@@ -1,0 +1,16 @@
+[package]
+name = "underlay-metrics"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+axum = { workspace = true }
+prometheus = { workspace = true }
+
+[features]
+default = ["process"]
+process = ["prometheus/process"]
+
+[dev-dependencies]
+axum = { workspace = true }

@@ -5,14 +5,36 @@ Underlay is split by layer, mirroring how consuming apps are structured.
 ## Rust
 
 - `rust/crates/underlay-core`
-  - Cross-cutting primitives used by all Rust crates and the API boundary.
+  - Cross-cutting primitives used by all Rust crates and API boundaries.
   - IDs (`Uuid` UUIDv7), error type (`AppError`), and DTO envelopes (`ListResponse`, `SingleResponse`, `ErrorEnvelope`).
 
-Future crates (intended; add when extracted):
+- `rust/crates/underlay-observability`
+  - Tracing bootstrap + request identity conventions.
+  - Provides `request_id_layer()` and `trace_layer()` helpers.
 
-- `underlay-api` (axum helpers, error → response mapping, version header handling)
-- `underlay-db` (sqlx patterns, migration conventions, common queries)
-- `underlay-auth` (auth boundary types, roles/capabilities abstractions)
+- `rust/crates/underlay-http`
+  - Axum-focused response helpers (envelopes, error responses, CORS).
+
+- `rust/crates/underlay-auth`
+  - Auth boundary types + provider abstraction.
+  - Includes an Axum extractor (`Authenticated`) that uses an app-supplied provider.
+
+- `rust/crates/underlay-db`
+  - SQLx pool setup + migration runner helpers.
+  - Includes guarded helpers for dev reset flows.
+
+- `rust/crates/underlay-soft-delete`
+  - Standard soft-delete column naming and result semantics.
+
+- `rust/crates/underlay-events`
+  - Outbox/event record types + writer boundary.
+  - Includes a template SQL schema apps can adopt.
+
+- `rust/crates/underlay-jobs`
+  - Background job runner skeleton + handler registry + store boundary.
+
+- `rust/crates/underlay-metrics`
+  - Prometheus registry wrapper + Axum `/metrics` handler.
 
 ## TypeScript + Svelte
 

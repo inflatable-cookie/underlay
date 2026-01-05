@@ -19,4 +19,10 @@ Underlay’s Rust layer is intended to support a modular API codebase (multiple 
 - Error responses are always `ErrorEnvelope`.
 - Success responses are `SingleResponse<T>` or `ListResponse<T>`.
 
-Underlay does not yet ship an axum integration crate; add `underlay-api` once we extract stable patterns from a reference implementation.
+## Integration crates
+
+- `underlay-observability` provides tracing bootstrap and request-id propagation.
+- `underlay-http` provides Axum response helpers (envelopes, `error_response`, and CORS).
+- `underlay-auth` provides an auth boundary and an Axum extractor that calls an app-supplied provider.
+- `underlay-db` provides SQLx pool + migrator helpers.
+- `underlay-soft-delete`, `underlay-events`, `underlay-jobs`, and `underlay-metrics` provide common semantics for shared infrastructure.

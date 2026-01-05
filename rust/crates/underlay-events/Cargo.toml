@@ -1,0 +1,15 @@
+[package]
+name = "underlay-events"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+async-trait = { workspace = true }
+chrono = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+underlay-core = { path = "../underlay-core" }
+
+[dev-dependencies]
+serde_json = { workspace = true }

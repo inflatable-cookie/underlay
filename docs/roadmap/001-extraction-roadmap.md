@@ -114,11 +114,12 @@ Reference sources:
 
 ## Phase 5 — DB Helpers + Migration Runners (keep schemas app-owned)
 
-- [ ] Underlay: create `underlay-db` crate (Rust).
-- [ ] Underlay: implement Postgres pool creation + common SQLx wiring helpers.
-- [ ] Underlay: implement migration runner helpers.
-- [ ] Underlay: implement dev reset patterns (guarded by environment).
-- [ ] Underlay: decide whether to add `underlay-migrations` for optional template migrations.
+- [x] Underlay: create `underlay-db` crate (Rust).
+- [x] Underlay: implement Postgres pool creation + common SQLx wiring helpers.
+- [x] Underlay: implement migration runner helpers.
+- [x] Underlay: implement dev reset patterns (guarded by environment).
+- [x] Underlay: decide whether to add `underlay-migrations` for optional template migrations.
+  - Decision: keep migrations app-owned for now; no `underlay-migrations` crate.
 
 - [ ] Acowtancy: switch pool + migrator setup to Underlay helpers; keep migrations in `farmyard/migrations/`.
 - [ ] Nursery: switch pool + migrator setup to Underlay helpers; keep migrations in `nursery/migrations/`.
@@ -133,10 +134,10 @@ Reference sources:
 
 ## Phase 6 — Soft Delete Semantics (generic; cascades remain app-local)
 
-- [ ] Underlay: add `underlay-soft-delete` (crate or module under `underlay-db`).
-- [ ] Underlay: standardise column naming (`deleted_at`, `delete_batch_id`).
-- [ ] Underlay: standardise result enums (`NotFound`, `AlreadyDeleted`, `Deleted { batch_id }`).
-- [ ] Underlay: standardise restore semantics by batch id.
+- [x] Underlay: add `underlay-soft-delete` (crate or module under `underlay-db`).
+- [x] Underlay: standardise column naming (`deleted_at`, `delete_batch_id`).
+- [x] Underlay: standardise result enums (`NotFound`, `AlreadyDeleted`, `Deleted { batch_id }`).
+- [x] Underlay: standardise restore semantics by batch id.
 
 - [ ] Acowtancy: keep cascade queries local, but use shared Underlay semantics/result types.
 
@@ -149,10 +150,10 @@ Reference sources:
 
 ## Phase 7 — Events / Outbox + Jobs Runner (harder; big payoff)
 
-- [ ] Underlay: create `underlay-events` crate (Rust).
-- [ ] Underlay: define event record type (id, type, payload, occurred_at, processed_at).
-- [ ] Underlay: define writer interface and recommended Postgres schema (template SQL).
-- [ ] Underlay: create `underlay-jobs` crate (Rust) with runner skeleton + handler registration.
+- [x] Underlay: create `underlay-events` crate (Rust).
+- [x] Underlay: define event record type (id, type, payload, occurred_at, processed_at).
+- [x] Underlay: define writer interface and recommended Postgres schema (template SQL).
+- [x] Underlay: create `underlay-jobs` crate (Rust) with runner skeleton + handler registration.
 
 - [ ] Nursery: harden outbox processing (don’t mark processed unless delivery succeeds; define retry/backoff).
 - [ ] Acowtancy: adopt once interface is stable; start with a single event type.
@@ -167,10 +168,10 @@ Reference sources:
 
 ## Phase 8 — Metrics (Prometheus) (optional, recommended)
 
-- [ ] Underlay: create `underlay-metrics` crate (Rust).
-- [ ] Underlay: implement registry wrapper.
-- [ ] Underlay: implement `/metrics` handler.
-- [ ] Underlay: add helper to register default process/runtime metrics.
+- [x] Underlay: create `underlay-metrics` crate (Rust).
+- [x] Underlay: implement registry wrapper.
+- [x] Underlay: implement `/metrics` handler.
+- [x] Underlay: add helper to register default process/runtime metrics.
 
 - [ ] Acowtancy: add `/metrics` endpoint to API binary and configure deployment.
 - [ ] Nursery: add `/metrics` endpoint to API binary and configure deployment.
