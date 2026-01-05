@@ -1961,6 +1961,7 @@ version = "0.0.1"
 dependencies = [
  "axum",
  "prometheus",
+ "tokio",
 ]
 
 [[package]]
@@ -1970,6 +1971,7 @@ dependencies = [
  "http",
  "pin-project-lite",
  "serde_json",
+ "tokio",
  "tower",
  "tower-http",
  "tracing",

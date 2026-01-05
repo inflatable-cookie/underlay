@@ -15,3 +15,4 @@ underlay-core = { path = "../underlay-core" }
 
 [dev-dependencies]
 serde_json = "1"
+tokio = { workspace = true, features = ["macros", "rt"] }

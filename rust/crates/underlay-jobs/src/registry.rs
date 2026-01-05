@@ -39,3 +39,36 @@ impl JobRegistry {
         self.handlers.get(job_type).cloned()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use async_trait::async_trait;
+
+    use crate::{Job, JobHandler, JobHandlerError, JobRegistry};
+
+    #[derive(Debug)]
+    struct TestHandler;
+
+    #[async_trait]
+    impl JobHandler for TestHandler {
+        fn job_type(&self) -> &'static str {
+            "test"
+        }
+
+        async fn handle(&self, _job: Job) -> Result<(), JobHandlerError> {
+            Ok(())
+        }
+    }
+
+    #[test]
+    fn registry_tracks_registered_job_types_and_handler_lookup() {
+        let mut registry = JobRegistry::new();
+        registry.register(TestHandler);
+
+        let types = registry.job_types();
+        assert_eq!(types, vec!["test".to_string()]);
+
+        assert!(registry.handler("test").is_some());
+        assert!(registry.handler("missing").is_none());
+    }
+}

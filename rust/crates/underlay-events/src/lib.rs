@@ -58,4 +58,17 @@ mod tests {
         let lowered = DOMAIN_EVENTS_SQL.to_ascii_lowercase();
         assert!(lowered.contains("create table"));
     }
+
+    #[test]
+    fn new_domain_event_now_sets_expected_fields() {
+        let payload = serde_json::json!({"ok": true});
+        let before = chrono::Utc::now();
+        let event = super::NewDomainEvent::now("test.event", payload.clone());
+        let after = chrono::Utc::now();
+
+        assert_eq!(event.event_type, "test.event");
+        assert_eq!(event.payload, payload);
+        assert!(event.occurred_at >= before);
+        assert!(event.occurred_at <= after);
+    }
 }
