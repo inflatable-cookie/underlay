@@ -23,11 +23,11 @@ Guiding rule: Underlay ships *primitives and patterns*, not app domains.
 
 ## 2. Phase Checklist (high-level)
 
-- [ ] Phase 1 — Core contract + primitives aligned
-- [ ] Phase 2 — Observability + request identity
-- [ ] Phase 3 — HTTP/Axum conventions
-- [ ] Phase 4 — Auth boundary
-- [ ] Phase 5 — DB helpers + migration runners
+- [x] Phase 1 — Core contract + primitives aligned
+- [x] Phase 2 — Observability + request identity
+- [x] Phase 3 — HTTP/Axum conventions
+- [x] Phase 4 — Auth boundary
+- [x] Phase 5 — DB helpers + migration runners
 - [ ] Phase 6 — Soft delete semantics
 - [ ] Phase 7 — Events/outbox + jobs runner
 - [ ] Phase 8 — Metrics
@@ -40,13 +40,13 @@ Guiding rule: Underlay ships *primitives and patterns*, not app domains.
 - [x] Underlay: ensure TS envelope exports in `@decodelabs/underlay/client` match Rust envelope JSON shape.
 - [x] Underlay: document envelope + error code conventions under `docs/architecture/`.
 
-- [ ] Acowtancy: update API boundary helpers to return Underlay envelopes (`ErrorEnvelope`, `SingleResponse<T>`, `ListResponse<T>`).
-- [ ] Acowtancy: ensure error sites emit stable string codes.
+- [x] Acowtancy: update API boundary helpers to return Underlay envelopes (`ErrorEnvelope`, `SingleResponse<T>`, `ListResponse<T>`).
+- [x] Acowtancy: ensure error sites emit stable string codes.
 
-- [ ] Nursery: replace local core primitives with Underlay (`AppError`, UUIDv7 wrapper, pagination/time if adopted).
+- [x] Nursery: replace local core primitives with Underlay (`AppError`, UUIDv7 wrapper, pagination/time if adopted).
 
-- [ ] Verify: both backends compile while importing `underlay-core`.
-- [ ] Verify: envelope JSON shape is identical across systems.
+- [x] Verify: both backends compile while importing `underlay-core`.
+- [x] Verify: envelope JSON shape is identical across systems.
 
 Reference sources:
 - Farmyard: `farmyard/crates/core/src/error.rs`, `farmyard/crates/core/src/id.rs`
@@ -61,14 +61,14 @@ Reference sources:
 - [x] Underlay: standardise request id header (`x-request-id`) and propagation rules (always include in responses).
 - [x] Underlay: provide optional axum/tower layers (`request_id_layer()`, `trace_layer()`) with consistent span fields.
 
-- [ ] Acowtancy: adopt Underlay request id middleware and remove ad-hoc correlation id behaviour.
-- [ ] Acowtancy: ensure logs and error responses share the same request id.
+- [x] Acowtancy: adopt Underlay request id middleware and remove ad-hoc correlation id behaviour.
+- [x] Acowtancy: ensure logs and error responses share the same request id.
 
-- [ ] Nursery: adopt Underlay request id middleware.
-- [ ] Nursery: fix middleware bugs during adoption (rate limiter + client IP fallback).
+- [x] Nursery: adopt Underlay request id middleware.
+- [x] Nursery: fix middleware bugs during adoption (rate limiter + client IP fallback).
 
-- [ ] Verify: every request gets a stable request id (client-provided or generated).
-- [ ] Verify: logs, traces, and error responses share the same request id.
+- [x] Verify: every request gets a stable request id (client-provided or generated).
+- [x] Verify: logs, traces, and error responses share the same request id.
 
 Reference sources:
 - Farmyard: `farmyard/crates/infra/src/lib.rs`, `farmyard/crates/infra/src/config.rs`
@@ -84,10 +84,10 @@ Reference sources:
 - [x] Underlay: add CORS helper allowing `x-request-id` and API version headers.
 - [x] Underlay: define an optional `ErrorLogSink` trait (apps decide persistence).
 
-- [ ] Acowtancy: keep endpoints local, but standardise error mapping + response envelopes via Underlay helpers.
-- [ ] Nursery: replace “new request id per error” behaviour with a shared request id.
+- [x] Acowtancy: keep endpoints local, but standardise error mapping + response envelopes via Underlay helpers.
+- [x] Nursery: replace “new request id per error” behaviour with a shared request id.
 
-- [ ] Verify: endpoints emit consistent JSON envelopes and status code semantics.
+- [x] Verify: endpoints emit consistent JSON envelopes and status code semantics.
 
 Reference sources:
 - Farmyard: `farmyard/crates/api/src/main.rs` (envelope shapes, `error_response` pattern)
@@ -102,10 +102,10 @@ Reference sources:
 - [x] Underlay: define `AuthProvider` trait (verify token/session) and stable error mapping.
 - [x] Underlay: provide axum extractor `Authenticated<P>` built on the provider.
 
-- [ ] Acowtancy: ensure `AuthenticatedUser` extraction calls a provider (not ad-hoc header logic).
-- [ ] Nursery: introduce the same boundary early (even if provider is dev-only initially).
+- [x] Acowtancy: ensure `AuthenticatedUser` extraction calls a provider (not ad-hoc header logic).
+- [x] Nursery: introduce the same boundary early (even if provider is dev-only initially).
 
-- [ ] Verify: auth verification can be swapped without changing handlers.
+- [x] Verify: auth verification can be swapped without changing handlers.
 
 Reference sources:
 - Farmyard: `farmyard/crates/auth/src/provider.rs`, `farmyard/crates/auth/src/principal.rs`
@@ -121,10 +121,10 @@ Reference sources:
 - [x] Underlay: decide whether to add `underlay-migrations` for optional template migrations.
   - Decision: keep migrations app-owned for now; no `underlay-migrations` crate.
 
-- [ ] Acowtancy: switch pool + migrator setup to Underlay helpers; keep migrations in `farmyard/migrations/`.
-- [ ] Nursery: switch pool + migrator setup to Underlay helpers; keep migrations in `nursery/migrations/`.
+- [x] Acowtancy: switch pool + migrator setup to Underlay helpers; keep migrations in `farmyard/migrations/`.
+- [x] Nursery: switch pool + migrator setup to Underlay helpers; keep migrations in `nursery/migrations/`.
 
-- [ ] Verify: both apps can run `migrate_dev_db`-equivalent flows using Underlay helpers.
+- [x] Verify: both apps can run `migrate_dev_db`-equivalent flows using Underlay helpers.
 
 Reference sources:
 - Farmyard: `farmyard/crates/db/src/lib.rs`, `farmyard/crates/db/src/bin/migrate_dev_db.rs`, `farmyard/crates/db/src/bin/reset_dev_db.rs`
@@ -139,7 +139,8 @@ Reference sources:
 - [x] Underlay: standardise result enums (`NotFound`, `AlreadyDeleted`, `Deleted { batch_id }`).
 - [x] Underlay: standardise restore semantics by batch id.
 
-- [ ] Acowtancy: keep cascade queries local, but use shared Underlay semantics/result types.
+- [x] Acowtancy: keep cascade queries local, but use shared Underlay semantics/result types.
+- [ ] Nursery: no soft-delete flows yet (leave until soft delete is introduced).
 
 - [ ] Verify: soft-delete operations across apps communicate state consistently.
 
@@ -173,8 +174,8 @@ Reference sources:
 - [x] Underlay: implement `/metrics` handler.
 - [x] Underlay: add helper to register default process/runtime metrics.
 
-- [ ] Acowtancy: add `/metrics` endpoint to API binary and configure deployment.
-- [ ] Nursery: add `/metrics` endpoint to API binary and configure deployment.
+- [x] Acowtancy: add `/metrics` endpoint to API binary and configure deployment.
+- [x] Nursery: add `/metrics` endpoint to API binary and configure deployment.
 
 - [ ] Verify: `/metrics` works locally and on target deployment.
 

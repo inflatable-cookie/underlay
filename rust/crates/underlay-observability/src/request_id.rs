@@ -13,7 +13,15 @@ impl RequestId {
     pub fn new() -> Self {
         RequestId(Uuid::new_v7())
     }
+}
 
+impl Default for RequestId {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl RequestId {
     pub fn from_header_value(value: &HeaderValue) -> Option<Self> {
         let raw = value.to_str().ok()?;
         let parsed = Uuid::parse_str(raw).ok()?;
@@ -121,7 +129,7 @@ where
             .headers()
             .get(&self.header_name)
             .and_then(RequestId::from_header_value)
-            .unwrap_or_else(RequestId::new);
+            .unwrap_or_default();
 
         req.extensions_mut().insert(request_id);
 

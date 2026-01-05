@@ -10,9 +10,5 @@ pub trait JobStore: Send + Sync {
 
     async fn mark_success(&self, job_id: JobId) -> Result<(), Self::Error>;
 
-    async fn mark_failure(
-        &self,
-        job_id: JobId,
-        error: JobHandlerError,
-    ) -> Result<(), Self::Error>;
+    async fn mark_failure(&self, job_id: JobId, error: JobHandlerError) -> Result<(), Self::Error>;
 }

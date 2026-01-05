@@ -34,8 +34,12 @@ where
     type Rejection = (StatusCode, axum::Json<underlay_core::ErrorEnvelope>);
 
     async fn from_request_parts(parts: &mut Parts, state: &S) -> Result<Self, Self::Rejection> {
-        let token = extract_bearer(parts.headers.get(AUTHORIZATION_HEADER))
-            .ok_or_else(|| reject(StatusCode::UNAUTHORIZED, AuthError::Unauthorized.into_app_error()))?;
+        let token = extract_bearer(parts.headers.get(AUTHORIZATION_HEADER)).ok_or_else(|| {
+            reject(
+                StatusCode::UNAUTHORIZED,
+                AuthError::Unauthorized.into_app_error(),
+            )
+        })?;
 
         let principal = state
             .auth_provider()
