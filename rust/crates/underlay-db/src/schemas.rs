@@ -50,11 +50,15 @@ pub fn validate_schema_name(schema: &str) -> bool {
 /// Drop schemas (CASCADE) in a safe, guarded way.
 ///
 /// This helper is intended for local/dev reset tooling.
-pub async fn drop_schemas(
+pub async fn drop_schemas<S, I>(
     pool: &DbPool,
     guard: DestructiveGuard,
-    schemas: &[&str],
-) -> Result<(), sqlx::Error> {
+    schemas: I,
+) -> Result<(), sqlx::Error>
+where
+    I: IntoIterator<Item = S>,
+    S: AsRef<str>,
+{
     if !guard.is_allowed() {
         return Err(sqlx::Error::Protocol(
             "destructive operations are not allowed".into(),
@@ -62,6 +66,8 @@ pub async fn drop_schemas(
     }
 
     for schema in schemas {
+        let schema = schema.as_ref();
+
         if !validate_schema_name(schema) {
             return Err(sqlx::Error::Protocol(format!(
                 "invalid schema name: {schema}"

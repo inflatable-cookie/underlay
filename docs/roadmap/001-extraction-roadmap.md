@@ -156,10 +156,10 @@ Reference sources:
 - [x] Underlay: define writer interface and recommended Postgres schema (template SQL).
 - [x] Underlay: create `underlay-jobs` crate (Rust) with runner skeleton + handler registration.
 
-- [ ] Nursery: harden outbox processing (don’t mark processed unless delivery succeeds; define retry/backoff).
+- [x] Nursery: harden outbox processing (don’t mark processed unless delivery succeeds; define retry/backoff).
 - [ ] Acowtancy: adopt once interface is stable; start with a single event type.
 
-- [ ] Verify: one app can emit events and a worker processes them with correct locking semantics.
+- [x] Verify: one app can emit events and a worker processes them with correct locking semantics.
 
 Reference sources:
 - Farmyard: `farmyard/crates/jobs/src/lib.rs`, `farmyard/crates/jobs/src/main.rs`
@@ -186,7 +186,7 @@ Reference sources:
 
 ## Open Questions / Decisions
 
-- [ ] Decide Axum version strategy for Underlay HTTP/auth integrations.
-- [ ] Decide whether Underlay ships `underlay-openapi` (utoipa helpers) vs keeping OpenAPI generation app-local.
-- [ ] Decide whether Underlay ships template infra migrations (error log table, outbox table) as optional imports.
-- [ ] Decide API version header naming convention (app-specific prefix vs generic).
+- [x] Decide Axum version strategy for Underlay HTTP/auth integrations (target Axum 0.7; `underlay-*` crates use workspace deps; consumers should align on Axum 0.7).
+- [x] Decide whether Underlay ships `underlay-openapi` (utoipa helpers) vs keeping OpenAPI generation app-local (ship `underlay-openapi` as an optional utoipa-only crate for envelopes + common schemas).
+- [x] Decide whether Underlay ships template infra migrations (error log table, outbox table) as optional imports (ship optional SQL templates per crate; apps own migrations).
+- [x] Decide API version header naming convention (app-specific prefix vs generic) (keep app-specific header names; Underlay only standardises `x-request-id` and `x-error-code`).

@@ -13,7 +13,7 @@ axum = "0.7"
 chrono = { version = "0.4", features = ["serde", "clock"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-sqlx = { version = "0.8", features = ["runtime-tokio", "postgres", "macros", "migrate", "chrono", "json"] }
+sqlx = { version = "0.8.6", features = ["runtime-tokio-rustls", "postgres", "uuid", "migrate", "chrono", "json"] }
 tokio = "1"
 
 # Metrics
@@ -21,6 +21,7 @@ prometheus = "0.13"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt", "json"] }
 tower = "0.5"
-tower-http = { version = "0.6", features = ["trace", "cors"] }
+tower-http = { version = "0.6", features = ["trace", "cors", "request-id", "propagate-header"] }
 http = "1"
 uuid = { version = "1", features = ["serde", "v7"] }
+utoipa = "5.4.0"
