@@ -20,8 +20,9 @@ Start reading: `docs/architecture/000-overview.md`.
 
 ## Development
 
+- Install JS deps: `pnpm install`
 - Rust: `cargo test`
-- TS/Svelte: `npm run check` (or `pnpm check` if your workspace uses pnpm)
+- TS/Svelte: `pnpm check`
 
 ## Status
 

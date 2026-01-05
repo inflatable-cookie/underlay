@@ -21,6 +21,11 @@ This repository is a *framework*, not an app. It should provide stable, app-agno
 - `contracts/` – API contracts (OpenAPI schemas and shared envelope types).
 - `docs/` – Underlay architecture and integration guides.
 
+## Build & Test
+
+- JS/Svelte: `pnpm install`, then `pnpm check`
+- Rust: `cargo test`
+
 ## Design Principles
 
 - **App-agnostic**: avoid project-specific naming, routes, and domain types.
