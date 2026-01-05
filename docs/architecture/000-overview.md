@@ -22,3 +22,9 @@ Underlay is a reusable foundation for building full-stack apps with a consistent
 
 - Architectural expectations are defined in `docs/architecture/`.
 - Shared wire contracts live in `contracts/openapi/`.
+
+## Key Docs
+
+- `docs/architecture/015-error-and-envelopes.md` (API error and envelope contract)
+- `docs/architecture/030-ts-api-client.md` (typed client conventions)
+- `docs/architecture/040-svelte-ui-kit.md` (UI kit scope and constraints)
