@@ -1,0 +1,59 @@
+{
+  "name": "@decodelabs/underlay",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "svelte": "./ts/src/index.ts",
+      "types": "./ts/src/index.ts",
+      "default": "./ts/src/index.ts"
+    },
+    "./components": {
+      "svelte": "./ts/src/components/index.ts",
+      "types": "./ts/src/components/index.ts",
+      "default": "./ts/src/components/index.ts"
+    },
+    "./patterns": {
+      "svelte": "./ts/src/patterns/index.ts",
+      "types": "./ts/src/patterns/index.ts",
+      "default": "./ts/src/patterns/index.ts"
+    },
+    "./nightfire": {
+      "svelte": "./ts/src/nightfire/index.ts",
+      "types": "./ts/src/nightfire/index.ts",
+      "default": "./ts/src/nightfire/index.ts"
+    },
+    "./styles": {
+      "svelte": "./ts/src/styles/index.ts",
+      "types": "./ts/src/styles/index.ts",
+      "default": "./ts/src/styles/index.ts"
+    },
+    "./client": {
+      "types": "./ts/src/client/index.ts",
+      "default": "./ts/src/client/index.ts"
+    },
+    "./styles/base.css": "./ts/src/styles/base.css",
+    "./components/*": {
+      "svelte": "./ts/src/components/*.svelte",
+      "default": "./ts/src/components/*.svelte"
+    },
+    "./nightfire/*": {
+      "svelte": "./ts/src/nightfire/*.svelte",
+      "default": "./ts/src/nightfire/*.svelte"
+    }
+  },
+  "scripts": {
+    "check": "svelte-check --tsconfig ./ts/tsconfig.json"
+  },
+  "peerDependencies": {
+    "svelte": "^5.0.0",
+    "@sveltejs/kit": "^2.0.0",
+    "vite": "^5.0.0"
+  },
+  "devDependencies": {
+    "svelte": "^5.43.8",
+    "svelte-check": "^4.3.4",
+    "typescript": "^5.9.3"
+  }
+}

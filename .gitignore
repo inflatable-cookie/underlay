@@ -1,0 +1,16 @@
+.DS_Store
+node_modules/
+target/
+**/*.log
+
+# SvelteKit / Vite
+.svelte-kit/
+dist/
+.vite/
+
+# TypeScript
+*.tsbuildinfo
+
+# OS/editor
+*.swp
+*.swo
