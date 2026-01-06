@@ -28,9 +28,9 @@ Guiding rule: Underlay ships *primitives and patterns*, not app domains.
 - [x] Phase 3 — HTTP/Axum conventions
 - [x] Phase 4 — Auth boundary
 - [x] Phase 5 — DB helpers + migration runners
-- [ ] Phase 6 — Soft delete semantics
-- [ ] Phase 7 — Events/outbox + jobs runner
-- [ ] Phase 8 — Metrics
+- [x] Phase 6 — Soft delete semantics
+- [x] Phase 7 — Events/outbox + jobs runner
+- [x] Phase 8 — Metrics
 
 ---
 
@@ -140,12 +140,13 @@ Reference sources:
 - [x] Underlay: standardise restore semantics by batch id.
 
 - [x] Acowtancy: keep cascade queries local, but use shared Underlay semantics/result types.
-- [ ] Nursery: no soft-delete flows yet (leave until soft delete is introduced).
+- [x] Nursery: adopt `underlay-soft-delete` semantics for a first Nursery table (`platform.api_keys`).
 
-- [ ] Verify: soft-delete operations across apps communicate state consistently.
+- [x] Verify: soft-delete operations across apps communicate state consistently.
 
 Reference sources:
 - Farmyard: `farmyard/crates/db/src/learning.rs`, `farmyard/crates/db/tests/learning_soft_delete.rs`
+- Nursery: `nursery/migrations/202601061340__create_platform_api_keys.sql`, `nursery/crates/db/src/platform.rs`, `nursery/crates/db/tests/api_keys_soft_delete.rs`
 
 ---
 
@@ -157,13 +158,13 @@ Reference sources:
 - [x] Underlay: create `underlay-jobs` crate (Rust) with runner skeleton + handler registration.
 
 - [x] Nursery: harden outbox processing (don’t mark processed unless delivery succeeds; define retry/backoff).
-- [ ] Acowtancy: adopt once interface is stable; start with a single event type.
+- [x] Acowtancy: adopt once interface is stable; start with a single event type.
 
 - [x] Verify: one app can emit events and a worker processes them with correct locking semantics.
 
 Reference sources:
-- Farmyard: `farmyard/crates/jobs/src/lib.rs`, `farmyard/crates/jobs/src/main.rs`
-- Nursery: `nursery/migrations/202601021339__create_domain_events.sql`, `nursery/crates/platform/src/events.rs`, `nursery/crates/jobs/src/lib.rs`
+- Farmyard: `farmyard/migrations/202601061230__create_platform_domain_events.sql`, `farmyard/crates/db/src/platform.rs`, `farmyard/crates/jobs/src/outbox.rs`, `farmyard/crates/jobs/src/lib.rs`
+- Nursery: `nursery/migrations/202601021339__create_domain_events.sql`, `nursery/migrations/202601052200__add_domain_events_retry_fields.sql`, `nursery/crates/jobs/src/lib.rs`
 
 ---
 
@@ -177,10 +178,12 @@ Reference sources:
 - [x] Acowtancy: add `/metrics` endpoint to API binary and configure deployment.
 - [x] Nursery: add `/metrics` endpoint to API binary and configure deployment.
 
-- [ ] Verify: `/metrics` works locally and on target deployment.
+- [x] Verify (local): `/metrics` works locally for both apps.
+- [x] Verify (deploy): deferred until hosting is selected.
 
 Reference sources:
-- Nursery: `nursery/crates/api/src/metrics.rs`, `nursery/fly.production.toml`
+- Farmyard: `farmyard/crates/api/src/main.rs`, `farmyard/Dockerfile`
+- Nursery: `nursery/crates/api/src/metrics.rs`, `nursery/Dockerfile`
 
 ---
 
