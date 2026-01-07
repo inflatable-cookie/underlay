@@ -12,7 +12,7 @@
     },
     "./components": {
       "svelte": "./ts/src/components/index.ts",
-      "types": "./ts/src/components/index.ts",
+      "types": "./ts/src/components/index.d.ts",
       "default": "./ts/src/components/index.ts"
     },
     "./patterns": {
@@ -35,13 +35,17 @@
       "default": "./ts/src/client/index.ts"
     },
     "./styles/base.css": "./ts/src/styles/base.css",
+    "./styles/forms.css": "./ts/src/styles/forms.css",
+    "./styles/tokens.css": "./ts/src/styles/tokens.css",
     "./components/*": {
-      "svelte": "./ts/src/components/*.svelte",
-      "default": "./ts/src/components/*.svelte"
+      "types": "./ts/src/svelte.d.ts",
+      "svelte": "./ts/src/components/*",
+      "default": "./ts/src/components/*"
     },
     "./nightfire/*": {
-      "svelte": "./ts/src/nightfire/*.svelte",
-      "default": "./ts/src/nightfire/*.svelte"
+      "types": "./ts/src/svelte.d.ts",
+      "svelte": "./ts/src/nightfire/*",
+      "default": "./ts/src/nightfire/*"
     }
   },
   "scripts": {
@@ -50,9 +54,14 @@
   "peerDependencies": {
     "svelte": "^5.0.0",
     "@sveltejs/kit": "^2.0.0",
-    "vite": "^7.0.0"
+    "vite": "^7.0.0",
+    "bits-ui": "^2.0.0"
+  },
+  "dependencies": {
+    "easymde": "^2.18.0"
   },
   "devDependencies": {
+    "bits-ui": "^2.14.4",
     "svelte": "^5.43.8",
     "svelte-check": "^4.3.4",
     "typescript": "^5.9.3"

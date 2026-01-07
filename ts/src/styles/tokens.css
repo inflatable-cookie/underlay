@@ -1,0 +1,133 @@
+:root {
+  /* Surface and text */
+  --froyo-color-bg-surface: #ffffff;
+  --froyo-color-text: #111827;
+  --froyo-color-text-muted: #6b7280;
+  --froyo-color-text-subtle: rgba(148, 163, 184, 0.65);
+
+  /* Borders */
+  --froyo-color-border-subtle: rgba(15, 23, 42, 0.15);
+  --froyo-color-border-strong: rgba(15, 23, 42, 0.25);
+
+  /* Primary action */
+  --froyo-color-primary: #2563eb;
+  --froyo-color-primary-strong: #1d4ed8;
+  --froyo-color-on-primary: #ffffff;
+
+  /* Status */
+  --froyo-color-success: #16a34a;
+  --froyo-color-warning: #f59e0b;
+  --froyo-color-error: #ef4444;
+  --froyo-color-danger: var(--froyo-color-error);
+
+  /* Muted / secondary surfaces */
+  --froyo-color-surface-muted: #e5e7eb;
+  --froyo-color-on-surface: #111827;
+
+  /* Form fields */
+  --froyo-color-field-bg: rgba(148, 163, 184, 0.18);
+  --froyo-color-field-bg-hover: rgba(148, 163, 184, 0.28);
+  --froyo-field-padding-block: 0.55em;
+  --froyo-field-padding-inline: 0.7em;
+
+  /* Hovers */
+  --froyo-color-hover-bg: rgba(148, 163, 184, 0.2);
+
+  /* Accent mixing helpers */
+  --froyo-color-accent-tint-bg: rgba(148, 163, 184, 0.08);
+  --froyo-color-accent-tint-border: rgba(148, 163, 184, 0.12);
+
+  /* Buttons */
+  --froyo-color-button-neutral-bg: #1f2933;
+  --froyo-color-button-neutral-hover: #374151;
+  --froyo-color-button-secondary: #ea580c;
+  --froyo-color-button-secondary-strong: #f97316;
+
+  --froyo-button-gap: 0.35em;
+  --froyo-button-padding-block: 0.6em;
+  --froyo-button-padding-inline: 1.2em;
+
+  --froyo-button-chip-padding-block: 0.2em;
+  --froyo-button-chip-padding-inline: 0.5em;
+
+  --froyo-stack-tight-margin: 0.35em;
+
+  /* Spacing */
+  --froyo-space-1: 0.25rem;
+  --froyo-space-2: 0.5rem;
+  --froyo-space-3: 0.75rem;
+  --froyo-space-4: 1rem;
+  --froyo-space-5: 1.25rem;
+  --froyo-space-6: 1.5rem;
+
+  /* Typography */
+  --froyo-font-size-xs: 0.75rem;
+  --froyo-font-size-sm: 0.8rem;
+  --froyo-font-size-md: 0.85rem;
+
+  --froyo-font-scale-xxs: 0.75;
+  --froyo-font-scale-xs: 0.8;
+  --froyo-font-scale-sm: 0.85;
+  --froyo-font-scale-lg: 0.95;
+
+  /* Radii */
+  --froyo-radius-pill: 9999px;
+  --froyo-radius-sm: 0.35rem;
+  --froyo-radius-md: 0.75rem;
+  --froyo-radius-lg: 1rem;
+
+  /* Shadows */
+  --froyo-shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.08);
+  --froyo-shadow-md: 0 10px 25px rgba(0, 0, 0, 0.18);
+  --froyo-shadow-popover: 0 8px 16px rgba(0, 0, 0, 0.5);
+  --froyo-shadow-card: 0 14px 30px rgba(15, 23, 42, 0.35);
+  --froyo-shadow-card-hover: 0 18px 40px rgba(15, 23, 42, 0.45);
+
+  /* Density */
+  --froyo-density-gap: 0.75rem;
+
+  /* List layouts */
+  --froyo-list-grid-min: 360px;
+  --froyo-list-grid-gap: 14px;
+
+  --froyo-list-card-media-size: 76px;
+  --froyo-list-card-media-size-sm: 64px;
+
+  /* Switch */
+  --froyo-switch-thumb-inset: 2px;
+
+  /* Focus */
+  --froyo-focus-ring-width: 2px;
+  --froyo-focus-ring-offset: 2px;
+
+  /* Motion */
+  --froyo-lift-hover: -1px;
+
+  --froyo-radius-control: 0.5rem;
+
+  /* Markdown editor */
+  --froyo-markdown-editor-inline-nudge: 4px;
+  --froyo-markdown-editor-min-height: 5em;
+  --froyo-markdown-editor-spinner-dot-size: 0.6em;
+
+  /* Menus */
+  --froyo-split-button-menu-min-width: 7rem;
+
+  /* Summary */
+  --froyo-summary-step-index-size: 1.8rem;
+  --froyo-summary-image-placeholder-min-height: 6rem;
+  --froyo-summary-placeholder-opacity: 0.8;
+  --froyo-summary-caption-opacity: 0.85;
+
+  /* Switch */
+  --froyo-switch-track-width: 2.25rem;
+  --froyo-switch-track-height: 1.25rem;
+  --froyo-switch-thumb-size: 0.9rem;
+  --froyo-switch-thumb-shift: 0.9rem;
+}
+
+[data-froyo-density="compact"] {
+  --froyo-density-gap: 0.5rem;
+  --froyo-field-padding-block: 0.45em;
+  --froyo-field-padding-inline: 0.6em;
+}

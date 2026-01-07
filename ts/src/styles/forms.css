@@ -1,0 +1,15 @@
+/*
+  Shared form layout utilities.
+
+  `underlay-form-grid` is the preferred class name.
+  `froyo-form-grid` is kept as a legacy alias.
+*/
+
+.underlay-form-grid,
+.froyo-form-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  max-width: 40rem;
+  margin: 0 auto;
+}
