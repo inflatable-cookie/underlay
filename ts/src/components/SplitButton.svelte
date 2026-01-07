@@ -62,49 +62,49 @@
 
 <style>
   .underlay-split-button {
-    --underlay-radius-pill: var(--underlay-radius-sm, var(--froyo-radius-sm, 0.35rem));
+    --underlay-radius-pill: var(--underlay-radius-sm, var(--underlay-radius-sm, 0.35rem));
     display: inline-flex;
   }
 
   .underlay-split-button__toggle {
-    --underlay-radius-pill: var(--underlay-radius-sm, var(--froyo-radius-sm, 0.35rem));
+    --underlay-radius-pill: var(--underlay-radius-sm, var(--underlay-radius-sm, 0.35rem));
     border: none;
     border-radius: 0 var(--underlay-radius-pill) var(--underlay-radius-pill) 0;
     margin-left: 0;
-    padding: 0 var(--underlay-space-3, var(--froyo-space-3, 0.75rem));
+    padding: 0 var(--underlay-space-3, var(--underlay-space-3, 0.75rem));
     background: var(
       --underlay-color-field-bg,
-      var(--froyo-color-field-bg, rgba(148, 163, 184, 0.18))
+      var(--underlay-color-field-bg, rgba(148, 163, 184, 0.18))
     );
-    color: var(--underlay-color-text, var(--froyo-color-text, inherit));
+    color: var(--underlay-color-text, var(--underlay-color-text, inherit));
     cursor: pointer;
-    font-size: var(--underlay-font-size-xs, var(--froyo-font-size-xs, 0.75rem));
+    font-size: var(--underlay-font-size-xs, var(--underlay-font-size-xs, 0.75rem));
   }
 
   .underlay-split-button__toggle:focus-visible,
   :global(.underlay-split-button__main:focus-visible) {
-    outline: var(--underlay-focus-ring-width, var(--froyo-focus-ring-width, 2px)) solid
-      var(--underlay-color-primary, var(--froyo-color-primary, #2563eb));
-    outline-offset: var(--underlay-focus-ring-offset, var(--froyo-focus-ring-offset, 2px));
+    outline: var(--underlay-focus-ring-width, var(--underlay-focus-ring-width, 2px)) solid
+      var(--underlay-color-primary, var(--underlay-color-primary, #2563eb));
+    outline-offset: var(--underlay-focus-ring-offset, var(--underlay-focus-ring-offset, 2px));
   }
 
   .underlay-split-button__menu {
     position: absolute;
     background: var(
       --underlay-color-bg-surface,
-      var(--froyo-color-bg-surface, #020617)
+      var(--underlay-color-bg-surface, #020617)
     );
-    border-radius: var(--underlay-radius-sm, var(--froyo-radius-sm, 0.35rem));
+    border-radius: var(--underlay-radius-sm, var(--underlay-radius-sm, 0.35rem));
     border: 1px solid
       var(
         --underlay-color-border-subtle,
-        var(--froyo-color-border-subtle, rgba(148, 163, 184, 0.5))
+        var(--underlay-color-border-subtle, rgba(148, 163, 184, 0.5))
       );
-    box-shadow: var(--underlay-shadow-popover, var(--froyo-shadow-popover, none));
-    padding: var(--underlay-space-1, var(--froyo-space-1, 0.25rem)) 0;
+    box-shadow: var(--underlay-shadow-popover, var(--underlay-shadow-popover, none));
+    padding: var(--underlay-space-1, var(--underlay-space-1, 0.25rem)) 0;
     z-index: 20;
-    min-width: var(--underlay-split-button-menu-min-width, var(--froyo-split-button-menu-min-width, 7rem));
-    color: var(--underlay-color-text, var(--froyo-color-text, inherit));
+    min-width: var(--underlay-split-button-menu-min-width, var(--underlay-split-button-menu-min-width, 7rem));
+    color: var(--underlay-color-text, var(--underlay-color-text, inherit));
   }
 
   @supports (position-anchor: --test) {
@@ -129,17 +129,17 @@
   .underlay-split-button__menu-item {
     display: block;
     width: 100%;
-    padding: var(--underlay-space-1, var(--froyo-space-1, 0.25rem))
-      var(--underlay-space-3, var(--froyo-space-3, 0.75rem));
+    padding: var(--underlay-space-1, var(--underlay-space-1, 0.25rem))
+      var(--underlay-space-3, var(--underlay-space-3, 0.75rem));
     border: none;
     background: transparent;
     color: inherit;
-    font-size: var(--underlay-font-size-sm, var(--froyo-font-size-sm, 0.8rem));
+    font-size: var(--underlay-font-size-sm, var(--underlay-font-size-sm, 0.8rem));
     text-align: left;
     cursor: pointer;
   }
 
   .underlay-split-button__menu-item:hover {
-    background: var(--underlay-color-hover-bg, var(--froyo-color-hover-bg, rgba(148, 163, 184, 0.2)));
+    background: var(--underlay-color-hover-bg, var(--underlay-color-hover-bg, rgba(148, 163, 184, 0.2)));
   }
 </style>

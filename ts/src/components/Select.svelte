@@ -131,21 +131,21 @@
     width: 100%;
     min-width: min(var(--underlay-select-min-width, 12rem), 100%);
     box-sizing: border-box;
-    padding: var(--underlay-field-padding-block, var(--froyo-field-padding-block, 0.55em))
-      var(--underlay-field-padding-inline, var(--froyo-field-padding-inline, 0.7em));
+    padding: var(--underlay-field-padding-block, var(--underlay-field-padding-block, 0.55em))
+      var(--underlay-field-padding-inline, var(--underlay-field-padding-inline, 0.7em));
     border-radius: 0.35rem;
     border: none;
     background: var(
       --underlay-color-field-bg,
-      var(--froyo-color-field-bg, rgba(148, 163, 184, 0.18))
+      var(--underlay-color-field-bg, rgba(148, 163, 184, 0.18))
     );
-    color: var(--underlay-color-text, var(--froyo-color-text, #e5e7eb));
+    color: var(--underlay-color-text, var(--underlay-color-text, #e5e7eb));
     font-size: 0.85rem;
   }
 
   .underlay-select:focus,
   .underlay-select:focus-visible {
-    outline: 2px solid var(--underlay-color-primary, var(--froyo-color-primary, #2563eb));
+    outline: 2px solid var(--underlay-color-primary, var(--underlay-color-primary, #2563eb));
     outline-offset: 2px;
   }
 
@@ -156,26 +156,26 @@
     align-items: center;
     justify-content: space-between;
     box-sizing: border-box;
-    padding: var(--underlay-field-padding-block, var(--froyo-field-padding-block, 0.55em))
-      var(--underlay-field-padding-inline, var(--froyo-field-padding-inline, 0.7em));
+    padding: var(--underlay-field-padding-block, var(--underlay-field-padding-block, 0.55em))
+      var(--underlay-field-padding-inline, var(--underlay-field-padding-inline, 0.7em));
     border-radius: 0.35rem;
     border: none;
     background: var(
       --underlay-color-field-bg,
-      var(--froyo-color-field-bg, rgba(148, 163, 184, 0.18))
+      var(--underlay-color-field-bg, rgba(148, 163, 184, 0.18))
     );
-    color: var(--underlay-color-text, var(--froyo-color-text, #e5e7eb));
+    color: var(--underlay-color-text, var(--underlay-color-text, #e5e7eb));
     font-size: 0.85rem;
     cursor: pointer;
   }
 
   :global(.underlay-select-trigger:focus-visible) {
-    outline: 2px solid var(--underlay-color-primary, var(--froyo-color-primary, #2563eb));
+    outline: 2px solid var(--underlay-color-primary, var(--underlay-color-primary, #2563eb));
     outline-offset: 2px;
   }
 
   .placeholder {
-    color: var(--underlay-color-text-muted, var(--froyo-color-text-muted, #9ca3af));
+    color: var(--underlay-color-text-muted, var(--underlay-color-text-muted, #9ca3af));
   }
 
   :global(.underlay-select-trigger__chevron) {
@@ -189,11 +189,11 @@
     border: 1px solid
       var(
         --underlay-color-border-subtle,
-        var(--froyo-color-border-subtle, rgba(148, 163, 184, 0.5))
+        var(--underlay-color-border-subtle, rgba(148, 163, 184, 0.5))
       );
     background: var(
       --underlay-color-bg-surface,
-      var(--froyo-color-bg-surface, #020617)
+      var(--underlay-color-bg-surface, #020617)
     );
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
     padding: 0.25rem;
@@ -229,7 +229,7 @@
     cursor: pointer;
     user-select: none;
     font-size: 0.85rem;
-    color: var(--underlay-color-text, var(--froyo-color-text, #e5e7eb));
+    color: var(--underlay-color-text, var(--underlay-color-text, #e5e7eb));
   }
 
   :global(.underlay-select-item[data-highlighted]) {

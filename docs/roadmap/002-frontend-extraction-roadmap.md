@@ -182,7 +182,7 @@ Acceptance criteria:
   - [x] Add baseline semantic tokens (text-muted/subtle, border, status colors, spacing, radii, shadows)
   - [ ] Remove remaining hard-coded literals in Froyo shared components
 - [ ] Froyo: implement density switching (comfortable vs compact) per Ledger Froyo docs.
-  - [x] Support `data-froyo-density="compact"` attribute overrides
+  - [x] Support `data-underlay-density="compact"` attribute overrides
   - [x] Ensure core inputs/cards/actions use density variables
 - [ ] Petal: formalize density variants (artist vs admin) if needed.
 - [x] Define a shared *semantic token shape* (not values):

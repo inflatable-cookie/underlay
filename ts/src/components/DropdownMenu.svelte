@@ -74,7 +74,7 @@
     border-radius: 0.5rem;
     border: 1px solid rgba(148, 163, 184, 0.35);
     background: rgba(255, 255, 255, 0.03);
-    color: var(--underlay-color-text, var(--froyo-color-text, #e5e7eb));
+    color: var(--underlay-color-text, var(--underlay-color-text, #e5e7eb));
     cursor: pointer;
     font-size: 1.1rem;
     line-height: 1;
@@ -95,11 +95,11 @@
     border: 1px solid
       var(
         --underlay-color-border-subtle,
-        var(--froyo-color-border-subtle, rgba(148, 163, 184, 0.5))
+        var(--underlay-color-border-subtle, rgba(148, 163, 184, 0.5))
       );
     background: var(
       --underlay-color-bg-surface,
-      var(--froyo-color-bg-surface, #020617)
+      var(--underlay-color-bg-surface, #020617)
     );
     box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55);
     padding: 0.35rem;
@@ -120,7 +120,7 @@
     cursor: pointer;
     user-select: none;
 
-    color: var(--underlay-color-text, var(--froyo-color-text, #e5e7eb));
+    color: var(--underlay-color-text, var(--underlay-color-text, #e5e7eb));
     font-size: 0.9rem;
     line-height: 1.2;
   }

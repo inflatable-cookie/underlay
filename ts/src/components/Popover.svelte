@@ -74,15 +74,15 @@
     border: 1px solid
       var(
         --underlay-color-border-subtle,
-        var(--froyo-color-border-subtle, rgba(148, 163, 184, 0.5))
+        var(--underlay-color-border-subtle, rgba(148, 163, 184, 0.5))
       );
     background: var(
       --underlay-color-bg-surface,
-      var(--froyo-color-bg-surface, #020617)
+      var(--underlay-color-bg-surface, #020617)
     );
     box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55);
     padding: 0.75rem;
     max-width: min(32rem, calc(100vw - 2rem));
-    color: var(--underlay-color-text, var(--froyo-color-text, #e5e7eb));
+    color: var(--underlay-color-text, var(--underlay-color-text, #e5e7eb));
   }
 </style>

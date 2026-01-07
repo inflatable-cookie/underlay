@@ -127,11 +127,11 @@
     border: 1px solid
       var(
         --underlay-color-border-subtle,
-        var(--froyo-color-border-subtle, rgba(148, 163, 184, 0.5))
+        var(--underlay-color-border-subtle, rgba(148, 163, 184, 0.5))
       );
     background: var(
       --underlay-color-bg-surface,
-      var(--froyo-color-bg-surface, #020617)
+      var(--underlay-color-bg-surface, #020617)
     );
     padding: 1rem;
 
@@ -148,11 +148,11 @@
     margin: 0;
     font-size: 1.05rem;
     font-weight: 650;
-    color: var(--underlay-color-text, var(--froyo-color-text, #e5e7eb));
+    color: var(--underlay-color-text, var(--underlay-color-text, #e5e7eb));
   }
 
   :global(.underlay-alert-dialog-description) {
-    color: var(--underlay-color-text-muted, var(--froyo-color-text-muted, #9ca3af));
+    color: var(--underlay-color-text-muted, var(--underlay-color-text-muted, #9ca3af));
     font-size: 0.9rem;
   }
 
@@ -177,7 +177,7 @@
     padding: 0.5rem 0.875rem;
     border: 1px solid rgba(148, 163, 184, 0.35);
     background: rgba(255, 255, 255, 0.03);
-    color: var(--underlay-color-text, var(--froyo-color-text, #e5e7eb));
+    color: var(--underlay-color-text, var(--underlay-color-text, #e5e7eb));
     cursor: pointer;
   }
 

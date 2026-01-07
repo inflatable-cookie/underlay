@@ -20,11 +20,11 @@
     grid-template-columns: repeat(
       auto-fit,
       minmax(
-        var(--underlay-list-grid-min, var(--froyo-list-grid-min, 360px)),
+        var(--underlay-list-grid-min, var(--underlay-list-grid-min, 360px)),
         1fr
       )
     );
-    gap: var(--underlay-list-grid-gap, var(--froyo-list-grid-gap, 14px));
+    gap: var(--underlay-list-grid-gap, var(--underlay-list-grid-gap, 14px));
     align-items: stretch;
   }
 </style>

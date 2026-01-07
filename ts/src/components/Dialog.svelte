@@ -94,11 +94,11 @@
     border: 1px solid
       var(
         --underlay-color-border-subtle,
-        var(--froyo-color-border-subtle, rgba(148, 163, 184, 0.5))
+        var(--underlay-color-border-subtle, rgba(148, 163, 184, 0.5))
       );
     background: var(
       --underlay-color-bg-surface,
-      var(--froyo-color-bg-surface, #020617)
+      var(--underlay-color-bg-surface, #020617)
     );
     padding: 1rem;
 
@@ -127,7 +127,7 @@
 
   :global(.underlay-dialog-description) {
     margin-top: 0.25rem;
-    color: var(--underlay-color-text-muted, var(--froyo-color-text-muted, #9ca3af));
+    color: var(--underlay-color-text-muted, var(--underlay-color-text-muted, #9ca3af));
     font-size: 0.9rem;
   }
 

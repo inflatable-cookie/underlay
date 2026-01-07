@@ -10,8 +10,8 @@
 
 <style>
   .nightfire-field__error {
-    margin-top: calc(var(--froyo-space-2) * 0.8);
-    font-size: var(--froyo-font-size-sm);
-    color: var(--froyo-color-danger);
+    margin-top: calc(var(--underlay-space-2) * 0.8);
+    font-size: var(--underlay-font-size-sm);
+    color: var(--underlay-color-danger);
   }
 </style>

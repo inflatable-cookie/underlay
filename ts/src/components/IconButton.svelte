@@ -36,7 +36,7 @@
     border-radius: 0.5rem;
     border: 1px solid rgba(148, 163, 184, 0.35);
     background: rgba(255, 255, 255, 0.03);
-    color: var(--underlay-color-text, var(--froyo-color-text, #e5e7eb));
+    color: var(--underlay-color-text, var(--underlay-color-text, #e5e7eb));
     cursor: pointer;
     padding: 0;
     line-height: 1;

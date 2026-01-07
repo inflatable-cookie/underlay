@@ -782,80 +782,80 @@
 
 <style>
   .nightfire-field {
-    border-radius: var(--froyo-radius-md);
-    color: var(--froyo-color-text);
+    border-radius: var(--underlay-radius-md);
+    color: var(--underlay-color-text);
   }
 
   .nightfire-field-multi {
     display: grid;
-    gap: var(--froyo-density-gap);
+    gap: var(--underlay-density-gap);
   }
 
   .nightfire-field-single {
     display: grid;
-    gap: var(--froyo-space-2);
+    gap: var(--underlay-space-2);
   }
 
   .nightfire-field-single__toolbar {
     display: flex;
     align-items: flex-start;
-    gap: var(--froyo-space-2);
+    gap: var(--underlay-space-2);
   }
 
   .nightfire-field-single__toolbar select {
-    padding: var(--froyo-field-padding-block) var(--froyo-field-padding-inline);
-    border-radius: var(--froyo-radius-sm);
+    padding: var(--underlay-field-padding-block) var(--underlay-field-padding-inline);
+    border-radius: var(--underlay-radius-sm);
     border: none;
-    background: var(--froyo-color-field-bg);
-    color: var(--froyo-color-text);
-    font-size: calc(1em * var(--froyo-font-scale-xs));
+    background: var(--underlay-color-field-bg);
+    color: var(--underlay-color-text);
+    font-size: calc(1em * var(--underlay-font-scale-xs));
   }
 
   .nightfire-field-single__toolbar select:focus,
   .nightfire-field-single__toolbar select:focus-visible {
-    outline: var(--froyo-focus-ring-width) solid var(--froyo-color-primary);
-    outline-offset: var(--froyo-focus-ring-offset);
+    outline: var(--underlay-focus-ring-width) solid var(--underlay-color-primary);
+    outline-offset: var(--underlay-focus-ring-offset);
   }
 
   .nightfire-field-multi__toolbar {
     display: flex;
     align-items: flex-start;
-    gap: var(--froyo-space-2);
+    gap: var(--underlay-space-2);
   }
 
   .nightfire-field-multi__toolbar select {
-    padding: var(--froyo-field-padding-block) var(--froyo-field-padding-inline);
-    border-radius: var(--froyo-radius-sm);
+    padding: var(--underlay-field-padding-block) var(--underlay-field-padding-inline);
+    border-radius: var(--underlay-radius-sm);
     border: none;
-    background: var(--froyo-color-field-bg);
-    color: var(--froyo-color-text);
-    font-size: calc(1em * var(--froyo-font-scale-xs));
+    background: var(--underlay-color-field-bg);
+    color: var(--underlay-color-text);
+    font-size: calc(1em * var(--underlay-font-scale-xs));
   }
 
   .nightfire-field-multi__toolbar select:focus,
   .nightfire-field-multi__toolbar select:focus-visible {
-    outline: var(--froyo-focus-ring-width) solid var(--froyo-color-primary);
-    outline-offset: var(--froyo-focus-ring-offset);
+    outline: var(--underlay-focus-ring-width) solid var(--underlay-color-primary);
+    outline-offset: var(--underlay-focus-ring-offset);
   }
 
   .nightfire-field-multi__item {
-    border-radius: var(--froyo-radius-control);
+    border-radius: var(--underlay-radius-control);
     display: grid;
-    gap: var(--froyo-space-2);
+    gap: var(--underlay-space-2);
   }
 
   .nightfire-field-multi__controls {
     display: flex;
-    gap: var(--froyo-space-1);
+    gap: var(--underlay-space-1);
   }
 
   .nightfire-field-multi__controls button,
   .nightfire-field-multi__add {
-    font-size: calc(1em * var(--froyo-font-scale-xxs));
-    padding: var(--froyo-button-chip-padding-block)
-      var(--froyo-button-chip-padding-inline);
-    border-radius: var(--froyo-radius-pill);
-    border: 1px solid var(--froyo-color-border-strong);
+    font-size: calc(1em * var(--underlay-font-scale-xxs));
+    padding: var(--underlay-button-chip-padding-block)
+      var(--underlay-button-chip-padding-inline);
+    border-radius: var(--underlay-radius-pill);
+    border: 1px solid var(--underlay-color-border-strong);
     background: transparent;
     color: inherit;
     cursor: pointer;
@@ -867,8 +867,8 @@
   }
 
   .nightfire-layout-warning {
-    margin-top: var(--froyo-space-2);
-    font-size: calc(1em * var(--froyo-font-scale-xs));
-    color: var(--froyo-color-danger);
+    margin-top: var(--underlay-space-2);
+    font-size: calc(1em * var(--underlay-font-scale-xs));
+    color: var(--underlay-color-danger);
   }
 </style>

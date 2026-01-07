@@ -25,20 +25,20 @@
   :global(.underlay-text-button) {
     border: none;
     background: transparent;
-    color: var(--underlay-color-text-muted, var(--froyo-color-text-muted, inherit));
+    color: var(--underlay-color-text-muted, var(--underlay-color-text-muted, inherit));
     font-size: calc(1em * var(--underlay-font-scale-sm, 0.85));
     cursor: pointer;
     padding: 0;
   }
 
   :global(.underlay-text-button:focus-visible) {
-    outline: var(--underlay-focus-ring-width, var(--froyo-focus-ring-width, 2px)) solid
-      var(--underlay-color-primary, var(--froyo-color-primary, #2563eb));
-    outline-offset: var(--underlay-focus-ring-offset, var(--froyo-focus-ring-offset, 2px));
+    outline: var(--underlay-focus-ring-width, var(--underlay-focus-ring-width, 2px)) solid
+      var(--underlay-color-primary, var(--underlay-color-primary, #2563eb));
+    outline-offset: var(--underlay-focus-ring-offset, var(--underlay-focus-ring-offset, 2px));
   }
 
   :global(.underlay-text-button:hover) {
-    color: var(--underlay-color-text, var(--froyo-color-text, inherit));
+    color: var(--underlay-color-text, var(--underlay-color-text, inherit));
     text-decoration: underline;
   }
 

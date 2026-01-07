@@ -9,10 +9,10 @@
 <style>
   .underlay-form-actions {
     margin-top: calc(
-      var(--underlay-density-gap, var(--froyo-density-gap, 0.75rem)) * 1.5
+      var(--underlay-density-gap, var(--underlay-density-gap, 0.75rem)) * 1.5
     );
     display: flex;
-    gap: var(--underlay-density-gap, var(--froyo-density-gap, 0.75rem));
+    gap: var(--underlay-density-gap, var(--underlay-density-gap, 0.75rem));
     align-items: center;
   }
 

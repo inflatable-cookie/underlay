@@ -12,3 +12,17 @@ export type NightfireValue = {
 
 export { prepareNightfireForSave, validateNightfireValue } from "./validation";
 export { isEmptyNightfire, writeNightfireToFormData } from "./utils";
+
+export {
+  registerSchema,
+  registerBlockEditor,
+  getSchemaDefinition,
+  getBlockEditor,
+  getBlockTypeOptionsForSchema
+} from "./editor-registry";
+
+export { registerBlockRenderer, getBlockRenderer } from "./render-registry";
+
+export { registerBlockValidator } from "./validator-registry";
+
+export type { FieldMode, SchemaDefinition, BlockTypeOption } from "./editor-registry";

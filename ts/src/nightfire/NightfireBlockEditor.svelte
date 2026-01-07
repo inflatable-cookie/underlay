@@ -78,6 +78,6 @@
 <style>
   .nightfire-editor {
     display: grid;
-    gap: var(--froyo-density-gap);
+    gap: var(--underlay-density-gap);
   }
 </style>

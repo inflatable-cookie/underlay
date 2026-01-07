@@ -1,5 +1,4 @@
 import type { NightfireValue } from "./index";
-import "./summary/validation";
 
 export {
   registerBlockValidator,

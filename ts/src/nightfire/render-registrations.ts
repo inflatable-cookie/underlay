@@ -3,4 +3,3 @@
 // pulling in any editor components.
 
 import "./markup/render";
-import "./summary/render";
