@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { tick } from "svelte";
   import { Popover as BitsPopover } from "bits-ui";
 
   export let open = false;
@@ -19,12 +20,25 @@
 
   export let trapFocus: boolean | undefined = undefined;
   export let preventScroll: boolean | undefined = undefined;
+
+  export let returnFocusOnClose = true;
+
+  let triggerRef: HTMLElement | null = null;
+  let lastOpen = open;
+
+  $: {
+    if (lastOpen && !open && returnFocusOnClose && typeof window !== "undefined") {
+      void tick().then(() => triggerRef?.focus());
+    }
+    lastOpen = open;
+  }
 </script>
 
 <BitsPopover.Root bind:open>
   {#if showTrigger}
     <BitsPopover.Trigger
       {...$$restProps}
+      bind:ref={triggerRef}
       type={triggerType}
       class={`underlay-popover-trigger ${$$restProps.class ?? ""}`}
       aria-label={triggerAriaLabel}
@@ -60,19 +74,33 @@
     gap: 0.5rem;
     border-radius: 0.5rem;
     padding: 0.5rem 0.875rem;
-    border: 1px solid rgba(148, 163, 184, 0.35);
-    background: rgba(255, 255, 255, 0.03);
+
+    border: 1px solid
+      var(
+        --underlay-color-border-subtle,
+        var(--underlay-color-border-subtle, rgba(148, 163, 184, 0.35))
+      );
+
+    background: var(
+      --underlay-color-field-bg,
+      var(--underlay-color-field-bg, rgba(255, 255, 255, 0.03))
+    );
+
     color: inherit;
     cursor: pointer;
   }
 
   :global(.underlay-popover-trigger:hover) {
-    background: rgba(148, 163, 184, 0.08);
+    background: var(
+      --underlay-color-field-bg-hover,
+      var(--underlay-color-field-bg-hover, rgba(148, 163, 184, 0.08))
+    );
   }
 
   :global(.underlay-popover-trigger:focus-visible) {
-    outline: 2px solid rgba(59, 130, 246, 0.9);
-    outline-offset: 2px;
+    outline: var(--underlay-focus-ring-width, var(--underlay-focus-ring-width, 2px)) solid
+      var(--underlay-color-primary, var(--underlay-color-primary, rgba(59, 130, 246, 0.9)));
+    outline-offset: var(--underlay-focus-ring-offset, var(--underlay-focus-ring-offset, 2px));
   }
 
   :global(.underlay-popover-content) {

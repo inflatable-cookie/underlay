@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { tick } from "svelte";
   import { DropdownMenu as BitsDropdownMenu } from "bits-ui";
 
   type DropdownMenuItem = {
@@ -13,21 +14,41 @@
 
   export let showTrigger = true;
   export let triggerLabel = "⋯";
+  export let triggerAriaLabel = "Open menu";
+  export let triggerType: "button" | "submit" | "reset" = "button";
 
   export let items: DropdownMenuItem[] | null | undefined = undefined;
 
+  export let side: "top" | "right" | "bottom" | "left" = "bottom";
   export let sideOffset = 6;
   export let align: "start" | "center" | "end" = "end";
-  export let side: "top" | "right" | "bottom" | "left" = "bottom";
+  export let alignOffset = 0;
+  export let avoidCollisions = true;
+  export let collisionPadding = 8;
 
+  export let contentClassName = "";
+
+  export let returnFocusOnClose = true;
+
+  let triggerRef: HTMLElement | null = null;
+  let lastOpen = open;
+
+  $: {
+    if (lastOpen && !open && returnFocusOnClose && typeof window !== "undefined") {
+      void tick().then(() => triggerRef?.focus());
+    }
+    lastOpen = open;
+  }
 </script>
 
 <BitsDropdownMenu.Root bind:open>
   {#if showTrigger}
     <BitsDropdownMenu.Trigger
       {...$$restProps}
+      bind:ref={triggerRef}
+      type={triggerType}
       class={`underlay-dropdown-menu-trigger ${$$restProps.class ?? ""}`}
-      aria-label="Open menu"
+      aria-label={triggerAriaLabel}
     >
       <slot name="trigger">{triggerLabel}</slot>
     </BitsDropdownMenu.Trigger>
@@ -35,10 +56,13 @@
 
   <BitsDropdownMenu.Portal>
     <BitsDropdownMenu.Content
-      class="underlay-dropdown-menu-content"
+      class={`underlay-dropdown-menu-content ${contentClassName}`}
+      {side}
       {sideOffset}
       {align}
-      {side}
+      {alignOffset}
+      {avoidCollisions}
+      {collisionPadding}
     >
       {#if items?.length}
         <BitsDropdownMenu.Group aria-label="Actions">
@@ -72,8 +96,18 @@
     width: 2rem;
     height: 2rem;
     border-radius: 0.5rem;
-    border: 1px solid rgba(148, 163, 184, 0.35);
-    background: rgba(255, 255, 255, 0.03);
+
+    border: 1px solid
+      var(
+        --underlay-color-border-subtle,
+        var(--underlay-color-border-subtle, rgba(148, 163, 184, 0.35))
+      );
+
+    background: var(
+      --underlay-color-field-bg,
+      var(--underlay-color-field-bg, rgba(255, 255, 255, 0.03))
+    );
+
     color: var(--underlay-color-text, var(--underlay-color-text, #e5e7eb));
     cursor: pointer;
     font-size: 1.1rem;
@@ -81,12 +115,16 @@
   }
 
   :global(.underlay-dropdown-menu-trigger:hover) {
-    background: rgba(148, 163, 184, 0.08);
+    background: var(
+      --underlay-color-field-bg-hover,
+      var(--underlay-color-field-bg-hover, rgba(148, 163, 184, 0.08))
+    );
   }
 
   :global(.underlay-dropdown-menu-trigger:focus-visible) {
-    outline: 2px solid rgba(59, 130, 246, 0.9);
-    outline-offset: 2px;
+    outline: var(--underlay-focus-ring-width, var(--underlay-focus-ring-width, 2px)) solid
+      var(--underlay-color-primary, var(--underlay-color-primary, rgba(59, 130, 246, 0.9)));
+    outline-offset: var(--underlay-focus-ring-offset, var(--underlay-focus-ring-offset, 2px));
   }
 
   :global(.underlay-dropdown-menu-content) {
@@ -97,11 +135,17 @@
         --underlay-color-border-subtle,
         var(--underlay-color-border-subtle, rgba(148, 163, 184, 0.5))
       );
+
     background: var(
-      --underlay-color-bg-surface,
+      --underlay-color-menu-bg,
       var(--underlay-color-bg-surface, #020617)
     );
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55);
+
+    box-shadow: var(
+      --underlay-shadow-menu,
+      0 16px 40px rgba(0, 0, 0, 0.55)
+    );
+
     padding: 0.35rem;
 
     /* Readable menus, but never tiny */

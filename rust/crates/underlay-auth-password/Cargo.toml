@@ -1,0 +1,25 @@
+[package]
+name = "underlay-auth-password"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+async-trait = { workspace = true }
+argon2 = "0.6.0-rc.5"
+base64 = "0.22"
+rand = "0.8"
+underlay-auth = { path = "../underlay-auth" }
+underlay-core = { path = "../underlay-core" }
+uuid = { workspace = true }
+zxcvbn = "2"
+
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls"], optional = true }
+sha1 = { version = "0.10", optional = true }
+
+[features]
+hibp = ["dep:reqwest", "dep:sha1"]
+
+[dev-dependencies]
+chrono = { workspace = true }
+tokio = { workspace = true, features = ["macros", "rt"] }

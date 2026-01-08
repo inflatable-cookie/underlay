@@ -40,7 +40,8 @@
     "./styles/tokens.css": "./ts/src/styles/tokens.css"
   },
   "scripts": {
-    "check": "svelte-check --tsconfig ./ts/tsconfig.json"
+    "check": "svelte-check --tsconfig ./ts/tsconfig.json",
+    "validate": "pnpm run check"
   },
   "peerDependencies": {
     "@sveltejs/kit": "^2.0.0",

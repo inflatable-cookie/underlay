@@ -7,7 +7,16 @@
 
   /* Surface and text */
   --underlay-color-bg-surface: #ffffff;
+
+  /* Portaled surfaces (menus/popovers/dialogs). */
   --underlay-color-popover-bg: var(--underlay-color-bg-surface);
+  --underlay-color-menu-bg: var(--underlay-color-bg-surface);
+  --underlay-color-dialog-bg: var(--underlay-color-bg-surface);
+
+  --underlay-color-overlay-backdrop: rgba(0, 0, 0, 0.65);
+
+  --underlay-shadow-menu: 0 16px 40px rgba(0, 0, 0, 0.55);
+  --underlay-shadow-dialog: 0 20px 40px rgba(0, 0, 0, 0.55);
 
   --underlay-color-text: #111827;
   --underlay-color-text-muted: #6b7280;

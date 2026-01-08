@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { tick } from "svelte";
   import { Dialog as BitsDialog } from "bits-ui";
 
   export let open = false;
@@ -8,26 +9,50 @@
 
   export let showTrigger = true;
   export let triggerLabel = "Open";
+  export let triggerAriaLabel: string | null = null;
+  export let triggerType: "button" | "submit" | "reset" = "button";
 
   export let showCloseX = true;
 
+  export let contentClassName = "";
+  export let overlayClassName = "";
+
   export let trapFocus: boolean | undefined = undefined;
   export let preventScroll: boolean | undefined = undefined;
+
+  export let returnFocusOnClose = true;
+
+  let triggerRef: HTMLElement | null = null;
+  let lastOpen = open;
+
+  $: {
+    if (lastOpen && !open && returnFocusOnClose && typeof window !== "undefined") {
+      void tick().then(() => triggerRef?.focus());
+    }
+    lastOpen = open;
+  }
 
 </script>
 
 <BitsDialog.Root bind:open>
   {#if showTrigger}
-    <BitsDialog.Trigger class="underlay-dialog-trigger">
+    <BitsDialog.Trigger
+      bind:ref={triggerRef}
+      class="underlay-dialog-trigger"
+      type={triggerType}
+      aria-label={triggerAriaLabel ?? undefined}
+    >
       <slot name="trigger">{triggerLabel}</slot>
     </BitsDialog.Trigger>
   {/if}
 
   <BitsDialog.Portal>
-    <BitsDialog.Overlay class="underlay-dialog-overlay" />
+    <BitsDialog.Overlay
+      class={`underlay-dialog-overlay ${overlayClassName}`}
+    />
 
     <BitsDialog.Content
-      class="underlay-dialog-content"
+      class={`underlay-dialog-content ${contentClassName}`}
       {trapFocus}
       {preventScroll}
     >
@@ -66,16 +91,39 @@
     gap: 0.5rem;
     border-radius: 0.5rem;
     padding: 0.5rem 0.875rem;
-    border: 1px solid rgba(148, 163, 184, 0.35);
-    background: rgba(255, 255, 255, 0.03);
+
+    border: 1px solid
+      var(
+        --underlay-color-border-subtle,
+        var(--underlay-color-border-subtle, rgba(148, 163, 184, 0.35))
+      );
+
+    background: var(
+      --underlay-color-field-bg,
+      var(--underlay-color-field-bg, rgba(255, 255, 255, 0.03))
+    );
+
     color: inherit;
     cursor: pointer;
+  }
+
+  :global(.underlay-dialog-trigger:hover) {
+    background: var(
+      --underlay-color-field-bg-hover,
+      var(--underlay-color-field-bg-hover, rgba(148, 163, 184, 0.08))
+    );
+  }
+
+  :global(.underlay-dialog-trigger:focus-visible) {
+    outline: var(--underlay-focus-ring-width, var(--underlay-focus-ring-width, 2px)) solid
+      var(--underlay-color-primary, var(--underlay-color-primary, #2563eb));
+    outline-offset: var(--underlay-focus-ring-offset, var(--underlay-focus-ring-offset, 2px));
   }
 
   :global(.underlay-dialog-overlay) {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.65);
+    background: var(--underlay-color-overlay-backdrop, rgba(0, 0, 0, 0.65));
     z-index: 50;
   }
 
@@ -97,12 +145,15 @@
         var(--underlay-color-border-subtle, rgba(148, 163, 184, 0.5))
       );
     background: var(
-      --underlay-color-bg-surface,
+      --underlay-color-dialog-bg,
       var(--underlay-color-bg-surface, #020617)
     );
     padding: 1rem;
 
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.55);
+    box-shadow: var(
+      --underlay-shadow-dialog,
+      0 20px 40px rgba(0, 0, 0, 0.55)
+    );
   }
 
   :global(.underlay-dialog-close-x) {

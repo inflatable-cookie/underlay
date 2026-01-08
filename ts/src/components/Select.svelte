@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { createEventDispatcher } from "svelte";
+  import { createEventDispatcher, tick } from "svelte";
   import { Select as BitsSelect } from "bits-ui";
 
   type SelectItem = {
@@ -9,6 +9,8 @@
   };
 
   export let value: string = "";
+  export let open = false;
+
   export let items: SelectItem[] | null | undefined = undefined;
   export let placeholder: string = "Select…";
 
@@ -16,6 +18,23 @@
   export let name: string | undefined = undefined;
   export let required: boolean = false;
   export let disabled: boolean = false;
+
+  export let triggerType: "button" | "submit" | "reset" = "button";
+  export let triggerAriaLabel: string | null = null;
+
+  export let contentClassName = "";
+
+  export let returnFocusOnClose = true;
+
+  let triggerRef: HTMLElement | null = null;
+  let lastOpen = open;
+
+  $: {
+    if (lastOpen && !open && returnFocusOnClose && typeof window !== "undefined") {
+      void tick().then(() => triggerRef?.focus());
+    }
+    lastOpen = open;
+  }
 
   export let side: "top" | "right" | "bottom" | "left" = "bottom";
   export let sideOffset = 6;
@@ -67,14 +86,17 @@
     type="single"
     items={items}
     bind:value={value as never}
+    bind:open
     {name}
     {required}
     {disabled}
   >
     <BitsSelect.Trigger
       {...$$restProps}
+      bind:ref={triggerRef}
+      type={triggerType}
       class={`underlay-select-trigger ${$$restProps.class ?? ""}`}
-      aria-label={placeholder}
+      aria-label={triggerAriaLabel ?? placeholder}
     >
       <span class:placeholder={!hasSelection}>
         {hasSelection ? selectedLabel : placeholder}
@@ -84,7 +106,7 @@
 
     <BitsSelect.Portal>
       <BitsSelect.Content
-        class="underlay-select-content"
+        class={`underlay-select-content ${contentClassName}`}
         style={`--underlay-select-align-shift: ${alignShift}; --underlay-select-align-shift-rtl: ${alignShiftRtl};`}
         {side}
         {sideOffset}
@@ -145,8 +167,9 @@
 
   .underlay-select:focus,
   .underlay-select:focus-visible {
-    outline: 2px solid var(--underlay-color-primary, var(--underlay-color-primary, #2563eb));
-    outline-offset: 2px;
+    outline: var(--underlay-focus-ring-width, var(--underlay-focus-ring-width, 2px)) solid
+      var(--underlay-color-primary, var(--underlay-color-primary, #2563eb));
+    outline-offset: var(--underlay-focus-ring-offset, var(--underlay-focus-ring-offset, 2px));
   }
 
   :global(.underlay-select-trigger) {
@@ -170,8 +193,9 @@
   }
 
   :global(.underlay-select-trigger:focus-visible) {
-    outline: 2px solid var(--underlay-color-primary, var(--underlay-color-primary, #2563eb));
-    outline-offset: 2px;
+    outline: var(--underlay-focus-ring-width, var(--underlay-focus-ring-width, 2px)) solid
+      var(--underlay-color-primary, var(--underlay-color-primary, #2563eb));
+    outline-offset: var(--underlay-focus-ring-offset, var(--underlay-focus-ring-offset, 2px));
   }
 
   .placeholder {
@@ -191,11 +215,17 @@
         --underlay-color-border-subtle,
         var(--underlay-color-border-subtle, rgba(148, 163, 184, 0.5))
       );
+
     background: var(
-      --underlay-color-bg-surface,
+      --underlay-color-menu-bg,
       var(--underlay-color-bg-surface, #020617)
     );
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+
+    box-shadow: var(
+      --underlay-shadow-menu,
+      0 8px 16px rgba(0, 0, 0, 0.5)
+    );
+
     padding: 0.25rem;
 
     min-width: min(var(--underlay-select-menu-min-width, 12rem), calc(100vw - 1.5rem));
@@ -233,7 +263,10 @@
   }
 
   :global(.underlay-select-item[data-highlighted]) {
-    background: rgba(148, 163, 184, 0.2);
+    background: var(
+      --underlay-color-hover-bg,
+      var(--underlay-color-hover-bg, rgba(148, 163, 184, 0.2))
+    );
   }
 
   :global(.underlay-select-item[data-disabled]) {
