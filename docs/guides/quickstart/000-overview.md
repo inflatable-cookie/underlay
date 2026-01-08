@@ -1,0 +1,178 @@
+# 000 - Architecture Overview
+
+This guide provides step-by-step instructions for initializing a new project that follows the **Songsprout/Acowtancy architecture**. This architecture is designed for full-stack applications requiring:
+
+- **Rust API backend** with domain-driven design
+- **TypeScript API client** with typed commands
+- **SvelteKit frontends** (artist-facing + admin)
+- **Shared UI kit** for consistent design
+- **Underlay integration** for cross-cutting primitives
+
+## When to Use This Guide
+
+Use this guide when creating a **new product** that:
+
+1. Requires a **robust, type-safe API** with Rust
+2. Needs **multiple frontends** (user-facing + admin)
+3. Benefits from **shared design system** and client libraries
+4. Wants to leverage **Underlay's cross-cutting primitives**
+5. Requires **production-grade auth, observability, and database patterns**
+
+## Architecture Diagram
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                           Project Monorepo                               │
+├─────────────────────────────────────────────────────────────────────────┤
+│  ┌─────────────────────┐  ┌─────────────────────┐  ┌──────────────────┐ │
+│  │   apps/bloom/       │  │  apps/greenhouse/   │  │  apps/nursery/   │ │
+│  │   (Artist UI)       │  │   (Admin UI)        │  │   (Rust API)     │ │
+│  │   SvelteKit         │  │   SvelteKit         │  │   Axum + Domain  │ │
+│  └──────────┬──────────┘  └──────────┬──────────┘  └────────┬─────────┘ │
+│             │                        │                       │          │
+│             └────────────────────────┼───────────────────────┘          │
+│                                      │                                  │
+│  ┌───────────────────────────────────┼──────────────────────────────┐  │
+│  │  libs/petal/                      │  libs/stem/                   │  │
+│  │  Shared Svelte UI kit             │  Shared TypeScript API client │  │
+│  │  Components, patterns, tokens     │  HTTP, commands, types        │  │
+│  └───────────────────────────────────┴──────────────────────────────┘  │
+│                                      │                                  │
+│  ┌───────────────────────────────────┴──────────────────────────────┐  │
+│  │  libs/underlay/ (external or sibling)                             │  │
+│  │  Cross-cutting primitives: IDs, errors, envelopes, auth, observability │  │
+│  └───────────────────────────────────────────────────────────────────┘  │
+│                                      │                                  │
+│  ┌───────────────────────────────────┴──────────────────────────────┐  │
+│  │  External Services                                                   │  │
+│  │  PostgreSQL, Redis (optional), Prometheus metrics, tracing          │  │
+│  └───────────────────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+## Key Principles
+
+### 1. Apps Own Domain Logic
+
+Underlay provides **primitives**; your app defines its **nouns and rules**.
+
+- Underlay: `Uuid`, `AppError`, `AuthProvider`, `CorsConfig`
+- Your App: `Artist`, `Program`, `Task`, `Release`
+
+### 2. Stable Boundaries
+
+Shared code uses **small, well-typed interfaces** that apps compose.
+
+```rust
+// Underlay provides the interface
+trait AuthProvider {
+    async fn authenticate_bearer(&self, token: &str) -> AuthResult<Principal>;
+}
+
+// Your app implements it
+impl AuthProvider for MyAppAuthProvider {
+    async fn authenticate_bearer(&self, token: &str) -> AuthResult<Principal> {
+        // Your implementation
+    }
+}
+```
+
+### 3. No Forced Stack Choices
+
+Underlay provides **defaults** but they are **optional**.
+
+| Layer | Default | Optional Alternatives |
+|-------|---------|----------------------|
+| API Framework | Axum | Actix, Rocket |
+| Database | SQLx | Diesel, SeaORM |
+| ORM | sqlx::query_as | SeaORM entities |
+| HTTP Client | reqwest | ureq, attohttpc |
+| Frontend | SvelteKit | Next.js, Remix |
+| UI Framework | Svelte | React, Vue |
+| Styling | CSS + Underlay tokens | Tailwind, Bootstrap |
+
+### 4. Consistent Conventions
+
+Following naming and structure patterns from reference apps ensures:
+
+- **Predictable navigation** for new developers
+- **Easier cross-project contributions**
+- **Consistent tooling** (linters, formatters, tests)
+
+## Layer Responsibilities
+
+### Apps Layer (`apps/`)
+
+| Directory | Responsibility |
+|-----------|---------------|
+| `apps/nursery/` | Rust API implementation, domain models, HTTP handlers |
+| `apps/bloom/` | Artist-facing SvelteKit frontend (main UI) |
+| `apps/greenhouse/` | Admin/author SvelteKit frontend |
+
+### Libraries Layer (`libs/`)
+
+| Directory | Responsibility |
+|-----------|---------------|
+| `libs/stem/` | TypeScript API client, HTTP abstraction, typed commands |
+| `libs/petal/` | Shared Svelte components, design tokens, UI patterns |
+| `libs/underlay/` | Cross-cutting Rust primitives (external or sibling) |
+
+### Documentation Layer (`trellis/` / `docs/`)
+
+| Directory | Responsibility |
+|-----------|---------------|
+| `trellis/docs/` | Architecture decisions, domain modeling, process docs |
+| `docs/guides/` | How-to guides, tutorials, quickstarts |
+
+## Reference Implementations
+
+| Project | Purpose | Key Patterns |
+|---------|---------|--------------|
+| **Songsprout** | Artist productivity tool | Programs, Tasks, Releases, Stripe integration |
+| **Acowtancy** | Accounting/finance tool | Different domain, same architecture |
+
+Both projects demonstrate the patterns in this guide. When in doubt, reference their implementation.
+
+## How to Use This Guide
+
+### For LLMs
+
+1. Read documents **in order** (000 → 170)
+2. Copy code examples from the `code/` subdirectories
+3. Follow the checklist in `170-checklist.md`
+4. Reference Songsprout/Acowtancy for additional patterns
+
+### For Human Developers
+
+1. Skim 000-overview for architecture context
+2. Follow 010-prerequisites to set up your machine
+3. Use 020-project-structure for initial setup
+4. Reference specific sections as needed (e.g., 060-authentication for auth setup)
+5. Use 170-checklist to verify completeness
+
+## Document Map
+
+| Document | Title | Purpose |
+|----------|-------|---------|
+| 000 | Architecture Overview | High-level architecture, principles |
+| 010 | Prerequisites | System requirements, verification |
+| 020 | Project Structure | Directory layout, AGENTS.md |
+| 030 | Underlay Integration | Linking the Underlay foundation |
+| 040 | Rust Backend (Nursery) | Workspace, core crate, patterns |
+| 050 | Database & Migrations | DB crate, sqlx, migrations |
+| 060 | Authentication | Auth providers, JWT, dev mode |
+| 070 | API Handlers | HTTP handlers, routing, middleware |
+| 080 | TypeScript Client (Stem) | HTTP client, commands |
+| 090 | UI Kit (Petal) | Component patterns |
+| 100 | Frontend (Bloom) | SvelteKit setup, routing |
+| 110 | Admin Frontend (Greenhouse) | Admin UI structure |
+| 120 | Configuration | Env files, validation |
+| 130 | Testing | Test patterns for all layers |
+| 140 | Local Development | Running locally, debugging |
+| 150 | CI/CD | GitHub Actions template |
+| 160 | Troubleshooting | Common issues and solutions |
+| 170 | Checklist | Completion verification |
+
+## Next Step
+
+Proceed to [010-prerequisites](./010-prerequisites.md) to verify your development environment.

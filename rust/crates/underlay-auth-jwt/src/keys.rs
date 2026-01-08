@@ -1,7 +1,8 @@
 //! Key loading and generation for Ed25519/EdDSA JWT signing.
 
-use base64::{
-    engine::general_purpose::STANDARD, engine::general_purpose::URL_SAFE_NO_PAD, Engine as _,
+pub use base64::{
+    engine::general_purpose::{STANDARD, URL_SAFE_NO_PAD},
+    Engine as _,
 };
 use ed25519_dalek::SigningKey;
 use pkcs8::EncodePrivateKey;

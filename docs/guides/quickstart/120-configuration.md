@@ -1,0 +1,55 @@
+# 120 - Configuration
+
+This document covers configuration management for all layers of the application.
+
+## Environment Variables
+
+### Nursery (.env)
+
+```bash
+# Server
+PORT=3000
+HOST=0.0.0.0
+ENVIRONMENT=development
+
+# Database
+DATABASE_URL=postgres://user:pass@localhost:5432/myapp
+
+# Auth
+NURSERY_DEV_AUTH=false
+AUTH_JWT_PRIVATE_KEY=...
+AUTH_JWT_PUBLIC_KEY=...
+AUTH_JWT_ISSUER=myapp
+AUTH_JWT_AUDIENCE=myapp-api
+AUTH_ACCESS_TOKEN_LIFETIME_MINUTES=15
+AUTH_REFRESH_TOKEN_LIFETIME_DAYS=30
+AUTH_JWT_LEEWAY_SECONDS=30
+
+# Tracing
+RUST_LOG=info
+RUST_LOG_FORMAT=json
+```
+
+### Bloom (.env)
+
+```bash
+PUBLIC_API_URL=http://localhost:3000
+PUBLIC_API_VERSION=2025-01-01
+PUBLIC_APP_NAME=MyApp
+```
+
+### Greenhouse (.env)
+
+```bash
+PUBLIC_API_URL=http://localhost:3000
+PUBLIC_API_VERSION=2025-01-01
+PUBLIC_APP_NAME=MyApp Admin
+```
+
+## Configuration Validation
+
+See code examples in `/code/120-configuration/`
+
+## Next Steps
+
+- [130-testing.md](./130-testing.md)

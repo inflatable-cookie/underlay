@@ -77,8 +77,9 @@ mod tests {
     use std::sync::{Arc, Mutex};
 
     use async_trait::async_trait;
+    use serde_json::json;
 
-    use crate::{Job, JobHandler, JobHandlerError, JobId, JobRegistry, JobRunner, JobStore};
+    use crate::{Job, JobHandler, JobHandlerError, JobId, JobRegistry, JobRunner, JobRunnerConfig, JobStore};
 
     #[derive(Debug, Default)]
     struct MemStore {
@@ -158,5 +159,98 @@ mod tests {
         let did_work = runner.run_once().await.expect("run_once");
         assert!(did_work);
         assert_eq!(store.successes.lock().unwrap().as_slice(), &[id]);
+    }
+
+    #[tokio::test]
+    async fn runner_returns_false_when_no_jobs_available() {
+        let store = Arc::new(MemStore::default());
+        let registry = JobRegistry::new();
+        let runner = JobRunner::new(store, registry);
+        let did_work = runner.run_once().await.expect("run_once");
+        assert!(!did_work);
+    }
+
+    #[tokio::test]
+    async fn runner_ignores_unknown_job_types() {
+        let store = Arc::new(MemStore::default());
+
+        store.queue.lock().unwrap().push(Job {
+            id: underlay_core::Uuid::new_v7(),
+            job_type: "unknown_type".to_string(),
+            payload: json!({}),
+            attempts: 0,
+        });
+
+        let registry = JobRegistry::new();
+        let runner = JobRunner::new(store, registry);
+        let did_work = runner.run_once().await.expect("run_once");
+        assert!(!did_work);
+    }
+
+    #[tokio::test]
+    async fn runner_records_failures() {
+        use std::sync::atomic::{AtomicBool, Ordering};
+        use std::sync::Arc;
+
+        #[derive(Debug)]
+        struct FailingHandler {
+            called: Arc<AtomicBool>,
+        }
+
+        #[async_trait]
+        impl JobHandler for FailingHandler {
+            fn job_type(&self) -> &'static str {
+                "failing"
+            }
+
+            async fn handle(&self, _job: Job) -> Result<(), JobHandlerError> {
+                self.called.store(true, Ordering::SeqCst);
+                Err(JobHandlerError::new("intentional failure"))
+            }
+        }
+
+        let store = Arc::new(MemStore::default());
+        let called = Arc::new(AtomicBool::new(false));
+
+        store.queue.lock().unwrap().push(Job {
+            id: underlay_core::Uuid::new_v7(),
+            job_type: "failing".to_string(),
+            payload: json!({}),
+            attempts: 0,
+        });
+
+        let mut registry = JobRegistry::new();
+        registry.register(FailingHandler { called: called.clone() });
+
+        let runner = JobRunner::new(store.clone(), registry);
+        let did_work = runner.run_once().await.expect("run_once");
+        assert!(did_work);
+        assert!(called.load(Ordering::SeqCst));
+        assert_eq!(store.failures.lock().unwrap().len(), 1);
+    }
+
+    #[test]
+    fn job_runner_config_default_values() {
+        let config = JobRunnerConfig::default();
+        assert_eq!(config.poll_interval.as_millis(), 250);
+    }
+
+    #[test]
+    fn job_runner_config_with_custom_values() {
+        let config = JobRunnerConfig {
+            poll_interval: std::time::Duration::from_secs(5),
+        };
+        assert_eq!(config.poll_interval.as_secs(), 5);
+    }
+
+    #[test]
+    fn job_runner_debug_format() {
+        let registry = JobRegistry::new();
+        let runner = JobRunner::new(
+            std::sync::Arc::new(MemStore::default()),
+            registry
+        );
+        let debug_str = format!("{:?}", runner);
+        assert!(debug_str.contains("JobRunner"));
     }
 }

@@ -83,7 +83,7 @@ where
 
 #[cfg(test)]
 mod tests {
-    use super::validate_schema_name;
+    use super::{validate_schema_name, DestructiveGuard};
 
     #[test]
     fn schema_validation_allows_simple_names() {
@@ -101,5 +101,70 @@ mod tests {
         assert!(!validate_schema_name("learning.content"));
         assert!(!validate_schema_name(""));
         assert!(!validate_schema_name(" "));
+    }
+
+    #[test]
+    fn destructive_guard_defaults_to_disallowed() {
+        let guard = DestructiveGuard::disallow();
+        assert!(!guard.is_allowed());
+    }
+
+    #[test]
+    fn destructive_guard_can_be_allowed() {
+        let guard = DestructiveGuard::allow();
+        assert!(guard.is_allowed());
+    }
+
+    #[test]
+    fn schema_validation_allows_underscore_prefix() {
+        assert!(validate_schema_name("_test"));
+        assert!(validate_schema_name("_my_schema"));
+    }
+
+    #[test]
+    fn schema_validation_allows_numbers_after_first_char() {
+        assert!(validate_schema_name("schema1"));
+        assert!(validate_schema_name("learning2content"));
+        assert!(validate_schema_name("_private123"));
+    }
+
+    #[test]
+    fn schema_validation_rejects_uppercase() {
+        assert!(!validate_schema_name("PUBLIC"));
+        assert!(!validate_schema_name("Learning"));
+        assert!(!validate_schema_name("My_Schema"));
+    }
+
+    #[test]
+    fn schema_validation_rejects_hyphen() {
+        assert!(!validate_schema_name("learning-content"));
+        assert!(!validate_schema_name("my-schema"));
+    }
+
+    #[test]
+    fn schema_validation_rejects_dot() {
+        assert!(!validate_schema_name("learning.content"));
+        assert!(!validate_schema_name("schema.table"));
+    }
+
+    #[test]
+    fn schema_validation_rejects_special_chars() {
+        assert!(!validate_schema_name("learning@content"));
+        assert!(!validate_schema_name("schema#table"));
+        assert!(!validate_schema_name("test$schema"));
+    }
+
+    #[test]
+    fn schema_validation_rejects_whitespace() {
+        assert!(!validate_schema_name("learning content"));
+        assert!(!validate_schema_name("\t\n"));
+        assert!(!validate_schema_name("a b c"));
+    }
+
+    #[test]
+    fn schema_validation_trims_leading_trailing() {
+        assert!(validate_schema_name("  learning"));
+        assert!(validate_schema_name("learning  "));
+        assert!(validate_schema_name("  learning  "));
     }
 }
