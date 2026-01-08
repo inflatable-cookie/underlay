@@ -7,6 +7,8 @@
 
   /* Surface and text */
   --underlay-color-bg-surface: #ffffff;
+  --underlay-color-popover-bg: var(--underlay-color-bg-surface);
+
   --underlay-color-text: #111827;
   --underlay-color-text-muted: #6b7280;
   --underlay-color-text-subtle: rgba(148, 163, 184, 0.65);

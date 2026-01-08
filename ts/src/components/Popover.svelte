@@ -5,6 +5,10 @@
 
   export let showTrigger = true;
   export let triggerLabel = "Open";
+  export let triggerAriaLabel = "Open popover";
+  export let triggerType: "button" | "submit" | "reset" = "button";
+
+  export let contentClassName = "";
 
   export let side: "top" | "right" | "bottom" | "left" = "bottom";
   export let sideOffset = 6;
@@ -21,28 +25,31 @@
   {#if showTrigger}
     <BitsPopover.Trigger
       {...$$restProps}
+      type={triggerType}
       class={`underlay-popover-trigger ${$$restProps.class ?? ""}`}
-      aria-label="Open popover"
+      aria-label={triggerAriaLabel}
     >
       <slot name="trigger">{triggerLabel}</slot>
     </BitsPopover.Trigger>
   {/if}
 
-  <BitsPopover.Portal>
-    <BitsPopover.Content
-      class="underlay-popover-content"
-      {side}
-      {sideOffset}
-      {align}
-      {alignOffset}
-      {avoidCollisions}
-      {collisionPadding}
-      {trapFocus}
-      {preventScroll}
-    >
-      <slot />
-    </BitsPopover.Content>
-  </BitsPopover.Portal>
+  {#if open}
+    <BitsPopover.Portal>
+      <BitsPopover.Content
+        class={`underlay-popover-content ${contentClassName}`}
+        {side}
+        {sideOffset}
+        {align}
+        {alignOffset}
+        {avoidCollisions}
+        {collisionPadding}
+        {trapFocus}
+        {preventScroll}
+      >
+        <slot />
+      </BitsPopover.Content>
+    </BitsPopover.Portal>
+  {/if}
 </BitsPopover.Root>
 
 <style>
@@ -76,11 +83,17 @@
         --underlay-color-border-subtle,
         var(--underlay-color-border-subtle, rgba(148, 163, 184, 0.5))
       );
+
     background: var(
-      --underlay-color-bg-surface,
+      --underlay-color-popover-bg,
       var(--underlay-color-bg-surface, #020617)
     );
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55);
+
+    box-shadow: var(
+      --underlay-shadow-popover,
+      0 18px 48px rgba(0, 0, 0, 0.6)
+    );
+
     padding: 0.75rem;
     max-width: min(32rem, calc(100vw - 2rem));
     color: var(--underlay-color-text, var(--underlay-color-text, #e5e7eb));

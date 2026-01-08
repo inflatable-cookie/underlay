@@ -1,12 +1,14 @@
 # 002 — Frontend (TS/Svelte) Extraction Roadmap
 
-**Status:** Draft
+**Status:** In progress
 
 This roadmap covers the **TypeScript + Svelte** side of the shared architecture.
 It complements `docs/roadmap/001-extraction-roadmap.md` (Rust/backend/infra).
 
 Scope includes:
-- Shared UI kits (`@acowtancy/froyo`, `@songsprout/petal`)
+- Shared UI primitives (`@decodelabs/underlay`)
+- Acowtancy-specific UI extensions (`@acowtancy/froyo` Nightfire blocks)
+- Songsprout-specific UI extensions (`@songsprout/petal`)
 - Admin app integration patterns (Dairy → Froyo + Underlay)
 - Headless UI foundation via Bits UI (`bits-ui`)
 - Shared conventions: tokens, component APIs, accessibility, packaging, testing
@@ -20,35 +22,31 @@ Non-goals (for this doc):
 ## Inputs audited (current state)
 
 ### 1) Froyo (`/Users/betterthanclay/Dev/apps/acowtancy/froyo`)
-- SvelteKit + library-style exports in `src/lib/index.ts`.
-- Uses `bits-ui` today (notably `Button.Root`), plus `lucide-svelte` and `easymde`.
-- Components currently live under `src/lib/shared/*` and `src/lib/nightfire/*`.
-  - This does **not** match the intended `src/lib/ui/...` structure described in Ledger Froyo docs.
-- Design tokens exist but are currently minimal in `src/lib/styles/tokens.css`.
+- Lightweight package for **Acowtancy-specific** Nightfire blocks (render/editor/validation registrations).
+- Depends on `@decodelabs/underlay` for shared primitives and Nightfire engine.
+- Does not aim to be a general shared UI kit.
 
 ### 2) Dairy (`/Users/betterthanclay/Dev/apps/acowtancy/dairy`)
 - SvelteKit admin app.
-- Consumes Froyo for app-level UI (imports of `@froyo/shared/*` and `@froyo/nightfire/*`).
-- Consumes Underlay primitives directly where Froyo/Petal add no value (no-op wrappers avoided).
-- Uses a local alias to Froyo source (`../froyo/src/lib`) during development.
-  - This is convenient, but increases the risk of “source-level coupling” and version drift.
+- Consumes Froyo for Acowtancy Nightfire blocks (registrations via `@acowtancy/froyo/editor|render|validation`).
+- Consumes Underlay primitives directly (`@decodelabs/underlay/components`, `@decodelabs/underlay/nightfire`).
+- Avoids source-level aliasing; prefers `file:` deps for local development.
 
 ### 3) Petal (`/Users/betterthanclay/Dev/apps/songsprout/petal`)
-- Shared UI kit with strong design tokens (`src/lib/styles/tokens.css`).
-- Depends on `bits-ui`, but the current component set is mostly custom (e.g. `<button>` in `Button.svelte`).
-- Current component surface is small (layout primitives, button/input, status badge).
+- Lightweight package reserved for Songsprout-specific UI extensions.
+- Intentionally minimal until Songsprout has shared cross-app UI extensions to centralize.
 
 ### Shared toolchain snapshot
 - All three are on Svelte 5 + SvelteKit 2.
-- Froyo and Petal are very closely aligned in tooling versions.
-- Dairy is slightly ahead in SvelteKit/devDependencies.
+- Froyo and Dairy are closely aligned in tooling versions.
+- Petal is intentionally minimal (does not currently drive shared UI tooling).
 
 ---
 
 ## Key findings (what is truly “shared”)
 
 ### A) Shared primitives (present in both ecosystems)
-These exist in both Froyo and Petal conceptually and are safe to standardize:
+These exist across product frontends conceptually and are safe to standardize:
 - `Button`
 - `TextInput` (+ label/hint/error pattern)
 - `Card`
@@ -70,52 +68,53 @@ These are product/domain specific and should remain app-owned:
 
 ---
 
-## Phase checklist (high-level)
+## Section checklist (high-level)
 
-- [x] Phase 1 — Standardize frontend foundations
-- [x] Phase 2 — Bits-first primitives and wrappers
-- [ ] Phase 3 — Tokens, themes, density
-- [ ] Phase 4 — Packaging and consumption boundaries
-- [ ] Phase 5 — Extract app-specific UI up into kits
-- [ ] Phase 6 — Testing + release discipline
+- [x] Section 1 — Standardize frontend foundations
+- [x] Section 2 — Bits-first primitives and wrappers
+- [x] Section 3 — Tokens, themes, density
+- [x] Section 4 — Packaging and consumption boundaries
+- [x] Section 5 — Extract app-specific UI up into extension packages
+- [x] Section 6 — Testing + release discipline
 
 ---
 
-## Phase 1 — Standardize frontend foundations (low risk)
+## Section 1 — Standardize frontend foundations (low risk)
 
 - [x] Align Svelte/SvelteKit/TS/ESLint/Vite/Vitest versions within each product family:
   - [x] Acowtancy: Dairy + Froyo
-  - [x] Songsprout: Petal + Bloom + Greenhouse
+  - [x] Songsprout: Bloom + Greenhouse
 - [x] Standardize SSR config for Bits UI usage:
   - Ensure `ssr.noExternal` consistently includes `bits-ui` (+ any required dependencies like `svelte-toolbelt`).
 - [x] Standardize iconography:
   - Confirm `lucide-svelte` as the shared icon set; define import conventions.
   - Convention: prefer per-icon imports (`lucide-svelte/icons/<icon-name>`) for consistent, tree-shakeable usage.
   - Convention: icon-only buttons must include an accessible label (`aria-label`) or use a labelled wrapper.
-- [x] Standardize CSS entrypoints for UI kits:
-  - Explicitly document that UI kits may import their token CSS at the package entry (`index.ts`).
+- [x] Standardize CSS entrypoints for shared packages:
+  - Explicitly document which CSS entrypoints apps must import (tokens/forms/markdown editor) and where.
 
 Acceptance criteria:
 - Apps run with no module-resolution hacks beyond local `file:` deps.
+- Apps do not depend on Underlay/Froyo/Petal deep-import paths.
 
 ---
 
-## Phase 2 — Bits-first primitives and wrappers (medium risk, high payoff)
+## Section 2 — Bits-first primitives and wrappers (medium risk, high payoff)
 
 Goal: make Bits UI the shared interaction foundation, with product-owned styling.
 
 Note on wrappers/adapters:
 - Avoid no-op component wrappers (a `.svelte` file that only re-exports an Underlay component).
-- If a kit (Froyo/Petal) does not add API policy or defaults, apps should import primitives directly from Underlay.
+- If an extension package (Froyo/Petal) does not add API policy or defaults, apps should import primitives directly from Underlay.
 
 - [x] Froyo: broaden Bits integration beyond `Button`:
   - Select, switch/toggle, dialogs/menus where relevant.
   - Ensure wrappers expose a consistent Froyo API (variant/size/density) while delegating interaction to Bits.
-- [x] Petal: adopt Bits UI for components where it provides clear accessibility/interaction wins.
+- [x] Underlay: adopt Bits UI for primitives where it provides clear accessibility/interaction wins.
   - [x] Button
   - [x] dropdown/select
   - [x] dialog/modal
-  - Keep Petal tokens as the styling layer.
+  - Keep Underlay tokens as the styling layer.
 - [x] Define a “component contract” template (per component type):
   - Props naming (`variant`, `size`, `density`, `disabled`, `loading`)
   - Events/callbacks
@@ -123,7 +122,7 @@ Note on wrappers/adapters:
 
 ### Component contract template
 
-Use this template for any new shared primitive in Underlay (and any adapter in Froyo/Petal).
+Use this template for any new shared primitive in Underlay (and any adapter in Froyo/Petal where needed).
 
 **1) Purpose (1–2 sentences)**
 - What interaction does it standardize?
@@ -172,26 +171,23 @@ Use this template for any new shared primitive in Underlay (and any adapter in F
 - Minimum: `pnpm -C <pkg> check` and an SSR build in at least one consuming app.
 
 Acceptance criteria:
-- Both UI kits have at least one Bits-backed component in each category: button, input/select, overlay (dialog/menu).
+- Underlay has at least one Bits-backed component in each category: button, input/select, overlay (dialog/menu).
 
 ---
 
-## Phase 3 — Tokens, themes, density (medium risk)
+## Section 3 — Tokens, themes, density (medium risk)
 
-- [ ] Froyo: expand tokens to match the intended scope (colors/spacing/typography/radii/shadows) and remove hard-coded values.
-  - [x] Add baseline semantic tokens (text-muted/subtle, border, status colors, spacing, radii, shadows)
-  - [ ] Remove remaining hard-coded literals in Froyo shared components
-- [ ] Froyo: implement density switching (comfortable vs compact) per Ledger Froyo docs.
+- [x] Underlay: adopt a single canonical token namespace (`--underlay-*`) and remove legacy aliases.
+- [x] Underlay: implement density switching (comfortable vs compact).
   - [x] Support `data-underlay-density="compact"` attribute overrides
   - [x] Ensure core inputs/cards/actions use density variables
-- [ ] Petal: formalize density variants (artist vs admin) if needed.
 - [x] Define a shared *semantic token shape* (not values):
   - background/surface/text/border/accent/success/warn/error
   - spacing scale and typography scale
 
 ### Semantic token shape
 
-These token names are the shared *shape* we standardize across kits. Values remain product-owned.
+These token names are the shared *shape* we standardize across products. Values remain product-owned.
 
 - **Surfaces:** `--*-color-bg-surface`, `--*-color-surface-muted`
 - **Text:** `--*-color-text`, `--*-color-text-muted`, `--*-color-text-subtle`
@@ -204,50 +200,65 @@ These token names are the shared *shape* we standardize across kits. Values rema
 - **Density:** `--*-density-gap` plus optional `[data-*-density="compact"]` overrides
 
 Acceptance criteria:
-- Both kits can switch density without ad-hoc CSS in apps.
+- Apps can change density via `data-underlay-density` without ad-hoc component CSS.
 
 ---
 
-## Phase 4 — Packaging and consumption boundaries (high leverage)
+## Section 4 — Packaging and consumption boundaries (high leverage)
 
-- [ ] Convert both UI kits into true library packages with predictable exports.
-  - Ensure CSS token files are included correctly.
-  - Ensure type generation and exports are stable.
-- [ ] Remove source-level aliasing from apps where feasible.
-  - Dairy should consume Froyo via package entry (still using `file:` locally is fine).
-- [ ] Add “public API” discipline:
-  - Only export stable components from `src/lib/index.ts` / `src/lib/index.ts`.
-  - Keep internals unexported.
+- [x] Underlay: export a stable public API surface.
+  - CSS entrypoints are explicitly exported (tokens/forms/markdown editor).
+  - Deep imports are not part of the supported surface.
+- [x] Froyo: export explicit entrypoints (`@acowtancy/froyo/editor|render|validation`).
+- [x] Petal: keep a minimal, explicit package surface until it has real cross-app Songsprout extensions.
+- [x] Apps: avoid source-level aliasing; prefer package entrypoints + `file:` deps for local dev.
 
 Acceptance criteria:
-- Apps can upgrade UI kits by bumping a single dependency.
+- Apps can upgrade Underlay/Froyo/Petal by bumping a single dependency each.
 
 ---
 
-## Phase 5 — Extract app-specific UI up into kits (selective)
+## Section 5 — Extract app-specific UI up into extension packages (selective)
 
-- [ ] Dairy → Froyo:
-  - Identify UI-only components currently living in Dairy (e.g. filter bars, list shells) and move them into Froyo if they are generic.
-  - Keep admin workflow logic in Dairy.
-- [ ] Bloom/Greenhouse → Petal:
-  - Identify repeated form and layout patterns and promote to Petal.
+- [x] Acowtancy: move Acowtancy-specific Nightfire block implementations out of Underlay and into Froyo.
+- [x] Acowtancy: audit Dairy for UI-only components that are truly generic and move them into Underlay (not Froyo).
+  - [x] Extract `FilterBar` into Underlay patterns (`@decodelabs/underlay/patterns`).
+  - [x] Extract `FormShell` into Underlay patterns (keep SvelteKit `enhance` in a Dairy wrapper).
+  - [x] Extract `FormError` into Underlay components (`@decodelabs/underlay/components`).
+  - [x] Extract confirmation dialog usage into `ConfirmAction` (`@decodelabs/underlay/components`).
+  - [x] Extract list-page header/back-link into `PageHeader` (`@decodelabs/underlay/patterns`).
+  - [x] Extract repeated “copy slug/id + actions” dropdown into `CopyActionsMenu` (`@decodelabs/underlay/patterns`).
+  - [x] Add a first-class `actions` slot to `ListCard` so per-card menus can live inside the card without adding extra grid height.
+  - [x] Extract small shared helpers into Underlay patterns (e.g. `copyToClipboard()`, `requestSubmitById()`).
+- [x] Songsprout: only add Petal exports when there is a concrete cross-app Songsprout extension; avoid using Petal as a general primitives kit.
+
+Remaining candidates (optional / if needed):
+- Generic “accent pill”/badge component for the repeated `kind-pill`/`activity-pill`/`module-code` patterns in list cards.
+- A generic list-card “meta row” helper if we want to standardize the multi-line `<span>` meta layout.
 
 Acceptance criteria:
 - Reduced duplication of generic UI patterns across apps.
+- Generic patterns live in Underlay; product-specific ones live in Froyo/Petal or the app.
 
 ---
 
-## Phase 6 — Testing + release discipline (ongoing)
+## Section 6 — Testing + release discipline (ongoing)
 
-- [ ] Add minimum test coverage expectations for UI kits:
-  - component smoke tests
-  - accessibility checks for Bits-backed components (at least keyboard + focus)
-- [ ] Define a versioning policy for UI kits:
-  - breaking changes require a major bump
-  - deprecations tracked in changelog notes
+- [x] Define minimum validation expectations for shared packages.
+  - Always run: `pnpm -C libraries/underlay check`.
+  - For any Nightfire or styling change: also run at least one consuming app build:
+    - Acowtancy: `pnpm -C apps/acowtancy/dairy build` and/or `pnpm -C apps/acowtancy/cream build`.
+  - For changes affecting block save/validation: ensure a server action path imports the relevant validators (`@acowtancy/froyo/validation`).
+
+- [x] Define a versioning policy for shared packages.
+  - Treat Underlay/Froyo/Petal entrypoints as a public API surface.
+  - Breaking changes require a major bump.
+  - Additive/backwards-compatible changes require a minor bump.
+  - Bugfixes require a patch bump.
+  - Avoid deep-import paths; changes to internals should not require consumer updates.
 
 Acceptance criteria:
-- UI kits can evolve without breaking apps unexpectedly.
+- Shared packages can evolve without breaking apps unexpectedly.
 
 ---
 

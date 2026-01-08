@@ -12,11 +12,21 @@
   align-items: center;
   flex-wrap: wrap;
   gap: 0.25rem;
-  padding: 0.35rem 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 0;
+  padding-right: 0;
 
   background: var(--underlay-color-surface-muted, rgba(255, 255, 255, 0.02));
   border-bottom: 1px solid
     var(--underlay-color-border-subtle, rgba(148, 163, 184, 0.25));
+}
+
+/* Keep a small gap between toolbar and editor surface. */
+.EasyMDEContainer .CodeMirror,
+.EasyMDEContainer .editor-preview,
+.EasyMDEContainer .editor-preview-side {
+  margin-top: var(--underlay-space-1, 0.25rem);
 }
 
 /* EasyMDE may render buttons as <button> or <a> depending on config/version. */

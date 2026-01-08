@@ -9,12 +9,13 @@
   }
 
   export let type: "button" | "submit" | "reset" = "button";
+  export let variant: "default" | "danger" = "default";
   export let className: string = "";
 </script>
 
 <BitsButton.Root
   {...$$restProps}
-  class={`underlay-text-button ${className} ${$$restProps.class ?? ""}`}
+  class={`underlay-text-button underlay-text-button--${variant} ${className} ${$$restProps.class ?? ""}`}
   {type}
   onclick={handleClick}
 >
@@ -40,6 +41,16 @@
   :global(.underlay-text-button:hover) {
     color: var(--underlay-color-text, var(--underlay-color-text, inherit));
     text-decoration: underline;
+  }
+
+  :global(.underlay-text-button--danger) {
+    color: var(--underlay-color-error, #ef4444);
+  }
+
+  :global(.underlay-text-button--danger:hover) {
+    color: var(--underlay-color-error, #ef4444);
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
   }
 
   :global(.underlay-text-button:disabled),

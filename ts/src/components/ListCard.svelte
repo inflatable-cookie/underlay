@@ -4,39 +4,50 @@
   export let subtitle: string | null = null;
   export let ariaLabel: string | null = null;
   export let accent: string | null = null;
+
+  const hasActions = Boolean($$slots.actions);
+
+  const style = accent ? `--underlay-list-card-accent: ${accent};` : undefined;
 </script>
 
 {#if href}
-  <a
-    class="underlay-list-card"
-    href={href}
-    aria-label={ariaLabel ?? title}
-    style={accent ? `--underlay-list-card-accent: ${accent};` : undefined}
-  >
-    <div class="underlay-list-card__media">
-      <slot name="media" />
-    </div>
-
-    <div class="underlay-list-card__body">
-      <div class="underlay-list-card__title-row">
-        <h3 class="underlay-list-card__title">{title}</h3>
-        <slot name="trailing" />
+  <div class="underlay-list-card-shell" style={style}>
+    <a
+      class={`underlay-list-card underlay-list-card__link ${hasActions ? "underlay-list-card--has-actions" : ""}`}
+      href={href}
+      aria-label={ariaLabel ?? title}
+    >
+      <div class="underlay-list-card__media">
+        <slot name="media" />
       </div>
 
-      {#if subtitle}
-        <p class="underlay-list-card__subtitle">{subtitle}</p>
-      {/if}
+      <div class="underlay-list-card__body">
+        <div class="underlay-list-card__title-row">
+          <h3 class="underlay-list-card__title">{title}</h3>
+          <slot name="trailing" />
+        </div>
 
-      <div class="underlay-list-card__meta">
-        <slot />
+        {#if subtitle}
+          <p class="underlay-list-card__subtitle">{subtitle}</p>
+        {/if}
+
+        <div class="underlay-list-card__meta">
+          <slot />
+        </div>
       </div>
-    </div>
-  </a>
+    </a>
+
+    {#if hasActions}
+      <div class="underlay-list-card__actions">
+        <slot name="actions" />
+      </div>
+    {/if}
+  </div>
 {:else}
   <div
-    class="underlay-list-card"
+    class={`underlay-list-card ${hasActions ? "underlay-list-card--has-actions" : ""}`}
     aria-label={ariaLabel ?? title}
-    style={accent ? `--underlay-list-card-accent: ${accent};` : undefined}
+    style={style}
   >
     <div class="underlay-list-card__media">
       <slot name="media" />
@@ -56,10 +67,20 @@
         <slot />
       </div>
     </div>
+
+    {#if hasActions}
+      <div class="underlay-list-card__actions">
+        <slot name="actions" />
+      </div>
+    {/if}
   </div>
 {/if}
 
 <style>
+  .underlay-list-card-shell {
+    position: relative;
+  }
+
   .underlay-list-card {
     --underlay-list-card-accent: var(
       --underlay-color-primary,
@@ -99,6 +120,21 @@
       box-shadow 0.12s ease-out;
   }
 
+  /* Give the top-right overlay room. */
+  .underlay-list-card--has-actions {
+    padding-right: calc(var(--underlay-space-4, var(--underlay-space-4, 1rem)) + 2.25rem);
+  }
+
+  .underlay-list-card-shell:hover > .underlay-list-card {
+    transform: translateY(var(--underlay-lift-hover, var(--underlay-lift-hover, -1px)));
+    border-color: color-mix(
+      in srgb,
+      var(--underlay-list-card-accent) 65%,
+      transparent
+    );
+    box-shadow: var(--underlay-shadow-card-hover, var(--underlay-shadow-card-hover, none));
+  }
+
   .underlay-list-card:hover {
     transform: translateY(var(--underlay-lift-hover, var(--underlay-lift-hover, -1px)));
     border-color: color-mix(
@@ -113,6 +149,13 @@
     outline: var(--underlay-focus-ring-width, var(--underlay-focus-ring-width, 2px)) solid
       var(--underlay-list-card-accent);
     outline-offset: var(--underlay-focus-ring-offset, var(--underlay-focus-ring-offset, 2px));
+  }
+
+  .underlay-list-card__actions {
+    position: absolute;
+    top: calc(var(--underlay-space-4, var(--underlay-space-4, 1rem)) * 0.75);
+    right: calc(var(--underlay-space-4, var(--underlay-space-4, 1rem)) * 0.75);
+    z-index: 1;
   }
 
   .underlay-list-card__media {

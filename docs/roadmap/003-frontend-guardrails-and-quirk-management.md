@@ -2,7 +2,7 @@
 
 **Status:** Draft
 
-This roadmap defines the “hardening pass” that follows Phase 2 (shared primitives and wrappers).
+This roadmap defines the “hardening pass” that follows Section 2 (shared primitives and wrappers).
 
 The goal is to make the SvelteKit + TypeScript admin UI (Dairy) and the shared UI packages (Underlay/Froyo) feel **dependable, polished, and low-quirk** while preserving SSR.
 

@@ -68,6 +68,8 @@
       autoDownloadFontAwesome: false,
       status: false,
       spellChecker: false,
+      // EasyMDE defaults to 300px; keep it a bit tighter.
+      minHeight: "200px", 
       initialValue: value ?? "",
       placeholder: placeholder ?? undefined,
       toolbar: [
@@ -208,7 +210,7 @@
   .markdown-editor-root {
     display: grid;
     gap: var(--underlay-space-1, var(--underlay-space-1, 0.25rem));
-    padding-top: var(--underlay-space-1, var(--underlay-space-1, 0.25rem));
+    padding-top: 0;
   }
 
   .markdown-editor-label {

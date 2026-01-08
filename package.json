@@ -37,17 +37,7 @@
     "./styles/base.css": "./ts/src/styles/base.css",
     "./styles/forms.css": "./ts/src/styles/forms.css",
     "./styles/markdown-editor.css": "./ts/src/styles/markdown-editor.css",
-    "./styles/tokens.css": "./ts/src/styles/tokens.css",
-    "./components/*": {
-      "types": "./ts/src/svelte.d.ts",
-      "svelte": "./ts/src/components/*",
-      "default": "./ts/src/components/*"
-    },
-    "./nightfire/*": {
-      "types": "./ts/src/svelte.d.ts",
-      "svelte": "./ts/src/nightfire/*",
-      "default": "./ts/src/nightfire/*"
-    }
+    "./styles/tokens.css": "./ts/src/styles/tokens.css"
   },
   "scripts": {
     "check": "svelte-check --tsconfig ./ts/tsconfig.json"

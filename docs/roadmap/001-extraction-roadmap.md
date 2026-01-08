@@ -19,22 +19,22 @@ Guiding rule: Underlay ships *primitives and patterns*, not app domains.
 
 - Every actionable item is a checkbox.
 - Tick items with `[x]` when complete.
-- Also tick the *phase header checkbox* once all of its children are complete.
+- Also tick the *section header checkbox* once all of its children are complete.
 
-## 2. Phase Checklist (high-level)
+## 2. Section Checklist (high-level)
 
-- [x] Phase 1 — Core contract + primitives aligned
-- [x] Phase 2 — Observability + request identity
-- [x] Phase 3 — HTTP/Axum conventions
-- [x] Phase 4 — Auth boundary
-- [x] Phase 5 — DB helpers + migration runners
-- [x] Phase 6 — Soft delete semantics
-- [x] Phase 7 — Events/outbox + jobs runner
-- [x] Phase 8 — Metrics
+- [x] Section 1 — Core contract + primitives aligned
+- [x] Section 2 — Observability + request identity
+- [x] Section 3 — HTTP/Axum conventions
+- [x] Section 4 — Auth boundary
+- [x] Section 5 — DB helpers + migration runners
+- [x] Section 6 — Soft delete semantics
+- [x] Section 7 — Events/outbox + jobs runner
+- [x] Section 8 — Metrics
 
 ---
 
-## Phase 1 — Core Contract + Primitive Alignment (low risk)
+## Section 1 — Core Contract + Primitive Alignment (low risk)
 
 - [x] Underlay: confirm `underlay-core` is the canonical home for `AppError`, `ErrorEnvelope`, `SingleResponse<T>`, `ListResponse<T>`, UUIDv7 (`Uuid`, `IdGenerator`).
 - [x] Underlay: ensure TS envelope exports in `@decodelabs/underlay/client` match Rust envelope JSON shape.
@@ -54,7 +54,7 @@ Reference sources:
 
 ---
 
-## Phase 2 — Observability + Request Identity (high value, widely reusable)
+## Section 2 — Observability + Request Identity (high value, widely reusable)
 
 - [x] Underlay: create `underlay-observability` crate (Rust).
 - [x] Underlay: implement `init_tracing(config)` (pretty local, JSON prod).
@@ -76,7 +76,7 @@ Reference sources:
 
 ---
 
-## Phase 3 — HTTP/Axum Conventions (envelopes, errors, middleware)
+## Section 3 — HTTP/Axum Conventions (envelopes, errors, middleware)
 
 - [x] Underlay: create `underlay-http` crate (Rust, axum-specific).
 - [x] Underlay: implement `error_response(status, AppError)` helper returning `ErrorEnvelope` consistently.
@@ -95,7 +95,7 @@ Reference sources:
 
 ---
 
-## Phase 4 — Auth Boundary (provider abstraction + principal type)
+## Section 4 — Auth Boundary (provider abstraction + principal type)
 
 - [x] Underlay: create `underlay-auth` crate (Rust).
 - [x] Underlay: define `Principal` (user id + claims) and an app-extensible role/capability approach.
@@ -112,7 +112,7 @@ Reference sources:
 
 ---
 
-## Phase 5 — DB Helpers + Migration Runners (keep schemas app-owned)
+## Section 5 — DB Helpers + Migration Runners (keep schemas app-owned)
 
 - [x] Underlay: create `underlay-db` crate (Rust).
 - [x] Underlay: implement Postgres pool creation + common SQLx wiring helpers.
@@ -132,7 +132,7 @@ Reference sources:
 
 ---
 
-## Phase 6 — Soft Delete Semantics (generic; cascades remain app-local)
+## Section 6 — Soft Delete Semantics (generic; cascades remain app-local)
 
 - [x] Underlay: add `underlay-soft-delete` (crate or module under `underlay-db`).
 - [x] Underlay: standardise column naming (`deleted_at`, `delete_batch_id`).
@@ -150,7 +150,7 @@ Reference sources:
 
 ---
 
-## Phase 7 — Events / Outbox + Jobs Runner (harder; big payoff)
+## Section 7 — Events / Outbox + Jobs Runner (harder; big payoff)
 
 - [x] Underlay: create `underlay-events` crate (Rust).
 - [x] Underlay: define event record type (id, type, payload, occurred_at, processed_at).
@@ -168,7 +168,7 @@ Reference sources:
 
 ---
 
-## Phase 8 — Metrics (Prometheus) (optional, recommended)
+## Section 8 — Metrics (Prometheus) (optional, recommended)
 
 - [x] Underlay: create `underlay-metrics` crate (Rust).
 - [x] Underlay: implement registry wrapper.

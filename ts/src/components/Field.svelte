@@ -1,4 +1,6 @@
 <script lang="ts">
+  import FieldHint from "./FieldHint.svelte";
+
   export let label: string | undefined = undefined;
   export let forId: string | undefined = undefined;
   export let hint: string | undefined = undefined;
@@ -13,14 +15,7 @@
       </label>
 
       {#if hint}
-        <button
-          type="button"
-          class="underlay-field__hint"
-          aria-label={hint}
-          title={hint}
-        >
-          ?
-        </button>
+        <FieldHint content={hint} />
       {/if}
     </div>
   {/if}
@@ -53,32 +48,6 @@
     color: var(--underlay-color-text-muted, var(--underlay-color-text-muted, #9ca3af));
   }
 
-  .underlay-field__hint {
-    border: 1px solid
-      var(--underlay-color-border-subtle, var(--underlay-color-border-subtle, rgba(148, 163, 184, 0.35)));
-    border-radius: var(--underlay-radius-pill, var(--underlay-radius-pill, 999px));
-    padding: 0;
-    margin: 0;
-    background: transparent;
-
-    width: 1.1rem;
-    height: 1.1rem;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-
-    cursor: help;
-    color: var(--underlay-color-text-subtle, var(--underlay-color-text-subtle, #6b7280));
-    font-size: 0.75em;
-    font-weight: 700;
-    line-height: 1;
-  }
-
-  .underlay-field__hint:hover {
-    color: var(--underlay-color-text, var(--underlay-color-text, #e5e7eb));
-    border-color: var(--underlay-color-border-strong, var(--underlay-color-border-strong, rgba(148, 163, 184, 0.6)));
-    background: var(--underlay-color-hover-bg, var(--underlay-color-hover-bg, rgba(148, 163, 184, 0.08)));
-  }
 
   .underlay-field__error {
     color: var(--underlay-color-error, var(--underlay-color-error, #ef4444));
