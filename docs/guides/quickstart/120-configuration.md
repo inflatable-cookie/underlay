@@ -34,6 +34,7 @@ RUST_LOG_FORMAT=json
 
 ```bash
 PUBLIC_API_URL=http://localhost:3000
+# Sent as `X-Api-Version` header
 PUBLIC_API_VERSION=2025-01-01
 PUBLIC_APP_NAME=MyApp
 ```
@@ -42,6 +43,7 @@ PUBLIC_APP_NAME=MyApp
 
 ```bash
 PUBLIC_API_URL=http://localhost:3000
+# Sent as `X-Api-Version` header
 PUBLIC_API_VERSION=2025-01-01
 PUBLIC_APP_NAME=MyApp Admin
 ```

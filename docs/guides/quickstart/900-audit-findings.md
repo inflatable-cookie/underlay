@@ -2,84 +2,47 @@
 
 ## Overview
 
-This document audits the quickstart documentation against the actual Songsprout and Acowtancy implementations to identify inconsistencies, gaps, and missing patterns.
+This document tracks quickstart issues found by auditing the guide against:
 
-## Status: PARTIALLY RESOLVED
+- Underlay’s actual Rust/TS types in this repo
+- Acowtancy / Songsprout architectural patterns
 
-The following issues have been resolved in recent documentation updates:
+## Current Status
 
-### ✅ Resolved Items
+Most issues originally identified have now been addressed. Remaining gaps are primarily about completeness of *application-specific* implementation details (which is expected).
 
-| Issue | Status | Notes |
-|-------|--------|-------|
-| Crate Organization | ✅ RESOLVED | Docs now use single `core` crate (matches Acowtancy canonical) |
-| Auth Module Structure | ✅ RESOLVED | 3-module pattern (principal/provider/underlay) documented |
-| Frontend Auth Pattern | ✅ RESOLVED | Server hooks + Locals pattern documented |
-| Environment Variables | ✅ RESOLVED | `PUBLIC_API_URL`, `PUBLIC_API_VERSION` documented |
-| Frontend Code Examples | ✅ RESOLVED | Updated with client factory, hooks, app.d.ts |
+## Key Fixes Applied
 
-### Still Needing Updates
+- ✅ **Response envelopes aligned** with `underlay_core::{ListResponse, SingleResponse}` and TS `ListResponse/SingleResponse`.
+- ✅ **Error envelopes aligned** with Underlay’s canonical `{ error: { code, message, fieldErrors? } }` shape.
+- ✅ **API versioning clarified**: stable `/v1/...` URLs with optional `X-Api-Version` header (Acowtancy-style).
+- ✅ **Handlers docs fixed**: removed Acowtancy-specific crate references and `/api/v1` paths.
+- ✅ **Database docs fixed**: migrations moved to `crates/db/migrations`, `pgcrypto` extension called out, removed invalid `sqlx::migrate!(migrations_path)` usage.
+- ✅ **Broken code-example references fixed**: created missing `code/140-local-development/` and `code/160-troubleshooting/` assets.
+- ✅ **AGENTS.md contradiction fixed**: clarified root-level “repo plumbing” files are allowed.
 
-| Issue | Priority | Status |
-|-------|----------|--------|
-| DTO Pattern | High | Not yet documented |
-| In-memory Repositories | High | Not yet documented |
-| AppState Composition | High | Not yet documented |
-| Middleware Patterns | Medium | Not yet documented |
-| Audit Logging | Medium | Not yet documented |
-| Handler Organization | Medium | Not yet documented |
+## Files Status
 
-## Acowtancy-Specific Differences
+| Document | Notes |
+|----------|-------|
+| `docs/guides/quickstart/030-underlay-integration.md` | Updated TS envelope example to match Underlay |
+| `docs/guides/quickstart/050-database.md` | Updated migrations layout + SQL fixes |
+| `docs/guides/quickstart/060-authentication.md` | Removed `farmyard_core` references; removed stray `todo!()` |
+| `docs/guides/quickstart/070-api-handlers.md` | Updated to `/v1`, Underlay envelopes/errors |
+| `docs/guides/quickstart/080-typescript-client.md` | Updated to use Underlay TS client + correct envelopes |
+| `docs/guides/quickstart/140-local-development.md` | Added concrete code example references |
+| `docs/guides/quickstart/160-troubleshooting.md` | Added concrete code example references |
 
-### Crate Names
-- Songsprout: `nursery/` with `nursery_core`, `nursery_auth`
-- Acowtancy: `farmyard/` with `farmyard_core`, `farmyard_auth`
-- **Quickstart uses:** Generic names (`core`, `auth`) to be project-agnostic
+## Remaining Known Limitations
 
-### Frontend Names
-- Songsprout: `bloom/` (artist), `greenhouse/` (admin)
-- Acowtancy: `cream/` (student), `dairy/` (admin)
-- **Quickstart uses:** `bloom/` and `greenhouse/` (matches Songsprout)
+These are expected (and OK for a quickstart), but worth noting:
 
-### Domain Crates
-- Songsprout: `programs`, `notifications`, `platform`
-- Acowtancy: `assessment`, `content`, `learning`, `nightfire-*`
-- **Quickstart documents:** Generic pattern, project-specific
-
-## Remaining Work
-
-### High Priority
-1. Add DTO pattern and response types documentation
-2. Add in-memory repository implementations
-3. Add `AppState` composition pattern
-
-### Medium Priority
-4. Add middleware patterns (rate limiting, request ID)
-5. Add audit logging patterns
-6. Document handler organization by domain
-
-### Low Priority
-7. Add API versioning documentation
-8. Add metrics endpoint documentation
-
-## Files Needing Updates
-
-| Document | Priority | Status |
-|----------|----------|--------|
-| 040-rust-backend.md | High | Partial - core/auth crates done |
-| 050-database.md | High | Not updated |
-| 060-authentication.md | High | ✅ Updated |
-| 070-api-handlers.md | High | ✅ Updated |
-| 080-typescript-client.md | High | ✅ Updated |
-| 100-frontend-bloom.md | High | ✅ Updated |
-| 110-admin-greenhouse.md | High | ✅ Updated |
-| 120-configuration.md | High | ✅ Updated |
-| 130-testing.md | Low | Not updated |
+- JWT validation in the Rust quickstart is intentionally not fully implemented (Underlay does not ship a JWT implementation).
+- The guide provides patterns and scaffolding; domain-specific repository implementations, DTOs, and endpoints are examples.
 
 ## Canonical Reference
 
-When in doubt, reference **Acowtancy** as the canonical implementation:
+When in doubt, use Acowtancy as the canonical implementation:
 - `/Users/betterthanclay/Dev/apps/acowtancy/farmyard/crates/` - Rust backend
-- `/Users/betterthanclay/Dev/apps/acowtancy/cream/src/` - Artist frontend
+- `/Users/betterthanclay/Dev/apps/acowtancy/cream/src/` - User frontend
 - `/Users/betterthanclay/Dev/apps/acowtancy/dairy/src/` - Admin frontend
-- `/Users/betterthanclay/Dev/apps/cattle-grid/src/` - TypeScript client

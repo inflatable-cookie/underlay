@@ -1,0 +1,17 @@
+Local dev (3 terminals):
+
+1) DB
+   docker compose -f docs/guides/quickstart/code/140-local-development/docker-compose.yml up -d
+
+2) Migrations
+   cd apps/nursery/crates/db
+   sqlx database create
+   sqlx migrate run
+
+3) Backend
+   cd apps/nursery
+   cargo run -p myapp-api
+
+4) Frontends
+   cd apps/bloom && pnpm dev
+   cd apps/greenhouse && pnpm dev

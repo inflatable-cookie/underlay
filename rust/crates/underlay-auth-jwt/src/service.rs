@@ -145,56 +145,72 @@ impl JwtService {
         Ok((token, claims))
     }
 
-    pub fn verify_access_token(&self, token: &str) -> JwtResult<AccessTokenClaims> {
-        let claims: AccessTokenClaims = self.decode_and_validate(token)?;
-        if claims.token_use != TokenUse::Access {
-            return Err(JwtError::UnsupportedTokenType);
-        }
-        Ok(claims)
-    }
+        pub fn verify_access_token(&self, token: &str) -> JwtResult<AccessTokenClaims> {
+            let value = self.decode_and_validate_value(token)?;
 
-    pub fn verify_refresh_token(&self, token: &str) -> JwtResult<RefreshTokenClaims> {
-        let claims: RefreshTokenClaims = self.decode_and_validate(token)?;
-        if claims.token_use != TokenUse::Refresh {
-            return Err(JwtError::UnsupportedTokenType);
-        }
-        Ok(claims)
-    }
+            let token_use = value
+                .get("tuse")
+                .and_then(|v| v.as_str())
+                .ok_or(JwtError::MalformedToken)?;
 
-    fn decode_and_validate<T: serde::de::DeserializeOwned>(&self, token: &str) -> JwtResult<T> {
-        let mut validation = Validation::new(Algorithm::EdDSA);
-        validation.leeway = self.config.leeway_seconds;
-        validation.validate_nbf = true;
+            if token_use != "access" {
+                return Err(JwtError::UnsupportedTokenType);
+            }
 
-        // Require core JWT claims we rely on.
-        if self.config.audience.is_some() {
-            validation.set_required_spec_claims(&["exp", "iss", "sub", "aud"]);
-        } else {
-            validation.set_required_spec_claims(&["exp", "iss", "sub"]);
+            serde_json::from_value::<AccessTokenClaims>(value)
+                .map_err(|_| JwtError::MalformedToken)
         }
 
-        validation.set_issuer(&[self.config.issuer.clone()]);
-        if let Some(aud) = &self.config.audience {
-            validation.set_audience(&[aud.clone()]);
+        pub fn verify_refresh_token(&self, token: &str) -> JwtResult<RefreshTokenClaims> {
+            let value = self.decode_and_validate_value(token)?;
+
+            let token_use = value
+                .get("tuse")
+                .and_then(|v| v.as_str())
+                .ok_or(JwtError::MalformedToken)?;
+
+            if token_use != "refresh" {
+                return Err(JwtError::UnsupportedTokenType);
+            }
+
+            serde_json::from_value::<RefreshTokenClaims>(value)
+                .map_err(|_| JwtError::MalformedToken)
         }
 
-        match decode::<T>(token, &self.decoding_key, &validation) {
-            Ok(data) => Ok(data.claims),
-            Err(err) => {
-                use jsonwebtoken::errors::ErrorKind;
-                match err.kind() {
-                    ErrorKind::ExpiredSignature => Err(JwtError::Expired),
-                    ErrorKind::ImmatureSignature => Err(JwtError::NotYetValid),
-                    ErrorKind::InvalidToken => Err(JwtError::InvalidToken),
-                    ErrorKind::InvalidSignature => Err(JwtError::InvalidToken),
-                    ErrorKind::InvalidIssuer => Err(JwtError::InvalidToken),
-                    ErrorKind::InvalidAudience => Err(JwtError::InvalidToken),
-                    ErrorKind::Json(_) => Err(JwtError::MalformedToken),
-                    _ => Err(JwtError::InvalidToken),
+        fn decode_and_validate_value(&self, token: &str) -> JwtResult<serde_json::Value> {
+            let mut validation = Validation::new(Algorithm::EdDSA);
+            validation.leeway = self.config.leeway_seconds;
+            validation.validate_nbf = true;
+
+            // Require core JWT claims we rely on.
+            if self.config.audience.is_some() {
+                validation.set_required_spec_claims(&["exp", "iss", "sub", "aud"]);
+            } else {
+                validation.set_required_spec_claims(&["exp", "iss", "sub"]);
+            }
+
+            validation.set_issuer(&[self.config.issuer.clone()]);
+            if let Some(aud) = &self.config.audience {
+                validation.set_audience(&[aud.clone()]);
+            }
+
+            match decode::<serde_json::Value>(token, &self.decoding_key, &validation) {
+                Ok(data) => Ok(data.claims),
+                Err(err) => {
+                    use jsonwebtoken::errors::ErrorKind;
+                    match err.kind() {
+                        ErrorKind::ExpiredSignature => Err(JwtError::Expired),
+                        ErrorKind::ImmatureSignature => Err(JwtError::NotYetValid),
+                        ErrorKind::InvalidToken => Err(JwtError::InvalidToken),
+                        ErrorKind::InvalidSignature => Err(JwtError::InvalidToken),
+                        ErrorKind::InvalidIssuer => Err(JwtError::InvalidToken),
+                        ErrorKind::InvalidAudience => Err(JwtError::InvalidToken),
+                        ErrorKind::Json(_) => Err(JwtError::MalformedToken),
+                        _ => Err(JwtError::InvalidToken),
+                    }
                 }
             }
         }
-    }
 }
 
 /// Session state stored in application persistence.
@@ -536,6 +552,21 @@ mod tests {
         }
 
         #[test]
+        fn mismatched_public_key_fails_service_startup() {
+            let (config1, _) = JwtConfig::generate().unwrap();
+            let (config2, _) = JwtConfig::generate().unwrap();
+
+            let mismatched = JwtConfig {
+                private_key_b64: config1.private_key_b64,
+                public_key_b64: config2.public_key_b64,
+                ..JwtConfig::default()
+            };
+
+            let result = JwtService::new(mismatched);
+            assert!(matches!(result, Err(JwtError::InvalidToken)), "got: {result:?}");
+        }
+
+        #[test]
         fn debug_redacts_private_key() {
             let (config, _) = JwtConfig::generate().unwrap();
             let debug_str = format!("{:?}", config);
@@ -617,7 +648,7 @@ mod tests {
             let user_id = Uuid::new_v7();
             let session_id = Uuid::new_v7();
 
-            let (token, claims) = jwt.issue_access_token(user_id, session_id, vec![]).unwrap();
+            let (token, _claims) = jwt.issue_access_token(user_id, session_id, vec![]).unwrap();
             let verified = jwt.verify_access_token(&token).unwrap();
 
             assert_eq!(verified.common.subject, user_id);
@@ -633,7 +664,7 @@ mod tests {
             let user_id = Uuid::new_v7();
             let session_id = Uuid::new_v7();
 
-            let (token, claims) = jwt.issue_refresh_token(user_id, session_id, None, 1).unwrap();
+            let (token, _claims) = jwt.issue_refresh_token(user_id, session_id, None, 1).unwrap();
             let verified = jwt.verify_refresh_token(&token).unwrap();
 
             assert_eq!(verified.common.subject, user_id);
@@ -644,16 +675,104 @@ mod tests {
 
         #[test]
         fn expired_token_returns_expired_error() {
-            let (config, _) = JwtConfig::generate().unwrap();
-            let jwt = JwtService::new(config.clone()).unwrap();
+            let (mut config, _) = JwtConfig::generate().unwrap();
+            config.leeway_seconds = 0;
+            let jwt = JwtService::new(config).unwrap();
 
+            let now = chrono::Utc::now().timestamp() as u64;
             let user_id = Uuid::new_v7();
             let session_id = Uuid::new_v7();
 
-            let (token, _) = jwt.issue_access_token(user_id, session_id, vec![]).unwrap();
+            let claims = AccessTokenClaims {
+                common: CommonClaims {
+                    issuer: jwt.config.issuer.clone(),
+                    subject: user_id,
+                    audience: jwt.config.audience.clone(),
+                    issued_at: now.saturating_sub(120),
+                    expires_at: now.saturating_sub(60),
+                    not_before: Some(now.saturating_sub(120)),
+                    token_id: Uuid::new_v7(),
+                },
+                token_use: TokenUse::Access,
+                session_id,
+                roles: vec![],
+            };
 
-            let verified = jwt.verify_access_token(&token);
-            assert!(verified.is_ok());
+            let mut header = Header::new(Algorithm::EdDSA);
+            header.typ = Some("JWT".to_string());
+
+            let token = encode(&header, &claims, &jwt.encoding_key).unwrap();
+            let result = jwt.verify_access_token(&token);
+
+            assert!(matches!(result, Err(JwtError::Expired)), "got: {result:?}");
+        }
+
+        #[test]
+        fn token_not_yet_valid_returns_not_yet_valid_error() {
+            let (mut config, _) = JwtConfig::generate().unwrap();
+            config.leeway_seconds = 0;
+            let jwt = JwtService::new(config).unwrap();
+
+            let now = chrono::Utc::now().timestamp() as u64;
+            let user_id = Uuid::new_v7();
+            let session_id = Uuid::new_v7();
+
+            let claims = AccessTokenClaims {
+                common: CommonClaims {
+                    issuer: jwt.config.issuer.clone(),
+                    subject: user_id,
+                    audience: jwt.config.audience.clone(),
+                    issued_at: now,
+                    expires_at: now + 600,
+                    not_before: Some(now + 300),
+                    token_id: Uuid::new_v7(),
+                },
+                token_use: TokenUse::Access,
+                session_id,
+                roles: vec![],
+            };
+
+            let mut header = Header::new(Algorithm::EdDSA);
+            header.typ = Some("JWT".to_string());
+
+            let token = encode(&header, &claims, &jwt.encoding_key).unwrap();
+            let result = jwt.verify_access_token(&token);
+
+            assert!(matches!(result, Err(JwtError::NotYetValid)), "got: {result:?}");
+        }
+
+        #[test]
+        fn leeway_allows_slightly_expired_tokens() {
+            let (mut config, _) = JwtConfig::generate().unwrap();
+            config.leeway_seconds = 30;
+            let jwt = JwtService::new(config).unwrap();
+
+            let now = chrono::Utc::now().timestamp() as u64;
+            let user_id = Uuid::new_v7();
+            let session_id = Uuid::new_v7();
+
+            let claims = AccessTokenClaims {
+                common: CommonClaims {
+                    issuer: jwt.config.issuer.clone(),
+                    subject: user_id,
+                    audience: jwt.config.audience.clone(),
+                    issued_at: now.saturating_sub(120),
+                    expires_at: now.saturating_sub(10),
+                    not_before: Some(now.saturating_sub(120)),
+                    token_id: Uuid::new_v7(),
+                },
+                token_use: TokenUse::Access,
+                session_id,
+                roles: vec![],
+            };
+
+            let mut header = Header::new(Algorithm::EdDSA);
+            header.typ = Some("JWT".to_string());
+
+            let token = encode(&header, &claims, &jwt.encoding_key).unwrap();
+            let result = jwt.verify_access_token(&token);
+
+            assert!(result.is_ok(), "got: {result:?}");
         }
 
         #[test]
@@ -694,8 +813,8 @@ mod tests {
 
             let result = jwt.verify_access_token(&refresh_token);
 
-            assert!(matches!(result, Err(JwtError::UnsupportedTokenType | JwtError::MalformedToken)), 
-                    "Expected UnsupportedTokenType or MalformedToken but got: {:?}", result);
+            assert!(matches!(result, Err(JwtError::UnsupportedTokenType)),
+                    "Expected UnsupportedTokenType but got: {:?}", result);
         }
 
         #[test]
@@ -710,8 +829,8 @@ mod tests {
 
             let result = jwt.verify_refresh_token(&access_token);
 
-            assert!(matches!(result, Err(JwtError::UnsupportedTokenType | JwtError::MalformedToken)),
-                    "Expected UnsupportedTokenType or MalformedToken but got: {:?}", result);
+            assert!(matches!(result, Err(JwtError::UnsupportedTokenType)),
+                    "Expected UnsupportedTokenType but got: {:?}", result);
         }
 
         #[test]

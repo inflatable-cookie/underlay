@@ -66,7 +66,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 Create `apps/greenhouse/src/lib/api/client.ts`:
 
 ```typescript
-import { createClient as createStemClient } from "@stem";
+import { createClient as createStemClient } from "@myapp/stem";
 import { env } from "$env/dynamic/public";
 
 const baseUrl = env.PUBLIC_API_URL ?? "http://127.0.0.1:3000";

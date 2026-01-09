@@ -21,7 +21,7 @@ apps/nursery/crates/auth/src/
 Defines domain-specific auth types in `principal.rs`:
 
 ```rust
-use farmyard_core::Uuid;
+use underlay_core::Uuid;
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -71,7 +71,7 @@ impl AuthProvider for MyAuthProvider {
 Connects to Underlay and provides dev mode in `underlay.rs`:
 
 ```rust
-use farmyard_core::Uuid;
+use underlay_core::Uuid;
 
 use crate::{UserId, UserPrincipal, UserRole};
 
@@ -192,7 +192,7 @@ use axum::{
     extract::{Path, State},
 };
 use underlay_auth::Authenticated;
-use underlay_http::SingleResponse;
+use underlay_core::SingleResponse;
 
 use crate::state::AppState;
 
@@ -201,7 +201,9 @@ pub async fn list_artists(
     Authenticated(principal): Authenticated<myapp_auth::UserPrincipal>,
 ) -> Json<SingleResponse<Vec<ArtistDto>>> {
     tracing::info!(user_id = %principal.user_id.0, "Listing artists");
-    todo!()
+
+    // Placeholder implementation for the quickstart.
+    Json(SingleResponse { data: Vec::new() })
 }
 ```
 

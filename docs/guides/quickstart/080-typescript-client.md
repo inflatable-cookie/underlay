@@ -1,25 +1,35 @@
-# 080 - TypeScript Client (API Client Pattern)
+# 080 - TypeScript Client (Stem)
 
-This document covers creating a typed API client for the Rust backend, following Acowtancy's canonical pattern. The client is structured as a dedicated package (like `@acowtancy/cattle-grid`).
+This document covers creating a typed API client for the Rust backend. The client lives in `libs/stem/` and is consumed by both frontends.
+
+This guide aligns with Underlay’s TypeScript client primitives and error envelope shape.
 
 ## Client Structure
 
+A minimal but scalable layout:
+
 ```
-libs/stem/                    # Or your client package name (e.g., @myapp/api-client)
+libs/stem/
 ├── package.json
 ├── tsconfig.json
 └── src/
-    ├── index.ts             # Main exports, createClient factory
-    ├── types/               # Shared TypeScript types
-    │   ├── common-types.ts
-    │   └── domain-types.ts
-    ├── commands/            # Domain-organized command functions
-    │   ├── learning-commands.ts
-    │   ├── assessment-commands.ts
-    │   └── content-commands.ts
-    └── utils/
-        └── http-client.ts   # Base HTTP client
+    ├── index.ts
+    ├── client.ts            # createClient factory
+    ├── http.ts              # low-level http wrapper
+    ├── errors.ts            # error helpers
+    └── commands/
+        ├── users.ts
+        └── artists.ts
 ```
+
+## Underlay Types and Errors
+
+Underlay exports:
+
+- `createHttpClient` (low-level fetch wrapper)
+- `UnderlayHttpError` (thrown on non-2xx)
+- `ErrorEnvelope` (shape: `{ error: { code, message, fieldErrors? } }`)
+- `SingleResponse<T>`, `ListResponse<T>`
 
 ## Step 1: Package Setup
 
@@ -35,282 +45,155 @@ Create `libs/stem/package.json`:
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "lint": "eslint src --ext .ts",
     "check": "tsc -p tsconfig.json --noEmit",
-    "test": "vitest",
-    "generate": "openapi-typescript ../nursery/openapi.json -o src/generated/openapi-types.ts"
+    "test": "vitest"
   },
   "dependencies": {
     "@decodelabs/underlay": "file:../../libs/underlay"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
-    "@typescript-eslint/eslint-plugin": "^8.0.0",
-    "@typescript-eslint/parser": "^8.0.0",
-    "eslint": "^9.0.0",
-    "openapi-typescript": "^7.4.0",
     "typescript": "^5.0.0",
     "vitest": "^2.0.0"
   }
 }
 ```
 
-## Step 2: Base HTTP Client
+## Step 2: HTTP Wrapper
 
-Create `libs/stem/src/utils/http-client.ts`:
+Create `libs/stem/src/http.ts`:
 
-```typescript
-import type { ErrorEnvelope } from '@decodelabs/underlay';
+```ts
+import {
+  createHttpClient,
+  type HttpClient,
+  type ErrorEnvelope,
+  UnderlayHttpError,
+} from "@decodelabs/underlay";
 
-export interface HttpClientConfig {
-  baseUrl: string;
-  apiVersion: string;
+export interface StemHttpConfig {
+  baseUrl: string; // e.g. http://127.0.0.1:3000
+  apiVersion: string; // e.g. 2025-01-01 (sent via header)
   fetchFn?: typeof fetch;
   getToken: () => string | null;
 }
 
-/**
- * Base HTTP client for API requests.
- */
-export class HttpClient {
-  private baseUrl: string;
-  private apiVersion: string;
-  private fetchFn: typeof fetch;
-  private getToken: () => string | null;
+export function createStemHttp(config: StemHttpConfig): HttpClient {
+  // Keep URL stable; version goes in a header.
+  const baseUrl = new URL("/v1/", config.baseUrl).toString();
 
-  constructor(config: HttpClientConfig) {
-    this.baseUrl = config.baseUrl;
-    this.apiVersion = config.apiVersion;
-    this.fetchFn = config.fetchFn || fetch;
-    this.getToken = config.getToken;
-  }
-
-  /**
-   * Build URL with API version prefix.
-   */
-  private buildUrl(path: string): string {
-    return `${this.baseUrl}/${this.apiVersion}${path}`;
-  }
-
-  /**
-   * Build request headers with auth.
-   */
-  private buildHeaders(headers?: Record<string, string>): Headers {
-    const authToken = this.getToken();
-    const authHeader = authToken ? { Authorization: `Bearer ${authToken}` } : {};
-
-    return new Headers({
-      'Content-Type': 'application/json',
-      ...authHeader,
-      ...headers,
-    });
-  }
-
-  /**
-   * Make an HTTP request.
-   */
-  private async request<T>(
-    method: string,
-    path: string,
-    body?: unknown
-  ): Promise<T> {
-    const url = this.buildUrl(path);
-    const headers = this.buildHeaders();
-
-    const response = await this.fetchFn(url, {
-      method,
-      headers,
-      body: body ? JSON.stringify(body) : undefined,
-    });
-
-    if (!response.ok) {
-      const error: ErrorEnvelope = await response.json();
-      throw new ApiError(error);
-    }
-
-    // Handle empty responses
-    const text = await response.text();
-    if (!text) {
-      return {} as T;
-    }
-
-    return JSON.parse(text);
-  }
-
-  get<T>(path: string): Promise<T> {
-    return this.request<T>('GET', path);
-  }
-
-  post<T>(path: string, body: unknown): Promise<T> {
-    return this.request<T>('POST', path, body);
-  }
-
-  put<T>(path: string, body: unknown): Promise<T> {
-    return this.request<T>('PUT', path, body);
-  }
-
-  patch<T>(path: string, body: unknown): Promise<T> {
-    return this.request<T>('PATCH', path, body);
-  }
-
-  delete<T>(path: string): Promise<T> {
-    return this.request<T>('DELETE', path);
-  }
+  return createHttpClient({
+    baseUrl,
+    fetch: config.fetchFn,
+    defaultHeaders: {
+      "X-Api-Version": config.apiVersion,
+    },
+  });
 }
 
-/**
- * API error class that wraps Underlay error envelopes.
- */
-export class ApiError extends Error {
-  public readonly code: string;
-  public readonly statusCode: number;
-
-  constructor(envelope: ErrorEnvelope) {
-    super(envelope.message);
-    this.code = envelope.code;
-    this.statusCode = envelope.status_code;
+export function getErrorEnvelope(err: unknown): ErrorEnvelope | null {
+  if (err instanceof UnderlayHttpError) {
+    return err.envelope ?? null;
   }
+  return null;
 }
 ```
 
-## Step 3: Domain-Organized Commands
+## Step 3: Commands (Domain-Organized)
 
-Following Acowtancy's pattern, commands are organized by domain:
+Example `users` commands in `libs/stem/src/commands/users.ts`:
 
-Create `libs/stem/src/commands/users-commands.ts`:
+```ts
+import type { HttpClient } from "@decodelabs/underlay";
+import type { ListResponse, SingleResponse } from "@decodelabs/underlay";
 
-```typescript
-import type { User, UserListResponse } from '../types/user-types.js';
-import type { SingleResponse, ListResponse } from '@decodelabs/underlay';
-import type { HttpClient } from '../utils/http-client.js';
-
-export interface UserCommands {
-  getUser(userId: string): Promise<SingleResponse<User>>;
-  listUsers(): Promise<ListResponse<User>>;
-  createUser(data: { email: string; name: string }): Promise<SingleResponse<User>>;
-  updateUser(userId: string, data: Partial<User>): Promise<SingleResponse<User>>;
-  deleteUser(userId: string): Promise<void>;
+export interface UserDto {
+  userId: string;
+  email: string;
+  createdAt: string;
 }
 
-export function createUserCommands(http: HttpClient): UserCommands {
+export interface UsersCommands {
+  list(): Promise<ListResponse<UserDto>>;
+  get(userId: string): Promise<SingleResponse<UserDto>>;
+}
+
+export function createUsersCommands(http: HttpClient, getToken: () => string | null): UsersCommands {
+  function authHeaders(): Record<string, string> {
+    const token = getToken();
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  }
+
   return {
-    getUser(userId) {
-      return http.get(`/users/${encodeURIComponent(userId)}`);
+    list() {
+      return http.get("/users", authHeaders());
     },
-
-    listUsers() {
-      return http.get('/users');
-    },
-
-    createUser(data) {
-      return http.post('/users', data);
-    },
-
-    updateUser(userId, data) {
-      return http.patch(`/users/${encodeURIComponent(userId)}`, data);
-    },
-
-    deleteUser(userId) {
-      return http.delete(`/users/${encodeURIComponent(userId)}`);
+    get(userId) {
+      return http.get(`/users/${encodeURIComponent(userId)}`, authHeaders());
     },
   };
 }
 ```
 
-## Step 4: Main Client Factory
+## Step 4: Client Factory
 
-Create `libs/stem/src/index.ts`:
+Create `libs/stem/src/client.ts`:
 
-```typescript
-import { HttpClient, type HttpClientConfig } from './utils/http-client.js';
-import { createUserCommands, type UserCommands } from './commands/users-commands.js';
-// Import other domain commands...
+```ts
+import type { HttpClient } from "@decodelabs/underlay";
+
+import { createStemHttp, type StemHttpConfig } from "./http";
+import { createUsersCommands } from "./commands/users";
 
 export interface StemClient {
-  users: UserCommands;
-  // Add other domains...
+  users: ReturnType<typeof createUsersCommands>;
 }
 
-export function createClient(config: HttpClientConfig): StemClient {
-  const http = new HttpClient(config);
+export function createClient(config: StemHttpConfig): StemClient {
+  const http: HttpClient = createStemHttp(config);
 
   return {
-    users: createUserCommands(http),
-    // Add other domains...
+    users: createUsersCommands(http, config.getToken),
   };
 }
+```
 
-export * from './types/user-types.js';
-export * from './utils/http-client.js';
+In `libs/stem/src/index.ts`:
+
+```ts
+export * from "./client";
+export * from "./http";
+export * from "./commands/users";
 ```
 
 ## Step 5: Frontend Integration
 
-In the frontend app, create a client factory:
+In Bloom/Greenhouse, read the base URL + version from public env and pass the auth token from server `locals`:
 
-Create `apps/bloom/src/lib/api/client.ts`:
+```ts
+// apps/bloom/src/lib/api/client.ts
 
-```typescript
-import { createClient, type StemClient } from '@myapp/stem';
-import { env } from '$env/dynamic/public';
+import { createClient } from "@myapp/stem";
+import { env } from "$env/dynamic/public";
 
-let cached: StemClient | null = null;
+export function createBloomClient(fetchFn: typeof fetch, authToken: string | null) {
+  const baseUrl = env.PUBLIC_API_URL ?? "http://127.0.0.1:3000";
+  const apiVersion = env.PUBLIC_API_VERSION ?? "2025-01-01";
 
-export function getApiClient(fetchFn?: typeof fetch): StemClient {
-  if (cached && !fetchFn) {
-    return cached;
-  }
-
-  const baseUrl = env.PUBLIC_API_URL ?? 'http://localhost:3000';
-  const apiVersion = env.PUBLIC_API_VERSION ?? '2025-01-01';
-
-  const client = createClient({
+  return createClient({
     baseUrl,
     apiVersion,
     fetchFn,
-    getToken: () => {
-      // Get token from locals or cookies
-      if (typeof document !== 'undefined') {
-        return document.cookie
-          .split('; ')
-          .find(row => row.startsWith('auth_token='))
-          ?.split('=')[1] ?? null;
-      }
-      return null;
-    },
+    getToken: () => authToken,
   });
-
-  if (!fetchFn) {
-    cached = client;
-  }
-
-  return client;
 }
 ```
 
-## Using the Client
+## Notes
 
-In SvelteKit pages:
-
-```svelte
-<script lang="ts">
-  import { onMount } from 'svelte';
-  import { getApiClient } from '$lib/api/client';
-
-  let user = $state<{ name: string } | null>(null);
-
-  onMount(async () => {
-    const client = getApiClient();
-    const response = await client.users.getUser('user-123');
-    user = response.data;
-  });
-</script>
-
-{#if user}
-  <p>Hello, {user.name}!</p>
-{/if}
-```
+- This client expects the API to return `ListResponse { data: [...] }` and `SingleResponse { data: ... }`.
+- On non-2xx responses, Underlay throws `UnderlayHttpError`. The error envelope (if present) is available at `err.envelope`.
 
 ## Next Step
 
-With the TypeScript client created, proceed to [090-ui-kit](./090-ui-kit.md) to create the shared Svelte UI kit.
+Proceed to [090-ui-kit](./090-ui-kit.md).

@@ -55,7 +55,7 @@ pnpm dev
 
 ## Debugging
 
-See code examples in `/code/140-local-development/`
+See code examples in `docs/guides/quickstart/code/140-local-development/docker-compose.yml` and `docs/guides/quickstart/code/140-local-development/run-local.txt`
 
 ## Next Steps
 

@@ -36,9 +36,8 @@ my-project/
 │       │   ├── api/               # HTTP server, handlers
 │       │   ├── core/              # Core domain types
 │       │   ├── auth/              # Authentication boundary
-│       │   ├── db/                # Database utilities
+│       │   ├── db/                # Database utilities (pool, migrations)
 │       │   └── infra/             # Infrastructure (config, tracing)
-│       └── migrations/            # Database migrations
 │
 ├── libs/                          # Shared libraries
 │   ├── petal/                     # Shared Svelte UI kit
@@ -157,8 +156,8 @@ This monorepo contains several related projects:
 - `trellis/` – system, domain, and process documentation.
 
 > Root-scope rule for agents:
-> Do **not** create or modify files directly in the repository root **except** this `AGENTS.md`.
-> All new code, docs, and configuration must live inside the appropriate subdirectory.
+> Prefer keeping new code inside `apps/` and `libs/`.
+> Root-level files are allowed when they are standard repo plumbing (e.g. `README.md`, `.gitignore`, `pnpm-workspace.yaml`, root `package.json`, and `.github/workflows/*`).
 
 ## Project Structure & Module Organization
 
@@ -377,7 +376,7 @@ PROJECT_ROOT="$(pwd)"
 mkdir -p apps/bloom/src/{routes,lib,components,assets}
 mkdir -p apps/greenhouse/src/{routes,lib,components,assets}
 mkdir -p apps/nursery/crates/{api,core,auth,db,infra}/src
-mkdir -p apps/nursery/migrations
+mkdir -p apps/nursery/crates/db/migrations
 
 # Create libs directories
 mkdir -p libs/petal/src/{components,patterns,styles,hooks}

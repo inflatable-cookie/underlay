@@ -1,62 +1,65 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { HttpClient } from './http.js';
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { createHttpClient, UnderlayHttpError } from "@decodelabs/underlay";
 
-describe('HttpClient', () => {
-  let client: HttpClient;
-  let fetchMock: any;
+describe("underlay createHttpClient", () => {
+  let fetchMock: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
-    client = new HttpClient({ baseUrl: 'http://localhost:3000' });
     fetchMock = vi.fn();
-    global.fetch = fetchMock;
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
   });
 
-  it('makes GET requests', async () => {
-    fetchMock.mockResolvedValue({
-      ok: true,
-      text: async () => JSON.stringify({ data: { test: true } }),
-    });
-
-    const result = await client.get<{ test: boolean }>('/test');
-    expect(result).toEqual({ test: true });
-    expect(fetchMock).toHaveBeenCalledWith(
-      'http://localhost:3000/test',
-      expect.objectContaining({ method: 'GET' })
-    );
-  });
-
-  it('includes auth header when token is set', async () => {
-    client.setAuthTokenGetter(() => 'test-token');
-    fetchMock.mockResolvedValue({
-      ok: true,
-      text: async () => JSON.stringify({ data: {} }),
-    });
-
-    await client.get('/test');
-    expect(fetchMock).toHaveBeenCalledWith(
-      'http://localhost:3000/test',
-      expect.objectContaining({
-        headers: expect.objectContaining({
-          Authorization: 'Bearer test-token',
-        }),
+  it("makes GET requests", async () => {
+    fetchMock.mockResolvedValue(
+      new Response(JSON.stringify({ data: { test: true } }), {
+        status: 200,
+        headers: { "content-type": "application/json" },
       })
     );
-  });
 
-  it('throws ApiError on HTTP error', async () => {
-    fetchMock.mockResolvedValue({
-      ok: false,
-      json: async () => ({
-        code: 'test.error',
-        message: 'Test error',
-        status_code: 400,
-      }),
+    const http = createHttpClient({
+      baseUrl: "http://localhost:3000/v1/",
+      fetch: fetchMock,
     });
 
-    await expect(client.get('/test')).rejects.toThrow();
+    const result = await http.get<{ data: { test: boolean } }>("/test");
+    expect(result.data.test).toBe(true);
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.any(URL),
+      expect.objectContaining({ method: "GET" })
+    );
+  });
+
+  it("throws UnderlayHttpError with envelope on JSON error", async () => {
+    fetchMock.mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          error: { code: "test.error", message: "Test error" },
+        }),
+        {
+          status: 400,
+          headers: { "content-type": "application/json" },
+        }
+      )
+    );
+
+    const http = createHttpClient({
+      baseUrl: "http://localhost:3000/v1/",
+      fetch: fetchMock,
+    });
+
+    try {
+      await http.get("/test");
+      throw new Error("expected request to throw");
+    } catch (err) {
+      expect(err).toBeInstanceOf(UnderlayHttpError);
+      const underlayErr = err as UnderlayHttpError;
+      expect(underlayErr.status).toBe(400);
+      expect(underlayErr.envelope?.error.code).toBe("test.error");
+    }
   });
 });

@@ -1,35 +1,20 @@
-export class ApiError extends Error {
-  public readonly code: string;
-  public readonly statusCode: number;
-  public readonly details?: Record<string, string>;
+import { UnderlayHttpError, type ErrorEnvelope } from "@decodelabs/underlay";
 
-  constructor(envelope: ErrorEnvelope) {
-    super(envelope.message);
-    this.code = envelope.code;
-    this.statusCode = envelope.status_code;
-    this.details = envelope.details as Record<string, string> | undefined;
-  }
-
-  isAuthError(): boolean {
-    return this.code.startsWith('auth.');
-  }
-
-  isNotFound(): boolean {
-    return this.code === 'resource.not_found';
-  }
-
-  isValidationError(): boolean {
-    return this.code.startsWith('validation.');
-  }
-
-  getRetryAfterSeconds(): number | undefined {
-    if (this.code === 'auth.rate_limited') {
-      return this.details?.retry_after_seconds
-        ? parseInt(this.details.retry_after_seconds, 10)
-        : undefined;
-    }
-    return undefined;
-  }
+export function isUnderlayHttpError(err: unknown): err is UnderlayHttpError {
+  return err instanceof UnderlayHttpError;
 }
 
-export type ApiResult<T> = T | ApiError;
+export function getErrorCode(err: unknown): string | null {
+  if (!isUnderlayHttpError(err)) return null;
+  return err.envelope?.error.code ?? null;
+}
+
+export function getFieldErrors(err: unknown): Record<string, string> | null {
+  if (!isUnderlayHttpError(err)) return null;
+  return err.envelope?.error.fieldErrors ?? null;
+}
+
+export function getErrorEnvelope(err: unknown): ErrorEnvelope | null {
+  if (!isUnderlayHttpError(err)) return null;
+  return err.envelope ?? null;
+}

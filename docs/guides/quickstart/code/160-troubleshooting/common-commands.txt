@@ -1,0 +1,27 @@
+Common checks:
+
+- Verify DB env
+  echo $DATABASE_URL
+
+- Verify migrations directory
+  ls apps/nursery/crates/db/migrations
+
+- Check backend health
+  curl -i http://127.0.0.1:3000/health
+
+- Check metrics
+  curl -i http://127.0.0.1:3000/metrics
+
+- Inspect error code header
+  curl -i http://127.0.0.1:3000/v1/users/not-a-uuid
+
+- Run Rust checks
+  cd apps/nursery
+  cargo fmt --all
+  cargo clippy --all-targets --all-features -- -D warnings
+  cargo test
+
+- Run TS checks
+  pnpm install:all
+  pnpm check:all
+  pnpm test

@@ -1,18 +1,14 @@
-export interface Artist {
-  id: string;
+import type { ListResponse, SingleResponse } from "@decodelabs/underlay";
+
+export interface ArtistDto {
+  artistId: string;
   email: string;
   displayName: string;
   createdAt: string;
 }
 
-export interface ArtistListResponse {
-  data: Artist[];
-  pagination?: {
-    limit: number;
-    offset: number;
-    total: number;
-  };
-}
+export type ArtistListResponse = ListResponse<ArtistDto>;
+export type ArtistSingleResponse = SingleResponse<ArtistDto>;
 
 export interface CreateArtistRequest {
   email: string;

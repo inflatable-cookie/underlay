@@ -283,7 +283,11 @@ where
             .into());
         }
 
-        let user = match self.repository.find_user_by_email(email).await? {
+        let user = match self
+            .repository
+            .find_user_by_email(&normalized_email)
+            .await?
+        {
             Some(u) => u,
             None => return Err(PasswordAuthError::CredentialNotFound),
         };
@@ -840,5 +844,115 @@ mod tests {
 
         let err = service.set_password(user.id, "password123").await.unwrap_err();
         assert!(matches!(err, PasswordAuthError::PasswordCompromised));
+    }
+
+    #[tokio::test]
+    async fn change_password_rejects_wrong_current_password() {
+        let user = make_user("e@example.com");
+        let repo = Arc::new(MemoryRepo::new(10));
+        repo.insert_user(user.clone()).await;
+
+        let hasher = Arc::new(Argon2Hasher::new());
+        let verifier = hasher.clone();
+
+        let service = PasswordAuthService::new(repo.clone(), hasher, verifier, None);
+
+        service.set_password(user.id, "CorrectHorse1!").await.unwrap();
+
+        let err = service
+            .change_password(user.id, "WrongPassword1!", "NewPassword2#")
+            .await
+            .unwrap_err();
+
+        assert!(matches!(err, PasswordAuthError::WrongPassword));
+    }
+
+    #[tokio::test]
+    async fn change_password_rejects_same_password() {
+        let user = make_user("f@example.com");
+        let repo = Arc::new(MemoryRepo::new(10));
+        repo.insert_user(user.clone()).await;
+
+        let hasher = Arc::new(Argon2Hasher::new());
+        let verifier = hasher.clone();
+
+        let service = PasswordAuthService::new(repo.clone(), hasher, verifier, None);
+
+        service.set_password(user.id, "CorrectHorse1!").await.unwrap();
+
+        let err = service
+            .change_password(user.id, "CorrectHorse1!", "CorrectHorse1!")
+            .await
+            .unwrap_err();
+
+        assert!(matches!(err, PasswordAuthError::PasswordSameAsCurrent));
+    }
+
+    #[tokio::test]
+    async fn change_password_updates_hash_and_allows_login() {
+        let user = make_user("g@example.com");
+        let repo = Arc::new(MemoryRepo::new(10));
+        repo.insert_user(user.clone()).await;
+
+        let hasher = Arc::new(Argon2Hasher::new());
+        let verifier = hasher.clone();
+
+        let service = PasswordAuthService::new(repo.clone(), hasher, verifier, None);
+
+        service.set_password(user.id, "CorrectHorse1!").await.unwrap();
+
+        service
+            .change_password(user.id, "CorrectHorse1!", "NewPassword2#")
+            .await
+            .unwrap();
+
+        assert!(service.verify_login(&user.email, "NewPassword2#").await.is_ok());
+        assert!(service
+            .verify_login(&user.email, "CorrectHorse1!")
+            .await
+            .is_err());
+    }
+
+    #[tokio::test]
+    async fn reset_password_updates_hash_and_allows_login() {
+        let user = make_user("h@example.com");
+        let repo = Arc::new(MemoryRepo::new(10));
+        repo.insert_user(user.clone()).await;
+
+        let hasher = Arc::new(Argon2Hasher::new());
+        let verifier = hasher.clone();
+
+        let service = PasswordAuthService::new(repo.clone(), hasher, verifier, None);
+
+        service.set_password(user.id, "CorrectHorse1!").await.unwrap();
+
+        service.reset_password(user.id, "ResetPassword2#").await.unwrap();
+
+        assert!(service
+            .verify_login(&user.email, "ResetPassword2#")
+            .await
+            .is_ok());
+    }
+
+    #[tokio::test]
+    async fn verify_login_normalizes_email_for_lookup() {
+        let user = make_user("i@example.com");
+        let repo = Arc::new(MemoryRepo::new(10));
+        repo.insert_user(user.clone()).await;
+
+        let hasher = Arc::new(Argon2Hasher::new());
+        let verifier = hasher.clone();
+
+        let service = PasswordAuthService::new(repo.clone(), hasher, verifier, None);
+
+        service.set_password(user.id, "S0mething$trong!").await.unwrap();
+
+        let logged_in = service
+            .verify_login("  I@EXAMPLE.COM  ", "S0mething$trong!")
+            .await
+            .unwrap();
+
+        assert_eq!(logged_in.id, user.id);
+        assert_eq!(logged_in.email, "i@example.com");
     }
 }

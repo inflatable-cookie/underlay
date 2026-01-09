@@ -28,7 +28,7 @@ This document covers common issues and their solutions.
 | 401 error | No auth token | Implement login flow |
 | 404 error | Wrong route | Check API endpoints |
 
-See full troubleshooting guide in `/code/160-troubleshooting/`
+See `docs/guides/quickstart/code/160-troubleshooting/common-commands.txt` for a quick command checklist.
 
 ## Next Steps
 

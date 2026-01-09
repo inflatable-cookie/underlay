@@ -1,5 +1,7 @@
 <script lang="ts">
-  import '@decodelabs/underlay/styles.css';
+  import "@decodelabs/underlay/styles/base.css";
+  import "@decodelabs/underlay/styles/tokens.css";
+
   let { children } = $props();
 </script>
 

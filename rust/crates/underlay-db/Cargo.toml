@@ -10,3 +10,6 @@ underlay-core = { path = "../underlay-core" }
 
 [dev-dependencies]
 tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
+# Integration tests (run with Colima/Docker)
+testcontainers = "0.15"
+testcontainers-modules = { version = "0.3", features = ["postgres"] }

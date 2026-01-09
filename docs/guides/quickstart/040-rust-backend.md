@@ -641,9 +641,11 @@ impl UnderlayJwtAuthProvider {
 #[async_trait]
 impl UnderlayAuthProvider for UnderlayJwtAuthProvider {
     async fn authenticate_bearer(&self, bearer_token: &str) -> AuthResult<Principal> {
-        // Validate JWT token and extract claims
-        // Implementation depends on your JWT library
-        todo!("Implement JWT validation")
+        // Validate JWT token and extract claims.
+        //
+        // Note: Underlay does not ship a JWT implementation; wire your own library here.
+        // Until implemented, reject all tokens so production config can't be accidentally “half-enabled”.
+        Err(underlay_auth::AuthError::InvalidToken)
     }
 }
 ```

@@ -4,15 +4,15 @@ This document covers setting up the database layer using SQLx, including connect
 
 ## Database Crate Structure
 
+Keep migrations in a standard `migrations/` folder at the crate root (this matches `sqlx migrate` conventions):
+
 ```
 apps/nursery/crates/db/
 ├── Cargo.toml
+├── migrations/
+│   └── 20250101000000_init.sql
 └── src/
-    ├── lib.rs              # Public exports, pool creation
-    └── migrations/         # SQL migration files
-        ├── 000_init.sql
-        ├── 001_add_users.sql
-        └── ...
+    └── lib.rs
 ```
 
 ## Step 1: Create Database Crate
@@ -27,8 +27,6 @@ edition.workspace = true
 
 [dependencies]
 sqlx = { workspace = true }
-underlay-db = { path = "../../../libs/underlay/rust/crates/underlay-db" }
-underlay-core = { path = "../../../libs/underlay/rust/crates/underlay-core" }
 tokio = { workspace = true }
 ```
 
@@ -39,8 +37,6 @@ Create `apps/nursery/crates/db/src/lib.rs`:
 
 pub use sqlx::PgPool;
 
-use underlay_db::Migrations;
-
 /// Create a PostgreSQL connection pool.
 pub async fn create_pool(database_url: &str) -> Result<PgPool, sqlx::Error> {
     sqlx::postgres::PgPoolOptions::new()
@@ -49,60 +45,42 @@ pub async fn create_pool(database_url: &str) -> Result<PgPool, sqlx::Error> {
         .await
 }
 
-/// Run database migrations.
+/// Run embedded database migrations.
 ///
-/// Migrations are stored in the `migrations/` directory.
+/// This uses SQLx's compile-time migration embedding.
 pub async fn run_migrations(pool: &PgPool) -> Result<(), sqlx::migrate::MigrateError> {
-    // Run migrations from the compiled binary's embedded migrations
-    sqlx::migrate!("migrations").run(pool).await
+    sqlx::migrate!("./migrations").run(pool).await
 }
 
-/// Run migrations from a specific directory.
+/// Runtime migration runner (optional).
 ///
-/// Use this when migrations are not embedded in the binary.
-pub async fn run_migrations_from(
+/// Use this if you want the migration path to be configurable.
+/// Note: this is not the `sqlx::migrate!` macro.
+pub async fn run_migrations_from_path(
     pool: &PgPool,
-    migrations_path: &str,
+    migrations_path: &std::path::Path,
 ) -> Result<(), sqlx::migrate::MigrateError> {
-    sqlx::migrate!(migrations_path).run(pool).await
-}
-
-/// Transaction helper for atomic operations.
-#[macro_export]
-macro_rules! transaction {
-    ($pool:expr, |$tx:ident| $body:expr) => {{
-        let mut tx = $pool.begin().await?;
-        match $body {
-            Ok(result) => {
-                tx.commit().await?;
-                Ok(result)
-            }
-            Err(e) => {
-                tx.rollback().await?;
-                Err(e)
-            }
-        }
-    }};
+    let migrator = sqlx::migrate::Migrator::new(migrations_path).await?;
+    migrator.run(pool).await
 }
 ```
 
 ## Step 2: Create Initial Migration
 
-Create the migrations directory and first migration:
+From `apps/nursery/crates/db`:
 
 ```bash
-mkdir -p apps/nursery/crates/db/src/migrations
-cd apps/nursery/crates/db
+mkdir -p migrations
 sqlx migrate add init
 ```
 
-Edit `apps/nursery/crates/db/src/migrations/000_init.sql`:
+Edit the generated migration file (SQLx will name it with a timestamp). Example `migrations/20250101000000_init.sql`:
 
 ```sql
--- Initial database schema
--- This follows Underlay auth database patterns
+-- Initial database schema (example)
 
--- === Enums ===
+-- Required for gen_random_uuid()
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 CREATE TYPE user_status AS ENUM (
     'active',
@@ -110,26 +88,27 @@ CREATE TYPE user_status AS ENUM (
     'deleted'
 );
 
--- === Tables ===
-
 CREATE TABLE users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     email VARCHAR(255) NOT NULL UNIQUE,
     display_name VARCHAR(255) NOT NULL,
     status user_status NOT NULL DEFAULT 'active',
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
 );
+
+CREATE INDEX idx_users_deleted_at ON users(deleted_at) WHERE deleted_at IS NOT NULL;
 
 CREATE TABLE sessions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     access_token_fingerprint VARCHAR(64) NOT NULL,
     refresh_token_fingerprint VARCHAR(64) NOT NULL,
-    access_token_expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
-    refresh_token_expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
-    last_used_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    access_token_expires_at TIMESTAMPTZ NOT NULL,
+    refresh_token_expires_at TIMESTAMPTZ NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    last_used_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     ip_address INET,
     user_agent TEXT,
     status VARCHAR(20) NOT NULL DEFAULT 'active'
@@ -148,19 +127,11 @@ CREATE TABLE audit_log (
     user_agent TEXT,
     success BOOLEAN NOT NULL,
     details JSONB,
-    occurred_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+    occurred_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE INDEX idx_audit_log_user_id ON audit_log(user_id);
 CREATE INDEX idx_audit_log_occurred_at ON audit_log(occurred_at);
-
--- === Soft Delete Support ===
-
-ALTER TABLE users ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP WITH TIME ZONE;
-
-CREATE INDEX idx_users_deleted_at ON users(deleted_at) WHERE deleted_at IS NOT NULL;
-
--- === Updated At Trigger ===
 
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
@@ -176,213 +147,93 @@ CREATE TRIGGER update_users_updated_at
     EXECUTE FUNCTION update_updated_at_column();
 ```
 
-## Step 3: Create Additional Migrations
+## Step 3: Using DB in the API
 
-Create `apps/nursery/crates/db/src/migrations/001_add_artists.sql`:
-
-```sql
--- Add artist-specific tables
-
-CREATE TABLE artists (
-    id UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
-    bio TEXT,
-    website_url VARCHAR(500),
-    social_links JSONB DEFAULT '{}',
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
-);
-```
-
-## Step 4: Database Pool in Application
-
-Update `apps/nursery/crates/api/src/main.rs` to include database setup:
+In `apps/nursery/crates/api/src/main.rs`:
 
 ```rust
 use myapp_db::{create_pool, run_migrations};
-use myapp_infra::tracing::init_tracing;
 
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
-    // Initialize tracing
-    init_tracing();
-
-    // Load configuration
     dotenvy::dotenv().ok();
+
     let database_url = std::env::var("DATABASE_URL")?;
-
-    // Create database pool
     let pool = create_pool(&database_url).await?;
-
-    // Run migrations
     run_migrations(&pool).await?;
-    tracing::info!("Database migrations completed");
 
-    // Create application state
-    let state = AppState { pool };
-
-    // Build and start the router
-    // ... rest of main.rs
+    // build state + router...
     Ok(())
 }
 ```
 
-## Step 5: Repository Pattern
+## Step 4: Environment
 
-Create `apps/nursery/crates/core/src/repositories.rs`:
-
-```rust
-//! Repository trait definitions for data access.
-//!
-//! Following Underlay patterns, define repository traits that
-//! implementations will fulfill.
-
-use async_trait::async_trait;
-use underlay_core::Uuid;
-
-use crate::{Artist, ArtistId};
-
-/// Result type for repository operations.
-pub type RepoResult<T> = Result<T, RepoError>;
-
-/// Repository errors.
-#[derive(Debug, thiserror::Error)]
-pub enum RepoError {
-    #[error("Not found")]
-    NotFound,
-
-    #[error("Conflict: {0}")]
-    Conflict(String),
-
-    #[error("Database error: {0}")]
-    Database(#[from] sqlx::Error),
-}
-
-/// Repository trait for artist operations.
-#[async_trait]
-pub trait ArtistRepository: Send + Sync {
-    /// Find an artist by ID.
-    async fn find_by_id(&self, id: ArtistId) -> RepoResult<Option<Artist>>;
-
-    /// Find an artist by user ID.
-    async fn find_by_user_id(&self, user_id: Uuid) -> RepoResult<Option<Artist>>;
-
-    /// Create a new artist.
-    async fn create(&self, artist: &Artist) -> RepoResult<Artist>;
-
-    /// Update an artist.
-    async fn update(&self, artist: &Artist) -> RepoResult<Artist>;
-
-    /// Delete an artist (soft delete).
-    async fn delete(&self, id: ArtistId) -> RepoResult<()>;
-}
-
-/// In-memory implementation for testing.
-#[derive(Debug, Default)]
-pub struct InMemoryArtistRepository {
-    artists: std::sync::Mutex<std::collections::HashMap<ArtistId, Artist>>,
-}
-
-#[async_trait]
-impl ArtistRepository for InMemoryArtistRepository {
-    async fn find_by_id(&self, id: ArtistId) -> RepoResult<Option<Artist>> {
-        Ok(self.artists.lock().unwrap().get(&id).cloned())
-    }
-
-    async fn find_by_user_id(&self, _user_id: Uuid) -> RepoResult<Option<Artist>> {
-        // Implementation for in-memory lookup
-        Ok(None)
-    }
-
-    async fn create(&self, artist: &Artist) -> RepoResult<Artist> {
-        let mut artists = self.artists.lock().unwrap();
-        artists.insert(artist.id, artist.clone());
-        Ok(artist.clone())
-    }
-
-    async fn update(&self, artist: &Artist) -> RepoResult<Artist> {
-        let mut artists = self.artists.lock().unwrap();
-        artists.insert(artist.id, artist.clone());
-        Ok(artist.clone())
-    }
-
-    async fn delete(&self, _id: ArtistId) -> RepoResult<()> {
-        Ok(())
-    }
-}
-```
-
-## Step 6: Database Configuration
-
-Create `apps/nursery/.env`:
+In `apps/nursery/.env`:
 
 ```bash
-# Database
-DATABASE_URL=postgres://myapp_user:password@localhost:5432/myapp_db
-
-# For migrations via sqlx-cli
 DATABASE_URL=postgres://myapp_user:password@localhost:5432/myapp_db
 ```
 
 ## Migration Commands
 
-```bash
-# Create a new migration
-cd apps/nursery/crates/db
-sqlx migrate add migration_name
+From `apps/nursery/crates/db`:
 
-# Run migrations locally
+```bash
+# Create DB
 sqlx database create
+
+# Run migrations
 sqlx migrate run
+
+# Check status
+sqlx migrate info
 
 # Revert last migration
 sqlx migrate revert
-
-# Check migration status
-sqlx migrate info
 ```
 
-## Testing with Test Database
+## Testing with a Test Database (Optional)
 
-Create `apps/nursery/crates/db/src/test.rs`:
+If you want per-test databases, avoid string-splitting URLs incorrectly. The simplest safe approach is:
+
+- Read `DATABASE_URL`
+- Replace only the database name component
+
+Example helper (simplified):
 
 ```rust
-//! Test utilities for database operations.
-
 use sqlx::{Executor, PgPool};
 
-/// Create a test database with a unique name.
-pub async fn create_test_db() -> Result<PgPool, sqlx::Error> {
-    let test_db_name = format!("test_{}", uuid::Uuid::new_v4().to_string().replace('-', "_"));
-
-    // Connect to default database to create test DB
+pub async fn create_test_db() -> Result<(PgPool, String), sqlx::Error> {
     let default_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-    let base_url = default_url.rsplit('/').next().unwrap();
-    let creator_url = format!("{}/postgres", base_url);
 
-    let pool = sqlx::PgPool::connect(&creator_url).await?;
+    let (base, _db_name) = default_url
+        .rsplit_once('/')
+        .expect("DATABASE_URL must include a database name");
 
-    // Create test database
-    pool.execute(&format!(r#"CREATE DATABASE "{}""#, test_db_name))
+    let test_db_name = format!(
+        "test_{}",
+        uuid::Uuid::new_v4().to_string().replace('-', "_")
+    );
+
+    let admin_url = format!("{}/postgres", base);
+    let admin_pool = PgPool::connect(&admin_url).await?;
+
+    admin_pool
+        .execute(format!(r#"CREATE DATABASE \"{}\""#, test_db_name).as_str())
         .await?;
 
-    // Connect to the new test database
-    let test_url = format!("{}/{}", base_url, test_db_name);
-    let test_pool = sqlx::PgPool::connect(&test_url).await?;
+    let test_url = format!("{}/{}", base, test_db_name);
+    let test_pool = PgPool::connect(&test_url).await?;
 
-    // Run migrations
-    sqlx::migrate!("migrations").run(&test_pool).await?;
+    // Run embedded migrations
+    sqlx::migrate!("./migrations").run(&test_pool).await?;
 
-    Ok(test_pool)
-}
-
-/// Clean up test database.
-pub async fn drop_test_db(pool: &PgPool, db_name: &str) {
-    let _ = sqlx::query(&format!(r#"DROP DATABASE "{}" WITH (FORCE)"#, db_name))
-        .execute(pool)
-        .await;
+    Ok((test_pool, test_db_name))
 }
 ```
 
 ## Next Step
 
-With the database layer configured, proceed to [060-authentication](./060-authentication.md) to implement the authentication system.
+Proceed to [060-authentication](./060-authentication.md).
