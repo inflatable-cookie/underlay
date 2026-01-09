@@ -1,5 +1,7 @@
 # Underlay
 
+![Rust CI](https://github.com/decodelabs/underlay/actions/workflows/rust.yml/badge.svg)
+
 Underlay is a reusable foundation for building full-stack apps with the same architecture patterns as Acowtancy:
 
 - Rust API + domain crates
@@ -21,8 +23,25 @@ Start reading: `docs/architecture/000-overview.md`.
 ## Development
 
 - Install JS deps: `pnpm install`
-- Rust: `cargo test`
+- Rust: `cargo test --workspace`
 - TS/Svelte: `pnpm check`
+
+### Postgres Integration Tests (Colima)
+
+Some `underlay-db` tests spin up a Postgres container via `testcontainers`.
+
+- Install runtime + CLI:
+  - `brew install colima docker`
+  - `colima start`
+  - verify: `docker ps`
+
+Run the integration tests:
+- `cargo test -p underlay-db --test postgres_integration -- --ignored`
+
+### Coverage
+
+- Install tarpaulin: `cargo install cargo-tarpaulin`
+- Run check: `rust/scripts/check-coverage.sh`
 
 ## Status
 

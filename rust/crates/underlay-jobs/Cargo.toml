@@ -12,4 +12,4 @@ tokio = { workspace = true, features = ["time"] }
 underlay-core = { path = "../underlay-core" }
 
 [dev-dependencies]
-tokio = { workspace = true, features = ["macros", "rt"] }
+tokio = { workspace = true, features = ["macros", "rt", "time", "test-util"] }

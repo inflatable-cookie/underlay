@@ -246,11 +246,67 @@ mod tests {
     #[test]
     fn job_runner_debug_format() {
         let registry = JobRegistry::new();
-        let runner = JobRunner::new(
-            std::sync::Arc::new(MemStore::default()),
-            registry
-        );
+        let runner = JobRunner::new(std::sync::Arc::new(MemStore::default()), registry);
         let debug_str = format!("{:?}", runner);
         assert!(debug_str.contains("JobRunner"));
+    }
+
+    #[tokio::test(start_paused = true)]
+    async fn run_forever_sleeps_when_no_work() {
+        use std::sync::atomic::{AtomicUsize, Ordering};
+
+        #[derive(Debug, Default)]
+        struct CountingStore {
+            fetches: AtomicUsize,
+        }
+
+        #[async_trait]
+        impl JobStore for Arc<CountingStore> {
+            type Error = MemError;
+
+            async fn fetch_next(&self, _allowed_types: &[String]) -> Result<Option<Job>, Self::Error> {
+                self.fetches.fetch_add(1, Ordering::SeqCst);
+                Ok(None)
+            }
+
+            async fn mark_success(&self, _job_id: JobId) -> Result<(), Self::Error> {
+                Ok(())
+            }
+
+            async fn mark_failure(
+                &self,
+                _job_id: JobId,
+                _error: JobHandlerError,
+            ) -> Result<(), Self::Error> {
+                Ok(())
+            }
+        }
+
+        let store = Arc::new(CountingStore::default());
+        let registry = JobRegistry::new();
+
+        let runner = JobRunner::new(store.clone(), registry).with_config(JobRunnerConfig {
+            poll_interval: std::time::Duration::from_secs(10),
+        });
+
+        let handle = tokio::spawn(async move {
+            let _ = runner.run_forever().await;
+        });
+
+        // Allow initial run_once to happen.
+        tokio::task::yield_now().await;
+        let initial = store.fetches.load(Ordering::SeqCst);
+        assert!(initial >= 1);
+
+        // No additional work should happen until we advance time.
+        tokio::task::yield_now().await;
+        assert_eq!(store.fetches.load(Ordering::SeqCst), initial);
+
+        tokio::time::advance(std::time::Duration::from_secs(10)).await;
+        tokio::task::yield_now().await;
+
+        assert!(store.fetches.load(Ordering::SeqCst) >= initial + 1);
+
+        handle.abort();
     }
 }
