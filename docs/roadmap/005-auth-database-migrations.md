@@ -4,7 +4,7 @@ Create SQL migrations for the auth system. Each migration is a numbered SQL file
 
 ## Migration Checklist
 
-- [ ] Create `YYYYMMDDHHMMSS__create_auth_tables.sql`
+- [x] Create `YYYYMMDDHHMMSS__create_auth_tables.sql`
   - `auth_users` table
   - `auth_credentials` table
   - `auth_sessions` table
@@ -12,14 +12,17 @@ Create SQL migrations for the auth system. Each migration is a numbered SQL file
   - `auth_rate_limits` table
   - Indexes for performance
   - `updated_at` trigger function
+  - **Location:** `rust/crates/underlay-auth/sql/001__create_auth_tables.sql`
 
-- [ ] Create `YYYYMMDDHHMMSS__create_auth_backup_codes.sql`
+- [x] Create `YYYYMMDDHHMMSS__create_auth_backup_codes.sql`
   - `auth_backup_codes` table
   - Indexes
+  - **Location:** `rust/crates/underlay-auth/sql/002__create_auth_backup_codes.sql`
 
-- [ ] Create `YYYYMMDDHHMMSS__create_auth_oauth_connections.sql`
+- [x] Create `YYYYMMDDHHMMSS__create_auth_oauth_connections.sql`
   - `auth_oauth_connections` table
   - Indexes
+  - **Location:** `rust/crates/underlay-auth/sql/003__create_auth_oauth_connections.sql`
 
 - [ ] Create `YYYYMMDDHHMMSS__seed_test_data.sql` (optional, for dev)
   - Test user with password credential

@@ -5,14 +5,16 @@ edition.workspace = true
 license.workspace = true
 
 [dependencies]
-serde = { workspace = true, features = ["derive"] }
-serde_json = { workspace = true }
-thiserror = "2"
-url = "2"
-base64urlsafedata = "0.5.4"
-webauthn-rs = "0.5.4"
-underlay-auth = { path = "../underlay-auth" }
-underlay-core = { path = "../underlay-core" }
+ serde = { workspace = true, features = ["derive"] }
+ serde_json = { workspace = true }
+ thiserror = "2"
+ url = "2"
+ base64urlsafedata = "0.5.4"
+ tracing = { workspace = true }
+ webauthn-rs = "0.5.4"
+ underlay-auth = { path = "../underlay-auth" }
+ underlay-core = { path = "../underlay-core" }
+
 
 [features]
 # `webauthn-rs` treats state serialisation as dangerous; we keep it opt-in.

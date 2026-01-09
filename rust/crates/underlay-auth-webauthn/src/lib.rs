@@ -241,7 +241,10 @@ impl WebAuthnService {
                 display_name,
                 exclude_credential_ids,
             )
-            .map_err(|_| WebAuthnError::RegistrationFailed.into())
+            .map_err(|err| {
+                tracing::warn!(error = ?err, "webauthn start passkey registration failed");
+                WebAuthnError::RegistrationFailed.into()
+            })
     }
 
     pub fn credential_id_from_passkey(passkey: &Passkey) -> CredentialId {
@@ -255,7 +258,10 @@ impl WebAuthnService {
     ) -> AuthResult<Passkey> {
         self.inner
             .finish_passkey_registration(response, state)
-            .map_err(|_| WebAuthnError::RegistrationFailed.into())
+            .map_err(|err| {
+                tracing::warn!(error = ?err, "webauthn finish passkey registration failed");
+                WebAuthnError::RegistrationFailed.into()
+            })
     }
 
     pub fn start_passkey_authentication(
@@ -264,7 +270,10 @@ impl WebAuthnService {
     ) -> AuthResult<(RequestChallengeResponse, PasskeyAuthentication)> {
         self.inner
             .start_passkey_authentication(allowed_credentials.as_slice())
-            .map_err(|_| WebAuthnError::AuthenticationFailed.into())
+            .map_err(|err| {
+                tracing::warn!(error = ?err, "webauthn start passkey authentication failed");
+                WebAuthnError::AuthenticationFailed.into()
+            })
     }
 
     pub fn finish_passkey_authentication(

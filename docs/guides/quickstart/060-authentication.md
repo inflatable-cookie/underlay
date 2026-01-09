@@ -147,6 +147,15 @@ mod underlay;
 
 pub use principal::{UserId, UserPrincipal, UserRole};
 
+// Session types
+#[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
+pub struct AuthSession {
+    pub user_id: UserId,
+    pub session_id: underlay_core::Uuid,
+    pub access_token: String,
+    pub refresh_token: String,
+}
+
 // Re-export Underlay boundary types (optional convenience)
 pub use underlay_auth::{AuthError, AuthProvider};
 
@@ -176,6 +185,7 @@ use myapp_auth::{AuthProvider, user_principal_from_underlay};
 #[derive(Clone)]
 pub struct AppState {
     pub auth_provider: Arc<dyn AuthProvider>,
+    pub auth_state: underlay_auth_state::AuthStateStore,
     pub pool: myapp_db::PgPool,
 }
 
@@ -186,7 +196,68 @@ impl underlay_auth::HasAuthProvider for AppState {
 }
 ```
 
-### Step 2: Auth Provider Selection
+### Step 2: Auth Service (Login & Session)
+
+Create `apps/nursery/crates/auth/src/service.rs` to handle login logic and token issuance:
+
+```rust
+use std::sync::Arc;
+use underlay_auth::{AuthError, AuthResult};
+use underlay_auth_jwt::JwtService;
+use farmyard_core::Uuid; // or underlay_core::Uuid
+
+use crate::{AuthSession, UserId};
+// Import your PasswordAuth, TotpAuthService etc.
+
+pub struct MyAppAuthService {
+    jwt: JwtService,
+    // Add other services/repos here
+    // password: Arc<PasswordAuth>,
+    // pool: sqlx::PgPool,
+}
+
+impl MyAppAuthService {
+    pub fn new(jwt: JwtService) -> Self {
+        Self { jwt }
+    }
+
+    pub async fn create_session(&self, user_id: Uuid, roles: Vec<String>) -> AuthResult<AuthSession> {
+        let session_id = Uuid::new_v7();
+
+        // Issue access token (short lived)
+        let (access_token, _) = self.jwt
+            .issue_access_token(user_id, session_id, roles.clone())
+            .map_err(AuthError::from)?;
+
+        // Issue refresh token (long lived)
+        let (refresh_token, _) = self.jwt
+            .issue_refresh_token(user_id, session_id, None, 1) // version 1
+            .map_err(AuthError::from)?;
+
+        // In a real app, you MUST persist the session in DB here using `sessions` table
+        // (see 050-database.md for schema).
+        // See `underlay-auth` docs for implementing session validation.
+
+        Ok(AuthSession {
+            user_id: UserId(user_id),
+            session_id,
+            access_token,
+            refresh_token,
+        })
+    }
+
+    // Example login combining Password + Session
+    /*
+    pub async fn login(&self, email: &str, password: &str) -> AuthResult<AuthSession> {
+        let user = self.password.verify_login(email, password).await?;
+        let roles = vec!["user".to_string()]; // fetch roles from DB
+        self.create_session(user.id, roles).await
+    }
+    */
+}
+```
+
+### Step 3: Auth Provider Selection
 
 ```rust
 use myapp_auth::{DevBearerUuidAuthProvider, JwtAuthProvider};
@@ -205,15 +276,19 @@ fn create_auth_provider() -> Arc<dyn underlay_auth::AuthProvider> {
         }
         None => {
             tracing::error!(
+            None => {
+            tracing::error!(
                 "Auth not configured. Set AUTH_JWT_* env vars or NURSERY_DEV_AUTH=true"
             );
+            // In a real app, you might want to panic or exit, but for dev we might allow continuing
+            // if we are not handling any requests yet.
             std::process::exit(1);
         }
     }
 }
 ```
 
-### Step 3: Protected Routes
+### Step 4: Protected Routes
 
 ```rust
 use axum::{
@@ -248,19 +323,22 @@ Underlay provides `underlay-auth-totp` for Time-based One-Time Password support.
 # apps/nursery/crates/auth/Cargo.toml
 [dependencies]
 underlay-auth-totp = { path = "../../../../../rust/crates/underlay-auth-totp" }
+underlay-auth-state = { path = "../../../../../rust/crates/underlay-auth-state" }
 ```
 
 ### TOTP Service Setup
 
 ```rust
-use underlay_auth_totp::{TotpService, TotpConfig};
+use underlay_auth_totp::{TotpSetup, TotpError};
+use underlay_auth_state::AuthStateStore; // Add this
 
 pub struct TotpAuthService {
     totp: TotpService,
+    state: AuthStateStore, // Add this
 }
 
 impl TotpAuthService {
-    pub fn new() -> Self {
+    pub fn new(state: AuthStateStore) -> Self { // Update constructor
         let config = TotpConfig {
             issuer: "MyApp".to_string(),
             digits: 6,
@@ -270,6 +348,7 @@ impl TotpAuthService {
         };
         Self {
             totp: TotpService::new(Some(config)),
+            state,
         }
     }
 }
@@ -391,20 +470,23 @@ underlay-auth-webauthn = { path = "../../../../../rust/crates/underlay-auth-weba
 
 ```rust
 use underlay_auth_webauthn::{WebAuthnService, WebAuthnConfig};
+use underlay_auth_state::AuthStateStore;
+use chrono::Duration;
 
 pub struct WebAuthnAuthService {
     webauthn: WebAuthnService,
+    state: AuthStateStore,
 }
 
 impl WebAuthnAuthService {
-    pub fn new(rp_id: &str, rp_origin: &str, rp_name: &str) -> AuthResult<Self> {
+    pub fn new(rp_id: &str, rp_origin: &str, rp_name: &str, state: AuthStateStore) -> AuthResult<Self> {
         let config = WebAuthnConfig {
             rp_id: rp_id.to_string(),
             rp_origin: rp_origin.to_string(),
             rp_name: rp_name.to_string(),
         };
         let webauthn = WebAuthnService::new(config)?;
-        Ok(Self { webauthn })
+        Ok(Self { webauthn, state })
     }
 }
 ```
@@ -420,51 +502,64 @@ use underlay_auth_webauthn::{
 use underlay_core::Uuid;
 
 impl WebAuthnAuthService {
-    /// Step 1: Start registration - returns challenge for the browser
+    /// Step 1: Start registration
     pub async fn start_registration(
         &self,
         user_id: Uuid,
         user_name: &str,
         display_name: &str,
     ) -> AuthResult<StartPasskeyRegistrationResponse> {
-        self.webauthn
-            .start_passkey_registration_http(
-                StartPasskeyRegistrationRequest {
-                    user_id,
-                    user_name: user_name.to_string(),
-                    display_name: display_name.to_string(),
-                    exclude_credential_ids: None,
-                },
-                |state| {
-                    // Persist PasskeyRegistration state server-side
-                    // Returns state_id for finish step
-                    todo!("Persist state to Redis/database")
-                },
-            )
-            .await
+        let (options, state) = self.webauthn.start_passkey_registration(
+            user_id,
+            user_name,
+            display_name,
+            None, // exclude credentials
+        )?;
+
+        let encoded = WebAuthnService::encode_registration_state(&state)?;
+        
+        let state_id = self.state.create_user(
+            user_id,
+            "passkey_registration",
+            serde_json::Value::String(encoded),
+            Duration::minutes(15),
+        ).await?;
+
+        Ok(StartPasskeyRegistrationResponse {
+            options,
+            state_id: state_id.to_string(),
+        })
     }
 
-    /// Step 2: Finish registration - browser sends credential response
+    /// Step 2: Finish registration
     pub async fn finish_registration(
         &self,
+        user_id: Uuid,
         state_id: &str,
         credential_json: &str,
     ) -> AuthResult<FinishPasskeyRegistrationResponse> {
-        let credential: serde_json::Value = serde_json::from_str(credential_json)
-            .map_err(|_| AuthError::BadRequest("invalid credential format".into()))?;
+        let state_uuid = Uuid::parse_str(state_id).map_err(|_| AuthError::BadRequest("invalid state id".into()))?;
+        
+        let value = self.state
+            .consume_user(user_id, state_uuid, "passkey_registration")
+            .await?
+            .ok_or_else(|| AuthError::BadRequest("invalid or expired registration state".into()))?;
 
-        self.webauthn
-            .finish_passkey_registration_http(
-                FinishPasskeyRegistrationRequest {
-                    state_id: state_id.to_string(),
-                    credential,
-                },
-                |state_id| {
-                    // Load PasskeyRegistration from storage
-                    todo!("Load state from Redis/database")
-                },
-            )
-            .await
+        let encoded = value.as_str().ok_or_else(|| AuthError::Internal("invalid state format".into()))?;
+        let state = WebAuthnService::decode_registration_state(encoded)?;
+
+        // Parse credential JSON
+        let credential = serde_json::from_str(credential_json)
+             .map_err(|_| AuthError::BadRequest("invalid credential format".into()))?;
+
+        // Finish logic (returns passkey)
+        let passkey = self.webauthn.finish_passkey_registration(&state, &credential)?;
+        
+        // In a real app, you would store `passkey` here using your repository
+        // and return the response needed by the frontend.
+        // For this guide, we return a success marker.
+        
+        todo!("Store passkey and return response")
     }
 }
 ```
@@ -478,45 +573,55 @@ use underlay_auth_webauthn::{
 };
 
 impl WebAuthnAuthService {
-    /// Step 1: Start authentication - get challenge for browser
+    /// Step 1: Start authentication
     pub async fn start_authentication(
         &self,
-        allowed_credential_ids: &[String],  // Base64url encoded credential IDs
+        allowed_credential_ids: &[String],
     ) -> AuthResult<StartPasskeyAuthenticationResponse> {
-        self.webauthn
-            .start_passkey_authentication_http(
-                StartPasskeyAuthenticationRequest {
-                    allowed_credentials: allowed_credential_ids.to_vec(),
-                },
-                |state| {
-                    // Persist PasskeyAuthentication state
-                    todo!("Persist state to Redis/database")
-                },
-            )
-            .await
+        // Convert Base64url strings to descriptors/passkeys if needed.
+        // Simplified:
+        let allowed_credentials = vec![]; // Populate from input
+
+        let (options, state) = self.webauthn.start_passkey_authentication(allowed_credentials)?;
+        let encoded = WebAuthnService::encode_authentication_state(&state)?;
+
+        let state_id = self.state.create_public(
+            "passkey_authentication",
+            serde_json::Value::String(encoded),
+            Duration::minutes(5),
+        ).await?;
+
+        Ok(StartPasskeyAuthenticationResponse {
+            options,
+            state_id: state_id.to_string(),
+        })
     }
 
-    /// Step 2: Finish authentication - verify browser response
+    /// Step 2: Finish authentication
     pub async fn finish_authentication(
         &self,
         state_id: &str,
         credential_json: &str,
     ) -> AuthResult<FinishPasskeyAuthenticationResponse> {
-        let credential: serde_json::Value = serde_json::from_str(credential_json)
+        let state_uuid = Uuid::parse_str(state_id).map_err(|_| AuthError::BadRequest("invalid state id".into()))?;
+
+        let value = self.state
+            .consume_public(state_uuid, "passkey_authentication")
+            .await?
+            .ok_or_else(|| AuthError::BadRequest("invalid or expired auth state".into()))?;
+
+        let encoded = value.as_str().ok_or_else(|| AuthError::Internal("invalid state format".into()))?;
+        let state = WebAuthnService::decode_authentication_state(encoded)?;
+
+        let credential = serde_json::from_str(credential_json)
             .map_err(|_| AuthError::BadRequest("invalid credential format".into()))?;
 
-        self.webauthn
-            .finish_passkey_authentication_http(
-                FinishPasskeyAuthenticationRequest {
-                    state_id: state_id.to_string(),
-                    credential,
-                },
-                |state_id| {
-                    // Load PasskeyAuthentication from storage
-                    todo!("Load state from Redis/database")
-                },
-            )
-            .await
+        let result = self.webauthn.finish_passkey_authentication(&credential, &state)?;
+        
+        // In a real app, you would now verify the credential against your DB user
+        // and issue a session.
+        
+        todo!("Verify credential and issue session")
     }
 }
 ```
@@ -737,24 +842,34 @@ pub struct OAuthCallbackQuery {
     state: String,
 }
 
-// In-memory state storage (use Redis/session in production)
-static OAUTH_STATES: tokio::sync::Mutex<std::collections::HashMap<String, OAuthLoginState>> =
-    tokio::sync::Mutex::new(std::collections::HashMap::new());
-
 pub async fn oauth_start(
     State(state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
-    let login = state.oauth.start_login().unwrap();
+    // Generate PKCS wrapper for the exchange
+    let pkce_verifier = underlay_auth_oauth::generate_pkce_verifier();
+    
+    // Create a state ID to track this login attempt
+    let state_id = Uuid::new_v7();
+    let csrf_state = state_id.to_string();
 
-    // Store state for callback validation
     let state_data = OAuthLoginState {
-        csrf_state: login.csrf_state.clone(),
-        pkce_verifier: login.pkce_verifier.clone(),
+        csrf_state: csrf_state.clone(),
+        pkce_verifier,
     };
-    OAUTH_STATES.lock().await.insert(login.csrf_state.clone(), state_data);
 
-    // Redirect user to Google
-    redirect(login.authorization_url)
+    // Store state in DB (valid for 10 minutes)
+    state.auth_state.create_public(
+        "oauth_login",
+        serde_json::to_value(&state_data).unwrap(),
+        chrono::Duration::minutes(10)
+    ).await.expect("Failed to store auth state");
+
+    // Start login with our custom state (UUID)
+    // The UUID acts as the CSRF token passed to Google
+    let url = state.oauth.start_login_with(&csrf_state, &state_data.pkce_verifier)
+        .expect("Failed to start oauth flow");
+
+    redirect(url)
 }
 
 pub async fn oauth_callback(
@@ -762,11 +877,16 @@ pub async fn oauth_callback(
     Query(query): Query<OAuthCallbackQuery>,
 ) -> impl IntoResponse {
     // Load stored state
-    let stored_state = OAUTH_STATES
-        .lock()
-        .await
-        .remove(&query.state)
-        .ok_or_else(|| AuthError::BadRequest("invalid oauth state".into()))?;
+    // We assume query.state is the UUID we sent
+    let state_id = Uuid::parse_str(&query.state).map_err(|_| AuthError::BadRequest("Invalid state".into()))?;
+    
+    let value = state.auth_state
+        .consume_public(state_id, "oauth_login")
+        .await?
+        .ok_or_else(|| AuthError::BadRequest("invalid or expired oauth state".into()))?;
+        
+    let stored_state: OAuthLoginState = serde_json::from_value(value)
+        .map_err(|_| AuthError::Internal("invalid state format".into()))?;
 
     let request = OAuthCallbackRequest {
         code: query.code,

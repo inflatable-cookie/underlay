@@ -6,6 +6,8 @@
   export let value: string = "";
   export let autocomplete: HTMLInputAttributes["autocomplete"] = "off";
 
+  export let inputRef: HTMLInputElement | null = null;
+
   const dispatch = createEventDispatcher<{ input: string; change: string }>();
 
   function handleInput(event: Event) {
@@ -25,6 +27,7 @@
   class={`underlay-input ${$$restProps.class ?? ""}`}
   {type}
   {autocomplete}
+  bind:this={inputRef}
   bind:value
   on:input={handleInput}
   on:change={handleChange}

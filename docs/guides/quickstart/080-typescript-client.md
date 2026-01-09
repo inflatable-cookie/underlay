@@ -29,12 +29,33 @@ libs/stem/
 
 ## Underlay Types and Errors
 
-Underlay exports:
+Underlay exports the following from `@decodelabs/underlay`:
 
-- `createHttpClient` (low-level fetch wrapper)
-- `UnderlayHttpError` (thrown on non-2xx)
-- `ErrorEnvelope` (shape: `{ error: { code, message, fieldErrors? } }`)
-- `SingleResponse<T>`, `ListResponse<T>`
+### Core HTTP Client
+
+- `createHttpClient(options: HttpClientOptions): HttpClient` - Low-level fetch wrapper with automatic token management
+- `HttpClient` - Interface for making HTTP requests
+- `HttpClientOptions` - Configuration for the HTTP client
+- `HttpRequest` - Request shape for custom requests
+
+### Error Handling
+
+- `UnderlayHttpError` - Error class thrown on non-2xx responses
+- `ErrorEnvelope` - Error response shape: `{ error: { code, message, fieldErrors? } }`
+- `isErrorEnvelope(value: unknown): value is ErrorEnvelope` - Type guard for error envelopes
+
+### Response Types
+
+- `SingleResponse<T>` - Single item response: `{ data: T }`
+- `ListResponse<T>` - List response: `{ data: T[] }`
+
+### Token Management
+
+- `TokenStore` - Interface for storing access/refresh tokens
+- `MemoryTokenStore` - In-memory token store implementation
+- `HttpAuthOptions` - Authentication configuration with token refresh support
+- `RefreshContext` - Context provided to token refresh callbacks
+- `RefreshResult` - Result from token refresh operations
 
 ## Step 1: Package Setup
 
@@ -195,10 +216,103 @@ export function createBloomClient(fetchFn: typeof fetch, authToken: string | nul
 }
 ```
 
+## Advanced: Token Refresh
+
+For applications that need automatic token refresh, use `HttpAuthOptions`:
+
+```ts
+import {
+  createHttpClient,
+  type HttpClient,
+  type TokenStore,
+  MemoryTokenStore,
+} from "@decodelabs/underlay";
+
+const tokenStore = new MemoryTokenStore();
+
+const http = createHttpClient({
+  baseUrl: "http://127.0.0.1:3000",
+  auth: {
+    tokenStore,
+    refresh: async (ctx) => {
+      const refreshToken = await ctx.getRefreshToken();
+      if (!refreshToken) {
+        return { retry: false };
+      }
+
+      try {
+        const result = await ctx.rawRequest<SingleResponse<{ accessToken: string; refreshToken: string }>>({
+          method: "POST",
+          path: "/auth/refresh",
+          body: { refreshToken },
+        });
+
+        await ctx.setAccessToken(result.data.accessToken);
+        await ctx.setRefreshToken(result.data.refreshToken);
+
+        return {
+          accessToken: result.data.accessToken,
+          refreshToken: result.data.refreshToken,
+          retry: true,
+        };
+      } catch (err) {
+        // Refresh failed, clear tokens
+        await ctx.setAccessToken(null);
+        await ctx.setRefreshToken(null);
+        return { retry: false };
+      }
+    },
+  },
+});
+```
+
+### Custom Token Storage
+
+Implement `TokenStore` for persistent storage (localStorage, cookies, etc.):
+
+```ts
+import type { TokenStore } from "@decodelabs/underlay";
+
+export class LocalStorageTokenStore implements TokenStore {
+  private keyPrefix = "auth_";
+
+  getAccessToken(): string | null {
+    return localStorage.getItem(`${this.keyPrefix}access_token`);
+  }
+
+  setAccessToken(token: string | null): void {
+    if (token) {
+      localStorage.setItem(`${this.keyPrefix}access_token`, token);
+    } else {
+      localStorage.removeItem(`${this.keyPrefix}access_token`);
+    }
+  }
+
+  getRefreshToken(): string | null {
+    return localStorage.getItem(`${this.keyPrefix}refresh_token`);
+  }
+
+  setRefreshToken(token: string | null): void {
+    if (token) {
+      localStorage.setItem(`${this.keyPrefix}refresh_token`, token);
+    } else {
+      localStorage.removeItem(`${this.keyPrefix}refresh_token`);
+    }
+  }
+
+  clear(): void {
+    localStorage.removeItem(`${this.keyPrefix}access_token`);
+    localStorage.removeItem(`${this.keyPrefix}refresh_token`);
+  }
+}
+```
+
 ## Notes
 
 - This client expects the API to return `ListResponse { data: [...] }` and `SingleResponse { data: ... }`.
 - On non-2xx responses, Underlay throws `UnderlayHttpError`. The error envelope (if present) is available at `err.envelope`.
+- Use `isErrorEnvelope()` to safely check if an unknown value is an error envelope.
+- `TokenStore` implementations can be synchronous or async (returning promises).
 
 ## Next Step
 

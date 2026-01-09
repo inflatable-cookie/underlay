@@ -3,6 +3,7 @@ import {
   type HttpClient,
   UnderlayHttpError,
   type ErrorEnvelope,
+  isErrorEnvelope,
 } from "@decodelabs/underlay";
 
 export interface StemHttpConfig {
@@ -35,4 +36,15 @@ export function getErrorEnvelope(err: unknown): ErrorEnvelope | null {
     return err.envelope ?? null;
   }
   return null;
+}
+
+// Example: Using isErrorEnvelope type guard
+export function handleError(err: unknown): string {
+  if (isErrorEnvelope(err)) {
+    return err.error.message;
+  }
+  if (err instanceof UnderlayHttpError) {
+    return err.message;
+  }
+  return "An unexpected error occurred";
 }
