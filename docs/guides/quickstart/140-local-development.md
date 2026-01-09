@@ -2,6 +2,8 @@
 
 This document covers running and debugging the application locally.
 
+Paths below use monorepo-style logical paths (e.g. `apps/nursery/...`). In multi-repo mode, run the same commands from the relevant repo root.
+
 ## Development Workflow
 
 ### 1. Start Database

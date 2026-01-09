@@ -17,8 +17,14 @@ DATABASE_URL=postgres://user:pass@localhost:5432/myapp
 
 # Auth
 NURSERY_DEV_AUTH=false
+
+# Ed25519 / EdDSA (used by `underlay-auth-jwt`)
+# - AUTH_JWT_PRIVATE_KEY: base64 PKCS#8 DER private key
+# - AUTH_JWT_PUBLIC_KEY: base64url (or base64) raw 32-byte public key
+# Generator: `docs/guides/quickstart/code/060-authentication/generate-jwt-env.rs`
 AUTH_JWT_PRIVATE_KEY=...
 AUTH_JWT_PUBLIC_KEY=...
+
 AUTH_JWT_ISSUER=myapp
 AUTH_JWT_AUDIENCE=myapp-api
 AUTH_ACCESS_TOKEN_LIFETIME_MINUTES=15

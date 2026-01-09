@@ -2,72 +2,66 @@
 
 This document covers the initial project setup, including directory layout, root configuration files, and the essential `AGENTS.md` that guides LLM interactions.
 
-## Directory Layout
+## Modes
+
+This quickstart supports two layouts:
+
+- **Multi-repo workspace (default):** separate git repos checked out side-by-side.
+- **Monorepo:** a single git repo with `apps/*` and `libs/*`.
+
+### Multi-repo workspace layout (default)
+
+A local folder containing multiple git repositories:
+
+```
+myapp-workspace/
+├── underlay/            # Foundation (git repo)
+├── myapp-api/           # Rust API backend (git repo)
+├── myapp-client/        # TypeScript API client (git repo)
+├── myapp-ui/            # UI kit (git repo, optional)
+├── myapp-web/           # SvelteKit frontend (git repo)
+└── myapp-admin/         # SvelteKit admin (git repo)
+```
+
+Notes:
+
+- There is no required “root repo” in this mode.
+- Each repo can have its own `AGENTS.md` and CI.
+
+### Monorepo layout
+
+A single repository containing all apps and libs:
 
 ```
 my-project/
 ├── .github/
-│   └── workflows/
-│       └── ci.yml                 # CI/CD configuration
-├── .gitignore                     # Git ignore rules
-├── README.md                      # Project overview
-├── AGENTS.md                      # LLM interaction guide (CRITICAL)
-│
-├── apps/                          # Application layer
-│   ├── bloom/                     # Artist-facing SvelteKit frontend
-│   │   ├── src/
-│   │   │   ├── routes/            # SvelteKit routes
-│   │   │   ├── lib/               # App-specific code
-│   │   │   └── app.html           # HTML shell
-│   │   ├── package.json
-│   │   ├── svelte.config.js
-│   │   ├── vite.config.ts
-│   │   └── tsconfig.json
-│   │
-│   ├── greenhouse/                # Admin/author SvelteKit frontend
-│   │   ├── src/
-│   │   │   ├── routes/
-│   │   │   └── lib/
-│   │   └── (similar structure to bloom)
-│   │
-│   └── nursery/                   # Rust API backend
-│       ├── Cargo.toml             # Workspace manifest
-│       ├── crates/
-│       │   ├── api/               # HTTP server, handlers
-│       │   ├── core/              # Core domain types
-│       │   ├── auth/              # Authentication boundary
-│       │   ├── db/                # Database utilities (pool, migrations)
-│       │   └── infra/             # Infrastructure (config, tracing)
-│
-├── libs/                          # Shared libraries
-│   ├── petal/                     # Shared Svelte UI kit
-│   │   ├── src/
-│   │   │   ├── components/        # Reusable Svelte components
-│   │   │   ├── patterns/          # UI patterns (forms, lists)
-│   │   │   └── styles/            # Design tokens, CSS
-│   │   └── package.json
-│   │
-│   ├── stem/                      # Shared TypeScript API client
-│   │   ├── src/
-│   │   │   ├── http.ts            # HTTP client base
-│   │   │   ├── commands/          # API command functions
-│   │   │   └── types/             # Shared TypeScript types
-│   │   └── package.json
-│   │
-│   └── underlay/                  # Underlay foundation (sibling or submodule)
-│       ├── rust/
-│       ├── ts/
-│       └── docs/
-│
-└── trellis/                       # Documentation
-    └── docs/
-        ├── architecture/          # Architecture decisions
-        ├── domain/                # Domain modeling docs
-        ├── processes/             # Process documentation
-        └── guides/                # How-to guides
+├── AGENTS.md
+├── apps/
+│   ├── web/
+│   ├── admin/
+│   └── api/
+├── libs/
+│   ├── ui/
+│   ├── client/
+│   └── underlay/
+└── trellis/
 ```
 
-## Step-by-Step Setup
+### Path mapping convention
+
+To keep examples readable, some docs use monorepo-style logical paths like `apps/api/...` and `libs/client/...`.
+
+- In **multi-repo mode**, interpret these as paths *within the corresponding repo*:
+  - `apps/api/...` → `<api-repo>/...`
+  - `apps/web/...` → `<web-repo>/...`
+  - `apps/admin/...` → `<admin-repo>/...`
+  - `libs/client/...` → `<client-repo>/...`
+  - `libs/ui/...` → `<ui-repo>/...`
+  - `libs/underlay/...` → `<underlay-repo>/...`
+
+## Step-by-Step Setup (Monorepo)
+
+If you are using the default **multi-repo** layout, treat this section as guidance to apply per-repo (or create a thin meta-repo just for workspace scripts/CI if you want).
 
 ### 1. Initialize Git Repository
 
@@ -146,14 +140,21 @@ secrets/
 ```markdown
 # Repository Guidelines
 
-This monorepo contains several related projects:
+This project may be set up either as:
 
-- `apps/bloom/` – artist-facing SvelteKit frontend.
-- `apps/greenhouse/` – admin/author SvelteKit frontend.
-- `apps/nursery/` – Rust API backend.
-- `libs/petal/` – shared Svelte UI kit and design system.
-- `libs/stem/` – shared TypeScript API client for Nursery.
+- a **multi-repo workspace** (default), or
+- a **monorepo** (`apps/*` and `libs/*`).
+
+In a monorepo, the main projects live at:
+
+- `apps/web/` – SvelteKit web frontend.
+- `apps/admin/` – SvelteKit admin frontend.
+- `apps/api/` – Rust API backend.
+- `libs/ui/` – shared UI kit and design system.
+- `libs/client/` – shared TypeScript API client.
 - `trellis/` – system, domain, and process documentation.
+
+In a multi-repo workspace, these are separate repos checked out side-by-side; treat the `apps/*` and `libs/*` paths in docs as logical names and map them to the appropriate repo root.
 
 > Root-scope rule for agents:
 > Prefer keeping new code inside `apps/` and `libs/`.
@@ -169,10 +170,18 @@ This monorepo contains several related projects:
 
 ## Build, Test, and Development Commands
 
-- Bloom dev server: `cd apps/bloom && pnpm install && pnpm dev`.
-- Greenhouse dev server: `cd apps/greenhouse && pnpm install && pnpm dev`.
-- Nursery backend: `cd apps/nursery && cargo test` (tests) and `cargo run` (local API).
-- Libraries: `cd libs/stem && pnpm test`, `cd libs/petal && pnpm test`.
+- Bloom dev server:
+  - Monorepo: `cd apps/bloom && pnpm install && pnpm dev`
+  - Multi-repo: `cd myapp-bloom && pnpm install && pnpm dev`
+- Greenhouse dev server:
+  - Monorepo: `cd apps/greenhouse && pnpm install && pnpm dev`
+  - Multi-repo: `cd myapp-greenhouse && pnpm install && pnpm dev`
+- Nursery backend:
+  - Monorepo: `cd apps/nursery && cargo test` and `cargo run -p myapp-api`
+  - Multi-repo: `cd myapp-api && cargo test` and `cargo run -p myapp-api`
+- Libraries:
+  - Monorepo: `cd libs/stem && pnpm test`, `cd libs/petal && pnpm test`
+  - Multi-repo: `cd myapp-stem && pnpm test`, `cd myapp-petal && pnpm test`
 
 When changing Rust code in Nursery, prefer running:
 
@@ -229,7 +238,7 @@ Semantics:
 This protocol applies across sessions for this repository.
 ```
 
-### 4. Create pnpm-workspace.yaml
+### 4. (Monorepo only) Create pnpm-workspace.yaml
 
 Create `pnpm-workspace.yaml` in the project root:
 
@@ -239,7 +248,7 @@ packages:
   - 'libs/*'
 ```
 
-### 5. Create Root package.json
+### 5. (Monorepo only) Create Root package.json
 
 Create `package.json` for workspace-level operations:
 
@@ -248,11 +257,11 @@ Create `package.json` for workspace-level operations:
   "name": "my-project",
   "private": true,
   "version": "0.0.1",
-  "description": "My project following the Songsprout/Acowtancy architecture",
+  "description": "My project following this architecture",
   "scripts": {
-    "install:all": "pnpm install && cd apps/bloom && pnpm install && cd ../greenhouse && pnpm install && cd ../../libs/petal && pnpm install && cd ../stem && pnpm install",
-    "check:all": "cd apps/bloom && pnpm check && cd ../../apps/greenhouse && pnpm check && cd ../../libs/petal && pnpm check && cd ../stem && pnpm check",
-    "test:all": "cd apps/bloom && pnpm test && cd ../../apps/greenhouse && pnpm test && cd ../../libs/petal && pnpm test && cd ../stem && pnpm test"
+    "install:all": "pnpm install",
+    "check:all": "pnpm -r --if-present check",
+    "test:all": "pnpm -r --if-present test"
   },
   "engines": {
     "node": ">=20.0.0",
@@ -261,7 +270,14 @@ Create `package.json` for workspace-level operations:
 }
 ```
 
-### 6. Create Initial GitHub Actions
+### 6. CI (Monorepo vs Multi-repo)
+
+- **Multi-repo (default):** each repo usually has its own `.github/workflows/*`.
+- **Monorepo:** you can run Rust + TS checks from one workflow.
+
+Below is a simple monorepo example.
+
+### 6. (Monorepo example) Create Initial GitHub Actions
 
 Create `.github/workflows/ci.yml`:
 
@@ -316,7 +332,7 @@ Create `README.md`:
 ```markdown
 # My Project
 
-A full-stack application following the Songsprout/Acowtancy architecture.
+A full-stack application following this architecture.
 
 ## Architecture
 
@@ -340,18 +356,27 @@ This project uses a monorepo structure with:
 ### Setup
 
 ```bash
-# Install dependencies
-pnpm install:all
+# Multi-repo (default): run per repo
+cd myapp-web && pnpm install
+cd myapp-admin && pnpm install
+cd myapp-client && pnpm install
 
-# Set up database
-cd apps/nursery/crates/db
+cd myapp-api/crates/db
 sqlx database create
 sqlx migrate run
 
-# Run development servers
-cargo run -p nursery-api  # Backend (port 3000)
-cd apps/bloom && pnpm dev  # Frontend (port 5173)
-cd apps/greenhouse && pnpm dev  # Admin (port 5174)
+cd myapp-api
+cargo run -p myapp-api  # Backend (port 3000)
+
+cd myapp-web && pnpm dev  # Web
+cd myapp-admin && pnpm dev  # Admin
+
+# Monorepo: run from repo root
+pnpm install:all
+cd apps/api/crates/db && sqlx database create && sqlx migrate run
+cd apps/api && cargo run -p myapp-api
+cd apps/web && pnpm dev
+cd apps/admin && pnpm dev
 ```
 
 ## Documentation
@@ -373,14 +398,14 @@ set -e
 PROJECT_ROOT="$(pwd)"
 
 # Create apps directories
-mkdir -p apps/bloom/src/{routes,lib,components,assets}
-mkdir -p apps/greenhouse/src/{routes,lib,components,assets}
-mkdir -p apps/nursery/crates/{api,core,auth,db,infra}/src
-mkdir -p apps/nursery/crates/db/migrations
+mkdir -p apps/web/src/{routes,lib,components,assets}
+mkdir -p apps/admin/src/{routes,lib,components,assets}
+mkdir -p apps/api/crates/{api,core,auth,db,infra}/src
+mkdir -p apps/api/crates/db/migrations
 
 # Create libs directories
-mkdir -p libs/petal/src/{components,patterns,styles,hooks}
-mkdir -p libs/stem/src/{http,commands,types,utils}
+mkdir -p libs/ui/src/{components,patterns,styles,hooks}
+mkdir -p libs/client/src/{http,commands,types,utils}
 
 # Create docs directories
 mkdir -p trellis/docs/{architecture,domain,processes,decisions}

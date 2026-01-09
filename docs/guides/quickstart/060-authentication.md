@@ -10,7 +10,7 @@ The auth crate is organized into three modules following the Underlay pattern:
 apps/nursery/crates/auth/src/
 ├── lib.rs           # Module declarations and exports
 ├── principal.rs     # UserId, UserPrincipal, UserRole types
-├── provider.rs      # AuthError, AuthProvider trait
+├── provider.rs      # JWT provider wrapper (Ed25519 / EdDSA)
 └── underlay.rs      # DevBearerUuidAuthProvider, converters
 ```
 
@@ -46,22 +46,38 @@ pub struct UserPrincipal {
 
 ### 2. Provider Module
 
-Defines the auth boundary trait in `provider.rs`:
+Your app implements Underlay’s provider boundary (`underlay_auth::AuthProvider`).
+
+For production JWT, use Underlay’s `underlay-auth-jwt` crate (it uses `jsonwebtoken` under the hood) and validate **Ed25519 / EdDSA** tokens.
 
 ```rust
 use async_trait::async_trait;
 use underlay_auth::{AuthProvider, AuthResult, Principal, RoleSet};
+use underlay_auth_jwt::JwtService;
 
-pub enum AuthError {
-    InvalidToken,
-    TokenExpired,
-    Unauthorized,
+#[derive(Clone)]
+pub struct JwtAuthProvider {
+    jwt: JwtService,
+}
+
+impl JwtAuthProvider {
+    pub fn new(jwt: JwtService) -> Self {
+        Self { jwt }
+    }
 }
 
 #[async_trait]
-impl AuthProvider for MyAuthProvider {
-    async fn authenticate_bearer(&self, token: &str) -> AuthResult<Principal> {
-        // Validate token and return principal
+impl AuthProvider for JwtAuthProvider {
+    async fn authenticate_bearer(&self, bearer_token: &str) -> AuthResult<Principal> {
+        let claims = self
+            .jwt
+            .verify_access_token(bearer_token)
+            .map_err(|e| e.into())?;
+
+        Ok(Principal {
+            user_id: claims.common.subject,
+            roles: RoleSet::new(claims.roles),
+        })
     }
 }
 ```
@@ -123,7 +139,12 @@ mod provider;
 mod underlay;
 
 pub use principal::{UserId, UserPrincipal, UserRole};
-pub use provider::{AuthError, AuthProvider};
+
+// Re-export Underlay boundary types (optional convenience)
+pub use underlay_auth::{AuthError, AuthProvider};
+
+// Providers
+pub use provider::JwtAuthProvider;
 pub use underlay::{user_principal_from_underlay, DevBearerUuidAuthProvider};
 ```
 
@@ -132,7 +153,7 @@ pub use underlay::{user_principal_from_underlay, DevBearerUuidAuthProvider};
 | Mode | Provider | Security | Use Case |
 |------|----------|----------|----------|
 | Development | `DevBearerUuidAuthProvider` | ⚠️ NONE | Local development only |
-| Production | `UnderlayJwtAuthProvider` | ✅ Secure | Production deployment |
+| Production | `JwtAuthProvider` (backed by `underlay-auth-jwt`) | ✅ Secure | Production deployment |
 
 **Critical:** Never enable dev mode in production.
 
@@ -161,22 +182,23 @@ impl underlay_auth::HasAuthProvider for AppState {
 ### Step 2: Auth Provider Selection
 
 ```rust
-use myapp_auth::{DevBearerUuidAuthProvider, UnderlayJwtAuthProvider};
+use myapp_auth::{DevBearerUuidAuthProvider, JwtAuthProvider};
+use underlay_auth_jwt::{JwtConfig, JwtService};
 
 fn create_auth_provider() -> Arc<dyn underlay_auth::AuthProvider> {
     let dev_auth_enabled = std::env::var("NURSERY_DEV_AUTH")
         .map(|v| v == "true")
         .unwrap_or(false);
 
-    match UnderlayJwtAuthProvider::from_env() {
-        Some(provider) => Arc::new(provider),
+    match JwtConfig::from_env().ok().and_then(|cfg| JwtService::new(cfg).ok()) {
+        Some(jwt) => Arc::new(JwtAuthProvider::new(jwt)),
         None if dev_auth_enabled => {
             tracing::warn!("DEV AUTH ENABLED - NEVER USE IN PRODUCTION");
             Arc::new(DevBearerUuidAuthProvider)
         }
         None => {
             tracing::error!(
-                "Auth not configured. Set JWT env vars or NURSERY_DEV_AUTH=true"
+                "Auth not configured. Set AUTH_JWT_* env vars or NURSERY_DEV_AUTH=true"
             );
             std::process::exit(1);
         }
@@ -216,10 +238,15 @@ Create `apps/nursery/.env`:
 ```bash
 # === Authentication ===
 
-# Production JWT Configuration
-# Generate keys using: openssl genpkey -algorithm Ed25519 -out private.pem
-AUTH_JWT_PRIVATE_KEY=your-base64-encoded-private-key
-AUTH_JWT_PUBLIC_KEY=your-base64-encoded-public-key
+# Production JWT Configuration (Ed25519 / EdDSA)
+#
+# Underlay JWT expects:
+# - AUTH_JWT_PRIVATE_KEY: base64-encoded PKCS#8 DER (Ed25519 private key)
+# - AUTH_JWT_PUBLIC_KEY: base64url (or base64) of raw Ed25519 public key bytes (32 bytes)
+#
+# See `docs/guides/quickstart/code/060-authentication/generate-jwt-env.rs` for a generator.
+AUTH_JWT_PRIVATE_KEY=...
+AUTH_JWT_PUBLIC_KEY=...
 
 # Token Configuration
 AUTH_JWT_ISSUER=myapp
@@ -234,12 +261,47 @@ NURSERY_DEV_AUTH=false
 
 ### Key Generation
 
+Because `underlay-auth-jwt` expects specific key encodings (PKCS#8 DER for the private key, raw 32-byte public key), the easiest way to generate correct env values is via the helper in:
+
+- `docs/guides/quickstart/code/060-authentication/generate-jwt-env.rs`
+
+Copy that file into your app repo as a small Rust bin target, for example:
+
+- `apps/nursery/crates/auth/src/bin/generate-jwt-env.rs`
+
+Then run:
+
 ```bash
-openssl genpkey -algorithm Ed25519 -out private.pem
-openssl pkey -in private.pem -pubout -out public.pem
-base64 -w0 private.pem
-base64 -w0 public.pem
+cd apps/nursery
+cargo run -p myapp-auth --bin generate-jwt-env
 ```
+
+This prints `AUTH_JWT_PRIVATE_KEY=...` and `AUTH_JWT_PUBLIC_KEY=...` ready to paste into `apps/nursery/.env`.
+
+## JWT Claims and Validation
+
+`underlay-auth-jwt` verifies **Ed25519 / EdDSA** tokens using `jsonwebtoken`.
+
+### Required JWT claims
+
+Access tokens are expected to include:
+
+- `exp` (expiry)
+- `iss` (issuer)
+- `sub` (subject user id)
+- `nbf` (not-before)
+- `tuse` (token use), must equal `"access"`
+
+If `AUTH_JWT_AUDIENCE` is set, `aud` is also required and validated.
+
+### Validation behavior
+
+- Algorithm is fixed to `EdDSA` (allowlist enforced by the validator).
+- `iss` is required and must match `AUTH_JWT_ISSUER`.
+- `aud` is validated if configured.
+- `nbf` is validated.
+- `exp` is validated with `AUTH_JWT_LEEWAY_SECONDS` applied.
+- Keypair mismatch fails fast during service initialization.
 
 ## Security Checklist
 

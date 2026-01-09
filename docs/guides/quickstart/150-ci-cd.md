@@ -2,6 +2,13 @@
 
 This document covers setting up continuous integration and deployment.
 
+## Modes
+
+- **Multi-repo (default):** each repo typically has its own workflow; keep CI close to the repo it validates.
+- **Monorepo:** one workflow can run all checks across `apps/*` and `libs/*`.
+
+The YAML below is written in a monorepo style; in multi-repo, remove the `cd apps/nursery` step and run `cargo test` from the Nursery repo root.
+
 ## GitHub Actions Workflow
 
 Create `.github/workflows/ci.yml`:
@@ -24,9 +31,14 @@ jobs:
           toolchain: stable
       - name: Run tests
         run: |
+          # Monorepo:
           cd apps/nursery
           cargo test
           cargo clippy --all-targets --all-features -- -D warnings
+
+          # Multi-repo:
+          # cargo test
+          # cargo clippy --all-targets --all-features -- -D warnings
 
   typescript:
     runs-on: ubuntu-latest
@@ -40,8 +52,13 @@ jobs:
           node-version: 20
       - name: Install and test
         run: |
+          # Monorepo:
           pnpm install:all
           pnpm check:all
+
+          # Multi-repo:
+          # pnpm install
+          # pnpm check
 ```
 
 See full template in `/code/150-ci-cd/`

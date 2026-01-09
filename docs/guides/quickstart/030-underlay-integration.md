@@ -11,6 +11,7 @@ Underlay is a reusable foundation that provides:
 | `underlay-core` | IDs, error types, response envelopes |
 | `underlay-http` | Axum helpers, CORS, standard error responses |
 | `underlay-auth` | Auth boundary, provider abstraction, Axum extractors |
+| `underlay-auth-jwt` | JWT issuance/verification (Ed25519 / EdDSA via `jsonwebtoken`) |
 | `underlay-db` | SQLx helpers (optional) |
 | `underlay-observability` | Tracing bootstrap, request ID |
 | `underlay-metrics` | Prometheus registry helpers (optional) |
@@ -49,7 +50,34 @@ underlay-auth = "0.1"
 
 ## Path Configuration (Rust)
 
-If Underlay lives at `libs/underlay/` inside your monorepo, set workspace deps like:
+### Multi-repo workspace (default)
+
+If `underlay/` and `myapp-nursery/` are sibling repos:
+
+```toml
+# myapp-nursery/Cargo.toml
+
+[workspace]
+members = [
+  "crates/core",
+  "crates/api",
+  "crates/auth",
+  "crates/db",
+  "crates/infra",
+]
+
+[workspace.dependencies]
+underlay-core = { path = "../underlay/rust/crates/underlay-core" }
+underlay-http = { path = "../underlay/rust/crates/underlay-http" }
+underlay-auth = { path = "../underlay/rust/crates/underlay-auth" }
+underlay-auth-jwt = { path = "../underlay/rust/crates/underlay-auth-jwt" }
+underlay-observability = { path = "../underlay/rust/crates/underlay-observability" }
+underlay-metrics = { path = "../underlay/rust/crates/underlay-metrics" }
+```
+
+### Monorepo
+
+If Underlay lives at `libs/underlay/` and Nursery at `apps/nursery/`:
 
 ```toml
 # apps/nursery/Cargo.toml
@@ -64,16 +92,31 @@ members = [
 ]
 
 [workspace.dependencies]
-underlay-core = { path = "../../../libs/underlay/rust/crates/underlay-core" }
-underlay-http = { path = "../../../libs/underlay/rust/crates/underlay-http" }
-underlay-auth = { path = "../../../libs/underlay/rust/crates/underlay-auth" }
-underlay-observability = { path = "../../../libs/underlay/rust/crates/underlay-observability" }
-underlay-metrics = { path = "../../../libs/underlay/rust/crates/underlay-metrics" }
+underlay-core = { path = "../../libs/underlay/rust/crates/underlay-core" }
+underlay-http = { path = "../../libs/underlay/rust/crates/underlay-http" }
+underlay-auth = { path = "../../libs/underlay/rust/crates/underlay-auth" }
+underlay-auth-jwt = { path = "../../libs/underlay/rust/crates/underlay-auth-jwt" }
+underlay-observability = { path = "../../libs/underlay/rust/crates/underlay-observability" }
+underlay-metrics = { path = "../../libs/underlay/rust/crates/underlay-metrics" }
 ```
 
 ## Path Configuration (TypeScript)
 
-Underlay’s TS package is `@decodelabs/underlay`. With pnpm, you can depend on it via a local file reference:
+Underlay’s TS package is `@decodelabs/underlay`.
+
+### Multi-repo workspace (default)
+
+In `myapp-stem/package.json` (and/or frontends), depend on the sibling repo:
+
+```json
+{
+  "dependencies": {
+    "@decodelabs/underlay": "file:../underlay"
+  }
+}
+```
+
+### Monorepo
 
 ```json
 {

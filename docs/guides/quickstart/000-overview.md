@@ -1,6 +1,6 @@
 # 000 - Architecture Overview
 
-This guide provides step-by-step instructions for initializing a new project that follows the **Songsprout/Acowtancy architecture**. This architecture is designed for full-stack applications requiring:
+This guide provides step-by-step instructions for initializing a new project that follows an Underlay-based multi-repo (default) or monorepo architecture. This architecture is designed for full-stack applications requiring:
 
 - **Rust API backend** with domain-driven design
 - **TypeScript API client** with typed commands
@@ -20,21 +20,28 @@ Use this guide when creating a **new product** that:
 
 ## Architecture Diagram
 
+This architecture works in both:
+
+- **Multi-repo workspace (default):** separate repos checked out side-by-side.
+- **Monorepo:** one repo with `apps/*` and `libs/*`.
+
+The diagram uses monorepo-style paths as logical names.
+
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                           Project Monorepo                               │
+│                    Project Workspace (multi-repo default)                 │
 ├─────────────────────────────────────────────────────────────────────────┤
 │  ┌─────────────────────┐  ┌─────────────────────┐  ┌──────────────────┐ │
-│  │   apps/bloom/       │  │  apps/greenhouse/   │  │  apps/nursery/   │ │
-│  │   (Artist UI)       │  │   (Admin UI)        │  │   (Rust API)     │ │
+│  │   apps/web/         │  │  apps/admin/        │  │  apps/api/       │ │
+│  │   (Web UI)          │  │   (Admin UI)        │  │   (Rust API)     │ │
 │  │   SvelteKit         │  │   SvelteKit         │  │   Axum + Domain  │ │
 │  └──────────┬──────────┘  └──────────┬──────────┘  └────────┬─────────┘ │
 │             │                        │                       │          │
 │             └────────────────────────┼───────────────────────┘          │
 │                                      │                                  │
 │  ┌───────────────────────────────────┼──────────────────────────────┐  │
-│  │  libs/petal/                      │  libs/stem/                   │  │
-│  │  Shared Svelte UI kit             │  Shared TypeScript API client │  │
+│  │  libs/ui/                         │  libs/client/                 │  │
+│  │  Shared UI kit                    │  Shared TypeScript API client │  │
 │  │  Components, patterns, tokens     │  HTTP, commands, types        │  │
 │  └───────────────────────────────────┴──────────────────────────────┘  │
 │                                      │                                  │
@@ -105,17 +112,17 @@ Following naming and structure patterns from reference apps ensures:
 
 | Directory | Responsibility |
 |-----------|---------------|
-| `apps/nursery/` | Rust API implementation, domain models, HTTP handlers |
-| `apps/bloom/` | Artist-facing SvelteKit frontend (main UI) |
-| `apps/greenhouse/` | Admin/author SvelteKit frontend |
+| `apps/api/` | Rust API implementation, domain models, HTTP handlers |
+| `apps/web/` | SvelteKit frontend (main UI) |
+| `apps/admin/` | Admin/author SvelteKit frontend |
 
 ### Libraries Layer (`libs/`)
 
 | Directory | Responsibility |
 |-----------|---------------|
-| `libs/stem/` | TypeScript API client, HTTP abstraction, typed commands |
-| `libs/petal/` | Shared Svelte components, design tokens, UI patterns |
-| `libs/underlay/` | Cross-cutting Rust primitives (external or sibling) |
+| `libs/client/` | TypeScript API client, HTTP abstraction, typed commands |
+| `libs/ui/` | Shared UI components, design tokens, UI patterns |
+| `libs/underlay/` | Cross-cutting primitives (external or sibling) |
 
 ### Documentation Layer (`trellis/` / `docs/`)
 
@@ -124,15 +131,6 @@ Following naming and structure patterns from reference apps ensures:
 | `trellis/docs/` | Architecture decisions, domain modeling, process docs |
 | `docs/guides/` | How-to guides, tutorials, quickstarts |
 
-## Reference Implementations
-
-| Project | Purpose | Key Patterns |
-|---------|---------|--------------|
-| **Songsprout** | Artist productivity tool | Programs, Tasks, Releases, Stripe integration |
-| **Acowtancy** | Accounting/finance tool | Different domain, same architecture |
-
-Both projects demonstrate the patterns in this guide. When in doubt, reference their implementation.
-
 ## How to Use This Guide
 
 ### For LLMs
@@ -140,7 +138,7 @@ Both projects demonstrate the patterns in this guide. When in doubt, reference t
 1. Read documents **in order** (000 → 170)
 2. Copy code examples from the `code/` subdirectories
 3. Follow the checklist in `170-checklist.md`
-4. Reference Songsprout/Acowtancy for additional patterns
+4. Treat the docs as scaffolding; fill in app-specific domain details as you build
 
 ### For Human Developers
 
@@ -158,14 +156,14 @@ Both projects demonstrate the patterns in this guide. When in doubt, reference t
 | 010 | Prerequisites | System requirements, verification |
 | 020 | Project Structure | Directory layout, AGENTS.md |
 | 030 | Underlay Integration | Linking the Underlay foundation |
-| 040 | Rust Backend (Nursery) | Workspace, core crate, patterns |
+| 040 | Rust Backend | Workspace, core crate, patterns |
 | 050 | Database & Migrations | DB crate, sqlx, migrations |
 | 060 | Authentication | Auth providers, JWT, dev mode |
 | 070 | API Handlers | HTTP handlers, routing, middleware |
-| 080 | TypeScript Client (Stem) | HTTP client, commands |
-| 090 | UI Kit (Petal) | Component patterns |
-| 100 | Frontend (Bloom) | SvelteKit setup, routing |
-| 110 | Admin Frontend (Greenhouse) | Admin UI structure |
+| 080 | TypeScript Client | HTTP client, commands |
+| 090 | UI Kit | Component patterns |
+| 100 | Frontend (Web) | SvelteKit setup, routing |
+| 110 | Admin Frontend | Admin UI structure |
 | 120 | Configuration | Env files, validation |
 | 130 | Testing | Test patterns for all layers |
 | 140 | Local Development | Running locally, debugging |

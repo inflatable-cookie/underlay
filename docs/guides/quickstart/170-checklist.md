@@ -81,7 +81,12 @@ Use this checklist to verify your project is properly set up.
 ## Final Verification
 
 ```bash
-# Run all checks
+# Run all checks (multi-repo)
+cd myapp-nursery && cargo test
+cd myapp-stem && pnpm test
+cd myapp-bloom && pnpm test
+
+# Run all checks (monorepo)
 cd apps/nursery && cargo test
 cd libs/stem && pnpm test
 cd apps/bloom && pnpm test

@@ -87,8 +87,7 @@ tower-http = { version = "0.6", features = ["trace", "request-id", "propagate-he
 sqlx = { version = "0.8.6", features = ["runtime-tokio-rustls", "postgres", "uuid", "migrate", "chrono"] }
 
 # === Authentication ===
-jsonwebtoken = "9"
-base64 = "0.22"
+# JWT is provided by Underlay via `underlay-auth-jwt` (Ed25519 / EdDSA).
 
 # === Observability ===
 tracing = "0.1"
@@ -98,13 +97,16 @@ tracing-subscriber = { version = "0.3", features = ["fmt", "env-filter", "json"]
 dotenvy = "0.15"
 
 # === Underlay (local dev via relative paths) ===
-underlay-core = { path = "../../../libs/underlay/rust/crates/underlay-core" }
-underlay-http = { path = "../../../libs/underlay/rust/crates/underlay-http" }
-underlay-auth = { path = "../../../libs/underlay/rust/crates/underlay-auth" }
-underlay-db = { path = "../../../libs/underlay/rust/crates/underlay-db" }
-underlay-observability = { path = "../../../libs/underlay/rust/crates/underlay-observability" }
-underlay-metrics = { path = "../../../libs/underlay/rust/crates/underlay-metrics" }
-underlay-soft-delete = { path = "../../../libs/underlay/rust/crates/underlay-soft-delete" }
+# Monorepo: this file is `apps/nursery/Cargo.toml`, so `../../libs/underlay/...`.
+# Multi-repo: see `030-underlay-integration.md` and use `../underlay/...` in `myapp-nursery/Cargo.toml`.
+underlay-core = { path = "../../libs/underlay/rust/crates/underlay-core" }
+underlay-http = { path = "../../libs/underlay/rust/crates/underlay-http" }
+underlay-auth = { path = "../../libs/underlay/rust/crates/underlay-auth" }
+underlay-auth-jwt = { path = "../../libs/underlay/rust/crates/underlay-auth-jwt" }
+underlay-db = { path = "../../libs/underlay/rust/crates/underlay-db" }
+underlay-observability = { path = "../../libs/underlay/rust/crates/underlay-observability" }
+underlay-metrics = { path = "../../libs/underlay/rust/crates/underlay-metrics" }
+underlay-soft-delete = { path = "../../libs/underlay/rust/crates/underlay-soft-delete" }
 ```
 
 ## Step 2: Create Core Crate
@@ -118,7 +120,7 @@ version.workspace = true
 edition.workspace = true
 
 [dependencies]
-underlay-core = { path = "../../../libs/underlay/rust/crates/underlay-core" }
+underlay-core = { workspace = true }
 ```
 
 Create `apps/nursery/crates/core/src/lib.rs`:
@@ -316,11 +318,10 @@ version.workspace = true
 edition.workspace = true
 
 [dependencies]
-underlay-core = { path = "../../../libs/underlay/rust/crates/underlay-core" }
-underlay-auth = { path = "../../../libs/underlay/rust/crates/underlay-auth" }
-jsonwebtoken = "9"
-base64 = "0.22"
-anyhow = "1"
+underlay-core = { workspace = true }
+underlay-auth = { workspace = true }
+underlay-auth-jwt = { workspace = true }
+async-trait = { workspace = true }
 serde = { version = "1", features = ["derive"] }
 thiserror = "2"
 ```
@@ -339,7 +340,7 @@ mod underlay;
 
 pub use principal::{UserId, UserRole, UserPrincipal};
 pub use provider::{AuthError, AuthProvider};
-pub use underlay::{user_principal_from_underlay, DevBearerUuidAuthProvider, UnderlayJwtAuthProvider};
+pub use underlay::{user_principal_from_underlay, DevBearerUuidAuthProvider, JwtAuthProvider};
 ```
 
 Create `apps/nursery/crates/auth/src/principal.rs`:
@@ -417,159 +418,13 @@ pub trait AuthProvider: Send + Sync {
 }
 ```
 
-Create `apps/nursery/crates/auth/src/jwt.rs`:
+Production JWT is implemented by Underlay’s `underlay-auth-jwt` crate.
 
-```rust
-//! JWT authentication implementation.
+- Algorithm: **Ed25519 / EdDSA**
+- Library: `jsonwebtoken` (via `underlay-auth-jwt`)
+- Key formats: `AUTH_JWT_PRIVATE_KEY` is base64 PKCS#8 DER; `AUTH_JWT_PUBLIC_KEY` is base64url/base64 raw 32-byte public key
 
-use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, Validation};
-use serde::{Deserialize, Serialize};
-use std::sync::RwLock;
-
-use crate::AuthError;
-
-/// JWT configuration loaded from environment.
-#[derive(Debug, Clone)]
-pub struct JwtConfig {
-    /// Base64-encoded private key (PKCS#8 DER format).
-    pub private_key_b64: String,
-    /// Base64-encoded public key.
-    pub public_key_b64: String,
-    /// Token issuer.
-    pub issuer: String,
-    /// Token audience.
-    pub audience: String,
-    /// Leeway for time validation (seconds).
-    pub leeway_seconds: u64,
-    /// Access token lifetime (minutes).
-    pub access_token_lifetime_minutes: i64,
-    /// Refresh token lifetime (days).
-    pub refresh_token_lifetime_days: i64,
-}
-
-impl JwtConfig {
-    /// Load configuration from environment variables.
-    pub fn from_env() -> Result<Self, AuthError> {
-        let private_key_b64 = std::env::var("AUTH_JWT_PRIVATE_KEY")
-            .map_err(|_| AuthError::Config("AUTH_JWT_PRIVATE_KEY not set".into()))?;
-        let public_key_b64 = std::env::var("AUTH_JWT_PUBLIC_KEY")
-            .map_err(|_| AuthError::Config("AUTH_JWT_PUBLIC_KEY not set".into()))?;
-        let issuer = std::env::var("AUTH_JWT_ISSUER").unwrap_or_else(|_| "myapp".into());
-        let audience = std::env::var("AUTH_JWT_AUDIENCE")
-            .map_err(|_| AuthError::Config("AUTH_JWT_AUDIENCE not set".into()))?;
-        let leeway_seconds: u64 = std::env::var("AUTH_JWT_LEEWAY_SECONDS")
-            .unwrap_or_else(|_| "30".into())
-            .parse()
-            .map_err(|_| AuthError::Config("Invalid AUTH_JWT_LEEWAY_SECONDS".into()))?;
-        let access_token_lifetime_minutes: i64 = std::env::var("AUTH_ACCESS_TOKEN_LIFETIME_MINUTES")
-            .unwrap_or_else(|_| "15".into())
-            .parse()
-            .map_err(|_| AuthError::Config("Invalid AUTH_ACCESS_TOKEN_LIFETIME_MINUTES".into()))?;
-        let refresh_token_lifetime_days: i64 = std::env::var("AUTH_REFRESH_TOKEN_LIFETIME_DAYS")
-            .unwrap_or_else(|_| "30".into())
-            .parse()
-            .map_err(|_| AuthError::Config("Invalid AUTH_REFRESH_TOKEN_LIFETIME_DAYS".into()))?;
-
-        Ok(Self {
-            private_key_b64,
-            public_key_b64,
-            issuer,
-            audience,
-            leeway_seconds,
-            access_token_lifetime_minutes,
-            refresh_token_lifetime_days,
-        })
-    }
-}
-
-/// JWT claims structure.
-#[derive(Debug, Serialize, Deserialize)]
-pub struct Claims {
-    pub sub: String,
-    pub iss: String,
-    pub aud: String,
-    pub exp: u64,
-    pub iat: u64,
-    pub roles: Vec<String>,
-}
-
-/// JWT authentication provider.
-#[derive(Clone)]
-pub struct JwtAuthProvider {
-    config: JwtConfig,
-    decoding_key: DecodingKey,
-    encoding_key: EncodingKey,
-}
-
-impl JwtAuthProvider {
-    /// Create a new JWT auth provider.
-    pub fn new(config: JwtConfig) -> Self {
-        let private_key_der = base64::Engine::decode(
-            &base64::engine::general_purpose::STANDARD,
-            &config.private_key_b64,
-        )
-        .map_err(|_| AuthError::Config("Invalid AUTH_JWT_PRIVATE_KEY".into()))
-        .unwrap();
-
-        let encoding_key = EncodingKey::from_ed_der(&private_key_der);
-
-        let public_key_bytes = base64::Engine::decode(
-            &base64::engine::general_purpose::STANDARD,
-            &config.public_key_b64,
-        )
-        .map_err(|_| AuthError::Config("Invalid AUTH_JWT_PUBLIC_KEY".into()))
-        .unwrap();
-
-        let decoding_key = DecodingKey::from_ed_components(&public_key_bytes)
-            .map_err(|_| AuthError::Config("Invalid public key format".into()))
-            .unwrap();
-
-        Self {
-            config,
-            decoding_key,
-            encoding_key,
-        }
-    }
-
-    /// Generate a new access token.
-    pub fn generate_access_token(
-        &self,
-        subject: &str,
-        roles: &[&str],
-    ) -> Result<String, AuthError> {
-        let now = chrono::Utc::now().timestamp() as u64;
-        let exp = now + (self.config.access_token_lifetime_minutes * 60) as u64;
-
-        let claims = Claims {
-            sub: subject.to_string(),
-            iss: self.config.issuer.clone(),
-            aud: self.config.audience.clone(),
-            exp,
-            iat: now,
-            roles: roles.iter().map(|s| s.to_string()).collect(),
-        };
-
-        let token = encode(&Header::new(Algorithm::EdDSA), &claims, &self.encoding_key)
-            .map_err(|e| AuthError::Internal(format!("JWT encoding failed: {}", e)))?;
-
-        Ok(token)
-    }
-
-    /// Verify and decode an access token.
-    pub fn verify_token(&self, token: &str) -> Result<Claims, AuthError> {
-        let mut validation = Validation::new(Algorithm::EdDSA);
-        validation.leeway = self.config.leeway_seconds;
-        validation.set_issuer(&[self.config.issuer.clone()]);
-        validation.set_audience(&[self.config.audience.clone()]);
-        validation.validate_exp = true;
-
-        let token_data = decode::<Claims>(token, &self.decoding_key, &validation)
-            .map_err(|_| AuthError::InvalidToken)?;
-
-        Ok(token_data.claims)
-    }
-}
-```
+You do not need to implement a `jwt.rs` module for the quickstart. Instead, wrap `underlay_auth_jwt::JwtService` in an `underlay_auth::AuthProvider` (see `apps/nursery/crates/auth/src/underlay.rs` below and `docs/guides/quickstart/060-authentication.md`).
 
 Create `apps/nursery/crates/auth/src/underlay.rs`:
 
@@ -580,7 +435,7 @@ use async_trait::async_trait;
 use underlay_auth::{AuthProvider as UnderlayAuthProvider, AuthResult, Principal, RoleSet};
 use underlay_core::Uuid;
 
-use crate::{AuthError, AuthProvider, UserId, UserPrincipal, UserRole};
+use crate::{UserId, UserPrincipal, UserRole};
 
 /// Dev auth provider for local development only.
 ///
@@ -622,30 +477,35 @@ pub fn user_principal_from_underlay(principal: Principal) -> UserPrincipal {
     }
 }
 
-/// Production JWT auth provider using Underlay.
+/// Production JWT auth provider.
+///
+/// This uses Underlay’s `underlay-auth-jwt` crate, which implements Ed25519 / EdDSA
+/// JWT issuance + verification using `jsonwebtoken`.
 #[derive(Clone)]
-pub struct UnderlayJwtAuthProvider;
+pub struct JwtAuthProvider {
+    jwt: underlay_auth_jwt::JwtService,
+}
 
-impl UnderlayJwtAuthProvider {
-    pub fn from_env() -> Option<Self> {
-        // Load JWT configuration from environment
-        let private_key = std::env::var("AUTH_JWT_PRIVATE_KEY").ok()?;
-        let _public_key = std::env::var("AUTH_JWT_PUBLIC_KEY").ok()?;
-        let _issuer = std::env::var("AUTH_JWT_ISSUER").ok()?;
-        let _audience = std::env::var("AUTH_JWT_AUDIENCE").ok()?;
-
-        Some(Self)
+impl JwtAuthProvider {
+    pub fn from_env() -> Result<Self, underlay_auth_jwt::JwtError> {
+        let config = underlay_auth_jwt::JwtConfig::from_env()?;
+        let jwt = underlay_auth_jwt::JwtService::new(config)?;
+        Ok(Self { jwt })
     }
 }
 
 #[async_trait]
-impl UnderlayAuthProvider for UnderlayJwtAuthProvider {
+impl UnderlayAuthProvider for JwtAuthProvider {
     async fn authenticate_bearer(&self, bearer_token: &str) -> AuthResult<Principal> {
-        // Validate JWT token and extract claims.
-        //
-        // Note: Underlay does not ship a JWT implementation; wire your own library here.
-        // Until implemented, reject all tokens so production config can't be accidentally “half-enabled”.
-        Err(underlay_auth::AuthError::InvalidToken)
+        let claims = self
+            .jwt
+            .verify_access_token(bearer_token)
+            .map_err(|e| e.into())?;
+
+        Ok(Principal {
+            user_id: claims.common.subject,
+            roles: RoleSet::new(claims.roles),
+        })
     }
 }
 ```
@@ -661,8 +521,8 @@ version.workspace = true
 edition.workspace = true
 
 [dependencies]
-underlay-observability = { path = "../../../libs/underlay/rust/crates/underlay-observability" }
-underlay-metrics = { path = "../../../libs/underlay/rust/crates/underlay-metrics" }
+underlay-observability = { workspace = true }
+underlay-metrics = { workspace = true }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["fmt", "env-filter", "json"] }
 serde = { version = "1", features = ["derive"] }

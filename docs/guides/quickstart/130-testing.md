@@ -34,13 +34,14 @@ import { describe, it, expect } from 'vitest';
 ## Running Tests
 
 ```bash
-# Rust
+# Multi-repo (default)
+cd myapp-nursery && cargo test
+cd myapp-stem && pnpm test
+cd myapp-bloom && pnpm test
+
+# Monorepo
 cd apps/nursery && cargo test
-
-# TypeScript
 cd libs/stem && pnpm test
-
-# Frontend
 cd apps/bloom && pnpm test
 ```
 

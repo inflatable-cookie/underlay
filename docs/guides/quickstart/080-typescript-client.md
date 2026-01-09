@@ -1,6 +1,11 @@
 # 080 - TypeScript Client (Stem)
 
-This document covers creating a typed API client for the Rust backend. The client lives in `libs/stem/` and is consumed by both frontends.
+This document covers creating a typed API client for the Rust backend.
+
+- **Multi-repo (default):** this is typically its own repo (e.g. `myapp-stem/`).
+- **Monorepo:** it typically lives at `libs/stem/`.
+
+In the rest of this doc, paths are written as `libs/stem/...` (monorepo style). In multi-repo mode, treat that as the repo root.
 
 This guide aligns with Underlay’s TypeScript client primitives and error envelope shape.
 
@@ -49,7 +54,8 @@ Create `libs/stem/package.json`:
     "test": "vitest"
   },
   "dependencies": {
-    "@decodelabs/underlay": "file:../../libs/underlay"
+    "@decodelabs/underlay": "file:../../libs/underlay" // monorepo
+    // multi-repo: "file:../underlay"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

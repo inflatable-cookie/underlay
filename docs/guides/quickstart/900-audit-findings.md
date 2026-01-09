@@ -37,7 +37,7 @@ Most issues originally identified have now been addressed. Remaining gaps are pr
 
 These are expected (and OK for a quickstart), but worth noting:
 
-- JWT validation in the Rust quickstart is intentionally not fully implemented (Underlay does not ship a JWT implementation).
+- JWT validation is implemented via Underlay’s `underlay-auth-jwt` crate (Ed25519 / EdDSA using `jsonwebtoken`). The quickstart still leaves application-specific pieces (login endpoints, persistence, refresh flow) for later.
 - The guide provides patterns and scaffolding; domain-specific repository implementations, DTOs, and endpoints are examples.
 
 ## Canonical Reference

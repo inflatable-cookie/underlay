@@ -1,6 +1,25 @@
 # Quickstart Guide Index
 
-This guide provides step-by-step instructions for initializing a new project following the Songsprout/Acowtancy architecture.
+This guide provides step-by-step instructions for initializing a new project using a multi-repo or monorepo architecture built on Underlay.
+
+## Modes (Multi-repo vs Monorepo)
+
+This guide supports two layouts:
+
+- **Multi-repo workspace (default):** multiple git repositories checked out side-by-side in a local folder.
+- **Monorepo:** a single git repository containing `apps/*` and `libs/*`.
+
+### Path Mapping Convention
+
+To keep examples readable, many docs use **monorepo-style logical paths** like `apps/api/...` and `libs/client/...`.
+
+- In **multi-repo mode**, interpret these as paths *within the corresponding repo*:
+  - `apps/api/...` → `<api-repo>/...`
+  - `apps/web/...` → `<web-repo>/...`
+  - `apps/admin/...` → `<admin-repo>/...`
+  - `libs/client/...` → `<client-repo>/...`
+  - `libs/ui/...` → `<ui-repo>/...`
+  - `libs/underlay/...` → `<underlay-repo>/...`
 
 ## Reading Order
 
@@ -10,14 +29,14 @@ Read these documents in order for a complete understanding:
 2. **[010 - Prerequisites](./010-prerequisites.md)** - System requirements, verification
 3. **[020 - Project Structure](./020-project-structure.md)** - Directory layout, AGENTS.md
 4. **[030 - Underlay Integration](./030-underlay-integration.md)** - Linking the Underlay foundation
-5. **[040 - Rust Backend (Nursery)](./040-rust-backend.md)** - Workspace, core crate, patterns
+5. **[040 - Rust Backend](./040-rust-backend.md)** - Workspace, core crate, patterns
 6. **[050 - Database & Migrations](./050-database.md)** - DB crate, sqlx, migrations
 7. **[060 - Authentication](./060-authentication.md)** - Auth providers, JWT, dev mode
-8. **[070 - API Handlers](./070-api-handlers.md)** - HTTP handlers, routing, middleware
-9. **[080 - TypeScript Client (Stem)](./080-typescript-client.md)** - HTTP client, commands
-10. **[090 - UI Kit (Petal)](./090-ui-kit.md)** - Component patterns
-11. **[100 - Frontend (Bloom)](./100-frontend-bloom.md)** - SvelteKit setup, routing
-12. **[110 - Admin Frontend (Greenhouse)](./110-admin-greenhouse.md)** - Admin UI structure
+8. **[070 - API Handlers](./070-api-handlers.md)** - HTTP handlers, routing
+9. **[080 - TypeScript Client](./080-typescript-client.md)** - HTTP client, commands
+10. **[090 - UI Kit](./090-ui-kit.md)** - Component patterns
+11. **[100 - Frontend (Web)](./100-frontend-bloom.md)** - SvelteKit setup, routing
+12. **[110 - Admin Frontend](./110-admin-greenhouse.md)** - Admin UI structure
 13. **[120 - Configuration](./120-configuration.md)** - Env files, validation
 14. **[130 - Testing](./130-testing.md)** - Test patterns for all layers
 15. **[140 - Local Development](./140-local-development.md)** - Running locally, debugging
@@ -37,8 +56,8 @@ code/
 ├── 070-api-handlers/       # Handler examples
 ├── 080-typescript-client/  # HTTP client, types
 ├── 090-ui-kit/             # Svelte components
-├── 100-frontend-bloom/     # SvelteKit pages
-├── 110-admin-greenhouse/   # Admin pages
+├── 100-frontend-bloom/     # SvelteKit pages (web)
+├── 110-admin-greenhouse/   # SvelteKit pages (admin)
 ├── 120-configuration/      # Environment examples
 ├── 130-testing/            # Test examples
 └── 150-ci-cd/              # CI/CD workflows
@@ -48,51 +67,74 @@ code/
 
 ### Essential Commands
 
+**Multi-repo (default):** run commands from each repo root.
+
 ```bash
-# Install Rust deps
-cd apps/nursery && cargo test
+# API (backend)
+cd myapp-api && cargo test
+cd myapp-api/crates/db && sqlx migrate run
+cd myapp-api && cargo run -p myapp-api
 
-# Install Node deps
-pnpm install:all
+# Web (frontend)
+cd myapp-web && pnpm install
+cd myapp-web && pnpm dev
 
-# Run migrations
-cd apps/nursery/crates/db && sqlx migrate run
+# Admin (frontend)
+cd myapp-admin && pnpm install
+cd myapp-admin && pnpm dev
 
-# Start backend
-cargo run -p myapp-api
+# Client (TypeScript)
+cd myapp-client && pnpm install
+cd myapp-client && pnpm check
 
-# Start frontends
-cd apps/bloom && pnpm dev
-cd apps/greenhouse && pnpm dev
-
-# Type checking
-pnpm check:all
+# UI kit (optional)
+cd myapp-ui && pnpm install
+cd myapp-ui && pnpm check
 ```
 
+**Monorepo:** run workspace scripts from repo root.
+
+```bash
+pnpm install:all
+pnpm check:all
+pnpm test:all
+
+cd apps/api && cargo test
+cd apps/api/crates/db && sqlx migrate run
+cd apps/api && cargo run -p myapp-api
+```
+
+
 ### Directory Structure
+
+**Multi-repo workspace (default):**
+
+```
+myapp-workspace/
+├── underlay/            # Foundation (git repo)
+├── myapp-api/           # Rust API (git repo)
+├── myapp-client/        # TypeScript client (git repo)
+├── myapp-ui/            # UI kit (git repo, optional)
+├── myapp-web/           # Frontend (git repo)
+└── myapp-admin/         # Admin frontend (git repo)
+```
+
+**Monorepo:**
 
 ```
 my-project/
 ├── apps/
-│   ├── bloom/          # Artist UI
-│   ├── greenhouse/     # Admin UI
-│   └── nursery/        # Rust API
+│   ├── web/
+│   ├── admin/
+│   └── api/
 ├── libs/
-│   ├── petal/          # UI kit
-│   ├── stem/           # API client
-│   └── underlay/       # Foundation
-└── trellis/docs/       # Documentation
+│   ├── ui/
+│   ├── client/
+│   └── underlay/
+└── trellis/docs/
 ```
-
-## Reference Projects
-
-- **Songsprout** - Artist productivity tool
-- **Acowtancy** - Accounting tool
-
-Both demonstrate the patterns in this guide.
 
 ## Getting Help
 
 - Check [160-troubleshooting](./160-troubleshooting.md) for common issues
-- Reference Songsprout/Acowtancy source code
-- Review Underlay documentation in `libs/underlay/docs/`
+- Review Underlay documentation in the Underlay repo (`underlay/docs/`), or `libs/underlay/docs/` in monorepo mode
