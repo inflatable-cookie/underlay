@@ -1,3 +1,7 @@
+mod sync_migrations;
+
+pub use sync_migrations::{sync_migrations, SyncMigrationsError, SyncMigrationsReport};
+
 use std::future::Future;
 use std::pin::Pin;
 

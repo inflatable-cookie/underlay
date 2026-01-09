@@ -1369,6 +1369,20 @@ NURSERY_DEV_AUTH=false
 # TOTP_PERIOD=30
 # TOTP_SKEW=1
 
+# === Auth State Migrations (required for multi-step flows) ===
+#
+# Underlay uses `accounts.auth_state` to store short-lived state for multi-step auth flows
+# like 2FA login continuation, passkeys, and OAuth callbacks.
+#
+# Underlay owns the canonical migration(s) for this table.
+# To keep each app using a *single* sqlx migrator, copy Underlay migrations into your
+# app's migrations folder using:
+#
+#   cargo run --manifest-path /path/to/libraries/underlay/Cargo.toml -p underlay-devtools --bin underlay-devtools -- \
+#     sync-migrations --target /path/to/your-app/migrations
+#
+# Re-run this whenever you update Underlay.
+
 # === OAuth token encryption (recommended if storing refresh tokens) ===
 #
 # If you store OAuth refresh tokens (e.g. Google) in your database, encrypt them at rest.

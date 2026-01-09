@@ -3491,6 +3491,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "underlay-auth-state"
+version = "0.0.1"
+dependencies = [
+ "chrono",
+ "serde",
+ "serde_json",
+ "sqlx",
+ "thiserror 2.0.17",
+ "tokio",
+ "underlay-core",
+]
+
+[[package]]
 name = "underlay-auth-totp"
 version = "0.0.1"
 dependencies = [

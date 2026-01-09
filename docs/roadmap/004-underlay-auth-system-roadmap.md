@@ -370,24 +370,24 @@ Integrate full auth system into Songsprout.
   - `POST /auth/passkey/auth/finish` (WebAuthn confirmation)
   - `GET /auth/oauth/google/url` (Google auth initiation)
   - `GET /auth/oauth/google/callback` (Google auth callback)
-- [ ] Songsprout: Update `bloom/`:
+- [x] Songsprout: Update `bloom/`:
   - [x] Replace dev login with real registration/login forms
   - [x] Use access/refresh tokens (cookies) with refresh rotation
   - [x] Attach bearer token for Nursery API calls (via Stem client)
-  - [ ] Add 2FA setup flow
-  - [ ] Add PassKey registration option
-  - [ ] Add Google Sign-In button
-  - [ ] Add session management (logout everywhere, active sessions)
-- [ ] Songsprout: Update `greenhouse/`:
-  - Add staff registration (admin-only)
-  - Add staff login with 2FA support
-  - Add OAuth support for staff
-- [ ] Songsprout: Update `stem/`:
+  - [x] Add 2FA setup flow
+  - [x] Add PassKey registration option
+  - [x] Add Google Sign-In button
+  - [x] Add session management (logout everywhere, active sessions)
+- [x] Songsprout: Update `greenhouse/`:
+  - [x] Add staff registration (admin-only)
+  - [x] Add staff login with 2FA support
+  - [x] Add OAuth support for staff
+- [x] Songsprout: Update `stem/`:
   - [x] Add auth commands (register, login, logout, refresh)
   - [x] Wire token attachment to HTTP client
-  - [ ] Add 2FA commands
-  - [ ] Add PassKey commands
-  - [ ] Add OAuth commands
+  - [x] Add 2FA commands
+  - [x] Add PassKey commands
+  - [x] Add OAuth commands
 - [x] Songsprout: Remove dev auth stubs (`NURSERY_DEV_ARTIST_ID`, etc.)
 - [ ] Verify: Full auth flow works end-to-end (register → login → session → logout)
 - [ ] Verify: 2FA works (register → enable 2FA → login with 2FA)
