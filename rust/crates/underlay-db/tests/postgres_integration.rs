@@ -1,5 +1,5 @@
-use underlay_db::{create_pool, drop_schemas, validate_schema_name, DbConfig, DestructiveGuard};
 use underlay_core::Uuid;
+use underlay_db::{create_pool, drop_schemas, validate_schema_name, DbConfig, DestructiveGuard};
 
 // These tests require a Docker-compatible runtime.
 // On macOS, Colima works well:
@@ -16,10 +16,7 @@ use testcontainers_modules::postgres::Postgres;
 fn docker_client() -> Cli {
     // `testcontainers` uses the `docker` CLI. We check it exists up front so
     // failures are actionable.
-    match std::process::Command::new("docker")
-        .arg("version")
-        .output()
-    {
+    match std::process::Command::new("docker").arg("version").output() {
         Ok(_) => {}
         Err(err) if err.kind() == std::io::ErrorKind::NotFound => {
             panic!(

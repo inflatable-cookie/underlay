@@ -42,18 +42,10 @@ pub trait UserRepository: Send + Sync {
     async fn find_by_email(&self, email: &str) -> RepoResult<Option<User>>;
 
     /// Create a new user.
-    async fn create(
-        &self,
-        email: &str,
-        display_name: &str,
-    ) -> RepoResult<User>;
+    async fn create(&self, email: &str, display_name: &str) -> RepoResult<User>;
 
     /// Update a user's status.
-    async fn update_status(
-        &self,
-        user_id: Uuid,
-        status: UserStatus,
-    ) -> RepoResult<()>;
+    async fn update_status(&self, user_id: Uuid, status: UserStatus) -> RepoResult<()>;
 
     /// Delete a user (soft delete).
     async fn delete(&self, user_id: Uuid) -> RepoResult<()>;
@@ -66,34 +58,19 @@ pub trait UserRepository: Send + Sync {
 #[async_trait]
 pub trait CredentialRepository: Send + Sync {
     /// Find a credential by ID.
-    async fn find_by_id(
-        &self,
-        credential_id: Uuid,
-    ) -> RepoResult<Option<Credential>>;
+    async fn find_by_id(&self, credential_id: Uuid) -> RepoResult<Option<Credential>>;
 
     /// Find all credentials for a user.
-    async fn find_by_user_id(
-        &self,
-        user_id: Uuid,
-    ) -> RepoResult<Vec<Credential>>;
+    async fn find_by_user_id(&self, user_id: Uuid) -> RepoResult<Vec<Credential>>;
 
     /// Find a password credential for a user.
-    async fn find_password_by_user_id(
-        &self,
-        user_id: Uuid,
-    ) -> RepoResult<Option<Credential>>;
+    async fn find_password_by_user_id(&self, user_id: Uuid) -> RepoResult<Option<Credential>>;
 
     /// Find a TOTP credential for a user.
-    async fn find_totp_by_user_id(
-        &self,
-        user_id: Uuid,
-    ) -> RepoResult<Option<Credential>>;
+    async fn find_totp_by_user_id(&self, user_id: Uuid) -> RepoResult<Option<Credential>>;
 
     /// Find PassKey credentials for a user.
-    async fn find_passkeys_by_user_id(
-        &self,
-        user_id: Uuid,
-    ) -> RepoResult<Vec<Credential>>;
+    async fn find_passkeys_by_user_id(&self, user_id: Uuid) -> RepoResult<Vec<Credential>>;
 
     /// Find OAuth connection for a user and provider.
     async fn find_oauth_by_user_and_provider(
@@ -112,17 +89,10 @@ pub trait CredentialRepository: Send + Sync {
     ) -> RepoResult<Credential>;
 
     /// Update a credential's verified status.
-    async fn set_verified(
-        &self,
-        credential_id: Uuid,
-        verified: bool,
-    ) -> RepoResult<()>;
+    async fn set_verified(&self, credential_id: Uuid, verified: bool) -> RepoResult<()>;
 
     /// Update last used timestamp.
-    async fn update_last_used(
-        &self,
-        credential_id: Uuid,
-    ) -> RepoResult<()>;
+    async fn update_last_used(&self, credential_id: Uuid) -> RepoResult<()>;
 
     /// Delete a credential.
     async fn delete(&self, credential_id: Uuid) -> RepoResult<()>;
@@ -135,37 +105,22 @@ pub trait CredentialRepository: Send + Sync {
 #[async_trait]
 pub trait SessionRepository: Send + Sync {
     /// Find a session by ID.
-    async fn find_by_id(
-        &self,
-        session_id: Uuid,
-    ) -> RepoResult<Option<Session>>;
+    async fn find_by_id(&self, session_id: Uuid) -> RepoResult<Option<Session>>;
 
     /// Find a session by access token fingerprint.
-    async fn find_by_access_fingerprint(
-        &self,
-        fingerprint: &str,
-    ) -> RepoResult<Option<Session>>;
+    async fn find_by_access_fingerprint(&self, fingerprint: &str) -> RepoResult<Option<Session>>;
 
     /// Find a session by refresh token fingerprint.
-    async fn find_by_refresh_fingerprint(
-        &self,
-        fingerprint: &str,
-    ) -> RepoResult<Option<Session>>;
+    async fn find_by_refresh_fingerprint(&self, fingerprint: &str) -> RepoResult<Option<Session>>;
 
     /// Find all active sessions for a user.
-    async fn find_active_by_user_id(
-        &self,
-        user_id: Uuid,
-    ) -> RepoResult<Vec<Session>>;
+    async fn find_active_by_user_id(&self, user_id: Uuid) -> RepoResult<Vec<Session>>;
 
     /// Create a new session.
     async fn create(&self, session: NewSession<'_>) -> RepoResult<Session>;
 
     /// Update last used timestamp.
-    async fn update_last_used(
-        &self,
-        session_id: Uuid,
-    ) -> RepoResult<()>;
+    async fn update_last_used(&self, session_id: Uuid) -> RepoResult<()>;
 
     /// Refresh a session (rotate tokens).
     async fn refresh(
@@ -178,11 +133,7 @@ pub trait SessionRepository: Send + Sync {
     ) -> RepoResult<Session>;
 
     /// Revoke a session.
-    async fn revoke(
-        &self,
-        session_id: Uuid,
-        reason: &str,
-    ) -> RepoResult<()>;
+    async fn revoke(&self, session_id: Uuid, reason: &str) -> RepoResult<()>;
 
     /// Revoke all sessions for a user.
     async fn revoke_all_for_user(
@@ -203,18 +154,10 @@ pub trait AuditLogRepository: Send + Sync {
     async fn create(&self, event: &AuthEvent) -> RepoResult<()>;
 
     /// Find audit log entries for a user.
-    async fn find_by_user_id(
-        &self,
-        user_id: Uuid,
-        limit: u64,
-    ) -> RepoResult<Vec<AuthEvent>>;
+    async fn find_by_user_id(&self, user_id: Uuid, limit: u64) -> RepoResult<Vec<AuthEvent>>;
 
     /// Find audit log entries by IP address.
-    async fn find_by_ip_address(
-        &self,
-        ip_address: &str,
-        limit: u64,
-    ) -> RepoResult<Vec<AuthEvent>>;
+    async fn find_by_ip_address(&self, ip_address: &str, limit: u64) -> RepoResult<Vec<AuthEvent>>;
 
     /// Find failed login attempts for a user.
     async fn find_failed_logins(
@@ -268,4 +211,14 @@ pub trait AuthRepository:
 }
 
 #[async_trait]
-impl<T: UserRepository + CredentialRepository + SessionRepository + AuditLogRepository + RateLimitRepository + Send + Sync> AuthRepository for T {}
+impl<
+        T: UserRepository
+            + CredentialRepository
+            + SessionRepository
+            + AuditLogRepository
+            + RateLimitRepository
+            + Send
+            + Sync,
+    > AuthRepository for T
+{
+}

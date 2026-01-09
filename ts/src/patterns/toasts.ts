@@ -31,6 +31,20 @@ function generateToastId() {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
+function errorToMessage(error: unknown): string {
+  if (typeof error === "string") return error;
+  if (error instanceof Error && error.message) return error.message;
+
+  const maybeMessage = (error as { message?: unknown } | null)?.message;
+  if (typeof maybeMessage === "string" && maybeMessage) return maybeMessage;
+
+  try {
+    return JSON.stringify(error);
+  } catch {
+    return "Unknown error";
+  }
+}
+
 export function createToastStore(): ToastStore {
   const toasts = writable<Toast[]>([]);
 
@@ -57,4 +71,24 @@ export function createToastStore(): ToastStore {
   }
 
   return { toasts, push, dismiss, clear };
+}
+
+export function pushSuccessToast(
+  store: ToastStore,
+  message: string,
+  title?: string
+): string {
+  return store.push({ variant: "success", title, message });
+}
+
+export function pushErrorToast(
+  store: ToastStore,
+  error: unknown,
+  fallbackMessage: string = "Something went wrong"
+): string {
+  const msg = errorToMessage(error);
+  return store.push({
+    variant: "error",
+    message: msg && msg !== "{}" ? msg : fallbackMessage
+  });
 }

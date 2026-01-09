@@ -2,10 +2,84 @@ import { UnderlayHttpError, isErrorEnvelope } from "./errors";
 
 export type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
+export interface TokenStore {
+  getAccessToken(): string | null | Promise<string | null>;
+  setAccessToken(token: string | null): void | Promise<void>;
+
+  getRefreshToken(): string | null | Promise<string | null>;
+  setRefreshToken(token: string | null): void | Promise<void>;
+
+  clear(): void | Promise<void>;
+}
+
+export class MemoryTokenStore implements TokenStore {
+  private accessToken: string | null = null;
+  private refreshToken: string | null = null;
+
+  getAccessToken(): string | null {
+    return this.accessToken;
+  }
+
+  setAccessToken(token: string | null): void {
+    this.accessToken = token;
+  }
+
+  getRefreshToken(): string | null {
+    return this.refreshToken;
+  }
+
+  setRefreshToken(token: string | null): void {
+    this.refreshToken = token;
+  }
+
+  clear(): void {
+    this.accessToken = null;
+    this.refreshToken = null;
+  }
+}
+
 export interface HttpClientOptions {
   baseUrl: string;
   defaultHeaders?: Record<string, string>;
   fetch?: typeof globalThis.fetch;
+
+  auth?: HttpAuthOptions;
+}
+
+export interface HttpAuthOptions {
+  tokenStore?: TokenStore;
+
+  getAccessToken?: () => string | null | Promise<string | null>;
+  setAccessToken?: (token: string | null) => void | Promise<void>;
+
+  getRefreshToken?: () => string | null | Promise<string | null>;
+  setRefreshToken?: (token: string | null) => void | Promise<void>;
+
+  /**
+   * Called when a request fails with 401; return true to retry.
+   *
+   * Use `rawRequest` so refresh calls do not include Authorization headers.
+   */
+  refresh?: (ctx: RefreshContext) => Promise<RefreshResult>;
+}
+
+export interface RefreshContext {
+  rawRequest<T>(req: HttpRequest): Promise<T>;
+  tokenStore?: TokenStore;
+
+  getRefreshToken(): Promise<string | null>;
+  setAccessToken(token: string | null): Promise<void>;
+  setRefreshToken(token: string | null): Promise<void>;
+}
+
+export interface RefreshResult {
+  /** If provided, the client will update the token store. */
+  accessToken?: string | null;
+  /** If provided, the client will update the token store. */
+  refreshToken?: string | null;
+
+  /** Whether to retry the original request after refresh. */
+  retry: boolean;
 }
 
 export interface HttpRequest {
@@ -27,7 +101,25 @@ export interface HttpClient {
 export function createHttpClient(options: HttpClientOptions): HttpClient {
   const fetchImpl = options.fetch ?? globalThis.fetch;
 
-  async function request<T>(req: HttpRequest): Promise<T> {
+  const tokenStore = options.auth?.tokenStore;
+
+  const getAccessToken =
+    options.auth?.getAccessToken ??
+    (tokenStore ? () => tokenStore.getAccessToken() : undefined);
+  const setAccessToken =
+    options.auth?.setAccessToken ??
+    (tokenStore ? (t: string | null) => tokenStore.setAccessToken(t) : undefined);
+
+  const getRefreshToken =
+    options.auth?.getRefreshToken ??
+    (tokenStore ? () => tokenStore.getRefreshToken() : async () => null);
+  const setRefreshToken =
+    options.auth?.setRefreshToken ??
+    (tokenStore ? (t: string | null) => tokenStore.setRefreshToken(t) : undefined);
+
+  let refreshInFlight: Promise<RefreshResult> | null = null;
+
+  async function rawRequest<T>(req: HttpRequest): Promise<T> {
     const url = new URL(req.path, options.baseUrl);
     const headers: Record<string, string> = {
       ...options.defaultHeaders,
@@ -65,6 +157,71 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
     }
 
     return (await res.json()) as T;
+  }
+
+  async function request<T>(req: HttpRequest): Promise<T> {
+    const authHeader = req.headers?.authorization ?? req.headers?.Authorization;
+    const token = authHeader ? null : await getAccessToken?.();
+
+    const headers = token
+      ? {
+          ...req.headers,
+          authorization: `Bearer ${token}`,
+        }
+      : req.headers;
+
+    try {
+      return await rawRequest<T>({ ...req, headers });
+    } catch (err) {
+      if (!(err instanceof UnderlayHttpError)) {
+        throw err;
+      }
+
+      if (err.status !== 401 || !options.auth?.refresh) {
+        throw err;
+      }
+
+      if (!refreshInFlight) {
+        refreshInFlight = options.auth
+          .refresh({
+            rawRequest,
+            tokenStore,
+            getRefreshToken: async () => (await getRefreshToken?.()) ?? null,
+            setAccessToken: async (t) => {
+              await setAccessToken?.(t);
+            },
+            setRefreshToken: async (t) => {
+              await setRefreshToken?.(t);
+            },
+          })
+          .finally(() => {
+            refreshInFlight = null;
+          });
+      }
+
+      const refreshed = await refreshInFlight;
+
+      if (refreshed.accessToken !== undefined) {
+        await setAccessToken?.(refreshed.accessToken);
+      }
+      if (refreshed.refreshToken !== undefined) {
+        await setRefreshToken?.(refreshed.refreshToken);
+      }
+
+      if (!refreshed.retry) {
+        throw err;
+      }
+
+      const retryToken = await getAccessToken?.();
+      const retryHeaders = retryToken
+        ? {
+            ...req.headers,
+            authorization: `Bearer ${retryToken}`,
+          }
+        : req.headers;
+
+      return await rawRequest<T>({ ...req, headers: retryHeaders });
+    }
   }
 
   return {

@@ -1,0 +1,25 @@
+[package]
+name = "underlay-auth-webauthn"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+thiserror = "2"
+url = "2"
+base64urlsafedata = "0.5.4"
+webauthn-rs = "0.5.4"
+underlay-auth = { path = "../underlay-auth" }
+underlay-core = { path = "../underlay-core" }
+
+[features]
+# `webauthn-rs` treats state serialisation as dangerous; we keep it opt-in.
+danger-allow-state-serialisation = ["webauthn-rs/danger-allow-state-serialisation"]
+
+# Support attested passkeys and CA verification.
+attestation = ["webauthn-rs/attestation"]
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["macros", "rt"] }

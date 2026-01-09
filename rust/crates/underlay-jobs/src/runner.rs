@@ -79,7 +79,9 @@ mod tests {
     use async_trait::async_trait;
     use serde_json::json;
 
-    use crate::{Job, JobHandler, JobHandlerError, JobId, JobRegistry, JobRunner, JobRunnerConfig, JobStore};
+    use crate::{
+        Job, JobHandler, JobHandlerError, JobId, JobRegistry, JobRunner, JobRunnerConfig, JobStore,
+    };
 
     #[derive(Debug, Default)]
     struct MemStore {
@@ -220,7 +222,9 @@ mod tests {
         });
 
         let mut registry = JobRegistry::new();
-        registry.register(FailingHandler { called: called.clone() });
+        registry.register(FailingHandler {
+            called: called.clone(),
+        });
 
         let runner = JobRunner::new(store.clone(), registry);
         let did_work = runner.run_once().await.expect("run_once");
@@ -264,7 +268,10 @@ mod tests {
         impl JobStore for Arc<CountingStore> {
             type Error = MemError;
 
-            async fn fetch_next(&self, _allowed_types: &[String]) -> Result<Option<Job>, Self::Error> {
+            async fn fetch_next(
+                &self,
+                _allowed_types: &[String],
+            ) -> Result<Option<Job>, Self::Error> {
                 self.fetches.fetch_add(1, Ordering::SeqCst);
                 Ok(None)
             }

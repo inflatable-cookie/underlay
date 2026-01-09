@@ -41,7 +41,8 @@ impl JwtService {
             .decode(&config.public_key_b64)
             .or_else(|_| base64::engine::general_purpose::STANDARD.decode(&config.public_key_b64))
             .map_err(|e| JwtError::Key(format!("Base64 error: {}", e)))?;
-        let public_key_b64url = base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(public_key_bytes);
+        let public_key_b64url =
+            base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(public_key_bytes);
 
         let decoding_key = DecodingKey::from_ed_components(&public_key_b64url)
             .map_err(|e| JwtError::Key(e.to_string()))?;
@@ -82,8 +83,7 @@ impl JwtService {
         roles: Vec<String>,
     ) -> JwtResult<(String, AccessTokenClaims)> {
         let now = Utc::now().timestamp() as u64;
-        let exp = (Utc::now() + self.config.access_token_lifetime())
-            .timestamp() as u64;
+        let exp = (Utc::now() + self.config.access_token_lifetime()).timestamp() as u64;
 
         let claims = AccessTokenClaims {
             common: CommonClaims {
@@ -117,8 +117,7 @@ impl JwtService {
         version: u32,
     ) -> JwtResult<(String, RefreshTokenClaims)> {
         let now = Utc::now().timestamp() as u64;
-        let exp = (Utc::now() + self.config.refresh_token_lifetime())
-            .timestamp() as u64;
+        let exp = (Utc::now() + self.config.refresh_token_lifetime()).timestamp() as u64;
 
         let claims = RefreshTokenClaims {
             common: CommonClaims {
@@ -145,72 +144,70 @@ impl JwtService {
         Ok((token, claims))
     }
 
-        pub fn verify_access_token(&self, token: &str) -> JwtResult<AccessTokenClaims> {
-            let value = self.decode_and_validate_value(token)?;
+    pub fn verify_access_token(&self, token: &str) -> JwtResult<AccessTokenClaims> {
+        let value = self.decode_and_validate_value(token)?;
 
-            let token_use = value
-                .get("tuse")
-                .and_then(|v| v.as_str())
-                .ok_or(JwtError::MalformedToken)?;
+        let token_use = value
+            .get("tuse")
+            .and_then(|v| v.as_str())
+            .ok_or(JwtError::MalformedToken)?;
 
-            if token_use != "access" {
-                return Err(JwtError::UnsupportedTokenType);
-            }
-
-            serde_json::from_value::<AccessTokenClaims>(value)
-                .map_err(|_| JwtError::MalformedToken)
+        if token_use != "access" {
+            return Err(JwtError::UnsupportedTokenType);
         }
 
-        pub fn verify_refresh_token(&self, token: &str) -> JwtResult<RefreshTokenClaims> {
-            let value = self.decode_and_validate_value(token)?;
+        serde_json::from_value::<AccessTokenClaims>(value).map_err(|_| JwtError::MalformedToken)
+    }
 
-            let token_use = value
-                .get("tuse")
-                .and_then(|v| v.as_str())
-                .ok_or(JwtError::MalformedToken)?;
+    pub fn verify_refresh_token(&self, token: &str) -> JwtResult<RefreshTokenClaims> {
+        let value = self.decode_and_validate_value(token)?;
 
-            if token_use != "refresh" {
-                return Err(JwtError::UnsupportedTokenType);
-            }
+        let token_use = value
+            .get("tuse")
+            .and_then(|v| v.as_str())
+            .ok_or(JwtError::MalformedToken)?;
 
-            serde_json::from_value::<RefreshTokenClaims>(value)
-                .map_err(|_| JwtError::MalformedToken)
+        if token_use != "refresh" {
+            return Err(JwtError::UnsupportedTokenType);
         }
 
-        fn decode_and_validate_value(&self, token: &str) -> JwtResult<serde_json::Value> {
-            let mut validation = Validation::new(Algorithm::EdDSA);
-            validation.leeway = self.config.leeway_seconds;
-            validation.validate_nbf = true;
+        serde_json::from_value::<RefreshTokenClaims>(value).map_err(|_| JwtError::MalformedToken)
+    }
 
-            // Require core JWT claims we rely on.
-            if self.config.audience.is_some() {
-                validation.set_required_spec_claims(&["exp", "iss", "sub", "aud"]);
-            } else {
-                validation.set_required_spec_claims(&["exp", "iss", "sub"]);
-            }
+    fn decode_and_validate_value(&self, token: &str) -> JwtResult<serde_json::Value> {
+        let mut validation = Validation::new(Algorithm::EdDSA);
+        validation.leeway = self.config.leeway_seconds;
+        validation.validate_nbf = true;
 
-            validation.set_issuer(&[self.config.issuer.clone()]);
-            if let Some(aud) = &self.config.audience {
-                validation.set_audience(&[aud.clone()]);
-            }
+        // Require core JWT claims we rely on.
+        if self.config.audience.is_some() {
+            validation.set_required_spec_claims(&["exp", "iss", "sub", "aud"]);
+        } else {
+            validation.set_required_spec_claims(&["exp", "iss", "sub"]);
+        }
 
-            match decode::<serde_json::Value>(token, &self.decoding_key, &validation) {
-                Ok(data) => Ok(data.claims),
-                Err(err) => {
-                    use jsonwebtoken::errors::ErrorKind;
-                    match err.kind() {
-                        ErrorKind::ExpiredSignature => Err(JwtError::Expired),
-                        ErrorKind::ImmatureSignature => Err(JwtError::NotYetValid),
-                        ErrorKind::InvalidToken => Err(JwtError::InvalidToken),
-                        ErrorKind::InvalidSignature => Err(JwtError::InvalidToken),
-                        ErrorKind::InvalidIssuer => Err(JwtError::InvalidToken),
-                        ErrorKind::InvalidAudience => Err(JwtError::InvalidToken),
-                        ErrorKind::Json(_) => Err(JwtError::MalformedToken),
-                        _ => Err(JwtError::InvalidToken),
-                    }
+        validation.set_issuer(&[self.config.issuer.clone()]);
+        if let Some(aud) = &self.config.audience {
+            validation.set_audience(&[aud.clone()]);
+        }
+
+        match decode::<serde_json::Value>(token, &self.decoding_key, &validation) {
+            Ok(data) => Ok(data.claims),
+            Err(err) => {
+                use jsonwebtoken::errors::ErrorKind;
+                match err.kind() {
+                    ErrorKind::ExpiredSignature => Err(JwtError::Expired),
+                    ErrorKind::ImmatureSignature => Err(JwtError::NotYetValid),
+                    ErrorKind::InvalidToken => Err(JwtError::InvalidToken),
+                    ErrorKind::InvalidSignature => Err(JwtError::InvalidToken),
+                    ErrorKind::InvalidIssuer => Err(JwtError::InvalidToken),
+                    ErrorKind::InvalidAudience => Err(JwtError::InvalidToken),
+                    ErrorKind::Json(_) => Err(JwtError::MalformedToken),
+                    _ => Err(JwtError::InvalidToken),
                 }
             }
         }
+    }
 }
 
 /// Session state stored in application persistence.
@@ -256,10 +253,15 @@ impl<S: SessionStore> SessionManager<S> {
         Self { jwt, store }
     }
 
-    pub async fn create_session(&self, user_id: Uuid, roles: Vec<String>) -> JwtResult<SessionTokens> {
+    pub async fn create_session(
+        &self,
+        user_id: Uuid,
+        roles: Vec<String>,
+    ) -> JwtResult<SessionTokens> {
         let session_id = Uuid::new_v7();
         let (access_token, _access_claims) =
-            self.jwt.issue_access_token(user_id, session_id, roles.clone())?;
+            self.jwt
+                .issue_access_token(user_id, session_id, roles.clone())?;
 
         let (refresh_token, refresh_claims) =
             self.jwt.issue_refresh_token(user_id, session_id, None, 1)?;
@@ -384,12 +386,18 @@ mod tests {
         }
 
         async fn create_session(&self, session: &SessionState) -> JwtResult<()> {
-            self.sessions.lock().await.insert(session.id, session.clone());
+            self.sessions
+                .lock()
+                .await
+                .insert(session.id, session.clone());
             Ok(())
         }
 
         async fn update_session(&self, session: &SessionState) -> JwtResult<()> {
-            self.sessions.lock().await.insert(session.id, session.clone());
+            self.sessions
+                .lock()
+                .await
+                .insert(session.id, session.clone());
             Ok(())
         }
 
@@ -431,10 +439,16 @@ mod tests {
             .await
             .unwrap();
 
-        let claims = manager.verify_access_token(&tokens.access_token).await.unwrap();
+        let claims = manager
+            .verify_access_token(&tokens.access_token)
+            .await
+            .unwrap();
         assert_eq!(claims.common.subject, user_id);
 
-        let refreshed = manager.refresh_session(&tokens.refresh_token).await.unwrap();
+        let refreshed = manager
+            .refresh_session(&tokens.refresh_token)
+            .await
+            .unwrap();
         assert_ne!(tokens.refresh_token, refreshed.refresh_token);
 
         // Refresh token replay should be rejected.
@@ -452,9 +466,9 @@ mod tests {
     }
 
     mod key_generation {
-        use crate::{KeyPair, keys::URL_SAFE_NO_PAD};
-        use base64::Engine as _;
         use super::*;
+        use crate::{keys::URL_SAFE_NO_PAD, KeyPair};
+        use base64::Engine as _;
 
         #[test]
         fn generates_unique_key_pairs() {
@@ -498,9 +512,9 @@ mod tests {
     }
 
     mod config_tests {
+        use super::*;
         use crate::keys::URL_SAFE_NO_PAD;
         use base64::Engine as _;
-        use super::*;
 
         #[test]
         fn default_config_has_sensible_values() {
@@ -563,7 +577,10 @@ mod tests {
             };
 
             let result = JwtService::new(mismatched);
-            assert!(matches!(result, Err(JwtError::InvalidToken)), "got: {result:?}");
+            assert!(
+                matches!(result, Err(JwtError::InvalidToken)),
+                "got: {result:?}"
+            );
         }
 
         #[test]
@@ -587,7 +604,9 @@ mod tests {
             let session_id = Uuid::new_v7();
             let roles = vec!["admin".to_string(), "user".to_string()];
 
-            let (token, claims) = jwt.issue_access_token(user_id, session_id, roles.clone()).unwrap();
+            let (token, claims) = jwt
+                .issue_access_token(user_id, session_id, roles.clone())
+                .unwrap();
 
             assert!(!token.is_empty());
             assert_eq!(claims.common.issuer, "underlay");
@@ -664,7 +683,9 @@ mod tests {
             let user_id = Uuid::new_v7();
             let session_id = Uuid::new_v7();
 
-            let (token, _claims) = jwt.issue_refresh_token(user_id, session_id, None, 1).unwrap();
+            let (token, _claims) = jwt
+                .issue_refresh_token(user_id, session_id, None, 1)
+                .unwrap();
             let verified = jwt.verify_refresh_token(&token).unwrap();
 
             assert_eq!(verified.common.subject, user_id);
@@ -738,7 +759,10 @@ mod tests {
             let token = encode(&header, &claims, &jwt.encoding_key).unwrap();
             let result = jwt.verify_access_token(&token);
 
-            assert!(matches!(result, Err(JwtError::NotYetValid)), "got: {result:?}");
+            assert!(
+                matches!(result, Err(JwtError::NotYetValid)),
+                "got: {result:?}"
+            );
         }
 
         #[test]
@@ -795,7 +819,9 @@ mod tests {
             let user_id = Uuid::new_v7();
             let session_id = Uuid::new_v7();
 
-            let (token, _) = jwt1.issue_access_token(user_id, session_id, vec![]).unwrap();
+            let (token, _) = jwt1
+                .issue_access_token(user_id, session_id, vec![])
+                .unwrap();
 
             let result = jwt2.verify_access_token(&token);
             assert!(matches!(result, Err(JwtError::InvalidToken)));
@@ -809,12 +835,17 @@ mod tests {
             let user_id = Uuid::new_v7();
             let session_id = Uuid::new_v7();
 
-            let (refresh_token, _) = jwt.issue_refresh_token(user_id, session_id, None, 1).unwrap();
+            let (refresh_token, _) = jwt
+                .issue_refresh_token(user_id, session_id, None, 1)
+                .unwrap();
 
             let result = jwt.verify_access_token(&refresh_token);
 
-            assert!(matches!(result, Err(JwtError::UnsupportedTokenType)),
-                    "Expected UnsupportedTokenType but got: {:?}", result);
+            assert!(
+                matches!(result, Err(JwtError::UnsupportedTokenType)),
+                "Expected UnsupportedTokenType but got: {:?}",
+                result
+            );
         }
 
         #[test]
@@ -829,8 +860,11 @@ mod tests {
 
             let result = jwt.verify_refresh_token(&access_token);
 
-            assert!(matches!(result, Err(JwtError::UnsupportedTokenType)),
-                    "Expected UnsupportedTokenType but got: {:?}", result);
+            assert!(
+                matches!(result, Err(JwtError::UnsupportedTokenType)),
+                "Expected UnsupportedTokenType but got: {:?}",
+                result
+            );
         }
 
         #[test]
@@ -891,7 +925,9 @@ mod tests {
             let user_id = Uuid::new_v7();
             let session_id = Uuid::new_v7();
 
-            let (token, _) = jwt_no_aud.issue_access_token(user_id, session_id, vec![]).unwrap();
+            let (token, _) = jwt_no_aud
+                .issue_access_token(user_id, session_id, vec![])
+                .unwrap();
 
             let result = jwt_with_aud.verify_access_token(&token);
             assert!(matches!(result, Err(JwtError::InvalidToken)));
@@ -899,8 +935,8 @@ mod tests {
     }
 
     mod token_fingerprint_tests {
-        use crate::keys::URL_SAFE_NO_PAD;
         use super::*;
+        use crate::keys::URL_SAFE_NO_PAD;
 
         #[test]
         fn fingerprint_is_consistent() {
@@ -950,17 +986,29 @@ mod tests {
 
         #[test]
         fn jwt_error_codes_are_correct() {
-            assert_eq!(JwtError::Config("test".to_string()).code(), "auth.jwt_config_error");
-            assert_eq!(JwtError::Key("test".to_string()).code(), "auth.jwt_key_error");
+            assert_eq!(
+                JwtError::Config("test".to_string()).code(),
+                "auth.jwt_config_error"
+            );
+            assert_eq!(
+                JwtError::Key("test".to_string()).code(),
+                "auth.jwt_key_error"
+            );
             assert_eq!(JwtError::Expired.code(), "auth.token_expired");
             assert_eq!(JwtError::NotYetValid.code(), "auth.token_not_yet_valid");
             assert_eq!(JwtError::InvalidToken.code(), "auth.token_invalid");
             assert_eq!(JwtError::MalformedToken.code(), "auth.token_malformed");
             assert_eq!(JwtError::SessionRevoked.code(), "auth.session_revoked");
-            assert_eq!(JwtError::TokenFingerprintMismatch.code(), "auth.token_fingerprint_mismatch");
+            assert_eq!(
+                JwtError::TokenFingerprintMismatch.code(),
+                "auth.token_fingerprint_mismatch"
+            );
             assert_eq!(JwtError::RefreshReplayDetected.code(), "auth.token_replay");
             assert_eq!(JwtError::UnsupportedTokenType.code(), "auth.token_invalid");
-            assert_eq!(JwtError::Internal("test".to_string()).code(), "auth.internal");
+            assert_eq!(
+                JwtError::Internal("test".to_string()).code(),
+                "auth.internal"
+            );
         }
 
         #[test]
@@ -972,12 +1020,30 @@ mod tests {
             assert_eq!(AuthError::TokenInvalid, JwtError::InvalidToken.into());
             assert_eq!(AuthError::TokenMalformed, JwtError::MalformedToken.into());
             assert_eq!(AuthError::SessionRevoked, JwtError::SessionRevoked.into());
-            assert_eq!(AuthError::TokenFingerprintMismatch, JwtError::TokenFingerprintMismatch.into());
-            assert_eq!(AuthError::TokenInvalid, JwtError::RefreshReplayDetected.into());
-            assert_eq!(AuthError::TokenInvalid, JwtError::UnsupportedTokenType.into());
-            assert!(matches!(JwtError::Config("error".into()).into(), AuthError::Internal(_)));
-            assert!(matches!(JwtError::Key("error".into()).into(), AuthError::Internal(_)));
-            assert!(matches!(JwtError::Internal("error".into()).into(), AuthError::Internal(_)));
+            assert_eq!(
+                AuthError::TokenFingerprintMismatch,
+                JwtError::TokenFingerprintMismatch.into()
+            );
+            assert_eq!(
+                AuthError::TokenInvalid,
+                JwtError::RefreshReplayDetected.into()
+            );
+            assert_eq!(
+                AuthError::TokenInvalid,
+                JwtError::UnsupportedTokenType.into()
+            );
+            assert!(matches!(
+                JwtError::Config("error".into()).into(),
+                AuthError::Internal(_)
+            ));
+            assert!(matches!(
+                JwtError::Key("error".into()).into(),
+                AuthError::Internal(_)
+            ));
+            assert!(matches!(
+                JwtError::Internal("error".into()).into(),
+                AuthError::Internal(_)
+            ));
         }
     }
 }

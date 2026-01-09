@@ -95,10 +95,7 @@ pub trait PasswordAuthRepository: Send + Sync {
     ) -> PasswordAuthResult<()>;
 
     /// Delete a password credential.
-    async fn delete_password_credential(
-        &self,
-        credential_id: Uuid,
-    ) -> PasswordAuthResult<()>;
+    async fn delete_password_credential(&self, credential_id: Uuid) -> PasswordAuthResult<()>;
 
     /// Record a failed login attempt.
     ///
@@ -112,22 +109,14 @@ pub trait PasswordAuthRepository: Send + Sync {
     ) -> PasswordAuthResult<FailedLoginAttempt>;
 
     /// Reset failed login attempts.
-    async fn reset_failed_logins(
-        &self,
-        user_id: Uuid,
-    ) -> PasswordAuthResult<()>;
+    async fn reset_failed_logins(&self, user_id: Uuid) -> PasswordAuthResult<()>;
 
     /// Get failed login count for a user.
-    async fn get_failed_login_count(
-        &self,
-        user_id: Uuid,
-    ) -> PasswordAuthResult<u32>;
+    async fn get_failed_login_count(&self, user_id: Uuid) -> PasswordAuthResult<u32>;
 
     /// Returns remaining lockout seconds, or `None` if not locked out.
-    async fn get_lockout_remaining_seconds(
-        &self,
-        user_id: Uuid,
-    ) -> PasswordAuthResult<Option<u64>>;
+    async fn get_lockout_remaining_seconds(&self, user_id: Uuid)
+        -> PasswordAuthResult<Option<u64>>;
 
     /// Check rate limit for this key.
     ///
@@ -304,31 +293,23 @@ where
             .get_lockout_remaining_seconds(user.id)
             .await?
         {
-            return Err(
-                PasswordAuthError::AccountLocked {
-                    retry_after_seconds,
-                }
-                .into(),
-            );
+            return Err(PasswordAuthError::AccountLocked {
+                retry_after_seconds,
+            }
+            .into());
         }
 
-        let credential = match self
-            .repository
-            .find_password_credential(user.id)
-            .await?
-        {
+        let credential = match self.repository.find_password_credential(user.id).await? {
             Some(c) => c,
             None => return Err(PasswordAuthError::CredentialNotFound),
         };
 
         let password_hash = match &credential.metadata {
-            CredentialMetadata::Password { .. } => {
-                &credential.secret_encrypted
-            }
+            CredentialMetadata::Password { .. } => &credential.secret_encrypted,
             _ => {
-                return Err(PasswordAuthError::Internal(
-                    "Invalid credential type".to_string(),
-                ).into());
+                return Err(
+                    PasswordAuthError::Internal("Invalid credential type".to_string()).into(),
+                );
             }
         };
 
@@ -350,19 +331,15 @@ where
                 .await?;
 
             if let Some(retry_after_seconds) = attempt.lockout_remaining_seconds {
-                Err(
-                    PasswordAuthError::AccountLocked {
-                        retry_after_seconds,
-                    }
-                    .into(),
-                )
+                Err(PasswordAuthError::AccountLocked {
+                    retry_after_seconds,
+                }
+                .into())
             } else if attempt.count >= self.config.max_failed_attempts {
-                Err(
-                    PasswordAuthError::AccountLocked {
-                        retry_after_seconds: self.config.lockout_duration_seconds,
-                    }
-                    .into(),
-                )
+                Err(PasswordAuthError::AccountLocked {
+                    retry_after_seconds: self.config.lockout_duration_seconds,
+                }
+                .into())
             } else {
                 Err(PasswordAuthError::WrongPassword)
             }
@@ -386,11 +363,7 @@ where
             return Err(PasswordAuthError::PasswordTooWeak(analysis.feedback.join(". ")).into());
         }
 
-        let credential = match self
-            .repository
-            .find_password_credential(user_id)
-            .await?
-        {
+        let credential = match self.repository.find_password_credential(user_id).await? {
             Some(c) => c,
             None => return Err(PasswordAuthError::CredentialNotFound.into()),
         };
@@ -436,11 +409,7 @@ where
             return Err(PasswordAuthError::PasswordTooWeak(analysis.feedback.join(". ")).into());
         }
 
-        let credential = match self
-            .repository
-            .find_password_credential(user_id)
-            .await?
-        {
+        let credential = match self.repository.find_password_credential(user_id).await? {
             Some(c) => c,
             None => return Err(PasswordAuthError::CredentialNotFound.into()),
         };
@@ -609,17 +578,16 @@ mod tests {
     use tokio::sync::Mutex;
 
     #[derive(Debug)]
-        struct MemoryRepo {
-            users_by_email: Mutex<HashMap<String, User>>,
-            users_by_id: Mutex<HashMap<Uuid, User>>,
-            credentials_by_user: Mutex<HashMap<Uuid, Credential>>,
-            credential_ids: Mutex<HashSet<Uuid>>,
-            failed_counts: Mutex<HashMap<Uuid, u32>>,
-            locked_until: Mutex<HashMap<Uuid, chrono::DateTime<chrono::Utc>>>,
-            blocked_rate_limit_keys: Mutex<HashSet<String>>,
-            lockout_threshold: u32,
-        }
-
+    struct MemoryRepo {
+        users_by_email: Mutex<HashMap<String, User>>,
+        users_by_id: Mutex<HashMap<Uuid, User>>,
+        credentials_by_user: Mutex<HashMap<Uuid, Credential>>,
+        credential_ids: Mutex<HashSet<Uuid>>,
+        failed_counts: Mutex<HashMap<Uuid, u32>>,
+        locked_until: Mutex<HashMap<Uuid, chrono::DateTime<chrono::Utc>>>,
+        blocked_rate_limit_keys: Mutex<HashSet<String>>,
+        lockout_threshold: u32,
+    }
 
     impl MemoryRepo {
         fn new(lockout_threshold: u32) -> Self {
@@ -689,7 +657,10 @@ mod tests {
             };
 
             self.credential_ids.lock().await.insert(cred.id);
-            self.credentials_by_user.lock().await.insert(user_id, cred.clone());
+            self.credentials_by_user
+                .lock()
+                .await
+                .insert(user_id, cred.clone());
             Ok(cred)
         }
 
@@ -735,8 +706,8 @@ mod tests {
 
             let threshold = std::cmp::min(self.lockout_threshold, max_failed_attempts);
             let lockout_remaining_seconds = if count >= threshold {
-                let until = chrono::Utc::now()
-                    + chrono::Duration::seconds(lockout_duration_seconds as i64);
+                let until =
+                    chrono::Utc::now() + chrono::Duration::seconds(lockout_duration_seconds as i64);
                 self.locked_until.lock().await.insert(user_id, until);
                 Some(lockout_duration_seconds)
             } else {
@@ -823,9 +794,15 @@ mod tests {
             }),
         );
 
-        service.set_password(user.id, "S0mething$trong!").await.unwrap();
+        service
+            .set_password(user.id, "S0mething$trong!")
+            .await
+            .unwrap();
 
-        let err = service.verify_login(&user.email, "wrong").await.unwrap_err();
+        let err = service
+            .verify_login(&user.email, "wrong")
+            .await
+            .unwrap_err();
         assert!(matches!(err, PasswordAuthError::WrongPassword));
 
         let ok = service
@@ -835,7 +812,11 @@ mod tests {
         assert_eq!(ok.id, user.id);
 
         assert_eq!(repo.get_failed_login_count(user.id).await.unwrap(), 0);
-        assert!(repo.get_lockout_remaining_seconds(user.id).await.unwrap().is_none());
+        assert!(repo
+            .get_lockout_remaining_seconds(user.id)
+            .await
+            .unwrap()
+            .is_none());
     }
 
     #[tokio::test]
@@ -858,12 +839,21 @@ mod tests {
             }),
         );
 
-        service.set_password(user.id, "S0mething$trong!").await.unwrap();
+        service
+            .set_password(user.id, "S0mething$trong!")
+            .await
+            .unwrap();
 
-        let err1 = service.verify_login(&user.email, "wrong").await.unwrap_err();
+        let err1 = service
+            .verify_login(&user.email, "wrong")
+            .await
+            .unwrap_err();
         assert!(matches!(err1, PasswordAuthError::WrongPassword));
 
-        let err2 = service.verify_login(&user.email, "wrong").await.unwrap_err();
+        let err2 = service
+            .verify_login(&user.email, "wrong")
+            .await
+            .unwrap_err();
         assert!(matches!(err2, PasswordAuthError::AccountLocked { .. }));
 
         // Subsequent attempts are blocked by get_lockout_remaining_seconds().
@@ -885,7 +875,10 @@ mod tests {
 
         let service = PasswordAuthService::new(repo.clone(), hasher, verifier, None);
 
-        service.set_password(user.id, "S0mething$trong!").await.unwrap();
+        service
+            .set_password(user.id, "S0mething$trong!")
+            .await
+            .unwrap();
 
         let ip = "1.2.3.4";
         let key = format!("login:{}:{}", user.email.trim().to_lowercase(), ip);
@@ -918,7 +911,10 @@ mod tests {
             }),
         );
 
-        let err = service.set_password(user.id, "password123").await.unwrap_err();
+        let err = service
+            .set_password(user.id, "password123")
+            .await
+            .unwrap_err();
         assert!(matches!(err, PasswordAuthError::PasswordCompromised));
     }
 
@@ -933,7 +929,10 @@ mod tests {
 
         let service = PasswordAuthService::new(repo.clone(), hasher, verifier, None);
 
-        service.set_password(user.id, "CorrectHorse1!").await.unwrap();
+        service
+            .set_password(user.id, "CorrectHorse1!")
+            .await
+            .unwrap();
 
         let err = service
             .change_password(user.id, "WrongPassword1!", "NewPassword2#")
@@ -954,7 +953,10 @@ mod tests {
 
         let service = PasswordAuthService::new(repo.clone(), hasher, verifier, None);
 
-        service.set_password(user.id, "CorrectHorse1!").await.unwrap();
+        service
+            .set_password(user.id, "CorrectHorse1!")
+            .await
+            .unwrap();
 
         let err = service
             .change_password(user.id, "CorrectHorse1!", "CorrectHorse1!")
@@ -975,14 +977,20 @@ mod tests {
 
         let service = PasswordAuthService::new(repo.clone(), hasher, verifier, None);
 
-        service.set_password(user.id, "CorrectHorse1!").await.unwrap();
+        service
+            .set_password(user.id, "CorrectHorse1!")
+            .await
+            .unwrap();
 
         service
             .change_password(user.id, "CorrectHorse1!", "NewPassword2#")
             .await
             .unwrap();
 
-        assert!(service.verify_login(&user.email, "NewPassword2#").await.is_ok());
+        assert!(service
+            .verify_login(&user.email, "NewPassword2#")
+            .await
+            .is_ok());
         assert!(service
             .verify_login(&user.email, "CorrectHorse1!")
             .await
@@ -1000,9 +1008,15 @@ mod tests {
 
         let service = PasswordAuthService::new(repo.clone(), hasher, verifier, None);
 
-        service.set_password(user.id, "CorrectHorse1!").await.unwrap();
+        service
+            .set_password(user.id, "CorrectHorse1!")
+            .await
+            .unwrap();
 
-        service.reset_password(user.id, "ResetPassword2#").await.unwrap();
+        service
+            .reset_password(user.id, "ResetPassword2#")
+            .await
+            .unwrap();
 
         assert!(service
             .verify_login(&user.email, "ResetPassword2#")
@@ -1021,7 +1035,10 @@ mod tests {
 
         let service = PasswordAuthService::new(repo.clone(), hasher, verifier, None);
 
-        service.set_password(user.id, "S0mething$trong!").await.unwrap();
+        service
+            .set_password(user.id, "S0mething$trong!")
+            .await
+            .unwrap();
 
         let logged_in = service
             .verify_login("  I@EXAMPLE.COM  ", "S0mething$trong!")

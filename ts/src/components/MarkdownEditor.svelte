@@ -28,6 +28,11 @@
   let textareaElement: HTMLTextAreaElement | null = null;
   let editorInstance: any = null;
   let editorReady = false;
+  let mounted = false;
+
+  let initAttempt = 0;
+  let changeScheduled = false;
+  let queuedChange = "";
 
   function handleChange(next: string) {
     value = next;
@@ -35,18 +40,37 @@
     dispatch("change", next);
   }
 
-  onMount(async () => {
+  function scheduleChange(next: string) {
+    queuedChange = next;
+    if (changeScheduled) return;
+
+    changeScheduled = true;
+    queueMicrotask(() => {
+      changeScheduled = false;
+      handleChange(queuedChange);
+    });
+  }
+
+  async function ensureEditor() {
     const isBrowser = typeof window !== "undefined";
     if (!isBrowser) return;
 
+    if (!showPreview || loading) return;
+    if (!textareaElement) return;
+    if (editorInstance) return;
+
     editorReady = false;
 
-    // If we are not showing the editor or are in a loading state, skip setup.
-    if (!showPreview || loading) return;
-
-    if (!textareaElement) return;
+    initAttempt += 1;
+    const attemptId = initAttempt;
 
     const EasyMDE = await lazyLoadEasyMde();
+
+    // Component state changed while waiting for dynamic import.
+    if (attemptId !== initAttempt) return;
+    if (!mounted) return;
+    if (!showPreview || loading) return;
+    if (!textareaElement) return;
 
     const icon = {
       bold: '<svg class="underlay-md-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 12h8a4 4 0 0 0 0-8H6z"/><path d="M6 12h9a4 4 0 0 1 0 8H6z"/></svg>',
@@ -147,17 +171,43 @@
 
     editorInstance.codemirror.on("change", () => {
       const next = editorInstance?.value?.() ?? "";
-      handleChange(next);
+      scheduleChange(next);
     });
 
     editorReady = true;
-  });
+  }
 
-  onDestroy(() => {
+  function destroyEditor() {
+    initAttempt += 1;
+
     if (editorInstance) {
       editorInstance.toTextArea();
       editorInstance = null;
     }
+
+    editorReady = false;
+  }
+
+  onMount(() => {
+    mounted = true;
+    void ensureEditor();
+
+    return () => {
+      mounted = false;
+      destroyEditor();
+    };
+  });
+
+  $: if (mounted) {
+    if (showPreview && !loading) {
+      void ensureEditor();
+    } else {
+      destroyEditor();
+    }
+  }
+
+  onDestroy(() => {
+    destroyEditor();
   });
 </script>
 

@@ -63,11 +63,11 @@ This roadmap defines a step-by-step plan to build a complete, self-hosted authen
 - [x] Section 1 — Core Types, Errors, and Database Schema
 - [x] Section 2 — Password Authentication
 - [x] Section 3 — JWT Session Management
-- [ ] Section 4 — Two-Factor Authentication (TOTP)
-- [ ] Section 5 — PassKey/WebAuthn Authentication
-- [ ] Section 6 — OAuth2 SSO (Google)
-- [ ] Section 7 — TypeScript API Client Support
-- [ ] Section 8 — Svelte UI Components
+- [x] Section 4 — Two-Factor Authentication (TOTP)
+- [x] Section 5 — PassKey/WebAuthn Authentication
+- [x] Section 6 — OAuth2 SSO (Google)
+- [x] Section 7 — TypeScript API Client Support
+- [x] Section 8 — Svelte UI Components
 - [ ] Section 9 — Songsprout Integration
 - [ ] Section 10 — Acowtancy Integration
 
@@ -88,13 +88,18 @@ Additional hardening tasks discovered during audit. These are intended to make t
   - Optional networked: HIBP k-anonymity check behind explicit config + feature flag
 - [x] Password: Clarify lockout semantics in repository boundary (ideally return `retry_after_seconds` from repo)
 - [x] Password: Clarify rate-limit semantics in repository boundary (pass window/max into repo or remove unused config)
+- [x] Password: Add `PasswordAuthRepository` trait for clean database abstraction
+- [x] Password: Support configurable max failed attempts, lockout duration, rate limiting via `PasswordConfig`
+- [x] Password: Add `verify_login_with_context` for IP-aware rate limiting
 - [x] Nursery: Disallow implicit fallback to dev auth provider in non-dev (require explicit `NURSERY_DEV_AUTH=true` to enable dev auth)
 - [x] Nursery (OIDC/JWKS JWT): Enforce allowed algorithms (do not trust `alg` from token header)
 - [x] Underlay: Map `AuthError::RateLimited` to HTTP 429 in extractors (and map `BadRequest`→400, `Internal`→500)
 - [x] Underlay: Avoid leaking internal details in public error messages/envelopes (`AuthError::Internal`, `AuthError::OAuthError`)
-- [x] Underlay: Fix `AuthEventBuilder::detail` to preserve keys (don’t overwrite) and avoid panics in `build()`
+- [x] Underlay: Fix `AuthEventBuilder::detail` to preserve keys (don't overwrite) and avoid panics in `build()`
 - [x] Underlay: Remove panic paths from config/crypto helpers (e.g. Argon2 parameter construction)
 - [x] Underlay: Align UUID types in repository traits (prefer `underlay_core::Uuid` consistently)
+- [x] Documentation: Add TOTP, WebAuthn, and OAuth to quickstart guide (see `docs/guides/quickstart/060-authentication.md`)
+- [x] Documentation: Update OAuth section with `GoogleOAuthAppService` repository integration patterns
 
 ---
 
@@ -203,20 +208,25 @@ Reference sources:
 
 Time-based one-time password support for additional security.
 
-- [ ] Underlay: Create `underlay-auth-totp` crate (Rust)
-- [ ] Underlay: Implement TOTP secret generation (crypto-secure random)
-- [ ] Underlay: Implement TOTP QR code generation (for authenticator app setup)
-- [ ] Underlay: Implement TOTP verification (time-window based)
-- [ ] Underlay: Create `TotpService` with:
-  - `generate_secret() -> (Secret, QRCodeImage)`
-  - `verify(user_secret, code) -> bool`
-  - `generate_backup_codes(count) -> Vec<String>` (one-time use codes)
-- [ ] Underlay: Define backup code storage and consumption (hashed, single-use)
-- [ ] Underlay: Create `TotpSetup` struct for UI (secret, QR URI, backup codes)
-- [ ] Underlay: Add TOTP to login flow (after password verification)
-- [ ] Underlay: Add TOTP backup code verification as fallback
-- [ ] Verify: TOTP codes work with standard authenticator apps (Google Authenticator, Authy, etc.)
-- [ ] Verify: Backup codes work when TOTP is unavailable
+- [x] Underlay: Create `underlay-auth-totp` crate (Rust)
+- [x] Underlay: Implement TOTP secret generation (crypto-secure random)
+- [x] Underlay: Implement TOTP QR code generation (for authenticator app setup)
+- [x] Underlay: Implement TOTP verification (time-window based)
+- [x] Underlay: Create `TotpService` with:
+  - `generate_secret() -> TotpSecret`
+  - `provisioning_uri(account, secret) -> String`
+  - `qr_svg(otpauth_uri) -> String`
+  - `verify_totp(secret, code) -> bool`
+  - `generate_backup_codes(count) -> (Vec<String>, Vec<String>)` (plain + hashed)
+- [x] Underlay: Define backup code storage and consumption (hashed, single-use)
+- [x] Underlay: Create `TotpSetup` struct for UI (secret, QR URI, backup codes)
+- [x] Underlay: Add TOTP to login flow (after password verification)
+- [x] Underlay: Add TOTP backup code verification as fallback
+- [~] Verify: TOTP codes work with standard authenticator apps (Google Authenticator, Authy, etc.)
+- [x] Verify: Backup codes work when TOTP is unavailable
+
+Implementation:
+- `rust/crates/underlay-auth-totp/src/lib.rs`
 
 Reference sources:
 - TOTP spec: `https://datatracker.ietf.org/doc/html/rfc6238`
@@ -228,19 +238,21 @@ Reference sources:
 
 Passwordless authentication using WebAuthn/PassKeys.
 
-- [ ] Underlay: Create `underlay-auth-webauthn` crate (Rust)
-- [ ] Underlay: Define WebAuthn types (challenge, credential, attestation options)
-- [ ] Underlay: Implement WebAuthn registration ceremony (challenge generation, verification)
-- [ ] Underlay: Implement WebAuthn authentication ceremony (challenge verification)
-- [ ] Underlay: Create `WebAuthnService` with:
-  - `generate_registration_challenge(user_id, user_name, display_name) -> Challenge`
-  - `verify_registration(challenge, response) -> Result<PassKeyCredential, AuthError>`
-  - `generate_authentication_challenge(user_id) -> Challenge`
-  - `verify_authentication(challenge, response, credential) -> Result<(), AuthError>`
-- [ ] Underlay: Define credential storage format (public key, counter, transports)
-- [ ] Underlay: Add credential attestation verification (optional; allow discoverable credentials)
-- [ ] Underlay: Support passkey synchronization hints (transports: platform, cross-platform)
-- [ ] Underlay: Add WebAuthn to login flow (as passwordless alternative or 2FA)
+- [x] Underlay: Create `underlay-auth-webauthn` crate (Rust)
+- [x] Underlay: Define WebAuthn boundary types (HTTP DTOs + `CredentialId` alias; apps persist state server-side)
+- [x] Underlay: Implement WebAuthn registration ceremony (challenge generation, verification)
+- [x] Underlay: Implement WebAuthn authentication ceremony (challenge verification)
+- [x] Underlay: Create `WebAuthnService` with:
+  - `start_passkey_registration(user_id, user_name, display_name, exclude_credential_ids) -> (CreationChallengeResponse, PasskeyRegistration)`
+  - `finish_passkey_registration(state, response) -> Passkey`
+  - `start_passkey_authentication(allowed_credentials) -> (RequestChallengeResponse, PasskeyAuthentication)`
+  - `finish_passkey_authentication(response, state) -> AuthenticationResult`
+  - `encode_passkey(passkey) -> String`
+  - `decode_passkey(encoded) -> Passkey`
+- [x] Underlay: Define credential storage format (`StoredPasskey` with `credential_id` + `passkey_json` + optional counter)
+- [x] Underlay: Add credential attestation verification options (feature-gated; attested passkeys + CA list)
+- [x] Underlay: Support passkey synchronization hints (transports + backup flags via `PasskeySyncInfo`)
+- [x] Underlay: Add WebAuthn to login flow (helpers for credential lookup + counter regression + updates)
 - [ ] Verify: Registration works with browser WebAuthn API
 - [ ] Verify: Authentication works with stored credentials
 
@@ -254,25 +266,26 @@ Reference sources:
 
 Google OAuth2 for social login.
 
-- [ ] Underlay: Create `underlay-auth-oauth` crate (Rust)
-- [ ] Underlay: Define OAuth provider trait (common interface for Google, future providers)
-- [ ] Underlay: Implement Google OAuth2 provider with:
+- [x] Underlay: Create `underlay-auth-oauth` crate (Rust)
+- [x] Underlay: Define OAuth provider trait (common interface for Google, future providers)
+- [x] Underlay: Implement Google OAuth2 provider with:
   - Authorization URL generation (with state, PKCE)
   - Token exchange (authorization code → access token + ID token)
   - User info retrieval
   - Token refresh
-- [ ] Underlay: Create `OAuthService` with:
-  - `initiate_google_login(redirect_uri, state) -> AuthorizationURL`
-  - `handle_google_callback(code, state, redirect_uri) -> Result<(User, is_new_user), AuthError>`
-  - `refresh_google_token(refresh_token) -> Result<TokenSet, AuthError>`
-  - `disconnect_google(user_id) -> Result<(), AuthError>`
-- [ ] Underlay: Define Google OAuth configuration:
+- [x] Underlay: Create app-agnostic OAuth boundary service (Google first):
+  - `start_login() -> { authorization_url, csrf_state, pkce_verifier }`
+  - `start_login_with(state, pkce_verifier) -> authorization_url`
+  - `exchange_code(code, pkce_verifier) -> TokenSet`
+  - `fetch_userinfo(access_token) -> GoogleUserInfo`
+  - `refresh(refresh_token) -> TokenSet`
+- [x] Underlay: Define Google OAuth configuration:
   - `AUTH_GOOGLE_CLIENT_ID`
   - `AUTH_GOOGLE_CLIENT_SECRET`
   - `AUTH_GOOGLE_REDIRECT_URI`
-- [ ] Underlay: Handle user creation from Google profile (email, name, avatar)
-- [ ] Underlay: Support linking OAuth connection to existing account (if email matches)
-- [ ] Underlay: Add OAuth to login/registration UI (Google Sign-In button)
+- [~] Underlay: Handle user creation from Google profile (email + name; avatar available via returned `GoogleUserInfo.picture`)
+- [x] Underlay: Support linking OAuth connection to existing account (email match via repository lookup)
+- [x] Underlay: Add OAuth to login/registration UI (Google Sign-In button)
 - [ ] Verify: OAuth flow works end-to-end with Google
 - [ ] Verify: Token refresh works when access token expires
 
@@ -286,20 +299,20 @@ Reference sources:
 
 Auth commands and types for the Underlay TS client.
 
-- [ ] Underlay: Add to `ts/src/client/types.ts`:
+- [x] Underlay: Add to `ts/src/client/types.ts`:
   - `User`, `Session`, `Credential` interfaces
   - `AuthError` interface matching Rust error codes
-- [ ] Underlay: Add to `ts/src/client/`:
+- [x] Underlay: Add to `ts/src/client/`:
   - `AuthCommands` interface (login, register, logout, refresh, session info)
   - `PasswordAuthParams`, `TotpAuthParams`, `PassKeyAuthParams` types
-- [ ] Underlay: Update `ts/src/client/http.ts` to support:
+- [x] Underlay: Update `ts/src/client/http.ts` to support:
   - Automatic access token attachment
   - 401 handling with refresh token flow
-  - Token storage abstraction (cookie/localStorage)
-- [ ] Underlay: Add `useAuth` Svelte store pattern (optional; for apps wanting built-in auth state)
-- [ ] Underlay: Create `AuthProvider` wrapper for SvelteKit hooks (protect routes)
-- [ ] Verify: TypeScript compiles without errors
-- [ ] Verify: Types match Rust API shapes
+  - Token storage abstraction (via `TokenStore`; apps provide cookie/localStorage)
+- [x] Underlay: Add `useAuth` Svelte store pattern (optional; for apps wanting built-in auth state)
+- [x] Underlay: Create `AuthProvider` wrapper for SvelteKit hooks (protect routes)
+- [x] Verify: TypeScript compiles without errors
+- [~] Verify: Types match Rust API shapes
 
 Reference sources:
 - Existing patterns: `underlay/ts/src/client/http.ts`, `underlay/ts/src/client/types.ts`
@@ -311,23 +324,22 @@ Reference sources:
 
 Reusable auth UI components for product apps.
 
-- [ ] Underlay: Create `ts/src/components/auth/` directory
-- [ ] Underlay: Implement components:
-  - `LoginForm.svelte` (username/password, 2FA input, remember me)
+- [x] Underlay: Create `ts/src/components/auth/` directory
+- [x] Underlay: Implement components:
+  - `LoginForm.svelte` (username/password, 2FA input)
   - `RegisterForm.svelte` (email, password, password confirmation)
   - `TotpSetup.svelte` (QR code, secret display, backup codes)
   - `TotpInput.svelte` (6-digit code input with validation)
   - `PassKeyButton.svelte` (WebAuthn trigger button)
   - `GoogleSignInButton.svelte` (OAuth trigger)
   - `SessionList.svelte` (active sessions with revoke option)
-  - `SecuritySettings.svelte` (password change, 2FA toggle, PassKey management)
+  - `SecuritySettings.svelte` (slot-based layout)
   - `AccountRecovery.svelte` (email recovery flow)
-- [ ] Underlay: Create `ts/src/patterns/auth.ts`:
-  - `useAuth` hook (login, logout, session state)
-  - `requireAuth` route guard helper
-  - `useRequireRole` permission helper
-- [ ] Underlay: Define component prop types and events
-- [ ] Underlay: Style components to work with app themes (use CSS variables)
+- [x] Underlay: Create `ts/src/patterns/auth.ts`:
+  - `createAuthStore` re-export
+  - `requireAuth` + `requireRole` helpers
+- [x] Underlay: Define component prop types and events (exported auth component payload types)
+- [x] Underlay: Style components to work with app themes (CSS variables)
 - [ ] Verify: Components work standalone (can be imported individually)
 - [ ] Verify: Components accept custom styling via slots and CSS variables
 
@@ -341,8 +353,8 @@ Reference sources:
 
 Integrate full auth system into Songsprout.
 
-- [ ] Songsprout: Add auth database migrations to `nursery/migrations/`
-- [ ] Songsprout: Create auth handlers in `nursery/crates/api/src/handlers/auth.rs`:
+- [x] Songsprout: Add auth database migrations to `nursery/migrations/`
+- [x] Songsprout: Create auth handlers in `nursery/crates/api/src/handlers/auth.rs`:
   - `POST /auth/register` (email, password, display name)
   - `POST /auth/login` (email, password, 2FA code if enabled)
   - `POST /auth/logout` (invalidate session)
@@ -359,20 +371,24 @@ Integrate full auth system into Songsprout.
   - `GET /auth/oauth/google/url` (Google auth initiation)
   - `GET /auth/oauth/google/callback` (Google auth callback)
 - [ ] Songsprout: Update `bloom/`:
-  - Replace dev login with real registration/login forms
-  - Add 2FA setup flow
-  - Add PassKey registration option
-  - Add Google Sign-In button
-  - Add session management (logout everywhere, active sessions)
+  - [x] Replace dev login with real registration/login forms
+  - [x] Use access/refresh tokens (cookies) with refresh rotation
+  - [x] Attach bearer token for Nursery API calls (via Stem client)
+  - [ ] Add 2FA setup flow
+  - [ ] Add PassKey registration option
+  - [ ] Add Google Sign-In button
+  - [ ] Add session management (logout everywhere, active sessions)
 - [ ] Songsprout: Update `greenhouse/`:
   - Add staff registration (admin-only)
   - Add staff login with 2FA support
   - Add OAuth support for staff
 - [ ] Songsprout: Update `stem/`:
-  - Add auth commands (register, login, logout, refresh)
-  - Add 2FA, PassKey, OAuth commands
-  - Wire token attachment to HTTP client
-- [ ] Songsprout: Remove dev auth stubs (`NURSERY_DEV_ARTIST_ID`, etc.)
+  - [x] Add auth commands (register, login, logout, refresh)
+  - [x] Wire token attachment to HTTP client
+  - [ ] Add 2FA commands
+  - [ ] Add PassKey commands
+  - [ ] Add OAuth commands
+- [x] Songsprout: Remove dev auth stubs (`NURSERY_DEV_ARTIST_ID`, etc.)
 - [ ] Verify: Full auth flow works end-to-end (register → login → session → logout)
 - [ ] Verify: 2FA works (register → enable 2FA → login with 2FA)
 - [ ] Verify: PassKey works (register → login with PassKey)
@@ -388,13 +404,13 @@ Reference sources:
 
 Integrate full auth system into Acowtancy.
 
-- [ ] Acowtancy: Add auth database migrations to `farmyard/migrations/`
-- [ ] Acowtancy: Create or update auth handlers in `farmyard/crates/api/src/`
-- [ ] Acowtancy: Create auth commands in `cattle-grid/`
-- [ ] Acowtancy: Update `cream/` (student frontend) with login/register forms
-- [ ] Acowtancy: Update `dairy/` (admin frontend) with staff login
-- [ ] Acowtancy: Update API client to use new auth commands
-- [ ] Acowtancy: Remove dev auth stubs
+- [x] Acowtancy: Add auth database migrations to `farmyard/migrations/`
+- [x] Acowtancy: Create or update auth handlers in `farmyard/crates/api/src/`
+- [x] Acowtancy: Create auth commands in `cattle-grid/`
+- [x] Acowtancy: Update `cream/` (student frontend) with login/register forms
+- [x] Acowtancy: Update `dairy/` (admin frontend) with staff login
+- [x] Acowtancy: Update API client to use new auth commands
+- [x] Acowtancy: Remove dev auth stubs
 - [ ] Verify: Full auth flow works for students and staff
 - [ ] Verify: Role-based access works (students vs staff vs admin)
 
@@ -441,6 +457,6 @@ All auth implementations should follow:
 
 ## Dependencies
 
-- Rust: `argon2`, `webauthn-rs`, `jsonwebtoken`, `totp-rs`, `qrcode`, `sqlx`
+- Rust: `argon2`, `webauthn-rs`, `jsonwebtoken`, `qrcode`, `hmac`, `sha1`, `base32`, `sqlx`
 - TypeScript: `@simplewebauthn/browser`, `@simplewebauthn/server`
 - Database: PostgreSQL (see Section 1 for schema)

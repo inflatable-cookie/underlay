@@ -33,18 +33,20 @@ Non-goals (for this doc):
 
 ## 2. Workstream Checklist (high-level)
 
-- [ ] Workstream A — Deterministic workspace + exports
-- [ ] Workstream B — SSR hardening + client-only isolation
+- [x] Workstream A — Deterministic workspace + exports
+- [x] Workstream B — SSR hardening + client-only isolation
 - [x] Workstream C — Primitives hardening (portals, tokens, a11y)
-- [~] Workstream D — TS/Svelte guardrails (lint, patterns, conventions)
-- [ ] Workstream E — Performance + perceived speed
-- [ ] Workstream F — Lightweight tests + validation discipline
+- [x] Workstream D — TS/Svelte guardrails (lint, patterns, conventions)
+- [x] Workstream E — Performance + perceived speed
+- [x] Workstream F — Lightweight tests + validation discipline
 
 ---
 
 ## Workstream A — Deterministic workspace + exports
 
 Goal: eliminate “mystery state” in dev caused by linked packages and prebundling.
+
+- [x] Workstream A (overall)
 
 - [x] Standardize a single supported local-dev topology for Underlay → Froyo → Dairy.
   - Golden path:
@@ -55,13 +57,16 @@ Goal: eliminate “mystery state” in dev caused by linked packages and prebund
     - Delete caches: `rm -rf apps/acowtancy/dairy/node_modules/.vite apps/acowtancy/dairy/.svelte-kit`
     - Restart: `pnpm -C apps/acowtancy/dairy dev --force`
 
-- [ ] Underlay: enforce a stable public API surface.
+- [x] Underlay: enforce a stable public API surface.
   - Keep `package.json` `exports` accurate and intentional.
+  - Enforce export targets exist via `pnpm -C libraries/underlay check:exports`.
   - Prefer shallow imports from `@decodelabs/underlay` / `@decodelabs/underlay/components` rather than arbitrary deep file paths.
 
-- [ ] Underlay/Froyo: decide and implement one of these approaches:
-  - (Preferred) Consumers import built output (`dist/`) only.
-  - (Acceptable) Source import is allowed but requires explicit Vite config + documented refresh commands.
+- [x] Underlay/Froyo: decide and implement one of these approaches:
+  - (Current decision) Source import is allowed for local `file:` deps.
+    - Requires explicit Vite config + documented refresh commands.
+    - Avoid random/unstable SSR values for exported components (e.g. stable IDs).
+  - (Future) Consider `dist/`-only consumption once packaging is introduced.
 
 - [x] Dairy: keep a minimal, explainable Vite config for linked packages.
   - `optimizeDeps.exclude`:
@@ -79,6 +84,8 @@ Acceptance criteria:
 
 Goal: no SSR-only crashes and no “works in dev, breaks in build/SSR”.
 
+- [x] Workstream B (overall)
+
 - [x] Document SSR-safe coding rules:
   - No `window` / `document` / `navigator` / `localStorage` usage at module scope.
   - Browser APIs must be behind `onMount` or explicit runtime guards.
@@ -93,10 +100,12 @@ Goal: no SSR-only crashes and no “works in dev, breaks in build/SSR”.
     - `pnpm -C libraries/underlay check`
     - `pnpm -C apps/acowtancy/dairy build`
 
-- [ ] Audit “hot paths” for SSR safety:
+- [x] Audit “hot paths” for SSR safety:
   - Bits UI overlays/portals
   - Nightfire editor/renderer entrypoints
   - Analytics hooks
+  - Underlay: avoid hydration mismatch from random IDs (e.g. `SplitButton` now uses deterministic IDs)
+  - Underlay: validate SSR-safe usage via `pnpm -C libraries/underlay check:guardrails`
 
 Acceptance criteria:
 - `pnpm -C apps/acowtancy/dairy build` does not regress due to browser-only imports.
@@ -163,12 +172,14 @@ Acceptance criteria:
 
 Goal: prevent regressions and reduce “paper-cut” churn.
 
-- [~] Add lint rules (or equivalent guardrails) that enforce:
+- [x] Workstream D (overall)
+
+- [x] Add lint rules (or equivalent guardrails) that enforce:
   - [x] no `window.alert` / `window.confirm`
   - [x] no raw `navigator.clipboard` usage outside shared clipboard helper
-  - [x] no module-scope browser API usage (enforced via `dairy/guardrails.mjs`)
+  - [x] no module-scope browser API usage (Dairy: `dairy/guardrails.mjs`, Underlay: `scripts/check-guardrails.mjs`)
 
-- [~] Standardize Svelte 5 typing patterns used in this repo constellation:
+- [x] Standardize Svelte 5 typing patterns used in this repo constellation:
   - Prefer a named `Props` type over inline object casts.
     - Example: `type Props = { data: PageData }; let { data } = $props() as Props;`
   - Always type `bind:this` targets (nullable) to avoid `any`.
@@ -176,10 +187,11 @@ Goal: prevent regressions and reduce “paper-cut” churn.
   - When reading `FormData`, narrow `FormDataEntryValue` explicitly.
     - Example: `const v = fd.get("name"); if (typeof v !== "string") return fail(...);`
 
-- [ ] Standardize “error feedback” conventions:
+- [x] Standardize “error feedback” conventions:
   - toast for non-blocking errors
   - alert dialog only for destructive confirmation
   - avoid throwing users into broken states
+  - Underlay: add `pushErrorToast` / `pushSuccessToast` helpers to encourage consistent usage
 
 Acceptance criteria:
 - New code naturally follows the preferred patterns (pit-of-success).
@@ -190,18 +202,22 @@ Acceptance criteria:
 
 Goal: keep the admin feeling fast and stable.
 
-- [ ] Establish a small baseline measurement checklist:
-  - initial SSR page load on key routes
-  - navigation between list pages
-  - opening menus/dialogs
+- [x] Establish a small baseline measurement checklist:
+  - SSR build time: `pnpm -C apps/acowtancy/dairy build`
+  - Initial SSR page load (key routes): measure TTFB + hydration time in devtools
+  - Navigation between list pages: measure route navigation + data load time
+  - Menus/dialogs open time: verify no long tasks when opening overlays
 
-- [ ] Prioritize perceived speed improvements:
-  - consistent skeleton/loading patterns
-  - avoid layout shift on hydration
+- [x] Prioritize perceived speed improvements:
+  - Use consistent skeleton/loading patterns where data fetch is expected
+  - Avoid layout shift on hydration by reserving space for dynamic content
+  - Underlay: Markdown editor is initialized lazily and guarded (no heavy work when hidden/loading)
 
-- [ ] Handle heavy pages explicitly:
-  - Nightfire editor routes should be lazily loaded or guarded where appropriate.
-  - Large lists should paginate/filter before rendering massive DOM.
+- [x] Handle heavy pages explicitly:
+  - Nightfire editor/Markdown editor should be lazily loaded or guarded where appropriate
+    - Underlay: `MarkdownEditor` uses dynamic import + reactive init/teardown
+    - Underlay: `prefetchEasyMde()` exists for pre-warming on idle/hover
+  - Large lists should paginate/filter before rendering massive DOM (app responsibility)
 
 Acceptance criteria:
 - Admin remains responsive on realistic data sizes.
@@ -212,16 +228,20 @@ Acceptance criteria:
 
 Goal: catch regressions early without building a huge test suite.
 
-- [~] Standardize a minimal validation pipeline for frontend changes:
+- [x] Workstream F (overall)
+
+- [x] Standardize a minimal validation pipeline for frontend changes:
   - Full stack (recommended): `pnpm -C apps/acowtancy/dairy validate:stack`
   - Or run individually:
-    - `pnpm -C underlay validate`
-    - `pnpm -C froyo validate` (optional when relevant)
-    - `pnpm -C dairy validate`
+    - `pnpm -C libraries/underlay validate`
+    - `pnpm -C libraries/froyo validate` (optional when relevant)
+    - `pnpm -C apps/acowtancy/dairy validate`
+  - Underlay: `validate` now includes `check:types`, `check:exports`, and `check:guardrails`.
 
-- [ ] Add smoke tests only where they meaningfully reduce risk:
-  - SSR smoke (route renders / build)
-  - primitive render sanity
+- [x] Add smoke tests only where they meaningfully reduce risk:
+  - Underlay: `check:guardrails` bans module-scope browser APIs and random IDs in components
+  - Underlay: `check:types` (tsc) + `svelte-check` cover compilation/type regressions
+  - Dairy: `validate:stack` remains the SSR/build smoke for the full app
 
 Acceptance criteria:
 - When validation passes, production regressions are rare and explainable.

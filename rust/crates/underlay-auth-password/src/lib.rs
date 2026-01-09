@@ -10,5 +10,8 @@ mod strength;
 
 pub use crate::errors::{PasswordAuthError, PasswordAuthResult};
 pub use crate::hasher::{Argon2Hasher, PasswordHasherExt, PasswordVerifierExt};
-pub use crate::service::{CompromisedPasswordStrategy, PasswordAuthService, PasswordConfig};
+pub use crate::service::{
+    CompromisedPasswordStrategy, FailedLoginAttempt, PasswordAuthRepository, PasswordAuthService,
+    PasswordConfig,
+};
 pub use crate::strength::{PasswordStrength, PasswordStrengthAnalyzer};

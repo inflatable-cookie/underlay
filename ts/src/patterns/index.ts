@@ -3,6 +3,7 @@
 export * from "./toasts";
 export * from "./clipboard";
 export * from "./dom";
+export * from "./auth";
 
 export { default as FilterBar } from "./FilterBar.svelte";
 export { default as FormShell } from "./FormShell.svelte";

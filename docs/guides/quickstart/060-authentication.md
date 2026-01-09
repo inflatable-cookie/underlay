@@ -1,6 +1,13 @@
 # 060 - Authentication
 
-This document covers implementing authentication using the Underlay auth system with both development (dev mode) and production (JWT) providers.
+This document covers implementing authentication using the Underlay auth system. Underlay provides multiple authentication methods:
+
+- **JWT tokens** (production) with Ed25519/EdDSA
+- **Dev mode** for local development
+- **Password** authentication with Argon2id
+- **TOTP** two-factor authentication
+- **WebAuthn/PassKey** passwordless authentication
+- **OAuth2** (Google) social login
 
 ## Auth Module Structure
 
@@ -46,9 +53,9 @@ pub struct UserPrincipal {
 
 ### 2. Provider Module
 
-Your app implements Underlay’s provider boundary (`underlay_auth::AuthProvider`).
+Your app implements Underlay's provider boundary (`underlay_auth::AuthProvider`).
 
-For production JWT, use Underlay’s `underlay-auth-jwt` crate (it uses `jsonwebtoken` under the hood) and validate **Ed25519 / EdDSA** tokens.
+For production JWT, use Underlay's `underlay-auth-jwt` crate (it uses `jsonwebtoken` under the hood) and validate **Ed25519 / EdDSA** tokens.
 
 ```rust
 use async_trait::async_trait;
@@ -229,6 +236,1104 @@ pub async fn list_artists(
 }
 ```
 
+---
+
+## TOTP Two-Factor Authentication
+
+Underlay provides `underlay-auth-totp` for Time-based One-Time Password support.
+
+### Adding TOTP to Your App
+
+```toml
+# apps/nursery/crates/auth/Cargo.toml
+[dependencies]
+underlay-auth-totp = { path = "../../../../../rust/crates/underlay-auth-totp" }
+```
+
+### TOTP Service Setup
+
+```rust
+use underlay_auth_totp::{TotpService, TotpConfig};
+
+pub struct TotpAuthService {
+    totp: TotpService,
+}
+
+impl TotpAuthService {
+    pub fn new() -> Self {
+        let config = TotpConfig {
+            issuer: "MyApp".to_string(),
+            digits: 6,
+            period_seconds: 30,
+            skew_steps: 1,
+            algorithm: underlay_auth_totp::TotpAlgorithm::Sha1,
+        };
+        Self {
+            totp: TotpService::new(Some(config)),
+        }
+    }
+}
+```
+
+### Generating TOTP Setup (QR Code for User)
+
+```rust
+use underlay_auth_totp::{TotpSetup, TotpError};
+
+impl TotpAuthService {
+    /// Generate TOTP secret, provisioning URI, and QR code for user setup
+    pub fn generate_setup(
+        &self,
+        account_name: &str,  // e.g., "user@example.com"
+        backup_code_count: usize,  // e.g., 8
+    ) -> Result<TotpSetup, AuthError> {
+        self.totp
+            .setup(account_name, backup_code_count)
+            .map_err(|e| e.into())
+    }
+}
+```
+
+The `TotpSetup` struct contains:
+- `secret`: Base32-encoded secret for manual entry
+- `otpauth_uri`: `otpauth://totp/...` URI for authenticator apps
+- `qr_svg`: SVG QR code image (render directly in UI)
+- `backup_codes`: One-time use codes (show once, user must save)
+- `backup_code_hashes`: Hashed codes for storage/verification
+- `metadata`: Credential metadata for your credential store
+
+### Verifying TOTP Codes
+
+```rust
+use underlay_auth_totp::{TwoFactorCode, TwoFactorVerified};
+
+impl TotpAuthService {
+    /// Verify a TOTP code or backup code during login
+    pub fn verify_second_factor(
+        &self,
+        secret_base32: &str,
+        last_counter: Option<u64>,
+        code: &str,
+        backup_code_hashes: &[String],
+        now: SystemTime,
+    ) -> AuthResult<TwoFactorVerified> {
+        self.totp
+            .verify_second_factor(
+                secret_base32,
+                last_counter,
+                TwoFactorCode::Totp(code),
+                backup_code_hashes,
+                now,
+            )
+    }
+
+    /// Verify just a backup code
+    pub fn verify_backup_code(
+        &self,
+        input: &str,
+        stored_hashes: &[String],
+    ) -> AuthResult<usize> {
+        self.totp
+            .verify_backup_code(input, stored_hashes)
+            .map_err(|e| e.into())
+    }
+}
+```
+
+### Database Schema for TOTP
+
+Add to your auth schema (see `docs/architecture/050-auth-database-schema.md`):
+
+```sql
+-- TOTP secrets are stored in auth_credentials with type = 'totp'
+-- secret_encrypted: AES-256-GCM encrypted secret
+-- metadata: { issuer, algorithm, digits, period }
+
+-- Backup codes stored separately (one-time use)
+CREATE TABLE auth_backup_codes (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES auth_users(id) ON DELETE CASCADE,
+    code_hash VARCHAR(255) NOT NULL UNIQUE,
+    used_at TIMESTAMPTZ NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_auth_backup_codes_user_id ON auth_backup_codes(user_id);
+```
+
+### TOTP Login Flow
+
+```
+1. User submits email/password
+2. If user has TOTP credential:
+   - Return 2FA required response
+   - Client shows TOTP input field
+3. User submits TOTP code or backup code
+4. Verify using TotpAuthService::verify_second_factor()
+5. On success, issue session tokens
+```
+
+---
+
+## WebAuthn / PassKey Authentication
+
+Underlay provides `underlay-auth-webauthn` for passwordless authentication using WebAuthn/PassKeys.
+
+### Adding WebAuthn to Your App
+
+```toml
+# apps/nursery/crates/auth/Cargo.toml
+[dependencies]
+underlay-auth-webauthn = { path = "../../../../../rust/crates/underlay-auth-webauthn" }
+```
+
+### WebAuthn Service Setup
+
+```rust
+use underlay_auth_webauthn::{WebAuthnService, WebAuthnConfig};
+
+pub struct WebAuthnAuthService {
+    webauthn: WebAuthnService,
+}
+
+impl WebAuthnAuthService {
+    pub fn new(rp_id: &str, rp_origin: &str, rp_name: &str) -> AuthResult<Self> {
+        let config = WebAuthnConfig {
+            rp_id: rp_id.to_string(),
+            rp_origin: rp_origin.to_string(),
+            rp_name: rp_name.to_string(),
+        };
+        let webauthn = WebAuthnService::new(config)?;
+        Ok(Self { webauthn })
+    }
+}
+```
+
+### PassKey Registration (User adds a PassKey)
+
+```rust
+use underlay_auth_webauthn::{
+    StartPasskeyRegistrationRequest, StartPasskeyRegistrationResponse,
+    FinishPasskeyRegistrationRequest, FinishPasskeyRegistrationResponse,
+    StoredPasskey,
+};
+use underlay_core::Uuid;
+
+impl WebAuthnAuthService {
+    /// Step 1: Start registration - returns challenge for the browser
+    pub async fn start_registration(
+        &self,
+        user_id: Uuid,
+        user_name: &str,
+        display_name: &str,
+    ) -> AuthResult<StartPasskeyRegistrationResponse> {
+        self.webauthn
+            .start_passkey_registration_http(
+                StartPasskeyRegistrationRequest {
+                    user_id,
+                    user_name: user_name.to_string(),
+                    display_name: display_name.to_string(),
+                    exclude_credential_ids: None,
+                },
+                |state| {
+                    // Persist PasskeyRegistration state server-side
+                    // Returns state_id for finish step
+                    todo!("Persist state to Redis/database")
+                },
+            )
+            .await
+    }
+
+    /// Step 2: Finish registration - browser sends credential response
+    pub async fn finish_registration(
+        &self,
+        state_id: &str,
+        credential_json: &str,
+    ) -> AuthResult<FinishPasskeyRegistrationResponse> {
+        let credential: serde_json::Value = serde_json::from_str(credential_json)
+            .map_err(|_| AuthError::BadRequest("invalid credential format".into()))?;
+
+        self.webauthn
+            .finish_passkey_registration_http(
+                FinishPasskeyRegistrationRequest {
+                    state_id: state_id.to_string(),
+                    credential,
+                },
+                |state_id| {
+                    // Load PasskeyRegistration from storage
+                    todo!("Load state from Redis/database")
+                },
+            )
+            .await
+    }
+}
+```
+
+### PassKey Authentication (Login)
+
+```rust
+use underlay_auth_webauthn::{
+    StartPasskeyAuthenticationRequest, StartPasskeyAuthenticationResponse,
+    FinishPasskeyAuthenticationRequest, FinishPasskeyAuthenticationResponse,
+};
+
+impl WebAuthnAuthService {
+    /// Step 1: Start authentication - get challenge for browser
+    pub async fn start_authentication(
+        &self,
+        allowed_credential_ids: &[String],  // Base64url encoded credential IDs
+    ) -> AuthResult<StartPasskeyAuthenticationResponse> {
+        self.webauthn
+            .start_passkey_authentication_http(
+                StartPasskeyAuthenticationRequest {
+                    allowed_credentials: allowed_credential_ids.to_vec(),
+                },
+                |state| {
+                    // Persist PasskeyAuthentication state
+                    todo!("Persist state to Redis/database")
+                },
+            )
+            .await
+    }
+
+    /// Step 2: Finish authentication - verify browser response
+    pub async fn finish_authentication(
+        &self,
+        state_id: &str,
+        credential_json: &str,
+    ) -> AuthResult<FinishPasskeyAuthenticationResponse> {
+        let credential: serde_json::Value = serde_json::from_str(credential_json)
+            .map_err(|_| AuthError::BadRequest("invalid credential format".into()))?;
+
+        self.webauthn
+            .finish_passkey_authentication_http(
+                FinishPasskeyAuthenticationRequest {
+                    state_id: state_id.to_string(),
+                    credential,
+                },
+                |state_id| {
+                    // Load PasskeyAuthentication from storage
+                    todo!("Load state from Redis/database")
+                },
+            )
+            .await
+    }
+}
+```
+
+### Storing PassKeys
+
+```rust
+impl WebAuthnAuthService {
+    /// Convert Passkey to storable format
+    pub fn encode_passkey(&self, passkey: &Passkey) -> AuthResult<String> {
+        self.webauthn.encode_passkey(passkey)
+    }
+
+    /// Load Passkey from storage
+    pub fn decode_passkey(&self, encoded: &str) -> AuthResult<Passkey> {
+        self.webauthn.decode_passkey(encoded)
+    }
+
+    /// Create stored passkey struct for database
+    pub fn stored_passkey_from_passkey(&self, passkey: &Passkey) -> AuthResult<StoredPasskey> {
+        self.webauthn.stored_passkey_from_passkey(passkey)
+    }
+}
+```
+
+### Database Schema for WebAuthn
+
+```sql
+-- PassKeys stored in auth_credentials with type = 'passkey'
+-- secret_encrypted: CBOR-encoded credential data (or JSON via webauthn-rs serialization)
+-- metadata: { credential_id, transports, last_counter }
+
+-- The underlay-auth-webauthn crate uses JSON serialization:
+-- StoredPasskey { credential_id, passkey_json, counter }
+```
+
+### WebAuthn Login Flow
+
+```
+Registration:
+1. User navigates to security settings
+2. Client calls POST /auth/passkey/register/start
+3. Server returns challenge + state_id
+4. Browser WebAuthn API creates credential
+5. Client POSTs credential to /auth/passkey/register/finish
+6. Server verifies and stores passkey
+
+Login:
+1. User clicks "Sign in with PassKey"
+2. Client calls POST /auth/passkey/auth/start (with allowed credentials)
+3. Server returns challenge + state_id
+4. Browser WebAuthn API signs challenge
+5. Client POSTs credential to /auth/passkey/auth/finish
+6. Server verifies and creates session
+```
+
+---
+
+## OAuth2 (Google) Authentication
+
+Underlay provides `underlay-auth-oauth` for Google Sign-In with two service layers:
+
+1. **`GoogleOAuthService`** - Low-level OAuth2 protocol helpers
+2. **`GoogleOAuthAppService`** - Higher-level service with repository integration for user/credential management
+
+### Adding OAuth to Your App
+
+```toml
+# apps/nursery/crates/auth/Cargo.toml
+[dependencies]
+underlay-auth-oauth = { path = "../../../../../rust/crates/underlay-auth-oauth" }
+```
+
+### OAuth Service Setup
+
+```rust
+use underlay_auth_oauth::{GoogleOAuthService, GoogleOAuthConfig, GoogleOAuthAppService};
+
+pub struct OAuthAuthService {
+    // Low-level service for token operations
+    google: GoogleOAuthService,
+    // Higher-level service with user/credential management
+    app: GoogleOAuthAppService<GoogleOAuthService>,
+}
+
+impl OAuthAuthService {
+    pub fn new() -> AuthResult<Self> {
+        let google = GoogleOAuthService::from_env()?;
+        let app = GoogleOAuthAppService::new(google.clone());
+        Ok(Self { google, app })
+    }
+
+    pub fn from_config(config: GoogleOAuthConfig) -> AuthResult<Self> {
+        let google = GoogleOAuthService::new(config)?;
+        let app = GoogleOAuthAppService::new(google.clone());
+        Ok(Self { google, app })
+    }
+}
+```
+
+### Low-Level OAuth (Token Operations)
+
+Use `GoogleOAuthService` directly when you need fine-grained control:
+
+```rust
+impl OAuthAuthService {
+    /// Step 1: Start OAuth flow - returns authorization URL and state
+    pub fn start_login(&self) -> AuthResult<underlay_auth_oauth::OAuthStart> {
+        self.google.start_login()
+    }
+
+    /// Step 2: Start with custom state (for session-based flows)
+    pub fn start_login_with(
+        &self,
+        csrf_state: &str,
+        pkce_verifier: &str,
+    ) -> AuthResult<String> {
+        self.google.start_login_with(csrf_state, pkce_verifier)
+    }
+
+    /// Step 3: Exchange authorization code for tokens
+    pub async fn exchange_code(
+        &self,
+        code: &str,
+        pkce_verifier: &str,
+    ) -> AuthResult<underlay_auth_oauth::TokenSet> {
+        self.google.exchange_code(code, pkce_verifier).await
+    }
+
+    /// Step 4: Refresh access token
+    pub async fn refresh_token(
+        &self,
+        refresh_token: &str,
+    ) -> AuthResult<underlay_auth_oauth::TokenSet> {
+        self.google.refresh(refresh_token).await
+    }
+
+    /// Step 5: Get user info from Google
+    pub async fn fetch_userinfo(
+        &self,
+        access_token: &str,
+    ) -> AuthResult<underlay_auth_oauth::GoogleUserInfo> {
+        self.google.fetch_userinfo(access_token).await
+    }
+}
+```
+
+### Higher-Level OAuth (User & Credential Management)
+
+Use `GoogleOAuthAppService` for complete OAuth callback handling including user creation and credential linking:
+
+```rust
+use underlay_auth_oauth::{
+    OAuthCallbackRequest, OAuthLoginState, OAuthLoginResult,
+    CredentialRepository, UserRepository,
+};
+use underlay_core::Uuid;
+
+impl OAuthAuthService {
+    /// Handle the complete OAuth callback flow
+    ///
+    /// This method:
+    /// 1. Validates CSRF state
+    /// 2. Exchanges code for tokens
+    /// 3. Fetches user info from Google
+    /// 4. Verifies email is verified (if configured)
+    /// 5. Creates user if doesn't exist (or links to existing)
+    /// 6. Creates OAuth credential
+    ///
+    /// Returns the user, whether they were newly created, and the credential.
+    pub async fn handle_google_callback<R>(
+        &self,
+        repo: &R,
+        request: OAuthCallbackRequest,
+        stored_state: OAuthLoginState,
+        encrypt_secret: impl FnOnce(&str) -> AuthResult<String>,
+    ) -> AuthResult<OAuthLoginResult>
+    where
+        R: UserRepository + CredentialRepository,
+    {
+        self.app
+            .handle_google_callback(repo, request, stored_state, encrypt_secret)
+            .await
+    }
+
+    /// Disconnect Google OAuth from a user account
+    ///
+    /// Removes the OAuth credential from the user's account.
+    pub async fn disconnect_google<R>(
+        &self,
+        repo: &R,
+        user_id: Uuid,
+    ) -> AuthResult<()>
+    where
+        R: UserRepository + CredentialRepository,
+    {
+        self.app.disconnect_google(repo, user_id).await
+    }
+}
+```
+
+### OAuth Handler Example (Complete Flow)
+
+```rust
+use axum::{
+    Json, Query, redirect,
+    extract::State,
+    response::IntoResponse,
+};
+use serde::Deserialize;
+use underlay_auth_oauth::{OAuthCallbackRequest, OAuthLoginState};
+use underlay_core::Uuid;
+use sqlx::PgPool;
+
+#[derive(Deserialize)]
+pub struct OAuthCallbackQuery {
+    code: String,
+    state: String,
+}
+
+// In-memory state storage (use Redis/session in production)
+static OAUTH_STATES: tokio::sync::Mutex<std::collections::HashMap<String, OAuthLoginState>> =
+    tokio::sync::Mutex::new(std::collections::HashMap::new());
+
+pub async fn oauth_start(
+    State(state): State<Arc<AppState>>,
+) -> impl IntoResponse {
+    let login = state.oauth.start_login().unwrap();
+
+    // Store state for callback validation
+    let state_data = OAuthLoginState {
+        csrf_state: login.csrf_state.clone(),
+        pkce_verifier: login.pkce_verifier.clone(),
+    };
+    OAUTH_STATES.lock().await.insert(login.csrf_state.clone(), state_data);
+
+    // Redirect user to Google
+    redirect(login.authorization_url)
+}
+
+pub async fn oauth_callback(
+    State(state): State<Arc<AppState>>,
+    Query(query): Query<OAuthCallbackQuery>,
+) -> impl IntoResponse {
+    // Load stored state
+    let stored_state = OAUTH_STATES
+        .lock()
+        .await
+        .remove(&query.state)
+        .ok_or_else(|| AuthError::BadRequest("invalid oauth state".into()))?;
+
+    let request = OAuthCallbackRequest {
+        code: query.code,
+        state: query.state,
+    };
+
+    // Encrypt refresh token for storage
+    let encrypt = |token: &str| {
+        // Use your encryption library (e.g., AES-256-GCM)
+        Ok(format!("encrypted:{}", token))
+    };
+
+    // Handle complete callback flow
+    let result = state
+        .oauth
+        .handle_google_callback(&state.pool, request, stored_state, encrypt)
+        .await
+        .map_err(|e| {
+            tracing::error!(?e, "OAuth callback failed");
+            e
+        })?;
+
+    // Create session for the user
+    let session = create_session_for_user(result.user.id, &state).await?;
+
+    // Clean up state
+    OAUTH_STATES.lock().await.remove(&result.user.id.to_string());
+
+    // Redirect to app with session
+    redirect(format!(
+        "{}/auth/callback?token={}&new_user={}",
+        FRONTEND_URL,
+        session.access_token,
+        result.is_new_user
+    ))
+}
+
+/// Disconnect Google OAuth
+pub async fn oauth_disconnect(
+    State(state): State<Arc<AppState>>,
+    Authenticated(principal): Authenticated<UserPrincipal>,
+) -> Json<SingleResponse<()>> {
+    state.oauth.disconnect_google(&state.pool, principal.user_id.0).await?;
+
+    Json(SingleResponse { data: () })
+}
+```
+
+### OAuth Callback Types
+
+```rust
+// Request from Google callback
+pub struct OAuthCallbackRequest {
+    pub code: String,   // Authorization code from Google
+    pub state: String,  // CSRF state we generated
+}
+
+// Stored state (persist between start and callback)
+pub struct OAuthLoginState {
+    pub csrf_state: String,       // For CSRF validation
+    pub pkce_verifier: String,    // For token exchange
+}
+
+// Callback result
+pub struct OAuthLoginResult {
+    pub user: User,                      // The user (new or existing)
+    pub is_new_user: bool,               // Whether this is a new account
+    pub credential: Credential,           // The OAuth credential created
+    pub token_set: TokenSet,             // OAuth tokens
+    pub userinfo: GoogleUserInfo,        // User profile from Google
+}
+
+// Google user profile
+pub struct GoogleUserInfo {
+    pub sub: String,                     // Google user ID
+    pub email: Option<String>,
+    pub email_verified: Option<bool>,
+    pub name: Option<String>,
+    pub given_name: Option<String>,
+    pub family_name: Option<String>,
+    pub picture: Option<String>,          // Avatar URL
+    pub locale: Option<String>,
+}
+```
+
+### Database Schema for OAuth
+
+OAuth credentials are stored in the standard `auth_credentials` table:
+
+```sql
+-- OAuth connections stored in auth_credentials with type = 'oauth_google'
+-- secret_encrypted: encrypted access_token or refresh_token
+-- metadata: { google_user_id, scopes }
+
+-- Find user's Google connection
+SELECT * FROM auth_credentials
+WHERE user_id = $1 AND type = 'oauth_google';
+
+-- Find user by Google account
+SELECT u.* FROM auth_users u
+JOIN auth_credentials c ON u.id = c.user_id
+WHERE c.type = 'oauth_google'
+  AND (c.metadata->>'google_user_id') = $1;
+```
+
+### Environment Variables for OAuth
+
+```bash
+# Google OAuth
+AUTH_GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
+AUTH_GOOGLE_CLIENT_SECRET=your-client-secret
+AUTH_GOOGLE_REDIRECT_URI=https://yourapp.com/auth/oauth/google/callback
+```
+
+### Google OAuth Setup
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a new project or select existing
+3. Enable "Google OAuth" API
+4. Configure OAuth consent screen
+5. Create OAuth 2.0 credentials (Web application)
+6. Add authorized redirect URIs
+7. Copy Client ID and Secret to environment variables
+
+### Email Verification
+
+By default, `GoogleOAuthAppService` requires `email_verified=true` from Google. You can disable this:
+
+```rust
+let mut app = GoogleOAuthAppService::new(google);
+app.require_verified_email = false;  // Allow unverified emails
+```
+
+### Configuring Scopes
+
+Default scopes: `openid`, `email`, `profile`. Configure custom scopes:
+
+```rust
+let config = GoogleOAuthConfig {
+    client_id: "...".to_string(),
+    client_secret: "...".to_string(),
+    redirect_uri: "https://...".to_string(),
+    scopes: vec!["openid", "email", "profile", "https://www.googleapis.com/auth/drive".to_string()],
+};
+```
+
+---
+
+## Password Authentication
+
+Underlay provides `underlay-auth-password` for secure password authentication using Argon2id hashing with configurable security policies.
+
+### Adding Password Auth to Your App
+
+```toml
+# apps/nursery/crates/auth/Cargo.toml
+[dependencies]
+underlay-auth-password = { path = "../../../../../rust/crates/underlay-auth-password" }
+```
+
+### Password Auth Components
+
+The password crate provides:
+
+- **`PasswordAuthService<R, H, V>`** - Main service for password operations
+- **`PasswordAuthRepository`** - Trait for database operations (implement this)
+- **`PasswordConfig`** - Security policy configuration
+- **`Argon2Hasher`** - Default hasher using Argon2id
+- **`PasswordStrengthAnalyzer`** - Password quality validation
+
+### Password Config
+
+Configure security policies:
+
+```rust
+use underlay_auth_password::{PasswordConfig, CompromisedPasswordStrategy};
+
+let config = PasswordConfig {
+    max_failed_attempts: 5,           // Lockout after 5 failures
+    lockout_duration_seconds: 900,    // 15 minute lockout
+    rate_limit_window_seconds: 3600,  // 1 hour rate limit window
+    rate_limit_max_attempts: 10,      // Max 10 attempts per window
+    min_password_length: 8,           // Minimum 8 characters
+    check_compromised: true,          // Check against blocklist
+    compromised_password_strategy: CompromisedPasswordStrategy::LocalBlocklist,
+    // Or for HIBP integration:
+    // compromised_password_strategy: CompromisedPasswordStrategy::HibpKAnonymity {
+    //     api_base_url: "https://api.pwnedpasswords.com".to_string(),
+    //     user_agent: "myapp".to_string(),
+    // },
+};
+```
+
+### Password Auth Repository
+
+Implement the `PasswordAuthRepository` trait for your database:
+
+```rust
+use async_trait::async_trait;
+use underlay_auth_password::{PasswordAuthRepository, PasswordAuthResult, FailedLoginAttempt};
+use underlay_core::Uuid;
+use underlay_auth::{User, Credential, CredentialMetadata};
+
+#[derive(Clone)]
+pub struct PgAuthRepository {
+    pool: Arc<sqlx::PgPool>,
+}
+
+#[async_trait]
+impl PasswordAuthRepository for PgAuthRepository {
+    async fn find_user_by_email(&self, email: &str) -> PasswordAuthResult<Option<User>> {
+        let email = email.trim().to_lowercase();
+        // Your SQL query here
+        Ok(None)
+    }
+
+    async fn find_user_by_id(&self, user_id: Uuid) -> PasswordAuthResult<Option<User>> {
+        // Your SQL query here
+        Ok(None)
+    }
+
+    async fn find_password_credential(
+        &self,
+        user_id: Uuid,
+    ) -> PasswordAuthResult<Option<Credential>> {
+        // Query: SELECT * FROM auth_credentials
+        //        WHERE user_id = $1 AND type = 'password'
+        Ok(None)
+    }
+
+    async fn create_password_credential(
+        &self,
+        user_id: Uuid,
+        password_hash: &str,
+    ) -> PasswordAuthResult<Credential> {
+        // Insert into auth_credentials with type = 'password'
+        Ok(...)
+    }
+
+    async fn update_password_credential(
+        &self,
+        credential_id: Uuid,
+        password_hash: &str,
+    ) -> PasswordAuthResult<()> {
+        // UPDATE auth_credentials SET secret_encrypted = $1 WHERE id = $2
+        Ok(())
+    }
+
+    async fn delete_password_credential(
+        &self,
+        credential_id: Uuid,
+    ) -> PasswordAuthResult<()> {
+        // DELETE FROM auth_credentials WHERE id = $1
+        Ok(())
+    }
+
+    async fn record_failed_login(
+        &self,
+        user_id: Uuid,
+        max_failed_attempts: u32,
+        lockout_duration_seconds: u64,
+    ) -> PasswordAuthResult<FailedLoginAttempt> {
+        // Increment failure count, apply lockout if threshold reached
+        // Return (count, lockout_remaining_seconds)
+        Ok(FailedLoginAttempt {
+            count: 1,
+            lockout_remaining_seconds: None,
+        })
+    }
+
+    async fn reset_failed_logins(&self, user_id: Uuid) -> PasswordAuthResult<()> {
+        // DELETE FROM auth_failed_logins WHERE user_id = $1
+        Ok(())
+    }
+
+    async fn get_failed_login_count(&self, user_id: Uuid) -> PasswordAuthResult<u32> {
+        // SELECT COUNT(*) FROM auth_failed_logins WHERE user_id = $1
+        Ok(0)
+    }
+
+    async fn get_lockout_remaining_seconds(
+        &self,
+        user_id: Uuid,
+    ) -> PasswordAuthResult<Option<u64>> {
+        // SELECT (locked_until - NOW()) FROM auth_users
+        // WHERE user_id = $1 AND locked_until > NOW()
+        Ok(None)
+    }
+
+    async fn check_rate_limit(
+        &self,
+        key: &str,
+        max_attempts: u32,
+        window_seconds: u64,
+    ) -> PasswordAuthResult<(bool, u64)> {
+        // Rate limiting implementation (Redis sorted sets, etc.)
+        Ok((true, 0))
+    }
+}
+```
+
+### Password Service Setup
+
+```rust
+use underlay_auth_password::{PasswordAuthService, PasswordConfig, Argon2Hasher};
+use std::sync::Arc;
+
+pub struct PasswordAuth {
+    service: Arc<PasswordAuthService<impl PasswordAuthRepository + Send + Sync>>,
+}
+
+impl PasswordAuth {
+    pub fn new(
+        repository: Arc<impl PasswordAuthRepository + Send + Sync>,
+        config: Option<PasswordConfig>,
+    ) -> Self {
+        let hasher = Arc::new(Argon2Hasher::new());
+        let service = PasswordAuthService::new(
+            repository,
+            hasher.clone(),
+            hasher,
+            config,
+        );
+        Self { service: Arc::new(service) }
+    }
+}
+```
+
+### Password Operations
+
+```rust
+impl PasswordAuth {
+    /// Set or update a user's password
+    pub async fn set_password(
+        &self,
+        user_id: Uuid,
+        password: &str,
+    ) -> AuthResult<Credential> {
+        self.service
+            .set_password(user_id, password)
+            .await
+            .map_err(|e| e.into())
+    }
+
+    /// Verify login credentials
+    pub async fn verify_login(
+        &self,
+        email: &str,
+        password: &str,
+    ) -> AuthResult<User> {
+        self.service
+            .verify_login(email, password)
+            .await
+            .map_err(|e| e.into())
+    }
+
+    /// Verify login with IP context (for rate limiting)
+    pub async fn verify_login_with_context(
+        &self,
+        email: &str,
+        password: &str,
+        ip: Option<&str>,
+    ) -> AuthResult<User> {
+        self.service
+            .verify_login_with_context(email, password, ip)
+            .await
+            .map_err(|e| e.into())
+    }
+
+    /// Change password (requires current password)
+    pub async fn change_password(
+        &self,
+        user_id: Uuid,
+        current_password: &str,
+        new_password: &str,
+    ) -> AuthResult<()> {
+        self.service
+            .change_password(user_id, current_password, new_password)
+            .await
+            .map_err(|e| e.into())
+    }
+
+    /// Reset password (admin/internal use, bypasses current password)
+    pub async fn reset_password(
+        &self,
+        user_id: Uuid,
+        new_password: &str,
+    ) -> AuthResult<()> {
+        self.service
+            .reset_password(user_id, new_password)
+            .await
+            .map_err(|e| e.into())
+    }
+}
+```
+
+### Password Login Handler Example
+
+```rust
+use axum::{Json, Extension};
+use underlay_core::SingleResponse;
+use serde::Deserialize;
+
+#[derive(Deserialize)]
+pub struct PasswordLoginRequest {
+    email: String,
+    password: String,
+    #[serde(default)]
+    ip: Option<String>,
+}
+
+#[derive(serde::Serialize)]
+pub struct PasswordLoginResponse {
+    user_id: Uuid,
+    email: String,
+    display_name: String,
+}
+
+pub async fn password_login(
+    Extension(state): Extension<Arc<AppState>>,
+    Json(req): Json<PasswordLoginRequest>,
+) -> Json<SingleResponse<PasswordLoginResponse>> {
+    match state
+        .password_service
+        .verify_login_with_context(
+            &req.email,
+            &req.password,
+            req.ip.as_deref(),
+        )
+        .await
+    {
+        Ok(user) => Json(SingleResponse {
+            data: PasswordLoginResponse {
+                user_id: user.id,
+                email: user.email,
+                display_name: user.display_name,
+            },
+        }),
+        Err(e) => {
+            tracing::warn!(email = %req.email, error = ?e, "Login failed");
+            Json(SingleResponse {
+                data: PasswordLoginResponse {
+                    user_id: Uuid::nil(),
+                    email: String::new(),
+                    display_name: String::new(),
+                },
+            })
+        }
+    }
+}
+
+#[derive(Deserialize)]
+pub struct SetPasswordRequest {
+    current_password: Option<String>,  // None for initial set
+    new_password: String,
+}
+
+pub async fn set_password(
+    Authenticated(principal): Authenticated<UserPrincipal>,
+    Extension(state): Extension<Arc<AppState>>,
+    Json(req): Json<SetPasswordRequest>,
+) -> Json<SingleResponse<()>> {
+    let result = match req.current_password {
+        Some(current) => {
+            state
+                .password_service
+                .change_password(principal.user_id.0, &current, &req.new_password)
+                .await
+        }
+        None => {
+            state
+                .password_service
+                .set_password(principal.user_id.0, &req.new_password)
+                .await
+                .map(|_| ())
+        }
+    };
+
+    match result {
+        Ok(_) => Json(SingleResponse { data: () }),
+        Err(e) => {
+            tracing::error!(user_id = %principal.user_id.0, error = ?e, "Password operation failed");
+            Json(SingleResponse {
+                data: (),  // In real app, return error in response
+            })
+        }
+    }
+}
+```
+
+### Database Schema for Password Auth
+
+```sql
+-- Password credentials stored in auth_credentials with type = 'password'
+-- secret_encrypted: Argon2id hash
+-- metadata: { algorithm: "argon2id", memory_kb, iterations, parallelism }
+
+-- Failed login tracking
+CREATE TABLE auth_failed_logins (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES auth_users(id) ON DELETE CASCADE,
+    attempted_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    ip_address VARCHAR(45),
+    user_agent TEXT,
+    reason VARCHAR(50),  -- 'wrong_password', 'account_locked', etc.
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_auth_failed_logins_user_id ON auth_failed_logins(user_id);
+CREATE INDEX idx_auth_failed_logins_ip ON auth_failed_logins(ip_address);
+CREATE INDEX idx_auth_failed_logins_created_at ON auth_failed_logins(created_at);
+
+-- Rate limiting (using sliding window)
+CREATE TABLE auth_rate_limits (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    key VARCHAR(255) NOT NULL,
+    count INTEGER NOT NULL,
+    window_start TIMESTAMPTZ NOT NULL,
+    expires_at TIMESTAMPTZ NOT NULL,
+    UNIQUE(key, window_start)
+);
+
+CREATE INDEX idx_auth_rate_limits_key ON auth_rate_limits(key);
+CREATE INDEX idx_auth_rate_limits_expires ON auth_rate_limits(expires_at);
+```
+
+### Password Security Features
+
+| Feature | Description |
+|---------|-------------|
+| **Argon2id** | Memory-hard hashing, resistant to GPU/ASIC attacks |
+| **Rate Limiting** | Configurable attempts per time window |
+| **Account Lockout** | Temporary lockout after failed attempts |
+| **Password Strength** | Minimum length + complexity validation |
+| **Compromised Check** | Optional HIBP k-anonymity integration |
+| **Replay Protection** | TOTP counter tracking for replay detection |
+| **Constant-Time Comparison** | Timing attack resistant |
+
+### Error Types
+
+```rust
+use underlay_auth_password::PasswordAuthError;
+
+match result {
+    Ok(user) => { /* success */ }
+    Err(PasswordAuthError::WrongPassword) => { /* invalid credentials */ }
+    Err(PasswordAuthError::AccountLocked { retry_after_seconds }) => {
+        // User is locked out, tell them to wait
+    }
+    Err(PasswordAuthError::RateLimited { retry_after_seconds }) => {
+        // Too many attempts, rate limited
+    }
+    Err(PasswordAuthError::PasswordTooWeak(feedback)) => {
+        // Password doesn't meet requirements
+    }
+    Err(PasswordAuthError::PasswordCompromised) => {
+        // Password found in breach database
+    }
+    Err(PasswordAuthError::PasswordSameAsCurrent) => {
+        // New password can't be the same as current
+    }
+    _ => { /* other errors */ }
+}
+```
+
+---
+
 ## Configuration
 
 ### Environment Variables
@@ -257,6 +1362,29 @@ AUTH_JWT_LEEWAY_SECONDS=30
 
 # === Dev Mode (LOCAL DEVELOPMENT ONLY) ===
 NURSERY_DEV_AUTH=false
+
+# === TOTP (optional - defaults provided) ===
+# TOTP_ISSUER=MyApp
+# TOTP_DIGITS=6
+# TOTP_PERIOD=30
+# TOTP_SKEW=1
+
+# === OAuth token encryption (recommended if storing refresh tokens) ===
+#
+# If you store OAuth refresh tokens (e.g. Google) in your database, encrypt them at rest.
+# Underlay provides `underlay-auth-oauth::OAuthTokenCipher` which expects:
+# - AUTH_OAUTH_SECRET_KEY: base64/base64url of 32 random bytes (AES-256-GCM key)
+#
+# Generate one with:
+#   openssl rand -base64 32
+# or:
+#   node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
+AUTH_OAUTH_SECRET_KEY=...
+
+# === Google OAuth (optional) ===
+AUTH_GOOGLE_CLIENT_ID=...
+AUTH_GOOGLE_CLIENT_SECRET=...
+AUTH_GOOGLE_REDIRECT_URI=https://myapp.com/auth/oauth/google/callback
 ```
 
 ### Key Generation
@@ -312,6 +1440,11 @@ If `AUTH_JWT_AUDIENCE` is set, `aud` is also required and validated.
 - [ ] Sensitive data not logged in auth operations
 - [ ] Rate limiting on auth endpoints
 - [ ] Audit logging for login attempts
+- [ ] TOTP secrets encrypted at rest (use AES-256-GCM)
+- [ ] Backup codes hashed (SHA-256) before storage
+- [ ] OAuth tokens encrypted at rest
+- [ ] WebAuthn credential IDs indexed for lookup
+- [ ] PassKey counter regression detected and rejected
 
 ## Next Step
 

@@ -1,5 +1,6 @@
 <script lang="ts">
   import Button from "./Button.svelte";
+  import { createStableId } from "../patterns/dom";
 
   type SplitButtonOption = {
     value: string;
@@ -11,14 +12,15 @@
   export let type: "button" | "submit" = "button";
   export let variant: "primary" | "secondary" = "primary";
 
-  const menuId = `underlay-split-menu-${Math.random().toString(36).slice(2)}`;
+  const menuId = createStableId("underlay-split-menu");
 
   $: current = options.find((opt) => opt.value === value) ?? options[0] ?? null;
 
   function choose(next: string) {
     value = next;
 
-    const el = document?.getElementById(menuId) as any;
+    const doc = globalThis?.document;
+    const el = doc?.getElementById(menuId) as any;
     if (el && typeof el.hidePopover === "function") {
       el.hidePopover();
     }

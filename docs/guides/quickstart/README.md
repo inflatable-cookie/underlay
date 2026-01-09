@@ -31,7 +31,7 @@ Read these documents in order for a complete understanding:
 4. **[030 - Underlay Integration](./030-underlay-integration.md)** - Linking the Underlay foundation
 5. **[040 - Rust Backend](./040-rust-backend.md)** - Workspace, core crate, patterns
 6. **[050 - Database & Migrations](./050-database.md)** - DB crate, sqlx, migrations
-7. **[060 - Authentication](./060-authentication.md)** - Auth providers, JWT, dev mode
+7. **[060 - Authentication](./060-authentication.md)** - Auth providers, JWT, TOTP, WebAuthn, OAuth
 8. **[070 - API Handlers](./070-api-handlers.md)** - HTTP handlers, routing
 9. **[080 - TypeScript Client](./080-typescript-client.md)** - HTTP client, commands
 10. **[090 - UI Kit](./090-ui-kit.md)** - Component patterns

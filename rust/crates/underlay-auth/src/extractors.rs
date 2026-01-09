@@ -46,21 +46,21 @@ where
             .authenticate_bearer(&token)
             .await
             .map_err(|auth_err| {
-                 let status = match auth_err {
-                     AuthError::Forbidden => StatusCode::FORBIDDEN,
-                     AuthError::RateLimited { .. } => StatusCode::TOO_MANY_REQUESTS,
-                     AuthError::BadRequest(_) => StatusCode::BAD_REQUEST,
-                     AuthError::Internal(_) => StatusCode::INTERNAL_SERVER_ERROR,
-                     AuthError::Unauthorized
-                     | AuthError::InvalidToken
-                     | AuthError::TokenInvalid
-                     | AuthError::TokenMalformed
-                     | AuthError::TokenNotYetValid
-                     | AuthError::TokenFingerprintMismatch
-                     | AuthError::SessionExpired
-                     | AuthError::SessionRevoked => StatusCode::UNAUTHORIZED,
-                     _ => StatusCode::UNAUTHORIZED,
-                 };
+                let status = match auth_err {
+                    AuthError::Forbidden => StatusCode::FORBIDDEN,
+                    AuthError::RateLimited { .. } => StatusCode::TOO_MANY_REQUESTS,
+                    AuthError::BadRequest(_) => StatusCode::BAD_REQUEST,
+                    AuthError::Internal(_) => StatusCode::INTERNAL_SERVER_ERROR,
+                    AuthError::Unauthorized
+                    | AuthError::InvalidToken
+                    | AuthError::TokenInvalid
+                    | AuthError::TokenMalformed
+                    | AuthError::TokenNotYetValid
+                    | AuthError::TokenFingerprintMismatch
+                    | AuthError::SessionExpired
+                    | AuthError::SessionRevoked => StatusCode::UNAUTHORIZED,
+                    _ => StatusCode::UNAUTHORIZED,
+                };
                 reject(status, auth_err.into_app_error())
             })?;
 
@@ -83,21 +83,21 @@ where
         match state.auth_provider().authenticate_bearer(&token).await {
             Ok(principal) => Ok(OptionalAuthenticated(Some(principal))),
             Err(auth_err) => {
-                 let status = match auth_err {
-                     AuthError::Forbidden => StatusCode::FORBIDDEN,
-                     AuthError::RateLimited { .. } => StatusCode::TOO_MANY_REQUESTS,
-                     AuthError::BadRequest(_) => StatusCode::BAD_REQUEST,
-                     AuthError::Internal(_) => StatusCode::INTERNAL_SERVER_ERROR,
-                     AuthError::Unauthorized
-                     | AuthError::InvalidToken
-                     | AuthError::TokenInvalid
-                     | AuthError::TokenMalformed
-                     | AuthError::TokenNotYetValid
-                     | AuthError::TokenFingerprintMismatch
-                     | AuthError::SessionExpired
-                     | AuthError::SessionRevoked => StatusCode::UNAUTHORIZED,
-                     _ => StatusCode::UNAUTHORIZED,
-                 };
+                let status = match auth_err {
+                    AuthError::Forbidden => StatusCode::FORBIDDEN,
+                    AuthError::RateLimited { .. } => StatusCode::TOO_MANY_REQUESTS,
+                    AuthError::BadRequest(_) => StatusCode::BAD_REQUEST,
+                    AuthError::Internal(_) => StatusCode::INTERNAL_SERVER_ERROR,
+                    AuthError::Unauthorized
+                    | AuthError::InvalidToken
+                    | AuthError::TokenInvalid
+                    | AuthError::TokenMalformed
+                    | AuthError::TokenNotYetValid
+                    | AuthError::TokenFingerprintMismatch
+                    | AuthError::SessionExpired
+                    | AuthError::SessionRevoked => StatusCode::UNAUTHORIZED,
+                    _ => StatusCode::UNAUTHORIZED,
+                };
                 Err(reject(status, auth_err.into_app_error()))
             }
         }

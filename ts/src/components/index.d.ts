@@ -29,6 +29,16 @@ declare const TabsList: any;
 declare const TabsTrigger: any;
 declare const TabsContent: any;
 
+declare const LoginForm: any;
+declare const RegisterForm: any;
+declare const TotpSetup: any;
+declare const TotpInput: any;
+declare const PassKeyButton: any;
+declare const GoogleSignInButton: any;
+declare const SessionList: any;
+declare const SecuritySettings: any;
+declare const AccountRecovery: any;
+
 export {
   AlertDialog,
   Button,
@@ -41,6 +51,15 @@ export {
   Form,
   FormActions,
   FormError,
+  LoginForm,
+  RegisterForm,
+  TotpSetup,
+  TotpInput,
+  PassKeyButton,
+  GoogleSignInButton,
+  SessionList,
+  SecuritySettings,
+  AccountRecovery,
   MarkdownEditor,
   IconButton,
   ListCard,

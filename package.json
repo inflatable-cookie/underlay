@@ -41,7 +41,10 @@
   },
   "scripts": {
     "check": "svelte-check --tsconfig ./ts/tsconfig.json",
-    "validate": "pnpm run check"
+    "check:types": "tsc -p ./ts/tsconfig.json",
+    "check:exports": "node ts/scripts/check-exports.mjs",
+    "check:guardrails": "node ts/scripts/check-guardrails.mjs",
+    "validate": "pnpm run check && pnpm run check:types && pnpm run check:exports && pnpm run check:guardrails"
   },
   "peerDependencies": {
     "@sveltejs/kit": "^2.0.0",

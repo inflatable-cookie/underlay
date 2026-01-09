@@ -30,3 +30,15 @@ export { default as TabsRoot } from "./TabsRoot.svelte";
 export { default as TabsList } from "./TabsList.svelte";
 export { default as TabsTrigger } from "./TabsTrigger.svelte";
 export { default as TabsContent } from "./TabsContent.svelte";
+
+export { default as LoginForm } from "./auth/LoginForm.svelte";
+export { default as RegisterForm } from "./auth/RegisterForm.svelte";
+export { default as TotpSetup } from "./auth/TotpSetup.svelte";
+export { default as TotpInput } from "./auth/TotpInput.svelte";
+export { default as PassKeyButton } from "./auth/PassKeyButton.svelte";
+export { default as GoogleSignInButton } from "./auth/GoogleSignInButton.svelte";
+export { default as SessionList } from "./auth/SessionList.svelte";
+export { default as SecuritySettings } from "./auth/SecuritySettings.svelte";
+export { default as AccountRecovery } from "./auth/AccountRecovery.svelte";
+
+export * from "./auth/types";
