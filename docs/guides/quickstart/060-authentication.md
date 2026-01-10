@@ -1491,7 +1491,7 @@ NURSERY_DEV_AUTH=false
 
 # === Auth State Migrations (required for multi-step flows) ===
 #
-# Underlay uses `accounts.auth_state` to store short-lived state for multi-step auth flows
+# Underlay uses `auth.auth_state` to store short-lived state for multi-step auth flows
 # like 2FA login continuation, passkeys, and OAuth callbacks.
 #
 # Underlay owns the canonical migration(s) for this table.

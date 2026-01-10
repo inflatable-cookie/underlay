@@ -125,12 +125,9 @@ Foundational types, error codes, and database schema for the auth system.
   - `auth.password_weak`
   - `auth.password_compromised`
   - `auth.rate_limited`
-- [x] Underlay: Add SQL template in `underlay-auth/sql/001__create_auth_tables.sql`:
-  - `auth_users` table (id, email, display_name, status, created_at, updated_at)
-  - `auth_credentials` table (id, user_id, type, secret_encrypted, metadata, created_at, updated_at)
-  - `auth_sessions` table (id, user_id, access_token_fingerprint, refresh_token_fingerprint, created_at, expires_at, last_used_at, ip, user_agent, revoked)
-  - `auth_audit_log` table (id, event_type, user_id, ip, user_agent, success, details, created_at)
-  - `auth_rate_limits` table (key, count, window_start, expires_at)
+- [x] Underlay: Define canonical auth migrations (sync into apps)
+  - `auth.users`, `auth.credentials`, `auth.sessions`, `auth.auth_state`, `auth.totp_credential`
+  - Location: `rust/crates/underlay-auth/migrations/0001_create_auth_tables.sql`
 - [x] Underlay: Define repository traits for user/credential/session operations (apps implement with their DB)
 - [x] Verify: Database schema compiles and migrations run against PostgreSQL
 

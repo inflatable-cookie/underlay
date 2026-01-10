@@ -276,6 +276,36 @@ impl WebAuthnService {
             })
     }
 
+    /// Begin a discoverable (username-less) authentication.
+    ///
+    /// This is primarily used for conditional UI / passkey autofill flows.
+    pub fn start_discoverable_authentication(
+        &self,
+    ) -> AuthResult<(RequestChallengeResponse, DiscoverableAuthentication)> {
+        self.inner
+            .start_discoverable_authentication()
+            .map_err(|err| {
+                tracing::warn!(error = ?err, "webauthn start discoverable authentication failed");
+                AuthError::from(WebAuthnError::AuthenticationFailed)
+            })
+    }
+
+    /// Extract the user UUID and credential ID from a discoverable authentication response.
+    pub fn identify_discoverable_authentication(
+        &self,
+        response: &PublicKeyCredential,
+    ) -> AuthResult<(Uuid, CredentialId)> {
+        let (user_uuid, cred_id_bytes) = self
+            .inner
+            .identify_discoverable_authentication(response)
+            .map_err(|err| {
+                tracing::warn!(error = ?err, "webauthn identify discoverable authentication failed");
+                AuthError::from(WebAuthnError::AuthenticationFailed)
+            })?;
+
+        Ok((Uuid(user_uuid), CredentialId::from(cred_id_bytes)))
+    }
+
     pub fn finish_passkey_authentication(
         &self,
         response: &PublicKeyCredential,
@@ -283,11 +313,38 @@ impl WebAuthnService {
     ) -> AuthResult<AuthenticationResult> {
         self.inner
             .finish_passkey_authentication(response, state)
-            .map_err(|e| match e {
-                WebauthnError::CredentialCounterUpdateFailure => {
-                    WebAuthnError::CounterRegression.into()
+            .map_err(|err| {
+                tracing::warn!(error = ?err, "webauthn finish passkey authentication failed");
+                match err {
+                    WebauthnError::CredentialCounterUpdateFailure => {
+                        WebAuthnError::CounterRegression.into()
+                    }
+                    _ => WebAuthnError::AuthenticationFailed.into(),
                 }
-                _ => WebAuthnError::AuthenticationFailed.into(),
+            })
+    }
+
+    pub fn finish_discoverable_authentication(
+        &self,
+        response: &PublicKeyCredential,
+        state: &DiscoverableAuthentication,
+        allowed_credentials: Vec<Passkey>,
+    ) -> AuthResult<AuthenticationResult> {
+        let discoverable_keys = allowed_credentials
+            .iter()
+            .map(|p| DiscoverableKey::from(p))
+            .collect::<Vec<_>>();
+
+        self.inner
+            .finish_discoverable_authentication(response, state.clone(), &discoverable_keys)
+            .map_err(|err| {
+                tracing::warn!(error = ?err, "webauthn finish discoverable authentication failed");
+                match err {
+                    WebauthnError::CredentialCounterUpdateFailure => {
+                        WebAuthnError::CounterRegression.into()
+                    }
+                    _ => WebAuthnError::AuthenticationFailed.into(),
+                }
             })
     }
 
@@ -342,6 +399,20 @@ impl WebAuthnService {
 
     #[cfg(feature = "danger-allow-state-serialisation")]
     pub fn decode_authentication_state(encoded: &str) -> AuthResult<PasskeyAuthentication> {
+        serde_json::from_str(encoded).map_err(|_| WebAuthnError::InvalidPasskeyEncoding.into())
+    }
+
+    #[cfg(feature = "danger-allow-state-serialisation")]
+    pub fn encode_discoverable_authentication_state(
+        state: &DiscoverableAuthentication,
+    ) -> AuthResult<String> {
+        serde_json::to_string(state).map_err(|_| WebAuthnError::InvalidPasskeyEncoding.into())
+    }
+
+    #[cfg(feature = "danger-allow-state-serialisation")]
+    pub fn decode_discoverable_authentication_state(
+        encoded: &str,
+    ) -> AuthResult<DiscoverableAuthentication> {
         serde_json::from_str(encoded).map_err(|_| WebAuthnError::InvalidPasskeyEncoding.into())
     }
 

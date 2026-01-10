@@ -63,9 +63,9 @@ struct MigrationSource {
 // The generated version number is: (crate_id * 100_000_000) + original_version
 // which yields a 12-digit numeric prefix and ensures stable ordering per crate.
 const SOURCES: &[MigrationSource] = &[MigrationSource {
-    slug: "underlay_auth_state",
-    crate_id: 9001,
-    migrations_rel: "../underlay-auth-state/migrations",
+    slug: "underlay_auth",
+    crate_id: 9000,
+    migrations_rel: "../underlay-auth/migrations",
 }];
 
 pub fn sync_migrations(

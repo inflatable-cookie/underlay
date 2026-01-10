@@ -16,7 +16,7 @@ impl AuthStateStore {
 
     /// Create a short-lived auth state row.
     ///
-    /// This stores state in `accounts.auth_state` and returns the generated UUID.
+    /// This stores state in `auth.auth_state` and returns the generated UUID.
     pub async fn create(
         &self,
         user_id: Option<Uuid>,
@@ -30,7 +30,7 @@ impl AuthStateStore {
 
         sqlx::query(
             r#"
-            INSERT INTO accounts.auth_state (id, user_id, state_type, state, created_at, expires_at)
+            INSERT INTO auth.auth_state (id, user_id, state_type, state, created_at, expires_at)
             VALUES ($1, $2, $3, $4, $5, $6)
             "#,
         )
@@ -79,7 +79,7 @@ impl AuthStateStore {
         let row = sqlx::query(
             r#"
             SELECT state
-            FROM accounts.auth_state
+            FROM auth.auth_state
             WHERE id = $1 AND user_id IS NOT DISTINCT FROM $2 AND state_type = $3 AND expires_at > $4
             "#,
         )
@@ -121,7 +121,7 @@ impl AuthStateStore {
 
         let result = sqlx::query(
             r#"
-            UPDATE accounts.auth_state
+            UPDATE auth.auth_state
             SET state = $3
             WHERE id = $1 AND user_id IS NULL AND state_type = $2 AND expires_at > $4
             "#,
@@ -144,7 +144,7 @@ impl AuthStateStore {
     pub async fn delete(&self, state_id: Uuid) -> Result<(), AuthStateError> {
         sqlx::query(
             r#"
-            DELETE FROM accounts.auth_state
+            DELETE FROM auth.auth_state
             WHERE id = $1
             "#,
         )
@@ -225,12 +225,6 @@ pub enum AuthStateError {
     Decode(#[source] serde_json::Error),
     #[error("database error")]
     Db(#[source] sqlx::Error),
-}
-
-pub static MIGRATOR: sqlx::migrate::Migrator = sqlx::migrate!();
-
-pub async fn run_migrations(pool: &sqlx::PgPool) -> Result<(), sqlx::migrate::MigrateError> {
-    MIGRATOR.run(pool).await
 }
 
 #[derive(Debug, Serialize, Deserialize)]
