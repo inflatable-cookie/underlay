@@ -322,8 +322,8 @@ Underlay provides `underlay-auth-totp` for Time-based One-Time Password support.
 ```toml
 # apps/nursery/crates/auth/Cargo.toml
 [dependencies]
-underlay-auth-totp = { path = "../../../../../rust/crates/underlay-auth-totp" }
-underlay-auth-state = { path = "../../../../../rust/crates/underlay-auth-state" }
+underlay-auth-totp = { path = "../../../underlay/rust/crates/underlay-auth-totp" }
+underlay-auth-state = { path = "../../../underlay/rust/crates/underlay-auth-state" }
 ```
 
 ### TOTP Service Setup
@@ -463,7 +463,7 @@ Underlay provides `underlay-auth-webauthn` for passwordless authentication using
 ```toml
 # apps/nursery/crates/auth/Cargo.toml
 [dependencies]
-underlay-auth-webauthn = { path = "../../../../../rust/crates/underlay-auth-webauthn" }
+underlay-auth-webauthn = { path = "../../../underlay/rust/crates/underlay-auth-webauthn" }
 ```
 
 ### WebAuthn Service Setup
@@ -692,7 +692,7 @@ Underlay provides `underlay-auth-oauth` for Google Sign-In with two service laye
 ```toml
 # apps/nursery/crates/auth/Cargo.toml
 [dependencies]
-underlay-auth-oauth = { path = "../../../../../rust/crates/underlay-auth-oauth" }
+underlay-auth-oauth = { path = "../../../underlay/rust/crates/underlay-auth-oauth" }
 ```
 
 ### OAuth Service Setup
@@ -1044,7 +1044,7 @@ Underlay provides `underlay-auth-password` for secure password authentication us
 ```toml
 # apps/nursery/crates/auth/Cargo.toml
 [dependencies]
-underlay-auth-password = { path = "../../../../../rust/crates/underlay-auth-password" }
+underlay-auth-password = { path = "../../../underlay/rust/crates/underlay-auth-password" }
 ```
 
 ### Password Auth Components
