@@ -180,6 +180,6 @@ Cause: wrong path dependencies in Cargo workspace.
 
 Cause: missing pnpm install or incorrect `file:` path.
 
-## Next Step
+## Next Steps
 
 Proceed to [040-rust-backend](./040-rust-backend.md).

@@ -1,5 +1,7 @@
 # 060 - Authentication
 
+> **Reference Implementation**: This guide includes patterns from Acowtancy, a production application built with Underlay. These serve as working examples of best practices.
+
 This document covers implementing authentication using the Underlay auth system. Underlay provides multiple authentication methods:
 
 - **JWT tokens** (production) with Ed25519/EdDSA
@@ -275,8 +277,6 @@ fn create_auth_provider() -> Arc<dyn underlay_auth::AuthProvider> {
             Arc::new(DevBearerUuidAuthProvider)
         }
         None => {
-            tracing::error!(
-            None => {
             tracing::error!(
                 "Auth not configured. Set AUTH_JWT_* env vars or NURSERY_DEV_AUTH=true"
             );
@@ -555,11 +555,23 @@ impl WebAuthnAuthService {
         // Finish logic (returns passkey)
         let passkey = self.webauthn.finish_passkey_registration(&state, &credential)?;
         
-        // In a real app, you would store `passkey` here using your repository
-        // and return the response needed by the frontend.
-        // For this guide, we return a success marker.
+        // Store the passkey in the database
+        let stored_passkey = self.webauthn.stored_passkey_from_passkey(\u0026passkey)?;
+        let secret = serde_json::to_string(\u0026stored_passkey)
+            .map_err(|_| AuthError::Internal("failed to encode passkey".into()))?;
+        let metadata = WebAuthnService::credential_metadata_from_stored_passkey(\u0026stored_passkey);
         
-        todo!("Store passkey and return response")
+        // Save to your repository (example assumes a credential repository pattern)
+        let created = credential_repo.create(
+            user_id,
+            CredentialType::Passkey,
+            \u0026secret,
+            \u0026metadata,
+        ).await?;
+        
+        Ok(FinishPasskeyRegistrationResponse {
+            credential_id: created.id.to_string(),
+        })
     }
 }
 ```
@@ -618,10 +630,26 @@ impl WebAuthnAuthService {
 
         let result = self.webauthn.finish_passkey_authentication(&credential, &state)?;
         
-        // In a real app, you would now verify the credential against your DB user
-        // and issue a session.
+        // Verify the credential against your database
+        let credential_id = WebAuthnService::authentication_result_credential_id_base64url(\u0026result)?;
         
-        todo!("Verify credential and issue session")
+        let (user_id, _passkey_credential_id, stored_passkey) = credential_repo
+            .find_passkey_by_credential_id(\u0026credential_id)
+            .await?
+            .ok_or(AuthError::PassKeyCredentialNotFound)?;
+        
+        // Update credential counter to prevent replay attacks
+        self.webauthn.update_passkey_credential(\u0026result, \u0026stored_passkey)?;
+        credential_repo.update_counter(user_id, result.counter()).await?;
+        
+        // Issue a session for the authenticated user
+        let session = self.issue_session(user_id).await?;
+        
+        Ok(FinishPasskeyAuthenticationResponse {
+            user_id: user_id.to_string(),
+            access_token: session.access_token,
+            refresh_token: session.refresh_token,
+        })
     }
 }
 ```
@@ -676,6 +704,414 @@ Login:
 4. Browser WebAuthn API signs challenge
 5. Client POSTs credential to /auth/passkey/auth/finish
 6. Server verifies and creates session
+```
+
+---
+
+## Multi-Step Authentication Flows
+
+Many authentication methods require multiple request-response cycles. Examples include:
+
+- **Password + TOTP**: User enters password first, then 2FA code in a second step
+- **WebAuthn registration**: Start creates challenge, finish verifies credential
+- **OAuth**: Redirect to provider, then callback processes result
+
+These flows share a common pattern: **temporary state management with TTL**.
+
+### State Management Pattern
+
+Underlay provides `AuthStateStore` (from `underlay-auth-state`) for managing short-lived authentication state between request steps.
+
+**Key concepts:**
+
+1. **Create state** with TTL when starting a flow
+2. **Return state ID** to client for the next request
+3. **Consume state** (one-time use) when finishing the flow
+4. **Automatic expiry** prevents replay attacks and cleans up abandoned flows
+
+### AuthStateStore API
+
+```rust
+use underlay_auth_state::AuthStateStore;
+use underlay_core::Uuid;
+use chrono::Duration;
+use serde_json::Value;
+
+pub struct AuthStateStore {
+    pool: sqlx::PgPool,
+}
+
+impl AuthStateStore {
+    pub fn new(pool: sqlx::PgPool) -> Self {
+        Self { pool }
+    }
+
+    /// Create new state (public or user-specific)
+    pub async fn create(
+        &self,
+        user_id: Option<Uuid>,  // None for public (unauthenticated) flows
+        state_type: &str,        // e.g., "login_2fa", "passkey_registration"
+        state: Value,            // Arbitrary JSON state
+        ttl: Duration,           // How long state is valid
+    ) -> Result<Uuid, AuthStateError> {
+        // Returns state_id to pass to client
+    }
+
+    /// Load state without consuming (for multiple attempts)
+    pub async fn load_public(
+        &self,
+        state_id: Uuid,
+        state_type: &str,
+    ) -> Result<Option<Value>, AuthStateError> {
+        // Returns state if valid and not expired
+    }
+
+    /// Update state (e.g., increment attempt counter)
+    pub async fn update_public(
+        &self,
+        state_id: Uuid,
+        state_type: &str,
+        state: Value,
+    ) -> Result<(), AuthStateError> {
+        // Updates existing state
+    }
+
+    /// Consume state (one-time use, deletes after retrieval)
+    pub async fn consume_public(
+        &self,
+        state_id: Uuid,
+        state_type: &str,
+    ) -> Result<Option<Value>, AuthStateError> {
+        // Loads and deletes state atomically
+    }
+
+    /// Consume user-specific state (validates user_id matches)
+    pub async fn consume_user(
+        &self,
+        state_id: Uuid,
+        user_id: Uuid,
+        state_type: &str,
+    ) -> Result<Option<Value>, AuthStateError> {
+        // Validates user_id before consuming
+    }
+
+    /// Delete state explicitly
+    pub async fn delete(&self, state_id: Uuid) -> Result<(), AuthStateError> {
+        // Cleanup on error/cancellation
+    }
+}
+```
+
+### Database Schema
+
+Auth state requires a table (see Underlay migrations):
+
+```sql
+CREATE TABLE auth.auth_state (
+    id UUID PRIMARY KEY,
+    user_id UUID NULL,                -- NULL for public flows
+    state_type VARCHAR(64) NOT NULL,  -- Flow identifier
+    state JSONB NOT NULL,             -- Arbitrary JSON
+    expires_at TIMESTAMPTZ NOT NULL,  -- TTL
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_auth_state_expires_at ON auth.auth_state(expires_at);
+CREATE INDEX idx_auth_state_user_id ON auth.auth_state(user_id) WHERE user_id IS NOT NULL;
+```
+
+**Note**: Run the Underlay migration sync tool to copy the canonical migrations into your app:
+
+```bash
+cargo run --manifest-path /path/to/underlay/Cargo.toml \
+  -p underlay-devtools --bin underlay-devtools -- \
+  sync-migrations --target /path/to/your-app/migrations
+```
+
+### Example: Password + TOTP Login (Multi-Step)
+
+This is a production-ready pattern from Acowtancy showing how to split login into two steps when 2FA is required.
+
+**Step 1: Login Start (Password Verification)**
+
+```rust
+use serde::{Deserialize, Serialize};
+use underlay_auth_state::AuthStateStore;
+use underlay_core::Uuid;
+use chrono::Duration;
+
+#[derive(Debug, Clone)]
+pub enum LoginStartOutcome {
+    /// Login complete (no 2FA required)
+    Complete { session: AuthSession, role: String },
+    /// 2FA required - client must call login_finish with TOTP code
+    TwoFactorRequired { login_state_id: Uuid },
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct LoginTwoFactorState {
+    user_id: String,
+    client_fingerprint: String,
+    attempts: u32,
+}
+
+pub async fn login_start_with_password(
+    auth_state: &AuthStateStore,
+    email: &str,
+    password: &str,
+    client_fingerprint: &str,  // e.g., user-agent hash
+) -> AuthResult<LoginStartOutcome> {
+    // 1. Find user by email
+    let user = find_user_by_email(email).await?
+        .ok_or(AuthError::WrongCredentials)?;
+
+    // 2. Verify password
+    let password_credential = find_password_credential(user.id).await?
+        .ok_or(AuthError::WrongCredentials)?;
+    
+    verify_password(password, &password_credential.secret_encrypted).await?;
+
+    // 3. Check if user has TOTP enabled
+    if has_totp_enabled(user.id).await? {
+        // Create temporary state for 2FA flow
+        let state_id = auth_state.create(
+            None,  // Public flow (user not yet authenticated)
+            "login_2fa",
+            serde_json::to_value(LoginTwoFactorState {
+                user_id: user.id.to_string(),
+                client_fingerprint: client_fingerprint.to_string(),
+                attempts: 0,
+            })?,
+            Duration::minutes(5),  // Short TTL for security
+        ).await?;
+
+        return Ok(LoginStartOutcome::TwoFactorRequired {
+            login_state_id: state_id,
+        });
+    }
+
+    // 4. No 2FA required - create session immediately
+    let roles = get_user_roles(user.id).await?;
+    let (tokens, session) = create_session(user.id, roles).await?;
+
+    Ok(LoginStartOutcome::Complete {
+        session: AuthSession {
+            user,
+            session,
+            access_token: tokens.access_token,
+            refresh_token: tokens.refresh_token,
+        },
+        role: get_user_role(user.id).await?,
+    })
+}
+```
+
+**Step 2: Login Finish (TOTP Verification)**
+
+```rust
+pub async fn login_finish_with_totp(
+    auth_state: &AuthStateStore,
+    login_state_id: Uuid,
+    code: &str,
+    client_fingerprint: &str,
+) -> AuthResult<(AuthSession, String)> {
+    // 1. Load state (not consumed yet - allows retry on wrong code)
+    let state_value = auth_state.load_public(login_state_id, "login_2fa").await?
+        .ok_or(AuthError::BadRequest("Invalid or expired login state".into()))?;
+
+    let mut state: LoginTwoFactorState = serde_json::from_value(state_value)?;
+
+    // 2. Validate client fingerprint matches (prevent state hijacking)
+    if state.client_fingerprint != client_fingerprint {
+        auth_state.delete(login_state_id).await?;
+        return Err(AuthError::BadRequest("Invalid or expired login state".into()));
+    }
+
+    // 3. Check rate limiting (max 5 attempts)
+    if state.attempts >= 5 {
+        auth_state.delete(login_state_id).await?;
+        return Err(AuthError::RateLimited { retry_after_seconds: 60 });
+    }
+
+    let user_id = Uuid::parse_str(&state.user_id)?;
+    let user = find_user_by_id(user_id).await?
+        .ok_or(AuthError::UserNotFound)?;
+
+    // 4. Verify TOTP code
+    let totp_details = find_totp_details(user.id).await?
+        .ok_or(AuthError::TwoFactorNotSetUp)?;
+
+    if let Err(err) = verify_totp_code(&totp_details, code).await {
+        // Increment attempt counter and update state
+        state.attempts += 1;
+        auth_state.update_public(
+            login_state_id,
+            "login_2fa",
+            serde_json::to_value(&state)?,
+        ).await?;
+
+        if state.attempts >= 5 {
+            auth_state.delete(login_state_id).await?;
+            return Err(AuthError::RateLimited { retry_after_seconds: 60 });
+        }
+
+        return Err(err);
+    }
+
+    // 5. Success - consume state (one-time use prevents replay)
+    auth_state.consume_public(login_state_id, "login_2fa").await?;
+
+    // 6. Create session
+    let role = get_user_role(user.id).await?;
+    let roles = roles_for_user(&role);
+    let (tokens, session) = create_session(user.id, roles).await?;
+
+    Ok((
+        AuthSession {
+            user,
+            session,
+            access_token: tokens.access_token,
+            refresh_token: tokens.refresh_token,
+        },
+        role,
+    ))
+}
+```
+
+**Frontend Integration (SvelteKit)**
+
+```typescript
+// Step 1: Start login
+const response = await api.auth.loginStart({
+  email,
+  password,
+  clientFingerprint: navigator.userAgent,
+});
+
+if (response.outcome === 'twoFactorRequired') {
+  // Show TOTP input form
+  setLoginStateId(response.loginStateId);
+  setShowTotpInput(true);
+} else {
+  // Login complete - set cookies and redirect
+  setCookies(response.session);
+  goto('/dashboard');
+}
+
+// Step 2: Finish login with TOTP
+const finishResponse = await api.auth.loginFinish({
+  loginStateId,
+  code: totpCode,
+  clientFingerprint: navigator.userAgent,
+});
+
+setCookies(finishResponse.session);
+goto('/dashboard');
+```
+
+### 2FA Enforcement Logic
+
+You can enforce 2FA for specific user roles or security levels:
+
+```rust
+pub async fn should_require_2fa(user_id: Uuid) -> AuthResult<bool> {
+    let role = get_user_role(user_id).await?;
+    
+    // Require 2FA for admin users
+    if role == "admin" || role == "super_admin" {
+        return Ok(true);
+    }
+
+    // Require 2FA if user has enabled it
+    Ok(has_totp_enabled(user_id).await?)
+}
+
+pub async fn login_start_with_password(
+    // ... params
+) -> AuthResult<LoginStartOutcome> {
+    // ... verify password ...
+
+    if should_require_2fa(user.id).await? {
+        // Create 2FA state
+        // ...
+    }
+
+    // ... create session ...
+}
+```
+
+### State Types Convention
+
+Use descriptive `state_type` values for different flows:
+
+- `login_2fa` - Password + TOTP login continuation
+- `passkey_registration` - WebAuthn registration challenge
+- `passkey_authentication` - WebAuthn login challenge
+- `passkey_discoverable_authentication` - Discoverable credential flow
+- `oauth_google` - Google OAuth CSRF/PKCE state
+- `totp_setup` - TOTP enrollment continuation
+- `password_reset` - Password reset token
+
+### Security Best Practices
+
+1. **Short TTLs**: Use 5-15 minutes for sensitive flows (login, registration)
+2. **One-time use**: Always `consume` state when completing a flow
+3. **Client fingerprinting**: Include user-agent or other client identifiers in state to prevent hijacking
+4. **Rate limiting**: Track attempts in state to prevent brute force
+5. **State cleanup**: Failed attempts should delete state after max attempts
+6. **Type validation**: Always validate `state_type` matches expected flow
+7. **User validation**: For user-specific flows, validate `user_id` in state matches authenticated user
+
+### Common Pitfalls
+
+**Don't:** Store sensitive data (passwords, plaintext secrets) in auth state
+**Do:** Store only identifiers and flow control data
+
+**Don't:** Reuse state IDs across different flows
+**Do:** Use unique state_type for each flow
+
+**Don't:** Forget to delete state on errors
+**Do:** Clean up state in error paths to prevent leaks
+
+**Don't:** Use long TTLs (hours/days)
+**Do:** Keep TTLs short (minutes) and let users restart if expired
+
+### Advanced: Multi-Device Flows
+
+For flows that span devices (e.g., QR code scan), use public state with polling:
+
+```rust
+// Device A: Generate QR code with state_id
+let state_id = auth_state.create(
+    None,
+    "device_pairing",
+    serde_json::to_value(DevicePairingState {
+        status: "pending",
+        device_a_fingerprint: fingerprint,
+    })?,
+    Duration::minutes(5),
+).await?;
+
+// Device B: Complete pairing
+auth_state.update_public(
+    state_id,
+    "device_pairing",
+    serde_json::to_value(DevicePairingState {
+        status: "completed",
+        device_b_id: Some(device_id),
+    })?,
+).await?;
+
+// Device A: Poll for completion
+loop {
+    let state = auth_state.load_public(state_id, "device_pairing").await?;
+    if state.status == "completed" {
+        auth_state.consume_public(state_id, "device_pairing").await?;
+        break;
+    }
+    tokio::time::sleep(Duration::seconds(2)).await;
+}
 ```
 
 ---
@@ -910,14 +1346,13 @@ pub async fn oauth_callback(
         })?;
 
     // Create session for the user
-    let session = create_session_for_user(result.user.id, &state).await?;
+    let session = create_session_for_user(result.user.id, \u0026state).await?;
 
-    // Clean up state
-    OAUTH_STATES.lock().await.remove(&result.user.id.to_string());
-
+    // State already consumed via consume_public() above - no need to clean up
+    
     // Redirect to app with session
     redirect(format!(
-        "{}/auth/callback?token={}&new_user={}",
+        \"{}/auth/callback?token={}\u0026new_user={}\",
         FRONTEND_URL,
         session.access_token,
         result.is_new_user
@@ -1081,6 +1516,9 @@ let config = PasswordConfig {
 ```
 
 ### Password Auth Repository
+
+> **Note**: The example below shows the repository trait interface with SQL query placeholders.  
+> For complete working SQL implementations including proper error handling, row mapping, and schema-qualified queries, see the Acowtancy reference implementation at `farmyard/crates/auth/src/local.rs` (lines 1168-1300+).
 
 Implement the `PasswordAuthRepository` trait for your database:
 
@@ -1580,6 +2018,23 @@ If `AUTH_JWT_AUDIENCE` is set, `aud` is also required and validated.
 - [ ] WebAuthn credential IDs indexed for lookup
 - [ ] PassKey counter regression detected and rejected
 
-## Next Step
+## See Also
+
+**Related Guides:**
+- **[065-session-management.md](./065-session-management.md)** - Complete login/logout flows, cookie management, session refresh
+- **[067-authorization.md](./067-authorization.md)** - RBAC patterns, role extraction, protected routes
+- **[070-api-handlers.md](./070-api-handlers.md)** - HTTP handlers for auth endpoints, error handling
+- **[050-database.md](./050-database.md)** - Database setup, migrations, auth schema
+- **[075-validation.md](./075-validation.md)** - Input validation for login forms
+
+**Implementation Checklist:**
+1. Set up auth database schema (see [050-database.md](./050-database.md))
+2. Configure JWT keys and environment variables (this guide)
+3. Implement login/logout handlers (see [070-api-handlers.md](./070-api-handlers.md))
+4. Add session management (see [065-session-management.md](./065-session-management.md))
+5. Add authorization guards (see [067-authorization.md](./067-authorization.md))
+6. Build frontend login forms (see [100-frontend-bloom.md](./100-frontend-bloom.md))
+
+## Next Steps
 
 With authentication configured, proceed to [070-api-handlers](./070-api-handlers.md) to implement HTTP handlers and routing.

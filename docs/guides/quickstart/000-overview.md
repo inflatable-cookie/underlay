@@ -158,19 +158,22 @@ Following naming and structure patterns from reference apps ensures:
 | 030 | Underlay Integration | Linking the Underlay foundation |
 | 040 | Rust Backend | Workspace, core crate, patterns |
 | 050 | Database & Migrations | DB crate, sqlx, migrations |
-| 060 | Authentication | Auth providers, JWT, dev mode |
+| 060 | Authentication | Auth providers, JWT, TOTP, WebAuthn, OAuth |
+| 065 | Session Management | Login/logout flows, cookie management, refresh |
+| 067 | Authorization | RBAC, role extraction, protected routes |
 | 070 | API Handlers | HTTP handlers, routing, middleware |
+| 075 | Validation | Backend/frontend validation, error display |
 | 080 | TypeScript Client | HTTP client, commands |
-| 090 | UI Kit | Component patterns |
+| 090 | UI Kit | Component patterns, design tokens |
 | 100 | Frontend (Web) | SvelteKit setup, routing |
 | 110 | Admin Frontend | Admin UI structure |
 | 120 | Configuration | Env files, validation |
 | 130 | Testing | Test patterns for all layers |
-| 140 | Local Development | Running locally, debugging |
+| 140 | Local Development | Running locally, debugging, guardrails |
 | 150 | CI/CD | GitHub Actions template |
 | 160 | Troubleshooting | Common issues and solutions |
 | 170 | Checklist | Completion verification |
 
-## Next Step
+## Next Steps
 
 Proceed to [010-prerequisites](./010-prerequisites.md) to verify your development environment.

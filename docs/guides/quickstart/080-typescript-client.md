@@ -1,11 +1,13 @@
-# 080 - TypeScript Client (Stem)
+# 080 - TypeScript Client
+
+> **Reference Implementation**: This guide includes patterns from Acowtancy's Cattle-Grid client, a production TypeScript API client built with Underlay. These serve as working examples of best practices.
 
 This document covers creating a typed API client for the Rust backend.
 
-- **Multi-repo (default):** this is typically its own repo (e.g. `myapp-stem/`).
-- **Monorepo:** it typically lives at `libs/stem/`.
+- **Multi-repo (default):** this is typically its own repo (e.g. `myapp-client/`).
+- **Monorepo:** it typically lives at `libs/client/`.
 
-In the rest of this doc, paths are written as `libs/stem/...` (monorepo style). In multi-repo mode, treat that as the repo root.
+In the rest of this doc, paths are written as `libs/client/...` (monorepo style). In multi-repo mode, treat that as the repo root.
 
 This guide aligns with Underlay’s TypeScript client primitives and error envelope shape.
 
@@ -307,13 +309,353 @@ export class LocalStorageTokenStore implements TokenStore {
 }
 ```
 
+## Production Patterns
+
+### Retry Logic
+
+Add automatic retries for transient errors (503, 504, network failures):
+
+```typescript
+// libs/stem/src/http-with-retry.ts
+
+interface RetryConfig {
+  maxRetries: number;
+  retryDelay: number; // milliseconds
+  retryableStatusCodes: number[];
+}
+
+export class HttpClientWithRetry {
+  private baseUrl: string;
+  private fetchFn: typeof fetch;
+  private retryConfig: RetryConfig;
+
+  constructor(
+    baseUrl: string,
+    fetchFn: typeof fetch = fetch,
+    retryConfig?: Partial<RetryConfig>
+  ) {
+    this.baseUrl = baseUrl;
+    this.fetchFn = fetchFn;
+    this.retryConfig = {
+      maxRetries: 3,
+      retryDelay: 1000,
+      retryableStatusCodes: [502, 503, 504],
+      ...retryConfig,
+    };
+  }
+
+  async request<T>(
+    method: string,
+    path: string,
+    body?: unknown
+  ): Promise<T> {
+    let lastError: Error | null = null;
+    const isIdempotent = method === "GET" || method === "HEAD";
+
+    const maxAttempts = isIdempotent ? this.retryConfig.maxRetries : 1;
+
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      try {
+        const response = await this.fetchFn(`${this.baseUrl}${path}`, {
+          method,
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: body ? JSON.stringify(body) : undefined,
+        });
+
+        if (!response.ok) {
+          // Check if we should retry
+          const shouldRetry =
+            isIdempotent &&
+            this.retryConfig.retryableStatusCodes.includes(response.status) &&
+            attempt < maxAttempts - 1;
+
+          if (shouldRetry) {
+            await this.sleep(this.retryConfig.retryDelay * (attempt + 1));
+            continue;
+          }
+
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        return await response.json();
+      } catch (err) {
+        lastError = err instanceof Error ? err : new Error(String(err));
+
+        // Network errors - retry if idempotent
+        if (isIdempotent && attempt < maxAttempts - 1) {
+          await this.sleep(this.retryConfig.retryDelay * (attempt + 1));
+          continue;
+        }
+
+        throw lastError;
+      }
+    }
+
+    throw lastError || new Error("Request failed after retries");
+  }
+
+  private sleep(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+}
+```
+
+### Timeout Handling
+
+Add request timeouts using AbortController:
+
+```typescript
+// libs/stem/src/http-with-timeout.ts
+
+export class HttpClientWithTimeout {
+  private baseUrl: string;
+  private fetchFn: typeof fetch;
+  private timeoutMs: number;
+
+  constructor(
+    baseUrl: string,
+    fetchFn: typeof fetch = fetch,
+    timeoutMs: number = 30000 // 30 seconds
+  ) {
+    this.baseUrl = baseUrl;
+    this.fetchFn = fetchFn;
+    this.timeoutMs = timeoutMs;
+  }
+
+  async request<T>(
+    method: string,
+    path: string,
+    body?: unknown
+  ): Promise<T> {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), this.timeoutMs);
+
+    try {
+      const response = await this.fetchFn(`${this.baseUrl}${path}`, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: body ? JSON.stringify(body) : undefined,
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (err) {
+      clearTimeout(timeoutId);
+
+      if (err instanceof Error && err.name === "AbortError") {
+        throw new Error(`Request timeout after ${this.timeoutMs}ms`);
+      }
+
+      throw err;
+    }
+  }
+}
+```
+
+### Combined: Retry + Timeout
+
+Combine both patterns for production-ready client:
+
+```typescript
+// libs/stem/src/http-resilient.ts
+
+interface ResilientHttpClientOptions {
+  baseUrl: string;
+  fetchFn?: typeof fetch;
+  timeoutMs?: number;
+  maxRetries?: number;
+  retryDelay?: number;
+  retryableStatusCodes?: number[];
+}
+
+export class ResilientHttpClient {
+  private options: Required<ResilientHttpClientOptions>;
+
+  constructor(options: ResilientHttpClientOptions) {
+    this.options = {
+      fetchFn: fetch,
+      timeoutMs: 30000,
+      maxRetries: 3,
+      retryDelay: 1000,
+      retryableStatusCodes: [502, 503, 504],
+      ...options,
+    };
+  }
+
+  async request<T>(
+    method: string,
+    path: string,
+    body?: unknown
+  ): Promise<T> {
+    const isIdempotent = method === "GET" || method === "HEAD";
+    const maxAttempts = isIdempotent ? this.options.maxRetries : 1;
+
+    let lastError: Error | null = null;
+
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      try {
+        return await this.singleRequest<T>(method, path, body);
+      } catch (err) {
+        lastError = err instanceof Error ? err : new Error(String(err));
+
+        // Determine if we should retry
+        const isRetryable =
+          isIdempotent &&
+          attempt < maxAttempts - 1 &&
+          this.isRetryableError(err);
+
+        if (isRetryable) {
+          const delay = this.options.retryDelay * (attempt + 1);
+          await this.sleep(delay);
+          continue;
+        }
+
+        throw lastError;
+      }
+    }
+
+    throw lastError || new Error("Request failed");
+  }
+
+  private async singleRequest<T>(
+    method: string,
+    path: string,
+    body?: unknown
+  ): Promise<T> {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(
+      () => controller.abort(),
+      this.options.timeoutMs
+    );
+
+    try {
+      const response = await this.options.fetchFn(
+        `${this.options.baseUrl}${path}`,
+        {
+          method,
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: body ? JSON.stringify(body) : undefined,
+          signal: controller.signal,
+        }
+      );
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        const error = new Error(`HTTP ${response.status}`);
+        (error as any).status = response.status;
+        throw error;
+      }
+
+      return await response.json();
+    } catch (err) {
+      clearTimeout(timeoutId);
+
+      if (err instanceof Error && err.name === "AbortError") {
+        throw new Error(`Request timeout after ${this.options.timeoutMs}ms`);
+      }
+
+      throw err;
+    }
+  }
+
+  private isRetryableError(err: unknown): boolean {
+    if (err instanceof Error) {
+      // Retry on timeout
+      if (err.message.includes("timeout")) {
+        return true;
+      }
+
+      // Retry on specific status codes
+      const status = (err as any).status;
+      if (status && this.options.retryableStatusCodes.includes(status)) {
+        return true;
+      }
+
+      // Retry on network errors
+      if (err.name === "TypeError" || err.name === "NetworkError") {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  private sleep(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+}
+```
+
+**Usage:**
+
+```typescript
+import { ResilientHttpClient } from "./http-resilient";
+
+const client = new ResilientHttpClient({
+  baseUrl: "https://api.example.com",
+  timeoutMs: 10000, // 10 seconds
+  maxRetries: 3,
+  retryDelay: 500, // 500ms, 1000ms, 1500ms
+});
+
+// Automatically retries on 503 or network failure
+const data = await client.request("GET", "/v1/users");
+```
+
+### Exponential Backoff
+
+Improve retry delays with exponential backoff:
+
+```typescript
+private calculateRetryDelay(attempt: number): number {
+  const baseDelay = this.options.retryDelay;
+  const exponentialDelay = baseDelay * Math.pow(2, attempt);
+  const maxDelay = 10000; // Cap at 10 seconds
+  
+  // Add jitter to prevent thundering herd
+  const jitter = Math.random() * 1000;
+  
+  return Math.min(exponentialDelay + jitter, maxDelay);
+}
+
+// In retry loop:
+await this.sleep(this.calculateRetryDelay(attempt));
+```
+
+### Acowtancy's Cattle-Grid Pattern
+
+For a production-ready reference, see Acowtancy's `cattle-grid` client which implements:
+- Automatic retries for 502/503/504 on GET requests
+- Request timeouts with AbortController
+- Exponential backoff with jitter
+- Type-safe error handling
+- Request/response interceptors
+
+**Reference:** `cattle-grid/src/utils/http-client.ts`
+
 ## Notes
 
 - This client expects the API to return `ListResponse { data: [...] }` and `SingleResponse { data: ... }`.
 - On non-2xx responses, Underlay throws `UnderlayHttpError`. The error envelope (if present) is available at `err.envelope`.
 - Use `isErrorEnvelope()` to safely check if an unknown value is an error envelope.
 - `TokenStore` implementations can be synchronous or async (returning promises).
+- **Production:** Always implement retries for idempotent requests (GET, HEAD)
+- **Production:** Always implement timeouts to prevent hanging requests
+- **Production:** Use exponential backoff with jitter for retries
 
-## Next Step
+## Next Steps
 
 Proceed to [090-ui-kit](./090-ui-kit.md).

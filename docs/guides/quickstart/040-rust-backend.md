@@ -260,7 +260,7 @@ pub struct PageRequest {
 impl PageRequest {
     /// Calculate the offset for database queries.
     pub fn offset(&self) -> u64 {
-        self.page.saturating_mul(1) * self.page_size
+        self.page.saturating_sub(1) * self.page_size
     }
 
     /// Get the limit (page size).
@@ -523,6 +523,7 @@ edition.workspace = true
 [dependencies]
 underlay-observability = { workspace = true }
 underlay-metrics = { workspace = true }
+config = "0.14"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["fmt", "env-filter", "json"] }
 serde = { version = "1", features = ["derive"] }
@@ -629,6 +630,6 @@ cargo check --workspace
 cargo test --workspace
 ```
 
-## Next Step
+## Next Steps
 
 With the Rust backend workspace set up, proceed to [050-database](./050-database.md) to configure the database layer.

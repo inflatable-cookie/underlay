@@ -51,6 +51,21 @@ my-project/
 
 To keep examples readable, some docs use monorepo-style logical paths like `apps/api/...` and `libs/client/...`.
 
+#### Quick Reference Table
+
+| Logical Path (in docs) | Monorepo | Multi-repo |
+|------------------------|----------|------------|
+| `apps/api/...` | `<project-root>/apps/api/...` | `<api-repo>/...` |
+| `apps/web/...` | `<project-root>/apps/web/...` | `<web-repo>/...` |
+| `apps/admin/...` | `<project-root>/apps/admin/...` | `<admin-repo>/...` |
+| `libs/client/...` | `<project-root>/libs/client/...` | `<client-repo>/...` |
+| `libs/ui/...` | `<project-root>/libs/ui/...` | `<ui-repo>/...` |
+| `libs/underlay/...` | `<project-root>/libs/underlay/...` | `<underlay-repo>/...` |
+
+**Example**: If a guide mentions `apps/api/src/main.rs`:
+- Monorepo: Open `my-project/apps/api/src/main.rs`
+- Multi-repo: Open `myapp-api/src/main.rs`
+
 - In **multi-repo mode**, interpret these as paths *within the corresponding repo*:
   - `apps/api/...` → `<api-repo>/...`
   - `apps/web/...` → `<web-repo>/...`
@@ -417,6 +432,6 @@ mkdir -p .github/workflows
 echo "Directory structure created at $PROJECT_ROOT"
 ```
 
-## Next Step
+## Next Steps
 
 With the project structure in place, proceed to [030-underlay-integration](./030-underlay-integration.md) to link the Underlay foundation.

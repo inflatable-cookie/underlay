@@ -1,6 +1,6 @@
 # 010 - Prerequisites
 
-Before starting a new project with the Songsprout/Acowtancy architecture, ensure your development environment meets the requirements below.
+Before starting a new project with Underlay, ensure your development environment meets the requirements below.
 
 ## Required Tools
 
@@ -291,6 +291,6 @@ pnpm store prune
 pnpm config set store-dir ~/.pnpm-store
 ```
 
-## Next Step
+## Next Steps
 
 Once all prerequisites are verified, proceed to [020-project-structure](./020-project-structure.md) to create the project directory layout.
