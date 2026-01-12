@@ -816,10 +816,305 @@ async fn test_validation_error_response() {
 
 ---
 
+## Underlay Validation (`underlay-validation`)
+
+Underlay provides its own validation crate with a derive macro, built-in validators, and Axum integration. This is the recommended approach for new Underlay projects.
+
+### Installation
+
+Add to your `Cargo.toml`:
+
+```toml
+[dependencies]
+underlay-validation = { path = "../underlay/rust/crates/underlay-validation", features = ["derive", "axum"] }
+```
+
+#### Features
+
+| Feature | Description |
+|---------|-------------|
+| `derive` | Enables `#[derive(Validate)]` macro (default) |
+| `axum` | Enables `ValidatedJson` extractor for Axum |
+
+### Basic Usage with Derive Macro
+
+```rust
+use underlay_validation::Validate;
+
+#[derive(Validate)]
+struct CreateUserRequest {
+    #[validate(email)]
+    email: String,
+
+    #[validate(length(min = 8, max = 100))]
+    password: String,
+
+    #[validate(range(min = 18, max = 120))]
+    age: i32,
+
+    #[validate(required)]
+    name: String,
+}
+```
+
+### Available Validators
+
+#### Simple Validators (No Arguments)
+
+| Validator | Description | Example |
+|-----------|-------------|---------|
+| `email` | Valid email address | `#[validate(email)]` |
+| `url` | Valid HTTP/HTTPS URL | `#[validate(url)]` |
+| `uuid` | Valid UUID (hyphenated or not) | `#[validate(uuid)]` |
+| `required` | Non-empty string (trims whitespace) | `#[validate(required)]` |
+| `alphanumeric` | Letters and numbers only | `#[validate(alphanumeric)]` |
+| `username` | Letters, numbers, underscores, hyphens | `#[validate(username)]` |
+| `slug` | Lowercase letters, numbers, hyphens | `#[validate(slug)]` |
+| `positive` | Greater than zero | `#[validate(positive)]` |
+| `non_negative` | Zero or greater | `#[validate(non_negative)]` |
+| `not_empty` | Collection has at least one item | `#[validate(not_empty)]` |
+| `nested` | Validate nested struct | `#[validate(nested)]` |
+| `skip` | Skip validation for field | `#[validate(skip)]` |
+
+#### Parameterized Validators
+
+| Validator | Description | Example |
+|-----------|-------------|---------|
+| `length(min, max)` | String length bounds | `#[validate(length(min = 1, max = 100))]` |
+| `range(min, max)` | Numeric range bounds | `#[validate(range(min = 0, max = 100))]` |
+| `collection_length(min, max)` | Collection size bounds | `#[validate(collection_length(min = 1, max = 10))]` |
+| `pattern = "regex"` | Custom regex pattern | `#[validate(pattern = r"^[A-Z]{2}\d{4}$")]` |
+| `custom = "fn"` | Custom validator function | `#[validate(custom = "validate_custom")]` |
+
+### Complete Example
+
+```rust
+use underlay_validation::Validate;
+
+#[derive(Validate)]
+struct CreateArticleRequest {
+    #[validate(required, length(min = 1, max = 200))]
+    title: String,
+
+    #[validate(slug)]
+    slug: String,
+
+    #[validate(length(min = 10))]
+    content: String,
+
+    #[validate(range(min = 1, max = 5))]
+    rating: i32,
+
+    #[validate(url)]
+    website: Option<String>,  // Optional fields skip validation if None
+
+    #[validate(not_empty, collection_length(max = 10))]
+    tags: Vec<String>,
+
+    #[validate(nested)]
+    author: AuthorInfo,
+
+    #[validate(custom = "validate_publish_date")]
+    publish_at: Option<chrono::DateTime<chrono::Utc>>,
+}
+
+#[derive(Validate)]
+struct AuthorInfo {
+    #[validate(required)]
+    name: String,
+
+    #[validate(email)]
+    email: String,
+}
+
+// Custom validator function
+fn validate_publish_date(
+    date: &Option<chrono::DateTime<chrono::Utc>>
+) -> Result<(), underlay_validation::FieldError> {
+    if let Some(d) = date {
+        if *d < chrono::Utc::now() {
+            return Err(underlay_validation::FieldError::with_code(
+                "Publish date must be in the future",
+                "publish_date.past"
+            ));
+        }
+    }
+    Ok(())
+}
+```
+
+### Axum Integration with ValidatedJson
+
+The `ValidatedJson` extractor automatically validates request bodies and returns proper HTTP error responses:
+
+```rust
+use axum::{Json, extract::State};
+use underlay_validation::{Validate, ValidatedJson};
+
+// Handler using ValidatedJson - validation is automatic!
+pub async fn create_article(
+    State(state): State<AppState>,
+    ValidatedJson(req): ValidatedJson<CreateArticleRequest>,
+) -> Json<SingleResponse<ArticleDto>> {
+    // req is already validated here - no manual validation needed
+    let article = state.article_repo.create(req).await?;
+    Json(SingleResponse { data: article.into() })
+}
+```
+
+When validation fails, `ValidatedJson` returns a `422 Unprocessable Entity` response:
+
+```json
+{
+  "error": {
+    "code": "validation_failed",
+    "message": "Request validation failed",
+    "details": {
+      "fields": {
+        "email": ["Invalid email address"],
+        "password": ["Must be at least 8 characters"],
+        "age": ["Must be at least 18"]
+      }
+    }
+  }
+}
+```
+
+### Manual Validation
+
+You can also validate manually using the `Validate` trait:
+
+```rust
+use underlay_validation::{Validate, ValidationError, validators};
+
+// Using derive macro
+let req = CreateUserRequest { /* ... */ };
+if let Err(errors) = req.validate() {
+    // Handle validation errors
+    for (field, messages) in errors.field_errors() {
+        println!("{}: {:?}", field, messages);
+    }
+}
+
+// Or implement manually for complex logic
+impl Validate for CustomRequest {
+    fn validate(&self) -> underlay_validation::ValidationResult<()> {
+        let mut errors = ValidationError::new();
+
+        if let Err(e) = validators::email(&self.email) {
+            errors.add_field("email", e);
+        }
+
+        if let Err(e) = validators::length(&self.password, Some(8), Some(100)) {
+            errors.add_field("password", e);
+        }
+
+        // Cross-field validation
+        if self.password == self.email {
+            errors.add_field("password", 
+                underlay_validation::FieldError::new("Password cannot be the same as email"));
+        }
+
+        errors.into_result()
+    }
+}
+```
+
+### Using Validators Directly
+
+All validators are available as standalone functions:
+
+```rust
+use underlay_validation::validators;
+
+// Email validation
+assert!(validators::email("user@example.com").is_ok());
+assert!(validators::email("not-an-email").is_err());
+
+// Length validation
+assert!(validators::length("hello", Some(1), Some(10)).is_ok());
+assert!(validators::length("hi", Some(5), None).is_err());
+
+// Range validation
+assert!(validators::range(25, Some(18), Some(120)).is_ok());
+assert!(validators::range(10, Some(18), None).is_err());
+
+// Pattern validation
+assert!(validators::pattern("ABC123", r"^[A-Z]+\d+$", "Invalid format").is_ok());
+
+// One-of validation
+assert!(validators::one_of("active", &["active", "inactive"]).is_ok());
+```
+
+### Comparing with `validator` Crate
+
+| Feature | `underlay-validation` | `validator` crate |
+|---------|----------------------|-------------------|
+| **Derive macro** | ✅ `#[derive(Validate)]` | ✅ `#[derive(Validate)]` |
+| **Axum integration** | ✅ `ValidatedJson` built-in | ❌ Manual implementation |
+| **Error format** | ✅ Matches Underlay error envelope | ❌ Custom format |
+| **Built-in validators** | ✅ Common web validators | ✅ More validators |
+| **Custom validators** | ✅ `#[validate(custom = "fn")]` | ✅ `#[validate(custom(...))]` |
+| **Nested validation** | ✅ `#[validate(nested)]` | ✅ `#[validate]` on nested |
+| **HTTP response** | ✅ Auto 422 with field errors | ❌ Manual response |
+
+**When to use `underlay-validation`:**
+- New Underlay projects
+- Want automatic Axum integration
+- Want error format matching Underlay error envelope
+
+**When to use `validator` crate:**
+- Existing projects already using it
+- Need validators not in underlay-validation
+- Non-Axum projects
+
+### Migrating from `validator` Crate
+
+The syntax is similar, so migration is straightforward:
+
+```rust
+// Before (validator crate)
+use validator::Validate;
+
+#[derive(Validate)]
+struct Request {
+    #[validate(email(message = "Invalid email"))]
+    email: String,
+
+    #[validate(length(min = 8))]
+    password: String,
+
+    #[validate]  // nested
+    profile: Profile,
+}
+
+// After (underlay-validation)
+use underlay_validation::Validate;
+
+#[derive(Validate)]
+struct Request {
+    #[validate(email)]  // message is built-in
+    email: String,
+
+    #[validate(length(min = 8))]
+    password: String,
+
+    #[validate(nested)]  // explicit nested keyword
+    profile: Profile,
+}
+```
+
+Key differences:
+- Use `#[validate(nested)]` instead of bare `#[validate]` for nested structs
+- Error messages are built-in (can't be customized per-field yet)
+- Use `ValidatedJson` instead of custom extractor
+
+---
+
 ## Best Practices Summary
 
 1. **Always validate on the backend** - Never trust client input
-2. **Use type-safe validation** - `validator` crate with derive macros
+2. **Use type-safe validation** - `underlay-validation` or `validator` crate with derive macros
 3. **Return structured errors** - Field-level errors with user-friendly messages
 4. **Validate early** - At the request boundary (extractors)
 5. **Test validation** - Unit test all validation rules
@@ -856,3 +1151,8 @@ See Acowtancy for complete examples:
 - Backend validation: Check API request types in farmyard crates
 - Frontend validation: `cream/src/routes/register/+page.server.ts`
 - Error handling: API error responses throughout the codebase
+
+See Underlay source for implementation details:
+- Validation crate: `underlay/rust/crates/underlay-validation/src/`
+- Derive macro: `underlay/rust/crates/underlay-validation-derive/src/`
+- Validators: `underlay/rust/crates/underlay-validation/src/validators.rs`

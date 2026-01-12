@@ -1610,6 +1610,231 @@ uploadComponent.clear();
 {/if}
 ```
 
+### Optimistic Updates
+
+Optimistic updates provide instant UI feedback by updating the interface before the server confirms the operation. If the operation fails, the UI automatically rolls back to the previous state.
+
+#### Why Optimistic Updates?
+
+- **Instant feedback**: Users see changes immediately, no loading spinners
+- **Better perceived performance**: App feels faster, even on slow connections
+- **Automatic rollback**: Failures revert to previous state with error message
+
+#### createOptimisticList
+
+For managing lists with add/remove/update operations:
+
+```typescript
+import { createOptimisticList } from '@decodelabs/underlay/patterns';
+
+interface Todo {
+  id: string;
+  name: string;
+  completed: boolean;
+}
+
+// Create the optimistic list
+const todos = createOptimisticList<Todo>([]);
+
+// Add item optimistically
+async function addTodo(name: string) {
+  const { confirm, rollback } = todos.add({ name, completed: false });
+
+  try {
+    const newTodo = await api.todos.create({ name });
+    confirm(newTodo);  // Replace temp item with real data
+  } catch (error) {
+    rollback();  // Remove the optimistic item
+    showToast({ message: 'Failed to add todo', type: 'error' });
+  }
+}
+
+// Remove item optimistically
+async function deleteTodo(id: string) {
+  const { confirm, rollback } = todos.remove(id);
+
+  try {
+    await api.todos.delete(id);
+    confirm();
+  } catch {
+    rollback();  // Restore the removed item
+    showToast({ message: 'Failed to delete', type: 'error' });
+  }
+}
+
+// Update item optimistically
+async function toggleTodo(id: string, completed: boolean) {
+  const { confirm, rollback } = todos.update(id, { completed });
+
+  try {
+    const updated = await api.todos.update(id, { completed });
+    confirm(updated);
+  } catch {
+    rollback();
+  }
+}
+```
+
+In your component:
+
+```svelte
+<script lang="ts">
+  import { createOptimisticList } from '@decodelabs/underlay/patterns';
+
+  const todos = createOptimisticList<Todo>(data.todos);
+</script>
+
+<ul>
+  {#each $todos as todo (todo.id)}
+    <li data-pending={$todos.isPending(todo.id)}>
+      <input 
+        type="checkbox" 
+        checked={todo.completed}
+        on:change={() => toggleTodo(todo.id, !todo.completed)}
+      />
+      {todo.name}
+      <button on:click={() => deleteTodo(todo.id)}>Delete</button>
+    </li>
+  {/each}
+</ul>
+```
+
+#### createOptimisticToggle
+
+For boolean toggle operations (like/unlike, follow/unfollow):
+
+```typescript
+import { createOptimisticToggle } from '@decodelabs/underlay/patterns';
+
+const liked = createOptimisticToggle(false);
+
+async function toggleLike() {
+  const { confirm, rollback } = liked.toggle();
+
+  try {
+    await api.posts.toggleLike(postId);
+    confirm();
+  } catch {
+    rollback();
+    showToast({ message: 'Failed to update', type: 'error' });
+  }
+}
+```
+
+```svelte
+<button 
+  on:click={toggleLike}
+  disabled={$liked.pending}
+  class:liked={$liked}
+>
+  {$liked ? 'Unlike' : 'Like'}
+</button>
+```
+
+#### createOptimisticCounter
+
+For numeric counters (like counts, vote counts):
+
+```typescript
+import { createOptimisticCounter } from '@decodelabs/underlay/patterns';
+
+const likeCount = createOptimisticCounter(42);
+
+async function like() {
+  const { confirm, rollback } = likeCount.increment();
+
+  try {
+    const { count } = await api.posts.like(postId);
+    confirm(count);  // Use server's authoritative count
+  } catch {
+    rollback();
+  }
+}
+```
+
+```svelte
+<button on:click={like} disabled={$likeCount.pending}>
+  {$likeCount} likes
+</button>
+```
+
+#### createOptimisticValue
+
+For any value type with optimistic updates:
+
+```typescript
+import { createOptimisticValue } from '@decodelabs/underlay/patterns';
+
+type Status = 'draft' | 'published' | 'archived';
+const status = createOptimisticValue<Status>('draft');
+
+async function publish() {
+  const { confirm, rollback } = status.set('published');
+
+  try {
+    await api.posts.publish(postId);
+    confirm();
+  } catch {
+    rollback();
+    showToast({ message: 'Failed to publish', type: 'error' });
+  }
+}
+```
+
+#### Visual Pending States
+
+Import the optimistic CSS for visual feedback:
+
+```typescript
+import '@decodelabs/underlay/styles/optimistic.css';
+```
+
+Apply `data-pending` attribute to elements:
+
+```svelte
+<li data-pending={isPending}>
+  <!-- Content appears dimmed while pending -->
+</li>
+
+<!-- Add striped overlay pattern -->
+<li data-pending={isPending} data-pending-striped>
+  ...
+</li>
+
+<!-- Add pulse animation -->
+<li data-pending={isPending} data-pending-pulse>
+  ...
+</li>
+```
+
+#### When to Use Optimistic Updates
+
+**Good use cases:**
+- Toggle operations (like, follow, archive)
+- Adding/removing items from lists
+- Status changes
+- Counter updates (likes, votes)
+
+**Avoid for:**
+- Payment/financial operations
+- Irreversible actions without confirmation
+- Operations with complex server-side validation
+- Multi-step workflows
+
+#### API Reference
+
+| Function | Purpose |
+|----------|---------|
+| `createOptimisticList<T>()` | List with add/remove/update |
+| `createOptimisticToggle()` | Boolean toggle |
+| `createOptimisticCounter()` | Numeric counter with increment/decrement |
+| `createOptimisticValue<T>()` | Any value type |
+
+All functions return stores with:
+- `subscribe` - Svelte store subscription
+- `pending` - Readable store indicating pending state
+- Operation methods returning `{ confirm, rollback }`
+
 ## Next Steps
 
 - [110-admin-greenhouse.md](./110-admin-greenhouse.md)

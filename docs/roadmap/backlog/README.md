@@ -4,6 +4,21 @@ This directory contains deferred features and enhancement ideas that are not cur
 
 ## Backlog Items
 
+### From Roadmap 011 (Advanced Features - YAGNI)
+
+| File | Description | Effort | Priority |
+|------|-------------|--------|----------|
+| [rate-limiting.md](./rate-limiting.md) | Pluggable rate limiting middleware | 4-6h | Low |
+| [caching-layer.md](./caching-layer.md) | Declarative caching with invalidation | 6-8h | Low |
+| [background-job-dashboard.md](./background-job-dashboard.md) | Web UI for monitoring jobs | 8-10h | Low |
+| [graphql-support.md](./graphql-support.md) | Code-first GraphQL schema | 20-30h | Very Low |
+| [realtime-websocket.md](./realtime-websocket.md) | WebSocket channels and presence | 15-20h | Low |
+| [cli-scaffolding.md](./cli-scaffolding.md) | Generate boilerplate code | 10-15h | Low |
+| [advanced-datatable.md](./advanced-datatable.md) | Column reorder, resize, inline edit | 5-10h | Low |
+| [advanced-forms.md](./advanced-forms.md) | Wizard, auto-save, conditional fields | 4-8h | Low |
+
+### Other Deferred Items
+
 | File | Description | Effort | Priority |
 |------|-------------|--------|----------|
 | [opentelemetry-integration.md](./opentelemetry-integration.md) | OTLP tracing for distributed observability | 4-6h | Medium |
@@ -20,6 +35,12 @@ Move items from backlog to active roadmap when:
 2. **Dependency**: An active roadmap item requires it
 3. **Opportunity**: Developer has time between planned work
 4. **Strategic**: Aligns with upcoming project goals
+
+For items from the former roadmap 011, also consider:
+- Is there a concrete use case from 2+ projects?
+- Is manual implementation >100 lines of boilerplate?
+- Is the feature generic enough to be reusable?
+- Do we have capacity to maintain it long-term?
 
 ## Adding New Items
 

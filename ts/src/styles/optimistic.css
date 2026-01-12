@@ -1,0 +1,147 @@
+/**
+ * Optimistic update visual styles.
+ *
+ * These styles provide visual feedback for pending optimistic operations.
+ * Apply the data-pending attribute to elements that have pending operations.
+ *
+ * @example
+ * ```svelte
+ * <li data-pending={$isPending(item.id)}>
+ *   {item.name}
+ * </li>
+ * ```
+ */
+
+/* Pending state - subtle opacity reduction */
+[data-pending="true"] {
+	opacity: 0.7;
+	transition: opacity 0.15s ease-out;
+}
+
+/* Pending with pointer events disabled */
+[data-pending="true"][data-pending-disabled] {
+	pointer-events: none;
+}
+
+/* Striped overlay pattern for pending items (optional, add data-pending-striped) */
+[data-pending="true"][data-pending-striped] {
+	position: relative;
+}
+
+[data-pending="true"][data-pending-striped]::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+	background: repeating-linear-gradient(
+		-45deg,
+		transparent,
+		transparent 4px,
+		rgba(0, 0, 0, 0.03) 4px,
+		rgba(0, 0, 0, 0.03) 8px
+	);
+	border-radius: inherit;
+}
+
+/* Pulse animation for pending items (optional, add data-pending-pulse) */
+[data-pending="true"][data-pending-pulse] {
+	animation: underlay-pending-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes underlay-pending-pulse {
+	0%,
+	100% {
+		opacity: 0.7;
+	}
+	50% {
+		opacity: 0.5;
+	}
+}
+
+/* Dark mode adjustments */
+[data-theme="dark"] [data-pending="true"][data-pending-striped]::after,
+.dark [data-pending="true"][data-pending-striped]::after {
+	background: repeating-linear-gradient(
+		-45deg,
+		transparent,
+		transparent 4px,
+		rgba(255, 255, 255, 0.03) 4px,
+		rgba(255, 255, 255, 0.03) 8px
+	);
+}
+
+/* Respect reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+	[data-pending="true"] {
+		opacity: 0.5;
+		transition: none;
+	}
+
+	[data-pending="true"][data-pending-pulse] {
+		animation: none;
+	}
+
+	[data-pending="true"][data-pending-striped]::after {
+		display: none;
+	}
+}
+
+/* Optimistic error toast styling */
+.underlay-optimistic-error {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	padding: 0.75rem 1rem;
+	background: var(--color-danger-subtle, #fef2f2);
+	border: 1px solid var(--color-danger-border, #fecaca);
+	border-radius: var(--radius-md, 0.375rem);
+	color: var(--color-danger, #dc2626);
+	font-size: 0.875rem;
+}
+
+.underlay-optimistic-error .message {
+	flex: 1;
+}
+
+.underlay-optimistic-error .actions {
+	display: flex;
+	gap: 0.5rem;
+}
+
+.underlay-optimistic-error button {
+	padding: 0.25rem 0.5rem;
+	font-size: 0.75rem;
+	font-weight: 500;
+	border-radius: var(--radius-sm, 0.25rem);
+	border: 1px solid currentColor;
+	background: transparent;
+	color: inherit;
+	cursor: pointer;
+	transition: background-color 0.15s;
+}
+
+.underlay-optimistic-error button:hover {
+	background: var(--color-danger, #dc2626);
+	color: white;
+	border-color: var(--color-danger, #dc2626);
+}
+
+/* Success flash for confirmed items (optional, add data-optimistic-confirmed) */
+[data-optimistic-confirmed="true"] {
+	animation: underlay-confirm-flash 0.5s ease-out;
+}
+
+@keyframes underlay-confirm-flash {
+	0% {
+		background-color: var(--color-success-subtle, #f0fdf4);
+	}
+	100% {
+		background-color: transparent;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	[data-optimistic-confirmed="true"] {
+		animation: none;
+	}
+}

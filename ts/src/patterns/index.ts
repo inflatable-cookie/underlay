@@ -7,6 +7,7 @@ export * from "./auth";
 export * from "./forms";
 export * from "./storage";
 export * from "./i18n";
+export * from "./optimistic";
 
 export { default as FilterBar } from "./FilterBar.svelte";
 export { default as FormShell } from "./FormShell.svelte";

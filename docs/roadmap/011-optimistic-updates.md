@@ -1,6 +1,6 @@
-# 012 – Optimistic Updates for Form State
+# 011 – Optimistic Updates for Form State
 
-**Status**: Proposed  
+**Status**: Complete  
 **Priority**: Medium  
 **Estimated Duration**: 8-12 hours  
 **Target**: Enhanced UX for form submissions
@@ -539,16 +539,19 @@ describe('createOptimisticToggle', () => {
 
 ## Success Criteria
 
-- [ ] `createFormState` supports optimistic updates via callback API
-- [ ] `createOptimisticList` handles add/remove/update patterns
-- [ ] `createOptimisticToggle` handles boolean toggle patterns
-- [ ] Visual pending indicators work in light/dark mode
-- [ ] Rollback is automatic on network failure
-- [ ] Error recovery UI provides retry option
-- [ ] Documentation covers all use cases
-- [ ] Examples demonstrate real-world patterns
-- [ ] No regressions in existing form functionality
-- [ ] TypeScript types are fully accurate
+- [ ] `createFormState` supports optimistic updates via callback API - deferred (standalone helpers preferred)
+- [x] `createOptimisticList` handles add/remove/update patterns
+- [x] `createOptimisticToggle` handles boolean toggle patterns
+- [x] `createOptimisticValue` handles any value type
+- [x] `createOptimisticCounter` handles numeric increment/decrement
+- [x] Visual pending indicators work in light/dark mode
+- [x] Rollback is automatic on network failure
+- [ ] Error recovery UI provides retry option - deferred (app-specific)
+- [x] Documentation covers all use cases
+- [x] Examples demonstrate real-world patterns
+- [x] No regressions in existing form functionality
+- [x] TypeScript types are fully accurate
+- [x] 53 unit tests passing
 
 ---
 
@@ -573,5 +576,6 @@ describe('createOptimisticToggle', () => {
 ---
 
 **Created**: 2026-01-12  
+**Completed**: 2026-01-12  
 **Author**: AI Assistant  
 **Related**: Phase 9 (`createFormState` foundation)

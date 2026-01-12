@@ -37,7 +37,8 @@
     "./styles/base.css": "./ts/src/styles/base.css",
     "./styles/forms.css": "./ts/src/styles/forms.css",
     "./styles/markdown-editor.css": "./ts/src/styles/markdown-editor.css",
-    "./styles/tokens.css": "./ts/src/styles/tokens.css"
+    "./styles/tokens.css": "./ts/src/styles/tokens.css",
+    "./styles/optimistic.css": "./ts/src/styles/optimistic.css"
   },
   "scripts": {
     "check": "svelte-check --tsconfig ./ts/tsconfig.json",

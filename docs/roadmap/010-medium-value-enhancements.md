@@ -21,7 +21,7 @@ This roadmap covers medium-effort, medium-value enhancements that build on the Q
 **Success Metrics**:
 - [x] Validation reduces validation code by 50%
 - [x] Data tables eliminate 100-200 lines per list page
-- [ ] Optimistic updates feel instant (no perceived lag) - moved to roadmap 012
+- [ ] Optimistic updates feel instant (no perceived lag) - moved to roadmap 011
 - [x] File uploads work across all browsers
 - [x] i18n helpers used for all date/number formatting
 
@@ -242,7 +242,7 @@ async fn create_user(
 
 ### 3. Optimistic Updates (`client/optimistic.ts`)
 
-> **Note**: This feature has been moved to [012-optimistic-updates.md](./012-optimistic-updates.md) for more focused implementation.
+> **Note**: This feature has been moved to [011-optimistic-updates.md](./011-optimistic-updates.md) for more focused implementation.
 
 **Problem**: CRUD operations feel slow, no instant feedback
 
@@ -466,7 +466,7 @@ Server-Side:
 
 Client-Side:
 - [x] DataTable works with server-side pagination
-- [ ] Optimistic updates roll back on error - moved to roadmap 012
+- [ ] Optimistic updates roll back on error - moved to roadmap 011
 - [x] File uploads work in all browsers
 - [x] i18n formatters handle edge cases (null, invalid dates)
 - [x] All examples compile and work
@@ -505,7 +505,8 @@ Client-Side:
 ## Related Roadmaps
 
 - 009 - Quick Wins (prerequisite)
-- 011 - Advanced Features (future work)
+- 011 - Optimistic Updates (future work)
+- Backlog - Advanced Features (see `backlog/` folder)
 
 ---
 
