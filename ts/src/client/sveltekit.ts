@@ -185,7 +185,7 @@ export function createAuthHandle(options: SvelteKitAuthOptions): Handle {
     };
 
     // App can module-augment Locals to include this.
-    (event.locals as Record<string, unknown>).auth = locals;
+    (event.locals as unknown as Record<string, unknown>).auth = locals;
 
     if (options.shouldProtect?.(event)) {
       const session = await getSession();
