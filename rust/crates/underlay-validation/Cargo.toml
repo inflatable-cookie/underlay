@@ -1,0 +1,28 @@
+[package]
+name = "underlay-validation"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Declarative validation with derive macros for Underlay"
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+regex = { workspace = true }
+once_cell = { workspace = true }
+
+# Re-export derive macro
+underlay-validation-derive = { path = "../underlay-validation-derive", optional = true }
+
+# Optional axum integration
+axum = { workspace = true, optional = true }
+http = { workspace = true, optional = true }
+
+[features]
+default = ["derive"]
+derive = ["underlay-validation-derive"]
+axum = ["dep:axum", "dep:http"]
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["macros", "rt"] }

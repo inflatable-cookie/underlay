@@ -1,0 +1,1120 @@
+# 070 - API Handlers
+
+> **Reference Implementation**: This guide includes patterns from Acowtancy, a production application built with Underlay. These serve as working examples of best practices.
+
+This document covers implementing HTTP handlers and routing using Axum.
+
+The patterns here are intentionally simple and align with Underlay's primitives:
+
+- API routes use the `/v1/...` prefix.
+- Responses use `underlay_core::{SingleResponse, ListResponse}`.
+- Errors use `underlay_core::AppError` wrapped via `underlay_http::error_response`.
+
+## Handler Structure
+
+For small-to-medium services, keep things inline in `main.rs`:
+
+```
+apps/nursery/crates/api/src/
+├── main.rs        # Router + handlers + DTOs
+└── state.rs       # AppState (optional)
+```
+
+As the API grows, split by domain:
+
+```
+apps/nursery/crates/api/src/
+├── main.rs
+├── state.rs
+├── error.rs
+└── handlers/
+    ├── mod.rs
+    ├── users.rs
+    ├── artists.rs
+    └── admin.rs
+```
+
+## Response Envelopes
+
+Underlay defines canonical response shapes:
+
+```rust
+use underlay_core::{ListResponse, SingleResponse};
+
+// list
+ListResponse { data: vec![/* ... */] }
+
+// single
+SingleResponse { data: /* ... */ }
+```
+
+## Errors
+
+Underlay’s error envelope is:
+
+```json
+{
+  "error": {
+    "code": "resource.not_found",
+    "message": "User not found",
+    "fieldErrors": {
+      "email": "Must be a valid email"
+    }
+  }
+}
+```
+
+In Rust, build errors with `underlay_core::AppError` and return them using `underlay_http::error_response`:
+
+```rust
+use axum::{http::StatusCode, response::IntoResponse};
+use underlay_core::AppError;
+
+fn not_found(resource: &str) -> impl IntoResponse {
+    underlay_http::error_response(
+        StatusCode::NOT_FOUND,
+        AppError::new("resource.not_found", format!("{} not found", resource)),
+    )
+}
+```
+
+## AppState
+
+Keep `AppState` minimal and explicit:
+
+```rust
+use std::sync::Arc;
+use myapp_db::PgPool;
+
+#[derive(Clone)]
+pub struct AppState {
+    pub pool: PgPool,
+    pub auth_provider: Arc<dyn underlay_auth::AuthProvider>,
+}
+
+impl underlay_auth::HasAuthProvider for AppState {
+    fn auth_provider(&self) -> &dyn underlay_auth::AuthProvider {
+        self.auth_provider.as_ref()
+    }
+}
+```
+
+## Example Handlers
+
+These examples use `/v1/...` routes and the Underlay envelopes.
+
+```rust
+use axum::{
+    extract::{Path, State},
+    http::StatusCode,
+    response::IntoResponse,
+    routing::get,
+    Json, Router,
+};
+use underlay_core::{ListResponse, SingleResponse};
+use underlay_core::AppError;
+
+use crate::state::AppState;
+
+#[derive(serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+struct UserDto {
+    user_id: String,
+    email: String,
+    created_at: String,
+}
+
+async fn list_users(State(state): State<AppState>) -> impl IntoResponse {
+    let rows = match sqlx::query!(
+        r#"
+        SELECT id::text as user_id, email, created_at
+        FROM users
+        ORDER BY created_at DESC
+        LIMIT 100
+        "#
+    )
+    .fetch_all(&state.pool)
+    .await
+    {
+        Ok(rows) => rows,
+        Err(err) => {
+            return underlay_http::error_response(
+                StatusCode::INTERNAL_SERVER_ERROR,
+                AppError::new("db.query_failed", err.to_string()),
+            );
+        }
+    };
+
+    let data: Vec<UserDto> = rows
+        .into_iter()
+        .map(|r| UserDto {
+            user_id: r.user_id,
+            email: r.email,
+            created_at: r.created_at.to_rfc3339(),
+        })
+        .collect();
+
+    (StatusCode::OK, Json(ListResponse { data })).into_response()
+}
+
+async fn get_user(State(state): State<AppState>, Path(user_id): Path<String>) -> impl IntoResponse {
+    let id: uuid::Uuid = match user_id.parse() {
+        Ok(id) => id,
+        Err(_) => {
+            return underlay_http::error_response(
+                StatusCode::BAD_REQUEST,
+                AppError::new("validation.invalid_id", "Invalid user ID"),
+            );
+        }
+    };
+
+    let row = match sqlx::query!(
+        r#"
+        SELECT id::text as user_id, email, created_at
+        FROM users
+        WHERE id = $1
+        "#,
+        id
+    )
+    .fetch_optional(&state.pool)
+    .await
+    {
+        Ok(row) => row,
+        Err(err) => {
+            return underlay_http::error_response(
+                StatusCode::INTERNAL_SERVER_ERROR,
+                AppError::new("db.query_failed", err.to_string()),
+            );
+        }
+    };
+
+    let Some(row) = row else {
+        return underlay_http::error_response(
+            StatusCode::NOT_FOUND,
+            AppError::new("resource.not_found", "User not found"),
+        );
+    };
+
+    let dto = UserDto {
+        user_id: row.user_id,
+        email: row.email,
+        created_at: row.created_at.to_rfc3339(),
+    };
+
+    (StatusCode::OK, Json(SingleResponse { data: dto })).into_response()
+}
+
+pub fn create_router(state: AppState) -> Router {
+    Router::new()
+        .route("/health", get(|| async { "ok" }))
+        .route("/v1/users", get(list_users))
+        .route("/v1/users/:id", get(get_user))
+        .with_state(state)
+}
+```
+
+## Production Patterns
+
+### Error Logging
+
+> **Quick Start**: Underlay provides production-ready error logging via the `underlay-http` crate's `error-logging` feature. For full documentation, see [rust/crates/underlay-http/ERROR_LOGGING.md](../../rust/crates/underlay-http/ERROR_LOGGING.md).
+
+Log errors to a database for monitoring and debugging. This pattern is used in Acowtancy's Farmyard.
+
+**Benefits:**
+- Centralized error tracking
+- Correlation with request IDs
+- Debug production issues
+- Monitor error trends
+- Query by time range, status code, or endpoint
+
+#### Setup
+
+Add to your `Cargo.toml`:
+
+```toml
+[dependencies]
+underlay-http = { path = "../../rust/crates/underlay-http", features = ["error-logging"] }
+```
+
+Sync migrations to your app:
+
+```bash
+cargo run --bin underlay-devtools -- sync-migrations --target ./migrations
+```
+
+Then run your migrations. This creates the `infra.error_log` table with indexes.
+
+#### Basic Usage in Handlers
+
+Log errors directly from error handlers:
+
+```rust
+use underlay_http::error_logging::append_error_log;
+use underlay_observability::RequestId;
+
+async fn get_user(
+    State(state): State<AppState>,
+    request_id: RequestId,
+    Path(user_id): Path<String>
+) -> impl IntoResponse {
+    let id: uuid::Uuid = match user_id.parse() {
+        Ok(id) => id,
+        Err(_) => {
+            let error = AppError::new("validation.invalid_id", "Invalid user ID");
+            
+            // Log the error asynchronously (non-blocking)
+            let pool = state.pool.clone();
+            tokio::spawn(async move {
+                let _ = append_error_log(
+                    &pool,
+                    "/v1/users/:id",                    // endpoint
+                    "GET",                               // method
+                    400,                                 // status code
+                    "validation.invalid_id",             // error code
+                    "Invalid user ID",                   // message
+                    &request_id.to_string(),             // correlation ID
+                    serde_json::json!({"user_id": user_id}), // context
+                ).await;
+            });
+            
+            return underlay_http::error_response(
+                StatusCode::BAD_REQUEST,
+                error,
+            );
+        }
+    };
+    
+    // ... rest of handler
+}
+```
+
+**Note**: Always wrap `append_error_log()` in `tokio::spawn()` to avoid blocking the request response.
+
+#### Querying Error Logs
+
+Query recent errors for debugging:
+
+```rust
+use underlay_http::error_logging::{list_error_logs, ErrorLogFilters};
+use chrono::{Utc, Duration};
+
+// Get all 500 errors in the last hour
+let filters = ErrorLogFilters {
+    since: Some(Utc::now() - Duration::hours(1)),
+    status_code: Some(500),
+    limit: 50,
+    ..Default::default()
+};
+
+let errors = list_error_logs(&pool, filters).await?;
+
+for error in errors {
+    println!("{}: {} - {}", 
+        error.occurred_at, 
+        error.endpoint, 
+        error.message
+    );
+}
+```
+
+#### Advanced: Middleware-Based Logging
+
+For automatic error logging across all endpoints, implement a Tower middleware layer (planned in Phase 8.3 task 3). The current implementation provides the building blocks:
+
+- `append_error_log()` - Direct database insertion
+- `DbErrorLogSink` - Implements `ErrorLogSink` trait
+- `ErrorLogFilters` - Query builder for error logs
+
+See [rust/crates/underlay-http/ERROR_LOGGING.md](../../rust/crates/underlay-http/ERROR_LOGGING.md) for:
+- Complete API documentation
+- Database schema details
+- Best practices for correlation IDs
+- Indexing and query optimization
+- Future roadmap (Tower middleware, retention policies)
+
+### Request Tracing
+
+Use Underlay's observability layer for structured logging:
+
+```rust
+use underlay_observability::init_tracing;
+
+#[tokio::main]
+async fn main() {
+    // Initialize tracing (pretty for dev, JSON for prod)
+    init_tracing();
+
+    // Handlers automatically get tracing context
+    let app = Router::new()
+        .route("/v1/users", get(list_users))
+        .layer(underlay_observability::trace_layer());
+
+    // ...
+}
+
+async fn list_users() -> impl IntoResponse {
+    tracing::info!("Listing users");  // Includes request ID automatically
+    // ...
+}
+```
+
+### Rate Limiting (Optional)
+
+Protect endpoints from abuse:
+
+```rust
+use tower_governor::{
+    governor::GovernorConfigBuilder,
+    GovernorLayer,
+};
+
+pub fn create_router() -> Router {
+    let governor_conf = Box::new(
+        GovernorConfigBuilder::default()
+            .per_second(10)
+            .burst_size(20)
+            .finish()
+            .unwrap(),
+    );
+
+    Router::new()
+        .route("/v1/auth/login", post(login))
+        .layer(GovernorLayer {
+            config: Box::leak(governor_conf),
+        })
+}
+```
+
+Add to `Cargo.toml`:
+```toml
+tower-governor = "0.1"
+```
+
+## API Version Header (Optional)
+
+If you use date-based versioning (Acowtancy-style), send a header like:
+
+- `X-Api-Version: 2025-01-01`
+
+Keep the URL stable (`/v1/...`). This makes it easier to evolve behavior without changing clients' base URLs.
+
+## See Also
+
+**Related Guides:**
+- **[060-authentication.md](./060-authentication.md)** - Authentication setup for protected endpoints
+- **[067-authorization.md](./067-authorization.md)** - Role-based access control in handlers
+- **[075-validation.md](./075-validation.md)** - Request validation patterns
+- **[130-testing.md](./130-testing.md)** - Testing API handlers and integration tests
+
+**Key Patterns:**
+- Use `SingleResponse` and `ListResponse` for consistency
+- Handle errors with `AppError` and `error_response`
+- Add request ID middleware for traceability
+- Log errors to database for monitoring
+- Test handlers with mock repositories
+
+---
+
+## Underlay HTTP Utilities (`underlay-http`)
+
+The `underlay-http` crate provides HTTP utilities for building Axum-based APIs.
+
+### Installation
+
+```toml
+[dependencies]
+underlay-http = { path = "../underlay/rust/crates/underlay-http" }
+
+# Optional features
+underlay-http = { path = "...", features = ["tracing"] }
+```
+
+### Request Context
+
+`RequestContext` provides unified access to common request metadata.
+
+#### Basic Usage
+
+```rust
+use underlay_http::context::RequestContext;
+use axum::Json;
+
+async fn my_handler(ctx: RequestContext) -> Json<String> {
+    println!("Request ID: {}", ctx.request_id());
+    println!("User ID: {:?}", ctx.user_id());
+    println!("IP: {:?}", ctx.ip_address());
+    println!("User-Agent: {:?}", ctx.user_agent());
+    
+    Json("ok".to_string())
+}
+```
+
+#### Available Methods
+
+| Method | Return Type | Description |
+|--------|-------------|-------------|
+| `request_id()` | `&str` | Request ID (from header or generated UUID v7) |
+| `user_id()` | `Option<Uuid>` | Authenticated user ID (from auth middleware) |
+| `ip_address()` | `Option<IpAddr>` | Client IP (from CF-Connecting-IP, X-Real-IP, or X-Forwarded-For) |
+| `user_agent()` | `Option<&str>` | User-Agent header value |
+| `is_authenticated()` | `bool` | Whether a user ID is present |
+
+#### Header Priority for IP Extraction
+
+1. `CF-Connecting-IP` (Cloudflare)
+2. `X-Real-IP` (nginx)
+3. `X-Forwarded-For` (first IP in list)
+
+#### Setting User ID from Auth Middleware
+
+```rust
+use underlay_http::context::AuthenticatedUser;
+use axum::Extension;
+
+// In your auth middleware, after validating the JWT:
+async fn auth_middleware(
+    mut req: Request,
+    next: Next,
+) -> Response {
+    // After validating JWT and extracting user_id...
+    let user_id: Uuid = validate_jwt(&token)?;
+    
+    // Insert into extensions for RequestContext to pick up
+    req.extensions_mut().insert(AuthenticatedUser(user_id));
+    
+    next.run(req).await
+}
+```
+
+### Authenticated Context
+
+Use `AuthenticatedContext` when an endpoint requires authentication:
+
+```rust
+use underlay_http::context::AuthenticatedContext;
+
+async fn protected_handler(ctx: AuthenticatedContext) -> Json<String> {
+    // Guaranteed to have a user ID - returns 401 if not authenticated
+    let user_id = ctx.user_id();
+    
+    Json(format!("Hello, user {}", user_id))
+}
+```
+
+#### Error Types
+
+```rust
+use underlay_http::context::ContextError;
+
+// ContextError::Unauthenticated - Returns 401 Unauthorized
+// ContextError::MissingField(field) - Returns 400 Bad Request
+```
+
+### Tracing Integration
+
+Enable the `tracing` feature for structured logging support:
+
+```toml
+underlay-http = { path = "...", features = ["tracing"] }
+```
+
+```rust
+use underlay_http::context::{RequestContext, make_request_span};
+
+async fn my_handler(ctx: RequestContext) -> Json<String> {
+    // Create a span with request context fields
+    let span = make_request_span(&ctx);
+    let _guard = span.enter();
+    
+    tracing::info!("Processing request");
+    // Logs will include: request_id, user_id, ip
+    
+    Json("ok".to_string())
+}
+```
+
+### Pagination
+
+Standardized pagination for list endpoints.
+
+#### Basic Usage
+
+```rust
+use underlay_http::pagination::{PaginationParams, Paginated};
+use axum::extract::Query;
+
+async fn list_users(
+    Query(params): Query<PaginationParams>,
+    db: DbPool,
+) -> Json<Paginated<User>> {
+    // Get total count
+    let total = sqlx::query_scalar!("SELECT COUNT(*) FROM users")
+        .fetch_one(&db)
+        .await?
+        .unwrap_or(0) as i64;
+    
+    // Fetch page of data
+    let users = sqlx::query_as!(
+        User,
+        "SELECT * FROM users ORDER BY created_at DESC LIMIT $1 OFFSET $2",
+        params.limit as i64,
+        params.offset() as i64
+    )
+    .fetch_all(&db)
+    .await?;
+    
+    // Wrap in paginated response
+    Ok(Json(params.wrap(users, total)))
+}
+```
+
+#### Query Parameters
+
+| Parameter | Type | Default | Max | Description |
+|-----------|------|---------|-----|-------------|
+| `page` | i32 | 1 | - | Page number (1-indexed) |
+| `limit` | i32 | 20 | 100 | Items per page |
+
+#### Response Format
+
+```json
+{
+  "data": [...],
+  "pagination": {
+    "page": 1,
+    "limit": 20,
+    "total": 45,
+    "total_pages": 3
+  }
+}
+```
+
+#### PaginationParams Methods
+
+| Method | Description |
+|--------|-------------|
+| `offset()` | Calculate SQL OFFSET from page and limit |
+| `limit_i64()` | Get limit as `i64` for SQLx binding |
+| `offset_i64()` | Get offset as `i64` for SQLx binding |
+| `with_max_limit(max)` | Clamp limit to a custom maximum |
+| `clamped()` | Clamp limit to `DEFAULT_MAX_LIMIT` (100) |
+| `sql_clause()` | Generate `"LIMIT 20 OFFSET 0"` string |
+| `sql_clause_params(l, o)` | Generate `"LIMIT $l OFFSET $o"` placeholders |
+| `wrap(data, total)` | Create `Paginated<T>` response |
+| `wrap_i64(data, total)` | Same as `wrap` but accepts `i64` total |
+
+#### SQL Helpers Example
+
+```rust
+use underlay_http::pagination::PaginationParams;
+use axum::extract::Query;
+
+async fn list_users(
+    Query(params): Query<PaginationParams>,
+    db: DbPool,
+) -> Json<Paginated<User>> {
+    // Use clamped() to enforce max limit
+    let params = params.clamped();
+    
+    // Get total count (returns i64)
+    let total: i64 = sqlx::query_scalar!("SELECT COUNT(*) FROM users")
+        .fetch_one(&db)
+        .await?
+        .unwrap_or(0);
+    
+    // Use limit_i64() and offset_i64() for binding
+    let users = sqlx::query_as!(
+        User,
+        "SELECT * FROM users ORDER BY created_at DESC LIMIT $1 OFFSET $2",
+        params.limit_i64(),
+        params.offset_i64()
+    )
+    .fetch_all(&db)
+    .await?;
+    
+    // Use wrap_i64() to handle i64 total directly
+    Ok(Json(params.wrap_i64(users, total)))
+}
+```
+
+#### Using SQL Clause Helpers
+
+For raw SQL or custom query builders:
+
+```rust
+// Inline values (for trusted contexts only)
+let clause = params.sql_clause();
+// => "LIMIT 20 OFFSET 40"
+
+// Parameterized (recommended for all queries)
+let clause = params.sql_clause_params(3, 4);
+// => "LIMIT $3 OFFSET $4"
+// Then bind: params.limit_i64(), params.offset_i64()
+```
+
+### Response Helpers
+
+Convenience functions for common HTTP responses:
+
+```rust
+use underlay_http::{ok, created, no_content, list_ok};
+
+// 200 OK with JSON body
+async fn get_user() -> impl IntoResponse {
+    ok(user)
+}
+
+// 201 Created with JSON body
+async fn create_user() -> impl IntoResponse {
+    created(new_user)
+}
+
+// 204 No Content
+async fn delete_user() -> impl IntoResponse {
+    no_content()
+}
+
+// 200 OK with list (alias for ok)
+async fn list_users() -> impl IntoResponse {
+    list_ok(users)
+}
+```
+
+### CORS Configuration
+
+```rust
+use underlay_http::{cors_layer, CorsConfig};
+
+let cors = cors_layer(CorsConfig {
+    allowed_origins: vec!["https://example.com".to_string()],
+    allow_credentials: true,
+    ..Default::default()
+});
+
+let app = Router::new()
+    .route("/api/users", get(list_users))
+    .layer(cors);
+```
+
+### Complete HTTP Example
+
+```rust
+use axum::{Router, routing::get, extract::Query, Json};
+use underlay_http::{
+    context::{RequestContext, AuthenticatedContext},
+    pagination::{PaginationParams, Paginated},
+    ok, created,
+};
+
+async fn list_items(
+    ctx: RequestContext,
+    Query(params): Query<PaginationParams>,
+) -> Json<Paginated<Item>> {
+    tracing::info!(
+        request_id = %ctx.request_id(),
+        "Listing items"
+    );
+    
+    let items = fetch_items(params.limit, params.offset()).await;
+    let total = count_items().await;
+    
+    Json(params.wrap(items, total))
+}
+
+async fn get_my_profile(ctx: AuthenticatedContext) -> impl IntoResponse {
+    let user = fetch_user(ctx.user_id()).await;
+    ok(user)
+}
+
+fn create_router() -> Router {
+    Router::new()
+        .route("/items", get(list_items))
+        .route("/me", get(get_my_profile))
+}
+```
+
+## Request Validation (`underlay-validation`)
+
+Declarative validation with built-in validators and derive macro.
+
+### Installation
+
+```toml
+[dependencies]
+underlay-validation = { path = "../underlay/rust/crates/underlay-validation" }
+
+# With Axum integration
+underlay-validation = { path = "...", features = ["axum"] }
+```
+
+### Derive Macro (Recommended)
+
+The easiest way to add validation is using the `#[derive(Validate)]` macro:
+
+```rust
+use underlay_validation::Validate;
+
+#[derive(Validate, Deserialize)]
+struct CreateUserRequest {
+    #[validate(email)]
+    email: String,
+
+    #[validate(length(min = 8, max = 100))]
+    password: String,
+
+    #[validate(range(min = 18, max = 120))]
+    age: i32,
+
+    #[validate(username)]
+    username: String,
+}
+```
+
+#### Available Derive Attributes
+
+| Attribute | Description | Example |
+|-----------|-------------|---------|
+| `#[validate(email)]` | Valid email format | `user@example.com` |
+| `#[validate(url)]` | Valid HTTP(S) URL | `https://example.com` |
+| `#[validate(uuid)]` | Valid UUID format | `550e8400-e29b-41d4-a716-446655440000` |
+| `#[validate(required)]` | Non-empty string | `"hello"` |
+| `#[validate(length(min = N, max = M))]` | String length bounds | 8-100 chars |
+| `#[validate(range(min = N, max = M))]` | Numeric range | 18-120 |
+| `#[validate(pattern = "regex")]` | Custom regex pattern | `r"^\d{3}-\d{4}$"` |
+| `#[validate(custom = "fn_name")]` | Custom validator function | See below |
+| `#[validate(positive)]` | Greater than zero | `1, 2, 3...` |
+| `#[validate(non_negative)]` | Zero or greater | `0, 1, 2...` |
+| `#[validate(alphanumeric)]` | Letters and numbers only | `ABC123` |
+| `#[validate(username)]` | Letters, numbers, `_`, `-` | `john_doe` |
+| `#[validate(slug)]` | Lowercase slug format | `my-article` |
+| `#[validate(not_empty)]` | Non-empty collection | `vec!["a"]` |
+| `#[validate(collection_length(min = N, max = M))]` | Collection size | 1-10 items |
+| `#[validate(nested)]` | Validate nested struct | See below |
+| `#[validate(skip)]` | Skip validation for field | - |
+
+#### Custom Validators with Derive
+
+```rust
+use underlay_validation::{Validate, FieldError};
+
+fn validate_starts_with_a(value: &str) -> Result<(), FieldError> {
+    if value.starts_with('a') || value.starts_with('A') {
+        Ok(())
+    } else {
+        Err(FieldError::new("Must start with 'a'"))
+    }
+}
+
+#[derive(Validate)]
+struct MyRequest {
+    #[validate(custom = "validate_starts_with_a")]
+    name: String,
+}
+```
+
+#### Nested Validation with Derive
+
+```rust
+#[derive(Validate)]
+struct Address {
+    #[validate(required)]
+    city: String,
+    
+    #[validate(length(min = 5, max = 10))]
+    postal_code: String,
+}
+
+#[derive(Validate)]
+struct CreateOrderRequest {
+    #[validate(email)]
+    email: String,
+
+    #[validate(nested)]
+    shipping_address: Address,
+}
+```
+
+This produces field names like `shipping_address.city` in error responses.
+
+### Manual Implementation
+
+For complex validation logic, implement the `Validate` trait directly:
+
+```rust
+use underlay_validation::{Validate, ValidationError, validators};
+
+#[derive(Deserialize)]
+struct CreateUserRequest {
+    email: String,
+    password: String,
+    age: i32,
+    username: String,
+}
+
+impl Validate for CreateUserRequest {
+    fn validate(&self) -> Result<(), ValidationError> {
+        let mut errors = ValidationError::new();
+
+        if let Err(e) = validators::email(&self.email) {
+            errors.add_field("email", e);
+        }
+
+        if let Err(e) = validators::length(&self.password, Some(8), Some(100)) {
+            errors.add_field("password", e);
+        }
+
+        if let Err(e) = validators::range(self.age, Some(18), Some(120)) {
+            errors.add_field("age", e);
+        }
+
+        if let Err(e) = validators::username(&self.username) {
+            errors.add_field("username", e);
+        }
+
+        errors.into_result()
+    }
+}
+```
+
+### ValidatedJson Extractor
+
+With the `axum` feature, use `ValidatedJson` instead of `Json`:
+
+```rust
+use underlay_validation::ValidatedJson;
+
+async fn create_user(
+    ValidatedJson(payload): ValidatedJson<CreateUserRequest>,
+) -> impl IntoResponse {
+    // payload is guaranteed to be valid
+    // Invalid requests return 400 with field errors automatically
+}
+```
+
+Error response format:
+
+```json
+{
+  "error": {
+    "code": "validation.failed",
+    "message": "Validation failed",
+    "fieldErrors": {
+      "email": "Invalid email address",
+      "password": "Must be at least 8 characters",
+      "age": "Must be at least 18"
+    }
+  }
+}
+```
+
+### Built-in Validators
+
+| Validator | Description | Example |
+|-----------|-------------|---------|
+| `email(value)` | Valid email format | `validators::email(&s)` |
+| `url(value)` | Valid HTTP(S) URL | `validators::url(&s)` |
+| `uuid(value)` | Valid UUID format | `validators::uuid(&s)` |
+| `length(value, min, max)` | String length bounds | `validators::length(&s, Some(8), Some(100))` |
+| `required(value)` | Non-empty string | `validators::required(&s)` |
+| `range(value, min, max)` | Numeric range | `validators::range(age, Some(18), Some(120))` |
+| `positive(value)` | Greater than zero | `validators::positive(count)` |
+| `non_negative(value)` | Zero or greater | `validators::non_negative(count)` |
+| `pattern(value, regex, msg)` | Custom regex | `validators::pattern(&s, r"^\d+$", "Must be digits")` |
+| `one_of(value, options)` | Value in list | `validators::one_of(&status, &["active", "inactive"])` |
+| `not_empty(slice)` | Non-empty collection | `validators::not_empty(&items)` |
+| `collection_length(slice, min, max)` | Collection size bounds | `validators::collection_length(&items, Some(1), Some(10))` |
+| `alphanumeric(value)` | Letters and numbers only | `validators::alphanumeric(&s)` |
+| `username(value)` | Letters, numbers, _, - | `validators::username(&s)` |
+| `slug(value)` | Lowercase slug format | `validators::slug(&s)` |
+
+### Nested Validation
+
+Validate nested objects with prefixed field names:
+
+```rust
+impl Validate for CreateOrderRequest {
+    fn validate(&self) -> Result<(), ValidationError> {
+        let mut errors = ValidationError::new();
+
+        // Validate nested address
+        if let Err(address_errors) = self.address.validate() {
+            errors.merge_nested("address", address_errors);
+        }
+
+        // Validate nested items
+        for (i, item) in self.items.iter().enumerate() {
+            if let Err(item_errors) = item.validate() {
+                errors.merge_nested(&format!("items[{}]", i), item_errors);
+            }
+        }
+
+        errors.into_result()
+    }
+}
+```
+
+Results in field names like `address.city` and `items[0].quantity`.
+
+### Custom Validators
+
+Create reusable validators:
+
+```rust
+fn validate_phone(value: &str) -> Result<(), FieldError> {
+    static PHONE_REGEX: Lazy<Regex> = Lazy::new(|| {
+        Regex::new(r"^\+?[1-9]\d{1,14}$").unwrap()
+    });
+
+    if PHONE_REGEX.is_match(value) {
+        Ok(())
+    } else {
+        Err(FieldError::with_code("Invalid phone number", "phone.invalid"))
+    }
+}
+
+// Use in validation
+if let Err(e) = validate_phone(&self.phone) {
+    errors.add_field("phone", e);
+}
+```
+
+### Error Codes for i18n
+
+Field errors include codes for internationalization:
+
+```rust
+FieldError::with_code("Invalid email address", "email.invalid")
+```
+
+Built-in validator codes:
+- `email.invalid`, `url.invalid`, `uuid.invalid`
+- `length.min`, `length.max`
+- `range.min`, `range.max`
+- `required`, `positive`, `non_negative`
+- `pattern.invalid`, `one_of.invalid`
+- `not_empty`, `collection.min`, `collection.max`
+- `alphanumeric`, `username.invalid`, `slug.invalid`
+
+### Migration Guide
+
+#### Migrating from Manual Validation
+
+If you have existing manual validation code, you can gradually migrate to the derive macro:
+
+**Before (manual validation scattered in handlers):**
+
+```rust
+async fn create_user(Json(payload): Json<CreateUserRequest>) -> impl IntoResponse {
+    // Manual validation in handler
+    if !payload.email.contains('@') {
+        return error_response(StatusCode::BAD_REQUEST, 
+            AppError::new("validation.failed", "Invalid email"));
+    }
+    if payload.password.len() < 8 {
+        return error_response(StatusCode::BAD_REQUEST, 
+            AppError::new("validation.failed", "Password too short"));
+    }
+    // ... more validation
+    
+    // Business logic
+}
+```
+
+**After (derive macro + ValidatedJson):**
+
+```rust
+#[derive(Validate, Deserialize)]
+struct CreateUserRequest {
+    #[validate(email)]
+    email: String,
+    
+    #[validate(length(min = 8))]
+    password: String,
+}
+
+async fn create_user(
+    ValidatedJson(payload): ValidatedJson<CreateUserRequest>,
+) -> impl IntoResponse {
+    // Validation already done - payload is guaranteed valid
+    // Business logic only
+}
+```
+
+#### Step-by-Step Migration
+
+1. **Add the dependency:**
+   ```toml
+   underlay-validation = { path = "...", features = ["axum"] }
+   ```
+
+2. **Add `#[derive(Validate)]` to request structs:**
+   ```rust
+   #[derive(Validate, Deserialize)]
+   struct MyRequest { ... }
+   ```
+
+3. **Add validation attributes to fields:**
+   ```rust
+   #[validate(email)]
+   email: String,
+   ```
+
+4. **Replace `Json<T>` with `ValidatedJson<T>`:**
+   ```rust
+   // Before
+   async fn handler(Json(payload): Json<MyRequest>)
+   
+   // After
+   async fn handler(ValidatedJson(payload): ValidatedJson<MyRequest>)
+   ```
+
+5. **Remove manual validation code from handlers.**
+
+#### Mixing Manual and Derive Validation
+
+For complex cross-field validation, combine both approaches:
+
+```rust
+#[derive(Validate, Deserialize)]
+struct CreateOrderRequest {
+    #[validate(positive)]
+    quantity: i32,
+    
+    #[validate(positive)]  
+    max_quantity: i32,
+    
+    #[validate(email)]
+    email: String,
+}
+
+// Add cross-field validation manually
+impl CreateOrderRequest {
+    fn validate_business_rules(&self) -> Result<(), ValidationError> {
+        let mut errors = ValidationError::new();
+        
+        // Cross-field validation
+        if self.quantity > self.max_quantity {
+            errors.add_field("quantity", 
+                FieldError::new("Cannot exceed max quantity"));
+        }
+        
+        errors.into_result()
+    }
+}
+
+async fn create_order(
+    ValidatedJson(payload): ValidatedJson<CreateOrderRequest>,
+) -> impl IntoResponse {
+    // Basic validation done by derive macro
+    // Now do cross-field validation
+    payload.validate_business_rules()?;
+    
+    // Business logic
+}
+```
+
+## Next Steps
+
+Proceed to [080-typescript-client](./080-typescript-client.md) to build a typed client that matches these envelopes and errors.
+

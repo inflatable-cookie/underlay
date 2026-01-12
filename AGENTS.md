@@ -44,6 +44,26 @@ This repository is a *framework*, not an app. It should provide stable, app-agno
 - Use a consistent error envelope and stable error codes (string codes like `auth.forbidden`, `resource.not_found`).
 - Keep DTO envelope shapes shared between Rust and TS via `contracts/openapi/`.
 
+## UUID Convention (important)
+
+**Always use UUID v7** for new identifiers unless there's a specific reason not to.
+
+- **Use**: `Uuid::now_v7()` (Rust) or equivalent v7 generator
+- **Avoid**: `Uuid::new_v4()` for database-stored IDs
+
+**Why v7?**
+- Time-ordered UUIDs give sequential B-tree inserts → better index performance
+- Improved cache locality and fewer page splits in PostgreSQL
+- Natural chronological ordering without extra timestamp columns
+- Still globally unique (includes random component)
+
+**Exceptions** (where v4 is acceptable):
+- Ephemeral tokens not stored in DB (e.g., CSRF tokens)
+- Cases where time-ordering would leak information
+- Compatibility with external systems requiring v4
+
+The workspace `Cargo.toml` already includes `uuid` with the `v7` feature enabled.
+
 ## SvelteKit Form Actions (important)
 
 When using SvelteKit form actions, do not wrap `throw redirect(...)` inside a `try`/`catch` that returns `fail(...)`. Perform redirects after successful `await` calls, and only return `fail(...)` for genuine errors.

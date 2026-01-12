@@ -11,9 +11,12 @@ license = "MIT"
 async-trait = "0.1"
 axum = "0.7"
 chrono = { version = "0.4", features = ["serde", "clock"] }
+once_cell = "1"
+regex = "1"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 sqlx = { version = "0.8.6", features = ["runtime-tokio-rustls", "postgres", "uuid", "migrate", "chrono", "json"] }
+thiserror = "1"
 tokio = "1"
 
 # Metrics

@@ -26,6 +26,19 @@ export { default as DropdownMenu } from "./DropdownMenu.svelte";
 export { default as IconButton } from "./IconButton.svelte";
 export { default as Tooltip } from "./Tooltip.svelte";
 export { default as Popover } from "./Popover.svelte";
+export { default as Skeleton } from "./Skeleton.svelte";
+export { default as DataTable } from "./DataTable.svelte";
+export type {
+	DataTableColumn,
+	DataTableAction,
+	DataTablePagination,
+	DataTableSort,
+	DataTableFilters
+} from "./DataTable.svelte";
+export { DEFAULT_LIMIT_OPTIONS, exportToCsv } from "./DataTable.svelte";
+export { default as FileUpload } from "./FileUpload.svelte";
+export type { FileUploadItem, ImageCompressionOptions } from "./FileUpload.svelte";
+export { compressImage, DEFAULT_COMPRESSION } from "./FileUpload.svelte";
 export { default as TabsRoot } from "./TabsRoot.svelte";
 export { default as TabsList } from "./TabsList.svelte";
 export { default as TabsTrigger } from "./TabsTrigger.svelte";

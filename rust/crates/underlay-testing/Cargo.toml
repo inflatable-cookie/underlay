@@ -1,0 +1,41 @@
+[package]
+name = "underlay-testing"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Testing utilities for Underlay applications"
+
+[dependencies]
+# Core dependencies (always available)
+uuid = { workspace = true, features = ["v7"] }
+tokio = { workspace = true, features = ["rt", "sync"] }
+async-trait = { workspace = true }
+
+# Database testing (optional)
+sqlx = { workspace = true, optional = true }
+underlay-db = { path = "../underlay-db", optional = true }
+testcontainers = { version = "0.15", optional = true }
+testcontainers-modules = { version = "0.3", features = ["postgres"], optional = true }
+
+# HTTP testing (optional)
+axum = { workspace = true, optional = true }
+reqwest = { version = "0.12", features = ["json"], optional = true }
+tower = { workspace = true, optional = true }
+http = { workspace = true, optional = true }
+serde = { workspace = true, optional = true }
+serde_json = { version = "1", optional = true }
+
+# Time utilities
+chrono = { workspace = true }
+
+[features]
+default = []
+# Database testing with testcontainers
+db = ["dep:sqlx", "dep:underlay-db", "dep:testcontainers", "dep:testcontainers-modules"]
+# HTTP/API testing
+server = ["dep:axum", "dep:reqwest", "dep:tower", "dep:http", "dep:serde", "dep:serde_json"]
+# All features
+full = ["db", "server"]
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
