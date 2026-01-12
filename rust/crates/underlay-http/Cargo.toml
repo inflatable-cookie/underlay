@@ -13,5 +13,16 @@ tower-http = { workspace = true, features = ["cors"] }
 underlay-core = { path = "../underlay-core" }
 underlay-observability = { path = "../underlay-observability" }
 
+# Optional database error logging
+underlay-db = { path = "../underlay-db", optional = true }
+sqlx = { workspace = true, optional = true, features = ["macros", "postgres", "uuid", "chrono", "json"] }
+uuid = { workspace = true, optional = true }
+chrono = { workspace = true, optional = true }
+tokio = { workspace = true, features = ["rt"], optional = true }
+
+[features]
+default = []
+error-logging = ["underlay-db", "sqlx", "uuid", "chrono", "tokio"]
+
 [dev-dependencies]
 tokio = { workspace = true, features = ["macros", "rt"] }

@@ -2,6 +2,8 @@
 
 This guide shows how to implement complete session management flows including login, logout, and session refresh for your Underlay-based application.
 
+> **Quick Start**: Underlay provides a ready-to-use SvelteKit session management implementation in `ts/src/client/sveltekit.ts`. See the "Underlay's createAuthHandle" section below for a turnkey solution. The rest of this guide explains the underlying patterns if you need to customize the behavior.
+
 ## Overview
 
 Session management ties together several concerns:
@@ -799,6 +801,122 @@ curl http://localhost:3000/v1/modules \
 - Form action quirks: Never wrap `throw redirect()` in try/catch with `fail()`
 
 ---
+
+## Underlay's createAuthHandle
+
+**Underlay provides a complete, production-ready implementation** at [`ts/src/client/sveltekit.ts`](../../ts/src/client/sveltekit.ts).
+
+### Usage
+
+Instead of implementing hooks manually, use Underlay's `createAuthHandle`:
+
+```typescript
+// apps/pasture/src/hooks.server.ts
+import { createAuthHandle } from '@decodelabs/underlay/client';
+
+export const handle = createAuthHandle({
+  baseUrl: 'https://api.example.com',
+  
+  routes: {
+    register: '/v1/auth/register',
+    loginPassword: '/v1/auth/login/password',
+    loginPasskey: '/v1/auth/login/passkey',
+    logout: '/v1/auth/logout',
+    refresh: '/v1/auth/refresh',
+    session: '/v1/auth/session',
+  },
+  
+  cookies: {
+    accessTokenCookie: 'myapp_access_token',
+    refreshTokenCookie: 'myapp_refresh_token',
+    cookie: {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 7, // 7 days
+    },
+  },
+  
+  // Optional: protect routes
+  shouldProtect: (event) => {
+    return !event.url.pathname.startsWith('/public');
+  },
+  
+  // Optional: custom unauthorized handling
+  onUnauthenticated: (event) => {
+    return Response.redirect(`${event.url.origin}/login`, 302);
+  },
+});
+```
+
+### Features
+
+Underlay's `createAuthHandle` includes:
+
+- ✅ **Cookie-based token storage** with configurable options
+- ✅ **Automatic token refresh** on 401 errors
+- ✅ **Route protection** via `shouldProtect` callback
+- ✅ **Session management** - `event.locals.auth.getSession()`
+- ✅ **Auth commands** - `event.locals.auth.commands.login()`, `.logout()`, etc.
+- ✅ **HTTP client** - Pre-configured client with token injection
+- ✅ **Token rotation** - Supports updating both access and refresh tokens
+- ✅ **Deduplication** - Single refresh request in-flight at a time
+
+### Accessing Session in Layouts
+
+```typescript
+// +layout.server.ts
+import type { LayoutServerLoad } from './$types';
+
+export const load: LayoutServerLoad = async ({ locals }) => {
+  const session = await locals.auth.getSession();
+  
+  return {
+    user: session?.user ?? null,
+  };
+};
+```
+
+### Accessing Session in Routes
+
+```typescript
+// +page.server.ts
+import { error } from '@sveltejs/kit';
+import type { PageServerLoad } from './$types';
+
+export const load: PageServerLoad = async ({ locals }) => {
+  const session = await locals.auth.getSession();
+  
+  if (!session) {
+    throw error(401, 'Unauthorized');
+  }
+  
+  // Use authenticated HTTP client
+  const modules = await locals.auth.http.get('/v1/modules');
+  
+  return { modules };
+};
+```
+
+### Custom Refresh Logic
+
+If you need custom refresh behavior:
+
+```typescript
+export const handle = createAuthHandle({
+  // ... other options
+  
+  refreshRequest: async ({ rawHttp, routes, refreshToken }) => {
+    // Custom refresh logic
+    const response = await rawHttp.post(routes.refresh, {
+      refreshToken,
+      customField: 'value',
+    });
+    
+    return response.data; // Returns AuthSession
+  },
+});
+```
 
 ## Reference Implementation
 

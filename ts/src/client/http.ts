@@ -44,6 +44,36 @@ export interface HttpClientOptions {
   fetch?: typeof globalThis.fetch;
 
   auth?: HttpAuthOptions;
+
+  /**
+   * Request timeout in milliseconds for idempotent requests (GET, DELETE).
+   * Non-idempotent requests (POST, PUT, PATCH) are not subject to timeout.
+   * @default 8000
+   */
+  timeoutMs?: number;
+
+  /**
+   * Maximum number of retry attempts for retryable operations.
+   * Retries are only attempted for idempotent requests (GET, DELETE) on:
+   * - 502 Bad Gateway
+   * - 503 Service Unavailable
+   * - 504 Gateway Timeout
+   * - Custom statuses specified in `retryStatuses`
+   * @default 3
+   */
+  maxRetries?: number;
+
+  /**
+   * Additional HTTP status codes to retry (beyond default 502, 503, 504).
+   * Example: [429] to retry on rate limit.
+   */
+  retryStatuses?: number[];
+
+  /**
+   * Enable debug logging to console.
+   * @default false
+   */
+  debug?: boolean;
 }
 
 export interface HttpAuthOptions {
@@ -100,6 +130,16 @@ export interface HttpClient {
 
 export function createHttpClient(options: HttpClientOptions): HttpClient {
   const fetchImpl = options.fetch ?? globalThis.fetch;
+  const timeoutMs = options.timeoutMs ?? 8000;
+  const maxRetries = options.maxRetries ?? 3;
+  const retryStatuses = new Set([502, 503, 504, ...(options.retryStatuses ?? [])]);
+  const debug = options.debug ?? false;
+
+  function log(...args: unknown[]): void {
+    if (debug) {
+      console.log("[HttpClient]", ...args);
+    }
+  }
 
   const tokenStore = options.auth?.tokenStore;
 
@@ -119,7 +159,7 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
 
   let refreshInFlight: Promise<RefreshResult> | null = null;
 
-  async function rawRequest<T>(req: HttpRequest): Promise<T> {
+  async function rawRequest<T>(req: HttpRequest, opts?: { skipRetry?: boolean }): Promise<T> {
     const url = new URL(req.path, options.baseUrl);
     const headers: Record<string, string> = {
       ...options.defaultHeaders,
@@ -132,31 +172,100 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
       body = JSON.stringify(req.body);
     }
 
-    const res = await fetchImpl(url, {
-      method: req.method,
-      headers,
-      body,
-    });
+    // Determine if this request is idempotent (can be retried)
+    const isIdempotent = req.method === "GET" || req.method === "DELETE";
+    const shouldRetry = isIdempotent && !opts?.skipRetry;
 
-    const contentType = res.headers.get("content-type") ?? "";
-    const hasJson = contentType.includes("application/json");
+    let attempt = 0;
 
-    if (!res.ok) {
-      const parsed = hasJson ? await res.json().catch(() => undefined) : undefined;
-      const envelope = isErrorEnvelope(parsed) ? parsed : undefined;
-      const message = envelope?.error.message ?? `HTTP ${res.status}`;
-      throw new UnderlayHttpError(res.status, message, envelope);
+    while (true) {
+      attempt += 1;
+
+      // Set up timeout for idempotent requests
+      const controller =
+        typeof AbortController !== "undefined" && isIdempotent
+          ? new AbortController()
+          : undefined;
+
+      const timeout =
+        controller != null
+          ? setTimeout(() => controller.abort(), timeoutMs)
+          : undefined;
+
+      try {
+        log(`${req.method} ${url} (attempt ${attempt}/${maxRetries})`);
+
+        const res = await fetchImpl(url, {
+          method: req.method,
+          headers,
+          body,
+          signal: controller?.signal,
+        });
+
+        if (timeout != null) {
+          clearTimeout(timeout);
+        }
+
+        const contentType = res.headers.get("content-type") ?? "";
+        const hasJson = contentType.includes("application/json");
+
+        if (!res.ok) {
+          const parsed = hasJson ? await res.json().catch(() => undefined) : undefined;
+          const envelope = isErrorEnvelope(parsed) ? parsed : undefined;
+          const message = envelope?.error.message ?? `HTTP ${res.status}`;
+
+          log(`Error response (${res.status}):`, envelope);
+
+          // Check if we should retry this error
+          const canRetry =
+            shouldRetry &&
+            retryStatuses.has(res.status) &&
+            attempt < maxRetries;
+
+          if (canRetry) {
+            log(`Retrying due to status ${res.status}...`);
+            // Exponential backoff: 100ms, 200ms, 400ms, etc.
+            const backoffMs = Math.min(100 * Math.pow(2, attempt - 1), 3000);
+            await new Promise((resolve) => setTimeout(resolve, backoffMs));
+            continue;
+          }
+
+          throw new UnderlayHttpError(res.status, message, envelope);
+        }
+
+        if (res.status === 204) {
+          log(`${req.method} ${url} -> 204 No Content`);
+          return undefined as T;
+        }
+
+        if (!hasJson) {
+          return (await res.text()) as unknown as T;
+        }
+
+        return (await res.json()) as T;
+      } catch (err) {
+        if (timeout != null) {
+          clearTimeout(timeout);
+        }
+
+        // If it's an HTTP error (not network/timeout), don't retry - we already handled that above
+        if (err instanceof UnderlayHttpError) {
+          throw err;
+        }
+
+        // Network/timeout error - retry if allowed
+        const canRetry = shouldRetry && attempt < maxRetries;
+
+        if (canRetry) {
+          log(`Network error, retrying:`, err);
+          const backoffMs = Math.min(100 * Math.pow(2, attempt - 1), 3000);
+          await new Promise((resolve) => setTimeout(resolve, backoffMs));
+          continue;
+        }
+
+        throw err;
+      }
     }
-
-    if (res.status === 204) {
-      return undefined as T;
-    }
-
-    if (!hasJson) {
-      return (await res.text()) as unknown as T;
-    }
-
-    return (await res.json()) as T;
   }
 
   async function request<T>(req: HttpRequest): Promise<T> {

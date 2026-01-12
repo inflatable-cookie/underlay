@@ -21,6 +21,12 @@ This repository is a *framework*, not an app. It should provide stable, app-agno
 - `contracts/` – API contracts (OpenAPI schemas and shared envelope types).
 - `docs/` – Underlay architecture and integration guides.
 
+**IMPORTANT**: Underlay is a **single-package-per-language** repository:
+- All TypeScript code goes in `ts/src/`, NOT in a separate `typescript/` directory or workspace
+- All Rust code goes in `rust/`, NOT scattered across multiple crates
+- Do NOT create package workspaces (e.g., `typescript/packages/`) - this is an app pattern, not a library pattern
+- The `ts/` directory exports a single unified package that consuming apps can import from
+
 ## Build & Test
 
 - JS/Svelte: `pnpm install`, then `pnpm check`
@@ -41,3 +47,26 @@ This repository is a *framework*, not an app. It should provide stable, app-agno
 ## SvelteKit Form Actions (important)
 
 When using SvelteKit form actions, do not wrap `throw redirect(...)` inside a `try`/`catch` that returns `fail(...)`. Perform redirects after successful `await` calls, and only return `fail(...)` for genuine errors.
+
+## Analysis Reports and Session Summaries
+
+When creating analysis documents, session summaries, or completion reports, save them in `docs/reports/` using the timestamp naming convention:
+
+- **Format**: `YYYY-MM-DD-HHMMSS-descriptive-name.md`
+- **Location**: `docs/reports/`
+- **Purpose**: Session summaries, phase analyses, completion reports, pattern analyses, etc.
+
+**Examples**:
+- `docs/reports/2026-01-12-100407-phase-8-4-complete.md`
+- `docs/reports/2026-01-12-100407-guardrails-analysis.md`
+- `docs/reports/2026-01-12-100407-test-utilities-patterns.md`
+
+**Do NOT**:
+- Put reports in `docs/roadmap/` (roadmaps are planning docs, not reports)
+- Put reports in `docs/guides/` (guides are user-facing documentation)
+- Use uppercase or underscore-separated names (use lowercase with hyphens)
+
+**This convention matches Ledger's reporting structure** and makes it easy to:
+- Find reports chronologically
+- Avoid name collisions
+- Archive session work systematically

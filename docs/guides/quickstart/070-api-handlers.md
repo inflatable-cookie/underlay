@@ -215,7 +215,9 @@ pub fn create_router(state: AppState) -> Router {
 
 ## Production Patterns
 
-### Error Logging Middleware
+### Error Logging
+
+> **Quick Start**: Underlay provides production-ready error logging via the `underlay-http` crate's `error-logging` feature. For full documentation, see [rust/crates/underlay-http/ERROR_LOGGING.md](../../rust/crates/underlay-http/ERROR_LOGGING.md).
 
 Log errors to a database for monitoring and debugging. This pattern is used in Acowtancy's Farmyard.
 
@@ -224,135 +226,112 @@ Log errors to a database for monitoring and debugging. This pattern is used in A
 - Correlation with request IDs
 - Debug production issues
 - Monitor error trends
+- Query by time range, status code, or endpoint
 
-#### Implementation
+#### Setup
 
-Create `apps/nursery/crates/api/src/middleware/error_logger.rs`:
+Add to your `Cargo.toml`:
+
+```toml
+[dependencies]
+underlay-http = { path = "../../rust/crates/underlay-http", features = ["error-logging"] }
+```
+
+Sync migrations to your app:
+
+```bash
+cargo run --bin underlay-devtools -- sync-migrations --target ./migrations
+```
+
+Then run your migrations. This creates the `infra.error_log` table with indexes.
+
+#### Basic Usage in Handlers
+
+Log errors directly from error handlers:
 
 ```rust
-use axum::{
-    body::Body,
-    extract::Request,
-    http::StatusCode,
-    middleware::Next,
-    response::{IntoResponse, Response},
-};
-use sqlx::PgPool;
-use std::sync::Arc;
-use tokio::spawn;
+use underlay_http::error_logging::append_error_log;
+use underlay_observability::RequestId;
 
-/// Middleware to log errors to database.
-pub async fn error_logger_middleware(
-    req: Request,
-    next: Next,
-) -> Response {
-    let request_id = req
-        .headers()
-        .get("x-request-id")
-        .and_then(|v| v.to_str().ok())
-        .unwrap_or("unknown")
-        .to_string();
-
-    let method = req.method().clone();
-    let uri = req.uri().clone();
-
-    // Get pool from extensions if available
-    let pool = req
-        .extensions()
-        .get::<Arc<PgPool>>()
-        .cloned();
-
-    let response = next.run(req).await;
-
-    // Log errors (4xx/5xx) asynchronously
-    let status = response.status();
-    if status.is_client_error() || status.is_server_error() {
-        if let Some(pool) = pool {
-            // Extract error message from response if possible
-            // (In practice, you might need to clone the body)
-            let error_message = format!("{} {} -> {}", method, uri, status);
-
-            // Spawn async task to avoid blocking response
-            spawn(async move {
-                if let Err(e) = log_error_to_db(
+async fn get_user(
+    State(state): State<AppState>,
+    request_id: RequestId,
+    Path(user_id): Path<String>
+) -> impl IntoResponse {
+    let id: uuid::Uuid = match user_id.parse() {
+        Ok(id) => id,
+        Err(_) => {
+            let error = AppError::new("validation.invalid_id", "Invalid user ID");
+            
+            // Log the error asynchronously (non-blocking)
+            let pool = state.pool.clone();
+            tokio::spawn(async move {
+                let _ = append_error_log(
                     &pool,
-                    &request_id,
-                    status.as_u16(),
-                    &error_message,
-                )
-                .await
-                {
-                    eprintln!("Failed to log error: {}", e);
-                }
+                    "/v1/users/:id",                    // endpoint
+                    "GET",                               // method
+                    400,                                 // status code
+                    "validation.invalid_id",             // error code
+                    "Invalid user ID",                   // message
+                    &request_id.to_string(),             // correlation ID
+                    serde_json::json!({"user_id": user_id}), // context
+                ).await;
             });
+            
+            return underlay_http::error_response(
+                StatusCode::BAD_REQUEST,
+                error,
+            );
         }
-    }
-
-    response
-}
-
-async fn log_error_to_db(
-    pool: &PgPool,
-    request_id: &str,
-    status_code: u16,
-    message: &str,
-) -> Result<(), sqlx::Error> {
-    sqlx::query(
-        r#"
-        INSERT INTO platform.error_log (request_id, status_code, message, occurred_at)
-        VALUES ($1, $2, $3, NOW())
-        "#,
-    )
-    .bind(request_id)
-    .bind(status_code as i32)
-    .bind(message)
-    .execute(pool)
-    .await?;
-
-    Ok(())
+    };
+    
+    // ... rest of handler
 }
 ```
 
-#### Database Schema
+**Note**: Always wrap `append_error_log()` in `tokio::spawn()` to avoid blocking the request response.
 
-```sql
-CREATE SCHEMA IF NOT EXISTS platform;
+#### Querying Error Logs
 
-CREATE TABLE platform.error_log (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    request_id VARCHAR(255) NOT NULL,
-    status_code INTEGER NOT NULL,
-    message TEXT NOT NULL,
-    user_id UUID,
-    occurred_at TIMESTAMPTZ NOT NULL,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-CREATE INDEX idx_error_log_request_id ON platform.error_log(request_id);
-CREATE INDEX idx_error_log_occurred_at ON platform.error_log(occurred_at DESC);
-CREATE INDEX idx_error_log_status_code ON platform.error_log(status_code);
-```
-
-#### Usage in Router
+Query recent errors for debugging:
 
 ```rust
-use axum::{middleware, Router};
-use std::sync::Arc;
+use underlay_http::error_logging::{list_error_logs, ErrorLogFilters};
+use chrono::{Utc, Duration};
 
-pub fn create_router(pool: Arc<PgPool>) -> Router {
-    Router::new()
-        .route("/v1/users", get(list_users))
-        // ... other routes
-        .layer(middleware::from_fn(error_logger_middleware))
-        .layer(Extension(pool))
+// Get all 500 errors in the last hour
+let filters = ErrorLogFilters {
+    since: Some(Utc::now() - Duration::hours(1)),
+    status_code: Some(500),
+    limit: 50,
+    ..Default::default()
+};
+
+let errors = list_error_logs(&pool, filters).await?;
+
+for error in errors {
+    println!("{}: {} - {}", 
+        error.occurred_at, 
+        error.endpoint, 
+        error.message
+    );
 }
 ```
 
-**Note:** This is a simplified example. In production, you might:
-- Extract error details from response body
-- Include user ID from authentication
-- Add IP address, user agent
-- Implement sampling to reduce database load
+#### Advanced: Middleware-Based Logging
+
+For automatic error logging across all endpoints, implement a Tower middleware layer (planned in Phase 8.3 task 3). The current implementation provides the building blocks:
+
+- `append_error_log()` - Direct database insertion
+- `DbErrorLogSink` - Implements `ErrorLogSink` trait
+- `ErrorLogFilters` - Query builder for error logs
+
+See [rust/crates/underlay-http/ERROR_LOGGING.md](../../rust/crates/underlay-http/ERROR_LOGGING.md) for:
+- Complete API documentation
+- Database schema details
+- Best practices for correlation IDs
+- Indexing and query optimization
+- Future roadmap (Tower middleware, retention policies)
 
 ### Request Tracing
 

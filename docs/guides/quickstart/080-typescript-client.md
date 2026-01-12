@@ -35,10 +35,19 @@ Underlay exports the following from `@decodelabs/underlay`:
 
 ### Core HTTP Client
 
-- `createHttpClient(options: HttpClientOptions): HttpClient` - Low-level fetch wrapper with automatic token management
+- `createHttpClient(options: HttpClientOptions): HttpClient` - Low-level fetch wrapper with automatic token management, retry logic, and timeout support
 - `HttpClient` - Interface for making HTTP requests
-- `HttpClientOptions` - Configuration for the HTTP client
+- `HttpClientOptions` - Configuration for the HTTP client (includes `maxRetries`, `retryStatuses`, `timeoutMs`, `debug`)
 - `HttpRequest` - Request shape for custom requests
+
+**Built-in Features** (as of v0.1.0):
+- ✅ **Retry logic** with exponential backoff (defaults: 502, 503, 504)
+- ✅ **Timeout support** via AbortController (default: 8000ms for idempotent requests)
+- ✅ **Configurable retry statuses** (e.g., add 429 for rate limiting)
+- ✅ **Debug logging** option for request tracing
+- ✅ **Token refresh** integration (401 auto-retry)
+
+See "Advanced: Retry and Timeout" section below for configuration details.
 
 ### Error Handling
 
@@ -310,6 +319,21 @@ export class LocalStorageTokenStore implements TokenStore {
 ```
 
 ## Production Patterns
+
+> **Note**: As of Underlay v0.1.0 (January 2026), **retry logic and timeout handling are built into `createHttpClient`**. The examples below show how to implement these patterns from scratch for educational purposes, but you can use Underlay's built-in features instead:
+>
+> ```ts
+> const client = createHttpClient({
+>   baseUrl: 'https://api.example.com',
+>   maxRetries: 3,              // Default: 3
+>   retryStatuses: [429],       // Add custom retry status codes (502, 503, 504 are default)
+>   timeoutMs: 10000,           // Default: 8000ms
+>   debug: true,                // Optional: log requests/retries
+>   // ... plus all the auth/token options
+> });
+> ```
+>
+> See [`ts/src/client/http.ts`](../../ts/src/client/http.ts) for the implementation.
 
 ### Retry Logic
 

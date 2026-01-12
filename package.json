@@ -44,7 +44,10 @@
     "check:types": "tsc -p ./ts/tsconfig.json",
     "check:exports": "node ts/scripts/check-exports.mjs",
     "check:guardrails": "node ts/scripts/check-guardrails.mjs",
-    "validate": "pnpm run check && pnpm run check:types && pnpm run check:exports && pnpm run check:guardrails"
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:run": "vitest run",
+    "validate": "pnpm run check && pnpm run check:types && pnpm run check:exports && pnpm run check:guardrails && pnpm run test:run"
   },
   "peerDependencies": {
     "@sveltejs/kit": "^2.0.0",
@@ -56,9 +59,11 @@
     "easymde": "^2.20.0"
   },
   "devDependencies": {
+    "@vitest/ui": "^3.0.0",
     "bits-ui": "^2.15.4",
     "svelte": "^5.46.1",
     "svelte-check": "^4.3.5",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^3.0.0"
   }
 }
