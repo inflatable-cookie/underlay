@@ -1,11 +1,11 @@
-# 110 - Admin Frontend (Greenhouse Pattern)
+# 110 - Admin Frontend (Admin Pattern)
 
-This document covers creating the admin/author SvelteKit frontend following the Greenhouse pattern.
+This document covers creating the admin/author SvelteKit frontend following the admin frontend pattern.
 
 ## Admin Frontend Structure
 
 ```
-apps/greenhouse/src/
+apps/admin/src/
 ├── app.html                  # HTML shell
 ├── app.d.ts                  # TypeScript declarations with Locals
 ├── hooks.server.ts           # Server hooks for auth
@@ -46,13 +46,13 @@ export {};
 
 ## Server Hooks
 
-Create `apps/greenhouse/src/hooks.server.ts`:
+Create `apps/admin/src/hooks.server.ts`:
 
 ```typescript
 import type { Handle } from "@sveltejs/kit";
 
 export const handle: Handle = async ({ event, resolve }) => {
-  const token = event.cookies.get("greenhouse_token") ?? null;
+  const token = event.cookies.get("myapp_admin_token") ?? null;
 
   event.locals.authToken = token;
   event.locals.isAuthenticated = token != null;
@@ -63,20 +63,20 @@ export const handle: Handle = async ({ event, resolve }) => {
 
 ## Client Factory
 
-Create `apps/greenhouse/src/lib/api/client.ts`:
+Create `apps/admin/src/lib/api/client.ts`:
 
 ```typescript
-import { createClient as createStemClient } from "@myapp/stem";
+import { createClient as createApiClient } from "@myorg/client";
 import { env } from "$env/dynamic/public";
 
 const baseUrl = env.PUBLIC_API_URL ?? "http://127.0.0.1:3000";
 const apiVersion = env.PUBLIC_API_VERSION ?? "2025-01-01";
 
-export function createGreenhouseClient(
+export function createAdminClient(
   fetchFn: typeof fetch,
   authToken: string | null | undefined
 ) {
-  return createStemClient({
+  return createApiClient({
     baseUrl,
     apiVersion,
     fetchFn,
@@ -87,7 +87,7 @@ export function createGreenhouseClient(
 
 ## Layout Server (Auth State)
 
-Create `apps/greenhouse/src/routes/+layout.server.ts`:
+Create `apps/admin/src/routes/+layout.server.ts`:
 
 ```typescript
 import type { LayoutServerLoad } from "./$types";
@@ -102,7 +102,7 @@ export const load: LayoutServerLoad = async ({ locals }) => {
 
 ## Creating Admin Frontend
 
-See code examples in `/code/110-admin-greenhouse/`
+See code examples in `/code/110-admin/`
 
 ## Next Steps
 

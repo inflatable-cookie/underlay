@@ -1,6 +1,6 @@
 # 060 - Authentication
 
-> **Reference Implementation**: This guide includes patterns from Acowtancy, a production application built with Underlay. These serve as working examples of best practices.
+> **Reference Implementation**: This guide includes patterns from a production application built with Underlay. These serve as working examples of best practices.
 
 This document covers implementing authentication using the Underlay auth system. Underlay provides multiple authentication methods:
 
@@ -16,7 +16,7 @@ This document covers implementing authentication using the Underlay auth system.
 The auth crate is organized into three modules following the Underlay pattern:
 
 ```
-apps/nursery/crates/auth/src/
+apps/api/crates/auth/src/
 ├── lib.rs           # Module declarations and exports
 ├── principal.rs     # UserId, UserPrincipal, UserRole types
 ├── provider.rs      # JWT provider wrapper (Ed25519 / EdDSA)
@@ -179,7 +179,7 @@ pub use underlay::{user_principal_from_underlay, DevBearerUuidAuthProvider};
 
 ### Step 1: AppState with Auth
 
-In `apps/nursery/crates/api/src/main.rs`:
+In `apps/api/crates/api/src/main.rs`:
 
 ```rust
 use myapp_auth::{AuthProvider, user_principal_from_underlay};
@@ -200,13 +200,13 @@ impl underlay_auth::HasAuthProvider for AppState {
 
 ### Step 2: Auth Service (Login & Session)
 
-Create `apps/nursery/crates/auth/src/service.rs` to handle login logic and token issuance:
+Create `apps/api/crates/auth/src/service.rs` to handle login logic and token issuance:
 
 ```rust
 use std::sync::Arc;
 use underlay_auth::{AuthError, AuthResult};
 use underlay_auth_jwt::JwtService;
-use farmyard_core::Uuid; // or underlay_core::Uuid
+use underlay_core::Uuid;
 
 use crate::{AuthSession, UserId};
 // Import your PasswordAuth, TotpAuthService etc.
@@ -266,7 +266,7 @@ use myapp_auth::{DevBearerUuidAuthProvider, JwtAuthProvider};
 use underlay_auth_jwt::{JwtConfig, JwtService};
 
 fn create_auth_provider() -> Arc<dyn underlay_auth::AuthProvider> {
-    let dev_auth_enabled = std::env::var("NURSERY_DEV_AUTH")
+    let dev_auth_enabled = std::env::var("MYAPP_API_DEV_AUTH")
         .map(|v| v == "true")
         .unwrap_or(false);
 
@@ -278,7 +278,7 @@ fn create_auth_provider() -> Arc<dyn underlay_auth::AuthProvider> {
         }
         None => {
             tracing::error!(
-                "Auth not configured. Set AUTH_JWT_* env vars or NURSERY_DEV_AUTH=true"
+                "Auth not configured. Set AUTH_JWT_* env vars or MYAPP_API_DEV_AUTH=true"
             );
             // In a real app, you might want to panic or exit, but for dev we might allow continuing
             // if we are not handling any requests yet.
@@ -320,7 +320,7 @@ Underlay provides `underlay-auth-totp` for Time-based One-Time Password support.
 ### Adding TOTP to Your App
 
 ```toml
-# apps/nursery/crates/auth/Cargo.toml
+# apps/api/crates/auth/Cargo.toml
 [dependencies]
 underlay-auth-totp = { path = "../../../underlay/rust/crates/underlay-auth-totp" }
 underlay-auth-state = { path = "../../../underlay/rust/crates/underlay-auth-state" }
@@ -461,7 +461,7 @@ Underlay provides `underlay-auth-webauthn` for passwordless authentication using
 ### Adding WebAuthn to Your App
 
 ```toml
-# apps/nursery/crates/auth/Cargo.toml
+# apps/api/crates/auth/Cargo.toml
 [dependencies]
 underlay-auth-webauthn = { path = "../../../underlay/rust/crates/underlay-auth-webauthn" }
 ```
@@ -830,7 +830,7 @@ cargo run --manifest-path /path/to/underlay/Cargo.toml \
 
 ### Example: Password + TOTP Login (Multi-Step)
 
-This is a production-ready pattern from Acowtancy showing how to split login into two steps when 2FA is required.
+This is a production-ready pattern showing how to split login into two steps when 2FA is required.
 
 **Step 1: Login Start (Password Verification)**
 
@@ -1126,7 +1126,7 @@ Underlay provides `underlay-auth-oauth` for Google Sign-In with two service laye
 ### Adding OAuth to Your App
 
 ```toml
-# apps/nursery/crates/auth/Cargo.toml
+# apps/api/crates/auth/Cargo.toml
 [dependencies]
 underlay-auth-oauth = { path = "../../../underlay/rust/crates/underlay-auth-oauth" }
 ```
@@ -1477,7 +1477,7 @@ Underlay provides `underlay-auth-password` for secure password authentication us
 ### Adding Password Auth to Your App
 
 ```toml
-# apps/nursery/crates/auth/Cargo.toml
+# apps/api/crates/auth/Cargo.toml
 [dependencies]
 underlay-auth-password = { path = "../../../underlay/rust/crates/underlay-auth-password" }
 ```
@@ -1518,7 +1518,7 @@ let config = PasswordConfig {
 ### Password Auth Repository
 
 > **Note**: The example below shows the repository trait interface with SQL query placeholders.  
-> For complete working SQL implementations including proper error handling, row mapping, and schema-qualified queries, see the Acowtancy reference implementation at `farmyard/crates/auth/src/local.rs` (lines 1168-1300+).
+> For complete working SQL implementations including proper error handling, row mapping, and schema-qualified queries, see your application's auth repository implementation.
 
 Implement the `PasswordAuthRepository` trait for your database:
 
@@ -1896,7 +1896,7 @@ match result {
 
 ### Environment Variables
 
-Create `apps/nursery/.env`:
+Create `apps/api/.env`:
 
 ```bash
 # === Authentication ===
@@ -1919,7 +1919,7 @@ AUTH_REFRESH_TOKEN_LIFETIME_DAYS=30
 AUTH_JWT_LEEWAY_SECONDS=30
 
 # === Dev Mode (LOCAL DEVELOPMENT ONLY) ===
-NURSERY_DEV_AUTH=false
+MYAPP_API_DEV_AUTH=false
 
 # === TOTP (optional - defaults provided) ===
 # TOTP_ISSUER=MyApp
@@ -1967,16 +1967,16 @@ Because `underlay-auth-jwt` expects specific key encodings (PKCS#8 DER for the p
 
 Copy that file into your app repo as a small Rust bin target, for example:
 
-- `apps/nursery/crates/auth/src/bin/generate-jwt-env.rs`
+- `apps/api/crates/auth/src/bin/generate-jwt-env.rs`
 
 Then run:
 
 ```bash
-cd apps/nursery
+cd apps/api
 cargo run -p myapp-auth --bin generate-jwt-env
 ```
 
-This prints `AUTH_JWT_PRIVATE_KEY=...` and `AUTH_JWT_PUBLIC_KEY=...` ready to paste into `apps/nursery/.env`.
+This prints `AUTH_JWT_PRIVATE_KEY=...` and `AUTH_JWT_PUBLIC_KEY=...` ready to paste into `apps/api/.env`.
 
 ## JWT Claims and Validation
 
@@ -2005,7 +2005,7 @@ If `AUTH_JWT_AUDIENCE` is set, `aud` is also required and validated.
 
 ## Security Checklist
 
-- [ ] Dev auth provider requires explicit `NURSERY_DEV_AUTH=true`
+- [ ] Dev auth provider requires explicit `MYAPP_API_DEV_AUTH=true`
 - [ ] JWT keys are loaded from environment, not hardcoded
 - [ ] Token expiration is set (access: 15min, refresh: 30days)
 - [ ] HTTPS required in production
@@ -2033,7 +2033,7 @@ If `AUTH_JWT_AUDIENCE` is set, `aud` is also required and validated.
 3. Implement login/logout handlers (see [070-api-handlers.md](./070-api-handlers.md))
 4. Add session management (see [065-session-management.md](./065-session-management.md))
 5. Add authorization guards (see [067-authorization.md](./067-authorization.md))
-6. Build frontend login forms (see [100-frontend-bloom.md](./100-frontend-bloom.md))
+6. Build frontend login forms (see [100-frontend-web.md](./100-frontend-web.md))
 
 ## Next Steps
 

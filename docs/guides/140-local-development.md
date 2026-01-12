@@ -1,10 +1,10 @@
 # 140 - Local Development
 
-> **Reference Implementation**: This guide includes patterns from Acowtancy, a production application built with Underlay. These serve as working examples of best practices.
+> **Reference Implementation**: This guide includes patterns from a production application built with Underlay. These serve as working examples of best practices.
 
 This document covers running and debugging the application locally.
 
-Paths below use monorepo-style logical paths (e.g. `apps/nursery/...`). In multi-repo mode, run the same commands from the relevant repo root.
+Paths below use monorepo-style logical paths (e.g. `apps/api/...`). In multi-repo mode, run the same commands from the relevant repo root.
 
 ## Development Workflow
 
@@ -24,7 +24,7 @@ docker run -d \
 ### 2. Run Migrations
 
 ```bash
-cd apps/nursery/crates/db
+cd apps/api/crates/db
 sqlx database create
 sqlx migrate run
 ```
@@ -32,19 +32,19 @@ sqlx migrate run
 ### 3. Start Backend
 
 ```bash
-cd apps/nursery
+cd apps/api
 cargo run -p myapp-api
 ```
 
 ### 4. Start Frontends
 
 ```bash
-# Terminal 1: Bloom
-cd apps/bloom
+# Terminal 1: Web frontend
+cd apps/web
 pnpm dev
 
-# Terminal 2: Greenhouse
-cd apps/greenhouse
+# Terminal 2: Admin frontend
+cd apps/admin
 pnpm dev
 ```
 
@@ -53,8 +53,8 @@ pnpm dev
 | Service | URL | Purpose |
 |---------|-----|---------|
 | API | http://localhost:3000 | Backend API |
-| Bloom | http://localhost:5173 | Artist UI |
-| Greenhouse | http://localhost:5174 | Admin UI |
+| Web | http://localhost:5173 | User UI |
+| Admin | http://localhost:5174 | Admin UI |
 | Health | http://localhost:3000/health | Health check |
 
 ## Debugging
@@ -418,7 +418,7 @@ Use explicit type guards or suppress the warning.
 - `ts/src/tools/templates/sveltekit-ssr.ts` - SSR safety rules
 - `ts/src/tools/templates/banned-apis.ts` - Banned API patterns
 
-**Battle-tested**: Extracted from Acowtancy's Dairy admin app (production use since 2025).
+**Battle-tested**: Extracted from a production admin app (production use since 2025).
 
 ## Next Steps
 

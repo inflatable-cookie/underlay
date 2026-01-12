@@ -7,7 +7,7 @@ This document covers setting up continuous integration and deployment.
 - **Multi-repo (default):** each repo typically has its own workflow; keep CI close to the repo it validates.
 - **Monorepo:** one workflow can run all checks across `apps/*` and `libs/*`.
 
-The YAML below is written in a monorepo style; in multi-repo, remove the `cd apps/nursery` step and run `cargo test` from the Nursery repo root.
+The YAML below is written in a monorepo style; in multi-repo, remove the `cd apps/api` step and run `cargo test` from the API repo root.
 
 ## GitHub Actions Workflow
 
@@ -32,7 +32,7 @@ jobs:
       - name: Run tests
         run: |
           # Monorepo:
-          cd apps/nursery
+          cd apps/api
           cargo test
           cargo clippy --all-targets --all-features -- -D warnings
 

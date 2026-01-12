@@ -1,5 +1,8 @@
 /// <reference path="../svelte.d.ts" />
 
+export { default as Badge } from "./Badge.svelte";
+export { default as Breadcrumbs } from "./Breadcrumbs.svelte";
+export type { BreadcrumbItem } from "./Breadcrumbs.svelte";
 export { default as Button } from "./Button.svelte";
 export { default as TextButton } from "./TextButton.svelte";
 export { default as Card } from "./Card.svelte";
@@ -43,6 +46,8 @@ export { default as TabsRoot } from "./TabsRoot.svelte";
 export { default as TabsList } from "./TabsList.svelte";
 export { default as TabsTrigger } from "./TabsTrigger.svelte";
 export { default as TabsContent } from "./TabsContent.svelte";
+export { default as Pagination } from "./Pagination.svelte";
+export type { PaginationState } from "./Pagination.svelte";
 
 export { default as LoginForm } from "./auth/LoginForm.svelte";
 export { default as RegisterForm } from "./auth/RegisterForm.svelte";

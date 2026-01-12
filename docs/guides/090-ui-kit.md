@@ -1,19 +1,21 @@
-# 090 - UI Kit (Petal Pattern)
+# 090 - UI Kit
 
-This document covers creating and using a shared Svelte UI kit following the Petal pattern. Underlay provides pre-built components for common UI needs.
+This document covers creating and using a shared Svelte UI kit with Underlay. Underlay provides pre-built components for common UI needs.
 
 ## Overview
 
 The UI kit provides:
 - **Form components** - Field, TextInput, Select, Switch, TextArea
-- **UI primitives** - Button, Card, Dialog, DropdownMenu
+- **UI primitives** - Button, Badge, Breadcrumbs, Card, Dialog, DropdownMenu, Pagination
 - **Patterns** - ListCard, Form, FormActions
 - **Design tokens** - CSS custom properties for theming
 
 ## UI Kit Structure
 
+> **Naming Convention**: Choose names that reflect your project's domain. For example, a project called "Acme" might use `acme-ui` for its UI kit. The examples below use placeholder names like `myapp-ui` - replace these with your own project-specific names.
+
 ```
-libs/petal/src/
+libs/myapp-ui/src/
 ├── components/          # Reusable Svelte components
 │   ├── Button.svelte
 │   ├── TextInput.svelte
@@ -172,6 +174,152 @@ Toggle switch (checkbox alternative):
 ---
 
 ## UI Primitives
+
+### Badge
+
+Status indicators, counts, and labels:
+
+```svelte
+<script>
+  import { Badge } from "@decodelabs/underlay";
+</script>
+
+<!-- Variants -->
+<Badge>Default</Badge>
+<Badge variant="success">Active</Badge>
+<Badge variant="warning">Pending</Badge>
+<Badge variant="danger">Error</Badge>
+<Badge variant="info">New</Badge>
+<Badge variant="muted">Archived</Badge>
+
+<!-- Sizes -->
+<Badge size="sm">Small</Badge>
+<Badge size="md">Medium</Badge>
+<Badge size="lg">Large</Badge>
+
+<!-- Pill shape -->
+<Badge pill>Pill Badge</Badge>
+
+<!-- With icon -->
+<Badge variant="success" icon="✓">Complete</Badge>
+```
+
+**Props:**
+- `variant` - `"default"` | `"success"` | `"warning"` | `"danger"` | `"info"` | `"muted"` (default: `"default"`)
+- `size` - `"sm"` | `"md"` | `"lg"` (default: `"md"`)
+- `pill` - Fully rounded shape (default: `false`)
+- `icon` - Optional icon to display before text
+- `className` - Additional CSS classes
+
+### Breadcrumbs
+
+Navigation breadcrumb trail:
+
+```svelte
+<script>
+  import { Breadcrumbs } from "@decodelabs/underlay";
+  
+  const items = [
+    { label: "Home", href: "/" },
+    { label: "Products", href: "/products" },
+    { label: "Widgets", href: "/products/widgets" },
+    { label: "Widget Pro" }  // Current page (no href)
+  ];
+</script>
+
+<Breadcrumbs {items} />
+
+<!-- With custom separator -->
+<Breadcrumbs {items} separator="/" />
+
+<!-- With icons -->
+<Breadcrumbs items={[
+  { label: "Home", href: "/", icon: "🏠" },
+  { label: "Settings", href: "/settings", icon: "⚙️" },
+  { label: "Profile" }
+]} />
+```
+
+**Props:**
+- `items` - Array of `{ label, href?, icon? }` objects
+- `separator` - Separator character (default: `"›"`)
+- `collapseOnMobile` - Collapse middle items on small screens (default: `true`)
+- `maxItems` - Max items before collapsing (default: `4`)
+- `className` - Additional CSS classes
+
+**Accessibility:**
+- Uses `<nav>` with `aria-label="Breadcrumb"`
+- Current page marked with `aria-current="page"`
+
+### Pagination
+
+Standalone pagination component for navigating pages:
+
+```svelte
+<script>
+  import { Pagination } from "@decodelabs/underlay";
+  import { goto } from "$app/navigation";
+  
+  export let data;
+  
+  let page = 1;
+  let limit = 20;
+  
+  function handlePageChange(event) {
+    page = event.detail;
+    goto(`?page=${page}&limit=${limit}`);
+  }
+  
+  function handleLimitChange(event) {
+    limit = event.detail;
+    page = 1;  // Reset to first page
+    goto(`?page=1&limit=${limit}`);
+  }
+</script>
+
+<Pagination
+  {page}
+  {limit}
+  total={data.total}
+  on:page={handlePageChange}
+/>
+
+<!-- With limit selector -->
+<Pagination
+  {page}
+  {limit}
+  total={data.total}
+  showLimitSelector
+  limitOptions={[10, 25, 50, 100]}
+  on:page={handlePageChange}
+  on:limit={handleLimitChange}
+/>
+
+<!-- Compact mode -->
+<Pagination
+  {page}
+  {limit}
+  total={data.total}
+  compact
+  on:page={handlePageChange}
+/>
+```
+
+**Props:**
+- `page` - Current page (1-based)
+- `limit` - Items per page
+- `total` - Total number of items
+- `showLimitSelector` - Show items-per-page dropdown (default: `false`)
+- `limitOptions` - Available limit choices (default: `[10, 20, 50, 100]`)
+- `showInfo` - Show "Showing X to Y of Z" text (default: `true`)
+- `compact` - Smaller padding, hide info on mobile (default: `false`)
+- `className` - Additional CSS classes
+
+**Events:**
+- `on:page` - Fired with new page number
+- `on:limit` - Fired with new limit value
+
+**Note:** For data tables, use the built-in pagination in `DataTable` component. This standalone `Pagination` component is for non-table contexts like card grids, galleries, or custom list layouts.
 
 ### Button
 
@@ -920,20 +1068,27 @@ For temporary success/error messages:
 
 ---
 
-## Domain UI Kit Pattern (Froyo)
+## Domain UI Kit Pattern
 
 For app-specific customizations, create a domain UI kit that wraps Underlay components.
+
+> **Naming Your Domain UI Kit**: Choose a name that reflects your project. For example:
+> - A learning platform called "EduPro" might use `edupro-ui`
+> - An e-commerce site called "ShopMax" might use `shopmax-components`
+> - A SaaS product called "Acme" might use `@acme/ui`
+>
+> The examples below use `myapp-ui` as a placeholder - **replace this with your own project name**.
 
 ### Structure
 
 ```
-froyo/src/
+myapp-ui/src/
 ├── components/
-│   ├── FroyoButton.svelte      # Wrapped Underlay Button
-│   ├── FroyoField.svelte       # Wrapped Underlay Field
-│   ├── FroyoTextInput.svelte   # Wrapped Underlay TextInput
-│   ├── ModuleCard.svelte       # Domain-specific component
-│   └── QuestionList.svelte     # Domain-specific component
+│   ├── MyAppButton.svelte      # Wrapped Underlay Button
+│   ├── MyAppField.svelte       # Wrapped Underlay Field
+│   ├── MyAppTextInput.svelte   # Wrapped Underlay TextInput
+│   ├── ProductCard.svelte      # Domain-specific component
+│   └── OrderList.svelte        # Domain-specific component
 ├── styles/
 │   └── theme.css               # App-specific tokens
 └── index.ts
@@ -944,13 +1099,13 @@ froyo/src/
 Create wrappers with app-specific defaults:
 
 ```svelte
-<!-- froyo/src/components/FroyoButton.svelte -->
+<!-- myapp-ui/src/components/MyAppButton.svelte -->
 <script lang="ts">
   import { Button } from "@decodelabs/underlay";
   
   // Override Underlay defaults for your app
   export let variant: "primary" | "secondary" | "subtle" = "primary";
-  export let pill: boolean = false; // Froyo uses square buttons by default
+  export let pill: boolean = false; // Your app uses square buttons by default
   export let type: "button" | "submit" | "reset" = "button";
 </script>
 
@@ -964,59 +1119,50 @@ Create wrappers with app-specific defaults:
 Build on Underlay primitives for domain features:
 
 ```svelte
-<!-- froyo/src/components/ModuleCard.svelte -->
+<!-- myapp-ui/src/components/ProductCard.svelte -->
 <script lang="ts">
   import { Card, Button } from "@decodelabs/underlay";
   
-  export let module: {
+  export let product: {
     id: string;
     title: string;
     description: string;
-    progress: number;
+    price: number;
   };
 </script>
 
-<Card className="module-card">
-  <div class="module-header">
-    <h3>{module.title}</h3>
-    <div class="progress-bar">
-      <div class="progress-fill" style="width: {module.progress}%" />
-    </div>
+<Card className="product-card">
+  <div class="product-header">
+    <h3>{product.title}</h3>
+    <span class="price">${product.price}</span>
   </div>
   
-  <p class="module-description">{module.description}</p>
+  <p class="product-description">{product.description}</p>
   
-  <div class="module-actions">
-    <Button href="/modules/{module.id}">
-      {module.progress > 0 ? "Continue" : "Start"}
+  <div class="product-actions">
+    <Button href="/products/{product.id}">
+      View Details
     </Button>
   </div>
 </Card>
 
 <style>
-  .module-card {
+  .product-card {
     padding: 1.5rem;
   }
   
-  .module-header {
+  .product-header {
+    display: flex;
+    justify-content: space-between;
     margin-bottom: 1rem;
   }
   
-  .progress-bar {
-    height: 4px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 2px;
-    overflow: hidden;
-    margin-top: 0.5rem;
+  .price {
+    font-weight: 600;
+    color: var(--underlay-color-primary);
   }
   
-  .progress-fill {
-    height: 100%;
-    background: var(--underlay-color-primary);
-    transition: width 0.3s ease-out;
-  }
-  
-  .module-description {
+  .product-description {
     color: var(--underlay-color-text-muted);
     margin-bottom: 1rem;
   }
@@ -1028,7 +1174,7 @@ Build on Underlay primitives for domain features:
 Override Underlay tokens in your domain UI kit:
 
 ```css
-/* froyo/src/styles/theme.css */
+/* myapp-ui/src/styles/theme.css */
 
 :root {
   /* Brand colors */
@@ -1041,17 +1187,17 @@ Override Underlay tokens in your domain UI kit:
   /* Custom typography */
   --underlay-font-family: "Inter", sans-serif;
   
-  /* Froyo-specific tokens */
-  --froyo-color-module-bg: rgba(139, 92, 246, 0.1);
-  --froyo-color-question-correct: #10b981;
-  --froyo-color-question-incorrect: #ef4444;
+  /* App-specific tokens (use your own prefix) */
+  --myapp-color-product-bg: rgba(139, 92, 246, 0.1);
+  --myapp-color-success: #10b981;
+  --myapp-color-error: #ef4444;
 }
 ```
 
 ### Exporting Domain Kit
 
 ```typescript
-// froyo/src/index.ts
+// myapp-ui/src/index.ts
 
 // Re-export Underlay components
 export { 
@@ -1066,30 +1212,31 @@ export {
 } from "@decodelabs/underlay";
 
 // Export wrapped components
-export { default as Button } from "./components/FroyoButton.svelte";
-export { default as Field } from "./components/FroyoField.svelte";
-export { default as TextInput } from "./components/FroyoTextInput.svelte";
+export { default as Button } from "./components/MyAppButton.svelte";
+export { default as Field } from "./components/MyAppField.svelte";
+export { default as TextInput } from "./components/MyAppTextInput.svelte";
 
 // Export domain components
-export { default as ModuleCard } from "./components/ModuleCard.svelte";
-export { default as QuestionList } from "./components/QuestionList.svelte";
+export { default as ProductCard } from "./components/ProductCard.svelte";
+export { default as OrderList } from "./components/OrderList.svelte";
 ```
 
 ### Usage in App
 
 ```svelte
-<!-- cream/src/routes/modules/+page.svelte -->
+<!-- apps/storefront/src/routes/products/+page.svelte -->
 <script>
-  import { ModuleCard, Button } from "@acowtancy/froyo";
+  // Import from YOUR domain UI kit, not Underlay directly
+  import { ProductCard, Button } from "@myorg/myapp-ui";
   
   export let data;
 </script>
 
-<h1>Learning Modules</h1>
+<h1>Products</h1>
 
-<div class="module-grid">
-  {#each data.modules as module}
-    <ModuleCard {module} />
+<div class="product-grid">
+  {#each data.products as product}
+    <ProductCard {product} />
   {/each}
 </div>
 ```
@@ -1104,10 +1251,10 @@ export { default as QuestionList } from "./components/QuestionList.svelte";
 
 ### When to Use Domain UI Kit
 
-**Use domain UI kit (Froyo) when:**
-- Building multiple frontends (student + admin)
+**Use a domain UI kit when:**
+- Building multiple frontends (e.g., customer + admin apps)
 - Need app-specific component defaults
-- Have domain-specific components (ModuleCard, QuestionList)
+- Have domain-specific components (ProductCard, OrderList, etc.)
 - Want centralized theming
 
 **Use Underlay directly when:**
@@ -1133,8 +1280,8 @@ export { default as QuestionList } from "./components/QuestionList.svelte";
 
 ## Next Steps
 
-- [100-frontend-bloom](./100-frontend-bloom.md) - Using UI kit in your app
-- [110-admin-greenhouse](./110-admin-greenhouse.md) - Admin interface patterns
+- [100-frontend-web](./100-frontend-web.md) - Frontend application patterns
+- [110-admin](./110-admin.md) - Admin interface patterns
 - [075-validation](./075-validation.md) - Form validation with UI kit
 
 ---
@@ -1145,8 +1292,3 @@ See Underlay components source:
 - Components: `underlay/ts/src/components/`
 - Patterns: `underlay/ts/src/patterns/`
 - Styles: `underlay/ts/src/styles/`
-
-See Acowtancy for usage examples:
-- Cream (student app): `cream/src/routes/`
-- Dairy (admin app): `dairy/src/routes/`
-- Froyo (domain UI kit): `froyo/src/components/`

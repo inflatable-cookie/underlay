@@ -1,11 +1,11 @@
-# 040 - Rust Backend (Nursery Pattern)
+# 040 - Rust Backend (API Pattern)
 
-This document covers setting up the Rust API backend following the Nursery pattern. The backend uses a **workspace structure** with specialized crates for different concerns.
+This document covers setting up the Rust API backend following the API pattern. The backend uses a **workspace structure** with specialized crates for different concerns.
 
 ## Workspace Structure
 
 ```
-apps/nursery/
+apps/api/
 ├── Cargo.toml                    # Workspace manifest
 ├── Cargo.lock                    # Locked dependencies
 │
@@ -52,7 +52,7 @@ apps/nursery/
 
 ## Step 1: Create Workspace Manifest
 
-Create `apps/nursery/Cargo.toml`:
+Create `apps/api/Cargo.toml`:
 
 ```toml
 [workspace]
@@ -97,8 +97,8 @@ tracing-subscriber = { version = "0.3", features = ["fmt", "env-filter", "json"]
 dotenvy = "0.15"
 
 # === Underlay (local dev via relative paths) ===
-# Monorepo: this file is `apps/nursery/Cargo.toml`, so `../../libs/underlay/...`.
-# Multi-repo: see `030-underlay-integration.md` and use `../underlay/...` in `myapp-nursery/Cargo.toml`.
+# Monorepo: this file is `apps/api/Cargo.toml`, so `../../libs/underlay/...`.
+# Multi-repo: see `030-underlay-integration.md` and use `../underlay/...` in `myapp-api/Cargo.toml`.
 underlay-core = { path = "../../libs/underlay/rust/crates/underlay-core" }
 underlay-http = { path = "../../libs/underlay/rust/crates/underlay-http" }
 underlay-auth = { path = "../../libs/underlay/rust/crates/underlay-auth" }
@@ -111,7 +111,7 @@ underlay-soft-delete = { path = "../../libs/underlay/rust/crates/underlay-soft-d
 
 ## Step 2: Create Core Crate
 
-Create `apps/nursery/crates/core/Cargo.toml`:
+Create `apps/api/crates/core/Cargo.toml`:
 
 ```toml
 [package]
@@ -123,7 +123,7 @@ edition.workspace = true
 underlay-core = { workspace = true }
 ```
 
-Create `apps/nursery/crates/core/src/lib.rs`:
+Create `apps/api/crates/core/src/lib.rs`:
 
 ```rust
 //! Core primitives for the application.
@@ -147,7 +147,7 @@ pub use crate::pagination::{PageRequest, Pagination};
 pub use crate::time::NowProvider;
 ```
 
-Create `apps/nursery/crates/core/src/error.rs`:
+Create `apps/api/crates/core/src/error.rs`:
 
 ```rust
 use thiserror::Error;
@@ -178,7 +178,7 @@ pub enum AppError {
 pub type AppResult<T> = Result<T, AppError>;
 ```
 
-Create `apps/nursery/crates/core/src/id.rs`:
+Create `apps/api/crates/core/src/id.rs`:
 
 ```rust
 use underlay_core::Uuid;
@@ -245,7 +245,7 @@ impl IdGenerator for UuidGenerator {
 }
 ```
 
-Create `apps/nursery/crates/core/src/pagination.rs`:
+Create `apps/api/crates/core/src/pagination.rs`:
 
 ```rust
 use serde::{Deserialize, Serialize};
@@ -309,7 +309,7 @@ impl Pagination {
 
 ## Step 3: Create Auth Crate
 
-Create `apps/nursery/crates/auth/Cargo.toml`:
+Create `apps/api/crates/auth/Cargo.toml`:
 
 ```toml
 [package]
@@ -326,7 +326,7 @@ serde = { version = "1", features = ["derive"] }
 thiserror = "2"
 ```
 
-Create `apps/nursery/crates/auth/src/lib.rs`:
+Create `apps/api/crates/auth/src/lib.rs`:
 
 ```rust
 //! Authentication boundary for the application.
@@ -343,7 +343,7 @@ pub use provider::{AuthError, AuthProvider};
 pub use underlay::{user_principal_from_underlay, DevBearerUuidAuthProvider, JwtAuthProvider};
 ```
 
-Create `apps/nursery/crates/auth/src/principal.rs`:
+Create `apps/api/crates/auth/src/principal.rs`:
 
 ```rust
 //! Principal types for authentication.
@@ -381,7 +381,7 @@ impl UserPrincipal {
 }
 ```
 
-Create `apps/nursery/crates/auth/src/provider.rs`:
+Create `apps/api/crates/auth/src/provider.rs`:
 
 ```rust
 //! Authentication provider traits and errors.
@@ -424,9 +424,9 @@ Production JWT is implemented by Underlay’s `underlay-auth-jwt` crate.
 - Library: `jsonwebtoken` (via `underlay-auth-jwt`)
 - Key formats: `AUTH_JWT_PRIVATE_KEY` is base64 PKCS#8 DER; `AUTH_JWT_PUBLIC_KEY` is base64url/base64 raw 32-byte public key
 
-You do not need to implement a `jwt.rs` module for the quickstart. Instead, wrap `underlay_auth_jwt::JwtService` in an `underlay_auth::AuthProvider` (see `apps/nursery/crates/auth/src/underlay.rs` below and `docs/guides/060-authentication.md`).
+You do not need to implement a `jwt.rs` module for the quickstart. Instead, wrap `underlay_auth_jwt::JwtService` in an `underlay_auth::AuthProvider` (see `apps/api/crates/auth/src/underlay.rs` below and `docs/guides/060-authentication.md`).
 
-Create `apps/nursery/crates/auth/src/underlay.rs`:
+Create `apps/api/crates/auth/src/underlay.rs`:
 
 ```rust
 //! Underlay auth integration.
@@ -512,7 +512,7 @@ impl UnderlayAuthProvider for JwtAuthProvider {
 
 ## Step 4: Create Infrastructure Crate
 
-Create `apps/nursery/crates/infra/Cargo.toml`:
+Create `apps/api/crates/infra/Cargo.toml`:
 
 ```toml
 [package]
@@ -529,7 +529,7 @@ tracing-subscriber = { version = "0.3", features = ["fmt", "env-filter", "json"]
 serde = { version = "1", features = ["derive"] }
 ```
 
-Create `apps/nursery/crates/infra/src/config.rs`:
+Create `apps/api/crates/infra/src/config.rs`:
 
 ```rust
 //! Application configuration.
@@ -576,7 +576,7 @@ impl AppConfig {
 }
 ```
 
-Create `apps/nursery/crates/infra/src/tracing.rs`:
+Create `apps/api/crates/infra/src/tracing.rs`:
 
 ```rust
 //! Tracing and observability setup.
@@ -625,7 +625,7 @@ pub fn init_tracing() {
 ## Step 5: Verify Build
 
 ```bash
-cd apps/nursery
+cd apps/api
 cargo check --workspace
 cargo test --workspace
 ```

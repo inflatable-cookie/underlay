@@ -1,6 +1,6 @@
 # 080 - TypeScript Client
 
-> **Reference Implementation**: This guide includes patterns from Acowtancy's Cattle-Grid client, a production TypeScript API client built with Underlay. These serve as working examples of best practices.
+> **Reference Implementation**: This guide includes patterns from a production TypeScript API client built with Underlay. These serve as working examples of best practices.
 
 This document covers creating a typed API client for the Rust backend.
 
@@ -16,7 +16,7 @@ This guide aligns with Underlay’s TypeScript client primitives and error envel
 A minimal but scalable layout:
 
 ```
-libs/stem/
+libs/client/
 ├── package.json
 ├── tsconfig.json
 └── src/
@@ -70,11 +70,11 @@ See "Advanced: Retry and Timeout" section below for configuration details.
 
 ## Step 1: Package Setup
 
-Create `libs/stem/package.json`:
+Create `libs/client/package.json`:
 
 ```json
 {
-  "name": "@myapp/stem",
+  "name": "@myorg/client",
   "version": "0.0.1",
   "private": true,
   "type": "module",
@@ -99,7 +99,7 @@ Create `libs/stem/package.json`:
 
 ## Step 2: HTTP Wrapper
 
-Create `libs/stem/src/http.ts`:
+Create `libs/client/src/http.ts`:
 
 ```ts
 import {
@@ -109,14 +109,14 @@ import {
   UnderlayHttpError,
 } from "@decodelabs/underlay";
 
-export interface StemHttpConfig {
+export interface ClientHttpConfig {
   baseUrl: string; // e.g. http://127.0.0.1:3000
   apiVersion: string; // e.g. 2025-01-01 (sent via header)
   fetchFn?: typeof fetch;
   getToken: () => string | null;
 }
 
-export function createStemHttp(config: StemHttpConfig): HttpClient {
+export function createClientHttp(config: ClientHttpConfig): HttpClient {
   // Keep URL stable; version goes in a header.
   const baseUrl = new URL("/v1/", config.baseUrl).toString();
 
@@ -139,7 +139,7 @@ export function getErrorEnvelope(err: unknown): ErrorEnvelope | null {
 
 ## Step 3: Commands (Domain-Organized)
 
-Example `users` commands in `libs/stem/src/commands/users.ts`:
+Example `users` commands in `libs/client/src/commands/users.ts`:
 
 ```ts
 import type { HttpClient } from "@decodelabs/underlay";
@@ -175,20 +175,20 @@ export function createUsersCommands(http: HttpClient, getToken: () => string | n
 
 ## Step 4: Client Factory
 
-Create `libs/stem/src/client.ts`:
+Create `libs/client/src/client.ts`:
 
 ```ts
 import type { HttpClient } from "@decodelabs/underlay";
 
-import { createStemHttp, type StemHttpConfig } from "./http";
+import { createClientHttp, type ClientHttpConfig } from "./http";
 import { createUsersCommands } from "./commands/users";
 
-export interface StemClient {
+export interface ApiClient {
   users: ReturnType<typeof createUsersCommands>;
 }
 
-export function createClient(config: StemHttpConfig): StemClient {
-  const http: HttpClient = createStemHttp(config);
+export function createClient(config: ClientHttpConfig): ApiClient {
+  const http: HttpClient = createClientHttp(config);
 
   return {
     users: createUsersCommands(http, config.getToken),
@@ -196,7 +196,7 @@ export function createClient(config: StemHttpConfig): StemClient {
 }
 ```
 
-In `libs/stem/src/index.ts`:
+In `libs/client/src/index.ts`:
 
 ```ts
 export * from "./client";
@@ -206,15 +206,15 @@ export * from "./commands/users";
 
 ## Step 5: Frontend Integration
 
-In Bloom/Greenhouse, read the base URL + version from public env and pass the auth token from server `locals`:
+In your web/admin frontends, read the base URL + version from public env and pass the auth token from server `locals`:
 
 ```ts
-// apps/bloom/src/lib/api/client.ts
+// apps/web/src/lib/api/client.ts
 
-import { createClient } from "@myapp/stem";
+import { createClient } from "@myorg/client";
 import { env } from "$env/dynamic/public";
 
-export function createBloomClient(fetchFn: typeof fetch, authToken: string | null) {
+export function createWebClient(fetchFn: typeof fetch, authToken: string | null) {
   const baseUrl = env.PUBLIC_API_URL ?? "http://127.0.0.1:3000";
   const apiVersion = env.PUBLIC_API_VERSION ?? "2025-01-01";
 
@@ -340,7 +340,7 @@ export class LocalStorageTokenStore implements TokenStore {
 Add automatic retries for transient errors (503, 504, network failures):
 
 ```typescript
-// libs/stem/src/http-with-retry.ts
+// libs/client/src/http-with-retry.ts
 
 interface RetryConfig {
   maxRetries: number;
@@ -431,7 +431,7 @@ export class HttpClientWithRetry {
 Add request timeouts using AbortController:
 
 ```typescript
-// libs/stem/src/http-with-timeout.ts
+// libs/client/src/http-with-timeout.ts
 
 export class HttpClientWithTimeout {
   private baseUrl: string;
@@ -491,7 +491,7 @@ export class HttpClientWithTimeout {
 Combine both patterns for production-ready client:
 
 ```typescript
-// libs/stem/src/http-resilient.ts
+// libs/client/src/http-resilient.ts
 
 interface ResilientHttpClientOptions {
   baseUrl: string;
@@ -659,16 +659,16 @@ private calculateRetryDelay(attempt: number): number {
 await this.sleep(this.calculateRetryDelay(attempt));
 ```
 
-### Acowtancy's Cattle-Grid Pattern
+### Production Client Pattern
 
-For a production-ready reference, see Acowtancy's `cattle-grid` client which implements:
+For a production-ready reference, a typical API client implements:
 - Automatic retries for 502/503/504 on GET requests
 - Request timeouts with AbortController
 - Exponential backoff with jitter
 - Type-safe error handling
 - Request/response interceptors
 
-**Reference:** `cattle-grid/src/utils/http-client.ts`
+**Reference:** See your project's `libs/client/src/utils/http-client.ts`
 
 ## Notes
 

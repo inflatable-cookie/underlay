@@ -19,7 +19,7 @@ This guide covers:
 
 - [040-rust-backend](./040-rust-backend.md) - Backend structure
 - [070-api-handlers](./070-api-handlers.md) - API patterns
-- [100-frontend-bloom](./100-frontend-bloom.md) - SvelteKit basics
+- [100-frontend-web](./100-frontend-web.md) - SvelteKit basics
 
 ---
 
@@ -29,14 +29,14 @@ This guide covers:
 
 We recommend using [`validator`](https://crates.io/crates/validator) for Rust validation.
 
-Add to `apps/nursery/Cargo.toml`:
+Add to `apps/api/Cargo.toml`:
 
 ```toml
 [workspace.dependencies]
 validator = { version = "0.16", features = ["derive"] }
 ```
 
-Add to your API crate `apps/nursery/crates/api/Cargo.toml`:
+Add to your API crate `apps/api/crates/api/Cargo.toml`:
 
 ```toml
 [dependencies]
@@ -130,7 +130,7 @@ fn validate_publish_date(date: &chrono::DateTime<chrono::Utc>) -> Result<(), val
 
 Create a helper to convert validation errors to your error envelope:
 
-In `apps/nursery/crates/api/src/validation.rs`:
+In `apps/api/crates/api/src/validation.rs`:
 
 ```rust
 use axum::{
@@ -315,7 +315,7 @@ pub async fn update_article(
 
 Use progressive enhancement with server-side validation as the source of truth.
 
-In `apps/bloom/src/routes/register/+page.server.ts`:
+In `apps/web/src/routes/register/+page.server.ts`:
 
 ```typescript
 import type { Actions } from "./$types";
@@ -402,7 +402,7 @@ export const actions: Actions = {
 
 ### Form Component with Error Display
 
-In `apps/bloom/src/routes/register/+page.svelte`:
+In `apps/web/src/routes/register/+page.svelte`:
 
 ```svelte
 <script lang="ts">
@@ -570,7 +570,7 @@ For immediate feedback without server round-trip:
 
 Update your API client to handle validation errors:
 
-In `cattle-grid/src/utils/http-client.ts`:
+In `libs/client/src/utils/http-client.ts`:
 
 ```typescript
 export interface ApiError extends Error {
@@ -1127,14 +1127,14 @@ Key differences:
 ## Next Steps
 
 - [070-api-handlers](./070-api-handlers.md) - Complete API patterns
-- [100-frontend-bloom](./100-frontend-bloom.md) - Frontend integration
+- [100-frontend-web](./100-frontend-web.md) - Frontend integration
 
 ## See Also
 
 **Related Guides:**
 - **[065-session-management.md](./065-session-management.md)** - Login form validation, error handling
 - **[090-ui-kit.md](./090-ui-kit.md)** - Form components (Field, TextInput, validation props)
-- **[100-frontend-bloom.md](./100-frontend-bloom.md)** - Complete form examples with validation
+- **[100-frontend-web.md](./100-frontend-web.md)** - Complete form examples with validation
 - **[070-api-handlers.md](./070-api-handlers.md)** - Backend validation in API handlers
 
 **Key Patterns:**
@@ -1147,9 +1147,9 @@ Key differences:
 
 ## Reference Implementation
 
-See Acowtancy for complete examples:
-- Backend validation: Check API request types in farmyard crates
-- Frontend validation: `cream/src/routes/register/+page.server.ts`
+See your project for complete examples:
+- Backend validation: Check API request types in your api crates
+- Frontend validation: `web/src/routes/register/+page.server.ts`
 - Error handling: API error responses throughout the codebase
 
 See Underlay source for implementation details:

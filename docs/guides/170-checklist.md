@@ -5,11 +5,11 @@ Use this checklist to verify your project is properly set up.
 ## Project Structure
 
 - [ ] Root `AGENTS.md` created
-- [ ] `apps/` directory with `bloom/`, `greenhouse/`, `nursery/`
-- [ ] `libs/` directory with `petal/`, `stem/`
+- [ ] `apps/` directory with `web/`, `admin/`, `api/`
+- [ ] `libs/` directory with `ui/`, `client/`
 - [ ] `trellis/` or `docs/` directory for documentation
 
-## Backend (Nursery)
+## Backend (API)
 
 - [ ] Rust workspace created with `Cargo.toml`
 - [ ] `core` crate with ID types
@@ -20,7 +20,7 @@ Use this checklist to verify your project is properly set up.
 - [ ] Auth provider works (dev mode for local)
 - [ ] API endpoints return expected responses
 
-## API Client (Stem)
+## API Client
 
 - [ ] `package.json` with correct exports
 - [ ] `tsconfig.json` with strict mode
@@ -30,14 +30,14 @@ Use this checklist to verify your project is properly set up.
 - [ ] Auth token storage helpers
 - [ ] Tests pass (`pnpm test`)
 
-## UI Kit (Petal)
+## UI Kit
 
 - [ ] `package.json` configured
 - [ ] Shared components created
 - [ ] Design tokens defined
 - [ ] Tests pass
 
-## Frontends (Bloom/Greenhouse)
+## Frontends (Web/Admin)
 
 - [ ] SvelteKit project initialized
 - [ ] Routes created for main pages
@@ -82,14 +82,14 @@ Use this checklist to verify your project is properly set up.
 
 ```bash
 # Run all checks (multi-repo)
-cd myapp-nursery && cargo test
-cd myapp-stem && pnpm test
-cd myapp-bloom && pnpm test
+cd myapp-api && cargo test
+cd myapp-client && pnpm test
+cd myapp-web && pnpm test
 
 # Run all checks (monorepo)
-cd apps/nursery && cargo test
-cd libs/stem && pnpm test
-cd apps/bloom && pnpm test
+cd apps/api && cargo test
+cd libs/client && pnpm test
+cd apps/web && pnpm test
 ```
 
 If all checks pass, your project is ready for development!

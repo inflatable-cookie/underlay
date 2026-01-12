@@ -630,7 +630,7 @@ pub async fn create_app_state(pool: sqlx::PgPool) -> Result<Arc<AppState>, anyho
     let oauth_service = Arc::new(GoogleOAuthAppService::new(google_oauth));
 
     // Dev mode check
-    let dev_auth_enabled = std::env::var("NURSERY_DEV_AUTH")
+    let dev_auth_enabled = std::env::var("MYAPP_API_DEV_AUTH")
         .map(|v| v == "true")
         .unwrap_or(false);
 

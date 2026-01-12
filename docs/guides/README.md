@@ -35,8 +35,8 @@ Read these documents in order for a complete understanding:
 8. **[070 - API Handlers](./070-api-handlers.md)** - HTTP handlers, routing
 9. **[080 - TypeScript Client](./080-typescript-client.md)** - HTTP client, commands
 10. **[090 - UI Kit](./090-ui-kit.md)** - Component patterns
-11. **[100 - Frontend (Web)](./100-frontend-bloom.md)** - SvelteKit setup, routing
-12. **[110 - Admin Frontend](./110-admin-greenhouse.md)** - Admin UI structure
+11. **[100 - Frontend (Web)](./100-frontend-web.md)** - SvelteKit setup, routing
+12. **[110 - Admin Frontend](./110-admin.md)** - Admin UI structure
 13. **[120 - Configuration](./120-configuration.md)** - Env files, validation
 14. **[130 - Testing](./130-testing.md)** - Test patterns for all layers
 15. **[140 - Local Development](./140-local-development.md)** - Running locally, debugging
@@ -56,8 +56,8 @@ code/
 ├── 070-api-handlers/       # Handler examples
 ├── 080-typescript-client/  # HTTP client, types
 ├── 090-ui-kit/             # Svelte components
-├── 100-frontend-bloom/     # SvelteKit pages (web)
-├── 110-admin-greenhouse/   # SvelteKit pages (admin)
+├── 100-frontend-web/       # SvelteKit pages (web)
+├── 110-admin/              # SvelteKit pages (admin)
 ├── 120-configuration/      # Environment examples
 ├── 130-testing/            # Test examples
 └── 150-ci-cd/              # CI/CD workflows

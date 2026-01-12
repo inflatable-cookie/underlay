@@ -41,7 +41,7 @@ git submodule update --init --recursive
 When Underlay is published:
 
 ```toml
-# apps/nursery/Cargo.toml
+# apps/api/Cargo.toml
 [workspace.dependencies]
 underlay-core = "0.1"
 underlay-http = "0.1"
@@ -52,10 +52,10 @@ underlay-auth = "0.1"
 
 ### Multi-repo workspace (default)
 
-If `underlay/` and `myapp-nursery/` are sibling repos:
+If `underlay/` and `myapp-api/` are sibling repos:
 
 ```toml
-# myapp-nursery/Cargo.toml
+# myapp-api/Cargo.toml
 
 [workspace]
 members = [
@@ -77,10 +77,10 @@ underlay-metrics = { path = "../underlay/rust/crates/underlay-metrics" }
 
 ### Monorepo
 
-If Underlay lives at `libs/underlay/` and Nursery at `apps/nursery/`:
+If Underlay lives at `libs/underlay/` and the API at `apps/api/`:
 
 ```toml
-# apps/nursery/Cargo.toml
+# apps/api/Cargo.toml
 
 [workspace]
 members = [
@@ -106,7 +106,7 @@ Underlay’s TS package is `@decodelabs/underlay`.
 
 ### Multi-repo workspace (default)
 
-In `myapp-stem/package.json` (and/or frontends), depend on the sibling repo:
+In `myapp-client/package.json` (and/or frontends), depend on the sibling repo:
 
 ```json
 {

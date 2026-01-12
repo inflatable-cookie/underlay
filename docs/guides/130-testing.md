@@ -24,7 +24,7 @@ This document covers testing strategies for all layers of your Underlay applicat
 Place unit tests in the same file as the code being tested:
 
 ```rust
-// apps/nursery/crates/core/src/user.rs
+// apps/api/crates/core/src/user.rs
 
 #[derive(Debug, Clone)]
 pub struct User {
@@ -62,7 +62,7 @@ mod tests {
 Create a `tests/` directory in your crate for integration tests:
 
 ```
-apps/nursery/crates/db/
+apps/api/crates/db/
 ├── src/
 │   ├── lib.rs
 │   └── learning.rs
@@ -75,21 +75,21 @@ apps/nursery/crates/db/
 **Test database setup pattern:**
 
 ```rust
-// apps/nursery/crates/db/tests/learning_soft_delete.rs
+// apps/api/crates/db/tests/learning_soft_delete.rs
 
-use farmyard_db::{create_pool, run_migrations, DbPool};
+use myapp_db::{create_pool, run_migrations, DbPool};
 use sqlx::Row;
 use uuid::Uuid;
 
 /// Get test database URL from environment
 fn test_database_url() -> Option<String> {
-    std::env::var("FARMYARD_DATABASE_URL").ok()
+    std::env::var("MYAPP_DATABASE_URL").ok()
 }
 
 /// Set up test database with migrations
 async fn setup_db() -> DbPool {
     let Some(db_url) = test_database_url() else {
-        unreachable!("setup_db called without FARMYARD_DATABASE_URL")
+        unreachable!("setup_db called without MYAPP_DATABASE_URL")
     };
 
     let pool = create_pool(&db_url)
@@ -167,7 +167,7 @@ async fn soft_delete_module_cascades() {
 
 ```bash
 # .env.test
-FARMYARD_DATABASE_URL=postgres://user:pass@localhost/myapp_test
+MYAPP_DATABASE_URL=postgres://user:pass@localhost/myapp_test
 ```
 
 **Run tests with test database:**
@@ -189,7 +189,7 @@ cargo test -- --test-threads=1
 Create reusable test helpers:
 
 ```rust
-// apps/nursery/crates/db/tests/helpers.rs
+// apps/api/crates/db/tests/helpers.rs
 
 use sqlx::Row;
 use uuid::Uuid;
@@ -655,7 +655,7 @@ jobs:
           cd apps/api
           cargo test
         env:
-          FARMYARD_DATABASE_URL: postgres://test:test@localhost/myapp_test
+          MYAPP_DATABASE_URL: postgres://test:test@localhost/myapp_test
 
   typescript-tests:
     runs-on: ubuntu-latest
@@ -789,7 +789,7 @@ k6 run tests/load/modules.js
 **Related Guides:**
 - **[050-database.md](./050-database.md)** - Database setup for testing
 - **[070-api-handlers.md](./070-api-handlers.md)** - Testing API endpoints
-- **[100-frontend-bloom.md](./100-frontend-bloom.md)** - Frontend testing patterns
+- **[100-frontend-web.md](./100-frontend-web.md)** - Frontend testing patterns
 - **[150-ci-cd.md](./150-ci-cd.md)** - CI/CD integration
 
 **Key Topics:**

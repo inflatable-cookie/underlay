@@ -4,7 +4,7 @@ This document covers configuration management for all layers of the application.
 
 ## Environment Variables
 
-### Nursery (.env)
+### API (.env)
 
 ```bash
 # Server
@@ -16,7 +16,7 @@ ENVIRONMENT=development
 DATABASE_URL=postgres://user:pass@localhost:5432/myapp
 
 # Auth
-NURSERY_DEV_AUTH=false
+MYAPP_API_DEV_AUTH=false
 
 # Ed25519 / EdDSA (used by `underlay-auth-jwt`)
 # - AUTH_JWT_PRIVATE_KEY: base64 PKCS#8 DER private key
@@ -36,7 +36,7 @@ RUST_LOG=info
 RUST_LOG_FORMAT=json
 ```
 
-### Bloom (.env)
+### Web (.env)
 
 ```bash
 PUBLIC_API_URL=http://localhost:3000
@@ -45,7 +45,7 @@ PUBLIC_API_VERSION=2025-01-01
 PUBLIC_APP_NAME=MyApp
 ```
 
-### Greenhouse (.env)
+### Admin (.env)
 
 ```bash
 PUBLIC_API_URL=http://localhost:3000

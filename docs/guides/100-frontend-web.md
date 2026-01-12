@@ -1,11 +1,11 @@
-# 100 - Frontend (Bloom Pattern)
+# 100 - Frontend (Web Pattern)
 
-This document covers creating the artist-facing SvelteKit frontend following the Bloom pattern.
+This document covers creating the user-facing SvelteKit frontend following the web frontend pattern.
 
 ## Frontend Structure
 
 ```
-apps/bloom/src/
+apps/web/src/
 ├── app.html                  # HTML shell
 ├── app.d.ts                  # TypeScript declarations with Locals
 ├── hooks.server.ts           # Server hooks for auth
@@ -29,7 +29,7 @@ apps/bloom/src/
 
 ## Creating Frontend
 
-See code examples in `/code/100-frontend-bloom/`
+See code examples in `/code/100-frontend-web/`
 
 ## App.d.ts (Locals Pattern)
 
@@ -53,13 +53,13 @@ export {};
 
 ## Server Hooks
 
-Create `apps/bloom/src/hooks.server.ts`:
+Create `apps/web/src/hooks.server.ts`:
 
 ```typescript
 import type { Handle } from "@sveltejs/kit";
 
 export const handle: Handle = async ({ event, resolve }) => {
-  const token = event.cookies.get("bloom_token") ?? null;
+  const token = event.cookies.get("myapp_access_token") ?? null;
 
   event.locals.authToken = token;
   event.locals.isAuthenticated = token != null;
@@ -70,20 +70,20 @@ export const handle: Handle = async ({ event, resolve }) => {
 
 ## Client Factory
 
-Create `apps/bloom/src/lib/api/client.ts`:
+Create `apps/web/src/lib/api/client.ts`:
 
 ```typescript
-import { createClient as createStemClient } from "@myapp/stem";
+import { createClient as createApiClient } from "@myorg/client";
 import { env } from "$env/dynamic/public";
 
 const baseUrl = env.PUBLIC_API_URL ?? "http://127.0.0.1:3000";
 const apiVersion = env.PUBLIC_API_VERSION ?? "2025-01-01";
 
-export function createBloomClient(
+export function createWebClient(
   fetchFn: typeof fetch,
   authToken: string | null | undefined
 ) {
-  return createStemClient({
+  return createApiClient({
     baseUrl,
     apiVersion,
     fetchFn,
@@ -94,7 +94,7 @@ export function createBloomClient(
 
 ## Layout Server (Auth State)
 
-Create `apps/bloom/src/routes/+layout.server.ts`:
+Create `apps/web/src/routes/+layout.server.ts`:
 
 ```typescript
 import type { LayoutServerLoad } from "./$types";
@@ -1837,6 +1837,6 @@ All functions return stores with:
 
 ## Next Steps
 
-- [110-admin-greenhouse.md](./110-admin-greenhouse.md)
+- [110-admin.md](./110-admin.md)
 - [120-configuration.md](./120-configuration.md)
 

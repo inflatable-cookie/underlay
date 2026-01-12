@@ -177,34 +177,34 @@ In a multi-repo workspace, these are separate repos checked out side-by-side; tr
 
 ## Project Structure & Module Organization
 
-- App frontends: `apps/bloom/` and `apps/greenhouse/` (routes, Svelte components, assets).
+- App frontends: `apps/web/` and `apps/admin/` (routes, Svelte components, assets).
   Co-locate UI, styles, and tests by feature.
-- Backend: `apps/nursery/` (Rust crates, domain modules, HTTP handlers, integrations).
-- Shared libraries: `libs/petal/` (UI components, design tokens) and `libs/stem/` (HTTP client, commands, typed models).
+- Backend: `apps/api/` (Rust crates, domain modules, HTTP handlers, integrations).
+- Shared libraries: `libs/ui/` (UI components, design tokens) and `libs/client/` (HTTP client, commands, typed models).
 - Documentation: `trellis/docs` (architecture, domain, processes, decisions).
 
 ## Build, Test, and Development Commands
 
-- Bloom dev server:
-  - Monorepo: `cd apps/bloom && pnpm install && pnpm dev`
-  - Multi-repo: `cd myapp-bloom && pnpm install && pnpm dev`
-- Greenhouse dev server:
-  - Monorepo: `cd apps/greenhouse && pnpm install && pnpm dev`
-  - Multi-repo: `cd myapp-greenhouse && pnpm install && pnpm dev`
-- Nursery backend:
-  - Monorepo: `cd apps/nursery && cargo test` and `cargo run -p myapp-api`
+- Web dev server:
+  - Monorepo: `cd apps/web && pnpm install && pnpm dev`
+  - Multi-repo: `cd myapp-web && pnpm install && pnpm dev`
+- Admin dev server:
+  - Monorepo: `cd apps/admin && pnpm install && pnpm dev`
+  - Multi-repo: `cd myapp-admin && pnpm install && pnpm dev`
+- API backend:
+  - Monorepo: `cd apps/api && cargo test` and `cargo run -p myapp-api`
   - Multi-repo: `cd myapp-api && cargo test` and `cargo run -p myapp-api`
 - Libraries:
-  - Monorepo: `cd libs/stem && pnpm test`, `cd libs/petal && pnpm test`
-  - Multi-repo: `cd myapp-stem && pnpm test`, `cd myapp-petal && pnpm test`
+  - Monorepo: `cd libs/client && pnpm test`, `cd libs/ui && pnpm test`
+  - Multi-repo: `cd myapp-client && pnpm test`, `cd myapp-ui && pnpm test`
 
-When changing Rust code in Nursery, prefer running:
+When changing Rust code in the API, prefer running:
 
 - `cargo fmt --all`
 - `cargo clippy --all-targets --all-features -- -D warnings`
 - `cargo test` for the narrowest relevant set of crates (or the whole workspace when appropriate).
 
-When changing TypeScript/Svelte code in Bloom, Greenhouse, Petal, or Stem, prefer running:
+When changing TypeScript/Svelte code in frontends or libraries, prefer running:
 
 - `pnpm lint`
 - `pnpm check`
@@ -214,9 +214,9 @@ Run the narrowest relevant commands before opening a PR.
 
 ## Coding Style & Naming Conventions
 
-- TypeScript/JavaScript (bloom/greenhouse/petal/stem): 2-space indentation;
+- TypeScript/JavaScript (frontends and libraries): 2-space indentation;
   components `PascalCase.svelte`; helpers `kebab-case.ts` with `camelCase` identifiers.
-- Rust (nursery): use `rustfmt` defaults; modules and files `snake_case`,
+- Rust (API backend): use `rustfmt` defaults; modules and files `snake_case`,
   types and enums `PascalCase`.
 - Docs: Markdown with `kebab-case` filenames; keep sections short and skimmable.
 
@@ -229,8 +229,8 @@ Run the narrowest relevant commands before opening a PR.
 
 ## Commit, PR, and Security Guidelines
 
-- Write clear, imperative commit messages (e.g., `Add stem playlist commands`,
-  `Refine nursery auth flow`).
+- Write clear, imperative commit messages (e.g., `Add client playlist commands`,
+  `Refine API auth flow`).
 - For non-trivial changes, add documentation in `trellis/docs/`.
 - Keep secrets and credentials out of the repo; use `.env` files.
 
@@ -319,7 +319,7 @@ jobs:
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
       - name: Run Rust tests
         run: |
-          cd apps/nursery
+          cd apps/api
           cargo test
           cargo clippy --all-targets --all-features -- -D warnings
 
@@ -353,11 +353,11 @@ A full-stack application following this architecture.
 
 This project uses a monorepo structure with:
 
-- **apps/nursery/** - Rust API backend (Axum + Domain-Driven Design)
-- **apps/bloom/** - Artist-facing SvelteKit frontend
-- **apps/greenhouse/** - Admin SvelteKit frontend
-- **libs/petal/** - Shared Svelte UI kit
-- **libs/stem/** - Shared TypeScript API client
+- **apps/api/** - Rust API backend (Axum + Domain-Driven Design)
+- **apps/web/** - User-facing SvelteKit frontend
+- **apps/admin/** - Admin SvelteKit frontend
+- **libs/ui/** - Shared Svelte UI kit
+- **libs/client/** - Shared TypeScript API client
 
 ## Getting Started
 

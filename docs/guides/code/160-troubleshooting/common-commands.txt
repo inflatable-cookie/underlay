@@ -4,7 +4,7 @@ Common checks:
   echo $DATABASE_URL
 
 - Verify migrations directory
-  ls apps/nursery/crates/db/migrations
+  ls apps/api/crates/db/migrations
 
 - Check backend health
   curl -i http://127.0.0.1:3000/health
@@ -16,7 +16,7 @@ Common checks:
   curl -i http://127.0.0.1:3000/v1/users/not-a-uuid
 
 - Run Rust checks
-  cd apps/nursery
+  cd apps/api
   cargo fmt --all
   cargo clippy --all-targets --all-features -- -D warnings
   cargo test

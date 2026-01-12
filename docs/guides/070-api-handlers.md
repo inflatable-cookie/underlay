@@ -1,6 +1,6 @@
 # 070 - API Handlers
 
-> **Reference Implementation**: This guide includes patterns from Acowtancy, a production application built with Underlay. These serve as working examples of best practices.
+> **Reference Implementation**: This guide includes patterns from a production application built with Underlay. These serve as working examples of best practices.
 
 This document covers implementing HTTP handlers and routing using Axum.
 
@@ -15,7 +15,7 @@ The patterns here are intentionally simple and align with Underlay's primitives:
 For small-to-medium services, keep things inline in `main.rs`:
 
 ```
-apps/nursery/crates/api/src/
+apps/api/crates/api/src/
 ├── main.rs        # Router + handlers + DTOs
 └── state.rs       # AppState (optional)
 ```
@@ -23,7 +23,7 @@ apps/nursery/crates/api/src/
 As the API grows, split by domain:
 
 ```
-apps/nursery/crates/api/src/
+apps/api/crates/api/src/
 ├── main.rs
 ├── state.rs
 ├── error.rs
@@ -219,7 +219,7 @@ pub fn create_router(state: AppState) -> Router {
 
 > **Quick Start**: Underlay provides production-ready error logging via the `underlay-http` crate's `error-logging` feature. For full documentation, see [rust/crates/underlay-http/ERROR_LOGGING.md](../../rust/crates/underlay-http/ERROR_LOGGING.md).
 
-Log errors to a database for monitoring and debugging. This pattern is used in Acowtancy's Farmyard.
+Log errors to a database for monitoring and debugging. This pattern is used in production applications.
 
 **Benefits:**
 - Centralized error tracking
@@ -393,7 +393,7 @@ tower-governor = "0.1"
 
 ## API Version Header (Optional)
 
-If you use date-based versioning (Acowtancy-style), send a header like:
+If you use date-based versioning (myapp-style), send a header like:
 
 - `X-Api-Version: 2025-01-01`
 

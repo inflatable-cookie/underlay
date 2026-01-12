@@ -25,7 +25,7 @@ This guide covers:
 
 ### Step 1: Define User Roles
 
-Create `apps/nursery/crates/auth/src/principal.rs`:
+Create `apps/api/crates/auth/src/principal.rs`:
 
 ```rust
 use underlay_core::Uuid;
@@ -108,7 +108,7 @@ impl UserPrincipal {
 
 Update your auth provider to include roles in the JWT claims.
 
-In `apps/nursery/crates/auth/src/jwt.rs`:
+In `apps/api/crates/auth/src/jwt.rs`:
 
 ```rust
 use underlay_auth_jwt::JwtService;
@@ -138,7 +138,7 @@ impl SessionManager {
 
 ### Step 3: Convert Underlay Principal to Domain Principal
 
-Create `apps/nursery/crates/auth/src/underlay.rs`:
+Create `apps/api/crates/auth/src/underlay.rs`:
 
 ```rust
 use crate::{UserId, UserPrincipal, UserRole};
@@ -171,7 +171,7 @@ pub fn user_principal_from_underlay(principal: Principal) -\u003e UserPrincipal 
 
 Create an extractor that wraps Underlay's `Authenticated` and converts to your domain type.
 
-In `apps/nursery/crates/api/src/extractors.rs`:
+In `apps/api/crates/api/src/extractors.rs`:
 
 ```rust
 use axum::{
@@ -355,7 +355,7 @@ pub async fn update_content(
 
 Use SvelteKit load functions to enforce authorization.
 
-In `apps/bloom/src/routes/admin/+layout.server.ts`:
+In `apps/web/src/routes/admin/+layout.server.ts`:
 
 ```typescript
 import type { LayoutServerLoad } from \"./$types\";
@@ -383,7 +383,7 @@ export const load: LayoutServerLoad = async ({ locals, parent }) =\u003e {
 
 ### Update Hooks to Include User Data
 
-Modify `apps/bloom/src/hooks.server.ts` to decode user from token:
+Modify `apps/web/src/hooks.server.ts` to decode user from token:
 
 ```typescript
 import type { Handle } from \"@sveltejs/kit\";
@@ -430,7 +430,7 @@ export const handle: Handle = async ({ event, resolve }) =\u003e {
 };
 ```
 
-Update `apps/bloom/src/app.d.ts`:
+Update `apps/web/src/app.d.ts`:
 
 ```typescript
 declare global {
@@ -694,12 +694,12 @@ fn test_superadmin_has_all_roles() {
 
 - **[070-api-handlers.md](./070-api-handlers.md)** - Implement protected API endpoints
 - **[075-validation.md](./075-validation.md)** - Add validation to your handlers
-- **[100-frontend-bloom.md](./100-frontend-bloom.md)** - Build frontend with role-based UI
+- **[100-frontend-web.md](./100-frontend-web.md)** - Build frontend with role-based UI
 
 ## Reference Implementation
 
-See Acowtancy for complete working examples:
-- Backend roles: `farmyard/crates/auth/src/principal.rs`
-- Role conversion: `farmyard/crates/auth/src/underlay.rs`
-- Protected handlers: `farmyard/crates/api/src/main.rs`
-- Frontend guards: `dairy/src/routes/admin/+layout.server.ts`
+See your project for complete working examples:
+- Backend roles: `apps/api/crates/auth/src/principal.rs`
+- Role conversion: `apps/api/crates/auth/src/underlay.rs`
+- Protected handlers: `apps/api/crates/api/src/main.rs`
+- Frontend guards: `admin/src/routes/admin/+layout.server.ts`

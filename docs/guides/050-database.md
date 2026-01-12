@@ -1,6 +1,6 @@
 # 050 - Database & Migrations
 
-> **Reference Implementation**: This guide includes patterns from Acowtancy, a production application built with Underlay. These serve as working examples of best practices.
+> **Reference Implementation**: This guide includes patterns from a production application built with Underlay. These serve as working examples of best practices.
 
 This document covers setting up the database layer using SQLx, including connection pool management and migration handling.
 
@@ -9,7 +9,7 @@ This document covers setting up the database layer using SQLx, including connect
 Keep migrations in a standard `migrations/` folder at the crate root (this matches `sqlx migrate` conventions):
 
 ```
-apps/nursery/crates/db/
+apps/api/crates/db/
 ├── Cargo.toml
 ├── migrations/
 │   └── 20250101000000_init.sql
@@ -19,7 +19,7 @@ apps/nursery/crates/db/
 
 ## Step 1: Create Database Crate
 
-Create `apps/nursery/crates/db/Cargo.toml`:
+Create `apps/api/crates/db/Cargo.toml`:
 
 ```toml
 [package]
@@ -32,7 +32,7 @@ sqlx = { workspace = true }
 tokio = { workspace = true }
 ```
 
-Create `apps/nursery/crates/db/src/lib.rs`:
+Create `apps/api/crates/db/src/lib.rs`:
 
 ```rust
 //! Database utilities and connection management.
@@ -69,7 +69,7 @@ pub async fn run_migrations_from_path(
 
 ## Step 2: Create Initial Migration
 
-From `apps/nursery/crates/db`:
+From `apps/api/crates/db`:
 
 ```bash
 mkdir -p migrations
@@ -152,7 +152,7 @@ CREATE TRIGGER update_users_updated_at
 
 ## Step 3: Using DB in the API
 
-In `apps/nursery/crates/api/src/main.rs`:
+In `apps/api/crates/api/src/main.rs`:
 
 ```rust
 use myapp_db::{create_pool, run_migrations};
@@ -172,7 +172,7 @@ async fn main() -> Result<(), anyhow::Error> {
 
 ## Step 4: Environment
 
-In `apps/nursery/.env`:
+In `apps/api/.env`:
 
 ```bash
 DATABASE_URL=postgres://myapp_user:password@localhost:5432/myapp_db
@@ -180,7 +180,7 @@ DATABASE_URL=postgres://myapp_user:password@localhost:5432/myapp_db
 
 ## Migration Commands
 
-From `apps/nursery/crates/db`:
+From `apps/api/crates/db`:
 
 ```bash
 # Create DB
@@ -205,7 +205,7 @@ For local development, you may want test data separate from production migration
 Create a separate directory for development-only seeds:
 
 ```
-apps/nursery/crates/db/
+apps/api/crates/db/
 ├── migrations/           # Production migrations
 │   ├── 001_create_users.sql
 │   └── 002_create_articles.sql
@@ -229,7 +229,7 @@ ON CONFLICT (id) DO NOTHING;
 
 ### Run Dev Seeds
 
-Create a helper function in `apps/nursery/crates/db/src/lib.rs`:
+Create a helper function in `apps/api/crates/db/src/lib.rs`:
 
 ```rust
 use sqlx::PgPool;
@@ -288,7 +288,7 @@ async fn main() -> Result<(), anyhow::Error> {
 
 Create a reset script for development:
 
-`apps/nursery/crates/db/src/bin/reset_dev_db.rs`:
+`apps/api/crates/db/src/bin/reset_dev_db.rs`:
 
 ```rust
 use anyhow::Result;
@@ -342,13 +342,13 @@ cargo run --bin reset_dev_db
 - **Speed** - Quick database reset during development
 - **Consistency** - All developers start with same test data
 
-### Acowtancy Pattern
+### Example Pattern
 
-Acowtancy uses this exact pattern:
-- `farmyard/crates/db/migrations/` - Production migrations
-- `farmyard/crates/db/migrations_dev/` - Development seeds
-- `farmyard/crates/db/src/lib.rs` - `run_dev_seeds()` function
-- `farmyard/crates/db/src/bin/reset_dev_db.rs` - Reset script
+Your project might use this exact pattern:
+- `apps/api/crates/db/migrations/` - Production migrations
+- `apps/api/crates/db/migrations_dev/` - Development seeds
+- `apps/api/crates/db/src/lib.rs` - `run_dev_seeds()` function
+- `apps/api/crates/db/src/bin/reset_dev_db.rs` - Reset script
 
 ## Testing with a Test Database (Optional)
 

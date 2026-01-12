@@ -17,7 +17,7 @@ Session management ties together several concerns:
 
 Before following this guide, complete:
 - [060-authentication](./060-authentication.md) - JWT authentication setup
-- [100-frontend-bloom](./100-frontend-bloom.md) - SvelteKit frontend basics
+- [100-frontend-web](./100-frontend-web.md) - SvelteKit frontend basics
 
 ## Session Flow Architecture
 
@@ -57,7 +57,7 @@ Before following this guide, complete:
 
 Extend your auth service to issue sessions with access + refresh tokens.
 
-Create `apps/nursery/crates/auth/src/session.rs`:
+Create `apps/api/crates/auth/src/session.rs`:
 
 ```rust
 use underlay_auth::{AuthError, AuthResult};
@@ -233,7 +233,7 @@ pub async fn logout(
 ### Add Routes
 
 ```rust
-// In your API router (apps/nursery/crates/api/src/main.rs)
+// In your API router (apps/api/crates/api/src/main.rs)
 
 let app = Router::new()
     .route(\"/v1/auth/login\", post(login))
@@ -258,7 +258,7 @@ const REFRESH_COOKIE = \"myapp_refresh_token\";
 
 ### Login Page
 
-Create `apps/bloom/src/routes/login/+page.server.ts`:
+Create `apps/web/src/routes/login/+page.server.ts`:
 
 ```typescript
 import type { Actions, PageServerLoad } from \"./$types\";
@@ -339,7 +339,7 @@ export const actions: Actions = {
 
 ### Login Form Component
 
-Create `apps/bloom/src/routes/login/+page.svelte`:
+Create `apps/web/src/routes/login/+page.svelte`:
 
 ```svelte
 \u003cscript lang=\"ts\"\u003e
@@ -405,7 +405,7 @@ Create `apps/bloom/src/routes/login/+page.svelte`:
 
 ### Logout Page
 
-Create `apps/bloom/src/routes/logout/+page.server.ts`:
+Create `apps/web/src/routes/logout/+page.server.ts`:
 
 ```typescript
 import type { Actions, PageServerLoad } from \"./$types\";
@@ -455,7 +455,7 @@ export const actions: Actions = {
 
 The server hooks intercept every request and handle session refresh automatically.
 
-Create/update `apps/bloom/src/hooks.server.ts`:
+Create/update `apps/web/src/hooks.server.ts`:
 
 ```typescript
 import type { Handle } from \"@sveltejs/kit\";
@@ -553,7 +553,7 @@ export const handle: Handle = async ({ event, resolve }) =\u003e {
 
 ### TypeScript Definitions
 
-Update `apps/bloom/src/app.d.ts`:
+Update `apps/web/src/app.d.ts`:
 
 ```typescript
 declare global {
@@ -783,7 +783,7 @@ curl http://localhost:3000/v1/modules \
 
 - [067-authorization](./067-authorization.md) - Role-based access control
 - [070-api-handlers](./070-api-handlers.md) - Protected API endpoints
-- [100-frontend-bloom](./100-frontend-bloom.md) - Frontend integration
+- [100-frontend-web](./100-frontend-web.md) - Frontend integration
 
 ## See Also
 
@@ -792,7 +792,7 @@ curl http://localhost:3000/v1/modules \
 - **[067-authorization.md](./067-authorization.md)** - RBAC, role extraction, custom extractors
 - **[070-api-handlers.md](./070-api-handlers.md)** - Protected endpoints, error handling
 - **[075-validation.md](./075-validation.md)** - Form validation, error display
-- **[100-frontend-bloom.md](./100-frontend-bloom.md)** - Complete frontend integration example
+- **[100-frontend-web.md](./100-frontend-web.md)** - Complete frontend integration example
 
 **Key Topics:**
 - Cookie security: `httpOnly`, `sameSite`, `secure` options
@@ -920,8 +920,8 @@ export const handle = createAuthHandle({
 
 ## Reference Implementation
 
-See Acowtancy for a complete working example:
-- Backend: `farmyard/crates/auth/src/local.rs` (session issuance)
-- Frontend login: `cream/src/routes/login/+page.server.ts`
-- Frontend logout: `cream/src/routes/logout/+page.server.ts`
-- Server hooks: `cream/src/hooks.server.ts`
+See your project for a complete working example:
+- Backend: `apps/api/crates/auth/src/local.rs` (session issuance)
+- Frontend login: `web/src/routes/login/+page.server.ts`
+- Frontend logout: `web/src/routes/logout/+page.server.ts`
+- Server hooks: `web/src/hooks.server.ts`
