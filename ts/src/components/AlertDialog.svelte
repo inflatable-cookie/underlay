@@ -1,42 +1,61 @@
 <script lang="ts">
+  import type { Snippet } from "svelte";
   import { tick } from "svelte";
   import { AlertDialog as BitsAlertDialog } from "bits-ui";
 
-  export let open = false;
+  interface Props {
+    open?: boolean;
+    title: string;
+    description?: string | null;
+    showTrigger?: boolean;
+    triggerLabel?: string;
+    triggerAriaLabel?: string | null;
+    triggerType?: "button" | "submit" | "reset";
+    confirmLabel?: string;
+    cancelLabel?: string;
+    onConfirm?: () => void | Promise<void>;
+    onCancel?: () => void;
+    contentClassName?: string;
+    overlayClassName?: string;
+    trapFocus?: boolean;
+    preventScroll?: boolean;
+    returnFocusOnClose?: boolean;
+    trigger?: Snippet;
+    children?: Snippet;
+  }
 
-  export let title: string;
-  export let description: string | null = null;
+  let {
+    open = $bindable(false),
+    title,
+    description = null,
+    showTrigger = true,
+    triggerLabel = "Open",
+    triggerAriaLabel = null,
+    triggerType = "button",
+    confirmLabel = "Confirm",
+    cancelLabel = "Cancel",
+    onConfirm,
+    onCancel,
+    contentClassName = "",
+    overlayClassName = "",
+    trapFocus,
+    preventScroll,
+    returnFocusOnClose = true,
+    trigger,
+    children
+  }: Props = $props();
 
-  export let showTrigger = true;
-  export let triggerLabel = "Open";
-  export let triggerAriaLabel: string | null = null;
-  export let triggerType: "button" | "submit" | "reset" = "button";
+  let triggerRef: HTMLElement | null = $state(null);
+  let lastOpen = $state(open);
 
-  export let confirmLabel = "Confirm";
-  export let cancelLabel = "Cancel";
-
-  export let onConfirm: (() => void | Promise<void>) | undefined = undefined;
-  export let onCancel: (() => void) | undefined = undefined;
-
-  export let contentClassName = "";
-  export let overlayClassName = "";
-
-  export let trapFocus: boolean | undefined = undefined;
-  export let preventScroll: boolean | undefined = undefined;
-
-  export let returnFocusOnClose = true;
-
-  let triggerRef: HTMLElement | null = null;
-  let lastOpen = open;
-
-  $: {
+  $effect(() => {
     if (lastOpen && !open && returnFocusOnClose && typeof window !== "undefined") {
       void tick().then(() => triggerRef?.focus());
     }
     lastOpen = open;
-  }
+  });
 
-  let confirming = false;
+  let confirming = $state(false);
 
   async function handleConfirm() {
     if (confirming) return;
@@ -67,7 +86,11 @@
       type={triggerType}
       aria-label={triggerAriaLabel ?? undefined}
     >
-      <slot name="trigger">{triggerLabel}</slot>
+      {#if trigger}
+        {@render trigger()}
+      {:else}
+        {triggerLabel}
+      {/if}
     </BitsAlertDialog.Trigger>
   {/if}
 
@@ -93,7 +116,7 @@
       </div>
 
       <div class="underlay-alert-dialog-body">
-        <slot />
+        {@render children?.()}
       </div>
 
       <div class="underlay-alert-dialog-footer">

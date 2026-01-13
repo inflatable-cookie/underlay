@@ -1,28 +1,38 @@
 <script lang="ts">
-  import { createEventDispatcher } from "svelte";
+  import type { HTMLTextareaAttributes } from "svelte/elements";
 
-  export let value: string = "";
+  interface Props extends Omit<HTMLTextareaAttributes, "value" | "oninput" | "onchange"> {
+    value?: string;
+    oninput?: (value: string) => void;
+    onchange?: (value: string) => void;
+  }
 
-  const dispatch = createEventDispatcher<{ input: string; change: string }>();
+  let {
+    value = $bindable(""),
+    oninput,
+    onchange,
+    class: className,
+    ...restProps
+  }: Props = $props();
 
   function handleInput(event: Event) {
     const target = event.currentTarget as HTMLTextAreaElement | null;
     const next = target ? target.value : value;
     value = next;
-    dispatch("input", next);
+    oninput?.(next);
   }
 
   function handleChange() {
-    dispatch("change", value);
+    onchange?.(value);
   }
 </script>
 
 <textarea
-  {...$$restProps}
-  class={`underlay-textarea ${$$restProps.class ?? ""}`}
+  {...restProps}
+  class={`underlay-textarea ${className ?? ""}`}
   bind:value
-  on:input={handleInput}
-  on:change={handleChange}
+  oninput={handleInput}
+  onchange={handleChange}
 ></textarea>
 
 <style>

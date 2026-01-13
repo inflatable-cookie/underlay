@@ -1,34 +1,50 @@
 <script lang="ts">
-  import { createEventDispatcher } from "svelte";
+  import type { Snippet } from "svelte";
 
   import type { PassKeyStartPayload } from "./types";
 
   import Button from "../Button.svelte";
 
-  const dispatch = createEventDispatcher<{ start: PassKeyStartPayload }>();
+  interface Props {
+    label?: string;
+    variant?: "primary" | "secondary" | "subtle";
+    disabled?: boolean;
+    loading?: boolean;
+    class?: string;
+    children?: Snippet;
+    onStart?: (payload: PassKeyStartPayload) => void;
+  }
 
-  export let label: string = "Use a passkey";
-  export let variant: "primary" | "secondary" | "subtle" = "subtle";
-  export let disabled: boolean = false;
-  export let loading: boolean = false;
-  export let className: string = "";
+  let {
+    label = "Use a passkey",
+    variant = "subtle",
+    disabled = false,
+    loading = false,
+    class: className = "",
+    children,
+    onStart,
+  }: Props = $props();
 
-  function handleClick(event: CustomEvent<MouseEvent>) {
+  function handleClick(event: MouseEvent) {
     if (disabled || loading) return;
-    event.detail.preventDefault();
-    dispatch("start", { source: "button" });
+    event.preventDefault();
+    onStart?.({ source: "button" });
   }
 </script>
 
 <Button
   type="button"
   {variant}
-  className={`underlay-passkey-button ${className}`}
+  class={`underlay-passkey-button ${className}`}
   disabled={disabled || loading}
   aria-busy={loading}
-  on:click={handleClick}
+  onclick={handleClick}
 >
-  <slot>{label}</slot>
+  {#if children}
+    {@render children()}
+  {:else}
+    {label}
+  {/if}
 </Button>
 
 <style>

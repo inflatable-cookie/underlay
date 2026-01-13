@@ -1,49 +1,74 @@
 <script lang="ts">
   import { tick } from "svelte";
+  import type { Snippet } from "svelte";
   import { Popover as BitsPopover } from "bits-ui";
 
-  export let open = false;
+  interface Props {
+    open?: boolean;
+    showTrigger?: boolean;
+    triggerLabel?: string;
+    triggerAriaLabel?: string;
+    triggerType?: "button" | "submit" | "reset";
+    contentClassName?: string;
+    side?: "top" | "right" | "bottom" | "left";
+    sideOffset?: number;
+    align?: "start" | "center" | "end";
+    alignOffset?: number;
+    avoidCollisions?: boolean;
+    collisionPadding?: number;
+    trapFocus?: boolean | undefined;
+    preventScroll?: boolean | undefined;
+    returnFocusOnClose?: boolean;
+    trigger?: Snippet;
+    children?: Snippet;
+    class?: string;
+  }
 
-  export let showTrigger = true;
-  export let triggerLabel = "Open";
-  export let triggerAriaLabel = "Open popover";
-  export let triggerType: "button" | "submit" | "reset" = "button";
+  let {
+    open = $bindable(false),
+    showTrigger = true,
+    triggerLabel = "Open",
+    triggerAriaLabel = "Open popover",
+    triggerType = "button",
+    contentClassName = "",
+    side = "bottom",
+    sideOffset = 6,
+    align = "center",
+    alignOffset = 0,
+    avoidCollisions = true,
+    collisionPadding = 8,
+    trapFocus = undefined,
+    preventScroll = undefined,
+    returnFocusOnClose = true,
+    trigger,
+    children,
+    class: className,
+  }: Props = $props();
 
-  export let contentClassName = "";
+  let triggerRef: HTMLElement | null = $state(null);
+  let lastOpen = $state(open);
 
-  export let side: "top" | "right" | "bottom" | "left" = "bottom";
-  export let sideOffset = 6;
-  export let align: "start" | "center" | "end" = "center";
-  export let alignOffset = 0;
-  export let avoidCollisions = true;
-  export let collisionPadding = 8;
-
-  export let trapFocus: boolean | undefined = undefined;
-  export let preventScroll: boolean | undefined = undefined;
-
-  export let returnFocusOnClose = true;
-
-  let triggerRef: HTMLElement | null = null;
-  let lastOpen = open;
-
-  $: {
+  $effect(() => {
     if (lastOpen && !open && returnFocusOnClose && typeof window !== "undefined") {
       void tick().then(() => triggerRef?.focus());
     }
     lastOpen = open;
-  }
+  });
 </script>
 
 <BitsPopover.Root bind:open>
   {#if showTrigger}
     <BitsPopover.Trigger
-      {...$$restProps}
       bind:ref={triggerRef}
       type={triggerType}
-      class={`underlay-popover-trigger ${$$restProps.class ?? ""}`}
+      class={`underlay-popover-trigger ${className ?? ""}`}
       aria-label={triggerAriaLabel}
     >
-      <slot name="trigger">{triggerLabel}</slot>
+      {#if trigger}
+        {@render trigger()}
+      {:else}
+        {triggerLabel}
+      {/if}
     </BitsPopover.Trigger>
   {/if}
 
@@ -60,7 +85,7 @@
         {trapFocus}
         {preventScroll}
       >
-        <slot />
+        {@render children?.()}
       </BitsPopover.Content>
     </BitsPopover.Portal>
   {/if}

@@ -1,6 +1,7 @@
 <script lang="ts">
-  import { createEventDispatcher, tick } from "svelte";
+  import { tick } from "svelte";
   import { Select as BitsSelect } from "bits-ui";
+  import type { Snippet } from "svelte";
 
   type SelectItem = {
     value: string;
@@ -8,77 +9,101 @@
     disabled?: boolean;
   };
 
-  export let value: string = "";
-  export let open = false;
+  interface Props {
+    value?: string;
+    open?: boolean;
+    items?: SelectItem[] | null;
+    placeholder?: string;
+    name?: string;
+    required?: boolean;
+    disabled?: boolean;
+    triggerType?: "button" | "submit" | "reset";
+    triggerAriaLabel?: string | null;
+    contentClassName?: string;
+    returnFocusOnClose?: boolean;
+    side?: "top" | "right" | "bottom" | "left";
+    sideOffset?: number;
+    align?: "start" | "center" | "end";
+    alignOffset?: number;
+    avoidCollisions?: boolean;
+    collisionPadding?: number;
+    onchange?: (value: string) => void;
+    oninput?: (value: string) => void;
+    children?: Snippet;
+    class?: string;
+  }
 
-  export let items: SelectItem[] | null | undefined = undefined;
-  export let placeholder: string = "Select…";
+  let {
+    value = $bindable(""),
+    open = $bindable(false),
+    items = undefined,
+    placeholder = "Select…",
+    name = undefined,
+    required = false,
+    disabled = false,
+    triggerType = "button",
+    triggerAriaLabel = null,
+    contentClassName = "",
+    returnFocusOnClose = true,
+    side = "bottom",
+    sideOffset = 6,
+    align = "end",
+    alignOffset = 0,
+    avoidCollisions = true,
+    collisionPadding = 8,
+    onchange,
+    oninput,
+    children,
+    class: className,
+  }: Props = $props();
 
-  // Used by BitsSelect mode for hidden input support.
-  export let name: string | undefined = undefined;
-  export let required: boolean = false;
-  export let disabled: boolean = false;
+  let triggerRef: HTMLElement | null = $state(null);
+  let lastOpen = $state(open);
+  let lastDispatchedValue = $state(value);
 
-  export let triggerType: "button" | "submit" | "reset" = "button";
-  export let triggerAriaLabel: string | null = null;
-
-  export let contentClassName = "";
-
-  export let returnFocusOnClose = true;
-
-  let triggerRef: HTMLElement | null = null;
-  let lastOpen = open;
-
-  $: {
+  $effect(() => {
     if (lastOpen && !open && returnFocusOnClose && typeof window !== "undefined") {
       void tick().then(() => triggerRef?.focus());
     }
     lastOpen = open;
-  }
+  });
 
-  export let side: "top" | "right" | "bottom" | "left" = "bottom";
-  export let sideOffset = 6;
-  export let align: "start" | "center" | "end" = "end";
-  export let alignOffset = 0;
-  export let avoidCollisions = true;
-  export let collisionPadding = 8;
+  // BitsSelect doesn't emit native "change" events in a way we can forward
+  // without opting into internal types, so we dispatch when bound value changes.
+  $effect(() => {
+    if (items?.length && value !== lastDispatchedValue) {
+      lastDispatchedValue = value;
+      onchange?.(value);
+      oninput?.(value);
+    }
+  });
 
-  const dispatch = createEventDispatcher<{ change: string; input: string }>();
+  let selectedLabel = $derived((items ?? []).find((item) => item.value === value)?.label);
+  let hasSelection = $derived(typeof selectedLabel === "string" && selectedLabel.length > 0);
+
+  let alignShift = $derived(
+    align === "end"
+      ? "calc((var(--bits-floating-anchor-width) - 100%) / 2)"
+      : align === "start"
+        ? "calc((100% - var(--bits-floating-anchor-width)) / 2)"
+        : "0px"
+  );
+
+  let alignShiftRtl = $derived(
+    align === "end"
+      ? "calc((100% - var(--bits-floating-anchor-width)) / 2)"
+      : align === "start"
+        ? "calc((var(--bits-floating-anchor-width) - 100%) / 2)"
+        : "0px"
+  );
 
   function handleNativeChange(event: Event) {
     const target = event.currentTarget as HTMLSelectElement | null;
     const next = target ? target.value : value;
     value = next;
-    dispatch("change", next);
-    dispatch("input", next);
+    onchange?.(next);
+    oninput?.(next);
   }
-
-  // BitsSelect doesn't emit native "change" events in a way we can forward
-  // without opting into internal types, so we dispatch when bound value changes.
-  let lastDispatchedValue = value;
-  $: if (items?.length && value !== lastDispatchedValue) {
-    lastDispatchedValue = value;
-    dispatch("change", value);
-    dispatch("input", value);
-  }
-
-  $: selectedLabel = (items ?? []).find((item) => item.value === value)?.label;
-  $: hasSelection = typeof selectedLabel === "string" && selectedLabel.length > 0;
-
-  $: alignShift =
-    align === "end"
-      ? "calc((var(--bits-floating-anchor-width) - 100%) / 2)"
-      : align === "start"
-        ? "calc((100% - var(--bits-floating-anchor-width)) / 2)"
-        : "0px";
-
-  $: alignShiftRtl =
-    align === "end"
-      ? "calc((100% - var(--bits-floating-anchor-width)) / 2)"
-      : align === "start"
-        ? "calc((var(--bits-floating-anchor-width) - 100%) / 2)"
-        : "0px";
-
 </script>
 
 {#if items?.length}
@@ -92,10 +117,9 @@
     {disabled}
   >
     <BitsSelect.Trigger
-      {...$$restProps}
       bind:ref={triggerRef}
       type={triggerType}
-      class={`underlay-select-trigger ${$$restProps.class ?? ""}`}
+      class={`underlay-select-trigger ${className ?? ""}`}
       aria-label={triggerAriaLabel ?? placeholder}
     >
       <span class:placeholder={!hasSelection}>
@@ -136,15 +160,16 @@
   </BitsSelect.Root>
 {:else}
   <select
-    {...$$restProps}
-    class={`underlay-select ${$$restProps.class ?? ""}`}
+    class={`underlay-select ${className ?? ""}`}
     bind:value
     {name}
     {required}
     {disabled}
     onchange={handleNativeChange}
   >
-    <slot />
+    {#if children}
+      {@render children()}
+    {/if}
   </select>
 {/if}
 

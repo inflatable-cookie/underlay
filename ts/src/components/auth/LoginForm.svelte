@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { createEventDispatcher } from "svelte";
+  import type { Snippet } from "svelte";
 
   import type { AuthFieldErrors, LoginPayload } from "./types";
 
@@ -14,26 +14,36 @@
 
   import TotpInput from "./TotpInput.svelte";
 
-  const dispatch = createEventDispatcher<{ submit: LoginPayload }>();
+  interface Props {
+    email?: string;
+    password?: string;
+    code?: string;
+    requireTotp?: boolean;
+    error?: string | null;
+    fieldErrors?: AuthFieldErrors;
+    submitLabel?: string;
+    loading?: boolean;
+    enhance?: ((node: HTMLFormElement) => { destroy?: () => void } | void) | null;
+    onSubmit?: (payload: LoginPayload) => void;
+  }
 
-  export let email: string = "";
-  export let password: string = "";
-  export let code: string = "";
-
-  export let requireTotp: boolean = false;
-
-  export let error: string | null | undefined = null;
-  export let fieldErrors: AuthFieldErrors | undefined = undefined;
-
-  export let submitLabel: string = "Sign in";
-  export let loading: boolean = false;
-
-  export let enhance: ((node: HTMLFormElement) => { destroy?: () => void } | void) | null = null;
+  let {
+    email = $bindable(""),
+    password = $bindable(""),
+    code = $bindable(""),
+    requireTotp = false,
+    error = null,
+    fieldErrors = undefined,
+    submitLabel = "Sign in",
+    loading = false,
+    enhance = null,
+    onSubmit,
+  }: Props = $props();
 
   const emailId = createStableId("underlay-login-email");
   const passwordId = createStableId("underlay-login-password");
 
-  function handleSubmit(event: any) {
+  function handleSubmit(event: SubmitEvent) {
     event.preventDefault();
 
     const payload: LoginPayload = {
@@ -45,11 +55,11 @@
       payload.code = code.trim();
     }
 
-    dispatch("submit", payload);
+    onSubmit?.(payload);
   }
 </script>
 
-<Form on:submit={handleSubmit} {enhance}>
+<Form {onSubmit} {enhance}>
   <FormError message={error} />
 
   <Field

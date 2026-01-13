@@ -1,4 +1,4 @@
-<script lang="ts" context="module">
+<script lang="ts" module>
 	/** A single breadcrumb item */
 	export interface BreadcrumbItem {
 		/** Display label */
@@ -15,6 +15,8 @@
 </script>
 
 <script lang="ts">
+	import type { HTMLAttributes } from "svelte/elements";
+
 	/**
 	 * Breadcrumbs navigation component.
 	 *
@@ -33,31 +35,40 @@
 	 * ```
 	 */
 
-	/** Array of breadcrumb items */
-	export let items: BreadcrumbItem[] = [];
+	interface Props extends HTMLAttributes<HTMLElement> {
+		/** Array of breadcrumb items */
+		items?: BreadcrumbItem[];
+		/** Separator between items */
+		separator?: string;
+		/** Additional CSS class */
+		className?: string;
+		/** Collapse middle items on mobile when there are many items */
+		collapseOnMobile?: boolean;
+		/** Maximum items to show before collapsing (includes first and last) */
+		maxItems?: number;
+	}
 
-	/** Separator between items */
-	export let separator: string = "›";
+	let {
+		items = [],
+		separator = "›",
+		className = "",
+		collapseOnMobile = true,
+		maxItems = 4,
+		...restProps
+	}: Props = $props();
 
-	/** Additional CSS class */
-	export let className: string = "";
-
-	/** Collapse middle items on mobile when there are many items */
-	export let collapseOnMobile: boolean = true;
-
-	/** Maximum items to show before collapsing (includes first and last) */
-	export let maxItems: number = 4;
-
-	$: shouldCollapse = collapseOnMobile && items.length > maxItems;
-	$: visibleItems = shouldCollapse
-		? ([items[0], { label: "…", collapsed: true }, ...items.slice(-2)] as InternalBreadcrumbItem[])
-		: (items as InternalBreadcrumbItem[]);
+	let shouldCollapse = $derived(collapseOnMobile && items.length > maxItems);
+	let visibleItems = $derived<InternalBreadcrumbItem[]>(
+		shouldCollapse
+			? [items[0], { label: "…", collapsed: true }, ...items.slice(-2)]
+			: items
+	);
 </script>
 
 <nav
 	class="underlay-breadcrumbs {className}"
 	aria-label="Breadcrumb"
-	{...$$restProps}
+	{...restProps}
 >
 	<ol class="breadcrumb-list" class:collapsible={shouldCollapse}>
 		{#each visibleItems as item, index}

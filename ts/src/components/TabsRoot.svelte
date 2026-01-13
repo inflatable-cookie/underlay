@@ -1,9 +1,15 @@
 <script lang="ts">
   import { Tabs as BitsTabs } from "bits-ui";
+  import type { Snippet } from "svelte";
 
-  export let value: string;
+  interface Props {
+    value: string;
+    children?: Snippet;
+  }
+
+  let { value = $bindable(), children }: Props = $props();
 </script>
 
 <BitsTabs.Root bind:value>
-  <slot />
+  {@render children?.()}
 </BitsTabs.Root>

@@ -1,32 +1,41 @@
 <script lang="ts">
-  import { createEventDispatcher } from "svelte";
+  import type { Snippet } from "svelte";
 
   import Button from "../Button.svelte";
 
   type NavigateEvent = { url: string };
   type ErrorEvent = { message: string };
 
-  const dispatch = createEventDispatcher<{ navigate: NavigateEvent; error: ErrorEvent }>();
+  interface Props {
+    authorizationUrl?: string | null;
+    getAuthorizationUrl?: (() => Promise<string> | string) | null;
+    label?: string;
+    variant?: "primary" | "secondary" | "subtle";
+    disabled?: boolean;
+    class?: string;
+    onNavigate?: (event: NavigateEvent) => void;
+    onError?: (event: ErrorEvent) => void;
+  }
 
-  export let authorizationUrl: string | null = null;
-  export let getAuthorizationUrl:
-    | (() => Promise<string> | string)
-    | null = null;
+  let {
+    authorizationUrl = null,
+    getAuthorizationUrl = null,
+    label = "Continue with Google",
+    variant = "subtle",
+    disabled = false,
+    class: className = "",
+    onNavigate,
+    onError,
+  }: Props = $props();
 
-  export let label: string = "Continue with Google";
-  export let variant: "primary" | "secondary" | "subtle" = "subtle";
-  export let disabled: boolean = false;
-  export let className: string = "";
+  let loading = $state(false);
 
-  let loading = false;
-
-  async function handleClick(e: CustomEvent<MouseEvent>) {
+  async function handleClick(e: MouseEvent) {
     if (disabled || loading) {
       return;
     }
 
-    const event = e.detail;
-    event.preventDefault();
+    e.preventDefault();
 
     try {
       loading = true;
@@ -36,17 +45,17 @@
         null;
 
       if (!url) {
-        dispatch("error", { message: "missing authorization url" });
+        onError?.({ message: "missing authorization url" });
         return;
       }
 
-      dispatch("navigate", { url });
+      onNavigate?.({ url });
 
       // Avoid direct browser globals for SSR/guardrails.
       if (globalThis?.location?.assign) {
         globalThis.location.assign(url);
       } else {
-        dispatch("error", { message: "navigation not available" });
+        onError?.({ message: "navigation not available" });
       }
     } finally {
       loading = false;
@@ -57,10 +66,10 @@
 <Button
   type="button"
   {variant}
-  className={`underlay-google-signin ${className}`}
+  class={`underlay-google-signin ${className}`}
   disabled={disabled || loading}
   aria-busy={loading}
-  on:click={handleClick}
+  onclick={handleClick}
 >
   <span class="underlay-google-signin__logo" aria-hidden="true">G</span>
   <span class="underlay-google-signin__label">{label}</span>

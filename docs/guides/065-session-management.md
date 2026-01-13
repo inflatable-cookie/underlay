@@ -925,3 +925,310 @@ See your project for a complete working example:
 - Frontend login: `web/src/routes/login/+page.server.ts`
 - Frontend logout: `web/src/routes/logout/+page.server.ts`
 - Server hooks: `web/src/hooks.server.ts`
+
+---
+
+## Route Protection Utilities
+
+Underlay provides route protection utilities in `@decodelabs/underlay/client` for centralized authentication checks in SvelteKit hooks.
+
+### Available Functions
+
+```typescript
+import {
+  isPublicPath,
+  createLoginRedirect,
+  createRouteProtection,
+} from '@decodelabs/underlay/client';
+```
+
+### `isPublicPath(pathname, publicPaths)`
+
+Checks if a path matches a list of public paths. Supports exact matches and wildcard patterns.
+
+```typescript
+const publicPaths = ['/login', '/register', '/auth/*', '/health'];
+
+isPublicPath('/login', publicPaths);          // true
+isPublicPath('/auth/callback', publicPaths);  // true (wildcard match)
+isPublicPath('/dashboard', publicPaths);      // false
+```
+
+### `createLoginRedirect(url, config?)`
+
+Creates a redirect Response to the login page, optionally preserving the original URL as a `redirect` query parameter.
+
+```typescript
+// Basic redirect
+const response = createLoginRedirect(event.url);
+// Redirects to /login
+
+// Custom login path
+const response = createLoginRedirect(event.url, { loginPath: '/auth/signin' });
+// Redirects to /auth/signin
+
+// Preserve original URL for post-login redirect
+const response = createLoginRedirect(event.url, { preserveRedirect: true });
+// Redirects to /login?redirect=/original/path
+```
+
+### `createRouteProtection(config)`
+
+Factory function that returns a `protectRoute` function for use in hooks.
+
+```typescript
+const protectRoute = createRouteProtection({
+  publicPaths: ['/login', '/register', '/auth/*', '/health'],
+  loginPath: '/login',
+  preserveRedirect: true,
+});
+
+// In hooks.server.ts
+export const handle: Handle = async ({ event, resolve }) => {
+  // ... token refresh logic ...
+  
+  // Check route protection
+  const redirect = protectRoute(event.url, event.locals.isAuthenticated);
+  if (redirect) {
+    return redirect;
+  }
+  
+  return resolve(event);
+};
+```
+
+### Complete Hooks Example
+
+```typescript
+// src/hooks.server.ts
+import type { Handle } from '@sveltejs/kit';
+import { isPublicPath, createLoginRedirect } from '@decodelabs/underlay/client';
+import { authCommands } from 'my-api-client';
+
+const PUBLIC_PATHS = ['/login', '/register', '/auth/*', '/health'];
+
+export const handle: Handle = async ({ event, resolve }) => {
+  let accessToken = event.cookies.get('app_access_token') ?? null;
+  const refreshToken = event.cookies.get('app_refresh_token') ?? null;
+
+  // Token refresh logic (see earlier sections)
+  if (!accessToken && refreshToken) {
+    // ... refresh tokens ...
+  }
+
+  // Set locals
+  event.locals.authToken = accessToken;
+  event.locals.isAuthenticated = accessToken != null;
+
+  // Route protection
+  if (!event.locals.isAuthenticated && !isPublicPath(event.url.pathname, PUBLIC_PATHS)) {
+    return createLoginRedirect(event.url, { preserveRedirect: true });
+  }
+
+  return resolve(event);
+};
+```
+
+---
+
+## Cookie Utilities
+
+Underlay provides `createAuthCookieHelpers()` to generate app-specific cookie utilities with consistent configuration.
+
+### `createAuthCookieHelpers(config)`
+
+Factory function that returns cookie read/write/clear helpers.
+
+```typescript
+import { createAuthCookieHelpers } from '@decodelabs/underlay/client';
+
+// Create helpers with app-specific configuration
+const {
+  readAccessToken,
+  readRefreshToken,
+  writeAuthTokens,
+  clearAuthTokens,
+  ACCESS_TOKEN_COOKIE,
+  REFRESH_TOKEN_COOKIE,
+} = createAuthCookieHelpers({
+  accessTokenCookie: 'myapp_access_token',
+  refreshTokenCookie: 'myapp_refresh_token',
+  maxAge: 60 * 60 * 24 * 7, // 7 days
+});
+```
+
+### Configuration Options
+
+```typescript
+interface AuthCookieConfig {
+  accessTokenCookie: string;   // Cookie name for access token
+  refreshTokenCookie: string;  // Cookie name for refresh token
+  maxAge?: number;             // Cookie maxAge in seconds (default: 7 days)
+  path?: string;               // Cookie path (default: '/')
+  sameSite?: 'strict' | 'lax' | 'none'; // SameSite policy (default: 'lax')
+  secure?: boolean;            // Secure flag (default: auto-detect from NODE_ENV)
+}
+```
+
+### Returned Helpers
+
+```typescript
+interface AuthCookieHelpers {
+  // Cookie name constants
+  ACCESS_TOKEN_COOKIE: string;
+  REFRESH_TOKEN_COOKIE: string;
+
+  // Read tokens from cookies
+  readAccessToken(cookies: Cookies): string | null;
+  readRefreshToken(cookies: Cookies): string | null;
+
+  // Write tokens to cookies
+  writeAuthTokens(cookies: Cookies, accessToken: string, refreshToken: string): void;
+
+  // Clear auth cookies (for logout)
+  clearAuthTokens(cookies: Cookies): void;
+}
+```
+
+### Usage in Routes
+
+```typescript
+// src/lib/utils/auth-tokens.ts
+import { createAuthCookieHelpers } from '@decodelabs/underlay/client';
+
+export const {
+  readAccessToken,
+  readRefreshToken,
+  writeAuthTokens,
+  clearAuthTokens,
+  ACCESS_TOKEN_COOKIE,
+  REFRESH_TOKEN_COOKIE,
+} = createAuthCookieHelpers({
+  accessTokenCookie: 'myapp_access_token',
+  refreshTokenCookie: 'myapp_refresh_token',
+});
+```
+
+```typescript
+// src/routes/login/+page.server.ts
+import { writeAuthTokens } from '$lib/utils/auth-tokens';
+
+export const actions: Actions = {
+  default: async ({ request, fetch, cookies }) => {
+    // ... validate credentials ...
+    
+    const response = await authCommands.login(payload, fetch);
+    
+    // Use shared utility to write cookies
+    writeAuthTokens(cookies, response.accessToken, response.refreshToken);
+    
+    throw redirect(302, '/');
+  }
+};
+```
+
+```typescript
+// src/routes/logout/+page.server.ts
+import { clearAuthTokens, readRefreshToken } from '$lib/utils/auth-tokens';
+
+export const actions: Actions = {
+  default: async ({ fetch, cookies }) => {
+    const refreshToken = readRefreshToken(cookies);
+    
+    if (refreshToken) {
+      await authCommands.logout({ refreshToken }, fetch);
+    }
+    
+    clearAuthTokens(cookies);
+    throw redirect(302, '/login');
+  }
+};
+```
+
+### Cookie Configuration Standards
+
+Follow these standards for consistent, secure cookie configuration:
+
+| Setting | Value | Rationale |
+|---------|-------|-----------|
+| `httpOnly` | `true` | Prevents XSS attacks |
+| `sameSite` | `'lax'` | CSRF protection while allowing normal navigation |
+| `secure` | `true` in prod | HTTPS only in production |
+| `path` | `'/'` | Available across entire app |
+| `maxAge` | 7 days (604800s) | Balance between UX and security |
+
+**Cookie Naming Convention:**
+
+```
+{app_name}_{token_type}
+```
+
+Examples:
+- `bloom_access_token`, `bloom_refresh_token` (artist frontend)
+- `greenhouse_access_token`, `greenhouse_refresh_token` (admin frontend)
+- `cream_access_token`, `cream_refresh_token` (student frontend)
+
+---
+
+## Auth Commands Reference
+
+Underlay-based applications use a consistent set of authentication endpoints. Your TypeScript client library should expose these as command functions.
+
+### Complete Auth Command Interface
+
+| Command | Method | Endpoint | Description |
+|---------|--------|----------|-------------|
+| `register` | POST | `/v1/auth/register` | Create new account |
+| `login` | POST | `/v1/auth/login` | Single-step login (no 2FA) |
+| `loginStart` | POST | `/v1/auth/login/start` | Start two-step login |
+| `loginFinish` | POST | `/v1/auth/login/finish` | Complete login with 2FA code |
+| `logout` | POST | `/v1/auth/logout` | End session |
+| `refresh` | POST | `/v1/auth/refresh` | Refresh tokens |
+| `me` | GET | `/v1/auth/me` | Get current user |
+| `changePassword` | POST | `/v1/auth/password/change` | Change password |
+
+### TOTP (Two-Factor Auth) Endpoints
+
+| Command | Method | Endpoint | Description |
+|---------|--------|----------|-------------|
+| `totpStatus` | GET | `/v1/auth/totp/status` | Check if TOTP enabled |
+| `totpSetup` | POST | `/v1/auth/totp/setup` | Get QR code for setup |
+| `totpEnable` | POST | `/v1/auth/totp/enable` | Enable TOTP with code |
+| `totpDisable` | POST | `/v1/auth/totp/disable` | Disable TOTP |
+
+### Session Management Endpoints
+
+| Command | Method | Endpoint | Description |
+|---------|--------|----------|-------------|
+| `listSessions` | GET | `/v1/auth/sessions` | List active sessions |
+| `revokeSession` | POST | `/v1/auth/sessions/:id/revoke` | End specific session |
+
+### Passkey Endpoints
+
+| Command | Method | Endpoint | Description |
+|---------|--------|----------|-------------|
+| `passkeyLoginStart` | POST | `/v1/auth/passkeys/login/start` | Start passkey login |
+| `passkeyLoginFinish` | POST | `/v1/auth/passkeys/login/finish` | Complete passkey login |
+| `passkeyRegisterStart` | POST | `/v1/auth/passkeys/register/start` | Start passkey registration |
+| `passkeyRegisterFinish` | POST | `/v1/auth/passkeys/register/finish` | Complete passkey registration |
+| `listPasskeys` | GET | `/v1/auth/passkeys` | List user's passkeys |
+| `deletePasskey` | DELETE | `/v1/auth/passkeys/:id` | Remove passkey |
+| `renamePasskey` | PATCH | `/v1/auth/passkeys/:id` | Rename passkey |
+
+### OAuth Endpoints
+
+| Command | Method | Endpoint | Description |
+|---------|--------|----------|-------------|
+| `oauthStart` | GET | `/v1/auth/oauth/google/start` | Start Google OAuth |
+| `oauthCallback` | GET | `/v1/auth/oauth/google/callback` | OAuth callback |
+| `oauthStatus` | GET | `/v1/auth/oauth/google/status` | Check OAuth connection |
+| `oauthRefresh` | POST | `/v1/auth/oauth/google/refresh` | Refresh OAuth tokens |
+| `oauthDisconnect` | POST | `/v1/auth/oauth/google/disconnect` | Remove OAuth connection |
+
+### Endpoint Naming Conventions
+
+1. **Use `/v1/auth/totp/*`** (not `/v1/auth/2fa/*`) for TOTP endpoints
+2. **Use lowercase `oauth`** (not `OAuth`) in paths
+3. **Use plural nouns** for collections: `/passkeys`, `/sessions`
+4. **Use verbs** for actions: `/start`, `/finish`, `/revoke`, `/disconnect`
+5. **Version prefix**: Always include `/v1/` for API versioning

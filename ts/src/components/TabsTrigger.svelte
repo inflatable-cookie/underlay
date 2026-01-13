@@ -1,17 +1,23 @@
 <script lang="ts">
   import { Tabs as BitsTabs } from "bits-ui";
+  import type { Snippet } from "svelte";
 
-  export let value: string;
-  export let disabled = false;
+  interface Props {
+    value: string;
+    disabled?: boolean;
+    children?: Snippet;
+    class?: string;
+  }
+
+  let { value, disabled = false, children, class: className }: Props = $props();
 </script>
 
 <BitsTabs.Trigger
-  {...$$restProps}
   {value}
   {disabled}
-  class={`underlay-tabs-trigger ${$$restProps.class ?? ""}`}
+  class={`underlay-tabs-trigger ${className ?? ""}`}
 >
-  <slot />
+  {@render children?.()}
 </BitsTabs.Trigger>
 
 <style>

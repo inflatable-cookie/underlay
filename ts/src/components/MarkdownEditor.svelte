@@ -1,43 +1,48 @@
 <script lang="ts">
   import { onDestroy, onMount } from "svelte";
-  import { createEventDispatcher } from "svelte";
   import type { Snippet } from "svelte";
   import { lazyLoadEasyMde } from "./lazy-load-easymde";
 
-  const dispatch = createEventDispatcher<{ change: string }>();
+  interface Props {
+    label?: string | null;
+    hint?: string | null;
+    name?: string | null;
+    value?: string | null;
+    required?: boolean;
+    loading?: boolean;
+    showPreview?: boolean;
+    className?: string;
+    children?: Snippet | null;
+    placeholder?: string | null;
+    onChange?: ((next: string) => void) | null;
+  }
 
-  export let label: string | null = null;
-  export let hint: string | null = null;
-  export let name: string | null = null;
-  export let value: string | null = null;
+  let {
+    label = null,
+    hint = null,
+    name = null,
+    value = $bindable(null),
+    required = false,
+    loading = false,
+    showPreview = true,
+    className = "",
+    children = null,
+    placeholder = null,
+    onChange = null
+  }: Props = $props();
 
-  export let required: boolean = false;
+  let textareaElement: HTMLTextAreaElement | null = $state(null);
+  let editorInstance: any = $state(null);
+  let editorReady = $state(false);
+  let mounted = $state(false);
 
-  export let loading: boolean = false;
-
-  export let showPreview: boolean = true;
-
-  export let className = "";
-
-  export let children: Snippet | null = null;
-
-  export let placeholder: string | null = null;
-
-  export let onChange: ((next: string) => void) | null = null;
-
-  let textareaElement: HTMLTextAreaElement | null = null;
-  let editorInstance: any = null;
-  let editorReady = false;
-  let mounted = false;
-
-  let initAttempt = 0;
-  let changeScheduled = false;
-  let queuedChange = "";
+  let initAttempt = $state(0);
+  let changeScheduled = $state(false);
+  let queuedChange = $state("");
 
   function handleChange(next: string) {
     value = next;
     onChange?.(next);
-    dispatch("change", next);
   }
 
   function scheduleChange(next: string) {
@@ -198,13 +203,15 @@
     };
   });
 
-  $: if (mounted) {
-    if (showPreview && !loading) {
-      void ensureEditor();
-    } else {
-      destroyEditor();
+  $effect(() => {
+    if (mounted) {
+      if (showPreview && !loading) {
+        void ensureEditor();
+      } else {
+        destroyEditor();
+      }
     }
-  }
+  });
 
   onDestroy(() => {
     destroyEditor();
@@ -217,7 +224,7 @@
     {#if loading || (showPreview && !editorReady)}
       <div class="markdown-editor-spinner">
         <span class="spinner-dot" aria-hidden="true"></span>
-        <span>Loading markdown editor…</span>
+        <span>Loading markdown editor...</span>
       </div>
     {/if}
 

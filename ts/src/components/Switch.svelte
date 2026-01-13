@@ -1,12 +1,21 @@
 <script lang="ts">
-  export let name: string | undefined = undefined;
-  export let initialChecked = false;
-  export let leftLabel = "Off";
-  export let rightLabel = "On";
-  export let disabled = false;
+  interface Props {
+    name?: string;
+    initialChecked?: boolean;
+    leftLabel?: string;
+    rightLabel?: string;
+    disabled?: boolean;
+    checked?: boolean;
+  }
 
-  let checked = initialChecked;
-  export { checked };
+  let {
+    name,
+    initialChecked = false,
+    leftLabel = "Off",
+    rightLabel = "On",
+    disabled = false,
+    checked = $bindable(initialChecked)
+  }: Props = $props();
 
   function toggle() {
     if (disabled) return;
@@ -17,7 +26,7 @@
 <button
   type="button"
   class={`underlay-switch ${checked ? "underlay-switch--on" : "underlay-switch--off"}`}
-  on:click={toggle}
+  onclick={toggle}
   role="switch"
   aria-checked={checked}
   aria-label={`${checked ? rightLabel : leftLabel}`}
@@ -33,7 +42,7 @@
 <input
   class="underlay-switch__input"
   type="checkbox"
-  name={name}
+  {name}
   bind:checked
   value="on"
   hidden
@@ -46,6 +55,7 @@
     display: inline-flex;
     align-items: center;
     gap: var(--underlay-space-2, var(--underlay-space-2, 0.5rem));
+    width: max-content;
     padding: 0;
     border: none;
     background: transparent;
@@ -66,9 +76,7 @@
   }
 
   .underlay-switch__label {
-    font-size: var(--underlay-font-size-xs, var(--underlay-font-size-xs, 0.75rem));
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
+    font-size: var(--underlay-font-size-sm, 0.8rem);
   }
 
   .underlay-switch__label--left,

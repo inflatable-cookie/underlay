@@ -1,17 +1,32 @@
 <script lang="ts">
-  export let minItemWidthPx: number | null = null;
-  export let gapPx: number | null = null;
+  import type { Snippet } from "svelte";
 
-  $: style = [
-    minItemWidthPx == null ? null : `--underlay-list-grid-min: ${minItemWidthPx}px;`,
-    gapPx == null ? null : `--underlay-list-grid-gap: ${gapPx}px;`
-  ]
-    .filter(Boolean)
-    .join(" ");
+  interface Props {
+    minItemWidthPx?: number | null;
+    gapPx?: number | null;
+    children?: Snippet;
+  }
+
+  let {
+    minItemWidthPx = null,
+    gapPx = null,
+    children
+  }: Props = $props();
+
+  let style = $derived(
+    [
+      minItemWidthPx == null ? null : `--underlay-list-grid-min: ${minItemWidthPx}px;`,
+      gapPx == null ? null : `--underlay-list-grid-gap: ${gapPx}px;`
+    ]
+      .filter(Boolean)
+      .join(" ")
+  );
 </script>
 
 <div class="underlay-list-grid" style={style || undefined}>
-  <slot />
+  {#if children}
+    {@render children()}
+  {/if}
 </div>
 
 <style>

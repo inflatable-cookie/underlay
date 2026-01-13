@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { createEventDispatcher } from "svelte";
+  import type { Snippet } from "svelte";
 
   import type { AuthFieldErrors, RecoveryPayload } from "./types";
 
@@ -12,24 +12,33 @@
   import FormError from "../FormError.svelte";
   import TextInput from "../TextInput.svelte";
 
-  const dispatch = createEventDispatcher<{ submit: RecoveryPayload }>();
+  interface Props {
+    email?: string;
+    error?: string | null;
+    fieldErrors?: AuthFieldErrors;
+    submitLabel?: string;
+    loading?: boolean;
+    onSubmit?: (payload: RecoveryPayload) => void;
+  }
 
-  export let email: string = "";
-  export let error: string | null | undefined = null;
-  export let fieldErrors: AuthFieldErrors | undefined = undefined;
-
-  export let submitLabel: string = "Send recovery email";
-  export let loading: boolean = false;
+  let {
+    email = $bindable(""),
+    error = null,
+    fieldErrors = undefined,
+    submitLabel = "Send recovery email",
+    loading = false,
+    onSubmit,
+  }: Props = $props();
 
   const emailId = createStableId("underlay-recovery-email");
 
-  function handleSubmit(event: any) {
+  function handleSubmit(event: SubmitEvent) {
     event.preventDefault();
-    dispatch("submit", { email });
+    onSubmit?.({ email });
   }
 </script>
 
-<Form on:submit={handleSubmit}>
+<Form {onSubmit}>
   <FormError message={error} />
 
   <Field label="Email" forId={emailId} error={fieldErrors?.email}>

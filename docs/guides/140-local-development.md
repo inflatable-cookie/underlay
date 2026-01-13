@@ -6,6 +6,92 @@ This document covers running and debugging the application locally.
 
 Paths below use monorepo-style logical paths (e.g. `apps/api/...`). In multi-repo mode, run the same commands from the relevant repo root.
 
+## Vite Configuration for Local Dependencies
+
+When using Underlay as a local `file:` dependency (symlinked), Vite's dependency caching can cause stale module errors and hydration mismatches. Configure Vite to handle this properly.
+
+### vite.config.ts
+
+```typescript
+import { sveltekit } from "@sveltejs/kit/vite";
+import { defineConfig } from "vite";
+
+export default defineConfig({
+  plugins: [sveltekit()],
+  optimizeDeps: {
+    // Local file: dependencies change frequently - exclude to avoid stale cache.
+    // List each subpath export you import from.
+    exclude: [
+      "@decodelabs/underlay",
+      "@decodelabs/underlay/components",
+      "@decodelabs/underlay/nightfire",
+      "@decodelabs/underlay/patterns",
+      "@decodelabs/underlay/styles",
+      "@decodelabs/underlay/client"
+    ]
+  },
+  ssr: {
+    // Force these packages through Vite's transform pipeline for SSR
+    noExternal: ["bits-ui", "runed", "svelte-toolbelt", "lucide-svelte"]
+  },
+  server: {
+    port: 5173,
+    watch: {
+      // Watch changes in symlinked local dependencies.
+      // The `!` prefix means "don't ignore" (inverts the pattern).
+      ignored: [
+        "!**/node_modules/@decodelabs/underlay/**",
+        "!**/node_modules/@myapp/shared/**"  // Add your other local deps
+      ]
+    }
+  }
+});
+```
+
+### package.json Scripts
+
+Add helper scripts for cache management:
+
+```json
+{
+  "scripts": {
+    "dev": "vite dev",
+    "dev:clean": "pnpm run clean && vite dev --force",
+    "dev:force": "vite dev --force",
+    "clean": "rm -rf .svelte-kit node_modules/.vite"
+  }
+}
+```
+
+| Script | When to Use |
+|--------|-------------|
+| `pnpm dev` | Normal development |
+| `pnpm dev:force` | After updating Underlay (quick refresh) |
+| `pnpm dev:clean` | If hydration errors persist (thorough refresh) |
+| `pnpm clean` | Just clear cache without starting dev |
+
+### Common Issues
+
+**Hydration Mismatch After Updating Underlay**
+
+Vite caches prebundled dependencies in `node_modules/.vite`. When you change Underlay, this cache becomes stale.
+
+```bash
+# Quick fix
+pnpm dev:force
+
+# Thorough fix
+pnpm dev:clean
+```
+
+**"Cannot set properties of null" Hydration Errors**
+
+This usually means the server-rendered HTML doesn't match the client hydration. Common causes:
+
+1. Stale Vite cache (use `pnpm dev:clean`)
+2. Browser APIs used at module scope (use guardrails to detect)
+3. Conditional rendering that differs between server and client
+
 ## Development Workflow
 
 ### 1. Start Database

@@ -1,5 +1,6 @@
 <script lang="ts">
   import { tick } from "svelte";
+  import type { Snippet } from "svelte";
   import { DropdownMenu as BitsDropdownMenu } from "bits-ui";
 
   type DropdownMenuItem = {
@@ -10,47 +11,70 @@
     separator?: boolean;
   };
 
-  export let open = false;
+  interface Props {
+    open?: boolean;
+    showTrigger?: boolean;
+    triggerLabel?: string;
+    triggerAriaLabel?: string;
+    triggerType?: "button" | "submit" | "reset";
+    items?: DropdownMenuItem[] | null | undefined;
+    side?: "top" | "right" | "bottom" | "left";
+    sideOffset?: number;
+    align?: "start" | "center" | "end";
+    alignOffset?: number;
+    avoidCollisions?: boolean;
+    collisionPadding?: number;
+    contentClassName?: string;
+    returnFocusOnClose?: boolean;
+    trigger?: Snippet;
+    children?: Snippet;
+    class?: string;
+  }
 
-  export let showTrigger = true;
-  export let triggerLabel = "⋯";
-  export let triggerAriaLabel = "Open menu";
-  export let triggerType: "button" | "submit" | "reset" = "button";
+  let {
+    open = $bindable(false),
+    showTrigger = true,
+    triggerLabel = "⋯",
+    triggerAriaLabel = "Open menu",
+    triggerType = "button",
+    items = undefined,
+    side = "bottom",
+    sideOffset = 6,
+    align = "end",
+    alignOffset = 0,
+    avoidCollisions = true,
+    collisionPadding = 8,
+    contentClassName = "",
+    returnFocusOnClose = true,
+    trigger,
+    children,
+    class: className,
+  }: Props = $props();
 
-  export let items: DropdownMenuItem[] | null | undefined = undefined;
+  let triggerRef: HTMLElement | null = $state(null);
+  let lastOpen = $state(open);
 
-  export let side: "top" | "right" | "bottom" | "left" = "bottom";
-  export let sideOffset = 6;
-  export let align: "start" | "center" | "end" = "end";
-  export let alignOffset = 0;
-  export let avoidCollisions = true;
-  export let collisionPadding = 8;
-
-  export let contentClassName = "";
-
-  export let returnFocusOnClose = true;
-
-  let triggerRef: HTMLElement | null = null;
-  let lastOpen = open;
-
-  $: {
+  $effect(() => {
     if (lastOpen && !open && returnFocusOnClose && typeof window !== "undefined") {
       void tick().then(() => triggerRef?.focus());
     }
     lastOpen = open;
-  }
+  });
 </script>
 
 <BitsDropdownMenu.Root bind:open>
   {#if showTrigger}
     <BitsDropdownMenu.Trigger
-      {...$$restProps}
       bind:ref={triggerRef}
       type={triggerType}
-      class={`underlay-dropdown-menu-trigger ${$$restProps.class ?? ""}`}
+      class={`underlay-dropdown-menu-trigger ${className ?? ""}`}
       aria-label={triggerAriaLabel}
     >
-      <slot name="trigger">{triggerLabel}</slot>
+      {#if trigger}
+        {@render trigger()}
+      {:else}
+        {triggerLabel}
+      {/if}
     </BitsDropdownMenu.Trigger>
   {/if}
 
@@ -82,7 +106,7 @@
           {/each}
         </BitsDropdownMenu.Group>
       {:else}
-        <slot />
+        {@render children?.()}
       {/if}
     </BitsDropdownMenu.Content>
   </BitsDropdownMenu.Portal>

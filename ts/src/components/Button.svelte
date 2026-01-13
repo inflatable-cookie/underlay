@@ -1,28 +1,38 @@
 <script lang="ts">
-  import { Button as BitsButton } from "bits-ui";
-  import { createEventDispatcher } from "svelte";
+  import type { Snippet } from "svelte";
+  import type { HTMLButtonAttributes } from "svelte/elements";
 
-  const dispatch = createEventDispatcher<{ click: MouseEvent }>();
-
-  function handleClick(event: MouseEvent) {
-    dispatch("click", event);
+  interface Props extends Omit<HTMLButtonAttributes, "class"> {
+    variant?: "primary" | "secondary" | "subtle";
+    type?: "button" | "submit" | "reset";
+    pill?: boolean;
+    class?: string;
+    onclick?: (event: MouseEvent) => void;
+    disabled?: boolean;
+    children?: Snippet;
   }
 
-  export let variant: "primary" | "secondary" | "subtle" = "primary";
-  export let type: "button" | "submit" | "reset" = "button";
-  export let pill: boolean = true;
-
-  export let className: string = "";
+  let {
+    variant = "primary",
+    type = "button",
+    pill = true,
+    class: className = "",
+    onclick,
+    disabled = false,
+    children,
+    ...restProps
+  }: Props = $props();
 </script>
 
-<BitsButton.Root
-  {...$$restProps}
-  onclick={handleClick}
-  class={`underlay-button ${pill ? "underlay-button--pill" : "underlay-button--square"} underlay-button--${variant} ${className} ${$$restProps.class ?? ""}`}
+<button
+  {...restProps}
+  {onclick}
+  {disabled}
+  class={`underlay-button ${pill ? "underlay-button--pill" : "underlay-button--square"} underlay-button--${variant} ${className}`}
   {type}
 >
-  <slot />
-</BitsButton.Root>
+  {@render children?.()}
+</button>
 
 <style>
   :global(.underlay-button) {

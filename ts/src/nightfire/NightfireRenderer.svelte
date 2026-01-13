@@ -8,7 +8,11 @@
     data?: Record<string, unknown>;
   };
 
-  export let value: NightfireValue | null = null;
+  interface Props {
+    value?: NightfireValue | null;
+  }
+
+  let { value = null }: Props = $props();
 
   function normalizeBlocks(v: NightfireValue | null): BlockLike[] {
     if (!v) return [];
@@ -21,7 +25,7 @@
     return [];
   }
 
-  $: blocks = normalizeBlocks(value);
+  const blocks = $derived(normalizeBlocks(value));
 </script>
 
 {#if blocks.length === 0}
@@ -31,8 +35,8 @@
     {#if block?.type}
       {#key `${value?.schema ?? ""}:${block.type}`}
         {#if getBlockRenderer(value?.schema, block.type)}
-          <svelte:component
-            this={getBlockRenderer(value?.schema, block.type)}
+          {@const BlockRenderer = getBlockRenderer(value?.schema, block.type)}
+          <BlockRenderer
             {block}
             {value}
           />

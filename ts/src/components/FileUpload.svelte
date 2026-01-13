@@ -1,4 +1,4 @@
-<script lang="ts" context="module">
+<script lang="ts" module>
 	/**
 	 * File state for tracking upload progress.
 	 */
@@ -125,42 +125,64 @@
 </script>
 
 <script lang="ts">
-	import { createEventDispatcher, onDestroy } from "svelte";
+	import type { Snippet } from "svelte";
+	import { onDestroy } from "svelte";
 
-	// Props
-	/** Accepted file types (e.g., "image/*", ".pdf,.doc") */
-	export let accept: string = "*";
-	/** Maximum file size in bytes */
-	export let maxSize: number = 10 * 1024 * 1024; // 10MB default
-	/** Allow multiple files */
-	export let multiple: boolean = false;
-	/** Maximum number of files (when multiple is true) */
-	export let maxFiles: number = 10;
-	/** Show image previews */
-	export let showPreview: boolean = true;
-	/** Disable the input */
-	export let disabled: boolean = false;
-	/** Custom validation function */
-	export let validate: ((file: File) => string | null) | undefined = undefined;
-	/** Current files (for controlled component) */
-	export let files: FileUploadItem[] = [];
-	/** Enable image compression before upload */
-	export let compress: boolean = false;
-	/** Image compression options (when compress is true) */
-	export let compressionOptions: ImageCompressionOptions = DEFAULT_COMPRESSION;
+	interface Props {
+		/** Accepted file types (e.g., "image/*", ".pdf,.doc") */
+		accept?: string;
+		/** Maximum file size in bytes */
+		maxSize?: number;
+		/** Allow multiple files */
+		multiple?: boolean;
+		/** Maximum number of files (when multiple is true) */
+		maxFiles?: number;
+		/** Show image previews */
+		showPreview?: boolean;
+		/** Disable the input */
+		disabled?: boolean;
+		/** Custom validation function */
+		validate?: (file: File) => string | null;
+		/** Current files (for controlled component) */
+		files?: FileUploadItem[];
+		/** Enable image compression before upload */
+		compress?: boolean;
+		/** Image compression options (when compress is true) */
+		compressionOptions?: ImageCompressionOptions;
+		/** Callback when files change */
+		onChange?: (files: FileUploadItem[]) => void;
+		/** Callback when files are ready to upload */
+		onUpload?: (files: File[]) => void;
+		/** Callback when a validation error occurs */
+		onError?: (event: { file: File; message: string }) => void;
+		/** Callback when a file is removed */
+		onRemove?: (item: FileUploadItem) => void;
+		/** Custom dropzone content */
+		dropzone?: Snippet;
+	}
+
+	let {
+		accept = "*",
+		maxSize = 10 * 1024 * 1024, // 10MB default
+		multiple = false,
+		maxFiles = 10,
+		showPreview = true,
+		disabled = false,
+		validate = undefined,
+		files = $bindable([]),
+		compress = false,
+		compressionOptions = DEFAULT_COMPRESSION,
+		onChange,
+		onUpload,
+		onError,
+		onRemove,
+		dropzone
+	}: Props = $props();
 
 	// Internal state
-	let inputElement: HTMLInputElement;
-	let isDragging = false;
-	let dragCounter = 0;
-
-	// Event dispatcher
-	const dispatch = createEventDispatcher<{
-		change: FileUploadItem[];
-		upload: File[];
-		error: { file: File; message: string };
-		remove: FileUploadItem;
-	}>();
+	let inputElement: HTMLInputElement | undefined = $state();
+	let isDragging = $state(false);
+	let dragCounter = $state(0);
 
 	// Cleanup preview URLs on destroy
 	onDestroy(() => {
@@ -236,7 +258,7 @@
 			const error = validateFile(file);
 
 			if (error) {
-				dispatch("error", { file, message: error });
+				onError?.({ file, message: error });
 				continue;
 			}
 
@@ -280,8 +302,8 @@
 				files = newFiles;
 			}
 
-			dispatch("change", files);
-			dispatch("upload", filesToUpload);
+			onChange?.(files);
+			onUpload?.(filesToUpload);
 		}
 
 		// Reset input
@@ -347,8 +369,8 @@
 		}
 
 		files = files.filter((f) => f.id !== item.id);
-		dispatch("change", files);
-		dispatch("remove", item);
+		onChange?.(files);
+		onRemove?.(item);
 	}
 
 	// Retry a failed upload
@@ -357,7 +379,7 @@
 		item.error = undefined;
 		item.progress = 0;
 		files = files;
-		dispatch("upload", [item.file]);
+		onUpload?.([item.file]);
 	}
 
 	// Update file progress (called externally)
@@ -388,7 +410,7 @@
 			}
 		});
 		files = [];
-		dispatch("change", files);
+		onChange?.(files);
 	}
 </script>
 
@@ -399,12 +421,12 @@
 		role="button"
 		tabindex={disabled ? -1 : 0}
 		aria-disabled={disabled}
-		on:click={handleClick}
-		on:keydown={handleKeydown}
-		on:dragenter={handleDragEnter}
-		on:dragleave={handleDragLeave}
-		on:dragover={handleDragOver}
-		on:drop={handleDrop}
+		onclick={handleClick}
+		onkeydown={handleKeydown}
+		ondragenter={handleDragEnter}
+		ondragleave={handleDragLeave}
+		ondragover={handleDragOver}
+		ondrop={handleDrop}
 	>
 		<input
 			bind:this={inputElement}
@@ -413,11 +435,13 @@
 			{multiple}
 			{disabled}
 			class="visually-hidden"
-			on:change={handleInputChange}
+			onchange={handleInputChange}
 			aria-label="File upload"
 		/>
 
-		<slot name="dropzone">
+		{#if dropzone}
+			{@render dropzone()}
+		{:else}
 			<div class="drop-zone-content">
 				<div class="drop-zone-icon">
 					<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -442,7 +466,7 @@
 					{/if}
 				</p>
 			</div>
-		</slot>
+		{/if}
 	</div>
 
 	<!-- File list -->
@@ -485,7 +509,7 @@
 							</svg>
 						</div>
 					{:else if item.status === "error"}
-						<button type="button" class="retry-button" on:click={() => handleRetry(item)} aria-label="Retry upload">
+						<button type="button" class="retry-button" onclick={() => handleRetry(item)} aria-label="Retry upload">
 							<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
 								<path d="M23 4v6h-6" />
 								<path d="M1 20v-6h6" />
@@ -497,7 +521,7 @@
 					<button
 						type="button"
 						class="remove-button"
-						on:click={() => handleRemove(item)}
+						onclick={() => handleRemove(item)}
 						aria-label="Remove file"
 						disabled={item.status === "uploading"}
 					>

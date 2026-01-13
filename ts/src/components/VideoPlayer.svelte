@@ -1,18 +1,23 @@
 <script lang="ts">
-  export let title: string | undefined;
-  export let provider: string | null | undefined;
-  export let externalId: string | null | undefined;
-  export let embedSource: string;
-  export let thumbnailUrl: string | null | undefined = null;
+  interface Props {
+    title: string | undefined;
+    provider: string | null | undefined;
+    externalId: string | null | undefined;
+    embedSource: string;
+    thumbnailUrl?: string | null | undefined;
+  }
 
-  const normalisedProvider = provider?.toLowerCase() ?? null;
+  let { title, provider, externalId, embedSource, thumbnailUrl = null }: Props = $props();
 
-  $: iframeSrc =
+  const normalisedProvider = $derived(provider?.toLowerCase() ?? null);
+
+  const iframeSrc = $derived(
     normalisedProvider === "vimeo" && externalId
       ? `https://player.vimeo.com/video/${externalId}`
       : normalisedProvider === "youtube" && externalId
         ? `https://www.youtube.com/embed/${externalId}`
-        : null;
+        : null
+  );
 </script>
 
 <figure data-video-player>

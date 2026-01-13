@@ -1,29 +1,46 @@
 <script lang="ts">
-  import { createEventDispatcher } from "svelte";
+  import type { Snippet } from "svelte";
+  import type { HTMLButtonAttributes } from "svelte/elements";
 
-  const dispatch = createEventDispatcher<{ click: MouseEvent }>();
-
-  function handleClick(event: MouseEvent) {
-    dispatch("click", event);
+  interface Props extends HTMLButtonAttributes {
+    label: string;
+    type?: "button" | "submit" | "reset";
+    disabled?: boolean;
+    sizeRem?: number;
+    variant?: "neutral" | "danger";
+    onclick?: (event: MouseEvent) => void;
+    children?: Snippet;
   }
 
-  export let label: string;
-  export let type: "button" | "submit" | "reset" = "button";
-  export let disabled = false;
-  export let sizeRem = 2;
-  export let variant: "neutral" | "danger" = "neutral";
+  let {
+    label,
+    type = "button",
+    disabled = false,
+    sizeRem = 2,
+    variant = "neutral",
+    onclick,
+    children,
+    class: className,
+    ...restProps
+  }: Props = $props();
+
+  function handleClick(event: MouseEvent) {
+    onclick?.(event);
+  }
 </script>
 
 <button
-  {...$$restProps}
+  {...restProps}
   {type}
   {disabled}
   aria-label={label}
   onclick={handleClick}
-  class={`underlay-icon-button underlay-icon-button--${variant} ${$$restProps.class ?? ""}`}
+  class={`underlay-icon-button underlay-icon-button--${variant} ${className ?? ""}`}
   style={`--underlay-icon-button-size: ${sizeRem}rem;`}
 >
-  <slot />
+  {#if children}
+    {@render children()}
+  {/if}
 </button>
 
 <style>

@@ -1,30 +1,53 @@
 <script lang="ts">
-  export let href: string | null = null;
-  export let title: string;
-  export let subtitle: string | null = null;
-  export let ariaLabel: string | null = null;
-  export let accent: string | null = null;
+  import type { Snippet } from "svelte";
 
-  const hasActions = Boolean($$slots.actions);
+  interface Props {
+    href?: string | null;
+    title: string;
+    subtitle?: string | null;
+    ariaLabel?: string | null;
+    accent?: string | null;
+    media?: Snippet;
+    trailing?: Snippet;
+    actions?: Snippet;
+    children?: Snippet;
+  }
 
-  const style = accent ? `--underlay-list-card-accent: ${accent};` : undefined;
+  let {
+    href = null,
+    title,
+    subtitle = null,
+    ariaLabel = null,
+    accent = null,
+    media,
+    trailing,
+    actions,
+    children
+  }: Props = $props();
+
+  let hasActions = $derived(Boolean(actions));
+  let style = $derived(accent ? `--underlay-list-card-accent: ${accent};` : undefined);
 </script>
 
 {#if href}
-  <div class="underlay-list-card-shell" style={style}>
+  <div class="underlay-list-card-shell" {style}>
     <a
       class={`underlay-list-card underlay-list-card__link ${hasActions ? "underlay-list-card--has-actions" : ""}`}
-      href={href}
+      {href}
       aria-label={ariaLabel ?? title}
     >
       <div class="underlay-list-card__media">
-        <slot name="media" />
+        {#if media}
+          {@render media()}
+        {/if}
       </div>
 
       <div class="underlay-list-card__body">
         <div class="underlay-list-card__title-row">
           <h3 class="underlay-list-card__title">{title}</h3>
-          <slot name="trailing" />
+          {#if trailing}
+            {@render trailing()}
+          {/if}
         </div>
 
         {#if subtitle}
@@ -32,14 +55,18 @@
         {/if}
 
         <div class="underlay-list-card__meta">
-          <slot />
+          {#if children}
+            {@render children()}
+          {/if}
         </div>
       </div>
     </a>
 
     {#if hasActions}
       <div class="underlay-list-card__actions">
-        <slot name="actions" />
+        {#if actions}
+          {@render actions()}
+        {/if}
       </div>
     {/if}
   </div>
@@ -47,16 +74,20 @@
   <div
     class={`underlay-list-card ${hasActions ? "underlay-list-card--has-actions" : ""}`}
     aria-label={ariaLabel ?? title}
-    style={style}
+    {style}
   >
     <div class="underlay-list-card__media">
-      <slot name="media" />
+      {#if media}
+        {@render media()}
+      {/if}
     </div>
 
     <div class="underlay-list-card__body">
       <div class="underlay-list-card__title-row">
         <h3 class="underlay-list-card__title">{title}</h3>
-        <slot name="trailing" />
+        {#if trailing}
+          {@render trailing()}
+        {/if}
       </div>
 
       {#if subtitle}
@@ -64,13 +95,17 @@
       {/if}
 
       <div class="underlay-list-card__meta">
-        <slot />
+        {#if children}
+          {@render children()}
+        {/if}
       </div>
     </div>
 
     {#if hasActions}
       <div class="underlay-list-card__actions">
-        <slot name="actions" />
+        {#if actions}
+          {@render actions()}
+        {/if}
       </div>
     {/if}
   </div>

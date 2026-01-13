@@ -1,4 +1,4 @@
-<script lang="ts" context="module">
+<script lang="ts" module>
 	/** Pagination state passed to the component */
 	export interface PaginationState {
 		/** Current page (1-based) */
@@ -11,7 +11,8 @@
 </script>
 
 <script lang="ts">
-	import { createEventDispatcher } from "svelte";
+	import type { Snippet } from "svelte";
+	import type { HTMLAttributes } from "svelte/elements";
 
 	/**
 	 * Standalone Pagination component for navigating through pages of content.
@@ -22,7 +23,7 @@
 	 *   page={1}
 	 *   limit={20}
 	 *   total={100}
-	 *   on:page={(e) => goto(`?page=${e.detail}`)}
+	 *   onPage={(page) => goto(`?page=${page}`)}
 	 * />
 	 * ```
 	 *
@@ -33,54 +34,62 @@
 	 *   limit={itemsPerPage}
 	 *   total={totalItems}
 	 *   showLimitSelector
-	 *   on:page={handlePageChange}
-	 *   on:limit={handleLimitChange}
+	 *   onPage={handlePageChange}
+	 *   onLimit={handleLimitChange}
 	 * />
 	 * ```
 	 */
 
-	const dispatch = createEventDispatcher<{
-		page: number;
-		limit: number;
-	}>();
+	interface Props extends HTMLAttributes<HTMLElement> {
+		/** Current page (1-based) */
+		page?: number;
+		/** Items per page */
+		limit?: number;
+		/** Total number of items */
+		total?: number;
+		/** Show the items-per-page selector */
+		showLimitSelector?: boolean;
+		/** Available limit options */
+		limitOptions?: number[];
+		/** Show "Showing X to Y of Z" info text */
+		showInfo?: boolean;
+		/** Compact mode (smaller padding, no info text on mobile) */
+		compact?: boolean;
+		/** Additional CSS class */
+		className?: string;
+		/** Callback when page changes */
+		onPage?: (page: number) => void;
+		/** Callback when limit changes */
+		onLimit?: (limit: number) => void;
+	}
 
-	/** Current page (1-based) */
-	export let page: number = 1;
+	let {
+		page = 1,
+		limit = 20,
+		total = 0,
+		showLimitSelector = false,
+		limitOptions = [10, 20, 50, 100],
+		showInfo = true,
+		compact = false,
+		className = "",
+		onPage,
+		onLimit,
+		...restProps
+	}: Props = $props();
 
-	/** Items per page */
-	export let limit: number = 20;
-
-	/** Total number of items */
-	export let total: number = 0;
-
-	/** Show the items-per-page selector */
-	export let showLimitSelector: boolean = false;
-
-	/** Available limit options */
-	export let limitOptions: number[] = [10, 20, 50, 100];
-
-	/** Show "Showing X to Y of Z" info text */
-	export let showInfo: boolean = true;
-
-	/** Compact mode (smaller padding, no info text on mobile) */
-	export let compact: boolean = false;
-
-	/** Additional CSS class */
-	export let className: string = "";
-
-	$: totalPages = Math.ceil(total / limit);
-	$: startItem = total === 0 ? 0 : (page - 1) * limit + 1;
-	$: endItem = Math.min(page * limit, total);
+	let totalPages = $derived(Math.ceil(total / limit));
+	let startItem = $derived(total === 0 ? 0 : (page - 1) * limit + 1);
+	let endItem = $derived(Math.min(page * limit, total));
 
 	function handlePageChange(newPage: number) {
 		if (newPage >= 1 && newPage <= totalPages && newPage !== page) {
-			dispatch("page", newPage);
+			onPage?.(newPage);
 		}
 	}
 
 	function handleLimitChange(event: Event) {
 		const newLimit = Number((event.target as HTMLSelectElement).value);
-		dispatch("limit", newLimit);
+		onLimit?.(newLimit);
 	}
 </script>
 
@@ -89,7 +98,7 @@
 		class="underlay-pagination {className}"
 		class:compact
 		aria-label="Pagination"
-		{...$$restProps}
+		{...restProps}
 	>
 		{#if showInfo && total > 0}
 			<div class="pagination-info">
@@ -104,7 +113,7 @@
 					<select
 						id="pagination-limit"
 						value={limit}
-						on:change={handleLimitChange}
+						onchange={handleLimitChange}
 					>
 						{#each limitOptions as option}
 							<option value={option}>{option}</option>
@@ -120,7 +129,7 @@
 						type="button"
 						class="pagination-button"
 						disabled={page <= 1}
-						on:click={() => handlePageChange(1)}
+						onclick={() => handlePageChange(1)}
 						aria-label="First page"
 					>
 						««
@@ -129,7 +138,7 @@
 						type="button"
 						class="pagination-button"
 						disabled={page <= 1}
-						on:click={() => handlePageChange(page - 1)}
+						onclick={() => handlePageChange(page - 1)}
 						aria-label="Previous page"
 					>
 						«
@@ -143,7 +152,7 @@
 						type="button"
 						class="pagination-button"
 						disabled={page >= totalPages}
-						on:click={() => handlePageChange(page + 1)}
+						onclick={() => handlePageChange(page + 1)}
 						aria-label="Next page"
 					>
 						»
@@ -152,7 +161,7 @@
 						type="button"
 						class="pagination-button"
 						disabled={page >= totalPages}
-						on:click={() => handlePageChange(totalPages)}
+						onclick={() => handlePageChange(totalPages)}
 						aria-label="Last page"
 					>
 						»»

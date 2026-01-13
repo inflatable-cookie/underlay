@@ -7,14 +7,23 @@
     label: string;
   };
 
-  export let options: SplitButtonOption[] = [];
-  export let value: string;
-  export let type: "button" | "submit" = "button";
-  export let variant: "primary" | "secondary" = "primary";
+  interface Props {
+    options?: SplitButtonOption[];
+    value: string;
+    type?: "button" | "submit";
+    variant?: "primary" | "secondary";
+  }
+
+  let {
+    options = [],
+    value = $bindable(),
+    type = "button",
+    variant = "primary"
+  }: Props = $props();
 
   const menuId = createStableId("underlay-split-menu");
 
-  $: current = options.find((opt) => opt.value === value) ?? options[0] ?? null;
+  let current = $derived(options.find((opt) => opt.value === value) ?? options[0] ?? null);
 
   function choose(next: string) {
     value = next;
@@ -31,7 +40,7 @@
   <Button
     {type}
     {variant}
-    className="underlay-split-button__main"
+    class="underlay-split-button__main"
     popovertarget={menuId}
     popovertargetaction="toggle"
   >
@@ -54,7 +63,7 @@
       <button
         type="button"
         class="underlay-split-button__menu-item"
-        on:click={() => choose(opt.value)}
+        onclick={() => choose(opt.value)}
       >
         {opt.label}
       </button>

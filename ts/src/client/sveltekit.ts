@@ -1,4 +1,4 @@
-import type { Handle, RequestEvent } from "@sveltejs/kit";
+import type { Cookies, Handle, RequestEvent } from "@sveltejs/kit";
 
 import type { AuthCommands, AuthRoutes, AuthSession } from "./auth";
 import { createAuthCommands } from "./auth";
@@ -10,6 +10,99 @@ export interface CookieTokenStoreOptions {
   accessTokenCookie: string;
   refreshTokenCookie: string;
   cookie?: Parameters<RequestEvent["cookies"]["set"]>[2];
+}
+
+/**
+ * Configuration for auth cookie helpers.
+ */
+export interface AuthCookieConfig {
+  /** Cookie name for the access token (e.g., "bloom_access_token") */
+  accessTokenName: string;
+  /** Cookie name for the refresh token (e.g., "bloom_refresh_token") */
+  refreshTokenName: string;
+  /** Cookie options (path, httpOnly, sameSite, maxAge, etc.) */
+  options?: {
+    path?: string;
+    httpOnly?: boolean;
+    sameSite?: "lax" | "strict" | "none";
+    maxAge?: number;
+    secure?: boolean;
+  };
+}
+
+/**
+ * Helper functions for reading and writing auth cookies.
+ */
+export interface AuthCookieHelpers {
+  /** Read the access token from cookies (returns null if empty/missing) */
+  readAccessToken(cookies: Cookies): string | null;
+  /** Read the refresh token from cookies (returns null if empty/missing) */
+  readRefreshToken(cookies: Cookies): string | null;
+  /** Write both access and refresh tokens to cookies */
+  writeAuthTokens(
+    cookies: Cookies,
+    tokens: { accessToken: string; refreshToken: string }
+  ): void;
+  /** Clear both auth cookies */
+  clearAuthTokens(cookies: Cookies): void;
+}
+
+/**
+ * Creates auth cookie helper functions with the given configuration.
+ *
+ * Use this to create a set of cookie utilities for your app that can be
+ * used in route actions (login, logout, etc.) where you have direct access
+ * to the Cookies object but not the token store.
+ *
+ * @example
+ * ```ts
+ * // src/lib/auth.ts
+ * import { createAuthCookieHelpers } from "@decodelabs/underlay/client";
+ *
+ * export const authCookies = createAuthCookieHelpers({
+ *   accessTokenName: "bloom_access_token",
+ *   refreshTokenName: "bloom_refresh_token",
+ *   options: { maxAge: 60 * 60 * 24 * 7 }
+ * });
+ *
+ * // In routes:
+ * import { authCookies } from "$lib/auth";
+ * authCookies.writeAuthTokens(cookies, { accessToken, refreshToken });
+ * ```
+ */
+export function createAuthCookieHelpers(config: AuthCookieConfig): AuthCookieHelpers {
+  const defaultOptions = {
+    path: "/",
+    httpOnly: true,
+    sameSite: "lax" as const,
+    maxAge: 60 * 60 * 24 * 7, // 7 days
+    ...config.options,
+  };
+
+  return {
+    readAccessToken(cookies: Cookies): string | null {
+      const value = cookies.get(config.accessTokenName);
+      return value?.trim() || null;
+    },
+
+    readRefreshToken(cookies: Cookies): string | null {
+      const value = cookies.get(config.refreshTokenName);
+      return value?.trim() || null;
+    },
+
+    writeAuthTokens(
+      cookies: Cookies,
+      tokens: { accessToken: string; refreshToken: string }
+    ): void {
+      cookies.set(config.accessTokenName, tokens.accessToken, defaultOptions);
+      cookies.set(config.refreshTokenName, tokens.refreshToken, defaultOptions);
+    },
+
+    clearAuthTokens(cookies: Cookies): void {
+      cookies.delete(config.accessTokenName, { path: "/" });
+      cookies.delete(config.refreshTokenName, { path: "/" });
+    },
+  };
 }
 
 export function createCookieTokenStore(

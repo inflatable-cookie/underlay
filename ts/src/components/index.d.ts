@@ -1,3 +1,5 @@
+declare const Badge: any;
+declare const Breadcrumbs: any;
 declare const Button: any;
 declare const TextButton: any;
 declare const Card: any;
@@ -24,10 +26,14 @@ declare const DropdownMenu: any;
 declare const IconButton: any;
 declare const Tooltip: any;
 declare const Popover: any;
+declare const Skeleton: any;
+declare const DataTable: any;
+declare const FileUpload: any;
 declare const TabsRoot: any;
 declare const TabsList: any;
 declare const TabsTrigger: any;
 declare const TabsContent: any;
+declare const Pagination: any;
 
 declare const LoginForm: any;
 declare const RegisterForm: any;
@@ -41,13 +47,17 @@ declare const AccountRecovery: any;
 
 export {
   AlertDialog,
+  Badge,
+  Breadcrumbs,
   Button,
   Card,
   ConfirmAction,
+  DataTable,
   Dialog,
   DropdownMenu,
   Field,
   FieldHint,
+  FileUpload,
   Form,
   FormActions,
   FormError,
@@ -64,9 +74,11 @@ export {
   IconButton,
   ListCard,
   ListGrid,
+  Pagination,
   Popover,
   SaveSplitButton,
   Select,
+  Skeleton,
   SplitButton,
   Switch,
   TabsContent,

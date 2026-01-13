@@ -17,30 +17,19 @@ stem/
 ├── package.json
 ├── tsconfig.json
 └── src/
-    ├── index.ts              # createClient factory + exports
+    ├── index.ts              # Exports commands, types, utilities
     ├── utils/
-    │   ├── http-client.ts    # Underlay wrapper
-    │   └── client-factory.ts # configureClient + getClient
+    │   ├── http-client.ts    # HttpClient wrapper around Underlay
+    │   └── client-factory.ts # configureStem + getHttpClient
     ├── types/
     │   ├── common-types.ts   # Domain DTOs
     │   └── auth-types.ts     # Auth DTOs
     └── commands/
-        ├── core-commands.ts  # Domain commands
-        ├── auth-commands.ts  # Extended auth commands
-        └── billing-commands.ts
-```
-libs/client/
-├── package.json
-├── tsconfig.json
-└── src/
-    ├── index.ts
-    ├── client.ts            # createClient factory
-    ├── http.ts              # low-level http wrapper
-    ├── client-factory.ts    # configureClient + getClient
-    ├── errors.ts            # error helpers
-    └── commands/
-        ├── users.ts
-        └── artists.ts
+        ├── auth-commands.ts     # Auth: register, login, refresh, logout, me
+        ├── security-commands.ts # TOTP, sessions, passkeys, OAuth
+        ├── core-commands.ts     # Domain commands
+        ├── billing-commands.ts  # Billing commands
+        └── admin-commands.ts    # Admin commands
 ```
 
 ## Underlay Types and Errors
@@ -72,7 +61,7 @@ See "Advanced: Retry and Timeout" section below for configuration details.
 ### Response Types
 
 - `SingleResponse<T>` - Single item response: `{ data: T }`
-- `ListResponse<T>` - List response: `{ data: T[] }`
+- `ListResponse<T>` - List response: `{ items: T[] }`
 
 ### Token Management
 
@@ -111,20 +100,15 @@ Create `libs/client/package.json`:
 }
 ```
 
-## Step 2: HTTP Wrapper (Production Pattern)
+## Step 2: HTTP Client Wrapper
 
 **Important:** Do not reimplement HTTP client logic. Use Underlay's `createHttpClient` and wrap it with your app-specific configuration.
 
-Create `stem/src/utils/http-client.ts` (based on cattle-grid's production pattern):
+Create `stem/src/utils/http-client.ts`:
 
 ```ts
 /**
  * App-specific HTTP client wrapper around Underlay's createHttpClient.
- * 
- * This pattern provides:
- * - App-specific API version header
- * - App-specific error conversion
- * - Consistent interface for command modules
  */
 
 import { 
@@ -143,7 +127,6 @@ export interface StemClientConfig {
   fetchFn?: typeof fetch;
 }
 
-// App-specific error shape (optional - can use UnderlayHttpError directly)
 export interface ApiError extends Error {
   status: number;
   code: string;
@@ -152,10 +135,6 @@ export interface ApiError extends Error {
   raw?: unknown;
 }
 
-/**
- * Convert UnderlayHttpError to app-specific ApiError format.
- * This is optional - you can use UnderlayHttpError directly.
- */
 function convertError(error: unknown): never {
   if (error instanceof UnderlayHttpError) {
     const apiError: ApiError = Object.assign(
@@ -175,10 +154,6 @@ function convertError(error: unknown): never {
   throw error;
 }
 
-/**
- * HttpClient class wrapping Underlay's implementation.
- * Provides app-specific configuration and error conversion.
- */
 export class HttpClient {
   private underlayClient: UnderlayHttpClient;
 
@@ -186,7 +161,7 @@ export class HttpClient {
     const underlayOptions: HttpClientOptions = {
       baseUrl: config.baseUrl.replace(/\/+$/, ''),
       defaultHeaders: {
-        'X-Songsprout-Api-Version': config.apiVersion  // App-specific header
+        'X-Api-Version': config.apiVersion
       },
       fetch: config.fetchFn,
       timeoutMs: config.timeoutMs ?? 8000,
@@ -233,770 +208,482 @@ export class HttpClient {
 }
 ```
 
-**Key points:**
-- Always use `createHttpClient` from Underlay - never reimplement retry/timeout logic
-- Add your app's API version header via `defaultHeaders`
-- Error conversion is optional but helps maintain backward compatibility
-- The wrapper provides a consistent interface for command modules
+## Step 3: Client Factory
 
-## Step 3: Commands (Domain-Organized)
-
-Example `users` commands in `libs/client/src/commands/users.ts`:
-
-```ts
-import type { HttpClient } from "@decodelabs/underlay";
-import type { ListResponse, SingleResponse } from "@decodelabs/underlay";
-
-export interface UserDto {
-  userId: string;
-  email: string;
-  createdAt: string;
-}
-
-export interface UsersCommands {
-  list(): Promise<ListResponse<UserDto>>;
-  get(userId: string): Promise<SingleResponse<UserDto>>;
-}
-
-export function createUsersCommands(http: HttpClient, getToken: () => string | null): UsersCommands {
-  function authHeaders(): Record<string, string> {
-    const token = getToken();
-    return token ? { Authorization: `Bearer ${token}` } : {};
-  }
-
-  return {
-    list() {
-      return http.get("/users", authHeaders());
-    },
-    get(userId) {
-      return http.get(`/users/${encodeURIComponent(userId)}`, authHeaders());
-    },
-  };
-}
-```
-
-## Step 4: Client Factory
-
-Create `libs/client/src/client.ts`:
-
-```ts
-import type { HttpClient } from "@decodelabs/underlay";
-
-import { createClientHttp, type ClientHttpConfig } from "./http";
-import { createUsersCommands } from "./commands/users";
-
-export interface ApiClient {
-  users: ReturnType<typeof createUsersCommands>;
-}
-
-export function createClient(config: ClientHttpConfig): ApiClient {
-  const http: HttpClient = createClientHttp(config);
-
-  return {
-    users: createUsersCommands(http, config.getToken),
-  };
-}
-```
-
-In `libs/client/src/index.ts`:
-
-```ts
-export * from "./client";
-export * from "./http";
-export * from "./commands/users";
-```
-
-## Step 5: Frontend Integration (Client Factory Pattern)
-
-**Important:** Avoid duplicating client wrapper code across multiple frontends. Instead, add a client factory to your shared API client library that handles configuration once at startup.
-
-### Step 5a: Add Client Factory to API Client Library
-
-Create `api-client/src/utils/client-factory.ts`:
+Create `stem/src/utils/client-factory.ts`:
 
 ```ts
 /**
- * Client factory for the API client library.
- *
- * Usage:
- *   // In hooks.server.ts (once at startup):
- *   import { configureClient } from "@myorg/client";
- *   configureClient({ baseUrl: "...", apiVersion: "..." });
- *
- *   // In routes (on each request):
- *   import { getClient } from "@myorg/client";
- *   const client = getClient({ fetchFn: fetch, accessToken: token });
+ * Client factory - provides configured HttpClient instances for commands
  */
+import { HttpClient, type StemClientConfig } from "./http-client.js";
 
-import { createClient, type ApiClient } from "../index.js";
-
-export interface ClientConfig {
+export interface StemConfig {
   baseUrl: string;
   apiVersion: string;
 }
 
-export interface GetClientOptions {
-  fetchFn: typeof fetch;
-  accessToken: string | null | undefined;
+export interface HttpClientOptions {
+  fetchFn?: typeof fetch;
+  accessToken?: string | null;
 }
 
-let storedConfig: ClientConfig | null = null;
+let stemConfig: StemConfig | null = null;
 
 /**
- * Configure the client with base URL and API version.
- * Call this once at app startup (e.g., in hooks.server.ts).
+ * Configure the client factory with base URL and API version.
+ * Must be called once at app startup (e.g., in hooks.server.ts).
  */
-export function configureClient(config: ClientConfig): void {
-  storedConfig = config;
+export function configureStem(config: StemConfig): void {
+  stemConfig = config;
 }
 
 /**
- * Create a client using the stored configuration.
- * Call this on each request with the request-specific fetch and token.
+ * Get an HttpClient instance configured with the app's base URL.
+ * @throws Error if configureStem() has not been called
  */
-export function getClient(options: GetClientOptions): ApiClient {
-  if (!storedConfig) {
+export function getHttpClient(options?: HttpClientOptions): HttpClient {
+  if (!stemConfig) {
     throw new Error(
-      "Client not configured. Call configureClient() before getClient()."
+      "Client not configured. Call configureStem() at app startup."
     );
   }
 
-  return createClient({
-    baseUrl: storedConfig.baseUrl,
-    apiVersion: storedConfig.apiVersion,
-    fetchFn: options.fetchFn,
-    getToken: () => options.accessToken ?? null
+  return new HttpClient({
+    baseUrl: stemConfig.baseUrl,
+    apiVersion: stemConfig.apiVersion,
+    fetchFn: options?.fetchFn,
+    getToken: options?.accessToken ? () => options.accessToken! : undefined,
   });
 }
 ```
 
-Export from `api-client/src/index.ts`:
+## Step 4: Commands (Standalone Functions)
+
+**Key principle:** Commands are standalone async functions that call `http.get()`/`http.post()` directly. They accept `fetchFn` and `accessToken` as parameters and unwrap responses.
+
+### Parameter Conventions
+
+- Functions **with payload**: `(payload, fetchFn, accessToken?)`
+- Functions **without payload**: `(fetchFn, accessToken)`
+- Functions **with ID + payload**: `(id, payload, fetchFn, accessToken)`
+- Functions **with ID only**: `(id, fetchFn, accessToken)`
+
+### Example: Auth Commands
+
+Create `stem/src/commands/auth-commands.ts`:
 
 ```ts
-export {
-  configureClient,
-  getClient,
-  type ClientConfig,
-  type GetClientOptions
-} from "./utils/client-factory.js";
-```
-
-### Step 5b: Configure in Frontend hooks.server.ts
-
-In each frontend app, configure the client once at module load:
-
-```ts
-// frontend-web/src/hooks.server.ts
-
-import type { Handle } from "@sveltejs/kit";
-import { configureClient, getClient } from "@myorg/client";
-import { env } from "$env/dynamic/public";
-
-// Configure client once at module load
-configureClient({
-  baseUrl: env.PUBLIC_API_URL ?? "http://127.0.0.1:3000",
-  apiVersion: env.PUBLIC_API_VERSION ?? "2025-01-01"
-});
-
-export const handle: Handle = async ({ event, resolve }) => {
-  // ... session handling, token refresh, etc.
-  return resolve(event);
-};
-```
-
-### Step 5c: Use in Routes
-
-In route files, import `getClient` directly from the shared library:
-
-```ts
-// frontend-web/src/routes/users/+page.server.ts
-
-import type { PageServerLoad } from "./$types";
-import { getClient } from "@myorg/client";
-
-export const load: PageServerLoad = async ({ fetch, locals }) => {
-  const client = getClient({ fetchFn: fetch, accessToken: locals.authToken });
-  const users = await client.users.list();
-  return { users: users.data };
-};
-```
-
-**Key benefits of this pattern:**
-- No duplicate `$lib/api/client.ts` files across frontends
-- Configuration happens once, not on every request
-- All frontends use the same client factory from the shared library
-- Easy to add new frontends without copying boilerplate
-
-## Advanced: Token Refresh
-
-For applications that need automatic token refresh, use `HttpAuthOptions`:
-
-```ts
-import {
-  createHttpClient,
-  type HttpClient,
-  type TokenStore,
-  MemoryTokenStore,
-} from "@decodelabs/underlay";
-
-const tokenStore = new MemoryTokenStore();
-
-const http = createHttpClient({
-  baseUrl: "http://127.0.0.1:3000",
-  auth: {
-    tokenStore,
-    refresh: async (ctx) => {
-      const refreshToken = await ctx.getRefreshToken();
-      if (!refreshToken) {
-        return { retry: false };
-      }
-
-      try {
-        const result = await ctx.rawRequest<SingleResponse<{ accessToken: string; refreshToken: string }>>({
-          method: "POST",
-          path: "/auth/refresh",
-          body: { refreshToken },
-        });
-
-        await ctx.setAccessToken(result.data.accessToken);
-        await ctx.setRefreshToken(result.data.refreshToken);
-
-        return {
-          accessToken: result.data.accessToken,
-          refreshToken: result.data.refreshToken,
-          retry: true,
-        };
-      } catch (err) {
-        // Refresh failed, clear tokens
-        await ctx.setAccessToken(null);
-        await ctx.setRefreshToken(null);
-        return { retry: false };
-      }
-    },
-  },
-});
-```
-
-### Custom Token Storage
-
-Implement `TokenStore` for persistent storage (localStorage, cookies, etc.):
-
-```ts
-import type { TokenStore } from "@decodelabs/underlay";
-
-export class LocalStorageTokenStore implements TokenStore {
-  private keyPrefix = "auth_";
-
-  getAccessToken(): string | null {
-    return localStorage.getItem(`${this.keyPrefix}access_token`);
-  }
-
-  setAccessToken(token: string | null): void {
-    if (token) {
-      localStorage.setItem(`${this.keyPrefix}access_token`, token);
-    } else {
-      localStorage.removeItem(`${this.keyPrefix}access_token`);
-    }
-  }
-
-  getRefreshToken(): string | null {
-    return localStorage.getItem(`${this.keyPrefix}refresh_token`);
-  }
-
-  setRefreshToken(token: string | null): void {
-    if (token) {
-      localStorage.setItem(`${this.keyPrefix}refresh_token`, token);
-    } else {
-      localStorage.removeItem(`${this.keyPrefix}refresh_token`);
-    }
-  }
-
-  clear(): void {
-    localStorage.removeItem(`${this.keyPrefix}access_token`);
-    localStorage.removeItem(`${this.keyPrefix}refresh_token`);
-  }
-}
-```
-
-## Extended Auth Commands
-
-Underlay provides a base `createAuthCommands()` with essential operations:
-- `register()`, `loginWithPassword()`, `loginWithPasskey()`, `logout()`, `refresh()`, `session()`
-
-**Apps typically need extended auth commands** for TOTP, passkey management, OAuth, and sessions. Create these in your client library.
-
-### Example: Extended Auth Commands (from cattle-grid/Songsprout)
-
-```typescript
-// stem/src/commands/auth-commands.ts
-
-import type { HttpClient } from "../utils/http-client.js";
-import type { ListResponse, SingleResponse } from "../types/common-types.js";
+/**
+ * Auth commands - authentication operations
+ */
+import type { SingleResponse } from "../types/common-types.js";
 import type {
   AuthSession,
   LoginRequest,
   LogoutRequest,
   RefreshRequest,
   RegisterRequest,
-  TotpSetupResponse,
-  TotpStatusResponse,
-  TotpEnableRequest,
-  PasskeyCredential,
-  PasskeyStartResponse,
-  PasskeyLoginStartRequest,
-  PasskeyLoginFinishRequest,
-  PasskeyRegisterFinishRequest,
-  GoogleOAuthStartResponse,
-  GoogleOAuthCallbackRequest,
-  GoogleOAuthStatusResponse,
-  SessionSummary,
+  User,
 } from "../types/auth-types.js";
+import { getHttpClient } from "../utils/client-factory.js";
 
-export interface AuthCommands {
-  // Core auth (matches Underlay's base commands)
-  register(payload: RegisterRequest): Promise<SingleResponse<AuthSession>>;
-  login(payload: LoginRequest): Promise<SingleResponse<AuthSession>>;
-  refresh(payload: RefreshRequest): Promise<SingleResponse<AuthSession>>;
-  logout(payload: LogoutRequest): Promise<void>;
-  me(): Promise<SingleResponse<User>>;
-
-  // TOTP / Two-factor
-  totpStatus(): Promise<SingleResponse<TotpStatusResponse>>;
-  totpSetup(): Promise<SingleResponse<TotpSetupResponse>>;
-  totpEnable(payload: TotpEnableRequest): Promise<void>;
-  totpDisable(): Promise<void>;
-
-  // Session management
-  listSessions(): Promise<ListResponse<SessionSummary>>;
-  revokeSession(sessionId: string): Promise<void>;
-
-  // Passkey registration (for authenticated users)
-  passkeyRegisterStart(): Promise<SingleResponse<PasskeyStartResponse>>;
-  passkeyRegisterFinish(payload: PasskeyRegisterFinishRequest): Promise<SingleResponse<PasskeyCredential>>;
-  listPasskeys(): Promise<ListResponse<PasskeyCredential>>;
-  deletePasskey(credentialId: string): Promise<void>;
-  renamePasskey(credentialId: string, displayName: string): Promise<void>;
-
-  // Passkey login (for unauthenticated users)
-  passkeyLoginStart(payload: PasskeyLoginStartRequest): Promise<SingleResponse<PasskeyStartResponse>>;
-  passkeyLoginFinish(payload: PasskeyLoginFinishRequest): Promise<SingleResponse<AuthSession>>;
-
-  // Google OAuth
-  googleOauthStart(): Promise<SingleResponse<GoogleOAuthStartResponse>>;
-  googleOauthCallback(payload: GoogleOAuthCallbackRequest): Promise<SingleResponse<AuthSession>>;
-  googleOauthStatus(): Promise<SingleResponse<GoogleOAuthStatusResponse>>;
-  googleOauthDisconnect(): Promise<void>;
+export async function register(
+  payload: RegisterRequest,
+  fetchFn: typeof fetch,
+): Promise<AuthSession> {
+  const http = getHttpClient({ fetchFn });
+  const response = await http.post<SingleResponse<AuthSession>>("/v1/auth/register", payload);
+  return response.data;
 }
 
-export function createAuthCommands(http: HttpClient): AuthCommands {
-  return {
-    // Core auth
-    register: (payload) => http.post("/v1/auth/register", payload),
-    login: (payload) => http.post("/v1/auth/login", payload),
-    refresh: (payload) => http.post("/v1/auth/refresh", payload),
-    logout: async (payload) => { await http.post("/v1/auth/logout", payload); },
-    me: () => http.get("/v1/auth/me"),
+export async function login(
+  payload: LoginRequest,
+  fetchFn: typeof fetch,
+): Promise<AuthSession> {
+  const http = getHttpClient({ fetchFn });
+  const response = await http.post<SingleResponse<AuthSession>>("/v1/auth/login", payload);
+  return response.data;
+}
 
-    // TOTP
-    totpStatus: () => http.get("/v1/auth/totp/status"),
-    totpSetup: () => http.post("/v1/auth/totp/setup", {}),
-    totpEnable: async (payload) => { await http.post("/v1/auth/totp/enable", payload); },
-    totpDisable: async () => { await http.post("/v1/auth/totp/disable", {}); },
+export async function refresh(
+  payload: RefreshRequest,
+  fetchFn: typeof fetch,
+): Promise<AuthSession> {
+  const http = getHttpClient({ fetchFn });
+  const response = await http.post<SingleResponse<AuthSession>>("/v1/auth/refresh", payload);
+  return response.data;
+}
 
-    // Sessions
-    listSessions: () => http.get("/v1/auth/sessions"),
-    revokeSession: async (sessionId) => {
-      await http.post(`/v1/auth/sessions/${encodeURIComponent(sessionId)}/revoke`, {});
-    },
+export async function logout(
+  payload: LogoutRequest,
+  fetchFn: typeof fetch,
+): Promise<void> {
+  const http = getHttpClient({ fetchFn });
+  await http.post("/v1/auth/logout", payload);
+}
 
-    // Passkeys
-    passkeyRegisterStart: () => http.post("/v1/auth/passkeys/register/start", {}),
-    passkeyRegisterFinish: (payload) => http.post("/v1/auth/passkeys/register/finish", payload),
-    listPasskeys: () => http.get("/v1/auth/passkeys"),
-    deletePasskey: async (credentialId) => {
-      await http.post(`/v1/auth/passkeys/${encodeURIComponent(credentialId)}/delete`, {});
-    },
-    renamePasskey: async (credentialId, displayName) => {
-      await http.post(`/v1/auth/passkeys/${encodeURIComponent(credentialId)}/rename`, { displayName });
-    },
-    passkeyLoginStart: (payload) => http.post("/v1/auth/passkeys/login/start", payload),
-    passkeyLoginFinish: (payload) => http.post("/v1/auth/passkeys/login/finish", payload),
-
-    // Google OAuth
-    googleOauthStart: () => http.post("/v1/auth/oauth/google/start", {}),
-    googleOauthCallback: (payload) => http.post("/v1/auth/oauth/google/callback", payload),
-    googleOauthStatus: () => http.get("/v1/auth/oauth/google/status"),
-    googleOauthDisconnect: async () => { await http.post("/v1/auth/oauth/google/disconnect", {}); },
-  };
+export async function me(
+  fetchFn: typeof fetch,
+  accessToken: string,
+): Promise<User> {
+  const http = getHttpClient({ fetchFn, accessToken });
+  const response = await http.get<SingleResponse<User>>("/v1/auth/me");
+  return response.data;
 }
 ```
 
-**Key points:**
-- Extended auth commands are app-specific because route paths may vary
-- The pattern matches Underlay's base `createAuthCommands()` structure
-- Use Underlay's auth UI components (LoginForm, TotpSetup, SessionList, etc.) with your commands
+### Example: Core Commands
 
-## Production Patterns
+Create `stem/src/commands/core-commands.ts`:
 
-> **Note**: As of Underlay v0.1.0 (January 2026), **retry logic and timeout handling are built into `createHttpClient`**. The examples below show how to implement these patterns from scratch for educational purposes, but you can use Underlay's built-in features instead:
->
-> ```ts
-> const client = createHttpClient({
->   baseUrl: 'https://api.example.com',
->   maxRetries: 3,              // Default: 3
->   retryStatuses: [429],       // Add custom retry status codes (502, 503, 504 are default)
->   timeoutMs: 10000,           // Default: 8000ms
->   debug: true,                // Optional: log requests/retries
->   // ... plus all the auth/token options
-> });
-> ```
->
-> See [`ts/src/client/http.ts`](../../ts/src/client/http.ts) for the implementation.
+```ts
+/**
+ * Core commands - domain operations
+ */
+import type { SingleResponse, ListResponse } from "../types/common-types.js";
+import type { Artist, Track, Release } from "../types/common-types.js";
+import { getHttpClient } from "../utils/client-factory.js";
 
-### Retry Logic
-
-Add automatic retries for transient errors (503, 504, network failures):
-
-```typescript
-// libs/client/src/http-with-retry.ts
-
-interface RetryConfig {
-  maxRetries: number;
-  retryDelay: number; // milliseconds
-  retryableStatusCodes: number[];
+export async function getArtist(
+  artistId: string,
+  fetchFn: typeof fetch,
+  accessToken: string | null,
+): Promise<Artist> {
+  const http = getHttpClient({ fetchFn, accessToken });
+  const response = await http.get<SingleResponse<Artist>>(
+    `/v1/artists/${encodeURIComponent(artistId)}`
+  );
+  return response.data;
 }
 
-export class HttpClientWithRetry {
-  private baseUrl: string;
-  private fetchFn: typeof fetch;
-  private retryConfig: RetryConfig;
+export async function listTracks(
+  artistId: string,
+  fetchFn: typeof fetch,
+  accessToken: string | null,
+): Promise<Track[]> {
+  const http = getHttpClient({ fetchFn, accessToken });
+  const response = await http.get<ListResponse<Track>>(
+    `/v1/artists/${encodeURIComponent(artistId)}/tracks`
+  );
+  return response.items;
+}
 
-  constructor(
-    baseUrl: string,
-    fetchFn: typeof fetch = fetch,
-    retryConfig?: Partial<RetryConfig>
-  ) {
-    this.baseUrl = baseUrl;
-    this.fetchFn = fetchFn;
-    this.retryConfig = {
-      maxRetries: 3,
-      retryDelay: 1000,
-      retryableStatusCodes: [502, 503, 504],
-      ...retryConfig,
-    };
-  }
-
-  async request<T>(
-    method: string,
-    path: string,
-    body?: unknown
-  ): Promise<T> {
-    let lastError: Error | null = null;
-    const isIdempotent = method === "GET" || method === "HEAD";
-
-    const maxAttempts = isIdempotent ? this.retryConfig.maxRetries : 1;
-
-    for (let attempt = 0; attempt < maxAttempts; attempt++) {
-      try {
-        const response = await this.fetchFn(`${this.baseUrl}${path}`, {
-          method,
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: body ? JSON.stringify(body) : undefined,
-        });
-
-        if (!response.ok) {
-          // Check if we should retry
-          const shouldRetry =
-            isIdempotent &&
-            this.retryConfig.retryableStatusCodes.includes(response.status) &&
-            attempt < maxAttempts - 1;
-
-          if (shouldRetry) {
-            await this.sleep(this.retryConfig.retryDelay * (attempt + 1));
-            continue;
-          }
-
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
-
-        return await response.json();
-      } catch (err) {
-        lastError = err instanceof Error ? err : new Error(String(err));
-
-        // Network errors - retry if idempotent
-        if (isIdempotent && attempt < maxAttempts - 1) {
-          await this.sleep(this.retryConfig.retryDelay * (attempt + 1));
-          continue;
-        }
-
-        throw lastError;
-      }
-    }
-
-    throw lastError || new Error("Request failed after retries");
-  }
-
-  private sleep(ms: number): Promise<void> {
-    return new Promise((resolve) => setTimeout(resolve, ms));
-  }
+export async function listReleases(
+  artistId: string,
+  fetchFn: typeof fetch,
+  accessToken: string | null,
+): Promise<Release[]> {
+  const http = getHttpClient({ fetchFn, accessToken });
+  const response = await http.get<ListResponse<Release>>(
+    `/v1/artists/${encodeURIComponent(artistId)}/releases`
+  );
+  return response.items;
 }
 ```
 
-### Timeout Handling
+### Example: Security Commands
 
-Add request timeouts using AbortController:
+Create `stem/src/commands/security-commands.ts`:
 
-```typescript
-// libs/client/src/http-with-timeout.ts
+```ts
+/**
+ * Security commands - TOTP, sessions, passkeys, OAuth
+ */
+import type { SingleResponse, ListResponse } from "../types/common-types.js";
+import type {
+  TotpStatus,
+  TotpSetup,
+  SessionSummary,
+  PasskeyCredential,
+  GoogleOAuthStart,
+} from "../types/auth-types.js";
+import { getHttpClient } from "../utils/client-factory.js";
 
-export class HttpClientWithTimeout {
-  private baseUrl: string;
-  private fetchFn: typeof fetch;
-  private timeoutMs: number;
+// TOTP
+export async function totpStatus(
+  fetchFn: typeof fetch,
+  accessToken: string,
+): Promise<TotpStatus> {
+  const http = getHttpClient({ fetchFn, accessToken });
+  const response = await http.get<SingleResponse<TotpStatus>>("/v1/auth/totp/status");
+  return response.data;
+}
 
-  constructor(
-    baseUrl: string,
-    fetchFn: typeof fetch = fetch,
-    timeoutMs: number = 30000 // 30 seconds
-  ) {
-    this.baseUrl = baseUrl;
-    this.fetchFn = fetchFn;
-    this.timeoutMs = timeoutMs;
-  }
+export async function totpSetup(
+  fetchFn: typeof fetch,
+  accessToken: string,
+): Promise<TotpSetup> {
+  const http = getHttpClient({ fetchFn, accessToken });
+  const response = await http.post<SingleResponse<TotpSetup>>("/v1/auth/totp/setup", {});
+  return response.data;
+}
 
-  async request<T>(
-    method: string,
-    path: string,
-    body?: unknown
-  ): Promise<T> {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), this.timeoutMs);
+export async function totpEnable(
+  fetchFn: typeof fetch,
+  accessToken: string,
+  setupId: string,
+  code: string,
+): Promise<void> {
+  const http = getHttpClient({ fetchFn, accessToken });
+  await http.post("/v1/auth/totp/enable", { setupId, code });
+}
 
-    try {
-      const response = await this.fetchFn(`${this.baseUrl}${path}`, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: body ? JSON.stringify(body) : undefined,
-        signal: controller.signal,
-      });
+// Sessions
+export async function listSessions(
+  fetchFn: typeof fetch,
+  accessToken: string,
+): Promise<SessionSummary[]> {
+  const http = getHttpClient({ fetchFn, accessToken });
+  const response = await http.get<ListResponse<SessionSummary>>("/v1/auth/sessions");
+  return response.items;
+}
 
-      clearTimeout(timeoutId);
+export async function revokeSession(
+  fetchFn: typeof fetch,
+  accessToken: string,
+  sessionId: string,
+): Promise<void> {
+  const http = getHttpClient({ fetchFn, accessToken });
+  await http.post(`/v1/auth/sessions/${encodeURIComponent(sessionId)}/revoke`, {});
+}
 
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
+// Passkeys
+export async function listPasskeys(
+  fetchFn: typeof fetch,
+  accessToken: string,
+): Promise<PasskeyCredential[]> {
+  const http = getHttpClient({ fetchFn, accessToken });
+  const response = await http.get<ListResponse<PasskeyCredential>>("/v1/auth/passkeys");
+  return response.items;
+}
 
-      return await response.json();
-    } catch (err) {
-      clearTimeout(timeoutId);
-
-      if (err instanceof Error && err.name === "AbortError") {
-        throw new Error(`Request timeout after ${this.timeoutMs}ms`);
-      }
-
-      throw err;
-    }
-  }
+// Google OAuth
+export async function googleOauthStart(
+  fetchFn: typeof fetch,
+): Promise<GoogleOAuthStart> {
+  const http = getHttpClient({ fetchFn });
+  const response = await http.post<SingleResponse<GoogleOAuthStart>>(
+    "/v1/auth/oauth/google/start",
+    {}
+  );
+  return response.data;
 }
 ```
 
-### Combined: Retry + Timeout
+## Step 5: Index Exports
 
-Combine both patterns for production-ready client:
+Create `stem/src/index.ts`:
 
-```typescript
-// libs/client/src/http-resilient.ts
+```ts
+// Types
+export * from "./types/common-types.js";
+export * from "./types/auth-types.js";
+export type { ApiError, StemClientConfig } from "./utils/http-client.js";
 
-interface ResilientHttpClientOptions {
-  baseUrl: string;
-  fetchFn?: typeof fetch;
-  timeoutMs?: number;
-  maxRetries?: number;
-  retryDelay?: number;
-  retryableStatusCodes?: number[];
-}
+// Utilities
+export { toUserMessage } from "./utils/api-error.js";
 
-export class ResilientHttpClient {
-  private options: Required<ResilientHttpClientOptions>;
+// Client factory (for apps to configure)
+export { configureStem, getHttpClient } from "./utils/client-factory.js";
+export type { StemConfig, HttpClientOptions } from "./utils/client-factory.js";
 
-  constructor(options: ResilientHttpClientOptions) {
-    this.options = {
-      fetchFn: fetch,
-      timeoutMs: 30000,
-      maxRetries: 3,
-      retryDelay: 1000,
-      retryableStatusCodes: [502, 503, 504],
-      ...options,
-    };
-  }
+// Command namespaces (THE public API for apps)
+export * as authCommands from "./commands/auth-commands.js";
+export * as coreCommands from "./commands/core-commands.js";
+export * as securityCommands from "./commands/security-commands.js";
+export * as billingCommands from "./commands/billing-commands.js";
+export * as adminCommands from "./commands/admin-commands.js";
 
-  async request<T>(
-    method: string,
-    path: string,
-    body?: unknown
-  ): Promise<T> {
-    const isIdempotent = method === "GET" || method === "HEAD";
-    const maxAttempts = isIdempotent ? this.options.maxRetries : 1;
-
-    let lastError: Error | null = null;
-
-    for (let attempt = 0; attempt < maxAttempts; attempt++) {
-      try {
-        return await this.singleRequest<T>(method, path, body);
-      } catch (err) {
-        lastError = err instanceof Error ? err : new Error(String(err));
-
-        // Determine if we should retry
-        const isRetryable =
-          isIdempotent &&
-          attempt < maxAttempts - 1 &&
-          this.isRetryableError(err);
-
-        if (isRetryable) {
-          const delay = this.options.retryDelay * (attempt + 1);
-          await this.sleep(delay);
-          continue;
-        }
-
-        throw lastError;
-      }
-    }
-
-    throw lastError || new Error("Request failed");
-  }
-
-  private async singleRequest<T>(
-    method: string,
-    path: string,
-    body?: unknown
-  ): Promise<T> {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(
-      () => controller.abort(),
-      this.options.timeoutMs
-    );
-
-    try {
-      const response = await this.options.fetchFn(
-        `${this.options.baseUrl}${path}`,
-        {
-          method,
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: body ? JSON.stringify(body) : undefined,
-          signal: controller.signal,
-        }
-      );
-
-      clearTimeout(timeoutId);
-
-      if (!response.ok) {
-        const error = new Error(`HTTP ${response.status}`);
-        (error as any).status = response.status;
-        throw error;
-      }
-
-      return await response.json();
-    } catch (err) {
-      clearTimeout(timeoutId);
-
-      if (err instanceof Error && err.name === "AbortError") {
-        throw new Error(`Request timeout after ${this.options.timeoutMs}ms`);
-      }
-
-      throw err;
-    }
-  }
-
-  private isRetryableError(err: unknown): boolean {
-    if (err instanceof Error) {
-      // Retry on timeout
-      if (err.message.includes("timeout")) {
-        return true;
-      }
-
-      // Retry on specific status codes
-      const status = (err as any).status;
-      if (status && this.options.retryableStatusCodes.includes(status)) {
-        return true;
-      }
-
-      // Retry on network errors
-      if (err.name === "TypeError" || err.name === "NetworkError") {
-        return true;
-      }
-    }
-
-    return false;
-  }
-
-  private sleep(ms: number): Promise<void> {
-    return new Promise((resolve) => setTimeout(resolve, ms));
-  }
-}
+// Re-export command types for convenience
+export type { PricingPlan } from "./commands/billing-commands.js";
+export { PRICING_PLANS } from "./commands/billing-commands.js";
 ```
 
-**Usage:**
+## Step 6: Frontend Integration
 
-```typescript
-import { ResilientHttpClient } from "./http-resilient";
+### Configuration for SvelteKit
 
-const client = new ResilientHttpClient({
-  baseUrl: "https://api.example.com",
-  timeoutMs: 10000, // 10 seconds
-  maxRetries: 3,
-  retryDelay: 500, // 500ms, 1000ms, 1500ms
+The client library needs to be configured on **both server and client** to support:
+- Server-side rendering (`+page.server.ts`)
+- Universal load functions (`+page.ts`)
+- Client-side navigation
+
+#### Server Configuration (hooks.server.ts)
+
+Configure the client at module load and set up response header filtering for universal load functions:
+
+```ts
+// web/src/hooks.server.ts
+
+import type { Handle } from "@sveltejs/kit";
+import { createCookieTokenStore } from "@decodelabs/underlay/client";
+import { configureStem, authCommands } from "@stem";
+import { env } from "$env/dynamic/public";
+
+// Configure client once at module load
+configureStem({
+  baseUrl: env.PUBLIC_API_URL ?? "http://127.0.0.1:4100",
+  apiVersion: env.PUBLIC_API_VERSION ?? "v1"
 });
 
-// Automatically retries on 503 or network failure
-const data = await client.request("GET", "/v1/users");
+export const handle: Handle = async ({ event, resolve }) => {
+  const tokenStore = createCookieTokenStore(event, {
+    accessTokenCookie: "access_token",
+    refreshTokenCookie: "refresh_token",
+  });
+
+  let accessToken = await tokenStore.getAccessToken();
+  const refreshToken = await tokenStore.getRefreshToken();
+
+  // Refresh session if needed
+  if (!accessToken && refreshToken) {
+    try {
+      const session = await authCommands.refresh({ refreshToken }, event.fetch);
+      accessToken = session.accessToken;
+      await tokenStore.setAccessToken(session.accessToken);
+      await tokenStore.setRefreshToken(session.refreshToken);
+    } catch {
+      await tokenStore.clear();
+    }
+  }
+
+  event.locals.isAuthenticated = accessToken != null;
+  
+  return resolve(event, {
+    // IMPORTANT: Allow content-type header to be serialized for universal load functions
+    // This is required so the HTTP client can determine response format
+    filterSerializedResponseHeaders: (name) => {
+      return name === "content-type";
+    }
+  });
+};
 ```
 
-### Exponential Backoff
+#### Client Configuration (hooks.client.ts)
 
-Improve retry delays with exponential backoff:
+**Required for universal load functions** (`+page.ts`) - these run in the browser too:
 
-```typescript
-private calculateRetryDelay(attempt: number): number {
-  const baseDelay = this.options.retryDelay;
-  const exponentialDelay = baseDelay * Math.pow(2, attempt);
-  const maxDelay = 10000; // Cap at 10 seconds
-  
-  // Add jitter to prevent thundering herd
-  const jitter = Math.random() * 1000;
-  
-  return Math.min(exponentialDelay + jitter, maxDelay);
-}
+```ts
+// web/src/hooks.client.ts
 
-// In retry loop:
-await this.sleep(this.calculateRetryDelay(attempt));
+import { configureStem } from "@stem";
+import { env } from "$env/dynamic/public";
+
+// Configure client on the client side
+// This is needed for universal load functions (+page.ts) that run in the browser
+configureStem({
+  baseUrl: env.PUBLIC_API_URL ?? "http://127.0.0.1:4100",
+  apiVersion: env.PUBLIC_API_VERSION ?? "v1"
+});
 ```
 
-### Production Client Pattern
+> **Why is this needed?**
+>
+> - `hooks.server.ts` only runs on the server
+> - Universal load functions (`+page.ts`) run on both server and client
+> - When navigating client-side, the load function runs in the browser where `hooks.server.ts` never executed
+> - Without `hooks.client.ts`, commands fail with "Client not configured" error
 
-For a production-ready reference, a typical API client implements:
-- Automatic retries for 502/503/504 on GET requests
-- Request timeouts with AbortController
-- Exponential backoff with jitter
-- Type-safe error handling
-- Request/response interceptors
+### Use in Server Routes (+page.server.ts)
 
-**Reference:** See your project's `libs/client/src/utils/http-client.ts`
+Server-only load functions have access to cookies directly:
+
+```ts
+// web/src/routes/dashboard/+page.server.ts
+
+import type { PageServerLoad } from "./$types";
+import { coreCommands } from "@stem";
+
+export const load: PageServerLoad = async ({ fetch, locals, cookies }) => {
+  const accessToken = cookies.get("access_token") ?? null;
+  const artistId = locals.artistId;
+
+  const [artist, tracks, releases] = await Promise.all([
+    coreCommands.getArtist(artistId, fetch, accessToken),
+    coreCommands.listTracks(artistId, fetch, accessToken),
+    coreCommands.listReleases(artistId, fetch, accessToken),
+  ]);
+
+  return { artist, tracks, releases };
+};
+```
+
+### Use in Universal Routes (+page.ts)
+
+Universal load functions run on both server and client. Get the auth token from parent data:
+
+```ts
+// web/src/routes/dashboard/+page.ts
+
+import type { PageLoad } from "./$types";
+import { coreCommands } from "@stem";
+
+export const load: PageLoad = async ({ fetch, parent }) => {
+  const parentData = await parent();
+  const accessToken = parentData.isAuthenticated ? parentData.authToken : null;
+
+  const tracks = await coreCommands.listTracks("artist-123", fetch, accessToken);
+
+  return { tracks };
+};
+```
+
+> **Note:** Universal load functions require both `hooks.client.ts` and the `filterSerializedResponseHeaders` option in `hooks.server.ts`.
+
+### Use in Form Actions
+
+```ts
+// web/src/routes/login/+page.server.ts
+
+import type { Actions } from "./$types";
+import { fail, redirect } from "@sveltejs/kit";
+import { authCommands } from "@stem";
+import { createCookieTokenStore } from "@decodelabs/underlay/client";
+
+export const actions: Actions = {
+  default: async ({ request, fetch, cookies }) => {
+    const formData = await request.formData();
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
+
+    try {
+      const session = await authCommands.login({ email, password }, fetch);
+
+      const tokenStore = createCookieTokenStore({ cookies }, {
+        accessTokenCookie: "access_token",
+        refreshTokenCookie: "refresh_token",
+      });
+
+      await tokenStore.setAccessToken(session.accessToken);
+      await tokenStore.setRefreshToken(session.refreshToken);
+
+      throw redirect(302, "/dashboard");
+    } catch (error) {
+      return fail(400, { error: "Invalid credentials" });
+    }
+  },
+};
+```
+
+## Key Benefits
+
+This pattern provides:
+
+1. **Single layer of abstraction** - Commands call `http.get()`/`http.post()` directly
+2. **No intermediate client object** - Import command namespaces directly
+3. **Response unwrapping** - Commands return `T` not `SingleResponse<T>`
+4. **Clear parameter convention** - `(payload?, fetchFn, accessToken?)`
+5. **Type safety** - Full TypeScript support with proper return types
+6. **Testability** - Commands are pure functions, easy to mock
 
 ## Notes
 
-- This client expects the API to return `ListResponse { data: [...] }` and `SingleResponse { data: ... }`.
-- On non-2xx responses, Underlay throws `UnderlayHttpError`. The error envelope (if present) is available at `err.envelope`.
-- Use `isErrorEnvelope()` to safely check if an unknown value is an error envelope.
-- `TokenStore` implementations can be synchronous or async (returning promises).
-- **Production:** Always implement retries for idempotent requests (GET, HEAD)
-- **Production:** Always implement timeouts to prevent hanging requests
-- **Production:** Use exponential backoff with jitter for retries
+- Commands call `getHttpClient()` to get a configured HttpClient instance
+- The HttpClient handles base URL, headers, auth, retries, and timeouts
+- On non-2xx responses, Underlay throws `UnderlayHttpError`
+- Use `isErrorEnvelope()` to safely check if an unknown value is an error envelope
+- **Do not** create local `$lib/api/client.ts` wrappers - use the shared library
 
 ## Next Steps
 

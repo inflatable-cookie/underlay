@@ -1,4 +1,4 @@
-<script lang="ts" context="module">
+<script lang="ts" module>
 	/**
 	 * Column configuration for DataTable.
 	 */
@@ -133,61 +133,125 @@
 </script>
 
 <script lang="ts" generics="T extends Record<string, unknown>">
-	import { createEventDispatcher } from "svelte";
+	import type { Snippet } from "svelte";
 	import Skeleton from "./Skeleton.svelte";
 	import IconButton from "./IconButton.svelte";
 	import DropdownMenu from "./DropdownMenu.svelte";
 
-	// Props
-	export let data: T[] = [];
-	export let columns: DataTableColumn<T>[] = [];
-	export let actions: DataTableAction<T>[] | ((row: T) => DataTableAction<T>[]) = [];
-	export let pagination: DataTablePagination | null = null;
-	export let sort: DataTableSort | null = null;
-	export let filters: DataTableFilters = {};
-	export let loading = false;
-	export let selectable = false;
-	export let selected: T[] = [];
-	export let emptyMessage = "No data available";
-	export let loadingRows = 5;
-	export let stickyHeader = false;
-	export let compact = false;
-	export let striped = false;
-	/** Available items per page options. Set to empty array to hide selector. */
-	export let limitOptions: number[] = DEFAULT_LIMIT_OPTIONS;
-	/** Whether to show the items per page selector */
-	export let showLimitSelector = true;
-	/** Whether to show the column visibility toggle */
-	export let showColumnToggle = false;
-	/** Whether to show the export to CSV button */
-	export let showExport = false;
-	/** Filename for CSV export (without extension) */
-	export let exportFilename = "export";
+	interface Props {
+		/** Data rows */
+		data?: T[];
+		/** Column configurations */
+		columns?: DataTableColumn<T>[];
+		/** Row actions */
+		actions?: DataTableAction<T>[] | ((row: T) => DataTableAction<T>[]);
+		/** Pagination state */
+		pagination?: DataTablePagination | null;
+		/** Current sort state */
+		sort?: DataTableSort | null;
+		/** Current filter values */
+		filters?: DataTableFilters;
+		/** Whether data is loading */
+		loading?: boolean;
+		/** Enable row selection */
+		selectable?: boolean;
+		/** Currently selected rows */
+		selected?: T[];
+		/** Message to show when there's no data */
+		emptyMessage?: string;
+		/** Number of skeleton rows to show when loading */
+		loadingRows?: number;
+		/** Stick header to top when scrolling */
+		stickyHeader?: boolean;
+		/** Compact mode (less padding) */
+		compact?: boolean;
+		/** Striped rows */
+		striped?: boolean;
+		/** Available items per page options. Set to empty array to hide selector. */
+		limitOptions?: number[];
+		/** Whether to show the items per page selector */
+		showLimitSelector?: boolean;
+		/** Whether to show the column visibility toggle */
+		showColumnToggle?: boolean;
+		/** Whether to show the export to CSV button */
+		showExport?: boolean;
+		/** Filename for CSV export (without extension) */
+		exportFilename?: string;
+		/** Callback when sort changes */
+		onSort?: (sort: DataTableSort) => void;
+		/** Callback when filters change */
+		onFilter?: (filters: DataTableFilters) => void;
+		/** Callback when page changes */
+		onPage?: (page: number) => void;
+		/** Callback when limit changes */
+		onLimit?: (limit: number) => void;
+		/** Callback when selection changes */
+		onSelect?: (selected: T[]) => void;
+		/** Callback when an action is triggered */
+		onAction?: (event: { action: string; row: T }) => void;
+		/** Callback when export is triggered */
+		onExport?: (event: { data: T[]; columns: DataTableColumn<T>[] }) => void;
+		/** Snippet for toolbar left area */
+		toolbarLeft?: Snippet;
+		/** Snippet for toolbar right area */
+		toolbarRight?: Snippet;
+		/** Snippet for empty state */
+		empty?: Snippet;
+		/** Snippet for custom cell rendering */
+		cell?: Snippet<[{ column: DataTableColumn<T>; row: T; value: string }]>;
+	}
+
+	let {
+		data = [],
+		columns = [],
+		actions = [],
+		pagination = null,
+		sort = null,
+		filters = {},
+		loading = false,
+		selectable = false,
+		selected = $bindable([]),
+		emptyMessage = "No data available",
+		loadingRows = 5,
+		stickyHeader = false,
+		compact = false,
+		striped = false,
+		limitOptions = DEFAULT_LIMIT_OPTIONS,
+		showLimitSelector = true,
+		showColumnToggle = false,
+		showExport = false,
+		exportFilename = "export",
+		onSort,
+		onFilter,
+		onPage,
+		onLimit,
+		onSelect,
+		onAction,
+		onExport,
+		toolbarLeft,
+		toolbarRight,
+		empty,
+		cell
+	}: Props = $props();
 
 	// Internal state
-	let internalFilters: DataTableFilters = { ...filters };
-	let hiddenColumns: Set<string> = new Set();
-	let showColumnMenu = false;
+	let internalFilters = $state<DataTableFilters>({});
+	let hiddenColumns = $state<Set<string>>(new Set());
+	let showColumnMenu = $state(false);
 
-	// Event dispatcher
-	const dispatch = createEventDispatcher<{
-		sort: DataTableSort;
-		filter: DataTableFilters;
-		page: number;
-		limit: number;
-		select: T[];
-		action: { action: string; row: T };
-		export: { data: T[]; columns: DataTableColumn<T>[] };
-	}>();
+	// Sync internal filters when prop changes
+	$effect(() => {
+		internalFilters = { ...filters };
+	});
 
 	// Computed - visible columns (excluding hidden ones)
-	$: visibleColumns = columns.filter((col) => !hiddenColumns.has(col.key));
-	$: hideableColumns = columns.filter((col) => col.hideable !== false);
+	let visibleColumns = $derived(columns.filter((col) => !hiddenColumns.has(col.key)));
+	let hideableColumns = $derived(columns.filter((col) => col.hideable !== false));
 
 	// Computed
-	$: totalPages = pagination ? Math.ceil(pagination.total / pagination.limit) : 1;
-	$: allSelected = data.length > 0 && selected.length === data.length;
-	$: someSelected = selected.length > 0 && selected.length < data.length;
+	let totalPages = $derived(pagination ? Math.ceil(pagination.total / pagination.limit) : 1);
+	let allSelected = $derived(data.length > 0 && selected.length === data.length);
+	let someSelected = $derived(selected.length > 0 && selected.length < data.length);
 
 	// Get cell value from row
 	function getCellValue(row: T, column: DataTableColumn<T>): string {
@@ -232,26 +296,26 @@
 			direction: sort?.key === column.key && sort.direction === "asc" ? "desc" : "asc"
 		};
 
-		dispatch("sort", newSort);
+		onSort?.(newSort);
 	}
 
 	// Handle filter change
 	function handleFilterChange(key: string, value: string) {
 		internalFilters = { ...internalFilters, [key]: value };
-		dispatch("filter", internalFilters);
+		onFilter?.(internalFilters);
 	}
 
 	// Handle page change
 	function handlePageChange(newPage: number) {
 		if (newPage < 1 || newPage > totalPages) return;
-		dispatch("page", newPage);
+		onPage?.(newPage);
 	}
 
 	// Handle limit change
 	function handleLimitChange(newLimit: number) {
-		dispatch("limit", newLimit);
+		onLimit?.(newLimit);
 		// Reset to first page when changing limit to avoid being on an invalid page
-		dispatch("page", 1);
+		onPage?.(1);
 	}
 
 	// Handle column visibility toggle
@@ -266,7 +330,7 @@
 
 	// Handle export to CSV
 	function handleExport() {
-		dispatch("export", { data, columns: visibleColumns });
+		onExport?.({ data, columns: visibleColumns });
 		exportToCsv(data, visibleColumns, `${exportFilename}.csv`);
 	}
 
@@ -277,7 +341,7 @@
 		} else {
 			selected = [...data];
 		}
-		dispatch("select", selected);
+		onSelect?.(selected);
 	}
 
 	function handleSelectRow(row: T) {
@@ -287,7 +351,7 @@
 		} else {
 			selected = [...selected, row];
 		}
-		dispatch("select", selected);
+		onSelect?.(selected);
 	}
 
 	// Handle action click
@@ -300,17 +364,19 @@
 			action.onClick(row);
 		}
 
-		dispatch("action", { action: action.label, row });
+		onAction?.({ action: action.label, row });
 	}
 
 	// Grid template columns
-	$: gridColumns = [
-		selectable ? "40px" : null,
-		...visibleColumns.map((col) => col.width ?? "1fr"),
-		actions.length > 0 || typeof actions === "function" ? "auto" : null
-	]
-		.filter(Boolean)
-		.join(" ");
+	let gridColumns = $derived(
+		[
+			selectable ? "40px" : null,
+			...visibleColumns.map((col) => col.width ?? "1fr"),
+			actions.length > 0 || typeof actions === "function" ? "auto" : null
+		]
+			.filter(Boolean)
+			.join(" ")
+	);
 </script>
 
 <div
@@ -324,7 +390,7 @@
 	{#if showColumnToggle || showExport}
 		<div class="table-toolbar">
 			<div class="toolbar-left">
-				<slot name="toolbar-left" />
+				{@render toolbarLeft?.()}
 			</div>
 			<div class="toolbar-right">
 				{#if showColumnToggle && hideableColumns.length > 0}
@@ -332,7 +398,7 @@
 						<button
 							type="button"
 							class="toolbar-button"
-							on:click={() => (showColumnMenu = !showColumnMenu)}
+							onclick={() => (showColumnMenu = !showColumnMenu)}
 							aria-expanded={showColumnMenu}
 							aria-haspopup="true"
 						>
@@ -346,7 +412,7 @@
 										<input
 											type="checkbox"
 											checked={!hiddenColumns.has(column.key)}
-											on:change={() => toggleColumn(column.key)}
+											onchange={() => toggleColumn(column.key)}
 										/>
 										{column.label}
 									</label>
@@ -356,12 +422,12 @@
 					</div>
 				{/if}
 				{#if showExport}
-					<button type="button" class="toolbar-button" on:click={handleExport} disabled={data.length === 0}>
+					<button type="button" class="toolbar-button" onclick={handleExport} disabled={data.length === 0}>
 						<span class="toolbar-icon">↓</span>
 						Export CSV
 					</button>
 				{/if}
-				<slot name="toolbar-right" />
+				{@render toolbarRight?.()}
 			</div>
 		</div>
 	{/if}
@@ -375,7 +441,7 @@
 						type="checkbox"
 						checked={allSelected}
 						indeterminate={someSelected}
-						on:change={handleSelectAll}
+						onchange={handleSelectAll}
 						aria-label="Select all rows"
 					/>
 				</div>
@@ -392,7 +458,7 @@
 					aria-sort={sort?.key === column.key ? (sort.direction === "asc" ? "ascending" : "descending") : undefined}
 				>
 					{#if column.sortable}
-						<button type="button" class="sort-button" on:click={() => handleSort(column)}>
+						<button type="button" class="sort-button" onclick={() => handleSort(column)}>
 							<span>{column.label}</span>
 							<span class="sort-icon" class:active={sort?.key === column.key}>
 								{#if sort?.key === column.key}
@@ -428,7 +494,7 @@
 							{#if column.filterType === "select" && column.filterOptions}
 								<select
 									value={internalFilters[column.key] ?? ""}
-									on:change={(e) => handleFilterChange(column.key, e.currentTarget.value)}
+									onchange={(e) => handleFilterChange(column.key, e.currentTarget.value)}
 									aria-label={`Filter by ${column.label}`}
 								>
 									<option value="">All</option>
@@ -444,7 +510,7 @@
 								<input
 									type="date"
 									value={internalFilters[column.key] ?? ""}
-									on:change={(e) => handleFilterChange(column.key, e.currentTarget.value)}
+									onchange={(e) => handleFilterChange(column.key, e.currentTarget.value)}
 									aria-label={`Filter by ${column.label}`}
 								/>
 							{:else}
@@ -452,7 +518,7 @@
 									type="text"
 									placeholder={`Filter ${column.label.toLowerCase()}...`}
 									value={internalFilters[column.key] ?? ""}
-									on:input={(e) => handleFilterChange(column.key, e.currentTarget.value)}
+									oninput={(e) => handleFilterChange(column.key, e.currentTarget.value)}
 									aria-label={`Filter by ${column.label}`}
 								/>
 							{/if}
@@ -491,9 +557,11 @@
 			{/each}
 		{:else if data.length === 0}
 			<div class="empty-state" role="row">
-				<slot name="empty">
+				{#if empty}
+					{@render empty()}
+				{:else}
 					<p>{emptyMessage}</p>
-				</slot>
+				{/if}
 			</div>
 		{:else}
 			{#each data as row, rowIndex}
@@ -503,7 +571,7 @@
 							<input
 								type="checkbox"
 								checked={selected.includes(row)}
-								on:change={() => handleSelectRow(row)}
+								onchange={() => handleSelectRow(row)}
 								aria-label={`Select row ${rowIndex + 1}`}
 							/>
 						</div>
@@ -517,9 +585,11 @@
 							class:align-right={column.align === "right"}
 							role="cell"
 						>
-							<slot name="cell" {column} {row} value={getCellValue(row, column)}>
+							{#if cell}
+								{@render cell({ column, row, value: getCellValue(row, column) })}
+							{:else}
 								{getCellValue(row, column)}
-							</slot>
+							{/if}
 						</div>
 					{/each}
 
@@ -530,14 +600,18 @@
 									{#if action.href}
 										<a href={getActionHref(action, row)} class="action-link">{action.label}</a>
 									{:else}
-										<button type="button" class="action-button" on:click={() => handleActionClick(action, row)}>
+										<button type="button" class="action-button" onclick={() => handleActionClick(action, row)}>
 											{action.label}
 										</button>
 									{/if}
 								{/each}
 							{:else if getRowActions(row).length > 1}
 								<DropdownMenu>
-									<IconButton slot="trigger" label="Row actions" icon="more-vertical" size="sm" />
+								{#snippet trigger()}
+									<IconButton label="Row actions" sizeRem={1.5}>
+										<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+									</IconButton>
+								{/snippet}
 									{#each getRowActions(row) as action}
 										{#if action.href}
 											<a href={getActionHref(action, row)} class="menu-item">{action.label}</a>
@@ -546,7 +620,7 @@
 												type="button"
 												class="menu-item"
 												class:danger={action.variant === "danger"}
-												on:click={() => handleActionClick(action, row)}
+												onclick={() => handleActionClick(action, row)}
 											>
 												{action.label}
 											</button>
@@ -576,7 +650,7 @@
 						<select
 							id="limit-select"
 							value={pagination.limit}
-							on:change={(e) => handleLimitChange(Number(e.currentTarget.value))}
+							onchange={(e) => handleLimitChange(Number(e.currentTarget.value))}
 						>
 							{#each limitOptions as option}
 								<option value={option}>{option}</option>
@@ -592,7 +666,7 @@
 							type="button"
 							class="pagination-button"
 							disabled={pagination.page <= 1}
-							on:click={() => handlePageChange(1)}
+							onclick={() => handlePageChange(1)}
 							aria-label="First page"
 						>
 							««
@@ -601,7 +675,7 @@
 							type="button"
 							class="pagination-button"
 							disabled={pagination.page <= 1}
-							on:click={() => handlePageChange(pagination.page - 1)}
+							onclick={() => handlePageChange(pagination.page - 1)}
 							aria-label="Previous page"
 						>
 							«
@@ -615,7 +689,7 @@
 							type="button"
 							class="pagination-button"
 							disabled={pagination.page >= totalPages}
-							on:click={() => handlePageChange(pagination.page + 1)}
+							onclick={() => handlePageChange(pagination.page + 1)}
 							aria-label="Next page"
 						>
 							»
@@ -624,7 +698,7 @@
 							type="button"
 							class="pagination-button"
 							disabled={pagination.page >= totalPages}
-							on:click={() => handlePageChange(totalPages)}
+							onclick={() => handlePageChange(totalPages)}
 							aria-label="Last page"
 						>
 							»»

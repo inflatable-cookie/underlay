@@ -1,30 +1,49 @@
 <script lang="ts">
+  import type { Snippet } from "svelte";
   import { Tooltip as BitsTooltip } from "bits-ui";
 
-  export let open = false;
+  interface Props {
+    open?: boolean;
+    content: string;
+    showTrigger?: boolean;
+    triggerLabel?: string;
+    side?: "top" | "right" | "bottom" | "left";
+    sideOffset?: number;
+    align?: "start" | "center" | "end";
+    alignOffset?: number;
+    delayDuration?: number;
+    disabled?: boolean;
+    trigger?: Snippet;
+    class?: string;
+  }
 
-  export let content: string;
-
-  export let showTrigger = true;
-  export let triggerLabel = "ⓘ";
-
-  export let side: "top" | "right" | "bottom" | "left" = "top";
-  export let sideOffset = 6;
-  export let align: "start" | "center" | "end" = "center";
-  export let alignOffset = 0;
-
-  export let delayDuration = 500;
-  export let disabled = false;
+  let {
+    open = $bindable(false),
+    content,
+    showTrigger = true,
+    triggerLabel = "ⓘ",
+    side = "top",
+    sideOffset = 6,
+    align = "center",
+    alignOffset = 0,
+    delayDuration = 500,
+    disabled = false,
+    trigger,
+    class: className,
+  }: Props = $props();
 </script>
 
 <BitsTooltip.Root bind:open {delayDuration} {disabled}>
   {#if showTrigger}
     <BitsTooltip.Trigger
-      {...$$restProps}
-      class={`underlay-tooltip-trigger ${$$restProps.class ?? ""}`}
+      class={`underlay-tooltip-trigger ${className ?? ""}`}
       aria-label={content}
     >
-      <slot name="trigger">{triggerLabel}</slot>
+      {#if trigger}
+        {@render trigger()}
+      {:else}
+        {triggerLabel}
+      {/if}
     </BitsTooltip.Trigger>
   {/if}
 

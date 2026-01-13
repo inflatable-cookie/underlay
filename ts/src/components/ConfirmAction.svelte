@@ -1,24 +1,41 @@
 <script lang="ts">
+  import type { Snippet } from "svelte";
   import AlertDialog from "./AlertDialog.svelte";
   import TextButton from "./TextButton.svelte";
 
-  export let open = false;
+  interface Props {
+    open?: boolean;
+    triggerLabel?: string;
+    triggerVariant?: "default" | "danger";
+    title: string;
+    description?: string | null;
+    confirmLabel?: string;
+    cancelLabel?: string;
+    onConfirm?: () => void | Promise<void>;
+    onCancel?: () => void;
+    trigger?: Snippet;
+  }
 
-  export let triggerLabel = "Open";
-  export let triggerVariant: "default" | "danger" = "default";
-
-  export let title: string;
-  export let description: string | null = null;
-
-  export let confirmLabel = "Confirm";
-  export let cancelLabel = "Cancel";
-
-  export let onConfirm: (() => void | Promise<void>) | undefined = undefined;
-  export let onCancel: (() => void) | undefined = undefined;
+  let {
+    open = $bindable(false),
+    triggerLabel = "Open",
+    triggerVariant = "default",
+    title,
+    description = null,
+    confirmLabel = "Confirm",
+    cancelLabel = "Cancel",
+    onConfirm,
+    onCancel,
+    trigger
+  }: Props = $props();
 </script>
 
-<TextButton type="button" variant={triggerVariant} on:click={() => (open = true)}>
-  <slot name="trigger">{triggerLabel}</slot>
+<TextButton type="button" variant={triggerVariant} onclick={() => (open = true)}>
+  {#if trigger}
+    {@render trigger()}
+  {:else}
+    {triggerLabel}
+  {/if}
 </TextButton>
 
 <AlertDialog

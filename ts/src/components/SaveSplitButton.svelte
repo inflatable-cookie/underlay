@@ -4,17 +4,29 @@
   type SaveIntent = "save" | "save-close";
   type SaveMode = "create" | "edit";
 
-  export let mode: SaveMode = "edit";
-  export let intent: SaveIntent = "save-close";
-  export let type: "button" | "submit" = "submit";
-  export let variant: "primary" | "secondary" = "primary";
+  interface Props {
+    mode?: SaveMode;
+    intent?: SaveIntent;
+    type?: "button" | "submit";
+    variant?: "primary" | "secondary";
+    createLabel?: string;
+    createAndCloseLabel?: string;
+    saveLabel?: string;
+    saveAndCloseLabel?: string;
+  }
 
-  export let createLabel = "Create";
-  export let createAndCloseLabel = "Create & close";
-  export let saveLabel = "Save changes";
-  export let saveAndCloseLabel = "Save & close";
+  let {
+    mode = "edit",
+    intent = $bindable("save-close"),
+    type = "submit",
+    variant = "primary",
+    createLabel = "Create",
+    createAndCloseLabel = "Create & close",
+    saveLabel = "Save changes",
+    saveAndCloseLabel = "Save & close"
+  }: Props = $props();
 
-  $: options =
+  let options = $derived(
     mode === "create"
       ? [
           { value: "save", label: createLabel },
@@ -23,7 +35,8 @@
       : [
           { value: "save", label: saveLabel },
           { value: "save-close", label: saveAndCloseLabel }
-        ];
+        ]
+  );
 </script>
 
 <SplitButton {type} {variant} {options} bind:value={intent} />

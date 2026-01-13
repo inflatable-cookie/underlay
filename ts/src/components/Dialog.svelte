@@ -1,36 +1,55 @@
 <script lang="ts">
   import { tick } from "svelte";
+  import type { Snippet } from "svelte";
   import { Dialog as BitsDialog } from "bits-ui";
 
-  export let open = false;
+  interface Props {
+    open?: boolean;
+    title?: string | null;
+    description?: string | null;
+    showTrigger?: boolean;
+    triggerLabel?: string;
+    triggerAriaLabel?: string | null;
+    triggerType?: "button" | "submit" | "reset";
+    showCloseX?: boolean;
+    contentClassName?: string;
+    overlayClassName?: string;
+    trapFocus?: boolean | undefined;
+    preventScroll?: boolean | undefined;
+    returnFocusOnClose?: boolean;
+    trigger?: Snippet;
+    footer?: Snippet;
+    children?: Snippet;
+  }
 
-  export let title: string | null = null;
-  export let description: string | null = null;
+  let {
+    open = $bindable(false),
+    title = null,
+    description = null,
+    showTrigger = true,
+    triggerLabel = "Open",
+    triggerAriaLabel = null,
+    triggerType = "button",
+    showCloseX = true,
+    contentClassName = "",
+    overlayClassName = "",
+    trapFocus = undefined,
+    preventScroll = undefined,
+    returnFocusOnClose = true,
+    trigger,
+    footer,
+    children
+  }: Props = $props();
 
-  export let showTrigger = true;
-  export let triggerLabel = "Open";
-  export let triggerAriaLabel: string | null = null;
-  export let triggerType: "button" | "submit" | "reset" = "button";
+  let triggerRef: HTMLElement | null = $state(null);
+  let lastOpen = $state(open);
 
-  export let showCloseX = true;
-
-  export let contentClassName = "";
-  export let overlayClassName = "";
-
-  export let trapFocus: boolean | undefined = undefined;
-  export let preventScroll: boolean | undefined = undefined;
-
-  export let returnFocusOnClose = true;
-
-  let triggerRef: HTMLElement | null = null;
-  let lastOpen = open;
-
-  $: {
+  $effect(() => {
     if (lastOpen && !open && returnFocusOnClose && typeof window !== "undefined") {
       void tick().then(() => triggerRef?.focus());
     }
     lastOpen = open;
-  }
+  });
 
 </script>
 
@@ -42,7 +61,11 @@
       type={triggerType}
       aria-label={triggerAriaLabel ?? undefined}
     >
-      <slot name="trigger">{triggerLabel}</slot>
+      {#if trigger}
+        {@render trigger()}
+      {:else}
+        {triggerLabel}
+      {/if}
     </BitsDialog.Trigger>
   {/if}
 
@@ -73,11 +96,11 @@
       {/if}
 
       <div class="underlay-dialog-body">
-        <slot />
+        {@render children?.()}
       </div>
 
       <div class="underlay-dialog-footer">
-        <slot name="footer" />
+        {@render footer?.()}
       </div>
     </BitsDialog.Content>
   </BitsDialog.Portal>

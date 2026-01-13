@@ -1,13 +1,22 @@
 <script lang="ts">
-  export let as: "section" | "article" | "div" = "section";
+  import type { Snippet } from "svelte";
+
+  interface Props {
+    as?: "section" | "article" | "div";
+    class?: string;
+    children?: Snippet;
+    [key: string]: unknown;
+  }
+
+  let { as = "section", class: className = "", children, ...restProps }: Props = $props();
 </script>
 
 <svelte:element
   this={as}
-  {...$$restProps}
-  class={`underlay-card ${$$restProps.class ?? ""}`}
+  {...restProps}
+  class={`underlay-card ${className}`}
 >
-  <slot />
+  {@render children?.()}
 </svelte:element>
 
 <style>

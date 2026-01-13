@@ -1,15 +1,41 @@
 <script lang="ts">
+  import type { Snippet } from "svelte";
+
   import Card from "../Card.svelte";
 
-  export let title: string = "Security";
-  export let className: string = "";
+  interface Props {
+    title?: string;
+    className?: string;
+    showPassword?: boolean;
+    showTwoFactor?: boolean;
+    showPasskeys?: boolean;
+    showOauth?: boolean;
+    showSessions?: boolean;
+    showRecovery?: boolean;
+    password?: Snippet;
+    twoFactor?: Snippet;
+    passkeys?: Snippet;
+    oauth?: Snippet;
+    sessions?: Snippet;
+    recovery?: Snippet;
+  }
 
-  export let showPassword: boolean = true;
-  export let showTwoFactor: boolean = true;
-  export let showPasskeys: boolean = true;
-  export let showOauth: boolean = true;
-  export let showSessions: boolean = true;
-  export let showRecovery: boolean = true;
+  let {
+    title = "Security",
+    className = "",
+    showPassword = true,
+    showTwoFactor = true,
+    showPasskeys = true,
+    showOauth = true,
+    showSessions = true,
+    showRecovery = true,
+    password,
+    twoFactor,
+    passkeys,
+    oauth,
+    sessions,
+    recovery,
+  }: Props = $props();
 </script>
 
 <Card class={`underlay-security-settings ${className}`}>
@@ -18,45 +44,45 @@
   </header>
 
   <div class="underlay-security-settings__sections">
-    {#if showPassword && $$slots.password}
+    {#if showPassword && password}
       <section class="underlay-security-settings__section">
         <h3 class="underlay-security-settings__section-title">Password</h3>
-        <slot name="password" />
+        {@render password()}
       </section>
     {/if}
 
-    {#if showTwoFactor && $$slots.twoFactor}
+    {#if showTwoFactor && twoFactor}
       <section class="underlay-security-settings__section">
         <h3 class="underlay-security-settings__section-title">Two-factor</h3>
-        <slot name="twoFactor" />
+        {@render twoFactor()}
       </section>
     {/if}
 
-    {#if showPasskeys && $$slots.passkeys}
+    {#if showPasskeys && passkeys}
       <section class="underlay-security-settings__section">
         <h3 class="underlay-security-settings__section-title">Passkeys</h3>
-        <slot name="passkeys" />
+        {@render passkeys()}
       </section>
     {/if}
 
-    {#if showOauth && $$slots.oauth}
+    {#if showOauth && oauth}
       <section class="underlay-security-settings__section">
         <h3 class="underlay-security-settings__section-title">Connected accounts</h3>
-        <slot name="oauth" />
+        {@render oauth()}
       </section>
     {/if}
 
-    {#if showSessions && $$slots.sessions}
+    {#if showSessions && sessions}
       <section class="underlay-security-settings__section">
         <h3 class="underlay-security-settings__section-title">Sessions</h3>
-        <slot name="sessions" />
+        {@render sessions()}
       </section>
     {/if}
 
-    {#if showRecovery && $$slots.recovery}
+    {#if showRecovery && recovery}
       <section class="underlay-security-settings__section">
         <h3 class="underlay-security-settings__section-title">Account recovery</h3>
-        <slot name="recovery" />
+        {@render recovery()}
       </section>
     {/if}
   </div>

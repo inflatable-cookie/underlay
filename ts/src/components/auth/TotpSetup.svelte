@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { createEventDispatcher } from "svelte";
+  import type { Snippet } from "svelte";
 
   import type { TotpSetupPayload } from "./types";
 
@@ -9,23 +9,34 @@
 
   import TotpInput from "./TotpInput.svelte";
 
-  const dispatch = createEventDispatcher<{ confirm: TotpSetupPayload }>();
+  interface Props {
+    issuer?: string;
+    accountName?: string;
+    secret: string;
+    qrSvg?: string | null;
+    backupCodes?: string[];
+    code?: string;
+    error?: string | null;
+    confirmLabel?: string;
+    loading?: boolean;
+    onConfirm?: (payload: TotpSetupPayload) => void;
+  }
 
-  export let issuer: string | undefined = undefined;
-  export let accountName: string | undefined = undefined;
-
-  export let secret: string;
-  export let qrSvg: string | null = null;
-  export let backupCodes: string[] = [];
-
-  export let code: string = "";
-  export let error: string | null | undefined = null;
-
-  export let confirmLabel: string = "Confirm";
-  export let loading: boolean = false;
+  let {
+    issuer = undefined,
+    accountName = undefined,
+    secret,
+    qrSvg = null,
+    backupCodes = [],
+    code = $bindable(""),
+    error = null,
+    confirmLabel = "Confirm",
+    loading = false,
+    onConfirm,
+  }: Props = $props();
 
   function handleConfirm() {
-    dispatch("confirm", { code: code.trim() });
+    onConfirm?.({ code: code.trim() });
   }
 </script>
 
@@ -76,7 +87,7 @@
         variant="primary"
         disabled={loading || !code.trim()}
         aria-busy={loading}
-        on:click={handleConfirm}
+        onclick={handleConfirm}
       >
         {confirmLabel}
       </Button>

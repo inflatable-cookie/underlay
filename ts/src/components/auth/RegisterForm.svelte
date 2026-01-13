@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { createEventDispatcher } from "svelte";
+  import type { Snippet } from "svelte";
 
   import type { AuthFieldErrors, RegisterPayload } from "./types";
 
@@ -12,30 +12,41 @@
   import FormError from "../FormError.svelte";
   import TextInput from "../TextInput.svelte";
 
-  const dispatch = createEventDispatcher<{ submit: RegisterPayload }>();
+  interface Props {
+    email?: string;
+    password?: string;
+    passwordConfirm?: string;
+    displayName?: string;
+    error?: string | null;
+    fieldErrors?: AuthFieldErrors;
+    submitLabel?: string;
+    loading?: boolean;
+    enhance?: ((node: HTMLFormElement) => { destroy?: () => void } | void) | null;
+    onSubmit?: (payload: RegisterPayload) => void;
+  }
 
-  export let email: string = "";
-  export let password: string = "";
-  export let passwordConfirm: string = "";
-  export let displayName: string = "";
-
-  export let error: string | null | undefined = null;
-  export let fieldErrors: AuthFieldErrors | undefined = undefined;
-
-  export let submitLabel: string = "Create account";
-  export let loading: boolean = false;
-
-  export let enhance: ((node: HTMLFormElement) => { destroy?: () => void } | void) | null = null;
+  let {
+    email = $bindable(""),
+    password = $bindable(""),
+    passwordConfirm = $bindable(""),
+    displayName = $bindable(""),
+    error = null,
+    fieldErrors = undefined,
+    submitLabel = "Create account",
+    loading = false,
+    enhance = null,
+    onSubmit,
+  }: Props = $props();
 
   const emailId = createStableId("underlay-register-email");
   const displayNameId = createStableId("underlay-register-display-name");
   const passwordId = createStableId("underlay-register-password");
   const passwordConfirmId = createStableId("underlay-register-password-confirm");
 
-  function handleSubmit(event: any) {
+  function handleSubmit(event: SubmitEvent) {
     event.preventDefault();
 
-    dispatch("submit", {
+    onSubmit?.({
       email,
       password,
       passwordConfirm,
@@ -44,7 +55,7 @@
   }
 </script>
 
-<Form on:submit={handleSubmit} {enhance}>
+<Form {onSubmit} {enhance}>
   <FormError message={error} />
 
   <Field

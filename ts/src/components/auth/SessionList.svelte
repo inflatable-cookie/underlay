@@ -1,16 +1,26 @@
 <script lang="ts">
+  import type { Snippet } from "svelte";
+
   import type { SessionListItem } from "./types";
 
   import Card from "../Card.svelte";
   import ConfirmAction from "../ConfirmAction.svelte";
 
-  export let sessions: SessionListItem[] = [];
-  export let currentSessionId: string | null = null;
+  interface Props {
+    sessions?: SessionListItem[];
+    currentSessionId?: string | null;
+    title?: string;
+    emptyMessage?: string;
+    onRevoke?: ((sessionId: string) => void | Promise<void>) | null;
+  }
 
-  export let title: string = "Sessions";
-  export let emptyMessage: string = "No active sessions.";
-
-  export let onRevoke: ((sessionId: string) => void | Promise<void>) | null = null;
+  let {
+    sessions = [],
+    currentSessionId = null,
+    title = "Sessions",
+    emptyMessage = "No active sessions.",
+    onRevoke = null,
+  }: Props = $props();
 
   function formatDate(iso: string) {
     const d = new Date(iso);

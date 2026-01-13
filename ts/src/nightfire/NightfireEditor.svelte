@@ -28,47 +28,57 @@
     category?: string;
   }
 
-  export let name: string;
-  export let schema: string;
-  export let value: NightfireValue;
+  interface Props {
+    name: string;
+    schema: string;
+    value: NightfireValue;
+    /**
+     * Optional overrides derived from a Nightfire strategy.
+     *
+     * - `modeOverride` lets the host control single vs multi editing
+     *   based on strategy cardinality.
+     * - `defaultTypeOverride` lets the host control which block type
+     *   is used for new blocks.
+     * - `blockOptions` provides a categorised list of available blocks,
+     *   typically coming from Farmyard via Cattle Grid.
+     *
+     * When these are not provided, the editor falls back to the
+     * local registry definitions so it remains usable in student views
+     * or in tests without a strategy API.
+     */
+    modeOverride?: NightfireFieldMode | null;
+    defaultTypeOverride?: string | null;
+    blockOptions?: NightfireBlockOptionInput[] | null;
+    /**
+     * Whether this Nightfire field is required from the UI's
+     * perspective. When true and the value is empty, a simple
+     * client-side validation message is shown.
+     */
+    required?: boolean;
+    /**
+     * Optional callback invoked whenever the NightfireValue changes.
+     */
+    onChange?: (value: NightfireValue) => void;
+    /**
+     * Hook used with Underlay Form's `prepare`. When bound from a parent
+     * (via `bind:prepare`), the editor will populate it with an
+     * implementation that writes the current Nightfire value into
+     * `FormData[name]` just before submit.
+     */
+    prepare?: (formData: FormData) => void;
+  }
 
-  /**
-   * Optional overrides derived from a Nightfire strategy.
-   *
-   * - `modeOverride` lets the host control single vs multi editing
-   *   based on strategy cardinality.
-   * - `defaultTypeOverride` lets the host control which block type
-   *   is used for new blocks.
-   * - `blockOptions` provides a categorised list of available blocks,
-   *   typically coming from Farmyard via Cattle Grid.
-   *
-   * When these are not provided, the editor falls back to the
-   * local registry definitions so it remains usable in student views
-   * or in tests without a strategy API.
-   */
-  export let modeOverride: NightfireFieldMode | null = null;
-  export let defaultTypeOverride: string | null = null;
-  export let blockOptions: NightfireBlockOptionInput[] | null = null;
-
-  /**
-   * Whether this Nightfire field is required from the UI's
-   * perspective. When true and the value is empty, a simple
-   * client-side validation message is shown.
-   */
-  export let required: boolean = false;
-
-  /**
-   * Optional callback invoked whenever the NightfireValue changes.
-   */
-  export let onChange: (value: NightfireValue) => void = () => {};
-
-  /**
-   * Hook used with Underlay Form's `prepare`. When bound from a parent
-   * (via `bind:prepare`), the editor will populate it with an
-   * implementation that writes the current Nightfire value into
-   * `FormData[name]` just before submit.
-   */
-  export let prepare: (formData: FormData) => void = () => {};
+  let {
+    name,
+    schema,
+    value = $bindable(),
+    modeOverride = null,
+    defaultTypeOverride = null,
+    blockOptions = null,
+    required = false,
+    onChange = () => {},
+    prepare = $bindable(() => {})
+  }: Props = $props();
 
   /**
    * When switching block types for the summary schema, we apply
@@ -94,8 +104,8 @@
   ]);
   const SUMMARY_IMAGE_SLIDER_TYPE = "summary.imageSlider";
 
-  let typeChangeWarning: string | null = null;
-  let hasInitialisedRequired = false;
+  let typeChangeWarning: string | null = $state(null);
+  let hasInitialisedRequired = $state(false);
 
   /**
    * Editing schema vs storage schema
@@ -108,21 +118,19 @@
    * requested schema, we fall back to the generic markup schema so that
    * fields can still be edited using basic text blocks.
    */
-  let editorSchema: string = schema;
+  let editorSchema: string = $state("");
 
-  let registryDef: NightfireFieldMode extends never
-    ? never
-    : {
-        schema: string;
-        mode: NightfireFieldMode;
-        defaultType: string;
-      } = {
-    schema,
+  let registryDef: {
+    schema: string;
+    mode: NightfireFieldMode;
+    defaultType: string;
+  } = $state({
+    schema: "",
     mode: "single",
     defaultType: "markdown"
-  };
+  });
 
-  $: {
+  $effect(() => {
     const def = getSchemaDefinition(schema);
     if (def) {
       editorSchema = schema;
@@ -149,25 +157,26 @@
         };
       }
     }
-  }
+  });
 
-  let baseTypeOptions: NightfireBlockOptionInput[] = [];
-
-  $: effectiveDef = {
+  const effectiveDef = $derived({
     schema: editorSchema,
     mode: (modeOverride ?? registryDef.mode) as NightfireFieldMode,
     defaultType: defaultTypeOverride ?? registryDef.defaultType ?? "markdown"
-  };
+  });
 
-  $: baseTypeOptions =
+  const baseTypeOptions = $derived(
     blockOptions && blockOptions.length > 0
       ? blockOptions
-      : getBlockTypeOptionsForSchema(editorSchema);
+      : getBlockTypeOptionsForSchema(editorSchema)
+  );
 
-  $: editorTypeOptions = baseTypeOptions.map((opt) => ({
-    type: opt.type,
-    label: opt.label
-  }));
+  const editorTypeOptions = $derived(
+    baseTypeOptions.map((opt) => ({
+      type: opt.type,
+      label: opt.label
+    }))
+  );
 
   interface GroupedOptions {
     category: string | null;
@@ -206,29 +215,23 @@
     });
   }
 
-  $: groupedOptions =
+  const groupedOptions = $derived(
     blockOptions && blockOptions.some((o) => !!o.category)
       ? buildGroupedOptions(blockOptions)
-      : null;
+      : null
+  );
 
-  $: isMulti = effectiveDef.mode === "multi" || Array.isArray(value?.blocks);
+  const isMulti = $derived(effectiveDef.mode === "multi" || Array.isArray(value?.blocks));
 
   // Single-block state view
-  let singleBlock: any = !isMulti ? ((value?.block as any) ?? null) : null;
-  $: if (!isMulti) {
-    singleBlock = (value?.block as any) ?? null;
-  }
+  const singleBlock = $derived(!isMulti ? ((value?.block as any) ?? null) : null);
 
   // Multi-block state view
-  let blocks: any[] =
+  const blocks = $derived(
     isMulti && Array.isArray(value?.blocks)
       ? (value.blocks as any[]).slice()
-      : [];
-  $: if (isMulti) {
-    blocks = Array.isArray(value?.blocks)
-      ? (value.blocks as any[]).slice()
-      : [];
-  }
+      : []
+  );
 
   function emit(nextValue: NightfireValue) {
     value = nextValue;
@@ -597,11 +600,9 @@
     });
   }
 
-  $: {
-    // For required fields, ensure there is at least one block when the
-    // editor is first initialised and the value is empty. This gives
-    // authors a concrete block to start from in create forms without
-    // affecting existing populated values.
+  // For required fields, ensure there is at least one block when the
+  // editor is first initialised and the value is empty.
+  $effect(() => {
     if (!hasInitialisedRequired && required && isEmptyNightfire(value)) {
       const defaultBlock = {
         type: effectiveDef.defaultType ?? "markdown",
@@ -624,18 +625,18 @@
 
       hasInitialisedRequired = true;
     }
-  }
+  });
 
-  $: isEmpty = isEmptyNightfire(value);
-  $: showRequiredError = required && isEmpty;
+  const isEmpty = $derived(isEmptyNightfire(value));
+  const showRequiredError = $derived(required && isEmpty);
 
   // Form serialisation hook: always serialise the current NightfireValue
-  // (single or multi) into FormData[name]. When the value is empty,
-  // serialise as an empty string so nullable hosts can treat this as
-  // `null` and required hosts can perform their own validation.
-  $: prepare = (formData: FormData) => {
-    writeNightfireToFormData(formData, name, value);
-  };
+  // (single or multi) into FormData[name].
+  $effect(() => {
+    prepare = (formData: FormData) => {
+      writeNightfireToFormData(formData, name, value);
+    };
+  });
 </script>
 
 <div class="nightfire-field">
@@ -646,7 +647,7 @@
           value={(singleBlock as any)?.type ??
             editorTypeOptions[0]?.type ??
             effectiveDef.defaultType}
-          on:change={(event) => handleSingleTypeChange(event)}
+          onchange={(event) => handleSingleTypeChange(event)}
           aria-label="Block type"
         >
           {#if groupedOptions}
@@ -697,7 +698,7 @@
               value={(block as any)?.type ??
                 editorTypeOptions[0]?.type ??
                 effectiveDef.defaultType}
-              on:change={(event) => handleTypeChange(index, event)}
+              onchange={(event) => handleTypeChange(index, event)}
               aria-label="Block type"
             >
               {#if groupedOptions}
@@ -729,7 +730,7 @@
             <div class="nightfire-field-multi__controls">
               <button
                 type="button"
-                on:click={() => moveBlock(index, index - 1)}
+                onclick={() => moveBlock(index, index - 1)}
                 disabled={index === 0}
                 aria-label="Move block up"
               >
@@ -737,7 +738,7 @@
               </button>
               <button
                 type="button"
-                on:click={() => moveBlock(index, index + 1)}
+                onclick={() => moveBlock(index, index + 1)}
                 disabled={index === blocks.length - 1}
                 aria-label="Move block down"
               >
@@ -745,7 +746,7 @@
               </button>
               <button
                 type="button"
-                on:click={() => removeBlock(index)}
+                onclick={() => removeBlock(index)}
                 aria-label="Remove block"
               >
                 ✕
@@ -765,7 +766,7 @@
       <button
         type="button"
         class="nightfire-field-multi__add"
-        on:click={addBlock}
+        onclick={addBlock}
       >
         + Add block
       </button>

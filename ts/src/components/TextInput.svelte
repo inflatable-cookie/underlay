@@ -1,36 +1,47 @@
 <script lang="ts">
-  import { createEventDispatcher } from "svelte";
   import type { HTMLInputAttributes } from "svelte/elements";
 
-  export let type: string = "text";
-  export let value: string = "";
-  export let autocomplete: HTMLInputAttributes["autocomplete"] = "off";
+  interface Props extends Omit<HTMLInputAttributes, "value" | "oninput" | "onchange"> {
+    type?: string;
+    value?: string;
+    autocomplete?: HTMLInputAttributes["autocomplete"];
+    inputRef?: HTMLInputElement | null;
+    oninput?: (value: string) => void;
+    onchange?: (value: string) => void;
+  }
 
-  export let inputRef: HTMLInputElement | null = null;
-
-  const dispatch = createEventDispatcher<{ input: string; change: string }>();
+  let {
+    type = "text",
+    value = $bindable(""),
+    autocomplete = "off",
+    inputRef = $bindable(null),
+    oninput,
+    onchange,
+    class: className,
+    ...restProps
+  }: Props = $props();
 
   function handleInput(event: Event) {
     const target = event.currentTarget as HTMLInputElement | null;
     const next = target ? target.value : value;
     value = next;
-    dispatch("input", next);
+    oninput?.(next);
   }
 
   function handleChange() {
-    dispatch("change", value);
+    onchange?.(value);
   }
 </script>
 
 <input
-  {...$$restProps}
-  class={`underlay-input ${$$restProps.class ?? ""}`}
+  {...restProps}
+  class={`underlay-input ${className ?? ""}`}
   {type}
   {autocomplete}
   bind:this={inputRef}
   bind:value
-  on:input={handleInput}
-  on:change={handleChange}
+  oninput={handleInput}
+  onchange={handleChange}
 />
 
 <style>

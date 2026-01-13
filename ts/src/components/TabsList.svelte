@@ -1,12 +1,19 @@
 <script lang="ts">
   import { Tabs as BitsTabs } from "bits-ui";
+  import type { Snippet } from "svelte";
+
+  interface Props {
+    children?: Snippet;
+    class?: string;
+  }
+
+  let { children, class: className }: Props = $props();
 </script>
 
 <BitsTabs.List
-  {...$$restProps}
-  class={`underlay-tabs-list ${$$restProps.class ?? ""}`}
+  class={`underlay-tabs-list ${className ?? ""}`}
 >
-  <slot />
+  {@render children?.()}
 </BitsTabs.List>
 
 <style>

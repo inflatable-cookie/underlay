@@ -1,4 +1,7 @@
 <script lang="ts">
+	import type { Snippet } from "svelte";
+	import type { HTMLAttributes } from "svelte/elements";
+
 	/**
 	 * Badge component for status indicators, counts, and labels.
 	 *
@@ -14,32 +17,42 @@
 	 * ```
 	 */
 
-	/** Visual style of the badge */
-	export let variant: "default" | "success" | "warning" | "danger" | "info" | "muted" = "default";
+	interface Props extends HTMLAttributes<HTMLSpanElement> {
+		/** Visual style of the badge */
+		variant?: "default" | "success" | "warning" | "danger" | "info" | "muted";
+		/** Size of the badge */
+		size?: "sm" | "md" | "lg";
+		/** Use pill shape (fully rounded) instead of rounded corners */
+		pill?: boolean;
+		/** Optional icon to show before the text */
+		icon?: string;
+		/** Additional CSS class */
+		className?: string;
+		/** Badge content */
+		children?: Snippet;
+	}
 
-	/** Size of the badge */
-	export let size: "sm" | "md" | "lg" = "md";
-
-	/** Use pill shape (fully rounded) instead of rounded corners */
-	export let pill: boolean = false;
-
-	/** Optional icon to show before the text */
-	export let icon: string | undefined = undefined;
-
-	/** Additional CSS class */
-	export let className: string = "";
+	let {
+		variant = "default",
+		size = "md",
+		pill = false,
+		icon = undefined,
+		className = "",
+		children,
+		...restProps
+	}: Props = $props();
 </script>
 
 <span
 	class="underlay-badge underlay-badge--{variant} underlay-badge--{size} {pill
 		? 'underlay-badge--pill'
 		: ''} {className}"
-	{...$$restProps}
+	{...restProps}
 >
 	{#if icon}
 		<span class="badge-icon">{icon}</span>
 	{/if}
-	<slot />
+	{@render children?.()}
 </span>
 
 <style>

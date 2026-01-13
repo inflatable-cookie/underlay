@@ -1,15 +1,21 @@
 <script lang="ts">
   import { Tabs as BitsTabs } from "bits-ui";
+  import type { Snippet } from "svelte";
 
-  export let value: string;
+  interface Props {
+    value: string;
+    children?: Snippet;
+    class?: string;
+  }
+
+  let { value, children, class: className }: Props = $props();
 </script>
 
 <BitsTabs.Content
-  {...$$restProps}
   {value}
-  class={`underlay-tabs-content ${$$restProps.class ?? ""}`}
+  class={`underlay-tabs-content ${className ?? ""}`}
 >
-  <slot />
+  {@render children?.()}
 </BitsTabs.Content>
 
 <style>

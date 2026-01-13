@@ -1,10 +1,16 @@
 <script lang="ts">
+  import type { Snippet } from "svelte";
   import FieldHint from "./FieldHint.svelte";
 
-  export let label: string | undefined = undefined;
-  export let forId: string | undefined = undefined;
-  export let hint: string | undefined = undefined;
-  export let error: string | undefined = undefined;
+  interface Props {
+    label?: string;
+    forId?: string;
+    hint?: string;
+    error?: string;
+    children?: Snippet;
+  }
+
+  let { label, forId, hint, error, children }: Props = $props();
 </script>
 
 <div class="underlay-field">
@@ -24,7 +30,7 @@
     <p class="underlay-field__error">{error}</p>
   {/if}
 
-  <slot />
+  {@render children?.()}
 </div>
 
 <style>

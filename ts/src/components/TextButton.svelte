@@ -1,26 +1,33 @@
 <script lang="ts">
-  import { Button as BitsButton } from "bits-ui";
-  import { createEventDispatcher } from "svelte";
+  import type { Snippet } from "svelte";
 
-  const dispatch = createEventDispatcher<{ click: MouseEvent }>();
-
-  function handleClick(event: MouseEvent) {
-    dispatch("click", event);
+  interface Props {
+    type?: "button" | "submit" | "reset";
+    variant?: "default" | "danger";
+    class?: string;
+    onclick?: (event: MouseEvent) => void;
+    disabled?: boolean;
+    children?: Snippet;
   }
 
-  export let type: "button" | "submit" | "reset" = "button";
-  export let variant: "default" | "danger" = "default";
-  export let className: string = "";
+  let {
+    type = "button",
+    variant = "default",
+    class: className = "",
+    onclick,
+    disabled = false,
+    children,
+  }: Props = $props();
 </script>
 
-<BitsButton.Root
-  {...$$restProps}
-  class={`underlay-text-button underlay-text-button--${variant} ${className} ${$$restProps.class ?? ""}`}
+<button
+  class={`underlay-text-button underlay-text-button--${variant} ${className}`}
   {type}
-  onclick={handleClick}
+  {onclick}
+  {disabled}
 >
-  <slot />
-</BitsButton.Root>
+  {@render children?.()}
+</button>
 
 <style>
   :global(.underlay-text-button) {
