@@ -195,7 +195,10 @@ mod tests {
         assert!(!err.has_errors());
 
         err.add_field("email", "Invalid email");
-        err.add_field("password", FieldError::with_code("Too short", "password.short"));
+        err.add_field(
+            "password",
+            FieldError::with_code("Too short", "password.short"),
+        );
 
         assert!(err.has_errors());
         assert_eq!(err.field_count(), 2);
@@ -239,7 +242,10 @@ mod tests {
     #[test]
     fn test_serialization() {
         let mut err = ValidationError::new();
-        err.add_field("email", FieldError::with_code("Invalid email", "email.invalid"));
+        err.add_field(
+            "email",
+            FieldError::with_code("Invalid email", "email.invalid"),
+        );
 
         let json = serde_json::to_string(&err.finalize()).unwrap();
         assert!(json.contains("fieldErrors"));

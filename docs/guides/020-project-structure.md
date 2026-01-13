@@ -6,27 +6,34 @@ This document covers the initial project setup, including directory layout, root
 
 This quickstart supports two layouts:
 
-- **Multi-repo workspace (default):** separate git repos checked out side-by-side.
-- **Monorepo:** a single git repo with `apps/*` and `libs/*`.
+- **Multi-repo workspace (recommended):** separate git repos for each component, browsed from a common parent directory.
+- **Monorepo:** a single git repo with `apps/*` and `libs/*` subdirectories.
 
-### Multi-repo workspace layout (default)
+### Multi-repo workspace layout (recommended)
 
-A local folder containing multiple git repositories:
+A local folder containing multiple independent git repositories:
 
 ```
-myapp-workspace/
-├── underlay/            # Foundation (git repo)
-├── myapp-api/           # Rust API backend (git repo)
-├── myapp-client/        # TypeScript API client (git repo)
-├── myapp-ui/            # UI kit (git repo, optional)
-├── myapp-web/           # SvelteKit frontend (git repo)
-└── myapp-admin/         # SvelteKit admin (git repo)
+my-workspace/
+├── underlay/            # Framework (git repo, often symlinked)
+├── api-backend/         # Rust API backend (git repo)
+├── api-client/          # TypeScript API client (git repo)
+├── frontend-web/        # SvelteKit user frontend (git repo)
+├── admin-web/           # SvelteKit admin frontend (git repo)
+├── ui-kit/              # Shared UI kit (git repo, optional)
+└── documentation/       # System documentation (git repo)
 ```
 
-Notes:
+**Key characteristics:**
+- Each folder is an independent git repository
+- Repos are browsed together from a common parent directory for convenience
+- No "root repo" or workspace package.json is required
+- Each repo has its own `AGENTS.md`, CI, and dependencies
+- Underlay is typically symlinked into the workspace
 
-- There is no required “root repo” in this mode.
-- Each repo can have its own `AGENTS.md` and CI.
+**Naming convention:** Choose thematic names that reflect your project's domain. For example:
+- A music platform might use: `bloom/`, `greenhouse/`, `nursery/`, `stem/`, `trellis/`
+- An education platform might use: `cream/`, `dairy/`, `farmyard/`, `cattle-grid/`, `ledger/`
 
 ### Monorepo layout
 
@@ -44,59 +51,153 @@ my-project/
 │   ├── ui/
 │   ├── client/
 │   └── underlay/
-└── trellis/
+└── docs/
 ```
+
+This layout is suitable when you prefer a single git history or have many small apps/libs.
 
 ### Path mapping convention
 
-To keep examples readable, some docs use monorepo-style logical paths like `apps/api/...` and `libs/client/...`.
+To keep examples readable, docs use generic component names. Map these to your project's folder structure:
 
 #### Quick Reference Table
 
-| Logical Path (in docs) | Monorepo | Multi-repo |
-|------------------------|----------|------------|
-| `apps/api/...` | `<project-root>/apps/api/...` | `<api-repo>/...` |
-| `apps/web/...` | `<project-root>/apps/web/...` | `<web-repo>/...` |
-| `apps/admin/...` | `<project-root>/apps/admin/...` | `<admin-repo>/...` |
-| `libs/client/...` | `<project-root>/libs/client/...` | `<client-repo>/...` |
-| `libs/ui/...` | `<project-root>/libs/ui/...` | `<ui-repo>/...` |
-| `libs/underlay/...` | `<project-root>/libs/underlay/...` | `<underlay-repo>/...` |
+| Generic Name | Purpose | Multi-repo Example |
+|--------------|---------|-------------------|
+| `frontend-web` | User-facing SvelteKit frontend | `bloom/`, `cream/`, `myapp-web/` |
+| `admin-web` | Admin SvelteKit frontend | `greenhouse/`, `dairy/`, `myapp-admin/` |
+| `api-backend` | Rust API backend | `nursery/`, `farmyard/`, `myapp-api/` |
+| `api-client` | TypeScript API client | `stem/`, `cattle-grid/`, `myapp-client/` |
+| `ui-kit` | Shared Svelte UI components | `petal/`, `myapp-ui/` |
+| `documentation` | System documentation | `trellis/`, `ledger/`, `docs/` |
 
-**Example**: If a guide mentions `apps/api/src/main.rs`:
-- Monorepo: Open `my-project/apps/api/src/main.rs`
-- Multi-repo: Open `myapp-api/src/main.rs`
+**Example**: If a guide mentions "the api-backend's main.rs":
+- Multi-repo: Open `<your-api-backend-folder>/crates/api/src/main.rs`
+- Monorepo: Open `apps/api/src/main.rs`
 
-- In **multi-repo mode**, interpret these as paths *within the corresponding repo*:
-  - `apps/api/...` → `<api-repo>/...`
-  - `apps/web/...` → `<web-repo>/...`
-  - `apps/admin/...` → `<admin-repo>/...`
-  - `libs/client/...` → `<client-repo>/...`
-  - `libs/ui/...` → `<ui-repo>/...`
-  - `libs/underlay/...` → `<underlay-repo>/...`
+**Key principle**: Use your project's naming convention. The generic component names in docs map to whatever folder names make sense for your domain.
 
-## Step-by-Step Setup (Monorepo)
+---
 
-If you are using the default **multi-repo** layout, treat this section as guidance to apply per-repo (or create a thin meta-repo just for workspace scripts/CI if you want).
+## Step-by-Step Setup (Multi-repo Workspace)
 
-### 1. Initialize Git Repository
+This section shows setup for a multi-repo workspace. Replace generic names with your project's chosen names.
+
+### 1. Create Workspace Directory
 
 ```bash
-# Create project directory
-mkdir -p my-project
-cd my-project
+# Create workspace directory
+mkdir -p my-workspace
+cd my-workspace
 
-# Initialize Git
-git init
-
-# Create initial commit
-echo "# My Project" > README.md
-git add .
-git commit -m "Initial project structure"
+# Clone or create each component repo
+# (Each folder below is its own git repository)
 ```
 
-### 2. Create .gitignore
+### 2. Create Component Repositories
 
-Create `.gitignore` with the following content:
+For each component, create a separate git repository:
+
+```bash
+# Create api-backend repo
+mkdir api-backend && cd api-backend && git init
+echo "# API Backend" > README.md
+git add . && git commit -m "Initial commit"
+cd ..
+
+# Create frontend-web repo
+mkdir frontend-web && cd frontend-web && git init
+echo "# Frontend Web" > README.md
+git add . && git commit -m "Initial commit"
+cd ..
+
+# Repeat for other components...
+```
+
+### 3. Symlink Underlay
+
+Link Underlay into your workspace (assuming Underlay is at a known location):
+
+```bash
+ln -s /path/to/underlay ./underlay
+```
+
+### 4. Create AGENTS.md in Each Repo
+
+**This file is critical** for LLM interactions. Create `AGENTS.md` in each component's root.
+
+Below is a template. Replace generic names with your project's equivalents:
+
+```markdown
+# Repository Guidelines
+
+This repository contains the [component description].
+
+## Related Repositories
+
+This component is part of a multi-repo workspace:
+
+- `frontend-web/` – user-facing SvelteKit frontend.
+- `admin-web/` – admin SvelteKit frontend.
+- `api-backend/` – Rust API backend.
+- `api-client/` – shared TypeScript API client.
+- `ui-kit/` – shared Svelte UI kit (optional).
+- `documentation/` – system, domain, and process documentation.
+
+## Build, Test, and Development Commands
+
+[Add component-specific commands here]
+
+When changing Rust code, prefer running:
+
+- `cargo fmt --all`
+- `cargo clippy --all-targets --all-features -- -D warnings`
+- `cargo test` for the narrowest relevant set of crates.
+
+When changing TypeScript/Svelte code, prefer running:
+
+- `pnpm lint`
+- `pnpm check`
+- `pnpm test`
+
+Run the narrowest relevant commands before opening a PR.
+
+## Coding Style & Naming Conventions
+
+- TypeScript/JavaScript: 2-space indentation;
+  components `PascalCase.svelte`; helpers `kebab-case.ts` with `camelCase` identifiers.
+- Rust: use `rustfmt` defaults; modules and files `snake_case`,
+  types and enums `PascalCase`.
+- Docs: Markdown with `kebab-case` filenames; keep sections short and skimmable.
+
+## Testing Guidelines
+
+- Prefer small, fast unit tests close to the code, plus a few integration tests for cross-module flows.
+- Mirror file names in test files (e.g., `Foo.svelte` → `Foo.test.ts`,
+  Rust module `foo` → `foo_tests` or `tests/foo.rs`).
+- Focus coverage on domain and API behavior; UI snapshot tests should be minimal and stable.
+
+## Commit, PR, and Security Guidelines
+
+- Write clear, imperative commit messages.
+- For non-trivial changes, add documentation.
+- Keep secrets and credentials out of the repo; use `.env` files.
+
+## Assistant Interaction Preferences
+
+When working against an established plan, treat short replies like "Yes", "Yes, do it",
+"Continue", "Carry on with that", or similar as explicit approval to proceed with
+the next concrete item and actually implement it, not just restate the plan.
+
+**"Continue" protocol:** Treat `Continue` as a codeword that accepts the assistant's
+most recently proposed "next step".
+
+This protocol applies across sessions for this repository.
+```
+
+### 5. Create .gitignore in Each Repo
+
+Create `.gitignore` with content appropriate for the component:
 
 ```gitignore
 # === OS ===
@@ -131,8 +232,6 @@ build/
 # === Logs ===
 *.log
 npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
 
 # === Testing ===
 coverage/
@@ -148,153 +247,34 @@ coverage/
 secrets/
 ```
 
-### 3. Create Root AGENTS.md
+### 6. Package Setup (TypeScript Components)
 
-**This file is critical** for LLM interactions. Create `AGENTS.md` in the project root:
-
-```markdown
-# Repository Guidelines
-
-This project may be set up either as:
-
-- a **multi-repo workspace** (default), or
-- a **monorepo** (`apps/*` and `libs/*`).
-
-In a monorepo, the main projects live at:
-
-- `apps/web/` – SvelteKit web frontend.
-- `apps/admin/` – SvelteKit admin frontend.
-- `apps/api/` – Rust API backend.
-- `libs/ui/` – shared UI kit and design system.
-- `libs/client/` – shared TypeScript API client.
-- `trellis/` – system, domain, and process documentation.
-
-In a multi-repo workspace, these are separate repos checked out side-by-side; treat the `apps/*` and `libs/*` paths in docs as logical names and map them to the appropriate repo root.
-
-> Root-scope rule for agents:
-> Prefer keeping new code inside `apps/` and `libs/`.
-> Root-level files are allowed when they are standard repo plumbing (e.g. `README.md`, `.gitignore`, `pnpm-workspace.yaml`, root `package.json`, and `.github/workflows/*`).
-
-## Project Structure & Module Organization
-
-- App frontends: `apps/web/` and `apps/admin/` (routes, Svelte components, assets).
-  Co-locate UI, styles, and tests by feature.
-- Backend: `apps/api/` (Rust crates, domain modules, HTTP handlers, integrations).
-- Shared libraries: `libs/ui/` (UI components, design tokens) and `libs/client/` (HTTP client, commands, typed models).
-- Documentation: `trellis/docs` (architecture, domain, processes, decisions).
-
-## Build, Test, and Development Commands
-
-- Web dev server:
-  - Monorepo: `cd apps/web && pnpm install && pnpm dev`
-  - Multi-repo: `cd myapp-web && pnpm install && pnpm dev`
-- Admin dev server:
-  - Monorepo: `cd apps/admin && pnpm install && pnpm dev`
-  - Multi-repo: `cd myapp-admin && pnpm install && pnpm dev`
-- API backend:
-  - Monorepo: `cd apps/api && cargo test` and `cargo run -p myapp-api`
-  - Multi-repo: `cd myapp-api && cargo test` and `cargo run -p myapp-api`
-- Libraries:
-  - Monorepo: `cd libs/client && pnpm test`, `cd libs/ui && pnpm test`
-  - Multi-repo: `cd myapp-client && pnpm test`, `cd myapp-ui && pnpm test`
-
-When changing Rust code in the API, prefer running:
-
-- `cargo fmt --all`
-- `cargo clippy --all-targets --all-features -- -D warnings`
-- `cargo test` for the narrowest relevant set of crates (or the whole workspace when appropriate).
-
-When changing TypeScript/Svelte code in frontends or libraries, prefer running:
-
-- `pnpm lint`
-- `pnpm check`
-- `pnpm test`
-
-Run the narrowest relevant commands before opening a PR.
-
-## Coding Style & Naming Conventions
-
-- TypeScript/JavaScript (frontends and libraries): 2-space indentation;
-  components `PascalCase.svelte`; helpers `kebab-case.ts` with `camelCase` identifiers.
-- Rust (API backend): use `rustfmt` defaults; modules and files `snake_case`,
-  types and enums `PascalCase`.
-- Docs: Markdown with `kebab-case` filenames; keep sections short and skimmable.
-
-## Testing Guidelines
-
-- Prefer small, fast unit tests close to the code, plus a few integration tests for cross-module flows.
-- Mirror file names in test files (e.g., `Foo.svelte` → `Foo.test.ts`,
-  Rust module `foo` → `foo_tests` or `tests/foo.rs`).
-- Focus coverage on domain and API behavior; UI snapshot tests should be minimal and stable.
-
-## Commit, PR, and Security Guidelines
-
-- Write clear, imperative commit messages (e.g., `Add client playlist commands`,
-  `Refine API auth flow`).
-- For non-trivial changes, add documentation in `trellis/docs/`.
-- Keep secrets and credentials out of the repo; use `.env` files.
-
-## Assistant Interaction Preferences
-
-When working against an established plan, treat short replies like "Yes", "Yes, do it",
-"Continue", "Carry on with that", or similar as explicit approval to proceed with
-the next concrete item and actually implement it, not just restate the plan.
-
-**"Continue" protocol:** Treat `Continue` as a codeword that accepts the assistant's
-most recently proposed "next step".
-
-Semantics:
-
-- The assistant should end each task-oriented message by proposing a **single next concrete step**.
-- If the user's message is exactly `Continue` (optionally surrounded by whitespace)
-  and contains no other instructions, interpret it as: "go ahead with the last next-step
-  suggestion you just described", and execute it (code/tests/docs) rather than restating or renegotiating the plan.
-
-This protocol applies across sessions for this repository.
-```
-
-### 4. (Monorepo only) Create pnpm-workspace.yaml
-
-Create `pnpm-workspace.yaml` in the project root:
-
-```yaml
-packages:
-  - 'apps/*'
-  - 'libs/*'
-```
-
-### 5. (Monorepo only) Create Root package.json
-
-Create `package.json` for workspace-level operations:
+For TypeScript components (frontend-web, admin-web, api-client, ui-kit), create `package.json`:
 
 ```json
 {
-  "name": "my-project",
-  "private": true,
+  "name": "@myorg/api-client",
   "version": "0.0.1",
-  "description": "My project following this architecture",
+  "private": true,
+  "type": "module",
   "scripts": {
-    "install:all": "pnpm install",
-    "check:all": "pnpm -r --if-present check",
-    "test:all": "pnpm -r --if-present test"
+    "check": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest"
   },
-  "engines": {
-    "node": ">=20.0.0",
-    "pnpm": ">=9.0.0"
+  "dependencies": {
+    "@decodelabs/underlay": "file:../underlay"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.0.0",
+    "vitest": "^2.0.0"
   }
 }
 ```
 
-### 6. CI (Monorepo vs Multi-repo)
+### 7. CI Configuration
 
-- **Multi-repo (default):** each repo usually has its own `.github/workflows/*`.
-- **Monorepo:** you can run Rust + TS checks from one workflow.
-
-Below is a simple monorepo example.
-
-### 6. (Monorepo example) Create Initial GitHub Actions
-
-Create `.github/workflows/ci.yml`:
+Create `.github/workflows/ci.yml` in each repo:
 
 ```yaml
 name: CI
@@ -305,132 +285,93 @@ on:
   pull_request:
 
 jobs:
-  rust:
+  check:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-      - name: Cache Rust dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.cargo
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-      - name: Run Rust tests
-        run: |
-          cd apps/api
-          cargo test
-          cargo clippy --all-targets --all-features -- -D warnings
-
-  typescript:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 9
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: 'pnpm'
-      - name: Install dependencies
-        run: pnpm install:all
-      - name: Run TypeScript checks
-        run: pnpm check:all
+      # Add component-specific steps...
 ```
 
-### 7. Create README.md
+---
 
-Create `README.md`:
+## Directory Structure Templates
 
-```markdown
-# My Project
+### api-backend (Rust)
 
-A full-stack application following this architecture.
-
-## Architecture
-
-This project uses a monorepo structure with:
-
-- **apps/api/** - Rust API backend (Axum + Domain-Driven Design)
-- **apps/web/** - User-facing SvelteKit frontend
-- **apps/admin/** - Admin SvelteKit frontend
-- **libs/ui/** - Shared Svelte UI kit
-- **libs/client/** - Shared TypeScript API client
-
-## Getting Started
-
-### Prerequisites
-
-- Rust 1.75+
-- Node.js 20+
-- pnpm 9+
-- PostgreSQL 14+
-
-### Setup
-
-```bash
-# Multi-repo (default): run per repo
-cd myapp-web && pnpm install
-cd myapp-admin && pnpm install
-cd myapp-client && pnpm install
-
-cd myapp-api/crates/db
-sqlx database create
-sqlx migrate run
-
-cd myapp-api
-cargo run -p myapp-api  # Backend (port 3000)
-
-cd myapp-web && pnpm dev  # Web
-cd myapp-admin && pnpm dev  # Admin
-
-# Monorepo: run from repo root
-pnpm install:all
-cd apps/api/crates/db && sqlx database create && sqlx migrate run
-cd apps/api && cargo run -p myapp-api
-cd apps/web && pnpm dev
-cd apps/admin && pnpm dev
+```
+api-backend/
+├── AGENTS.md
+├── Cargo.toml
+├── .gitignore
+└── crates/
+    ├── api/src/          # HTTP handlers, router
+    ├── core/src/         # Domain types, IDs
+    ├── auth/src/         # Auth providers
+    ├── db/
+    │   ├── src/
+    │   └── migrations/
+    └── infra/src/        # Config, logging
 ```
 
-## Documentation
+### api-client (TypeScript)
 
-- [Architecture Overview](./trellis/docs/architecture/)
-- [Domain Modeling](./trellis/docs/domain/)
-- [Process Documentation](./trellis/docs/processes/)
-- [Quickstart Guide](./docs/guides/)
+```
+api-client/
+├── AGENTS.md
+├── package.json
+├── tsconfig.json
+├── .gitignore
+└── src/
+    ├── index.ts
+    ├── utils/
+    │   ├── http-client.ts
+    │   └── client-factory.ts  # configureClient + getClient
+    ├── types/
+    │   ├── common-types.ts
+    │   └── auth-types.ts
+    └── commands/
+        ├── core-commands.ts
+        └── auth-commands.ts
 ```
 
-## Directory Creation Script
+### frontend-web / admin-web (SvelteKit)
 
-Run the following to create the full directory structure:
-
-```bash
-#!/bin/bash
-set -e
-
-PROJECT_ROOT="$(pwd)"
-
-# Create apps directories
-mkdir -p apps/web/src/{routes,lib,components,assets}
-mkdir -p apps/admin/src/{routes,lib,components,assets}
-mkdir -p apps/api/crates/{api,core,auth,db,infra}/src
-mkdir -p apps/api/crates/db/migrations
-
-# Create libs directories
-mkdir -p libs/ui/src/{components,patterns,styles,hooks}
-mkdir -p libs/client/src/{http,commands,types,utils}
-
-# Create docs directories
-mkdir -p trellis/docs/{architecture,domain,processes,decisions}
-mkdir -p docs/guides/code
-
-# Create GitHub workflows
-mkdir -p .github/workflows
-
-echo "Directory structure created at $PROJECT_ROOT"
 ```
+frontend-web/
+├── AGENTS.md
+├── package.json
+├── svelte.config.js
+├── vite.config.ts
+├── tsconfig.json
+├── .gitignore
+└── src/
+    ├── app.html
+    ├── app.d.ts
+    ├── hooks.server.ts       # Calls configureClient() at module load
+    ├── routes/
+    │   ├── +layout.svelte
+    │   └── +page.svelte
+    └── lib/
+        ├── components/
+        └── utils/
+```
+
+**Note:** Frontends import `getClient()` directly from the shared api-client library. Do not create local `$lib/api/client.ts` wrappers that duplicate the shared library's functionality.
+
+### documentation
+
+```
+documentation/
+├── AGENTS.md
+├── .gitignore
+└── docs/
+    ├── architecture/
+    ├── domain/
+    ├── processes/
+    └── decisions/
+```
+
+---
 
 ## Next Steps
 

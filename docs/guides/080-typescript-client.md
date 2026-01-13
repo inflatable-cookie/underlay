@@ -1,20 +1,33 @@
 # 080 - TypeScript Client
 
-> **Reference Implementation**: This guide includes patterns from a production TypeScript API client built with Underlay. These serve as working examples of best practices.
+> **Reference Implementations**: This guide includes patterns from production TypeScript API clients (cattle-grid for Acowtancy, stem for Songsprout) built with Underlay.
 
 This document covers creating a typed API client for the Rust backend.
 
-- **Multi-repo (default):** this is typically its own repo (e.g. `myapp-client/`).
-- **Monorepo:** it typically lives at `libs/client/`.
+In a flat monorepo, the client lives at a top-level folder (e.g., `stem/`, `cattle-grid/`). In nested monorepo it lives at `libs/client/`. In multi-repo, it's its own repo.
 
-In the rest of this doc, paths are written as `libs/client/...` (monorepo style). In multi-repo mode, treat that as the repo root.
-
-This guide aligns with Underlay’s TypeScript client primitives and error envelope shape.
+This guide aligns with Underlay's TypeScript client primitives and error envelope shape.
 
 ## Client Structure
 
-A minimal but scalable layout:
+A minimal but scalable layout (using Songsprout's naming):
 
+```
+stem/
+├── package.json
+├── tsconfig.json
+└── src/
+    ├── index.ts              # createClient factory + exports
+    ├── utils/
+    │   ├── http-client.ts    # Underlay wrapper
+    │   └── client-factory.ts # configureClient + getClient
+    ├── types/
+    │   ├── common-types.ts   # Domain DTOs
+    │   └── auth-types.ts     # Auth DTOs
+    └── commands/
+        ├── core-commands.ts  # Domain commands
+        ├── auth-commands.ts  # Extended auth commands
+        └── billing-commands.ts
 ```
 libs/client/
 ├── package.json
@@ -23,6 +36,7 @@ libs/client/
     ├── index.ts
     ├── client.ts            # createClient factory
     ├── http.ts              # low-level http wrapper
+    ├── client-factory.ts    # configureClient + getClient
     ├── errors.ts            # error helpers
     └── commands/
         ├── users.ts
@@ -97,45 +111,133 @@ Create `libs/client/package.json`:
 }
 ```
 
-## Step 2: HTTP Wrapper
+## Step 2: HTTP Wrapper (Production Pattern)
 
-Create `libs/client/src/http.ts`:
+**Important:** Do not reimplement HTTP client logic. Use Underlay's `createHttpClient` and wrap it with your app-specific configuration.
+
+Create `stem/src/utils/http-client.ts` (based on cattle-grid's production pattern):
 
 ```ts
-import {
-  createHttpClient,
-  type HttpClient,
-  type ErrorEnvelope,
-  UnderlayHttpError,
-} from "@decodelabs/underlay";
+/**
+ * App-specific HTTP client wrapper around Underlay's createHttpClient.
+ * 
+ * This pattern provides:
+ * - App-specific API version header
+ * - App-specific error conversion
+ * - Consistent interface for command modules
+ */
 
-export interface ClientHttpConfig {
-  baseUrl: string; // e.g. http://127.0.0.1:3000
-  apiVersion: string; // e.g. 2025-01-01 (sent via header)
+import { 
+  createHttpClient as createUnderlayHttpClient,
+  type HttpClient as UnderlayHttpClient,
+  type HttpClientOptions,
+  UnderlayHttpError
+} from '@decodelabs/underlay/client';
+
+export interface StemClientConfig {
+  baseUrl: string;
+  apiVersion: string;
+  getToken?: () => Promise<string | null> | string | null;
+  timeoutMs?: number;
+  maxRetries?: number;
   fetchFn?: typeof fetch;
-  getToken: () => string | null;
 }
 
-export function createClientHttp(config: ClientHttpConfig): HttpClient {
-  // Keep URL stable; version goes in a header.
-  const baseUrl = new URL("/v1/", config.baseUrl).toString();
-
-  return createHttpClient({
-    baseUrl,
-    fetch: config.fetchFn,
-    defaultHeaders: {
-      "X-Api-Version": config.apiVersion,
-    },
-  });
+// App-specific error shape (optional - can use UnderlayHttpError directly)
+export interface ApiError extends Error {
+  status: number;
+  code: string;
+  details?: Record<string, unknown>;
+  requestId?: string;
+  raw?: unknown;
 }
 
-export function getErrorEnvelope(err: unknown): ErrorEnvelope | null {
-  if (err instanceof UnderlayHttpError) {
-    return err.envelope ?? null;
+/**
+ * Convert UnderlayHttpError to app-specific ApiError format.
+ * This is optional - you can use UnderlayHttpError directly.
+ */
+function convertError(error: unknown): never {
+  if (error instanceof UnderlayHttpError) {
+    const apiError: ApiError = Object.assign(
+      new Error(error.message),
+      {
+        status: error.status,
+        code: error.envelope?.error.code ?? 'unknown_error',
+        details: error.envelope?.error.fieldErrors 
+          ? { fieldErrors: error.envelope.error.fieldErrors }
+          : undefined,
+        requestId: (error.envelope?.error as any)?.requestId,
+        raw: error.envelope
+      }
+    );
+    throw apiError;
   }
-  return null;
+  throw error;
+}
+
+/**
+ * HttpClient class wrapping Underlay's implementation.
+ * Provides app-specific configuration and error conversion.
+ */
+export class HttpClient {
+  private underlayClient: UnderlayHttpClient;
+
+  constructor(config: StemClientConfig) {
+    const underlayOptions: HttpClientOptions = {
+      baseUrl: config.baseUrl.replace(/\/+$/, ''),
+      defaultHeaders: {
+        'X-Songsprout-Api-Version': config.apiVersion  // App-specific header
+      },
+      fetch: config.fetchFn,
+      timeoutMs: config.timeoutMs ?? 8000,
+      maxRetries: config.maxRetries ?? 3,
+      auth: config.getToken ? {
+        getAccessToken: config.getToken
+      } : undefined,
+    };
+
+    this.underlayClient = createUnderlayHttpClient(underlayOptions);
+  }
+
+  async get<T>(path: string): Promise<T> {
+    try {
+      return await this.underlayClient.get<T>(path);
+    } catch (error) {
+      convertError(error);
+    }
+  }
+
+  async post<T>(path: string, body: unknown): Promise<T> {
+    try {
+      return await this.underlayClient.post<T>(path, body);
+    } catch (error) {
+      convertError(error);
+    }
+  }
+
+  async put<T>(path: string, body: unknown): Promise<T> {
+    try {
+      return await this.underlayClient.put<T>(path, body);
+    } catch (error) {
+      convertError(error);
+    }
+  }
+
+  async delete<T>(path: string): Promise<T> {
+    try {
+      return await this.underlayClient.delete<T>(path);
+    } catch (error) {
+      convertError(error);
+    }
+  }
 }
 ```
+
+**Key points:**
+- Always use `createHttpClient` from Underlay - never reimplement retry/timeout logic
+- Add your app's API version header via `defaultHeaders`
+- Error conversion is optional but helps maintain backward compatibility
+- The wrapper provides a consistent interface for command modules
 
 ## Step 3: Commands (Domain-Organized)
 
@@ -204,28 +306,126 @@ export * from "./http";
 export * from "./commands/users";
 ```
 
-## Step 5: Frontend Integration
+## Step 5: Frontend Integration (Client Factory Pattern)
 
-In your web/admin frontends, read the base URL + version from public env and pass the auth token from server `locals`:
+**Important:** Avoid duplicating client wrapper code across multiple frontends. Instead, add a client factory to your shared API client library that handles configuration once at startup.
+
+### Step 5a: Add Client Factory to API Client Library
+
+Create `api-client/src/utils/client-factory.ts`:
 
 ```ts
-// apps/web/src/lib/api/client.ts
+/**
+ * Client factory for the API client library.
+ *
+ * Usage:
+ *   // In hooks.server.ts (once at startup):
+ *   import { configureClient } from "@myorg/client";
+ *   configureClient({ baseUrl: "...", apiVersion: "..." });
+ *
+ *   // In routes (on each request):
+ *   import { getClient } from "@myorg/client";
+ *   const client = getClient({ fetchFn: fetch, accessToken: token });
+ */
 
-import { createClient } from "@myorg/client";
-import { env } from "$env/dynamic/public";
+import { createClient, type ApiClient } from "../index.js";
 
-export function createWebClient(fetchFn: typeof fetch, authToken: string | null) {
-  const baseUrl = env.PUBLIC_API_URL ?? "http://127.0.0.1:3000";
-  const apiVersion = env.PUBLIC_API_VERSION ?? "2025-01-01";
+export interface ClientConfig {
+  baseUrl: string;
+  apiVersion: string;
+}
+
+export interface GetClientOptions {
+  fetchFn: typeof fetch;
+  accessToken: string | null | undefined;
+}
+
+let storedConfig: ClientConfig | null = null;
+
+/**
+ * Configure the client with base URL and API version.
+ * Call this once at app startup (e.g., in hooks.server.ts).
+ */
+export function configureClient(config: ClientConfig): void {
+  storedConfig = config;
+}
+
+/**
+ * Create a client using the stored configuration.
+ * Call this on each request with the request-specific fetch and token.
+ */
+export function getClient(options: GetClientOptions): ApiClient {
+  if (!storedConfig) {
+    throw new Error(
+      "Client not configured. Call configureClient() before getClient()."
+    );
+  }
 
   return createClient({
-    baseUrl,
-    apiVersion,
-    fetchFn,
-    getToken: () => authToken,
+    baseUrl: storedConfig.baseUrl,
+    apiVersion: storedConfig.apiVersion,
+    fetchFn: options.fetchFn,
+    getToken: () => options.accessToken ?? null
   });
 }
 ```
+
+Export from `api-client/src/index.ts`:
+
+```ts
+export {
+  configureClient,
+  getClient,
+  type ClientConfig,
+  type GetClientOptions
+} from "./utils/client-factory.js";
+```
+
+### Step 5b: Configure in Frontend hooks.server.ts
+
+In each frontend app, configure the client once at module load:
+
+```ts
+// frontend-web/src/hooks.server.ts
+
+import type { Handle } from "@sveltejs/kit";
+import { configureClient, getClient } from "@myorg/client";
+import { env } from "$env/dynamic/public";
+
+// Configure client once at module load
+configureClient({
+  baseUrl: env.PUBLIC_API_URL ?? "http://127.0.0.1:3000",
+  apiVersion: env.PUBLIC_API_VERSION ?? "2025-01-01"
+});
+
+export const handle: Handle = async ({ event, resolve }) => {
+  // ... session handling, token refresh, etc.
+  return resolve(event);
+};
+```
+
+### Step 5c: Use in Routes
+
+In route files, import `getClient` directly from the shared library:
+
+```ts
+// frontend-web/src/routes/users/+page.server.ts
+
+import type { PageServerLoad } from "./$types";
+import { getClient } from "@myorg/client";
+
+export const load: PageServerLoad = async ({ fetch, locals }) => {
+  const client = getClient({ fetchFn: fetch, accessToken: locals.authToken });
+  const users = await client.users.list();
+  return { users: users.data };
+};
+```
+
+**Key benefits of this pattern:**
+- No duplicate `$lib/api/client.ts` files across frontends
+- Configuration happens once, not on every request
+- All frontends use the same client factory from the shared library
+- Easy to add new frontends without copying boilerplate
 
 ## Advanced: Token Refresh
 
@@ -317,6 +517,124 @@ export class LocalStorageTokenStore implements TokenStore {
   }
 }
 ```
+
+## Extended Auth Commands
+
+Underlay provides a base `createAuthCommands()` with essential operations:
+- `register()`, `loginWithPassword()`, `loginWithPasskey()`, `logout()`, `refresh()`, `session()`
+
+**Apps typically need extended auth commands** for TOTP, passkey management, OAuth, and sessions. Create these in your client library.
+
+### Example: Extended Auth Commands (from cattle-grid/Songsprout)
+
+```typescript
+// stem/src/commands/auth-commands.ts
+
+import type { HttpClient } from "../utils/http-client.js";
+import type { ListResponse, SingleResponse } from "../types/common-types.js";
+import type {
+  AuthSession,
+  LoginRequest,
+  LogoutRequest,
+  RefreshRequest,
+  RegisterRequest,
+  TotpSetupResponse,
+  TotpStatusResponse,
+  TotpEnableRequest,
+  PasskeyCredential,
+  PasskeyStartResponse,
+  PasskeyLoginStartRequest,
+  PasskeyLoginFinishRequest,
+  PasskeyRegisterFinishRequest,
+  GoogleOAuthStartResponse,
+  GoogleOAuthCallbackRequest,
+  GoogleOAuthStatusResponse,
+  SessionSummary,
+} from "../types/auth-types.js";
+
+export interface AuthCommands {
+  // Core auth (matches Underlay's base commands)
+  register(payload: RegisterRequest): Promise<SingleResponse<AuthSession>>;
+  login(payload: LoginRequest): Promise<SingleResponse<AuthSession>>;
+  refresh(payload: RefreshRequest): Promise<SingleResponse<AuthSession>>;
+  logout(payload: LogoutRequest): Promise<void>;
+  me(): Promise<SingleResponse<User>>;
+
+  // TOTP / Two-factor
+  totpStatus(): Promise<SingleResponse<TotpStatusResponse>>;
+  totpSetup(): Promise<SingleResponse<TotpSetupResponse>>;
+  totpEnable(payload: TotpEnableRequest): Promise<void>;
+  totpDisable(): Promise<void>;
+
+  // Session management
+  listSessions(): Promise<ListResponse<SessionSummary>>;
+  revokeSession(sessionId: string): Promise<void>;
+
+  // Passkey registration (for authenticated users)
+  passkeyRegisterStart(): Promise<SingleResponse<PasskeyStartResponse>>;
+  passkeyRegisterFinish(payload: PasskeyRegisterFinishRequest): Promise<SingleResponse<PasskeyCredential>>;
+  listPasskeys(): Promise<ListResponse<PasskeyCredential>>;
+  deletePasskey(credentialId: string): Promise<void>;
+  renamePasskey(credentialId: string, displayName: string): Promise<void>;
+
+  // Passkey login (for unauthenticated users)
+  passkeyLoginStart(payload: PasskeyLoginStartRequest): Promise<SingleResponse<PasskeyStartResponse>>;
+  passkeyLoginFinish(payload: PasskeyLoginFinishRequest): Promise<SingleResponse<AuthSession>>;
+
+  // Google OAuth
+  googleOauthStart(): Promise<SingleResponse<GoogleOAuthStartResponse>>;
+  googleOauthCallback(payload: GoogleOAuthCallbackRequest): Promise<SingleResponse<AuthSession>>;
+  googleOauthStatus(): Promise<SingleResponse<GoogleOAuthStatusResponse>>;
+  googleOauthDisconnect(): Promise<void>;
+}
+
+export function createAuthCommands(http: HttpClient): AuthCommands {
+  return {
+    // Core auth
+    register: (payload) => http.post("/v1/auth/register", payload),
+    login: (payload) => http.post("/v1/auth/login", payload),
+    refresh: (payload) => http.post("/v1/auth/refresh", payload),
+    logout: async (payload) => { await http.post("/v1/auth/logout", payload); },
+    me: () => http.get("/v1/auth/me"),
+
+    // TOTP
+    totpStatus: () => http.get("/v1/auth/totp/status"),
+    totpSetup: () => http.post("/v1/auth/totp/setup", {}),
+    totpEnable: async (payload) => { await http.post("/v1/auth/totp/enable", payload); },
+    totpDisable: async () => { await http.post("/v1/auth/totp/disable", {}); },
+
+    // Sessions
+    listSessions: () => http.get("/v1/auth/sessions"),
+    revokeSession: async (sessionId) => {
+      await http.post(`/v1/auth/sessions/${encodeURIComponent(sessionId)}/revoke`, {});
+    },
+
+    // Passkeys
+    passkeyRegisterStart: () => http.post("/v1/auth/passkeys/register/start", {}),
+    passkeyRegisterFinish: (payload) => http.post("/v1/auth/passkeys/register/finish", payload),
+    listPasskeys: () => http.get("/v1/auth/passkeys"),
+    deletePasskey: async (credentialId) => {
+      await http.post(`/v1/auth/passkeys/${encodeURIComponent(credentialId)}/delete`, {});
+    },
+    renamePasskey: async (credentialId, displayName) => {
+      await http.post(`/v1/auth/passkeys/${encodeURIComponent(credentialId)}/rename`, { displayName });
+    },
+    passkeyLoginStart: (payload) => http.post("/v1/auth/passkeys/login/start", payload),
+    passkeyLoginFinish: (payload) => http.post("/v1/auth/passkeys/login/finish", payload),
+
+    // Google OAuth
+    googleOauthStart: () => http.post("/v1/auth/oauth/google/start", {}),
+    googleOauthCallback: (payload) => http.post("/v1/auth/oauth/google/callback", payload),
+    googleOauthStatus: () => http.get("/v1/auth/oauth/google/status"),
+    googleOauthDisconnect: async () => { await http.post("/v1/auth/oauth/google/disconnect", {}); },
+  };
+}
+```
+
+**Key points:**
+- Extended auth commands are app-specific because route paths may vary
+- The pattern matches Underlay's base `createAuthCommands()` structure
+- Use Underlay's auth UI components (LoginForm, TotpSetup, SessionList, etc.) with your commands
 
 ## Production Patterns
 

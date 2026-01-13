@@ -92,6 +92,141 @@ export function createWebClient(
 }
 ```
 
+## Command Wrappers
+
+Command wrappers are thin functions in `frontend-web` that wrap calls to `api-client`, providing a cleaner interface for route handlers.
+
+### Why Command Wrappers?
+
+Command wrappers provide two benefits:
+
+1. **Response unwrapping** - Extract `.data` from `SingleResponse<T>` or `.items` from `ListResponse<T>`
+2. **Consistent client instantiation** - Handle `fetchFn` and `accessToken` parameters uniformly
+
+### Structure
+
+```
+frontend-web/src/lib/
+  commands/
+    auth-commands.ts     # Login, logout, register, refresh
+    core-commands.ts     # Domain operations (users, artists, etc.)
+    security-commands.ts # TOTP, passkeys, sessions
+    admin-commands.ts    # Admin-only operations (admin-web only)
+```
+
+### Example: Auth Commands
+
+```typescript
+// frontend-web/src/lib/commands/auth-commands.ts
+
+import type {
+  AuthSession,
+  LoginRequest,
+  RefreshRequest,
+  SingleResponse,
+  User,
+} from "@myorg/api-client";
+import { createWebClient } from "$lib/api/client";
+
+export async function login(
+  payload: LoginRequest,
+  fetchFn: typeof fetch,
+): Promise<AuthSession> {
+  const client = createWebClient(fetchFn, null);
+  const response: SingleResponse<AuthSession> = await client.auth.login(payload);
+  return response.data;  // Unwrap the response
+}
+
+export async function refresh(
+  payload: RefreshRequest,
+  fetchFn: typeof fetch,
+): Promise<AuthSession> {
+  const client = createWebClient(fetchFn, null);
+  const response: SingleResponse<AuthSession> = await client.auth.refresh(payload);
+  return response.data;
+}
+
+export async function me(
+  fetchFn: typeof fetch,
+  accessToken: string,
+): Promise<User> {
+  const client = createWebClient(fetchFn, accessToken);
+  const response: SingleResponse<User> = await client.auth.me();
+  return response.data;
+}
+```
+
+### Example: Core Commands
+
+```typescript
+// frontend-web/src/lib/commands/core-commands.ts
+
+import type {
+  Artist,
+  ListResponse,
+  SingleResponse,
+} from "@myorg/api-client";
+import { createWebClient } from "$lib/api/client";
+
+export async function listArtists(
+  fetchFn: typeof fetch,
+  accessToken: string,
+): Promise<Artist[]> {
+  const client = createWebClient(fetchFn, accessToken);
+  const response: ListResponse<Artist> = await client.core.listArtists();
+  return response.items;  // Unwrap list response
+}
+
+export async function getArtist(
+  artistId: string,
+  fetchFn: typeof fetch,
+  accessToken: string,
+): Promise<Artist> {
+  const client = createWebClient(fetchFn, accessToken);
+  const response: SingleResponse<Artist> = await client.core.getArtist(artistId);
+  return response.data;
+}
+```
+
+### Usage in Route Handlers
+
+```typescript
+// frontend-web/src/routes/artists/+page.server.ts
+
+import type { PageServerLoad } from "./$types";
+import { listArtists } from "$lib/commands/core-commands";
+
+export const load: PageServerLoad = async ({ fetch, locals }) => {
+  const artists = await listArtists(fetch, locals.authToken);
+  return { artists };
+};
+```
+
+Compare to calling the client directly:
+
+```typescript
+// Without command wrapper (more verbose)
+const client = createWebClient(fetch, locals.authToken);
+const response = await client.core.listArtists();
+const artists = response.items;
+```
+
+### When to Use Commands vs Direct Client
+
+| Scenario | Recommendation |
+|----------|----------------|
+| Route handlers (load, actions) | Use commands - cleaner call sites |
+| Hooks (hooks.server.ts) | Direct client - need full response for token refresh |
+| Complex flows with retry logic | Direct client - need error envelope access |
+| Simple CRUD operations | Use commands |
+
+### When to Add a New Command Wrapper
+
+- When adding new `api-client` endpoints, add corresponding wrappers in the relevant `-commands.ts` file
+- Group commands by domain (auth, core, security, admin)
+- Keep wrappers thin - just client instantiation and response unwrapping
+- If you need business logic transformation, put it in `$lib/models/` and call from the route handler
+
 ## Layout Server (Auth State)
 
 Create `apps/web/src/routes/+layout.server.ts`:

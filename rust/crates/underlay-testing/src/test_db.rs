@@ -150,7 +150,10 @@ impl TestDb {
     /// let db = TestDb::new().await;
     /// db.run_migrations("./migrations").await.unwrap();
     /// ```
-    pub async fn run_migrations(&self, migrations_path: &str) -> Result<(), Box<dyn std::error::Error>> {
+    pub async fn run_migrations(
+        &self,
+        migrations_path: &str,
+    ) -> Result<(), Box<dyn std::error::Error>> {
         use std::fs;
         use std::path::Path;
 
@@ -198,7 +201,10 @@ impl TestDb {
     /// let db = TestDb::new().await;
     /// db.run_migrator(&MIGRATOR).await.unwrap();
     /// ```
-    pub async fn run_migrator(&self, migrator: &sqlx::migrate::Migrator) -> Result<(), sqlx::migrate::MigrateError> {
+    pub async fn run_migrator(
+        &self,
+        migrator: &sqlx::migrate::Migrator,
+    ) -> Result<(), sqlx::migrate::MigrateError> {
         migrator.run(&self.pool).await
     }
 
@@ -207,9 +213,12 @@ impl TestDb {
     /// This is called automatically on drop, but can be called manually
     /// if you want to reset the database mid-test.
     pub async fn cleanup(&self) -> Result<(), sqlx::Error> {
-        sqlx::query(&format!("DROP SCHEMA IF EXISTS {} CASCADE", self.schema_name))
-            .execute(&self.pool)
-            .await?;
+        sqlx::query(&format!(
+            "DROP SCHEMA IF EXISTS {} CASCADE",
+            self.schema_name
+        ))
+        .execute(&self.pool)
+        .await?;
         Ok(())
     }
 }
@@ -274,11 +283,9 @@ mod tests {
         let db = TestDb::new().await;
 
         // Create a table via fixture
-        db.load_fixture(
-            "CREATE TABLE items (id SERIAL PRIMARY KEY, name TEXT NOT NULL)",
-        )
-        .await
-        .expect("load fixture");
+        db.load_fixture("CREATE TABLE items (id SERIAL PRIMARY KEY, name TEXT NOT NULL)")
+            .await
+            .expect("load fixture");
 
         // Insert some data
         db.load_fixture("INSERT INTO items (name) VALUES ('test1'), ('test2')")

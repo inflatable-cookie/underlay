@@ -19,9 +19,8 @@ use regex::Regex;
 /// assert!(validators::email("not-an-email").is_err());
 /// ```
 pub fn email(value: &str) -> Result<(), FieldError> {
-    static EMAIL_REGEX: Lazy<Regex> = Lazy::new(|| {
-        Regex::new(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$").unwrap()
-    });
+    static EMAIL_REGEX: Lazy<Regex> =
+        Lazy::new(|| Regex::new(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$").unwrap());
 
     if EMAIL_REGEX.is_match(value) {
         Ok(())
@@ -47,7 +46,8 @@ pub fn email(value: &str) -> Result<(), FieldError> {
 /// ```
 pub fn url(value: &str) -> Result<(), FieldError> {
     static URL_REGEX: Lazy<Regex> = Lazy::new(|| {
-        Regex::new(r"^https?://[a-zA-Z0-9][-a-zA-Z0-9]*(\.[a-zA-Z0-9][-a-zA-Z0-9]*)+(/.*)?$").unwrap()
+        Regex::new(r"^https?://[a-zA-Z0-9][-a-zA-Z0-9]*(\.[a-zA-Z0-9][-a-zA-Z0-9]*)+(/.*)?$")
+            .unwrap()
     });
 
     if URL_REGEX.is_match(value) {
@@ -71,7 +71,10 @@ pub fn url(value: &str) -> Result<(), FieldError> {
 /// ```
 pub fn uuid(value: &str) -> Result<(), FieldError> {
     static UUID_REGEX: Lazy<Regex> = Lazy::new(|| {
-        Regex::new(r"^[0-9a-fA-F]{8}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{12}$").unwrap()
+        Regex::new(
+            r"^[0-9a-fA-F]{8}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{12}$",
+        )
+        .unwrap()
     });
 
     if UUID_REGEX.is_match(value) {
@@ -370,8 +373,7 @@ pub fn alphanumeric(value: &str) -> Result<(), FieldError> {
 /// assert!(validators::username("john@doe").is_err());
 /// ```
 pub fn username(value: &str) -> Result<(), FieldError> {
-    static USERNAME_REGEX: Lazy<Regex> =
-        Lazy::new(|| Regex::new(r"^[a-zA-Z0-9_-]+$").unwrap());
+    static USERNAME_REGEX: Lazy<Regex> = Lazy::new(|| Regex::new(r"^[a-zA-Z0-9_-]+$").unwrap());
 
     if USERNAME_REGEX.is_match(value) {
         Ok(())

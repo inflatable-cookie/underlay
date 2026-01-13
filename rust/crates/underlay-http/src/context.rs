@@ -223,10 +223,7 @@ where
             .map(|s| s.to_string());
 
         // Extract user ID from extensions (set by auth middleware)
-        let user_id = parts
-            .extensions
-            .get::<AuthenticatedUser>()
-            .map(|u| u.0);
+        let user_id = parts.extensions.get::<AuthenticatedUser>().map(|u| u.0);
 
         Ok(RequestContext {
             request_id,
@@ -340,7 +337,7 @@ mod tests {
             headers::X_REQUEST_ID,
             HeaderValue::from_static("test-request-id"),
         );
-        
+
         let request_id = extract_request_id(&headers);
         assert_eq!(request_id, "test-request-id");
     }
@@ -349,7 +346,7 @@ mod tests {
     fn test_extract_request_id_generates_uuid() {
         let headers = HeaderMap::new();
         let request_id = extract_request_id(&headers);
-        
+
         // Should be a valid UUID
         assert!(Uuid::parse_str(&request_id).is_ok());
     }
@@ -361,7 +358,7 @@ mod tests {
             headers::CF_CONNECTING_IP,
             HeaderValue::from_static("192.168.1.1"),
         );
-        
+
         let ip = extract_ip_address(&headers);
         assert_eq!(ip, Some("192.168.1.1".parse().unwrap()));
     }
@@ -369,11 +366,8 @@ mod tests {
     #[test]
     fn test_extract_ip_from_x_real_ip() {
         let mut headers = HeaderMap::new();
-        headers.insert(
-            headers::X_REAL_IP,
-            HeaderValue::from_static("10.0.0.1"),
-        );
-        
+        headers.insert(headers::X_REAL_IP, HeaderValue::from_static("10.0.0.1"));
+
         let ip = extract_ip_address(&headers);
         assert_eq!(ip, Some("10.0.0.1".parse().unwrap()));
     }
@@ -385,7 +379,7 @@ mod tests {
             headers::X_FORWARDED_FOR,
             HeaderValue::from_static("203.0.113.195, 70.41.3.18, 150.172.238.178"),
         );
-        
+
         let ip = extract_ip_address(&headers);
         assert_eq!(ip, Some("203.0.113.195".parse().unwrap()));
     }
@@ -398,15 +392,12 @@ mod tests {
             headers::CF_CONNECTING_IP,
             HeaderValue::from_static("1.1.1.1"),
         );
-        headers.insert(
-            headers::X_REAL_IP,
-            HeaderValue::from_static("2.2.2.2"),
-        );
+        headers.insert(headers::X_REAL_IP, HeaderValue::from_static("2.2.2.2"));
         headers.insert(
             headers::X_FORWARDED_FOR,
             HeaderValue::from_static("3.3.3.3"),
         );
-        
+
         let ip = extract_ip_address(&headers);
         assert_eq!(ip, Some("1.1.1.1".parse().unwrap()));
     }
@@ -436,12 +427,7 @@ mod tests {
 
     #[test]
     fn test_request_context_unauthenticated() {
-        let ctx = RequestContext::new(
-            "req-456".to_string(),
-            None,
-            None,
-            None,
-        );
+        let ctx = RequestContext::new("req-456".to_string(), None, None, None);
 
         assert!(!ctx.is_authenticated());
         assert!(ctx.user_id().is_none());

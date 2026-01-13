@@ -177,9 +177,7 @@ impl RequestBuilder {
 
     /// Send the request and get the response
     pub async fn send(self) -> TestResponse {
-        let mut request_builder = Request::builder()
-            .method(self.method)
-            .uri(&self.path);
+        let mut request_builder = Request::builder().method(self.method).uri(&self.path);
 
         for (key, value) in &self.headers {
             request_builder = request_builder.header(key, value);
@@ -190,9 +188,7 @@ impl RequestBuilder {
             None => Body::empty(),
         };
 
-        let request = request_builder
-            .body(body)
-            .expect("Failed to build request");
+        let request = request_builder.body(body).expect("Failed to build request");
 
         let response = self
             .router

@@ -13,7 +13,9 @@ mod errors_tests;
 #[cfg(test)]
 mod responses_tests;
 
-pub use crate::context::{headers, AuthenticatedContext, AuthenticatedUser, ContextError, RequestContext};
+pub use crate::context::{
+    headers, AuthenticatedContext, AuthenticatedUser, ContextError, RequestContext,
+};
 pub use crate::cors::{cors_layer, CorsConfig};
 pub use crate::errors::{error_response, ErrorLogContext, ErrorLogSink};
 pub use crate::pagination::{Paginated, PaginationMeta, PaginationParams};

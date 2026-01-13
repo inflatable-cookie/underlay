@@ -121,7 +121,10 @@ struct NumericValidators {
 
 #[test]
 fn test_numeric_validators_valid() {
-    let req = NumericValidators { count: 5, balance: 0 };
+    let req = NumericValidators {
+        count: 5,
+        balance: 0,
+    };
 
     assert!(req.validate().is_ok());
 }

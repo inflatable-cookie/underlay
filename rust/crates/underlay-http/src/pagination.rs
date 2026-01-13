@@ -232,7 +232,10 @@ mod tests {
         let params = PaginationParams { page: 1, limit: 20 };
         assert_eq!(params.limit_i64(), 20i64);
 
-        let params = PaginationParams { page: 1, limit: 100 };
+        let params = PaginationParams {
+            page: 1,
+            limit: 100,
+        };
         assert_eq!(params.limit_i64(), 100i64);
     }
 
