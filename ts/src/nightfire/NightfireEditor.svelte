@@ -118,45 +118,71 @@
    * requested schema, we fall back to the generic markup schema so that
    * fields can still be edited using basic text blocks.
    */
-  let editorSchema: string = $state("");
 
+  // Helper function to resolve schema synchronously - called both at init
+  // and when schema prop changes. This ensures we have correct values
+  // IMMEDIATELY on first render, not after an $effect runs.
+  function resolveSchema(schemaId: string): {
+    editorSchema: string;
+    registryDef: { schema: string; mode: NightfireFieldMode; defaultType: string };
+  } {
+    const def = getSchemaDefinition(schemaId);
+    if (def) {
+      return {
+        editorSchema: schemaId,
+        registryDef: {
+          schema: def.schema,
+          mode: def.mode,
+          defaultType: def.defaultType
+        }
+      };
+    }
+
+    const fallbackDef = getSchemaDefinition(FALLBACK_MARKUP_SCHEMA_ID);
+    if (fallbackDef) {
+      return {
+        editorSchema: FALLBACK_MARKUP_SCHEMA_ID,
+        registryDef: {
+          schema: fallbackDef.schema,
+          mode: fallbackDef.mode,
+          defaultType: fallbackDef.defaultType
+        }
+      };
+    }
+
+    return {
+      editorSchema: schemaId,
+      registryDef: {
+        schema: schemaId,
+        mode: "single",
+        defaultType: "markdown"
+      }
+    };
+  }
+
+  // Initialize with correct values IMMEDIATELY (not deferred via $effect)
+  const initialResolved = resolveSchema(schema);
+  let editorSchema: string = $state(initialResolved.editorSchema);
   let registryDef: {
     schema: string;
     mode: NightfireFieldMode;
     defaultType: string;
-  } = $state({
-    schema: "",
-    mode: "single",
-    defaultType: "markdown"
-  });
+  } = $state(initialResolved.registryDef);
 
+  // Track the last schema prop to avoid redundant updates
+  let lastSchemaProp = schema;
+
+  // Update when schema prop changes (for subsequent navigations)
   $effect(() => {
-    const def = getSchemaDefinition(schema);
-    if (def) {
-      editorSchema = schema;
-      registryDef = {
-        schema: def.schema,
-        mode: def.mode,
-        defaultType: def.defaultType
-      };
-    } else {
-      const fallbackDef = getSchemaDefinition(FALLBACK_MARKUP_SCHEMA_ID);
-      if (fallbackDef) {
-        editorSchema = FALLBACK_MARKUP_SCHEMA_ID;
-        registryDef = {
-          schema: fallbackDef.schema,
-          mode: fallbackDef.mode,
-          defaultType: fallbackDef.defaultType
-        };
-      } else {
-        editorSchema = schema;
-        registryDef = {
-          schema,
-          mode: "single",
-          defaultType: "markdown"
-        };
-      }
+    // Only update if schema prop actually changed
+    if (schema === lastSchemaProp) {
+      return;
     }
+    lastSchemaProp = schema;
+
+    const resolved = resolveSchema(schema);
+    editorSchema = resolved.editorSchema;
+    registryDef = resolved.registryDef;
   });
 
   const effectiveDef = $derived({

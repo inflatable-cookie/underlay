@@ -1,4 +1,4 @@
-import type { SvelteComponent } from "svelte";
+import type { SvelteComponent, Component } from "svelte";
 
 export type FieldMode = "single" | "multi";
 
@@ -15,15 +15,17 @@ export interface BlockTypeOption {
 
 type RegistryKey = string;
 
+// Support both Svelte 4 class components and Svelte 5 function components
+type AnyComponent =
+  | (new (...args: any[]) => SvelteComponent)
+  | Component<any, any, any>;
+
 function makeKey(schema: string, type: string): RegistryKey {
   return `${schema}|${type}`;
 }
 
 const schemaDefs = new Map<string, SchemaDefinition>();
-const blockEditors = new Map<
-  RegistryKey,
-  new (...args: any[]) => SvelteComponent
->();
+const blockEditors = new Map<RegistryKey, AnyComponent>();
 const blockTypeOptions = new Map<string, BlockTypeOption[]>();
 
 export function registerSchema(def: SchemaDefinition): void {
@@ -34,7 +36,7 @@ export function registerBlockEditor(
   schema: string,
   type: string,
   label: string,
-  component: new (...args: any[]) => SvelteComponent
+  component: AnyComponent
 ): void {
   blockEditors.set(makeKey(schema, type), component);
 
@@ -55,7 +57,7 @@ export function getSchemaDefinition(
 export function getBlockEditor(
   schema: string,
   type: string
-): (new (...args: any[]) => SvelteComponent) | null {
+): AnyComponent | null {
   return blockEditors.get(makeKey(schema, type)) ?? null;
 }
 

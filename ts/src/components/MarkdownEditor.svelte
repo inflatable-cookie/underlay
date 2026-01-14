@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onDestroy, onMount } from "svelte";
+  import { onDestroy, onMount, untrack } from "svelte";
   import type { Snippet } from "svelte";
   import { lazyLoadEasyMde } from "./lazy-load-easymde";
 
@@ -204,13 +204,17 @@
   });
 
   $effect(() => {
-    if (mounted) {
-      if (showPreview && !loading) {
+    // Read reactive dependencies first
+    const shouldInit = mounted && showPreview && !loading;
+    
+    // Use untrack to prevent state writes from re-triggering this effect
+    untrack(() => {
+      if (shouldInit) {
         void ensureEditor();
-      } else {
+      } else if (mounted) {
         destroyEditor();
       }
-    }
+    });
   });
 
   onDestroy(() => {

@@ -44,16 +44,34 @@
     typeOptions
   }: Props = $props();
 
-  let internalBlock: any = $state(null);
+  // Initialize internalBlock synchronously so the correct editor is shown
+  // on first render. Previously we used $state(null) + $effect which caused
+  // the "No editor found" error on client-side navigation because the
+  // $effect runs AFTER the initial render.
+  const initialBlock = normaliseNightfireBlock(block, typeOptions, definition);
+  let internalBlock: any = $state(initialBlock);
 
-  // Sync internal block when prop changes
+  // Track the last block reference to avoid redundant normalisation
+  let lastBlockRef: any = block;
+
+  // Update when props change (for subsequent updates after initial render)
   $effect(() => {
-    internalBlock = normaliseNightfireBlock(block, typeOptions, definition);
+    // Re-normalise whenever block, typeOptions, or definition changes
+    const currentBlock = block;
+
+    // Only update if block reference actually changed
+    if (currentBlock !== lastBlockRef) {
+      lastBlockRef = currentBlock;
+      internalBlock = normaliseNightfireBlock(currentBlock, typeOptions, definition);
+    }
   });
 
   function emitChange(nextBlock: any) {
-    internalBlock = normaliseNightfireBlock(nextBlock, typeOptions, definition);
-    onChange?.(internalBlock);
+    const normalised = normaliseNightfireBlock(nextBlock, typeOptions, definition);
+    // Update local state immediately so the editor reflects changes
+    internalBlock = normalised;
+    lastBlockRef = nextBlock;
+    onChange?.(normalised);
   }
 
   function handleBlockEditorChange(nextBlock: any) {

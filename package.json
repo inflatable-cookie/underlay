@@ -60,7 +60,7 @@
     "easymde": "^2.20.0"
   },
   "devDependencies": {
-    "@types/node": "^25.0.7",
+    "@types/node": "^25.0.8",
     "@vitest/ui": "^3.2.4",
     "bits-ui": "^2.15.4",
     "svelte": "^5.46.3",
