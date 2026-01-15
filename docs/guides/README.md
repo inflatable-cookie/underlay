@@ -34,7 +34,9 @@ Read these documents in order for a complete understanding:
 7. **[060 - Authentication](./060-authentication.md)** - Auth providers, JWT, TOTP, WebAuthn, OAuth
 8. **[070 - API Handlers](./070-api-handlers.md)** - HTTP handlers, routing
 9. **[072 - Admin/Front Separation](./072-admin-front-separation.md)** - Audience routing conventions
-10. **[080 - TypeScript Client](./080-typescript-client.md)** - HTTP client, commands
+10. **[075 - Validation](./075-validation.md)** - Request validation patterns
+11. **[076 - Nightfire](./076-nightfire.md)** - Block-based structured content
+12. **[080 - TypeScript Client](./080-typescript-client.md)** - HTTP client, commands
 11. **[090 - UI Kit](./090-ui-kit.md)** - Component patterns
 12. **[100 - Frontend (Web)](./100-frontend-web.md)** - SvelteKit setup, routing
 13. **[110 - Admin Frontend](./110-admin.md)** - Admin UI structure

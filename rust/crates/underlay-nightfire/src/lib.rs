@@ -1,0 +1,66 @@
+//! Nightfire – a generic block-based content protocol.
+//!
+//! This crate provides the core engine for Nightfire, a structured content
+//! system for storing and validating JSON content with typed blocks and
+//! validation strategies.
+//!
+//! ## Overview
+//!
+//! Nightfire values always use the shape:
+//!
+//! **Single-block:**
+//! ```json
+//! {
+//!   "schema": "<schema-id>",
+//!   "block": { "type": "...", ... }
+//! }
+//! ```
+//!
+//! **Multi-block:**
+//! ```json
+//! {
+//!   "schema": "<schema-id>",
+//!   "blocks": [ { "type": "...", ... }, ... ]
+//! }
+//! ```
+//!
+//! ## Generic Design
+//!
+//! The core types are generic over a `Category` type parameter, allowing
+//! consuming applications to define their own block categories (e.g.
+//! `Text`, `Media`, `Layout`) without modifying this crate.
+//!
+//! ## Example
+//!
+//! ```rust,ignore
+//! use underlay_nightfire::{BlockData, NightfireValue, Block};
+//!
+//! // Define your category enum
+//! #[derive(Clone, Copy, PartialEq, Eq, Hash)]
+//! enum MyCategory { Text, Media }
+//!
+//! // Define a block type
+//! struct ParagraphBlock { text: String }
+//!
+//! impl Block for ParagraphBlock {
+//!     const TYPE_NAME: &'static str = "paragraph";
+//!     fn to_data(&self) -> serde_json::Value {
+//!         serde_json::json!({ "text": self.text })
+//!     }
+//! }
+//! ```
+
+mod block;
+mod hash;
+mod registry;
+mod strategy;
+mod validation;
+mod value;
+
+// Re-export all public types at the crate root.
+pub use block::{Block, BlockData};
+pub use hash::compute_block_hash;
+pub use registry::{BlockDescriptor, BlockRegistry, StrategyRegistry};
+pub use strategy::{MultiConfig, NightfireStrategy, StrategyCardinality};
+pub use validation::{validate_nightfire_value, NightfireValidationError};
+pub use value::{NightfireValue, SchemaId};
