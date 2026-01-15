@@ -7,6 +7,8 @@
     subtitle?: string | null;
     ariaLabel?: string | null;
     accent?: string | null;
+    /** When false, card displays with reduced opacity and dashed border to indicate draft/hidden status */
+    isLive?: boolean;
     media?: Snippet;
     trailing?: Snippet;
     /** Renders the actions menu. When provided, the media area becomes a custom trigger containing the icon + dots. */
@@ -20,6 +22,7 @@
     subtitle = null,
     ariaLabel = null,
     accent = null,
+    isLive = true,
     media,
     trailing,
     actions,
@@ -28,6 +31,7 @@
 
   let hasActions = $derived(Boolean(actions));
   let style = $derived(accent ? `--underlay-list-card-accent: ${accent};` : undefined);
+  let cardClass = $derived(isLive ? "underlay-list-card" : "underlay-list-card underlay-list-card--draft");
 </script>
 
 {#snippet mediaTrigger()}
@@ -42,9 +46,10 @@
 {/snippet}
 
 {#if href}
-  <div class="underlay-list-card-shell" {style}>
+  <div class="underlay-list-card-shell" class:underlay-list-card-shell--draft={!isLive} {style}>
     <a
-      class="underlay-list-card underlay-list-card__link"
+      class={cardClass}
+      class:underlay-list-card__link={true}
       {href}
       aria-label={ariaLabel ?? title}
     >
@@ -82,7 +87,7 @@
   </div>
 {:else}
   <div
-    class="underlay-list-card"
+    class={cardClass}
     aria-label={ariaLabel ?? title}
     {style}
   >
@@ -324,5 +329,27 @@
     font-size: 0.82em;
     color: var(--underlay-color-text-muted, var(--underlay-color-text-muted, #9ca3af));
     min-width: 0;
+  }
+
+  /* Draft/non-live state styling - monochrome with visible dashed border */
+  .underlay-list-card--draft {
+    opacity: 0.7;
+    filter: grayscale(100%);
+    border-style: dashed;
+    border-color: var(--underlay-color-border-muted, rgba(148, 163, 184, 0.5));
+  }
+
+  .underlay-list-card-shell--draft > .underlay-list-card {
+    opacity: 0.7;
+    filter: grayscale(100%);
+    border-style: dashed;
+    border-color: var(--underlay-color-border-muted, rgba(148, 163, 184, 0.5));
+  }
+
+  /* Restore colour on hover */
+  .underlay-list-card--draft:hover,
+  .underlay-list-card-shell--draft:hover > .underlay-list-card {
+    opacity: 1;
+    filter: none;
   }
 </style>
