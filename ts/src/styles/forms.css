@@ -19,6 +19,12 @@
   .froyo-form-grid {
     grid-template-columns: repeat(2, 1fr);
   }
+
+  /* Narrow forms stay single-column (e.g. login, registration) */
+  .underlay-form-grid--narrow,
+  .froyo-form-grid--narrow {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* FieldSets that should span full width */

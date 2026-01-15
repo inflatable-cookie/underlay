@@ -4,6 +4,7 @@
   interface Props {
     type?: "button" | "submit" | "reset";
     variant?: "default" | "danger";
+    href?: string | null;
     class?: string;
     onclick?: (event: MouseEvent) => void;
     disabled?: boolean;
@@ -13,6 +14,7 @@
   let {
     type = "button",
     variant = "default",
+    href = null,
     class: className = "",
     onclick,
     disabled = false,
@@ -20,14 +22,24 @@
   }: Props = $props();
 </script>
 
-<button
-  class={`underlay-text-button underlay-text-button--${variant} ${className}`}
-  {type}
-  {onclick}
-  {disabled}
->
-  {@render children?.()}
-</button>
+{#if href}
+  <a
+    {href}
+    class={`underlay-text-button underlay-text-button--${variant} ${className}`}
+    aria-disabled={disabled || undefined}
+  >
+    {@render children?.()}
+  </a>
+{:else}
+  <button
+    class={`underlay-text-button underlay-text-button--${variant} ${className}`}
+    {type}
+    {onclick}
+    {disabled}
+  >
+    {@render children?.()}
+  </button>
+{/if}
 
 <style>
   :global(.underlay-text-button) {
@@ -37,6 +49,11 @@
     font-size: calc(1em * var(--underlay-font-scale-sm, 0.85));
     cursor: pointer;
     padding: 0;
+    text-decoration: none;
+  }
+
+  :global(a.underlay-text-button) {
+    display: inline;
   }
 
   :global(.underlay-text-button:focus-visible) {
