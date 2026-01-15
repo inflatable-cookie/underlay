@@ -1,4 +1,5 @@
 <script lang="ts">
+  import type { Snippet } from "svelte";
   import DropdownMenu from "../components/DropdownMenu.svelte";
   import { copyToClipboard } from "./clipboard";
   import type { ToastStore } from "./toasts";
@@ -26,6 +27,7 @@
 
     triggerLabel?: string;
     showTrigger?: boolean;
+    trigger?: Snippet;
 
     sideOffset?: number;
     align?: "start" | "center" | "end";
@@ -40,6 +42,7 @@
     actions = [],
     triggerLabel = "⋯",
     showTrigger = true,
+    trigger,
     sideOffset = 6,
     align = "end",
     side = "bottom",
@@ -63,11 +66,11 @@
   const menuItems = $derived.by(() => {
     const copyItems = toCopyMenuItems(copies);
     return [
-      ...copyItems,
-      ...(copyItems.length && actions.length
+      ...actions,
+      ...(actions.length && copyItems.length
         ? ([{ separator: true }] as DropdownMenuItem[])
         : []),
-      ...actions
+      ...copyItems
     ];
   });
 </script>
@@ -76,6 +79,7 @@
   class={className}
   {showTrigger}
   {triggerLabel}
+  {trigger}
   items={menuItems}
   {sideOffset}
   {align}

@@ -7,7 +7,7 @@
     children?: Snippet;
   }
 
-  let { title = "Filters", startCollapsed = true, children }: Props = $props();
+  let { title = "Filters", startCollapsed = false, children }: Props = $props();
 
   let collapsed = $state(true);
   let hasInteracted = $state(false);
@@ -62,7 +62,7 @@
   }
 
   .underlay-filter-bar--expanded {
-    padding-top: var(--underlay-space-4, 1rem);
+    padding: var(--underlay-space-3, 0.75rem);
   }
 
   .underlay-filter-bar__header {
@@ -121,7 +121,12 @@
 
   .underlay-filter-bar__body {
     display: flex;
-    flex-direction: column;
-    gap: var(--underlay-space-3, 0.75rem);
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: var(--underlay-space-4, 1rem);
+  }
+
+  .underlay-filter-bar__body :global(.underlay-field) {
+    min-width: 12rem;
   }
 </style>

@@ -67,5 +67,15 @@ export function getBlockTypeOptionsForSchema(
   return blockTypeOptions.get(schema) ?? [];
 }
 
+export function getBlockTypeLabel(
+  schema: string,
+  type: string
+): string | null {
+  const options = blockTypeOptions.get(schema);
+  if (!options) return null;
+  const match = options.find((opt) => opt.type === type);
+  return match?.label ?? null;
+}
+
 // Registrations are defined in `*-registrations.ts` to keep this file
 // focused purely on registry mechanics.

@@ -7,9 +7,28 @@
 
 .underlay-form-grid,
 .froyo-form-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-  max-width: 40rem;
-  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--underlay-space-5, 1.25rem);
+  width: 100%;
+}
+
+/* Two-column layout for fieldsets when container is wide enough */
+@container (min-width: 45rem) {
+  .underlay-form-grid,
+  .froyo-form-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* FieldSets that should span full width */
+.underlay-form-grid .underlay-fieldset--full,
+.froyo-form-grid .underlay-fieldset--full {
+  grid-column: 1 / -1;
+}
+
+/* FormActions should always span full width */
+.underlay-form-grid .underlay-form-actions,
+.froyo-form-grid .underlay-form-actions {
+  grid-column: 1 / -1;
 }

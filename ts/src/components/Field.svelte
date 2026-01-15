@@ -7,13 +7,23 @@
     forId?: string;
     hint?: string;
     error?: string;
+    /** Grid column span: "full" spans all columns, number specifies exact span */
+    span?: "full" | 1 | 2 | 3 | 4;
+    /** Remove max-width constraint for wide content like editors */
+    wide?: boolean;
     children?: Snippet;
   }
 
-  let { label, forId, hint, error, children }: Props = $props();
+  let { label, forId, hint, error, span, wide = false, children }: Props = $props();
+
+  const spanStyle = span === "full"
+    ? "grid-column: 1 / -1;"
+    : span
+      ? `grid-column: span ${span};`
+      : "";
 </script>
 
-<div class="underlay-field">
+<div class="underlay-field" class:underlay-field--wide={wide} style={spanStyle}>
   {#if label}
     <div class="underlay-field__header">
       <label class="underlay-field__label" for={forId}>
@@ -30,7 +40,9 @@
     <p class="underlay-field__error">{error}</p>
   {/if}
 
-  {@render children?.()}
+  <div class="underlay-field__content">
+    {@render children?.()}
+  </div>
 </div>
 
 <style>
@@ -38,12 +50,24 @@
     display: flex;
     flex-direction: column;
     gap: var(--underlay-space-1, var(--underlay-space-1, 0.25rem));
+    max-width: var(--underlay-field-max-width, 52rem);
+  }
+
+  .underlay-field.underlay-field--wide {
+    max-width: none;
   }
 
   .underlay-field__header {
     display: inline-flex;
     align-items: center;
     gap: var(--underlay-space-1, var(--underlay-space-1, 0.25rem));
+  }
+
+  .underlay-field__content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
   }
 
   .underlay-field__label {

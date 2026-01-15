@@ -33,16 +33,17 @@ Read these documents in order for a complete understanding:
 6. **[050 - Database & Migrations](./050-database.md)** - DB crate, sqlx, migrations
 7. **[060 - Authentication](./060-authentication.md)** - Auth providers, JWT, TOTP, WebAuthn, OAuth
 8. **[070 - API Handlers](./070-api-handlers.md)** - HTTP handlers, routing
-9. **[080 - TypeScript Client](./080-typescript-client.md)** - HTTP client, commands
-10. **[090 - UI Kit](./090-ui-kit.md)** - Component patterns
-11. **[100 - Frontend (Web)](./100-frontend-web.md)** - SvelteKit setup, routing
-12. **[110 - Admin Frontend](./110-admin.md)** - Admin UI structure
-13. **[120 - Configuration](./120-configuration.md)** - Env files, validation
-14. **[130 - Testing](./130-testing.md)** - Test patterns for all layers
-15. **[140 - Local Development](./140-local-development.md)** - Running locally, debugging
-16. **[150 - CI/CD](./150-ci-cd.md)** - GitHub Actions template
-17. **[160 - Troubleshooting](./160-troubleshooting.md)** - Common issues and solutions
-18. **[170 - Checklist](./170-checklist.md)** - Completion verification
+9. **[072 - Admin/Front Separation](./072-admin-front-separation.md)** - Audience routing conventions
+10. **[080 - TypeScript Client](./080-typescript-client.md)** - HTTP client, commands
+11. **[090 - UI Kit](./090-ui-kit.md)** - Component patterns
+12. **[100 - Frontend (Web)](./100-frontend-web.md)** - SvelteKit setup, routing
+13. **[110 - Admin Frontend](./110-admin.md)** - Admin UI structure
+14. **[120 - Configuration](./120-configuration.md)** - Env files, validation
+15. **[130 - Testing](./130-testing.md)** - Test patterns for all layers
+16. **[140 - Local Development](./140-local-development.md)** - Running locally, debugging
+17. **[150 - CI/CD](./150-ci-cd.md)** - GitHub Actions template
+18. **[160 - Troubleshooting](./160-troubleshooting.md)** - Common issues and solutions
+19. **[170 - Checklist](./170-checklist.md)** - Completion verification
 
 ## Code Examples
 

@@ -228,6 +228,7 @@
   }
 
   :global(.underlay-select-trigger__chevron) {
+    margin-left: 0.5rem;
     font-size: 0.75rem;
     opacity: 0.8;
   }

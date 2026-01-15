@@ -15,6 +15,8 @@ export { default as PageHeader } from "./PageHeader.svelte";
 export { default as CopyActionsMenu } from "./CopyActionsMenu.svelte";
 export { default as CardActions } from "./CardActions.svelte";
 export { default as SubmitButton } from "./SubmitButton.svelte";
+export { default as NavCard } from "./NavCard.svelte";
+export { default as NavCardGrid } from "./NavCardGrid.svelte";
 
 // Explicit export avoids dev-time prebundle staleness.
 export { useToasts } from "./useToasts";

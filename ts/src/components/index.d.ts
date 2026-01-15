@@ -5,6 +5,8 @@ declare const TextButton: any;
 declare const Card: any;
 declare const Field: any;
 declare const FieldHint: any;
+declare const FieldSet: any;
+declare const Pill: any;
 declare const TextInput: any;
 declare const TextArea: any;
 declare const MarkdownEditor: any;
@@ -57,6 +59,7 @@ export {
   DropdownMenu,
   Field,
   FieldHint,
+  FieldSet,
   FileUpload,
   Form,
   FormActions,
@@ -75,6 +78,7 @@ export {
   ListCard,
   ListGrid,
   Pagination,
+  Pill,
   Popover,
   SaveSplitButton,
   Select,

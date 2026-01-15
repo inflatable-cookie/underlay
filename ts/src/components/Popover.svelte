@@ -129,7 +129,7 @@
   }
 
   :global(.underlay-popover-content) {
-    z-index: 70;
+    z-index: 150;
     border-radius: 0.75rem;
     border: 1px solid
       var(

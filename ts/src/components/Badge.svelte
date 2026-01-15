@@ -72,17 +72,17 @@
 	/* Sizes */
 	.underlay-badge--sm {
 		padding: 0.2em 0.5em;
-		font-size: 0.7rem;
+		font-size: 0.7em;
 	}
 
 	.underlay-badge--md {
 		padding: 0.25em 0.6em;
-		font-size: 0.8rem;
+		font-size: 0.8em;
 	}
 
 	.underlay-badge--lg {
 		padding: 0.35em 0.75em;
-		font-size: 0.9rem;
+		font-size: 0.9em;
 	}
 
 	/* Pill shape */

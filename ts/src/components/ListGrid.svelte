@@ -35,11 +35,11 @@
     grid-template-columns: repeat(
       auto-fit,
       minmax(
-        var(--underlay-list-grid-min, var(--underlay-list-grid-min, 360px)),
+        min(var(--underlay-list-grid-min, 360px), 100%),
         1fr
       )
     );
-    gap: var(--underlay-list-grid-gap, var(--underlay-list-grid-gap, 14px));
+    gap: var(--underlay-list-grid-gap, 14px);
     align-items: stretch;
   }
 </style>

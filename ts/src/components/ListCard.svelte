@@ -9,7 +9,8 @@
     accent?: string | null;
     media?: Snippet;
     trailing?: Snippet;
-    actions?: Snippet;
+    /** Renders the actions menu. When provided, the media area becomes a custom trigger containing the icon + dots. */
+    actions?: Snippet<[{ trigger: Snippet }]>;
     children?: Snippet;
   }
 
@@ -29,18 +30,35 @@
   let style = $derived(accent ? `--underlay-list-card-accent: ${accent};` : undefined);
 </script>
 
+{#snippet mediaTrigger()}
+  <span class="underlay-list-card__media-content">
+    <span class="underlay-list-card__icon">
+      {#if media}
+        {@render media()}
+      {/if}
+    </span>
+    <span class="underlay-list-card__dots" aria-hidden="true">⋯</span>
+  </span>
+{/snippet}
+
 {#if href}
   <div class="underlay-list-card-shell" {style}>
     <a
-      class={`underlay-list-card underlay-list-card__link ${hasActions ? "underlay-list-card--has-actions" : ""}`}
+      class="underlay-list-card underlay-list-card__link"
       {href}
       aria-label={ariaLabel ?? title}
     >
-      <div class="underlay-list-card__media">
-        {#if media}
-          {@render media()}
-        {/if}
-      </div>
+      {#if hasActions}
+        <div class="underlay-list-card__media-slot">
+          {@render actions?.({ trigger: mediaTrigger })}
+        </div>
+      {:else}
+        <div class="underlay-list-card__media">
+          {#if media}
+            {@render media()}
+          {/if}
+        </div>
+      {/if}
 
       <div class="underlay-list-card__body">
         <div class="underlay-list-card__title-row">
@@ -61,26 +79,24 @@
         </div>
       </div>
     </a>
-
-    {#if hasActions}
-      <div class="underlay-list-card__actions">
-        {#if actions}
-          {@render actions()}
-        {/if}
-      </div>
-    {/if}
   </div>
 {:else}
   <div
-    class={`underlay-list-card ${hasActions ? "underlay-list-card--has-actions" : ""}`}
+    class="underlay-list-card"
     aria-label={ariaLabel ?? title}
     {style}
   >
-    <div class="underlay-list-card__media">
-      {#if media}
-        {@render media()}
-      {/if}
-    </div>
+    {#if hasActions}
+      <div class="underlay-list-card__media-slot">
+        {@render actions?.({ trigger: mediaTrigger })}
+      </div>
+    {:else}
+      <div class="underlay-list-card__media">
+        {#if media}
+          {@render media()}
+        {/if}
+      </div>
+    {/if}
 
     <div class="underlay-list-card__body">
       <div class="underlay-list-card__title-row">
@@ -100,20 +116,13 @@
         {/if}
       </div>
     </div>
-
-    {#if hasActions}
-      <div class="underlay-list-card__actions">
-        {#if actions}
-          {@render actions()}
-        {/if}
-      </div>
-    {/if}
   </div>
 {/if}
 
 <style>
   .underlay-list-card-shell {
     position: relative;
+    min-width: 0;
   }
 
   .underlay-list-card {
@@ -135,6 +144,7 @@
     grid-template-columns: var(--_underlay-list-card-media-size) 1fr;
     gap: var(--_underlay-list-card-gap);
     align-items: center;
+    min-width: 0;
     text-decoration: none;
     border-radius: var(--underlay-radius-md, var(--underlay-radius-md, 0.75rem));
     padding: var(--underlay-space-4, var(--underlay-space-4, 1rem));
@@ -153,11 +163,6 @@
       transform 0.12s ease-out,
       border-color 0.12s ease-out,
       box-shadow 0.12s ease-out;
-  }
-
-  /* Give the top-right overlay room. */
-  .underlay-list-card--has-actions {
-    padding-right: calc(var(--underlay-space-4, var(--underlay-space-4, 1rem)) + 2.25rem);
   }
 
   .underlay-list-card-shell:hover > .underlay-list-card {
@@ -186,13 +191,6 @@
     outline-offset: var(--underlay-focus-ring-offset, var(--underlay-focus-ring-offset, 2px));
   }
 
-  .underlay-list-card__actions {
-    position: absolute;
-    top: calc(var(--underlay-space-4, var(--underlay-space-4, 1rem)) * 0.75);
-    right: calc(var(--underlay-space-4, var(--underlay-space-4, 1rem)) * 0.75);
-    z-index: 1;
-  }
-
   .underlay-list-card__media {
     width: var(--_underlay-list-card-media-size);
     height: var(--_underlay-list-card-media-size);
@@ -215,6 +213,74 @@
     overflow: hidden;
   }
 
+  /* Slot wrapper for the actions trigger - no styling, just positioning */
+  .underlay-list-card__media-slot {
+    width: var(--_underlay-list-card-media-size);
+    height: var(--_underlay-list-card-media-size);
+  }
+
+  /* The dropdown trigger button becomes the media area */
+  .underlay-list-card__media-slot :global(.underlay-dropdown-menu-trigger) {
+    width: 100%;
+    height: 100%;
+    border-radius: var(--underlay-radius-lg, var(--underlay-radius-lg, 1rem));
+    padding: 0;
+    background: color-mix(
+      in srgb,
+      var(--underlay-list-card-accent) 18%,
+      var(--underlay-color-accent-tint-bg, var(--underlay-color-accent-tint-bg, rgba(255, 255, 255, 0.03)))
+    );
+    border: 1px solid
+      color-mix(
+        in srgb,
+        var(--underlay-list-card-accent) 30%,
+        var(--underlay-color-accent-tint-border, var(--underlay-color-accent-tint-border, rgba(148, 163, 184, 0.25)))
+      );
+    color: var(--underlay-list-card-accent);
+    cursor: pointer;
+  }
+
+  .underlay-list-card__media-slot :global(.underlay-dropdown-menu-trigger:hover) {
+    background: color-mix(
+      in srgb,
+      var(--underlay-list-card-accent) 28%,
+      var(--underlay-color-accent-tint-bg, var(--underlay-color-accent-tint-bg, rgba(255, 255, 255, 0.03)))
+    );
+  }
+
+  .underlay-list-card__media-slot :global(.underlay-dropdown-menu-trigger:focus-visible) {
+    outline: var(--underlay-focus-ring-width, 2px) solid var(--underlay-list-card-accent);
+    outline-offset: var(--underlay-focus-ring-offset, 2px);
+  }
+
+  .underlay-list-card__media-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    gap: 0.15rem;
+  }
+
+  .underlay-list-card__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    padding-top: 0.25rem;
+    color: var(--underlay-list-card-accent);
+  }
+
+  .underlay-list-card__dots {
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1;
+    opacity: 0.6;
+    padding-bottom: 0.3rem;
+    color: var(--underlay-list-card-accent);
+  }
+
   .underlay-list-card__body {
     min-width: 0;
     display: flex;
@@ -232,7 +298,7 @@
 
   .underlay-list-card__title {
     margin: 0;
-    font-size: 1rem;
+    font-size: 1em;
     line-height: 1.2;
     font-weight: 650;
     min-width: 0;
@@ -243,8 +309,9 @@
 
   .underlay-list-card__subtitle {
     margin: 0;
-    font-size: 0.9rem;
+    font-size: 0.9em;
     color: var(--underlay-color-text-muted, var(--underlay-color-text-muted, #9ca3af));
+    min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -254,19 +321,8 @@
     display: flex;
     flex-direction: column;
     gap: calc(var(--underlay-space-1, var(--underlay-space-1, 0.25rem)) * 0.6);
-    font-size: 0.82rem;
+    font-size: 0.82em;
     color: var(--underlay-color-text-muted, var(--underlay-color-text-muted, #9ca3af));
-  }
-
-  @media (max-width: 520px) {
-    .underlay-list-card {
-      --_underlay-list-card-media-size: var(
-        --underlay-list-card-media-size,
-        var(
-          --underlay-list-card-media-size-sm,
-          var(--underlay-list-card-media-size-sm, 64px)
-        )
-      );
-    }
+    min-width: 0;
   }
 </style>

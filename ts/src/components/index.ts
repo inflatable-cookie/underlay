@@ -8,6 +8,8 @@ export { default as TextButton } from "./TextButton.svelte";
 export { default as Card } from "./Card.svelte";
 export { default as Field } from "./Field.svelte";
 export { default as FieldHint } from "./FieldHint.svelte";
+export { default as FieldSet } from "./FieldSet.svelte";
+export { default as Pill } from "./Pill.svelte";
 export { default as TextInput } from "./TextInput.svelte";
 export { default as TextArea } from "./TextArea.svelte";
 export { default as MarkdownEditor } from "./MarkdownEditor.svelte";

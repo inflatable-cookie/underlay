@@ -21,6 +21,7 @@
 
 <style>
   .underlay-card {
+    container-type: inline-size;
     border-radius: var(--underlay-radius-md, var(--underlay-radius-md, 0.75rem));
     padding: var(--underlay-card-padding, var(--underlay-density-gap, 1rem));
     background-color: var(

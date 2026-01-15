@@ -6,8 +6,8 @@ This document covers creating and using a shared Svelte UI kit with Underlay. Un
 
 The UI kit provides:
 - **Form components** - Field, TextInput, Select, Switch, TextArea
-- **UI primitives** - Button, Badge, Breadcrumbs, Card, Dialog, DropdownMenu, Pagination
-- **Patterns** - ListCard, Form, FormActions
+- **UI primitives** - Button, Badge, Pill, Breadcrumbs, Card, Dialog, DropdownMenu, Pagination
+- **Patterns** - ListCard, NavCard, NavCardGrid, Form, FormActions, PageHeader
 - **Design tokens** - CSS custom properties for theming
 
 ## UI Kit Structure
@@ -210,6 +210,40 @@ Status indicators, counts, and labels:
 - `pill` - Fully rounded shape (default: `false`)
 - `icon` - Optional icon to display before text
 - `className` - Additional CSS classes
+
+### Pill
+
+Compact inline labels for metadata like type, category, year, or code. Unlike Badge, Pill supports custom accent colors via `color-mix()`.
+
+```svelte
+<script>
+  import { Pill } from "@decodelabs/underlay";
+</script>
+
+<!-- Neutral (default) - gray/slate colored -->
+<Pill>2024</Pill>
+<Pill>FA1</Pill>
+<Pill>Module Code</Pill>
+
+<!-- With accent color - uses color-mix for bg/border/text -->
+<Pill accent="#14b8a6">Outcome</Pill>
+<Pill accent="#a855f7">Bundle</Pill>
+<Pill accent="#fb923c">PreSeen</Pill>
+<Pill accent="#60a5fa">Analysis</Pill>
+```
+
+**Props:**
+- `accent` - Optional hex color for accent styling (uses `color-mix()` for background, border, and text)
+- `className` - Additional CSS classes
+
+**When to use Pill vs Badge:**
+- Use **Pill** for inline metadata labels within content (year, code, type, category)
+- Use **Badge** for status indicators with semantic variants (success, warning, danger)
+
+**Styling Notes:**
+- Uses `em` units for font-size (0.7em) so it scales with container
+- Neutral pills use a muted slate color scheme
+- Accent pills derive background (18% mix), border (30% mix), and text (88% mix) from the accent color
 
 ### Breadcrumbs
 
@@ -559,6 +593,139 @@ List display component with pagination support:
   {/if}
 </ListCard>
 ```
+
+### NavCard & NavCardGrid
+
+Navigation card components for index/dashboard pages. NavCards are substantial link blocks with icons and descriptions, ideal for section landing pages.
+
+```svelte
+<script>
+  import { NavCard, NavCardGrid } from "@decodelabs/underlay/patterns";
+  import Users from "lucide-svelte/icons/users";
+  import Settings from "lucide-svelte/icons/settings";
+  import Trash2 from "lucide-svelte/icons/trash-2";
+</script>
+
+<h1>Dashboard</h1>
+
+<NavCardGrid>
+  <NavCard
+    href="/users"
+    title="Users"
+    description="Manage user accounts and permissions."
+    icon={Users}
+  />
+  <NavCard
+    href="/settings"
+    title="Settings"
+    description="Configure application preferences."
+    icon={Settings}
+  />
+  <NavCard
+    href="/trash"
+    title="Trash"
+    description="View and restore deleted items."
+    icon={Trash2}
+    variant="danger"
+  />
+</NavCardGrid>
+```
+
+**NavCard Props:**
+- `href` - Link destination (required)
+- `title` - Card title (required)
+- `description` - Description text shown below title
+- `icon` - Svelte component for the icon (e.g., lucide-svelte icons)
+- `variant` - `"default"` | `"danger"` (default: `"default"`)
+- `children` - Optional extra content via slot
+
+**NavCardGrid Props:**
+- `children` - NavCard components (required)
+
+**Grid Behavior:**
+- Uses CSS `auto-fit` with `minmax(20rem, 1fr)` for adaptive columns
+- Automatically adjusts column count based on available width
+- Falls back to single column on narrow viewports (<480px)
+
+**Variants:**
+- `default` - Standard styling with primary-colored icon badge
+- `danger` - Red-tinted styling for destructive actions (trash, delete sections)
+
+**Usage Notes:**
+- NavCards work with any icon component that accepts a `class` prop
+- Icons are displayed in a colored badge (primary blue for default, red gradient for danger)
+- The grid has no maximum column count - it adapts entirely to available space
+- Use for section index pages where links are the primary content
+
+### PageHeader
+
+Page header component with title, optional subtitle, back link, and action buttons. Use this for consistent page headers across your application.
+
+```svelte
+<script>
+  import { PageHeader } from "@decodelabs/underlay/patterns";
+  import { Button } from "@decodelabs/underlay/components";
+</script>
+
+<!-- Simple header -->
+<PageHeader title="Dashboard" />
+
+<!-- With back link (appears below titles) -->
+<PageHeader 
+  title="Edit Article" 
+  backHref="/articles" 
+  backLabel="Back to articles" 
+/>
+
+<!-- With subtitle (for database-provided names) -->
+<PageHeader 
+  title="Edit Module" 
+  subtitle="Introduction to Financial Accounting"
+  backHref="/modules"
+  backLabel="Back to modules"
+/>
+
+<!-- With actions -->
+<PageHeader title="Users">
+  {#snippet actions()}
+    <Button href="/users/new">Add User</Button>
+  {/snippet}
+</PageHeader>
+
+<!-- With meta information -->
+<PageHeader 
+  title="Article" 
+  subtitle="Getting Started with Svelte"
+  backHref="/articles"
+>
+  <p>Last updated: 2024-01-15</p>
+  <p>Status: <code>published</code></p>
+</PageHeader>
+```
+
+**Props:**
+- `title` - Main page title (h1, required)
+- `subtitle` - Secondary title for database-provided names (h2, optional)
+- `backHref` - URL for back link (optional)
+- `backLabel` - Text for back link (default: "Back")
+- `actions` - Snippet for action buttons (optional)
+- `children` - Snippet for meta information below header (optional)
+
+**Layout:**
+The component renders in this order:
+1. Title (h1)
+2. Subtitle (h2, if provided)
+3. Back link (if provided)
+4. Actions (aligned right of the title row)
+5. Meta content (children, below the header)
+
+**Usage Guidelines:**
+- Use `title` for deterministic, static page names (e.g., "Edit Module", "Users", "Settings")
+- Use `subtitle` for database-provided names (e.g., the module name, user name, etc.)
+- The subtitle appears smaller and muted below the main title
+- The back link appears below titles for clear visual hierarchy
+- Action buttons align to the right of the title row
+- Meta content (via children) appears below the title block in muted text
 
 ---
 

@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
   import { Card, Form } from "@decodelabs/underlay/components";
+  import PageHeader from "./PageHeader.svelte";
 
   type PrepareHook = ((formData: FormData) => void) | null;
 
@@ -15,6 +16,9 @@
 
   interface Props {
     title: string;
+    subtitle?: string;
+    backHref?: string | null;
+    backLabel?: string;
     method?: "post" | "get";
 
     showTitle?: boolean;
@@ -30,11 +34,16 @@
     formClass?: string;
     autocomplete?: string;
 
+    /** Content to render inside PageHeader (meta info like IDs) */
+    headerMeta?: Snippet;
     children?: Snippet;
   }
 
   let {
     title,
+    subtitle,
+    backHref = null,
+    backLabel = "Back",
     method = "post",
     showTitle = true,
     success = null,
@@ -45,12 +54,17 @@
     enhance = null,
     formClass = "underlay-form-grid",
     autocomplete = "off",
+    headerMeta,
     children
   }: Props = $props();
 </script>
 
 {#if showTitle}
-  <h1>{title}</h1>
+  <PageHeader {title} {subtitle} {backHref} {backLabel}>
+    {#if headerMeta}
+      {@render headerMeta()}
+    {/if}
+  </PageHeader>
 {/if}
 
 {#if success && successMessage}
@@ -95,7 +109,7 @@
     border-radius: var(--underlay-radius-md, 0.5rem);
     background-color: rgba(239, 68, 68, 0.08);
     border: 1px solid rgba(239, 68, 68, 0.6);
-    font-size: var(--underlay-font-size-sm, 0.9rem);
+    font-size: 0.9em;
   }
 
   .underlay-form-shell__error-summary ul {

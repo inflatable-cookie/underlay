@@ -421,14 +421,8 @@
   }
 
   .markdown-editor-root :global(.EasyMDEContainer .editor-toolbar) {
-    background: var(
-      --underlay-color-surface-muted,
-      var(--underlay-color-surface-muted, rgba(255, 255, 255, 0.02))
-    );
-    border-color: var(
-      --underlay-color-border-subtle,
-      var(--underlay-color-border-subtle, rgba(148, 163, 184, 0.25))
-    );
+    background: transparent;
+    border: none;
   }
 
   .markdown-editor-root.preview-active
