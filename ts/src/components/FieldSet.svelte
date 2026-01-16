@@ -4,8 +4,8 @@
   interface Props {
     /** Optional legend/title for the fieldset */
     legend?: string;
-    /** Layout columns: 1, 2, 3, 4 or "auto" for auto-fit */
-    columns?: 1 | 2 | 3 | 4 | "auto";
+    /** Layout columns: 1, 2, 3, 4, 6 or "auto" for auto-fit */
+    columns?: 1 | 2 | 3 | 4 | 6 | "auto";
     /** Span full width in a 2-column form grid */
     full?: boolean;
     /** Additional CSS class */
@@ -60,7 +60,7 @@
   }
 
   /* Auto-fit columns based on available space */
-  .underlay-fieldset:not(.underlay-fieldset--cols-1):not(.underlay-fieldset--cols-2):not(.underlay-fieldset--cols-3):not(.underlay-fieldset--cols-4)
+  .underlay-fieldset:not(.underlay-fieldset--cols-1):not(.underlay-fieldset--cols-2):not(.underlay-fieldset--cols-3):not(.underlay-fieldset--cols-4):not(.underlay-fieldset--cols-6)
     .underlay-fieldset__fields {
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
   }
@@ -78,6 +78,10 @@
     .underlay-fieldset--cols-4 .underlay-fieldset__fields {
       grid-template-columns: repeat(4, 1fr);
     }
+
+    .underlay-fieldset--cols-6 .underlay-fieldset__fields {
+      grid-template-columns: repeat(6, 1fr);
+    }
   }
 
   /* Progressive collapse for 3+ columns: first to 2 columns */
@@ -86,13 +90,18 @@
     .underlay-fieldset--cols-4 .underlay-fieldset__fields {
       grid-template-columns: repeat(2, 1fr);
     }
+
+    .underlay-fieldset--cols-6 .underlay-fieldset__fields {
+      grid-template-columns: repeat(3, 1fr);
+    }
   }
 
   /* Collapse to single column on very small screens */
   @media (max-width: 399px) {
     .underlay-fieldset--cols-2 .underlay-fieldset__fields,
     .underlay-fieldset--cols-3 .underlay-fieldset__fields,
-    .underlay-fieldset--cols-4 .underlay-fieldset__fields {
+    .underlay-fieldset--cols-4 .underlay-fieldset__fields,
+    .underlay-fieldset--cols-6 .underlay-fieldset__fields {
       grid-template-columns: 1fr;
     }
   }

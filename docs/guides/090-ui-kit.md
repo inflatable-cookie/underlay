@@ -1447,6 +1447,7 @@ export { default as OrderList } from "./components/OrderList.svelte";
 
 ## Next Steps
 
+- [095-navigation-context](./095-navigation-context.md) - Contextual back buttons and form redirects
 - [100-frontend-web](./100-frontend-web.md) - Frontend application patterns
 - [110-admin](./110-admin.md) - Admin interface patterns
 - [075-validation](./075-validation.md) - Form validation with UI kit

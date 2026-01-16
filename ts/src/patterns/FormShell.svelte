@@ -19,6 +19,7 @@
     subtitle?: string;
     backHref?: string | null;
     backLabel?: string;
+    backIsContextual?: boolean;
     method?: "post" | "get";
 
     showTitle?: boolean;
@@ -44,6 +45,7 @@
     subtitle,
     backHref = null,
     backLabel = "Back",
+    backIsContextual = false,
     method = "post",
     showTitle = true,
     success = null,
@@ -60,7 +62,7 @@
 </script>
 
 {#if showTitle}
-  <PageHeader {title} {subtitle} {backHref} {backLabel}>
+  <PageHeader {title} {subtitle} {backHref} {backLabel} {backIsContextual}>
     {#if headerMeta}
       {@render headerMeta()}
     {/if}

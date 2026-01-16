@@ -8,7 +8,7 @@
     hint?: string;
     error?: string;
     /** Grid column span: "full" spans all columns, number specifies exact span */
-    span?: "full" | 1 | 2 | 3 | 4;
+    span?: "full" | 1 | 2 | 3 | 4 | 5 | 6;
     /** Remove max-width constraint for wide content like editors */
     wide?: boolean;
     children?: Snippet;
@@ -76,6 +76,9 @@
     text-transform: uppercase;
     letter-spacing: 0.04em;
     color: var(--underlay-color-text-muted, var(--underlay-color-text-muted, #9ca3af));
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
 

@@ -128,11 +128,11 @@ where
         block_registry: &BlockRegistry<C>,
     ) -> Result<(), NightfireValidationError> {
         let schema_str = value.schema.as_str();
-        let strategy =
-            self.get_by_str(schema_str)
-                .ok_or_else(|| NightfireValidationError::UnknownStrategy {
-                    schema: schema_str.to_owned(),
-                })?;
+        let strategy = self.get_by_str(schema_str).ok_or_else(|| {
+            NightfireValidationError::UnknownStrategy {
+                schema: schema_str.to_owned(),
+            }
+        })?;
 
         validate_nightfire_value(value, strategy, block_registry)
     }

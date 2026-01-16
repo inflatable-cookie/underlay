@@ -6,6 +6,7 @@ export * from "./dom";
 export * from "./auth";
 export * from "./forms";
 export * from "./storage";
+export * from "./navigation";
 export * from "./i18n";
 export * from "./optimistic";
 

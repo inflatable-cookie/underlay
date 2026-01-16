@@ -11,30 +11,6 @@
   grid-template-columns: 1fr;
   gap: var(--underlay-space-5, 1.25rem);
   width: 100%;
-}
-
-/* Two-column layout for fieldsets when container is wide enough */
-@container (min-width: 45rem) {
-  .underlay-form-grid,
-  .froyo-form-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  /* Narrow forms stay single-column (e.g. login, registration) */
-  .underlay-form-grid--narrow,
-  .froyo-form-grid--narrow {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* FieldSets that should span full width */
-.underlay-form-grid .underlay-fieldset--full,
-.froyo-form-grid .underlay-fieldset--full {
-  grid-column: 1 / -1;
-}
-
-/* FormActions should always span full width */
-.underlay-form-grid .underlay-form-actions,
-.froyo-form-grid .underlay-form-actions {
-  grid-column: 1 / -1;
+  max-width: 40em;
+  margin: 0 auto;
 }

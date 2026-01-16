@@ -38,7 +38,8 @@ Read these documents in order for a complete understanding:
 11. **[076 - Nightfire](./076-nightfire.md)** - Block-based structured content
 12. **[080 - TypeScript Client](./080-typescript-client.md)** - HTTP client, commands
 11. **[090 - UI Kit](./090-ui-kit.md)** - Component patterns
-12. **[100 - Frontend (Web)](./100-frontend-web.md)** - SvelteKit setup, routing
+12. **[095 - Navigation Context](./095-navigation-context.md)** - Contextual back buttons and form redirects
+13. **[100 - Frontend (Web)](./100-frontend-web.md)** - SvelteKit setup, routing
 13. **[110 - Admin Frontend](./110-admin.md)** - Admin UI structure
 14. **[120 - Configuration](./120-configuration.md)** - Env files, validation
 15. **[130 - Testing](./130-testing.md)** - Test patterns for all layers

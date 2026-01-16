@@ -34,6 +34,18 @@
       "types": "./ts/src/client/index.ts",
       "default": "./ts/src/client/index.ts"
     },
+    "./client/http": {
+      "types": "./ts/src/client/http.ts",
+      "default": "./ts/src/client/http.ts"
+    },
+    "./client/errors": {
+      "types": "./ts/src/client/errors.ts",
+      "default": "./ts/src/client/errors.ts"
+    },
+    "./client/types": {
+      "types": "./ts/src/client/types.ts",
+      "default": "./ts/src/client/types.ts"
+    },
     "./styles/base.css": "./ts/src/styles/base.css",
     "./styles/forms.css": "./ts/src/styles/forms.css",
     "./styles/markdown-editor.css": "./ts/src/styles/markdown-editor.css",

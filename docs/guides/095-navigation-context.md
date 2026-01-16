@@ -1,0 +1,1049 @@
+# 095 - Navigation Context
+
+This document covers Underlay's navigation context system for contextual back buttons and form redirects. This pattern enables edit forms to know where users came from and provide appropriate "back" navigation.
+
+## Overview
+
+When users navigate to an edit form, they could arrive from multiple places:
+- A list view (e.g., `/videos`)
+- A detail view (e.g., `/videos/123`)
+- A nested context (e.g., `/modules/456/videos`)
+- Deep links or external sources
+
+The navigation context system:
+- **Tracks navigation history** in sessionStorage with sanity rules
+- **Provides contextual back buttons** with appropriate labels
+- **Enables form redirects** to return users where they came from
+- **Survives page refresh** (sessionStorage-backed)
+- **Prevents unbounded growth** with max depth and deduplication
+
+---
+
+## Quick Start
+
+### 1. Navigate with Context
+
+When navigating to an edit page, use `gotoWithContext()` to record where the user came from:
+
+```svelte
+<script lang="ts">
+  import { gotoWithContext } from "@decodelabs/underlay/client";
+  import { CopyActionsMenu } from "@decodelabs/underlay/patterns";
+
+  export let data;
+</script>
+
+<CopyActionsMenu
+  actions={[
+    {
+      label: "Edit video",
+      onSelect: () =>
+        void gotoWithContext(`/videos/${data.video.videoId}/edit`, {
+          label: data.video.title,
+          href: `/videos/${data.video.videoId}`,
+          type: "detail"
+        })
+    }
+  ]}
+/>
+```
+
+### 2. Consume Context in Edit/Create Page
+
+In the edit or create page, use `consumeNavigationContext()` to **pop** the context from the stack and get both back button info and return URL:
+
+```svelte
+<script lang="ts">
+  import { consumeNavigationContext } from "@decodelabs/underlay/patterns";
+  import { PageHeader } from "@decodelabs/underlay/patterns";
+
+  export let data;
+
+  const defaultBackHref = `/videos/${data.video.videoId}`;
+  const { backInfo, returnTo } = consumeNavigationContext("Back to video", defaultBackHref);
+</script>
+
+<PageHeader
+  title="Edit Video"
+  subtitle={data.video.title}
+  backHref={backInfo.href}
+  backLabel={backInfo.label}
+/>
+
+<!-- Pass returnTo to form for server redirect -->
+<VideoForm {returnTo} ... />
+```
+
+> **Important:** Use `consumeNavigationContext()` for edit/create pages. This function **pops** the context from the stack, ensuring it's only used once and doesn't persist across multiple navigations.
+
+### 3. Handle Server Redirect
+
+In the form component, include a hidden `returnTo` field:
+
+```svelte
+<!-- VideoForm.svelte -->
+<script lang="ts">
+  interface Props {
+    returnTo?: string;
+    // ... other props
+  }
+
+  let { returnTo = undefined }: Props = $props();
+</script>
+
+{#if returnTo}
+  <input type="hidden" name="returnTo" value={returnTo} />
+{/if}
+```
+
+In the server action, read `returnTo` and use it for the redirect:
+
+```typescript
+// +page.server.ts
+export const actions: Actions = {
+  default: async ({ params, request }) => {
+    const formData = await request.formData();
+    const returnTo = String(formData.get("returnTo") ?? "").trim() || null;
+
+    // ... validate and save ...
+
+    if (intent === "save-close") {
+      // Use returnTo if provided and safe (relative path only)
+      const redirectTarget = returnTo && returnTo.startsWith("/")
+        ? returnTo
+        : `/videos/${params.videoId}`;
+      throw redirect(303, redirectTarget);
+    }
+
+    return { success: true };
+  }
+};
+```
+
+---
+
+## API Reference
+
+### Types
+
+```typescript
+/**
+ * Navigation context representing where the user came from.
+ */
+interface NavigationContext {
+  /** Display label for back button (e.g., "Videos", "Module: Intro") */
+  label: string;
+  /** URL to navigate back to */
+  href: string;
+  /** Type of page - used for breadcrumb collapse rules */
+  type: "list" | "detail" | "edit";
+  /** Target URL this context is intended for (used for stale context validation) */
+  targetHref?: string;
+}
+
+/**
+ * Configuration options for the navigation context system.
+ */
+interface NavigationContextConfig {
+  /** Storage key (default: "underlay:nav-context") */
+  storageKey?: string;
+  /** Maximum breadcrumb depth (default: 3) */
+  maxDepth?: number;
+}
+
+/**
+ * Return type for getBackButtonInfo().
+ */
+interface BackButtonInfo {
+  /** Label for the back button */
+  label: string;
+  /** Href for the back button */
+  href: string;
+}
+```
+
+### Framework-Agnostic Functions (`@decodelabs/underlay/patterns`)
+
+These functions work in any JavaScript environment with sessionStorage.
+
+#### `pushNavigationContext(context)`
+
+Push a navigation context onto the stack.
+
+```typescript
+import { pushNavigationContext } from "@decodelabs/underlay/patterns";
+
+pushNavigationContext({
+  label: "Videos",
+  href: "/content/videos",
+  type: "list"
+});
+```
+
+**Sanity rules applied:**
+- **Max depth**: Stack is trimmed to 3 items (configurable)
+- **Same-type collapse**: `list→list` replaces the top item
+- **Deduplication**: Same `href` already in stack? Moves to top, doesn't duplicate
+
+#### `popNavigationContext()`
+
+Remove and return the most recent context from the stack.
+
+```typescript
+import { popNavigationContext } from "@decodelabs/underlay/patterns";
+
+const context = popNavigationContext();
+if (context) {
+  console.log(`Returning to: ${context.label}`);
+  navigateTo(context.href);
+}
+```
+
+**Returns:** `NavigationContext | null`
+
+#### `peekNavigationContext()`
+
+Read the most recent context without removing it.
+
+```typescript
+import { peekNavigationContext } from "@decodelabs/underlay/patterns";
+
+const context = peekNavigationContext();
+console.log(`User came from: ${context?.label ?? "unknown"}`);
+```
+
+**Returns:** `NavigationContext | null`
+
+#### `getNavigationContextStack()`
+
+Get the full navigation context stack (for debugging or breadcrumbs).
+
+```typescript
+import { getNavigationContextStack } from "@decodelabs/underlay/patterns";
+
+const stack = getNavigationContextStack();
+// [
+//   { label: "Learning", href: "/learning", type: "list" },
+//   { label: "Pathways", href: "/learning/pathways", type: "list" },
+//   { label: "FA 2025", href: "/learning/pathways/abc", type: "detail" }
+// ]
+```
+
+**Returns:** `NavigationContext[]`
+
+#### `clearNavigationContext()`
+
+Clear all navigation context.
+
+```typescript
+import { clearNavigationContext } from "@decodelabs/underlay/patterns";
+
+clearNavigationContext();
+```
+
+#### `getReturnUrl(fallbackHref)`
+
+Get the URL for form submission redirects. **Peeks** at the context without consuming it.
+
+If the stored context includes a `targetHref` and it doesn't match the current URL pathname, the context is ignored and the fallback is used.
+
+> **Note:** For edit/create pages, prefer `consumeNavigationContext()` which pops the context.
+
+```typescript
+import { getReturnUrl } from "@decodelabs/underlay/patterns";
+
+const returnTo = getReturnUrl(`/items/${itemId}`);
+// If context exists: "/content/videos"
+// If no context:     "/items/123"
+```
+
+**Parameters:**
+- `fallbackHref` - URL to return if no context exists
+
+**Returns:** `string`
+
+#### `getBackButtonInfo(fallbackLabel, fallbackHref)`
+
+Get contextual back button label and href. **Peeks** at the context without consuming it.
+
+If the stored context includes a `targetHref` and it doesn't match the current URL pathname, the context is ignored and the fallbacks are used.
+
+> **Note:** For edit/create pages, prefer `consumeNavigationContext()` which pops the context. Use `getBackButtonInfo()` for detail pages that display a back button but don't have forms.
+
+```typescript
+import { getBackButtonInfo } from "@decodelabs/underlay/patterns";
+
+const { label, href } = getBackButtonInfo("Back to item", `/items/${itemId}`);
+// If context exists: { label: "Back to Videos", href: "/content/videos" }
+// If no context:     { label: "Back to item", href: "/items/123" }
+```
+
+**Parameters:**
+- `fallbackLabel` - Label to use if no context exists
+- `fallbackHref` - URL to use if no context exists
+
+**Returns:** `BackButtonInfo`
+
+#### `consumeNavigationContext(fallbackLabel, fallbackHref)` ⭐ Recommended
+
+**Pops** the navigation context and returns both back button info and return URL. This is the recommended function for edit/create pages because it ensures the context is consumed (removed from the stack) when used.
+
+**Stale context detection:** If the context has a `targetHref` that doesn't match the current URL pathname, the context is considered stale and discarded. This prevents showing incorrect "Back to X" labels when users navigate to edit pages via bookmarks, direct links, or from pages that don't push context.
+
+```typescript
+import { consumeNavigationContext } from "@decodelabs/underlay/patterns";
+
+const { backInfo, returnTo } = consumeNavigationContext("Back to videos", "/content/videos");
+// backInfo: { label: "Back to Module: FA1", href: "/learning/modules/abc" }
+// returnTo: "/learning/modules/abc"
+```
+
+**Parameters:**
+- `fallbackLabel` - Label to use if no context exists or context is stale
+- `fallbackHref` - URL to use if no context exists or context is stale
+
+**Returns:** `{ backInfo: BackButtonInfo, returnTo: string }`
+
+**Why use this instead of separate calls?**
+- Ensures context is consumed only once
+- Validates context is intended for the current page (prevents stale context bugs)
+- Prevents stale context from persisting across multiple page navigations
+- Provides both back button info and form redirect URL in one call
+
+#### `deriveParentPath(currentPath)`
+
+Derive a sensible parent URL from a path.
+
+```typescript
+import { deriveParentPath } from "@decodelabs/underlay/patterns";
+
+deriveParentPath("/content/videos/123/edit");  // "/content/videos/123"
+deriveParentPath("/content/videos/123");       // "/content/videos"
+deriveParentPath("/content/videos");           // "/content"
+deriveParentPath("/");                         // "/"
+```
+
+**Parameters:**
+- `currentPath` - The current URL path
+
+**Returns:** `string`
+
+#### `configureNavigationContext(options)`
+
+Configure the navigation context system. Call early in app initialization if needed.
+
+```typescript
+import { configureNavigationContext } from "@decodelabs/underlay/patterns";
+
+configureNavigationContext({
+  storageKey: "myapp:nav-context",
+  maxDepth: 5
+});
+```
+
+**Parameters:**
+- `options.storageKey` - Storage key (default: `"underlay:nav-context"`)
+- `options.maxDepth` - Maximum stack depth (default: `3`)
+
+---
+
+### SvelteKit Functions (`@decodelabs/underlay/client`)
+
+These functions integrate with SvelteKit's navigation.
+
+#### `gotoWithContext(targetHref, context, options?)`
+
+Navigate to a URL while pushing context onto the stack.
+
+The `targetHref` is automatically stored with the context, allowing `consumeNavigationContext()` to validate that the context is intended for the current page. This prevents stale context from being used when users navigate via bookmarks, direct links, or from pages that don't push context.
+
+```typescript
+import { gotoWithContext } from "@decodelabs/underlay/client";
+
+// From a list page
+await gotoWithContext(`/items/${id}/edit`, {
+  label: "Items",
+  href: "/items",
+  type: "list"
+});
+
+// From a detail page
+await gotoWithContext(`/items/${id}/edit`, {
+  label: item.name,
+  href: `/items/${id}`,
+  type: "detail"
+});
+```
+
+**Parameters:**
+- `targetHref` - URL to navigate to
+- `context` - NavigationContext to push
+- `options` - Optional SvelteKit goto options
+
+**Returns:** `Promise<void>`
+
+#### `navigateBack(fallbackHref?)`
+
+Navigate back using the context stack.
+
+```typescript
+import { navigateBack } from "@decodelabs/underlay/client";
+
+// Uses context if available, otherwise derives parent URL
+navigateBack();
+
+// With explicit fallback
+navigateBack(`/items/${itemId}`);
+```
+
+**Parameters:**
+- `fallbackHref` - Optional fallback URL if no context exists
+
+**Returns:** `string` (the href navigated to)
+
+#### `navigateOnCancel(cancelHref?)`
+
+Legacy cancel button navigation. Navigates to the provided href, derives a parent URL, or uses browser history.
+
+```typescript
+import { navigateOnCancel } from "@decodelabs/underlay/client";
+
+function handleCancel() {
+  navigateOnCancel(); // Derives parent from current URL
+}
+
+function handleCancelWithFallback() {
+  navigateOnCancel("/items"); // Uses provided URL
+}
+```
+
+**Parameters:**
+- `cancelHref` - Optional explicit URL to navigate to
+
+> **Note:** Prefer `navigateBack()` for context-aware navigation. `navigateOnCancel()` is provided for backwards compatibility.
+
+---
+
+## Complete Example
+
+### List Page (Videos)
+
+```svelte
+<!-- /content/videos/+page.svelte -->
+<script lang="ts">
+  import type { PageData } from "./$types";
+  import { PageHeader } from "@decodelabs/underlay/patterns";
+  import { ListGrid } from "@decodelabs/underlay/components";
+  import { VideoListCard } from "$lib/cards";
+
+  export let data: PageData;
+</script>
+
+<PageHeader title="Videos" backHref="/content" backLabel="Back to content" />
+
+<ListGrid>
+  {#each data.videos as video}
+    <VideoListCard {video} />
+  {/each}
+</ListGrid>
+```
+
+### List Card Component
+
+```svelte
+<!-- $lib/cards/VideoListCard.svelte -->
+<script lang="ts">
+  import { CopyActionsMenu } from "@decodelabs/underlay/patterns";
+  import { ListCard } from "@decodelabs/underlay/components";
+  import { gotoWithContext } from "@decodelabs/underlay/client";
+  import Video from "lucide-svelte/icons/video";
+
+  interface Props {
+    video: {
+      videoId: string;
+      title: string;
+      duration: number;
+    };
+  }
+
+  let { video }: Props = $props();
+
+  const videoHref = $derived(`/content/videos/${video.videoId}`);
+</script>
+
+<ListCard href={videoHref} title={video.title}>
+  {#snippet media()}
+    <Video size={24} />
+  {/snippet}
+
+  {#snippet actions({ trigger })}
+    <CopyActionsMenu
+      {trigger}
+      actions={[
+        {
+          label: "Edit video",
+          onSelect: () =>
+            void gotoWithContext(`${videoHref}/edit`, {
+              label: "Videos",
+              href: "/content/videos",
+              type: "list"
+            })
+        }
+      ]}
+    />
+  {/snippet}
+
+  <span>{video.duration}s</span>
+</ListCard>
+```
+
+### Detail Page
+
+```svelte
+<!-- /content/videos/[videoId]/+page.svelte -->
+<script lang="ts">
+  import type { PageData } from "./$types";
+  import { CopyActionsMenu, PageHeader } from "@decodelabs/underlay/patterns";
+  import { gotoWithContext } from "@decodelabs/underlay/client";
+
+  export let data: PageData;
+</script>
+
+<PageHeader
+  title="Video"
+  subtitle={data.video.title}
+  backHref="/content/videos"
+  backLabel="Back to videos"
+>
+  {#snippet actions()}
+    <CopyActionsMenu
+      actions={[
+        {
+          label: "Edit video",
+          onSelect: () =>
+            void gotoWithContext(`/content/videos/${data.video.videoId}/edit`, {
+              label: data.video.title,
+              href: `/content/videos/${data.video.videoId}`,
+              type: "detail"
+            })
+        }
+      ]}
+    />
+  {/snippet}
+</PageHeader>
+```
+
+### Edit Page
+
+```svelte
+<!-- /content/videos/[videoId]/edit/+page.svelte -->
+<script lang="ts">
+  import type { PageData, ActionData } from "./$types";
+  import { getBackButtonInfo, getReturnUrl } from "@decodelabs/underlay/patterns";
+  import CrudFormShell from "$lib/forms/CrudFormShell.svelte";
+  import VideoForm from "$lib/forms/VideoForm.svelte";
+
+  export let data: PageData;
+  export let form: ActionData | null = null;
+
+  const defaultBackHref = `/content/videos/${data.video.videoId}`;
+  const backInfo = getBackButtonInfo("Back to video", defaultBackHref);
+  const returnTo = getReturnUrl(defaultBackHref);
+</script>
+
+<CrudFormShell
+  title="Edit Video"
+  subtitle={data.video.title}
+  backHref={backInfo.href}
+  backLabel={backInfo.label}
+  success={form?.success === true}
+  error={form?.success === false ? form?.error : null}
+>
+  <VideoForm
+    mode="edit"
+    values={data.video}
+    errors={form?.fieldErrors ?? null}
+    {returnTo}
+  />
+</CrudFormShell>
+```
+
+### Form Component
+
+```svelte
+<!-- $lib/forms/VideoForm.svelte -->
+<script lang="ts">
+  import { Field, TextInput, FormActions, SaveSplitButton } from "@decodelabs/underlay/components";
+  import { navigateOnCancel } from "@decodelabs/underlay/client";
+
+  interface Props {
+    mode?: "create" | "edit";
+    values?: { title?: string; url?: string };
+    errors?: Record<string, string> | null;
+    cancelHref?: string;
+    returnTo?: string;
+  }
+
+  let {
+    mode = "edit",
+    values = {},
+    errors = null,
+    cancelHref = undefined,
+    returnTo = undefined
+  }: Props = $props();
+
+  function handleCancel() {
+    navigateOnCancel(cancelHref);
+  }
+</script>
+
+<Field label="Title" error={errors?.title}>
+  <TextInput name="title" value={values.title ?? ""} required />
+</Field>
+
+<Field label="URL" error={errors?.url}>
+  <TextInput name="url" value={values.url ?? ""} required />
+</Field>
+
+<FormActions>
+  <button type="button" onclick={handleCancel}>Cancel</button>
+
+  <input type="hidden" name="intent" value="save-close" />
+  {#if returnTo}
+    <input type="hidden" name="returnTo" value={returnTo} />
+  {/if}
+
+  <SaveSplitButton type="submit" {mode} />
+</FormActions>
+```
+
+### Server Action
+
+```typescript
+// /content/videos/[videoId]/edit/+page.server.ts
+import type { Actions, PageServerLoad } from "./$types";
+import { fail, redirect } from "@sveltejs/kit";
+import { videoCommands } from "@myapp/client";
+
+export const load: PageServerLoad = async ({ params, fetch }) => {
+  const video = await videoCommands.getVideo(params.videoId, fetch);
+  if (!video) throw error(404, "Video not found");
+  return { video };
+};
+
+export const actions: Actions = {
+  default: async ({ params, request, fetch }) => {
+    const formData = await request.formData();
+
+    const title = String(formData.get("title") ?? "").trim();
+    const url = String(formData.get("url") ?? "").trim();
+    const intent = String(formData.get("intent") ?? "save-close");
+    const returnTo = String(formData.get("returnTo") ?? "").trim() || null;
+
+    // Validate
+    const fieldErrors: Record<string, string> = {};
+    if (!title) fieldErrors.title = "Title is required";
+    if (!url) fieldErrors.url = "URL is required";
+
+    if (Object.keys(fieldErrors).length > 0) {
+      return fail(400, {
+        success: false,
+        error: "Validation failed",
+        fieldErrors,
+        values: { title, url }
+      });
+    }
+
+    // Save
+    try {
+      await videoCommands.updateVideo(params.videoId, { title, url }, fetch);
+    } catch (e) {
+      return fail(400, {
+        success: false,
+        error: e instanceof Error ? e.message : "Failed to update video",
+        fieldErrors: null,
+        values: { title, url }
+      });
+    }
+
+    // Redirect on save-close
+    if (intent === "save-close") {
+      // Use returnTo if safe (relative path only), otherwise fall back
+      const redirectTarget = returnTo && returnTo.startsWith("/")
+        ? returnTo
+        : `/content/videos/${params.videoId}`;
+      throw redirect(303, redirectTarget);
+    }
+
+    return { success: true, values: { title, url } };
+  }
+};
+```
+
+---
+
+## Create Page Pattern
+
+Create pages follow a similar pattern to edit pages, but with a key difference: the default back/redirect destination is typically the list page rather than a detail page (since the entity doesn't exist yet).
+
+### Create Page Component
+
+```svelte
+<!-- /content/videos/new/+page.svelte -->
+<script lang="ts">
+  import type { ActionData } from "./$types";
+  import { getBackButtonInfo, getReturnUrl } from "@decodelabs/underlay/patterns";
+  import CrudFormShell from "$lib/forms/CrudFormShell.svelte";
+  import VideoForm from "$lib/forms/VideoForm.svelte";
+
+  export let form: ActionData | null = null;
+
+  // For create pages, the default destination is the list page
+  const defaultBackHref = "/content/videos";
+  const backInfo = getBackButtonInfo("Back to videos", defaultBackHref);
+  const returnTo = getReturnUrl(defaultBackHref);
+</script>
+
+<CrudFormShell
+  title="New Video"
+  backHref={backInfo.href}
+  backLabel={backInfo.label}
+  success={form?.success === true}
+  error={form?.success === false ? form?.error : null}
+>
+  <VideoForm
+    mode="create"
+    values={form?.values ?? {}}
+    errors={form?.fieldErrors ?? null}
+    cancelHref={backInfo.href}
+    {returnTo}
+  />
+</CrudFormShell>
+```
+
+### Create Page Server Action
+
+```typescript
+// /content/videos/new/+page.server.ts
+import type { Actions } from "./$types";
+import { fail, redirect } from "@sveltejs/kit";
+import { videoCommands } from "@myapp/client";
+
+export const actions: Actions = {
+  default: async ({ request, fetch }) => {
+    const formData = await request.formData();
+
+    const title = String(formData.get("title") ?? "").trim();
+    const url = String(formData.get("url") ?? "").trim();
+    const intent = String(formData.get("intent") ?? "save-close");
+    const returnTo = String(formData.get("returnTo") ?? "").trim() || null;
+
+    // Validate
+    const fieldErrors: Record<string, string> = {};
+    if (!title) fieldErrors.title = "Title is required";
+    if (!url) fieldErrors.url = "URL is required";
+
+    if (Object.keys(fieldErrors).length > 0) {
+      return fail(400, {
+        success: false,
+        error: "Validation failed",
+        fieldErrors,
+        values: { title, url, intent }
+      });
+    }
+
+    // Create
+    let created: { videoId: string };
+    try {
+      created = await videoCommands.createVideo({ title, url }, fetch);
+    } catch (e) {
+      return fail(400, {
+        success: false,
+        error: e instanceof Error ? e.message : "Failed to create video",
+        fieldErrors: null,
+        values: { title, url, intent }
+      });
+    }
+
+    // Redirect based on intent
+    if (intent === "save-close") {
+      // Use returnTo if safe, otherwise go to list
+      const redirectTarget =
+        returnTo && returnTo.startsWith("/")
+          ? returnTo
+          : "/content/videos";
+      throw redirect(303, redirectTarget);
+    }
+
+    // For plain "save", redirect to the edit page of the newly created item
+    throw redirect(303, `/content/videos/${created.videoId}`);
+  }
+};
+```
+
+### Key Differences from Edit Pages
+
+| Aspect | Edit Page | Create Page |
+|--------|-----------|-------------|
+| Default back destination | Detail page (`/items/123`) | List page (`/items`) |
+| Save & close redirect | Context or detail page | Context or list page |
+| Plain save redirect | Stay on edit page | Go to new item's edit page |
+| `cancelHref` | `backInfo.href` | `backInfo.href` |
+
+---
+
+## Inline Form Pattern
+
+For pages where the form is defined inline (not in a separate component), include the hidden fields directly:
+
+```svelte
+<!-- /assessment/questions/new/+page.svelte -->
+<script lang="ts">
+  import type { ActionData } from "./$types";
+  import { getBackButtonInfo, getReturnUrl } from "@decodelabs/underlay/patterns";
+  import { navigateOnCancel } from "@decodelabs/underlay/client";
+  import CrudFormShell from "$lib/forms/CrudFormShell.svelte";
+  import { Field, TextInput, FormActions, SaveSplitButton } from "@decodelabs/underlay/components";
+
+  export let form: ActionData | null = null;
+
+  let intent: "save" | "save-close" = "save-close";
+
+  const defaultBackHref = "/assessment/questions";
+  const backInfo = getBackButtonInfo("Back to questions", defaultBackHref);
+  const returnTo = getReturnUrl(defaultBackHref);
+
+  function handleCancel() {
+    navigateOnCancel(backInfo.href);
+  }
+</script>
+
+<CrudFormShell
+  title="Create Question"
+  backHref={backInfo.href}
+  backLabel={backInfo.label}
+  method="post"
+  success={form?.success === true}
+  error={form?.success === false ? form?.error : null}
+>
+  <Field label="Title" error={form?.fieldErrors?.title}>
+    <TextInput name="title" value={form?.values?.title ?? ""} required />
+  </Field>
+
+  <!-- More fields... -->
+
+  <FormActions>
+    {#snippet danger()}
+      <button type="button" onclick={handleCancel}>Cancel</button>
+    {/snippet}
+
+    <input type="hidden" name="intent" value={intent} />
+    {#if returnTo}
+      <input type="hidden" name="returnTo" value={returnTo} />
+    {/if}
+
+    <SaveSplitButton type="submit" mode="create" bind:intent />
+  </FormActions>
+</CrudFormShell>
+```
+
+---
+
+## Rollout Checklist
+
+When adding navigation context support to an existing page, follow this checklist:
+
+### For Pages with Separate Form Components
+
+**1. Update the page component (`+page.svelte`):**
+- [ ] Import `consumeNavigationContext` from `@decodelabs/underlay/patterns`
+- [ ] Define `defaultBackHref` constant with the fallback destination
+- [ ] Call `const { backInfo, returnTo } = consumeNavigationContext(label, defaultBackHref)`
+- [ ] Pass `backInfo.href` and `backInfo.label` to `CrudFormShell` or `PageHeader`
+- [ ] Pass `returnTo` and `cancelHref={backInfo.href}` to the form component
+
+**2. Update the form component:**
+- [ ] Add `returnTo?: string` prop
+- [ ] Add `cancelHref?: string` prop (if not already present)
+- [ ] Import `navigateOnCancel` from `@decodelabs/underlay/client`
+- [ ] Update `handleCancel()` to use `navigateOnCancel(cancelHref)`
+- [ ] Add hidden input: `{#if returnTo}<input type="hidden" name="returnTo" value={returnTo} />{/if}`
+
+**3. Update the server action (`+page.server.ts`):**
+- [ ] Extract `returnTo`: `const returnTo = String(formData.get("returnTo") ?? "").trim() || null;`
+- [ ] Update redirect logic: `const target = returnTo && returnTo.startsWith("/") ? returnTo : defaultPath;`
+
+### For Pages with Inline Forms
+
+**1. Update the page component:**
+- [ ] Import `consumeNavigationContext` from `@decodelabs/underlay/patterns`
+- [ ] Import `navigateOnCancel` from `@decodelabs/underlay/client`
+- [ ] Define `defaultBackHref` and call `const { backInfo, returnTo } = consumeNavigationContext(...)`
+- [ ] Add hidden `returnTo` input directly in the form
+- [ ] Update cancel handler to use `navigateOnCancel(backInfo.href)`
+
+**2. Update the server action:**
+- [ ] Same as above
+
+### For Source Pages (List/Detail)
+
+**Update list cards or action menus:**
+- [ ] Import `gotoWithContext` from `@decodelabs/underlay/client`
+- [ ] Replace `goto(editHref)` with `gotoWithContext(editHref, { label, href, type })`
+- [ ] Use `type: "list"` for list pages, `type: "detail"` for detail pages
+
+---
+
+## Breadcrumb Sanity Rules
+
+The navigation context stack applies these rules to prevent unbounded growth:
+
+### 1. Maximum Depth (default: 3)
+
+The stack is trimmed to keep only the most recent items:
+
+```
+Push: List A → Detail A → Detail B → Detail C → Detail D
+Stack after: [Detail B, Detail C, Detail D]  // Only 3 items kept
+```
+
+### 2. Same-Type Collapse
+
+Consecutive list pages collapse into one:
+
+```
+Push: List A (list) → List B (list)
+Stack after: [List B]  // List A replaced by List B
+```
+
+This makes sense because navigating from one list to another list means the first list is no longer relevant as a "back" destination. Detail pages are kept so they can form a breadcrumb trail (up to the max depth).
+
+### 3. Deduplication
+
+If the same `href` already exists in the stack, it moves to the top:
+
+```
+Stack: [List A, Detail A, Detail B]
+Push: Detail A
+Stack after: [List A, Detail B, Detail A]  // Detail A moved to top
+```
+
+---
+
+## Security Considerations
+
+### Validate returnTo on Server
+
+Always validate that `returnTo` is a safe relative path:
+
+```typescript
+// GOOD - validate returnTo is a relative path
+const redirectTarget = returnTo && returnTo.startsWith("/")
+  ? returnTo
+  : `/default/path`;
+
+// BAD - allows open redirect attacks
+const redirectTarget = returnTo ?? `/default/path`;
+```
+
+**Why?** Without validation, an attacker could craft a link like:
+```
+/edit?returnTo=https://evil.com
+```
+
+By requiring `returnTo.startsWith("/")`, we ensure it's always a relative path within the same origin.
+
+### Don't Trust Client State
+
+The server action should always have a sensible default redirect. The `returnTo` field is a hint for better UX, not a requirement:
+
+```typescript
+// Always have a safe fallback
+const redirectTarget = returnTo && returnTo.startsWith("/")
+  ? returnTo
+  : `/items/${params.itemId}`;  // Safe default
+```
+
+---
+
+## Best Practices
+
+1. **Always provide fallbacks** - Both `getBackButtonInfo()` and `getReturnUrl()` require fallback values
+2. **Use descriptive labels** - "FA 2025" is better than "Pathway" for context labels
+3. **Set type correctly** - Use `"list"` for collection pages, `"detail"` for item pages
+4. **Validate returnTo server-side** - Only accept relative paths
+5. **Don't over-navigate** - Only use `gotoWithContext()` when going to forms/edit pages
+6. **Test refresh behavior** - Context survives refresh (sessionStorage), verify this works
+
+---
+
+## Troubleshooting
+
+### Back button shows default label instead of context
+
+**Possible causes:**
+- Navigation didn't use `gotoWithContext()` - check the source page
+- User navigated to the edit page via bookmark or direct link (no context was pushed)
+- Context was for a different page (targetHref validation discarded it as stale)
+- Different browser tab - sessionStorage is per-tab
+
+**Debug:**
+```svelte
+<script>
+  import { getNavigationContextStack } from "@decodelabs/underlay/patterns";
+  console.log("Nav context:", getNavigationContextStack());
+</script>
+```
+
+### Stale context appearing (wrong "Back to X" label)
+
+**This should be fixed automatically.** When `gotoWithContext()` is used, the target URL is stored with the context. When `consumeNavigationContext()` is called, it validates that the context was intended for the current page.
+
+**If you still see stale context:**
+- Ensure you're using `gotoWithContext()` (not `pushNavigationContext()` directly) for navigation
+- Ensure edit/create pages use `consumeNavigationContext()` (not `getBackButtonInfo()` + `getReturnUrl()`)
+- Check that the stored targetHref matches the current pathname exactly
+
+**Debug:**
+```svelte
+<script>
+  import { getNavigationContextStack } from "@decodelabs/underlay/patterns";
+  const stack = getNavigationContextStack();
+  if (stack.length > 0) {
+    console.log("Top context targetHref:", stack[stack.length - 1].targetHref);
+    console.log("Current pathname:", window.location.pathname);
+  }
+</script>
+```
+
+### Form redirects to wrong place
+
+**Possible causes:**
+- `returnTo` hidden field not included in form
+- Server action not reading `returnTo` from formData
+- `returnTo` validation rejecting the value (doesn't start with `/`)
+
+**Debug:**
+```typescript
+// In server action
+console.log("returnTo value:", formData.get("returnTo"));
+```
+
+### Context stack grows too large
+
+This shouldn't happen due to built-in sanity rules, but if it does:
+
+```typescript
+import { clearNavigationContext } from "@decodelabs/underlay/patterns";
+
+// Reset on logout or major navigation events
+clearNavigationContext();
+```
+
+---
+
+## Next Steps
+
+- [090-ui-kit](./090-ui-kit.md) - UI components including PageHeader
+- [100-frontend-web](./100-frontend-web.md) - Frontend routing patterns
+- [110-admin](./110-admin.md) - Admin interface patterns

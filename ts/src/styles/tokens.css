@@ -108,7 +108,7 @@
   --underlay-form-actions-gap: 1.5rem;
 
   /* List layouts */
-  --underlay-list-grid-min: 360px;
+  --underlay-list-grid-min: 20em;
   --underlay-list-grid-gap: 14px;
 
   --underlay-list-card-media-size: 76px;

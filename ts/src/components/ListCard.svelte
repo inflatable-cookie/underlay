@@ -14,6 +14,7 @@
     /** Renders the actions menu. When provided, the media area becomes a custom trigger containing the icon + dots. */
     actions?: Snippet<[{ trigger: Snippet }]>;
     children?: Snippet;
+    onclick?: ((event: MouseEvent) => void) | null;
   }
 
   let {
@@ -26,7 +27,8 @@
     media,
     trailing,
     actions,
-    children
+    children,
+    onclick = null
   }: Props = $props();
 
   let hasActions = $derived(Boolean(actions));
@@ -52,6 +54,7 @@
       class:underlay-list-card__link={true}
       {href}
       aria-label={ariaLabel ?? title}
+      onclick={onclick ?? undefined}
     >
       {#if hasActions}
         <div class="underlay-list-card__media-slot">
