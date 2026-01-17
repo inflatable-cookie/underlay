@@ -11,6 +11,7 @@ base64 = "0.22"
 rand = "0.8"
 underlay-auth = { path = "../underlay-auth" }
 underlay-core = { path = "../underlay-core" }
+underlay-ratelimit = { path = "../underlay-ratelimit" }
 uuid = { workspace = true }
 zxcvbn = "2"
 

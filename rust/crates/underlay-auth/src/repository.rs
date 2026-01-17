@@ -176,24 +176,6 @@ pub trait AuditLogRepository: Send + Sync {
     ) -> RepoResult<u64>;
 }
 
-/// Repository trait for rate limiting.
-#[async_trait]
-pub trait RateLimitRepository: Send + Sync {
-    /// Check if a key is rate limited.
-    async fn is_rate_limited(
-        &self,
-        key: &str,
-        max_count: u64,
-        window_seconds: u64,
-    ) -> RepoResult<(bool, u64)>;
-
-    /// Increment a rate limit counter.
-    async fn increment(&self, key: &str, window_seconds: u64) -> RepoResult<u64>;
-
-    /// Reset a rate limit for a key.
-    async fn reset(&self, key: &str) -> RepoResult<()>;
-}
-
 /// Composite repository for all auth operations.
 ///
 /// Applications can implement this trait to provide a unified repository,
@@ -204,7 +186,6 @@ pub trait AuthRepository:
     + CredentialRepository
     + SessionRepository
     + AuditLogRepository
-    + RateLimitRepository
     + Send
     + Sync
 {
@@ -216,7 +197,6 @@ impl<
             + CredentialRepository
             + SessionRepository
             + AuditLogRepository
-            + RateLimitRepository
             + Send
             + Sync,
     > AuthRepository for T

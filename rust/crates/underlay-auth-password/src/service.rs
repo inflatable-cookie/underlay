@@ -2,9 +2,11 @@
 
 use async_trait::async_trait;
 use std::sync::Arc;
+use std::time::Duration;
 use underlay_core::Uuid;
 
 use underlay_auth::{AuthError, Credential, CredentialMetadata, User, UserStatus};
+use underlay_ratelimit::{RateLimitBackend, RateLimitConfig};
 
 use crate::errors::{PasswordAuthError, PasswordAuthResult};
 use crate::hasher::{PasswordHasherExt, PasswordVerifierExt};
@@ -117,16 +119,6 @@ pub trait PasswordAuthRepository: Send + Sync {
     /// Returns remaining lockout seconds, or `None` if not locked out.
     async fn get_lockout_remaining_seconds(&self, user_id: Uuid)
         -> PasswordAuthResult<Option<u64>>;
-
-    /// Check rate limit for this key.
-    ///
-    /// Returns `(allowed, retry_after_seconds)`.
-    async fn check_rate_limit(
-        &self,
-        key: &str,
-        max_attempts: u32,
-        window_seconds: u64,
-    ) -> PasswordAuthResult<(bool, u64)>;
 }
 
 /// Result of recording a failed login attempt.
@@ -138,30 +130,34 @@ pub struct FailedLoginAttempt {
 
 /// Service for password-based authentication.
 #[derive(Debug, Clone)]
-pub struct PasswordAuthService<R, H, V>
+pub struct PasswordAuthService<R, H, V, L>
 where
     R: PasswordAuthRepository,
     H: PasswordHasherExt,
     V: PasswordVerifierExt,
+    L: RateLimitBackend,
 {
     repository: Arc<R>,
     hasher: Arc<H>,
     verifier: Arc<V>,
+    rate_limiter: Arc<L>,
     analyzer: Arc<PasswordStrengthAnalyzer>,
     config: PasswordConfig,
 }
 
-impl<R, H, V> PasswordAuthService<R, H, V>
+impl<R, H, V, L> PasswordAuthService<R, H, V, L>
 where
     R: PasswordAuthRepository,
     H: PasswordHasherExt,
     V: PasswordVerifierExt,
+    L: RateLimitBackend,
 {
     /// Create a new password auth service.
     pub fn new(
         repository: Arc<R>,
         hasher: Arc<H>,
         verifier: Arc<V>,
+        rate_limiter: Arc<L>,
         config: Option<PasswordConfig>,
     ) -> Self {
         let config = config.unwrap_or_default();
@@ -171,6 +167,7 @@ where
             repository,
             hasher,
             verifier,
+            rate_limiter,
             analyzer: Arc::new(analyzer),
             config,
         }
@@ -257,17 +254,20 @@ where
             None => format!("login:{}", normalized_email),
         };
 
-        let (allowed, retry_after_seconds) = self
-            .repository
-            .check_rate_limit(
-                &rate_limit_key,
-                self.config.rate_limit_max_attempts,
-                self.config.rate_limit_window_seconds,
-            )
-            .await?;
-        if !allowed {
+        // Check rate limit using the injected backend
+        let rate_limit_config = RateLimitConfig::new(
+            self.config.rate_limit_max_attempts as u64,
+            Duration::from_secs(self.config.rate_limit_window_seconds),
+        );
+        let rate_result = self
+            .rate_limiter
+            .check_and_increment(&rate_limit_key, &rate_limit_config)
+            .await
+            .map_err(|e| PasswordAuthError::Internal(format!("Rate limit error: {}", e)))?;
+
+        if rate_result.is_denied() {
             return Err(PasswordAuthError::RateLimited {
-                retry_after_seconds,
+                retry_after_seconds: rate_result.retry_after_secs(),
             }
             .into());
         }
@@ -576,6 +576,7 @@ mod tests {
     use crate::hasher::Argon2Hasher;
     use std::collections::{HashMap, HashSet};
     use tokio::sync::Mutex;
+    use underlay_ratelimit::InMemoryBackend;
 
     #[derive(Debug)]
     struct MemoryRepo {
@@ -585,7 +586,6 @@ mod tests {
         credential_ids: Mutex<HashSet<Uuid>>,
         failed_counts: Mutex<HashMap<Uuid, u32>>,
         locked_until: Mutex<HashMap<Uuid, chrono::DateTime<chrono::Utc>>>,
-        blocked_rate_limit_keys: Mutex<HashSet<String>>,
         lockout_threshold: u32,
     }
 
@@ -598,7 +598,6 @@ mod tests {
                 credential_ids: Mutex::new(HashSet::new()),
                 failed_counts: Mutex::new(HashMap::new()),
                 locked_until: Mutex::new(HashMap::new()),
-                blocked_rate_limit_keys: Mutex::new(HashSet::new()),
                 lockout_threshold,
             }
         }
@@ -609,10 +608,6 @@ mod tests {
                 .await
                 .insert(user.email.clone(), user.clone());
             self.users_by_id.lock().await.insert(user.id, user);
-        }
-
-        async fn block_rate_limit_key(&self, key: String) {
-            self.blocked_rate_limit_keys.lock().await.insert(key);
         }
     }
 
@@ -748,19 +743,6 @@ mod tests {
             let secs = (until - now).num_seconds();
             Ok(Some(secs.max(1) as u64))
         }
-
-        async fn check_rate_limit(
-            &self,
-            key: &str,
-            _max_attempts: u32,
-            _window_seconds: u64,
-        ) -> PasswordAuthResult<(bool, u64)> {
-            if self.blocked_rate_limit_keys.lock().await.contains(key) {
-                Ok((false, 60))
-            } else {
-                Ok((true, 0))
-            }
-        }
     }
 
     fn make_user(email: &str) -> User {
@@ -783,11 +765,13 @@ mod tests {
 
         let hasher = Arc::new(Argon2Hasher::new());
         let verifier = hasher.clone();
+        let rate_limiter = Arc::new(InMemoryBackend::new());
 
         let service = PasswordAuthService::new(
             repo.clone(),
             hasher,
             verifier,
+            rate_limiter,
             Some(PasswordConfig {
                 max_failed_attempts: 10,
                 ..PasswordConfig::default()
@@ -827,11 +811,13 @@ mod tests {
 
         let hasher = Arc::new(Argon2Hasher::new());
         let verifier = hasher.clone();
+        let rate_limiter = Arc::new(InMemoryBackend::new());
 
         let service = PasswordAuthService::new(
             repo.clone(),
             hasher,
             verifier,
+            rate_limiter,
             Some(PasswordConfig {
                 max_failed_attempts: 2,
                 lockout_duration_seconds: 900,
@@ -872,8 +858,20 @@ mod tests {
 
         let hasher = Arc::new(Argon2Hasher::new());
         let verifier = hasher.clone();
+        // Create a rate limiter with a very low limit (1 request)
+        let rate_limiter = Arc::new(InMemoryBackend::new());
 
-        let service = PasswordAuthService::new(repo.clone(), hasher, verifier, None);
+        let service = PasswordAuthService::new(
+            repo.clone(),
+            hasher,
+            verifier,
+            rate_limiter.clone(),
+            Some(PasswordConfig {
+                rate_limit_max_attempts: 1, // Only 1 attempt allowed
+                rate_limit_window_seconds: 3600,
+                ..PasswordConfig::default()
+            }),
+        );
 
         service
             .set_password(user.id, "S0mething$trong!")
@@ -881,9 +879,15 @@ mod tests {
             .unwrap();
 
         let ip = "1.2.3.4";
-        let key = format!("login:{}:{}", user.email.trim().to_lowercase(), ip);
-        repo.block_rate_limit_key(key).await;
 
+        // First attempt should succeed
+        let ok = service
+            .verify_login_with_context(&user.email, "S0mething$trong!", Some(ip))
+            .await
+            .unwrap();
+        assert_eq!(ok.id, user.id);
+
+        // Second attempt should be rate limited
         let err = service
             .verify_login_with_context(&user.email, "S0mething$trong!", Some(ip))
             .await
@@ -899,11 +903,13 @@ mod tests {
 
         let hasher = Arc::new(Argon2Hasher::new());
         let verifier = hasher.clone();
+        let rate_limiter = Arc::new(InMemoryBackend::new());
 
         let service = PasswordAuthService::new(
             repo,
             hasher,
             verifier,
+            rate_limiter,
             Some(PasswordConfig {
                 check_compromised: true,
                 compromised_password_strategy: CompromisedPasswordStrategy::LocalBlocklist,
@@ -926,8 +932,9 @@ mod tests {
 
         let hasher = Arc::new(Argon2Hasher::new());
         let verifier = hasher.clone();
+        let rate_limiter = Arc::new(InMemoryBackend::new());
 
-        let service = PasswordAuthService::new(repo.clone(), hasher, verifier, None);
+        let service = PasswordAuthService::new(repo.clone(), hasher, verifier, rate_limiter, None);
 
         service
             .set_password(user.id, "CorrectHorse1!")
@@ -950,8 +957,9 @@ mod tests {
 
         let hasher = Arc::new(Argon2Hasher::new());
         let verifier = hasher.clone();
+        let rate_limiter = Arc::new(InMemoryBackend::new());
 
-        let service = PasswordAuthService::new(repo.clone(), hasher, verifier, None);
+        let service = PasswordAuthService::new(repo.clone(), hasher, verifier, rate_limiter, None);
 
         service
             .set_password(user.id, "CorrectHorse1!")
@@ -974,8 +982,9 @@ mod tests {
 
         let hasher = Arc::new(Argon2Hasher::new());
         let verifier = hasher.clone();
+        let rate_limiter = Arc::new(InMemoryBackend::new());
 
-        let service = PasswordAuthService::new(repo.clone(), hasher, verifier, None);
+        let service = PasswordAuthService::new(repo.clone(), hasher, verifier, rate_limiter, None);
 
         service
             .set_password(user.id, "CorrectHorse1!")
@@ -1005,8 +1014,9 @@ mod tests {
 
         let hasher = Arc::new(Argon2Hasher::new());
         let verifier = hasher.clone();
+        let rate_limiter = Arc::new(InMemoryBackend::new());
 
-        let service = PasswordAuthService::new(repo.clone(), hasher, verifier, None);
+        let service = PasswordAuthService::new(repo.clone(), hasher, verifier, rate_limiter, None);
 
         service
             .set_password(user.id, "CorrectHorse1!")
@@ -1032,8 +1042,9 @@ mod tests {
 
         let hasher = Arc::new(Argon2Hasher::new());
         let verifier = hasher.clone();
+        let rate_limiter = Arc::new(InMemoryBackend::new());
 
-        let service = PasswordAuthService::new(repo.clone(), hasher, verifier, None);
+        let service = PasswordAuthService::new(repo.clone(), hasher, verifier, rate_limiter, None);
 
         service
             .set_password(user.id, "S0mething$trong!")

@@ -1,0 +1,18 @@
+[package]
+name = "underlay-ratelimit"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Rate limiting with pluggable backends for Underlay"
+
+[dependencies]
+async-trait = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true, features = ["time", "sync", "rt"] }
+tracing = { workspace = true }
+
+# For in-memory backend
+dashmap = "6"
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["rt-multi-thread", "macros", "time"] }

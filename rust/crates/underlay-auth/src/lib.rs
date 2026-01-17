@@ -13,7 +13,7 @@ pub use crate::extractors::{Authenticated, HasAuthProvider, OptionalAuthenticate
 pub use crate::principal::{Principal, RoleSet};
 pub use crate::provider::AuthProvider;
 pub use crate::repository::{
-    AuditLogRepository, AuthRepository, CredentialRepository, RateLimitRepository, RepoResult,
+    AuditLogRepository, AuthRepository, CredentialRepository, NewSession, RepoResult,
     SessionRepository, UserRepository,
 };
 pub use crate::types::{
