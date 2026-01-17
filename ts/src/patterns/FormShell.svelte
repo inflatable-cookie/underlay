@@ -2,6 +2,7 @@
   import type { Snippet } from "svelte";
   import { Card, Form } from "@decodelabs/underlay/components";
   import PageHeader from "./PageHeader.svelte";
+  import type { BannerVariant } from "./banner";
 
   type PrepareHook = ((formData: FormData) => void) | null;
 
@@ -23,6 +24,11 @@
     method?: "post" | "get";
 
     showTitle?: boolean;
+
+    /** Banner message to display below the header */
+    bannerMessage?: string;
+    /** Banner variant (warning, error, info) */
+    bannerVariant?: BannerVariant;
 
     success?: boolean | null;
     successMessage?: string | null;
@@ -48,6 +54,8 @@
     backIsContextual = false,
     method = "post",
     showTitle = true,
+    bannerMessage,
+    bannerVariant = "warning",
     success = null,
     successMessage = null,
     error = null,
@@ -62,7 +70,7 @@
 </script>
 
 {#if showTitle}
-  <PageHeader {title} {subtitle} {backHref} {backLabel} {backIsContextual}>
+  <PageHeader {title} {subtitle} {backHref} {backLabel} {backIsContextual} {bannerMessage} {bannerVariant}>
     {#if headerMeta}
       {@render headerMeta()}
     {/if}

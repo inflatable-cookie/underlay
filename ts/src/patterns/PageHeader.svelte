@@ -1,13 +1,24 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
+  import type { BannerVariant } from "./banner";
+  import Banner from "./Banner.svelte";
+
+  export type PageHeaderLevel = 1 | 2 | 3 | 4;
 
   interface Props {
     title: string;
     subtitle?: string;
+    /** Heading level: 1 (page), 2, 3 (section), 4 (subsection) */
+    level?: PageHeaderLevel;
     backHref?: string | null;
     backLabel?: string;
     /** True when backHref/backLabel came from navigation context */
     backIsContextual?: boolean;
+
+    /** Banner message to display below the header */
+    bannerMessage?: string;
+    /** Banner variant (warning, error, info) */
+    bannerVariant?: BannerVariant;
 
     /** Primary actions (e.g. "Add") shown next to back link */
     primaryActions?: Snippet;
@@ -18,13 +29,19 @@
   let {
     title,
     subtitle,
+    level = 1,
     backHref = null,
     backLabel = "Back",
     backIsContextual = false,
+    bannerMessage,
+    bannerVariant = "warning",
     primaryActions,
     actions,
     children
   }: Props = $props();
+
+  const headingTag = $derived(`h${level}` as "h1" | "h2" | "h3" | "h4");
+  const subtitleTag = $derived(`h${Math.min(level + 1, 6)}` as "h2" | "h3" | "h4" | "h5");
 
   function titleCaseWords(input: string): string {
     return input
@@ -48,21 +65,30 @@
     return prefix + titleCaseWords(input.slice(prefix.length));
   }
 
+  function truncateLabel(input: string, maxLength: number): string {
+    if (input.length <= maxLength) return input;
+    return input.slice(0, maxLength - 1).trimEnd() + "…";
+  }
+
   const formattedBackLabel = $derived(formatBackLabel(backLabel));
+  const displayBackLabel = $derived(
+    backIsContextual ? truncateLabel(formattedBackLabel, 35) : formattedBackLabel
+  );
 </script>
 
-<header class="underlay-page-header">
+<header class="underlay-page-header underlay-page-header--level-{level}">
   <div class="underlay-page-header__row">
     <div class="underlay-page-header__top">
-      <h1 class="underlay-page-header__title">{title}</h1>
+      <svelte:element this={headingTag} class="underlay-page-header__title">{title}</svelte:element>
 
       <div class="underlay-page-header__right">
         {#if backHref}
           <a
             class="underlay-page-header__back underlay-page-header__back--inline"
             href={backHref}
+            title={formattedBackLabel}
           >
-            ← {formattedBackLabel}
+            ← {displayBackLabel}
             {#if backIsContextual}
               <span class="underlay-page-header__context-dot" aria-hidden="true"></span>
             {/if}
@@ -78,7 +104,7 @@
     </div>
 
     {#if subtitle}
-      <h2 class="underlay-page-header__subtitle">{subtitle}</h2>
+      <svelte:element this={subtitleTag} class="underlay-page-header__subtitle">{subtitle}</svelte:element>
     {/if}
   </div>
 
@@ -86,9 +112,13 @@
     <div class="underlay-page-header__meta">{@render children?.()}</div>
   {/if}
 
+  {#if bannerMessage}
+    <Banner variant={bannerVariant} message={bannerMessage} />
+  {/if}
+
   {#if backHref}
-    <a class="underlay-page-header__back underlay-page-header__back--below" href={backHref}>
-      ← {formattedBackLabel}
+    <a class="underlay-page-header__back underlay-page-header__back--below" href={backHref} title={formattedBackLabel}>
+      ← {displayBackLabel}
       {#if backIsContextual}
         <span class="underlay-page-header__context-dot" aria-hidden="true"></span>
       {/if}
@@ -101,7 +131,7 @@
     display: flex;
     flex-direction: column;
     gap: var(--underlay-space-2, 0.5rem);
-    margin-bottom: var(--underlay-space-5, 1.25rem);
+    margin-bottom: var(--underlay-space-6, 1.5rem);
   }
 
   .underlay-page-header__back {
@@ -227,5 +257,47 @@
     .underlay-page-header__subtitle {
       font-size: 1em;
     }
+  }
+
+  /* Level variants */
+  .underlay-page-header--level-1 .underlay-page-header__title {
+    font-size: 2em;
+  }
+
+  .underlay-page-header--level-2 .underlay-page-header__title {
+    font-size: 1.5em;
+  }
+
+  .underlay-page-header--level-2 .underlay-page-header__subtitle {
+    font-size: 1em;
+  }
+
+  .underlay-page-header--level-3 .underlay-page-header__title {
+    font-size: 1.25em;
+  }
+
+  .underlay-page-header--level-3 .underlay-page-header__subtitle {
+    font-size: 0.95em;
+  }
+
+  .underlay-page-header--level-4 .underlay-page-header__title {
+    font-size: 1.1em;
+  }
+
+  .underlay-page-header--level-4 .underlay-page-header__subtitle {
+    font-size: 0.9em;
+  }
+
+  /* Reduce margins for nested headers */
+  .underlay-page-header--level-2,
+  .underlay-page-header--level-3,
+  .underlay-page-header--level-4 {
+    margin-bottom: var(--underlay-space-4, 1rem);
+  }
+
+  /* Tighter title/subtitle gap for smaller levels */
+  .underlay-page-header--level-3 .underlay-page-header__row,
+  .underlay-page-header--level-4 .underlay-page-header__row {
+    gap: 0.1rem;
   }
 </style>

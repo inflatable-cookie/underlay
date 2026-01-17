@@ -47,7 +47,7 @@
         1fr
       )
     );
-    gap: var(--underlay-list-grid-gap, 14px);
+    gap: var(--underlay-list-grid-gap, 1.25rem);
     align-items: stretch;
   }
 </style>

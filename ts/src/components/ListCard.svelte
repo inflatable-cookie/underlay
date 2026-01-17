@@ -154,8 +154,8 @@
     align-items: center;
     min-width: 0;
     text-decoration: none;
-    border-radius: var(--underlay-radius-md, var(--underlay-radius-md, 0.75rem));
-    padding: var(--underlay-space-4, var(--underlay-space-4, 1rem));
+    border-radius: var(--underlay-radius-lg, var(--underlay-radius-lg, 1rem));
+    padding: var(--underlay-space-3, var(--underlay-space-3, 0.75rem));
     background: var(
       --underlay-color-surface-muted,
       var(--underlay-color-surface-muted, rgba(255, 255, 255, 0.02))
@@ -202,7 +202,7 @@
   .underlay-list-card__media {
     width: var(--_underlay-list-card-media-size);
     height: var(--_underlay-list-card-media-size);
-    border-radius: var(--underlay-radius-lg, var(--underlay-radius-lg, 1rem));
+    border-radius: var(--underlay-radius-md, var(--underlay-radius-md, 0.75rem));
     display: flex;
     align-items: center;
     justify-content: center;
@@ -231,7 +231,7 @@
   .underlay-list-card__media-slot :global(.underlay-dropdown-menu-trigger) {
     width: 100%;
     height: 100%;
-    border-radius: var(--underlay-radius-lg, var(--underlay-radius-lg, 1rem));
+    border-radius: var(--underlay-radius-md, var(--underlay-radius-md, 0.75rem));
     padding: 0;
     background: color-mix(
       in srgb,

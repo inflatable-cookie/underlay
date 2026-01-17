@@ -13,6 +13,19 @@ Nightfire solves the problem of storing and validating structured content in dat
 - **Content hashing** for change detection
 - **Generic design** so applications define their own block types
 
+### When to Use Nightfire vs Plain Markdown
+
+Not all rich text fields need Nightfire. Follow this convention based on database column type:
+
+| Column Type | Content Format | Frontend Editor | Use Case |
+|-------------|----------------|-----------------|----------|
+| `TEXT` | Plain Markdown | `MarkdownEditor` | Simple text: learning aims, key takeaways, notes |
+| `JSONB` | Nightfire JSON | `NightfireEditor` | Complex content: descriptions, article bodies, multi-block content |
+
+**Rule of thumb**: If the field is fundamentally simple text with basic formatting (bold, italic, lists), use `TEXT` and Markdown. If it requires structured blocks, validation strategies, or complex editing, use `JSONB` and Nightfire.
+
+See **[050-database.md](./050-database.md#rich-text-field-conventions)** for detailed guidance.
+
 ### Core Concepts
 
 | Concept | Description |

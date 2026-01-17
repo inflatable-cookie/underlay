@@ -68,6 +68,19 @@ The workspace `Cargo.toml` already includes `uuid` with the `v7` feature enabled
 
 When using SvelteKit form actions, do not wrap `throw redirect(...)` inside a `try`/`catch` that returns `fail(...)`. Perform redirects after successful `await` calls, and only return `fail(...)` for genuine errors.
 
+## Rich Text Field Conventions (important)
+
+Follow these database column type conventions for rich text content:
+
+| DB Column Type | Content Format | Editor | Use Case |
+|----------------|----------------|--------|----------|
+| `TEXT` | Plain Markdown | `MarkdownEditor` | Simple text: learning aims, notes, summaries |
+| `JSONB` | Nightfire JSON | `NightfireEditor` | Complex content: descriptions, article bodies |
+
+**Rule**: If the content is fundamentally simple text with basic formatting, use `TEXT` and Markdown. If it requires structured blocks, validation, or complex editing, use `JSONB` and Nightfire.
+
+See `docs/guides/050-database.md#rich-text-field-conventions` for full details.
+
 ## Analysis Reports and Session Summaries
 
 When creating analysis documents, session summaries, or completion reports, save them in `docs/reports/` using the timestamp naming convention:

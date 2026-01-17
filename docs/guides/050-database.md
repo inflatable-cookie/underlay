@@ -568,6 +568,68 @@ Before committing a migration:
 4. **Maintenance**: Easier to reorganize schemas later
 5. **CI/CD**: No environment-specific behavior
 
+## Rich Text Field Conventions
+
+When storing rich text content in the database, follow these conventions based on the PostgreSQL column type:
+
+### TEXT Columns → Plain Markdown
+
+Use `TEXT` columns for simple rich text that can be represented as plain Markdown:
+
+```sql
+CREATE TABLE learning.module (
+    id UUID PRIMARY KEY,
+    title TEXT NOT NULL,
+    learning_aims TEXT,       -- Plain Markdown text
+    key_takeaways TEXT,       -- Plain Markdown text
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+```
+
+- **Storage**: Plain text with Markdown formatting
+- **Frontend editor**: `MarkdownEditor` component (simple textarea with preview)
+- **API type**: `String` / `Option<String>` in Rust, `string | null` in TypeScript
+- **Use case**: Learning aims, key takeaways, simple notes, summaries without complex structure
+
+### JSONB Columns → Nightfire Structured Content
+
+Use `JSONB` columns for complex structured content that requires block-based editing:
+
+```sql
+CREATE TABLE learning.module (
+    id UUID PRIMARY KEY,
+    title TEXT NOT NULL,
+    description JSONB,        -- Nightfire structured content
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+```
+
+- **Storage**: Nightfire JSON with schema, blocks, versions, and content hashes
+- **Frontend editor**: `NightfireEditor` component (block-based editor)
+- **API type**: `serde_json::Value` / `Option<serde_json::Value>` in Rust, `NightfireValue | null` in TypeScript
+- **Use case**: Descriptions, article bodies, complex content with multiple block types (paragraphs, headings, images, etc.)
+
+### Decision Guide
+
+| Scenario | Column Type | Editor |
+|----------|-------------|--------|
+| Simple text with basic formatting (bold, italic, lists) | `TEXT` | `MarkdownEditor` |
+| Single-purpose content (e.g., learning aims) | `TEXT` | `MarkdownEditor` |
+| Complex content with multiple block types | `JSONB` | `NightfireEditor` |
+| Content requiring validation strategies | `JSONB` | `NightfireEditor` |
+| Content with embedded media or custom blocks | `JSONB` | `NightfireEditor` |
+
+### Example: Module Fields
+
+```sql
+-- learning.module table
+learning_aims TEXT,       -- Markdown: simple bulleted list of aims
+key_takeaways TEXT,       -- Markdown: simple bulleted list of takeaways  
+description JSONB,        -- Nightfire: rich description with paragraphs, headings, etc.
+```
+
+**Key principle**: If the content is fundamentally a simple text blob with formatting, use `TEXT` and Markdown. If it requires structured blocks, validation, or complex editing, use `JSONB` and Nightfire.
+
 ## See Also
 
 **Related Guides:**
@@ -575,6 +637,7 @@ Before committing a migration:
 - **[040-rust-backend.md](./040-rust-backend.md)** - Database pool setup, SQL queries in handlers
 - **[070-api-handlers.md](./070-api-handlers.md)** - Using database in API handlers
 - **[130-testing.md](./130-testing.md)** - Database testing patterns, test fixtures, integration tests
+- **[076-nightfire.md](./076-nightfire.md)** - Nightfire structured content system
 
 **Key Topics:**
 - Migration best practices: Never use `SET search_path`

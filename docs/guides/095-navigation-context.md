@@ -139,6 +139,8 @@ interface NavigationContext {
   type: "list" | "detail" | "edit";
   /** Target URL this context is intended for (used for stale context validation) */
   targetHref?: string;
+  /** Optional page state snapshot (tabs, pagination, filters, etc.) */
+  state?: Record<string, unknown>;
 }
 
 /**
@@ -357,6 +359,8 @@ Navigate to a URL while pushing context onto the stack.
 
 The `targetHref` is automatically stored with the context, allowing `consumeNavigationContext()` to validate that the context is intended for the current page. This prevents stale context from being used when users navigate via bookmarks, direct links, or from pages that don't push context.
 
+If the context includes a `state` object, it will be stored in sessionStorage keyed by the context's `href` pathname. This state can be restored using `initPageState()` when the user navigates back.
+
 ```typescript
 import { gotoWithContext } from "@decodelabs/underlay/client";
 
@@ -367,17 +371,18 @@ await gotoWithContext(`/items/${id}/edit`, {
   type: "list"
 });
 
-// From a detail page
+// From a detail page with state to restore
 await gotoWithContext(`/items/${id}/edit`, {
   label: item.name,
   href: `/items/${id}`,
-  type: "detail"
+  type: "detail",
+  state: { activeTab: "details", currentPage: 2 }
 });
 ```
 
 **Parameters:**
 - `targetHref` - URL to navigate to
-- `context` - NavigationContext to push
+- `context` - NavigationContext to push (including optional `state`)
 - `options` - Optional SvelteKit goto options
 
 **Returns:** `Promise<void>`
@@ -421,6 +426,352 @@ function handleCancelWithFallback() {
 - `cancelHref` - Optional explicit URL to navigate to
 
 > **Note:** Prefer `navigateBack()` for context-aware navigation. `navigateOnCancel()` is provided for backwards compatibility.
+
+---
+
+## Page State Restoration
+
+When users navigate away from a page (e.g., to edit a nested item), then navigate back, they expect the page to be in the same state they left it - same tab selected, same pagination page, same filters applied.
+
+The navigation context system supports **page state restoration** to enable this. State is stored in sessionStorage, keyed by pathname, and restored when the user navigates back.
+
+### How It Works
+
+1. **When navigating away**: Pass a `state` object in the context to `gotoWithContext()`
+2. **State is stored**: Keyed by the source page's pathname in sessionStorage
+3. **When navigating back**: Call `initPageState()` in `onMount` to restore state
+4. **State is consumed**: Removed from storage after restoration to prevent stale state
+
+### Quick Start
+
+#### 1. Save State When Navigating Away
+
+```typescript
+import { gotoWithContext } from "@decodelabs/underlay/client";
+
+// Current page state
+let activeTab = $state("details");
+let currentPage = $state(1);
+
+// When navigating to edit page, save current state
+void gotoWithContext(`/items/${id}/edit`, {
+  label: "Items",
+  href: "/items",
+  type: "list",
+  state: { activeTab, currentPage }  // State to restore on return
+});
+```
+
+#### 2. Restore State on Return
+
+```typescript
+import { onMount } from "svelte";
+import { initPageState } from "@decodelabs/underlay/client";
+
+let activeTab = $state("details");
+let currentPage = $state(1);
+
+onMount(() => {
+  // Restore state if returning via back navigation
+  const restored = initPageState({
+    activeTab: "details",  // Default values
+    currentPage: 1
+  });
+  
+  activeTab = restored.activeTab;
+  currentPage = restored.currentPage;
+});
+```
+
+### API Reference
+
+#### State Storage Functions (`@decodelabs/underlay/patterns`)
+
+##### `storePageState(pathname, state)`
+
+Store state for a specific pathname. Called automatically by `gotoWithContext()` when state is provided, but can be called manually.
+
+```typescript
+import { storePageState } from "@decodelabs/underlay/patterns";
+
+storePageState("/learning/modules/123", {
+  activeTab: "syllabus",
+  expandedSections: ["section-a", "section-b"]
+});
+```
+
+**Parameters:**
+- `pathname` - The pathname to associate state with
+- `state` - Object containing state values
+
+##### `retrievePageState<T>(pathname)`
+
+Retrieve stored state for a pathname without consuming it.
+
+```typescript
+import { retrievePageState } from "@decodelabs/underlay/patterns";
+
+const state = retrievePageState<{ activeTab: string }>("/learning/modules/123");
+if (state) {
+  console.log(`Active tab: ${state.activeTab}`);
+}
+```
+
+**Parameters:**
+- `pathname` - The pathname to retrieve state for
+
+**Returns:** `T | null`
+
+##### `consumePageState<T>(pathname?)`
+
+Retrieve and **remove** stored state. The state is deleted from storage after retrieval.
+
+```typescript
+import { consumePageState } from "@decodelabs/underlay/patterns";
+
+// Uses current pathname by default
+const state = consumePageState<{ activeTab: string }>();
+```
+
+**Parameters:**
+- `pathname` - Optional pathname (defaults to `window.location.pathname`)
+
+**Returns:** `T | null`
+
+##### `clearPageStates()`
+
+Clear all stored page states.
+
+```typescript
+import { clearPageStates } from "@decodelabs/underlay/patterns";
+
+clearPageStates();
+```
+
+#### SvelteKit Helper Functions (`@decodelabs/underlay/client`)
+
+##### `initPageState<T>(defaults)`
+
+Initialize page state from storage, merged with defaults. This is the primary way to restore state in Svelte components.
+
+```typescript
+import { initPageState } from "@decodelabs/underlay/client";
+
+onMount(() => {
+  const restored = initPageState({
+    activeTab: "details",
+    currentPage: 1,
+    filters: {}
+  });
+  
+  // Apply restored values
+  activeTab = restored.activeTab;
+  currentPage = restored.currentPage;
+  filters = restored.filters;
+});
+```
+
+**Parameters:**
+- `defaults` - Object with default values for each state property
+
+**Returns:** `T` - Merged object with restored values overriding defaults
+
+**Key behavior:**
+- Only restores properties that exist in `defaults` (type-safe)
+- Returns defaults if no stored state exists
+- Consumes (removes) state after retrieval
+
+##### `capturePageState<T>(stateValues)`
+
+Type-safe helper to create state objects. Simply returns the input (passthrough function for type safety).
+
+```typescript
+import { capturePageState } from "@decodelabs/underlay/client";
+
+void gotoWithContext(`/items/${id}/edit`, {
+  label: "Items",
+  href: "/items",
+  type: "list",
+  state: capturePageState({ activeTab, currentPage, filters })
+});
+```
+
+##### Updated `gotoWithContext()`
+
+The `gotoWithContext()` function now accepts an optional `state` property in the context:
+
+```typescript
+await gotoWithContext(targetHref, {
+  label: "Module",
+  href: `/learning/modules/${moduleId}`,
+  type: "detail",
+  state: { activeTab: "syllabus" }  // Optional state to restore on return
+});
+```
+
+When `state` is provided, it's stored in sessionStorage keyed by the context's `href` pathname.
+
+### Complete Example
+
+Here's a complete example of a Module detail page with tabbed content that preserves tab selection:
+
+```svelte
+<!-- /learning/modules/[moduleId]/+page.svelte -->
+<script lang="ts">
+  import { onMount } from "svelte";
+  import { PageHeader, CopyActionsMenu } from "@decodelabs/underlay/patterns";
+  import { TabsRoot, TabsList, TabsTrigger, TabsContent } from "@decodelabs/underlay/components";
+  import { gotoWithContext, initPageState } from "@decodelabs/underlay/client";
+
+  let { data } = $props();
+  
+  let activeTab = $state("details");
+
+  onMount(() => {
+    // Restore tab selection if returning via back navigation
+    const restored = initPageState({ activeTab: "details" });
+    activeTab = restored.activeTab;
+  });
+</script>
+
+<PageHeader title={data.module.code} subtitle={data.module.title}>
+  {#snippet actions()}
+    <CopyActionsMenu
+      actions={[
+        {
+          label: "Edit module",
+          onSelect: () =>
+            void gotoWithContext(`/learning/modules/${data.module.moduleId}/edit`, {
+              label: `${data.module.code}: ${data.module.title}`,
+              href: `/learning/modules/${data.module.moduleId}`,
+              type: "detail",
+              state: { activeTab }  // Save current tab
+            })
+        }
+      ]}
+    />
+  {/snippet}
+</PageHeader>
+
+<TabsRoot bind:value={activeTab} variant="boxed">
+  <TabsList>
+    <TabsTrigger value="details">Details</TabsTrigger>
+    <TabsTrigger value="syllabus">Syllabus</TabsTrigger>
+  </TabsList>
+
+  <TabsContent value="details">
+    <!-- Details content -->
+  </TabsContent>
+
+  <TabsContent value="syllabus">
+    <!-- Syllabus content with nested edit links that also save activeTab -->
+    {#each data.syllabus.sections as section}
+      <CopyActionsMenu
+        actions={[
+          {
+            label: "Edit section",
+            onSelect: () =>
+              void gotoWithContext(`/learning/modules/${data.module.moduleId}/sections/${section.sectionId}/edit`, {
+                label: `Section ${section.label}`,
+                href: `/learning/modules/${data.module.moduleId}`,
+                type: "detail",
+                state: { activeTab }  // User will return to Syllabus tab
+              })
+          }
+        ]}
+      />
+    {/each}
+  </TabsContent>
+</TabsRoot>
+```
+
+### What State to Save
+
+Good candidates for state restoration:
+
+| State Type | Example | Restore? |
+|------------|---------|----------|
+| Active tab | `activeTab: "syllabus"` | ✅ Yes |
+| Pagination page | `currentPage: 3` | ✅ Yes |
+| Filter selections | `filters: { status: "active" }` | ✅ Yes |
+| Sort order | `sortBy: "date"` | ✅ Yes |
+| Expanded/collapsed sections | `expanded: ["a", "b"]` | ✅ Yes |
+| Search query | `search: "example"` | ⚠️ Maybe |
+| Scroll position | `scrollY: 450` | ⚠️ Maybe |
+| Form input values | `draft: { title: "..." }` | ❌ No (use form state) |
+| Sensitive data | passwords, tokens | ❌ Never |
+
+### Design Decisions
+
+1. **State stored separately from context stack**
+   - The context stack is push/pop based for navigation history
+   - State needs to persist until consumed, independent of stack operations
+
+2. **State keyed by pathname**
+   - Each page has its own state shape
+   - Query parameters are stripped (pathname only)
+   - Prevents state collision between different pages
+
+3. **State is consumed on retrieval**
+   - Prevents stale state from persisting indefinitely
+   - Each navigation cycle gets fresh state
+
+4. **Defaults always required**
+   - Ensures components work without stored state
+   - Type-safe merging - only known keys are restored
+
+5. **sessionStorage (not localStorage)**
+   - State cleared when browser/tab closes
+   - Different tabs have independent state
+   - Appropriate lifetime for navigation state
+
+### Troubleshooting
+
+#### State not being restored
+
+**Possible causes:**
+- `initPageState()` not called in `onMount`
+- State was already consumed (only works once per navigation)
+- Pathname mismatch (query params are stripped)
+- User navigated via bookmark/direct link (no state was saved)
+
+**Debug:**
+```typescript
+import { retrievePageState } from "@decodelabs/underlay/patterns";
+
+// Check if state exists (without consuming)
+console.log("Stored state:", retrievePageState(window.location.pathname));
+```
+
+#### State being restored unexpectedly
+
+**Possible causes:**
+- State from a previous session still in sessionStorage
+- State saved but not consumed on a previous visit
+
+**Solution:**
+```typescript
+import { clearPageStates } from "@decodelabs/underlay/patterns";
+
+// Clear all states (e.g., on logout)
+clearPageStates();
+```
+
+#### Wrong state being restored
+
+**Possible causes:**
+- Pathname collision (unlikely with unique IDs in paths)
+- State shape changed between saves (add defaults for new fields)
+
+**Solution:**
+```typescript
+// Always provide complete defaults
+const restored = initPageState({
+  activeTab: "details",
+  currentPage: 1,
+  newField: "default"  // New fields get defaults if not in stored state
+});
+```
 
 ---
 
@@ -974,6 +1325,9 @@ const redirectTarget = returnTo && returnTo.startsWith("/")
 4. **Validate returnTo server-side** - Only accept relative paths
 5. **Don't over-navigate** - Only use `gotoWithContext()` when going to forms/edit pages
 6. **Test refresh behavior** - Context survives refresh (sessionStorage), verify this works
+7. **Save meaningful state** - Tabs, pagination, filters are good; avoid transient UI state
+8. **Always provide defaults for state** - Use `initPageState({ tab: "default" })` not `consumePageState()`
+9. **Don't store sensitive data in state** - State is stored in sessionStorage (visible to client-side code)
 
 ---
 

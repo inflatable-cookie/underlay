@@ -30,11 +30,14 @@ import {
   pushNavigationContext,
   popNavigationContext,
   deriveParentPath,
+  storePageState,
+  consumePageState,
   type NavigationContext
 } from "../patterns/navigation";
 
-// Re-export types for convenience
+// Re-export types and state functions for convenience
 export type { NavigationContext } from "../patterns/navigation";
+export { storePageState, retrievePageState, consumePageState } from "../patterns/navigation";
 
 /**
  * Navigate to a URL while pushing the current location as context.
@@ -56,11 +59,12 @@ export type { NavigationContext } from "../patterns/navigation";
  *   type: "list"
  * });
  *
- * // From a detail page:
+ * // With page state to restore when navigating back:
  * await gotoWithContext(`/items/${id}/edit`, {
- *   label: item.name,
- *   href: `/items/${id}`,
- *   type: "detail"
+ *   label: "Items",
+ *   href: "/items",
+ *   type: "list",
+ *   state: { activeTab: "details", page: 2 }
  * });
  * ```
  */
@@ -69,6 +73,15 @@ export async function gotoWithContext(
   context: NavigationContext,
   options?: Parameters<typeof goto>[1]
 ): Promise<void> {
+  // If state is provided, store it keyed by the context's href
+  if (context.state) {
+    // Extract pathname from href for consistent keying
+    const pathname = context.href.startsWith("/")
+      ? context.href.split("?")[0]
+      : new URL(context.href, window.location.origin).pathname;
+    storePageState(pathname, context.state);
+  }
+
   // Store the target URL with the context so we can validate it when consuming
   pushNavigationContext({
     ...context,
@@ -142,4 +155,69 @@ export function navigateOnCancel(cancelHref: string | undefined): void {
   } else {
     window.location.href = "/";
   }
+}
+
+/**
+ * Initialize page state from navigation context.
+ * 
+ * Call this in your component's initialization to restore any state
+ * that was saved when the user navigated away from this page.
+ * 
+ * The state is consumed (removed) after retrieval, so it won't be
+ * restored again on subsequent visits unless saved again.
+ * 
+ * @param defaults - Default values for state properties
+ * @returns Merged state with defaults and any restored values
+ * 
+ * @example
+ * ```typescript
+ * // In a Svelte component
+ * let activeTab = $state("details");
+ * let currentPage = $state(1);
+ * 
+ * onMount(() => {
+ *   const restored = initPageState({ activeTab: "details", currentPage: 1 });
+ *   activeTab = restored.activeTab;
+ *   currentPage = restored.currentPage;
+ * });
+ * ```
+ */
+export function initPageState<T extends Record<string, unknown>>(defaults: T): T {
+  if (!browser) return defaults;
+  
+  const restored = consumePageState<Partial<T>>();
+  if (!restored) return defaults;
+  
+  // Merge restored values with defaults, only including keys that exist in defaults
+  const result = { ...defaults };
+  for (const key of Object.keys(defaults) as (keyof T)[]) {
+    if (key in restored && restored[key] !== undefined) {
+      result[key] = restored[key] as T[keyof T];
+    }
+  }
+  
+  return result;
+}
+
+/**
+ * Get the current page state for saving before navigation.
+ * 
+ * This is a helper to create a state object from multiple reactive values.
+ * Use this with gotoWithContext to save state when navigating away.
+ * 
+ * @param stateValues - Object containing current state values
+ * @returns The same object (type-safe passthrough)
+ * 
+ * @example
+ * ```typescript
+ * await gotoWithContext(`/items/${id}/edit`, {
+ *   label: "Module",
+ *   href: `/learning/modules/${moduleId}`,
+ *   type: "detail",
+ *   state: capturePageState({ activeTab, currentPage, filters })
+ * });
+ * ```
+ */
+export function capturePageState<T extends Record<string, unknown>>(stateValues: T): T {
+  return stateValues;
 }
