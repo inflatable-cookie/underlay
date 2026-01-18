@@ -154,7 +154,7 @@ CREATE TABLE infra.error_log (
 ### ❌ Phase 8.4: Guardrails Framework
 
 **Status**: ❌ DO NOT EXTRACT - Acowtancy-specific  
-**Location**: `ledger/docs/architecture/dairy/160-dairy-frontend-guardrails-and-quirk-management.md`
+**Location**: `ledger/architecture/dairy/160-dairy-frontend-guardrails-and-quirk-management.md`
 
 #### Analysis
 

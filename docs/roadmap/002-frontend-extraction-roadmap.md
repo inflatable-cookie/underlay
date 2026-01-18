@@ -265,9 +265,9 @@ Acceptance criteria:
 ## Reference docs
 
 - Froyo:
-  - `acowtancy/ledger/docs/architecture/froyo/010-froyo-architecture.md`
-  - `acowtancy/ledger/docs/architecture/froyo/020-froyo-components-and-design-system.md`
+  - `acowtancy/ledger/architecture/froyo/010-froyo-architecture.md`
+  - `acowtancy/ledger/architecture/froyo/020-froyo-components-and-design-system.md`
 - Dairy:
-  - `acowtancy/ledger/docs/architecture/dairy/010-dairy-architecture.md`
+  - `acowtancy/ledger/architecture/dairy/010-dairy-architecture.md`
 - Petal:
   - `songsprout/trellis/docs/architecture/petal/010-petal-architecture.md`
