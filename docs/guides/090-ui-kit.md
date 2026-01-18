@@ -7,7 +7,7 @@ This document covers creating and using a shared Svelte UI kit with Underlay. Un
 The UI kit provides:
 - **Form components** - Field, TextInput, Select, Switch, TextArea
 - **UI primitives** - Button, Badge, Pill, Breadcrumbs, Card, Dialog, DropdownMenu, Pagination
-- **Patterns** - ListCard, NavCard, NavCardGrid, Form, FormActions, PageHeader
+- **Patterns** - ListCard, NavCard, NavCardGrid, Form, FormActions, PageHeader, ReorderableList
 - **Design tokens** - CSS custom properties for theming
 
 ## UI Kit Structure
@@ -564,34 +564,117 @@ Container for form action buttons with consistent spacing:
 
 ### ListCard
 
-List display component with pagination support:
+Card component for displaying items in a list, with support for media, actions, and a compact variant for reorder mode.
 
 ```svelte
 <script>
-  import { ListCard, Button } from "@decodelabs/underlay";
-  
-  export let data;
-  
-  const items = data.articles;
+  import { ListCard } from "@decodelabs/underlay/components";
+  import BookOpen from "lucide-svelte/icons/book-open";
 </script>
 
-<ListCard title="Articles" actions={
-  <Button on:click={() => goto("/articles/new")}>
-    New Article
-  </Button>
-}>
-  {#each items as article}
-    <div class="list-item">
-      <h3>{article.title}</h3>
-      <p>{article.summary}</p>
-      <a href="/articles/{article.id}">View</a>
-    </div>
-  {/each}
+<!-- Standard list card with link -->
+<ListCard
+  href="/articles/123"
+  title="Getting Started with Svelte"
+  subtitle="A beginner's guide to Svelte 5"
+  accent="#14b8a6"
+>
+  {#snippet media()}
+    <BookOpen size={30} />
+  {/snippet}
   
-  {#if items.length === 0}
-    <p class="empty-state">No articles found.</p>
-  {/if}
+  {#snippet trailing()}
+    <Pill>Tutorial</Pill>
+  {/snippet}
+  
+  <span class="meta">Published: 2024-01-15</span>
 </ListCard>
+
+<!-- With actions menu -->
+<ListCard
+  href="/modules/abc"
+  title="FA1"
+  subtitle="Introduction to Financial Accounting"
+  accent="#14b8a6"
+>
+  {#snippet media()}
+    <BookOpen size={30} />
+  {/snippet}
+  
+  {#snippet actions({ trigger })}
+    <CopyActionsMenu
+      {trigger}
+      copies={[{ label: "Copy ID", text: module.id }]}
+      actions={[{ label: "Edit", onSelect: handleEdit }]}
+    />
+  {/snippet}
+</ListCard>
+
+<!-- Compact variant for reorder mode -->
+<ListCard
+  title="Section A: Revenue Recognition"
+  variant="compact"
+  showDragHandle
+  accent="#14b8a6"
+>
+  {#snippet media()}
+    <Layers size={16} />
+  {/snippet}
+</ListCard>
+```
+
+**Props:**
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `href` | `string \| null` | `null` | Link destination (makes card clickable) |
+| `title` | `string` | required | Primary card title |
+| `subtitle` | `string \| null` | `null` | Secondary text below title |
+| `ariaLabel` | `string \| null` | `null` | Accessible label (defaults to title) |
+| `accent` | `string \| null` | `null` | Accent color for media background/border |
+| `variant` | `"default" \| "compact"` | `"default"` | Visual variant |
+| `isLive` | `boolean` | `true` | When false, shows draft styling (grayscale, dashed border) |
+| `showDragHandle` | `boolean` | `false` | Show drag handle (compact variant only) |
+| `onclick` | `(event: MouseEvent) => void` | `null` | Click handler |
+
+**Snippets:**
+
+| Snippet | Parameters | Description |
+|---------|------------|-------------|
+| `media` | none | Icon or image in the media area |
+| `trailing` | none | Content at the end of title row (badges, pills) |
+| `actions` | `{ trigger: Snippet }` | Actions menu - receives trigger snippet for custom menus |
+| `children` | none | Additional content below title/subtitle |
+
+**Variants:**
+
+- **default** - Full card with 76px media area, title, subtitle, and optional content
+- **compact** - Minimal 48px height card with small icon and title only, designed for reorder mode
+
+**Draft State (`isLive={false}`):**
+- Reduced opacity (0.7)
+- Grayscale filter
+- Dashed border
+- Restores on hover
+
+**Usage with Actions:**
+
+When the `actions` snippet is provided, the media area becomes a clickable trigger containing the icon plus a "⋯" indicator. This allows the icon to open a dropdown menu while the rest of the card remains a link.
+
+```svelte
+{#snippet actions({ trigger })}
+  <CopyActionsMenu
+    {trigger}
+    toastStore={toastStore}
+    copies={[
+      { label: "Copy slug", text: item.slug, successMessage: "Copied slug" }
+    ]}
+    actions={[
+      { label: "Edit", onSelect: () => goto(`/items/${item.id}/edit`) },
+      { label: "Delete", destructive: true, onSelect: handleDelete }
+    ]}
+  />
+{/snippet}
 ```
 
 ### NavCard & NavCardGrid
@@ -726,6 +809,380 @@ The component renders in this order:
 - The back link appears below titles for clear visual hierarchy
 - Action buttons align to the right of the title row
 - Meta content (via children) appears below the title block in muted text
+
+### ReorderableList & Reorder Controller
+
+Drag-and-drop reordering pattern for admin list pages. Uses `svelte-dnd-action` under the hood with batch-commit semantics (changes are saved only when user clicks "Save Order").
+
+#### Overview
+
+The reordering pattern consists of two parts:
+1. **`createReorderController`** - Svelte 5 reactive state controller for managing reorder state
+2. **`ReorderableList`** - UI component that wraps items with drag-and-drop and Save/Cancel buttons
+
+#### Basic Usage
+
+```svelte
+<script lang="ts">
+  import { ReorderableList, createReorderController } from "@decodelabs/underlay/patterns";
+  import { ListCard, Button } from "@decodelabs/underlay/components";
+  import { myApi } from "$lib/api";
+
+  let { data } = $props();
+
+  let isReorderMode = $state(false);
+
+  // Items must have an 'id' field - map if needed
+  const reorderItems = $derived(
+    data.items.map((item) => ({ ...item, id: item.itemId }))
+  );
+
+  // Create controller with items and submit function
+  const controller = $derived(
+    createReorderController(reorderItems, async (orderedIds) => {
+      await myApi.reorderItems(orderedIds);
+    })
+  );
+</script>
+
+<header>
+  <h2>Items</h2>
+  {#if !isReorderMode && data.items.length > 1}
+    <Button variant="subtle" onclick={() => isReorderMode = true}>
+      Reorder
+    </Button>
+  {/if}
+</header>
+
+{#if isReorderMode}
+  <ReorderableList
+    {controller}
+    oncancel={() => isReorderMode = false}
+    onsuccess={() => isReorderMode = false}
+  >
+    {#snippet item(item)}
+      <ListCard
+        title={item.name}
+        variant="compact"
+        showDragHandle
+        accent="#14b8a6"
+      >
+        {#snippet media()}
+          <MyIcon size={16} />
+        {/snippet}
+      </ListCard>
+    {/snippet}
+  </ReorderableList>
+{:else}
+  <!-- Normal list view -->
+  {#each data.items as item}
+    <MyItemCard {item} />
+  {/each}
+{/if}
+```
+
+#### createReorderController
+
+Factory function that creates a reactive controller for managing reorder state.
+
+```typescript
+import { createReorderController } from "@decodelabs/underlay/patterns";
+
+const controller = createReorderController(items, submitFn);
+```
+
+**Parameters:**
+- `items: T[]` - Initial array of items. Each item must have an `id: string` property.
+- `submitFn: (orderedIds: string[]) => Promise<void>` - Async function called with the new order of IDs when user saves.
+
+**Returns: `ReorderController<T>`**
+
+| Property/Method | Type | Description |
+|----------------|------|-------------|
+| `pending` | `T[]` | Current working order (mutable, used by drag-drop) |
+| `original` | `readonly T[]` | Original order for comparison |
+| `isDirty` | `boolean` | Whether order has changed from original |
+| `isPending` | `boolean` | Whether submit is in progress |
+| `error` | `Error \| null` | Error from last submit attempt |
+| `move(from, to)` | `(number, number) => void` | Programmatically move item |
+| `reset()` | `() => void` | Reset to original order |
+| `submit()` | `() => Promise<void>` | Submit the new order |
+| `updatePending(items)` | `(T[]) => void` | Update pending items (used by DnD handlers) |
+| `mergeNewItems(items)` | `(T[]) => void` | Merge new items (conflict resolution) |
+| `removeItems(ids)` | `(string[]) => void` | Remove items by ID (conflict resolution) |
+
+**Example with ID mapping:**
+
+```svelte
+<script lang="ts">
+  // When your items use a different ID field name
+  const reorderItems = $derived(
+    data.pathways.map((p) => ({ ...p, id: p.pathwayId }))
+  );
+
+  const controller = $derived(
+    createReorderController(reorderItems, async (orderedIds) => {
+      await learningCommands.reorderPathways(orderedIds, fetch, authToken);
+    })
+  );
+</script>
+```
+
+#### ReorderableList Component
+
+Wraps a list of items with drag-and-drop functionality, Save/Cancel header, and error handling.
+
+```svelte
+<ReorderableList
+  controller={controller}
+  oncancel={handleCancel}
+  onsuccess={handleSuccess}
+  flipDurationMs={200}
+  saveLabel="Save Order"
+  cancelLabel="Cancel"
+>
+  {#snippet item(itemData)}
+    <!-- Render each item -->
+  {/snippet}
+  
+  {#snippet empty()}
+    <p>No items to reorder.</p>
+  {/snippet}
+</ReorderableList>
+```
+
+**Props:**
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `controller` | `ReorderController<T>` | required | Controller from `createReorderController` |
+| `oncancel` | `() => void` | required | Called when user clicks Cancel |
+| `onsuccess` | `() => void` | optional | Called after successful submit |
+| `flipDurationMs` | `number` | `200` | Animation duration for reorder transitions |
+| `disabled` | `boolean` | `false` | Disable drag-and-drop |
+| `saveLabel` | `string` | `"Save Order"` | Custom save button text |
+| `cancelLabel` | `string` | `"Cancel"` | Custom cancel button text |
+
+**Snippets:**
+
+| Snippet | Parameters | Description |
+|---------|------------|-------------|
+| `item` | `(T)` | Required. Renders each draggable item |
+| `empty` | none | Optional. Shown when list is empty |
+
+#### ListCard Compact Variant
+
+When in reorder mode, use `ListCard` with `variant="compact"` and `showDragHandle` for a streamlined drag-and-drop experience.
+
+```svelte
+<ListCard
+  title={item.name}
+  variant="compact"
+  showDragHandle
+  accent="#14b8a6"
+>
+  {#snippet media()}
+    <BookOpen size={16} />
+  {/snippet}
+</ListCard>
+```
+
+**Compact variant differences:**
+- Smaller height (~48px vs full card height)
+- Reduced icon size (28px vs 76px)
+- Title only (no subtitle, meta, or actions)
+- Grab cursor for drag indication
+- Optional drag handle icon on the left
+
+**Props for compact mode:**
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `variant` | `"default" \| "compact"` | `"default"` | Visual variant |
+| `showDragHandle` | `boolean` | `false` | Show 6-dot drag handle icon |
+
+#### Complete Example: Reorderable Sections
+
+A full example showing reorder mode for sections within a module:
+
+```svelte
+<script lang="ts">
+  import { ReorderableList, createReorderController } from "@decodelabs/underlay/patterns";
+  import { Button, ListCard } from "@decodelabs/underlay/components";
+  import { learningCommands } from "@cattle-grid";
+  import Layers from "lucide-svelte/icons/layers";
+
+  let { data } = $props();
+
+  let isSectionReorderMode = $state(false);
+
+  // Map sections to have 'id' field
+  const sectionReorderItems = $derived(
+    data.syllabus.sections.map((s) => ({ ...s, id: s.sectionId }))
+  );
+
+  // Create controller for sections
+  const sectionController = $derived(
+    createReorderController(sectionReorderItems, async (orderedIds) => {
+      await learningCommands.reorderSectionsInModule(
+        data.module.moduleId,
+        orderedIds,
+        fetch,
+        data.authToken!
+      );
+    })
+  );
+
+  function enterReorderMode() {
+    isSectionReorderMode = true;
+  }
+
+  function exitReorderMode() {
+    isSectionReorderMode = false;
+  }
+</script>
+
+<section>
+  <header class="section-header">
+    <h2>Sections</h2>
+    {#if !isSectionReorderMode && data.syllabus.sections.length > 1}
+      <Button variant="subtle" onclick={enterReorderMode}>
+        Reorder Sections
+      </Button>
+    {/if}
+  </header>
+
+  {#if data.syllabus.sections.length === 0}
+    <p>No sections defined.</p>
+  {:else if isSectionReorderMode}
+    <ReorderableList
+      controller={sectionController}
+      oncancel={exitReorderMode}
+      onsuccess={exitReorderMode}
+    >
+      {#snippet item(section)}
+        <ListCard
+          title={`Section ${section.label}: ${section.title}`}
+          variant="compact"
+          showDragHandle
+          accent="#14b8a6"
+        >
+          {#snippet media()}
+            <Layers size={16} />
+          {/snippet}
+        </ListCard>
+      {/snippet}
+    </ReorderableList>
+  {:else}
+    {#each data.syllabus.sections as section}
+      <SectionCard {section} />
+    {/each}
+  {/if}
+</section>
+
+<style>
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+
+  .section-header h2 {
+    margin: 0;
+  }
+</style>
+```
+
+#### Nested Reordering
+
+For hierarchical data (e.g., sections containing areas), you can have multiple reorder modes. Use separate state variables and controllers for each level:
+
+```svelte
+<script lang="ts">
+  let isSectionReorderMode = $state(false);
+  let reorderingAreaSectionId = $state<string | null>(null);
+
+  // Section controller
+  const sectionController = $derived(
+    createReorderController(sectionItems, async (ids) => {
+      await api.reorderSections(moduleId, ids);
+    })
+  );
+
+  // Area controller (only active when reordering a specific section)
+  const reorderingSection = $derived(
+    reorderingAreaSectionId
+      ? sections.find((s) => s.id === reorderingAreaSectionId)
+      : null
+  );
+
+  const areaController = $derived(
+    reorderingAreaSectionId && reorderingSection
+      ? createReorderController(reorderingSection.areas, async (ids) => {
+          await api.reorderAreas(reorderingAreaSectionId!, ids);
+        })
+      : null
+  );
+</script>
+
+{#if isSectionReorderMode}
+  <!-- Section reorder UI -->
+{:else if reorderingAreaSectionId && areaController}
+  <!-- Context label -->
+  <p>Reordering areas in: <strong>{reorderingSection?.title}</strong></p>
+  <!-- Area reorder UI -->
+{:else}
+  <!-- Normal view with "Reorder Areas" buttons per section -->
+{/if}
+```
+
+#### Best Practices
+
+1. **Only show Reorder button when useful** - Hide when there's 0 or 1 item
+2. **Invalidate data on success** - Call `invalidateAll()` in `onsuccess` to refresh the list with new order
+3. **Use consistent icons** - Pick meaningful icons for each item type
+4. **Map IDs correctly** - Ensure items have `id` field (map from `itemId`, `sectionId`, etc.)
+5. **Use compact ListCard** - The `variant="compact"` + `showDragHandle` combo is designed for reorder mode
+6. **Handle nested structures** - Use separate state/controllers for each reorderable level
+7. **Place Reorder button logically** - Next to section headers, not in page header
+
+**Refreshing data after reorder:**
+
+```svelte
+<script lang="ts">
+  import { invalidateAll } from "$app/navigation";
+
+  let isReorderMode = $state(false);
+
+  async function handleReorderSuccess() {
+    isReorderMode = false;
+    await invalidateAll(); // Refetch page data with new order
+  }
+</script>
+
+<ReorderableList
+  controller={controller}
+  oncancel={() => isReorderMode = false}
+  onsuccess={handleReorderSuccess}
+>
+  ...
+</ReorderableList>
+```
+
+#### API Backend Requirements
+
+Your backend needs a reorder endpoint that:
+1. Accepts an array of IDs in the desired order
+2. Updates the `sort_order` (or equivalent) column for each item
+3. Returns success confirmation
+
+Example endpoint pattern:
+```
+POST /v1/admin/learning/modules/{moduleId}/sections/reorder
+Body: { "ids": ["section-1", "section-3", "section-2"] }
+Response: { "reorderedCount": 3 }
+```
 
 ---
 

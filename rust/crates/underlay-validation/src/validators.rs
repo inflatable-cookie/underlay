@@ -408,6 +408,64 @@ pub fn slug(value: &str) -> Result<(), FieldError> {
     }
 }
 
+/// Validate that all items in a collection are unique.
+///
+/// Useful for reorder payloads where duplicate IDs are invalid.
+///
+/// # Example
+///
+/// ```rust
+/// use underlay_validation::validators;
+///
+/// assert!(validators::unique_items(&vec!["a", "b", "c"]).is_ok());
+/// assert!(validators::unique_items(&vec!["a", "b", "a"]).is_err());
+/// ```
+pub fn unique_items<T: std::hash::Hash + Eq>(value: &[T]) -> Result<(), FieldError> {
+    let mut seen = std::collections::HashSet::new();
+    for item in value {
+        if !seen.insert(item) {
+            return Err(FieldError::with_code(
+                "All items must be unique",
+                "unique_items.duplicate",
+            ));
+        }
+    }
+    Ok(())
+}
+
+/// Validate that all items in a collection are unique, returning the count of duplicates.
+///
+/// This variant provides more detail for error messages.
+///
+/// # Example
+///
+/// ```rust
+/// use underlay_validation::validators;
+///
+/// let result = validators::unique_items_detailed(&vec!["a", "b", "a", "c", "a"]);
+/// assert!(result.is_err());
+/// ```
+pub fn unique_items_detailed<T: std::hash::Hash + Eq>(value: &[T]) -> Result<(), FieldError> {
+    let mut seen = std::collections::HashSet::new();
+    let mut duplicate_count = 0;
+    for item in value {
+        if !seen.insert(item) {
+            duplicate_count += 1;
+        }
+    }
+    if duplicate_count > 0 {
+        Err(FieldError::with_code(
+            format!(
+                "Found {} duplicate item(s) - all items must be unique",
+                duplicate_count
+            ),
+            "unique_items.duplicate",
+        ))
+    } else {
+        Ok(())
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -523,5 +581,21 @@ mod tests {
         assert!(slug("My-Article").is_err());
         assert!(slug("my--article").is_err());
         assert!(slug("-article").is_err());
+    }
+
+    #[test]
+    fn test_unique_items() {
+        assert!(unique_items(&vec!["a", "b", "c"]).is_ok());
+        assert!(unique_items(&vec![1, 2, 3]).is_ok());
+        assert!(unique_items(&vec!["a", "b", "a"]).is_err());
+        assert!(unique_items(&vec![1, 2, 1]).is_err());
+        assert!(unique_items(&Vec::<i32>::new()).is_ok());
+    }
+
+    #[test]
+    fn test_unique_items_detailed() {
+        assert!(unique_items_detailed(&vec!["a", "b", "c"]).is_ok());
+        let err = unique_items_detailed(&vec!["a", "b", "a", "c", "a"]).unwrap_err();
+        assert!(err.message.contains("2 duplicate"));
     }
 }

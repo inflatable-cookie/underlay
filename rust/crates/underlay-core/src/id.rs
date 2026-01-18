@@ -1,6 +1,9 @@
 use serde::{Deserialize, Serialize};
 use uuid::Uuid as InnerUuid;
 
+// Re-export the raw uuid type for interoperability with crates that use it directly
+pub use uuid::Uuid as RawUuid;
+
 /// Canonical UUID type for Underlay-based projects (UUIDv7).
 ///
 /// This is a thin newtype wrapper around `uuid::Uuid` so that

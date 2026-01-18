@@ -1,14 +1,20 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
 
+  type ListCardVariant = "default" | "compact";
+
   interface Props {
     href?: string | null;
     title: string;
     subtitle?: string | null;
     ariaLabel?: string | null;
     accent?: string | null;
+    /** Visual variant - 'compact' shows small icon + title only for reorder mode */
+    variant?: ListCardVariant;
     /** When false, card displays with reduced opacity and dashed border to indicate draft/hidden status */
     isLive?: boolean;
+    /** Show drag handle for reorder mode (only visible in compact variant) */
+    showDragHandle?: boolean;
     media?: Snippet;
     trailing?: Snippet;
     /** Renders the actions menu. When provided, the media area becomes a custom trigger containing the icon + dots. */
@@ -23,7 +29,9 @@
     subtitle = null,
     ariaLabel = null,
     accent = null,
+    variant = "default",
     isLive = true,
+    showDragHandle = false,
     media,
     trailing,
     actions,
@@ -33,7 +41,12 @@
 
   let hasActions = $derived(Boolean(actions));
   let style = $derived(accent ? `--underlay-list-card-accent: ${accent};` : undefined);
-  let cardClass = $derived(isLive ? "underlay-list-card" : "underlay-list-card underlay-list-card--draft");
+  let isCompact = $derived(variant === "compact");
+  let cardClass = $derived([
+    "underlay-list-card",
+    !isLive && "underlay-list-card--draft",
+    isCompact && "underlay-list-card--compact"
+  ].filter(Boolean).join(" "));
 </script>
 
 {#snippet mediaTrigger()}
@@ -47,7 +60,65 @@
   </span>
 {/snippet}
 
-{#if href}
+{#snippet dragHandle()}
+  <div class="underlay-list-card__drag-handle" aria-label="Drag to reorder">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+      <circle cx="5" cy="3" r="1.5"/>
+      <circle cx="11" cy="3" r="1.5"/>
+      <circle cx="5" cy="8" r="1.5"/>
+      <circle cx="11" cy="8" r="1.5"/>
+      <circle cx="5" cy="13" r="1.5"/>
+      <circle cx="11" cy="13" r="1.5"/>
+    </svg>
+  </div>
+{/snippet}
+
+{#snippet compactContent()}
+  {#if showDragHandle}
+    {@render dragHandle()}
+  {/if}
+  <div class="underlay-list-card__media underlay-list-card__media--compact">
+    {#if media}
+      {@render media()}
+    {/if}
+  </div>
+  <span class="underlay-list-card__title underlay-list-card__title--compact">{title}</span>
+{/snippet}
+
+{#snippet fullContent()}
+  {#if hasActions}
+    <div class="underlay-list-card__media-slot">
+      {@render actions?.({ trigger: mediaTrigger })}
+    </div>
+  {:else}
+    <div class="underlay-list-card__media">
+      {#if media}
+        {@render media()}
+      {/if}
+    </div>
+  {/if}
+
+  <div class="underlay-list-card__body">
+    <div class="underlay-list-card__title-row">
+      <h3 class="underlay-list-card__title">{title}</h3>
+      {#if trailing}
+        {@render trailing()}
+      {/if}
+    </div>
+
+    {#if subtitle}
+      <p class="underlay-list-card__subtitle">{subtitle}</p>
+    {/if}
+
+    <div class="underlay-list-card__meta">
+      {#if children}
+        {@render children()}
+      {/if}
+    </div>
+  </div>
+{/snippet}
+
+{#if href && !isCompact}
   <div class="underlay-list-card-shell" class:underlay-list-card-shell--draft={!isLive} {style}>
     <a
       class={cardClass}
@@ -56,74 +127,21 @@
       aria-label={ariaLabel ?? title}
       onclick={onclick ?? undefined}
     >
-      {#if hasActions}
-        <div class="underlay-list-card__media-slot">
-          {@render actions?.({ trigger: mediaTrigger })}
-        </div>
-      {:else}
-        <div class="underlay-list-card__media">
-          {#if media}
-            {@render media()}
-          {/if}
-        </div>
-      {/if}
-
-      <div class="underlay-list-card__body">
-        <div class="underlay-list-card__title-row">
-          <h3 class="underlay-list-card__title">{title}</h3>
-          {#if trailing}
-            {@render trailing()}
-          {/if}
-        </div>
-
-        {#if subtitle}
-          <p class="underlay-list-card__subtitle">{subtitle}</p>
-        {/if}
-
-        <div class="underlay-list-card__meta">
-          {#if children}
-            {@render children()}
-          {/if}
-        </div>
-      </div>
+      {@render fullContent()}
     </a>
   </div>
 {:else}
   <div
     class={cardClass}
+    class:underlay-list-card-shell--draft={!isLive && !isCompact}
     aria-label={ariaLabel ?? title}
     {style}
   >
-    {#if hasActions}
-      <div class="underlay-list-card__media-slot">
-        {@render actions?.({ trigger: mediaTrigger })}
-      </div>
+    {#if isCompact}
+      {@render compactContent()}
     {:else}
-      <div class="underlay-list-card__media">
-        {#if media}
-          {@render media()}
-        {/if}
-      </div>
+      {@render fullContent()}
     {/if}
-
-    <div class="underlay-list-card__body">
-      <div class="underlay-list-card__title-row">
-        <h3 class="underlay-list-card__title">{title}</h3>
-        {#if trailing}
-          {@render trailing()}
-        {/if}
-      </div>
-
-      {#if subtitle}
-        <p class="underlay-list-card__subtitle">{subtitle}</p>
-      {/if}
-
-      <div class="underlay-list-card__meta">
-        {#if children}
-          {@render children()}
-        {/if}
-      </div>
-    </div>
   </div>
 {/if}
 
@@ -354,5 +372,78 @@
   .underlay-list-card-shell--draft:hover > .underlay-list-card {
     opacity: 1;
     filter: none;
+  }
+
+  /* =========================================================================
+     Compact variant - for reorder mode
+     Smaller icon, title only, ~48px height, optional drag handle
+     ========================================================================= */
+
+  .underlay-list-card--compact {
+    --_underlay-list-card-media-size: 28px;
+
+    display: flex;
+    align-items: center;
+    gap: var(--underlay-space-3, 0.75rem);
+    padding: var(--underlay-space-2, 0.5rem) var(--underlay-space-3, 0.75rem);
+    min-height: 48px;
+    border-radius: var(--underlay-radius-md, 0.5rem);
+    cursor: grab;
+  }
+
+  .underlay-list-card--compact:active {
+    cursor: grabbing;
+  }
+
+  /* Disable hover effects in compact mode - it's for reordering, not navigation */
+  .underlay-list-card--compact:hover {
+    transform: none;
+    box-shadow: var(--underlay-shadow-card, none);
+  }
+
+  /* Compact media icon */
+  .underlay-list-card__media--compact {
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
+    border-radius: var(--underlay-radius-sm, 0.375rem);
+    font-size: 0.875rem;
+  }
+
+  /* Compact title - inline, single line, truncated */
+  .underlay-list-card__title--compact {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    line-height: 1.3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Drag handle styling */
+  .underlay-list-card__drag-handle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    color: var(--underlay-color-text-muted, #9ca3af);
+    opacity: 0.6;
+    cursor: grab;
+    touch-action: none; /* Prevent scroll while dragging on touch devices */
+    flex-shrink: 0;
+    margin-left: -4px;
+    margin-right: -2px;
+  }
+
+  .underlay-list-card__drag-handle:hover {
+    opacity: 1;
+  }
+
+  .underlay-list-card--compact:active .underlay-list-card__drag-handle {
+    cursor: grabbing;
   }
 </style>

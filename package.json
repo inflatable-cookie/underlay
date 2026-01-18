@@ -73,7 +73,8 @@
     "vite": "^7.0.0"
   },
   "dependencies": {
-    "easymde": "^2.20.0"
+    "easymde": "^2.20.0",
+    "svelte-dnd-action": "^0.9.69"
   },
   "devDependencies": {
     "@types/node": "^25.0.8",

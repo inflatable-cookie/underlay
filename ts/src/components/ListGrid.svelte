@@ -1,19 +1,29 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
 
+  type ListGridVariant = "default" | "compact";
+
   interface Props {
-    /** Minimum item width - number (in ems) or string with unit */
+    /** Visual variant - 'compact' uses single column layout with tighter spacing */
+    variant?: ListGridVariant;
+    /** Minimum item width - number (in ems) or string with unit (ignored in compact mode) */
     minItemWidth?: number | string | null;
     /** Gap between items - number (in pixels) or string with unit */
     gap?: number | string | null;
+    /** Actions slot for toolbar buttons (e.g., Save/Cancel in reorder mode) */
+    actions?: Snippet;
     children?: Snippet;
   }
 
   let {
+    variant = "default",
     minItemWidth = null,
     gap = null,
+    actions,
     children
   }: Props = $props();
+
+  let isCompact = $derived(variant === "compact");
 
   function formatValue(value: number | string | null, defaultUnit: string): string | null {
     if (value == null) return null;
@@ -23,21 +33,40 @@
 
   let style = $derived(
     [
-      minItemWidth != null ? `--underlay-list-grid-min: ${formatValue(minItemWidth, "em")};` : null,
+      !isCompact && minItemWidth != null ? `--underlay-list-grid-min: ${formatValue(minItemWidth, "em")};` : null,
       gap != null ? `--underlay-list-grid-gap: ${formatValue(gap, "px")};` : null
     ]
       .filter(Boolean)
       .join(" ")
   );
+
+  let gridClass = $derived([
+    "underlay-list-grid",
+    isCompact && "underlay-list-grid--compact"
+  ].filter(Boolean).join(" "));
 </script>
 
-<div class="underlay-list-grid" style={style || undefined}>
+{#if actions}
+  <div class="underlay-list-grid-header">
+    {@render actions()}
+  </div>
+{/if}
+
+<div class={gridClass} style={style || undefined}>
   {#if children}
     {@render children()}
   {/if}
 </div>
 
 <style>
+  .underlay-list-grid-header {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: var(--underlay-space-2, 0.5rem);
+    margin-bottom: var(--underlay-space-3, 0.75rem);
+  }
+
   .underlay-list-grid {
     display: grid;
     grid-template-columns: repeat(
@@ -49,5 +78,11 @@
     );
     gap: var(--underlay-list-grid-gap, 1.25rem);
     align-items: stretch;
+  }
+
+  /* Compact variant: single column, tighter spacing */
+  .underlay-list-grid--compact {
+    grid-template-columns: 1fr;
+    gap: var(--underlay-list-grid-gap, 0.5rem);
   }
 </style>
