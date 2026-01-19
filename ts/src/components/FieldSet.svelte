@@ -57,6 +57,7 @@
     display: grid;
     gap: var(--underlay-space-4, 1rem);
     grid-template-columns: 1fr;
+    align-items: start;
   }
 
   /* Auto-fit columns based on available space */

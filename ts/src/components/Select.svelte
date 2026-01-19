@@ -2,6 +2,8 @@
   import { tick } from "svelte";
   import { Select as BitsSelect } from "bits-ui";
   import type { Snippet } from "svelte";
+  import X from "lucide-svelte/icons/x";
+  import ChevronDown from "lucide-svelte/icons/chevron-down";
 
   type SelectItem = {
     value: string;
@@ -31,6 +33,10 @@
     oninput?: (value: string) => void;
     children?: Snippet;
     class?: string;
+    /** Show a clear button to reset to default value */
+    clearable?: boolean;
+    /** Value to reset to when cleared (default: "") */
+    defaultValue?: string;
   }
 
   let {
@@ -55,6 +61,8 @@
     oninput,
     children,
     class: className,
+    clearable = false,
+    defaultValue = "",
   }: Props = $props();
 
   let triggerRef: HTMLElement | null = $state(null);
@@ -80,6 +88,16 @@
 
   let selectedLabel = $derived((items ?? []).find((item) => item.value === value)?.label);
   let hasSelection = $derived(typeof selectedLabel === "string" && selectedLabel.length > 0);
+  let isDefaultValue = $derived(value === defaultValue || value === "");
+  let showClearButton = $derived(clearable && hasSelection && value !== defaultValue && !disabled);
+
+  function handleClear(event: MouseEvent) {
+    event.stopPropagation();
+    event.preventDefault();
+    value = defaultValue;
+    onchange?.(defaultValue);
+    oninput?.(defaultValue);
+  }
 
   let alignShift = $derived(
     align === "end"
@@ -122,10 +140,24 @@
       class={`underlay-select-trigger ${className ?? ""}`}
       aria-label={triggerAriaLabel ?? placeholder}
     >
-      <span class:placeholder={!hasSelection}>
+      <span class:placeholder={!hasSelection} class:default-value={hasSelection && isDefaultValue}>
         {hasSelection ? selectedLabel : placeholder}
       </span>
-      <span class="underlay-select-trigger__chevron" aria-hidden="true">▾</span>
+      <span class="underlay-select-trigger__controls">
+        {#if showClearButton}
+          <button
+            type="button"
+            class="underlay-select-trigger__clear"
+            aria-label="Clear selection"
+            onclick={handleClear}
+            onpointerdown={(e) => e.stopPropagation()}
+            onmousedown={(e) => e.stopPropagation()}
+          >
+            <X size="1em" strokeWidth={2.5} />
+          </button>
+        {/if}
+        <ChevronDown size="1em" strokeWidth={2.5} class="underlay-select-trigger__chevron" />
+      </span>
     </BitsSelect.Trigger>
 
     <BitsSelect.Portal>
@@ -227,14 +259,54 @@
     color: var(--underlay-color-text-muted, var(--underlay-color-text-muted, #9ca3af));
   }
 
-  :global(.underlay-select-trigger__chevron) {
+  .default-value {
+    opacity: 0.6;
+  }
+
+  :global(.underlay-select-trigger__controls) {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
     margin-left: 0.5rem;
-    font-size: 0.75rem;
-    opacity: 0.8;
+  }
+
+  :global(.underlay-select-trigger__clear) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    margin: 0;
+    border: none;
+    background: transparent;
+    color: var(--underlay-color-text-muted, #9ca3af);
+    cursor: pointer;
+    border-radius: 0.2rem;
+    opacity: 0.7;
+    transition: opacity 0.15s ease, color 0.15s ease;
+  }
+
+  :global(.underlay-select-trigger__clear:hover) {
+    opacity: 1;
+    color: var(--underlay-color-danger, #ef4444);
+  }
+
+  :global(.underlay-select-trigger__clear:focus-visible) {
+    outline: 2px solid var(--underlay-color-primary, #2563eb);
+    outline-offset: 1px;
+  }
+
+  :global(.underlay-select-trigger__clear svg) {
+    margin-top: 1px;
+  }
+
+  :global(.underlay-select-trigger__chevron) {
+    color: var(--underlay-color-text, #e5e7eb);
+    opacity: 0.5;
+    margin-top: 1px;
   }
 
   :global(.underlay-select-content) {
-    z-index: 50;
+    z-index: 200;
     border-radius: 0.35rem;
     border: 1px solid
       var(
@@ -254,8 +326,8 @@
 
     padding: 0.25rem;
 
-    min-width: min(var(--underlay-select-menu-min-width, 12rem), calc(100vw - 1.5rem));
-    width: auto;
+    min-width: min(var(--bits-floating-anchor-width), calc(100vw - 1.5rem));
+    width: var(--bits-floating-anchor-width);
     max-width: min(26rem, calc(100vw - 1.5rem));
   }
 
@@ -302,5 +374,10 @@
 
   :global(.underlay-select-item__check) {
     opacity: 0.9;
+  }
+
+  /* Override bits-ui floating wrapper z-index to ensure Select appears above popovers */
+  :global([data-bits-floating-content-wrapper]:has(.underlay-select-content)) {
+    z-index: 200 !important;
   }
 </style>

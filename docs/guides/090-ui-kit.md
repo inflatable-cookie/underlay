@@ -6,7 +6,7 @@ This document covers creating and using a shared Svelte UI kit with Underlay. Un
 
 The UI kit provides:
 - **Form components** - Field, TextInput, Select, Switch, TextArea
-- **UI primitives** - Button, Badge, Pill, Breadcrumbs, Card, Dialog, DropdownMenu, Pagination
+- **UI primitives** - Button, Badge, Pill, Breadcrumbs, Card, Dialog, DropdownMenu, OrderBy, Pagination
 - **Patterns** - ListCard, NavCard, NavCardGrid, Form, FormActions, PageHeader, ReorderableList
 - **Design tokens** - CSS custom properties for theming
 
@@ -48,15 +48,16 @@ libs/myapp-ui/src/
 ```svelte
 <script lang="ts">
   import { Field, TextInput } from "@decodelabs/underlay";
-  
+
   export let form; // ActionData from SvelteKit
 </script>
 
-<Field 
-  label="Email" 
+<Field
+  label="Email"
   forId="email"
   hint="We'll never share your email"
   error={form?.errors?.email}
+  required
 >
   <TextInput
     id="email"
@@ -73,6 +74,9 @@ libs/myapp-ui/src/
 - `forId` - Links label to input
 - `hint` - Help text shown next to label
 - `error` - Error message shown below input
+- `required` - Shows a red asterisk (*) indicator next to the label (default: `false`)
+- `span` - Grid column span: `"full"` spans all columns, number (1-6) specifies exact span
+- `wide` - Remove max-width constraint for wide content like editors (default: `false`)
 
 ### TextInput
 
@@ -97,7 +101,77 @@ Standard text input with consistent styling:
 
 **Props:**
 - All standard `<input>` attributes
+- `oninput` - Callback fired on every keystroke with the current value
+- `onchange` - Callback fired on blur (or after debounce delay if `debounce` is set)
+- `debounce` - Optional delay in milliseconds; when set, `onchange` fires after delay instead of on blur
+- `search` - When true, uses `type="search"` with native clear button (default: `false`)
 - `className` - Additional CSS classes
+
+#### Search Input for Filters
+
+Use the `search` prop for filter fields to get a native clear button. Combine with `debounce` for a complete filter input experience.
+
+```svelte
+<Field label="Search" forId="search">
+  <TextInput
+    id="search"
+    value={searchTerm}
+    onchange={handleSearch}
+    search
+    debounce={500}
+    placeholder="Search..."
+  />
+</Field>
+```
+
+The native clear button (×) appears when the input has content. Clicking it clears the input and immediately fires `onchange` with an empty value, even if debounce is enabled.
+
+#### Debounced Input
+
+Use the `debounce` prop for filter/search fields that trigger server-side queries. This prevents excessive API calls as users type.
+
+```svelte
+<script>
+  import { Field, TextInput } from "@decodelabs/underlay/components";
+
+  function handleSearch(value: string) {
+    // Called after user stops typing for 500ms
+    console.log("Searching for:", value);
+  }
+</script>
+
+<Field label="Search" forId="search">
+  <TextInput
+    id="search"
+    value=""
+    onchange={handleSearch}
+    debounce={500}
+    placeholder="Search..."
+  />
+</Field>
+
+<!-- With custom debounce delay (1 second) -->
+<Field label="Filter" forId="filter">
+  <TextInput
+    id="filter"
+    value={filterValue}
+    onchange={handleFilter}
+    debounce={1000}
+    placeholder="Filter by name..."
+  />
+</Field>
+```
+
+**Debounce behavior:**
+- When `debounce` is set, `onchange` fires after the delay instead of on blur
+- As the user types, the timer resets with each keystroke
+- Once the user stops typing for the debounce duration, `onchange` fires
+- The `value` prop updates immediately (for controlled input display)
+
+**Use cases for debounce:**
+- Filter inputs that trigger server-side queries
+- Search boxes with live results
+- Any text input that triggers expensive operations
 
 ### TextArea
 
@@ -142,10 +216,43 @@ Dropdown select component:
 ```
 
 **Props:**
-- `options` - Array of `{ value, label }` objects
+- `items` - Array of `{ value, label }` objects
 - `value` - Selected value (bindable)
 - `placeholder` - Placeholder text
 - `disabled` - Disable select
+- `clearable` - Show a clear button (×) to reset to default value (default: `false`)
+- `defaultValue` - Value to reset to when cleared (default: `""`)
+
+#### Clearable Select
+
+Use `clearable` for filter dropdowns where users should be able to reset to a default state:
+
+```svelte
+<script>
+  import { Field, Select } from "@decodelabs/underlay/components";
+
+  const yearOptions = [
+    { value: "All", label: "All years" },
+    { value: "2024", label: "2024" },
+    { value: "2023", label: "2023" }
+  ];
+
+  let selectedYear = "All";
+</script>
+
+<Field label="Year" forId="year">
+  <Select
+    id="year"
+    items={yearOptions}
+    bind:value={selectedYear}
+    placeholder="All years"
+    clearable
+    defaultValue="All"
+  />
+</Field>
+```
+
+The clear button appears when a non-default value is selected. Clicking it resets to `defaultValue` and fires `onchange`.
 
 ### Switch
 
@@ -169,7 +276,39 @@ Toggle switch (checkbox alternative):
 **Props:**
 - `checked` - Boolean value (bindable)
 - `name` - Form field name
+- `leftLabel` - Label for off state (default: `"Off"`)
+- `rightLabel` - Label for on state (default: `"On"`)
+- `variant` - `"default"` | `"danger-off"` (default: `"default"`)
 - `disabled` - Disable switch
+
+**Variants:**
+
+- `default` - Standard styling with grey track when off, primary color when on
+- `danger-off` - Red track and label when off, primary color when on. Use for visibility/live status fields where the "off" state represents a warning condition.
+
+#### Visibility Fields Pattern
+
+For `isLive` or visibility toggle fields, use consistent styling across the application:
+
+```svelte
+<Field label="Visibility">
+  <Switch
+    name="isLive"
+    leftLabel="Draft"
+    rightLabel="Live"
+    bind:checked={isLive}
+    variant="danger-off"
+  />
+</Field>
+```
+
+**Convention:**
+- **Label**: Use "Visibility" (not "Is Live" or "Status")
+- **Left label**: "Draft" (off state)
+- **Right label**: "Live" (on state)
+- **Variant**: `"danger-off"` - shows red when content is not live, making the draft state visually prominent
+
+This pattern applies to all content that can be published or unpublished: pathways, modules, sections, areas, outcomes, activities, documents, Q&A items, summaries, videos, and audio items.
 
 ---
 
@@ -355,26 +494,395 @@ Standalone pagination component for navigating pages:
 
 **Note:** For data tables, use the built-in pagination in `DataTable` component. This standalone `Pagination` component is for non-table contexts like card grids, galleries, or custom list layouts.
 
+### OrderBy
+
+Multi-field sorting component with drag-and-drop reordering. Use this for list views that need configurable sort order.
+
+> **Important**: Filters and sorting should be implemented **server-side** for production use. Client-side filtering/sorting won't scale with pagination, large datasets, or complex queries. Use the OrderBy component to build the UI, but send sort parameters to your API and let the server handle the actual sorting. See "Server-Side Sorting" below for the recommended pattern.
+
+#### Overview
+
+The OrderBy component provides a popover-based UI for configuring multi-field sorting. Users can:
+
+- Add sort fields from a dropdown
+- Reorder fields by dragging
+- Toggle sort direction (ascending/descending) per field
+- Remove individual fields or clear all
+- Reverse all directions at once
+
+```
+┌─────────────────────────────────────┐
+│ [≡] Title                    ↑  [×] │  ← Drag handle, label, direction, remove
+│ [≡] Created                  ↓  [×] │
+├─────────────────────────────────────┤
+│ [+ Add field ▾]                     │  ← Dropdown to add more fields
+├─────────────────────────────────────┤
+│ [↕ Reverse All]        [Clear]      │  ← Global actions
+└─────────────────────────────────────┘
+```
+
+#### Basic Usage
+
+```svelte
+<script>
+  import { OrderBy, type OrderByValue } from "@decodelabs/underlay/components";
+
+  const fields = [
+    { key: "title", label: "Title" },
+    { key: "createdAt", label: "Created", defaultDirection: "desc" },
+    { key: "updatedAt", label: "Updated", defaultDirection: "desc" },
+    { key: "status", label: "Status" }
+  ];
+
+  let orderBy: OrderByValue = $state([
+    { key: "createdAt", direction: "desc" }
+  ]);
+</script>
+
+<OrderBy {fields} bind:value={orderBy} />
+```
+
+#### Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `fields` | `OrderByFieldDefinition[]` | required | Available fields that can be sorted |
+| `value` | `OrderByValue` | `[]` | Current sort order (bindable) |
+| `onChange` | `(value: OrderByValue) => void` | - | Callback when sort order changes |
+| `maxFields` | `number` | unlimited | Maximum number of sort fields allowed |
+| `compact` | `boolean` | `false` | Truncate trigger text in tight spaces |
+| `class` | `string` | - | Additional CSS class for trigger |
+
+#### Types
+
+```typescript
+interface OrderByFieldDefinition {
+  key: string;           // Unique field identifier (matches data property name)
+  label: string;         // Display label shown in UI
+  defaultDirection?: "asc" | "desc";  // Direction when field is first added (default: "asc")
+}
+
+interface OrderByField {
+  key: string;           // Field key from definition
+  direction: "asc" | "desc";  // Current sort direction
+}
+
+type OrderByValue = OrderByField[];  // Ordered array of active sort fields
+```
+
+#### Trigger Button Display
+
+The trigger button shows a summary of the current sort order:
+
+| State | Display |
+|-------|---------|
+| No fields selected | "Sort by..." (placeholder style) |
+| Single field | "Title ↑" |
+| Multiple fields | "Title ↑, Created ↓" |
+| Compact mode (3+ fields) | "Title ↑, Created ↓ +2" |
+
+#### Usage in FilterBar
+
+The most common pattern is placing OrderBy inside a FilterBar alongside other filters:
+
+```svelte
+<script lang="ts">
+  import { onMount } from "svelte";
+  import { FilterBar } from "@decodelabs/underlay/patterns";
+  import {
+    Field,
+    ListGrid,
+    OrderBy,
+    Select,
+    type OrderByValue
+  } from "@decodelabs/underlay/components";
+  import { initPageState } from "@decodelabs/underlay/client";
+
+  interface Props {
+    data: {
+      items: Array<{
+        id: string;
+        title: string;
+        category: string;
+        createdAt: string;
+      }>;
+      categories: Array<{ id: string; name: string }>;
+    };
+  }
+
+  let { data }: Props = $props();
+
+  // Filter and sort state
+  let selectedCategory = $state("All");
+  let orderBy: OrderByValue = $state([]);
+
+  // Define sortable fields (keys must match data property names)
+  const sortFields = [
+    { key: "title", label: "Title" },
+    { key: "category", label: "Category" },
+    { key: "createdAt", label: "Created", defaultDirection: "desc" }
+  ];
+
+  // Build category filter options
+  const categoryItems = $derived([
+    { value: "All", label: "All categories" },
+    ...data.categories.map((c) => ({ value: c.id, label: c.name }))
+  ]);
+
+  // Filter and sort data
+  const displayItems = $derived(() => {
+    // Apply filters
+    let result = data.items.filter((item) =>
+      selectedCategory === "All" || item.category === selectedCategory
+    );
+
+    // Apply sorting
+    if (orderBy.length > 0) {
+      result = [...result].sort((a, b) => {
+        for (const { key, direction } of orderBy) {
+          const aVal = String(a[key as keyof typeof a] ?? "").toLowerCase();
+          const bVal = String(b[key as keyof typeof b] ?? "").toLowerCase();
+          const cmp = aVal.localeCompare(bVal);
+          if (cmp !== 0) {
+            return direction === "asc" ? cmp : -cmp;
+          }
+        }
+        return 0;
+      });
+    }
+
+    return result;
+  });
+
+  // Restore state on back navigation
+  onMount(() => {
+    const restored = initPageState({
+      selectedCategory: "All",
+      orderBy: []
+    });
+    selectedCategory = restored.selectedCategory;
+    orderBy = restored.orderBy;
+  });
+</script>
+
+<FilterBar title="Filters">
+  <Field label="Category" forId="category">
+    <Select
+      id="category"
+      bind:value={selectedCategory}
+      items={categoryItems}
+      placeholder="All categories"
+    />
+  </Field>
+  <Field label="Sort" forId="sort">
+    <OrderBy fields={sortFields} bind:value={orderBy} />
+  </Field>
+</FilterBar>
+
+<ListGrid>
+  {#each displayItems() as item}
+    <ItemCard {item} />
+  {/each}
+</ListGrid>
+```
+
+#### Client-Side Sorting Implementation
+
+The sorting logic handles multiple fields with different directions:
+
+```typescript
+function sortItems<T extends Record<string, unknown>>(
+  items: T[],
+  orderBy: OrderByValue
+): T[] {
+  if (orderBy.length === 0) return items;
+
+  return [...items].sort((a, b) => {
+    for (const { key, direction } of orderBy) {
+      const aVal = String(a[key] ?? "").toLowerCase();
+      const bVal = String(b[key] ?? "").toLowerCase();
+      const cmp = aVal.localeCompare(bVal);
+      if (cmp !== 0) {
+        return direction === "asc" ? cmp : -cmp;
+      }
+    }
+    return 0;
+  });
+}
+```
+
+**Sorting notes:**
+
+- Fields are compared in order (first field is primary sort, second is secondary, etc.)
+- String comparison uses `localeCompare()` for proper alphabetical ordering
+- Values are converted to lowercase for case-insensitive sorting
+- Null/undefined values are treated as empty strings
+
+For numeric or date fields, use appropriate comparison:
+
+```typescript
+// Numeric comparison
+const aVal = Number(a[key] ?? 0);
+const bVal = Number(b[key] ?? 0);
+const cmp = aVal - bVal;
+
+// Date comparison
+const aVal = new Date(a[key] as string).getTime();
+const bVal = new Date(b[key] as string).getTime();
+const cmp = aVal - bVal;
+```
+
+#### State Persistence
+
+Use `initPageState` to restore sort order when users navigate back:
+
+```svelte
+<script>
+  import { onMount } from "svelte";
+  import { gotoWithContext, initPageState } from "@decodelabs/underlay/client";
+
+  let orderBy: OrderByValue = $state([]);
+
+  onMount(() => {
+    const restored = initPageState({ orderBy: [] });
+    orderBy = restored.orderBy;
+  });
+
+  // When navigating away, include state
+  function navigateToDetail(id: string) {
+    gotoWithContext(`/items/${id}`, {
+      label: "Items",
+      href: "/items",
+      type: "list",
+      state: { orderBy }
+    });
+  }
+</script>
+```
+
+#### URL Parameter Sync
+
+For shareable/bookmarkable sort states, sync with URL parameters:
+
+```svelte
+<script>
+  import { page } from "$app/stores";
+  import { goto } from "$app/navigation";
+  import { OrderBy, type OrderByValue } from "@decodelabs/underlay/components";
+
+  const fields = [
+    { key: "title", label: "Title" },
+    { key: "createdAt", label: "Created", defaultDirection: "desc" }
+  ];
+
+  // Parse sort from URL: ?sort=title:asc,createdAt:desc
+  let orderBy: OrderByValue = $derived(
+    parseOrderByFromUrl($page.url.searchParams.get("sort"))
+  );
+
+  function handleOrderChange(value: OrderByValue) {
+    const url = new URL($page.url);
+    if (value.length > 0) {
+      url.searchParams.set("sort", serializeOrderBy(value));
+    } else {
+      url.searchParams.delete("sort");
+    }
+    goto(url.toString(), { replaceState: true });
+  }
+
+  function parseOrderByFromUrl(param: string | null): OrderByValue {
+    if (!param) return [];
+    return param.split(",").map((part) => {
+      const [key, dir] = part.split(":");
+      return { key, direction: dir === "desc" ? "desc" : "asc" };
+    });
+  }
+
+  function serializeOrderBy(value: OrderByValue): string {
+    return value.map((f) => `${f.key}:${f.direction}`).join(",");
+  }
+</script>
+
+<OrderBy {fields} value={orderBy} onChange={handleOrderChange} />
+```
+
+#### Limiting Sort Fields
+
+Use `maxFields` to restrict the number of sort fields:
+
+```svelte
+<!-- Allow only single-field sorting -->
+<OrderBy fields={sortFields} bind:value={orderBy} maxFields={1} />
+
+<!-- Allow up to 3 sort fields -->
+<OrderBy fields={sortFields} bind:value={orderBy} maxFields={3} />
+```
+
+When the limit is reached, the "Add field" dropdown is hidden.
+
+#### Compact Mode
+
+Use `compact` for tight spaces (e.g., mobile layouts):
+
+```svelte
+<OrderBy fields={sortFields} bind:value={orderBy} compact />
+```
+
+In compact mode, the trigger text truncates after 2 fields: "Title ↑, Created ↓ +2"
+
+#### Accessibility
+
+The OrderBy component includes:
+
+- **Keyboard navigation** - Tab through controls, Enter/Space to activate
+- **ARIA labels** - Descriptive labels for screen readers ("Toggle direction to descending", "Remove Title from sort")
+- **Focus management** - Focus returns to trigger when popover closes
+
+#### Styling
+
+The component uses BEM class names with `underlay-order-by` prefix:
+
+| Class | Element |
+|-------|---------|
+| `.underlay-order-by-trigger` | Trigger button |
+| `.underlay-order-by-content` | Popover content container |
+| `.underlay-order-by-list` | Sortable field list |
+| `.underlay-order-by-item` | Individual field row |
+| `.underlay-order-by-item__handle` | Drag handle (⠿) |
+| `.underlay-order-by-item__label` | Field label text |
+| `.underlay-order-by-item__direction` | Direction toggle button |
+| `.underlay-order-by-item__remove` | Remove button |
+| `.underlay-order-by-add` | Add field section |
+| `.underlay-order-by-actions` | Footer actions (Reverse All, Clear) |
+| `.underlay-order-by-empty` | Empty state message |
+
+Override styles using CSS custom properties or global class selectors.
+
 ### Button
 
 ```svelte
 <script>
-  import { Button } from "@decodelabs/underlay";
+  import { Button } from "@decodelabs/underlay/components";
 </script>
 
-<!-- Primary button -->
+<!-- Primary button (blue) -->
 <Button variant="primary" type="submit">
   Save Changes
 </Button>
 
-<!-- Secondary button -->
-<Button variant="secondary" on:click={handleCancel}>
+<!-- Secondary button (orange) -->
+<Button variant="secondary" onclick={handleCancel}>
   Cancel
 </Button>
 
-<!-- Subtle/ghost button -->
-<Button variant="subtle" on:click={handleReset}>
+<!-- Subtle/ghost button (muted background) -->
+<Button variant="subtle" onclick={handleReset}>
   Reset
+</Button>
+
+<!-- Danger button (red) - for destructive or cancel actions -->
+<Button variant="danger" onclick={handleDelete}>
+  Delete
 </Button>
 
 <!-- Square (non-pill) button -->
@@ -384,14 +892,17 @@ Standalone pagination component for navigating pages:
 ```
 
 **Props:**
-- `variant` - `"primary"` | `"secondary"` | `"subtle"` (default: `"primary"`)
+- `variant` - `"primary"` | `"secondary"` | `"subtle"` | `"danger"` (default: `"primary"`)
 - `type` - `"button"` | `"submit"` | `"reset"` (default: `"button"`)
 - `pill` - Rounded corners (default: `true`)
 - `disabled` - Disable button
-- `className` - Additional CSS classes
+- `class` - Additional CSS classes
 
-**Events:**
-- `on:click` - Click handler
+**Variant colors:**
+- `primary` - Blue (#2563eb) - main actions
+- `secondary` - Orange (#ea580c) - alternative actions
+- `subtle` - Muted background - low-emphasis actions
+- `danger` - Red (#dc2626) - destructive or cancel actions
 
 ### Card
 

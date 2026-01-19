@@ -16,7 +16,7 @@
     label,
     type = "button",
     disabled = false,
-    sizeRem = 2,
+    sizeRem = 1.6,
     variant = "neutral",
     onclick,
     children,
@@ -48,8 +48,8 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: var(--underlay-icon-button-size, 2rem);
-    height: var(--underlay-icon-button-size, 2rem);
+    width: var(--underlay-icon-button-size, 1.6rem);
+    height: var(--underlay-icon-button-size, 1.6rem);
     border-radius: 0.5rem;
     border: 1px solid rgba(148, 163, 184, 0.35);
     background: rgba(255, 255, 255, 0.03);

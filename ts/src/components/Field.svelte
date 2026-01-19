@@ -7,6 +7,8 @@
     forId?: string;
     hint?: string;
     error?: string;
+    /** Show a red asterisk indicator for required fields */
+    required?: boolean;
     /** Grid column span: "full" spans all columns, number specifies exact span */
     span?: "full" | 1 | 2 | 3 | 4 | 5 | 6;
     /** Remove max-width constraint for wide content like editors */
@@ -14,7 +16,7 @@
     children?: Snippet;
   }
 
-  let { label, forId, hint, error, span, wide = false, children }: Props = $props();
+  let { label, forId, hint, error, required = false, span, wide = false, children }: Props = $props();
 
   const spanStyle = span === "full"
     ? "grid-column: 1 / -1;"
@@ -27,7 +29,7 @@
   {#if label}
     <div class="underlay-field__header">
       <label class="underlay-field__label" for={forId}>
-        {label}
+        {label}{#if required}<span class="underlay-field__required">*</span>{/if}
       </label>
 
       {#if hint}
@@ -79,6 +81,11 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+  }
+
+  .underlay-field__required {
+    color: var(--underlay-color-error, #ef4444);
+    margin-left: 0.125rem;
   }
 
 

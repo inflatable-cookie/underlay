@@ -36,6 +36,20 @@ declare const TabsList: any;
 declare const TabsTrigger: any;
 declare const TabsContent: any;
 declare const Pagination: any;
+declare const OrderBy: any;
+
+interface OrderByFieldDefinition {
+  key: string;
+  label: string;
+  defaultDirection?: "asc" | "desc";
+}
+
+interface OrderByField {
+  key: string;
+  direction: "asc" | "desc";
+}
+
+type OrderByValue = OrderByField[];
 
 declare const LoginForm: any;
 declare const RegisterForm: any;
@@ -77,6 +91,7 @@ export {
   IconButton,
   ListCard,
   ListGrid,
+  OrderBy,
   Pagination,
   Pill,
   Popover,
@@ -96,3 +111,5 @@ export {
   Tooltip,
   VideoPlayer
 };
+
+export type { OrderByFieldDefinition, OrderByField, OrderByValue };

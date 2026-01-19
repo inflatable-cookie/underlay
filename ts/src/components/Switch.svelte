@@ -1,4 +1,6 @@
 <script lang="ts">
+  type SwitchVariant = "default" | "danger-off";
+
   interface Props {
     name?: string;
     initialChecked?: boolean;
@@ -6,6 +8,8 @@
     rightLabel?: string;
     disabled?: boolean;
     checked?: boolean;
+    /** Variant style: "default" or "danger-off" (red when off) */
+    variant?: SwitchVariant;
   }
 
   let {
@@ -14,18 +18,21 @@
     leftLabel = "Off",
     rightLabel = "On",
     disabled = false,
-    checked = $bindable(initialChecked)
+    checked = $bindable(initialChecked),
+    variant = "default"
   }: Props = $props();
 
   function toggle() {
     if (disabled) return;
     checked = !checked;
   }
+
+  const variantClass = $derived(variant === "danger-off" ? "underlay-switch--danger-off" : "");
 </script>
 
 <button
   type="button"
-  class={`underlay-switch ${checked ? "underlay-switch--on" : "underlay-switch--off"}`}
+  class={`underlay-switch ${checked ? "underlay-switch--on" : "underlay-switch--off"} ${variantClass}`}
   onclick={toggle}
   role="switch"
   aria-checked={checked}
@@ -56,6 +63,7 @@
     align-items: center;
     gap: var(--underlay-space-2, var(--underlay-space-2, 0.5rem));
     width: max-content;
+    min-height: var(--underlay-input-height, 2em);
     padding: 0;
     border: none;
     background: transparent;
@@ -123,5 +131,14 @@
     transform: translateX(
       var(--underlay-switch-thumb-shift, var(--underlay-switch-thumb-shift, 0.9rem))
     );
+  }
+
+  /* Danger-off variant: red track and label when off */
+  .underlay-switch--danger-off.underlay-switch--off .underlay-switch__track {
+    background: var(--underlay-color-error, #ef4444);
+  }
+
+  .underlay-switch--danger-off.underlay-switch--off .underlay-switch__label--left {
+    color: var(--underlay-color-error, #ef4444);
   }
 </style>

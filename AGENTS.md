@@ -32,6 +32,8 @@ This repository is a *framework*, not an app. It should provide stable, app-agno
 - JS/Svelte: `pnpm install`, then `pnpm check`
 - Rust: `cargo test`
 
+**Important**: After updating TypeScript/Svelte components in this repo, consuming apps (e.g., Acowtancy's `dairy/` or `cream/`) need to run `pnpm install` to pick up the changes. This is required because the pnpm workspace links need to be refreshed.
+
 ## Design Principles
 
 - **App-agnostic**: avoid project-specific naming, routes, and domain types.

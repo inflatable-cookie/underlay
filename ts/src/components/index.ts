@@ -50,6 +50,8 @@ export { default as TabsTrigger } from "./TabsTrigger.svelte";
 export { default as TabsContent } from "./TabsContent.svelte";
 export { default as Pagination } from "./Pagination.svelte";
 export type { PaginationState } from "./Pagination.svelte";
+export { OrderBy } from "./OrderBy";
+export type { OrderByFieldDefinition, OrderByField, OrderByValue } from "./OrderBy";
 
 export { default as LoginForm } from "./auth/LoginForm.svelte";
 export { default as RegisterForm } from "./auth/RegisterForm.svelte";

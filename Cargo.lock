@@ -721,6 +721,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "deunicode"
+version = "1.6.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "abd57806937c9cc163efc8ea3910e00a62e2aeb0b8119f1793a978088f8f6b04"
+
+[[package]]
 name = "digest"
 version = "0.10.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3740,6 +3746,9 @@ dependencies = [
 name = "underlay-core"
 version = "0.0.1"
 dependencies = [
+ "deunicode",
+ "once_cell",
+ "regex",
  "serde",
  "uuid",
 ]
@@ -3784,6 +3793,7 @@ dependencies = [
  "http 1.4.0",
  "serde",
  "serde_json",
+ "serde_urlencoded",
  "sqlx",
  "tokio",
  "tower-http",

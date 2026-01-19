@@ -10,6 +10,36 @@ export class UnderlayHttpError extends Error {
     this.status = status;
     this.envelope = envelope;
   }
+
+  /**
+   * Check if this error is an authentication error (401).
+   * These errors indicate the user's session is invalid and they should re-authenticate.
+   */
+  isAuthError(): boolean {
+    return this.status === 401;
+  }
+
+  /**
+   * Get the error code from the envelope, if present.
+   */
+  get code(): string | undefined {
+    return this.envelope?.error.code;
+  }
+}
+
+/**
+ * Check if an error is an authentication error that should trigger a login redirect.
+ *
+ * Works with UnderlayHttpError and any error-like object with a status property.
+ */
+export function isAuthError(error: unknown): boolean {
+  if (error instanceof UnderlayHttpError) {
+    return error.isAuthError();
+  }
+
+  // Handle error-like objects with status
+  const statusError = error as { status?: number } | null;
+  return statusError?.status === 401;
 }
 
 export function isErrorEnvelope(value: unknown): value is ErrorEnvelope {

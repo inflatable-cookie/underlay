@@ -30,3 +30,4 @@ error-logging = ["underlay-db", "sqlx", "chrono", "tokio"]
 
 [dev-dependencies]
 tokio = { workspace = true, features = ["macros", "rt"] }
+serde_urlencoded = "0.7"

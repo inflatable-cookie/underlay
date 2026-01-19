@@ -3,7 +3,7 @@
   import type { HTMLButtonAttributes } from "svelte/elements";
 
   interface Props extends Omit<HTMLButtonAttributes, "class"> {
-    variant?: "primary" | "secondary" | "subtle";
+    variant?: "primary" | "secondary" | "subtle" | "danger";
     type?: "button" | "submit" | "reset";
     pill?: boolean;
     class?: string;
@@ -114,6 +114,22 @@
       var(--underlay-color-field-bg-hover, rgba(148, 163, 184, 0.25))
     );
     color: var(--underlay-color-text, var(--underlay-color-text, inherit));
+  }
+
+  :global(.underlay-button--danger) {
+    background-color: var(
+      --underlay-color-danger,
+      var(--underlay-color-danger, #dc2626)
+    );
+    color: var(--underlay-color-on-danger, var(--underlay-color-on-danger, white));
+    box-shadow: var(--underlay-shadow-md, var(--underlay-shadow-md, none));
+  }
+
+  :global(.underlay-button--danger:hover) {
+    background-color: var(
+      --underlay-color-danger-strong,
+      var(--underlay-color-danger-strong, #b91c1c)
+    );
   }
 
   :global(.underlay-button:focus-visible) {

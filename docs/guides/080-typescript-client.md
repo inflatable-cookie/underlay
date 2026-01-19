@@ -55,8 +55,14 @@ See "Advanced: Retry and Timeout" section below for configuration details.
 ### Error Handling
 
 - `UnderlayHttpError` - Error class thrown on non-2xx responses
+  - `.status` - HTTP status code
+  - `.message` - Error message
+  - `.envelope` - Full error envelope (if available)
+  - `.code` - Error code from envelope (e.g., `auth.session_revoked`)
+  - `.isAuthError()` - Returns `true` for 401 errors
 - `ErrorEnvelope` - Error response shape: `{ error: { code, message, fieldErrors? } }`
 - `isErrorEnvelope(value: unknown): value is ErrorEnvelope` - Type guard for error envelopes
+- `isAuthError(error: unknown): boolean` - Check if any error is an auth error (401)
 
 ### Response Types
 
@@ -666,6 +672,81 @@ export const actions: Actions = {
 };
 ```
 
+## Handling Auth Errors in SvelteKit
+
+When a user's session expires or is revoked, API calls return 401. By default, SvelteKit renders these as generic errors. To redirect users to login instead:
+
+### 1. Add handleError Hook
+
+Convert `UnderlayHttpError` to SvelteKit errors with proper status codes:
+
+```ts
+// hooks.server.ts
+import { type HandleServerError } from "@sveltejs/kit";
+import { UnderlayHttpError } from "@decodelabs/underlay/client";
+
+export const handleError: HandleServerError = async ({ error: err }) => {
+  if (err instanceof UnderlayHttpError) {
+    return {
+      message: err.message,
+      status: err.status,
+      code: err.code
+    };
+  }
+
+  console.error("Unexpected error:", err);
+  return { message: "An unexpected error occurred" };
+};
+```
+
+### 2. Type the Custom Error
+
+```ts
+// app.d.ts
+declare global {
+  namespace App {
+    interface Error {
+      message: string;
+      status?: number;
+      code?: string;
+    }
+  }
+}
+```
+
+### 3. Create Error Page with Auth Redirect
+
+```svelte
+<!-- routes/+error.svelte -->
+<script lang="ts">
+  import { page } from "$app/stores";
+  import { goto } from "$app/navigation";
+  import { onMount } from "svelte";
+
+  const isAuthError = $derived(
+    $page.error?.status === 401 ||
+    $page.error?.code?.startsWith("auth.session_") ||
+    $page.error?.code?.startsWith("auth.token_")
+  );
+
+  onMount(() => {
+    if (isAuthError) {
+      const returnUrl = encodeURIComponent($page.url.pathname + $page.url.search);
+      goto(`/login?returnTo=${returnUrl}`);
+    }
+  });
+</script>
+
+{#if isAuthError}
+  <p>Session expired. Redirecting to login...</p>
+{:else}
+  <h1>Error {$page.status}</h1>
+  <p>{$page.error?.message}</p>
+{/if}
+```
+
+This pattern ensures users are smoothly redirected to login when their session expires, rather than seeing a confusing error page.
+
 ## Key Benefits
 
 This pattern provides:
@@ -683,6 +764,8 @@ This pattern provides:
 - The HttpClient handles base URL, headers, auth, retries, and timeouts
 - On non-2xx responses, Underlay throws `UnderlayHttpError`
 - Use `isErrorEnvelope()` to safely check if an unknown value is an error envelope
+- Use `isAuthError()` to check if an error should trigger a login redirect
+- Use `.code` on `UnderlayHttpError` to get the API error code (e.g., `auth.session_revoked`)
 - **Do not** create local `$lib/api/client.ts` wrappers - use the shared library
 
 ## Next Steps

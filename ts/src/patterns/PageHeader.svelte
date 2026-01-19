@@ -225,9 +225,9 @@
   }
 
   .underlay-page-header__primary-actions :global(.underlay-button) {
-    --underlay-button-font-size: calc(1em * 0.88);
-    --underlay-button-padding-block: 0.48em;
-    --underlay-button-padding-inline: 0.95em;
+    --underlay-button-font-size: calc(1em * 0.8);
+    --underlay-button-padding-block: 0.4em;
+    --underlay-button-padding-inline: 0.85em;
   }
 
   .underlay-page-header__actions {
@@ -260,8 +260,10 @@
   }
 
   /* Level variants */
-  .underlay-page-header--level-1 .underlay-page-header__title {
-    font-size: 2em;
+  @media (min-width: 768px) {
+    .underlay-page-header--level-1 .underlay-page-header__title {
+      font-size: 2em;
+    }
   }
 
   .underlay-page-header--level-2 .underlay-page-header__title {
