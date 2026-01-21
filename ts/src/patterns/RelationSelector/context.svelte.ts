@@ -180,7 +180,6 @@ export function createRelationSelectorContext<T extends SelectableRelation>(
     resolvedItems = newResolved;
 
     // Track selection in history (if provided)
-    console.log("[RelationSelector] selectItem - tracking:", item.id, "history:", !!props.selectionHistory);
     props.selectionHistory?.track(item.id);
 
     if (isMultiSelect) {
@@ -295,7 +294,6 @@ export function createRelationSelectorContext<T extends SelectableRelation>(
     try {
       // Get recent hints from selection history (if provided)
       const recentHints = props.selectionHistory?.getRecentIds();
-      console.log("[RelationSelector] loadSuggestions - recentHints:", recentHints);
       const items = await props.suggestions({ recentHints });
       state.suggestionItems = items;
 

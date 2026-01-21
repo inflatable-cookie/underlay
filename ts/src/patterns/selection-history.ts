@@ -167,7 +167,6 @@ export function createSelectionHistory(
     // Trim to max size
     const trimmed = updated.slice(0, maxItems);
 
-    console.log("[SelectionHistory] track:", id, "storage:", storageKey, "entries:", trimmed.length);
     setData({ ...data, entries: trimmed });
   }
 
@@ -197,7 +196,6 @@ export function createSelectionHistory(
   function getRecentIds(limit?: number): string[] {
     const data = getData();
     const ids = data.entries.map((e) => e.id);
-    console.log("[SelectionHistory] getRecentIds:", storageKey, "ids:", ids);
     return limit ? ids.slice(0, limit) : ids;
   }
 
@@ -258,4 +256,87 @@ export function formatHintsParam(ids: string[]): string {
 export function parseHintsParam(param: string | null | undefined): string[] {
   if (!param || param.trim() === "") return [];
   return param.split(",").filter((id) => id.trim() !== "");
+}
+
+// ============================================================================
+// Request Options
+// ============================================================================
+
+/**
+ * Options for API requests that support server-curated suggestions.
+ *
+ * This interface is used by API client functions to request suggestion-mode
+ * responses from the server, optionally with hint IDs for prioritization.
+ *
+ * @example
+ * ```typescript
+ * import { type SuggestionRequestOptions } from '@decodelabs/underlay/patterns';
+ *
+ * async function getLevels(pathwayId: string, options?: SuggestionRequestOptions) {
+ *   const params = buildSuggestionParams(options);
+ *   const url = `/api/levels?${params}`;
+ *   // ...
+ * }
+ * ```
+ */
+export interface SuggestionRequestOptions {
+  /** Request server-curated suggestions instead of full list */
+  suggestions?: boolean;
+  /** Hint IDs (recently selected) to prioritize in results */
+  recentHints?: string[];
+}
+
+/**
+ * Build URLSearchParams for suggestion request options.
+ *
+ * Returns a URLSearchParams object with `suggestions` and `recentHints`
+ * parameters set appropriately. The result can be appended to a URL or
+ * merged with other parameters.
+ *
+ * @example
+ * ```typescript
+ * const options = { suggestions: true, recentHints: ['id1', 'id2'] };
+ * const params = buildSuggestionParams(options);
+ * const url = `/api/items?${params.toString()}`;
+ * // "/api/items?suggestions=true&recentHints=id1,id2"
+ * ```
+ */
+export function buildSuggestionParams(
+  options?: SuggestionRequestOptions
+): URLSearchParams {
+  const params = new URLSearchParams();
+
+  if (options?.suggestions) {
+    params.set("suggestions", "true");
+  }
+  if (options?.recentHints && options.recentHints.length > 0) {
+    params.set("recentHints", options.recentHints.join(","));
+  }
+
+  return params;
+}
+
+/**
+ * Append suggestion parameters to a base URL path.
+ *
+ * @example
+ * ```typescript
+ * const path = appendSuggestionParams('/api/levels', {
+ *   suggestions: true,
+ *   recentHints: ['id1', 'id2']
+ * });
+ * // "/api/levels?suggestions=true&recentHints=id1,id2"
+ * ```
+ */
+export function appendSuggestionParams(
+  basePath: string,
+  options?: SuggestionRequestOptions
+): string {
+  const params = buildSuggestionParams(options);
+  const queryString = params.toString();
+
+  if (!queryString) return basePath;
+
+  const separator = basePath.includes("?") ? "&" : "?";
+  return `${basePath}${separator}${queryString}`;
 }

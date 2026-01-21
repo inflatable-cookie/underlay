@@ -41,15 +41,16 @@ Read these documents in order for a complete understanding:
 14. **[076 - Nightfire](./076-nightfire.md)** - Block-based structured content
 15. **[080 - TypeScript Client](./080-typescript-client.md)** - HTTP client, commands
 16. **[090 - UI Kit](./090-ui-kit.md)** - Component patterns
-17. **[095 - Navigation Context](./095-navigation-context.md)** - Contextual back buttons and form redirects
-18. **[100 - Frontend (Web)](./100-frontend-web.md)** - SvelteKit setup, routing
-19. **[110 - Admin Frontend](./110-admin.md)** - Admin UI structure
-20. **[120 - Configuration](./120-configuration.md)** - Env files, validation
-21. **[130 - Testing](./130-testing.md)** - Test patterns for all layers
-22. **[140 - Local Development](./140-local-development.md)** - Running locally, debugging
-23. **[150 - CI/CD](./150-ci-cd.md)** - GitHub Actions template
-24. **[160 - Troubleshooting](./160-troubleshooting.md)** - Common issues and solutions
-25. **[170 - Checklist](./170-checklist.md)** - Completion verification
+17. **[092 - Selection Suggestions](./092-selection-suggestions.md)** - Intelligent suggestions with selection history
+18. **[095 - Navigation Context](./095-navigation-context.md)** - Contextual back buttons and form redirects
+19. **[100 - Frontend (Web)](./100-frontend-web.md)** - SvelteKit setup, routing
+20. **[110 - Admin Frontend](./110-admin.md)** - Admin UI structure
+21. **[120 - Configuration](./120-configuration.md)** - Env files, validation
+22. **[130 - Testing](./130-testing.md)** - Test patterns for all layers
+23. **[140 - Local Development](./140-local-development.md)** - Running locally, debugging
+24. **[150 - CI/CD](./150-ci-cd.md)** - GitHub Actions template
+25. **[160 - Troubleshooting](./160-troubleshooting.md)** - Common issues and solutions
+26. **[170 - Checklist](./170-checklist.md)** - Completion verification
 
 ## Code Examples
 

@@ -1704,6 +1704,7 @@ Modal-based relation picker for selecting related records. Provides a richer exp
 The RelationSelector provides:
 - **Two-tier interaction**: Quick dropdown for fast selection, full modal for search/browse
 - **Server-side search**: Debounced search with configurable suggestions
+- **Intelligent suggestions**: Track user selections and prioritize recently-used items (see [Selection Suggestions Guide](./092-selection-suggestions.md))
 - **Single and multi-select modes**: Toggle individual items or select multiple with confirmation
 - **Embedded create form**: Add new related records without leaving the modal
 - **Full accessibility**: Keyboard navigation, ARIA attributes, focus management
@@ -1880,7 +1881,8 @@ Use the `renderItem` snippet for custom item display:
 | `values` | `string[]` | `[]` | Selected value IDs (multi-select) |
 | `mode` | `"single" \| "multi"` | `"single"` | Selection mode |
 | `search` | `(query, options?) => Promise<SearchResult>` | required | Server-side search function |
-| `suggestions` | `() => Promise<T[]>` | - | Fetch suggestions/recent items |
+| `suggestions` | `(options?: SuggestionOptions) => Promise<T[]>` | - | Fetch suggestions/recent items |
+| `selectionHistory` | `SelectionHistory` | - | Track selections for intelligent suggestions ([guide](./092-selection-suggestions.md)) |
 | `label` | `string` | required | Modal title |
 | `placeholder` | `string` | `"Select..."` | Trigger button placeholder |
 | `searchPlaceholder` | `string` | `"Search..."` | Search input placeholder |
