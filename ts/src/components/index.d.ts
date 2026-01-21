@@ -27,6 +27,7 @@ declare const ToastHost: any;
 declare const DropdownMenu: any;
 declare const IconButton: any;
 declare const Tooltip: any;
+declare const TimeAgo: any;
 declare const Popover: any;
 declare const Skeleton: any;
 declare const DataTable: any;
@@ -107,6 +108,7 @@ export {
   TextArea,
   TextButton,
   TextInput,
+  TimeAgo,
   ToastHost,
   Tooltip,
   VideoPlayer

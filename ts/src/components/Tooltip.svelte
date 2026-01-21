@@ -13,6 +13,8 @@
     alignOffset?: number;
     delayDuration?: number;
     disabled?: boolean;
+    /** Use inline mode for text content (inherits font size, no fixed dimensions) */
+    inline?: boolean;
     trigger?: Snippet;
     class?: string;
   }
@@ -28,38 +30,47 @@
     alignOffset = 0,
     delayDuration = 500,
     disabled = false,
+    inline = false,
     trigger,
     class: className,
   }: Props = $props();
+
+  const triggerClass = $derived(
+    inline || trigger
+      ? `underlay-tooltip-trigger--inline ${className ?? ""}`
+      : `underlay-tooltip-trigger ${className ?? ""}`
+  );
 </script>
 
-<BitsTooltip.Root bind:open {delayDuration} {disabled}>
-  {#if showTrigger}
-    <BitsTooltip.Trigger
-      class={`underlay-tooltip-trigger ${className ?? ""}`}
-      aria-label={content}
-    >
-      {#if trigger}
-        {@render trigger()}
-      {:else}
-        {triggerLabel}
-      {/if}
-    </BitsTooltip.Trigger>
-  {/if}
+<BitsTooltip.Provider>
+  <BitsTooltip.Root bind:open {delayDuration} {disabled}>
+    {#if showTrigger}
+      <BitsTooltip.Trigger
+        class={triggerClass}
+        aria-label={content}
+      >
+        {#if trigger}
+          {@render trigger()}
+        {:else}
+          {triggerLabel}
+        {/if}
+      </BitsTooltip.Trigger>
+    {/if}
 
-  <BitsTooltip.Portal>
-    <BitsTooltip.Content
-      class="underlay-tooltip-content"
-      {side}
-      {sideOffset}
-      {align}
-      {alignOffset}
-    >
-      {content}
-      <BitsTooltip.Arrow class="underlay-tooltip-arrow" />
-    </BitsTooltip.Content>
-  </BitsTooltip.Portal>
-</BitsTooltip.Root>
+    <BitsTooltip.Portal>
+      <BitsTooltip.Content
+        class="underlay-tooltip-content"
+        {side}
+        {sideOffset}
+        {align}
+        {alignOffset}
+      >
+        {content}
+        <BitsTooltip.Arrow class="underlay-tooltip-arrow" />
+      </BitsTooltip.Content>
+    </BitsTooltip.Portal>
+  </BitsTooltip.Root>
+</BitsTooltip.Provider>
 
 <style>
   :global(.underlay-tooltip-trigger) {
@@ -71,7 +82,7 @@
     border-radius: 999px;
     border: 1px solid rgba(148, 163, 184, 0.35);
     background: rgba(255, 255, 255, 0.03);
-    color: var(--underlay-color-text, var(--underlay-color-text, #e5e7eb));
+    color: var(--underlay-color-text, #e5e7eb);
     cursor: pointer;
     font-size: 0.85rem;
     line-height: 1;
@@ -86,35 +97,42 @@
     outline-offset: 2px;
   }
 
+  :global(.underlay-tooltip-trigger--inline) {
+    display: inline;
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    width: auto;
+    height: auto;
+    border-radius: 0;
+    cursor: help;
+    color: inherit;
+    font: inherit;
+  }
+
+  :global(.underlay-tooltip-trigger--inline:focus-visible) {
+    outline: 2px solid rgba(59, 130, 246, 0.9);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
   :global(.underlay-tooltip-content) {
     z-index: 80;
     border-radius: 0.6rem;
-    border: 1px solid
-      var(
-        --underlay-color-border-subtle,
-        var(--underlay-color-border-subtle, rgba(148, 163, 184, 0.5))
-      );
-    background: var(
-      --underlay-color-bg-surface,
-      var(--underlay-color-bg-surface, #020617)
-    );
+    border: 1px solid rgba(148, 163, 184, 0.5);
+    background: #020617;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-    padding: 0.4rem 0.55rem;
+    padding: 0.4rem 0.6rem;
     max-width: min(28rem, calc(100vw - 2rem));
-    font-size: 0.85rem;
-    line-height: 1.25;
-    color: var(--underlay-color-text, var(--underlay-color-text, #e5e7eb));
+    font-size: 0.875rem;
+    line-height: 1.35;
+    color: #e5e7eb;
   }
 
   :global(.underlay-tooltip-arrow) {
-    fill: var(
-      --underlay-color-bg-surface,
-      var(--underlay-color-bg-surface, #020617)
-    );
-    stroke: var(
-      --underlay-color-border-subtle,
-      var(--underlay-color-border-subtle, rgba(148, 163, 184, 0.5))
-    );
+    fill: #020617;
+    stroke: rgba(148, 163, 184, 0.5);
     stroke-width: 1;
   }
 </style>
