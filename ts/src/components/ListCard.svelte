@@ -126,6 +126,7 @@
       {href}
       aria-label={ariaLabel ?? title}
       onclick={onclick ?? undefined}
+      {style}
     >
       {@render fullContent()}
     </a>

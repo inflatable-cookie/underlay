@@ -182,12 +182,7 @@ pub trait AuditLogRepository: Send + Sync {
 /// or implement individual traits separately.
 #[async_trait]
 pub trait AuthRepository:
-    UserRepository
-    + CredentialRepository
-    + SessionRepository
-    + AuditLogRepository
-    + Send
-    + Sync
+    UserRepository + CredentialRepository + SessionRepository + AuditLogRepository + Send + Sync
 {
 }
 

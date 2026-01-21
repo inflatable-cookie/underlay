@@ -110,9 +110,7 @@ impl InMemoryBackend {
             loop {
                 tokio::time::sleep(cleanup_interval).await;
                 // Remove entries where the window has expired
-                entries.retain(|_, entry| {
-                    entry.window_start.elapsed() < entry.window_duration
-                });
+                entries.retain(|_, entry| entry.window_start.elapsed() < entry.window_duration);
                 tracing::trace!(
                     "Rate limit cleanup complete, {} entries remaining",
                     entries.len()
@@ -270,14 +268,23 @@ mod tests {
         let backend = InMemoryBackend::new();
         let config = RateLimitConfig::new(1, Duration::from_secs(60));
 
-        let result = backend.check_and_increment("user:1", &config).await.unwrap();
+        let result = backend
+            .check_and_increment("user:1", &config)
+            .await
+            .unwrap();
         assert!(result.is_allowed());
 
-        let result = backend.check_and_increment("user:1", &config).await.unwrap();
+        let result = backend
+            .check_and_increment("user:1", &config)
+            .await
+            .unwrap();
         assert!(result.is_denied());
 
         // Different key should still be allowed
-        let result = backend.check_and_increment("user:2", &config).await.unwrap();
+        let result = backend
+            .check_and_increment("user:2", &config)
+            .await
+            .unwrap();
         assert!(result.is_allowed());
     }
 }

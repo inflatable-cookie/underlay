@@ -1,19 +1,77 @@
 <script lang="ts">
   import { Tabs as BitsTabs } from "bits-ui";
   import type { Snippet } from "svelte";
-  import { setContext } from "svelte";
+  import { setContext, onMount } from "svelte";
+  import { browser } from "$app/environment";
+  import { goto } from "$app/navigation";
+  import { page } from "$app/stores";
 
   export type TabsVariant = "pills" | "boxed";
 
   interface Props {
+    /** Current active tab value (bindable) */
     value: string;
+    /** Visual style variant */
     variant?: TabsVariant;
+    /**
+     * When provided, syncs the active tab with URL query param.
+     * The tab state will be preserved in browser history, so hitting
+     * back after navigating away will restore the previous tab.
+     * Example: historyKey="tab" stores as ?tab=details
+     */
+    historyKey?: string;
     children?: Snippet;
   }
 
-  let { value = $bindable(), variant = "pills", children }: Props = $props();
+  let { value = $bindable(), variant = "pills", historyKey, children }: Props =
+    $props();
 
   setContext("underlay-tabs-variant", () => variant);
+
+  // Track the last value we synced to URL to prevent loops
+  let lastSyncedValue = $state<string | null>(null);
+
+  // Read initial tab from URL on mount
+  onMount(() => {
+    if (!browser || !historyKey) return;
+
+    const urlValue = $page.url.searchParams.get(historyKey);
+    if (urlValue) {
+      value = urlValue;
+      lastSyncedValue = urlValue;
+    } else {
+      // Set initial value in URL without creating history entry
+      const url = new URL($page.url);
+      url.searchParams.set(historyKey, value);
+      lastSyncedValue = value;
+      goto(url.toString(), { replaceState: true, keepFocus: true, noScroll: true });
+    }
+
+    // Listen for back/forward navigation
+    const handlePopState = () => {
+      const newUrl = new URL(window.location.href);
+      const newValue = newUrl.searchParams.get(historyKey);
+      if (newValue && newValue !== value) {
+        value = newValue;
+        lastSyncedValue = newValue;
+      }
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  });
+
+  // Update URL when tab changes (without creating history entry)
+  $effect(() => {
+    if (!browser || !historyKey) return;
+    // Skip if this is the same value we just synced (prevents loops)
+    if (value === lastSyncedValue) return;
+
+    const url = new URL($page.url);
+    url.searchParams.set(historyKey, value);
+    lastSyncedValue = value;
+    goto(url.toString(), { replaceState: true, keepFocus: true, noScroll: true });
+  });
 </script>
 
 <BitsTabs.Root bind:value class={`underlay-tabs underlay-tabs--${variant}`}>

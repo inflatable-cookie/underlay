@@ -181,7 +181,11 @@ pub struct FilterField {
 
 impl FilterField {
     /// Create a new filter field
-    pub fn new(field: impl Into<String>, operator: FilterOperator, value: impl Into<String>) -> Self {
+    pub fn new(
+        field: impl Into<String>,
+        operator: FilterOperator,
+        value: impl Into<String>,
+    ) -> Self {
         Self {
             field: field.into(),
             operator,
@@ -409,12 +413,7 @@ impl WhereBuilder {
     /// Returns true if the filter was added (field exists in map)
     pub fn add_filter(&mut self, filter: &FilterField, field_map: &HashMap<&str, &str>) -> bool {
         if let Some(column) = field_map.get(filter.field.as_str()) {
-            let condition = format!(
-                "{} {} ${}",
-                column,
-                filter.operator.sql(),
-                self.param_index
-            );
+            let condition = format!("{} {} ${}", column, filter.operator.sql(), self.param_index);
             self.conditions.push(condition);
             self.values.push(filter.value.clone());
             self.param_index += 1;
@@ -480,9 +479,15 @@ mod tests {
     #[test]
     fn test_sort_direction_parse() {
         assert_eq!("asc".parse::<SortDirection>().unwrap(), SortDirection::Asc);
-        assert_eq!("desc".parse::<SortDirection>().unwrap(), SortDirection::Desc);
+        assert_eq!(
+            "desc".parse::<SortDirection>().unwrap(),
+            SortDirection::Desc
+        );
         assert_eq!("ASC".parse::<SortDirection>().unwrap(), SortDirection::Asc);
-        assert_eq!("DESC".parse::<SortDirection>().unwrap(), SortDirection::Desc);
+        assert_eq!(
+            "DESC".parse::<SortDirection>().unwrap(),
+            SortDirection::Desc
+        );
         assert!("invalid".parse::<SortDirection>().is_err());
     }
 
@@ -524,8 +529,14 @@ mod tests {
     #[test]
     fn test_filter_operator_parse() {
         assert_eq!("eq".parse::<FilterOperator>().unwrap(), FilterOperator::Eq);
-        assert_eq!("gte".parse::<FilterOperator>().unwrap(), FilterOperator::Gte);
-        assert_eq!("like".parse::<FilterOperator>().unwrap(), FilterOperator::Like);
+        assert_eq!(
+            "gte".parse::<FilterOperator>().unwrap(),
+            FilterOperator::Gte
+        );
+        assert_eq!(
+            "like".parse::<FilterOperator>().unwrap(),
+            FilterOperator::Like
+        );
     }
 
     #[test]

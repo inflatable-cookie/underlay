@@ -44,6 +44,10 @@ export type CspSource = string;
  *
  * All array properties are additive to sensible defaults.
  * Set to `false` to disable that directive entirely.
+ *
+ * Note: In development with Vite, CSP headers should be skipped entirely
+ * since Vite's HMR requires inline scripts that conflict with nonce-based CSP.
+ * The CSP spec ignores 'unsafe-inline' when a nonce is present.
  */
 export interface CspConfig {
   /**

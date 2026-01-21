@@ -20,8 +20,6 @@
     /** Banner variant (warning, error, info) */
     bannerVariant?: BannerVariant;
 
-    /** Primary actions (e.g. "Add") shown next to back link */
-    primaryActions?: Snippet;
     actions?: Snippet;
     children?: Snippet;
   }
@@ -35,7 +33,6 @@
     backIsContextual = false,
     bannerMessage,
     bannerVariant = "warning",
-    primaryActions,
     actions,
     children
   }: Props = $props();
@@ -93,9 +90,6 @@
               <span class="underlay-page-header__context-dot" aria-hidden="true"></span>
             {/if}
           </a>
-        {/if}
-        {#if primaryActions}
-          <div class="underlay-page-header__primary-actions">{@render primaryActions?.()}</div>
         {/if}
         {#if actions}
           <div class="underlay-page-header__actions">{@render actions?.()}</div>
@@ -217,23 +211,18 @@
     flex-wrap: wrap;
   }
 
-  .underlay-page-header__primary-actions {
+  .underlay-page-header__actions {
     display: inline-flex;
     align-items: center;
     gap: var(--underlay-space-2, 0.5rem);
     flex-wrap: wrap;
   }
 
-  .underlay-page-header__primary-actions :global(.underlay-button) {
+  /* Smaller buttons in header actions (doesn't affect TextButton) */
+  .underlay-page-header__actions :global(.underlay-button) {
     --underlay-button-font-size: calc(1em * 0.8);
     --underlay-button-padding-block: 0.4em;
     --underlay-button-padding-inline: 0.85em;
-  }
-
-  .underlay-page-header__actions {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--underlay-space-2, 0.5rem);
   }
 
   .underlay-page-header__meta {

@@ -5,8 +5,22 @@ use regex::Regex;
 
 /// List of reserved slugs that could conflict with routes.
 pub const RESERVED_SLUGS: &[&str] = &[
-    "new", "edit", "delete", "create", "update", "list", "admin", "api", "auth", "login", "logout",
-    "register", "settings", "profile", "dashboard", "search",
+    "new",
+    "edit",
+    "delete",
+    "create",
+    "update",
+    "list",
+    "admin",
+    "api",
+    "auth",
+    "login",
+    "logout",
+    "register",
+    "settings",
+    "profile",
+    "dashboard",
+    "search",
 ];
 
 /// Regex pattern for valid slugs.
