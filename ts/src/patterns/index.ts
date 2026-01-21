@@ -32,5 +32,21 @@ export { default as Banner } from "./Banner.svelte";
 export { default as ReorderableList } from "./ReorderableList.svelte";
 export { default as SlugField } from "./SlugField.svelte";
 
+// RelationSelector pattern
+export {
+  RelationSelector,
+  RelationSelectorTrigger,
+  RelationSelectorModal,
+  createRelationSelectorContext,
+  useRelationSelector,
+  type RelationSelectorContext,
+  type SelectableRelation,
+  type SearchResult,
+  type RelationSearchFn,
+  type RelationSuggestionsFn,
+  type RelationSelectorProps,
+  type RelationSelectorState
+} from "./RelationSelector/index.js";
+
 // Explicit export avoids dev-time prebundle staleness.
 export { useToasts } from "./useToasts";

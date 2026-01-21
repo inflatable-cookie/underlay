@@ -2,7 +2,184 @@
 
 > **Reference Implementation**: This guide includes patterns from a production application built with Underlay. These serve as working examples of best practices.
 
-This document covers setting up the database layer using SQLx, including connection pool management and migration handling.
+This document covers setting up the database layer using SQLx, including connection pool management, migration handling, and the docs-first schema development workflow.
+
+## Docs-First Schema Development
+
+**Schema documentation is the source of truth for design decisions.** Migrations are the mechanical implementation of that design.
+
+### Why Docs-First?
+
+The traditional approach—write a migration, then update docs—leads to:
+- Documentation that's perpetually out of date
+- Schema changes reviewed at the SQL level, not the design level
+- Difficulty understanding the intended state vs. the current state
+- No clear reference when something goes wrong
+
+The docs-first approach inverts this:
+1. **Design in documentation**: Describe the intended schema in human-readable docs
+2. **Review the design**: Catch issues before writing SQL
+3. **Implement mechanically**: The migration becomes a translation of reviewed docs
+4. **Stay synchronized**: Docs are always current because they're written first
+
+### The Docs-First Workflow
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  1. UPDATE DOCUMENTATION                                        │
+│     Edit table docs with intended columns, constraints, indexes │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  2. REVIEW THE DESIGN                                           │
+│     Verify constraints, relationships, and naming are correct   │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  3. WRITE THE MIGRATION                                         │
+│     Translate documentation into SQL                            │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  4. VERIFY ALIGNMENT                                            │
+│     Confirm migration matches documentation exactly             │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  5. TEST & DEPLOY                                               │
+│     Run migration on dev, staging, then production              │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Documentation Structure
+
+Organize schema documentation by schema and table:
+
+```
+docs/database/
+├── 000-index.md              # Schema overview and conventions
+├── 001-schema-issues.md      # Known issues and planned fixes
+├── auth/
+│   ├── users.md
+│   ├── credentials.md
+│   └── sessions.md
+├── content/
+│   ├── articles.md
+│   └── media.md
+└── learning/
+    ├── courses.md
+    └── lessons.md
+```
+
+### Table Documentation Template
+
+Each table document should include:
+
+```markdown
+# schema.table_name
+
+Brief description of what this table stores.
+
+## Columns
+
+| Column | Type | Nullable | Default | Description |
+|--------|------|----------|---------|-------------|
+| `id` | `uuid` | NO | - | Primary key (UUIDv7) |
+| `name` | `text` | NO | - | Display name |
+| `created_at` | `timestamptz` | NO | `now()` | Creation timestamp |
+
+## Primary Key
+
+\`\`\`sql
+PRIMARY KEY (id)
+\`\`\`
+
+## Unique Constraints
+
+\`\`\`sql
+CONSTRAINT table_name_unique UNIQUE (name)
+\`\`\`
+
+## Check Constraints
+
+| Column | Constraint |
+|--------|------------|
+| `name` | `char_length(name) <= 100` |
+
+## Foreign Keys
+
+| Column | References | On Delete |
+|--------|------------|-----------|
+| `user_id` | `auth.users(id)` | `CASCADE` |
+
+## Indexes
+
+\`\`\`sql
+CREATE INDEX idx_table_user ON schema.table (user_id);
+\`\`\`
+
+## Soft Delete
+
+✅ Supported via `deleted_at` and `delete_batch_id`.
+
+## Notes
+
+- Important behavioral notes
+- Edge cases
+- Migration considerations
+```
+
+### Example: Adding a New Column
+
+**Step 1: Update documentation first**
+
+Edit `docs/database/content/articles.md`:
+
+```diff
+ ## Columns
+ 
+ | Column | Type | Nullable | Default | Description |
+ |--------|------|----------|---------|-------------|
+ | `id` | `uuid` | NO | - | Primary key |
+ | `title` | `text` | NO | - | Article title |
++| `subtitle` | `text` | YES | - | Optional subtitle |
+ | `created_at` | `timestamptz` | NO | `now()` | Creation timestamp |
+```
+
+**Step 2: Review the design**
+
+- Is `subtitle` the right name?
+- Should it be nullable or have a default?
+- Are there length constraints needed?
+
+**Step 3: Write migration**
+
+```sql
+-- migrations/202601211200__add_article_subtitle.sql
+ALTER TABLE content.articles
+ADD COLUMN subtitle TEXT NULL
+CHECK (subtitle IS NULL OR char_length(subtitle) <= 200);
+```
+
+**Step 4: Verify alignment**
+
+Confirm the migration matches what's documented.
+
+### Checklist for Schema Changes
+
+Before committing any schema change:
+
+- [ ] Documentation updated in `docs/database/` FIRST
+- [ ] Design reviewed (constraints, indexes, relationships)
+- [ ] Migration written to match documentation
+- [ ] Migration tested on local dev database
+- [ ] Migration verified with `cargo sqlx prepare` (if applicable)
+- [ ] Documentation and migration reviewed together
+- [ ] Applied to staging, then production
 
 ## Database Crate Structure
 
@@ -553,12 +730,15 @@ let query = format!(
 
 Before committing a migration:
 
+- [ ] Documentation updated in `docs/database/` FIRST
+- [ ] Design reviewed (constraints, indexes, relationships)
 - [ ] No `SET search_path` statements
 - [ ] All table references include schema prefix (e.g., `auth.users`)
 - [ ] All type references include schema prefix (e.g., `auth.user_status`)
 - [ ] All index definitions use qualified table names
 - [ ] All foreign keys use qualified table names
 - [ ] All cross-schema references are explicit
+- [ ] Migration matches documentation exactly
 
 ### Benefits of Schema Qualification
 
@@ -640,6 +820,7 @@ description JSONB,        -- Nightfire: rich description with paragraphs, headin
 - **[076-nightfire.md](./076-nightfire.md)** - Nightfire structured content system
 
 **Key Topics:**
+- **Docs-first workflow**: Document schema changes before writing migrations
 - Migration best practices: Never use `SET search_path`
 - Schema organization: Group related tables (auth, content, etc.)
 - Dev seeds pattern: Separate test data from production migrations
@@ -647,13 +828,16 @@ description JSONB,        -- Nightfire: rich description with paragraphs, headin
 - Test database setup: Clean database for integration tests
 
 **Migration Checklist:**
-1. Create schema (`CREATE SCHEMA IF NOT EXISTS ...`)
-2. Fully qualify all object names
-3. Add indexes for foreign keys and query patterns
-4. Use `gen_random_uuid()` for UUIDs (Postgres 13+)
-5. Add constraints (NOT NULL, CHECK, UNIQUE)
-6. Test migration in clean database
-7. Test rollback if applicable
+1. Update documentation in `docs/database/` FIRST
+2. Review the design in documentation
+3. Create schema (`CREATE SCHEMA IF NOT EXISTS ...`)
+4. Fully qualify all object names
+5. Add indexes for foreign keys and query patterns
+6. Use `gen_random_uuid()` for UUIDs (Postgres 13+)
+7. Add constraints (NOT NULL, CHECK, UNIQUE)
+8. Verify migration matches documentation
+9. Test migration in clean database
+10. Test rollback if applicable
 
 ## Next Steps
 

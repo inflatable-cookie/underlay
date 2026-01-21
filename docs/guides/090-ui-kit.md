@@ -1695,6 +1695,284 @@ Body: { "ids": ["section-1", "section-3", "section-2"] }
 Response: { "reorderedCount": 3 }
 ```
 
+### RelationSelector
+
+Modal-based relation picker for selecting related records. Provides a richer experience than simple `<select>` dropdowns for relation fields with large datasets.
+
+#### Overview
+
+The RelationSelector provides:
+- **Two-tier interaction**: Quick dropdown for fast selection, full modal for search/browse
+- **Server-side search**: Debounced search with configurable suggestions
+- **Single and multi-select modes**: Toggle individual items or select multiple with confirmation
+- **Embedded create form**: Add new related records without leaving the modal
+- **Full accessibility**: Keyboard navigation, ARIA attributes, focus management
+
+```
+┌─────────────────────────────────────┐
+│  [Selected: Applied Skills    ▼]   │  ← Trigger button
+└─────────────────────────────────────┘
+                 │
+                 ▼ (click)
+┌─────────────────────────────────────┐
+│  Recent                             │  ← Quick dropdown (tier 1)
+│  ┌───────────────────────────────┐  │
+│  │ Applied Skills            ✓   │  │
+│  │ Strategic Professional        │  │
+│  │ Operational                   │  │
+│  └───────────────────────────────┘  │
+│  ┌───────────────────────────────┐  │
+│  │ 🔍 Search all levels...       │  │  ← Opens full modal
+│  └───────────────────────────────┘  │
+└─────────────────────────────────────┘
+```
+
+#### Basic Single-Select
+
+```svelte
+<script lang="ts">
+  import { RelationSelector, type SelectableRelation } from "@decodelabs/underlay/patterns";
+
+  let pathwayId = $state<string | null>(null);
+
+  // Server-side search function
+  async function searchPathways(query: string): Promise<{ items: SelectableRelation[]; total: number }> {
+    const response = await fetch(`/api/pathways/search?q=${encodeURIComponent(query)}`);
+    return response.json();
+  }
+
+  // Optional: fetch recent/suggested items
+  async function getSuggestions(): Promise<SelectableRelation[]> {
+    const response = await fetch('/api/pathways/recent');
+    return response.json();
+  }
+</script>
+
+<Field label="Pathway" forId="pathway">
+  <RelationSelector
+    label="Select Pathway"
+    bind:value={pathwayId}
+    search={searchPathways}
+    suggestions={getSuggestions}
+    suggestionsLabel="Recent"
+    placeholder="Choose a pathway..."
+  />
+</Field>
+```
+
+#### Multi-Select with Pills
+
+```svelte
+<script lang="ts">
+  import { RelationSelector } from "@decodelabs/underlay/patterns";
+
+  let moduleIds = $state<string[]>([]);
+</script>
+
+<Field label="Modules" forId="modules">
+  <RelationSelector
+    label="Select Modules"
+    mode="multi"
+    bind:values={moduleIds}
+    search={searchModules}
+    placeholder="Choose modules..."
+  />
+</Field>
+```
+
+Multi-select mode shows:
+- Pills for selected items (up to 3 visible, then "+N more")
+- Checkboxes in dropdown and modal
+- Confirm/Cancel buttons in modal
+
+#### Dependent Fields
+
+Handle field dependencies (e.g., Level depends on Pathway) at the form level:
+
+```svelte
+<script lang="ts">
+  let pathwayId = $state<string | null>(null);
+  let levelId = $state<string | null>(null);
+
+  // Clear dependent field when parent changes
+  $effect(() => {
+    if (!pathwayId) {
+      levelId = null;
+    }
+  });
+
+  // Search function scoped to selected pathway
+  const searchLevels = (query: string) =>
+    api.searchLevels(pathwayId!, query);
+</script>
+
+<Field label="Pathway" required>
+  <RelationSelector
+    label="Select Pathway"
+    bind:value={pathwayId}
+    search={searchPathways}
+  />
+</Field>
+
+<Field label="Level">
+  <RelationSelector
+    label="Select Level"
+    bind:value={levelId}
+    search={searchLevels}
+    disabled={!pathwayId}
+    placeholder={!pathwayId ? "Select a pathway first" : "Select a level..."}
+  />
+</Field>
+```
+
+#### With Create Form
+
+Embed a form to create new items without leaving the modal:
+
+```svelte
+<RelationSelector
+  label="Select Level"
+  bind:value={levelId}
+  search={searchLevels}
+  allowCreate
+  createLabel="Add new level"
+>
+  {#snippet createForm(onSuccess, onCancel)}
+    <LevelQuickCreateForm
+      pathwayId={pathwayId}
+      onSuccess={(level) => onSuccess(level)}
+      onCancel={onCancel}
+    />
+  {/snippet}
+</RelationSelector>
+```
+
+The create form:
+- Appears as a collapsible section in the modal
+- Calls `onSuccess(item)` when created - item is auto-selected
+- Calls `onCancel()` to close without creating
+
+#### Custom Item Rendering
+
+Use the `renderItem` snippet for custom item display:
+
+```svelte
+<RelationSelector
+  label="Select Module"
+  bind:value={moduleId}
+  search={searchModules}
+>
+  {#snippet renderItem(item, selected)}
+    <div class="module-item" class:selected>
+      <span class="code">{item.metadata?.code}</span>
+      <span class="title">{item.label}</span>
+      <span class="pathway">{item.metadata?.pathwayName}</span>
+    </div>
+  {/snippet}
+</RelationSelector>
+```
+
+#### Props Reference
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `value` | `string \| null` | `null` | Selected value ID (single-select) |
+| `values` | `string[]` | `[]` | Selected value IDs (multi-select) |
+| `mode` | `"single" \| "multi"` | `"single"` | Selection mode |
+| `search` | `(query, options?) => Promise<SearchResult>` | required | Server-side search function |
+| `suggestions` | `() => Promise<T[]>` | - | Fetch suggestions/recent items |
+| `label` | `string` | required | Modal title |
+| `placeholder` | `string` | `"Select..."` | Trigger button placeholder |
+| `searchPlaceholder` | `string` | `"Search..."` | Search input placeholder |
+| `emptyMessage` | `string` | `"No results found"` | Empty search results message |
+| `suggestionsLabel` | `string` | `"Suggestions"` | Label for suggestions section |
+| `searchAllLabel` | `string` | `"Search all..."` | Label for search button in dropdown |
+| `disabled` | `boolean` | `false` | Disable the selector |
+| `required` | `boolean` | `false` | Mark as required field |
+| `error` | `string` | - | Error message to display |
+| `quickSelect` | `boolean` | `true` if suggestions provided | Enable quick-select dropdown |
+| `quickSelectLimit` | `number` | `5` | Max items in quick dropdown |
+| `allowCreate` | `boolean` | `false` | Show "Add new" button |
+| `createLabel` | `string` | `"Add new"` | Create button label |
+| `onCreate` | `(item: T) => void` | - | Called when item created |
+
+#### Callbacks
+
+| Callback | Type | Description |
+|----------|------|-------------|
+| `onchange` | `(value: string \| null) => void` | Single-select value change |
+| `onchangeMulti` | `(values: string[]) => void` | Multi-select values change |
+| `onCreate` | `(item: T) => void` | New item created |
+
+#### Snippets
+
+| Snippet | Parameters | Description |
+|---------|------------|-------------|
+| `renderItem` | `(item: T, selected: boolean)` | Custom item rendering |
+| `renderTrigger` | `(selected: T \| T[] \| null, open: () => void)` | Custom trigger button |
+| `renderSelectedPill` | `(item: T, remove: () => void)` | Custom pill rendering (multi-select) |
+| `createForm` | `(onSuccess: (item: T) => void, onCancel: () => void)` | Embedded create form |
+
+#### Types
+
+```typescript
+interface SelectableRelation {
+  id: string;
+  label: string;
+  description?: string | null;
+  disabled?: boolean;
+  metadata?: Record<string, unknown>;
+}
+
+interface SearchResult<T> {
+  items: T[];
+  total: number;
+}
+
+type RelationSearchFn<T> = (
+  query: string,
+  options?: { limit?: number; offset?: number }
+) => Promise<SearchResult<T>>;
+
+type RelationSuggestionsFn<T> = () => Promise<T[]>;
+```
+
+#### Backend Requirements
+
+Search endpoints should follow this pattern:
+
+```
+GET /v1/admin/learning/levels/search?q=applied&pathwayId=xxx&limit=20&offset=0
+```
+
+Response format:
+
+```json
+{
+  "items": [
+    { "id": "level-1", "label": "Applied Skills", "description": "3 modules" }
+  ],
+  "total": 15
+}
+```
+
+#### Keyboard Navigation
+
+| Key | Action |
+|-----|--------|
+| `Tab` | Move through interactive elements |
+| `Enter`/`Space` | Select/toggle item, activate buttons |
+| `Arrow Up/Down` | Navigate through list items |
+| `Escape` | Close dropdown/modal |
+
+#### Accessibility
+
+- Trigger has `role="combobox"` with `aria-expanded` and `aria-haspopup`
+- Lists have `role="listbox"` with `role="option"` items
+- `aria-selected` indicates selection state
+- Focus is managed: search input focused on modal open
+- Error retry button for network failures
+
 ---
 
 ## Design Tokens

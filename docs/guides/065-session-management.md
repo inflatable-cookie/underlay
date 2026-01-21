@@ -1031,6 +1031,122 @@ export const handle: Handle = async ({ event, resolve }) => {
 
 ---
 
+## Layout-Level Session Validation (Critical)
+
+**Server hooks check token *existence*, not token *validity*.** This creates a gap where users with invalid tokens (expired, fingerprint mismatch, revoked) can access pages that don't make API calls.
+
+### The Problem
+
+Consider this scenario:
+
+1. User logs in successfully, tokens are set in cookies
+2. User's session becomes invalid (admin revokes it, token fingerprint changes, etc.)
+3. Hooks see `accessToken` exists → `isAuthenticated = true`
+4. User navigates to a page with no API calls in its load function
+5. Page renders because `isAuthenticated` is true, but the session is actually invalid
+
+This happens because hooks only decode the JWT to check expiration—they don't make an API call to verify the session is still valid on the server.
+
+### The Solution
+
+**Layout load functions should validate sessions by making an API call** (e.g., fetching the current user). This catches invalid tokens early and redirects to login.
+
+```typescript
+// src/routes/(app)/+layout.server.ts
+import type { LayoutServerLoad } from "./$types";
+import { redirect } from "@sveltejs/kit";
+import { authCommands } from "my-api-client";
+
+export const load: LayoutServerLoad = async ({ locals, url, fetch }) => {
+  // Skip validation for login page
+  if (url.pathname === "/login") {
+    return { currentUser: null };
+  }
+
+  // Require authentication
+  if (!locals.isAuthenticated || !locals.authToken) {
+    throw redirect(302, "/login");
+  }
+
+  let currentUser = null;
+
+  try {
+    // Validate session by fetching current user
+    currentUser = await authCommands.me(fetch, locals.authToken);
+  } catch (e) {
+    // Check if this is an auth error (401, token mismatch, etc.)
+    const isAuthError =
+      (e instanceof Error && "status" in e && (e as { status: number }).status === 401) ||
+      (e instanceof Error && "code" in e && String((e as { code: string }).code).startsWith("auth."));
+
+    if (isAuthError) {
+      // Preserve the URL they were trying to access
+      const returnUrl = encodeURIComponent(url.pathname + url.search);
+      throw redirect(302, `/login?returnTo=${returnUrl}`);
+    }
+
+    // For non-auth errors (network issues), continue with null user
+    // The page can handle missing user data appropriately
+    currentUser = null;
+  }
+
+  return {
+    isAuthenticated: locals.isAuthenticated,
+    authToken: locals.authToken,
+    currentUser,
+  };
+};
+```
+
+### Clearing Stale Cookies on Login
+
+When users are redirected to login due to auth errors, clear the stale cookies:
+
+```typescript
+// src/routes/(auth)/login/+page.server.ts
+import type { PageServerLoad } from "./$types";
+import { redirect } from "@sveltejs/kit";
+import { clearAuthTokens } from "$lib/utils/auth-tokens";
+
+export const load: PageServerLoad = async ({ locals, url, cookies }) => {
+  // If redirected here due to auth error (returnTo param exists), clear stale tokens
+  const hasReturnTo = url.searchParams.has("returnTo");
+
+  if (hasReturnTo) {
+    // Clear any stale auth cookies - user was redirected due to auth failure
+    clearAuthTokens(cookies);
+  } else if (locals.isAuthenticated) {
+    // Only redirect authenticated users if they navigated here directly
+    // (not if they were redirected due to auth error)
+    throw redirect(302, "/");
+  }
+
+  return {};
+};
+```
+
+### Why This Matters
+
+| Scenario | Hooks Only | Layout Validation |
+|----------|-----------|-------------------|
+| Valid token | Works | Works |
+| Expired token (within refresh window) | Refreshes | Refreshes |
+| Token with wrong fingerprint | Appears logged in, API calls fail | Redirects to login |
+| Revoked session | Appears logged in, API calls fail | Redirects to login |
+| Server session data changed | Appears logged in, stale data | Gets fresh data |
+
+### Best Practices
+
+1. **Always validate in the root authenticated layout** (`(app)/+layout.server.ts`)
+2. **Use an API call that validates the session** (e.g., `authCommands.me()`)
+3. **Distinguish auth errors from network errors** — only redirect on auth failures
+4. **Preserve the return URL** for better UX after re-authentication
+5. **Clear cookies when redirecting to login** via the `returnTo` query param pattern
+
+This pattern ensures users with invalid sessions are redirected to login immediately, rather than seeing confusing partial access or unexpected 401 errors deep in the application.
+
+---
+
 ## Cookie Utilities
 
 Underlay provides `createAuthCookieHelpers()` to generate app-specific cookie utilities with consistent configuration.
