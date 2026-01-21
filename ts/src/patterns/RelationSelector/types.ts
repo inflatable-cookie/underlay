@@ -1,4 +1,5 @@
 import type { Snippet } from "svelte";
+import type { SelectionHistory } from "../selection-history.js";
 
 /**
  * Base interface for any selectable relation item.
@@ -40,10 +41,22 @@ export type RelationSearchFn<T extends SelectableRelation> = (
 ) => Promise<SearchResult<T>>;
 
 /**
+ * Options passed to the suggestions function.
+ */
+export interface SuggestionOptions {
+  /** Recent selection IDs as hints for server-side ordering */
+  recentHints?: string[];
+}
+
+/**
  * Function signature for fetching suggestions.
  * Called once when the selector opens, not on every keystroke.
+ *
+ * @param options Optional hints for server-side suggestion ordering
  */
-export type RelationSuggestionsFn<T extends SelectableRelation> = () => Promise<T[]>;
+export type RelationSuggestionsFn<T extends SelectableRelation> = (
+  options?: SuggestionOptions
+) => Promise<T[]>;
 
 /**
  * Props for the RelationSelector component.
@@ -70,6 +83,13 @@ export interface RelationSelectorProps<T extends SelectableRelation> {
   search: RelationSearchFn<T>;
   /** Optional function to fetch suggestions/recent items */
   suggestions?: RelationSuggestionsFn<T>;
+  /**
+   * Optional selection history tracker for tracking recent selections.
+   * When provided:
+   * - Selections are automatically tracked
+   * - Recent IDs are passed as hints to the suggestions function
+   */
+  selectionHistory?: SelectionHistory;
 
   // === Labels & Text ===
   /** Modal title, e.g., "Select Level" */

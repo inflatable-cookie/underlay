@@ -1,0 +1,10 @@
+[package]
+name = "underlay-suggestions"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Server-side suggestion query building utilities for RelationSelector"
+
+[dependencies]
+serde = { workspace = true }
+serde_urlencoded = "0.7"

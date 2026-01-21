@@ -3876,6 +3876,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "underlay-suggestions"
+version = "0.0.1"
+dependencies = [
+ "serde",
+ "serde_urlencoded",
+]
+
+[[package]]
 name = "underlay-testing"
 version = "0.0.1"
 dependencies = [

@@ -11,6 +11,7 @@ export * from "./i18n";
 export * from "./optimistic";
 export * from "./banner";
 export * from "./slugify";
+export * from "./selection-history";
 
 // Reorder utilities
 export {
@@ -44,6 +45,7 @@ export {
   type SearchResult,
   type RelationSearchFn,
   type RelationSuggestionsFn,
+  type SuggestionOptions,
   type RelationSelectorProps,
   type RelationSelectorState
 } from "./RelationSelector/index.js";

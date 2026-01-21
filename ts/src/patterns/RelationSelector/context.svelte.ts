@@ -179,6 +179,10 @@ export function createRelationSelectorContext<T extends SelectableRelation>(
     newResolved.set(item.id, item);
     resolvedItems = newResolved;
 
+    // Track selection in history (if provided)
+    console.log("[RelationSelector] selectItem - tracking:", item.id, "history:", !!props.selectionHistory);
+    props.selectionHistory?.track(item.id);
+
     if (isMultiSelect) {
       // Multi-select: toggle
       const currentValues = props.values ?? [];
@@ -234,6 +238,10 @@ export function createRelationSelectorContext<T extends SelectableRelation>(
     closeCreateForm();
     // Notify parent
     props.onCreate?.(item);
+    // Refresh suggestions so the new item appears in the list
+    if (props.suggestions) {
+      void loadSuggestions();
+    }
   }
 
   async function performSearch(query: string): Promise<void> {
@@ -285,7 +293,10 @@ export function createRelationSelectorContext<T extends SelectableRelation>(
     state.isSuggestionsLoading = true;
 
     try {
-      const items = await props.suggestions();
+      // Get recent hints from selection history (if provided)
+      const recentHints = props.selectionHistory?.getRecentIds();
+      console.log("[RelationSelector] loadSuggestions - recentHints:", recentHints);
+      const items = await props.suggestions({ recentHints });
       state.suggestionItems = items;
 
       // Store items for reference - reassign map to trigger reactivity

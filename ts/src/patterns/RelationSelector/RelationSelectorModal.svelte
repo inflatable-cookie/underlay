@@ -194,10 +194,14 @@
 
       <div class="relation-selector-modal__header">
         <BitsDialog.Title class="relation-selector-modal__title">
-          {ctx.props.label}
+          {#if ctx.state.createFormOpen}
+            {ctx.props.createLabel ?? "Add new"}
+          {:else}
+            {ctx.props.label}
+          {/if}
         </BitsDialog.Title>
 
-        {#if showClearButton}
+        {#if showClearButton && !ctx.state.createFormOpen}
           <button
             type="button"
             class="relation-selector-modal__clear-btn"
@@ -209,148 +213,154 @@
         {/if}
       </div>
 
-      <div class="relation-selector-modal__search">
-        <Search size="1.1em" class="relation-selector-modal__search-icon" />
-        <input
-          bind:this={searchInputRef}
-          type="text"
-          class="relation-selector-modal__search-input"
-          placeholder={ctx.props.searchPlaceholder ?? "Search..."}
-          value={ctx.state.searchQuery}
-          oninput={handleSearchInput}
-          onkeydown={handleSearchKeyDown}
-          aria-controls="relation-selector-list"
-          aria-autocomplete="list"
-        />
-        {#if showLoading}
-          <Loader size="1.1em" class="relation-selector-modal__search-loader" />
-        {/if}
-      </div>
+      {#if !ctx.state.createFormOpen}
+        <div class="relation-selector-modal__search">
+          <Search size="1.1em" class="relation-selector-modal__search-icon" />
+          <input
+            bind:this={searchInputRef}
+            type="text"
+            class="relation-selector-modal__search-input"
+            placeholder={ctx.props.searchPlaceholder ?? "Search..."}
+            value={ctx.state.searchQuery}
+            oninput={handleSearchInput}
+            onkeydown={handleSearchKeyDown}
+            aria-controls="relation-selector-list"
+            aria-autocomplete="list"
+          />
+          {#if showLoading}
+            <Loader size="1.1em" class="relation-selector-modal__search-loader" />
+          {/if}
+        </div>
+      {/if}
 
       <div class="relation-selector-modal__body">
-        {#if ctx.state.searchError}
-          <div class="relation-selector-modal__error">
-            <span>{ctx.state.searchError}</span>
-            <button
-              type="button"
-              class="relation-selector-modal__error-retry"
-              onclick={() => ctx.retrySearch()}
-            >
-              Retry
-            </button>
-          </div>
-        {/if}
-
-        {#if showSuggestions}
-          <div class="relation-selector-modal__section">
-            <div class="relation-selector-modal__section-label">
-              {ctx.props.suggestionsLabel ?? "Suggestions"}
+        {#if ctx.state.createFormOpen}
+          <!-- Create form mode: only show the create form -->
+          {#if ctx.props.createForm}
+            <div class="relation-selector-modal__create-form">
+              {@render ctx.props.createForm(handleCreateSuccess, handleCreateCancel)}
             </div>
-            <ul
-              bind:this={listRef}
-              class="relation-selector-modal__list"
-              role="listbox"
-              id="relation-selector-list"
-              onkeydown={(e) => handleListKeyDown(e, ctx.state.suggestionItems)}
-            >
-              {#each ctx.state.suggestionItems as item, index (item.id)}
-                {@const selected = ctx.isSelected(item.id)}
-                <li
-                  class="relation-selector-modal__item"
-                  class:relation-selector-modal__item--selected={selected}
-                  class:relation-selector-modal__item--disabled={item.disabled}
-                  class:relation-selector-modal__item--focused={focusedIndex === index}
-                  role="option"
-                  aria-selected={selected}
-                  onclick={() => handleItemClick(item)}
-                  tabindex={item.disabled ? -1 : 0}
-                >
-                  {#if ctx.props.renderItem}
-                    {@render ctx.props.renderItem(item as never, selected)}
-                  {:else}
-                    <div class="relation-selector-modal__item-content">
-                      <span class="relation-selector-modal__item-label">{item.label}</span>
-                      {#if item.description}
-                        <span class="relation-selector-modal__item-description">
-                          {item.description}
-                        </span>
-                      {/if}
-                    </div>
-                    {#if selected}
-                      <Check size="1em" class="relation-selector-modal__item-check" />
-                    {/if}
-                  {/if}
-                </li>
-              {/each}
-            </ul>
-          </div>
-        {/if}
-
-        {#if showSearchResults}
-          <div class="relation-selector-modal__section">
-            <div class="relation-selector-modal__section-label">
-              Results ({ctx.state.searchTotal})
+          {/if}
+        {:else}
+          <!-- Selection mode: show search results, suggestions, etc. -->
+          {#if ctx.state.searchError}
+            <div class="relation-selector-modal__error">
+              <span>{ctx.state.searchError}</span>
+              <button
+                type="button"
+                class="relation-selector-modal__error-retry"
+                onclick={() => ctx.retrySearch()}
+              >
+                Retry
+              </button>
             </div>
-            <ul
-              bind:this={listRef}
-              class="relation-selector-modal__list"
-              role="listbox"
-              id="relation-selector-list"
-              onkeydown={(e) => handleListKeyDown(e, ctx.state.searchResults)}
-            >
-              {#each ctx.state.searchResults as item, index (item.id)}
-                {@const selected = ctx.isSelected(item.id)}
-                <li
-                  class="relation-selector-modal__item"
-                  class:relation-selector-modal__item--selected={selected}
-                  class:relation-selector-modal__item--disabled={item.disabled}
-                  class:relation-selector-modal__item--focused={focusedIndex === index}
-                  role="option"
-                  aria-selected={selected}
-                  onclick={() => handleItemClick(item)}
-                  tabindex={item.disabled ? -1 : 0}
-                >
-                  {#if ctx.props.renderItem}
-                    {@render ctx.props.renderItem(item as never, selected)}
-                  {:else}
-                    <div class="relation-selector-modal__item-content">
-                      <span class="relation-selector-modal__item-label">{item.label}</span>
-                      {#if item.description}
-                        <span class="relation-selector-modal__item-description">
-                          {item.description}
-                        </span>
-                      {/if}
-                    </div>
-                    {#if selected}
-                      <Check size="1em" class="relation-selector-modal__item-check" />
-                    {/if}
-                  {/if}
-                </li>
-              {/each}
-            </ul>
-          </div>
-        {/if}
+          {/if}
 
-        {#if showEmpty}
-          <div class="relation-selector-modal__empty">
-            {ctx.props.emptyMessage ?? "No results found"}
-          </div>
-        {/if}
-
-        {#if showLoading && !showSuggestions && !showSearchResults}
-          <div class="relation-selector-modal__loading">
-            <Loader size="1.5em" class="relation-selector-modal__loading-spinner" />
-            <span>Loading...</span>
-          </div>
-        {/if}
-
-        {#if ctx.props.allowCreate && ctx.props.createForm}
-          <div class="relation-selector-modal__create">
-            {#if ctx.state.createFormOpen}
-              <div class="relation-selector-modal__create-form">
-                {@render ctx.props.createForm(handleCreateSuccess, handleCreateCancel)}
+          {#if showSuggestions}
+            <div class="relation-selector-modal__section">
+              <div class="relation-selector-modal__section-label">
+                {ctx.props.suggestionsLabel ?? "Suggestions"}
               </div>
-            {:else}
+              <ul
+                bind:this={listRef}
+                class="relation-selector-modal__list"
+                role="listbox"
+                id="relation-selector-list"
+                onkeydown={(e) => handleListKeyDown(e, ctx.state.suggestionItems)}
+              >
+                {#each ctx.state.suggestionItems as item, index (item.id)}
+                  {@const selected = ctx.isSelected(item.id)}
+                  <li
+                    class="relation-selector-modal__item"
+                    class:relation-selector-modal__item--selected={selected}
+                    class:relation-selector-modal__item--disabled={item.disabled}
+                    class:relation-selector-modal__item--focused={focusedIndex === index}
+                    role="option"
+                    aria-selected={selected}
+                    onclick={() => handleItemClick(item)}
+                    tabindex={item.disabled ? -1 : 0}
+                  >
+                    {#if ctx.props.renderItem}
+                      {@render ctx.props.renderItem(item as never, selected)}
+                    {:else}
+                      <div class="relation-selector-modal__item-content">
+                        <span class="relation-selector-modal__item-label">{item.label}</span>
+                        {#if item.description}
+                          <span class="relation-selector-modal__item-description">
+                            {item.description}
+                          </span>
+                        {/if}
+                      </div>
+                      {#if selected}
+                        <Check size="1em" class="relation-selector-modal__item-check" />
+                      {/if}
+                    {/if}
+                  </li>
+                {/each}
+              </ul>
+            </div>
+          {/if}
+
+          {#if showSearchResults}
+            <div class="relation-selector-modal__section">
+              <div class="relation-selector-modal__section-label">
+                Results ({ctx.state.searchTotal})
+              </div>
+              <ul
+                bind:this={listRef}
+                class="relation-selector-modal__list"
+                role="listbox"
+                id="relation-selector-list"
+                onkeydown={(e) => handleListKeyDown(e, ctx.state.searchResults)}
+              >
+                {#each ctx.state.searchResults as item, index (item.id)}
+                  {@const selected = ctx.isSelected(item.id)}
+                  <li
+                    class="relation-selector-modal__item"
+                    class:relation-selector-modal__item--selected={selected}
+                    class:relation-selector-modal__item--disabled={item.disabled}
+                    class:relation-selector-modal__item--focused={focusedIndex === index}
+                    role="option"
+                    aria-selected={selected}
+                    onclick={() => handleItemClick(item)}
+                    tabindex={item.disabled ? -1 : 0}
+                  >
+                    {#if ctx.props.renderItem}
+                      {@render ctx.props.renderItem(item as never, selected)}
+                    {:else}
+                      <div class="relation-selector-modal__item-content">
+                        <span class="relation-selector-modal__item-label">{item.label}</span>
+                        {#if item.description}
+                          <span class="relation-selector-modal__item-description">
+                            {item.description}
+                          </span>
+                        {/if}
+                      </div>
+                      {#if selected}
+                        <Check size="1em" class="relation-selector-modal__item-check" />
+                      {/if}
+                    {/if}
+                  </li>
+                {/each}
+              </ul>
+            </div>
+          {/if}
+
+          {#if showEmpty}
+            <div class="relation-selector-modal__empty">
+              {ctx.props.emptyMessage ?? "No results found"}
+            </div>
+          {/if}
+
+          {#if showLoading && !showSuggestions && !showSearchResults}
+            <div class="relation-selector-modal__loading">
+              <Loader size="1.5em" class="relation-selector-modal__loading-spinner" />
+              <span>Loading...</span>
+            </div>
+          {/if}
+
+          {#if ctx.props.allowCreate && ctx.props.createForm}
+            <div class="relation-selector-modal__create">
               <button
                 type="button"
                 class="relation-selector-modal__create-button"
@@ -359,8 +369,8 @@
                 <Plus size="1em" />
                 <span>{ctx.props.createLabel ?? "Add new"}</span>
               </button>
-            {/if}
-          </div>
+            </div>
+          {/if}
         {/if}
       </div>
 

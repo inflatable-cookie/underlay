@@ -36,6 +36,8 @@
     allowCreate = false,
     createLabel,
     onCreate,
+    // Selection history
+    selectionHistory,
     // Snippets
     renderItem,
     renderTrigger,
@@ -79,6 +81,7 @@
     allowCreate,
     createLabel,
     onCreate,
+    selectionHistory,
     renderItem,
     renderTrigger,
     renderSelectedPill,

@@ -15,6 +15,7 @@ export type {
   SearchResult,
   RelationSearchFn,
   RelationSuggestionsFn,
+  SuggestionOptions,
   RelationSelectorProps,
   RelationSelectorState
 } from "./types.js";
