@@ -299,6 +299,156 @@ export function createAdminClient(
 }
 ```
 
+## Admin Detail Page Pattern
+
+Admin detail pages for entities (pathways, modules, etc.) typically use a tabbed interface to organize different views and related data. This section documents the standard patterns.
+
+### Page Structure
+
+A typical detail page has:
+1. **PageHeader** - Title, subtitle, back navigation, and entity-level actions
+2. **TabsRoot** - Container for tabbed content
+3. **TabsList/TabsTrigger** - Tab navigation
+4. **TabsContent** - Content for each tab
+
+```svelte
+<PageHeader
+  title={entity.code}
+  subtitle={entity.parentName}
+  backHref={backInfo.href}
+  backLabel={backInfo.label}
+>
+  {#snippet actions()}
+    <EntityActionsMenu entity={entity} authToken={authToken} />
+  {/snippet}
+</PageHeader>
+
+<TabsRoot bind:value={activeTab} variant="boxed" historyKey="tab">
+  <TabsList>
+    <TabsTrigger value="details">Details</TabsTrigger>
+    <TabsTrigger value="children">Children</TabsTrigger>
+    <TabsTrigger value="related">Related</TabsTrigger>
+  </TabsList>
+
+  <TabsContent value="details">
+    <!-- Entity details -->
+  </TabsContent>
+
+  <TabsContent value="children">
+    <!-- List of child entities -->
+  </TabsContent>
+</TabsRoot>
+```
+
+### Tab Content with Lists
+
+When a tab displays a list of related entities (e.g., Sections within a Module), use the following structure:
+
+1. **PageHeader (level 3)** - Section title with action buttons
+2. **FilterBar** - Optional search/filter controls (only when items exist)
+3. **ListGrid** - Grid of entity cards, or ReorderableList when in reorder mode
+
+```svelte
+<PageHeader title="Sections" level={3}>
+  {#snippet actions()}
+    {#if canReorder}
+      <Button
+        variant={isReorderMode ? "danger" : "subtle"}
+        onclick={toggleReorderMode}
+      >
+        <ArrowUpDown size={16} />
+        Reorder
+      </Button>
+    {/if}
+    <Button
+      variant="primary"
+      onclick={() => gotoWithContext(addUrl, sourceContext)}
+    >
+      <Plus size={16} />
+      Add Section
+    </Button>
+  {/snippet}
+</PageHeader>
+
+{#if items.length > 0}
+  <FilterBar title="Filter">
+    <Field label="Search" forId="search">
+      <TextInput
+        id="search"
+        placeholder="Filter by title..."
+        bind:value={searchFilter}
+        debounce={300}
+        search
+      />
+    </Field>
+  </FilterBar>
+{/if}
+
+{#if filteredItems.length === 0}
+  <p class="empty-message">
+    {searchFilter ? "No items match your filter." : "No items yet."}
+  </p>
+{:else if isReorderMode}
+  <ReorderableList
+    controller={reorderController}
+    oncancel={exitReorderMode}
+    onsuccess={handleReorderSuccess}
+  >
+    {#snippet item(item)}
+      <ListCard title={item.title} variant="compact" showDragHandle />
+    {/snippet}
+  </ReorderableList>
+{:else}
+  <ListGrid minItemWidth={26}>
+    {#each filteredItems as item}
+      <EntityListCard {item} {sourceContext} onRequestDelete={handleDelete} />
+    {/each}
+  </ListGrid>
+{/if}
+```
+
+### List Card Actions
+
+Entity list cards should use `CopyActionsMenu` with:
+- **Copy actions**: Key, ID, slug (when present)
+- **Edit action**: Navigate to edit page with context
+- **Delete action**: Trigger soft delete confirmation (format: "Soft delete {entityType}")
+
+```svelte
+<ListCard title={`Section ${section.label}`} subtitle={section.title}>
+  {#snippet actions({ trigger })}
+    <CopyActionsMenu
+      {trigger}
+      copies={[
+        { label: "Copy key", text: section.key },
+        { label: "Copy id", text: section.sectionId },
+        ...(section.slug ? [{ label: "Copy slug", text: section.slug }] : [])
+      ]}
+      actions={[
+        {
+          label: "Edit section",
+          onSelect: () => gotoWithContext(editHref, sourceContext)
+        },
+        {
+          label: "Soft delete section",
+          destructive: true,
+          onSelect: () => onRequestDelete(section.sectionId)
+        }
+      ]}
+    />
+  {/snippet}
+</ListCard>
+```
+
+### Key Conventions
+
+1. **Tab-level PageHeader**: Use `level={3}` for section headers within tabs
+2. **Action button order**: Reorder (when applicable), then Add
+3. **Reorder button state**: Use `variant="danger"` when active, `variant="subtle"` when inactive
+4. **Filter visibility**: Only show FilterBar when there are items to filter
+5. **Delete label format**: "Soft delete {entityType}" (e.g., "Soft delete section")
+6. **Empty states**: Differentiate between "no items" and "no matches for filter"
+
 ## Key Points
 
 1. **CSS Import Order**: Import Underlay CSS in the root layout BEFORE custom `:root` styles so your overrides take precedence.
