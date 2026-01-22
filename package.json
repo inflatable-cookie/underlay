@@ -12,7 +12,7 @@
     },
     "./components": {
       "svelte": "./ts/src/components/index.ts",
-      "types": "./ts/src/components/index.d.ts",
+      "types": "./ts/src/components/index.ts",
       "default": "./ts/src/components/index.ts"
     },
     "./patterns": {
@@ -74,13 +74,14 @@
   },
   "dependencies": {
     "easymde": "^2.20.0",
+    "marked": "^17.0.1",
     "svelte-dnd-action": "^0.9.69"
   },
   "devDependencies": {
-    "@types/node": "^25.0.8",
+    "@types/node": "^25.0.10",
     "@vitest/ui": "^3.2.4",
     "bits-ui": "^2.15.4",
-    "svelte": "^5.46.3",
+    "svelte": "^5.48.0",
     "svelte-check": "^4.3.5",
     "typescript": "^5.9.3",
     "vitest": "^3.2.4"

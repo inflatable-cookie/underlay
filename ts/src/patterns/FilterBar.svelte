@@ -8,7 +8,7 @@
     children?: Snippet;
   }
 
-  let { title = "Filters", startCollapsed = false, children }: Props = $props();
+  let { title = "Filters", startCollapsed = true, children }: Props = $props();
 
   let collapsed = $state(true);
   let hasInteracted = $state(false);
@@ -25,12 +25,12 @@
 
 <section class="underlay-filter-bar" class:underlay-filter-bar--expanded={!collapsed}>
   {#if collapsed}
-    <header class="underlay-filter-bar__header">
+    <button type="button" class="underlay-filter-bar__header" onclick={toggle}>
       <h2 class="underlay-filter-bar__title">{title}</h2>
-      <button type="button" class="underlay-filter-bar__toggle" onclick={toggle}>
+      <span class="underlay-filter-bar__toggle">
         Show filters
-      </button>
-    </header>
+      </span>
+    </button>
   {:else}
     <button
       type="button"
@@ -52,7 +52,7 @@
     border-radius: var(--underlay-radius-lg, 0.75rem);
     border: 1px solid var(--underlay-color-border-subtle, rgba(148, 163, 184, 0.25));
     background: var(--underlay-color-surface-muted, rgba(15, 23, 42, 0.65));
-    padding: var(--underlay-space-3, 0.75rem);
+    padding: 0.4rem 0.75rem;
     margin-bottom: var(--underlay-space-4, 1rem);
     display: flex;
     flex-direction: column;
@@ -68,6 +68,21 @@
     align-items: center;
     justify-content: space-between;
     gap: var(--underlay-space-2, 0.5rem);
+    width: 100%;
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    text-align: left;
+    font: inherit;
+  }
+
+  .underlay-filter-bar__header:hover .underlay-filter-bar__toggle {
+    background: var(
+      --underlay-color-button-neutral-hover,
+      var(--underlay-color-hover-bg, rgba(148, 163, 184, 0.12))
+    );
   }
 
   .underlay-filter-bar__title {
@@ -85,14 +100,7 @@
     color: var(--underlay-color-text, #e5e7eb);
     padding: 0.2rem var(--underlay-space-3, 0.75rem);
     font-size: var(--underlay-font-size-xs, 0.75rem);
-    cursor: pointer;
-  }
-
-  .underlay-filter-bar__toggle:hover {
-    background: var(
-      --underlay-color-button-neutral-hover,
-      var(--underlay-color-hover-bg, rgba(148, 163, 184, 0.12))
-    );
+    transition: background 0.15s ease;
   }
 
   .underlay-filter-bar__close {

@@ -39,7 +39,7 @@
     margin-top: 0;
     padding: 1.25rem 0 0 0;
     border: none;
-    border-top: 2px solid var(--underlay-color-border-subtle, rgba(148, 163, 184, 0.25));
+    border-top: 0.3em solid var(--underlay-color-border-subtle, rgba(148, 163, 184, 0.25));
     border-radius: 0;
   }
 </style>

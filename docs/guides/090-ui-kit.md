@@ -924,6 +924,71 @@ Container component with consistent styling:
 </Card>
 ```
 
+### ContentCard
+
+Display card for rendering rich text content with a title. Automatically detects the content type and renders appropriately:
+- **NightfireValue objects** are rendered using the NightfireRenderer
+- **HTML strings** are rendered directly (for pre-rendered HTML)
+- **Markdown strings** are parsed and rendered when `markdown` prop is set
+
+Shows a subtle empty message when no content is set.
+
+```svelte
+<script>
+  import { ContentCard } from "@decodelabs/underlay/components";
+</script>
+
+<!-- With Nightfire content -->
+<ContentCard
+  title="Description"
+  value={data.description}
+  emptyMessage="No description set."
+/>
+
+<!-- With HTML string -->
+<ContentCard
+  title="Notes"
+  value={data.notesHtml}
+  emptyMessage="No notes added."
+/>
+
+<!-- With Markdown string -->
+<ContentCard
+  title="Learning Aims"
+  value={data.learningAims}
+  markdown
+  emptyMessage="No learning aims set."
+/>
+
+<!-- With custom max height (no collapse) -->
+<ContentCard
+  title="Full Content"
+  value={data.content}
+  maxHeight={0}
+/>
+```
+
+**Props:**
+- `title` - Card heading text (required)
+- `value` - NightfireValue object, HTML string, or Markdown string to render (optional)
+- `markdown` - When true, string values are parsed as Markdown (default: false)
+- `emptyMessage` - Message shown when value is empty (default: "No content set.")
+- `maxHeight` - Max height in pixels when collapsed; set to 0 to disable collapsing (default: 200)
+
+**Features:**
+- Auto-detects content type (object = Nightfire, string = HTML/Markdown)
+- Markdown parsing via `marked` when `markdown` prop is set
+- Collapsible content with "Show more/less" toggle when content exceeds `maxHeight`
+- Gradient fade effect on collapsed content for visual indication
+- Max-width of 65ch for comfortable reading
+- Card styling with subtle background and border
+- Uppercase legend-style title
+- Automatic empty state handling with italic muted message
+- Built-in styling for common Markdown elements (headings, lists, code, blockquotes)
+- Proper paragraph margin handling within rendered content
+
+**Note:** When rendering HTML strings without the `markdown` prop, only use with trusted/sanitized content.
+
 ### Dialog
 
 Modal dialog component:
@@ -1004,6 +1069,340 @@ Dropdown menu component:
   <button class="danger" on:click={handleDelete}>Delete</button>
 </DropdownMenu>
 ```
+
+### Tooltip
+
+Tooltip component for showing additional information on hover. Supports both icon triggers (default) and inline text triggers.
+
+```svelte
+<script>
+  import { Tooltip } from "@decodelabs/underlay/components";
+</script>
+
+<!-- Default icon trigger (ⓘ) -->
+<Tooltip content="This is helpful information">
+  <!-- Uses default ⓘ icon -->
+</Tooltip>
+
+<!-- Custom trigger label -->
+<Tooltip content="Click for more info" triggerLabel="?">
+  <!-- Uses ? instead of ⓘ -->
+</Tooltip>
+
+<!-- Inline text trigger (for TimeAgo, definitions, etc.) -->
+<Tooltip content="January 21, 2026 at 3:45 PM" inline>
+  {#snippet trigger()}
+    <span>3 days ago</span>
+  {/snippet}
+</Tooltip>
+
+<!-- Custom snippet trigger -->
+<Tooltip content="User profile settings">
+  {#snippet trigger()}
+    <button class="custom-trigger">⚙️ Settings</button>
+  {/snippet}
+</Tooltip>
+
+<!-- Positioning -->
+<Tooltip content="Appears below" side="bottom" />
+<Tooltip content="Appears left" side="left" align="start" />
+```
+
+**Props:**
+- `content` - Tooltip text content (required)
+- `open` - Boolean controlling visibility (bindable)
+- `showTrigger` - Show trigger element (default: `true`)
+- `triggerLabel` - Label for default trigger (default: `"ⓘ"`)
+- `side` - `"top"` | `"right"` | `"bottom"` | `"left"` (default: `"top"`)
+- `sideOffset` - Distance from trigger in pixels (default: `6`)
+- `align` - `"start"` | `"center"` | `"end"` (default: `"center"`)
+- `alignOffset` - Alignment offset in pixels (default: `0`)
+- `delayDuration` - Delay before showing in ms (default: `500`)
+- `disabled` - Disable tooltip (default: `false`)
+- `inline` - Use inline trigger styling for text content (default: `false`)
+- `trigger` - Custom trigger snippet
+- `class` - Additional CSS classes for trigger
+
+**Snippets:**
+- `trigger` - Custom content for the trigger element
+
+**Inline Mode:**
+
+Use `inline={true}` when the tooltip trigger is text within a sentence or paragraph. This mode:
+- Inherits font size, color, and line-height from the parent
+- Removes default trigger dimensions and background
+- Sets `cursor: help` for the trigger
+- Preserves text flow without disrupting layout
+
+```svelte
+<p>
+  Updated <Tooltip content="January 21, 2026" inline>
+    {#snippet trigger()}
+      <span>3 days ago</span>
+    {/snippet}
+  </Tooltip> by admin.
+</p>
+```
+
+**Styling:**
+
+The tooltip uses these CSS classes:
+- `.underlay-tooltip-trigger` - Default icon trigger styling
+- `.underlay-tooltip-trigger--inline` - Inline trigger styling
+- `.underlay-tooltip-content` - Tooltip popup container
+- `.underlay-tooltip-arrow` - Arrow pointing to trigger
+
+### TimeAgo
+
+Displays a date as relative time (e.g., "3 days ago", "just now") with a tooltip showing the full date. Useful for timestamps, activity feeds, and metadata displays.
+
+```svelte
+<script>
+  import { TimeAgo } from "@decodelabs/underlay/components";
+</script>
+
+<!-- Basic usage with Date object -->
+<TimeAgo date={new Date()} />
+
+<!-- With ISO string -->
+<TimeAgo date="2026-01-18T10:30:00Z" />
+
+<!-- Different tooltip formats -->
+<TimeAgo date={item.createdAt} tooltipFormat="date" />
+<TimeAgo date={item.createdAt} tooltipFormat="datetime" />
+<TimeAgo date={item.createdAt} tooltipFormat="full" />
+
+<!-- In context -->
+<p>Created <TimeAgo date={article.createdAt} /></p>
+<p>Last updated <TimeAgo date={article.updatedAt} /></p>
+```
+
+**Props:**
+- `date` - Date to display. Accepts ISO string or Date object (required)
+- `tooltipFormat` - Format for tooltip display (default: `"datetime"`)
+  - `"date"` - "January 21, 2026"
+  - `"datetime"` - "January 21, 2026 at 3:45 PM"
+  - `"full"` - "January 21, 2026 at 3:45:30 PM EST"
+- `class` - Additional CSS classes
+
+**Relative Time Output:**
+
+| Time Difference | Output |
+|-----------------|--------|
+| < 10 seconds | "just now" |
+| < 60 seconds | "45 seconds ago" |
+| 1 minute | "1 minute ago" |
+| < 60 minutes | "23 minutes ago" |
+| 1 hour | "1 hour ago" |
+| < 24 hours | "5 hours ago" |
+| 1 day | "yesterday" |
+| < 7 days | "3 days ago" |
+| 1 week | "1 week ago" |
+| < 4 weeks | "2 weeks ago" |
+| 1 month | "1 month ago" |
+| < 12 months | "6 months ago" |
+| 1 year | "1 year ago" |
+| > 1 year | "2 years ago" |
+
+**Future Dates:**
+
+TimeAgo also handles future dates:
+- "in a few seconds"
+- "in 5 minutes"
+- "in 2 hours"
+- "in 3 days"
+
+**Styling:**
+
+The component renders as a `<time>` element with semantic `datetime` attribute. The text has a dotted underline to indicate interactivity:
+
+```css
+.time-ago {
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-underline-offset: 2px;
+  text-decoration-color: var(--underlay-color-text-muted);
+}
+
+.time-ago:hover {
+  text-decoration-color: var(--underlay-color-text);
+}
+```
+
+**Usage in Tables/Lists:**
+
+```svelte
+<script>
+  import { DataTable, TimeAgo } from "@decodelabs/underlay/components";
+</script>
+
+<DataTable
+  data={articles}
+  columns={[
+    { key: "title", label: "Title" },
+    {
+      key: "createdAt",
+      label: "Created",
+      render: (row) => {
+        return { component: TimeAgo, props: { date: row.createdAt } };
+      }
+    }
+  ]}
+/>
+```
+
+**With Page Headers:**
+
+```svelte
+<PageHeader title="Edit Article" subtitle={article.title}>
+  <div class="meta">
+    <span>Created: <TimeAgo date={article.createdAt} /></span>
+    <span>Updated: <TimeAgo date={article.updatedAt} /></span>
+  </div>
+</PageHeader>
+```
+
+### DetailsGrid & DetailsItem
+
+Grid layout for displaying key-value detail information in a visually appealing format. Use for detail pages, settings displays, and metadata sections.
+
+```svelte
+<script>
+  import { DetailsGrid, DetailsItem, TimeAgo } from "@decodelabs/underlay/components";
+</script>
+
+<!-- Basic usage -->
+<DetailsGrid>
+  <DetailsItem label="Name" value="John Smith" />
+  <DetailsItem label="Email" value="john@example.com" />
+  <DetailsItem label="Role" value="Administrator" />
+  <DetailsItem label="Status" value="Active" />
+</DetailsGrid>
+
+<!-- With code values and custom content -->
+<DetailsGrid>
+  <DetailsItem label="Slug" value="my-article" code />
+  <DetailsItem label="ID" value="018f2a3b-3c4d-7e8f" code />
+  <DetailsItem label="Created">
+    <TimeAgo date={createdAt} />
+  </DetailsItem>
+  <DetailsItem label="Last Updated">
+    <TimeAgo date={updatedAt} />
+  </DetailsItem>
+</DetailsGrid>
+
+<!-- Spanning multiple columns -->
+<DetailsGrid>
+  <DetailsItem label="Title" value={article.title} span={2} />
+  <DetailsItem label="Author" value={article.author} />
+  <DetailsItem label="Category" value={article.category} />
+  <DetailsItem label="Description" value={article.description} span="full" />
+</DetailsGrid>
+```
+
+**DetailsGrid Props:**
+- `columns` - Number of columns at full width: `2 | 3 | 4` (default: `4`)
+- `minItemWidth` - Minimum item width before wrapping (default: `"14rem"`)
+- `accent` - Optional accent color for styling
+- `class` - Additional CSS classes
+
+**DetailsItem Props:**
+- `label` - The label/key for this detail item (required)
+- `value` - Plain text or number value (use children snippet for complex content)
+- `code` - Display value as monospace code (default: `false`)
+- `span` - Column span: number (`1-4`) or `"full"` for entire row
+- `muted` - Show value in muted/secondary style (default: `false`)
+- `class` - Additional CSS classes
+
+**Empty Values:**
+
+When `value` is `null` or `undefined` (and no children provided), a muted dash is displayed:
+
+```svelte
+<DetailsItem label="Middle Name" value={user.middleName} />
+<!-- Shows "—" if middleName is null -->
+```
+
+**Custom Content:**
+
+Use the children snippet for complex content like badges, links, or custom components:
+
+```svelte
+<DetailsItem label="Status">
+  <Badge variant="success">Active</Badge>
+</DetailsItem>
+
+<DetailsItem label="Website">
+  <a href={website}>{website}</a>
+</DetailsItem>
+
+<DetailsItem label="Tags">
+  {#each tags as tag}
+    <Pill>{tag}</Pill>
+  {/each}
+</DetailsItem>
+```
+
+**Grid Layout:**
+
+The grid uses CSS `auto-fill` with `minmax()` for responsive column counts:
+- At wide widths: up to 4 columns (configurable)
+- Items automatically wrap based on `minItemWidth`
+- Single-pixel gap lines create a subtle grid effect
+- Rounded corners with subtle shadow for visual depth
+
+**Usage in Detail Pages:**
+
+```svelte
+<script lang="ts">
+  import {
+    DetailsGrid,
+    DetailsItem,
+    TimeAgo,
+    Badge
+  } from "@decodelabs/underlay/components";
+  import { PageHeader } from "@decodelabs/underlay/patterns";
+
+  let { data } = $props();
+</script>
+
+<PageHeader
+  title={data.user.name}
+  subtitle="User Details"
+  backHref="/users"
+  backLabel="Back to users"
+/>
+
+<DetailsGrid>
+  <DetailsItem label="Email" value={data.user.email} />
+  <DetailsItem label="Username" value={data.user.username} code />
+  <DetailsItem label="Role" value={data.user.role} />
+  <DetailsItem label="Status">
+    <Badge variant={data.user.active ? "success" : "muted"}>
+      {data.user.active ? "Active" : "Inactive"}
+    </Badge>
+  </DetailsItem>
+  <DetailsItem label="Created">
+    <TimeAgo date={data.user.createdAt} />
+  </DetailsItem>
+  <DetailsItem label="Last Login">
+    <TimeAgo date={data.user.lastLoginAt} />
+  </DetailsItem>
+  <DetailsItem label="Bio" value={data.user.bio} span="full" />
+</DetailsGrid>
+```
+
+**Styling:**
+
+The component uses these CSS classes:
+- `.details-grid` - Container with grid layout and border
+- `.details-item` - Individual item cell
+- `.details-item__label` - Uppercase muted label
+- `.details-item__value` - Value text
+- `.details-item__code` - Monospace code styling
+- `.details-item__empty` - Muted dash for empty values
+
+Items have a subtle hover effect for better scannability.
 
 ---
 

@@ -21,6 +21,10 @@
     bannerVariant?: BannerVariant;
 
     actions?: Snippet;
+    /** Content to render inline after the title (e.g., a Pill or Badge) */
+    titleSuffix?: Snippet;
+    /** Content to render inline after the subtitle (e.g., a Pill or Badge) */
+    subtitleSuffix?: Snippet;
     children?: Snippet;
   }
 
@@ -34,6 +38,8 @@
     bannerMessage,
     bannerVariant = "warning",
     actions,
+    titleSuffix,
+    subtitleSuffix,
     children
   }: Props = $props();
 
@@ -76,7 +82,9 @@
 <header class="underlay-page-header underlay-page-header--level-{level}">
   <div class="underlay-page-header__row">
     <div class="underlay-page-header__top">
-      <svelte:element this={headingTag} class="underlay-page-header__title">{title}</svelte:element>
+      <svelte:element this={headingTag} class="underlay-page-header__title">
+        {title}{#if titleSuffix}<span class="underlay-page-header__title-suffix">{@render titleSuffix()}</span>{/if}
+      </svelte:element>
 
       <div class="underlay-page-header__right">
         {#if backHref}
@@ -97,8 +105,8 @@
       </div>
     </div>
 
-    {#if subtitle}
-      <svelte:element this={subtitleTag} class="underlay-page-header__subtitle">{subtitle}</svelte:element>
+    {#if subtitle || subtitleSuffix}
+      <svelte:element this={subtitleTag} class="underlay-page-header__subtitle">{subtitle}{#if subtitleSuffix}<span class="underlay-page-header__subtitle-suffix">{@render subtitleSuffix()}</span>{/if}</svelte:element>
     {/if}
   </div>
 
@@ -195,6 +203,18 @@
     font-size: 2em;
     font-weight: 650;
     color: var(--underlay-color-text, #e5e7eb);
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .underlay-page-header__title-suffix {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 0.4em;
+  }
+
+  .underlay-page-header__title-suffix :global(.underlay-pill) {
+    font-size: 0.45em;
   }
 
   .underlay-page-header__subtitle {
@@ -202,6 +222,18 @@
     font-size: 1.1em;
     font-weight: 500;
     color: var(--underlay-color-text-muted, rgba(148, 163, 184, 0.85));
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .underlay-page-header__subtitle-suffix {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 0.5em;
+  }
+
+  .underlay-page-header__subtitle-suffix :global(.underlay-pill) {
+    font-size: 0.7em;
   }
 
   .underlay-page-header__right {
@@ -235,7 +267,11 @@
   }
 
   .underlay-page-header__meta :global(code) {
-    font-size: 0.9em;
+    font-size: inherit;
+    background: rgba(148, 163, 184, 0.1);
+    border: 1px solid rgba(148, 163, 184, 0.15);
+    border-radius: 0.25rem;
+    padding: 0.1em 0.4em;
   }
 
   @media (max-width: 500px) {
@@ -253,6 +289,14 @@
     .underlay-page-header--level-1 .underlay-page-header__title {
       font-size: 2em;
     }
+  }
+
+  /* Smaller level titles get lighter weight and italic */
+  .underlay-page-header--level-2 .underlay-page-header__title,
+  .underlay-page-header--level-3 .underlay-page-header__title,
+  .underlay-page-header--level-4 .underlay-page-header__title {
+    font-weight: 500;
+    font-style: italic;
   }
 
   .underlay-page-header--level-2 .underlay-page-header__title {

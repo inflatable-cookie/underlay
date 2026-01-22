@@ -249,8 +249,31 @@
 
   const isMulti = $derived(effectiveDef.mode === "multi" || Array.isArray(value?.blocks));
 
-  // Single-block state view
-  const singleBlock = $derived(!isMulti ? ((value?.block as any) ?? null) : null);
+  // Single-block state view - cached to prevent re-renders on data-only changes
+  // We only update the reference when the block TYPE changes
+  // Initialize synchronously for first render
+  const initialSingleBlock = !effectiveDef.mode || effectiveDef.mode === "single"
+    ? ((value?.block as any) ?? null)
+    : null;
+  let singleBlock: any = $state(initialSingleBlock);
+  let singleBlockType: string | null = $state(initialSingleBlock?.type ?? null);
+
+  $effect(() => {
+    if (isMulti) {
+      singleBlock = null;
+      singleBlockType = null;
+      return;
+    }
+
+    const currentBlock = (value?.block as any) ?? null;
+    const currentType = currentBlock?.type ?? null;
+
+    // Only update if type changed (not on data-only changes)
+    if (currentType !== singleBlockType) {
+      singleBlockType = currentType;
+      singleBlock = currentBlock;
+    }
+  });
 
   // Multi-block state view - use $derived.by to ensure stable reference
   const blocks = $derived.by(() => {
@@ -259,23 +282,6 @@
     }
     return [];
   });
-
-  // Stable key generation for block objects to support proper DOM reconciliation
-  // during reordering. Using WeakMap preserves keys based on object identity.
-  const blockKeys = new WeakMap<object, number>();
-  let nextBlockKey = 0;
-
-  function getBlockKey(block: any): number {
-    if (block === null || typeof block !== "object") {
-      return nextBlockKey++;
-    }
-    let key = blockKeys.get(block);
-    if (key === undefined) {
-      key = nextBlockKey++;
-      blockKeys.set(block, key);
-    }
-    return key;
-  }
 
   function emit(nextValue: NightfireValue) {
     value = nextValue;
@@ -676,11 +682,20 @@
 
   // Form serialisation hook: always serialise the current NightfireValue
   // (single or multi) into FormData[name].
+  // Use a ref pattern to avoid creating a new function on every value change,
+  // which would propagate through bindings and potentially cause re-renders.
+  let valueRef = { current: value };
+  let nameRef = { current: name };
+
   $effect(() => {
-    prepare = (formData: FormData) => {
-      writeNightfireToFormData(formData, name, value);
-    };
+    valueRef.current = value;
+    nameRef.current = name;
   });
+
+  // Set prepare only once - it reads current values from refs at call time
+  prepare = (formData: FormData) => {
+    writeNightfireToFormData(formData, nameRef.current, valueRef.current);
+  };
 </script>
 
 <div class="nightfire-field">
@@ -731,7 +746,7 @@
     </div>
   {:else}
     <div class="nightfire-field-multi">
-      {#each blocks as block, index (getBlockKey(block))}
+      {#each blocks as block, index (index)}
         <div class="nightfire-field-multi__item">
           <div class="nightfire-field-multi__toolbar">
             <select

@@ -7,6 +7,7 @@
     type NightfireBlockDefinition,
     type NightfireTypeOption
   } from "./utils";
+  import { untrack } from "svelte";
 
   /**
    * Single-block Nightfire editor.
@@ -44,56 +45,45 @@
     typeOptions
   }: Props = $props();
 
-  // Initialize internalBlock synchronously so the correct editor is shown
-  // on first render. Previously we used $state(null) + $effect which caused
-  // the "No editor found" error on client-side navigation because the
-  // $effect runs AFTER the initial render.
-  const initialBlock = normaliseNightfireBlock(block, typeOptions, definition);
-  let internalBlock: any = $state(initialBlock);
+  // Initialize block state once on mount - child editors manage their own state
+  // after that, so we only need to update when the block TYPE changes.
+  const initialBlock = untrack(() => normaliseNightfireBlock(block, typeOptions, definition));
 
-  // Track the last block reference to avoid redundant normalisation
-  let lastBlockRef: any = block;
+  let currentBlockType = $state(initialBlock.type);
+  let BlockEditor: any = $state(getBlockEditor(schema, currentBlockType));
+  let internalBlock = $state(initialBlock);
 
-  // Update when props change (for subsequent updates after initial render)
+  // Update only when the block TYPE changes (e.g., user selects different block type)
   $effect(() => {
-    // Re-normalise whenever block, typeOptions, or definition changes
-    const currentBlock = block;
-
-    // Only update if block reference actually changed
-    if (currentBlock !== lastBlockRef) {
-      lastBlockRef = currentBlock;
-      internalBlock = normaliseNightfireBlock(currentBlock, typeOptions, definition);
+    const newBlock = normaliseNightfireBlock(block, typeOptions, definition);
+    if (newBlock.type !== currentBlockType) {
+      currentBlockType = newBlock.type;
+      internalBlock = newBlock;
+      BlockEditor = getBlockEditor(schema, currentBlockType);
     }
   });
 
-  function emitChange(nextBlock: any) {
-    const normalised = normaliseNightfireBlock(nextBlock, typeOptions, definition);
-    // Update local state immediately so the editor reflects changes
-    internalBlock = normalised;
-    lastBlockRef = nextBlock;
-    onChange?.(normalised);
-  }
-
   function handleBlockEditorChange(nextBlock: any) {
-    emitChange(nextBlock);
+    const normalised = normaliseNightfireBlock(nextBlock, typeOptions, definition);
+    onChange?.(normalised);
   }
 </script>
 
 <div class="nightfire-editor nightfire-editor--single">
-  {#if internalBlock}
-    {#if getBlockEditor(schema, internalBlock.type)}
-      {@const BlockEditor = getBlockEditor(schema, internalBlock.type)}
-      <BlockEditor
+  {#if BlockEditor}
+    {#key currentBlockType}
+      <svelte:component
+        this={BlockEditor}
         block={internalBlock}
         onChange={handleBlockEditorChange}
       />
-    {:else}
-      <p>
-        No editor found for type
-        <code>{internalBlock.type}</code>. You can still edit this value as JSON
-        in Dairy.
-      </p>
-    {/if}
+    {/key}
+  {:else}
+    <p>
+      No editor found for type
+      <code>{currentBlockType}</code>. You can still edit this value as JSON
+      in Dairy.
+    </p>
   {/if}
 </div>
 

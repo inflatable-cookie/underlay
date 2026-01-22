@@ -34,6 +34,10 @@ export { default as TimeAgo } from "./TimeAgo.svelte";
 export { default as Popover } from "./Popover.svelte";
 export { default as Skeleton } from "./Skeleton.svelte";
 export { default as DataTable } from "./DataTable.svelte";
+export { default as DetailsGrid } from "./DetailsGrid.svelte";
+export { default as DetailsItem } from "./DetailsItem.svelte";
+export { default as DetailsSection } from "./DetailsSection.svelte";
+export { default as ContentCard } from "./ContentCard.svelte";
 export type {
 	DataTableColumn,
 	DataTableAction,

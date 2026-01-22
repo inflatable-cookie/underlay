@@ -31,6 +31,10 @@ declare const TimeAgo: any;
 declare const Popover: any;
 declare const Skeleton: any;
 declare const DataTable: any;
+declare const DetailsGrid: any;
+declare const DetailsItem: any;
+declare const DetailsSection: any;
+declare const ContentCard: any;
 declare const FileUpload: any;
 declare const TabsRoot: any;
 declare const TabsList: any;
@@ -70,6 +74,10 @@ export {
   Card,
   ConfirmAction,
   DataTable,
+  DetailsGrid,
+  DetailsItem,
+  DetailsSection,
+  ContentCard,
   Dialog,
   DropdownMenu,
   Field,
