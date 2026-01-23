@@ -1073,6 +1073,588 @@ if email_exists {
 }
 ```
 
+### Form-Level Validation with FormValidationProvider
+
+The `FormValidationProvider` component automatically tracks all validated fields in a form and computes overall form validity, eliminating the need to manually list and validate each field.
+
+#### Overview
+
+FormValidationProvider uses Svelte's context API to automatically detect and track all `TextInput` and `SlugField` components with validation. Fields register themselves on mount and update their state reactively, allowing the provider to compute form-level validity without manual configuration.
+
+#### Basic Usage
+
+Wrap your form fields in `FormValidationProvider` and bind to `isValid`:
+
+```svelte
+<script lang="ts">
+  import {
+    FormValidationProvider,
+    TextInput,
+    SaveSplitButton
+  } from "@decodelabs/underlay/components";
+  import { SlugField } from "@decodelabs/underlay/patterns";
+
+  let isFormValid = $state(false);
+  let titleValue = $state("");
+  let slugValue = $state("");
+
+  async function validateSlug(slug: string) {
+    // Validate slug uniqueness
+    return await api.validateField({
+      entity: "article",
+      field: "slug",
+      value: slug
+    });
+  }
+</script>
+
+<FormValidationProvider bind:isValid={isFormValid}>
+  <TextInput
+    id="title"
+    name="title"
+    required
+    bind:value={titleValue}
+  />
+
+  <SlugField
+    id="slug"
+    name="slug"
+    bind:value={slugValue}
+    source={titleValue}
+    validate={validateSlug}
+  />
+</FormValidationProvider>
+
+<SaveSplitButton
+  type="submit"
+  disabled={!isFormValid}
+/>
+```
+
+#### How It Works
+
+**Automatic Field Registration**
+
+When a `TextInput` or `SlugField` with a `validate` prop or `required` attribute mounts inside a `FormValidationProvider`, it automatically:
+
+1. Registers itself with the provider via context API
+2. Reports its current state (has value, validation status, is valid)
+3. Updates the provider whenever its state changes
+4. Unregisters when unmounted
+
+**Form Validity Computation**
+
+The provider computes form validity by checking all registered fields:
+
+```typescript
+// A form is valid when ALL of these are true:
+✓ All required fields have values (value.trim() !== "")
+✓ No fields are currently validating (status !== "validating")
+✓ All validated fields are valid (isValidationValid === true)
+✓ "idle" validation state is treated as valid (field not yet touched)
+```
+
+**Reactive Updates**
+
+The `isValid` prop updates automatically whenever:
+- User types in a field (value changes)
+- Async validation completes (status changes from "validating" to "valid"/"invalid")
+- Fields are added or removed from the form
+
+#### Complete Example
+
+```svelte
+<script lang="ts">
+  import {
+    FormValidationProvider,
+    Field,
+    FieldSet,
+    TextInput,
+    SaveSplitButton
+  } from "@decodelabs/underlay/components";
+  import { SlugField } from "@decodelabs/underlay/patterns";
+  import type { ValidationResult } from "@decodelabs/underlay/components";
+
+  interface Props {
+    validateLabel?: (label: string, context?: unknown) => Promise<ValidationResult>;
+    validateSlug?: (slug: string) => Promise<ValidationResult>;
+  }
+
+  let { validateLabel, validateSlug }: Props = $props();
+
+  // Form-level validity (automatically computed by provider)
+  let isFormValid = $state(false);
+
+  // Field values
+  let labelValue = $state("");
+  let titleValue = $state("");
+  let slugValue = $state("");
+  let descriptionValue = $state("");
+</script>
+
+<form method="post">
+  <FormValidationProvider bind:isValid={isFormValid}>
+    <FieldSet columns={2}>
+      <Field label="Label" required>
+        <TextInput
+          id="label"
+          name="label"
+          required
+          maxlength={1}
+          pattern="[A-Z]"
+          bind:value={labelValue}
+          validate={validateLabel}
+          oninput={(value) => {
+            labelValue = value.toUpperCase();
+          }}
+        />
+      </Field>
+
+      <Field label="Title" required>
+        <TextInput
+          id="title"
+          name="title"
+          required
+          maxlength={128}
+          bind:value={titleValue}
+        />
+      </Field>
+    </FieldSet>
+
+    <SlugField
+      id="slug"
+      name="slug"
+      label="Slug"
+      hint="optional, used in URLs if present"
+      bind:value={slugValue}
+      source={titleValue}
+      validate={validateSlug}
+      maxlength={64}
+    />
+
+    <Field label="Description">
+      <TextInput
+        id="description"
+        name="description"
+        bind:value={descriptionValue}
+      />
+    </Field>
+  </FormValidationProvider>
+
+  <SaveSplitButton
+    type="submit"
+    mode="create"
+    disabled={!isFormValid}
+  />
+</form>
+```
+
+#### Validation State Tracking
+
+Each registered field tracks:
+
+```typescript
+type FieldState = {
+  id: string;                    // Field identifier
+  required: boolean;             // Whether field is required
+  hasValue: boolean;             // Whether field has content
+  validationStatus: string;      // "idle" | "validating" | "valid" | "invalid"
+  isValidationValid: boolean;    // Whether validation passed
+};
+```
+
+#### Field Registration Lifecycle
+
+**1. Mount (Registration)**
+```typescript
+onMount(() => {
+  if (formValidation) {
+    formValidation.registerField(
+      fieldId,
+      required,
+      hasValue,
+      validationStatus,
+      isValidationValid
+    );
+  }
+});
+```
+
+**2. Updates (Reactive)**
+```typescript
+$effect(() => {
+  if (formValidation && (value !== prevValue || validationStatus !== prevStatus)) {
+    formValidation.updateField(
+      fieldId,
+      hasValue,
+      validationStatus,
+      isValidationValid
+    );
+  }
+});
+```
+
+**3. Unmount (Cleanup)**
+```typescript
+return () => {
+  formValidation.unregisterField(fieldId);
+};
+```
+
+#### Auto-Generated Value Validation
+
+Fields validate automatically even when values are auto-generated (like slugs generated from titles):
+
+```svelte
+<SlugField
+  bind:value={slugValue}
+  source={titleValue}  <!-- Auto-generates slug from title -->
+  validate={validateSlug}  <!-- Validates on every auto-generation -->
+/>
+```
+
+When the user types a title:
+1. SlugField auto-generates slug from title
+2. Validation triggers automatically (doesn't require user to focus slug field)
+3. Validation icon shows immediately if slug is invalid
+4. Form validity updates based on slug validation status
+
+#### Context-Dependent Validation
+
+Fields can revalidate when validation context changes:
+
+```svelte
+<script lang="ts">
+  let selectedModuleId = $state<string | undefined>(undefined);
+
+  async function validateLabel(label: string) {
+    if (!selectedModuleId) {
+      return { valid: false, message: "Please select a module first" };
+    }
+
+    return await api.validateField({
+      entity: "section",
+      field: "label",
+      value: label,
+      context: { moduleId: selectedModuleId }
+    });
+  }
+</script>
+
+<FormValidationProvider bind:isValid={isFormValid}>
+  <!-- Module selector -->
+  <RelationSelector
+    value={selectedModuleId}
+    onchange={(val) => { selectedModuleId = val; }}
+  />
+
+  <!-- Label field revalidates when selectedModuleId changes -->
+  <TextInput
+    name="label"
+    required
+    validate={validateLabel}
+    validationContext={selectedModuleId}
+  />
+</FormValidationProvider>
+```
+
+When `selectedModuleId` changes, the label field automatically revalidates with the new context.
+
+#### Required vs Optional Fields
+
+**Required Fields (must have value)**
+```svelte
+<TextInput
+  required  <!-- Form invalid if empty -->
+  bind:value={titleValue}
+/>
+```
+
+**Optional Fields (can be empty)**
+```svelte
+<SlugField
+  bind:value={slugValue}  <!-- No required prop -->
+  validate={validateSlug}  <!-- Only validates if has value -->
+/>
+```
+
+Optional fields with validation:
+- Don't block form submission when empty
+- Validate when they have a value
+- Show validation status when validation runs
+
+#### Manual Field Tracking (Not Recommended)
+
+Before FormValidationProvider, you had to manually track each field:
+
+```svelte
+<!-- OLD APPROACH - Don't do this -->
+<script lang="ts">
+  // Manual field state tracking
+  let labelValidation = $state({ status: "idle", isValid: true });
+  let slugValidation = $state({ status: "idle", isValid: true });
+
+  // Manual validity computation
+  const isFormValid = $derived(
+    labelValue.trim() !== "" &&
+    titleValue.trim() !== "" &&
+    labelValidation.status !== "validating" &&
+    labelValidation.isValid &&
+    slugValidation.status !== "validating" &&
+    slugValidation.isValid
+  );
+
+  // Manual validation callbacks
+  function handleLabelValidation(status: string, isValid: boolean) {
+    labelValidation = { status, isValid };
+  }
+
+  function handleSlugValidation(status: string, isValid: boolean) {
+    slugValidation = { status, isValid };
+  }
+</script>
+
+<TextInput validate={validateLabel} onvalidationchange={handleLabelValidation} />
+<SlugField validate={validateSlug} onvalidationchange={handleSlugValidation} />
+```
+
+**With FormValidationProvider, this is automatic:**
+
+```svelte
+<script lang="ts">
+  let isFormValid = $state(false);  // That's it!
+</script>
+
+<FormValidationProvider bind:isValid={isFormValid}>
+  <TextInput validate={validateLabel} />
+  <SlugField validate={validateSlug} />
+</FormValidationProvider>
+```
+
+#### Validation Callback (Optional)
+
+You can still use `onvalidationchange` for field-specific logic:
+
+```svelte
+<script lang="ts">
+  let isFormValid = $state(false);
+  let labelHasError = $state(false);
+
+  function handleLabelValidation(status: string, isValid: boolean) {
+    labelHasError = status === "invalid";
+  }
+</script>
+
+<FormValidationProvider bind:isValid={isFormValid}>
+  <TextInput
+    validate={validateLabel}
+    onvalidationchange={handleLabelValidation}
+  />
+
+  {#if labelHasError}
+    <p>Please choose a different label.</p>
+  {/if}
+</FormValidationProvider>
+```
+
+The callback receives field-specific validation state while FormValidationProvider handles form-level validity.
+
+#### Common Patterns
+
+**Edit Mode with Existing Values**
+
+```svelte
+<script lang="ts">
+  interface Props {
+    article?: {
+      title: string;
+      slug: string;
+      description: string;
+    };
+  }
+
+  let { article }: Props = $props();
+  let isFormValid = $state(false);
+
+  // Initialize from existing values
+  let titleValue = $state(article?.title ?? "");
+  let slugValue = $state(article?.slug ?? "");
+  let descriptionValue = $state(article?.description ?? "");
+</script>
+
+<FormValidationProvider bind:isValid={isFormValid}>
+  <TextInput required bind:value={titleValue} />
+  <SlugField
+    bind:value={slugValue}
+    source={titleValue}
+    validate={validateSlug}
+  />
+  <TextInput bind:value={descriptionValue} />
+</FormValidationProvider>
+
+<SaveSplitButton
+  mode="edit"
+  disabled={!isFormValid}
+/>
+```
+
+**Conditional Fields**
+
+```svelte
+<script lang="ts">
+  let isFormValid = $state(false);
+  let requiresApproval = $state(false);
+  let approverEmail = $state("");
+</script>
+
+<FormValidationProvider bind:isValid={isFormValid}>
+  <TextInput required bind:value={titleValue} />
+
+  <Switch
+    bind:checked={requiresApproval}
+    label="Requires approval"
+  />
+
+  {#if requiresApproval}
+    <!-- Conditionally rendered field auto-registers when shown -->
+    <TextInput
+      required
+      type="email"
+      bind:value={approverEmail}
+      validate={validateEmail}
+    />
+  {/if}
+</FormValidationProvider>
+```
+
+When `requiresApproval` becomes true, the email field registers and affects form validity. When false, it unregisters and doesn't block submission.
+
+#### Troubleshooting
+
+**Form stays invalid even when fields are filled**
+
+Check that:
+1. All required fields have the `required` prop
+2. Field IDs are unique (duplicates can cause conflicts)
+3. Validation functions return `ValidationResult` format
+4. No fields are stuck in "validating" state (check network requests)
+
+**Submit button never enables**
+
+Add debug logging to see field state:
+
+```svelte
+<script lang="ts">
+  let isFormValid = $state(false);
+
+  // Debug form validity
+  $effect(() => {
+    console.log('Form valid:', isFormValid);
+  });
+</script>
+
+<FormValidationProvider bind:isValid={isFormValid}>
+  <!-- fields -->
+</FormValidationProvider>
+```
+
+Check browser console to see when `isFormValid` changes.
+
+**Validation doesn't run on auto-generated values**
+
+This is fixed in the latest version. Validation now runs on any value change, including:
+- User typing
+- Programmatic updates
+- Auto-generated slugs
+- Copy/paste
+
+**Infinite validation loop**
+
+Ensure validation functions don't modify reactive state that triggers re-validation. Use `untrack()` if needed:
+
+```svelte
+async function validateField(value: string) {
+  // Safe - doesn't modify reactive state
+  const result = await fetch('/api/validate', {
+    body: JSON.stringify({ value })
+  });
+  return await result.json();
+}
+```
+
+#### Performance Considerations
+
+**Debouncing**
+
+Validation is debounced by default (300ms) to avoid excessive API calls:
+
+```svelte
+<TextInput
+  validate={validateEmail}
+  validationDebounce={500}  <!-- Custom debounce -->
+/>
+```
+
+**Validation Context Changes**
+
+Changing `validationContext` triggers revalidation. Use stable references:
+
+```svelte
+<!-- GOOD: Stable reference -->
+<TextInput
+  validate={validateLabel}
+  validationContext={selectedModuleId}
+/>
+
+<!-- BAD: New object on every render -->
+<TextInput
+  validate={validateLabel}
+  validationContext={{ moduleId: selectedModuleId }}  <!-- Creates new object! -->
+/>
+```
+
+**Many Fields**
+
+FormValidationProvider scales well to forms with many fields (tested with 20+ validated fields). The version counter approach ensures efficient reactivity.
+
+#### Best Practices
+
+1. **Always wrap validated fields in FormValidationProvider**
+   ```svelte
+   <FormValidationProvider bind:isValid={isFormValid}>
+     <!-- All validated fields here -->
+   </FormValidationProvider>
+   ```
+
+2. **Use required prop for mandatory fields**
+   ```svelte
+   <TextInput required />  <!-- Not just HTML5 validation -->
+   ```
+
+3. **Return consistent ValidationResult format**
+   ```svelte
+   async function validate(value: string): Promise<ValidationResult> {
+     return { valid: true, message: "Looks good!" };
+   }
+   ```
+
+4. **Disable submit button based on form validity**
+   ```svelte
+   <SaveSplitButton disabled={!isFormValid} />
+   ```
+
+5. **Use validationContext for related validation**
+   ```svelte
+   <TextInput
+     validate={validateLabel}
+     validationContext={parentId}
+   />
+   ```
+
+6. **Don't mix manual and automatic tracking**
+   - Choose FormValidationProvider OR manual callbacks, not both
+   - FormValidationProvider is recommended for all new forms
+
 ---
 
 ## Frontend Validation
