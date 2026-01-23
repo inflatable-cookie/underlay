@@ -1,4 +1,6 @@
 <script lang="ts">
+  import type { Snippet } from "svelte";
+
   /**
    * StatusBadge - A generic badge component for displaying boolean states
    *
@@ -24,14 +26,23 @@
      * - danger: green when true, red when false
      */
     variant?: "success" | "danger";
+    /** Optional icon to show when value is true */
+    trueIcon?: Snippet;
+    /** Optional icon to show when value is false */
+    falseIcon?: Snippet;
   }
 
   let {
     value,
     trueLabel,
     falseLabel,
-    variant = "success"
+    variant = "success",
+    trueIcon,
+    falseIcon
   }: Props = $props();
+
+  const currentIcon = $derived(value ? trueIcon : falseIcon);
+  const currentLabel = $derived(value ? trueLabel : falseLabel);
 </script>
 
 <span
@@ -39,18 +50,41 @@
   class:status-badge--true={value}
   class:status-badge--false={!value}
   class:status-badge--danger={variant === "danger"}
+  class:status-badge--with-icon={currentIcon !== undefined}
 >
-  {value ? trueLabel : falseLabel}
+  {#if currentIcon}
+    <span class="status-badge__icon">
+      {@render currentIcon()}
+    </span>
+  {/if}
+  <span class="status-badge__label">{currentLabel}</span>
 </span>
 
 <style>
   .status-badge {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35em;
     padding: 0.2em 0.6em;
     font-size: 0.85rem;
     font-weight: 500;
     border-radius: 0.25rem;
     transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  .status-badge__icon {
+    display: inline-flex;
+    align-items: center;
+    line-height: 0;
+  }
+
+  .status-badge__icon :global(svg) {
+    width: 1em;
+    height: 1em;
+  }
+
+  .status-badge__label {
+    line-height: 1;
   }
 
   /* Success variant (default): green/orange */
