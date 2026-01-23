@@ -1,8 +1,10 @@
 <script lang="ts">
   import type { HTMLInputAttributes } from "svelte/elements";
+  import { getContext, onMount } from "svelte";
   import X from "lucide-svelte/icons/x";
   import Check from "lucide-svelte/icons/check";
   import AlertCircle from "lucide-svelte/icons/alert-circle";
+  import { createStableId } from "../patterns/dom";
 
   export interface ValidationResult {
     valid: boolean;
@@ -53,8 +55,20 @@
     validateOnBlur = true,
     onvalidationchange,
     class: className,
+    id,
+    required = false,
     ...restProps
   }: Props = $props();
+
+  // Get FormValidationProvider context if present
+  const formValidation = getContext<{
+    registerField: (id: string, required: boolean, hasValue: boolean, validationStatus: string, isValidationValid: boolean) => void;
+    unregisterField: (id: string) => void;
+    updateField: (id: string, hasValue: boolean, validationStatus?: string, isValidationValid?: boolean) => void;
+  } | undefined>("formValidation");
+
+  // Generate stable ID for form validation tracking
+  const fieldId = id ?? createStableId("underlay-text-input");
 
   let debounceTimer: ReturnType<typeof setTimeout> | null = null;
   let validationTimer: ReturnType<typeof setTimeout> | null = null;
@@ -97,6 +111,28 @@
         clearTimeout(validationTimer);
       }
     };
+  });
+
+  // Register with FormValidationProvider on mount
+  $effect(() => {
+    if (formValidation) {
+      const hasValue = value.trim() !== "";
+      const isValid = validationStatus === "valid" || validationStatus === "idle";
+      formValidation.registerField(fieldId, required, hasValue, validationStatus, isValid);
+
+      return () => {
+        formValidation.unregisterField(fieldId);
+      };
+    }
+  });
+
+  // Update FormValidationProvider when value or validation changes
+  $effect(() => {
+    if (formValidation) {
+      const hasValue = value.trim() !== "";
+      const isValid = validationStatus === "valid" || validationStatus === "idle";
+      formValidation.updateField(fieldId, hasValue, validationStatus, isValid);
+    }
   });
 
   // Notify validation state changes
@@ -202,9 +238,11 @@
   <div class="underlay-input-wrapper">
     <input
       {...restProps}
+      id={fieldId}
       class={`underlay-input ${search ? "underlay-input--search" : ""} ${showValidationIcon ? "underlay-input--validated" : ""} ${className ?? ""}`}
       {type}
       {autocomplete}
+      {required}
       bind:this={inputRef}
       bind:value
       oninput={handleInput}
@@ -247,9 +285,11 @@
 {:else}
   <input
     {...restProps}
+    id={fieldId}
     class={`underlay-input ${className ?? ""}`}
     {type}
     {autocomplete}
+    {required}
     bind:this={inputRef}
     bind:value
     oninput={handleInput}

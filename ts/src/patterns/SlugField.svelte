@@ -21,6 +21,8 @@
     debounceMs?: number;
     /** Whether field is disabled */
     disabled?: boolean;
+    /** Whether field is required */
+    required?: boolean;
     /** Hint text shown below field */
     hint?: string;
     /** Input element ID */
@@ -43,6 +45,7 @@
     excludeId = null,
     debounceMs = 300,
     disabled = false,
+    required = false,
     hint,
     id,
     error,
@@ -115,11 +118,12 @@
   }
 </script>
 
-<Field {label} forId={id} error={error} {hint}>
+<Field {label} forId={id} error={error} {hint} {required}>
   <TextInput
     {id}
     {name}
     {disabled}
+    {required}
     {maxlength}
     bind:value
     oninput={handleInput}
