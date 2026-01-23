@@ -37,6 +37,8 @@
     validateOnBlur?: boolean;
     /** Callback when validation state changes */
     onvalidationchange?: (status: ValidationStatus, isValid: boolean) => void;
+    /** Static prefix to display before the input (e.g., "A", "$") */
+    prefix?: string;
   }
 
   let {
@@ -54,6 +56,7 @@
     showValidationStatus = validate !== undefined,
     validateOnBlur = true,
     onvalidationchange,
+    prefix,
     class: className,
     id,
     required = false,
@@ -82,7 +85,7 @@
 
   const showClearButton = $derived(search && value.length > 0);
   const showValidationIcon = $derived(showValidationStatus && validationStatus !== "idle");
-  const needsWrapper = $derived(search || showValidationStatus);
+  const needsWrapper = $derived(search || showValidationStatus || prefix);
 
   // Trigger validation when value changes (even if auto-generated)
   $effect(() => {
@@ -255,11 +258,14 @@
 </script>
 
 {#if needsWrapper}
-  <div class="underlay-input-wrapper">
+  <div class="underlay-input-wrapper {prefix ? 'underlay-input-wrapper--prefixed' : ''}">
+    {#if prefix}
+      <span class="underlay-input-prefix">{prefix}</span>
+    {/if}
     <input
       {...restProps}
       id={fieldId}
-      class={`underlay-input ${search ? "underlay-input--search" : ""} ${showValidationIcon ? "underlay-input--validated" : ""} ${className ?? ""}`}
+      class={`underlay-input ${prefix ? "underlay-input--prefixed" : ""} ${search ? "underlay-input--search" : ""} ${showValidationIcon ? "underlay-input--validated" : ""} ${className ?? ""}`}
       {type}
       {autocomplete}
       {required}
@@ -436,5 +442,47 @@
 
   .underlay-input-validation__message--invalid {
     color: var(--underlay-color-error, #ef4444);
+  }
+
+  /* Prefixed input styles */
+  .underlay-input-wrapper--prefixed {
+    display: flex;
+    align-items: stretch;
+    border: var(--underlay-field-border-width, 1px) solid var(--underlay-color-border, rgba(148, 163, 184, 0.35));
+    border-radius: var(--underlay-radius-md, 0.375rem);
+    background: var(--underlay-color-field-bg, rgba(148, 163, 184, 0.08));
+  }
+
+  .underlay-input-wrapper--prefixed:focus-within {
+    outline: var(--underlay-focus-ring-width, 2px) solid var(--underlay-color-primary, #2563eb);
+    outline-offset: var(--underlay-focus-ring-offset, 2px);
+  }
+
+  .underlay-input-prefix {
+    display: flex;
+    align-items: center;
+    padding: 0 0.6em;
+    font-family: var(--underlay-font-mono, monospace);
+    font-size: 0.9em;
+    font-weight: 600;
+    color: var(--underlay-color-text-muted, #9ca3af);
+    background: var(--underlay-color-field-bg, rgba(148, 163, 184, 0.08));
+    border-right: 1px solid var(--underlay-color-border, rgba(148, 163, 184, 0.35));
+    border-radius: var(--underlay-radius-md, 0.375rem) 0 0 var(--underlay-radius-md, 0.375rem);
+    user-select: none;
+    white-space: nowrap;
+  }
+
+  .underlay-input--prefixed {
+    flex: 1;
+    min-width: 0;
+    border: none !important;
+    border-radius: 0 var(--underlay-radius-md, 0.375rem) var(--underlay-radius-md, 0.375rem) 0 !important;
+    background: transparent !important;
+  }
+
+  .underlay-input--prefixed:focus,
+  .underlay-input--prefixed:focus-visible {
+    outline: none !important;
   }
 </style>
