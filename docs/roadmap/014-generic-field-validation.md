@@ -1,6 +1,6 @@
 # 014 — Generic Field Validation System
 
-**Status:** Complete (Phase 6 deferred)
+**Status:** Complete
 
 This roadmap defines the refactoring of field validation from slug-specific to generic and reusable across the platform. The goal is to enhance `TextInput` with optional async validation capabilities while maintaining `SlugField` for slug-specific UX features.
 
@@ -46,6 +46,8 @@ Non-goals (for this doc):
 - `dairy:bcf0744` - Applied Switch color variants across forms, removed slug uniqueness for Section/Area
 - `underlay:15661db` - Added prefix support to SlugField for key display
 - `dairy:a2b8608` - Added key generation and display to Section/Area forms
+- `cattle-grid:787d719` - Removed deprecated check-slug functions
+- `farmyard:015e1e6` - Removed deprecated check-slug endpoints
 
 **Additional enhancements (beyond original scope):**
 - FormValidationProvider component for automatic form-level validation tracking
@@ -72,7 +74,7 @@ Non-goals (for this doc):
 - [x] Phase 3 — Generic validation client (Cattle-Grid)
 - [x] Phase 4 — SlugField refactor to use TextInput validation
 - [x] Phase 5 — Migrate forms to generic validation
-- [ ] Phase 6 — Deprecate old slug-specific endpoints
+- [x] Phase 6 — Remove old slug-specific endpoints
 
 ---
 
@@ -480,69 +482,56 @@ Non-goals (for this doc):
 
 ---
 
-## Phase 6 — Deprecate Old Endpoints
+## Phase 6 — Remove Old Endpoints
 
-**Goal:** Mark old slug-specific endpoints as deprecated and plan for eventual removal.
+**Goal:** Remove old slug-specific endpoints that have been superseded by the generic validateField endpoint.
 
-**Status:** DEFERRED — Old endpoints can remain alongside new system. New code uses validateField; old endpoints continue to work for backward compatibility. Will revisit deprecation after all consuming code migrated.
+**Status:** COMPLETE — Removed all check-slug endpoints and related code since all forms now use validateField.
 
-**Estimated time:** 1-2 days
+**Estimated time:** 1 day (actual)
 
-- [ ] Phase 6 (overall) — *Deferred*
+- [x] Phase 6 (overall)
 
-### Documentation
+### Removed Code
 
-- [ ] Add deprecation notices to OpenAPI docs
-  - Mark check-slug endpoints as deprecated
-  - Add "use validate-field instead" message
-  - Add deprecation date
-  - Add planned removal date (e.g., 6 months)
-- [ ] Update API documentation
-  - Document new validate-field endpoints
-  - Provide migration examples
-  - Link to changelog
+- [x] Farmyard API handlers
+  - Removed `check_pathway_slug` handler
+  - Removed `check_module_slug` handler
+  - Removed `check_section_slug` handler
+  - Removed `check_area_slug` handler
+- [x] Farmyard DTOs
+  - Removed `CheckSlugPayload`
+  - Removed `CheckModuleSlugPayload`
+  - Removed `CheckSlugResponse`
+- [x] Farmyard router routes
+  - Removed `/v1/admin/learning/pathways/check-slug`
+  - Removed `/v1/admin/learning/modules/check-slug`
+  - Removed `/v1/admin/learning/modules/:module_id/sections/check-slug`
+  - Removed `/v1/admin/learning/sections/:section_id/areas/check-slug`
+- [x] Cattle-Grid functions
+  - Removed `checkPathwaySlug`
+  - Removed `checkModuleSlug`
+  - Removed `checkSectionSlug`
+  - Removed `checkAreaSlug`
+- [x] Cattle-Grid types
+  - Removed `CheckSlugResponse`
 
-### Monitoring
+### What Remains
 
-- [ ] Add deprecation warnings to old endpoint logs
-  - Log each time old endpoint is called
-  - Include caller info if possible
-- [ ] Monitor usage of old endpoints
-  - Track how many calls per day
-  - Identify any remaining callers
-- [ ] Set up alerting if usage increases
-  - Catches accidental new usage
+- [x] SlugField component (still valuable for slug UX)
+- [x] slug utility functions (slugify, etc.)
+- [x] Database check helpers (used by validateField internally)
+- [x] validateField endpoint and client function
 
-### Communication
-
-- [ ] Announce deprecation in changelog
-  - Explain why (consolidation, better UX)
-  - Show migration path
-  - Give timeline for removal
-- [ ] Update internal documentation
-  - Form development guide
-  - API usage guide
-  - Migration guide for developers
-
-### Future Cleanup
-
-- [ ] Plan for eventual removal (after 6 months)
-  - Remove old handlers
-  - Remove old routes
-  - Remove old cattle-grid functions
-  - Remove old payload types (if only used for slug checks)
-  - Keep database helpers (may still be used)
-- [ ] Document what stays
-  - SlugField component (still valuable)
-  - slug utility functions
-  - Database check helpers
+**Commits:**
+- `cattle-grid:787d719` — Remove deprecated check-slug functions
+- `farmyard:015e1e6` — Remove deprecated check-slug endpoints
 
 **Acceptance criteria:**
-- Old endpoints marked as deprecated in docs
-- Deprecation warnings logged when old endpoints called
-- Clear migration path documented
-- Timeline for removal communicated
-- Monitoring in place to track usage
+- [x] Old endpoints removed from codebase
+- [x] Old client functions removed
+- [x] All forms use validateField instead
+- [x] Codebase compiles successfully
 
 ---
 
