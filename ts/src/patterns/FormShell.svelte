@@ -122,6 +122,10 @@
     font-size: 0.9em;
   }
 
+  .underlay-form-shell__error-summary p:first-child {
+    margin-top: 0;
+  }
+
   .underlay-form-shell__error-summary ul {
     margin: var(--underlay-space-2, 0.5rem) 0 0;
     padding-left: 1.25rem;
