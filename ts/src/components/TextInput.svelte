@@ -113,12 +113,16 @@
     };
   });
 
+  // Track mount state to prevent update loops during hydration
+  let isMounted = $state(false);
+
   // Register with FormValidationProvider on mount
   onMount(() => {
     if (formValidation) {
       const hasValue = untrack(() => value.trim() !== "");
       const isValid = untrack(() => validationStatus === "valid" || validationStatus === "idle");
       formValidation.registerField(fieldId, required, hasValue, untrack(() => validationStatus), isValid);
+      isMounted = true;
 
       return () => {
         formValidation.unregisterField(fieldId);
@@ -126,9 +130,9 @@
     }
   });
 
-  // Update FormValidationProvider when value or validation changes
+  // Update FormValidationProvider when value or validation changes (only after mount)
   $effect(() => {
-    if (formValidation) {
+    if (formValidation && isMounted) {
       const hasValue = value.trim() !== "";
       const isValid = validationStatus === "valid" || validationStatus === "idle";
       formValidation.updateField(fieldId, hasValue, validationStatus, isValid);
