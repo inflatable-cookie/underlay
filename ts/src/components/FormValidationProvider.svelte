@@ -26,11 +26,9 @@
   const computedIsValid = $derived.by(() => {
     // Access version to create dependency
     const _v = version;
-    console.log('[FormValidationProvider] Computing validity, version:', _v, 'fields:', Array.from(fields.entries()));
     for (const field of fields.values()) {
       // Required field must have a value
       if (field.required && !field.hasValue) {
-        console.log('[FormValidationProvider] INVALID: Required field missing value:', field.id);
         return false;
       }
 
@@ -38,17 +36,14 @@
       if (field.validationStatus !== "idle") {
         // Can't be validating
         if (field.validationStatus === "validating") {
-          console.log('[FormValidationProvider] INVALID: Field is validating:', field.id);
           return false;
         }
         // Must be valid
         if (!field.isValidationValid) {
-          console.log('[FormValidationProvider] INVALID: Field validation failed:', field.id);
           return false;
         }
       }
     }
-    console.log('[FormValidationProvider] VALID: All fields passed');
     return true;
   });
 
@@ -65,7 +60,6 @@
     validationStatus: string,
     isValidationValid: boolean
   ) => {
-    console.log('[FormValidationProvider] registerField:', { id, required, hasValue, validationStatus, isValidationValid });
     fields.set(id, {
       id,
       required,
@@ -77,7 +71,6 @@
   };
 
   const unregisterField = (id: string) => {
-    console.log('[FormValidationProvider] unregisterField:', id);
     fields.delete(id);
     version++;
   };
@@ -89,7 +82,6 @@
     isValidationValid?: boolean
   ) => {
     const field = fields.get(id);
-    console.log('[FormValidationProvider] updateField:', { id, hasValue, validationStatus, isValidationValid, fieldExists: !!field });
     if (field) {
       // Mutate field in place (Map reference stays same)
       field.hasValue = hasValue;
