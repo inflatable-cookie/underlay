@@ -33,6 +33,8 @@
     showValidationStatus?: boolean;
     /** Validate on blur in addition to on change (default: true) */
     validateOnBlur?: boolean;
+    /** Callback when validation state changes */
+    onvalidationchange?: (status: ValidationStatus, isValid: boolean) => void;
   }
 
   let {
@@ -49,6 +51,7 @@
     validationDebounce = 300,
     showValidationStatus = validate !== undefined,
     validateOnBlur = true,
+    onvalidationchange,
     class: className,
     ...restProps
   }: Props = $props();
@@ -94,6 +97,14 @@
         clearTimeout(validationTimer);
       }
     };
+  });
+
+  // Notify validation state changes
+  $effect(() => {
+    if (onvalidationchange && validate) {
+      const isValid = validationStatus === "valid" || validationStatus === "idle";
+      onvalidationchange(validationStatus, isValid);
+    }
   });
 
   function triggerValidation(inputValue: string) {

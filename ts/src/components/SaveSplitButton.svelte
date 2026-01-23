@@ -13,6 +13,7 @@
     createAndCloseLabel?: string;
     saveLabel?: string;
     saveAndCloseLabel?: string;
+    disabled?: boolean;
   }
 
   let {
@@ -23,7 +24,8 @@
     createLabel = "Create",
     createAndCloseLabel = "Create & close",
     saveLabel = "Save changes",
-    saveAndCloseLabel = "Save & close"
+    saveAndCloseLabel = "Save & close",
+    disabled = false
   }: Props = $props();
 
   let options = $derived(
@@ -39,4 +41,4 @@
   );
 </script>
 
-<SplitButton {type} {variant} {options} bind:value={intent} />
+<SplitButton {type} {variant} {options} {disabled} bind:value={intent} />

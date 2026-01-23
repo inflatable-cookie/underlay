@@ -29,6 +29,8 @@
     error?: string;
     /** Maximum length for the slug */
     maxlength?: number;
+    /** Callback when validation state changes */
+    onvalidationchange?: (status: string, isValid: boolean) => void;
   }
 
   let {
@@ -45,6 +47,7 @@
     id,
     error,
     maxlength,
+    onvalidationchange,
   }: Props = $props();
 
   // Internal state for slug-specific features
@@ -124,6 +127,7 @@
     validate={validate ? validateForTextInput : undefined}
     validationContext={validationKey}
     validationDebounce={debounceMs}
+    onvalidationchange={onvalidationchange}
     placeholder="url-friendly-slug"
     autocomplete="off"
     spellcheck={false}
