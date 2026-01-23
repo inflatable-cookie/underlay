@@ -70,13 +70,15 @@
       validationStatus,
       isValidationValid,
     });
-    fields = fields; // Trigger reactivity
+    // Create new Map to trigger reactivity
+    fields = new Map(fields);
   };
 
   const unregisterField = (id: string) => {
     console.log('[FormValidationProvider] unregisterField:', id);
     fields.delete(id);
-    fields = fields; // Trigger reactivity
+    // Create new Map to trigger reactivity
+    fields = new Map(fields);
   };
 
   const updateField = (
@@ -88,14 +90,16 @@
     const field = fields.get(id);
     console.log('[FormValidationProvider] updateField:', { id, hasValue, validationStatus, isValidationValid, fieldExists: !!field });
     if (field) {
-      field.hasValue = hasValue;
-      if (validationStatus !== undefined) {
-        field.validationStatus = validationStatus;
-      }
-      if (isValidationValid !== undefined) {
-        field.isValidationValid = isValidationValid;
-      }
-      fields = fields; // Trigger reactivity
+      // Create new field object instead of mutating to trigger reactivity
+      fields.set(id, {
+        id: field.id,
+        required: field.required,
+        hasValue,
+        validationStatus: validationStatus !== undefined ? validationStatus : field.validationStatus,
+        isValidationValid: isValidationValid !== undefined ? isValidationValid : field.isValidationValid,
+      });
+      // Create new Map to trigger reactivity
+      fields = new Map(fields);
     }
   };
 
