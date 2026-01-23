@@ -65,6 +65,7 @@
 
   const showClearButton = $derived(search && value.length > 0);
   const showValidationIcon = $derived(showValidationStatus && validationStatus !== "idle" && hasUserInteracted);
+  const needsWrapper = $derived(search || showValidationStatus);
 
   // Trigger validation when value changes
   $effect(() => {
@@ -186,7 +187,7 @@
   }
 </script>
 
-{#if search || showValidationIcon}
+{#if needsWrapper}
   <div class="underlay-input-wrapper">
     <input
       {...restProps}
