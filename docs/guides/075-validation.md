@@ -309,6 +309,772 @@ pub async fn update_article(
 
 ---
 
+## Async Field Validation
+
+Underlay provides a complete async field validation system that validates fields as the user types, with debouncing, visual feedback, and backend integration.
+
+### Overview
+
+The async validation system consists of:
+- **TextInput component** - Handles validation state, debouncing, and visual feedback
+- **SlugField component** - Specialized input with slug-specific validation and auto-generation
+- **Generic validation endpoints** - Backend validates field uniqueness and business rules
+- **API client helpers** - Type-safe validation requests
+
+### TextInput Async Validation
+
+The `TextInput` component supports optional async validation with visual feedback:
+
+```svelte
+<script lang="ts">
+  import { TextInput, type ValidationResult } from "@decodelabs/underlay/components";
+
+  async function validateEmail(email: string): Promise<ValidationResult> {
+    // Call backend to check if email exists
+    const response = await fetch("/api/validate-email", {
+      method: "POST",
+      body: JSON.stringify({ email })
+    });
+
+    const result = await response.json();
+
+    return {
+      valid: result.available,
+      message: result.available
+        ? "Email is available"
+        : "Email is already registered"
+    };
+  }
+</script>
+
+<TextInput
+  name="email"
+  placeholder="you@example.com"
+  validate={validateEmail}
+  validationDebounce={300}
+/>
+```
+
+#### ValidationResult Format
+
+All async validators must return a `ValidationResult`:
+
+```typescript
+interface ValidationResult {
+  valid: boolean;
+  message?: string;    // User-friendly feedback
+  suggestion?: string; // Optional alternative value
+}
+```
+
+#### Validation Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `validate` | `(value: string, context?: unknown) => Promise<ValidationResult>` | `undefined` | Async validation function |
+| `validationContext` | `unknown` | `undefined` | Context passed to validator (e.g., parent ID) |
+| `validationDebounce` | `number` | `300` | Debounce delay in milliseconds |
+| `showValidationStatus` | `boolean` | `true` (if validate provided) | Show status icon and message |
+| `validateOnBlur` | `boolean` | `true` | Also validate on blur for immediate feedback |
+
+#### Visual Feedback
+
+TextInput shows real-time validation status:
+
+- **Validating**: Gray spinner icon while checking
+- **Valid**: Green checkmark icon with success message
+- **Invalid**: Red alert icon with error message
+
+Status icons appear on the right side of the input field. Messages appear below the field.
+
+#### Validation Context
+
+Use `validationContext` to pass additional data to the validator:
+
+```svelte
+<script lang="ts">
+  let selectedModuleId = $state("module-123");
+
+  async function validateLabel(label: string) {
+    // Context is available in the validator
+    return await api.validateField({
+      entity: "section",
+      field: "label",
+      value: label,
+      context: { moduleId: selectedModuleId }
+    });
+  }
+</script>
+
+<TextInput
+  name="label"
+  validate={validateLabel}
+  validationContext={selectedModuleId}
+/>
+```
+
+When `validationContext` changes, the field automatically revalidates.
+
+### SlugField Component
+
+`SlugField` is a specialized component for URL-friendly slugs with auto-generation and validation:
+
+```svelte
+<script lang="ts">
+  import { SlugField } from "@decodelabs/underlay/patterns";
+  import type { ValidationResult } from "@decodelabs/underlay/components";
+
+  let titleValue = $state("");
+  let slugValue = $state("");
+
+  async function validateSlug(slug: string): Promise<ValidationResult> {
+    const response = await fetch("/api/validate-slug", {
+      method: "POST",
+      body: JSON.stringify({ slug })
+    });
+
+    return await response.json();
+  }
+</script>
+
+<TextInput
+  name="title"
+  bind:value={titleValue}
+  placeholder="Article Title"
+/>
+
+<SlugField
+  name="slug"
+  label="Slug"
+  bind:value={slugValue}
+  source={titleValue}
+  validate={validateSlug}
+  hint="Used in URLs, lowercase letters and hyphens only"
+/>
+```
+
+#### SlugField Features
+
+1. **Auto-generation**: Automatically generates slug from source field
+2. **Manual edit tracking**: Stops auto-generation once user edits manually
+3. **Slugification**: Normalizes input on blur (lowercase, hyphens, etc.)
+4. **Format validation**: Built-in format checks before async validation
+5. **Reserved slugs**: Checks against reserved words (`admin`, `api`, etc.)
+6. **Monospace font**: Better visibility for URL-like values
+
+#### SlugField Props
+
+Inherits all TextInput validation props, plus:
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `source` | `string` | Source value to auto-generate slug from (e.g., title) |
+| `validate` | `(slug: string) => Promise<ValidationResult>` | Async slug validation |
+| `validationKey` | `unknown` | Triggers revalidation when changed |
+| `excludeId` | `string \| null` | ID to exclude from uniqueness check (edit mode) |
+| `maxlength` | `number` | Max slug length (default: 100) |
+
+#### Validation Flow
+
+SlugField validates in this order:
+
+1. **Format check** (synchronous):
+   - Minimum 2 characters
+   - Maximum length
+   - Pattern: `^[a-z0-9-]+$`
+
+2. **Reserved check** (synchronous):
+   - Rejects reserved slugs: `admin`, `api`, `new`, `edit`, `delete`, etc.
+
+3. **Async validation** (if `validate` provided):
+   - Uniqueness check via backend
+   - Business rule validation
+
+If any step fails, subsequent steps are skipped.
+
+### Backend Validation Endpoints
+
+Create a generic validation endpoint that routes to entity/field-specific validators:
+
+#### Payload Structure
+
+```typescript
+interface ValidateFieldPayload {
+  entity: string;      // e.g., "user", "article", "module"
+  field: string;       // e.g., "email", "slug", "label"
+  value: string;       // The value to validate
+  context?: {          // Optional context for validation
+    [key: string]: any;
+    excludeId?: string; // Exclude from uniqueness check
+  };
+}
+```
+
+#### Backend Implementation (Rust/Axum)
+
+```rust
+use axum::{Json, extract::State};
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ValidateFieldPayload {
+    pub entity: String,
+    pub field: String,
+    pub value: String,
+    #[serde(default)]
+    pub context: serde_json::Value,
+}
+
+#[derive(Debug, Serialize)]
+pub struct ValidationResult {
+    pub valid: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub message: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub suggestion: Option<String>,
+}
+
+pub async fn validate_field(
+    State(state): State<AppState>,
+    Json(payload): Json<ValidateFieldPayload>,
+) -> Result<Json<ValidationResult>, AppError> {
+    let result = match (payload.entity.as_str(), payload.field.as_str()) {
+        ("user", "email") => validate_user_email(&state, &payload).await?,
+        ("article", "slug") => validate_article_slug(&state, &payload).await?,
+        ("section", "label") => validate_section_label(&state, &payload).await?,
+        _ => {
+            return Err(AppError::BadRequest(
+                format!("Unknown validation: {}.{}", payload.entity, payload.field)
+            ));
+        }
+    };
+
+    Ok(Json(result))
+}
+
+async fn validate_user_email(
+    state: &AppState,
+    payload: &ValidateFieldPayload,
+) -> Result<ValidationResult, AppError> {
+    let exclude_id = payload.context.get("excludeId")
+        .and_then(|v| v.as_str());
+
+    let exists = state.db
+        .user_email_exists(&payload.value, exclude_id)
+        .await?;
+
+    Ok(ValidationResult {
+        valid: !exists,
+        message: Some(if exists {
+            "Email is already registered".into()
+        } else {
+            "Email is available".into()
+        }),
+        suggestion: None,
+    })
+}
+
+async fn validate_article_slug(
+    state: &AppState,
+    payload: &ValidateFieldPayload,
+) -> Result<ValidationResult, AppError> {
+    let exclude_id = payload.context.get("excludeId")
+        .and_then(|v| v.as_str());
+
+    let exists = state.db
+        .article_slug_exists(&payload.value, exclude_id)
+        .await?;
+
+    Ok(ValidationResult {
+        valid: !exists,
+        message: Some(if exists {
+            "Slug is already in use".into()
+        } else {
+            "Slug is available".into()
+        }),
+        suggestion: if exists {
+            Some(format!("{}-{}", payload.value, rand::random::<u32>() % 1000))
+        } else {
+            None
+        },
+    })
+}
+```
+
+#### Database Helpers
+
+```rust
+impl Database {
+    pub async fn user_email_exists(
+        &self,
+        email: &str,
+        exclude_id: Option<&str>,
+    ) -> Result<bool, Error> {
+        let query = if let Some(id) = exclude_id {
+            sqlx::query_scalar!(
+                "SELECT EXISTS(SELECT 1 FROM users WHERE email = $1 AND user_id != $2)",
+                email,
+                id
+            )
+        } else {
+            sqlx::query_scalar!(
+                "SELECT EXISTS(SELECT 1 FROM users WHERE email = $1)",
+                email
+            )
+        };
+
+        Ok(query.fetch_one(&self.pool).await?.unwrap_or(false))
+    }
+
+    pub async fn article_slug_exists(
+        &self,
+        slug: &str,
+        exclude_id: Option<&str>,
+    ) -> Result<bool, Error> {
+        let query = if let Some(id) = exclude_id {
+            sqlx::query_scalar!(
+                "SELECT EXISTS(SELECT 1 FROM articles WHERE slug = $1 AND article_id != $2)",
+                slug,
+                id
+            )
+        } else {
+            sqlx::query_scalar!(
+                "SELECT EXISTS(SELECT 1 FROM articles WHERE slug = $1)",
+                slug
+            )
+        };
+
+        Ok(query.fetch_one(&self.pool).await?.unwrap_or(false))
+    }
+}
+```
+
+### API Client Integration
+
+Add validation helpers to your TypeScript API client:
+
+```typescript
+// In your API client (e.g., cattle-grid)
+export interface ValidateFieldPayload {
+  entity: string;
+  field: string;
+  value: string;
+  context?: {
+    excludeId?: string;
+    [key: string]: any;
+  };
+}
+
+export interface ValidationResult {
+  valid: boolean;
+  message?: string;
+  suggestion?: string;
+}
+
+export async function validateField(
+  payload: ValidateFieldPayload,
+  fetchFn: typeof fetch,
+  authToken: string
+): Promise<ValidationResult> {
+  const response = await fetchFn("/api/admin/validate-field", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${authToken}`
+    },
+    body: JSON.stringify(payload)
+  });
+
+  if (!response.ok) {
+    throw new Error("Validation request failed");
+  }
+
+  return await response.json();
+}
+```
+
+### Form Integration Examples
+
+#### Basic Field Validation
+
+```svelte
+<script lang="ts">
+  import { TextInput, type ValidationResult } from "@decodelabs/underlay/components";
+  import { api } from "$lib/api-client";
+
+  export let data;  // { authToken }
+
+  async function validateEmail(email: string): Promise<ValidationResult> {
+    return await api.validateField(
+      {
+        entity: "user",
+        field: "email",
+        value: email
+      },
+      window.fetch.bind(window),
+      data.authToken
+    );
+  }
+</script>
+
+<form method="post">
+  <TextInput
+    name="email"
+    type="email"
+    placeholder="you@example.com"
+    required
+    validate={validateEmail}
+  />
+
+  <button type="submit">Register</button>
+</form>
+```
+
+#### Edit Mode with Exclusion
+
+```svelte
+<script lang="ts">
+  import { TextInput } from "@decodelabs/underlay/components";
+  import { api } from "$lib/api-client";
+
+  export let data;  // { user, authToken }
+
+  async function validateEmail(email: string) {
+    return await api.validateField(
+      {
+        entity: "user",
+        field: "email",
+        value: email,
+        context: {
+          excludeId: data.user.userId  // Exclude current user from check
+        }
+      },
+      window.fetch.bind(window),
+      data.authToken
+    );
+  }
+</script>
+
+<form method="post">
+  <TextInput
+    name="email"
+    value={data.user.email}
+    validate={validateEmail}
+  />
+
+  <button type="submit">Update</button>
+</form>
+```
+
+#### Context-Dependent Validation
+
+```svelte
+<script lang="ts">
+  import { TextInput } from "@decodelabs/underlay/components";
+  import { api } from "$lib/api-client";
+
+  export let data;  // { authToken }
+
+  let selectedModuleId = $state<string | undefined>(undefined);
+
+  async function validateLabel(label: string) {
+    if (!selectedModuleId) {
+      return {
+        valid: false,
+        message: "Please select a module first"
+      };
+    }
+
+    return await api.validateField(
+      {
+        entity: "section",
+        field: "label",
+        value: label,
+        context: { moduleId: selectedModuleId }
+      },
+      window.fetch.bind(window),
+      data.authToken
+    );
+  }
+</script>
+
+<form method="post">
+  <!-- Module selector that updates selectedModuleId -->
+  <select bind:value={selectedModuleId}>
+    <option value="">Select module...</option>
+    <option value="mod-1">Module 1</option>
+    <option value="mod-2">Module 2</option>
+  </select>
+
+  <!-- Label validates within selected module -->
+  <TextInput
+    name="label"
+    placeholder="A, B, C..."
+    validate={validateLabel}
+    validationContext={selectedModuleId}
+  />
+
+  <button type="submit">Create Section</button>
+</form>
+```
+
+When `selectedModuleId` changes, the field automatically revalidates.
+
+#### Reactive Validation Context
+
+Use `$derived` to create reactive validation contexts:
+
+```svelte
+<script lang="ts">
+  import { SlugField } from "@decodelabs/underlay/patterns";
+  import { api } from "$lib/api-client";
+
+  export let data;  // { module, authToken }
+  export let form;  // Form data from +page.server.ts
+
+  // Reactive values
+  let formValues = $derived(form?.values ?? {});
+  let startYearValue = $derived(
+    typeof formValues?.startYear === "number"
+      ? formValues.startYear
+      : data.module.startYear
+  );
+
+  async function validateSlug(slug: string) {
+    return await api.validateField(
+      {
+        entity: "module",
+        field: "slug",
+        value: slug,
+        context: {
+          pathwayId: data.module.pathwayId,
+          startYear: startYearValue,  // Use reactive value
+          excludeId: data.module.moduleId
+        }
+      },
+      window.fetch.bind(window),
+      data.authToken
+    );
+  }
+</script>
+
+<form method="post">
+  <input
+    type="number"
+    name="startYear"
+    value={startYearValue}
+  />
+
+  <SlugField
+    name="slug"
+    value={data.module.slug}
+    validate={validateSlug}
+    validationKey={`${data.module.pathwayId}:${startYearValue}`}
+  />
+
+  <button type="submit">Update</button>
+</form>
+```
+
+### Common Patterns
+
+#### Pattern 1: Simple Uniqueness Check
+
+```svelte
+<script lang="ts">
+  async function validateUsername(username: string) {
+    return await api.validateField({
+      entity: "user",
+      field: "username",
+      value: username
+    }, fetch, authToken);
+  }
+</script>
+
+<TextInput
+  name="username"
+  validate={validateUsername}
+/>
+```
+
+#### Pattern 2: Scoped Uniqueness (Within Parent)
+
+```svelte
+<script lang="ts">
+  let categoryId = $state("cat-123");
+
+  async function validateSlug(slug: string) {
+    return await api.validateField({
+      entity: "product",
+      field: "slug",
+      value: slug,
+      context: { categoryId }  // Unique within category
+    }, fetch, authToken);
+  }
+</script>
+
+<SlugField
+  name="slug"
+  validate={validateSlug}
+  validationContext={categoryId}
+/>
+```
+
+#### Pattern 3: Composite Context
+
+```svelte
+<script lang="ts">
+  let year = $state(2024);
+  let term = $state("spring");
+
+  async function validateCode(code: string) {
+    return await api.validateField({
+      entity: "course",
+      field: "code",
+      value: code,
+      context: { year, term }  // Unique within year + term
+    }, fetch, authToken);
+  }
+</script>
+
+<TextInput
+  name="code"
+  validate={validateCode}
+  validationContext={`${year}-${term}`}
+/>
+```
+
+### Troubleshooting
+
+#### Field Loses Focus During Validation
+
+**Problem**: Input field loses focus when validation status changes.
+
+**Cause**: Template condition switches branches, destroying and recreating the input element.
+
+**Solution**: Ensure the wrapper element is always rendered when validation is enabled. TextInput handles this internally by checking `showValidationStatus` instead of `showValidationIcon`:
+
+```svelte
+<!-- ✅ CORRECT: TextInput internal implementation -->
+{#if search || showValidationStatus}
+  <div class="wrapper">
+    <input />
+    {#if showValidationIcon}
+      <!-- Icon appears/disappears without destroying input -->
+    {/if}
+  </div>
+{/if}
+
+<!-- ❌ WRONG: Would destroy input when icon appears -->
+{#if search || showValidationIcon}
+  <div class="wrapper">
+    <input />
+  </div>
+{/if}
+```
+
+If implementing custom validated inputs, always check if validation is **enabled**, not if validation is **active**.
+
+#### Validation Doesn't Revalidate
+
+**Problem**: Field doesn't revalidate when context changes.
+
+**Cause**: `validationContext` prop not updated or not passed.
+
+**Solution**: Ensure validation context is reactive:
+
+```svelte
+<!-- ❌ WRONG: Static context -->
+<TextInput
+  validate={validateLabel}
+  validationContext="static-value"
+/>
+
+<!-- ✅ CORRECT: Reactive context -->
+<script>
+  let moduleId = $state("mod-1");
+</script>
+<TextInput
+  validate={validateLabel}
+  validationContext={moduleId}
+/>
+```
+
+#### Backend Validation Fails
+
+**Problem**: Backend returns error instead of ValidationResult.
+
+**Cause**: Missing context fields or incorrect entity/field name.
+
+**Solution**: Add proper error handling in backend:
+
+```rust
+pub async fn validate_field(
+    State(state): State<AppState>,
+    Json(payload): Json<ValidateFieldPayload>,
+) -> Result<Json<ValidationResult>, AppError> {
+    // Log unknown validations for debugging
+    let result = match (payload.entity.as_str(), payload.field.as_str()) {
+        ("user", "email") => validate_user_email(&state, &payload).await?,
+        // ... other cases
+        (entity, field) => {
+            tracing::warn!("Unknown validation: {}.{}", entity, field);
+            return Err(AppError::BadRequest(
+                format!("Validation not implemented: {}.{}", entity, field)
+            ));
+        }
+    };
+
+    Ok(Json(result))
+}
+```
+
+### Performance Considerations
+
+1. **Debouncing**: Default 300ms prevents excessive API calls
+2. **Caching**: Consider caching validation results for repeated values
+3. **Database indexes**: Add indexes on validated columns for fast lookups
+4. **Rate limiting**: Protect validation endpoints from abuse
+
+```rust
+// Add index for fast slug lookups
+CREATE INDEX idx_articles_slug ON articles(slug);
+
+// Consider composite index for scoped uniqueness
+CREATE INDEX idx_products_slug_category
+ON products(category_id, slug);
+```
+
+### Security Considerations
+
+1. **Don't leak information**: Validation messages should not reveal sensitive data
+2. **Rate limiting**: Limit validation requests per user/IP
+3. **Authentication**: Require auth token for validation endpoints
+4. **Input sanitization**: Validate and sanitize all inputs
+
+```rust
+// ❌ WRONG: Reveals if email exists
+if email_exists {
+    return Ok(ValidationResult {
+        valid: false,
+        message: Some("User with this email already exists"),
+        suggestion: None,
+    });
+}
+
+// ✅ CORRECT: Generic message
+if email_exists {
+    return Ok(ValidationResult {
+        valid: false,
+        message: Some("Email is not available"),
+        suggestion: None,
+    });
+}
+```
+
+---
+
 ## Frontend Validation
 
 ### SvelteKit Form Validation
