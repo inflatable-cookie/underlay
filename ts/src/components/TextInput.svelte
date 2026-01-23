@@ -1,6 +1,16 @@
 <script lang="ts">
   import type { HTMLInputAttributes } from "svelte/elements";
   import X from "lucide-svelte/icons/x";
+  import Check from "lucide-svelte/icons/check";
+  import AlertCircle from "lucide-svelte/icons/alert-circle";
+
+  export interface ValidationResult {
+    valid: boolean;
+    message?: string;
+    suggestion?: string;
+  }
+
+  type ValidationStatus = "idle" | "validating" | "valid" | "invalid";
 
   interface Props extends Omit<HTMLInputAttributes, "value" | "oninput" | "onchange" | "type"> {
     type?: string;
@@ -13,6 +23,16 @@
     debounce?: number;
     /** Show a clear button when input has content. */
     search?: boolean;
+    /** Async validation function */
+    validate?: (value: string, context?: unknown) => Promise<ValidationResult>;
+    /** Context to pass to validation function */
+    validationContext?: unknown;
+    /** Debounce delay for validation in ms (default: 300) */
+    validationDebounce?: number;
+    /** Show validation status indicator (default: true if validate provided) */
+    showValidationStatus?: boolean;
+    /** Validate on blur in addition to on change (default: true) */
+    validateOnBlur?: boolean;
   }
 
   let {
@@ -24,17 +44,99 @@
     onchange,
     debounce,
     search = false,
+    validate,
+    validationContext,
+    validationDebounce = 300,
+    showValidationStatus = validate !== undefined,
+    validateOnBlur = true,
     class: className,
     ...restProps
   }: Props = $props();
 
   let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+  let validationTimer: ReturnType<typeof setTimeout> | null = null;
+
+  // Validation state
+  let validationStatus = $state<ValidationStatus>("idle");
+  let validationMessage = $state<string>("");
+  let lastValidatedValue = $state<string>("");
+  let lastValidationContext = $state<unknown>(validationContext);
+  let hasUserInteracted = $state(false);
 
   const showClearButton = $derived(search && value.length > 0);
+  const showValidationIcon = $derived(showValidationStatus && validationStatus !== "idle" && hasUserInteracted);
+
+  // Trigger validation when value changes
+  $effect(() => {
+    if (validate && hasUserInteracted && value !== lastValidatedValue) {
+      triggerValidation(value);
+    }
+  });
+
+  // Revalidate when context changes
+  $effect(() => {
+    if (validationContext !== lastValidationContext) {
+      lastValidationContext = validationContext;
+      if (validate && hasUserInteracted && value) {
+        triggerValidation(value);
+      }
+    }
+  });
+
+  // Cleanup on unmount
+  $effect(() => {
+    return () => {
+      if (debounceTimer) {
+        clearTimeout(debounceTimer);
+      }
+      if (validationTimer) {
+        clearTimeout(validationTimer);
+      }
+    };
+  });
+
+  function triggerValidation(inputValue: string) {
+    // Clear any pending validation
+    if (validationTimer) {
+      clearTimeout(validationTimer);
+    }
+
+    // Don't validate empty values
+    if (!inputValue) {
+      validationStatus = "idle";
+      validationMessage = "";
+      return;
+    }
+
+    // Set validating status immediately
+    validationStatus = "validating";
+    validationMessage = "";
+
+    // Debounce the async validation
+    const ctx = validationContext;
+    validationTimer = setTimeout(async () => {
+      try {
+        const result = await validate!(inputValue, ctx);
+        // Only update if this is still the current value
+        if (inputValue === value) {
+          lastValidatedValue = inputValue;
+          validationStatus = result.valid ? "valid" : "invalid";
+          validationMessage = result.message || "";
+        }
+      } catch (error) {
+        // Only update if this is still the current value
+        if (inputValue === value) {
+          validationStatus = "idle";
+          validationMessage = "Could not validate";
+        }
+      }
+    }, validationDebounce);
+  }
 
   function handleInput(event: Event) {
     const target = event.currentTarget as HTMLInputElement | null;
     const next = target ? target.value : value;
+    hasUserInteracted = true;
     value = next;
     oninput?.(next);
 
@@ -50,6 +152,15 @@
   }
 
   function handleChange() {
+    // Validate on blur if enabled
+    if (validate && validateOnBlur && hasUserInteracted && value) {
+      // Clear validation timer and validate immediately
+      if (validationTimer) {
+        clearTimeout(validationTimer);
+      }
+      triggerValidation(value);
+    }
+
     // Only fire onchange on blur if debounce is not enabled
     if (!debounce || debounce <= 0) {
       onchange?.(value);
@@ -57,21 +168,29 @@
   }
 
   function handleClear() {
-    // Clear debounce timer and fire onchange immediately with empty value
+    // Clear debounce and validation timers
     if (debounceTimer) {
       clearTimeout(debounceTimer);
     }
+    if (validationTimer) {
+      clearTimeout(validationTimer);
+    }
+
     value = "";
+    validationStatus = "idle";
+    validationMessage = "";
+    lastValidatedValue = "";
+
     onchange?.("");
     inputRef?.focus();
   }
 </script>
 
-{#if search}
+{#if search || showValidationIcon}
   <div class="underlay-input-wrapper">
     <input
       {...restProps}
-      class={`underlay-input underlay-input--search ${className ?? ""}`}
+      class={`underlay-input ${search ? "underlay-input--search" : ""} ${showValidationIcon ? "underlay-input--validated" : ""} ${className ?? ""}`}
       {type}
       {autocomplete}
       bind:this={inputRef}
@@ -88,8 +207,31 @@
       >
         <X size="1em" strokeWidth={2.5} />
       </button>
+    {:else if showValidationIcon}
+      <div class="underlay-input-validation" aria-live="polite">
+        {#if validationStatus === "validating"}
+          <span class="underlay-input-validation__spinner" aria-label="Validating"></span>
+        {:else if validationStatus === "valid"}
+          <Check
+            size="1em"
+            class="underlay-input-validation__icon underlay-input-validation__icon--success"
+            aria-label="Valid"
+          />
+        {:else if validationStatus === "invalid"}
+          <AlertCircle
+            size="1em"
+            class="underlay-input-validation__icon underlay-input-validation__icon--error"
+            aria-label="Invalid"
+          />
+        {/if}
+      </div>
     {/if}
   </div>
+  {#if validationMessage && showValidationStatus}
+    <p class="underlay-input-validation__message underlay-input-validation__message--{validationStatus}">
+      {validationMessage}
+    </p>
+  {/if}
 {:else}
   <input
     {...restProps}
@@ -128,6 +270,10 @@
     padding-right: 2.2em;
   }
 
+  .underlay-input--validated {
+    padding-right: 2.5rem;
+  }
+
   .underlay-input:focus,
   .underlay-input:focus-visible {
     outline: var(--underlay-focus-ring-width, var(--underlay-focus-ring-width, 2px)) solid
@@ -161,5 +307,62 @@
   .underlay-input-clear:focus-visible {
     outline: 2px solid var(--underlay-color-primary, #2563eb);
     outline-offset: 1px;
+  }
+
+  .underlay-input-validation {
+    position: absolute;
+    right: var(--underlay-space-3, 0.75rem);
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.25rem;
+    height: 1.25rem;
+    pointer-events: none;
+  }
+
+  .underlay-input-validation__spinner {
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid var(--underlay-color-text-muted, #9ca3af);
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: underlay-input-spin 0.8s linear infinite;
+  }
+
+  @keyframes underlay-input-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .underlay-input-validation__icon {
+    font-size: 1rem;
+  }
+
+  .underlay-input-validation__icon--success {
+    color: var(--underlay-color-success, #22c55e);
+  }
+
+  .underlay-input-validation__icon--error {
+    color: var(--underlay-color-error, #ef4444);
+  }
+
+  .underlay-input-validation__message {
+    margin: var(--underlay-space-2, 0.5rem) 0 0;
+    font-size: var(--underlay-font-size-sm, 0.8rem);
+  }
+
+  .underlay-input-validation__message--validating {
+    color: var(--underlay-color-text-muted, #9ca3af);
+  }
+
+  .underlay-input-validation__message--valid {
+    color: var(--underlay-color-success, #22c55e);
+  }
+
+  .underlay-input-validation__message--invalid {
+    color: var(--underlay-color-error, #ef4444);
   }
 </style>
