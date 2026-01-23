@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { HTMLInputAttributes } from "svelte/elements";
-  import { getContext, onMount } from "svelte";
+  import { getContext, onMount, untrack } from "svelte";
   import X from "lucide-svelte/icons/x";
   import Check from "lucide-svelte/icons/check";
   import AlertCircle from "lucide-svelte/icons/alert-circle";
@@ -114,11 +114,11 @@
   });
 
   // Register with FormValidationProvider on mount
-  $effect(() => {
+  onMount(() => {
     if (formValidation) {
-      const hasValue = value.trim() !== "";
-      const isValid = validationStatus === "valid" || validationStatus === "idle";
-      formValidation.registerField(fieldId, required, hasValue, validationStatus, isValid);
+      const hasValue = untrack(() => value.trim() !== "");
+      const isValid = untrack(() => validationStatus === "valid" || validationStatus === "idle");
+      formValidation.registerField(fieldId, required, hasValue, untrack(() => validationStatus), isValid);
 
       return () => {
         formValidation.unregisterField(fieldId);
