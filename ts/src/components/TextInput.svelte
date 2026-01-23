@@ -81,12 +81,12 @@
   let hasUserInteracted = $state(false);
 
   const showClearButton = $derived(search && value.length > 0);
-  const showValidationIcon = $derived(showValidationStatus && validationStatus !== "idle" && hasUserInteracted);
+  const showValidationIcon = $derived(showValidationStatus && validationStatus !== "idle");
   const needsWrapper = $derived(search || showValidationStatus);
 
-  // Trigger validation when value changes
+  // Trigger validation when value changes (even if auto-generated)
   $effect(() => {
-    if (validate && hasUserInteracted && value !== lastValidatedValue) {
+    if (validate && value !== lastValidatedValue) {
       triggerValidation(value);
     }
   });
@@ -95,7 +95,7 @@
   $effect(() => {
     if (validationContext !== lastValidationContext) {
       lastValidationContext = validationContext;
-      if (validate && hasUserInteracted && value) {
+      if (validate && value) {
         triggerValidation(value);
       }
     }
