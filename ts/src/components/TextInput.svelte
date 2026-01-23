@@ -113,16 +113,21 @@
     };
   });
 
-  // Track mount state to prevent update loops during hydration
-  let isMounted = $state(false);
+  // Track previous values to prevent unnecessary updates
+  let prevValue = $state("");
+  let prevValidationStatus = $state<ValidationStatus>("idle");
 
   // Register with FormValidationProvider on mount
   onMount(() => {
     if (formValidation) {
       const hasValue = untrack(() => value.trim() !== "");
       const isValid = untrack(() => validationStatus === "valid" || validationStatus === "idle");
-      formValidation.registerField(fieldId, required, hasValue, untrack(() => validationStatus), isValid);
-      isMounted = true;
+      const status = untrack(() => validationStatus);
+      formValidation.registerField(fieldId, required, hasValue, status, isValid);
+
+      // Initialize previous values
+      prevValue = untrack(() => value);
+      prevValidationStatus = untrack(() => validationStatus);
 
       return () => {
         formValidation.unregisterField(fieldId);
@@ -130,12 +135,15 @@
     }
   });
 
-  // Update FormValidationProvider when value or validation changes (only after mount)
+  // Update FormValidationProvider when value or validation actually changes
   $effect(() => {
-    if (formValidation && isMounted) {
+    if (formValidation && (value !== prevValue || validationStatus !== prevValidationStatus)) {
       const hasValue = value.trim() !== "";
       const isValid = validationStatus === "valid" || validationStatus === "idle";
       formValidation.updateField(fieldId, hasValue, validationStatus, isValid);
+
+      prevValue = value;
+      prevValidationStatus = validationStatus;
     }
   });
 
