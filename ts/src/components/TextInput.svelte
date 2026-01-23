@@ -341,12 +341,12 @@
     font-size: 1rem;
   }
 
-  .underlay-input-validation__icon--success {
-    color: var(--underlay-color-success, #22c55e);
+  :global(.underlay-input-validation__icon--success) {
+    color: var(--underlay-color-success, #22c55e) !important;
   }
 
-  .underlay-input-validation__icon--error {
-    color: var(--underlay-color-error, #ef4444);
+  :global(.underlay-input-validation__icon--error) {
+    color: var(--underlay-color-danger, #ef4444) !important;
   }
 
   .underlay-input-validation__message {
