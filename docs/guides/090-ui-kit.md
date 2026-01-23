@@ -278,13 +278,20 @@ Toggle switch (checkbox alternative):
 - `name` - Form field name
 - `leftLabel` - Label for off state (default: `"Off"`)
 - `rightLabel` - Label for on state (default: `"On"`)
-- `variant` - `"default"` | `"danger-off"` (default: `"default"`)
+- `leftVariant` - Color variant for off state: `"default"` | `"primary"` | `"success"` | `"warning"` | `"danger"` (default: `"default"`)
+- `rightVariant` - Color variant for on state: `"default"` | `"primary"` | `"success"` | `"warning"` | `"danger"` (default: `"primary"`)
+- `variant` - Legacy prop: `"default"` | `"danger-off"` (deprecated, use leftVariant/rightVariant instead)
 - `disabled` - Disable switch
 
-**Variants:**
+**Color Variants:**
 
-- `default` - Standard styling with grey track when off, primary color when on
-- `danger-off` - Red track and label when off, primary color when on. Use for visibility/live status fields where the "off" state represents a warning condition.
+Use `leftVariant` and `rightVariant` to set semantic colors for each state:
+
+- `default` - Grey/muted (standard inactive appearance)
+- `primary` - Blue (default for "on" state)
+- `success` - Green (positive states like "Live", "Free", "Enabled")
+- `warning` - Orange (caution states like "Restricted")
+- `danger` - Red (warning states like "Draft", "Disabled")
 
 #### Visibility Fields Pattern
 
@@ -297,18 +304,40 @@ For `isLive` or visibility toggle fields, use consistent styling across the appl
     leftLabel="Draft"
     rightLabel="Live"
     bind:checked={isLive}
-    variant="danger-off"
+    leftVariant="danger"
+    rightVariant="success"
   />
 </Field>
 ```
 
 **Convention:**
 - **Label**: Use "Visibility" (not "Is Live" or "Status")
-- **Left label**: "Draft" (off state)
-- **Right label**: "Live" (on state)
-- **Variant**: `"danger-off"` - shows red when content is not live, making the draft state visually prominent
+- **Left label**: "Draft" (off state, red)
+- **Right label**: "Live" (on state, green)
 
-This pattern applies to all content that can be published or unpublished: pathways, modules, sections, areas, outcomes, activities, documents, Q&A items, summaries, videos, and audio items.
+#### Access Fields Pattern
+
+For `isFree` or access control fields:
+
+```svelte
+<Field label="Access">
+  <Switch
+    name="isFree"
+    leftLabel="Restricted"
+    rightLabel="Free"
+    bind:checked={isFree}
+    leftVariant="warning"
+    rightVariant="success"
+  />
+</Field>
+```
+
+**Convention:**
+- **Label**: Use "Access"
+- **Left label**: "Restricted" (off state, orange)
+- **Right label**: "Free" (on state, green)
+
+These patterns apply to all content that can be published or access-controlled: pathways, modules, sections, areas, outcomes, activities, documents, Q&A items, summaries, videos, and audio items.
 
 ---
 

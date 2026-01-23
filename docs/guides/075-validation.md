@@ -473,6 +473,54 @@ Inherits all TextInput validation props, plus:
 | `validationKey` | `unknown` | Triggers revalidation when changed |
 | `excludeId` | `string \| null` | ID to exclude from uniqueness check (edit mode) |
 | `maxlength` | `number` | Max slug length (default: 100) |
+| `prefix` | `string` | Static prefix displayed before the editable slug (e.g., `"sa3f2e-"`) |
+
+#### Prefix Display
+
+The `prefix` prop displays a non-editable prefix before the slug input, useful for showing URL structure with typed keys:
+
+```svelte
+<script lang="ts">
+  import { SlugField } from "@decodelabs/underlay/patterns";
+
+  // Key generated on form mount (e.g., "a3f2e")
+  let keyValue = $state("a3f2e");
+  let slugValue = $state("");
+  let titleValue = $state("");
+</script>
+
+<SlugField
+  name="slug"
+  label="Slug"
+  hint="Used in URLs as sa3f2e-your-slug"
+  prefix={`s${keyValue}-`}
+  bind:value={slugValue}
+  source={titleValue}
+/>
+```
+
+This renders as:
+
+```
+┌─────────────────────────────────────────┐
+│ sa3f2e-your-slug-here                   │
+│ └──────┘└────────────────┘              │
+│  (grey)  (editable, black)              │
+└─────────────────────────────────────────┘
+```
+
+The prefix:
+- Displays in a muted grey color
+- Is not editable
+- Flows seamlessly with the input text (no visible boundary)
+- Is NOT included in the submitted `value` - only the slug portion is stored
+
+**Common prefix patterns:**
+- Section: `s{key}-` (e.g., `sa3f2e-`)
+- Area: `a{key}-` (e.g., `a7b2c4-`)
+- Outcome: `o{key}-` (e.g., `o9f2d1-`)
+- Activity: `x{key}-` (e.g., `x43b76-`)
+- Bundle: `b{key}-` (e.g., `b123d4-`)
 
 #### Validation Flow
 
