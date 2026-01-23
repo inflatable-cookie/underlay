@@ -33,6 +33,8 @@
     maxlength?: number;
     /** Callback when validation state changes */
     onvalidationchange?: (status: string, isValid: boolean) => void;
+    /** Static prefix to display before the slug (e.g., "sa3f2e-") */
+    prefix?: string;
   }
 
   let {
@@ -51,6 +53,7 @@
     error,
     maxlength,
     onvalidationchange,
+    prefix,
   }: Props = $props();
 
   // Internal state for slug-specific features
@@ -119,27 +122,97 @@
 </script>
 
 <Field {label} forId={id} error={error} {hint} {required}>
-  <TextInput
-    {id}
-    {name}
-    {disabled}
-    {required}
-    {maxlength}
-    bind:value
-    oninput={handleInput}
-    onblur={handleBlur}
-    validate={validate ? validateForTextInput : undefined}
-    validationContext={validationKey}
-    validationDebounce={debounceMs}
-    onvalidationchange={onvalidationchange}
-    placeholder="url-friendly-slug"
-    autocomplete="off"
-    spellcheck={false}
-    class="slug-field__input"
-  />
+  {#if prefix}
+    <div class="slug-field-wrapper">
+      <span class="slug-field-prefix"><span class="slug-field-prefix__text">{prefix}</span></span>
+      <TextInput
+        {id}
+        {name}
+        {disabled}
+        {required}
+        {maxlength}
+        bind:value
+        oninput={handleInput}
+        onblur={handleBlur}
+        validate={validate ? validateForTextInput : undefined}
+        validationContext={validationKey}
+        validationDebounce={debounceMs}
+        onvalidationchange={onvalidationchange}
+        placeholder="url-friendly-slug"
+        autocomplete="off"
+        spellcheck={false}
+        class="slug-field__input"
+      />
+    </div>
+  {:else}
+    <TextInput
+      {id}
+      {name}
+      {disabled}
+      {required}
+      {maxlength}
+      bind:value
+      oninput={handleInput}
+      onblur={handleBlur}
+      validate={validate ? validateForTextInput : undefined}
+      validationContext={validationKey}
+      validationDebounce={debounceMs}
+      onvalidationchange={onvalidationchange}
+      placeholder="url-friendly-slug"
+      autocomplete="off"
+      spellcheck={false}
+      class="slug-field__input"
+    />
+  {/if}
 </Field>
 
 <style>
+  .slug-field-wrapper {
+    display: flex;
+    align-items: stretch;
+    width: 100%;
+    border: var(--underlay-field-border-width, 1px) solid var(--underlay-color-border, rgba(148, 163, 184, 0.35));
+    border-radius: var(--underlay-radius-md, 0.375rem);
+    background: var(--underlay-color-field-bg, rgba(148, 163, 184, 0.08));
+    overflow: hidden;
+  }
+
+  .slug-field-wrapper:focus-within {
+    border-color: var(--underlay-color-primary, #2563eb);
+    outline: var(--underlay-focus-ring-width, 2px) solid var(--underlay-color-primary, #2563eb);
+    outline-offset: var(--underlay-focus-ring-offset, 1px);
+  }
+
+  .slug-field-prefix {
+    display: flex;
+    align-items: center;
+    padding-left: var(--underlay-field-padding-inline, 0.7em);
+    background: var(--underlay-color-field-bg, rgba(148, 163, 184, 0.08));
+    user-select: none;
+  }
+
+  .slug-field-prefix__text {
+    margin-right: -0.5ch;
+    font-family: var(--underlay-font-mono, monospace);
+    font-size: var(--underlay-font-size-md, 0.85rem);
+    color: var(--underlay-color-text-muted, #9ca3af);
+    white-space: nowrap;
+  }
+
+  /* Remove border/outline from the input when inside wrapper */
+  .slug-field-wrapper :global(.underlay-input) {
+    border: none !important;
+    outline: none !important;
+    background: transparent !important;
+    flex: 1;
+    min-width: 0;
+  }
+
+  /* Remove padding-left so text joins up with prefix */
+  .slug-field-wrapper :global(.underlay-input input) {
+    padding-left: 0 !important;
+  }
+
   :global(.slug-field__input) {
     font-family: var(--underlay-font-mono, monospace);
   }
