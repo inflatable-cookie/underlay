@@ -20,10 +20,13 @@
   };
 
   let fields = $state<Map<string, FieldState>>(new Map());
+  let version = $state(0); // Increment to trigger reactivity
 
   // Compute overall form validity
   const computedIsValid = $derived.by(() => {
-    console.log('[FormValidationProvider] Computing validity, fields:', Array.from(fields.entries()));
+    // Access version to create dependency
+    const _v = version;
+    console.log('[FormValidationProvider] Computing validity, version:', _v, 'fields:', Array.from(fields.entries()));
     for (const field of fields.values()) {
       // Required field must have a value
       if (field.required && !field.hasValue) {
@@ -70,15 +73,13 @@
       validationStatus,
       isValidationValid,
     });
-    // Create new Map to trigger reactivity
-    fields = new Map(fields);
+    version++;
   };
 
   const unregisterField = (id: string) => {
     console.log('[FormValidationProvider] unregisterField:', id);
     fields.delete(id);
-    // Create new Map to trigger reactivity
-    fields = new Map(fields);
+    version++;
   };
 
   const updateField = (
@@ -90,16 +91,15 @@
     const field = fields.get(id);
     console.log('[FormValidationProvider] updateField:', { id, hasValue, validationStatus, isValidationValid, fieldExists: !!field });
     if (field) {
-      // Create new field object instead of mutating to trigger reactivity
-      fields.set(id, {
-        id: field.id,
-        required: field.required,
-        hasValue,
-        validationStatus: validationStatus !== undefined ? validationStatus : field.validationStatus,
-        isValidationValid: isValidationValid !== undefined ? isValidationValid : field.isValidationValid,
-      });
-      // Create new Map to trigger reactivity
-      fields = new Map(fields);
+      // Mutate field in place (Map reference stays same)
+      field.hasValue = hasValue;
+      if (validationStatus !== undefined) {
+        field.validationStatus = validationStatus;
+      }
+      if (isValidationValid !== undefined) {
+        field.isValidationValid = isValidationValid;
+      }
+      version++;
     }
   };
 
