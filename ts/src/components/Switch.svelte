@@ -1,5 +1,6 @@
 <script lang="ts">
   type SwitchVariant = "default" | "danger-off";
+  type SwitchStateVariant = "default" | "primary" | "success" | "warning" | "danger";
 
   interface Props {
     name?: string;
@@ -8,8 +9,12 @@
     rightLabel?: string;
     disabled?: boolean;
     checked?: boolean;
-    /** Variant style: "default" or "danger-off" (red when off) */
+    /** @deprecated Legacy variant style. Use leftVariant and rightVariant instead. */
     variant?: SwitchVariant;
+    /** Color variant for left/off state */
+    leftVariant?: SwitchStateVariant;
+    /** Color variant for right/on state */
+    rightVariant?: SwitchStateVariant;
   }
 
   let {
@@ -19,7 +24,9 @@
     rightLabel = "On",
     disabled = false,
     checked = $bindable(initialChecked),
-    variant = "default"
+    variant = "default",
+    leftVariant = "default",
+    rightVariant = "primary"
   }: Props = $props();
 
   function toggle() {
@@ -27,12 +34,30 @@
     checked = !checked;
   }
 
-  const variantClass = $derived(variant === "danger-off" ? "underlay-switch--danger-off" : "");
+  // Build variant classes
+  const variantClass = $derived(() => {
+    const classes: string[] = [];
+
+    // Legacy variant support
+    if (variant === "danger-off") {
+      classes.push("underlay-switch--danger-off");
+    }
+
+    // New flexible variants
+    if (leftVariant !== "default") {
+      classes.push(`underlay-switch--left-${leftVariant}`);
+    }
+    if (rightVariant !== "default" && rightVariant !== "primary") {
+      classes.push(`underlay-switch--right-${rightVariant}`);
+    }
+
+    return classes.join(" ");
+  });
 </script>
 
 <button
   type="button"
-  class={`underlay-switch ${checked ? "underlay-switch--on" : "underlay-switch--off"} ${variantClass}`}
+  class={`underlay-switch ${checked ? "underlay-switch--on" : "underlay-switch--off"} ${variantClass()}`}
   onclick={toggle}
   role="switch"
   aria-checked={checked}
@@ -133,12 +158,63 @@
     );
   }
 
-  /* Danger-off variant: red track and label when off */
+  /* Legacy danger-off variant: red track and label when off */
   .underlay-switch--danger-off.underlay-switch--off .underlay-switch__track {
     background: var(--underlay-color-error, #ef4444);
   }
 
   .underlay-switch--danger-off.underlay-switch--off .underlay-switch__label--left {
     color: var(--underlay-color-error, #ef4444);
+  }
+
+  /* Flexible left state variants (when switch is OFF) */
+  .underlay-switch--left-primary.underlay-switch--off .underlay-switch__track {
+    background: var(--underlay-color-primary, #2563eb);
+  }
+  .underlay-switch--left-primary.underlay-switch--off .underlay-switch__label--left {
+    color: var(--underlay-color-primary, #2563eb);
+  }
+
+  .underlay-switch--left-success.underlay-switch--off .underlay-switch__track {
+    background: var(--underlay-color-success, #22c55e);
+  }
+  .underlay-switch--left-success.underlay-switch--off .underlay-switch__label--left {
+    color: var(--underlay-color-success, #22c55e);
+  }
+
+  .underlay-switch--left-warning.underlay-switch--off .underlay-switch__track {
+    background: var(--underlay-color-warning, #de8d04);
+  }
+  .underlay-switch--left-warning.underlay-switch--off .underlay-switch__label--left {
+    color: var(--underlay-color-warning, #de8d04);
+  }
+
+  .underlay-switch--left-danger.underlay-switch--off .underlay-switch__track {
+    background: var(--underlay-color-danger, #ef4444);
+  }
+  .underlay-switch--left-danger.underlay-switch--off .underlay-switch__label--left {
+    color: var(--underlay-color-danger, #ef4444);
+  }
+
+  /* Flexible right state variants (when switch is ON) */
+  .underlay-switch--right-success.underlay-switch--on .underlay-switch__track {
+    background: var(--underlay-color-success, #22c55e);
+  }
+  .underlay-switch--right-success.underlay-switch--on .underlay-switch__label--right {
+    color: var(--underlay-color-success, #22c55e);
+  }
+
+  .underlay-switch--right-warning.underlay-switch--on .underlay-switch__track {
+    background: var(--underlay-color-warning, #de8d04);
+  }
+  .underlay-switch--right-warning.underlay-switch--on .underlay-switch__label--right {
+    color: var(--underlay-color-warning, #de8d04);
+  }
+
+  .underlay-switch--right-danger.underlay-switch--on .underlay-switch__track {
+    background: var(--underlay-color-danger, #ef4444);
+  }
+  .underlay-switch--right-danger.underlay-switch--on .underlay-switch__label--right {
+    color: var(--underlay-color-danger, #ef4444);
   }
 </style>
