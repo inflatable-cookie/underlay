@@ -117,10 +117,18 @@
   let prevValue = $state("");
   let prevValidationStatus = $state<ValidationStatus>("idle");
 
+  // Helper to check if field has value (handles both string and number inputs)
+  function checkHasValue(val: string | number): boolean {
+    if (typeof val === 'number') {
+      return !isNaN(val);
+    }
+    return String(val).trim() !== "";
+  }
+
   // Register with FormValidationProvider on mount
   onMount(() => {
     if (formValidation) {
-      const hasValue = untrack(() => value.trim() !== "");
+      const hasValue = untrack(() => checkHasValue(value));
       const isValid = untrack(() => validationStatus === "valid" || validationStatus === "idle");
       const status = untrack(() => validationStatus);
       formValidation.registerField(fieldId, required, hasValue, status, isValid);
@@ -138,7 +146,7 @@
   // Update FormValidationProvider when value or validation actually changes
   $effect(() => {
     if (formValidation && (value !== prevValue || validationStatus !== prevValidationStatus)) {
-      const hasValue = value.trim() !== "";
+      const hasValue = checkHasValue(value);
       const isValid = validationStatus === "valid" || validationStatus === "idle";
       formValidation.updateField(fieldId, hasValue, validationStatus, isValid);
 
