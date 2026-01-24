@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { HTMLInputAttributes } from "svelte/elements";
+  import type { Snippet } from "svelte";
   import { getContext, onMount, untrack } from "svelte";
   import X from "lucide-svelte/icons/x";
   import Check from "lucide-svelte/icons/check";
@@ -39,6 +40,8 @@
     onvalidationchange?: (status: ValidationStatus, isValid: boolean) => void;
     /** Static prefix to display before the input (e.g., "A", "$") */
     prefix?: string;
+    /** Suffix content to render inside the wrapper (e.g., stepper buttons) */
+    suffix?: Snippet;
   }
 
   let {
@@ -57,6 +60,7 @@
     validateOnBlur = true,
     onvalidationchange,
     prefix,
+    suffix,
     class: className,
     id,
     required = false,
@@ -85,7 +89,7 @@
 
   const showClearButton = $derived(search && value.length > 0);
   const showValidationIcon = $derived(showValidationStatus && validationStatus !== "idle");
-  const needsWrapper = $derived(search || showValidationStatus || prefix);
+  const needsWrapper = $derived(search || showValidationStatus || prefix || suffix);
 
   // Trigger validation when value changes (even if auto-generated)
   $effect(() => {
@@ -258,7 +262,7 @@
 </script>
 
 {#if needsWrapper}
-  <div class="underlay-input-wrapper {prefix ? 'underlay-input-wrapper--prefixed' : ''}">
+  <div class="underlay-input-wrapper {prefix ? 'underlay-input-wrapper--prefixed' : ''} {suffix ? 'underlay-input-wrapper--suffixed' : ''}">
     {#if prefix}
       <span class="underlay-input-prefix">{prefix}</span>
     {/if}
@@ -301,6 +305,9 @@
           />
         {/if}
       </div>
+    {/if}
+    {#if suffix}
+      {@render suffix()}
     {/if}
   </div>
   {#if validationMessage && showValidationStatus}
@@ -389,7 +396,7 @@
 
   .underlay-input-validation {
     position: absolute;
-    right: var(--underlay-space-3, 0.75rem);
+    right: var(--underlay-input-suffix-width, var(--underlay-space-3, 0.75rem));
     top: 50%;
     transform: translateY(-50%);
     display: flex;
@@ -398,6 +405,10 @@
     width: 1.25rem;
     height: 1.25rem;
     pointer-events: none;
+  }
+
+  .underlay-input-wrapper--suffixed .underlay-input-validation {
+    right: calc(var(--underlay-input-suffix-width, 0px) + var(--underlay-space-3, 0.75rem));
   }
 
   .underlay-input-validation__spinner {
