@@ -23,6 +23,8 @@
     disabled?: boolean;
     /** Static prefix to display before the input (e.g., "A") */
     prefix?: string;
+    /** Placeholder text */
+    placeholder?: string;
     /** Async validation function */
     validate?: (value: string, context?: unknown) => Promise<ValidationResult>;
     /** Context to pass to validation function */
@@ -45,6 +47,7 @@
     required = false,
     disabled = false,
     prefix,
+    placeholder,
     validate,
     validationContext,
     validationDebounce = 300,
@@ -126,6 +129,7 @@
     {required}
     {disabled}
     {prefix}
+    {placeholder}
     {validate}
     {validationContext}
     {validationDebounce}
