@@ -23,7 +23,7 @@ export {
 export { default as FilterBar } from "./FilterBar.svelte";
 export { default as FormShell } from "./FormShell.svelte";
 export { default as PageHeader } from "./PageHeader.svelte";
-export type { PageHeaderLevel } from "./PageHeader.svelte";
+export type { PageHeaderLevel, BreadcrumbItem } from "./PageHeader.svelte";
 export { default as CopyActionsMenu } from "./CopyActionsMenu.svelte";
 export { default as CardActions } from "./CardActions.svelte";
 export { default as SubmitButton } from "./SubmitButton.svelte";

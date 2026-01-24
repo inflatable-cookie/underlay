@@ -5,9 +5,16 @@
 
   export type PageHeaderLevel = 1 | 2 | 3 | 4;
 
+  export interface BreadcrumbItem {
+    label: string;
+    href: string;
+  }
+
   interface Props {
     title: string;
     subtitle?: string;
+    /** Breadcrumb trail rendered in the subtitle area */
+    breadcrumbs?: BreadcrumbItem[];
     /** Heading level: 1 (page), 2, 3 (section), 4 (subsection) */
     level?: PageHeaderLevel;
     backHref?: string | null;
@@ -31,6 +38,7 @@
   let {
     title,
     subtitle,
+    breadcrumbs,
     level = 1,
     backHref = null,
     backLabel = "Back",
@@ -105,7 +113,14 @@
       </div>
     </div>
 
-    {#if subtitle || subtitleSuffix}
+    {#if breadcrumbs && breadcrumbs.length > 0}
+      <nav class="underlay-page-header__breadcrumbs" aria-label="Breadcrumb">
+        {#each breadcrumbs as crumb, i}
+          {#if i > 0}<span class="underlay-page-header__breadcrumb-sep" aria-hidden="true">/</span>{/if}
+          <a href={crumb.href} class="underlay-page-header__breadcrumb-link">{crumb.label}</a>
+        {/each}
+      </nav>
+    {:else if subtitle || subtitleSuffix}
       <svelte:element this={subtitleTag} class="underlay-page-header__subtitle">{subtitle}{#if subtitleSuffix}<span class="underlay-page-header__subtitle-suffix">{@render subtitleSuffix()}</span>{/if}</svelte:element>
     {/if}
   </div>
@@ -234,6 +249,30 @@
 
   .underlay-page-header__subtitle-suffix :global(.underlay-pill) {
     font-size: 0.7em;
+  }
+
+  .underlay-page-header__breadcrumbs {
+    display: flex;
+    align-items: center;
+    gap: 0.4em;
+    font-size: 0.95em;
+    color: var(--underlay-color-text-muted, rgba(148, 163, 184, 0.85));
+  }
+
+  .underlay-page-header__breadcrumb-link {
+    color: var(--underlay-color-text-muted, rgba(148, 163, 184, 0.85));
+    text-decoration: none;
+  }
+
+  .underlay-page-header__breadcrumb-link:hover {
+    color: var(--underlay-color-text, #e5e7eb);
+    text-decoration: underline;
+    text-underline-offset: 0.12em;
+  }
+
+  .underlay-page-header__breadcrumb-sep {
+    color: var(--underlay-color-text-muted, rgba(148, 163, 184, 0.5));
+    font-size: 0.9em;
   }
 
   .underlay-page-header__right {
