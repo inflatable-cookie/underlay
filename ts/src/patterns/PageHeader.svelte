@@ -2,6 +2,7 @@
   import type { Snippet } from "svelte";
   import type { BannerVariant } from "./banner";
   import Banner from "./Banner.svelte";
+  import ChevronRight from "lucide-svelte/icons/chevron-right";
 
   export type PageHeaderLevel = 1 | 2 | 3 | 4;
 
@@ -116,7 +117,7 @@
     {#if breadcrumbs && breadcrumbs.length > 0}
       <nav class="underlay-page-header__breadcrumbs" aria-label="Breadcrumb">
         {#each breadcrumbs as crumb, i}
-          {#if i > 0}<span class="underlay-page-header__breadcrumb-sep" aria-hidden="true">/</span>{/if}
+          {#if i > 0}<span class="underlay-page-header__breadcrumb-sep" aria-hidden="true"><ChevronRight size={14} /></span>{/if}
           <a href={crumb.href} class="underlay-page-header__breadcrumb-link">{crumb.label}</a>
         {/each}
       </nav>
@@ -271,8 +272,9 @@
   }
 
   .underlay-page-header__breadcrumb-sep {
+    display: inline-flex;
+    align-items: center;
     color: var(--underlay-color-text-muted, rgba(148, 163, 184, 0.5));
-    font-size: 0.9em;
   }
 
   .underlay-page-header__right {
