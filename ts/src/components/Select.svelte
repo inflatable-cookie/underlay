@@ -16,6 +16,7 @@
     open?: boolean;
     items?: SelectItem[] | null;
     placeholder?: string;
+    id?: string;
     name?: string;
     required?: boolean;
     disabled?: boolean;
@@ -44,6 +45,7 @@
     open = $bindable(false),
     items = undefined,
     placeholder = "Select…",
+    id = undefined,
     name = undefined,
     required = false,
     disabled = false,
@@ -135,6 +137,7 @@
     {disabled}
   >
     <BitsSelect.Trigger
+      {id}
       bind:ref={triggerRef}
       type={triggerType}
       class={`underlay-select-trigger ${className ?? ""}`}
@@ -192,6 +195,7 @@
   </BitsSelect.Root>
 {:else}
   <select
+    {id}
     class={`underlay-select ${className ?? ""}`}
     bind:value
     {name}
