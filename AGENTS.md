@@ -105,3 +105,21 @@ When creating analysis documents, session summaries, or completion reports, save
 - Find reports chronologically
 - Avoid name collisions
 - Archive session work systematically
+
+## btca
+
+When you need up-to-date information about technologies used in this project, use btca to query source repositories directly.
+
+**Available resources**: svelte, svelteKit, vite, typescript, bitsUi, vitest, marked, axum, sqlx, tokio, serde, tower, utoipa, tracing
+
+### Usage
+
+```bash
+btca ask -r <resource> -q "<question>"
+```
+
+Use multiple `-r` flags to query multiple resources at once:
+
+```bash
+btca ask -r svelte -r bitsUi -q "How do I create accessible dialog components with Svelte 5?"
+```

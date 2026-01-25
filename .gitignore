@@ -14,3 +14,6 @@ dist/
 # OS/editor
 *.swp
 *.swo
+
+# btca
+.btca
