@@ -248,39 +248,62 @@ where
 }
 ```
 
-**Note**: Const generics with enums are experimental. A simpler alternative:
+**Note**: Const generics with enums are experimental. The recommended alternative is a dedicated extractor per role:
 
 ```rust
-/// Require Admin role.
-pub struct RequireAdmin(pub UserPrincipal);
+use serde_json::json;
+
+/// Admin-only extractor.
+///
+/// Validates that the user is both authenticated AND has the Admin role.
+/// Returns 403 Forbidden if the user lacks admin privileges.
+pub struct AdminUser(pub UserPrincipal);
 
 #[async_trait]
-impl\u003cS\u003e FromRequestParts\u003cS\u003e for RequireAdmin
+impl<S> FromRequestParts<S> for AdminUser
 where
     S: Send + Sync + underlay_auth::HasAuthProvider,
 {
     type Rejection = Response;
 
-    async fn from_request_parts(parts: \u0026mut Parts, state: \u0026S) -\u003e Result\u003cSelf, Self::Rejection\u003e {
-        let AuthenticatedUser(principal) = AuthenticatedUser::from_request_parts(parts, state).await?;
+    async fn from_request_parts(parts: &mut Parts, state: &S) -> Result<Self, Self::Rejection> {
+        let AuthenticatedUser(user) = AuthenticatedUser::from_request_parts(parts, state).await?;
 
-        if !principal.has_role(UserRole::Admin) {
+        if !user.has_role(UserRole::Admin) {
             return Err((
                 StatusCode::FORBIDDEN,
-                Json(ErrorEnvelope {
-                    error: underlay_core::AppError {
-                        code: \"forbidden\".into(),
-                        message: \"Admin access required\".into(),
-                        details: None,
-                    },
-                }),
+                Json(json!({
+                    "ok": false,
+                    "error": {
+                        "code": "auth.forbidden",
+                        "message": "Admin access required."
+                    }
+                })),
             ).into_response());
         }
 
-        Ok(RequireAdmin(principal))
+        Ok(AdminUser(user))
     }
 }
 ```
+
+### Why Use Role Extractors (Recommended Pattern)
+
+Role extractors like `AdminUser` provide significant benefits over manual role checks in handlers:
+
+| Approach | Lines per handler | Total (60 handlers) |
+|----------|-------------------|---------------------|
+| Manual `has_role()` check | ~7 lines | ~420 lines |
+| `AdminUser` extractor | 0 lines | 0 lines (+ 30-line extractor) |
+
+**Benefits:**
+- **Type-safe authorization**: If you have an `AdminUser`, you're guaranteed to be an admin
+- **Eliminates duplicate code**: No repeated role-checking boilerplate
+- **Prevents accidental omissions**: Can't forget the role check if the type requires it
+- **Single point of change**: Update authorization logic in one place
+- **Cleaner handlers**: Focus on business logic, not authorization
+
+**Real-world example**: In Farmyard (Acowtancy), introducing `AdminUser` eliminated 68 manual role checks across 4 files, removing ~540 lines of boilerplate code.
 
 ### Step 6: Use in Handlers
 
@@ -308,17 +331,17 @@ pub async fn list_modules(
 #### Admin-Only Handler
 
 ```rust
-use crate::extractors::RequireAdmin;
+use crate::extractors::AdminUser;
 
 pub async fn delete_user(
-    State(state): State\u003cAppState\u003e,
-    RequireAdmin(principal): RequireAdmin,
-    Path(user_id): Path\u003cUuid\u003e,
-) -\u003e Json\u003cSingleResponse\u003c()\u003e\u003e {
+    State(state): State<AppState>,
+    AdminUser(user): AdminUser,
+    Path(user_id): Path<Uuid>,
+) -> Json<SingleResponse<()>> {
     tracing::warn!(
-        admin_user_id = %principal.user_id.0,
+        admin_user_id = %user.user_id.0,
         target_user_id = %user_id,
-        \"Admin deleting user\"
+        "Admin deleting user"
     );
 
     state.user_repo.delete(user_id).await?;
@@ -510,7 +533,7 @@ async fn verify_login(\u0026self, email: \u0026str, password: \u0026str) -\u003e
 
 ### 1. Route-Level (Coarse)
 
-Use extractors like `RequireAdmin` for entire handlers.
+Use extractors like `AdminUser` for entire handlers.
 
 **When to use**: Admin panels, superuser tools, role-specific features.
 
@@ -601,7 +624,7 @@ let is_admin = principal.has_role(UserRole::Admin);
 {/if}
 
 // Backend: Enforce permission (security)
-RequireAdmin(principal): RequireAdmin
+AdminUser(user): AdminUser
 ```
 
 ### 3. Audit Logging
@@ -625,10 +648,10 @@ Grant the minimum role needed for each task.
 
 ```rust
 // ❌ WRONG - requires admin for content editing
-RequireAdmin(_): RequireAdmin
+AdminUser(_): AdminUser
 
 // ✅ CORRECT - allows editor or admin
-if !principal.has_any_role(\u0026[UserRole::Editor, UserRole::Admin]) {
+if !user.has_any_role(&[UserRole::Editor, UserRole::Admin]) {
     return Err(AuthError::Forbidden);
 }
 ```
