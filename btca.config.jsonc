@@ -111,7 +111,7 @@
             "specialNotes": "Tracing framework for instrumentation. Check tracing-subscriber for formatters and filters."
         }
     ],
-    "model": "claude-haiku-4-5",
+    "model": "minimax-m2.1-free",
     "provider": "opencode",
     "providerTimeoutMs": 300000
 }
