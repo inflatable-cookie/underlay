@@ -27,6 +27,10 @@
     $props();
 
   setContext("underlay-tabs-variant", () => variant);
+  setContext("underlay-tabs-value", () => value);
+  setContext("underlay-tabs-set-value", (v: string) => {
+    value = v;
+  });
 
   // Track the last value we synced to URL to prevent loops
   let lastSyncedValue = $state<string | null>(null);
