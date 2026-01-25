@@ -9,9 +9,11 @@
     disabled?: boolean;
     children?: Snippet;
     class?: string;
+    /** Optional count to display as a badge */
+    count?: number | null;
   }
 
-  let { value, disabled = false, children, class: className }: Props = $props();
+  let { value, disabled = false, children, class: className, count }: Props = $props();
 
   const getVariant = getContext<() => TabsVariant>("underlay-tabs-variant");
   let variant = $derived(getVariant?.() ?? "pills");
@@ -23,6 +25,9 @@
   class={`underlay-tabs-trigger underlay-tabs-trigger--${variant} ${className ?? ""}`}
 >
   {@render children?.()}
+  {#if count != null}
+    <span class="underlay-tabs-trigger__count">{count}</span>
+  {/if}
 </BitsTabs.Trigger>
 
 <style>
@@ -79,6 +84,26 @@
 
   :global(.underlay-tabs-trigger--boxed[data-state="active"]) {
     background: var(--underlay-color-button-neutral-hover, #374151);
+    color: var(--underlay-color-text, #e5e7eb);
+  }
+
+  /* Count badge */
+  .underlay-tabs-trigger__count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 0.4rem;
+    padding: 0.1rem 0.4rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    line-height: 1;
+    border-radius: 999px;
+    background: rgba(148, 163, 184, 0.2);
+    color: var(--underlay-color-text-muted, #9ca3af);
+  }
+
+  :global(.underlay-tabs-trigger[data-state="active"]) .underlay-tabs-trigger__count {
+    background: rgba(148, 163, 184, 0.3);
     color: var(--underlay-color-text, #e5e7eb);
   }
 </style>
