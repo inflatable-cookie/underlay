@@ -1,15 +1,9 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
   import type { BannerVariant } from "./banner";
+  import type { PageHeaderLevel, BreadcrumbItem } from "./types";
   import Banner from "./Banner.svelte";
   import ChevronRight from "lucide-svelte/icons/chevron-right";
-
-  export type PageHeaderLevel = 1 | 2 | 3 | 4;
-
-  export interface BreadcrumbItem {
-    label: string;
-    href: string;
-  }
 
   interface Props {
     title: string;

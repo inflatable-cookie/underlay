@@ -74,6 +74,15 @@ export interface HttpClientOptions {
    * @default false
    */
   debug?: boolean;
+
+  /**
+   * Fetch credentials mode.
+   * - 'omit': Never send cookies (default)
+   * - 'same-origin': Send cookies for same-origin requests
+   * - 'include': Always send cookies (needed for cross-origin auth)
+   * @default 'omit'
+   */
+  credentials?: RequestCredentials;
 }
 
 export interface HttpAuthOptions {
@@ -134,6 +143,7 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
   const maxRetries = options.maxRetries ?? 3;
   const retryStatuses = new Set([502, 503, 504, ...(options.retryStatuses ?? [])]);
   const debug = options.debug ?? false;
+  const credentials = options.credentials ?? "omit";
 
   function log(...args: unknown[]): void {
     if (debug) {
@@ -200,6 +210,7 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
           headers,
           body,
           signal: controller?.signal,
+          credentials,
         });
 
         if (timeout != null) {
