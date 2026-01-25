@@ -260,36 +260,68 @@ pub async fn logout(
 
 ### CORS Configuration
 
-Most API calls don't need credentials (just Bearer header):
+Auth endpoints require `credentials: include` to send/receive cookies. With credentials enabled, CORS cannot use wildcards (`*`) for origin or methods - explicit values are required.
+
+**Using underlay-http CorsConfig:**
 
 ```rust
-use tower_http::cors::{CorsLayer, Any};
-use axum::http::{header, Method};
+use underlay_http::CorsConfig;
 
-fn cors_layer(allowed_origins: &[&str]) -> CorsLayer {
-    CorsLayer::new()
-        .allow_origin(allowed_origins.iter().map(|o| o.parse().unwrap()).collect::<Vec<_>>())
-        .allow_methods([Method::GET, Method::POST, Method::PUT, Method::PATCH, Method::DELETE])
-        .allow_headers([header::CONTENT_TYPE, header::AUTHORIZATION])
-        // Note: allow_credentials is false for regular endpoints
-}
+// Check if explicit origins are configured
+let has_explicit_origins = !config.cors.allowed_origins.is_empty();
 
-fn auth_cors_layer(allowed_origins: &[&str]) -> CorsLayer {
-    CorsLayer::new()
-        .allow_origin(allowed_origins.iter().map(|o| o.parse().unwrap()).collect::<Vec<_>>())
-        .allow_methods([Method::POST])
-        .allow_headers([header::CONTENT_TYPE])
-        .allow_credentials(true)  // Only auth endpoints need credentials
-}
-```
+let cors = CorsConfig {
+    // Don't use wildcard origin
+    allow_any_origin: false,
 
-Apply different CORS to auth routes:
+    // For local dev: echo the requesting origin (works with credentials)
+    // For production: use explicit origins list
+    mirror_origin: !has_explicit_origins,
 
-```rust
+    // Production origins (from env var)
+    allowed_origins: config.cors.allowed_origins
+        .iter()
+        .filter_map(|s| s.parse().ok())
+        .collect(),
+
+    // Headers needed for API calls
+    allowed_headers: vec![
+        HeaderName::from_static("x-request-id"),
+        HeaderName::from_static("authorization"),
+        HeaderName::from_static("content-type"),
+    ],
+
+    // Always enable credentials for auth cookies
+    allow_credentials: true,
+};
+
 let app = Router::new()
-    .nest("/v1/auth", auth_routes().layer(auth_cors_layer(&origins)))
-    .nest("/v1", api_routes().layer(cors_layer(&origins)));
+    .nest("/v1", api_routes())
+    .layer(underlay_http::cors_layer(cors));
 ```
+
+**How `mirror_origin` works:**
+
+When `mirror_origin: true` and `allow_credentials: true`:
+- The server echoes back the exact `Origin` header from the request
+- This allows credentials from any origin without using `*`
+- Useful for local development without configuring explicit origins
+
+**Production configuration:**
+
+Set `FARMYARD_CORS_ORIGINS` (or your env var) to a comma-separated list:
+
+```bash
+# Production
+FARMYARD_CORS_ORIGINS=https://app.example.com,https://admin.example.com
+
+# Local dev - leave unset to use mirror_origin mode
+# FARMYARD_CORS_ORIGINS=
+```
+
+**Why unified CORS (not separate auth/api layers):**
+
+Using a single CORS configuration for all routes simplifies setup. The refresh endpoint needs `credentials: include` to receive the httpOnly cookie, and having credentials enabled on all routes doesn't hurt - it just means cookies are sent when present.
 
 ---
 
@@ -739,23 +771,28 @@ export default {
     adapter: adapter({
       pages: 'build',
       assets: 'build',
-      fallback: 'index.html',  // SPA fallback for non-prerendered routes
+      // Use 200.html for SPA fallback to avoid overwriting pre-rendered index.html
+      // Most static hosts (Cloudflare Pages, Netlify) support 200.html as fallback
+      fallback: '200.html',
       precompress: false,
       strict: true,
     }),
     prerender: {
-      // Routes to pre-render at build time
-      entries: [
-        '/',
-        '/login',
-        '/pricing',
-        '/modules',
-        // Add other SEO-important routes
-      ],
+      // Ignore dynamic routes during prerendering - they're handled client-side
+      handleUnseenRoutes: 'ignore',
     },
   },
 };
 ```
+
+**Why `200.html` instead of `index.html`?**
+
+When you pre-render pages (like `/`, `/login`), the adapter creates `index.html`, `login.html`, etc. If you use `fallback: 'index.html'`, it overwrites your pre-rendered `index.html` with an empty SPA shell.
+
+Using `200.html` as the fallback:
+- Pre-rendered pages keep their full HTML content (SEO-friendly)
+- Non-pre-rendered routes fall back to the SPA shell
+- Most CDNs/static hosts recognize `200.html` as a fallback
 
 ### Mark pages for pre-rendering
 
@@ -818,20 +855,66 @@ if (data.refreshToken) {
 
 ---
 
+## Local Development
+
+For local development, you typically run:
+- API server on `http://127.0.0.1:3000` or `http://localhost:3000`
+- Frontend on `http://localhost:5173` (Vite default)
+
+**CORS for local dev:**
+
+Leave `FARMYARD_CORS_ORIGINS` (or equivalent) **unset**. The API will use `mirror_origin` mode, which echoes the requesting origin back. This allows credentials to work from any localhost port without configuration.
+
+```bash
+# Start API (no CORS env var needed for local dev)
+cargo run --bin your-api
+
+# Start frontend
+pnpm dev
+```
+
+**Cookie considerations:**
+
+- `Secure: false` for local dev (set via `FARMYARD_COOKIE_SECURE=false` or auto-detect from environment)
+- `SameSite: Lax` works for same-site requests (localhost to localhost)
+- Different ports on localhost are considered same-site
+
+**Troubleshooting CORS errors:**
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| `Access-Control-Allow-Origin` must not be `*` with credentials | Using wildcard origin with `credentials: include` | Enable `mirror_origin` mode |
+| `Access-Control-Allow-Methods` must not be `*` with credentials | Using wildcard methods with credentials | Use explicit method list |
+| Preflight fails | Missing OPTIONS handler or wrong headers | Ensure CORS layer is applied to all routes |
+| Cookies not sent | `credentials: include` missing on fetch | Add credentials option to fetch calls |
+
+---
+
 ## Deployment Checklist
 
-- [ ] Backend: Login endpoint returns access token in body, sets refresh + logged_in cookies
-- [ ] Backend: Refresh endpoint accepts token from cookie OR body
-- [ ] Backend: Logout endpoint clears both cookies
-- [ ] Backend: CORS configured (credentials only for /auth endpoints)
-- [ ] Frontend: Token store keeps access token in memory only
-- [ ] Frontend: HTTP client attaches Bearer header, handles 401 refresh
-- [ ] Frontend: Auth initialization checks logged_in cookie, attempts refresh
-- [ ] Frontend: app.html has inline script for CSS switching
-- [ ] Frontend: app.css has .is-logged-in/.is-logged-out rules
-- [ ] Frontend: Auth-aware pages use the dual-content pattern
-- [ ] Frontend: SvelteKit configured with adapter-static
-- [ ] Frontend: Prerender entries configured for SEO pages
+### Backend
+- [ ] Login endpoint returns access token in body, sets refresh + logged_in cookies
+- [ ] Refresh endpoint accepts token from cookie OR body
+- [ ] Logout endpoint clears both cookies
+- [ ] CORS configured with `allow_credentials: true`
+- [ ] CORS uses `mirror_origin` for local dev OR explicit origins for production
+- [ ] Cookie secure flag enabled for production (HTTPS)
+
+### Frontend
+- [ ] Token store keeps access token in memory only (not localStorage)
+- [ ] HTTP client attaches Bearer header, handles 401 → refresh → retry
+- [ ] Auth initialization checks logged_in cookie, attempts refresh
+- [ ] app.html has inline script for CSS switching (before first paint)
+- [ ] app.css has .is-logged-in/.is-logged-out rules
+- [ ] Auth-aware pages use the dual-content pattern
+- [ ] SvelteKit configured with adapter-static
+- [ ] SEO pages have `export const prerender = true`
+- [ ] SPA fallback configured (e.g., `fallback: '200.html'`)
+
+### Production
+- [ ] `CORS_ORIGINS` env var set to frontend domains
+- [ ] `COOKIE_SECURE=true` for HTTPS
+- [ ] Custom domains configured with SSL
 
 ## Security Considerations
 
