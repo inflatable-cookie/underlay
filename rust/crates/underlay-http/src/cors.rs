@@ -1,5 +1,6 @@
 use http::header::{HeaderName, HeaderValue};
-use tower_http::cors::{AllowHeaders, AllowOrigin, Any, CorsLayer};
+use http::Method;
+use tower_http::cors::{AllowHeaders, AllowMethods, AllowOrigin, CorsLayer};
 
 use underlay_observability::REQUEST_ID_HEADER;
 
@@ -56,10 +57,24 @@ pub fn cors_layer(config: CorsConfig) -> CorsLayer {
 
     let allow_headers = AllowHeaders::list(config.allowed_headers);
 
+    // When credentials are enabled, we can't use wildcard for methods either
+    let allow_methods = if config.allow_credentials {
+        AllowMethods::list([
+            Method::GET,
+            Method::POST,
+            Method::PUT,
+            Method::PATCH,
+            Method::DELETE,
+            Method::OPTIONS,
+        ])
+    } else {
+        AllowMethods::any()
+    };
+
     let layer = CorsLayer::new()
         .allow_origin(allow_origin)
         .allow_headers(allow_headers)
-        .allow_methods(Any);
+        .allow_methods(allow_methods);
 
     if config.allow_credentials {
         layer.allow_credentials(true)
