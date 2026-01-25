@@ -111,7 +111,7 @@
             "specialNotes": "Tracing framework for instrumentation. Check tracing-subscriber for formatters and filters."
         }
     ],
-    "model": "minimax-m2.1-free",
+    "model": "big-pickle",
     "provider": "opencode",
     "providerTimeoutMs": 300000
 }
