@@ -539,13 +539,17 @@ export async function logout(): Promise<void> {
 }
 
 export async function initialize(): Promise<User | null> {
-  // Check for logged_in cookie
-  if (!document.cookie.includes('logged_in=1')) {
-    return null;
-  }
+  // Always attempt to refresh on initialization.
+  // We can't reliably check for the logged_in cookie in cross-origin setups
+  // (e.g., frontend on localhost:5173, API on localhost:3000) because the
+  // cookie is set on the API origin and not visible to document.cookie.
+  //
+  // The refresh_token is in an httpOnly cookie that the browser sends
+  // automatically with credentials: 'include'. If there's no valid session,
+  // the server returns 401 and we treat it as "not logged in".
 
   try {
-    // Attempt to refresh and get user info
+    // Attempt to refresh - the httpOnly refresh_token cookie is sent automatically
     const response = await fetch(`${API_BASE}/v1/auth/refresh`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -554,6 +558,7 @@ export async function initialize(): Promise<User | null> {
     });
 
     if (!response.ok) {
+      // No valid session - user needs to log in
       return null;
     }
 
@@ -564,6 +569,7 @@ export async function initialize(): Promise<User | null> {
     // return await fetchCurrentUser();
     return { id: 'from-token' } as User;  // Decode from JWT if needed
   } catch {
+    // Network error or invalid response - treat as not logged in
     return null;
   }
 }
@@ -878,6 +884,34 @@ pnpm dev
 - `Secure: false` for local dev (set via `FARMYARD_COOKIE_SECURE=false` or auto-detect from environment)
 - `SameSite: Lax` works for same-site requests (localhost to localhost)
 - Different ports on localhost are considered same-site
+
+**Cross-origin cookie visibility:**
+
+When running the frontend on `localhost:5173` and API on `localhost:3000` (or `127.0.0.1:3000`), cookies set by the API are scoped to the API origin. This means:
+
+- The `logged_in` cookie set by the API is NOT visible in `document.cookie` on the frontend
+- The `refresh_token` httpOnly cookie IS sent automatically by the browser with `credentials: 'include'`
+
+**Implication:** Don't rely on checking `document.cookie.includes('logged_in=')` to determine if a session exists. Instead, always attempt to refresh and handle the response:
+
+```typescript
+// DON'T do this in cross-origin setups:
+if (!document.cookie.includes('logged_in=')) {
+  return null;  // May incorrectly return null for valid sessions!
+}
+
+// DO this instead:
+try {
+  const response = await fetch(`${API}/v1/auth/refresh`, {
+    credentials: 'include',  // Browser sends httpOnly cookie automatically
+    // ...
+  });
+  if (!response.ok) return null;  // No valid session
+  // Session is valid, use the new token
+} catch {
+  return null;
+}
+```
 
 **Troubleshooting CORS errors:**
 
