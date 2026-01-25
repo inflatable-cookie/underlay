@@ -890,6 +890,146 @@ impl PasswordStrengthAnalyzer {
 
 ---
 
+## Audit Logging
+
+### Overview
+
+Audit logging records administrative actions for security forensics, compliance, and debugging. Underlay provides the `underlay-audit` crate for structured audit trails.
+
+### Why Audit Logging?
+
+| Use Case | Benefit |
+|----------|---------|
+| Security Forensics | "Who deleted this pathway?" |
+| Compliance | SOC 2, GDPR audit requirements |
+| Debugging | Track down unexpected state changes |
+| Accountability | Know who changed what, when |
+
+### Database Schema
+
+Create an audit log table in your migrations:
+
+```sql
+CREATE TABLE IF NOT EXISTS infra.audit_log (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    occurred_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    user_id UUID,  -- NULL for system-initiated actions
+    action TEXT NOT NULL,
+    resource_type TEXT NOT NULL,
+    resource_id UUID NOT NULL,
+    details JSONB NOT NULL DEFAULT '{}',
+    correlation_id TEXT,
+    ip_address TEXT
+);
+
+-- Primary query pattern: recent entries
+CREATE INDEX IF NOT EXISTS idx_audit_log_occurred_at
+    ON infra.audit_log (occurred_at DESC);
+
+-- Filter by user (who did what?)
+CREATE INDEX IF NOT EXISTS idx_audit_log_user_id
+    ON infra.audit_log (user_id)
+    WHERE user_id IS NOT NULL;
+
+-- Filter by resource (what happened to this resource?)
+CREATE INDEX IF NOT EXISTS idx_audit_log_resource
+    ON infra.audit_log (resource_type, resource_id);
+```
+
+### Rust Usage
+
+```rust
+use underlay_audit::{append_audit_log, AuditAction, AuditEntry};
+
+// In your admin handler, after a successful operation:
+let audit_entry = AuditEntry::new(
+    Some(user.user_id),    // User who performed the action
+    AuditAction::Create,   // Action type
+    "pathway",             // Resource type
+    pathway_id,            // Resource ID
+)
+.with_details(serde_json::json!({
+    "name": &payload.name,
+    "title": &payload.title,
+}));
+
+if let Err(e) = append_audit_log(&pool, "infra.audit_log", audit_entry).await {
+    // Log error but don't fail the request - audit is non-critical
+    warn!("failed to write audit log: {}", e);
+}
+```
+
+### Standard Action Types
+
+The `AuditAction` enum provides common actions:
+
+| Action | Use Case |
+|--------|----------|
+| `Create` | New resource created |
+| `Update` | Resource modified |
+| `Delete` | Resource deleted (soft or hard) |
+| `Publish` | Resource made live/public |
+| `Unpublish` | Resource hidden/unpublished |
+| `Archive` | Resource archived |
+| `Restore` | Resource restored from archive/deletion |
+| `Grant` | Permission granted |
+| `Revoke` | Permission revoked |
+| `Login` | User login (success) |
+| `Logout` | User logout |
+| `SecurityChange` | Security setting changed |
+| `Custom(String)` | App-specific actions |
+
+### Async Fire-and-Forget
+
+For non-blocking audit logging:
+
+```rust
+use underlay_audit::append_audit_log_async;
+
+// Fire-and-forget - doesn't block the request
+append_audit_log_async(pool.clone(), "infra.audit_log", audit_entry);
+```
+
+### Query Filters
+
+```rust
+use underlay_audit::{list_audit_logs, AuditLogFilters};
+
+let filters = AuditLogFilters::new()
+    .with_action("create")
+    .with_resource_type("pathway")
+    .with_pagination(50, 0);
+
+let entries = list_audit_logs(&pool, "infra.audit_log", filters).await?;
+```
+
+### What to Log
+
+**High Value** (strongly recommended):
+- Resource create/delete operations
+- Role and permission changes
+- Security setting changes (MFA enable/disable)
+- Login failures (for breach detection)
+
+**Medium Value** (recommended):
+- Resource updates
+- Bulk operations
+- Export operations
+
+**Low Value** (optional):
+- Read-only operations
+- Frequent automated operations
+
+### Security Checklist for Audit Logging
+
+- [ ] Audit log table created with proper indexes
+- [ ] Key admin actions logged (create, delete, security changes)
+- [ ] Admin endpoint to view audit logs
+- [ ] Audit log retention policy (e.g., 90 days for revoked sessions)
+- [ ] Non-blocking logging (failures don't break requests)
+
+---
+
 ## Further Reading
 
 - [060-authentication](./060-authentication.md) - Authentication providers
