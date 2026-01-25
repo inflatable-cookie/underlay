@@ -31,6 +31,7 @@
   const getVariant = getContext<() => TabsVariant>("underlay-tabs-variant");
   const getValue = getContext<() => string>("underlay-tabs-value");
   const setValue = getContext<((v: string) => void) | undefined>("underlay-tabs-set-value");
+  const setParentCollapsed = getContext<((v: boolean) => void) | undefined>("underlay-tabs-set-collapsed");
 
   let variant = $derived(getVariant?.() ?? "pills");
   let currentValue = $derived(getValue?.() ?? "");
@@ -43,6 +44,11 @@
 
   // Find the current tab for dropdown display
   const currentTab = $derived(tabs?.find((t) => t.value === currentValue));
+
+  // Sync collapsed state to parent TabsRoot
+  $effect(() => {
+    setParentCollapsed?.(isCollapsed);
+  });
 
   function handleDropdownSelect(value: string) {
     setValue?.(value);
@@ -191,6 +197,10 @@
     max-width: 100%;
   }
 
+  .underlay-tabs-list-container--boxed {
+    /* No special styling - let dropdown handle it */
+  }
+
   /* Wrapper for measuring tabs width */
   .underlay-tabs-list__measure {
     display: inline-block;
@@ -200,13 +210,14 @@
   /* Dropdown styles */
   .underlay-tabs-dropdown {
     position: relative;
-    display: inline-block;
+    display: block;
+    width: 100%;
   }
 
   .underlay-tabs-dropdown--boxed {
-    background: rgba(0, 0, 0, 0.25);
-    border-radius: 0.5rem 0.5rem 0 0;
-    padding: 0.35rem 0.5rem;
+    background: transparent;
+    border-radius: 0;
+    padding: 0;
   }
 
   .underlay-tabs-dropdown--pills {
@@ -217,17 +228,17 @@
   }
 
   .underlay-tabs-dropdown__trigger {
-    display: inline-flex;
+    display: flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.5rem 0.75rem;
+    width: 100%;
+    padding: 0.6rem 0.75rem;
     border: none;
     border-radius: 0.4rem;
     background: var(--underlay-color-button-neutral-bg, #1f2933);
     color: var(--underlay-color-text, #e5e7eb);
     font-size: 0.9rem;
     cursor: pointer;
-    min-width: 10rem;
     justify-content: space-between;
   }
 

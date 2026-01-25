@@ -26,10 +26,17 @@
   let { value = $bindable(), variant = "pills", historyKey, children }: Props =
     $props();
 
+  // Collapsed state (set by TabsList when in collapsible mode)
+  let isCollapsed = $state(false);
+
   setContext("underlay-tabs-variant", () => variant);
   setContext("underlay-tabs-value", () => value);
   setContext("underlay-tabs-set-value", (v: string) => {
     value = v;
+  });
+  setContext("underlay-tabs-collapsed", () => isCollapsed);
+  setContext("underlay-tabs-set-collapsed", (v: boolean) => {
+    isCollapsed = v;
   });
 
   // Track the last value we synced to URL to prevent loops
@@ -78,6 +85,6 @@
   });
 </script>
 
-<BitsTabs.Root bind:value class={`underlay-tabs underlay-tabs--${variant}`}>
+<BitsTabs.Root bind:value class={`underlay-tabs underlay-tabs--${variant} ${isCollapsed ? "underlay-tabs--collapsed" : ""}`}>
   {@render children?.()}
 </BitsTabs.Root>

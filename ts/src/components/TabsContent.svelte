@@ -42,4 +42,10 @@
     border-top: 0.3em solid var(--underlay-color-border-subtle, rgba(148, 163, 184, 0.25));
     border-radius: 0;
   }
+
+  /* Collapsed mode - simpler styling */
+  :global(.underlay-tabs--collapsed .underlay-tabs-content--boxed) {
+    border-top: none;
+    padding-top: 1rem;
+  }
 </style>
