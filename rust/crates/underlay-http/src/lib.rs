@@ -1,4 +1,5 @@
 pub mod context;
+pub mod cookies;
 mod cors;
 mod errors;
 pub mod pagination;
@@ -16,6 +17,9 @@ mod responses_tests;
 
 pub use crate::context::{
     headers, AuthenticatedContext, AuthenticatedUser, ContextError, RequestContext,
+};
+pub use crate::cookies::{
+    clear_auth_cookies, extract_refresh_token, set_auth_cookies, AuthCookieConfig,
 };
 pub use crate::cors::{cors_layer, CorsConfig};
 pub use crate::errors::{error_response, ErrorLogContext, ErrorLogSink};
