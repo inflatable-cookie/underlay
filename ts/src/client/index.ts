@@ -1,5 +1,6 @@
 export * from "./types";
 export * from "./errors";
+export * from "./format";
 export * from "./http";
 export * from "./auth";
 export * from "./useAuth";
