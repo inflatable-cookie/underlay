@@ -84,8 +84,11 @@
   let validationStatus = $state<ValidationStatus>("idle");
   let validationMessage = $state<string>("");
   let lastValidatedValue = $state<string>("");
-  let lastValidationContext = $state<unknown>(validationContext);
   let hasUserInteracted = $state(false);
+
+  // Serialize context for value-based comparison (avoids proxy reference issues)
+  const contextKey = $derived(JSON.stringify(validationContext ?? null));
+  let lastContextKey = $state(JSON.stringify(validationContext ?? null));
 
   const showClearButton = $derived(search && value.length > 0);
   const showValidationIcon = $derived(showValidationStatus && validationStatus !== "idle");
@@ -98,10 +101,10 @@
     }
   });
 
-  // Revalidate when context changes
+  // Revalidate when context changes (use serialized key for value comparison)
   $effect(() => {
-    if (validationContext !== lastValidationContext) {
-      lastValidationContext = validationContext;
+    if (contextKey !== lastContextKey) {
+      lastContextKey = contextKey;
       if (validate && value) {
         triggerValidation(value);
       }
