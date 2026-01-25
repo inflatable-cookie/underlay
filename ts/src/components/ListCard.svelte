@@ -6,6 +6,8 @@
   interface Props {
     href?: string | null;
     title: string;
+    /** Optional content to render after the title (e.g., badges, tags) */
+    titleSuffix?: Snippet;
     subtitle?: string | null;
     ariaLabel?: string | null;
     accent?: string | null;
@@ -26,6 +28,7 @@
   let {
     href = null,
     title,
+    titleSuffix,
     subtitle = null,
     ariaLabel = null,
     accent = null,
@@ -100,7 +103,9 @@
 
   <div class="underlay-list-card__body">
     <div class="underlay-list-card__title-row">
-      <h3 class="underlay-list-card__title">{title}</h3>
+      <h3 class="underlay-list-card__title">
+        {title}{#if titleSuffix}{@render titleSuffix()}{/if}
+      </h3>
       {#if trailing}
         {@render trailing()}
       {/if}
