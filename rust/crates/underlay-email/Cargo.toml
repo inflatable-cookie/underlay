@@ -8,6 +8,7 @@ license.workspace = true
 default = []
 smtp = ["lettre"]
 ses = ["aws-sdk-sesv2", "aws-config"]
+templates = ["tera"]
 
 [dependencies]
 async-trait = { workspace = true }
@@ -24,6 +25,9 @@ lettre = { version = "0.11", features = ["tokio1-native-tls", "builder"], option
 # AWS SES adapter (optional)
 aws-sdk-sesv2 = { version = "1", optional = true }
 aws-config = { version = "1", optional = true }
+
+# Email templates (optional)
+tera = { version = "1", optional = true }
 
 [dev-dependencies]
 tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }

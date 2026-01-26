@@ -45,6 +45,8 @@ mod adapter;
 pub mod adapters;
 mod error;
 mod manager;
+#[cfg(feature = "templates")]
+mod templates;
 mod types;
 
 // Re-export main types
@@ -63,3 +65,6 @@ pub use adapters::SmtpAdapter;
 
 #[cfg(feature = "ses")]
 pub use adapters::SesAdapter;
+
+#[cfg(feature = "templates")]
+pub use templates::{EmailContext, EmailTemplateEngine};
