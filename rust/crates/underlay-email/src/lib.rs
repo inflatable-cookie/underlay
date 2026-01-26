@@ -68,3 +68,7 @@ pub use adapters::SesAdapter;
 
 #[cfg(feature = "templates")]
 pub use templates::{EmailContext, EmailTemplateEngine};
+
+// Re-export tera for consumers who need to create custom contexts or engines
+#[cfg(feature = "templates")]
+pub use tera;
