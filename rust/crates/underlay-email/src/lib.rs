@@ -49,6 +49,7 @@ mod types;
 
 // Re-export main types
 pub use adapter::{EmailAdapter, NoopAdapter};
+pub use adapters::{CapturedEmail, DevCaptureAdapter, EmailStore, InMemoryEmailStore};
 pub use error::{EmailError, EmailResult};
 pub use manager::{
     AdapterType, DevCaptureConfig, EmailManager, EmailManagerConfig, SesConfig, SmtpConfig,
