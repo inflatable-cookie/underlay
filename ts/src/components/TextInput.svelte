@@ -76,6 +76,7 @@
 
   // Generate stable ID for form validation tracking
   const fieldId = id ?? createStableId("underlay-text-input");
+  const isRequired = required ?? false;
 
   let debounceTimer: ReturnType<typeof setTimeout> | null = null;
   let validationTimer: ReturnType<typeof setTimeout> | null = null;
@@ -141,7 +142,7 @@
       const hasValue = untrack(() => checkHasValue(value));
       const isValid = untrack(() => validationStatus === "valid" || validationStatus === "idle");
       const status = untrack(() => validationStatus);
-      formValidation.registerField(fieldId, required, hasValue, status, isValid);
+      formValidation.registerField(fieldId, isRequired, hasValue, status, isValid);
 
       // Initialize previous values
       prevValue = untrack(() => value);

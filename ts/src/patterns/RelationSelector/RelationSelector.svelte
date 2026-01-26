@@ -108,7 +108,7 @@
       if (!open) ctx.closePopover();
     }}
   >
-    <BitsPopover.Trigger asChild>
+    <BitsPopover.Trigger>
       {#snippet child({ props })}
         <button
           {...props}

@@ -100,13 +100,15 @@
 		// Create and trigger download
 		const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
 		const url = URL.createObjectURL(blob);
-		const link = document.createElement("a");
+		const doc = globalThis?.document;
+		if (!doc) return;
+		const link = doc.createElement("a");
 		link.setAttribute("href", url);
 		link.setAttribute("download", filename);
 		link.style.visibility = "hidden";
-		document.body.appendChild(link);
+		doc.body.appendChild(link);
 		link.click();
-		document.body.removeChild(link);
+		doc.body.removeChild(link);
 		URL.revokeObjectURL(url);
 	}
 

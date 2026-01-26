@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
+  import type { HTMLFormAttributes } from "svelte/elements";
   import { Card, Form } from "@decodelabs/underlay/components";
   import PageHeader from "./PageHeader.svelte";
   import type { BannerVariant } from "./banner";
@@ -39,7 +40,7 @@
     enhance?: EnhanceHook;
 
     formClass?: string;
-    autocomplete?: string;
+    autocomplete?: HTMLFormAttributes["autocomplete"];
 
     /** Content to render inside PageHeader (meta info like IDs) */
     headerMeta?: Snippet;

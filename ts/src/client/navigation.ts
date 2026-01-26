@@ -76,9 +76,12 @@ export async function gotoWithContext(
   // If state is provided, store it keyed by the context's href
   if (context.state) {
     // Extract pathname from href for consistent keying
+    const origin = globalThis?.location?.origin;
     const pathname = context.href.startsWith("/")
       ? context.href.split("?")[0]
-      : new URL(context.href, window.location.origin).pathname;
+      : origin
+        ? new URL(context.href, origin).pathname
+        : context.href.split("?")[0];
     storePageState(pathname, context.state);
   }
 

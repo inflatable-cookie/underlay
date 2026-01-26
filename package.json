@@ -20,6 +20,15 @@
       "types": "./ts/src/patterns/index.ts",
       "default": "./ts/src/patterns/index.ts"
     },
+    "./patterns/SpaFormShell": {
+      "svelte": "./ts/src/patterns/SpaFormShell.svelte",
+      "types": "./ts/src/patterns/SpaFormShell.svelte",
+      "default": "./ts/src/patterns/SpaFormShell.svelte"
+    },
+    "./patterns/spa-form-types": {
+      "types": "./ts/src/patterns/spa-form-types.ts",
+      "default": "./ts/src/patterns/spa-form-types.ts"
+    },
     "./nightfire": {
       "svelte": "./ts/src/nightfire/index.ts",
       "types": "./ts/src/nightfire/index.ts",
@@ -60,7 +69,7 @@
     "check": "svelte-check --tsconfig ./ts/tsconfig.json",
     "check:types": "tsc -p ./ts/tsconfig.json",
     "check:exports": "node ts/scripts/check-exports.mjs",
-    "check:guardrails": "node ts/scripts/check-guardrails.mjs",
+    "check:guardrails": "node --import tsx ts/src/tools/guardrails.ts",
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
@@ -69,6 +78,7 @@
   "peerDependencies": {
     "@sveltejs/kit": "^2.0.0",
     "bits-ui": "^2.0.0",
+    "lucide-svelte": "^0.476.0",
     "svelte": "^5.0.0",
     "vite": "^7.0.0"
   },
@@ -81,9 +91,18 @@
     "@types/node": "^25.0.10",
     "@vitest/ui": "^3.2.4",
     "bits-ui": "^2.15.4",
+    "lucide-svelte": "^0.476.0",
     "svelte": "^5.48.0",
     "svelte-check": "^4.3.5",
+    "tsx": "^4.21.0",
     "typescript": "^5.9.3",
     "vitest": "^3.2.4"
+  },
+  "guardrails": {
+    "srcDir": "./ts/src",
+    "extensions": [".ts", ".svelte"],
+    "bannedPatterns": [],
+    "moduleScopeChecks": "@decodelabs/underlay/tools/templates/sveltekit-ssr",
+    "suppressionPrefix": "guardrails-disable"
   }
 }
