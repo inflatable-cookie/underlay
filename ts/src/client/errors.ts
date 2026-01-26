@@ -25,6 +25,11 @@ export class UnderlayHttpError extends Error {
   get code(): string | undefined {
     return this.envelope?.error.code;
   }
+
+  /** Field-level errors, if provided by the API. */
+  get fieldErrors(): Record<string, string> | undefined {
+    return this.envelope?.error.fieldErrors;
+  }
 }
 
 /**

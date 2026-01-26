@@ -204,13 +204,13 @@ export function createAuthHandle(options: SvelteKitAuthOptions): Handle {
         await tokenStore.setRefreshToken(session.refreshToken);
 
         return {
+          success: true,
           accessToken: session.accessToken,
           refreshToken: session.refreshToken,
-          retry: true,
         };
       } catch {
         await tokenStore.clear();
-        return { retry: false, accessToken: null, refreshToken: null };
+        return { success: false, accessToken: null, refreshToken: null };
       }
     };
 
@@ -243,12 +243,12 @@ export function createAuthHandle(options: SvelteKitAuthOptions): Handle {
               : await defaultRefreshRequest(rawHttp, options.routes, refreshToken);
 
             return {
-              retry: true,
+              success: true,
               accessToken: session.accessToken,
               refreshToken: session.refreshToken,
             };
           } catch {
-            return { retry: false, accessToken: null, refreshToken: null };
+            return { success: false, accessToken: null, refreshToken: null };
           }
         },
       },

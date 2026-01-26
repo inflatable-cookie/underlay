@@ -54,6 +54,7 @@ export interface HttpClientOptions {
 
   /**
    * Maximum number of retry attempts for retryable operations.
+   * This is the number of *retries* (in addition to the initial attempt).
    * Retries are only attempted for idempotent requests (GET, DELETE) on:
    * - 502 Bad Gateway
    * - 503 Service Unavailable
@@ -112,13 +113,13 @@ export interface RefreshContext {
 }
 
 export interface RefreshResult {
+  /** Whether the refresh succeeded. */
+  success: boolean;
+
   /** If provided, the client will update the token store. */
   accessToken?: string | null;
   /** If provided, the client will update the token store. */
   refreshToken?: string | null;
-
-  /** Whether to retry the original request after refresh. */
-  retry: boolean;
 }
 
 export interface HttpRequest {
@@ -145,9 +146,28 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
   const debug = options.debug ?? false;
   const credentials = options.credentials ?? "omit";
 
+  function hasHeader(headers: Record<string, string>, name: string): boolean {
+    const target = name.toLowerCase();
+    return Object.keys(headers).some((k) => k.toLowerCase() === target);
+  }
+
+  function setHeaderIfMissing(headers: Record<string, string>, name: string, value: string): void {
+    if (hasHeader(headers, name)) return;
+    headers[name] = value;
+  }
+
+  function getHeader(headers: Record<string, string> | undefined, name: string): string | undefined {
+    if (!headers) return undefined;
+    const target = name.toLowerCase();
+    for (const [k, v] of Object.entries(headers)) {
+      if (k.toLowerCase() === target) return v;
+    }
+    return undefined;
+  }
+
   function log(...args: unknown[]): void {
     if (debug) {
-      console.log("[HttpClient]", ...args);
+      console.log("[HTTP]", ...args);
     }
   }
 
@@ -170,15 +190,17 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
   let refreshInFlight: Promise<RefreshResult> | null = null;
 
   async function rawRequest<T>(req: HttpRequest, opts?: { skipRetry?: boolean }): Promise<T> {
-    const url = new URL(req.path, options.baseUrl);
+    const url = new URL(req.path, options.baseUrl).toString();
     const headers: Record<string, string> = {
       ...options.defaultHeaders,
       ...req.headers,
     };
 
+    setHeaderIfMissing(headers, "Accept", "application/json");
+
     let body: BodyInit | undefined;
     if (req.body !== undefined) {
-      headers["content-type"] ??= "application/json";
+      setHeaderIfMissing(headers, "Content-Type", "application/json");
       body = JSON.stringify(req.body);
     }
 
@@ -187,6 +209,7 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
     const shouldRetry = isIdempotent && !opts?.skipRetry;
 
     let attempt = 0;
+    let retries = 0;
 
     while (true) {
       attempt += 1;
@@ -203,7 +226,7 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
           : undefined;
 
       try {
-        log(`${req.method} ${url} (attempt ${attempt}/${maxRetries})`);
+        log(req.method, req.path);
 
         const res = await fetchImpl(url, {
           method: req.method,
@@ -217,7 +240,7 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
           clearTimeout(timeout);
         }
 
-        const contentType = res.headers.get("content-type") ?? "";
+        const contentType = res.headers?.get?.("content-type") ?? "application/json";
         const hasJson = contentType.includes("application/json");
 
         if (!res.ok) {
@@ -231,12 +254,13 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
           const canRetry =
             shouldRetry &&
             retryStatuses.has(res.status) &&
-            attempt < maxRetries;
+            retries < maxRetries;
 
           if (canRetry) {
-            log(`Retrying due to status ${res.status}...`);
+            retries += 1;
+            log("Retrying due to status", res.status);
             // Exponential backoff: 100ms, 200ms, 400ms, etc.
-            const backoffMs = Math.min(100 * Math.pow(2, attempt - 1), 3000);
+            const backoffMs = Math.min(100 * Math.pow(2, retries - 1), 3000);
             await new Promise((resolve) => setTimeout(resolve, backoffMs));
             continue;
           }
@@ -245,15 +269,18 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
         }
 
         if (res.status === 204) {
-          log(`${req.method} ${url} -> 204 No Content`);
-          return undefined as T;
+          return null as T;
         }
 
         if (!hasJson) {
           return (await res.text()) as unknown as T;
         }
 
-        return (await res.json()) as T;
+        const parsed = await res.json().catch(() => null);
+        if (parsed && typeof parsed === "object" && "data" in (parsed as Record<string, unknown>)) {
+          return (parsed as { data: T }).data;
+        }
+        return parsed as T;
       } catch (err) {
         if (timeout != null) {
           clearTimeout(timeout);
@@ -264,38 +291,26 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
           throw err;
         }
 
-        // Network/timeout error - retry if allowed
-        const canRetry = shouldRetry && attempt < maxRetries;
-
-        if (canRetry) {
-          log(`Network error, retrying:`, err);
-          const backoffMs = Math.min(100 * Math.pow(2, attempt - 1), 3000);
-          await new Promise((resolve) => setTimeout(resolve, backoffMs));
-          continue;
-        }
-
-        throw err;
+        const message = err instanceof Error ? err.message : "Network error";
+        throw new UnderlayHttpError(0, message);
       }
     }
   }
 
   async function request<T>(req: HttpRequest): Promise<T> {
-    const authHeader = req.headers?.authorization ?? req.headers?.Authorization;
-    const token = authHeader ? null : await getAccessToken?.();
+    const token = hasHeader(req.headers ?? {}, "Authorization")
+      ? null
+      : (await getAccessToken?.()) ?? null;
 
-    const headers = token
-      ? {
-          ...req.headers,
-          authorization: `Bearer ${token}`,
-        }
-      : req.headers;
+    const headers: Record<string, string> = { ...(req.headers ?? {}) };
+    if (token) {
+      setHeaderIfMissing(headers, "Authorization", `Bearer ${token}`);
+    }
 
     try {
       return await rawRequest<T>({ ...req, headers });
     } catch (err) {
-      if (!(err instanceof UnderlayHttpError)) {
-        throw err;
-      }
+      if (!(err instanceof UnderlayHttpError)) throw err;
 
       if (err.status !== 401 || !options.auth?.refresh) {
         throw err;
@@ -321,6 +336,13 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
 
       const refreshed = await refreshInFlight;
 
+      if (!refreshed.success) {
+        await tokenStore?.clear();
+        await setAccessToken?.(null);
+        await setRefreshToken?.(null);
+        throw err;
+      }
+
       if (refreshed.accessToken !== undefined) {
         await setAccessToken?.(refreshed.accessToken);
       }
@@ -328,17 +350,11 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
         await setRefreshToken?.(refreshed.refreshToken);
       }
 
-      if (!refreshed.retry) {
-        throw err;
+      const retryToken = (await getAccessToken?.()) ?? null;
+      const retryHeaders: Record<string, string> = { ...(req.headers ?? {}) };
+      if (retryToken) {
+        setHeaderIfMissing(retryHeaders, "Authorization", `Bearer ${retryToken}`);
       }
-
-      const retryToken = await getAccessToken?.();
-      const retryHeaders = retryToken
-        ? {
-            ...req.headers,
-            authorization: `Bearer ${retryToken}`,
-          }
-        : req.headers;
 
       return await rawRequest<T>({ ...req, headers: retryHeaders });
     }
