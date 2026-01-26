@@ -59,3 +59,6 @@ pub use types::{Email, EmailAddress, EmailBuilder, SendResult};
 // Re-export adapters
 #[cfg(feature = "smtp")]
 pub use adapters::SmtpAdapter;
+
+#[cfg(feature = "ses")]
+pub use adapters::SesAdapter;

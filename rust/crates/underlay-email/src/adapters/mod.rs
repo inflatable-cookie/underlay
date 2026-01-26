@@ -6,9 +6,14 @@
 #[cfg(feature = "smtp")]
 mod smtp;
 
+#[cfg(feature = "ses")]
+mod ses;
+
 #[cfg(feature = "smtp")]
 pub use smtp::SmtpAdapter;
 
+#[cfg(feature = "ses")]
+pub use ses::SesAdapter;
+
 // Future adapters:
-// - AWS SES adapter (Phase 1.3)
 // - Development capture adapter (Phase 1.4)
