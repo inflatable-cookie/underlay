@@ -230,18 +230,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: color-mix(
-      in srgb,
-      var(--underlay-list-card-accent) 18%,
-      var(--underlay-color-accent-tint-bg, var(--underlay-color-accent-tint-bg, rgba(255, 255, 255, 0.03)))
-    );
-    border: 1px solid
-      color-mix(
-        in srgb,
-        var(--underlay-list-card-accent) 30%,
-        var(--underlay-color-accent-tint-border, var(--underlay-color-accent-tint-border, rgba(148, 163, 184, 0.25)))
-      );
-    color: var(--underlay-list-card-accent);
+    background: var(--underlay-list-card-accent);
+    color: var(--underlay-color-on-primary, #fff);
     overflow: hidden;
   }
 
@@ -257,27 +247,14 @@
     height: 100%;
     border-radius: var(--underlay-radius-md, var(--underlay-radius-md, 0.75rem));
     padding: 0;
-    background: color-mix(
-      in srgb,
-      var(--underlay-list-card-accent) 18%,
-      var(--underlay-color-accent-tint-bg, var(--underlay-color-accent-tint-bg, rgba(255, 255, 255, 0.03)))
-    );
-    border: 1px solid
-      color-mix(
-        in srgb,
-        var(--underlay-list-card-accent) 30%,
-        var(--underlay-color-accent-tint-border, var(--underlay-color-accent-tint-border, rgba(148, 163, 184, 0.25)))
-      );
-    color: var(--underlay-list-card-accent);
+    background: var(--underlay-list-card-accent);
+    border: none;
+    color: var(--underlay-color-on-primary, #fff);
     cursor: pointer;
   }
 
   .underlay-list-card__media-slot :global(.underlay-dropdown-menu-trigger:hover) {
-    background: color-mix(
-      in srgb,
-      var(--underlay-list-card-accent) 28%,
-      var(--underlay-color-accent-tint-bg, var(--underlay-color-accent-tint-bg, rgba(255, 255, 255, 0.03)))
-    );
+    background: color-mix(in srgb, var(--underlay-list-card-accent) 85%, black);
   }
 
   .underlay-list-card__media-slot :global(.underlay-dropdown-menu-trigger:focus-visible) {
@@ -301,16 +278,16 @@
     justify-content: center;
     flex: 1;
     padding-top: 0.25rem;
-    color: var(--underlay-list-card-accent);
+    color: var(--underlay-color-on-primary, #fff);
   }
 
   .underlay-list-card__dots {
     font-size: 1rem;
     font-weight: 700;
     line-height: 1;
-    opacity: 0.6;
+    opacity: 0.8;
     padding-bottom: 0.3rem;
-    color: var(--underlay-list-card-accent);
+    color: var(--underlay-color-on-primary, #fff);
   }
 
   .underlay-list-card__body {
