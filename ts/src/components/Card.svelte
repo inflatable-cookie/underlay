@@ -36,4 +36,8 @@
         var(--underlay-color-border-subtle, rgba(148, 163, 184, 0.25))
       );
   }
+
+  .underlay-card > :global(*:first-child) {
+    margin-top: 0;
+  }
 </style>
