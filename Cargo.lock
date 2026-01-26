@@ -3787,6 +3787,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "underlay-email"
+version = "0.0.1"
+dependencies = [
+ "async-trait",
+ "chrono",
+ "serde",
+ "serde_json",
+ "thiserror 1.0.69",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
 name = "underlay-events"
 version = "0.0.1"
 dependencies = [
