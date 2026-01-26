@@ -32,6 +32,8 @@ export { default as NavCardGrid } from "./NavCardGrid.svelte";
 export { default as Banner } from "./Banner.svelte";
 export { default as ReorderableList } from "./ReorderableList.svelte";
 export { default as SlugField } from "./SlugField.svelte";
+export { default as SpaFormShell } from "./SpaFormShell.svelte";
+export type { SpaFormResult, SpaSubmitHandler, SpaNavigateFn } from "./spa-form-types";
 
 // RelationSelector pattern
 export {

@@ -2,7 +2,6 @@
 
 export { default as Badge } from "./Badge.svelte";
 export { default as Breadcrumbs } from "./Breadcrumbs.svelte";
-export type { BreadcrumbItem } from "./Breadcrumbs.svelte";
 export { default as Button } from "./Button.svelte";
 export { default as TextButton } from "./TextButton.svelte";
 export { default as Card } from "./Card.svelte";
