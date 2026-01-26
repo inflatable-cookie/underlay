@@ -40,7 +40,7 @@ describe('createHttpClient', () => {
 			expect(url).toBe('https://api.example.com/users/123');
 			expect(method).toBe('GET');
 			expect(headers.Accept).toBe('application/json');
-			expect(response).toEqual({ id: '123', name: 'Test' });
+			expect(response).toEqual({ data: { id: '123', name: 'Test' } });
 		});
 
 		it('should make POST request with body', async () => {
@@ -59,7 +59,7 @@ describe('createHttpClient', () => {
 			expect(method).toBe('POST');
 			expect(headers['Content-Type']).toBe('application/json');
 			expect(sentBody).toEqual(body);
-			expect(response).toEqual({ id: '456', name: 'Created' });
+			expect(response).toEqual({ data: { id: '456', name: 'Created' } });
 		});
 
 		it('should handle 204 No Content responses', async () => {
@@ -146,7 +146,7 @@ describe('createHttpClient', () => {
 				const refreshToken = await getRefreshToken();
 				if (!refreshToken) return { success: false };
 
-				const data = await rawRequest<{ accessToken: string; refreshToken: string }>({
+				const response = await rawRequest<{ data: { accessToken: string; refreshToken: string } }>({
 					method: 'POST',
 					path: '/auth/refresh',
 					body: { refreshToken }
@@ -154,8 +154,8 @@ describe('createHttpClient', () => {
 
 				return {
 					success: true,
-					accessToken: data.accessToken,
-					refreshToken: data.refreshToken
+					accessToken: response.data.accessToken,
+					refreshToken: response.data.refreshToken
 				};
 			});
 
@@ -170,7 +170,7 @@ describe('createHttpClient', () => {
 			expect(refresh).toHaveBeenCalledTimes(1);
 			expect(fetchMock).toHaveBeenCalledTimes(3);
 			tokenStore.expectTokens('new-access-token', 'new-refresh-token');
-			expect(result).toEqual({ id: '123' });
+			expect(result).toEqual({ data: { id: '123' } });
 		});
 
 		it('should clear tokens and throw error if refresh fails', async () => {
@@ -215,7 +215,7 @@ describe('createHttpClient', () => {
 			const result = await client.get<{ id: string }>('/resource');
 
 			expect(fetchMock).toHaveBeenCalledTimes(3);
-			expect(result).toEqual({ id: '123' });
+			expect(result).toEqual({ data: { id: '123' } });
 		});
 
 		it('should not retry on 502/503/504 for POST requests', async () => {
@@ -248,7 +248,7 @@ describe('createHttpClient', () => {
 			const result = await client.get<{ id: string }>('/resource');
 
 			expect(fetchMock).toHaveBeenCalledTimes(2);
-			expect(result).toEqual({ id: '123' });
+			expect(result).toEqual({ data: { id: '123' } });
 		});
 
 		it('should respect maxRetries limit', async () => {
@@ -304,7 +304,7 @@ describe('createHttpClient', () => {
 			await vi.advanceTimersByTimeAsync(10000);
 
 			const result = await promise;
-			expect(result).toEqual({ id: '123' });
+			expect(result).toEqual({ data: { id: '123' } });
 		});
 	});
 

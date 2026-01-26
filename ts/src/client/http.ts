@@ -276,11 +276,7 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
           return (await res.text()) as unknown as T;
         }
 
-        const parsed = await res.json().catch(() => null);
-        if (parsed && typeof parsed === "object" && "data" in (parsed as Record<string, unknown>)) {
-          return (parsed as { data: T }).data;
-        }
-        return parsed as T;
+        return await res.json();
       } catch (err) {
         if (timeout != null) {
           clearTimeout(timeout);
