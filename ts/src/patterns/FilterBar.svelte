@@ -1,14 +1,17 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
   import ChevronUp from "lucide-svelte/icons/chevron-up";
+  import RefreshCcw from "lucide-svelte/icons/refresh-ccw";
 
   interface Props {
     title?: string;
     startCollapsed?: boolean;
+    /** Callback when refresh button is clicked. If provided, shows a refresh button. */
+    onRefresh?: () => void;
     children?: Snippet;
   }
 
-  let { title = "Filters", startCollapsed = true, children }: Props = $props();
+  let { title = "Filters", startCollapsed = true, onRefresh, children }: Props = $props();
 
   let collapsed = $state(true);
   let hasInteracted = $state(false);
@@ -25,21 +28,47 @@
 
 <section class="underlay-filter-bar" class:underlay-filter-bar--expanded={!collapsed}>
   {#if collapsed}
-    <button type="button" class="underlay-filter-bar__header" onclick={toggle}>
-      <h2 class="underlay-filter-bar__title">{title}</h2>
-      <span class="underlay-filter-bar__toggle">
-        Show filters
-      </span>
-    </button>
+    <div class="underlay-filter-bar__row">
+      <button type="button" class="underlay-filter-bar__header" onclick={toggle}>
+        <h2 class="underlay-filter-bar__title">{title}</h2>
+        <span class="underlay-filter-bar__toggle">
+          Show filters
+        </span>
+      </button>
+      {#if onRefresh}
+        <button
+          type="button"
+          class="underlay-filter-bar__refresh"
+          onclick={onRefresh}
+          aria-label="Refresh"
+          title="Refresh"
+        >
+          <RefreshCcw size={16} />
+        </button>
+      {/if}
+    </div>
   {:else}
-    <button
-      type="button"
-      class="underlay-filter-bar__close"
-      onclick={toggle}
-      aria-label="Collapse filters"
-    >
-      <ChevronUp size="1em" strokeWidth={2.5} />
-    </button>
+    <div class="underlay-filter-bar__actions">
+      {#if onRefresh}
+        <button
+          type="button"
+          class="underlay-filter-bar__refresh"
+          onclick={onRefresh}
+          aria-label="Refresh"
+          title="Refresh"
+        >
+          <RefreshCcw size={16} />
+        </button>
+      {/if}
+      <button
+        type="button"
+        class="underlay-filter-bar__close"
+        onclick={toggle}
+        aria-label="Collapse filters"
+      >
+        <ChevronUp size="1em" strokeWidth={2.5} />
+      </button>
+    </div>
     <div class="underlay-filter-bar__body">
       {@render children?.()}
     </div>
@@ -63,12 +92,18 @@
     padding: var(--underlay-space-3, 0.75rem);
   }
 
+  .underlay-filter-bar__row {
+    display: flex;
+    align-items: center;
+    gap: var(--underlay-space-2, 0.5rem);
+  }
+
   .underlay-filter-bar__header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: var(--underlay-space-2, 0.5rem);
-    width: 100%;
+    flex: 1;
     background: none;
     border: none;
     padding: 0;
@@ -103,10 +138,17 @@
     transition: background 0.15s ease;
   }
 
-  .underlay-filter-bar__close {
+  .underlay-filter-bar__actions {
     position: absolute;
     top: var(--underlay-space-2, 0.5rem);
     right: var(--underlay-space-2, 0.5rem);
+    display: flex;
+    align-items: center;
+    gap: var(--underlay-space-1, 0.25rem);
+  }
+
+  .underlay-filter-bar__refresh,
+  .underlay-filter-bar__close {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -120,6 +162,7 @@
     cursor: pointer;
   }
 
+  .underlay-filter-bar__refresh:hover,
   .underlay-filter-bar__close:hover {
     background: var(--underlay-color-hover-bg, rgba(148, 163, 184, 0.12));
     color: var(--underlay-color-text, #e5e7eb);

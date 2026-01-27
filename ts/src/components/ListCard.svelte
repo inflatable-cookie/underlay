@@ -19,8 +19,9 @@
     showDragHandle?: boolean;
     media?: Snippet;
     trailing?: Snippet;
-    /** Renders the actions menu. When provided, the media area becomes a custom trigger containing the icon + dots. */
-    actions?: Snippet<[{ trigger: Snippet }]>;
+    /** Renders the actions menu. When provided, the media area becomes a custom trigger containing the icon + dots.
+     * The snippet receives `trigger` (the media content to render) and `align` (recommended dropdown alignment). */
+    actions?: Snippet<[{ trigger: Snippet; align: "start" | "center" | "end" }]>;
     children?: Snippet;
     onclick?: ((event: MouseEvent) => void) | null;
   }
@@ -91,7 +92,7 @@
 {#snippet fullContent()}
   {#if hasActions}
     <div class="underlay-list-card__media-slot">
-      {@render actions?.({ trigger: mediaTrigger })}
+      {@render actions?.({ trigger: mediaTrigger, align: "start" })}
     </div>
   {:else}
     <div class="underlay-list-card__media">
