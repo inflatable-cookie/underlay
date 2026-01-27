@@ -57,6 +57,13 @@
     email?: string;
   }
 
+  interface EmailFallbackResult {
+    /** New login state ID for email verification */
+    loginStateId: string;
+    /** Masked email address (for display) */
+    email: string;
+  }
+
   interface Props {
     /** Enabled login methods (default: ['password']) */
     methods?: LoginMethod[];
@@ -64,6 +71,10 @@
     onPasswordLogin?: (email: string, password: string) => Promise<LoginResult>;
     /** Called to verify 2FA code */
     onTwoFactorVerify?: (stateId: string, code: string) => Promise<void>;
+    /** Called to request email fallback when user has TOTP but wants email verification */
+    onRequestEmailCode?: (stateId: string) => Promise<EmailFallbackResult>;
+    /** Called to resend the email verification code */
+    onResendEmailCode?: (stateId: string) => Promise<void>;
     /** Called for passkey login (email is provided if showPasskeyEmailField is true) */
     onPasskeyLogin?: (email?: string) => Promise<void>;
     /** Show optional email field in passkey tab to narrow credential selection */
@@ -94,6 +105,8 @@
     methods = ["password"],
     onPasswordLogin,
     onTwoFactorVerify,
+    onRequestEmailCode,
+    onResendEmailCode,
     onPasskeyLogin,
     showPasskeyEmailField = false,
     onGoogleLogin,
@@ -231,6 +244,42 @@
     error = null;
   }
 
+  // Handle requesting email fallback (when user has TOTP but wants email verification)
+  async function handleRequestEmailCode() {
+    if (!loginStateId || !onRequestEmailCode) return;
+
+    error = null;
+    loading = true;
+
+    try {
+      const result = await onRequestEmailCode(loginStateId);
+      // Update state to use the new email login state
+      loginStateId = result.loginStateId;
+      twoFactorEmail = result.email;
+      isEmailVerification = true;
+    } catch (e) {
+      error = e instanceof Error ? e.message : "Failed to send verification code";
+    } finally {
+      loading = false;
+    }
+  }
+
+  // Handle resending email code
+  async function handleResendEmailCode() {
+    if (!loginStateId || !onResendEmailCode) return;
+
+    error = null;
+    loading = true;
+
+    try {
+      await onResendEmailCode(loginStateId);
+    } catch (e) {
+      // Silently fail - don't reveal if email exists
+    } finally {
+      loading = false;
+    }
+  }
+
   // Handle setup prompt actions
   function handleSetupNow() {
     if (setupHref) {
@@ -253,6 +302,8 @@
       {loading}
       {error}
       onVerify={handleTwoFactorVerify}
+      onRequestEmailCode={onRequestEmailCode ? handleRequestEmailCode : undefined}
+      onResendEmailCode={onResendEmailCode ? handleResendEmailCode : undefined}
       onBack={handleBackToCredentials}
     />
 
