@@ -8,6 +8,7 @@ This document covers implementing authentication using the Underlay auth system.
 - **Dev mode** for local development
 - **Password** authentication with Argon2id
 - **TOTP** two-factor authentication
+- **Email TOTP** email-based verification codes
 - **WebAuthn/PassKey** passwordless authentication
 - **OAuth2** (Google) social login
 
@@ -1889,6 +1890,465 @@ match result {
     _ => { /* other errors */ }
 }
 ```
+
+---
+
+## Email TOTP Verification
+
+Underlay provides `underlay-auth-email-totp` for email-based one-time password verification. This is useful for:
+
+- **Forgot password flows** - Verify email ownership before allowing password reset
+- **Login fallback** - Alternative 2FA when user doesn't have their authenticator app
+- **Sensitive action verification** - Require email code before critical operations
+- **Email change verification** - Confirm new email address before updating
+
+### Adding Email TOTP to Your App
+
+```toml
+# apps/api/crates/auth/Cargo.toml
+[dependencies]
+underlay-auth-email-totp = { path = "../../../underlay/rust/crates/underlay-auth-email-totp" }
+```
+
+### Configuration
+
+```rust
+use underlay_auth_email_totp::EmailTotpConfig;
+
+let config = EmailTotpConfig {
+    code_expiry_minutes: 10,     // Code expires after 10 minutes
+    max_codes_per_hour: 5,       // Rate limit: 5 codes per user per hour
+    max_attempts: 5,             // Max verification attempts per code
+    session_expiry_minutes: 5,   // Verification session expires after 5 minutes
+    code_length: 6,              // 6-digit codes
+};
+
+// Or use defaults:
+let config = EmailTotpConfig::default();
+```
+
+### Repository Traits
+
+Email TOTP requires two repository traits for storage. Implement these for your database:
+
+**EmailTotpCodeRepository** - Manages codes and rate limiting:
+
+```rust
+use async_trait::async_trait;
+use chrono::{DateTime, Utc};
+use underlay_auth_email_totp::{
+    EmailTotpCodeRepository, EmailTotpResult, RateLimitStatus, StoredCode,
+};
+
+#[async_trait]
+impl EmailTotpCodeRepository for MyCodeRepository {
+    /// Check if user has exceeded rate limit for sending codes
+    async fn check_rate_limit(
+        &self,
+        user_id: &str,
+        purpose: &str,
+        max_per_hour: i32,
+    ) -> EmailTotpResult<RateLimitStatus> {
+        // Query your database for codes sent in the last hour
+        // Return RateLimitStatus { send_count, attempt_count, is_limited }
+    }
+
+    /// Record that a code was sent (for rate limiting)
+    async fn increment_send_count(
+        &self,
+        user_id: &str,
+        purpose: &str,
+    ) -> EmailTotpResult<()> {
+        // Increment send counter in your database
+    }
+
+    /// Store a new code (hashed with Argon2id)
+    async fn store_code(
+        &self,
+        user_id: &str,
+        email: &str,
+        code_hash: &str,      // Argon2id hash of the code
+        purpose: &str,        // "login", "password_reset", etc.
+        expires_at: DateTime<Utc>,
+        max_attempts: i32,
+    ) -> EmailTotpResult<String> {
+        // Insert into database, return code_id
+    }
+
+    /// Get active (non-expired, unused) code for verification
+    async fn get_active_code(
+        &self,
+        user_id: &str,
+        purpose: &str,
+    ) -> EmailTotpResult<Option<StoredCode>> {
+        // Query for unexpired, unused code
+        // Return StoredCode { id, code_hash, expires_at, attempts, max_attempts }
+    }
+
+    /// Increment verification attempts counter
+    async fn increment_attempts(&self, code_id: &str) -> EmailTotpResult<i32> {
+        // Increment and return new count
+    }
+
+    /// Mark code as used (prevents reuse)
+    async fn mark_code_used(&self, code_id: &str) -> EmailTotpResult<()> {
+        // Set used_at timestamp
+    }
+}
+```
+
+**VerificationSessionRepository** - Manages verification sessions:
+
+```rust
+use underlay_auth_email_totp::{
+    VerificationSessionRepository, VerificationSession, EmailTotpResult,
+};
+
+#[async_trait]
+impl VerificationSessionRepository for MySessionRepository {
+    /// Create a new verification session after successful code verification
+    async fn create_session(
+        &self,
+        user_id: &str,
+        purpose: &str,
+        method: &str,        // "email_totp"
+        expires_at: DateTime<Utc>,
+    ) -> EmailTotpResult<VerificationSession> {
+        // Insert session, return VerificationSession { id, user_id, purpose, ... }
+    }
+
+    /// Consume session (one-time use) when completing the action
+    async fn consume_session(
+        &self,
+        session_id: &str,
+        user_id: &str,
+        purpose: &str,
+    ) -> EmailTotpResult<VerificationSession> {
+        // Mark as used and return session, or error if invalid/expired/already used
+    }
+
+    /// Get session without consuming (for validation)
+    async fn get_session(
+        &self,
+        session_id: &str,
+        user_id: &str,
+        purpose: &str,
+    ) -> EmailTotpResult<Option<VerificationSession>> {
+        // Query for valid session
+    }
+}
+```
+
+### Email Sender Trait
+
+Implement the `EmailTotpSender` trait to send verification emails:
+
+```rust
+use async_trait::async_trait;
+use underlay_auth_email_totp::{EmailTotpSender, EmailTotpResult};
+
+pub struct MyEmailSender {
+    // Your email infrastructure (SMTP, SES, SendGrid, etc.)
+}
+
+#[async_trait]
+impl EmailTotpSender for MyEmailSender {
+    async fn send_code(
+        &self,
+        to_email: &str,
+        code: &str,           // The 6-digit code to send
+        purpose: &str,        // "login", "password_reset", etc.
+        expiry_minutes: i32,  // How long until code expires
+    ) -> EmailTotpResult<()> {
+        // Build email subject and body based on purpose
+        let subject = match purpose {
+            "login" => "Your login code",
+            "password_reset" => "Reset your password",
+            _ => "Your verification code",
+        };
+
+        let body = format!(
+            "Your verification code is: {}\n\n\
+             This code expires in {} minutes.\n\n\
+             If you didn't request this code, you can safely ignore this email.",
+            code, expiry_minutes
+        );
+
+        // Send the email using your email infrastructure
+        self.send_email(to_email, subject, &body).await
+    }
+}
+```
+
+### Service Setup
+
+```rust
+use underlay_auth_email_totp::{EmailTotpConfig, EmailTotpService};
+use std::sync::Arc;
+
+pub struct EmailTotpAuth {
+    service: EmailTotpService<MyCodeRepository, MySessionRepository, MyEmailSender>,
+}
+
+impl EmailTotpAuth {
+    pub fn new(
+        code_repo: MyCodeRepository,
+        session_repo: MySessionRepository,
+        email_sender: MyEmailSender,
+        config: Option<EmailTotpConfig>,
+    ) -> Self {
+        let service = EmailTotpService::new(
+            code_repo,
+            session_repo,
+            email_sender,
+            config.unwrap_or_default(),
+        );
+        Self { service }
+    }
+}
+```
+
+### Usage Patterns
+
+**Request a verification code:**
+
+```rust
+use underlay_auth_email_totp::purposes;
+
+impl EmailTotpAuth {
+    /// Send a verification code to the user's email
+    pub async fn request_code(
+        &self,
+        user_id: &str,
+        email: &str,
+        purpose: &str,  // Use purposes::LOGIN, purposes::PASSWORD_RESET, etc.
+    ) -> EmailTotpResult<()> {
+        self.service.request_code(user_id, email, purpose).await
+    }
+}
+```
+
+**Verify code and create session:**
+
+```rust
+impl EmailTotpAuth {
+    /// Verify the code and create a verification session
+    /// Returns the session ID for use in the next step
+    pub async fn verify_code(
+        &self,
+        user_id: &str,
+        purpose: &str,
+        code: &str,
+    ) -> EmailTotpResult<VerificationSession> {
+        self.service.verify_code(user_id, purpose, code).await
+    }
+
+    /// Verify code without creating a session (e.g., for login completion)
+    pub async fn verify_code_only(
+        &self,
+        user_id: &str,
+        purpose: &str,
+        code: &str,
+    ) -> EmailTotpResult<()> {
+        self.service.verify_code_only(user_id, purpose, code).await
+    }
+}
+```
+
+**Consume verification session:**
+
+```rust
+impl EmailTotpAuth {
+    /// Consume the verification session before performing the sensitive action
+    /// Returns error if session is invalid, expired, or already used
+    pub async fn consume_session(
+        &self,
+        session_id: &str,
+        user_id: &str,
+        purpose: &str,
+    ) -> EmailTotpResult<VerificationSession> {
+        self.service.consume_session(session_id, user_id, purpose).await
+    }
+}
+```
+
+### Purpose Constants
+
+Use the provided purpose constants for consistency:
+
+```rust
+use underlay_auth_email_totp::purposes;
+
+// Available purposes:
+purposes::LOGIN              // "login" - Email-based 2FA for login
+purposes::PASSWORD_CHANGE    // "password_change" - Verify before changing password
+purposes::PASSWORD_RESET     // "password_reset" - Forgot password flow
+purposes::SENSITIVE_ACTION   // "sensitive_action" - Generic sensitive operations
+```
+
+### Example: Forgot Password Flow
+
+```rust
+pub async fn request_password_reset(
+    email_totp: &EmailTotpAuth,
+    user_repo: &UserRepository,
+    email: &str,
+) -> Result<(), AuthError> {
+    // 1. Look up user by email (don't reveal if user exists)
+    let user = match user_repo.find_by_email(email).await? {
+        Some(u) => u,
+        None => return Ok(()), // Silent success for non-existent users
+    };
+
+    // 2. Send verification code
+    email_totp
+        .request_code(&user.id.to_string(), email, purposes::PASSWORD_RESET)
+        .await?;
+
+    Ok(())
+}
+
+pub async fn verify_password_reset(
+    email_totp: &EmailTotpAuth,
+    user_repo: &UserRepository,
+    email: &str,
+    code: &str,
+) -> Result<String, AuthError> {
+    // 1. Look up user
+    let user = user_repo
+        .find_by_email(email)
+        .await?
+        .ok_or(AuthError::InvalidCode)?;
+
+    // 2. Verify code and create session
+    let session = email_totp
+        .verify_code(&user.id.to_string(), purposes::PASSWORD_RESET, code)
+        .await?;
+
+    // 3. Return session ID for the password reset step
+    Ok(session.id)
+}
+
+pub async fn complete_password_reset(
+    email_totp: &EmailTotpAuth,
+    password_auth: &PasswordAuth,
+    user_repo: &UserRepository,
+    session_id: &str,
+    email: &str,
+    new_password: &str,
+) -> Result<(), AuthError> {
+    // 1. Look up user
+    let user = user_repo
+        .find_by_email(email)
+        .await?
+        .ok_or(AuthError::InvalidSession)?;
+
+    // 2. Consume verification session (one-time use)
+    email_totp
+        .consume_session(session_id, &user.id.to_string(), purposes::PASSWORD_RESET)
+        .await?;
+
+    // 3. Reset the password
+    password_auth.reset_password(user.id, new_password).await?;
+
+    Ok(())
+}
+```
+
+### Database Schema for Email TOTP
+
+```sql
+-- Email TOTP codes
+CREATE TABLE auth.email_totp_codes (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    email VARCHAR(255) NOT NULL,
+    code_hash VARCHAR(255) NOT NULL,  -- Argon2id hash
+    purpose VARCHAR(50) NOT NULL,     -- 'login', 'password_reset', etc.
+    attempts INTEGER NOT NULL DEFAULT 0,
+    max_attempts INTEGER NOT NULL DEFAULT 5,
+    used_at TIMESTAMPTZ NULL,
+    expires_at TIMESTAMPTZ NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_email_totp_codes_user_id ON auth.email_totp_codes(user_id);
+CREATE INDEX idx_email_totp_codes_expires ON auth.email_totp_codes(expires_at);
+
+-- Rate limiting for email TOTP (per-user, rolling window)
+CREATE TABLE auth.email_totp_rate_limits (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    send_count INTEGER NOT NULL DEFAULT 0,
+    attempt_count INTEGER NOT NULL DEFAULT 0,
+    window_start TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE(user_id)
+);
+
+-- Verification sessions (shared with other verification methods)
+CREATE TABLE auth.verification_sessions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    purpose VARCHAR(50) NOT NULL,    -- 'password_reset', 'sensitive_action', etc.
+    method VARCHAR(50) NOT NULL,     -- 'email_totp', 'totp', 'passkey', etc.
+    used_at TIMESTAMPTZ NULL,
+    expires_at TIMESTAMPTZ NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_verification_sessions_user_id ON auth.verification_sessions(user_id);
+CREATE INDEX idx_verification_sessions_expires ON auth.verification_sessions(expires_at);
+```
+
+### Error Handling
+
+```rust
+use underlay_auth_email_totp::EmailTotpError;
+
+match result {
+    Ok(_) => { /* success */ }
+    Err(EmailTotpError::RateLimited) => {
+        // User has requested too many codes
+        // Return "Please wait before requesting another code"
+    }
+    Err(EmailTotpError::CodeExpired) => {
+        // Code has expired, user must request a new one
+    }
+    Err(EmailTotpError::InvalidCode) => {
+        // Wrong code entered
+    }
+    Err(EmailTotpError::TooManyAttempts) => {
+        // Too many wrong attempts, code is invalidated
+    }
+    Err(EmailTotpError::NoActiveCode) => {
+        // No pending code for this user/purpose
+    }
+    Err(EmailTotpError::SessionNotFound) => {
+        // Verification session doesn't exist or has expired
+    }
+    Err(EmailTotpError::SessionAlreadyUsed) => {
+        // Session was already consumed
+    }
+    Err(EmailTotpError::EmailSendFailed(msg)) => {
+        // Email delivery failed
+    }
+    Err(EmailTotpError::Storage(msg)) => {
+        // Database error
+    }
+}
+```
+
+### Security Considerations
+
+| Feature | Description |
+|---------|-------------|
+| **Argon2id Hashing** | Codes are hashed before storage, not stored in plaintext |
+| **Rate Limiting** | Configurable limit on codes per hour (default: 5) |
+| **Attempt Limiting** | Codes invalidated after max attempts (default: 5) |
+| **Short Expiry** | Codes expire quickly (default: 10 minutes) |
+| **One-Time Use** | Codes and sessions can only be used once |
+| **No Enumeration** | Forgot password returns success even for non-existent emails |
+| **Session Binding** | Sessions are bound to specific user and purpose |
 
 ---
 
