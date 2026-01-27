@@ -378,7 +378,7 @@
 
         {#if methods.includes("passkey")}
           <TabsContent value="passkey">
-            <div class="underlay-login-page__passkey">
+            <div class="underlay-login-page__passkey" class:underlay-login-page__passkey--centered={!showPasskeyEmailField}>
               <p class="underlay-login-page__hint">{passkeyHint}</p>
 
               {#if showPasskeyEmailField}
@@ -448,9 +448,13 @@
   .underlay-login-page__google {
     display: flex;
     flex-direction: column;
+    gap: var(--underlay-density-gap, 0.75rem);
+  }
+
+  .underlay-login-page__passkey--centered,
+  .underlay-login-page__google {
     align-items: center;
     text-align: center;
-    gap: var(--underlay-density-gap, 0.75rem);
   }
 
   .underlay-login-page__tabs {
