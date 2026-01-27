@@ -170,7 +170,7 @@
       <span class="underlay-two-factor-step__spacer"></span>
       <button
         type="button"
-        class="underlay-two-factor-step__text-btn"
+        class="underlay-two-factor-step__text-btn underlay-two-factor-step__text-btn--muted"
         onclick={onBack}
         disabled={loading}
       >
@@ -235,6 +235,10 @@
   .underlay-two-factor-step__text-btn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+  }
+
+  .underlay-two-factor-step__text-btn--muted {
+    color: var(--underlay-color-text-muted, #64748b);
   }
 
   .underlay-two-factor-step__resend {
