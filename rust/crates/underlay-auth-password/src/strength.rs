@@ -2,10 +2,33 @@
 
 use std::collections::HashSet;
 
+use serde::{Deserialize, Serialize};
 use zxcvbn::zxcvbn;
 
+/// Password requirements configuration.
+///
+/// This can be serialized and exposed via an API endpoint so that
+/// frontend UIs can display accurate requirements without hardcoding.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PasswordRequirements {
+    /// Minimum password length.
+    pub min_length: usize,
+    /// Whether mixed case (upper + lower) is recommended.
+    pub require_mixed_case: bool,
+    /// Whether at least one digit is recommended.
+    pub require_digit: bool,
+    /// Whether at least one special character is recommended.
+    pub require_special: bool,
+    /// Minimum zxcvbn score required (0-4, where 3 = "Good").
+    pub min_strength_score: u8,
+    /// Human-readable description of requirements.
+    pub description: String,
+}
+
 /// Password strength levels.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub enum PasswordStrength {
     /// Very weak - fails most requirements.
     VeryWeak,
@@ -20,7 +43,8 @@ pub enum PasswordStrength {
 }
 
 /// Analysis of password strength.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct PasswordAnalysis {
     /// Overall strength rating.
     pub strength: PasswordStrength,
@@ -154,6 +178,25 @@ impl PasswordStrengthAnalyzer {
     pub fn add_common_passwords(mut self, passwords: &[&'static str]) -> Self {
         self.common_passwords.extend(passwords);
         self
+    }
+
+    /// Get the password requirements configuration.
+    ///
+    /// This can be exposed via an API endpoint so frontends can display
+    /// accurate requirements without hardcoding values.
+    pub fn requirements(&self) -> PasswordRequirements {
+        PasswordRequirements {
+            min_length: self.min_length,
+            // These are recommendations for achieving a good zxcvbn score
+            require_mixed_case: true,
+            require_digit: true,
+            require_special: true,
+            min_strength_score: 3, // "Good" strength
+            description: format!(
+                "Password must be at least {} characters with a mix of letters, numbers, and symbols. Avoid common words and patterns.",
+                self.min_length
+            ),
+        }
     }
 
     /// Analyze a password and return its strength.

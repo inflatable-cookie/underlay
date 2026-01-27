@@ -9,6 +9,7 @@ async-trait = { workspace = true }
 argon2 = "0.6.0-rc.5"
 base64 = "0.22"
 rand = "0.8"
+serde = { workspace = true }
 underlay-auth = { path = "../underlay-auth" }
 underlay-core = { path = "../underlay-core" }
 underlay-ratelimit = { path = "../underlay-ratelimit" }

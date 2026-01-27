@@ -66,6 +66,7 @@ export { default as LoginForm } from "./auth/LoginForm.svelte";
 export { default as RegisterForm } from "./auth/RegisterForm.svelte";
 export { default as TotpSetup } from "./auth/TotpSetup.svelte";
 export { default as TotpInput } from "./auth/TotpInput.svelte";
+export { default as PasswordRequirements } from "./auth/PasswordRequirements.svelte";
 export { default as PassKeyButton } from "./auth/PassKeyButton.svelte";
 export { default as GoogleSignInButton } from "./auth/GoogleSignInButton.svelte";
 export { default as SessionList } from "./auth/SessionList.svelte";

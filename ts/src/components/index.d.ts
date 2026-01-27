@@ -60,6 +60,7 @@ declare const LoginForm: any;
 declare const RegisterForm: any;
 declare const TotpSetup: any;
 declare const TotpInput: any;
+declare const PasswordRequirements: any;
 declare const PassKeyButton: any;
 declare const GoogleSignInButton: any;
 declare const SessionList: any;
@@ -91,6 +92,7 @@ export {
   RegisterForm,
   TotpSetup,
   TotpInput,
+  PasswordRequirements,
   PassKeyButton,
   GoogleSignInButton,
   SessionList,
