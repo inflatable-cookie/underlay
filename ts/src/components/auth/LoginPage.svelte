@@ -36,6 +36,7 @@
   import TabsList from "../TabsList.svelte";
   import TabsRoot from "../TabsRoot.svelte";
   import TabsTrigger from "../TabsTrigger.svelte";
+  import TextButton from "../TextButton.svelte";
   import TextInput from "../TextInput.svelte";
 
   import GoogleSignInButton from "./GoogleSignInButton.svelte";
@@ -317,7 +318,7 @@
       {#if hadTotpConfigured}
         <!-- User has TOTP but used email fallback - less urgent message -->
         <h2 class="underlay-login-page__setup-title">Having trouble with your authenticator?</h2>
-        <p class="underlay-login-page__hint">
+        <p class="underlay-login-page__hint underlay-login-page__hint--spaced">
           If you've lost access to your authenticator app, you can update your two-factor
           authentication settings or set up a new device.
         </p>
@@ -325,9 +326,11 @@
           <Button variant="secondary" onclick={handleSetupNow}>
             Manage 2FA settings
           </Button>
-          <Button variant="secondary" onclick={handleSkipSetup}>
+        </div>
+        <div class="underlay-login-page__setup-skip">
+          <TextButton onclick={handleSkipSetup}>
             Continue to dashboard
-          </Button>
+          </TextButton>
         </div>
       {:else}
         <!-- User doesn't have 2FA configured - encourage setup -->
@@ -542,6 +545,15 @@
     font-size: var(--underlay-font-size-sm, 0.875rem);
     line-height: 1.5;
     color: var(--underlay-color-text-muted, #64748b);
+  }
+
+  .underlay-login-page__hint--spaced {
+    margin-bottom: var(--underlay-space-4, 1rem);
+  }
+
+  .underlay-login-page__setup-skip {
+    margin-top: var(--underlay-space-3, 0.75rem);
+    text-align: center;
   }
 
   .underlay-login-page__spacer {
