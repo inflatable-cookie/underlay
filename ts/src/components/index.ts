@@ -58,6 +58,7 @@ export type { TabsVariant, TabsSize } from "./TabsRoot.svelte";
 export { default as TabsList } from "./TabsList.svelte";
 export { default as TabsTrigger } from "./TabsTrigger.svelte";
 export { default as TabsContent } from "./TabsContent.svelte";
+export { default as TabsSeparator } from "./TabsSeparator.svelte";
 export { default as Pagination } from "./Pagination.svelte";
 export type { PaginationState } from "./Pagination.svelte";
 export { OrderBy } from "./OrderBy";
