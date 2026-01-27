@@ -66,6 +66,10 @@ declare const GoogleSignInButton: any;
 declare const SessionList: any;
 declare const SecuritySettings: any;
 declare const AccountRecovery: any;
+declare const AuthLayout: any;
+declare const TwoFactorStep: any;
+declare const SuccessStep: any;
+declare const PasswordResetStep: any;
 
 export {
   AlertDialog,
@@ -98,6 +102,10 @@ export {
   SessionList,
   SecuritySettings,
   AccountRecovery,
+  AuthLayout,
+  TwoFactorStep,
+  SuccessStep,
+  PasswordResetStep,
   MarkdownEditor,
   IconButton,
   ListCard,

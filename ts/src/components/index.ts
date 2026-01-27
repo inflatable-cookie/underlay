@@ -73,4 +73,10 @@ export { default as SessionList } from "./auth/SessionList.svelte";
 export { default as SecuritySettings } from "./auth/SecuritySettings.svelte";
 export { default as AccountRecovery } from "./auth/AccountRecovery.svelte";
 
+// Auth building blocks (Phase 1 of auth consolidation)
+export { default as AuthLayout } from "./auth/AuthLayout.svelte";
+export { default as TwoFactorStep } from "./auth/TwoFactorStep.svelte";
+export { default as SuccessStep } from "./auth/SuccessStep.svelte";
+export { default as PasswordResetStep } from "./auth/PasswordResetStep.svelte";
+
 export * from "./auth/types";
