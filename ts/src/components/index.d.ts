@@ -70,6 +70,8 @@ declare const AuthLayout: any;
 declare const TwoFactorStep: any;
 declare const SuccessStep: any;
 declare const PasswordResetStep: any;
+declare const ForgotPasswordFlow: any;
+declare const LoginPage: any;
 
 export {
   AlertDialog,
@@ -106,6 +108,8 @@ export {
   TwoFactorStep,
   SuccessStep,
   PasswordResetStep,
+  ForgotPasswordFlow,
+  LoginPage,
   MarkdownEditor,
   IconButton,
   ListCard,

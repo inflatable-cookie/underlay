@@ -9,6 +9,8 @@
   interface Props {
     authorizationUrl?: string | null;
     getAuthorizationUrl?: (() => Promise<string> | string) | null;
+    /** Custom click handler (alternative to URL-based navigation) */
+    onclick?: () => void | Promise<void>;
     label?: string;
     variant?: "primary" | "secondary" | "subtle";
     disabled?: boolean;
@@ -20,6 +22,7 @@
   let {
     authorizationUrl = null,
     getAuthorizationUrl = null,
+    onclick,
     label = "Continue with Google",
     variant = "subtle",
     disabled = false,
@@ -39,6 +42,12 @@
 
     try {
       loading = true;
+
+      // If custom onclick handler provided, use it instead of URL navigation
+      if (onclick) {
+        await onclick();
+        return;
+      }
 
       const url =
         (getAuthorizationUrl ? await getAuthorizationUrl() : authorizationUrl) ??

@@ -79,4 +79,8 @@ export { default as TwoFactorStep } from "./auth/TwoFactorStep.svelte";
 export { default as SuccessStep } from "./auth/SuccessStep.svelte";
 export { default as PasswordResetStep } from "./auth/PasswordResetStep.svelte";
 
+// Auth composite pages (Phase 2 of auth consolidation)
+export { default as ForgotPasswordFlow } from "./auth/ForgotPasswordFlow.svelte";
+export { default as LoginPage } from "./auth/LoginPage.svelte";
+
 export * from "./auth/types";

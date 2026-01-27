@@ -140,7 +140,6 @@
       oninput={handleInput}
       onkeydown={handleKeydown}
       onkeyup={handleKeydown}
-      onclick={handleKeydown}
       onfocus={handleFocus}
       onblur={handleBlur}
       class="underlay-totp-input__input"
