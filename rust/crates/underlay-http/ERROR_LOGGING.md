@@ -9,7 +9,7 @@ The `error-logging` feature adds database persistence for HTTP errors, allowing 
 ## Features
 
 - **Non-blocking async logging** - Uses `tokio::spawn` to avoid slowing down request handling
-- **Configurable schema** - Uses `infra.error_log` by default
+- **Configurable schema** - Uses `platform.error_log` by default
 - **Rich filtering** - Query by time range, status code, error code, or endpoint
 - **Indexed for performance** - Pre-configured indexes for common queries
 
@@ -38,7 +38,7 @@ Then run migrations:
 cargo run --bin migrate_dev_db
 ```
 
-This creates the `infra.error_log` table with indexes.
+This creates the `platform.error_log` table with indexes.
 
 ## Usage
 
@@ -131,7 +131,7 @@ let filters = ErrorLogFilters {
 ## Database Schema
 
 ```sql
-CREATE TABLE infra.error_log (
+CREATE TABLE platform.error_log (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     occurred_at     TIMESTAMPTZ NOT NULL DEFAULT now(),
     endpoint        TEXT NOT NULL,

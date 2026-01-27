@@ -16,7 +16,7 @@
 //! // Log an admin action
 //! append_audit_log(
 //!     &pool,
-//!     "infra.audit_log",  // table name (app-configurable)
+//!     "platform.audit_log",  // table name (app-configurable)
 //!     AuditEntry {
 //!         user_id: Some(user.id),
 //!         action: AuditAction::Create,
@@ -34,7 +34,7 @@
 //! The consuming application must create an audit log table. Example migration:
 //!
 //! ```sql
-//! CREATE TABLE infra.audit_log (
+//! CREATE TABLE platform.audit_log (
 //!     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 //!     occurred_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 //!     user_id UUID,  -- NULL for system actions
@@ -46,10 +46,10 @@
 //!     ip_address TEXT
 //! );
 //!
-//! CREATE INDEX idx_audit_log_occurred_at ON infra.audit_log (occurred_at DESC);
-//! CREATE INDEX idx_audit_log_user_id ON infra.audit_log (user_id);
-//! CREATE INDEX idx_audit_log_resource ON infra.audit_log (resource_type, resource_id);
-//! CREATE INDEX idx_audit_log_action ON infra.audit_log (action);
+//! CREATE INDEX idx_audit_log_occurred_at ON platform.audit_log (occurred_at DESC);
+//! CREATE INDEX idx_audit_log_user_id ON platform.audit_log (user_id);
+//! CREATE INDEX idx_audit_log_resource ON platform.audit_log (resource_type, resource_id);
+//! CREATE INDEX idx_audit_log_action ON platform.audit_log (action);
 //! ```
 
 mod entry;

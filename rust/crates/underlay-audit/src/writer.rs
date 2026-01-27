@@ -7,12 +7,12 @@ use tracing::{info, instrument};
 /// Append an audit log entry to the specified table.
 ///
 /// The table must have the expected schema (see crate documentation).
-/// The table name should be fully qualified (e.g., "infra.audit_log").
+/// The table name should be fully qualified (e.g., "platform.audit_log").
 ///
 /// # Arguments
 ///
 /// * `pool` - Database connection pool
-/// * `table` - Fully qualified table name (e.g., "infra.audit_log")
+/// * `table` - Fully qualified table name (e.g., "platform.audit_log")
 /// * `entry` - The audit entry to log
 ///
 /// # Example
@@ -22,7 +22,7 @@ use tracing::{info, instrument};
 ///
 /// append_audit_log(
 ///     &pool,
-///     "infra.audit_log",
+///     "platform.audit_log",
 ///     AuditEntry::new(
 ///         Some(user_id),
 ///         AuditAction::Create,
@@ -120,7 +120,7 @@ mod tests {
     #[test]
     fn validate_table_name() {
         // Valid table names
-        assert!("infra.audit_log"
+        assert!("platform.audit_log"
             .chars()
             .all(|c| c.is_alphanumeric() || c == '_' || c == '.'));
         assert!("audit_log"

@@ -54,7 +54,7 @@ pub async fn append_error_log(
 ) -> Result<ErrorLogRow, sqlx::Error> {
     sqlx::query_as::<_, ErrorLogRow>(
         r#"
-        INSERT INTO infra.error_log (
+        INSERT INTO platform.error_log (
             endpoint,
             method,
             status_code,
@@ -139,7 +139,7 @@ pub async fn list_error_logs(
 ) -> Result<Vec<ErrorLogRow>, sqlx::Error> {
     let mut query_str = String::from(
         "SELECT id, occurred_at, endpoint, method, status_code, error_code, message, correlation_id, context
-         FROM infra.error_log
+         FROM platform.error_log
          WHERE 1=1"
     );
 

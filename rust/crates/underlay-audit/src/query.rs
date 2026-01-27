@@ -83,7 +83,7 @@ impl AuditLogFilters {
 /// # Arguments
 ///
 /// * `pool` - Database connection pool
-/// * `table` - Fully qualified table name (e.g., "infra.audit_log")
+/// * `table` - Fully qualified table name (e.g., "platform.audit_log")
 /// * `filters` - Query filters
 #[instrument(skip(pool, filters))]
 pub async fn list_audit_logs(
