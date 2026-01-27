@@ -118,20 +118,6 @@
     {@html effectiveHint}
   </p>
 
-  {#if effectiveShowBackupOption && !useBackupCode}
-    <p class="underlay-two-factor-step__backup-prompt">
-      Can't access your authenticator app?
-      <button
-        type="button"
-        class="underlay-two-factor-step__text-btn"
-        onclick={() => { useBackupCode = true; code = ""; }}
-        disabled={loading}
-      >
-        {backupCodeLabel}
-      </button>
-    </p>
-  {/if}
-
   {#if useBackupCode}
     <Field label={effectiveInputLabel}>
       <TextInput
@@ -141,22 +127,37 @@
         autocomplete="off"
       />
     </Field>
-    <p class="underlay-two-factor-step__backup-prompt">
-      <button
-        type="button"
-        class="underlay-two-factor-step__text-btn"
-        onclick={() => { useBackupCode = false; code = ""; }}
-        disabled={loading}
-      >
-        {useRegularCodeLabel}
-      </button>
-    </p>
   {:else}
     <TotpInput
       bind:value={code}
       label={effectiveInputLabel}
       disabled={loading}
     />
+  {/if}
+
+  {#if effectiveShowBackupOption}
+    <p class="underlay-two-factor-step__backup-prompt">
+      {#if useBackupCode}
+        <button
+          type="button"
+          class="underlay-two-factor-step__text-btn"
+          onclick={() => { useBackupCode = false; code = ""; }}
+          disabled={loading}
+        >
+          {useRegularCodeLabel}
+        </button>
+      {:else}
+        Can't access your authenticator app?
+        <button
+          type="button"
+          class="underlay-two-factor-step__text-btn"
+          onclick={() => { useBackupCode = true; code = ""; }}
+          disabled={loading}
+        >
+          {backupCodeLabel}
+        </button>
+      {/if}
+    </p>
   {/if}
 
   <FormError message={error} />
