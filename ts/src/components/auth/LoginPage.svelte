@@ -135,6 +135,8 @@
   // 2FA state
   let loginStateId = $state<string | undefined>(undefined);
   let isEmailVerification = $state(false);
+  let hadTotpConfigured = $state(false); // Track if user originally had TOTP (before any fallback)
+  let usedEmailFallback = $state(false); // Track if user chose email over their configured TOTP
   let twoFactorEmail = $state<string | undefined>(undefined);
 
   // UI state
@@ -163,9 +165,10 @@
       if (result?.requiresTwoFactor) {
         loginStateId = result.loginStateId;
         isEmailVerification = result.isEmailVerification ?? false;
+        hadTotpConfigured = !isEmailVerification; // User has TOTP if not email-only
+        usedEmailFallback = false; // Reset - they haven't used fallback yet
         twoFactorEmail = result.email ?? email;
 
-        // If email verification and setup prompt enabled, prepare to show it after 2FA
         step = "2fa";
       } else if (result?.complete !== false) {
         // Login complete
@@ -191,8 +194,9 @@
 
       await onTwoFactorVerify?.(loginStateId, inputCode);
 
-      // Check if we should show setup prompt (after email verification)
-      if (isEmailVerification && showSetupPrompt) {
+      // Check if we should show setup prompt (only if user doesn't have 2FA configured)
+      // If they have TOTP but used email fallback, show a different prompt
+      if (showSetupPrompt && (isEmailVerification || usedEmailFallback)) {
         step = "setup-prompt";
       } else {
         onComplete?.();
@@ -257,6 +261,7 @@
       loginStateId = result.loginStateId;
       twoFactorEmail = result.email;
       isEmailVerification = true;
+      usedEmailFallback = true; // They chose email over their configured TOTP
     } catch (e) {
       error = e instanceof Error ? e.message : "Failed to send verification code";
     } finally {
@@ -296,7 +301,7 @@
 <Card class="underlay-login-page {className}">
   {#if step === "2fa"}
     <TwoFactorStep
-      hasTotpSetup={!isEmailVerification}
+      hasTotpSetup={hadTotpConfigured && !usedEmailFallback}
       email={twoFactorEmail}
       bind:code
       {loading}
@@ -309,24 +314,42 @@
 
   {:else if step === "setup-prompt"}
     <div class="underlay-login-page__setup-prompt">
-      <h2 class="underlay-login-page__setup-title">Secure your account</h2>
-      <p class="underlay-login-page__hint">
-        Your account doesn't have two-factor authentication configured. We recommend
-        setting up an authenticator app for faster, more secure logins.
-      </p>
-      <ul class="underlay-login-page__setup-benefits">
-        <li>No need to wait for email codes</li>
-        <li>Works offline</li>
-        <li>More secure than email verification</li>
-      </ul>
-      <div class="underlay-login-page__setup-actions">
-        <Button variant="primary" onclick={handleSetupNow}>
-          Set up 2FA now
-        </Button>
-        <Button variant="secondary" onclick={handleSkipSetup}>
-          Skip for now
-        </Button>
-      </div>
+      {#if hadTotpConfigured}
+        <!-- User has TOTP but used email fallback - less urgent message -->
+        <h2 class="underlay-login-page__setup-title">Having trouble with your authenticator?</h2>
+        <p class="underlay-login-page__hint">
+          If you've lost access to your authenticator app, you can update your two-factor
+          authentication settings or set up a new device.
+        </p>
+        <div class="underlay-login-page__setup-actions">
+          <Button variant="secondary" onclick={handleSetupNow}>
+            Manage 2FA settings
+          </Button>
+          <Button variant="secondary" onclick={handleSkipSetup}>
+            Continue to dashboard
+          </Button>
+        </div>
+      {:else}
+        <!-- User doesn't have 2FA configured - encourage setup -->
+        <h2 class="underlay-login-page__setup-title">Secure your account</h2>
+        <p class="underlay-login-page__hint">
+          Your account doesn't have two-factor authentication configured. We recommend
+          setting up an authenticator app for faster, more secure logins.
+        </p>
+        <ul class="underlay-login-page__setup-benefits">
+          <li>No need to wait for email codes</li>
+          <li>Works offline</li>
+          <li>More secure than email verification</li>
+        </ul>
+        <div class="underlay-login-page__setup-actions">
+          <Button variant="primary" onclick={handleSetupNow}>
+            Set up 2FA now
+          </Button>
+          <Button variant="secondary" onclick={handleSkipSetup}>
+            Skip for now
+          </Button>
+        </div>
+      {/if}
     </div>
 
   {:else}
