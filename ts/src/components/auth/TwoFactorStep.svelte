@@ -18,8 +18,10 @@
    */
 
   import Button from "../Button.svelte";
+  import Field from "../Field.svelte";
   import FormActions from "../FormActions.svelte";
   import FormError from "../FormError.svelte";
+  import TextInput from "../TextInput.svelte";
 
   import TotpInput from "./TotpInput.svelte";
 
@@ -50,6 +52,12 @@
     onResend?: () => void;
     /** Called when user wants to go back */
     onBack?: () => void;
+    /** Show option to use backup codes (default: true for totp type) */
+    showBackupCodeOption?: boolean;
+    /** Label for backup code link */
+    backupCodeLabel?: string;
+    /** Label for returning to regular code */
+    useRegularCodeLabel?: string;
   }
 
   let {
@@ -66,20 +74,35 @@
     onVerify,
     onResend,
     onBack,
+    showBackupCodeOption,
+    backupCodeLabel = "Use a backup code",
+    useRegularCodeLabel = "Use authenticator code",
   }: Props = $props();
 
-  // Derive default labels based on type
+  // Track backup code mode
+  let useBackupCode = $state(false);
+
+  // Derive whether to show backup code option (default true for totp)
+  const effectiveShowBackupOption = $derived(
+    showBackupCodeOption ?? type === "totp"
+  );
+
+  // Derive default labels based on type and backup code mode
   const effectiveInputLabel = $derived(
-    inputLabel ?? (type === "email" ? "Email code" : "2FA code")
+    useBackupCode
+      ? "Backup code"
+      : inputLabel ?? (type === "email" ? "Email code" : "2FA code")
   );
 
   const effectiveHint = $derived(
-    hint ??
-      (type === "email"
-        ? email
-          ? `We've sent a verification code to <strong>${email}</strong>. Enter the 6-digit code to continue.`
-          : "We've sent a verification code to your email. Enter the 6-digit code to continue."
-        : "Enter the code from your authenticator app to continue.")
+    useBackupCode
+      ? "Enter one of your backup codes. Each code can only be used once."
+      : hint ??
+          (type === "email"
+            ? email
+              ? `We've sent a verification code to <strong>${email}</strong>. Enter the 6-digit code to continue.`
+              : "We've sent a verification code to your email. Enter the 6-digit code to continue."
+            : "Enter the code from your authenticator app to continue.")
   );
 
   function handleSubmit(event: SubmitEvent) {
@@ -95,11 +118,22 @@
     {@html effectiveHint}
   </p>
 
-  <TotpInput
-    bind:value={code}
-    label={effectiveInputLabel}
-    disabled={loading}
-  />
+  {#if useBackupCode}
+    <Field label={effectiveInputLabel}>
+      <TextInput
+        bind:value={code}
+        placeholder="XXXX-XXXX-XXXX"
+        disabled={loading}
+        autocomplete="off"
+      />
+    </Field>
+  {:else}
+    <TotpInput
+      bind:value={code}
+      label={effectiveInputLabel}
+      disabled={loading}
+    />
+  {/if}
 
   <FormError message={error} />
 
@@ -130,6 +164,19 @@
         disabled={loading}
       >
         {resendLabel}
+      </button>
+    </div>
+  {/if}
+
+  {#if effectiveShowBackupOption}
+    <div class="underlay-two-factor-step__backup">
+      <button
+        type="button"
+        class="underlay-two-factor-step__text-btn"
+        onclick={() => { useBackupCode = !useBackupCode; code = ""; }}
+        disabled={loading}
+      >
+        {useBackupCode ? useRegularCodeLabel : backupCodeLabel}
       </button>
     </div>
   {/if}
@@ -189,5 +236,10 @@
   .underlay-two-factor-step__resend-text {
     font-size: var(--underlay-font-size-sm, 0.8rem);
     color: var(--underlay-color-text-muted, #64748b);
+  }
+
+  .underlay-two-factor-step__backup {
+    text-align: center;
+    padding-top: var(--underlay-space-2, 0.5rem);
   }
 </style>
