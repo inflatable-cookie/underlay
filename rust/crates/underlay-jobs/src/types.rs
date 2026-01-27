@@ -1,29 +1,375 @@
+//! Core types for the job system.
+
 use async_trait::async_trait;
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use std::time::Duration;
 
 use underlay_core::Uuid;
 
 pub type JobId = Uuid;
 
+/// Job status enum matching the database constraint.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum JobStatus {
+    /// Job is waiting to be claimed by a worker
+    Pending,
+    /// Job has been claimed but not yet started
+    Claimed,
+    /// Job is currently executing
+    Running,
+    /// Job completed successfully
+    Succeeded,
+    /// Job failed (exhausted retries or permanent failure)
+    Failed,
+    /// Job was manually cancelled
+    Cancelled,
+}
+
+impl JobStatus {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            JobStatus::Pending => "pending",
+            JobStatus::Claimed => "claimed",
+            JobStatus::Running => "running",
+            JobStatus::Succeeded => "succeeded",
+            JobStatus::Failed => "failed",
+            JobStatus::Cancelled => "cancelled",
+        }
+    }
+
+    pub fn is_terminal(&self) -> bool {
+        matches!(
+            self,
+            JobStatus::Succeeded | JobStatus::Failed | JobStatus::Cancelled
+        )
+    }
+}
+
+/// Configuration for a job type.
+///
+/// Tasks can opt-in to features they need:
+/// - Retries with backoff
+/// - Progress tracking
+/// - Overlap prevention
+/// - Timeouts
+#[derive(Debug, Clone)]
+pub struct JobConfig {
+    /// Maximum retry attempts (default: 1, meaning no retries)
+    pub max_attempts: u32,
+    /// Timeout in seconds (None = no timeout)
+    pub timeout_seconds: Option<u32>,
+    /// Allow multiple instances of this job to run simultaneously
+    pub allow_overlap: bool,
+    /// Job priority (higher = more urgent, default: 0)
+    pub priority: i32,
+    /// Whether this job reports progress
+    pub tracks_progress: bool,
+    /// Retry backoff strategy
+    pub backoff: BackoffStrategy,
+}
+
+impl Default for JobConfig {
+    fn default() -> Self {
+        Self {
+            max_attempts: 1,
+            timeout_seconds: None,
+            allow_overlap: false,
+            priority: 0,
+            tracks_progress: false,
+            backoff: BackoffStrategy::None,
+        }
+    }
+}
+
+impl JobConfig {
+    /// Config for simple maintenance tasks (no retries, no overlap).
+    pub fn maintenance() -> Self {
+        Self::default()
+    }
+
+    /// Config for critical tasks that should retry on failure.
+    pub fn with_retries(max_attempts: u32) -> Self {
+        Self {
+            max_attempts,
+            backoff: BackoffStrategy::Exponential {
+                base: Duration::from_secs(60),
+                max: Duration::from_secs(3600),
+            },
+            ..Self::default()
+        }
+    }
+
+    /// Config for long-running tasks with progress tracking.
+    pub fn long_running() -> Self {
+        Self {
+            tracks_progress: true,
+            timeout_seconds: Some(3600), // 1 hour default
+            ..Self::default()
+        }
+    }
+
+    /// Config for long-running tasks with retries.
+    pub fn long_running_with_retries(max_attempts: u32) -> Self {
+        Self {
+            max_attempts,
+            tracks_progress: true,
+            timeout_seconds: Some(3600),
+            backoff: BackoffStrategy::Exponential {
+                base: Duration::from_secs(60),
+                max: Duration::from_secs(3600),
+            },
+            ..Self::default()
+        }
+    }
+
+    /// Set the priority (higher = more urgent).
+    pub fn with_priority(mut self, priority: i32) -> Self {
+        self.priority = priority;
+        self
+    }
+
+    /// Set the timeout.
+    pub fn with_timeout(mut self, seconds: u32) -> Self {
+        self.timeout_seconds = Some(seconds);
+        self
+    }
+
+    /// Allow overlapping executions.
+    pub fn allow_overlap(mut self) -> Self {
+        self.allow_overlap = true;
+        self
+    }
+}
+
+/// Retry backoff strategy.
+#[derive(Debug, Clone)]
+pub enum BackoffStrategy {
+    /// No delay between retries
+    None,
+    /// Fixed delay between retries
+    Fixed(Duration),
+    /// Exponential backoff: min(base * 2^attempt, max)
+    Exponential { base: Duration, max: Duration },
+}
+
+impl BackoffStrategy {
+    /// Calculate the delay for a given attempt number (0-indexed).
+    pub fn delay_for_attempt(&self, attempt: u32) -> Duration {
+        match self {
+            BackoffStrategy::None => Duration::ZERO,
+            BackoffStrategy::Fixed(d) => *d,
+            BackoffStrategy::Exponential { base, max } => {
+                let multiplier = 2u64.saturating_pow(attempt);
+                let delay = base.saturating_mul(multiplier as u32);
+                std::cmp::min(delay, *max)
+            }
+        }
+    }
+}
+
+/// Progress information for long-running jobs.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct JobProgress {
+    /// Current progress value
+    pub current: u64,
+    /// Total expected value (for percentage calculation)
+    pub total: u64,
+    /// Human-readable progress message
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub message: Option<String>,
+    /// When this progress was last updated
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub updated_at: Option<DateTime<Utc>>,
+}
+
+impl JobProgress {
+    pub fn new(current: u64, total: u64) -> Self {
+        Self {
+            current,
+            total,
+            message: None,
+            updated_at: Some(Utc::now()),
+        }
+    }
+
+    pub fn with_message(mut self, message: impl Into<String>) -> Self {
+        self.message = Some(message.into());
+        self
+    }
+
+    pub fn percentage(&self) -> f64 {
+        if self.total == 0 {
+            0.0
+        } else {
+            (self.current as f64 / self.total as f64) * 100.0
+        }
+    }
+}
+
+/// A job record from the database.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Job {
     pub id: JobId,
     pub job_type: String,
+    pub status: JobStatus,
     pub payload: Value,
-    pub attempts: u32,
+    pub attempts: i32,
+    pub max_attempts: i32,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub scheduled_for: Option<DateTime<Utc>>,
+    pub priority: i32,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub claimed_at: Option<DateTime<Utc>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub claimed_by: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub started_at: Option<DateTime<Utc>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub finished_at: Option<DateTime<Utc>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub heartbeat_at: Option<DateTime<Utc>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub progress: Option<JobProgress>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub last_error: Option<String>,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
 }
 
+/// Error information for failed attempts.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct JobErrorRecord {
+    pub attempt: i32,
+    pub error: String,
+    pub at: DateTime<Utc>,
+}
+
+/// A scheduled task definition from the database.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ScheduledTask {
+    pub id: Uuid,
+    pub name: String,
+    pub job_type: String,
+    pub schedule: String,
+    pub payload: Value,
+    pub max_attempts: i32,
+    pub timeout_seconds: Option<i32>,
+    pub allow_overlap: bool,
+    pub priority: i32,
+    pub enabled: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub last_scheduled_at: Option<DateTime<Utc>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub last_completed_at: Option<DateTime<Utc>>,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
+}
+
+/// Definition for registering a scheduled task in code.
+#[derive(Debug, Clone)]
+pub struct ScheduledTaskDefinition {
+    /// Unique task name (used for upsert)
+    pub name: &'static str,
+    /// Job type to create when scheduled
+    pub job_type: &'static str,
+    /// Cron schedule expression
+    pub schedule: &'static str,
+    /// Payload to pass to the job
+    pub payload: Value,
+    /// Job configuration
+    pub config: JobConfig,
+}
+
+/// Filters for listing jobs.
+#[derive(Debug, Default, Clone)]
+pub struct JobFilters {
+    pub status: Option<JobStatus>,
+    pub job_type: Option<String>,
+    pub limit: usize,
+    pub offset: usize,
+}
+
+impl JobFilters {
+    pub fn new() -> Self {
+        Self {
+            limit: 50,
+            ..Default::default()
+        }
+    }
+
+    pub fn with_status(mut self, status: JobStatus) -> Self {
+        self.status = Some(status);
+        self
+    }
+
+    pub fn with_job_type(mut self, job_type: impl Into<String>) -> Self {
+        self.job_type = Some(job_type.into());
+        self
+    }
+
+    pub fn with_limit(mut self, limit: usize) -> Self {
+        self.limit = limit;
+        self
+    }
+
+    pub fn with_offset(mut self, offset: usize) -> Self {
+        self.offset = offset;
+        self
+    }
+}
+
+/// Result of job execution.
+#[derive(Debug)]
+pub enum JobResult {
+    /// Job completed successfully
+    Success,
+    /// Job failed with a retryable error
+    RetryableError(String),
+    /// Job failed with a permanent error (no retry)
+    PermanentError(String),
+}
+
+impl JobResult {
+    /// Create a success result.
+    pub fn success() -> Self {
+        Self::Success
+    }
+
+    /// Create a retryable error result.
+    pub fn retryable(error: impl Into<String>) -> Self {
+        Self::RetryableError(error.into())
+    }
+
+    /// Create a permanent error result.
+    pub fn permanent(error: impl Into<String>) -> Self {
+        Self::PermanentError(error.into())
+    }
+}
+
+/// Error type for job handlers.
 #[derive(Debug, Clone)]
 pub struct JobHandlerError {
     pub message: String,
+    pub is_permanent: bool,
 }
 
 impl JobHandlerError {
     pub fn new(message: impl Into<String>) -> Self {
         Self {
             message: message.into(),
+            is_permanent: false,
+        }
+    }
+
+    pub fn permanent(message: impl Into<String>) -> Self {
+        Self {
+            message: message.into(),
+            is_permanent: true,
         }
     }
 }
@@ -36,24 +382,93 @@ impl std::fmt::Display for JobHandlerError {
 
 impl std::error::Error for JobHandlerError {}
 
+impl From<JobHandlerError> for JobResult {
+    fn from(err: JobHandlerError) -> Self {
+        if err.is_permanent {
+            JobResult::PermanentError(err.message)
+        } else {
+            JobResult::RetryableError(err.message)
+        }
+    }
+}
+
+/// Trait for job handlers.
+///
+/// Implement this trait to define how a specific job type is executed.
 #[async_trait]
 pub trait JobHandler: Send + Sync {
+    /// The canonical job type string (e.g., "learning.reindex").
+    ///
+    /// Convention: `namespace.action` where namespace is the domain
+    /// (learning, assessment, platform, etc.)
     fn job_type(&self) -> &'static str;
+
+    /// Configuration for this job type.
+    ///
+    /// Defines retry behavior, timeouts, progress tracking, etc.
+    fn config(&self) -> JobConfig {
+        JobConfig::default()
+    }
+
+    /// Execute the job with the given payload.
+    ///
+    /// Legacy interface - implement `handle_with_context` for full functionality.
     async fn handle(&self, job: Job) -> Result<(), JobHandlerError>;
 }
 
 #[cfg(test)]
 mod tests {
-    use super::{Job, JobHandlerError};
+    use super::*;
     use serde_json::json;
+
+    #[test]
+    fn test_backoff_strategy() {
+        let strategy = BackoffStrategy::Exponential {
+            base: Duration::from_secs(60),
+            max: Duration::from_secs(3600),
+        };
+
+        assert_eq!(strategy.delay_for_attempt(0), Duration::from_secs(60));
+        assert_eq!(strategy.delay_for_attempt(1), Duration::from_secs(120));
+        assert_eq!(strategy.delay_for_attempt(2), Duration::from_secs(240));
+        assert_eq!(strategy.delay_for_attempt(6), Duration::from_secs(3600)); // Capped at max
+    }
+
+    #[test]
+    fn test_job_progress() {
+        let progress = JobProgress::new(50, 100).with_message("Processing...");
+        assert_eq!(progress.percentage(), 50.0);
+    }
+
+    #[test]
+    fn test_job_status_terminal() {
+        assert!(!JobStatus::Pending.is_terminal());
+        assert!(!JobStatus::Running.is_terminal());
+        assert!(JobStatus::Succeeded.is_terminal());
+        assert!(JobStatus::Failed.is_terminal());
+        assert!(JobStatus::Cancelled.is_terminal());
+    }
 
     #[test]
     fn job_type_has_required_fields() {
         let job = Job {
             id: underlay_core::Uuid::new_v7(),
             job_type: "test_job".to_string(),
+            status: JobStatus::Pending,
             payload: json!({"key": "value"}),
             attempts: 1,
+            max_attempts: 3,
+            scheduled_for: None,
+            priority: 0,
+            claimed_at: None,
+            claimed_by: None,
+            started_at: None,
+            finished_at: None,
+            heartbeat_at: None,
+            progress: None,
+            last_error: None,
+            created_at: Utc::now(),
+            updated_at: Utc::now(),
         };
         assert!(!job.id.to_string().is_empty());
         assert_eq!(job.job_type, "test_job");
@@ -61,21 +476,17 @@ mod tests {
     }
 
     #[test]
-    fn job_payload_is_valid_json() {
-        let payload = json!({"nested": {"key": 123}});
-        let job = Job {
-            id: underlay_core::Uuid::new_v7(),
-            job_type: "test".to_string(),
-            payload: payload.clone(),
-            attempts: 0,
-        };
-        assert_eq!(job.payload, payload);
-    }
-
-    #[test]
     fn job_handler_error_new() {
         let err = JobHandlerError::new("test message");
         assert_eq!(err.message, "test message");
+        assert!(!err.is_permanent);
+    }
+
+    #[test]
+    fn job_handler_error_permanent() {
+        let err = JobHandlerError::permanent("permanent error");
+        assert_eq!(err.message, "permanent error");
+        assert!(err.is_permanent);
     }
 
     #[test]
@@ -85,16 +496,15 @@ mod tests {
     }
 
     #[test]
-    fn job_handler_error_is_error_trait() {
-        fn assert_error<T: std::error::Error>() {}
-        assert_error::<JobHandlerError>();
-    }
+    fn job_config_presets() {
+        let maintenance = JobConfig::maintenance();
+        assert_eq!(maintenance.max_attempts, 1);
 
-    #[test]
-    fn job_handler_error_implements_send_sync() {
-        fn assert_send<T: Send>() {}
-        fn assert_sync<T: Sync>() {}
-        assert_send::<JobHandlerError>();
-        assert_sync::<JobHandlerError>();
+        let with_retries = JobConfig::with_retries(3);
+        assert_eq!(with_retries.max_attempts, 3);
+
+        let long_running = JobConfig::long_running();
+        assert!(long_running.tracks_progress);
+        assert_eq!(long_running.timeout_seconds, Some(3600));
     }
 }

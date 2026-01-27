@@ -31,27 +31,28 @@ Read these documents in order for a complete understanding:
 4. **[030 - Underlay Integration](./030-underlay-integration.md)** - Linking the Underlay foundation
 5. **[040 - Rust Backend](./040-rust-backend.md)** - Workspace, core crate, patterns
 6. **[050 - Database & Migrations](./050-database.md)** - DB crate, sqlx, migrations
-7. **[060 - Authentication](./060-authentication.md)** - Auth providers, JWT, TOTP, WebAuthn, OAuth
-8. **[065 - Session Management](./065-session-management.md)** - Session lifecycle, cookies, refresh
-9. **[066 - SPA Deployment & Static Auth](./066-spa-deployment-and-static-auth.md)** - Static deployment, hybrid tokens, auth-aware pages
-10. **[067 - Authorization](./067-authorization.md)** - Role-based access control
-11. **[068 - Security](./068-security.md)** - Rate limiting, CSP, password policy, lockout
-12. **[070 - API Handlers](./070-api-handlers.md)** - HTTP handlers, routing
-13. **[072 - Admin/Front Separation](./072-admin-front-separation.md)** - Audience routing conventions
-14. **[075 - Validation](./075-validation.md)** - Request validation patterns
-15. **[076 - Nightfire](./076-nightfire.md)** - Block-based structured content
-16. **[080 - TypeScript Client](./080-typescript-client.md)** - HTTP client, commands
-17. **[090 - UI Kit](./090-ui-kit.md)** - Component patterns
-18. **[092 - Selection Suggestions](./092-selection-suggestions.md)** - Intelligent suggestions with selection history
-19. **[095 - Navigation Context](./095-navigation-context.md)** - Contextual back buttons and form redirects
-20. **[100 - Frontend (Web)](./100-frontend-web.md)** - SvelteKit setup, routing
-21. **[110 - Admin Frontend](./110-admin.md)** - Admin UI structure
-22. **[120 - Configuration](./120-configuration.md)** - Env files, validation
-23. **[130 - Testing](./130-testing.md)** - Test patterns for all layers
-24. **[140 - Local Development](./140-local-development.md)** - Running locally, debugging
-25. **[150 - CI/CD](./150-ci-cd.md)** - GitHub Actions template
-26. **[160 - Troubleshooting](./160-troubleshooting.md)** - Common issues and solutions
-27. **[170 - Checklist](./170-checklist.md)** - Completion verification
+7. **[055 - Background Jobs](./055-background-jobs.md)** - Job queues, handlers, scheduling
+8. **[060 - Authentication](./060-authentication.md)** - Auth providers, JWT, TOTP, WebAuthn, OAuth
+9. **[065 - Session Management](./065-session-management.md)** - Session lifecycle, cookies, refresh
+10. **[066 - SPA Deployment & Static Auth](./066-spa-deployment-and-static-auth.md)** - Static deployment, hybrid tokens, auth-aware pages
+11. **[067 - Authorization](./067-authorization.md)** - Role-based access control
+12. **[068 - Security](./068-security.md)** - Rate limiting, CSP, password policy, lockout
+13. **[070 - API Handlers](./070-api-handlers.md)** - HTTP handlers, routing
+14. **[072 - Admin/Front Separation](./072-admin-front-separation.md)** - Audience routing conventions
+15. **[075 - Validation](./075-validation.md)** - Request validation patterns
+16. **[076 - Nightfire](./076-nightfire.md)** - Block-based structured content
+17. **[080 - TypeScript Client](./080-typescript-client.md)** - HTTP client, commands
+18. **[090 - UI Kit](./090-ui-kit.md)** - Component patterns
+19. **[092 - Selection Suggestions](./092-selection-suggestions.md)** - Intelligent suggestions with selection history
+20. **[095 - Navigation Context](./095-navigation-context.md)** - Contextual back buttons and form redirects
+21. **[100 - Frontend (Web)](./100-frontend-web.md)** - SvelteKit setup, routing
+22. **[110 - Admin Frontend](./110-admin.md)** - Admin UI structure
+23. **[120 - Configuration](./120-configuration.md)** - Env files, validation
+24. **[130 - Testing](./130-testing.md)** - Test patterns for all layers
+25. **[140 - Local Development](./140-local-development.md)** - Running locally, debugging
+26. **[150 - CI/CD](./150-ci-cd.md)** - GitHub Actions template
+27. **[160 - Troubleshooting](./160-troubleshooting.md)** - Common issues and solutions
+28. **[170 - Checklist](./170-checklist.md)** - Completion verification
 
 ## Code Examples
 
@@ -61,6 +62,7 @@ Code examples referenced in the guides are located in the `code/` subdirectory:
 code/
 ├── 040-rust-backend/       # Rust workspace examples
 ├── 050-database/           # SQL migrations
+├── 055-background-jobs/    # Job handler examples
 ├── 060-authentication/     # Auth provider implementations
 ├── 068-security/           # Security utilities, CSP, rate limiting
 ├── 070-api-handlers/       # Handler examples

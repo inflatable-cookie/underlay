@@ -6,10 +6,29 @@ license.workspace = true
 
 [dependencies]
 async-trait = { workspace = true }
+chrono = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 tokio = { workspace = true, features = ["time"] }
+tracing = { workspace = true }
 underlay-core = { path = "../underlay-core" }
+
+# Optional: PostgreSQL persistence
+sqlx = { workspace = true, optional = true }
+thiserror = { version = "1", optional = true }
+uuid = { workspace = true, optional = true }
+
+# Optional: Cron scheduling
+cron = { version = "0.13", optional = true }
 
 [dev-dependencies]
 tokio = { workspace = true, features = ["macros", "rt", "time", "test-util"] }
+
+[features]
+default = []
+# Enable PostgreSQL-backed job store with full functionality
+postgres = ["sqlx", "thiserror", "uuid"]
+# Enable cron-based scheduling
+scheduler = ["cron"]
+# Full feature set
+full = ["postgres", "scheduler"]
