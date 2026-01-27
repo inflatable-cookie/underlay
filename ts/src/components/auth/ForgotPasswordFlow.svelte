@@ -184,13 +184,13 @@
 
   {:else if step === "verify"}
     <TwoFactorStep
-      type="email"
+      hasTotpSetup={false}
       {email}
       bind:code
       {loading}
       {error}
       onVerify={handleVerifyCode}
-      onResend={handleResendCode}
+      onResendEmailCode={handleResendCode}
       onBack={handleBackToEmail}
       backLabel="Change email"
     />

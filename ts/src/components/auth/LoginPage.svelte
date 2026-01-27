@@ -247,7 +247,7 @@
 <Card class="underlay-login-page {className}">
   {#if step === "2fa"}
     <TwoFactorStep
-      type={isEmailVerification ? "email" : "totp"}
+      hasTotpSetup={!isEmailVerification}
       email={twoFactorEmail}
       bind:code
       {loading}
