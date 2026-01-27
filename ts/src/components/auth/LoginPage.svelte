@@ -328,7 +328,7 @@
           </Button>
         </div>
         <div class="underlay-login-page__setup-skip">
-          <TextButton onclick={handleSkipSetup}>
+          <TextButton variant="success" onclick={handleSkipSetup}>
             Continue to dashboard
           </TextButton>
         </div>

@@ -3,7 +3,7 @@
 
   interface Props {
     type?: "button" | "submit" | "reset";
-    variant?: "default" | "danger";
+    variant?: "default" | "danger" | "success";
     href?: string | null;
     class?: string;
     onclick?: (event: MouseEvent) => void;
@@ -73,6 +73,16 @@
 
   :global(.underlay-text-button--danger:hover) {
     color: var(--underlay-color-error, #ef4444);
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+  }
+
+  :global(.underlay-text-button--success) {
+    color: var(--underlay-color-success, #22c55e);
+  }
+
+  :global(.underlay-text-button--success:hover) {
+    color: var(--underlay-color-success, #22c55e);
     text-decoration: underline;
     text-decoration-thickness: 2px;
   }
