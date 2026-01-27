@@ -59,6 +59,10 @@
       "types": "./ts/src/server/index.ts",
       "default": "./ts/src/server/index.ts"
     },
+    "./utils": {
+      "types": "./ts/src/utils/index.ts",
+      "default": "./ts/src/utils/index.ts"
+    },
     "./styles/base.css": "./ts/src/styles/base.css",
     "./styles/forms.css": "./ts/src/styles/forms.css",
     "./styles/markdown-editor.css": "./ts/src/styles/markdown-editor.css",
