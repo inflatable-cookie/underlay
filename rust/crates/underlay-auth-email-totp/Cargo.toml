@@ -1,0 +1,18 @@
+[package]
+name = "underlay-auth-email-totp"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Email-based OTP verification for Underlay auth"
+
+[dependencies]
+async-trait = { workspace = true }
+chrono = { workspace = true, features = ["serde"] }
+rand = "0.8"
+thiserror = "2"
+tracing = { workspace = true }
+underlay-auth = { path = "../underlay-auth" }
+underlay-auth-password = { path = "../underlay-auth-password" }
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["macros", "rt"] }

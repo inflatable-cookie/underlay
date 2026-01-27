@@ -4687,6 +4687,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "underlay-auth-email-totp"
+version = "0.0.1"
+dependencies = [
+ "async-trait",
+ "chrono",
+ "rand 0.8.5",
+ "thiserror 2.0.17",
+ "tokio",
+ "tracing",
+ "underlay-auth",
+ "underlay-auth-password",
+]
+
+[[package]]
 name = "underlay-auth-jwt"
 version = "0.0.1"
 dependencies = [
