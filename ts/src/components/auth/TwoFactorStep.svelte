@@ -118,6 +118,20 @@
     {@html effectiveHint}
   </p>
 
+  {#if effectiveShowBackupOption && !useBackupCode}
+    <p class="underlay-two-factor-step__backup-prompt">
+      Can't access your authenticator app?
+      <button
+        type="button"
+        class="underlay-two-factor-step__text-btn"
+        onclick={() => { useBackupCode = true; code = ""; }}
+        disabled={loading}
+      >
+        {backupCodeLabel}
+      </button>
+    </p>
+  {/if}
+
   {#if useBackupCode}
     <Field label={effectiveInputLabel}>
       <TextInput
@@ -127,6 +141,16 @@
         autocomplete="off"
       />
     </Field>
+    <p class="underlay-two-factor-step__backup-prompt">
+      <button
+        type="button"
+        class="underlay-two-factor-step__text-btn"
+        onclick={() => { useBackupCode = false; code = ""; }}
+        disabled={loading}
+      >
+        {useRegularCodeLabel}
+      </button>
+    </p>
   {:else}
     <TotpInput
       bind:value={code}
@@ -168,18 +192,6 @@
     </div>
   {/if}
 
-  {#if effectiveShowBackupOption}
-    <div class="underlay-two-factor-step__backup">
-      <button
-        type="button"
-        class="underlay-two-factor-step__text-btn"
-        onclick={() => { useBackupCode = !useBackupCode; code = ""; }}
-        disabled={loading}
-      >
-        {useBackupCode ? useRegularCodeLabel : backupCodeLabel}
-      </button>
-    </div>
-  {/if}
 </form>
 
 <style>
@@ -238,8 +250,9 @@
     color: var(--underlay-color-text-muted, #64748b);
   }
 
-  .underlay-two-factor-step__backup {
-    text-align: center;
-    padding-top: var(--underlay-space-2, 0.5rem);
+  .underlay-two-factor-step__backup-prompt {
+    margin: 0;
+    font-size: var(--underlay-font-size-sm, 0.85rem);
+    color: var(--underlay-color-text-muted, #64748b);
   }
 </style>
