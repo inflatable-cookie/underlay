@@ -54,3 +54,10 @@ export {
 
 // Explicit export avoids dev-time prebundle staleness.
 export { useToasts } from "./useToasts";
+
+// Authenticated data fetching pattern
+export {
+  useAuthenticatedData,
+  type AuthenticatedDataOptions,
+  type AuthenticatedDataResult
+} from "./authenticated-data.svelte";

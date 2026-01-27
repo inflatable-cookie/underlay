@@ -866,6 +866,330 @@ form.reset();
 </SubmitButton>
 ```
 
+### Authenticated Data Fetching
+
+The `useAuthenticatedData` pattern solves a common race condition in SvelteKit applications where page data needs to be fetched with an auth token, but the token isn't available during the initial page load.
+
+#### The Problem
+
+In SvelteKit, there's a timing issue with client-side authentication:
+
+1. **Page load runs first**: SvelteKit's `+page.ts` `load` function executes immediately
+2. **Auth initializes later**: The auth store typically initializes in the layout's `onMount`
+3. **Race condition**: On page refresh, the page load function tries to get a token before auth is ready
+
+```typescript
+// ❌ This causes redirect loops on page refresh
+export const load: PageLoad = async ({ parent }) => {
+  await parent();
+  const token = auth.getToken();  // null on refresh!
+  if (!token) {
+    redirect(302, '/login');  // Redirects even for logged-in users
+  }
+  // ...
+};
+```
+
+#### The Solution
+
+Instead of fetching in `+page.ts`, use `useAuthenticatedData` in the component. It waits for auth to be ready, then fetches data.
+
+```svelte
+<script lang="ts">
+  import { useAuthenticatedData } from '@decodelabs/underlay/patterns';
+  import { PageLoading, FormError } from '@decodelabs/underlay/components';
+  import { auth, authLoading, currentUser } from '$lib/stores/auth';
+  import { myApiCommand } from '@myorg/client';
+
+  const pageData = useAuthenticatedData(
+    async (fetch, token) => {
+      const result = await myApiCommand(fetch, token);
+      return { items: result.items };
+    },
+    {
+      getToken: () => auth.getToken(),
+      defaultValue: { items: [] }
+    }
+  );
+
+  // Trigger fetch when auth is ready
+  $effect(() => {
+    pageData.tryFetch($authLoading, $currentUser);
+  });
+</script>
+
+{#if pageData.loading}
+  <PageLoading message="Loading data..." />
+{:else if pageData.error}
+  <FormError message={pageData.error} />
+{:else}
+  <p>Found {pageData.data?.items.length} items</p>
+{/if}
+```
+
+#### Page Load Files
+
+Keep `+page.ts` files simple for protected routes. Let the layout handle auth protection:
+
+```typescript
+// ✅ Simple - no auth checks here
+import type { PageLoad } from './$types';
+
+export const load: PageLoad = async () => {
+  return {};  // Auth protection handled by layout
+};
+```
+
+#### API Reference
+
+##### `useAuthenticatedData<T>(fetcher, options)`
+
+Creates a reactive data fetcher that waits for auth to be ready.
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `fetcher` | `(fetch, token) => Promise<T>` | Async function that fetches data using fetch and auth token |
+| `options` | `AuthenticatedDataOptions<T>` | Configuration options |
+
+**Options:**
+
+| Option | Type | Required | Description |
+|--------|------|----------|-------------|
+| `getToken` | `() => string \| null` | Yes | Function to get current access token |
+| `defaultValue` | `T` | No | Initial value before data is fetched |
+| `onSuccess` | `(data: T) => void` | No | Callback after successful fetch |
+
+**Returns:** `AuthenticatedDataResult<T>`
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `data` | `T \| undefined` | The fetched data (or default value) |
+| `loading` | `boolean` | Whether data is currently being fetched |
+| `error` | `string \| null` | Error message if fetch failed |
+| `tryFetch` | `(authLoading, currentUser) => Promise<void>` | Attempt fetch if auth ready |
+| `refetch` | `() => Promise<void>` | Force a refetch of the data |
+
+#### Common Patterns
+
+##### Fetching Multiple Resources
+
+```svelte
+<script lang="ts">
+  const pageData = useAuthenticatedData(
+    async (fetch, token) => {
+      const [users, settings] = await Promise.all([
+        getUsers(fetch, token),
+        getSettings(fetch, token)
+      ]);
+      return { users, settings };
+    },
+    {
+      getToken: () => auth.getToken(),
+      defaultValue: { users: [], settings: null }
+    }
+  );
+</script>
+```
+
+##### Post-Load Actions with `onSuccess`
+
+Use `onSuccess` to handle URL parameters or other initialization after data loads:
+
+```svelte
+<script lang="ts">
+  import { page } from '$app/stores';
+
+  let selectedTab = $state('general');
+
+  const pageData = useAuthenticatedData(
+    async (fetch, token) => getSecuritySettings(fetch, token),
+    {
+      getToken: () => auth.getToken(),
+      onSuccess: (data) => {
+        // Handle URL parameters after data loads
+        const tab = $page.url.searchParams.get('tab');
+        if (tab && ['general', 'advanced'].includes(tab)) {
+          selectedTab = tab;
+        }
+      }
+    }
+  );
+</script>
+```
+
+##### Refetching After Mutations
+
+Call `refetch()` after modifying data to refresh the display:
+
+```svelte
+<script lang="ts">
+  const pageData = useAuthenticatedData(/* ... */);
+
+  const handleDelete = async (id: string) => {
+    const token = auth.getToken();
+    if (!token) return;
+
+    await deleteItem(id, fetch, token);
+    await pageData.refetch();  // Refresh the list
+  };
+</script>
+```
+
+##### Derived State
+
+Use Svelte's `$derived` to compute values from the fetched data:
+
+```svelte
+<script lang="ts">
+  const pageData = useAuthenticatedData(
+    async (fetch, token) => ({
+      totpEnabled: (await getTotpStatus(fetch, token)).enabled,
+      hasPasskeys: (await listPasskeys(fetch, token)).length > 0
+    }),
+    {
+      getToken: () => auth.getToken(),
+      defaultValue: { totpEnabled: false, hasPasskeys: false }
+    }
+  );
+
+  // Derived state
+  let has2fa = $derived(pageData.data?.totpEnabled || pageData.data?.hasPasskeys);
+</script>
+
+{#if has2fa}
+  <Badge variant="success">2FA Enabled</Badge>
+{/if}
+```
+
+#### PageLoading Component
+
+Use the `PageLoading` component for consistent loading states:
+
+```svelte
+<script lang="ts">
+  import { PageLoading } from '@decodelabs/underlay/components';
+</script>
+
+<!-- Basic usage -->
+<PageLoading />
+
+<!-- Custom message -->
+<PageLoading message="Loading your settings..." />
+
+<!-- Different sizes: "sm" | "md" | "lg" -->
+<PageLoading size="lg" />
+```
+
+The component includes:
+- Accessible `role="status"` and `aria-live="polite"` attributes
+- Reduced motion support for accessibility
+- Consistent styling with Underlay CSS variables
+
+#### Error Handling
+
+Errors are automatically caught and stored in `pageData.error`:
+
+```svelte
+{#if pageData.error}
+  <FormError message={pageData.error} />
+  <Button onclick={() => pageData.refetch()}>Try Again</Button>
+{/if}
+```
+
+#### Complete Example
+
+Here's a full example of a security settings page:
+
+```svelte
+<script lang="ts">
+  import { useAuthenticatedData } from '@decodelabs/underlay/patterns';
+  import {
+    PageLoading,
+    Card,
+    FormError,
+    Button
+  } from '@decodelabs/underlay/components';
+  import { auth, authLoading, currentUser } from '$lib/stores/auth';
+  import { authCommands } from '@myorg/client';
+
+  const pageData = useAuthenticatedData(
+    async (fetch, token) => {
+      const [totpStatus, passkeys, sessions] = await Promise.all([
+        authCommands.totpStatus(fetch, token).catch(() => ({ enabled: false })),
+        authCommands.listPasskeys(fetch, token).catch(() => []),
+        authCommands.listSessions(fetch, token)
+      ]);
+      return {
+        totpEnabled: totpStatus.enabled,
+        passkeys,
+        sessions
+      };
+    },
+    {
+      getToken: () => auth.getToken(),
+      defaultValue: { totpEnabled: false, passkeys: [], sessions: [] }
+    }
+  );
+
+  $effect(() => {
+    pageData.tryFetch($authLoading, $currentUser);
+  });
+
+  let has2fa = $derived(
+    pageData.data?.totpEnabled || (pageData.data?.passkeys?.length ?? 0) > 0
+  );
+
+  const handleRevokeSession = async (sessionId: string) => {
+    const token = auth.getToken();
+    if (!token) return;
+
+    await authCommands.revokeSession(sessionId, fetch, token);
+    await pageData.refetch();
+  };
+</script>
+
+<svelte:head>
+  <title>Security Settings</title>
+</svelte:head>
+
+<div class="security-settings">
+  <h1>Security Settings</h1>
+
+  {#if pageData.loading}
+    <PageLoading message="Loading security settings..." />
+  {:else if pageData.error}
+    <FormError message={pageData.error} />
+  {:else}
+    <Card>
+      <h2>Two-Factor Authentication</h2>
+      {#if has2fa}
+        <p>2FA is enabled on your account.</p>
+      {:else}
+        <p>Add an extra layer of security to your account.</p>
+        <Button href="/account/security/setup-2fa">Enable 2FA</Button>
+      {/if}
+    </Card>
+
+    <Card>
+      <h2>Active Sessions</h2>
+      {#each pageData.data?.sessions ?? [] as session}
+        <div class="session">
+          <span>{session.userAgent}</span>
+          <Button
+            variant="secondary"
+            onclick={() => handleRevokeSession(session.id)}
+          >
+            Revoke
+          </Button>
+        </div>
+      {/each}
+    </Card>
+  {/if}
+</div>
+```
+
 ### SSR-Safe Storage
 
 The `storage` module provides SSR-safe wrappers for browser storage APIs.
