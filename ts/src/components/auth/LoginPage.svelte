@@ -64,8 +64,10 @@
     onPasswordLogin?: (email: string, password: string) => Promise<LoginResult>;
     /** Called to verify 2FA code */
     onTwoFactorVerify?: (stateId: string, code: string) => Promise<void>;
-    /** Called for passkey login */
-    onPasskeyLogin?: () => Promise<void>;
+    /** Called for passkey login (email is provided if showPasskeyEmailField is true) */
+    onPasskeyLogin?: (email?: string) => Promise<void>;
+    /** Show optional email field in passkey tab to narrow credential selection */
+    showPasskeyEmailField?: boolean;
     /** Called for Google OAuth login */
     onGoogleLogin?: () => Promise<void>;
     /** Called when login is complete (alternative to redirect) */
@@ -93,6 +95,7 @@
     onPasswordLogin,
     onTwoFactorVerify,
     onPasskeyLogin,
+    showPasskeyEmailField = false,
     onGoogleLogin,
     onComplete,
     forgotPasswordHref,
@@ -113,6 +116,7 @@
   // Form state
   let email = $state("");
   let password = $state("");
+  let passkeyEmail = $state("");
   let code = $state("");
 
   // 2FA state
@@ -193,7 +197,8 @@
     passkeyLoading = true;
 
     try {
-      await onPasskeyLogin?.();
+      const emailValue = passkeyEmail.trim() || undefined;
+      await onPasskeyLogin?.(emailValue);
       onComplete?.();
     } catch (e) {
       passkeyError = e instanceof Error ? e.message : "Passkey login failed";
@@ -376,6 +381,17 @@
             <div class="underlay-login-page__passkey">
               <p class="underlay-login-page__hint">{passkeyHint}</p>
 
+              {#if showPasskeyEmailField}
+                <Field label="Email (optional)">
+                  <TextInput
+                    type="email"
+                    bind:value={passkeyEmail}
+                    autocomplete="username"
+                    disabled={passkeyLoading}
+                  />
+                </Field>
+              {/if}
+
               <FormError message={passkeyError} />
 
               <FormActions>
@@ -422,11 +438,18 @@
 </Card>
 
 <style>
-  .underlay-login-page__form,
+  .underlay-login-page__form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--underlay-density-gap, 0.75rem);
+  }
+
   .underlay-login-page__passkey,
   .underlay-login-page__google {
     display: flex;
     flex-direction: column;
+    align-items: center;
+    text-align: center;
     gap: var(--underlay-density-gap, 0.75rem);
   }
 
