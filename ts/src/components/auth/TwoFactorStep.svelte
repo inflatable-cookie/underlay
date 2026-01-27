@@ -122,7 +122,7 @@
     <Field label={effectiveInputLabel}>
       <TextInput
         bind:value={code}
-        placeholder="XXXX-XXXX-XXXX"
+        placeholder="XXXXX-XXXXX"
         disabled={loading}
         autocomplete="off"
       />
