@@ -2,7 +2,7 @@
   import { Tabs as BitsTabs } from "bits-ui";
   import type { Snippet } from "svelte";
   import { getContext, onMount } from "svelte";
-  import type { TabsVariant } from "./TabsRoot.svelte";
+  import type { TabsVariant, TabsSize } from "./TabsRoot.svelte";
   import ChevronDown from "lucide-svelte/icons/chevron-down";
 
   interface TabItem {
@@ -29,11 +29,13 @@
   let { children, class: className, tabs, collapsible = false }: Props = $props();
 
   const getVariant = getContext<() => TabsVariant>("underlay-tabs-variant");
+  const getSize = getContext<() => TabsSize>("underlay-tabs-size");
   const getValue = getContext<() => string>("underlay-tabs-value");
   const setValue = getContext<((v: string) => void) | undefined>("underlay-tabs-set-value");
   const setParentCollapsed = getContext<((v: boolean) => void) | undefined>("underlay-tabs-set-collapsed");
 
   let variant = $derived(getVariant?.() ?? "pills");
+  let size = $derived(getSize?.() ?? "default");
   let currentValue = $derived(getValue?.() ?? "");
 
   let containerRef = $state<HTMLElement | null>(null);
@@ -97,11 +99,11 @@
 {#if collapsible && tabs}
   <div
     bind:this={containerRef}
-    class="underlay-tabs-list-container underlay-tabs-list-container--{variant}"
+    class="underlay-tabs-list-container underlay-tabs-list-container--{variant} underlay-tabs-list-container--{size}"
   >
     <!-- Collapsed dropdown mode -->
     {#if isCollapsed}
-      <div class="underlay-tabs-dropdown underlay-tabs-dropdown--{variant}">
+      <div class="underlay-tabs-dropdown underlay-tabs-dropdown--{variant} underlay-tabs-dropdown--{size}">
         <button
           type="button"
           class="underlay-tabs-dropdown__trigger"
@@ -150,7 +152,7 @@
       <!-- Normal tabs mode -->
       <div bind:this={tabsRef} class="underlay-tabs-list__measure">
         <BitsTabs.List
-          class={`underlay-tabs-list underlay-tabs-list--${variant} underlay-tabs-list__tabs ${className ?? ""}`}
+          class={`underlay-tabs-list underlay-tabs-list--${variant} underlay-tabs-list--${size} underlay-tabs-list__tabs ${className ?? ""}`}
         >
           {@render children?.()}
         </BitsTabs.List>
@@ -160,7 +162,7 @@
 {:else}
   <!-- Non-collapsible mode - original behavior -->
   <BitsTabs.List
-    class={`underlay-tabs-list underlay-tabs-list--${variant} ${className ?? ""}`}
+    class={`underlay-tabs-list underlay-tabs-list--${variant} underlay-tabs-list--${size} ${className ?? ""}`}
   >
     {@render children?.()}
   </BitsTabs.List>
@@ -188,6 +190,17 @@
     border: none;
     background: rgba(0, 0, 0, 0.25);
     border-radius: 0.5rem 0.5rem 0 0;
+  }
+
+  /* Small size variant */
+  :global(.underlay-tabs-list--sm.underlay-tabs-list--boxed) {
+    gap: 0.25rem;
+    padding: 0.25rem 0.4rem 0;
+  }
+
+  :global(.underlay-tabs-list--sm.underlay-tabs-list--pills) {
+    padding: 0.15rem;
+    gap: 0.15rem;
   }
 
   /* Container for collapsible tabs */
@@ -311,5 +324,21 @@
   .underlay-tabs-dropdown__item--active {
     background: rgba(148, 163, 184, 0.18);
     color: var(--underlay-color-text, #e5e7eb);
+  }
+
+  /* Small size dropdown */
+  .underlay-tabs-dropdown--sm .underlay-tabs-dropdown__trigger {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.8rem;
+  }
+
+  .underlay-tabs-dropdown--sm .underlay-tabs-dropdown__item {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.8rem;
+  }
+
+  .underlay-tabs-dropdown--sm .underlay-tabs-dropdown__count {
+    font-size: 0.65rem;
+    padding: 0.05rem 0.3rem;
   }
 </style>

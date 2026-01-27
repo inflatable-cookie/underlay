@@ -7,12 +7,15 @@
   import { page } from "$app/stores";
 
   export type TabsVariant = "pills" | "boxed";
+  export type TabsSize = "default" | "sm";
 
   interface Props {
     /** Current active tab value (bindable) */
     value: string;
     /** Visual style variant */
     variant?: TabsVariant;
+    /** Size variant - 'sm' gives smaller text and padding */
+    size?: TabsSize;
     /**
      * When provided, syncs the active tab with URL query param.
      * The tab state will be preserved in browser history, so hitting
@@ -23,13 +26,14 @@
     children?: Snippet;
   }
 
-  let { value = $bindable(), variant = "pills", historyKey, children }: Props =
+  let { value = $bindable(), variant = "pills", size = "default", historyKey, children }: Props =
     $props();
 
   // Collapsed state (set by TabsList when in collapsible mode)
   let isCollapsed = $state(false);
 
   setContext("underlay-tabs-variant", () => variant);
+  setContext("underlay-tabs-size", () => size);
   setContext("underlay-tabs-value", () => value);
   setContext("underlay-tabs-set-value", (v: string) => {
     value = v;
@@ -85,6 +89,6 @@
   });
 </script>
 
-<BitsTabs.Root bind:value class={`underlay-tabs underlay-tabs--${variant} ${isCollapsed ? "underlay-tabs--collapsed" : ""}`}>
+<BitsTabs.Root bind:value class={`underlay-tabs underlay-tabs--${variant} underlay-tabs--${size} ${isCollapsed ? "underlay-tabs--collapsed" : ""}`}>
   {@render children?.()}
 </BitsTabs.Root>

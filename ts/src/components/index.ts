@@ -54,6 +54,7 @@ export { default as FileUpload } from "./FileUpload.svelte";
 export type { FileUploadItem, ImageCompressionOptions } from "./FileUpload.svelte";
 export { compressImage, DEFAULT_COMPRESSION } from "./FileUpload.svelte";
 export { default as TabsRoot } from "./TabsRoot.svelte";
+export type { TabsVariant, TabsSize } from "./TabsRoot.svelte";
 export { default as TabsList } from "./TabsList.svelte";
 export { default as TabsTrigger } from "./TabsTrigger.svelte";
 export { default as TabsContent } from "./TabsContent.svelte";

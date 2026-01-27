@@ -2,7 +2,7 @@
   import { Tabs as BitsTabs } from "bits-ui";
   import type { Snippet } from "svelte";
   import { getContext } from "svelte";
-  import type { TabsVariant } from "./TabsRoot.svelte";
+  import type { TabsVariant, TabsSize } from "./TabsRoot.svelte";
 
   interface Props {
     value: string;
@@ -16,13 +16,15 @@
   let { value, disabled = false, children, class: className, count }: Props = $props();
 
   const getVariant = getContext<() => TabsVariant>("underlay-tabs-variant");
+  const getSize = getContext<() => TabsSize>("underlay-tabs-size");
   let variant = $derived(getVariant?.() ?? "pills");
+  let size = $derived(getSize?.() ?? "default");
 </script>
 
 <BitsTabs.Trigger
   {value}
   {disabled}
-  class={`underlay-tabs-trigger underlay-tabs-trigger--${variant} ${className ?? ""}`}
+  class={`underlay-tabs-trigger underlay-tabs-trigger--${variant} underlay-tabs-trigger--${size} ${className ?? ""}`}
 >
   {@render children?.()}
   {#if count != null}
@@ -87,6 +89,16 @@
     color: var(--underlay-color-text, #e5e7eb);
   }
 
+  /* Small size variant */
+  :global(.underlay-tabs-trigger--sm) {
+    font-size: 0.8rem;
+    padding: 0.3rem 0.6rem;
+  }
+
+  :global(.underlay-tabs-trigger--sm.underlay-tabs-trigger--boxed) {
+    padding: 0.4rem 0.75rem;
+  }
+
   /* Count badge */
   .underlay-tabs-trigger__count {
     display: inline-flex;
@@ -105,5 +117,12 @@
   :global(.underlay-tabs-trigger[data-state="active"]) .underlay-tabs-trigger__count {
     background: rgba(148, 163, 184, 0.3);
     color: var(--underlay-color-text, #e5e7eb);
+  }
+
+  /* Small size count badge */
+  :global(.underlay-tabs-trigger--sm) .underlay-tabs-trigger__count {
+    font-size: 0.65rem;
+    padding: 0.05rem 0.3rem;
+    margin-left: 0.3rem;
   }
 </style>
