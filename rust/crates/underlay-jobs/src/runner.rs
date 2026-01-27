@@ -1,4 +1,30 @@
 //! Job runner for processing queued jobs.
+//!
+//! The runner fetches jobs from a store and dispatches them to registered handlers.
+//! It supports two modes of operation:
+//!
+//! 1. **Polling mode** (`run_forever`): Polls the database at a fixed interval.
+//!    Simple but creates unnecessary database load when idle.
+//!
+//! 2. **Notification mode** (`run_with_notifier`): Uses PostgreSQL LISTEN/NOTIFY
+//!    to wake up immediately when jobs are inserted. Falls back to polling at a
+//!    longer interval as a safety net. This is the recommended mode for production.
+//!
+//! # Example: Notification Mode (Recommended)
+//!
+//! ```ignore
+//! use underlay_jobs::{JobRunner, JobRunnerConfig, PgJobNotifier};
+//! use std::time::Duration;
+//!
+//! let runner = JobRunner::new(store, registry)
+//!     .with_config(JobRunnerConfig {
+//!         poll_interval: Duration::from_secs(30), // Fallback interval
+//!         ..Default::default()
+//!     });
+//!
+//! let mut notifier = PgJobNotifier::connect(&pool).await?;
+//! runner.run_with_notifier(&mut notifier).await?;
+//! ```
 
 use std::time::Duration;
 
@@ -10,8 +36,15 @@ use crate::store::JobStore;
 /// Configuration for the job runner.
 #[derive(Debug, Clone)]
 pub struct JobRunnerConfig {
-    /// How often to poll for new jobs when idle.
+    /// How often to poll for new jobs when idle (fallback interval).
+    ///
+    /// In notification mode, this is the maximum time between checks.
+    /// In polling mode, this is the interval between each poll.
+    ///
+    /// Default: 30 seconds (suitable for notification mode).
+    /// For polling mode without notifications, consider 250ms-1s.
     pub poll_interval: Duration,
+
     /// How many jobs to process before sleeping (0 = unlimited).
     pub batch_size: usize,
 }
@@ -19,7 +52,9 @@ pub struct JobRunnerConfig {
 impl Default for JobRunnerConfig {
     fn default() -> Self {
         Self {
-            poll_interval: Duration::from_millis(250),
+            // Default to 30 seconds - appropriate for notification mode
+            // where this is just a fallback safety net
+            poll_interval: Duration::from_secs(30),
             batch_size: 0,
         }
     }
@@ -109,12 +144,19 @@ where
         }
     }
 
-    /// Run the job processing loop forever.
+    /// Run the job processing loop forever using polling.
     ///
-    /// This will continuously poll for and process jobs, sleeping when
-    /// no jobs are available.
+    /// This will continuously poll for and process jobs, sleeping for
+    /// `poll_interval` when no jobs are available.
+    ///
+    /// **Note**: For production use, prefer `run_with_notifier()` which uses
+    /// PostgreSQL LISTEN/NOTIFY for efficient wake-up. Polling mode is useful
+    /// for testing or non-PostgreSQL backends.
     pub async fn run_forever(&self) -> Result<(), S::Error> {
-        info!("Starting job runner");
+        info!(
+            poll_interval_ms = self.config.poll_interval.as_millis(),
+            "Starting job runner in polling mode"
+        );
 
         loop {
             let did_work = self.run_once().await?;
@@ -140,6 +182,103 @@ where
         }
 
         Ok(processed)
+    }
+}
+
+// ============================================================================
+// Notification-based runner (PostgreSQL LISTEN/NOTIFY)
+// ============================================================================
+
+#[cfg(feature = "postgres")]
+use crate::postgres::{PgJobNotifier, RepoError};
+
+#[cfg(feature = "postgres")]
+impl<S> JobRunner<S>
+where
+    S: JobStore<Error = RepoError>,
+{
+    /// Run the job processing loop using PostgreSQL LISTEN/NOTIFY.
+    ///
+    /// This is the recommended way to run the job worker in production.
+    /// Instead of constantly polling, the runner waits for NOTIFY events
+    /// that are triggered when new jobs are inserted.
+    ///
+    /// # How It Works
+    ///
+    /// 1. Try to claim and process any available jobs
+    /// 2. If no jobs are available, wait for a notification
+    /// 3. When notified (or after the fallback timeout), go back to step 1
+    ///
+    /// # Fallback Polling
+    ///
+    /// The `poll_interval` from `JobRunnerConfig` is used as a fallback timeout.
+    /// If no notifications arrive within this interval, the runner wakes up and
+    /// checks for jobs anyway. This handles edge cases like:
+    ///
+    /// - Notifications missed during brief disconnections
+    /// - Jobs scheduled for the future becoming ready
+    /// - Any other race conditions
+    ///
+    /// A 30-second fallback interval is recommended (the default).
+    ///
+    /// # Example
+    ///
+    /// ```ignore
+    /// use underlay_jobs::{JobRunner, JobRunnerConfig, PgJobNotifier, JobRepository};
+    /// use std::time::Duration;
+    ///
+    /// let job_repo = JobRepository::new(pool.clone());
+    /// let mut notifier = PgJobNotifier::connect(&pool).await?;
+    ///
+    /// let runner = JobRunner::new(job_repo, registry)
+    ///     .with_config(JobRunnerConfig {
+    ///         poll_interval: Duration::from_secs(30),
+    ///         ..Default::default()
+    ///     });
+    ///
+    /// // This will run forever, efficiently waiting for jobs
+    /// runner.run_with_notifier(&mut notifier).await?;
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the notifier connection fails. The caller should
+    /// implement reconnection logic if needed.
+    pub async fn run_with_notifier(&self, notifier: &mut PgJobNotifier) -> Result<(), S::Error> {
+        info!(
+            fallback_interval_secs = self.config.poll_interval.as_secs(),
+            "Starting job runner with LISTEN/NOTIFY"
+        );
+
+        loop {
+            // Process all available jobs
+            let mut did_work = true;
+            while did_work {
+                did_work = self.run_once().await?;
+            }
+
+            // No jobs available - wait for notification or fallback timeout
+            debug!(
+                timeout_secs = self.config.poll_interval.as_secs(),
+                "Waiting for job notification"
+            );
+
+            match notifier.wait(self.config.poll_interval).await {
+                Ok(Some(job_type)) => {
+                    debug!(job_type = %job_type, "Woke up from notification");
+                }
+                Ok(None) => {
+                    debug!("Woke up from fallback timeout");
+                }
+                Err(e) => {
+                    // Log the error but don't exit - the notifier may reconnect
+                    // on the next wait() call, or the caller may need to handle this
+                    error!(error = %e, "Notifier error, will retry");
+                    // Brief sleep to avoid tight loop on persistent errors
+                    tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+                }
+            }
+        }
     }
 }
 

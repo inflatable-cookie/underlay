@@ -80,7 +80,9 @@ pub use crate::store::JobStore;
 
 // PostgreSQL exports
 #[cfg(feature = "postgres")]
-pub use crate::postgres::{JobRepository, RepoError, ScheduledTaskRepository};
+pub use crate::postgres::{
+    JobRepository, PgJobNotifier, RepoError, ScheduledTaskRepository, JOB_NOTIFY_CHANNEL,
+};
 
 // Scheduler exports
 #[cfg(all(feature = "scheduler", feature = "postgres"))]
@@ -91,3 +93,10 @@ pub use crate::scheduler::Scheduler;
 /// Applications should use `underlay-devtools sync-migrations` to copy this
 /// to their migrations folder, or include it directly.
 pub const JOB_TABLES_SQL: &str = include_str!("../migrations/0001_create_job_tables.sql");
+
+/// SQL for LISTEN/NOTIFY trigger.
+///
+/// This migration adds efficient job notification support. See the
+/// `PgJobNotifier` type for usage details.
+#[cfg(feature = "postgres")]
+pub const JOB_NOTIFY_SQL: &str = include_str!("../migrations/0002_add_job_notify.sql");
