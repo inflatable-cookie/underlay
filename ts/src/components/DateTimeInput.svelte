@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { untrack } from "svelte";
   import TextInput from "./TextInput.svelte";
 
   interface Props {
@@ -39,12 +40,7 @@
    * Uses local timezone for display.
    */
   function toDateTimeLocal(rfc3339: string | undefined | null): string {
-    if (!rfc3339) {
-      if (defaultToNow) {
-        return getCurrentDateTimeLocal();
-      }
-      return "";
-    }
+    if (!rfc3339) return "";
     try {
       const date = new Date(rfc3339);
       if (isNaN(date.getTime())) return "";
@@ -64,8 +60,6 @@
    */
   function toRfc3339(dateTimeLocal: string): string {
     if (!dateTimeLocal) return "";
-    // datetime-local gives us YYYY-MM-DDTHH:MM, we need to add seconds and timezone
-    // Parse as local time and convert to UTC
     try {
       const date = new Date(dateTimeLocal);
       if (isNaN(date.getTime())) return "";
@@ -88,20 +82,38 @@
     return `${year}-${month}-${day}T${hours}:${minutes}`;
   }
 
-  // Internal value in datetime-local format
-  let localValue = $state(toDateTimeLocal(value));
-
-  // Sync external value changes to local value
-  $effect(() => {
+  // Compute initial local value
+  function getInitialLocalValue(): string {
     const converted = toDateTimeLocal(value);
-    if (converted !== localValue) {
-      localValue = converted;
+    if (converted) return converted;
+    if (defaultToNow) return getCurrentDateTimeLocal();
+    return "";
+  }
+
+  // Internal value in datetime-local format - only set once on init
+  let localValue = $state(untrack(() => getInitialLocalValue()));
+
+  // Track the last value we synced FROM to detect external changes
+  let lastExternalValue = $state(untrack(() => value));
+
+  // Sync external value changes to local value (only when value changes externally)
+  $effect(() => {
+    // Only sync if the external value actually changed (not from our own update)
+    if (value !== lastExternalValue) {
+      const converted = toDateTimeLocal(value);
+      if (converted) {
+        localValue = converted;
+      }
+      lastExternalValue = value;
     }
   });
 
-  function handleChange(newLocalValue: string) {
+  // Update external value when local value changes (user input)
+  function handleInput(newLocalValue: string) {
     localValue = newLocalValue;
     const rfc3339Value = toRfc3339(newLocalValue);
+    // Update tracking to prevent the effect from overwriting
+    lastExternalValue = rfc3339Value;
     value = rfc3339Value;
     onchange?.(rfc3339Value);
   }
@@ -109,8 +121,8 @@
 
 <TextInput
   type="datetime-local"
-  bind:value={localValue}
-  onchange={handleChange}
+  value={localValue}
+  oninput={handleInput}
   {name}
   {required}
   {placeholder}
