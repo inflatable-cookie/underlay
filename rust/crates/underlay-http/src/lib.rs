@@ -6,6 +6,9 @@ pub mod pagination;
 pub mod query;
 mod responses;
 
+#[cfg(feature = "validation")]
+mod validation;
+
 #[cfg(feature = "error-logging")]
 pub mod error_logging;
 
@@ -29,6 +32,9 @@ pub use crate::query::{
     WhereBuilder,
 };
 pub use crate::responses::{created, list_ok, no_content, ok};
+
+#[cfg(feature = "validation")]
+pub use crate::validation::{validation_to_app_error, ValidateExt};
 
 #[cfg(feature = "error-logging")]
 pub use crate::error_logging::{
