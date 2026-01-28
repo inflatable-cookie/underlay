@@ -43,6 +43,8 @@ export { default as DetailsGrid } from "./DetailsGrid.svelte";
 export { default as DetailsItem } from "./DetailsItem.svelte";
 export { default as DetailsSection } from "./DetailsSection.svelte";
 export { default as ContentCard } from "./ContentCard.svelte";
+export { default as InlineListCard } from "./InlineListCard.svelte";
+export { default as InlineListItem } from "./InlineListItem.svelte";
 export type {
 	DataTableColumn,
 	DataTableAction,
