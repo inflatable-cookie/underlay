@@ -91,6 +91,7 @@ pub struct ExistsCheck<'a> {
     table: &'a str,
     conditions: Vec<Condition<'a>>,
     exclude_id: Option<Uuid>,
+    include_deleted: bool,
 }
 
 #[derive(Debug, Clone)]
@@ -117,6 +118,7 @@ impl<'a> ExistsCheck<'a> {
             table,
             conditions: Vec::new(),
             exclude_id: None,
+            include_deleted: false,
         }
     }
 
@@ -168,6 +170,19 @@ impl<'a> ExistsCheck<'a> {
         self
     }
 
+    /// Include soft-deleted records in the check.
+    ///
+    /// By default, `ExistsCheck` adds `AND deleted_at IS NULL` to exclude
+    /// soft-deleted records. Call this method to check all records including
+    /// deleted ones.
+    ///
+    /// Use this for tables without soft-delete or when you explicitly need
+    /// to check against deleted records (e.g., preventing slug reuse).
+    pub fn include_deleted(mut self) -> Self {
+        self.include_deleted = true;
+        self
+    }
+
     /// Execute the existence check.
     ///
     /// Returns `true` if a matching record exists (respecting soft-delete).
@@ -206,8 +221,10 @@ impl<'a> ExistsCheck<'a> {
         }
         let _ = param_idx; // silence unused warning
 
-        // Add soft-delete condition
-        where_parts.push("deleted_at IS NULL".to_string());
+        // Add soft-delete condition unless explicitly including deleted records
+        if !self.include_deleted {
+            where_parts.push("deleted_at IS NULL".to_string());
+        }
 
         let where_clause = where_parts.join(" AND ");
         let query = format!(

@@ -731,7 +731,60 @@ Both helpers return `Result<Uuid, Response>` - on error, they return a properly 
 }
 ```
 
-### Validation Error Conversion
+### Live Field Validation
+
+For real-time validation endpoints (e.g., checking slug availability as user types), use `ValidationResult` instead of HTTP errors:
+
+```rust
+use underlay_http::{ValidationResult, parse_uuid_for_validation};
+use axum::{Json, response::IntoResponse};
+
+async fn validate_slug(payload: Json<ValidatePayload>) -> impl IntoResponse {
+    // Parse UUID with validation result (not HTTP error)
+    let module_id = match parse_uuid_for_validation(&payload.module_id, "moduleId") {
+        Ok(id) => id,
+        Err(result) => return Json(result),
+    };
+
+    // Check business logic
+    if slug_exists(&module_id, &payload.slug).await {
+        return Json(ValidationResult::invalid("Slug already exists"));
+    }
+
+    // Optionally suggest alternatives
+    if let Some(suggestion) = generate_unique_slug(&payload.slug).await {
+        return Json(ValidationResult::invalid_with_suggestion(
+            "Slug already exists",
+            suggestion,
+        ));
+    }
+
+    Json(ValidationResult::valid())
+}
+```
+
+#### ValidationResult Methods
+
+| Method | Description |
+|--------|-------------|
+| `valid()` | Create successful result |
+| `invalid(message)` | Create failed result with message |
+| `invalid_with_suggestion(message, suggestion)` | Failed with alternative suggestion |
+| `with_suggestion(suggestion)` | Add suggestion to existing result |
+
+#### UUID Parsing for Validation
+
+```rust
+use underlay_http::{parse_uuid_for_validation, parse_optional_uuid_for_validation};
+
+// Required UUID - returns Err(ValidationResult) on invalid
+let id = parse_uuid_for_validation(&value, "moduleId")?;
+
+// Optional UUID - returns Ok(None) if missing
+let exclude_id = parse_optional_uuid_for_validation(value.as_deref(), "excludeId")?;
+```
+
+### Validator Crate Integration
 
 When using the `validator` crate, convert validation errors to `AppError` with field errors:
 
@@ -763,6 +816,35 @@ Enable with the `validation` feature:
 
 ```toml
 underlay-http = { path = "...", features = ["validation"] }
+```
+
+### Nightfire Content Validation
+
+Convert Nightfire validation errors to HTTP error responses:
+
+```rust
+use underlay_http::{nightfire_validation_to_app_error, error_response};
+use nightfire::{validate_nightfire_value_by_schema, NightfireValue};
+use axum::http::StatusCode;
+
+async fn create_content(body: NightfireValue) -> impl IntoResponse {
+    if let Err(validation_err) = validate_nightfire_value_by_schema(&body) {
+        let err = nightfire_validation_to_app_error(
+            validation_err,
+            "content.invalid",
+            "body",
+            "Content body failed schema validation.",
+        );
+        return error_response(StatusCode::BAD_REQUEST, err).into_response();
+    }
+    // ... rest of handler
+}
+```
+
+Enable with the `nightfire` feature:
+
+```toml
+underlay-http = { path = "...", features = ["nightfire"] }
 ```
 
 ### Query Field Mapping
