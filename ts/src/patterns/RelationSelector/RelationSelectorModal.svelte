@@ -9,6 +9,7 @@
   import type { SelectableRelation } from "./types.js";
   import { useRelationSelector } from "./context.svelte.js";
   import Button from "../../components/Button.svelte";
+  import Card from "../../components/Card.svelte";
 
   const ctx = useRelationSelector<SelectableRelation>();
 
@@ -187,7 +188,7 @@
   <BitsDialog.Portal>
     <BitsDialog.Overlay class="relation-selector-modal__overlay" />
 
-    <BitsDialog.Content class="relation-selector-modal__content">
+    <BitsDialog.Content class="relation-selector-modal__content {ctx.state.createFormOpen ? 'relation-selector-modal__content--create-mode' : ''}">
       <BitsDialog.Close class="relation-selector-modal__close" aria-label="Close">
         <span aria-hidden="true">×</span>
       </BitsDialog.Close>
@@ -237,9 +238,9 @@
         {#if ctx.state.createFormOpen}
           <!-- Create form mode: only show the create form -->
           {#if ctx.props.createForm}
-            <div class="relation-selector-modal__create-form">
+            <Card class="relation-selector-modal__create-form">
               {@render ctx.props.createForm(handleCreateSuccess, handleCreateCancel)}
-            </div>
+            </Card>
           {/if}
         {:else}
           <!-- Selection mode: show search results, suggestions, etc. -->
@@ -412,6 +413,11 @@
     border: 1px solid var(--underlay-color-border-subtle, rgba(148, 163, 184, 0.5));
     background: var(--underlay-color-dialog-bg, var(--underlay-color-bg-surface, #020617));
     box-shadow: var(--underlay-shadow-dialog, 0 20px 40px rgba(0, 0, 0, 0.55));
+  }
+
+  :global(.relation-selector-modal__content--create-mode) {
+    width: min(48rem, calc(100vw - 2rem));
+    max-height: min(90vh, 50rem);
   }
 
   :global(.relation-selector-modal__close) {
@@ -706,8 +712,8 @@
     outline-offset: -1px;
   }
 
-  .relation-selector-modal__create-form {
-    padding: 0.5rem 0;
+  :global(.relation-selector-modal__create-form) {
+    margin: 0.5rem 0 1rem;
   }
 
   .relation-selector-modal__footer {

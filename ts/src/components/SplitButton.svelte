@@ -13,6 +13,7 @@
     type?: "button" | "submit";
     variant?: "primary" | "secondary";
     disabled?: boolean;
+    onclick?: () => void;
   }
 
   let {
@@ -20,7 +21,8 @@
     value = $bindable(),
     type = "button",
     variant = "primary",
-    disabled = false
+    disabled = false,
+    onclick = undefined
   }: Props = $props();
 
   const menuId = createStableId("underlay-split-menu");
@@ -43,6 +45,7 @@
     {type}
     {variant}
     {disabled}
+    {onclick}
     class="underlay-split-button__main"
     popovertarget={menuId}
     popovertargetaction="toggle"

@@ -14,6 +14,7 @@
     saveLabel?: string;
     saveAndCloseLabel?: string;
     disabled?: boolean;
+    onclick?: () => void;
   }
 
   let {
@@ -25,7 +26,8 @@
     createAndCloseLabel = "Create & close",
     saveLabel = "Save changes",
     saveAndCloseLabel = "Save & close",
-    disabled = false
+    disabled = false,
+    onclick = undefined
   }: Props = $props();
 
   let options = $derived(
@@ -41,4 +43,4 @@
   );
 </script>
 
-<SplitButton {type} {variant} {options} {disabled} bind:value={intent} />
+<SplitButton {type} {variant} {options} {disabled} {onclick} bind:value={intent} />
