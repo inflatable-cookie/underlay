@@ -154,13 +154,15 @@ interface NavigationContextConfig {
 }
 
 /**
- * Return type for getBackButtonInfo().
+ * Return type for getBackButtonInfo() and consumeNavigationContext().
  */
 interface BackButtonInfo {
   /** Label for the back button */
   label: string;
   /** Href for the back button */
   href: string;
+  /** True when derived from stored navigation context (not fallback) */
+  isContextual?: boolean;
 }
 ```
 
@@ -311,6 +313,65 @@ const { backInfo, returnTo } = consumeNavigationContext("Back to videos", "/cont
 - Validates context is intended for the current page (prevents stale context bugs)
 - Prevents stale context from persisting across multiple page navigations
 - Provides both back button info and form redirect URL in one call
+
+#### `computeBackInfo(backInfo, fallback?)` ⭐ Recommended for Dynamic Fallbacks
+
+Compute back button info with a data-dependent fallback, while always respecting contextual navigation. This helper ensures that contextual back links (from the user's actual navigation path) take precedence over hardcoded fallbacks.
+
+**Use this when:** Your fallback depends on data that loads asynchronously (e.g., the entity being edited).
+
+```typescript
+import { computeBackInfo, consumeNavigationContext } from "@decodelabs/underlay/patterns";
+
+// In page initialization
+const { backInfo, returnTo } = consumeNavigationContext("Back to module", defaultBackHref);
+
+// In reactive context (Svelte $derived, Vue computed, etc.)
+const computedBackInfo = $derived(
+  computeBackInfo(backInfo, module ? {
+    href: `/learning/modules/${module.moduleId}`,
+    label: `Back to ${module.code}`
+  } : undefined)
+);
+```
+
+**Parameters:**
+- `backInfo` - The BackButtonInfo from `consumeNavigationContext()`
+- `fallback` - Optional object with `href` and `label` for when no contextual navigation exists
+
+**Returns:** `BackButtonInfo`
+
+**Why use this?**
+
+Without `computeBackInfo`, you might write:
+
+```typescript
+// ❌ BAD - Easy to forget isContextual check
+const computedBackInfo = $derived(
+  module
+    ? { href: `/modules/${module.id}`, label: "Back to module", isContextual: false }
+    : backInfo
+);
+```
+
+This ignores contextual navigation! If the user arrived from a different page (e.g., a list with filters), they'll lose that context.
+
+With `computeBackInfo`:
+
+```typescript
+// ✅ GOOD - Always respects contextual navigation
+const computedBackInfo = $derived(
+  computeBackInfo(backInfo, module ? {
+    href: `/modules/${module.id}`,
+    label: "Back to module"
+  } : undefined)
+);
+```
+
+The helper ensures:
+1. Contextual navigation (from the user's actual path) is always used when available
+2. The data-dependent fallback is only used when there's no contextual navigation
+3. The original `backInfo` defaults are used if neither contextual nor fallback is available
 
 #### `deriveParentPath(currentPath)`
 
@@ -1207,11 +1268,20 @@ When adding navigation context support to an existing page, follow this checklis
 ### For Pages with Separate Form Components
 
 **1. Update the page component (`+page.svelte`):**
-- [ ] Import `consumeNavigationContext` from `@decodelabs/underlay/patterns`
+- [ ] Import `consumeNavigationContext` (and `computeBackInfo` if using async data) from `@decodelabs/underlay/patterns`
 - [ ] Define `defaultBackHref` constant with the fallback destination
 - [ ] Call `const { backInfo, returnTo } = consumeNavigationContext(label, defaultBackHref)`
-- [ ] Pass `backInfo.href` and `backInfo.label` to `CrudFormShell` or `PageHeader`
-- [ ] Pass `returnTo` and `cancelHref={backInfo.href}` to the form component
+- [ ] If fallback depends on async data (e.g., entity name), use `computeBackInfo()`:
+  ```typescript
+  const computedBackInfo = $derived(
+    computeBackInfo(backInfo, module ? {
+      href: `/modules/${module.id}`,
+      label: `Back to ${module.code}`
+    } : undefined)
+  );
+  ```
+- [ ] Pass `computedBackInfo.href` and `computedBackInfo.label` to `CrudFormShell` or `PageHeader`
+- [ ] Pass `returnTo` and `cancelHref={computedBackInfo.href}` to the form component
 
 **2. Update the form component:**
 - [ ] Add `returnTo?: string` prop
@@ -1320,14 +1390,15 @@ const redirectTarget = returnTo && returnTo.startsWith("/")
 ## Best Practices
 
 1. **Always provide fallbacks** - Both `getBackButtonInfo()` and `getReturnUrl()` require fallback values
-2. **Use descriptive labels** - "FA 2025" is better than "Pathway" for context labels
-3. **Set type correctly** - Use `"list"` for collection pages, `"detail"` for item pages
-4. **Validate returnTo server-side** - Only accept relative paths
-5. **Don't over-navigate** - Only use `gotoWithContext()` when going to forms/edit pages
-6. **Test refresh behavior** - Context survives refresh (sessionStorage), verify this works
-7. **Save meaningful state** - Tabs, pagination, filters are good; avoid transient UI state
-8. **Always provide defaults for state** - Use `initPageState({ tab: "default" })` not `consumePageState()`
-9. **Don't store sensitive data in state** - State is stored in sessionStorage (visible to client-side code)
+2. **Use `computeBackInfo()` for data-dependent fallbacks** - Don't manually check `isContextual`; let the helper handle it
+3. **Use descriptive labels** - "FA 2025" is better than "Pathway" for context labels
+4. **Set type correctly** - Use `"list"` for collection pages, `"detail"` for item pages
+5. **Validate returnTo server-side** - Only accept relative paths
+6. **Don't over-navigate** - Only use `gotoWithContext()` when going to forms/edit pages
+7. **Test refresh behavior** - Context survives refresh (sessionStorage), verify this works
+8. **Save meaningful state** - Tabs, pagination, filters are good; avoid transient UI state
+9. **Always provide defaults for state** - Use `initPageState({ tab: "default" })` not `consumePageState()`
+10. **Don't store sensitive data in state** - State is stored in sessionStorage (visible to client-side code)
 
 ---
 
