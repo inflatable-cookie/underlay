@@ -4837,6 +4837,7 @@ dependencies = [
  "testcontainers-modules",
  "tokio",
  "underlay-core",
+ "uuid",
 ]
 
 [[package]]
