@@ -15,3 +15,10 @@ export {
   assertionToJson,
   credentialCreationToJson,
 } from "./webauthn.js";
+
+// Sequence utilities
+export {
+  getNextLetter,
+  getNextNumber,
+  type GetNextLetterOptions,
+} from "./sequence.js";
