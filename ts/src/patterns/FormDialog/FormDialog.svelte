@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
   import { Dialog as BitsDialog } from "bits-ui";
-  import { Button } from "../../components/index.js";
+  import { Card } from "../../components/index.js";
   import X from "lucide-svelte/icons/x";
 
   interface Props {
@@ -92,7 +92,9 @@
       {/if}
 
       <div class="form-dialog__body">
-        {@render children?.(submitting)}
+        <Card>
+          {@render children?.(submitting)}
+        </Card>
       </div>
     </BitsDialog.Content>
   </BitsDialog.Portal>
