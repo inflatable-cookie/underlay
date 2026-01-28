@@ -34,6 +34,11 @@
     /* default styles */
   }
 
+  /* Underline variant - tight spacing */
+  :global(.underlay-tabs-content--underline) {
+    margin-top: 0.5rem;
+  }
+
   /* Boxed variant - bordered content area */
   :global(.underlay-tabs-content--boxed) {
     margin-top: 0;
