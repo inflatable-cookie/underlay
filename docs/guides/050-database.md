@@ -810,6 +810,91 @@ description JSONB,        -- Nightfire: rich description with paragraphs, headin
 
 **Key principle**: If the content is fundamentally a simple text blob with formatting, use `TEXT` and Markdown. If it requires structured blocks, validation, or complex editing, use `JSONB` and Nightfire.
 
+## Underlay Database Utilities (`underlay-db`)
+
+The `underlay-db` crate provides common database utilities to reduce boilerplate.
+
+### Value Existence Helpers
+
+Check if a value exists in a table column, commonly used for slug/key uniqueness validation:
+
+```rust
+use underlay_db::{value_exists, value_exists_excluding};
+
+// Check if slug is taken
+let exists = value_exists(
+    &pool,
+    "content",           // schema
+    "summary_item",      // table
+    "slug",              // column
+    "my-slug"            // value
+).await?;
+
+// Check if slug is taken, excluding current record (for updates)
+let exists = value_exists_excluding(
+    &pool,
+    "content",
+    "summary_item",
+    "slug",
+    "my-slug",
+    current_id           // exclude this ID
+).await?;
+```
+
+### Scoped Uniqueness
+
+For values that must be unique within a parent scope (e.g., section label within a module):
+
+```rust
+use underlay_db::{value_exists_in_scope, value_exists_in_scope_excluding};
+
+// Check if section label exists within module
+let exists = value_exists_in_scope(
+    &pool,
+    "learning",
+    "section",
+    "label",             // column to check
+    "Introduction",      // value
+    "module_id",         // scope column
+    module_id            // scope value
+).await?;
+
+// Same but excluding current record (for updates)
+let exists = value_exists_in_scope_excluding(
+    &pool,
+    "learning",
+    "section",
+    "label",
+    "Introduction",
+    "module_id",
+    module_id,
+    current_section_id   // exclude this ID
+).await?;
+```
+
+### Integer Column Variants
+
+For numeric columns like position or number:
+
+```rust
+use underlay_db::{number_exists_in_scope, number_exists_in_scope_excluding};
+
+// Check if area number exists within section
+let exists = number_exists_in_scope(
+    &pool,
+    "learning",
+    "area",
+    "number",            // integer column
+    5,                   // value (i32)
+    "section_id",        // scope column
+    section_id
+).await?;
+```
+
+### Safety Note
+
+These helpers use format strings for table/column names. Only pass known-good values from your application code - never user input directly.
+
 ## See Also
 
 **Related Guides:**

@@ -681,6 +681,150 @@ async fn list_users() -> impl IntoResponse {
 }
 ```
 
+### UUID Path Parameter Parsing
+
+Parse and validate UUID path parameters with automatic error responses:
+
+```rust
+use underlay_http::parse_uuid_path;
+use axum::extract::Path;
+
+async fn get_user(
+    State(state): State<AppState>,
+    Path(user_id): Path<String>,
+) -> impl IntoResponse {
+    // Returns 400 Bad Request if invalid UUID
+    let parsed = parse_uuid_path(&user_id, "userId")?;
+
+    // parsed is underlay_core::Uuid for domain ID types
+    // ...
+}
+```
+
+For direct database calls that need `uuid::Uuid`:
+
+```rust
+use underlay_http::parse_uuid_path_raw;
+
+async fn get_item(
+    State(state): State<AppState>,
+    Path(item_id): Path<String>,
+) -> impl IntoResponse {
+    // Returns uuid::Uuid for direct DB use
+    let id = parse_uuid_path_raw(&item_id, "itemId")?;
+
+    let row = sqlx::query!("SELECT * FROM items WHERE id = $1", id)
+        .fetch_optional(&state.pool)
+        .await?;
+    // ...
+}
+```
+
+Both helpers return `Result<Uuid, Response>` - on error, they return a properly formatted JSON error response:
+
+```json
+{
+  "error": {
+    "code": "validation.invalid_id",
+    "message": "Invalid itemId; expected UUIDv7 string."
+  }
+}
+```
+
+### Validation Error Conversion
+
+When using the `validator` crate, convert validation errors to `AppError` with field errors:
+
+```rust
+use underlay_http::{validation_to_app_error, ValidateExt};
+use validator::Validate;
+
+// Option 1: Manual conversion
+async fn create_user(Json(payload): Json<CreateUserPayload>) -> impl IntoResponse {
+    if let Err(validation_err) = payload.validate() {
+        let err = validation_to_app_error(
+            &validation_err,
+            "user.invalid",
+            "There is a problem with one or more fields."
+        );
+        return error_response(StatusCode::BAD_REQUEST, err).into_response();
+    }
+    // ...
+}
+
+// Option 2: Trait extension (more concise)
+async fn create_user(Json(payload): Json<CreateUserPayload>) -> impl IntoResponse {
+    payload.validate_or_error("user.invalid")?;
+    // ...
+}
+```
+
+Enable with the `validation` feature:
+
+```toml
+underlay-http = { path = "...", features = ["validation"] }
+```
+
+### Query Field Mapping
+
+Simplify field mappings for sortable/filterable list endpoints:
+
+```rust
+use underlay_http::{FieldMapping, WhereBuilder, QueryParams};
+
+pub async fn list_users_with_query(
+    pool: &PgPool,
+    query: &QueryParams,
+) -> Result<Vec<UserRow>, sqlx::Error> {
+    // Define field mappings (API name => DB column)
+    let mapping = FieldMapping::new()
+        .map("name", "name")           // Both sort and filter
+        .map("email", "email")
+        .map("isActive", "is_active")
+        .sort_only("createdAt", "created_at")  // Sort only
+        .filter_only("role", "role");          // Filter only
+
+    // Build WHERE clause from filters
+    let filters = query.filter_fields();
+    let mut where_builder = WhereBuilder::new(1);
+    where_builder.add_condition("deleted_at IS NULL");
+
+    for filter in &filters {
+        where_builder.add_filter(filter, &mapping.filter_map());
+    }
+
+    let (where_clause, filter_values) = where_builder.build();
+    let order_by = query.sql_order_by_or(&mapping.sort_map(), "name");
+
+    // ... execute query
+}
+```
+
+Or use the macro for common cases where all fields support both sort and filter:
+
+```rust
+use underlay_http::field_mapping;
+
+let mapping = field_mapping! {
+    "name" => "name",
+    "slug" => "slug",
+    "isLive" => "is_live",
+    "createdAt" => "created_at",
+};
+```
+
+#### FieldMapping Methods
+
+| Method | Description |
+|--------|-------------|
+| `map(api, db)` | Map field for both sorting and filtering |
+| `sort_only(api, db)` | Map field for sorting only |
+| `filter_only(api, db)` | Map field for filtering only |
+| `sort_map()` | Get `HashMap<&str, &str>` for sort lookups |
+| `filter_map()` | Get `HashMap<&str, &str>` for filter lookups |
+| `get_sort(api)` | Look up sort column for API field |
+| `get_filter(api)` | Look up filter column for API field |
+
 ### CORS Configuration
 
 ```rust
