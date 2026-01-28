@@ -82,7 +82,7 @@
     return `${year}-${month}-${day}T${hours}:${minutes}`;
   }
 
-  // Compute initial local value
+  // Compute initial local value and sync to parent if defaulting to now
   function getInitialLocalValue(): string {
     const converted = toDateTimeLocal(value);
     if (converted) return converted;
@@ -95,6 +95,22 @@
 
   // Track the last value we synced FROM to detect external changes
   let lastExternalValue = $state(untrack(() => value));
+
+  // Flag to track if we've synced the default value
+  let hasInitialized = $state(false);
+
+  // If we defaulted to now, sync that value back to the parent immediately (runs once)
+  $effect(() => {
+    if (!hasInitialized && defaultToNow && !lastExternalValue && localValue) {
+      hasInitialized = true;
+      const rfc3339Value = toRfc3339(localValue);
+      if (rfc3339Value) {
+        lastExternalValue = rfc3339Value;
+        value = rfc3339Value;
+        onchange?.(rfc3339Value);
+      }
+    }
+  });
 
   // Sync external value changes to local value (only when value changes externally)
   $effect(() => {
@@ -117,13 +133,22 @@
     value = rfc3339Value;
     onchange?.(rfc3339Value);
   }
+
+  // Compute the value for form submission - always derived from localValue to ensure it's never empty
+  // when defaultToNow is used (the effect that syncs to parent runs after render)
+  const formValue = $derived(value || toRfc3339(localValue));
 </script>
 
+<!-- Hidden input for form submission with RFC3339 value -->
+{#if name}
+  <input type="hidden" {name} value={formValue} />
+{/if}
+
+<!-- Visible datetime-local picker (no name to avoid duplicate submission) -->
 <TextInput
   type="datetime-local"
   value={localValue}
   oninput={handleInput}
-  {name}
   {required}
   {placeholder}
   {disabled}
