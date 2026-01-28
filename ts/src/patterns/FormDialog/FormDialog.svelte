@@ -99,14 +99,15 @@
 </BitsDialog.Root>
 
 <style>
-  .form-dialog__overlay {
+  /* All styles must be global because BitsDialog.Portal renders outside the component tree */
+  :global(.form-dialog__overlay) {
     position: fixed;
     inset: 0;
     background: var(--underlay-color-overlay-backdrop, rgba(0, 0, 0, 0.65));
     z-index: 50;
   }
 
-  .form-dialog__content {
+  :global(.form-dialog__content) {
     position: fixed;
     left: 50%;
     top: 50%;
@@ -125,7 +126,7 @@
     box-shadow: var(--underlay-shadow-dialog, 0 20px 40px rgba(0, 0, 0, 0.55));
   }
 
-  .form-dialog__header {
+  :global(.form-dialog__header) {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
@@ -133,25 +134,25 @@
     margin-bottom: 1rem;
   }
 
-  .form-dialog__titles {
+  :global(.form-dialog__titles) {
     flex: 1;
     min-width: 0;
   }
 
-  .form-dialog__title {
+  :global(.form-dialog__title) {
     margin: 0;
     font-size: 1.125rem;
     font-weight: 600;
     color: var(--underlay-color-text, #e5e7eb);
   }
 
-  .form-dialog__subtitle {
+  :global(.form-dialog__subtitle) {
     margin: 0.25rem 0 0;
     font-size: 0.875rem;
     color: var(--underlay-color-text-muted, #9ca3af);
   }
 
-  .form-dialog__close {
+  :global(.form-dialog__close) {
     flex-shrink: 0;
     display: flex;
     align-items: center;
@@ -167,17 +168,17 @@
     transition: background-color 0.15s ease, color 0.15s ease;
   }
 
-  .form-dialog__close:hover:not(:disabled) {
+  :global(.form-dialog__close:hover:not(:disabled)) {
     background: var(--underlay-color-surface-hover, rgba(255, 255, 255, 0.08));
     color: var(--underlay-color-text, #e5e7eb);
   }
 
-  .form-dialog__close:disabled {
+  :global(.form-dialog__close:disabled) {
     opacity: 0.5;
     cursor: not-allowed;
   }
 
-  .form-dialog__error {
+  :global(.form-dialog__error) {
     padding: 0.75rem 1rem;
     margin-bottom: 1rem;
     border-radius: 0.5rem;
@@ -186,7 +187,7 @@
     font-size: 0.875rem;
   }
 
-  .form-dialog__success {
+  :global(.form-dialog__success) {
     padding: 0.75rem 1rem;
     margin-bottom: 1rem;
     border-radius: 0.5rem;
@@ -195,7 +196,7 @@
     font-size: 0.875rem;
   }
 
-  .form-dialog__body {
+  :global(.form-dialog__body) {
     /* Form content */
   }
 </style>
