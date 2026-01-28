@@ -509,3 +509,55 @@ export function consumePageState<T extends Record<string, unknown>>(
 export function clearPageStates(): void {
   storage.session.remove(DEFAULT_STATE_STORAGE_KEY);
 }
+
+// ============================================================================
+// Back Info Helpers
+// ============================================================================
+
+/**
+ * Compute back button info, respecting contextual navigation when available.
+ *
+ * This helper ensures that contextual back links (from navigation context)
+ * take precedence over hardcoded fallbacks. Use this in edit/create pages
+ * when you want to provide a sensible fallback but still respect the user's
+ * actual navigation path.
+ *
+ * @param backInfo - The back info from consumeNavigationContext()
+ * @param fallback - Optional fallback href and label when no contextual navigation
+ * @returns BackButtonInfo that respects contextual navigation
+ *
+ * @example
+ * ```typescript
+ * // In a Svelte component
+ * const { backInfo } = consumeNavigationContext("Back to module", defaultBackHref);
+ *
+ * // Compute final back info with data-dependent fallback
+ * const computedBackInfo = $derived(
+ *   computeBackInfo(backInfo, module ? {
+ *     href: `/learning/modules/${module.moduleId}`,
+ *     label: `Back to ${module.code}`
+ *   } : undefined)
+ * );
+ * ```
+ */
+export function computeBackInfo(
+  backInfo: BackButtonInfo,
+  fallback?: { href: string; label: string }
+): BackButtonInfo {
+  // Always respect contextual navigation - the user's actual path
+  if (backInfo.isContextual) {
+    return backInfo;
+  }
+
+  // Use provided fallback if available (e.g., when data has loaded)
+  if (fallback) {
+    return {
+      href: fallback.href,
+      label: fallback.label,
+      isContextual: false
+    };
+  }
+
+  // Fall back to the original backInfo (from consumeNavigationContext defaults)
+  return backInfo;
+}
