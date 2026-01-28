@@ -860,7 +860,21 @@ let exists = ExistsCheck::new("learning", "module")
 | `scope(column, uuid)` | Add UUID equality condition (FK scope) |
 | `nullable_value(column, Option<i32>)` | Add nullable int with `IS NOT DISTINCT FROM` |
 | `excluding(id)` | Exclude a specific record (for updates) |
+| `include_deleted()` | Skip `deleted_at IS NULL` filter (for tables without soft-delete) |
 | `check(&pool)` | Execute and return `Result<bool, sqlx::Error>` |
+
+#### Including Deleted Records
+
+By default, `ExistsCheck` filters out soft-deleted records (`deleted_at IS NULL`). For tables without soft-delete or when you need to check all records:
+
+```rust
+// Check existence including deleted records
+let exists = ExistsCheck::new("learning", "area")
+    .value("slug", slug)
+    .include_deleted()
+    .check(&pool)
+    .await?;
+```
 
 ### Legacy Helper Functions
 

@@ -83,6 +83,36 @@ Follow these database column type conventions for rich text content:
 
 See `docs/guides/050-database.md#rich-text-field-conventions` for full details.
 
+## Documentation and Guides
+
+Underlay documentation is the source of truth for patterns used across consuming apps.
+
+### Key Resources
+
+| Resource | Purpose |
+|----------|---------|
+| [Patterns Catalogue](docs/patterns/000-index.md) | Quick lookup for implementation patterns |
+| [Project Sync Guide](docs/guides/200-project-sync.md) | Checklist for updating projects to latest patterns |
+| [Database Guide](docs/guides/050-database.md) | ExistsCheck, migrations, schema patterns |
+| [API Handlers Guide](docs/guides/070-api-handlers.md) | HTTP utilities, validation, responses |
+
+### Adding New Patterns
+
+When extracting patterns from consuming apps:
+
+1. **Document first** - Add to relevant guide in `docs/guides/`
+2. **Update catalogue** - Add entry to `docs/patterns/000-index.md`
+3. **Update sync guide** - Add migration steps to `docs/guides/200-project-sync.md`
+4. **Implement** - Add code to appropriate crate in `rust/` or `ts/`
+
+### Pattern Ownership
+
+- **Atomic patterns** (ExistsCheck, ValidationResult, etc.) → Detailed in guides
+- **Composite recipes** (CRUD interface, validation endpoint) → Checklists in catalogue
+- **App-specific code** → Stays in consuming apps, references Underlay patterns
+
+---
+
 ## Analysis Reports and Session Summaries
 
 When creating analysis documents, session summaries, or completion reports, save them in `docs/reports/` using the timestamp naming convention:
