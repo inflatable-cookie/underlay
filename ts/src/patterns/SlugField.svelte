@@ -56,21 +56,22 @@
     prefix,
   }: Props = $props();
 
-  // Internal state for slug-specific features
-  let hasManuallyEdited = $state(false);
-  let prevSource = $state(source);
+  // Track the last auto-generated slug to detect user modifications.
+  // This approach handles pre-populated values (edit mode) correctly:
+  // - If value is empty or matches lastAutoSlug, we auto-generate
+  // - If value differs (e.g., server-provided custom slug), we preserve it
+  let lastAutoSlug = $state("");
 
-  // Auto-sync slug from source when source changes (unless manually edited)
+  // Auto-sync slug from source (unless user has customized it)
   $effect(() => {
-    if (source !== prevSource) {
-      prevSource = source;
-      if (!hasManuallyEdited && source) {
-        const newSlug = slugify(source);
-        if (newSlug !== value) {
-          value = newSlug;
-        }
+    const nextAutoSlug = source ? slugify(source) : "";
+    // Only update if value is empty OR matches what we last auto-generated
+    if (!value || value === lastAutoSlug) {
+      if (nextAutoSlug !== value) {
+        value = nextAutoSlug;
       }
     }
+    lastAutoSlug = nextAutoSlug;
   });
 
   // Adapter: Adds slug-specific format/reserved checks before async validation
@@ -106,7 +107,8 @@
   }
 
   function handleInput(newValue: string) {
-    hasManuallyEdited = true;
+    // When user types, the value will differ from lastAutoSlug,
+    // which prevents future auto-generation from overwriting their edit
     value = newValue;
   }
 
