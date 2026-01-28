@@ -814,80 +814,91 @@ description JSONB,        -- Nightfire: rich description with paragraphs, headin
 
 The `underlay-db` crate provides common database utilities to reduce boilerplate.
 
-### Value Existence Helpers
+### ExistsCheck Builder (Recommended)
 
-Check if a value exists in a table column, commonly used for slug/key uniqueness validation:
+The `ExistsCheck` builder provides flexible existence checks with support for composite constraints:
+
+```rust
+use underlay_db::ExistsCheck;
+
+// Simple: check if slug exists
+let exists = ExistsCheck::new("content", "summary_item")
+    .value("slug", "my-slug")
+    .check(&pool)
+    .await?;
+
+// For updates: exclude current record
+let exists = ExistsCheck::new("content", "summary_item")
+    .value("slug", "my-slug")
+    .excluding(current_id)
+    .check(&pool)
+    .await?;
+
+// Composite: slug + nullable year (pathway)
+let exists = ExistsCheck::new("learning", "pathway")
+    .value("slug", slug)
+    .nullable_value("year", year)  // uses IS NOT DISTINCT FROM
+    .check(&pool)
+    .await?;
+
+// Multi-scope: slug + pathway_id + start_year (module)
+let exists = ExistsCheck::new("learning", "module")
+    .value("slug", slug)
+    .scope("pathway_id", pathway_id)
+    .value_i32("start_year", start_year)
+    .excluding(current_id)
+    .check(&pool)
+    .await?;
+```
+
+#### ExistsCheck Methods
+
+| Method | Description |
+|--------|-------------|
+| `value(column, value)` | Add string equality condition |
+| `value_i32(column, value)` | Add integer equality condition |
+| `scope(column, uuid)` | Add UUID equality condition (FK scope) |
+| `nullable_value(column, Option<i32>)` | Add nullable int with `IS NOT DISTINCT FROM` |
+| `excluding(id)` | Exclude a specific record (for updates) |
+| `check(&pool)` | Execute and return `Result<bool, sqlx::Error>` |
+
+### Legacy Helper Functions
+
+For simple cases, convenience functions are also available:
 
 ```rust
 use underlay_db::{value_exists, value_exists_excluding};
 
 // Check if slug is taken
-let exists = value_exists(
-    &pool,
-    "content",           // schema
-    "summary_item",      // table
-    "slug",              // column
-    "my-slug"            // value
-).await?;
+let exists = value_exists(&pool, "content", "summary_item", "slug", "my-slug").await?;
 
-// Check if slug is taken, excluding current record (for updates)
+// Excluding current record (for updates)
 let exists = value_exists_excluding(
-    &pool,
-    "content",
-    "summary_item",
-    "slug",
-    "my-slug",
-    current_id           // exclude this ID
+    &pool, "content", "summary_item", "slug", "my-slug", current_id
 ).await?;
 ```
 
-### Scoped Uniqueness
+#### Scoped Uniqueness
 
-For values that must be unique within a parent scope (e.g., section label within a module):
+For values unique within a parent scope:
 
 ```rust
 use underlay_db::{value_exists_in_scope, value_exists_in_scope_excluding};
 
 // Check if section label exists within module
 let exists = value_exists_in_scope(
-    &pool,
-    "learning",
-    "section",
-    "label",             // column to check
-    "Introduction",      // value
-    "module_id",         // scope column
-    module_id            // scope value
-).await?;
-
-// Same but excluding current record (for updates)
-let exists = value_exists_in_scope_excluding(
-    &pool,
-    "learning",
-    "section",
-    "label",
-    "Introduction",
-    "module_id",
-    module_id,
-    current_section_id   // exclude this ID
+    &pool, "learning", "section", "label", "Introduction", "module_id", module_id
 ).await?;
 ```
 
-### Integer Column Variants
-
-For numeric columns like position or number:
+#### Integer Column Variants
 
 ```rust
 use underlay_db::{number_exists_in_scope, number_exists_in_scope_excluding};
 
 // Check if area number exists within section
 let exists = number_exists_in_scope(
-    &pool,
-    "learning",
-    "area",
-    "number",            // integer column
-    5,                   // value (i32)
-    "section_id",        // scope column
-    section_id
+    &pool, "learning", "area", "number", 5, "section_id", section_id
 ).await?;
 ```
 
