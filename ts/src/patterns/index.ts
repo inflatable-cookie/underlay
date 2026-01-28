@@ -12,6 +12,11 @@ export * from "./optimistic";
 export * from "./banner";
 export * from "./slugify";
 export * from "./selection-history";
+export {
+  createLocalSearchFns,
+  type LocalSearchOptions,
+  type LocalSearchFns
+} from "./local-search";
 
 // Reorder utilities
 export {
