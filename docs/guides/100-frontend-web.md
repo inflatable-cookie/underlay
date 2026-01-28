@@ -857,13 +857,83 @@ form.reset();
   import { SubmitButton } from '@decodelabs/underlay/patterns';
 </script>
 
-<SubmitButton 
+<SubmitButton
   submitting={$form.state.isSubmitting}
   submittingText="Saving..."
   variant="primary"
 >
   Save Changes
 </SubmitButton>
+```
+
+#### Form Intent Helpers
+
+For forms that use intent-based actions (e.g., "save", "delete", "save-close"), Underlay provides a helper to programmatically submit with a specific intent.
+
+##### `submitFormWithIntent(intent, formSelector?, intentFieldName?)`
+
+Sets a hidden intent input value and submits the form:
+
+```typescript
+import { submitFormWithIntent } from '@decodelabs/underlay/patterns';
+
+// Submit with delete intent (uses first <form> element)
+function handleDelete() {
+  submitFormWithIntent("delete");
+}
+
+// Submit with custom form selector
+function handleArchive() {
+  submitFormWithIntent("archive", "#main-form");
+}
+
+// Submit with custom intent field name
+function handleSpecialAction() {
+  submitFormWithIntent("special", "form", "action");
+}
+```
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `intent` | `string` | required | The intent value to set |
+| `formSelector` | `string` | `"form"` | CSS selector for the form |
+| `intentFieldName` | `string` | `"intent"` | Name of the hidden intent input |
+
+**Common Usage Pattern:**
+
+```svelte
+<script lang="ts">
+  import { submitFormWithIntent } from '@decodelabs/underlay/patterns';
+
+  function handleDelete() {
+    submitFormWithIntent("delete");
+  }
+</script>
+
+<SpaFormShell onSubmit={handleSubmit} ...>
+  <MyForm onDelete={handleDelete} />
+</SpaFormShell>
+```
+
+This replaces the common boilerplate:
+
+```typescript
+// ❌ Before: Manual DOM manipulation
+function handleDelete() {
+  const form = document.querySelector('form');
+  if (form) {
+    const input = form.querySelector('input[name="intent"]');
+    if (input) input.value = "delete";
+    form.requestSubmit();
+  }
+}
+
+// ✅ After: One-liner
+function handleDelete() {
+  submitFormWithIntent("delete");
+}
 ```
 
 ### Authenticated Data Fetching
