@@ -11,6 +11,7 @@ export { default as FieldSet } from "./FieldSet.svelte";
 export { default as Pill } from "./Pill.svelte";
 export { default as TextInput } from "./TextInput.svelte";
 export type { ValidationResult } from "./TextInput.svelte";
+export { default as DateTimeInput } from "./DateTimeInput.svelte";
 export { default as NumberInput } from "./NumberInput.svelte";
 export { default as TextArea } from "./TextArea.svelte";
 export { default as MarkdownEditor } from "./MarkdownEditor.svelte";
