@@ -1,7 +1,6 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
   import { Dialog as BitsDialog } from "bits-ui";
-  import { Card } from "../../components/index.js";
   import X from "lucide-svelte/icons/x";
 
   interface Props {
@@ -92,9 +91,7 @@
       {/if}
 
       <div class="form-dialog__body">
-        <Card>
-          {@render children?.(submitting)}
-        </Card>
+        {@render children?.(submitting)}
       </div>
     </BitsDialog.Content>
   </BitsDialog.Portal>
@@ -120,10 +117,10 @@
     max-height: min(85vh, 52rem);
     overflow: auto;
 
-    border-radius: 0.75rem;
-    border: 1px solid var(--underlay-color-border-subtle, rgba(148, 163, 184, 0.5));
-    background: var(--underlay-color-dialog-bg, var(--underlay-color-bg-surface, #020617));
-    padding: 1.25rem;
+    border-radius: var(--underlay-radius-md, 0.75rem);
+    border: 1px solid var(--underlay-color-border-subtle, rgba(148, 163, 184, 0.25));
+    background-color: var(--underlay-color-surface-muted, rgba(255, 255, 255, 0.02));
+    padding: var(--underlay-card-padding, 1rem);
 
     box-shadow: var(--underlay-shadow-dialog, 0 20px 40px rgba(0, 0, 0, 0.55));
   }
