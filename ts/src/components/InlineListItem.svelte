@@ -45,7 +45,7 @@
   }
 </script>
 
-<li class="inline-list-item">
+<li class="inline-list-item" class:inline-list-item--has-delete={showDelete && ondelete}>
   {#if href}
     <a
       class="inline-list-item__content"
@@ -160,6 +160,12 @@
     align-items: center;
     gap: 0.375rem;
     flex-shrink: 0;
+    transition: margin-right 0.1s ease;
+  }
+
+  /* Make room for delete button on hover when delete is enabled */
+  .inline-list-item--has-delete:hover .inline-list-item__trailing {
+    margin-right: 2rem;
   }
 
   .inline-list-item__delete {
