@@ -415,7 +415,8 @@
   }
 
   :global(.relation-selector-modal__content--create-mode) {
-    width: min(48rem, calc(100vw - 2rem));
+    /* 40em form max-width + 2rem padding */
+    width: min(calc(40em + 2rem), calc(100vw - 2rem));
     max-height: min(90vh, 50rem);
   }
 
