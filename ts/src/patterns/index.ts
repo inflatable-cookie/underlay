@@ -40,6 +40,9 @@ export { default as SlugField } from "./SlugField.svelte";
 export { default as SpaFormShell } from "./SpaFormShell.svelte";
 export type { SpaFormResult, SpaSubmitHandler, SpaNavigateFn } from "./spa-form-types";
 
+// FormDialog pattern
+export { FormDialog } from "./FormDialog/index.js";
+
 // RelationSelector pattern
 export {
   RelationSelector,
