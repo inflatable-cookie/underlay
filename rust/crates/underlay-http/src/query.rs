@@ -466,6 +466,128 @@ impl WhereBuilder {
     }
 }
 
+/// Builder for creating field mappings between API names and database columns.
+///
+/// Simplifies the common pattern of creating HashMaps for sort and filter field mappings.
+/// Can be reused across multiple query handlers for the same entity type.
+///
+/// # Example
+///
+/// ```
+/// use underlay_http::query::FieldMapping;
+///
+/// let mapping = FieldMapping::new()
+///     .map("title", "m.title")
+///     .map("slug", "m.slug")
+///     .map("isLive", "m.is_live")
+///     .sort_only("weight", "m.weight")
+///     .filter_only("pathwayId", "m.pathway_id");
+///
+/// // Use with QueryParams and WhereBuilder
+/// // let order_by = query.sql_order_by(mapping.sort_map());
+/// // builder.add_filter(&filter, mapping.filter_map());
+/// ```
+#[derive(Debug, Clone, Default)]
+pub struct FieldMapping {
+    sort_fields: HashMap<String, String>,
+    filter_fields: HashMap<String, String>,
+}
+
+impl FieldMapping {
+    /// Create a new empty field mapping.
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// Map an API field name to a database column for both sorting and filtering.
+    ///
+    /// This is the most common case where a field can be used for both operations.
+    pub fn map(mut self, api_name: &str, db_column: &str) -> Self {
+        self.sort_fields
+            .insert(api_name.to_string(), db_column.to_string());
+        self.filter_fields
+            .insert(api_name.to_string(), db_column.to_string());
+        self
+    }
+
+    /// Map a field only for sorting (not filtering).
+    ///
+    /// Use this for fields that should be sortable but not filterable,
+    /// like computed columns or aggregates.
+    pub fn sort_only(mut self, api_name: &str, db_column: &str) -> Self {
+        self.sort_fields
+            .insert(api_name.to_string(), db_column.to_string());
+        self
+    }
+
+    /// Map a field only for filtering (not sorting).
+    ///
+    /// Use this for fields that should be filterable but not sortable,
+    /// like foreign keys or boolean flags that don't make sense to sort by.
+    pub fn filter_only(mut self, api_name: &str, db_column: &str) -> Self {
+        self.filter_fields
+            .insert(api_name.to_string(), db_column.to_string());
+        self
+    }
+
+    /// Get the sort field mapping as a HashMap with &str references.
+    ///
+    /// Returns a HashMap suitable for use with `QueryParams::sql_order_by()`.
+    pub fn sort_map(&self) -> HashMap<&str, &str> {
+        self.sort_fields
+            .iter()
+            .map(|(k, v)| (k.as_str(), v.as_str()))
+            .collect()
+    }
+
+    /// Get the filter field mapping as a HashMap with &str references.
+    ///
+    /// Returns a HashMap suitable for use with `WhereBuilder::add_filter()`.
+    pub fn filter_map(&self) -> HashMap<&str, &str> {
+        self.filter_fields
+            .iter()
+            .map(|(k, v)| (k.as_str(), v.as_str()))
+            .collect()
+    }
+
+    /// Look up a sort column by API field name.
+    pub fn get_sort(&self, api_name: &str) -> Option<&str> {
+        self.sort_fields.get(api_name).map(|s| s.as_str())
+    }
+
+    /// Look up a filter column by API field name.
+    pub fn get_filter(&self, api_name: &str) -> Option<&str> {
+        self.filter_fields.get(api_name).map(|s| s.as_str())
+    }
+}
+
+/// Create a FieldMapping with a concise syntax.
+///
+/// All fields are mapped for both sorting and filtering by default.
+///
+/// # Example
+///
+/// ```
+/// use underlay_http::field_mapping;
+///
+/// let mapping = field_mapping! {
+///     "title" => "m.title",
+///     "slug" => "m.slug",
+///     "isLive" => "m.is_live",
+///     "createdAt" => "m.created_at",
+/// };
+/// ```
+#[macro_export]
+macro_rules! field_mapping {
+    ($($api:expr => $db:expr),* $(,)?) => {{
+        let mut mapping = $crate::query::FieldMapping::new();
+        $(
+            mapping = mapping.map($api, $db);
+        )*
+        mapping
+    }};
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -665,5 +787,74 @@ mod tests {
         assert_eq!(filters[0].field, "name");
         assert_eq!(filters[0].operator, FilterOperator::Like);
         assert_eq!(filters[0].value, "%test%");
+    }
+
+    #[test]
+    fn test_field_mapping_map() {
+        let mapping = FieldMapping::new()
+            .map("title", "m.title")
+            .map("isLive", "m.is_live");
+
+        let sort = mapping.sort_map();
+        assert_eq!(sort.get("title"), Some(&"m.title"));
+        assert_eq!(sort.get("isLive"), Some(&"m.is_live"));
+
+        let filter = mapping.filter_map();
+        assert_eq!(filter.get("title"), Some(&"m.title"));
+        assert_eq!(filter.get("isLive"), Some(&"m.is_live"));
+    }
+
+    #[test]
+    fn test_field_mapping_sort_only() {
+        let mapping = FieldMapping::new()
+            .map("title", "m.title")
+            .sort_only("weight", "m.weight");
+
+        let sort = mapping.sort_map();
+        assert_eq!(sort.get("weight"), Some(&"m.weight"));
+
+        let filter = mapping.filter_map();
+        assert_eq!(filter.get("weight"), None);
+        assert_eq!(filter.get("title"), Some(&"m.title"));
+    }
+
+    #[test]
+    fn test_field_mapping_filter_only() {
+        let mapping = FieldMapping::new()
+            .map("title", "m.title")
+            .filter_only("pathwayId", "m.pathway_id");
+
+        let sort = mapping.sort_map();
+        assert_eq!(sort.get("pathwayId"), None);
+
+        let filter = mapping.filter_map();
+        assert_eq!(filter.get("pathwayId"), Some(&"m.pathway_id"));
+    }
+
+    #[test]
+    fn test_field_mapping_get() {
+        let mapping = FieldMapping::new()
+            .map("title", "m.title")
+            .sort_only("weight", "m.weight")
+            .filter_only("pathwayId", "m.pathway_id");
+
+        assert_eq!(mapping.get_sort("title"), Some("m.title"));
+        assert_eq!(mapping.get_sort("weight"), Some("m.weight"));
+        assert_eq!(mapping.get_sort("pathwayId"), None);
+
+        assert_eq!(mapping.get_filter("title"), Some("m.title"));
+        assert_eq!(mapping.get_filter("weight"), None);
+        assert_eq!(mapping.get_filter("pathwayId"), Some("m.pathway_id"));
+    }
+
+    #[test]
+    fn test_field_mapping_macro() {
+        let mapping = crate::field_mapping! {
+            "title" => "m.title",
+            "slug" => "m.slug",
+        };
+
+        assert_eq!(mapping.get_sort("title"), Some("m.title"));
+        assert_eq!(mapping.get_filter("slug"), Some("m.slug"));
     }
 }

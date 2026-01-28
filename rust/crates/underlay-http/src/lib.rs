@@ -29,8 +29,8 @@ pub use crate::cors::{cors_layer, CorsConfig};
 pub use crate::errors::{error_response, ErrorLogContext, ErrorLogSink};
 pub use crate::pagination::{Paginated, PaginationMeta, PaginationParams};
 pub use crate::query::{
-    parse_sort_string, FilterField, FilterOperator, QueryParams, SortDirection, SortField,
-    WhereBuilder,
+    parse_sort_string, FieldMapping, FilterField, FilterOperator, QueryParams, SortDirection,
+    SortField, WhereBuilder,
 };
 pub use crate::path::{parse_uuid_path, parse_uuid_path_raw};
 pub use crate::responses::{created, list_ok, no_content, ok};
