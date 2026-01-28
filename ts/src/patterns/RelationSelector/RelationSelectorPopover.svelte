@@ -6,11 +6,41 @@
   import Plus from "lucide-svelte/icons/plus";
   import Check from "lucide-svelte/icons/check";
   import X from "lucide-svelte/icons/x";
-  import type { SelectableRelation } from "./types.js";
+  import ChevronDown from "lucide-svelte/icons/chevron-down";
+  import type { SelectableRelation, FilterConfig } from "./types.js";
   import { useRelationSelector } from "./context.svelte.js";
   import Button from "../../components/Button.svelte";
 
   const ctx = useRelationSelector<SelectableRelation>();
+
+  // Filter state
+  let openFilterKey = $state<string | null>(null);
+
+  function toggleFilterDropdown(filterKey: string) {
+    openFilterKey = openFilterKey === filterKey ? null : filterKey;
+  }
+
+  function handleFilterSelect(filterKey: string, optionId: string | undefined) {
+    ctx.setFilter(filterKey, optionId);
+    openFilterKey = null;
+  }
+
+  function getActiveFilterLabel(filter: FilterConfig): string {
+    const activeValue = ctx.state.activeFilters[filter.key];
+    if (activeValue === undefined) {
+      return filter.allLabel ?? "All";
+    }
+    const option = filter.options.find((o) => o.id === activeValue);
+    return option?.label ?? filter.allLabel ?? "All";
+  }
+
+  // Close filter dropdown when clicking outside
+  function handlePopoverClick(event: MouseEvent) {
+    const target = event.target as HTMLElement;
+    if (!target.closest(".relation-selector-popover__filter-dropdown")) {
+      openFilterKey = null;
+    }
+  }
 
   let searchInputRef: HTMLInputElement | null = $state(null);
   let listRef: HTMLUListElement | null = $state(null);
@@ -172,6 +202,7 @@
 </script>
 
 <BitsPopover.Portal>
+  <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
   <BitsPopover.Content
     class="relation-selector-popover__content"
     side="bottom"
@@ -190,6 +221,7 @@
     onEscapeKeydown={() => {
       ctx.closePopover();
     }}
+    onclick={handlePopoverClick}
   >
   <div class="relation-selector-popover__header">
     <span class="relation-selector-popover__title">{ctx.props.label}</span>
@@ -204,6 +236,56 @@
       </button>
     {/if}
   </div>
+
+  {#if ctx.props.filters && ctx.props.filters.length > 0}
+    <div class="relation-selector-popover__filters">
+      {#each ctx.props.filters as filter (filter.key)}
+        <div class="relation-selector-popover__filter">
+          <span class="relation-selector-popover__filter-label">{filter.label}:</span>
+          <div class="relation-selector-popover__filter-dropdown">
+            <button
+              type="button"
+              class="relation-selector-popover__filter-trigger"
+              onclick={() => toggleFilterDropdown(filter.key)}
+            >
+              <span>{getActiveFilterLabel(filter)}</span>
+              <ChevronDown size="0.8em" />
+            </button>
+            {#if openFilterKey === filter.key}
+              <div class="relation-selector-popover__filter-menu">
+                {#if filter.includeAll !== false}
+                  <button
+                    type="button"
+                    class="relation-selector-popover__filter-option"
+                    class:relation-selector-popover__filter-option--selected={ctx.state.activeFilters[filter.key] === undefined}
+                    onclick={() => handleFilterSelect(filter.key, undefined)}
+                  >
+                    {filter.allLabel ?? "All"}
+                    {#if ctx.state.activeFilters[filter.key] === undefined}
+                      <Check size="0.8em" />
+                    {/if}
+                  </button>
+                {/if}
+                {#each filter.options as option (option.id)}
+                  <button
+                    type="button"
+                    class="relation-selector-popover__filter-option"
+                    class:relation-selector-popover__filter-option--selected={ctx.state.activeFilters[filter.key] === option.id}
+                    onclick={() => handleFilterSelect(filter.key, option.id)}
+                  >
+                    {option.label}
+                    {#if ctx.state.activeFilters[filter.key] === option.id}
+                      <Check size="0.8em" />
+                    {/if}
+                  </button>
+                {/each}
+              </div>
+            {/if}
+          </div>
+        </div>
+      {/each}
+    </div>
+  {/if}
 
   <div class="relation-selector-popover__search">
     <Search size="1em" class="relation-selector-popover__search-icon" />
@@ -432,6 +514,95 @@
   .relation-selector-popover__clear-btn:hover {
     background: var(--underlay-color-hover-bg, rgba(148, 163, 184, 0.2));
     color: var(--underlay-color-danger, #ef4444);
+  }
+
+  .relation-selector-popover__filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0 0.75rem 0.5rem;
+    flex-shrink: 0;
+  }
+
+  .relation-selector-popover__filter {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.75rem;
+  }
+
+  .relation-selector-popover__filter-label {
+    color: var(--underlay-color-text-muted, #9ca3af);
+    font-weight: 500;
+  }
+
+  .relation-selector-popover__filter-dropdown {
+    position: relative;
+  }
+
+  .relation-selector-popover__filter-trigger {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    border: 1px solid var(--underlay-color-border-subtle, rgba(148, 163, 184, 0.4));
+    border-radius: 0.25rem;
+    background: var(--underlay-color-field-bg, rgba(148, 163, 184, 0.12));
+    color: var(--underlay-color-text, #e5e7eb);
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+  }
+
+  .relation-selector-popover__filter-trigger:hover {
+    border-color: var(--underlay-color-border, rgba(148, 163, 184, 0.6));
+    background: var(--underlay-color-hover-bg, rgba(148, 163, 184, 0.18));
+  }
+
+  .relation-selector-popover__filter-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 10;
+    min-width: 100%;
+    max-height: 12rem;
+    overflow-y: auto;
+    margin-top: 0.25rem;
+    padding: 0.25rem;
+    border: 1px solid var(--underlay-color-border-subtle, rgba(148, 163, 184, 0.4));
+    border-radius: 0.3rem;
+    background: var(--underlay-color-popover-bg, var(--underlay-color-bg-surface, #020617));
+    box-shadow: var(--underlay-shadow-popover, 0 4px 12px rgba(0, 0, 0, 0.3));
+  }
+
+  .relation-selector-popover__filter-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.35rem 0.5rem;
+    border: none;
+    border-radius: 0.2rem;
+    background: transparent;
+    color: var(--underlay-color-text, #e5e7eb);
+    font-size: 0.75rem;
+    text-align: left;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .relation-selector-popover__filter-option:hover {
+    background: var(--underlay-color-hover-bg, rgba(148, 163, 184, 0.2));
+  }
+
+  .relation-selector-popover__filter-option--selected {
+    background: var(--underlay-color-primary, #2563eb);
+    color: var(--underlay-color-on-primary, white);
+  }
+
+  .relation-selector-popover__filter-option--selected:hover {
+    background: var(--underlay-color-primary-strong, #1d4ed8);
   }
 
   .relation-selector-popover__search {

@@ -22,6 +22,8 @@
     // Data fetching
     search,
     suggestions,
+    // Filters
+    filters,
     // Labels
     label,
     placeholder,
@@ -66,6 +68,7 @@
     mode,
     search,
     suggestions,
+    filters,
     label,
     placeholder,
     searchPlaceholder,

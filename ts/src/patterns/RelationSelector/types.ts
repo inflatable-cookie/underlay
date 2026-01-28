@@ -2,6 +2,34 @@ import type { Snippet } from "svelte";
 import type { SelectionHistory } from "../selection-history.js";
 
 /**
+ * A single option within a filter.
+ */
+export interface FilterOption {
+  /** Unique identifier for this option */
+  id: string;
+  /** Display label */
+  label: string;
+}
+
+/**
+ * Configuration for a filter that can be applied to the selector.
+ */
+export interface FilterConfig {
+  /** Unique key for this filter (used in activeFilters map) */
+  key: string;
+  /** Display label shown above the filter dropdown */
+  label: string;
+  /** Available filter options */
+  options: FilterOption[];
+  /** Default selected option ID (undefined = all items) */
+  defaultValue?: string;
+  /** Whether to include an "All" option at the start (default: true) */
+  includeAll?: boolean;
+  /** Custom label for the "All" option (default: "All") */
+  allLabel?: string;
+}
+
+/**
  * Base interface for any selectable relation item.
  * Consumers should extend this with their own metadata.
  */
@@ -29,15 +57,24 @@ export interface SearchResult<T> {
 }
 
 /**
+ * Options passed to the search function.
+ */
+export interface SearchOptions {
+  /** Maximum number of results to return */
+  limit?: number;
+  /** Offset for pagination */
+  offset?: number;
+  /** Active filter values (filter key -> selected option id, undefined = all) */
+  filters?: Record<string, string | undefined>;
+}
+
+/**
  * Function signature for server-side search.
  * Implementations should debounce on the component side.
  */
 export type RelationSearchFn<T extends SelectableRelation> = (
   query: string,
-  options?: {
-    limit?: number;
-    offset?: number;
-  }
+  options?: SearchOptions
 ) => Promise<SearchResult<T>>;
 
 /**
@@ -46,6 +83,8 @@ export type RelationSearchFn<T extends SelectableRelation> = (
 export interface SuggestionOptions {
   /** Recent selection IDs as hints for server-side ordering */
   recentHints?: string[];
+  /** Active filter values (filter key -> selected option id, undefined = all) */
+  filters?: Record<string, string | undefined>;
 }
 
 /**
@@ -90,6 +129,14 @@ export interface RelationSelectorProps<T extends SelectableRelation> {
    * - Recent IDs are passed as hints to the suggestions function
    */
   selectionHistory?: SelectionHistory;
+
+  // === Filters ===
+  /**
+   * Optional filter configurations for narrowing down results.
+   * Each filter appears as a dropdown in the selector UI.
+   * Filter values are passed to search and suggestions functions.
+   */
+  filters?: FilterConfig[];
 
   // === Labels & Text ===
   /** Modal title, e.g., "Select Level" */
@@ -154,4 +201,6 @@ export interface RelationSelectorState<T extends SelectableRelation> {
   createFormOpen: boolean;
   /** Search error message */
   searchError: string | null;
+  /** Active filter values (filter key -> selected option id, undefined = all) */
+  activeFilters: Record<string, string | undefined>;
 }

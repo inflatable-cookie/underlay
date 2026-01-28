@@ -45,11 +45,14 @@ export {
   type RelationSelectorContext,
   type SelectableRelation,
   type SearchResult,
+  type SearchOptions,
   type RelationSearchFn,
   type RelationSuggestionsFn,
   type SuggestionOptions,
   type RelationSelectorProps,
-  type RelationSelectorState
+  type RelationSelectorState,
+  type FilterOption,
+  type FilterConfig
 } from "./RelationSelector/index.js";
 
 // Explicit export avoids dev-time prebundle staleness.

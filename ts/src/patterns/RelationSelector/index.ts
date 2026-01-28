@@ -13,9 +13,12 @@ export {
 export type {
   SelectableRelation,
   SearchResult,
+  SearchOptions,
   RelationSearchFn,
   RelationSuggestionsFn,
   SuggestionOptions,
   RelationSelectorProps,
-  RelationSelectorState
+  RelationSelectorState,
+  FilterOption,
+  FilterConfig
 } from "./types.js";

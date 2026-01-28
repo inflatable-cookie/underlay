@@ -64,6 +64,8 @@ export interface RelationSelectorContext<T extends SelectableRelation> {
   retrySuggestions: () => Promise<void>;
   /** Check if an item is selected */
   isSelected: (itemId: string) => boolean;
+  /** Set a filter value (undefined = all) */
+  setFilter: (filterKey: string, optionId: string | undefined) => void;
 }
 
 /**
@@ -73,6 +75,17 @@ export interface RelationSelectorContext<T extends SelectableRelation> {
 export function createRelationSelectorContext<T extends SelectableRelation>(
   props: RelationSelectorProps<T>
 ): RelationSelectorContext<T> {
+  // Initialize activeFilters from filter configs' default values
+  function getInitialFilters(): Record<string, string | undefined> {
+    const filters: Record<string, string | undefined> = {};
+    if (props.filters) {
+      for (const filter of props.filters) {
+        filters[filter.key] = filter.defaultValue;
+      }
+    }
+    return filters;
+  }
+
   // Initialize state with Svelte 5 runes
   let state = $state<RelationSelectorState<T>>({
     popoverOpen: false,
@@ -84,7 +97,8 @@ export function createRelationSelectorContext<T extends SelectableRelation>(
     isSuggestionsLoading: false,
     suggestionItems: [],
     createFormOpen: false,
-    searchError: null
+    searchError: null,
+    activeFilters: getInitialFilters()
   });
 
   // Track resolved items for selected values
@@ -258,7 +272,8 @@ export function createRelationSelectorContext<T extends SelectableRelation>(
     try {
       const result: SearchResult<T> = await props.search(query, {
         limit: 20,
-        offset: 0
+        offset: 0,
+        filters: state.activeFilters
       });
 
       state.searchResults = result.items;
@@ -294,7 +309,10 @@ export function createRelationSelectorContext<T extends SelectableRelation>(
     try {
       // Get recent hints from selection history (if provided)
       const recentHints = props.selectionHistory?.getRecentIds();
-      const items = await props.suggestions({ recentHints });
+      const items = await props.suggestions({
+        recentHints,
+        filters: state.activeFilters
+      });
       state.suggestionItems = items;
 
       // Store items for reference - reassign map to trigger reactivity
@@ -320,6 +338,21 @@ export function createRelationSelectorContext<T extends SelectableRelation>(
       return props.values?.includes(itemId) ?? false;
     }
     return props.value === itemId;
+  }
+
+  function setFilter(filterKey: string, optionId: string | undefined): void {
+    state.activeFilters = {
+      ...state.activeFilters,
+      [filterKey]: optionId
+    };
+    // Clear current results and reload with new filters
+    state.searchResults = [];
+    state.suggestionItems = [];
+    if (state.searchQuery.trim()) {
+      void performSearch(state.searchQuery);
+    } else {
+      void loadSuggestions();
+    }
   }
 
   const context: RelationSelectorContext<T> = {
@@ -355,7 +388,8 @@ export function createRelationSelectorContext<T extends SelectableRelation>(
     retrySearch,
     loadSuggestions,
     retrySuggestions,
-    isSelected
+    isSelected,
+    setFilter
   };
 
   setContext(RELATION_SELECTOR_CONTEXT_KEY, context);
