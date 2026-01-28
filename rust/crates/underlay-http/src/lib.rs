@@ -3,6 +3,7 @@ pub mod cookies;
 mod cors;
 mod errors;
 pub mod pagination;
+mod path;
 pub mod query;
 mod responses;
 
@@ -31,6 +32,7 @@ pub use crate::query::{
     parse_sort_string, FilterField, FilterOperator, QueryParams, SortDirection, SortField,
     WhereBuilder,
 };
+pub use crate::path::{parse_uuid_path, parse_uuid_path_raw};
 pub use crate::responses::{created, list_ok, no_content, ok};
 
 #[cfg(feature = "validation")]
