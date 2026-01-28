@@ -69,3 +69,9 @@ export {
   type AuthenticatedDataOptions,
   type AuthenticatedDataResult
 } from "./authenticated-data.svelte";
+
+// Selection state management
+export {
+  useSyncedSelection,
+  type SyncedSelectionResult
+} from "./synced-selection.svelte";
