@@ -1893,6 +1893,68 @@ When the `actions` snippet is provided, the media area becomes a clickable trigg
 {/snippet}
 ```
 
+**Child Counts Pattern:**
+
+When displaying related entity counts (e.g., "3 modules", "5 sections"), use an icon + number with a tooltip for the full label. This provides a compact visual while remaining accessible.
+
+```svelte
+<script>
+  import { ListCard, Tooltip } from "@decodelabs/underlay/components";
+  import BookOpen from "lucide-svelte/icons/book-open";
+  import Layers from "lucide-svelte/icons/layers";
+  import Package from "lucide-svelte/icons/package";
+</script>
+
+<ListCard href="/pathways/123" title="ACCA" subtitle="Association of Chartered Certified Accountants">
+  {#snippet media()}
+    <Route size={30} />
+  {/snippet}
+
+  <!-- Child counts with icon + tooltip -->
+  <span class="counts">
+    <Tooltip content="Modules: {pathway.moduleCount}" inline delayDuration={200}>
+      {#snippet trigger()}
+        <span class="counts__item">
+          <BookOpen size={14} />
+          {pathway.moduleCount}
+        </span>
+      {/snippet}
+    </Tooltip>
+    <Tooltip content="Levels: {pathway.levelCount}" inline delayDuration={200}>
+      {#snippet trigger()}
+        <span class="counts__item">
+          <Layers size={14} />
+          {pathway.levelCount}
+        </span>
+      {/snippet}
+    </Tooltip>
+  </span>
+</ListCard>
+
+<style>
+  .counts {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+  }
+
+  .counts__item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+</style>
+```
+
+**Guidelines:**
+
+- Use a relevant icon for each count type (e.g., `BookOpen` for modules, `Layers` for sections/levels, `Package` for bundles, `Target` for outcomes)
+- Icon size should be 14px for consistency
+- Tooltip format: `"{Label}: {count}"` (e.g., "Modules: 5")
+- Set `delayDuration={200}` for quick hover response
+- Use `inline` mode on the Tooltip component
+- Multiple counts are separated with `gap: 0.75rem`
+
 ### NavCard & NavCardGrid
 
 Navigation card components for index/dashboard pages. NavCards are substantial link blocks with icons and descriptions, ideal for section landing pages.
