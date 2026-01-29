@@ -811,14 +811,18 @@ Detail pages show entity metadata in the PageHeader subtitle area:
     </StatusBadge>
     <span class="header-separator">·</span>
     <StatusBadge value={entity.isLive} trueLabel="Live" falseLabel="Draft" variant="danger">
-      {#snippet trueIcon()}<LockOpen size={14} />{/snippet}
-      {#snippet falseIcon()}<Lock size={14} />{/snippet}
+      {#snippet trueIcon()}<Eye size={14} />{/snippet}
+      {#snippet falseIcon()}<EyeOff size={14} />{/snippet}
     </StatusBadge>
   </p>
 </PageHeader>
 ```
 
 **Important**: `StatusBadge` requires icon snippets for both states when you want icons displayed.
+
+**Icon conventions**:
+- **isFree** (access): `LockOpen` (free) / `Lock` (restricted)
+- **isLive** (visibility): `Eye` (live) / `EyeOff` (draft)
 
 ### List Card Trailing Pills
 
