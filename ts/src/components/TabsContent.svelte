@@ -29,6 +29,11 @@
     margin-top: 0.75rem;
   }
 
+  /* Remove top margin from first child to avoid double spacing */
+  :global(.underlay-tabs-content > *:first-child) {
+    margin-top: 0;
+  }
+
   /* Pills variant - minimal spacing */
   :global(.underlay-tabs-content--pills) {
     /* default styles */
