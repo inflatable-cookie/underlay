@@ -1473,12 +1473,14 @@ A responsive two-column grid layout that uses CSS container queries to collapse 
 **Props:**
 - `breakpoint` - Container width at which to collapse to single column (default: `700`)
 - `gap` - Gap between grid items (default: `"1.5rem"`)
+- `stretch` - When `true`, items stretch to fill the row height (default: `false`)
 - `class` - Additional CSS class for the wrapper (useful for margins)
 
 **Behavior:**
 - At container widths above `breakpoint`, displays as a two-column grid
 - At container widths at or below `breakpoint`, collapses to single column
 - Automatically removes `margin-top` and `max-width` from nested `DetailsGrid` and `InlineListCard` components
+- Adds bottom margin between consecutive `ContainerGrid` components (removed on last child)
 
 **Why Container Queries?**
 
@@ -1487,6 +1489,226 @@ Container queries allow the grid to respond to its own available space rather th
 - Sidebars or split layouts
 - Modal dialogs
 - Any constrained container
+
+### InlineListCard
+
+A compact card for displaying related items in a vertical list. Commonly used alongside `DetailsGrid` within a `ContainerGrid` to show associations like "Related Items" or "Assigned Users".
+
+```svelte
+<script>
+  import { InlineListCard, InlineListItem, Button } from "@decodelabs/underlay/components";
+
+  const items = [
+    { id: "1", name: "Item One", href: "/items/1" },
+    { id: "2", name: "Item Two", href: "/items/2" }
+  ];
+</script>
+
+<!-- Basic usage -->
+<InlineListCard title="Related Items" hasItems={items.length > 0}>
+  {#each items as item}
+    <InlineListItem label={item.name} href={item.href} />
+  {/each}
+</InlineListCard>
+
+<!-- With action button -->
+<InlineListCard
+  title="Assigned Users"
+  hasItems={users.length > 0}
+  emptyMessage="No users assigned."
+>
+  {#snippet action()}
+    <Button size="sm" variant="ghost" onclick={handleAdd}>Add</Button>
+  {/snippet}
+
+  {#each users as user}
+    <InlineListItem label={user.name} href={`/users/${user.id}`} />
+  {/each}
+</InlineListCard>
+```
+
+**Props:**
+- `title` - Card title displayed in uppercase
+- `hasItems` - Whether the list has items (controls empty state display)
+- `emptyMessage` - Message shown when there are no items (default: `"No items."`)
+- `action` - Optional snippet for action button (typically "Add")
+- `children` - List items to render (use `InlineListItem`)
+
+### InlineListItem
+
+A list item for use inside `InlineListCard`. Supports links, click handlers, accent colors, badges, and trailing content.
+
+```svelte
+<script>
+  import { InlineListCard, InlineListItem, Pill } from "@decodelabs/underlay/components";
+</script>
+
+<InlineListCard title="Modules" hasItems={true}>
+  <!-- Basic link item -->
+  <InlineListItem label="Getting Started" href="/modules/getting-started" />
+
+  <!-- With accent color (colored dot) -->
+  <InlineListItem
+    label="Advanced Topics"
+    href="/modules/advanced"
+    accent="#14b8a6"
+  />
+
+  <!-- With badge (inline after label) -->
+  <InlineListItem label="FA1" href="/modules/fa1">
+    {#snippet badge()}
+      <Pill accent="#6b7280">2024</Pill>
+    {/snippet}
+  </InlineListItem>
+
+  <!-- With trailing content (right-aligned) -->
+  <InlineListItem label="Module ABC" href="/modules/abc">
+    {#snippet trailing()}
+      <Pill accent="#6366f1">after:10</Pill>
+    {/snippet}
+  </InlineListItem>
+
+  <!-- With both badge and trailing -->
+  <InlineListItem label="Complete Example" href="/items/1">
+    {#snippet badge()}
+      <Pill>Code</Pill>
+    {/snippet}
+    {#snippet trailing()}
+      <Pill accent="#22c55e">Active</Pill>
+    {/snippet}
+  </InlineListItem>
+
+  <!-- With delete button (appears on hover) -->
+  <InlineListItem
+    label="Deletable Item"
+    href="/items/2"
+    showDelete
+    ondelete={() => handleDelete(item.id)}
+  />
+
+  <!-- Click handler instead of link -->
+  <InlineListItem
+    label="Clickable Item"
+    onclick={() => console.log("clicked")}
+  />
+</InlineListCard>
+```
+
+**Props:**
+- `label` - Primary text to display
+- `href` - Optional link URL
+- `onclick` - Optional click handler (used when no href)
+- `accent` - Optional hex color for the indicator dot
+- `badge` - Snippet for inline content immediately after the label
+- `trailing` - Snippet for right-aligned content (badges, pills, etc.)
+- `showDelete` - Whether to show delete button on hover (default: `false`)
+- `ondelete` - Delete handler called when delete button is clicked
+
+**Styling Notes:**
+- The `badge` snippet renders inline next to the label, useful for codes or years
+- The `trailing` snippet is pushed to the right with `margin-left: auto`
+- When `showDelete` is enabled, trailing content shifts left on hover to make room for the delete button
+
+### Tabs
+
+A tabbed interface component with multiple visual variants. Supports URL history synchronization and responsive collapse to dropdown.
+
+```svelte
+<script>
+  import { Tabs, TabsList, TabsTrigger, TabsContent } from "@decodelabs/underlay/components";
+
+  let activeTab = $state("details");
+</script>
+
+<!-- Basic tabs with pills variant (default) -->
+<Tabs bind:value={activeTab}>
+  <TabsList>
+    <TabsTrigger value="details">Details</TabsTrigger>
+    <TabsTrigger value="settings">Settings</TabsTrigger>
+  </TabsList>
+
+  <TabsContent value="details">
+    <p>Details content here</p>
+  </TabsContent>
+  <TabsContent value="settings">
+    <p>Settings content here</p>
+  </TabsContent>
+</Tabs>
+
+<!-- Underline variant -->
+<Tabs bind:value={activeTab} variant="underline">
+  <TabsList>
+    <TabsTrigger value="overview">Overview</TabsTrigger>
+    <TabsTrigger value="history">History</TabsTrigger>
+  </TabsList>
+  <!-- TabsContent sections... -->
+</Tabs>
+
+<!-- Boxed variant -->
+<Tabs bind:value={activeTab} variant="boxed">
+  <TabsList>
+    <TabsTrigger value="code">Code</TabsTrigger>
+    <TabsTrigger value="preview">Preview</TabsTrigger>
+  </TabsList>
+  <!-- TabsContent sections... -->
+</Tabs>
+
+<!-- With URL history synchronization -->
+<Tabs bind:value={activeTab} historyKey="tab">
+  <TabsList>
+    <TabsTrigger value="details">Details</TabsTrigger>
+    <TabsTrigger value="modules">Modules</TabsTrigger>
+  </TabsList>
+  <!-- Tab state syncs with ?tab=details or ?tab=modules -->
+</Tabs>
+
+<!-- With count badges -->
+<Tabs bind:value={activeTab}>
+  <TabsList>
+    <TabsTrigger value="all">All</TabsTrigger>
+    <TabsTrigger value="active" count={12}>Active</TabsTrigger>
+    <TabsTrigger value="archived" count={3}>Archived</TabsTrigger>
+  </TabsList>
+</Tabs>
+
+<!-- Collapsible tabs (collapse to dropdown on narrow screens) -->
+<Tabs bind:value={activeTab}>
+  <TabsList
+    collapsible
+    tabs={[
+      { value: "details", label: "Details" },
+      { value: "modules", label: "Modules", count: 5 },
+      { value: "settings", label: "Settings" }
+    ]}
+  >
+    <TabsTrigger value="details">Details</TabsTrigger>
+    <TabsTrigger value="modules" count={5}>Modules</TabsTrigger>
+    <TabsTrigger value="settings">Settings</TabsTrigger>
+  </TabsList>
+</Tabs>
+```
+
+**Tabs Props:**
+- `value` - Current active tab value (bindable)
+- `variant` - Visual style: `"pills"` (default), `"underline"`, or `"boxed"`
+- `size` - Size variant: `"default"` or `"sm"`
+- `historyKey` - When provided, syncs tab state with URL query param (e.g., `historyKey="tab"` stores as `?tab=value`)
+
+**TabsList Props:**
+- `class` - Additional CSS class
+- `collapsible` - Enable responsive collapse to dropdown (requires `tabs` prop)
+- `tabs` - Array of `{ value, label, count? }` for collapsible mode
+
+**TabsTrigger Props:**
+- `value` - Tab value (must match `TabsContent` value)
+- `disabled` - Disable the tab
+- `count` - Optional count badge displayed after the label
+- `class` - Additional CSS class
+
+**Variant Styling:**
+- **pills** - Rounded pill-shaped tabs with subtle background, contained in a rounded border
+- **underline** - Minimal tabs with bottom border highlight on active tab
+- **boxed** - Traditional raised tabs with background color
 
 ---
 
@@ -1803,6 +2025,7 @@ The component renders in this order:
 - The back link appears below titles for clear visual hierarchy
 - Action buttons align to the right of the title row
 - Meta content (via children) appears below the title block in muted text
+- `<p>` elements in meta content use flexbox with `align-items: center`, so inline elements like badges and status indicators align vertically
 
 ### ReorderableList & Reorder Controller
 
