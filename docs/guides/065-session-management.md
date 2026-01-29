@@ -1348,3 +1348,201 @@ Underlay-based applications use a consistent set of authentication endpoints. Yo
 3. **Use plural nouns** for collections: `/passkeys`, `/sessions`
 4. **Use verbs** for actions: `/start`, `/finish`, `/revoke`, `/disconnect`
 5. **Version prefix**: Always include `/v1/` for API versioning
+
+---
+
+## Client-Side Authenticated Data Fetching
+
+For Single Page Applications (SPAs) that fetch data client-side after the initial page load, Underlay provides patterns for automatic token refresh on 401 errors.
+
+### The Problem
+
+In SPAs, users may become inactive for a period longer than the access token lifetime. When they return and trigger an API call:
+
+1. The stale access token is sent
+2. Backend returns 401 (unauthorized)
+3. User sees "Session expired" error
+4. User must manually refresh the page
+
+This creates a poor user experience, even though the refresh token may still be valid.
+
+### The Solution: Global Auth Configuration
+
+Underlay's `useAuthenticatedData` hook supports automatic token refresh when properly configured. Configure global auth handlers once at app startup, and all data fetchers will automatically retry on 401 errors.
+
+### Setup (Once Per App)
+
+In your app's authenticated layout, configure the global auth handlers:
+
+```svelte
+<!-- src/routes/(app)/+layout.svelte -->
+<script lang="ts">
+  import { configureAuth } from '@decodelabs/underlay/patterns';
+  import { auth } from '$lib/stores/auth';
+
+  // Configure global auth handlers for useAuthenticatedData
+  // This enables automatic token refresh on 401 errors
+  configureAuth({
+    getToken: () => auth.getToken(),
+    onRefresh: auth.getRefreshHandler()
+  });
+</script>
+```
+
+### How It Works
+
+When `configureAuth()` is called, it registers two handlers:
+
+| Handler | Purpose |
+|---------|---------|
+| `getToken` | Returns the current access token (synchronous) |
+| `onRefresh` | Attempts to refresh the token, returns new token or null |
+
+When `useAuthenticatedData` makes an API call and receives a 401 error:
+
+1. **Check for refresh handler** - If `onRefresh` is configured, proceed
+2. **Attempt refresh** - Call `onRefresh(fetch)` to get a new token
+3. **Retry on success** - If refresh returns a new token, retry the original request
+4. **Propagate on failure** - If refresh returns null, propagate the original error
+
+```
+┌─────────────────┐         ┌─────────────────┐         ┌─────────────────┐
+│  API Call with  │         │   Backend API   │         │  Refresh Token  │
+│  Stale Token    │────────>│   Returns 401   │         │    Endpoint     │
+└────────┬────────┘         └─────────────────┘         └────────┬────────┘
+         │                                                       │
+         │  401 Error                                           │
+         ▼                                                       │
+┌─────────────────┐                                              │
+│  onRefresh()    │──────────────────────────────────────────────┤
+│  called         │                                              │
+└────────┬────────┘                                              │
+         │                                                       │
+         │  New Token                                            │
+         ▼                                                       ▼
+┌─────────────────┐         ┌─────────────────┐         ┌─────────────────┐
+│  Retry Request  │────────>│   Backend API   │────────>│   Success!      │
+│  with New Token │         │   Returns 200   │         │   Data Loaded   │
+└─────────────────┘         └─────────────────┘         └─────────────────┘
+```
+
+### Auth Store Requirements
+
+Your auth store must provide these methods:
+
+```typescript
+// $lib/stores/auth.ts
+export interface AuthStore {
+  // Get the current access token (synchronous)
+  getToken: () => string | null;
+
+  // Get a refresh handler for automatic token refresh
+  // Returns a function that takes fetch and returns Promise<string | null>
+  getRefreshHandler: () => (fetchFn: typeof fetch) => Promise<string | null>;
+}
+```
+
+Example implementation:
+
+```typescript
+// In your auth store
+getRefreshHandler() {
+  return async (fetchFn: typeof fetch): Promise<string | null> => {
+    // Attempt to refresh using your auth manager
+    const user = await authManager.refresh(fetchFn);
+    if (user) {
+      return authManager.getToken();
+    }
+    return null;
+  };
+}
+```
+
+### Using useAuthenticatedData
+
+Once configured, `useAuthenticatedData` automatically uses the global handlers. You no longer need to pass `getToken` explicitly:
+
+```svelte
+<script lang="ts">
+  import { useAuthenticatedData } from '@decodelabs/underlay/patterns';
+  import { authLoading, currentUser } from '$lib/stores/auth';
+  import { myApiCommands } from 'my-api-client';
+
+  // No need to pass getToken - uses global config
+  const pageData = useAuthenticatedData(
+    async (fetch, token) => {
+      return await myApiCommands.getItems(fetch, token);
+    },
+    { defaultValue: { items: [] } }
+  );
+
+  // Trigger fetch when auth is ready
+  $effect(() => {
+    pageData.tryFetch($authLoading, $currentUser);
+  });
+</script>
+
+{#if pageData.loading}
+  <LoadingSpinner />
+{:else if pageData.error}
+  <ErrorMessage message={pageData.error} />
+{:else}
+  <ItemList items={pageData.data.items} />
+{/if}
+```
+
+### Backwards Compatibility
+
+For backwards compatibility, you can still pass explicit handlers:
+
+```typescript
+const pageData = useAuthenticatedData(
+  async (fetch, token) => { /* ... */ },
+  {
+    getToken: () => customAuth.getToken(),
+    onRefresh: (fetchFn) => customAuth.refresh(fetchFn),
+    defaultValue: null
+  }
+);
+```
+
+Explicit options take precedence over global configuration.
+
+### Error Handling
+
+The refresh mechanism only activates for 401 errors. Other errors (network failures, 500s, etc.) propagate normally:
+
+| Error Type | Behavior |
+|------------|----------|
+| 401 Unauthorized | Attempt refresh, retry if successful |
+| 403 Forbidden | Propagate error (permission issue, not token issue) |
+| 404 Not Found | Propagate error |
+| 500 Server Error | Propagate error |
+| Network Error | Propagate error |
+
+### When Refresh Fails
+
+If the refresh attempt fails (returns null), the original 401 error is propagated. Your app's error handling should then:
+
+1. Clear local auth state
+2. Redirect to login
+3. Optionally preserve the return URL
+
+This typically happens in the auth store's `onLogout` callback:
+
+```typescript
+const authManager = createAuthManager({
+  onLogout: () => {
+    // Redirect to login when refresh fails
+    goto('/login');
+  }
+});
+```
+
+### Best Practices
+
+1. **Configure once** - Call `configureAuth()` in your root authenticated layout
+2. **Use with auth initialization** - Ensure auth is initialized before data fetching
+3. **Handle loading states** - Show loading UI while auth initializes
+4. **Don't over-refresh** - The pattern handles 401s automatically; don't add manual refresh logic
+5. **Test inactive scenarios** - Verify the refresh works after periods of inactivity

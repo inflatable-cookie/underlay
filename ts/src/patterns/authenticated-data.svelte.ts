@@ -1,3 +1,5 @@
+import { getAuthConfig } from "./auth";
+
 /**
  * Hook for fetching auth-protected data in SvelteKit page components.
  *
@@ -8,21 +10,34 @@
  * Instead of fetching in +page.ts (which races with auth init), use this hook
  * in the component. It waits for auth to be ready, then fetches data.
  *
- * Usage:
+ * ## Setup (once per app)
+ *
+ * Configure global auth handlers in your app's +layout.svelte:
+ * ```svelte
+ * <script>
+ *   import { configureAuth } from '@decodelabs/underlay/patterns';
+ *   import { auth } from '$lib/stores/auth';
+ *
+ *   configureAuth({
+ *     getToken: () => auth.getToken(),
+ *     onRefresh: auth.getRefreshHandler()
+ *   });
+ * </script>
+ * ```
+ *
+ * ## Usage
+ *
  * ```svelte
  * <script lang="ts">
  *   import { useAuthenticatedData } from '@decodelabs/underlay/patterns';
- *   import { authLoading, currentUser, auth } from '$lib/stores/auth';
+ *   import { authLoading, currentUser } from '$lib/stores/auth';
  *
  *   const pageData = useAuthenticatedData(
  *     async (fetch, token) => {
  *       const result = await someApiCall(fetch, token);
  *       return { items: result.items };
  *     },
- *     {
- *       getToken: () => auth.getToken(),
- *       defaultValue: { items: [] }
- *     }
+ *     { defaultValue: { items: [] } }
  *   );
  *
  *   // Trigger fetch when auth is ready
@@ -52,8 +67,10 @@ export interface AuthenticatedDataOptions<T> {
   /**
    * Function to get the current access token synchronously.
    * Should return null if not authenticated.
+   *
+   * If not provided, uses the global auth config set via configureAuth().
    */
-  getToken: () => string | null;
+  getToken?: () => string | null;
 
   /**
    * Default value before data is fetched.
@@ -66,6 +83,15 @@ export interface AuthenticatedDataOptions<T> {
    * Useful for post-load actions like handling URL parameters.
    */
   onSuccess?: (data: T) => void;
+
+  /**
+   * Optional refresh function to call on 401 errors.
+   * Should attempt to refresh the token and return the new token,
+   * or null if refresh failed.
+   *
+   * If not provided, uses the global auth config set via configureAuth().
+   */
+  onRefresh?: (fetchFn: typeof fetch) => Promise<string | null>;
 }
 
 export interface AuthenticatedDataResult<T> {
@@ -103,13 +129,24 @@ export function useAuthenticatedData<T>(
   fetcher: (fetchFn: typeof fetch, token: string) => Promise<T>,
   options: AuthenticatedDataOptions<T>
 ): AuthenticatedDataResult<T> {
+  // Resolve getToken and onRefresh from options or global config
+  const globalConfig = getAuthConfig();
+  const getToken = options.getToken ?? globalConfig?.getToken;
+  const onRefresh = options.onRefresh ?? globalConfig?.onRefresh;
+
+  if (!getToken) {
+    throw new Error(
+      "useAuthenticatedData: getToken is required. Either pass it in options or call configureAuth() at app startup."
+    );
+  }
+
   let data = $state<T | undefined>(options.defaultValue);
   let loading = $state(true);
   let error = $state<string | null>(null);
   let _fetched = false;
 
   const doFetch = async () => {
-    const token = options.getToken();
+    const token = getToken();
     if (!token) {
       loading = false;
       return;
@@ -124,7 +161,30 @@ export function useAuthenticatedData<T>(
       _fetched = true;
       options.onSuccess?.(result);
     } catch (e) {
-      error = e instanceof Error ? e.message : "Failed to load data";
+      // Check if this is a 401 error and we have a refresh handler
+      const is401 = e && typeof e === 'object' && 'status' in e && (e as { status: number }).status === 401;
+
+      if (is401 && onRefresh) {
+        // Attempt to refresh the token
+        const newToken = await onRefresh(fetch);
+        if (newToken) {
+          // Retry the fetch with the new token
+          try {
+            const result = await fetcher(fetch, newToken);
+            data = result;
+            _fetched = true;
+            options.onSuccess?.(result);
+            return;
+          } catch (retryError) {
+            error = retryError instanceof Error ? retryError.message : "Failed to load data";
+          }
+        } else {
+          // Refresh failed - propagate original error
+          error = e instanceof Error ? e.message : "Session expired";
+        }
+      } else {
+        error = e instanceof Error ? e.message : "Failed to load data";
+      }
     } finally {
       loading = false;
     }
