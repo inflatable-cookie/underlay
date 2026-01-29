@@ -174,17 +174,12 @@
     flex-shrink: 0;
   }
 
-  /* Spacer to push trailing to the right */
-  .inline-list-item__content::after {
-    content: "";
-    flex: 1;
-  }
-
   .inline-list-item__trailing {
     display: flex;
     align-items: center;
     gap: 0.375rem;
     flex-shrink: 0;
+    margin-left: auto;
     transition: margin-right 0.1s ease;
   }
 
