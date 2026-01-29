@@ -174,7 +174,7 @@
     align-items: stretch;
     width: 100%;
     border: var(--underlay-field-border-width, 1px) solid var(--underlay-color-border, rgba(148, 163, 184, 0.35));
-    border-radius: var(--underlay-radius-md, 0.375rem);
+    border-radius: var(--underlay-radius-sm, 0.35rem);
     background: var(--underlay-color-field-bg, rgba(148, 163, 184, 0.08));
     overflow: hidden;
   }
