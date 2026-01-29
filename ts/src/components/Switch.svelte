@@ -139,23 +139,22 @@
 
   .underlay-switch__thumb {
     position: absolute;
-    top: var(--underlay-switch-thumb-inset, var(--underlay-switch-thumb-inset, 2px));
-    left: var(--underlay-switch-thumb-inset, var(--underlay-switch-thumb-inset, 2px));
-    width: var(--underlay-switch-thumb-size, var(--underlay-switch-thumb-size, 0.9rem));
-    height: var(--underlay-switch-thumb-size, var(--underlay-switch-thumb-size, 0.9rem));
-    border-radius: var(--underlay-radius-pill, var(--underlay-radius-pill, 999px));
-    background: var(--underlay-color-text, var(--underlay-color-text, #e5e7eb));
-    transition: transform 0.15s ease-out;
+    top: 50%;
+    left: var(--underlay-switch-thumb-inset, 2px);
+    width: var(--underlay-switch-thumb-size, 0.9rem);
+    height: var(--underlay-switch-thumb-size, 0.9rem);
+    border-radius: var(--underlay-radius-pill, 999px);
+    background: var(--underlay-color-text, #e5e7eb);
+    transform: translateY(-50%);
+    transition: transform 0.15s ease-out, left 0.15s ease-out;
   }
 
   .underlay-switch--on .underlay-switch__track {
-    background: var(--underlay-color-primary, var(--underlay-color-primary, #2563eb));
+    background: var(--underlay-color-primary, #2563eb);
   }
 
   .underlay-switch--on .underlay-switch__thumb {
-    transform: translateX(
-      var(--underlay-switch-thumb-shift, var(--underlay-switch-thumb-shift, 0.9rem))
-    );
+    left: calc(100% - var(--underlay-switch-thumb-size, 0.9rem) - var(--underlay-switch-thumb-inset, 2px));
   }
 
   /* Legacy danger-off variant: red track and label when off */
