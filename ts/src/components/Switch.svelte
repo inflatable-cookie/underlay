@@ -140,9 +140,9 @@
   .underlay-switch__thumb {
     position: absolute;
     top: 50%;
-    left: var(--underlay-switch-thumb-inset, 2px);
-    width: var(--underlay-switch-thumb-size, 0.9rem);
-    height: var(--underlay-switch-thumb-size, 0.9rem);
+    left: var(--underlay-switch-thumb-inset, 3px);
+    width: var(--underlay-switch-thumb-size, 0.85rem);
+    height: var(--underlay-switch-thumb-size, 0.85rem);
     border-radius: var(--underlay-radius-pill, 999px);
     background: var(--underlay-color-text, #e5e7eb);
     transform: translateY(-50%);
@@ -154,7 +154,7 @@
   }
 
   .underlay-switch--on .underlay-switch__thumb {
-    left: calc(100% - var(--underlay-switch-thumb-size, 0.9rem) - var(--underlay-switch-thumb-inset, 2px));
+    left: calc(100% - var(--underlay-switch-thumb-size, 0.85rem) - var(--underlay-switch-thumb-inset, 3px));
   }
 
   /* Legacy danger-off variant: red track and label when off */
