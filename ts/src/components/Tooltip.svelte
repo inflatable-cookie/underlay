@@ -25,7 +25,7 @@
     showTrigger = true,
     triggerLabel = "ⓘ",
     side = "top",
-    sideOffset = 4,
+    sideOffset = 2,
     align = "center",
     alignOffset = 0,
     delayDuration = 500,

@@ -32,11 +32,6 @@
 <style>
   .container-grid-wrapper {
     container-type: inline-size;
-    margin-bottom: var(--grid-gap, 1.5rem);
-  }
-
-  .container-grid-wrapper:last-child {
-    margin-bottom: 0;
   }
 
   .container-grid {
