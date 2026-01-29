@@ -71,6 +71,18 @@
     color: var(--underlay-color-text, #e5e7eb);
   }
 
+  /* Underline variant - minimal with bottom border */
+  :global(.underlay-tabs-trigger--underline) {
+    border-radius: 0;
+    border-bottom: 2px solid transparent;
+    padding: 0.4rem 0.5rem;
+  }
+
+  :global(.underlay-tabs-trigger--underline[data-state="active"]) {
+    color: var(--underlay-color-text, #e5e7eb);
+    border-bottom-color: var(--underlay-color-primary, #3b82f6);
+  }
+
   /* Boxed variant - traditional tabs */
   :global(.underlay-tabs-trigger--boxed) {
     border-radius: 0.4rem 0.4rem 0 0;

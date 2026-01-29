@@ -183,6 +183,15 @@
     background: rgba(255, 255, 255, 0.03);
   }
 
+  /* Underline variant - minimal with bottom border */
+  :global(.underlay-tabs-list--underline) {
+    gap: 0;
+    padding: 0;
+    border: none;
+    background: transparent;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.25);
+  }
+
   /* Boxed variant - traditional tabs */
   :global(.underlay-tabs-list--boxed) {
     gap: 0.35rem;
