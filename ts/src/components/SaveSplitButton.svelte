@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Button from "./Button.svelte";
   import SplitButton from "./SplitButton.svelte";
 
   type SaveIntent = "save" | "save-close";
@@ -10,7 +11,6 @@
     type?: "button" | "submit";
     variant?: "primary" | "secondary";
     createLabel?: string;
-    createAndCloseLabel?: string;
     saveLabel?: string;
     saveAndCloseLabel?: string;
     disabled?: boolean;
@@ -23,24 +23,27 @@
     type = "submit",
     variant = "primary",
     createLabel = "Create",
-    createAndCloseLabel = "Create & close",
     saveLabel = "Save changes",
     saveAndCloseLabel = "Save & close",
     disabled = false,
     onclick = undefined
   }: Props = $props();
 
-  let options = $derived(
-    mode === "create"
-      ? [
-          { value: "save", label: createLabel },
-          { value: "save-close", label: createAndCloseLabel }
-        ]
-      : [
-          { value: "save", label: saveLabel },
-          { value: "save-close", label: saveAndCloseLabel }
-        ]
-  );
+  // In create mode, always use save-close intent (create and navigate away)
+  $effect(() => {
+    if (mode === "create") {
+      intent = "save-close";
+    }
+  });
+
+  let editOptions = $derived([
+    { value: "save", label: saveLabel },
+    { value: "save-close", label: saveAndCloseLabel }
+  ]);
 </script>
 
-<SplitButton {type} {variant} {options} {disabled} {onclick} bind:value={intent} />
+{#if mode === "create"}
+  <Button {type} {variant} {disabled} {onclick}>{createLabel}</Button>
+{:else}
+  <SplitButton {type} {variant} options={editOptions} {disabled} {onclick} bind:value={intent} />
+{/if}
