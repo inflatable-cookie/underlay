@@ -40,7 +40,7 @@ export { default as Skeleton } from "./Skeleton.svelte";
 export { default as PageLoading } from "./PageLoading.svelte";
 export { default as StatusBadge } from "./StatusBadge.svelte";
 export { default as DataTable } from "./DataTable.svelte";
-export { default as DetailsGrid } from "./DetailsGrid.svelte";
+export { default as DetailsCard } from "./DetailsCard.svelte";
 export { default as ContainerGrid } from "./ContainerGrid.svelte";
 export { default as DetailsItem } from "./DetailsItem.svelte";
 export { default as DetailsSection } from "./DetailsSection.svelte";

@@ -4,10 +4,24 @@
 
 /*
   Utility class for admin detail tab content.
-  Provides consistent vertical spacing between sections.
+  2-column grid that collapses to 1 column on narrow containers.
+  Components inside can use .span-full to span both columns.
 */
 .underlay-details-content {
-  display: flex;
-  flex-direction: column;
+  container-type: inline-size;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
   gap: var(--underlay-space-6, 1.5rem);
+  align-items: start;
+}
+
+@container (max-width: 700px) {
+  .underlay-details-content {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Utility class for items that should span both columns */
+.underlay-details-content > .span-full {
+  grid-column: 1 / -1;
 }
