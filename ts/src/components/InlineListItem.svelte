@@ -158,6 +158,7 @@
   }
 
   .inline-list-item__label {
+    flex: 1;
     min-width: 0;
     font-size: 0.9rem;
     font-weight: 500;
