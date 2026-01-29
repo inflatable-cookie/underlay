@@ -492,6 +492,85 @@ This recipe uses these atomic patterns:
 
 ---
 
+### Detail Page View Structure
+
+Detail pages should use `DetailsGrid` with `DetailsSection` to organize information. Always include a **Timestamps** section at the end showing creation and update times.
+
+**Components**:
+- `DetailsGrid` - Container for all detail sections
+- `DetailsSection` - Groups related fields with a legend
+- `DetailsItem` - Individual field display (label + value)
+- `TimeAgo` - Renders relative time with tooltip for exact time
+
+**Standard pattern**:
+
+```svelte
+<script lang="ts">
+  import {
+    DetailsGrid,
+    DetailsItem,
+    DetailsSection,
+    TimeAgo
+  } from "@decodelabs/underlay/components";
+</script>
+
+<div class="underlay-details-content">
+  <DetailsGrid>
+    <!-- Domain-specific sections -->
+    <DetailsSection legend="Details">
+      <DetailsItem label="Name" value={entity.name} />
+      <DetailsItem label="Slug" value={entity.slug} code />
+    </DetailsSection>
+
+    <!-- Timestamps section - always last -->
+    <DetailsSection legend="Timestamps">
+      <DetailsItem label="Created">
+        <TimeAgo date={entity.createdAt} />
+      </DetailsItem>
+      <DetailsItem label="Last Updated">
+        <TimeAgo date={entity.updatedAt} />
+      </DetailsItem>
+    </DetailsSection>
+  </DetailsGrid>
+</div>
+```
+
+**DetailsItem props**:
+- `label` - Field label (uppercase styling applied)
+- `value` - Plain text/number value
+- `code` - Display value as monospace code
+- `span` - Column span (`number` or `"full"` for entire row)
+- `muted` - Show as secondary/less important
+- `children` - Custom content snippet instead of plain value
+
+**Full-width grid**: For simpler detail views, make the grid single-column:
+
+```svelte
+<DetailsGrid class="my-details-grid">
+  ...
+</DetailsGrid>
+
+<style>
+  :global(.my-details-grid) {
+    grid-template-columns: 1fr !important;
+  }
+</style>
+```
+
+**Markdown content**: Use `ContentCard` with `markdown` prop for rich text fields:
+
+```svelte
+<ContentCard
+  title="Description"
+  value={entity.description}
+  markdown
+  emptyMessage="No description set."
+  maxHeight={0}
+/>
+```
+
+---
+
 ## Variations
 
 ### With Pagination

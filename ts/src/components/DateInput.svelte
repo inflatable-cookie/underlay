@@ -1,6 +1,8 @@
 <script lang="ts">
   import { untrack } from "svelte";
-  import TextInput from "./TextInput.svelte";
+  import TextInput, { type ValidationResult } from "./TextInput.svelte";
+
+  type ValidationStatus = "idle" | "validating" | "valid" | "invalid";
 
   interface Props {
     /** ISO date string (e.g., "2024-01-28") */
@@ -21,6 +23,18 @@
     id?: string;
     /** Additional CSS class */
     class?: string;
+    /** Async validation function */
+    validate?: (value: string, context?: unknown) => Promise<ValidationResult>;
+    /** Context to pass to validation function */
+    validationContext?: unknown;
+    /** Debounce delay for validation in ms (default: 300) */
+    validationDebounce?: number;
+    /** Show validation status indicator (default: true if validate provided) */
+    showValidationStatus?: boolean;
+    /** Validate on blur in addition to on change (default: true) */
+    validateOnBlur?: boolean;
+    /** Callback when validation state changes */
+    onvalidationchange?: (status: ValidationStatus, isValid: boolean) => void;
   }
 
   let {
@@ -32,7 +46,13 @@
     placeholder,
     disabled,
     id,
-    class: className
+    class: className,
+    validate,
+    validationContext,
+    validationDebounce,
+    showValidationStatus,
+    validateOnBlur,
+    onvalidationchange
   }: Props = $props();
 
   /**
@@ -136,4 +156,10 @@
   {disabled}
   {id}
   class={className}
+  {validate}
+  {validationContext}
+  {validationDebounce}
+  {showValidationStatus}
+  {validateOnBlur}
+  {onvalidationchange}
 />
