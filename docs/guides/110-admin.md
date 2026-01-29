@@ -796,6 +796,82 @@ Tab content should ONLY handle navigation and display - no forms or dialogs:
 </ListGrid>
 ```
 
+### Detail Page Header Pattern
+
+Detail pages show entity metadata in the PageHeader subtitle area:
+
+```svelte
+<PageHeader title={entity.name} backHref={backInfo.href} backLabel={backInfo.label}>
+  <p class="entity-meta">
+    <strong>ID:</strong> <code>{entity.id}</code>
+    <span class="header-separator">·</span>
+    <StatusBadge value={entity.isFree} trueLabel="Free" falseLabel="Restricted">
+      {#snippet trueIcon()}<LockOpen size={14} />{/snippet}
+      {#snippet falseIcon()}<Lock size={14} />{/snippet}
+    </StatusBadge>
+    <span class="header-separator">·</span>
+    <StatusBadge value={entity.isLive} trueLabel="Live" falseLabel="Draft" variant="danger">
+      {#snippet trueIcon()}<LockOpen size={14} />{/snippet}
+      {#snippet falseIcon()}<Lock size={14} />{/snippet}
+    </StatusBadge>
+  </p>
+</PageHeader>
+```
+
+**Important**: `StatusBadge` requires icon snippets for both states when you want icons displayed.
+
+### List Card Trailing Pills
+
+In ListCards, pills should only show **positive/notable states**. Don't show both states:
+
+```svelte
+{#snippet trailing()}
+  {#if item.isFree}
+    <Pill accent="#22c55e">Free</Pill>
+  {/if}
+  <!-- Do NOT show "Restricted" pill when isFree is false -->
+{/snippet}
+```
+
+### Markdown Content Fields
+
+For long-form markdown fields (descriptions, notes, etc.), use `ContentCard` instead of `DetailsItem`:
+
+```svelte
+<TabsContent value="details">
+  <ContainerGrid>
+    <DetailsGrid>
+      <!-- Short fields in DetailsGrid -->
+    </DetailsGrid>
+    <InlineListCard><!-- Related items --></InlineListCard>
+  </ContainerGrid>
+
+  <!-- Markdown content OUTSIDE ContainerGrid -->
+  <ContentCard
+    title="Description"
+    value={entity.description}
+    markdown
+    emptyMessage="No description set."
+    maxHeight={0}
+  />
+</TabsContent>
+```
+
+### Navigation Context with Tabs
+
+When a detail page has tabs, `sourceContext.href` must include the current tab so back navigation returns to the correct tab:
+
+```svelte
+let activeTab = $state("details");
+
+// Include tab in href when not on default tab
+const sourceContext = $derived(entity ? {
+  label: entity.name,
+  href: `/learning/entities/${entity.id}${activeTab !== "details" ? `?tab=${activeTab}` : ""}`,
+  type: "detail" as const
+} : null);
+```
+
 ### Common Mistakes to Avoid
 
 1. **Using dialogs for create/edit** - Always use dedicated routes
@@ -804,6 +880,10 @@ Tab content should ONLY handle navigation and display - no forms or dialogs:
 4. **Forgetting delete handling** - Parent page needs AlertDialog for list deletion
 5. **Missing hidden form for delete** - Edit pages need `<form id="entity-delete-form">`
 6. **Using onsubmit|preventDefault** - Use `onsubmit={(e) => { e.preventDefault(); ... }}`
+7. **StatusBadge without icon snippets** - Always provide `trueIcon` and `falseIcon` snippets
+8. **Showing both Pill states** - Only show pills for positive/notable states (e.g., "Free"), not negative defaults
+9. **sourceContext.href missing tab** - Include `?tab={activeTab}` for proper back navigation from child routes
+10. **Description in DetailsItem** - Use `ContentCard` with `markdown` prop for long-form content
 
 ## Key Points
 
