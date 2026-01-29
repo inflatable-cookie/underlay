@@ -16,6 +16,10 @@
       ) => { destroy?: () => void } | void)
     | null;
 
+  // Use permissive type for snippets to handle linked dependency type mismatches
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  type SnippetLike = Snippet | ((...args: any[]) => any);
+
   interface Props {
     title: string;
     subtitle?: string;
@@ -43,8 +47,8 @@
     autocomplete?: HTMLFormAttributes["autocomplete"];
 
     /** Content to render inside PageHeader (meta info like IDs) */
-    headerMeta?: Snippet;
-    children?: Snippet;
+    headerMeta?: SnippetLike;
+    children?: SnippetLike;
   }
 
   let {

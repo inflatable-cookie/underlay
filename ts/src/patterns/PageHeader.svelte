@@ -12,6 +12,8 @@
     breadcrumbs?: BreadcrumbItem[];
     /** Heading level: 1 (page), 2, 3 (section), 4 (subsection) */
     level?: PageHeaderLevel;
+    /** Optional count to display in parentheses after the title */
+    count?: number;
     backHref?: string | null;
     backLabel?: string;
     /** True when backHref/backLabel came from navigation context */
@@ -35,6 +37,7 @@
     subtitle,
     breadcrumbs,
     level = 1,
+    count,
     backHref = null,
     backLabel = "Back",
     backIsContextual = false,
@@ -86,7 +89,7 @@
   <div class="underlay-page-header__row">
     <div class="underlay-page-header__top">
       <svelte:element this={headingTag} class="underlay-page-header__title">
-        {title}{#if titleSuffix}<span class="underlay-page-header__title-suffix">{@render titleSuffix()}</span>{/if}
+        {title}{#if count !== undefined}<span class="underlay-page-header__count">({count})</span>{/if}{#if titleSuffix}<span class="underlay-page-header__title-suffix">{@render titleSuffix()}</span>{/if}
       </svelte:element>
 
       <div class="underlay-page-header__right">

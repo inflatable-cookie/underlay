@@ -4,6 +4,10 @@
   import type { SpaFormResult, SpaSubmitHandler, SpaNavigateFn } from "./spa-form-types";
   import FormShell from "./FormShell.svelte";
 
+  // Use permissive type for snippets to handle linked dependency type mismatches
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  type SnippetLike = Snippet | ((...args: any[]) => any);
+
   interface Props {
     title: string;
     subtitle?: string;
@@ -23,8 +27,8 @@
     prepare?: ((formData: FormData) => void) | null;
     formClass?: string;
     showTitle?: boolean;
-    headerMeta?: Snippet;
-    children?: Snippet;
+    headerMeta?: SnippetLike;
+    children?: SnippetLike;
     /** Handler for form submission - required for SPA mode */
     onSubmit: SpaSubmitHandler;
     /** Optional callback when submission completes */

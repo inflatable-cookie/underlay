@@ -2,7 +2,7 @@
   import type { SelectableRelation } from "./types.js";
   import { useRelationSelector } from "./context.svelte.js";
   import RelationPickerDialog from "../RelationPickerDialog.svelte";
-  import type { PickerSection, PickableItem } from "../RelationPickerDialog.svelte";
+  import type { PickerSection, PickableItem } from "../relation-picker-types.js";
 
   const ctx = useRelationSelector<SelectableRelation>();
 

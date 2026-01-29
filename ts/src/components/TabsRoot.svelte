@@ -23,10 +23,12 @@
      * Example: historyKey="tab" stores as ?tab=details
      */
     historyKey?: string;
+    /** Additional CSS classes */
+    class?: string;
     children?: Snippet;
   }
 
-  let { value = $bindable(), variant = "pills", size = "default", historyKey, children }: Props =
+  let { value = $bindable(), variant = "pills", size = "default", historyKey, class: className, children }: Props =
     $props();
 
   // Collapsed state (set by TabsList when in collapsible mode)
@@ -89,6 +91,6 @@
   });
 </script>
 
-<BitsTabs.Root bind:value class={`underlay-tabs underlay-tabs--${variant} underlay-tabs--${size} ${isCollapsed ? "underlay-tabs--collapsed" : ""}`}>
+<BitsTabs.Root bind:value class={`underlay-tabs underlay-tabs--${variant} underlay-tabs--${size} ${isCollapsed ? "underlay-tabs--collapsed" : ""} ${className ?? ""}`}>
   {@render children?.()}
 </BitsTabs.Root>

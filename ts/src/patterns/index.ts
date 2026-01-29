@@ -64,11 +64,8 @@ export {
 } from "./RelationSelector/index.js";
 
 // RelationPickerDialog - item picker dialog (base component for relation selection)
-export {
-  default as RelationPickerDialog,
-  type PickableItem,
-  type PickerSection
-} from "./RelationPickerDialog.svelte";
+export { default as RelationPickerDialog } from "./RelationPickerDialog.svelte";
+export type { PickableItem, PickerSection } from "./relation-picker-types.js";
 
 // Explicit export avoids dev-time prebundle staleness.
 export { useToasts } from "./useToasts";
