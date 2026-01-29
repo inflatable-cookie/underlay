@@ -303,6 +303,98 @@ export function createAdminClient(
 
 Admin detail pages for entities (pathways, modules, etc.) typically use a tabbed interface to organize different views and related data. This section documents the standard patterns.
 
+### List Display Patterns
+
+There are two distinct patterns for displaying lists of related entities. Choosing the wrong one creates confusion and inconsistent UX.
+
+#### Pattern 1: Tab Content Lists (Full ListCard Pattern)
+
+**When to use**: Displaying lists of entities in their own tab (e.g., "Sections" tab, "Topics" tab, "Variants" tab).
+
+**Components**: `PageHeader` (level=3) + `FilterBar` + `ListGrid` + entity-specific `*ListCard`
+
+**Structure**:
+```svelte
+<PageHeader title="Sections" level={3}>
+  {#snippet actions()}
+    <Button variant="primary" onclick={addItem}>
+      <Plus size={16} />
+      Add Section
+    </Button>
+  {/snippet}
+</PageHeader>
+
+{#if items.length > 0}
+  <FilterBar title="Filter">
+    <Field label="Search" forId="search">
+      <TextInput id="search" bind:value={searchFilter} search />
+    </Field>
+  </FilterBar>
+{/if}
+
+{#if filteredItems.length === 0}
+  <p class="empty">No items.</p>
+{:else}
+  <ListGrid minItemWidth={26}>
+    {#each filteredItems as item}
+      <EntityListCard {item} {sourceContext} />
+    {/each}
+  </ListGrid>
+{/if}
+```
+
+**File organization**:
+- Create `EntityListCard.svelte` in `$lib/cards/` (e.g., `SectionListCard.svelte`, `TopicListCard.svelte`)
+- Create `EntityTabContent.svelte` in the route folder (e.g., `SectionsTabContent.svelte`)
+- Export the ListCard from `$lib/cards/index.ts`
+
+#### Pattern 2: Detail Page Auxiliary Lists (InlineListCard)
+
+**When to use**: Displaying small, secondary lists alongside other detail content (e.g., showing associated modules on a Bundle's Details tab, showing aliases on a Module's Details tab).
+
+**Components**: `InlineListCard` + `InlineListItem` (often wrapped in `ContainerGrid` with other content)
+
+**Structure**:
+```svelte
+<ContainerGrid>
+  <DetailsGrid>
+    <!-- Main entity details -->
+  </DetailsGrid>
+
+  <InlineListCard
+    title="Related Items"
+    emptyMessage="No items."
+    hasItems={items.length > 0}
+  >
+    {#snippet action()}
+      <IconButton label="Add" onclick={addItem}>
+        <Plus size={16} />
+      </IconButton>
+    {/snippet}
+
+    {#each items as item}
+      <InlineListItem label={item.name} onclick={() => edit(item)}>
+        {#snippet trailing()}
+          <Pill>{item.status}</Pill>
+        {/snippet}
+      </InlineListItem>
+    {/each}
+  </InlineListCard>
+</ContainerGrid>
+```
+
+**When InlineListCard is appropriate**:
+- The list is auxiliary/secondary information (not the main focus of a tab)
+- Items are typically edited via dialog rather than dedicated pages
+- The list appears alongside DetailsGrid or other components
+- Expected item count is small (< 10-15 items)
+
+**When InlineListCard is NOT appropriate**:
+- The list is the primary content of a tab
+- Items have their own detail/edit pages
+- The list needs filtering/search
+- Expected item count is large
+
 ### Page Structure
 
 A typical detail page has:
