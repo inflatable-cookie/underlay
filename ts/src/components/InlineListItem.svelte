@@ -11,7 +11,9 @@
     onclick?: ((event: MouseEvent) => void) | null;
     /** Optional accent color for the indicator dot */
     accent?: string | null;
-    /** Trailing content (badges, pills, etc.) */
+    /** Badge content rendered immediately after the label */
+    badge?: Snippet;
+    /** Trailing content (badges, pills, etc.) - pushed to the right */
     trailing?: Snippet;
     /** Whether to show delete button on hover */
     showDelete?: boolean;
@@ -24,6 +26,7 @@
     href = null,
     onclick = null,
     accent = null,
+    badge,
     trailing,
     showDelete = false,
     ondelete
@@ -57,6 +60,11 @@
         style:--inline-list-item-accent={accent}
       ></span>
       <span class="inline-list-item__label">{label}</span>
+      {#if badge}
+        <span class="inline-list-item__badge">
+          {@render badge()}
+        </span>
+      {/if}
       {#if trailing}
         <span class="inline-list-item__trailing">
           {@render trailing()}
@@ -77,6 +85,11 @@
         style:--inline-list-item-accent={accent}
       ></span>
       <span class="inline-list-item__label">{label}</span>
+      {#if badge}
+        <span class="inline-list-item__badge">
+          {@render badge()}
+        </span>
+      {/if}
       {#if trailing}
         <span class="inline-list-item__trailing">
           {@render trailing()}
@@ -145,7 +158,6 @@
   }
 
   .inline-list-item__label {
-    flex: 1;
     min-width: 0;
     font-size: 0.9rem;
     font-weight: 500;
@@ -153,6 +165,19 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  .inline-list-item__badge {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    flex-shrink: 0;
+  }
+
+  /* Spacer to push trailing to the right */
+  .inline-list-item__content::after {
+    content: "";
+    flex: 1;
   }
 
   .inline-list-item__trailing {
