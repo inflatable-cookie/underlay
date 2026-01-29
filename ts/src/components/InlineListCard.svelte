@@ -47,6 +47,8 @@
 <style>
   .inline-list-card {
     max-width: 65ch;
+    min-width: 0;
+    overflow: hidden;
     padding: 1rem 1.25rem;
     background: var(--underlay-color-surface-muted, rgba(255, 255, 255, 0.02));
     border: 1px solid var(--underlay-color-border-subtle, rgba(148, 163, 184, 0.2));

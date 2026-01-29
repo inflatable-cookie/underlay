@@ -26,6 +26,7 @@
 <style>
   /* Base styles */
   :global(.underlay-tabs-content) {
+    container-type: inline-size;
     margin-top: 0.75rem;
   }
 

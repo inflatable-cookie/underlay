@@ -8,14 +8,13 @@
   Components inside can use .span-full to span both columns.
 */
 .underlay-details-content {
-  container-type: inline-size;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: var(--underlay-space-6, 1.5rem);
   align-items: start;
 }
 
-@container (max-width: 700px) {
+@container (max-width: 850px) {
   .underlay-details-content {
     grid-template-columns: 1fr;
   }

@@ -27,4 +27,9 @@
     border: 1px solid var(--underlay-color-border-subtle, rgba(148, 163, 184, 0.2));
     border-radius: var(--underlay-radius-lg, 0.75rem);
   }
+
+  /* Span both columns when alone in a 2-col grid row */
+  .details-card:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
 </style>

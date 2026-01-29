@@ -117,6 +117,7 @@
     align-items: center;
     gap: 0.5rem;
     margin: 0;
+    min-width: 0;
     border-radius: var(--underlay-radius-sm, 0.375rem);
     transition: background-color 0.1s ease;
   }
