@@ -8,6 +8,8 @@
     breakpoint?: number;
     /** Gap between grid items (default: 1.5rem) */
     gap?: string;
+    /** Whether items should stretch to fill the row height (default: false) */
+    stretch?: boolean;
     /** Additional class for the container */
     class?: string;
   }
@@ -16,11 +18,12 @@
     children,
     breakpoint = 700,
     gap = "1.5rem",
+    stretch = false,
     class: className = ""
   }: Props = $props();
 </script>
 
-<div class="container-grid-wrapper {className}" style="--grid-gap: {gap}; --grid-breakpoint: {breakpoint}px;">
+<div class="container-grid-wrapper {className}" class:container-grid-wrapper--stretch={stretch} style="--grid-gap: {gap}; --grid-breakpoint: {breakpoint}px;">
   <div class="container-grid">
     {@render children()}
   </div>
@@ -36,6 +39,10 @@
     grid-template-columns: 1fr 1fr;
     gap: var(--grid-gap, 1.5rem);
     align-items: start;
+  }
+
+  .container-grid-wrapper--stretch .container-grid {
+    align-items: stretch;
   }
 
   /* Remove default margins/max-width from components when in grid */
