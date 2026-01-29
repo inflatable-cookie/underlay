@@ -1433,6 +1433,61 @@ The component uses these CSS classes:
 
 Items have a subtle hover effect for better scannability.
 
+### ContainerGrid
+
+A responsive two-column grid layout that uses CSS container queries to collapse to a single column when space is limited. Unlike media queries which respond to viewport width, container queries respond to the actual container width, making this component work correctly inside tabs, sidebars, or any constrained layout.
+
+```svelte
+<script>
+  import { ContainerGrid, DetailsGrid, DetailsItem } from "@decodelabs/underlay/components";
+  import { InlineListCard, InlineListItem } from "@decodelabs/underlay/components";
+</script>
+
+<!-- Basic usage: DetailsGrid alongside an InlineListCard -->
+<ContainerGrid>
+  <DetailsGrid>
+    <DetailsItem label="Name" value={item.name} />
+    <DetailsItem label="Status" value={item.status} />
+  </DetailsGrid>
+
+  <InlineListCard title="Related Items" hasItems={items.length > 0}>
+    {#each items as item}
+      <InlineListItem label={item.name} href={item.href} />
+    {/each}
+  </InlineListCard>
+</ContainerGrid>
+
+<!-- With custom gap -->
+<ContainerGrid gap="2rem">
+  <div>Left column</div>
+  <div>Right column</div>
+</ContainerGrid>
+
+<!-- With additional class for margins -->
+<ContainerGrid class="my-section">
+  <div>Content</div>
+  <div>Content</div>
+</ContainerGrid>
+```
+
+**Props:**
+- `breakpoint` - Container width at which to collapse to single column (default: `700`)
+- `gap` - Gap between grid items (default: `"1.5rem"`)
+- `class` - Additional CSS class for the wrapper (useful for margins)
+
+**Behavior:**
+- At container widths above `breakpoint`, displays as a two-column grid
+- At container widths at or below `breakpoint`, collapses to single column
+- Automatically removes `margin-top` and `max-width` from nested `DetailsGrid` and `InlineListCard` components
+
+**Why Container Queries?**
+
+Container queries allow the grid to respond to its own available space rather than the viewport width. This is essential for components that may be rendered inside:
+- Tab panels that don't span the full viewport
+- Sidebars or split layouts
+- Modal dialogs
+- Any constrained container
+
 ---
 
 ## Pattern Components
