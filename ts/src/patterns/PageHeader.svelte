@@ -298,6 +298,10 @@
   }
 
   .underlay-page-header__meta :global(p) {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    flex-wrap: wrap;
     margin: 0.15rem 0;
   }
 
