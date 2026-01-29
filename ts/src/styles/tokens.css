@@ -115,11 +115,10 @@
   --underlay-list-card-media-size-sm: 64px;
 
   /* Switch */
-  --underlay-switch-thumb-inset: 2px;
+  --underlay-switch-thumb-inset: 3px;
   --underlay-switch-track-width: 2.25rem;
   --underlay-switch-track-height: 1.25rem;
-  --underlay-switch-thumb-size: 0.9rem;
-  --underlay-switch-thumb-shift: 0.9rem;
+  --underlay-switch-thumb-size: 0.85rem;
 
   /* Focus */
   --underlay-focus-ring-width: 2px;
