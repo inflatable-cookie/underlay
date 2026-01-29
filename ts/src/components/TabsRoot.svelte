@@ -6,7 +6,7 @@
   import { goto } from "$app/navigation";
   import { page } from "$app/stores";
 
-  export type TabsVariant = "pills" | "boxed" | "underline";
+  export type TabsVariant = "pills" | "boxed" | "underline" | "plain";
   export type TabsSize = "default" | "sm";
 
   interface Props {
