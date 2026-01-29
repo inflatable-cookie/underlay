@@ -765,12 +765,456 @@ fn main() {
 
 ---
 
+## Frontend Implementation (TypeScript/Svelte)
+
+Underlay provides TypeScript components for editing and rendering Nightfire content in Svelte applications.
+
+### Installation
+
+Import Nightfire components from `@decodelabs/underlay/nightfire`:
+
+```typescript
+import {
+  NightfireEditor,
+  NightfireRenderer,
+  type NightfireValue,
+  configureNightfireStrategies,
+  createNightfireStrategiesContext,
+  useNightfireStrategies
+} from "@decodelabs/underlay/nightfire";
+```
+
+---
+
+## Strategies: Lazy Loading and Caching
+
+Nightfire strategies define what blocks are allowed in each schema. Rather than loading strategies on every page, Underlay provides a lazy-loading system that:
+
+1. **Loads on demand** - Strategies are only fetched when a `NightfireEditor` is rendered
+2. **Caches automatically** - Once loaded, strategies are cached for 1 hour
+3. **Deduplicates requests** - Multiple concurrent editors share a single fetch request
+4. **Supports invalidation** - Cache can be manually cleared when strategies change
+
+### Configuration
+
+Configure the strategies fetcher once in your app's root layout:
+
+```svelte
+<!-- src/routes/+layout.svelte -->
+<script lang="ts">
+  import {
+    configureNightfireStrategies,
+    createNightfireStrategiesContext
+  } from "@decodelabs/underlay/nightfire";
+  import { nightfireCommands } from "@my-app/api";
+  import { auth } from "$lib/stores/auth";
+
+  // Configure how strategies are fetched (called once at app startup)
+  configureNightfireStrategies({
+    fetchStrategies: async () => {
+      const token = auth.getToken();
+      if (!token) return [];
+      return nightfireCommands.listStrategies(fetch, token, { includeOptions: true });
+    },
+    cacheTtl: 60 * 60 * 1000  // Optional: 1 hour (default)
+  });
+
+  // Create the context (makes strategies available to child components)
+  createNightfireStrategiesContext();
+
+  let { children } = $props();
+</script>
+
+{@render children()}
+```
+
+### Configuration Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `fetchStrategies` | `() => Promise<NightfireStrategy[]>` | **Required** | Async function that fetches strategies from your API |
+| `cacheTtl` | `number` | `3600000` (1 hour) | Cache time-to-live in milliseconds |
+
+### Strategy Types
+
+```typescript
+interface NightfireStrategy {
+  id: string;                           // Schema ID (e.g., "myapp:content/body@1")
+  cardinality: NightfireStrategyCardinality;
+  allowedTypes: string[];               // Explicit block type whitelist
+  allowedCategories: string[];          // Category-based whitelist
+  defaultType: string;                  // Default block type for new blocks
+  blockOptions?: NightfireBlockOption[]; // Pre-computed block options for UI
+}
+
+interface NightfireStrategyCardinality {
+  mode: "single" | "multi";
+  minBlocks?: number;
+  maxBlocks?: number | null;
+}
+
+interface NightfireBlockOption {
+  type: string;
+  label: string;
+  category?: string;
+}
+```
+
+---
+
+## NightfireEditor Component
+
+The `NightfireEditor` component provides a block-based editor for Nightfire content. It automatically loads strategies from context and handles normalisation.
+
+### Basic Usage
+
+```svelte
+<script lang="ts">
+  import { NightfireEditor, type NightfireValue } from "@decodelabs/underlay/nightfire";
+
+  let description = $state<NightfireValue>({ schema: "myapp:content/description@1" });
+  let prepare = $state<(formData: FormData) => void>(() => {});
+</script>
+
+<form>
+  <NightfireEditor
+    name="description"
+    schema="myapp:content/description@1"
+    bind:value={description}
+    bind:prepare
+  />
+</form>
+```
+
+### Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `name` | `string` | **Required** | Form field name for the hidden input |
+| `schema` | `string` | **Required** | Strategy ID to use (e.g., `"myapp:content/body@1"`) |
+| `value` | `NightfireValue` | **Required** | Bindable value containing the content |
+| `prepare` | `(formData: FormData) => void` | **Required** | Bindable function to serialize content before form submission |
+| `required` | `boolean` | `false` | Whether the field is required |
+| `disabled` | `boolean` | `false` | Whether the editor is disabled |
+| `modeOverride` | `"single" \| "multi"` | `null` | Override the strategy's cardinality mode |
+| `blockOptionsOverride` | `NightfireBlockOption[]` | `null` | Override the available block types |
+| `onSchemaMismatch` | `(info: SchemaMismatchInfo) => void` | `null` | Callback when loaded content has a different schema |
+
+### Form Integration
+
+The `prepare` function must be called before form submission to serialize the Nightfire content:
+
+```svelte
+<script lang="ts">
+  import { NightfireEditor, type NightfireValue } from "@decodelabs/underlay/nightfire";
+
+  let body = $state<NightfireValue>({ schema: "myapp:content/body@1" });
+  let bodyPrepare = $state<(formData: FormData) => void>(() => {});
+
+  async function handleSubmit(formData: FormData) {
+    // Call prepare to serialize Nightfire content to the form
+    bodyPrepare(formData);
+
+    // Now formData contains the serialized JSON
+    const bodyJson = formData.get("body");
+    // ...submit to API
+  }
+</script>
+
+<form onsubmit={handleSubmit}>
+  <NightfireEditor
+    name="body"
+    schema="myapp:content/body@1"
+    bind:value={body}
+    bind:prepare={bodyPrepare}
+  />
+  <button type="submit">Save</button>
+</form>
+```
+
+### Multiple Editors
+
+When a form has multiple Nightfire fields, combine the prepare functions:
+
+```svelte
+<script lang="ts">
+  let description = $state<NightfireValue>({ schema: "myapp:content/markup@1" });
+  let body = $state<NightfireValue>({ schema: "myapp:content/body@1" });
+
+  let prepareDescription = $state<(formData: FormData) => void>(() => {});
+  let prepareBody = $state<(formData: FormData) => void>(() => {});
+
+  // Combined prepare function
+  let prepare = $derived(() => (formData: FormData) => {
+    prepareDescription(formData);
+    prepareBody(formData);
+  });
+</script>
+
+<NightfireEditor
+  name="description"
+  schema="myapp:content/markup@1"
+  bind:value={description}
+  bind:prepare={prepareDescription}
+/>
+
+<NightfireEditor
+  name="body"
+  schema="myapp:content/body@1"
+  bind:value={body}
+  bind:prepare={prepareBody}
+/>
+```
+
+---
+
+## Schema Normalisation
+
+When editing existing content, the stored schema may differ from the expected schema (e.g., after a schema version upgrade). `NightfireEditor` handles this automatically:
+
+1. Loads the content with its original schema
+2. Coerces it to match the strategy's cardinality (single vs multi)
+3. Updates the schema to the expected version
+4. Optionally notifies via the `onSchemaMismatch` callback
+
+### Schema Mismatch Callback
+
+```svelte
+<script lang="ts">
+  import { NightfireEditor, type NightfireValue, type SchemaMismatchInfo } from "@decodelabs/underlay/nightfire";
+
+  let description = $state<NightfireValue>({ schema: "myapp:content/markup@1" });
+  let schemaMismatch = $state<SchemaMismatchInfo | null>(null);
+
+  function handleSchemaMismatch(info: SchemaMismatchInfo) {
+    schemaMismatch = info;
+    console.log(`Schema mismatch: ${info.actualSchema} → ${info.expectedSchema}`);
+  }
+</script>
+
+{#if schemaMismatch}
+  <p class="warning">
+    This content uses legacy schema
+    <code>{schemaMismatch.actualSchema ?? "unspecified"}</code>
+    and will be saved using <code>{schemaMismatch.expectedSchema}</code>.
+  </p>
+{/if}
+
+<NightfireEditor
+  name="description"
+  schema="myapp:content/markup@1"
+  bind:value={description}
+  bind:prepare={prepare}
+  onSchemaMismatch={handleSchemaMismatch}
+/>
+```
+
+### SchemaMismatchInfo Type
+
+```typescript
+interface SchemaMismatchInfo {
+  actualSchema: string | null;   // The schema found in the content (null if missing)
+  expectedSchema: string;        // The schema specified in the editor's props
+}
+```
+
+---
+
+## Manual Strategy Access
+
+For advanced use cases, you can access the strategies store directly:
+
+```svelte
+<script lang="ts">
+  import { useNightfireStrategies } from "@decodelabs/underlay/nightfire";
+  import { onMount } from "svelte";
+
+  const strategiesStore = useNightfireStrategies();
+
+  onMount(async () => {
+    if (strategiesStore) {
+      // Ensure strategies are loaded
+      await strategiesStore.ensure();
+
+      // Find a specific strategy
+      const bodyStrategy = strategiesStore.findById("myapp:content/body@1");
+      console.log("Body strategy:", bodyStrategy);
+    }
+  });
+</script>
+```
+
+### Store API
+
+```typescript
+interface NightfireStrategiesStore {
+  strategies: Readable<NightfireStrategy[]>;  // Svelte store of all strategies
+  loading: Readable<boolean>;                  // Whether currently fetching
+  error: Readable<string | null>;              // Last error message
+
+  ensure(): Promise<NightfireStrategy[]>;      // Load if not cached, return strategies
+  refresh(): Promise<NightfireStrategy[]>;     // Force reload, ignoring cache
+  invalidate(): void;                          // Clear cache (next ensure() will fetch)
+  findById(id: string): NightfireStrategy | null;  // Find strategy by schema ID
+}
+```
+
+### Cache Invalidation
+
+When strategies are updated (e.g., via an admin interface), invalidate the cache:
+
+```typescript
+const strategiesStore = useNightfireStrategies();
+
+async function handleStrategyUpdated() {
+  // Invalidate cache so next editor load fetches fresh data
+  strategiesStore?.invalidate();
+
+  // Or force immediate refresh
+  await strategiesStore?.refresh();
+}
+```
+
+---
+
+## NightfireRenderer Component
+
+For read-only display of Nightfire content:
+
+```svelte
+<script lang="ts">
+  import { NightfireRenderer, type NightfireValue } from "@decodelabs/underlay/nightfire";
+
+  interface Props {
+    content: NightfireValue;
+  }
+
+  let { content }: Props = $props();
+</script>
+
+<NightfireRenderer value={content} />
+```
+
+---
+
+## NightfireValue Utilities
+
+### Checking for Empty Content
+
+```typescript
+import { isEmptyNightfire, type NightfireValue } from "@decodelabs/underlay/nightfire";
+
+const value: NightfireValue = { schema: "myapp:content/body@1" };
+
+if (isEmptyNightfire(value)) {
+  console.log("No content");
+}
+```
+
+### Normalising Values
+
+```typescript
+import { normaliseNightfireValue, type NightfireValue } from "@decodelabs/underlay/nightfire";
+
+// Normalise to a specific schema, coercing cardinality as needed
+const normalised = normaliseNightfireValue(
+  existingValue,
+  "myapp:content/body@1",
+  "multi"  // Target cardinality
+);
+```
+
+### Preparing for Save
+
+```typescript
+import { prepareNightfireForSave, type NightfireValue } from "@decodelabs/underlay/nightfire";
+
+// Strips transient properties, recomputes hashes
+const prepared = prepareNightfireForSave(value);
+```
+
+### Writing to FormData
+
+```typescript
+import { writeNightfireToFormData, type NightfireValue } from "@decodelabs/underlay/nightfire";
+
+const formData = new FormData();
+writeNightfireToFormData(formData, "body", value);
+```
+
+---
+
+## Complete Frontend Example
+
+Here's a complete example of a form with Nightfire content:
+
+```svelte
+<!-- ArticleForm.svelte -->
+<script lang="ts">
+  import { Field } from "@decodelabs/underlay/components";
+  import { NightfireEditor, type NightfireValue } from "@decodelabs/underlay/nightfire";
+
+  interface Props {
+    values: { title: string; body: NightfireValue };
+    errors?: Record<string, string> | null;
+    onSubmit: (data: { title: string; body: NightfireValue }) => Promise<void>;
+  }
+
+  let { values, errors = null, onSubmit }: Props = $props();
+
+  let title = $state(values.title);
+  let body = $state<NightfireValue>(values.body);
+  let bodyPrepare = $state<(formData: FormData) => void>(() => {});
+  let submitting = $state(false);
+
+  async function handleSubmit(e: SubmitEvent) {
+    e.preventDefault();
+    submitting = true;
+
+    try {
+      const formData = new FormData(e.target as HTMLFormElement);
+      bodyPrepare(formData);
+
+      const bodyJson = formData.get("body") as string;
+      const bodyValue = JSON.parse(bodyJson) as NightfireValue;
+
+      await onSubmit({ title, body: bodyValue });
+    } finally {
+      submitting = false;
+    }
+  }
+</script>
+
+<form onsubmit={handleSubmit}>
+  <Field label="Title" error={errors?.title} required>
+    <input type="text" name="title" bind:value={title} required />
+  </Field>
+
+  <Field label="Body" error={errors?.body} required>
+    <NightfireEditor
+      name="body"
+      schema="myapp:content/body@1"
+      bind:value={body}
+      bind:prepare={bodyPrepare}
+      required
+    />
+  </Field>
+
+  <button type="submit" disabled={submitting}>
+    {submitting ? "Saving..." : "Save"}
+  </button>
+</form>
+```
+
+---
+
 ## See Also
 
 **Related Guides:**
 - **[070-api-handlers.md](./070-api-handlers.md)** - Using Nightfire in API handlers
 - **[075-validation.md](./075-validation.md)** - Request validation patterns
 - **[050-database.md](./050-database.md)** - Storing JSONB content
+- **[090-ui-kit.md](./090-ui-kit.md)** - UI component library
 
 **Crate Documentation:**
 - `underlay-nightfire/README.md` - Quick reference

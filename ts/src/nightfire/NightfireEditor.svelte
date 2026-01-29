@@ -1,5 +1,7 @@
 <script lang="ts">
+  import { onMount } from "svelte";
   import type { NightfireValue } from "./index";
+  import { normaliseNightfireValue } from "./utils";
   import NightfireBlockEditor from "./NightfireBlockEditor.svelte";
   import NightfireFieldError from "./NightfireFieldError.svelte";
   import {
@@ -10,6 +12,11 @@
     isEmptyNightfire,
     writeNightfireToFormData
   } from "./utils";
+  import {
+    useNightfireStrategies,
+    type NightfireStrategy,
+    type NightfireBlockOption
+  } from "./strategies";
 
   /**
    * Field-level Nightfire editor.
@@ -18,6 +25,8 @@
    * - Delegates single-block editing to NightfireBlockEditor.
    * - Provides an optional `prepare` hook so forms can serialise the
    *   current value into FormData just before submit.
+   * - Automatically loads and applies Nightfire strategies when configured.
+   * - Handles value normalisation internally.
    */
 
   type NightfireFieldMode = "single" | "multi";
@@ -28,12 +37,18 @@
     category?: string;
   }
 
+  export interface SchemaMismatchInfo {
+    actualSchema: string | null;
+    expectedSchema: string;
+  }
+
   interface Props {
     name: string;
     schema: string;
     value: NightfireValue;
     /**
      * Optional overrides derived from a Nightfire strategy.
+     * @deprecated Use automatic strategy loading via configureNightfireStrategies() instead.
      *
      * - `modeOverride` lets the host control single vs multi editing
      *   based on strategy cardinality.
@@ -66,6 +81,11 @@
      * `FormData[name]` just before submit.
      */
     prepare?: (formData: FormData) => void;
+    /**
+     * Callback invoked when a schema mismatch is detected during normalisation.
+     * This allows the parent to display a warning to the user.
+     */
+    onSchemaMismatch?: (info: SchemaMismatchInfo) => void;
   }
 
   let {
@@ -77,8 +97,84 @@
     blockOptions = null,
     required = false,
     onChange = () => {},
-    prepare = $bindable(() => {})
+    prepare = $bindable(() => {}),
+    onSchemaMismatch
   }: Props = $props();
+
+  // Strategy loading
+  const strategiesStore = useNightfireStrategies();
+  let strategy = $state<NightfireStrategy | null>(null);
+  let strategiesLoading = $state(false);
+  let hasNormalised = $state(false);
+
+  // Load strategy on mount
+  onMount(() => {
+    if (strategiesStore) {
+      strategiesLoading = true;
+      strategiesStore.ensure().then(() => {
+        strategy = strategiesStore.findById(schema);
+        strategiesLoading = false;
+      });
+    }
+  });
+
+  // Derive effective overrides from strategy (if no manual overrides provided)
+  const effectiveModeOverride = $derived(
+    modeOverride ?? strategy?.cardinality.mode ?? null
+  );
+  const effectiveDefaultTypeOverride = $derived(
+    defaultTypeOverride ?? strategy?.defaultType ?? null
+  );
+  const effectiveBlockOptions = $derived(
+    blockOptions ?? (strategy?.blockOptions as NightfireBlockOptionInput[] | null) ?? null
+  );
+
+  // Normalise value when strategy loads (only once)
+  $effect(() => {
+    if (hasNormalised || !strategy || strategiesLoading) return;
+
+    // Normalise the value
+    const normalised = normaliseNightfireValue(value, schema);
+
+    // Check for schema mismatch
+    const actualSchema = (() => {
+      if (!value || typeof value !== "object") return null;
+      const s = (value as Record<string, unknown>).schema;
+      return typeof s === "string" ? s : null;
+    })();
+
+    if (actualSchema && actualSchema !== schema) {
+      onSchemaMismatch?.({ actualSchema, expectedSchema: schema });
+    }
+
+    // Coerce single vs multi shape based on strategy cardinality
+    const mode = strategy.cardinality.mode;
+    let coerced: NightfireValue = { ...normalised, schema } as NightfireValue;
+    const record = coerced as unknown as Record<string, unknown>;
+    const single = record.block ?? null;
+    const multi = Array.isArray(record.blocks) ? (record.blocks as unknown[]) : undefined;
+
+    if (mode === "single") {
+      if (!single && multi && multi.length > 0) {
+        coerced = { ...coerced, block: multi[0], blocks: undefined } as NightfireValue;
+      } else if (single && multi) {
+        coerced = { ...coerced, blocks: undefined } as NightfireValue;
+      }
+    } else {
+      if (!multi && single) {
+        coerced = { ...coerced, block: undefined, blocks: [single] } as NightfireValue;
+      } else if (multi && single) {
+        coerced = { ...coerced, block: undefined } as NightfireValue;
+      }
+    }
+
+    // Only update if something changed
+    if (JSON.stringify(coerced) !== JSON.stringify(value)) {
+      value = coerced;
+    }
+
+    hasNormalised = true;
+  });
 
   /**
    * When switching block types for the summary schema, we apply
@@ -187,13 +283,13 @@
 
   const effectiveDef = $derived({
     schema: editorSchema,
-    mode: (modeOverride ?? registryDef.mode) as NightfireFieldMode,
-    defaultType: defaultTypeOverride ?? registryDef.defaultType ?? "markdown"
+    mode: (effectiveModeOverride ?? registryDef.mode) as NightfireFieldMode,
+    defaultType: effectiveDefaultTypeOverride ?? registryDef.defaultType ?? "markdown"
   });
 
   const baseTypeOptions = $derived(
-    blockOptions && blockOptions.length > 0
-      ? blockOptions
+    effectiveBlockOptions && effectiveBlockOptions.length > 0
+      ? effectiveBlockOptions
       : getBlockTypeOptionsForSchema(editorSchema)
   );
 
@@ -242,8 +338,8 @@
   }
 
   const groupedOptions = $derived(
-    blockOptions && blockOptions.some((o) => !!o.category)
-      ? buildGroupedOptions(blockOptions)
+    effectiveBlockOptions && effectiveBlockOptions.some((o) => !!o.category)
+      ? buildGroupedOptions(effectiveBlockOptions)
       : null
   );
 

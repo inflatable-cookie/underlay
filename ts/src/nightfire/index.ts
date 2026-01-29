@@ -27,3 +27,22 @@ export { registerBlockRenderer, getBlockRenderer } from "./render-registry";
 export { registerBlockValidator } from "./validator-registry";
 
 export type { FieldMode, SchemaDefinition, BlockTypeOption } from "./editor-registry";
+
+// Nightfire strategies (lazy loading and caching)
+export {
+  configureNightfireStrategies,
+  createNightfireStrategiesContext,
+  useNightfireStrategies,
+  getStrategy
+} from "./strategies";
+
+export type {
+  NightfireStrategy,
+  NightfireStrategyCardinality,
+  NightfireBlockOption,
+  NightfireStrategiesConfig,
+  NightfireStrategiesStore
+} from "./strategies";
+
+// Re-export SchemaMismatchInfo from editor for convenience
+export type { SchemaMismatchInfo } from "./NightfireEditor.svelte";
