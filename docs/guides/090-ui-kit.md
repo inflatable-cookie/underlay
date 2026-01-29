@@ -2740,6 +2740,58 @@ Components automatically adapt to dark mode via CSS custom properties:
 
 ---
 
+## CSS Utility Classes
+
+Underlay provides utility classes for common layout patterns. Import the base styles to use them:
+
+```ts
+// In your app's layout or entry point
+import "@decodelabs/underlay/styles/base.css";
+```
+
+### Details Content Layout
+
+The `.underlay-details-content` class provides consistent vertical spacing for admin detail pages. Use it to wrap the content of a "Details" tab to ensure uniform gaps between sections.
+
+```svelte
+<TabsContent value="details">
+  <PageHeader title={item.title} level={3}>
+    <p><strong>Slug:</strong> <code>{item.slug}</code></p>
+  </PageHeader>
+
+  <div class="underlay-details-content">
+    <DetailsGrid>
+      <DetailsSection legend="Configuration">
+        <DetailsItem label="Name" value={item.name} />
+        <DetailsItem label="Status" value={item.status} />
+      </DetailsSection>
+    </DetailsGrid>
+
+    <ContentCard
+      title="Description"
+      value={item.description}
+      emptyMessage="No description set."
+    />
+
+    <TabsRoot value="tab1" variant="underline" size="sm">
+      <!-- Nested tabs for grouped content -->
+    </TabsRoot>
+  </div>
+</TabsContent>
+```
+
+**What it does:**
+- Applies `display: flex` with `flex-direction: column` and `gap: 1.5rem`
+- Removes top margin from `ContentCard` components when nested inside
+- Handles nested underline tabs correctly
+
+**When to use:**
+- Inside `TabsContent value="details"` on admin detail pages
+- When you have multiple sections (DetailsGrid, ContentCard, nested tabs) that need consistent spacing
+- To avoid manual margin adjustments between sections
+
+---
+
 ## Complete Form Example
 
 ```svelte
