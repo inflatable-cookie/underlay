@@ -25,7 +25,7 @@
     showTrigger = true,
     triggerLabel = "ⓘ",
     side = "top",
-    sideOffset = 6,
+    sideOffset = 4,
     align = "center",
     alignOffset = 0,
     delayDuration = 500,
@@ -119,11 +119,11 @@
 
   :global(.underlay-tooltip-content) {
     z-index: 80;
-    border-radius: 0.6rem;
+    border-radius: 0.4rem;
     border: 1px solid rgba(148, 163, 184, 0.5);
     background: #020617;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-    padding: 0.4rem 0.6rem;
+    padding: 0.25rem 0.5rem;
     max-width: min(28rem, calc(100vw - 2rem));
     font-size: 0.875rem;
     line-height: 1.35;
