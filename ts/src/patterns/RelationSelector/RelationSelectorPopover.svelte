@@ -449,7 +449,8 @@
 <style>
   :global(.relation-selector-popover__content) {
     /* bits-ui exposes --bits-popover-anchor-width for matching trigger width */
-    z-index: 50;
+    /* z-index must be higher than dialogs (51) to work when nested inside dialogs */
+    z-index: 60;
     width: min(22rem, calc(100vw - 1rem));
     min-width: var(--bits-popover-anchor-width);
     max-height: min(24rem, 50vh);
