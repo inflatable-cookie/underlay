@@ -11,13 +11,3 @@
   flex-direction: column;
   gap: var(--underlay-space-6, 1.5rem);
 }
-
-/* Remove top margin from ContentCard when inside details content */
-.underlay-details-content .content-card {
-  margin-top: 0;
-}
-
-/* Also remove margin from nested underline tab content */
-.underlay-details-content .underlay-tabs-content--underline .content-card {
-  margin-top: 0;
-}
