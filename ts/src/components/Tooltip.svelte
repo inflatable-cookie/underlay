@@ -25,7 +25,7 @@
     showTrigger = true,
     triggerLabel = "ⓘ",
     side = "top",
-    sideOffset = 1,
+    sideOffset = 0,
     align = "center",
     alignOffset = 0,
     delayDuration = 500,
@@ -66,7 +66,7 @@
         {alignOffset}
       >
         {content}
-        <BitsTooltip.Arrow class="underlay-tooltip-arrow" width={6} height={4} />
+        <BitsTooltip.Arrow class="underlay-tooltip-arrow" width={8} height={6} />
       </BitsTooltip.Content>
     </BitsTooltip.Portal>
   </BitsTooltip.Root>
