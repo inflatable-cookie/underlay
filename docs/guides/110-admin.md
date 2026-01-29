@@ -541,6 +541,270 @@ Entity list cards should use `CopyActionsMenu` with:
 5. **Delete label format**: "Soft delete {entityType}" (e.g., "Soft delete section")
 6. **Empty states**: Differentiate between "no items" and "no matches for filter"
 
+## Complete CRUD Admin Pattern
+
+When implementing a full admin section for a new entity type, follow this comprehensive structure. **Do NOT use dialogs for creating/editing entities** - always use dedicated routes.
+
+### Route Structure
+
+For an entity `Topic` nested under `Bundle`:
+
+```
+routes/(app)/learning/bundles/[bundleId]/
+├── +page.svelte           # Bundle detail with Topics tab
+├── topics/
+│   ├── new/
+│   │   └── +page.svelte   # Create topic form
+│   └── [topicId]/
+│       ├── +page.svelte   # Topic detail view
+│       └── edit/
+│           └── +page.svelte   # Edit topic form
+```
+
+### File Checklist
+
+When creating a new admin entity, create these files in order:
+
+1. **`$lib/cards/EntityListCard.svelte`** - List card for displaying items in a grid
+2. **`$lib/forms/learning/EntityForm.svelte`** - Reusable form component
+3. **`routes/.../EntityTabContent.svelte`** - Tab content with list view (navigation only, NO dialogs)
+4. **`routes/.../new/+page.svelte`** - Create page using SpaFormShell
+5. **`routes/.../[entityId]/+page.svelte`** - Detail view page
+6. **`routes/.../[entityId]/edit/+page.svelte`** - Edit page using SpaFormShell
+
+### Form Component Pattern
+
+Forms should NOT contain `<form>` elements or submission logic. They render fields and use hidden inputs for values:
+
+```svelte
+<script lang="ts">
+  import {
+    ConfirmAction,
+    Field,
+    FieldSet,
+    FormActions,
+    FormValidationProvider,
+    SaveSplitButton,
+    Switch,
+    TextButton,
+    TextInput
+  } from "@decodelabs/underlay/components";
+  import { navigateOnCancel } from "@decodelabs/underlay/client";
+
+  interface Props {
+    mode?: "create" | "edit";
+    values?: { name?: string; isLive?: boolean; };
+    intent?: "save" | "save-close";
+    errors?: Record<string, string> | null;
+    cancelHref?: string;
+    returnTo?: string;
+    submitting?: boolean;
+  }
+
+  let {
+    mode = "create",
+    values = {},
+    intent = $bindable("save-close"),
+    errors = null,
+    cancelHref = undefined,
+    returnTo = undefined,
+    submitting = false
+  }: Props = $props();
+
+  let nameValue = $state(values.name ?? "");
+  let isLiveValue = $state(values.isLive ?? false);
+  let isFormValid = $state(false);
+
+  function handleCancel() {
+    navigateOnCancel(cancelHref);
+  }
+
+  function handleDeleteConfirm() {
+    const form = document.getElementById('entity-delete-form') as HTMLFormElement | null;
+    form?.requestSubmit();
+  }
+
+  const dangerItems = $derived(mode === "edit"
+    ? [
+        { label: "Cancel", onSelect: handleCancel, destructive: false },
+        { label: "Soft delete entity", onSelect: () => { /* open dialog */ }, destructive: true }
+      ]
+    : [
+        { label: "Cancel", onSelect: handleCancel, destructive: false }
+      ]);
+</script>
+
+<FormValidationProvider bind:isValid={isFormValid}>
+  <FieldSet legend="Details">
+    <Field label="Name" error={errors?.name} required>
+      <TextInput name="name" bind:value={nameValue} required />
+    </Field>
+  </FieldSet>
+
+  <FieldSet legend="Status">
+    <Field label="Visibility">
+      <input type="hidden" name="isLive" value={isLiveValue ? "true" : "false"} />
+      <Switch leftLabel="Draft" rightLabel="Live" bind:checked={isLiveValue} />
+    </Field>
+  </FieldSet>
+</FormValidationProvider>
+
+<FormActions align="start" {dangerItems}>
+  {#snippet danger()}
+    <TextButton type="button" onclick={handleCancel} disabled={submitting}>
+      Cancel
+    </TextButton>
+    {#if mode === "edit"}
+      <ConfirmAction
+        triggerLabel="Soft delete entity"
+        triggerVariant="danger"
+        onConfirm={handleDeleteConfirm}
+      />
+    {/if}
+  {/snippet}
+
+  <input type="hidden" name="intent" value={intent} />
+  {#if returnTo}
+    <input type="hidden" name="returnTo" value={returnTo} />
+  {/if}
+
+  <SaveSplitButton type="submit" mode={mode} disabled={submitting} bind:intent />
+</FormActions>
+```
+
+### Create/Edit Page Pattern
+
+Both create and edit pages use `SpaFormShell`:
+
+```svelte
+<script lang="ts">
+  import { goto } from "$app/navigation";
+  import { entityCommands } from "@client";
+  import EntityForm from "$lib/forms/learning/EntityForm.svelte";
+  import SpaFormShell from "@decodelabs/underlay/patterns/SpaFormShell";
+  import type { SpaFormResult } from "@decodelabs/underlay/patterns/spa-form-types";
+  import { consumeNavigationContext, submitFormWithIntent } from "@decodelabs/underlay/patterns";
+
+  const { backInfo, returnTo } = consumeNavigationContext("Back", defaultBackHref);
+
+  let intent = $state<"save" | "save-close">("save-close");
+  let success = $state<boolean | null>(null);
+  let error = $state<string | null>(null);
+  let fieldErrors = $state<Record<string, string> | null>(null);
+
+  async function handleSubmit(formData: FormData): Promise<SpaFormResult> {
+    const formIntent = String(formData.get("intent") ?? "save-close");
+
+    // Handle delete intent (edit mode only)
+    if (formIntent === "delete") {
+      await entityCommands.softDelete(entityId, fetch, token);
+      return { success: true, redirectTo: listUrl };
+    }
+
+    // Validate and save
+    const name = String(formData.get("name") ?? "").trim();
+    if (!name) {
+      return { success: false, fieldErrors: { name: "Required" } };
+    }
+
+    await entityCommands.create({ name }, fetch, token);
+
+    if (formIntent === "save-close") {
+      return { success: true, redirectTo: listUrl };
+    }
+    return { success: true, redirectTo: editUrl };
+  }
+
+  function handleResult(result: SpaFormResult) {
+    success = result.success;
+    error = result.error ?? null;
+    fieldErrors = result.fieldErrors ?? null;
+  }
+
+  function handleDelete() {
+    submitFormWithIntent("delete");
+  }
+</script>
+
+<SpaFormShell
+  title="New Entity"
+  backHref={backInfo.href}
+  backLabel={backInfo.label}
+  success={success === true}
+  error={success === false && !fieldErrors ? error : null}
+  {fieldErrors}
+  onSubmit={handleSubmit}
+  onResult={handleResult}
+  navigate={goto}
+>
+  <EntityForm mode="create" {errors} cancelHref={backInfo.href} {returnTo} bind:intent />
+</SpaFormShell>
+
+<!-- For edit pages: hidden delete form -->
+<form id="entity-delete-form" style="display: none;" onsubmit={(e) => { e.preventDefault(); handleDelete(); }}>
+  <input type="hidden" name="intent" value="delete" />
+</form>
+```
+
+### Tab Content Pattern (List View)
+
+Tab content should ONLY handle navigation and display - no forms or dialogs:
+
+```svelte
+<script lang="ts">
+  import { FilterBar, PageHeader, type NavigationContext } from "@decodelabs/underlay/patterns";
+  import { Button, Field, ListGrid, TextInput } from "@decodelabs/underlay/components";
+  import { EntityListCard } from "$lib/cards";
+  import { gotoWithContext } from "@decodelabs/underlay/client";
+  import Plus from "lucide-svelte/icons/plus";
+
+  interface Props {
+    items: Entity[];
+    parentId: string;
+    sourceContext: NavigationContext;
+    onRequestDelete?: (id: string) => void;
+  }
+
+  let { items, parentId, sourceContext, onRequestDelete }: Props = $props();
+
+  let searchFilter = $state("");
+  const filteredItems = $derived(/* filter logic */);
+  const addUrl = $derived(`/learning/parents/${parentId}/entities/new`);
+</script>
+
+<PageHeader title="Entities" level={3}>
+  {#snippet actions()}
+    <Button variant="primary" onclick={() => gotoWithContext(addUrl, sourceContext)}>
+      <Plus size={16} />
+      Add Entity
+    </Button>
+  {/snippet}
+</PageHeader>
+
+{#if items.length > 0}
+  <FilterBar title="Filter">
+    <Field label="Search" forId="search">
+      <TextInput id="search" bind:value={searchFilter} search />
+    </Field>
+  </FilterBar>
+{/if}
+
+<ListGrid minItemWidth={26}>
+  {#each filteredItems as item}
+    <EntityListCard {item} {parentId} {sourceContext} {onRequestDelete} />
+  {/each}
+</ListGrid>
+```
+
+### Common Mistakes to Avoid
+
+1. **Using dialogs for create/edit** - Always use dedicated routes
+2. **Putting form submission in tab content** - Tab content is for list display only
+3. **Using InlineListCard for tab content** - InlineListCard is only for auxiliary lists on detail pages
+4. **Forgetting delete handling** - Parent page needs AlertDialog for list deletion
+5. **Missing hidden form for delete** - Edit pages need `<form id="entity-delete-form">`
+6. **Using onsubmit|preventDefault** - Use `onsubmit={(e) => { e.preventDefault(); ... }}`
+
 ## Key Points
 
 1. **CSS Import Order**: Import Underlay CSS in the root layout BEFORE custom `:root` styles so your overrides take precedence.
