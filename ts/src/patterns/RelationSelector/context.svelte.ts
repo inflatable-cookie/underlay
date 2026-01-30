@@ -124,15 +124,22 @@ export function createRelationSelectorContext<T extends SelectableRelation>(
       .filter((item): item is T => item !== undefined);
   });
 
+  // Track if we've attempted to load suggestions for pre-selected value
+  let hasLoadedInitialSuggestions = false;
+
   // Load suggestions on mount if there's a pre-selected value
   // This ensures the trigger can display the correct label for pre-selected values
   $effect(() => {
+    // Only run once - don't keep retrying if suggestions returns empty
+    if (hasLoadedInitialSuggestions) return;
+
     const hasValue = isMultiSelect
       ? (props.values ?? []).length > 0
       : !!props.value;
 
     // Load suggestions if we have a value but haven't loaded suggestions yet
-    if (hasValue && props.suggestions && !state.isSuggestionsLoading && state.suggestionItems.length === 0) {
+    if (hasValue && props.suggestions && !state.isSuggestionsLoading) {
+      hasLoadedInitialSuggestions = true;
       void loadSuggestions();
     }
   });
