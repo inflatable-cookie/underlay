@@ -98,8 +98,11 @@ export interface AuthenticatedDataResult<T> {
   /** The fetched data (or default value if not yet fetched) */
   readonly data: T | undefined;
 
-  /** Whether data is currently being fetched */
+  /** Whether data is being fetched for the first time (no data yet) */
   readonly loading: boolean;
+
+  /** Whether data is being refetched (data already exists) */
+  readonly refetching: boolean;
 
   /** Error message if fetch failed */
   readonly error: string | null;
@@ -142,17 +145,23 @@ export function useAuthenticatedData<T>(
 
   let data = $state<T | undefined>(options.defaultValue);
   let loading = $state(true);
+  let refetching = $state(false);
   let error = $state<string | null>(null);
   let _fetched = false;
 
-  const doFetch = async () => {
+  const doFetch = async (isRefetch = false) => {
     const token = getToken();
     if (!token) {
       loading = false;
       return;
     }
 
-    loading = true;
+    // On initial load, show loading. On refetch, show refetching (keeps existing data visible)
+    if (isRefetch) {
+      refetching = true;
+    } else {
+      loading = true;
+    }
     error = null;
 
     try {
@@ -187,6 +196,7 @@ export function useAuthenticatedData<T>(
       }
     } finally {
       loading = false;
+      refetching = false;
     }
   };
 
@@ -194,12 +204,12 @@ export function useAuthenticatedData<T>(
     if (_fetched || authLoading || !currentUser) {
       return;
     }
-    await doFetch();
+    await doFetch(false);
   };
 
   const refetch = async () => {
     _fetched = false;
-    await doFetch();
+    await doFetch(true);
   };
 
   return {
@@ -208,6 +218,9 @@ export function useAuthenticatedData<T>(
     },
     get loading() {
       return loading;
+    },
+    get refetching() {
+      return refetching;
     },
     get error() {
       return error;

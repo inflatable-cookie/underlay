@@ -16,7 +16,7 @@
   }: Props = $props();
 </script>
 
-<div class="details-section {className ?? ''}"
+<div class="details-section {className ?? ''}">
   {#if legend}
     <h4 class="details-section__legend">{legend}</h4>
   {/if}
