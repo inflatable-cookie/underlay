@@ -15,6 +15,14 @@ Acowtancy’s admin frontend (Dairy) is deployed as a **pure SPA**:
 - auth handled client-side via an auth store (so `App.Locals` is typically empty)
 - CSP headers via Underlay’s server helpers (applied in production only; HMR needs inline scripts)
 
+### Dependencies
+
+Most Underlay UI components expect these peer dependencies to be installed in the consuming app:
+
+```bash
+pnpm add bits-ui lucide-svelte
+```
+
 ### 1) Adapter + Aliases (`svelte.config.js`)
 
 ```js
@@ -160,68 +168,175 @@ The root `+layout.svelte` contains only shared CSS variables and global body sty
 </style>
 ```
 
-### App Layout (With Sidebar)
+### App Shell Layout (Nav + User Menu + Context Panel)
 
-The `(app)/+layout.svelte` contains the full admin shell with sidebar navigation. It inherits from the root layout automatically.
+The `(app)/+layout.svelte` hosts the default admin shell:
+
+- Left panel: brand + navigation + user menu
+- Main content: scrollable
+- Right panel: a pop-in context panel (AI/help/tools/actions) with a collapsed strip on desktop and a slide-in drawer on mobile
 
 ```svelte
 <!-- apps/admin/src/routes/(app)/+layout.svelte -->
 <script lang="ts">
+  import Menu from "lucide-svelte/icons/menu";
+  import X from "lucide-svelte/icons/x";
+  import PanelRight from "lucide-svelte/icons/panel-right";
   import { setContext } from "svelte";
+  import { page } from "$app/stores";
   import { ToastHost } from "@decodelabs/underlay/components";
   import { UNDERLAY_TOASTS_CONTEXT_KEY, createToastStore } from "@decodelabs/underlay/patterns";
-  import AdminNav from "$lib/ui/AdminNav.svelte";
+  import AdminNavList from "$lib/ui/AdminNavList.svelte";
+  import AdminUserMenu from "$lib/ui/AdminUserMenu.svelte";
 
   let { children, data } = $props();
 
   const toastStore = createToastStore();
   setContext(UNDERLAY_TOASTS_CONTEXT_KEY, toastStore);
+
+  let mobileMenuOpen = $state(false);
+  let contextPanelOpen = $state(false);
+
+  const closeMobileMenu = () => {
+    mobileMenuOpen = false;
+  };
+
+  const toggleContextPanel = () => {
+    contextPanelOpen = !contextPanelOpen;
+  };
+
+  const closeContextPanel = () => {
+    contextPanelOpen = false;
+  };
+
+  const currentSection = $derived.by(() => {
+    const path = $page.url.pathname;
+    if (path.startsWith("/system")) return "system";
+    return "overview";
+  });
 </script>
 
-<div class="admin-shell">
-  <nav class="admin-nav">
-    <AdminNav currentSection={data?.currentSection} />
-  </nav>
-  <div class="admin-content">
-    <main>
-      {@render children()}
-    </main>
+<div class="admin-app-shell">
+  <!-- Mobile header (< 900px) -->
+  <header class="admin-mobile-header">
+    <a href="/" class="admin-mobile-header__brand">
+      <span class="admin-mobile-header__title">Admin</span>
+      <span class="admin-mobile-header__env">UI</span>
+    </a>
+    <div class="admin-mobile-header__actions">
+      <button
+        type="button"
+        class="admin-mobile-header__icon-btn"
+        aria-label={contextPanelOpen ? "Close context panel" : "Open context panel"}
+        onclick={toggleContextPanel}
+      >
+        <PanelRight class="admin-mobile-header__icon" />
+      </button>
+      <button
+        type="button"
+        class="admin-mobile-header__icon-btn"
+        aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+        aria-expanded={mobileMenuOpen}
+        onclick={() => (mobileMenuOpen = !mobileMenuOpen)}
+      >
+        {#if mobileMenuOpen}
+          <X class="admin-mobile-header__icon" />
+        {:else}
+          <Menu class="admin-mobile-header__icon" />
+        {/if}
+      </button>
+    </div>
+  </header>
+
+  {#if mobileMenuOpen}
+    <div class="admin-mobile-overlay" role="dialog" aria-modal="true" aria-label="Navigation menu">
+      <nav class="admin-mobile-overlay__nav" aria-label="Main">
+        <AdminNavList
+          currentSection={data?.currentSection ?? currentSection}
+          currentPath={$page.url.pathname}
+          onNavigate={closeMobileMenu}
+          variant="mobile"
+        />
+        <AdminUserMenu variant="mobile" onNavigate={closeMobileMenu} />
+      </nav>
+    </div>
+  {/if}
+
+  <div class="admin-main" class:admin-main--panel-open={contextPanelOpen}>
+    <!-- Left nav -->
+    <nav class="admin-nav" aria-label="Main">
+      <div class="admin-nav__inner">
+        <a href="/" class="admin-nav__brand">
+          <span class="admin-nav__title">Admin</span>
+          <span class="admin-nav__env">UI</span>
+        </a>
+
+        <AdminNavList
+          currentSection={data?.currentSection ?? currentSection}
+          currentPath={$page.url.pathname}
+          variant="desktop"
+        />
+
+        <AdminUserMenu variant="desktop" />
+      </div>
+    </nav>
+
+    <!-- Main content -->
+    <div class="admin-content">
+      <main class="admin-content__body">
+        {@render children()}
+      </main>
+    </div>
+
+    <!-- Right context panel -->
+    <aside
+      class="admin-context-panel"
+      class:admin-context-panel--open={contextPanelOpen}
+      aria-label="Context panel"
+    >
+      <button
+        type="button"
+        class="admin-context-panel__toggle"
+        aria-label={contextPanelOpen ? "Close context panel" : "Open context panel"}
+        onclick={toggleContextPanel}
+      >
+        <PanelRight class="admin-context-panel__toggle-icon" />
+      </button>
+
+      <div class="admin-context-panel__content">
+        <div class="admin-context-panel__header">
+          <h2 class="admin-context-panel__title">Context</h2>
+          <button
+            type="button"
+            class="admin-context-panel__close"
+            aria-label="Close context panel"
+            onclick={closeContextPanel}
+          >
+            <X class="admin-context-panel__close-icon" />
+          </button>
+        </div>
+
+        <div class="admin-context-panel__body">
+          <p class="admin-context-panel__placeholder">Project-specific content goes here.</p>
+        </div>
+      </div>
+    </aside>
+
+    {#if contextPanelOpen}
+      <button
+        type="button"
+        class="admin-context-panel__backdrop"
+        aria-label="Close context panel"
+        onclick={closeContextPanel}
+      ></button>
+    {/if}
   </div>
+
   <ToastHost store={toastStore} />
 </div>
-
-<style>
-  /* App shell body overrides */
-  :global(body) {
-    padding: 0 1rem;
-    overflow: hidden;
-    height: 100vh;
-  }
-
-  .admin-shell {
-    display: grid;
-    grid-template-columns: 264px minmax(0, 1fr);
-    height: calc(100vh - 4rem);
-    max-width: 1650px;
-    margin: 2rem auto;
-    border-radius: 1.5rem;
-    overflow: hidden;
-    background: var(--admin-color-surface);
-    box-shadow: 0 26px 70px rgba(0, 0, 0, 0.75);
-  }
-
-  .admin-nav {
-    background-color: var(--admin-color-surface-subtle);
-    padding: 1.1rem 0 1.1rem 0.9rem;
-    overflow: hidden;
-  }
-
-  .admin-content {
-    padding: 1.25rem 1.6rem;
-    overflow-y: auto;
-  }
-</style>
 ```
+
+For a complete, copy/paste-ready example (including the CSS for mobile nav and the context panel), see `docs/guides/code/110-admin/(app)/+layout.svelte`.
 
 ### App Layout Server (Auth Check)
 

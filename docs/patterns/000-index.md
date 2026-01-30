@@ -82,6 +82,7 @@ Individual techniques referenced by the recipes above.
 |---------|-------------|-------|
 | Load functions | SvelteKit data loading | [110-sveltekit-frontend.md](../guides/110-sveltekit-frontend.md) |
 | Form actions | SvelteKit form handling | [110-sveltekit-frontend.md](../guides/110-sveltekit-frontend.md) |
+| Admin shell layout | Left nav + user menu + right context panel | [110-admin.md#app-shell-layout-nav--user-menu--context-panel](../guides/110-admin.md#app-shell-layout-nav--user-menu--context-panel) |
 | DataTable | Sortable, filterable tables | Component library |
 | StatusPill | Live/draft badges | Component library |
 | Tabs | Tabbed navigation | Component library |
