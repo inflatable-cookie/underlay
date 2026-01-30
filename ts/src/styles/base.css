@@ -1,5 +1,6 @@
 :root {
   --underlay-radius: 0.75rem;
+  --underlay-details-section-min-width: 12rem;
 }
 
 /*

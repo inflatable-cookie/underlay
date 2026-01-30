@@ -13,7 +13,7 @@
 
   let {
     legend,
-    minItemWidth = "10rem",
+    minItemWidth = "12rem",
     class: className,
     children
   }: Props = $props();
@@ -50,7 +50,7 @@
 
   .details-section__items {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(var(--details-section-min-width, 10rem), 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(var(--details-section-min-width, var(--underlay-details-section-min-width, 12rem)), 1fr));
     gap: 1rem 1.5rem;
   }
 

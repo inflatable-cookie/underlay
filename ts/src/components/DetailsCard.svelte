@@ -29,7 +29,7 @@
   }
 
   .details-card > :global(*) {
-    flex: 1 1 auto;
+    flex: 1 1 30%;
   }
 
   /* Span both columns when alone in a 2-col grid row */
