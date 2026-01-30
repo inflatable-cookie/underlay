@@ -509,7 +509,6 @@ CREATE TYPE user_role AS ENUM ('superadmin', 'user', 'editor', 'admin');
 CREATE TABLE auth.users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     email VARCHAR(255) NOT NULL UNIQUE,
-    display_name VARCHAR(255) NOT NULL,
     role user_role NOT NULL DEFAULT 'user',
     status user_status NOT NULL DEFAULT 'active',
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -523,7 +522,7 @@ CREATE INDEX idx_users_role ON auth.users(role);
 
 ```rust
 async fn verify_login(\u0026self, email: \u0026str, password: \u0026str) -\u003e AuthResult\u003c(User, String)\u003e {
-    let row = sqlx::query(\n        r#\"\n        SELECT u.id, u.email, u.display_name, u.role, u.status,\n               c.secret_encrypted\n        FROM auth.users u\n        JOIN auth.credentials c ON c.user_id = u.id AND c.type = 'password'\n        WHERE u.email = $1\n        \"#,\n    )\n    .bind(email)\n    .fetch_one(\u0026self.pool)\n    .await?;\n\n    let password_hash: String = row.get(\"secret_encrypted\");\n    self.password_hasher.verify(password.as_bytes(), \u0026password_hash)?;\n\n    let role: String = row.get(\"role\");\n    let user = User {\n        id: row.get(\"id\"),\n        email: row.get(\"email\"),\n        // ...\n    };\n\n    Ok((user, role))
+    let row = sqlx::query(\n        r#\"\n        SELECT u.id, u.email, u.role, u.status,\n               c.secret_encrypted\n        FROM auth.users u\n        JOIN auth.credentials c ON c.user_id = u.id AND c.type = 'password'\n        WHERE u.email = $1\n        \"#,\n    )\n    .bind(email)\n    .fetch_one(\u0026self.pool)\n    .await?;\n\n    let password_hash: String = row.get(\"secret_encrypted\");\n    self.password_hasher.verify(password.as_bytes(), \u0026password_hash)?;\n\n    let role: String = row.get(\"role\");\n    let user = User {\n        id: row.get(\"id\"),\n        email: row.get(\"email\"),\n        // ...\n    };\n\n    Ok((user, role))
 }
 ```
 

@@ -13,7 +13,6 @@ CREATE SCHEMA IF NOT EXISTS auth;
 CREATE TABLE IF NOT EXISTS auth.users (
     id UUID PRIMARY KEY,
     email TEXT NOT NULL UNIQUE,
-    display_name TEXT NOT NULL,
 
     -- Coarse primary role (mirrors common Underlay Principal roles).
     role TEXT NOT NULL DEFAULT 'student'

@@ -1,10 +1,10 @@
 # Account Database Schema
 
-This document details the database schema for user profiles. The `account` schema is separate from `auth` to maintain a clean boundary between authentication (identity/credentials) and user personalization.
+This document details the database schema for user profiles. The `account` schema is separate from `auth` to maintain a clean boundary between authentication (credentials/session) and user identity/personalization.
 
 ## Design Principles
 
-1. **Separation from Auth**: The `auth` schema handles identity and credentials only. User preferences, locale, and personalization belong in `account`.
+1. **Separation from Auth**: The `auth` schema handles authentication only (email + credentials + sessions). User identity and personalization belong in `account`.
 
 2. **Optional Profile**: Not every `auth.users` record needs a profile immediately. Profiles can be created lazily on first access.
 
@@ -19,27 +19,18 @@ Stores user preferences, locale settings, and consent data.
 | Column | Type | Constraints | Description |
 |--------|------|-------------|-------------|
 | user_id | UUID | PRIMARY KEY, FK → auth.users | User identifier (1:1 with auth.users) |
-| display_name | TEXT | NULL, ≤128 chars | Override display name (if different from auth.users) |
-| first_name | TEXT | NULL, ≤64 chars | First/given name |
-| last_name | TEXT | NULL, ≤64 chars | Last/family name |
-| avatar_url | TEXT | NULL, ≤512 chars | Profile picture URL |
-| country_code | TEXT | NULL, ≤2 chars | ISO 3166-1 alpha-2 (e.g., `GB`, `US`) |
-| time_zone | TEXT | NULL, ≤64 chars | IANA timezone (e.g., `Europe/London`) |
-| language | TEXT | NULL, ≤10 chars | BCP 47 language tag (e.g., `en`, `en-GB`) |
-| region_code | TEXT | NULL, ≤8 chars | Sub-national region (e.g., `ENG`, `CA`) |
-| currency_preference | TEXT | NULL, ≤3 chars | ISO 4217 currency (e.g., `GBP`, `USD`) |
-| email_marketing_opt_in | BOOLEAN | NOT NULL DEFAULT FALSE | Marketing email consent |
-| email_transactional_opt_in | BOOLEAN | NOT NULL DEFAULT TRUE | Transactional email consent |
-| email_frequency | TEXT | NOT NULL DEFAULT 'normal' | Email frequency preference |
-| cookie_consent | JSONB | NULL | Cookie consent details |
-| data_processing_consent_version | TEXT | NULL, ≤32 chars | GDPR/privacy consent version |
+| full_name | TEXT | NULL | Full name as the user wishes to be known |
+| display_name | TEXT | NULL | Short display name override (optional) |
+| country_code | TEXT | NULL | ISO 3166-1 alpha-2 (e.g., `GB`, `US`) |
+| time_zone | TEXT | NULL | IANA timezone (e.g., `Europe/London`) |
+| language | TEXT | NULL | BCP 47 language tag (e.g., `en`, `en-GB`) |
 | created_at | TIMESTAMPTZ | NOT NULL DEFAULT NOW() | Profile creation time |
 | updated_at | TIMESTAMPTZ | NOT NULL DEFAULT NOW() | Last update time |
 
 **Notes:**
 - `user_id` is both the primary key and foreign key - one profile per user
 - All locale fields are optional; apps should fall back to browser detection
-- `email_frequency` enum: `low`, `normal`, `high`
+- Name fields use a culturally-inclusive pattern; avoid hardcoding first/last name.
 
 ## Relationships
 

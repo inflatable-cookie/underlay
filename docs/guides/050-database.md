@@ -377,11 +377,20 @@ CREATE TYPE user_status AS ENUM (
 CREATE TABLE users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     email VARCHAR(255) NOT NULL UNIQUE,
-    display_name VARCHAR(255) NOT NULL,
     status user_status NOT NULL DEFAULT 'active',
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     deleted_at TIMESTAMPTZ
+);
+
+-- Identity/personalization lives outside auth.
+CREATE TABLE user_profile (
+    user_id UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+    full_name VARCHAR(255),
+    display_name VARCHAR(255),
+    time_zone VARCHAR(64),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE INDEX idx_users_deleted_at ON users(deleted_at) WHERE deleted_at IS NOT NULL;
@@ -503,7 +512,7 @@ apps/api/crates/db/
 
 ```sql
 -- Development seed data for users
-INSERT INTO auth.users (id, email, display_name, role, status) VALUES
+INSERT INTO auth.users (id, email, role, status) VALUES
     ('01933f9a-7b1e-7c9f-8f3d-1a2b3c4d5e6f', 'admin@example.com', 'Admin User', 'admin', 'active'),
     ('01933f9a-7b1e-7c9f-8f3d-2b3c4d5e6f7g', 'user@example.com', 'Test User', 'user', 'active'),
     ('01933f9a-7b1e-7c9f-8f3d-3c4d5e6f7g8h', 'editor@example.com', 'Editor User', 'editor', 'active')
@@ -743,8 +752,19 @@ CREATE TYPE auth.user_status AS ENUM ('active', 'suspended', 'deleted');
 CREATE TABLE auth.users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     email VARCHAR(255) NOT NULL UNIQUE,
-    display_name VARCHAR(255) NOT NULL,
     status auth.user_status NOT NULL DEFAULT 'active',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Identity/personalization lives outside auth.
+CREATE SCHEMA IF NOT EXISTS account;
+
+CREATE TABLE account.user_profile (
+    user_id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    full_name VARCHAR(255),
+    display_name VARCHAR(255),
+    time_zone VARCHAR(64),
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -788,8 +808,9 @@ Always use qualified names in raw SQL:
 // ✅ CORRECT
 let user = sqlx::query_as::<_, User>(
     r#"
-    SELECT id, email, display_name, status, created_at, updated_at
-    FROM auth.users
+    SELECT u.id, u.email, p.display_name, u.status, u.created_at, u.updated_at
+    FROM auth.users u
+    LEFT JOIN account.user_profile p ON p.user_id = u.id
     WHERE email = $1
     "#
 )
@@ -801,9 +822,10 @@ let user = sqlx::query_as::<_, User>(
 let articles = sqlx::query_as::<_, Article>(
     r#"
     SELECT a.id, a.title, a.content, a.published_at,
-           u.display_name as author_name
+           p.display_name as author_name
     FROM content.articles a
     JOIN auth.users u ON u.id = a.author_id
+    LEFT JOIN account.user_profile p ON p.user_id = u.id
     WHERE a.published_at IS NOT NULL
     ORDER BY a.published_at DESC
     LIMIT $1
