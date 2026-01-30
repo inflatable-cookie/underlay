@@ -108,6 +108,49 @@ Create `libs/client/package.json`:
 
 ## Step 2: HTTP Client Wrapper
 
+## Dev-Time Import Alias (Recommended)
+
+When consuming the client from SvelteKit apps in a multi-repo workspace, prefer importing from a short alias that points at the client repo’s `src/` directory (rather than importing from the package name and relying on prebuilt `dist/`).
+
+This matches the Acowtancy reference implementation (`@cattle-grid` → `../cattle-grid/src`) and avoids stale build artifacts during local development.
+
+Example (SvelteKit `svelte.config.js`):
+
+```js
+kit: {
+  alias: {
+    "@cattle-grid": "../cattle-grid/src"
+  }
+}
+```
+
+Example (Vite `vite.config.ts`, optional):
+
+```ts
+import { fileURLToPath } from "node:url";
+
+const cattleGridSrc = fileURLToPath(new URL("../cattle-grid/src", import.meta.url));
+
+export default defineConfig({
+  resolve: {
+    alias: {
+      "@cattle-grid": cattleGridSrc
+    }
+  }
+});
+```
+
+## API Version Header (Generic)
+
+Use the generic API version header:
+
+- `X-Api-Version: <version>`
+
+Ensure:
+
+- the TS client sets it on every request
+- the API expects/reads the same header (if you enforce versioning)
+
 **Important:** Do not reimplement HTTP client logic. Use Underlay's `createHttpClient` and wrap it with your app-specific configuration.
 
 Create `stem/src/utils/http-client.ts`:

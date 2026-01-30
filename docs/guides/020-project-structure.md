@@ -364,11 +364,12 @@ frontend-web/
 documentation/
 ├── AGENTS.md
 ├── .gitignore
-└── docs/
-    ├── architecture/
-    ├── domain/
-    ├── processes/
-    └── decisions/
+├── architecture/
+├── domain/
+├── processes/
+├── decisions/
+├── roadmap/
+└── reports/
 ```
 
 ---

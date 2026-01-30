@@ -31,6 +31,110 @@ apps/web/src/
 
 See code examples in `/code/100-frontend-web/`
 
+## Static Deployment (Acowtancy-Style)
+
+Acowtancy deploys SvelteKit frontends with `@sveltejs/adapter-static` and uses:
+
+- `export const ssr = false` by default at `src/routes/+layout.ts`
+- route-level opt-in to SSR + prerender where needed (e.g. marketing/home pages)
+- a short dev-time import alias to the TS client’s `src/` folder (e.g. `@cattle-grid`)
+- CSP headers via Underlay’s server helpers (report-only while iterating)
+
+### 1) Adapter + Aliases (`svelte.config.js`)
+
+```js
+import adapter from "@sveltejs/adapter-static";
+import { vitePreprocess } from "@sveltejs/vite-plugin-svelte";
+
+/** @type {import('@sveltejs/kit').Config} */
+const config = {
+  preprocess: vitePreprocess(),
+  kit: {
+    adapter: adapter({
+      fallback: "200.html",
+      strict: true
+    }),
+    alias: {
+      "@app": "src",
+      "@cattle-grid": "../cattle-grid/src"
+    },
+    prerender: {
+      handleUnseenRoutes: "ignore"
+    }
+  }
+};
+
+export default config;
+```
+
+### 2) SPA-First Layout Defaults (`src/routes/+layout.ts`)
+
+```ts
+export const ssr = false;
+export const prerender = true;
+```
+
+### 3) Configure the Client (`src/hooks.client.ts`)
+
+```ts
+import { configureCattleGrid } from "@cattle-grid";
+import { env } from "$env/dynamic/public";
+
+configureCattleGrid({
+  baseUrl: env.PUBLIC_FARMYARD_BASE_URL,
+  apiVersion: env.PUBLIC_FARMYARD_API_VERSION
+});
+```
+
+### 4) CSP Headers (`src/hooks.server.ts`)
+
+```ts
+import type { Handle } from "@sveltejs/kit";
+import {
+  createCspConfig,
+  generateNonce,
+  applyCspHeaders,
+  createCspResolveOptions
+} from "@decodelabs/underlay/server";
+import { env } from "$env/dynamic/public";
+
+const cspConfig = createCspConfig({
+  connectSrc: [env.PUBLIC_FARMYARD_BASE_URL],
+  reportOnly: true
+});
+
+export const handle: Handle = async ({ event, resolve }) => {
+  const nonce = generateNonce();
+  const response = await resolve(event, createCspResolveOptions(nonce, {
+    filterSerializedResponseHeaders: (name: string) => name === "content-type"
+  }));
+  applyCspHeaders(response, cspConfig, nonce);
+  return response;
+};
+```
+
+### 5) Vite Dedupe + Underlay Excludes (`vite.config.ts`)
+
+```ts
+export default defineConfig({
+  resolve: {
+    dedupe: ["@decodelabs/underlay"]
+  },
+  optimizeDeps: {
+    exclude: [
+      "@decodelabs/underlay",
+      "@decodelabs/underlay/components",
+      "@decodelabs/underlay/nightfire",
+      "@decodelabs/underlay/patterns",
+      "@decodelabs/underlay/styles",
+      "@decodelabs/underlay/client"
+    ]
+  }
+});
+```
+
+This setup avoids duplicate Underlay module instances and stale prebundled exports when using local `file:` dependencies.
+
 ## App.d.ts (Locals Pattern)
 
 ```typescript
@@ -2368,4 +2472,3 @@ All functions return stores with:
 
 - [110-admin.md](./110-admin.md)
 - [120-configuration.md](./120-configuration.md)
-

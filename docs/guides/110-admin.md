@@ -6,6 +6,66 @@ This document covers creating the admin/author SvelteKit frontend following the 
 
 The admin frontend uses **layout groups** to separate authenticated routes (with sidebar) from unauthenticated routes (login/register with minimal centered layout).
 
+## Static SPA Deployment (Acowtancy-Style)
+
+Acowtancy’s admin frontend (Dairy) is deployed as a **pure SPA**:
+
+- `@sveltejs/adapter-static` with `fallback: "index.html"` and `strict: true`
+- `export const ssr = false` at `src/routes/+layout.ts`
+- auth handled client-side via an auth store (so `App.Locals` is typically empty)
+- CSP headers via Underlay’s server helpers (applied in production only; HMR needs inline scripts)
+
+### 1) Adapter + Aliases (`svelte.config.js`)
+
+```js
+import adapter from "@sveltejs/adapter-static";
+import { vitePreprocess } from "@sveltejs/vite-plugin-svelte";
+
+/** @type {import('@sveltejs/kit').Config} */
+const config = {
+  preprocess: vitePreprocess(),
+  kit: {
+    adapter: adapter({
+      fallback: "index.html",
+      strict: true
+    }),
+    alias: {
+      "@app": "src",
+      "@cattle-grid": "../cattle-grid/src"
+    },
+    prerender: {
+      handleUnseenRoutes: "ignore"
+    }
+  }
+};
+
+export default config;
+```
+
+### 2) SPA Root Layout (`src/routes/+layout.ts`)
+
+```ts
+export const ssr = false;
+export const prerender = true;
+```
+
+### 3) Error Hook (Optional)
+
+Convert Underlay HTTP errors into SvelteKit error metadata:
+
+```ts
+import { type HandleServerError } from "@sveltejs/kit";
+import { UnderlayHttpError } from "@decodelabs/underlay/client";
+
+export const handleError: HandleServerError = async ({ error: err }) => {
+  if (err instanceof UnderlayHttpError) {
+    return { message: err.message, status: err.status, code: err.code };
+  }
+
+  return { message: "An unexpected error occurred" };
+};
+```
+
 ```
 apps/admin/src/
 ├── app.html                  # HTML shell
