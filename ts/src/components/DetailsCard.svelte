@@ -28,6 +28,10 @@
     border-radius: var(--underlay-radius-lg, 0.75rem);
   }
 
+  .details-card > :global(*) {
+    flex: 1 1 auto;
+  }
+
   /* Span both columns when alone in a 2-col grid row */
   .details-card:last-child:nth-child(odd) {
     grid-column: 1 / -1;
