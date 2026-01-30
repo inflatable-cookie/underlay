@@ -6,6 +6,11 @@
     date: string | Date;
     /** Format for the tooltip. Defaults to full locale string. */
     tooltipFormat?: "full" | "date" | "datetime";
+    /**
+     * IANA timezone identifier for tooltip display (e.g., "Europe/London").
+     * If not provided, uses the browser's local timezone.
+     */
+    timezone?: string;
     /** Custom class for the wrapper element */
     class?: string;
   }
@@ -13,11 +18,13 @@
   let {
     date,
     tooltipFormat = "datetime",
+    timezone,
     class: className,
   }: Props = $props();
 
   /**
-   * Calculate relative time string from a date
+   * Calculate relative time string from a date.
+   * Relative time is timezone-agnostic (always comparing UTC timestamps).
    */
   function getRelativeTime(date: Date): string {
     const now = new Date();
@@ -62,41 +69,51 @@
   }
 
   /**
-   * Format date for tooltip display
+   * Format date for tooltip display in the specified timezone.
    */
-  function formatTooltip(date: Date, format: "full" | "date" | "datetime"): string {
-    switch (format) {
-      case "date":
-        return date.toLocaleDateString(undefined, {
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-        });
-      case "datetime":
-        return date.toLocaleString(undefined, {
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
-        });
-      case "full":
-      default:
-        return date.toLocaleString(undefined, {
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
-          second: "2-digit",
-          timeZoneName: "short",
-        });
+  function formatTooltip(date: Date, format: "full" | "date" | "datetime", tz?: string): string {
+    const tzOption = tz ? { timeZone: tz } : {};
+
+    try {
+      switch (format) {
+        case "date":
+          return date.toLocaleDateString(undefined, {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+            ...tzOption,
+          });
+        case "datetime":
+          return date.toLocaleString(undefined, {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            ...tzOption,
+          });
+        case "full":
+        default:
+          return date.toLocaleString(undefined, {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+            timeZoneName: "short",
+            ...tzOption,
+          });
+      }
+    } catch {
+      // Fallback if timezone is invalid
+      return formatTooltip(date, format, undefined);
     }
   }
 
   const dateObj = $derived(typeof date === "string" ? new Date(date) : date);
   const relativeTime = $derived(getRelativeTime(dateObj));
-  const tooltipText = $derived(formatTooltip(dateObj, tooltipFormat));
+  const tooltipText = $derived(formatTooltip(dateObj, tooltipFormat, timezone));
 </script>
 
 <Tooltip content={tooltipText} inline delayDuration={300} class={className}>
