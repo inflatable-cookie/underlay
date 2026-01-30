@@ -194,6 +194,111 @@ apps/api/crates/db/
     └── lib.rs
 ```
 
+## Farmyard-Style Migrations + Seeds (Recommended)
+
+Acowtancy's Farmyard uses a pattern that works well in multi-repo workspaces:
+
+- Keep `migrations/` and `migrations_dev/` at the Rust repo root
+- Embed schema migrations at compile time with `sqlx::migrate!` from the DB crate
+- Load dev seeds from disk at runtime via `underlay_db::run_sql_dir`
+- Provide two small DB binaries:
+  - `reset_dev_db` (drop schemas)
+  - `migrate_dev_db` (run migrations + dev seeds)
+
+### Layout
+
+```text
+api/
+├── migrations/
+├── migrations_dev/
+└── crates/
+    └── db/
+        ├── build.rs
+        └── src/
+            ├── lib.rs
+            └── bin/
+                ├── reset_dev_db.rs
+                └── migrate_dev_db.rs
+```
+
+### DB Crate (`sqlx::migrate!`)
+
+In `crates/db/src/lib.rs`:
+
+```rust
+static MIGRATOR: sqlx::migrate::Migrator = sqlx::migrate!("../../migrations");
+
+pub async fn run_migrations(pool: &underlay_db::DbPool) -> Result<(), sqlx::migrate::MigrateError> {
+    underlay_db::run_migrations(pool, &MIGRATOR).await
+}
+
+pub async fn run_dev_seeds(pool: &underlay_db::DbPool) -> Result<(), sqlx::Error> {
+    let dir = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../migrations_dev");
+    underlay_db::run_sql_dir(pool, dir).await
+}
+```
+
+In `crates/db/build.rs`:
+
+```rust
+fn main() {
+    println!("cargo:rerun-if-changed=../../migrations");
+}
+```
+
+### Reset Binary (Dev Only)
+
+Use `underlay_devtools::reset_from_env`:
+
+```rust
+underlay_devtools::reset_from_env(
+    "MYAPP_DATABASE_URL",
+    &["public", "auth", "platform", "myapp"],
+    true,
+    true,
+).await?;
+```
+
+### Migrate + Seed Binary (Dev Only)
+
+Use `underlay_devtools::migrate_from_env_with` then call `run_dev_seeds`:
+
+```rust
+let pool = underlay_devtools::migrate_from_env_with("MYAPP_DATABASE_URL", |pool| {
+    Box::pin(run_migrations(pool))
+}).await?;
+
+run_dev_seeds(&pool).await?;
+```
+
+## Farmyard-Style pnpm Scripts (Recommended)
+
+Farmyard uses a tiny `package.json` in the Rust repo root to standardize common developer commands.
+
+Example `api/package.json`:
+
+```json
+{
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "cargo build",
+    "test": "cargo test",
+    "dev": "cargo run -p myapp-api",
+    "dev:watch": "cargo watch -x 'run -p myapp-api'",
+    "jobs": "cargo run -p myapp-jobs",
+    "db:drop": "cargo run -p myapp-db --bin reset_dev_db",
+    "db:migrate": "cargo run -p myapp-db --bin migrate_dev_db",
+    "db:reset": "pnpm db:drop && pnpm db:migrate"
+  }
+}
+```
+
+Notes:
+
+- `dev:watch` requires `cargo-watch` installed (`cargo install cargo-watch`).
+- Prefer an app-specific database URL env var (e.g. `MYAPP_DATABASE_URL`) to avoid collisions in a multi-repo workspace.
+
 ## Step 1: Create Database Crate
 
 Create `apps/api/crates/db/Cargo.toml`:
@@ -952,4 +1057,3 @@ These helpers use format strings for table/column names. Only pass known-good va
 ## Next Steps
 
 Proceed to [060-authentication](./060-authentication.md).
-
