@@ -1018,6 +1018,83 @@ Shows a subtle empty message when no content is set.
 
 **Note:** When rendering HTML strings without the `markdown` prop, only use with trusted/sanitized content.
 
+### DetailList
+
+Compact horizontal key-value list for displaying related information. Each item shows a label on the left and value on the right. Use within a `Card` for visual grouping.
+
+```svelte
+<script>
+  import { Card, DetailList, DetailItem } from "@decodelabs/underlay/components";
+</script>
+
+<Card>
+  <DetailList title="Locale">
+    <DetailItem label="Time Zone" value={profile.timeZone} />
+    <DetailItem label="Language" value={profile.language} />
+    <DetailItem label="Country" value={profile.countryCode} />
+  </DetailList>
+</Card>
+
+<!-- Without title -->
+<Card>
+  <DetailList>
+    <DetailItem label="Status" value="Active" />
+    <DetailItem label="Created" value="Jan 30, 2026" />
+  </DetailList>
+</Card>
+
+<!-- With boolean values (auto-formatted as Yes/No) -->
+<DetailList title="Settings">
+  <DetailItem label="Marketing Emails" value={user.emailMarketingOptIn} />
+  <DetailItem label="Notifications" value={true} />
+</DetailList>
+
+<!-- With code formatting -->
+<DetailList title="System">
+  <DetailItem label="User ID" value={user.id} code />
+  <DetailItem label="API Key" value={apiKey} code />
+</DetailList>
+
+<!-- With capitalize -->
+<DetailList title="Preferences">
+  <DetailItem label="Email Frequency" value={user.emailFrequency} capitalize />
+</DetailList>
+
+<!-- Custom content via children snippet -->
+<DetailItem label="Status">
+  <Badge variant="success">Active</Badge>
+</DetailItem>
+```
+
+**DetailList Props:**
+- `title` - Optional section title (uppercase, muted style)
+- `class` - Additional CSS classes
+
+**DetailItem Props:**
+- `label` - The key/label text (required)
+- `value` - Plain text, number, or boolean value (optional)
+- `code` - Display value in monospace font (default: false)
+- `capitalize` - Capitalize the value text (default: false)
+- `class` - Additional CSS classes
+- `children` - Snippet for custom content instead of plain value
+
+**Features:**
+- Horizontal layout with label left, value right
+- Boolean values automatically formatted as "Yes"/"No"
+- Empty values show "Not set" in muted style
+- Compact 0.875rem font size
+- Works well in Card grids for dashboard-style layouts
+
+**When to use:**
+- Account/profile overview pages
+- Settings summaries
+- Entity detail sidebars
+- Dashboard stat cards
+
+**Comparison with DetailsCard/DetailsItem:**
+- `DetailList` is horizontal (label left, value right) - compact for simple key-value pairs
+- `DetailsCard` is vertical (label above value) - better for longer values or grid layouts
+
 ### Dialog
 
 Modal dialog component:
