@@ -28,6 +28,51 @@ This document covers common issues and their solutions.
 | 401 error | No auth token | Implement login flow |
 | 404 error | Wrong route | Check API endpoints |
 
+### Vite / SvelteKit
+
+#### "failed to load virtual css module" errors
+
+**Symptom**: When running `pnpm dev`, you see errors like:
+```
+[vite-plugin-svelte:load] failed to load virtual css module
+/path/to/node_modules/.pnpm/@decodelabs+underlay@file+..+underlay_.../
+node_modules/@decodelabs/underlay/ts/src/components/Button.svelte?svelte&type=style&lang.css
+```
+
+The app may load but styles from underlay components are broken.
+
+**Cause**: vite-plugin-svelte creates virtual CSS modules for Svelte component styles. When underlay is installed via `file:` protocol, pnpm creates long paths with special characters (`+`, `@`) in `.pnpm/`. The plugin fails to resolve these virtual modules correctly.
+
+**Solution**: Add a resolve alias in `vite.config.ts` to bypass pnpm's node_modules paths and resolve underlay directly from source:
+
+```typescript
+import { fileURLToPath } from "node:url";
+import path from "node:path";
+
+const __dirname = fileURLToPath(new URL(".", import.meta.url));
+const underlayPath = path.resolve(__dirname, "../underlay/ts/src");
+
+export default defineConfig({
+  resolve: {
+    alias: [
+      // Resolve underlay directly from source to avoid pnpm path issues
+      // with virtual CSS modules. Uses regex to match all subpaths.
+      {
+        find: /^@decodelabs\/underlay(\/.*)?$/,
+        replacement: `${underlayPath}$1`
+      }
+    ],
+    dedupe: ["@decodelabs/underlay"]
+  },
+  optimizeDeps: {
+    exclude: ["@decodelabs/underlay"]
+  },
+  // ... rest of config
+});
+```
+
+This resolves `@decodelabs/underlay` and all subpaths (e.g., `/components`, `/patterns`) directly to the source directory via the project's underlay symlink, avoiding the problematic pnpm paths entirely.
+
 See `docs/guides/code/160-troubleshooting/common-commands.txt` for a quick command checklist.
 
 ## Next Steps
