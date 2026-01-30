@@ -1846,14 +1846,40 @@ Form wrapper with enhanced submission handling:
 
 ### FormActions
 
-Container for form action buttons with consistent spacing:
+Container for form action buttons with consistent spacing. Supports a right-aligned `danger` slot for secondary actions:
 
 ```svelte
+<script>
+  import { FormActions, Button, TextButton } from "@decodelabs/underlay/components";
+</script>
+
+<!-- Basic usage -->
 <FormActions>
   <Button type="submit">Save</Button>
-  <Button variant="secondary" type="reset">Reset</Button>
+</FormActions>
+
+<!-- With right-aligned secondary action -->
+<FormActions>
+  <Button type="submit" variant="primary">Save Changes</Button>
+  {#snippet danger()}
+    <TextButton onclick={handleCancel}>Cancel</TextButton>
+  {/snippet}
 </FormActions>
 ```
+
+**Props:**
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `align` | `"start" \| "end"` | `"start"` | Horizontal alignment of primary buttons |
+| `dangerItems` | `DangerMenuItem[]` | - | Menu items for collapsed menu on small screens |
+
+**Slots:**
+
+| Slot | Purpose |
+|------|---------|
+| `children` | Primary action buttons (left-aligned by default) |
+| `danger` | Right-aligned actions (Cancel, Delete, etc.). Collapses to dropdown menu on small screens when `dangerItems` is provided. |
 
 ### ListCard
 
