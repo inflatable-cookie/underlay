@@ -40,6 +40,7 @@
     padding: 0;
     margin: 0;
     min-width: 0;
+    container-type: inline-size;
   }
 
   .underlay-fieldset__legend {
@@ -66,12 +67,25 @@
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
   }
 
-  /* Fixed column layouts for larger screens */
-  @media (min-width: 640px) {
+  /* Fixed column layouts using container queries */
+  @container (min-width: 400px) {
     .underlay-fieldset--cols-2 .underlay-fieldset__fields {
       grid-template-columns: repeat(2, 1fr);
     }
 
+    /* Progressive: 3+ columns collapse to 2 first */
+    .underlay-fieldset--cols-3 .underlay-fieldset__fields,
+    .underlay-fieldset--cols-4 .underlay-fieldset__fields {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .underlay-fieldset--cols-6 .underlay-fieldset__fields {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  /* Full column layouts at wider container widths */
+  @container (min-width: 600px) {
     .underlay-fieldset--cols-3 .underlay-fieldset__fields {
       grid-template-columns: repeat(3, 1fr);
     }
@@ -82,28 +96,6 @@
 
     .underlay-fieldset--cols-6 .underlay-fieldset__fields {
       grid-template-columns: repeat(6, 1fr);
-    }
-  }
-
-  /* Progressive collapse for 3+ columns: first to 2 columns */
-  @media (max-width: 639px) and (min-width: 400px) {
-    .underlay-fieldset--cols-3 .underlay-fieldset__fields,
-    .underlay-fieldset--cols-4 .underlay-fieldset__fields {
-      grid-template-columns: repeat(2, 1fr);
-    }
-
-    .underlay-fieldset--cols-6 .underlay-fieldset__fields {
-      grid-template-columns: repeat(3, 1fr);
-    }
-  }
-
-  /* Collapse to single column on very small screens */
-  @media (max-width: 399px) {
-    .underlay-fieldset--cols-2 .underlay-fieldset__fields,
-    .underlay-fieldset--cols-3 .underlay-fieldset__fields,
-    .underlay-fieldset--cols-4 .underlay-fieldset__fields,
-    .underlay-fieldset--cols-6 .underlay-fieldset__fields {
-      grid-template-columns: 1fr;
     }
   }
 </style>
