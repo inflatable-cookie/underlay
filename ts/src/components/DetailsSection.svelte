@@ -4,8 +4,6 @@
   interface Props {
     /** Legend/title for this section */
     legend?: string;
-    /** Minimum item width before wrapping (default: "12rem") */
-    minItemWidth?: string;
     /** Additional CSS classes */
     class?: string;
     children: Snippet;
@@ -13,15 +11,12 @@
 
   let {
     legend,
-    minItemWidth = "12rem",
     class: className,
     children
   }: Props = $props();
-
-  const style = `--details-section-min-width: ${minItemWidth}`;
 </script>
 
-<div class="details-section {className ?? ''}" {style}>
+<div class="details-section {className ?? ''}"
   {#if legend}
     <h4 class="details-section__legend">{legend}</h4>
   {/if}
@@ -50,7 +45,7 @@
 
   .details-section__items {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(var(--details-section-min-width, var(--underlay-details-section-min-width, 12rem)), 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(var(--underlay-details-section-min-width, 12rem), 1fr));
     gap: 1rem 1.5rem;
   }
 
