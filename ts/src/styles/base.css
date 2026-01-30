@@ -24,3 +24,8 @@
 .underlay-details-content > .span-full {
   grid-column: 1 / -1;
 }
+
+/* Tab groups (description tabs) always span full width */
+.underlay-details-content > .underlay-tabs {
+  grid-column: 1 / -1;
+}
