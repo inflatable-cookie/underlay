@@ -53,4 +53,18 @@
     grid-template-columns: repeat(auto-fill, minmax(var(--details-section-min-width, 10rem), 1fr));
     gap: 1rem 1.5rem;
   }
+
+  /* Utility classes for spanning columns */
+  .details-section__items :global(.span-full) {
+    grid-column: 1 / -1;
+  }
+
+  .details-section__items :global(.span-2) {
+    grid-column: span 2;
+  }
+
+  /* TabsRoot (description tab groups) always span 2 columns */
+  .details-section__items :global(.underlay-tabs) {
+    grid-column: span 2;
+  }
 </style>
