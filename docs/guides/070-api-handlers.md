@@ -923,6 +923,59 @@ let app = Router::new()
     .layer(cors);
 ```
 
+### Graceful Shutdown (SIGINT/SIGTERM)
+
+In production deployments (Docker, systemd, Kubernetes), your API should stop accepting new connections and allow in-flight requests to finish when it receives a shutdown signal.
+
+Axum supports this via `with_graceful_shutdown(...)`.
+
+Recommended pattern:
+
+- Handle `SIGINT` (Ctrl+C) for local development.
+- Handle `SIGTERM` for production (Kubernetes sends SIGTERM by default).
+
+```rust
+#[tokio::main]
+async fn main() -> anyhow::Result<()> {
+    // ... build router, bind listener
+
+    axum::serve(listener, app)
+        .with_graceful_shutdown(shutdown_signal())
+        .await?;
+
+    Ok(())
+}
+
+async fn shutdown_signal() {
+    #[cfg(unix)]
+    {
+        use tokio::signal::unix::{signal as unix_signal, SignalKind};
+
+        let mut sigint = unix_signal(SignalKind::interrupt())
+            .expect("failed to install SIGINT handler");
+        let mut sigterm = unix_signal(SignalKind::terminate())
+            .expect("failed to install SIGTERM handler");
+
+        tokio::select! {
+            _ = sigint.recv() => {
+                tracing::info!("received SIGINT; starting graceful shutdown");
+            }
+            _ = sigterm.recv() => {
+                tracing::info!("received SIGTERM; starting graceful shutdown");
+            }
+        }
+    }
+
+    #[cfg(not(unix))]
+    {
+        tokio::signal::ctrl_c()
+            .await
+            .expect("failed to install Ctrl+C handler");
+        tracing::info!("received Ctrl+C; starting graceful shutdown");
+    }
+}
+```
+
 ### Complete HTTP Example
 
 ```rust
@@ -1343,4 +1396,3 @@ async fn create_order(
 ## Next Steps
 
 Proceed to [080-typescript-client](./080-typescript-client.md) to build a typed client that matches these envelopes and errors.
-
