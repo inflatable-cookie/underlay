@@ -251,8 +251,9 @@ fn main() {
 Use `underlay_devtools::reset_from_env`:
 
 ```rust
+// Prefer standard Underlay env vars.
 underlay_devtools::reset_from_env(
-    "MYAPP_DATABASE_URL",
+    "DATABASE_URL",
     &["public", "auth", "platform", "myapp"],
     true,
     true,
@@ -264,7 +265,7 @@ underlay_devtools::reset_from_env(
 Use `underlay_devtools::migrate_from_env_with` then call `run_dev_seeds`:
 
 ```rust
-let pool = underlay_devtools::migrate_from_env_with("MYAPP_DATABASE_URL", |pool| {
+let pool = underlay_devtools::migrate_from_env_with("DATABASE_URL", |pool| {
     Box::pin(run_migrations(pool))
 }).await?;
 
@@ -297,7 +298,7 @@ Example `api/package.json`:
 Notes:
 
 - `dev:watch` requires `cargo-watch` installed (`cargo install cargo-watch`).
-- Prefer an app-specific database URL env var (e.g. `MYAPP_DATABASE_URL`) to avoid collisions in a multi-repo workspace.
+- Prefer the standard `DATABASE_URL` name. If migrating an older app-prefixed variable, accept it as a fallback in code.
 
 ## Step 1: Create Database Crate
 
