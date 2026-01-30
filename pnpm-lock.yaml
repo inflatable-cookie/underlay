@@ -34,8 +34,8 @@ importers:
         specifier: ^2.15.4
         version: 2.15.4(@internationalized/date@3.10.1)(@sveltejs/kit@2.50.0(@sveltejs/vite-plugin-svelte@6.2.1(svelte@5.48.0)(vite@7.3.1(@types/node@25.0.10)(tsx@4.21.0)))(svelte@5.48.0)(typescript@5.9.3)(vite@7.3.1(@types/node@25.0.10)(tsx@4.21.0)))(svelte@5.48.0)
       lucide-svelte:
-        specifier: ^0.476.0
-        version: 0.476.0(svelte@5.48.0)
+        specifier: ^0.563.0
+        version: 0.563.0(svelte@5.48.0)
       svelte:
         specifier: ^5.48.0
         version: 5.48.0
@@ -610,8 +610,8 @@ packages:
   loupe@3.2.1:
     resolution: {integrity: sha512-CdzqowRJCeLU72bHvWqwRBBlLcMEtIvGrlvef74kMnV2AolS9Y8xUv1I0U/MNAWMhBlKIoyuEgoJ0t/bbwHbLQ==}
 
-  lucide-svelte@0.476.0:
-    resolution: {integrity: sha512-Ph6zoMWjQVJibDrR+DJoT7LR2uEKLPzzGo886OLRk+nCJZESJUvoCWXk0uE6Y9aaamaSFAdI1Cpwslgzk3YYdQ==}
+  lucide-svelte@0.563.0:
+    resolution: {integrity: sha512-pjZKw7TpQcamfQrx7YdbOHgmrcNeKiGGMD0tKZQaVktwSsbqw28CsKc2Q97ttwjytiCWkJyOa8ij2Q+Og0nPfQ==}
     peerDependencies:
       svelte: ^3 || ^4 || ^5.0.0-next.42
 
@@ -1338,7 +1338,7 @@ snapshots:
 
   loupe@3.2.1: {}
 
-  lucide-svelte@0.476.0(svelte@5.48.0):
+  lucide-svelte@0.563.0(svelte@5.48.0):
     dependencies:
       svelte: 5.48.0
 
