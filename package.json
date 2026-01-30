@@ -92,11 +92,11 @@
     "svelte-dnd-action": "^0.9.69"
   },
   "devDependencies": {
-    "@types/node": "^25.0.10",
+    "@types/node": "^25.1.0",
     "@vitest/ui": "^3.2.4",
-    "bits-ui": "^2.15.4",
+    "bits-ui": "^2.15.5",
     "lucide-svelte": "^0.563.0",
-    "svelte": "^5.48.0",
+    "svelte": "^5.49.1",
     "svelte-check": "^4.3.5",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
@@ -104,7 +104,10 @@
   },
   "guardrails": {
     "srcDir": "./ts/src",
-    "extensions": [".ts", ".svelte"],
+    "extensions": [
+      ".ts",
+      ".svelte"
+    ],
     "bannedPatterns": [],
     "moduleScopeChecks": "@decodelabs/underlay/tools/templates/sveltekit-ssr",
     "suppressionPrefix": "guardrails-disable"
