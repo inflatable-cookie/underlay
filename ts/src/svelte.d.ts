@@ -86,6 +86,14 @@ declare module "*.svelte" {
     limit: number;
     total: number;
   }
+
+  export type TabsVariant = "pills" | "boxed" | "underline" | "plain";
+  export type TabsSize = "default" | "sm";
+
+  export interface SchemaMismatchInfo {
+    actualSchema: string | null;
+    expectedSchema: string;
+  }
 }
 
 declare module "*.css" {

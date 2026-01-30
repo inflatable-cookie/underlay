@@ -15,6 +15,7 @@ Complete, repeatable implementations covering backend → client → frontend.
 
 | Recipe | Use When | Guide |
 |--------|----------|-------|
+| [New Project Bootstrap Prompt](./new-project-bootstrap-prompt.md) | Starting a fresh Underlay-based project and bootstrapping the skeleton | Copy/paste prompt |
 | [CRUD Admin Interface](./crud-admin-interface.md) | Building complete create/read/update/delete for an entity | 8-phase checklist |
 | [Live Validation Endpoint](./live-validation-endpoint.md) | Real-time field validation (e.g., slug availability) | 3-phase checklist |
 | [Nested Entity Management](./nested-entity-management.md) | Child entities within a parent (tabs, scoped lists) | 7-phase checklist |
@@ -24,6 +25,7 @@ Complete, repeatable implementations covering backend → client → frontend.
 These prompts will trigger the appropriate recipe:
 
 - "Build the CRUD interface for Bundles" → [CRUD Admin Interface](./crud-admin-interface.md)
+- "Bootstrap a new Underlay project" → [New Project Bootstrap Prompt](./new-project-bootstrap-prompt.md)
 - "Add live slug validation for modules" → [Live Validation Endpoint](./live-validation-endpoint.md)
 - "Build the Variants tab for Modules" → [Nested Entity Management](./nested-entity-management.md)
 - "Create admin pages for X" → [CRUD Admin Interface](./crud-admin-interface.md)
