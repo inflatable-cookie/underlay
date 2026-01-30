@@ -1,26 +1,6 @@
 # Account Database Schema
 
-This document details the database schema for user profiles, subscriptions, and saved items. The `account` schema is separate from `auth` to maintain a clean boundary between authentication (identity/credentials) and user personalization.
-
-## Schema Overview
-
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                              account schema                                  │
-│                                                                             │
-│  ┌───────────────────┐  ┌───────────────────┐  ┌───────────────────┐       │
-│  │   user_profile    │  │   subscription    │  │    saved_item     │       │
-│  │                   │  │                   │  │                   │       │
-│  │ - locale settings │  │ - tier & status   │  │ - bookmarks       │       │
-│  │ - preferences     │  │ - Stripe IDs      │  │ - notes           │       │
-│  │ - consent         │  │ - billing periods │  │                   │       │
-│  └───────────────────┘  └───────────────────┘  └───────────────────┘       │
-│           │                      │                      │                   │
-│           └──────────────────────┼──────────────────────┘                   │
-│                                  ▼                                          │
-│                         auth.users (FK)                                     │
-└─────────────────────────────────────────────────────────────────────────────┘
-```
+This document details the database schema for user profiles. The `account` schema is separate from `auth` to maintain a clean boundary between authentication (identity/credentials) and user personalization.
 
 ## Design Principles
 
@@ -29,8 +9,6 @@ This document details the database schema for user profiles, subscriptions, and 
 2. **Optional Profile**: Not every `auth.users` record needs a profile immediately. Profiles can be created lazily on first access.
 
 3. **Timezone as IANA String**: Store timezones as IANA identifiers (e.g., `Europe/London`, `America/New_York`) rather than offsets, to handle DST correctly.
-
-4. **Subscription Flexibility**: Support multiple subscription models (Stripe, manual, trials) with clear status tracking.
 
 ## Core Tables
 
@@ -63,66 +41,10 @@ Stores user preferences, locale settings, and consent data.
 - All locale fields are optional; apps should fall back to browser detection
 - `email_frequency` enum: `low`, `normal`, `high`
 
-### account.subscription
-
-Tracks user subscription tiers and billing status.
-
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| id | UUID | PRIMARY KEY | Subscription identifier |
-| user_id | UUID | NOT NULL, FK → auth.users, UNIQUE | Owning user (one active subscription per user) |
-| tier | TEXT | NOT NULL DEFAULT 'free' | Subscription tier |
-| status | TEXT | NOT NULL DEFAULT 'active' | Subscription status |
-| stripe_subscription_id | TEXT | NULL, ≤128 chars | Stripe subscription ID |
-| stripe_customer_id | TEXT | NULL, ≤128 chars | Stripe customer ID |
-| current_period_start | TIMESTAMPTZ | NULL | Current billing period start |
-| current_period_end | TIMESTAMPTZ | NULL | Current billing period end |
-| trial_ends_at | TIMESTAMPTZ | NULL | Trial expiration (if trialing) |
-| cancelled_at | TIMESTAMPTZ | NULL | When subscription was cancelled |
-| created_at | TIMESTAMPTZ | NOT NULL DEFAULT NOW() | Subscription creation time |
-| updated_at | TIMESTAMPTZ | NOT NULL DEFAULT NOW() | Last update time |
-
-**Tier values:** `free`, `premium`, `premium_plus`
-
-**Status values:** `active`, `past_due`, `cancelled`, `expired`, `trialing`
-
-### account.saved_item
-
-User bookmarks/saved content for later review.
-
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| id | UUID | PRIMARY KEY | Saved item identifier |
-| user_id | UUID | NOT NULL, FK → auth.users | Owning user |
-| item_type | TEXT | NOT NULL | Type of saved item |
-| item_id | UUID | NOT NULL | Reference to the saved item |
-| note | TEXT | NULL, ≤1000 chars | User's personal note |
-| created_at | TIMESTAMPTZ | NOT NULL DEFAULT NOW() | When item was saved |
-
-**Item type values:** `activity`, `summary`, `video`, `question`
-
-**Unique constraint:** `(user_id, item_type, item_id)` - can't save same item twice
-
-## Indexes
-
-| Table | Index | Purpose |
-|-------|-------|---------|
-| user_profile | PK on user_id | Profile lookup by user |
-| subscription | idx_subscription_user_id | Subscription lookup by user |
-| subscription | idx_subscription_stripe_id | Webhook processing |
-| subscription | idx_subscription_status | Find active/expired subscriptions |
-| saved_item | idx_saved_item_user_id | User's saved items |
-| saved_item | idx_saved_item_user_type | User's saved items by type |
-| saved_item | unique on (user_id, item_type, item_id) | Prevent duplicates |
-
 ## Relationships
 
 ```
 auth.users (1) ─────── (0..1) account.user_profile
-     │
-     ├──────────────── (0..1) account.subscription
-     │
-     └──────────────── (0..n) account.saved_item
 ```
 
 ## Application Usage
@@ -146,20 +68,30 @@ let profile = match db::get_user_profile(user_id).await? {
 3. Use timezone for displaying dates/times to user
 4. Always store timestamps as UTC in database
 
-### Subscription Webhooks
+## Application Extensions
 
-Stripe webhooks should update subscription status:
+Apps can add additional tables to the `account` schema for app-specific user data:
 
-```
-customer.subscription.created → create subscription record
-customer.subscription.updated → update tier/status/periods
-customer.subscription.deleted → set status to 'cancelled'
-invoice.payment_failed → set status to 'past_due'
+```sql
+-- Example: Subscription tracking
+CREATE TABLE account.subscription (
+    id UUID PRIMARY KEY,
+    user_id UUID NOT NULL REFERENCES auth.users(id),
+    tier TEXT NOT NULL,
+    -- ...
+);
+
+-- Example: Saved/bookmarked items
+CREATE TABLE account.saved_item (
+    id UUID PRIMARY KEY,
+    user_id UUID NOT NULL REFERENCES auth.users(id),
+    item_type TEXT NOT NULL,
+    item_id UUID NOT NULL,
+    -- ...
+);
 ```
 
 ## Security Considerations
 
 1. Profile data is PII - apply appropriate access controls
 2. Only expose profile to the owning user or admins
-3. Subscription tier affects feature access - validate server-side
-4. Saved items should only be visible to the owning user
