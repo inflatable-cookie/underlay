@@ -20,15 +20,6 @@
       "types": "./ts/src/patterns/index.ts",
       "default": "./ts/src/patterns/index.ts"
     },
-    "./patterns/SpaFormShell": {
-      "svelte": "./ts/src/patterns/SpaFormShell.svelte",
-      "types": "./ts/src/patterns/SpaFormShell.svelte",
-      "default": "./ts/src/patterns/SpaFormShell.svelte"
-    },
-    "./patterns/spa-form-types": {
-      "types": "./ts/src/patterns/spa-form-types.ts",
-      "default": "./ts/src/patterns/spa-form-types.ts"
-    },
     "./nightfire": {
       "svelte": "./ts/src/nightfire/index.ts",
       "types": "./ts/src/nightfire/index.ts",
