@@ -12,7 +12,7 @@
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: var(--underlay-space-6, 1.5rem);
-  align-items: start;
+  align-items: stretch;
 }
 
 @container (max-width: 850px) {
