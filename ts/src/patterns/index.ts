@@ -96,3 +96,11 @@ export {
   type TimezoneState,
   type InitTimezoneOptions
 } from "./timezone.svelte";
+
+// Account / user profile types (identity & personalization)
+export {
+  deriveDisplayName,
+  getEffectiveDisplayName,
+  type UserProfileBase,
+  type UserProfileUpdateBase
+} from "./account-types";

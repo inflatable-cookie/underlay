@@ -25,6 +25,10 @@ pub enum UserStatus {
 ///
 /// This is an app-agnostic representation. Applications may extend this
 /// with additional fields (e.g., `artist_id` for Songsprout, `role` for Acowtancy).
+///
+/// Note: `display_name` is optional because identity/personalization fields
+/// should live in `account.user_profile`, not in auth. Auth handles
+/// authentication only (email, password hash, verification status).
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct User {
@@ -32,8 +36,8 @@ pub struct User {
     pub id: Uuid,
     /// User's email address (unique per app).
     pub email: String,
-    /// User's display name.
-    pub display_name: String,
+    /// User's display name (optional - prefer account.user_profile for identity).
+    pub display_name: Option<String>,
     /// Account status.
     pub status: UserStatus,
     /// When the account was created.

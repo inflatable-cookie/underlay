@@ -42,7 +42,11 @@ pub trait UserRepository: Send + Sync {
     async fn find_by_email(&self, email: &str) -> RepoResult<Option<User>>;
 
     /// Create a new user.
-    async fn create(&self, email: &str, display_name: &str) -> RepoResult<User>;
+    ///
+    /// Note: `display_name` is optional. For new apps, prefer storing identity
+    /// in `account.user_profile` instead. The auth layer handles authentication
+    /// only (email, password hash, verification status).
+    async fn create(&self, email: &str, display_name: Option<&str>) -> RepoResult<User>;
 
     /// Update a user's status.
     async fn update_status(&self, user_id: Uuid, status: UserStatus) -> RepoResult<()>;

@@ -232,7 +232,7 @@ where
             None => {
                 let display_name = derive_display_name(&userinfo, &email);
                 (
-                    UserRepository::create(repo, &email, &display_name).await?,
+                    UserRepository::create(repo, &email, Some(display_name.as_str())).await?,
                     true,
                 )
             }
@@ -628,11 +628,11 @@ mod tests {
             Ok(self.users_by_email.lock().await.get(email).cloned())
         }
 
-        async fn create(&self, email: &str, display_name: &str) -> underlay_auth::RepoResult<User> {
+        async fn create(&self, email: &str, display_name: Option<&str>) -> underlay_auth::RepoResult<User> {
             let user = User {
                 id: Uuid::new_v7(),
                 email: email.to_string(),
-                display_name: display_name.to_string(),
+                display_name: display_name.map(|s| s.to_string()),
                 status: underlay_auth::UserStatus::Active,
                 created_at: chrono::Utc::now(),
                 updated_at: chrono::Utc::now(),
@@ -815,7 +815,7 @@ mod tests {
 
         assert!(result.is_new_user);
         assert_eq!(result.user.email, "claire@example.com");
-        assert_eq!(result.user.display_name, "Claire");
+        assert_eq!(result.user.display_name, Some("Claire".to_string()));
         assert_eq!(
             result.credential.credential_type,
             CredentialType::OAuthGoogle

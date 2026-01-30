@@ -10,7 +10,8 @@ export type RegisterPayload = {
   email: string;
   password: string;
   passwordConfirm: string;
-  displayName: string;
+  /** Optional display name. Identity/personalization should live in account.user_profile. */
+  displayName?: string;
 };
 
 export type RecoveryPayload = {

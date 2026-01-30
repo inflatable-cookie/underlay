@@ -750,7 +750,7 @@ mod tests {
         User {
             id: Uuid::new_v7(),
             email: email.to_string(),
-            display_name: "Test".to_string(),
+            display_name: Some("Test".to_string()),
             status: UserStatus::Active,
             created_at: now,
             updated_at: now,
