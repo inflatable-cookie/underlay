@@ -104,6 +104,38 @@ export function createRelationSelectorContext<T extends SelectableRelation>(
   // Track resolved items for selected values
   let resolvedItems = $state<Map<string, T>>(new Map());
 
+  // Watch for initialSelection changes and add to resolvedItems
+  // This handles the case where initialSelection is computed after data loads
+  $effect(() => {
+    const initial = props.initialSelection;
+    if (initial && !resolvedItems.has(initial.id)) {
+      const newResolved = new Map(resolvedItems);
+      newResolved.set(initial.id, initial);
+      resolvedItems = newResolved;
+    }
+  });
+
+  // Watch for initialSelections changes (multi-select)
+  $effect(() => {
+    const initials = props.initialSelections;
+    if (initials && initials.length > 0) {
+      let needsUpdate = false;
+      for (const item of initials) {
+        if (!resolvedItems.has(item.id)) {
+          needsUpdate = true;
+          break;
+        }
+      }
+      if (needsUpdate) {
+        const newResolved = new Map(resolvedItems);
+        for (const item of initials) {
+          newResolved.set(item.id, item);
+        }
+        resolvedItems = newResolved;
+      }
+    }
+  });
+
   // Track last search query for retry
   let lastSearchQuery = $state<string>("");
 

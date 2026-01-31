@@ -14,9 +14,11 @@
     // Selection (single-select)
     value = $bindable(null),
     onchange,
+    initialSelection = undefined,
     // Selection (multi-select)
     values = $bindable([]),
     onchangeMulti,
+    initialSelections = undefined,
     // Mode
     mode = "single",
     // Data fetching
@@ -58,12 +60,18 @@
       value = v;
       onchange?.(v);
     },
+    get initialSelection() {
+      return initialSelection;
+    },
     get values() {
       return values;
     },
     onchangeMulti: (v) => {
       values = v;
       onchangeMulti?.(v);
+    },
+    get initialSelections() {
+      return initialSelections;
     },
     mode,
     search,

@@ -106,12 +106,24 @@ export interface RelationSelectorProps<T extends SelectableRelation> {
   value?: string | null;
   /** Callback when selection changes (single-select mode) */
   onchange?: (value: string | null) => void;
+  /**
+   * Initial selection data (single-select mode).
+   * Use this to display the correct label when the suggestions list
+   * hasn't loaded yet (e.g., when editing an existing record).
+   */
+  initialSelection?: T | null;
 
   // === Selection (multi-select) ===
   /** Currently selected value IDs (multi-select mode) */
   values?: string[];
   /** Callback when selection changes (multi-select mode) */
   onchangeMulti?: (values: string[]) => void;
+  /**
+   * Initial selections data (multi-select mode).
+   * Use this to display correct labels when the suggestions list
+   * hasn't loaded yet.
+   */
+  initialSelections?: T[];
 
   // === Mode ===
   /** Selection mode - single or multi */
