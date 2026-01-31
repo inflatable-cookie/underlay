@@ -1,5 +1,7 @@
 <script lang="ts" module>
-	/** Pagination state passed to the component */
+	import type { PaginationController } from "../patterns/pagination-types";
+
+	/** Pagination state passed to the component (legacy interface) */
 	export interface PaginationState {
 		/** Current page (1-based) */
 		page: number;
@@ -17,7 +19,16 @@
 	/**
 	 * Standalone Pagination component for navigating through pages of content.
 	 *
-	 * @example Basic usage
+	 * Can be used in two modes:
+	 * 1. Controller mode: Pass a PaginationController from createPaginationController/createClientPagination
+	 * 2. Props mode: Pass individual page/limit/total props with callbacks
+	 *
+	 * @example Controller mode (recommended)
+	 * ```svelte
+	 * <Pagination controller={pagination} />
+	 * ```
+	 *
+	 * @example Props mode (legacy)
 	 * ```svelte
 	 * <Pagination
 	 *   page={1}
@@ -30,22 +41,20 @@
 	 * @example With limit selector
 	 * ```svelte
 	 * <Pagination
-	 *   page={currentPage}
-	 *   limit={itemsPerPage}
-	 *   total={totalItems}
+	 *   controller={pagination}
 	 *   showLimitSelector
-	 *   onPage={handlePageChange}
-	 *   onLimit={handleLimitChange}
 	 * />
 	 * ```
 	 */
 
 	interface Props extends HTMLAttributes<HTMLElement> {
-		/** Current page (1-based) */
+		/** Pagination controller from createPaginationController or createClientPagination */
+		controller?: PaginationController<unknown>;
+		/** Current page (1-based) - ignored if controller is provided */
 		page?: number;
-		/** Items per page */
+		/** Items per page - ignored if controller is provided */
 		limit?: number;
-		/** Total number of items */
+		/** Total number of items - ignored if controller is provided */
 		total?: number;
 		/** Show the items-per-page selector */
 		showLimitSelector?: boolean;
@@ -55,15 +64,18 @@
 		showInfo?: boolean;
 		/** Compact mode (smaller padding, no info text on mobile) */
 		compact?: boolean;
+		/** Variant: "full" shows page numbers, "simple" shows only prev/next */
+		variant?: "full" | "simple";
 		/** Additional CSS class */
 		className?: string;
-		/** Callback when page changes */
+		/** Callback when page changes - ignored if controller is provided */
 		onPage?: (page: number) => void;
-		/** Callback when limit changes */
+		/** Callback when limit changes - ignored if controller is provided */
 		onLimit?: (limit: number) => void;
 	}
 
 	let {
+		controller,
 		page = 1,
 		limit = 20,
 		total = 0,
@@ -71,38 +83,76 @@
 		limitOptions = [10, 20, 50, 100],
 		showInfo = true,
 		compact = false,
+		variant = "full",
 		className = "",
 		onPage,
 		onLimit,
 		...restProps
 	}: Props = $props();
 
-	let totalPages = $derived(Math.ceil(total / limit));
-	let startItem = $derived(total === 0 ? 0 : (page - 1) * limit + 1);
-	let endItem = $derived(Math.min(page * limit, total));
+	// Derive values from controller if provided, otherwise use props
+	let effectivePage = $derived(controller?.currentPage ?? page);
+	let effectiveLimit = $derived(controller?.pageSize ?? limit);
+	let effectiveTotal = $derived(controller?.total ?? total);
+	let effectiveTotalPages = $derived(controller?.totalPages ?? Math.ceil((effectiveTotal ?? 0) / effectiveLimit));
+	let startItem = $derived(controller?.showingFrom ?? ((effectiveTotal ?? 0) === 0 ? 0 : (effectivePage - 1) * effectiveLimit + 1));
+	let endItem = $derived(controller?.showingTo ?? Math.min(effectivePage * effectiveLimit, effectiveTotal ?? 0));
+	let hasPrev = $derived(controller?.hasPrevPage ?? effectivePage > 1);
+	let hasNext = $derived(controller?.hasNextPage ?? effectivePage < (effectiveTotalPages ?? 1));
+	let isLoading = $derived(controller?.loading ?? false);
 
-	function handlePageChange(newPage: number) {
-		if (newPage >= 1 && newPage <= totalPages && newPage !== page) {
+	// Check if controller supports random page access (client-side pagination)
+	let supportsGoToPage = $derived(controller && typeof controller.goToPage === 'function');
+
+	function handlePrev() {
+		if (controller) {
+			controller.prevPage();
+		} else {
+			onPage?.(effectivePage - 1);
+		}
+	}
+
+	function handleNext() {
+		if (controller) {
+			controller.nextPage();
+		} else {
+			onPage?.(effectivePage + 1);
+		}
+	}
+
+	function handleGoToPage(newPage: number) {
+		if (controller && supportsGoToPage) {
+			controller.goToPage!(newPage);
+		} else if (!controller) {
 			onPage?.(newPage);
 		}
 	}
 
 	function handleLimitChange(event: Event) {
 		const newLimit = Number((event.target as HTMLSelectElement).value);
-		onLimit?.(newLimit);
+		if (controller) {
+			controller.setPageSize(newLimit);
+		} else {
+			onLimit?.(newLimit);
+		}
 	}
 </script>
 
-{#if totalPages > 1 || showLimitSelector}
+{#if (effectiveTotalPages ?? 1) > 1 || showLimitSelector}
 	<nav
 		class="underlay-pagination {className}"
 		class:compact
+		class:loading={isLoading}
 		aria-label="Pagination"
 		{...restProps}
 	>
-		{#if showInfo && total > 0}
+		{#if showInfo && (effectiveTotal ?? 0) > 0}
 			<div class="pagination-info">
-				Showing {startItem} to {endItem} of {total}
+				{#if effectiveTotal !== null}
+					Showing {startItem} to {endItem} of {effectiveTotal.toLocaleString()}
+				{:else}
+					Showing {startItem} to {endItem}
+				{/if}
 			</div>
 		{/if}
 
@@ -112,8 +162,9 @@
 					<label for="pagination-limit">Show</label>
 					<select
 						id="pagination-limit"
-						value={limit}
+						value={effectiveLimit}
 						onchange={handleLimitChange}
+						disabled={isLoading}
 					>
 						{#each limitOptions as option}
 							<option value={option}>{option}</option>
@@ -123,49 +174,59 @@
 				</div>
 			{/if}
 
-			{#if totalPages > 1}
+			{#if (effectiveTotalPages ?? 1) > 1 || hasPrev || hasNext}
 				<div class="pagination-controls">
+					{#if variant === "full" && supportsGoToPage}
+						<button
+							type="button"
+							class="pagination-button"
+							disabled={!hasPrev || isLoading}
+							onclick={() => handleGoToPage(1)}
+							aria-label="First page"
+						>
+							««
+						</button>
+					{/if}
 					<button
 						type="button"
 						class="pagination-button"
-						disabled={page <= 1}
-						onclick={() => handlePageChange(1)}
-						aria-label="First page"
-					>
-						««
-					</button>
-					<button
-						type="button"
-						class="pagination-button"
-						disabled={page <= 1}
-						onclick={() => handlePageChange(page - 1)}
+						disabled={!hasPrev || isLoading}
+						onclick={handlePrev}
 						aria-label="Previous page"
 					>
-						«
+						«{#if variant === "simple"}&nbsp;Prev{/if}
 					</button>
 
-					<span class="pagination-page">
-						Page {page} of {totalPages}
-					</span>
+					{#if variant === "full" && effectiveTotalPages !== null}
+						<span class="pagination-page">
+							Page {effectivePage} of {effectiveTotalPages}
+						</span>
+					{:else if variant === "simple"}
+						<span class="pagination-page">
+							{startItem}–{endItem}{#if effectiveTotal !== null} of {effectiveTotal.toLocaleString()}{/if}
+						</span>
+					{/if}
 
 					<button
 						type="button"
 						class="pagination-button"
-						disabled={page >= totalPages}
-						onclick={() => handlePageChange(page + 1)}
+						disabled={!hasNext || isLoading}
+						onclick={handleNext}
 						aria-label="Next page"
 					>
-						»
+						{#if variant === "simple"}Next&nbsp;{/if}»
 					</button>
-					<button
-						type="button"
-						class="pagination-button"
-						disabled={page >= totalPages}
-						onclick={() => handlePageChange(totalPages)}
-						aria-label="Last page"
-					>
-						»»
-					</button>
+					{#if variant === "full" && supportsGoToPage && effectiveTotalPages !== null}
+						<button
+							type="button"
+							class="pagination-button"
+							disabled={!hasNext || isLoading}
+							onclick={() => handleGoToPage(effectiveTotalPages!)}
+							aria-label="Last page"
+						>
+							»»
+						</button>
+					{/if}
 				</div>
 			{/if}
 		</div>
@@ -188,6 +249,11 @@
 	.underlay-pagination.compact {
 		padding: 0.5rem 0.75rem;
 		gap: 0.75rem;
+	}
+
+	.underlay-pagination.loading {
+		opacity: 0.7;
+		pointer-events: none;
 	}
 
 	.pagination-info {
