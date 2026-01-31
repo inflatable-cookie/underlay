@@ -115,3 +115,12 @@ export {
   type PaginatedResponse,
   type PaginationController
 } from "./pagination-types";
+
+// Pagination controllers (Svelte 5 runes)
+export {
+  createPaginationController,
+  createClientPagination,
+  type ServerPaginationOptions,
+  type ServerPaginationResult,
+  type ClientPaginationOptions
+} from "./pagination.svelte";
