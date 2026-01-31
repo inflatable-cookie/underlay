@@ -104,3 +104,14 @@ export {
   type UserProfileBase,
   type UserProfileUpdateBase
 } from "./account-types";
+
+// Pagination types and utilities
+export {
+  buildPaginationQuery,
+  appendPaginationParams,
+  DEFAULT_PAGE_SIZE,
+  MAX_PAGE_SIZE,
+  type PaginationParams,
+  type PaginatedResponse,
+  type PaginationController
+} from "./pagination-types";
