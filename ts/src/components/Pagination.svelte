@@ -240,6 +240,7 @@
 		align-items: center;
 		justify-content: space-between;
 		gap: 1rem;
+		margin-top: 1rem;
 		padding: 0.75rem 1rem;
 		font-size: 0.875rem;
 		background: var(--underlay-color-surface-muted, var(--underlay-color-bg-surface, transparent));
