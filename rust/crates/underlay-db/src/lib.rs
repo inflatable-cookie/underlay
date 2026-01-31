@@ -1,5 +1,6 @@
 mod existence;
 mod migrations;
+pub mod pagination;
 mod pool;
 mod schemas;
 mod sql_dir;
