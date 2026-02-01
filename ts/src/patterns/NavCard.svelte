@@ -28,8 +28,8 @@
 
 <a class="underlay-nav-card underlay-nav-card--{variant}" {href}>
   {#if Icon}
+    {@const IconComponent = Icon}
     <span class="underlay-nav-card__icon" style={iconStyle} aria-hidden="true">
-      {@const IconComponent = Icon}
       <IconComponent class="underlay-nav-card__icon-svg" />
     </span>
   {/if}
