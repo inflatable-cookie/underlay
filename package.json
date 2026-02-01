@@ -67,10 +67,10 @@
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
-    "validate": "pnpm run check && pnpm run check:types && pnpm run check:exports && pnpm run check:guardrails && pnpm run test:run"
+    "validate": "bun run check && bun run check:types && bun run check:exports && bun run check:guardrails && bun run test:run"
   },
   "peerDependencies": {
-    "@sveltejs/kit": "^2.0.0",
+    "@sveltejs/kit": "^2.50.1",
     "bits-ui": "^2.0.0",
     "lucide-svelte": "^0.563.0",
     "svelte": "^5.0.0",
@@ -82,17 +82,16 @@
     "svelte-dnd-action": "^0.9.69"
   },
   "devDependencies": {
-    "@sveltejs/package": "^2.3.10",
-    "@sveltejs/vite-plugin-svelte": "^5.0.3",
+    "@sveltejs/vite-plugin-svelte": "^6.2.4",
     "@types/node": "^25.1.0",
     "@vitest/ui": "^3.2.4",
     "bits-ui": "^2.15.5",
     "lucide-svelte": "^0.563.0",
     "svelte": "^5.49.1",
-    "svelte-check": "^4.3.5",
+    "svelte-check": "^4.3.6",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
-    "vite": "^6.3.5",
+    "vite": "^7.3.1",
     "vitest": "^3.2.4"
   },
   "guardrails": {
