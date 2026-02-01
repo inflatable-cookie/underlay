@@ -60,6 +60,7 @@
     "./styles/optimistic.css": "./ts/src/styles/optimistic.css"
   },
   "scripts": {
+    "preinstall": "node -e \"if(!process.env.BUN_INSTALL){console.error('\\x1b[31mUse bun install, not npm/pnpm/yarn\\x1b[0m');process.exit(1)}\"",
     "check": "svelte-check --tsconfig ./ts/tsconfig.json",
     "check:types": "tsc -p ./ts/tsconfig.json",
     "check:exports": "node ts/scripts/check-exports.mjs",
