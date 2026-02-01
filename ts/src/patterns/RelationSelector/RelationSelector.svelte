@@ -51,7 +51,7 @@
     class: className = ""
   }: Props = $props();
 
-  // Create the props object for context
+  // Create the props object for context - use getters for reactive access
   const contextProps: RelationSelectorProps<T> = {
     get value() {
       return value;
@@ -73,30 +73,66 @@
     get initialSelections() {
       return initialSelections;
     },
-    mode,
-    search,
-    suggestions,
-    filters,
-    label,
-    placeholder,
-    searchPlaceholder,
-    emptyMessage,
-    suggestionsLabel,
+    get mode() {
+      return mode;
+    },
+    get search() {
+      return search;
+    },
+    get suggestions() {
+      return suggestions;
+    },
+    get filters() {
+      return filters;
+    },
+    get label() {
+      return label;
+    },
+    get placeholder() {
+      return placeholder;
+    },
+    get searchPlaceholder() {
+      return searchPlaceholder;
+    },
+    get emptyMessage() {
+      return emptyMessage;
+    },
+    get suggestionsLabel() {
+      return suggestionsLabel;
+    },
     get disabled() {
       return disabled;
     },
-    required,
+    get required() {
+      return required;
+    },
     get error() {
       return error;
     },
-    allowCreate,
-    createLabel,
-    onCreate,
-    selectionHistory,
-    renderItem,
-    renderTrigger,
-    renderSelectedPill,
-    createForm
+    get allowCreate() {
+      return allowCreate;
+    },
+    get createLabel() {
+      return createLabel;
+    },
+    get onCreate() {
+      return onCreate;
+    },
+    get selectionHistory() {
+      return selectionHistory;
+    },
+    get renderItem() {
+      return renderItem;
+    },
+    get renderTrigger() {
+      return renderTrigger;
+    },
+    get renderSelectedPill() {
+      return renderSelectedPill;
+    },
+    get createForm() {
+      return createForm;
+    }
   };
 
   // Create the context - this sets up all the state and actions

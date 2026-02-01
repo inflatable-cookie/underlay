@@ -21,8 +21,8 @@
     children
   }: Props = $props();
 
-  const columnClass = columns === "auto" ? "" : `underlay-fieldset--cols-${columns}`;
-  const fullClass = full ? "underlay-fieldset--full" : "";
+  const columnClass = $derived(columns === "auto" ? "" : `underlay-fieldset--cols-${columns}`);
+  const fullClass = $derived(full ? "underlay-fieldset--full" : "");
 </script>
 
 <fieldset class={`underlay-fieldset ${columnClass} ${fullClass} ${className}`}>

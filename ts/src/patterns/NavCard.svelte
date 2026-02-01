@@ -29,7 +29,8 @@
 <a class="underlay-nav-card underlay-nav-card--{variant}" {href}>
   {#if Icon}
     <span class="underlay-nav-card__icon" style={iconStyle} aria-hidden="true">
-      <svelte:component this={Icon} class="underlay-nav-card__icon-svg" />
+      {@const IconComponent = Icon}
+      <IconComponent class="underlay-nav-card__icon-svg" />
     </span>
   {/if}
 

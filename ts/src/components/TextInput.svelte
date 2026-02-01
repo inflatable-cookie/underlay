@@ -75,8 +75,9 @@
   } | undefined>("formValidation");
 
   // Generate stable ID for form validation tracking
-  const fieldId = id ?? createStableId("underlay-text-input");
-  const isRequired = required ?? false;
+  // Note: fieldId intentionally captures id once - we want a stable ID for the lifetime of the component
+  const fieldId = untrack(() => id) ?? createStableId("underlay-text-input");
+  const isRequired = $derived(required ?? false);
 
   let debounceTimer: ReturnType<typeof setTimeout> | null = null;
   let validationTimer: ReturnType<typeof setTimeout> | null = null;
@@ -89,7 +90,8 @@
 
   // Serialize context for value-based comparison (avoids proxy reference issues)
   const contextKey = $derived(JSON.stringify(validationContext ?? null));
-  let lastContextKey = $state(JSON.stringify(validationContext ?? null));
+  // Initialize lastContextKey with the initial value for comparison tracking
+  let lastContextKey = $state(untrack(() => JSON.stringify(validationContext ?? null)));
 
   const showClearButton = $derived(search && value.length > 0);
   const showValidationIcon = $derived(showValidationStatus && validationStatus !== "idle");

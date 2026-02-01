@@ -18,11 +18,13 @@
 
   let { label, forId, hint, error, required = false, span, wide = false, children }: Props = $props();
 
-  const spanStyle = span === "full"
-    ? "grid-column: 1 / -1;"
-    : span
-      ? `grid-column: span ${span};`
-      : "";
+  const spanStyle = $derived(
+    span === "full"
+      ? "grid-column: 1 / -1;"
+      : span
+        ? `grid-column: span ${span};`
+        : ""
+  );
 </script>
 
 <div class="underlay-field" class:underlay-field--wide={wide} style={spanStyle}>

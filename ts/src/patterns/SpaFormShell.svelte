@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
+  import { untrack } from "svelte";
   import type { BannerVariant } from "./banner";
   import type { SpaFormResult, SpaSubmitHandler, SpaNavigateFn } from "./spa-form-types";
   import FormShell from "./FormShell.svelte";
@@ -63,11 +64,12 @@
     navigate
   }: Props = $props();
 
-  // Internal state for form status
+  // Internal state for form status - initialized from props, then managed locally
+  // Use untrack to capture initial values without creating reactive dependencies
   let loading = $state(false);
-  let success = $state(initialSuccess);
-  let error = $state(initialError);
-  let fieldErrors = $state(initialFieldErrors);
+  let success = $state(untrack(() => initialSuccess));
+  let error = $state(untrack(() => initialError));
+  let fieldErrors = $state(untrack(() => initialFieldErrors));
 
   // Reset state when initial props change
   $effect(() => {
