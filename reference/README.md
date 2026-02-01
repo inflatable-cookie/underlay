@@ -56,6 +56,14 @@ Public-facing frontend:
 - Auth integration ready
 - SSR-compatible setup
 
+## Important: Package Paths
+
+The `package.json` files in this reference use paths like `file:../..` which point to the underlay root. **These paths must be updated when copying to a new project.**
+
+After copying, update the `@decodelabs/underlay` dependency in each `package.json`:
+- From: `"@decodelabs/underlay": "file:../.."`
+- To: `"@decodelabs/underlay": "file:../underlay"` (assuming underlay is a sibling)
+
 ## Quick Start
 
 ### 1. Copy to Your Project

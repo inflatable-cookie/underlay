@@ -48,6 +48,19 @@ Create a symlink to the Underlay repository:
 ln -s /path/to/underlay ./underlay
 ```
 
+## Step 3.5: Fix Package Paths
+
+The reference `package.json` files use paths relative to being inside underlay. Update them for your project structure:
+
+**In `api-client/package.json`, `admin/package.json`, `front/package.json`:**
+```json
+// Change from:
+"@decodelabs/underlay": "file:../.."
+
+// To:
+"@decodelabs/underlay": "file:../underlay"
+```
+
 ## Step 4: Rename Project
 
 Systematically replace `acme` with your project name. For this example, we use `myapp`.
