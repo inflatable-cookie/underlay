@@ -17,6 +17,7 @@
    * ```
    */
 
+  import { untrack } from "svelte";
   import Button from "../Button.svelte";
   import Field from "../Field.svelte";
   import FormActions from "../FormActions.svelte";
@@ -71,8 +72,9 @@
   }: Props = $props();
 
   // Track active method and email code request state
-  let activeMethod = $state<Method>(hasTotpSetup ? "totp" : "email");
-  let emailCodeRequested = $state(!hasTotpSetup);
+  // Use untrack to capture initial prop value - method can change later via tabs
+  let activeMethod = $state<Method>(untrack(() => hasTotpSetup ? "totp" : "email"));
+  let emailCodeRequested = $state(untrack(() => !hasTotpSetup));
 
   // Reset code when method changes
   $effect(() => {
@@ -80,7 +82,7 @@
     // This is triggered by the TabsRoot binding
   });
 
-  let previousMethod = $state<Method>(activeMethod);
+  let previousMethod = $state<Method>(untrack(() => activeMethod));
   $effect(() => {
     if (activeMethod !== previousMethod) {
       code = "";
@@ -105,9 +107,10 @@
   const totpHint = "Enter the 6-digit code from your authenticator app.";
   const backupHint = "Enter one of your backup codes. Each code can only be used once.";
   const emailHintPending = "We'll send a verification code to your email address.";
-  const emailHintSent = email
+  // Use $derived since emailHintSent depends on the email prop
+  const emailHintSent = $derived(email
     ? `We've sent a verification code to <strong>${email}</strong>.`
-    : "We've sent a verification code to your email.";
+    : "We've sent a verification code to your email.");
 </script>
 
 {#if hasTotpSetup}

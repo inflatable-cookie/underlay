@@ -35,10 +35,7 @@
     margin-top: 0;
   }
 
-  /* Pills variant - minimal spacing */
-  :global(.underlay-tabs-content--pills) {
-    /* default styles */
-  }
+  /* Pills variant - uses default styles, no overrides needed */
 
   /* Underline variant - tight spacing */
   :global(.underlay-tabs-content--underline) {

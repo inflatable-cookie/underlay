@@ -26,6 +26,7 @@
    */
 
   import type { Snippet } from "svelte";
+  import { untrack } from "svelte";
 
   import Button from "../Button.svelte";
   import Card from "../Card.svelte";
@@ -125,7 +126,8 @@
   type Step = "credentials" | "2fa" | "setup-prompt";
 
   let step = $state<Step>("credentials");
-  let activeMethod = $state<LoginMethod>(methods[0] ?? "password");
+  // Use untrack to capture initial method from props
+  let activeMethod = $state<LoginMethod>(untrack(() => methods[0] ?? "password"));
 
   // Form state
   let email = $state("");

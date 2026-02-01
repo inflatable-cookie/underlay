@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { tick } from "svelte";
+  import { tick, untrack } from "svelte";
   import { flip } from "svelte/animate";
   import { dndzone, type DndEvent } from "svelte-dnd-action";
   import { Popover as BitsPopover } from "bits-ui";
@@ -144,7 +144,8 @@
   }
 
   // Return focus to trigger on close
-  let lastOpen = $state(open);
+  // Use untrack to capture initial value - the $effect below tracks changes
+  let lastOpen = $state(untrack(() => open));
   $effect(() => {
     if (lastOpen && !open && typeof window !== "undefined") {
       void tick().then(() => triggerRef?.focus());

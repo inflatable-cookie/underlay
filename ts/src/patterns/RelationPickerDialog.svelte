@@ -406,6 +406,7 @@
                         aria-selected={selected}
                         aria-disabled={item.disabled}
                         onclick={() => handleItemClick(item)}
+                        onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleItemClick(item); }}}
                         tabindex={item.disabled ? -1 : 0}
                       >
                         {#if renderItem}
@@ -454,6 +455,7 @@
                   aria-selected={selected}
                   aria-disabled={item.disabled}
                   onclick={() => handleItemClick(item)}
+                  onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleItemClick(item); }}}
                   tabindex={item.disabled ? -1 : 0}
                 >
                   {#if renderItem}

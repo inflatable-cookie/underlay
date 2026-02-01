@@ -71,15 +71,32 @@
         </span>
       {/if}
     </a>
-  {:else}
+  {:else if onclick}
     <div
-      class="inline-list-item__content"
-      class:inline-list-item__content--clickable={Boolean(onclick)}
-      role={onclick ? "button" : undefined}
-      tabindex={onclick ? 0 : undefined}
-      onclick={onclick ?? undefined}
-      onkeydown={onclick ? handleKeydown : undefined}
+      class="inline-list-item__content inline-list-item__content--clickable"
+      role="button"
+      tabindex={0}
+      onclick={onclick}
+      onkeydown={handleKeydown}
     >
+      <span
+        class="inline-list-item__dot"
+        style:--inline-list-item-accent={accent}
+      ></span>
+      <span class="inline-list-item__label">{label}</span>
+      {#if badge}
+        <span class="inline-list-item__badge">
+          {@render badge()}
+        </span>
+      {/if}
+      {#if trailing}
+        <span class="inline-list-item__trailing">
+          {@render trailing()}
+        </span>
+      {/if}
+    </div>
+  {:else}
+    <div class="inline-list-item__content">
       <span
         class="inline-list-item__dot"
         style:--inline-list-item-accent={accent}

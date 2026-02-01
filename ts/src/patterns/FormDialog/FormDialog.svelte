@@ -195,7 +195,5 @@
     font-size: 0.875rem;
   }
 
-  :global(.form-dialog__body) {
-    /* Form content */
-  }
+  /* .form-dialog__body: Form content renders here, no additional global styles needed */
 </style>

@@ -219,9 +219,7 @@
     max-width: 100%;
   }
 
-  .underlay-tabs-list-container--boxed {
-    /* No special styling - let dropdown handle it */
-  }
+  /* .underlay-tabs-list-container--boxed: No special styling - let dropdown handle it */
 
   /* Wrapper for measuring tabs width */
   .underlay-tabs-list__measure {

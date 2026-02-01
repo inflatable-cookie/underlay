@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from "svelte";
+  import { onMount, untrack } from "svelte";
   import type { NightfireValue } from "./index";
   import { normaliseNightfireValue } from "./utils";
   import NightfireBlockEditor from "./NightfireBlockEditor.svelte";
@@ -257,7 +257,8 @@
   }
 
   // Initialize with correct values IMMEDIATELY (not deferred via $effect)
-  const initialResolved = resolveSchema(schema);
+  // Use untrack to capture initial values without creating reactive dependencies
+  const initialResolved = untrack(() => resolveSchema(schema));
   let editorSchema: string = $state(initialResolved.editorSchema);
   let registryDef: {
     schema: string;
@@ -266,7 +267,7 @@
   } = $state(initialResolved.registryDef);
 
   // Track the last schema prop to avoid redundant updates
-  let lastSchemaProp = schema;
+  let lastSchemaProp = untrack(() => schema);
 
   // Update when schema prop changes (for subsequent navigations)
   $effect(() => {
@@ -347,10 +348,12 @@
 
   // Single-block state view - cached to prevent re-renders on data-only changes
   // We only update the reference when the block TYPE changes
-  // Initialize synchronously for first render
-  const initialSingleBlock = !effectiveDef.mode || effectiveDef.mode === "single"
-    ? ((value?.block as any) ?? null)
-    : null;
+  // Initialize synchronously for first render, using untrack to capture initial values
+  const initialSingleBlock = untrack(() =>
+    !effectiveDef.mode || effectiveDef.mode === "single"
+      ? ((value?.block as any) ?? null)
+      : null
+  );
   let singleBlock: any = $state(initialSingleBlock);
   let singleBlockType: string | null = $state(initialSingleBlock?.type ?? null);
 
@@ -780,8 +783,9 @@
   // (single or multi) into FormData[name].
   // Use a ref pattern to avoid creating a new function on every value change,
   // which would propagate through bindings and potentially cause re-renders.
-  let valueRef = { current: value };
-  let nameRef = { current: name };
+  // Use untrack to capture initial values - the $effect below keeps them updated.
+  let valueRef = { current: untrack(() => value) };
+  let nameRef = { current: untrack(() => name) };
 
   $effect(() => {
     valueRef.current = value;

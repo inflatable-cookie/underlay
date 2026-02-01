@@ -50,7 +50,8 @@
   const initialBlock = untrack(() => normaliseNightfireBlock(block, typeOptions, definition));
 
   let currentBlockType = $state(initialBlock.type);
-  let BlockEditor: any = $state(getBlockEditor(schema, currentBlockType));
+  // Use untrack to capture initial schema value - the $effect below handles updates
+  let BlockEditor: any = $state(untrack(() => getBlockEditor(schema, currentBlockType)));
   let internalBlock = $state(initialBlock);
 
   // Update only when the block TYPE changes (e.g., user selects different block type)
@@ -72,8 +73,8 @@
 <div class="nightfire-editor nightfire-editor--single">
   {#if BlockEditor}
     {#key currentBlockType}
-      <svelte:component
-        this={BlockEditor}
+      {@const EditorComponent = BlockEditor}
+      <EditorComponent
         block={internalBlock}
         onChange={handleBlockEditorChange}
       />

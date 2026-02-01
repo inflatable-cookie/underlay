@@ -95,9 +95,7 @@
     color: var(--underlay-color-text, #e5e7eb);
   }
 
-  .underlay-auth-layout__content {
-    /* Content renders here */
-  }
+  /* .underlay-auth-layout__content: Content renders in the slot, no additional styles needed */
 
   .underlay-auth-layout__footer {
     margin-top: var(--underlay-space-4, 1rem);
