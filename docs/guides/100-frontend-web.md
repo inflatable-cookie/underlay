@@ -1,5 +1,7 @@
 # 100 - Frontend (Web Pattern)
 
+> **Reference Implementation**: See `underlay/reference/acme-front/` for a complete, working example of the public frontend patterns described here.
+
 This document covers creating the user-facing SvelteKit frontend following the web frontend pattern.
 
 ## Frontend Structure

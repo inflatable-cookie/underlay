@@ -174,6 +174,17 @@ Following naming and structure patterns from reference apps ensures:
 | 160 | Troubleshooting | Common issues and solutions |
 | 170 | Checklist | Completion verification |
 
+## Reference Implementation
+
+For a complete, working example of all these patterns, see the **Acme reference implementation** at `underlay/reference/`:
+
+- `acme-api/` - Complete Rust backend with auth, database, background jobs
+- `acme-client/` - TypeScript API client with commands and types
+- `acme-admin/` - SvelteKit admin frontend with auth flows
+- `acme-front/` - SvelteKit public frontend
+
+See [175-llm-bootstrap-guide.md](./175-llm-bootstrap-guide.md) for step-by-step instructions on bootstrapping a new project from the reference.
+
 ## Next Steps
 
 Proceed to [010-prerequisites](./010-prerequisites.md) to verify your development environment.

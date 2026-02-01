@@ -1,0 +1,83 @@
+// Types
+export type { ApiError } from "./types/common-types.js";
+export type {
+  // Auth types
+  RegisterRequest,
+  LoginRequest,
+  LoginStartRequest,
+  LoginStartResponse,
+  LoginFinishRequest,
+  LoginEmailFallbackRequest,
+  LoginEmailFallbackResponse,
+  LoginEmailResendRequest,
+  RefreshRequest,
+  LogoutRequest,
+  ChangePasswordRequest,
+  TotpSetupResponse,
+  TotpEnableRequest,
+  TotpStatusResponse,
+  TwoFactorStatusResponse,
+  PasskeyStartResponse,
+  PasskeyRegisterFinishRequest,
+  PasskeyLoginStartRequest,
+  PasskeyLoginFinishRequest,
+  PasskeyCredential,
+  PasskeyRenameRequest,
+  GoogleOAuthStartResponse,
+  GoogleOAuthCallbackRequest,
+  GoogleOAuthStatusResponse,
+  GoogleOAuthTokenResponse,
+  EmailTotpPurpose,
+  EmailTotpRequestRequest,
+  EmailTotpRequestResponse,
+  EmailTotpVerifyRequest,
+  EmailTotpVerifyResponse,
+  VerificationSessionResponse,
+  TotpVerifyRequest,
+  PasskeyVerifyStartRequest,
+  PasskeyVerifyFinishRequest,
+  ChangePasswordWithVerificationRequest,
+  PasswordRequirements,
+  LoginUser,
+  LoginResponse,
+  Session,
+  PasswordResetRequestRequest,
+  PasswordResetVerifyRequest,
+  PasswordResetVerifyResponse,
+  PasswordResetCompleteRequest,
+  ListResponse,
+  SingleResponse,
+} from "./types/common-types.js";
+
+// Utilities - re-export from Underlay
+export { toUserMessage } from "@decodelabs/underlay/client";
+
+// Client factory (for apps to configure)
+export {
+  configureAcmeClient,
+  getHttpClient,
+  getAdminHttpClient,
+  getFrontHttpClient,
+  getSharedHttpClient,
+} from "./utils/client-factory.js";
+export type { AcmeClientConfig, HttpClientOptions, Audience } from "./utils/client-factory.js";
+
+// Token store
+export { createTokenStore, tokenStore } from "./utils/token-store.js";
+export type { TokenStore, TokenState } from "./utils/token-store.js";
+
+// Auth manager
+export {
+  createAuthManager,
+  configureAuthManager,
+  getAuthManager,
+} from "./utils/auth-manager.js";
+export type { AuthManager, AuthManagerConfig, AuthState } from "./utils/auth-manager.js";
+
+// Account types
+export type { UserProfile, UserProfileUpdate } from "./types/account-types.js";
+
+// Commands
+export * as healthCommands from "./commands/health-commands.js";
+export * as authCommands from "./commands/auth-commands.js";
+export * as accountCommands from "./commands/account-commands.js";

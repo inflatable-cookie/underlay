@@ -1,6 +1,8 @@
 # 080 - TypeScript Client
 
-> **Reference Implementations**: This guide includes patterns from production TypeScript API clients (cattle-grid for Acowtancy, stem for Songsprout) built with Underlay.
+> **Reference Implementation**: See `underlay/reference/acme-client/` for a complete, working example of the TypeScript client patterns described here.
+>
+> **Additional Examples**: This guide includes patterns from production TypeScript API clients (cattle-grid for Acowtancy, stem for Songsprout) built with Underlay.
 
 This document covers creating a typed API client for the Rust backend.
 

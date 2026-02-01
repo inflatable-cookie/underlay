@@ -1,0 +1,107 @@
+//! Entry point for the Acme background job worker.
+
+use std::time::Duration;
+
+use acme_db::{create_pool, run_migrations};
+use acme_infra::init_tracing;
+use acme_jobs::{JobRegistry, JobRepository, JobRunner, JobRunnerConfig, PgJobNotifier, Scheduler, ScheduledTaskRepository};
+use tracing::{error, info};
+
+#[tokio::main]
+async fn main() {
+    init_tracing();
+
+    let db_url = match std::env::var("DATABASE_URL").or_else(|_| std::env::var("ACME_DATABASE_URL")) {
+        Ok(url) => url,
+        Err(_) => {
+            error!("DATABASE_URL is not set; job worker cannot start");
+            return;
+        }
+    };
+
+    let pool = match create_pool(&db_url).await {
+        Ok(pool) => pool,
+        Err(err) => {
+            error!(%err, "failed to connect to database; job worker exiting");
+            return;
+        }
+    };
+
+    if let Err(err) = run_migrations(&pool).await {
+        error!(%err, "failed to run DB migrations; job worker exiting");
+        return;
+    }
+
+    info!("starting acme job worker");
+
+    // Registry is intentionally empty in the baseline.
+    let registry = JobRegistry::new();
+
+    // Create scheduler and job runner.
+    let job_repo = JobRepository::new(pool.clone());
+    let runner = JobRunner::new(job_repo, registry).with_config(JobRunnerConfig {
+        poll_interval: Duration::from_secs(30),
+        ..Default::default()
+    });
+
+    let scheduler_job_repo = JobRepository::new(pool.clone());
+    let task_repo = ScheduledTaskRepository::new(pool.clone());
+    let scheduler = Scheduler::new(scheduler_job_repo, task_repo);
+
+    let mut notifier = match PgJobNotifier::connect(&pool).await {
+        Ok(n) => n,
+        Err(err) => {
+            error!(%err, "failed to create job notifier; job worker exiting");
+            return;
+        }
+    };
+
+    tokio::select! {
+        result = runner.run_with_notifier(&mut notifier) => {
+            if let Err(err) = result {
+                error!(%err, "job runner failed");
+            }
+        }
+        _ = run_scheduler(scheduler) => {
+            info!("scheduler stopped");
+        }
+        _ = shutdown_signal() => {
+            info!("shutdown signal received");
+        }
+    }
+
+    info!("job worker shutting down");
+}
+
+async fn run_scheduler(scheduler: Scheduler) {
+    loop {
+        if let Err(err) = scheduler.tick().await {
+            error!(%err, "scheduler tick failed");
+        }
+        tokio::time::sleep(Duration::from_secs(60)).await;
+    }
+}
+
+async fn shutdown_signal() {
+    let ctrl_c = async {
+        tokio::signal::ctrl_c()
+            .await
+            .expect("failed to install Ctrl+C handler");
+    };
+
+    #[cfg(unix)]
+    let terminate = async {
+        tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate())
+            .expect("failed to install SIGTERM handler")
+            .recv()
+            .await;
+    };
+
+    #[cfg(not(unix))]
+    let terminate = std::future::pending::<()>();
+
+    tokio::select! {
+        _ = ctrl_c => {}
+        _ = terminate => {}
+    }
+}

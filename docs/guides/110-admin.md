@@ -1,5 +1,7 @@
 # 110 - Admin Frontend (Admin Pattern)
 
+> **Reference Implementation**: See `underlay/reference/acme-admin/` for a complete, working example of the admin frontend patterns described here.
+
 This document covers creating the admin/author SvelteKit frontend following the admin frontend pattern.
 
 ## Admin Frontend Structure
