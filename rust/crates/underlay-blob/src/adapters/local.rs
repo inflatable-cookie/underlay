@@ -76,6 +76,8 @@ impl LocalConfig {
 /// HTTP endpoint.
 pub struct LocalAdapter {
     config: LocalConfig,
+    /// Canonicalized base path for secure path comparisons.
+    canonical_base: PathBuf,
 }
 
 impl LocalAdapter {
@@ -88,7 +90,11 @@ impl LocalAdapter {
             .await
             .map_err(|e| BlobError::ConfigError(format!("Failed to create base directory: {}", e)))?;
 
-        Ok(Self { config })
+        // Canonicalize the base path for secure comparisons (resolves symlinks and ..)
+        let canonical_base = config.base_path.canonicalize()
+            .map_err(|e| BlobError::ConfigError(format!("Failed to canonicalize base path: {}", e)))?;
+
+        Ok(Self { config, canonical_base })
     }
 
     /// Get the full filesystem path for a key.
@@ -150,6 +156,73 @@ impl LocalAdapter {
                 }
             })
     }
+
+    /// Check if a path is safely within the base directory.
+    ///
+    /// Returns the canonicalized path if valid, None otherwise.
+    /// This resolves symlinks and `..` to prevent path traversal attacks.
+    fn is_path_within_base(&self, path: &std::path::Path) -> Option<PathBuf> {
+        // Canonicalize the path to resolve symlinks and ..
+        let canonical = match path.canonicalize() {
+            Ok(p) => p,
+            Err(_) => return None,
+        };
+
+        // Ensure the canonical path starts with our canonical base
+        // and is not equal to it (we never want to delete the base itself)
+        if canonical.starts_with(&self.canonical_base) && canonical != self.canonical_base {
+            Some(canonical)
+        } else {
+            None
+        }
+    }
+
+    /// Clean up empty parent directories after file deletion.
+    ///
+    /// Walks up from the deleted file's parent directory, removing empty
+    /// directories until reaching the base path or a non-empty directory.
+    ///
+    /// # Safety
+    ///
+    /// This function uses canonicalized paths to prevent:
+    /// - Path traversal attacks via `..`
+    /// - Symlink attacks that could escape the base directory
+    /// - Accidental deletion of the base directory itself
+    async fn cleanup_empty_parents(&self, deleted_path: &std::path::Path) {
+        let mut current = deleted_path.parent().map(|p| p.to_path_buf());
+
+        while let Some(ref dir) = current {
+            // Validate this directory is safely within our base path
+            // This canonicalizes the path, resolving any symlinks or ..
+            let canonical_dir = match self.is_path_within_base(dir) {
+                Some(p) => p,
+                None => {
+                    // Path is outside base directory or doesn't exist - stop immediately
+                    break;
+                }
+            };
+
+            // Double-check: the canonical path must be strictly inside the canonical base
+            // (not equal to it, and must be a proper child path)
+            if canonical_dir == self.canonical_base {
+                break;
+            }
+
+            // Try to remove the directory (only succeeds if empty)
+            // Note: remove_dir does NOT follow symlinks - it removes the symlink itself
+            // if the target is a symlink to a directory, which is the safe behavior
+            match fs::remove_dir(&canonical_dir).await {
+                Ok(()) => {
+                    // Directory was empty and removed, continue to parent
+                    current = dir.parent().map(|p| p.to_path_buf());
+                }
+                Err(_) => {
+                    // Directory not empty, permission denied, or other error - stop
+                    break;
+                }
+            }
+        }
+    }
 }
 
 #[async_trait]
@@ -207,7 +280,11 @@ impl BlobAdapter for LocalAdapter {
         let path = self.path_for_key(key);
 
         match fs::remove_file(&path).await {
-            Ok(()) => Ok(()),
+            Ok(()) => {
+                // Clean up empty parent directories
+                self.cleanup_empty_parents(&path).await;
+                Ok(())
+            }
             Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(()), // Idempotent
             Err(e) => Err(BlobError::IoError(e.to_string())),
         }
@@ -361,5 +438,97 @@ mod tests {
         assert_eq!(guess_content_type("photo.JPEG"), "image/jpeg");
         assert_eq!(guess_content_type("doc.pdf"), "application/pdf");
         assert_eq!(guess_content_type("unknown.xyz"), "application/octet-stream");
+    }
+
+    #[tokio::test]
+    async fn test_is_path_within_base_rejects_traversal() {
+        let temp_dir = std::env::temp_dir().join("underlay-blob-security-test");
+        let _ = fs::remove_dir_all(&temp_dir).await;
+        fs::create_dir_all(&temp_dir).await.unwrap();
+
+        let config = LocalConfig::new(&temp_dir, "http://localhost:8080/uploads");
+        let adapter = LocalAdapter::new(config).await.unwrap();
+
+        // Valid path within base should succeed
+        let valid_path = temp_dir.join("subdir");
+        fs::create_dir_all(&valid_path).await.unwrap();
+        assert!(adapter.is_path_within_base(&valid_path).is_some());
+
+        // Path traversal with .. should be rejected (resolves outside base)
+        let traversal_path = temp_dir.join("..").join("other");
+        assert!(adapter.is_path_within_base(&traversal_path).is_none());
+
+        // Base path itself should be rejected (we never delete the base)
+        assert!(adapter.is_path_within_base(&temp_dir).is_none());
+
+        // Non-existent path should be rejected (can't canonicalize)
+        let nonexistent = temp_dir.join("does-not-exist");
+        assert!(adapter.is_path_within_base(&nonexistent).is_none());
+
+        // Clean up
+        let _ = fs::remove_dir_all(&temp_dir).await;
+    }
+
+    #[tokio::test]
+    async fn test_cleanup_preserves_base_directory() {
+        let temp_dir = std::env::temp_dir().join("underlay-blob-cleanup-test");
+        let _ = fs::remove_dir_all(&temp_dir).await;
+
+        let config = LocalConfig::new(&temp_dir, "http://localhost:8080/uploads");
+        let adapter = LocalAdapter::new(config).await.unwrap();
+
+        // Create a nested structure and file
+        let nested_path = temp_dir.join("a").join("b").join("c");
+        fs::create_dir_all(&nested_path).await.unwrap();
+        let file_path = nested_path.join("file.txt");
+        fs::write(&file_path, b"test").await.unwrap();
+
+        // Delete the file and trigger cleanup
+        adapter.delete("a/b/c/file.txt").await.unwrap();
+
+        // The nested empty directories should be cleaned up
+        assert!(!nested_path.exists());
+        assert!(!temp_dir.join("a").join("b").exists());
+        assert!(!temp_dir.join("a").exists());
+
+        // But the base directory MUST still exist
+        assert!(temp_dir.exists(), "Base directory was incorrectly deleted!");
+
+        // Clean up
+        let _ = fs::remove_dir_all(&temp_dir).await;
+    }
+
+    #[tokio::test]
+    async fn test_cleanup_stops_at_non_empty_directory() {
+        let temp_dir = std::env::temp_dir().join("underlay-blob-cleanup-nonempty-test");
+        let _ = fs::remove_dir_all(&temp_dir).await;
+
+        let config = LocalConfig::new(&temp_dir, "http://localhost:8080/uploads");
+        let adapter = LocalAdapter::new(config).await.unwrap();
+
+        // Create nested structure with a sibling file
+        let nested_path = temp_dir.join("media").join("123").join("versions");
+        fs::create_dir_all(&nested_path).await.unwrap();
+
+        // File to delete
+        let file_to_delete = nested_path.join("v1.jpg");
+        fs::write(&file_to_delete, b"image").await.unwrap();
+
+        // Sibling file that should prevent parent deletion
+        let sibling_file = temp_dir.join("media").join("123").join("metadata.json");
+        fs::write(&sibling_file, b"{}").await.unwrap();
+
+        // Delete the file
+        adapter.delete("media/123/versions/v1.jpg").await.unwrap();
+
+        // versions/ should be deleted (was empty after file removal)
+        assert!(!nested_path.exists());
+
+        // But media/123/ should still exist (has sibling file)
+        assert!(temp_dir.join("media").join("123").exists());
+        assert!(sibling_file.exists());
+
+        // Clean up
+        let _ = fs::remove_dir_all(&temp_dir).await;
     }
 }
