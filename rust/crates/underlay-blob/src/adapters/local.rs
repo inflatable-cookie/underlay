@@ -244,6 +244,20 @@ impl BlobAdapter for LocalAdapter {
         })
     }
 
+    async fn get_bytes(&self, key: &str) -> BlobResult<Vec<u8>> {
+        let path = self.path_for_key(key);
+
+        fs::read(&path)
+            .await
+            .map_err(|e| {
+                if e.kind() == std::io::ErrorKind::NotFound {
+                    BlobError::NotFound(key.to_string())
+                } else {
+                    BlobError::DownloadFailed(format!("Failed to read file: {}", e))
+                }
+            })
+    }
+
     fn name(&self) -> &'static str {
         "local"
     }

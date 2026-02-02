@@ -310,6 +310,27 @@ impl BlobAdapter for S3Adapter {
         })
     }
 
+    async fn get_bytes(&self, key: &str) -> BlobResult<Vec<u8>> {
+        let response = self
+            .client
+            .get_object()
+            .bucket(&self.config.bucket)
+            .key(key)
+            .send()
+            .await
+            .map_err(|e| Self::map_s3_error(e.into(), key))?;
+
+        let bytes = response
+            .body
+            .collect()
+            .await
+            .map_err(|e| BlobError::DownloadFailed(format!("Failed to read object body: {}", e)))?
+            .into_bytes()
+            .to_vec();
+
+        Ok(bytes)
+    }
+
     fn name(&self) -> &'static str {
         "s3"
     }

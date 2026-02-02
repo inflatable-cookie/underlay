@@ -44,6 +44,12 @@ pub trait BlobAdapter: Send + Sync {
     /// Get metadata about an object without downloading it.
     async fn head(&self, key: &str) -> BlobResult<ObjectInfo>;
 
+    /// Download an object's contents as bytes.
+    ///
+    /// This fetches the entire object into memory. For large files,
+    /// consider using `signed_download_url` and streaming instead.
+    async fn get_bytes(&self, key: &str) -> BlobResult<Vec<u8>>;
+
     /// Check if an object exists.
     async fn exists(&self, key: &str) -> BlobResult<bool> {
         match self.head(key).await {
@@ -151,6 +157,11 @@ impl BlobAdapter for NoopAdapter {
             last_modified: None,
             metadata: std::collections::HashMap::new(),
         })
+    }
+
+    async fn get_bytes(&self, _key: &str) -> BlobResult<Vec<u8>> {
+        // Noop adapter returns empty bytes
+        Ok(Vec::new())
     }
 
     fn name(&self) -> &'static str {
