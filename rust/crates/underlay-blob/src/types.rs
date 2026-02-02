@@ -52,6 +52,7 @@ impl UploadRequest {
 
 /// The result of initiating an upload, containing the pre-signed URL and constraints.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct UploadPlan {
     /// The URL to upload to (pre-signed PUT URL for S3, or direct endpoint for local).
     pub upload_url: String,
@@ -60,6 +61,7 @@ pub struct UploadPlan {
     pub method: String,
 
     /// Required headers that must be included in the upload request.
+    #[serde(rename = "headers")]
     pub required_headers: HashMap<String, String>,
 
     /// Maximum allowed file size in bytes.
