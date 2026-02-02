@@ -63,6 +63,10 @@ pub mod types;
 #[cfg(feature = "postgres")]
 pub mod postgres;
 
+// Standard maintenance tasks (optional, requires postgres)
+#[cfg(feature = "postgres")]
+pub mod tasks;
+
 // Scheduler (optional, requires postgres)
 #[cfg(feature = "scheduler")]
 mod scheduler;
