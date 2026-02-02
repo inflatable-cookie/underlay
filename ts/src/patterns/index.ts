@@ -124,3 +124,32 @@ export {
   type ServerPaginationResult,
   type ClientPaginationOptions
 } from "./pagination.svelte";
+
+// Blob upload utilities (direct-to-S3 uploads)
+export {
+  uploadToBlob,
+  computeFileHash,
+  validateFileType,
+  validateFileSize,
+  validateFile,
+  isVideoFile,
+  formatFileSize,
+  getFileTypeDescription,
+} from "./blob-upload";
+
+export {
+  BlobUploadError,
+  ALLOWED_IMAGE_TYPES,
+  ALLOWED_PDF_TYPES,
+  ALLOWED_MEDIA_TYPES,
+  REJECTED_VIDEO_TYPES,
+  type UploadPlan,
+  type UploadProgress,
+  type UploadResult,
+  type UploadOptions,
+  type StoredObject,
+  type BlobErrorCode,
+  type AllowedImageType,
+  type AllowedPdfType,
+  type AllowedMediaType,
+} from "./blob-types";
