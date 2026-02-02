@@ -405,6 +405,99 @@ impl PaginationBuilder {
         self.params.decode_cursor()
     }
 
+    /// Check if a cursor is present.
+    pub fn has_cursor(&self) -> bool {
+        self.params.cursor.is_some()
+    }
+
+    // ========================================================================
+    // Query Builder Helpers
+    // ========================================================================
+
+    /// Get the comparison operator for keyset pagination.
+    ///
+    /// For descending order (most common), returns `<` for forward pagination.
+    /// For ascending order, returns `>` for forward pagination.
+    ///
+    /// # Arguments
+    /// * `descending` - Whether the primary sort is descending (true for most recent first)
+    ///
+    /// # Example
+    /// ```rust,ignore
+    /// let op = builder.keyset_operator(true); // "<" for forward, ">" for backward
+    /// let sql = format!("WHERE (updated_at, id) {} ($1, $2)", op);
+    /// ```
+    pub fn keyset_operator(&self, descending: bool) -> &'static str {
+        match (self.params.direction, descending) {
+            (PaginationDirection::Forward, true) => "<",
+            (PaginationDirection::Forward, false) => ">",
+            (PaginationDirection::Backward, true) => ">",
+            (PaginationDirection::Backward, false) => "<",
+        }
+    }
+
+    /// Generate the keyset WHERE clause fragment for a two-column cursor.
+    ///
+    /// Returns a SQL fragment like `(col, id) < ($1, $2)` suitable for keyset pagination.
+    ///
+    /// # Arguments
+    /// * `column` - The primary sort column name (e.g., "updated_at", "weight")
+    /// * `param_offset` - Starting parameter number (1-indexed for PostgreSQL)
+    /// * `descending` - Whether the primary sort is descending
+    ///
+    /// # Example
+    /// ```rust,ignore
+    /// // For a query with existing WHERE clause
+    /// let keyset = builder.keyset_condition("updated_at", 1, true);
+    /// // Returns: "(updated_at, id) < ($1, $2)"
+    ///
+    /// let sql = format!(
+    ///     "SELECT * FROM items WHERE deleted_at IS NULL AND {} LIMIT $3",
+    ///     keyset
+    /// );
+    /// ```
+    pub fn keyset_condition(&self, column: &str, param_offset: usize, descending: bool) -> String {
+        let op = self.keyset_operator(descending);
+        format!(
+            "({}, id) {} (${}, ${})",
+            column,
+            op,
+            param_offset,
+            param_offset + 1
+        )
+    }
+
+    /// Get the ORDER BY direction string.
+    ///
+    /// # Arguments
+    /// * `descending` - Whether the base sort order is descending
+    ///
+    /// Returns "DESC" or "ASC" adjusted for pagination direction.
+    pub fn order_direction(&self, descending: bool) -> &'static str {
+        match (self.params.direction, descending) {
+            (PaginationDirection::Forward, true) => "DESC",
+            (PaginationDirection::Forward, false) => "ASC",
+            (PaginationDirection::Backward, true) => "ASC",
+            (PaginationDirection::Backward, false) => "DESC",
+        }
+    }
+
+    /// Generate the ORDER BY clause for a two-column keyset.
+    ///
+    /// # Arguments
+    /// * `column` - The primary sort column name
+    /// * `descending` - Whether the primary sort is descending
+    ///
+    /// # Example
+    /// ```rust,ignore
+    /// let order = builder.keyset_order_by("updated_at", true);
+    /// // Returns: "updated_at DESC, id DESC"
+    /// ```
+    pub fn keyset_order_by(&self, column: &str, descending: bool) -> String {
+        let dir = self.order_direction(descending);
+        format!("{} {}, id {}", column, dir, dir)
+    }
+
     /// Build response from fetched items.
     ///
     /// Items should be fetched with `query_limit()` (limit + 1).
@@ -558,5 +651,83 @@ mod tests {
         assert_eq!(mapped.data, vec![2, 4, 6]);
         assert!(mapped.has_more);
         assert_eq!(mapped.total, Some(100));
+    }
+
+    #[test]
+    fn test_keyset_operator_forward_desc() {
+        let params = PaginationParams::new();
+        let builder = PaginationBuilder::new(params);
+        assert_eq!(builder.keyset_operator(true), "<");
+    }
+
+    #[test]
+    fn test_keyset_operator_forward_asc() {
+        let params = PaginationParams::new();
+        let builder = PaginationBuilder::new(params);
+        assert_eq!(builder.keyset_operator(false), ">");
+    }
+
+    #[test]
+    fn test_keyset_operator_backward_desc() {
+        let params = PaginationParams::new().with_direction(PaginationDirection::Backward);
+        let builder = PaginationBuilder::new(params);
+        assert_eq!(builder.keyset_operator(true), ">");
+    }
+
+    #[test]
+    fn test_keyset_operator_backward_asc() {
+        let params = PaginationParams::new().with_direction(PaginationDirection::Backward);
+        let builder = PaginationBuilder::new(params);
+        assert_eq!(builder.keyset_operator(false), "<");
+    }
+
+    #[test]
+    fn test_keyset_condition() {
+        let params = PaginationParams::new();
+        let builder = PaginationBuilder::new(params);
+        assert_eq!(
+            builder.keyset_condition("updated_at", 1, true),
+            "(updated_at, id) < ($1, $2)"
+        );
+        assert_eq!(
+            builder.keyset_condition("weight", 3, false),
+            "(weight, id) > ($3, $4)"
+        );
+    }
+
+    #[test]
+    fn test_keyset_order_by() {
+        let params = PaginationParams::new();
+        let builder = PaginationBuilder::new(params);
+        assert_eq!(
+            builder.keyset_order_by("updated_at", true),
+            "updated_at DESC, id DESC"
+        );
+        assert_eq!(
+            builder.keyset_order_by("weight", false),
+            "weight ASC, id ASC"
+        );
+    }
+
+    #[test]
+    fn test_keyset_order_by_backward() {
+        let params = PaginationParams::new().with_direction(PaginationDirection::Backward);
+        let builder = PaginationBuilder::new(params);
+        // Backward pagination reverses the order
+        assert_eq!(
+            builder.keyset_order_by("updated_at", true),
+            "updated_at ASC, id ASC"
+        );
+    }
+
+    #[test]
+    fn test_has_cursor() {
+        let params = PaginationParams::new();
+        let builder = PaginationBuilder::new(params);
+        assert!(!builder.has_cursor());
+
+        let params_with_cursor = PaginationParams::new().with_cursor("abc123");
+        let builder_with_cursor = PaginationBuilder::new(params_with_cursor);
+        assert!(builder_with_cursor.has_cursor());
     }
 }
