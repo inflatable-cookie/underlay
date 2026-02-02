@@ -5,6 +5,10 @@
   interface Props {
     /** Primary text to display */
     label: string;
+    /** Secondary text displayed below the label in a smaller, muted font */
+    sublabel?: string | null;
+    /** Secondary content snippet displayed below the label (alternative to sublabel string) */
+    sublabelContent?: Snippet;
     /** Optional href for the item */
     href?: string | null;
     /** Click handler (used when no href) */
@@ -23,6 +27,8 @@
 
   let {
     label,
+    sublabel = null,
+    sublabelContent,
     href = null,
     onclick = null,
     accent = null,
@@ -48,6 +54,17 @@
   }
 </script>
 
+{#snippet labelContent()}
+  <div class="inline-list-item__label-group">
+    <span class="inline-list-item__label">{label}</span>
+    {#if sublabelContent}
+      <span class="inline-list-item__sublabel">{@render sublabelContent()}</span>
+    {:else if sublabel}
+      <span class="inline-list-item__sublabel">{sublabel}</span>
+    {/if}
+  </div>
+{/snippet}
+
 <li class="inline-list-item" class:inline-list-item--has-delete={showDelete && ondelete}>
   {#if href}
     <a
@@ -59,7 +76,7 @@
         class="inline-list-item__dot"
         style:--inline-list-item-accent={accent}
       ></span>
-      <span class="inline-list-item__label">{label}</span>
+      {@render labelContent()}
       {#if badge}
         <span class="inline-list-item__badge">
           {@render badge()}
@@ -83,7 +100,7 @@
         class="inline-list-item__dot"
         style:--inline-list-item-accent={accent}
       ></span>
-      <span class="inline-list-item__label">{label}</span>
+      {@render labelContent()}
       {#if badge}
         <span class="inline-list-item__badge">
           {@render badge()}
@@ -101,7 +118,7 @@
         class="inline-list-item__dot"
         style:--inline-list-item-accent={accent}
       ></span>
-      <span class="inline-list-item__label">{label}</span>
+      {@render labelContent()}
       {#if badge}
         <span class="inline-list-item__badge">
           {@render badge()}
@@ -175,12 +192,27 @@
     flex-shrink: 0;
   }
 
-  .inline-list-item__label {
+  .inline-list-item__label-group {
     flex: 1;
     min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+  }
+
+  .inline-list-item__label {
     font-size: 0.9rem;
     font-weight: 500;
     color: var(--underlay-color-text, #e5e7eb);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .inline-list-item__sublabel {
+    font-size: 0.8rem;
+    font-weight: 400;
+    color: var(--underlay-color-text-muted, #9ca3af);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
