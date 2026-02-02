@@ -5,6 +5,7 @@
 pub mod account;
 pub mod auth;
 pub mod infra;
+pub mod tasks;
 
 use underlay_db::DbConfig;
 

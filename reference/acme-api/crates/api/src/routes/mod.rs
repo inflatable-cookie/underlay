@@ -8,6 +8,7 @@ use underlay_http::{cors_layer, CorsConfig};
 use crate::state::AppState;
 
 mod shared;
+mod tasks;
 
 /// Build the main API router with all routes configured.
 pub fn build_router() -> Router<AppState> {
@@ -63,6 +64,26 @@ pub fn build_router() -> Router<AppState> {
         .route(
             "/v1/account/profile",
             get(shared::account::get_profile).patch(shared::account::update_profile),
+        )
+        // Project routes
+        .route(
+            "/v1/projects",
+            get(tasks::list_projects).post(tasks::create_project),
+        )
+        .route(
+            "/v1/projects/:project_id",
+            get(tasks::get_project)
+                .patch(tasks::update_project)
+                .delete(tasks::delete_project),
+        )
+        // Task routes
+        .route(
+            "/v1/projects/:project_id/tasks",
+            get(tasks::list_tasks).post(tasks::create_task),
+        )
+        .route(
+            "/v1/projects/:project_id/tasks/:task_id",
+            patch(tasks::update_task).delete(tasks::delete_task),
         )
         .layer(cors)
 }
