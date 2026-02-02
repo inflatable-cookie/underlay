@@ -168,7 +168,7 @@ Use this template for any new shared primitive in Underlay (and any adapter in F
 - Avoid deep imports unless they are explicitly supported by `package.json` `exports`.
 
 **8) Test/verification**
-- Minimum: `pnpm -C <pkg> check` and an SSR build in at least one consuming app.
+- Minimum: `bun -C <pkg> check` and an SSR build in at least one consuming app.
 
 Acceptance criteria:
 - Underlay has at least one Bits-backed component in each category: button, input/select, overlay (dialog/menu).
@@ -245,9 +245,9 @@ Acceptance criteria:
 ## Section 6 — Testing + release discipline (ongoing)
 
 - [x] Define minimum validation expectations for shared packages.
-  - Always run: `pnpm -C libraries/underlay check`.
+  - Always run: `bun -C libraries/underlay check`.
   - For any Nightfire or styling change: also run at least one consuming app build:
-    - Acowtancy: `pnpm -C apps/acowtancy/dairy build` and/or `pnpm -C apps/acowtancy/cream build`.
+    - Acowtancy: `bun -C apps/acowtancy/dairy build` and/or `bun -C apps/acowtancy/cream build`.
   - For changes affecting block save/validation: ensure a server action path imports the relevant validators (`@acowtancy/froyo/validation`).
 
 - [x] Define a versioning policy for shared packages.

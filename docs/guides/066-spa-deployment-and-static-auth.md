@@ -763,7 +763,7 @@ Static pre-rendered pages can't know auth state at build time. If you show logge
 ### Install adapter-static
 
 ```bash
-pnpm add -D @sveltejs/adapter-static
+bun add -D @sveltejs/adapter-static
 ```
 
 ### Configure svelte.config.js
@@ -876,7 +876,7 @@ Leave `FARMYARD_CORS_ORIGINS` (or equivalent) **unset**. The API will use `mirro
 cargo run --bin your-api
 
 # Start frontend
-pnpm dev
+bun dev
 ```
 
 **Cookie considerations:**

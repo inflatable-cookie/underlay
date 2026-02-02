@@ -272,7 +272,7 @@ let pool = underlay_devtools::migrate_from_env_with("DATABASE_URL", |pool| {
 run_dev_seeds(&pool).await?;
 ```
 
-## Farmyard-Style pnpm Scripts (Recommended)
+## Farmyard-Style bun Scripts (Recommended)
 
 Farmyard uses a tiny `package.json` in the Rust repo root to standardize common developer commands.
 
@@ -290,7 +290,7 @@ Example `api/package.json`:
     "jobs": "cargo run -p myapp-jobs",
     "db:drop": "cargo run -p myapp-db --bin reset_dev_db",
     "db:migrate": "cargo run -p myapp-db --bin migrate_dev_db",
-    "db:reset": "pnpm db:drop && pnpm db:migrate"
+    "db:reset": "bun db:drop && bun db:migrate"
   }
 }
 ```

@@ -54,7 +54,7 @@ const underlayPath = path.resolve(__dirname, "../underlay/ts/src");
 export default defineConfig({
   resolve: {
     alias: [
-      // Resolve underlay directly from source to avoid pnpm path issues
+      // Resolve underlay directly from source to avoid path issues
       // with virtual CSS modules. Uses regex to match all subpaths.
       {
         find: /^@decodelabs\/underlay(\/.*)?$/,

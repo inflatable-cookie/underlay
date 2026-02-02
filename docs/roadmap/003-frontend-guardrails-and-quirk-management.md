@@ -50,16 +50,16 @@ Goal: eliminate “mystery state” in dev caused by linked packages and prebund
 
 - [x] Standardize a single supported local-dev topology for Underlay → Froyo → Dairy.
   - Golden path:
-    - `pnpm -C apps/acowtancy/dairy dev:refresh`
-    - If you add new files/exports in Underlay/Froyo, run `pnpm -C apps/acowtancy/dairy refresh:deps` (this re-links the `file:` deps) and restart.
+    - `bun -C apps/acowtancy/dairy dev:refresh`
+    - If you add new files/exports in Underlay/Froyo, run `bun -C apps/acowtancy/dairy refresh:deps` (this re-links the `file:` deps) and restart.
   - Troubleshooting (only if something is clearly stale):
     - Stop dev server
     - Delete caches: `rm -rf apps/acowtancy/dairy/node_modules/.vite apps/acowtancy/dairy/.svelte-kit`
-    - Restart: `pnpm -C apps/acowtancy/dairy dev --force`
+    - Restart: `bun -C apps/acowtancy/dairy dev --force`
 
 - [x] Underlay: enforce a stable public API surface.
   - Keep `package.json` `exports` accurate and intentional.
-  - Enforce export targets exist via `pnpm -C libraries/underlay check:exports`.
+  - Enforce export targets exist via `bun -C libraries/underlay check:exports`.
   - Prefer shallow imports from `@decodelabs/underlay` / `@decodelabs/underlay/components` rather than arbitrary deep file paths.
 
 - [x] Underlay/Froyo: decide and implement one of these approaches:
@@ -76,7 +76,7 @@ Goal: eliminate “mystery state” in dev caused by linked packages and prebund
     - Includes `lucide-svelte` and `easymde` since they’re used by shared components.
 
 Acceptance criteria:
-- Starting `pnpm -C apps/acowtancy/dairy dev` reliably reflects changes in Underlay/Froyo with a documented refresh path.
+- Starting `bun -C apps/acowtancy/dairy dev` reliably reflects changes in Underlay/Froyo with a documented refresh path.
 
 ---
 
@@ -97,18 +97,18 @@ Goal: no SSR-only crashes and no “works in dev, breaks in build/SSR”.
     - `ssr.noExternal`: `bits-ui`, `svelte-toolbelt`, `runed`, `lucide-svelte`, `easymde`
     - `optimizeDeps.exclude`: Underlay entrypoints (local `file:` dependency)
   - Validation after bumps:
-    - `pnpm -C libraries/underlay check`
-    - `pnpm -C apps/acowtancy/dairy build`
+    - `bun -C libraries/underlay check`
+    - `bun -C apps/acowtancy/dairy build`
 
 - [x] Audit “hot paths” for SSR safety:
   - Bits UI overlays/portals
   - Nightfire editor/renderer entrypoints
   - Analytics hooks
   - Underlay: avoid hydration mismatch from random IDs (e.g. `SplitButton` now uses deterministic IDs)
-  - Underlay: validate SSR-safe usage via `pnpm -C libraries/underlay check:guardrails`
+  - Underlay: validate SSR-safe usage via `bun -C libraries/underlay check:guardrails`
 
 Acceptance criteria:
-- `pnpm -C apps/acowtancy/dairy build` does not regress due to browser-only imports.
+- `bun -C apps/acowtancy/dairy build` does not regress due to browser-only imports.
 
 ---
 
@@ -203,7 +203,7 @@ Acceptance criteria:
 Goal: keep the admin feeling fast and stable.
 
 - [x] Establish a small baseline measurement checklist:
-  - SSR build time: `pnpm -C apps/acowtancy/dairy build`
+  - SSR build time: `bun -C apps/acowtancy/dairy build`
   - Initial SSR page load (key routes): measure TTFB + hydration time in devtools
   - Navigation between list pages: measure route navigation + data load time
   - Menus/dialogs open time: verify no long tasks when opening overlays
@@ -231,11 +231,11 @@ Goal: catch regressions early without building a huge test suite.
 - [x] Workstream F (overall)
 
 - [x] Standardize a minimal validation pipeline for frontend changes:
-  - Full stack (recommended): `pnpm -C apps/acowtancy/dairy validate:stack`
+  - Full stack (recommended): `bun -C apps/acowtancy/dairy validate:stack`
   - Or run individually:
-    - `pnpm -C libraries/underlay validate`
-    - `pnpm -C libraries/froyo validate` (optional when relevant)
-    - `pnpm -C apps/acowtancy/dairy validate`
+    - `bun -C libraries/underlay validate`
+    - `bun -C libraries/froyo validate` (optional when relevant)
+    - `bun -C apps/acowtancy/dairy validate`
   - Underlay: `validate` now includes `check:types`, `check:exports`, and `check:guardrails`.
 
 - [x] Add smoke tests only where they meaningfully reduce risk:

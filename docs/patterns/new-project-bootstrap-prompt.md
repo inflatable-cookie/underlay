@@ -91,7 +91,7 @@ After I answer, do the following:
 6) Verification
    - Run the narrowest commands to prove the skeleton is healthy:
      - Rust: cargo build (and cargo test if there are tests)
-     - Frontends/client: pnpm install + pnpm check (or the equivalent scripts you created)
+     - Frontends/client: bun install + bun check (or the equivalent scripts you created)
    - If anything fails, fix it.
 
 7) Output

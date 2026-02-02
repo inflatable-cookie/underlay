@@ -178,7 +178,7 @@ Cause: wrong path dependencies in Cargo workspace.
 
 ### Issue: "Module not found: @decodelabs/underlay"
 
-Cause: missing pnpm install or incorrect `file:` path.
+Cause: missing bun install or incorrect `file:` path.
 
 ## Next Steps
 

@@ -277,11 +277,11 @@ Install dependencies:
 ```bash
 # Multi-repo
 cd myapp-client
-pnpm add -D vitest @vitest/ui
+bun add -D vitest @vitest/ui
 
 # Monorepo
 cd libs/client
-pnpm add -D vitest @vitest/ui
+bun add -D vitest @vitest/ui
 ```
 
 Create `vitest.config.ts`:
@@ -444,7 +444,7 @@ describe("learning integration", () => {
 Test Svelte components using `@testing-library/svelte`:
 
 ```bash
-pnpm add -D @testing-library/svelte @testing-library/jest-dom
+bun add -D @testing-library/svelte @testing-library/jest-dom
 ```
 
 ```typescript
@@ -531,11 +531,11 @@ Install Playwright:
 ```bash
 # Multi-repo
 cd myapp-web
-pnpm create playwright
+bun create playwright
 
 # Monorepo
 cd apps/web
-pnpm create playwright
+bun create playwright
 ```
 
 ### E2E Test Example
@@ -574,9 +574,9 @@ test.describe("Login flow", () => {
 **Run E2E tests:**
 
 ```bash
-pnpm playwright test
-pnpm playwright test --ui  # Interactive mode
-pnpm playwright test --debug  # Debug mode
+bun playwright test
+bun playwright test --ui  # Interactive mode
+bun playwright test --debug  # Debug mode
 ```
 
 ---
@@ -661,23 +661,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
+      - uses: oven-sh/setup-bun@v2
         with:
-          version: 9
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: "pnpm"
+          bun-version: latest
       - name: Install dependencies
-        run: pnpm install
+        run: bun install
       - name: Run unit tests
         run: |
           cd libs/client
-          pnpm test:unit
+          bun test:unit
       - name: Run integration tests
         run: |
           cd libs/client
-          pnpm test:integration
+          bun test:integration
         env:
           API_URL: http://localhost:3000
 
@@ -685,21 +681,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
+      - uses: oven-sh/setup-bun@v2
         with:
-          version: 9
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: "pnpm"
+          bun-version: latest
       - name: Install dependencies
-        run: pnpm install
+        run: bun install
       - name: Install Playwright browsers
-        run: pnpm playwright install --with-deps
+        run: bun playwright install --with-deps
       - name: Run E2E tests
         run: |
           cd apps/web
-          pnpm playwright test
+          bun playwright test
 ```
 
 ---
@@ -719,7 +711,7 @@ cargo tarpaulin --out Html --output-dir coverage
 
 ```bash
 cd libs/client
-pnpm vitest run --coverage
+bun vitest run --coverage
 ```
 
 **View coverage reports:**

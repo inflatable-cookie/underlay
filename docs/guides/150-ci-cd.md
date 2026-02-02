@@ -44,21 +44,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
+      - uses: oven-sh/setup-bun@v2
         with:
-          version: 9
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
+          bun-version: latest
       - name: Install and test
         run: |
           # Monorepo:
-          pnpm install:all
-          pnpm check:all
+          bun install:all
+          bun check:all
 
           # Multi-repo:
-          # pnpm install
-          # pnpm check
+          # bun install
+          # bun check
 ```
 
 See full template in `/code/150-ci-cd/`

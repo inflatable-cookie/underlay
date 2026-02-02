@@ -38,7 +38,7 @@ new-project/
 
 - **Rust:** 1.75+ (`rustc --version`)
 - **Node.js:** 20+ (`node --version`)
-- **pnpm:** 9+ (`pnpm --version`)
+- **bun:** 9+ (`bun --version`)
 - **PostgreSQL:** 14+ (for local development)
 - **sqlx-cli:** For running migrations (`cargo install sqlx-cli`)
 
@@ -47,7 +47,7 @@ new-project/
 ```bash
 rustc --version      # Should be 1.75+
 node --version       # Should be 20+
-pnpm --version       # Should be 9+
+bun --version       # Should be 9+
 psql --version       # Should be 14+
 cargo install sqlx-cli --no-default-features --features postgres
 ```
@@ -112,10 +112,10 @@ This monorepo contains several related projects:
 
 ## Build, Test, and Development Commands
 
-- Bloom dev server: `cd apps/bloom && pnpm install && pnpm dev`.
-- Greenhouse dev server: `cd apps/greenhouse && pnpm install && pnpm dev`.
+- Bloom dev server: `cd apps/bloom && bun install && bun dev`.
+- Greenhouse dev server: `cd apps/greenhouse && bun install && bun dev`.
 - Nursery backend: `cd apps/nursery && cargo test` (tests) and `cargo run` (local API).
-- Libraries: `cd libs/stem && pnpm test`, `cd libs/petal && pnpm test`.
+- Libraries: `cd libs/stem && bun test`, `cd libs/petal && bun test`.
 
 ## Coding Style & Naming Conventions
 
@@ -1015,7 +1015,7 @@ Run tests:
 
 ```bash
 cd libs/stem
-pnpm test
+bun test
 ```
 
 ### 11.3 Frontend Tests
@@ -1039,7 +1039,7 @@ Run frontend tests:
 
 ```bash
 cd apps/bloom
-pnpm test
+bun test
 ```
 
 ---
@@ -1081,13 +1081,13 @@ cargo run -p nursery-api
 ```bash
 # Terminal 1: Bloom
 cd apps/bloom
-pnpm install
-pnpm dev
+bun install
+bun dev
 
 # Terminal 2: Greenhouse
 cd apps/greenhouse
-pnpm install
-pnpm dev
+bun install
+bun dev
 ```
 
 ### 12.5 Verify
@@ -1128,22 +1128,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
+      - uses: oven-sh/setup-bun@v2
         with:
-          version: 9
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
+          bun-version: latest
       - name: Install dependencies
         run: |
-          cd libs/stem && pnpm install
+          cd libs/stem && bun install
           cd ../../
-          cd apps/bloom && pnpm install
+          cd apps/bloom && bun install
       - name: Run tests
         run: |
-          cd libs/stem && pnpm test
+          cd libs/stem && bun test
           cd ../../
-          cd apps/bloom && pnpm test
+          cd apps/bloom && bun test
 ```
 
 ---
@@ -1176,7 +1173,7 @@ jobs:
 
 ### Issue: "Module not found: Can't resolve '@decodelabs/underlay'"
 
-**Solution:** Run `pnpm install` in the frontend directory, or ensure Underlay is properly linked.
+**Solution:** Run `bun install` in the frontend directory, or ensure Underlay is properly linked.
 
 ### Issue: "Connection refused" when calling API
 

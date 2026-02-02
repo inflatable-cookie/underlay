@@ -101,7 +101,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: pnpm bench
+      - run: bun bench
 ```
 
 ### 4. Benchmark Reports

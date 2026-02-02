@@ -41,7 +41,7 @@ Features:
 
 ```bash
 # Generate docs for all exports
-pnpm typedoc --entryPoints ts/src/index.ts --out docs/api/ts/
+bun typedoc --entryPoints ts/src/index.ts --out docs/api/ts/
 ```
 
 Features:

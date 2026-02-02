@@ -22,7 +22,7 @@ Acowtancy’s admin frontend (Dairy) is deployed as a **pure SPA**:
 Most Underlay UI components expect these peer dependencies to be installed in the consuming app:
 
 ```bash
-pnpm add bits-ui lucide-svelte
+bun add bits-ui lucide-svelte
 ```
 
 ### 1) Adapter + Aliases (`svelte.config.js`)

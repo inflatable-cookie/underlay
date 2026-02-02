@@ -156,9 +156,9 @@ When changing Rust code, prefer running:
 
 When changing TypeScript/Svelte code, prefer running:
 
-- `pnpm lint`
-- `pnpm check`
-- `pnpm test`
+- `bun lint`
+- `bun check`
+- `bun test`
 
 Run the narrowest relevant commands before opening a PR.
 
