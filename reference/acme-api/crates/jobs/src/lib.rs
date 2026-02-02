@@ -2,10 +2,12 @@
 //!
 //! This crate wraps `underlay-jobs` and provides Acme-specific job handlers.
 //!
-//! ## Example Job Handlers
+//! ## Job Handlers
 //!
-//! This crate includes example job handlers that demonstrate common patterns:
+//! ### Platform (maintenance)
+//! - `platform.jobs_cleanup` - Purge old completed/failed jobs from history
 //!
+//! ### Domain (example business logic)
 //! - `tasks.cleanup_completed` - Cleanup old completed tasks (batch processing)
 //! - `tasks.send_reminder` - Send task reminder email (single-item processing)
 //! - `projects.generate_report` - Generate project report (long-running with progress)
@@ -23,6 +25,68 @@ pub use underlay_jobs::{
     JobStatus, JobStore, PgJobNotifier, RepoError, ScheduledTask, ScheduledTaskDefinition,
     ScheduledTaskRepository, Scheduler, JOB_NOTIFY_CHANNEL, JOB_NOTIFY_SQL, JOB_TABLES_SQL,
 };
+
+// ============================================================================
+// Job Handler: platform.jobs_cleanup
+// ============================================================================
+
+/// Purge old job history (completed/failed jobs).
+///
+/// Payload: `{ "days_old": 30 }`
+///
+/// This handler is portable across all Underlay apps since it uses the
+/// JobRepository directly from underlay-jobs.
+pub struct JobsCleanupHandler {
+    pool: Arc<PgPool>,
+}
+
+impl JobsCleanupHandler {
+    pub fn new(pool: Arc<PgPool>) -> Self {
+        Self { pool }
+    }
+}
+
+#[derive(Debug, Deserialize)]
+struct JobsCleanupPayload {
+    /// Days to retain completed/failed jobs (default: 30)
+    days_old: Option<i32>,
+}
+
+#[async_trait]
+impl JobHandler for JobsCleanupHandler {
+    fn job_type(&self) -> &'static str {
+        "platform.jobs_cleanup"
+    }
+
+    fn config(&self) -> JobConfig {
+        JobConfig {
+            max_attempts: 3,
+            ..Default::default()
+        }
+    }
+
+    async fn handle(&self, job: Job) -> Result<(), JobHandlerError> {
+        let payload: JobsCleanupPayload = serde_json::from_value(job.payload)
+            .map_err(|e| JobHandlerError::permanent(format!("invalid payload: {}", e)))?;
+
+        let days_old = payload.days_old.unwrap_or(30);
+
+        let job_repo = JobRepository::new((*self.pool).clone());
+        let purged = job_repo
+            .purge_history(days_old)
+            .await
+            .map_err(|e| JobHandlerError::new(format!("job history purge failed: {}", e)))?;
+
+        info!(
+            job_id = %job.id,
+            purged = purged,
+            days_old = days_old,
+            "job history cleanup completed"
+        );
+
+        Ok(())
+    }
+}
 
 // ============================================================================
 // Job Handler: tasks.cleanup_completed
@@ -307,9 +371,85 @@ impl JobHandler for GenerateProjectReportHandler {
 pub fn create_registry(pool: Arc<PgPool>) -> JobRegistry {
     let mut registry = JobRegistry::new();
 
+    // Platform handlers
+    registry.register(JobsCleanupHandler::new(pool.clone()));
+
+    // Domain handlers
     registry.register(CleanupCompletedTasksHandler::new(pool.clone()));
     registry.register(SendTaskReminderHandler::new(pool.clone()));
     registry.register(GenerateProjectReportHandler::new(pool));
 
     registry
+}
+
+// ============================================================================
+// Scheduled Task Definitions
+// ============================================================================
+
+/// Returns the list of scheduled tasks to register on startup.
+///
+/// These definitions are upserted into the database by `Scheduler::register_tasks()`.
+/// Tasks not in this list will be disabled (preserving data but preventing execution).
+///
+/// # Adding New Scheduled Tasks
+///
+/// 1. Add a new `ScheduledTaskDefinition` to this list
+/// 2. Create a corresponding job handler if one doesn't exist
+/// 3. The task will be automatically registered on next worker startup
+///
+/// # Cron Schedule Format
+///
+/// Uses standard cron format: `sec min hour day-of-month month day-of-week`
+/// - `0 0 3 * * *` = 3:00 AM daily
+/// - `0 0 2 * * 0` = 2:00 AM every Sunday
+/// - `0 */15 * * * *` = Every 15 minutes
+///
+/// See <https://crates.io/crates/cron> for full syntax.
+pub fn scheduled_task_definitions() -> Vec<ScheduledTaskDefinition> {
+    vec![
+        // ====================================================================
+        // Platform maintenance tasks
+        // ====================================================================
+
+        // Job history cleanup - daily at 2:30 AM
+        // Purges old completed/failed jobs
+        ScheduledTaskDefinition {
+            name: "jobs_cleanup",
+            job_type: "platform.jobs_cleanup",
+            schedule: "0 30 2 * * *", // 2:30 AM daily
+            payload: serde_json::json!({ "days_old": 30 }),
+            config: JobConfig {
+                max_attempts: 3,
+                ..Default::default()
+            },
+        },
+
+        // ====================================================================
+        // Domain-specific tasks (examples)
+        // ====================================================================
+
+        // Cleanup completed tasks - daily at 3 AM
+        ScheduledTaskDefinition {
+            name: "cleanup_completed_tasks",
+            job_type: "tasks.cleanup_completed",
+            schedule: "0 0 3 * * *", // 3:00 AM daily
+            payload: serde_json::json!({ "days_old": 30 }),
+            config: JobConfig {
+                max_attempts: 3,
+                ..Default::default()
+            },
+        },
+        // Generate project reports - weekly on Sunday at 4 AM
+        ScheduledTaskDefinition {
+            name: "weekly_project_reports",
+            job_type: "projects.generate_report",
+            schedule: "0 0 4 * * SUN", // 4:00 AM every Sunday
+            payload: serde_json::json!({}),
+            config: JobConfig {
+                max_attempts: 3,
+                timeout_seconds: Some(600), // 10 minutes
+                ..Default::default()
+            },
+        },
+    ]
 }

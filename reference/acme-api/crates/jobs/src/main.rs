@@ -4,11 +4,12 @@ use std::time::Duration;
 
 use acme_db::{create_pool, run_migrations};
 use acme_infra::init_tracing;
-use acme_jobs::{JobRepository, JobRunner, JobRunnerConfig, PgJobNotifier, Scheduler, ScheduledTaskRepository};
+use acme_jobs::{scheduled_task_definitions, JobRepository, JobRunner, JobRunnerConfig, PgJobNotifier, Scheduler, ScheduledTaskRepository};
 use tracing::{error, info};
 
 #[tokio::main]
 async fn main() {
+    dotenvy::dotenv().ok();
     init_tracing();
 
     let db_url = match std::env::var("DATABASE_URL").or_else(|_| std::env::var("ACME_DATABASE_URL")) {
@@ -47,6 +48,15 @@ async fn main() {
     let scheduler_job_repo = JobRepository::new(pool.clone());
     let task_repo = ScheduledTaskRepository::new(pool.clone());
     let scheduler = Scheduler::new(scheduler_job_repo, task_repo);
+
+    // Register scheduled task definitions on startup.
+    // This upserts task definitions and disables any stale tasks.
+    let task_definitions = scheduled_task_definitions();
+    if let Err(err) = scheduler.register_tasks(&task_definitions).await {
+        error!(%err, "failed to register scheduled tasks");
+        return;
+    }
+    info!(count = task_definitions.len(), "registered scheduled tasks");
 
     let mut notifier = match PgJobNotifier::connect(&pool).await {
         Ok(n) => n,

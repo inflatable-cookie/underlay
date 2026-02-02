@@ -120,6 +120,7 @@ dependencies = [
  "acme-infra",
  "async-trait",
  "chrono",
+ "dotenvy",
  "serde",
  "serde_json",
  "sqlx",
