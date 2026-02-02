@@ -31,7 +31,7 @@ export interface ServerPaginationOptions<T> {
   onRefresh?: (fetchFn: typeof fetch) => Promise<string | null>;
 
   /**
-   * Initial page size (default: 50).
+   * Initial page size (default: 30).
    */
   pageSize?: number;
 
@@ -39,6 +39,13 @@ export interface ServerPaginationOptions<T> {
    * Whether to include total count in API requests (default: true).
    */
   includeTotal?: boolean;
+
+  /**
+   * Key for persisting page size preference in localStorage.
+   * If provided, the user's page size choice will be remembered.
+   * Example: "pagination:summaries" or "pagination:modules"
+   */
+  persistKey?: string;
 
   /**
    * Callback after successful fetch.
@@ -109,10 +116,24 @@ export function createPaginationController<T>(
     );
   }
 
+  // Helper to get initial page size (checks localStorage if persistKey provided)
+  const getInitialPageSize = (): number => {
+    if (options.persistKey && typeof localStorage !== "undefined") {
+      const stored = localStorage.getItem(options.persistKey);
+      if (stored) {
+        const parsed = parseInt(stored, 10);
+        if (!isNaN(parsed) && parsed > 0 && parsed <= MAX_PAGE_SIZE) {
+          return parsed;
+        }
+      }
+    }
+    return options.pageSize ?? DEFAULT_PAGE_SIZE;
+  };
+
   // State
   let items = $state<T[]>([]);
   let currentPage = $state(1);
-  let pageSize = $state(Math.min(options.pageSize ?? DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE));
+  let pageSize = $state(Math.min(getInitialPageSize(), MAX_PAGE_SIZE));
   let loading = $state(true);
   let error = $state<string | null>(null);
   let total = $state<number | null>(null);
@@ -247,6 +268,12 @@ export function createPaginationController<T>(
     pageSize = newSize;
     currentPage = 1;
     cursorHistory = [];
+
+    // Persist to localStorage if key provided
+    if (options.persistKey && typeof localStorage !== "undefined") {
+      localStorage.setItem(options.persistKey, String(newSize));
+    }
+
     doFetch(null, "forward");
   };
 
@@ -256,6 +283,9 @@ export function createPaginationController<T>(
     _fetched = false;
     await doFetch(null, "forward");
   };
+
+  // reset() is an alias for refresh() - use when filters change
+  const reset = refresh;
 
   return {
     get items() { return items; },
@@ -273,7 +303,8 @@ export function createPaginationController<T>(
     nextPage,
     prevPage,
     setPageSize,
-    refresh
+    refresh,
+    reset
   };
 }
 
@@ -283,7 +314,7 @@ export function createPaginationController<T>(
 
 export interface ClientPaginationOptions {
   /**
-   * Initial page size (default: 50).
+   * Initial page size (default: 30).
    */
   pageSize?: number;
 
@@ -291,6 +322,12 @@ export interface ClientPaginationOptions {
    * Initial page number (1-indexed, default: 1).
    */
   initialPage?: number;
+
+  /**
+   * Key for persisting page size preference in localStorage.
+   * If provided, the user's page size choice will be remembered.
+   */
+  persistKey?: string;
 }
 
 /**
@@ -320,8 +357,22 @@ export function createClientPagination<T>(
   getAllItems: () => T[],
   options: ClientPaginationOptions = {}
 ): PaginationController<T> {
+  // Helper to get initial page size (checks localStorage if persistKey provided)
+  const getInitialPageSize = (): number => {
+    if (options.persistKey && typeof localStorage !== "undefined") {
+      const stored = localStorage.getItem(options.persistKey);
+      if (stored) {
+        const parsed = parseInt(stored, 10);
+        if (!isNaN(parsed) && parsed > 0 && parsed <= MAX_PAGE_SIZE) {
+          return parsed;
+        }
+      }
+    }
+    return options.pageSize ?? DEFAULT_PAGE_SIZE;
+  };
+
   let currentPage = $state(options.initialPage ?? 1);
-  let pageSize = $state(Math.min(options.pageSize ?? DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE));
+  let pageSize = $state(Math.min(getInitialPageSize(), MAX_PAGE_SIZE));
 
   // Derived from source array
   const allItems = $derived(getAllItems());
@@ -368,11 +419,21 @@ export function createClientPagination<T>(
     const firstItemIndex = (validPage - 1) * pageSize;
     pageSize = newSize;
     currentPage = Math.floor(firstItemIndex / newSize) + 1;
+
+    // Persist to localStorage if key provided
+    if (options.persistKey && typeof localStorage !== "undefined") {
+      localStorage.setItem(options.persistKey, String(newSize));
+    }
   };
 
   const refresh = async () => {
     // For client-side, refresh is a no-op since data is already loaded
     // But we keep the method for interface compatibility
+  };
+
+  const reset = async () => {
+    // For client-side, reset goes back to page 1
+    currentPage = 1;
   };
 
   return {
@@ -391,6 +452,7 @@ export function createClientPagination<T>(
     prevPage,
     goToPage,
     setPageSize,
-    refresh
+    refresh,
+    reset
   };
 }

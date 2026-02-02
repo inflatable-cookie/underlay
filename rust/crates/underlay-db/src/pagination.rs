@@ -32,7 +32,7 @@ use std::collections::HashMap;
 use uuid::Uuid;
 
 /// Default number of items per page.
-pub const DEFAULT_PAGE_SIZE: i64 = 50;
+pub const DEFAULT_PAGE_SIZE: i64 = 30;
 
 /// Maximum allowed page size.
 pub const MAX_PAGE_SIZE: i64 = 100;
@@ -626,7 +626,7 @@ mod tests {
     #[test]
     fn test_pagination_params_defaults() {
         let params = PaginationParams::default();
-        assert_eq!(params.limit, 50);
+        assert_eq!(params.limit, 30);
         assert!(params.cursor.is_none());
         assert_eq!(params.direction, PaginationDirection::Forward);
         assert!(params.include_total);

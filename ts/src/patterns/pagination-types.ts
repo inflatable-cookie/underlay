@@ -79,12 +79,14 @@ export interface PaginationController<T> {
   setPageSize(size: number): void;
   /** Refresh the current page */
   refresh(): Promise<void>;
+  /** Reset to page 1 and refetch (use when filters change) */
+  reset(): Promise<void>;
 }
 
 /**
  * Default page size for paginated endpoints.
  */
-export const DEFAULT_PAGE_SIZE = 50;
+export const DEFAULT_PAGE_SIZE = 30;
 
 /**
  * Maximum page size allowed by the API.

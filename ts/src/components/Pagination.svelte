@@ -80,7 +80,7 @@
 		limit = 20,
 		total = 0,
 		showLimitSelector = false,
-		limitOptions = [10, 20, 50, 100],
+		limitOptions = [30, 50, 100],
 		showInfo = true,
 		compact = false,
 		variant = "full",
