@@ -49,7 +49,7 @@ underlay-auth-totp = { path = "../../rust/crates/underlay-auth-totp" }
 underlay-auth-webauthn = { path = "../../rust/crates/underlay-auth-webauthn" }
 underlay-db = { path = "../../rust/crates/underlay-db" }
 underlay-devtools = { path = "../../rust/crates/underlay-devtools" }
-underlay-email = { path = "../../rust/crates/underlay-email" }
+underlay-email = { path = "../../rust/crates/underlay-email", features = ["templates"] }
 underlay-events = { path = "../../rust/crates/underlay-events" }
 underlay-jobs = { path = "../../rust/crates/underlay-jobs", features = ["full"] }
 underlay-ratelimit = { path = "../../rust/crates/underlay-ratelimit" }

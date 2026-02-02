@@ -43,6 +43,19 @@ pub fn build_router() -> Router<AppState> {
             "/v1/auth/password/change-2fa",
             post(shared::auth::change_password_with_verification),
         )
+        // Password reset (forgot password) routes
+        .route(
+            "/v1/auth/password/reset/request",
+            post(shared::auth::password_reset_request),
+        )
+        .route(
+            "/v1/auth/password/reset/verify",
+            post(shared::auth::password_reset_verify),
+        )
+        .route(
+            "/v1/auth/password/reset/complete",
+            post(shared::auth::password_reset_complete),
+        )
         // TOTP routes
         .route("/v1/auth/totp/status", get(shared::auth::totp_status))
         .route("/v1/auth/totp/setup", post(shared::auth::totp_setup))
@@ -59,6 +72,36 @@ pub fn build_router() -> Router<AppState> {
         .route(
             "/v1/auth/email-totp/verify",
             post(shared::auth::email_totp_verify),
+        )
+        // Passkey routes
+        .route("/v1/auth/passkeys", get(shared::auth::list_passkeys))
+        .route(
+            "/v1/auth/passkeys/:credential_id",
+            patch(shared::auth::rename_passkey).delete(shared::auth::delete_passkey),
+        )
+        .route(
+            "/v1/auth/passkeys/register/start",
+            post(shared::auth::passkey_register_start),
+        )
+        .route(
+            "/v1/auth/passkeys/register/finish",
+            post(shared::auth::passkey_register_finish),
+        )
+        .route(
+            "/v1/auth/passkeys/login/start",
+            post(shared::auth::passkey_login_start),
+        )
+        .route(
+            "/v1/auth/passkeys/login/finish",
+            post(shared::auth::passkey_login_finish),
+        )
+        .route(
+            "/v1/auth/passkeys/verify/start",
+            post(shared::auth::passkey_verify_start),
+        )
+        .route(
+            "/v1/auth/passkeys/verify/finish",
+            post(shared::auth::passkey_verify_finish),
         )
         // Session routes
         .route("/v1/auth/sessions", get(shared::auth::list_sessions))

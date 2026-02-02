@@ -3,13 +3,14 @@
   import { goto } from "$app/navigation";
   import { adminCommands, type Project, type TaskWithLabels } from "@acme/client";
   import { auth, authLoading, currentUser } from "$lib/stores/auth";
-  import { useAuthenticatedData, PageHeader, useToasts, Banner } from "@decodelabs/underlay/patterns";
+  import { useAuthenticatedData, PageHeader, useToasts, Banner, ReorderableList, createReorderController } from "@decodelabs/underlay/patterns";
   import { Button, PageLoading, FormError, ConfirmAction, Badge, ListGrid, ListCard, ProgressBar } from "@decodelabs/underlay/components";
   import { gotoWithContext } from "@decodelabs/underlay/client";
   import Pencil from "lucide-svelte/icons/pencil";
   import Trash2 from "lucide-svelte/icons/trash-2";
   import Plus from "lucide-svelte/icons/plus";
   import CheckSquare from "lucide-svelte/icons/check-square";
+  import ArrowUpDown from "lucide-svelte/icons/arrow-up-down";
 
   interface Props {
     data: PageData;
@@ -41,6 +42,38 @@
 
   const project = $derived(pageData.data?.project);
   const tasks = $derived(pageData.data?.tasks ?? []);
+
+  let isTaskReorderMode = $state(false);
+
+  // Map tasks to have 'id' field for reorder controller
+  const reorderItems = $derived(
+    tasks.map((t) => ({ ...t, id: t.id }))
+  );
+
+  // Create reorder controller for tasks
+  const reorderController = $derived(
+    createReorderController(reorderItems, async (orderedIds) => {
+      const token = auth.getToken();
+      if (!token) {
+        toastStore.push({ variant: "error", message: "Not authenticated" });
+        return;
+      }
+      await adminCommands.reorderTasks(data.projectId, { ids: orderedIds }, fetch, token);
+    })
+  );
+
+  function enterTaskReorderMode() {
+    isTaskReorderMode = true;
+  }
+
+  async function handleTaskReorderSuccess() {
+    isTaskReorderMode = false;
+    await pageData.refetch();
+  }
+
+  function exitTaskReorderMode() {
+    isTaskReorderMode = false;
+  }
 
   const completedTasks = $derived(tasks.filter(t => t.status === "completed").length);
   const progress = $derived(tasks.length > 0 ? Math.round((completedTasks / tasks.length) * 100) : 0);
@@ -207,14 +240,46 @@
   <section class="tasks-section">
     <div class="tasks-header">
       <h2>Tasks</h2>
-      <Button type="button" variant="primary" size="sm" onclick={handleAddTask}>
-        <Plus size={14} />
-        Add Task
-      </Button>
+      <div class="tasks-header-actions">
+        {#if tasks.length > 1}
+          <Button
+            type="button"
+            variant={isTaskReorderMode ? "danger" : "subtle"}
+            size="sm"
+            onclick={() => isTaskReorderMode ? exitTaskReorderMode() : enterTaskReorderMode()}
+          >
+            <ArrowUpDown size={14} />
+            Reorder
+          </Button>
+        {/if}
+        <Button type="button" variant="primary" size="sm" onclick={handleAddTask}>
+          <Plus size={14} />
+          Add Task
+        </Button>
+      </div>
     </div>
 
     {#if tasks.length === 0}
       <p class="empty-state">No tasks yet. Add your first task to get started.</p>
+    {:else if isTaskReorderMode}
+      <ReorderableList controller={reorderController} oncancel={exitTaskReorderMode} onsuccess={handleTaskReorderSuccess}>
+        {#snippet item(task)}
+          <ListCard
+            title={task.title}
+            variant="compact"
+            showDragHandle
+          >
+            {#snippet media()}
+              <CheckSquare size={16} />
+            {/snippet}
+            {#snippet badges()}
+              <Badge variant={task.status === "completed" ? "success" : task.status === "in_progress" ? "info" : "muted"} size="sm">
+                {task.status === "completed" ? "Done" : task.status === "in_progress" ? "In Progress" : "Pending"}
+              </Badge>
+            {/snippet}
+          </ListCard>
+        {/snippet}
+      </ReorderableList>
     {:else}
       <ListGrid minItemWidth={24}>
         {#each tasks as task}
@@ -329,6 +394,12 @@
     font-size: 1rem;
     font-weight: 600;
     color: var(--text-primary, #111827);
+  }
+
+  .tasks-header-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
   }
 
   .empty-state {

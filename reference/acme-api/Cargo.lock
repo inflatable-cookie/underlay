@@ -118,11 +118,15 @@ version = "0.1.0"
 dependencies = [
  "acme-db",
  "acme-infra",
+ "async-trait",
+ "chrono",
  "serde",
  "serde_json",
+ "sqlx",
  "tokio",
  "tracing",
  "underlay-jobs",
+ "uuid",
 ]
 
 [[package]]

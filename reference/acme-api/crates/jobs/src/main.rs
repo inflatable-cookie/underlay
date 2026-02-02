@@ -4,7 +4,7 @@ use std::time::Duration;
 
 use acme_db::{create_pool, run_migrations};
 use acme_infra::init_tracing;
-use acme_jobs::{JobRegistry, JobRepository, JobRunner, JobRunnerConfig, PgJobNotifier, Scheduler, ScheduledTaskRepository};
+use acme_jobs::{JobRepository, JobRunner, JobRunnerConfig, PgJobNotifier, Scheduler, ScheduledTaskRepository};
 use tracing::{error, info};
 
 #[tokio::main]
@@ -34,8 +34,8 @@ async fn main() {
 
     info!("starting acme job worker");
 
-    // Registry is intentionally empty in the baseline.
-    let registry = JobRegistry::new();
+    // Create registry with all job handlers
+    let registry = acme_jobs::create_registry(std::sync::Arc::new(pool.clone()));
 
     // Create scheduler and job runner.
     let job_repo = JobRepository::new(pool.clone());

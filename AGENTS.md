@@ -34,6 +34,17 @@ This repository is a *framework*, not an app. It should provide stable, app-agno
 
 **Important**: After updating TypeScript/Svelte components in this repo, consuming apps (e.g., Acowtancy's `dairy/` or `cream/`) need to run `bun install` to pick up the changes. This is required because the workspace links need to be refreshed.
 
+## Reference Apps (reference/)
+
+The `reference/` directory contains example implementations demonstrating Underlay patterns:
+- `acme-api/` - Rust API example
+- `acme-admin/` - SvelteKit admin frontend
+- `acme-client/` - TypeScript API client
+- `acme-front/` - SvelteKit public frontend
+- `acme-ui/` - Shared UI components
+
+**IMPORTANT: Do NOT run TypeScript build/install commands in reference apps.** The `file:` protocol dependencies between reference apps create cyclic hard link issues. Only run Rust commands (`cargo check`, `cargo test`, etc.) in `reference/acme-api/`. The user will handle TypeScript tooling manually.
+
 ## Design Principles
 
 - **App-agnostic**: avoid project-specific naming, routes, and domain types.

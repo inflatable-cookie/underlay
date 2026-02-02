@@ -141,3 +141,14 @@ export * as healthCommands from "./commands/health-commands.js";
 export * as authCommands from "./commands/auth-commands.js";
 export * as accountCommands from "./commands/account-commands.js";
 export * as adminCommands from "./commands/admin-commands.js";
+export * as userCommands from "./commands/user-commands.js";
+
+// User types
+export type {
+  UserProject,
+  UserTask,
+  CreateUserProjectPayload,
+  UpdateUserProjectPayload,
+  CreateUserTaskPayload,
+  UpdateUserTaskPayload,
+} from "./commands/user-commands.js";

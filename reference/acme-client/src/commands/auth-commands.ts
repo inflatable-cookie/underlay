@@ -200,29 +200,26 @@ export async function passkeyRegisterFinish(
   payload: PasskeyRegisterFinishRequest,
   fetchFn: typeof fetch,
   accessToken: string,
-): Promise<PasskeyCredential> {
+): Promise<void> {
   const http = getHttpClient({ fetchFn, accessToken });
-  const response = await http.post<SingleResponse<PasskeyCredential>>("/v1/auth/passkeys/register/finish", payload);
-  return response.data;
+  await http.post<void>("/v1/auth/passkeys/register/finish", payload);
 }
 
+/** @deprecated Use passkeyRegisterStart instead */
 export async function passkeyConnectStart(
   fetchFn: typeof fetch,
   accessToken: string,
 ): Promise<PasskeyStartResponse> {
-  const http = getHttpClient({ fetchFn, accessToken });
-  const response = await http.post<SingleResponse<PasskeyStartResponse>>("/v1/auth/passkeys/connect/start", {});
-  return response.data;
+  return passkeyRegisterStart(fetchFn, accessToken);
 }
 
+/** @deprecated Use passkeyRegisterFinish instead */
 export async function passkeyConnectFinish(
   payload: PasskeyRegisterFinishRequest,
   fetchFn: typeof fetch,
   accessToken: string,
-): Promise<PasskeyCredential> {
-  const http = getHttpClient({ fetchFn, accessToken });
-  const response = await http.post<SingleResponse<PasskeyCredential>>("/v1/auth/passkeys/connect/finish", payload);
-  return response.data;
+): Promise<void> {
+  return passkeyRegisterFinish(payload, fetchFn, accessToken);
 }
 
 // ============================================================================
@@ -244,7 +241,7 @@ export async function deletePasskey(
   accessToken: string,
 ): Promise<void> {
   const http = getHttpClient({ fetchFn, accessToken });
-  await http.post<void>(`/v1/auth/passkeys/${credentialId}/delete`, {});
+  await http.delete<void>(`/v1/auth/passkeys/${credentialId}`);
 }
 
 export async function renamePasskey(
@@ -254,7 +251,7 @@ export async function renamePasskey(
   accessToken: string,
 ): Promise<void> {
   const http = getHttpClient({ fetchFn, accessToken });
-  await http.post<void>(`/v1/auth/passkeys/${credentialId}/rename`, payload);
+  await http.patch<void>(`/v1/auth/passkeys/${credentialId}`, payload);
 }
 
 // ============================================================================
