@@ -146,7 +146,7 @@ pub async fn create_project(
     let user_id = user.user_id.0.into_inner();
     let project_id = Uuid::new_v7().into_inner();
 
-    match tasks::create_project(pool, project_id, user_id, &req.name, req.description.as_deref())
+    match tasks::create_project(pool, project_id, user_id, &req.name, req.description.as_deref(), None)
         .await
     {
         Ok(project) => {
@@ -212,6 +212,7 @@ pub async fn update_project(
         req.name.as_deref(),
         req.description.as_ref().map(|d| d.as_deref()),
         req.status.as_deref(),
+        None, // category_id - not editable from user routes
     )
     .await
     {

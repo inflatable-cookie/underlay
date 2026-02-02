@@ -4,6 +4,7 @@
 
 pub mod account;
 pub mod auth;
+pub mod categories;
 pub mod infra;
 pub mod tasks;
 

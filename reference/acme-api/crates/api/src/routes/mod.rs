@@ -1,12 +1,18 @@
 //! Route handlers for the Acme API.
+//!
+//! This module organizes routes into:
+//! - `shared/` - Auth, health, account routes (used by all clients)
+//! - `tasks` - User-facing project/task routes
+//! - `admin/` - Admin-only routes with enhanced features
 
 use axum::http::header::HeaderName;
-use axum::routing::{get, patch, post};
+use axum::routing::{get, patch, post, put};
 use axum::Router;
 use underlay_http::{cors_layer, CorsConfig};
 
 use crate::state::AppState;
 
+mod admin;
 mod shared;
 mod tasks;
 
@@ -65,6 +71,9 @@ pub fn build_router() -> Router<AppState> {
             "/v1/account/profile",
             get(shared::account::get_profile).patch(shared::account::update_profile),
         )
+        // ====================================================================
+        // User-facing routes (authenticated users)
+        // ====================================================================
         // Project routes
         .route(
             "/v1/projects",
@@ -84,6 +93,76 @@ pub fn build_router() -> Router<AppState> {
         .route(
             "/v1/projects/:project_id/tasks/:task_id",
             patch(tasks::update_task).delete(tasks::delete_task),
+        )
+        // ====================================================================
+        // Admin routes (require Admin role)
+        // ====================================================================
+        // Validation endpoint (for async form validation)
+        .route(
+            "/v1/admin/validate-field",
+            post(admin::validation::validate_field),
+        )
+        // Category admin routes
+        .route(
+            "/v1/admin/categories",
+            get(admin::categories::list_categories).post(admin::categories::create_category),
+        )
+        .route(
+            "/v1/admin/categories/reorder",
+            put(admin::categories::reorder_categories),
+        )
+        .route(
+            "/v1/admin/categories/:category_id",
+            get(admin::categories::get_category)
+                .patch(admin::categories::update_category)
+                .delete(admin::categories::soft_delete_category),
+        )
+        .route(
+            "/v1/admin/categories/:category_id/restore",
+            post(admin::categories::restore_category),
+        )
+        // Project admin routes
+        .route(
+            "/v1/admin/projects",
+            get(admin::projects::list_projects).post(admin::projects::create_project),
+        )
+        .route(
+            "/v1/admin/projects/reorder",
+            put(admin::projects::reorder_projects),
+        )
+        .route(
+            "/v1/admin/projects/:project_id",
+            get(admin::projects::get_project)
+                .patch(admin::projects::update_project)
+                .delete(admin::projects::soft_delete_project),
+        )
+        .route(
+            "/v1/admin/projects/:project_id/restore",
+            post(admin::projects::restore_project),
+        )
+        // Task admin routes (nested under projects)
+        .route(
+            "/v1/admin/projects/:project_id/tasks",
+            get(admin::tasks::list_tasks).post(admin::tasks::create_task),
+        )
+        .route(
+            "/v1/admin/projects/:project_id/tasks/reorder",
+            put(admin::tasks::reorder_tasks),
+        )
+        .route(
+            "/v1/admin/projects/:project_id/tasks/:task_id",
+            get(admin::tasks::get_task)
+                .patch(admin::tasks::update_task)
+                .delete(admin::tasks::soft_delete_task),
+        )
+        .route(
+            "/v1/admin/projects/:project_id/tasks/:task_id/labels",
+            get(admin::tasks::get_task_labels).put(admin::tasks::set_task_labels),
+        )
+        // Label admin routes (nested under projects)
+        .route(
+            "/v1/admin/projects/:project_id/labels",
+            get(admin::tasks::list_labels).post(admin::tasks::create_label),
         )
         .layer(cors)
 }

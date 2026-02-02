@@ -1,9 +1,9 @@
 <script lang="ts">
 	import ChevronDown from "lucide-svelte/icons/chevron-down";
 	import Gauge from "lucide-svelte/icons/gauge";
-	import Users from "lucide-svelte/icons/users";
-	import Building2 from "lucide-svelte/icons/building-2";
-	import ClipboardCheck from "lucide-svelte/icons/clipboard-check";
+	import FolderOpen from "lucide-svelte/icons/folder-open";
+	import Briefcase from "lucide-svelte/icons/briefcase";
+	import CheckSquare from "lucide-svelte/icons/check-square";
 	import Settings from "lucide-svelte/icons/settings";
 
 	interface Props {
@@ -63,20 +63,25 @@
 		<button
 			type="button"
 			class="{linkClass} {sectionClass} admin-nav__section-toggle"
-			aria-expanded={expandedSection === "people"}
-			onclick={() => toggleSection("people")}
+			aria-expanded={expandedSection === "categories"}
+			onclick={() => toggleSection("categories")}
 		>
-			<span class="admin-nav__badge admin-nav__badge--people" aria-hidden="true">
-				<Users class="admin-nav__badge-icon" />
+			<span class="admin-nav__badge admin-nav__badge--categories" aria-hidden="true">
+				<FolderOpen class="admin-nav__badge-icon" />
 			</span>
-			<span class={variant === "desktop" ? "admin-nav__label" : ""}>People</span>
+			<span class={variant === "desktop" ? "admin-nav__label" : ""}>Categories</span>
 			<ChevronDown class="admin-nav__chevron" />
 		</button>
-		{#if expandedSection === "people"}
+		{#if expandedSection === "categories"}
 			<ul class={childrenClass}>
 				<li>
-					<a href="/people" class:admin-nav__link--active={isActive("/people")} onclick={handleChildClick}>
-						All people
+					<a href="/categories" class:admin-nav__link--active={isActive("/categories")} onclick={handleChildClick}>
+						All categories
+					</a>
+				</li>
+				<li>
+					<a href="/categories/new" class:admin-nav__link--active={isActive("/categories/new")} onclick={handleChildClick}>
+						New category
 					</a>
 				</li>
 			</ul>
@@ -87,24 +92,33 @@
 		<button
 			type="button"
 			class="{linkClass} {sectionClass} admin-nav__section-toggle"
-			aria-expanded={expandedSection === "businesses"}
-			onclick={() => toggleSection("businesses")}
+			aria-expanded={expandedSection === "projects"}
+			onclick={() => toggleSection("projects")}
 		>
-			<span class="admin-nav__badge admin-nav__badge--businesses" aria-hidden="true">
-				<Building2 class="admin-nav__badge-icon" />
+			<span class="admin-nav__badge admin-nav__badge--projects" aria-hidden="true">
+				<Briefcase class="admin-nav__badge-icon" />
 			</span>
-			<span class={variant === "desktop" ? "admin-nav__label" : ""}>Businesses</span>
+			<span class={variant === "desktop" ? "admin-nav__label" : ""}>Projects</span>
 			<ChevronDown class="admin-nav__chevron" />
 		</button>
-		{#if expandedSection === "businesses"}
+		{#if expandedSection === "projects"}
 			<ul class={childrenClass}>
 				<li>
 					<a
-						href="/businesses"
-						class:admin-nav__link--active={isActive("/businesses")}
+						href="/projects"
+						class:admin-nav__link--active={isActive("/projects")}
 						onclick={handleChildClick}
 					>
-						All businesses
+						All projects
+					</a>
+				</li>
+				<li>
+					<a
+						href="/projects/new"
+						class:admin-nav__link--active={isActive("/projects/new")}
+						onclick={handleChildClick}
+					>
+						New project
 					</a>
 				</li>
 			</ul>
@@ -115,24 +129,24 @@
 		<button
 			type="button"
 			class="{linkClass} {sectionClass} admin-nav__section-toggle"
-			aria-expanded={expandedSection === "assessments"}
-			onclick={() => toggleSection("assessments")}
+			aria-expanded={expandedSection === "tasks"}
+			onclick={() => toggleSection("tasks")}
 		>
-			<span class="admin-nav__badge admin-nav__badge--assessments" aria-hidden="true">
-				<ClipboardCheck class="admin-nav__badge-icon" />
+			<span class="admin-nav__badge admin-nav__badge--tasks" aria-hidden="true">
+				<CheckSquare class="admin-nav__badge-icon" />
 			</span>
-			<span class={variant === "desktop" ? "admin-nav__label" : ""}>Assessments</span>
+			<span class={variant === "desktop" ? "admin-nav__label" : ""}>Tasks</span>
 			<ChevronDown class="admin-nav__chevron" />
 		</button>
-		{#if expandedSection === "assessments"}
+		{#if expandedSection === "tasks"}
 			<ul class={childrenClass}>
 				<li>
 					<a
-						href="/assessments"
-						class:admin-nav__link--active={isActive("/assessments")}
+						href="/projects"
+						class:admin-nav__link--active={false}
 						onclick={handleChildClick}
 					>
-						All assessments
+						View by project
 					</a>
 				</li>
 			</ul>
@@ -155,8 +169,8 @@
 		{#if expandedSection === "system"}
 			<ul class={childrenClass}>
 				<li>
-					<a href="/system" class:admin-nav__link--active={isActive("/system")} onclick={handleChildClick}>
-						Overview
+					<a href="/account" class:admin-nav__link--active={isActive("/account")} onclick={handleChildClick}>
+						Account
 					</a>
 				</li>
 			</ul>
@@ -276,20 +290,20 @@
 		background: linear-gradient(135deg, #22c55e, #14b8a6);
 	}
 
-	:global(.admin-nav__badge--people) {
-		background: linear-gradient(135deg, #60a5fa, #34d399);
+	:global(.admin-nav__badge--categories) {
+		background: linear-gradient(135deg, #8b5cf6, #6366f1);
 	}
 
-	:global(.admin-nav__badge--businesses) {
-		background: linear-gradient(135deg, #f97316, #f59e0b);
+	:global(.admin-nav__badge--projects) {
+		background: linear-gradient(135deg, #60a5fa, #3b82f6);
 	}
 
-	:global(.admin-nav__badge--assessments) {
-		background: linear-gradient(135deg, #fb7185, #f97316);
+	:global(.admin-nav__badge--tasks) {
+		background: linear-gradient(135deg, #14b8a6, #22c55e);
 	}
 
 	:global(.admin-nav__badge--system) {
-		background: linear-gradient(135deg, #facc15, #f97316);
+		background: linear-gradient(135deg, #94a3b8, #64748b);
 	}
 
 	:global(.admin-mobile-overlay__list) {

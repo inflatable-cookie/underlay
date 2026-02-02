@@ -1,7 +1,15 @@
--- Underlay auth schema (synced into app migrations).
--- Source: underlay/rust/crates/underlay-auth/migrations/0001_create_auth_tables.sql
-
-CREATE SCHEMA IF NOT EXISTS auth;
+-- Acme baseline: auth schema.
+--
+-- Contains all auth tables from Underlay auth:
+-- - users (with lockout support)
+-- - credentials
+-- - sessions
+-- - auth_state
+-- - totp_credential
+-- - login_attempts
+-- - email_totp_codes
+-- - email_totp_rate_limits
+-- - verification_sessions
 
 -- =========================================
 -- Users
@@ -17,11 +25,22 @@ CREATE TABLE IF NOT EXISTS auth.users (
 
     status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'suspended', 'deleted')),
 
+    -- Display name for UI
+    display_name TEXT,
+
+    -- Account lockout support
+    failed_login_count INTEGER NOT NULL DEFAULT 0,
+    lockout_until TIMESTAMPTZ NULL,
+
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE INDEX IF NOT EXISTS idx_auth_users_email ON auth.users (email);
+
+CREATE INDEX IF NOT EXISTS idx_auth_users_lockout
+    ON auth.users (lockout_until)
+    WHERE lockout_until IS NOT NULL;
 
 -- =========================================
 -- Credentials
@@ -139,3 +158,82 @@ CREATE TABLE IF NOT EXISTS auth.totp_credential (
     last_counter BIGINT NOT NULL DEFAULT 0,
     backup_code_hashes JSONB NOT NULL
 );
+
+-- =========================================
+-- Login attempts tracking
+-- =========================================
+
+CREATE TABLE IF NOT EXISTS auth.login_attempts (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    ip_address INET NULL,
+    attempted_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    success BOOLEAN NOT NULL DEFAULT FALSE,
+    failure_reason TEXT NULL CHECK (failure_reason IS NULL OR char_length(failure_reason) <= 128)
+);
+
+CREATE INDEX IF NOT EXISTS idx_auth_login_attempts_user_id
+    ON auth.login_attempts (user_id, attempted_at DESC);
+
+CREATE INDEX IF NOT EXISTS idx_auth_login_attempts_ip
+    ON auth.login_attempts (ip_address, attempted_at DESC)
+    WHERE ip_address IS NOT NULL;
+
+CREATE INDEX IF NOT EXISTS idx_auth_login_attempts_user_failures
+    ON auth.login_attempts (user_id, attempted_at DESC)
+    WHERE success = FALSE;
+
+-- =========================================
+-- Email TOTP codes
+-- =========================================
+
+CREATE TABLE IF NOT EXISTS auth.email_totp_codes (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    email TEXT NOT NULL,
+    code_hash TEXT NOT NULL,
+    purpose TEXT NOT NULL CHECK (purpose IN ('login', 'password_change', 'sensitive_action', 'password_reset')),
+    expires_at TIMESTAMPTZ NOT NULL,
+    attempts INT NOT NULL DEFAULT 0,
+    max_attempts INT NOT NULL DEFAULT 5,
+    used_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_email_totp_codes_user_purpose
+    ON auth.email_totp_codes(user_id, purpose)
+    WHERE used_at IS NULL;
+
+CREATE INDEX IF NOT EXISTS idx_email_totp_codes_expires_at
+    ON auth.email_totp_codes(expires_at)
+    WHERE used_at IS NULL;
+
+-- =========================================
+-- Email TOTP rate limiting
+-- =========================================
+
+CREATE TABLE IF NOT EXISTS auth.email_totp_rate_limits (
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    hour_bucket TIMESTAMPTZ NOT NULL,
+    send_count INT NOT NULL DEFAULT 1,
+    attempt_count INT NOT NULL DEFAULT 0,
+    PRIMARY KEY (user_id, hour_bucket)
+);
+
+-- =========================================
+-- Verification sessions
+-- =========================================
+
+CREATE TABLE IF NOT EXISTS auth.verification_sessions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    purpose TEXT NOT NULL CHECK (purpose IN ('login', 'password_change', 'sensitive_action', 'password_reset')),
+    method TEXT NOT NULL CHECK (method IN ('totp', 'passkey', 'email_totp')),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    expires_at TIMESTAMPTZ NOT NULL,
+    used_at TIMESTAMPTZ
+);
+
+CREATE INDEX IF NOT EXISTS idx_verification_sessions_user_purpose
+    ON auth.verification_sessions(user_id, purpose, expires_at)
+    WHERE used_at IS NULL;

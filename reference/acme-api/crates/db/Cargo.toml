@@ -14,6 +14,7 @@ tracing = { workspace = true }
 underlay-db = { workspace = true }
 underlay-devtools = { workspace = true }
 underlay-email = { workspace = true }
+underlay-http = { workspace = true }
 uuid = { workspace = true }
 
 [[bin]]
