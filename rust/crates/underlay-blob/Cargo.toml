@@ -1,0 +1,27 @@
+[package]
+name = "underlay-blob"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Blob storage adapter for Underlay applications"
+
+[features]
+default = []
+s3 = ["aws-sdk-s3", "aws-config"]
+local = ["tokio/fs", "tokio/io-util"]
+
+[dependencies]
+async-trait = { workspace = true }
+base64 = { workspace = true }
+chrono = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+thiserror = { workspace = true }
+tokio = { workspace = true }
+url = "2"
+
+# AWS S3 adapter (optional)
+aws-sdk-s3 = { version = "1", optional = true }
+aws-config = { version = "1", optional = true }
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }

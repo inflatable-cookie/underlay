@@ -1,0 +1,68 @@
+//! Error types for blob storage operations.
+
+use thiserror::Error;
+
+/// Errors that can occur during blob storage operations.
+#[derive(Debug, Error)]
+pub enum BlobError {
+    /// The object was not found.
+    #[error("object not found: {0}")]
+    NotFound(String),
+
+    /// Access denied to the object or bucket.
+    #[error("access denied: {0}")]
+    AccessDenied(String),
+
+    /// The bucket does not exist.
+    #[error("bucket not found: {0}")]
+    BucketNotFound(String),
+
+    /// Invalid object key.
+    #[error("invalid key: {0}")]
+    InvalidKey(String),
+
+    /// The object exceeds the maximum allowed size.
+    #[error("object too large: {0} bytes (max: {1})")]
+    TooLarge(u64, u64),
+
+    /// Invalid content type.
+    #[error("invalid content type: {0}")]
+    InvalidContentType(String),
+
+    /// Configuration error.
+    #[error("configuration error: {0}")]
+    ConfigError(String),
+
+    /// Authentication/credentials error.
+    #[error("authentication error: {0}")]
+    AuthError(String),
+
+    /// Network or transport error.
+    #[error("transport error: {0}")]
+    TransportError(String),
+
+    /// Pre-signed URL generation failed.
+    #[error("failed to generate pre-signed URL: {0}")]
+    PresignError(String),
+
+    /// I/O error (for local adapter).
+    #[error("I/O error: {0}")]
+    IoError(String),
+
+    /// The adapter is not available or not configured.
+    #[error("adapter not available: {0}")]
+    AdapterUnavailable(String),
+
+    /// Generic internal error.
+    #[error("internal error: {0}")]
+    Internal(String),
+}
+
+impl From<std::io::Error> for BlobError {
+    fn from(err: std::io::Error) -> Self {
+        BlobError::IoError(err.to_string())
+    }
+}
+
+/// Result type for blob storage operations.
+pub type BlobResult<T> = Result<T, BlobError>;
