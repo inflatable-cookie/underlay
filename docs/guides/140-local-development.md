@@ -56,7 +56,7 @@ Add helper scripts for cache management:
 {
   "scripts": {
     "dev": "vite dev",
-    "dev:clean": "pnpm run clean && vite dev --force",
+    "dev:clean": "bun run clean && vite dev --force",
     "dev:force": "vite dev --force",
     "clean": "rm -rf .svelte-kit node_modules/.vite"
   }
@@ -65,10 +65,10 @@ Add helper scripts for cache management:
 
 | Script | When to Use |
 |--------|-------------|
-| `pnpm dev` | Normal development |
-| `pnpm dev:force` | After updating Underlay (quick refresh) |
-| `pnpm dev:clean` | If hydration errors persist (thorough refresh) |
-| `pnpm clean` | Just clear cache without starting dev |
+| `bun dev` | Normal development |
+| `bun dev:force` | After updating Underlay (quick refresh) |
+| `bun dev:clean` | If hydration errors persist (thorough refresh) |
+| `bun clean` | Just clear cache without starting dev |
 
 ### Common Issues
 
@@ -78,17 +78,17 @@ Vite caches prebundled dependencies in `node_modules/.vite`. When you change Und
 
 ```bash
 # Quick fix
-pnpm dev:force
+bun dev:force
 
 # Thorough fix
-pnpm dev:clean
+bun dev:clean
 ```
 
 **"Cannot set properties of null" Hydration Errors**
 
 This usually means the server-rendered HTML doesn't match the client hydration. Common causes:
 
-1. Stale Vite cache (use `pnpm dev:clean`)
+1. Stale Vite cache (use `bun dev:clean`)
 2. Browser APIs used at module scope (use guardrails to detect)
 3. Conditional rendering that differs between server and client
 
@@ -127,11 +127,11 @@ cargo run -p myapp-api
 ```bash
 # Terminal 1: Web frontend
 cd apps/web
-pnpm dev
+bun dev
 
 # Terminal 2: Admin frontend
 cd apps/admin
-pnpm dev
+bun dev
 ```
 
 ## Access Points
@@ -198,7 +198,7 @@ Create `.guardrailsrc.json` in your project root:
 #### 3. Run
 
 ```bash
-pnpm lint:guardrails
+bun lint:guardrails
 ```
 
 ### Configuration Options
@@ -428,7 +428,7 @@ const z = typeof window !== "undefined" ? window.innerWidth : 0;
 
 ```yaml
 - name: Run Guardrails
-  run: pnpm lint:guardrails
+  run: bun lint:guardrails
 ```
 
 #### Pre-commit Hook
@@ -437,7 +437,7 @@ const z = typeof window !== "undefined" ? window.innerWidth : 0;
 {
   "husky": {
     "hooks": {
-      "pre-commit": "pnpm lint:guardrails"
+      "pre-commit": "bun lint:guardrails"
     }
   }
 }

@@ -88,28 +88,28 @@ cd myapp-api/crates/db && sqlx migrate run
 cd myapp-api && cargo run -p myapp-api
 
 # Web (frontend)
-cd myapp-web && pnpm install
-cd myapp-web && pnpm dev
+cd myapp-web && bun install
+cd myapp-web && bun dev
 
 # Admin (frontend)
-cd myapp-admin && pnpm install
-cd myapp-admin && pnpm dev
+cd myapp-admin && bun install
+cd myapp-admin && bun dev
 
 # Client (TypeScript)
-cd myapp-client && pnpm install
-cd myapp-client && pnpm check
+cd myapp-client && bun install
+cd myapp-client && bun check
 
 # UI kit (optional)
-cd myapp-ui && pnpm install
-cd myapp-ui && pnpm check
+cd myapp-ui && bun install
+cd myapp-ui && bun check
 ```
 
 **Monorepo:** run workspace scripts from repo root.
 
 ```bash
-pnpm install:all
-pnpm check:all
-pnpm test:all
+bun install:all
+bun check:all
+bun test:all
 
 cd apps/api && cargo test
 cd apps/api/crates/db && sqlx migrate run

@@ -24,6 +24,6 @@ async fn main() {
     }
 
     println!(
-        "Dev database schema dropped. Run `cargo run -p acme-db --bin migrate_dev_db` or `pnpm db:migrate` to apply migrations and seeds."
+        "Dev database schema dropped. Run `cargo run -p acme-db --bin migrate_dev_db` or `bun db:migrate` to apply migrations and seeds."
     );
 }

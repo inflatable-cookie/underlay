@@ -29,10 +29,10 @@ This repository is a *framework*, not an app. It should provide stable, app-agno
 
 ## Build & Test
 
-- JS/Svelte: `pnpm install`, then `pnpm check`
+- JS/Svelte: `bun install`, then `bun check`
 - Rust: `cargo test`
 
-**Important**: After updating TypeScript/Svelte components in this repo, consuming apps (e.g., Acowtancy's `dairy/` or `cream/`) need to run `pnpm install` to pick up the changes. This is required because the pnpm workspace links need to be refreshed.
+**Important**: After updating TypeScript/Svelte components in this repo, consuming apps (e.g., Acowtancy's `dairy/` or `cream/`) need to run `bun install` to pick up the changes. This is required because the workspace links need to be refreshed.
 
 ## Design Principles
 

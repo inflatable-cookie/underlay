@@ -39,16 +39,16 @@ nvm install 20
 nvm use 20
 ```
 
-### 3. pnpm
+### 3. bun
 
-**Version:** 9 or later
+**Version:** 1.0 or later
 
 ```bash
 # Verify installation
-pnpm --version
+bun --version
 
-# If not installed, install via npm
-npm install -g pnpm
+# If not installed, install via curl
+curl -fsSL https://bun.sh/install | bash
 ```
 
 ### 4. PostgreSQL
@@ -102,8 +102,8 @@ node --version
 npm --version
 
 echo ""
-echo "=== pnpm ==="
-pnpm --version
+echo "=== bun ==="
+bun --version
 
 echo ""
 echo "=== PostgreSQL ==="
@@ -124,8 +124,8 @@ cargo 1.75.0
 v20.10.0
 10.2.4
 
-=== pnpm ===
-9.0.0
+=== bun ===
+1.1.0
 
 === PostgreSQL ===
 psql (15.4)
@@ -283,12 +283,16 @@ nvm install 20
 nvm use 20
 ```
 
-### Issue: pnpm permission errors
+### Issue: bun command not found
 
 ```bash
-# Fix pnpm store permissions
-pnpm store prune
-pnpm config set store-dir ~/.pnpm-store
+# Reinstall bun
+curl -fsSL https://bun.sh/install | bash
+
+# Add to PATH if needed
+echo 'export BUN_INSTALL="$HOME/.bun"' >> ~/.zshrc
+echo 'export PATH="$BUN_INSTALL/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
 ```
 
 ## Next Steps

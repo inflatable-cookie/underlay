@@ -27,8 +27,8 @@
   },
   "scripts": {
     "check": "svelte-check --tsconfig ./tsconfig.json",
-    "validate": "pnpm run check",
-    "refresh:deps": "pnpm install"
+    "validate": "bun run check",
+    "refresh:deps": "bun install"
   },
   "devDependencies": {
     "svelte": "^5.46.3",

@@ -16,8 +16,8 @@ This document covers common issues and their solutions.
 
 | Issue | Cause | Solution |
 |-------|-------|----------|
-| "Module not found" | pnpm install not run | Run `pnpm install` |
-| "Type error" | TypeScript config | Run `pnpm check` |
+| "Module not found" | bun install not run | Run `bun install` |
+| "Type error" | TypeScript config | Run `bun check` |
 | "Import error" | Wrong path | Check exports |
 
 ### Frontend
@@ -32,18 +32,17 @@ This document covers common issues and their solutions.
 
 #### "failed to load virtual css module" errors
 
-**Symptom**: When running `pnpm dev`, you see errors like:
+**Symptom**: When running `bun dev`, you see errors like:
 ```
 [vite-plugin-svelte:load] failed to load virtual css module
-/path/to/node_modules/.pnpm/@decodelabs+underlay@file+..+underlay_.../
-node_modules/@decodelabs/underlay/ts/src/components/Button.svelte?svelte&type=style&lang.css
+/path/to/node_modules/@decodelabs/underlay/ts/src/components/Button.svelte?svelte&type=style&lang.css
 ```
 
 The app may load but styles from underlay components are broken.
 
-**Cause**: vite-plugin-svelte creates virtual CSS modules for Svelte component styles. When underlay is installed via `file:` protocol, pnpm creates long paths with special characters (`+`, `@`) in `.pnpm/`. The plugin fails to resolve these virtual modules correctly.
+**Cause**: vite-plugin-svelte creates virtual CSS modules for Svelte component styles. When underlay is installed via `file:` protocol, the plugin may fail to resolve these virtual modules correctly.
 
-**Solution**: Add a resolve alias in `vite.config.ts` to bypass pnpm's node_modules paths and resolve underlay directly from source:
+**Solution**: Add a resolve alias in `vite.config.ts` to resolve underlay directly from source:
 
 ```typescript
 import { fileURLToPath } from "node:url";
@@ -71,7 +70,7 @@ export default defineConfig({
 });
 ```
 
-This resolves `@decodelabs/underlay` and all subpaths (e.g., `/components`, `/patterns`) directly to the source directory via the project's underlay symlink, avoiding the problematic pnpm paths entirely.
+This resolves `@decodelabs/underlay` and all subpaths (e.g., `/components`, `/patterns`) directly to the source directory via the project's underlay symlink.
 
 See `docs/guides/code/160-troubleshooting/common-commands.txt` for a quick command checklist.
 

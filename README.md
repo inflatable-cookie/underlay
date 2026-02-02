@@ -22,9 +22,9 @@ Start reading: `docs/architecture/000-overview.md`.
 
 ## Development
 
-- Install JS deps: `pnpm install`
+- Install JS deps: `bun install`
 - Rust: `cargo test --workspace`
-- TS/Svelte: `pnpm check`
+- TS/Svelte: `bun check`
 
 ### Postgres Integration Tests (Colima)
 

@@ -28,7 +28,7 @@ Use this checklist to verify your project is properly set up.
 - [ ] TypeScript types for domain objects
 - [ ] Command functions for API calls
 - [ ] Auth token storage helpers
-- [ ] Tests pass (`pnpm test`)
+- [ ] Tests pass (`bun test`)
 
 ## UI Kit
 
@@ -43,7 +43,7 @@ Use this checklist to verify your project is properly set up.
 - [ ] Routes created for main pages
 - [ ] API client integrated
 - [ ] Auth flow implemented
-- [ ] Dev server runs (`pnpm dev`)
+- [ ] Dev server runs (`bun dev`)
 
 ## Configuration
 
@@ -54,7 +54,7 @@ Use this checklist to verify your project is properly set up.
 ## Testing
 
 - [ ] Rust tests pass (`cargo test`)
-- [ ] TypeScript tests pass (`pnpm test`)
+- [ ] TypeScript tests pass (`bun test`)
 - [ ] Frontend tests pass
 
 ## Local Development
@@ -62,7 +62,7 @@ Use this checklist to verify your project is properly set up.
 - [ ] Database runs and accepts connections
 - [ ] Migrations applied successfully
 - [ ] Backend runs (`cargo run`)
-- [ ] Frontends run (`pnpm dev`)
+- [ ] Frontends run (`bun dev`)
 - [ ] All services accessible
 
 ## Documentation
@@ -83,13 +83,13 @@ Use this checklist to verify your project is properly set up.
 ```bash
 # Run all checks (multi-repo)
 cd myapp-api && cargo test
-cd myapp-client && pnpm test
-cd myapp-web && pnpm test
+cd myapp-client && bun test
+cd myapp-web && bun test
 
 # Run all checks (monorepo)
 cd apps/api && cargo test
-cd libs/client && pnpm test
-cd apps/web && pnpm test
+cd libs/client && bun test
+cd apps/web && bun test
 ```
 
 If all checks pass, your project is ready for development!
