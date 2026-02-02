@@ -163,6 +163,7 @@ Following naming and structure patterns from reference apps ensures:
 | 067 | Authorization | RBAC, role extraction, protected routes |
 | 070 | API Handlers | HTTP handlers, routing, middleware |
 | 075 | Validation | Backend/frontend validation, error display |
+| 077 | Media Library | File uploads, blob storage, media management |
 | 080 | TypeScript Client | HTTP client, commands |
 | 090 | UI Kit | Component patterns, design tokens |
 | 100 | Frontend (Web) | SvelteKit setup, routing |

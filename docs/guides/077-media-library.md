@@ -1,0 +1,1535 @@
+# 077 - Media Library
+
+This guide covers implementing a complete media library for managing uploaded files (images, PDFs, etc.) in Underlay-based applications. The media library pattern includes:
+
+- **Backend**: Database schema, repository, and API handlers for media CRUD operations
+- **Client**: TypeScript commands and types for calling the API
+- **Frontend**: Admin UI with list, detail, upload, and trash views
+
+## Architecture Overview
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                         Media Library Architecture                        │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                           │
+│  ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────────┐  │
+│  │   Admin UI      │    │   API Server    │    │   Blob Storage      │  │
+│  │   (SvelteKit)   │◄──►│   (Axum/Rust)   │◄──►│   (S3/Local)        │  │
+│  └─────────────────┘    └─────────────────┘    └─────────────────────┘  │
+│         │                       │                                        │
+│         │                       │                                        │
+│         ▼                       ▼                                        │
+│  ┌─────────────────┐    ┌─────────────────┐                             │
+│  │  TS API Client  │    │   PostgreSQL    │                             │
+│  │  (cattle-grid)  │    │   (media tables)│                             │
+│  └─────────────────┘    └─────────────────┘                             │
+│                                                                           │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### Upload Flow
+
+The upload process uses **direct-to-blob** uploads with pre-signed URLs:
+
+1. **Client hashes file** → SHA-256 computed client-side for deduplication
+2. **Client checks for duplicates** → API checks if hash exists
+3. **Client creates media record** → API creates `media` row
+4. **Client initiates upload** → API creates `media_version` row, returns pre-signed URL
+5. **Client uploads to blob storage** → Direct PUT to S3/local storage
+6. **Client finalizes upload** → API marks version as ready, sets as current
+
+```
+┌──────────┐       ┌──────────┐       ┌──────────┐       ┌──────────┐
+│  Client  │       │   API    │       │ Database │       │   Blob   │
+└────┬─────┘       └────┬─────┘       └────┬─────┘       └────┬─────┘
+     │                  │                  │                  │
+     │ 1. Compute hash  │                  │                  │
+     │◄────────────────►│                  │                  │
+     │                  │                  │                  │
+     │ 2. Check duplicate (sha256)        │                  │
+     │─────────────────►│                  │                  │
+     │                  │  SELECT          │                  │
+     │                  │─────────────────►│                  │
+     │  {exists, media} │                  │                  │
+     │◄─────────────────│                  │                  │
+     │                  │                  │                  │
+     │ 3. Create media  │                  │                  │
+     │─────────────────►│  INSERT media    │                  │
+     │                  │─────────────────►│                  │
+     │  {media}         │                  │                  │
+     │◄─────────────────│                  │                  │
+     │                  │                  │                  │
+     │ 4. Initiate upload                 │                  │
+     │─────────────────►│ INSERT version   │                  │
+     │                  │─────────────────►│                  │
+     │                  │ Generate presigned URL             │
+     │                  │─────────────────────────────────────►
+     │  {versionId, uploadPlan}           │                  │
+     │◄─────────────────│                  │                  │
+     │                  │                  │                  │
+     │ 5. Upload file directly            │                  │
+     │───────────────────────────────────────────────────────►│
+     │                  │                  │                  │
+     │ 6. Finalize upload                 │                  │
+     │─────────────────►│ UPDATE version   │                  │
+     │                  │─────────────────►│                  │
+     │  {media}         │                  │                  │
+     │◄─────────────────│                  │                  │
+```
+
+## Database Schema
+
+### Tables
+
+The media library uses three tables in the `media` schema:
+
+```sql
+-- Media items (images, PDFs, etc.)
+CREATE TABLE media.media (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    kind TEXT NOT NULL,                    -- 'image', 'pdf'
+    visibility TEXT NOT NULL DEFAULT 'public', -- 'public', 'restricted'
+    title TEXT,
+    original_filename TEXT,
+    current_version_id UUID,               -- FK to media_version
+    usage_count INT NOT NULL DEFAULT 0,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ                 -- Soft delete
+);
+
+-- Version history for each media item
+CREATE TABLE media.media_version (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    media_id UUID NOT NULL REFERENCES media.media(id) ON DELETE CASCADE,
+    state TEXT NOT NULL DEFAULT 'uploading', -- 'uploading', 'ready', 'failed', 'purging'
+    object_key TEXT,                       -- Storage path
+    sha256 TEXT,                           -- Content hash for deduplication
+    byte_size BIGINT,
+    mime_type TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Track where media is used (for reference counting)
+CREATE TABLE media.media_usage (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    media_id UUID NOT NULL REFERENCES media.media(id) ON DELETE CASCADE,
+    used_by_type TEXT NOT NULL,            -- 'qa_item', 'document', etc.
+    used_by_id UUID NOT NULL,              -- ID of the referencing entity
+    field TEXT,                            -- Which field references it
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE(media_id, used_by_type, used_by_id, field)
+);
+
+-- Indexes
+CREATE INDEX idx_media_deleted_at ON media.media(deleted_at);
+CREATE INDEX idx_media_kind ON media.media(kind);
+CREATE INDEX idx_media_version_media_id ON media.media_version(media_id);
+CREATE INDEX idx_media_version_sha256 ON media.media_version(sha256);
+CREATE INDEX idx_media_usage_media_id ON media.media_usage(media_id);
+CREATE INDEX idx_media_usage_used_by ON media.media_usage(used_by_type, used_by_id);
+
+-- Foreign key for current version (added after both tables exist)
+ALTER TABLE media.media
+    ADD CONSTRAINT fk_media_current_version
+    FOREIGN KEY (current_version_id) REFERENCES media.media_version(id);
+```
+
+### Enums
+
+```rust
+// Rust enums
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum MediaKind {
+    Image,
+    Pdf,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum MediaVisibility {
+    Public,
+    Restricted,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum MediaVersionState {
+    Uploading,
+    Ready,
+    Failed,
+    Purging,
+}
+```
+
+## Backend Implementation
+
+### Repository Layer
+
+```rust
+// crates/db/src/media.rs
+
+use sqlx::PgPool;
+use underlay_db::Uuid;
+
+#[derive(Debug, sqlx::FromRow)]
+pub struct MediaRow {
+    pub id: Uuid,
+    pub kind: String,
+    pub visibility: String,
+    pub title: Option<String>,
+    pub original_filename: Option<String>,
+    pub current_version_id: Option<Uuid>,
+    pub usage_count: i32,
+    pub created_at: chrono::DateTime<chrono::Utc>,
+    pub updated_at: chrono::DateTime<chrono::Utc>,
+    pub deleted_at: Option<chrono::DateTime<chrono::Utc>>,
+}
+
+#[derive(Debug, sqlx::FromRow)]
+pub struct MediaVersionRow {
+    pub id: Uuid,
+    pub media_id: Uuid,
+    pub state: String,
+    pub object_key: Option<String>,
+    pub sha256: Option<String>,
+    pub byte_size: Option<i64>,
+    pub mime_type: Option<String>,
+    pub created_at: chrono::DateTime<chrono::Utc>,
+}
+
+#[derive(Debug, sqlx::FromRow)]
+pub struct MediaUsageRow {
+    pub id: Uuid,
+    pub media_id: Uuid,
+    pub used_by_type: String,
+    pub used_by_id: Uuid,
+    pub field: Option<String>,
+    pub created_at: chrono::DateTime<chrono::Utc>,
+}
+
+/// List all media (excluding soft-deleted)
+pub async fn list_media(pool: &PgPool) -> Result<Vec<MediaRow>, sqlx::Error> {
+    sqlx::query_as::<_, MediaRow>(
+        r#"
+        SELECT m.*, v.byte_size, v.mime_type
+        FROM media.media m
+        LEFT JOIN media.media_version v ON v.id = m.current_version_id
+        WHERE m.deleted_at IS NULL
+        ORDER BY m.created_at DESC
+        "#
+    )
+    .fetch_all(pool)
+    .await
+}
+
+/// Get media by ID with current version info
+pub async fn get_media(pool: &PgPool, id: Uuid) -> Result<Option<MediaRow>, sqlx::Error> {
+    sqlx::query_as::<_, MediaRow>(
+        "SELECT * FROM media.media WHERE id = $1"
+    )
+    .bind(id)
+    .fetch_optional(pool)
+    .await
+}
+
+/// Create a new media record
+pub async fn create_media(
+    pool: &PgPool,
+    kind: &str,
+    visibility: &str,
+    title: Option<&str>,
+    original_filename: Option<&str>,
+) -> Result<MediaRow, sqlx::Error> {
+    sqlx::query_as::<_, MediaRow>(
+        r#"
+        INSERT INTO media.media (kind, visibility, title, original_filename)
+        VALUES ($1, $2, $3, $4)
+        RETURNING *
+        "#
+    )
+    .bind(kind)
+    .bind(visibility)
+    .bind(title)
+    .bind(original_filename)
+    .fetch_one(pool)
+    .await
+}
+
+/// Check for duplicate by SHA-256 hash
+pub async fn find_by_sha256(pool: &PgPool, sha256: &str) -> Result<Option<MediaRow>, sqlx::Error> {
+    sqlx::query_as::<_, MediaRow>(
+        r#"
+        SELECT m.*
+        FROM media.media m
+        JOIN media.media_version v ON v.media_id = m.id
+        WHERE v.sha256 = $1 AND v.state = 'ready' AND m.deleted_at IS NULL
+        LIMIT 1
+        "#
+    )
+    .bind(sha256)
+    .fetch_optional(pool)
+    .await
+}
+
+/// Create a new version record
+pub async fn create_version(
+    pool: &PgPool,
+    media_id: Uuid,
+    object_key: &str,
+    sha256: &str,
+    byte_size: i64,
+    mime_type: &str,
+) -> Result<MediaVersionRow, sqlx::Error> {
+    sqlx::query_as::<_, MediaVersionRow>(
+        r#"
+        INSERT INTO media.media_version (media_id, object_key, sha256, byte_size, mime_type, state)
+        VALUES ($1, $2, $3, $4, $5, 'uploading')
+        RETURNING *
+        "#
+    )
+    .bind(media_id)
+    .bind(object_key)
+    .bind(sha256)
+    .bind(byte_size)
+    .bind(mime_type)
+    .fetch_one(pool)
+    .await
+}
+
+/// Finalize upload - mark version as ready and set as current
+pub async fn finalize_version(
+    pool: &PgPool,
+    media_id: Uuid,
+    version_id: Uuid,
+) -> Result<(), sqlx::Error> {
+    let mut tx = pool.begin().await?;
+
+    // Mark version as ready
+    sqlx::query(
+        "UPDATE media.media_version SET state = 'ready' WHERE id = $1"
+    )
+    .bind(version_id)
+    .execute(&mut *tx)
+    .await?;
+
+    // Set as current version
+    sqlx::query(
+        "UPDATE media.media SET current_version_id = $1, updated_at = NOW() WHERE id = $2"
+    )
+    .bind(version_id)
+    .bind(media_id)
+    .execute(&mut *tx)
+    .await?;
+
+    tx.commit().await
+}
+
+/// Soft delete media
+pub async fn soft_delete(pool: &PgPool, id: Uuid) -> Result<(), sqlx::Error> {
+    sqlx::query(
+        "UPDATE media.media SET deleted_at = NOW(), updated_at = NOW() WHERE id = $1"
+    )
+    .bind(id)
+    .execute(pool)
+    .await?;
+    Ok(())
+}
+
+/// Restore soft-deleted media
+pub async fn restore(pool: &PgPool, id: Uuid) -> Result<(), sqlx::Error> {
+    sqlx::query(
+        "UPDATE media.media SET deleted_at = NULL, updated_at = NOW() WHERE id = $1"
+    )
+    .bind(id)
+    .execute(pool)
+    .await?;
+    Ok(())
+}
+
+/// List soft-deleted media (trash)
+pub async fn list_trash(pool: &PgPool) -> Result<Vec<MediaRow>, sqlx::Error> {
+    sqlx::query_as::<_, MediaRow>(
+        r#"
+        SELECT * FROM media.media
+        WHERE deleted_at IS NOT NULL
+        ORDER BY deleted_at DESC
+        "#
+    )
+    .fetch_all(pool)
+    .await
+}
+```
+
+### API Handlers
+
+```rust
+// crates/api/src/routes/admin/media.rs
+
+use axum::{
+    extract::{Path, State},
+    Json,
+};
+use serde::{Deserialize, Serialize};
+use underlay_db::Uuid;
+
+use crate::{AppState, Result};
+
+// DTOs
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MediaSummary {
+    pub id: Uuid,
+    pub kind: String,
+    pub visibility: String,
+    pub title: Option<String>,
+    pub original_filename: Option<String>,
+    pub byte_size: Option<i64>,
+    pub usage_count: i32,
+    pub created_at: String,
+    pub deleted_at: Option<String>,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MediaDetail {
+    pub id: Uuid,
+    pub kind: String,
+    pub visibility: String,
+    pub title: Option<String>,
+    pub original_filename: Option<String>,
+    pub current_version_id: Option<Uuid>,
+    pub current_version: Option<MediaVersion>,
+    pub usage_count: i32,
+    pub created_at: String,
+    pub updated_at: String,
+    pub deleted_at: Option<String>,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MediaVersion {
+    pub id: Uuid,
+    pub state: String,
+    pub object_key: Option<String>,
+    pub sha256: Option<String>,
+    pub byte_size: Option<i64>,
+    pub mime_type: Option<String>,
+    pub created_at: String,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CreateMediaRequest {
+    pub kind: String,
+    pub visibility: String,
+    pub title: Option<String>,
+    pub original_filename: Option<String>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct InitiateUploadRequest {
+    pub content_type: String,
+    pub content_length: i64,
+    pub sha256: String,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct InitiateUploadResponse {
+    pub version_id: Uuid,
+    pub upload_plan: UploadPlan,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct UploadPlan {
+    pub upload_url: String,
+    pub method: String,
+    pub headers: std::collections::HashMap<String, String>,
+    pub expires_at: String,
+    pub max_bytes: i64,
+    pub allowed_content_types: Vec<String>,
+}
+
+// Handlers
+pub async fn list_media(State(state): State<AppState>) -> Result<Json<Vec<MediaSummary>>> {
+    let media = db::media::list_media(&state.pool).await?;
+    let summaries = media.into_iter().map(|m| MediaSummary {
+        id: m.id,
+        kind: m.kind,
+        visibility: m.visibility,
+        title: m.title,
+        original_filename: m.original_filename,
+        byte_size: m.byte_size,
+        usage_count: m.usage_count,
+        created_at: m.created_at.to_rfc3339(),
+        deleted_at: m.deleted_at.map(|d| d.to_rfc3339()),
+    }).collect();
+    Ok(Json(summaries))
+}
+
+pub async fn get_media(
+    State(state): State<AppState>,
+    Path(id): Path<Uuid>,
+) -> Result<Json<MediaDetail>> {
+    let media = db::media::get_media(&state.pool, id)
+        .await?
+        .ok_or_else(|| AppError::NotFound("Media not found"))?;
+
+    let current_version = if let Some(version_id) = media.current_version_id {
+        db::media::get_version(&state.pool, version_id).await?.map(|v| MediaVersion {
+            id: v.id,
+            state: v.state,
+            object_key: v.object_key,
+            sha256: v.sha256,
+            byte_size: v.byte_size,
+            mime_type: v.mime_type,
+            created_at: v.created_at.to_rfc3339(),
+        })
+    } else {
+        None
+    };
+
+    Ok(Json(MediaDetail {
+        id: media.id,
+        kind: media.kind,
+        visibility: media.visibility,
+        title: media.title,
+        original_filename: media.original_filename,
+        current_version_id: media.current_version_id,
+        current_version,
+        usage_count: media.usage_count,
+        created_at: media.created_at.to_rfc3339(),
+        updated_at: media.updated_at.to_rfc3339(),
+        deleted_at: media.deleted_at.map(|d| d.to_rfc3339()),
+    }))
+}
+
+pub async fn create_media(
+    State(state): State<AppState>,
+    Json(req): Json<CreateMediaRequest>,
+) -> Result<Json<MediaDetail>> {
+    let media = db::media::create_media(
+        &state.pool,
+        &req.kind,
+        &req.visibility,
+        req.title.as_deref(),
+        req.original_filename.as_deref(),
+    ).await?;
+
+    // Return as MediaDetail
+    // ...
+}
+
+pub async fn initiate_upload(
+    State(state): State<AppState>,
+    Path(id): Path<Uuid>,
+    Json(req): Json<InitiateUploadRequest>,
+) -> Result<Json<InitiateUploadResponse>> {
+    // Generate object key
+    let object_key = format!("media/{}/{}", id, uuid::Uuid::new_v4());
+
+    // Create version record
+    let version = db::media::create_version(
+        &state.pool,
+        id,
+        &object_key,
+        &req.sha256,
+        req.content_length,
+        &req.content_type,
+    ).await?;
+
+    // Generate pre-signed upload URL
+    let upload_plan = state.blob_adapter.generate_upload_plan(
+        &object_key,
+        &req.content_type,
+        req.content_length,
+    ).await?;
+
+    Ok(Json(InitiateUploadResponse {
+        version_id: version.id,
+        upload_plan,
+    }))
+}
+
+pub async fn finalize_upload(
+    State(state): State<AppState>,
+    Path((media_id, version_id)): Path<(Uuid, Uuid)>,
+) -> Result<Json<MediaDetail>> {
+    db::media::finalize_version(&state.pool, media_id, version_id).await?;
+    get_media(State(state), Path(media_id)).await
+}
+```
+
+### Router Setup
+
+```rust
+// crates/api/src/routes/admin/router.rs
+
+use axum::{
+    routing::{get, post, put, delete},
+    Router,
+};
+
+pub fn admin_media_routes() -> Router<AppState> {
+    Router::new()
+        .route("/media", get(media::list_media).post(media::create_media))
+        .route("/media/trash", get(media::list_trash))
+        .route("/media/check-duplicate", post(media::check_duplicate))
+        .route("/media/:id", get(media::get_media).patch(media::update_media))
+        .route("/media/:id/soft-delete", post(media::soft_delete))
+        .route("/media/:id/restore", post(media::restore))
+        .route("/media/:id/purge", delete(media::purge))
+        .route("/media/:id/upload", post(media::initiate_upload))
+        .route("/media/:id/upload/:versionId/finalize", post(media::finalize_upload))
+        .route("/media/:id/versions", get(media::list_versions))
+        .route("/media/:id/usages", get(media::list_usages))
+}
+```
+
+## TypeScript Client
+
+### Types
+
+```typescript
+// src/types/media-types.ts
+
+export interface MediaSummary {
+  id: string;
+  kind: string;
+  visibility: string;
+  title: string | null;
+  originalFilename: string | null;
+  byteSize: number | null;
+  usageCount: number;
+  createdAt: string;
+  deletedAt: string | null;
+}
+
+export interface MediaDetail {
+  id: string;
+  kind: string;
+  visibility: string;
+  title: string | null;
+  originalFilename: string | null;
+  currentVersionId: string | null;
+  currentVersion: MediaVersion | null;
+  usageCount: number;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+}
+
+export interface MediaVersion {
+  id: string;
+  state: string;
+  objectKey: string | null;
+  sha256: string | null;
+  byteSize: number | null;
+  mimeType: string | null;
+  createdAt: string;
+}
+
+export interface MediaUsage {
+  id: string;
+  mediaId: string;
+  usedByType: string;
+  usedById: string;
+  field: string | null;
+  createdAt: string;
+}
+
+export interface CreateMediaRequest {
+  kind: string;
+  visibility: string;
+  title?: string | null;
+  originalFilename?: string | null;
+}
+
+export interface InitiateUploadRequest {
+  contentType: string;
+  contentLength: number;
+  sha256: string;
+}
+
+export interface InitiateUploadResponse {
+  versionId: string;
+  uploadPlan: UploadPlan;
+}
+
+export interface UploadPlan {
+  uploadUrl: string;
+  method: string;
+  headers: Record<string, string>;
+  expiresAt: string;
+  maxBytes: number;
+  allowedContentTypes: string[];
+}
+
+export interface DuplicateCheckResult {
+  exists: boolean;
+  media: MediaSummary | null;
+}
+
+// Enums
+export const MediaKind = {
+  Image: "image",
+  Pdf: "pdf",
+} as const;
+
+export const MediaVisibility = {
+  Public: "public",
+  Restricted: "restricted",
+} as const;
+
+export const MediaVersionState = {
+  Uploading: "uploading",
+  Ready: "ready",
+  Failed: "failed",
+  Purging: "purging",
+} as const;
+```
+
+### Commands
+
+```typescript
+// src/commands/media-commands.ts
+
+import type {
+  MediaSummary,
+  MediaDetail,
+  MediaVersion,
+  MediaUsage,
+  CreateMediaRequest,
+  InitiateUploadRequest,
+  InitiateUploadResponse,
+  DuplicateCheckResult,
+} from "../types/media-types";
+
+const BASE = "/admin/media";
+
+export const mediaCommands = {
+  // List all media
+  async listMedia(
+    fetchFn: typeof fetch,
+    token: string
+  ): Promise<MediaSummary[]> {
+    const res = await fetchFn(`${BASE}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) throw new Error("Failed to list media");
+    return res.json();
+  },
+
+  // Get media by ID
+  async getMedia(
+    id: string,
+    fetchFn: typeof fetch,
+    token: string
+  ): Promise<MediaDetail> {
+    const res = await fetchFn(`${BASE}/${id}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) throw new Error("Failed to get media");
+    return res.json();
+  },
+
+  // Create new media
+  async createMedia(
+    data: CreateMediaRequest,
+    fetchFn: typeof fetch,
+    token: string
+  ): Promise<MediaDetail> {
+    const res = await fetchFn(`${BASE}`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) throw new Error("Failed to create media");
+    return res.json();
+  },
+
+  // Check for duplicate by hash
+  async checkDuplicate(
+    data: { sha256: string },
+    fetchFn: typeof fetch,
+    token: string
+  ): Promise<DuplicateCheckResult> {
+    const res = await fetchFn(`${BASE}/check-duplicate`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) throw new Error("Failed to check duplicate");
+    return res.json();
+  },
+
+  // Initiate upload
+  async initiateUpload(
+    mediaId: string,
+    data: InitiateUploadRequest,
+    fetchFn: typeof fetch,
+    token: string
+  ): Promise<InitiateUploadResponse> {
+    const res = await fetchFn(`${BASE}/${mediaId}/upload`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) throw new Error("Failed to initiate upload");
+    return res.json();
+  },
+
+  // Finalize upload
+  async finaliseUpload(
+    mediaId: string,
+    versionId: string,
+    data: { sha256: string },
+    fetchFn: typeof fetch,
+    token: string
+  ): Promise<MediaDetail> {
+    const res = await fetchFn(`${BASE}/${mediaId}/upload/${versionId}/finalize`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) throw new Error("Failed to finalize upload");
+    return res.json();
+  },
+
+  // List versions
+  async listVersions(
+    mediaId: string,
+    fetchFn: typeof fetch,
+    token: string
+  ): Promise<MediaVersion[]> {
+    const res = await fetchFn(`${BASE}/${mediaId}/versions`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) throw new Error("Failed to list versions");
+    return res.json();
+  },
+
+  // List usages
+  async listUsages(
+    mediaId: string,
+    fetchFn: typeof fetch,
+    token: string
+  ): Promise<MediaUsage[]> {
+    const res = await fetchFn(`${BASE}/${mediaId}/usages`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) throw new Error("Failed to list usages");
+    return res.json();
+  },
+
+  // Soft delete
+  async softDeleteMedia(
+    id: string,
+    fetchFn: typeof fetch,
+    token: string
+  ): Promise<void> {
+    const res = await fetchFn(`${BASE}/${id}/soft-delete`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) throw new Error("Failed to soft delete media");
+  },
+
+  // Restore from trash
+  async restoreMedia(
+    id: string,
+    fetchFn: typeof fetch,
+    token: string
+  ): Promise<void> {
+    const res = await fetchFn(`${BASE}/${id}/restore`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) throw new Error("Failed to restore media");
+  },
+
+  // Permanent delete
+  async purgeMedia(
+    id: string,
+    fetchFn: typeof fetch,
+    token: string
+  ): Promise<void> {
+    const res = await fetchFn(`${BASE}/${id}/purge`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) throw new Error("Failed to purge media");
+  },
+
+  // List trash
+  async listMediaTrash(
+    fetchFn: typeof fetch,
+    token: string
+  ): Promise<MediaSummary[]> {
+    const res = await fetchFn(`${BASE}/trash`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) throw new Error("Failed to list trash");
+    return res.json();
+  },
+};
+```
+
+## Frontend Implementation
+
+### Navigation
+
+Add media section to admin navigation:
+
+```svelte
+<!-- src/lib/ui/AdminNavList.svelte -->
+<NavGroup label="Media">
+  <NavLink href="/media" icon={Image}>Library</NavLink>
+  <NavLink href="/media/upload" icon={Upload}>Upload</NavLink>
+  <NavLink href="/media/trash" icon={Trash2}>Trash</NavLink>
+</NavGroup>
+```
+
+### List Page
+
+```svelte
+<!-- src/routes/(app)/media/+page.svelte -->
+<script lang="ts">
+  import { PageHeader, useToasts, useAuthenticatedData } from "@decodelabs/underlay/patterns";
+  import { ListCard, ListGrid, PageLoading, Pill } from "@decodelabs/underlay/components";
+  import { mediaCommands, type MediaSummary, MediaKind } from "@my-client";
+  import { auth, authLoading, currentUser } from "$lib/stores/auth";
+  import Image from "lucide-svelte/icons/image";
+  import FileText from "lucide-svelte/icons/file-text";
+
+  const pageData = useAuthenticatedData<MediaSummary[]>(
+    async (fetchFn, token) => mediaCommands.listMedia(fetchFn, token),
+    { getToken: () => auth.getToken() }
+  );
+
+  $effect(() => {
+    pageData.tryFetch($authLoading, $currentUser);
+  });
+
+  function getMediaIcon(kind: string) {
+    return kind === MediaKind.Image ? Image : FileText;
+  }
+
+  function getKindAccent(kind: string): string {
+    return kind === MediaKind.Image ? "#22c55e" : "#ef4444";
+  }
+</script>
+
+<PageHeader title="Media Library">
+  <a href="/media/upload" class="button-primary">Upload Media</a>
+</PageHeader>
+
+{#if pageData.loading}
+  <PageLoading message="Loading media..." />
+{:else if pageData.data}
+  <ListGrid>
+    {#each pageData.data as item}
+      {@const Icon = getMediaIcon(item.kind)}
+      <ListCard href={`/media/${item.id}`} title={item.title || item.originalFilename || "Untitled"}>
+        {#snippet media()}
+          <Icon size={30} />
+        {/snippet}
+        {#snippet trailing()}
+          <Pill accent={getKindAccent(item.kind)}>{item.kind}</Pill>
+        {/snippet}
+      </ListCard>
+    {/each}
+  </ListGrid>
+{/if}
+```
+
+### Upload Page
+
+The upload page uses Underlay's blob upload utilities:
+
+```svelte
+<!-- src/routes/(app)/media/upload/+page.svelte -->
+<script lang="ts">
+  import { goto } from "$app/navigation";
+  import { PageHeader, useToasts } from "@decodelabs/underlay/patterns";
+  import {
+    uploadToBlob,
+    computeFileHash,
+    validateFile,
+    formatFileSize,
+    ALLOWED_MEDIA_TYPES,
+    type UploadPlan
+  } from "@decodelabs/underlay/patterns";
+  import { mediaCommands, MediaKind, MediaVisibility } from "@my-client";
+  import { auth } from "$lib/stores/auth";
+  import { Button, Field, TextInput, Select } from "@decodelabs/underlay/components";
+
+  const toastStore = useToasts();
+
+  // Form state
+  let title = $state("");
+  let visibility = $state(MediaVisibility.Public);
+  let selectedFile = $state<File | null>(null);
+  let fileError = $state<string | null>(null);
+
+  // Upload state
+  let uploadStep = $state<"select" | "checking" | "duplicate" | "uploading" | "complete" | "error">("select");
+  let uploadProgress = $state(0);
+  let fileHash = $state<string | null>(null);
+  let duplicateMedia = $state<any>(null);
+  let createdMediaId = $state<string | null>(null);
+
+  function validateAndSetFile(file: File) {
+    fileError = null;
+    selectedFile = null;
+
+    const result = validateFile(file, 25 * 1024 * 1024);
+    if (!result.valid) {
+      fileError = result.error ?? "Invalid file";
+      return;
+    }
+
+    selectedFile = file;
+    if (!title) {
+      title = file.name.replace(/\.[^/.]+$/, "");
+    }
+  }
+
+  function getMediaKind(file: File): string {
+    if (file.type.startsWith("image/")) return MediaKind.Image;
+    if (file.type === "application/pdf") return MediaKind.Pdf;
+    return MediaKind.Image;
+  }
+
+  async function startUpload() {
+    if (!selectedFile) return;
+
+    const token = auth.getToken();
+    if (!token) {
+      toastStore.push({ variant: "error", message: "Not authenticated" });
+      return;
+    }
+
+    uploadStep = "checking";
+
+    try {
+      // Step 1: Compute hash
+      fileHash = await computeFileHash(selectedFile);
+
+      // Step 2: Check for duplicates
+      const duplicateCheck = await mediaCommands.checkDuplicate(
+        { sha256: fileHash },
+        fetch,
+        token
+      );
+
+      if (duplicateCheck.exists && duplicateCheck.media) {
+        duplicateMedia = duplicateCheck.media;
+        uploadStep = "duplicate";
+        return;
+      }
+
+      // No duplicate - proceed
+      await proceedWithUpload(token);
+    } catch (e) {
+      uploadStep = "error";
+    }
+  }
+
+  async function proceedWithUpload(token: string) {
+    if (!selectedFile || !fileHash) return;
+
+    uploadStep = "uploading";
+    uploadProgress = 0;
+
+    try {
+      // Step 3: Create media item
+      const media = await mediaCommands.createMedia(
+        {
+          kind: getMediaKind(selectedFile),
+          visibility,
+          title: title || null,
+          originalFilename: selectedFile.name
+        },
+        fetch,
+        token
+      );
+
+      createdMediaId = media.id;
+
+      // Step 4: Initiate upload
+      const uploadResponse = await mediaCommands.initiateUpload(
+        media.id,
+        {
+          contentType: selectedFile.type,
+          contentLength: selectedFile.size,
+          sha256: fileHash
+        },
+        fetch,
+        token
+      );
+
+      // Step 5: Upload to blob storage
+      const plan: UploadPlan = {
+        uploadUrl: uploadResponse.uploadPlan.uploadUrl,
+        method: uploadResponse.uploadPlan.method,
+        requiredHeaders: uploadResponse.uploadPlan.headers,
+        expiresAt: uploadResponse.uploadPlan.expiresAt,
+        maxBytes: uploadResponse.uploadPlan.maxBytes || 25 * 1024 * 1024,
+        allowedContentTypes: uploadResponse.uploadPlan.allowedContentTypes || [],
+        objectKey: ""
+      };
+
+      await uploadToBlob(plan, selectedFile, {
+        onProgress: (progress) => {
+          uploadProgress = progress.percent;
+        }
+      });
+
+      // Step 6: Finalize
+      await mediaCommands.finaliseUpload(
+        media.id,
+        uploadResponse.versionId,
+        { sha256: fileHash },
+        fetch,
+        token
+      );
+
+      uploadStep = "complete";
+      toastStore.push({ variant: "success", message: "Media uploaded successfully" });
+    } catch (e) {
+      uploadStep = "error";
+    }
+  }
+</script>
+
+<PageHeader title="Upload Media" backHref="/media" backLabel="Back to media" />
+
+<div class="upload-container">
+  {#if uploadStep === "select"}
+    <div
+      class="dropzone"
+      ondrop={(e) => { e.preventDefault(); validateAndSetFile(e.dataTransfer?.files?.[0]!); }}
+      ondragover={(e) => e.preventDefault()}
+    >
+      {#if selectedFile}
+        <p>{selectedFile.name} ({formatFileSize(selectedFile.size)})</p>
+        <Button variant="subtle" onclick={() => { selectedFile = null; }}>Remove</Button>
+      {:else}
+        <p>Drag and drop a file here, or click to browse</p>
+        <input type="file" accept={ALLOWED_MEDIA_TYPES.join(",")} onchange={(e) => validateAndSetFile(e.target.files?.[0]!)} />
+      {/if}
+    </div>
+
+    <Field label="Title (optional)">
+      <TextInput bind:value={title} placeholder="Enter a title" />
+    </Field>
+
+    <Field label="Visibility">
+      <Select bind:value={visibility}>
+        <option value={MediaVisibility.Public}>Public</option>
+        <option value={MediaVisibility.Restricted}>Restricted</option>
+      </Select>
+    </Field>
+
+    <Button variant="primary" disabled={!selectedFile} onclick={startUpload}>
+      Upload
+    </Button>
+
+  {:else if uploadStep === "uploading"}
+    <div class="progress">
+      <p>Uploading... {uploadProgress}%</p>
+      <div class="progress-bar" style="width: {uploadProgress}%"></div>
+    </div>
+
+  {:else if uploadStep === "complete"}
+    <p>Upload complete!</p>
+    <Button onclick={() => goto(`/media/${createdMediaId}`)}>View Media</Button>
+  {/if}
+</div>
+```
+
+### Detail Page with Tabs
+
+```svelte
+<!-- src/routes/(app)/media/[id]/+page.svelte -->
+<script lang="ts">
+  import { page } from "$app/stores";
+  import { PageHeader, getBackButtonInfo, useAuthenticatedData } from "@decodelabs/underlay/patterns";
+  import {
+    DetailsCard, DetailsItem, DetailsSection,
+    InlineListCard, InlineListItem,
+    TabsRoot, TabsList, TabsTrigger, TabsContent,
+    Pill, TimeAgo, PageLoading
+  } from "@decodelabs/underlay/components";
+  import { MediaActionsMenu } from "$lib/menus";
+  import { mediaCommands, MediaKind, MediaVisibility, MediaVersionState } from "@my-client";
+  import { auth, authLoading, currentUser } from "$lib/stores/auth";
+
+  const mediaId = $derived($page.params.id!);
+
+  const pageData = useAuthenticatedData(
+    async (fetchFn, token) => {
+      const [media, versions, usages] = await Promise.all([
+        mediaCommands.getMedia(mediaId, fetchFn, token),
+        mediaCommands.listVersions(mediaId, fetchFn, token),
+        mediaCommands.listUsages(mediaId, fetchFn, token)
+      ]);
+      return { media, versions, usages };
+    },
+    { getToken: () => auth.getToken() }
+  );
+
+  $effect(() => {
+    pageData.tryFetch($authLoading, $currentUser);
+  });
+
+  const media = $derived(pageData.data?.media);
+  const versions = $derived(pageData.data?.versions ?? []);
+  const usages = $derived(pageData.data?.usages ?? []);
+
+  let activeTab = $state("details");
+  const usageCount = $derived(usages.length);
+  const backInfo = getBackButtonInfo("Back to media", "/media");
+
+  function formatFileSize(bytes: number | null): string {
+    if (!bytes) return "—";
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  }
+</script>
+
+{#if pageData.loading}
+  <PageLoading message="Loading media..." />
+{:else if media}
+  <PageHeader
+    title={media.title || media.originalFilename || "Untitled"}
+    backHref={backInfo.href}
+    backLabel={backInfo.label}
+    bannerMessage={media.deletedAt ? "This media has been soft-deleted." : undefined}
+  >
+    <p>
+      <strong>ID:</strong> <code>{media.id}</code>
+      <Pill accent={media.kind === MediaKind.Image ? "#22c55e" : "#ef4444"}>
+        {media.kind}
+      </Pill>
+      <Pill accent={media.visibility === MediaVisibility.Restricted ? "#f59e0b" : "#3b82f6"}>
+        {media.visibility}
+      </Pill>
+    </p>
+
+    {#snippet actions()}
+      <MediaActionsMenu
+        {media}
+        onSoftDeleteSuccess={() => pageData.refetch()}
+        onRestoreSuccess={() => pageData.refetch()}
+      />
+    {/snippet}
+  </PageHeader>
+
+  <TabsRoot bind:value={activeTab} variant="boxed" size="sm" historyKey="tab">
+    <TabsList>
+      <TabsTrigger value="details">Details</TabsTrigger>
+      <TabsTrigger value="usage" count={usageCount}>Usage</TabsTrigger>
+    </TabsList>
+
+    <TabsContent value="details">
+      <div class="underlay-details-content">
+        <DetailsCard>
+          <DetailsSection legend="File Details">
+            <DetailsItem label="Original Filename" value={media.originalFilename} />
+            {#if media.currentVersion}
+              <DetailsItem label="File Size" value={formatFileSize(media.currentVersion.byteSize)} />
+              <DetailsItem label="MIME Type" value={media.currentVersion.mimeType} />
+            {/if}
+            <DetailsItem label="Usage Count" value={String(media.usageCount)} />
+          </DetailsSection>
+
+          <DetailsSection legend="Timestamps">
+            <DetailsItem label="Created">
+              <TimeAgo date={media.createdAt} />
+            </DetailsItem>
+            <DetailsItem label="Last Updated">
+              <TimeAgo date={media.updatedAt} />
+            </DetailsItem>
+          </DetailsSection>
+        </DetailsCard>
+
+        <InlineListCard title="Versions" hasItems={versions.length > 0}>
+          {#each versions as version}
+            <InlineListItem label={version.sha256 ?? "No hash"}>
+              {#snippet sublabelContent()}
+                {formatFileSize(version.byteSize)} · {version.mimeType ?? "Unknown"} · <TimeAgo date={version.createdAt} />
+              {/snippet}
+              {#snippet trailing()}
+                <Pill>{version.state}</Pill>
+                {#if version.id === media.currentVersionId}
+                  <Pill accent="#3b82f6">Current</Pill>
+                {/if}
+              {/snippet}
+            </InlineListItem>
+          {/each}
+        </InlineListCard>
+      </div>
+    </TabsContent>
+
+    <TabsContent value="usage">
+      <div class="underlay-details-content">
+        {#if usages.length === 0}
+          <p>This media is not used anywhere yet.</p>
+        {:else}
+          <InlineListCard title="Usages" hasItems={true}>
+            {#each usages as usage}
+              <InlineListItem label={usage.usedByType} accent="#6366f1">
+                {#snippet sublabelContent()}
+                  <code>{usage.usedById}</code>
+                  {#if usage.field}
+                    <span> · {usage.field}</span>
+                  {/if}
+                {/snippet}
+              </InlineListItem>
+            {/each}
+          </InlineListCard>
+        {/if}
+      </div>
+    </TabsContent>
+  </TabsRoot>
+{/if}
+```
+
+### Actions Menu
+
+```svelte
+<!-- src/lib/menus/MediaActionsMenu.svelte -->
+<script lang="ts">
+  import { CopyActionsMenu, useToasts } from "@decodelabs/underlay/patterns";
+  import { AlertDialog } from "@decodelabs/underlay/components";
+  import { mediaCommands, type MediaDetail } from "@my-client";
+  import { auth } from "$lib/stores/auth";
+  import Trash2 from "lucide-svelte/icons/trash-2";
+  import RotateCcw from "lucide-svelte/icons/rotate-ccw";
+  import AlertTriangle from "lucide-svelte/icons/alert-triangle";
+
+  interface Props {
+    media: MediaDetail;
+    onSoftDeleteSuccess?: () => void;
+    onRestoreSuccess?: () => void;
+  }
+
+  let { media, onSoftDeleteSuccess, onRestoreSuccess }: Props = $props();
+
+  const toastStore = useToasts();
+
+  let softDeleteOpen = $state(false);
+  let restoreOpen = $state(false);
+  let purgeOpen = $state(false);
+
+  async function confirmSoftDelete() {
+    const token = auth.getToken();
+    if (!token) return;
+
+    await mediaCommands.softDeleteMedia(media.id, fetch, token);
+    softDeleteOpen = false;
+    toastStore.push({ variant: "success", message: "Media moved to trash" });
+    onSoftDeleteSuccess?.();
+  }
+
+  async function confirmRestore() {
+    const token = auth.getToken();
+    if (!token) return;
+
+    await mediaCommands.restoreMedia(media.id, fetch, token);
+    restoreOpen = false;
+    toastStore.push({ variant: "success", message: "Media restored" });
+    onRestoreSuccess?.();
+  }
+
+  async function confirmPurge() {
+    const token = auth.getToken();
+    if (!token) return;
+
+    await mediaCommands.purgeMedia(media.id, fetch, token);
+    purgeOpen = false;
+    toastStore.push({ variant: "success", message: "Media permanently deleted" });
+  }
+</script>
+
+<AlertDialog
+  bind:open={softDeleteOpen}
+  showTrigger={false}
+  title="Move to trash?"
+  description="This media will be moved to trash. You can restore it later."
+  confirmLabel="Move to trash"
+  onConfirm={confirmSoftDelete}
+  onCancel={() => { softDeleteOpen = false; }}
+/>
+
+<AlertDialog
+  bind:open={restoreOpen}
+  showTrigger={false}
+  title="Restore media?"
+  description="This will restore the media back to the library."
+  confirmLabel="Restore"
+  onConfirm={confirmRestore}
+  onCancel={() => { restoreOpen = false; }}
+/>
+
+<AlertDialog
+  bind:open={purgeOpen}
+  showTrigger={false}
+  title="Permanently delete?"
+  description="This will permanently delete the media and all versions. This cannot be undone."
+  confirmLabel="Delete permanently"
+  variant="danger"
+  onConfirm={confirmPurge}
+  onCancel={() => { purgeOpen = false; }}
+/>
+
+<CopyActionsMenu label={media.title || "Media"} copyText={media.id}>
+  {#if media.deletedAt}
+    <button onclick={() => { restoreOpen = true; }}>
+      <RotateCcw size={14} /> Restore
+    </button>
+    <button class="danger" onclick={() => { purgeOpen = true; }}>
+      <AlertTriangle size={14} /> Delete Permanently
+    </button>
+  {:else}
+    <button onclick={() => { softDeleteOpen = true; }}>
+      <Trash2 size={14} /> Move to Trash
+    </button>
+  {/if}
+</CopyActionsMenu>
+```
+
+## Blob Upload Utilities
+
+Underlay provides client-side utilities for blob uploads in `@decodelabs/underlay/patterns`:
+
+### Available Functions
+
+| Function | Description |
+|----------|-------------|
+| `uploadToBlob(plan, file, options)` | Upload file directly to blob storage |
+| `computeFileHash(file)` | Compute SHA-256 hash for deduplication |
+| `validateFile(file, maxBytes)` | Validate file type and size |
+| `validateFileType(file, allowedTypes)` | Check if file type is allowed |
+| `validateFileSize(file, maxBytes)` | Check if file size is within limit |
+| `formatFileSize(bytes)` | Format bytes to human-readable string |
+| `getFileTypeDescription(mimeType)` | Get friendly file type name |
+| `isVideoFile(file)` | Check if file is a video (to reject) |
+
+### Types
+
+| Type | Description |
+|------|-------------|
+| `UploadPlan` | Pre-signed URL and constraints from server |
+| `UploadProgress` | Progress info (loaded, total, percent) |
+| `UploadResult` | Result after successful upload |
+| `UploadOptions` | Options for upload (onProgress, signal) |
+| `BlobUploadError` | Error with code and status |
+
+### Constants
+
+```typescript
+import {
+  ALLOWED_IMAGE_TYPES,  // ['image/jpeg', 'image/png', ...]
+  ALLOWED_PDF_TYPES,    // ['application/pdf']
+  ALLOWED_MEDIA_TYPES,  // Combined image + PDF
+  REJECTED_VIDEO_TYPES, // Video types to reject
+} from "@decodelabs/underlay/patterns";
+```
+
+## Best Practices
+
+### Deduplication
+
+Always check for duplicates before uploading:
+
+```typescript
+const hash = await computeFileHash(file);
+const { exists, media } = await mediaCommands.checkDuplicate({ sha256: hash }, fetch, token);
+
+if (exists) {
+  // Offer to use existing media or upload as new
+}
+```
+
+### Progress Tracking
+
+Use the onProgress callback for user feedback:
+
+```typescript
+await uploadToBlob(plan, file, {
+  onProgress: (progress) => {
+    uploadProgress = progress.percent;
+  }
+});
+```
+
+### Error Handling
+
+Handle upload errors gracefully:
+
+```typescript
+try {
+  await uploadToBlob(plan, file, options);
+} catch (e) {
+  if (e instanceof BlobUploadError) {
+    switch (e.code) {
+      case "FILE_TOO_LARGE":
+        showError("File exceeds size limit");
+        break;
+      case "UPLOAD_EXPIRED":
+        showError("Upload URL expired, please try again");
+        break;
+      case "NETWORK_ERROR":
+        showError("Network error, check your connection");
+        break;
+      // ...
+    }
+  }
+}
+```
+
+### Soft Delete Pattern
+
+Always use soft delete by default, with permanent delete requiring confirmation:
+
+1. **Soft delete**: Moves to trash, can be restored
+2. **Restore**: Brings back from trash
+3. **Purge**: Permanent deletion, requires double confirmation
+
+### Usage Tracking
+
+Track where media is used to prevent orphaned files:
+
+```rust
+// When a content item references media
+db::media::create_usage(&pool, media_id, "qa_item", qa_item_id, "image").await?;
+
+// When reference is removed
+db::media::remove_usage(&pool, media_id, "qa_item", qa_item_id, "image").await?;
+```
+
+## Next Steps
+
+- See [076-nightfire.md](./076-nightfire.md) for integrating media with block-based content
+- See [055-background-jobs.md](./055-background-jobs.md) for implementing media processing jobs (thumbnails, optimization)

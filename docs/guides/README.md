@@ -41,7 +41,8 @@ Read these documents in order for a complete understanding:
 14. **[072 - Admin/Front Separation](./072-admin-front-separation.md)** - Audience routing conventions
 15. **[075 - Validation](./075-validation.md)** - Request validation patterns
 16. **[076 - Nightfire](./076-nightfire.md)** - Block-based structured content
-17. **[080 - TypeScript Client](./080-typescript-client.md)** - HTTP client, commands
+17. **[077 - Media Library](./077-media-library.md)** - File uploads, blob storage, media management
+18. **[080 - TypeScript Client](./080-typescript-client.md)** - HTTP client, commands
 18. **[090 - UI Kit](./090-ui-kit.md)** - Component patterns
 19. **[092 - Selection Suggestions](./092-selection-suggestions.md)** - Intelligent suggestions with selection history
 20. **[095 - Navigation Context](./095-navigation-context.md)** - Contextual back buttons and form redirects
@@ -66,6 +67,7 @@ code/
 ├── 060-authentication/     # Auth provider implementations
 ├── 068-security/           # Security utilities, CSP, rate limiting
 ├── 070-api-handlers/       # Handler examples
+├── 077-media-library/      # Media upload, blob storage examples
 ├── 080-typescript-client/  # HTTP client, types
 ├── 090-ui-kit/             # Svelte components
 ├── 100-frontend-web/       # SvelteKit pages (web)
