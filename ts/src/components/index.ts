@@ -68,6 +68,7 @@ export { default as TabsContent } from "./TabsContent.svelte";
 export { default as TabsSeparator } from "./TabsSeparator.svelte";
 export { default as Pagination } from "./Pagination.svelte";
 export type { PaginationState } from "./Pagination.svelte";
+export { default as PaginatedList } from "./PaginatedList.svelte";
 export { OrderBy } from "./OrderBy";
 export type { OrderByFieldDefinition, OrderByField, OrderByValue } from "./OrderBy";
 
