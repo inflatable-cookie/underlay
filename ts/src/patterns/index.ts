@@ -154,6 +154,14 @@ export {
   type AllowedMediaType,
 } from "./blob-types";
 
+// Media upload flow pattern
+export {
+  createMediaUploadFlow,
+  type MediaUploadStep,
+  type MediaUploadFlowOptions,
+  type MediaUploadFlowController,
+} from "./media-upload-flow.svelte";
+
 // Media library types and utilities
 export {
   // Enums
