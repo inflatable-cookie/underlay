@@ -40,6 +40,7 @@ underlay-core = { path = "../../rust/crates/underlay-core" }
 underlay-http = { path = "../../rust/crates/underlay-http" }
 underlay-observability = { path = "../../rust/crates/underlay-observability" }
 underlay-auth = { path = "../../rust/crates/underlay-auth" }
+underlay-blob = { path = "../../rust/crates/underlay-blob", features = ["local"] }
 underlay-auth-email-totp = { path = "../../rust/crates/underlay-auth-email-totp" }
 underlay-auth-jwt = { path = "../../rust/crates/underlay-auth-jwt" }
 underlay-auth-oauth = { path = "../../rust/crates/underlay-auth-oauth" }

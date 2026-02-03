@@ -6,7 +6,7 @@
 //! - `admin/` - Admin-only routes with enhanced features
 
 use axum::http::header::HeaderName;
-use axum::routing::{get, patch, post, put};
+use axum::routing::{delete, get, patch, post, put};
 use axum::Router;
 use underlay_http::{cors_layer, CorsConfig};
 
@@ -206,6 +206,60 @@ pub fn build_router() -> Router<AppState> {
         .route(
             "/v1/admin/projects/:project_id/labels",
             get(admin::tasks::list_labels).post(admin::tasks::create_label),
+        )
+        // ====================================================================
+        // Media Library admin routes
+        // ====================================================================
+        .route(
+            "/v1/admin/media/check-duplicate",
+            post(admin::media::check_duplicate),
+        )
+        .route(
+            "/v1/admin/media",
+            get(admin::media::list_media).post(admin::media::create_media),
+        )
+        .route(
+            "/v1/admin/media/paginated",
+            get(admin::media::list_media_paginated),
+        )
+        .route("/v1/admin/media/trash", get(admin::media::list_media_trash))
+        .route(
+            "/v1/admin/media/:media_id",
+            get(admin::media::get_media)
+                .put(admin::media::update_media)
+                .delete(admin::media::purge_media),
+        )
+        .route(
+            "/v1/admin/media/:media_id/soft-delete",
+            post(admin::media::soft_delete_media),
+        )
+        .route(
+            "/v1/admin/media/:media_id/restore",
+            post(admin::media::restore_media),
+        )
+        .route(
+            "/v1/admin/media/:media_id/versions",
+            get(admin::media::list_versions),
+        )
+        .route(
+            "/v1/admin/media/:media_id/versions/initiate-upload",
+            post(admin::media::initiate_upload),
+        )
+        .route(
+            "/v1/admin/media/:media_id/versions/:version_id/finalise-upload",
+            post(admin::media::finalise_upload),
+        )
+        .route(
+            "/v1/admin/media/:media_id/versions/:version_id/activate",
+            post(admin::media::activate_version),
+        )
+        .route(
+            "/v1/admin/media/:media_id/versions/:version_id",
+            delete(admin::media::delete_version),
+        )
+        .route(
+            "/v1/admin/media/:media_id/usage",
+            get(admin::media::list_usage),
         )
         .layer(cors)
 }

@@ -25,11 +25,14 @@ dependencies = [
  "tracing",
  "tracing-subscriber",
  "underlay-auth",
+ "underlay-blob",
  "underlay-core",
+ "underlay-db",
  "underlay-email",
  "underlay-http",
  "underlay-observability",
  "utoipa",
+ "uuid",
  "validator",
  "webauthn-rs-proto",
 ]
@@ -3697,6 +3700,19 @@ dependencies = [
  "underlay-core",
  "url",
  "webauthn-rs",
+]
+
+[[package]]
+name = "underlay-blob"
+version = "0.0.1"
+dependencies = [
+ "async-trait",
+ "base64 0.22.1",
+ "chrono",
+ "serde",
+ "thiserror 1.0.69",
+ "tokio",
+ "url",
 ]
 
 [[package]]

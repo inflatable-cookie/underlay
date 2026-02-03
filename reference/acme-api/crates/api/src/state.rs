@@ -13,6 +13,7 @@ use serde_json::json;
 use once_cell::sync::OnceCell;
 use std::sync::Arc;
 use underlay_auth::Authenticated;
+use underlay_blob::BlobAdapter;
 use underlay_email::{EmailManager, EmailTemplateEngine};
 use underlay_http::AuthCookieConfig;
 
@@ -29,6 +30,7 @@ pub struct AppState {
     pub email_templates: Arc<EmailTemplateEngine>,
     pub email_totp: Arc<EmailTotpService>,
     pub email_config: EmailConfig,
+    pub blob_adapter: Arc<dyn BlobAdapter>,
 }
 
 impl underlay_auth::HasAuthProvider for AppState {

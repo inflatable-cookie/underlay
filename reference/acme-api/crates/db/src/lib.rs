@@ -6,6 +6,7 @@ pub mod account;
 pub mod auth;
 pub mod categories;
 pub mod infra;
+pub mod media;
 pub mod tasks;
 
 use underlay_db::DbConfig;
@@ -20,7 +21,7 @@ static MIGRATOR: sqlx::migrate::Migrator = sqlx::migrate!("../../migrations");
 /// Schemas to drop when resetting the dev database.
 ///
 /// This list is app-owned (schema names are part of the app DB contract).
-pub const DEV_RESET_SCHEMAS: &[&str] = &["public", "auth", "account", "platform", "acme"];
+pub const DEV_RESET_SCHEMAS: &[&str] = &["public", "auth", "account", "platform", "media", "acme"];
 
 /// Create a new Postgres connection pool from a URL.
 pub async fn create_pool(database_url: &str) -> Result<DbPool, sqlx::Error> {

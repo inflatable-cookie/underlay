@@ -14,7 +14,9 @@ tokio = { workspace = true }
 tracing = { workspace = true }
 tracing-subscriber = { workspace = true }
 underlay-auth = { workspace = true }
+underlay-blob = { workspace = true }
 underlay-core = { workspace = true }
+underlay-db = { workspace = true }
 underlay-email = { workspace = true, features = ["templates"] }
 underlay-http = { workspace = true }
 underlay-observability = { workspace = true }
@@ -33,3 +35,4 @@ webauthn-rs-proto = "0.5.4"
 once_cell = "1"
 sha2 = "0.10"
 hex = "0.4"
+uuid = { workspace = true }

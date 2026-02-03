@@ -5,6 +5,7 @@ use acme_db::{create_pool, run_dev_seeds, run_migrations};
 use acme_infra::{create_email_manager, create_template_engine, EmailAdapterType, EmailConfig};
 use std::sync::Arc;
 use tracing::info;
+use underlay_blob::{BlobAdapter, LocalAdapter, LocalConfig, NoopAdapter};
 
 // Routes and state from the library crate
 use acme_api::routes;
@@ -110,21 +111,7 @@ async fn main() -> anyhow::Result<()> {
         email_config.clone(),
     ));
 
-    let state = AppState {
-        local_auth,
-        auth_provider,
-        cookie_config,
-        email_manager,
-        email_templates,
-        email_totp,
-        email_config,
-    };
-
-    // Set global DB pool for middleware
-    if DB_POOL.set(pool.clone()).is_err() {
-        tracing::warn!("DB pool already initialised for DB_POOL");
-    }
-
+    // Parse host/port early so blob adapter can use them
     let host = std::env::var("HOST")
         .or_else(|_| std::env::var("ACME_BIND_ADDR"))
         .unwrap_or_else(|_| "127.0.0.1".to_string());
@@ -133,6 +120,47 @@ async fn main() -> anyhow::Result<()> {
         .ok()
         .and_then(|v| v.parse::<u16>().ok())
         .unwrap_or(40011);
+
+    // Initialize blob storage adapter
+    // In local/dev, use LocalAdapter with filesystem storage
+    // In production, this should be configured to use S3Adapter
+    let blob_adapter: Arc<dyn BlobAdapter> = if env == "local" || env == "dev" {
+        let base_path = std::env::var("BLOB_STORAGE_DIR")
+            .unwrap_or_else(|_| "./.blob-storage".to_string());
+        let serve_url_base = std::env::var("BLOB_SERVE_URL")
+            .unwrap_or_else(|_| format!("http://{}:{}/v1/dev-blobs", host, port));
+
+        let local_adapter = LocalAdapter::new(LocalConfig {
+            base_path: base_path.into(),
+            serve_url_base,
+            bucket: "media".to_string(),
+            upload_url_base: None,
+        })
+        .await
+        .map_err(|e| anyhow::anyhow!("Failed to create local blob adapter: {}", e))?;
+
+        Arc::new(local_adapter)
+    } else {
+        // Production: use NoopAdapter as placeholder (configure S3 in production)
+        tracing::warn!("Using NoopAdapter for blob storage - configure S3 for production");
+        Arc::new(NoopAdapter::new())
+    };
+
+    let state = AppState {
+        local_auth,
+        auth_provider,
+        cookie_config,
+        email_manager,
+        email_templates,
+        email_totp,
+        email_config,
+        blob_adapter,
+    };
+
+    // Set global DB pool for middleware
+    if DB_POOL.set(pool.clone()).is_err() {
+        tracing::warn!("DB pool already initialised for DB_POOL");
+    }
 
     let app = routes::build_router()
         .with_state(state)

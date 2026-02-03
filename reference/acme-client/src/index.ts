@@ -136,12 +136,48 @@ export type { AuthManager, AuthManagerConfig, AuthState } from "./utils/auth-man
 // Account types
 export type { UserProfile, UserProfileUpdate } from "./types/account-types.js";
 
+// Media types (re-exported from Underlay patterns)
+export {
+  // Enums
+  MediaKind,
+  MediaVisibility,
+  MediaVersionState,
+  // Utility functions
+  getMediaKindLabel,
+  getMediaKindAccent,
+  getMediaVisibilityLabel,
+  getMediaVisibilityAccent,
+  getMediaVersionStateLabel,
+  getMediaVersionStateAccent,
+  detectMediaKindFromMimeType,
+  isMediaDeleted,
+  getMediaDisplayName,
+} from "./types/media-types.js";
+export type {
+  MediaSummary,
+  MediaDetail,
+  MediaVersion,
+  MediaRendition,
+  MediaUsage,
+  CreateMediaRequest,
+  UpdateMediaRequest,
+  CheckDuplicateRequest,
+  CheckDuplicateResponse,
+  InitiateUploadRequest,
+  InitiateUploadResponse,
+  MediaUploadPlan,
+  FinaliseUploadRequest,
+  FinaliseUploadResponse,
+  MediaListQuery,
+} from "./types/media-types.js";
+
 // Commands
 export * as healthCommands from "./commands/health-commands.js";
 export * as authCommands from "./commands/auth-commands.js";
 export * as accountCommands from "./commands/account-commands.js";
 export * as adminCommands from "./commands/admin-commands.js";
 export * as userCommands from "./commands/user-commands.js";
+export * as mediaCommands from "./commands/media-commands.js";
 
 // User types
 export type {
