@@ -50,11 +50,13 @@
 
 mod adapter;
 pub mod adapters;
+mod config;
 mod error;
 mod types;
 
 // Re-export main types
 pub use adapter::{BlobAdapter, NoopAdapter};
+pub use config::MediaConfig;
 pub use error::{BlobError, BlobResult};
 pub use types::{
     DownloadRequest, ObjectInfo, SignedUrl, StoredObject, UploadPlan, UploadRequest,

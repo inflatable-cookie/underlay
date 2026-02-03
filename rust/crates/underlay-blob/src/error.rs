@@ -53,6 +53,10 @@ pub enum BlobError {
     #[error("download failed: {0}")]
     DownloadFailed(String),
 
+    /// Failed to upload object.
+    #[error("upload failed: {0}")]
+    UploadFailed(String),
+
     /// The adapter is not available or not configured.
     #[error("adapter not available: {0}")]
     AdapterUnavailable(String),
