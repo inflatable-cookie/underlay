@@ -153,3 +153,37 @@ export {
   type AllowedPdfType,
   type AllowedMediaType,
 } from "./blob-types";
+
+// Media library types and utilities
+export {
+  // Enums
+  MediaKind,
+  MediaVisibility,
+  MediaVersionState,
+  // Utility functions
+  getMediaKindLabel,
+  getMediaKindAccent,
+  getMediaVisibilityLabel,
+  getMediaVisibilityAccent,
+  getMediaVersionStateLabel,
+  getMediaVersionStateAccent,
+  detectMediaKindFromMimeType,
+  isMediaDeleted,
+  getMediaDisplayName,
+  // Types
+  type MediaSummary,
+  type MediaDetail,
+  type MediaVersion,
+  type MediaRendition,
+  type MediaUsage,
+  type CreateMediaRequest,
+  type UpdateMediaRequest,
+  type CheckDuplicateRequest,
+  type CheckDuplicateResponse,
+  type InitiateUploadRequest,
+  type InitiateUploadResponse,
+  type MediaUploadPlan,
+  type FinaliseUploadRequest,
+  type FinaliseUploadResponse,
+  type MediaListQuery,
+} from "./media-types";
