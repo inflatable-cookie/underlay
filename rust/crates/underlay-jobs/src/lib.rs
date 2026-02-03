@@ -75,6 +75,7 @@ mod scheduler;
 pub use crate::types::{
     BackoffStrategy, Job, JobConfig, JobErrorRecord, JobFilters, JobHandler, JobHandlerError,
     JobId, JobProgress, JobResult, JobStatus, ScheduledTask, ScheduledTaskDefinition,
+    DEFAULT_BACKOFF_BASE_SECS, DEFAULT_BACKOFF_MAX_SECS, DEFAULT_LONG_RUNNING_TIMEOUT_SECS,
 };
 
 // Core exports

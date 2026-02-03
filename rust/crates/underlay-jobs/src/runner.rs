@@ -452,7 +452,9 @@ mod tests {
     #[test]
     fn job_runner_config_default_values() {
         let config = JobRunnerConfig::default();
-        assert_eq!(config.poll_interval.as_millis(), 250);
+        // Default is 30 seconds (suitable for notification mode)
+        assert_eq!(config.poll_interval.as_secs(), 30);
+        assert_eq!(config.batch_size, 0);
     }
 
     #[tokio::test]
