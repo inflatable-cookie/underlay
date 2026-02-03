@@ -74,6 +74,7 @@ export type { OrderByFieldDefinition, OrderByField, OrderByValue } from "./Order
 
 // Media library components
 export { default as MediaPicker } from "./MediaPicker.svelte";
+export { default as MediaActionsMenu } from "./MediaActionsMenu.svelte";
 
 export { default as LoginForm } from "./auth/LoginForm.svelte";
 export { default as RegisterForm } from "./auth/RegisterForm.svelte";
