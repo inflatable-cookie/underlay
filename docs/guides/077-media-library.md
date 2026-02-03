@@ -1419,6 +1419,381 @@ The upload page uses Underlay's blob upload utilities:
 </CopyActionsMenu>
 ```
 
+## Shared Underlay Components
+
+Underlay provides reusable components and patterns for media library implementations. These significantly reduce boilerplate code when building media features.
+
+### Shared Types
+
+All media types are exported from `@decodelabs/underlay/patterns`:
+
+```typescript
+import {
+  // Enums
+  MediaKind,
+  MediaVisibility,
+  MediaVersionState,
+
+  // Types
+  type MediaSummary,
+  type MediaDetail,
+  type MediaVersion,
+  type MediaRendition,
+  type MediaUsage,
+
+  // Request/Response DTOs
+  type CreateMediaRequest,
+  type UpdateMediaRequest,
+  type CheckDuplicateRequest,
+  type CheckDuplicateResponse,
+  type InitiateUploadRequest,
+  type InitiateUploadResponse,
+  type FinaliseUploadRequest,
+  type FinaliseUploadResponse,
+  type MediaListQuery,
+
+  // Utility functions
+  getMediaKindLabel,
+  getMediaKindAccent,
+  getMediaVisibilityLabel,
+  getMediaVisibilityAccent,
+  getMediaVersionStateLabel,
+  getMediaVersionStateAccent,
+  detectMediaKindFromMimeType,
+  isMediaDeleted,
+  getMediaDisplayName,
+} from "@decodelabs/underlay/patterns";
+```
+
+These types match the API contracts, so your TypeScript client can use them directly. Consuming apps typically re-export these from their API client package for convenience.
+
+### MediaPicker Component
+
+A modal dialog for selecting existing media or uploading new files:
+
+```svelte
+<script lang="ts">
+  import { MediaPicker } from "@decodelabs/underlay/components";
+  import { mediaCommands, type MediaSummary } from "@my-client";
+  import { auth } from "$lib/stores/auth";
+
+  let pickerOpen = $state(false);
+  let selectedMedia = $state<MediaSummary | null>(null);
+
+  // Bind your API commands as callback props
+  async function listMediaPaginated(params?: PaginationParams) {
+    const token = auth.getToken();
+    if (!token) throw new Error("Not authenticated");
+    return mediaCommands.listMediaPaginated(fetch, token, params);
+  }
+
+  async function checkDuplicate(sha256: string) {
+    const token = auth.getToken();
+    if (!token) throw new Error("Not authenticated");
+    return mediaCommands.checkDuplicate({ sha256 }, fetch, token);
+  }
+
+  async function createMedia(request: CreateMediaRequest) {
+    const token = auth.getToken();
+    if (!token) throw new Error("Not authenticated");
+    return mediaCommands.createMedia(request, fetch, token);
+  }
+
+  async function initiateUpload(mediaId: string, request: InitiateUploadRequest) {
+    const token = auth.getToken();
+    if (!token) throw new Error("Not authenticated");
+    return mediaCommands.initiateUpload(mediaId, request, fetch, token);
+  }
+
+  async function finaliseUpload(mediaId: string, versionId: string, request: FinaliseUploadRequest) {
+    const token = auth.getToken();
+    if (!token) throw new Error("Not authenticated");
+    return mediaCommands.finaliseUpload(mediaId, versionId, request, fetch, token);
+  }
+
+  function handleSelect(mediaId: string, media: MediaSummary) {
+    selectedMedia = media;
+    // Use the selected media...
+  }
+</script>
+
+<button onclick={() => pickerOpen = true}>Select Media</button>
+
+<MediaPicker
+  bind:open={pickerOpen}
+  title="Select an image"
+  {listMediaPaginated}
+  {checkDuplicate}
+  {createMedia}
+  {initiateUpload}
+  {finaliseUpload}
+  onselect={handleSelect}
+  oncancel={() => pickerOpen = false}
+/>
+```
+
+**Props:**
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `open` | `boolean` | Controls dialog visibility (bindable) |
+| `title` | `string` | Dialog title (default: "Select Media") |
+| `filterKind` | `MediaKind \| null` | Filter to specific media type |
+| `maxFileSize` | `number` | Max upload size (default: 25MB) |
+| `listMediaPaginated` | `function` | Callback to list media with pagination |
+| `checkDuplicate` | `function` | Callback to check for duplicates |
+| `createMedia` | `function` | Callback to create media record |
+| `initiateUpload` | `function` | Callback to get upload URL |
+| `finaliseUpload` | `function` | Callback to finalize upload |
+| `onselect` | `function` | Called when media is selected |
+| `oncancel` | `function` | Called when picker is cancelled |
+
+**Creating a thin wrapper:**
+
+For convenience, create an app-specific wrapper that pre-binds your commands:
+
+```svelte
+<!-- src/lib/components/MediaPicker.svelte -->
+<script lang="ts">
+  import { MediaPicker as BaseMediaPicker } from "@decodelabs/underlay/components";
+  import { mediaCommands } from "@my-client";
+  import { auth } from "$lib/stores/auth";
+
+  interface Props {
+    open?: boolean;
+    title?: string;
+    filterKind?: MediaKind | null;
+    onselect?: (mediaId: string, media: MediaSummary) => void;
+    oncancel?: () => void;
+  }
+
+  let { open = $bindable(false), title, filterKind, onselect, oncancel }: Props = $props();
+
+  // Pre-bind all the command callbacks with auth
+  async function listMediaPaginated(params?: PaginationParams) {
+    const token = auth.getToken();
+    if (!token) throw new Error("Not authenticated");
+    return mediaCommands.listMediaPaginated(fetch, token, params);
+  }
+
+  // ... other callbacks
+</script>
+
+<BaseMediaPicker
+  bind:open
+  {title}
+  {filterKind}
+  {listMediaPaginated}
+  {checkDuplicate}
+  {createMedia}
+  {initiateUpload}
+  {finaliseUpload}
+  {onselect}
+  {oncancel}
+/>
+```
+
+### MediaActionsMenu Component
+
+A context menu for media item actions (edit, delete, restore, etc.):
+
+```svelte
+<script lang="ts">
+  import { MediaActionsMenu } from "@decodelabs/underlay/components";
+  import { mediaCommands, type MediaDetail } from "@my-client";
+  import { auth } from "$lib/stores/auth";
+
+  interface Props {
+    media: MediaDetail;
+  }
+
+  let { media }: Props = $props();
+
+  // Bind commands with auth
+  async function softDelete(mediaId: string) {
+    const token = auth.getToken();
+    if (!token) throw new Error("Not authenticated");
+    await mediaCommands.softDeleteMedia(mediaId, fetch, token);
+  }
+
+  async function restore(mediaId: string) {
+    const token = auth.getToken();
+    if (!token) throw new Error("Not authenticated");
+    await mediaCommands.restoreMedia(mediaId, fetch, token);
+  }
+
+  async function purge(mediaId: string) {
+    const token = auth.getToken();
+    if (!token) throw new Error("Not authenticated");
+    await mediaCommands.purgeMedia(mediaId, fetch, token);
+  }
+
+  function navigateToReplace(mediaId: string) {
+    goto(`/media/${mediaId}/upload`);
+  }
+</script>
+
+<MediaActionsMenu
+  {media}
+  {softDelete}
+  {restore}
+  {purge}
+  {navigateToReplace}
+  onSoftDeleteSuccess={() => refetchMedia()}
+  onRestoreSuccess={() => refetchMedia()}
+  onPurgeSuccess={() => goto('/media')}
+/>
+```
+
+**Props:**
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `media` | `MediaSummary \| MediaDetail` | The media item |
+| `sourceContext` | `NavigationContext` | For navigation context tracking |
+| `trigger` | `Snippet` | Custom trigger element |
+| `softDelete` | `function` | Callback for soft delete |
+| `restore` | `function` | Callback for restore |
+| `purge` | `function` | Callback for permanent delete |
+| `navigateToReplace` | `function` | Callback to navigate to replace file page |
+| `onSoftDeleteSuccess` | `function` | Called after successful soft delete |
+| `onRestoreSuccess` | `function` | Called after successful restore |
+| `onPurgeSuccess` | `function` | Called after successful purge |
+| `onEditRequest` | `function` | Called when edit is requested |
+
+The menu automatically shows appropriate actions based on the media's deleted state.
+
+### Upload Flow Pattern
+
+For building custom upload pages, use the `createMediaUploadFlow` state machine:
+
+```typescript
+import { createMediaUploadFlow, type MediaUploadFlowController } from "@decodelabs/underlay/patterns";
+import { mediaCommands } from "@my-client";
+import { auth } from "$lib/stores/auth";
+
+const uploadFlow = createMediaUploadFlow({
+  // API callbacks
+  checkDuplicate: async (sha256) => {
+    const token = auth.getToken()!;
+    return mediaCommands.checkDuplicate({ sha256 }, fetch, token);
+  },
+  createMedia: async (request) => {
+    const token = auth.getToken()!;
+    return mediaCommands.createMedia(request, fetch, token);
+  },
+  initiateUpload: async (mediaId, request) => {
+    const token = auth.getToken()!;
+    return mediaCommands.initiateUpload(mediaId, request, fetch, token);
+  },
+  finaliseUpload: async (mediaId, versionId, request) => {
+    const token = auth.getToken()!;
+    return mediaCommands.finaliseUpload(mediaId, versionId, request, fetch, token);
+  },
+
+  // Lifecycle callbacks
+  onComplete: (media) => {
+    toasts.push({ variant: "success", message: "Upload complete!" });
+    goto(`/media/${media.id}`);
+  },
+  onError: (error) => {
+    toasts.push({ variant: "error", message: error.message });
+  },
+
+  // Options
+  maxFileSize: 25 * 1024 * 1024,
+  defaultVisibility: MediaVisibility.Public,
+});
+```
+
+**State Machine Steps:**
+
+| Step | Description |
+|------|-------------|
+| `select` | Initial state, waiting for file selection |
+| `checking` | Computing hash, checking for duplicates |
+| `duplicate` | Duplicate found, user chooses action |
+| `uploading` | Uploading to blob storage |
+| `finalising` | Finalizing upload on server |
+| `complete` | Upload successful |
+| `error` | Error occurred |
+
+**Controller Interface:**
+
+```typescript
+interface MediaUploadFlowController {
+  // Reactive state
+  readonly step: MediaUploadStep;
+  readonly file: File | null;
+  readonly fileError: string | null;
+  readonly fileHash: string | null;
+  readonly progress: number;        // 0-100
+  readonly error: string | null;
+  readonly duplicateMedia: MediaSummary | null;
+  readonly createdMedia: MediaDetail | null;
+
+  // Computed
+  readonly canUpload: boolean;
+  readonly isUploading: boolean;
+
+  // Actions
+  setFile: (file: File) => void;
+  clearFile: () => void;
+  startUpload: (metadata?: Partial<CreateMediaRequest>) => Promise<void>;
+  proceedWithUpload: (metadata?: Partial<CreateMediaRequest>) => Promise<void>;
+  useDuplicate: () => void;
+  reset: () => void;
+}
+```
+
+**Using in a component:**
+
+```svelte
+<script lang="ts">
+  const uploadFlow = createMediaUploadFlow({ /* ... */ });
+</script>
+
+{#if uploadFlow.step === "select"}
+  <FileDropzone onfile={(f) => uploadFlow.setFile(f)} />
+  {#if uploadFlow.file}
+    <Button onclick={() => uploadFlow.startUpload()}>Upload</Button>
+  {/if}
+
+{:else if uploadFlow.step === "checking"}
+  <Spinner /> Checking for duplicates...
+
+{:else if uploadFlow.step === "duplicate"}
+  <p>This file already exists: {uploadFlow.duplicateMedia?.title}</p>
+  <Button onclick={() => uploadFlow.useDuplicate()}>Use existing</Button>
+  <Button onclick={() => uploadFlow.proceedWithUpload()}>Upload anyway</Button>
+
+{:else if uploadFlow.step === "uploading"}
+  <ProgressBar value={uploadFlow.progress} />
+
+{:else if uploadFlow.step === "complete"}
+  <p>Upload complete!</p>
+  <Button onclick={() => uploadFlow.reset()}>Upload another</Button>
+
+{:else if uploadFlow.step === "error"}
+  <p>Error: {uploadFlow.error}</p>
+  <Button onclick={() => uploadFlow.reset()}>Try again</Button>
+{/if}
+```
+
+**Replace file flow:**
+
+For adding a new version to existing media, pass `existingMediaId`:
+
+```typescript
+const replaceFlow = createMediaUploadFlow({
+  // ... callbacks
+  existingMediaId: media.id,
+  existingVersionHashes: media.versions?.map(v => v.sha256).filter(Boolean) ?? [],
+});
+```
+
+This skips `createMedia` and prevents uploading the same file that's already a version.
+
 ## Blob Upload Utilities
 
 Underlay provides client-side utilities for blob uploads in `@decodelabs/underlay/patterns`:
