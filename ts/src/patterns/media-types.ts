@@ -68,6 +68,8 @@ export interface MediaSummary {
   byteSize: number | null;
   /** MIME type of current version (if available) */
   mimeType: string | null;
+  /** URL to thumbnail image (if available) */
+  thumbnailUrl: string | null;
 }
 
 /**

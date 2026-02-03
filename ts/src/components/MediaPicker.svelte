@@ -307,6 +307,7 @@
         deletedAt: null,
         byteSize: null,
         mimeType: null,
+        thumbnailUrl: null, // Thumbnail not yet generated
       };
 
       uploadStep = "complete";
