@@ -331,6 +331,31 @@ impl BlobAdapter for S3Adapter {
         Ok(bytes)
     }
 
+    async fn put_bytes(&self, key: &str, data: &[u8], content_type: &str) -> BlobResult<StoredObject> {
+        let body = aws_sdk_s3::primitives::ByteStream::from(data.to_vec());
+
+        let response = self
+            .client
+            .put_object()
+            .bucket(&self.config.bucket)
+            .key(key)
+            .content_type(content_type)
+            .content_length(data.len() as i64)
+            .body(body)
+            .send()
+            .await
+            .map_err(|e| BlobError::UploadFailed(format!("Failed to upload object: {}", e)))?;
+
+        Ok(StoredObject {
+            provider: "s3".to_string(),
+            bucket: self.config.bucket.clone(),
+            key: key.to_string(),
+            size: data.len() as u64,
+            content_type: content_type.to_string(),
+            etag: response.e_tag().map(|s| s.trim_matches('"').to_string()),
+        })
+    }
+
     fn name(&self) -> &'static str {
         "s3"
     }

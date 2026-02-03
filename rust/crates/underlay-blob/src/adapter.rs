@@ -50,6 +50,12 @@ pub trait BlobAdapter: Send + Sync {
     /// consider using `signed_download_url` and streaming instead.
     async fn get_bytes(&self, key: &str) -> BlobResult<Vec<u8>>;
 
+    /// Upload bytes directly to storage.
+    ///
+    /// This is for server-side uploads (e.g., thumbnail generation, file processing).
+    /// For client-side uploads, use `initiate_upload` to get a presigned URL.
+    async fn put_bytes(&self, key: &str, data: &[u8], content_type: &str) -> BlobResult<StoredObject>;
+
     /// Check if an object exists.
     async fn exists(&self, key: &str) -> BlobResult<bool> {
         match self.head(key).await {
@@ -162,6 +168,16 @@ impl BlobAdapter for NoopAdapter {
     async fn get_bytes(&self, _key: &str) -> BlobResult<Vec<u8>> {
         // Noop adapter returns empty bytes
         Ok(Vec::new())
+    }
+
+    async fn put_bytes(&self, key: &str, data: &[u8], content_type: &str) -> BlobResult<StoredObject> {
+        Ok(StoredObject::new(
+            "noop",
+            &self.bucket,
+            key,
+            data.len() as u64,
+            content_type,
+        ))
     }
 
     fn name(&self) -> &'static str {

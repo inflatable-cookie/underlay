@@ -14,7 +14,11 @@
  */
 export const MediaKind = {
   Image: "image",
+  Video: "video",
+  Audio: "audio",
+  Document: "document",
   Pdf: "pdf",
+  Other: "other",
 } as const;
 
 export type MediaKind = (typeof MediaKind)[keyof typeof MediaKind];
@@ -248,8 +252,16 @@ export function getMediaKindLabel(kind: MediaKind): string {
   switch (kind) {
     case MediaKind.Image:
       return "Image";
+    case MediaKind.Video:
+      return "Video";
+    case MediaKind.Audio:
+      return "Audio";
+    case MediaKind.Document:
+      return "Document";
     case MediaKind.Pdf:
       return "PDF";
+    case MediaKind.Other:
+      return "Other";
     default:
       return kind;
   }
@@ -262,8 +274,16 @@ export function getMediaKindAccent(kind: MediaKind): string {
   switch (kind) {
     case MediaKind.Image:
       return "#22c55e"; // green
+    case MediaKind.Video:
+      return "#f59e0b"; // amber
+    case MediaKind.Audio:
+      return "#8b5cf6"; // violet
+    case MediaKind.Document:
+      return "#3b82f6"; // blue
     case MediaKind.Pdf:
       return "#ef4444"; // red
+    case MediaKind.Other:
+      return "#94a3b8"; // gray
     default:
       return "#94a3b8"; // gray
   }
@@ -336,14 +356,35 @@ export function getMediaVersionStateAccent(state: MediaVersionState): string {
 /**
  * Detect media kind from MIME type
  */
-export function detectMediaKindFromMimeType(mimeType: string): MediaKind | null {
+export function detectMediaKindFromMimeType(mimeType: string): MediaKind {
   if (mimeType.startsWith("image/")) {
     return MediaKind.Image;
+  }
+  if (mimeType.startsWith("video/")) {
+    return MediaKind.Video;
+  }
+  if (mimeType.startsWith("audio/")) {
+    return MediaKind.Audio;
   }
   if (mimeType === "application/pdf") {
     return MediaKind.Pdf;
   }
-  return null;
+  // Common document types
+  if (
+    mimeType.includes("word") ||
+    mimeType.includes("document") ||
+    mimeType.includes("excel") ||
+    mimeType.includes("spreadsheet") ||
+    mimeType.includes("powerpoint") ||
+    mimeType.includes("presentation") ||
+    mimeType === "text/plain" ||
+    mimeType === "text/csv" ||
+    mimeType === "text/html" ||
+    mimeType === "text/markdown"
+  ) {
+    return MediaKind.Document;
+  }
+  return MediaKind.Other;
 }
 
 /**

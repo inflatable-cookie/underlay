@@ -335,6 +335,10 @@ impl BlobAdapter for LocalAdapter {
             })
     }
 
+    async fn put_bytes(&self, key: &str, data: &[u8], content_type: &str) -> BlobResult<StoredObject> {
+        self.write_file(key, data, content_type).await
+    }
+
     fn name(&self) -> &'static str {
         "local"
     }
