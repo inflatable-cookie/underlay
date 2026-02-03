@@ -1,24 +1,75 @@
 use tracing_subscriber::EnvFilter;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+/// Log output format.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum LogFormat {
+    /// Human-readable format with colors (default).
+    #[default]
     Pretty,
+    /// JSON format for log aggregation systems.
     Json,
 }
 
-#[derive(Debug, Clone)]
+/// Configuration for observability (logging, tracing).
+///
+/// # Example
+///
+/// ```
+/// use underlay_observability::{ObservabilityConfig, LogFormat};
+///
+/// // Default config (pretty format, info level fallback)
+/// let config = ObservabilityConfig::default();
+///
+/// // Custom config
+/// let config = ObservabilityConfig::default()
+///     .with_level("debug")
+///     .with_format(LogFormat::Json);
+///
+/// // Production config
+/// let config = ObservabilityConfig::new()
+///     .with_level("warn")
+///     .with_json();
+/// ```
+#[derive(Debug, Clone, Default)]
 pub struct ObservabilityConfig {
-    /// If set, used as a fallback when `RUST_LOG` is not present.
+    /// Fallback log level when `RUST_LOG` is not present.
+    /// Default: "info"
     pub level: Option<String>,
+    /// Log output format.
+    /// Default: Pretty
     pub format: LogFormat,
 }
 
-impl Default for ObservabilityConfig {
-    fn default() -> Self {
-        Self {
-            level: None,
-            format: LogFormat::Pretty,
-        }
+impl ObservabilityConfig {
+    /// Create a new config with default values.
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// Set the fallback log level (used when `RUST_LOG` is not set).
+    ///
+    /// Valid values: "trace", "debug", "info", "warn", "error"
+    pub fn with_level(mut self, level: impl Into<String>) -> Self {
+        self.level = Some(level.into());
+        self
+    }
+
+    /// Set the log output format.
+    pub fn with_format(mut self, format: LogFormat) -> Self {
+        self.format = format;
+        self
+    }
+
+    /// Use pretty (human-readable) log format.
+    pub fn with_pretty(mut self) -> Self {
+        self.format = LogFormat::Pretty;
+        self
+    }
+
+    /// Use JSON log format (for log aggregation).
+    pub fn with_json(mut self) -> Self {
+        self.format = LogFormat::Json;
+        self
     }
 }
 

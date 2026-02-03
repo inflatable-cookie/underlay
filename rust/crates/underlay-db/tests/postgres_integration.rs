@@ -55,10 +55,7 @@ async fn create_pool_connects() {
     let node = docker.run(Postgres::default());
 
     let database_url = postgres_database_url(&node);
-    let config = DbConfig {
-        database_url,
-        max_connections: 5,
-    };
+    let config = DbConfig::new(database_url).with_max_connections(5);
 
     let pool = create_pool(&config).await.expect("create_pool");
     let (one,): (i64,) = sqlx::query_as("SELECT 1::BIGINT")
@@ -75,10 +72,7 @@ async fn drop_schemas_requires_guard() {
     let node = docker.run(Postgres::default());
 
     let database_url = postgres_database_url(&node);
-    let config = DbConfig {
-        database_url,
-        max_connections: 5,
-    };
+    let config = DbConfig::new(database_url).with_max_connections(5);
 
     let pool = create_pool(&config).await.expect("create_pool");
 
@@ -105,10 +99,7 @@ async fn drop_schemas_drops_schema() {
     let node = docker.run(Postgres::default());
 
     let database_url = postgres_database_url(&node);
-    let config = DbConfig {
-        database_url,
-        max_connections: 5,
-    };
+    let config = DbConfig::new(database_url).with_max_connections(5);
 
     let pool = create_pool(&config).await.expect("create_pool");
 
@@ -149,10 +140,7 @@ async fn drop_schemas_rejects_invalid_schema_name() {
     let node = docker.run(Postgres::default());
 
     let database_url = postgres_database_url(&node);
-    let config = DbConfig {
-        database_url,
-        max_connections: 5,
-    };
+    let config = DbConfig::new(database_url).with_max_connections(5);
 
     let pool = create_pool(&config).await.expect("create_pool");
 

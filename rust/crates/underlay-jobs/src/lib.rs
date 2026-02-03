@@ -71,6 +71,10 @@ pub mod tasks;
 #[cfg(feature = "scheduler")]
 mod scheduler;
 
+// Scheduler config is always available (doesn't require postgres)
+#[cfg(feature = "scheduler")]
+pub use crate::scheduler::{SchedulerConfig, DEFAULT_SCHEDULER_TICK_INTERVAL_SECS};
+
 // Re-exports from types
 pub use crate::types::{
     BackoffStrategy, Job, JobConfig, JobErrorRecord, JobFilters, JobHandler, JobHandlerError,

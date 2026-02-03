@@ -30,7 +30,7 @@ pub use crate::cookies::{
     clear_auth_cookies, extract_refresh_token, extract_refresh_token_default, set_auth_cookies,
     AuthCookieConfig, SameSite,
 };
-pub use crate::cors::{cors_layer, CorsConfig};
+pub use crate::cors::{cors_layer, CorsConfig, DEFAULT_CORS_MAX_AGE_SECS};
 pub use crate::errors::{error_response, ErrorLogContext, ErrorLogSink};
 pub use crate::pagination::{Paginated, PaginationMeta, PaginationParams};
 pub use crate::query::{
