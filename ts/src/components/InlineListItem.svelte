@@ -19,6 +19,8 @@
     badge?: Snippet;
     /** Trailing content (badges, pills, etc.) - pushed to the right */
     trailing?: Snippet;
+    /** Action buttons shown on hover (alternative to showDelete for multiple actions) */
+    actions?: Snippet;
     /** Whether to show delete button on hover */
     showDelete?: boolean;
     /** Delete handler */
@@ -34,9 +36,13 @@
     accent = null,
     badge,
     trailing,
+    actions,
     showDelete = false,
     ondelete
   }: Props = $props();
+
+  // Has any hover actions (either custom actions or delete button)
+  let hasActions = $derived(actions || (showDelete && ondelete));
 
   function handleDelete(e: MouseEvent) {
     e.preventDefault();
@@ -65,7 +71,7 @@
   </div>
 {/snippet}
 
-<li class="inline-list-item" class:inline-list-item--has-delete={showDelete && ondelete}>
+<li class="inline-list-item" class:inline-list-item--has-actions={hasActions}>
   {#if href}
     <a
       class="inline-list-item__content"
@@ -132,15 +138,22 @@
     </div>
   {/if}
 
-  {#if showDelete && ondelete}
-    <button
-      type="button"
-      class="inline-list-item__delete"
-      onclick={handleDelete}
-      aria-label="Delete {label}"
-    >
-      <Trash2 size={14} />
-    </button>
+  {#if hasActions}
+    <div class="inline-list-item__actions">
+      {#if actions}
+        {@render actions()}
+      {/if}
+      {#if showDelete && ondelete}
+        <button
+          type="button"
+          class="inline-list-item__delete"
+          onclick={handleDelete}
+          aria-label="Delete {label}"
+        >
+          <Trash2 size={14} />
+        </button>
+      {/if}
+    </div>
   {/if}
 </li>
 
@@ -234,16 +247,34 @@
     transition: margin-right 0.1s ease;
   }
 
-  /* Make room for delete button on hover when delete is enabled */
-  .inline-list-item--has-delete:hover .inline-list-item__trailing {
-    margin-right: 2rem;
-  }
-
-  .inline-list-item__delete {
+  /* Actions container - shows on hover */
+  .inline-list-item__actions {
     position: absolute;
     right: 0.375rem;
     top: 50%;
     transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    opacity: 0;
+    transition: opacity 0.1s ease;
+  }
+
+  .inline-list-item:hover .inline-list-item__actions {
+    opacity: 1;
+  }
+
+  .inline-list-item__actions:focus-within {
+    opacity: 1;
+  }
+
+  /* Make room for actions on hover */
+  .inline-list-item--has-actions:hover .inline-list-item__trailing {
+    margin-right: 4rem;
+  }
+
+  /* Style for action buttons inside the actions container */
+  .inline-list-item__actions :global(button) {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -255,12 +286,43 @@
     background: transparent;
     color: var(--underlay-color-text-muted, #9ca3af);
     cursor: pointer;
-    opacity: 0;
-    transition: opacity 0.1s ease, background-color 0.1s ease, color 0.1s ease;
+    transition: background-color 0.1s ease, color 0.1s ease;
   }
 
-  .inline-list-item:hover .inline-list-item__delete {
-    opacity: 1;
+  .inline-list-item__actions :global(button:hover) {
+    background: var(--underlay-color-surface-hover, rgba(255, 255, 255, 0.08));
+    color: var(--underlay-color-text, #e5e7eb);
+  }
+
+  .inline-list-item__actions :global(button:disabled) {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .inline-list-item__actions :global(button:disabled:hover) {
+    background: transparent;
+    color: var(--underlay-color-text-muted, #9ca3af);
+  }
+
+  .inline-list-item__actions :global(button:focus-visible) {
+    outline: 2px solid var(--underlay-color-primary, #3b82f6);
+    outline-offset: -2px;
+  }
+
+  /* Built-in delete button styling */
+  .inline-list-item__delete {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: none;
+    border-radius: var(--underlay-radius-sm, 0.375rem);
+    background: transparent;
+    color: var(--underlay-color-text-muted, #9ca3af);
+    cursor: pointer;
+    transition: background-color 0.1s ease, color 0.1s ease;
   }
 
   .inline-list-item__delete:hover {
@@ -269,7 +331,6 @@
   }
 
   .inline-list-item__delete:focus-visible {
-    opacity: 1;
     outline: 2px solid var(--underlay-color-danger, #ef4444);
     outline-offset: -2px;
   }
