@@ -30,14 +30,15 @@ cd your-project
 
 ## Step 2: Copy Reference Implementation
 
-Copy all four sub-projects from the reference:
+Copy all sub-projects from the `underlay-reference` repository:
 
 ```bash
-# Assuming underlay is at ../underlay
-cp -r ../underlay/reference/acme-api ./api
-cp -r ../underlay/reference/acme-client ./api-client
-cp -r ../underlay/reference/acme-admin ./admin
-cp -r ../underlay/reference/acme-front ./front
+# Clone or copy from underlay-reference repo
+cp -r /path/to/underlay-reference/acme-api ./api
+cp -r /path/to/underlay-reference/acme-client ./api-client
+cp -r /path/to/underlay-reference/acme-admin ./admin
+cp -r /path/to/underlay-reference/acme-front ./front
+cp -r /path/to/underlay-reference/acme-ui ./ui  # optional shared UI
 ```
 
 ## Step 3: Link Underlay

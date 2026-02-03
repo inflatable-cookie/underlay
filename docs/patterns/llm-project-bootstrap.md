@@ -11,7 +11,7 @@ I'll help you create a new [project-name] application using the Underlay referen
 
 ## Steps:
 
-1. Copy from `underlay/reference/acme-*` to your project
+1. Copy from the `underlay-reference` repository (`acme-*` projects)
 2. Rename `acme` → `[project-name]` throughout
 3. Set up database and run migrations
 4. Generate JWT keys
@@ -22,15 +22,17 @@ Let me start by copying the files...
 
 ## Key Files to Reference
 
+From the `underlay-reference` repository:
+
 | Purpose | Reference File |
 |---------|----------------|
-| Rust workspace | `reference/acme-api/Cargo.toml` |
-| API entry point | `reference/acme-api/crates/api/src/main.rs` |
-| Auth service | `reference/acme-api/crates/auth/src/local.rs` |
-| Database schema | `reference/acme-api/migrations/` |
-| TypeScript client | `reference/acme-client/src/index.ts` |
-| Admin layout | `reference/acme-admin/src/routes/(app)/+layout.svelte` |
-| Auth hooks | `reference/acme-admin/src/hooks.server.ts` |
+| Rust workspace | `acme-api/Cargo.toml` |
+| API entry point | `acme-api/crates/api/src/main.rs` |
+| Auth service | `acme-api/crates/auth/src/local.rs` |
+| Database schema | `acme-api/migrations/` |
+| TypeScript client | `acme-client/src/index.ts` |
+| Admin layout | `acme-admin/src/routes/(app)/+layout.svelte` |
+| Auth hooks | `acme-admin/src/hooks.server.ts` |
 
 ## Renaming Checklist
 

@@ -1,6 +1,6 @@
 # 040 - Rust Backend (API Pattern)
 
-> **Reference Implementation**: See `underlay/reference/acme-api/` for a complete, working example of the Rust backend patterns described here.
+> **Reference Implementation**: See `acme-api/` in the `underlay-reference` repository for a complete, working example of the Rust backend patterns described here.
 
 This document covers setting up the Rust API backend following the API pattern. The backend uses a **workspace structure** with specialized crates for different concerns.
 

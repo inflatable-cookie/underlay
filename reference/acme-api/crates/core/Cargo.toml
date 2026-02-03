@@ -1,7 +1,0 @@
-[package]
-name = "acme-core"
-version.workspace = true
-edition.workspace = true
-
-[dependencies]
-underlay-core = { workspace = true }

@@ -177,12 +177,15 @@ Following naming and structure patterns from reference apps ensures:
 
 ## Reference Implementation
 
-For a complete, working example of all these patterns, see the **Acme reference implementation** at `underlay/reference/`:
+For a complete, working example of all these patterns, see the **Acme reference implementation** in the separate `underlay-reference` repository:
 
 - `acme-api/` - Complete Rust backend with auth, database, background jobs
 - `acme-client/` - TypeScript API client with commands and types
 - `acme-admin/` - SvelteKit admin frontend with auth flows
 - `acme-front/` - SvelteKit public frontend
+- `acme-ui/` - Shared UI components
+
+The reference repo uses a symlink to the underlay library for development.
 
 See [175-llm-bootstrap-guide.md](./175-llm-bootstrap-guide.md) for step-by-step instructions on bootstrapping a new project from the reference.
 

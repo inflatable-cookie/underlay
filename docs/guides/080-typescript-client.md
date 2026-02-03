@@ -1,6 +1,6 @@
 # 080 - TypeScript Client
 
-> **Reference Implementation**: See `underlay/reference/acme-client/` for a complete, working example of the TypeScript client patterns described here.
+> **Reference Implementation**: See `acme-client/` in the `underlay-reference` repository for a complete, working example of the TypeScript client patterns described here.
 >
 > **Additional Examples**: This guide includes patterns from production TypeScript API clients (cattle-grid for Acowtancy, stem for Songsprout) built with Underlay.
 
