@@ -6,6 +6,23 @@ This guide covers implementing a complete media library for managing uploaded fi
 - **Client**: TypeScript commands and types for calling the API
 - **Frontend**: Admin UI with list, detail, upload, and trash views
 
+## Quick Start
+
+Underlay provides shared types and components to reduce boilerplate. For new implementations:
+
+1. **Use shared types** - Import from `underlay-db` (Rust) or `@decodelabs/underlay/patterns` (TypeScript)
+2. **Use shared UI components** - `MediaPicker` and `MediaActionsMenu` from `@decodelabs/underlay/components`
+3. **Use the upload flow pattern** - `createMediaUploadFlow` for consistent upload state management
+
+| Layer | Package | Exports |
+|-------|---------|---------|
+| Rust types | `underlay-db` | `MediaKind`, `MediaVisibility`, `MediaVersionState` |
+| TypeScript types | `@decodelabs/underlay/patterns` | All types, enums, and utility functions |
+| UI components | `@decodelabs/underlay/components` | `MediaPicker`, `MediaActionsMenu` |
+| Upload pattern | `@decodelabs/underlay/patterns` | `createMediaUploadFlow` |
+
+See [Shared Underlay Components](#shared-underlay-components) for detailed usage. The sections below cover implementing the backend and custom frontend if needed.
+
 ## Architecture Overview
 
 ```
@@ -138,30 +155,47 @@ ALTER TABLE media.media
 
 ### Enums
 
+Media enums are provided by `underlay-db` and should be re-exported by consuming apps:
+
 ```rust
-// Rust enums
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
-pub enum MediaKind {
-    Image,
-    Pdf,
-}
+// Re-export from underlay-db in your domain layer
+pub use underlay_db::{MediaKind, MediaVisibility, MediaVersionState};
+```
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
-pub enum MediaVisibility {
-    Public,
-    Restricted,
-}
+The enums serialize to lowercase strings (`"image"`, `"pdf"`, `"public"`, `"restricted"`, etc.) matching the TypeScript definitions.
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
-pub enum MediaVersionState {
-    Uploading,
-    Ready,
-    Failed,
-    Purging,
-}
+**Available enums:**
+
+| Enum | Values | Description |
+|------|--------|-------------|
+| `MediaKind` | `Image`, `Pdf` | Type of media file |
+| `MediaVisibility` | `Public`, `Restricted` | Access level |
+| `MediaVersionState` | `Uploading`, `Ready`, `Failed`, `Purging` | Upload lifecycle state |
+
+**Utility methods on each enum:**
+
+```rust
+use underlay_db::{MediaKind, MediaVisibility, MediaVersionState};
+
+// String conversion
+let kind = MediaKind::Image;
+assert_eq!(kind.as_str(), "image");
+assert_eq!(kind.label(), "Image");
+assert_eq!(kind.to_string(), "image");
+
+// Parsing from string (FromStr trait)
+let kind: MediaKind = "image".parse().unwrap();
+let visibility: MediaVisibility = "public".parse().unwrap();
+
+// Detect kind from MIME type
+use underlay_db::detect_media_kind_from_mime_type;
+assert_eq!(detect_media_kind_from_mime_type("image/jpeg"), Some(MediaKind::Image));
+assert_eq!(detect_media_kind_from_mime_type("application/pdf"), Some(MediaKind::Pdf));
+
+// Check version state
+let state = MediaVersionState::Ready;
+assert!(state.is_ready());
+assert!(state.is_terminal());
 ```
 
 ## Backend Implementation
@@ -1793,6 +1827,79 @@ const replaceFlow = createMediaUploadFlow({
 ```
 
 This skips `createMedia` and prevents uploading the same file that's already a version.
+
+### Rust Types (underlay-db)
+
+For Rust backends, media types are exported from the `underlay-db` crate:
+
+```rust
+use underlay_db::{
+    // Enums
+    MediaKind,
+    MediaVisibility,
+    MediaVersionState,
+
+    // Utility function
+    detect_media_kind_from_mime_type,
+
+    // Error type for parsing
+    MediaTypeParseError,
+};
+```
+
+**Re-exporting in your domain layer:**
+
+Consuming apps should re-export the types for use throughout the codebase:
+
+```rust
+// crates/domain/src/media/mod.rs
+
+// Re-export media enums from underlay-db
+pub use underlay_db::{MediaKind, MediaVersionState, MediaVisibility};
+
+// Your domain-specific types
+pub struct MediaId(pub Uuid);
+pub struct MediaVersionId(pub Uuid);
+
+pub struct Media {
+    pub id: MediaId,
+    pub kind: MediaKind,          // Using underlay-db type
+    pub visibility: MediaVisibility,
+    pub title: String,
+    // ...
+}
+```
+
+**Converting from database rows:**
+
+```rust
+impl From<MediaRow> for Media {
+    fn from(row: MediaRow) -> Self {
+        Self {
+            id: MediaId(row.id),
+            // Parse string from DB into enum using FromStr
+            kind: row.kind.parse().unwrap_or(MediaKind::Image),
+            visibility: row.visibility.parse().unwrap_or(MediaVisibility::Public),
+            title: row.title,
+            // ...
+        }
+    }
+}
+```
+
+**Serialization:**
+
+The enums serialize to lowercase strings matching the TypeScript definitions:
+
+```rust
+use serde_json;
+
+let kind = MediaKind::Image;
+assert_eq!(serde_json::to_string(&kind).unwrap(), "\"image\"");
+
+let visibility = MediaVisibility::Restricted;
+assert_eq!(serde_json::to_string(&visibility).unwrap(), "\"restricted\"");
+```
 
 ## Blob Upload Utilities
 
