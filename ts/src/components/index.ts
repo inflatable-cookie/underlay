@@ -69,6 +69,7 @@ export { default as TabsSeparator } from "./TabsSeparator.svelte";
 export { default as Pagination } from "./Pagination.svelte";
 export type { PaginationState } from "./Pagination.svelte";
 export { default as PaginatedList } from "./PaginatedList.svelte";
+export { default as ProgressBar } from "./ProgressBar.svelte";
 export { OrderBy } from "./OrderBy";
 export type { OrderByFieldDefinition, OrderByField, OrderByValue } from "./OrderBy";
 

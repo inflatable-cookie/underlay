@@ -413,6 +413,71 @@ Compact inline labels for metadata like type, category, year, or code. Unlike Ba
 - Neutral pills use a muted slate color scheme
 - Accent pills derive background (18% mix), border (30% mix), and text (88% mix) from the accent color
 
+### ProgressBar
+
+Visual progress indicator for task completion, upload progress, or metrics:
+
+```svelte
+<script>
+  import { ProgressBar } from "@decodelabs/underlay/components";
+</script>
+
+<!-- Basic usage -->
+<ProgressBar value={50} />
+<ProgressBar value={75} max={100} />
+
+<!-- Variants -->
+<ProgressBar value={100} variant="success" />
+<ProgressBar value={50} variant="warning" />
+<ProgressBar value={25} variant="danger" />
+<ProgressBar value={80} variant="info" />
+
+<!-- Sizes -->
+<ProgressBar value={60} size="sm" />
+<ProgressBar value={60} size="md" />
+<ProgressBar value={60} size="lg" />
+
+<!-- With label -->
+<ProgressBar value={75} showLabel />
+
+<!-- Animated stripes -->
+<ProgressBar value={50} animated />
+
+<!-- Custom label format -->
+<ProgressBar
+  value={3}
+  max={10}
+  showLabel
+  formatLabel={(value, max) => `${value} of ${max} tasks`}
+/>
+
+<!-- Custom label snippet -->
+<ProgressBar value={75}>
+  {#snippet label({ value, percentage })}
+    <strong>{percentage.toFixed(0)}%</strong> complete
+  {/snippet}
+</ProgressBar>
+```
+
+**Props:**
+- `value` - Current progress value (required)
+- `max` - Maximum value (default: `100`)
+- `variant` - `"default"` | `"success"` | `"warning"` | `"danger"` | `"info"` (default: `"default"`)
+- `size` - `"sm"` | `"md"` | `"lg"` (default: `"md"`)
+- `showLabel` - Show percentage label (default: `false`)
+- `animated` - Enable striped animation (default: `false`)
+- `formatLabel` - Custom label format function `(value, max, percentage) => string`
+- `label` - Snippet for fully custom label content (receives `{ value, max, percentage }`)
+- `className` - Additional CSS classes
+
+**CSS Variables:**
+- `--underlay-color-progress-track` - Track background color
+- `--underlay-color-progress-default` - Default fill color
+- `--underlay-color-progress-success` - Success fill color
+- `--underlay-color-progress-warning` - Warning fill color
+- `--underlay-color-progress-danger` - Danger fill color
+- `--underlay-color-progress-info` - Info fill color
+
 ### Breadcrumbs
 
 Navigation breadcrumb trail:

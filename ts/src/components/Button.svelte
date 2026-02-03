@@ -4,6 +4,8 @@
 
   interface Props extends Omit<HTMLButtonAttributes, "class"> {
     variant?: "primary" | "secondary" | "subtle" | "danger";
+    /** Size of the button */
+    size?: "sm" | "md" | "lg";
     type?: "button" | "submit" | "reset";
     pill?: boolean;
     class?: string;
@@ -14,6 +16,7 @@
 
   let {
     variant = "primary",
+    size = "md",
     type = "button",
     pill = true,
     class: className = "",
@@ -28,7 +31,7 @@
   {...restProps}
   {onclick}
   {disabled}
-  class={`underlay-button ${pill ? "underlay-button--pill" : "underlay-button--square"} underlay-button--${variant} ${className}`}
+  class={`underlay-button ${pill ? "underlay-button--pill" : "underlay-button--square"} underlay-button--${variant} underlay-button--${size} ${className}`}
   {type}
 >
   {@render children?.()}
@@ -65,6 +68,19 @@
 
   :global(.underlay-button--square) {
     border-radius: var(--underlay-radius-sm, var(--underlay-radius-sm, 0.35rem));
+  }
+
+  /* Sizes */
+  :global(.underlay-button--sm) {
+    padding: 0.4em 0.8em;
+    font-size: 0.8em;
+  }
+
+  /* md size uses base styles, no overrides needed */
+
+  :global(.underlay-button--lg) {
+    padding: 0.75em 1.5em;
+    font-size: 1.1em;
   }
 
   :global(.underlay-button--primary) {

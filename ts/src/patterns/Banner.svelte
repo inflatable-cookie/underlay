@@ -38,6 +38,9 @@
       <circle cx="12" cy="12" r="10"/>
       <line x1="12" x2="12" y1="16" y2="12"/>
       <line x1="12" x2="12.01" y1="8" y2="8"/>
+    {:else if variant === "success"}
+      <circle cx="12" cy="12" r="10"/>
+      <polyline points="9 12 11 14 15 10"/>
     {:else}
       <circle cx="12" cy="12" r="10"/>
       <line x1="12" x2="12" y1="8" y2="12"/>
@@ -98,5 +101,12 @@
     background: rgba(59, 130, 246, 0.12);
     border: 1px solid rgba(59, 130, 246, 0.3);
     color: #60a5fa;
+  }
+
+  /* Success variant (green) */
+  .underlay-banner--success {
+    background: rgba(34, 197, 94, 0.12);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    color: #4ade80;
   }
 </style>
