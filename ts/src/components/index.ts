@@ -72,6 +72,9 @@ export { default as PaginatedList } from "./PaginatedList.svelte";
 export { OrderBy } from "./OrderBy";
 export type { OrderByFieldDefinition, OrderByField, OrderByValue } from "./OrderBy";
 
+// Media library components
+export { default as MediaPicker } from "./MediaPicker.svelte";
+
 export { default as LoginForm } from "./auth/LoginForm.svelte";
 export { default as RegisterForm } from "./auth/RegisterForm.svelte";
 export { default as TotpSetup } from "./auth/TotpSetup.svelte";
