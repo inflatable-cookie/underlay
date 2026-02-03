@@ -107,6 +107,10 @@ export interface MediaVersion {
   sha256: string | null;
   createdAt: string;
   createdBy: string | null;
+  /** URL to the original file (if available) */
+  url: string | null;
+  /** Renditions (thumbnails, etc.) for this version */
+  renditions: MediaRendition[];
 }
 
 /**
@@ -124,6 +128,8 @@ export interface MediaRendition {
   width: number | null;
   height: number | null;
   createdAt: string;
+  /** URL to the rendition (if available) */
+  url: string | null;
 }
 
 /**
