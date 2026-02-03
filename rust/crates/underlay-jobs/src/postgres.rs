@@ -195,16 +195,25 @@ impl JobRepository {
     }
 
     /// Mark a job as succeeded.
+    ///
+    /// Also updates `last_completed_at` on any scheduled task with a matching job_type.
     #[instrument(skip(self))]
     pub async fn mark_succeeded(&self, job_id: Uuid) -> Result<()> {
         let now = Utc::now();
 
+        // Mark job as succeeded and update any matching scheduled task's last_completed_at
         sqlx::query(
             r#"
-            UPDATE platform.job
-            SET status = 'succeeded',
-                finished_at = $2
-            WHERE id = $1 AND status = 'running'
+            WITH updated_job AS (
+                UPDATE platform.job
+                SET status = 'succeeded',
+                    finished_at = $2
+                WHERE id = $1 AND status = 'running'
+                RETURNING job_type
+            )
+            UPDATE platform.scheduled_task
+            SET last_completed_at = $2
+            WHERE job_type = (SELECT job_type FROM updated_job)
             "#,
         )
         .bind(to_raw(job_id))
