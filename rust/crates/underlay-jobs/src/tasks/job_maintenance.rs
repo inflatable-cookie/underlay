@@ -64,7 +64,11 @@ impl JobHandler for ArchiveCompletedJobsJob {
         .await
         .map_err(|e| JobHandlerError::new(format!("Database error: {e}")))?;
 
-        info!(archived = result, retention_days = self.retention_days, "Archived completed jobs");
+        info!(
+            archived = result,
+            retention_days = self.retention_days,
+            "Archived completed jobs"
+        );
         Ok(())
     }
 }
@@ -123,7 +127,11 @@ impl JobHandler for PurgeJobHistoryJob {
         .await
         .map_err(|e| JobHandlerError::new(format!("Database error: {e}")))?;
 
-        info!(purged = result, retention_days = self.retention_days, "Purged old job history");
+        info!(
+            purged = result,
+            retention_days = self.retention_days,
+            "Purged old job history"
+        );
         Ok(())
     }
 }
@@ -227,7 +235,10 @@ impl JobHandler for RecoverAbandonedJobsJob {
         .map_err(|e| JobHandlerError::new(format!("Database error: {e}")))?;
 
         if failed > 0 {
-            warn!(failed = failed, "Marked stalled jobs as failed (max attempts exceeded)");
+            warn!(
+                failed = failed,
+                "Marked stalled jobs as failed (max attempts exceeded)"
+            );
         }
 
         Ok(())

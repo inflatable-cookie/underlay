@@ -403,7 +403,11 @@ mod tests {
     #[tokio::test]
     async fn runner_ignores_unknown_job_types() {
         let store = Arc::new(MemStore::default());
-        store.queue.lock().unwrap().push(make_test_job("unknown_type"));
+        store
+            .queue
+            .lock()
+            .unwrap()
+            .push(make_test_job("unknown_type"));
 
         let registry = JobRegistry::new();
         let runner = JobRunner::new(store, registry);

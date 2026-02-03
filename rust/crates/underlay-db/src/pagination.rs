@@ -329,7 +329,9 @@ impl Cursor {
         let s = self.get_string(key)?;
         chrono::DateTime::parse_from_rfc3339(s)
             .map(|dt| dt.with_timezone(&chrono::Utc))
-            .map_err(|e| CursorError::InvalidType(format!("{} is not a valid timestamp: {}", key, e)))
+            .map_err(|e| {
+                CursorError::InvalidType(format!("{} is not a valid timestamp: {}", key, e))
+            })
     }
 
     /// Encode the cursor to a URL-safe string.
@@ -344,8 +346,7 @@ impl Cursor {
             .decode(encoded)
             .map_err(|e| CursorError::DecodeError(e.to_string()))?;
 
-        let json =
-            String::from_utf8(bytes).map_err(|e| CursorError::DecodeError(e.to_string()))?;
+        let json = String::from_utf8(bytes).map_err(|e| CursorError::DecodeError(e.to_string()))?;
 
         let values: HashMap<String, serde_json::Value> =
             serde_json::from_str(&json).map_err(|e| CursorError::ParseError(e.to_string()))?;

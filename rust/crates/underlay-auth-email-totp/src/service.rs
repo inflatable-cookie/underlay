@@ -152,8 +152,7 @@ where
             .map_err(|e| EmailTotpError::Storage(format!("failed to hash code: {}", e)))?;
 
         // Calculate expiry
-        let expires_at = Utc::now()
-            + Duration::minutes(self.config.code_expiry_minutes as i64);
+        let expires_at = Utc::now() + Duration::minutes(self.config.code_expiry_minutes as i64);
 
         // Store the code
         self.code_repository
@@ -173,7 +172,9 @@ where
             .await?;
 
         // Increment send count after successful send
-        self.code_repository.increment_send_count(user_id, purpose).await?;
+        self.code_repository
+            .increment_send_count(user_id, purpose)
+            .await?;
 
         info!(
             user_id = %user_id,
@@ -248,8 +249,8 @@ where
         self.code_repository.mark_code_used(&stored_code.id).await?;
 
         // Create verification session
-        let session_expires_at = Utc::now()
-            + Duration::minutes(self.config.session_expiry_minutes as i64);
+        let session_expires_at =
+            Utc::now() + Duration::minutes(self.config.session_expiry_minutes as i64);
 
         let session = self
             .session_repository

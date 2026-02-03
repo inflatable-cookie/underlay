@@ -132,18 +132,18 @@ mod tests {
         field_error.message = Some("Name is required".into());
         errors.add("name", field_error);
 
-        let app_error = validation_to_app_error(
-            &errors,
-            "test.validation_failed",
-            "Validation failed",
-        );
+        let app_error =
+            validation_to_app_error(&errors, "test.validation_failed", "Validation failed");
 
         assert_eq!(app_error.code, "test.validation_failed");
         assert_eq!(app_error.message, "Validation failed");
         assert!(app_error.field_errors.is_some());
 
         let field_errors = app_error.field_errors.unwrap();
-        assert_eq!(field_errors.get("name"), Some(&"Name is required".to_string()));
+        assert_eq!(
+            field_errors.get("name"),
+            Some(&"Name is required".to_string())
+        );
     }
 
     #[test]
@@ -153,14 +153,14 @@ mod tests {
         let field_error = validator::ValidationError::new("length");
         errors.add("email", field_error);
 
-        let app_error = validation_to_app_error(
-            &errors,
-            "test.validation_failed",
-            "Validation failed",
-        );
+        let app_error =
+            validation_to_app_error(&errors, "test.validation_failed", "Validation failed");
 
         let field_errors = app_error.field_errors.unwrap();
-        assert_eq!(field_errors.get("email"), Some(&"Invalid value".to_string()));
+        assert_eq!(
+            field_errors.get("email"),
+            Some(&"Invalid value".to_string())
+        );
     }
 
     #[test]
@@ -183,7 +183,13 @@ mod tests {
 
         let field_errors = app_error.field_errors.unwrap();
         assert_eq!(field_errors.len(), 2);
-        assert_eq!(field_errors.get("name"), Some(&"Name is required".to_string()));
-        assert_eq!(field_errors.get("email"), Some(&"Invalid email format".to_string()));
+        assert_eq!(
+            field_errors.get("name"),
+            Some(&"Name is required".to_string())
+        );
+        assert_eq!(
+            field_errors.get("email"),
+            Some(&"Invalid email format".to_string())
+        );
     }
 }

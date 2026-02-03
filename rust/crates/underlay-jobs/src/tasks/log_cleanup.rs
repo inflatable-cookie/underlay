@@ -68,7 +68,11 @@ impl JobHandler for PurgeErrorLogsJob {
         .await
         .map_err(|e| JobHandlerError::new(format!("Database error: {e}")))?;
 
-        info!(deleted = result, retention_days = self.retention_days, "Purged old error logs");
+        info!(
+            deleted = result,
+            retention_days = self.retention_days,
+            "Purged old error logs"
+        );
         Ok(())
     }
 }
@@ -133,7 +137,11 @@ impl JobHandler for PurgeCapturedEmailsJob {
         .await
         .map_err(|e| JobHandlerError::new(format!("Database error: {e}")))?;
 
-        info!(deleted = result, retention_days = self.retention_days, "Purged old captured emails");
+        info!(
+            deleted = result,
+            retention_days = self.retention_days,
+            "Purged old captured emails"
+        );
         Ok(())
     }
 }

@@ -72,8 +72,8 @@ pub use crate::code::generate_code;
 pub use crate::config::EmailTotpConfig;
 pub use crate::error::{EmailTotpError, EmailTotpResult};
 pub use crate::repository::{
-    EmailTotpCodeRepository, EmailTotpRepository, RateLimitStatus, StoredCode,
-    VerificationSession, VerificationSessionRepository,
+    EmailTotpCodeRepository, EmailTotpRepository, RateLimitStatus, StoredCode, VerificationSession,
+    VerificationSessionRepository,
 };
 pub use crate::service::{EmailTotpSender, EmailTotpService, VERIFICATION_METHOD_EMAIL_TOTP};
 

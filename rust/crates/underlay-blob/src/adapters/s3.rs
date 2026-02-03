@@ -10,7 +10,9 @@ use chrono::{DateTime, Utc};
 
 use crate::adapter::BlobAdapter;
 use crate::error::{BlobError, BlobResult};
-use crate::types::{DownloadRequest, ObjectInfo, SignedUrl, StoredObject, UploadPlan, UploadRequest};
+use crate::types::{
+    DownloadRequest, ObjectInfo, SignedUrl, StoredObject, UploadPlan, UploadRequest,
+};
 
 /// Configuration for the S3 adapter.
 #[derive(Debug, Clone)]
@@ -46,8 +48,8 @@ impl S3Config {
             region: region.into(),
             endpoint_url: None,
             public_url_base: None,
-            upload_url_expiry: Duration::from_secs(3600),     // 1 hour
-            download_url_expiry: Duration::from_secs(300),   // 5 minutes
+            upload_url_expiry: Duration::from_secs(3600), // 1 hour
+            download_url_expiry: Duration::from_secs(300), // 5 minutes
             path_style: false,
         }
     }
@@ -192,8 +194,8 @@ impl BlobAdapter for S3Adapter {
             .await
             .map_err(|e| BlobError::PresignError(e.to_string()))?;
 
-        let expires_at = Utc::now() + chrono::Duration::from_std(expires_in)
-            .unwrap_or_else(|_| chrono::Duration::hours(1));
+        let expires_at = Utc::now()
+            + chrono::Duration::from_std(expires_in).unwrap_or_else(|_| chrono::Duration::hours(1));
 
         // Build required headers from the presigned request
         let mut required_headers = HashMap::new();
@@ -256,8 +258,9 @@ impl BlobAdapter for S3Adapter {
             .await
             .map_err(|e| BlobError::PresignError(e.to_string()))?;
 
-        let expires_at = Utc::now() + chrono::Duration::from_std(expires_in)
-            .unwrap_or_else(|_| chrono::Duration::minutes(5));
+        let expires_at = Utc::now()
+            + chrono::Duration::from_std(expires_in)
+                .unwrap_or_else(|_| chrono::Duration::minutes(5));
 
         Ok(SignedUrl {
             url: presigned.uri().to_string(),
@@ -288,8 +291,7 @@ impl BlobAdapter for S3Adapter {
             .map_err(|e| Self::map_s3_error(e.into(), key))?;
 
         let last_modified = response.last_modified().map(|t| {
-            DateTime::<Utc>::from_timestamp(t.secs(), t.subsec_nanos())
-                .unwrap_or_else(Utc::now)
+            DateTime::<Utc>::from_timestamp(t.secs(), t.subsec_nanos()).unwrap_or_else(Utc::now)
         });
 
         let metadata = response
@@ -331,7 +333,12 @@ impl BlobAdapter for S3Adapter {
         Ok(bytes)
     }
 
-    async fn put_bytes(&self, key: &str, data: &[u8], content_type: &str) -> BlobResult<StoredObject> {
+    async fn put_bytes(
+        &self,
+        key: &str,
+        data: &[u8],
+        content_type: &str,
+    ) -> BlobResult<StoredObject> {
         let body = aws_sdk_s3::primitives::ByteStream::from(data.to_vec());
 
         let response = self

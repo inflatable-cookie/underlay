@@ -19,10 +19,8 @@ impl SmtpAdapter {
     /// Create a new SMTP adapter with the given configuration.
     pub fn new(config: &SmtpConfig) -> EmailResult<Self> {
         let builder = match config.tls_mode {
-            TlsMode::Required => {
-                AsyncSmtpTransport::<Tokio1Executor>::starttls_relay(&config.host)
-                    .map_err(|e| EmailError::ConfigError(format!("SMTP relay error: {}", e)))?
-            }
+            TlsMode::Required => AsyncSmtpTransport::<Tokio1Executor>::starttls_relay(&config.host)
+                .map_err(|e| EmailError::ConfigError(format!("SMTP relay error: {}", e)))?,
             TlsMode::Opportunistic => {
                 AsyncSmtpTransport::<Tokio1Executor>::starttls_relay(&config.host)
                     .map_err(|e| EmailError::ConfigError(format!("SMTP relay error: {}", e)))?
@@ -107,21 +105,27 @@ impl SmtpAdapter {
                                     .body(html.clone()),
                             ),
                     )
-                    .map_err(|e| EmailError::ConfigError(format!("Failed to build message: {}", e)))?
+                    .map_err(|e| {
+                        EmailError::ConfigError(format!("Failed to build message: {}", e))
+                    })?
             }
             (Some(text), None) => {
                 // Text only
                 builder
                     .header(ContentType::TEXT_PLAIN)
                     .body(text.clone())
-                    .map_err(|e| EmailError::ConfigError(format!("Failed to build message: {}", e)))?
+                    .map_err(|e| {
+                        EmailError::ConfigError(format!("Failed to build message: {}", e))
+                    })?
             }
             (None, Some(html)) => {
                 // HTML only
                 builder
                     .header(ContentType::TEXT_HTML)
                     .body(html.clone())
-                    .map_err(|e| EmailError::ConfigError(format!("Failed to build message: {}", e)))?
+                    .map_err(|e| {
+                        EmailError::ConfigError(format!("Failed to build message: {}", e))
+                    })?
             }
             (None, None) => {
                 return Err(EmailError::MissingField("text_body or html_body"));

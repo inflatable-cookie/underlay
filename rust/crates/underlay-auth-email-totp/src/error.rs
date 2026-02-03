@@ -58,12 +58,12 @@ impl From<EmailTotpError> for AuthError {
                 retry_after_seconds: 300,
             },
             EmailTotpError::NoActiveCode => AuthError::TwoFactorInvalid,
-            EmailTotpError::SessionNotFound => AuthError::BadRequest(
-                "Verification session not found or expired".to_string(),
-            ),
-            EmailTotpError::SessionAlreadyUsed => AuthError::BadRequest(
-                "Verification session already used".to_string(),
-            ),
+            EmailTotpError::SessionNotFound => {
+                AuthError::BadRequest("Verification session not found or expired".to_string())
+            }
+            EmailTotpError::SessionAlreadyUsed => {
+                AuthError::BadRequest("Verification session already used".to_string())
+            }
             EmailTotpError::EmailSendFailed(msg) => AuthError::Internal(msg),
             EmailTotpError::Storage(msg) => AuthError::Internal(msg),
         }

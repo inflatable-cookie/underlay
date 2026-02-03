@@ -76,7 +76,10 @@ mod inner {
     impl Scheduler {
         /// Create a new scheduler.
         pub fn new(job_repo: JobRepository, task_repo: ScheduledTaskRepository) -> Self {
-            Self { job_repo, task_repo }
+            Self {
+                job_repo,
+                task_repo,
+            }
         }
 
         /// Register scheduled task definitions.

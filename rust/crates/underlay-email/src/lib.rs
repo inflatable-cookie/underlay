@@ -54,8 +54,7 @@ pub use adapter::{EmailAdapter, NoopAdapter};
 pub use adapters::{CapturedEmail, DevCaptureAdapter, EmailStore, InMemoryEmailStore};
 pub use error::{EmailError, EmailResult};
 pub use manager::{
-    AdapterType, DevCaptureConfig, EmailManager, EmailManagerConfig, SesConfig, SmtpConfig,
-    TlsMode,
+    AdapterType, DevCaptureConfig, EmailManager, EmailManagerConfig, SesConfig, SmtpConfig, TlsMode,
 };
 pub use types::{Email, EmailAddress, EmailBuilder, SendResult};
 

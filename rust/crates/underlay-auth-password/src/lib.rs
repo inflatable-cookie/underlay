@@ -14,4 +14,6 @@ pub use crate::service::{
     CompromisedPasswordStrategy, FailedLoginAttempt, PasswordAuthRepository, PasswordAuthService,
     PasswordConfig,
 };
-pub use crate::strength::{PasswordAnalysis, PasswordRequirements, PasswordStrength, PasswordStrengthAnalyzer};
+pub use crate::strength::{
+    PasswordAnalysis, PasswordRequirements, PasswordStrength, PasswordStrengthAnalyzer,
+};

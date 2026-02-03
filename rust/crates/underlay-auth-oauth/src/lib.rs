@@ -628,7 +628,11 @@ mod tests {
             Ok(self.users_by_email.lock().await.get(email).cloned())
         }
 
-        async fn create(&self, email: &str, display_name: Option<&str>) -> underlay_auth::RepoResult<User> {
+        async fn create(
+            &self,
+            email: &str,
+            display_name: Option<&str>,
+        ) -> underlay_auth::RepoResult<User> {
             let user = User {
                 id: Uuid::new_v7(),
                 email: email.to_string(),

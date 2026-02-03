@@ -58,9 +58,7 @@ mod types;
 pub use adapter::{BlobAdapter, NoopAdapter};
 pub use config::MediaConfig;
 pub use error::{BlobError, BlobResult};
-pub use types::{
-    DownloadRequest, ObjectInfo, SignedUrl, StoredObject, UploadPlan, UploadRequest,
-};
+pub use types::{DownloadRequest, ObjectInfo, SignedUrl, StoredObject, UploadPlan, UploadRequest};
 
 // Re-export adapters based on features
 #[cfg(feature = "s3")]

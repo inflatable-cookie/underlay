@@ -1,9 +1,7 @@
 //! AWS SES email adapter.
 
 use async_trait::async_trait;
-use aws_sdk_sesv2::types::{
-    Body, Content, Destination, EmailContent, Message as SesMessage,
-};
+use aws_sdk_sesv2::types::{Body, Content, Destination, EmailContent, Message as SesMessage};
 use aws_sdk_sesv2::Client;
 
 use crate::adapter::EmailAdapter;
@@ -63,7 +61,9 @@ impl SesAdapter {
                 .data(text)
                 .charset("UTF-8")
                 .build()
-                .map_err(|e| EmailError::ConfigError(format!("Failed to build text body: {}", e)))?;
+                .map_err(|e| {
+                    EmailError::ConfigError(format!("Failed to build text body: {}", e))
+                })?;
             body_builder = body_builder.text(text_content);
         }
 
@@ -72,16 +72,15 @@ impl SesAdapter {
                 .data(html)
                 .charset("UTF-8")
                 .build()
-                .map_err(|e| EmailError::ConfigError(format!("Failed to build HTML body: {}", e)))?;
+                .map_err(|e| {
+                    EmailError::ConfigError(format!("Failed to build HTML body: {}", e))
+                })?;
             body_builder = body_builder.html(html_content);
         }
 
         let body = body_builder.build();
 
-        let message = SesMessage::builder()
-            .subject(subject)
-            .body(body)
-            .build();
+        let message = SesMessage::builder().subject(subject).body(body).build();
 
         Ok(EmailContent::builder().simple(message).build())
     }

@@ -303,7 +303,10 @@ mod tests {
     #[test]
     fn test_whitelist_lookup() {
         let config = DevCaptureConfig {
-            whitelist: vec!["dev@example.com".to_string(), "test@example.com".to_string()],
+            whitelist: vec![
+                "dev@example.com".to_string(),
+                "test@example.com".to_string(),
+            ],
             use_fallback: true,
         };
         let lookup = WhitelistLookup::from_config(&config);
@@ -417,6 +420,9 @@ mod tests {
 
         captured.mark_delivery_failed("Connection refused");
         assert!(!captured.was_delivered);
-        assert_eq!(captured.delivery_error, Some("Connection refused".to_string()));
+        assert_eq!(
+            captured.delivery_error,
+            Some("Connection refused".to_string())
+        );
     }
 }

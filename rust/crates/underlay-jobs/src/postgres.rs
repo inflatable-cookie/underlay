@@ -51,12 +51,7 @@ impl JobRepository {
 
     /// Create a new job to run immediately.
     #[instrument(skip(self, payload), fields(job_type = %job_type))]
-    pub async fn create(
-        &self,
-        job_type: &str,
-        payload: Value,
-        config: &JobConfig,
-    ) -> Result<Uuid> {
+    pub async fn create(&self, job_type: &str, payload: Value, config: &JobConfig) -> Result<Uuid> {
         self.create_scheduled(job_type, payload, config, None).await
     }
 
@@ -226,12 +221,7 @@ impl JobRepository {
 
     /// Mark a job as failed and potentially schedule for retry.
     #[instrument(skip(self, config))]
-    pub async fn mark_failed(
-        &self,
-        job_id: Uuid,
-        error: &str,
-        config: &JobConfig,
-    ) -> Result<bool> {
+    pub async fn mark_failed(&self, job_id: Uuid, error: &str, config: &JobConfig) -> Result<bool> {
         let now = Utc::now();
 
         // Get current attempt count
@@ -517,7 +507,8 @@ impl JobStore for JobRepository {
     async fn mark_failure(&self, job_id: JobId, error: JobHandlerError) -> Result<()> {
         // Use default config for retry logic (single attempt, no retry)
         let config = JobConfig::default();
-        self.mark_failed(job_id, &error.to_string(), &config).await?;
+        self.mark_failed(job_id, &error.to_string(), &config)
+            .await?;
         Ok(())
     }
 }
@@ -688,9 +679,7 @@ impl From<JobRow> for Job {
             _ => JobStatus::Pending,
         };
 
-        let progress = row
-            .progress
-            .and_then(|v| serde_json::from_value(v).ok());
+        let progress = row.progress.and_then(|v| serde_json::from_value(v).ok());
 
         Job {
             id: from_raw(row.id),

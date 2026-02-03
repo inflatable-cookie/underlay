@@ -67,10 +67,7 @@ pub fn nightfire_validation_to_app_error(
             actual_blocks,
             ..
         } => {
-            format!(
-                "Expected {:?} block(s), got {}.",
-                expected, actual_blocks
-            )
+            format!("Expected {:?} block(s), got {}.", expected, actual_blocks)
         }
         NightfireValidationError::DisallowedBlockType { block_type, .. } => {
             let msg = format!("Block type \"{}\" is not allowed.", block_type);

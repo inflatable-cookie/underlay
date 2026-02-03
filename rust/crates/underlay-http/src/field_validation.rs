@@ -100,13 +100,8 @@ impl ValidationResult {
 ///     Err(result) => return Json(result),
 /// };
 /// ```
-pub fn parse_uuid_for_validation(
-    value: &str,
-    field_name: &str,
-) -> Result<Uuid, ValidationResult> {
-    Uuid::parse_str(value).map_err(|_| {
-        ValidationResult::invalid(format!("Invalid {}", field_name))
-    })
+pub fn parse_uuid_for_validation(value: &str, field_name: &str) -> Result<Uuid, ValidationResult> {
+    Uuid::parse_str(value).map_err(|_| ValidationResult::invalid(format!("Invalid {}", field_name)))
 }
 
 /// Parse an optional UUID string for validation purposes.
@@ -144,10 +139,8 @@ mod tests {
 
     #[test]
     fn invalid_with_suggestion_serializes_correctly() {
-        let result = ValidationResult::invalid_with_suggestion(
-            "Slug already exists",
-            "try-this-slug",
-        );
+        let result =
+            ValidationResult::invalid_with_suggestion("Slug already exists", "try-this-slug");
         let json = serde_json::to_string(&result).unwrap();
         assert!(json.contains(r#""suggestion":"try-this-slug""#));
     }

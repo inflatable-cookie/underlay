@@ -175,7 +175,11 @@ impl JobHandler for PurgeLoginAttemptsJob {
         .await
         .map_err(|e| JobHandlerError::new(format!("Database error: {e}")))?;
 
-        info!(deleted = result, retention_days = self.retention_days, "Purged old login attempts");
+        info!(
+            deleted = result,
+            retention_days = self.retention_days,
+            "Purged old login attempts"
+        );
         Ok(())
     }
 }
@@ -330,7 +334,10 @@ impl JobHandler for PurgeVerificationSessionsJob {
         .await
         .map_err(|e| JobHandlerError::new(format!("Database error: {e}")))?;
 
-        info!(deleted = result, "Purged expired/used verification sessions");
+        info!(
+            deleted = result,
+            "Purged expired/used verification sessions"
+        );
         Ok(())
     }
 }

@@ -143,8 +143,7 @@ mod tests {
 
     #[test]
     fn db_config_clone_works() {
-        let config = DbConfig::new("postgres://localhost/test")
-            .with_max_connections(20);
+        let config = DbConfig::new("postgres://localhost/test").with_max_connections(20);
         let cloned = config.clone();
         assert_eq!(cloned.database_url, config.database_url);
         assert_eq!(cloned.max_connections, config.max_connections);

@@ -13,7 +13,9 @@ use tokio::io::AsyncWriteExt;
 
 use crate::adapter::BlobAdapter;
 use crate::error::{BlobError, BlobResult};
-use crate::types::{DownloadRequest, ObjectInfo, SignedUrl, StoredObject, UploadPlan, UploadRequest};
+use crate::types::{
+    DownloadRequest, ObjectInfo, SignedUrl, StoredObject, UploadPlan, UploadRequest,
+};
 
 /// Configuration for the local filesystem adapter.
 #[derive(Debug, Clone)]
@@ -86,15 +88,19 @@ impl LocalAdapter {
     /// This will create the base directory if it doesn't exist.
     pub async fn new(config: LocalConfig) -> BlobResult<Self> {
         // Ensure the base directory exists
-        fs::create_dir_all(&config.base_path)
-            .await
-            .map_err(|e| BlobError::ConfigError(format!("Failed to create base directory: {}", e)))?;
+        fs::create_dir_all(&config.base_path).await.map_err(|e| {
+            BlobError::ConfigError(format!("Failed to create base directory: {}", e))
+        })?;
 
         // Canonicalize the base path for secure comparisons (resolves symlinks and ..)
-        let canonical_base = config.base_path.canonicalize()
-            .map_err(|e| BlobError::ConfigError(format!("Failed to canonicalize base path: {}", e)))?;
+        let canonical_base = config.base_path.canonicalize().map_err(|e| {
+            BlobError::ConfigError(format!("Failed to canonicalize base path: {}", e))
+        })?;
 
-        Ok(Self { config, canonical_base })
+        Ok(Self {
+            config,
+            canonical_base,
+        })
     }
 
     /// Get the full filesystem path for a key.
@@ -106,7 +112,12 @@ impl LocalAdapter {
     ///
     /// This is called from a development-only HTTP endpoint after receiving
     /// the upload request. It should NOT be exposed in production.
-    pub async fn write_file(&self, key: &str, data: &[u8], content_type: &str) -> BlobResult<StoredObject> {
+    pub async fn write_file(
+        &self,
+        key: &str,
+        data: &[u8],
+        content_type: &str,
+    ) -> BlobResult<StoredObject> {
         let path = self.path_for_key(key);
 
         // Create parent directories if needed
@@ -146,15 +157,13 @@ impl LocalAdapter {
     pub async fn read_file(&self, key: &str) -> BlobResult<Vec<u8>> {
         let path = self.path_for_key(key);
 
-        fs::read(&path)
-            .await
-            .map_err(|e| {
-                if e.kind() == std::io::ErrorKind::NotFound {
-                    BlobError::NotFound(key.to_string())
-                } else {
-                    BlobError::IoError(e.to_string())
-                }
-            })
+        fs::read(&path).await.map_err(|e| {
+            if e.kind() == std::io::ErrorKind::NotFound {
+                BlobError::NotFound(key.to_string())
+            } else {
+                BlobError::IoError(e.to_string())
+            }
+        })
     }
 
     /// Check if a path is safely within the base directory.
@@ -228,18 +237,21 @@ impl LocalAdapter {
 #[async_trait]
 impl BlobAdapter for LocalAdapter {
     async fn initiate_upload(&self, request: UploadRequest) -> BlobResult<UploadPlan> {
-        let upload_base = self.config.upload_url_base
+        let upload_base = self
+            .config
+            .upload_url_base
             .as_ref()
             .unwrap_or(&self.config.serve_url_base);
 
         let upload_url = format!("{}/{}", upload_base.trim_end_matches('/'), &request.key);
 
-        let expires_at = Utc::now() + chrono::Duration::from_std(request.expires_in)
-            .unwrap_or_else(|_| chrono::Duration::hours(1));
+        let expires_at = Utc::now()
+            + chrono::Duration::from_std(request.expires_in)
+                .unwrap_or_else(|_| chrono::Duration::hours(1));
 
         Ok(UploadPlan {
             upload_url,
-            method: "PUT".to_string(),  // Local endpoint should accept PUT
+            method: "PUT".to_string(), // Local endpoint should accept PUT
             required_headers: HashMap::new(),
             max_bytes: request.content_length,
             allowed_content_types: vec![request.content_type],
@@ -263,15 +275,20 @@ impl BlobAdapter for LocalAdapter {
     }
 
     fn public_url(&self, key: &str) -> String {
-        format!("{}/{}", self.config.serve_url_base.trim_end_matches('/'), key)
+        format!(
+            "{}/{}",
+            self.config.serve_url_base.trim_end_matches('/'),
+            key
+        )
     }
 
     async fn signed_download_url(&self, request: DownloadRequest) -> BlobResult<SignedUrl> {
         // Local adapter doesn't need signing - just return the public URL
         let url = self.public_url(&request.key);
 
-        let expires_at = Utc::now() + chrono::Duration::from_std(request.expires_in)
-            .unwrap_or_else(|_| chrono::Duration::minutes(5));
+        let expires_at = Utc::now()
+            + chrono::Duration::from_std(request.expires_in)
+                .unwrap_or_else(|_| chrono::Duration::minutes(5));
 
         Ok(SignedUrl { url, expires_at })
     }
@@ -293,15 +310,13 @@ impl BlobAdapter for LocalAdapter {
     async fn head(&self, key: &str) -> BlobResult<ObjectInfo> {
         let path = self.path_for_key(key);
 
-        let metadata = fs::metadata(&path)
-            .await
-            .map_err(|e| {
-                if e.kind() == std::io::ErrorKind::NotFound {
-                    BlobError::NotFound(key.to_string())
-                } else {
-                    BlobError::IoError(e.to_string())
-                }
-            })?;
+        let metadata = fs::metadata(&path).await.map_err(|e| {
+            if e.kind() == std::io::ErrorKind::NotFound {
+                BlobError::NotFound(key.to_string())
+            } else {
+                BlobError::IoError(e.to_string())
+            }
+        })?;
 
         let last_modified = metadata
             .modified()
@@ -324,18 +339,21 @@ impl BlobAdapter for LocalAdapter {
     async fn get_bytes(&self, key: &str) -> BlobResult<Vec<u8>> {
         let path = self.path_for_key(key);
 
-        fs::read(&path)
-            .await
-            .map_err(|e| {
-                if e.kind() == std::io::ErrorKind::NotFound {
-                    BlobError::NotFound(key.to_string())
-                } else {
-                    BlobError::DownloadFailed(format!("Failed to read file: {}", e))
-                }
-            })
+        fs::read(&path).await.map_err(|e| {
+            if e.kind() == std::io::ErrorKind::NotFound {
+                BlobError::NotFound(key.to_string())
+            } else {
+                BlobError::DownloadFailed(format!("Failed to read file: {}", e))
+            }
+        })
     }
 
-    async fn put_bytes(&self, key: &str, data: &[u8], content_type: &str) -> BlobResult<StoredObject> {
+    async fn put_bytes(
+        &self,
+        key: &str,
+        data: &[u8],
+        content_type: &str,
+    ) -> BlobResult<StoredObject> {
         self.write_file(key, data, content_type).await
     }
 
@@ -368,10 +386,7 @@ impl std::fmt::Debug for LocalAdapter {
 
 /// Guess the content type from a file extension.
 fn guess_content_type(key: &str) -> String {
-    let extension = key
-        .rsplit('.')
-        .next()
-        .map(|s| s.to_lowercase());
+    let extension = key.rsplit('.').next().map(|s| s.to_lowercase());
 
     match extension.as_deref() {
         Some("jpg") | Some("jpeg") => "image/jpeg",
@@ -441,7 +456,10 @@ mod tests {
         assert_eq!(guess_content_type("photo.jpg"), "image/jpeg");
         assert_eq!(guess_content_type("photo.JPEG"), "image/jpeg");
         assert_eq!(guess_content_type("doc.pdf"), "application/pdf");
-        assert_eq!(guess_content_type("unknown.xyz"), "application/octet-stream");
+        assert_eq!(
+            guess_content_type("unknown.xyz"),
+            "application/octet-stream"
+        );
     }
 
     #[tokio::test]

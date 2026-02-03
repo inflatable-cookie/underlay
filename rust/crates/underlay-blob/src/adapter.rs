@@ -3,7 +3,9 @@
 use async_trait::async_trait;
 
 use crate::error::BlobResult;
-use crate::types::{DownloadRequest, ObjectInfo, SignedUrl, StoredObject, UploadPlan, UploadRequest};
+use crate::types::{
+    DownloadRequest, ObjectInfo, SignedUrl, StoredObject, UploadPlan, UploadRequest,
+};
 
 /// Trait for blob storage backends.
 ///
@@ -54,7 +56,12 @@ pub trait BlobAdapter: Send + Sync {
     ///
     /// This is for server-side uploads (e.g., thumbnail generation, file processing).
     /// For client-side uploads, use `initiate_upload` to get a presigned URL.
-    async fn put_bytes(&self, key: &str, data: &[u8], content_type: &str) -> BlobResult<StoredObject>;
+    async fn put_bytes(
+        &self,
+        key: &str,
+        data: &[u8],
+        content_type: &str,
+    ) -> BlobResult<StoredObject>;
 
     /// Check if an object exists.
     async fn exists(&self, key: &str) -> BlobResult<bool> {
@@ -170,7 +177,12 @@ impl BlobAdapter for NoopAdapter {
         Ok(Vec::new())
     }
 
-    async fn put_bytes(&self, key: &str, data: &[u8], content_type: &str) -> BlobResult<StoredObject> {
+    async fn put_bytes(
+        &self,
+        key: &str,
+        data: &[u8],
+        content_type: &str,
+    ) -> BlobResult<StoredObject> {
         Ok(StoredObject::new(
             "noop",
             &self.bucket,

@@ -199,9 +199,7 @@ impl EmailBuilder {
 
     /// Build the email.
     pub fn build(self) -> EmailResult<Email> {
-        let from = self
-            .from
-            .ok_or(EmailError::MissingField("from address"))?;
+        let from = self.from.ok_or(EmailError::MissingField("from address"))?;
 
         if self.to.is_empty() {
             return Err(EmailError::MissingField("at least one recipient"));

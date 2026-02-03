@@ -27,7 +27,11 @@ pub struct UploadRequest {
 
 impl UploadRequest {
     /// Create a new upload request.
-    pub fn new(key: impl Into<String>, content_type: impl Into<String>, content_length: u64) -> Self {
+    pub fn new(
+        key: impl Into<String>,
+        content_type: impl Into<String>,
+        content_length: u64,
+    ) -> Self {
         Self {
             key: key.into(),
             content_type: content_type.into(),

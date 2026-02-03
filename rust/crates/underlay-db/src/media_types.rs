@@ -257,7 +257,10 @@ mod tests {
 
     #[test]
     fn test_media_kind_serialization() {
-        assert_eq!(serde_json::to_string(&MediaKind::Image).unwrap(), "\"image\"");
+        assert_eq!(
+            serde_json::to_string(&MediaKind::Image).unwrap(),
+            "\"image\""
+        );
         assert_eq!(serde_json::to_string(&MediaKind::Pdf).unwrap(), "\"pdf\"");
     }
 

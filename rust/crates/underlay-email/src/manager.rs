@@ -158,7 +158,6 @@ impl Default for SesConfig {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;

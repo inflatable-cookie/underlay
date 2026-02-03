@@ -145,7 +145,8 @@ impl<'a> ExistsCheck<'a> {
     ///
     /// Generates: `column = $N`
     pub fn scope(mut self, column: &'a str, value: Uuid) -> Self {
-        self.conditions.push(Condition::UuidEquals { column, value });
+        self.conditions
+            .push(Condition::UuidEquals { column, value });
         self
     }
 
