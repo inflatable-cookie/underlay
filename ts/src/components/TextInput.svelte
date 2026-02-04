@@ -363,6 +363,7 @@
   .underlay-input[type="time"] {
     color-scheme: dark;
     font-family: inherit;
+    font-size: 0.85rem;
     line-height: 1.2;
     /* Force background to override browser defaults */
     background-color: var(
