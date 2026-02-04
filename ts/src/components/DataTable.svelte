@@ -719,6 +719,7 @@
 		border: var(--dt-border);
 		border-radius: var(--radius-lg, 0.5rem);
 		overflow: hidden;
+		font-size: 0.8rem;
 	}
 
 	.table-toolbar {
@@ -743,7 +744,7 @@
 		align-items: center;
 		gap: 0.375rem;
 		padding: 0.375rem 0.75rem;
-		font-size: 0.875rem;
+		font-size: inherit;
 		font-weight: 500;
 		color: var(--color-text, #1e293b);
 		background: var(--color-surface, #fff);
@@ -764,7 +765,7 @@
 	}
 
 	.toolbar-icon {
-		font-size: 0.875rem;
+		font-size: inherit;
 	}
 
 	.column-toggle {
@@ -791,7 +792,7 @@
 		align-items: center;
 		gap: 0.5rem;
 		padding: 0.5rem 0.75rem;
-		font-size: 0.875rem;
+		font-size: inherit;
 		cursor: pointer;
 		transition: background-color 0.15s;
 	}
@@ -866,7 +867,6 @@
 	}
 
 	.header-cell {
-		font-size: 0.8rem;
 		font-weight: 600;
 	}
 
@@ -910,14 +910,14 @@
 		padding: 0.25rem 0.5rem;
 		border: 1px solid var(--color-border, #e2e8f0);
 		border-radius: var(--radius-sm, 0.25rem);
-		font-size: 0.8rem;
+		font-size: inherit;
 		background: var(--color-surface, #fff);
 	}
 
 	.filter-cell :global(.underlay-select-trigger) {
 		min-width: 0;
 		padding: 0.25rem 0.5rem;
-		font-size: 0.8rem;
+		font-size: inherit;
 	}
 
 	.actions-cell {
@@ -929,7 +929,7 @@
 
 	.action-link,
 	.action-button {
-		font-size: 0.875rem;
+		font-size: inherit;
 		color: var(--color-primary, #3b82f6);
 		text-decoration: none;
 		background: none;
@@ -979,7 +979,6 @@
 		padding: var(--dt-gap);
 		background: var(--dt-header-bg);
 		border-top: var(--dt-border);
-		font-size: 0.875rem;
 	}
 
 	.pagination-info {
@@ -996,14 +995,13 @@
 		display: flex;
 		align-items: center;
 		gap: 0.5rem;
-		font-size: 0.875rem;
 		color: var(--color-text-muted, #64748b);
 	}
 
 	.limit-selector :global(.underlay-select-trigger) {
 		min-width: 4.5rem;
 		padding: 0.25rem 0.5rem;
-		font-size: 0.875rem;
+		font-size: inherit;
 	}
 
 	.pagination-controls {
@@ -1018,7 +1016,7 @@
 		border-radius: var(--radius-sm, 0.25rem);
 		background: var(--color-surface, #fff);
 		cursor: pointer;
-		font-size: 0.875rem;
+		font-size: inherit;
 	}
 
 	.pagination-button:hover:not(:disabled) {
