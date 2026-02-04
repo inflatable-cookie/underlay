@@ -89,7 +89,7 @@
   <div class="underlay-page-header__row">
     <div class="underlay-page-header__top">
       <svelte:element this={headingTag} class="underlay-page-header__title">
-        {title}{#if count !== undefined}<span class="underlay-page-header__count">({count})</span>{/if}{#if titleSuffix}<span class="underlay-page-header__title-suffix">{@render titleSuffix()}</span>{/if}
+        {title}{#if count !== undefined}<span class="underlay-page-header__count-badge">{count}</span>{/if}{#if titleSuffix}<span class="underlay-page-header__title-suffix">{@render titleSuffix()}</span>{/if}
       </svelte:element>
 
       <div class="underlay-page-header__right">
@@ -218,6 +218,23 @@
     color: var(--underlay-color-text, #e5e7eb);
     display: inline-flex;
     align-items: center;
+  }
+
+  .underlay-page-header__count-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.5em;
+    height: 1.5em;
+    padding: 0 0.4em;
+    margin-left: 0.4em;
+    font-size: 0.4em;
+    font-weight: 600;
+    font-style: normal;
+    color: var(--underlay-color-text-muted, rgba(148, 163, 184, 0.85));
+    background: var(--underlay-color-surface-subtle, rgba(148, 163, 184, 0.1));
+    border-radius: 9999px;
+    vertical-align: middle;
   }
 
   .underlay-page-header__title-suffix {
