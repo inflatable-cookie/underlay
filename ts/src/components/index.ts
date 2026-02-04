@@ -84,6 +84,11 @@ export type { ActivityEntry, ActivityActor, ActionType } from "./ActivityFeed.sv
 // Batch actions
 export { default as BatchActionBar } from "./BatchActionBar.svelte";
 
+// Dashboard stats
+export { default as StatCard } from "./StatCard.svelte";
+export type { StatVariant } from "./StatCard.svelte";
+export { default as StatGrid } from "./StatGrid.svelte";
+
 export { default as LoginForm } from "./auth/LoginForm.svelte";
 export { default as RegisterForm } from "./auth/RegisterForm.svelte";
 export { default as TotpSetup } from "./auth/TotpSetup.svelte";
