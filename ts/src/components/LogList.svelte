@@ -458,6 +458,11 @@
     letter-spacing: 0.025em;
   }
 
+  /* Ensure date inputs have consistent min-width */
+  .log-list__filter :global(.underlay-input[type="date"]) {
+    min-width: 130px;
+  }
+
   .log-list__actions {
     display: flex;
     align-items: center;

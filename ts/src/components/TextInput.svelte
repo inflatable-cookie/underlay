@@ -357,6 +357,13 @@
     font-size: var(--underlay-font-size-md, var(--underlay-font-size-md, 0.85rem));
   }
 
+  /* Native date/time inputs need color-scheme for dark mode */
+  .underlay-input[type="date"],
+  .underlay-input[type="datetime-local"],
+  .underlay-input[type="time"] {
+    color-scheme: dark;
+  }
+
   .underlay-input--search {
     padding-right: 2.2em;
   }
