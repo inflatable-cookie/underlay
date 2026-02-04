@@ -234,7 +234,8 @@
     color: var(--underlay-color-text-muted, rgba(148, 163, 184, 0.85));
     background: var(--underlay-color-surface-subtle, rgba(148, 163, 184, 0.1));
     border-radius: 9999px;
-    vertical-align: middle;
+    vertical-align: super;
+    transform: translateY(-0.3em);
   }
 
   .underlay-page-header__title-suffix {
