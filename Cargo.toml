@@ -20,6 +20,9 @@ sqlx = { version = "0.8.6", features = ["runtime-tokio-rustls", "postgres", "uui
 thiserror = "1"
 tokio = "1"
 
+# Image processing
+image = { version = "0.25", default-features = false, features = ["jpeg", "png", "gif", "webp"] }
+
 # Metrics
 prometheus = "0.13"
 tracing = "0.1"
