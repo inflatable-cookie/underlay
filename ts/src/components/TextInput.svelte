@@ -362,7 +362,7 @@
     font-size: 0.85rem;
     line-height: 1;
     /* Force exact height to match Select trigger */
-    height: 2.1em;
+    height: 2.2em;
     padding: 0 0.7em;
     /* Force background to override browser defaults */
     background-color: var(
