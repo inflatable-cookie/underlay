@@ -123,6 +123,8 @@
     formatResourceType?: (resourceType: string) => string;
     /** Get href for actor link (if provided, actors become links) */
     getActorHref?: (actor: LogActor) => string;
+    /** Get href for resource link (if provided, resources become links) */
+    getResourceHref?: (resourceType: string, resourceId: string) => string | null;
   }
 
   let {
@@ -148,7 +150,8 @@
     getActionType: customGetActionType,
     formatAction: customFormatAction,
     formatResourceType: customFormatResourceType,
-    getActorHref
+    getActorHref,
+    getResourceHref
   }: Props = $props();
 
   // Computed values
@@ -359,11 +362,20 @@
                 <Badge variant={getActionVariant(actionType)} size="sm">
                   {formatAction(entry.action)}
                 </Badge>
-                <span class="log-entry__resource-type">
-                  {formatResourceType(entry.resourceType)}
-                </span>
-                {#if entry.resourceLabel}
-                  <span class="log-entry__resource-label">"{entry.resourceLabel}"</span>
+                {#if getResourceHref?.(entry.resourceType, entry.resourceId)}
+                  <a href={getResourceHref(entry.resourceType, entry.resourceId)} class="log-entry__resource-link">
+                    {formatResourceType(entry.resourceType)}
+                    {#if entry.resourceLabel}
+                      <span class="log-entry__resource-label">"{entry.resourceLabel}"</span>
+                    {/if}
+                  </a>
+                {:else}
+                  <span class="log-entry__resource-type">
+                    {formatResourceType(entry.resourceType)}
+                  </span>
+                  {#if entry.resourceLabel}
+                    <span class="log-entry__resource-label">"{entry.resourceLabel}"</span>
+                  {/if}
                 {/if}
               </div>
 
@@ -625,6 +637,20 @@
 
   .log-entry__resource-type {
     color: var(--underlay-color-text-muted, #94a3b8);
+  }
+
+  .log-entry__resource-link {
+    color: var(--underlay-color-text-muted, #94a3b8);
+    text-decoration: none;
+  }
+
+  .log-entry__resource-link:hover {
+    text-decoration: underline;
+    color: var(--underlay-color-primary, #3b82f6);
+  }
+
+  .log-entry__resource-link .log-entry__resource-label {
+    color: inherit;
   }
 
   .log-entry__resource-label {
