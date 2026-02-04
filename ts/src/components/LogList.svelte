@@ -124,7 +124,7 @@
     /** Get href for actor link (if provided, actors become links) */
     getActorHref?: (actor: LogActor) => string;
     /** Get href for resource link (if provided, resources become links) */
-    getResourceHref?: (resourceType: string, resourceId: string) => string | null;
+    getResourceHref?: (resourceType: string, resourceId: string, action: string) => string | null;
   }
 
   let {
@@ -362,8 +362,8 @@
                 <Badge variant={getActionVariant(actionType)} size="sm">
                   {formatAction(entry.action)}
                 </Badge>
-                {#if getResourceHref?.(entry.resourceType, entry.resourceId)}
-                  <a href={getResourceHref(entry.resourceType, entry.resourceId)} class="log-entry__resource-link">
+                {#if getResourceHref?.(entry.resourceType, entry.resourceId, entry.action)}
+                  <a href={getResourceHref(entry.resourceType, entry.resourceId, entry.action)} class="log-entry__resource-link">
                     {formatResourceType(entry.resourceType)}
                     {#if entry.resourceLabel}
                       <span class="log-entry__resource-label">"{entry.resourceLabel}"</span>
