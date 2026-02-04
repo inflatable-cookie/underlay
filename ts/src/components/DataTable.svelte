@@ -866,6 +866,7 @@
 	}
 
 	.header-cell {
+		font-size: 0.8rem;
 		font-weight: 600;
 	}
 
