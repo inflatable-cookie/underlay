@@ -80,11 +80,11 @@
   }
 
   .stat-loading {
-    color: var(--text-secondary, #6b7280);
+    color: var(--underlay-color-text-muted, #6b7280);
   }
 
   .stat-error {
-    color: var(--danger, #ef4444);
+    color: var(--underlay-color-danger, #ef4444);
   }
 
   .stat-card {
@@ -104,28 +104,28 @@
   }
 
   .stat-card__icon--default {
-    background: var(--bg-muted, #f3f4f6);
-    color: var(--text-secondary, #6b7280);
+    background: var(--underlay-color-surface-muted, #e5e7eb);
+    color: var(--underlay-color-text-muted, #6b7280);
   }
 
   .stat-card__icon--success {
-    background: color-mix(in srgb, var(--success, #22c55e) 15%, transparent);
-    color: var(--success, #22c55e);
+    background: color-mix(in srgb, var(--underlay-color-success, #22c55e) 15%, transparent);
+    color: var(--underlay-color-success, #22c55e);
   }
 
   .stat-card__icon--warning {
-    background: color-mix(in srgb, var(--warning, #f97316) 15%, transparent);
-    color: var(--warning, #f97316);
+    background: color-mix(in srgb, var(--underlay-color-warning, #f97316) 15%, transparent);
+    color: var(--underlay-color-warning, #f97316);
   }
 
   .stat-card__icon--danger {
-    background: color-mix(in srgb, var(--danger, #ef4444) 15%, transparent);
-    color: var(--danger, #ef4444);
+    background: color-mix(in srgb, var(--underlay-color-danger, #ef4444) 15%, transparent);
+    color: var(--underlay-color-danger, #ef4444);
   }
 
   .stat-card__icon--info {
-    background: color-mix(in srgb, var(--info, #3b82f6) 15%, transparent);
-    color: var(--info, #3b82f6);
+    background: color-mix(in srgb, var(--underlay-color-primary, #3b82f6) 15%, transparent);
+    color: var(--underlay-color-primary, #3b82f6);
   }
 
   .stat-card__content {
@@ -138,13 +138,13 @@
     font-size: 1.75rem;
     font-weight: 700;
     line-height: 1.2;
-    color: var(--text-primary, #111827);
+    color: var(--underlay-color-text, inherit);
   }
 
   .stat-card__label {
     margin: 0.125rem 0 0;
     font-size: 0.875rem;
-    color: var(--text-secondary, #6b7280);
+    color: var(--underlay-color-text-muted, #6b7280);
   }
 
   .stat-card__breakdown {
@@ -153,6 +153,6 @@
     gap: 0.75rem;
     margin-top: 0.75rem;
     padding-top: 0.75rem;
-    border-top: 1px solid var(--border-color, #e5e7eb);
+    border-top: 1px solid var(--underlay-color-border-subtle, rgba(148, 163, 184, 0.2));
   }
 </style>
