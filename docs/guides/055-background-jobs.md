@@ -528,6 +528,111 @@ If migrating from a custom job system:
 4. **Migrate handlers** one job type at a time
 5. **Drain old queue** before removing old tables
 
+## Standard Maintenance Tasks
+
+The `underlay-jobs` crate includes pre-built maintenance tasks for common platform cleanup operations. These are available when using the `postgres` feature.
+
+### Available Tasks
+
+Import and register the tasks you need:
+
+```rust
+use underlay_jobs::tasks::{
+    // Auth cleanup
+    PurgeExpiredSessionsJob,     // Remove expired sessions
+    PurgeAuthStatesJob,          // Remove expired auth states
+    PurgeLoginAttemptsJob,       // Remove old login attempts
+    PurgeRateLimitEntriesJob,    // Remove old rate limit entries
+    PurgeEmailTotpCodesJob,      // Remove expired/used TOTP codes
+    PurgeVerificationSessionsJob, // Remove expired/used verification sessions
+
+    // Job system maintenance
+    ArchiveCompletedJobsJob,     // Move old jobs to history table
+    PurgeJobHistoryJob,          // Remove old job history
+    RecoverAbandonedJobsJob,     // Reset stalled jobs
+
+    // Log cleanup
+    PurgeErrorLogsJob,           // Remove old error logs
+    PurgeCapturedEmailsJob,      // Remove old captured emails (dev/test)
+};
+
+let mut registry = JobRegistry::new();
+registry.register(PurgeExpiredSessionsJob::new(pool.clone()));
+registry.register(ArchiveCompletedJobsJob::new(pool.clone()));
+// ... register other tasks as needed
+```
+
+### Task Configuration
+
+Most tasks support builder methods for customization:
+
+```rust
+// Custom retention period
+registry.register(
+    PurgeLoginAttemptsJob::new(pool.clone())
+        .with_retention_days(60)  // Default: 30
+);
+
+registry.register(
+    PurgeJobHistoryJob::new(pool.clone())
+        .with_retention_days(180)  // Default: 90
+);
+
+registry.register(
+    RecoverAbandonedJobsJob::new(pool.clone())
+        .with_stall_timeout_seconds(600)  // Default: 300
+);
+```
+
+### Recommended Schedules
+
+| Task | Job Type | Recommended Schedule | Notes |
+|------|----------|---------------------|-------|
+| PurgeExpiredSessionsJob | `purge_expired_sessions` | Every 15 min | Keeps session table clean |
+| PurgeAuthStatesJob | `purge_auth_states` | Hourly | Short-lived auth flow entries |
+| PurgeLoginAttemptsJob | `purge_login_attempts` | Daily 3 AM | 30-day retention |
+| PurgeRateLimitEntriesJob | `purge_rate_limit_entries` | Hourly | 24-hour entries |
+| PurgeEmailTotpCodesJob | `purge_email_totp_codes` | Hourly | Expired/used codes |
+| PurgeVerificationSessionsJob | `purge_verification_sessions` | Hourly | Expired/used sessions |
+| ArchiveCompletedJobsJob | `archive_completed_jobs` | Daily 5 AM | 7-day retention before archive |
+| PurgeJobHistoryJob | `purge_job_history` | Weekly Sunday 5 AM | 90-day retention |
+| RecoverAbandonedJobsJob | `recover_abandoned_jobs` | Every 5 min | 5-min stall timeout |
+| PurgeErrorLogsJob | `purge_error_logs` | Daily 4 AM | 90-day retention |
+| PurgeCapturedEmailsJob | `purge_captured_emails` | Daily 4:30 AM | 7-day retention |
+
+### Example: Full Registration
+
+```rust
+pub fn scheduled_task_definitions() -> Vec<ScheduledTaskDefinition> {
+    vec![
+        ScheduledTaskDefinition {
+            name: "purge_expired_sessions",
+            job_type: "purge_expired_sessions",
+            schedule: "0 */15 * * * *",
+            payload: serde_json::json!({}),
+            config: JobConfig::maintenance(),
+        },
+        ScheduledTaskDefinition {
+            name: "archive_completed_jobs",
+            job_type: "archive_completed_jobs",
+            schedule: "0 0 5 * * *",
+            payload: serde_json::json!({}),
+            config: JobConfig::maintenance(),
+        },
+        ScheduledTaskDefinition {
+            name: "recover_abandoned_jobs",
+            job_type: "recover_abandoned_jobs",
+            schedule: "0 */5 * * * *",
+            payload: serde_json::json!({}),
+            config: JobConfig::maintenance(),
+        },
+        // ... add other tasks as needed
+    ]
+}
+```
+
+These tasks use standard Underlay table names (`auth.sessions`, `platform.job`, etc.) and work with any Underlay application that has run the standard migrations.
+
 ## Related Documentation
 
 - [050 - Database & Migrations](./050-database.md) - Database setup
