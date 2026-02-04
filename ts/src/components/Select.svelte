@@ -143,7 +143,7 @@
       class={`underlay-select-trigger ${className ?? ""}`}
       aria-label={triggerAriaLabel ?? placeholder}
     >
-      <span class:placeholder={!hasSelection} class:default-value={hasSelection && isDefaultValue}>
+      <span class="underlay-select-trigger__text" class:placeholder={!hasSelection} class:default-value={hasSelection && isDefaultValue}>
         {hasSelection ? selectedLabel : placeholder}
       </span>
       <span class="underlay-select-trigger__controls">
@@ -257,6 +257,13 @@
     outline: var(--underlay-focus-ring-width, var(--underlay-focus-ring-width, 2px)) solid
       var(--underlay-color-primary, var(--underlay-color-primary, #2563eb));
     outline-offset: var(--underlay-focus-ring-offset, var(--underlay-focus-ring-offset, 2px));
+  }
+
+  :global(.underlay-select-trigger__text) {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
   }
 
   .placeholder {
