@@ -121,6 +121,8 @@
     formatAction?: (action: string) => string;
     /** Custom resource type label formatting */
     formatResourceType?: (resourceType: string) => string;
+    /** Get href for actor link (if provided, actors become links) */
+    getActorHref?: (actor: LogActor) => string;
   }
 
   let {
@@ -145,7 +147,8 @@
     entryDetails,
     getActionType: customGetActionType,
     formatAction: customFormatAction,
-    formatResourceType: customFormatResourceType
+    formatResourceType: customFormatResourceType,
+    getActorHref
   }: Props = $props();
 
   // Computed values
@@ -343,7 +346,12 @@
               <div class="log-entry__main">
                 <span class="log-entry__actor">
                   {#if entry.actor}
-                    {entry.actor.name ?? entry.actor.email ?? `User ${entry.actor.id.slice(0, 8)}`}
+                    {@const actorName = entry.actor.name ?? entry.actor.email ?? `User ${entry.actor.id.slice(0, 8)}`}
+                    {#if getActorHref}
+                      <a href={getActorHref(entry.actor)} class="log-entry__actor-link">{actorName}</a>
+                    {:else}
+                      {actorName}
+                    {/if}
                   {:else}
                     System
                   {/if}
@@ -603,6 +611,16 @@
   .log-entry__actor {
     font-weight: 500;
     color: var(--underlay-color-text, #f1f5f9);
+  }
+
+  .log-entry__actor-link {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .log-entry__actor-link:hover {
+    text-decoration: underline;
+    color: var(--underlay-color-primary, #3b82f6);
   }
 
   .log-entry__resource-type {
