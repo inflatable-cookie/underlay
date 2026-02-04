@@ -297,11 +297,17 @@
   .underlay-list-card__media--selectable {
     border: none;
     cursor: pointer;
-    transition: background-color 0.12s ease-out;
+    transition: background-color 0.12s ease-out, filter 0.12s ease-out;
+    filter: grayscale(60%) opacity(0.7);
   }
 
   .underlay-list-card__media--selectable:hover {
-    background: color-mix(in srgb, var(--underlay-list-card-accent) 85%, black);
+    filter: grayscale(30%) opacity(0.85);
+  }
+
+  /* Full color when selected */
+  .underlay-list-card--selected .underlay-list-card__media--selectable {
+    filter: none;
   }
 
   .underlay-list-card__media--selectable:focus-visible {
@@ -312,8 +318,29 @@
   .underlay-list-card__checkbox {
     width: 28px;
     height: 28px;
-    accent-color: var(--underlay-color-on-primary, #fff);
-    cursor: pointer;
+    border: none;
+    outline: none;
+    appearance: none;
+    -webkit-appearance: none;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    position: relative;
+  }
+
+  .underlay-list-card__checkbox:checked {
+    background: rgba(255, 255, 255, 0.95);
+  }
+
+  .underlay-list-card__checkbox:checked::after {
+    content: "";
+    position: absolute;
+    left: 9px;
+    top: 4px;
+    width: 8px;
+    height: 14px;
+    border: solid var(--underlay-list-card-accent);
+    border-width: 0 3px 3px 0;
+    transform: rotate(45deg);
   }
 
   /* Make entire card clickable in selection mode */
