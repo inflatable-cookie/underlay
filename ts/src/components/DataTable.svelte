@@ -137,9 +137,10 @@
 <script lang="ts" generics="T extends object">
 	import type { Snippet } from "svelte";
 	import Skeleton from "./Skeleton.svelte";
-	import IconButton from "./IconButton.svelte";
 	import DropdownMenu from "./DropdownMenu.svelte";
 	import Select from "./Select.svelte";
+	import TextInput from "./TextInput.svelte";
+	import DateInput from "./DateInput.svelte";
 
 	interface Props {
 		/** Data rows */
@@ -375,7 +376,7 @@
 		[
 			selectable ? "40px" : null,
 			...visibleColumns.map((col) => col.width ?? "1fr"),
-			actions.length > 0 || typeof actions === "function" ? "auto" : null
+			actions.length > 0 || typeof actions === "function" ? "80px" : null
 		]
 			.filter(Boolean)
 			.join(" ")
@@ -507,19 +508,17 @@
 									]}
 								/>
 							{:else if column.filterType === "date"}
-								<input
-									type="date"
+								<DateInput
 									value={internalFilters[column.key] ?? ""}
-									onchange={(e) => handleFilterChange(column.key, e.currentTarget.value)}
-									aria-label={`Filter by ${column.label}`}
+									onchange={(value) => handleFilterChange(column.key, value)}
 								/>
 							{:else}
-								<input
-									type="text"
+								<TextInput
+									search
 									placeholder={`Filter ${column.label.toLowerCase()}...`}
 									value={internalFilters[column.key] ?? ""}
-									oninput={(e) => handleFilterChange(column.key, e.currentTarget.value)}
-									aria-label={`Filter by ${column.label}`}
+									debounce={300}
+									onchange={(value) => handleFilterChange(column.key, value)}
 								/>
 							{/if}
 						{/if}
@@ -608,9 +607,22 @@
 							{:else if getRowActions(row).length > 1}
 								<DropdownMenu>
 								{#snippet trigger()}
-									<IconButton label="Row actions" sizeRem={1.5}>
-										<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
-									</IconButton>
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										width="16"
+										height="16"
+										viewBox="0 0 24 24"
+										fill="none"
+										stroke="currentColor"
+										stroke-width="2"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										aria-hidden="true"
+									>
+										<circle cx="12" cy="12" r="1" />
+										<circle cx="12" cy="5" r="1" />
+										<circle cx="12" cy="19" r="1" />
+									</svg>
 								{/snippet}
 									{#each getRowActions(row) as action}
 										{#if action.href}
@@ -716,6 +728,8 @@
 		--dt-gap: var(--underlay-table-gap, 0.75rem);
 		--dt-gap-compact: var(--underlay-table-gap-compact, 0.5rem);
 
+		display: grid;
+		grid-template-columns: var(--grid-columns);
 		border: var(--dt-border);
 		border-radius: var(--radius-lg, 0.5rem);
 		overflow: hidden;
@@ -723,6 +737,7 @@
 	}
 
 	.table-toolbar {
+		grid-column: 1 / -1;
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
@@ -806,45 +821,50 @@
 	}
 
 	.table-header,
-	.table-body,
-	.table-footer {
+	.table-body {
 		display: contents;
 	}
 
 	.table-row {
-		display: grid;
-		grid-template-columns: var(--grid-columns);
-		align-items: center;
+		display: contents;
+	}
+
+	/* Row styling applied to cells since rows use display:contents */
+	.header-row > .table-cell {
+		background: var(--dt-header-bg);
+		font-weight: 600;
 		border-bottom: var(--dt-border);
 	}
 
-	.table-row:last-child {
+	.filter-row > .table-cell {
+		background: var(--dt-header-bg);
+		border-bottom: var(--dt-border);
+	}
+
+	/* Data rows - border on cells */
+	.table-body > .table-row > .table-cell {
+		border-bottom: var(--dt-border);
+	}
+
+	.table-body > .table-row:last-child > .table-cell {
 		border-bottom: none;
 	}
 
-	.header-row {
-		background: var(--dt-header-bg);
-		font-weight: 600;
-	}
-
-	.filter-row {
-		background: var(--dt-header-bg);
-		border-bottom: var(--dt-border);
-	}
-
-	.table-body .table-row:hover {
+	/* Hover state for data rows using :has() */
+	.table-body > .table-row:hover > .table-cell {
 		background: var(--dt-row-hover);
 	}
 
-	.table-body .table-row.selected {
+	.table-body > .table-row.selected > .table-cell {
 		background: var(--dt-row-selected);
 	}
 
-	.striped .table-body .table-row:nth-child(even) {
+	/* Striped rows */
+	.striped .table-body > .table-row:nth-child(even) > .table-cell {
 		background: var(--dt-stripe);
 	}
 
-	.striped .table-body .table-row:nth-child(even):hover {
+	.striped .table-body > .table-row:nth-child(even):hover > .table-cell {
 		background: var(--dt-row-hover);
 	}
 
@@ -854,6 +874,8 @@
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
+		display: flex;
+		align-items: center;
 	}
 
 	.compact .table-cell {
@@ -872,10 +894,12 @@
 
 	.align-center {
 		text-align: center;
+		justify-content: center;
 	}
 
 	.align-right {
 		text-align: right;
+		justify-content: flex-end;
 	}
 
 	.sort-button {
@@ -905,13 +929,14 @@
 		color: var(--color-primary, #3b82f6);
 	}
 
-	.filter-cell input {
+	.filter-cell :global(.underlay-input),
+	.filter-cell :global(.underlay-input-wrapper) {
 		width: 100%;
-		padding: 0.25rem 0.5rem;
-		border: 1px solid var(--color-border, #e2e8f0);
-		border-radius: var(--radius-sm, 0.25rem);
 		font-size: inherit;
-		background: var(--color-surface, #fff);
+	}
+
+	.filter-cell :global(.underlay-input) {
+		padding: 0.25rem 0.5rem;
 	}
 
 	.filter-cell :global(.underlay-select-trigger) {
@@ -973,6 +998,7 @@
 	}
 
 	.table-footer {
+		grid-column: 1 / -1;
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
