@@ -575,7 +575,7 @@ import { env } from "$env/dynamic/public";
 // Configure client once at module load
 configureStem({
   baseUrl: env.PUBLIC_API_URL ?? "http://127.0.0.1:4100",
-  apiVersion: env.PUBLIC_API_VERSION ?? "v1"
+  apiVersion: env.PUBLIC_API_VERSION ?? "2025-01-01"
 });
 
 export const handle: Handle = async ({ event, resolve }) => {
@@ -625,7 +625,7 @@ import { env } from "$env/dynamic/public";
 // This is needed for universal load functions (+page.ts) that run in the browser
 configureStem({
   baseUrl: env.PUBLIC_API_URL ?? "http://127.0.0.1:4100",
-  apiVersion: env.PUBLIC_API_VERSION ?? "v1"
+  apiVersion: env.PUBLIC_API_VERSION ?? "2025-01-01"
 });
 ```
 
