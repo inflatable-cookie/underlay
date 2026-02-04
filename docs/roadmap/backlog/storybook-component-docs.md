@@ -43,7 +43,7 @@ Set up [Storybook](https://storybook.js.org/) for the Underlay component library
 - Form, Field, FieldSet
 
 **Medium Priority** (specialized):
-- ActivityFeed, BatchActionBar
+- LogList, BatchActionBar
 - StatCard, StatGrid
 - DataTable, Pagination
 - MediaPicker, FileUpload
