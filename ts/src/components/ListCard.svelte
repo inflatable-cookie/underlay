@@ -64,6 +64,14 @@
     e.stopPropagation();
     onSelectionChange?.(!selected);
   }
+
+  function handleCardClick(e: MouseEvent) {
+    // In selection mode, clicking anywhere on the card toggles selection
+    if (isSelectionMode) {
+      e.preventDefault();
+      onSelectionChange?.(!selected);
+    }
+  }
 </script>
 
 {#snippet mediaTrigger()}
@@ -152,7 +160,8 @@
   </div>
 {/snippet}
 
-{#if href && !isCompact}
+{#if href && !isCompact && !isSelectionMode}
+  <!-- Normal link mode -->
   <div class="underlay-list-card-shell" class:underlay-list-card-shell--draft={!isLive} {style}>
     <a
       class={cardClass}
@@ -164,6 +173,26 @@
     >
       {@render fullContent()}
     </a>
+  </div>
+{:else if isSelectionMode && !isCompact}
+  <!-- Selection mode - entire card is clickable for toggle -->
+  <div
+    class="underlay-list-card-shell"
+    class:underlay-list-card-shell--draft={!isLive}
+    class:underlay-list-card-shell--selected={selected}
+    {style}
+  >
+    <button
+      type="button"
+      class={cardClass}
+      class:underlay-list-card--selected={selected}
+      aria-label={selected ? `Deselect ${title}` : `Select ${title}`}
+      aria-pressed={selected}
+      onclick={handleCardClick}
+      {style}
+    >
+      {@render fullContent()}
+    </button>
   </div>
 {:else}
   <div
@@ -290,6 +319,21 @@
   /* Make entire card clickable in selection mode */
   .underlay-list-card--selectable {
     cursor: pointer;
+    /* Reset button styles when card is a button */
+    font: inherit;
+    text-align: left;
+    width: 100%;
+  }
+
+  /* Selected state */
+  .underlay-list-card--selected {
+    border-color: var(--underlay-list-card-accent);
+    box-shadow: 0 0 0 1px var(--underlay-list-card-accent);
+  }
+
+  .underlay-list-card-shell--selected > .underlay-list-card {
+    border-color: var(--underlay-list-card-accent);
+    box-shadow: 0 0 0 1px var(--underlay-list-card-accent);
   }
 
   /* Slot wrapper for the actions trigger - no styling, just positioning */
