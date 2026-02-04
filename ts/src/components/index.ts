@@ -77,6 +77,13 @@ export type { OrderByFieldDefinition, OrderByField, OrderByValue } from "./Order
 export { default as MediaPicker } from "./MediaPicker.svelte";
 export { default as MediaActionsMenu } from "./MediaActionsMenu.svelte";
 
+// Activity feed
+export { default as ActivityFeed } from "./ActivityFeed.svelte";
+export type { ActivityEntry, ActivityActor, ActionType } from "./ActivityFeed.svelte";
+
+// Batch actions
+export { default as BatchActionBar } from "./BatchActionBar.svelte";
+
 export { default as LoginForm } from "./auth/LoginForm.svelte";
 export { default as RegisterForm } from "./auth/RegisterForm.svelte";
 export { default as TotpSetup } from "./auth/TotpSetup.svelte";
