@@ -251,6 +251,7 @@
     color: var(--underlay-color-text, var(--underlay-color-text, #e5e7eb));
     font-size: 0.85rem;
     cursor: pointer;
+    container-type: inline-size;
   }
 
   :global(.underlay-select-trigger:focus-visible) {
@@ -279,6 +280,14 @@
     align-items: center;
     gap: 0.35rem;
     margin-left: 0.5rem;
+    flex-shrink: 0;
+  }
+
+  @container (max-width: 6rem) {
+    :global(.underlay-select-trigger__controls) {
+      gap: 0.15rem;
+      margin-left: 0.25rem;
+    }
   }
 
   :global(.underlay-select-trigger__clear) {
