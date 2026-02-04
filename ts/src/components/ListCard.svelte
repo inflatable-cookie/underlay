@@ -17,6 +17,10 @@
     isLive?: boolean;
     /** Show drag handle for reorder mode (only visible in compact variant) */
     showDragHandle?: boolean;
+    /** Whether this card is selected (enables selection mode when provided) */
+    selected?: boolean;
+    /** Callback when selection changes - providing this enables selection mode */
+    onSelectionChange?: (selected: boolean) => void;
     media?: Snippet;
     trailing?: Snippet;
     /** Renders the actions menu. When provided, the media area becomes a custom trigger containing the icon + dots.
@@ -36,6 +40,8 @@
     variant = "default",
     isLive = true,
     showDragHandle = false,
+    selected = false,
+    onSelectionChange,
     media,
     trailing,
     actions,
@@ -44,13 +50,20 @@
   }: Props = $props();
 
   let hasActions = $derived(Boolean(actions));
+  let isSelectionMode = $derived(Boolean(onSelectionChange));
   let style = $derived(accent ? `--underlay-list-card-accent: ${accent};` : undefined);
   let isCompact = $derived(variant === "compact");
   let cardClass = $derived([
     "underlay-list-card",
     !isLive && "underlay-list-card--draft",
-    isCompact && "underlay-list-card--compact"
+    isCompact && "underlay-list-card--compact",
+    isSelectionMode && "underlay-list-card--selectable"
   ].filter(Boolean).join(" "));
+
+  function handleSelectionToggle(e: Event) {
+    e.stopPropagation();
+    onSelectionChange?.(!selected);
+  }
 </script>
 
 {#snippet mediaTrigger()}
@@ -90,7 +103,22 @@
 {/snippet}
 
 {#snippet fullContent()}
-  {#if hasActions}
+  {#if isSelectionMode}
+    <button
+      type="button"
+      class="underlay-list-card__media underlay-list-card__media--selectable"
+      onclick={handleSelectionToggle}
+      aria-label={selected ? "Deselect" : "Select"}
+    >
+      <input
+        type="checkbox"
+        class="underlay-list-card__checkbox"
+        checked={selected}
+        onchange={handleSelectionToggle}
+        onclick={(e) => e.stopPropagation()}
+      />
+    </button>
+  {:else if hasActions}
     <div class="underlay-list-card__media-slot">
       {@render actions?.({ trigger: mediaTrigger, align: "start" })}
     </div>
@@ -234,6 +262,34 @@
     background: var(--underlay-list-card-accent);
     color: var(--underlay-color-on-primary, #fff);
     overflow: hidden;
+  }
+
+  /* Selection mode - clickable media area with checkbox */
+  .underlay-list-card__media--selectable {
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.12s ease-out;
+  }
+
+  .underlay-list-card__media--selectable:hover {
+    background: color-mix(in srgb, var(--underlay-list-card-accent) 85%, black);
+  }
+
+  .underlay-list-card__media--selectable:focus-visible {
+    outline: var(--underlay-focus-ring-width, 2px) solid var(--underlay-list-card-accent);
+    outline-offset: var(--underlay-focus-ring-offset, 2px);
+  }
+
+  .underlay-list-card__checkbox {
+    width: 28px;
+    height: 28px;
+    accent-color: var(--underlay-color-on-primary, #fff);
+    cursor: pointer;
+  }
+
+  /* Make entire card clickable in selection mode */
+  .underlay-list-card--selectable {
+    cursor: pointer;
   }
 
   /* Slot wrapper for the actions trigger - no styling, just positioning */
