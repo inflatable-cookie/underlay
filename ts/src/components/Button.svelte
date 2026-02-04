@@ -4,8 +4,8 @@
 
   interface Props extends Omit<HTMLButtonAttributes, "class"> {
     variant?: "primary" | "secondary" | "subtle" | "danger";
-    /** Size of the button */
-    size?: "sm" | "md" | "lg";
+    /** Size of the button. Use "icon" for icon-only buttons. */
+    size?: "sm" | "md" | "lg" | "icon";
     type?: "button" | "submit" | "reset";
     pill?: boolean;
     class?: string;
@@ -81,6 +81,13 @@
   :global(.underlay-button--lg) {
     padding: 0.75em 1.5em;
     font-size: 1.1em;
+  }
+
+  :global(.underlay-button--icon) {
+    width: 2.25rem;
+    height: 2.25rem;
+    padding: 0;
+    border-radius: var(--underlay-radius-control, 0.5rem);
   }
 
   :global(.underlay-button--primary) {
