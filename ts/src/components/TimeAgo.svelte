@@ -13,6 +13,8 @@
     timezone?: string;
     /** Custom class for the wrapper element */
     class?: string;
+    /** Use abbreviated output (e.g., "5 min ago") */
+    short?: boolean;
   }
 
   let {
@@ -20,13 +22,14 @@
     tooltipFormat = "datetime",
     timezone,
     class: className,
+    short = false,
   }: Props = $props();
 
   /**
    * Calculate relative time string from a date.
    * Relative time is timezone-agnostic (always comparing UTC timestamps).
    */
-  function getRelativeTime(date: Date): string {
+  function getRelativeTime(date: Date, shortFormat: boolean): string {
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
     const diffSeconds = Math.floor(diffMs / 1000);
@@ -45,27 +48,35 @@
       const absDiffHours = Math.floor(absDiffMinutes / 60);
       const absDiffDays = Math.floor(absDiffHours / 24);
 
-      if (absDiffSeconds < 60) return "in a few seconds";
-      if (absDiffMinutes < 60) return `in ${absDiffMinutes} minute${absDiffMinutes === 1 ? "" : "s"}`;
-      if (absDiffHours < 24) return `in ${absDiffHours} hour${absDiffHours === 1 ? "" : "s"}`;
-      return `in ${absDiffDays} day${absDiffDays === 1 ? "" : "s"}`;
+      if (absDiffSeconds < 60) return shortFormat ? "soon" : "in a few seconds";
+      if (absDiffMinutes < 60)
+        return shortFormat
+          ? `in ${absDiffMinutes} min`
+          : `in ${absDiffMinutes} minute${absDiffMinutes === 1 ? "" : "s"}`;
+      if (absDiffHours < 24)
+        return shortFormat
+          ? `in ${absDiffHours} h`
+          : `in ${absDiffHours} hour${absDiffHours === 1 ? "" : "s"}`;
+      return shortFormat
+        ? `in ${absDiffDays} d`
+        : `in ${absDiffDays} day${absDiffDays === 1 ? "" : "s"}`;
     }
 
     // Past dates
-    if (diffSeconds < 10) return "just now";
-    if (diffSeconds < 60) return `${diffSeconds} seconds ago`;
-    if (diffMinutes === 1) return "1 minute ago";
-    if (diffMinutes < 60) return `${diffMinutes} minutes ago`;
-    if (diffHours === 1) return "1 hour ago";
-    if (diffHours < 24) return `${diffHours} hours ago`;
-    if (diffDays === 1) return "yesterday";
-    if (diffDays < 7) return `${diffDays} days ago`;
-    if (diffWeeks === 1) return "1 week ago";
-    if (diffWeeks < 4) return `${diffWeeks} weeks ago`;
-    if (diffMonths === 1) return "1 month ago";
-    if (diffMonths < 12) return `${diffMonths} months ago`;
-    if (diffYears === 1) return "1 year ago";
-    return `${diffYears} years ago`;
+    if (diffSeconds < 10) return shortFormat ? "now" : "just now";
+    if (diffSeconds < 60) return shortFormat ? `${diffSeconds}s ago` : `${diffSeconds} seconds ago`;
+    if (diffMinutes === 1) return shortFormat ? "1 min ago" : "1 minute ago";
+    if (diffMinutes < 60) return shortFormat ? `${diffMinutes} min ago` : `${diffMinutes} minutes ago`;
+    if (diffHours === 1) return shortFormat ? "1 h ago" : "1 hour ago";
+    if (diffHours < 24) return shortFormat ? `${diffHours} h ago` : `${diffHours} hours ago`;
+    if (diffDays === 1) return shortFormat ? "1 d ago" : "yesterday";
+    if (diffDays < 7) return shortFormat ? `${diffDays} d ago` : `${diffDays} days ago`;
+    if (diffWeeks === 1) return shortFormat ? "1 wk ago" : "1 week ago";
+    if (diffWeeks < 4) return shortFormat ? `${diffWeeks} wk ago` : `${diffWeeks} weeks ago`;
+    if (diffMonths === 1) return shortFormat ? "1 mo ago" : "1 month ago";
+    if (diffMonths < 12) return shortFormat ? `${diffMonths} mo ago` : `${diffMonths} months ago`;
+    if (diffYears === 1) return shortFormat ? "1 yr ago" : "1 year ago";
+    return shortFormat ? `${diffYears} yr ago` : `${diffYears} years ago`;
   }
 
   /**
@@ -112,7 +123,7 @@
   }
 
   const dateObj = $derived(typeof date === "string" ? new Date(date) : date);
-  const relativeTime = $derived(getRelativeTime(dateObj));
+  const relativeTime = $derived(getRelativeTime(dateObj, short));
   const tooltipText = $derived(formatTooltip(dateObj, tooltipFormat, timezone));
 </script>
 

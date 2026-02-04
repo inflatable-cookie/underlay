@@ -9,6 +9,8 @@
 		label: string;
 		/** Column width (CSS value, e.g., "200px", "1fr", "auto") */
 		width?: string;
+		/** Minimum column width (CSS value, e.g., "100px"). Used with flexible widths. */
+		minWidth?: string;
 		/** Enable sorting for this column */
 		sortable?: boolean;
 		/** Enable filtering for this column */
@@ -195,6 +197,8 @@
 		onAction?: (event: { action: string; row: T }) => void;
 		/** Callback when export is triggered */
 		onExport?: (event: { data: T[]; columns: DataTableColumn<T>[] }) => void;
+		/** Callback when a row is clicked */
+		onRowClick?: (row: T) => void;
 		/** Snippet for toolbar left area */
 		toolbarLeft?: Snippet;
 		/** Snippet for toolbar right area */
@@ -236,6 +240,7 @@
 		onSelect,
 		onAction,
 		onExport,
+		onRowClick,
 		toolbarLeft,
 		toolbarRight,
 		empty,
@@ -378,10 +383,23 @@
 	}
 
 	// Grid template columns
+	function getColumnWidth(col: DataTableColumn<T>): string {
+		// If explicit width is set, use it (but wrap in minmax if minWidth is also set)
+		if (col.width) {
+			if (col.minWidth) {
+				return `minmax(${col.minWidth}, ${col.width})`;
+			}
+			return col.width;
+		}
+		// Default: flexible column with minimum width
+		const minWidth = col.minWidth ?? "100px";
+		return `minmax(${minWidth}, 1fr)`;
+	}
+
 	let gridColumns = $derived(
 		[
 			selectable ? "40px" : null,
-			...visibleColumns.map((col) => col.width ?? "1fr"),
+			...visibleColumns.map(getColumnWidth),
 			actions.length > 0 || typeof actions === "function" ? "80px" : null
 		]
 			.filter(Boolean)
@@ -389,6 +407,7 @@
 	);
 </script>
 
+<div class="underlay-data-table-wrapper">
 <div
 	class="underlay-data-table"
 	class:compact
@@ -570,11 +589,14 @@
 			</div>
 		{:else}
 			{#each data as row, rowIndex}
+				<!-- svelte-ignore a11y_click_events_have_key_events -->
 				<div
 					class="table-row"
 					class:selected={selected.includes(row)}
 					class:has-extended={!!extendedRow && extendedRowWhen(row)}
+					class:clickable={!!onRowClick}
 					role="row"
+					onclick={() => onRowClick?.(row)}
 				>
 					{#if selectable}
 						<div class="table-cell checkbox-cell" role="cell">
@@ -735,8 +757,14 @@
 		</div>
 	{/if}
 </div>
+</div>
 
 <style>
+	.underlay-data-table-wrapper {
+		overflow-x: auto;
+		border-radius: var(--radius-lg, 0.5rem);
+	}
+
 	.underlay-data-table {
 		--dt-border: var(--underlay-table-border, 1px solid var(--color-border, #e2e8f0));
 		--dt-header-bg: var(--underlay-table-header-bg, var(--color-surface-subtle, #f8fafc));
@@ -750,8 +778,8 @@
 		grid-template-columns: var(--grid-columns);
 		border: var(--dt-border);
 		border-radius: var(--radius-lg, 0.5rem);
-		overflow: hidden;
 		font-size: 0.8rem;
+		min-width: fit-content;
 	}
 
 	.table-toolbar {
@@ -852,6 +880,10 @@
 		background: var(--dt-header-bg);
 		font-weight: 600;
 		border-bottom: var(--dt-border);
+		font-size: 0.75rem;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		color: var(--underlay-color-text-muted, var(--color-text-muted, #64748b));
 	}
 
 	.filter-row > .table-cell {
@@ -868,13 +900,20 @@
 		border-bottom: none;
 	}
 
-	.table-body > .table-row:last-child > .table-cell {
+	.table-body > .table-row:last-child > .table-cell,
+	.table-body > .table-row:last-of-type > .table-cell,
+	.table-body > .table-row--extended:last-child > .table-cell {
 		border-bottom: none;
 	}
 
 	/* Hover state for data rows using :has() */
 	.table-body > .table-row:hover > .table-cell {
 		background: var(--dt-row-hover);
+	}
+
+	/* Clickable row style */
+	.table-body > .table-row.clickable {
+		cursor: pointer;
 	}
 
 	.table-body > .table-row.selected > .table-cell {

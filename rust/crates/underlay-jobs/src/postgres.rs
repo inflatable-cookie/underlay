@@ -5,7 +5,7 @@
 use async_trait::async_trait;
 use chrono::{DateTime, Utc};
 use serde_json::Value;
-use sqlx::PgPool;
+use sqlx::{PgPool, QueryBuilder};
 use thiserror::Error;
 use tracing::{debug, instrument};
 
@@ -389,8 +389,7 @@ impl JobRepository {
     /// List jobs with filters.
     #[instrument(skip(self))]
     pub async fn list(&self, filters: JobFilters) -> Result<Vec<Job>> {
-        // Build dynamic query based on filters
-        let mut query = String::from(
+        let mut qb: QueryBuilder<sqlx::Postgres> = QueryBuilder::new(
             r#"
             SELECT *
             FROM platform.job
@@ -398,27 +397,19 @@ impl JobRepository {
             "#,
         );
 
-        if filters.status.is_some() {
-            query.push_str(" AND status = $3");
-        }
-        if filters.job_type.is_some() {
-            query.push_str(" AND job_type = $4");
-        }
-
-        query.push_str(" ORDER BY created_at DESC LIMIT $1 OFFSET $2");
-
-        let mut qb = sqlx::query_as::<_, JobRow>(&query)
-            .bind(filters.limit as i64)
-            .bind(filters.offset as i64);
-
         if let Some(status) = &filters.status {
-            qb = qb.bind(status.as_str());
+            qb.push(" AND status = ").push_bind(status.as_str());
         }
         if let Some(job_type) = &filters.job_type {
-            qb = qb.bind(job_type);
+            qb.push(" AND job_type ILIKE ").push_bind(format!("%{}%", job_type));
         }
 
-        let rows = qb.fetch_all(&self.pool).await?;
+        qb.push(" ORDER BY created_at DESC LIMIT ")
+            .push_bind(filters.limit as i64)
+            .push(" OFFSET ")
+            .push_bind(filters.offset as i64);
+
+        let rows = qb.build_query_as::<JobRow>().fetch_all(&self.pool).await?;
         Ok(rows.into_iter().map(Job::from).collect())
     }
 
