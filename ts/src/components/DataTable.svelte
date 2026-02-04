@@ -77,7 +77,7 @@
 	/**
 	 * Export data to CSV format.
 	 */
-	export function exportToCsv<T extends Record<string, unknown>>(
+	export function exportToCsv<T extends object>(
 		data: T[],
 		columns: DataTableColumn<T>[],
 		filename = "export.csv"
@@ -120,7 +120,7 @@
 		return value;
 	}
 
-	function getNestedValue(obj: Record<string, unknown>, path: string): unknown {
+	function getNestedValue(obj: object, path: string): unknown {
 		const keys = path.split(".");
 		let value: unknown = obj;
 		for (const key of keys) {
@@ -134,7 +134,7 @@
 	}
 </script>
 
-<script lang="ts" generics="T extends Record<string, unknown>">
+<script lang="ts" generics="T extends object">
 	import type { Snippet } from "svelte";
 	import Skeleton from "./Skeleton.svelte";
 	import IconButton from "./IconButton.svelte";

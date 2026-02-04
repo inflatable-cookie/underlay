@@ -14,6 +14,7 @@ export type { ValidationResult } from "./TextInput.svelte";
 export { default as DateInput } from "./DateInput.svelte";
 export { default as DateTimeInput } from "./DateTimeInput.svelte";
 export { default as NumberInput } from "./NumberInput.svelte";
+export { default as ColorPicker } from "./ColorPicker.svelte";
 export { default as TextArea } from "./TextArea.svelte";
 export { default as MarkdownEditor } from "./MarkdownEditor.svelte";
 export { default as Form } from "./Form.svelte";
@@ -83,6 +84,9 @@ export type { ActivityEntry, ActivityActor, ActionType } from "./ActivityFeed.sv
 
 // Batch actions
 export { default as BatchActionBar } from "./BatchActionBar.svelte";
+
+// List container for autonomous list components
+export { default as ListContainer } from "./ListContainer.svelte";
 
 // Dashboard stats
 export { default as StatCard } from "./StatCard.svelte";
