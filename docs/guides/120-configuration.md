@@ -153,8 +153,24 @@ Frontend apps (SvelteKit) use `PUBLIC_` prefixed variables that are exposed to t
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `PUBLIC_API_URL` | — | Backend API base URL |
-| `PUBLIC_API_VERSION` | — | API version sent as `X-Api-Version` header |
+| `PUBLIC_API_VERSION` | — | API version sent as `X-Api-Version` header (date format) |
 | `PUBLIC_APP_NAME` | — | Application display name |
+
+### API Versioning (Date Format)
+
+Underlay uses **date-based API versioning** in the format `YYYY-MM-DD` (e.g., `2025-01-01`). This approach offers several advantages over traditional major version numbers like `v1`, `v2`:
+
+1. **Granular changes** — Each API change can be tied to a specific date, allowing incremental updates rather than large breaking version bumps
+2. **Clear timeline** — The version date indicates when the API contract was established, making it easy to understand compatibility
+3. **Gradual deprecation** — Old date versions can be deprecated with clear sunset dates (e.g., "versions before 2024-06-01 will be removed on 2025-01-01")
+4. **No version inflation** — Avoids the awkwardness of `v47` or deciding what constitutes a "major" version
+
+The version is sent to the API via the `X-Api-Version` header. The API can use this to:
+- Return responses in the expected format for that version
+- Apply version-specific validation rules
+- Log which versions are still in use for deprecation planning
+
+**Convention:** Use the date when the API contract was defined or last changed in a breaking way. For new projects, use the project start date or a recent date like `2025-01-01`.
 
 Example:
 
