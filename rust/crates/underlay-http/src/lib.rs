@@ -51,5 +51,7 @@ pub use crate::nightfire::nightfire_validation_to_app_error;
 
 #[cfg(feature = "error-logging")]
 pub use crate::error_logging::{
-    append_error_log, list_error_logs, DbErrorLogSink, ErrorLogFilters, ErrorLogRow,
+    append_error_log, count_error_logs, error_logging_middleware, error_response_with_context,
+    get_error_log_by_id, list_error_logs, DbErrorLogSink, ErrorLogFilters, ErrorLoggingConfig,
+    ErrorLogRow, ERROR_CONTEXT_HEADER,
 };

@@ -1,5 +1,16 @@
 #[cfg(feature = "error-logging")]
+use axum::{
+    body::Body,
+    http::{HeaderValue, Request},
+    middleware::Next,
+    response::Response,
+};
+#[cfg(feature = "error-logging")]
 use underlay_db::DbPool;
+
+/// Header name for passing error context to the logging middleware.
+#[cfg(feature = "error-logging")]
+pub const ERROR_CONTEXT_HEADER: &str = "x-error-context";
 
 /// Database row returned from error_log queries.
 #[cfg(feature = "error-logging")]
@@ -263,4 +274,285 @@ impl crate::ErrorLogSink for DbErrorLogSink {
             .await;
         });
     }
+}
+
+/// Get a single error log entry by ID.
+#[cfg(feature = "error-logging")]
+pub async fn get_error_log_by_id(
+    pool: &DbPool,
+    id: uuid::Uuid,
+) -> Result<Option<ErrorLogRow>, sqlx::Error> {
+    sqlx::query_as::<_, ErrorLogRow>(
+        r#"
+        SELECT id, occurred_at, endpoint, method, status_code, error_code,
+               message, correlation_id, context
+        FROM platform.error_log
+        WHERE id = $1
+        "#,
+    )
+    .bind(id)
+    .fetch_optional(pool)
+    .await
+}
+
+/// Count error log entries matching filters (for pagination).
+#[cfg(feature = "error-logging")]
+pub async fn count_error_logs(
+    pool: &DbPool,
+    filters: &ErrorLogFilters,
+) -> Result<i64, sqlx::Error> {
+    let mut query_str = String::from("SELECT COUNT(*) FROM platform.error_log WHERE 1=1");
+
+    if filters.since.is_some() {
+        query_str.push_str(" AND occurred_at >= $1");
+    }
+    if filters.until.is_some() {
+        query_str.push_str(&format!(
+            " AND occurred_at <= ${}",
+            if filters.since.is_some() { 2 } else { 1 }
+        ));
+    }
+    if filters.status_code.is_some() {
+        let param_num = 1 + filters.since.is_some() as usize + filters.until.is_some() as usize;
+        query_str.push_str(&format!(" AND status_code = ${}", param_num));
+    }
+    if filters.error_code.is_some() {
+        let param_num = 1
+            + filters.since.is_some() as usize
+            + filters.until.is_some() as usize
+            + filters.status_code.is_some() as usize;
+        query_str.push_str(&format!(" AND error_code = ${}", param_num));
+    }
+    if filters.endpoint.is_some() {
+        let param_num = 1
+            + filters.since.is_some() as usize
+            + filters.until.is_some() as usize
+            + filters.status_code.is_some() as usize
+            + filters.error_code.is_some() as usize;
+        query_str.push_str(&format!(" AND endpoint = ${}", param_num));
+    }
+
+    let mut query = sqlx::query_scalar::<_, i64>(&query_str);
+
+    if let Some(since) = filters.since {
+        query = query.bind(since);
+    }
+    if let Some(until) = filters.until {
+        query = query.bind(until);
+    }
+    if let Some(status_code) = filters.status_code {
+        query = query.bind(status_code);
+    }
+    if let Some(ref error_code) = filters.error_code {
+        query = query.bind(error_code);
+    }
+    if let Some(ref endpoint) = filters.endpoint {
+        query = query.bind(endpoint);
+    }
+
+    query.fetch_one(pool).await
+}
+
+/// Configuration for the error logging middleware.
+#[cfg(feature = "error-logging")]
+#[derive(Clone)]
+pub struct ErrorLoggingConfig {
+    pool: DbPool,
+    /// Optional source identifier for the app (e.g., "acme-api", "farmyard-api").
+    pub source: Option<String>,
+    /// Whether to log 4xx client errors (default: true).
+    pub log_client_errors: bool,
+    /// Whether to log 5xx server errors (default: true).
+    pub log_server_errors: bool,
+}
+
+#[cfg(feature = "error-logging")]
+impl ErrorLoggingConfig {
+    /// Create a new configuration with the given database pool.
+    pub fn new(pool: DbPool) -> Self {
+        Self {
+            pool,
+            source: None,
+            log_client_errors: true,
+            log_server_errors: true,
+        }
+    }
+
+    /// Set the source identifier for log entries.
+    pub fn with_source(mut self, source: impl Into<String>) -> Self {
+        self.source = Some(source.into());
+        self
+    }
+
+    /// Set whether to log 4xx client errors.
+    pub fn with_client_errors(mut self, enabled: bool) -> Self {
+        self.log_client_errors = enabled;
+        self
+    }
+
+    /// Set whether to log 5xx server errors.
+    pub fn with_server_errors(mut self, enabled: bool) -> Self {
+        self.log_server_errors = enabled;
+        self
+    }
+}
+
+/// Create an error logging middleware layer.
+///
+/// This middleware captures 4xx and 5xx responses and logs them to the database
+/// for later inspection. It runs the logging asynchronously to avoid blocking
+/// the response.
+///
+/// # Example
+///
+/// ```rust,ignore
+/// use underlay_http::error_logging::{error_logging_layer, ErrorLoggingConfig};
+///
+/// let config = ErrorLoggingConfig::new(pool.clone())
+///     .with_source("my-api")
+///     .with_client_errors(true);
+///
+/// let app = Router::new()
+///     .route("/", get(handler))
+///     .layer(axum::middleware::from_fn_with_state(config, error_logging_middleware));
+/// ```
+#[cfg(feature = "error-logging")]
+pub async fn error_logging_middleware(
+    axum::extract::State(config): axum::extract::State<ErrorLoggingConfig>,
+    req: Request<Body>,
+    next: Next,
+) -> Response {
+    let method = req.method().clone();
+    let path = req.uri().path().to_string();
+    let query = req.uri().query().map(|q| q.to_string());
+    let user_agent = req
+        .headers()
+        .get("user-agent")
+        .and_then(|v| v.to_str().ok())
+        .map(|s| s.to_string());
+
+    let res = next.run(req).await;
+
+    let status = res.status();
+
+    // Check if we should log this response
+    let should_log = (status.is_client_error() && config.log_client_errors)
+        || (status.is_server_error() && config.log_server_errors);
+
+    if !should_log {
+        return res;
+    }
+
+    let status_code = status.as_u16() as i32;
+
+    let request_id = res
+        .headers()
+        .get(underlay_observability::REQUEST_ID_HEADER)
+        .and_then(|v| v.to_str().ok())
+        .unwrap_or("unknown")
+        .to_string();
+
+    let error_code = res
+        .headers()
+        .get("x-error-code")
+        .and_then(|v| v.to_str().ok())
+        .unwrap_or("unknown")
+        .to_string();
+
+    let message = res
+        .headers()
+        .get("x-error-message")
+        .and_then(|v| v.to_str().ok())
+        .unwrap_or("")
+        .to_string();
+
+    // Extract handler-provided context from header
+    let handler_context: Option<serde_json::Value> = res
+        .headers()
+        .get(ERROR_CONTEXT_HEADER)
+        .and_then(|v| v.to_str().ok())
+        .and_then(|encoded| urlencoding::decode(encoded).ok())
+        .and_then(|json_str| serde_json::from_str(&json_str).ok());
+
+    // Build comprehensive context object
+    let context = serde_json::json!({
+        "source": config.source,
+        "query": query,
+        "user_agent": user_agent,
+        "handler_context": handler_context,
+    });
+
+    let pool = config.pool.clone();
+    tokio::spawn(async move {
+        if let Err(err) = append_error_log(
+            &pool,
+            &path,
+            method.as_str(),
+            status_code,
+            &error_code,
+            &message,
+            &request_id,
+            context,
+        )
+        .await
+        {
+            tracing::error!(%err, "failed to append error log entry");
+        }
+    });
+
+    res
+}
+
+/// Construct a standardised error response with additional context for logging.
+///
+/// The `context` parameter accepts any serializable value that will be included
+/// in the error log record for debugging purposes. This is useful for capturing:
+/// - The underlying error details (e.g., database error messages)
+/// - Relevant request parameters or IDs
+/// - State information that helps diagnose the issue
+///
+/// # Example
+///
+/// ```rust,ignore
+/// use underlay_http::error_logging::error_response_with_context;
+/// use axum::http::StatusCode;
+///
+/// Err(e) => {
+///     error!("failed to update record: {}", e);
+///     error_response_with_context(
+///         StatusCode::INTERNAL_SERVER_ERROR,
+///         AppError::new("db.error", "Database error"),
+///         serde_json::json!({
+///             "db_error": e.to_string(),
+///             "record_id": record_id,
+///         }),
+///     ).into_response()
+/// }
+/// ```
+#[cfg(feature = "error-logging")]
+pub fn error_response_with_context(
+    status: axum::http::StatusCode,
+    err: underlay_core::AppError,
+    context: serde_json::Value,
+) -> Response {
+    let message = err.message.clone();
+
+    // Use the standard error response
+    let mut res = crate::error_response(status, err);
+
+    // Add the message header for the middleware to extract
+    if let Ok(value) = HeaderValue::from_str(&message) {
+        res.headers_mut().insert("x-error-message", value);
+    }
+
+    // Serialize context to JSON string and add as header
+    if let Ok(context_str) = serde_json::to_string(&context) {
+        // URL-encode to handle special characters in header value
+        let encoded = urlencoding::encode(&context_str);
+        if let Ok(value) = HeaderValue::from_str(&encoded) {
+            res.headers_mut().insert(ERROR_CONTEXT_HEADER, value);
+        }
+    }
+
+    res
 }
