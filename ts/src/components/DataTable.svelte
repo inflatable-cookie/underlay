@@ -910,14 +910,14 @@
 		padding: 0.25rem 0.5rem;
 		border: 1px solid var(--color-border, #e2e8f0);
 		border-radius: var(--radius-sm, 0.25rem);
-		font-size: 0.875rem;
+		font-size: 0.8rem;
 		background: var(--color-surface, #fff);
 	}
 
 	.filter-cell :global(.underlay-select-trigger) {
 		min-width: 0;
 		padding: 0.25rem 0.5rem;
-		font-size: 0.875rem;
+		font-size: 0.8rem;
 	}
 
 	.actions-cell {
