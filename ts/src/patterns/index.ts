@@ -83,6 +83,12 @@ export {
   type SyncedSelectionResult
 } from "./synced-selection.svelte";
 
+// Batch selection state management (for multi-select lists)
+export {
+  useBatchSelection,
+  type BatchSelectionResult
+} from "./batch-selection.svelte";
+
 // Timezone management
 export {
   timezoneStore,
