@@ -214,15 +214,11 @@
     width: 100%;
     min-width: min(var(--underlay-select-min-width, 12rem), 100%);
     box-sizing: border-box;
-    padding: var(--underlay-field-padding-block, var(--underlay-field-padding-block, 0.55em))
-      var(--underlay-field-padding-inline, var(--underlay-field-padding-inline, 0.7em));
+    padding: 0.55em 0.7em;
     border-radius: 0.35rem;
     border: none;
-    background: var(
-      --underlay-color-field-bg,
-      var(--underlay-color-field-bg, rgba(148, 163, 184, 0.18))
-    );
-    color: var(--underlay-color-text, var(--underlay-color-text, #e5e7eb));
+    background: var(--underlay-color-field-bg, rgba(148, 163, 184, 0.18));
+    color: var(--underlay-color-text, #e5e7eb);
     font-size: 0.85rem;
   }
 
@@ -240,15 +236,11 @@
     align-items: center;
     justify-content: space-between;
     box-sizing: border-box;
-    padding: var(--underlay-field-padding-block, var(--underlay-field-padding-block, 0.55em))
-      var(--underlay-field-padding-inline, var(--underlay-field-padding-inline, 0.7em));
+    padding: 0.55em 0.7em;
     border-radius: 0.35rem;
     border: none;
-    background: var(
-      --underlay-color-field-bg,
-      var(--underlay-color-field-bg, rgba(148, 163, 184, 0.18))
-    );
-    color: var(--underlay-color-text, var(--underlay-color-text, #e5e7eb));
+    background: var(--underlay-color-field-bg, rgba(148, 163, 184, 0.18));
+    color: var(--underlay-color-text, #e5e7eb);
     font-size: 0.85rem;
     cursor: pointer;
     container-type: inline-size;

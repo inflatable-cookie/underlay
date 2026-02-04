@@ -345,31 +345,44 @@
   .underlay-input {
     width: 100%;
     box-sizing: border-box;
-    padding: var(--underlay-field-padding-block, var(--underlay-field-padding-block, 0.55em))
-      var(--underlay-field-padding-inline, var(--underlay-field-padding-inline, 0.7em));
-    border-radius: var(--underlay-radius-sm, var(--underlay-radius-sm, 0.35rem));
+    padding: 0.55em 0.7em;
+    border-radius: 0.35rem;
     border: none;
-    background: var(
-      --underlay-color-field-bg,
-      var(--underlay-color-field-bg, rgba(148, 163, 184, 0.18))
-    );
-    color: var(--underlay-color-text, var(--underlay-color-text, inherit));
-    font-size: var(--underlay-font-size-md, var(--underlay-font-size-md, 0.85rem));
+    background: var(--underlay-color-field-bg, rgba(148, 163, 184, 0.18));
+    color: var(--underlay-color-text, #e5e7eb);
+    font-size: 0.85rem;
   }
 
-  /* Native date/time inputs need explicit dark mode styling */
+  /* Native date/time inputs need explicit styling to match Select */
   .underlay-input[type="date"],
   .underlay-input[type="datetime-local"],
   .underlay-input[type="time"] {
     color-scheme: dark;
     font-family: inherit;
     font-size: 0.85rem;
-    line-height: 1.2;
+    /* Match Select component exactly */
+    padding: 0.55em 0.7em;
+    line-height: normal;
+    height: auto;
     /* Force background to override browser defaults */
     background-color: var(
       --underlay-color-field-bg,
       rgba(148, 163, 184, 0.18)
     ) !important;
+  }
+
+  /* Remove webkit inner styling that adds height */
+  .underlay-input[type="date"]::-webkit-datetime-edit,
+  .underlay-input[type="datetime-local"]::-webkit-datetime-edit,
+  .underlay-input[type="time"]::-webkit-datetime-edit {
+    padding: 0;
+    line-height: 1;
+  }
+
+  .underlay-input[type="date"]::-webkit-datetime-edit-fields-wrapper,
+  .underlay-input[type="datetime-local"]::-webkit-datetime-edit-fields-wrapper,
+  .underlay-input[type="time"]::-webkit-datetime-edit-fields-wrapper {
+    padding: 0;
   }
 
   /* Style the calendar picker icon for dark mode */
@@ -379,6 +392,7 @@
     filter: invert(0.7);
     cursor: pointer;
     opacity: 0.7;
+    margin-left: 0.5em;
   }
 
   .underlay-input[type="date"]::-webkit-calendar-picker-indicator:hover,
