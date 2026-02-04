@@ -357,11 +357,33 @@
     font-size: var(--underlay-font-size-md, var(--underlay-font-size-md, 0.85rem));
   }
 
-  /* Native date/time inputs need color-scheme for dark mode */
+  /* Native date/time inputs need explicit dark mode styling */
   .underlay-input[type="date"],
   .underlay-input[type="datetime-local"],
   .underlay-input[type="time"] {
     color-scheme: dark;
+    font-family: inherit;
+    line-height: 1.2;
+    /* Force background to override browser defaults */
+    background-color: var(
+      --underlay-color-field-bg,
+      rgba(148, 163, 184, 0.18)
+    ) !important;
+  }
+
+  /* Style the calendar picker icon for dark mode */
+  .underlay-input[type="date"]::-webkit-calendar-picker-indicator,
+  .underlay-input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+  .underlay-input[type="time"]::-webkit-calendar-picker-indicator {
+    filter: invert(0.7);
+    cursor: pointer;
+    opacity: 0.7;
+  }
+
+  .underlay-input[type="date"]::-webkit-calendar-picker-indicator:hover,
+  .underlay-input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover,
+  .underlay-input[type="time"]::-webkit-calendar-picker-indicator:hover {
+    opacity: 1;
   }
 
   .underlay-input--search {
