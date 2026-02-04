@@ -30,5 +30,7 @@ default = []
 postgres = ["sqlx", "thiserror", "uuid"]
 # Enable cron-based scheduling
 scheduler = ["cron"]
+# Enable outbox pattern for domain events (requires postgres)
+outbox = ["postgres"]
 # Full feature set
-full = ["postgres", "scheduler"]
+full = ["postgres", "scheduler", "outbox"]

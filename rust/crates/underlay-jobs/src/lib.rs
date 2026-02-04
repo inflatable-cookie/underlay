@@ -67,6 +67,10 @@ pub mod postgres;
 #[cfg(feature = "postgres")]
 pub mod tasks;
 
+// Outbox pattern for domain events (optional, requires postgres)
+#[cfg(feature = "outbox")]
+pub mod outbox;
+
 // Scheduler (optional, requires postgres)
 #[cfg(feature = "scheduler")]
 mod scheduler;
@@ -109,3 +113,11 @@ pub const JOB_TABLES_SQL: &str = include_str!("../migrations/0001_create_job_tab
 /// `PgJobNotifier` type for usage details.
 #[cfg(feature = "postgres")]
 pub const JOB_NOTIFY_SQL: &str = include_str!("../migrations/0002_add_job_notify.sql");
+
+/// SQL for domain event LISTEN/NOTIFY trigger.
+///
+/// This migration adds efficient outbox notification support. See the
+/// `outbox::OutboxNotifier` type for usage details.
+#[cfg(feature = "outbox")]
+pub const DOMAIN_EVENT_NOTIFY_SQL: &str =
+    include_str!("../migrations/0003_add_domain_event_notify.sql");

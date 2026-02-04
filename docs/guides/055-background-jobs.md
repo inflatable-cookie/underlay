@@ -633,6 +633,142 @@ pub fn scheduled_task_definitions() -> Vec<ScheduledTaskDefinition> {
 
 These tasks use standard Underlay table names (`auth.sessions`, `platform.job`, etc.) and work with any Underlay application that has run the standard migrations.
 
+## Outbox Pattern for Domain Events
+
+The `outbox` feature provides reliable domain event processing using the outbox pattern. This ensures events are delivered even if downstream systems are temporarily unavailable.
+
+### How It Works
+
+1. **Write**: Application writes domain events to `platform.domain_events` within the same transaction as business data
+2. **Process**: Outbox processor claims unprocessed events and calls your handler
+3. **Mark**: Successfully processed events are marked with `processed_at` timestamp
+4. **Retry**: Failed events remain unprocessed for automatic retry
+
+### Enabling the Feature
+
+```toml
+[dependencies]
+underlay-jobs = { path = "../underlay/rust/crates/underlay-jobs", features = ["outbox"] }
+# Or use "full" for all features
+```
+
+### Database Setup
+
+Run the domain events migration from `underlay-events`:
+
+```bash
+# Using underlay-devtools
+underlay-devtools sync-migrations
+
+# The migration creates platform.domain_events table
+# and the notify trigger for efficient wake-up
+```
+
+### Running the Outbox Processor
+
+```rust
+use underlay_jobs::outbox::{OutboxProcessor, OutboxNotifier, OutboxConfig};
+use std::time::Duration;
+
+// Configure the processor
+let config = OutboxConfig::default()
+    .with_batch_size(50)
+    .with_fallback_interval(Duration::from_secs(60));
+
+let processor = OutboxProcessor::new(config);
+
+// Create notifier for LISTEN/NOTIFY
+let mut notifier = OutboxNotifier::connect(&pool).await?;
+
+// Run with your event handler
+processor.run_with_notifier(&pool, &mut notifier, |event| async move {
+    match event.event_type.as_str() {
+        "user.created" => {
+            // Send welcome email, update analytics, etc.
+            println!("New user: {:?}", event.payload);
+        }
+        "order.placed" => {
+            // Notify warehouse, update inventory, etc.
+            println!("New order: {:?}", event.payload);
+        }
+        _ => {
+            // Unknown event types are logged but marked processed
+            tracing::warn!(event_type = %event.event_type, "Unknown event type");
+        }
+    }
+    Ok(())
+}).await?;
+```
+
+### Publishing Events
+
+Events are typically published by your domain layer within a transaction:
+
+```rust
+use underlay_events::NewDomainEvent;
+use serde_json::json;
+
+// Within a transaction that also saves business data
+let event = NewDomainEvent::now(
+    "user.created",
+    json!({
+        "user_id": user.id,
+        "email": user.email,
+        "name": user.display_name,
+    }),
+);
+
+sqlx::query(
+    r#"
+    INSERT INTO platform.domain_events (id, event_type, payload, occurred_at)
+    VALUES ($1, $2, $3, $4)
+    "#,
+)
+.bind(uuid::Uuid::now_v7())
+.bind(&event.event_type)
+.bind(&event.payload)
+.bind(event.occurred_at)
+.execute(&mut *tx)
+.await?;
+
+// Both user creation and event are committed together
+tx.commit().await?;
+```
+
+### OutboxConfig Options
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `batch_size` | 100 | Max events processed before yielding |
+| `fallback_interval` | 30s | Poll interval when no notifications |
+
+### Error Handling
+
+If your handler returns an error, the event remains unprocessed:
+
+```rust
+processor.run_with_notifier(&pool, &mut notifier, |event| async move {
+    // This event will be retried
+    if some_condition_fails() {
+        return Err("Processing failed".into());
+    }
+    Ok(())
+}).await?;
+```
+
+Events are retried on the next processing cycle. For events that repeatedly fail, consider adding a retry count column and dead-letter logic in your handler.
+
+### Polling Mode
+
+If LISTEN/NOTIFY isn't available, use polling mode:
+
+```rust
+processor.run_polling(&pool, |event| async move {
+    // Handle event
+    Ok(())
+}).await?;
+```
+
 ## Related Documentation
 
 - [050 - Database & Migrations](./050-database.md) - Database setup
