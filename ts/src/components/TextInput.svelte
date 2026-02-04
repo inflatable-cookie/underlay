@@ -360,29 +360,15 @@
     color-scheme: dark;
     font-family: inherit;
     font-size: 0.85rem;
-    /* Match Select component exactly */
-    padding: 0.55em 0.7em;
-    line-height: normal;
-    height: auto;
+    line-height: 1;
+    /* Force exact height to match Select trigger */
+    height: 2.1em;
+    padding: 0 0.7em;
     /* Force background to override browser defaults */
     background-color: var(
       --underlay-color-field-bg,
       rgba(148, 163, 184, 0.18)
     ) !important;
-  }
-
-  /* Remove webkit inner styling that adds height */
-  .underlay-input[type="date"]::-webkit-datetime-edit,
-  .underlay-input[type="datetime-local"]::-webkit-datetime-edit,
-  .underlay-input[type="time"]::-webkit-datetime-edit {
-    padding: 0;
-    line-height: 1;
-  }
-
-  .underlay-input[type="date"]::-webkit-datetime-edit-fields-wrapper,
-  .underlay-input[type="datetime-local"]::-webkit-datetime-edit-fields-wrapper,
-  .underlay-input[type="time"]::-webkit-datetime-edit-fields-wrapper {
-    padding: 0;
   }
 
   /* Style the calendar picker icon for dark mode */
@@ -392,7 +378,6 @@
     filter: invert(0.7);
     cursor: pointer;
     opacity: 0.7;
-    margin-left: 0.5em;
   }
 
   .underlay-input[type="date"]::-webkit-calendar-picker-indicator:hover,
