@@ -23,7 +23,7 @@
 </script>
 
 <div
-  class="stat-grid"
+  class="underlay-stat-grid"
   style:--min-item-width="{minItemWidth}px"
   style:--max-columns={columns}
 >
@@ -31,7 +31,7 @@
 </div>
 
 <style>
-  .stat-grid {
+  .underlay-stat-grid {
     display: grid;
     grid-template-columns: repeat(
       auto-fit,
@@ -41,7 +41,7 @@
   }
 
   @container (min-width: 800px) {
-    .stat-grid {
+    .underlay-stat-grid {
       grid-template-columns: repeat(var(--max-columns), 1fr);
     }
   }
