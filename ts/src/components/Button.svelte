@@ -3,7 +3,7 @@
   import type { HTMLButtonAttributes } from "svelte/elements";
 
   interface Props extends Omit<HTMLButtonAttributes, "class"> {
-    variant?: "primary" | "secondary" | "subtle" | "danger";
+    variant?: "primary" | "secondary" | "subtle" | "danger" | "danger-subtle";
     /** Size of the button. Use "icon" for icon-only buttons. */
     size?: "sm" | "md" | "lg" | "icon";
     type?: "button" | "submit" | "reset";
@@ -153,6 +153,24 @@
       --underlay-color-danger-strong,
       var(--underlay-color-danger-strong, #b91c1c)
     );
+  }
+
+  :global(.underlay-button--danger-subtle) {
+    background-color: var(
+      --underlay-color-field-bg,
+      var(--underlay-color-field-bg, rgba(148, 163, 184, 0.18))
+    );
+    color: color-mix(in srgb, var(--underlay-color-danger, #ef4444) 70%, var(--underlay-color-text-muted, #9ca3af));
+    box-shadow: none;
+    border: 1px solid transparent;
+  }
+
+  :global(.underlay-button--danger-subtle:hover) {
+    background-color: var(
+      --underlay-color-danger,
+      var(--underlay-color-danger, #dc2626)
+    );
+    color: var(--underlay-color-on-danger, var(--underlay-color-on-danger, white));
   }
 
   :global(.underlay-button:focus-visible) {
