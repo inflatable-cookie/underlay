@@ -139,6 +139,7 @@
 	import Skeleton from "./Skeleton.svelte";
 	import IconButton from "./IconButton.svelte";
 	import DropdownMenu from "./DropdownMenu.svelte";
+	import Select from "./Select.svelte";
 
 	interface Props {
 		/** Data rows */
@@ -494,20 +495,17 @@
 					<div class="table-cell filter-cell" class:hide-mobile={column.hideOnMobile} role="cell">
 						{#if column.filterable}
 							{#if column.filterType === "select" && column.filterOptions}
-								<select
+								<Select
 									value={internalFilters[column.key] ?? ""}
-									onchange={(e) => handleFilterChange(column.key, e.currentTarget.value)}
-									aria-label={`Filter by ${column.label}`}
-								>
-									<option value="">All</option>
-									{#each column.filterOptions as option}
-										{#if typeof option === "string"}
-											<option value={option}>{option}</option>
-										{:else}
-											<option value={option.value}>{option.label}</option>
-										{/if}
-									{/each}
-								</select>
+									onchange={(value) => handleFilterChange(column.key, value)}
+									placeholder="All"
+									items={[
+										{ value: "", label: "All" },
+										...column.filterOptions.map((opt) =>
+											typeof opt === "string" ? { value: opt, label: opt } : opt
+										)
+									]}
+								/>
 							{:else if column.filterType === "date"}
 								<input
 									type="date"
@@ -648,16 +646,12 @@
 			<div class="pagination-right">
 				{#if showLimitSelector && limitOptions.length > 0}
 					<div class="limit-selector">
-						<label for="limit-select">Show</label>
-						<select
-							id="limit-select"
-							value={pagination.limit}
-							onchange={(e) => handleLimitChange(Number(e.currentTarget.value))}
-						>
-							{#each limitOptions as option}
-								<option value={option}>{option}</option>
-							{/each}
-						</select>
+						<span>Show</span>
+						<Select
+							value={String(pagination.limit)}
+							onchange={(value) => handleLimitChange(Number(value))}
+							items={limitOptions.map((opt) => ({ value: String(opt), label: String(opt) }))}
+						/>
 						<span>per page</span>
 					</div>
 				{/if}
@@ -910,14 +904,19 @@
 		color: var(--color-primary, #3b82f6);
 	}
 
-	.filter-cell input,
-	.filter-cell select {
+	.filter-cell input {
 		width: 100%;
 		padding: 0.25rem 0.5rem;
 		border: 1px solid var(--color-border, #e2e8f0);
 		border-radius: var(--radius-sm, 0.25rem);
 		font-size: 0.875rem;
 		background: var(--color-surface, #fff);
+	}
+
+	.filter-cell :global(.underlay-select-trigger) {
+		min-width: 0;
+		padding: 0.25rem 0.5rem;
+		font-size: 0.875rem;
 	}
 
 	.actions-cell {
@@ -1000,13 +999,10 @@
 		color: var(--color-text-muted, #64748b);
 	}
 
-	.limit-selector select {
+	.limit-selector :global(.underlay-select-trigger) {
+		min-width: 4.5rem;
 		padding: 0.25rem 0.5rem;
-		border: 1px solid var(--color-border, #e2e8f0);
-		border-radius: var(--radius-sm, 0.25rem);
-		background: var(--color-surface, #fff);
 		font-size: 0.875rem;
-		cursor: pointer;
 	}
 
 	.pagination-controls {
