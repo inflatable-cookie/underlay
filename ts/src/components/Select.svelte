@@ -330,8 +330,8 @@
 
     padding: 0.25rem;
 
-    min-width: min(var(--bits-floating-anchor-width), calc(100vw - 1.5rem));
-    width: var(--bits-floating-anchor-width);
+    min-width: max(var(--underlay-select-min-content-width, 8rem), min(var(--bits-floating-anchor-width), calc(100vw - 1.5rem)));
+    width: max(var(--underlay-select-min-content-width, 8rem), var(--bits-floating-anchor-width));
     max-width: min(26rem, calc(100vw - 1.5rem));
   }
 
