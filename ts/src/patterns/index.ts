@@ -89,6 +89,22 @@ export {
   type BatchSelectionResult
 } from "./batch-selection.svelte";
 
+// List controller for autonomous list components
+export {
+  createListController,
+  type ListControllerOptions,
+  type ListControllerResult
+} from "./list-controller.svelte";
+
+// Batch actions for autonomous list components
+export {
+  useBatchActions,
+  type BatchAction,
+  type BatchActionResult,
+  type BatchActionConfirm,
+  type BatchActionsResult
+} from "./batch-actions.svelte";
+
 // Timezone management
 export {
   timezoneStore,

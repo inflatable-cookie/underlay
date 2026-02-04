@@ -84,6 +84,7 @@ export type { ActivityEntry, ActivityActor, ActionType } from "./ActivityFeed.sv
 
 // Batch actions
 export { default as BatchActionBar } from "./BatchActionBar.svelte";
+export { default as BatchConfirmDialog } from "./BatchConfirmDialog.svelte";
 
 // List container for autonomous list components
 export { default as ListContainer } from "./ListContainer.svelte";

@@ -3,7 +3,9 @@
    * BatchActionBar - A fixed toolbar that appears when items are selected.
    *
    * Shows selection count and action buttons for batch operations.
+   * Supports both static actions (via props) and dynamic actions (via registeredActions).
    */
+  import type { Component, Snippet } from "svelte";
   import Button from "./Button.svelte";
   import AlertDialog from "./AlertDialog.svelte";
   import Dialog from "./Dialog.svelte";
@@ -12,7 +14,20 @@
   import CheckCheck from "lucide-svelte/icons/check-check";
   import CheckSquare from "lucide-svelte/icons/check-square";
   import Square from "lucide-svelte/icons/square";
-  import type { Snippet } from "svelte";
+
+  /**
+   * Dynamic action configuration for integration with useBatchActions.
+   */
+  interface DynamicAction {
+    /** Unique identifier */
+    id: string;
+    /** Display label */
+    label: string;
+    /** Optional icon component */
+    icon?: Component;
+    /** Visual variant */
+    variant?: "default" | "danger" | "warning";
+  }
 
   interface Props {
     /** Number of selected items */
@@ -31,6 +46,11 @@
     itemLabel?: string;
     /** Item label (plural) - defaults to "items" */
     itemLabelPlural?: string;
+    /**
+     * Dynamic actions from useBatchActions controller.
+     * These are rendered as buttons before the static actions.
+     */
+    registeredActions?: DynamicAction[];
     /** Callback when clear selection is clicked */
     onClearSelection: () => void;
     /** Callback when select all is clicked */
@@ -39,6 +59,11 @@
     onBatchDelete?: () => void;
     /** Callback when batch status update is confirmed */
     onBatchStatusUpdate?: (status: string) => void;
+    /**
+     * Callback when a dynamic action is requested.
+     * The action may need confirmation before executing.
+     */
+    onAction?: (actionId: string) => void;
     /** Custom actions slot */
     actions?: Snippet;
   }
@@ -52,12 +77,28 @@
     statusOptions = [],
     itemLabel = "item",
     itemLabelPlural = "items",
+    registeredActions = [],
     onClearSelection,
     onSelectAll,
     onBatchDelete,
     onBatchStatusUpdate,
+    onAction,
     actions
   }: Props = $props();
+
+  /**
+   * Map action variant to Button variant.
+   */
+  function getButtonVariant(actionVariant: DynamicAction["variant"]): "subtle" | "danger" | "danger-subtle" {
+    switch (actionVariant) {
+      case "danger":
+        return "danger";
+      case "warning":
+        return "danger-subtle";
+      default:
+        return "subtle";
+    }
+  }
 
   const allSelected = $derived(totalCount > 0 && selectedCount === totalCount);
   const itemText = $derived(selectedCount === 1 ? itemLabel : itemLabelPlural);
@@ -126,6 +167,22 @@
           Update Status
         </Button>
       {/if}
+
+      {#each registeredActions as action (action.id)}
+        {@const ActionIcon = action.icon}
+        <Button
+          type="button"
+          variant={getButtonVariant(action.variant)}
+          size="sm"
+          onclick={() => onAction?.(action.id)}
+          disabled={loading}
+        >
+          {#if ActionIcon}
+            <ActionIcon size={16} />
+          {/if}
+          {action.label}
+        </Button>
+      {/each}
 
       {#if actions}
         {@render actions()}
