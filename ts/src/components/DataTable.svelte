@@ -203,6 +203,10 @@
 		empty?: Snippet;
 		/** Snippet for custom cell rendering */
 		cell?: Snippet<[{ column: DataTableColumn<T>; row: T; value: string }]>;
+		/** Snippet for extended row content */
+		extendedRow?: Snippet<[{ row: T }]>;
+		/** Condition to show the extended row */
+		extendedRowWhen?: (row: T) => boolean;
 	}
 
 	let {
@@ -235,7 +239,9 @@
 		toolbarLeft,
 		toolbarRight,
 		empty,
-		cell
+		cell,
+		extendedRow,
+		extendedRowWhen = () => true
 	}: Props = $props();
 
 	// Internal state
@@ -564,7 +570,12 @@
 			</div>
 		{:else}
 			{#each data as row, rowIndex}
-				<div class="table-row" class:selected={selected.includes(row)} role="row">
+				<div
+					class="table-row"
+					class:selected={selected.includes(row)}
+					class:has-extended={!!extendedRow && extendedRowWhen(row)}
+					role="row"
+				>
 					{#if selectable}
 						<div class="table-cell checkbox-cell" role="cell">
 							<input
@@ -643,6 +654,13 @@
 						</div>
 					{/if}
 				</div>
+				{#if extendedRow && extendedRowWhen(row)}
+					<div class="table-row table-row--extended" role="row">
+						<div class="table-cell table-cell--extended" role="cell">
+							{@render extendedRow({ row })}
+						</div>
+					</div>
+				{/if}
 			{/each}
 		{/if}
 	</div>
@@ -846,6 +864,10 @@
 		border-bottom: var(--dt-border);
 	}
 
+	.table-body > .table-row.has-extended > .table-cell {
+		border-bottom: none;
+	}
+
 	.table-body > .table-row:last-child > .table-cell {
 		border-bottom: none;
 	}
@@ -876,6 +898,20 @@
 		white-space: nowrap;
 		display: flex;
 		align-items: center;
+	}
+
+	.table-row--extended > .table-cell {
+		grid-column: 1 / -1;
+	}
+
+	.table-cell--extended {
+		white-space: normal;
+		align-items: flex-start;
+	}
+
+	/* Ensure common elements are vertically centered even when nested content affects layout */
+	.table-cell > :global(*) {
+		align-self: center;
 	}
 
 	.compact .table-cell {

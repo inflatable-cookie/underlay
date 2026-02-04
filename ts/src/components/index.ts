@@ -78,9 +78,9 @@ export type { OrderByFieldDefinition, OrderByField, OrderByValue } from "./Order
 export { default as MediaPicker } from "./MediaPicker.svelte";
 export { default as MediaActionsMenu } from "./MediaActionsMenu.svelte";
 
-// Activity feed
-export { default as ActivityFeed } from "./ActivityFeed.svelte";
-export type { ActivityEntry, ActivityActor, ActionType } from "./ActivityFeed.svelte";
+// Log list (audit/activity logs with filtering, pagination, export)
+export { default as LogList } from "./LogList.svelte";
+export type { LogEntry, LogActor, LogFilter, LogActionType } from "./LogList.svelte";
 
 // Batch actions
 export { default as BatchActionBar } from "./BatchActionBar.svelte";
