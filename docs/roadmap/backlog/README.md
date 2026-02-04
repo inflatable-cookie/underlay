@@ -26,6 +26,7 @@ This directory contains deferred features and enhancement ideas that are not cur
 | [smart-skeletons.md](./smart-skeletons.md) | Auto-layout DataSkeleton component | 3-4h | Low |
 | [api-reference-docs.md](./api-reference-docs.md) | Automated rustdoc/TypeDoc generation | 6-8h | Medium |
 | [performance-benchmarks.md](./performance-benchmarks.md) | Criterion benchmarks + CI integration | 4-6h | Low |
+| [storybook-component-docs.md](./storybook-component-docs.md) | Interactive component documentation with Storybook | 8-12h | Low |
 
 ## When to Promote
 
