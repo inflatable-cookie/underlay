@@ -130,14 +130,19 @@
     typeof date === "string" ? new Date(date) : date instanceof Date ? date : null
   );
   const isValidDate = $derived(isValidDateValue(dateObj));
-  const relativeTime = $derived(isValidDate ? getRelativeTime(dateObj, short) : "");
-  const tooltipText = $derived(isValidDate ? formatTooltip(dateObj, tooltipFormat, timezone) : "");
+  const safeDate = $derived(isValidDate ? (dateObj as Date) : null);
+  const relativeTime = $derived(
+    safeDate ? getRelativeTime(safeDate, short) : ""
+  );
+  const tooltipText = $derived(
+    safeDate ? formatTooltip(safeDate, tooltipFormat, timezone) : ""
+  );
 </script>
 
 {#if isValidDate}
   <Tooltip content={tooltipText} inline delayDuration={300} class={className}>
     {#snippet trigger()}
-      <time class="time-ago" datetime={dateObj.toISOString()}>{relativeTime}</time>
+      <time class="time-ago" datetime={safeDate?.toISOString() ?? ""}>{relativeTime}</time>
     {/snippet}
   </Tooltip>
 {:else}
