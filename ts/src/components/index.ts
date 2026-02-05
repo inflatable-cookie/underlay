@@ -78,6 +78,7 @@ export type { OrderByFieldDefinition, OrderByField, OrderByValue } from "./Order
 // Media library components
 export { default as MediaPicker } from "./MediaPicker.svelte";
 export { default as MediaActionsMenu } from "./MediaActionsMenu.svelte";
+export { default as MediaThumbnail } from "./MediaThumbnail.svelte";
 
 // Log list (audit/activity logs with filtering, pagination, export)
 export { default as LogList } from "./LogList.svelte";

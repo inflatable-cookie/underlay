@@ -408,3 +408,54 @@ export function isMediaDeleted(media: MediaSummary | MediaDetail): boolean {
 export function getMediaDisplayName(media: MediaSummary | MediaDetail): string {
   return media.title || media.originalFilename || "Untitled";
 }
+
+// ============================================================================
+// Icon Utilities
+// ============================================================================
+
+// Import lucide icons for media kinds
+import ImageIcon from "lucide-svelte/icons/image";
+import FileTextIcon from "lucide-svelte/icons/file-text";
+import VideoIcon from "lucide-svelte/icons/video";
+import MusicIcon from "lucide-svelte/icons/music";
+import FileIcon from "lucide-svelte/icons/file";
+import type { Component } from "svelte";
+
+/**
+ * Icon component type (lucide-svelte icons)
+ */
+export type IconComponent = Component<{ size?: number | string; class?: string }>;
+
+/**
+ * Get the appropriate icon component for a media kind.
+ *
+ * @param kind - The media kind
+ * @returns A Svelte component for the icon
+ *
+ * @example
+ * ```svelte
+ * <script>
+ *   import { getMediaKindIcon, MediaKind } from "@decodelabs/underlay/patterns";
+ *   const Icon = getMediaKindIcon(MediaKind.Image);
+ * </script>
+ *
+ * <Icon size={24} />
+ * ```
+ */
+export function getMediaKindIcon(kind: MediaKind): IconComponent {
+  switch (kind) {
+    case MediaKind.Image:
+      return ImageIcon as unknown as IconComponent;
+    case MediaKind.Video:
+      return VideoIcon as unknown as IconComponent;
+    case MediaKind.Audio:
+      return MusicIcon as unknown as IconComponent;
+    case MediaKind.Pdf:
+      return FileTextIcon as unknown as IconComponent;
+    case MediaKind.Document:
+      return FileTextIcon as unknown as IconComponent;
+    case MediaKind.Other:
+    default:
+      return FileIcon as unknown as IconComponent;
+  }
+}

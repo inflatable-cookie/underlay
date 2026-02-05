@@ -193,6 +193,7 @@ export {
   // Utility functions
   getMediaKindLabel,
   getMediaKindAccent,
+  getMediaKindIcon,
   getMediaVisibilityLabel,
   getMediaVisibilityAccent,
   getMediaVersionStateLabel,
@@ -201,6 +202,7 @@ export {
   isMediaDeleted,
   getMediaDisplayName,
   // Types
+  type IconComponent,
   type MediaSummary,
   type MediaDetail,
   type MediaVersion,
