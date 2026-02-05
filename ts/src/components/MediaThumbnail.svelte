@@ -14,10 +14,19 @@
    *   alt={media.title}
    * />
    * ```
+   *
+   * @example Using "fill" to fill parent container (e.g., in ListCard)
+   * ```svelte
+   * <MediaThumbnail
+   *   thumbnailUrl={media.thumbnailUrl}
+   *   kind={media.kind}
+   *   size="fill"
+   * />
+   * ```
    */
   import { MediaKind, getMediaKindIcon, getMediaKindAccent } from "../patterns/media-types.js";
 
-  type Size = "sm" | "md" | "lg" | "xl" | number;
+  type Size = "sm" | "md" | "lg" | "xl" | "fill" | number;
 
   interface Props {
     /** URL to the thumbnail image */
@@ -26,7 +35,7 @@
     kind?: MediaKind;
     /** Alt text for the image */
     alt?: string;
-    /** Size preset or pixel value */
+    /** Size preset, pixel value, or "fill" to fill parent container */
     size?: Size;
     /** Whether to show accent color background for icon fallback */
     showAccent?: boolean;
@@ -51,11 +60,16 @@
     xl: 96
   };
 
-  // Compute pixel size
-  const pixelSize = $derived(typeof size === "number" ? size : sizeMap[size] ?? 48);
+  // Check if using fill mode
+  const isFillMode = $derived(size === "fill");
 
-  // Icon size is slightly smaller than container
-  const iconSize = $derived(Math.round(pixelSize * 0.6));
+  // Compute pixel size (only used when not in fill mode)
+  const pixelSize = $derived(
+    isFillMode ? 0 : (typeof size === "number" ? size : sizeMap[size] ?? 48)
+  );
+
+  // Icon size - for fill mode, use a reasonable default
+  const iconSize = $derived(isFillMode ? 28 : Math.round(pixelSize * 0.6));
 
   // Get the icon component for this kind
   const Icon = $derived(getMediaKindIcon(kind));
@@ -65,8 +79,10 @@
 
   // Container style
   const containerStyle = $derived(
-    `width: ${pixelSize}px; height: ${pixelSize}px;` +
-    (showAccent && !thumbnailUrl ? ` background-color: ${accentColor}15;` : "")
+    isFillMode
+      ? (showAccent && !thumbnailUrl ? `background-color: ${accentColor}15;` : "")
+      : `width: ${pixelSize}px; height: ${pixelSize}px;` +
+        (showAccent && !thumbnailUrl ? ` background-color: ${accentColor}15;` : "")
   );
 </script>
 
@@ -74,7 +90,8 @@
   class="media-thumbnail {className}"
   class:media-thumbnail--has-image={!!thumbnailUrl}
   class:media-thumbnail--has-accent={showAccent && !thumbnailUrl}
-  style={containerStyle}
+  class:media-thumbnail--fill={isFillMode}
+  style={containerStyle || undefined}
 >
   {#if thumbnailUrl}
     <img src={thumbnailUrl} {alt} class="media-thumbnail__image" />
@@ -98,6 +115,11 @@
 
   .media-thumbnail--has-accent {
     background-color: transparent;
+  }
+
+  .media-thumbnail--fill {
+    width: 100%;
+    height: 100%;
   }
 
   .media-thumbnail__image {

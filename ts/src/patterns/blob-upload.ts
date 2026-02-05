@@ -236,10 +236,11 @@ export function validateFileSize(file: File, maxBytes: number): boolean {
 /**
  * Format a file size in bytes to a human-readable string.
  *
- * @param bytes - Size in bytes
+ * @param bytes - Size in bytes (null/undefined returns "—")
  * @returns Human-readable size string (e.g., "1.5 MB")
  */
-export function formatFileSize(bytes: number): string {
+export function formatFileSize(bytes: number | null | undefined): string {
+  if (bytes == null) return "—";
   if (bytes === 0) return "0 B";
 
   const units = ["B", "KB", "MB", "GB"];
