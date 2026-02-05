@@ -143,10 +143,16 @@ export const audioboom: EmbedProvider = {
 
   async lookupMeta(
     id: string,
-    fetchFn: typeof fetch = fetch
+    fetchFn: typeof fetch = fetch,
+    parsed?: ParsedEmbed
   ): Promise<EmbedMeta | null> {
+    // Check if this is a playlist embed
+    if (parsed?.embedType === "playlist") {
+      return lookupPlaylistMeta(id, fetchFn);
+    }
+
+    // Default: single post lookup via oEmbed
     try {
-      // Use oEmbed API for single posts
       const postUrl = `https://audioboom.com/posts/${id}`;
       const oembedUrl = `https://audioboom.com/publishing/oembed.json?url=${encodeURIComponent(postUrl)}`;
 

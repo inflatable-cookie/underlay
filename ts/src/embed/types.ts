@@ -114,8 +114,12 @@ export interface EmbedProvider {
   /**
    * Look up metadata via provider API (oEmbed, etc.).
    * Returns null if lookup fails or is not supported.
+   *
+   * @param id - Media ID
+   * @param fetchFn - Fetch function (for server-side proxying)
+   * @param parsed - Full parsed embed (for providers needing extra context like embedType)
    */
-  lookupMeta?(id: string, fetchFn?: typeof fetch): Promise<EmbedMeta | null>;
+  lookupMeta?(id: string, fetchFn?: typeof fetch, parsed?: ParsedEmbed): Promise<EmbedMeta | null>;
 }
 
 /**

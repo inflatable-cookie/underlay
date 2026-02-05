@@ -26,7 +26,7 @@ export async function lookupMeta(
   }
 
   try {
-    return await provider.lookupMeta(parsed.id, fetchFn);
+    return await provider.lookupMeta(parsed.id, fetchFn, parsed);
   } catch {
     return null;
   }
@@ -120,7 +120,7 @@ export async function lookupMetaWithResult(
   }
 
   try {
-    const meta = await provider.lookupMeta(parsed.id, fetchFn);
+    const meta = await provider.lookupMeta(parsed.id, fetchFn, parsed);
 
     if (meta) {
       return {
