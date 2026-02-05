@@ -222,6 +222,7 @@
     color: var(--underlay-color-text, inherit);
     font-family: var(--underlay-font-mono, monospace);
     font-size: var(--underlay-font-size-md, 0.85rem);
+    font-size-adjust: var(--underlay-font-mono-size-adjust, 0.52);
     text-transform: uppercase;
   }
 

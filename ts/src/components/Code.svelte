@@ -58,7 +58,8 @@
 
   :global(.underlay-code) {
     font-family: var(--underlay-font-mono, ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace);
-    font-size: 0.85em;
+    font-size: 0.9em;
+    font-size-adjust: var(--underlay-font-mono-size-adjust, 0.52);
     padding: 0.15em 0.4em;
     background: var(--underlay-color-surface-inset, rgba(0, 0, 0, 0.2));
     border: 1px solid var(--underlay-color-border-subtle, rgba(148, 163, 184, 0.2));

@@ -76,6 +76,7 @@
   .detail-item__value--code {
     font-family: var(--underlay-font-mono, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace);
     font-size: 0.8125rem;
+    font-size-adjust: var(--underlay-font-mono-size-adjust, 0.52);
   }
 
   .detail-item__value--capitalize {

@@ -197,6 +197,7 @@
     margin-right: -0.5ch;
     font-family: var(--underlay-font-mono, monospace);
     font-size: var(--underlay-font-size-md, 0.85rem);
+    font-size-adjust: var(--underlay-font-mono-size-adjust, 0.52);
     color: var(--underlay-color-text-muted, #9ca3af);
     white-space: nowrap;
   }
@@ -217,5 +218,10 @@
 
   :global(.slug-field__input) {
     font-family: var(--underlay-font-mono, monospace);
+    font-size-adjust: var(--underlay-font-mono-size-adjust, 0.52);
+  }
+
+  :global(.underlay-input.slug-field__input) {
+    font-size-adjust: var(--underlay-font-mono-size-adjust, 0.52);
   }
 </style>

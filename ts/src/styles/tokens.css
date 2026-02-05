@@ -81,6 +81,7 @@
   --underlay-font-size-xs: 0.75rem;
   --underlay-font-size-sm: 0.8rem;
   --underlay-font-size-md: 0.9rem;
+  --underlay-font-mono-size-adjust: 0.52;
 
   --underlay-font-scale-xxs: 0.75;
   --underlay-font-scale-xs: 0.8;

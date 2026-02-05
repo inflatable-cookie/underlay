@@ -91,6 +91,7 @@
     display: inline-block;
     font-family: var(--underlay-font-mono, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace);
     font-size: 0.875em;
+    font-size-adjust: var(--underlay-font-mono-size-adjust, 0.52);
     background: rgba(148, 163, 184, 0.1);
     padding: 0.15em 0.4em;
     border-radius: 0.25rem;

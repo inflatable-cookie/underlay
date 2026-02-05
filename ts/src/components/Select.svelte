@@ -229,6 +229,13 @@
     outline-offset: var(--underlay-focus-ring-offset, var(--underlay-focus-ring-offset, 2px));
   }
 
+  /* Disabled state for native select */
+  .underlay-select:disabled {
+    color: var(--underlay-color-text-disabled, rgba(156, 163, 175, 0.5));
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+
   :global(.underlay-select-trigger) {
     width: 100%;
     min-width: min(var(--underlay-select-min-width, 12rem), 100%);
@@ -250,6 +257,14 @@
     outline: var(--underlay-focus-ring-width, var(--underlay-focus-ring-width, 2px)) solid
       var(--underlay-color-primary, var(--underlay-color-primary, #2563eb));
     outline-offset: var(--underlay-focus-ring-offset, var(--underlay-focus-ring-offset, 2px));
+  }
+
+  /* Disabled state for trigger */
+  :global(.underlay-select-trigger:disabled),
+  :global(.underlay-select-trigger[data-disabled]) {
+    color: var(--underlay-color-text-disabled, rgba(156, 163, 175, 0.5));
+    cursor: not-allowed;
+    opacity: 0.6;
   }
 
   :global(.underlay-select-trigger__text) {

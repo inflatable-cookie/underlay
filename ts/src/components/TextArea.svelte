@@ -58,4 +58,17 @@
       var(--underlay-color-primary, var(--underlay-color-primary, #2563eb));
     outline-offset: var(--underlay-focus-ring-offset, var(--underlay-focus-ring-offset, 2px));
   }
+
+  /* Readonly state - slightly dimmed */
+  .underlay-textarea:read-only {
+    color: var(--underlay-color-text-muted, #9ca3af);
+    cursor: default;
+  }
+
+  /* Disabled state - more dimmed */
+  .underlay-textarea:disabled {
+    color: var(--underlay-color-text-disabled, rgba(156, 163, 175, 0.5));
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
 </style>

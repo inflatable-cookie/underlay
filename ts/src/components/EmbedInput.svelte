@@ -184,6 +184,7 @@
     color: var(--underlay-color-text, inherit);
     font-size: var(--underlay-font-size-md, 0.85rem);
     font-family: var(--underlay-font-mono, monospace);
+    font-size-adjust: var(--underlay-font-mono-size-adjust, 0.52);
     resize: vertical;
     transition: border-color 0.15s ease;
   }

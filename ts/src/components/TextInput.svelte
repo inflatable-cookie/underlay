@@ -510,6 +510,7 @@
     padding: 0 0.6em;
     font-family: var(--underlay-font-mono, monospace);
     font-size: 0.9em;
+    font-size-adjust: var(--underlay-font-mono-size-adjust, 0.52);
     font-weight: 600;
     color: var(--underlay-color-text-muted, #9ca3af);
     background: var(--underlay-color-field-bg, rgba(148, 163, 184, 0.08));
@@ -530,5 +531,18 @@
   .underlay-input--prefixed:focus,
   .underlay-input--prefixed:focus-visible {
     outline: none !important;
+  }
+
+  /* Readonly state - slightly dimmed */
+  .underlay-input:read-only {
+    color: var(--underlay-color-text-muted, #9ca3af);
+    cursor: default;
+  }
+
+  /* Disabled state - more dimmed */
+  .underlay-input:disabled {
+    color: var(--underlay-color-text-disabled, rgba(156, 163, 175, 0.5));
+    cursor: not-allowed;
+    opacity: 0.6;
   }
 </style>
