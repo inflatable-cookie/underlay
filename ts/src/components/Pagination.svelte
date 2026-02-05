@@ -100,7 +100,7 @@
 	/**
 	 * Find the nearest scrollable ancestor of an element
 	 */
-	function getScrollParent(element: HTMLElement): HTMLElement | Window {
+	function getScrollParent(element: HTMLElement): HTMLElement | null {
 		let parent = element.parentElement;
 
 		while (parent) {
@@ -117,7 +117,7 @@
 			parent = parent.parentElement;
 		}
 
-		return window;
+		return null;
 	}
 
 	/**
@@ -134,23 +134,33 @@
 			element = scrollTarget;
 		}
 
-		if (element) {
-			const scrollParent = getScrollParent(element);
+		if (!element) return;
 
-			if (scrollParent === window) {
-				// Window scrolling
-				const rect = element.getBoundingClientRect();
-				const scrollTop = window.scrollY + rect.top - scrollOffset;
-				window.scrollTo({ top: scrollTop, behavior: "smooth" });
-			} else {
-				// Container scrolling
-				const container = scrollParent as HTMLElement;
-				const containerRect = container.getBoundingClientRect();
-				const elementRect = element.getBoundingClientRect();
-				const scrollTop = container.scrollTop + (elementRect.top - containerRect.top) - scrollOffset;
-				container.scrollTo({ top: scrollTop, behavior: "smooth" });
-			}
+		const scrollParent = getScrollParent(element);
+
+		// Only scroll if we found a scrollable container
+		if (!scrollParent) return;
+
+		const containerRect = scrollParent.getBoundingClientRect();
+		const elementRect = element.getBoundingClientRect();
+
+		// Calculate where element is relative to the container's scroll position
+		const relativeTop = elementRect.top - containerRect.top;
+
+		// Only scroll if element is not already near the top of the container
+		if (relativeTop < scrollOffset && relativeTop > -scrollOffset) {
+			// Already at the top, no need to scroll
+			return;
 		}
+
+		// Calculate target scroll position
+		const targetScroll = scrollParent.scrollTop + relativeTop - scrollOffset;
+
+		// Clamp to valid range
+		const maxScroll = scrollParent.scrollHeight - scrollParent.clientHeight;
+		const clampedScroll = Math.max(0, Math.min(targetScroll, maxScroll));
+
+		scrollParent.scrollTo({ top: clampedScroll, behavior: "smooth" });
 	}
 
 	// Derive values from controller if provided, otherwise use props
