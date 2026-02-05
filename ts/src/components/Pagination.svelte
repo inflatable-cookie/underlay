@@ -72,6 +72,10 @@
 		onPage?: (page: number) => void;
 		/** Callback when limit changes - ignored if controller is provided */
 		onLimit?: (limit: number) => void;
+		/** Element or CSS selector to scroll to when page changes. Set to false to disable. */
+		scrollTarget?: HTMLElement | string | false;
+		/** Offset in pixels from the scroll target (default: 16) */
+		scrollOffset?: number;
 	}
 
 	let {
@@ -87,8 +91,34 @@
 		className = "",
 		onPage,
 		onLimit,
+		scrollTarget,
+		scrollOffset = 16,
 		...restProps
 	}: Props = $props();
+
+	/**
+	 * Scroll to the target element with offset
+	 */
+	function scrollToTarget() {
+		if (scrollTarget === false) return;
+
+		// Use requestAnimationFrame to ensure DOM has updated
+		requestAnimationFrame(() => {
+			let element: HTMLElement | null = null;
+
+			if (typeof scrollTarget === "string") {
+				element = document.querySelector(scrollTarget);
+			} else if (scrollTarget instanceof HTMLElement) {
+				element = scrollTarget;
+			}
+
+			if (element) {
+				const rect = element.getBoundingClientRect();
+				const scrollTop = window.scrollY + rect.top - scrollOffset;
+				window.scrollTo({ top: scrollTop, behavior: "smooth" });
+			}
+		});
+	}
 
 	// Derive values from controller if provided, otherwise use props
 	let effectivePage = $derived(controller?.currentPage ?? page);
@@ -110,6 +140,7 @@
 		} else {
 			onPage?.(effectivePage - 1);
 		}
+		scrollToTarget();
 	}
 
 	function handleNext() {
@@ -118,6 +149,7 @@
 		} else {
 			onPage?.(effectivePage + 1);
 		}
+		scrollToTarget();
 	}
 
 	function handleGoToPage(newPage: number) {
@@ -126,6 +158,7 @@
 		} else if (!controller) {
 			onPage?.(newPage);
 		}
+		scrollToTarget();
 	}
 
 	function handleLimitChange(event: Event) {
@@ -135,6 +168,7 @@
 		} else {
 			onLimit?.(newLimit);
 		}
+		scrollToTarget();
 	}
 </script>
 
