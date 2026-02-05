@@ -110,6 +110,9 @@
     border-radius: var(--underlay-radius-md, 0.375rem);
     overflow: hidden;
     flex-shrink: 0;
+  }
+
+  .media-thumbnail--has-image {
     background-color: var(--underlay-color-surface-secondary, #f3f4f6);
   }
 
