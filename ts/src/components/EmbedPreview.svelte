@@ -63,7 +63,7 @@
   // Calculate padding-bottom for aspect ratio
   const aspectPadding = $derived.by(() => {
     if (!useAspectRatio) return undefined;
-    const ratio = aspectRatio ?? 16 / 9;
+    const ratio = typeof aspectRatio === "number" ? aspectRatio : 16 / 9;
     return `${(1 / ratio) * 100}%`;
   });
 </script>
