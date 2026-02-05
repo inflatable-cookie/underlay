@@ -998,6 +998,37 @@ Override styles using CSS custom properties or global class selectors.
 - `subtle` - Muted background - low-emphasis actions
 - `danger` - Red (#dc2626) - destructive or cancel actions
 
+### Code
+
+Inline code styling component for displaying technical values like IDs, slugs, MIME types, and other monospace content.
+
+```svelte
+<script>
+  import { Code } from "@decodelabs/underlay/components";
+</script>
+
+<!-- Display an ID -->
+<p><strong>ID:</strong> <Code>{item.id}</Code></p>
+
+<!-- Display a MIME type -->
+<p>Type: <Code>{file.mimeType}</Code></p>
+
+<!-- Display a slug -->
+<p>Slug: <Code>{page.slug}</Code></p>
+```
+
+**Props:**
+- `class` - Additional CSS classes
+- All standard HTML `<code>` element attributes
+
+**Styling:**
+- Monospace font family
+- Smaller font size (0.8em)
+- Subtle background and border
+- Small border radius
+
+The component provides consistent inline code styling across the application, replacing raw `<code>` elements with properly styled output that matches the design system.
+
 ### Card
 
 Container component with consistent styling:

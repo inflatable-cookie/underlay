@@ -26,6 +26,8 @@
     /** Renders the actions menu. When provided, the media area becomes a custom trigger containing the icon + dots.
      * The snippet receives `trigger` (the media content to render) and `align` (recommended dropdown alignment). */
     actions?: Snippet<[{ trigger: Snippet; align: "start" | "center" | "end" }]>;
+    /** Where to place the actions trigger. Defaults to "media". */
+    actionsPlacement?: "media" | "media-overlay" | "trailing";
     children?: Snippet;
     onclick?: ((event: MouseEvent) => void) | null;
   }
@@ -45,6 +47,7 @@
     media,
     trailing,
     actions,
+    actionsPlacement = "media",
     children,
     onclick = null
   }: Props = $props();
@@ -83,6 +86,10 @@
     </span>
     <span class="underlay-list-card__dots" aria-hidden="true">⋯</span>
   </span>
+{/snippet}
+
+{#snippet actionsTrigger()}
+  <span class="underlay-list-card__dots-only" aria-hidden="true">⋯</span>
 {/snippet}
 
 {#snippet dragHandle()}
@@ -126,14 +133,21 @@
         onclick={(e) => e.stopPropagation()}
       />
     </button>
-  {:else if hasActions}
+  {:else if hasActions && actionsPlacement === "media"}
     <div class="underlay-list-card__media-slot">
       {@render actions?.({ trigger: mediaTrigger, align: "start" })}
     </div>
   {:else}
-    <div class="underlay-list-card__media">
-      {#if media}
-        {@render media()}
+    <div class="underlay-list-card__media-wrap">
+      <div class="underlay-list-card__media">
+        {#if media}
+          {@render media()}
+        {/if}
+      </div>
+      {#if hasActions && actionsPlacement === "media-overlay"}
+        <div class="underlay-list-card__media-actions">
+          {@render actions?.({ trigger: actionsTrigger, align: "end" })}
+        </div>
       {/if}
     </div>
   {/if}
@@ -143,8 +157,17 @@
       <h3 class="underlay-list-card__title">
         {title}{#if titleSuffix}{@render titleSuffix()}{/if}
       </h3>
-      {#if trailing}
-        {@render trailing()}
+      {#if trailing || (hasActions && actionsPlacement === "trailing")}
+        <div class="underlay-list-card__title-actions">
+          {#if trailing}
+            {@render trailing()}
+          {/if}
+          {#if hasActions && actionsPlacement === "trailing"}
+            <div class="underlay-list-card__actions">
+              {@render actions?.({ trigger: actionsTrigger, align: "end" })}
+            </div>
+          {/if}
+        </div>
       {/if}
     </div>
 
@@ -293,6 +316,36 @@
     overflow: hidden;
   }
 
+  .underlay-list-card__media-wrap {
+    position: relative;
+    width: var(--_underlay-list-card-media-size);
+    height: var(--_underlay-list-card-media-size);
+  }
+
+  .underlay-list-card__media-actions {
+    position: absolute;
+    bottom: 0.2rem;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .underlay-list-card__media-actions :global(.underlay-dropdown-menu-trigger) {
+    width: auto;
+    height: 1.25rem;
+    padding: 0 0.5rem;
+    border-radius: 999px;
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    background: rgba(15, 23, 42, 0.5);
+    color: var(--underlay-color-text, var(--underlay-color-text, #e5e7eb));
+    backdrop-filter: blur(6px);
+    font-size: 0.75rem;
+    line-height: 1;
+  }
+
+  .underlay-list-card__media-actions :global(.underlay-dropdown-menu-trigger:hover) {
+    background: rgba(15, 23, 42, 0.75);
+  }
+
   /* Selection mode - clickable media area with checkbox */
   .underlay-list-card__media--selectable {
     border: none;
@@ -400,6 +453,12 @@
     gap: 0.15rem;
   }
 
+  .underlay-list-card__dots-only {
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+
   .underlay-list-card__icon {
     display: flex;
     align-items: center;
@@ -431,6 +490,13 @@
     justify-content: space-between;
     gap: var(--underlay-space-3, var(--underlay-space-3, 0.75rem));
     min-width: 0;
+  }
+
+  .underlay-list-card__title-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--underlay-space-2, var(--underlay-space-2, 0.5rem));
+    flex-shrink: 0;
   }
 
   .underlay-list-card__title {

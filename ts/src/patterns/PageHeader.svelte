@@ -327,7 +327,6 @@
   }
 
   .underlay-page-header__meta :global(code) {
-    font-size: inherit;
     background: rgba(148, 163, 184, 0.1);
     border: 1px solid rgba(148, 163, 184, 0.15);
     border-radius: 0.25rem;

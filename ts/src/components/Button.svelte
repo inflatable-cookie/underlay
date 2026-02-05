@@ -4,8 +4,8 @@
 
   interface Props extends Omit<HTMLButtonAttributes, "class"> {
     variant?: "primary" | "secondary" | "subtle" | "danger" | "danger-subtle";
-    /** Size of the button. Use "icon" for icon-only buttons. */
-    size?: "sm" | "md" | "lg" | "icon";
+    /** Size of the button. Use "icon" or "icon-sm" for icon-only buttons. */
+    size?: "sm" | "md" | "lg" | "icon" | "icon-sm";
     type?: "button" | "submit" | "reset";
     pill?: boolean;
     class?: string;
@@ -87,6 +87,14 @@
     width: 2.25rem;
     height: 2.25rem;
     padding: 0;
+    border-radius: var(--underlay-radius-control, 0.5rem);
+  }
+
+  :global(.underlay-button--icon-sm) {
+    width: 1.75rem;
+    height: 1.75rem;
+    padding: 0;
+    font-size: 0.875rem;
     border-radius: var(--underlay-radius-control, 0.5rem);
   }
 

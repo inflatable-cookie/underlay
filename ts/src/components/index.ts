@@ -3,6 +3,7 @@
 export { default as Badge } from "./Badge.svelte";
 export { default as Breadcrumbs } from "./Breadcrumbs.svelte";
 export { default as Button } from "./Button.svelte";
+export { default as Code } from "./Code.svelte";
 export { default as TextButton } from "./TextButton.svelte";
 export { default as Card } from "./Card.svelte";
 export { default as Field } from "./Field.svelte";
