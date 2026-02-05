@@ -76,6 +76,7 @@
 
   // Get accent color for icon background
   const accentColor = $derived(getMediaKindAccent(kind));
+  const iconColor = $derived(showAccent ? accentColor : "currentColor");
 
   // Container style
   const containerStyle = $derived(
@@ -96,7 +97,7 @@
   {#if thumbnailUrl}
     <img src={thumbnailUrl} {alt} class="media-thumbnail__image" />
   {:else}
-    <div class="media-thumbnail__icon" style="color: {accentColor}">
+    <div class="media-thumbnail__icon" style="color: {iconColor}">
       <Icon size={iconSize} />
     </div>
   {/if}

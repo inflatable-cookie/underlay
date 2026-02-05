@@ -292,6 +292,7 @@
       uploadStep = "finalising";
       await finaliseUpload(media.id, uploadResponse.versionId, {
         sha256: fileHash,
+        contentType: selectedFile.type,
       });
 
       // Create a summary for selection

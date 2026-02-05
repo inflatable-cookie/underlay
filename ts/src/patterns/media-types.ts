@@ -219,6 +219,7 @@ export interface MediaUploadPlan {
  */
 export interface FinaliseUploadRequest {
   sha256: string;
+  contentType: string;
 }
 
 /**

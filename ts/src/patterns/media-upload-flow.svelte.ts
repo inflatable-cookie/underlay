@@ -286,6 +286,7 @@ export function createMediaUploadFlow(
       step = "finalising";
       const finaliseResponse = await finaliseUpload(mediaId, uploadResponse.versionId, {
         sha256: fileHash,
+        contentType: file.type,
       });
 
       // Done!
