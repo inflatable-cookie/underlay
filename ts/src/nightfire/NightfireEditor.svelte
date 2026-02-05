@@ -348,33 +348,10 @@
 
   const isMulti = $derived(effectiveDef.mode === "multi" || Array.isArray(value?.blocks));
 
-  // Single-block state view - cached to prevent re-renders on data-only changes
-  // We only update the reference when the block TYPE changes
-  // Initialize synchronously for first render, using untrack to capture initial values
-  const initialSingleBlock = untrack(() =>
-    !effectiveDef.mode || effectiveDef.mode === "single"
-      ? ((value?.block as any) ?? null)
-      : null
-  );
-  let singleBlock: any = $state(initialSingleBlock);
-  let singleBlockType: string | null = $state(initialSingleBlock?.type ?? null);
-
-  $effect(() => {
-    if (isMulti) {
-      singleBlock = null;
-      singleBlockType = null;
-      return;
-    }
-
-    const currentBlock = (value?.block as any) ?? null;
-    const currentType = currentBlock?.type ?? null;
-
-    // Only update if type changed (not on data-only changes)
-    if (currentType !== singleBlockType) {
-      singleBlockType = currentType;
-      singleBlock = currentBlock;
-    }
-  });
+  // Single-block view - derives from value reactively
+  // This ensures child editors always receive the latest data
+  const singleBlock = $derived(isMulti ? null : ((value?.block as any) ?? null));
+  const singleBlockType = $derived(singleBlock?.type ?? null);
 
   // Multi-block state view - use $derived.by to ensure stable reference
   const blocks = $derived.by(() => {
