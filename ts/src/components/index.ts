@@ -83,6 +83,8 @@ export { default as MediaThumbnail } from "./MediaThumbnail.svelte";
 // Embed parser components
 export { default as EmbedInput } from "./EmbedInput.svelte";
 export { default as EmbedPreview } from "./EmbedPreview.svelte";
+export { default as AudioPlayer } from "./AudioPlayer.svelte";
+export { default as AudioEmbed } from "./AudioEmbed.svelte";
 
 // Log list (audit/activity logs with filtering, pagination, export)
 export { default as LogList } from "./LogList.svelte";
