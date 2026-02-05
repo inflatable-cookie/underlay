@@ -3,7 +3,7 @@
 
   interface Props {
     /** The date to display as relative time. Accepts ISO string or Date object. */
-    date: string | Date;
+    date?: string | Date | null;
     /** Format for the tooltip. Defaults to full locale string. */
     tooltipFormat?: "full" | "date" | "datetime";
     /**
@@ -18,7 +18,7 @@
   }
 
   let {
-    date,
+    date = null,
     tooltipFormat = "datetime",
     timezone,
     class: className,
@@ -122,16 +122,27 @@
     }
   }
 
-  const dateObj = $derived(typeof date === "string" ? new Date(date) : date);
-  const relativeTime = $derived(getRelativeTime(dateObj, short));
-  const tooltipText = $derived(formatTooltip(dateObj, tooltipFormat, timezone));
+  function isValidDateValue(value: Date | null): value is Date {
+    return value instanceof Date && !Number.isNaN(value.getTime());
+  }
+
+  const dateObj = $derived(
+    typeof date === "string" ? new Date(date) : date instanceof Date ? date : null
+  );
+  const isValidDate = $derived(isValidDateValue(dateObj));
+  const relativeTime = $derived(isValidDate ? getRelativeTime(dateObj, short) : "");
+  const tooltipText = $derived(isValidDate ? formatTooltip(dateObj, tooltipFormat, timezone) : "");
 </script>
 
-<Tooltip content={tooltipText} inline delayDuration={300} class={className}>
-  {#snippet trigger()}
-    <time class="time-ago" datetime={dateObj.toISOString()}>{relativeTime}</time>
-  {/snippet}
-</Tooltip>
+{#if isValidDate}
+  <Tooltip content={tooltipText} inline delayDuration={300} class={className}>
+    {#snippet trigger()}
+      <time class="time-ago" datetime={dateObj.toISOString()}>{relativeTime}</time>
+    {/snippet}
+  </Tooltip>
+{:else}
+  <span class="time-ago time-ago--empty {className ?? ''}">—</span>
+{/if}
 
 <style>
   .time-ago {
@@ -143,5 +154,10 @@
 
   .time-ago:hover {
     text-decoration-color: var(--underlay-color-text, #e5e7eb);
+  }
+
+  .time-ago--empty {
+    text-decoration: none;
+    color: var(--underlay-color-text-muted, #9ca3af);
   }
 </style>
