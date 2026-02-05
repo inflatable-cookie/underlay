@@ -20,6 +20,28 @@ export const URL_PATTERNS: Record<string, string[]> = {
 };
 
 /**
+ * Brand accent colors for providers
+ */
+export const PROVIDER_ACCENTS: Record<string, string> = {
+  youtube: "#ff0000",
+  vimeo: "#1ab7ea",
+  audioboom: "#f5a623",
+};
+
+/**
+ * Get the brand accent color for a provider
+ * @param provider - Provider name (case-insensitive)
+ * @param fallback - Fallback color if provider not found (default: gray)
+ */
+export function getProviderAccent(
+  provider: string | null | undefined,
+  fallback = "#94a3b8"
+): string {
+  if (!provider) return fallback;
+  return PROVIDER_ACCENTS[provider.toLowerCase()] ?? fallback;
+}
+
+/**
  * Create a provider registry with default providers
  */
 export function createProviderRegistry(): ProviderRegistry {

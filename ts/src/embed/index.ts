@@ -75,6 +75,8 @@ export {
   createProviderRegistry,
   detectProviderFromUrl,
   URL_PATTERNS,
+  PROVIDER_ACCENTS,
+  getProviderAccent,
 } from "./providers/index.js";
 
 // Individual providers (for direct access if needed)
