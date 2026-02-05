@@ -13,6 +13,7 @@
 </script>
 
 <script lang="ts">
+	import { tick } from "svelte";
 	import type { Snippet } from "svelte";
 	import type { HTMLAttributes } from "svelte/elements";
 
@@ -99,25 +100,22 @@
 	/**
 	 * Scroll to the target element with offset
 	 */
-	function scrollToTarget() {
+	function doScroll() {
 		if (scrollTarget === false) return;
 
-		// Use requestAnimationFrame to ensure DOM has updated
-		requestAnimationFrame(() => {
-			let element: HTMLElement | null = null;
+		let element: HTMLElement | null = null;
 
-			if (typeof scrollTarget === "string") {
-				element = document.querySelector(scrollTarget);
-			} else if (scrollTarget instanceof HTMLElement) {
-				element = scrollTarget;
-			}
+		if (typeof scrollTarget === "string") {
+			element = document.querySelector(scrollTarget);
+		} else if (scrollTarget instanceof HTMLElement) {
+			element = scrollTarget;
+		}
 
-			if (element) {
-				const rect = element.getBoundingClientRect();
-				const scrollTop = window.scrollY + rect.top - scrollOffset;
-				window.scrollTo({ top: scrollTop, behavior: "smooth" });
-			}
-		});
+		if (element) {
+			const rect = element.getBoundingClientRect();
+			const scrollTop = window.scrollY + rect.top - scrollOffset;
+			window.scrollTo({ top: scrollTop, behavior: "smooth" });
+		}
 	}
 
 	// Derive values from controller if provided, otherwise use props
@@ -134,41 +132,49 @@
 	// Check if controller supports random page access (client-side pagination)
 	let supportsGoToPage = $derived(controller && typeof controller.goToPage === 'function');
 
-	function handlePrev() {
+	async function handlePrev() {
 		if (controller) {
-			controller.prevPage();
+			await controller.prevPage();
 		} else {
 			onPage?.(effectivePage - 1);
 		}
-		scrollToTarget();
+		// Wait for Svelte to update DOM, then scroll
+		await tick();
+		doScroll();
 	}
 
-	function handleNext() {
+	async function handleNext() {
 		if (controller) {
-			controller.nextPage();
+			await controller.nextPage();
 		} else {
 			onPage?.(effectivePage + 1);
 		}
-		scrollToTarget();
+		// Wait for Svelte to update DOM, then scroll
+		await tick();
+		doScroll();
 	}
 
-	function handleGoToPage(newPage: number) {
+	async function handleGoToPage(newPage: number) {
 		if (controller && supportsGoToPage) {
-			controller.goToPage!(newPage);
+			await controller.goToPage!(newPage);
 		} else if (!controller) {
 			onPage?.(newPage);
 		}
-		scrollToTarget();
+		// Wait for Svelte to update DOM, then scroll
+		await tick();
+		doScroll();
 	}
 
-	function handleLimitChange(event: Event) {
+	async function handleLimitChange(event: Event) {
 		const newLimit = Number((event.target as HTMLSelectElement).value);
 		if (controller) {
-			controller.setPageSize(newLimit);
+			await controller.setPageSize(newLimit);
 		} else {
 			onLimit?.(newLimit);
 		}
-		scrollToTarget();
+		// Wait for Svelte to update DOM, then scroll
+		await tick();
+		doScroll();
 	}
 </script>
 
