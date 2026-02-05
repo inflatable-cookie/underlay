@@ -53,6 +53,10 @@
       "types": "./ts/src/utils/index.ts",
       "default": "./ts/src/utils/index.ts"
     },
+    "./embed": {
+      "types": "./ts/src/embed/index.ts",
+      "default": "./ts/src/embed/index.ts"
+    },
     "./styles/base.css": "./ts/src/styles/base.css",
     "./styles/forms.css": "./ts/src/styles/forms.css",
     "./styles/markdown-editor.css": "./ts/src/styles/markdown-editor.css",
