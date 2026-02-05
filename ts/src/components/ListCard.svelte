@@ -464,8 +464,20 @@
     align-items: center;
     justify-content: center;
     flex: 1;
+    width: 100%;
     padding-top: 0.25rem;
     color: var(--underlay-color-on-primary, #fff);
+    overflow: hidden;
+  }
+
+  /* Support MediaThumbnail filling the icon area */
+  .underlay-list-card__icon :global(.media-thumbnail) {
+    width: 100%;
+    height: 100%;
+  }
+
+  .underlay-list-card__icon :global(.media-thumbnail__image) {
+    object-fit: cover;
   }
 
   .underlay-list-card__dots {
