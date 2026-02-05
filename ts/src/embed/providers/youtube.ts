@@ -82,68 +82,6 @@ function isYouTubeUrl(url: string): boolean {
   return YOUTUBE_PATTERNS.some((pattern) => lowerUrl.includes(pattern));
 }
 
-/**
- * Extract video duration from YouTube page HTML
- * Looks for duration in various metadata formats embedded in the page
- */
-function extractDurationFromPage(html: string): number | null {
-  // Try to find duration in ytInitialPlayerResponse JSON
-  // Format: "lengthSeconds":"123"
-  const lengthSecondsMatch = html.match(/"lengthSeconds"\s*:\s*"(\d+)"/);
-  if (lengthSecondsMatch) {
-    const seconds = parseInt(lengthSecondsMatch[1], 10);
-    if (!isNaN(seconds) && seconds > 0) {
-      return seconds;
-    }
-  }
-
-  // Try to find duration in microdata/schema.org format
-  // Format: "duration":"PT1M23S" (ISO 8601 duration)
-  const isoDurationMatch = html.match(/"duration"\s*:\s*"PT([^"]+)"/i);
-  if (isoDurationMatch) {
-    const duration = parseIsoDuration(isoDurationMatch[1]);
-    if (duration !== null) {
-      return duration;
-    }
-  }
-
-  // Try meta tag format
-  // <meta itemprop="duration" content="PT1M23S">
-  const metaDurationMatch = html.match(/<meta[^>]+itemprop=["']duration["'][^>]+content=["']PT([^"']+)["']/i);
-  if (metaDurationMatch) {
-    const duration = parseIsoDuration(metaDurationMatch[1]);
-    if (duration !== null) {
-      return duration;
-    }
-  }
-
-  return null;
-}
-
-/**
- * Parse ISO 8601 duration format (e.g., "1H2M3S" or "2M3S" or "45S")
- */
-function parseIsoDuration(duration: string): number | null {
-  let totalSeconds = 0;
-
-  const hoursMatch = duration.match(/(\d+)H/i);
-  if (hoursMatch) {
-    totalSeconds += parseInt(hoursMatch[1], 10) * 3600;
-  }
-
-  const minutesMatch = duration.match(/(\d+)M/i);
-  if (minutesMatch) {
-    totalSeconds += parseInt(minutesMatch[1], 10) * 60;
-  }
-
-  const secondsMatch = duration.match(/(\d+)S/i);
-  if (secondsMatch) {
-    totalSeconds += parseInt(secondsMatch[1], 10);
-  }
-
-  return totalSeconds > 0 ? totalSeconds : null;
-}
-
 export const youtube: EmbedProvider = {
   name: "youtube",
 
@@ -284,19 +222,8 @@ export const youtube: EmbedProvider = {
         thumbnailHeight: data.thumbnail_height,
       };
 
-      // YouTube oEmbed doesn't provide duration, so fetch from page metadata
-      try {
-        const pageResponse = await fetchFn(videoUrl);
-        if (pageResponse.ok) {
-          const html = await pageResponse.text();
-          const duration = extractDurationFromPage(html);
-          if (duration !== null) {
-            meta.duration = duration;
-          }
-        }
-      } catch {
-        // Duration extraction failed, continue without it
-      }
+      // Note: YouTube oEmbed doesn't provide duration
+      // Would need YouTube Data API v3 for that (requires API key)
 
       return meta;
     } catch {
