@@ -24,7 +24,6 @@
   .underlay-pill {
     display: inline-flex;
     align-items: center;
-    align-self: flex-start;
     width: fit-content;
     font-size: 0.625em;
     font-weight: 650;
