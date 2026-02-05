@@ -5131,6 +5131,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "underlay-media"
+version = "0.0.1"
+dependencies = [
+ "async-trait",
+ "chrono",
+ "serde",
+ "serde_json",
+ "sqlx",
+ "thiserror 1.0.69",
+ "tokio",
+ "tracing",
+ "underlay-blob",
+ "underlay-db",
+ "underlay-image",
+ "uuid",
+]
+
+[[package]]
 name = "underlay-metrics"
 version = "0.0.1"
 dependencies = [
