@@ -8,9 +8,12 @@ use std::sync::Arc;
 use underlay_blob::BlobAdapter;
 use underlay_image::{generate_thumbnail, ThumbnailConfig};
 
-use crate::domain::{CreateRenditionInput, MediaRendition, MediaVersionId, RenditionType};
+use crate::domain::{
+    CreateRenditionInput, MediaId, MediaRendition, MediaVersionId, RenditionType,
+};
 use crate::error::{MediaError, MediaResult};
 use crate::repository::MediaRepository;
+use crate::storage::StorageKeyGenerator;
 
 // ============================================================================
 // Configuration
@@ -25,10 +28,16 @@ pub struct RenditionConfig {
     pub preview_max_dimension: u32,
     /// JPEG quality for rendered images (1-100).
     pub jpeg_quality: u8,
+    /// Whether to generate square (cropped) thumbnails.
+    pub square_thumbnails: bool,
     /// Whether to generate thumbnails for images.
     pub generate_thumbnails: bool,
     /// Whether to generate previews for images.
     pub generate_previews: bool,
+    /// Custom thumbnail rendition name (e.g., "thumb_128" for Farmyard compatibility).
+    pub thumbnail_name: String,
+    /// Custom preview rendition name.
+    pub preview_name: String,
 }
 
 impl Default for RenditionConfig {
@@ -37,8 +46,11 @@ impl Default for RenditionConfig {
             thumbnail_max_dimension: 400,
             preview_max_dimension: 1200,
             jpeg_quality: 85,
+            square_thumbnails: false,
             generate_thumbnails: true,
             generate_previews: false,
+            thumbnail_name: "thumb".to_string(),
+            preview_name: "preview".to_string(),
         }
     }
 }
@@ -62,6 +74,24 @@ impl RenditionConfig {
         }
     }
 
+    /// Create a farmyard-compatible config with 128x128 square thumbnails.
+    ///
+    /// This matches the default Farmyard configuration:
+    /// - 128px square thumbnails
+    /// - Quality 80
+    /// - Rendition name "thumb_128"
+    pub fn farmyard_compat() -> Self {
+        Self {
+            thumbnail_max_dimension: 128,
+            jpeg_quality: 80,
+            square_thumbnails: true,
+            generate_thumbnails: true,
+            generate_previews: false,
+            thumbnail_name: "thumb_128".to_string(),
+            ..Default::default()
+        }
+    }
+
     /// Set the thumbnail maximum dimension.
     pub fn thumbnail_size(mut self, max_dim: u32) -> Self {
         self.thumbnail_max_dimension = max_dim;
@@ -77,6 +107,24 @@ impl RenditionConfig {
     /// Set the JPEG quality.
     pub fn quality(mut self, quality: u8) -> Self {
         self.jpeg_quality = quality.clamp(1, 100);
+        self
+    }
+
+    /// Enable square (center-cropped) thumbnails.
+    pub fn square(mut self) -> Self {
+        self.square_thumbnails = true;
+        self
+    }
+
+    /// Set custom thumbnail rendition name.
+    pub fn thumbnail_name(mut self, name: impl Into<String>) -> Self {
+        self.thumbnail_name = name.into();
+        self
+    }
+
+    /// Set custom preview rendition name.
+    pub fn preview_name(mut self, name: impl Into<String>) -> Self {
+        self.preview_name = name.into();
         self
     }
 }
@@ -128,6 +176,7 @@ pub struct RenditionResult {
 pub struct RenditionService<B: BlobAdapter> {
     blob_adapter: Arc<B>,
     config: RenditionConfig,
+    key_generator: StorageKeyGenerator,
 }
 
 impl<B: BlobAdapter> RenditionService<B> {
@@ -136,6 +185,7 @@ impl<B: BlobAdapter> RenditionService<B> {
         Self {
             blob_adapter,
             config,
+            key_generator: StorageKeyGenerator::with_defaults(),
         }
     }
 
@@ -144,9 +194,27 @@ impl<B: BlobAdapter> RenditionService<B> {
         Self::new(blob_adapter, RenditionConfig::default())
     }
 
+    /// Create a new rendition service with a custom key generator.
+    pub fn with_key_generator(
+        blob_adapter: Arc<B>,
+        config: RenditionConfig,
+        key_generator: StorageKeyGenerator,
+    ) -> Self {
+        Self {
+            blob_adapter,
+            config,
+            key_generator,
+        }
+    }
+
     /// Get the configuration.
     pub fn config(&self) -> &RenditionConfig {
         &self.config
+    }
+
+    /// Get the key generator.
+    pub fn key_generator(&self) -> &StorageKeyGenerator {
+        &self.key_generator
     }
 
     /// Generate a thumbnail from a source image.
@@ -308,6 +376,9 @@ impl<B: BlobAdapter> RenditionService<B> {
     ///
     /// This generates thumbnails and/or previews based on the configuration,
     /// storing them and recording them in the repository.
+    ///
+    /// **Deprecated**: Use `generate_renditions_for_version` instead, which
+    /// automatically generates storage keys using the standardized format.
     pub async fn generate_version_renditions<R: MediaRepository>(
         &self,
         repo: &R,
@@ -318,7 +389,7 @@ impl<B: BlobAdapter> RenditionService<B> {
         let mut renditions = Vec::new();
 
         if self.config.generate_thumbnails {
-            let thumb_key = format!("{}/thumb.jpg", key_prefix);
+            let thumb_key = format!("{}/{}.jpg", key_prefix, self.config.thumbnail_name);
             match self.generate_thumbnail(source_key, &thumb_key).await {
                 Ok(result) => {
                     let input = CreateRenditionInput {
@@ -345,7 +416,7 @@ impl<B: BlobAdapter> RenditionService<B> {
         }
 
         if self.config.generate_previews {
-            let preview_key = format!("{}/preview.jpg", key_prefix);
+            let preview_key = format!("{}/{}.jpg", key_prefix, self.config.preview_name);
             match self.generate_preview(source_key, &preview_key).await {
                 Ok(result) => {
                     let input = CreateRenditionInput {
@@ -373,6 +444,108 @@ impl<B: BlobAdapter> RenditionService<B> {
 
         Ok(renditions)
     }
+
+    /// Generate all configured renditions for a version using standardized keys.
+    ///
+    /// This is the recommended method for generating renditions. It uses the
+    /// built-in key generator to create storage keys in the standard format:
+    /// `media/{media_id}/renditions/{version_id}/{rendition_name}.jpg`
+    ///
+    /// # Arguments
+    ///
+    /// * `repo` - The media repository for storing rendition records
+    /// * `media_id` - The media item ID (needed for key generation)
+    /// * `version_id` - The version ID
+    /// * `source_key` - The object key of the source image
+    ///
+    /// # Returns
+    ///
+    /// A list of created renditions, or an empty list if generation failed.
+    pub async fn generate_renditions_for_version<R: MediaRepository>(
+        &self,
+        repo: &R,
+        media_id: MediaId,
+        version_id: MediaVersionId,
+        source_key: &str,
+    ) -> MediaResult<Vec<MediaRendition>> {
+        let mut renditions = Vec::new();
+
+        if self.config.generate_thumbnails {
+            let thumb_key = self.key_generator.rendition_key(
+                media_id.0,
+                version_id.0,
+                &self.config.thumbnail_name,
+            );
+
+            match self.generate_thumbnail(source_key, &thumb_key).await {
+                Ok(result) => {
+                    let input = CreateRenditionInput {
+                        rendition_type: RenditionType::Custom(self.config.thumbnail_name.clone()),
+                        object_key: result.object_key,
+                        mime_type: result.mime_type,
+                        byte_size: result.byte_size,
+                        width: Some(result.width),
+                        height: Some(result.height),
+                        storage_provider: self.blob_adapter.name().to_string(),
+                        bucket: self.blob_adapter.bucket().to_string(),
+                    };
+                    let rendition = repo.create_rendition(version_id, input).await?;
+                    renditions.push(rendition);
+                    tracing::info!(
+                        version_id = %version_id,
+                        rendition_type = %self.config.thumbnail_name,
+                        "Generated thumbnail"
+                    );
+                }
+                Err(e) => {
+                    tracing::warn!(
+                        version_id = %version_id,
+                        error = %e,
+                        "Failed to generate thumbnail"
+                    );
+                }
+            }
+        }
+
+        if self.config.generate_previews {
+            let preview_key = self.key_generator.rendition_key(
+                media_id.0,
+                version_id.0,
+                &self.config.preview_name,
+            );
+
+            match self.generate_preview(source_key, &preview_key).await {
+                Ok(result) => {
+                    let input = CreateRenditionInput {
+                        rendition_type: RenditionType::Custom(self.config.preview_name.clone()),
+                        object_key: result.object_key,
+                        mime_type: result.mime_type,
+                        byte_size: result.byte_size,
+                        width: Some(result.width),
+                        height: Some(result.height),
+                        storage_provider: self.blob_adapter.name().to_string(),
+                        bucket: self.blob_adapter.bucket().to_string(),
+                    };
+                    let rendition = repo.create_rendition(version_id, input).await?;
+                    renditions.push(rendition);
+                    tracing::info!(
+                        version_id = %version_id,
+                        rendition_type = %self.config.preview_name,
+                        "Generated preview"
+                    );
+                }
+                Err(e) => {
+                    tracing::warn!(
+                        version_id = %version_id,
+                        error = %e,
+                        "Failed to generate preview"
+                    );
+                }
+            }
+        }
+
+        Ok(renditions)
+    }
 }
 
 impl<B: BlobAdapter> Clone for RenditionService<B> {
@@ -380,6 +553,7 @@ impl<B: BlobAdapter> Clone for RenditionService<B> {
         Self {
             blob_adapter: Arc::clone(&self.blob_adapter),
             config: self.config.clone(),
+            key_generator: self.key_generator.clone(),
         }
     }
 }
@@ -394,8 +568,11 @@ mod tests {
         assert_eq!(config.thumbnail_max_dimension, 400);
         assert_eq!(config.preview_max_dimension, 1200);
         assert_eq!(config.jpeg_quality, 85);
+        assert!(!config.square_thumbnails);
         assert!(config.generate_thumbnails);
         assert!(!config.generate_previews);
+        assert_eq!(config.thumbnail_name, "thumb");
+        assert_eq!(config.preview_name, "preview");
     }
 
     #[test]
@@ -403,13 +580,30 @@ mod tests {
         let config = RenditionConfig::with_previews()
             .thumbnail_size(256)
             .preview_size(1024)
-            .quality(90);
+            .quality(90)
+            .square()
+            .thumbnail_name("thumb_256")
+            .preview_name("large");
 
         assert_eq!(config.thumbnail_max_dimension, 256);
         assert_eq!(config.preview_max_dimension, 1024);
         assert_eq!(config.jpeg_quality, 90);
+        assert!(config.square_thumbnails);
         assert!(config.generate_thumbnails);
         assert!(config.generate_previews);
+        assert_eq!(config.thumbnail_name, "thumb_256");
+        assert_eq!(config.preview_name, "large");
+    }
+
+    #[test]
+    fn test_farmyard_compat_config() {
+        let config = RenditionConfig::farmyard_compat();
+        assert_eq!(config.thumbnail_max_dimension, 128);
+        assert_eq!(config.jpeg_quality, 80);
+        assert!(config.square_thumbnails);
+        assert!(config.generate_thumbnails);
+        assert!(!config.generate_previews);
+        assert_eq!(config.thumbnail_name, "thumb_128");
     }
 
     #[test]

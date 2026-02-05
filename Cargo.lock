@@ -5009,11 +5009,14 @@ dependencies = [
  "async-trait",
  "aws-config",
  "aws-sdk-s3",
+ "axum",
  "base64 0.22.1",
  "chrono",
  "serde",
  "thiserror 1.0.69",
  "tokio",
+ "tower-http",
+ "tracing",
  "url",
 ]
 

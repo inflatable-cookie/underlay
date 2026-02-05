@@ -44,6 +44,9 @@
   // Has any hover actions (either custom actions or delete button)
   let hasActions = $derived(actions || (showDelete && ondelete));
 
+  // Track actions container width for dynamic slide animation
+  let actionsWidth = $state(0);
+
   function handleDelete(e: MouseEvent) {
     e.preventDefault();
     e.stopPropagation();
@@ -71,7 +74,11 @@
   </div>
 {/snippet}
 
-<li class="inline-list-item" class:inline-list-item--has-actions={hasActions}>
+<li
+  class="inline-list-item"
+  class:inline-list-item--has-actions={hasActions}
+  style:--actions-width="{actionsWidth}px"
+>
   {#if href}
     <a
       class="inline-list-item__content"
@@ -139,7 +146,7 @@
   {/if}
 
   {#if hasActions}
-    <div class="inline-list-item__actions">
+    <div class="inline-list-item__actions" bind:clientWidth={actionsWidth}>
       {#if actions}
         {@render actions()}
       {/if}
@@ -270,7 +277,7 @@
 
   /* Make room for actions on hover */
   .inline-list-item--has-actions:hover .inline-list-item__trailing {
-    margin-right: 4rem;
+    margin-right: calc(var(--actions-width, 0px) + 0.5rem);
   }
 
   /* Style for action buttons inside the actions container */

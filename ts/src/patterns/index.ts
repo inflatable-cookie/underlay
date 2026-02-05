@@ -28,6 +28,10 @@ export {
 export { default as FilterBar } from "./FilterBar.svelte";
 export { default as FormShell } from "./FormShell.svelte";
 export { default as PageHeader } from "./PageHeader.svelte";
+export { default as PageHeaderMeta } from "./PageHeaderMeta.svelte";
+export { default as PageHeaderMetaRow } from "./PageHeaderMetaRow.svelte";
+export { default as PageHeaderMetaItem } from "./PageHeaderMetaItem.svelte";
+export { default as PageHeaderMetaSeparator } from "./PageHeaderMetaSeparator.svelte";
 export type { PageHeaderLevel, BreadcrumbItem } from "./types";
 export { default as CopyActionsMenu } from "./CopyActionsMenu.svelte";
 export { default as CardActions } from "./CardActions.svelte";

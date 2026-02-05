@@ -70,24 +70,20 @@ pub async fn run_sql_dir_with_options(
                         .and_then(|n| n.to_str())
                         .unwrap_or("<unknown>");
 
-                    return Err(sqlx::Error::Io(std::io::Error::new(
-                        std::io::ErrorKind::Other,
-                        format!("sql dir execution failed in {file_name}: {err}"),
-                    )));
+                    return Err(sqlx::Error::Io(std::io::Error::other(format!(
+                        "sql dir execution failed in {file_name}: {err}"
+                    ))));
                 }
             }
-        } else {
-            if let Err(err) = sqlx::query(&sql).execute(pool).await {
-                let file_name = path
-                    .file_name()
-                    .and_then(|n| n.to_str())
-                    .unwrap_or("<unknown>");
+        } else if let Err(err) = sqlx::query(&sql).execute(pool).await {
+            let file_name = path
+                .file_name()
+                .and_then(|n| n.to_str())
+                .unwrap_or("<unknown>");
 
-                return Err(sqlx::Error::Io(std::io::Error::new(
-                    std::io::ErrorKind::Other,
-                    format!("sql dir execution failed in {file_name}: {err}"),
-                )));
-            }
+            return Err(sqlx::Error::Io(std::io::Error::other(format!(
+                "sql dir execution failed in {file_name}: {err}"
+            ))));
         }
     }
 

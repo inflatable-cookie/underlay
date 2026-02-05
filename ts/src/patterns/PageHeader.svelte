@@ -318,21 +318,6 @@
     font-size: 0.85em;
   }
 
-  .underlay-page-header__meta :global(p) {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-    flex-wrap: wrap;
-    margin: 0.15rem 0;
-  }
-
-  .underlay-page-header__meta :global(code) {
-    background: rgba(148, 163, 184, 0.1);
-    border: 1px solid rgba(148, 163, 184, 0.15);
-    border-radius: 0.25rem;
-    padding: 0.1em 0.4em;
-  }
-
   @media (max-width: 500px) {
     .underlay-page-header__title {
       font-size: 1.5em;

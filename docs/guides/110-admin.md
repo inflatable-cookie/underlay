@@ -975,23 +975,28 @@ Tab content should ONLY handle navigation and display - no forms or dialogs:
 
 ### Detail Page Header Pattern
 
-Detail pages show entity metadata in the PageHeader subtitle area:
+Detail pages show entity metadata in the PageHeader meta area:
 
 ```svelte
 <PageHeader title={entity.name} backHref={backInfo.href} backLabel={backInfo.label}>
-  <p class="entity-meta">
-    <strong>ID:</strong> <code>{entity.id}</code>
-    <span class="header-separator">·</span>
-    <StatusBadge value={entity.isFree} trueLabel="Free" falseLabel="Restricted">
-      {#snippet trueIcon()}<LockOpen size={14} />{/snippet}
-      {#snippet falseIcon()}<Lock size={14} />{/snippet}
-    </StatusBadge>
-    <span class="header-separator">·</span>
-    <StatusBadge value={entity.isLive} trueLabel="Live" falseLabel="Draft" variant="danger">
-      {#snippet trueIcon()}<Eye size={14} />{/snippet}
-      {#snippet falseIcon()}<EyeOff size={14} />{/snippet}
-    </StatusBadge>
-  </p>
+  <PageHeaderMeta>
+    <PageHeaderMetaRow>
+      <PageHeaderMetaItem label="ID">
+        <Code copy>{entity.id}</Code>
+      </PageHeaderMetaItem>
+      <PageHeaderMetaSeparator />
+      <StatusBadge value={entity.isFree} trueLabel="Free" falseLabel="Restricted">
+        {#snippet trueIcon()}<LockOpen size={14} />{/snippet}
+        {#snippet falseIcon()}<Lock size={14} />{/snippet}
+      </StatusBadge>
+    </PageHeaderMetaRow>
+    <PageHeaderMetaRow>
+      <StatusBadge value={entity.isLive} trueLabel="Live" falseLabel="Draft" variant="danger">
+        {#snippet trueIcon()}<Eye size={14} />{/snippet}
+        {#snippet falseIcon()}<EyeOff size={14} />{/snippet}
+      </StatusBadge>
+    </PageHeaderMetaRow>
+  </PageHeaderMeta>
 </PageHeader>
 ```
 

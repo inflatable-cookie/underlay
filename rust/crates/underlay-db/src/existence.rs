@@ -95,6 +95,7 @@ pub struct ExistsCheck<'a> {
 }
 
 #[derive(Debug, Clone)]
+#[allow(clippy::enum_variant_names)]
 enum Condition<'a> {
     /// column = $N (string)
     StringEquals { column: &'a str, value: String },
@@ -382,6 +383,7 @@ pub async fn value_exists_in_scope(
 ///     &pool, "learning", "section", "label", "A", "module_id", module_id, section_id
 /// ).await?;
 /// ```
+#[allow(clippy::too_many_arguments)]
 pub async fn value_exists_in_scope_excluding(
     pool: &PgPool,
     schema: &str,
@@ -444,6 +446,7 @@ pub async fn number_exists_in_scope(
 ///     &pool, "learning", "area", "number", 1, "section_id", section_id, area_id
 /// ).await?;
 /// ```
+#[allow(clippy::too_many_arguments)]
 pub async fn number_exists_in_scope_excluding(
     pool: &PgPool,
     schema: &str,

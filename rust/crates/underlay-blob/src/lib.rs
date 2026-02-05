@@ -54,6 +54,9 @@ mod config;
 mod error;
 mod types;
 
+#[cfg(feature = "dev-server")]
+pub mod dev_server;
+
 // Re-export main types
 pub use adapter::{BlobAdapter, NoopAdapter};
 pub use config::MediaConfig;

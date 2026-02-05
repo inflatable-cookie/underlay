@@ -2223,8 +2223,14 @@ Page header component with title, optional subtitle, back link, and action butto
 
 ```svelte
 <script>
-  import { PageHeader } from "@decodelabs/underlay/patterns";
-  import { Button } from "@decodelabs/underlay/components";
+  import {
+    PageHeader,
+    PageHeaderMeta,
+    PageHeaderMetaRow,
+    PageHeaderMetaItem,
+    PageHeaderMetaSeparator
+  } from "@decodelabs/underlay/patterns";
+  import { Button, Code, Pill } from "@decodelabs/underlay/components";
 </script>
 
 <!-- Simple header -->
@@ -2258,8 +2264,18 @@ Page header component with title, optional subtitle, back link, and action butto
   subtitle="Getting Started with Svelte"
   backHref="/articles"
 >
-  <p>Last updated: 2024-01-15</p>
-  <p>Status: <code>published</code></p>
+  <PageHeaderMeta>
+    <PageHeaderMetaRow>
+      <PageHeaderMetaItem label="ID">
+        <Code>art_123</Code>
+      </PageHeaderMetaItem>
+      <PageHeaderMetaSeparator />
+      <Pill accent="#22c55e">Published</Pill>
+    </PageHeaderMetaRow>
+    <PageHeaderMetaRow>
+      <PageHeaderMetaItem label="Updated">2024-01-15</PageHeaderMetaItem>
+    </PageHeaderMetaRow>
+  </PageHeaderMeta>
 </PageHeader>
 ```
 
@@ -2286,7 +2302,11 @@ The component renders in this order:
 - The back link appears below titles for clear visual hierarchy
 - Action buttons align to the right of the title row
 - Meta content (via children) appears below the title block in muted text
-- `<p>` elements in meta content use flexbox with `align-items: center`, so inline elements like badges and status indicators align vertically
+- Use `PageHeaderMeta*` components to standardize layout and label/value pairs
+
+**Migration Note:**
+- Replace `<p>` meta rows with `PageHeaderMeta`, `PageHeaderMetaRow`, and `PageHeaderMetaItem`
+- Use `PageHeaderMetaSeparator` only between items that need separation (e.g., ID → pills)
 
 ### ReorderableList & Reorder Controller
 
