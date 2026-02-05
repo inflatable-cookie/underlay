@@ -511,7 +511,7 @@
 
   .underlay-list-card__title-row {
     display: flex;
-    align-items: baseline;
+    align-items: center;
     justify-content: space-between;
     gap: var(--underlay-space-3, var(--underlay-space-3, 0.75rem));
     min-width: 0;
