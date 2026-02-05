@@ -40,7 +40,7 @@
     toastStore,
     copies = [],
     actions = [],
-    triggerLabel = "⋯",
+    triggerLabel,
     showTrigger = true,
     trigger,
     sideOffset = 6,

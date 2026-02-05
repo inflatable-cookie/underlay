@@ -2,6 +2,7 @@
   import { tick } from "svelte";
   import type { Snippet } from "svelte";
   import { DropdownMenu as BitsDropdownMenu } from "bits-ui";
+  import Ellipsis from "lucide-svelte/icons/ellipsis";
 
   type DropdownMenuItem = {
     label?: string;
@@ -34,7 +35,7 @@
   let {
     open = $bindable(false),
     showTrigger = true,
-    triggerLabel = "⋯",
+    triggerLabel,
     triggerAriaLabel = "Open menu",
     triggerType = "button",
     items = undefined,
@@ -72,8 +73,10 @@
     >
       {#if trigger}
         {@render trigger()}
-      {:else}
+      {:else if triggerLabel}
         {triggerLabel}
+      {:else}
+        <Ellipsis size={16} />
       {/if}
     </BitsDropdownMenu.Trigger>
   {/if}
