@@ -107,6 +107,7 @@
 
 		if (typeof scrollTarget === "string") {
 			element = document.querySelector(scrollTarget);
+			console.log('[Pagination] Looking for:', scrollTarget, 'Found:', element);
 		} else if (scrollTarget instanceof HTMLElement) {
 			element = scrollTarget;
 		}
@@ -114,7 +115,10 @@
 		if (element) {
 			const rect = element.getBoundingClientRect();
 			const scrollTop = window.scrollY + rect.top - scrollOffset;
+			console.log('[Pagination] Scrolling to:', scrollTop, 'rect.top:', rect.top, 'scrollY:', window.scrollY);
 			window.scrollTo({ top: scrollTop, behavior: "smooth" });
+		} else {
+			console.log('[Pagination] No element found for scrollTarget');
 		}
 	}
 
