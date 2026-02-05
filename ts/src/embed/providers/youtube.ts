@@ -213,7 +213,10 @@ export const youtube: EmbedProvider = {
 
       const data = await response.json();
 
-      const meta: EmbedMeta = {
+      // Note: YouTube oEmbed doesn't provide duration.
+      // Duration requires YouTube Data API v3 with an API key.
+      // Admins can manually enter duration if needed.
+      return {
         title: data.title,
         authorName: data.author_name,
         authorUrl: data.author_url,
@@ -221,41 +224,6 @@ export const youtube: EmbedProvider = {
         thumbnailWidth: data.thumbnail_width,
         thumbnailHeight: data.thumbnail_height,
       };
-
-      // Try to get duration via Innertube API
-      try {
-        const innertubeUrl = "https://www.youtube.com/youtubei/v1/player?prettyPrint=false";
-        const innertubeResponse = await fetchFn(innertubeUrl, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            videoId: id,
-            context: {
-              client: {
-                clientName: "WEB_EMBEDDED_PLAYER",
-                clientVersion: "1.20240101.00.00",
-              },
-            },
-          }),
-        });
-
-        if (innertubeResponse.ok) {
-          const innertubeData = await innertubeResponse.json();
-          const lengthSeconds = innertubeData?.videoDetails?.lengthSeconds;
-          if (lengthSeconds) {
-            const duration = parseInt(lengthSeconds, 10);
-            if (!isNaN(duration) && duration > 0) {
-              meta.duration = duration;
-            }
-          }
-        }
-      } catch {
-        // Innertube lookup failed (likely CORS), continue without duration
-      }
-
-      return meta;
     } catch {
       return null;
     }
