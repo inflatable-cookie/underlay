@@ -41,6 +41,7 @@ use crate::error_response;
 ///     // ... rest of handler
 /// }
 /// ```
+#[allow(clippy::result_large_err)]
 pub fn parse_uuid_path(value: &str, field_name: &str) -> Result<Uuid, Response> {
     Uuid::parse_str(value).map_err(|_| {
         let err = AppError::new(
@@ -69,6 +70,7 @@ pub fn parse_uuid_path(value: &str, field_name: &str) -> Result<Uuid, Response> 
 ///     // uuid is uuid::Uuid, ready for DB calls
 /// }
 /// ```
+#[allow(clippy::result_large_err)]
 pub fn parse_uuid_path_raw(value: &str, field_name: &str) -> Result<uuid::Uuid, Response> {
     uuid::Uuid::parse_str(value).map_err(|_| {
         let err = AppError::new(

@@ -28,9 +28,19 @@ When migrating from app-prefixed names, the API should accept both the generic n
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `ENVIRONMENT` | `local` | Runtime environment: `local`, `development`, `staging`, `production`, `test` |
-| `HOST` | `127.0.0.1` (local) or `0.0.0.0` | IP address to bind the server |
+| `HOST` | `127.0.0.1` (local) or `0.0.0.0` | IP address to bind the server socket |
 | `PORT` | `3000` | Port number for the HTTP server |
+| `PUBLIC_HOST` | `HOST` value | Hostname for constructing URLs (e.g., `localhost`, `api.example.com`) |
 | `LOG_LEVEL` | `info` | Application log level (also see `RUST_LOG`) |
+
+**Note on HOST vs PUBLIC_HOST:**
+
+`HOST` must be a valid IP address for socket binding (e.g., `127.0.0.1`, `0.0.0.0`). `PUBLIC_HOST` is used when constructing URLs that need to be accessible from browsers or external clients. For local development, set `HOST=localhost` in `.env` if you want browser-compatible URLs (the socket will bind to `127.0.0.1` by default).
+
+Common patterns:
+- **Local dev:** `HOST` unset (defaults to `127.0.0.1`), `PUBLIC_HOST=localhost` for browser URLs
+- **Containers/proxies:** `HOST=0.0.0.0` (bind all interfaces), `PUBLIC_HOST=api.example.com`
+- **Production:** `HOST=0.0.0.0`, `PUBLIC_HOST` set to the public domain name
 
 ### Database
 
@@ -189,8 +199,8 @@ PUBLIC_APP_NAME=MyApp
 ```bash
 # Server
 ENVIRONMENT=local
-HOST=127.0.0.1
 PORT=3000
+PUBLIC_HOST=localhost  # For browser-compatible URLs
 
 # Database
 DATABASE_URL=postgres://root@127.0.0.1:5432/myapp
@@ -213,6 +223,7 @@ EMAIL_ADAPTER=dev_capture
 ENVIRONMENT=production
 HOST=0.0.0.0
 PORT=3000
+PUBLIC_HOST=api.example.com  # Public domain for URLs
 
 # Database
 DATABASE_URL=postgres://user:pass@db.example.com:5432/myapp

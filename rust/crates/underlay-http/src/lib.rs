@@ -3,6 +3,7 @@ pub mod cookies;
 mod cors;
 mod errors;
 mod field_validation;
+mod http_config;
 pub mod pagination;
 mod path;
 pub mod query;
@@ -42,6 +43,7 @@ pub use crate::query::{
     SortField, WhereBuilder,
 };
 pub use crate::responses::{created, list_ok, no_content, ok};
+pub use crate::http_config::HttpServerConfig;
 
 #[cfg(feature = "validation")]
 pub use crate::validation::{validation_to_app_error, ValidateExt};
