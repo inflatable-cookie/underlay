@@ -222,24 +222,9 @@ export const youtube: EmbedProvider = {
         thumbnailHeight: data.thumbnail_height,
       };
 
-      // Try to get duration from get_video_info endpoint
-      try {
-        const infoUrl = `https://www.youtube.com/get_video_info?video_id=${id}`;
-        const infoResponse = await fetchFn(infoUrl);
-        if (infoResponse.ok) {
-          const infoText = await infoResponse.text();
-          const infoParams = new URLSearchParams(infoText);
-          const lengthSeconds = infoParams.get("length_seconds");
-          if (lengthSeconds) {
-            const duration = parseInt(lengthSeconds, 10);
-            if (!isNaN(duration) && duration > 0) {
-              meta.duration = duration;
-            }
-          }
-        }
-      } catch {
-        // Duration lookup failed, continue without it
-      }
+      // Note: YouTube oEmbed doesn't provide duration.
+      // The get_video_info endpoint is blocked by CORS in browsers.
+      // Duration must be fetched via a server-side proxy.
 
       return meta;
     } catch {
