@@ -98,6 +98,29 @@
 	}: Props = $props();
 
 	/**
+	 * Find the nearest scrollable ancestor of an element
+	 */
+	function getScrollParent(element: HTMLElement): HTMLElement | Window {
+		let parent = element.parentElement;
+
+		while (parent) {
+			const style = getComputedStyle(parent);
+			const overflowY = style.overflowY;
+
+			if (overflowY === "auto" || overflowY === "scroll") {
+				// Check if it's actually scrollable (has overflow content)
+				if (parent.scrollHeight > parent.clientHeight) {
+					return parent;
+				}
+			}
+
+			parent = parent.parentElement;
+		}
+
+		return window;
+	}
+
+	/**
 	 * Scroll to the target element with offset
 	 */
 	function doScroll() {
@@ -107,18 +130,26 @@
 
 		if (typeof scrollTarget === "string") {
 			element = document.querySelector(scrollTarget);
-			console.log('[Pagination] Looking for:', scrollTarget, 'Found:', element);
 		} else if (scrollTarget instanceof HTMLElement) {
 			element = scrollTarget;
 		}
 
 		if (element) {
-			const rect = element.getBoundingClientRect();
-			const scrollTop = window.scrollY + rect.top - scrollOffset;
-			console.log('[Pagination] Scrolling to:', scrollTop, 'rect.top:', rect.top, 'scrollY:', window.scrollY);
-			window.scrollTo({ top: scrollTop, behavior: "smooth" });
-		} else {
-			console.log('[Pagination] No element found for scrollTarget');
+			const scrollParent = getScrollParent(element);
+
+			if (scrollParent === window) {
+				// Window scrolling
+				const rect = element.getBoundingClientRect();
+				const scrollTop = window.scrollY + rect.top - scrollOffset;
+				window.scrollTo({ top: scrollTop, behavior: "smooth" });
+			} else {
+				// Container scrolling
+				const container = scrollParent as HTMLElement;
+				const containerRect = container.getBoundingClientRect();
+				const elementRect = element.getBoundingClientRect();
+				const scrollTop = container.scrollTop + (elementRect.top - containerRect.top) - scrollOffset;
+				container.scrollTo({ top: scrollTop, behavior: "smooth" });
+			}
 		}
 	}
 
