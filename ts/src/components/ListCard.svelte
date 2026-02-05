@@ -470,6 +470,19 @@
     overflow: hidden;
   }
 
+  /* Constrain SVG icons to fit within the icon area */
+  .underlay-list-card__icon :global(svg) {
+    max-width: 100%;
+    max-height: 100%;
+    flex-shrink: 0;
+  }
+
+  /* Also constrain icons in the plain media area (non-actions mode) */
+  .underlay-list-card__media :global(svg) {
+    max-width: 60%;
+    max-height: 60%;
+  }
+
   /* Support MediaThumbnail filling the icon area */
   .underlay-list-card__icon :global(.media-thumbnail) {
     width: 100%;
@@ -561,6 +574,16 @@
   .underlay-list-card-shell--draft:hover > .underlay-list-card {
     opacity: 1;
     filter: none;
+  }
+
+  /* =========================================================================
+     Mobile responsive - reduce media size on smaller screens
+     ========================================================================= */
+
+  @media (max-width: 480px) {
+    .underlay-list-card {
+      --_underlay-list-card-media-size: 56px;
+    }
   }
 
   /* =========================================================================
