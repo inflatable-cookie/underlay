@@ -80,6 +80,10 @@ export { default as MediaPicker } from "./MediaPicker.svelte";
 export { default as MediaActionsMenu } from "./MediaActionsMenu.svelte";
 export { default as MediaThumbnail } from "./MediaThumbnail.svelte";
 
+// Embed parser components
+export { default as EmbedInput } from "./EmbedInput.svelte";
+export { default as EmbedPreview } from "./EmbedPreview.svelte";
+
 // Log list (audit/activity logs with filtering, pagination, export)
 export { default as LogList } from "./LogList.svelte";
 export type { LogEntry, LogActor, LogFilter, LogActionType } from "./LogList.svelte";
