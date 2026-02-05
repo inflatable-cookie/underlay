@@ -4,6 +4,8 @@
   import { normaliseNightfireValue } from "./utils";
   import NightfireBlockEditor from "./NightfireBlockEditor.svelte";
   import NightfireFieldError from "./NightfireFieldError.svelte";
+  // Ensure registrations are loaded before we lookup schema definitions
+  import "./editor-registrations";
   import {
     getSchemaDefinition,
     getBlockTypeOptionsForSchema

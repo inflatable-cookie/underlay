@@ -46,21 +46,41 @@
   }: Props = $props();
 
   // Initialize block state once on mount - child editors manage their own state
-  // after that, so we only need to update when the block TYPE changes.
+  // after that, so we only need to update when the block TYPE changes or when
+  // we first receive data (to handle async data loading).
   const initialBlock = untrack(() => normaliseNightfireBlock(block, typeOptions, definition));
 
   let currentBlockType = $state(initialBlock.type);
   // Use untrack to capture initial schema value - the $effect below handles updates
   let BlockEditor: any = $state(untrack(() => getBlockEditor(schema, currentBlockType)));
   let internalBlock = $state(initialBlock);
+  // Track whether we've received "real" data (not just default empty block)
+  let hasReceivedData = $state(hasNonEmptyData(initialBlock));
 
-  // Update only when the block TYPE changes (e.g., user selects different block type)
+  function hasNonEmptyData(blk: any): boolean {
+    if (!blk || typeof blk.data !== "object" || blk.data === null) return false;
+    // Check if data has any non-empty values
+    return Object.values(blk.data).some((v) => {
+      if (v === null || v === undefined || v === "") return false;
+      if (Array.isArray(v)) return v.length > 0;
+      return true;
+    });
+  }
+
+  // Update when the block TYPE changes, OR when we first receive real data
+  // (to handle async data loading where initial block was empty/default)
   $effect(() => {
     const newBlock = normaliseNightfireBlock(block, typeOptions, definition);
-    if (newBlock.type !== currentBlockType) {
+    const typeChanged = newBlock.type !== currentBlockType;
+    const receivedFirstData = !hasReceivedData && hasNonEmptyData(newBlock);
+
+    if (typeChanged || receivedFirstData) {
       currentBlockType = newBlock.type;
       internalBlock = newBlock;
       BlockEditor = getBlockEditor(schema, currentBlockType);
+      if (receivedFirstData) {
+        hasReceivedData = true;
+      }
     }
   });
 
