@@ -584,6 +584,12 @@
     .underlay-list-card {
       --_underlay-list-card-media-size: 56px;
     }
+
+    /* Smaller pills on mobile */
+    .underlay-list-card__title-actions :global(.underlay-pill) {
+      font-size: 0.5em;
+      padding: 0.2em 0.5em;
+    }
   }
 
   /* =========================================================================
