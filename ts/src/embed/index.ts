@@ -110,3 +110,14 @@ export {
   secondsToTimestamp,
   timestampToSeconds,
 } from "./utils.js";
+
+// Server proxy utilities
+export {
+  CORS_BLOCKED_PROVIDERS,
+  requiresServerProxy,
+  createProxyAwareLookup,
+  proxyResponseToMeta,
+  type EmbedMetaProxyRequest,
+  type EmbedMetaProxyResponse,
+  type ProxyLookupConfig,
+} from "./proxy.js";

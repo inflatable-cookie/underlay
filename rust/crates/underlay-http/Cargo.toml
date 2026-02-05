@@ -30,12 +30,16 @@ chrono = { workspace = true, optional = true }
 tokio = { workspace = true, features = ["rt"], optional = true }
 urlencoding = { version = "2.1", optional = true }
 
+# Optional embed metadata proxy
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "json"], optional = true }
+
 [features]
 default = []
 tracing = ["dep:tracing"]
 validation = ["dep:validator"]
 nightfire = ["underlay-nightfire"]
 error-logging = ["underlay-db", "sqlx", "chrono", "tokio", "urlencoding", "tracing"]
+embed = ["reqwest"]
 
 [dev-dependencies]
 tokio = { workspace = true, features = ["macros", "rt"] }

@@ -18,6 +18,9 @@ mod nightfire;
 #[cfg(feature = "error-logging")]
 pub mod error_logging;
 
+#[cfg(feature = "embed")]
+pub mod embed;
+
 #[cfg(test)]
 mod errors_tests;
 
@@ -56,4 +59,9 @@ pub use crate::error_logging::{
     append_error_log, count_error_logs, error_logging_middleware, error_response_with_context,
     get_error_log_by_id, list_error_logs, DbErrorLogSink, ErrorLogFilters, ErrorLoggingConfig,
     ErrorLogRow, ERROR_CONTEXT_HEADER,
+};
+
+#[cfg(feature = "embed")]
+pub use crate::embed::{
+    lookup_audioboom, lookup_embed_metadata, lookup_metadata, EmbedMetaRequest, EmbedMetaResponse,
 };
