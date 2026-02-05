@@ -28,10 +28,62 @@
   }: Props = $props();
 
   /**
+   * Common audio file extensions and their MIME types
+   */
+  const AUDIO_EXTENSIONS: Record<string, string> = {
+    ".mp3": "audio/mpeg",
+    ".wav": "audio/wav",
+    ".ogg": "audio/ogg",
+    ".oga": "audio/ogg",
+    ".m4a": "audio/mp4",
+    ".aac": "audio/aac",
+    ".flac": "audio/flac",
+    ".webm": "audio/webm",
+    ".opus": "audio/opus",
+  };
+
+  /**
+   * Check if a URL is a direct audio file URL
+   */
+  function getAudioTypeFromUrl(url: string): string | null {
+    try {
+      const urlObj = new URL(url);
+      const pathname = urlObj.pathname.toLowerCase();
+
+      for (const [ext, mimeType] of Object.entries(AUDIO_EXTENSIONS)) {
+        if (pathname.endsWith(ext)) {
+          return mimeType;
+        }
+      }
+    } catch {
+      // Invalid URL, check raw string
+      const lowerUrl = url.toLowerCase();
+      for (const [ext, mimeType] of Object.entries(AUDIO_EXTENSIONS)) {
+        if (lowerUrl.endsWith(ext)) {
+          return mimeType;
+        }
+      }
+    }
+    return null;
+  }
+
+  /**
    * Extract direct audio URL from parsed embed.
    * Returns null if direct URL cannot be determined.
    */
   function getDirectAudioUrl(embed: ParsedEmbed): { url: string; type: string } | null {
+    // First, check if the original URL is a direct audio file
+    if (embed.originalUrl) {
+      const mimeType = getAudioTypeFromUrl(embed.originalUrl);
+      if (mimeType) {
+        return {
+          url: embed.originalUrl,
+          type: mimeType,
+        };
+      }
+    }
+
+    // Provider-specific extraction
     // Audioboom single posts have direct MP3 URLs
     if (
       embed.provider === "audioboom" &&
