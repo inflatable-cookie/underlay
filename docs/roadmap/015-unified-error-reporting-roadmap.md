@@ -261,9 +261,9 @@ All phases must preserve strict separation between:
 
 Rules:
 
-- [ ] Never include credentials, tokens, secrets, or raw PII in `context`.
+- [x] Never include credentials, tokens, secrets, or raw PII in `context`.
 - [x] Add explicit examples of safe context fields.
-- [ ] Prefer IDs, operation names, and failure class over raw payload dumps.
+- [x] Prefer IDs, operation names, and failure class over raw payload dumps.
 
 ## Validation Plan
 

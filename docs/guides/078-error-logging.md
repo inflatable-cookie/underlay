@@ -335,11 +335,11 @@ ApiError::internal("external.api_error", "External service unavailable")
 
 ### 2. Don't Log Sensitive Data
 
-Avoid logging:
-- Passwords or tokens
-- Personal identification numbers
-- Credit card details
-- Session tokens
+Never include these in `context`:
+- Credentials (passwords, OTP codes, passkeys)
+- Tokens or secrets (JWTs, refresh tokens, API keys, cookie values)
+- Raw PII (full email bodies, addresses, phone numbers, full legal names)
+- Raw request payload dumps from auth/account/profile endpoints
 
 Safe context example:
 
@@ -349,6 +349,7 @@ ApiError::internal("db.update_failed", "Failed to update record")
         "operation": "projects.update",
         "project_id": project_id,
         "request_id": request_id,
+        "failure_class": "constraint_violation",
     }))
 ```
 
@@ -363,7 +364,18 @@ ApiError::internal("auth.failed", "Authentication failed")
     }))
 ```
 
-### 3. Use Meaningful Error Codes
+### 3. Prefer IDs and Failure Class
+
+For context fields, prefer:
+- operation names (`projects.update`)
+- stable IDs (`project_id`, `user_id`, `job_id`)
+- failure class (`validation_failed`, `db_timeout`, `external_4xx`)
+
+Avoid:
+- full serialized payloads
+- unbounded free-form blobs
+- duplicate user-entered content already present in request body
+### 4. Use Meaningful Error Codes
 
 Structure error codes hierarchically:
 - `auth.invalid_credentials`
@@ -371,7 +383,7 @@ Structure error codes hierarchically:
 - `db.connection_failed`
 - `external.payment_declined`
 
-### 4. Configure Log Retention
+### 5. Configure Log Retention
 
 Error logs can grow quickly. Implement a maintenance job to purge old entries:
 
@@ -382,7 +394,7 @@ sqlx::query("DELETE FROM platform.error_log WHERE occurred_at < now() - interval
     .await?;
 ```
 
-### 5. Monitor Error Trends
+### 6. Monitor Error Trends
 
 Use the error log data for monitoring:
 
