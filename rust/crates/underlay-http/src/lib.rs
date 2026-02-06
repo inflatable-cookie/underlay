@@ -22,6 +22,9 @@ pub mod error_logging;
 pub mod embed;
 
 #[cfg(test)]
+mod cors_tests;
+
+#[cfg(test)]
 mod errors_tests;
 
 #[cfg(test)]
