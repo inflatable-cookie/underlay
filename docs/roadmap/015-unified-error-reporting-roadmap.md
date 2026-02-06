@@ -269,7 +269,7 @@ Rules:
 
 - [x] Unit tests in `underlay-http` for header and envelope behavior.
 - [x] Integration tests for middleware capture path (`ApiError` -> response headers -> `platform.error_log.context`).
-- [ ] Reference app smoke test:
+- [x] Reference app smoke test:
   - force a known DB failure
   - verify logged `error_code`, `message`, and `handler_context` fields are present and useful.
 

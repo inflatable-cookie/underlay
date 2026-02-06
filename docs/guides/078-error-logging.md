@@ -465,6 +465,20 @@ export interface ErrorLogStats {
 2. Verify the context is valid JSON
 3. Check that context size doesn't exceed header limits (use smaller context if needed)
 
+### Reference App Smoke Test
+
+Use the Acme reference script to validate the capture path end-to-end:
+
+```bash
+cd /path/to/underlay-reference
+./scripts/smoke-error-logging.sh
+```
+
+Expected result:
+1. A forced 500 is returned from `POST /v1/dev/error-smoke` (debug build).
+2. A new `platform.error_log` row exists for `error_code = smoke.forced_db_failure`.
+3. The row includes non-null `message` and `context.handler_context.operation = smoke.error_logging_capture`.
+
 ### High Database Load
 
 1. Consider disabling `log_client_errors` for high-traffic APIs
