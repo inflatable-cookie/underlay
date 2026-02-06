@@ -486,6 +486,13 @@ cd /path/to/underlay-reference
 ./scripts/error-log-metrics.sh
 ```
 
+To run the full reference validation sequence in one command:
+
+```bash
+cd /path/to/underlay-reference
+./scripts/validate-error-reporting.sh
+```
+
 ### High Database Load
 
 1. Consider disabling `log_client_errors` for high-traffic APIs
