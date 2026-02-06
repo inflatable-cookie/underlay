@@ -71,10 +71,11 @@ impl TestDb {
             container.get_host_port_ipv4(5432)
         );
 
-        let config = DbConfig {
-            database_url,
-            max_connections: 5,
-        };
+        let config = DbConfig::new(database_url)
+            .with_max_connections(5)
+            .with_min_connections(1)
+            .with_acquire_timeout_secs(30)
+            .with_idle_timeout_secs(600);
 
         let pool = create_pool(&config)
             .await

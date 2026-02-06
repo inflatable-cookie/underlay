@@ -268,7 +268,7 @@ Rules:
 ## Validation Plan
 
 - [x] Unit tests in `underlay-http` for header and envelope behavior.
-- [ ] Integration tests for middleware capture path (`ApiError` -> response headers -> `platform.error_log.context`).
+- [x] Integration tests for middleware capture path (`ApiError` -> response headers -> `platform.error_log.context`).
 - [ ] Reference app smoke test:
   - force a known DB failure
   - verify logged `error_code`, `message`, and `handler_context` fields are present and useful.

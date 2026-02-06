@@ -27,6 +27,9 @@ mod cors_tests;
 #[cfg(test)]
 mod errors_tests;
 
+#[cfg(all(test, feature = "error-logging"))]
+mod error_logging_tests;
+
 #[cfg(test)]
 mod responses_tests;
 
