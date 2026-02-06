@@ -8,9 +8,7 @@ use std::sync::Arc;
 use underlay_blob::BlobAdapter;
 use underlay_image::{generate_thumbnail, ThumbnailConfig};
 
-use crate::domain::{
-    CreateRenditionInput, MediaId, MediaRendition, MediaVersionId, RenditionType,
-};
+use crate::domain::{CreateRenditionInput, MediaId, MediaRendition, MediaVersionId, RenditionType};
 use crate::error::{MediaError, MediaResult};
 use crate::repository::MediaRepository;
 use crate::storage::StorageKeyGenerator;

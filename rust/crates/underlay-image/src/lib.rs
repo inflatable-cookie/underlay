@@ -180,7 +180,10 @@ impl ThumbnailConfig {
 /// // result.data contains the JPEG bytes
 /// // result.width and result.height contain the actual dimensions
 /// ```
-pub fn generate_thumbnail(data: &[u8], config: &ThumbnailConfig) -> Result<ThumbnailResult, ImageError> {
+pub fn generate_thumbnail(
+    data: &[u8],
+    config: &ThumbnailConfig,
+) -> Result<ThumbnailResult, ImageError> {
     // Decode the source image
     let img = ImageReader::new(Cursor::new(data))
         .with_guessed_format()
@@ -206,7 +209,8 @@ pub fn generate_thumbnail(data: &[u8], config: &ThumbnailConfig) -> Result<Thumb
 
     // Encode as JPEG
     let mut output = Vec::new();
-    let mut encoder = image::codecs::jpeg::JpegEncoder::new_with_quality(&mut output, config.quality);
+    let mut encoder =
+        image::codecs::jpeg::JpegEncoder::new_with_quality(&mut output, config.quality);
     encoder
         .encode(
             thumb.to_rgb8().as_raw(),
@@ -246,7 +250,11 @@ pub fn generate_thumbnail(data: &[u8], config: &ThumbnailConfig) -> Result<Thumb
 /// assert_eq!(result.width, 128);
 /// assert_eq!(result.height, 128);
 /// ```
-pub fn generate_square_thumbnail(data: &[u8], size: u32, quality: u8) -> Result<ThumbnailResult, ImageError> {
+pub fn generate_square_thumbnail(
+    data: &[u8],
+    size: u32,
+    quality: u8,
+) -> Result<ThumbnailResult, ImageError> {
     // Decode the source image
     let img = ImageReader::new(Cursor::new(data))
         .with_guessed_format()

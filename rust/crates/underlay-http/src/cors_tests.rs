@@ -24,11 +24,7 @@ mod tests {
     #[test]
     fn default_config_has_standard_headers() {
         let config = CorsConfig::default();
-        let header_names: Vec<&str> = config
-            .allowed_headers
-            .iter()
-            .map(|h| h.as_str())
-            .collect();
+        let header_names: Vec<&str> = config.allowed_headers.iter().map(|h| h.as_str()).collect();
 
         assert!(header_names.contains(&"authorization"));
         assert!(header_names.contains(&"content-type"));
@@ -79,8 +75,8 @@ mod tests {
 
     #[test]
     fn with_origins_sets_explicit_origins() {
-        let config = CorsConfig::new()
-            .with_origins(["https://example.com", "https://app.example.com"]);
+        let config =
+            CorsConfig::new().with_origins(["https://example.com", "https://app.example.com"]);
 
         assert!(!config.allow_any_origin);
         assert!(!config.mirror_origin);
@@ -132,14 +128,9 @@ mod tests {
 
     #[test]
     fn with_header_adds_to_existing() {
-        let config =
-            CorsConfig::new().with_header(HeaderName::from_static("x-custom-header"));
+        let config = CorsConfig::new().with_header(HeaderName::from_static("x-custom-header"));
 
-        let header_names: Vec<&str> = config
-            .allowed_headers
-            .iter()
-            .map(|h| h.as_str())
-            .collect();
+        let header_names: Vec<&str> = config.allowed_headers.iter().map(|h| h.as_str()).collect();
 
         // Should have defaults plus custom
         assert!(header_names.contains(&"authorization"));
@@ -149,9 +140,7 @@ mod tests {
 
     #[test]
     fn with_headers_replaces_defaults() {
-        let config = CorsConfig::new().with_headers(vec![
-            HeaderName::from_static("x-only-this"),
-        ]);
+        let config = CorsConfig::new().with_headers(vec![HeaderName::from_static("x-only-this")]);
 
         assert_eq!(config.allowed_headers.len(), 1);
         assert_eq!(config.allowed_headers[0].as_str(), "x-only-this");
@@ -163,11 +152,7 @@ mod tests {
             .with_header(HeaderName::from_static("x-first"))
             .with_header(HeaderName::from_static("x-second"));
 
-        let header_names: Vec<&str> = config
-            .allowed_headers
-            .iter()
-            .map(|h| h.as_str())
-            .collect();
+        let header_names: Vec<&str> = config.allowed_headers.iter().map(|h| h.as_str()).collect();
 
         assert!(header_names.contains(&"x-first"));
         assert!(header_names.contains(&"x-second"));
@@ -226,11 +211,7 @@ mod tests {
         assert_eq!(config.max_age_secs, 86400);
         assert_eq!(config.allowed_origins.len(), 2);
 
-        let header_names: Vec<&str> = config
-            .allowed_headers
-            .iter()
-            .map(|h| h.as_str())
-            .collect();
+        let header_names: Vec<&str> = config.allowed_headers.iter().map(|h| h.as_str()).collect();
         assert!(header_names.contains(&"x-csrf-token"));
     }
 
@@ -247,9 +228,7 @@ mod tests {
 
     #[test]
     fn internal_service_config() {
-        let config = CorsConfig::new()
-            .with_any_origin()
-            .with_credentials(false);
+        let config = CorsConfig::new().with_any_origin().with_credentials(false);
 
         assert!(config.allow_any_origin);
         assert!(!config.allow_credentials);

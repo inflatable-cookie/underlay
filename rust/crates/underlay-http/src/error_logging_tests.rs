@@ -7,8 +7,8 @@ mod tests {
         extract::State,
         http::{Request, StatusCode},
         middleware,
-        routing::get,
         response::IntoResponse,
+        routing::get,
         Router,
     };
     use serde_json::json;

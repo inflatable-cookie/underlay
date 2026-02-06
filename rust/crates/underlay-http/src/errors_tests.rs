@@ -26,7 +26,10 @@ mod tests {
             .with_context(serde_json::json!({ "operation": "list_users" }))
             .into_response();
 
-        let code = res.headers().get("x-error-code").expect("x-error-code should be set");
+        let code = res
+            .headers()
+            .get("x-error-code")
+            .expect("x-error-code should be set");
         let message = res
             .headers()
             .get("x-error-message")
@@ -39,7 +42,8 @@ mod tests {
         assert_eq!(code.to_str().unwrap(), "db.query_failed");
         assert_eq!(message.to_str().unwrap(), "Query failed");
 
-        let decoded = urlencoding::decode(context.to_str().unwrap()).expect("context should decode");
+        let decoded =
+            urlencoding::decode(context.to_str().unwrap()).expect("context should decode");
         let parsed: serde_json::Value =
             serde_json::from_str(&decoded).expect("context should be valid json");
         assert_eq!(parsed["operation"], "list_users");
@@ -69,7 +73,8 @@ mod tests {
             .get("x-error-context")
             .expect("x-error-context should be set");
 
-        let decoded = urlencoding::decode(context_header.to_str().unwrap()).expect("context should decode");
+        let decoded =
+            urlencoding::decode(context_header.to_str().unwrap()).expect("context should decode");
         let parsed: serde_json::Value =
             serde_json::from_str(&decoded).expect("context should be valid json");
         assert_eq!(parsed["operation"], "update_user");

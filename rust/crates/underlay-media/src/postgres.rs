@@ -9,10 +9,9 @@ use sqlx::{FromRow, PgPool, Row};
 use uuid::Uuid;
 
 use crate::domain::{
-    CreateMediaInput, CreateRenditionInput, FinalizeUploadInput, ListMediaParams, Media,
-    MediaId, MediaKind, MediaRendition, MediaRenditionId, MediaSummary, MediaUsage,
-    MediaVersion, MediaVersionId, MediaVersionState, MediaVisibility, RenditionType,
-    UpdateMediaInput,
+    CreateMediaInput, CreateRenditionInput, FinalizeUploadInput, ListMediaParams, Media, MediaId,
+    MediaKind, MediaRendition, MediaRenditionId, MediaSummary, MediaUsage, MediaVersion,
+    MediaVersionId, MediaVersionState, MediaVisibility, RenditionType, UpdateMediaInput,
 };
 use crate::error::{MediaError, MediaResult};
 use crate::repository::MediaRepository;
@@ -102,7 +101,10 @@ impl From<MediaRow> for Media {
         Self {
             id: MediaId(row.id),
             kind: row.kind.parse().unwrap_or(MediaKind::Image),
-            visibility: row.visibility.parse().unwrap_or(MediaVisibility::Restricted),
+            visibility: row
+                .visibility
+                .parse()
+                .unwrap_or(MediaVisibility::Restricted),
             title: row.title,
             original_filename: row.original_filename,
             alt_text: row.alt_text,
@@ -136,7 +138,10 @@ impl From<MediaSummaryRow> for MediaSummary {
         Self {
             id: MediaId(row.id),
             kind: row.kind.parse().unwrap_or(MediaKind::Image),
-            visibility: row.visibility.parse().unwrap_or(MediaVisibility::Restricted),
+            visibility: row
+                .visibility
+                .parse()
+                .unwrap_or(MediaVisibility::Restricted),
             title: row.title,
             original_filename: row.original_filename,
             current_version_id: row.current_version_id.map(MediaVersionId),
@@ -368,11 +373,7 @@ impl MediaRepository for PostgresMediaRepository {
         Ok(row.into())
     }
 
-    async fn soft_delete_media(
-        &self,
-        id: MediaId,
-        _deleted_by: Option<Uuid>,
-    ) -> MediaResult<bool> {
+    async fn soft_delete_media(&self, id: MediaId, _deleted_by: Option<Uuid>) -> MediaResult<bool> {
         let query = format!(
             r#"
             UPDATE {}
@@ -382,10 +383,7 @@ impl MediaRepository for PostgresMediaRepository {
             self.config.media_fqn()
         );
 
-        let result = sqlx::query(&query)
-            .bind(id.0)
-            .execute(&self.pool)
-            .await?;
+        let result = sqlx::query(&query).bind(id.0).execute(&self.pool).await?;
 
         Ok(result.rows_affected() > 0)
     }
@@ -400,10 +398,7 @@ impl MediaRepository for PostgresMediaRepository {
             self.config.media_fqn()
         );
 
-        let result = sqlx::query(&query)
-            .bind(id.0)
-            .execute(&self.pool)
-            .await?;
+        let result = sqlx::query(&query).bind(id.0).execute(&self.pool).await?;
 
         Ok(result.rows_affected() > 0)
     }
@@ -417,10 +412,7 @@ impl MediaRepository for PostgresMediaRepository {
             self.config.media_fqn()
         );
 
-        let result = sqlx::query(&query)
-            .bind(id.0)
-            .execute(&self.pool)
-            .await?;
+        let result = sqlx::query(&query).bind(id.0).execute(&self.pool).await?;
 
         Ok(result.rows_affected() > 0)
     }
@@ -447,8 +439,7 @@ impl MediaRepository for PostgresMediaRepository {
         if params.search.is_some() {
             conditions.push(format!(
                 "(m.title ILIKE ${} OR m.original_filename ILIKE ${})",
-                bind_index,
-                bind_index
+                bind_index, bind_index
             ));
             #[allow(unused_assignments)]
             {
@@ -640,10 +631,7 @@ impl MediaRepository for PostgresMediaRepository {
             self.config.versions_fqn()
         );
 
-        let result = sqlx::query(&query)
-            .bind(id.0)
-            .execute(&self.pool)
-            .await?;
+        let result = sqlx::query(&query).bind(id.0).execute(&self.pool).await?;
 
         Ok(result.rows_affected() > 0)
     }
@@ -657,10 +645,7 @@ impl MediaRepository for PostgresMediaRepository {
             self.config.versions_fqn()
         );
 
-        let result = sqlx::query(&query)
-            .bind(id.0)
-            .execute(&self.pool)
-            .await?;
+        let result = sqlx::query(&query).bind(id.0).execute(&self.pool).await?;
 
         Ok(result.rows_affected() > 0)
     }
@@ -793,7 +778,10 @@ impl MediaRepository for PostgresMediaRepository {
         Ok(row.map(Into::into))
     }
 
-    async fn list_renditions(&self, version_id: MediaVersionId) -> MediaResult<Vec<MediaRendition>> {
+    async fn list_renditions(
+        &self,
+        version_id: MediaVersionId,
+    ) -> MediaResult<Vec<MediaRendition>> {
         let query = format!(
             r#"
             SELECT id, media_version_id, kind, object_key, mime_type, byte_size,

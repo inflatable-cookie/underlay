@@ -234,7 +234,5 @@ pub fn init_tracing(config: ObservabilityConfig) {
 /// init_tracing_for_env(env, "info");
 /// ```
 pub fn init_tracing_for_env(env: Environment, default_level: &str) {
-    init_tracing(
-        ObservabilityConfig::for_environment(env).with_level(default_level),
-    );
+    init_tracing(ObservabilityConfig::for_environment(env).with_level(default_level));
 }

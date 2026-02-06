@@ -532,10 +532,7 @@ mod tests {
     fn test_rendition_type_as_str() {
         assert_eq!(RenditionType::Thumbnail.as_str(), "thumbnail");
         assert_eq!(RenditionType::Preview.as_str(), "preview");
-        assert_eq!(
-            RenditionType::Custom("hero".to_string()).as_str(),
-            "hero"
-        );
+        assert_eq!(RenditionType::Custom("hero".to_string()).as_str(), "hero");
     }
 
     #[test]

@@ -238,8 +238,14 @@ mod tests {
         assert_eq!(guess_content_type("doc.pdf"), "application/pdf");
         assert_eq!(guess_content_type("video.mp4"), "video/mp4");
         assert_eq!(guess_content_type("font.woff2"), "font/woff2");
-        assert_eq!(guess_content_type("unknown.xyz"), "application/octet-stream");
-        assert_eq!(guess_content_type("no-extension"), "application/octet-stream");
+        assert_eq!(
+            guess_content_type("unknown.xyz"),
+            "application/octet-stream"
+        );
+        assert_eq!(
+            guess_content_type("no-extension"),
+            "application/octet-stream"
+        );
     }
 
     #[test]

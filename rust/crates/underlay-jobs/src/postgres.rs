@@ -401,7 +401,8 @@ impl JobRepository {
             qb.push(" AND status = ").push_bind(status.as_str());
         }
         if let Some(job_type) = &filters.job_type {
-            qb.push(" AND job_type ILIKE ").push_bind(format!("%{}%", job_type));
+            qb.push(" AND job_type ILIKE ")
+                .push_bind(format!("%{}%", job_type));
         }
 
         qb.push(" ORDER BY created_at DESC LIMIT ")

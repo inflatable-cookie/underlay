@@ -69,30 +69,30 @@ pub mod renditions;
 
 // Re-export main types for convenience
 pub use domain::{
-    // Identifiers
-    MediaId,
-    MediaRenditionId,
-    MediaVersionId,
-    // Entities
-    Media,
-    MediaRendition,
-    MediaSummary,
-    MediaUsage,
-    MediaVersion,
-    // Enums (from underlay-db)
-    MediaKind,
-    MediaTypeParseError,
-    MediaVersionState,
-    MediaVisibility,
-    RenditionType,
+    // Utility
+    detect_media_kind_from_mime_type,
     // Input types
     CreateMediaInput,
     CreateRenditionInput,
     FinalizeUploadInput,
     ListMediaParams,
+    // Entities
+    Media,
+    // Identifiers
+    MediaId,
+    // Enums (from underlay-db)
+    MediaKind,
+    MediaRendition,
+    MediaRenditionId,
+    MediaSummary,
+    MediaTypeParseError,
+    MediaUsage,
+    MediaVersion,
+    MediaVersionId,
+    MediaVersionState,
+    MediaVisibility,
+    RenditionType,
     UpdateMediaInput,
-    // Utility
-    detect_media_kind_from_mime_type,
 };
 
 pub use error::{MediaError, MediaResult};
@@ -156,7 +156,10 @@ mod tests {
 
         // Test filename generation
         assert_eq!(version_filename("image/jpeg", None), "file.jpg");
-        assert_eq!(version_filename("image/png", Some("custom.png")), "custom.png");
+        assert_eq!(
+            version_filename("image/png", Some("custom.png")),
+            "custom.png"
+        );
 
         // Test extension mapping
         assert_eq!(mime_to_extension("image/jpeg"), "jpg");

@@ -7,9 +7,9 @@ use async_trait::async_trait;
 use uuid::Uuid;
 
 use crate::domain::{
-    CreateMediaInput, CreateRenditionInput, FinalizeUploadInput, ListMediaParams, Media,
-    MediaId, MediaRendition, MediaRenditionId, MediaSummary, MediaUsage, MediaVersion,
-    MediaVersionId, UpdateMediaInput,
+    CreateMediaInput, CreateRenditionInput, FinalizeUploadInput, ListMediaParams, Media, MediaId,
+    MediaRendition, MediaRenditionId, MediaSummary, MediaUsage, MediaVersion, MediaVersionId,
+    UpdateMediaInput,
 };
 use crate::error::MediaResult;
 
@@ -61,11 +61,7 @@ pub trait MediaRepository: Send + Sync {
     ///
     /// This marks the media as deleted but doesn't remove it from storage.
     /// Use `purge_media` to permanently delete.
-    async fn soft_delete_media(
-        &self,
-        id: MediaId,
-        deleted_by: Option<Uuid>,
-    ) -> MediaResult<bool>;
+    async fn soft_delete_media(&self, id: MediaId, deleted_by: Option<Uuid>) -> MediaResult<bool>;
 
     /// Restore a soft-deleted media item.
     async fn restore_media(&self, id: MediaId) -> MediaResult<bool>;
@@ -146,7 +142,8 @@ pub trait MediaRepository: Send + Sync {
     async fn get_rendition(&self, id: MediaRenditionId) -> MediaResult<Option<MediaRendition>>;
 
     /// List all renditions for a version.
-    async fn list_renditions(&self, version_id: MediaVersionId) -> MediaResult<Vec<MediaRendition>>;
+    async fn list_renditions(&self, version_id: MediaVersionId)
+        -> MediaResult<Vec<MediaRendition>>;
 
     /// Delete all renditions for a version.
     ///
@@ -232,7 +229,8 @@ pub trait MediaRepositoryExt: MediaRepository {
         input: FinalizeUploadInput,
     ) -> MediaResult<MediaVersion> {
         let version = self.finalize_version(version_id, input).await?;
-        self.set_current_version(version.media_id, version.id).await?;
+        self.set_current_version(version.media_id, version.id)
+            .await?;
         Ok(version)
     }
 }
