@@ -174,11 +174,11 @@ These helpers reduce boilerplate so rich context remains easy to add.
 
 - [ ] Replace direct `StatusCode::...into_response()` error branches in route handlers with `ApiError`.
 - [ ] Replace `error_response(...)` callsites with `ApiError` where practical.
-- [ ] Add context for high-value failure paths first:
+- [x] Add context for high-value failure paths first:
   - DB operations
   - external integrations
   - auth/session operations
-- [ ] Keep business error codes stable.
+- [x] Keep business error codes stable.
 
 ### Implementation Tickets (Phase 15.4)
 
@@ -209,6 +209,24 @@ These helpers reduce boilerplate so rich context remains easy to add.
   - Ensure list/fetch failures emit structured `ApiError` context.
 - [ ] `acme-api/crates/api/src/routes/mod.rs`
   - Confirm no route-level adapters bypass `ApiError` response path.
+- [x] `acme-api/crates/api/src/routes/admin/error_logs.rs`
+  - Convert error listing/getting routes to `ApiError`.
+  - Add structured context for list/get failures.
+- [x] `acme-api/crates/api/src/routes/admin/scheduled_tasks.rs`
+  - Convert list/get/toggle/trigger handlers to `ApiError`.
+  - Add structured context for SQL and job trigger failures.
+- [x] `acme-api/crates/api/src/routes/admin/jobs.rs`
+  - Convert list/get/cancel/retry/stats handlers to `ApiError`.
+  - Add structured context for job lifecycle failures.
+- [x] `acme-api/crates/api/src/routes/admin/captured_emails.rs`
+  - Convert list/get/delete handlers to `ApiError`.
+  - Add structured context for filter parsing and DB failures.
+- [x] `acme-api/crates/api/src/routes/shared/account.rs`
+  - Convert profile load/update handlers to `ApiError`.
+  - Add structured context for profile persistence failures.
+- [x] `acme-api/crates/api/src/routes/shared/auth.rs` (in progress)
+  - Migrate helper and endpoint error paths incrementally to `ApiError`.
+  - Preserve cookie/header behavior while replacing generic error responses.
 - [ ] Verification sweep (`acme-api` routes)
   - Run grep check to identify remaining `StatusCode::...into_response()` error branches.
   - Track remaining migrations as explicit TODO items until zero.
