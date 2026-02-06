@@ -12,8 +12,8 @@ The target outcome is:
 
 ## Progress Checklist
 
-- [ ] Phase 15.1 complete
-- [ ] Phase 15.2 complete
+- [x] Phase 15.1 complete
+- [x] Phase 15.2 complete
 - [ ] Phase 15.3 complete
 - [ ] Phase 15.4 complete
 - [ ] Phase 15.5 complete
@@ -94,66 +94,66 @@ These helpers reduce boilerplate so rich context remains easy to add.
 
 ### Tasks
 
-- [ ] Add `ApiError` and `ApiResult` to `underlay-http`.
-- [ ] Implement `IntoResponse` for `ApiError`.
-- [ ] Ensure generated response headers are compatible with existing error logging middleware.
-- [ ] Add unit tests for response envelope and headers.
+- [x] Add `ApiError` and `ApiResult` to `underlay-http`.
+- [x] Implement `IntoResponse` for `ApiError`.
+- [x] Ensure generated response headers are compatible with existing error logging middleware.
+- [x] Add unit tests for response envelope and headers.
 
 ### Implementation Tickets (Phase 15.1)
 
-- [ ] `underlay/rust/crates/underlay-http/src/errors.rs`
+- [x] `underlay/rust/crates/underlay-http/src/errors.rs`
   - Add `ApiError` struct, constructors, `with_context`, `with_cause`, `with_field_errors`.
   - Add `ApiResult<T>` alias.
   - Implement `IntoResponse` for `ApiError` with required headers.
-- [ ] `underlay/rust/crates/underlay-http/src/lib.rs`
+- [x] `underlay/rust/crates/underlay-http/src/lib.rs`
   - Export `ApiError`, `ApiResult`, and helper traits/builders.
-- [ ] `underlay/rust/crates/underlay-http/src/error_logging.rs`
+- [x] `underlay/rust/crates/underlay-http/src/error_logging.rs`
   - Verify middleware consumes headers emitted by `ApiError` without changes.
   - Add compatibility assertions/comments where behavior coupling exists.
-- [ ] `underlay/rust/crates/underlay-http/src/errors_tests.rs`
+- [x] `underlay/rust/crates/underlay-http/src/errors_tests.rs`
   - Add tests for envelope shape and `x-error-code`, `x-error-message`, `x-error-context`.
   - Add tests that field errors and context serialization are preserved.
-- [ ] `underlay/rust/crates/underlay-http/ERROR_LOGGING.md`
+- [x] `underlay/rust/crates/underlay-http/ERROR_LOGGING.md`
   - Update examples to use `ApiError` as the primary path.
   - Mark `error_response_with_context` as compatibility fallback.
 
 ### Acceptance Criteria
 
-- [ ] A handler returning `Err(ApiError::internal(...))` produces:
+- [x] A handler returning `Err(ApiError::internal(...))` produces:
   - correct status
   - standard error envelope
   - `x-error-code`, `x-error-message`, `x-error-context`
-- [ ] Existing middleware records all required fields without route-specific code.
+- [x] Existing middleware records all required fields without route-specific code.
 
 ## Phase 15.2 – Documentation Canonicalization
 
 ### Tasks
 
-- [ ] Update `underlay/docs/guides/070-api-handlers.md` to make `ApiResult` + `ApiError` the primary pattern.
-- [ ] Update `underlay/docs/guides/078-error-logging.md` to position `error_response_with_context()` as legacy/migration-only.
-- [ ] Add a concise “Do / Don’t” section:
+- [x] Update `underlay/docs/guides/070-api-handlers.md` to make `ApiResult` + `ApiError` the primary pattern.
+- [x] Update `underlay/docs/guides/078-error-logging.md` to position `error_response_with_context()` as legacy/migration-only.
+- [x] Add a concise “Do / Don’t” section:
   - Do: return `ApiResult`
   - Don’t: return raw status for errors in handlers
 
 ### Implementation Tickets (Phase 15.2)
 
-- [ ] `underlay/docs/guides/070-api-handlers.md`
+- [x] `underlay/docs/guides/070-api-handlers.md`
   - Add canonical handler signatures using `ApiResult`.
   - Replace primary examples that currently use raw `error_response(...)`.
   - Add a lintable rule section for route modules (no raw `StatusCode::...into_response()` in error branches).
-- [ ] `underlay/docs/guides/078-error-logging.md`
+- [x] `underlay/docs/guides/078-error-logging.md`
   - Make `ApiError` examples first-class and default.
   - Move `error_response_with_context(...)` to migration/fallback section.
   - Add “safe context payload” examples and “unsafe context” anti-examples.
-- [ ] `underlay/docs/patterns/000-index.md`
+- [x] `underlay/docs/patterns/000-index.md`
   - Update error-handling pattern references to point to the new canonical `ApiError` flow.
-- [ ] `underlay/docs/guides/200-project-sync.md`
+- [x] `underlay/docs/guides/200-project-sync.md`
   - Add explicit upgrade checklist items for adopting `ApiError` and removing raw status error returns.
 
 ### Acceptance Criteria
 
-- [ ] Guides have one recommended pattern, not multiple equivalent patterns.
-- [ ] Migration fallback is documented but clearly secondary.
+- [x] Guides have one recommended pattern, not multiple equivalent patterns.
+- [x] Migration fallback is documented but clearly secondary.
 
 ## Phase 15.3 – Compatibility and Migration Layer
 
@@ -249,7 +249,7 @@ Rules:
 
 ## Validation Plan
 
-- [ ] Unit tests in `underlay-http` for header and envelope behavior.
+- [x] Unit tests in `underlay-http` for header and envelope behavior.
 - [ ] Integration tests for middleware capture path (`ApiError` -> response headers -> `platform.error_log.context`).
 - [ ] Reference app smoke test:
   - force a known DB failure
@@ -269,7 +269,7 @@ Rules:
 
 ## Deliverables
 
-- [ ] `underlay-http`: `ApiError`, `ApiResult`, helpers, tests.
-- [ ] Updated guides: `070-api-handlers.md`, `078-error-logging.md`.
+- [x] `underlay-http`: `ApiError`, `ApiResult`, helpers, tests.
+- [x] Updated guides: `070-api-handlers.md`, `078-error-logging.md`.
 - [ ] Reference migration in `acme-api`.
 - [ ] Reusable downstream upgrade checklist.

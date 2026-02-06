@@ -8,7 +8,7 @@ The patterns here are intentionally simple and align with Underlay's primitives:
 
 - API routes use the `/v1/...` prefix.
 - Responses use `underlay_core::{SingleResponse, ListResponse}`.
-- Errors use `underlay_core::AppError` wrapped via `underlay_http::error_response`.
+- Errors use `underlay_http::ApiError` and `ApiResult<T>` as the canonical path.
 
 ## Handler Structure
 
@@ -64,19 +64,32 @@ Underlay’s error envelope is:
 }
 ```
 
-In Rust, build errors with `underlay_core::AppError` and return them using `underlay_http::error_response`:
+In Rust, return typed handler errors with `underlay_http::ApiError`:
 
 ```rust
-use axum::{http::StatusCode, response::IntoResponse};
-use underlay_core::AppError;
+use underlay_http::ApiError;
 
-fn not_found(resource: &str) -> impl IntoResponse {
-    underlay_http::error_response(
-        StatusCode::NOT_FOUND,
-        AppError::new("resource.not_found", format!("{} not found", resource)),
-    )
+fn not_found(resource: &str) -> ApiError {
+    ApiError::not_found("resource.not_found", format!("{resource} not found"))
 }
 ```
+
+### Do / Don't
+
+- Do: return `ApiResult<T>` from handlers and construct failures with `ApiError`.
+- Do: attach structured context via `.with_context(...)` on failures.
+- Don't: return raw `StatusCode::...into_response()` for handler error branches.
+- Don't: use `error_response(...)` as a primary route pattern in new code.
+
+### Lintable Rule for Route Modules
+
+Use this check to find likely non-canonical error branches in handlers:
+
+```bash
+rg -n "StatusCode::[A-Z_]+\\s*\\.into_response\\(\\)" crates/api/src/routes
+```
+
+Expected migration target: zero matches for error branches in route modules.
 
 ## AppState
 
@@ -106,13 +119,11 @@ These examples use `/v1/...` routes and the Underlay envelopes.
 ```rust
 use axum::{
     extract::{Path, State},
-    http::StatusCode,
-    response::IntoResponse,
     routing::get,
-    Json, Router,
+    Router,
 };
 use underlay_core::{ListResponse, SingleResponse};
-use underlay_core::AppError;
+use underlay_http::{ApiError, ApiResult, list_ok, ok, parse_uuid_path_raw};
 
 use crate::state::AppState;
 
@@ -124,8 +135,8 @@ struct UserDto {
     created_at: String,
 }
 
-async fn list_users(State(state): State<AppState>) -> impl IntoResponse {
-    let rows = match sqlx::query!(
+async fn list_users(State(state): State<AppState>) -> ApiResult<ListResponse<UserDto>> {
+    let rows = sqlx::query!(
         r#"
         SELECT id::text as user_id, email, created_at
         FROM users
@@ -135,15 +146,11 @@ async fn list_users(State(state): State<AppState>) -> impl IntoResponse {
     )
     .fetch_all(&state.pool)
     .await
-    {
-        Ok(rows) => rows,
-        Err(err) => {
-            return underlay_http::error_response(
-                StatusCode::INTERNAL_SERVER_ERROR,
-                AppError::new("db.query_failed", err.to_string()),
-            );
-        }
-    };
+    .map_err(|err| {
+        ApiError::internal("db.query_failed", "Failed to list users")
+            .with_cause(err.to_string())
+            .with_context(serde_json::json!({"query": "users.list"}))
+    })?;
 
     let data: Vec<UserDto> = rows
         .into_iter()
@@ -154,21 +161,14 @@ async fn list_users(State(state): State<AppState>) -> impl IntoResponse {
         })
         .collect();
 
-    (StatusCode::OK, Json(ListResponse { data })).into_response()
+    Ok(list_ok(data))
 }
 
-async fn get_user(State(state): State<AppState>, Path(user_id): Path<String>) -> impl IntoResponse {
-    let id: uuid::Uuid = match user_id.parse() {
-        Ok(id) => id,
-        Err(_) => {
-            return underlay_http::error_response(
-                StatusCode::BAD_REQUEST,
-                AppError::new("validation.invalid_id", "Invalid user ID"),
-            );
-        }
-    };
+async fn get_user(State(state): State<AppState>, Path(user_id): Path<String>) -> ApiResult<SingleResponse<UserDto>> {
+    let id = parse_uuid_path_raw(&user_id, "userId")
+        .map_err(|_| ApiError::bad_request("validation.invalid_id", "Invalid user ID"))?;
 
-    let row = match sqlx::query!(
+    let row = sqlx::query!(
         r#"
         SELECT id::text as user_id, email, created_at
         FROM users
@@ -178,21 +178,15 @@ async fn get_user(State(state): State<AppState>, Path(user_id): Path<String>) ->
     )
     .fetch_optional(&state.pool)
     .await
-    {
-        Ok(row) => row,
-        Err(err) => {
-            return underlay_http::error_response(
-                StatusCode::INTERNAL_SERVER_ERROR,
-                AppError::new("db.query_failed", err.to_string()),
-            );
-        }
-    };
+    .map_err(|err| {
+        ApiError::internal("db.query_failed", "Failed to load user")
+            .with_cause(err.to_string())
+            .with_context(serde_json::json!({ "userId": id }))
+    })?;
 
     let Some(row) = row else {
-        return underlay_http::error_response(
-            StatusCode::NOT_FOUND,
-            AppError::new("resource.not_found", "User not found"),
-        );
+        return Err(ApiError::not_found("resource.not_found", "User not found")
+            .with_context(serde_json::json!({ "userId": id })));
     };
 
     let dto = UserDto {
@@ -201,7 +195,7 @@ async fn get_user(State(state): State<AppState>, Path(user_id): Path<String>) ->
         created_at: row.created_at.to_rfc3339(),
     };
 
-    (StatusCode::OK, Json(SingleResponse { data: dto })).into_response()
+    Ok(ok(dto))
 }
 
 pub fn create_router(state: AppState) -> Router {
@@ -247,41 +241,20 @@ Then run your migrations. This creates the `infra.error_log` table with indexes.
 
 #### Basic Usage in Handlers
 
-Log errors directly from error handlers:
+For handlers, prefer returning `ApiError` so context is automatically attached via headers:
 
 ```rust
-use underlay_http::error_logging::append_error_log;
-use underlay_observability::RequestId;
+use underlay_http::{ApiError, ApiResult};
 
 async fn get_user(
     State(state): State<AppState>,
-    request_id: RequestId,
     Path(user_id): Path<String>
-) -> impl IntoResponse {
+) -> ApiResult<SingleResponse<UserDto>> {
     let id: uuid::Uuid = match user_id.parse() {
         Ok(id) => id,
         Err(_) => {
-            let error = AppError::new("validation.invalid_id", "Invalid user ID");
-            
-            // Log the error asynchronously (non-blocking)
-            let pool = state.pool.clone();
-            tokio::spawn(async move {
-                let _ = append_error_log(
-                    &pool,
-                    "/v1/users/:id",                    // endpoint
-                    "GET",                               // method
-                    400,                                 // status code
-                    "validation.invalid_id",             // error code
-                    "Invalid user ID",                   // message
-                    &request_id.to_string(),             // correlation ID
-                    serde_json::json!({"user_id": user_id}), // context
-                ).await;
-            });
-            
-            return underlay_http::error_response(
-                StatusCode::BAD_REQUEST,
-                error,
-            );
+            return Err(ApiError::bad_request("validation.invalid_id", "Invalid user ID")
+                .with_context(serde_json::json!({ "userId": user_id })));
         }
     };
     
@@ -289,7 +262,7 @@ async fn get_user(
 }
 ```
 
-**Note**: Always wrap `append_error_log()` in `tokio::spawn()` to avoid blocking the request response.
+**Note**: Reserve direct `append_error_log()` calls for non-HTTP contexts (background jobs, workers). HTTP handlers should return `ApiError` and let middleware persist the log entry.
 
 #### Querying Error Logs
 
@@ -789,24 +762,24 @@ let exclude_id = parse_optional_uuid_for_validation(value.as_deref(), "excludeId
 When using the `validator` crate, convert validation errors to `AppError` with field errors:
 
 ```rust
-use underlay_http::{validation_to_app_error, ValidateExt};
+use underlay_http::{ApiError, ApiResult, validation_to_app_error, ValidateExt};
 use validator::Validate;
 
 // Option 1: Manual conversion
-async fn create_user(Json(payload): Json<CreateUserPayload>) -> impl IntoResponse {
+async fn create_user(Json(payload): Json<CreateUserPayload>) -> ApiResult<SingleResponse<UserDto>> {
     if let Err(validation_err) = payload.validate() {
         let err = validation_to_app_error(
             &validation_err,
             "user.invalid",
             "There is a problem with one or more fields."
         );
-        return error_response(StatusCode::BAD_REQUEST, err).into_response();
+        return Err(ApiError::new(StatusCode::BAD_REQUEST, err));
     }
     // ...
 }
 
 // Option 2: Trait extension (more concise)
-async fn create_user(Json(payload): Json<CreateUserPayload>) -> impl IntoResponse {
+async fn create_user(Json(payload): Json<CreateUserPayload>) -> ApiResult<SingleResponse<UserDto>> {
     payload.validate_or_error("user.invalid")?;
     // ...
 }
@@ -823,11 +796,11 @@ underlay-http = { path = "...", features = ["validation"] }
 Convert Nightfire validation errors to HTTP error responses:
 
 ```rust
-use underlay_http::{nightfire_validation_to_app_error, error_response};
+use underlay_http::{ApiError, ApiResult, nightfire_validation_to_app_error};
 use nightfire::{validate_nightfire_value_by_schema, NightfireValue};
 use axum::http::StatusCode;
 
-async fn create_content(body: NightfireValue) -> impl IntoResponse {
+async fn create_content(body: NightfireValue) -> ApiResult<SingleResponse<ContentDto>> {
     if let Err(validation_err) = validate_nightfire_value_by_schema(&body) {
         let err = nightfire_validation_to_app_error(
             validation_err,
@@ -835,7 +808,7 @@ async fn create_content(body: NightfireValue) -> impl IntoResponse {
             "body",
             "Content body failed schema validation.",
         );
-        return error_response(StatusCode::BAD_REQUEST, err).into_response();
+        return Err(ApiError::new(StatusCode::BAD_REQUEST, err));
     }
     // ... rest of handler
 }
@@ -1284,15 +1257,19 @@ If you have existing manual validation code, you can gradually migrate to the de
 **Before (manual validation scattered in handlers):**
 
 ```rust
-async fn create_user(Json(payload): Json<CreateUserRequest>) -> impl IntoResponse {
+async fn create_user(Json(payload): Json<CreateUserRequest>) -> ApiResult<SingleResponse<UserDto>> {
     // Manual validation in handler
     if !payload.email.contains('@') {
-        return error_response(StatusCode::BAD_REQUEST, 
-            AppError::new("validation.failed", "Invalid email"));
+        return Err(ApiError::bad_request(
+            "validation.failed",
+            "Invalid email",
+        ));
     }
     if payload.password.len() < 8 {
-        return error_response(StatusCode::BAD_REQUEST, 
-            AppError::new("validation.failed", "Password too short"));
+        return Err(ApiError::bad_request(
+            "validation.failed",
+            "Password too short",
+        ));
     }
     // ... more validation
     

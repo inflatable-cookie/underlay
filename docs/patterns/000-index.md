@@ -55,7 +55,7 @@ Individual techniques referenced by the recipes above.
 |---------|-------------|-------|
 | UUID path parsing | `parse_uuid_path_raw()` | [070-api-handlers.md#uuid-path-parameter-parsing](../guides/070-api-handlers.md#uuid-path-parameter-parsing) |
 | Response helpers | `ok()`, `created()`, `list_ok()` | [070-api-handlers.md#response-helpers](../guides/070-api-handlers.md#response-helpers) |
-| Error responses | `error_response()` with `AppError` | [070-api-handlers.md#errors](../guides/070-api-handlers.md#errors) |
+| Error responses | `ApiError` / `ApiResult<T>` (canonical) | [070-api-handlers.md#errors](../guides/070-api-handlers.md#errors) |
 | Pagination | `PaginationParams`, `Paginated<T>` | [070-api-handlers.md#pagination](../guides/070-api-handlers.md#pagination) |
 | Field mapping | `FieldMapping` for sort/filter | [070-api-handlers.md#query-field-mapping](../guides/070-api-handlers.md#query-field-mapping) |
 

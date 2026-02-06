@@ -9,7 +9,7 @@ The error logging feature includes:
 - **Middleware** - Automatically captures 4xx and 5xx responses
 - **Database storage** - Persists errors to `platform.error_log` table
 - **Query functions** - List, filter, and retrieve error logs
-- **Context enrichment** - Add custom debugging context to error responses
+- **Context enrichment** - Capture structured handler context from `ApiError`
 
 ## Feature Flag
 
@@ -97,39 +97,50 @@ This ensures:
 2. Tracing spans are established
 3. Errors are captured before CORS headers are added
 
-## Adding Context to Errors
+## Canonical Handler Path
 
-Use `error_response_with_context()` to include debugging information in error logs:
+Use `ApiError` and `ApiResult<T>` in handlers. This is the canonical Underlay path for rich error logging:
 
 ```rust
-use underlay_http::error_response_with_context;
-use underlay_core::AppError;
-use axum::http::StatusCode;
-use serde_json::json;
+use axum::extract::{Json, Path};
+use underlay_core::SingleResponse;
+use underlay_http::{ApiError, ApiResult, ok};
 
 async fn update_record(
     Path(id): Path<Uuid>,
     Json(payload): Json<UpdateRequest>,
-) -> impl IntoResponse {
-    match db::update_record(&pool, id, &payload).await {
-        Ok(record) => Json(record).into_response(),
-        Err(e) => {
-            tracing::error!(%e, %id, "failed to update record");
-            error_response_with_context(
-                StatusCode::INTERNAL_SERVER_ERROR,
-                AppError::new("db.update_failed", "Failed to update record"),
-                json!({
-                    "db_error": e.to_string(),
-                    "record_id": id.to_string(),
-                    "attempted_changes": payload,
-                }),
-            ).into_response()
-        }
-    }
+) -> ApiResult<SingleResponse<RecordDto>> {
+    let record = db::update_record(&pool, id, &payload).await.map_err(|e| {
+        ApiError::internal("db.update_failed", "Failed to update record")
+            .with_cause(e.to_string())
+            .with_context(serde_json::json!({
+                "record_id": id,
+                "payload": payload
+            }))
+    })?;
+
+    Ok(ok(record))
 }
 ```
 
-The context is URL-encoded and passed via the `x-error-context` header, which the middleware extracts and stores in the `context` JSONB column.
+`ApiError` writes `x-error-code`, `x-error-message`, and `x-error-context` headers; the middleware extracts these and persists them into `platform.error_log.context.handler_context`.
+
+## Compatibility Path
+
+`error_response_with_context()` remains available for legacy handlers returning `impl IntoResponse`:
+
+```rust
+use axum::http::StatusCode;
+use underlay_core::AppError;
+use underlay_http::error_response_with_context;
+
+return error_response_with_context(
+    StatusCode::BAD_REQUEST,
+    AppError::new("validation.invalid", "Validation failed"),
+    serde_json::json!({"field": "email"}),
+)
+.into_response();
+```
 
 ## Querying Error Logs
 
@@ -238,16 +249,13 @@ The middleware automatically captures and stores context including:
 For 5xx errors, always include relevant debugging information:
 
 ```rust
-error_response_with_context(
-    StatusCode::INTERNAL_SERVER_ERROR,
-    AppError::new("external.api_error", "External service unavailable"),
-    json!({
+ApiError::internal("external.api_error", "External service unavailable")
+    .with_context(serde_json::json!({
         "service": "payment-gateway",
         "response_code": response.status().as_u16(),
-        "response_body": response_text,
         "request_id": external_request_id,
-    }),
-)
+    }))
+    .with_cause(response_text)
 ```
 
 ### 2. Don't Log Sensitive Data
@@ -257,6 +265,28 @@ Avoid logging:
 - Personal identification numbers
 - Credit card details
 - Session tokens
+
+Safe context example:
+
+```rust
+ApiError::internal("db.update_failed", "Failed to update record")
+    .with_context(serde_json::json!({
+        "operation": "projects.update",
+        "project_id": project_id,
+        "request_id": request_id,
+    }))
+```
+
+Unsafe anti-example:
+
+```rust
+ApiError::internal("auth.failed", "Authentication failed")
+    .with_context(serde_json::json!({
+        "password": payload.password,
+        "token": auth_token,
+        "raw_payload": payload,
+    }))
+```
 
 ### 3. Use Meaningful Error Codes
 
@@ -344,7 +374,7 @@ export interface ErrorLogStats {
 
 ### Context Not Appearing
 
-1. Ensure you're using `error_response_with_context()` not `error_response()`
+1. Ensure handlers return `ApiError` (or legacy `error_response_with_context()`)
 2. Verify the context is valid JSON
 3. Check that context size doesn't exceed header limits (use smaller context if needed)
 

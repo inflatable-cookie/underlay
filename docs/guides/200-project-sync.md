@@ -70,8 +70,8 @@ Ensure all API handlers use consistent response shapes.
 ### Imports
 
 ```rust
-use underlay_core::{AppError, ListResponse, SingleResponse};
-use underlay_http::{ok, created, no_content, list_ok, error_response};
+use underlay_core::{ListResponse, SingleResponse};
+use underlay_http::{ApiError, ApiResult, ok, created, no_content, list_ok};
 ```
 
 ### Migration Checklist
@@ -79,7 +79,7 @@ use underlay_http::{ok, created, no_content, list_ok, error_response};
 - [ ] Replace manual `Json(...)` returns with `ok(data)` or `created(data)`
 - [ ] Replace `(StatusCode::OK, Json(ListResponse { data }))` with `list_ok(data)`
 - [ ] Replace `(StatusCode::NO_CONTENT, ())` with `no_content()`
-- [ ] Use `error_response(StatusCode::..., AppError::new(...))` for errors
+- [ ] Use `ApiResult<T>` and return `ApiError` for handler failures
 
 **Before:**
 ```rust
@@ -89,6 +89,15 @@ use underlay_http::{ok, created, no_content, list_ok, error_response};
 **After:**
 ```rust
 ok(dto).into_response()
+```
+
+**Error handling (canonical):**
+
+```rust
+return Err(ApiError::bad_request(
+    "validation.invalid_id",
+    "Invalid user ID",
+));
 ```
 
 ---
@@ -115,10 +124,10 @@ use underlay_http::{parse_uuid_path, parse_uuid_path_raw};
 let id: uuid::Uuid = match user_id.parse() {
     Ok(id) => id,
     Err(_) => {
-        return error_response(
-            StatusCode::BAD_REQUEST,
-            AppError::new("validation.invalid_id", "Invalid user ID"),
-        );
+        return Err(ApiError::bad_request(
+            "validation.invalid_id",
+            "Invalid user ID",
+        ));
     }
 };
 ```
@@ -228,13 +237,13 @@ pub async fn area_slug_exists(pool: &DbPool, slug: &str) -> Result<bool, sqlx::E
 For request body validation using the `validator` crate:
 
 ```rust
-use underlay_http::{validation_to_app_error, ValidateExt};
+use underlay_http::{ApiError, validation_to_app_error, ValidateExt};
 use validator::Validate;
 
 // Option 1: Manual
 if let Err(validation_err) = payload.validate() {
     let err = validation_to_app_error(&validation_err, "entity.invalid", "Validation failed.");
-    return error_response(StatusCode::BAD_REQUEST, err).into_response();
+    return Err(ApiError::new(StatusCode::BAD_REQUEST, err));
 }
 
 // Option 2: Trait extension
@@ -277,7 +286,7 @@ if let Err(validation_err) = validate_nightfire_value_by_schema(&body) {
         "body",
         "Content body failed schema validation.",
     );
-    return error_response(StatusCode::BAD_REQUEST, err).into_response();
+    return Err(ApiError::new(StatusCode::BAD_REQUEST, err));
 }
 ```
 
@@ -351,18 +360,18 @@ After completing the sync:
 |---------|---------|
 | `validation` | `validation_to_app_error()`, `ValidateExt` |
 | `nightfire` | `nightfire_validation_to_app_error()` |
-| `error-logging` | `append_error_log()`, `DbErrorLogSink` |
+| `error-logging` | middleware + DB logging for `ApiError` and legacy context headers |
 | `tracing` | Request span helpers |
 
 ### Common Imports
 
 ```rust
 // Core types
-use underlay_core::{AppError, ListResponse, SingleResponse};
+use underlay_core::{ListResponse, SingleResponse};
 
 // HTTP utilities
 use underlay_http::{
-    ok, created, no_content, list_ok, error_response,
+    ApiError, ApiResult, ok, created, no_content, list_ok,
     parse_uuid_path_raw, parse_uuid_for_validation,
     ValidationResult, validation_to_app_error,
     PaginationParams, Paginated,
