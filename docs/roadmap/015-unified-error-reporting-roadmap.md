@@ -240,12 +240,12 @@ These helpers reduce boilerplate so rich context remains easy to add.
 
 ### Tasks
 
-- [ ] Publish a short upgrade checklist in docs:
+- [x] Publish a short upgrade checklist in docs:
   - update Underlay version
   - migrate handler return types
   - convert raw status error returns
   - verify logs in admin UI
-- [ ] Include copy-paste migration examples for common handler patterns.
+- [x] Include copy-paste migration examples for common handler patterns.
 
 ### Acceptance Criteria
 
@@ -289,5 +289,5 @@ Rules:
 
 - [x] `underlay-http`: `ApiError`, `ApiResult`, helpers, tests.
 - [x] Updated guides: `070-api-handlers.md`, `078-error-logging.md`.
-- [ ] Reference migration in `acme-api`.
-- [ ] Reusable downstream upgrade checklist.
+- [x] Reference migration in `acme-api`.
+- [x] Reusable downstream upgrade checklist.

@@ -148,6 +148,75 @@ Soft deprecation policy:
 2. Prefer `ApiError` in all new and touched handlers.
 3. Treat new `error_response(...)` usage in routes as a migration regression.
 
+## Downstream Upgrade Playbook
+
+Use this sequence to migrate an existing Underlay-based app with minimal local glue code:
+
+1. Update Underlay dependencies and ensure `underlay-http` has `error-logging` enabled.
+2. Confirm middleware order (`trace` -> `request_id` -> `error_logging` -> `cors`).
+3. Convert route handlers to `ApiResult<T>` where practical.
+4. Replace raw `StatusCode::...into_response()` error branches with `ApiError`.
+5. Replace legacy `error_response(...)` / `error_response_with_context(...)` route callsites with `ApiError`.
+6. Add structured context to high-value failures:
+   - operation name
+   - primary entity IDs
+   - safe query/filter metadata
+7. Run a migration sweep:
+   - `rg -n "\\berror_response\\(" crates/api/src/routes`
+   - `rg -n "StatusCode::(BAD_REQUEST|UNAUTHORIZED|FORBIDDEN|NOT_FOUND|CONFLICT|INTERNAL_SERVER_ERROR|TOO_MANY_REQUESTS).*into_response\\(" crates/api/src/routes`
+8. Validate via `cargo check` and trigger known failure paths; confirm admin error logs now include non-null `handler_context`.
+
+### Copy-Paste Migration Patterns
+
+#### Pattern A: Raw status branch -> `ApiError`
+
+```rust
+// before
+if invalid {
+    return StatusCode::BAD_REQUEST.into_response();
+}
+
+// after
+if invalid {
+    return ApiError::bad_request("validation.invalid_input", "Invalid input")
+        .with_context(serde_json::json!({
+            "operation": "items.create",
+            "item_id": item_id,
+        }))
+        .into_response();
+}
+```
+
+#### Pattern B: Legacy `error_response_with_context` -> `ApiError`
+
+```rust
+// before
+return error_response_with_context(
+    StatusCode::BAD_REQUEST,
+    AppError::new("validation.invalid", "Validation failed"),
+    serde_json::json!({ "field": "email" }),
+)
+.into_response();
+
+// after
+return ApiError::bad_request("validation.invalid", "Validation failed")
+    .with_context(serde_json::json!({ "field": "email" }))
+    .into_response();
+```
+
+#### Pattern C: DB failure mapping with context
+
+```rust
+let row = repo::get_item(&pool, id).await.map_err(|e| {
+    ApiError::internal("db.select_failed", "Failed to load item")
+        .with_cause(&e)
+        .with_context(serde_json::json!({
+            "operation": "items.get",
+            "item_id": id,
+        }))
+})?;
+```
+
 ## Querying Error Logs
 
 ### List Errors with Filters
