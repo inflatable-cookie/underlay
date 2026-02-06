@@ -172,8 +172,8 @@ These helpers reduce boilerplate so rich context remains easy to add.
 
 ### Tasks
 
-- [ ] Replace direct `StatusCode::...into_response()` error branches in route handlers with `ApiError`.
-- [ ] Replace `error_response(...)` callsites with `ApiError` where practical.
+- [x] Replace direct `StatusCode::...into_response()` error branches in route handlers with `ApiError`.
+- [x] Replace `error_response(...)` callsites with `ApiError` where practical.
 - [x] Add context for high-value failure paths first:
   - DB operations
   - external integrations
@@ -224,10 +224,10 @@ These helpers reduce boilerplate so rich context remains easy to add.
 - [x] `acme-api/crates/api/src/routes/shared/account.rs`
   - Convert profile load/update handlers to `ApiError`.
   - Add structured context for profile persistence failures.
-- [x] `acme-api/crates/api/src/routes/shared/auth.rs` (in progress)
+- [x] `acme-api/crates/api/src/routes/shared/auth.rs`
   - Migrate helper and endpoint error paths incrementally to `ApiError`.
   - Preserve cookie/header behavior while replacing generic error responses.
-- [ ] Verification sweep (`acme-api` routes)
+- [x] Verification sweep (`acme-api` routes)
   - Run grep check to identify remaining `StatusCode::...into_response()` error branches.
   - Track remaining migrations as explicit TODO items until zero.
 
