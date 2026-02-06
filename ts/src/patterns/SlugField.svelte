@@ -100,7 +100,12 @@
 
     // Call the async validator (already returns ValidationResult)
     try {
-      return await validate(slug);
+      const result = await validate(slug);
+      // Keep positive status/icon but suppress success text like "Slug is available".
+      if (result.valid) {
+        return { ...result, message: undefined };
+      }
+      return result;
     } catch {
       return { valid: false, message: "Could not verify availability" };
     }
