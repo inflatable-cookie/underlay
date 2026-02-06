@@ -180,6 +180,20 @@ These helpers reduce boilerplate so rich context remains easy to add.
   - auth/session operations
 - [x] Keep business error codes stable.
 
+## Phase 15.4b – Underlay Legacy Cleanup
+
+### Tasks
+
+- [x] Remove `error_response_with_context()` from `underlay-http` public API.
+- [x] Remove compatibility-function implementation from `underlay-http` internals.
+- [x] Update guides to remove compatibility-path recommendations.
+- [x] Keep `ApiError`/`ApiResult` as the only documented route-handler pattern.
+
+### Acceptance Criteria
+
+- [x] `underlay-http` exposes canonical `ApiError` path without compatibility wrappers.
+- [x] Documentation no longer recommends compatibility helpers for handlers.
+
 ### Implementation Tickets (Phase 15.4)
 
 - [x] `acme-api/crates/api/src/error.rs`

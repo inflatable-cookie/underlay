@@ -103,11 +103,10 @@ To also print compatibility-helper callsites:
 ./scripts/check-route-error-patterns.sh crates/api/src/routes --show-compat
 ```
 
-### Soft Deprecation Guidance
+### Migration Guidance
 
-- `error_response()` and `error_response_with_context()` remain available for migration compatibility.
-- New handlers should use `ApiResult<T>` and `ApiError` by default.
-- Existing handlers using compatibility helpers should be migrated incrementally during regular route-touch work.
+- `ApiResult<T>` and `ApiError` are the standard handler error path.
+- Route modules should avoid compatibility helper patterns and return `ApiError` directly.
 
 ## AppState
 

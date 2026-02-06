@@ -45,6 +45,7 @@ pub use crate::errors::{error_response, ApiError, ApiResult, ErrorLogContext, Er
 pub use crate::field_validation::{
     parse_optional_uuid_for_validation, parse_uuid_for_validation, ValidationResult,
 };
+pub use crate::http_config::HttpServerConfig;
 pub use crate::pagination::{Paginated, PaginationMeta, PaginationParams};
 pub use crate::path::{parse_uuid_path, parse_uuid_path_raw};
 pub use crate::query::{
@@ -52,7 +53,6 @@ pub use crate::query::{
     SortField, WhereBuilder,
 };
 pub use crate::responses::{created, list_ok, no_content, ok};
-pub use crate::http_config::HttpServerConfig;
 
 #[cfg(feature = "validation")]
 pub use crate::validation::{validation_to_app_error, ValidateExt};
@@ -62,9 +62,9 @@ pub use crate::nightfire::nightfire_validation_to_app_error;
 
 #[cfg(feature = "error-logging")]
 pub use crate::error_logging::{
-    append_error_log, count_error_logs, error_logging_middleware, error_response_with_context,
-    get_error_log_by_id, list_error_logs, DbErrorLogSink, ErrorLogFilters, ErrorLoggingConfig,
-    ErrorLogRow, ERROR_CONTEXT_HEADER,
+    append_error_log, count_error_logs, error_logging_middleware, get_error_log_by_id,
+    list_error_logs, DbErrorLogSink, ErrorLogFilters, ErrorLogRow, ErrorLoggingConfig,
+    ERROR_CONTEXT_HEADER,
 };
 
 #[cfg(feature = "embed")]

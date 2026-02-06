@@ -1,7 +1,7 @@
 #[cfg(feature = "error-logging")]
 use axum::{
     body::Body,
-    http::{HeaderValue, Request},
+    http::Request,
     middleware::Next,
     response::Response,
 };
@@ -499,60 +499,6 @@ pub async fn error_logging_middleware(
             tracing::error!(%err, "failed to append error log entry");
         }
     });
-
-    res
-}
-
-/// Construct a standardised error response with additional context for logging.
-///
-/// The `context` parameter accepts any serializable value that will be included
-/// in the error log record for debugging purposes. This is useful for capturing:
-/// - The underlying error details (e.g., database error messages)
-/// - Relevant request parameters or IDs
-/// - State information that helps diagnose the issue
-///
-/// # Example
-///
-/// ```rust,ignore
-/// use underlay_http::error_logging::error_response_with_context;
-/// use axum::http::StatusCode;
-///
-/// Err(e) => {
-///     error!("failed to update record: {}", e);
-///     error_response_with_context(
-///         StatusCode::INTERNAL_SERVER_ERROR,
-///         AppError::new("db.error", "Database error"),
-///         serde_json::json!({
-///             "db_error": e.to_string(),
-///             "record_id": record_id,
-///         }),
-///     ).into_response()
-/// }
-/// ```
-#[cfg(feature = "error-logging")]
-pub fn error_response_with_context(
-    status: axum::http::StatusCode,
-    err: underlay_core::AppError,
-    context: serde_json::Value,
-) -> Response {
-    let message = err.message.clone();
-
-    // Use the standard error response
-    let mut res = crate::error_response(status, err);
-
-    // Add the message header for the middleware to extract
-    if let Ok(value) = HeaderValue::from_str(&message) {
-        res.headers_mut().insert("x-error-message", value);
-    }
-
-    // Serialize context to JSON string and add as header
-    if let Ok(context_str) = serde_json::to_string(&context) {
-        // URL-encode to handle special characters in header value
-        let encoded = urlencoding::encode(&context_str);
-        if let Ok(value) = HeaderValue::from_str(&encoded) {
-            res.headers_mut().insert(ERROR_CONTEXT_HEADER, value);
-        }
-    }
 
     res
 }

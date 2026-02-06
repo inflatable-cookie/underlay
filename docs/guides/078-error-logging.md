@@ -125,29 +125,6 @@ async fn update_record(
 
 `ApiError` writes `x-error-code`, `x-error-message`, and `x-error-context` headers; the middleware extracts these and persists them into `platform.error_log.context.handler_context`.
 
-## Compatibility Path
-
-`error_response_with_context()` remains available for legacy handlers returning `impl IntoResponse`:
-
-```rust
-use axum::http::StatusCode;
-use underlay_core::AppError;
-use underlay_http::error_response_with_context;
-
-return error_response_with_context(
-    StatusCode::BAD_REQUEST,
-    AppError::new("validation.invalid", "Validation failed"),
-    serde_json::json!({"field": "email"}),
-)
-.into_response();
-```
-
-Soft deprecation policy:
-
-1. Keep compatibility helpers available during migration windows.
-2. Prefer `ApiError` in all new and touched handlers.
-3. Treat new `error_response(...)` usage in routes as a migration regression.
-
 ## Downstream Upgrade Playbook
 
 Use this sequence to migrate an existing Underlay-based app with minimal local glue code:
@@ -156,7 +133,7 @@ Use this sequence to migrate an existing Underlay-based app with minimal local g
 2. Confirm middleware order (`trace` -> `request_id` -> `error_logging` -> `cors`).
 3. Convert route handlers to `ApiResult<T>` where practical.
 4. Replace raw `StatusCode::...into_response()` error branches with `ApiError`.
-5. Replace legacy `error_response(...)` / `error_response_with_context(...)` route callsites with `ApiError`.
+5. Replace legacy `error_response(...)` route callsites with `ApiError`.
 6. Add structured context to high-value failures:
    - operation name
    - primary entity IDs
@@ -187,24 +164,7 @@ if invalid {
 }
 ```
 
-#### Pattern B: Legacy `error_response_with_context` -> `ApiError`
-
-```rust
-// before
-return error_response_with_context(
-    StatusCode::BAD_REQUEST,
-    AppError::new("validation.invalid", "Validation failed"),
-    serde_json::json!({ "field": "email" }),
-)
-.into_response();
-
-// after
-return ApiError::bad_request("validation.invalid", "Validation failed")
-    .with_context(serde_json::json!({ "field": "email" }))
-    .into_response();
-```
-
-#### Pattern C: DB failure mapping with context
+#### Pattern B: DB failure mapping with context
 
 ```rust
 let row = repo::get_item(&pool, id).await.map_err(|e| {
@@ -461,7 +421,7 @@ export interface ErrorLogStats {
 
 ### Context Not Appearing
 
-1. Ensure handlers return `ApiError` (or legacy `error_response_with_context()`)
+1. Ensure handlers return `ApiError`
 2. Verify the context is valid JSON
 3. Check that context size doesn't exceed header limits (use smaller context if needed)
 

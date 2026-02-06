@@ -114,25 +114,6 @@ sink.record(ErrorLogContext {
 
 **Note**: `DbErrorLogSink.record()` doesn't capture endpoint/method. Prefer `ApiError` + middleware for normal HTTP handlers.
 
-### Compatibility Path (`error_response_with_context`)
-
-`error_response_with_context()` is kept for migration and compatibility, but it is not the preferred path for new handlers.
-
-```rust
-use underlay_http::error_response_with_context;
-use underlay_core::AppError;
-use axum::http::StatusCode;
-
-let res = error_response_with_context(
-    StatusCode::INTERNAL_SERVER_ERROR,
-    AppError::new("db.error", "Database operation failed"),
-    serde_json::json!({
-        "operation": "legacy_handler",
-        "resource_id": resource_id,
-    }),
-);
-```
-
 ### Querying Error Logs
 
 ```rust
