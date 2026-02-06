@@ -21,7 +21,8 @@
   type SnippetLike = Snippet | ((...args: any[]) => any);
 
   interface Props {
-    title: string;
+    title?: string;
+    section?: string;
     subtitle?: string;
     backHref?: string | null;
     backLabel?: string;
@@ -53,6 +54,7 @@
 
   let {
     title,
+    section,
     subtitle,
     backHref = null,
     backLabel = "Back",
@@ -75,7 +77,7 @@
 </script>
 
 {#if showTitle}
-  <PageHeader {title} {subtitle} {backHref} {backLabel} {backIsContextual} {bannerMessage} {bannerVariant}>
+  <PageHeader {title} {section} {subtitle} {backHref} {backLabel} {backIsContextual} {bannerMessage} {bannerVariant}>
     {#if headerMeta}
       {@render headerMeta()}
     {/if}

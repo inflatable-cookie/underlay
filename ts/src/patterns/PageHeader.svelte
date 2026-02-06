@@ -6,7 +6,10 @@
   import ChevronRight from "lucide-svelte/icons/chevron-right";
 
   interface Props {
-    title: string;
+    /** Primary heading text. Required when `section` is not set. */
+    title?: string;
+    /** Section name — renders as the prominent h1. When set, `title` renders as a smaller h2 below. */
+    section?: string;
     subtitle?: string;
     /** Breadcrumb trail rendered in the subtitle area */
     breadcrumbs?: BreadcrumbItem[];
@@ -34,6 +37,7 @@
 
   let {
     title,
+    section,
     subtitle,
     breadcrumbs,
     level = 1,
@@ -48,6 +52,12 @@
     subtitleSuffix,
     children
   }: Props = $props();
+
+  /** The primary heading text — `section` takes priority, falls back to `title` */
+  const primaryHeading = $derived(section ?? title ?? "");
+  /** The secondary heading — only shown when both `section` and `title` are set */
+  const secondaryHeading = $derived(section && title ? title : undefined);
+  const sectionTitleTag = $derived(`h${Math.min(level + 1, 6)}` as "h2" | "h3" | "h4" | "h5");
 
   const headingTag = $derived(`h${level}` as "h1" | "h2" | "h3" | "h4");
   const subtitleTag = $derived(`h${Math.min(level + 1, 6)}` as "h2" | "h3" | "h4" | "h5");
@@ -89,7 +99,7 @@
   <div class="underlay-page-header__row">
     <div class="underlay-page-header__top">
       <svelte:element this={headingTag} class="underlay-page-header__title">
-        {title}{#if count !== undefined}<span class="underlay-page-header__count-badge">{count}</span>{/if}{#if titleSuffix}<span class="underlay-page-header__title-suffix">{@render titleSuffix()}</span>{/if}
+        {primaryHeading}{#if count !== undefined}<span class="underlay-page-header__count-badge">{count}</span>{/if}{#if !secondaryHeading && titleSuffix}<span class="underlay-page-header__title-suffix">{@render titleSuffix()}</span>{/if}
       </svelte:element>
 
       <div class="underlay-page-header__right">
@@ -110,6 +120,12 @@
         {/if}
       </div>
     </div>
+
+    {#if secondaryHeading}
+      <svelte:element this={sectionTitleTag} class="underlay-page-header__section-title">
+        {secondaryHeading}{#if titleSuffix}<span class="underlay-page-header__title-suffix">{@render titleSuffix()}</span>{/if}
+      </svelte:element>
+    {/if}
 
     {#if breadcrumbs && breadcrumbs.length > 0}
       <nav class="underlay-page-header__breadcrumbs" aria-label="Breadcrumb">
@@ -246,6 +262,15 @@
 
   .underlay-page-header__title-suffix :global(.underlay-pill) {
     font-size: 0.45em;
+  }
+
+  .underlay-page-header__section-title {
+    margin: 0;
+    font-size: 1.35em;
+    font-weight: 500;
+    color: var(--underlay-color-text-muted, rgba(148, 163, 184, 0.85));
+    display: inline-flex;
+    align-items: center;
   }
 
   .underlay-page-header__subtitle {

@@ -10,7 +10,8 @@
   type SnippetLike = Snippet | ((...args: any[]) => any);
 
   interface Props {
-    title: string;
+    title?: string;
+    section?: string;
     subtitle?: string;
     backHref?: string | null;
     backLabel?: string;
@@ -44,6 +45,7 @@
 
   let {
     title,
+    section,
     subtitle,
     backHref = null,
     backLabel = "Back",
@@ -145,6 +147,7 @@
 
 <FormShell
   {title}
+  {section}
   {subtitle}
   {backHref}
   {backLabel}
