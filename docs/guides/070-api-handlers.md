@@ -91,6 +91,24 @@ rg -n "StatusCode::[A-Z_]+\\s*\\.into_response\\(\\)" crates/api/src/routes
 
 Expected migration target: zero matches for error branches in route modules.
 
+For a reusable migration check, run:
+
+```bash
+./scripts/check-route-error-patterns.sh crates/api/src/routes
+```
+
+To also print compatibility-helper callsites:
+
+```bash
+./scripts/check-route-error-patterns.sh crates/api/src/routes --show-compat
+```
+
+### Soft Deprecation Guidance
+
+- `error_response()` and `error_response_with_context()` remain available for migration compatibility.
+- New handlers should use `ApiResult<T>` and `ApiError` by default.
+- Existing handlers using compatibility helpers should be migrated incrementally during regular route-touch work.
+
 ## AppState
 
 Keep `AppState` minimal and explicit:

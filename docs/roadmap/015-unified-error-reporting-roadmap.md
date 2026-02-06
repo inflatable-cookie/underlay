@@ -14,7 +14,7 @@ The target outcome is:
 
 - [x] Phase 15.1 complete
 - [x] Phase 15.2 complete
-- [ ] Phase 15.3 complete
+- [x] Phase 15.3 complete
 - [ ] Phase 15.4 complete
 - [ ] Phase 15.5 complete
 - [ ] Validation plan complete
@@ -159,14 +159,14 @@ These helpers reduce boilerplate so rich context remains easy to add.
 
 ### Tasks
 
-- [ ] Keep `error_response()` and `error_response_with_context()` available for compatibility.
-- [ ] Add deprecation guidance in docs (soft deprecation first).
-- [ ] Add optional lint/check script for apps to detect raw error status returns in route modules.
+- [x] Keep `error_response()` and `error_response_with_context()` available for compatibility.
+- [x] Add deprecation guidance in docs (soft deprecation first).
+- [x] Add optional lint/check script for apps to detect raw error status returns in route modules.
 
 ### Acceptance Criteria
 
-- [ ] Existing apps compile unchanged.
-- [ ] New apps and updated apps can standardize on `ApiError` without custom wrappers.
+- [x] Existing apps compile unchanged.
+- [x] New apps and updated apps can standardize on `ApiError` without custom wrappers.
 
 ## Phase 15.4 – Reference App Migration (`acme-api`)
 

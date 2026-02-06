@@ -345,6 +345,7 @@ After completing the sync:
 - [ ] `cargo build` succeeds with no warnings
 - [ ] `cargo clippy --all-targets --all-features -- -D warnings` passes
 - [ ] `cargo test` passes
+- [ ] `./scripts/check-route-error-patterns.sh crates/api/src/routes` passes
 - [ ] Frontend builds successfully
 - [ ] API endpoints return correct response shapes
 - [ ] Error responses include proper `error.code` and `error.message`

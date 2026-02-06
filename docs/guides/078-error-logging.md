@@ -142,6 +142,12 @@ return error_response_with_context(
 .into_response();
 ```
 
+Soft deprecation policy:
+
+1. Keep compatibility helpers available during migration windows.
+2. Prefer `ApiError` in all new and touched handlers.
+3. Treat new `error_response(...)` usage in routes as a migration regression.
+
 ## Querying Error Logs
 
 ### List Errors with Filters
