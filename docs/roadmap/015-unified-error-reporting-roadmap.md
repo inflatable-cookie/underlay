@@ -185,27 +185,27 @@ These helpers reduce boilerplate so rich context remains easy to add.
 - [ ] `acme-api/crates/api/src/error.rs`
   - Re-export or wrap Underlay `ApiError` / `ApiResult` so handlers have one local import surface.
   - Keep backward-compatible shim functions during migration window.
-- [ ] `acme-api/crates/api/src/routes/admin/users.rs`
+- [x] `acme-api/crates/api/src/routes/admin/users.rs`
   - Convert raw status error returns to `ApiError`.
   - Add structured context for DB failure branches (`operation`, `user_id`, `query params`).
-- [ ] `acme-api/crates/api/src/routes/admin/dashboard.rs`
+- [x] `acme-api/crates/api/src/routes/admin/dashboard.rs`
   - Replace generic 500 status returns with typed `ApiError::internal(...)`.
   - Include failing stat query identifier in context.
-- [ ] `acme-api/crates/api/src/routes/admin/media.rs`
+- [x] `acme-api/crates/api/src/routes/admin/media.rs`
   - Convert high-volume 500/404 branches to `ApiError`.
   - Add context for storage/db operation, media ID/version ID, and operation type.
-- [ ] `acme-api/crates/api/src/routes/tasks.rs`
+- [x] `acme-api/crates/api/src/routes/tasks.rs`
   - Convert raw status error returns for authorization/not-found/internal branches.
   - Preserve existing business semantics while adding logging context.
-- [ ] `acme-api/crates/api/src/routes/admin/tasks.rs`
+- [x] `acme-api/crates/api/src/routes/admin/tasks.rs`
   - Convert raw status error branches and add operation-level context.
-- [ ] `acme-api/crates/api/src/routes/admin/projects.rs`
+- [x] `acme-api/crates/api/src/routes/admin/projects.rs`
   - Convert remaining raw status branches and include project/task identifiers in context.
-- [ ] `acme-api/crates/api/src/routes/admin/categories.rs`
+- [x] `acme-api/crates/api/src/routes/admin/categories.rs`
   - Convert remaining raw status branches and include category identifiers in context.
-- [ ] `acme-api/crates/api/src/routes/admin/validation.rs`
+- [x] `acme-api/crates/api/src/routes/admin/validation.rs`
   - Ensure validation endpoint failures emit structured `ApiError` context.
-- [ ] `acme-api/crates/api/src/routes/admin/activity.rs`
+- [x] `acme-api/crates/api/src/routes/admin/activity.rs`
   - Ensure list/fetch failures emit structured `ApiError` context.
 - [ ] `acme-api/crates/api/src/routes/mod.rs`
   - Confirm no route-level adapters bypass `ApiError` response path.
@@ -244,7 +244,7 @@ All phases must preserve strict separation between:
 Rules:
 
 - [ ] Never include credentials, tokens, secrets, or raw PII in `context`.
-- [ ] Add explicit examples of safe context fields.
+- [x] Add explicit examples of safe context fields.
 - [ ] Prefer IDs, operation names, and failure class over raw payload dumps.
 
 ## Validation Plan
