@@ -28,7 +28,7 @@ Target outcome:
 - [x] Phase 16.2 complete
 - [x] Phase 16.3 complete
 - [ ] Phase 16.4 complete
-- [ ] Phase 16.5 complete
+- [x] Phase 16.5 complete
 - [ ] Phase 16.6 complete
 - [ ] Validation plan complete
 - [ ] Success metrics achieved
@@ -133,15 +133,15 @@ Current API and export payloads are inconsistent across projects (`camelCase` an
 
 ### Tasks
 
-- [ ] Sweep API DTOs and handlers for mixed JSON naming.
-- [ ] Update API clients and front/admin boundary adapters.
-- [ ] Update seed/export/import and fixture payloads.
-- [ ] Validate scheduled jobs and task payload handling after DB reset.
+- [x] Sweep API DTOs and handlers for mixed JSON naming.
+- [x] Update API clients and front/admin boundary adapters.
+- [x] Update seed/export/import and fixture payloads.
+- [x] Validate scheduled jobs and task payload handling after DB reset.
 
 ### Acceptance Criteria
 
-- [ ] `compli-me` API contracts and job payloads are `snake_case`.
-- [ ] No missing-field regressions from naming mismatch.
+- [x] `compli-me` API contracts and job payloads are `snake_case`.
+- [x] No missing-field regressions from naming mismatch.
 
 ## Phase 16.6 – Compatibility Windows and Legacy Removal
 
