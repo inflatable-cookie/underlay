@@ -28,7 +28,7 @@ underlay-db = { path = "../underlay-db", optional = true }
 sqlx = { workspace = true, optional = true, features = ["macros", "postgres", "uuid", "chrono", "json"] }
 chrono = { workspace = true, optional = true }
 tokio = { workspace = true, features = ["rt"], optional = true }
-urlencoding = { version = "2.1", optional = true }
+urlencoding = { version = "2.1" }
 
 # Optional embed metadata proxy
 reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "json"], optional = true }
@@ -38,7 +38,7 @@ default = []
 tracing = ["dep:tracing"]
 validation = ["dep:validator"]
 nightfire = ["underlay-nightfire"]
-error-logging = ["underlay-db", "sqlx", "chrono", "tokio", "urlencoding", "tracing"]
+error-logging = ["underlay-db", "sqlx", "chrono", "tokio", "tracing"]
 embed = ["reqwest"]
 
 [dev-dependencies]

@@ -42,6 +42,37 @@ This creates the `platform.error_log` table with indexes.
 
 ## Usage
 
+### Canonical Handler Path (`ApiError`)
+
+`ApiError` is the canonical way to return errors from handlers. It emits:
+
+- standard error envelope
+- `x-error-code`
+- `x-error-message`
+- `x-error-context`
+
+These headers are consumed by error logging middleware and persisted to `platform.error_log`.
+
+```rust
+use underlay_http::{ApiError, ApiResult};
+use axum::{extract::State, Json};
+
+async fn list_users(State(state): State<AppState>) -> ApiResult<Json<Vec<UserDto>>> {
+    let users = sqlx::query_as::<_, UserDto>("SELECT id, email FROM users")
+        .fetch_all(state.pool())
+        .await
+        .map_err(|err| {
+            ApiError::internal("db.query_failed", "Failed to list users")
+                .with_context(serde_json::json!({
+                    "operation": "list_users",
+                }))
+                .with_cause(&err)
+        })?;
+
+    Ok(Json(users))
+}
+```
+
 ### Basic Error Logging
 
 ```rust
@@ -81,7 +112,26 @@ sink.record(ErrorLogContext {
 });
 ```
 
-**Note**: Currently `DbErrorLogSink.record()` doesn't capture endpoint/method. For full context, use `append_error_log()` directly or implement a middleware layer (see Phase 8.3 task 3).
+**Note**: `DbErrorLogSink.record()` doesn't capture endpoint/method. Prefer `ApiError` + middleware for normal HTTP handlers.
+
+### Compatibility Path (`error_response_with_context`)
+
+`error_response_with_context()` is kept for migration and compatibility, but it is not the preferred path for new handlers.
+
+```rust
+use underlay_http::error_response_with_context;
+use underlay_core::AppError;
+use axum::http::StatusCode;
+
+let res = error_response_with_context(
+    StatusCode::INTERNAL_SERVER_ERROR,
+    AppError::new("db.error", "Database operation failed"),
+    serde_json::json!({
+        "operation": "legacy_handler",
+        "resource_id": resource_id,
+    }),
+);
+```
 
 ### Querying Error Logs
 

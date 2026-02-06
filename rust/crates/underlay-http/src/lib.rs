@@ -38,7 +38,7 @@ pub use crate::cookies::{
     AuthCookieConfig, SameSite,
 };
 pub use crate::cors::{cors_layer, CorsConfig, DEFAULT_CORS_MAX_AGE_SECS};
-pub use crate::errors::{error_response, ErrorLogContext, ErrorLogSink};
+pub use crate::errors::{error_response, ApiError, ApiResult, ErrorLogContext, ErrorLogSink};
 pub use crate::field_validation::{
     parse_optional_uuid_for_validation, parse_uuid_for_validation, ValidationResult,
 };
