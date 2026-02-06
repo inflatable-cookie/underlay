@@ -25,28 +25,28 @@ impl From<ApiUuid> for underlay_core::Uuid {
 
 /// OpenAPI schema representation of `underlay_core::SingleResponse<T>`.
 #[derive(Debug, Clone, Serialize, ToSchema)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 pub struct ApiSingleResponse<T> {
     pub data: T,
 }
 
 /// OpenAPI schema representation of `underlay_core::ListResponse<T>`.
 #[derive(Debug, Clone, Serialize, ToSchema)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 pub struct ApiListResponse<T> {
     pub data: Vec<T>,
 }
 
 /// OpenAPI schema representation of `underlay_core::ErrorEnvelope`.
 #[derive(Debug, Clone, Serialize, ToSchema)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 pub struct ApiErrorEnvelope {
     pub error: ApiErrorBody,
 }
 
 /// OpenAPI schema representation of `underlay_core::ErrorBody`.
 #[derive(Debug, Clone, Serialize, ToSchema)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 pub struct ApiErrorBody {
     pub code: String,
     pub message: String,

@@ -63,7 +63,6 @@ pub struct ValidationError {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub code: Option<String>,
     /// Field-level errors.
-    #[serde(rename = "fieldErrors")]
     pub field_errors: HashMap<String, FieldError>,
 }
 
@@ -248,7 +247,7 @@ mod tests {
         );
 
         let json = serde_json::to_string(&err.finalize()).unwrap();
-        assert!(json.contains("fieldErrors"));
+        assert!(json.contains("field_errors"));
         assert!(json.contains("email.invalid"));
     }
 }

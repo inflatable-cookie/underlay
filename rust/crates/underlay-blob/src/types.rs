@@ -56,7 +56,7 @@ impl UploadRequest {
 
 /// The result of initiating an upload, containing the pre-signed URL and constraints.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 pub struct UploadPlan {
     /// The URL to upload to (pre-signed PUT URL for S3, or direct endpoint for local).
     pub upload_url: String,

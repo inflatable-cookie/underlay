@@ -228,7 +228,7 @@ pub enum AuthStateError {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 pub struct AuthStateRow {
     pub id: Uuid,
     pub user_id: Option<Uuid>,

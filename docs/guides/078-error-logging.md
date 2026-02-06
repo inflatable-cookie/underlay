@@ -221,7 +221,7 @@ use axum::{extract::Query, response::IntoResponse, Json};
 use underlay_http::{list_error_logs, get_error_log_by_id, count_error_logs, ErrorLogFilters};
 
 #[derive(Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 pub struct ListErrorLogsQuery {
     pub status_code: Option<i32>,
     pub limit: Option<i64>,

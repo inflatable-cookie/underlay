@@ -78,7 +78,7 @@ impl IntoResponse for ValidatedJsonRejection {
                     "error": {
                         "code": error.code.as_deref().unwrap_or("validation.failed"),
                         "message": error.message.as_deref().unwrap_or("Validation failed"),
-                        "fieldErrors": error.field_errors,
+                        "field_errors": error.field_errors,
                     }
                 });
                 (StatusCode::BAD_REQUEST, Json(body)).into_response()

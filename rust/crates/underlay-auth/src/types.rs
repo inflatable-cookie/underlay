@@ -30,7 +30,7 @@ pub enum UserStatus {
 /// should live in `account.user_profile`, not in auth. Auth handles
 /// authentication only (email, password hash, verification status).
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 pub struct User {
     /// Unique user identifier.
     pub id: Uuid,
@@ -81,10 +81,10 @@ pub enum CredentialType {
 ///
 /// The contents vary by credential type.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", tag = "type")]
+#[serde(rename_all = "snake_case", tag = "type")]
 pub enum CredentialMetadata {
     /// Password credential metadata.
-    #[serde(rename_all = "camelCase")]
+    #[serde(rename_all = "snake_case")]
     Password {
         /// Hashing algorithm used.
         algorithm: String,
@@ -96,7 +96,7 @@ pub enum CredentialMetadata {
         parallelism: u32,
     },
     /// TOTP credential metadata.
-    #[serde(rename_all = "camelCase")]
+    #[serde(rename_all = "snake_case")]
     Totp {
         /// Issuer name for QR code.
         issuer: String,
@@ -108,7 +108,7 @@ pub enum CredentialMetadata {
         period: u8,
     },
     /// PassKey credential metadata.
-    #[serde(rename_all = "camelCase")]
+    #[serde(rename_all = "snake_case")]
     Passkey {
         /// Base64-encoded credential ID.
         credential_id: String,
@@ -118,7 +118,7 @@ pub enum CredentialMetadata {
         last_counter: u32,
     },
     /// OAuth connection metadata.
-    #[serde(rename_all = "camelCase")]
+    #[serde(rename_all = "snake_case")]
     OAuthGoogle {
         /// Google user ID.
         google_user_id: String,
@@ -131,7 +131,7 @@ pub enum CredentialMetadata {
 ///
 /// Users can have multiple credentials (e.g., password + TOTP + PassKey).
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 pub struct Credential {
     /// Unique credential identifier.
     pub id: Uuid,
@@ -167,7 +167,7 @@ pub enum SessionStatus {
 
 /// An active user session.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 pub struct Session {
     /// Unique session identifier.
     pub id: Uuid,
@@ -271,7 +271,7 @@ pub enum AuthEventType {
 
 /// An authentication event for audit logging.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 pub struct AuthEvent {
     /// Unique event identifier.
     pub id: Uuid,

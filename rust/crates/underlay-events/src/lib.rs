@@ -10,7 +10,7 @@ use underlay_core::Uuid;
 pub use crate::schema::DOMAIN_EVENTS_SQL;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 pub struct DomainEvent {
     pub id: Uuid,
     pub event_type: String,
@@ -20,7 +20,7 @@ pub struct DomainEvent {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 pub struct NewDomainEvent {
     pub event_type: String,
     pub payload: Value,

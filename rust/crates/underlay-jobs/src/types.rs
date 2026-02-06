@@ -282,7 +282,7 @@ impl JobProgress {
 
 /// A job record from the database.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 pub struct Job {
     pub id: JobId,
     pub job_type: String,
@@ -321,7 +321,7 @@ pub struct JobErrorRecord {
 
 /// A scheduled task definition from the database.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 pub struct ScheduledTask {
     pub id: Uuid,
     pub name: String,

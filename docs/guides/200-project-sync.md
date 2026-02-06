@@ -12,6 +12,7 @@ This guide provides a reproducible checklist for bringing a project up to curren
 - Rust backend using Axum
 - SvelteKit frontend(s)
 - TypeScript API client
+- JSON naming policy reviewed: [071-json-naming.md](./071-json-naming.md)
 
 ---
 
@@ -80,6 +81,9 @@ use underlay_http::{ApiError, ApiResult, ok, created, no_content, list_ok};
 - [ ] Replace `(StatusCode::OK, Json(ListResponse { data }))` with `list_ok(data)`
 - [ ] Replace `(StatusCode::NO_CONTENT, ())` with `no_content()`
 - [ ] Use `ApiResult<T>` and return `ApiError` for handler failures
+- [ ] Ensure API request/response payload field names are `snake_case`
+- [ ] Remove internal `#[serde(rename_all = "camelCase")]` from DTOs
+- [ ] Keep `camelCase` serde naming only for documented external contract exceptions
 
 **Before:**
 ```rust

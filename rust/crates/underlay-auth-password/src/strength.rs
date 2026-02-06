@@ -10,7 +10,7 @@ use zxcvbn::zxcvbn;
 /// This can be serialized and exposed via an API endpoint so that
 /// frontend UIs can display accurate requirements without hardcoding.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 pub struct PasswordRequirements {
     /// Minimum password length.
     pub min_length: usize,
@@ -28,7 +28,7 @@ pub struct PasswordRequirements {
 
 /// Password strength levels.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 pub enum PasswordStrength {
     /// Very weak - fails most requirements.
     VeryWeak,
@@ -44,7 +44,7 @@ pub enum PasswordStrength {
 
 /// Analysis of password strength.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 pub struct PasswordAnalysis {
     /// Overall strength rating.
     pub strength: PasswordStrength,

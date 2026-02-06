@@ -38,22 +38,23 @@ Read these documents in order for a complete understanding:
 11. **[067 - Authorization](./067-authorization.md)** - Role-based access control
 12. **[068 - Security](./068-security.md)** - Rate limiting, CSP, password policy, lockout
 13. **[070 - API Handlers](./070-api-handlers.md)** - HTTP handlers, routing
-14. **[072 - Admin/Front Separation](./072-admin-front-separation.md)** - Audience routing conventions
-15. **[075 - Validation](./075-validation.md)** - Request validation patterns
-16. **[076 - Nightfire](./076-nightfire.md)** - Block-based structured content
-17. **[077 - Media Library](./077-media-library.md)** - File uploads, blob storage, media management
-18. **[080 - TypeScript Client](./080-typescript-client.md)** - HTTP client, commands
-18. **[090 - UI Kit](./090-ui-kit.md)** - Component patterns
-19. **[092 - Selection Suggestions](./092-selection-suggestions.md)** - Intelligent suggestions with selection history
-20. **[095 - Navigation Context](./095-navigation-context.md)** - Contextual back buttons and form redirects
-21. **[100 - Frontend (Web)](./100-frontend-web.md)** - SvelteKit setup, routing
-22. **[110 - Admin Frontend](./110-admin.md)** - Admin UI structure
-23. **[120 - Configuration](./120-configuration.md)** - Env files, validation
-24. **[130 - Testing](./130-testing.md)** - Test patterns for all layers
-25. **[140 - Local Development](./140-local-development.md)** - Running locally, debugging
-26. **[150 - CI/CD](./150-ci-cd.md)** - GitHub Actions template
-27. **[160 - Troubleshooting](./160-troubleshooting.md)** - Common issues and solutions
-28. **[170 - Checklist](./170-checklist.md)** - Completion verification
+14. **[071 - JSON Naming Policy](./071-json-naming.md)** - Canonical `snake_case` JSON conventions
+15. **[072 - Admin/Front Separation](./072-admin-front-separation.md)** - Audience routing conventions
+16. **[075 - Validation](./075-validation.md)** - Request validation patterns
+17. **[076 - Nightfire](./076-nightfire.md)** - Block-based structured content
+18. **[077 - Media Library](./077-media-library.md)** - File uploads, blob storage, media management
+19. **[080 - TypeScript Client](./080-typescript-client.md)** - HTTP client, commands
+20. **[090 - UI Kit](./090-ui-kit.md)** - Component patterns
+21. **[092 - Selection Suggestions](./092-selection-suggestions.md)** - Intelligent suggestions with selection history
+22. **[095 - Navigation Context](./095-navigation-context.md)** - Contextual back buttons and form redirects
+23. **[100 - Frontend (Web)](./100-frontend-web.md)** - SvelteKit setup, routing
+24. **[110 - Admin Frontend](./110-admin.md)** - Admin UI structure
+25. **[120 - Configuration](./120-configuration.md)** - Env files, validation
+26. **[130 - Testing](./130-testing.md)** - Test patterns for all layers
+27. **[140 - Local Development](./140-local-development.md)** - Running locally, debugging
+28. **[150 - CI/CD](./150-ci-cd.md)** - GitHub Actions template
+29. **[160 - Troubleshooting](./160-troubleshooting.md)** - Common issues and solutions
+30. **[170 - Checklist](./170-checklist.md)** - Completion verification
 
 ## Code Examples
 

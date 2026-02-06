@@ -48,7 +48,7 @@ pub enum PaginationDirection {
 
 /// Pagination parameters extracted from query string.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 pub struct PaginationParams {
     /// Number of items per page (default: 50, max: 100).
     #[serde(default = "default_limit")]
@@ -135,7 +135,7 @@ impl PaginationParams {
 
 /// A paginated response wrapper.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 pub struct PaginatedResponse<T> {
     /// The items for the current page.
     pub data: Vec<T>,

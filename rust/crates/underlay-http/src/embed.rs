@@ -22,7 +22,7 @@ use serde::{Deserialize, Serialize};
 
 /// Request to look up embed metadata via server proxy.
 #[derive(Debug, Clone, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 pub struct EmbedMetaRequest {
     /// Provider name: "audioboom", "youtube", "vimeo"
     pub provider: String,
@@ -35,7 +35,7 @@ pub struct EmbedMetaRequest {
 
 /// Response from embed metadata lookup.
 #[derive(Debug, Clone, Serialize)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 pub struct EmbedMetaResponse {
     /// Whether lookup was successful
     pub success: bool,

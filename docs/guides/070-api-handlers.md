@@ -9,6 +9,7 @@ The patterns here are intentionally simple and align with Underlay's primitives:
 - API routes use the `/v1/...` prefix.
 - Responses use `underlay_core::{SingleResponse, ListResponse}`.
 - Errors use `underlay_http::ApiError` and `ApiResult<T>` as the canonical path.
+- JSON field names use snake_case (see [071-json-naming.md](./071-json-naming.md)).
 
 ## Handler Structure
 
@@ -57,7 +58,7 @@ Underlay’s error envelope is:
   "error": {
     "code": "resource.not_found",
     "message": "User not found",
-    "fieldErrors": {
+    "field_errors": {
       "email": "Must be a valid email"
     }
   }
@@ -145,7 +146,6 @@ use underlay_http::{ApiError, ApiResult, list_ok, ok, parse_uuid_path_raw};
 use crate::state::AppState;
 
 #[derive(serde::Serialize)]
-#[serde(rename_all = "camelCase")]
 struct UserDto {
     user_id: String,
     email: String,
@@ -198,12 +198,12 @@ async fn get_user(State(state): State<AppState>, Path(user_id): Path<String>) ->
     .map_err(|err| {
         ApiError::internal("db.query_failed", "Failed to load user")
             .with_cause(err.to_string())
-            .with_context(serde_json::json!({ "userId": id }))
+            .with_context(serde_json::json!({ "user_id": id }))
     })?;
 
     let Some(row) = row else {
         return Err(ApiError::not_found("resource.not_found", "User not found")
-            .with_context(serde_json::json!({ "userId": id })));
+            .with_context(serde_json::json!({ "user_id": id })));
     };
 
     let dto = UserDto {
@@ -1168,7 +1168,7 @@ Error response format:
   "error": {
     "code": "validation.failed",
     "message": "Validation failed",
-    "fieldErrors": {
+    "field_errors": {
       "email": "Invalid email address",
       "password": "Must be at least 8 characters",
       "age": "Must be at least 18"
