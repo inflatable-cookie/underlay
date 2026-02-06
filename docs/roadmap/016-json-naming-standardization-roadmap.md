@@ -20,7 +20,7 @@ Target outcome:
 ## Decision
 
 - [x] Canonical exported JSON naming is `snake_case`
-- [ ] Legacy `camelCase` response compatibility windows are documented where needed
+- [x] Legacy `camelCase` response compatibility windows are documented where needed
 
 ## Progress Checklist
 
@@ -147,15 +147,18 @@ Current API and export payloads are inconsistent across projects (`camelCase` an
 
 ### Tasks
 
-- [ ] Identify endpoints requiring temporary dual-read compatibility (`camelCase` + `snake_case`).
-- [ ] Implement short-lived compatibility adapters at the boundary.
-- [ ] Publish sunset dates for compatibility mode.
+- [x] Identify endpoints requiring temporary dual-read compatibility (`camelCase` + `snake_case`).
+- [x] Implement short-lived compatibility adapters at the boundary.
+- [x] Publish sunset dates for compatibility mode.
 - [ ] Remove compatibility adapters after migration cutover.
 
 ### Acceptance Criteria
 
 - [ ] Legacy compatibility is explicit, time-boxed, and removed on schedule.
 - [ ] No internal codepaths rely on `camelCase` after cutoff.
+
+Compatibility inventory is tracked in `docs/roadmap/016-compatibility-adapters.csv`.
+Sunset guardrail is enforced by `scripts/check-compatibility-sunset.sh`.
 
 ## Validation Plan
 
