@@ -479,6 +479,13 @@ Expected result:
 2. A new `platform.error_log` row exists for `error_code = smoke.forced_db_failure`.
 3. The row includes non-null `message` and `context.handler_context.operation = smoke.error_logging_capture`.
 
+To measure the current `handler_context` null-rate in the reference app:
+
+```bash
+cd /path/to/underlay-reference
+./scripts/error-log-metrics.sh
+```
+
 ### High Database Load
 
 1. Consider disabling `log_client_errors` for high-traffic APIs
