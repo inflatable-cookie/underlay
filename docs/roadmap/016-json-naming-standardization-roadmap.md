@@ -26,7 +26,7 @@ Target outcome:
 
 - [x] Phase 16.1 complete
 - [x] Phase 16.2 complete
-- [ ] Phase 16.3 complete
+- [x] Phase 16.3 complete
 - [ ] Phase 16.4 complete
 - [ ] Phase 16.5 complete
 - [ ] Phase 16.6 complete
@@ -96,11 +96,11 @@ Current API and export payloads are inconsistent across projects (`camelCase` an
 
 ### Tasks
 
-- [ ] Sweep `acme-api` DTOs, route payloads, and job payload types to `snake_case`.
-- [ ] Update `acme-client` generated/manual types and command adapters.
-- [ ] Update `acme-admin` and `acme-front` boundary mappers where required.
-- [ ] Update dev seeds/fixtures/export files to `snake_case`.
-- [ ] Verify post-reset DB seeds and local workflows remain stable.
+- [x] Sweep `acme-api` DTOs, route payloads, and job payload types to `snake_case`.
+- [x] Update `acme-client` generated/manual types and command adapters.
+- [x] Update `acme-admin` and `acme-front` boundary mappers where required.
+- [x] Update dev seeds/fixtures/export files to `snake_case`.
+- [x] Verify post-reset DB seeds and local workflows remain stable.
 
 ### Implementation Tickets
 
@@ -112,16 +112,16 @@ Current API and export payloads are inconsistent across projects (`camelCase` an
 
 ### Acceptance Criteria
 
-- [ ] `acme-*` API responses/requests are consistently `snake_case`.
-- [ ] Admin/front continue functioning after seed/schema refresh.
+- [x] `acme-*` API responses/requests are consistently `snake_case`.
+- [x] Admin/front continue functioning after seed/schema refresh.
 
 ## Phase 16.4 – `acowtancy` Migration
 
 ### Tasks
 
-- [ ] Sweep API DTOs and handlers for mixed JSON naming.
-- [ ] Update app clients and boundary adapters.
-- [ ] Update seed/export/import and test fixtures.
+- [x] Sweep API DTOs and handlers for mixed JSON naming.
+- [x] Update app clients and boundary adapters.
+- [x] Update seed/export/import and test fixtures.
 - [ ] Validate critical admin pages and integration flows after DB reset.
 
 ### Acceptance Criteria
@@ -160,8 +160,8 @@ Current API and export payloads are inconsistent across projects (`camelCase` an
 ## Validation Plan
 
 - [ ] Run naming guardrail scripts in all repos.
-- [ ] Run Rust checks/tests for touched crates in each project.
-- [ ] Run frontend type checks (`bun check`) for touched apps.
+- [x] Run Rust checks/tests for touched crates in each project.
+- [x] Run frontend type checks (`bun check`) for touched apps.
 - [ ] Sample key API responses and confirm field names are `snake_case`.
 - [ ] Confirm error logs and job payload records use `snake_case` keys.
 
