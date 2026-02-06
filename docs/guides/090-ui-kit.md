@@ -1464,6 +1464,39 @@ The component renders as a `<time>` element with semantic `datetime` attribute. 
 </PageHeader>
 ```
 
+### DateRange
+
+Displays a date range using adaptive formatting:
+- Same month/year: `1st to 25th Feb 2025`
+- Same year: `1st Feb to 25th Mar 2025`
+- Different years: `1st Feb 2025 to 25th Mar 2026`
+
+```svelte
+<script>
+  import { DateRange } from "@decodelabs/underlay/components";
+</script>
+
+<DateRange startDate="2025-02-01" endDate="2025-02-25" />
+<DateRange startDate="2025-02-01" endDate="2025-03-25" />
+<DateRange startDate="2025-12-01" endDate="2026-01-15" />
+```
+
+**Props:**
+- `startDate` - Range start date (ISO string or `Date`)
+- `endDate` - Range end date (ISO string or `Date`)
+- `locale` - Locale for month names (default: `"en-GB"`)
+- `style` - `"adaptive"` (default) or `"full"`
+- `emptyText` - Text when start/end is missing or invalid (default: `"—"`)
+- `class` - Additional CSS classes
+
+You can also use the shared formatter for places that require plain text (e.g. `ListCard.subtitle`):
+
+```ts
+import { formatAdaptiveDateRange } from "@decodelabs/underlay/components";
+
+const label = formatAdaptiveDateRange(startDate, endDate, { locale: "en-GB" }) ?? "No date window";
+```
+
 ### DetailsGrid & DetailsItem
 
 Grid layout for displaying key-value detail information in a visually appealing format. Use for detail pages, settings displays, and metadata sections.

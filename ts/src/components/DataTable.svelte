@@ -596,6 +596,7 @@
 					class:has-extended={!!extendedRow && extendedRowWhen(row)}
 					class:clickable={!!onRowClick}
 					role="row"
+					tabindex={onRowClick ? 0 : undefined}
 					onclick={() => onRowClick?.(row)}
 				>
 					{#if selectable}

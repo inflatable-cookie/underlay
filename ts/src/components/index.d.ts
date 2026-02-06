@@ -28,6 +28,7 @@ declare const DropdownMenu: any;
 declare const IconButton: any;
 declare const Tooltip: any;
 declare const TimeAgo: any;
+declare const DateRange: any;
 declare const Popover: any;
 declare const Skeleton: any;
 declare const DataTable: any;
@@ -72,6 +73,15 @@ declare const SuccessStep: any;
 declare const PasswordResetStep: any;
 declare const ForgotPasswordFlow: any;
 declare const LoginPage: any;
+declare function formatAdaptiveDateRange(
+  startInput: string | Date | null | undefined,
+  endInput: string | Date | null | undefined,
+  options?: { locale?: string; style?: "adaptive" | "full" }
+): string | null;
+declare function formatDateWithOrdinal(
+  input: string | Date | null | undefined,
+  locale?: string
+): string | null;
 
 export {
   AlertDialog,
@@ -81,6 +91,7 @@ export {
   Card,
   ConfirmAction,
   DataTable,
+  DateRange,
   DetailsCard,
   DetailsItem,
   DetailsSection,
@@ -133,7 +144,9 @@ export {
   TimeAgo,
   ToastHost,
   Tooltip,
-  VideoPlayer
+  VideoPlayer,
+  formatAdaptiveDateRange,
+  formatDateWithOrdinal
 };
 
 export type { OrderByFieldDefinition, OrderByField, OrderByValue };

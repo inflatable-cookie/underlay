@@ -14,6 +14,11 @@ export { default as TextInput } from "./TextInput.svelte";
 export type { ValidationResult } from "./TextInput.svelte";
 export { default as DateInput } from "./DateInput.svelte";
 export { default as DateTimeInput } from "./DateTimeInput.svelte";
+export {
+	default as DateRange,
+	formatAdaptiveDateRange,
+	formatDateWithOrdinal
+} from "./DateRange.svelte";
 export { default as NumberInput } from "./NumberInput.svelte";
 export { default as ColorPicker } from "./ColorPicker.svelte";
 export { default as TextArea } from "./TextArea.svelte";

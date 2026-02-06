@@ -41,9 +41,13 @@
   let errorMessage = $state<string | null>(null);
   let currentTime = $state(0);
   let duration = $state(0);
-  let volume = $state(initialVolume);
+  let volume = $state(1);
   let isMuted = $state(false);
   let isDragging = $state(false);
+
+  $effect(() => {
+    volume = initialVolume;
+  });
 
   // Format time as MM:SS or HH:MM:SS
   function formatTime(seconds: number): string {
