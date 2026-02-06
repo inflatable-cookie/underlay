@@ -182,7 +182,7 @@ These helpers reduce boilerplate so rich context remains easy to add.
 
 ### Implementation Tickets (Phase 15.4)
 
-- [ ] `acme-api/crates/api/src/error.rs`
+- [x] `acme-api/crates/api/src/error.rs`
   - Re-export or wrap Underlay `ApiError` / `ApiResult` so handlers have one local import surface.
   - Keep backward-compatible shim functions during migration window.
 - [x] `acme-api/crates/api/src/routes/admin/users.rs`
@@ -207,7 +207,7 @@ These helpers reduce boilerplate so rich context remains easy to add.
   - Ensure validation endpoint failures emit structured `ApiError` context.
 - [x] `acme-api/crates/api/src/routes/admin/activity.rs`
   - Ensure list/fetch failures emit structured `ApiError` context.
-- [ ] `acme-api/crates/api/src/routes/mod.rs`
+- [x] `acme-api/crates/api/src/routes/mod.rs`
   - Confirm no route-level adapters bypass `ApiError` response path.
 - [x] `acme-api/crates/api/src/routes/admin/error_logs.rs`
   - Convert error listing/getting routes to `ApiError`.
