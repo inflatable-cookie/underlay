@@ -131,7 +131,7 @@
       <nav class="underlay-page-header__breadcrumbs" aria-label="Breadcrumb">
         {#each breadcrumbs as crumb, i}
           {#if i > 0}<span class="underlay-page-header__breadcrumb-sep" aria-hidden="true"><ChevronRight size={14} /></span>{/if}
-          <a href={crumb.href} class="underlay-page-header__breadcrumb-link">{crumb.label}</a>
+          {#if crumb.href}<a href={crumb.href} class="underlay-page-header__breadcrumb-link">{crumb.label}</a>{:else}<span class="underlay-page-header__breadcrumb-current" aria-current="page">{crumb.label}</span>{/if}
         {/each}
       </nav>
     {:else if subtitle || subtitleSuffix}
@@ -309,6 +309,10 @@
     color: var(--underlay-color-text, #e5e7eb);
     text-decoration: underline;
     text-underline-offset: 0.12em;
+  }
+
+  .underlay-page-header__breadcrumb-current {
+    color: var(--underlay-color-text, #e5e7eb);
   }
 
   .underlay-page-header__breadcrumb-sep {

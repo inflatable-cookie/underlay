@@ -9,5 +9,5 @@ export type PageHeaderLevel = 1 | 2 | 3 | 4;
 
 export interface BreadcrumbItem {
   label: string;
-  href: string;
+  href?: string;
 }
