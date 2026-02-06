@@ -2219,7 +2219,7 @@ Navigation card components for index/dashboard pages. NavCards are substantial l
 
 ### PageHeader
 
-Page header component with title, optional subtitle, back link, and action buttons. Use this for consistent page headers across your application.
+Page header component with section heading, optional entity title, breadcrumbs, back link, and action buttons. Use this for consistent page headers across your application.
 
 ```svelte
 <script>
@@ -2228,85 +2228,128 @@ Page header component with title, optional subtitle, back link, and action butto
     PageHeaderMeta,
     PageHeaderMetaRow,
     PageHeaderMetaItem,
-    PageHeaderMetaSeparator
+    PageHeaderMetaSeparator,
+    type BreadcrumbItem
   } from "@decodelabs/underlay/patterns";
   import { Button, Code, Pill } from "@decodelabs/underlay/components";
 </script>
 
-<!-- Simple header -->
-<PageHeader title="Dashboard" />
-
-<!-- With back link (appears below titles) -->
-<PageHeader 
-  title="Edit Article" 
-  backHref="/articles" 
-  backLabel="Back to articles" 
-/>
-
-<!-- With subtitle (for database-provided names) -->
-<PageHeader 
-  title="Edit Module" 
-  subtitle="Introduction to Financial Accounting"
-  backHref="/modules"
-  backLabel="Back to modules"
-/>
-
-<!-- With actions -->
-<PageHeader title="Users">
+<!-- List page: section only (renders as h1) -->
+<PageHeader section="Projects" backHref="/" backLabel="Back to dashboard">
   {#snippet actions()}
-    <Button href="/users/new">Add User</Button>
+    <Button href="/projects/new">Add Project</Button>
   {/snippet}
 </PageHeader>
 
-<!-- With meta information -->
-<PageHeader 
-  title="Article" 
-  subtitle="Getting Started with Svelte"
-  backHref="/articles"
+<!-- List page with count badge -->
+<PageHeader section="Users" count={total} backHref="/" backLabel="Back to dashboard" />
+
+<!-- Detail page: section (h1) + title (h2) -->
+<PageHeader
+  section="Project"
+  title={project.name}
+  backHref="/projects"
+  backLabel="Back to projects"
 >
   <PageHeaderMeta>
     <PageHeaderMetaRow>
       <PageHeaderMetaItem label="ID">
-        <Code>art_123</Code>
+        <Code copy>{project.id}</Code>
       </PageHeaderMetaItem>
       <PageHeaderMetaSeparator />
-      <Pill accent="#22c55e">Published</Pill>
-    </PageHeaderMetaRow>
-    <PageHeaderMetaRow>
-      <PageHeaderMetaItem label="Updated">2024-01-15</PageHeaderMetaItem>
+      <Pill accent="#22c55e">Active</Pill>
     </PageHeaderMetaRow>
   </PageHeaderMeta>
 </PageHeader>
+
+<!-- Detail page with breadcrumbs -->
+<PageHeader
+  section="Section"
+  subtitle={section.title}
+  breadcrumbs={[
+    { label: pathway.name, href: `/pathways/${pathway.id}` },
+    { label: module.code, href: `/modules/${module.id}` },
+    { label: `Section ${section.label}` }
+  ]}
+  backHref={`/modules/${module.id}`}
+  backLabel="Back to module"
+/>
+
+<!-- Edit form page: action phrase as section -->
+<SpaFormShell
+  section="Edit Project"
+  subtitle={project.name}
+  backHref={`/projects/${project.id}`}
+  backLabel="Back to project"
+  ...
+/>
+
+<!-- New form page: action phrase as section -->
+<SpaFormShell
+  section="New Project"
+  subtitle="Create a new project to organize your tasks"
+  ...
+/>
 ```
 
 **Props:**
-- `title` - Main page title (h1, required)
-- `subtitle` - Secondary title for database-provided names (h2, optional)
-- `backHref` - URL for back link (optional)
-- `backLabel` - Text for back link (default: "Back")
-- `actions` - Snippet for action buttons (optional)
-- `children` - Snippet for meta information below header (optional)
+- `section` - Section heading (renders as h1). Use for the page type or action phrase.
+- `title` - Entity-specific title (renders as h2 below section, when both are set). Optional.
+- `subtitle` - Secondary text below the heading (shown when no breadcrumbs). Optional.
+- `breadcrumbs` - Array of `{ label, href? }` for navigation trail. Items without `href` render as plain text (for the current page). Optional.
+- `level` - Heading level: 1 (page), 2, 3 (section), 4 (subsection). Default: 1.
+- `count` - Badge count after the heading (e.g., total items on list pages). Optional.
+- `backHref` - URL for back link. Optional.
+- `backLabel` - Text for back link (default: "Back").
+- `backIsContextual` - Shows a green dot when the back link came from navigation context.
+- `bannerMessage` - Warning/info banner below the header. Optional.
+- `bannerVariant` - Banner style: "warning" | "error" | "info". Default: "warning".
+- `actions` - Snippet for action buttons (aligned right of the heading row). Optional.
+- `titleSuffix` - Snippet for inline content after the title (e.g., a Pill). Optional.
+- `subtitleSuffix` - Snippet for inline content after the subtitle. Optional.
+- `children` - Snippet for meta information below header. Optional.
+
+**Heading Hierarchy:**
+
+When `section` is set, it renders as the primary h1 heading. When `title` is also provided, it renders as a smaller, muted h2 below the section heading. When only `title` is set (no `section`), it renders as h1 — this is the legacy behaviour and still works for backward compatibility.
 
 **Layout:**
 The component renders in this order:
-1. Title (h1)
-2. Subtitle (h2, if provided)
-3. Back link (if provided)
-4. Actions (aligned right of the title row)
-5. Meta content (children, below the header)
+1. Section heading (h1) — or title if no section
+2. Entity title (h2, if both section and title are set)
+3. Breadcrumbs (if provided) — or subtitle (if no breadcrumbs)
+4. Back link (inline on wide screens, below on narrow)
+5. Actions (aligned right of the heading row)
+6. Meta content (children, below the header)
+7. Banner (if bannerMessage is set)
 
-**Usage Guidelines:**
-- Use `title` for deterministic, static page names (e.g., "Edit Module", "Users", "Settings")
-- Use `subtitle` for database-provided names (e.g., the module name, user name, etc.)
-- The subtitle appears smaller and muted below the main title
-- The back link appears below titles for clear visual hierarchy
-- Action buttons align to the right of the title row
-- Meta content (via children) appears below the title block in muted text
-- Use `PageHeaderMeta*` components to standardize layout and label/value pairs
+**Usage Guidelines by Page Type:**
 
-**Migration Note:**
-- Replace `<p>` meta rows with `PageHeaderMeta`, `PageHeaderMetaRow`, and `PageHeaderMetaItem`
-- Use `PageHeaderMetaSeparator` only between items that need separation (e.g., ID → pills)
+| Page type | `section` | `title` | Example |
+|-----------|-----------|---------|---------|
+| List page | Plural entity name | — | `section="Projects"` |
+| Hub page | Hub name | — | `section="System"` |
+| Detail page | Singular entity name | Entity title/name | `section="Project"` `title={project.name}` |
+| Edit form | "Edit Entity" | — | `section="Edit Project"` |
+| New form | "New Entity" | — | `section="New Project"` |
+| Nested header | — | Sub-heading text | `title={module.title}` `level={3}` |
+
+- Use Title Case for section names (e.g., "Audit Log", not "Audit log")
+- On detail pages, use `subtitle` for supplementary text (e.g., a slug) and `title` for the primary entity identifier
+- Use `breadcrumbs` on deeply nested pages to show the navigation hierarchy. The last breadcrumb item can omit `href` to render as plain text for the current page.
+- The `count` badge stays on the section/title h1 heading
+- Use `PageHeaderMeta*` components to standardize metadata layout below the heading
+
+**Breadcrumbs:**
+
+```typescript
+interface BreadcrumbItem {
+  label: string;
+  href?: string; // omit for current page (renders as plain text)
+}
+```
+
+Breadcrumbs replace the subtitle when provided. They render as a horizontal trail with chevron separators. Items with `href` render as links; items without render as plain text with `aria-current="page"`.
 
 ### ReorderableList & Reorder Controller
 
