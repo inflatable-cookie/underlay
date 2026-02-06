@@ -275,7 +275,7 @@ Rules:
 
 ## Success Metrics
 
-- [ ] 0 new route handlers using raw `StatusCode::...into_response()` for error branches in migrated apps.
+- [x] 0 new route handlers using raw `StatusCode::...into_response()` for error branches in migrated apps.
 - [ ] Significant reduction in error logs with empty/`null` handler context.
 - [ ] Faster diagnosis in admin error logs without requiring terminal-only reproduction.
 

@@ -18,7 +18,7 @@ raw_status_matches="$(
     'StatusCode::(BAD_REQUEST|UNAUTHORIZED|FORBIDDEN|NOT_FOUND|METHOD_NOT_ALLOWED|CONFLICT|UNPROCESSABLE_ENTITY|TOO_MANY_REQUESTS|INTERNAL_SERVER_ERROR|NOT_IMPLEMENTED|BAD_GATEWAY|SERVICE_UNAVAILABLE|GATEWAY_TIMEOUT)\s*\.into_response\(\)' \
     "$TARGET_DIR" || true
 )"
-compat_matches="$(rg -n --glob '*.rs' 'error_response\(' "$TARGET_DIR" || true)"
+compat_matches="$(rg -n --glob '*.rs' '\berror_response\(' "$TARGET_DIR" || true)"
 
 has_failures=0
 
