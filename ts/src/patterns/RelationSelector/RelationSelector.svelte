@@ -5,6 +5,7 @@
   import RelationSelectorTrigger from "./RelationSelectorTrigger.svelte";
   import RelationSelectorPopover from "./RelationSelectorPopover.svelte";
   import RelationSelectorModal from "./RelationSelectorModal.svelte";
+  import Plus from "lucide-svelte/icons/plus";
 
   type Props = RelationSelectorProps<T> & {
     class?: string;
@@ -142,6 +143,13 @@
     if (disabled) return;
     ctx.openPopover();
   }
+
+  function handleCreateClick() {
+    if (disabled) return;
+    ctx.switchToModal();
+  }
+
+  const showInlineCreate = $derived(allowCreate && !!createForm);
 </script>
 
 <div
@@ -149,35 +157,50 @@
   class:relation-selector--disabled={disabled}
   class:relation-selector--error={error}
 >
-  <BitsPopover.Root
-    bind:open={ctx.state.popoverOpen}
-    onOpenChange={(open) => {
-      if (!open) ctx.closePopover();
-    }}
-  >
-    <BitsPopover.Trigger>
-      {#snippet child({ props })}
-        <button
-          {...props}
-          type="button"
-          class="relation-selector__trigger-wrapper"
-          disabled={disabled}
-          onclick={handleTriggerClick}
-        >
-          {#if renderTrigger}
-            {@render renderTrigger(
-              mode === "multi" ? ctx.selectedItems : ctx.selectedItem,
-              handleTriggerClick
-            )}
-          {:else}
-            <RelationSelectorTrigger />
-          {/if}
-        </button>
-      {/snippet}
-    </BitsPopover.Trigger>
+  <div class="relation-selector__row" class:relation-selector__row--with-create={showInlineCreate}>
+    <BitsPopover.Root
+      bind:open={ctx.state.popoverOpen}
+      onOpenChange={(open) => {
+        if (!open) ctx.closePopover();
+      }}
+    >
+      <BitsPopover.Trigger>
+        {#snippet child({ props })}
+          <button
+            {...props}
+            type="button"
+            class="relation-selector__trigger-wrapper"
+            disabled={disabled}
+            onclick={handleTriggerClick}
+          >
+            {#if renderTrigger}
+              {@render renderTrigger(
+                mode === "multi" ? ctx.selectedItems : ctx.selectedItem,
+                handleTriggerClick
+              )}
+            {:else}
+              <RelationSelectorTrigger />
+            {/if}
+          </button>
+        {/snippet}
+      </BitsPopover.Trigger>
 
-    <RelationSelectorPopover />
-  </BitsPopover.Root>
+      <RelationSelectorPopover />
+    </BitsPopover.Root>
+
+    {#if showInlineCreate}
+      <button
+        type="button"
+        class="relation-selector__create-button"
+        aria-label={createLabel ?? "Create new"}
+        title={createLabel ?? "Create new"}
+        disabled={disabled}
+        onclick={handleCreateClick}
+      >
+        <Plus size="1.1em" strokeWidth={2.5} />
+      </button>
+    {/if}
+  </div>
 
   <!-- Modal for create form (opens when user clicks "Add new" in popover) -->
   <RelationSelectorModal />
@@ -191,6 +214,18 @@
   .relation-selector {
     position: relative;
     width: 100%;
+  }
+
+  .relation-selector__row {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    width: 100%;
+  }
+
+  .relation-selector__row > :global(:first-child) {
+    flex: 1;
+    min-width: 0;
   }
 
   .relation-selector__trigger-wrapper {
@@ -208,8 +243,45 @@
     -webkit-appearance: none;
   }
 
+  .relation-selector__row--with-create .relation-selector__trigger-wrapper :global(.relation-selector-trigger) {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+
   .relation-selector__trigger-wrapper:disabled {
     cursor: not-allowed;
+  }
+
+  .relation-selector__create-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5em;
+    flex-shrink: 0;
+    padding: 0;
+    margin: 0;
+    border: none;
+    border-radius: 0 0.35rem 0.35rem 0;
+    background: var(--underlay-color-primary, var(--underlay-color-primary, #2563eb));
+    color: #fff;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: background-color 0.12s ease;
+  }
+
+  .relation-selector__create-button:hover:not(:disabled) {
+    background: var(--underlay-color-primary-strong, var(--underlay-color-primary-strong, #1d4ed8));
+  }
+
+  .relation-selector__create-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .relation-selector__create-button:focus-visible {
+    outline: 2px solid var(--underlay-color-primary, #2563eb);
+    outline-offset: -1px;
+    z-index: 1;
   }
 
   .relation-selector__error {

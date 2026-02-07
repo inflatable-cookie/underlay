@@ -5,6 +5,7 @@
   export interface DateRangeFormatOptions {
     locale?: string;
     style?: DateRangeStyle;
+    hideDays?: boolean;
   }
 
   function parseDate(input: DateRangeInput): Date | null {
@@ -43,6 +44,10 @@
     return `${day}${getOrdinalSuffix(day)} ${month}`;
   }
 
+  function formatMonthYear(date: Date, locale: string): string {
+    return date.toLocaleDateString(locale, { month: "long", year: "numeric" });
+  }
+
   export function formatAdaptiveDateRange(
     startInput: DateRangeInput,
     endInput: DateRangeInput,
@@ -50,10 +55,23 @@
   ): string | null {
     const locale = options.locale ?? "en-GB";
     const style = options.style ?? "adaptive";
+    const hideDays = options.hideDays ?? false;
 
     const start = parseDate(startInput);
     const end = parseDate(endInput);
     if (!start || !end) return null;
+
+    if (hideDays) {
+      const startStr = formatMonthYear(start, locale);
+      const endStr = formatMonthYear(end, locale);
+      if (startStr === endStr) return startStr;
+      if (start.getFullYear() === end.getFullYear()) {
+        const startMonth = start.toLocaleDateString(locale, { month: "long" });
+        const endMonth = end.toLocaleDateString(locale, { month: "long" });
+        return `${startMonth} – ${endMonth} ${start.getFullYear()}`;
+      }
+      return `${startStr} – ${endStr}`;
+    }
 
     if (style === "full") {
       const startFull = formatDateWithOrdinal(start, locale);

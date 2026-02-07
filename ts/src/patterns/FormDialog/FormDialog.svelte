@@ -20,6 +20,8 @@
     width?: string;
     /** Called when cancel/close is requested */
     onCancel?: () => void;
+    /** Rich subtitle content snippet - rendered in the header below the title */
+    subtitleContent?: Snippet;
     /** Form content snippet - receives (submitting: boolean) */
     children?: Snippet<[boolean]>;
   }
@@ -33,6 +35,7 @@
     success = null,
     width = "36rem",
     onCancel,
+    subtitleContent,
     children
   }: Props = $props();
 
@@ -60,7 +63,11 @@
       <div class="form-dialog__header">
         <div class="form-dialog__titles">
           <BitsDialog.Title class="form-dialog__title">{title}</BitsDialog.Title>
-          {#if subtitle}
+          {#if subtitleContent}
+            <BitsDialog.Description class="form-dialog__subtitle">
+              {@render subtitleContent()}
+            </BitsDialog.Description>
+          {:else if subtitle}
             <BitsDialog.Description class="form-dialog__subtitle">
               {subtitle}
             </BitsDialog.Description>
