@@ -24,8 +24,8 @@ Target outcome:
 - [x] Phase 17.2 complete
 - [x] Phase 17.3 complete
 - [x] Phase 17.4 complete
-- [ ] Validation plan complete
-- [ ] Success metrics achieved
+- [x] Validation plan complete
+- [x] Success metrics achieved
 
 ## Problem Statement
 
@@ -190,13 +190,13 @@ The three largest files are all auth service modules with embedded test suites, 
 ### Tasks
 
 - [x] Add a CI script (`scripts/check-file-length.sh`) — warns >500, fails >900 lines
-- [ ] Document module splitting conventions in `docs/guides/`
+- [x] Document module splitting conventions in `docs/guides/041-rust-module-splitting.md`
 - [x] Review and close this roadmap
 
 ### Acceptance Criteria
 
 - [x] CI script flags files exceeding 500-line warning and 900-line fail thresholds
-- [ ] Splitting conventions are documented for future contributors
+- [x] Splitting conventions are documented for future contributors
 
 ## Validation Plan
 
