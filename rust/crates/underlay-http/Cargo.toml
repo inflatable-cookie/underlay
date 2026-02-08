@@ -33,6 +33,9 @@ urlencoding = { version = "2.1" }
 # Optional embed metadata proxy
 underlay-http-client = { workspace = true, optional = true }
 
+# Optional OpenAPI schema types
+utoipa = { workspace = true, optional = true }
+
 [features]
 default = []
 tracing = ["dep:tracing"]
@@ -40,6 +43,7 @@ validation = ["dep:validator"]
 nightfire = ["underlay-nightfire"]
 error-logging = ["underlay-db", "sqlx", "chrono", "tokio", "tracing"]
 embed = ["underlay-http-client"]
+openapi = ["dep:utoipa"]
 
 [dev-dependencies]
 tokio = { workspace = true, features = ["macros", "rt"] }

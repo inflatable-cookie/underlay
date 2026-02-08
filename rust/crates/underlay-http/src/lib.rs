@@ -21,6 +21,9 @@ pub mod error_logging;
 #[cfg(feature = "embed")]
 pub mod embed;
 
+#[cfg(feature = "openapi")]
+pub mod openapi;
+
 #[cfg(test)]
 mod cors_tests;
 
@@ -70,4 +73,9 @@ pub use crate::error_logging::{
 #[cfg(feature = "embed")]
 pub use crate::embed::{
     lookup_audioboom, lookup_embed_metadata, lookup_metadata, EmbedMetaRequest, EmbedMetaResponse,
+};
+
+#[cfg(feature = "openapi")]
+pub use crate::openapi::{
+    ApiErrorBody, ApiErrorEnvelope, ApiListResponse, ApiSingleResponse, ApiUuid,
 };

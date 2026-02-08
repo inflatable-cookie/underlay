@@ -11,8 +11,7 @@ chrono = { workspace = true, features = ["serde"] }
 rand = "0.8"
 thiserror = "2"
 tracing = { workspace = true }
-underlay-auth = { path = "../underlay-auth" }
-underlay-auth-password = { path = "../underlay-auth-password" }
+underlay-auth = { path = "../underlay-auth", features = ["hashing"] }
 
 [dev-dependencies]
 tokio = { workspace = true, features = ["macros", "rt"] }

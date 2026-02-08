@@ -5,7 +5,7 @@
 
 use chrono::{Duration, Utc};
 use tracing::{info, instrument, warn};
-use underlay_auth_password::{Argon2Hasher, PasswordHasherExt, PasswordVerifierExt};
+use underlay_auth::hashing::{Argon2Hasher, PasswordHasherExt, PasswordVerifierExt};
 
 use crate::code::generate_code;
 use crate::config::EmailTotpConfig;

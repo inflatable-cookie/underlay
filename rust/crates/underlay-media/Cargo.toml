@@ -8,7 +8,7 @@ description = "Media library types and repository for Underlay applications"
 [features]
 default = []
 postgres = ["sqlx"]
-renditions = ["underlay-image", "underlay-blob", "tracing"]
+renditions = ["underlay-blob", "tracing"]
 full = ["postgres", "renditions"]
 
 [dependencies]
@@ -18,6 +18,9 @@ serde = { workspace = true, features = ["derive"] }
 thiserror = { workspace = true }
 uuid = { workspace = true }
 
+# Image processing
+image = { workspace = true }
+
 # Re-export enums from underlay-db
 underlay-db = { path = "../underlay-db" }
 
@@ -25,7 +28,6 @@ underlay-db = { path = "../underlay-db" }
 sqlx = { workspace = true, optional = true }
 
 # Rendition generation (optional)
-underlay-image = { path = "../underlay-image", optional = true }
 underlay-blob = { path = "../underlay-blob", optional = true }
 tracing = { workspace = true, optional = true }
 

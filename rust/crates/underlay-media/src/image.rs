@@ -1,33 +1,15 @@
-//! Image processing utilities for Underlay applications.
+//! Image processing utilities.
 //!
-//! This crate provides functions for generating thumbnails and other
-//! image renditions from source images. It supports JPEG, PNG, GIF, and WebP
-//! input formats, with JPEG output for thumbnails.
+//! Functions for generating thumbnails and other image renditions from source
+//! images. Supports JPEG, PNG, GIF, and WebP input formats with JPEG output.
 //!
 //! # Example
 //!
 //! ```rust,ignore
-//! use underlay_image::{generate_thumbnail, ThumbnailConfig};
+//! use underlay_media::image::{generate_thumbnail, ThumbnailConfig};
 //!
-//! // Generate a medium-sized thumbnail
 //! let config = ThumbnailConfig::medium();
 //! let result = generate_thumbnail(&image_bytes, &config)?;
-//!
-//! // Use the thumbnail
-//! println!("Thumbnail: {}x{}", result.width, result.height);
-//! save_file(&result.data)?;
-//! ```
-//!
-//! # Square Thumbnails
-//!
-//! For avatar-style images, use `generate_square_thumbnail` which center-crops
-//! the image to produce a perfect square:
-//!
-//! ```rust,ignore
-//! use underlay_image::generate_square_thumbnail;
-//!
-//! let result = generate_square_thumbnail(&image_bytes, 128, 85)?;
-//! assert_eq!(result.width, result.height);
 //! ```
 
 use image::{imageops::FilterType, GenericImageView, ImageFormat, ImageReader};
@@ -65,7 +47,7 @@ pub struct ThumbnailResult {
 /// # Example
 ///
 /// ```rust
-/// use underlay_image::ThumbnailConfig;
+/// use underlay_media::image::ThumbnailConfig;
 ///
 /// // Use a preset
 /// let config = ThumbnailConfig::medium();
@@ -172,7 +154,7 @@ impl ThumbnailConfig {
 /// # Example
 ///
 /// ```rust,ignore
-/// use underlay_image::{generate_thumbnail, ThumbnailConfig};
+/// use underlay_media::image::{generate_thumbnail, ThumbnailConfig};
 ///
 /// let config = ThumbnailConfig::medium();
 /// let result = generate_thumbnail(&image_bytes, &config)?;
@@ -243,7 +225,7 @@ pub fn generate_thumbnail(
 /// # Example
 ///
 /// ```rust,ignore
-/// use underlay_image::generate_square_thumbnail;
+/// use underlay_media::image::generate_square_thumbnail;
 ///
 /// // Generate a 128x128 avatar thumbnail
 /// let result = generate_square_thumbnail(&image_bytes, 128, 85)?;
@@ -352,7 +334,7 @@ pub fn calculate_thumbnail_dimensions(
 /// # Example
 ///
 /// ```rust
-/// use underlay_image::is_supported_image;
+/// use underlay_media::image::is_supported_image;
 ///
 /// assert!(is_supported_image("image/jpeg"));
 /// assert!(is_supported_image("image/png"));
@@ -373,7 +355,7 @@ pub fn is_supported_image(mime_type: &str) -> bool {
 /// # Example
 ///
 /// ```rust
-/// use underlay_image::format_from_mime;
+/// use underlay_media::image::format_from_mime;
 /// use image::ImageFormat;
 ///
 /// assert_eq!(format_from_mime("image/jpeg"), Some(ImageFormat::Jpeg));
@@ -395,7 +377,7 @@ pub fn format_from_mime(mime_type: &str) -> Option<ImageFormat> {
 /// # Example
 ///
 /// ```rust
-/// use underlay_image::mime_from_format;
+/// use underlay_media::image::mime_from_format;
 /// use image::ImageFormat;
 ///
 /// assert_eq!(mime_from_format(ImageFormat::Jpeg), "image/jpeg");
@@ -412,5 +394,5 @@ pub fn mime_from_format(format: ImageFormat) -> &'static str {
 }
 
 #[cfg(test)]
-#[path = "lib_tests.rs"]
+#[path = "image_tests.rs"]
 mod tests;

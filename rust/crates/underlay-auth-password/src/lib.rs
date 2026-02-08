@@ -4,14 +4,13 @@
 //! password strength validation.
 
 mod errors;
-mod hasher;
 #[cfg(feature = "hibp")]
 pub(crate) mod hibp;
 mod service;
 mod strength;
 
 pub use crate::errors::{PasswordAuthError, PasswordAuthResult};
-pub use crate::hasher::{Argon2Hasher, PasswordHasherExt, PasswordVerifierExt};
+pub use underlay_auth::hashing::{Argon2Hasher, PasswordHasherExt, PasswordVerifierExt};
 pub use crate::service::{
     CompromisedPasswordStrategy, FailedLoginAttempt, PasswordAuthRepository, PasswordAuthService,
     PasswordConfig,

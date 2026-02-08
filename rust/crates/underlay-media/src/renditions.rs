@@ -6,7 +6,7 @@
 use std::sync::Arc;
 
 use underlay_blob::BlobAdapter;
-use underlay_image::{generate_thumbnail, ThumbnailConfig};
+use crate::image::{generate_thumbnail, ThumbnailConfig};
 
 use crate::domain::{CreateRenditionInput, MediaId, MediaRendition, MediaVersionId, RenditionType};
 use crate::error::{MediaError, MediaResult};

@@ -58,6 +58,7 @@
 
 pub mod domain;
 pub mod error;
+pub mod image;
 pub mod repository;
 pub mod storage;
 
@@ -98,6 +99,11 @@ pub use domain::{
 };
 
 pub use error::{MediaError, MediaResult};
+pub use image::{
+    calculate_thumbnail_dimensions, format_from_mime, generate_square_thumbnail,
+    generate_thumbnail, is_supported_image, mime_from_format, ImageError, ThumbnailConfig,
+    ThumbnailResult,
+};
 pub use repository::{MediaRepository, MediaRepositoryExt};
 pub use storage::{
     mime_to_extension, rendition_key, version_filename, version_key, StorageKeyConfig,
