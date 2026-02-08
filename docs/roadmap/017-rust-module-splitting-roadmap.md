@@ -157,19 +157,19 @@ The three largest files are all auth service modules with embedded test suites, 
 - [x] Move test suite (17 tests, ~133 lines) to `validators_tests.rs`
 - [x] Validators are flat functions with no shared state — no further split needed
 
-### `underlay-blob/src/adapters/local.rs` (556 lines)
+### `underlay-blob/src/adapters/local.rs` (556 → ~407 lines)
 
-- [ ] Evaluate splitting file operations from metadata handling
-- [ ] Move test suite to dedicated test module if >200 lines
+- [x] Move test suite (6 tests, ~149 lines) to `local_tests.rs`
+- [x] Adapter code is cohesive — no further split needed
 
 ### `underlay-blob/src/adapters/s3.rs` (396 lines)
 
 - [x] No split needed — under threshold, flag for monitoring
 
-### `underlay-image/src/lib.rs` (532 lines)
+### `underlay-image/src/lib.rs` (532 → ~413 lines)
 
-- [ ] Evaluate splitting by processing operation (resize, crop, format conversion)
-- [ ] Move test suite to dedicated test module if >200 lines
+- [x] Move test suite (12 tests, ~119 lines) to `lib_tests.rs`
+- [x] Image processing functions are cohesive — no further split needed
 
 ### `underlay-email/src/adapters/dev_capture.rs` (428 lines)
 
