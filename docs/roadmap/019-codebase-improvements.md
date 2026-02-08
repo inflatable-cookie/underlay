@@ -22,10 +22,10 @@ Address findings from the 2026-02-08 codebase audit (`docs/reports/2026-02-08-co
 
 ## Progress Checklist
 
-- [ ] Phase 19.1 complete (no breaking changes)
-- [ ] Phase 19.2 complete (import path changes)
-- [ ] Phase 19.3 complete (API surface changes)
-- [ ] Phase 19.4 complete (new additive infrastructure)
+- [x] Phase 19.1 complete (no breaking changes)
+- [x] Phase 19.2 complete (import path changes)
+- [x] Phase 19.3 complete (API surface changes)
+- [x] Phase 19.4 complete (new additive infrastructure)
 
 ---
 
@@ -35,46 +35,46 @@ Address findings from the 2026-02-08 codebase audit (`docs/reports/2026-02-08-co
 
 Fix Cargo.toml feature flags that don't properly declare dependencies:
 
-- [ ] `underlay-http`: Add `dep:tracing` to `error-logging` feature
-- [ ] `underlay-jobs`: Make `scheduler` require `postgres`
-- [ ] `underlay-jobs`: Make `outbox` require `postgres`
-- [ ] Verify all crates compile with each feature flag in isolation
+- [x] `underlay-http`: Add `dep:tracing` to `error-logging` feature
+- [x] `underlay-jobs`: Make `scheduler` require `postgres`
+- [x] `underlay-jobs`: Make `outbox` require `postgres`
+- [x] Verify all crates compile with each feature flag in isolation
 
 ### 19.1.2 Audit table validation dedup
 
-- [ ] Extract `validate_table_name()` helper in `underlay-audit`
-- [ ] Replace 4 copy-pasted validation blocks in `writer.rs` and `query.rs`
-- [ ] Run audit crate tests
+- [x] Extract `validate_table_name()` helper in `underlay-audit`
+- [x] Replace 4 copy-pasted validation blocks in `writer.rs` and `query.rs`
+- [x] Run audit crate tests
 
 ### 19.1.3 Standardise internal Uuid imports
 
-- [ ] Replace all `uuid::Uuid` with `underlay_core::Uuid` inside underlay crates
-- [ ] Keep `uuid` as a workspace dep for re-export only
-- [ ] Run full test suite
+- [x] Replace all `uuid::Uuid` with `underlay_core::Uuid` inside underlay crates
+- [x] Keep `uuid` as a workspace dep for re-export only
+- [x] Run full test suite
 
 ### 19.1.4 Replace once_cell with std::LazyLock
 
-- [ ] Replace `once_cell::sync::Lazy` with `std::sync::LazyLock` in `underlay-core/src/slugify.rs`
-- [ ] Replace in `underlay-validation/src/validators.rs` if applicable
-- [ ] Remove `once_cell` from Cargo.toml if no longer needed
-- [ ] Verify minimum Rust version is 1.80+
+- [x] Replace `once_cell::sync::Lazy` with `std::sync::LazyLock` in `underlay-core/src/slugify.rs`
+- [x] Replace in `underlay-validation/src/validators.rs` if applicable
+- [x] Remove `once_cell` from Cargo.toml if no longer needed
+- [x] Verify minimum Rust version is 1.80+
 
 ### 19.1.5 Auth error boilerplate reduction (internal only)
 
-- [ ] Add `impl_auth_error_from!` macro to `underlay-auth`
-- [ ] Replace manual `From` impls in all 6 auth provider crates
-- [ ] Fix semantic issues: `AccountLocked` should NOT map to `RateLimited`
-- [ ] Fix hard-coded `retry_after_seconds: 300` in email-totp
-- [ ] Run full auth test suite
+- [x] Add `impl_auth_error_from!` macro to `underlay-auth`
+- [x] Replace manual `From` impls in all 6 auth provider crates
+- [x] Fix semantic issues: `AccountLocked` should NOT map to `RateLimited`
+- [x] Fix hard-coded `retry_after_seconds: 300` in email-totp
+- [x] Run full auth test suite
 
 ### Acceptance Criteria (Phase 19.1)
 
-- [ ] All feature flags properly enforce their dependencies
-- [ ] No duplicate table validation code in audit crate
-- [ ] `uuid::Uuid` not directly imported anywhere in underlay crates
-- [ ] `once_cell` removed from dependencies
-- [ ] Auth error conversions use declarative macro
-- [ ] All tests pass, no consuming app changes needed
+- [x] All feature flags properly enforce their dependencies
+- [x] No duplicate table validation code in audit crate
+- [x] `uuid::Uuid` not directly imported anywhere in underlay crates
+- [x] `once_cell` removed from dependencies
+- [x] Auth error conversions use declarative macro
+- [x] All tests pass, no consuming app changes needed
 
 ---
 
@@ -92,21 +92,21 @@ Each merge requires updating consuming apps that import from the old crate.
 - Loophole: does not use → no change
 
 **Underlay changes:**
-- [ ] Move `underlay-image/src/lib.rs` contents to `underlay-media/src/image.rs`
-- [ ] Add `pub mod image;` to `underlay-media/src/lib.rs` (always available, not feature-gated)
-- [ ] Re-export key types: `pub use image::{generate_thumbnail, generate_square_thumbnail, ThumbnailConfig, ThumbnailResult, ImageError, ...}`
-- [ ] Remove `underlay-image` crate directory
-- [ ] Remove from workspace Cargo.toml
-- [ ] Update `underlay-media/Cargo.toml`: move `image` crate dep from optional to required
-- [ ] Deduplicate `generate_version_renditions()` / `generate_renditions_for_version()` in renditions.rs
-- [ ] Run media tests
+- [x] Move `underlay-image/src/lib.rs` contents to `underlay-media/src/image.rs`
+- [x] Add `pub mod image;` to `underlay-media/src/lib.rs` (always available, not feature-gated)
+- [x] Re-export key types: `pub use image::{generate_thumbnail, generate_square_thumbnail, ThumbnailConfig, ThumbnailResult, ImageError, ...}`
+- [x] Remove `underlay-image` crate directory
+- [x] Remove from workspace Cargo.toml
+- [x] Update `underlay-media/Cargo.toml`: move `image` crate dep from optional to required
+- [x] Deduplicate `generate_version_renditions()` / `generate_renditions_for_version()` in renditions.rs
+- [x] Run media tests
 
 **App updates:**
-- [ ] Acowtancy: update `farmyard_infra::image` re-exports from `underlay_media::image`
-- [ ] Acowtancy: remove `underlay-image` from workspace Cargo.toml
-- [ ] Underlay Reference: change import to `underlay_media::image::{generate_thumbnail, ThumbnailConfig}`
-- [ ] Underlay Reference: remove `underlay-image` from workspace Cargo.toml
-- [ ] Songsprout: remove `underlay-image` from workspace Cargo.toml if listed
+- [x] Acowtancy: update `farmyard_infra::image` re-exports from `underlay_media::image`
+- [x] Acowtancy: remove `underlay-image` from workspace Cargo.toml
+- [x] Underlay Reference: change import to `underlay_media::image::{generate_thumbnail, ThumbnailConfig}`
+- [x] Underlay Reference: remove `underlay-image` from workspace Cargo.toml
+- [x] Songsprout: remove `underlay-image` from workspace Cargo.toml if listed
 
 ### 19.2.2 Merge underlay-openapi into underlay-http
 
@@ -118,18 +118,18 @@ Each merge requires updating consuming apps that import from the old crate.
 - Underlay Reference: not used → no change
 
 **Underlay changes:**
-- [ ] Move `underlay-openapi/src/lib.rs` to `underlay-http/src/openapi.rs`
-- [ ] Add `openapi` feature to `underlay-http/Cargo.toml` gated on `utoipa`
-- [ ] Add `#[cfg(feature = "openapi")] pub mod openapi;` to `underlay-http/src/lib.rs`
-- [ ] Remove `underlay-openapi` crate directory
-- [ ] Remove from workspace Cargo.toml
-- [ ] Run http crate tests
+- [x] Move `underlay-openapi/src/lib.rs` to `underlay-http/src/openapi.rs`
+- [x] Add `openapi` feature to `underlay-http/Cargo.toml` gated on `utoipa`
+- [x] Add `#[cfg(feature = "openapi")] pub mod openapi;` to `underlay-http/src/lib.rs`
+- [x] Remove `underlay-openapi` crate directory
+- [x] Remove from workspace Cargo.toml
+- [x] Run http crate tests
 
 **App updates:**
-- [ ] Acowtancy: add `openapi` feature to `underlay-http` dependency
-- [ ] Acowtancy: replace all `underlay_openapi::` imports with `underlay_http::openapi::`
-- [ ] Acowtancy: remove `underlay-openapi` from workspace Cargo.toml
-- [ ] Songsprout: remove `underlay-openapi` from workspace Cargo.toml
+- [x] Acowtancy: add `openapi` feature to `underlay-http` dependency
+- [x] Acowtancy: replace all `underlay_openapi::` imports with `underlay_http::openapi::`
+- [x] Acowtancy: remove `underlay-openapi` from workspace Cargo.toml
+- [x] Songsprout: remove `underlay-openapi` from workspace Cargo.toml
 
 ### 19.2.3 Absorb underlay-auth-state into underlay-auth
 
@@ -141,25 +141,25 @@ Each merge requires updating consuming apps that import from the old crate.
 - Loophole: not used → no change
 
 **Underlay changes:**
-- [ ] Move `underlay-auth-state/src/lib.rs` to `underlay-auth/src/state.rs`
-- [ ] Add `postgres` feature to `underlay-auth/Cargo.toml` (gated on `sqlx`)
-- [ ] Add `#[cfg(feature = "postgres")] pub mod state;` to `underlay-auth/src/lib.rs`
-- [ ] Re-export: `#[cfg(feature = "postgres")] pub use state::{AuthStateStore, AuthStateError};`
-- [ ] Remove `underlay-auth-state` crate directory
-- [ ] Remove from workspace Cargo.toml
-- [ ] Run auth tests
+- [x] Move `underlay-auth-state/src/lib.rs` to `underlay-auth/src/state.rs`
+- [x] Add `postgres` feature to `underlay-auth/Cargo.toml` (gated on `sqlx`)
+- [x] Add `#[cfg(feature = "postgres")] pub mod state;` to `underlay-auth/src/lib.rs`
+- [x] Re-export: `#[cfg(feature = "postgres")] pub use state::{AuthStateStore, AuthStateError};`
+- [x] Remove `underlay-auth-state` crate directory
+- [x] Remove from workspace Cargo.toml
+- [x] Run auth tests
 
 **App updates:**
-- [ ] Acowtancy: replace `underlay_auth_state::` with `underlay_auth::state::`
-- [ ] Acowtancy: add `postgres` feature to `underlay-auth` dependency
-- [ ] Acowtancy: remove `underlay-auth-state` from workspace Cargo.toml
-- [ ] Compli-me: replace `underlay_auth_state::` with `underlay_auth::state::`
-- [ ] Compli-me: add `postgres` feature to `underlay-auth` dependency
-- [ ] Compli-me: remove `underlay-auth-state` from workspace Cargo.toml
-- [ ] Underlay Reference: replace `underlay_auth_state::` with `underlay_auth::state::`
-- [ ] Underlay Reference: add `postgres` feature to `underlay-auth` dependency
-- [ ] Underlay Reference: remove `underlay-auth-state` from workspace Cargo.toml
-- [ ] Songsprout: remove `underlay-auth-state` from workspace Cargo.toml
+- [x] Acowtancy: replace `underlay_auth_state::` with `underlay_auth::state::`
+- [x] Acowtancy: add `postgres` feature to `underlay-auth` dependency
+- [x] Acowtancy: remove `underlay-auth-state` from workspace Cargo.toml
+- [x] Compli-me: replace `underlay_auth_state::` with `underlay_auth::state::`
+- [x] Compli-me: add `postgres` feature to `underlay-auth` dependency
+- [x] Compli-me: remove `underlay-auth-state` from workspace Cargo.toml
+- [x] Underlay Reference: replace `underlay_auth_state::` with `underlay_auth::state::`
+- [x] Underlay Reference: add `postgres` feature to `underlay-auth` dependency
+- [x] Underlay Reference: remove `underlay-auth-state` from workspace Cargo.toml
+- [x] Songsprout: remove `underlay-auth-state` from workspace Cargo.toml
 
 ### 19.2.4 Extract Argon2 hasher to underlay-auth
 
@@ -167,22 +167,22 @@ Each merge requires updating consuming apps that import from the old crate.
 - No consuming app imports `Argon2Hasher` directly from underlay crates — they all use it through the auth service types. This is an internal-only dependency change.
 
 **Underlay changes:**
-- [ ] Copy `hasher.rs` (Argon2Hasher, PasswordHasherExt, PasswordVerifierExt) from `underlay-auth-password` to `underlay-auth/src/hashing.rs`
-- [ ] Add `hashing` feature to `underlay-auth/Cargo.toml` (gated on `argon2`)
-- [ ] Add `#[cfg(feature = "hashing")] pub mod hashing;` to `underlay-auth/src/lib.rs`
-- [ ] Update `underlay-auth-password` to import from `underlay-auth::hashing` instead of defining locally
-- [ ] Update `underlay-auth-email-totp` to depend on `underlay-auth` (with `hashing` feature) instead of `underlay-auth-password`
-- [ ] Remove `underlay-auth-email-totp` → `underlay-auth-password` dependency
-- [ ] Run all auth tests
+- [x] Copy `hasher.rs` (Argon2Hasher, PasswordHasherExt, PasswordVerifierExt) from `underlay-auth-password` to `underlay-auth/src/hashing.rs`
+- [x] Add `hashing` feature to `underlay-auth/Cargo.toml` (gated on `argon2`)
+- [x] Add `#[cfg(feature = "hashing")] pub mod hashing;` to `underlay-auth/src/lib.rs`
+- [x] Update `underlay-auth-password` to import from `underlay-auth::hashing` instead of defining locally
+- [x] Update `underlay-auth-email-totp` to depend on `underlay-auth` (with `hashing` feature) instead of `underlay-auth-password`
+- [x] Remove `underlay-auth-email-totp` → `underlay-auth-password` dependency
+- [x] Run all auth tests
 
 ### Acceptance Criteria (Phase 19.2)
 
-- [ ] `underlay-image` crate removed, all functionality in `underlay-media::image`
-- [ ] `underlay-openapi` crate removed, all functionality in `underlay-http::openapi`
-- [ ] `underlay-auth-state` crate removed, all functionality in `underlay-auth::state`
-- [ ] `underlay-auth-email-totp` no longer depends on `underlay-auth-password`
-- [ ] All 5 consuming apps compile and their tests pass
-- [ ] Crate count reduced from 29 to 26
+- [x] `underlay-image` crate removed, all functionality in `underlay-media::image`
+- [x] `underlay-openapi` crate removed, all functionality in `underlay-http::openapi`
+- [x] `underlay-auth-state` crate removed, all functionality in `underlay-auth::state`
+- [x] `underlay-auth-email-totp` no longer depends on `underlay-auth-password`
+- [x] All 5 consuming apps compile and their tests pass
+- [x] Crate count reduced from 29 to 26
 
 ---
 
@@ -198,31 +198,31 @@ Each merge requires updating consuming apps that import from the old crate.
 - Underlay Reference: does not use → no change
 
 **Underlay changes:**
-- [ ] Move `ValidationResult` and `parse_uuid_for_validation` from `underlay-http/src/field_validation.rs` to `underlay-validation`
-- [ ] Move `validation_to_app_error` and `nightfire_validation_to_app_error` logic into `underlay-validation` (with optional `axum` feature)
-- [ ] Remove `validation` feature from `underlay-http/Cargo.toml`
-- [ ] Remove `underlay-http/src/validation.rs`
-- [ ] Remove `underlay-http/src/field_validation.rs` (after moving types)
-- [ ] Run validation crate tests
+- [x] Move `ValidationResult` and `parse_uuid_for_validation` from `underlay-http/src/field_validation.rs` to `underlay-validation`
+- [x] Move `validation_to_app_error` and `nightfire_validation_to_app_error` logic into `underlay-validation` (with optional `axum` feature)
+- [x] Remove `validation` feature from `underlay-http/Cargo.toml`
+- [x] Remove `underlay-http/src/validation.rs`
+- [x] Remove `underlay-http/src/field_validation.rs` (after moving types)
+- [x] Run validation crate tests
 
 **App updates:**
-- [ ] Acowtancy: add `underlay-validation` with `axum` feature to workspace deps
-- [ ] Acowtancy: replace all `underlay_http::validation_to_app_error` with `underlay_validation::validation_to_app_error`
-- [ ] Acowtancy: replace `underlay_http::parse_uuid_for_validation` with `underlay_validation::parse_uuid_for_validation`
-- [ ] Acowtancy: remove `validation` feature from `underlay-http` dependency
-- [ ] Acowtancy: verify all 50+ usage sites compile
+- [x] Acowtancy: add `underlay-validation` with `axum` feature to workspace deps
+- [x] Acowtancy: replace all `underlay_http::validation_to_app_error` with `underlay_validation::validation_to_app_error`
+- [x] Acowtancy: replace `underlay_http::parse_uuid_for_validation` with `underlay_validation::parse_uuid_for_validation`
+- [x] Acowtancy: remove `validation` feature from `underlay-http` dependency
+- [x] Acowtancy: verify all 50+ usage sites compile
 
 ### 19.3.2 Standardise error conventions
 
 **Underlay changes:**
-- [ ] Add `AuditError` enum to `underlay-audit` wrapping `sqlx::Error`
-- [ ] Rename inconsistent result aliases to `Result<T>` pattern
-- [ ] Standardise Uuid imports across all crates (ensure `underlay_core::Uuid` only)
-- [ ] Document error convention in CLAUDE.md and AGENTS.md
+- [x] Add `AuditError` enum to `underlay-audit` wrapping `sqlx::Error`
+- [x] Rename inconsistent result aliases to `Result<T>` pattern
+- [x] Standardise Uuid imports across all crates (ensure `underlay_core::Uuid` only)
+- [x] Document error convention in CLAUDE.md and AGENTS.md
 
 **App updates (if result alias names change):**
-- [ ] Check each app for direct references to old result type aliases
-- [ ] Update any affected imports
+- [x] Check each app for direct references to old result type aliases
+- [x] Update any affected imports
 
 ### 19.3.3 Clean up underlay-core exports
 
@@ -231,20 +231,20 @@ Each merge requires updating consuming apps that import from the old crate.
 - `RawUuid`: Acowtancy re-exports and uses it in 2 places. Loophole re-exports it.
 
 **Underlay changes:**
-- [ ] Remove slug module from `underlay-core` (move to `underlay-validation` or a utility crate if needed later)
-- [ ] Keep `RawUuid` (Acowtancy uses it)
-- [ ] Run core tests
+- [x] Remove slug module from `underlay-core` (move to `underlay-validation` or a utility crate if needed later)
+- [x] Keep `RawUuid` (Acowtancy uses it)
+- [x] Run core tests
 
 **App updates:**
-- [ ] Verify no app imports slug functions (confirmed: none do)
+- [x] Verify no app imports slug functions (confirmed: none do)
 
 ### Acceptance Criteria (Phase 19.3)
 
-- [ ] Single validation framework (`underlay-validation`)
-- [ ] No `validation` feature on `underlay-http`
-- [ ] Consistent error conventions documented and applied
-- [ ] Slug module removed from core
-- [ ] All 5 consuming apps compile and tests pass
+- [x] Single validation framework (`underlay-validation`)
+- [x] No `validation` feature on `underlay-http`
+- [x] Consistent error conventions documented and applied
+- [x] Slug module removed from core
+- [x] All 5 consuming apps compile and tests pass
 
 ---
 
@@ -253,45 +253,45 @@ Each merge requires updating consuming apps that import from the old crate.
 ### 19.4.1 Create underlay-aws shared config
 
 **Underlay changes:**
-- [ ] Create `underlay-aws` crate with unified `aws-config` setup
-- [ ] Provide `AwsConfig` builder with credential chain, region, endpoint
-- [ ] Update `underlay-blob` (S3 feature) to use `underlay-aws`
-- [ ] Update `underlay-email` (SES feature) to use `underlay-aws`
-- [ ] Run blob and email tests
+- [x] Create `underlay-aws` crate with unified `aws-config` setup
+- [x] Provide `AwsConfig` builder with credential chain, region, endpoint
+- [x] Update `underlay-blob` (S3 feature) to use `underlay-aws`
+- [x] Update `underlay-email` (SES feature) to use `underlay-aws`
+- [x] Run blob and email tests
 
 ### 19.4.2 Create underlay-http-client wrapper
 
 **Underlay changes:**
-- [ ] Create `underlay-http-client` crate wrapping `reqwest::Client`
-- [ ] Sensible defaults: timeouts, rustls-tls, user-agent
-- [ ] Update `underlay-auth-oauth`, `underlay-auth-password` (hibp), `underlay-http` (embed) to use it
-- [ ] Run affected crate tests
+- [x] Create `underlay-http-client` crate wrapping `reqwest::Client`
+- [x] Sensible defaults: timeouts, rustls-tls, user-agent
+- [x] Update `underlay-auth-oauth`, `underlay-auth-password` (hibp), `underlay-http` (embed) to use it
+- [x] Run affected crate tests
 
 ### Acceptance Criteria (Phase 19.4)
 
-- [ ] AWS crates share configuration through `underlay-aws`
-- [ ] HTTP client crates share configuration through `underlay-http-client`
-- [ ] No consuming app changes required
+- [x] AWS crates share configuration through `underlay-aws`
+- [x] HTTP client crates share configuration through `underlay-http-client`
+- [x] No consuming app changes required
 
 ---
 
 ## Validation Plan
 
-- [ ] All underlay crates build with `cargo check --all-features`
-- [ ] All underlay tests pass with `cargo test --all-features`
-- [ ] File length check passes: `bash scripts/check-file-length.sh`
-- [ ] Each consuming app builds after each phase
-- [ ] Package map updated to reflect crate count changes
-- [ ] AGENTS.md and CLAUDE.md updated with any new conventions
+- [x] All underlay crates build with `cargo check --all-features`
+- [x] All underlay tests pass with `cargo test --all-features`
+- [x] File length check passes: `bash scripts/check-file-length.sh`
+- [x] Each consuming app builds after each phase
+- [x] Package map updated to reflect crate count changes
+- [x] AGENTS.md and CLAUDE.md updated with any new conventions
 
 ## Success Metrics
 
-- [ ] Crate count reduced from 29 to 26 (image, openapi, auth-state removed)
-- [ ] Single validation framework in use
-- [ ] Auth error boilerplate eliminated via macro
-- [ ] Feature flags properly enforce dependencies
-- [ ] Error conventions documented and consistent
-- [ ] All consuming apps updated and compiling
+- [x] Crate count reduced from 29 to 26 (image, openapi, auth-state removed)
+- [x] Single validation framework in use
+- [x] Auth error boilerplate eliminated via macro
+- [x] Feature flags properly enforce dependencies
+- [x] Error conventions documented and consistent
+- [x] All consuming apps updated and compiling
 
 ## Execution Notes
 
