@@ -4,6 +4,40 @@ use underlay_core::AppError;
 /// Result type for auth operations.
 pub type AuthResult<T> = Result<T, AuthError>;
 
+/// Generate a `From<ProviderError> for AuthError` impl declaratively.
+///
+/// Each arm maps provider error variants to `AuthError` variants.
+/// The match body is written as raw `pat => expr` arms, with `AuthError`
+/// available unqualified in scope.
+///
+/// # Example
+///
+/// ```rust,ignore
+/// use underlay_auth::impl_auth_error_from;
+///
+/// impl_auth_error_from!(JwtError, err, {
+///     JwtError::Expired => AuthError::SessionExpired,
+///     JwtError::InvalidToken | JwtError::UnsupportedTokenType => AuthError::TokenInvalid,
+///     JwtError::Config(msg) | JwtError::Key(msg) | JwtError::Internal(msg) => {
+///         AuthError::Internal(msg)
+///     }
+/// });
+/// ```
+#[macro_export]
+macro_rules! impl_auth_error_from {
+    ($error_type:ty, $err:ident, { $( $arms:tt )* }) => {
+        impl From<$error_type> for $crate::AuthError {
+            fn from($err: $error_type) -> Self {
+                #[allow(unused_imports)]
+                use $crate::AuthError;
+                match $err {
+                    $( $arms )*
+                }
+            }
+        }
+    };
+}
+
 /// Comprehensive authentication errors for Underlay-based apps.
 ///
 /// Error codes follow the pattern `auth.<category>.<specific>` for easy mapping

@@ -10,8 +10,8 @@ pub async fn hibp_k_anonymity_check(
     api_base_url: &str,
     user_agent: &str,
 ) -> PasswordAuthResult<bool> {
-    use reqwest::header::HeaderValue;
     use sha1::{Digest, Sha1};
+    use underlay_http_client::reqwest::header::HeaderValue;
 
     let mut hasher = Sha1::new();
     hasher.update(password.as_bytes());
@@ -27,10 +27,7 @@ pub async fn hibp_k_anonymity_check(
     let base = api_base_url.trim_end_matches('/');
     let url = format!("{}/range/{}", base, prefix);
 
-    let client = reqwest::Client::builder()
-        .user_agent(user_agent)
-        .build()
-        .map_err(|e| PasswordAuthError::Internal(format!("failed to build HIBP client: {}", e)))?;
+    let client = underlay_http_client::HttpClient::with_user_agent(user_agent);
 
     let resp = client
         .get(url)

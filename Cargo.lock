@@ -4945,12 +4945,12 @@ dependencies = [
  "base64 0.22.1",
  "chrono",
  "rand 0.8.5",
- "reqwest 0.12.28",
  "serde",
  "sha1",
  "tokio",
  "underlay-auth",
  "underlay-core",
+ "underlay-http-client",
  "underlay-ratelimit",
  "uuid",
  "zxcvbn",
@@ -5003,11 +5003,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "underlay-aws"
+version = "0.0.1"
+dependencies = [
+ "aws-config",
+ "aws-types",
+]
+
+[[package]]
 name = "underlay-blob"
 version = "0.0.1"
 dependencies = [
  "async-trait",
- "aws-config",
  "aws-sdk-s3",
  "axum",
  "base64 0.22.1",
@@ -5017,6 +5024,7 @@ dependencies = [
  "tokio",
  "tower-http",
  "tracing",
+ "underlay-aws",
  "url",
 ]
 
@@ -5025,7 +5033,6 @@ name = "underlay-core"
 version = "0.0.1"
 dependencies = [
  "deunicode",
- "once_cell",
  "regex",
  "serde",
  "uuid",
@@ -5061,7 +5068,6 @@ name = "underlay-email"
 version = "0.0.1"
 dependencies = [
  "async-trait",
- "aws-config",
  "aws-sdk-sesv2",
  "chrono",
  "lettre",
@@ -5070,6 +5076,7 @@ dependencies = [
  "tera",
  "thiserror 1.0.69",
  "tokio",
+ "underlay-aws",
  "uuid",
 ]
 
@@ -5091,7 +5098,6 @@ dependencies = [
  "axum",
  "chrono",
  "http 1.4.0",
- "reqwest 0.12.28",
  "serde",
  "serde_json",
  "serde_urlencoded",
@@ -5102,12 +5108,20 @@ dependencies = [
  "tracing",
  "underlay-core",
  "underlay-db",
+ "underlay-http-client",
  "underlay-nightfire",
  "underlay-observability",
  "underlay-testing",
  "urlencoding",
  "uuid",
  "validator",
+]
+
+[[package]]
+name = "underlay-http-client"
+version = "0.0.1"
+dependencies = [
+ "reqwest 0.12.28",
 ]
 
 [[package]]
@@ -5251,7 +5265,6 @@ version = "0.0.1"
 dependencies = [
  "axum",
  "http 1.4.0",
- "once_cell",
  "regex",
  "serde",
  "serde_json",

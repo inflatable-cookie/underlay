@@ -16,11 +16,11 @@ underlay-ratelimit = { path = "../underlay-ratelimit" }
 uuid = { workspace = true }
 zxcvbn = "2"
 
-reqwest = { version = "0.12", default-features = false, features = ["rustls-tls"], optional = true }
+underlay-http-client = { workspace = true, optional = true }
 sha1 = { version = "0.10", optional = true }
 
 [features]
-hibp = ["dep:reqwest", "dep:sha1"]
+hibp = ["underlay-http-client", "dep:sha1"]
 
 [dev-dependencies]
 chrono = { workspace = true }

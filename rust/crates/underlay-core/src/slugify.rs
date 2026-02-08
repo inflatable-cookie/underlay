@@ -1,7 +1,7 @@
 //! Slug utilities for generating and validating URL-friendly identifiers.
 
-use once_cell::sync::Lazy;
 use regex::Regex;
+use std::sync::LazyLock;
 
 /// List of reserved slugs that could conflict with routes.
 pub const RESERVED_SLUGS: &[&str] = &[
@@ -24,7 +24,8 @@ pub const RESERVED_SLUGS: &[&str] = &[
 ];
 
 /// Regex pattern for valid slugs.
-static SLUG_REGEX: Lazy<Regex> = Lazy::new(|| Regex::new(r"^[a-z0-9]+(?:-[a-z0-9]+)*$").unwrap());
+static SLUG_REGEX: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"^[a-z0-9]+(?:-[a-z0-9]+)*$").unwrap());
 
 /// Convert a string to a URL-friendly slug.
 ///

@@ -28,8 +28,8 @@ tokio = { workspace = true, features = ["macros", "rt", "time", "test-util"] }
 default = []
 # Enable PostgreSQL-backed job store with full functionality
 postgres = ["sqlx", "thiserror", "uuid"]
-# Enable cron-based scheduling
-scheduler = ["cron"]
+# Enable cron-based scheduling (requires postgres for job persistence)
+scheduler = ["cron", "postgres"]
 # Enable outbox pattern for domain events (requires postgres)
 outbox = ["postgres"]
 # Full feature set

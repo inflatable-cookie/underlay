@@ -142,21 +142,17 @@ pub enum WebAuthnError {
     InvalidPasskeyEncoding,
 }
 
-impl From<WebAuthnError> for AuthError {
-    fn from(value: WebAuthnError) -> Self {
-        match value {
-            WebAuthnError::InvalidConfig => {
-                AuthError::Internal("invalid webauthn configuration".into())
-            }
-            WebAuthnError::RegistrationFailed => AuthError::PassKeyRegistrationFailed,
-            WebAuthnError::AuthenticationFailed => AuthError::PassKeyAuthenticationFailed,
-            WebAuthnError::CounterRegression => AuthError::PassKeyCounterRegression,
-            WebAuthnError::InvalidPasskeyEncoding => {
-                AuthError::BadRequest("invalid passkey encoding".into())
-            }
-        }
+underlay_auth::impl_auth_error_from!(WebAuthnError, err, {
+    WebAuthnError::InvalidConfig => {
+        AuthError::Internal("invalid webauthn configuration".into())
     }
-}
+    WebAuthnError::RegistrationFailed => AuthError::PassKeyRegistrationFailed,
+    WebAuthnError::AuthenticationFailed => AuthError::PassKeyAuthenticationFailed,
+    WebAuthnError::CounterRegression => AuthError::PassKeyCounterRegression,
+    WebAuthnError::InvalidPasskeyEncoding => {
+        AuthError::BadRequest("invalid passkey encoding".into())
+    }
+});
 
 #[derive(Debug, Clone)]
 pub struct WebAuthnService {

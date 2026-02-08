@@ -91,15 +91,7 @@ pub async fn list_audit_logs(
     table: &str,
     filters: AuditLogFilters,
 ) -> Result<Vec<AuditLogRow>, sqlx::Error> {
-    // Validate table name
-    if !table
-        .chars()
-        .all(|c| c.is_alphanumeric() || c == '_' || c == '.')
-    {
-        return Err(sqlx::Error::Protocol(
-            "Invalid table name: must contain only alphanumeric, underscore, or dot".to_string(),
-        ));
-    }
+    crate::validate_table_name(table)?;
 
     // Build dynamic query with filters
     // We use a fixed parameter order for predictable binding
@@ -149,15 +141,7 @@ pub async fn get_audit_log_by_id(
     table: &str,
     id: Uuid,
 ) -> Result<Option<AuditLogRow>, sqlx::Error> {
-    // Validate table name
-    if !table
-        .chars()
-        .all(|c| c.is_alphanumeric() || c == '_' || c == '.')
-    {
-        return Err(sqlx::Error::Protocol(
-            "Invalid table name: must contain only alphanumeric, underscore, or dot".to_string(),
-        ));
-    }
+    crate::validate_table_name(table)?;
 
     let query = format!(
         r#"
@@ -190,15 +174,7 @@ pub async fn count_audit_logs(
     table: &str,
     filters: &AuditLogFilters,
 ) -> Result<i64, sqlx::Error> {
-    // Validate table name
-    if !table
-        .chars()
-        .all(|c| c.is_alphanumeric() || c == '_' || c == '.')
-    {
-        return Err(sqlx::Error::Protocol(
-            "Invalid table name: must contain only alphanumeric, underscore, or dot".to_string(),
-        ));
-    }
+    crate::validate_table_name(table)?;
 
     let query = format!(
         r#"

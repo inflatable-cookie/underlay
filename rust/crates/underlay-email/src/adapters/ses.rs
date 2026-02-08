@@ -21,10 +21,7 @@ impl SesAdapter {
     /// This uses the default AWS credential chain (environment variables,
     /// IAM role, shared credentials file, etc.).
     pub async fn new(config: &SesConfig) -> EmailResult<Self> {
-        let aws_config = aws_config::defaults(aws_config::BehaviorVersion::latest())
-            .region(aws_config::Region::new(config.region.clone()))
-            .load()
-            .await;
+        let aws_config = underlay_aws::AwsConfig::new(&config.region).load().await;
 
         let client = Client::new(&aws_config);
 
@@ -36,7 +33,7 @@ impl SesAdapter {
 
     /// Create a new SES adapter from an existing AWS SDK config.
     pub fn from_aws_config(
-        aws_config: &aws_config::SdkConfig,
+        aws_config: &underlay_aws::SdkConfig,
         configuration_set: Option<String>,
     ) -> Self {
         let client = Client::new(aws_config);

@@ -31,7 +31,7 @@ tokio = { workspace = true, features = ["rt"], optional = true }
 urlencoding = { version = "2.1" }
 
 # Optional embed metadata proxy
-reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "json"], optional = true }
+underlay-http-client = { workspace = true, optional = true }
 
 [features]
 default = []
@@ -39,7 +39,7 @@ tracing = ["dep:tracing"]
 validation = ["dep:validator"]
 nightfire = ["underlay-nightfire"]
 error-logging = ["underlay-db", "sqlx", "chrono", "tokio", "tracing"]
-embed = ["reqwest"]
+embed = ["underlay-http-client"]
 
 [dev-dependencies]
 tokio = { workspace = true, features = ["macros", "rt"] }

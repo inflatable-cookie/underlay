@@ -3,8 +3,8 @@
 //! Each validator returns `Ok(())` if the value is valid, or `Err(FieldError)` if invalid.
 
 use crate::FieldError;
-use once_cell::sync::Lazy;
 use regex::Regex;
+use std::sync::LazyLock;
 
 /// Validate that a string is a valid email address.
 ///
@@ -19,8 +19,8 @@ use regex::Regex;
 /// assert!(validators::email("not-an-email").is_err());
 /// ```
 pub fn email(value: &str) -> Result<(), FieldError> {
-    static EMAIL_REGEX: Lazy<Regex> =
-        Lazy::new(|| Regex::new(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$").unwrap());
+    static EMAIL_REGEX: LazyLock<Regex> =
+        LazyLock::new(|| Regex::new(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$").unwrap());
 
     if EMAIL_REGEX.is_match(value) {
         Ok(())
@@ -45,7 +45,7 @@ pub fn email(value: &str) -> Result<(), FieldError> {
 /// assert!(validators::url("not-a-url").is_err());
 /// ```
 pub fn url(value: &str) -> Result<(), FieldError> {
-    static URL_REGEX: Lazy<Regex> = Lazy::new(|| {
+    static URL_REGEX: LazyLock<Regex> = LazyLock::new(|| {
         Regex::new(r"^https?://[a-zA-Z0-9][-a-zA-Z0-9]*(\.[a-zA-Z0-9][-a-zA-Z0-9]*)+(/.*)?$")
             .unwrap()
     });
@@ -70,7 +70,7 @@ pub fn url(value: &str) -> Result<(), FieldError> {
 /// assert!(validators::uuid("not-a-uuid").is_err());
 /// ```
 pub fn uuid(value: &str) -> Result<(), FieldError> {
-    static UUID_REGEX: Lazy<Regex> = Lazy::new(|| {
+    static UUID_REGEX: LazyLock<Regex> = LazyLock::new(|| {
         Regex::new(
             r"^[0-9a-fA-F]{8}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{12}$",
         )
@@ -373,7 +373,8 @@ pub fn alphanumeric(value: &str) -> Result<(), FieldError> {
 /// assert!(validators::username("john@doe").is_err());
 /// ```
 pub fn username(value: &str) -> Result<(), FieldError> {
-    static USERNAME_REGEX: Lazy<Regex> = Lazy::new(|| Regex::new(r"^[a-zA-Z0-9_-]+$").unwrap());
+    static USERNAME_REGEX: LazyLock<Regex> =
+        LazyLock::new(|| Regex::new(r"^[a-zA-Z0-9_-]+$").unwrap());
 
     if USERNAME_REGEX.is_match(value) {
         Ok(())
@@ -396,7 +397,8 @@ pub fn username(value: &str) -> Result<(), FieldError> {
 /// assert!(validators::slug("My Article").is_err());
 /// ```
 pub fn slug(value: &str) -> Result<(), FieldError> {
-    static SLUG_REGEX: Lazy<Regex> = Lazy::new(|| Regex::new(r"^[a-z0-9]+(-[a-z0-9]+)*$").unwrap());
+    static SLUG_REGEX: LazyLock<Regex> =
+        LazyLock::new(|| Regex::new(r"^[a-z0-9]+(-[a-z0-9]+)*$").unwrap());
 
     if SLUG_REGEX.is_match(value) {
         Ok(())

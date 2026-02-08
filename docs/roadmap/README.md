@@ -21,6 +21,7 @@ Status overview of all Underlay roadmaps. Check individual files for detailed pr
 | 015 | [Error Reporting](./015-unified-error-reporting-roadmap.md) | In progress | Unified error reporting across layers |
 | 016 | [JSON Naming](./016-json-naming-standardization-roadmap.md) | In progress | snake_case JSON standardisation |
 | 017 | [Module Splitting](./017-rust-module-splitting-roadmap.md) | Complete | Split oversized Rust modules |
-| 018 | [Documentation & AI](./018-documentation-ai-agent-improvements.md) | In progress | Documentation and AI agent context improvements |
+| 018 | [Documentation & AI](./018-documentation-ai-agent-improvements.md) | Complete | Documentation and AI agent context improvements |
+| 019 | [Codebase Improvements](./019-codebase-improvements.md) | In progress | Simplification, deduplication, reorganisation |
 
-**Complete:** 8 | **In progress:** 10
+**Complete:** 9 | **In progress:** 10

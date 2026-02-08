@@ -1,7 +1,6 @@
 //! Error types for email TOTP operations.
 
 use thiserror::Error;
-use underlay_auth::AuthError;
 
 /// Errors that can occur during email TOTP operations.
 #[derive(Debug, Error)]
@@ -46,26 +45,20 @@ pub enum EmailTotpError {
 /// Result type for email TOTP operations.
 pub type EmailTotpResult<T> = Result<T, EmailTotpError>;
 
-impl From<EmailTotpError> for AuthError {
-    fn from(err: EmailTotpError) -> Self {
-        match err {
-            EmailTotpError::RateLimited => AuthError::RateLimited {
-                retry_after_seconds: 300,
-            },
-            EmailTotpError::CodeExpired => AuthError::TwoFactorInvalid,
-            EmailTotpError::InvalidCode => AuthError::TwoFactorInvalid,
-            EmailTotpError::TooManyAttempts => AuthError::RateLimited {
-                retry_after_seconds: 300,
-            },
-            EmailTotpError::NoActiveCode => AuthError::TwoFactorInvalid,
-            EmailTotpError::SessionNotFound => {
-                AuthError::BadRequest("Verification session not found or expired".to_string())
-            }
-            EmailTotpError::SessionAlreadyUsed => {
-                AuthError::BadRequest("Verification session already used".to_string())
-            }
-            EmailTotpError::EmailSendFailed(msg) => AuthError::Internal(msg),
-            EmailTotpError::Storage(msg) => AuthError::Internal(msg),
-        }
+underlay_auth::impl_auth_error_from!(EmailTotpError, err, {
+    EmailTotpError::RateLimited | EmailTotpError::TooManyAttempts => {
+        AuthError::RateLimited { retry_after_seconds: 300 }
     }
-}
+    EmailTotpError::CodeExpired
+    | EmailTotpError::InvalidCode
+    | EmailTotpError::NoActiveCode => AuthError::TwoFactorInvalid,
+    EmailTotpError::SessionNotFound => {
+        AuthError::BadRequest("Verification session not found or expired".to_string())
+    }
+    EmailTotpError::SessionAlreadyUsed => {
+        AuthError::BadRequest("Verification session already used".to_string())
+    }
+    EmailTotpError::EmailSendFailed(msg) | EmailTotpError::Storage(msg) => {
+        AuthError::Internal(msg)
+    }
+});

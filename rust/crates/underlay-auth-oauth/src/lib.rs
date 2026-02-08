@@ -96,18 +96,14 @@ pub enum OAuthServiceError {
     RefreshFailed,
 }
 
-impl From<OAuthServiceError> for AuthError {
-    fn from(value: OAuthServiceError) -> Self {
-        match value {
-            OAuthServiceError::InvalidConfig => {
-                AuthError::Internal("invalid oauth configuration".into())
-            }
-            OAuthServiceError::ExchangeFailed => AuthError::OAuthError("exchange failed".into()),
-            OAuthServiceError::UserInfoFailed => AuthError::OAuthError("userinfo failed".into()),
-            OAuthServiceError::RefreshFailed => AuthError::OAuthTokenRefreshFailed,
-        }
+underlay_auth::impl_auth_error_from!(OAuthServiceError, err, {
+    OAuthServiceError::InvalidConfig => {
+        AuthError::Internal("invalid oauth configuration".into())
     }
-}
+    OAuthServiceError::ExchangeFailed => AuthError::OAuthError("exchange failed".into()),
+    OAuthServiceError::UserInfoFailed => AuthError::OAuthError("userinfo failed".into()),
+    OAuthServiceError::RefreshFailed => AuthError::OAuthTokenRefreshFailed,
+});
 
 #[async_trait::async_trait]
 pub trait OAuthProvider {

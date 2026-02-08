@@ -1,0 +1,9 @@
+[package]
+name = "underlay-http-client"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Shared HTTP client configuration for Underlay crates"
+
+[dependencies]
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "json"] }

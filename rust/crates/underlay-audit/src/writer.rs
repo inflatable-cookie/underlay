@@ -37,16 +37,7 @@ pub async fn append_audit_log(
     table: &str,
     entry: AuditEntry,
 ) -> Result<AuditLogRow, sqlx::Error> {
-    // Validate table name to prevent SQL injection
-    // Only allow alphanumeric, underscore, and dot (for schema.table)
-    if !table
-        .chars()
-        .all(|c| c.is_alphanumeric() || c == '_' || c == '.')
-    {
-        return Err(sqlx::Error::Protocol(
-            "Invalid table name: must contain only alphanumeric, underscore, or dot".to_string(),
-        ));
-    }
+    crate::validate_table_name(table)?;
 
     let query = format!(
         r#"
@@ -117,22 +108,17 @@ pub fn append_audit_log_async(pool: DbPool, table: &'static str, entry: AuditEnt
 
 #[cfg(test)]
 mod tests {
-    #[test]
-    fn validate_table_name() {
-        // Valid table names
-        assert!("platform.audit_log"
-            .chars()
-            .all(|c| c.is_alphanumeric() || c == '_' || c == '.'));
-        assert!("audit_log"
-            .chars()
-            .all(|c| c.is_alphanumeric() || c == '_' || c == '.'));
+    use crate::validate_table_name;
 
-        // Invalid table names
-        assert!(!"audit; DROP TABLE users"
-            .chars()
-            .all(|c| c.is_alphanumeric() || c == '_' || c == '.'));
-        assert!(!"audit-log"
-            .chars()
-            .all(|c| c.is_alphanumeric() || c == '_' || c == '.'));
+    #[test]
+    fn valid_table_names() {
+        assert!(validate_table_name("platform.audit_log").is_ok());
+        assert!(validate_table_name("audit_log").is_ok());
+    }
+
+    #[test]
+    fn invalid_table_names() {
+        assert!(validate_table_name("audit; DROP TABLE users").is_err());
+        assert!(validate_table_name("audit-log").is_err());
     }
 }

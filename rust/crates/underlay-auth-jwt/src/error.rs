@@ -1,7 +1,6 @@
 //! JWT/session errors.
 
 use thiserror::Error;
-use underlay_auth::AuthError;
 
 #[derive(Debug, Clone, Error, PartialEq, Eq)]
 pub enum JwtError {
@@ -57,22 +56,18 @@ impl JwtError {
     }
 }
 
-impl From<JwtError> for AuthError {
-    fn from(err: JwtError) -> Self {
-        match err {
-            JwtError::Expired => AuthError::SessionExpired,
-            JwtError::NotYetValid => AuthError::TokenNotYetValid,
-            JwtError::InvalidToken => AuthError::TokenInvalid,
-            JwtError::MalformedToken => AuthError::TokenMalformed,
-            JwtError::SessionRevoked => AuthError::SessionRevoked,
-            JwtError::TokenFingerprintMismatch => AuthError::TokenFingerprintMismatch,
-            JwtError::RefreshReplayDetected => AuthError::TokenInvalid,
-            JwtError::UnsupportedTokenType => AuthError::TokenInvalid,
-            JwtError::Config(msg) | JwtError::Key(msg) | JwtError::Internal(msg) => {
-                AuthError::Internal(msg)
-            }
-        }
+underlay_auth::impl_auth_error_from!(JwtError, err, {
+    JwtError::Expired => AuthError::SessionExpired,
+    JwtError::NotYetValid => AuthError::TokenNotYetValid,
+    JwtError::InvalidToken
+    | JwtError::RefreshReplayDetected
+    | JwtError::UnsupportedTokenType => AuthError::TokenInvalid,
+    JwtError::MalformedToken => AuthError::TokenMalformed,
+    JwtError::SessionRevoked => AuthError::SessionRevoked,
+    JwtError::TokenFingerprintMismatch => AuthError::TokenFingerprintMismatch,
+    JwtError::Config(msg) | JwtError::Key(msg) | JwtError::Internal(msg) => {
+        AuthError::Internal(msg)
     }
-}
+});
 
 pub type JwtResult<T> = Result<T, JwtError>;

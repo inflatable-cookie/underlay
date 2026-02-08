@@ -169,14 +169,11 @@ pub enum TotpError {
     Replay,
 }
 
-impl From<TotpError> for AuthError {
-    fn from(value: TotpError) -> Self {
-        match value {
-            TotpError::InvalidSecret | TotpError::InvalidCode => AuthError::TwoFactorInvalid,
-            TotpError::Replay => AuthError::TwoFactorInvalid,
-        }
+underlay_auth::impl_auth_error_from!(TotpError, err, {
+    TotpError::InvalidSecret | TotpError::InvalidCode | TotpError::Replay => {
+        AuthError::TwoFactorInvalid
     }
-}
+});
 
 #[derive(Debug, Clone)]
 pub struct TotpService {

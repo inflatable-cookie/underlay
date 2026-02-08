@@ -62,3 +62,19 @@ pub use crate::writer::{append_audit_log, append_audit_log_async};
 
 /// Convenience type alias for the database pool.
 pub type DbPool = sqlx::PgPool;
+
+/// Validate that a table name is safe for use in dynamic SQL.
+///
+/// Only allows alphanumeric characters, underscores, and dots (for schema.table).
+/// Rejects any characters that could enable SQL injection.
+pub(crate) fn validate_table_name(table: &str) -> Result<(), sqlx::Error> {
+    if !table
+        .chars()
+        .all(|c| c.is_alphanumeric() || c == '_' || c == '.')
+    {
+        return Err(sqlx::Error::Protocol(
+            "Invalid table name: must contain only alphanumeric, underscore, or dot".to_string(),
+        ));
+    }
+    Ok(())
+}

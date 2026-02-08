@@ -1,0 +1,10 @@
+[package]
+name = "underlay-aws"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Shared AWS SDK configuration for Underlay crates"
+
+[dependencies]
+aws-config = "1"
+aws-types = "1"

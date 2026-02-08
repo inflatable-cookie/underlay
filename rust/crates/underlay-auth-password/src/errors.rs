@@ -32,28 +32,19 @@ pub enum PasswordAuthError {
     Internal(String),
 }
 
-impl From<PasswordAuthError> for AuthError {
-    fn from(err: PasswordAuthError) -> Self {
-        match err {
-            PasswordAuthError::PasswordTooWeak(_) => AuthError::PasswordTooWeak,
-            PasswordAuthError::PasswordCompromised => AuthError::PasswordCompromised,
-            PasswordAuthError::PasswordSameAsCurrent => AuthError::PasswordSameAsCurrent,
-            PasswordAuthError::WrongPassword => AuthError::WrongCredentials,
-            PasswordAuthError::AccountLocked {
-                retry_after_seconds,
-            } => AuthError::RateLimited {
-                retry_after_seconds,
-            },
-            PasswordAuthError::RateLimited {
-                retry_after_seconds,
-            } => AuthError::RateLimited {
-                retry_after_seconds,
-            },
-            PasswordAuthError::CredentialNotFound => AuthError::WrongCredentials,
-            PasswordAuthError::Internal(msg) => AuthError::Internal(msg),
-        }
+underlay_auth::impl_auth_error_from!(PasswordAuthError, err, {
+    PasswordAuthError::PasswordTooWeak(_) => AuthError::PasswordTooWeak,
+    PasswordAuthError::PasswordCompromised => AuthError::PasswordCompromised,
+    PasswordAuthError::PasswordSameAsCurrent => AuthError::PasswordSameAsCurrent,
+    PasswordAuthError::WrongPassword | PasswordAuthError::CredentialNotFound => {
+        AuthError::WrongCredentials
     }
-}
+    PasswordAuthError::AccountLocked { retry_after_seconds }
+    | PasswordAuthError::RateLimited { retry_after_seconds } => {
+        AuthError::RateLimited { retry_after_seconds }
+    }
+    PasswordAuthError::Internal(msg) => AuthError::Internal(msg),
+});
 
 impl From<std::io::Error> for PasswordAuthError {
     fn from(err: std::io::Error) -> Self {

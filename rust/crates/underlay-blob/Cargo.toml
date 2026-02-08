@@ -7,7 +7,7 @@ description = "Blob storage adapter for Underlay applications"
 
 [features]
 default = []
-s3 = ["aws-sdk-s3", "aws-config"]
+s3 = ["aws-sdk-s3", "underlay-aws"]
 local = ["tokio/fs", "tokio/io-util"]
 dev-server = ["local", "axum", "tracing", "tower-http"]
 
@@ -22,7 +22,7 @@ url = "2"
 
 # AWS S3 adapter (optional)
 aws-sdk-s3 = { version = "1", optional = true }
-aws-config = { version = "1", optional = true }
+underlay-aws = { workspace = true, optional = true }
 
 # Dev server (optional - for local development blob endpoints)
 axum = { workspace = true, optional = true }

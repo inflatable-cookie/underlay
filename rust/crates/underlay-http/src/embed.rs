@@ -110,7 +110,7 @@ pub async fn lookup_metadata(req: &EmbedMetaRequest) -> EmbedMetaResponse {
 /// Uses the audio_clips API for single posts (includes duration) and
 /// the playlists API for playlists (aggregates duration from clips).
 pub async fn lookup_audioboom(id: &str, embed_type: Option<&str>) -> EmbedMetaResponse {
-    let client = reqwest::Client::new();
+    let client = underlay_http_client::HttpClient::new();
 
     let result = match embed_type {
         Some("playlist") => lookup_audioboom_playlist(&client, id).await,
@@ -124,7 +124,7 @@ pub async fn lookup_audioboom(id: &str, embed_type: Option<&str>) -> EmbedMetaRe
 }
 
 async fn lookup_audioboom_single(
-    client: &reqwest::Client,
+    client: &underlay_http_client::reqwest::Client,
     id: &str,
 ) -> Result<EmbedMetaResponse, String> {
     // Use audio_clips API (has duration, unlike oEmbed)
@@ -162,7 +162,7 @@ async fn lookup_audioboom_single(
 }
 
 async fn lookup_audioboom_playlist(
-    client: &reqwest::Client,
+    client: &underlay_http_client::reqwest::Client,
     id: &str,
 ) -> Result<EmbedMetaResponse, String> {
     let url = format!("https://api.audioboom.com/playlists/{}", id);

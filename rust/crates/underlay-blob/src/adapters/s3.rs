@@ -97,14 +97,13 @@ impl S3Adapter {
     /// This uses the default AWS credential chain (environment variables,
     /// IAM role, shared credentials file, etc.).
     pub async fn new(config: S3Config) -> BlobResult<Self> {
-        let mut aws_config_builder = aws_config::defaults(aws_config::BehaviorVersion::latest())
-            .region(aws_config::Region::new(config.region.clone()));
+        let mut aws = underlay_aws::AwsConfig::new(&config.region);
 
         if let Some(endpoint) = &config.endpoint_url {
-            aws_config_builder = aws_config_builder.endpoint_url(endpoint);
+            aws = aws.with_endpoint(endpoint);
         }
 
-        let aws_config = aws_config_builder.load().await;
+        let aws_config = aws.load().await;
 
         let mut s3_config_builder = aws_sdk_s3::config::Builder::from(&aws_config);
 
@@ -118,7 +117,7 @@ impl S3Adapter {
     }
 
     /// Create a new S3 adapter from an existing AWS SDK config.
-    pub fn from_aws_config(aws_config: &aws_config::SdkConfig, config: S3Config) -> Self {
+    pub fn from_aws_config(aws_config: &underlay_aws::SdkConfig, config: S3Config) -> Self {
         let mut s3_config_builder = aws_sdk_s3::config::Builder::from(aws_config);
 
         if config.path_style {
