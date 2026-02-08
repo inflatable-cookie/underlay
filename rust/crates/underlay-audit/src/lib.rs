@@ -53,10 +53,12 @@
 //! ```
 
 mod entry;
+mod error;
 mod query;
 mod writer;
 
 pub use crate::entry::{AuditAction, AuditEntry, AuditLogRow};
+pub use crate::error::{AuditError, AuditResult};
 pub use crate::query::{count_audit_logs, get_audit_log_by_id, list_audit_logs, AuditLogFilters};
 pub use crate::writer::{append_audit_log, append_audit_log_async};
 
@@ -67,14 +69,12 @@ pub type DbPool = sqlx::PgPool;
 ///
 /// Only allows alphanumeric characters, underscores, and dots (for schema.table).
 /// Rejects any characters that could enable SQL injection.
-pub(crate) fn validate_table_name(table: &str) -> Result<(), sqlx::Error> {
+pub(crate) fn validate_table_name(table: &str) -> AuditResult<()> {
     if !table
         .chars()
         .all(|c| c.is_alphanumeric() || c == '_' || c == '.')
     {
-        return Err(sqlx::Error::Protocol(
-            "Invalid table name: must contain only alphanumeric, underscore, or dot".to_string(),
-        ));
+        return Err(AuditError::InvalidTableName);
     }
     Ok(())
 }

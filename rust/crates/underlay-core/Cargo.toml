@@ -5,7 +5,5 @@ edition.workspace = true
 license.workspace = true
 
 [dependencies]
-deunicode = "1.6"
-regex = "1"
 serde = { workspace = true }
 uuid = { workspace = true }

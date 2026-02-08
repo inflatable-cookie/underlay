@@ -31,12 +31,13 @@ static SLUG_REGEX: LazyLock<Regex> =
 ///
 /// # Examples
 /// ```
-/// use underlay_core::slugify;
+/// use underlay_validation::slugify::slugify;
 /// assert_eq!(slugify("Hello World!"), "hello-world");
 /// assert_eq!(slugify("FA1 2024"), "fa1-2024");
 /// assert_eq!(slugify("  Spaces  "), "spaces");
 /// assert_eq!(slugify("Über Café"), "uber-cafe");
 /// ```
+#[cfg(feature = "slugify")]
 pub fn slugify(input: &str) -> String {
     use deunicode::deunicode;
 
@@ -112,6 +113,7 @@ pub fn validate_slug(slug: &str) -> Result<(), SlugValidationError> {
 mod tests {
     use super::*;
 
+    #[cfg(feature = "slugify")]
     #[test]
     fn test_slugify_basic() {
         assert_eq!(slugify("Hello World"), "hello-world");
@@ -119,12 +121,14 @@ mod tests {
         assert_eq!(slugify("  spaces  "), "spaces");
     }
 
+    #[cfg(feature = "slugify")]
     #[test]
     fn test_slugify_numbers() {
         assert_eq!(slugify("FA1 2024"), "fa1-2024");
         assert_eq!(slugify("Module 123"), "module-123");
     }
 
+    #[cfg(feature = "slugify")]
     #[test]
     fn test_slugify_unicode() {
         assert_eq!(slugify("Über Café"), "uber-cafe");

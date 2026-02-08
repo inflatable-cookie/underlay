@@ -1,25 +1,21 @@
-//! Nightfire content validation integration for HTTP handlers.
+//! Nightfire content validation integration.
 //!
-//! Provides helpers to convert Nightfire validation errors to HTTP error responses.
+//! Converts Nightfire validation errors to `AppError` responses
+//! with field-level error details.
 //!
 //! # Example
 //!
 //! ```rust,ignore
-//! use underlay_http::{nightfire_validation_to_app_error, error_response};
-//! use nightfire::{validate_nightfire_value_by_schema, NightfireValue};
-//! use axum::http::StatusCode;
+//! use underlay_validation::nightfire_validation_to_app_error;
 //!
-//! async fn create_content(body: NightfireValue) -> impl IntoResponse {
-//!     if let Err(validation_err) = validate_nightfire_value_by_schema(&body) {
-//!         let err = nightfire_validation_to_app_error(
-//!             validation_err,
-//!             "content.invalid",
-//!             "body",
-//!             "Content body failed schema validation.",
-//!         );
-//!         return error_response(StatusCode::BAD_REQUEST, err).into_response();
-//!     }
-//!     // ... rest of handler
+//! if let Err(validation_err) = validate_nightfire_value_by_schema(&body) {
+//!     let err = nightfire_validation_to_app_error(
+//!         validation_err,
+//!         "content.invalid",
+//!         "body",
+//!         "Content body failed schema validation.",
+//!     );
+//!     return Err(err);
 //! }
 //! ```
 
@@ -30,7 +26,7 @@ use underlay_nightfire::NightfireValidationError;
 
 /// Convert a Nightfire validation error to an AppError with field errors.
 ///
-/// This provides consistent error formatting for Nightfire content validation
+/// Provides consistent error formatting for Nightfire content validation
 /// failures across all HTTP handlers.
 ///
 /// # Arguments
@@ -39,20 +35,6 @@ use underlay_nightfire::NightfireValidationError;
 /// * `error_code` - Error code for the AppError (e.g., "content.summary_invalid")
 /// * `field_name` - Field name for field_errors (e.g., "body")
 /// * `message` - Human-readable message for the AppError
-///
-/// # Example
-///
-/// ```rust,ignore
-/// if let Err(validation_err) = validate_nightfire_value_by_schema(&nf_body) {
-///     let err = nightfire_validation_to_app_error(
-///         validation_err,
-///         "content.summary_invalid",
-///         "body",
-///         "Summary body failed schema validation.",
-///     );
-///     return error_response(StatusCode::BAD_REQUEST, err).into_response();
-/// }
-/// ```
 pub fn nightfire_validation_to_app_error(
     validation_err: NightfireValidationError,
     error_code: &'static str,

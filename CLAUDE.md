@@ -4,7 +4,7 @@ This file provides Claude Code-specific conventions for working on the Underlay 
 
 ## Quick Reference
 
-- **Full crate inventory**: `docs/architecture/010-package-map.md` (29 Rust crates)
+- **Full crate inventory**: `docs/architecture/010-package-map.md` (26 Rust crates)
 - **Patterns catalogue**: `docs/patterns/000-index.md`
 - **Roadmap status**: `docs/roadmap/README.md`
 - **Module splitting guide**: `docs/guides/041-rust-module-splitting.md`
@@ -61,7 +61,8 @@ Common feature flags you'll encounter:
 
 | Flag | Crates | Purpose |
 |------|--------|---------|
-| `postgres` | jobs, media, http (error-logging) | PostgreSQL persistence |
+| `postgres` | jobs, media, auth, http (error-logging) | PostgreSQL persistence |
+| `hashing` | auth | Argon2id password hashing (used by auth-password, auth-email-totp) |
 | `scheduler` | jobs | Cron-based job scheduling |
 | `outbox` | jobs | Domain event outbox pattern |
 | `s3` / `local` | blob | Storage backend selection |
@@ -69,6 +70,10 @@ Common feature flags you'll encounter:
 | `hibp` | auth-password | Have I Been Pwned breach checking |
 | `attestation` | auth-webauthn | Attested passkey verification |
 | `derive` | validation | `#[derive(Validate)]` macro |
+| `validator-compat` | validation | `validation_to_app_error` bridge for `validator` crate |
+| `nightfire` | validation | `nightfire_validation_to_app_error` bridge |
+| `field-validation` | validation | `FieldValidationResult` for live validation endpoints |
+| `openapi` | http | OpenAPI response types (utoipa) |
 | `db` / `server` | testing | Test infrastructure scope |
 
 ## File Length Limits
@@ -83,22 +88,41 @@ Common feature flags you'll encounter:
 - **`AppError`** for all error types (from `underlay-core`)
 - **Snake_case** wire format for all JSON contracts
 - **`ExistsCheck`** builder for flexible uniqueness validation
-- **`ValidationResult`** (200 OK) for live field validation endpoints
+- **`FieldValidationResult`** (200 OK) for live field validation endpoints (from `underlay-validation`)
+
+## Error Conventions
+
+Each crate defines its own error enum and result alias following this pattern:
+
+```rust
+// In crate_name/src/error.rs:
+#[derive(Debug, thiserror::Error)]
+pub enum FooError {
+    #[error("database error")]
+    Db(#[from] sqlx::Error),
+    // domain-specific variants...
+}
+pub type FooResult<T> = Result<T, FooError>;
+```
+
+Naming convention: `{Domain}Result<T>` — e.g., `AuditResult`, `MediaResult`, `EmailResult`, `BlobResult`.
 
 ## Auth Crate Family
 
 The auth system uses an umbrella + provider pattern:
 
 ```
-underlay-auth (umbrella: traits, extractors)
+underlay-auth (umbrella: traits, extractors, hashing, state)
 ├── underlay-auth-jwt (session tokens)
 ├── underlay-auth-password (Argon2id)
 ├── underlay-auth-totp (TOTP codes)
 ├── underlay-auth-email-totp (email OTP)
 ├── underlay-auth-webauthn (passkeys)
-├── underlay-auth-oauth (OAuth2 providers)
-└── underlay-auth-state (flow state storage)
+└── underlay-auth-oauth (OAuth2 providers)
 ```
+
+The `hashing` feature provides `Argon2Hasher` (used by auth-password and auth-email-totp).
+The `postgres` feature provides `AuthStateStore` (flow state storage).
 
 ## Do Not
 

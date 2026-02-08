@@ -112,6 +112,35 @@ mod axum_integration;
 #[cfg(feature = "axum")]
 pub use axum_integration::ValidatedJson;
 
+#[cfg(feature = "validator-compat")]
+mod validator_compat;
+
+#[cfg(feature = "validator-compat")]
+pub use validator_compat::validation_to_app_error;
+
+#[cfg(feature = "nightfire")]
+mod nightfire_compat;
+
+#[cfg(feature = "nightfire")]
+pub use nightfire_compat::nightfire_validation_to_app_error;
+
+#[cfg(feature = "field-validation")]
+pub mod field_validation;
+
+#[cfg(feature = "field-validation")]
+pub use field_validation::{
+    parse_optional_uuid_for_validation, parse_uuid_for_validation, FieldValidationResult,
+};
+
+pub mod slugify;
+
+pub use slugify::{
+    is_reserved_slug, is_valid_slug_format, validate_slug, SlugValidationError, RESERVED_SLUGS,
+};
+
+#[cfg(feature = "slugify")]
+pub use slugify::slugify;
+
 #[cfg(test)]
 mod tests {
     use super::*;

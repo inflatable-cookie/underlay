@@ -4862,6 +4862,7 @@ dependencies = [
  "serde",
  "serde_json",
  "sqlx",
+ "thiserror 1.0.69",
  "tokio",
  "tracing",
  "uuid",
@@ -5020,8 +5021,6 @@ dependencies = [
 name = "underlay-core"
 version = "0.0.1"
 dependencies = [
- "deunicode",
- "regex",
  "serde",
  "uuid",
 ]
@@ -5097,13 +5096,11 @@ dependencies = [
  "underlay-core",
  "underlay-db",
  "underlay-http-client",
- "underlay-nightfire",
  "underlay-observability",
  "underlay-testing",
  "urlencoding",
  "utoipa",
  "uuid",
- "validator",
 ]
 
 [[package]]
@@ -5235,13 +5232,18 @@ name = "underlay-validation"
 version = "0.0.1"
 dependencies = [
  "axum",
+ "deunicode",
  "http 1.4.0",
  "regex",
  "serde",
  "serde_json",
  "thiserror 1.0.69",
  "tokio",
+ "underlay-core",
+ "underlay-nightfire",
  "underlay-validation-derive",
+ "uuid",
+ "validator",
 ]
 
 [[package]]

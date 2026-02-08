@@ -2,18 +2,11 @@ pub mod context;
 pub mod cookies;
 mod cors;
 mod errors;
-mod field_validation;
 mod http_config;
 pub mod pagination;
 mod path;
 pub mod query;
 mod responses;
-
-#[cfg(feature = "validation")]
-mod validation;
-
-#[cfg(feature = "nightfire")]
-mod nightfire;
 
 #[cfg(feature = "error-logging")]
 pub mod error_logging;
@@ -45,9 +38,6 @@ pub use crate::cookies::{
 };
 pub use crate::cors::{cors_layer, CorsConfig, DEFAULT_CORS_MAX_AGE_SECS};
 pub use crate::errors::{error_response, ApiError, ApiResult, ErrorLogContext, ErrorLogSink};
-pub use crate::field_validation::{
-    parse_optional_uuid_for_validation, parse_uuid_for_validation, ValidationResult,
-};
 pub use crate::http_config::HttpServerConfig;
 pub use crate::pagination::{Paginated, PaginationMeta, PaginationParams};
 pub use crate::path::{parse_uuid_path, parse_uuid_path_raw};
@@ -56,12 +46,6 @@ pub use crate::query::{
     SortField, WhereBuilder,
 };
 pub use crate::responses::{created, list_ok, no_content, ok};
-
-#[cfg(feature = "validation")]
-pub use crate::validation::{validation_to_app_error, ValidateExt};
-
-#[cfg(feature = "nightfire")]
-pub use crate::nightfire::nightfire_validation_to_app_error;
 
 #[cfg(feature = "error-logging")]
 pub use crate::error_logging::{

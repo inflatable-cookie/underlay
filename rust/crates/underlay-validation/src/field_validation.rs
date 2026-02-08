@@ -1,4 +1,4 @@
-//! Live field validation helpers for HTTP handlers.
+//! Live field validation helpers.
 //!
 //! Provides types and helpers for real-time field validation endpoints that
 //! return validation feedback (valid/invalid + message) rather than HTTP errors.
@@ -9,22 +9,20 @@
 //! # Example
 //!
 //! ```rust,ignore
-//! use underlay_http::{ValidationResult, parse_uuid_for_validation};
+//! use underlay_validation::{FieldValidationResult, parse_uuid_for_validation};
 //! use axum::{Json, response::IntoResponse};
 //!
 //! async fn validate_field(payload: Json<ValidatePayload>) -> impl IntoResponse {
-//!     // Parse UUID with validation result (not HTTP error)
 //!     let module_id = match parse_uuid_for_validation(&payload.module_id, "moduleId") {
 //!         Ok(id) => id,
 //!         Err(result) => return Json(result),
 //!     };
 //!
-//!     // Check business logic
 //!     if slug_exists(&module_id, &payload.slug).await {
-//!         return Json(ValidationResult::invalid("Slug already exists"));
+//!         return Json(FieldValidationResult::invalid("Slug already exists"));
 //!     }
 //!
-//!     Json(ValidationResult::valid())
+//!     Json(FieldValidationResult::valid())
 //! }
 //! ```
 
@@ -36,7 +34,7 @@ use uuid::Uuid;
 /// Used by live validation endpoints to provide feedback to the UI
 /// without returning HTTP errors.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ValidationResult {
+pub struct FieldValidationResult {
     /// Whether the field value is valid.
     pub valid: bool,
 
@@ -49,7 +47,7 @@ pub struct ValidationResult {
     pub suggestion: Option<String>,
 }
 
-impl ValidationResult {
+impl FieldValidationResult {
     /// Create a successful validation result.
     pub fn valid() -> Self {
         Self {
@@ -89,29 +87,24 @@ impl ValidationResult {
 
 /// Parse a UUID string for validation purposes.
 ///
-/// Unlike `parse_uuid_path` which returns HTTP errors, this returns a
-/// `ValidationResult` for use in live validation endpoints.
-///
-/// # Example
-///
-/// ```rust,ignore
-/// let module_id = match parse_uuid_for_validation(&payload.module_id, "moduleId") {
-///     Ok(id) => id,
-///     Err(result) => return Json(result),
-/// };
-/// ```
-pub fn parse_uuid_for_validation(value: &str, field_name: &str) -> Result<Uuid, ValidationResult> {
-    Uuid::parse_str(value).map_err(|_| ValidationResult::invalid(format!("Invalid {}", field_name)))
+/// Unlike HTTP path parsers which return HTTP errors, this returns a
+/// `FieldValidationResult` for use in live validation endpoints.
+pub fn parse_uuid_for_validation(
+    value: &str,
+    field_name: &str,
+) -> Result<Uuid, FieldValidationResult> {
+    Uuid::parse_str(value)
+        .map_err(|_| FieldValidationResult::invalid(format!("Invalid {}", field_name)))
 }
 
 /// Parse an optional UUID string for validation purposes.
 ///
 /// Returns `Ok(None)` if the value is `None`, `Ok(Some(uuid))` if valid,
-/// or `Err(ValidationResult)` if invalid.
+/// or `Err(FieldValidationResult)` if invalid.
 pub fn parse_optional_uuid_for_validation(
     value: Option<&str>,
     field_name: &str,
-) -> Result<Option<Uuid>, ValidationResult> {
+) -> Result<Option<Uuid>, FieldValidationResult> {
     match value {
         None => Ok(None),
         Some(v) => parse_uuid_for_validation(v, field_name).map(Some),
@@ -124,14 +117,14 @@ mod tests {
 
     #[test]
     fn valid_result_serializes_correctly() {
-        let result = ValidationResult::valid();
+        let result = FieldValidationResult::valid();
         let json = serde_json::to_string(&result).unwrap();
         assert_eq!(json, r#"{"valid":true}"#);
     }
 
     #[test]
     fn invalid_result_serializes_correctly() {
-        let result = ValidationResult::invalid("Slug already exists");
+        let result = FieldValidationResult::invalid("Slug already exists");
         let json = serde_json::to_string(&result).unwrap();
         assert!(json.contains(r#""valid":false"#));
         assert!(json.contains(r#""message":"Slug already exists""#));
@@ -140,7 +133,7 @@ mod tests {
     #[test]
     fn invalid_with_suggestion_serializes_correctly() {
         let result =
-            ValidationResult::invalid_with_suggestion("Slug already exists", "try-this-slug");
+            FieldValidationResult::invalid_with_suggestion("Slug already exists", "try-this-slug");
         let json = serde_json::to_string(&result).unwrap();
         assert!(json.contains(r#""suggestion":"try-this-slug""#));
     }

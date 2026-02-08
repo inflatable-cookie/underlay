@@ -1,34 +1,28 @@
-//! Helpers for converting validation errors to API responses.
+//! Compatibility helpers for the `validator` crate.
 //!
-//! Provides utilities for converting `validator` crate errors into `AppError`
-//! responses with field-level error details.
+//! Converts `validator::ValidationErrors` into `AppError` responses
+//! with field-level error details.
 //!
 //! # Example
 //!
 //! ```rust,ignore
 //! use validator::Validate;
-//! use underlay_http::{validation_to_app_error, error_response};
-//! use axum::http::StatusCode;
+//! use underlay_validation::validation_to_app_error;
 //!
 //! if let Err(validation_err) = payload.validate() {
 //!     let err = validation_to_app_error(
 //!         &validation_err,
 //!         "learning.pathway_invalid",
-//!         "There is a problem with one or more fields."
+//!         "There is a problem with one or more fields.",
 //!     );
-//!     return error_response(StatusCode::BAD_REQUEST, err).into_response();
+//!     return Err(err);
 //! }
 //! ```
 
 use std::collections::HashMap;
 
-use axum::http::StatusCode;
-use axum::response::Response;
-use validator::ValidationErrors;
-
 use underlay_core::AppError;
-
-use crate::error_response;
+use validator::ValidationErrors;
 
 /// Convert validator errors to an AppError with field errors.
 ///
@@ -39,21 +33,6 @@ use crate::error_response;
 /// * `validation_err` - The ValidationErrors from the validator crate
 /// * `error_code` - Error code for the AppError (e.g., "learning.pathway_invalid")
 /// * `message` - Human-readable message (e.g., "There is a problem with one or more fields.")
-///
-/// # Example
-/// ```rust,ignore
-/// use validator::Validate;
-/// use underlay_http::validation_to_app_error;
-///
-/// if let Err(validation_err) = payload.validate() {
-///     let err = validation_to_app_error(
-///         &validation_err,
-///         "learning.pathway_invalid",
-///         "There is a problem with one or more fields."
-///     );
-///     return error_response(StatusCode::BAD_REQUEST, err).into_response();
-/// }
-/// ```
 pub fn validation_to_app_error(
     validation_err: &ValidationErrors,
     error_code: &'static str,
@@ -78,55 +57,12 @@ pub fn validation_to_app_error(
     }
 }
 
-/// Trait extension for ergonomic validation in handlers.
-///
-/// Provides a method to validate and return an error response in a single step.
-///
-/// # Example
-/// ```rust,ignore
-/// use validator::Validate;
-/// use underlay_http::ValidateExt;
-///
-/// // Returns Result<(), Response>
-/// payload.validate_or_error("learning.pathway_invalid")?;
-///
-/// // Proceed with validated payload...
-/// ```
-pub trait ValidateExt: validator::Validate {
-    /// Validate the payload and return a 400 error response if validation fails.
-    ///
-    /// Uses the default message "There is a problem with one or more fields."
-    fn validate_or_error(&self, error_code: &'static str) -> Result<(), Response> {
-        self.validate_or_error_with_message(
-            error_code,
-            "There is a problem with one or more fields.",
-        )
-    }
-
-    /// Validate the payload with a custom error message.
-    fn validate_or_error_with_message(
-        &self,
-        error_code: &'static str,
-        message: &str,
-    ) -> Result<(), Response> {
-        if let Err(validation_err) = self.validate() {
-            let err = validation_to_app_error(&validation_err, error_code, message);
-            return Err(error_response(StatusCode::BAD_REQUEST, err));
-        }
-        Ok(())
-    }
-}
-
-// Blanket implementation for all types implementing Validate
-impl<T: validator::Validate> ValidateExt for T {}
-
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
     fn test_validation_to_app_error_creates_correct_structure() {
-        // Create a ValidationErrors manually for testing
         let mut errors = validator::ValidationErrors::new();
         let mut field_error = validator::ValidationError::new("required");
         field_error.message = Some("Name is required".into());
@@ -149,7 +85,6 @@ mod tests {
     #[test]
     fn test_validation_to_app_error_default_message() {
         let mut errors = validator::ValidationErrors::new();
-        // Error without custom message - should use "Invalid value"
         let field_error = validator::ValidationError::new("length");
         errors.add("email", field_error);
 

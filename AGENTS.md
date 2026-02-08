@@ -56,6 +56,9 @@ The `reference/` directory contains example implementations demonstrating Underl
 
 - Use a consistent error envelope and stable error codes (string codes like `auth.forbidden`, `resource.not_found`).
 - Keep DTO envelope shapes shared between Rust and TS via `contracts/openapi/`.
+- Each crate defines its own error enum with `thiserror::Error` and a `{Domain}Result<T>` type alias (e.g., `AuditError`/`AuditResult`, `MediaError`/`MediaResult`).
+- Wrap `sqlx::Error` via `#[from]` for database crates.
+- `AppError` (from `underlay-core`) is the top-level error type for HTTP responses.
 
 ## UUID Convention (important)
 
@@ -118,7 +121,7 @@ When extracting patterns from consuming apps:
 
 ### Pattern Ownership
 
-- **Atomic patterns** (ExistsCheck, ValidationResult, etc.) → Detailed in guides
+- **Atomic patterns** (ExistsCheck, FieldValidationResult, etc.) → Detailed in guides
 - **Composite recipes** (CRUD interface, validation endpoint) → Checklists in catalogue
 - **App-specific code** → Stays in consuming apps, references Underlay patterns
 
@@ -147,30 +150,27 @@ When creating analysis documents, session summaries, or completion reports, save
 - Avoid name collisions
 - Archive session work systematically
 
-## Rust Crate Reference (29 crates)
+## Rust Crate Reference (26 crates)
 
 | Crate | Domain | Purpose |
 |-------|--------|---------|
-| `underlay-core` | Core | Primitives: `Uuid` (v7), `AppError`, DTO envelopes, slug validation |
-| `underlay-http` | Core | Axum HTTP utilities: responses, CORS, cookies, pagination, query builders |
+| `underlay-core` | Core | Primitives: `Uuid` (v7), `AppError`, DTO envelopes |
+| `underlay-http` | Core | Axum HTTP utilities: responses, CORS, cookies, pagination, OpenAPI types |
 | `underlay-observability` | Core | Tracing bootstrap, request ID layer |
 | `underlay-metrics` | Core | Prometheus registry + `/metrics` handler |
-| `underlay-openapi` | Core | OpenAPI schema types |
-| `underlay-validation` | Core | Declarative `Validate` trait + built-in validators |
+| `underlay-validation` | Core | Declarative `Validate` trait, built-in validators, slug utilities, field validation, error bridges |
 | `underlay-validation-derive` | Core | `#[derive(Validate)]` proc macro |
-| `underlay-auth` | Auth | Auth boundary types + `AuthProvider` trait + Axum extractor |
+| `underlay-auth` | Auth | Auth boundary types, `AuthProvider` trait, Axum extractor, hashing, state storage |
 | `underlay-auth-jwt` | Auth | JWT session management |
 | `underlay-auth-password` | Auth | Password auth with Argon2id |
 | `underlay-auth-totp` | Auth | TOTP primitives |
 | `underlay-auth-email-totp` | Auth | Email-based OTP verification |
 | `underlay-auth-webauthn` | Auth | WebAuthn / Passkey primitives |
 | `underlay-auth-oauth` | Auth | OAuth2 provider primitives |
-| `underlay-auth-state` | Auth | Auth flow state storage |
 | `underlay-db` | Data | SQLx pool setup, migrations, dev reset |
 | `underlay-soft-delete` | Data | Soft-delete conventions and traits |
 | `underlay-blob` | Data | Blob storage (S3, local) |
-| `underlay-image` | Data | Image processing: thumbnails, renditions |
-| `underlay-media` | Data | Media library: storage, renditions, usage tracking |
+| `underlay-media` | Data | Media library: storage, renditions, image processing, usage tracking |
 | `underlay-nightfire` | Data | Block-based structured content protocol |
 | `underlay-events` | Infra | Domain event outbox |
 | `underlay-jobs` | Infra | Background job queue (PostgreSQL, cron) |
@@ -213,12 +213,16 @@ bash scripts/check-file-length.sh
 
 | Flag | Crates | Purpose |
 |------|--------|---------|
-| `postgres` | jobs, media, http | PostgreSQL persistence |
+| `postgres` | jobs, media, auth, http | PostgreSQL persistence |
+| `hashing` | auth | Argon2id password hashing |
 | `s3` / `local` | blob | Storage backend |
 | `smtp` / `ses` | email | Email transport |
 | `hibp` | auth-password | Breach checking |
 | `attestation` | auth-webauthn | Attested passkeys |
 | `derive` | validation | `#[derive(Validate)]` |
+| `validator-compat` / `nightfire` | validation | Error conversion bridges |
+| `field-validation` | validation | Live field validation types |
+| `openapi` | http | OpenAPI response types |
 | `db` / `server` | testing | Test infrastructure scope |
 
 ## btca

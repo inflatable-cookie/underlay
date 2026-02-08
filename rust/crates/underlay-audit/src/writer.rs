@@ -1,6 +1,7 @@
 //! Audit log writer functions.
 
 use crate::entry::{AuditEntry, AuditLogRow};
+use crate::error::AuditResult;
 use crate::DbPool;
 use tracing::{info, instrument};
 
@@ -36,7 +37,7 @@ pub async fn append_audit_log(
     pool: &DbPool,
     table: &str,
     entry: AuditEntry,
-) -> Result<AuditLogRow, sqlx::Error> {
+) -> AuditResult<AuditLogRow> {
     crate::validate_table_name(table)?;
 
     let query = format!(

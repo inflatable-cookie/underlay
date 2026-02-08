@@ -1,6 +1,7 @@
 //! Audit log query functions.
 
 use crate::entry::AuditLogRow;
+use crate::error::AuditResult;
 use crate::DbPool;
 use chrono::{DateTime, Utc};
 use tracing::instrument;
@@ -90,7 +91,7 @@ pub async fn list_audit_logs(
     pool: &DbPool,
     table: &str,
     filters: AuditLogFilters,
-) -> Result<Vec<AuditLogRow>, sqlx::Error> {
+) -> AuditResult<Vec<AuditLogRow>> {
     crate::validate_table_name(table)?;
 
     // Build dynamic query with filters
@@ -121,7 +122,7 @@ pub async fn list_audit_logs(
         table
     );
 
-    sqlx::query_as::<_, AuditLogRow>(&query)
+    Ok(sqlx::query_as::<_, AuditLogRow>(&query)
         .bind(filters.user_id)
         .bind(filters.action)
         .bind(filters.resource_type)
@@ -131,7 +132,7 @@ pub async fn list_audit_logs(
         .bind(filters.limit)
         .bind(filters.offset)
         .fetch_all(pool)
-        .await
+        .await?)
 }
 
 /// Get a single audit log entry by ID.
@@ -140,7 +141,7 @@ pub async fn get_audit_log_by_id(
     pool: &DbPool,
     table: &str,
     id: Uuid,
-) -> Result<Option<AuditLogRow>, sqlx::Error> {
+) -> AuditResult<Option<AuditLogRow>> {
     crate::validate_table_name(table)?;
 
     let query = format!(
@@ -161,10 +162,10 @@ pub async fn get_audit_log_by_id(
         table
     );
 
-    sqlx::query_as::<_, AuditLogRow>(&query)
+    Ok(sqlx::query_as::<_, AuditLogRow>(&query)
         .bind(id)
         .fetch_optional(pool)
-        .await
+        .await?)
 }
 
 /// Count audit log entries matching filters.
@@ -173,7 +174,7 @@ pub async fn count_audit_logs(
     pool: &DbPool,
     table: &str,
     filters: &AuditLogFilters,
-) -> Result<i64, sqlx::Error> {
+) -> AuditResult<i64> {
     crate::validate_table_name(table)?;
 
     let query = format!(
