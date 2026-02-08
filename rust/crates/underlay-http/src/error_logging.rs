@@ -1,10 +1,5 @@
 #[cfg(feature = "error-logging")]
-use axum::{
-    body::Body,
-    http::Request,
-    middleware::Next,
-    response::Response,
-};
+use axum::{body::Body, http::Request, middleware::Next, response::Response};
 #[cfg(feature = "error-logging")]
 use underlay_db::DbPool;
 

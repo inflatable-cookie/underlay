@@ -62,9 +62,9 @@ pub mod repository;
 pub mod storage;
 
 #[cfg(feature = "postgres")]
-mod postgres_rows;
-#[cfg(feature = "postgres")]
 pub mod postgres;
+#[cfg(feature = "postgres")]
+mod postgres_rows;
 
 #[cfg(feature = "renditions")]
 pub mod renditions;

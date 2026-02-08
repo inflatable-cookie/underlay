@@ -147,6 +147,80 @@ When creating analysis documents, session summaries, or completion reports, save
 - Avoid name collisions
 - Archive session work systematically
 
+## Rust Crate Reference (29 crates)
+
+| Crate | Domain | Purpose |
+|-------|--------|---------|
+| `underlay-core` | Core | Primitives: `Uuid` (v7), `AppError`, DTO envelopes, slug validation |
+| `underlay-http` | Core | Axum HTTP utilities: responses, CORS, cookies, pagination, query builders |
+| `underlay-observability` | Core | Tracing bootstrap, request ID layer |
+| `underlay-metrics` | Core | Prometheus registry + `/metrics` handler |
+| `underlay-openapi` | Core | OpenAPI schema types |
+| `underlay-validation` | Core | Declarative `Validate` trait + built-in validators |
+| `underlay-validation-derive` | Core | `#[derive(Validate)]` proc macro |
+| `underlay-auth` | Auth | Auth boundary types + `AuthProvider` trait + Axum extractor |
+| `underlay-auth-jwt` | Auth | JWT session management |
+| `underlay-auth-password` | Auth | Password auth with Argon2id |
+| `underlay-auth-totp` | Auth | TOTP primitives |
+| `underlay-auth-email-totp` | Auth | Email-based OTP verification |
+| `underlay-auth-webauthn` | Auth | WebAuthn / Passkey primitives |
+| `underlay-auth-oauth` | Auth | OAuth2 provider primitives |
+| `underlay-auth-state` | Auth | Auth flow state storage |
+| `underlay-db` | Data | SQLx pool setup, migrations, dev reset |
+| `underlay-soft-delete` | Data | Soft-delete conventions and traits |
+| `underlay-blob` | Data | Blob storage (S3, local) |
+| `underlay-image` | Data | Image processing: thumbnails, renditions |
+| `underlay-media` | Data | Media library: storage, renditions, usage tracking |
+| `underlay-nightfire` | Data | Block-based structured content protocol |
+| `underlay-events` | Infra | Domain event outbox |
+| `underlay-jobs` | Infra | Background job queue (PostgreSQL, cron) |
+| `underlay-email` | Infra | Email infrastructure (SMTP, SES) |
+| `underlay-ratelimit` | Infra | Rate limiting |
+| `underlay-audit` | Infra | Audit logging |
+| `underlay-suggestions` | Infra | Suggestion query building for RelationSelector |
+| `underlay-testing` | Dev | `TestDb`, `TestServer`, test fixtures |
+| `underlay-devtools` | Dev | Migration sync and dev utilities |
+
+For feature flags and detailed descriptions, see `docs/architecture/010-package-map.md`.
+
+## Working on Underlay Itself
+
+### Test commands
+
+```bash
+# Test a single crate (always use --all-features)
+cargo test -p underlay-http --all-features
+
+# Check a single crate
+cargo check -p underlay-http --all-features
+
+# Test all crates
+cargo test --all-features
+
+# CI file length check (warn >500 lines, fail >900)
+bash scripts/check-file-length.sh
+```
+
+### Module conventions
+
+- **Test extraction**: `#[cfg(test)] #[path = "lib_tests.rs"] mod tests;`
+- **Row types**: Extract to `postgres_rows.rs` with `pub(crate)` visibility
+- **Feature-gated code**: Extract to named module (e.g., `google.rs`, `hibp.rs`)
+- **Re-exports**: Preserve `pub use` in `lib.rs` when extracting types
+- See `docs/guides/041-rust-module-splitting.md` for full conventions
+
+### Common feature flags
+
+| Flag | Crates | Purpose |
+|------|--------|---------|
+| `postgres` | jobs, media, http | PostgreSQL persistence |
+| `s3` / `local` | blob | Storage backend |
+| `smtp` / `ses` | email | Email transport |
+| `hibp` | auth-password | Breach checking |
+| `attestation` | auth-webauthn | Attested passkeys |
+| `derive` | validation | `#[derive(Validate)]` |
+| `db` / `server` | testing | Test infrastructure scope |
+
 ## btca
 
 When you need up-to-date information about technologies used in this project, use btca to query source repositories directly.

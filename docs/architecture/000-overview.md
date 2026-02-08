@@ -23,8 +23,15 @@ Underlay is a reusable foundation for building full-stack apps with a consistent
 - Architectural expectations are defined in `docs/architecture/`.
 - Shared wire contracts live in `contracts/openapi/`.
 
+## Rust Crates
+
+Underlay provides 29 Rust crates organised into five domains: Core, Auth, Data & Storage, Infrastructure, and Developer Tools. The auth system uses an umbrella + provider pattern (`underlay-auth` defines traits; `underlay-auth-jwt`, `underlay-auth-password`, etc. implement them).
+
+See [010-package-map.md](./010-package-map.md) for the full crate inventory, descriptions, and feature flags.
+
 ## Key Docs
 
-- `docs/architecture/015-error-and-envelopes.md` (API error and envelope contract)
-- `docs/architecture/030-ts-api-client.md` (typed client conventions)
-- `docs/architecture/040-svelte-ui-kit.md` (UI kit scope and constraints)
+- [010-package-map.md](./010-package-map.md) (full crate inventory and feature flags)
+- [015-error-and-envelopes.md](./015-error-and-envelopes.md) (API error and envelope contract)
+- [030-ts-api-client.md](./030-ts-api-client.md) (typed client conventions)
+- [040-svelte-ui-kit.md](./040-svelte-ui-kit.md) (UI kit scope and constraints)

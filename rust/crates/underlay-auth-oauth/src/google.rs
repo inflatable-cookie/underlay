@@ -9,7 +9,9 @@ use serde::{Deserialize, Serialize};
 use underlay_auth::AuthResult;
 use url::Url;
 
-use crate::{GoogleOAuthConfig, GoogleUserInfo, OAuthProvider, OAuthServiceError, OAuthStart, TokenSet};
+use crate::{
+    GoogleOAuthConfig, GoogleUserInfo, OAuthProvider, OAuthServiceError, OAuthStart, TokenSet,
+};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct GoogleTokenResponse {

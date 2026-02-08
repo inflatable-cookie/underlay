@@ -11,7 +11,9 @@ use tracing::{debug, instrument};
 
 use crate::postgres_rows::JobRow;
 use crate::store::JobStore;
-use crate::types::{Job, JobConfig, JobErrorRecord, JobFilters, JobHandlerError, JobId, JobProgress};
+use crate::types::{
+    Job, JobConfig, JobErrorRecord, JobFilters, JobHandlerError, JobId, JobProgress,
+};
 use underlay_core::Uuid;
 
 // Helper to convert underlay_core::Uuid to raw uuid for sqlx
@@ -497,4 +499,3 @@ impl JobStore for JobRepository {
         Ok(())
     }
 }
-

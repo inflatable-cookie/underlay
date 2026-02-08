@@ -24,8 +24,7 @@ fn from_env_requires_config_vars() {
 
     let prev_id = with_env_var("AUTH_GOOGLE_CLIENT_ID", None);
     let prev_secret = with_env_var("AUTH_GOOGLE_CLIENT_SECRET", Some("secret"));
-    let prev_redirect =
-        with_env_var("AUTH_GOOGLE_REDIRECT_URI", Some("https://example.com/cb"));
+    let prev_redirect = with_env_var("AUTH_GOOGLE_REDIRECT_URI", Some("https://example.com/cb"));
 
     let result = GoogleOAuthService::from_env();
     assert!(matches!(
@@ -184,10 +183,7 @@ impl underlay_auth::CredentialRepository for MemoryRepo {
         Ok(None)
     }
 
-    async fn find_by_user_id(
-        &self,
-        _user_id: Uuid,
-    ) -> underlay_auth::RepoResult<Vec<Credential>> {
+    async fn find_by_user_id(&self, _user_id: Uuid) -> underlay_auth::RepoResult<Vec<Credential>> {
         Ok(vec![])
     }
 

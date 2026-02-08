@@ -597,7 +597,6 @@ impl WebAuthnService {
 
         Ok(FinishPasskeyAuthenticationResponse { result })
     }
-
 }
 
 #[cfg(test)]

@@ -61,9 +61,9 @@ pub mod types;
 
 // PostgreSQL implementation (optional)
 #[cfg(feature = "postgres")]
-mod postgres_rows;
-#[cfg(feature = "postgres")]
 pub mod postgres;
+#[cfg(feature = "postgres")]
+mod postgres_rows;
 #[cfg(feature = "postgres")]
 pub mod postgres_scheduled;
 

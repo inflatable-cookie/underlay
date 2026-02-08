@@ -89,6 +89,24 @@ Individual techniques referenced by the recipes above.
 | Tabs | Tabbed navigation | Component library |
 | FormField | Consistent form inputs | Component library |
 
+### Internal Development Patterns
+
+Patterns for working on Underlay itself (not for consuming apps).
+
+| Pattern | Description | Guide |
+|---------|-------------|-------|
+| Test file extraction | `#[cfg(test)] #[path = "lib_tests.rs"] mod tests;` | [041-rust-module-splitting.md](../guides/041-rust-module-splitting.md) |
+| Row type extraction | `pub(crate)` types in `postgres_rows.rs` | [041-rust-module-splitting.md](../guides/041-rust-module-splitting.md) |
+| Feature-gated extraction | Separate module per feature (e.g., `google.rs`, `hibp.rs`) | [041-rust-module-splitting.md](../guides/041-rust-module-splitting.md) |
+| Re-export preservation | `pub use submodule::Type;` in `lib.rs` after extraction | [041-rust-module-splitting.md](../guides/041-rust-module-splitting.md) |
+| File length limits | Warn >500 lines, fail >900 lines | [041-rust-module-splitting.md](../guides/041-rust-module-splitting.md) |
+
+### Quick Prompts (Internal)
+
+- "This file is too long" → [Module Splitting Guide](../guides/041-rust-module-splitting.md)
+- "Extract tests from X" → Test file extraction pattern above
+- "Split this module" → [Module Splitting Guide](../guides/041-rust-module-splitting.md)
+
 ---
 
 ## Project Sync
