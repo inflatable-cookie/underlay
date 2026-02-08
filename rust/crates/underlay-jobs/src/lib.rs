@@ -61,7 +61,11 @@ pub mod types;
 
 // PostgreSQL implementation (optional)
 #[cfg(feature = "postgres")]
+mod postgres_rows;
+#[cfg(feature = "postgres")]
 pub mod postgres;
+#[cfg(feature = "postgres")]
+pub mod postgres_scheduled;
 
 // Standard maintenance tasks (optional, requires postgres)
 #[cfg(feature = "postgres")]
@@ -93,9 +97,9 @@ pub use crate::store::JobStore;
 
 // PostgreSQL exports
 #[cfg(feature = "postgres")]
-pub use crate::postgres::{
-    JobRepository, PgJobNotifier, RepoError, ScheduledTaskRepository, JOB_NOTIFY_CHANNEL,
-};
+pub use crate::postgres::{JobRepository, RepoError};
+#[cfg(feature = "postgres")]
+pub use crate::postgres_scheduled::{PgJobNotifier, ScheduledTaskRepository, JOB_NOTIFY_CHANNEL};
 
 // Scheduler exports
 #[cfg(all(feature = "scheduler", feature = "postgres"))]

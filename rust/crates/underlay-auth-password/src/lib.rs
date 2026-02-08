@@ -5,6 +5,8 @@
 
 mod errors;
 mod hasher;
+#[cfg(feature = "hibp")]
+pub(crate) mod hibp;
 mod service;
 mod strength;
 

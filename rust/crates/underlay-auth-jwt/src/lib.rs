@@ -10,10 +10,12 @@ mod error;
 mod fingerprint;
 mod keys;
 mod service;
+mod session;
 
 pub use crate::claims::{AccessTokenClaims, RefreshTokenClaims, TokenUse};
 pub use crate::config::JwtConfig;
 pub use crate::error::{JwtError, JwtResult};
 pub use crate::fingerprint::token_fingerprint;
 pub use crate::keys::KeyPair;
-pub use crate::service::{JwtService, SessionManager, SessionState, SessionStore, SessionTokens};
+pub use crate::service::JwtService;
+pub use crate::session::{SessionManager, SessionState, SessionStore, SessionTokens};

@@ -190,7 +190,9 @@ where
 // ============================================================================
 
 #[cfg(feature = "postgres")]
-use crate::postgres::{PgJobNotifier, RepoError};
+use crate::postgres::RepoError;
+#[cfg(feature = "postgres")]
+use crate::postgres_scheduled::PgJobNotifier;
 
 #[cfg(feature = "postgres")]
 impl<S> JobRunner<S>

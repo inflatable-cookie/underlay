@@ -62,7 +62,8 @@ mod inner {
     use std::str::FromStr;
     use tracing::{debug, error, info, instrument, warn};
 
-    use crate::postgres::{JobRepository, Result, ScheduledTaskRepository};
+    use crate::postgres::{JobRepository, Result};
+    use crate::postgres_scheduled::ScheduledTaskRepository;
     use crate::types::{JobConfig, ScheduledTask, ScheduledTaskDefinition};
 
     /// Scheduler for recurring tasks.
