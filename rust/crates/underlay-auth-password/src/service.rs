@@ -9,8 +9,8 @@ use underlay_auth::{AuthError, Credential, CredentialMetadata, User, UserStatus}
 use underlay_ratelimit::{RateLimitBackend, RateLimitConfig};
 
 use crate::errors::{PasswordAuthError, PasswordAuthResult};
-use underlay_auth::hashing::{PasswordHasherExt, PasswordVerifierExt};
 use crate::strength::PasswordStrengthAnalyzer;
+use underlay_auth::hashing::{PasswordHasherExt, PasswordVerifierExt};
 
 /// Configuration for password authentication.
 #[derive(Debug, Clone)]

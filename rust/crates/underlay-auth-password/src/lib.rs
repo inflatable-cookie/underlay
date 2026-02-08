@@ -10,7 +10,6 @@ mod service;
 mod strength;
 
 pub use crate::errors::{PasswordAuthError, PasswordAuthResult};
-pub use underlay_auth::hashing::{Argon2Hasher, PasswordHasherExt, PasswordVerifierExt};
 pub use crate::service::{
     CompromisedPasswordStrategy, FailedLoginAttempt, PasswordAuthRepository, PasswordAuthService,
     PasswordConfig,
@@ -18,3 +17,4 @@ pub use crate::service::{
 pub use crate::strength::{
     PasswordAnalysis, PasswordRequirements, PasswordStrength, PasswordStrengthAnalyzer,
 };
+pub use underlay_auth::hashing::{Argon2Hasher, PasswordHasherExt, PasswordVerifierExt};

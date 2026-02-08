@@ -1,8 +1,8 @@
 use super::*;
-use underlay_auth::hashing::Argon2Hasher;
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 use tokio::sync::Mutex;
+use underlay_auth::hashing::Argon2Hasher;
 use underlay_ratelimit::InMemoryBackend;
 
 use async_trait::async_trait;
