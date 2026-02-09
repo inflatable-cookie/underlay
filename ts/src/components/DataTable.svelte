@@ -119,8 +119,8 @@
 	} from "./data-table/view";
 	import EmptyState from "./data-table/EmptyState.svelte";
 	import LoadingRow from "./data-table/LoadingRow.svelte";
-	import ToolbarControls from "./data-table/ToolbarControls.svelte";
 	import TableHeader from "./data-table/TableHeader.svelte";
+	import TableToolbar from "./data-table/TableToolbar.svelte";
 	import PaginationFooter from "./data-table/PaginationFooter.svelte";
 	import RowActionsCell from "./data-table/RowActionsCell.svelte";
 
@@ -312,25 +312,19 @@
 >
 	<!-- Toolbar -->
 	{#if showColumnToggle || showExport}
-		<div class="table-toolbar">
-			<div class="toolbar-left">
-				{@render toolbarLeft?.()}
-			</div>
-			<div class="toolbar-right">
-				<ToolbarControls
-					{showColumnToggle}
-					{hideableColumns}
-					{hiddenColumns}
-					{showColumnMenu}
-					{showExport}
-					dataLength={data.length}
-					onToggleColumnMenu={() => (showColumnMenu = !showColumnMenu)}
-					onToggleColumn={toggleColumn}
-					onExport={handleExport}
-				/>
-				{@render toolbarRight?.()}
-			</div>
-		</div>
+		<TableToolbar
+			{showColumnToggle}
+			{hideableColumns}
+			{hiddenColumns}
+			{showColumnMenu}
+			{showExport}
+			dataLength={data.length}
+			{toolbarLeft}
+			{toolbarRight}
+			onToggleColumnMenu={() => (showColumnMenu = !showColumnMenu)}
+			onToggleColumn={toggleColumn}
+			onExport={handleExport}
+		/>
 	{/if}
 
 	<TableHeader
@@ -454,24 +448,6 @@
 		border-radius: var(--radius-lg, 0.5rem);
 		font-size: 0.8rem;
 		min-width: fit-content;
-	}
-
-	.table-toolbar {
-		grid-column: 1 / -1;
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		padding: 0.5rem 0.75rem;
-		background: var(--dt-header-bg);
-		border-bottom: var(--dt-border);
-		gap: 0.5rem;
-	}
-
-	.toolbar-left,
-	.toolbar-right {
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
 	}
 
 	.table-body {
