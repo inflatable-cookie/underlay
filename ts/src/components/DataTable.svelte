@@ -92,6 +92,10 @@
 
 <script lang="ts" generics="T extends object">
 	import type { Snippet } from "svelte";
+	import {
+		getRowActionHref,
+		getVisibleRowActions
+	} from "./data-table/actions";
 	import Skeleton from "./Skeleton.svelte";
 	import DropdownMenu from "./DropdownMenu.svelte";
 	import Select from "./Select.svelte";
@@ -246,14 +250,12 @@
 
 	// Get actions for a row
 	function getRowActions(row: T): DataTableAction<T>[] {
-		const rowActions = typeof actions === "function" ? actions(row) : actions;
-		return rowActions.filter((action) => !action.show || action.show(row));
+		return getVisibleRowActions(row, actions) as DataTableAction<T>[];
 	}
 
 	// Get action href
 	function getActionHref(action: DataTableAction<T>, row: T): string | undefined {
-		if (!action.href) return undefined;
-		return typeof action.href === "function" ? action.href(row) : action.href;
+		return getRowActionHref(action, row);
 	}
 
 	// Handle sort
