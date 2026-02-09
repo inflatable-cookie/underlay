@@ -18,113 +18,19 @@
 		/** Original file (if compressed) */
 		originalFile?: File;
 	}
-
-	/**
-	 * Image compression options.
-	 */
-	export interface ImageCompressionOptions {
-		/** Maximum width in pixels */
-		maxWidth?: number;
-		/** Maximum height in pixels */
-		maxHeight?: number;
-		/** JPEG/WebP quality (0-1) */
-		quality?: number;
-		/** Output format (defaults to original or 'image/jpeg' for non-web formats) */
-		format?: "image/jpeg" | "image/png" | "image/webp";
-	}
-
-	/**
-	 * Default compression options.
-	 */
-	export const DEFAULT_COMPRESSION: ImageCompressionOptions = {
-		maxWidth: 1920,
-		maxHeight: 1080,
-		quality: 0.85
-	};
-
-	/**
-	 * Compress an image file.
-	 * Returns the original file if it's not an image or compression fails.
-	 */
-	export async function compressImage(
-		file: File,
-		options: ImageCompressionOptions = DEFAULT_COMPRESSION
-	): Promise<File> {
-		// Only process images
-		if (!file.type.startsWith("image/")) {
-			return file;
-		}
-
-		// Skip SVGs and GIFs (can't be compressed this way)
-		if (file.type === "image/svg+xml" || file.type === "image/gif") {
-			return file;
-		}
-
-		const { maxWidth = 1920, maxHeight = 1080, quality = 0.85, format } = options;
-
-		return new Promise((resolve) => {
-			const img = new Image();
-			const canvas = document.createElement("canvas");
-			const ctx = canvas.getContext("2d");
-
-			img.onload = () => {
-				// Calculate new dimensions
-				let { width, height } = img;
-				
-				if (width > maxWidth || height > maxHeight) {
-					const ratio = Math.min(maxWidth / width, maxHeight / height);
-					width = Math.round(width * ratio);
-					height = Math.round(height * ratio);
-				}
-
-				// Set canvas dimensions
-				canvas.width = width;
-				canvas.height = height;
-
-				// Draw image
-				if (ctx) {
-					ctx.drawImage(img, 0, 0, width, height);
-
-					// Determine output format
-					const outputFormat = format || (file.type === "image/png" ? "image/png" : "image/jpeg");
-
-					// Convert to blob
-					canvas.toBlob(
-						(blob) => {
-							if (blob && blob.size < file.size) {
-								// Compressed file is smaller, use it
-								const compressedFile = new File([blob], file.name, {
-									type: outputFormat,
-									lastModified: Date.now()
-								});
-								resolve(compressedFile);
-							} else {
-								// Original is smaller or compression failed
-								resolve(file);
-							}
-						},
-						outputFormat,
-						quality
-					);
-				} else {
-					resolve(file);
-				}
-
-				// Cleanup
-				URL.revokeObjectURL(img.src);
-			};
-
-			img.onerror = () => {
-				URL.revokeObjectURL(img.src);
-				resolve(file);
-			};
-
-			img.src = URL.createObjectURL(file);
-		});
-	}
+	export type { ImageCompressionOptions } from "./file-upload/compression";
+	export {
+		DEFAULT_COMPRESSION,
+		compressImage
+	} from "./file-upload/compression";
 </script>
 
 <script lang="ts">
+	import {
+		DEFAULT_COMPRESSION,
+		compressImage,
+		type ImageCompressionOptions
+	} from "./file-upload/compression";
 	import type { Snippet } from "svelte";
 	import { onDestroy } from "svelte";
 	import {
