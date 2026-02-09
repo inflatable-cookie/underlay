@@ -1,4 +1,5 @@
 <script lang="ts">
+  import ListCardCompactContent from "./list-card/ListCardCompactContent.svelte";
   import type { Snippet } from "svelte";
 
   type ListCardVariant = "default" | "compact";
@@ -90,31 +91,6 @@
 
 {#snippet actionsTrigger()}
   <span class="underlay-list-card__dots-only" aria-hidden="true">⋯</span>
-{/snippet}
-
-{#snippet dragHandle()}
-  <div class="underlay-list-card__drag-handle" aria-label="Drag to reorder">
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-      <circle cx="5" cy="3" r="1.5"/>
-      <circle cx="11" cy="3" r="1.5"/>
-      <circle cx="5" cy="8" r="1.5"/>
-      <circle cx="11" cy="8" r="1.5"/>
-      <circle cx="5" cy="13" r="1.5"/>
-      <circle cx="11" cy="13" r="1.5"/>
-    </svg>
-  </div>
-{/snippet}
-
-{#snippet compactContent()}
-  {#if showDragHandle}
-    {@render dragHandle()}
-  {/if}
-  <div class="underlay-list-card__media underlay-list-card__media--compact">
-    {#if media}
-      {@render media()}
-    {/if}
-  </div>
-  <span class="underlay-list-card__title underlay-list-card__title--compact">{title}</span>
 {/snippet}
 
 {#snippet fullContent()}
@@ -225,7 +201,7 @@
     {style}
   >
     {#if isCompact}
-      {@render compactContent()}
+      <ListCardCompactContent {title} {showDragHandle} {media} />
     {:else}
       {@render fullContent()}
     {/if}
@@ -619,49 +595,4 @@
     box-shadow: var(--underlay-shadow-card, none);
   }
 
-  /* Compact media icon */
-  .underlay-list-card__media--compact {
-    width: 28px;
-    height: 28px;
-    min-width: 28px;
-    border-radius: var(--underlay-radius-sm, 0.375rem);
-    font-size: 0.875rem;
-  }
-
-  /* Compact title - inline, single line, truncated */
-  .underlay-list-card__title--compact {
-    flex: 1;
-    min-width: 0;
-    margin: 0;
-    font-size: 0.9375rem;
-    font-weight: 500;
-    line-height: 1.3;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  /* Drag handle styling */
-  .underlay-list-card__drag-handle {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 24px;
-    height: 24px;
-    color: var(--underlay-color-text-muted, #9ca3af);
-    opacity: 0.6;
-    cursor: grab;
-    touch-action: none; /* Prevent scroll while dragging on touch devices */
-    flex-shrink: 0;
-    margin-left: -4px;
-    margin-right: -2px;
-  }
-
-  .underlay-list-card__drag-handle:hover {
-    opacity: 1;
-  }
-
-  .underlay-list-card--compact:active .underlay-list-card__drag-handle {
-    cursor: grabbing;
-  }
 </style>
