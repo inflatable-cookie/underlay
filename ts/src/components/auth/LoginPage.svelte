@@ -30,11 +30,10 @@
 
   import Card from "../Card.svelte";
   import TabsContent from "../TabsContent.svelte";
-  import TabsList from "../TabsList.svelte";
   import TabsRoot from "../TabsRoot.svelte";
-  import TabsTrigger from "../TabsTrigger.svelte";
 
   import LoginGoogleTab from "./LoginGoogleTab.svelte";
+  import LoginMethodTabs from "./LoginMethodTabs.svelte";
   import LoginPasskeyTab from "./LoginPasskeyTab.svelte";
   import LoginPasswordForm from "./LoginPasswordForm.svelte";
   import LoginSetupPrompt from "./LoginSetupPrompt.svelte";
@@ -335,19 +334,7 @@
     {:else}
       <!-- Multiple methods - show tabs -->
       <TabsRoot bind:value={activeMethod}>
-        <div class="underlay-login-page__tabs">
-          <TabsList>
-            {#if methods.includes("password")}
-              <TabsTrigger value="password">Password</TabsTrigger>
-            {/if}
-            {#if methods.includes("passkey")}
-              <TabsTrigger value="passkey">Passkeys</TabsTrigger>
-            {/if}
-            {#if methods.includes("google")}
-              <TabsTrigger value="google" disabled={!onGoogleLogin}>Google</TabsTrigger>
-            {/if}
-          </TabsList>
-        </div>
+        <LoginMethodTabs {methods} {onGoogleLogin} />
 
         {#if methods.includes("password")}
           <TabsContent value="password">
@@ -399,12 +386,6 @@
 </Card>
 
 <style>
-  .underlay-login-page__tabs {
-    display: flex;
-    justify-content: center;
-    margin-bottom: var(--underlay-space-3, 0.75rem);
-  }
-
   .underlay-login-page__register {
     margin-top: var(--underlay-space-4, 1rem);
     padding-top: var(--underlay-space-3, 0.75rem);
