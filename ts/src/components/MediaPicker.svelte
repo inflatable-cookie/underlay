@@ -29,7 +29,6 @@
     type PaginationParams,
     MediaKind,
     getMediaKindLabel,
-    getMediaKindAccent,
     getMediaDisplayName,
     type MediaSummary,
     type MediaDetail,
@@ -41,6 +40,7 @@
     type FinaliseUploadResponse,
   } from "../patterns/index.js";
   import { uploadNewMedia } from "./media-picker/upload";
+  import MediaBrowseItem from "./media-picker/MediaBrowseItem.svelte";
   import Button from "./Button.svelte";
   import Dialog from "./Dialog.svelte";
   import FormError from "./FormError.svelte";
@@ -310,9 +310,6 @@
     browseHasMore = false;
   }
 
-  function getMediaIcon(kind: MediaKind) {
-    return kind === MediaKind.Image ? Image : FileText;
-  }
 </script>
 
 <Dialog
@@ -347,27 +344,7 @@
         {:else}
           <div class="media-grid">
             {#each browseItems as item}
-              {@const Icon = getMediaIcon(item.kind)}
-              <button
-                type="button"
-                class="media-item"
-                onclick={() => selectMedia(item)}
-              >
-                <div
-                  class="media-item__icon"
-                  style="color: {getMediaKindAccent(item.kind)}"
-                >
-                  <Icon size={24} />
-                </div>
-                <div class="media-item__info">
-                  <span class="media-item__title"
-                    >{getMediaDisplayName(item)}</span
-                  >
-                  <span class="media-item__meta"
-                    >{getMediaKindLabel(item.kind)}</span
-                  >
-                </div>
-              </button>
+              <MediaBrowseItem {item} onSelect={selectMedia} />
             {/each}
           </div>
 
@@ -522,57 +499,6 @@
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
     gap: 0.75rem;
     margin-top: 1rem;
-  }
-
-  .media-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 1rem;
-    border: 1px solid var(--underlay-color-border, #374151);
-    border-radius: 0.5rem;
-    background: var(--underlay-color-surface, #1f2937);
-    cursor: pointer;
-    transition:
-      border-color 0.15s,
-      background-color 0.15s;
-    text-align: center;
-  }
-
-  .media-item:hover {
-    border-color: var(--underlay-color-primary, #3b82f6);
-    background: var(--underlay-color-surface-raised, #374151);
-  }
-
-  .media-item__icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 48px;
-    height: 48px;
-    border-radius: 0.375rem;
-    background: var(--underlay-color-surface-raised, #374151);
-  }
-
-  .media-item__info {
-    display: flex;
-    flex-direction: column;
-    gap: 0.125rem;
-  }
-
-  .media-item__title {
-    font-size: 0.875rem;
-    font-weight: 500;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    max-width: 150px;
-  }
-
-  .media-item__meta {
-    font-size: 0.75rem;
-    color: var(--underlay-color-text-muted, #9ca3af);
   }
 
   .empty-state {
