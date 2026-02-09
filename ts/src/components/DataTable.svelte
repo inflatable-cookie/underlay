@@ -113,9 +113,8 @@
 	import Skeleton from "./Skeleton.svelte";
 	import DropdownMenu from "./DropdownMenu.svelte";
 	import Select from "./Select.svelte";
-	import TextInput from "./TextInput.svelte";
-	import DateInput from "./DateInput.svelte";
 	import ToolbarControls from "./data-table/ToolbarControls.svelte";
+	import FilterCell from "./data-table/FilterCell.svelte";
 
 	interface Props {
 		/** Data rows */
@@ -383,34 +382,11 @@
 
 				{#each visibleColumns as column}
 					<div class="table-cell filter-cell" class:hide-mobile={column.hideOnMobile} role="cell">
-						{#if column.filterable}
-							{#if column.filterType === "select" && column.filterOptions}
-								<Select
-									value={internalFilters[column.key] ?? ""}
-									onchange={(value) => handleFilterChange(column.key, value)}
-									placeholder="All"
-									items={[
-										{ value: "", label: "All" },
-										...column.filterOptions.map((opt) =>
-											typeof opt === "string" ? { value: opt, label: opt } : opt
-										)
-									]}
-								/>
-							{:else if column.filterType === "date"}
-								<DateInput
-									value={internalFilters[column.key] ?? ""}
-									onchange={(value) => handleFilterChange(column.key, value)}
-								/>
-							{:else}
-								<TextInput
-									search
-									placeholder={`Filter ${column.label.toLowerCase()}...`}
-									value={internalFilters[column.key] ?? ""}
-									debounce={300}
-									onchange={(value) => handleFilterChange(column.key, value)}
-								/>
-							{/if}
-						{/if}
+						<FilterCell
+							{column}
+							value={internalFilters[column.key] ?? ""}
+							onChange={(value) => handleFilterChange(column.key, value)}
+						/>
 					</div>
 				{/each}
 
