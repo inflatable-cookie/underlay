@@ -24,6 +24,23 @@ import {
 	resolveTimezone,
 	type I18nFormatConfig
 } from "./i18n/intl-context";
+export {
+	formatNumber,
+	formatPercent,
+	formatFileSize,
+	formatCurrency,
+	plural,
+	pluralCount,
+	type PluralForms
+} from "./i18n/number-format";
+import {
+	formatNumber,
+	formatPercent,
+	formatFileSize,
+	formatCurrency,
+	plural,
+	pluralCount
+} from "./i18n/number-format";
 
 // ---------------------------------------------------------------------------
 // Configuration
@@ -218,242 +235,6 @@ export function formatDateTime(
 	if (!d) return "";
 	if (!t) return d;
 	return `${d}, ${t}`;
-}
-
-// ---------------------------------------------------------------------------
-// Number Formatting
-// ---------------------------------------------------------------------------
-
-/**
- * Format a number with locale-aware thousands separators.
- *
- * @param value - Number to format
- * @param options - Optional overrides for locale and decimal places
- * @returns Formatted number string, or empty string for invalid input
- *
- * @example
- * ```typescript
- * formatNumber(1234567);                    // "1,234,567"
- * formatNumber(1234.567, { decimals: 2 });  // "1,234.57"
- * ```
- */
-export function formatNumber(
-	value: number | null | undefined,
-	options?: { locale?: string; decimals?: number; minDecimals?: number; maxDecimals?: number }
-): string {
-	if (value == null || isNaN(value)) return "";
-
-	const locale = resolveLocale(options?.locale);
-	const formatOptions: Intl.NumberFormatOptions = {};
-
-	if (options?.decimals !== undefined) {
-		formatOptions.minimumFractionDigits = options.decimals;
-		formatOptions.maximumFractionDigits = options.decimals;
-	} else {
-		if (options?.minDecimals !== undefined) {
-			formatOptions.minimumFractionDigits = options.minDecimals;
-		}
-		if (options?.maxDecimals !== undefined) {
-			formatOptions.maximumFractionDigits = options.maxDecimals;
-		}
-	}
-
-	return new Intl.NumberFormat(locale, formatOptions).format(value);
-}
-
-/**
- * Format a number as a percentage.
- *
- * @param value - Number to format (0.5 = 50%)
- * @param options - Optional overrides for locale and decimal places
- * @returns Formatted percentage string, or empty string for invalid input
- *
- * @example
- * ```typescript
- * formatPercent(0.856);                    // "86%"
- * formatPercent(0.856, { decimals: 1 });   // "85.6%"
- * formatPercent(1.5);                      // "150%"
- * ```
- */
-export function formatPercent(
-	value: number | null | undefined,
-	options?: { locale?: string; decimals?: number }
-): string {
-	if (value == null || isNaN(value)) return "";
-
-	const locale = resolveLocale(options?.locale);
-	const formatOptions: Intl.NumberFormatOptions = {
-		style: "percent",
-		minimumFractionDigits: options?.decimals ?? 0,
-		maximumFractionDigits: options?.decimals ?? 0
-	};
-
-	return new Intl.NumberFormat(locale, formatOptions).format(value);
-}
-
-/**
- * Format bytes as a human-readable file size.
- *
- * @param bytes - Number of bytes
- * @param options - Optional overrides for locale and decimal places
- * @returns Formatted file size string (e.g., "1.5 MB"), or empty string for invalid input
- *
- * @example
- * ```typescript
- * formatFileSize(1024);          // "1 KB"
- * formatFileSize(1536000);       // "1.5 MB"
- * formatFileSize(1073741824);    // "1 GB"
- * ```
- */
-export function formatFileSize(bytes: number | null | undefined, options?: { locale?: string; decimals?: number }): string {
-	if (bytes == null || isNaN(bytes)) return "";
-	if (bytes === 0) return "0 B";
-
-	const locale = resolveLocale(options?.locale);
-	const decimals = options?.decimals ?? 1;
-
-	const units = ["B", "KB", "MB", "GB", "TB", "PB"];
-	const k = 1024;
-	const i = Math.floor(Math.log(Math.abs(bytes)) / Math.log(k));
-	const unitIndex = Math.min(i, units.length - 1);
-
-	const value = bytes / Math.pow(k, unitIndex);
-
-	// Don't show decimals for bytes
-	const showDecimals = unitIndex === 0 ? 0 : decimals;
-
-	const formatted = new Intl.NumberFormat(locale, {
-		minimumFractionDigits: 0,
-		maximumFractionDigits: showDecimals
-	}).format(value);
-
-	return `${formatted} ${units[unitIndex]}`;
-}
-
-// ---------------------------------------------------------------------------
-// Currency Formatting
-// ---------------------------------------------------------------------------
-
-/**
- * Format a number as currency.
- *
- * @param value - Amount to format
- * @param currency - ISO 4217 currency code (e.g., 'GBP', 'USD', 'EUR')
- * @param options - Optional overrides for locale
- * @returns Formatted currency string, or empty string for invalid input
- *
- * @example
- * ```typescript
- * formatCurrency(1234.56, 'GBP');  // "£1,234.56"
- * formatCurrency(1234.56, 'USD');  // "$1,234.56"
- * formatCurrency(1234.56, 'EUR');  // "€1,234.56"
- * formatCurrency(1234, 'JPY');     // "¥1,234"
- * ```
- */
-export function formatCurrency(
-	value: number | null | undefined,
-	currency: string,
-	options?: { locale?: string; hideSymbol?: boolean }
-): string {
-	if (value == null || isNaN(value)) return "";
-
-	const locale = resolveLocale(options?.locale);
-
-	const formatOptions: Intl.NumberFormatOptions = {
-		style: "currency",
-		currency: currency.toUpperCase()
-	};
-
-	if (options?.hideSymbol) {
-		formatOptions.currencyDisplay = "code";
-	}
-
-	return new Intl.NumberFormat(locale, formatOptions).format(value);
-}
-
-// ---------------------------------------------------------------------------
-// Pluralization
-// ---------------------------------------------------------------------------
-
-export interface PluralForms {
-	/** Form for count === 0 (optional, falls back to 'other') */
-	zero?: string;
-	/** Form for count === 1 */
-	one: string;
-	/** Form for count === 2 (optional, used in some languages) */
-	two?: string;
-	/** Form for "a few" (optional, used in some languages) */
-	few?: string;
-	/** Form for "many" (optional, used in some languages) */
-	many?: string;
-	/** Default form for other counts */
-	other: string;
-}
-
-/**
- * Select the correct plural form based on count.
- *
- * Uses Intl.PluralRules for locale-aware pluralization, supporting
- * languages with complex plural rules (e.g., Arabic, Russian).
- *
- * @param count - The count to pluralize
- * @param forms - Object with plural forms
- * @param options - Optional locale override
- * @returns The selected plural form
- *
- * @example
- * ```typescript
- * plural(0, { one: 'item', other: 'items' });   // "items"
- * plural(1, { one: 'item', other: 'items' });   // "item"
- * plural(5, { one: 'item', other: 'items' });   // "items"
- *
- * // With zero form
- * plural(0, { zero: 'no items', one: 'item', other: 'items' });  // "no items"
- * ```
- */
-export function plural(count: number, forms: PluralForms, options?: { locale?: string }): string {
-	const locale = resolveLocale(options?.locale);
-	const pr = new Intl.PluralRules(locale);
-	const rule = pr.select(count);
-
-	// Check for explicit zero form first
-	if (count === 0 && forms.zero !== undefined) {
-		return forms.zero;
-	}
-
-	// Use Intl.PluralRules result
-	const form = forms[rule as keyof PluralForms];
-	return form ?? forms.other;
-}
-
-/**
- * Format a count with its pluralized label.
- *
- * @param count - The count
- * @param forms - Object with plural forms
- * @param options - Optional locale override
- * @returns Formatted string like "5 items"
- *
- * @example
- * ```typescript
- * pluralCount(0, { one: 'item', other: 'items' });   // "0 items"
- * pluralCount(1, { one: 'item', other: 'items' });   // "1 item"
- * pluralCount(5, { one: 'item', other: 'items' });   // "5 items"
- *
- * // With zero form
- * pluralCount(0, { zero: 'no items', one: 'item', other: 'items' });  // "no items"
- * ```
- */
-export function pluralCount(count: number, forms: PluralForms, options?: { locale?: string }): string {
-	const form = plural(count, forms, options);
-
-	// If using zero form that includes count info, don't prefix with number
-	if (count === 0 && forms.zero !== undefined) {
-		return form;
-	}
-
-	const formattedCount = formatNumber(count, { locale: options?.locale });
-	return `${formattedCount} ${form}`;
 }
 
 // ---------------------------------------------------------------------------
