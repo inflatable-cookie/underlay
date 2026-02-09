@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { createHttpClient, UnderlayHttpError } from "@decodelabs/underlay";
+import { createHttpClient } from "@decodelabs/underlay/client/http";
+import { UnderlayHttpError } from "@decodelabs/underlay/client/errors";
 
 describe("underlay createHttpClient", () => {
   let fetchMock: ReturnType<typeof vi.fn>;
@@ -28,10 +29,10 @@ describe("underlay createHttpClient", () => {
     const result = await http.get<{ data: { test: boolean } }>("/test");
     expect(result.data.test).toBe(true);
 
-    expect(fetchMock).toHaveBeenCalledWith(
-      expect.any(URL),
-      expect.objectContaining({ method: "GET" })
-    );
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const [url, requestInit] = fetchMock.mock.calls[0];
+    expect(String(url)).toContain("/test");
+    expect(requestInit).toEqual(expect.objectContaining({ method: "GET" }));
   });
 
   it("throws UnderlayHttpError with envelope on JSON error", async () => {
