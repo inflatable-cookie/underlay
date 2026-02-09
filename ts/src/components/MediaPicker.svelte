@@ -20,7 +20,6 @@
    * ```
    */
   import {
-    validateFile,
     type PaginatedResponse,
     type PaginationParams,
     MediaKind,
@@ -41,6 +40,12 @@
     loadMediaBrowsePage,
     mergeMediaBrowseItems
   } from "./media-picker/browse";
+  import {
+    createClearedUploadState,
+    createResetBrowseState,
+    type MediaPickerUploadStep,
+    validateMediaPickerFile
+  } from "./media-picker/state";
   import MediaBrowseTab from "./media-picker/MediaBrowseTab.svelte";
   import MediaUploadDropzone from "./media-picker/MediaUploadDropzone.svelte";
   import MediaUploadStatusPanel from "./media-picker/MediaUploadStatusPanel.svelte";
@@ -130,9 +135,7 @@
   // Upload state
   let selectedFile = $state<File | null>(null);
   let fileError = $state<string | null>(null);
-  let uploadStep = $state<
-    "select" | "checking" | "duplicate" | "uploading" | "finalising" | "complete" | "error"
-  >("select");
+  let uploadStep = $state<MediaPickerUploadStep>("select");
   let uploadProgress = $state(0);
   let uploadError = $state<string | null>(null);
   let duplicateMedia = $state<MediaSummary | null>(null);
@@ -193,26 +196,21 @@
   }
 
   function validateAndSetFile(file: File) {
-    fileError = null;
-    selectedFile = null;
-
-    try {
-      validateFile(file, maxFileSize);
-      selectedFile = file;
-    } catch (e) {
-      fileError = e instanceof Error ? e.message : "Invalid file";
-    }
+    const result = validateMediaPickerFile(file, maxFileSize);
+    selectedFile = result.selectedFile;
+    fileError = result.fileError;
   }
 
   function clearUpload() {
-    selectedFile = null;
-    fileError = null;
-    fileHash = null;
-    uploadStep = "select";
-    uploadProgress = 0;
-    uploadError = null;
-    duplicateMedia = null;
-    createdMedia = null;
+    const reset = createClearedUploadState();
+    selectedFile = reset.selectedFile;
+    fileError = reset.fileError;
+    fileHash = reset.fileHash;
+    uploadStep = reset.uploadStep;
+    uploadProgress = reset.uploadProgress;
+    uploadError = reset.uploadError;
+    duplicateMedia = reset.duplicateMedia;
+    createdMedia = reset.createdMedia;
   }
 
   async function startUpload() {
@@ -312,10 +310,10 @@
     open = false;
     activeTab = "browse";
     clearUpload();
-    // Reset browse state for next open
-    browseItems = [];
-    browseNextCursor = null;
-    browseHasMore = false;
+    const browseReset = createResetBrowseState();
+    browseItems = browseReset.browseItems;
+    browseNextCursor = browseReset.browseNextCursor;
+    browseHasMore = browseReset.browseHasMore;
   }
 
 </script>
