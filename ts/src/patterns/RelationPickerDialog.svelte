@@ -2,12 +2,12 @@
   import { tick } from "svelte";
   import type { Snippet } from "svelte";
   import { Dialog as BitsDialog } from "bits-ui";
-  import Search from "lucide-svelte/icons/search";
   import Loader from "lucide-svelte/icons/loader-circle";
   import Check from "lucide-svelte/icons/check";
   import X from "lucide-svelte/icons/x";
   import Plus from "lucide-svelte/icons/plus";
   import Button from "../components/Button.svelte";
+  import RelationPickerSearch from "./relation-picker/RelationPickerSearch.svelte";
   import type { PickableItem, PickerSection } from "./relation-picker-types.js";
 
   interface Props {
@@ -325,23 +325,14 @@
       </div>
 
       {#if searchable && !createFormOpen}
-        <div class="relation-picker-dialog__search">
-          <Search size="1.1em" class="relation-picker-dialog__search-icon" />
-          <input
-            bind:this={searchInputRef}
-            type="text"
-            class="relation-picker-dialog__search-input"
-            placeholder={searchPlaceholder}
-            value={searchQuery}
-            oninput={handleSearchInput}
-            onkeydown={handleSearchKeyDown}
-            aria-controls="relation-picker-list"
-            aria-autocomplete="list"
-          />
-          {#if searching}
-            <Loader size="1.1em" class="relation-picker-dialog__search-loader" />
-          {/if}
-        </div>
+        <RelationPickerSearch
+          placeholder={searchPlaceholder}
+          value={searchQuery}
+          {searching}
+          onInput={handleSearchInput}
+          onKeyDown={handleSearchKeyDown}
+          onInputRef={(input) => (searchInputRef = input)}
+        />
       {/if}
 
       <div class="relation-picker-dialog__body">
@@ -600,49 +591,6 @@
   .relation-picker-dialog__clear-btn:focus-visible {
     outline: 2px solid var(--underlay-color-primary, #2563eb);
     outline-offset: 1px;
-  }
-
-  .relation-picker-dialog__search {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0 1rem 0.75rem;
-    position: relative;
-    flex-shrink: 0;
-  }
-
-  :global(.relation-picker-dialog__search-icon) {
-    position: absolute;
-    left: 1.6rem;
-    color: var(--underlay-color-text-muted, #9ca3af);
-    pointer-events: none;
-  }
-
-  .relation-picker-dialog__search-input {
-    width: 100%;
-    padding: 0.55em 0.7em 0.55em 2.2em;
-    border-radius: 0.35rem;
-    border: none;
-    background: var(--underlay-color-field-bg, rgba(148, 163, 184, 0.18));
-    color: var(--underlay-color-text, #e5e7eb);
-    font-size: 0.85rem;
-  }
-
-  .relation-picker-dialog__search-input:focus {
-    outline: var(--underlay-focus-ring-width, 2px) solid
-      var(--underlay-color-primary, #2563eb);
-    outline-offset: -1px;
-  }
-
-  .relation-picker-dialog__search-input::placeholder {
-    color: var(--underlay-color-text-muted, #9ca3af);
-  }
-
-  :global(.relation-picker-dialog__search-loader) {
-    position: absolute;
-    right: 1.6rem;
-    color: var(--underlay-color-text-muted, #9ca3af);
-    animation: relation-picker-spin 1s linear infinite;
   }
 
   @keyframes relation-picker-spin {
