@@ -22,9 +22,6 @@
   import {
     computeFileHash,
     validateFile,
-    formatFileSize,
-    getFileTypeDescription,
-    ALLOWED_MEDIA_TYPES,
     type PaginatedResponse,
     type PaginationParams,
     MediaKind,
@@ -41,6 +38,7 @@
   } from "../patterns/index.js";
   import { uploadNewMedia } from "./media-picker/upload";
   import MediaBrowseItem from "./media-picker/MediaBrowseItem.svelte";
+  import MediaUploadDropzone from "./media-picker/MediaUploadDropzone.svelte";
   import Button from "./Button.svelte";
   import Dialog from "./Dialog.svelte";
   import FormError from "./FormError.svelte";
@@ -50,7 +48,6 @@
   import TabsTrigger from "./TabsTrigger.svelte";
   import TabsContent from "./TabsContent.svelte";
   import Image from "lucide-svelte/icons/image";
-  import FileText from "lucide-svelte/icons/file-text";
   import Upload from "lucide-svelte/icons/upload";
   import Check from "lucide-svelte/icons/check";
   import AlertCircle from "lucide-svelte/icons/alert-circle";
@@ -366,43 +363,13 @@
     <TabsContent value="upload">
       <div class="upload-content">
         {#if uploadStep === "select"}
-          <div
-            class="dropzone"
-            class:dropzone--has-file={selectedFile}
-            class:dropzone--has-error={fileError}
-            ondrop={handleDrop}
-            ondragover={handleDragOver}
-            role="button"
-            tabindex="0"
-          >
-            {#if selectedFile}
-              <div class="selected-file">
-                {#if selectedFile.type.startsWith("image/")}
-                  <Image size={32} />
-                {:else}
-                  <FileText size={32} />
-                {/if}
-                <div class="selected-file__info">
-                  <span class="selected-file__name">{selectedFile.name}</span>
-                  <span class="selected-file__meta">
-                    {getFileTypeDescription(selectedFile.type)} &middot; {formatFileSize(
-                      selectedFile.size
-                    )}
-                  </span>
-                </div>
-              </div>
-            {:else}
-              <Upload size={32} />
-              <p>Drop file here or click to browse</p>
-              <p class="dropzone__hint">Images and PDFs up to 25MB</p>
-              <input
-                type="file"
-                class="dropzone__input"
-                accept={ALLOWED_MEDIA_TYPES.join(",")}
-                onchange={handleFileSelect}
-              />
-            {/if}
-          </div>
+          <MediaUploadDropzone
+            {selectedFile}
+            hasError={!!fileError}
+            onDrop={handleDrop}
+            onDragOver={handleDragOver}
+            onFileSelect={handleFileSelect}
+          />
 
           {#if fileError}
             <FormError message={fileError} />
@@ -519,78 +486,6 @@
   .upload-content {
     min-height: 200px;
     margin-top: 1rem;
-  }
-
-  .dropzone {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    padding: 2rem;
-    border: 2px dashed var(--underlay-color-border, #374151);
-    border-radius: 0.5rem;
-    background: var(--underlay-color-surface, #1f2937);
-    cursor: pointer;
-    transition: border-color 0.15s;
-    text-align: center;
-    color: var(--underlay-color-text-muted, #9ca3af);
-  }
-
-  .dropzone:hover {
-    border-color: var(--underlay-color-primary, #3b82f6);
-  }
-
-  .dropzone--has-file {
-    border-style: solid;
-    border-color: var(--underlay-color-primary, #3b82f6);
-    cursor: default;
-  }
-
-  .dropzone--has-error {
-    border-color: var(--underlay-color-danger, #ef4444);
-  }
-
-  .dropzone__hint {
-    font-size: 0.75rem;
-    opacity: 0.7;
-  }
-
-  .dropzone__input {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    opacity: 0;
-    cursor: pointer;
-  }
-
-  .dropzone--has-file .dropzone__input {
-    display: none;
-  }
-
-  .selected-file {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    color: var(--underlay-color-text, #f3f4f6);
-  }
-
-  .selected-file__info {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.125rem;
-  }
-
-  .selected-file__name {
-    font-weight: 500;
-  }
-
-  .selected-file__meta {
-    font-size: 0.75rem;
-    color: var(--underlay-color-text-muted, #9ca3af);
   }
 
   .upload-actions {
