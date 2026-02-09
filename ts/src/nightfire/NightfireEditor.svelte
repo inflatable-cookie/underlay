@@ -10,8 +10,7 @@
     getBlockTypeOptionsForSchema
   } from "./editor-registry";
   import {
-    isEmptyNightfire,
-    writeNightfireToFormData
+    isEmptyNightfire
   } from "./utils";
   import {
     useNightfireStrategies,
@@ -22,10 +21,12 @@
     buildGroupedOptions,
     type NightfireBlockOptionInput
   } from "./editor/grouped-options";
-  import {
-    createDefaultBlock,
-  } from "./editor/block-list";
   import { resolveSchemaDefinition } from "./editor/schema-resolution";
+  import {
+    createPrepareWriter,
+    createRequiredInitialValue,
+    type NightfireFieldMode
+  } from "./editor/field-lifecycle";
   import {
     addBlock as addEditorBlock,
     asMultiBlockValue,
@@ -47,8 +48,6 @@
    * - Automatically loads and applies Nightfire strategies when configured.
    * - Handles value normalisation internally.
    */
-
-  type NightfireFieldMode = "single" | "multi";
 
   export interface SchemaMismatchInfo {
     actualSchema: string | null;
@@ -338,19 +337,11 @@
   // editor is first initialised and the value is empty.
   $effect(() => {
     if (!hasInitialisedRequired && required && isEmptyNightfire(value)) {
-      const defaultBlock = createDefaultBlock(effectiveDef.defaultType ?? "markdown");
-
-      if (effectiveDef.mode === "multi") {
-        value = {
-          schema,
-          blocks: [defaultBlock]
-        } as any;
-      } else {
-        value = {
-          schema,
-          block: defaultBlock
-        } as any;
-      }
+      value = createRequiredInitialValue(
+        schema,
+        effectiveDef.mode,
+        effectiveDef.defaultType ?? "markdown"
+      );
 
       hasInitialisedRequired = true;
     }
@@ -373,9 +364,10 @@
   });
 
   // Set prepare only once - it reads current values from refs at call time
-  prepare = (formData: FormData) => {
-    writeNightfireToFormData(formData, nameRef.current, valueRef.current);
-  };
+  prepare = createPrepareWriter(
+    () => valueRef.current,
+    () => nameRef.current
+  );
 </script>
 
 <div class="nightfire-field">
