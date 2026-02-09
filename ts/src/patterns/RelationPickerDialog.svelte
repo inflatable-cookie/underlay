@@ -3,10 +3,10 @@
   import type { Snippet } from "svelte";
   import { Dialog as BitsDialog } from "bits-ui";
   import Loader from "lucide-svelte/icons/loader-circle";
-  import Check from "lucide-svelte/icons/check";
   import X from "lucide-svelte/icons/x";
   import Plus from "lucide-svelte/icons/plus";
   import Button from "../components/Button.svelte";
+  import RelationPickerList from "./relation-picker/RelationPickerList.svelte";
   import RelationPickerSearch from "./relation-picker/RelationPickerSearch.svelte";
   import type { PickableItem, PickerSection } from "./relation-picker-types.js";
 
@@ -247,10 +247,6 @@
     });
   }
 
-  function isSelected(id: string): boolean {
-    return selectedIds.includes(id);
-  }
-
   function handleItemClick(item: PickableItem) {
     if (item.disabled) return;
     onSelect?.(item);
@@ -370,103 +366,19 @@
             <div class="relation-picker-dialog__empty">
               {searchQuery.trim() ? "No matches found." : emptyMessage}
             </div>
-          {:else if displaySections}
-            <!-- Sectioned mode -->
-            {#each displaySections as section, sectionIndex (section.label)}
-              {#if section.items.length > 0}
-                <div class="relation-picker-dialog__section">
-                  <div class="relation-picker-dialog__section-label">
-                    {section.label}
-                  </div>
-                  <ul
-                    bind:this={listRef}
-                    class="relation-picker-dialog__list"
-                    role="listbox"
-                    id="relation-picker-list"
-                    onkeydown={handleListKeyDown}
-                  >
-                    {#each section.items as item, itemIndex (item.id)}
-                      {@const selected = isSelected(item.id)}
-                      {@const globalIndex = getGlobalIndex(sectionIndex, itemIndex)}
-                      <li
-                        class="relation-picker-dialog__item"
-                        class:relation-picker-dialog__item--selected={selected}
-                        class:relation-picker-dialog__item--disabled={item.disabled}
-                        class:relation-picker-dialog__item--focused={focusedIndex === globalIndex}
-                        role="option"
-                        aria-selected={selected}
-                        aria-disabled={item.disabled}
-                        onclick={() => handleItemClick(item)}
-                        onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleItemClick(item); }}}
-                        tabindex={item.disabled ? -1 : 0}
-                      >
-                        {#if renderItem}
-                          {@render renderItem(item, selected)}
-                        {:else}
-                          <div class="relation-picker-dialog__item-content">
-                            <span class="relation-picker-dialog__item-label">{item.label}</span>
-                            {#if item.description}
-                              <span class="relation-picker-dialog__item-description">
-                                {item.description}
-                              </span>
-                            {/if}
-                          </div>
-                          {#if selected}
-                            <Check size="1em" class="relation-picker-dialog__item-check" />
-                          {/if}
-                        {/if}
-                      </li>
-                    {/each}
-                  </ul>
-                </div>
-              {/if}
-            {/each}
           {:else}
-            <!-- Flat items mode -->
-            {#if sectionLabel}
-              <div class="relation-picker-dialog__section-label">
-                {sectionLabel}
-              </div>
-            {/if}
-            <ul
-              bind:this={listRef}
-              class="relation-picker-dialog__list"
-              role="listbox"
-              id="relation-picker-list"
-              onkeydown={handleListKeyDown}
-            >
-              {#each displayItems as item, index (item.id)}
-                {@const selected = isSelected(item.id)}
-                <li
-                  class="relation-picker-dialog__item"
-                  class:relation-picker-dialog__item--selected={selected}
-                  class:relation-picker-dialog__item--disabled={item.disabled}
-                  class:relation-picker-dialog__item--focused={focusedIndex === index}
-                  role="option"
-                  aria-selected={selected}
-                  aria-disabled={item.disabled}
-                  onclick={() => handleItemClick(item)}
-                  onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleItemClick(item); }}}
-                  tabindex={item.disabled ? -1 : 0}
-                >
-                  {#if renderItem}
-                    {@render renderItem(item, selected)}
-                  {:else}
-                    <div class="relation-picker-dialog__item-content">
-                      <span class="relation-picker-dialog__item-label">{item.label}</span>
-                      {#if item.description}
-                        <span class="relation-picker-dialog__item-description">
-                          {item.description}
-                        </span>
-                      {/if}
-                    </div>
-                    {#if selected}
-                      <Check size="1em" class="relation-picker-dialog__item-check" />
-                    {/if}
-                  {/if}
-                </li>
-              {/each}
-            </ul>
+            <RelationPickerList
+              {displaySections}
+              {displayItems}
+              {sectionLabel}
+              {selectedIds}
+              {focusedIndex}
+              {renderItem}
+              onItemClick={handleItemClick}
+              onListKeyDown={handleListKeyDown}
+              {getGlobalIndex}
+              onListRef={(node) => (listRef = node)}
+            />
           {/if}
 
           {#if allowCreate && createForm && !createFormOpen}
@@ -602,94 +514,6 @@
     flex: 1;
     overflow-y: auto;
     padding: 0 1rem 1rem;
-  }
-
-  .relation-picker-dialog__section {
-    margin-bottom: 1rem;
-  }
-
-  .relation-picker-dialog__section-label {
-    font-size: 0.7rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    color: var(--underlay-color-text-muted, #9ca3af);
-    margin-bottom: 0.5rem;
-  }
-
-  .relation-picker-dialog__list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0.15rem;
-  }
-
-  .relation-picker-dialog__item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.5rem;
-    padding: 0.5rem 0.65rem;
-    border-radius: 0.35rem;
-    cursor: pointer;
-    user-select: none;
-    font-size: 0.85rem;
-    color: var(--underlay-color-text, #e5e7eb);
-  }
-
-  .relation-picker-dialog__item:hover:not(.relation-picker-dialog__item--disabled) {
-    background: var(--underlay-color-hover-bg, rgba(148, 163, 184, 0.2));
-  }
-
-  .relation-picker-dialog__item:focus-visible,
-  .relation-picker-dialog__item--focused {
-    outline: var(--underlay-focus-ring-width, 2px) solid
-      var(--underlay-color-primary, #2563eb);
-    outline-offset: -1px;
-  }
-
-  .relation-picker-dialog__item--selected {
-    background: var(--underlay-color-primary, #2563eb);
-    color: var(--underlay-color-on-primary, white);
-  }
-
-  .relation-picker-dialog__item--selected:hover {
-    background: var(--underlay-color-primary-strong, #1d4ed8);
-  }
-
-  .relation-picker-dialog__item--disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-
-  .relation-picker-dialog__item-content {
-    display: flex;
-    flex-direction: column;
-    gap: 0.1rem;
-    min-width: 0;
-    flex: 1;
-  }
-
-  .relation-picker-dialog__item-label {
-    font-weight: 500;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .relation-picker-dialog__item-description {
-    font-size: 0.8em;
-    opacity: 0.7;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  :global(.relation-picker-dialog__item-check) {
-    flex-shrink: 0;
-    opacity: 0.9;
   }
 
   .relation-picker-dialog__empty {
