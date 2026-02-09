@@ -7,7 +7,6 @@
   // Ensure registrations are loaded before we lookup schema definitions
   import "./editor-registrations";
   import {
-    getSchemaDefinition,
     getBlockTypeOptionsForSchema
   } from "./editor-registry";
   import {
@@ -23,6 +22,7 @@
     buildGroupedOptions,
     type NightfireBlockOptionInput
   } from "./editor/grouped-options";
+  import { resolveSchemaDefinition } from "./editor/schema-resolution";
 
   /**
    * Field-level Nightfire editor.
@@ -215,50 +215,11 @@
    * fields can still be edited using basic text blocks.
    */
 
-  // Helper function to resolve schema synchronously - called both at init
-  // and when schema prop changes. This ensures we have correct values
-  // IMMEDIATELY on first render, not after an $effect runs.
-  function resolveSchema(schemaId: string): {
-    editorSchema: string;
-    registryDef: { schema: string; mode: NightfireFieldMode; defaultType: string };
-  } {
-    const def = getSchemaDefinition(schemaId);
-    if (def) {
-      return {
-        editorSchema: schemaId,
-        registryDef: {
-          schema: def.schema,
-          mode: def.mode,
-          defaultType: def.defaultType
-        }
-      };
-    }
-
-    const fallbackDef = getSchemaDefinition(FALLBACK_MARKUP_SCHEMA_ID);
-    if (fallbackDef) {
-      return {
-        editorSchema: FALLBACK_MARKUP_SCHEMA_ID,
-        registryDef: {
-          schema: fallbackDef.schema,
-          mode: fallbackDef.mode,
-          defaultType: fallbackDef.defaultType
-        }
-      };
-    }
-
-    return {
-      editorSchema: schemaId,
-      registryDef: {
-        schema: schemaId,
-        mode: "single",
-        defaultType: "markdown"
-      }
-    };
-  }
-
   // Initialize with correct values IMMEDIATELY (not deferred via $effect)
   // Use untrack to capture initial values without creating reactive dependencies
-  const initialResolved = untrack(() => resolveSchema(schema));
+  const initialResolved = untrack(() =>
+    resolveSchemaDefinition(schema, FALLBACK_MARKUP_SCHEMA_ID)
+  );
   let editorSchema: string = $state(initialResolved.editorSchema);
   let registryDef: {
     schema: string;
@@ -277,7 +238,7 @@
     }
     lastSchemaProp = schema;
 
-    const resolved = resolveSchema(schema);
+    const resolved = resolveSchemaDefinition(schema, FALLBACK_MARKUP_SCHEMA_ID);
     editorSchema = resolved.editorSchema;
     registryDef = resolved.registryDef;
   });
