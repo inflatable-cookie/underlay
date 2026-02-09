@@ -19,6 +19,10 @@
     type NightfireStrategy,
     type NightfireBlockOption
   } from "./strategies";
+  import {
+    buildGroupedOptions,
+    type NightfireBlockOptionInput
+  } from "./editor/grouped-options";
 
   /**
    * Field-level Nightfire editor.
@@ -32,12 +36,6 @@
    */
 
   type NightfireFieldMode = "single" | "multi";
-
-  interface NightfireBlockOptionInput {
-    type: string;
-    label: string;
-    category?: string;
-  }
 
   export interface SchemaMismatchInfo {
     actualSchema: string | null;
@@ -302,43 +300,6 @@
       label: opt.label
     }))
   );
-
-  interface GroupedOptions {
-    category: string | null;
-    label: string;
-    options: NightfireBlockOptionInput[];
-  }
-
-  function buildGroupedOptions(
-    options: NightfireBlockOptionInput[]
-  ): GroupedOptions[] {
-    const groups = new Map<string | null, NightfireBlockOptionInput[]>();
-
-    for (const opt of options) {
-      const key = opt.category ?? null;
-      const existing = groups.get(key) ?? [];
-      existing.push(opt);
-      groups.set(key, existing);
-    }
-
-    const sortedKeys = Array.from(groups.keys()).sort((a, b) => {
-      const labelA = (a ?? "").toLowerCase();
-      const labelB = (b ?? "").toLowerCase();
-      if (labelA < labelB) return -1;
-      if (labelA > labelB) return 1;
-      return 0;
-    });
-
-    return sortedKeys.map((key) => {
-      const opts = groups.get(key) ?? [];
-      opts.sort((a, b) => a.label.localeCompare(b.label));
-      return {
-        category: key,
-        label: key ?? "Other",
-        options: opts
-      };
-    });
-  }
 
   const groupedOptions = $derived(
     effectiveBlockOptions && effectiveBlockOptions.some((o) => !!o.category)
