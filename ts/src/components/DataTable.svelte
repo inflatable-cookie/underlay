@@ -96,6 +96,12 @@
 		getRowActionHref,
 		getVisibleRowActions
 	} from "./data-table/actions";
+	import {
+		getNextPage,
+		getPageAfterLimitChange,
+		toggleRowSelection,
+		toggleSelectAllRows
+	} from "./data-table/pagination-selection";
 	import Skeleton from "./Skeleton.svelte";
 	import DropdownMenu from "./DropdownMenu.svelte";
 	import Select from "./Select.svelte";
@@ -278,15 +284,16 @@
 
 	// Handle page change
 	function handlePageChange(newPage: number) {
-		if (newPage < 1 || newPage > totalPages) return;
-		onPage?.(newPage);
+		const nextPage = getNextPage(newPage, totalPages);
+		if (nextPage == null) return;
+		onPage?.(nextPage);
 	}
 
 	// Handle limit change
 	function handleLimitChange(newLimit: number) {
 		onLimit?.(newLimit);
 		// Reset to first page when changing limit to avoid being on an invalid page
-		onPage?.(1);
+		onPage?.(getPageAfterLimitChange());
 	}
 
 	// Handle column visibility toggle
@@ -307,21 +314,12 @@
 
 	// Handle selection
 	function handleSelectAll() {
-		if (allSelected) {
-			selected = [];
-		} else {
-			selected = [...data];
-		}
+		selected = toggleSelectAllRows(data, selected, allSelected);
 		onSelect?.(selected);
 	}
 
 	function handleSelectRow(row: T) {
-		const index = selected.indexOf(row);
-		if (index >= 0) {
-			selected = [...selected.slice(0, index), ...selected.slice(index + 1)];
-		} else {
-			selected = [...selected, row];
-		}
+		selected = toggleRowSelection(selected, row);
 		onSelect?.(selected);
 	}
 
