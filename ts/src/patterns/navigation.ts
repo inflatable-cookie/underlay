@@ -27,6 +27,7 @@
  */
 
 import { storage } from "./storage";
+import { matchesCurrentPath } from "./navigation-path";
 import { buildPushedContextStack } from "./navigation-stack";
 
 // ============================================================================
@@ -336,25 +337,6 @@ export function consumeNavigationContext(
     },
     returnTo: fallbackHref
   };
-}
-
-/**
- * Check if a target href matches the current browser path.
- * 
- * Compares pathnames only, ignoring query strings and fragments.
- * Returns true if not in browser environment (SSR safety).
- */
-function matchesCurrentPath(targetHref: string): boolean {
-  if (typeof window === "undefined") return true;
-  
-  try {
-    // Parse target href to extract pathname
-    const targetUrl = new URL(targetHref, window.location.origin);
-    return window.location.pathname === targetUrl.pathname;
-  } catch {
-    // If parsing fails, do a simple string comparison
-    return window.location.pathname === targetHref;
-  }
 }
 
 /**
