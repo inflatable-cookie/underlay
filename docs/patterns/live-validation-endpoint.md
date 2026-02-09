@@ -158,7 +158,7 @@ $: validateSlug(slug, existingId);
 **Form field pattern**:
 
 ```svelte
-<FormField label="Slug" error={slugValidation?.valid === false ? slugValidation.message : undefined}>
+<Field label="Slug" error={slugValidation?.valid === false ? slugValidation.message : undefined}>
   <TextInput
     bind:value={slug}
     on:input={() => validateSlug(slug, existingId)}
@@ -176,7 +176,7 @@ $: validateSlug(slug, existingId);
       </Button>
     </div>
   {/if}
-</FormField>
+</Field>
 ```
 
 ---

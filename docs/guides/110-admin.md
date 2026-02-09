@@ -76,16 +76,47 @@ export const handleError: HandleServerError = async ({ error: err }) => {
 };
 ```
 
+### 4) App Shell Runtime Setup (Recommended)
+
+For SPA admin apps, configure auth and shared runtime services in `(app)/+layout.svelte`:
+
+- `configureAuth()` for automatic token refresh in `useAuthenticatedData()`
+- toast context (`createToastStore()` + `ToastHost`)
+- Nightfire strategy loading (`configureNightfireStrategies()`)
+- optional timezone initialization (`initTimezone()`) if profiles store timezone
+
+```svelte
+<script lang="ts">
+  import { configureAuth } from "@decodelabs/underlay/patterns";
+  import { configureNightfireStrategies } from "@decodelabs/underlay/nightfire";
+  import { nightfireCommands } from "@cattle-grid";
+  import { auth } from "$lib/stores/auth";
+
+  configureAuth({
+    getToken: () => auth.getToken(),
+    onRefresh: auth.getRefreshHandler()
+  });
+
+  configureNightfireStrategies({
+    fetchStrategies: async () => {
+      const token = auth.getToken();
+      if (!token) return [];
+      return await nightfireCommands.listStrategies(fetch, token, { includeOptions: true });
+    }
+  });
+</script>
+```
+
 ```
 apps/admin/src/
 ├── app.html                  # HTML shell
 ├── app.d.ts                  # TypeScript declarations with Locals
-├── hooks.server.ts           # Server hooks for auth
+├── hooks.server.ts           # Optional server error/headers hook
 ├── routes/
 │   ├── +layout.svelte        # Minimal root layout (CSS vars, body reset)
 │   ├── (app)/                # Authenticated routes WITH sidebar
 │   │   ├── +layout.svelte    # App shell with sidebar navigation
-│   │   ├── +layout.server.ts # Auth check, data loading
+│   │   ├── +layout.server.ts # Optional (SSR auth); often omitted in SPA mode
 │   │   ├── +page.svelte      # Dashboard
 │   │   ├── account/
 │   │   ├── content/
@@ -96,7 +127,7 @@ apps/admin/src/
 │       ├── +layout.svelte    # Centered card layout
 │       └── login/
 │           ├── +page.svelte
-│           └── +page.server.ts
+│           └── +page.server.ts  # Optional (SSR form actions)
 └── lib/
     ├── api/
     │   └── client.ts         # Client factory

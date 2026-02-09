@@ -4,6 +4,24 @@
 
 **Example prompt**: "Build the CRUD interface for the Bundles table"
 
+## Outcome Profile (Quickstart vs Dairy-Scale Admin)
+
+If you stop at the base checklist in this recipe, you get a correct but **minimal CRUD surface**. That is usually enough for a simple table, but it will underdeliver for complex admin areas like Dairy's `learning`, `content`, and `system` flows.
+
+| Area | Base recipe outcome | Dairy-scale outcome (recommended) |
+|------|----------------------|-----------------------------------|
+| Data loading | Single load call per page | Auth-aware loading with `useAuthenticatedData()` and retry/empty/loading states |
+| List UX | Basic table/list and row click | Pagination controller, filters, search, selection mode, batch actions, reorder mode |
+| Form UX | Local submit handler | `SpaFormShell`, intent-based submit (`save`, `save-close`, `delete`), field-level error mapping |
+| Navigation | Static breadcrumb/back link | Context-aware back links with `consumeNavigationContext()` + `gotoWithContext()` |
+| Related entities | Separate screens only | Parent detail tabs plus nested child routes and inline list actions |
+| Rich fields | Plain text inputs | `MarkdownEditor`/`NightfireEditor`, content cards, schema-aware save prep |
+| Operational polish | Minimal success/failure handling | Toasts, optimistic local updates, structured errors, analytics hooks |
+
+**Rule of thumb**:
+- Use this recipe alone for straightforward one-entity admin pages.
+- Combine this recipe with the extension checklist below for Dairy-style admin surfaces.
+
 ---
 
 ## Checklist
@@ -296,7 +314,7 @@ export const load: PageLoad = async () => {
 ```svelte
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { DataTable, StatusPill, Button } from '@underlay/components';
+  import { DataTable, Button } from '@underlay/components';
   import type { Bundle } from '@cattle-grid/types';
 
   export let data: { bundles: Bundle[] };
@@ -315,7 +333,7 @@ export const load: PageLoad = async () => {
     {
       key: 'isLive',
       label: 'Status',
-      render: (value) => StatusPill({ live: value })
+      render: (value) => value ? 'Live' : 'Draft'
     },
   ]}
   onRowClick={(bundle) => goto(`/domain/bundles/${bundle.id}`)}
@@ -351,7 +369,7 @@ export const load: PageLoad = async ({ params }) => {
 ```svelte
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { FormField, TextInput, Toggle, Button, ConfirmModal } from '@underlay/components';
+  import { AlertDialog, Field, TextInput, Switch, Button } from '@underlay/components';
   import { updateBundle, deleteBundle } from '@cattle-grid/commands';
   import type { Bundle } from '@cattle-grid/types';
 
@@ -388,17 +406,17 @@ export const load: PageLoad = async ({ params }) => {
 </div>
 
 <form on:submit|preventDefault={handleSave}>
-  <FormField label="Name">
+  <Field label="Name">
     <TextInput bind:value={form.name} />
-  </FormField>
+  </Field>
 
-  <FormField label="Slug">
+  <Field label="Slug">
     <TextInput bind:value={form.slug} />
-  </FormField>
+  </Field>
 
-  <FormField label="Live">
-    <Toggle bind:checked={form.isLive} />
-  </FormField>
+  <Field label="Live">
+    <Switch bind:checked={form.isLive} />
+  </Field>
 
   <div class="form-actions">
     <Button type="submit" loading={saving}>Save</Button>
@@ -406,13 +424,14 @@ export const load: PageLoad = async ({ params }) => {
   </div>
 </form>
 
-<ConfirmModal
-  bind:open={showDeleteModal}
-  title="Delete Bundle"
-  message="Are you sure you want to delete this bundle?"
-  confirmLabel="Delete"
-  onConfirm={handleDelete}
-/>
+{#if showDeleteModal}
+  <AlertDialog
+    title="Delete Bundle"
+    description="Are you sure you want to delete this bundle?"
+    onConfirm={handleDelete}
+    onCancel={() => showDeleteModal = false}
+  />
+{/if}
 ```
 
 ---
@@ -430,7 +449,7 @@ export const load: PageLoad = async ({ params }) => {
 ```svelte
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { FormField, TextInput, Toggle, Button } from '@underlay/components';
+  import { Field, TextInput, Switch, Button } from '@underlay/components';
   import { createBundle } from '@cattle-grid/commands';
 
   let form = {
@@ -458,23 +477,98 @@ export const load: PageLoad = async ({ params }) => {
 </div>
 
 <form on:submit|preventDefault={handleCreate}>
-  <FormField label="Name">
+  <Field label="Name">
     <TextInput bind:value={form.name} />
-  </FormField>
+  </Field>
 
-  <FormField label="Slug">
+  <Field label="Slug">
     <TextInput bind:value={form.slug} />
-  </FormField>
+  </Field>
 
-  <FormField label="Live">
-    <Toggle bind:checked={form.isLive} />
-  </FormField>
+  <Field label="Live">
+    <Switch bind:checked={form.isLive} />
+  </Field>
 
   <div class="form-actions">
     <Button type="submit" loading={saving}>Create</Button>
   </div>
 </form>
 ```
+
+---
+
+## Dairy-Scale Extension Checklist (Required for Complex Admin Areas)
+
+Use these extension phases whenever the admin surface has nested entities, richer forms, or operational workflows.
+
+### Phase 9: Authenticated SPA Data Flow
+
+- [ ] Use `useAuthenticatedData()` instead of plain `+page.ts` data-only loading for protected routes.
+- [ ] Trigger fetch using auth readiness (`authLoading` + current user state).
+- [ ] Expose clear loading, empty, and error states (`PageLoading`, `FormError`).
+- [ ] Keep token access in auth store (do not pass tokens through page data).
+
+Primary references:
+- [110-admin.md#complete-crud-admin-pattern](../guides/110-admin.md#complete-crud-admin-pattern)
+- [110-admin.md#createedit-page-pattern](../guides/110-admin.md#createedit-page-pattern)
+
+### Phase 10: Form Shell + Intent Pattern
+
+- [ ] Wrap create/edit pages in `SpaFormShell`.
+- [ ] Support intents: `save`, `save-close`, and `delete` (edit mode).
+- [ ] Return `SpaFormResult` with `fieldErrors` mapped to form fields.
+- [ ] Use a reusable form component that renders fields only (no page-level routing logic inside form component).
+- [ ] Keep destructive actions explicit using `ConfirmAction`/`AlertDialog`.
+
+Primary references:
+- [110-admin.md#form-component-pattern](../guides/110-admin.md#form-component-pattern)
+- [110-admin.md#createedit-page-pattern](../guides/110-admin.md#createedit-page-pattern)
+
+### Phase 11: Navigation Context and Tab-Aware Back Links
+
+- [ ] Use `consumeNavigationContext()` on create/edit/detail routes.
+- [ ] Use `gotoWithContext()` from list cards/tab lists.
+- [ ] Include active tab in context href for detail pages with tabs.
+- [ ] Compute back links dynamically with `computeBackInfo()`.
+
+Primary references:
+- [110-admin.md#navigation-context-with-tabs](../guides/110-admin.md#navigation-context-with-tabs)
+- [110-admin.md#detail-page-header-pattern](../guides/110-admin.md#detail-page-header-pattern)
+
+### Phase 12: List Controllers (Pagination, Batch Actions, Reorder)
+
+- [ ] Use `createPaginationController()` for server pagination.
+- [ ] Add `FilterBar` + search/filter inputs where datasets are non-trivial.
+- [ ] Add `useBatchActions()` + `BatchActionBar` for multi-select delete/archive workflows.
+- [ ] Add `createReorderController()` + `ReorderableList` when sequence/order matters.
+- [ ] Keep list components autonomous and reusable between page and tab contexts.
+
+Primary references:
+- [110-admin.md#tab-content-pattern-list-view](../guides/110-admin.md#tab-content-pattern-list-view)
+- [nested-entity-management.md#phase-5-frontend---tab-on-parent-page](./nested-entity-management.md#phase-5-frontend---tab-on-parent-page)
+
+### Phase 13: Nested Entity and Relation Workflows
+
+- [ ] For child entities under a parent, apply the nested recipe (`/parents/:id/children` list + independent child CRUD).
+- [ ] Use tab content for child lists and dedicated child create/edit/detail routes.
+- [ ] Add relation picking/search where entities reference other resources (`RelationSelector` + local/remote search functions).
+- [ ] Support inline-create relations only when it clearly reduces authoring friction.
+
+Primary references:
+- [nested-entity-management.md](./nested-entity-management.md)
+- [live-validation-endpoint.md](./live-validation-endpoint.md)
+
+### Phase 14: Rich Content and Validation
+
+- [ ] Use `MarkdownEditor` for `TEXT` fields and `NightfireEditor` for `JSONB`.
+- [ ] Run field validation endpoints for uniqueness and scoped constraints.
+- [ ] Show rich content on detail pages with `ContentCard` and structured details sections.
+- [ ] Keep server-side validation as source of truth (`validation_to_app_error`, Nightfire validation mapping).
+
+Primary references:
+- [050-database.md#rich-text-field-conventions](../guides/050-database.md#rich-text-field-conventions)
+- [070-api-handlers.md#nightfire-content-validation](../guides/070-api-handlers.md#nightfire-content-validation)
+- [live-validation-endpoint.md](./live-validation-endpoint.md)
 
 ---
 

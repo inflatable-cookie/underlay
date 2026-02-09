@@ -317,7 +317,7 @@ export function deleteModuleVariant(id: string): Promise<ApiResponse<void>> {
           { key: 'name', label: 'Name' },
           { key: 'key', label: 'Key' },
           { key: 'weight', label: 'Weight' },
-          { key: 'isLive', label: 'Status', render: (v) => StatusPill({ live: v }) },
+          { key: 'isLive', label: 'Status', render: (v) => v ? 'Live' : 'Draft' },
           { key: 'isDefault', label: 'Default', render: (v) => v ? 'Yes' : '' },
         ]}
         onRowClick={(variant) => goto(`/learning/variants/${variant.id}`)}

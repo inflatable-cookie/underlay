@@ -22,6 +22,6 @@ Common checks:
   cargo test
 
 - Run TS checks
-  pnpm install:all
-  pnpm check:all
-  pnpm test
+  bun install
+  bun check
+  bun test

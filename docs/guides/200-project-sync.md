@@ -334,7 +334,7 @@ export function deleteEntity(id: string): Promise<ApiResponse<void>> {
 
 ### SvelteKit Page Patterns
 
-See [110-sveltekit-frontend.md](./110-sveltekit-frontend.md) for:
+See [100-frontend-web.md](./100-frontend-web.md) and [110-admin.md](./110-admin.md) for:
 - Load functions
 - Form actions
 - Error handling
@@ -396,4 +396,5 @@ use underlay_http::nightfire_validation_to_app_error;
 - [Patterns Catalogue](../patterns/000-index.md) - Quick reference for all patterns
 - [050-database.md](./050-database.md) - Database patterns in depth
 - [070-api-handlers.md](./070-api-handlers.md) - HTTP utilities in depth
-- [110-sveltekit-frontend.md](./110-sveltekit-frontend.md) - Frontend patterns
+- [100-frontend-web.md](./100-frontend-web.md) - Frontend patterns
+- [110-admin.md](./110-admin.md) - Admin app shell + CRUD conventions

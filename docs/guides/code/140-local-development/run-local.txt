@@ -13,5 +13,5 @@ Local dev (3 terminals):
    cargo run -p myapp-api
 
 4) Frontends
-   cd apps/web && pnpm dev
-   cd apps/admin && pnpm dev
+   cd apps/web && bun dev
+   cd apps/admin && bun dev

@@ -16,18 +16,39 @@ Complete, repeatable implementations covering backend → client → frontend.
 | Recipe | Use When | Guide |
 |--------|----------|-------|
 | [New Project Bootstrap Prompt](./new-project-bootstrap-prompt.md) | Starting a fresh Underlay-based project and bootstrapping the skeleton | Copy/paste prompt |
-| [CRUD Admin Interface](./crud-admin-interface.md) | Building complete create/read/update/delete for an entity | 8-phase checklist |
+| [CRUD Admin Interface](./crud-admin-interface.md) | Building complete create/read/update/delete for an entity | Baseline checklist + Dairy-scale extension phases |
 | [Live Validation Endpoint](./live-validation-endpoint.md) | Real-time field validation (e.g., slug availability) | 3-phase checklist |
 | [Nested Entity Management](./nested-entity-management.md) | Child entities within a parent (tabs, scoped lists) | 7-phase checklist |
+| [Autonomous Admin List](./autonomous-admin-list.md) | Building reusable list surfaces with pagination, filtering, and batch actions | 7-phase checklist |
+| [Reorderable Collections](./reorderable-collections.md) | Adding drag/drop reorder with scoped API persistence | 6-phase checklist |
+| [Trash Lifecycle](./trash-lifecycle.md) | Implementing soft-delete restore/purge workflows | 5-phase checklist |
+| [Delete Batch Cascades](./delete-batch-cascades.md) | Cascading soft deletes tracked under a single batch ID | 5-phase checklist |
+| [Media Upload Pipeline](./media-upload-pipeline.md) | Direct-to-blob upload with dedup, initiate, and finalise | 5-phase checklist |
+| [Relation Selector with Inline Create](./relation-selector-inline-create.md) | Selecting related entities and creating missing ones inline | 5-phase checklist |
+| [Context-Preserving Navigation](./context-preserving-navigation.md) | Keeping back/navigation context across list/detail/edit flows | 5-phase checklist |
+| [Synced Hierarchical Selection](./synced-hierarchical-selection.md) | Managing module/section/area style dependent selections | 5-phase checklist |
+| [Admin Ops Console](./admin-ops-console.md) | Building jobs/scheduled/errors/audit operational interfaces | 5-phase checklist |
+| [Nightfire Integration](./nightfire-integration.md) | Configuring strategies, renderers, and editor/render pipeline | 5-phase checklist |
 
 ### Quick Prompts
 
 These prompts will trigger the appropriate recipe:
 
 - "Build the CRUD interface for Bundles" → [CRUD Admin Interface](./crud-admin-interface.md)
+- "Build a Dairy-style admin area for X" → [CRUD Admin Interface](./crud-admin-interface.md#dairy-scale-extension-checklist-required-for-complex-admin-areas)
 - "Bootstrap a new Underlay project" → [New Project Bootstrap Prompt](./new-project-bootstrap-prompt.md)
 - "Add live slug validation for modules" → [Live Validation Endpoint](./live-validation-endpoint.md)
 - "Build the Variants tab for Modules" → [Nested Entity Management](./nested-entity-management.md)
+- "Build a reusable paginated list for X" → [Autonomous Admin List](./autonomous-admin-list.md)
+- "Add drag-and-drop reordering for X" → [Reorderable Collections](./reorderable-collections.md)
+- "Add trash/restore/purge for X" → [Trash Lifecycle](./trash-lifecycle.md)
+- "Implement cascade soft delete batches for X" → [Delete Batch Cascades](./delete-batch-cascades.md)
+- "Implement media upload flow for X" → [Media Upload Pipeline](./media-upload-pipeline.md)
+- "Add relation picker with inline create for X" → [Relation Selector with Inline Create](./relation-selector-inline-create.md)
+- "Preserve back context across list/detail/edit" → [Context-Preserving Navigation](./context-preserving-navigation.md)
+- "Build dependent selections (module/section/area)" → [Synced Hierarchical Selection](./synced-hierarchical-selection.md)
+- "Build admin jobs/schedules/errors/audit pages" → [Admin Ops Console](./admin-ops-console.md)
+- "Wire Nightfire strategies and custom block renderers" → [Nightfire Integration](./nightfire-integration.md)
 - "Create admin pages for X" → [CRUD Admin Interface](./crud-admin-interface.md)
 - "Add real-time validation for X field" → [Live Validation Endpoint](./live-validation-endpoint.md)
 - "Manage X within Y" → [Nested Entity Management](./nested-entity-management.md)
@@ -81,13 +102,13 @@ Individual techniques referenced by the recipes above.
 
 | Pattern | Description | Guide |
 |---------|-------------|-------|
-| Load functions | SvelteKit data loading | [110-sveltekit-frontend.md](../guides/110-sveltekit-frontend.md) |
-| Form actions | SvelteKit form handling | [110-sveltekit-frontend.md](../guides/110-sveltekit-frontend.md) |
+| Load functions | SvelteKit data loading | [100-frontend-web.md](../guides/100-frontend-web.md) |
+| Form actions | SvelteKit form handling | [100-frontend-web.md](../guides/100-frontend-web.md) |
 | Admin shell layout | Left nav + user menu + right context panel | [110-admin.md#app-shell-layout-nav--user-menu--context-panel](../guides/110-admin.md#app-shell-layout-nav--user-menu--context-panel) |
 | DataTable | Sortable, filterable tables | Component library |
-| StatusPill | Live/draft badges | Component library |
+| StatusBadge | Live/draft badges | Component library |
 | Tabs | Tabbed navigation | Component library |
-| FormField | Consistent form inputs | Component library |
+| Field | Consistent form inputs | Component library |
 
 ### Internal Development Patterns
 
