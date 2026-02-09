@@ -36,6 +36,7 @@ import {
 } from "./csp-config";
 export { createCspResolveOptions } from "./csp-resolve";
 export { buildCspHeader, getCspHeaderName } from "./csp-header";
+export { applySecurityHeaders } from "./csp-security-headers";
 export type {
   CspSource,
   CspConfig,
@@ -49,6 +50,7 @@ import type {
   SecurityHeadersConfig
 } from "./csp-types";
 import { buildCspHeader, getCspHeaderName } from "./csp-header";
+import { applySecurityHeaders } from "./csp-security-headers";
 
 // ============================================================================
 // Nonce Generation
@@ -132,22 +134,7 @@ export function applyCspHeaders(
     buildCspHeader(cspConfig, nonce)
   );
 
-  // Additional security headers
-  if (securityHeaders.contentTypeOptions) {
-    response.headers.set("X-Content-Type-Options", securityHeaders.contentTypeOptions);
-  }
-  if (securityHeaders.frameOptions) {
-    response.headers.set("X-Frame-Options", securityHeaders.frameOptions);
-  }
-  if (securityHeaders.referrerPolicy) {
-    response.headers.set("Referrer-Policy", securityHeaders.referrerPolicy);
-  }
-  if (securityHeaders.xssProtection) {
-    response.headers.set("X-XSS-Protection", securityHeaders.xssProtection);
-  }
-  if (securityHeaders.permissionsPolicy) {
-    response.headers.set("Permissions-Policy", securityHeaders.permissionsPolicy);
-  }
+  applySecurityHeaders(response, securityHeaders);
 }
 
 // ============================================================================
