@@ -1,7 +1,6 @@
 <script lang="ts">
   import { onMount, untrack } from "svelte";
   import type { NightfireValue } from "./index";
-  import { normaliseNightfireValue } from "./utils";
   import NightfireBlockEditor from "./NightfireBlockEditor.svelte";
   import NightfireFieldError from "./NightfireFieldError.svelte";
   // Ensure registrations are loaded before we lookup schema definitions
@@ -29,6 +28,7 @@
   } from "./editor/field-lifecycle";
   import NightfireTypeSelect from "./editor/NightfireTypeSelect.svelte";
   import NightfireMultiBlockItem from "./editor/NightfireMultiBlockItem.svelte";
+  import { normaliseForStrategy } from "./editor/strategy-normalisation";
   import {
     addBlock as addEditorBlock,
     asMultiBlockValue,
@@ -147,39 +147,13 @@
   $effect(() => {
     if (hasNormalised || !strategy || strategiesLoading) return;
 
-    // Normalise the value
-    const normalised = normaliseNightfireValue(value, schema);
-
-    // Check for schema mismatch
-    const actualSchema = (() => {
-      if (!value || typeof value !== "object") return null;
-      const s = (value as Record<string, unknown>).schema;
-      return typeof s === "string" ? s : null;
-    })();
-
-    if (actualSchema && actualSchema !== schema) {
-      onSchemaMismatch?.({ actualSchema, expectedSchema: schema });
-    }
-
-    // Coerce single vs multi shape based on strategy cardinality
-    const mode = strategy.cardinality.mode;
-    let coerced: NightfireValue = { ...normalised, schema } as NightfireValue;
-    const record = coerced as unknown as Record<string, unknown>;
-    const single = record.block ?? null;
-    const multi = Array.isArray(record.blocks) ? (record.blocks as unknown[]) : undefined;
-
-    if (mode === "single") {
-      if (!single && multi && multi.length > 0) {
-        coerced = { ...coerced, block: multi[0], blocks: undefined } as NightfireValue;
-      } else if (single && multi) {
-        coerced = { ...coerced, blocks: undefined } as NightfireValue;
-      }
-    } else {
-      if (!multi && single) {
-        coerced = { ...coerced, block: undefined, blocks: [single] } as NightfireValue;
-      } else if (multi && single) {
-        coerced = { ...coerced, block: undefined } as NightfireValue;
-      }
+    const { coerced, schemaMismatch } = normaliseForStrategy(
+      value,
+      schema,
+      strategy.cardinality.mode
+    );
+    if (schemaMismatch) {
+      onSchemaMismatch?.({ actualSchema: schemaMismatch, expectedSchema: schema });
     }
 
     // Only update if something changed
