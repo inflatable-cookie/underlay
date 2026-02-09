@@ -102,6 +102,13 @@
 		toggleRowSelection,
 		toggleSelectAllRows
 	} from "./data-table/pagination-selection";
+	import {
+		getCellDisplayValue,
+		getColumnWidthValue,
+		getNextSort,
+		toggleHiddenColumn,
+		updateFilters
+	} from "./data-table/state";
 	import Skeleton from "./Skeleton.svelte";
 	import DropdownMenu from "./DropdownMenu.svelte";
 	import Select from "./Select.svelte";
@@ -234,24 +241,7 @@
 
 	// Get cell value from row
 	function getCellValue(row: T, column: DataTableColumn<T>): string {
-		const keys = column.key.split(".");
-		let value: unknown = row;
-		for (const key of keys) {
-			if (value && typeof value === "object") {
-				value = (value as Record<string, unknown>)[key];
-			} else {
-				value = undefined;
-				break;
-			}
-		}
-
-		if (column.formatter) {
-			return column.formatter(value, row);
-		}
-
-		if (value == null) return "";
-		if (value instanceof Date) return value.toLocaleDateString();
-		return String(value);
+		return getCellDisplayValue(row, column);
 	}
 
 	// Get actions for a row
@@ -267,18 +257,13 @@
 	// Handle sort
 	function handleSort(column: DataTableColumn<T>) {
 		if (!column.sortable) return;
-
-		const newSort: DataTableSort = {
-			key: column.key,
-			direction: sort?.key === column.key && sort.direction === "asc" ? "desc" : "asc"
-		};
-
+		const newSort: DataTableSort = getNextSort(sort, column.key);
 		onSort?.(newSort);
 	}
 
 	// Handle filter change
 	function handleFilterChange(key: string, value: string) {
-		internalFilters = { ...internalFilters, [key]: value };
+		internalFilters = updateFilters(internalFilters, key, value);
 		onFilter?.(internalFilters);
 	}
 
@@ -298,12 +283,7 @@
 
 	// Handle column visibility toggle
 	function toggleColumn(key: string) {
-		if (hiddenColumns.has(key)) {
-			hiddenColumns.delete(key);
-		} else {
-			hiddenColumns.add(key);
-		}
-		hiddenColumns = hiddenColumns; // Trigger reactivity
+		hiddenColumns = toggleHiddenColumn(hiddenColumns, key);
 	}
 
 	// Handle export to CSV
@@ -338,16 +318,7 @@
 
 	// Grid template columns
 	function getColumnWidth(col: DataTableColumn<T>): string {
-		// If explicit width is set, use it (but wrap in minmax if minWidth is also set)
-		if (col.width) {
-			if (col.minWidth) {
-				return `minmax(${col.minWidth}, ${col.width})`;
-			}
-			return col.width;
-		}
-		// Default: flexible column with minimum width
-		const minWidth = col.minWidth ?? "100px";
-		return `minmax(${minWidth}, 1fr)`;
+		return getColumnWidthValue(col);
 	}
 
 	let gridColumns = $derived(
