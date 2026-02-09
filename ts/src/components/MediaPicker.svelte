@@ -37,6 +37,10 @@
     runUploadFlow,
     uploadMediaWithKnownHash
   } from "./media-picker/upload-flow";
+  import {
+    loadMediaBrowsePage,
+    mergeMediaBrowseItems
+  } from "./media-picker/browse";
   import MediaBrowseTab from "./media-picker/MediaBrowseTab.svelte";
   import MediaUploadDropzone from "./media-picker/MediaUploadDropzone.svelte";
   import MediaUploadStatusPanel from "./media-picker/MediaUploadStatusPanel.svelte";
@@ -147,15 +151,12 @@
     browseError = null;
 
     try {
-      const response = await listMediaPaginated({
-        cursor: cursor ?? undefined,
-        limit: 12,
+      const response = await loadMediaBrowsePage({
+        listMediaPaginated,
+        cursor
       });
-      if (cursor) {
-        browseItems = [...browseItems, ...response.data];
-      } else {
-        browseItems = response.data;
-      }
+
+      browseItems = mergeMediaBrowseItems(browseItems, response.items, cursor);
       browseNextCursor = response.nextCursor;
       browseHasMore = response.hasMore;
     } catch (e) {
