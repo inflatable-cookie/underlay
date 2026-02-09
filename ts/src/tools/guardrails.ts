@@ -27,6 +27,8 @@
 import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { getLineNumberFromIndex, getLineStarts } from './guardrails/line-utils.js';
+import { isSuppressed } from './guardrails/suppressions.js';
 
 // =============================================================================
 // Types
@@ -93,80 +95,6 @@ function toRelative(fileUrl: URL, rootUrl: URL): string {
 	const filePath = fileURLToPath(fileUrl);
 	const rootPath = fileURLToPath(rootUrl);
 	return path.relative(rootPath, filePath);
-}
-
-// =============================================================================
-// Line Number Tracking
-// =============================================================================
-
-function getLineStarts(text: string): number[] {
-	const starts = [0];
-
-	for (let i = 0; i < text.length; i++) {
-		if (text.charCodeAt(i) === 10) starts.push(i + 1);
-	}
-
-	return starts;
-}
-
-function getLineNumberFromIndex(lineStarts: number[], index: number): number {
-	// 1-based line number
-	let low = 0;
-	let high = lineStarts.length - 1;
-
-	while (low <= high) {
-		const mid = (low + high) >> 1;
-
-		if (lineStarts[mid] <= index) {
-			low = mid + 1;
-		} else {
-			high = mid - 1;
-		}
-	}
-
-	return high + 1;
-}
-
-function getLineText(text: string, lineStarts: number[], lineNumber: number): string {
-	const start = lineStarts[lineNumber - 1] ?? 0;
-	const end = lineStarts[lineNumber] ? lineStarts[lineNumber] - 1 : text.length;
-	return text.slice(start, end);
-}
-
-// =============================================================================
-// Suppression Detection
-// =============================================================================
-
-function hasSuppression(lineText: string, directive: 'line' | 'next-line', ruleIds: string[]): boolean {
-	const pattern = new RegExp(`\\bguardrails-disable-${directive}\\b([^\\n]*)`);
-	const match = lineText.match(pattern);
-	if (!match) return false;
-
-	const raw = (match[1] ?? '').trim();
-
-	// If no rule is specified, treat it as disabling everything for that line.
-	if (!raw) return true;
-
-	const tokens = raw.split(/[\s,]+/).filter(Boolean);
-
-	for (const token of tokens) {
-		if (token === 'all') return true;
-		if (ruleIds.includes(token)) return true;
-	}
-
-	return false;
-}
-
-function isSuppressed(text: string, lineStarts: number[], index: number, ruleIds: string[]): boolean {
-	const lineNumber = getLineNumberFromIndex(lineStarts, index);
-
-	const currentLine = getLineText(text, lineStarts, lineNumber);
-	if (hasSuppression(currentLine, 'line', ruleIds)) return true;
-
-	const prevLine = lineNumber > 1 ? getLineText(text, lineStarts, lineNumber - 1) : '';
-	if (hasSuppression(prevLine, 'next-line', ruleIds)) return true;
-
-	return false;
 }
 
 // =============================================================================
