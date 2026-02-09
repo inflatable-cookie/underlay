@@ -29,6 +29,7 @@
 import { writable, derived, get, type Readable, type Writable } from "svelte/store";
 import { createNoopOperation, withSetValue, withoutSetValue } from "./optimistic/helpers";
 export { createOptimisticCounter, type OptimisticCounter } from "./optimistic/counter";
+export { createOptimisticToggle, type OptimisticToggle } from "./optimistic/toggle";
 
 // ============================================================================
 // Types
@@ -80,16 +81,6 @@ export interface OptimisticList<T extends { id: string }> extends Readable<T[]> 
 	isPending: Readable<(id: string) => boolean>;
 	/** Derived store: get all pending item IDs */
 	pendingIds: Readable<Set<string>>;
-}
-
-/** An optimistic toggle store for boolean values */
-export interface OptimisticToggle extends Readable<boolean> {
-	/** Toggle the value optimistically */
-	toggle: () => OptimisticOperation;
-	/** Set the value optimistically */
-	set: (value: boolean) => OptimisticOperation;
-	/** Whether there's a pending operation */
-	pending: Readable<boolean>;
 }
 
 /** Options for createOptimisticValue */
@@ -271,80 +262,6 @@ export function createOptimisticList<T extends { id: string }>(
 		set,
 		isPending,
 		pendingIds
-	};
-}
-
-// ============================================================================
-// createOptimisticToggle
-// ============================================================================
-
-/**
- * Create an optimistic toggle store for boolean values.
- *
- * @example
- * ```typescript
- * const liked = createOptimisticToggle(false);
- *
- * async function toggleLike() {
- *   const { confirm, rollback } = liked.toggle();
- *
- *   try {
- *     await api.posts.toggleLike(postId);
- *     confirm();
- *   } catch {
- *     rollback();
- *     showToast({ message: 'Failed to update like', type: 'error' });
- *   }
- * }
- * ```
- */
-export function createOptimisticToggle(initial: boolean = false): OptimisticToggle {
-	const store: Writable<boolean> = writable(initial);
-	const pending: Writable<boolean> = writable(false);
-
-	function toggle(): OptimisticOperation {
-		const previous = get(store);
-		store.set(!previous);
-		pending.set(true);
-
-		return {
-			confirm: () => {
-				pending.set(false);
-			},
-			rollback: () => {
-				store.set(previous);
-				pending.set(false);
-			}
-		};
-	}
-
-	function set(value: boolean): OptimisticOperation {
-		const previous = get(store);
-
-		if (previous === value) {
-			// No change needed
-			return createNoopOperation();
-		}
-
-		store.set(value);
-		pending.set(true);
-
-		return {
-			confirm: () => {
-				pending.set(false);
-			},
-			rollback: () => {
-				store.set(previous);
-				pending.set(false);
-			}
-		};
-	}
-
-	return {
-		subscribe: store.subscribe,
-		toggle,
-		set,
-		pending: { subscribe: pending.subscribe }
 	};
 }
 
