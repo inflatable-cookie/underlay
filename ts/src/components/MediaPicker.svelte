@@ -20,7 +20,6 @@
    * ```
    */
   import {
-    computeFileHash,
     validateFile,
     type PaginatedResponse,
     type PaginationParams,
@@ -34,7 +33,10 @@
     type FinaliseUploadRequest,
     type FinaliseUploadResponse,
   } from "../patterns/index.js";
-  import { uploadNewMedia } from "./media-picker/upload";
+  import {
+    runUploadFlow,
+    uploadMediaWithKnownHash
+  } from "./media-picker/upload-flow";
   import MediaBrowseTab from "./media-picker/MediaBrowseTab.svelte";
   import MediaUploadDropzone from "./media-picker/MediaUploadDropzone.svelte";
   import MediaUploadStatusPanel from "./media-picker/MediaUploadStatusPanel.svelte";
@@ -215,21 +217,34 @@
   async function startUpload() {
     if (!selectedFile) return;
 
-    uploadStep = "checking";
     uploadError = null;
 
     try {
-      fileHash = await computeFileHash(selectedFile);
+      const result = await runUploadFlow({
+        file: selectedFile,
+        maxFileSize,
+        checkDuplicate,
+        createMedia,
+        initiateUpload,
+        finaliseUpload,
+        onStep: (stage) => {
+          uploadStep = stage;
+        },
+        onProgress: (percent) => {
+          uploadProgress = percent;
+        }
+      });
 
-      const duplicateCheck = await checkDuplicate(fileHash);
+      fileHash = result.fileHash;
 
-      if (duplicateCheck.exists && duplicateCheck.media) {
-        duplicateMedia = duplicateCheck.media;
+      if (result.kind === "duplicate") {
+        duplicateMedia = result.duplicateMedia;
         uploadStep = "duplicate";
         return;
       }
 
-      await proceedWithUpload();
+      createdMedia = result.createdMedia;
+      uploadStep = "complete";
     } catch (e) {
       console.error("Upload failed", e);
       uploadError = e instanceof Error ? e.message : "Upload failed";
@@ -242,14 +257,14 @@
 
     try {
       uploadProgress = 0;
-      createdMedia = await uploadNewMedia({
+      createdMedia = await uploadMediaWithKnownHash({
         file: selectedFile,
         fileHash,
         maxFileSize,
         createMedia,
         initiateUpload,
         finaliseUpload,
-        onStage: (stage) => {
+        onStep: (stage) => {
           uploadStep = stage;
         },
         onProgress: (percent) => {
