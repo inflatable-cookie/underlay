@@ -28,6 +28,7 @@
 
 import { writable, derived, get, type Readable, type Writable } from "svelte/store";
 import { createNoopOperation, withSetValue, withoutSetValue } from "./optimistic/helpers";
+export { createOptimisticCounter, type OptimisticCounter } from "./optimistic/counter";
 
 // ============================================================================
 // Types
@@ -407,100 +408,6 @@ export function createOptimisticValue<T>(
 
 	return {
 		subscribe: store.subscribe,
-		set,
-		pending: { subscribe: pending.subscribe }
-	};
-}
-
-// ============================================================================
-// createOptimisticCounter
-// ============================================================================
-
-/** An optimistic counter store for numeric values with increment/decrement */
-export interface OptimisticCounter extends Readable<number> {
-	/** Increment the counter by amount (default: 1) */
-	increment: (amount?: number) => OptimisticOperation;
-	/** Decrement the counter by amount (default: 1) */
-	decrement: (amount?: number) => OptimisticOperation;
-	/** Set the counter to a specific value */
-	set: (value: number) => OptimisticUpdateOperation<number>;
-	/** Whether there's a pending operation */
-	pending: Readable<boolean>;
-}
-
-/**
- * Create an optimistic counter store for numeric values.
- *
- * Useful for like counts, vote counts, etc.
- *
- * @example
- * ```typescript
- * const likeCount = createOptimisticCounter(42);
- *
- * async function like() {
- *   const { confirm, rollback } = likeCount.increment();
- *
- *   try {
- *     const { count } = await api.posts.like(postId);
- *     confirm(count); // Use server's count
- *   } catch {
- *     rollback();
- *   }
- * }
- * ```
- */
-export function createOptimisticCounter(initial: number = 0): OptimisticCounter {
-	const store: Writable<number> = writable(initial);
-	const pending: Writable<boolean> = writable(false);
-
-	function increment(amount: number = 1): OptimisticOperation {
-		const previous = get(store);
-		store.set(previous + amount);
-		pending.set(true);
-
-		return {
-			confirm: () => {
-				pending.set(false);
-			},
-			rollback: () => {
-				store.set(previous);
-				pending.set(false);
-			}
-		};
-	}
-
-	function decrement(amount: number = 1): OptimisticOperation {
-		return increment(-amount);
-	}
-
-	function set(value: number): OptimisticUpdateOperation<number> {
-		const previous = get(store);
-
-		if (previous === value) {
-			return createNoopOperation();
-		}
-
-		store.set(value);
-		pending.set(true);
-
-		return {
-			confirm: (realValue?: number) => {
-				if (realValue !== undefined) {
-					store.set(realValue);
-				}
-				pending.set(false);
-			},
-			rollback: () => {
-				store.set(previous);
-				pending.set(false);
-			}
-		};
-	}
-
-	return {
-		subscribe: store.subscribe,
-		increment,
-		decrement,
 		set,
 		pending: { subscribe: pending.subscribe }
 	};
