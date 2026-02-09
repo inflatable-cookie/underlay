@@ -50,6 +50,12 @@
 
 <script lang="ts">
   import LogEntryItem from "./log-list/LogEntryItem.svelte";
+  import {
+    formatDefaultAction,
+    formatDefaultResourceType,
+    getActionVariant,
+    getDefaultActionType
+  } from "./log-list/helpers";
   import LogListPagination from "./log-list/LogListPagination.svelte";
   import LogListStatus from "./log-list/LogListStatus.svelte";
   import LogListToolbar from "./log-list/LogListToolbar.svelte";
@@ -143,61 +149,19 @@
   const totalPages = $derived(total ? Math.ceil(total / pageSize) : 1);
   const showPagination = $derived(total !== undefined && total > pageSize);
 
-  // Default action type mapping
-  function defaultGetActionType(action: string): LogActionType {
-    const normalized = action.toLowerCase();
-    if (normalized.includes("create")) return "create";
-    if (normalized.includes("update") || normalized.includes("edit")) return "update";
-    if (normalized.includes("delete") || normalized.includes("remove")) return "delete";
-    if (normalized.includes("restore") || normalized.includes("recover")) return "restore";
-    if (normalized.includes("upload")) return "upload";
-    if (normalized === "login" || normalized === "sign_in") return "login";
-    if (normalized === "logout" || normalized === "sign_out") return "logout";
-    if (
-      normalized.includes("role") ||
-      normalized.includes("suspend") ||
-      normalized.includes("permission")
-    )
-      return "security";
-    return "other";
-  }
-
   function getActionType(action: string): LogActionType {
-    return (customGetActionType ?? defaultGetActionType)(action);
-  }
-
-  // Badge variant mapping
-  type BadgeVariant = "default" | "success" | "warning" | "danger" | "info" | "muted";
-
-  function getActionVariant(actionType: LogActionType): BadgeVariant {
-    switch (actionType) {
-      case "create":
-      case "restore":
-        return "success";
-      case "delete":
-        return "danger";
-      case "update":
-      case "upload":
-        return "info";
-      case "login":
-      case "logout":
-        return "muted";
-      case "security":
-        return "warning";
-      default:
-        return "default";
-    }
+    return (customGetActionType ?? getDefaultActionType)(action);
   }
 
   // Formatting functions
   function formatAction(action: string): string {
     if (customFormatAction) return customFormatAction(action);
-    return action.replace(/_/g, " ");
+    return formatDefaultAction(action);
   }
 
   function formatResourceType(resourceType: string): string {
     if (customFormatResourceType) return customFormatResourceType(resourceType);
-    return resourceType.replace(/_/g, " ");
+    return formatDefaultResourceType(resourceType);
   }
 
   function handlePrevPage() {
