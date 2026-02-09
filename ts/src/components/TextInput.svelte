@@ -5,7 +5,11 @@
   import TextInputField from "./text-input/TextInputField.svelte";
   import { createStableId } from "../patterns/dom";
   import {
-    hasInputValue,
+    registerFormValidationField,
+    updateFormValidationField,
+    type FormValidationContext
+  } from "./text-input/form-validation";
+  import {
     isValidationStatusValid,
     type InputValidationStatus
   } from "./text-input/validation-state";
@@ -69,11 +73,7 @@
   }: Props = $props();
 
   // Get FormValidationProvider context if present
-  const formValidation = getContext<{
-    registerField: (id: string, required: boolean, hasValue: boolean, validationStatus: string, isValidationValid: boolean) => void;
-    unregisterField: (id: string) => void;
-    updateField: (id: string, hasValue: boolean, validationStatus?: string, isValidationValid?: boolean) => void;
-  } | undefined>("formValidation");
+  const formValidation = getContext<FormValidationContext | undefined>("formValidation");
 
   // Generate stable ID for form validation tracking
   // Note: fieldId intentionally captures id once - we want a stable ID for the lifetime of the component
@@ -134,10 +134,9 @@
   // Register with FormValidationProvider on mount
   onMount(() => {
     if (formValidation) {
-      const hasValue = untrack(() => hasInputValue(value));
-      const isValid = untrack(() => isValidationStatusValid(validationStatus));
       const status = untrack(() => validationStatus);
-      formValidation.registerField(fieldId, isRequired, hasValue, status, isValid);
+      const inputValue = untrack(() => value);
+      registerFormValidationField(formValidation, fieldId, isRequired, inputValue, status);
 
       // Initialize previous values
       prevValue = untrack(() => value);
@@ -152,9 +151,7 @@
   // Update FormValidationProvider when value or validation actually changes
   $effect(() => {
     if (formValidation && (value !== prevValue || validationStatus !== prevValidationStatus)) {
-      const hasValue = hasInputValue(value);
-      const isValid = isValidationStatusValid(validationStatus);
-      formValidation.updateField(fieldId, hasValue, validationStatus, isValid);
+      updateFormValidationField(formValidation, fieldId, value, validationStatus);
 
       prevValue = value;
       prevValidationStatus = validationStatus;
