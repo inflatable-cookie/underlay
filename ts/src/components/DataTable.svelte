@@ -120,7 +120,7 @@
 	import EmptyState from "./data-table/EmptyState.svelte";
 	import LoadingRow from "./data-table/LoadingRow.svelte";
 	import ToolbarControls from "./data-table/ToolbarControls.svelte";
-	import FilterCell from "./data-table/FilterCell.svelte";
+	import TableHeader from "./data-table/TableHeader.svelte";
 	import PaginationFooter from "./data-table/PaginationFooter.svelte";
 	import RowActionsCell from "./data-table/RowActionsCell.svelte";
 
@@ -333,78 +333,19 @@
 		</div>
 	{/if}
 
-	<!-- Header -->
-	<div class="table-header" role="rowgroup">
-		<div class="table-row header-row" role="row">
-			{#if selectable}
-				<div class="table-cell checkbox-cell" role="columnheader">
-					<input
-						type="checkbox"
-						checked={allSelected}
-						indeterminate={someSelected}
-						onchange={handleSelectAll}
-						aria-label="Select all rows"
-					/>
-				</div>
-			{/if}
-
-			{#each visibleColumns as column}
-				<div
-					class="table-cell header-cell"
-					class:sortable={column.sortable}
-					class:hide-mobile={column.hideOnMobile}
-					class:align-center={column.align === "center"}
-					class:align-right={column.align === "right"}
-					role="columnheader"
-					aria-sort={sort?.key === column.key ? (sort.direction === "asc" ? "ascending" : "descending") : undefined}
-				>
-					{#if column.sortable}
-						<button type="button" class="sort-button" onclick={() => handleSort(column)}>
-							<span>{column.label}</span>
-							<span class="sort-icon" class:active={sort?.key === column.key}>
-								{#if sort?.key === column.key}
-									{sort.direction === "asc" ? "↑" : "↓"}
-								{:else}
-									↕
-								{/if}
-							</span>
-						</button>
-					{:else}
-						{column.label}
-					{/if}
-				</div>
-			{/each}
-
-			{#if hasActions}
-				<div class="table-cell header-cell actions-header" role="columnheader">
-					<span class="sr-only">Actions</span>
-				</div>
-			{/if}
-		</div>
-
-		<!-- Filter row -->
-		{#if visibleColumns.some((c) => c.filterable)}
-			<div class="table-row filter-row" role="row">
-				{#if selectable}
-					<div class="table-cell" role="cell"></div>
-				{/if}
-
-				{#each visibleColumns as column}
-					<div class="table-cell filter-cell" class:hide-mobile={column.hideOnMobile} role="cell">
-						<FilterCell
-							{column}
-							value={internalFilters[column.key] ?? ""}
-							onChange={(value) => handleFilterChange(column.key, value)}
-						/>
-					</div>
-				{/each}
-
-				{#if hasActions}
-					<div class="table-cell" role="cell"></div>
-				{/if}
-			</div>
-		{/if}
-	</div>
+	<TableHeader
+		{stickyHeader}
+		{selectable}
+		{allSelected}
+		{someSelected}
+		{visibleColumns}
+		{hasActions}
+		{sort}
+		{internalFilters}
+		onSort={handleSort}
+		onSelectAll={handleSelectAll}
+		onFilterChange={handleFilterChange}
+	/>
 
 	<!-- Body -->
 	<div class="table-body" role="rowgroup">
@@ -533,29 +474,12 @@
 		gap: 0.5rem;
 	}
 
-	.table-header,
 	.table-body {
 		display: contents;
 	}
 
 	.table-row {
 		display: contents;
-	}
-
-	/* Row styling applied to cells since rows use display:contents */
-	.header-row > .table-cell {
-		background: var(--dt-header-bg);
-		font-weight: 600;
-		border-bottom: var(--dt-border);
-		font-size: 0.75rem;
-		text-transform: uppercase;
-		letter-spacing: 0.05em;
-		color: var(--underlay-color-text-muted, var(--color-text-muted, #64748b));
-	}
-
-	.filter-row > .table-cell {
-		background: var(--dt-header-bg);
-		border-bottom: var(--dt-border);
 	}
 
 	/* Data rows - border on cells */
@@ -630,10 +554,6 @@
 		justify-content: center;
 	}
 
-	.header-cell {
-		font-weight: 600;
-	}
-
 	.align-center {
 		text-align: center;
 		justify-content: center;
@@ -644,72 +564,11 @@
 		justify-content: flex-end;
 	}
 
-	.sort-button {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.25rem;
-		background: none;
-		border: none;
-		padding: 0;
-		font: inherit;
-		font-weight: 600;
-		cursor: pointer;
-		color: inherit;
-	}
-
-	.sort-button:hover {
-		color: var(--color-primary, #3b82f6);
-	}
-
-	.sort-icon {
-		opacity: 0.4;
-		font-size: 0.75em;
-	}
-
-	.sort-icon.active {
-		opacity: 1;
-		color: var(--color-primary, #3b82f6);
-	}
-
-	.filter-cell :global(.underlay-input),
-	.filter-cell :global(.underlay-input-wrapper) {
-		width: 100%;
-		font-size: inherit;
-	}
-
-	.filter-cell :global(.underlay-input) {
-		padding: 0.25rem 0.5rem;
-	}
-
-	.filter-cell :global(.underlay-select-trigger) {
-		min-width: 0;
-		padding: 0.25rem 0.5rem;
-		font-size: inherit;
-	}
-
 	.actions-cell {
 		display: flex;
 		align-items: center;
 		justify-content: flex-end;
 		gap: 0.5rem;
-	}
-
-	.sticky-header .header-row {
-		position: sticky;
-		top: 0;
-		z-index: 10;
-	}
-
-	.sr-only {
-		position: absolute;
-		width: 1px;
-		height: 1px;
-		padding: 0;
-		margin: -1px;
-		overflow: hidden;
-		clip: rect(0, 0, 0, 0);
-		white-space: nowrap;
-		border: 0;
 	}
 
 	@media (max-width: 900px) {
