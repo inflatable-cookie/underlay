@@ -1,0 +1,57 @@
+# 180 - Admin Workflow Playbook
+
+A practical "start here" playbook for building admin functionality with Underlay.
+
+## When To Use This
+
+Use this guide when the request is:
+- "Build admin interface for X"
+- "Add admin flow for X"
+- "Extend admin area with list/detail/edit"
+
+## Default Implementation Flow
+
+1. Define scope and entity model
+- Confirm entity boundaries and whether this is standalone CRUD or nested under a parent.
+- Identify whether ordering, trash, or relation picking is required.
+- Set expected file/module boundaries up front using `docs/guides/020-project-structure.md` (anti-god-file policy).
+
+2. Choose the base recipe
+- Standalone CRUD: `docs/patterns/crud-admin-interface.md`
+- Nested children: `docs/patterns/nested-entity-management.md`
+- Live field validation: `docs/patterns/live-validation-endpoint.md`
+
+3. Add common Dairy-scale extensions
+- Autonomous lists: `docs/patterns/autonomous-admin-list.md`
+- Reorder: `docs/patterns/reorderable-collections.md`
+- Trash lifecycle: `docs/patterns/trash-lifecycle.md`
+- Context navigation: `docs/patterns/context-preserving-navigation.md`
+
+4. Build backend -> client -> UI in order
+- DB/data functions, then API handlers/routes, then TS client commands/types, then Svelte pages/components.
+- Keep response/error shapes consistent with `docs/guides/070-api-handlers.md`.
+
+5. Apply app shell/runtime requirements (SPA admin)
+- Follow `docs/guides/110-admin.md` for auth runtime setup, toasts, and Nightfire strategy configuration.
+
+6. Verify with minimum testing matrix
+- Use the per-recipe matrix in `docs/guides/185-recipe-map-and-testing-matrix.md`.
+
+7. Sync docs and index
+- Update `docs/patterns/000-index.md` and `docs/guides/200-project-sync.md` when introducing/altering patterns.
+
+## Decision Shortcuts
+
+- If the list is large: always use pagination controller.
+- If users can reorder: add explicit reorder mode and endpoint.
+- If deletes should be recoverable: implement trash + restore + purge.
+- If create/edit comes from multiple entry points: use navigation context helpers.
+- If related entities are selected often: use relation selector with inline create.
+
+## Exit Criteria
+
+A feature is complete when:
+- All layers are implemented (DB/API/client/UI)
+- Relevant recipe checklist items are complete
+- Minimum tests pass
+- Docs are synced using the checklist in `docs/guides/200-project-sync.md`

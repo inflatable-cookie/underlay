@@ -342,6 +342,75 @@ See [100-frontend-web.md](./100-frontend-web.md) and [110-admin.md](./110-admin.
 
 ---
 
+## Phase 6.5: Structure and Contracts Guardrails
+
+Apply these guardrails before adding new feature code.
+
+### Refactor Triggers and Budget
+
+Mandatory refactor in the same PR when any trigger is hit:
+
+- A changed file crosses warning threshold in `020-project-structure.md`.
+- You are adding a second distinct workflow to an existing file.
+- A page/route file now mixes orchestration with business rules.
+- A single PR adds more than 350 lines to one file.
+
+Refactor budget requirement:
+
+- Reserve at least 15% of implementation effort for structure cleanup/splitting.
+- If a temporary exception is needed, add a tracked follow-up task before merge.
+
+### Cross-Repo Contract Checklist
+
+When changing backend behavior, do not merge until all impacted layers are aligned:
+
+- [ ] API request/response shape updated and documented.
+- [ ] TypeScript client types updated.
+- [ ] Client command(s) updated for paths/query/envelope shape.
+- [ ] UI load/submit/error states updated for new behavior.
+- [ ] Recipe map/docs updated where implementation pattern changed.
+
+### Naming Conventions by Layer
+
+| Layer | Convention |
+|---|---|
+| Rust routes | `snake_case` modules split by domain and action (`list.rs`, `get.rs`, `mutations/create.rs`) |
+| DB/query modules | `snake_case` grouped by domain concern (`learning/module_queries.rs`) |
+| TS commands | domain-first folders with `queries.ts`, `mutations.ts`, `validation.ts` |
+| TS types | `<domain>-types.ts` |
+| Svelte components | `PascalCase.svelte` |
+| Route folders/files | SvelteKit defaults (`+page.svelte`, `+page.ts`) with feature-local `_components`, `_state`, `_api` |
+
+### State Management Rules (Svelte)
+
+- Use component-local state for ephemeral UI state (dialog open, hover, draft input).
+- Use URL query params for shareable/filter/sort/pagination state.
+- Use feature-local store modules for state shared across sibling components in one route.
+- Avoid global stores unless state is truly app-wide (auth/session/theme).
+- Keep data fetch and transform logic out of leaf presentational components.
+
+### Pattern Deviation (ADR Lite)
+
+If you intentionally diverge from an Underlay recipe, add an ADR-lite note in your docs repo using this template:
+
+```md
+# ADR-Lite: <short-title>
+
+## Context
+What recipe/pattern was expected and why this case differs.
+
+## Decision
+What was implemented instead.
+
+## Consequences
+Tradeoffs, risks, and operational impact.
+
+## Rollback Plan
+How to return to standard pattern later, and trigger for doing it.
+```
+
+---
+
 ## Phase 7: Verification
 
 After completing the sync:
@@ -354,6 +423,37 @@ After completing the sync:
 - [ ] API endpoints return correct response shapes
 - [ ] Error responses include proper `error.code` and `error.message`
 - [ ] Validation errors include `error.fieldErrors`
+- [ ] Cross-repo contract checklist (Phase 6.5) completed for any backend/client/UI change
+- [ ] No changed file exceeds hard limits in `020-project-structure.md`
+
+---
+
+## Phase 8: Documentation Sync Definition of Done
+
+Use this section as the required closeout checklist after implementing or updating any pattern.
+
+### Always Update
+
+- [ ] `docs/patterns/000-index.md` includes the new or changed recipe and prompt.
+- [ ] `docs/guides/README.md` reading order includes any new guide.
+- [ ] Changed APIs/components are reflected in the relevant guide and recipe snippets.
+
+### If Work Affects Admin Flows
+
+- [ ] `docs/guides/180-admin-workflow-playbook.md` still matches the implementation sequence.
+- [ ] `docs/guides/185-recipe-map-and-testing-matrix.md` still points to valid Acowtancy references.
+- [ ] Minimum testing expectations in `docs/guides/185-recipe-map-and-testing-matrix.md` are met.
+
+### If Work Affects Tooling/Runtime/Upgrades
+
+- [ ] `docs/guides/190-upgrade-compatibility.md` is updated for any new constraints, versions, or breakage signals.
+- [ ] Command examples use current tooling (`bun` for JS/TS repositories).
+
+### Required Validation Before Merge
+
+- [ ] All referenced file paths in docs exist.
+- [ ] All internal guide links resolve.
+- [ ] Sample commands run as written in at least one consuming app.
 
 ---
 

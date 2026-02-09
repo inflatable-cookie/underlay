@@ -71,6 +71,24 @@ Use this checklist to verify your project is properly set up.
 - [ ] Architecture documented
 - [ ] API documented
 
+## Code Organization
+
+- [ ] No files exceed hard limits from `020-project-structure.md`
+- [ ] Large features split by domain and workflow (not appended into existing god files)
+- [ ] Route/page files remain orchestration-focused
+- [ ] Business logic is extracted into db/service/helper modules
+- [ ] Tests are split/co-located to match feature structure
+
+## Contract and Quality Gates
+
+- [ ] Cross-repo contract checklist completed for backend/client/frontend changes
+- [ ] Naming conventions by layer are consistent (`200-project-sync.md`)
+- [ ] State management follows local vs URL vs store rules (`200-project-sync.md`)
+- [ ] Error handling follows taxonomy and UI behavior map (`185-recipe-map-and-testing-matrix.md`)
+- [ ] Admin list performance guardrails are applied where relevant
+- [ ] Risk-based testing depth matches change type (`185-recipe-map-and-testing-matrix.md`)
+- [ ] Pattern deviations are documented with ADR-lite notes
+
 ## Git
 
 - [ ] Git repository initialized

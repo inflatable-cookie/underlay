@@ -372,6 +372,111 @@ documentation/
 └── reports/
 ```
 
+## Code Organization and Anti-God-File Policy
+
+Use this policy from day one. Do not wait for files to become painful to navigate.
+
+### File Size Thresholds
+
+| File Type | Warning Threshold | Hard Limit | Action |
+|---|---|---|---|
+| Rust (`.rs`) | 500 lines | 900 lines | Split modules before merge (see `041-rust-module-splitting.md`) |
+| TypeScript (`.ts`) | 300 lines | 500 lines | Split by domain responsibility and call site |
+| Svelte (`.svelte`) | 250 lines | 400 lines | Move logic to helpers/stores and split UI into child components |
+| SQL migration (`.sql`) | 250 lines | 400 lines | Split migration into focused steps/files when possible |
+
+If a file is under the hard limit but difficult to read, still split it. Cohesion matters more than line count.
+
+### Organization Rules (All Repos)
+
+1. One file should have one primary job.
+2. Group by feature/domain first, then by technical layer.
+3. Keep route handlers thin and push business logic into service/query modules.
+4. Keep UI pages orchestration-focused and push rendering into local feature components.
+5. Keep command files scoped to one domain entity or workflow.
+6. Co-locate tests with the unit being tested, or mirror structure in `tests/`.
+
+### Recommended Structure by Layer
+
+#### Rust API (`api-backend`)
+
+Prefer this split for each domain:
+
+```
+crates/api/src/routes/admin/<domain>/
+├── mod.rs                  # Router wiring only
+├── list.rs                 # List endpoint handlers
+├── get.rs                  # Single fetch handlers
+├── mutations/
+│   ├── create.rs
+│   ├── update.rs
+│   ├── delete.rs
+│   └── reorder.rs          # When needed
+└── validation.rs           # Live validation endpoints
+```
+
+Query and mutation logic belongs in `crates/db/src/<domain>/...`, not in route files.
+
+#### TypeScript Client (`api-client`)
+
+Split commands by feature domain:
+
+```
+src/
+├── commands/
+│   └── <domain>/
+│       ├── queries.ts
+│       ├── mutations.ts
+│       ├── validation.ts
+│       └── reorder.ts
+├── types/
+│   └── <domain>-types.ts
+└── utils/
+    └── http-client.ts
+```
+
+Avoid monolithic `*-commands.ts` files that accumulate unrelated domains.
+
+#### SvelteKit Admin/Web
+
+For each feature route, split page shell from feature implementation:
+
+```
+src/routes/(app)/<domain>/<feature>/
+├── +page.ts
+├── +page.svelte            # Orchestration only
+├── _components/
+│   ├── <Feature>List.svelte
+│   ├── <Feature>Form.svelte
+│   └── <Feature>Toolbar.svelte
+├── _state/
+│   └── <feature>-store.ts
+└── _api/
+    └── <feature>-client.ts # Optional view-specific adapters
+```
+
+Move business logic out of `+page.svelte` once it starts mixing fetch, transform, and UI concerns.
+
+### Split Triggers (Refactor Immediately)
+
+Split a file when any of these are true:
+
+- More than one distinct workflow lives in the same file (for example: list + edit + reorder + trash).
+- Tests are more than 30% of file size and reduce readability.
+- A Svelte page has multiple modal/dialog flows and action handlers.
+- A route/controller contains both HTTP wiring and domain rules.
+- Reviewing the file requires frequent jumping across distant sections.
+
+### Pull Request Gate
+
+Before merging:
+
+- [ ] No changed file exceeds hard limits above.
+- [ ] New features were added as new files/modules, not appended to an existing god file.
+- [ ] Route/page files remain orchestration-focused.
+- [ ] Tests were added/updated in the same feature structure.
+- [ ] If a temporary exception is needed, a follow-up split task is documented before merge.
+
 ---
 
 ## Next Steps

@@ -6,6 +6,9 @@ Quick reference for implementation patterns. Use this to find the right approach
 
 1. **Composite Recipes** - Full system implementations. Start here for "build X" tasks.
 2. **Atomic Patterns** - Individual techniques. Use when you need a specific helper.
+3. **Playbook + Testing Matrix** - Use the implementation flow and minimum tests in:
+   - [180-admin-workflow-playbook.md](../guides/180-admin-workflow-playbook.md)
+   - [185-recipe-map-and-testing-matrix.md](../guides/185-recipe-map-and-testing-matrix.md)
 
 ---
 
