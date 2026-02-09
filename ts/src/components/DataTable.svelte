@@ -93,10 +93,6 @@
 <script lang="ts" generics="T extends object">
 	import type { Snippet } from "svelte";
 	import {
-		getRowActionHref,
-		getVisibleRowActions
-	} from "./data-table/actions";
-import {
 		applySelectAll,
 		applySelectRow,
 		emitLimitChange,
@@ -106,10 +102,14 @@ import {
 		runRowAction
 	} from "./data-table/interactions";
 	import {
-		getCellDisplayValue,
-		getColumnWidthValue,
 		toggleHiddenColumn,
 	} from "./data-table/state";
+	import {
+		buildGridColumns,
+		getRenderedActionHref,
+		getRenderedCellValue,
+		getRenderedRowActions
+	} from "./data-table/render";
 	import Skeleton from "./Skeleton.svelte";
 	import DropdownMenu from "./DropdownMenu.svelte";
 	import Select from "./Select.svelte";
@@ -240,21 +240,6 @@ import {
 	let allSelected = $derived(data.length > 0 && selected.length === data.length);
 	let someSelected = $derived(selected.length > 0 && selected.length < data.length);
 
-	// Get cell value from row
-	function getCellValue(row: T, column: DataTableColumn<T>): string {
-		return getCellDisplayValue(row, column);
-	}
-
-	// Get actions for a row
-	function getRowActions(row: T): DataTableAction<T>[] {
-		return getVisibleRowActions(row, actions) as DataTableAction<T>[];
-	}
-
-	// Get action href
-	function getActionHref(action: DataTableAction<T>, row: T): string | undefined {
-		return getRowActionHref(action, row);
-	}
-
 	// Handle sort
 	function handleSort(column: DataTableColumn<T>) {
 		if (!column.sortable) return;
@@ -303,19 +288,8 @@ import {
 		runRowAction(action, row, onAction, confirm);
 	}
 
-	// Grid template columns
-	function getColumnWidth(col: DataTableColumn<T>): string {
-		return getColumnWidthValue(col);
-	}
-
 	let gridColumns = $derived(
-		[
-			selectable ? "40px" : null,
-			...visibleColumns.map(getColumnWidth),
-			actions.length > 0 || typeof actions === "function" ? "80px" : null
-		]
-			.filter(Boolean)
-			.join(" ")
+		buildGridColumns(selectable, visibleColumns, actions)
 	);
 </script>
 
@@ -531,26 +505,26 @@ import {
 							role="cell"
 						>
 							{#if cell}
-								{@render cell({ column, row, value: getCellValue(row, column) })}
+								{@render cell({ column, row, value: getRenderedCellValue(row, column) })}
 							{:else}
-								{getCellValue(row, column)}
+								{getRenderedCellValue(row, column)}
 							{/if}
 						</div>
 					{/each}
 
 					{#if actions.length > 0 || typeof actions === "function"}
 						<div class="table-cell actions-cell" role="cell">
-							{#if getRowActions(row).length === 1}
-								{#each [getRowActions(row)[0]] as action}
+							{#if getRenderedRowActions(row, actions).length === 1}
+								{#each [getRenderedRowActions(row, actions)[0]] as action}
 									{#if action.href}
-										<a href={getActionHref(action, row)} class="action-link">{action.label}</a>
+										<a href={getRenderedActionHref(action, row)} class="action-link">{action.label}</a>
 									{:else}
 										<button type="button" class="action-button" onclick={() => handleActionClick(action, row)}>
 											{action.label}
 										</button>
 									{/if}
 								{/each}
-							{:else if getRowActions(row).length > 1}
+							{:else if getRenderedRowActions(row, actions).length > 1}
 								<DropdownMenu>
 								{#snippet trigger()}
 									<svg
@@ -570,9 +544,9 @@ import {
 										<circle cx="12" cy="19" r="1" />
 									</svg>
 								{/snippet}
-									{#each getRowActions(row) as action}
+									{#each getRenderedRowActions(row, actions) as action}
 										{#if action.href}
-											<a href={getActionHref(action, row)} class="menu-item">{action.label}</a>
+											<a href={getRenderedActionHref(action, row)} class="menu-item">{action.label}</a>
 										{:else}
 											<button
 												type="button"
