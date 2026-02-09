@@ -127,6 +127,11 @@
 <script lang="ts">
 	import type { Snippet } from "svelte";
 	import { onDestroy } from "svelte";
+	import {
+		formatFileSize,
+		generateFileUploadId,
+		validateUploadFile
+	} from "./file-upload/helpers";
 
 	interface Props {
 		/** Accepted file types (e.g., "image/*", ".pdf,.doc") */
@@ -193,56 +198,6 @@
 		});
 	});
 
-	// Generate unique ID
-	function generateId(): string {
-		return `file-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
-	}
-
-	// Format file size
-	function formatSize(bytes: number): string {
-		if (bytes === 0) return "0 B";
-		const k = 1024;
-		const sizes = ["B", "KB", "MB", "GB"];
-		const i = Math.floor(Math.log(bytes) / Math.log(k));
-		return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
-	}
-
-	// Validate a single file
-	function validateFile(file: File): string | null {
-		// Check file size
-		if (file.size > maxSize) {
-			return `File too large. Maximum size is ${formatSize(maxSize)}`;
-		}
-
-		// Check file type if accept is specified
-		if (accept !== "*") {
-			const acceptedTypes = accept.split(",").map((t) => t.trim());
-			const fileType = file.type;
-			const fileExtension = `.${file.name.split(".").pop()?.toLowerCase()}`;
-
-			const isAccepted = acceptedTypes.some((type) => {
-				if (type.startsWith(".")) {
-					return fileExtension === type.toLowerCase();
-				}
-				if (type.endsWith("/*")) {
-					return fileType.startsWith(type.slice(0, -1));
-				}
-				return fileType === type;
-			});
-
-			if (!isAccepted) {
-				return `File type not accepted. Accepted types: ${accept}`;
-			}
-		}
-
-		// Custom validation
-		if (validate) {
-			return validate(file);
-		}
-
-		return null;
-	}
-
 	// Process files from input or drop
 	async function processFiles(fileList: FileList | null) {
 		if (!fileList || fileList.length === 0) return;
@@ -255,7 +210,12 @@
 		const filesToProcess = Array.from(fileList).slice(0, availableSlots);
 
 		for (const file of filesToProcess) {
-			const error = validateFile(file);
+			const error = validateUploadFile({
+				file,
+				maxSize,
+				accept,
+				validate
+			});
 
 			if (error) {
 				onError?.({ file, message: error });
@@ -276,7 +236,7 @@
 
 			const item: FileUploadItem = {
 				file: processedFile,
-				id: generateId(),
+				id: generateFileUploadId(),
 				progress: 0,
 				status: "pending",
 				originalFile
@@ -462,7 +422,7 @@
 						{accept.replace(/\./g, "").replace(/,/g, ", ")}
 					{/if}
 					{#if maxSize}
-						(max {formatSize(maxSize)})
+						(max {formatFileSize(maxSize)})
 					{/if}
 				</p>
 			</div>
@@ -489,7 +449,7 @@
 
 					<div class="file-info">
 						<span class="file-name">{item.file.name}</span>
-						<span class="file-size">{formatSize(item.file.size)}</span>
+						<span class="file-size">{formatFileSize(item.file.size)}</span>
 						{#if item.error}
 							<span class="file-error">{item.error}</span>
 						{/if}
