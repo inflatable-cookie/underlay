@@ -116,4 +116,11 @@
     color: var(--underlay-color-text-muted, var(--underlay-color-text-muted, #9ca3af));
     min-width: 0;
   }
+
+  @media (max-width: 480px) {
+    .underlay-list-card__title-actions :global(.underlay-pill) {
+      font-size: 0.5em;
+      padding: 0.2em 0.5em;
+    }
+  }
 </style>
