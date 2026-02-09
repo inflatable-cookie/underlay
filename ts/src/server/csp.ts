@@ -34,6 +34,7 @@ import {
   resolveCspConfig,
   resolveSecurityHeadersConfig
 } from "./csp-config";
+export { createCspResolveOptions } from "./csp-resolve";
 
 // ============================================================================
 // Types
@@ -377,51 +378,4 @@ export interface CspHandleOptions {
    * Defaults to sensible security headers.
    */
   securityHeaders?: SecurityHeadersConfig;
-}
-
-/**
- * Create resolve options for SvelteKit that inject the nonce.
- *
- * Use this with the `resolve` function in your handle hook.
- *
- * @param nonce - The nonce to inject
- * @param existingOptions - Any existing resolve options to merge
- * @returns Resolve options with nonce transformation
- *
- * @example
- * ```typescript
- * const nonce = generateNonce();
- * const response = await resolve(event, createCspResolveOptions(nonce, {
- *   filterSerializedResponseHeaders: (name) => name === "content-type"
- * }));
- * ```
- */
-export function createCspResolveOptions(
-  nonce: string,
-  existingOptions: {
-    transformPageChunk?: (input: { html: string; done: boolean }) => string | Promise<string>;
-    filterSerializedResponseHeaders?: (name: string, value: string) => boolean;
-    preload?: (input: { type: string; path: string }) => boolean;
-  } = {}
-): {
-  transformPageChunk: (input: { html: string; done: boolean }) => string | Promise<string>;
-  filterSerializedResponseHeaders?: (name: string, value: string) => boolean;
-  preload?: (input: { type: string; path: string }) => boolean;
-} {
-  const existingTransform = existingOptions.transformPageChunk;
-
-  return {
-    ...existingOptions,
-    transformPageChunk: async ({ html, done }) => {
-      // Replace the SvelteKit nonce placeholder
-      let transformed = html.replace(/%sveltekit\.nonce%/g, nonce);
-
-      // Apply any existing transform
-      if (existingTransform) {
-        transformed = await existingTransform({ html: transformed, done });
-      }
-
-      return transformed;
-    }
-  };
 }
