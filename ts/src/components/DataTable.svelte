@@ -115,6 +115,7 @@
 	import Select from "./Select.svelte";
 	import TextInput from "./TextInput.svelte";
 	import DateInput from "./DateInput.svelte";
+	import ToolbarControls from "./data-table/ToolbarControls.svelte";
 
 	interface Props {
 		/** Data rows */
@@ -308,40 +309,17 @@
 				{@render toolbarLeft?.()}
 			</div>
 			<div class="toolbar-right">
-				{#if showColumnToggle && hideableColumns.length > 0}
-					<div class="column-toggle">
-						<button
-							type="button"
-							class="toolbar-button"
-							onclick={() => (showColumnMenu = !showColumnMenu)}
-							aria-expanded={showColumnMenu}
-							aria-haspopup="true"
-						>
-							<span class="toolbar-icon">☰</span>
-							Columns
-						</button>
-						{#if showColumnMenu}
-							<div class="column-menu" role="menu">
-								{#each hideableColumns as column}
-									<label class="column-menu-item">
-										<input
-											type="checkbox"
-											checked={!hiddenColumns.has(column.key)}
-											onchange={() => toggleColumn(column.key)}
-										/>
-										{column.label}
-									</label>
-								{/each}
-							</div>
-						{/if}
-					</div>
-				{/if}
-				{#if showExport}
-					<button type="button" class="toolbar-button" onclick={handleExport} disabled={data.length === 0}>
-						<span class="toolbar-icon">↓</span>
-						Export CSV
-					</button>
-				{/if}
+				<ToolbarControls
+					{showColumnToggle}
+					{hideableColumns}
+					{hiddenColumns}
+					{showColumnMenu}
+					{showExport}
+					dataLength={data.length}
+					onToggleColumnMenu={() => (showColumnMenu = !showColumnMenu)}
+					onToggleColumn={toggleColumn}
+					onExport={handleExport}
+				/>
 				{@render toolbarRight?.()}
 			</div>
 		</div>
@@ -685,72 +663,6 @@
 		display: flex;
 		align-items: center;
 		gap: 0.5rem;
-	}
-
-	.toolbar-button {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.375rem;
-		padding: 0.375rem 0.75rem;
-		font-size: inherit;
-		font-weight: 500;
-		color: var(--color-text, #1e293b);
-		background: var(--color-surface, #fff);
-		border: 1px solid var(--color-border, #e2e8f0);
-		border-radius: var(--radius-md, 0.375rem);
-		cursor: pointer;
-		transition: background-color 0.15s, border-color 0.15s;
-	}
-
-	.toolbar-button:hover:not(:disabled) {
-		background: var(--dt-row-hover);
-		border-color: var(--color-border-hover, #cbd5e1);
-	}
-
-	.toolbar-button:disabled {
-		opacity: 0.5;
-		cursor: not-allowed;
-	}
-
-	.toolbar-icon {
-		font-size: inherit;
-	}
-
-	.column-toggle {
-		position: relative;
-	}
-
-	.column-menu {
-		position: absolute;
-		top: 100%;
-		right: 0;
-		margin-top: 0.25rem;
-		min-width: 12rem;
-		background: var(--color-surface, #fff);
-		border: 1px solid var(--color-border, #e2e8f0);
-		border-radius: var(--radius-md, 0.375rem);
-		box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-		z-index: 50;
-		max-height: 20rem;
-		overflow-y: auto;
-	}
-
-	.column-menu-item {
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-		padding: 0.5rem 0.75rem;
-		font-size: inherit;
-		cursor: pointer;
-		transition: background-color 0.15s;
-	}
-
-	.column-menu-item:hover {
-		background: var(--dt-row-hover);
-	}
-
-	.column-menu-item input {
-		cursor: pointer;
 	}
 
 	.table-header,
