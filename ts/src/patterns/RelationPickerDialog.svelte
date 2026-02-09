@@ -4,8 +4,8 @@
   import { Dialog as BitsDialog } from "bits-ui";
   import Loader from "lucide-svelte/icons/loader-circle";
   import X from "lucide-svelte/icons/x";
-  import Plus from "lucide-svelte/icons/plus";
   import Button from "../components/Button.svelte";
+  import RelationPickerCreateButton from "./relation-picker/RelationPickerCreateButton.svelte";
   import RelationPickerList from "./relation-picker/RelationPickerList.svelte";
   import RelationPickerSearch from "./relation-picker/RelationPickerSearch.svelte";
   import type { PickableItem, PickerSection } from "./relation-picker-types.js";
@@ -381,18 +381,13 @@
             />
           {/if}
 
-          {#if allowCreate && createForm && !createFormOpen}
-            <div class="relation-picker-dialog__create">
-              <button
-                type="button"
-                class="relation-picker-dialog__create-button"
-                onclick={() => onCreate?.()}
-              >
-                <Plus size="1em" />
-                <span>{createLabel}</span>
-              </button>
-            </div>
-          {/if}
+          <RelationPickerCreateButton
+            {allowCreate}
+            {createFormOpen}
+            {createForm}
+            {createLabel}
+            {onCreate}
+          />
         {/if}
       </div>
 
@@ -569,37 +564,6 @@
   .relation-picker-dialog__error-retry:focus-visible {
     outline: 2px solid white;
     outline-offset: 2px;
-  }
-
-  .relation-picker-dialog__create {
-    border-top: 1px solid var(--underlay-color-border-subtle, rgba(148, 163, 184, 0.3));
-    margin-top: 0.5rem;
-    padding-top: 0.75rem;
-  }
-
-  .relation-picker-dialog__create-button {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    width: 100%;
-    padding: 0.6rem 0.7rem;
-    border: none;
-    border-radius: 0.35rem;
-    background: transparent;
-    color: var(--underlay-color-primary, #2563eb);
-    font-size: 0.85rem;
-    cursor: pointer;
-    text-align: left;
-  }
-
-  .relation-picker-dialog__create-button:hover {
-    background: var(--underlay-color-hover-bg, rgba(148, 163, 184, 0.15));
-  }
-
-  .relation-picker-dialog__create-button:focus-visible {
-    outline: var(--underlay-focus-ring-width, 2px) solid
-      var(--underlay-color-primary, #2563eb);
-    outline-offset: -1px;
   }
 
   .relation-picker-dialog__create-form {
