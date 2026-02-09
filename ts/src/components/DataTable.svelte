@@ -96,18 +96,19 @@
 		getRowActionHref,
 		getVisibleRowActions
 	} from "./data-table/actions";
-	import {
-		getNextPage,
-		getPageAfterLimitChange,
-		toggleRowSelection,
-		toggleSelectAllRows
-	} from "./data-table/pagination-selection";
+import {
+		applySelectAll,
+		applySelectRow,
+		emitLimitChange,
+		emitNextPage,
+		getNextFiltersState,
+		getNextSortState,
+		runRowAction
+	} from "./data-table/interactions";
 	import {
 		getCellDisplayValue,
 		getColumnWidthValue,
-		getNextSort,
 		toggleHiddenColumn,
-		updateFilters
 	} from "./data-table/state";
 	import Skeleton from "./Skeleton.svelte";
 	import DropdownMenu from "./DropdownMenu.svelte";
@@ -257,28 +258,24 @@
 	// Handle sort
 	function handleSort(column: DataTableColumn<T>) {
 		if (!column.sortable) return;
-		const newSort: DataTableSort = getNextSort(sort, column.key);
+		const newSort: DataTableSort = getNextSortState(sort, column);
 		onSort?.(newSort);
 	}
 
 	// Handle filter change
 	function handleFilterChange(key: string, value: string) {
-		internalFilters = updateFilters(internalFilters, key, value);
+		internalFilters = getNextFiltersState(internalFilters, key, value);
 		onFilter?.(internalFilters);
 	}
 
 	// Handle page change
 	function handlePageChange(newPage: number) {
-		const nextPage = getNextPage(newPage, totalPages);
-		if (nextPage == null) return;
-		onPage?.(nextPage);
+		emitNextPage(newPage, totalPages, onPage);
 	}
 
 	// Handle limit change
 	function handleLimitChange(newLimit: number) {
-		onLimit?.(newLimit);
-		// Reset to first page when changing limit to avoid being on an invalid page
-		onPage?.(getPageAfterLimitChange());
+		emitLimitChange(newLimit, onLimit, onPage);
 	}
 
 	// Handle column visibility toggle
@@ -294,26 +291,16 @@
 
 	// Handle selection
 	function handleSelectAll() {
-		selected = toggleSelectAllRows(data, selected, allSelected);
-		onSelect?.(selected);
+		selected = applySelectAll(data, selected, allSelected, onSelect);
 	}
 
 	function handleSelectRow(row: T) {
-		selected = toggleRowSelection(selected, row);
-		onSelect?.(selected);
+		selected = applySelectRow(selected, row, onSelect);
 	}
 
 	// Handle action click
 	function handleActionClick(action: DataTableAction<T>, row: T) {
-		if (action.confirm) {
-			if (!confirm(action.confirm)) return;
-		}
-
-		if (action.onClick) {
-			action.onClick(row);
-		}
-
-		onAction?.({ action: action.label, row });
+		runRowAction(action, row, onAction, confirm);
 	}
 
 	// Grid template columns
