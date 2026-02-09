@@ -1,4 +1,6 @@
 <script lang="ts" module>
+	import { exportRowsToCsv } from "./data-table/csv";
+
 	/**
 	 * Column configuration for DataTable.
 	 */
@@ -84,55 +86,7 @@
 		columns: DataTableColumn<T>[],
 		filename = "export.csv"
 	): void {
-		// Build header row
-		const headers = columns.map((col) => escapeCSVValue(col.label));
-
-		// Build data rows
-		const rows = data.map((row) => {
-			return columns.map((col) => {
-				const value = getNestedValue(row, col.key);
-				const formatted = col.formatter ? col.formatter(value, row) : String(value ?? "");
-				return escapeCSVValue(formatted);
-			});
-		});
-
-		// Combine into CSV string
-		const csvContent = [headers.join(","), ...rows.map((row) => row.join(","))].join("\n");
-
-		// Create and trigger download
-		const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-		const url = URL.createObjectURL(blob);
-		const doc = globalThis?.document;
-		if (!doc) return;
-		const link = doc.createElement("a");
-		link.setAttribute("href", url);
-		link.setAttribute("download", filename);
-		link.style.visibility = "hidden";
-		doc.body.appendChild(link);
-		link.click();
-		doc.body.removeChild(link);
-		URL.revokeObjectURL(url);
-	}
-
-	function escapeCSVValue(value: string): string {
-		// If value contains comma, newline, or quote, wrap in quotes and escape quotes
-		if (value.includes(",") || value.includes("\n") || value.includes('"')) {
-			return `"${value.replace(/"/g, '""')}"`;
-		}
-		return value;
-	}
-
-	function getNestedValue(obj: object, path: string): unknown {
-		const keys = path.split(".");
-		let value: unknown = obj;
-		for (const key of keys) {
-			if (value && typeof value === "object") {
-				value = (value as Record<string, unknown>)[key];
-			} else {
-				return undefined;
-			}
-		}
-		return value;
+		exportRowsToCsv(data, columns, filename);
 	}
 </script>
 
