@@ -29,6 +29,10 @@
     removeBlockFromList
   } from "./editor/block-list";
   import { resolveSchemaDefinition } from "./editor/schema-resolution";
+  import {
+    SUMMARY_SCHEMA_ID,
+    transformSummaryBlockOnLayoutChange
+  } from "./editor/summary-transform";
 
   /**
    * Field-level Nightfire editor.
@@ -192,19 +196,7 @@
    *   image IDs, additional pages when moving to the image
    *   slider layout).
    */
-  const SUMMARY_SCHEMA_ID = "acow:content/summary@1";
   const FALLBACK_MARKUP_SCHEMA_ID = "acow:content/markup@1";
-  const SUMMARY_TEXT_PAGE_TYPES = new Set([
-    "summary.book",
-    "summary.circles",
-    "summary.pie",
-    "summary.steps"
-  ]);
-  const SUMMARY_IMAGE_PAGE_TYPES = new Set([
-    "summary.diagram",
-    "summary.slideshow"
-  ]);
-  const SUMMARY_IMAGE_SLIDER_TYPE = "summary.imageSlider";
 
   let typeChangeWarning: string | null = $state(null);
   let hasInitialisedRequired = $state(false);
@@ -299,266 +291,6 @@
     return match?.label ?? type;
   }
 
-  function clonePagesWithTitleBody(source: any): any[] {
-    if (!source || !Array.isArray((source as any).pages)) return [];
-    return (source as any).pages.map((page: any) => ({
-      title:
-        typeof page?.title === "string" && page.title.length > 0
-          ? page.title
-          : null,
-      body:
-        typeof page?.body === "string" && page.body.length > 0
-          ? page.body
-          : null
-    }));
-  }
-
-  function hasAnyImageIds(source: any): boolean {
-    if (!source || !Array.isArray((source as any).pages)) return false;
-    return (source as any).pages.some(
-      (page: any) =>
-        typeof page?.image_id === "string" && page.image_id.trim().length > 0
-    );
-  }
-
-  function transformSummaryBlockOnLayoutChange(
-    currentBlock: any,
-    nextType: string
-  ): { block: any; warning: string | null } {
-    const fromType: string | null =
-      currentBlock && typeof currentBlock.type === "string"
-        ? (currentBlock.type as string)
-        : null;
-
-    if (!fromType || fromType === nextType) {
-      return {
-        block: {
-          ...(currentBlock ?? {}),
-          type: nextType
-        },
-        warning: null
-      };
-    }
-
-    const fromIsTextPages = SUMMARY_TEXT_PAGE_TYPES.has(fromType);
-    const toIsTextPages = SUMMARY_TEXT_PAGE_TYPES.has(nextType);
-    const fromIsImagePages = SUMMARY_IMAGE_PAGE_TYPES.has(fromType);
-    const toIsImagePages = SUMMARY_IMAGE_PAGE_TYPES.has(nextType);
-    const fromIsSlider = fromType === SUMMARY_IMAGE_SLIDER_TYPE;
-    const toIsSlider = nextType === SUMMARY_IMAGE_SLIDER_TYPE;
-
-    const fromLabel = getLabelForType(fromType);
-    const toLabel = getLabelForType(nextType);
-
-    // Default: keep data as-is; Nightfire block editors will
-    // normalise fields.
-    let warning: string | null = null;
-    let data: any =
-      currentBlock && typeof currentBlock.data === "object"
-        ? (currentBlock.data as any)
-        : {};
-
-    // Text-only page layouts ↔ text-only page layouts.
-    if (fromIsTextPages && toIsTextPages) {
-      const pages = clonePagesWithTitleBody({ pages: data.pages });
-      const subTitle =
-        typeof data.subTitle === "string" && data.subTitle.length > 0
-          ? data.subTitle
-          : null;
-
-      data = {
-        ...data,
-        pages
-      };
-
-      if (
-        nextType === "summary.circles" ||
-        nextType === "summary.pie" ||
-        nextType === "summary.steps"
-      ) {
-        data.subTitle = subTitle;
-      } else {
-        delete data.subTitle;
-      }
-
-      return {
-        block: {
-          ...currentBlock,
-          type: nextType,
-          data
-        },
-        warning: null
-      };
-    }
-
-    // Image page layouts ↔ image page layouts: keep pages as-is.
-    if (fromIsImagePages && toIsImagePages) {
-      return {
-        block: {
-          ...currentBlock,
-          type: nextType
-        },
-        warning: null
-      };
-    }
-
-    // Image page → text-only page: keep titles/bodies, drop images.
-    if (fromIsImagePages && toIsTextPages) {
-      const pages = clonePagesWithTitleBody({ pages: data.pages });
-      const hadImages = hasAnyImageIds(data);
-
-      data = {
-        ...data,
-        pages
-      };
-
-      if (
-        nextType === "summary.circles" ||
-        nextType === "summary.pie" ||
-        nextType === "summary.steps"
-      ) {
-        data.subTitle =
-          typeof data.subTitle === "string" && data.subTitle.length > 0
-            ? data.subTitle
-            : null;
-      } else {
-        delete data.subTitle;
-      }
-
-      if (hadImages) {
-        warning = `Changing layout from ${fromLabel} to ${toLabel} keeps titles and bodies but drops image selections.`;
-      }
-
-      return {
-        block: {
-          ...currentBlock,
-          type: nextType,
-          data
-        },
-        warning
-      };
-    }
-
-    // Text-only page → image page: keep titles/bodies; images start empty.
-    if (fromIsTextPages && toIsImagePages) {
-      const pages = clonePagesWithTitleBody({ pages: data.pages }).map(
-        (page) => ({
-          ...page,
-          image_id: null
-        })
-      );
-
-      data = {
-        ...data,
-        pages
-      };
-
-      return {
-        block: {
-          ...currentBlock,
-          type: nextType,
-          data
-        },
-        warning: null
-      };
-    }
-
-    // Any page-based layout → image slider: keep first body as description.
-    if ((fromIsTextPages || fromIsImagePages) && toIsSlider) {
-      const pagesArray: any[] = Array.isArray(data.pages)
-        ? (data.pages as any[])
-        : [];
-      const first = pagesArray[0] ?? {};
-      const description =
-        typeof first.body === "string" && first.body.length > 0
-          ? first.body
-          : "";
-
-      data = {
-        subTitle:
-          typeof data.subTitle === "string" && data.subTitle.length > 0
-            ? data.subTitle
-            : null,
-        description: description || null,
-        image1Id: null,
-        image1Alt: null,
-        image2Id: null,
-        image2Alt: null,
-        startPosition: "left"
-      };
-
-      if (pagesArray.length > 1 || hasAnyImageIds(currentBlock.data)) {
-        warning = `Changing layout from ${fromLabel} to ${toLabel} keeps the first page's text as the slider description but discards other pages and any image selections.`;
-      } else {
-        warning = `Changing layout from ${fromLabel} to ${toLabel} keeps the first page's text as the slider description.`;
-      }
-
-      return {
-        block: {
-          ...currentBlock,
-          type: nextType,
-          data
-        },
-        warning
-      };
-    }
-
-    // Image slider → page-based layouts: turn description into a single page.
-    if (fromIsSlider && (toIsTextPages || toIsImagePages)) {
-      const description =
-        typeof data.description === "string" && data.description.length > 0
-          ? data.description
-          : "";
-
-      const page = {
-        title: null,
-        body: description || null
-      };
-
-      data = {
-        pages: [page]
-      };
-
-      if (toIsImagePages) {
-        data.pages = [
-          {
-            ...page,
-            image_id: null
-          }
-        ];
-      }
-
-      const hadImages =
-        (typeof data.image1Id === "string" && data.image1Id.length > 0) ||
-        (typeof data.image2Id === "string" && data.image2Id.length > 0);
-
-      if (hadImages) {
-        warning = `Changing layout from ${fromLabel} to ${toLabel} keeps the description as the first page's body but drops image selections.`;
-      } else {
-        warning = `Changing layout from ${fromLabel} to ${toLabel} keeps the description as the first page's body.`;
-      }
-
-      return {
-        block: {
-          ...currentBlock,
-          type: nextType,
-          data
-        },
-        warning
-      };
-    }
-
-    // Fallback: keep data and update type; rely on block editors to
-    // normalise. No explicit warning.
-    return {
-      block: {
-        ...(currentBlock ?? {}),
-        type: nextType
-      },
-      warning: null
-    };
-  }
-
   function handleSingleBlockChange(nextBlock: any) {
     emit({
       schema,
@@ -587,7 +319,11 @@
     };
 
     if (schema === SUMMARY_SCHEMA_ID) {
-      const transformed = transformSummaryBlockOnLayoutChange(current, nextType);
+      const transformed = transformSummaryBlockOnLayoutChange(
+        current,
+        nextType,
+        getLabelForType
+      );
       nextBlock = transformed.block;
       typeChangeWarning = transformed.warning;
     } else {
