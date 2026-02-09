@@ -27,6 +27,7 @@
  */
 
 import { writable, derived, get, type Readable, type Writable } from "svelte/store";
+import { createNoopOperation, withSetValue, withoutSetValue } from "./optimistic/helpers";
 
 // ============================================================================
 // Types
@@ -168,28 +169,16 @@ export function createOptimisticList<T extends { id: string }>(
 		const optimisticItem = { ...item, id } as T;
 
 		store.update((items) => [...items, optimisticItem]);
-		pending.update((p) => {
-			const next = new Set(p);
-			next.add(id);
-			return next;
-		});
+		pending.update((p) => withSetValue(p, id));
 
 		return {
 			confirm: (realItem: T) => {
 				store.update((items) => items.map((i) => (i.id === id ? realItem : i)));
-				pending.update((p) => {
-					const next = new Set(p);
-					next.delete(id);
-					return next;
-				});
+				pending.update((p) => withoutSetValue(p, id));
 			},
 			rollback: () => {
 				store.update((items) => items.filter((i) => i.id !== id));
-				pending.update((p) => {
-					const next = new Set(p);
-					next.delete(id);
-					return next;
-				});
+				pending.update((p) => withoutSetValue(p, id));
 			}
 		};
 	}
@@ -207,19 +196,11 @@ export function createOptimisticList<T extends { id: string }>(
 			return items;
 		});
 
-		pending.update((p) => {
-			const next = new Set(p);
-			next.add(id);
-			return next;
-		});
+		pending.update((p) => withSetValue(p, id));
 
 		return {
 			confirm: () => {
-				pending.update((p) => {
-					const next = new Set(p);
-					next.delete(id);
-					return next;
-				});
+				pending.update((p) => withoutSetValue(p, id));
 			},
 			rollback: () => {
 				if (removedItem) {
@@ -234,11 +215,7 @@ export function createOptimisticList<T extends { id: string }>(
 						return [...items, removedItem!];
 					});
 				}
-				pending.update((p) => {
-					const next = new Set(p);
-					next.delete(id);
-					return next;
-				});
+				pending.update((p) => withoutSetValue(p, id));
 			}
 		};
 	}
@@ -259,32 +236,20 @@ export function createOptimisticList<T extends { id: string }>(
 			})
 		);
 
-		pending.update((p) => {
-			const next = new Set(p);
-			next.add(id);
-			return next;
-		});
+		pending.update((p) => withSetValue(p, id));
 
 		return {
 			confirm: (realItem?: T) => {
 				if (realItem) {
 					store.update((items) => items.map((i) => (i.id === id ? realItem : i)));
 				}
-				pending.update((p) => {
-					const next = new Set(p);
-					next.delete(id);
-					return next;
-				});
+				pending.update((p) => withoutSetValue(p, id));
 			},
 			rollback: () => {
 				if (previousItem) {
 					store.update((items) => items.map((i) => (i.id === id ? previousItem! : i)));
 				}
-				pending.update((p) => {
-					const next = new Set(p);
-					next.delete(id);
-					return next;
-				});
+				pending.update((p) => withoutSetValue(p, id));
 			}
 		};
 	}
@@ -357,10 +322,7 @@ export function createOptimisticToggle(initial: boolean = false): OptimisticTogg
 
 		if (previous === value) {
 			// No change needed
-			return {
-				confirm: () => {},
-				rollback: () => {}
-			};
+			return createNoopOperation();
 		}
 
 		store.set(value);
@@ -423,10 +385,7 @@ export function createOptimisticValue<T>(
 
 		if (equals(previous, value)) {
 			// No change needed
-			return {
-				confirm: () => {},
-				rollback: () => {}
-			};
+			return createNoopOperation();
 		}
 
 		store.set(value);
@@ -518,10 +477,7 @@ export function createOptimisticCounter(initial: number = 0): OptimisticCounter 
 		const previous = get(store);
 
 		if (previous === value) {
-			return {
-				confirm: () => {},
-				rollback: () => {}
-			};
+			return createNoopOperation();
 		}
 
 		store.set(value);
