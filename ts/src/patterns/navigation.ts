@@ -29,6 +29,12 @@
 import { storage } from "./storage";
 import { matchesCurrentPath } from "./navigation-path";
 import { buildPushedContextStack } from "./navigation-stack";
+export {
+  storePageState,
+  retrievePageState,
+  consumePageState,
+  clearPageStates
+} from "./navigation-state";
 
 // ============================================================================
 // Types
@@ -77,7 +83,6 @@ export interface BackButtonInfo {
 // ============================================================================
 
 const DEFAULT_STORAGE_KEY = "underlay:nav-context";
-const DEFAULT_STATE_STORAGE_KEY = "underlay:nav-state";
 const DEFAULT_MAX_DEPTH = 3;
 
 // ============================================================================
@@ -359,121 +364,6 @@ export function deriveParentPath(currentPath: string): string {
   }
 
   return "/";
-}
-
-// ============================================================================
-// Page State Management
-// ============================================================================
-
-/**
- * Store for page states, keyed by pathname.
- * Stored separately from context stack so states persist across stack changes.
- */
-type PageStateStore = Record<string, Record<string, unknown>>;
-
-/**
- * Get the page state store from sessionStorage.
- */
-function getPageStateStore(): PageStateStore {
-  return storage.session.get<PageStateStore>(DEFAULT_STATE_STORAGE_KEY, {});
-}
-
-/**
- * Save the page state store to sessionStorage.
- */
-function savePageStateStore(store: PageStateStore): void {
-  storage.session.set(DEFAULT_STATE_STORAGE_KEY, store);
-}
-
-/**
- * Store page state for a given path.
- * 
- * This is called automatically when using gotoWithContext with state,
- * but can also be called manually to update state before navigation.
- * 
- * @param pathname - The pathname to associate the state with
- * @param state - The state object to store
- * 
- * @example
- * ```typescript
- * // Store current page state before navigating away
- * storePageState("/learning/modules/123", {
- *   activeTab: "syllabus",
- *   scrollPosition: window.scrollY
- * });
- * ```
- */
-export function storePageState(pathname: string, state: Record<string, unknown>): void {
-  const store = getPageStateStore();
-  store[pathname] = state;
-  savePageStateStore(store);
-}
-
-/**
- * Retrieve stored page state for a given path.
- * 
- * Returns null if no state exists for this path.
- * The state is NOT consumed - it remains stored for potential future use.
- * 
- * @param pathname - The pathname to retrieve state for
- * @returns The stored state or null
- * 
- * @example
- * ```typescript
- * const state = retrievePageState<{ activeTab: string }>("/learning/modules/123");
- * if (state) {
- *   activeTab = state.activeTab;
- * }
- * ```
- */
-export function retrievePageState<T extends Record<string, unknown>>(
-  pathname: string
-): T | null {
-  const store = getPageStateStore();
-  return (store[pathname] as T) ?? null;
-}
-
-/**
- * Consume (retrieve and remove) stored page state for a given path.
- * 
- * This is the primary way to restore state when arriving at a page via
- * back navigation. The state is removed after retrieval to prevent stale
- * state from being restored on subsequent visits.
- * 
- * @param pathname - The pathname to retrieve state for (defaults to current)
- * @returns The stored state or null
- * 
- * @example
- * ```typescript
- * // In page component onMount or initialization
- * const restoredState = consumePageState<{ activeTab: string }>();
- * if (restoredState) {
- *   activeTab = restoredState.activeTab;
- * }
- * ```
- */
-export function consumePageState<T extends Record<string, unknown>>(
-  pathname?: string
-): T | null {
-  const targetPath = pathname ?? (typeof window !== "undefined" ? window.location.pathname : null);
-  if (!targetPath) return null;
-  
-  const store = getPageStateStore();
-  const state = store[targetPath] as T | undefined;
-  
-  if (state) {
-    delete store[targetPath];
-    savePageStateStore(store);
-  }
-  
-  return state ?? null;
-}
-
-/**
- * Clear all stored page states.
- */
-export function clearPageStates(): void {
-  storage.session.remove(DEFAULT_STATE_STORAGE_KEY);
 }
 
 // ============================================================================
