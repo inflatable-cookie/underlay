@@ -37,11 +37,11 @@
   import TabsList from "../TabsList.svelte";
   import TabsRoot from "../TabsRoot.svelte";
   import TabsTrigger from "../TabsTrigger.svelte";
-  import TextButton from "../TextButton.svelte";
   import TextInput from "../TextInput.svelte";
 
   import GoogleSignInButton from "./GoogleSignInButton.svelte";
   import LoginPasswordForm from "./LoginPasswordForm.svelte";
+  import LoginSetupPrompt from "./LoginSetupPrompt.svelte";
   import PassKeyButton from "./PassKeyButton.svelte";
   import TwoFactorStep from "./TwoFactorStep.svelte";
 
@@ -317,46 +317,11 @@
     />
 
   {:else if step === "setup-prompt"}
-    <div class="underlay-login-page__setup-prompt">
-      {#if hadTotpConfigured}
-        <!-- User has TOTP but used email fallback - less urgent message -->
-        <h2 class="underlay-login-page__setup-title">Having trouble with your authenticator?</h2>
-        <p class="underlay-login-page__hint underlay-login-page__hint--spaced">
-          If you've lost access to your authenticator app, you can update your two-factor
-          authentication settings or set up a new device.
-        </p>
-        <div class="underlay-login-page__setup-actions">
-          <Button variant="secondary" onclick={handleSetupNow}>
-            Manage 2FA settings
-          </Button>
-        </div>
-        <div class="underlay-login-page__setup-skip">
-          <TextButton variant="success" onclick={handleSkipSetup}>
-            Continue to dashboard
-          </TextButton>
-        </div>
-      {:else}
-        <!-- User doesn't have 2FA configured - encourage setup -->
-        <h2 class="underlay-login-page__setup-title">Secure your account</h2>
-        <p class="underlay-login-page__hint">
-          Your account doesn't have two-factor authentication configured. We recommend
-          setting up an authenticator app for faster, more secure logins.
-        </p>
-        <ul class="underlay-login-page__setup-benefits">
-          <li>No need to wait for email codes</li>
-          <li>Works offline</li>
-          <li>More secure than email verification</li>
-        </ul>
-        <div class="underlay-login-page__setup-actions">
-          <Button variant="primary" onclick={handleSetupNow}>
-            Set up 2FA now
-          </Button>
-          <Button variant="secondary" onclick={handleSkipSetup}>
-            Skip for now
-          </Button>
-        </div>
-      {/if}
-    </div>
+    <LoginSetupPrompt
+      {hadTotpConfigured}
+      onSetupNow={handleSetupNow}
+      onSkipSetup={handleSkipSetup}
+    />
 
   {:else}
     <!-- Credentials step -->
@@ -490,15 +455,6 @@
     color: var(--underlay-color-text-muted, #64748b);
   }
 
-  .underlay-login-page__hint--spaced {
-    margin-bottom: var(--underlay-space-4, 1rem);
-  }
-
-  .underlay-login-page__setup-skip {
-    margin-top: var(--underlay-space-3, 0.75rem);
-    text-align: center;
-  }
-
   .underlay-login-page__register {
     margin-top: var(--underlay-space-4, 1rem);
     padding-top: var(--underlay-space-3, 0.75rem);
@@ -514,44 +470,4 @@
     margin-left: var(--underlay-space-1, 0.25rem);
   }
 
-  .underlay-login-page__setup-prompt {
-    text-align: center;
-  }
-
-  .underlay-login-page__setup-title {
-    margin: 0 0 var(--underlay-space-3, 0.75rem);
-    font-size: var(--underlay-font-size-lg, 1.1rem);
-    font-weight: 600;
-    color: var(--underlay-color-text, #e5e7eb);
-  }
-
-  .underlay-login-page__setup-benefits {
-    margin: var(--underlay-space-4, 1rem) auto;
-    padding: 0;
-    list-style: none;
-    text-align: left;
-    max-width: 16rem;
-  }
-
-  .underlay-login-page__setup-benefits li {
-    font-size: var(--underlay-font-size-sm, 0.85rem);
-    color: var(--underlay-color-text-muted, #64748b);
-    padding: var(--underlay-space-1, 0.25rem) 0 var(--underlay-space-1, 0.25rem) 1.5rem;
-    position: relative;
-  }
-
-  .underlay-login-page__setup-benefits li::before {
-    content: "\2713"; /* checkmark */
-    position: absolute;
-    left: 0;
-    color: var(--underlay-color-success, #22c55e);
-    font-weight: 600;
-  }
-
-  .underlay-login-page__setup-actions {
-    display: flex;
-    justify-content: center;
-    gap: var(--underlay-space-3, 0.75rem);
-    flex-wrap: wrap;
-  }
 </style>
