@@ -5,33 +5,15 @@
    * Supports password, passkey, and Google OAuth login methods with
    * tab-based navigation when multiple methods are enabled. Handles
    * 2FA flows and optional post-login setup prompts.
-   *
-   * @example
-   * ```svelte
-   * <LoginPage
-   *   methods={['password', 'passkey']}
-   *   onPasswordLogin={async (email, password) => {
-   *     const result = await api.loginStart(email, password);
-   *     return result;
-   *   }}
-   *   onTwoFactorVerify={async (stateId, code) => {
-   *     return await api.loginFinish(stateId, code);
-   *   }}
-   *   onPasskeyLogin={async () => {
-   *     return await passkeyAuth.login();
-   *   }}
-   *   forgotPasswordHref="/forgot-password"
-   * />
-   * ```
    */
 
-  import type { Snippet } from "svelte";
   import { untrack } from "svelte";
-  import type {
-    LoginMethod,
-    LoginPageProps,
-    LoginStep
-  } from "./login-page.types";
+  import type { LoginMethod, LoginPageProps, LoginStep } from "./login-page.types";
+  import {
+    getPostTwoFactorOutcome,
+    resolveEmailFallbackOutcome,
+    resolvePasswordLoginOutcome
+  } from "./login-page-state";
 
   import Card from "../Card.svelte";
   import TabsContent from "../TabsContent.svelte";
@@ -62,36 +44,30 @@
     onSkipSetup,
     passkeyHint = "Passkeys let you sign in using your device, a password manager, or a security key.",
     googleHint = "Sign in with your Google account.",
-    class: className = "",
+    class: className = ""
   }: LoginPageProps = $props();
 
   let step = $state<LoginStep>("credentials");
-  // Use untrack to capture initial method from props
   let activeMethod = $state<LoginMethod>(untrack(() => methods[0] ?? "password"));
 
-  // Form state
   let email = $state("");
   let password = $state("");
   let passkeyEmail = $state("");
   let code = $state("");
 
-  // 2FA state
   let loginStateId = $state<string | undefined>(undefined);
   let isEmailVerification = $state(false);
-  let hadTotpConfigured = $state(false); // Track if user originally had TOTP (before any fallback)
-  let usedEmailFallback = $state(false); // Track if user chose email over their configured TOTP
+  let hadTotpConfigured = $state(false);
+  let usedEmailFallback = $state(false);
   let twoFactorEmail = $state<string | undefined>(undefined);
 
-  // UI state
   let error = $state<string | null>(null);
   let loading = $state(false);
   let passkeyLoading = $state(false);
   let passkeyError = $state<string | null>(null);
 
-  // Whether to show tabs (only if multiple methods)
   const showTabs = $derived(methods.length > 1);
 
-  // Handle password login
   async function handlePasswordLogin(event: SubmitEvent) {
     event.preventDefault();
     error = null;
@@ -104,17 +80,16 @@
       }
 
       const result = await onPasswordLogin?.(email.trim(), password.trim());
+      const outcome = resolvePasswordLoginOutcome(result, email);
 
-      if (result?.requiresTwoFactor) {
-        loginStateId = result.loginStateId;
-        isEmailVerification = result.isEmailVerification ?? false;
-        hadTotpConfigured = !isEmailVerification; // User has TOTP if not email-only
-        usedEmailFallback = false; // Reset - they haven't used fallback yet
-        twoFactorEmail = result.email ?? email;
-
+      if (outcome.kind === "2fa") {
+        loginStateId = outcome.loginStateId;
+        isEmailVerification = outcome.isEmailVerification;
+        hadTotpConfigured = outcome.hadTotpConfigured;
+        usedEmailFallback = outcome.usedEmailFallback;
+        twoFactorEmail = outcome.twoFactorEmail;
         step = "2fa";
-      } else if (result?.complete !== false) {
-        // Login complete
+      } else if (outcome.kind === "complete") {
         onComplete?.();
       }
     } catch (e) {
@@ -124,7 +99,6 @@
     }
   }
 
-  // Handle 2FA verification
   async function handleTwoFactorVerify(inputCode: string) {
     error = null;
     loading = true;
@@ -136,10 +110,9 @@
       }
 
       await onTwoFactorVerify?.(loginStateId, inputCode);
+      const outcome = getPostTwoFactorOutcome(showSetupPrompt, isEmailVerification, usedEmailFallback);
 
-      // Check if we should show setup prompt (only if user doesn't have 2FA configured)
-      // If they have TOTP but used email fallback, show a different prompt
-      if (showSetupPrompt && (isEmailVerification || usedEmailFallback)) {
+      if (outcome === "setup-prompt") {
         step = "setup-prompt";
       } else {
         onComplete?.();
@@ -151,7 +124,6 @@
     }
   }
 
-  // Handle passkey login
   async function handlePasskeyLogin() {
     passkeyError = null;
     passkeyLoading = true;
@@ -167,7 +139,6 @@
     }
   }
 
-  // Handle Google login
   async function handleGoogleLogin() {
     error = null;
     loading = true;
@@ -182,7 +153,6 @@
     }
   }
 
-  // Reset 2FA state
   function handleBackToCredentials() {
     step = "credentials";
     loginStateId = undefined;
@@ -191,7 +161,6 @@
     error = null;
   }
 
-  // Handle requesting email fallback (when user has TOTP but wants email verification)
   async function handleRequestEmailCode() {
     if (!loginStateId || !onRequestEmailCode) return;
 
@@ -200,11 +169,11 @@
 
     try {
       const result = await onRequestEmailCode(loginStateId);
-      // Update state to use the new email login state
-      loginStateId = result.loginStateId;
-      twoFactorEmail = result.email;
-      isEmailVerification = true;
-      usedEmailFallback = true; // They chose email over their configured TOTP
+      const outcome = resolveEmailFallbackOutcome(result);
+      loginStateId = outcome.loginStateId;
+      twoFactorEmail = outcome.twoFactorEmail;
+      isEmailVerification = outcome.isEmailVerification;
+      usedEmailFallback = outcome.usedEmailFallback;
     } catch (e) {
       error = e instanceof Error ? e.message : "Failed to send verification code";
     } finally {
@@ -212,7 +181,6 @@
     }
   }
 
-  // Handle resending email code
   async function handleResendEmailCode() {
     if (!loginStateId || !onResendEmailCode) return;
 
@@ -221,14 +189,13 @@
 
     try {
       await onResendEmailCode(loginStateId);
-    } catch (e) {
+    } catch {
       // Silently fail - don't reveal if email exists
     } finally {
       loading = false;
     }
   }
 
-  // Handle setup prompt actions
   function handleSetupNow() {
     if (setupHref) {
       window.location.href = setupHref;
@@ -263,9 +230,7 @@
     />
 
   {:else}
-    <!-- Credentials step -->
     {#if !showTabs}
-      <!-- Single method - no tabs -->
       {#if methods.includes("password")}
         <LoginPasswordForm
           bind:email
@@ -277,7 +242,6 @@
         />
       {/if}
     {:else}
-      <!-- Multiple methods - show tabs -->
       <TabsRoot bind:value={activeMethod}>
         <LoginMethodTabs {methods} {onGoogleLogin} />
 
@@ -326,6 +290,3 @@
     {/if}
   {/if}
 </Card>
-
-<style>
-</style>
