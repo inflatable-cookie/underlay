@@ -111,10 +111,10 @@
 		getRenderedRowActions
 	} from "./data-table/render";
 	import Skeleton from "./Skeleton.svelte";
-	import DropdownMenu from "./DropdownMenu.svelte";
 	import Select from "./Select.svelte";
 	import ToolbarControls from "./data-table/ToolbarControls.svelte";
 	import FilterCell from "./data-table/FilterCell.svelte";
+	import RowActionsCell from "./data-table/RowActionsCell.svelte";
 
 	interface Props {
 		/** Data rows */
@@ -429,6 +429,7 @@
 			</div>
 		{:else}
 			{#each data as row, rowIndex}
+				{@const rowActions = getRenderedRowActions(row, actions)}
 				<!-- svelte-ignore a11y_click_events_have_key_events -->
 				<div
 					class="table-row"
@@ -468,52 +469,12 @@
 
 					{#if actions.length > 0 || typeof actions === "function"}
 						<div class="table-cell actions-cell" role="cell">
-							{#if getRenderedRowActions(row, actions).length === 1}
-								{#each [getRenderedRowActions(row, actions)[0]] as action}
-									{#if action.href}
-										<a href={getRenderedActionHref(action, row)} class="action-link">{action.label}</a>
-									{:else}
-										<button type="button" class="action-button" onclick={() => handleActionClick(action, row)}>
-											{action.label}
-										</button>
-									{/if}
-								{/each}
-							{:else if getRenderedRowActions(row, actions).length > 1}
-								<DropdownMenu>
-								{#snippet trigger()}
-									<svg
-										xmlns="http://www.w3.org/2000/svg"
-										width="16"
-										height="16"
-										viewBox="0 0 24 24"
-										fill="none"
-										stroke="currentColor"
-										stroke-width="2"
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										aria-hidden="true"
-									>
-										<circle cx="12" cy="12" r="1" />
-										<circle cx="12" cy="5" r="1" />
-										<circle cx="12" cy="19" r="1" />
-									</svg>
-								{/snippet}
-									{#each getRenderedRowActions(row, actions) as action}
-										{#if action.href}
-											<a href={getRenderedActionHref(action, row)} class="menu-item">{action.label}</a>
-										{:else}
-											<button
-												type="button"
-												class="menu-item"
-												class:danger={action.variant === "danger"}
-												onclick={() => handleActionClick(action, row)}
-											>
-												{action.label}
-											</button>
-										{/if}
-									{/each}
-								</DropdownMenu>
-							{/if}
+							<RowActionsCell
+								{row}
+								{rowActions}
+								getActionHref={getRenderedActionHref}
+								onActionClick={handleActionClick}
+							/>
 						</div>
 					{/if}
 				</div>
@@ -800,44 +761,6 @@
 		align-items: center;
 		justify-content: flex-end;
 		gap: 0.5rem;
-	}
-
-	.action-link,
-	.action-button {
-		font-size: inherit;
-		color: var(--color-primary, #3b82f6);
-		text-decoration: none;
-		background: none;
-		border: none;
-		padding: 0.25rem 0.5rem;
-		cursor: pointer;
-		border-radius: var(--radius-sm, 0.25rem);
-	}
-
-	.action-link:hover,
-	.action-button:hover {
-		background: var(--dt-row-hover);
-	}
-
-	.menu-item {
-		display: block;
-		width: 100%;
-		padding: 0.5rem 1rem;
-		text-align: left;
-		background: none;
-		border: none;
-		cursor: pointer;
-		font: inherit;
-		color: inherit;
-		text-decoration: none;
-	}
-
-	.menu-item:hover {
-		background: var(--dt-row-hover);
-	}
-
-	.menu-item.danger {
-		color: var(--color-danger, #ef4444);
 	}
 
 	.empty-state {
