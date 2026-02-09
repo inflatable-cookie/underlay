@@ -22,6 +22,12 @@
     buildGroupedOptions,
     type NightfireBlockOptionInput
   } from "./editor/grouped-options";
+  import {
+    addBlockToList,
+    createDefaultBlock,
+    moveBlockInList,
+    removeBlockFromList
+  } from "./editor/block-list";
   import { resolveSchemaDefinition } from "./editor/schema-resolution";
 
   /**
@@ -607,12 +613,7 @@
   function addBlock() {
     const defaultType =
       editorTypeOptions[0]?.type ?? effectiveDef.defaultType ?? "markdown";
-    const nextBlocks = blocks.concat({
-      type: defaultType,
-      version: "initial",
-      hash: "",
-      data: {}
-    });
+    const nextBlocks = addBlockToList(blocks, defaultType);
     emit({
       schema,
       block: undefined,
@@ -621,8 +622,7 @@
   }
 
   function removeBlock(index: number) {
-    const nextBlocks = blocks.slice();
-    nextBlocks.splice(index, 1);
+    const nextBlocks = removeBlockFromList(blocks, index);
     emit({
       schema,
       block: undefined,
@@ -631,18 +631,10 @@
   }
 
   function moveBlock(from: number, to: number) {
-    if (
-      from === to ||
-      from < 0 ||
-      to < 0 ||
-      from >= blocks.length ||
-      to >= blocks.length
-    ) {
+    const nextBlocks = moveBlockInList(blocks, from, to);
+    if (!nextBlocks) {
       return;
     }
-    const nextBlocks = blocks.slice();
-    const [moved] = nextBlocks.splice(from, 1);
-    nextBlocks.splice(to, 0, moved);
     emit({
       schema,
       block: undefined,
@@ -654,12 +646,7 @@
   // editor is first initialised and the value is empty.
   $effect(() => {
     if (!hasInitialisedRequired && required && isEmptyNightfire(value)) {
-      const defaultBlock = {
-        type: effectiveDef.defaultType ?? "markdown",
-        version: "initial",
-        hash: "",
-        data: {}
-      };
+      const defaultBlock = createDefaultBlock(effectiveDef.defaultType ?? "markdown");
 
       if (effectiveDef.mode === "multi") {
         value = {
