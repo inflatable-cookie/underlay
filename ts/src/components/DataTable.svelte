@@ -117,7 +117,8 @@
 		isAllSelected,
 		isSomeSelected
 	} from "./data-table/view";
-	import Skeleton from "./Skeleton.svelte";
+	import EmptyState from "./data-table/EmptyState.svelte";
+	import LoadingRow from "./data-table/LoadingRow.svelte";
 	import ToolbarControls from "./data-table/ToolbarControls.svelte";
 	import FilterCell from "./data-table/FilterCell.svelte";
 	import PaginationFooter from "./data-table/PaginationFooter.svelte";
@@ -243,6 +244,7 @@
 	let hideableColumns = $derived(getHideableColumns(columns));
 
 	// Computed
+	let hasActions = $derived(actions.length > 0 || typeof actions === "function");
 	let totalPages = $derived(getTotalPages(pagination));
 	let allSelected = $derived(isAllSelected(data.length, selected.length));
 	let someSelected = $derived(isSomeSelected(data.length, selected.length));
@@ -373,7 +375,7 @@
 				</div>
 			{/each}
 
-			{#if actions.length > 0 || typeof actions === "function"}
+			{#if hasActions}
 				<div class="table-cell header-cell actions-header" role="columnheader">
 					<span class="sr-only">Actions</span>
 				</div>
@@ -397,7 +399,7 @@
 					</div>
 				{/each}
 
-				{#if actions.length > 0 || typeof actions === "function"}
+				{#if hasActions}
 					<div class="table-cell" role="cell"></div>
 				{/if}
 			</div>
@@ -408,32 +410,10 @@
 	<div class="table-body" role="rowgroup">
 		{#if loading}
 			{#each Array(loadingRows) as _, i}
-				<div class="table-row" role="row">
-					{#if selectable}
-						<div class="table-cell checkbox-cell" role="cell">
-							<Skeleton variant="button" width="16px" height="16px" />
-						</div>
-					{/if}
-					{#each visibleColumns as column}
-						<div class="table-cell" class:hide-mobile={column.hideOnMobile} role="cell">
-							<Skeleton variant="text" />
-						</div>
-					{/each}
-					{#if actions.length > 0 || typeof actions === "function"}
-						<div class="table-cell actions-cell" role="cell">
-							<Skeleton variant="button" width="24px" height="24px" />
-						</div>
-					{/if}
-				</div>
+				<LoadingRow {selectable} {visibleColumns} showActions={hasActions} />
 			{/each}
 		{:else if data.length === 0}
-			<div class="empty-state" role="row">
-				{#if empty}
-					{@render empty()}
-				{:else}
-					<p>{emptyMessage}</p>
-				{/if}
-			</div>
+			<EmptyState message={emptyMessage} {empty} />
 		{:else}
 			{#each data as row, rowIndex}
 				{@const rowActions = getRenderedRowActions(row, actions)}
@@ -474,7 +454,7 @@
 						</div>
 					{/each}
 
-					{#if actions.length > 0 || typeof actions === "function"}
+					{#if hasActions}
 						<div class="table-cell actions-cell" role="cell">
 							<RowActionsCell
 								{row}
@@ -712,13 +692,6 @@
 		align-items: center;
 		justify-content: flex-end;
 		gap: 0.5rem;
-	}
-
-	.empty-state {
-		padding: 3rem;
-		text-align: center;
-		color: var(--color-text-muted, #64748b);
-		grid-column: 1 / -1;
 	}
 
 	.sticky-header .header-row {
