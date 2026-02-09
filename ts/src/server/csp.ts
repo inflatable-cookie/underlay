@@ -35,6 +35,7 @@ import {
   resolveSecurityHeadersConfig
 } from "./csp-config";
 export { createCspResolveOptions } from "./csp-resolve";
+export { buildCspHeader, getCspHeaderName } from "./csp-header";
 export type {
   CspSource,
   CspConfig,
@@ -43,11 +44,11 @@ export type {
   CspHandleOptions
 } from "./csp-types";
 import type {
-  CspSource,
   CspConfig,
   ResolvedCspConfig,
   SecurityHeadersConfig
 } from "./csp-types";
+import { buildCspHeader, getCspHeaderName } from "./csp-header";
 
 // ============================================================================
 // Nonce Generation
@@ -103,71 +104,6 @@ export function createSecurityHeadersConfig(
 // ============================================================================
 // Header Building
 // ============================================================================
-
-/**
- * Build a CSP header value from configuration.
- *
- * @param config - Resolved CSP configuration
- * @param nonce - Optional nonce to include in script-src
- * @returns The CSP header value string
- *
- * @example
- * ```typescript
- * const nonce = generateNonce();
- * const headerValue = buildCspHeader(config, nonce);
- * response.headers.set("Content-Security-Policy", headerValue);
- * ```
- */
-export function buildCspHeader(config: ResolvedCspConfig, nonce?: string): string {
-  const directives: string[] = [];
-
-  const addDirective = (name: string, sources: CspSource[]) => {
-    if (sources.length > 0) {
-      directives.push(`${name} ${sources.join(" ")}`);
-    }
-  };
-
-  addDirective("default-src", config.defaultSrc);
-
-  // Add nonce to script-src if provided
-  const scriptSources = nonce
-    ? [...config.scriptSrc, `'nonce-${nonce}'`]
-    : config.scriptSrc;
-  addDirective("script-src", scriptSources);
-
-  // Note: Do NOT add nonce to style-src. SvelteKit component styles use inline
-  // styles that rely on 'unsafe-inline'. Adding a nonce makes the browser ignore
-  // 'unsafe-inline' per CSP spec, breaking all component styles.
-  addDirective("style-src", config.styleSrc);
-
-  addDirective("img-src", config.imgSrc);
-  addDirective("font-src", config.fontSrc);
-  addDirective("connect-src", config.connectSrc);
-  addDirective("frame-src", config.frameSrc);
-  addDirective("media-src", config.mediaSrc);
-  addDirective("object-src", config.objectSrc);
-  addDirective("form-action", config.formAction);
-  addDirective("base-uri", config.baseUri);
-  addDirective("frame-ancestors", config.frameAncestors);
-
-  if (config.reportUri) {
-    directives.push(`report-uri ${config.reportUri}`);
-  }
-
-  return directives.join("; ");
-}
-
-/**
- * Get the appropriate CSP header name based on configuration.
- *
- * @param config - CSP configuration
- * @returns "Content-Security-Policy-Report-Only" or "Content-Security-Policy"
- */
-export function getCspHeaderName(config: ResolvedCspConfig): string {
-  return config.reportOnly
-    ? "Content-Security-Policy-Report-Only"
-    : "Content-Security-Policy";
-}
 
 /**
  * Apply CSP and security headers to a Response object.
