@@ -26,9 +26,15 @@
  * @module
  */
 
-import { storage } from "./storage";
 import { matchesCurrentPath } from "./navigation-path";
 import { buildPushedContextStack } from "./navigation-stack";
+import {
+  readNavigationContextStack,
+  writeNavigationContextStack,
+  popNavigationContextStack,
+  peekNavigationContextStack,
+  clearNavigationContextStack
+} from "./navigation-context-store";
 import {
   resolveBackButtonInfo,
   consumeBackNavigation,
@@ -128,20 +134,6 @@ export function configureNavigationContext(options: NavigationContextConfig): vo
 // ============================================================================
 
 /**
- * Get the navigation context stack from sessionStorage.
- */
-function getContextStack(): NavigationContext[] {
-  return storage.session.get<NavigationContext[]>(config.storageKey, []);
-}
-
-/**
- * Save the navigation context stack to sessionStorage.
- */
-function saveContextStack(stack: NavigationContext[]): void {
-  storage.session.set(config.storageKey, stack);
-}
-
-/**
  * Push a navigation context onto the stack.
  *
  * Applies sanity rules:
@@ -160,9 +152,9 @@ function saveContextStack(stack: NavigationContext[]): void {
  * ```
  */
 export function pushNavigationContext(context: NavigationContext): void {
-  const stack = getContextStack();
+  const stack = readNavigationContextStack<NavigationContext>(config.storageKey);
   const nextStack = buildPushedContextStack(stack, context, config.maxDepth);
-  saveContextStack(nextStack);
+  writeNavigationContextStack(config.storageKey, nextStack);
 }
 
 /**
@@ -179,12 +171,7 @@ export function pushNavigationContext(context: NavigationContext): void {
  * ```
  */
 export function popNavigationContext(): NavigationContext | null {
-  const stack = getContextStack();
-  if (stack.length === 0) return null;
-
-  const popped = stack.pop()!;
-  saveContextStack(stack);
-  return popped;
+  return popNavigationContextStack<NavigationContext>(config.storageKey);
 }
 
 /**
@@ -199,8 +186,7 @@ export function popNavigationContext(): NavigationContext | null {
  * ```
  */
 export function peekNavigationContext(): NavigationContext | null {
-  const stack = getContextStack();
-  return stack.length > 0 ? stack[stack.length - 1] : null;
+  return peekNavigationContextStack<NavigationContext>(config.storageKey);
 }
 
 /**
@@ -209,14 +195,14 @@ export function peekNavigationContext(): NavigationContext | null {
  * Useful for debugging or implementing full breadcrumb trails.
  */
 export function getNavigationContextStack(): NavigationContext[] {
-  return getContextStack();
+  return readNavigationContextStack<NavigationContext>(config.storageKey);
 }
 
 /**
  * Clear all navigation context.
  */
 export function clearNavigationContext(): void {
-  storage.session.remove(config.storageKey);
+  clearNavigationContextStack(config.storageKey);
 }
 
 /**
