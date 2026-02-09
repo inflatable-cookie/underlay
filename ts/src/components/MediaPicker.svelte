@@ -26,7 +26,6 @@
     type PaginationParams,
     MediaKind,
     getMediaKindLabel,
-    getMediaDisplayName,
     type MediaSummary,
     type MediaDetail,
     type CreateMediaRequest,
@@ -39,6 +38,7 @@
   import { uploadNewMedia } from "./media-picker/upload";
   import MediaBrowseItem from "./media-picker/MediaBrowseItem.svelte";
   import MediaUploadDropzone from "./media-picker/MediaUploadDropzone.svelte";
+  import MediaUploadStatusPanel from "./media-picker/MediaUploadStatusPanel.svelte";
   import Button from "./Button.svelte";
   import Dialog from "./Dialog.svelte";
   import FormError from "./FormError.svelte";
@@ -49,8 +49,6 @@
   import TabsContent from "./TabsContent.svelte";
   import Image from "lucide-svelte/icons/image";
   import Upload from "lucide-svelte/icons/upload";
-  import Check from "lucide-svelte/icons/check";
-  import AlertCircle from "lucide-svelte/icons/alert-circle";
   import Search from "lucide-svelte/icons/search";
 
   interface Props {
@@ -384,63 +382,17 @@
               </Button>
             </div>
           {/if}
-        {:else if uploadStep === "checking"}
-          <div class="status-panel">
-            <div class="spinner"></div>
-            <p>Checking for duplicates...</p>
-          </div>
-        {:else if uploadStep === "duplicate"}
-          <div class="status-panel status-panel--warning">
-            <AlertCircle size={32} />
-            <p>This file already exists</p>
-            {#if duplicateMedia}
-              <span class="duplicate-name"
-                >{getMediaDisplayName(duplicateMedia)}</span
-              >
-            {/if}
-            <div class="upload-actions">
-              <Button variant="secondary" onclick={uploadAnyway}
-                >Upload as new</Button
-              >
-              <Button variant="primary" onclick={selectDuplicate}
-                >Use existing</Button
-              >
-            </div>
-          </div>
-        {:else if uploadStep === "uploading"}
-          <div class="status-panel">
-            <div class="progress-bar">
-              <div
-                class="progress-bar__fill"
-                style="width: {uploadProgress}%"
-              ></div>
-            </div>
-            <p>Uploading... {uploadProgress.toFixed(0)}%</p>
-          </div>
-        {:else if uploadStep === "finalising"}
-          <div class="status-panel">
-            <div class="spinner"></div>
-            <p>Finalising...</p>
-          </div>
-        {:else if uploadStep === "complete"}
-          <div class="status-panel status-panel--success">
-            <Check size={32} />
-            <p>Upload complete!</p>
-            <div class="upload-actions">
-              <Button variant="secondary" onclick={clearUpload}
-                >Upload another</Button
-              >
-              <Button variant="primary" onclick={selectUploaded}
-                >Use this media</Button
-              >
-            </div>
-          </div>
-        {:else if uploadStep === "error"}
-          <div class="status-panel status-panel--error">
-            <AlertCircle size={32} />
-            <p>{uploadError || "Upload failed"}</p>
-            <Button variant="secondary" onclick={clearUpload}>Try again</Button>
-          </div>
+        {:else}
+          <MediaUploadStatusPanel
+            {uploadStep}
+            {duplicateMedia}
+            {uploadProgress}
+            {uploadError}
+            onUploadAnyway={uploadAnyway}
+            onSelectDuplicate={selectDuplicate}
+            onClearUpload={clearUpload}
+            onSelectUploaded={selectUploaded}
+          />
         {/if}
       </div>
     </TabsContent>
@@ -488,71 +440,4 @@
     margin-top: 1rem;
   }
 
-  .upload-actions {
-    display: flex;
-    justify-content: center;
-    gap: 0.5rem;
-    margin-top: 1rem;
-  }
-
-  .status-panel {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 2rem;
-    text-align: center;
-  }
-
-  .status-panel p {
-    margin: 0;
-    color: var(--underlay-color-text-muted, #9ca3af);
-  }
-
-  .status-panel--warning {
-    color: var(--underlay-color-warning, #f59e0b);
-  }
-
-  .status-panel--success {
-    color: var(--underlay-color-success, #22c55e);
-  }
-
-  .status-panel--error {
-    color: var(--underlay-color-danger, #ef4444);
-  }
-
-  .duplicate-name {
-    font-weight: 500;
-    color: var(--underlay-color-text, #f3f4f6);
-  }
-
-  .spinner {
-    width: 32px;
-    height: 32px;
-    border: 3px solid var(--underlay-color-border, #374151);
-    border-top-color: var(--underlay-color-primary, #3b82f6);
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-  }
-
-  @keyframes spin {
-    to {
-      transform: rotate(360deg);
-    }
-  }
-
-  .progress-bar {
-    width: 100%;
-    max-width: 200px;
-    height: 6px;
-    background: var(--underlay-color-surface-raised, #374151);
-    border-radius: 3px;
-    overflow: hidden;
-  }
-
-  .progress-bar__fill {
-    height: 100%;
-    background: var(--underlay-color-primary, #3b82f6);
-    transition: width 0.1s ease-out;
-  }
 </style>
