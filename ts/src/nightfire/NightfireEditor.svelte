@@ -23,16 +23,19 @@
     type NightfireBlockOptionInput
   } from "./editor/grouped-options";
   import {
-    addBlockToList,
     createDefaultBlock,
-    moveBlockInList,
-    removeBlockFromList
   } from "./editor/block-list";
   import { resolveSchemaDefinition } from "./editor/schema-resolution";
   import {
-    SUMMARY_SCHEMA_ID,
-    transformSummaryBlockOnLayoutChange
-  } from "./editor/summary-transform";
+    addBlock as addEditorBlock,
+    asMultiBlockValue,
+    asSingleBlockValue,
+    changeBlockType,
+    changeSingleBlockType,
+    moveBlock as moveEditorBlock,
+    removeBlock as removeEditorBlock,
+    replaceBlockAtIndex
+  } from "./editor/value-updates";
 
   /**
    * Field-level Nightfire editor.
@@ -292,90 +295,43 @@
   }
 
   function handleSingleBlockChange(nextBlock: any) {
-    emit({
-      schema,
-      block: nextBlock,
-      blocks: undefined
-    });
+    emit(asSingleBlockValue(schema, nextBlock));
   }
 
   function handleBlockChange(index: number, nextBlock: any) {
-    const nextBlocks = blocks.slice();
-    nextBlocks[index] = nextBlock;
-    emit({
-      schema,
-      block: undefined,
-      blocks: nextBlocks
-    });
+    emit(asMultiBlockValue(schema, replaceBlockAtIndex(blocks, index, nextBlock)));
   }
 
   function handleSingleTypeChange(event: Event) {
     const select = event.currentTarget as HTMLSelectElement;
     const nextType = select.value;
-    const current = singleBlock ?? {};
-    let nextBlock: any = {
-      ...current,
-      type: nextType
-    };
-
-    if (schema === SUMMARY_SCHEMA_ID) {
-      const transformed = transformSummaryBlockOnLayoutChange(
-        current,
-        nextType,
-        getLabelForType
-      );
-      nextBlock = transformed.block;
-      typeChangeWarning = transformed.warning;
-    } else {
-      typeChangeWarning = null;
-    }
-
-    handleSingleBlockChange(nextBlock);
+    const transformed = changeSingleBlockType(schema, singleBlock, nextType, getLabelForType);
+    typeChangeWarning = transformed.warning;
+    handleSingleBlockChange(transformed.block);
   }
 
   function handleTypeChange(index: number, event: Event) {
     const select = event.currentTarget as HTMLSelectElement;
     const nextType = select.value;
-    const current = blocks[index] ?? {};
-
-    const nextBlock = {
-      ...current,
-      type: nextType
-    };
-
-    handleBlockChange(index, nextBlock);
+    handleBlockChange(index, changeBlockType(blocks[index], nextType));
   }
 
   function addBlock() {
     const defaultType =
       editorTypeOptions[0]?.type ?? effectiveDef.defaultType ?? "markdown";
-    const nextBlocks = addBlockToList(blocks, defaultType);
-    emit({
-      schema,
-      block: undefined,
-      blocks: nextBlocks
-    });
+    emit(asMultiBlockValue(schema, addEditorBlock(blocks, defaultType)));
   }
 
   function removeBlock(index: number) {
-    const nextBlocks = removeBlockFromList(blocks, index);
-    emit({
-      schema,
-      block: undefined,
-      blocks: nextBlocks
-    });
+    emit(asMultiBlockValue(schema, removeEditorBlock(blocks, index)));
   }
 
   function moveBlock(from: number, to: number) {
-    const nextBlocks = moveBlockInList(blocks, from, to);
+    const nextBlocks = moveEditorBlock(blocks, from, to);
     if (!nextBlocks) {
       return;
     }
-    emit({
-      schema,
-      block: undefined,
-      blocks: nextBlocks
-    });
+    emit(asMultiBlockValue(schema, nextBlocks));
   }
 
   // For required fields, ensure there is at least one block when the
