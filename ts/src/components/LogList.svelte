@@ -51,8 +51,8 @@
 <script lang="ts">
   import LogEntryItem from "./log-list/LogEntryItem.svelte";
   import LogListPagination from "./log-list/LogListPagination.svelte";
+  import LogListStatus from "./log-list/LogListStatus.svelte";
   import LogListToolbar from "./log-list/LogListToolbar.svelte";
-  import Activity from "lucide-svelte/icons/activity";
   import type { Snippet } from "svelte";
 
   interface Props {
@@ -229,20 +229,13 @@
 
   <!-- Content -->
   <div class="log-list__content">
-    {#if loading && entries.length === 0}
-      <div class="log-list__status">
-        <Activity size={24} class="log-list__status-icon spinning" />
-        <p>Loading log entries...</p>
-      </div>
-    {:else if error}
-      <div class="log-list__status log-list__status--error">
-        <p>{error}</p>
-      </div>
-    {:else if entries.length === 0}
-      <div class="log-list__status">
-        <Activity size={24} class="log-list__status-icon" />
-        <p>{emptyMessage}</p>
-      </div>
+    {#if loading || error || entries.length === 0}
+      <LogListStatus
+        {loading}
+        {error}
+        entriesCount={entries.length}
+        {emptyMessage}
+      />
     {:else}
       <ul class="log-list__entries">
         {#each entries as entry (entry.id)}
@@ -298,42 +291,6 @@
   /* Content */
   .log-list__content {
     min-height: 200px;
-  }
-
-  .log-list__status {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 0.75rem;
-    padding: 3rem 1rem;
-    color: var(--underlay-color-text-muted, #94a3b8);
-  }
-
-  .log-list__status p {
-    margin: 0;
-    font-size: 0.875rem;
-  }
-
-  .log-list__status--error {
-    color: var(--underlay-color-danger, #ef4444);
-  }
-
-  :global(.log-list__status-icon) {
-    opacity: 0.5;
-  }
-
-  :global(.spinning) {
-    animation: spin 1s linear infinite;
-  }
-
-  @keyframes spin {
-    from {
-      transform: rotate(0deg);
-    }
-    to {
-      transform: rotate(360deg);
-    }
   }
 
   /* Entries */

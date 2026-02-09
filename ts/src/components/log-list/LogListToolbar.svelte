@@ -84,7 +84,9 @@
         disabled={loading}
         title="Refresh"
       >
-        <RefreshCw size={14} class={loading ? "spinning" : ""} />
+        <span class={loading ? "spinning" : ""}>
+          <RefreshCw size={14} />
+        </span>
       </Button>
     {/if}
     {#if onExport}
@@ -139,5 +141,18 @@
     align-items: center;
     gap: 0.5rem;
     margin-left: auto;
+  }
+
+  .spinning {
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
   }
 </style>
