@@ -39,6 +39,10 @@
  */
 
 import { writable, get, type Writable, type Readable } from "svelte/store";
+import {
+  resolveActionFailureResult,
+  type ActionResult
+} from "./forms-action-result";
 
 // ============================================================================
 // Types
@@ -113,15 +117,6 @@ type EnhanceFn = (
 ) => {
   destroy?: () => void;
 };
-
-/** SvelteKit ActionResult type (simplified) */
-interface ActionResult {
-  type: "success" | "failure" | "redirect" | "error";
-  status?: number;
-  data?: Record<string, unknown>;
-  location?: string;
-  error?: Error;
-}
 
 // ============================================================================
 // Store-based implementation (Svelte 4 compatible, works with Svelte 5)
@@ -294,30 +289,7 @@ export function createFormState<T = unknown>(
           break;
 
         case "failure": {
-          // Extract error message and field errors from ActionData
-          const data = result.data ?? {};
-          const message =
-            typeof data.error === "string"
-              ? data.error
-              : typeof data.message === "string"
-                ? data.message
-                : "Validation failed";
-
-          const fieldErrors: FieldErrors = {};
-          if (
-            data.fieldErrors &&
-            typeof data.fieldErrors === "object" &&
-            !Array.isArray(data.fieldErrors)
-          ) {
-            for (const [key, value] of Object.entries(
-              data.fieldErrors as Record<string, unknown>
-            )) {
-              if (typeof value === "string") {
-                fieldErrors[key] = value;
-              }
-            }
-          }
-
+          const { message, fieldErrors } = resolveActionFailureResult(result.data);
           setError(message, fieldErrors);
           break;
         }
