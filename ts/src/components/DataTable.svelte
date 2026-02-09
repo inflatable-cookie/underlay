@@ -110,6 +110,13 @@
 		getRenderedCellValue,
 		getRenderedRowActions
 	} from "./data-table/render";
+	import {
+		getHideableColumns,
+		getTotalPages,
+		getVisibleColumns,
+		isAllSelected,
+		isSomeSelected
+	} from "./data-table/view";
 	import Skeleton from "./Skeleton.svelte";
 	import ToolbarControls from "./data-table/ToolbarControls.svelte";
 	import FilterCell from "./data-table/FilterCell.svelte";
@@ -232,13 +239,13 @@
 	});
 
 	// Computed - visible columns (excluding hidden ones)
-	let visibleColumns = $derived(columns.filter((col) => !hiddenColumns.has(col.key)));
-	let hideableColumns = $derived(columns.filter((col) => col.hideable !== false));
+	let visibleColumns = $derived(getVisibleColumns(columns, hiddenColumns));
+	let hideableColumns = $derived(getHideableColumns(columns));
 
 	// Computed
-	let totalPages = $derived(pagination ? Math.ceil(pagination.total / pagination.limit) : 1);
-	let allSelected = $derived(data.length > 0 && selected.length === data.length);
-	let someSelected = $derived(selected.length > 0 && selected.length < data.length);
+	let totalPages = $derived(getTotalPages(pagination));
+	let allSelected = $derived(isAllSelected(data.length, selected.length));
+	let someSelected = $derived(isSomeSelected(data.length, selected.length));
 
 	// Handle sort
 	function handleSort(column: DataTableColumn<T>) {
