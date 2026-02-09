@@ -2,13 +2,13 @@
   import { tick } from "svelte";
   import { Popover as BitsPopover } from "bits-ui";
   import Loader from "lucide-svelte/icons/loader-circle";
-  import Plus from "lucide-svelte/icons/plus";
   import Check from "lucide-svelte/icons/check";
   import X from "lucide-svelte/icons/x";
   import ChevronDown from "lucide-svelte/icons/chevron-down";
   import type { SelectableRelation, FilterConfig } from "./types.js";
   import { useRelationSelector } from "./context.svelte.js";
   import Button from "../../components/Button.svelte";
+  import RelationSelectorPopoverCreateAction from "./RelationSelectorPopoverCreateAction.svelte";
   import RelationSelectorPopoverSearch from "./RelationSelectorPopoverSearch.svelte";
 
   const ctx = useRelationSelector<SelectableRelation>();
@@ -413,18 +413,12 @@
       </div>
     {/if}
 
-    {#if ctx.props.allowCreate && ctx.props.createForm}
-      <div class="relation-selector-popover__create">
-        <button
-          type="button"
-          class="relation-selector-popover__create-button"
-          onclick={handleCreateClick}
-        >
-          <Plus size="0.9em" />
-          <span>{ctx.props.createLabel ?? "Add new"}</span>
-        </button>
-      </div>
-    {/if}
+    <RelationSelectorPopoverCreateAction
+      allowCreate={ctx.props.allowCreate}
+      hasCreateForm={!!ctx.props.createForm}
+      createLabel={ctx.props.createLabel ?? "Add new"}
+      onCreate={handleCreateClick}
+    />
   </div>
 
   {#if ctx.isMultiSelect}
@@ -748,38 +742,6 @@
 
   .relation-selector-popover__error-retry:hover {
     background: rgba(255, 255, 255, 0.15);
-  }
-
-  .relation-selector-popover__create {
-    border-top: 1px solid var(--underlay-color-border-subtle, rgba(148, 163, 184, 0.3));
-    margin-top: 0.35rem;
-    padding-top: 0.5rem;
-    margin-bottom: 0.5rem;
-  }
-
-  .relation-selector-popover__create-button {
-    display: flex;
-    align-items: center;
-    gap: 0.35rem;
-    width: 100%;
-    padding: 0.45rem 0.5rem;
-    border: none;
-    border-radius: 0.3rem;
-    background: transparent;
-    color: var(--underlay-color-primary, #2563eb);
-    font-size: 0.8rem;
-    cursor: pointer;
-    text-align: left;
-  }
-
-  .relation-selector-popover__create-button:hover {
-    background: var(--underlay-color-hover-bg, rgba(148, 163, 184, 0.15));
-  }
-
-  .relation-selector-popover__create-button:focus-visible {
-    outline: var(--underlay-focus-ring-width, 2px) solid
-      var(--underlay-color-primary, #2563eb);
-    outline-offset: -1px;
   }
 
   .relation-selector-popover__footer {
