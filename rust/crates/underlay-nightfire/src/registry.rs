@@ -148,7 +148,6 @@ mod tests {
     #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
     enum TestCategory {
         Text,
-        Media,
     }
 
     fn make_block(type_name: &str) -> BlockData {
