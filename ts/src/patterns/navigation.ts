@@ -27,6 +27,7 @@
  */
 
 import { storage } from "./storage";
+import { buildPushedContextStack } from "./navigation-stack";
 
 // ============================================================================
 // Types
@@ -148,26 +149,9 @@ function saveContextStack(stack: NavigationContext[]): void {
  * ```
  */
 export function pushNavigationContext(context: NavigationContext): void {
-  let stack = getContextStack();
-
-  // Deduplication: if this href already exists, remove it first
-  stack = stack.filter((c) => c.href !== context.href);
-
-  // Same-type collapse: list→list replaces top (keeps detail breadcrumbs)
-  const shouldCollapseSameType = context.type === "list";
-
-  if (shouldCollapseSameType && stack.length > 0 && stack[stack.length - 1].type === context.type) {
-    stack[stack.length - 1] = context;
-  } else {
-    stack.push(context);
-  }
-
-  // Enforce max depth
-  if (stack.length > config.maxDepth) {
-    stack = stack.slice(-config.maxDepth);
-  }
-
-  saveContextStack(stack);
+  const stack = getContextStack();
+  const nextStack = buildPushedContextStack(stack, context, config.maxDepth);
+  saveContextStack(nextStack);
 }
 
 /**
