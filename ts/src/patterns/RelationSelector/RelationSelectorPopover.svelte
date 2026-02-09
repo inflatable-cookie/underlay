@@ -9,6 +9,7 @@
   import { useRelationSelector } from "./context.svelte.js";
   import Button from "../../components/Button.svelte";
   import RelationSelectorPopoverCreateAction from "./RelationSelectorPopoverCreateAction.svelte";
+  import RelationSelectorPopoverListSection from "./RelationSelectorPopoverListSection.svelte";
   import RelationSelectorPopoverSearch from "./RelationSelectorPopoverSearch.svelte";
 
   const ctx = useRelationSelector<SelectableRelation>();
@@ -311,93 +312,29 @@
     {/if}
 
     {#if showSuggestions}
-      <div class="relation-selector-popover__section">
-        <div class="relation-selector-popover__section-label">
-          {ctx.props.suggestionsLabel ?? "Suggestions"}
-        </div>
-        <ul
-          bind:this={listRef}
-          class="relation-selector-popover__list"
-          role="listbox"
-          id="relation-selector-popover-list"
-          onkeydown={(e) => handleListKeyDown(e, ctx.state.suggestionItems)}
-        >
-          {#each ctx.state.suggestionItems as item, index (item.id)}
-            {@const selected = ctx.isSelected(item.id)}
-            <li
-              class="relation-selector-popover__item"
-              class:relation-selector-popover__item--selected={selected}
-              class:relation-selector-popover__item--disabled={item.disabled}
-              class:relation-selector-popover__item--focused={focusedIndex === index}
-              role="option"
-              aria-selected={selected}
-              onclick={() => handleItemClick(item)}
-              tabindex={item.disabled ? -1 : 0}
-            >
-              {#if ctx.props.renderItem}
-                {@render ctx.props.renderItem(item as never, selected)}
-              {:else}
-                <div class="relation-selector-popover__item-content">
-                  <span class="relation-selector-popover__item-label">{item.label}</span>
-                  {#if item.description}
-                    <span class="relation-selector-popover__item-description">
-                      {item.description}
-                    </span>
-                  {/if}
-                </div>
-                {#if selected}
-                  <Check size="0.9em" class="relation-selector-popover__item-check" />
-                {/if}
-              {/if}
-            </li>
-          {/each}
-        </ul>
-      </div>
+      <RelationSelectorPopoverListSection
+        label={ctx.props.suggestionsLabel ?? "Suggestions"}
+        items={ctx.state.suggestionItems}
+        {focusedIndex}
+        isSelected={ctx.isSelected}
+        onItemClick={handleItemClick}
+        onListKeyDown={handleListKeyDown}
+        renderItem={ctx.props.renderItem as any}
+        onListRef={(node) => (listRef = node)}
+      />
     {/if}
 
     {#if showSearchResults}
-      <div class="relation-selector-popover__section">
-        <div class="relation-selector-popover__section-label">
-          Results ({ctx.state.searchTotal})
-        </div>
-        <ul
-          bind:this={listRef}
-          class="relation-selector-popover__list"
-          role="listbox"
-          id="relation-selector-popover-list"
-          onkeydown={(e) => handleListKeyDown(e, ctx.state.searchResults)}
-        >
-          {#each ctx.state.searchResults as item, index (item.id)}
-            {@const selected = ctx.isSelected(item.id)}
-            <li
-              class="relation-selector-popover__item"
-              class:relation-selector-popover__item--selected={selected}
-              class:relation-selector-popover__item--disabled={item.disabled}
-              class:relation-selector-popover__item--focused={focusedIndex === index}
-              role="option"
-              aria-selected={selected}
-              onclick={() => handleItemClick(item)}
-              tabindex={item.disabled ? -1 : 0}
-            >
-              {#if ctx.props.renderItem}
-                {@render ctx.props.renderItem(item as never, selected)}
-              {:else}
-                <div class="relation-selector-popover__item-content">
-                  <span class="relation-selector-popover__item-label">{item.label}</span>
-                  {#if item.description}
-                    <span class="relation-selector-popover__item-description">
-                      {item.description}
-                    </span>
-                  {/if}
-                </div>
-                {#if selected}
-                  <Check size="0.9em" class="relation-selector-popover__item-check" />
-                {/if}
-              {/if}
-            </li>
-          {/each}
-        </ul>
-      </div>
+      <RelationSelectorPopoverListSection
+        label={`Results (${ctx.state.searchTotal})`}
+        items={ctx.state.searchResults}
+        {focusedIndex}
+        isSelected={ctx.isSelected}
+        onItemClick={handleItemClick}
+        onListKeyDown={handleListKeyDown}
+        renderItem={ctx.props.renderItem as any}
+        onListRef={(node) => (listRef = node)}
+      />
     {/if}
 
     {#if showEmpty}
@@ -604,94 +541,6 @@
     flex: 1;
     overflow-y: auto;
     padding: 0 0.75rem;
-  }
-
-  .relation-selector-popover__section {
-    margin-bottom: 0.5rem;
-  }
-
-  .relation-selector-popover__section-label {
-    font-size: 0.65rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    color: var(--underlay-color-text-muted, #9ca3af);
-    margin-bottom: 0.35rem;
-  }
-
-  .relation-selector-popover__list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0.1rem;
-  }
-
-  .relation-selector-popover__item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.4rem;
-    padding: 0.4rem 0.5rem;
-    border-radius: 0.3rem;
-    cursor: pointer;
-    user-select: none;
-    font-size: 0.8rem;
-    color: var(--underlay-color-text, #e5e7eb);
-  }
-
-  .relation-selector-popover__item:hover:not(.relation-selector-popover__item--disabled) {
-    background: var(--underlay-color-hover-bg, rgba(148, 163, 184, 0.2));
-  }
-
-  .relation-selector-popover__item:focus-visible,
-  .relation-selector-popover__item--focused {
-    outline: var(--underlay-focus-ring-width, 2px) solid
-      var(--underlay-color-primary, #2563eb);
-    outline-offset: -1px;
-  }
-
-  .relation-selector-popover__item--selected {
-    background: var(--underlay-color-primary, #2563eb);
-    color: var(--underlay-color-on-primary, white);
-  }
-
-  .relation-selector-popover__item--selected:hover {
-    background: var(--underlay-color-primary-strong, #1d4ed8);
-  }
-
-  .relation-selector-popover__item--disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-
-  .relation-selector-popover__item-content {
-    display: flex;
-    flex-direction: column;
-    gap: 0.05rem;
-    min-width: 0;
-    flex: 1;
-  }
-
-  .relation-selector-popover__item-label {
-    font-weight: 500;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .relation-selector-popover__item-description {
-    font-size: 0.75em;
-    opacity: 0.7;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  :global(.relation-selector-popover__item-check) {
-    flex-shrink: 0;
-    opacity: 0.9;
   }
 
   .relation-selector-popover__empty {
