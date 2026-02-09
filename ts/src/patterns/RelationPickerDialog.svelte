@@ -4,8 +4,8 @@
   import { Dialog as BitsDialog } from "bits-ui";
   import Loader from "lucide-svelte/icons/loader-circle";
   import X from "lucide-svelte/icons/x";
-  import Button from "../components/Button.svelte";
   import RelationPickerCreateButton from "./relation-picker/RelationPickerCreateButton.svelte";
+  import RelationPickerFooter from "./relation-picker/RelationPickerFooter.svelte";
   import RelationPickerList from "./relation-picker/RelationPickerList.svelte";
   import RelationPickerSearch from "./relation-picker/RelationPickerSearch.svelte";
   import type { PickableItem, PickerSection } from "./relation-picker-types.js";
@@ -391,20 +391,14 @@
         {/if}
       </div>
 
-      {#if footer}
-        <div class="relation-picker-dialog__footer">
-          {@render footer()}
-        </div>
-      {:else if multiSelect && !createFormOpen}
-        <div class="relation-picker-dialog__footer">
-          <Button variant="subtle" onclick={() => onCancel?.()}>
-            Cancel
-          </Button>
-          <Button variant="primary" onclick={() => onConfirm?.()}>
-            Confirm ({selectedCount})
-          </Button>
-        </div>
-      {/if}
+      <RelationPickerFooter
+        {footer}
+        {multiSelect}
+        {createFormOpen}
+        {selectedCount}
+        {onCancel}
+        {onConfirm}
+      />
     </BitsDialog.Content>
   </BitsDialog.Portal>
 </BitsDialog.Root>
@@ -570,12 +564,4 @@
     margin: 0.5rem 0 1rem;
   }
 
-  .relation-picker-dialog__footer {
-    display: flex;
-    justify-content: flex-end;
-    gap: 0.5rem;
-    padding: 0.75rem 1rem 1rem;
-    border-top: 1px solid var(--underlay-color-border-subtle, rgba(148, 163, 184, 0.3));
-    flex-shrink: 0;
-  }
 </style>
