@@ -28,16 +28,13 @@
   import type { Snippet } from "svelte";
   import { untrack } from "svelte";
 
-  import Button from "../Button.svelte";
   import Card from "../Card.svelte";
-  import FormActions from "../FormActions.svelte";
-  import FormError from "../FormError.svelte";
   import TabsContent from "../TabsContent.svelte";
   import TabsList from "../TabsList.svelte";
   import TabsRoot from "../TabsRoot.svelte";
   import TabsTrigger from "../TabsTrigger.svelte";
 
-  import GoogleSignInButton from "./GoogleSignInButton.svelte";
+  import LoginGoogleTab from "./LoginGoogleTab.svelte";
   import LoginPasskeyTab from "./LoginPasskeyTab.svelte";
   import LoginPasswordForm from "./LoginPasswordForm.svelte";
   import LoginSetupPrompt from "./LoginSetupPrompt.svelte";
@@ -380,19 +377,13 @@
 
         {#if methods.includes("google")}
           <TabsContent value="google">
-            <div class="underlay-login-page__google">
-              <p class="underlay-login-page__hint">{googleHint}</p>
-
-              <FormError message={error} />
-
-              <FormActions>
-                {#if onGoogleLogin}
-                  <GoogleSignInButton onclick={handleGoogleLogin} disabled={loading} />
-                {:else}
-                  <Button disabled>Google sign-in not configured</Button>
-                {/if}
-              </FormActions>
-            </div>
+            <LoginGoogleTab
+              {googleHint}
+              {loading}
+              {error}
+              {onGoogleLogin}
+              onGoogleClick={handleGoogleLogin}
+            />
           </TabsContent>
         {/if}
       </TabsRoot>
@@ -408,28 +399,10 @@
 </Card>
 
 <style>
-  .underlay-login-page__google {
-    display: flex;
-    flex-direction: column;
-    gap: var(--underlay-density-gap, 0.75rem);
-  }
-
-  .underlay-login-page__google {
-    align-items: center;
-    text-align: center;
-  }
-
   .underlay-login-page__tabs {
     display: flex;
     justify-content: center;
     margin-bottom: var(--underlay-space-3, 0.75rem);
-  }
-
-  .underlay-login-page__hint {
-    margin: 0;
-    font-size: var(--underlay-font-size-sm, 0.875rem);
-    line-height: 1.5;
-    color: var(--underlay-color-text-muted, #64748b);
   }
 
   .underlay-login-page__register {
