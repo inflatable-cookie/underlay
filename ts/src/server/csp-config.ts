@@ -3,7 +3,7 @@ import type {
   CspSource,
   ResolvedCspConfig,
   SecurityHeadersConfig
-} from "./csp";
+} from "./csp-types";
 
 export const DEFAULT_CSP_CONFIG: ResolvedCspConfig = {
   defaultSrc: ["'self'"],

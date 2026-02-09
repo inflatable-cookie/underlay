@@ -35,165 +35,19 @@ import {
   resolveSecurityHeadersConfig
 } from "./csp-config";
 export { createCspResolveOptions } from "./csp-resolve";
-
-// ============================================================================
-// Types
-// ============================================================================
-
-/**
- * CSP directive sources that can be used in policies.
- */
-export type CspSource = string;
-
-/**
- * Configuration for Content Security Policy.
- *
- * All array properties are additive to sensible defaults.
- * Set to `false` to disable that directive entirely.
- *
- * Note: In development with Vite, CSP headers should be skipped entirely
- * since Vite's HMR requires inline scripts that conflict with nonce-based CSP.
- * The CSP spec ignores 'unsafe-inline' when a nonce is present.
- */
-export interface CspConfig {
-  /**
-   * Base default-src. Defaults to ["'self'"].
-   */
-  defaultSrc?: CspSource[] | false;
-
-  /**
-   * Script sources. Nonce is automatically added.
-   * Defaults to ["'self'"].
-   */
-  scriptSrc?: CspSource[] | false;
-
-  /**
-   * Style sources.
-   * Defaults to ["'self'", "'unsafe-inline'"] (needed for component styles).
-   */
-  styleSrc?: CspSource[] | false;
-
-  /**
-   * Image sources.
-   * Defaults to ["'self'", "data:", "https:"].
-   */
-  imgSrc?: CspSource[] | false;
-
-  /**
-   * Font sources.
-   * Defaults to ["'self'"].
-   */
-  fontSrc?: CspSource[] | false;
-
-  /**
-   * Connect sources (fetch, XHR, WebSocket).
-   * Defaults to ["'self'"]. Add your API URLs here.
-   */
-  connectSrc?: CspSource[] | false;
-
-  /**
-   * Frame sources (iframes).
-   * Defaults to ["'self'"]. Add video embed domains here.
-   */
-  frameSrc?: CspSource[] | false;
-
-  /**
-   * Media sources (audio, video).
-   * Defaults to ["'self'"].
-   */
-  mediaSrc?: CspSource[] | false;
-
-  /**
-   * Object/embed sources.
-   * Defaults to ["'none'"] (blocks plugins).
-   */
-  objectSrc?: CspSource[] | false;
-
-  /**
-   * Form action targets.
-   * Defaults to ["'self'"].
-   */
-  formAction?: CspSource[] | false;
-
-  /**
-   * Base URI for relative URLs.
-   * Defaults to ["'self'"].
-   */
-  baseUri?: CspSource[] | false;
-
-  /**
-   * Frame ancestors (who can embed this page).
-   * Defaults to ["'none'"] (prevents clickjacking).
-   */
-  frameAncestors?: CspSource[] | false;
-
-  /**
-   * Whether to use report-only mode.
-   * Defaults to false (enforcing mode).
-   */
-  reportOnly?: boolean;
-
-  /**
-   * Report URI for CSP violations.
-   * Optional - if set, violations will be reported to this endpoint.
-   */
-  reportUri?: string;
-}
-
-/**
- * Resolved CSP configuration with all defaults applied.
- */
-export interface ResolvedCspConfig {
-  defaultSrc: CspSource[];
-  scriptSrc: CspSource[];
-  styleSrc: CspSource[];
-  imgSrc: CspSource[];
-  fontSrc: CspSource[];
-  connectSrc: CspSource[];
-  frameSrc: CspSource[];
-  mediaSrc: CspSource[];
-  objectSrc: CspSource[];
-  formAction: CspSource[];
-  baseUri: CspSource[];
-  frameAncestors: CspSource[];
-  reportOnly: boolean;
-  reportUri?: string;
-}
-
-/**
- * Additional security headers that complement CSP.
- */
-export interface SecurityHeadersConfig {
-  /**
-   * X-Content-Type-Options header.
-   * Defaults to "nosniff".
-   */
-  contentTypeOptions?: string | false;
-
-  /**
-   * X-Frame-Options header.
-   * Defaults to "DENY".
-   */
-  frameOptions?: string | false;
-
-  /**
-   * Referrer-Policy header.
-   * Defaults to "strict-origin-when-cross-origin".
-   */
-  referrerPolicy?: string | false;
-
-  /**
-   * X-XSS-Protection header.
-   * Defaults to false (modern browsers use CSP instead).
-   */
-  xssProtection?: string | false;
-
-  /**
-   * Permissions-Policy header.
-   * Optional - set to configure browser feature permissions.
-   */
-  permissionsPolicy?: string | false;
-}
+export type {
+  CspSource,
+  CspConfig,
+  ResolvedCspConfig,
+  SecurityHeadersConfig,
+  CspHandleOptions
+} from "./csp-types";
+import type {
+  CspSource,
+  CspConfig,
+  ResolvedCspConfig,
+  SecurityHeadersConfig
+} from "./csp-types";
 
 // ============================================================================
 // Nonce Generation
@@ -363,19 +217,3 @@ export function applyCspHeaders(
 // ============================================================================
 // SvelteKit Integration
 // ============================================================================
-
-/**
- * Options for the SvelteKit CSP handle wrapper.
- */
-export interface CspHandleOptions {
-  /**
-   * CSP configuration.
-   */
-  csp: ResolvedCspConfig;
-
-  /**
-   * Security headers configuration.
-   * Defaults to sensible security headers.
-   */
-  securityHeaders?: SecurityHeadersConfig;
-}
