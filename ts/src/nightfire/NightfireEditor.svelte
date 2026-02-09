@@ -27,6 +27,7 @@
     createRequiredInitialValue,
     type NightfireFieldMode
   } from "./editor/field-lifecycle";
+  import NightfireTypeSelect from "./editor/NightfireTypeSelect.svelte";
   import {
     addBlock as addEditorBlock,
     asMultiBlockValue,
@@ -374,39 +375,14 @@
   {#if !isMulti}
     <div class="nightfire-field-single">
       <div class="nightfire-field-single__toolbar">
-        <select
+        <NightfireTypeSelect
           value={(singleBlock as any)?.type ??
             editorTypeOptions[0]?.type ??
             effectiveDef.defaultType}
-          onchange={(event) => handleSingleTypeChange(event)}
-          aria-label="Block type"
-        >
-          {#if groupedOptions}
-            {#each groupedOptions as group}
-              {#if group.category}
-                <optgroup label={group.label}>
-                  {#each group.options as opt}
-                    <option value={opt.type}>
-                      {opt.label}
-                    </option>
-                  {/each}
-                </optgroup>
-              {:else}
-                {#each group.options as opt}
-                  <option value={opt.type}>
-                    {opt.label}
-                  </option>
-                {/each}
-              {/if}
-            {/each}
-          {:else}
-            {#each editorTypeOptions as opt}
-              <option value={opt.type}>
-                {opt.label}
-              </option>
-            {/each}
-          {/if}
-        </select>
+          onChange={(event) => handleSingleTypeChange(event)}
+          {groupedOptions}
+          typeOptions={editorTypeOptions}
+        />
       </div>
       <NightfireBlockEditor
         schema={editorSchema}
@@ -421,39 +397,14 @@
       {#each blocks as block, index (index)}
         <div class="nightfire-field-multi__item">
           <div class="nightfire-field-multi__toolbar">
-            <select
+            <NightfireTypeSelect
               value={(block as any)?.type ??
                 editorTypeOptions[0]?.type ??
                 effectiveDef.defaultType}
-              onchange={(event) => handleTypeChange(index, event)}
-              aria-label="Block type"
-            >
-              {#if groupedOptions}
-                {#each groupedOptions as group}
-                  {#if group.category}
-                    <optgroup label={group.label}>
-                      {#each group.options as opt}
-                        <option value={opt.type}>
-                          {opt.label}
-                        </option>
-                      {/each}
-                    </optgroup>
-                  {:else}
-                    {#each group.options as opt}
-                      <option value={opt.type}>
-                        {opt.label}
-                      </option>
-                    {/each}
-                  {/if}
-                {/each}
-              {:else}
-                {#each editorTypeOptions as opt}
-                  <option value={opt.type}>
-                    {opt.label}
-                  </option>
-                {/each}
-              {/if}
-            </select>
+              onChange={(event) => handleTypeChange(index, event)}
+              {groupedOptions}
+              typeOptions={editorTypeOptions}
+            />
             <div class="nightfire-field-multi__controls">
               <button
                 type="button"
@@ -535,40 +486,10 @@
     gap: var(--underlay-space-2);
   }
 
-  .nightfire-field-single__toolbar select {
-    padding: var(--underlay-field-padding-block) var(--underlay-field-padding-inline);
-    border-radius: var(--underlay-radius-sm);
-    border: none;
-    background: var(--underlay-color-field-bg);
-    color: var(--underlay-color-text);
-    font-size: calc(1em * var(--underlay-font-scale-xs));
-  }
-
-  .nightfire-field-single__toolbar select:focus,
-  .nightfire-field-single__toolbar select:focus-visible {
-    outline: var(--underlay-focus-ring-width) solid var(--underlay-color-primary);
-    outline-offset: var(--underlay-focus-ring-offset);
-  }
-
   .nightfire-field-multi__toolbar {
     display: flex;
     align-items: center;
     gap: var(--underlay-space-2);
-  }
-
-  .nightfire-field-multi__toolbar select {
-    padding: var(--underlay-field-padding-block) var(--underlay-field-padding-inline);
-    border-radius: var(--underlay-radius-sm);
-    border: none;
-    background: var(--underlay-color-field-bg);
-    color: var(--underlay-color-text);
-    font-size: calc(1em * var(--underlay-font-scale-xs));
-  }
-
-  .nightfire-field-multi__toolbar select:focus,
-  .nightfire-field-multi__toolbar select:focus-visible {
-    outline: var(--underlay-focus-ring-width) solid var(--underlay-color-primary);
-    outline-offset: var(--underlay-focus-ring-offset);
   }
 
   .nightfire-field-multi__item {
