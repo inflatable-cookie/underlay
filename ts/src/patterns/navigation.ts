@@ -29,6 +29,11 @@
 import { storage } from "./storage";
 import { matchesCurrentPath } from "./navigation-path";
 import { buildPushedContextStack } from "./navigation-stack";
+import {
+  resolveBackButtonInfo,
+  consumeBackNavigation,
+  computeResolvedBackInfo
+} from "./navigation-back-info";
 export {
   storePageState,
   retrievePageState,
@@ -255,29 +260,12 @@ export function getBackButtonInfo(
   fallbackLabel: string,
   fallbackHref: string
 ): BackButtonInfo {
-  const context = peekNavigationContext();
-
-  if (context?.targetHref && !matchesCurrentPath(context.targetHref)) {
-    return {
-      label: fallbackLabel,
-      href: fallbackHref,
-      isContextual: false
-    };
-  }
-
-  if (context) {
-    return {
-      label: `Back to ${context.label}`,
-      href: context.href,
-      isContextual: true
-    };
-  }
-
-  return {
-    label: fallbackLabel,
-    href: fallbackHref,
-    isContextual: false
-  };
+  return resolveBackButtonInfo(
+    peekNavigationContext(),
+    fallbackLabel,
+    fallbackHref,
+    matchesCurrentPath
+  );
 }
 
 /**
@@ -315,33 +303,12 @@ export function consumeNavigationContext(
   fallbackLabel: string,
   fallbackHref: string
 ): { backInfo: BackButtonInfo; returnTo: string } {
-  const context = popNavigationContext();
-
-  // Validate context: if targetHref was set, it must match current pathname
-  if (context) {
-    const isValid = !context.targetHref || matchesCurrentPath(context.targetHref);
-    
-    if (isValid) {
-      return {
-        backInfo: {
-          label: `Back to ${context.label}`,
-          href: context.href,
-          isContextual: true
-        },
-        returnTo: context.href
-      };
-    }
-    // Context is stale - fall through to return fallbacks
-  }
-
-  return {
-    backInfo: {
-      label: fallbackLabel,
-      href: fallbackHref,
-      isContextual: false
-    },
-    returnTo: fallbackHref
-  };
+  return consumeBackNavigation(
+    popNavigationContext(),
+    fallbackLabel,
+    fallbackHref,
+    matchesCurrentPath
+  );
 }
 
 /**
@@ -400,20 +367,5 @@ export function computeBackInfo(
   backInfo: BackButtonInfo,
   fallback?: { href: string; label: string }
 ): BackButtonInfo {
-  // Always respect contextual navigation - the user's actual path
-  if (backInfo.isContextual) {
-    return backInfo;
-  }
-
-  // Use provided fallback if available (e.g., when data has loaded)
-  if (fallback) {
-    return {
-      href: fallback.href,
-      label: fallback.label,
-      isContextual: false
-    };
-  }
-
-  // Fall back to the original backInfo (from consumeNavigationContext defaults)
-  return backInfo;
+  return computeResolvedBackInfo(backInfo, fallback);
 }
