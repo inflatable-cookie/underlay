@@ -41,6 +41,7 @@
   import TextInput from "../TextInput.svelte";
 
   import GoogleSignInButton from "./GoogleSignInButton.svelte";
+  import LoginPasswordForm from "./LoginPasswordForm.svelte";
   import PassKeyButton from "./PassKeyButton.svelte";
   import TwoFactorStep from "./TwoFactorStep.svelte";
 
@@ -362,41 +363,14 @@
     {#if !showTabs}
       <!-- Single method - no tabs -->
       {#if methods.includes("password")}
-        <form onsubmit={handlePasswordLogin} class="underlay-login-page__form">
-          <Field label="Email">
-            <TextInput
-              name="email"
-              type="email"
-              bind:value={email}
-              autocomplete="email"
-              required
-              disabled={loading}
-            />
-          </Field>
-
-          <Field label="Password">
-            <TextInput
-              name="password"
-              type="password"
-              bind:value={password}
-              autocomplete="current-password"
-              required
-              disabled={loading}
-            />
-          </Field>
-
-          <FormError message={error} />
-
-          <FormActions>
-            <Button type="submit" variant="primary" disabled={loading}>
-              {loading ? "Logging in..." : "Log in"}
-            </Button>
-            {#if forgotPasswordHref}
-              <span class="underlay-login-page__spacer"></span>
-              <a href={forgotPasswordHref} class="underlay-login-page__link">Forgot password?</a>
-            {/if}
-          </FormActions>
-        </form>
+        <LoginPasswordForm
+          bind:email
+          bind:password
+          {loading}
+          {error}
+          {forgotPasswordHref}
+          onSubmit={handlePasswordLogin}
+        />
       {/if}
     {:else}
       <!-- Multiple methods - show tabs -->
@@ -417,41 +391,14 @@
 
         {#if methods.includes("password")}
           <TabsContent value="password">
-            <form onsubmit={handlePasswordLogin} class="underlay-login-page__form">
-              <Field label="Email">
-                <TextInput
-                  name="email"
-                  type="email"
-                  bind:value={email}
-                  autocomplete="email"
-                  required
-                  disabled={loading}
-                />
-              </Field>
-
-              <Field label="Password">
-                <TextInput
-                  name="password"
-                  type="password"
-                  bind:value={password}
-                  autocomplete="current-password"
-                  required
-                  disabled={loading}
-                />
-              </Field>
-
-              <FormError message={error} />
-
-              <FormActions>
-                <Button type="submit" variant="primary" disabled={loading}>
-                  {loading ? "Logging in..." : "Log in"}
-                </Button>
-                {#if forgotPasswordHref}
-                  <span class="underlay-login-page__spacer"></span>
-                  <a href={forgotPasswordHref} class="underlay-login-page__link">Forgot password?</a>
-                {/if}
-              </FormActions>
-            </form>
+            <LoginPasswordForm
+              bind:email
+              bind:password
+              {loading}
+              {error}
+              {forgotPasswordHref}
+              onSubmit={handlePasswordLogin}
+            />
           </TabsContent>
         {/if}
 
@@ -517,12 +464,6 @@
 </Card>
 
 <style>
-  .underlay-login-page__form {
-    display: flex;
-    flex-direction: column;
-    gap: var(--underlay-density-gap, 0.75rem);
-  }
-
   .underlay-login-page__passkey,
   .underlay-login-page__google {
     display: flex;
@@ -556,20 +497,6 @@
   .underlay-login-page__setup-skip {
     margin-top: var(--underlay-space-3, 0.75rem);
     text-align: center;
-  }
-
-  .underlay-login-page__spacer {
-    flex: 1;
-  }
-
-  .underlay-login-page__link {
-    color: var(--underlay-color-accent, #3b82f6);
-    font-size: var(--underlay-font-size-sm, 0.85rem);
-    text-decoration: underline;
-  }
-
-  .underlay-login-page__link:hover {
-    text-decoration-thickness: 2px;
   }
 
   .underlay-login-page__register {
