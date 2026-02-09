@@ -104,12 +104,7 @@
 	import {
 		toggleHiddenColumn,
 	} from "./data-table/state";
-	import {
-		buildGridColumns,
-		getRenderedActionHref,
-		getRenderedCellValue,
-		getRenderedRowActions
-	} from "./data-table/render";
+	import { buildGridColumns } from "./data-table/render";
 	import {
 		getHideableColumns,
 		getTotalPages,
@@ -117,12 +112,10 @@
 		isAllSelected,
 		isSomeSelected
 	} from "./data-table/view";
-	import EmptyState from "./data-table/EmptyState.svelte";
-	import LoadingRow from "./data-table/LoadingRow.svelte";
+	import TableBody from "./data-table/TableBody.svelte";
 	import TableHeader from "./data-table/TableHeader.svelte";
 	import TableToolbar from "./data-table/TableToolbar.svelte";
 	import PaginationFooter from "./data-table/PaginationFooter.svelte";
-	import RowActionsCell from "./data-table/RowActionsCell.svelte";
 
 	interface Props {
 		/** Data rows */
@@ -341,75 +334,24 @@
 		onFilterChange={handleFilterChange}
 	/>
 
-	<!-- Body -->
-	<div class="table-body" role="rowgroup">
-		{#if loading}
-			{#each Array(loadingRows) as _, i}
-				<LoadingRow {selectable} {visibleColumns} showActions={hasActions} />
-			{/each}
-		{:else if data.length === 0}
-			<EmptyState message={emptyMessage} {empty} />
-		{:else}
-			{#each data as row, rowIndex}
-				{@const rowActions = getRenderedRowActions(row, actions)}
-				<!-- svelte-ignore a11y_click_events_have_key_events -->
-				<div
-					class="table-row"
-					class:selected={selected.includes(row)}
-					class:has-extended={!!extendedRow && extendedRowWhen(row)}
-					class:clickable={!!onRowClick}
-					role="row"
-					tabindex={onRowClick ? 0 : undefined}
-					onclick={() => onRowClick?.(row)}
-				>
-					{#if selectable}
-						<div class="table-cell checkbox-cell" role="cell">
-							<input
-								type="checkbox"
-								checked={selected.includes(row)}
-								onchange={() => handleSelectRow(row)}
-								aria-label={`Select row ${rowIndex + 1}`}
-							/>
-						</div>
-					{/if}
-
-					{#each visibleColumns as column}
-						<div
-							class="table-cell"
-							class:hide-mobile={column.hideOnMobile}
-							class:align-center={column.align === "center"}
-							class:align-right={column.align === "right"}
-							role="cell"
-						>
-							{#if cell}
-								{@render cell({ column, row, value: getRenderedCellValue(row, column) })}
-							{:else}
-								{getRenderedCellValue(row, column)}
-							{/if}
-						</div>
-					{/each}
-
-					{#if hasActions}
-						<div class="table-cell actions-cell" role="cell">
-							<RowActionsCell
-								{row}
-								{rowActions}
-								getActionHref={getRenderedActionHref}
-								onActionClick={handleActionClick}
-							/>
-						</div>
-					{/if}
-				</div>
-				{#if extendedRow && extendedRowWhen(row)}
-					<div class="table-row table-row--extended" role="row">
-						<div class="table-cell table-cell--extended" role="cell">
-							{@render extendedRow({ row })}
-						</div>
-					</div>
-				{/if}
-			{/each}
-		{/if}
-	</div>
+	<TableBody
+		{data}
+		{actions}
+		{loading}
+		{loadingRows}
+		{selectable}
+		{visibleColumns}
+		{hasActions}
+		{selected}
+		{emptyMessage}
+		{onRowClick}
+		onSelectRow={handleSelectRow}
+		onActionClick={handleActionClick}
+		{empty}
+		{cell}
+		{extendedRow}
+		{extendedRowWhen}
+	/>
 
 	<!-- Pagination -->
 	{#if pagination && (totalPages > 1 || showLimitSelector)}
@@ -450,107 +392,4 @@
 		min-width: fit-content;
 	}
 
-	.table-body {
-		display: contents;
-	}
-
-	.table-row {
-		display: contents;
-	}
-
-	/* Data rows - border on cells */
-	.table-body > .table-row > .table-cell {
-		border-bottom: var(--dt-border);
-	}
-
-	.table-body > .table-row.has-extended > .table-cell {
-		border-bottom: none;
-	}
-
-	.table-body > .table-row:last-child > .table-cell,
-	.table-body > .table-row:last-of-type > .table-cell,
-	.table-body > .table-row--extended:last-child > .table-cell {
-		border-bottom: none;
-	}
-
-	/* Hover state for data rows using :has() */
-	.table-body > .table-row:hover > .table-cell {
-		background: var(--dt-row-hover);
-	}
-
-	/* Clickable row style */
-	.table-body > .table-row.clickable {
-		cursor: pointer;
-	}
-
-	.table-body > .table-row.selected > .table-cell {
-		background: var(--dt-row-selected);
-	}
-
-	/* Striped rows */
-	.striped .table-body > .table-row:nth-child(even) > .table-cell {
-		background: var(--dt-stripe);
-	}
-
-	.striped .table-body > .table-row:nth-child(even):hover > .table-cell {
-		background: var(--dt-row-hover);
-	}
-
-	.table-cell {
-		padding: var(--dt-gap);
-		min-width: 0;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-		display: flex;
-		align-items: center;
-	}
-
-	.table-row--extended > .table-cell {
-		grid-column: 1 / -1;
-	}
-
-	.table-cell--extended {
-		white-space: normal;
-		align-items: flex-start;
-	}
-
-	/* Ensure common elements are vertically centered even when nested content affects layout */
-	.table-cell > :global(*) {
-		align-self: center;
-	}
-
-	.compact .table-cell {
-		padding: var(--dt-gap-compact);
-	}
-
-	.checkbox-cell {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-	}
-
-	.align-center {
-		text-align: center;
-		justify-content: center;
-	}
-
-	.align-right {
-		text-align: right;
-		justify-content: flex-end;
-	}
-
-	.actions-cell {
-		display: flex;
-		align-items: center;
-		justify-content: flex-end;
-		gap: 0.5rem;
-	}
-
-	@media (max-width: 900px) {
-		.hide-mobile {
-			display: none;
-		}
-
-	}
 </style>
