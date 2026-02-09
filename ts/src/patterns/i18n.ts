@@ -18,18 +18,18 @@
  * @module
  */
 
+import {
+	mergeI18nConfig,
+	resolveLocale,
+	resolveTimezone,
+	type I18nFormatConfig
+} from "./i18n/intl-context";
+
 // ---------------------------------------------------------------------------
 // Configuration
 // ---------------------------------------------------------------------------
 
-export interface FormatConfig {
-	/** Default locale for all formatting (e.g., 'en-GB', 'en-US'). Defaults to browser locale. */
-	locale?: string;
-	/** Default timezone for date/time formatting (e.g., 'Europe/London'). Defaults to browser timezone. */
-	timezone?: string;
-}
-
-let globalConfig: FormatConfig = {};
+export interface FormatConfig extends I18nFormatConfig {}
 
 /**
  * Configure global formatting defaults.
@@ -40,21 +40,7 @@ let globalConfig: FormatConfig = {};
  * ```
  */
 export function configureFormat(config: FormatConfig): void {
-	globalConfig = { ...globalConfig, ...config };
-}
-
-/**
- * Get the current locale, falling back to browser default.
- */
-function getLocale(override?: string): string {
-	return override ?? globalConfig.locale ?? (typeof navigator !== "undefined" ? navigator.language : "en-GB");
-}
-
-/**
- * Get the current timezone, falling back to browser default.
- */
-function getTimezone(override?: string): string | undefined {
-	return override ?? globalConfig.timezone;
+	mergeI18nConfig(config);
 }
 
 // ---------------------------------------------------------------------------
@@ -104,8 +90,8 @@ export function formatDate(
 	const d = date instanceof Date ? date : new Date(date);
 	if (isNaN(d.getTime())) return "";
 
-	const locale = getLocale(options?.locale);
-	const timezone = getTimezone(options?.timezone);
+	const locale = resolveLocale(options?.locale);
+	const timezone = resolveTimezone(options?.timezone);
 	const formatOptions: Intl.DateTimeFormatOptions = {
 		...dateStyleMap[style],
 		...(timezone && { timeZone: timezone })
@@ -139,8 +125,8 @@ export function formatTime(
 	const d = date instanceof Date ? date : new Date(date);
 	if (isNaN(d.getTime())) return "";
 
-	const locale = getLocale(options?.locale);
-	const timezone = getTimezone(options?.timezone);
+	const locale = resolveLocale(options?.locale);
+	const timezone = resolveTimezone(options?.timezone);
 	const formatOptions: Intl.DateTimeFormatOptions = {
 		...timeStyleMap[style],
 		...(timezone && { timeZone: timezone })
@@ -176,7 +162,7 @@ export function formatRelative(
 	if (isNaN(d.getTime())) return "";
 
 	const now = options?.now ?? new Date();
-	const locale = getLocale(options?.locale);
+	const locale = resolveLocale(options?.locale);
 
 	const diffMs = d.getTime() - now.getTime();
 	const diffSecs = Math.round(diffMs / 1000);
@@ -257,7 +243,7 @@ export function formatNumber(
 ): string {
 	if (value == null || isNaN(value)) return "";
 
-	const locale = getLocale(options?.locale);
+	const locale = resolveLocale(options?.locale);
 	const formatOptions: Intl.NumberFormatOptions = {};
 
 	if (options?.decimals !== undefined) {
@@ -295,7 +281,7 @@ export function formatPercent(
 ): string {
 	if (value == null || isNaN(value)) return "";
 
-	const locale = getLocale(options?.locale);
+	const locale = resolveLocale(options?.locale);
 	const formatOptions: Intl.NumberFormatOptions = {
 		style: "percent",
 		minimumFractionDigits: options?.decimals ?? 0,
@@ -323,7 +309,7 @@ export function formatFileSize(bytes: number | null | undefined, options?: { loc
 	if (bytes == null || isNaN(bytes)) return "";
 	if (bytes === 0) return "0 B";
 
-	const locale = getLocale(options?.locale);
+	const locale = resolveLocale(options?.locale);
 	const decimals = options?.decimals ?? 1;
 
 	const units = ["B", "KB", "MB", "GB", "TB", "PB"];
@@ -371,7 +357,7 @@ export function formatCurrency(
 ): string {
 	if (value == null || isNaN(value)) return "";
 
-	const locale = getLocale(options?.locale);
+	const locale = resolveLocale(options?.locale);
 
 	const formatOptions: Intl.NumberFormatOptions = {
 		style: "currency",
@@ -426,7 +412,7 @@ export interface PluralForms {
  * ```
  */
 export function plural(count: number, forms: PluralForms, options?: { locale?: string }): string {
-	const locale = getLocale(options?.locale);
+	const locale = resolveLocale(options?.locale);
 	const pr = new Intl.PluralRules(locale);
 	const rule = pr.select(count);
 
