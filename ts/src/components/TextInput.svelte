@@ -4,14 +4,17 @@
   import { getContext, onMount, untrack } from "svelte";
   import TextInputField from "./text-input/TextInputField.svelte";
   import { createStableId } from "../patterns/dom";
+  import {
+    hasInputValue,
+    isValidationStatusValid,
+    type InputValidationStatus
+  } from "./text-input/validation-state";
 
   export interface ValidationResult {
     valid: boolean;
     message?: string;
     suggestion?: string;
   }
-
-  type ValidationStatus = "idle" | "validating" | "valid" | "invalid";
 
   interface Props extends Omit<HTMLInputAttributes, "value" | "oninput" | "onchange" | "type"> {
     type?: string;
@@ -35,7 +38,7 @@
     /** Validate on blur in addition to on change (default: true) */
     validateOnBlur?: boolean;
     /** Callback when validation state changes */
-    onvalidationchange?: (status: ValidationStatus, isValid: boolean) => void;
+    onvalidationchange?: (status: InputValidationStatus, isValid: boolean) => void;
     /** Static prefix to display before the input (e.g., "A", "$") */
     prefix?: string;
     /** Suffix content to render inside the wrapper (e.g., stepper buttons) */
@@ -81,7 +84,7 @@
   let validationTimer: ReturnType<typeof setTimeout> | null = null;
 
   // Validation state
-  let validationStatus = $state<ValidationStatus>("idle");
+  let validationStatus = $state<InputValidationStatus>("idle");
   let validationMessage = $state<string>("");
   let lastValidatedValue = $state<string>("");
   let hasUserInteracted = $state(false);
@@ -126,21 +129,13 @@
 
   // Track previous values to prevent unnecessary updates
   let prevValue = $state("");
-  let prevValidationStatus = $state<ValidationStatus>("idle");
-
-  // Helper to check if field has value (handles both string and number inputs)
-  function checkHasValue(val: string | number): boolean {
-    if (typeof val === 'number') {
-      return !isNaN(val);
-    }
-    return String(val).trim() !== "";
-  }
+  let prevValidationStatus = $state<InputValidationStatus>("idle");
 
   // Register with FormValidationProvider on mount
   onMount(() => {
     if (formValidation) {
-      const hasValue = untrack(() => checkHasValue(value));
-      const isValid = untrack(() => validationStatus === "valid" || validationStatus === "idle");
+      const hasValue = untrack(() => hasInputValue(value));
+      const isValid = untrack(() => isValidationStatusValid(validationStatus));
       const status = untrack(() => validationStatus);
       formValidation.registerField(fieldId, isRequired, hasValue, status, isValid);
 
@@ -157,8 +152,8 @@
   // Update FormValidationProvider when value or validation actually changes
   $effect(() => {
     if (formValidation && (value !== prevValue || validationStatus !== prevValidationStatus)) {
-      const hasValue = checkHasValue(value);
-      const isValid = validationStatus === "valid" || validationStatus === "idle";
+      const hasValue = hasInputValue(value);
+      const isValid = isValidationStatusValid(validationStatus);
       formValidation.updateField(fieldId, hasValue, validationStatus, isValid);
 
       prevValue = value;
@@ -169,7 +164,7 @@
   // Notify validation state changes
   $effect(() => {
     if (onvalidationchange && validate) {
-      const isValid = validationStatus === "valid" || validationStatus === "idle";
+      const isValid = isValidationStatusValid(validationStatus);
       onvalidationchange(validationStatus, isValid);
     }
   });

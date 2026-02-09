@@ -2,8 +2,7 @@
   import type { HTMLInputAttributes } from "svelte/elements";
   import type { Snippet } from "svelte";
   import TextInputAffordances from "./TextInputAffordances.svelte";
-
-  type ValidationStatus = "idle" | "validating" | "valid" | "invalid";
+  import type { InputValidationStatus } from "./validation-state";
 
   interface Props {
     needsWrapper?: boolean;
@@ -17,7 +16,7 @@
     showValidationIcon?: boolean;
     showClearButton?: boolean;
     showValidationStatus?: boolean;
-    validationStatus?: ValidationStatus;
+    validationStatus?: InputValidationStatus;
     validationMessage?: string;
     prefix?: string;
     suffix?: Snippet;

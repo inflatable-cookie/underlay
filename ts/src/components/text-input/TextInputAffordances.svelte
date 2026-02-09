@@ -2,14 +2,13 @@
   import X from "lucide-svelte/icons/x";
   import Check from "lucide-svelte/icons/check";
   import AlertCircle from "lucide-svelte/icons/alert-circle";
-
-  type ValidationStatus = "idle" | "validating" | "valid" | "invalid";
+  import type { InputValidationStatus } from "./validation-state";
 
   interface Props {
     showClearButton?: boolean;
     showValidationIcon?: boolean;
     showValidationStatus?: boolean;
-    validationStatus?: ValidationStatus;
+    validationStatus?: InputValidationStatus;
     validationMessage?: string;
     onClear?: () => void;
   }
