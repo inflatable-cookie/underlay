@@ -1,23 +1,5 @@
 <script lang="ts" module>
-	/**
-	 * File state for tracking upload progress.
-	 */
-	export interface FileUploadItem {
-		/** The file object */
-		file: File;
-		/** Unique ID for this upload */
-		id: string;
-		/** Upload progress (0-100) */
-		progress: number;
-		/** Current status */
-		status: "pending" | "uploading" | "complete" | "error";
-		/** Error message if status is 'error' */
-		error?: string;
-		/** Preview URL (for images) */
-		previewUrl?: string;
-		/** Original file (if compressed) */
-		originalFile?: File;
-	}
+	export type { FileUploadItem } from "./file-upload/types";
 	export type { ImageCompressionOptions } from "./file-upload/compression";
 	export {
 		DEFAULT_COMPRESSION,
@@ -33,11 +15,16 @@
 	} from "./file-upload/compression";
 	import type { Snippet } from "svelte";
 	import { onDestroy } from "svelte";
+	import { formatFileSize } from "./file-upload/helpers";
+	import type { FileUploadItem } from "./file-upload/types";
 	import {
-		formatFileSize,
-		generateFileUploadId,
-		validateUploadFile
-	} from "./file-upload/helpers";
+		processUploadFiles,
+		removeUploadItem,
+		retryUploadItem,
+		revokePreviewUrls,
+		setUploadError,
+		updateUploadProgress
+	} from "./file-upload/state";
 	import FileUploadItemRow from "./file-upload/FileUploadItemRow.svelte";
 
 	interface Props {
@@ -98,77 +85,30 @@
 
 	// Cleanup preview URLs on destroy
 	onDestroy(() => {
-		files.forEach((item) => {
-			if (item.previewUrl) {
-				URL.revokeObjectURL(item.previewUrl);
-			}
-		});
+		revokePreviewUrls(files);
 	});
 
 	// Process files from input or drop
 	async function processFiles(fileList: FileList | null) {
-		if (!fileList || fileList.length === 0) return;
-
-		const newFiles: FileUploadItem[] = [];
-		const filesToUpload: File[] = [];
-
-		// Check max files limit
-		const availableSlots = multiple ? maxFiles - files.length : 1;
-		const filesToProcess = Array.from(fileList).slice(0, availableSlots);
-
-		for (const file of filesToProcess) {
-			const error = validateUploadFile({
-				file,
-				maxSize,
+		const { nextFiles, filesToUpload, replacedPreviewUrls } =
+			await processUploadFiles({
+				fileList,
+				currentFiles: files,
 				accept,
-				validate
+				maxSize,
+				multiple,
+				maxFiles,
+				showPreview,
+				validate,
+				compress,
+				compressionOptions,
+				onValidationError: onError
 			});
 
-			if (error) {
-				onError?.({ file, message: error });
-				continue;
-			}
+		replacedPreviewUrls.forEach((previewUrl) => URL.revokeObjectURL(previewUrl));
 
-			// Compress image if enabled
-			let processedFile = file;
-			let originalFile: File | undefined;
-
-			if (compress && file.type.startsWith("image/")) {
-				const compressed = await compressImage(file, compressionOptions);
-				if (compressed !== file) {
-					originalFile = file;
-					processedFile = compressed;
-				}
-			}
-
-			const item: FileUploadItem = {
-				file: processedFile,
-				id: generateFileUploadId(),
-				progress: 0,
-				status: "pending",
-				originalFile
-			};
-
-			// Generate preview for images
-			if (showPreview && processedFile.type.startsWith("image/")) {
-				item.previewUrl = URL.createObjectURL(processedFile);
-			}
-
-			newFiles.push(item);
-			filesToUpload.push(processedFile);
-		}
-
-		if (newFiles.length > 0) {
-			if (multiple) {
-				files = [...files, ...newFiles];
-			} else {
-				// Clean up old preview URL
-				if (files[0]?.previewUrl) {
-					URL.revokeObjectURL(files[0].previewUrl);
-				}
-				files = newFiles;
-			}
-
+		if (filesToUpload.length > 0) {
+			files = nextFiles;
 			onChange?.(files);
 			onUpload?.(filesToUpload);
 		}
@@ -231,51 +171,31 @@
 
 	// Remove a file
 	function handleRemove(item: FileUploadItem) {
-		if (item.previewUrl) {
-			URL.revokeObjectURL(item.previewUrl);
-		}
-
-		files = files.filter((f) => f.id !== item.id);
+		files = removeUploadItem(files, item);
 		onChange?.(files);
 		onRemove?.(item);
 	}
 
 	// Retry a failed upload
 	function handleRetry(item: FileUploadItem) {
-		item.status = "pending";
-		item.error = undefined;
-		item.progress = 0;
-		files = files;
-		onUpload?.([item.file]);
+		const { nextFiles, retryFile } = retryUploadItem(files, item);
+		files = nextFiles;
+		onUpload?.([retryFile]);
 	}
 
 	// Update file progress (called externally)
 	export function updateProgress(id: string, progress: number) {
-		const item = files.find((f) => f.id === id);
-		if (item) {
-			item.progress = progress;
-			item.status = progress < 100 ? "uploading" : "complete";
-			files = files;
-		}
+		files = updateUploadProgress(files, id, progress);
 	}
 
 	// Set file error (called externally)
 	export function setError(id: string, message: string) {
-		const item = files.find((f) => f.id === id);
-		if (item) {
-			item.status = "error";
-			item.error = message;
-			files = files;
-		}
+		files = setUploadError(files, id, message);
 	}
 
 	// Clear all files
 	export function clear() {
-		files.forEach((item) => {
-			if (item.previewUrl) {
-				URL.revokeObjectURL(item.previewUrl);
-			}
-		});
+		revokePreviewUrls(files);
 		files = [];
 		onChange?.(files);
 	}

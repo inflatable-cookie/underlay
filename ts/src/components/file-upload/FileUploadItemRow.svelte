@@ -1,19 +1,11 @@
 <script lang="ts">
   import { formatFileSize } from "./helpers";
-
-  interface UploadItem {
-    file: File;
-    id: string;
-    progress: number;
-    status: "pending" | "uploading" | "complete" | "error";
-    error?: string;
-    previewUrl?: string;
-  }
+  import type { FileUploadItem } from "./types";
 
   interface Props {
-    item: UploadItem;
-    onRetry: (item: UploadItem) => void;
-    onRemove: (item: UploadItem) => void;
+    item: FileUploadItem;
+    onRetry: (item: FileUploadItem) => void;
+    onRemove: (item: FileUploadItem) => void;
   }
 
   let {
