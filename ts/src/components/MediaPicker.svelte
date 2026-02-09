@@ -25,7 +25,6 @@
     type PaginatedResponse,
     type PaginationParams,
     MediaKind,
-    getMediaKindLabel,
     type MediaSummary,
     type MediaDetail,
     type CreateMediaRequest,
@@ -36,18 +35,16 @@
     type FinaliseUploadResponse,
   } from "../patterns/index.js";
   import { uploadNewMedia } from "./media-picker/upload";
-  import MediaBrowseItem from "./media-picker/MediaBrowseItem.svelte";
+  import MediaBrowseTab from "./media-picker/MediaBrowseTab.svelte";
   import MediaUploadDropzone from "./media-picker/MediaUploadDropzone.svelte";
   import MediaUploadStatusPanel from "./media-picker/MediaUploadStatusPanel.svelte";
   import Button from "./Button.svelte";
   import Dialog from "./Dialog.svelte";
   import FormError from "./FormError.svelte";
-  import PageLoading from "./PageLoading.svelte";
   import TabsRoot from "./TabsRoot.svelte";
   import TabsList from "./TabsList.svelte";
   import TabsTrigger from "./TabsTrigger.svelte";
   import TabsContent from "./TabsContent.svelte";
-  import Image from "lucide-svelte/icons/image";
   import Upload from "lucide-svelte/icons/upload";
   import Search from "lucide-svelte/icons/search";
 
@@ -326,36 +323,14 @@
     </TabsList>
 
     <TabsContent value="browse">
-      <div class="browse-content">
-        {#if browseLoading && browseItems.length === 0}
-          <PageLoading message="Loading media..." />
-        {:else if browseError}
-          <FormError message={browseError} />
-        {:else if browseItems.length === 0}
-          <div class="empty-state">
-            <Image size={32} />
-            <p>No media found</p>
-          </div>
-        {:else}
-          <div class="media-grid">
-            {#each browseItems as item}
-              <MediaBrowseItem {item} onSelect={selectMedia} />
-            {/each}
-          </div>
-
-          {#if browseHasMore}
-            <div class="load-more">
-              <Button
-                variant="secondary"
-                onclick={loadMoreItems}
-                disabled={browseLoading}
-              >
-                {browseLoading ? "Loading..." : "Load more"}
-              </Button>
-            </div>
-          {/if}
-        {/if}
-      </div>
+      <MediaBrowseTab
+        loading={browseLoading}
+        error={browseError}
+        items={browseItems}
+        hasMore={browseHasMore}
+        onLoadMore={loadMoreItems}
+        onSelectMedia={selectMedia}
+      />
     </TabsContent>
 
     <TabsContent value="upload">
@@ -407,32 +382,6 @@
   :global(.media-picker-dialog) {
     width: min(50rem, calc(100vw - 2rem)) !important;
     max-height: min(85vh, 50rem) !important;
-  }
-
-  .browse-content {
-    min-height: 300px;
-  }
-
-  .media-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 0.75rem;
-    margin-top: 1rem;
-  }
-
-  .empty-state {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 2rem;
-    color: var(--underlay-color-text-muted, #9ca3af);
-  }
-
-  .load-more {
-    display: flex;
-    justify-content: center;
-    margin-top: 1rem;
   }
 
   .upload-content {
