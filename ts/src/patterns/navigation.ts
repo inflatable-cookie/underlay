@@ -45,6 +45,10 @@ import {
   consumeBackNavigation,
   computeResolvedBackInfo
 } from "./navigation-back-info";
+import {
+  getNavigationContextConfig,
+  setNavigationContextConfig
+} from "./navigation-config";
 export type {
   NavigationContext,
   NavigationContextConfig,
@@ -56,22 +60,6 @@ export {
   consumePageState,
   clearPageStates
 } from "./navigation-state";
-
-// ============================================================================
-// Constants
-// ============================================================================
-
-const DEFAULT_STORAGE_KEY = "underlay:nav-context";
-const DEFAULT_MAX_DEPTH = 3;
-
-// ============================================================================
-// Internal State
-// ============================================================================
-
-let config: Required<NavigationContextConfig> = {
-  storageKey: DEFAULT_STORAGE_KEY,
-  maxDepth: DEFAULT_MAX_DEPTH
-};
 
 // ============================================================================
 // Configuration
@@ -91,10 +79,7 @@ let config: Required<NavigationContextConfig> = {
  * ```
  */
 export function configureNavigationContext(options: NavigationContextConfig): void {
-  config = {
-    storageKey: options.storageKey ?? DEFAULT_STORAGE_KEY,
-    maxDepth: options.maxDepth ?? DEFAULT_MAX_DEPTH
-  };
+  setNavigationContextConfig(options);
 }
 
 // ============================================================================
@@ -120,6 +105,7 @@ export function configureNavigationContext(options: NavigationContextConfig): vo
  * ```
  */
 export function pushNavigationContext(context: NavigationContext): void {
+  const config = getNavigationContextConfig();
   const stack = readNavigationContextStack<NavigationContext>(config.storageKey);
   const nextStack = buildPushedContextStack(stack, context, config.maxDepth);
   writeNavigationContextStack(config.storageKey, nextStack);
@@ -139,6 +125,7 @@ export function pushNavigationContext(context: NavigationContext): void {
  * ```
  */
 export function popNavigationContext(): NavigationContext | null {
+  const config = getNavigationContextConfig();
   return popNavigationContextStack<NavigationContext>(config.storageKey);
 }
 
@@ -154,6 +141,7 @@ export function popNavigationContext(): NavigationContext | null {
  * ```
  */
 export function peekNavigationContext(): NavigationContext | null {
+  const config = getNavigationContextConfig();
   return peekNavigationContextStack<NavigationContext>(config.storageKey);
 }
 
@@ -163,6 +151,7 @@ export function peekNavigationContext(): NavigationContext | null {
  * Useful for debugging or implementing full breadcrumb trails.
  */
 export function getNavigationContextStack(): NavigationContext[] {
+  const config = getNavigationContextConfig();
   return readNavigationContextStack<NavigationContext>(config.storageKey);
 }
 
@@ -170,6 +159,7 @@ export function getNavigationContextStack(): NavigationContext[] {
  * Clear all navigation context.
  */
 export function clearNavigationContext(): void {
+  const config = getNavigationContextConfig();
   clearNavigationContextStack(config.storageKey);
 }
 
