@@ -30,19 +30,17 @@
 
   import Button from "../Button.svelte";
   import Card from "../Card.svelte";
-  import Field from "../Field.svelte";
   import FormActions from "../FormActions.svelte";
   import FormError from "../FormError.svelte";
   import TabsContent from "../TabsContent.svelte";
   import TabsList from "../TabsList.svelte";
   import TabsRoot from "../TabsRoot.svelte";
   import TabsTrigger from "../TabsTrigger.svelte";
-  import TextInput from "../TextInput.svelte";
 
   import GoogleSignInButton from "./GoogleSignInButton.svelte";
+  import LoginPasskeyTab from "./LoginPasskeyTab.svelte";
   import LoginPasswordForm from "./LoginPasswordForm.svelte";
   import LoginSetupPrompt from "./LoginSetupPrompt.svelte";
-  import PassKeyButton from "./PassKeyButton.svelte";
   import TwoFactorStep from "./TwoFactorStep.svelte";
 
   type LoginMethod = "password" | "passkey" | "google";
@@ -369,33 +367,14 @@
 
         {#if methods.includes("passkey")}
           <TabsContent value="passkey">
-            <div class="underlay-login-page__passkey" class:underlay-login-page__passkey--centered={!showPasskeyEmailField}>
-              <p class="underlay-login-page__hint">{passkeyHint}</p>
-
-              {#if showPasskeyEmailField}
-                <Field label="Email (optional)">
-                  <TextInput
-                    type="email"
-                    bind:value={passkeyEmail}
-                    autocomplete="username"
-                    disabled={passkeyLoading}
-                  />
-                </Field>
-              {/if}
-
-              <FormError message={passkeyError} />
-
-              <FormActions>
-                <PassKeyButton
-                  variant="primary"
-                  onStart={handlePasskeyLogin}
-                  disabled={passkeyLoading}
-                  loading={passkeyLoading}
-                >
-                  Sign in with passkey
-                </PassKeyButton>
-              </FormActions>
-            </div>
+            <LoginPasskeyTab
+              {showPasskeyEmailField}
+              {passkeyHint}
+              bind:passkeyEmail
+              {passkeyLoading}
+              passkeyError={passkeyError}
+              onPasskeyLogin={handlePasskeyLogin}
+            />
           </TabsContent>
         {/if}
 
@@ -429,14 +408,12 @@
 </Card>
 
 <style>
-  .underlay-login-page__passkey,
   .underlay-login-page__google {
     display: flex;
     flex-direction: column;
     gap: var(--underlay-density-gap, 0.75rem);
   }
 
-  .underlay-login-page__passkey--centered,
   .underlay-login-page__google {
     align-items: center;
     text-align: center;
