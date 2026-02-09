@@ -20,17 +20,14 @@
    * ```
    */
   import {
-    uploadToBlob,
     computeFileHash,
     validateFile,
     formatFileSize,
     getFileTypeDescription,
     ALLOWED_MEDIA_TYPES,
-    type UploadPlan,
     type PaginatedResponse,
     type PaginationParams,
     MediaKind,
-    MediaVisibility,
     getMediaKindLabel,
     getMediaKindAccent,
     getMediaDisplayName,
@@ -43,6 +40,7 @@
     type FinaliseUploadRequest,
     type FinaliseUploadResponse,
   } from "../patterns/index.js";
+  import { uploadNewMedia } from "./media-picker/upload";
   import Button from "./Button.svelte";
   import Dialog from "./Dialog.svelte";
   import FormError from "./FormError.svelte";
@@ -222,12 +220,6 @@
     createdMedia = null;
   }
 
-  function getMediaKindFromFile(file: File): MediaKind {
-    if (file.type.startsWith("image/")) return MediaKind.Image;
-    if (file.type === "application/pdf") return MediaKind.Pdf;
-    return MediaKind.Image;
-  }
-
   async function startUpload() {
     if (!selectedFile) return;
 
@@ -257,59 +249,21 @@
     if (!selectedFile || !fileHash) return;
 
     try {
-      uploadStep = "uploading";
       uploadProgress = 0;
-
-      const media = await createMedia({
-        kind: getMediaKindFromFile(selectedFile),
-        visibility: MediaVisibility.Public,
-        title: selectedFile.name.replace(/\.[^/.]+$/, ""),
-        originalFilename: selectedFile.name,
-      });
-
-      const uploadResponse = await initiateUpload(media.id, {
-        contentType: selectedFile.type,
-        contentLength: selectedFile.size,
-        sha256: fileHash,
-      });
-
-      const plan: UploadPlan = {
-        uploadUrl: uploadResponse.uploadPlan.uploadUrl,
-        method: uploadResponse.uploadPlan.method,
-        requiredHeaders: uploadResponse.uploadPlan.headers,
-        expiresAt: uploadResponse.uploadPlan.expiresAt,
-        maxBytes: uploadResponse.uploadPlan.maxBytes || maxFileSize,
-        allowedContentTypes: uploadResponse.uploadPlan.allowedContentTypes || [],
-        objectKey: "",
-      };
-
-      await uploadToBlob(plan, selectedFile, {
-        onProgress: (progress) => {
-          uploadProgress = progress.percent;
+      createdMedia = await uploadNewMedia({
+        file: selectedFile,
+        fileHash,
+        maxFileSize,
+        createMedia,
+        initiateUpload,
+        finaliseUpload,
+        onStage: (stage) => {
+          uploadStep = stage;
         },
+        onProgress: (percent) => {
+          uploadProgress = percent;
+        }
       });
-
-      uploadStep = "finalising";
-      await finaliseUpload(media.id, uploadResponse.versionId, {
-        sha256: fileHash,
-        contentType: selectedFile.type,
-      });
-
-      // Create a summary for selection
-      createdMedia = {
-        id: media.id,
-        kind: media.kind,
-        visibility: media.visibility,
-        title: media.title,
-        originalFilename: media.originalFilename,
-        currentVersionId: media.currentVersionId,
-        createdAt: media.createdAt,
-        updatedAt: media.updatedAt,
-        deletedAt: null,
-        byteSize: null,
-        mimeType: null,
-        thumbnailUrl: null, // Thumbnail not yet generated
-      };
 
       uploadStep = "complete";
     } catch (e) {
