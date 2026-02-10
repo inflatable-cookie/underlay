@@ -709,6 +709,7 @@ fn test_superadmin_has_all_roles() {
 
 - [075-validation](./075-validation.md) - Request validation
 - [070-api-handlers](./070-api-handlers.md) - Complete API patterns
+- [176-ai-runtime-routing](./176-ai-runtime-routing.md) - AI routing admin role expectations
 
 ---
 

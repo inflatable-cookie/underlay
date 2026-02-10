@@ -71,6 +71,14 @@ Optional customization:
 - `windowDefaults` (`AiRoutingOpsOptions`) for default metric/cost/parity/anomaly windows
 - `messages` (`AiRoutingAdminMessages`) for empty-state and button labels
 
+## Role and permission expectations
+
+- Treat AI routing operations surfaces as privileged admin tooling, not general user UI.
+- Require staff-level access at minimum (`admin`), and prefer stricter gates (`superadmin`) for rollout/override actions.
+- Enforce authorization on backend endpoints and only use frontend route guards for UX.
+- Keep provider credentials and policy controls server-side; never expose provider keys to browser clients.
+- For RBAC implementation patterns, see [067-authorization.md](./067-authorization.md).
+
 ### Minimal Svelte integration example
 
 Reference file: `docs/guides/code/176-ai-runtime-routing/ai-routing-admin-page.svelte`
