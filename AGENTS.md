@@ -150,7 +150,7 @@ When creating analysis documents, session summaries, or completion reports, save
 - Avoid name collisions
 - Archive session work systematically
 
-## Rust Crate Reference (26 crates)
+## Rust Crate Reference (27 crates)
 
 | Crate | Domain | Purpose |
 |-------|--------|---------|
@@ -178,6 +178,7 @@ When creating analysis documents, session summaries, or completion reports, save
 | `underlay-ratelimit` | Infra | Rate limiting |
 | `underlay-audit` | Infra | Audit logging |
 | `underlay-suggestions` | Infra | Suggestion query building for RelationSelector |
+| `underlay-ai-runtime` | Infra | AI runtime contracts, routing helpers, OpenAI-compatible transport |
 | `underlay-testing` | Dev | `TestDb`, `TestServer`, test fixtures |
 | `underlay-devtools` | Dev | Migration sync and dev utilities |
 

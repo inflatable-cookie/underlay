@@ -33,6 +33,7 @@ underlay-observability = { path = "../underlay/rust/crates/underlay-observabilit
 underlay-email = { path = "../underlay/rust/crates/underlay-email", features = ["templates"] }
 underlay-nightfire = { path = "../underlay/rust/crates/underlay-nightfire" }
 underlay-suggestions = { path = "../underlay/rust/crates/underlay-suggestions" }
+underlay-ai-runtime = { path = "../underlay/rust/crates/underlay-ai-runtime" }
 underlay-metrics = { path = "../underlay/rust/crates/underlay-metrics" }
 underlay-openapi = { path = "../underlay/rust/crates/underlay-openapi" }
 ```

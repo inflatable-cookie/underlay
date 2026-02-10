@@ -113,6 +113,12 @@ Individual techniques referenced by the recipes above.
 | Tabs | Tabbed navigation | Component library |
 | Field | Consistent form inputs | Component library |
 
+### AI Runtime Patterns
+
+| Pattern | Description | Guide |
+|---------|-------------|-------|
+| Provider-agnostic LLM boundary | `LlmClient`, registry, route candidates, OpenAI-compatible transport | [176-ai-runtime-routing.md](../guides/176-ai-runtime-routing.md) |
+
 ### Internal Development Patterns
 
 Patterns for working on Underlay itself (not for consuming apps).

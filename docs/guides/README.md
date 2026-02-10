@@ -59,6 +59,7 @@ Read these documents in order for a complete understanding:
 32. **[185 - Recipe Map and Testing Matrix](./185-recipe-map-and-testing-matrix.md)** - Recipe-to-code references + minimum tests
 33. **[190 - Upgrade Compatibility Matrix](./190-upgrade-compatibility.md)** - Upgrade expectations and breakage checks
 34. **[200 - Project Sync](./200-project-sync.md)** - Migration/sync checklist for existing projects
+35. **[176 - AI Runtime Routing](./176-ai-runtime-routing.md)** - Provider-agnostic backend LLM runtime boundary
 
 ## Code Examples
 
