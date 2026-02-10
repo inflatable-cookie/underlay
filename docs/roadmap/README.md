@@ -23,5 +23,6 @@ Status overview of all Underlay roadmaps. Check individual files for detailed pr
 | 017 | [Module Splitting](./017-rust-module-splitting-roadmap.md) | Complete | Split oversized Rust modules |
 | 018 | [Documentation & AI](./018-documentation-ai-agent-improvements.md) | Complete | Documentation and AI agent context improvements |
 | 019 | [Codebase Improvements](./019-codebase-improvements.md) | In progress | Simplification, deduplication, reorganisation |
+| 020 | [Configuration Standardization](./020-configuration-standardization-and-env-reduction.md) | In progress | Move app behavior config from env files into typed structures |
 
-**Complete:** 9 | **In progress:** 10
+**Complete:** 9 | **In progress:** 11
