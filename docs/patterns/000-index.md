@@ -52,6 +52,7 @@ These prompts will trigger the appropriate recipe:
 - "Build dependent selections (module/section/area)" → [Synced Hierarchical Selection](./synced-hierarchical-selection.md)
 - "Build admin jobs/schedules/errors/audit pages" → [Admin Ops Console](./admin-ops-console.md)
 - "Wire Nightfire strategies and custom block renderers" → [Nightfire Integration](./nightfire-integration.md)
+- "Build AI routing diagnostics/cost/parity admin page" → [176-ai-runtime-routing.md](../guides/176-ai-runtime-routing.md)
 - "Create admin pages for X" → [CRUD Admin Interface](./crud-admin-interface.md)
 - "Add real-time validation for X field" → [Live Validation Endpoint](./live-validation-endpoint.md)
 - "Manage X within Y" → [Nested Entity Management](./nested-entity-management.md)
