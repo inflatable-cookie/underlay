@@ -41,6 +41,7 @@ export { default as NavCardGrid } from "./NavCardGrid.svelte";
 export { default as OpsCard } from "./OpsCard.svelte";
 export { default as OpsCardGrid } from "./OpsCardGrid.svelte";
 export { default as OpsSection } from "./OpsSection.svelte";
+export { default as AiRoutingAdmin } from "./AiRoutingAdmin.svelte";
 export { default as Banner } from "./Banner.svelte";
 export { default as ReorderableList } from "./ReorderableList.svelte";
 export { default as SlugField } from "./SlugField.svelte";
