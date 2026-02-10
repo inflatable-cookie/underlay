@@ -55,11 +55,11 @@ Read these documents in order for a complete understanding:
 28. **[150 - CI/CD](./150-ci-cd.md)** - GitHub Actions template
 29. **[160 - Troubleshooting](./160-troubleshooting.md)** - Common issues and solutions
 30. **[170 - Checklist](./170-checklist.md)** - Completion verification
-31. **[180 - Admin Workflow Playbook](./180-admin-workflow-playbook.md)** - Start-here implementation flow for admin features
-32. **[185 - Recipe Map and Testing Matrix](./185-recipe-map-and-testing-matrix.md)** - Recipe-to-code references + minimum tests
-33. **[190 - Upgrade Compatibility Matrix](./190-upgrade-compatibility.md)** - Upgrade expectations and breakage checks
-34. **[200 - Project Sync](./200-project-sync.md)** - Migration/sync checklist for existing projects
-35. **[176 - AI Runtime Routing](./176-ai-runtime-routing.md)** - Provider-agnostic backend LLM runtime boundary
+31. **[176 - AI Runtime Routing](./176-ai-runtime-routing.md)** - Provider-agnostic backend LLM runtime boundary
+32. **[180 - Admin Workflow Playbook](./180-admin-workflow-playbook.md)** - Start-here implementation flow for admin features
+33. **[185 - Recipe Map and Testing Matrix](./185-recipe-map-and-testing-matrix.md)** - Recipe-to-code references + minimum tests
+34. **[190 - Upgrade Compatibility Matrix](./190-upgrade-compatibility.md)** - Upgrade expectations and breakage checks
+35. **[200 - Project Sync](./200-project-sync.md)** - Migration/sync checklist for existing projects
 
 ## Code Examples
 

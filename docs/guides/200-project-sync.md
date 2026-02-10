@@ -60,8 +60,24 @@ cargo run --bin underlay-devtools -- sync-migrations --target ./crates/db/migrat
 - [ ] Add underlay-http with required features
 - [ ] Add underlay-auth dependency
 - [ ] Add underlay-observability dependency
+- [ ] Add underlay-ai-runtime dependency (if app uses AI provider routing)
 - [ ] Sync migrations from Underlay
 - [ ] Run migrations on local database
+
+---
+
+## Phase 1A: AI Runtime Routing (Optional)
+
+If your app executes LLM-backed jobs, standardize on `underlay-ai-runtime`.
+
+### Migration Checklist
+
+- [ ] Move provider-agnostic request/response/error contracts to `underlay-ai-runtime`
+- [ ] Use `LlmClient` trait + `ProviderRegistry` in job orchestration
+- [ ] Use `OpenAiCompatibleClient` for OpenAI-style router services
+- [ ] Keep app-specific action-key alias mapping in the app infra layer
+- [ ] Keep provider secrets/config loading in app config layer (not in handlers/frontends)
+- [ ] Enforce outbound host allowlist for non-local environments
 
 ---
 
