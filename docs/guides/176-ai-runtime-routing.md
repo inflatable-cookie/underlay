@@ -73,6 +73,8 @@ Optional customization:
 
 ### Minimal Svelte integration example
 
+Reference file: `docs/guides/code/176-ai-runtime-routing/ai-routing-admin-page.svelte`
+
 ```svelte
 <script lang="ts">
   import { auth, authLoading, currentUser } from "$lib/stores/auth";
