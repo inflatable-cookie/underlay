@@ -121,6 +121,14 @@ Individual techniques referenced by the recipes above.
 | Provider-agnostic LLM boundary | `LlmClient`, registry, route candidates, OpenAI-compatible transport | [176-ai-runtime-routing.md](../guides/176-ai-runtime-routing.md) |
 | Admin AI routing dashboard | `AiRoutingAdmin` + `AiRoutingOpsSource` for turnkey diagnostics/cost/parity ops UI | [176-ai-runtime-routing.md](../guides/176-ai-runtime-routing.md) |
 
+### Configuration Patterns
+
+| Pattern | Description | Guide |
+|---------|-------------|-------|
+| Typed config + env boundary | Keep app behavior config in typed structs; reserve `.env` for secrets/runtime-env values | [120-configuration.md](../guides/120-configuration.md) |
+| Layered config loading | Defaults -> `config/default.toml` -> `config/local.toml` -> allowlisted env overrides | [120-configuration.md](../guides/120-configuration.md) |
+| Config migration checklist | Repeatable per-app migration flow from env-heavy setup to typed config | [120-configuration.md](../guides/120-configuration.md) |
+
 ### Internal Development Patterns
 
 Patterns for working on Underlay itself (not for consuming apps).

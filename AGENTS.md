@@ -109,6 +109,7 @@ Underlay documentation is the source of truth for patterns used across consuming
 | [Project Sync Guide](docs/guides/200-project-sync.md) | Checklist for updating projects to latest patterns |
 | [Database Guide](docs/guides/050-database.md) | ExistsCheck, migrations, schema patterns |
 | [API Handlers Guide](docs/guides/070-api-handlers.md) | HTTP utilities, validation, responses |
+| [Configuration Guide](docs/guides/120-configuration.md) | Typed config boundaries and env usage policy |
 
 ### Adding New Patterns
 

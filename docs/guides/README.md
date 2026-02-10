@@ -49,7 +49,7 @@ Read these documents in order for a complete understanding:
 22. **[095 - Navigation Context](./095-navigation-context.md)** - Contextual back buttons and form redirects
 23. **[100 - Frontend (Web)](./100-frontend-web.md)** - SvelteKit setup, routing
 24. **[110 - Admin Frontend](./110-admin.md)** - Admin UI structure
-25. **[120 - Configuration](./120-configuration.md)** - Env files, validation
+25. **[120 - Configuration](./120-configuration.md)** - Typed config model, env boundaries, migration checklist
 26. **[130 - Testing](./130-testing.md)** - Test patterns for all layers
 27. **[140 - Local Development](./140-local-development.md)** - Running locally, debugging
 28. **[150 - CI/CD](./150-ci-cd.md)** - GitHub Actions template

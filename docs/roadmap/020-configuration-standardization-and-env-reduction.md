@@ -20,7 +20,7 @@ This roadmap defines a reusable migration pattern that can be applied app-by-app
 
 ## Progress Checklist
 
-- [ ] Phase 20.1 complete (Underlay standard and documentation)
+- [x] Phase 20.1 complete (Underlay standard and documentation)
 - [ ] Phase 20.2 complete (Acowtancy pilot migration)
 - [ ] Phase 20.3 complete (Underlay Reference migration)
 - [ ] Phase 20.4 complete (consumer rollout kit + enforcement)
@@ -53,42 +53,42 @@ Current app configuration is spread across many `.env` keys, including values th
 
 ### 20.1.1 Publish canonical config model in Underlay docs
 
-- [ ] Add a dedicated configuration guide in `docs/guides/` with:
+- [x] Add a dedicated configuration guide in `docs/guides/` with:
   - classification rules (`secret` vs `runtime-env` vs `app-behavior`)
   - load order and precedence
   - naming conventions
   - validation and failure behavior
   - deprecation and migration policy
-- [ ] Link the guide from:
+- [x] Link the guide from:
   - `docs/patterns/000-index.md`
   - `docs/guides/200-project-sync.md`
   - `AGENTS.md` (short reference)
 
 ### 20.1.2 Define canonical load order
 
-- [ ] Standardize precedence (lowest to highest):
+- [x] Standardize precedence (lowest to highest):
   1. Rust struct defaults
   2. `config/default.toml` (committed)
   3. `config/local.toml` (optional, gitignored)
   4. environment overrides (allowlisted)
-- [ ] Document where secrets are injected and how they are redacted in logs
+- [x] Document where secrets are injected and how they are redacted in logs
 
 ### 20.1.3 Define per-app migration checklist template
 
-- [ ] Add reusable checklist:
+- [x] Add reusable checklist:
   - env inventory
   - key classification
   - typed struct introduction
   - compatibility bridge
   - deprecation warnings
   - cleanup removal
-- [ ] Include rollout template for PR descriptions and release notes
+- [x] Include rollout template for PR descriptions and release notes
 
 ### Acceptance Criteria (Phase 20.1)
 
-- [ ] Underlay docs include a single clear source of truth for configuration strategy
-- [ ] Migration checklist is reusable without app-specific assumptions
-- [ ] Patterns and sync docs reference the new standard
+- [x] Underlay docs include a single clear source of truth for configuration strategy
+- [x] Migration checklist is reusable without app-specific assumptions
+- [x] Patterns and sync docs reference the new standard
 
 ---
 

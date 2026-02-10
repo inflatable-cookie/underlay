@@ -66,6 +66,24 @@ cargo run --bin underlay-devtools -- sync-migrations --target ./crates/db/migrat
 
 ---
 
+## Phase 1B: Configuration Standardization (Required)
+
+Align with [120-configuration.md](./120-configuration.md) before expanding features.
+
+### Migration Checklist
+
+- [ ] Inventory env keys currently read by the app
+- [ ] Classify keys as `secret`, `runtime-env`, or `app-behavior`
+- [ ] Move `app-behavior` keys into typed Rust config structs
+- [ ] Add committed defaults in `config/default.toml`
+- [ ] Support optional local overrides with `config/local.toml` (gitignored)
+- [ ] Restrict env overrides to an allowlist
+- [ ] Add startup validation and redacted config diagnostics
+- [ ] Add legacy-key deprecation warnings where needed
+- [ ] Remove migrated keys from `.env.example` and docs after transition window
+
+---
+
 ## Phase 1A: AI Runtime Routing (Optional)
 
 If your app executes LLM-backed jobs, standardize on `underlay-ai-runtime`.

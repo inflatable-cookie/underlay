@@ -1,6 +1,94 @@
 # 120 - Configuration
 
-This document covers configuration management for Underlay applications. Environment variables follow a standard naming convention to ensure consistency across projects.
+This document defines the canonical configuration model for Underlay applications.
+
+Primary rule: keep `.env` for secrets and true environment-dependent runtime values, and keep stable app behavior settings in typed Rust config structures committed with code.
+
+## Configuration Classes
+
+Classify every setting before adding it:
+
+| Class | Where it belongs | Examples |
+|---|---|---|
+| `secret` | Environment / secret manager only | API keys, JWT private keys, SMTP passwords |
+| `runtime-env` | Environment (deployment specific) | `DATABASE_URL`, `HOST`, `PORT`, public base URLs |
+| `app-behavior` | Typed Rust config + committed defaults | pagination limits, retries, feature knobs, timeout defaults |
+
+If a value is not secret and does not need to vary per environment, it should not live in `.env`.
+
+## Canonical Load Order
+
+Use this precedence (lowest to highest):
+
+1. Rust struct defaults
+2. `config/default.toml` (committed)
+3. `config/local.toml` (optional, gitignored)
+4. Environment overrides (allowlisted keys only)
+
+Recommended behavior:
+
+- Fail fast at startup on invalid config
+- Emit clear error messages with field names
+- Log effective config in redacted form (never print secrets)
+
+## Recommended Project Layout
+
+```text
+apps/api/
+  config/
+    default.toml
+    local.toml.example
+  crates/
+    app-config/
+      src/lib.rs
+```
+
+`app-config` should expose typed sections such as `ServerConfig`, `AuthConfig`, `EmailConfig`, and app-domain sections for behavior toggles/limits.
+
+## Environment Key Policy
+
+- Keep an explicit allowlist of supported env keys per app
+- Reject or warn on unknown app env keys
+- Do not read `std::env::var` throughout handlers/services; read env in config bootstrap only
+- Keep deprecation windows for renamed keys (warn first, remove later)
+
+## Per-App Migration Checklist (Reusable)
+
+For each consuming app:
+
+1. Inventory all env keys currently read.
+2. Classify each key (`secret`, `runtime-env`, `app-behavior`).
+3. Move `app-behavior` keys into typed Rust config with defaults.
+4. Add compatibility bridge for legacy env keys with deprecation warnings.
+5. Update docs and `.env.example` to remove migrated keys.
+6. Enforce allowlist/guardrails in CI.
+7. Remove deprecated keys after the agreed transition window.
+
+## Rollout PR Template (Copy/Paste)
+
+```md
+## Config Migration Scope
+- App: <name>
+- Phase: <inventory|typed-structs|deprecation|cleanup>
+
+## Env Key Changes
+- Moved to typed config: <keys>
+- Remaining env keys (secret/runtime-env): <keys>
+- Deprecated keys (warning only): <keys>
+
+## Validation
+- Startup validation result:
+- Redacted config diagnostics reviewed:
+
+## Follow-ups
+- Deprecation removal target release:
+```
+
+---
+
+## Standard Environment Variables
+
+The sections below list commonly used env keys that remain valid for `secret` and `runtime-env` usage.
 
 ## Naming Convention
 
