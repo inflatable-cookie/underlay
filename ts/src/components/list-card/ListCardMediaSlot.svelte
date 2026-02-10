@@ -1,9 +1,10 @@
 <script lang="ts">
-  import type { Snippet } from "svelte";
+  type RenderSnippet = (...args: any[]) => any;
+  type ActionsRenderer = (args: { trigger: RenderSnippet; align: "start" | "center" | "end" }) => any;
 
   interface Props {
-    media?: Snippet;
-    actions?: Snippet<[{ trigger: Snippet; align: "start" | "center" | "end" }]>;
+    media?: RenderSnippet;
+    actions?: ActionsRenderer;
     actionsPlacement?: "media" | "media-overlay" | "trailing";
     isSelectionMode?: boolean;
     selected?: boolean;

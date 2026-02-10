@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { Snippet } from "svelte";
+  type RenderSnippet = (...args: any[]) => any;
 
   interface Props {
     href?: string | null;
@@ -13,8 +13,8 @@
     style?: string;
     onclick?: ((event: MouseEvent) => void) | null;
     onCardClick?: ((event: MouseEvent) => void) | null;
-    fullContent: Snippet;
-    compactContent: Snippet;
+    fullContent: RenderSnippet;
+    compactContent: RenderSnippet;
   }
 
   let {

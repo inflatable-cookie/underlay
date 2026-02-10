@@ -1,17 +1,18 @@
 <script lang="ts">
-  import type { Snippet } from "svelte";
+  type RenderSnippet = (...args: any[]) => any;
+  type ActionsRenderer = (args: { trigger: RenderSnippet; align: "start" | "center" | "end" }) => any;
 
   interface Props {
     /** Title text - used when titleSnippet is not provided */
     title?: string;
-    titleSuffix?: Snippet;
+    titleSuffix?: RenderSnippet;
     /** Snippet for custom title content (takes precedence over title prop) */
-    titleSnippet?: Snippet;
+    titleSnippet?: RenderSnippet;
     subtitle?: string | null;
-    trailing?: Snippet;
-    actions?: Snippet<[{ trigger: Snippet; align: "start" | "center" | "end" }]>;
+    trailing?: RenderSnippet;
+    actions?: ActionsRenderer;
     actionsPlacement?: "media" | "media-overlay" | "trailing";
-    children?: Snippet;
+    children?: RenderSnippet;
   }
 
   let {

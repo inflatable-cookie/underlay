@@ -3,7 +3,9 @@
   import ListCardCompactContent from "./list-card/ListCardCompactContent.svelte";
   import ListCardContainer from "./list-card/ListCardContainer.svelte";
   import ListCardMediaSlot from "./list-card/ListCardMediaSlot.svelte";
-  import type { Snippet } from "svelte";
+
+  type RenderSnippet = (...args: any[]) => any;
+  type ActionsRenderer = (args: { trigger: RenderSnippet; align: "start" | "center" | "end" }) => any;
 
   type ListCardVariant = "default" | "compact";
 
@@ -12,9 +14,9 @@
     /** Title text - used when title snippet is not provided */
     title?: string;
     /** Optional content to render after the title (e.g., badges, tags) */
-    titleSuffix?: Snippet;
+    titleSuffix?: RenderSnippet;
     /** Snippet for custom title content (takes precedence over title prop) */
-    titleSnippet?: Snippet;
+    titleSnippet?: RenderSnippet;
     subtitle?: string | null;
     ariaLabel?: string | null;
     accent?: string | null;
@@ -28,14 +30,14 @@
     selected?: boolean;
     /** Callback when selection changes - providing this enables selection mode */
     onSelectionChange?: (selected: boolean) => void;
-    media?: Snippet;
-    trailing?: Snippet;
+    media?: RenderSnippet;
+    trailing?: RenderSnippet;
     /** Renders the actions menu. When provided, the media area becomes a custom trigger containing the icon + dots.
      * The snippet receives `trigger` (the media content to render) and `align` (recommended dropdown alignment). */
-    actions?: Snippet<[{ trigger: Snippet; align: "start" | "center" | "end" }]>;
+    actions?: ActionsRenderer;
     /** Where to place the actions trigger. Defaults to "media". */
     actionsPlacement?: "media" | "media-overlay" | "trailing";
-    children?: Snippet;
+    children?: RenderSnippet;
     onclick?: ((event: MouseEvent) => void) | null;
   }
 
