@@ -144,3 +144,11 @@ Use this variant when AI routing appears inside a nested admin tab, where you wa
   backHref={null}
 />
 ```
+
+## Troubleshooting
+
+- **`Not authenticated` errors**: Ensure your token provider returns a non-null token before invoking command calls.
+- **Page stays on loading/empty**: Verify `enabled` becomes `true` only after auth state resolves and a user is present.
+- **No diagnostics data**: Confirm backend endpoints for diagnostics/metrics/cost/anomalies/alerts/parity are wired and authorized for the current role.
+- **Unexpected window values**: `AiRoutingAdmin` clamps window inputs to safe ranges before refresh (`metric/parity: 1-720h`, `anomaly: 2-90d`, `cost: 1-365d`).
+- **Label overrides not applied**: Pass `messages` and/or `windowDefaults` directly to `AiRoutingAdmin` (not only to your source adapter).
