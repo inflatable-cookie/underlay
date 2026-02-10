@@ -128,3 +128,19 @@ Reference file: `docs/guides/code/176-ai-runtime-routing/ai-routing-admin-page.s
   backLabel="Back to system"
 />
 ```
+
+### Embedded variant (tabs/subsections)
+
+Reference file: `docs/guides/code/176-ai-runtime-routing/ai-routing-admin-embedded.svelte`
+
+Use this variant when AI routing appears inside a nested admin tab, where you want custom labels and no back link:
+
+```svelte
+<AiRoutingAdmin
+  {source}
+  {enabled}
+  {messages}
+  section="Routing ops"
+  backHref={null}
+/>
+```
