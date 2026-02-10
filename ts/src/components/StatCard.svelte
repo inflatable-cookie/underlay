@@ -12,7 +12,6 @@
    * - Default: Full card with title header
    * - Compact: Inline badge style without card wrapper
    */
-  import Card from "./Card.svelte";
   import type { Snippet } from "svelte";
 
   interface Props {
@@ -71,7 +70,16 @@
     {/if}
   </div>
 {:else}
-  <Card title={title ?? ""} variant="muted" {href}>
+  <svelte:element
+    this={href ? "a" : "section"}
+    class="underlay-stat-card-shell"
+    href={href}
+    aria-label={title}
+  >
+    {#if title}
+      <p class="underlay-stat-card-shell__title">{title}</p>
+    {/if}
+
     {#if loading}
       <p class="underlay-stat-loading">Loading...</p>
     {:else if error}
@@ -96,7 +104,7 @@
         </div>
       {/if}
     {/if}
-  </Card>
+  </svelte:element>
 {/if}
 
 <style>
@@ -153,6 +161,29 @@
   }
 
   /* Default card variant styles */
+  .underlay-stat-card-shell {
+    container-type: inline-size;
+    border-radius: var(--underlay-radius-md, 0.75rem);
+    padding: var(--underlay-card-padding, var(--underlay-density-gap, 1rem));
+    background-color: var(--underlay-color-surface-muted, rgba(255, 255, 255, 0.02));
+    color: var(--underlay-color-text, inherit);
+    box-shadow: var(--underlay-shadow-card, none);
+    border: 1px solid var(--underlay-color-border-subtle, rgba(148, 163, 184, 0.25));
+    display: block;
+    text-decoration: none;
+  }
+
+  .underlay-stat-card-shell:hover {
+    border-color: var(--underlay-color-border-strong, rgba(148, 163, 184, 0.4));
+  }
+
+  .underlay-stat-card-shell__title {
+    margin: 0 0 0.75rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--underlay-color-text-muted, #94a3b8);
+  }
+
   .underlay-stat-loading,
   .underlay-stat-error {
     margin: 0;

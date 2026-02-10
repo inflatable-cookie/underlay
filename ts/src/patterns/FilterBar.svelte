@@ -2,16 +2,38 @@
   import type { Snippet } from "svelte";
   import ChevronUp from "lucide-svelte/icons/chevron-up";
   import RefreshCcw from "lucide-svelte/icons/refresh-ccw";
+  import X from "lucide-svelte/icons/x";
+
+  interface ActiveFilter {
+    id: string;
+    label: string;
+    value: string;
+    accent?: string;
+  }
 
   interface Props {
     title?: string;
     startCollapsed?: boolean;
     /** Callback when refresh button is clicked. If provided, shows a refresh button. */
     onRefresh?: () => void;
+    /** Array of currently active filters to display as pills */
+    activeFilters?: ActiveFilter[];
+    /** Callback to clear a specific filter by id */
+    onClearFilter?: (filterId: string) => void;
+    /** Callback to clear all filters */
+    onClearAllFilters?: () => void;
     children?: Snippet;
   }
 
-  let { title = "Filters", startCollapsed = true, onRefresh, children }: Props = $props();
+  let {
+    title = "Filters",
+    startCollapsed = true,
+    onRefresh,
+    activeFilters = [],
+    onClearFilter,
+    onClearAllFilters,
+    children
+  }: Props = $props();
 
   let collapsed = $state(true);
   let hasInteracted = $state(false);
@@ -23,6 +45,14 @@
   function toggle() {
     hasInteracted = true;
     collapsed = !collapsed;
+  }
+
+  function handleClearFilter(filterId: string) {
+    onClearFilter?.(filterId);
+  }
+
+  function handleClearAll() {
+    onClearAllFilters?.();
   }
 </script>
 
@@ -47,6 +77,27 @@
         </button>
       {/if}
     </div>
+    {#if activeFilters.length > 0}
+      <div class="underlay-filter-bar__active-filters underlay-filter-bar__active-filters--collapsed">
+        {#each activeFilters as filter (filter.id)}
+          <span
+            class="underlay-filter-bar__pill"
+            style:--pill-accent={filter.accent ?? 'var(--underlay-color-primary, #0ea5e9)'}
+          >
+            {filter.label}: {filter.value}
+          </span>
+        {/each}
+        {#if onClearAllFilters}
+          <button
+            type="button"
+            class="underlay-filter-bar__clear-all"
+            onclick={handleClearAll}
+          >
+            Clear all
+          </button>
+        {/if}
+      </div>
+    {/if}
   {:else}
     <div class="underlay-filter-bar__actions">
       {#if onRefresh}
@@ -72,6 +123,44 @@
     <div class="underlay-filter-bar__body">
       {@render children?.()}
     </div>
+    {#if activeFilters.length > 0}
+      <div class="underlay-filter-bar__active-filters">
+        <span class="underlay-filter-bar__active-label">Active filters:</span>
+        <div class="underlay-filter-bar__pills">
+          {#each activeFilters as filter (filter.id)}
+            <span
+              class="underlay-filter-bar__pill underlay-filter-bar__pill--removable"
+              style:--pill-accent={filter.accent ?? 'var(--underlay-color-primary, #0ea5e9)'}
+            >
+              <span class="underlay-filter-bar__pill-content">
+                <span class="underlay-filter-bar__pill-label">{filter.label}:</span>
+                <span class="underlay-filter-bar__pill-value">{filter.value}</span>
+              </span>
+              {#if onClearFilter}
+                <button
+                  type="button"
+                  class="underlay-filter-bar__pill-remove"
+                  onclick={() => handleClearFilter(filter.id)}
+                  aria-label="Remove {filter.label} filter"
+                  title="Remove filter"
+                >
+                  <X size={12} />
+                </button>
+              {/if}
+            </span>
+          {/each}
+        </div>
+        {#if onClearAllFilters}
+          <button
+            type="button"
+            class="underlay-filter-bar__clear-all"
+            onclick={handleClearAll}
+          >
+            Clear all
+          </button>
+        {/if}
+      </div>
+    {/if}
   {/if}
 </section>
 
@@ -177,5 +266,105 @@
 
   .underlay-filter-bar__body :global(.underlay-field) {
     min-width: 12rem;
+  }
+
+  /* Active filters section */
+  .underlay-filter-bar__active-filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--underlay-space-2, 0.5rem);
+    padding-top: var(--underlay-space-3, 0.75rem);
+    border-top: 1px solid var(--underlay-color-border-subtle, rgba(148, 163, 184, 0.25));
+    margin-top: var(--underlay-space-2, 0.5rem);
+  }
+
+  .underlay-filter-bar__active-filters--collapsed {
+    padding-top: 0;
+    border-top: none;
+    margin-top: 0;
+    padding-left: var(--underlay-space-8, 2rem);
+  }
+
+  .underlay-filter-bar__active-label {
+    font-size: var(--underlay-font-size-sm, 0.875rem);
+    color: var(--underlay-color-text-muted, rgba(148, 163, 184, 0.85));
+    font-weight: 500;
+  }
+
+  .underlay-filter-bar__pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--underlay-space-2, 0.5rem);
+    flex: 1;
+  }
+
+  .underlay-filter-bar__pill {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--underlay-space-1, 0.25rem);
+    padding: 0.25rem var(--underlay-space-2, 0.5rem);
+    border-radius: var(--underlay-radius-pill, 999px);
+    font-size: var(--underlay-font-size-sm, 0.875rem);
+    background: color-mix(in srgb, var(--pill-accent) 15%, transparent);
+    border: 1px solid color-mix(in srgb, var(--pill-accent) 30%, transparent);
+    color: var(--underlay-color-text, #e5e7eb);
+  }
+
+  .underlay-filter-bar__pill--removable {
+    padding-right: 0.25rem;
+  }
+
+  .underlay-filter-bar__pill-content {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  .underlay-filter-bar__pill-label {
+    color: var(--underlay-color-text-muted, rgba(148, 163, 184, 0.85));
+    font-weight: 500;
+  }
+
+  .underlay-filter-bar__pill-value {
+    color: var(--pill-accent);
+    font-weight: 600;
+  }
+
+  .underlay-filter-bar__pill-remove {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.25rem;
+    height: 1.25rem;
+    padding: 0;
+    border: none;
+    border-radius: var(--underlay-radius-pill, 999px);
+    background: transparent;
+    color: var(--underlay-color-text-muted, rgba(148, 163, 184, 0.85));
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .underlay-filter-bar__pill-remove:hover {
+    background: var(--underlay-color-danger-bg, rgba(239, 68, 68, 0.2));
+    color: var(--underlay-color-danger, #ef4444);
+  }
+
+  .underlay-filter-bar__clear-all {
+    padding: 0.25rem var(--underlay-space-2, 0.5rem);
+    border: none;
+    border-radius: var(--underlay-radius-sm, 0.25rem);
+    background: transparent;
+    color: var(--underlay-color-text-muted, rgba(148, 163, 184, 0.85));
+    font-size: var(--underlay-font-size-sm, 0.875rem);
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    transition: color 0.15s ease;
+  }
+
+  .underlay-filter-bar__clear-all:hover {
+    color: var(--underlay-color-text, #e5e7eb);
   }
 </style>
