@@ -2,8 +2,11 @@
   import type { Snippet } from "svelte";
 
   interface Props {
-    title: string;
+    /** Title text - used when titleSnippet is not provided */
+    title?: string;
     titleSuffix?: Snippet;
+    /** Snippet for custom title content (takes precedence over title prop) */
+    titleSnippet?: Snippet;
     subtitle?: string | null;
     trailing?: Snippet;
     actions?: Snippet<[{ trigger: Snippet; align: "start" | "center" | "end" }]>;
@@ -12,8 +15,9 @@
   }
 
   let {
-    title,
+    title = "",
     titleSuffix,
+    titleSnippet,
     subtitle = null,
     trailing,
     actions,
@@ -31,7 +35,12 @@
 <div class="underlay-list-card__body">
   <div class="underlay-list-card__title-row">
     <h3 class="underlay-list-card__title">
-      {title}{#if titleSuffix}{@render titleSuffix()}{/if}
+      {#if titleSnippet}
+        {@render titleSnippet()}
+      {:else}
+        {title}
+      {/if}
+      {#if titleSuffix}{@render titleSuffix()}{/if}
     </h3>
     {#if trailing || (hasActions && actionsPlacement === "trailing")}
       <div class="underlay-list-card__title-actions">

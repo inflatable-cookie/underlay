@@ -9,9 +9,12 @@
 
   interface Props {
     href?: string | null;
-    title: string;
+    /** Title text - used when title snippet is not provided */
+    title?: string;
     /** Optional content to render after the title (e.g., badges, tags) */
     titleSuffix?: Snippet;
+    /** Snippet for custom title content (takes precedence over title prop) */
+    titleSnippet?: Snippet;
     subtitle?: string | null;
     ariaLabel?: string | null;
     accent?: string | null;
@@ -38,8 +41,9 @@
 
   let {
     href = null,
-    title,
+    title = "",
     titleSuffix,
+    titleSnippet,
     subtitle = null,
     ariaLabel = null,
     accent = null,
@@ -93,6 +97,7 @@
   <ListCardBody
     {title}
     {titleSuffix}
+    {titleSnippet}
     {subtitle}
     {trailing}
     {actions}
@@ -102,7 +107,7 @@
 {/snippet}
 
 {#snippet compactContent()}
-  <ListCardCompactContent {title} {showDragHandle} {media} />
+  <ListCardCompactContent {title} {titleSnippet} {showDragHandle} {media} />
 {/snippet}
 
 <ListCardContainer

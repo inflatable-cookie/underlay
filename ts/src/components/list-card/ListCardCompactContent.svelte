@@ -2,12 +2,15 @@
   import type { Snippet } from "svelte";
 
   interface Props {
-    title: string;
+    /** Title text - used when titleSnippet is not provided */
+    title?: string;
     showDragHandle?: boolean;
     media?: Snippet;
+    /** Snippet for custom title content (takes precedence over title prop) */
+    titleSnippet?: Snippet;
   }
 
-  let { title, showDragHandle = false, media }: Props = $props();
+  let { title = "", showDragHandle = false, media, titleSnippet }: Props = $props();
 </script>
 
 {#if showDragHandle}
@@ -27,7 +30,13 @@
     {@render media()}
   {/if}
 </div>
-<span class="underlay-list-card__title underlay-list-card__title--compact">{title}</span>
+<span class="underlay-list-card__title underlay-list-card__title--compact">
+  {#if titleSnippet}
+    {@render titleSnippet()}
+  {:else}
+    {title}
+  {/if}
+</span>
 
 <style>
   .underlay-list-card__media {
