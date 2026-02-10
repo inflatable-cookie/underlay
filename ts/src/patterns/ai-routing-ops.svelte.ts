@@ -99,6 +99,16 @@ export interface AiRoutingOpsController {
   refreshAll: () => Promise<void>;
 }
 
+export interface AiRoutingAdminMessages {
+  refreshLabel?: string;
+  applyLabel?: string;
+  metricsEmpty?: string;
+  anomaliesEmpty?: string;
+  parityEmpty?: string;
+  costEmpty?: string;
+  noSpike?: string;
+}
+
 function normalizeError(error: unknown): string {
   if (error instanceof Error) {
     return error.message;

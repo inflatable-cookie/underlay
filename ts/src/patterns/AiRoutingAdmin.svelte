@@ -22,6 +22,7 @@
     createAiRoutingOpsController,
     maxCostSpike,
     toPercent,
+    type AiRoutingAdminMessages,
     type AiRoutingCostAnomaly,
     type AiRoutingDailyCost,
     type AiRoutingMetric,
@@ -32,7 +33,10 @@
 
   interface Props {
     source: AiRoutingOpsSource;
+    /** @deprecated Use `windowDefaults` */
     options?: AiRoutingOpsOptions;
+    windowDefaults?: AiRoutingOpsOptions;
+    messages?: AiRoutingAdminMessages;
     enabled?: boolean;
     section?: string;
     backHref?: string | null;
@@ -43,6 +47,8 @@
   let {
     source,
     options,
+    windowDefaults,
+    messages,
     enabled = true,
     section = "AI Routing",
     backHref = null,
@@ -51,8 +57,18 @@
   }: Props = $props();
 
   const controllerSource = untrack(() => source);
-  const controllerOptions = untrack(() => options);
+  const controllerOptions = untrack(() => windowDefaults ?? options);
   const ops = createAiRoutingOpsController(controllerSource, controllerOptions);
+
+  const labels = $derived({
+    refresh: messages?.refreshLabel ?? "Refresh",
+    apply: messages?.applyLabel ?? "Apply",
+    metricsEmpty: messages?.metricsEmpty ?? "No routing metrics yet",
+    anomaliesEmpty: messages?.anomaliesEmpty ?? "No cost anomalies",
+    parityEmpty: messages?.parityEmpty ?? "No parity records",
+    costEmpty: messages?.costEmpty ?? "No cost data yet",
+    noSpike: messages?.noSpike ?? "No spike records in current window."
+  });
 
   $effect(() => {
     if (enabled) {
@@ -139,7 +155,7 @@
   {#snippet actions()}
     <Button type="button" variant="subtle" onclick={() => ops.refreshAll()} disabled={ops.loading}>
       <RefreshCw size={16} />
-      Refresh
+      {labels.refresh}
     </Button>
   {/snippet}
 </PageHeader>
@@ -182,7 +198,7 @@
           Delta <strong>{topSpike.deltaPercent.toFixed(1)}%</strong> · Today ${topSpike.todayEstimatedCostUsd.toFixed(4)}
         </p>
       {:else}
-        <p class="summary-text">No spike records in current window.</p>
+        <p class="summary-text">{labels.noSpike}</p>
       {/if}
     </OpsCard>
   </OpsCardGrid>
@@ -195,10 +211,10 @@
     {#snippet controls()}
       <div class="controls-row">
         <NumberInput bind:value={metricHoursInput} min={1} max={720} />
-        <Button type="button" variant="secondary" onclick={applyMetricWindow}>Apply</Button>
+        <Button type="button" variant="secondary" onclick={applyMetricWindow}>{labels.apply}</Button>
       </div>
     {/snippet}
-    <DataTable data={ops.metrics} columns={metricColumns} emptyMessage="No routing metrics yet" showLimitSelector={false}>
+    <DataTable data={ops.metrics} columns={metricColumns} emptyMessage={labels.metricsEmpty} showLimitSelector={false}>
       {#snippet cell({ column, row })}
         {#if column.key === "providerModel"}
           <code>{row.providerName}</code>/<code>{row.modelName}</code>
@@ -225,10 +241,10 @@
     {#snippet controls()}
       <div class="controls-row">
         <NumberInput bind:value={anomalyDaysInput} min={2} max={90} />
-        <Button type="button" variant="secondary" onclick={applyAnomalyWindow}>Apply</Button>
+        <Button type="button" variant="secondary" onclick={applyAnomalyWindow}>{labels.apply}</Button>
       </div>
     {/snippet}
-    <DataTable data={ops.anomalies} columns={anomalyColumns} emptyMessage="No cost anomalies" showLimitSelector={false}>
+    <DataTable data={ops.anomalies} columns={anomalyColumns} emptyMessage={labels.anomaliesEmpty} showLimitSelector={false}>
       {#snippet cell({ column, row })}
         {#if column.key === "providerModel"}
           <code>{row.providerName}</code>/<code>{row.modelName}</code>
@@ -245,10 +261,10 @@
     {#snippet controls()}
       <div class="controls-row">
         <NumberInput bind:value={parityHoursInput} min={1} max={720} />
-        <Button type="button" variant="secondary" onclick={applyParityWindow}>Apply</Button>
+        <Button type="button" variant="secondary" onclick={applyParityWindow}>{labels.apply}</Button>
       </div>
     {/snippet}
-    <DataTable data={ops.parity} columns={parityColumns} emptyMessage="No parity records" showLimitSelector={false}>
+    <DataTable data={ops.parity} columns={parityColumns} emptyMessage={labels.parityEmpty} showLimitSelector={false}>
       {#snippet cell({ column, row })}
         {#if column.key === "successRate"}
           {toPercent(row.successRate)}
@@ -261,10 +277,10 @@
     {#snippet controls()}
       <div class="controls-row">
         <NumberInput bind:value={costDaysInput} min={1} max={365} />
-        <Button type="button" variant="secondary" onclick={applyCostWindow}>Apply</Button>
+        <Button type="button" variant="secondary" onclick={applyCostWindow}>{labels.apply}</Button>
       </div>
     {/snippet}
-    <DataTable data={ops.cost} columns={costColumns} emptyMessage="No cost data yet" showLimitSelector={false}>
+    <DataTable data={ops.cost} columns={costColumns} emptyMessage={labels.costEmpty} showLimitSelector={false}>
       {#snippet cell({ column, row })}
         {#if column.key === "providerModel"}
           <code>{row.providerName}</code>/<code>{row.modelName}</code>

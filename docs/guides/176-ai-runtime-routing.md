@@ -65,3 +65,8 @@ Use it when you want a ready-made AI routing operations page with:
 - preconfigured tables for metrics, anomalies, parity, and daily cost
 
 Apps only need to provide an `AiRoutingOpsSource` implementation and auth gating.
+
+Optional customization:
+
+- `windowDefaults` (`AiRoutingOpsOptions`) for default metric/cost/parity/anomaly windows
+- `messages` (`AiRoutingAdminMessages`) for empty-state and button labels
