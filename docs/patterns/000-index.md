@@ -118,6 +118,7 @@ Individual techniques referenced by the recipes above.
 | Pattern | Description | Guide |
 |---------|-------------|-------|
 | Provider-agnostic LLM boundary | `LlmClient`, registry, route candidates, OpenAI-compatible transport | [176-ai-runtime-routing.md](../guides/176-ai-runtime-routing.md) |
+| Admin AI routing dashboard | `AiRoutingAdmin` + `AiRoutingOpsSource` for turnkey diagnostics/cost/parity ops UI | [176-ai-runtime-routing.md](../guides/176-ai-runtime-routing.md) |
 
 ### Internal Development Patterns
 

@@ -53,3 +53,15 @@ Underlay exports `createAiRoutingOpsController` from `ts/src/patterns/ai-routing
 
 Use it to compose app-specific fetchers for diagnostics/metrics/cost/anomalies/alerts/parity,
 while keeping state and refresh behavior reusable across admin apps.
+
+## Svelte admin dashboard pattern
+
+Underlay also exports `AiRoutingAdmin` from `ts/src/patterns/AiRoutingAdmin.svelte`.
+
+Use it when you want a ready-made AI routing operations page with:
+
+- summary cards (routing config, alert counts, top spike)
+- window controls for metrics/anomalies/parity/cost
+- preconfigured tables for metrics, anomalies, parity, and daily cost
+
+Apps only need to provide an `AiRoutingOpsSource` implementation and auth gating.
