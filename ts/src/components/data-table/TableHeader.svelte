@@ -113,6 +113,7 @@
 
   .header-row > .table-cell {
     background: var(--dt-header-bg);
+    padding: var(--dt-gap);
     font-weight: 600;
     border-bottom: var(--dt-border);
     font-size: 0.75rem;
@@ -123,7 +124,13 @@
 
   .filter-row > .table-cell {
     background: var(--dt-header-bg);
+    padding: var(--dt-gap);
     border-bottom: var(--dt-border);
+  }
+
+  :global(.compact) .header-row > .table-cell,
+  :global(.compact) .filter-row > .table-cell {
+    padding: var(--dt-gap-compact);
   }
 
   .checkbox-cell {
