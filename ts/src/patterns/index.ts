@@ -123,6 +123,23 @@ export {
   type InitTimezoneOptions
 } from "./timezone.svelte";
 
+// AI routing operations helpers
+export {
+  createAiRoutingOpsController,
+  toPercent,
+  estimateSuccessRate,
+  maxCostSpike,
+  type AiRoutingDiagnostics,
+  type AiRoutingMetric,
+  type AiRoutingDailyCost,
+  type AiRoutingCostAnomaly,
+  type AiRoutingAlertSummary,
+  type AiRoutingParity,
+  type AiRoutingOpsSource,
+  type AiRoutingOpsOptions,
+  type AiRoutingOpsController,
+} from "./ai-routing-ops.svelte";
+
 // Account / user profile types (identity & personalization)
 export {
   deriveDisplayName,

@@ -46,3 +46,10 @@ Use `underlay-ai-runtime` for app-agnostic runtime pieces:
 - DB schema for routing config and versioning
 - Runtime rollout flags (canary %, action-prefix rollout, force-primary)
 - Admin diagnostics and governance endpoints
+
+## TypeScript admin helper
+
+Underlay exports `createAiRoutingOpsController` from `ts/src/patterns/ai-routing-ops.svelte.ts`.
+
+Use it to compose app-specific fetchers for diagnostics/metrics/cost/anomalies/alerts/parity,
+while keeping state and refresh behavior reusable across admin apps.
