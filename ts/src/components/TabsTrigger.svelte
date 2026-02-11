@@ -3,6 +3,7 @@
   import type { Snippet } from "svelte";
   import { getContext } from "svelte";
   import type { TabsVariant, TabsSize } from "./TabsRoot.svelte";
+  import type { FormTabsSectionRegistryContext } from "./form-tabs/types";
 
   interface Props {
     value: string;
@@ -17,18 +18,26 @@
 
   const getVariant = getContext<() => TabsVariant>("underlay-tabs-variant");
   const getSize = getContext<() => TabsSize>("underlay-tabs-size");
+  const registry = getContext<FormTabsSectionRegistryContext | undefined>("underlay-form-tabs-registry");
   let variant = $derived(getVariant?.() ?? "pills");
   let size = $derived(getSize?.() ?? "default");
+  let sectionState = $derived(registry?.getSectionState(value) ?? "idle");
 </script>
 
 <BitsTabs.Trigger
   {value}
   {disabled}
   class={`underlay-tabs-trigger underlay-tabs-trigger--${variant} underlay-tabs-trigger--${size} ${className ?? ""}`}
+  data-section-state={sectionState}
 >
   {@render children?.()}
   {#if count != null}
     <span class="underlay-tabs-trigger__count">{count}</span>
+  {/if}
+  {#if sectionState === "invalid"}
+    <span class="underlay-tabs-trigger__validation-dot underlay-tabs-trigger__validation-dot--error" aria-label="Has validation errors"></span>
+  {:else if sectionState === "incomplete"}
+    <span class="underlay-tabs-trigger__validation-dot underlay-tabs-trigger__validation-dot--warning" aria-label="Has required fields"></span>
   {/if}
 </BitsTabs.Trigger>
 
@@ -146,5 +155,44 @@
     font-size: 0.65rem;
     padding: 0.05rem 0.3rem;
     margin-left: 0.3rem;
+  }
+
+  /* Form variant - prominent, for form section navigation */
+  :global(.underlay-tabs-trigger--form) {
+    padding: 0.65rem 1.25rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+    border-radius: 0;
+    gap: 0.5rem;
+    border-bottom: 2px solid transparent;
+    transition: color 0.15s ease, border-color 0.15s ease;
+  }
+
+  :global(.underlay-tabs-trigger--form[data-state="active"]) {
+    color: var(--underlay-color-text, #e5e7eb);
+    border-bottom-color: var(--underlay-color-primary, #3b82f6);
+  }
+
+  :global(.underlay-tabs-trigger--form:hover:not([data-state="active"])) {
+    color: var(--underlay-color-text, #e5e7eb);
+    border-bottom-color: var(--underlay-color-border-subtle, rgba(148, 163, 184, 0.25));
+  }
+
+  /* Validation indicator dots */
+  .underlay-tabs-trigger__validation-dot {
+    display: inline-block;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-left: 0.25rem;
+  }
+
+  .underlay-tabs-trigger__validation-dot--error {
+    background: var(--underlay-color-error, #ef4444);
+  }
+
+  .underlay-tabs-trigger__validation-dot--warning {
+    background: var(--underlay-color-warning, #f59e0b);
   }
 </style>

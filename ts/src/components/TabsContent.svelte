@@ -56,6 +56,12 @@
     border-radius: 0;
   }
 
+  /* Form variant - generous spacing for form sections */
+  :global(.underlay-tabs-content--form) {
+    margin-top: 0;
+    padding: 1.5rem 0 0 0;
+  }
+
   /* Collapsed mode - simpler styling */
   :global(.underlay-tabs--collapsed .underlay-tabs-content--boxed) {
     border-top: none;

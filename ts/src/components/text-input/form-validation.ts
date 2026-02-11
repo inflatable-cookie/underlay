@@ -4,6 +4,14 @@ import {
   type InputValidationStatus
 } from "./validation-state";
 
+export interface FieldState {
+  id: string;
+  required: boolean;
+  hasValue: boolean;
+  validationStatus: string;
+  isValidationValid: boolean;
+}
+
 export interface FormValidationContext {
   registerField: (
     id: string,
@@ -19,6 +27,10 @@ export interface FormValidationContext {
     validationStatus?: string,
     isValidationValid?: boolean
   ) => void;
+  /** Query individual field state (used by form tabs) */
+  getFieldState?: (id: string) => FieldState | undefined;
+  /** Reactivity version counter (used by form tabs) */
+  getVersion?: () => number;
 }
 
 export function registerFormValidationField(

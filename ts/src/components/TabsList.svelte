@@ -201,6 +201,15 @@
     border-radius: 0.5rem 0.5rem 0 0;
   }
 
+  /* Form variant - prominent bar for form section navigation */
+  :global(.underlay-tabs-list--form) {
+    gap: 0;
+    padding: 0;
+    border: none;
+    background: transparent;
+    border-bottom: 2px solid var(--underlay-color-border-subtle, rgba(148, 163, 184, 0.25));
+  }
+
   /* Small size variant */
   :global(.underlay-tabs-list--sm.underlay-tabs-list--boxed) {
     gap: 0.25rem;

@@ -99,6 +99,8 @@
     registerField,
     unregisterField,
     updateField,
+    getFieldState: (id: string) => fields.get(id),
+    getVersion: () => version,
   });
 </script>
 
