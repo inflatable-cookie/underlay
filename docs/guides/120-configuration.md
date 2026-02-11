@@ -102,7 +102,7 @@ Underlay defines a set of **standard environment variable names** that all consu
 
 1. **Generic infrastructure** uses unprefixed names: `PORT`, `DATABASE_URL`, `SMTP_HOST`
 2. **Auth variables** use `AUTH_` prefix: `AUTH_JWT_PRIVATE_KEY`, `AUTH_GOOGLE_CLIENT_ID`
-3. **Frontend public vars** use `PUBLIC_` prefix: `PUBLIC_API_URL`, `PUBLIC_APP_NAME`
+3. **Frontend public vars** use `PUBLIC_` prefix: `PUBLIC_API_BASE_URL`, `PUBLIC_API_VERSION`, `PUBLIC_APP_NAME`
 4. **App-specific branding** can use app prefix: `MYAPP_EMAIL_SUPPORT`, `MYAPP_THEME`
 
 When migrating from app-prefixed names, the API should accept both the generic name (preferred) and the legacy app-prefixed name as fallback.
@@ -250,9 +250,29 @@ Frontend apps (SvelteKit) use `PUBLIC_` prefixed variables that are exposed to t
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `PUBLIC_API_URL` | — | Backend API base URL |
+| `PUBLIC_API_BASE_URL` | — | Canonical backend API base URL |
 | `PUBLIC_API_VERSION` | — | API version sent as `X-Api-Version` header (date format) |
 | `PUBLIC_APP_NAME` | — | Application display name |
+
+Legacy migration fallbacks (deprecated):
+
+- `PUBLIC_API_URL`
+- `VITE_API_URL`
+
+Use these only during transition windows. New projects should read
+`PUBLIC_API_BASE_URL` directly.
+
+Recommended resolver pattern:
+
+```ts
+const baseUrl =
+  env.PUBLIC_API_BASE_URL ??
+  env.PUBLIC_API_URL ??
+  env.VITE_API_URL ??
+  "http://127.0.0.1:3000";
+
+const apiVersion = env.PUBLIC_API_VERSION ?? "2025-01-01";
+```
 
 ### API Versioning (Date Format)
 
@@ -273,7 +293,7 @@ The version is sent to the API via the `X-Api-Version` header. The API can use t
 Example:
 
 ```bash
-PUBLIC_API_URL=http://localhost:3000
+PUBLIC_API_BASE_URL=http://localhost:3000
 PUBLIC_API_VERSION=2025-01-01
 PUBLIC_APP_NAME=MyApp
 ```
@@ -343,7 +363,7 @@ SMTP_TLS=required
 ### Frontend (Development)
 
 ```bash
-PUBLIC_API_URL=http://localhost:3000
+PUBLIC_API_BASE_URL=http://localhost:3000
 PUBLIC_API_VERSION=2025-01-01
 PUBLIC_APP_NAME=MyApp
 ```
@@ -351,7 +371,7 @@ PUBLIC_APP_NAME=MyApp
 ### Frontend (Production)
 
 ```bash
-PUBLIC_API_URL=https://api.example.com
+PUBLIC_API_BASE_URL=https://api.example.com
 PUBLIC_API_VERSION=2025-01-01
 PUBLIC_APP_NAME=MyApp
 ```

@@ -574,7 +574,11 @@ import { env } from "$env/dynamic/public";
 
 // Configure client once at module load
 configureStem({
-  baseUrl: env.PUBLIC_API_URL ?? "http://127.0.0.1:4100",
+  baseUrl:
+    env.PUBLIC_API_BASE_URL ??
+    env.PUBLIC_API_URL ??
+    env.VITE_API_URL ??
+    "http://127.0.0.1:4100",
   apiVersion: env.PUBLIC_API_VERSION ?? "2025-01-01"
 });
 
@@ -624,7 +628,11 @@ import { env } from "$env/dynamic/public";
 // Configure client on the client side
 // This is needed for universal load functions (+page.ts) that run in the browser
 configureStem({
-  baseUrl: env.PUBLIC_API_URL ?? "http://127.0.0.1:4100",
+  baseUrl:
+    env.PUBLIC_API_BASE_URL ??
+    env.PUBLIC_API_URL ??
+    env.VITE_API_URL ??
+    "http://127.0.0.1:4100",
   apiVersion: env.PUBLIC_API_VERSION ?? "2025-01-01"
 });
 ```

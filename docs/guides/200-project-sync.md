@@ -80,6 +80,7 @@ Align with [120-configuration.md](./120-configuration.md) before expanding featu
 - [ ] Restrict env overrides to an allowlist
 - [ ] Add startup validation and redacted config diagnostics
 - [ ] Add legacy-key deprecation warnings where needed
+- [ ] Standardize frontend public API env keys to `PUBLIC_API_BASE_URL` + `PUBLIC_API_VERSION`
 - [ ] Remove migrated keys from `.env.example` and docs after transition window
 
 ---

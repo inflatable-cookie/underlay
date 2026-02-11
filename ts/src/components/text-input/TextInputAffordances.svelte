@@ -8,6 +8,7 @@
     showClearButton?: boolean;
     showValidationIcon?: boolean;
     showValidationStatus?: boolean;
+    showValidationMessage?: boolean;
     validationStatus?: InputValidationStatus;
     validationMessage?: string;
     onClear?: () => void;
@@ -17,6 +18,7 @@
     showClearButton = false,
     showValidationIcon = false,
     showValidationStatus = false,
+    showValidationMessage = true,
     validationStatus = "idle",
     validationMessage = "",
     onClear
@@ -52,7 +54,7 @@
   </div>
 {/if}
 
-{#if validationMessage && showValidationStatus}
+{#if showValidationMessage && validationMessage && showValidationStatus}
   <p class="underlay-input-validation__message underlay-input-validation__message--{validationStatus}">
     {validationMessage}
   </p>

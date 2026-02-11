@@ -97,8 +97,8 @@
       autoDownloadFontAwesome: false,
       status: false,
       spellChecker: false,
-      // EasyMDE defaults to 300px; keep it a bit tighter.
-      minHeight: "200px", 
+      // Keep JS config aligned with the design token used in CSS.
+      minHeight: "var(--underlay-markdown-editor-min-height, 5em)",
       initialValue: value ?? "",
       placeholder: placeholder ?? undefined,
       toolbar: [

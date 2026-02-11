@@ -1091,6 +1091,15 @@ Shows a subtle empty message when no content is set.
   value={data.content}
   maxHeight={0}
 />
+
+<!-- Scroll instead of reveal toggle -->
+<ContentCard
+  title="Stitched Preview"
+  value={data.stitchedMarkdown}
+  markdown
+  maxHeight="10em"
+  overflowBehavior="scroll"
+/>
 ```
 
 **Props:**
@@ -1098,12 +1107,14 @@ Shows a subtle empty message when no content is set.
 - `value` - NightfireValue object, HTML string, or Markdown string to render (optional)
 - `markdown` - When true, string values are parsed as Markdown (default: false)
 - `emptyMessage` - Message shown when value is empty (default: "No content set.")
-- `maxHeight` - Max height in pixels when collapsed; set to 0 to disable collapsing (default: 200)
+- `maxHeight` - Max height when constrained. Number values are interpreted as pixels; strings can use CSS units like `"10em"` (default: `200`)
+- `overflowBehavior` - Overflow mode when `maxHeight` is set: `"reveal"` (default, show more/less toggle) or `"scroll"` (fixed height with internal scroll)
 
 **Features:**
 - Auto-detects content type (object = Nightfire, string = HTML/Markdown)
 - Markdown parsing via `marked` when `markdown` prop is set
-- Collapsible content with "Show more/less" toggle when content exceeds `maxHeight`
+- Collapsible reveal mode with "Show more/less" toggle when `overflowBehavior="reveal"`
+- Scroll mode with fixed-height content when `overflowBehavior="scroll"`
 - Gradient fade effect on collapsed content for visual indication
 - Max-width of 65ch for comfortable reading
 - Card styling with subtle background and border

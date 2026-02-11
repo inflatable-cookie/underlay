@@ -9,7 +9,7 @@
 .froyo-form-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: var(--underlay-space-5, 1.25rem);
+  gap: var(--underlay-space-6, 2.5rem);
   width: 100%;
   max-width: 40em;
   margin: 0 auto;

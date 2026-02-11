@@ -1,6 +1,5 @@
 <script lang="ts">
   import UnderlayMarkdownEditor from "../../components/MarkdownEditor.svelte";
-  import { untrack } from "svelte";
 
   type MarkdownBlock = {
     type?: string;
@@ -18,12 +17,18 @@
 
   let { block, onChange = () => {} }: Props = $props();
 
-  // Initialize text from block once - don't use reactive binding
-  const initialText = untrack(() => block.data?.text ?? "");
+  // Keep local editor text in sync with incoming block updates.
+  let text = $state("");
+
+  $effect(() => {
+    const next = block.data?.text ?? "";
+    if (next !== text) {
+      text = next;
+    }
+  });
 
   function handleInput(next: string) {
-    // Don't update local state - let the editor manage its own state
-    // Just propagate the change up
+    text = next;
     onChange({
       type: block.type ?? "markdown",
       version: block.version ?? "initial",
@@ -36,7 +41,7 @@
 </script>
 
 <div class="markdown-editor">
-  <UnderlayMarkdownEditor value={initialText} onChange={handleInput} />
+  <UnderlayMarkdownEditor value={text} onChange={handleInput} />
 </div>
 
 <style>

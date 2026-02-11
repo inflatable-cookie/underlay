@@ -3,22 +3,33 @@
   import { marked } from "marked";
 
   interface Props {
-    title: string;
+    title?: string | null;
     value?: NightfireValue | string | null;
     /** When true, string values are parsed as markdown instead of raw HTML */
     markdown?: boolean;
     emptyMessage?: string;
-    /** Max height in pixels when collapsed. Set to 0 to disable collapsing. */
-    maxHeight?: number;
+    /** Max height when constrained. Number values are interpreted as pixels. */
+    maxHeight?: number | string;
+    /** How overflow should behave when maxHeight is set. */
+    overflowBehavior?: "reveal" | "scroll";
   }
 
   let {
-    title,
+    title = null,
     value = null,
     markdown = false,
     emptyMessage = "No content set.",
-    maxHeight = 200
+    maxHeight = 200,
+    overflowBehavior = "reveal"
   }: Props = $props();
+
+  const maxHeightCss = $derived(
+    typeof maxHeight === "number" ? `${maxHeight}px` : maxHeight
+  );
+
+  const maxHeightNumber = $derived(
+    typeof maxHeight === "number" ? maxHeight : Number.NaN
+  );
 
   const isNightfire = $derived(value !== null && typeof value === "object");
 
@@ -35,12 +46,19 @@
       : value
   );
 
+  const hasTitle = $derived(typeof title === "string" && title.trim().length > 0);
+
   let isExpanded = $state(false);
   let contentEl: HTMLDivElement | null = $state(null);
   let isOverflowing = $state(false);
 
   $effect(() => {
-    if (!contentEl || maxHeight <= 0) {
+    if (
+      !contentEl ||
+      !Number.isFinite(maxHeightNumber) ||
+      maxHeightNumber <= 0 ||
+      overflowBehavior !== "reveal"
+    ) {
       isOverflowing = false;
       return;
     }
@@ -48,7 +66,7 @@
     // Check if content overflows the max height
     const checkOverflow = () => {
       if (contentEl) {
-        isOverflowing = contentEl.scrollHeight > maxHeight;
+        isOverflowing = contentEl.scrollHeight > maxHeightNumber;
       }
     };
 
@@ -67,11 +85,14 @@
 </script>
 
 <div class="content-card">
-  <h4 class="content-card__title">{title}</h4>
+  {#if hasTitle}
+    <h4 class="content-card__title">{title}</h4>
+  {/if}
   <div
     class="content-card__body"
-    class:content-card__body--collapsed={!isExpanded && isOverflowing && maxHeight > 0}
-    style:--content-card-max-height="{maxHeight}px"
+    class:content-card__body--collapsed={!isExpanded && isOverflowing && maxHeightNumber > 0 && overflowBehavior === "reveal"}
+    class:content-card__body--scroll={maxHeightCss !== "0px" && maxHeightCss !== "0" && overflowBehavior === "scroll"}
+    style:--content-card-max-height={maxHeightCss}
     bind:this={contentEl}
   >
     {#if hasContent}
@@ -84,7 +105,7 @@
       <p class="content-card__empty">{emptyMessage}</p>
     {/if}
   </div>
-  {#if isOverflowing && maxHeight > 0}
+  {#if overflowBehavior === "reveal" && isOverflowing && maxHeightNumber > 0}
     <button
       type="button"
       class="content-card__toggle"
@@ -124,6 +145,11 @@
     overflow: hidden;
     mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
     -webkit-mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
+  }
+
+  .content-card__body--scroll {
+    max-height: var(--content-card-max-height, 200px);
+    overflow: auto;
   }
 
   .content-card__body :global(p:first-child) {

@@ -72,6 +72,7 @@
       {showClearButton}
       {showValidationIcon}
       {showValidationStatus}
+      showValidationMessage={false}
       {validationStatus}
       {validationMessage}
       onClear={onClear}
@@ -80,6 +81,12 @@
       {@render suffix()}
     {/if}
   </div>
+
+  {#if validationMessage && showValidationStatus}
+    <p class="underlay-input-validation__message underlay-input-validation__message--{validationStatus}">
+      {validationMessage}
+    </p>
+  {/if}
 {:else}
   <input
     {...restProps}
@@ -162,6 +169,23 @@
     border: var(--underlay-field-border-width, 1px) solid var(--underlay-color-border, rgba(148, 163, 184, 0.35));
     border-radius: var(--underlay-radius-sm, 0.35rem);
     background: var(--underlay-color-field-bg, rgba(148, 163, 184, 0.08));
+  }
+
+  .underlay-input-validation__message {
+    margin: var(--underlay-space-2, 0.5rem) 0 0;
+    font-size: var(--underlay-font-size-sm, 0.8rem);
+  }
+
+  .underlay-input-validation__message--validating {
+    color: var(--underlay-color-text-muted, #9ca3af);
+  }
+
+  .underlay-input-validation__message--valid {
+    color: var(--underlay-color-success, #22c55e);
+  }
+
+  .underlay-input-validation__message--invalid {
+    color: var(--underlay-color-error, #ef4444);
   }
 
   .underlay-input-wrapper--prefixed:focus-within {
