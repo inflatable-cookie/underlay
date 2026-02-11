@@ -259,6 +259,12 @@
     max-width: 100%;
   }
 
+  /* Form variant measure wrapper stretches full width */
+  .underlay-tabs-list-container--form .underlay-tabs-list__measure {
+    display: block;
+    width: 100%;
+  }
+
   /* Dropdown styles */
   .underlay-tabs-dropdown {
     position: relative;
