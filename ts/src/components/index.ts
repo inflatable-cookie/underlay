@@ -21,6 +21,8 @@ export {
 	formatDateWithOrdinal
 } from "./DateRange.svelte";
 export { default as NumberInput } from "./NumberInput.svelte";
+export { default as RangeSlider } from "./RangeSlider.svelte";
+export type { RangeSliderOption } from "./RangeSlider.svelte";
 export { default as ColorPicker } from "./ColorPicker.svelte";
 export { default as TextArea } from "./TextArea.svelte";
 export { default as MarkdownEditor } from "./MarkdownEditor.svelte";
