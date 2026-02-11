@@ -46,5 +46,16 @@ export type {
   NightfireStrategiesStore
 } from "./strategies";
 
+// Nightfire media context (media picker injection for block editors)
+export {
+  createNightfireMediaContext,
+  useNightfireMedia
+} from "./media/context";
+
+export type {
+  NightfireMediaContext,
+  NightfireMediaPickResult
+} from "./media/context";
+
 // Re-export SchemaMismatchInfo from editor for convenience
 export type { SchemaMismatchInfo } from "./NightfireEditor.svelte";

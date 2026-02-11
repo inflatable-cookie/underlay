@@ -3,3 +3,4 @@
 // contexts (e.g. Dairy), not from public/student views.
 
 import "./markup/editor";
+import "./media/editor";
