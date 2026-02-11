@@ -13,16 +13,24 @@
 
   let { columns = 1, full = false, class: className = "", children }: Props = $props();
 
-  const columnClass = $derived(columns === "auto" ? "" : `underlay-fieldset--cols-${columns}`);
-  const fullClass = $derived(full ? "underlay-fieldset--full" : "");
+  const columnClass = $derived(
+    columns === "auto"
+      ? ""
+      : `underlay-fieldset-grid--cols-${columns} underlay-fieldset--cols-${columns}`
+  );
+  const fullClass = $derived(
+    full
+      ? "underlay-fieldset-grid--full underlay-fieldset--full"
+      : ""
+  );
 </script>
 
-<div class={`underlay-fieldset ${columnClass} ${fullClass} ${className}`}>
+<div class={`underlay-fieldset-grid underlay-fieldset ${columnClass} ${fullClass} ${className}`}>
   {@render children?.()}
 </div>
 
 <style>
-  .underlay-fieldset {
+  .underlay-fieldset-grid {
     display: grid;
     gap: var(--underlay-space-4, 1rem);
     grid-template-columns: minmax(0, 1fr);
@@ -34,44 +42,51 @@
   /*
    * Optional variant: keep a compact two-column layout only on very small containers.
    * This preserves the configured desktop column count (e.g. 3/4/6) at wider sizes.
-   * Use with class="underlay-fieldset--mobile-2".
+   * Use with class="underlay-fieldset-grid--mobile-2".
    */
   @container (max-width: 399px) {
+    .underlay-fieldset-grid--mobile-2,
     .underlay-fieldset--mobile-2 {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
+    .underlay-fieldset-grid--mobile-2-first-full > :global(:first-child),
     .underlay-fieldset--mobile-2-first-full > :global(:first-child) {
       grid-column: 1 / -1;
     }
   }
 
-  .underlay-fieldset > :global(*) {
+  .underlay-fieldset-grid > :global(*) {
     min-width: 0;
     max-width: 100%;
   }
 
-  .underlay-fieldset.underlay-fieldset--full {
+  .underlay-fieldset-grid.underlay-fieldset-grid--full,
+  .underlay-fieldset-grid.underlay-fieldset--full {
     grid-column: 1 / -1;
   }
 
   /* Auto-fit columns based on available space */
-  .underlay-fieldset:not(.underlay-fieldset--cols-1):not(.underlay-fieldset--cols-2):not(.underlay-fieldset--cols-3):not(.underlay-fieldset--cols-4):not(.underlay-fieldset--cols-6) {
+  .underlay-fieldset-grid:not(.underlay-fieldset-grid--cols-1):not(.underlay-fieldset-grid--cols-2):not(.underlay-fieldset-grid--cols-3):not(.underlay-fieldset-grid--cols-4):not(.underlay-fieldset-grid--cols-6) {
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
   }
 
   /* Fixed column layouts using container queries */
   @container (min-width: 400px) {
+    .underlay-fieldset-grid--cols-2,
     .underlay-fieldset--cols-2 {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     /* Progressive: 3+ columns collapse to 2 first */
+    .underlay-fieldset-grid--cols-3,
+    .underlay-fieldset-grid--cols-4,
     .underlay-fieldset--cols-3,
     .underlay-fieldset--cols-4 {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
+    .underlay-fieldset-grid--cols-6,
     .underlay-fieldset--cols-6 {
       grid-template-columns: repeat(3, minmax(0, 1fr));
     }
@@ -79,14 +94,17 @@
 
   /* Full column layouts at wider container widths */
   @container (min-width: 600px) {
+    .underlay-fieldset-grid--cols-3,
     .underlay-fieldset--cols-3 {
       grid-template-columns: repeat(3, minmax(0, 1fr));
     }
 
+    .underlay-fieldset-grid--cols-4,
     .underlay-fieldset--cols-4 {
       grid-template-columns: repeat(4, minmax(0, 1fr));
     }
 
+    .underlay-fieldset-grid--cols-6,
     .underlay-fieldset--cols-6 {
       grid-template-columns: repeat(6, minmax(0, 1fr));
     }
