@@ -80,11 +80,10 @@ impl OAuthTokenCipher {
             .decode(nonce_b64.as_bytes())
             .map_err(|_| AuthError::Internal("invalid oauth nonce".into()))?;
 
-        if nonce_bytes.len() != 12 {
-            return Err(AuthError::Internal("invalid oauth nonce".into()));
-        }
-
-        let nonce = Nonce::from_slice(&nonce_bytes);
+        let nonce_arr: [u8; 12] = nonce_bytes
+            .try_into()
+            .map_err(|_| AuthError::Internal("invalid oauth nonce".into()))?;
+        let nonce = Nonce::from(nonce_arr);
 
         let ct = URL_SAFE_NO_PAD
             .decode(ct_b64.as_bytes())
@@ -92,7 +91,7 @@ impl OAuthTokenCipher {
 
         let plaintext = self
             .cipher
-            .decrypt(nonce, ct.as_ref())
+            .decrypt(&nonce, ct.as_ref())
             .map_err(|_| AuthError::Internal("failed to decrypt oauth secret".into()))?;
 
         String::from_utf8(plaintext)

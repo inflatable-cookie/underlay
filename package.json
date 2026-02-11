@@ -74,7 +74,7 @@
     "validate": "bun run check && bun run check:types && bun run check:exports && bun run check:guardrails && bun run test:run"
   },
   "peerDependencies": {
-    "@sveltejs/kit": "^2.50.1",
+    "@sveltejs/kit": "^2.50.2",
     "bits-ui": "^2.0.0",
     "lucide-svelte": "^0.563.0",
     "svelte": "^5.0.0",
@@ -87,11 +87,11 @@
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^6.2.4",
-    "@types/node": "^25.1.0",
+    "@types/node": "^25.2.3",
     "@vitest/ui": "^4.0.18",
     "bits-ui": "^2.15.5",
     "lucide-svelte": "^0.563.0",
-    "svelte": "^5.50.0",
+    "svelte": "^5.50.1",
     "svelte-check": "^4.3.6",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
