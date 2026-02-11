@@ -1217,6 +1217,7 @@ The `isValid` prop updates automatically whenever:
     FormValidationProvider,
     Field,
     FieldSet,
+    FieldSetGrid,
     TextInput,
     SaveSplitButton
   } from "@decodelabs/underlay/components";
@@ -1242,31 +1243,33 @@ The `isValid` prop updates automatically whenever:
 
 <form method="post">
   <FormValidationProvider bind:isValid={isFormValid}>
-    <FieldSet columns={2}>
-      <Field label="Label" required>
-        <TextInput
-          id="label"
-          name="label"
-          required
-          maxlength={1}
-          pattern="[A-Z]"
-          bind:value={labelValue}
-          validate={validateLabel}
-          oninput={(value) => {
-            labelValue = value.toUpperCase();
-          }}
-        />
-      </Field>
+    <FieldSet>
+      <FieldSetGrid columns={2}>
+        <Field label="Label" required>
+          <TextInput
+            id="label"
+            name="label"
+            required
+            maxlength={1}
+            pattern="[A-Z]"
+            bind:value={labelValue}
+            validate={validateLabel}
+            oninput={(value) => {
+              labelValue = value.toUpperCase();
+            }}
+          />
+        </Field>
 
-      <Field label="Title" required>
-        <TextInput
-          id="title"
-          name="title"
-          required
-          maxlength={128}
-          bind:value={titleValue}
-        />
-      </Field>
+        <Field label="Title" required>
+          <TextInput
+            id="title"
+            name="title"
+            required
+            maxlength={128}
+            bind:value={titleValue}
+          />
+        </Field>
+      </FieldSetGrid>
     </FieldSet>
 
     <SlugField

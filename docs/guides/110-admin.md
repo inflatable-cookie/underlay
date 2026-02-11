@@ -790,6 +790,7 @@ Forms should NOT contain `<form>` elements or submission logic. They render fiel
     ConfirmAction,
     Field,
     FieldSet,
+    FieldSetGrid,
     FormActions,
     FormValidationProvider,
     SaveSplitButton,
@@ -844,16 +845,20 @@ Forms should NOT contain `<form>` elements or submission logic. They render fiel
 
 <FormValidationProvider bind:isValid={isFormValid}>
   <FieldSet legend="Details">
-    <Field label="Name" error={errors?.name} required>
-      <TextInput name="name" bind:value={nameValue} required />
-    </Field>
+    <FieldSetGrid>
+      <Field label="Name" error={errors?.name} required>
+        <TextInput name="name" bind:value={nameValue} required />
+      </Field>
+    </FieldSetGrid>
   </FieldSet>
 
   <FieldSet legend="Status">
-    <Field label="Visibility">
-      <input type="hidden" name="isLive" value={isLiveValue ? "true" : "false"} />
-      <Switch leftLabel="Draft" rightLabel="Live" bind:checked={isLiveValue} />
-    </Field>
+    <FieldSetGrid>
+      <Field label="Visibility">
+        <input type="hidden" name="isLive" value={isLiveValue ? "true" : "false"} />
+        <Switch leftLabel="Draft" rightLabel="Live" bind:checked={isLiveValue} />
+      </Field>
+    </FieldSetGrid>
   </FieldSet>
 </FormValidationProvider>
 
