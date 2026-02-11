@@ -6,6 +6,7 @@ declare const Card: any;
 declare const Field: any;
 declare const FieldHint: any;
 declare const FieldSet: any;
+declare const FieldSetGrid: any;
 declare const Pill: any;
 declare const TextInput: any;
 declare const TextArea: any;
@@ -101,6 +102,7 @@ export {
   Field,
   FieldHint,
   FieldSet,
+  FieldSetGrid,
   FileUpload,
   Form,
   FormActions,

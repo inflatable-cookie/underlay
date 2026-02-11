@@ -226,11 +226,19 @@
   .relation-selector__row > :global(:first-child) {
     flex: 1;
     min-width: 0;
+    max-width: 100%;
+  }
+
+  .relation-selector__row > :global(*) {
+    min-width: 0;
   }
 
   .relation-selector__trigger-wrapper {
     display: block;
     width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
     padding: 0;
     margin: 0;
     border: none;

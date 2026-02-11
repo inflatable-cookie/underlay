@@ -99,7 +99,8 @@
 <style>
   .relation-selector-trigger {
     width: 100%;
-    min-width: min(var(--underlay-select-min-width, 12rem), 100%);
+    min-width: 0;
+    max-width: 100%;
     display: inline-flex;
     align-items: center;
     justify-content: space-between;
@@ -137,6 +138,8 @@
 
   .relation-selector-trigger__text {
     flex: 1;
+    min-width: 0;
+    display: block;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -150,6 +153,7 @@
     display: flex;
     align-items: center;
     gap: 0.35rem;
+    flex-shrink: 0;
   }
 
   .relation-selector-trigger__clear {
@@ -202,9 +206,12 @@
     color: var(--underlay-color-on-primary, white);
     font-size: 0.8em;
     max-width: 10rem;
+    min-width: 0;
   }
 
   .relation-selector-trigger__pill-label {
+    display: block;
+    min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;

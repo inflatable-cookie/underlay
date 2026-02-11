@@ -55,6 +55,7 @@
     flex-direction: column;
     gap: var(--underlay-space-1, var(--underlay-space-1, 0.25rem));
     max-width: var(--underlay-field-max-width, 52rem);
+    min-width: 0;
   }
 
   .underlay-field.underlay-field--wide {
@@ -72,6 +73,7 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
+    min-width: 0;
   }
 
   .underlay-field__label {
