@@ -14,8 +14,13 @@
 
   type SelectGroup = {
     label: string;
-    items: SelectItem[];
+    items?: SelectItem[];
+    groups?: SelectGroup[];
   };
+
+  type GroupRow =
+    | { kind: "heading"; key: string; label: string; level: number }
+    | { kind: "item"; key: string; item: SelectItem; level: number };
 
   interface Props {
     value?: string;
@@ -120,6 +125,54 @@
   let lastOpen = $state(open);
   let lastDispatchedValue = $state(value);
 
+  function flattenGroupItems(input: SelectGroup[] | null | undefined): SelectItem[] {
+    if (!input?.length) return [];
+    const acc: SelectItem[] = [];
+    for (const group of input) {
+      if (group.items?.length) {
+        acc.push(...group.items);
+      }
+      if (group.groups?.length) {
+        acc.push(...flattenGroupItems(group.groups));
+      }
+    }
+    return acc;
+  }
+
+  function buildGroupRows(
+    input: SelectGroup[] | null | undefined,
+    level = 1,
+    parentKey = "group"
+  ): GroupRow[] {
+    if (!input?.length) return [];
+    const rows: GroupRow[] = [];
+
+    input.forEach((group, groupIndex) => {
+      const groupKey = `${parentKey}-${groupIndex}`;
+      rows.push({
+        kind: "heading",
+        key: `${groupKey}-heading`,
+        label: group.label,
+        level
+      });
+
+      for (const item of group.items ?? []) {
+        rows.push({
+          kind: "item",
+          key: `${groupKey}-item-${item.value}`,
+          item,
+          level
+        });
+      }
+
+      if (group.groups?.length) {
+        rows.push(...buildGroupRows(group.groups, level + 1, `${groupKey}-sub`));
+      }
+    });
+
+    return rows;
+  }
+
   $effect(() => {
     if (lastOpen && !open && returnFocusOnClose && typeof window !== "undefined") {
       void tick().then(() => triggerRef?.focus());
@@ -131,11 +184,12 @@
   // without opting into internal types, so we dispatch when bound value changes.
   let allItems = $derived(
     groups?.length
-      ? groups.flatMap((group) => group.items)
+      ? flattenGroupItems(groups)
       : (items ?? [])
   );
 
   let hasGroups = $derived(Boolean(groups?.length));
+  let groupRows = $derived(buildGroupRows(groups));
 
   $effect(() => {
     if (allItems.length && value !== lastDispatchedValue) {
@@ -154,6 +208,7 @@
     event.stopPropagation();
     event.preventDefault();
     value = defaultValue;
+    lastDispatchedValue = defaultValue;
     onchange?.(defaultValue);
     oninput?.(defaultValue);
   }
@@ -233,27 +288,31 @@
       >
         <BitsSelect.Viewport class="underlay-select-viewport">
           {#if hasGroups}
-            {#each groups ?? [] as group, index (group.label + index)}
-              <BitsSelect.Group>
-                <BitsSelect.GroupHeading class="underlay-select-group-heading">
-                  {group.label}
-                </BitsSelect.GroupHeading>
-
-                {#each group.items as item (item.value)}
-                  {@const isSelected = item.value === value}
-                  <BitsSelect.Item
-                    value={item.value}
-                    label={item.label}
-                    disabled={item.disabled}
-                    class="underlay-select-item"
-                  >
-                    <span class="underlay-select-item__label">{item.label}</span>
-                    {#if isSelected}
-                      <span class="underlay-select-item__check" aria-hidden="true">✓</span>
-                    {/if}
-                  </BitsSelect.Item>
-                {/each}
-              </BitsSelect.Group>
+            {#each groupRows as row (row.key)}
+              {#if row.kind === "heading"}
+                <div
+                  class="underlay-select-group-heading"
+                  data-level={row.level}
+                  style={`--underlay-select-level: ${row.level};`}
+                >
+                  {row.label}
+                </div>
+              {:else}
+                {@const isSelected = row.item.value === value}
+                <BitsSelect.Item
+                  value={row.item.value}
+                  label={row.item.label}
+                  disabled={row.item.disabled}
+                  class="underlay-select-item"
+                  data-level={row.level}
+                  style={`--underlay-select-level: ${row.level};`}
+                >
+                  <span class="underlay-select-item__label">{row.item.label}</span>
+                  {#if isSelected}
+                    <span class="underlay-select-item__check" aria-hidden="true">✓</span>
+                  {/if}
+                </BitsSelect.Item>
+              {/if}
             {/each}
           {:else}
             {#each items ?? [] as item (item.value)}
@@ -310,6 +369,7 @@
     z-index: 1;
     display: block;
     padding: 0.35rem 0.7rem;
+    padding-left: calc(0.7rem + (var(--underlay-select-level, 1) - 1) * 0.35rem);
     margin: 0.2rem 0 0.15rem;
     font-size: 0.72rem;
     font-weight: 700;
@@ -317,6 +377,13 @@
     text-transform: uppercase;
     color: var(--underlay-color-text-subtle, var(--underlay-color-text-muted, #64748b));
     background: var(--underlay-color-bg-surface, #fff);
+  }
+
+  .underlay-select-group-heading:not([data-level="1"]) {
+    font-size: 0.65rem;
+    text-transform: none;
+    letter-spacing: 0;
+    opacity: 0.85;
   }
 
   .underlay-select:focus,
@@ -477,6 +544,7 @@
     justify-content: space-between;
     gap: 0.5rem;
     padding: 0.35rem 0.55rem;
+    padding-left: calc(0.55rem + (var(--underlay-select-level, 1) - 1) * 0.35rem);
     border-radius: 0.25rem;
     cursor: pointer;
     user-select: none;

@@ -12,7 +12,7 @@
     effectiveDef: NightfireBlockDefinition;
     editorTypeOptions: NightfireTypeOption[];
     groupedOptions: GroupedOptions[] | null;
-    onTypeChange: (index: number, event: Event) => void;
+    onTypeChange: (index: number, value: string) => void;
     onMove: (from: number, to: number) => void;
     onRemove: (index: number) => void;
     onBlockChange: (index: number, next: any) => void;
@@ -39,7 +39,7 @@
       value={(block as any)?.type ??
         editorTypeOptions[0]?.type ??
         effectiveDef.defaultType}
-      onChange={(event) => onTypeChange(index, event)}
+      onChange={(value) => onTypeChange(index, value)}
       {groupedOptions}
       typeOptions={editorTypeOptions}
     />
@@ -86,6 +86,9 @@
     display: flex;
     align-items: center;
     gap: var(--underlay-space-2);
+    padding-bottom: var(--underlay-space-2);
+    margin-bottom: var(--underlay-space-1);
+    border-bottom: 1px solid var(--underlay-color-border-subtle, rgba(148, 163, 184, 0.35));
   }
 
   .nightfire-field-multi__item {

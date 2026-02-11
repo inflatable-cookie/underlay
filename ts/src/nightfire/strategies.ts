@@ -19,6 +19,7 @@ export interface NightfireBlockOption {
   type: string;
   label: string;
   category?: string;
+  subcategory?: string;
 }
 
 export interface NightfireStrategy {

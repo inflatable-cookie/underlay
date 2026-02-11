@@ -277,17 +277,13 @@
     emit(asMultiBlockValue(schema, replaceBlockAtIndex(blocks, index, nextBlock)));
   }
 
-  function handleSingleTypeChange(event: Event) {
-    const select = event.currentTarget as HTMLSelectElement;
-    const nextType = select.value;
+  function handleSingleTypeChange(nextType: string) {
     const transformed = changeSingleBlockType(schema, singleBlock, nextType, getLabelForType);
     typeChangeWarning = transformed.warning;
     handleSingleBlockChange(transformed.block);
   }
 
-  function handleTypeChange(index: number, event: Event) {
-    const select = event.currentTarget as HTMLSelectElement;
-    const nextType = select.value;
+  function handleTypeChange(index: number, nextType: string) {
     handleBlockChange(index, changeBlockType(blocks[index], nextType));
   }
 
@@ -354,7 +350,7 @@
           value={(singleBlock as any)?.type ??
             editorTypeOptions[0]?.type ??
             effectiveDef.defaultType}
-          onChange={(event) => handleSingleTypeChange(event)}
+          onChange={handleSingleTypeChange}
           {groupedOptions}
           typeOptions={editorTypeOptions}
         />
@@ -425,6 +421,9 @@
     display: flex;
     align-items: flex-start;
     gap: var(--underlay-space-2);
+    padding-bottom: var(--underlay-space-2);
+    margin-bottom: var(--underlay-space-1);
+    border-bottom: 1px solid var(--underlay-color-border-subtle, rgba(148, 163, 184, 0.35));
   }
 
   .nightfire-field-multi__add {

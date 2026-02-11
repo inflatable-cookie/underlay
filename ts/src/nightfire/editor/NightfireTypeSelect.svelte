@@ -1,13 +1,16 @@
 <script lang="ts">
+  import Select from "../../components/Select.svelte";
   import type { GroupedOptions, NightfireBlockOptionInput } from "./grouped-options";
 
   type TypeOption = Pick<NightfireBlockOptionInput, "type" | "label">;
+  type SelectItem = { value: string; label: string; disabled?: boolean };
+  type SelectGroup = { label: string; items?: SelectItem[]; groups?: SelectGroup[] };
 
   interface Props {
     value?: string;
     groupedOptions?: GroupedOptions[] | null;
     typeOptions?: TypeOption[];
-    onChange: (event: Event) => void;
+    onChange: (value: string) => void;
   }
 
   let {
@@ -16,53 +19,62 @@
     typeOptions = [],
     onChange
   }: Props = $props();
+
+  function formatSubgroupLabel(input: string): string {
+    return input
+      .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+      .replace(/[_-]/g, " ")
+      .trim();
+  }
+
+  function formatOptionLabel(input: string): string {
+    const trimmed = input.trim();
+    const withoutQuestionPrefix = trimmed.replace(/^question\s*(?:[-:–—]\s*)?/i, "");
+    return withoutQuestionPrefix.length > 0 ? withoutQuestionPrefix : trimmed;
+  }
+
+  const items = $derived(
+    typeOptions.map((opt) => ({ value: opt.type, label: formatOptionLabel(opt.label) }))
+  );
+
+  const groups = $derived.by<SelectGroup[] | null>(() => {
+    if (!groupedOptions?.length) return null;
+
+    return groupedOptions.map((group) => {
+      const subgroups = new Map<string, SelectItem[]>();
+      const directItems: SelectItem[] = [];
+
+      for (const option of group.options) {
+        const item = { value: option.type, label: formatOptionLabel(option.label) };
+        if (option.subcategory) {
+          const existing = subgroups.get(option.subcategory) ?? [];
+          existing.push(item);
+          subgroups.set(option.subcategory, existing);
+        } else {
+          directItems.push(item);
+        }
+      }
+
+      const nestedGroups: SelectGroup[] = Array.from(subgroups.entries())
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([subcategory, subgroupItems]) => ({
+          label: formatSubgroupLabel(subcategory),
+          items: subgroupItems.sort((a, b) => a.label.localeCompare(b.label))
+        }));
+
+      return {
+        label: group.label,
+        items: directItems.length ? directItems.sort((a, b) => a.label.localeCompare(b.label)) : undefined,
+        groups: nestedGroups.length ? nestedGroups : undefined
+      };
+    });
+  });
 </script>
 
-<select
-  {value}
+<Select
+  value={value ?? ""}
+  items={groups ? undefined : items}
+  {groups}
+  triggerAriaLabel="Block type"
   onchange={onChange}
-  aria-label="Block type"
->
-  {#if groupedOptions}
-    {#each groupedOptions as group}
-      {#if group.category}
-        <optgroup label={group.label}>
-          {#each group.options as opt}
-            <option value={opt.type}>
-              {opt.label}
-            </option>
-          {/each}
-        </optgroup>
-      {:else}
-        {#each group.options as opt}
-          <option value={opt.type}>
-            {opt.label}
-          </option>
-        {/each}
-      {/if}
-    {/each}
-  {:else}
-    {#each typeOptions as opt}
-      <option value={opt.type}>
-        {opt.label}
-      </option>
-    {/each}
-  {/if}
-</select>
-
-<style>
-  select {
-    padding: var(--underlay-field-padding-block) var(--underlay-field-padding-inline);
-    border-radius: var(--underlay-radius-sm);
-    border: none;
-    background: var(--underlay-color-field-bg);
-    color: var(--underlay-color-text);
-    font-size: calc(1em * var(--underlay-font-scale-xs));
-  }
-
-  select:focus,
-  select:focus-visible {
-    outline: var(--underlay-focus-ring-width) solid var(--underlay-color-primary);
-    outline-offset: var(--underlay-focus-ring-offset);
-  }
-</style>
+/>
