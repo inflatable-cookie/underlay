@@ -56,10 +56,24 @@
     border-radius: 0;
   }
 
-  /* Form variant - generous spacing for form sections */
+  /* Form variant - generous spacing, same as pills default */
   :global(.underlay-tabs-content--form) {
-    margin-top: 0;
-    padding: 1.5rem 0 0 0;
+    margin-top: 1rem;
+  }
+
+  /*
+   * Form variant: override the hidden attribute so inactive panels stay in the
+   * layout flow. Editors (CodeMirror / EasyMDE) that rely on measuring their
+   * container on mount break under display:none.  Using height:0 + overflow
+   * keeps them initialised while remaining invisible and non-interactive.
+   */
+  :global(.underlay-tabs-content--form[hidden]) {
+    display: block !important;
+    height: 0;
+    overflow: hidden;
+    visibility: hidden;
+    margin: 0;
+    padding: 0;
   }
 
   /* Collapsed mode - simpler styling */

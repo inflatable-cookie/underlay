@@ -157,25 +157,25 @@
     margin-left: 0.3rem;
   }
 
-  /* Form variant - prominent, for form section navigation */
+  /* Form variant - larger pills for form section navigation */
   :global(.underlay-tabs-trigger--form) {
-    padding: 0.65rem 1.25rem;
+    flex: 1;
+    padding: 0.55rem 1.2rem;
     font-size: 0.95rem;
     font-weight: 500;
-    border-radius: 0;
+    border-radius: 999px;
     gap: 0.5rem;
-    border-bottom: 2px solid transparent;
-    transition: color 0.15s ease, border-color 0.15s ease;
+    transition: background 0.15s ease, color 0.15s ease;
   }
 
   :global(.underlay-tabs-trigger--form[data-state="active"]) {
+    background: rgba(148, 163, 184, 0.22);
     color: var(--underlay-color-text, #e5e7eb);
-    border-bottom-color: var(--underlay-color-primary, #3b82f6);
   }
 
   :global(.underlay-tabs-trigger--form:hover:not([data-state="active"])) {
+    background: rgba(148, 163, 184, 0.1);
     color: var(--underlay-color-text, #e5e7eb);
-    border-bottom-color: var(--underlay-color-border-subtle, rgba(148, 163, 184, 0.25));
   }
 
   /* Validation indicator dots */

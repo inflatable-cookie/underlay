@@ -3,6 +3,7 @@
   import type { Snippet } from "svelte";
   import { getContext, onMount } from "svelte";
   import type { TabsVariant, TabsSize } from "./TabsRoot.svelte";
+  import type { FormTabsSectionRegistryContext, SectionValidationState } from "./form-tabs/types";
   import ChevronDown from "lucide-svelte/icons/chevron-down";
 
   interface TabItem {
@@ -33,6 +34,7 @@
   const getValue = getContext<() => string>("underlay-tabs-value");
   const setValue = getContext<((v: string) => void) | undefined>("underlay-tabs-set-value");
   const setParentCollapsed = getContext<((v: boolean) => void) | undefined>("underlay-tabs-set-collapsed");
+  const registry = getContext<FormTabsSectionRegistryContext | undefined>("underlay-form-tabs-registry");
 
   let variant = $derived(getVariant?.() ?? "pills");
   let size = $derived(getSize?.() ?? "default");
@@ -46,6 +48,14 @@
 
   // Find the current tab for dropdown display
   const currentTab = $derived(tabs?.find((t) => t.value === currentValue));
+
+  // Get section validation state for the current tab (form variant only)
+  let currentTabState = $derived<SectionValidationState>(registry?.getSectionState(currentValue) ?? "idle");
+
+  // Helper to get validation state for any tab
+  function getTabState(value: string): SectionValidationState {
+    return registry?.getSectionState(value) ?? "idle";
+  }
 
   // Sync collapsed state to parent TabsRoot
   $effect(() => {
@@ -116,6 +126,11 @@
             {#if currentTab?.count != null}
               <span class="underlay-tabs-dropdown__count">{currentTab.count}</span>
             {/if}
+            {#if currentTabState === "invalid"}
+              <span class="underlay-tabs-dropdown__dot underlay-tabs-dropdown__dot--error" aria-label="Has validation errors"></span>
+            {:else if currentTabState === "incomplete"}
+              <span class="underlay-tabs-dropdown__dot underlay-tabs-dropdown__dot--warning" aria-label="Has required fields"></span>
+            {/if}
           </span>
           <ChevronDown size={16} class="underlay-tabs-dropdown__chevron" />
         </button>
@@ -138,7 +153,14 @@
                   aria-selected={tab.value === currentValue}
                   onclick={() => handleDropdownSelect(tab.value)}
                 >
-                  {tab.label}
+                  <span class="underlay-tabs-dropdown__item-label">
+                    {tab.label}
+                    {#if getTabState(tab.value) === "invalid"}
+                      <span class="underlay-tabs-dropdown__dot underlay-tabs-dropdown__dot--error" aria-label="Has validation errors"></span>
+                    {:else if getTabState(tab.value) === "incomplete"}
+                      <span class="underlay-tabs-dropdown__dot underlay-tabs-dropdown__dot--warning" aria-label="Has required fields"></span>
+                    {/if}
+                  </span>
                   {#if tab.count != null}
                     <span class="underlay-tabs-dropdown__count">{tab.count}</span>
                   {/if}
@@ -201,13 +223,14 @@
     border-radius: 0.5rem 0.5rem 0 0;
   }
 
-  /* Form variant - prominent bar for form section navigation */
+  /* Form variant - larger pills for form section navigation */
   :global(.underlay-tabs-list--form) {
-    gap: 0;
-    padding: 0;
-    border: none;
-    background: transparent;
-    border-bottom: 2px solid var(--underlay-color-border-subtle, rgba(148, 163, 184, 0.25));
+    display: flex;
+    padding: 0.35rem;
+    border-radius: 999px;
+    border: 1px solid rgba(148, 163, 184, 0.35);
+    background: rgba(255, 255, 255, 0.03);
+    gap: 0.35rem;
   }
 
   /* Small size variant */
@@ -356,5 +379,50 @@
   .underlay-tabs-dropdown--sm .underlay-tabs-dropdown__count {
     font-size: 0.65rem;
     padding: 0.05rem 0.3rem;
+  }
+
+  /* Form variant dropdown - larger pills style */
+  .underlay-tabs-dropdown--form {
+    padding: 0.35rem;
+    border-radius: 999px;
+    border: 1px solid rgba(148, 163, 184, 0.35);
+    background: rgba(255, 255, 255, 0.03);
+  }
+
+  .underlay-tabs-dropdown--form .underlay-tabs-dropdown__trigger {
+    padding: 0.55rem 1.2rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+    border-radius: 999px;
+  }
+
+  .underlay-tabs-dropdown--form .underlay-tabs-dropdown__item {
+    font-size: 0.95rem;
+    font-weight: 500;
+    padding: 0.55rem 1rem;
+  }
+
+  /* Dropdown item label wrapper */
+  .underlay-tabs-dropdown__item-label {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  /* Validation indicator dots in dropdown */
+  .underlay-tabs-dropdown__dot {
+    display: inline-block;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .underlay-tabs-dropdown__dot--error {
+    background: var(--underlay-color-error, #ef4444);
+  }
+
+  .underlay-tabs-dropdown__dot--warning {
+    background: var(--underlay-color-warning, #f59e0b);
   }
 </style>
