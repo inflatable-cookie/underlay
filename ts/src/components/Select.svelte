@@ -315,7 +315,7 @@
     font-weight: 700;
     letter-spacing: 0.02em;
     text-transform: uppercase;
-    color: var(--underlay-color-text-muted, #64748b);
+    color: var(--underlay-color-text-subtle, var(--underlay-color-text-muted, #64748b));
     background: var(--underlay-color-bg-surface, #fff);
   }
 
