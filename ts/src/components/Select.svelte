@@ -12,10 +12,16 @@
     disabled?: boolean;
   };
 
+  type SelectGroup = {
+    label: string;
+    items: SelectItem[];
+  };
+
   interface Props {
     value?: string;
     open?: boolean;
     items?: SelectItem[] | null;
+    groups?: SelectGroup[] | null;
     placeholder?: string;
     id?: string;
     name?: string;
@@ -45,6 +51,7 @@
     value = $bindable(""),
     open = $bindable(false),
     items = undefined,
+    groups = undefined,
     placeholder = "Select…",
     id = undefined,
     name = undefined,
@@ -122,15 +129,23 @@
 
   // BitsSelect doesn't emit native "change" events in a way we can forward
   // without opting into internal types, so we dispatch when bound value changes.
+  let allItems = $derived(
+    groups?.length
+      ? groups.flatMap((group) => group.items)
+      : (items ?? [])
+  );
+
+  let hasGroups = $derived(Boolean(groups?.length));
+
   $effect(() => {
-    if (items?.length && value !== lastDispatchedValue) {
+    if (allItems.length && value !== lastDispatchedValue) {
       lastDispatchedValue = value;
       onchange?.(value);
       oninput?.(value);
     }
   });
 
-  let selectedLabel = $derived((items ?? []).find((item) => item.value === value)?.label);
+  let selectedLabel = $derived(allItems.find((item) => item.value === value)?.label);
   let hasSelection = $derived(typeof selectedLabel === "string" && selectedLabel.length > 0);
   let isDefaultValue = $derived(value === defaultValue || value === "");
   let showClearButton = $derived(clearable && hasSelection && value !== defaultValue && !disabled);
@@ -168,10 +183,10 @@
   }
 </script>
 
-{#if items?.length}
+{#if allItems.length}
   <BitsSelect.Root
     type="single"
-    items={items}
+    items={allItems}
     bind:value={value as never}
     bind:open
     {name}
@@ -217,20 +232,45 @@
         {collisionPadding}
       >
         <BitsSelect.Viewport class="underlay-select-viewport">
-          {#each items as item (item.value)}
-            {@const isSelected = item.value === value}
-            <BitsSelect.Item
-              value={item.value}
-              label={item.label}
-              disabled={item.disabled}
-              class="underlay-select-item"
-            >
-              <span class="underlay-select-item__label">{item.label}</span>
-              {#if isSelected}
-                <span class="underlay-select-item__check" aria-hidden="true">✓</span>
-              {/if}
-            </BitsSelect.Item>
-          {/each}
+          {#if hasGroups}
+            {#each groups ?? [] as group, index (group.label + index)}
+              <BitsSelect.Group>
+                <BitsSelect.GroupHeading class="underlay-select-group-heading">
+                  {group.label}
+                </BitsSelect.GroupHeading>
+
+                {#each group.items as item (item.value)}
+                  {@const isSelected = item.value === value}
+                  <BitsSelect.Item
+                    value={item.value}
+                    label={item.label}
+                    disabled={item.disabled}
+                    class="underlay-select-item"
+                  >
+                    <span class="underlay-select-item__label">{item.label}</span>
+                    {#if isSelected}
+                      <span class="underlay-select-item__check" aria-hidden="true">✓</span>
+                    {/if}
+                  </BitsSelect.Item>
+                {/each}
+              </BitsSelect.Group>
+            {/each}
+          {:else}
+            {#each items ?? [] as item (item.value)}
+              {@const isSelected = item.value === value}
+              <BitsSelect.Item
+                value={item.value}
+                label={item.label}
+                disabled={item.disabled}
+                class="underlay-select-item"
+              >
+                <span class="underlay-select-item__label">{item.label}</span>
+                {#if isSelected}
+                  <span class="underlay-select-item__check" aria-hidden="true">✓</span>
+                {/if}
+              </BitsSelect.Item>
+            {/each}
+          {/if}
         </BitsSelect.Viewport>
       </BitsSelect.Content>
     </BitsSelect.Portal>
@@ -262,6 +302,21 @@
     background: var(--underlay-color-field-bg, rgba(148, 163, 184, 0.18));
     color: var(--underlay-color-text, #e5e7eb);
     font-size: 0.85rem;
+  }
+
+  .underlay-select-group-heading {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    display: block;
+    padding: 0.35rem 0.7rem;
+    margin: 0.2rem 0 0.15rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--underlay-color-text-muted, #64748b);
+    background: var(--underlay-color-bg-surface, #fff);
   }
 
   .underlay-select:focus,

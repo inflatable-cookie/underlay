@@ -344,8 +344,7 @@
     background: var(--underlay-color-popover-bg, var(--underlay-color-bg-surface, #020617));
     box-shadow: var(--underlay-shadow-popover, 0 8px 24px rgba(0, 0, 0, 0.4));
 
-    /* Ensure proper stacking and overflow */
-    overflow: hidden;
+    /* Ensure proper stacking - allow overflow for filter dropdowns */
   }
 
   :global(.relation-selector-popover__content[data-state="open"]) {
