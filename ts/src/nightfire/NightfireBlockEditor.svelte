@@ -50,8 +50,11 @@
   const currentBlockType = $derived(normalisedBlock.type);
   const BlockEditor = $derived(getBlockEditor(schema, currentBlockType));
 
-  function handleBlockEditorChange(nextBlock: any) {
-    const normalised = normaliseNightfireBlock(nextBlock, typeOptions, definition);
+  function handleBlockEditorChange(next: any) {
+    const candidate = next && typeof next === "object" && "block" in next
+      ? (next as { block?: any }).block
+      : next;
+    const normalised = normaliseNightfireBlock(candidate, typeOptions, definition);
     onChange?.(normalised);
   }
 </script>
@@ -62,6 +65,7 @@
       {@const EditorComponent = BlockEditor}
       <EditorComponent
         block={normalisedBlock}
+        value={{ schema, block: normalisedBlock }}
         onChange={handleBlockEditorChange}
       />
     {/key}
