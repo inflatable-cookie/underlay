@@ -56,9 +56,9 @@
     border-radius: 0;
   }
 
-  /* Form variant - generous spacing, same as pills default */
+  /* Form variant - generous spacing below tabs */
   :global(.underlay-tabs-content--form) {
-    margin-top: 1rem;
+    margin-top: 2rem;
   }
 
   /*
