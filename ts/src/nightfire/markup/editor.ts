@@ -2,6 +2,7 @@ import MarkdownEditor from "./MarkdownEditor.svelte";
 import {
   registerSchema,
   registerBlockEditor,
+  registerBlockEmptyChecker,
   type SchemaDefinition
 } from "../editor-registry";
 
@@ -19,3 +20,8 @@ registerBlockEditor(
   "Markdown",
   MarkdownEditor
 );
+
+registerBlockEmptyChecker("markdown", (block) => {
+  const text = block?.data?.text;
+  return !text || typeof text !== "string" || text.trim().length === 0;
+});

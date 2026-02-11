@@ -16,6 +16,8 @@ export { isEmptyNightfire, normaliseNightfireValue, writeNightfireToFormData } f
 export {
   registerSchema,
   registerBlockEditor,
+  registerBlockEmptyChecker,
+  isBlockContentEmpty,
   getSchemaDefinition,
   getBlockEditor,
   getBlockTypeOptionsForSchema,
@@ -26,7 +28,7 @@ export { registerBlockRenderer, getBlockRenderer } from "./render-registry";
 
 export { registerBlockValidator } from "./validator-registry";
 
-export type { FieldMode, SchemaDefinition, BlockTypeOption } from "./editor-registry";
+export type { FieldMode, SchemaDefinition, BlockTypeOption, BlockEmptyChecker } from "./editor-registry";
 
 // Nightfire strategies (lazy loading and caching)
 export {

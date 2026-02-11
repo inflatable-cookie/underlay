@@ -1,4 +1,5 @@
 import type { NightfireValue } from "./index";
+import { isBlockContentEmpty } from "./editor-registry";
 
 export interface NightfireBlockDefinition {
   schema: string;
@@ -122,18 +123,34 @@ export function normaliseNightfireBlock(
   };
 }
 
+/**
+ * Checks whether a NightfireValue is empty.
+ *
+ * When `contentLevel` is true (default) the check delegates to
+ * per-block-type empty checkers registered via `registerBlockEmptyChecker`.
+ * This means a markdown block with blank text is treated as empty even
+ * though the block structure exists. When no checker is registered for a
+ * block type the block is assumed non-empty (conservative default).
+ *
+ * When `contentLevel` is false only structural presence is checked
+ * (i.e. does a block/blocks array exist at all).
+ */
 export function isEmptyNightfire(
-  value: NightfireValue | null | undefined
+  value: NightfireValue | null | undefined,
+  contentLevel: boolean = true
 ): boolean {
   if (!value || typeof value !== "object") return true;
 
-  if ((value as any).block && (value as any).block !== null) {
-    return false;
+  const block = (value as any).block;
+  if (block && block !== null) {
+    if (!contentLevel) return false;
+    return isBlockContentEmpty(block);
   }
 
   const blocks = (value as any).blocks as unknown[] | undefined;
   if (Array.isArray(blocks) && blocks.length > 0) {
-    return false;
+    if (!contentLevel) return false;
+    return blocks.every((b) => isBlockContentEmpty(b));
   }
 
   return true;
