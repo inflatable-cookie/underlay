@@ -16,11 +16,18 @@
   let sections = $state<Map<string, Set<string>>>(new Map());
   let sectionVersion = $state(0);
 
-  function registerSection(sectionId: string) {
-    if (!sections.has(sectionId)) {
-      sections.set(sectionId, new Set());
-      sectionVersion++;
+  function ensureSection(sectionId: string): Set<string> {
+    let section = sections.get(sectionId);
+    if (!section) {
+      section = new Set();
+      sections.set(sectionId, section);
     }
+    return section;
+  }
+
+  function registerSection(sectionId: string) {
+    ensureSection(sectionId);
+    sectionVersion++;
   }
 
   function unregisterSection(sectionId: string) {
@@ -29,11 +36,10 @@
   }
 
   function registerFieldInSection(sectionId: string, fieldId: string) {
-    const section = sections.get(sectionId);
-    if (section) {
-      section.add(fieldId);
-      sectionVersion++;
-    }
+    // Lazily create section — child fields mount before parent section
+    const section = ensureSection(sectionId);
+    section.add(fieldId);
+    sectionVersion++;
   }
 
   function unregisterFieldFromSection(sectionId: string, fieldId: string) {
