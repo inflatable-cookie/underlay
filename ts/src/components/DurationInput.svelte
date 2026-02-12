@@ -118,9 +118,10 @@
   let minutesRef = $state<HTMLInputElement | null>(null);
   let secondsRef = $state<HTMLInputElement | null>(null);
 
-  // Track which segment is focused for stepper context
+  // Track which segment is focused and last-focused for stepper context
   type Segment = "h" | "m" | "s";
   let focusedSegment = $state<Segment | null>(null);
+  let lastFocusedSegment = $state<Segment>("s"); // default to seconds
 
   // --- Input handling ---
 
@@ -166,6 +167,7 @@
 
   function handleFocus(segment: Segment) {
     focusedSegment = segment;
+    lastFocusedSegment = segment;
   }
 
   function handleKeydown(segment: Segment, event: KeyboardEvent) {
@@ -205,15 +207,15 @@
     syncToValue();
   }
 
-  // Stepper operates on focused segment, or seconds by default
+  // Stepper operates on focused segment, or last-focused, or seconds by default
   function incrementFocused() {
-    const seg = focusedSegment ?? "s";
+    const seg = focusedSegment ?? lastFocusedSegment;
     incrementSegment(seg);
     refForSegment(seg)?.focus();
   }
 
   function decrementFocused() {
-    const seg = focusedSegment ?? "s";
+    const seg = focusedSegment ?? lastFocusedSegment;
     decrementSegment(seg);
     refForSegment(seg)?.focus();
   }
@@ -239,68 +241,71 @@
 >
   <div class="underlay-duration-input__fields">
     <!-- Hours -->
-    <input
-      bind:this={hoursRef}
-      type="text"
-      inputmode="numeric"
-      pattern="[0-9]*"
-      class="underlay-duration-input__input"
-      value={hours}
-      placeholder="0"
-      maxlength={2}
-      disabled={disabled}
-      autocomplete="off"
-      aria-label="Hours"
-      oninput={(e) => handleSegmentInput("h", e)}
-      onblur={() => handleBlur("h")}
-      onfocus={() => handleFocus("h")}
-      onkeydown={(e) => handleKeydown("h", e)}
-    />
-    <span class="underlay-duration-input__unit">h</span>
+    <div class="underlay-duration-input__segment">
+      <input
+        bind:this={hoursRef}
+        type="text"
+        inputmode="numeric"
+        pattern="[0-9]*"
+        class="underlay-duration-input__input"
+        value={hours}
+        placeholder="0"
+        maxlength={2}
+        disabled={disabled}
+        autocomplete="off"
+        aria-label="Hours"
+        oninput={(e) => handleSegmentInput("h", e)}
+        onblur={() => handleBlur("h")}
+        onfocus={() => handleFocus("h")}
+        onkeydown={(e) => handleKeydown("h", e)}
+      /><span class="underlay-duration-input__unit">h</span>
+    </div>
 
     <span class="underlay-duration-input__separator">:</span>
 
     <!-- Minutes -->
-    <input
-      bind:this={minutesRef}
-      type="text"
-      inputmode="numeric"
-      pattern="[0-9]*"
-      class="underlay-duration-input__input"
-      value={minutes}
-      placeholder="0"
-      maxlength={2}
-      disabled={disabled}
-      autocomplete="off"
-      aria-label="Minutes"
-      oninput={(e) => handleSegmentInput("m", e)}
-      onblur={() => handleBlur("m")}
-      onfocus={() => handleFocus("m")}
-      onkeydown={(e) => handleKeydown("m", e)}
-    />
-    <span class="underlay-duration-input__unit">m</span>
+    <div class="underlay-duration-input__segment">
+      <input
+        bind:this={minutesRef}
+        type="text"
+        inputmode="numeric"
+        pattern="[0-9]*"
+        class="underlay-duration-input__input"
+        value={minutes}
+        placeholder="0"
+        maxlength={2}
+        disabled={disabled}
+        autocomplete="off"
+        aria-label="Minutes"
+        oninput={(e) => handleSegmentInput("m", e)}
+        onblur={() => handleBlur("m")}
+        onfocus={() => handleFocus("m")}
+        onkeydown={(e) => handleKeydown("m", e)}
+      /><span class="underlay-duration-input__unit">m</span>
+    </div>
 
     <span class="underlay-duration-input__separator">:</span>
 
     <!-- Seconds -->
-    <input
-      bind:this={secondsRef}
-      type="text"
-      inputmode="numeric"
-      pattern="[0-9]*"
-      class="underlay-duration-input__input"
-      value={seconds}
-      placeholder="0"
-      maxlength={2}
-      disabled={disabled}
-      autocomplete="off"
-      aria-label="Seconds"
-      oninput={(e) => handleSegmentInput("s", e)}
-      onblur={() => handleBlur("s")}
-      onfocus={() => handleFocus("s")}
-      onkeydown={(e) => handleKeydown("s", e)}
-    />
-    <span class="underlay-duration-input__unit">s</span>
+    <div class="underlay-duration-input__segment">
+      <input
+        bind:this={secondsRef}
+        type="text"
+        inputmode="numeric"
+        pattern="[0-9]*"
+        class="underlay-duration-input__input"
+        value={seconds}
+        placeholder="0"
+        maxlength={2}
+        disabled={disabled}
+        autocomplete="off"
+        aria-label="Seconds"
+        oninput={(e) => handleSegmentInput("s", e)}
+        onblur={() => handleBlur("s")}
+        onfocus={() => handleFocus("s")}
+        onkeydown={(e) => handleKeydown("s", e)}
+      /><span class="underlay-duration-input__unit">s</span>
+    </div>
   </div>
 
   <!-- Single stepper controls on right edge -->
@@ -347,13 +352,22 @@
   .underlay-duration-input__fields {
     display: flex;
     align-items: center;
-    padding: 0 0.25em;
+    gap: 0.15em;
+    padding: 0.2em 0.25em;
+  }
+
+  .underlay-duration-input__segment {
+    display: flex;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: calc(var(--underlay-radius-sm, 0.35rem) * 0.6);
+    padding-right: 0.25em;
   }
 
   .underlay-duration-input__input {
     width: 2ch;
     box-sizing: content-box;
-    padding: var(--underlay-field-padding-block, 0.55em) 0.15em;
+    padding: 0.3em 0.15em 0.3em 0.3em;
     border: none;
     background: transparent;
     color: var(--underlay-color-text, #e5e7eb);
@@ -369,16 +383,16 @@
   }
 
   .underlay-duration-input__unit {
-    font-size: 0.75em;
+    font-size: 0.7em;
     color: var(--underlay-color-text-muted, #9ca3af);
     user-select: none;
     pointer-events: none;
-    margin-right: 0.1em;
+    line-height: 1;
   }
 
   .underlay-duration-input__separator {
     color: var(--underlay-color-text-muted, #9ca3af);
-    opacity: 0.4;
+    opacity: 0.7;
     font-weight: 500;
     font-size: 0.85em;
     user-select: none;
