@@ -142,6 +142,47 @@ return Err(ApiError::bad_request(
 
 ---
 
+## Phase 2A: Database Error Diagnostics (SQLx)
+
+Replace generic database failure messages with `underlay_db` diagnostics helpers.
+
+### Imports
+
+```rust
+use underlay_db::{map_db_error, map_db_error_ref};
+```
+
+### Migration Checklist
+
+- [ ] Replace `AppError::new("infra.db_error", "Database error ...")` where the source error is `sqlx::Error`
+- [ ] For borrowed errors in handlers, use `map_db_error_ref("Database error ...", &err)`
+- [ ] For owned errors in repositories/domain, use `map_db_error("Database error ...", err)`
+- [ ] Keep `.with_context(...)` on `ApiError` so operation metadata remains queryable
+- [ ] Keep `.with_cause(...)` for middleware error logging and traceability
+
+**Before:**
+
+```rust
+Err(err) => {
+    let app_err = AppError::new("infra.db_error", "Database error updating user");
+    return Err(ApiError::new(StatusCode::INTERNAL_SERVER_ERROR, app_err)
+        .with_context(json!({ "operation": "users.update" })));
+}
+```
+
+**After:**
+
+```rust
+Err(err) => {
+    let app_err = map_db_error_ref("Database error updating user", &err);
+    return Err(ApiError::internal(&app_err.code, &app_err.message)
+        .with_cause(&err)
+        .with_context(json!({ "operation": "users.update" })));
+}
+```
+
+---
+
 ## Phase 3: UUID Path Parsing
 
 Replace manual UUID parsing in path handlers.
@@ -519,7 +560,7 @@ use underlay_http::{
 };
 
 // Database utilities
-use underlay_db::ExistsCheck;
+use underlay_db::{ExistsCheck, map_db_error, map_db_error_ref};
 
 // Optional: Nightfire
 use underlay_http::nightfire_validation_to_app_error;

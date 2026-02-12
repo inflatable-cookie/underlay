@@ -1,3 +1,4 @@
+mod db_errors;
 mod existence;
 pub mod media_types;
 mod migrations;
@@ -6,6 +7,7 @@ mod pool;
 mod schemas;
 mod sql_dir;
 
+pub use crate::db_errors::{describe_db_error, map_db_error, map_db_error_ref};
 pub use crate::existence::{
     number_exists_in_scope, number_exists_in_scope_excluding, value_exists, value_exists_excluding,
     value_exists_in_scope, value_exists_in_scope_excluding, ExistsCheck,

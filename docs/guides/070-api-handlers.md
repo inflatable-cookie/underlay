@@ -82,6 +82,38 @@ fn not_found(resource: &str) -> ApiError {
 - Don't: return raw `StatusCode::...into_response()` for handler error branches.
 - Don't: use `error_response(...)` as a primary route pattern in new code.
 
+### Database Error Diagnostics (SQLx)
+
+When mapping SQL failures to HTTP errors, prefer `underlay_db::map_db_error_ref(...)`.
+
+This preserves operator-useful details (SQLSTATE, location, PostgreSQL detail/hint, suggested fix) while keeping the stable code `infra.db_error`.
+
+```rust
+use underlay_http::ApiError;
+
+let row = sqlx::query!("SELECT * FROM users WHERE id = $1", id)
+    .fetch_optional(&state.pool)
+    .await
+    .map_err(|err| {
+        let db_err = underlay_db::map_db_error_ref("Database error loading user", &err);
+
+        ApiError::internal(&db_err.code, &db_err.message)
+            .with_cause(&err)
+            .with_context(serde_json::json!({
+                "operation": "users.get",
+                "user_id": id,
+            }))
+    })?;
+```
+
+For domain/repository layers where you already own the `sqlx::Error`, use `underlay_db::map_db_error(...)` (owned variant).
+
+```rust
+let rows = query_fn(pool)
+    .await
+    .map_err(|err| underlay_db::map_db_error("Database error listing users", err))?;
+```
+
 ### Lintable Rule for Route Modules
 
 Use this check to find likely non-canonical error branches in handlers:
