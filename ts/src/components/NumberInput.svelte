@@ -56,10 +56,16 @@
   }: Props = $props();
 
   let inputRef = $state<HTMLInputElement | null>(null);
+  const allowsDecimal = $derived(!Number.isInteger(step));
 
   function parseValue(): number {
-    const num = parseInt(value, 10);
+    const num = Number.parseFloat(value);
     return isNaN(num) ? (min ?? 0) : num;
+  }
+
+  function formatValue(num: number): string {
+    if (!Number.isFinite(num)) return "";
+    return Number.isInteger(num) ? String(num) : String(Number(num.toFixed(10)));
   }
 
   function clampValue(num: number): number {
@@ -72,7 +78,7 @@
     if (disabled) return;
     const current = parseValue();
     const next = clampValue(current + step);
-    value = String(next);
+    value = formatValue(next);
     inputRef?.focus();
   }
 
@@ -80,7 +86,7 @@
     if (disabled) return;
     const current = parseValue();
     const next = clampValue(current - step);
-    value = String(next);
+    value = formatValue(next);
     inputRef?.focus();
   }
 
@@ -95,8 +101,13 @@
   }
 
   function handleInput(newValue: string) {
-    // Only allow digits and optional leading minus
-    const sanitized = newValue.replace(/[^0-9-]/g, "").replace(/(?!^)-/g, "");
+    // Only allow digits and optional leading minus. Allow decimal point when step is fractional.
+    const sanitized = allowsDecimal
+      ? newValue
+          .replace(/[^0-9.-]/g, "")
+          .replace(/(?!^)-/g, "")
+          .replace(/(\..*)\./g, "$1")
+      : newValue.replace(/[^0-9-]/g, "").replace(/(?!^)-/g, "");
     if (sanitized !== newValue) {
       value = sanitized;
     } else {
@@ -107,11 +118,11 @@
   function handleBlur() {
     // Clamp value on blur if it's a valid number
     if (value) {
-      const num = parseInt(value, 10);
+      const num = Number.parseFloat(value);
       if (!isNaN(num)) {
         const clamped = clampValue(num);
         if (clamped !== num) {
-          value = String(clamped);
+          value = formatValue(clamped);
         }
       }
     }
@@ -139,8 +150,8 @@
     oninput={handleInput}
     onblur={handleBlur}
     onkeydown={handleKeydown}
-    inputmode="numeric"
-    pattern="[0-9]*"
+    inputmode={allowsDecimal ? "decimal" : "numeric"}
+    pattern={allowsDecimal ? "-?[0-9]*[.]?[0-9]*" : "-?[0-9]*"}
     autocomplete="off"
     class="underlay-number-input__input"
   >
