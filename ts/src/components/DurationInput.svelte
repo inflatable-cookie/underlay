@@ -118,9 +118,13 @@
   let minutesRef = $state<HTMLInputElement | null>(null);
   let secondsRef = $state<HTMLInputElement | null>(null);
 
+  // Track which segment is focused for stepper context
+  type Segment = "h" | "m" | "s";
+  let focusedSegment = $state<Segment | null>(null);
+
   // --- Input handling ---
 
-  function handleSegmentInput(segment: "h" | "m" | "s", event: Event) {
+  function handleSegmentInput(segment: Segment, event: Event) {
     const target = event.currentTarget as HTMLInputElement;
     const sanitized = target.value.replace(/[^0-9]/g, "").slice(0, 2);
     if (segment === "h") hours = sanitized;
@@ -131,7 +135,20 @@
     syncToValue();
   }
 
-  function handleBlur(segment: "h" | "m" | "s") {
+  function handleBlur(segment: Segment) {
+    // Small delay to let focus move to another segment before clearing
+    setTimeout(() => {
+      // Only clear focusedSegment if nothing in this component has focus
+      const active = document.activeElement;
+      if (
+        active !== hoursRef &&
+        active !== minutesRef &&
+        active !== secondsRef
+      ) {
+        focusedSegment = null;
+      }
+    }, 0);
+
     // Clamp individual segment
     if (segment === "h") hours = clampSegment(hours, 99);
     else if (segment === "m") minutes = clampSegment(minutes, 59);
@@ -147,7 +164,11 @@
     value = newTotal;
   }
 
-  function handleKeydown(segment: "h" | "m" | "s", event: KeyboardEvent) {
+  function handleFocus(segment: Segment) {
+    focusedSegment = segment;
+  }
+
+  function handleKeydown(segment: Segment, event: KeyboardEvent) {
     if (event.key === "ArrowUp") {
       event.preventDefault();
       incrementSegment(segment);
@@ -157,7 +178,7 @@
     }
   }
 
-  function incrementSegment(segment: "h" | "m" | "s") {
+  function incrementSegment(segment: Segment) {
     if (disabled) return;
     const maxVal = segment === "h" ? 99 : 59;
     const current = parseInt(
@@ -171,7 +192,7 @@
     syncToValue();
   }
 
-  function decrementSegment(segment: "h" | "m" | "s") {
+  function decrementSegment(segment: Segment) {
     if (disabled) return;
     const current = parseInt(
       segment === "h" ? hours : segment === "m" ? minutes : seconds,
@@ -184,22 +205,23 @@
     syncToValue();
   }
 
-  // Determine if segments are at limits for button disabled state
-  function isAtMax(segment: "h" | "m" | "s"): boolean {
-    const maxVal = segment === "h" ? 99 : 59;
-    const current = parseInt(
-      segment === "h" ? hours : segment === "m" ? minutes : seconds,
-      10
-    ) || 0;
-    return current >= maxVal;
+  // Stepper operates on focused segment, or seconds by default
+  function incrementFocused() {
+    const seg = focusedSegment ?? "s";
+    incrementSegment(seg);
+    refForSegment(seg)?.focus();
   }
 
-  function isAtMin(segment: "h" | "m" | "s"): boolean {
-    const current = parseInt(
-      segment === "h" ? hours : segment === "m" ? minutes : seconds,
-      10
-    ) || 0;
-    return current <= 0;
+  function decrementFocused() {
+    const seg = focusedSegment ?? "s";
+    decrementSegment(seg);
+    refForSegment(seg)?.focus();
+  }
+
+  function refForSegment(seg: Segment): HTMLInputElement | null {
+    if (seg === "h") return hoursRef;
+    if (seg === "m") return minutesRef;
+    return secondsRef;
   }
 </script>
 
@@ -210,12 +232,13 @@
 <div
   class="underlay-duration-input {className ?? ''}"
   class:underlay-duration-input--disabled={disabled}
+  class:underlay-duration-input--focused={focusedSegment !== null}
   {id}
   role="group"
   aria-label="Duration"
 >
-  <!-- Hours -->
-  <div class="underlay-duration-input__segment">
+  <div class="underlay-duration-input__fields">
+    <!-- Hours -->
     <input
       bind:this={hoursRef}
       type="text"
@@ -230,37 +253,14 @@
       aria-label="Hours"
       oninput={(e) => handleSegmentInput("h", e)}
       onblur={() => handleBlur("h")}
+      onfocus={() => handleFocus("h")}
       onkeydown={(e) => handleKeydown("h", e)}
     />
     <span class="underlay-duration-input__unit">h</span>
-    <div class="underlay-duration-input__controls">
-      <button
-        type="button"
-        class="underlay-duration-input__button underlay-duration-input__button--up"
-        onclick={() => { incrementSegment("h"); hoursRef?.focus(); }}
-        disabled={disabled || isAtMax("h")}
-        tabindex={-1}
-        aria-label="Increment hours"
-      >
-        <ChevronUp size="1em" strokeWidth={2.5} />
-      </button>
-      <button
-        type="button"
-        class="underlay-duration-input__button underlay-duration-input__button--down"
-        onclick={() => { decrementSegment("h"); hoursRef?.focus(); }}
-        disabled={disabled || isAtMin("h")}
-        tabindex={-1}
-        aria-label="Decrement hours"
-      >
-        <ChevronDown size="1em" strokeWidth={2.5} />
-      </button>
-    </div>
-  </div>
 
-  <span class="underlay-duration-input__separator">:</span>
+    <span class="underlay-duration-input__separator">:</span>
 
-  <!-- Minutes -->
-  <div class="underlay-duration-input__segment">
+    <!-- Minutes -->
     <input
       bind:this={minutesRef}
       type="text"
@@ -275,37 +275,14 @@
       aria-label="Minutes"
       oninput={(e) => handleSegmentInput("m", e)}
       onblur={() => handleBlur("m")}
+      onfocus={() => handleFocus("m")}
       onkeydown={(e) => handleKeydown("m", e)}
     />
     <span class="underlay-duration-input__unit">m</span>
-    <div class="underlay-duration-input__controls">
-      <button
-        type="button"
-        class="underlay-duration-input__button underlay-duration-input__button--up"
-        onclick={() => { incrementSegment("m"); minutesRef?.focus(); }}
-        disabled={disabled || isAtMax("m")}
-        tabindex={-1}
-        aria-label="Increment minutes"
-      >
-        <ChevronUp size="1em" strokeWidth={2.5} />
-      </button>
-      <button
-        type="button"
-        class="underlay-duration-input__button underlay-duration-input__button--down"
-        onclick={() => { decrementSegment("m"); minutesRef?.focus(); }}
-        disabled={disabled || isAtMin("m")}
-        tabindex={-1}
-        aria-label="Decrement minutes"
-      >
-        <ChevronDown size="1em" strokeWidth={2.5} />
-      </button>
-    </div>
-  </div>
 
-  <span class="underlay-duration-input__separator">:</span>
+    <span class="underlay-duration-input__separator">:</span>
 
-  <!-- Seconds -->
-  <div class="underlay-duration-input__segment">
+    <!-- Seconds -->
     <input
       bind:this={secondsRef}
       type="text"
@@ -320,46 +297,42 @@
       aria-label="Seconds"
       oninput={(e) => handleSegmentInput("s", e)}
       onblur={() => handleBlur("s")}
+      onfocus={() => handleFocus("s")}
       onkeydown={(e) => handleKeydown("s", e)}
     />
     <span class="underlay-duration-input__unit">s</span>
-    <div class="underlay-duration-input__controls">
-      <button
-        type="button"
-        class="underlay-duration-input__button underlay-duration-input__button--up"
-        onclick={() => { incrementSegment("s"); secondsRef?.focus(); }}
-        disabled={disabled || isAtMax("s")}
-        tabindex={-1}
-        aria-label="Increment seconds"
-      >
-        <ChevronUp size="1em" strokeWidth={2.5} />
-      </button>
-      <button
-        type="button"
-        class="underlay-duration-input__button underlay-duration-input__button--down"
-        onclick={() => { decrementSegment("s"); secondsRef?.focus(); }}
-        disabled={disabled || isAtMin("s")}
-        tabindex={-1}
-        aria-label="Decrement seconds"
-      >
-        <ChevronDown size="1em" strokeWidth={2.5} />
-      </button>
-    </div>
+  </div>
+
+  <!-- Single stepper controls on right edge -->
+  <div class="underlay-duration-input__controls">
+    <button
+      type="button"
+      class="underlay-duration-input__button underlay-duration-input__button--up"
+      onclick={incrementFocused}
+      disabled={disabled}
+      tabindex={-1}
+      aria-label="Increment"
+    >
+      <ChevronUp size="1em" strokeWidth={2.5} />
+    </button>
+    <button
+      type="button"
+      class="underlay-duration-input__button underlay-duration-input__button--down"
+      onclick={decrementFocused}
+      disabled={disabled}
+      tabindex={-1}
+      aria-label="Decrement"
+    >
+      <ChevronDown size="1em" strokeWidth={2.5} />
+    </button>
   </div>
 </div>
 
 <style>
   .underlay-duration-input {
     display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
+    align-items: stretch;
     width: max-content;
-  }
-
-  .underlay-duration-input__segment {
-    position: relative;
-    display: flex;
-    align-items: center;
     background: var(--underlay-color-field-bg, rgba(148, 163, 184, 0.18));
     border-radius: var(--underlay-radius-sm, 0.35rem);
     transition: outline-color 0.15s ease;
@@ -367,14 +340,20 @@
     outline-offset: var(--underlay-focus-ring-offset, 2px);
   }
 
-  .underlay-duration-input__segment:focus-within {
+  .underlay-duration-input--focused {
     outline-color: var(--underlay-color-primary, #2563eb);
   }
 
+  .underlay-duration-input__fields {
+    display: flex;
+    align-items: center;
+    padding: 0 0.25em;
+  }
+
   .underlay-duration-input__input {
-    width: 2.5ch;
+    width: 2ch;
     box-sizing: content-box;
-    padding: var(--underlay-field-padding-block, 0.55em) 0 var(--underlay-field-padding-block, 0.55em) 0.5em;
+    padding: var(--underlay-field-padding-block, 0.55em) 0.15em;
     border: none;
     background: transparent;
     color: var(--underlay-color-text, #e5e7eb);
@@ -390,20 +369,29 @@
   }
 
   .underlay-duration-input__unit {
-    padding-right: 0.15em;
-    font-size: 0.8em;
+    font-size: 0.75em;
     color: var(--underlay-color-text-muted, #9ca3af);
     user-select: none;
     pointer-events: none;
+    margin-right: 0.1em;
+  }
+
+  .underlay-duration-input__separator {
+    color: var(--underlay-color-text-muted, #9ca3af);
+    opacity: 0.4;
+    font-weight: 500;
+    font-size: 0.85em;
+    user-select: none;
+    padding: 0 0.05em;
   }
 
   .underlay-duration-input__controls {
     display: flex;
     flex-direction: column;
     width: 1.2em;
+    border-left: 1px solid rgba(148, 163, 184, 0.12);
     border-radius: 0 var(--underlay-radius-sm, 0.35rem) var(--underlay-radius-sm, 0.35rem) 0;
     overflow: hidden;
-    align-self: stretch;
   }
 
   .underlay-duration-input__button {
@@ -413,11 +401,11 @@
     justify-content: center;
     padding: 0;
     border: none;
-    background: var(--underlay-color-field-bg, rgba(148, 163, 184, 0.18));
+    background: transparent;
     color: var(--underlay-color-text-muted, #9ca3af);
     cursor: pointer;
     transition: background-color 0.15s ease, color 0.15s ease;
-    font-size: 0.75em;
+    font-size: 0.7em;
   }
 
   .underlay-duration-input__button:hover:not(:disabled) {
@@ -435,15 +423,7 @@
   }
 
   .underlay-duration-input__button--up {
-    border-bottom: none;
-  }
-
-  .underlay-duration-input__separator {
-    color: var(--underlay-color-text-muted, #9ca3af);
-    font-weight: 600;
-    font-size: inherit;
-    user-select: none;
-    padding: 0 0.1em;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.12);
   }
 
   .underlay-duration-input--disabled {
