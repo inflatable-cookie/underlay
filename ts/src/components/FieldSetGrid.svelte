@@ -40,18 +40,22 @@
   }
 
   /*
-   * Optional variant: keep a compact two-column layout only on very small containers.
-   * This preserves the configured desktop column count (e.underlay-g. 3/4/6) at wider sizes.
-   * Use with class="underlay-fieldset-grid--mobile-2".
+   * Optional mobile variants for very small containers:
+   * - underlay-fieldset-grid--mobile-2: force two columns.
+   * - underlay-fieldset-grid--mobile-2-last-two: first child full width, remaining two side-by-side.
    */
   @container (max-width: 399px) {
     .underlay-fieldset-grid--mobile-2,
-    .underlay-fieldset--mobile-2 {
+    .underlay-fieldset--mobile-2,
+    .underlay-fieldset-grid--mobile-2-last-two,
+    .underlay-fieldset--mobile-2-last-two {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     .underlay-fieldset-grid--mobile-2-first-full > :global(:first-child),
-    .underlay-fieldset--mobile-2-first-full > :global(:first-child) {
+    .underlay-fieldset--mobile-2-first-full > :global(:first-child),
+    .underlay-fieldset-grid--mobile-2-last-two > :global(:first-child),
+    .underlay-fieldset--mobile-2-last-two > :global(:first-child) {
       grid-column: 1 / -1;
     }
   }
