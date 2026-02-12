@@ -58,6 +58,30 @@
   let inputRef = $state<HTMLInputElement | null>(null);
   const allowsDecimal = $derived(!Number.isInteger(step));
 
+  function hasValidStep(): boolean {
+    return Number.isFinite(step) && step > 0;
+  }
+
+  function stepBase(): number {
+    return min ?? 0;
+  }
+
+  function isAlignedToStep(num: number): boolean {
+    if (!hasValidStep()) return true;
+    const relative = (num - stepBase()) / step;
+    return Math.abs(relative - Math.round(relative)) < 1e-9;
+  }
+
+  function alignToStep(num: number): number {
+    if (!hasValidStep()) return num;
+    const relative = (num - stepBase()) / step;
+    return stepBase() + Math.round(relative) * step;
+  }
+
+  function isPartialNumberInput(raw: string): boolean {
+    return raw === "" || raw === "-" || raw === "." || raw === "-." || raw.endsWith(".");
+  }
+
   function parseValue(): number {
     const num = Number.parseFloat(value);
     return isNaN(num) ? (min ?? 0) : num;
@@ -110,9 +134,25 @@
       : newValue.replace(/[^0-9-]/g, "").replace(/(?!^)-/g, "");
     if (sanitized !== newValue) {
       value = sanitized;
-    } else {
-      value = newValue;
+      return;
     }
+
+    if (isPartialNumberInput(sanitized)) {
+      value = sanitized;
+      return;
+    }
+
+    const parsed = Number.parseFloat(sanitized);
+    if (Number.isNaN(parsed)) {
+      value = sanitized;
+      return;
+    }
+
+    if (!isAlignedToStep(parsed)) {
+      return;
+    }
+
+    value = sanitized;
   }
 
   function handleBlur() {
@@ -121,9 +161,9 @@
       const num = Number.parseFloat(value);
       if (!isNaN(num)) {
         const clamped = clampValue(num);
-        if (clamped !== num) {
-          value = formatValue(clamped);
-        }
+        const snapped = alignToStep(clamped);
+        const finalValue = clampValue(snapped);
+        value = formatValue(finalValue);
       }
     }
   }
