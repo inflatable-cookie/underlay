@@ -50,17 +50,6 @@
   onDestroy(() => {
     unregisterTab?.(value);
   });
-
-  // Re-register when count changes (for dynamic counts)
-  $effect(() => {
-    if (registerTab && triggerRef) {
-      const resolvedLabel =
-        label ??
-        triggerRef.textContent?.trim() ??
-        value;
-      registerTab({ value, label: resolvedLabel, count });
-    }
-  });
 </script>
 
 <BitsTabs.Trigger

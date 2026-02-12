@@ -38,12 +38,6 @@
 
   // Use auto-registered tabs from TabsTrigger children
   let registeredTabs = $state<RegisteredTab[]>([]);
-  
-  // Poll for registered tabs (they're registered on mount)
-  $effect(() => {
-    if (!collapsible || !getRegisteredTabs) return;
-    registeredTabs = getRegisteredTabs();
-  });
 
   // Find the current tab for dropdown display
   const currentTab = $derived(registeredTabs.find((t) => t.value === currentValue));
