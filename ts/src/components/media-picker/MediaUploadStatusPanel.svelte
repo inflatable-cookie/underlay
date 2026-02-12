@@ -37,20 +37,20 @@
 </script>
 
 {#if uploadStep === "checking"}
-  <div class="status-panel">
-    <div class="spinner"></div>
+  <div class="underlay-status-panel">
+    <div class="underlay-spinner"></div>
     <p>Checking for duplicates...</p>
   </div>
 {:else if uploadStep === "duplicate"}
-  <div class="status-panel status-panel--warning">
+  <div class="underlay-status-panel underlay-status-panel--warning">
     <AlertCircle size={32} />
     <p>This file already exists</p>
     {#if duplicateMedia}
-      <span class="duplicate-name"
+      <span class="underlay-duplicate-name"
         >{getMediaDisplayName(duplicateMedia)}</span
       >
     {/if}
-    <div class="upload-actions">
+    <div class="underlay-upload-actions">
       <Button variant="secondary" onclick={onUploadAnyway}
         >Upload as new</Button
       >
@@ -60,25 +60,25 @@
     </div>
   </div>
 {:else if uploadStep === "uploading"}
-  <div class="status-panel">
-    <div class="progress-bar">
+  <div class="underlay-status-panel">
+    <div class="underlay-progress-bar">
       <div
-        class="progress-bar__fill"
+        class="underlay-progress-bar__fill"
         style="width: {uploadProgress}%"
       ></div>
     </div>
     <p>Uploading... {uploadProgress.toFixed(0)}%</p>
   </div>
 {:else if uploadStep === "finalising"}
-  <div class="status-panel">
-    <div class="spinner"></div>
+  <div class="underlay-status-panel">
+    <div class="underlay-spinner"></div>
     <p>Finalising...</p>
   </div>
 {:else if uploadStep === "complete"}
-  <div class="status-panel status-panel--success">
+  <div class="underlay-status-panel underlay-status-panel--success">
     <Check size={32} />
     <p>Upload complete!</p>
-    <div class="upload-actions">
+    <div class="underlay-upload-actions">
       <Button variant="secondary" onclick={onClearUpload}
         >Upload another</Button
       >
@@ -88,7 +88,7 @@
     </div>
   </div>
 {:else if uploadStep === "error"}
-  <div class="status-panel status-panel--error">
+  <div class="underlay-status-panel underlay-status-panel--error">
     <AlertCircle size={32} />
     <p>{uploadError || "Upload failed"}</p>
     <Button variant="secondary" onclick={onClearUpload}>Try again</Button>
@@ -96,14 +96,14 @@
 {/if}
 
 <style>
-  .upload-actions {
+  .underlay-upload-actions {
     display: flex;
     justify-content: center;
     gap: 0.5rem;
     margin-top: 1rem;
   }
 
-  .status-panel {
+  .underlay-status-panel {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -112,29 +112,29 @@
     text-align: center;
   }
 
-  .status-panel p {
+  .underlay-status-panel p {
     margin: 0;
     color: var(--underlay-color-text-muted, #9ca3af);
   }
 
-  .status-panel--warning {
+  .underlay-status-panel--warning {
     color: var(--underlay-color-warning, #f59e0b);
   }
 
-  .status-panel--success {
+  .underlay-status-panel--success {
     color: var(--underlay-color-success, #22c55e);
   }
 
-  .status-panel--error {
+  .underlay-status-panel--error {
     color: var(--underlay-color-danger, #ef4444);
   }
 
-  .duplicate-name {
+  .underlay-duplicate-name {
     font-weight: 500;
     color: var(--underlay-color-text, #f3f4f6);
   }
 
-  .spinner {
+  .underlay-spinner {
     width: 32px;
     height: 32px;
     border: 3px solid var(--underlay-color-border, #374151);
@@ -149,7 +149,7 @@
     }
   }
 
-  .progress-bar {
+  .underlay-progress-bar {
     width: 100%;
     max-width: 200px;
     height: 6px;
@@ -158,7 +158,7 @@
     overflow: hidden;
   }
 
-  .progress-bar__fill {
+  .underlay-progress-bar__fill {
     height: 100%;
     background: var(--underlay-color-primary, #3b82f6);
     transition: width 0.1s ease-out;

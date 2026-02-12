@@ -41,7 +41,7 @@
 
   /*
    * Optional variant: keep a compact two-column layout only on very small containers.
-   * This preserves the configured desktop column count (e.g. 3/4/6) at wider sizes.
+   * This preserves the configured desktop column count (e.underlay-g. 3/4/6) at wider sizes.
    * Use with class="underlay-fieldset-grid--mobile-2".
    */
   @container (max-width: 399px) {

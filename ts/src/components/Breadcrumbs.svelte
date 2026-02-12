@@ -70,25 +70,25 @@
 	aria-label="Breadcrumb"
 	{...restProps}
 >
-	<ol class="breadcrumb-list" class:collapsible={shouldCollapse}>
+	<ol class="underlay-breadcrumb-list" class:underlay-collapsible={shouldCollapse}>
 		{#each visibleItems as item, index}
-			<li class="breadcrumb-item" class:collapsed={item.collapsed}>
+			<li class="underlay-breadcrumb-item" class:underlay-collapsed={item.collapsed}>
 				{#if item.collapsed}
-					<span class="breadcrumb-ellipsis" title="More items">…</span>
+					<span class="underlay-breadcrumb-ellipsis" title="More items">…</span>
 				{:else if item.href && index < visibleItems.length - 1}
-					<a href={item.href} class="breadcrumb-link">
+					<a href={item.href} class="underlay-breadcrumb-link">
 						{#if item.icon}
-							<span class="breadcrumb-icon">{item.icon}</span>
+							<span class="underlay-breadcrumb-icon">{item.icon}</span>
 						{/if}
 						{item.label}
 					</a>
 				{:else}
 					<span
-						class="breadcrumb-current"
+						class="underlay-breadcrumb-current"
 						aria-current={index === visibleItems.length - 1 ? "page" : undefined}
 					>
 						{#if item.icon}
-							<span class="breadcrumb-icon">{item.icon}</span>
+							<span class="underlay-breadcrumb-icon">{item.icon}</span>
 						{/if}
 						{item.label}
 					</span>
@@ -96,7 +96,7 @@
 			</li>
 
 			{#if index < visibleItems.length - 1}
-				<li class="breadcrumb-separator" aria-hidden="true">
+				<li class="underlay-breadcrumb-separator" aria-hidden="true">
 					{separator}
 				</li>
 			{/if}
@@ -109,7 +109,7 @@
 		font-size: var(--underlay-breadcrumb-font-size, 0.875rem);
 	}
 
-	.breadcrumb-list {
+	.underlay-breadcrumb-list {
 		display: flex;
 		flex-wrap: wrap;
 		align-items: center;
@@ -119,18 +119,18 @@
 		padding: 0;
 	}
 
-	.breadcrumb-item {
+	.underlay-breadcrumb-item {
 		display: inline-flex;
 		align-items: center;
 	}
 
-	.breadcrumb-separator {
+	.underlay-breadcrumb-separator {
 		color: var(--underlay-color-text-muted, #94a3b8);
 		user-select: none;
 		padding: 0 0.125rem;
 	}
 
-	.breadcrumb-link {
+	.underlay-breadcrumb-link {
 		display: inline-flex;
 		align-items: center;
 		gap: 0.25rem;
@@ -141,18 +141,18 @@
 			text-decoration 0.15s;
 	}
 
-	.breadcrumb-link:hover {
+	.underlay-breadcrumb-link:hover {
 		color: var(--underlay-color-primary, #2563eb);
 		text-decoration: underline;
 	}
 
-	.breadcrumb-link:focus-visible {
+	.underlay-breadcrumb-link:focus-visible {
 		outline: 2px solid var(--underlay-color-primary, #2563eb);
 		outline-offset: 2px;
 		border-radius: 2px;
 	}
 
-	.breadcrumb-current {
+	.underlay-breadcrumb-current {
 		display: inline-flex;
 		align-items: center;
 		gap: 0.25rem;
@@ -160,38 +160,38 @@
 		font-weight: 500;
 	}
 
-	.breadcrumb-ellipsis {
+	.underlay-breadcrumb-ellipsis {
 		color: var(--underlay-color-text-muted, #94a3b8);
 		padding: 0 0.25rem;
 	}
 
-	.breadcrumb-icon {
+	.underlay-breadcrumb-icon {
 		display: inline-flex;
 		font-size: 1em;
 	}
 
 	/* Mobile: hide collapsed items */
 	@media (max-width: 640px) {
-		.collapsible .collapsed {
+		.underlay-collapsible .underlay-collapsed {
 			display: none;
 		}
 	}
 
 	/* Dark mode */
-	:global([data-theme="dark"]) .breadcrumb-link {
+	:global([data-theme="dark"]) .underlay-breadcrumb-link {
 		color: var(--underlay-color-text-muted-dark, #94a3b8);
 	}
 
-	:global([data-theme="dark"]) .breadcrumb-link:hover {
+	:global([data-theme="dark"]) .underlay-breadcrumb-link:hover {
 		color: var(--underlay-color-primary-light, #60a5fa);
 	}
 
-	:global([data-theme="dark"]) .breadcrumb-current {
+	:global([data-theme="dark"]) .underlay-breadcrumb-current {
 		color: var(--underlay-color-text-dark, #f1f5f9);
 	}
 
-	:global([data-theme="dark"]) .breadcrumb-separator,
-	:global([data-theme="dark"]) .breadcrumb-ellipsis {
+	:global([data-theme="dark"]) .underlay-breadcrumb-separator,
+	:global([data-theme="dark"]) .underlay-breadcrumb-ellipsis {
 		color: var(--underlay-color-text-muted-dark, #64748b);
 	}
 </style>

@@ -31,6 +31,7 @@
     type InitiateUploadResponse,
     type FinaliseUploadRequest,
     type FinaliseUploadResponse,
+    ALLOWED_MEDIA_TYPES,
   } from "../patterns/index.js";
   import {
     runUploadFlow,
@@ -41,17 +42,15 @@
     mergeMediaBrowseItems
   } from "./media-picker/browse";
   import {
-    createClearedUploadState,
     createResetBrowseState,
     type MediaPickerUploadStep,
-    validateMediaPickerFile
   } from "./media-picker/state";
   import MediaBrowseTab from "./media-picker/MediaBrowseTab.svelte";
-  import MediaUploadDropzone from "./media-picker/MediaUploadDropzone.svelte";
   import MediaUploadStatusPanel from "./media-picker/MediaUploadStatusPanel.svelte";
   import Button from "./Button.svelte";
   import Dialog from "./Dialog.svelte";
-  import FormError from "./FormError.svelte";
+  import FileUpload from "./FileUpload.svelte";
+  import type { FileUploadItem } from "./file-upload/types";
   import TabsRoot from "./TabsRoot.svelte";
   import TabsList from "./TabsList.svelte";
   import TabsTrigger from "./TabsTrigger.svelte";
@@ -62,8 +61,6 @@
   interface Props {
     /** Whether the picker dialog is open */
     open?: boolean;
-    /** Dialog title */
-    title?: string;
     /** Filter by media kind */
     filterKind?: MediaKind | null;
     /** Maximum file size in bytes (default 25MB) */
@@ -104,13 +101,10 @@
     /** Callback when media is selected */
     onselect?: (mediaId: string, media: MediaSummary) => void;
 
-    /** Callback when picker is cancelled */
-    oncancel?: () => void;
   }
 
   let {
     open = $bindable(false),
-    title = "Select Media",
     filterKind = null,
     maxFileSize = 25 * 1024 * 1024,
     listMediaPaginated,
@@ -119,7 +113,6 @@
     initiateUpload,
     finaliseUpload,
     onselect,
-    oncancel,
   }: Props = $props();
 
   // Tabs state
@@ -131,10 +124,12 @@
   let browseItems = $state<MediaSummary[]>([]);
   let browseNextCursor = $state<string | null>(null);
   let browseHasMore = $state(false);
+  let browseInitialLoadDone = $state(false);
+  let browseStale = $state(false);
 
-  // Upload state
-  let selectedFile = $state<File | null>(null);
-  let fileError = $state<string | null>(null);
+  // Upload state — FileUpload manages file selection; we derive selectedFile from it
+  let uploadFiles = $state<FileUploadItem[]>([]);
+  let selectedFile = $derived<File | null>(uploadFiles[0]?.file ?? null);
   let uploadStep = $state<MediaPickerUploadStep>("select");
   let uploadProgress = $state(0);
   let uploadError = $state<string | null>(null);
@@ -144,7 +139,17 @@
 
   // Load initial browse data when dialog opens
   $effect(() => {
-    if (open && browseItems.length === 0 && !browseLoading) {
+    if (open && !browseInitialLoadDone && !browseLoading) {
+      loadBrowseItems();
+    }
+  });
+
+  // Refresh browse data when switching to browse tab after an upload
+  $effect(() => {
+    if (activeTab === "browse" && browseStale && !browseLoading) {
+      browseStale = false;
+      browseItems = [];
+      browseNextCursor = null;
       loadBrowseItems();
     }
   });
@@ -166,6 +171,7 @@
       browseError = e instanceof Error ? e.message : "Failed to load media";
     } finally {
       browseLoading = false;
+      browseInitialLoadDone = true;
     }
   }
 
@@ -175,42 +181,14 @@
     }
   }
 
-  function handleFileSelect(event: Event) {
-    const input = event.target as HTMLInputElement;
-    const file = input.files?.[0];
-    if (file) {
-      validateAndSetFile(file);
-    }
-  }
-
-  function handleDrop(event: DragEvent) {
-    event.preventDefault();
-    const file = event.dataTransfer?.files?.[0];
-    if (file) {
-      validateAndSetFile(file);
-    }
-  }
-
-  function handleDragOver(event: DragEvent) {
-    event.preventDefault();
-  }
-
-  function validateAndSetFile(file: File) {
-    const result = validateMediaPickerFile(file, maxFileSize);
-    selectedFile = result.selectedFile;
-    fileError = result.fileError;
-  }
-
   function clearUpload() {
-    const reset = createClearedUploadState();
-    selectedFile = reset.selectedFile;
-    fileError = reset.fileError;
-    fileHash = reset.fileHash;
-    uploadStep = reset.uploadStep;
-    uploadProgress = reset.uploadProgress;
-    uploadError = reset.uploadError;
-    duplicateMedia = reset.duplicateMedia;
-    createdMedia = reset.createdMedia;
+    uploadFiles = [];
+    fileHash = null;
+    uploadStep = "select";
+    uploadProgress = 0;
+    uploadError = null;
+    duplicateMedia = null;
+    createdMedia = null;
   }
 
   async function startUpload() {
@@ -244,6 +222,7 @@
 
       createdMedia = result.createdMedia;
       uploadStep = "complete";
+      browseStale = true;
     } catch (e) {
       console.error("Upload failed", e);
       uploadError = e instanceof Error ? e.message : "Upload failed";
@@ -272,6 +251,7 @@
       });
 
       uploadStep = "complete";
+      browseStale = true;
     } catch (e) {
       console.error("Upload failed", e);
       uploadError = e instanceof Error ? e.message : "Upload failed";
@@ -292,17 +272,20 @@
 
   function selectUploaded() {
     if (createdMedia) {
+      // For image uploads, use a local blob URL as a temporary thumbnail
+      // since the server-side rendition is generated asynchronously.
+      if (selectedFile && createdMedia.thumbnailUrl === null && selectedFile.type.startsWith("image/")) {
+        createdMedia = {
+          ...createdMedia,
+          thumbnailUrl: URL.createObjectURL(selectedFile)
+        };
+      }
       selectMedia(createdMedia);
     }
   }
 
   function selectMedia(media: MediaSummary) {
     onselect?.(media.id, media);
-    closeAndReset();
-  }
-
-  function handleCancel() {
-    oncancel?.();
     closeAndReset();
   }
 
@@ -314,27 +297,30 @@
     browseItems = browseReset.browseItems;
     browseNextCursor = browseReset.browseNextCursor;
     browseHasMore = browseReset.browseHasMore;
+    browseInitialLoadDone = false;
+    browseStale = false;
   }
 
 </script>
 
 <Dialog
   bind:open
-  {title}
   showTrigger={false}
   contentClassName="media-picker-dialog"
 >
   <TabsRoot bind:value={activeTab}>
-    <TabsList>
-      <TabsTrigger value="browse">
-        <Search size={14} />
-        Browse Library
-      </TabsTrigger>
-      <TabsTrigger value="upload">
-        <Upload size={14} />
-        Upload New
-      </TabsTrigger>
-    </TabsList>
+    <div class="underlay-media-picker-tabs-center">
+      <TabsList>
+        <TabsTrigger value="browse">
+          <Search size={14} />
+          Browse Library
+        </TabsTrigger>
+        <TabsTrigger value="upload">
+          <Upload size={14} />
+          Upload New
+        </TabsTrigger>
+      </TabsList>
+    </div>
 
     <TabsContent value="browse">
       <MediaBrowseTab
@@ -348,22 +334,17 @@
     </TabsContent>
 
     <TabsContent value="upload">
-      <div class="upload-content">
+      <div class="underlay-upload-content">
         {#if uploadStep === "select"}
-          <MediaUploadDropzone
-            {selectedFile}
-            hasError={!!fileError}
-            onDrop={handleDrop}
-            onDragOver={handleDragOver}
-            onFileSelect={handleFileSelect}
+          <FileUpload
+            bind:files={uploadFiles}
+            accept={ALLOWED_MEDIA_TYPES.join(",")}
+            maxSize={maxFileSize}
+            showPreview={false}
           />
 
-          {#if fileError}
-            <FormError message={fileError} />
-          {/if}
-
           {#if selectedFile}
-            <div class="upload-actions">
+            <div class="underlay-upload-actions">
               <Button variant="secondary" onclick={clearUpload}>Clear</Button>
               <Button variant="primary" onclick={startUpload}>
                 <Upload size={14} />
@@ -387,9 +368,6 @@
     </TabsContent>
   </TabsRoot>
 
-  {#snippet footer()}
-    <Button variant="secondary" onclick={handleCancel}>Cancel</Button>
-  {/snippet}
 </Dialog>
 
 <style>
@@ -398,9 +376,20 @@
     max-height: min(85vh, 50rem) !important;
   }
 
-  .upload-content {
+  .underlay-media-picker-tabs-center {
+    display: flex;
+    justify-content: center;
+  }
+
+  .underlay-upload-content {
     min-height: 200px;
     margin-top: 1rem;
   }
 
+  .underlay-upload-actions {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+  }
 </style>

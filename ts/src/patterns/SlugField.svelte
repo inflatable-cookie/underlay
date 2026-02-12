@@ -178,14 +178,12 @@
     display: flex;
     align-items: stretch;
     width: 100%;
-    border: var(--underlay-field-border-width, 1px) solid var(--underlay-color-border, rgba(148, 163, 184, 0.35));
     border-radius: var(--underlay-radius-sm, 0.35rem);
     background: var(--underlay-color-field-bg, rgba(148, 163, 184, 0.08));
     overflow: hidden;
   }
 
   .slug-field-wrapper:focus-within {
-    border-color: var(--underlay-color-primary, #2563eb);
     outline: var(--underlay-focus-ring-width, 2px) solid var(--underlay-color-primary, #2563eb);
     outline-offset: var(--underlay-focus-ring-offset, 1px);
   }

@@ -63,14 +63,14 @@
 	aria-label={displayLabel}
 	{...restProps}
 >
-	<div class="progress-track">
+	<div class="underlay-progress-track">
 		<div
-			class="progress-fill {animated ? 'progress-fill--animated' : ''}"
+			class="underlay-progress-fill {animated ? 'underlay-progress-fill--animated' : ''}"
 			style="width: {percentage}%"
 		></div>
 	</div>
 	{#if showLabel || label}
-		<span class="progress-label">
+		<span class="underlay-progress-label">
 			{#if label}
 				{@render label({ value, max, percentage })}
 			{:else}
@@ -88,20 +88,20 @@
 		width: 100%;
 	}
 
-	.progress-track {
+	.underlay-progress-track {
 		flex: 1;
 		background-color: var(--underlay-color-progress-track, rgba(100, 116, 139, 0.15));
 		border-radius: var(--underlay-radius-pill, 999px);
 		overflow: hidden;
 	}
 
-	.progress-fill {
+	.underlay-progress-fill {
 		height: 100%;
 		border-radius: var(--underlay-radius-pill, 999px);
 		transition: width 0.3s ease;
 	}
 
-	.progress-fill--animated {
+	.underlay-progress-fill--animated {
 		background-image: linear-gradient(
 			-45deg,
 			rgba(255, 255, 255, 0.15) 25%,
@@ -125,7 +125,7 @@
 		}
 	}
 
-	.progress-label {
+	.underlay-progress-label {
 		font-size: 0.875em;
 		font-weight: 500;
 		color: var(--underlay-color-text-muted, #64748b);
@@ -134,73 +134,73 @@
 	}
 
 	/* Sizes */
-	.underlay-progress--sm .progress-track {
+	.underlay-progress--sm .underlay-progress-track {
 		height: 0.375rem;
 	}
 
-	.underlay-progress--sm .progress-label {
+	.underlay-progress--sm .underlay-progress-label {
 		font-size: 0.75em;
 	}
 
-	.underlay-progress--md .progress-track {
+	.underlay-progress--md .underlay-progress-track {
 		height: 0.5rem;
 	}
 
-	.underlay-progress--lg .progress-track {
+	.underlay-progress--lg .underlay-progress-track {
 		height: 0.75rem;
 	}
 
-	.underlay-progress--lg .progress-label {
+	.underlay-progress--lg .underlay-progress-label {
 		font-size: 1em;
 	}
 
 	/* Variants */
-	.underlay-progress--default .progress-fill {
+	.underlay-progress--default .underlay-progress-fill {
 		background-color: var(--underlay-color-progress-default, #6366f1);
 	}
 
-	.underlay-progress--success .progress-fill {
+	.underlay-progress--success .underlay-progress-fill {
 		background-color: var(--underlay-color-progress-success, #22c55e);
 	}
 
-	.underlay-progress--warning .progress-fill {
+	.underlay-progress--warning .underlay-progress-fill {
 		background-color: var(--underlay-color-progress-warning, #f59e0b);
 	}
 
-	.underlay-progress--danger .progress-fill {
+	.underlay-progress--danger .underlay-progress-fill {
 		background-color: var(--underlay-color-progress-danger, #ef4444);
 	}
 
-	.underlay-progress--info .progress-fill {
+	.underlay-progress--info .underlay-progress-fill {
 		background-color: var(--underlay-color-progress-info, #3b82f6);
 	}
 
 	/* Dark mode adjustments */
-	:global([data-theme="dark"]) .progress-track {
+	:global([data-theme="dark"]) .underlay-progress-track {
 		background-color: var(--underlay-color-progress-track-dark, rgba(148, 163, 184, 0.2));
 	}
 
-	:global([data-theme="dark"]) .progress-label {
+	:global([data-theme="dark"]) .underlay-progress-label {
 		color: var(--underlay-color-text-muted-dark, #94a3b8);
 	}
 
-	:global([data-theme="dark"]) .underlay-progress--default .progress-fill {
+	:global([data-theme="dark"]) .underlay-progress--default .underlay-progress-fill {
 		background-color: var(--underlay-color-progress-default-dark, #818cf8);
 	}
 
-	:global([data-theme="dark"]) .underlay-progress--success .progress-fill {
+	:global([data-theme="dark"]) .underlay-progress--success .underlay-progress-fill {
 		background-color: var(--underlay-color-progress-success-dark, #4ade80);
 	}
 
-	:global([data-theme="dark"]) .underlay-progress--warning .progress-fill {
+	:global([data-theme="dark"]) .underlay-progress--warning .underlay-progress-fill {
 		background-color: var(--underlay-color-progress-warning-dark, #fbbf24);
 	}
 
-	:global([data-theme="dark"]) .underlay-progress--danger .progress-fill {
+	:global([data-theme="dark"]) .underlay-progress--danger .underlay-progress-fill {
 		background-color: var(--underlay-color-progress-danger-dark, #f87171);
 	}
 
-	:global([data-theme="dark"]) .underlay-progress--info .progress-fill {
+	:global([data-theme="dark"]) .underlay-progress--info .underlay-progress-fill {
 		background-color: var(--underlay-color-progress-info-dark, #60a5fa);
 	}
 </style>

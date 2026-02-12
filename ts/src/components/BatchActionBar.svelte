@@ -130,13 +130,13 @@
 </script>
 
 {#if selectedCount > 0}
-  <div class="batch-action-bar">
-    <div class="selection-info">
-      <span class="count">{selectedCount}</span>
-      <span class="label">{itemText} selected</span>
+  <div class="underlay-batch-action-bar">
+    <div class="underlay-selection-info">
+      <span class="underlay-count">{selectedCount}</span>
+      <span class="underlay-label">{itemText} selected</span>
     </div>
 
-    <div class="actions">
+    <div class="underlay-actions">
       {#if onSelectAll && totalCount > 0}
         <Button
           type="button"
@@ -231,12 +231,12 @@
     bind:open={showStatusModal}
     title="Update Status"
   >
-    <p class="confirm-text">
+    <p class="underlay-confirm-text">
       Update status for <strong>{selectedCount}</strong> {itemText}:
     </p>
-    <div class="status-options">
+    <div class="underlay-status-options">
       {#each statusOptions as option}
-        <label class="status-option">
+        <label class="underlay-status-option">
           <input
             type="radio"
             name="status"
@@ -247,7 +247,7 @@
         </label>
       {/each}
     </div>
-    <div class="dialog-actions">
+    <div class="underlay-dialog-actions">
       <Button
         type="button"
         variant="subtle"
@@ -268,7 +268,7 @@
 {/if}
 
 <style>
-  .batch-action-bar {
+  .underlay-batch-action-bar {
     position: fixed;
     bottom: 1.5rem;
     left: 50%;
@@ -284,13 +284,13 @@
     z-index: 100;
   }
 
-  .selection-info {
+  .underlay-selection-info {
     display: flex;
     align-items: center;
     gap: 0.5rem;
   }
 
-  .count {
+  .underlay-count {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -304,28 +304,28 @@
     border-radius: 9999px;
   }
 
-  .label {
+  .underlay-label {
     color: var(--text-secondary, #9ca3af);
     font-size: 0.875rem;
   }
 
-  .actions {
+  .underlay-actions {
     display: flex;
     align-items: center;
     gap: 0.5rem;
   }
 
-  .confirm-text {
+  .underlay-confirm-text {
     margin: 0 0 1rem;
   }
 
-  .status-options {
+  .underlay-status-options {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
   }
 
-  .status-option {
+  .underlay-status-option {
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -335,15 +335,15 @@
     transition: background 0.15s ease;
   }
 
-  .status-option:hover {
+  .underlay-status-option:hover {
     background: var(--surface-hover, #374151);
   }
 
-  .status-option input {
+  .underlay-status-option input {
     accent-color: var(--accent-color, #3b82f6);
   }
 
-  .dialog-actions {
+  .underlay-dialog-actions {
     display: flex;
     justify-content: flex-end;
     gap: 0.5rem;

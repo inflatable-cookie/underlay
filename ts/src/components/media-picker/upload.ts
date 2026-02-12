@@ -20,6 +20,7 @@ function getMediaKindFromFile(file: File): MediaKind {
 }
 
 function toCreatedMediaSummary(media: MediaDetail): MediaSummary {
+	const version = media.currentVersion;
 	return {
 		id: media.id,
 		kind: media.kind,
@@ -30,8 +31,8 @@ function toCreatedMediaSummary(media: MediaDetail): MediaSummary {
 		createdAt: media.createdAt,
 		updatedAt: media.updatedAt,
 		deletedAt: null,
-		byteSize: null,
-		mimeType: null,
+		byteSize: version?.byteSize ?? null,
+		mimeType: version?.mimeType ?? null,
 		thumbnailUrl: null
 	};
 }
@@ -86,10 +87,12 @@ export async function uploadNewMedia(input: UploadNewMediaInput): Promise<MediaS
 	});
 
 	input.onStage?.("finalising");
-	await input.finaliseUpload(media.id, uploadResponse.versionId, {
+	const finaliseResponse = await input.finaliseUpload(media.id, uploadResponse.versionId, {
 		sha256: input.fileHash,
 		contentType: input.file.type
 	});
 
-	return toCreatedMediaSummary(media);
+	// Use the media detail from the finalise response — it has the
+	// up-to-date version info including renditions / thumbnail URLs.
+	return toCreatedMediaSummary(finaliseResponse.media);
 }

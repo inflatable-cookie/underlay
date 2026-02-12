@@ -223,23 +223,23 @@
 </script>
 
   <div
-    class={`markdown-editor-root ${showPreview ? "" : "preview-hidden"} ${className}`}
+    class={`underlay-markdown-editor-root ${showPreview ? "" : "underlay-preview-hidden"} ${className}`}
   >
     {#if loading || (showPreview && !editorReady)}
-      <div class="markdown-editor-spinner">
-        <span class="spinner-dot" aria-hidden="true"></span>
+      <div class="underlay-markdown-editor-spinner">
+        <span class="underlay-spinner-dot" aria-hidden="true"></span>
         <span>Loading markdown editor...</span>
       </div>
     {/if}
 
 
   {#if label}
-    <label class="markdown-editor-label">
-      <span class="markdown-editor-label__text">{label}</span>
+    <label class="underlay-markdown-editor-label">
+      <span class="underlay-markdown-editor-label__text">{label}</span>
       <textarea
         bind:this={textareaElement}
-        class="markdown-editor-textarea"
-        class:is-hidden={showPreview && editorReady}
+        class="underlay-markdown-editor-textarea"
+        class:underlay-is-hidden={showPreview && editorReady}
         name={name ?? undefined}
         bind:value
         required={required}
@@ -249,8 +249,8 @@
   {:else}
     <textarea
       bind:this={textareaElement}
-      class="markdown-editor-textarea"
-      class:is-hidden={showPreview && editorReady}
+      class="underlay-markdown-editor-textarea"
+      class:underlay-is-hidden={showPreview && editorReady}
       name={name ?? undefined}
       bind:value
       required={required}
@@ -259,7 +259,7 @@
   {/if}
 
   {#if hint}
-    <div class="markdown-editor-help">{hint}</div>
+    <div class="underlay-markdown-editor-help">{hint}</div>
   {/if}
 
   {#if children}
@@ -268,23 +268,23 @@
 </div>
 
 <style>
-  .markdown-editor-root {
+  .underlay-markdown-editor-root {
     display: grid;
     gap: var(--underlay-space-1, var(--underlay-space-1, 0.25rem));
     padding-top: 0;
   }
 
-  .markdown-editor-label {
+  .underlay-markdown-editor-label {
     display: grid;
     gap: var(--underlay-space-1, var(--underlay-space-1, 0.25rem));
   }
 
-  .markdown-editor-label__text {
+  .underlay-markdown-editor-label__text {
     font-size: var(--underlay-font-size-sm, calc(1em * 0.9));
     font-weight: 500;
   }
 
-  .markdown-editor-textarea {
+  .underlay-markdown-editor-textarea {
     width: 100%;
     min-height: var(
       --underlay-markdown-editor-min-height,
@@ -303,23 +303,23 @@
     resize: vertical;
   }
 
-  .markdown-editor-textarea:focus,
-  .markdown-editor-textarea:focus-visible {
+  .underlay-markdown-editor-textarea:focus,
+  .underlay-markdown-editor-textarea:focus-visible {
     outline: var(--underlay-focus-ring-width, var(--underlay-focus-ring-width, 2px)) solid
       var(--underlay-color-primary, var(--underlay-color-primary, #2563eb));
     outline-offset: var(--underlay-focus-ring-offset, var(--underlay-focus-ring-offset, 2px));
   }
 
-  .markdown-editor-textarea.is-hidden {
+  .underlay-markdown-editor-textarea.underlay-is-hidden {
     display: none;
   }
 
-  .markdown-editor-help {
+  .underlay-markdown-editor-help {
     font-size: var(--underlay-font-size-xs, calc(1em * 0.8));
     opacity: 0.8;
   }
 
-  .markdown-editor-spinner {
+  .underlay-markdown-editor-spinner {
     display: flex;
     align-items: center;
     gap: var(--underlay-space-2, var(--underlay-space-2, 0.5rem));
@@ -341,7 +341,7 @@
     );
   }
 
-  .markdown-editor-spinner .spinner-dot {
+  .underlay-markdown-editor-spinner .underlay-spinner-dot {
     width: var(--underlay-markdown-editor-spinner-dot-size, var(--underlay-markdown-editor-spinner-dot-size, 0.8rem));
     height: var(--underlay-markdown-editor-spinner-dot-size, var(--underlay-markdown-editor-spinner-dot-size, 0.8rem));
     border-radius: var(--underlay-radius-pill, var(--underlay-radius-pill, 999px));
@@ -361,11 +361,11 @@
   }
 
   /* Style the EasyMDE / CodeMirror surface */
-  .markdown-editor-root :global(.EasyMDEContainer) {
+  .underlay-markdown-editor-root :global(.EasyMDEContainer) {
     border-radius: var(--underlay-radius-sm, var(--underlay-radius-sm, 0.35rem));
   }
 
-  .markdown-editor-root :global(.EasyMDEContainer .CodeMirror) {
+  .underlay-markdown-editor-root :global(.EasyMDEContainer .CodeMirror) {
     background: var(
       --underlay-color-field-bg,
       var(--underlay-color-field-bg, rgba(148, 163, 184, 0.18))
@@ -385,24 +385,24 @@
     );
   }
 
-  .markdown-editor-root
+  .underlay-markdown-editor-root
     :global(.EasyMDEContainer .CodeMirror.CodeMirror-focused) {
     outline: var(--underlay-focus-ring-width, var(--underlay-focus-ring-width, 2px)) solid
       var(--underlay-color-primary, var(--underlay-color-primary, #2563eb));
     outline-offset: var(--underlay-focus-ring-offset, var(--underlay-focus-ring-offset, 2px));
   }
 
-  .markdown-editor-root
+  .underlay-markdown-editor-root
     :global(.EasyMDEContainer .CodeMirror pre.CodeMirror-line) {
     font-family: inherit;
   }
 
-  .markdown-editor-root
+  .underlay-markdown-editor-root
     :global(.EasyMDEContainer .CodeMirror div.CodeMirror-cursor) {
     border-left-color: var(--underlay-color-text, var(--underlay-color-text, inherit));
   }
 
-  .markdown-editor-root
+  .underlay-markdown-editor-root
     :global(.EasyMDEContainer .CodeMirror .CodeMirror-selected) {
     background: color-mix(
       in srgb,
@@ -411,8 +411,8 @@
     );
   }
 
-  .markdown-editor-root :global(.EasyMDEContainer .editor-preview),
-  .markdown-editor-root :global(.EasyMDEContainer .editor-preview-side) {
+  .underlay-markdown-editor-root :global(.EasyMDEContainer .editor-preview),
+  .underlay-markdown-editor-root :global(.EasyMDEContainer .editor-preview-side) {
     background: var(
       --underlay-color-surface-muted,
       var(--underlay-color-surface-muted, rgba(255, 255, 255, 0.02))
@@ -420,14 +420,14 @@
     color: var(--underlay-color-text, var(--underlay-color-text, inherit));
   }
 
-  .markdown-editor-root :global(.EasyMDEContainer .editor-toolbar) {
+  .underlay-markdown-editor-root :global(.EasyMDEContainer .editor-toolbar) {
     background: transparent;
     border: none;
   }
 
-  .markdown-editor-root.preview-active
+  .underlay-markdown-editor-root.underlay-preview-active
     :global(.EasyMDEContainer .editor-preview),
-  .markdown-editor-root.preview-active
+  .underlay-markdown-editor-root.underlay-preview-active
     :global(.EasyMDEContainer .editor-preview-side) {
     border: 1px solid var(--underlay-color-primary, var(--underlay-color-primary, #2563eb));
     border-radius: var(--underlay-radius-sm, var(--underlay-radius-sm, 0.35rem));

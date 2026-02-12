@@ -122,7 +122,7 @@
   const atMax = $derived(max !== undefined && parseValue() >= max);
 </script>
 
-<div class="number-input {className ?? ''}" class:number-input--disabled={disabled}>
+<div class="underlay-number-input {className ?? ''}" class:underlay-number-input--disabled={disabled}>
   <TextInput
     {id}
     {name}
@@ -142,13 +142,13 @@
     inputmode="numeric"
     pattern="[0-9]*"
     autocomplete="off"
-    class="number-input__input"
+    class="underlay-number-input__input"
   >
     {#snippet suffix()}
-      <div class="number-input__controls">
+      <div class="underlay-number-input__controls">
         <button
           type="button"
-          class="number-input__button number-input__button--up"
+          class="underlay-number-input__button underlay-number-input__button--up"
           onclick={increment}
           disabled={disabled || atMax}
           tabindex={-1}
@@ -158,7 +158,7 @@
         </button>
         <button
           type="button"
-          class="number-input__button number-input__button--down"
+          class="underlay-number-input__button underlay-number-input__button--down"
           onclick={decrement}
           disabled={disabled || atMin}
           tabindex={-1}
@@ -172,18 +172,18 @@
 </div>
 
 <style>
-  .number-input {
+  .underlay-number-input {
     width: 100%;
     /* Tell TextInput how wide the suffix is so validation icon can be positioned */
     --underlay-input-suffix-width: 1.2em;
   }
 
   /* Adjust input padding to make room for controls + validation icon */
-  .number-input :global(.underlay-input) {
+  .underlay-number-input :global(.underlay-input) {
     padding-right: calc(var(--underlay-input-suffix-width) + 2em) !important;
   }
 
-  .number-input__controls {
+  .underlay-number-input__controls {
     position: absolute;
     right: 0;
     top: 0;
@@ -191,12 +191,11 @@
     display: flex;
     flex-direction: column;
     width: 1.2em;
-    border-left: 1px solid var(--underlay-color-border, rgba(148, 163, 184, 0.35));
     border-radius: 0 var(--underlay-radius-sm, 0.35rem) var(--underlay-radius-sm, 0.35rem) 0;
     overflow: hidden;
   }
 
-  .number-input__button {
+  .underlay-number-input__button {
     flex: 1;
     display: flex;
     align-items: center;
@@ -210,25 +209,25 @@
     font-size: 0.85em;
   }
 
-  .number-input__button:hover:not(:disabled) {
+  .underlay-number-input__button:hover:not(:disabled) {
     background: var(--underlay-color-primary-subtle, rgba(37, 99, 235, 0.15));
     color: var(--underlay-color-primary, #2563eb);
   }
 
-  .number-input__button:active:not(:disabled) {
+  .underlay-number-input__button:active:not(:disabled) {
     background: var(--underlay-color-primary-subtle, rgba(37, 99, 235, 0.25));
   }
 
-  .number-input__button:disabled {
+  .underlay-number-input__button:disabled {
     opacity: 0.4;
     cursor: not-allowed;
   }
 
-  .number-input__button--up {
-    border-bottom: 1px solid var(--underlay-color-border, rgba(148, 163, 184, 0.35));
+  .underlay-number-input__button--up {
+    border-bottom: none;
   }
 
-  .number-input--disabled .number-input__controls {
+  .underlay-number-input--disabled .underlay-number-input__controls {
     opacity: 0.5;
     pointer-events: none;
   }

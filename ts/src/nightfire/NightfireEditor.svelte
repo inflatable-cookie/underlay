@@ -146,7 +146,7 @@
   const strategiesStore = useNightfireStrategies();
   let strategy = $state<NightfireStrategy | null>(null);
   let strategiesLoading = $state(false);
-  let hasNormalised = $state(false);
+  let lastSchemaMismatchReported = $state<string | null>(null);
 
   // Load strategy on mount
   onMount(() => {
@@ -169,27 +169,6 @@
   const effectiveBlockOptions = $derived(
     blockOptions ?? (strategy?.blockOptions as NightfireBlockOptionInput[] | null) ?? null
   );
-
-  // Normalise value when strategy loads (only once)
-  $effect(() => {
-    if (hasNormalised || !strategy || strategiesLoading) return;
-
-    const { coerced, schemaMismatch } = normaliseForStrategy(
-      value,
-      schema,
-      strategy.cardinality.mode
-    );
-    if (schemaMismatch) {
-      onSchemaMismatch?.({ actualSchema: schemaMismatch, expectedSchema: schema });
-    }
-
-    // Only update if something changed
-    if (JSON.stringify(coerced) !== JSON.stringify(value)) {
-      value = coerced;
-    }
-
-    hasNormalised = true;
-  });
 
   /**
    * When switching block types for the summary schema, we apply
@@ -250,6 +229,34 @@
     schema: editorSchema,
     mode: (effectiveModeOverride ?? registryDef.mode) as NightfireFieldMode,
     defaultType: effectiveDefaultTypeOverride ?? registryDef.defaultType ?? "markdown"
+  });
+
+  // Keep stored value shape aligned with the effective editor mode.
+  // This is important for schemas that don't have a local registry entry
+  // (e.g. acow:content/qa@1), where we may fall back to markup editors but
+  // still receive single-block payloads from the API.
+  $effect(() => {
+    const { coerced, schemaMismatch } = normaliseForStrategy(value, schema, effectiveDef.mode);
+
+    if (schemaMismatch && schemaMismatch !== lastSchemaMismatchReported) {
+      lastSchemaMismatchReported = schemaMismatch;
+      onSchemaMismatch?.({ actualSchema: schemaMismatch, expectedSchema: schema });
+    }
+
+    const current = value as Record<string, unknown> | null | undefined;
+    const next = coerced as Record<string, unknown>;
+    const currentBlocks = Array.isArray(current?.blocks) ? (current?.blocks as unknown[]) : null;
+    const nextBlocks = Array.isArray(next.blocks) ? (next.blocks as unknown[]) : null;
+
+    const needsShapeUpdate =
+      !current ||
+      current.schema !== next.schema ||
+      (!!current.block !== !!next.block) ||
+      ((currentBlocks?.length ?? 0) !== (nextBlocks?.length ?? 0));
+
+    if (needsShapeUpdate) {
+      value = coerced;
+    }
   });
 
   const baseTypeOptions = $derived(
@@ -371,41 +378,45 @@
 
 <div class="nightfire-field">
   {#if !isMulti}
-    <div class="nightfire-field-single">
-      <div class="nightfire-field-single__toolbar">
-        <NightfireTypeSelect
-          value={(singleBlock as any)?.type ??
-            editorTypeOptions[0]?.type ??
-            effectiveDef.defaultType}
-          onChange={handleSingleTypeChange}
-          {groupedOptions}
+    <div class="nightfire-field__block-card">
+      <div class="nightfire-field-single">
+        <div class="nightfire-field-single__toolbar">
+          <NightfireTypeSelect
+            value={(singleBlock as any)?.type ??
+              editorTypeOptions[0]?.type ??
+              effectiveDef.defaultType}
+            onChange={handleSingleTypeChange}
+            {groupedOptions}
+            typeOptions={editorTypeOptions}
+          />
+        </div>
+        <NightfireBlockEditor
+          schema={editorSchema}
+          block={singleBlock}
+          definition={effectiveDef}
           typeOptions={editorTypeOptions}
+          onChange={handleSingleBlockChange}
         />
       </div>
-      <NightfireBlockEditor
-        schema={editorSchema}
-        block={singleBlock}
-        definition={effectiveDef}
-        typeOptions={editorTypeOptions}
-        onChange={handleSingleBlockChange}
-      />
     </div>
   {:else}
     <div class="nightfire-field-multi">
       {#each blocks as block, index (index)}
-        <NightfireMultiBlockItem
-          {block}
-          {index}
-          totalBlocks={blocks.length}
-          {editorSchema}
-          {effectiveDef}
-          {editorTypeOptions}
-          {groupedOptions}
-          onTypeChange={handleTypeChange}
-          onMove={moveBlock}
-          onRemove={removeBlock}
-          onBlockChange={handleBlockChange}
-        />
+        <div class="nightfire-field__block-card">
+          <NightfireMultiBlockItem
+            {block}
+            {index}
+            totalBlocks={blocks.length}
+            {editorSchema}
+            {effectiveDef}
+            {editorTypeOptions}
+            {groupedOptions}
+            onTypeChange={handleTypeChange}
+            onMove={moveBlock}
+            onRemove={removeBlock}
+            onBlockChange={handleBlockChange}
+          />
+        </div>
       {/each}
 
       <button
@@ -428,10 +439,17 @@
 
 <style>
   .nightfire-field {
+    display: grid;
+    gap: var(--underlay-space-2);
+    color: var(--underlay-color-text);
+  }
+
+  .nightfire-field__block-card {
     border-radius: var(--underlay-radius-md);
     color: var(--underlay-color-text);
     padding: calc(var(--underlay-card-padding, 1.25rem) / 2);
     background-color: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--underlay-color-border-subtle, rgba(148, 163, 184, 0.2));
   }
 
   .nightfire-field-multi {

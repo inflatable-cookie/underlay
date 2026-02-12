@@ -298,9 +298,9 @@
 <div class="underlay-data-table-wrapper">
 <div
 	class="underlay-data-table"
-	class:compact
-	class:striped
-	class:sticky-header={stickyHeader}
+	class:underlay-compact={compact}
+	class:underlay-striped={striped}
+	class:underlay-sticky-header={stickyHeader}
 	style:--grid-columns={gridColumns}
 >
 	<!-- Toolbar -->

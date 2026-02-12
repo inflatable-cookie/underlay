@@ -142,26 +142,26 @@
 {#if isValidDate}
   <Tooltip content={tooltipText} inline delayDuration={300} class={className}>
     {#snippet trigger()}
-      <time class="time-ago" datetime={safeDate?.toISOString() ?? ""}>{relativeTime}</time>
+      <time class="underlay-time-ago" datetime={safeDate?.toISOString() ?? ""}>{relativeTime}</time>
     {/snippet}
   </Tooltip>
 {:else}
-  <span class="time-ago time-ago--empty {className ?? ''}">—</span>
+  <span class="underlay-time-ago underlay-time-ago--empty {className ?? ''}">—</span>
 {/if}
 
 <style>
-  .time-ago {
+  .underlay-time-ago {
     text-decoration: underline;
     text-decoration-style: dotted;
     text-underline-offset: 2px;
     text-decoration-color: var(--underlay-color-text-muted, #9ca3af);
   }
 
-  .time-ago:hover {
+  .underlay-time-ago:hover {
     text-decoration-color: var(--underlay-color-text, #e5e7eb);
   }
 
-  .time-ago--empty {
+  .underlay-time-ago--empty {
     text-decoration: none;
     color: var(--underlay-color-text-muted, #9ca3af);
   }

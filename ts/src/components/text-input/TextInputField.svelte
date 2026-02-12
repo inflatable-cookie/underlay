@@ -166,7 +166,6 @@
   .underlay-input-wrapper--prefixed {
     display: flex;
     align-items: stretch;
-    border: var(--underlay-field-border-width, 1px) solid var(--underlay-color-border, rgba(148, 163, 184, 0.35));
     border-radius: var(--underlay-radius-sm, 0.35rem);
     background: var(--underlay-color-field-bg, rgba(148, 163, 184, 0.08));
   }
@@ -203,7 +202,6 @@
     font-weight: 600;
     color: var(--underlay-color-text-muted, #9ca3af);
     background: var(--underlay-color-field-bg, rgba(148, 163, 184, 0.08));
-    border-right: 1px solid var(--underlay-color-border, rgba(148, 163, 184, 0.35));
     border-radius: var(--underlay-radius-sm, 0.35rem) 0 0 var(--underlay-radius-sm, 0.35rem);
     user-select: none;
     white-space: nowrap;

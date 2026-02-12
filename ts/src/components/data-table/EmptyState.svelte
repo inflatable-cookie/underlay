@@ -12,7 +12,7 @@
   }: Props = $props();
 </script>
 
-<div class="empty-state" role="row">
+<div class="underlay-empty-state" role="row">
   {#if empty}
     {@render empty()}
   {:else}
@@ -21,7 +21,7 @@
 </div>
 
 <style>
-  .empty-state {
+  .underlay-empty-state {
     padding: 3rem;
     text-align: center;
     color: var(--color-text-muted, #64748b);

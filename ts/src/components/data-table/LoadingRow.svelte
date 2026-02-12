@@ -15,19 +15,19 @@
   }: Props = $props();
 </script>
 
-<div class="table-row" role="row">
+<div class="underlay-table-row" role="row">
   {#if selectable}
-    <div class="table-cell checkbox-cell" role="cell">
+    <div class="underlay-table-cell underlay-checkbox-cell" role="cell">
       <Skeleton variant="button" width="16px" height="16px" />
     </div>
   {/if}
   {#each visibleColumns as column}
-    <div class="table-cell" class:hide-mobile={column.hideOnMobile} role="cell">
+    <div class="underlay-table-cell" class:underlay-hide-mobile={column.hideOnMobile} role="cell">
       <Skeleton variant="text" />
     </div>
   {/each}
   {#if showActions}
-    <div class="table-cell actions-cell" role="cell">
+    <div class="underlay-table-cell underlay-actions-cell" role="cell">
       <Skeleton variant="button" width="24px" height="24px" />
     </div>
   {/if}

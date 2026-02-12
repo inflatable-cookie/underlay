@@ -13,12 +13,12 @@
   }: Props = $props();
 </script>
 
-<div class="details-card {className ?? ''}">
+<div class="underlay-details-card {className ?? ''}">
   {@render children()}
 </div>
 
 <style>
-  .details-card {
+  .underlay-details-card {
     display: flex;
     flex-wrap: wrap;
     gap: 1.5rem 2rem;
@@ -29,21 +29,21 @@
     container-type: inline-size;
   }
 
-  .details-card > :global(*) {
+  .underlay-details-card > :global(*) {
     flex: 1 1 45%;
   }
 
   /* Span both columns when alone in a 2-col grid row */
-  .details-card:last-child:nth-child(odd) {
+  .underlay-details-card:last-child:nth-child(odd) {
     grid-column: 1 / -1;
   }
 
   @container (max-width: 700px) {
-    .details-card {
+    .underlay-details-card {
       flex-direction: column;
     }
 
-    .details-card > :global(*) {
+    .underlay-details-card > :global(*) {
       flex: 1 1 100%;
     }
   }

@@ -42,8 +42,8 @@
   }: Props = $props();
 </script>
 
-<li class="log-entry">
-  <div class="log-entry__icon log-entry__icon--{actionType}">
+<li class="underlay-log-entry">
+  <div class="underlay-log-entry__icon underlay-log-entry__icon--{actionType}">
     {#if actionIcon}
       {@render actionIcon(actionType)}
     {:else if actionType === "create"}
@@ -67,12 +67,12 @@
     {/if}
   </div>
 
-  <div class="log-entry__body">
-    <div class="log-entry__main">
-      <span class="log-entry__actor">
+  <div class="underlay-log-entry__body">
+    <div class="underlay-log-entry__main">
+      <span class="underlay-log-entry__actor">
         {#if entry.actor}
           {#if actorHref}
-            <a href={actorHref} class="log-entry__actor-link">{actorName}</a>
+            <a href={actorHref} class="underlay-log-entry__actor-link">{actorName}</a>
           {:else}
             {actorName}
           {/if}
@@ -84,51 +84,51 @@
         {actionLabel}
       </Badge>
       {#if resourceHref}
-        <a href={resourceHref} class="log-entry__resource-link">
+        <a href={resourceHref} class="underlay-log-entry__resource-link">
           {resourceTypeLabel}
           {#if entry.resourceLabel}
-            <span class="log-entry__resource-label">"{entry.resourceLabel}"</span>
+            <span class="underlay-log-entry__resource-label">"{entry.resourceLabel}"</span>
           {/if}
         </a>
       {:else}
-        <span class="log-entry__resource-type">
+        <span class="underlay-log-entry__resource-type">
           {resourceTypeLabel}
         </span>
         {#if entry.resourceLabel}
-          <span class="log-entry__resource-label">"{entry.resourceLabel}"</span>
+          <span class="underlay-log-entry__resource-label">"{entry.resourceLabel}"</span>
         {/if}
       {/if}
     </div>
 
     {#if entryDetails}
-      <div class="log-entry__details">
+      <div class="underlay-log-entry__details">
         {@render entryDetails(entry)}
       </div>
     {/if}
 
-    <time class="log-entry__time" datetime={entry.occurredAt}>
+    <time class="underlay-log-entry__time" datetime={entry.occurredAt}>
       {formatRelative(entry.occurredAt)}
     </time>
   </div>
 </li>
 
 <style>
-  .log-entry {
+  .underlay-log-entry {
     display: flex;
     gap: 0.75rem;
     padding: 0.875rem 1rem;
     border-bottom: 1px solid var(--underlay-color-border-subtle, #334155);
   }
 
-  .log-entry:last-child {
+  .underlay-log-entry:last-child {
     border-bottom: none;
   }
 
-  .log-entry:hover {
+  .underlay-log-entry:hover {
     background: var(--underlay-color-surface-hover, rgba(255, 255, 255, 0.02));
   }
 
-  .log-entry__icon {
+  .underlay-log-entry__icon {
     width: 1.75rem;
     height: 1.75rem;
     border-radius: 50%;
@@ -140,43 +140,43 @@
     color: var(--underlay-color-text-muted, #94a3b8);
   }
 
-  .log-entry__icon--create {
+  .underlay-log-entry__icon--create {
     background: rgba(34, 197, 94, 0.15);
     color: #22c55e;
   }
 
-  .log-entry__icon--update {
+  .underlay-log-entry__icon--update {
     background: rgba(59, 130, 246, 0.15);
     color: #3b82f6;
   }
 
-  .log-entry__icon--delete {
+  .underlay-log-entry__icon--delete {
     background: rgba(239, 68, 68, 0.15);
     color: #ef4444;
   }
 
-  .log-entry__icon--restore {
+  .underlay-log-entry__icon--restore {
     background: rgba(34, 197, 94, 0.15);
     color: #22c55e;
   }
 
-  .log-entry__icon--upload {
+  .underlay-log-entry__icon--upload {
     background: rgba(168, 85, 247, 0.15);
     color: #a855f7;
   }
 
-  .log-entry__icon--login,
-  .log-entry__icon--logout {
+  .underlay-log-entry__icon--login,
+  .underlay-log-entry__icon--logout {
     background: rgba(148, 163, 184, 0.15);
     color: #94a3b8;
   }
 
-  .log-entry__icon--security {
+  .underlay-log-entry__icon--security {
     background: rgba(245, 158, 11, 0.15);
     color: #f59e0b;
   }
 
-  .log-entry__body {
+  .underlay-log-entry__body {
     flex: 1;
     min-width: 0;
     display: flex;
@@ -184,7 +184,7 @@
     gap: 0.25rem;
   }
 
-  .log-entry__main {
+  .underlay-log-entry__main {
     display: flex;
     align-items: center;
     gap: 0.375rem;
@@ -193,50 +193,50 @@
     line-height: 1.4;
   }
 
-  .log-entry__actor {
+  .underlay-log-entry__actor {
     font-weight: 500;
     color: var(--underlay-color-text, #f1f5f9);
   }
 
-  .log-entry__actor-link {
+  .underlay-log-entry__actor-link {
     color: inherit;
     text-decoration: none;
   }
 
-  .log-entry__actor-link:hover {
+  .underlay-log-entry__actor-link:hover {
     text-decoration: underline;
     color: var(--underlay-color-primary, #3b82f6);
   }
 
-  .log-entry__resource-type {
+  .underlay-log-entry__resource-type {
     color: var(--underlay-color-text-muted, #94a3b8);
   }
 
-  .log-entry__resource-link {
+  .underlay-log-entry__resource-link {
     color: var(--underlay-color-text-muted, #94a3b8);
     text-decoration: none;
   }
 
-  .log-entry__resource-link:hover {
+  .underlay-log-entry__resource-link:hover {
     text-decoration: underline;
     color: var(--underlay-color-primary, #3b82f6);
   }
 
-  .log-entry__resource-link .log-entry__resource-label {
+  .underlay-log-entry__resource-link .underlay-log-entry__resource-label {
     color: inherit;
   }
 
-  .log-entry__resource-label {
+  .underlay-log-entry__resource-label {
     color: var(--underlay-color-text-secondary, #cbd5e1);
     font-style: italic;
   }
 
-  .log-entry__details {
+  .underlay-log-entry__details {
     font-size: 0.8125rem;
     color: var(--underlay-color-text-muted, #94a3b8);
   }
 
-  .log-entry__time {
+  .underlay-log-entry__time {
     font-size: 0.75rem;
     color: var(--underlay-color-text-muted, #64748b);
   }

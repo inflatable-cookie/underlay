@@ -177,7 +177,7 @@
   }
 </script>
 
-<div class="log-list" class:log-list--loading={loading}>
+<div class="underlay-log-list" class:underlay-log-list--loading={loading}>
   <!-- Filter bar -->
   {#if showToolbar}
     <LogListToolbar
@@ -192,7 +192,7 @@
   {/if}
 
   <!-- Content -->
-  <div class="log-list__content">
+  <div class="underlay-log-list__content">
     {#if loading || error || entries.length === 0}
       <LogListStatus
         {loading}
@@ -201,7 +201,7 @@
         {emptyMessage}
       />
     {:else}
-      <ul class="log-list__entries">
+      <ul class="underlay-log-list__entries">
         {#each entries as entry (entry.id)}
           {@const actionType = getActionType(entry.action)}
           {@const actorName = entry.actor?.name ?? entry.actor?.email ?? (entry.actor ? `User ${entry.actor.id.slice(0, 8)}` : "System")}
@@ -237,7 +237,7 @@
 </div>
 
 <style>
-  .log-list {
+  .underlay-log-list {
     display: flex;
     flex-direction: column;
     gap: 0;
@@ -247,18 +247,18 @@
     overflow: hidden;
   }
 
-  .log-list--loading {
+  .underlay-log-list--loading {
     opacity: 0.7;
     pointer-events: none;
   }
 
   /* Content */
-  .log-list__content {
+  .underlay-log-list__content {
     min-height: 200px;
   }
 
   /* Entries */
-  .log-list__entries {
+  .underlay-log-list__entries {
     list-style: none;
     margin: 0;
     padding: 0;

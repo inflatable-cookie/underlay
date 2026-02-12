@@ -25,25 +25,25 @@
   }: Props = $props();
 </script>
 
-<div class="browse-content">
+<div class="underlay-browse-content">
   {#if loading && items.length === 0}
     <PageLoading message="Loading media..." />
   {:else if error}
     <FormError message={error} />
   {:else if items.length === 0}
-    <div class="empty-state">
+    <div class="underlay-empty-state">
       <Image size={32} />
       <p>No media found</p>
     </div>
   {:else}
-    <div class="media-grid">
+    <div class="underlay-media-grid">
       {#each items as item}
         <MediaBrowseItem {item} onSelect={onSelectMedia} />
       {/each}
     </div>
 
     {#if hasMore}
-      <div class="load-more">
+      <div class="underlay-load-more">
         <Button
           variant="secondary"
           onclick={onLoadMore}
@@ -57,18 +57,18 @@
 </div>
 
 <style>
-  .browse-content {
+  .underlay-browse-content {
     min-height: 300px;
   }
 
-  .media-grid {
+  .underlay-media-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
     gap: 0.75rem;
     margin-top: 1rem;
   }
 
-  .empty-state {
+  .underlay-empty-state {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -77,7 +77,7 @@
     color: var(--underlay-color-text-muted, #9ca3af);
   }
 
-  .load-more {
+  .underlay-load-more {
     display: flex;
     justify-content: center;
     margin-top: 1rem;

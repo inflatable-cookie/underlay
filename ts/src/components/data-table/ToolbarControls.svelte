@@ -27,21 +27,21 @@
 </script>
 
 {#if showColumnToggle && hideableColumns.length > 0}
-  <div class="column-toggle">
+  <div class="underlay-column-toggle">
     <button
       type="button"
-      class="toolbar-button"
+      class="underlay-toolbar-button"
       onclick={onToggleColumnMenu}
       aria-expanded={showColumnMenu}
       aria-haspopup="true"
     >
-      <span class="toolbar-icon">☰</span>
+      <span class="underlay-toolbar-icon">☰</span>
       Columns
     </button>
     {#if showColumnMenu}
-      <div class="column-menu" role="menu">
+      <div class="underlay-column-menu" role="menu">
         {#each hideableColumns as column}
-          <label class="column-menu-item">
+          <label class="underlay-column-menu-item">
             <input
               type="checkbox"
               checked={!hiddenColumns.has(column.key)}
@@ -56,7 +56,7 @@
 {/if}
 
 <style>
-  .toolbar-button {
+  .underlay-toolbar-button {
     display: inline-flex;
     align-items: center;
     gap: var(--underlay-space-1, 0.25rem);
@@ -70,25 +70,25 @@
     white-space: nowrap;
   }
 
-  .toolbar-button:hover:not(:disabled) {
+  .underlay-toolbar-button:hover:not(:disabled) {
     background: var(--dt-row-hover);
   }
 
-  .toolbar-button:disabled {
+  .underlay-toolbar-button:disabled {
     opacity: 0.5;
     cursor: not-allowed;
   }
 
-  .toolbar-icon {
+  .underlay-toolbar-icon {
     font-size: inherit;
     line-height: 1;
   }
 
-  .column-toggle {
+  .underlay-column-toggle {
     position: relative;
   }
 
-  .column-menu {
+  .underlay-column-menu {
     position: absolute;
     top: calc(100% + var(--underlay-space-1, 0.25rem));
     right: 0;
@@ -103,7 +103,7 @@
     padding: var(--underlay-space-1, 0.25rem);
   }
 
-  .column-menu-item {
+  .underlay-column-menu-item {
     display: flex;
     align-items: center;
     gap: var(--underlay-space-2, 0.5rem);
@@ -114,18 +114,18 @@
     font-size: calc(1em * var(--underlay-font-scale-sm, 0.875));
   }
 
-  .column-menu-item:hover {
+  .underlay-column-menu-item:hover {
     background: var(--dt-row-hover);
   }
 
-  .column-menu-item input {
+  .underlay-column-menu-item input {
     cursor: pointer;
   }
 </style>
 
 {#if showExport}
-  <button type="button" class="toolbar-button" onclick={onExport} disabled={dataLength === 0}>
-    <span class="toolbar-icon">↓</span>
+  <button type="button" class="underlay-toolbar-button" onclick={onExport} disabled={dataLength === 0}>
+    <span class="underlay-toolbar-icon">↓</span>
     Export CSV
   </button>
 {/if}

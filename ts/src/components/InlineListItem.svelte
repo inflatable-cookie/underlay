@@ -64,81 +64,81 @@
 </script>
 
 {#snippet labelContent()}
-  <div class="inline-list-item__label-group">
-    <span class="inline-list-item__label">{label}</span>
+  <div class="underlay-inline-list-item__label-group">
+    <span class="underlay-inline-list-item__label">{label}</span>
     {#if sublabelContent}
-      <span class="inline-list-item__sublabel">{@render sublabelContent()}</span>
+      <span class="underlay-inline-list-item__sublabel">{@render sublabelContent()}</span>
     {:else if sublabel}
-      <span class="inline-list-item__sublabel">{sublabel}</span>
+      <span class="underlay-inline-list-item__sublabel">{sublabel}</span>
     {/if}
   </div>
 {/snippet}
 
 <li
-  class="inline-list-item"
-  class:inline-list-item--has-actions={hasActions}
+  class="underlay-inline-list-item"
+  class:underlay-inline-list-item--has-actions={hasActions}
   style:--actions-width="{actionsWidth}px"
 >
   {#if href}
     <a
-      class="inline-list-item__content"
+      class="underlay-inline-list-item__content"
       {href}
       onclick={onclick ?? undefined}
     >
       <span
-        class="inline-list-item__dot"
+        class="underlay-inline-list-item__dot"
         style:--inline-list-item-accent={accent}
       ></span>
       {@render labelContent()}
       {#if badge}
-        <span class="inline-list-item__badge">
+        <span class="underlay-inline-list-item__badge">
           {@render badge()}
         </span>
       {/if}
       {#if trailing}
-        <span class="inline-list-item__trailing">
+        <span class="underlay-inline-list-item__trailing">
           {@render trailing()}
         </span>
       {/if}
     </a>
   {:else if onclick}
     <div
-      class="inline-list-item__content inline-list-item__content--clickable"
+      class="underlay-inline-list-item__content underlay-inline-list-item__content--clickable"
       role="button"
       tabindex={0}
       onclick={onclick}
       onkeydown={handleKeydown}
     >
       <span
-        class="inline-list-item__dot"
+        class="underlay-inline-list-item__dot"
         style:--inline-list-item-accent={accent}
       ></span>
       {@render labelContent()}
       {#if badge}
-        <span class="inline-list-item__badge">
+        <span class="underlay-inline-list-item__badge">
           {@render badge()}
         </span>
       {/if}
       {#if trailing}
-        <span class="inline-list-item__trailing">
+        <span class="underlay-inline-list-item__trailing">
           {@render trailing()}
         </span>
       {/if}
     </div>
   {:else}
-    <div class="inline-list-item__content">
+    <div class="underlay-inline-list-item__content">
       <span
-        class="inline-list-item__dot"
+        class="underlay-inline-list-item__dot"
         style:--inline-list-item-accent={accent}
       ></span>
       {@render labelContent()}
       {#if badge}
-        <span class="inline-list-item__badge">
+        <span class="underlay-inline-list-item__badge">
           {@render badge()}
         </span>
       {/if}
       {#if trailing}
-        <span class="inline-list-item__trailing">
+        <span class="underlay-inline-list-item__trailing">
           {@render trailing()}
         </span>
       {/if}
@@ -146,14 +146,14 @@
   {/if}
 
   {#if hasActions}
-    <div class="inline-list-item__actions" bind:clientWidth={actionsWidth}>
+    <div class="underlay-inline-list-item__actions" bind:clientWidth={actionsWidth}>
       {#if actions}
         {@render actions()}
       {/if}
       {#if showDelete && ondelete}
         <button
           type="button"
-          class="inline-list-item__delete"
+          class="underlay-inline-list-item__delete"
           onclick={handleDelete}
           aria-label="Delete {label}"
         >
@@ -165,7 +165,7 @@
 </li>
 
 <style>
-  .inline-list-item {
+  .underlay-inline-list-item {
     position: relative;
     display: flex;
     align-items: center;
@@ -176,11 +176,11 @@
     transition: background-color 0.1s ease;
   }
 
-  .inline-list-item:hover {
+  .underlay-inline-list-item:hover {
     background: var(--underlay-color-surface-hover, rgba(255, 255, 255, 0.04));
   }
 
-  .inline-list-item__content {
+  .underlay-inline-list-item__content {
     flex: 1;
     display: flex;
     align-items: center;
@@ -192,17 +192,17 @@
     border-radius: var(--underlay-radius-sm, 0.375rem);
   }
 
-  .inline-list-item__content--clickable {
+  .underlay-inline-list-item__content--clickable {
     cursor: pointer;
   }
 
-  a.inline-list-item__content:focus-visible,
-  .inline-list-item__content--clickable:focus-visible {
+  a.underlay-inline-list-item__content:focus-visible,
+  .underlay-inline-list-item__content--clickable:focus-visible {
     outline: 2px solid var(--underlay-color-primary, #3b82f6);
     outline-offset: -2px;
   }
 
-  .inline-list-item__dot {
+  .underlay-inline-list-item__dot {
     --inline-list-item-accent: var(--underlay-color-primary, #3b82f6);
 
     width: 6px;
@@ -212,7 +212,7 @@
     flex-shrink: 0;
   }
 
-  .inline-list-item__label-group {
+  .underlay-inline-list-item__label-group {
     flex: 1;
     min-width: 0;
     display: flex;
@@ -220,7 +220,7 @@
     gap: 0.125rem;
   }
 
-  .inline-list-item__label {
+  .underlay-inline-list-item__label {
     font-size: 0.9rem;
     font-weight: 500;
     color: var(--underlay-color-text, #e5e7eb);
@@ -229,7 +229,7 @@
     white-space: nowrap;
   }
 
-  .inline-list-item__sublabel {
+  .underlay-inline-list-item__sublabel {
     font-size: 0.8rem;
     font-weight: 400;
     color: var(--underlay-color-text-muted, #9ca3af);
@@ -238,14 +238,14 @@
     white-space: nowrap;
   }
 
-  .inline-list-item__badge {
+  .underlay-inline-list-item__badge {
     display: flex;
     align-items: center;
     gap: 0.375rem;
     flex-shrink: 0;
   }
 
-  .inline-list-item__trailing {
+  .underlay-inline-list-item__trailing {
     display: flex;
     align-items: center;
     gap: 0.375rem;
@@ -255,7 +255,7 @@
   }
 
   /* Actions container - shows on hover */
-  .inline-list-item__actions {
+  .underlay-inline-list-item__actions {
     position: absolute;
     right: 0.375rem;
     top: 50%;
@@ -267,21 +267,21 @@
     transition: opacity 0.1s ease;
   }
 
-  .inline-list-item:hover .inline-list-item__actions {
+  .underlay-inline-list-item:hover .underlay-inline-list-item__actions {
     opacity: 1;
   }
 
-  .inline-list-item__actions:focus-within {
+  .underlay-inline-list-item__actions:focus-within {
     opacity: 1;
   }
 
   /* Make room for actions on hover */
-  .inline-list-item--has-actions:hover .inline-list-item__trailing {
+  .underlay-inline-list-item--has-actions:hover .underlay-inline-list-item__trailing {
     margin-right: calc(var(--actions-width, 0px) + 0.5rem);
   }
 
   /* Style for action buttons inside the actions container */
-  .inline-list-item__actions :global(button) {
+  .underlay-inline-list-item__actions :global(button) {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -296,28 +296,28 @@
     transition: background-color 0.1s ease, color 0.1s ease;
   }
 
-  .inline-list-item__actions :global(button:hover) {
+  .underlay-inline-list-item__actions :global(button:hover) {
     background: var(--underlay-color-surface-hover, rgba(255, 255, 255, 0.08));
     color: var(--underlay-color-text, #e5e7eb);
   }
 
-  .inline-list-item__actions :global(button:disabled) {
+  .underlay-inline-list-item__actions :global(button:disabled) {
     opacity: 0.4;
     cursor: not-allowed;
   }
 
-  .inline-list-item__actions :global(button:disabled:hover) {
+  .underlay-inline-list-item__actions :global(button:disabled:hover) {
     background: transparent;
     color: var(--underlay-color-text-muted, #9ca3af);
   }
 
-  .inline-list-item__actions :global(button:focus-visible) {
+  .underlay-inline-list-item__actions :global(button:focus-visible) {
     outline: 2px solid var(--underlay-color-primary, #3b82f6);
     outline-offset: -2px;
   }
 
   /* Built-in delete button styling */
-  .inline-list-item__delete {
+  .underlay-inline-list-item__delete {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -332,12 +332,12 @@
     transition: background-color 0.1s ease, color 0.1s ease;
   }
 
-  .inline-list-item__delete:hover {
+  .underlay-inline-list-item__delete:hover {
     background: var(--underlay-color-danger-muted, rgba(239, 68, 68, 0.15));
     color: var(--underlay-color-danger, #ef4444);
   }
 
-  .inline-list-item__delete:focus-visible {
+  .underlay-inline-list-item__delete:focus-visible {
     outline: 2px solid var(--underlay-color-danger, #ef4444);
     outline-offset: -2px;
   }

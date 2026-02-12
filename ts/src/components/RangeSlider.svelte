@@ -123,6 +123,13 @@
     return (index / maxIndex) * 100;
   });
 
+  const thumbLeft = $derived.by(() => {
+    if (maxIndex <= 0) return "0.5em";
+    const index = Math.max(selectedIndex, 0);
+    const ratio = index / maxIndex;
+    return `calc(0.5em + (100% - 1em) * ${ratio})`;
+  });
+
   let prevValue = $state("");
 
   function registerField() {
@@ -208,26 +215,30 @@
 
 <div
   class={`underlay-range-slider ${className ?? ""}`}
-  style={`--underlay-range-slider-progress: ${progressPercent}%; --underlay-range-slider-accent: ${selectedAccentColor}; --underlay-range-slider-halo: ${selectedAccentHalo};`}
+  style={`--underlay-range-slider-accent: ${selectedAccentColor}; --underlay-range-slider-halo: ${selectedAccentHalo};`}
 >
   <div class="underlay-range-slider__row">
-    <input
-      id={id}
-      type="range"
-      class="underlay-range-slider__input"
-      min="0"
-      max={maxIndex}
-      step="1"
-      value={Math.max(selectedIndex, 0)}
-      disabled={disabled || normalizedOptions.length <= 1}
-      aria-label={ariaLabel ?? name ?? "Range slider"}
-      aria-valuemin={0}
-      aria-valuemax={maxIndex}
-      aria-valuenow={Math.max(selectedIndex, 0)}
-      aria-valuetext={selectedOption?.label ?? ""}
-      oninput={handleInput}
-      onchange={handleChange}
-    />
+    <div class="underlay-range-slider__control">
+      <input
+        id={id}
+        type="range"
+        class="underlay-range-slider__input"
+        min="0"
+        max={maxIndex}
+        step="1"
+        value={Math.max(selectedIndex, 0)}
+        disabled={disabled || normalizedOptions.length <= 1}
+        aria-label={ariaLabel ?? name ?? "Range slider"}
+        aria-valuemin={0}
+        aria-valuemax={maxIndex}
+        aria-valuenow={Math.max(selectedIndex, 0)}
+        aria-valuetext={selectedOption?.label ?? ""}
+        style={`--underlay-range-slider-progress: ${progressPercent}%;`}
+        oninput={handleInput}
+        onchange={handleChange}
+      />
+      <span class="underlay-range-slider__thumb" style={`left: ${thumbLeft};`} aria-hidden="true"></span>
+    </div>
 
     {#if showValue}
       <div class="underlay-range-slider__value" aria-live="polite">
@@ -248,10 +259,22 @@
     initial-value: 0%;
   }
 
+  @property --underlay-range-slider-accent {
+    syntax: "<color>";
+    inherits: true;
+    initial-value: #2563eb;
+  }
+
+  @property --underlay-range-slider-halo {
+    syntax: "<color>";
+    inherits: true;
+    initial-value: rgba(37, 99, 235, 0.2);
+  }
+
   .underlay-range-slider {
     display: block;
     width: 100%;
-    transition: --underlay-range-slider-progress 180ms ease;
+    transition: --underlay-range-slider-accent 180ms ease, --underlay-range-slider-halo 180ms ease;
   }
 
   .underlay-range-slider__row {
@@ -259,6 +282,13 @@
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
     gap: var(--underlay-space-2, 0.5rem);
+  }
+
+  .underlay-range-slider__control {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
   }
 
   .underlay-range-slider__value {
@@ -284,16 +314,24 @@
     height: 0.5rem;
     border-radius: var(--underlay-radius-pill, 999px);
     outline: none;
-    background:
+    background-image:
       linear-gradient(
-        to right,
-        var(--underlay-range-slider-accent, var(--underlay-color-primary, #2563eb)) 0%,
-        var(--underlay-range-slider-accent, var(--underlay-color-primary, #2563eb)) var(--underlay-range-slider-progress, 50%),
-        var(--underlay-color-field-bg, rgba(148, 163, 184, 0.24)) var(--underlay-range-slider-progress, 50%),
-        var(--underlay-color-field-bg, rgba(148, 163, 184, 0.24)) 100%
+        var(--underlay-range-slider-accent, var(--underlay-color-primary, #2563eb)),
+        var(--underlay-range-slider-accent, var(--underlay-color-primary, #2563eb))
+      ),
+      linear-gradient(
+        var(--underlay-range-slider-track-bg, rgba(255, 255, 255, 0.4)),
+        var(--underlay-range-slider-track-bg, rgba(255, 255, 255, 0.4))
       );
+    background-repeat: no-repeat;
+    background-position: left center, left center;
+    background-size: var(--underlay-range-slider-progress, 0%) 100%, 100% 100%;
     cursor: pointer;
-    transition: background 180ms ease, opacity 120ms ease;
+    transition:
+      background-size 180ms ease,
+      opacity 120ms ease,
+      --underlay-range-slider-accent 180ms ease,
+      --underlay-range-slider-halo 180ms ease;
   }
 
   .underlay-range-slider__input:focus-visible {
@@ -306,37 +344,53 @@
     appearance: none;
     width: 1rem;
     height: 1rem;
-    border: 2px solid var(--underlay-range-slider-accent, var(--underlay-color-primary, #2563eb));
+    border: 0;
     border-radius: var(--underlay-radius-pill, 999px);
-    background: var(--underlay-color-surface, #0f172a);
-    box-shadow: 0 0 0 2px var(--underlay-range-slider-halo, rgba(37, 99, 235, 0.2));
-    transition:
-      transform 0.15s ease,
-      border-color 0.18s ease,
-      box-shadow 0.18s ease,
-      background-color 0.18s ease;
-  }
-
-  .underlay-range-slider__input:hover::-webkit-slider-thumb {
-    transform: scale(1.05);
+    background: transparent;
+    box-shadow: none;
+    opacity: 0;
+    transition: none;
   }
 
   .underlay-range-slider__input::-moz-range-thumb {
     width: 1rem;
     height: 1rem;
-    border: 2px solid var(--underlay-range-slider-accent, var(--underlay-color-primary, #2563eb));
+    border: 0;
     border-radius: var(--underlay-radius-pill, 999px);
-    background: var(--underlay-color-surface, #0f172a);
-    box-shadow: 0 0 0 2px var(--underlay-range-slider-halo, rgba(37, 99, 235, 0.2));
-    transition:
-      transform 0.15s ease,
-      border-color 0.18s ease,
-      box-shadow 0.18s ease,
-      background-color 0.18s ease;
+    background: transparent;
+    box-shadow: none;
+    opacity: 0;
+    transition: none;
   }
 
-  .underlay-range-slider__input:hover::-moz-range-thumb {
-    transform: scale(1.05);
+  .underlay-range-slider__thumb {
+    position: absolute;
+    top: 50%;
+    left: 0%;
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid var(--underlay-range-slider-accent, var(--underlay-color-primary, #2563eb));
+    border-radius: var(--underlay-radius-pill, 999px);
+    background: var(--underlay-range-slider-puck-bg, var(--underlay-color-surface, #0f172a));
+    box-shadow: 0 0 0 2px var(--underlay-range-slider-halo, rgba(37, 99, 235, 0.2));
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    transition:
+      left 180ms ease,
+      transform 150ms ease,
+      border-color 180ms ease,
+      box-shadow 180ms ease,
+      background-color 180ms ease,
+      --underlay-range-slider-accent 180ms ease,
+      --underlay-range-slider-halo 180ms ease;
+  }
+
+  .underlay-range-slider__control:hover .underlay-range-slider__thumb {
+    transform: translate(-50%, -50%) scale(1.05);
+  }
+
+  .underlay-range-slider__input:disabled + .underlay-range-slider__thumb {
+    opacity: 0.55;
   }
 
   .underlay-range-slider__input::-moz-range-track {

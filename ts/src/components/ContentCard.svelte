@@ -84,14 +84,14 @@
   }
 </script>
 
-<div class="content-card">
+<div class="underlay-content-card">
   {#if hasTitle}
-    <h4 class="content-card__title">{title}</h4>
+    <h4 class="underlay-content-card__title">{title}</h4>
   {/if}
   <div
-    class="content-card__body"
-    class:content-card__body--collapsed={!isExpanded && isOverflowing && maxHeightNumber > 0 && overflowBehavior === "reveal"}
-    class:content-card__body--scroll={maxHeightCss !== "0px" && maxHeightCss !== "0" && overflowBehavior === "scroll"}
+    class="underlay-content-card__body"
+    class:underlay-content-card__body--collapsed={!isExpanded && isOverflowing && maxHeightNumber > 0 && overflowBehavior === "reveal"}
+    class:underlay-content-card__body--scroll={maxHeightCss !== "0px" && maxHeightCss !== "0" && overflowBehavior === "scroll"}
     style:--content-card-max-height={maxHeightCss}
     bind:this={contentEl}
   >
@@ -102,13 +102,13 @@
         {@html renderedHtml}
       {/if}
     {:else}
-      <p class="content-card__empty">{emptyMessage}</p>
+      <p class="underlay-content-card__empty">{emptyMessage}</p>
     {/if}
   </div>
   {#if overflowBehavior === "reveal" && isOverflowing && maxHeightNumber > 0}
     <button
       type="button"
-      class="content-card__toggle"
+      class="underlay-content-card__toggle"
       onclick={toggleExpanded}
     >
       {isExpanded ? "Show less" : "Show more"}
@@ -117,7 +117,7 @@
 </div>
 
 <style>
-  .content-card {
+  .underlay-content-card {
     max-width: 65ch;
     padding: 1.25rem 1.5rem;
     background: var(--underlay-color-surface-muted, rgba(255, 255, 255, 0.02));
@@ -125,7 +125,7 @@
     border-radius: var(--underlay-radius-lg, 0.75rem);
   }
 
-  .content-card__title {
+  .underlay-content-card__title {
     margin: 0 0 0.75rem;
     font-size: 0.75rem;
     font-weight: 600;
@@ -134,64 +134,64 @@
     color: var(--underlay-color-text-muted, rgba(148, 163, 184, 0.85));
   }
 
-  .content-card__body {
+  .underlay-content-card__body {
     margin: 0;
     line-height: 1.6;
     color: var(--underlay-color-text, #e5e7eb);
   }
 
-  .content-card__body--collapsed {
+  .underlay-content-card__body--collapsed {
     max-height: var(--content-card-max-height, 200px);
     overflow: hidden;
     mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
     -webkit-mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
   }
 
-  .content-card__body--scroll {
+  .underlay-content-card__body--scroll {
     max-height: var(--content-card-max-height, 200px);
     overflow: auto;
   }
 
-  .content-card__body :global(p:first-child) {
+  .underlay-content-card__body :global(p:first-child) {
     margin-top: 0;
   }
 
-  .content-card__body :global(p:last-child) {
+  .underlay-content-card__body :global(p:last-child) {
     margin-bottom: 0;
   }
 
-  .content-card__body :global(h1),
-  .content-card__body :global(h2),
-  .content-card__body :global(h3),
-  .content-card__body :global(h4),
-  .content-card__body :global(h5),
-  .content-card__body :global(h6) {
+  .underlay-content-card__body :global(h1),
+  .underlay-content-card__body :global(h2),
+  .underlay-content-card__body :global(h3),
+  .underlay-content-card__body :global(h4),
+  .underlay-content-card__body :global(h5),
+  .underlay-content-card__body :global(h6) {
     margin-top: 1.25em;
     margin-bottom: 0.5em;
     font-weight: 600;
     line-height: 1.3;
   }
 
-  .content-card__body :global(h1:first-child),
-  .content-card__body :global(h2:first-child),
-  .content-card__body :global(h3:first-child),
-  .content-card__body :global(h4:first-child),
-  .content-card__body :global(h5:first-child),
-  .content-card__body :global(h6:first-child) {
+  .underlay-content-card__body :global(h1:first-child),
+  .underlay-content-card__body :global(h2:first-child),
+  .underlay-content-card__body :global(h3:first-child),
+  .underlay-content-card__body :global(h4:first-child),
+  .underlay-content-card__body :global(h5:first-child),
+  .underlay-content-card__body :global(h6:first-child) {
     margin-top: 0;
   }
 
-  .content-card__body :global(ul),
-  .content-card__body :global(ol) {
+  .underlay-content-card__body :global(ul),
+  .underlay-content-card__body :global(ol) {
     padding-left: 1.5em;
     margin: 0.75em 0;
   }
 
-  .content-card__body :global(li) {
+  .underlay-content-card__body :global(li) {
     margin: 0.25em 0;
   }
 
-  .content-card__body :global(code) {
+  .underlay-content-card__body :global(code) {
     font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, monospace;
     font-size: 0.9em;
     background: rgba(148, 163, 184, 0.1);
@@ -200,7 +200,7 @@
     padding: 0.1em 0.4em;
   }
 
-  .content-card__body :global(pre) {
+  .underlay-content-card__body :global(pre) {
     background: rgba(0, 0, 0, 0.2);
     border-radius: 0.5rem;
     padding: 1rem;
@@ -208,27 +208,27 @@
     margin: 0.75em 0;
   }
 
-  .content-card__body :global(pre code) {
+  .underlay-content-card__body :global(pre code) {
     background: none;
     border: none;
     padding: 0;
   }
 
-  .content-card__body :global(blockquote) {
+  .underlay-content-card__body :global(blockquote) {
     border-left: 3px solid var(--underlay-color-border-subtle, rgba(148, 163, 184, 0.3));
     padding-left: 1rem;
     margin: 0.75em 0;
     color: var(--underlay-color-text-muted, rgba(148, 163, 184, 0.85));
   }
 
-  .content-card__empty {
+  .underlay-content-card__empty {
     margin: 0;
     font-size: 0.9em;
     font-style: italic;
     color: var(--underlay-color-text-muted, rgba(148, 163, 184, 0.7));
   }
 
-  .content-card__toggle {
+  .underlay-content-card__toggle {
     display: block;
     margin-top: 0.75rem;
     padding: 0;
@@ -241,11 +241,11 @@
     transition: color 0.15s ease;
   }
 
-  .content-card__toggle:hover {
+  .underlay-content-card__toggle:hover {
     color: var(--underlay-color-primary-hover, #2563eb);
   }
 
-  .content-card__toggle:focus-visible {
+  .underlay-content-card__toggle:focus-visible {
     outline: 2px solid var(--underlay-color-primary, #3b82f6);
     outline-offset: 2px;
     border-radius: 2px;

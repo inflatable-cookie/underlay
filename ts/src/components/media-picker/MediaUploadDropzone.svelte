@@ -26,24 +26,24 @@
 </script>
 
 <div
-  class="dropzone"
-  class:dropzone--has-file={selectedFile}
-  class:dropzone--has-error={hasError}
+  class="underlay-dropzone"
+  class:underlay-dropzone--has-file={selectedFile}
+  class:underlay-dropzone--has-error={hasError}
   ondrop={onDrop}
   ondragover={onDragOver}
   role="button"
   tabindex="0"
 >
   {#if selectedFile}
-    <div class="selected-file">
+    <div class="underlay-selected-file">
       {#if selectedFile.type.startsWith("image/")}
         <Image size={32} />
       {:else}
         <FileText size={32} />
       {/if}
-      <div class="selected-file__info">
-        <span class="selected-file__name">{selectedFile.name}</span>
-        <span class="selected-file__meta">
+      <div class="underlay-selected-file__info">
+        <span class="underlay-selected-file__name">{selectedFile.name}</span>
+        <span class="underlay-selected-file__meta">
           {getFileTypeDescription(selectedFile.type)} &middot; {formatFileSize(
             selectedFile.size
           )}
@@ -53,10 +53,10 @@
   {:else}
     <Upload size={32} />
     <p>Drop file here or click to browse</p>
-    <p class="dropzone__hint">Images and PDFs up to 25MB</p>
+    <p class="underlay-dropzone__hint">Images and PDFs up to 25MB</p>
     <input
       type="file"
-      class="dropzone__input"
+      class="underlay-dropzone__input"
       accept={ALLOWED_MEDIA_TYPES.join(",")}
       onchange={onFileSelect}
     />
@@ -64,7 +64,7 @@
 </div>
 
 <style>
-  .dropzone {
+  .underlay-dropzone {
     position: relative;
     display: flex;
     flex-direction: column;
@@ -81,26 +81,26 @@
     color: var(--underlay-color-text-muted, #9ca3af);
   }
 
-  .dropzone:hover {
+  .underlay-dropzone:hover {
     border-color: var(--underlay-color-primary, #3b82f6);
   }
 
-  .dropzone--has-file {
+  .underlay-dropzone--has-file {
     border-style: solid;
     border-color: var(--underlay-color-primary, #3b82f6);
     cursor: default;
   }
 
-  .dropzone--has-error {
+  .underlay-dropzone--has-error {
     border-color: var(--underlay-color-danger, #ef4444);
   }
 
-  .dropzone__hint {
+  .underlay-dropzone__hint {
     font-size: 0.75rem;
     opacity: 0.7;
   }
 
-  .dropzone__input {
+  .underlay-dropzone__input {
     position: absolute;
     inset: 0;
     width: 100%;
@@ -109,29 +109,29 @@
     cursor: pointer;
   }
 
-  .dropzone--has-file .dropzone__input {
+  .underlay-dropzone--has-file .underlay-dropzone__input {
     display: none;
   }
 
-  .selected-file {
+  .underlay-selected-file {
     display: flex;
     align-items: center;
     gap: 0.75rem;
     color: var(--underlay-color-text, #f3f4f6);
   }
 
-  .selected-file__info {
+  .underlay-selected-file__info {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
     gap: 0.125rem;
   }
 
-  .selected-file__name {
+  .underlay-selected-file__name {
     font-weight: 500;
   }
 
-  .selected-file__meta {
+  .underlay-selected-file__meta {
     font-size: 0.75rem;
     color: var(--underlay-color-text-muted, #9ca3af);
   }

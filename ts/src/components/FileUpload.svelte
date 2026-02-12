@@ -201,7 +201,11 @@
 	}
 </script>
 
-<div class="underlay-file-upload" class:disabled class:dragging={isDragging}>
+<div
+	class="underlay-file-upload"
+	class:underlay-disabled={disabled}
+	class:underlay-dragging={isDragging}
+>
 	<FileUploadDropzone
 		{accept}
 		{multiple}
@@ -221,7 +225,7 @@
 
 	<!-- File list -->
 	{#if files.length > 0}
-		<ul class="file-list" role="list">
+		<ul class="underlay-file-list" role="list">
 			{#each files as item (item.id)}
 				<FileUploadItemRow
 					{item}
@@ -235,14 +239,26 @@
 
 <style>
 	.underlay-file-upload {
-		--fu-border: var(--underlay-upload-border, 2px dashed var(--color-border, #e2e8f0));
-		--fu-border-active: var(--underlay-upload-border-active, 2px dashed var(--color-primary, #3b82f6));
-		--fu-bg: var(--underlay-upload-bg, var(--color-surface, #fff));
-		--fu-bg-hover: var(--underlay-upload-bg-hover, var(--color-surface-subtle, #f8fafc));
-		--fu-radius: var(--radius-lg, 0.5rem);
+		--fu-border: var(
+			--underlay-upload-border,
+			2px dashed var(--underlay-color-border-subtle, rgba(148, 163, 184, 0.35))
+		);
+		--fu-border-active: var(
+			--underlay-upload-border-active,
+			2px dashed var(--underlay-color-primary, #3b82f6)
+		);
+		--fu-bg: var(
+			--underlay-upload-bg,
+			var(--underlay-color-surface-raised, var(--underlay-color-surface-muted, rgba(255, 255, 255, 0.02)))
+		);
+		--fu-bg-hover: var(
+			--underlay-upload-bg-hover,
+			var(--underlay-color-surface-hover, rgba(148, 163, 184, 0.12))
+		);
+		--fu-radius: var(--underlay-upload-radius, var(--underlay-radius-lg, 0.5rem));
 	}
 
-	.file-list {
+	.underlay-file-list {
 		list-style: none;
 		margin: 1rem 0 0;
 		padding: 0;

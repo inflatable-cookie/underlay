@@ -56,12 +56,12 @@
     max-height: 60%;
   }
 
-  .underlay-list-card__media :global(.media-thumbnail) {
+  .underlay-list-card__media :global(.underlay-media-thumbnail) {
     width: 100%;
     height: 100%;
   }
 
-  .underlay-list-card__media :global(.media-thumbnail__image) {
+  .underlay-list-card__media :global(.underlay-media-thumbnail__image) {
     object-fit: cover;
   }
 

@@ -50,7 +50,7 @@
 
   .underlay-fieldset__fields {
     display: grid;
-    gap: var(--underlay-space-4, 1rem);
+    gap: var(--underlay-space-5, 1.25rem);
     grid-template-columns: minmax(0, 1fr);
     align-items: start;
     min-width: 0;

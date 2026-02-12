@@ -50,7 +50,7 @@
 	{...restProps}
 >
 	{#if icon}
-		<span class="badge-icon">{icon}</span>
+		<span class="underlay-badge-icon">{icon}</span>
 	{/if}
 	{@render children?.()}
 </span>
@@ -152,7 +152,7 @@
 		color: var(--underlay-color-badge-muted-text-dark, #64748b);
 	}
 
-	.badge-icon {
+	.underlay-badge-icon {
 		display: inline-flex;
 		font-size: 1em;
 	}

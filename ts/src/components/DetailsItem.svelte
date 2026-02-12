@@ -46,31 +46,31 @@
 </script>
 
 <div class={itemClass} {style}>
-  <dt class="details-item__label">{label}</dt>
-  <dd class="details-item__value">
+  <dt class="underlay-details-item__label">{label}</dt>
+  <dd class="underlay-details-item__value">
     {#if children}
       {@render children()}
     {:else if value !== null && value !== undefined}
       {#if code}
-        <code class="details-item__code">{value}</code>
+        <code class="underlay-details-item__code">{value}</code>
       {:else}
         {value}
       {/if}
     {:else}
-      <span class="details-item__empty">—</span>
+      <span class="underlay-details-item__empty">—</span>
     {/if}
   </dd>
 </div>
 
 <style>
-  .details-item {
+  .underlay-details-item {
     display: flex;
     flex-direction: column;
     gap: 0.35rem;
     min-width: 0;
   }
 
-  .details-item__label {
+  .underlay-details-item__label {
     font-size: 0.75rem;
     font-weight: 500;
     color: var(--underlay-color-text-muted, #64748b);
@@ -79,7 +79,7 @@
     line-height: 1.2;
   }
 
-  .details-item__value {
+  .underlay-details-item__value {
     margin: 0;
     font-size: 1rem;
     color: var(--underlay-color-text, #e5e7eb);
@@ -87,7 +87,7 @@
     word-break: break-word;
   }
 
-  .details-item__code {
+  .underlay-details-item__code {
     display: inline-block;
     font-family: var(--underlay-font-mono, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace);
     font-size: 0.875em;
@@ -98,11 +98,11 @@
     color: var(--underlay-color-text, #e5e7eb);
   }
 
-  .details-item__empty {
+  .underlay-details-item__empty {
     color: var(--underlay-color-text-muted, #64748b);
   }
 
-  .details-item--muted .details-item__value {
+  .underlay-details-item--muted .underlay-details-item__value {
     color: var(--underlay-color-text-muted, #64748b);
   }
 </style>

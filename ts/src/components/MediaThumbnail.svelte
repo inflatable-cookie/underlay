@@ -88,23 +88,23 @@
 </script>
 
 <div
-  class="media-thumbnail {className}"
-  class:media-thumbnail--has-image={!!thumbnailUrl}
-  class:media-thumbnail--has-accent={showAccent && !thumbnailUrl}
-  class:media-thumbnail--fill={isFillMode}
+  class="underlay-media-thumbnail {className}"
+  class:underlay-media-thumbnail--has-image={!!thumbnailUrl}
+  class:underlay-media-thumbnail--has-accent={showAccent && !thumbnailUrl}
+  class:underlay-media-thumbnail--fill={isFillMode}
   style={containerStyle || undefined}
 >
   {#if thumbnailUrl}
-    <img src={thumbnailUrl} {alt} class="media-thumbnail__image" />
+    <img src={thumbnailUrl} {alt} class="underlay-media-thumbnail__image" />
   {:else}
-    <div class="media-thumbnail__icon" style="color: {iconColor}">
+    <div class="underlay-media-thumbnail__icon" style="color: {iconColor}">
       <Icon size={iconSize} />
     </div>
   {/if}
 </div>
 
 <style>
-  .media-thumbnail {
+  .underlay-media-thumbnail {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -113,26 +113,26 @@
     flex-shrink: 0;
   }
 
-  .media-thumbnail--has-image {
+  .underlay-media-thumbnail--has-image {
     background-color: var(--underlay-color-surface-secondary, #f3f4f6);
   }
 
-  .media-thumbnail--has-accent {
+  .underlay-media-thumbnail--has-accent {
     background-color: transparent;
   }
 
-  .media-thumbnail--fill {
+  .underlay-media-thumbnail--fill {
     width: 100%;
     height: 100%;
   }
 
-  .media-thumbnail__image {
+  .underlay-media-thumbnail__image {
     width: 100%;
     height: 100%;
     object-fit: cover;
   }
 
-  .media-thumbnail__icon {
+  .underlay-media-thumbnail__icon {
     display: flex;
     align-items: center;
     justify-content: center;

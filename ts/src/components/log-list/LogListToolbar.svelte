@@ -37,12 +37,12 @@
   }
 </script>
 
-<div class="log-list__toolbar">
+<div class="underlay-log-list__toolbar">
   {#if hasFilters}
-    <div class="log-list__filters">
+    <div class="underlay-log-list__filters">
       {#each filters as filter}
-        <div class="log-list__filter">
-          <label class="log-list__filter-label" for="filter-{filter.field}">
+        <div class="underlay-log-list__filter">
+          <label class="underlay-log-list__filter-label" for="filter-{filter.field}">
             {filter.label}
           </label>
           {#if filter.type === "select" && filter.options}
@@ -75,7 +75,7 @@
     </div>
   {/if}
 
-  <div class="log-list__actions">
+  <div class="underlay-log-list__actions">
     {#if onRefresh}
       <Button
         variant="subtle"
@@ -84,7 +84,7 @@
         disabled={loading}
         title="Refresh"
       >
-        <span class={loading ? "spinning" : ""}>
+        <span class={loading ? "underlay-spinning" : ""}>
           <RefreshCw size={14} />
         </span>
       </Button>
@@ -99,7 +99,7 @@
 </div>
 
 <style>
-  .log-list__toolbar {
+  .underlay-log-list__toolbar {
     display: flex;
     align-items: flex-end;
     justify-content: space-between;
@@ -110,21 +110,21 @@
     flex-wrap: wrap;
   }
 
-  .log-list__filters {
+  .underlay-log-list__filters {
     display: flex;
     align-items: flex-end;
     gap: 0.75rem;
     flex-wrap: wrap;
   }
 
-  .log-list__filter {
+  .underlay-log-list__filter {
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
     min-width: 120px;
   }
 
-  .log-list__filter-label {
+  .underlay-log-list__filter-label {
     font-size: 0.7rem;
     font-weight: 500;
     color: var(--underlay-color-text-muted, #94a3b8);
@@ -132,18 +132,18 @@
     letter-spacing: 0.025em;
   }
 
-  .log-list__filter :global(.underlay-input[type="date"]) {
+  .underlay-log-list__filter :global(.underlay-input[type="date"]) {
     min-width: 130px;
   }
 
-  .log-list__actions {
+  .underlay-log-list__actions {
     display: flex;
     align-items: center;
     gap: 0.5rem;
     margin-left: auto;
   }
 
-  .spinning {
+  .underlay-spinning {
     animation: spin 1s linear infinite;
   }
 

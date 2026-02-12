@@ -17,19 +17,19 @@
 </script>
 
 {#if loading && entriesCount === 0}
-  <div class="log-list__status">
-    <span class="log-list__status-icon log-list__status-icon--spinning">
+  <div class="underlay-log-list__status">
+    <span class="underlay-log-list__status-icon underlay-log-list__status-icon--spinning">
       <Activity size={24} />
     </span>
     <p>Loading log entries...</p>
   </div>
 {:else if error}
-  <div class="log-list__status log-list__status--error">
+  <div class="underlay-log-list__status underlay-log-list__status--error">
     <p>{error}</p>
   </div>
 {:else if entriesCount === 0}
-  <div class="log-list__status">
-    <span class="log-list__status-icon">
+  <div class="underlay-log-list__status">
+    <span class="underlay-log-list__status-icon">
       <Activity size={24} />
     </span>
     <p>{emptyMessage}</p>
@@ -37,7 +37,7 @@
 {/if}
 
 <style>
-  .log-list__status {
+  .underlay-log-list__status {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -47,20 +47,20 @@
     color: var(--underlay-color-text-muted, #94a3b8);
   }
 
-  .log-list__status p {
+  .underlay-log-list__status p {
     margin: 0;
     font-size: 0.875rem;
   }
 
-  .log-list__status--error {
+  .underlay-log-list__status--error {
     color: var(--underlay-color-danger, #ef4444);
   }
 
-  .log-list__status-icon {
+  .underlay-log-list__status-icon {
     opacity: 0.5;
   }
 
-  .log-list__status-icon--spinning {
+  .underlay-log-list__status-icon--spinning {
     animation: spin 1s linear infinite;
   }
 

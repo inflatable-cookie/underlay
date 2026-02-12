@@ -169,7 +169,7 @@
     class={`underlay-order-by-trigger ${className ?? ""}`}
     aria-label="Configure sort order"
   >
-    <span class="underlay-order-by-trigger__text" class:placeholder={value.length === 0}>
+    <span class="underlay-order-by-trigger__text" class:underlay-placeholder={value.length === 0}>
       {triggerText()}
     </span>
     <span class="underlay-order-by-trigger__controls">
@@ -291,7 +291,7 @@
     text-overflow: ellipsis;
   }
 
-  .underlay-order-by-trigger__text.placeholder {
+  .underlay-order-by-trigger__text.underlay-placeholder {
     color: var(--underlay-color-text-muted, #9ca3af);
   }
 

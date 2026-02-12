@@ -47,6 +47,7 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    gap: 0.35rem;
     border: none;
     padding: 0.4rem 0.75rem;
     cursor: pointer;

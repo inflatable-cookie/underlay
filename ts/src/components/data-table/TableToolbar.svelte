@@ -32,11 +32,11 @@
   }: Props = $props();
 </script>
 
-<div class="table-toolbar">
-  <div class="toolbar-left">
+<div class="underlay-table-toolbar">
+  <div class="underlay-toolbar-left">
     {@render toolbarLeft?.()}
   </div>
-  <div class="toolbar-right">
+  <div class="underlay-toolbar-right">
     <ToolbarControls
       {showColumnToggle}
       {hideableColumns}
@@ -53,7 +53,7 @@
 </div>
 
 <style>
-  .table-toolbar {
+  .underlay-table-toolbar {
     grid-column: 1 / -1;
     display: flex;
     align-items: center;
@@ -64,8 +64,8 @@
     gap: 0.5rem;
   }
 
-  .toolbar-left,
-  .toolbar-right {
+  .underlay-toolbar-left,
+  .underlay-toolbar-right {
     display: flex;
     align-items: center;
     gap: 0.5rem;

@@ -82,15 +82,15 @@
   <div class="underlay-password-requirements {className}">
     <p class="underlay-password-requirements__title">Password requirements:</p>
     <ul class="underlay-password-requirements__list">
-      <li class:met={lengthMet}>At least {requirements.minLength} characters</li>
+      <li class:underlay-met={lengthMet}>At least {requirements.minLength} characters</li>
       {#if requirements.requireMixedCase}
-        <li class:met={mixedCaseMet}>Mix of uppercase and lowercase letters</li>
+        <li class:underlay-met={mixedCaseMet}>Mix of uppercase and lowercase letters</li>
       {/if}
       {#if requirements.requireDigit}
-        <li class:met={digitMet}>At least one number</li>
+        <li class:underlay-met={digitMet}>At least one number</li>
       {/if}
       {#if requirements.requireSpecial}
-        <li class:met={specialMet}>At least one special character</li>
+        <li class:underlay-met={specialMet}>At least one special character</li>
       {/if}
     </ul>
     <p class="underlay-password-requirements__hint">
@@ -132,7 +132,7 @@
     transition: color 0.15s;
   }
 
-  .underlay-password-requirements__list li.met {
+  .underlay-password-requirements__list li.underlay-met {
     color: var(--underlay-color-success, #22c55e);
   }
 

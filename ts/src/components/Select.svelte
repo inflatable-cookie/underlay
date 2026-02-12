@@ -255,7 +255,7 @@
       class={`underlay-select-trigger ${className ?? ""}`}
       aria-label={triggerAriaLabel ?? placeholder}
     >
-      <span class="underlay-select-trigger__text" class:placeholder={!hasSelection} class:default-value={hasSelection && isDefaultValue}>
+      <span class="underlay-select-trigger__text" class:underlay-placeholder={!hasSelection} class:underlay-default-value={hasSelection && isDefaultValue}>
         {hasSelection ? selectedLabel : placeholder}
       </span>
       <span class="underlay-select-trigger__controls">
@@ -438,11 +438,11 @@
     min-width: 0;
   }
 
-  .placeholder {
+  .underlay-placeholder {
     color: var(--underlay-color-text-muted, var(--underlay-color-text-muted, #9ca3af));
   }
 
-  .default-value {
+  .underlay-default-value {
     opacity: 0.6;
   }
 

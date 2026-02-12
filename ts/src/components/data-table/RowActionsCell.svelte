@@ -20,9 +20,9 @@
 {#if rowActions.length === 1}
   {#each [rowActions[0]] as action}
     {#if action.href}
-      <a href={getActionHref(action, row)} class="action-link">{action.label}</a>
+      <a href={getActionHref(action, row)} class="underlay-action-link">{action.label}</a>
     {:else}
-      <button type="button" class="action-button" onclick={() => onActionClick(action, row)}>
+      <button type="button" class="underlay-action-button" onclick={() => onActionClick(action, row)}>
         {action.label}
       </button>
     {/if}
@@ -49,12 +49,12 @@
     {/snippet}
     {#each rowActions as action}
       {#if action.href}
-        <a href={getActionHref(action, row)} class="menu-item">{action.label}</a>
+        <a href={getActionHref(action, row)} class="underlay-menu-item">{action.label}</a>
       {:else}
         <button
           type="button"
-          class="menu-item"
-          class:danger={action.variant === "danger"}
+          class="underlay-menu-item"
+          class:underlay-danger={action.variant === "danger"}
           onclick={() => onActionClick(action, row)}
         >
           {action.label}
@@ -65,8 +65,8 @@
 {/if}
 
 <style>
-  .action-link,
-  .action-button {
+  .underlay-action-link,
+  .underlay-action-button {
     display: inline-flex;
     align-items: center;
     gap: 0.25rem;
@@ -81,12 +81,12 @@
     transition: background-color 0.15s;
   }
 
-  .action-link:hover,
-  .action-button:hover {
+  .underlay-action-link:hover,
+  .underlay-action-button:hover {
     background: var(--dt-row-hover);
   }
 
-  .menu-item {
+  .underlay-menu-item {
     display: flex;
     align-items: center;
     width: 100%;
@@ -100,11 +100,11 @@
     cursor: pointer;
   }
 
-  .menu-item:hover {
+  .underlay-menu-item:hover {
     background: var(--dt-row-hover);
   }
 
-  .menu-item.danger {
+  .underlay-menu-item.underlay-danger {
     color: var(--color-danger, #dc2626);
   }
 </style>

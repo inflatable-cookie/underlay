@@ -24,13 +24,13 @@
   }: Props = $props();
 </script>
 
-<div class="log-list__pagination">
-  <span class="log-list__pagination-info">
+<div class="underlay-log-list__pagination">
+  <span class="underlay-log-list__pagination-info">
     {#if total}
       Showing {(page - 1) * pageSize + 1}–{Math.min(page * pageSize, total)} of {total}
     {/if}
   </span>
-  <div class="log-list__pagination-controls">
+  <div class="underlay-log-list__pagination-controls">
     <Button
       variant="subtle"
       size="sm"
@@ -39,7 +39,7 @@
     >
       <ChevronLeft size={16} />
     </Button>
-    <span class="log-list__pagination-page">
+    <span class="underlay-log-list__pagination-page">
       Page {page} of {totalPages}
     </span>
     <Button
@@ -54,7 +54,7 @@
 </div>
 
 <style>
-  .log-list__pagination {
+  .underlay-log-list__pagination {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -65,17 +65,17 @@
     font-size: 0.8125rem;
   }
 
-  .log-list__pagination-info {
+  .underlay-log-list__pagination-info {
     color: var(--underlay-color-text-muted, #94a3b8);
   }
 
-  .log-list__pagination-controls {
+  .underlay-log-list__pagination-controls {
     display: flex;
     align-items: center;
     gap: 0.5rem;
   }
 
-  .log-list__pagination-page {
+  .underlay-log-list__pagination-page {
     color: var(--underlay-color-text-secondary, #cbd5e1);
     min-width: 100px;
     text-align: center;

@@ -38,8 +38,8 @@
 </script>
 
 <div
-  class="drop-zone"
-  class:dragging={isDragging}
+  class="underlay-drop-zone"
+  class:underlay-dragging={isDragging}
   role="button"
   tabindex={disabled ? -1 : 0}
   aria-disabled={disabled}
@@ -56,7 +56,7 @@
     {accept}
     {multiple}
     {disabled}
-    class="visually-hidden"
+    class="underlay-visually-hidden"
     onchange={onInputChange}
     aria-label="File upload"
   />
@@ -64,22 +64,22 @@
   {#if dropzone}
     {@render dropzone()}
   {:else}
-    <div class="drop-zone-content">
-      <div class="drop-zone-icon">
+    <div class="underlay-drop-zone-content">
+      <div class="underlay-drop-zone-icon">
         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
           <polyline points="17 8 12 3 7 8" />
           <line x1="12" y1="3" x2="12" y2="15" />
         </svg>
       </div>
-      <p class="drop-zone-text">
+      <p class="underlay-drop-zone-text">
         {#if isDragging}
           Drop files here
         {:else}
-          <span class="drop-zone-link">Click to upload</span> or drag and drop
+          <span class="underlay-drop-zone-link">Click to upload</span> or drag and drop
         {/if}
       </p>
-      <p class="drop-zone-hint">
+      <p class="underlay-drop-zone-hint">
         {#if accept !== "*"}
           {accept.replace(/\./g, "").replace(/,/g, ", ")}
         {/if}
@@ -92,7 +92,7 @@
 </div>
 
 <style>
-  .drop-zone {
+  .underlay-drop-zone {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -107,47 +107,47 @@
       background-color 0.2s;
   }
 
-  .drop-zone:hover[aria-disabled="false"] {
+  .underlay-drop-zone:hover[aria-disabled="false"] {
     background: var(--fu-bg-hover);
   }
 
-  .drop-zone[aria-disabled="true"] {
+  .underlay-drop-zone[aria-disabled="true"] {
     opacity: 0.5;
     cursor: not-allowed;
   }
 
-  .drop-zone.dragging {
+  .underlay-drop-zone.underlay-dragging {
     border: var(--fu-border-active);
     background: var(--fu-bg-hover);
   }
 
-  .drop-zone-content {
+  .underlay-drop-zone-content {
     text-align: center;
   }
 
-  .drop-zone-icon {
-    color: var(--color-text-muted, #64748b);
+  .underlay-drop-zone-icon {
+    color: var(--underlay-color-text-muted, #9ca3af);
     margin-bottom: 0.5rem;
   }
 
-  .drop-zone-text {
+  .underlay-drop-zone-text {
     margin: 0;
     font-size: 0.875rem;
-    color: var(--color-text-muted, #64748b);
+    color: var(--underlay-color-text-muted, #9ca3af);
   }
 
-  .drop-zone-link {
-    color: var(--color-primary, #3b82f6);
+  .underlay-drop-zone-link {
+    color: var(--underlay-color-primary, #3b82f6);
     font-weight: 500;
   }
 
-  .drop-zone-hint {
+  .underlay-drop-zone-hint {
     margin: 0.25rem 0 0;
     font-size: 0.75rem;
-    color: var(--color-text-muted, #64748b);
+    color: var(--underlay-color-text-muted, #9ca3af);
   }
 
-  .visually-hidden {
+  .underlay-visually-hidden {
     position: absolute;
     width: 1px;
     height: 1px;

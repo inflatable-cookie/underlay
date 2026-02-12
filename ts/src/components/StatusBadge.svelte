@@ -46,22 +46,22 @@
 </script>
 
 <span
-  class="status-badge"
-  class:status-badge--true={value}
-  class:status-badge--false={!value}
-  class:status-badge--danger={variant === "danger"}
-  class:status-badge--with-icon={currentIcon !== undefined}
+  class="underlay-status-badge"
+  class:underlay-status-badge--true={value}
+  class:underlay-status-badge--false={!value}
+  class:underlay-status-badge--danger={variant === "danger"}
+  class:underlay-status-badge--with-icon={currentIcon !== undefined}
 >
   {#if currentIcon}
-    <span class="status-badge__icon">
+    <span class="underlay-status-badge__icon">
       {@render currentIcon()}
     </span>
   {/if}
-  <span class="status-badge__label">{currentLabel}</span>
+  <span class="underlay-status-badge__label">{currentLabel}</span>
 </span>
 
 <style>
-  .status-badge {
+  .underlay-status-badge {
     display: inline-flex;
     align-items: center;
     gap: 0.35em;
@@ -72,34 +72,34 @@
     transition: background-color 0.2s ease, color 0.2s ease;
   }
 
-  .status-badge__icon {
+  .underlay-status-badge__icon {
     display: inline-flex;
     align-items: center;
     line-height: 0;
   }
 
-  .status-badge__icon :global(svg) {
+  .underlay-status-badge__icon :global(svg) {
     width: 1em;
     height: 1em;
   }
 
-  .status-badge__label {
+  .underlay-status-badge__label {
     line-height: 1;
   }
 
   /* Success variant (default): green/orange */
-  .status-badge--true {
+  .underlay-status-badge--true {
     background: rgba(34, 197, 94, 0.2);
     color: #22c55e;
   }
 
-  .status-badge--false {
+  .underlay-status-badge--false {
     background: rgba(251, 146, 60, 0.2);
     color: #fb923c;
   }
 
   /* Danger variant: green/red */
-  .status-badge--danger.status-badge--false {
+  .underlay-status-badge--danger.underlay-status-badge--false {
     background: rgba(239, 68, 68, 0.2);
     color: #ef4444;
   }

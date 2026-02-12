@@ -1,13 +1,10 @@
 <script lang="ts">
-  import Image from "lucide-svelte/icons/image";
-  import FileText from "lucide-svelte/icons/file-text";
   import {
-    MediaKind,
     getMediaDisplayName,
-    getMediaKindAccent,
     getMediaKindLabel,
     type MediaSummary
   } from "../../patterns/index.js";
+  import MediaThumbnail from "../MediaThumbnail.svelte";
 
   interface Props {
     item: MediaSummary;
@@ -18,33 +15,32 @@
     item,
     onSelect
   }: Props = $props();
-
-  const Icon = $derived(item.kind === MediaKind.Image ? Image : FileText);
 </script>
 
 <button
   type="button"
-  class="media-item"
+  class="underlay-media-item"
   onclick={() => onSelect(item)}
 >
-  <div
-    class="media-item__icon"
-    style="color: {getMediaKindAccent(item.kind)}"
-  >
-    <Icon size={24} />
-  </div>
-  <div class="media-item__info">
-    <span class="media-item__title"
+  <MediaThumbnail
+    thumbnailUrl={item.thumbnailUrl}
+    kind={item.kind}
+    alt={getMediaDisplayName(item)}
+    size={48}
+    showAccent
+  />
+  <div class="underlay-media-item__info">
+    <span class="underlay-media-item__title"
       >{getMediaDisplayName(item)}</span
     >
-    <span class="media-item__meta"
+    <span class="underlay-media-item__meta"
       >{getMediaKindLabel(item.kind)}</span
     >
   </div>
 </button>
 
 <style>
-  .media-item {
+  .underlay-media-item {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -60,28 +56,18 @@
     text-align: center;
   }
 
-  .media-item:hover {
+  .underlay-media-item:hover {
     border-color: var(--underlay-color-primary, #3b82f6);
     background: var(--underlay-color-surface-raised, #374151);
   }
 
-  .media-item__icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 48px;
-    height: 48px;
-    border-radius: 0.375rem;
-    background: var(--underlay-color-surface-raised, #374151);
-  }
-
-  .media-item__info {
+  .underlay-media-item__info {
     display: flex;
     flex-direction: column;
     gap: 0.125rem;
   }
 
-  .media-item__title {
+  .underlay-media-item__title {
     font-size: 0.875rem;
     font-weight: 500;
     overflow: hidden;
@@ -90,7 +76,7 @@
     max-width: 150px;
   }
 
-  .media-item__meta {
+  .underlay-media-item__meta {
     font-size: 0.75rem;
     color: var(--underlay-color-text-muted, #9ca3af);
   }

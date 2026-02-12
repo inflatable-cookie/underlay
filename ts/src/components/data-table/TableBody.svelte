@@ -49,7 +49,7 @@
   }: Props = $props();
 </script>
 
-<div class="table-body" role="rowgroup">
+<div class="underlay-table-body" role="rowgroup">
   {#if loading}
     {#each Array(loadingRows) as _, i}
       <LoadingRow {selectable} {visibleColumns} showActions={hasActions} />
@@ -61,16 +61,16 @@
       {@const rowActions = getRenderedRowActions(row, actions)}
       <!-- svelte-ignore a11y_click_events_have_key_events -->
       <div
-        class="table-row"
-        class:selected={selected.includes(row)}
-        class:has-extended={!!extendedRow && extendedRowWhen(row)}
-        class:clickable={!!onRowClick}
+        class="underlay-table-row"
+        class:underlay-selected={selected.includes(row)}
+        class:underlay-has-extended={!!extendedRow && extendedRowWhen(row)}
+        class:underlay-clickable={!!onRowClick}
         role="row"
         tabindex={onRowClick ? 0 : undefined}
         onclick={() => onRowClick?.(row)}
       >
         {#if selectable}
-          <div class="table-cell checkbox-cell" role="cell">
+          <div class="underlay-table-cell underlay-checkbox-cell" role="cell">
             <input
               type="checkbox"
               checked={selected.includes(row)}
@@ -82,10 +82,10 @@
 
         {#each visibleColumns as column}
           <div
-            class="table-cell"
-            class:hide-mobile={column.hideOnMobile}
-            class:align-center={column.align === "center"}
-            class:align-right={column.align === "right"}
+            class="underlay-table-cell"
+            class:underlay-hide-mobile={column.hideOnMobile}
+            class:underlay-align-center={column.align === "center"}
+            class:underlay-align-right={column.align === "right"}
             role="cell"
           >
             {#if cell}
@@ -97,7 +97,7 @@
         {/each}
 
         {#if hasActions}
-          <div class="table-cell actions-cell" role="cell">
+          <div class="underlay-table-cell underlay-actions-cell" role="cell">
             <RowActionsCell
               {row}
               {rowActions}
@@ -108,8 +108,8 @@
         {/if}
       </div>
       {#if extendedRow && extendedRowWhen(row)}
-        <div class="table-row table-row--extended" role="row">
-          <div class="table-cell table-cell--extended" role="cell">
+        <div class="underlay-table-row underlay-table-row--extended" role="row">
+          <div class="underlay-table-cell underlay-table-cell--extended" role="cell">
             {@render extendedRow({ row })}
           </div>
         </div>
@@ -119,49 +119,49 @@
 </div>
 
 <style>
-  .table-body {
+  .underlay-table-body {
     display: contents;
   }
 
-  .table-row {
+  .underlay-table-row {
     display: contents;
   }
 
-  .table-body > .table-row > .table-cell {
+  .underlay-table-body > .underlay-table-row > .underlay-table-cell {
     border-bottom: var(--dt-border);
   }
 
-  .table-body > .table-row.has-extended > .table-cell {
+  .underlay-table-body > .underlay-table-row.underlay-has-extended > .underlay-table-cell {
     border-bottom: none;
   }
 
-  .table-body > .table-row:last-child > .table-cell,
-  .table-body > .table-row:last-of-type > .table-cell,
-  .table-body > .table-row--extended:last-child > .table-cell {
+  .underlay-table-body > .underlay-table-row:last-child > .underlay-table-cell,
+  .underlay-table-body > .underlay-table-row:last-of-type > .underlay-table-cell,
+  .underlay-table-body > .underlay-table-row--extended:last-child > .underlay-table-cell {
     border-bottom: none;
   }
 
-  .table-body > .table-row:hover > .table-cell {
+  .underlay-table-body > .underlay-table-row:hover > .underlay-table-cell {
     background: var(--dt-row-hover);
   }
 
-  .table-body > .table-row.clickable {
+  .underlay-table-body > .underlay-table-row.underlay-clickable {
     cursor: pointer;
   }
 
-  .table-body > .table-row.selected > .table-cell {
+  .underlay-table-body > .underlay-table-row.underlay-selected > .underlay-table-cell {
     background: var(--dt-row-selected);
   }
 
-  :global(.striped) .table-body > .table-row:nth-child(even) > .table-cell {
+  :global(.underlay-striped) .underlay-table-body > .underlay-table-row:nth-child(even) > .underlay-table-cell {
     background: var(--dt-stripe);
   }
 
-  :global(.striped) .table-body > .table-row:nth-child(even):hover > .table-cell {
+  :global(.underlay-striped) .underlay-table-body > .underlay-table-row:nth-child(even):hover > .underlay-table-cell {
     background: var(--dt-row-hover);
   }
 
-  .table-cell {
+  .underlay-table-cell {
     padding: var(--dt-gap);
     min-width: 0;
     overflow: hidden;
@@ -171,40 +171,40 @@
     align-items: center;
   }
 
-  .table-row--extended > .table-cell {
+  .underlay-table-row--extended > .underlay-table-cell {
     grid-column: 1 / -1;
   }
 
-  .table-cell--extended {
+  .underlay-table-cell--extended {
     white-space: normal;
     align-items: flex-start;
   }
 
-  .table-cell > :global(*) {
+  .underlay-table-cell > :global(*) {
     align-self: center;
   }
 
-  :global(.compact) .table-cell {
+  :global(.underlay-compact) .underlay-table-cell {
     padding: var(--dt-gap-compact);
   }
 
-  .checkbox-cell {
+  .underlay-checkbox-cell {
     display: flex;
     align-items: center;
     justify-content: center;
   }
 
-  .align-center {
+  .underlay-align-center {
     text-align: center;
     justify-content: center;
   }
 
-  .align-right {
+  .underlay-align-right {
     text-align: right;
     justify-content: flex-end;
   }
 
-  .actions-cell {
+  .underlay-actions-cell {
     display: flex;
     align-items: center;
     justify-content: flex-end;
@@ -212,7 +212,7 @@
   }
 
   @media (max-width: 900px) {
-    .hide-mobile {
+    .underlay-hide-mobile {
       display: none;
     }
   }

@@ -23,29 +23,29 @@
   }: Props = $props();
 </script>
 
-<div class="inline-list-card">
-  <div class="inline-list-card__header">
-    <h4 class="inline-list-card__title">{title}</h4>
+<div class="underlay-inline-list-card">
+  <div class="underlay-inline-list-card__header">
+    <h4 class="underlay-inline-list-card__title">{title}</h4>
     {#if action}
-      <div class="inline-list-card__action">
+      <div class="underlay-inline-list-card__action">
         {@render action()}
       </div>
     {/if}
   </div>
 
-  <div class="inline-list-card__body">
+  <div class="underlay-inline-list-card__body">
     {#if hasItems && children}
-      <ul class="inline-list-card__list">
+      <ul class="underlay-inline-list-card__list">
         {@render children()}
       </ul>
     {:else}
-      <p class="inline-list-card__empty">{emptyMessage}</p>
+      <p class="underlay-inline-list-card__empty">{emptyMessage}</p>
     {/if}
   </div>
 </div>
 
 <style>
-  .inline-list-card {
+  .underlay-inline-list-card {
     max-width: 65ch;
     min-width: 0;
     overflow: hidden;
@@ -55,7 +55,7 @@
     border-radius: var(--underlay-radius-lg, 0.75rem);
   }
 
-  .inline-list-card__header {
+  .underlay-inline-list-card__header {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -63,7 +63,7 @@
     margin-bottom: 0.75rem;
   }
 
-  .inline-list-card__title {
+  .underlay-inline-list-card__title {
     margin: 0;
     font-size: 0.75rem;
     font-weight: 600;
@@ -72,15 +72,15 @@
     color: var(--underlay-color-text-muted, rgba(148, 163, 184, 0.85));
   }
 
-  .inline-list-card__action {
+  .underlay-inline-list-card__action {
     flex-shrink: 0;
   }
 
-  .inline-list-card__body {
+  .underlay-inline-list-card__body {
     margin: 0;
   }
 
-  .inline-list-card__list {
+  .underlay-inline-list-card__list {
     list-style: none;
     margin: 0;
     padding: 0;
@@ -89,7 +89,7 @@
     gap: 2px;
   }
 
-  .inline-list-card__empty {
+  .underlay-inline-list-card__empty {
     margin: 0;
     font-size: 0.9em;
     font-style: italic;
