@@ -14,6 +14,7 @@ export interface NightfireMediaPickResult {
   id: string;
   thumbnailUrl: string | null;
   title: string | null;
+  originalFilename?: string | null;
   kind: string;
 }
 
