@@ -112,6 +112,7 @@ Individual techniques referenced by the recipes above.
 | DataTable | Sortable, filterable tables | Component library |
 | StatusBadge | Live/draft badges | Component library |
 | Tabs | Tabbed navigation | Component library |
+| Form tabs (large forms) | Sectioned forms with validation-state indicators per tab | [096-form-helpers.md#form-tabs-approach-large-forms](../guides/096-form-helpers.md#form-tabs-approach-large-forms) |
 | Field | Consistent form inputs | Component library |
 
 ### AI Runtime Patterns

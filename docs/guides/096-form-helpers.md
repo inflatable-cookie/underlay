@@ -23,8 +23,125 @@ These helpers extract these patterns into reusable, tested utilities.
 | `useSyncedSelection()` | `@decodelabs/underlay/patterns` | Manage selection state |
 | `createLocalSearchFns()` | `@decodelabs/underlay/patterns` | Search/suggest for RelationSelector |
 | `SlugField` | `@decodelabs/underlay/patterns` | Auto-slug field component |
+| `FormTabsProvider` + `FormTabsSection` | `@decodelabs/underlay/components` | Multi-section form tabs with validation indicators |
 | `getNextLetter()` | `@decodelabs/underlay/utils` | Next letter in sequence |
 | `getNextNumber()` | `@decodelabs/underlay/utils` | Next number in sequence |
+
+---
+
+## Form Tabs Approach (Large Forms)
+
+Use form tabs when a single form has multiple conceptual sections (for example: Details / Notes / Marking).
+
+### Why this pattern exists
+
+- Keeps long forms scannable without splitting into separate routes
+- Preserves one submit surface (`SaveSplitButton`, hidden intent field, form action)
+- Surfaces per-tab validation state so users can quickly find missing/invalid fields
+- Works with rich editors that break when mounted under `display: none`
+
+### Required wiring
+
+For section-level validation indicators to work, the hierarchy must be:
+
+1. `FormValidationProvider`
+2. `FormTabsProvider`
+3. `TabsRoot variant="form"`
+4. `TabsContent`
+5. `FormTabsSection sectionId="..."`
+6. Fields/inputs
+
+```svelte
+<FormValidationProvider bind:isValid={isFormValid}>
+  <FormTabsProvider>
+    <TabsRoot bind:value={activeTab} variant="form">
+      <TabsList
+        collapsible
+        tabs={[
+          { value: "details", label: "Details" },
+          { value: "notes", label: "Notes" }
+        ]}
+      >
+        <TabsTrigger value="details">Details</TabsTrigger>
+        <TabsTrigger value="notes">Notes</TabsTrigger>
+      </TabsList>
+
+      <TabsContent value="details">
+        <FormTabsSection sectionId="details">
+          <div class="underlay-form-grid">
+            <!-- details fields -->
+          </div>
+        </FormTabsSection>
+      </TabsContent>
+
+      <TabsContent value="notes">
+        <FormTabsSection sectionId="notes">
+          <div class="underlay-form-grid">
+            <!-- notes fields -->
+          </div>
+        </FormTabsSection>
+      </TabsContent>
+    </TabsRoot>
+  </FormTabsProvider>
+</FormValidationProvider>
+```
+
+### Section ID/value alignment rule
+
+Use one canonical id per tab section and keep it aligned across:
+
+- `TabsTrigger value="details"`
+- `TabsContent value="details"`
+- `FormTabsSection sectionId="details"`
+
+If these diverge, the section registry cannot map field validation to the correct tab.
+
+### Validation states and indicators
+
+`FormTabsProvider` tracks fields per section and exposes four states:
+
+- `invalid` - a field in the section has a validation error
+- `incomplete` - a required field in the section has no value
+- `valid` - all required fields are filled and no errors are present
+- `idle` - no fields registered yet
+
+`TabsTrigger` renders these states as colored dots (and the same indicators appear in collapsed dropdown mode).
+
+### Collapsible tabs for narrow layouts
+
+Use `TabsList collapsible` with a parallel `tabs` array so tabs can collapse into a dropdown without losing labels/counts/state indicators.
+
+```svelte
+<TabsList
+  collapsible
+  tabs={[
+    { value: "details", label: "Details" },
+    { value: "notes", label: "Notes", count: 3 }
+  ]}
+>
+  <TabsTrigger value="details">Details</TabsTrigger>
+  <TabsTrigger value="notes" count={3}>Notes</TabsTrigger>
+</TabsList>
+```
+
+### Rich-editor compatibility
+
+The `form` variant keeps inactive tab panels mounted (hidden without `display: none`) so editors like CodeMirror/EasyMDE can initialize correctly and keep state while switching tabs.
+
+### Recommended composition
+
+- Put top-level sections in form tabs (`details`, `notes`, `marking`, etc.)
+- Keep micro-modes (e.g. `Edit` / `Preview`) as nested tabs *inside* a section
+- Keep `FormActions` outside tab panels so submit controls remain constant
+
+### Common mistakes
+
+- Missing `FormTabsProvider` (no section dots/state)
+- Missing `FormTabsSection` around tab content (fields not tracked)
+- Mismatched `value`/`sectionId`
+- Moving `FormActions` inside a tab panel (actions disappear when switching tabs)
+
+See also: [090-ui-kit.md#form-tabs-multi-section-forms](./090-ui-kit.md#form-tabs-multi-section-forms)
 
 ---
 

@@ -1828,17 +1828,17 @@ A list item for use inside `InlineListCard`. Supports links, click handlers, acc
 
 ### Tabs
 
-A tabbed interface component with multiple visual variants. Supports URL history synchronization and responsive collapse to dropdown.
+A tabbed interface component with multiple visual variants. Supports URL query synchronization, responsive collapse to dropdown, and a dedicated `form` variant for large multi-section forms.
 
 ```svelte
 <script>
-  import { Tabs, TabsList, TabsTrigger, TabsContent } from "@decodelabs/underlay/components";
+  import { TabsRoot, TabsList, TabsTrigger, TabsContent } from "@decodelabs/underlay/components";
 
   let activeTab = $state("details");
 </script>
 
 <!-- Basic tabs with pills variant (default) -->
-<Tabs bind:value={activeTab}>
+<TabsRoot bind:value={activeTab}>
   <TabsList>
     <TabsTrigger value="details">Details</TabsTrigger>
     <TabsTrigger value="settings">Settings</TabsTrigger>
@@ -1850,46 +1850,46 @@ A tabbed interface component with multiple visual variants. Supports URL history
   <TabsContent value="settings">
     <p>Settings content here</p>
   </TabsContent>
-</Tabs>
+</TabsRoot>
 
 <!-- Underline variant -->
-<Tabs bind:value={activeTab} variant="underline">
+<TabsRoot bind:value={activeTab} variant="underline">
   <TabsList>
     <TabsTrigger value="overview">Overview</TabsTrigger>
     <TabsTrigger value="history">History</TabsTrigger>
   </TabsList>
   <!-- TabsContent sections... -->
-</Tabs>
+</TabsRoot>
 
 <!-- Boxed variant -->
-<Tabs bind:value={activeTab} variant="boxed">
+<TabsRoot bind:value={activeTab} variant="boxed">
   <TabsList>
     <TabsTrigger value="code">Code</TabsTrigger>
     <TabsTrigger value="preview">Preview</TabsTrigger>
   </TabsList>
   <!-- TabsContent sections... -->
-</Tabs>
+</TabsRoot>
 
 <!-- With URL history synchronization -->
-<Tabs bind:value={activeTab} historyKey="tab">
+<TabsRoot bind:value={activeTab} historyKey="tab">
   <TabsList>
     <TabsTrigger value="details">Details</TabsTrigger>
     <TabsTrigger value="modules">Modules</TabsTrigger>
   </TabsList>
   <!-- Tab state syncs with ?tab=details or ?tab=modules -->
-</Tabs>
+</TabsRoot>
 
 <!-- With count badges -->
-<Tabs bind:value={activeTab}>
+<TabsRoot bind:value={activeTab}>
   <TabsList>
     <TabsTrigger value="all">All</TabsTrigger>
     <TabsTrigger value="active" count={12}>Active</TabsTrigger>
     <TabsTrigger value="archived" count={3}>Archived</TabsTrigger>
   </TabsList>
-</Tabs>
+</TabsRoot>
 
 <!-- Collapsible tabs (collapse to dropdown on narrow screens) -->
-<Tabs bind:value={activeTab}>
+<TabsRoot bind:value={activeTab}>
   <TabsList
     collapsible
     tabs={[
@@ -1902,12 +1902,12 @@ A tabbed interface component with multiple visual variants. Supports URL history
     <TabsTrigger value="modules" count={5}>Modules</TabsTrigger>
     <TabsTrigger value="settings">Settings</TabsTrigger>
   </TabsList>
-</Tabs>
+</TabsRoot>
 ```
 
-**Tabs Props:**
+**TabsRoot Props:**
 - `value` - Current active tab value (bindable)
-- `variant` - Visual style: `"pills"` (default), `"underline"`, or `"boxed"`
+- `variant` - Visual style: `"pills"` (default), `"underline"`, `"boxed"`, `"plain"`, or `"form"`
 - `size` - Size variant: `"default"` or `"sm"`
 - `historyKey` - When provided, syncs tab state with URL query param (e.g., `historyKey="tab"` stores as `?tab=value`)
 
@@ -1926,6 +1926,96 @@ A tabbed interface component with multiple visual variants. Supports URL history
 - **pills** - Rounded pill-shaped tabs with subtle background, contained in a rounded border
 - **underline** - Minimal tabs with bottom border highlight on active tab
 - **boxed** - Traditional raised tabs with background color
+- **plain** - Minimal text tabs without underline border treatment
+- **form** - Larger section-navigation tabs intended for long, multi-section forms
+
+#### Form Tabs (Multi-Section Forms)
+
+Use this pattern for long forms (2+ sections) where each section has its own validation state.
+
+```svelte
+<script lang="ts">
+  import {
+    Field,
+    FieldSet,
+    FormTabsProvider,
+    FormTabsSection,
+    FormValidationProvider,
+    TabsRoot,
+    TabsList,
+    TabsTrigger,
+    TabsContent,
+    TextInput
+  } from "@decodelabs/underlay/components";
+
+  let activeTab = $state("details");
+  let isFormValid = $state(false);
+  let title = $state("");
+  let notes = $state("");
+</script>
+
+<FormValidationProvider bind:isValid={isFormValid}>
+  <FormTabsProvider>
+    <TabsRoot bind:value={activeTab} variant="form">
+      <TabsList
+        collapsible
+        tabs={[
+          { value: "details", label: "Details" },
+          { value: "notes", label: "Notes" }
+        ]}
+      >
+        <TabsTrigger value="details">Details</TabsTrigger>
+        <TabsTrigger value="notes">Notes</TabsTrigger>
+      </TabsList>
+
+      <TabsContent value="details">
+        <FormTabsSection sectionId="details">
+          <div class="underlay-form-grid">
+            <FieldSet legend="Core">
+              <Field label="Title" required>
+                <TextInput name="title" bind:value={title} required />
+              </Field>
+            </FieldSet>
+          </div>
+        </FormTabsSection>
+      </TabsContent>
+
+      <TabsContent value="notes">
+        <FormTabsSection sectionId="notes">
+          <div class="underlay-form-grid">
+            <FieldSet legend="Notes">
+              <Field label="Notes">
+                <TextInput name="notes" bind:value={notes} />
+              </Field>
+            </FieldSet>
+          </div>
+        </FormTabsSection>
+      </TabsContent>
+    </TabsRoot>
+  </FormTabsProvider>
+</FormValidationProvider>
+```
+
+**Form tabs components:**
+- `FormTabsProvider` - Creates a section registry and wires tab state to form validation state
+- `FormTabsSection sectionId="..."` - Assigns enclosed fields to a tab section (required for validation dots)
+
+**How section validation indicators work:**
+- `invalid` - At least one field in the section has validation errors
+- `incomplete` - A required field has no value
+- `valid` - No errors and required fields are filled
+- `idle` - No registered fields yet
+
+Those states automatically appear as dots on `TabsTrigger` and in collapsed dropdown tabs.
+
+**Important requirements:**
+- Wrap form tabs in `FormValidationProvider` first
+- Wrap tabbed sections in `FormTabsProvider`
+- Put each tab panel's form controls inside a matching `FormTabsSection`
+- Keep `TabsTrigger.value`, `TabsContent.value`, and `FormTabsSection.sectionId` aligned by section
+
+**Editor compatibility note:**
+- The `form` tab variant keeps inactive panels mounted (hidden with height/visibility, not `display: none`) so editors like CodeMirror/EasyMDE don't break when switching tabs
 
 ---
 
