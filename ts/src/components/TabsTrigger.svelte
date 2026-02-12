@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Tabs as BitsTabs } from "bits-ui";
   import type { Snippet } from "svelte";
-  import { getContext } from "svelte";
+  import { getContext, onMount, onDestroy } from "svelte";
   import type { TabsVariant, TabsSize } from "./TabsRoot.svelte";
   import type { FormTabsSectionRegistryContext } from "./form-tabs/types";
 
@@ -12,19 +12,59 @@
     class?: string;
     /** Optional count to display as a badge */
     count?: number | null;
+    /**
+     * Optional label for collapsible dropdown.
+     * If not provided, text content of the trigger is used.
+     * Falls back to value if neither is available.
+     */
+    label?: string;
   }
 
-  let { value, disabled = false, children, class: className, count }: Props = $props();
+  let { value, disabled = false, children, class: className, count, label }: Props = $props();
 
   const getVariant = getContext<() => TabsVariant>("underlay-tabs-variant");
   const getSize = getContext<() => TabsSize>("underlay-tabs-size");
   const registry = getContext<FormTabsSectionRegistryContext | undefined>("underlay-form-tabs-registry");
+  const registerTab = getContext<((tab: { value: string; label: string; count?: number | null }) => void) | undefined>(
+    "underlay-tabs-register"
+  );
+  const unregisterTab = getContext<((value: string) => void) | undefined>("underlay-tabs-unregister");
+
   let variant = $derived(getVariant?.() ?? "pills");
   let size = $derived(getSize?.() ?? "default");
   let sectionState = $derived(registry?.getSectionState(value) ?? "idle");
+
+  let triggerRef = $state<HTMLElement | null>(null);
+
+  onMount(() => {
+    if (registerTab) {
+      // Extract label: explicit prop > text content > value fallback
+      const resolvedLabel =
+        label ??
+        triggerRef?.textContent?.trim() ??
+        value;
+      registerTab({ value, label: resolvedLabel, count });
+    }
+  });
+
+  onDestroy(() => {
+    unregisterTab?.(value);
+  });
+
+  // Re-register when count changes (for dynamic counts)
+  $effect(() => {
+    if (registerTab && triggerRef) {
+      const resolvedLabel =
+        label ??
+        triggerRef.textContent?.trim() ??
+        value;
+      registerTab({ value, label: resolvedLabel, count });
+    }
+  });
 </script>
 
 <BitsTabs.Trigger
+  bind:ref={triggerRef}
   {value}
   {disabled}
   class={`underlay-tabs-trigger underlay-tabs-trigger--${variant} underlay-tabs-trigger--${size} ${className ?? ""}`}

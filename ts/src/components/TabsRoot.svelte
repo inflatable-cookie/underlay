@@ -9,6 +9,12 @@
   export type TabsVariant = "pills" | "boxed" | "underline" | "plain" | "form";
   export type TabsSize = "default" | "sm";
 
+  export interface RegisteredTab {
+    value: string;
+    label: string;
+    count?: number | null;
+  }
+
   interface Props {
     /** Current active tab value (bindable) */
     value: string;
@@ -34,6 +40,23 @@
   // Collapsed state (set by TabsList when in collapsible mode)
   let isCollapsed = $state(false);
 
+  // Auto-registered tabs (populated by TabsTrigger components)
+  let registeredTabs = $state<Map<string, RegisteredTab>>(new Map());
+
+  function registerTab(tab: RegisteredTab) {
+    registeredTabs = new Map(registeredTabs).set(tab.value, tab);
+  }
+
+  function unregisterTab(value: string) {
+    const newMap = new Map(registeredTabs);
+    newMap.delete(value);
+    registeredTabs = newMap;
+  }
+
+  function getRegisteredTabs(): RegisteredTab[] {
+    return Array.from(registeredTabs.values());
+  }
+
   setContext("underlay-tabs-variant", () => variant);
   setContext("underlay-tabs-size", () => size);
   setContext("underlay-tabs-value", () => value);
@@ -44,6 +67,9 @@
   setContext("underlay-tabs-set-collapsed", (v: boolean) => {
     isCollapsed = v;
   });
+  setContext("underlay-tabs-register", registerTab);
+  setContext("underlay-tabs-unregister", unregisterTab);
+  setContext("underlay-tabs-get-registered", getRegisteredTabs);
 
   // Track the last value we synced to URL to prevent loops
   let lastSyncedValue = $state<string | null>(null);

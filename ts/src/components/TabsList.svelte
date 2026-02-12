@@ -2,32 +2,21 @@
   import { Tabs as BitsTabs } from "bits-ui";
   import type { Snippet } from "svelte";
   import { getContext, onMount } from "svelte";
-  import type { TabsVariant, TabsSize } from "./TabsRoot.svelte";
+  import type { TabsVariant, TabsSize, RegisteredTab } from "./TabsRoot.svelte";
   import type { FormTabsSectionRegistryContext, SectionValidationState } from "./form-tabs/types";
   import ChevronDown from "lucide-svelte/icons/chevron-down";
-
-  interface TabItem {
-    value: string;
-    label: string;
-    count?: number | null;
-  }
 
   interface Props {
     children?: Snippet;
     class?: string;
     /**
-     * When provided with collapsible=true, enables responsive collapse to dropdown.
-     * Array of tab items with value, label, and optional count.
-     */
-    tabs?: TabItem[];
-    /**
      * Enable responsive collapse to dropdown when tabs overflow.
-     * Requires `tabs` prop to be set.
+     * Tabs are auto-registered from TabsTrigger children.
      */
     collapsible?: boolean;
   }
 
-  let { children, class: className, tabs, collapsible = false }: Props = $props();
+  let { children, class: className, collapsible = false }: Props = $props();
 
   const getVariant = getContext<() => TabsVariant>("underlay-tabs-variant");
   const getSize = getContext<() => TabsSize>("underlay-tabs-size");
@@ -35,6 +24,7 @@
   const setValue = getContext<((v: string) => void) | undefined>("underlay-tabs-set-value");
   const setParentCollapsed = getContext<((v: boolean) => void) | undefined>("underlay-tabs-set-collapsed");
   const registry = getContext<FormTabsSectionRegistryContext | undefined>("underlay-form-tabs-registry");
+  const getRegisteredTabs = getContext<(() => RegisteredTab[]) | undefined>("underlay-tabs-get-registered");
 
   let variant = $derived(getVariant?.() ?? "pills");
   let size = $derived(getSize?.() ?? "default");
@@ -46,8 +36,17 @@
   let dropdownOpen = $state(false);
   let lastTabsWidth = $state(0);
 
+  // Use auto-registered tabs from TabsTrigger children
+  let registeredTabs = $state<RegisteredTab[]>([]);
+  
+  // Poll for registered tabs (they're registered on mount)
+  $effect(() => {
+    if (!collapsible || !getRegisteredTabs) return;
+    registeredTabs = getRegisteredTabs();
+  });
+
   // Find the current tab for dropdown display
-  const currentTab = $derived(tabs?.find((t) => t.value === currentValue));
+  const currentTab = $derived(registeredTabs.find((t) => t.value === currentValue));
 
   // Get section validation state for the current tab (form variant only)
   let currentTabState = $derived<SectionValidationState>(registry?.getSectionState(currentValue) ?? "idle");
@@ -68,7 +67,7 @@
   }
 
   onMount(() => {
-    if (!collapsible || !tabs || !containerRef) return;
+    if (!collapsible || !containerRef) return;
 
     const checkOverflow = () => {
       if (!containerRef) return;
@@ -89,6 +88,16 @@
 
     // Initial check after a brief delay to let tabs render
     requestAnimationFrame(checkOverflow);
+    
+    // Also check after registered tabs are populated
+    const checkInterval = setInterval(() => {
+      const tabs = getRegisteredTabs?.() ?? [];
+      if (tabs.length > 0) {
+        registeredTabs = tabs;
+        requestAnimationFrame(checkOverflow);
+        clearInterval(checkInterval);
+      }
+    }, 50);
 
     // Close dropdown when clicking outside
     const handleClickOutside = (e: MouseEvent) => {
@@ -102,11 +111,12 @@
     return () => {
       observer.disconnect();
       document.removeEventListener("click", handleClickOutside);
+      clearInterval(checkInterval);
     };
   });
 </script>
 
-{#if collapsible && tabs}
+{#if collapsible && registeredTabs.length > 0}
   <div
     bind:this={containerRef}
     class="underlay-tabs-list-container underlay-tabs-list-container--{variant} underlay-tabs-list-container--{size}"
@@ -143,7 +153,7 @@
             role="listbox"
             onclick={(e) => e.stopPropagation()}
           >
-            {#each tabs as tab}
+            {#each registeredTabs as tab (tab.value)}
               <li>
                 <button
                   type="button"
