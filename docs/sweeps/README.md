@@ -18,6 +18,7 @@ Unlike implementation guides, sweeps are runbooks for reviewing an existing code
 | [001-security-sweep.md](./001-security-sweep.md) | Comprehensive security review across API, client, and frontends | Platform/security reviewers |
 | [002-underlay-reuse-sweep.md](./002-underlay-reuse-sweep.md) | Detect and correct reimplementation of existing Underlay UI/pattern functionality | Frontend/platform reviewers |
 | [003-frontend-consistency-sweep.md](./003-frontend-consistency-sweep.md) | Cross-site consistency checks for frontend architecture, API usage, state, and UX patterns | Frontend/platform reviewers |
+| [004-tab-count-badges-sweep.md](./004-tab-count-badges-sweep.md) | Ensure tab badge counts come from detail DTO counts, not eager relation-list fetches | Frontend/API reviewers |
 
 ## How to run a sweep
 
