@@ -27,6 +27,7 @@ Unlike implementation guides, sweeps are runbooks for reviewing an existing code
 | [010-authorization-boundary-sweep.md](./010-authorization-boundary-sweep.md) | Verify authn/authz boundaries are enforced in API extractors and route topology, not only in UI | Backend/security reviewers |
 | [011-migration-safety-sweep.md](./011-migration-safety-sweep.md) | Enforce safe SQL migration practices (schema qualification, idempotency, and rollout discipline) | Backend/platform reviewers |
 | [012-observability-and-audit-sweep.md](./012-observability-and-audit-sweep.md) | Validate error/event observability and audit trail coverage for critical mutations | Backend/platform reviewers |
+| [013-background-jobs-and-scheduler-reliability-sweep.md](./013-background-jobs-and-scheduler-reliability-sweep.md) | Verify job queue and scheduler reliability (idempotency, retries, overlap control, and recovery) | Backend/platform reviewers |
 
 ## How to run a sweep
 
