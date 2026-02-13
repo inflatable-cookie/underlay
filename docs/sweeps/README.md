@@ -28,6 +28,8 @@ Unlike implementation guides, sweeps are runbooks for reviewing an existing code
 | [011-migration-safety-sweep.md](./011-migration-safety-sweep.md) | Enforce safe SQL migration practices (schema qualification, idempotency, and rollout discipline) | Backend/platform reviewers |
 | [012-observability-and-audit-sweep.md](./012-observability-and-audit-sweep.md) | Validate error/event observability and audit trail coverage for critical mutations | Backend/platform reviewers |
 | [013-background-jobs-and-scheduler-reliability-sweep.md](./013-background-jobs-and-scheduler-reliability-sweep.md) | Verify job queue and scheduler reliability (idempotency, retries, overlap control, and recovery) | Backend/platform reviewers |
+| [014-accessibility-and-keyboard-sweep.md](./014-accessibility-and-keyboard-sweep.md) | Verify accessibility fundamentals: keyboard nav, focus management, ARIA semantics, and form/dialog usability | Frontend/platform reviewers |
+| [015-test-coverage-and-critical-paths-sweep.md](./015-test-coverage-and-critical-paths-sweep.md) | Ensure critical workflows have meaningful automated coverage across API, client, and frontend boundaries | Backend/frontend reviewers |
 
 ## How to run a sweep
 
