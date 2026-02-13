@@ -112,6 +112,8 @@ where
             "Processing job"
         );
 
+        let handler_config = handler.config();
+
         match handler.handle(job.clone()).await {
             Ok(()) => {
                 self.store.mark_success(job.id).await?;
@@ -124,7 +126,9 @@ where
             }
             Err(err) => {
                 let is_permanent = err.is_permanent;
-                self.store.mark_failure(job.id, err).await?;
+                self.store
+                    .mark_failure(job.id, err, &handler_config)
+                    .await?;
 
                 if is_permanent {
                     error!(
@@ -334,6 +338,7 @@ mod tests {
             &self,
             job_id: JobId,
             _error: JobHandlerError,
+            _config: &crate::types::JobConfig,
         ) -> Result<(), Self::Error> {
             self.failures.lock().unwrap().push(job_id);
             Ok(())

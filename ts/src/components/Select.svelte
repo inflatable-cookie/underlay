@@ -5,6 +5,11 @@
   import X from "lucide-svelte/icons/x";
   import ChevronDown from "lucide-svelte/icons/chevron-down";
   import { createStableId } from "../patterns/dom";
+  import {
+    FIELD_A11Y_CONTEXT_KEY,
+    mergeAriaDescribedBy,
+    type FieldA11yContext
+  } from "./field/a11y-context";
 
   type SelectItem = {
     value: string;
@@ -86,10 +91,20 @@
     unregisterField: (id: string) => void;
     updateField: (id: string, hasValue: boolean, validationStatus?: string, isValidationValid?: boolean) => void;
   } | undefined>("formValidation");
+  const fieldA11y = getContext<FieldA11yContext | undefined>(FIELD_A11Y_CONTEXT_KEY);
 
   // Generate stable ID for form validation tracking
   const fieldId = untrack(() => id) ?? createStableId("underlay-select");
+  const controlId = $derived(id ?? fieldA11y?.controlId() ?? fieldId);
   const isRequired = $derived(required ?? false);
+
+  const matchesField = $derived(fieldA11y?.matchesControl(controlId) ?? false);
+  const hasFieldError = $derived(matchesField && (fieldA11y?.hasError() ?? false));
+  const fieldErrorId = $derived(matchesField ? fieldA11y?.errorId() : undefined);
+
+  const ariaInvalid = $derived(hasFieldError ? true : undefined);
+  const ariaDescribedBy = $derived(mergeAriaDescribedBy(fieldErrorId));
+  const ariaErrorMessage = $derived(hasFieldError ? fieldErrorId : undefined);
 
   // Track previous value to prevent unnecessary updates
   let prevValue = $state("");
@@ -249,11 +264,14 @@
     {disabled}
   >
     <BitsSelect.Trigger
-      {id}
+      id={controlId}
       bind:ref={triggerRef}
       type={triggerType}
       class={`underlay-select-trigger ${className ?? ""}`}
       aria-label={triggerAriaLabel ?? placeholder}
+      aria-invalid={ariaInvalid}
+      aria-describedby={ariaDescribedBy}
+      aria-errormessage={ariaErrorMessage}
     >
       <span class="underlay-select-trigger__text" class:underlay-placeholder={!hasSelection} class:underlay-default-value={hasSelection && isDefaultValue}>
         {hasSelection ? selectedLabel : placeholder}
@@ -336,12 +354,15 @@
   </BitsSelect.Root>
 {:else}
   <select
-    {id}
+    id={controlId}
     class={`underlay-select ${className ?? ""}`}
     bind:value
     {name}
     {required}
     {disabled}
+    aria-invalid={ariaInvalid}
+    aria-describedby={ariaDescribedBy}
+    aria-errormessage={ariaErrorMessage}
     onchange={handleNativeChange}
   >
     {#if children}

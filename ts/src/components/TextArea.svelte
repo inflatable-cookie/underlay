@@ -1,5 +1,11 @@
 <script lang="ts">
   import type { HTMLTextareaAttributes } from "svelte/elements";
+  import { getContext } from "svelte";
+  import {
+    FIELD_A11Y_CONTEXT_KEY,
+    mergeAriaDescribedBy,
+    type FieldA11yContext
+  } from "./field/a11y-context";
 
   interface Props extends Omit<HTMLTextareaAttributes, "value" | "oninput" | "onchange"> {
     value?: string;
@@ -11,9 +17,32 @@
     value = $bindable(""),
     oninput,
     onchange,
+    id,
     class: className,
     ...restProps
   }: Props = $props();
+
+  const fieldA11y = getContext<FieldA11yContext | undefined>(FIELD_A11Y_CONTEXT_KEY);
+  const controlId = $derived(id ?? fieldA11y?.controlId());
+  const matchesField = $derived(fieldA11y?.matchesControl(controlId) ?? false);
+  const hasFieldError = $derived(matchesField && (fieldA11y?.hasError() ?? false));
+  const fieldErrorId = $derived(matchesField ? fieldA11y?.errorId() : undefined);
+
+  const externalAriaInvalid = $derived(restProps["aria-invalid"]);
+  const externalAriaDescribedBy = $derived(restProps["aria-describedby"]);
+  const externalAriaErrorMessage = $derived(restProps["aria-errormessage"]);
+
+  const ariaInvalid = $derived(externalAriaInvalid ?? (hasFieldError ? true : undefined));
+  const ariaDescribedBy = $derived(
+    mergeAriaDescribedBy(
+      typeof externalAriaDescribedBy === "string" ? externalAriaDescribedBy : undefined,
+      fieldErrorId,
+    )
+  );
+  const ariaErrorMessage = $derived(
+    (typeof externalAriaErrorMessage === "string" ? externalAriaErrorMessage : undefined) ??
+      (hasFieldError ? fieldErrorId : undefined)
+  );
 
   function handleInput(event: Event) {
     const target = event.currentTarget as HTMLTextAreaElement | null;
@@ -29,7 +58,11 @@
 
 <textarea
   {...restProps}
+  id={controlId}
   class={`underlay-textarea ${className ?? ""}`}
+  aria-invalid={ariaInvalid}
+  aria-describedby={ariaDescribedBy}
+  aria-errormessage={ariaErrorMessage}
   bind:value
   oninput={handleInput}
   onchange={handleChange}

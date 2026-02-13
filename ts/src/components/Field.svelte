@@ -1,6 +1,12 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
+  import { setContext, untrack } from "svelte";
   import FieldHint from "./FieldHint.svelte";
+  import { createStableId } from "../patterns/dom";
+  import {
+    FIELD_A11Y_CONTEXT_KEY,
+    type FieldA11yContext
+  } from "./field/a11y-context";
 
   interface Props {
     label?: string;
@@ -18,6 +24,23 @@
 
   let { label, forId, hint, error, required = false, span, wide = false, children }: Props = $props();
 
+  const controlId = untrack(() => forId) ?? createStableId("underlay-field-control");
+  const errorId = $derived(error ? `${controlId}-error` : undefined);
+
+  const fieldA11yContext: FieldA11yContext = {
+    controlId: () => controlId,
+    matchesControl: (candidateId) => {
+      if (forId) {
+        return candidateId === forId;
+      }
+      return !candidateId || candidateId === controlId;
+    },
+    errorId: () => errorId,
+    hasError: () => Boolean(error),
+  };
+
+  setContext(FIELD_A11Y_CONTEXT_KEY, fieldA11yContext);
+
   const spanStyle = $derived(
     span === "full"
       ? "grid-column: 1 / -1;"
@@ -30,7 +53,7 @@
 <div class="underlay-field" class:underlay-field--wide={wide} style={spanStyle}>
   {#if label}
     <div class="underlay-field__header">
-      <label class="underlay-field__label" for={forId}>
+      <label class="underlay-field__label" for={forId ?? controlId}>
         {label}{#if required}<span class="underlay-field__required">*</span>{/if}
       </label>
 
@@ -41,7 +64,7 @@
   {/if}
 
   {#if error}
-    <p class="underlay-field__error">{error}</p>
+    <p id={errorId} class="underlay-field__error" aria-live="polite">{error}</p>
   {/if}
 
   <div class="underlay-field__content">

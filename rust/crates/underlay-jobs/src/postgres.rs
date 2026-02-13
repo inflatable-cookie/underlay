@@ -216,7 +216,13 @@ impl JobRepository {
 
     /// Mark a job as failed and potentially schedule for retry.
     #[instrument(skip(self, config))]
-    pub async fn mark_failed(&self, job_id: Uuid, error: &str, config: &JobConfig) -> Result<bool> {
+    pub async fn mark_failed(
+        &self,
+        job_id: Uuid,
+        error: &str,
+        config: &JobConfig,
+        is_permanent: bool,
+    ) -> Result<bool> {
         let now = Utc::now();
 
         // Get current attempt count
@@ -245,7 +251,7 @@ impl JobRepository {
             arr.push(serde_json::to_value(&job_error)?);
         }
 
-        let should_retry = attempts < max_attempts;
+        let should_retry = !is_permanent && attempts < max_attempts;
 
         if should_retry {
             // Schedule for retry with backoff
@@ -332,7 +338,8 @@ impl JobRepository {
             SELECT *
             FROM platform.job
             WHERE status IN ('claimed', 'running')
-              AND heartbeat_at < NOW() - ($1 || ' seconds')::interval
+              AND COALESCE(heartbeat_at, claimed_at, started_at, created_at)
+                  < NOW() - ($1 || ' seconds')::interval
             "#,
         )
         .bind(timeout_seconds)
@@ -491,10 +498,13 @@ impl JobStore for JobRepository {
         self.mark_succeeded(job_id).await
     }
 
-    async fn mark_failure(&self, job_id: JobId, error: JobHandlerError) -> Result<()> {
-        // Use default config for retry logic (single attempt, no retry)
-        let config = JobConfig::default();
-        self.mark_failed(job_id, &error.to_string(), &config)
+    async fn mark_failure(
+        &self,
+        job_id: JobId,
+        error: JobHandlerError,
+        config: &JobConfig,
+    ) -> Result<()> {
+        self.mark_failed(job_id, &error.message, config, error.is_permanent)
             .await?;
         Ok(())
     }

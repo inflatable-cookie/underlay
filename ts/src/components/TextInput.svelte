@@ -9,10 +9,14 @@
     updateFormValidationField,
     type FormValidationContext
   } from "./text-input/form-validation";
-  import {
+import {
     isValidationStatusValid,
     type InputValidationStatus
   } from "./text-input/validation-state";
+  import {
+    FIELD_A11Y_CONTEXT_KEY,
+    type FieldA11yContext
+  } from "./field/a11y-context";
 
   export interface ValidationResult {
     valid: boolean;
@@ -74,10 +78,12 @@
 
   // Get FormValidationProvider context if present
   const formValidation = getContext<FormValidationContext | undefined>("formValidation");
+  const fieldA11y = getContext<FieldA11yContext | undefined>(FIELD_A11Y_CONTEXT_KEY);
 
   // Generate stable ID for form validation tracking
   // Note: fieldId intentionally captures id once - we want a stable ID for the lifetime of the component
-  const fieldId = untrack(() => id) ?? createStableId("underlay-text-input");
+  const fieldId =
+    untrack(() => id ?? fieldA11y?.controlId()) ?? createStableId("underlay-text-input");
   const isRequired = $derived(required ?? false);
 
   let debounceTimer: ReturnType<typeof setTimeout> | null = null;

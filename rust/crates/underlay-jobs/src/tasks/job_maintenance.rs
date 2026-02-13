@@ -195,7 +195,8 @@ impl JobHandler for RecoverAbandonedJobsJob {
                     heartbeat_at = NULL,
                     last_error = 'Job stalled and was automatically recovered'
                 WHERE status IN ('claimed', 'running')
-                  AND heartbeat_at < NOW() - ($1 || ' seconds')::interval
+                  AND COALESCE(heartbeat_at, claimed_at, started_at, created_at)
+                      < NOW() - ($1 || ' seconds')::interval
                   AND attempts < max_attempts
                 RETURNING id
             )
@@ -222,7 +223,8 @@ impl JobHandler for RecoverAbandonedJobsJob {
                     finished_at = NOW(),
                     last_error = 'Job stalled and exceeded max attempts'
                 WHERE status IN ('claimed', 'running')
-                  AND heartbeat_at < NOW() - ($1 || ' seconds')::interval
+                  AND COALESCE(heartbeat_at, claimed_at, started_at, created_at)
+                      < NOW() - ($1 || ' seconds')::interval
                   AND attempts >= max_attempts
                 RETURNING id
             )

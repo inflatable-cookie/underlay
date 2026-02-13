@@ -5,7 +5,7 @@
 
 use async_trait::async_trait;
 
-use crate::types::{Job, JobHandlerError, JobId};
+use crate::types::{Job, JobConfig, JobHandlerError, JobId};
 
 /// Abstract storage backend for jobs.
 ///
@@ -22,5 +22,10 @@ pub trait JobStore: Send + Sync {
     async fn mark_success(&self, job_id: JobId) -> Result<(), Self::Error>;
 
     /// Mark a job as failed with the given error.
-    async fn mark_failure(&self, job_id: JobId, error: JobHandlerError) -> Result<(), Self::Error>;
+    async fn mark_failure(
+        &self,
+        job_id: JobId,
+        error: JobHandlerError,
+        config: &JobConfig,
+    ) -> Result<(), Self::Error>;
 }

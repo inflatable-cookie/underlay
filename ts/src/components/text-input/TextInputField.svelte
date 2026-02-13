@@ -1,8 +1,14 @@
 <script lang="ts">
   import type { HTMLInputAttributes } from "svelte/elements";
   import type { Snippet } from "svelte";
+  import { getContext } from "svelte";
   import TextInputAffordances from "./TextInputAffordances.svelte";
   import type { InputValidationStatus } from "./validation-state";
+  import {
+    FIELD_A11Y_CONTEXT_KEY,
+    mergeAriaDescribedBy,
+    type FieldA11yContext
+  } from "../field/a11y-context";
 
   interface Props {
     needsWrapper?: boolean;
@@ -49,6 +55,35 @@
     onClear,
     restProps = {}
   }: Props = $props();
+
+  const fieldA11y = getContext<FieldA11yContext | undefined>(FIELD_A11Y_CONTEXT_KEY);
+  const validationMessageId = $derived(
+    validationMessage && showValidationStatus ? `${fieldId}-validation-message` : undefined
+  );
+  const hasInvalidValidation = $derived(showValidationStatus && validationStatus === "invalid");
+
+  const matchesField = $derived(fieldA11y?.matchesControl(fieldId) ?? false);
+  const hasFieldError = $derived(matchesField && (fieldA11y?.hasError() ?? false));
+  const fieldErrorId = $derived(matchesField ? fieldA11y?.errorId() : undefined);
+
+  const externalAriaInvalid = $derived(restProps["aria-invalid"]);
+  const externalAriaDescribedBy = $derived(restProps["aria-describedby"]);
+  const externalAriaErrorMessage = $derived(restProps["aria-errormessage"]);
+
+  const ariaInvalid = $derived(
+    externalAriaInvalid ?? (hasFieldError || hasInvalidValidation ? true : undefined)
+  );
+  const ariaDescribedBy = $derived(
+    mergeAriaDescribedBy(
+      typeof externalAriaDescribedBy === "string" ? externalAriaDescribedBy : undefined,
+      fieldErrorId,
+      validationMessageId,
+    )
+  );
+  const ariaErrorMessage = $derived(
+    (typeof externalAriaErrorMessage === "string" ? externalAriaErrorMessage : undefined) ??
+      (ariaInvalid ? fieldErrorId ?? validationMessageId : undefined)
+  );
 </script>
 
 {#if needsWrapper}
@@ -63,6 +98,9 @@
       {type}
       {autocomplete}
       {required}
+      aria-invalid={ariaInvalid}
+      aria-describedby={ariaDescribedBy}
+      aria-errormessage={ariaErrorMessage}
       bind:this={inputRef}
       bind:value
       oninput={onInput}
@@ -83,7 +121,10 @@
   </div>
 
   {#if validationMessage && showValidationStatus}
-    <p class="underlay-input-validation__message underlay-input-validation__message--{validationStatus}">
+    <p
+      id={validationMessageId}
+      class="underlay-input-validation__message underlay-input-validation__message--{validationStatus}"
+    >
       {validationMessage}
     </p>
   {/if}
@@ -95,6 +136,9 @@
     {type}
     {autocomplete}
     {required}
+    aria-invalid={ariaInvalid}
+    aria-describedby={ariaDescribedBy}
+    aria-errormessage={ariaErrorMessage}
     bind:this={inputRef}
     bind:value
     oninput={onInput}
