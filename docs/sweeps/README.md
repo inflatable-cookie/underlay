@@ -23,6 +23,10 @@ Unlike implementation guides, sweeps are runbooks for reviewing an existing code
 | [006-query-efficiency-sweep.md](./006-query-efficiency-sweep.md) | Detect avoidable API/DB over-fetching, fan-out requests, and N+1 query patterns | Backend/frontend reviewers |
 | [007-error-diagnostics-and-logging-sweep.md](./007-error-diagnostics-and-logging-sweep.md) | Enforce Underlay db diagnostics and HTTP error logging with rich context | Backend/platform reviewers |
 | [008-form-and-nightfire-validation-sweep.md](./008-form-and-nightfire-validation-sweep.md) | Validate API + client form validation coverage, async checks, and Nightfire emptiness rules | Backend/frontend reviewers |
+| [009-rich-text-storage-alignment-sweep.md](./009-rich-text-storage-alignment-sweep.md) | Ensure `TEXT`/Markdown and `JSONB`/Nightfire are aligned end-to-end across DB, API, client, and UI | Backend/frontend reviewers |
+| [010-authorization-boundary-sweep.md](./010-authorization-boundary-sweep.md) | Verify authn/authz boundaries are enforced in API extractors and route topology, not only in UI | Backend/security reviewers |
+| [011-migration-safety-sweep.md](./011-migration-safety-sweep.md) | Enforce safe SQL migration practices (schema qualification, idempotency, and rollout discipline) | Backend/platform reviewers |
+| [012-observability-and-audit-sweep.md](./012-observability-and-audit-sweep.md) | Validate error/event observability and audit trail coverage for critical mutations | Backend/platform reviewers |
 
 ## How to run a sweep
 
