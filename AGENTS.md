@@ -110,6 +110,7 @@ Underlay documentation is the source of truth for patterns used across consuming
 | [Database Guide](docs/guides/050-database.md) | ExistsCheck, migrations, schema patterns |
 | [API Handlers Guide](docs/guides/070-api-handlers.md) | HTTP utilities, validation, responses |
 | [Configuration Guide](docs/guides/120-configuration.md) | Typed config boundaries and env usage policy |
+| [Sweeps Index](docs/sweeps/README.md) | Prescripted cross-repo audit runbooks (security, consistency, etc.) |
 
 ### Adding New Patterns
 
