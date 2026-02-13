@@ -20,6 +20,7 @@ Unlike implementation guides, sweeps are runbooks for reviewing an existing code
 | [003-frontend-consistency-sweep.md](./003-frontend-consistency-sweep.md) | Cross-site consistency checks for frontend architecture, API usage, state, and UX patterns | Frontend/platform reviewers |
 | [004-tab-count-badges-sweep.md](./004-tab-count-badges-sweep.md) | Ensure tab badge counts come from detail DTO counts, not eager relation-list fetches | Frontend/API reviewers |
 | [005-api-client-contract-drift-sweep.md](./005-api-client-contract-drift-sweep.md) | Detect DTO, endpoint, and type drift between Rust API and TypeScript client | API/client maintainers |
+| [006-query-efficiency-sweep.md](./006-query-efficiency-sweep.md) | Detect avoidable API/DB over-fetching, fan-out requests, and N+1 query patterns | Backend/frontend reviewers |
 | [007-error-diagnostics-and-logging-sweep.md](./007-error-diagnostics-and-logging-sweep.md) | Enforce Underlay db diagnostics and HTTP error logging with rich context | Backend/platform reviewers |
 | [008-form-and-nightfire-validation-sweep.md](./008-form-and-nightfire-validation-sweep.md) | Validate API + client form validation coverage, async checks, and Nightfire emptiness rules | Backend/frontend reviewers |
 
