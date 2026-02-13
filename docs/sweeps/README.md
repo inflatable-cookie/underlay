@@ -30,6 +30,9 @@ Unlike implementation guides, sweeps are runbooks for reviewing an existing code
 | [013-background-jobs-and-scheduler-reliability-sweep.md](./013-background-jobs-and-scheduler-reliability-sweep.md) | Verify job queue and scheduler reliability (idempotency, retries, overlap control, and recovery) | Backend/platform reviewers |
 | [014-accessibility-and-keyboard-sweep.md](./014-accessibility-and-keyboard-sweep.md) | Verify accessibility fundamentals: keyboard nav, focus management, ARIA semantics, and form/dialog usability | Frontend/platform reviewers |
 | [015-test-coverage-and-critical-paths-sweep.md](./015-test-coverage-and-critical-paths-sweep.md) | Ensure critical workflows have meaningful automated coverage across API, client, and frontend boundaries | Backend/frontend reviewers |
+| [016-api-versioning-and-backward-compat-sweep.md](./016-api-versioning-and-backward-compat-sweep.md) | Verify API version signaling and backward-compat discipline across routes, DTOs, and client commands | API/client maintainers |
+| [017-dependency-and-supply-chain-hygiene-sweep.md](./017-dependency-and-supply-chain-hygiene-sweep.md) | Detect vulnerable, stale, or risky dependencies and enforce dependency hygiene across Rust and TypeScript stacks | Platform/security reviewers |
+| [018-privacy-and-sensitive-data-handling-sweep.md](./018-privacy-and-sensitive-data-handling-sweep.md) | Verify PII/secret handling, redaction, retention, and safe data exposure across API, jobs, logs, and frontends | Security/platform reviewers |
 
 ## How to run a sweep
 
