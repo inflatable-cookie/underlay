@@ -11,12 +11,30 @@ export interface GroupedOptions {
 	options: NightfireBlockOptionInput[];
 }
 
+const CATEGORY_PRIORITY: Record<string, number> = {
+	Text: 1,
+	Media: 2
+};
+
+const INTERACTIVE_QUESTION_SUBCATEGORY_PRIORITY: Record<string, number> = {
+	multiplechoice: 1,
+	input: 2,
+	interactive: 3,
+	draganddrop: 4,
+	other: 5
+};
+
+function getCategoryPriority(category: string | null): number {
+	if (category === null) return 999;
+	return CATEGORY_PRIORITY[category] ?? 100;
+}
+
 export function buildGroupedOptions(
 	options: NightfireBlockOptionInput[]
 ): GroupedOptions[] {
 	const normalised = options.map((option) => ({
 		...option,
-		subcategory: option.subcategory ?? inferSubcategory(option)
+		subcategory: inferSubcategory(option) ?? option.subcategory
 	}));
 
 	const groups = new Map<string | null, NightfireBlockOptionInput[]>();
@@ -29,6 +47,11 @@ export function buildGroupedOptions(
 	}
 
 	const sortedKeys = Array.from(groups.keys()).sort((a, b) => {
+		const priorityA = getCategoryPriority(a);
+		const priorityB = getCategoryPriority(b);
+		if (priorityA !== priorityB) {
+			return priorityA - priorityB;
+		}
 		const labelA = (a ?? "").toLowerCase();
 		const labelB = (b ?? "").toLowerCase();
 		if (labelA < labelB) return -1;
@@ -39,6 +62,12 @@ export function buildGroupedOptions(
 	return sortedKeys.map((key) => {
 		const grouped = groups.get(key) ?? [];
 		grouped.sort((a, b) => {
+			const priorityA = getSubcategoryPriority(a);
+			const priorityB = getSubcategoryPriority(b);
+			if (priorityA !== priorityB) {
+				return priorityA - priorityB;
+			}
+
 			const subA = (a.subcategory ?? "").toLowerCase();
 			const subB = (b.subcategory ?? "").toLowerCase();
 			if (subA < subB) return -1;
@@ -51,6 +80,22 @@ export function buildGroupedOptions(
 			options: grouped
 		};
 	});
+}
+
+function getSubcategoryPriority(option: NightfireBlockOptionInput): number {
+	const normalisedCategory = (option.category ?? "")
+		.toLowerCase()
+		.replace(/[^a-z0-9]/g, "");
+
+	if (normalisedCategory !== "interactivequestion") {
+		return 100;
+	}
+
+	const normalisedSubcategory = (option.subcategory ?? "")
+		.toLowerCase()
+		.replace(/[^a-z0-9]/g, "");
+
+	return INTERACTIVE_QUESTION_SUBCATEGORY_PRIORITY[normalisedSubcategory] ?? 99;
 }
 
 function formatCategoryLabel(input: string): string {
@@ -83,6 +128,10 @@ function inferSubcategory(option: NightfireBlockOptionInput): string | undefined
 
 	if (normalisedCategory !== "interactivequestion") {
 		return undefined;
+	}
+
+	if (option.type === "acow.question.multipleChoice@1") {
+		return "MultipleChoice";
 	}
 
 	if (option.type.startsWith("acow.question.mc")) {

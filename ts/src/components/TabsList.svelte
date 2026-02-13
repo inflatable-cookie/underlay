@@ -39,6 +39,12 @@
   // Use auto-registered tabs from TabsTrigger children
   let registeredTabs = $state<RegisteredTab[]>([]);
 
+  // Keep local tab metadata in sync with TabsTrigger registrations.
+  $effect(() => {
+    if (!collapsible || !getRegisteredTabs) return;
+    registeredTabs = getRegisteredTabs();
+  });
+
   // Find the current tab for dropdown display
   const currentTab = $derived(registeredTabs.find((t) => t.value === currentValue));
 
@@ -110,7 +116,7 @@
   });
 </script>
 
-{#if collapsible && registeredTabs.length > 0}
+{#if collapsible}
   <div
     bind:this={containerRef}
     class="underlay-tabs-list-container underlay-tabs-list-container--{variant} underlay-tabs-list-container--{size}"

@@ -27,6 +27,8 @@
     suggestions,
     // Filters
     filters,
+    // Drill-Down
+    drillDown,
     // Labels
     label,
     placeholder,
@@ -85,6 +87,9 @@
     },
     get filters() {
       return filters;
+    },
+    get drillDown() {
+      return drillDown;
     },
     get label() {
       return label;
@@ -264,7 +269,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 2.5em;
+    width: 2.3em;
     flex-shrink: 0;
     padding: 0;
     margin: 0;
@@ -273,7 +278,7 @@
     background: var(--underlay-color-primary, var(--underlay-color-primary, #2563eb));
     color: #fff;
     cursor: pointer;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     transition: background-color 0.12s ease;
   }
 

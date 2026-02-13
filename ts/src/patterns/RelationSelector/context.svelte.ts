@@ -5,6 +5,8 @@ import type {
   RelationSelectorState,
   SearchResult
 } from "./types.js";
+import type { DrillDownItem, DrillDownBreadcrumb, DrillDownLevel } from "./drilldown-types.js";
+import { createDrillDownContext, type DrillDownActions } from "./drilldown-context.svelte.js";
 
 const RELATION_SELECTOR_CONTEXT_KEY = Symbol("relationSelector");
 
@@ -66,6 +68,10 @@ export interface RelationSelectorContext<T extends SelectableRelation> {
   isSelected: (itemId: string) => boolean;
   /** Set a filter value (undefined = all) */
   setFilter: (filterKey: string, optionId: string | undefined) => void;
+
+  // === Drill-Down Navigation ===
+  /** Drill-down actions (only functional when drillDown config is provided) */
+  drillDown: DrillDownActions;
 }
 
 /**
@@ -86,6 +92,9 @@ export function createRelationSelectorContext<T extends SelectableRelation>(
     return filters;
   }
 
+  // Initialize drill-down context (if configured)
+  const ddCtx = createDrillDownContext(() => props.drillDown);
+
   // Initialize state with Svelte 5 runes
   let state = $state<RelationSelectorState<T>>({
     popoverOpen: false,
@@ -98,7 +107,8 @@ export function createRelationSelectorContext<T extends SelectableRelation>(
     suggestionItems: [],
     createFormOpen: false,
     searchError: null,
-    activeFilters: getInitialFilters()
+    activeFilters: getInitialFilters(),
+    drillDown: props.drillDown ? ddCtx.state : null
   });
 
   // Track resolved items for selected values
@@ -156,6 +166,23 @@ export function createRelationSelectorContext<T extends SelectableRelation>(
       .filter((item): item is T => item !== undefined);
   });
 
+  // When drill-down reaches the final level, load final-level suggestions
+  let lastDrillDownDepth = 0;
+  $effect(() => {
+    const dd = state.drillDown;
+    if (!dd || !props.drillDown) {
+      lastDrillDownDepth = 0;
+      return;
+    }
+    const atFinalLevel = dd.depth === props.drillDown.levels.length;
+    const depthChanged = dd.depth !== lastDrillDownDepth;
+    lastDrillDownDepth = dd.depth;
+    if (atFinalLevel && depthChanged && state.popoverOpen && props.suggestions) {
+      state.suggestionItems = [];
+      void loadSuggestions();
+    }
+  });
+
   // Track if we've attempted to load suggestions for pre-selected value
   let hasLoadedInitialSuggestions = false;
 
@@ -180,8 +207,11 @@ export function createRelationSelectorContext<T extends SelectableRelation>(
 
   function openPopover() {
     state.popoverOpen = true;
-    // Load suggestions when popover opens
-    if (props.suggestions && state.suggestionItems.length === 0) {
+    if (ddCtx.actions.isDrillDownActive) {
+      // Load drill-down suggestions for the current level
+      void ddCtx.actions.loadDrillDownSuggestions();
+    } else if (props.suggestions && state.suggestionItems.length === 0) {
+      // Load final-level suggestions when popover opens
       void loadSuggestions();
     }
   }
@@ -191,6 +221,10 @@ export function createRelationSelectorContext<T extends SelectableRelation>(
     state.searchQuery = "";
     state.searchResults = [];
     state.searchError = null;
+    // Reset drill-down to start (so next open starts from the beginning)
+    if (props.drillDown) {
+      ddCtx.actions.resetDrillDown();
+    }
   }
 
   function openModal() {
@@ -309,10 +343,14 @@ export function createRelationSelectorContext<T extends SelectableRelation>(
     state.searchError = null;
 
     try {
+      // Merge drill-down selections into filters for the final selection level
+      const mergedFilters = props.drillDown
+        ? { ...ddCtx.actions.getDrillDownFilters(), ...state.activeFilters }
+        : state.activeFilters;
       const result: SearchResult<T> = await props.search(query, {
         limit: 20,
         offset: 0,
-        filters: state.activeFilters
+        filters: mergedFilters
       });
 
       state.searchResults = result.items;
@@ -348,9 +386,13 @@ export function createRelationSelectorContext<T extends SelectableRelation>(
     try {
       // Get recent hints from selection history (if provided)
       const recentHints = props.selectionHistory?.getRecentIds();
+      // Merge drill-down selections into filters for the final selection level
+      const mergedFilters = props.drillDown
+        ? { ...ddCtx.actions.getDrillDownFilters(), ...state.activeFilters }
+        : state.activeFilters;
       const items = await props.suggestions({
         recentHints,
-        filters: state.activeFilters
+        filters: mergedFilters
       });
       state.suggestionItems = items;
 
@@ -428,7 +470,8 @@ export function createRelationSelectorContext<T extends SelectableRelation>(
     loadSuggestions,
     retrySuggestions,
     isSelected,
-    setFilter
+    setFilter,
+    drillDown: ddCtx.actions
   };
 
   setContext(RELATION_SELECTOR_CONTEXT_KEY, context);

@@ -28,6 +28,7 @@ Complete, repeatable implementations covering backend → client → frontend.
 | [Delete Batch Cascades](./delete-batch-cascades.md) | Cascading soft deletes tracked under a single batch ID | 5-phase checklist |
 | [Media Upload Pipeline](./media-upload-pipeline.md) | Direct-to-blob upload with dedup, initiate, and finalise | 5-phase checklist |
 | [Relation Selector with Inline Create](./relation-selector-inline-create.md) | Selecting related entities and creating missing ones inline | 5-phase checklist |
+| [Relation Selector with Drill-Down](./relation-selector-drilldown.md) | Hierarchical drill-down navigation for large nested data (e.g., Module → Section → Outcome) | 6-phase checklist |
 | [Context-Preserving Navigation](./context-preserving-navigation.md) | Keeping back/navigation context across list/detail/edit flows | 5-phase checklist |
 | [Synced Hierarchical Selection](./synced-hierarchical-selection.md) | Managing module/section/area style dependent selections | 5-phase checklist |
 | [Admin Ops Console](./admin-ops-console.md) | Building jobs/scheduled/errors/audit operational interfaces | 5-phase checklist |
@@ -48,6 +49,8 @@ These prompts will trigger the appropriate recipe:
 - "Implement cascade soft delete batches for X" → [Delete Batch Cascades](./delete-batch-cascades.md)
 - "Implement media upload flow for X" → [Media Upload Pipeline](./media-upload-pipeline.md)
 - "Add relation picker with inline create for X" → [Relation Selector with Inline Create](./relation-selector-inline-create.md)
+- "Add drill-down selection for X" → [Relation Selector with Drill-Down](./relation-selector-drilldown.md)
+- "Build hierarchical relation picker for X" → [Relation Selector with Drill-Down](./relation-selector-drilldown.md)
 - "Preserve back context across list/detail/edit" → [Context-Preserving Navigation](./context-preserving-navigation.md)
 - "Build dependent selections (module/section/area)" → [Synced Hierarchical Selection](./synced-hierarchical-selection.md)
 - "Build admin jobs/schedules/errors/audit pages" → [Admin Ops Console](./admin-ops-console.md)

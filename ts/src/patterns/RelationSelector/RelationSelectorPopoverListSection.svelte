@@ -117,7 +117,7 @@
     color: var(--underlay-color-text, #e5e7eb);
   }
 
-  .relation-selector-popover__item:hover:not(.relation-selector-popover__item--disabled) {
+  .relation-selector-popover__item:hover:not(.relation-selector-popover__item--disabled):not(.relation-selector-popover__item--selected) {
     background: var(--underlay-color-hover-bg, rgba(148, 163, 184, 0.2));
   }
 

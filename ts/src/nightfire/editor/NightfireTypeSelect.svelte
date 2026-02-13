@@ -33,6 +33,16 @@
     return withoutQuestionPrefix.length > 0 ? withoutQuestionPrefix : trimmed;
   }
 
+  function subcategoryPriority(input: string): number {
+    const normalised = input.toLowerCase().replace(/[^a-z0-9]/g, "");
+    if (normalised === "multiplechoice") return 1;
+    if (normalised === "input") return 2;
+    if (normalised === "interactive") return 3;
+    if (normalised === "draganddrop") return 4;
+    if (normalised === "other") return 5;
+    return 99;
+  }
+
   const items = $derived(
     typeOptions.map((opt) => ({ value: opt.type, label: formatOptionLabel(opt.label) }))
   );
@@ -56,7 +66,14 @@
       }
 
       const nestedGroups: SelectGroup[] = Array.from(subgroups.entries())
-        .sort(([a], [b]) => a.localeCompare(b))
+        .sort(([a], [b]) => {
+          const priorityA = subcategoryPriority(a);
+          const priorityB = subcategoryPriority(b);
+          if (priorityA !== priorityB) {
+            return priorityA - priorityB;
+          }
+          return a.localeCompare(b);
+        })
         .map(([subcategory, subgroupItems]) => ({
           label: formatSubgroupLabel(subcategory),
           items: subgroupItems.sort((a, b) => a.label.localeCompare(b.label))

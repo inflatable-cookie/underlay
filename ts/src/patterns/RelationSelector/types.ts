@@ -1,5 +1,6 @@
 import type { Snippet } from "svelte";
 import type { SelectionHistory } from "../selection-history.js";
+import type { DrillDownConfig, DrillDownState } from "./drilldown-types.js";
 
 /**
  * A single option within a filter.
@@ -150,6 +151,16 @@ export interface RelationSelectorProps<T extends SelectableRelation> {
    */
   filters?: FilterConfig[];
 
+  // === Drill-Down Navigation ===
+  /**
+   * Optional drill-down configuration for hierarchical selection.
+   * When provided, the selector shows a step-by-step drill-down through
+   * hierarchy levels before reaching the final selection.
+   * Each level has its own search/suggestions; the final level uses
+   * the existing search/suggestions/filters props.
+   */
+  drillDown?: DrillDownConfig;
+
   // === Labels & Text ===
   /** Modal title, e.g., "Select Level" */
   label: string;
@@ -215,4 +226,6 @@ export interface RelationSelectorState<T extends SelectableRelation> {
   searchError: string | null;
   /** Active filter values (filter key -> selected option id, undefined = all) */
   activeFilters: Record<string, string | undefined>;
+  /** Drill-down navigation state (only present when drillDown config is provided) */
+  drillDown: DrillDownState | null;
 }

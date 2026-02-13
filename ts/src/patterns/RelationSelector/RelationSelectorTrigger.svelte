@@ -115,7 +115,6 @@
     font-size: 0.85rem;
     cursor: pointer;
     text-align: left;
-    min-height: 2.5em;
   }
 
   .relation-selector-trigger:hover:not(.relation-selector-trigger--disabled) {

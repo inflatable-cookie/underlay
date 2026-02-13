@@ -10,8 +10,24 @@
   import RelationSelectorPopoverFilters from "./RelationSelectorPopoverFilters.svelte";
   import RelationSelectorPopoverListSection from "./RelationSelectorPopoverListSection.svelte";
   import RelationSelectorPopoverSearch from "./RelationSelectorPopoverSearch.svelte";
+  import RelationSelectorDrillDown from "./RelationSelectorDrillDown.svelte";
+  import ArrowLeft from "lucide-svelte/icons/arrow-left";
 
   const ctx = useRelationSelector<SelectableRelation>();
+
+  // Drill-down state
+  const hasDrillDown = $derived(!!ctx.props.drillDown);
+  const isDrillDownActive = $derived(ctx.drillDown.isDrillDownActive);
+  const drillDownBreadcrumbs = $derived(ctx.drillDown.drillDownBreadcrumbs);
+
+  // At the final selection level, use finalLevelFilters if configured, otherwise fall back to props.filters
+  const effectiveFilters = $derived.by(() => {
+    if (hasDrillDown && !isDrillDownActive) {
+      const computed = ctx.drillDown.finalLevelFilters;
+      if (computed) return computed;
+    }
+    return ctx.props.filters;
+  });
 
   // Filter state
   let openFilterKey = $state<string | null>(null);
@@ -223,107 +239,140 @@
     }}
     onclick={handlePopoverClick}
   >
-  <div class="relation-selector-popover__header">
-    <span class="relation-selector-popover__title">{ctx.props.label}</span>
-    {#if showClearButton}
-      <button
-        type="button"
-        class="relation-selector-popover__clear-btn"
-        onclick={handleClear}
-      >
-        <X size="0.85em" strokeWidth={2.5} />
-        <span>Clear</span>
-      </button>
-    {/if}
-  </div>
-
-  {#if ctx.props.filters && ctx.props.filters.length > 0}
-    <RelationSelectorPopoverFilters
-      filters={ctx.props.filters}
-      activeFilters={ctx.state.activeFilters}
-      {openFilterKey}
-      {getActiveFilterLabel}
-      onToggleFilter={toggleFilterDropdown}
-      onSelectFilter={handleFilterSelect}
-    />
-  {/if}
-
-  <RelationSelectorPopoverSearch
-    placeholder={ctx.props.searchPlaceholder ?? "Search..."}
-    value={ctx.state.searchQuery}
-    {showLoading}
-    onInput={handleSearchInput}
-    onKeyDown={handleSearchKeyDown}
-    onInputRef={(input) => (searchInputRef = input)}
-  />
-
-  <div class="relation-selector-popover__body">
-    {#if ctx.state.searchError}
-      <div class="relation-selector-popover__error">
-        <span>{ctx.state.searchError}</span>
+  {#if hasDrillDown && isDrillDownActive}
+    <!-- Drill-down mode: show hierarchy navigation -->
+    <RelationSelectorDrillDown />
+  {:else}
+    <!-- Normal selection mode (or final level of drill-down) -->
+    <div class="relation-selector-popover__header">
+      <span class="relation-selector-popover__title">{ctx.props.label}</span>
+      {#if showClearButton}
         <button
           type="button"
-          class="relation-selector-popover__error-retry"
-          onclick={() => ctx.retrySearch()}
+          class="relation-selector-popover__clear-btn"
+          onclick={handleClear}
         >
-          Retry
+          <X size="0.85em" strokeWidth={2.5} />
+          <span>Clear</span>
         </button>
-      </div>
-    {/if}
-
-    {#if showSuggestions}
-      <RelationSelectorPopoverListSection
-        label={ctx.props.suggestionsLabel ?? "Suggestions"}
-        items={ctx.state.suggestionItems}
-        {focusedIndex}
-        isSelected={ctx.isSelected}
-        onItemClick={handleItemClick}
-        onListKeyDown={handleListKeyDown}
-        renderItem={ctx.props.renderItem as any}
-        onListRef={(node) => (listRef = node)}
-      />
-    {/if}
-
-    {#if showSearchResults}
-      <RelationSelectorPopoverListSection
-        label={`Results (${ctx.state.searchTotal})`}
-        items={ctx.state.searchResults}
-        {focusedIndex}
-        isSelected={ctx.isSelected}
-        onItemClick={handleItemClick}
-        onListKeyDown={handleListKeyDown}
-        renderItem={ctx.props.renderItem as any}
-        onListRef={(node) => (listRef = node)}
-      />
-    {/if}
-
-    {#if showEmpty}
-      <div class="relation-selector-popover__empty">
-        {ctx.props.emptyMessage ?? "No results found"}
-      </div>
-    {/if}
-
-    {#if showLoading && !showSuggestions && !showSearchResults}
-      <div class="relation-selector-popover__loading">
-        <Loader size="1.2em" class="relation-selector-popover__loading-spinner" />
-        <span>Loading...</span>
-      </div>
-    {/if}
-
-    <RelationSelectorPopoverCreateAction
-      allowCreate={ctx.props.allowCreate}
-      hasCreateForm={!!ctx.props.createForm}
-      createLabel={ctx.props.createLabel ?? "Add new"}
-      onCreate={handleCreateClick}
-    />
-  </div>
-
-  {#if ctx.isMultiSelect}
-    <div class="relation-selector-popover__footer">
-      <Button variant="primary" onclick={handleConfirm}>
-        Done ({ctx.selectedItems.length})
-      </Button>
+      {/if}
     </div>
+
+    {#if hasDrillDown && drillDownBreadcrumbs.length > 0}
+      <div class="relation-selector-popover__drilldown-breadcrumbs">
+        <button
+          type="button"
+          class="relation-selector-popover__drilldown-back"
+          onclick={() => ctx.drillDown.drillDownBack()}
+          aria-label="Go back"
+        >
+          <ArrowLeft size="0.9em" strokeWidth={2.5} />
+        </button>
+        <div class="relation-selector-popover__drilldown-trail">
+          {#each drillDownBreadcrumbs as crumb, i (crumb.key)}
+            {#if i > 0}
+              <span class="relation-selector-popover__drilldown-sep">/</span>
+            {/if}
+            <button
+              type="button"
+              class="relation-selector-popover__drilldown-crumb"
+              onclick={() => ctx.drillDown.drillDownNavigateTo(crumb.depth)}
+            >
+              {crumb.itemLabel}
+            </button>
+          {/each}
+        </div>
+      </div>
+    {/if}
+
+    {#if effectiveFilters && effectiveFilters.length > 0}
+      <RelationSelectorPopoverFilters
+        filters={effectiveFilters}
+        activeFilters={ctx.state.activeFilters}
+        {openFilterKey}
+        {getActiveFilterLabel}
+        onToggleFilter={toggleFilterDropdown}
+        onSelectFilter={handleFilterSelect}
+      />
+    {/if}
+
+    <RelationSelectorPopoverSearch
+      placeholder={ctx.props.searchPlaceholder ?? "Search..."}
+      value={ctx.state.searchQuery}
+      {showLoading}
+      onInput={handleSearchInput}
+      onKeyDown={handleSearchKeyDown}
+      onInputRef={(input) => (searchInputRef = input)}
+    />
+
+    <div class="relation-selector-popover__body">
+      {#if ctx.state.searchError}
+        <div class="relation-selector-popover__error">
+          <span>{ctx.state.searchError}</span>
+          <button
+            type="button"
+            class="relation-selector-popover__error-retry"
+            onclick={() => ctx.retrySearch()}
+          >
+            Retry
+          </button>
+        </div>
+      {/if}
+
+      {#if showSuggestions}
+        <RelationSelectorPopoverListSection
+          label={ctx.props.suggestionsLabel ?? "Suggestions"}
+          items={ctx.state.suggestionItems}
+          {focusedIndex}
+          isSelected={ctx.isSelected}
+          onItemClick={handleItemClick}
+          onListKeyDown={handleListKeyDown}
+          renderItem={ctx.props.renderItem as any}
+          onListRef={(node) => (listRef = node)}
+        />
+      {/if}
+
+      {#if showSearchResults}
+        <RelationSelectorPopoverListSection
+          label={`Results (${ctx.state.searchTotal})`}
+          items={ctx.state.searchResults}
+          {focusedIndex}
+          isSelected={ctx.isSelected}
+          onItemClick={handleItemClick}
+          onListKeyDown={handleListKeyDown}
+          renderItem={ctx.props.renderItem as any}
+          onListRef={(node) => (listRef = node)}
+        />
+      {/if}
+
+      {#if showEmpty}
+        <div class="relation-selector-popover__empty">
+          {ctx.props.emptyMessage ?? "No results found"}
+        </div>
+      {/if}
+
+      {#if showLoading && !showSuggestions && !showSearchResults}
+        <div class="relation-selector-popover__loading">
+          <Loader size="1.2em" class="relation-selector-popover__loading-spinner" />
+          <span>Loading...</span>
+        </div>
+      {/if}
+
+      <RelationSelectorPopoverCreateAction
+        allowCreate={ctx.props.allowCreate}
+        hasCreateForm={!!ctx.props.createForm}
+        createLabel={ctx.props.createLabel ?? "Add new"}
+        onCreate={handleCreateClick}
+      />
+    </div>
+
+    {#if ctx.isMultiSelect}
+      <div class="relation-selector-popover__footer">
+        <Button variant="primary" onclick={handleConfirm}>
+          Done ({ctx.selectedItems.length})
+        </Button>
+      </div>
+    {/if}
   {/if}
   </BitsPopover.Content>
 </BitsPopover.Portal>
@@ -369,6 +418,11 @@
     gap: 0.5rem;
     padding: 0.6rem 0.75rem 0.4rem;
     flex-shrink: 0;
+  }
+
+  /* Tighten header bottom padding when breadcrumbs follow */
+  .relation-selector-popover__header:has(+ .relation-selector-popover__drilldown-breadcrumbs) {
+    padding-bottom: 0;
   }
 
   .relation-selector-popover__title {
@@ -470,5 +524,70 @@
     padding: 0.5rem 0.75rem 0.6rem;
     border-top: 1px solid var(--underlay-color-border-subtle, rgba(148, 163, 184, 0.3));
     flex-shrink: 0;
+  }
+
+  /* Drill-down breadcrumbs at final selection level */
+  .relation-selector-popover__drilldown-breadcrumbs {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.2rem 0.75rem 0.35rem;
+    flex-shrink: 0;
+  }
+
+  .relation-selector-popover__drilldown-back {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    flex-shrink: 0;
+    padding: 0;
+    border: none;
+    border-radius: 0.25rem;
+    background: transparent;
+    color: var(--underlay-color-text-muted, #9ca3af);
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+  }
+
+  .relation-selector-popover__drilldown-back:hover {
+    background: var(--underlay-color-hover-bg, rgba(148, 163, 184, 0.2));
+    color: var(--underlay-color-text, #e5e7eb);
+  }
+
+  .relation-selector-popover__drilldown-trail {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .relation-selector-popover__drilldown-sep {
+    color: var(--underlay-color-text-muted, #9ca3af);
+    font-size: 0.7rem;
+    flex-shrink: 0;
+    opacity: 0.6;
+  }
+
+  .relation-selector-popover__drilldown-crumb {
+    padding: 0.15rem 0.3rem;
+    border: none;
+    border-radius: 0.2rem;
+    background: transparent;
+    color: var(--underlay-color-primary, #2563eb);
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 8rem;
+    transition: background-color 0.15s ease;
+  }
+
+  .relation-selector-popover__drilldown-crumb:hover {
+    background: var(--underlay-color-hover-bg, rgba(148, 163, 184, 0.15));
   }
 </style>

@@ -22,3 +22,14 @@ export type {
   FilterOption,
   FilterConfig
 } from "./types.js";
+
+export type {
+  DrillDownItem,
+  DrillDownContext,
+  DrillDownSearchFn,
+  DrillDownSuggestionsFn,
+  DrillDownLevel,
+  DrillDownConfig,
+  DrillDownState,
+  DrillDownBreadcrumb
+} from "./drilldown-types.js";

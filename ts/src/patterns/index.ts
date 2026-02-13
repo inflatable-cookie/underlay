@@ -17,6 +17,11 @@ export {
   type LocalSearchOptions,
   type LocalSearchFns
 } from "./local-search";
+export {
+  createLocalDrillDownSearchFns,
+  type LocalDrillDownSearchOptions,
+  type LocalDrillDownSearchFns
+} from "./drilldown-search";
 
 // Reorder utilities
 export {
@@ -68,7 +73,15 @@ export {
   type RelationSelectorProps,
   type RelationSelectorState,
   type FilterOption,
-  type FilterConfig
+  type FilterConfig,
+  type DrillDownItem,
+  type DrillDownContext,
+  type DrillDownSearchFn,
+  type DrillDownSuggestionsFn,
+  type DrillDownLevel,
+  type DrillDownConfig,
+  type DrillDownState,
+  type DrillDownBreadcrumb
 } from "./RelationSelector/index.js";
 
 // RelationPickerDialog - item picker dialog (base component for relation selection)
