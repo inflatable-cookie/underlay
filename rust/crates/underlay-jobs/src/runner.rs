@@ -296,7 +296,7 @@ mod tests {
     use chrono::Utc;
     use serde_json::json;
 
-    use crate::types::{Job, JobHandler, JobHandlerError, JobId, JobStatus};
+    use crate::types::{Job, JobConfig, JobHandler, JobHandlerError, JobId, JobStatus};
     use crate::{JobRegistry, JobRunner, JobRunnerConfig, JobStore};
 
     #[derive(Debug, Default)]
@@ -304,6 +304,15 @@ mod tests {
         queue: Mutex<Vec<Job>>,
         successes: Mutex<Vec<JobId>>,
         failures: Mutex<Vec<JobId>>,
+        failure_calls: Mutex<Vec<FailureCall>>,
+    }
+
+    #[derive(Debug, Clone)]
+    struct FailureCall {
+        job_id: JobId,
+        is_permanent: bool,
+        max_attempts: u32,
+        retry_delay_secs: u64,
     }
 
     #[derive(Debug)]
@@ -337,10 +346,16 @@ mod tests {
         async fn mark_failure(
             &self,
             job_id: JobId,
-            _error: JobHandlerError,
-            _config: &crate::types::JobConfig,
+            error: JobHandlerError,
+            config: &crate::types::JobConfig,
         ) -> Result<(), Self::Error> {
             self.failures.lock().unwrap().push(job_id);
+            self.failure_calls.lock().unwrap().push(FailureCall {
+                job_id,
+                is_permanent: error.is_permanent,
+                max_attempts: config.max_attempts,
+                retry_delay_secs: config.backoff.delay_for_attempt(0).as_secs(),
+            });
             Ok(())
         }
     }
@@ -458,6 +473,86 @@ mod tests {
         assert!(did_work);
         assert!(called.load(Ordering::SeqCst));
         assert_eq!(store.failures.lock().unwrap().len(), 1);
+        assert_eq!(store.failure_calls.lock().unwrap().len(), 1);
+    }
+
+    #[tokio::test]
+    async fn runner_passes_handler_config_to_failure_path() {
+        #[derive(Debug)]
+        struct ConfiguredFailingHandler;
+
+        #[async_trait]
+        impl JobHandler for ConfiguredFailingHandler {
+            fn job_type(&self) -> &'static str {
+                "configured_failing"
+            }
+
+            fn config(&self) -> JobConfig {
+                JobConfig::new().with_max_attempts(4).with_fixed_backoff(42)
+            }
+
+            async fn handle(&self, _job: Job) -> Result<(), JobHandlerError> {
+                Err(JobHandlerError::new("retryable failure"))
+            }
+        }
+
+        let store = Arc::new(MemStore::default());
+        let job = make_test_job("configured_failing");
+        let job_id = job.id;
+        store.queue.lock().unwrap().push(job);
+
+        let mut registry = JobRegistry::new();
+        registry.register(ConfiguredFailingHandler);
+
+        let runner = JobRunner::new(store.clone(), registry);
+        let did_work = runner.run_once().await.expect("run_once");
+
+        assert!(did_work);
+        let calls = store.failure_calls.lock().unwrap();
+        assert_eq!(calls.len(), 1);
+        assert_eq!(calls[0].job_id, job_id);
+        assert!(!calls[0].is_permanent);
+        assert_eq!(calls[0].max_attempts, 4);
+        assert_eq!(calls[0].retry_delay_secs, 42);
+    }
+
+    #[tokio::test]
+    async fn runner_flags_permanent_failures_for_store() {
+        #[derive(Debug)]
+        struct PermanentFailingHandler;
+
+        #[async_trait]
+        impl JobHandler for PermanentFailingHandler {
+            fn job_type(&self) -> &'static str {
+                "permanent_failing"
+            }
+
+            fn config(&self) -> JobConfig {
+                JobConfig::new().with_max_attempts(7).with_fixed_backoff(30)
+            }
+
+            async fn handle(&self, _job: Job) -> Result<(), JobHandlerError> {
+                Err(JobHandlerError::permanent("permanent failure"))
+            }
+        }
+
+        let store = Arc::new(MemStore::default());
+        let job = make_test_job("permanent_failing");
+        let job_id = job.id;
+        store.queue.lock().unwrap().push(job);
+
+        let mut registry = JobRegistry::new();
+        registry.register(PermanentFailingHandler);
+
+        let runner = JobRunner::new(store.clone(), registry);
+        let did_work = runner.run_once().await.expect("run_once");
+
+        assert!(did_work);
+        let calls = store.failure_calls.lock().unwrap();
+        assert_eq!(calls.len(), 1);
+        assert_eq!(calls[0].job_id, job_id);
+        assert!(calls[0].is_permanent);
+        assert_eq!(calls[0].max_attempts, 7);
     }
 
     #[test]
