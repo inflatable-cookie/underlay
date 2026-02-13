@@ -32,6 +32,7 @@ export { default as FormActions } from "./FormActions.svelte";
 export { default as FormError } from "./FormError.svelte";
 export { default as FormValidationProvider } from "./FormValidationProvider.svelte";
 export type { FieldState, FormValidationContext } from "./text-input/form-validation";
+export { default as SegmentedControl } from "./SegmentedControl.svelte";
 export { default as Switch } from "./Switch.svelte";
 export { default as ListGrid } from "./ListGrid.svelte";
 export { default as ListCard } from "./ListCard.svelte";
