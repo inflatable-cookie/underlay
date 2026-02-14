@@ -39,6 +39,7 @@ export { default as PageHeaderMetaItem } from "./PageHeaderMetaItem.svelte";
 export { default as PageHeaderMetaSeparator } from "./PageHeaderMetaSeparator.svelte";
 export type { PageHeaderLevel, BreadcrumbItem } from "./types";
 export { default as CopyActionsMenu } from "./CopyActionsMenu.svelte";
+export { default as EntityActionsMenu } from "./EntityActionsMenu.svelte";
 export { default as CardActions } from "./CardActions.svelte";
 export { default as SubmitButton } from "./SubmitButton.svelte";
 export { default as NavCard } from "./NavCard.svelte";
@@ -52,6 +53,28 @@ export { default as ReorderableList } from "./ReorderableList.svelte";
 export { default as SlugField } from "./SlugField.svelte";
 export { default as SpaFormShell } from "./SpaFormShell.svelte";
 export type { SpaFormResult, SpaSubmitHandler, SpaNavigateFn } from "./spa-form-types";
+
+// AutonomousList pattern
+export {
+  AutonomousList,
+  createAutonomousListState,
+  type AutonomousListState
+} from "./AutonomousList/index.js";
+export type {
+  AutonomousListProps,
+  ListFilterField,
+  ListReorderConfig,
+  ListItemContext
+} from "./AutonomousList/autonomous-list-types.js";
+
+// DetailPageShell pattern
+export {
+  DetailPageShell,
+  DetailMeta,
+  DetailMetaId,
+  DetailMetaStatus,
+  DetailMetaSeparator
+} from "./DetailPageShell/index.js";
 
 // FormDialog pattern
 export { FormDialog } from "./FormDialog/index.js";
@@ -87,6 +110,14 @@ export {
 // RelationPickerDialog - item picker dialog (base component for relation selection)
 export { default as RelationPickerDialog } from "./RelationPickerDialog.svelte";
 export type { PickableItem, PickerSection } from "./relation-picker-types.js";
+
+// Keyboard shortcuts manager
+export {
+  createKeyboardShortcuts,
+  type KeyboardShortcutManager,
+  type ShortcutOptions,
+  type RegisteredShortcut
+} from "./keyboard-shortcuts.svelte";
 
 // Explicit export avoids dev-time prebundle staleness.
 export { useToasts } from "./useToasts";

@@ -24,5 +24,6 @@ Status overview of all Underlay roadmaps. Check individual files for detailed pr
 | 018 | [Documentation & AI](./018-documentation-ai-agent-improvements.md) | Complete | Documentation and AI agent context improvements |
 | 019 | [Codebase Improvements](./019-codebase-improvements.md) | In progress | Simplification, deduplication, reorganisation |
 | 020 | [Configuration Standardization](./020-configuration-standardization-and-env-reduction.md) | In progress | Move app behavior config from env files into typed structures |
+| 021 | [Shared Admin Components](./021-shared-admin-components.md) | In progress | EmptyState, EntityActionsMenu, Drawer, DetailPageShell, AutonomousList, InlineEditableField, KeyboardShortcuts, ErrorBoundary |
 
-**Complete:** 9 | **In progress:** 11
+**Complete:** 9 | **In progress:** 12
