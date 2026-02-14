@@ -47,7 +47,8 @@ Read these documents in order for a complete understanding:
 20. **[090 - UI Kit](./090-ui-kit.md)** - Component patterns
 21. **[092 - Selection Suggestions](./092-selection-suggestions.md)** - Intelligent suggestions with selection history
 22. **[095 - Navigation Context](./095-navigation-context.md)** - Contextual back buttons and form redirects
-23. **[100 - Frontend (Web)](./100-frontend-web.md)** - SvelteKit setup, routing
+23. **[098 - Shared Admin Patterns](./098-shared-admin-patterns.md)** - Higher-level admin components (EmptyState, Drawer, DetailPageShell, AutonomousList, etc.)
+24. **[100 - Frontend (Web)](./100-frontend-web.md)** - SvelteKit setup, routing
 24. **[110 - Admin Frontend](./110-admin.md)** - Admin UI structure
 25. **[120 - Configuration](./120-configuration.md)** - Typed config model, env boundaries, migration checklist
 26. **[130 - Testing](./130-testing.md)** - Test patterns for all layers
