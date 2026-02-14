@@ -167,7 +167,6 @@ export function useAuthenticatedData<T>(
     try {
       const result = await fetcher(fetch, token);
       data = result;
-      _fetched = true;
       options.onSuccess?.(result);
     } catch (e) {
       // Check if this is a 401 error and we have a refresh handler
@@ -181,7 +180,6 @@ export function useAuthenticatedData<T>(
           try {
             const result = await fetcher(fetch, newToken);
             data = result;
-            _fetched = true;
             options.onSuccess?.(result);
             return;
           } catch (retryError) {
@@ -195,6 +193,9 @@ export function useAuthenticatedData<T>(
         error = e instanceof Error ? e.message : "Failed to load data";
       }
     } finally {
+      // Mark as fetched even on error to prevent tryFetch from auto-retrying.
+      // Users can still explicitly call refetch() to retry.
+      _fetched = true;
       loading = false;
       refetching = false;
     }

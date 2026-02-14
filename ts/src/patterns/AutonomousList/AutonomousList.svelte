@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { Component, Snippet } from "svelte";
+  import type { Component, SvelteComponent, Snippet } from "svelte";
   import PageHeader from "../PageHeader.svelte";
   import FilterBar from "../FilterBar.svelte";
   import ReorderableList from "../ReorderableList.svelte";
@@ -8,59 +8,94 @@
   import PageLoading from "../../components/PageLoading.svelte";
   import FormError from "../../components/FormError.svelte";
   import EmptyState from "../../components/EmptyState.svelte";
+  import Pagination from "../../components/Pagination.svelte";
   import BatchActionBar from "../../components/BatchActionBar.svelte";
   import BatchConfirmDialog from "../../components/BatchConfirmDialog.svelte";
   import Button from "../../components/Button.svelte";
   import TextInput from "../../components/TextInput.svelte";
   import type { BatchAction } from "../batch-actions.svelte";
   import type { PageHeaderLevel, BreadcrumbItem } from "../types";
-  import type { ListFilterField, ListReorderConfig, ListItemContext } from "./autonomous-list-types";
+  import type {
+    ListFilterField,
+    ListReorderConfig,
+    ListItemContext,
+    FilterBarContext,
+    ServerFetcher
+  } from "./autonomous-list-types";
   import { createAutonomousListState } from "./autonomous-list-context.svelte";
+
+  type IconComponent =
+    | Component<{ size?: number }>
+    | (new (...args: any[]) => SvelteComponent);
 
   interface Props<T> {
     title: string;
+    section?: string;
     level?: PageHeaderLevel;
     breadcrumbs?: BreadcrumbItem[];
-    fetcher: (fetchFn: typeof fetch, token: string, filters: Record<string, unknown>) => Promise<T[]>;
+    variant?: "page" | "tab";
+    fetcher?: (fetchFn: typeof fetch, token: string, filters: Record<string, unknown>) => Promise<T[]>;
+    serverFetcher?: ServerFetcher<T>;
     idField?: string;
+    pageSize?: number;
+    persistKey?: string;
     filters?: ListFilterField[];
+    filterBar?: Snippet<[FilterBarContext]>;
     batchActions?: BatchAction<string>[];
     reorderable?: ListReorderConfig;
     addHref?: string;
     addLabel?: string;
+    headerActions?: Snippet;
     emptyMessage?: string;
-    emptyIcon?: Component<{ size?: number }>;
+    emptyIcon?: IconComponent;
+    sourceContext?: Record<string, unknown>;
     item?: Snippet<[T, ListItemContext]>;
     reorderItem?: Snippet<[T]>;
+    onDataChange?: () => void;
     class?: string;
   }
 
   let {
     title,
+    section = undefined,
     level = undefined,
     breadcrumbs = undefined,
-    fetcher,
+    variant = "page",
+    fetcher = undefined,
+    serverFetcher = undefined,
     idField = "id",
+    pageSize = undefined,
+    persistKey = undefined,
     filters: filterFields = [],
+    filterBar: filterBarSnippet = undefined,
     batchActions = [],
     reorderable = undefined,
     addHref = undefined,
     addLabel = "Add",
+    headerActions: headerActionsSnippet = undefined,
     emptyMessage = "No items found",
     emptyIcon = undefined,
     item: itemSnippet,
     reorderItem: reorderItemSnippet,
+    onDataChange = undefined,
     class: className = ""
   }: Props<any> = $props();
 
+  // Derive header level from variant if not explicitly set
+  const effectiveLevel = $derived(level ?? (variant === "page" ? 1 : 3));
+
   const listState = createAutonomousListState({
     fetcher,
+    serverFetcher,
     idField,
     batchActions,
-    reorderable
+    reorderable,
+    pageSize,
+    persistKey,
+    onDataChange
   });
 
-  const { list, batch } = listState;
+  const { batch } = listState;
 
   // Active filter state for FilterBar display
   let activeFilterValues = $state<Record<string, string>>({});
@@ -72,21 +107,51 @@
       const { [key]: _, ...rest } = activeFilterValues;
       activeFilterValues = rest;
     }
-    list.setFilter(key, value);
+
+    if (serverFetcher) {
+      // For server mode, update the filter state on the pagination controller
+      // and reset to page 1
+      const pag = listState.pagination as any;
+      if (pag?._setFilters) {
+        pag._setFilters(activeFilterValues);
+      }
+      listState.resetPagination();
+    } else {
+      // For client mode, pass through to list controller
+      // We need to access list controller's setFilter indirectly
+      // The list controller is inside the state — we pass filter values via
+      // the fetcher's closure. Trigger a refresh.
+      listState.resetPagination();
+    }
   }
 
   function clearFilter(key: string) {
     const { [key]: _, ...rest } = activeFilterValues;
     activeFilterValues = rest;
-    list.setFilter(key, undefined);
+    handleFilterChange(key, undefined);
   }
 
   function clearAllFilters() {
     activeFilterValues = {};
-    list.resetFilters();
+    if (serverFetcher) {
+      const pag = listState.pagination as any;
+      if (pag?._setFilters) {
+        pag._setFilters({});
+      }
+    }
+    listState.resetPagination();
   }
 
-  // Build active filters for FilterBar display (needs `id` property, not `key`)
+  // FilterBar context for custom snippets
+  const filterBarContext = $derived<FilterBarContext>({
+    filters: activeFilterValues,
+    setFilter: handleFilterChange,
+    clearFilter,
+    clearAll: clearAllFilters,
+    refresh: () => listState.refresh()
+  });
+
+  // Build active filters for FilterBar display
   const activeFilters = $derived(
     Object.entries(activeFilterValues).map(([key, value]) => {
       const field = filterFields.find((f) => f.key === key);
@@ -110,9 +175,10 @@
 <div class="underlay-autonomous-list {className}">
   <PageHeader
     {title}
-    {level}
+    section={variant === "page" ? section : undefined}
+    level={effectiveLevel}
     {breadcrumbs}
-    count={list.items.length}
+    count={listState.total ?? undefined}
   >
     {#snippet actions()}
       <div class="underlay-autonomous-list__actions">
@@ -142,6 +208,10 @@
           </Button>
         {/if}
 
+        {#if headerActionsSnippet}
+          {@render headerActionsSnippet()}
+        {/if}
+
         {#if addHref}
           <Button variant="primary" size="sm" onclick={() => { window.location.href = addHref! }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -154,12 +224,14 @@
     {/snippet}
   </PageHeader>
 
-  {#if filterFields.length > 0}
+  {#if filterBarSnippet}
+    {@render filterBarSnippet(filterBarContext)}
+  {:else if filterFields.length > 0}
     <FilterBar
       {activeFilters}
       onClearFilter={(id) => clearFilter(id)}
       onClearAllFilters={clearAllFilters}
-      onRefresh={() => list.refresh()}
+      onRefresh={() => listState.refresh()}
     >
       {#each filterFields as field (field.key)}
         {#if field.type === "text"}
@@ -170,7 +242,6 @@
             debounce={field.debounce ?? 400}
           />
         {:else if field.type === "select" && field.options}
-          <!-- Use native select for simple filter dropdowns -->
           <select
             class="underlay-autonomous-list__select"
             value={activeFilterValues[field.key] ?? ""}
@@ -188,10 +259,10 @@
     </FilterBar>
   {/if}
 
-  {#if list.loading}
+  {#if listState.loading}
     <PageLoading message={`Loading ${title.toLowerCase()}...`} />
-  {:else if list.error}
-    <FormError message={list.error} />
+  {:else if listState.error}
+    <FormError message={listState.error} />
   {:else if listState.reorderMode && listState.reorder}
     <ReorderableList
       controller={listState.reorder}
@@ -200,7 +271,7 @@
     >
       {#snippet item(reorderableItem)}
         {#if reorderItemSnippet}
-          {@const sourceItem = list.items.find((i) => getItemId(i) === reorderableItem.id)}
+          {@const sourceItem = listState.items.find((i) => getItemId(i) === reorderableItem.id)}
           {#if sourceItem}
             {@render reorderItemSnippet(sourceItem)}
           {:else}
@@ -211,14 +282,14 @@
         {/if}
       {/snippet}
     </ReorderableList>
-  {:else if list.items.length === 0}
+  {:else if listState.items.length === 0}
     <EmptyState
       icon={emptyIcon}
       title={emptyMessage}
     />
   {:else if itemSnippet}
     <ListGrid>
-      {#each list.items as listItem (getItemId(listItem))}
+      {#each listState.items as listItem (getItemId(listItem))}
         {@const itemId = getItemId(listItem)}
         {@render itemSnippet(listItem, {
           selected: batch.isSelected(itemId),
@@ -227,6 +298,15 @@
         })}
       {/each}
     </ListGrid>
+
+    {#if listState.pagination}
+      <Pagination
+        controller={listState.pagination}
+        variant="simple"
+        showLimitSelector
+        scrollTarget=".underlay-list-grid"
+      />
+    {/if}
   {/if}
 
   {#if batch.hasSelection}

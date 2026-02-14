@@ -4,7 +4,11 @@
   import ChevronDown from "lucide-svelte/icons/chevron-down";
 
   interface Props {
-    /** Total seconds as string (bindable). Empty string = no value. */
+    /**
+     * Total duration as string (bindable). Empty string = no value.
+     * When unit="seconds" (default): value is total seconds.
+     * When unit="minutes": value is total minutes.
+     */
     value?: string;
     /** Hidden input name for form submission */
     name?: string;
@@ -14,10 +18,15 @@
     required?: boolean;
     /** Whether field is disabled */
     disabled?: boolean;
-    /** Minimum total seconds */
+    /** Minimum total (in the selected unit) */
     min?: number;
-    /** Maximum total seconds */
+    /** Maximum total (in the selected unit) */
     max?: number;
+    /**
+     * Unit for the value. Defaults to "seconds" (H:MM:SS).
+     * Set to "minutes" to hide the seconds segment and treat value as total minutes (H:MM).
+     */
+    unit?: "seconds" | "minutes";
     /** Additional CSS class */
     class?: string;
   }
@@ -30,15 +39,33 @@
     disabled = false,
     min,
     max,
+    unit = "seconds",
     class: className,
   }: Props = $props();
 
+  const showSeconds = $derived(unit === "seconds");
+
   // --- Decompose / Compose helpers ---
+  // When unit="seconds": value is total seconds, segments are H:MM:SS
+  // When unit="minutes": value is total minutes, segments are H:MM (no seconds)
 
   function decompose(totalStr: string): { h: string; m: string; s: string } {
     if (!totalStr) return { h: "", m: "", s: "" };
     const total = parseInt(totalStr, 10);
     if (isNaN(total) || total <= 0) return { h: "", m: "", s: "" };
+
+    if (unit === "minutes") {
+      // total is minutes → decompose into hours and minutes
+      const h = Math.floor(total / 60);
+      const m = total % 60;
+      return {
+        h: h > 0 ? String(h) : "",
+        m: m > 0 || h > 0 ? String(m) : "",
+        s: "",
+      };
+    }
+
+    // total is seconds → decompose into hours, minutes, seconds
     const h = Math.floor(total / 3600);
     const m = Math.floor((total % 3600) / 60);
     const s = total % 60;
@@ -53,6 +80,12 @@
     const hNum = parseInt(h, 10) || 0;
     const mNum = parseInt(m, 10) || 0;
     const sNum = parseInt(s, 10) || 0;
+
+    if (unit === "minutes") {
+      const total = hNum * 60 + mNum;
+      return total > 0 ? String(total) : "";
+    }
+
     const total = hNum * 3600 + mNum * 60 + sNum;
     return total > 0 ? String(total) : "";
   }
@@ -103,8 +136,8 @@
     }
   });
 
-  // Derived total for hidden input
-  const totalSeconds = $derived(compose(hours, minutes, seconds));
+  // Derived total for hidden input (seconds or minutes depending on unit)
+  const totalValue = $derived(compose(hours, minutes, seconds));
 
   function syncToValue() {
     const newTotal = compose(hours, minutes, seconds);
@@ -121,7 +154,7 @@
   // Track which segment is focused and last-focused for stepper context
   type Segment = "h" | "m" | "s";
   let focusedSegment = $state<Segment | null>(null);
-  let lastFocusedSegment = $state<Segment>("s"); // default to seconds
+  let lastFocusedSegment = $state<Segment>(untrack(() => showSeconds) ? "s" : "m");
 
   // --- Input handling ---
 
@@ -144,7 +177,7 @@
       if (
         active !== hoursRef &&
         active !== minutesRef &&
-        active !== secondsRef
+        (active !== secondsRef || !showSeconds)
       ) {
         focusedSegment = null;
       }
@@ -223,12 +256,13 @@
   function refForSegment(seg: Segment): HTMLInputElement | null {
     if (seg === "h") return hoursRef;
     if (seg === "m") return minutesRef;
-    return secondsRef;
+    if (seg === "s" && showSeconds) return secondsRef;
+    return minutesRef;
   }
 </script>
 
 {#if name}
-  <input type="hidden" {name} value={totalSeconds} />
+  <input type="hidden" {name} value={totalValue} />
 {/if}
 
 <div
@@ -284,28 +318,30 @@
       /><span class="underlay-duration-input__unit">m</span>
     </div>
 
-    <span class="underlay-duration-input__separator">:</span>
+    {#if showSeconds}
+      <span class="underlay-duration-input__separator">:</span>
 
-    <!-- Seconds -->
-    <div class="underlay-duration-input__segment">
-      <input
-        bind:this={secondsRef}
-        type="text"
-        inputmode="numeric"
-        pattern="[0-9]*"
-        class="underlay-duration-input__input"
-        value={seconds}
-        placeholder="0"
-        maxlength={2}
-        disabled={disabled}
-        autocomplete="off"
-        aria-label="Seconds"
-        oninput={(e) => handleSegmentInput("s", e)}
-        onblur={() => handleBlur("s")}
-        onfocus={() => handleFocus("s")}
-        onkeydown={(e) => handleKeydown("s", e)}
-      /><span class="underlay-duration-input__unit">s</span>
-    </div>
+      <!-- Seconds -->
+      <div class="underlay-duration-input__segment">
+        <input
+          bind:this={secondsRef}
+          type="text"
+          inputmode="numeric"
+          pattern="[0-9]*"
+          class="underlay-duration-input__input"
+          value={seconds}
+          placeholder="0"
+          maxlength={2}
+          disabled={disabled}
+          autocomplete="off"
+          aria-label="Seconds"
+          oninput={(e) => handleSegmentInput("s", e)}
+          onblur={() => handleBlur("s")}
+          onfocus={() => handleFocus("s")}
+          onkeydown={(e) => handleKeydown("s", e)}
+        /><span class="underlay-duration-input__unit">s</span>
+      </div>
+    {/if}
   </div>
 
   <!-- Single stepper controls on right edge -->

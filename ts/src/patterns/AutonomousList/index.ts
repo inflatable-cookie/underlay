@@ -3,7 +3,9 @@ export type {
   AutonomousListProps,
   ListFilterField,
   ListReorderConfig,
-  ListItemContext
+  ListItemContext,
+  FilterBarContext,
+  ServerFetcher
 } from "./autonomous-list-types";
 export {
   createAutonomousListState,

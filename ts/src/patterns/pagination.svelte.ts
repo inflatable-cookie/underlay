@@ -183,7 +183,6 @@ export function createPaginationController<T>(
         total = response.total;
       }
 
-      _fetched = true;
       options.onSuccess?.(response);
     } catch (e) {
       // Check for 401 error
@@ -201,7 +200,6 @@ export function createPaginationController<T>(
             if (response.total !== null) {
               total = response.total;
             }
-            _fetched = true;
             options.onSuccess?.(response);
             return;
           } catch (retryError) {
@@ -220,6 +218,9 @@ export function createPaginationController<T>(
         options.onError?.(err);
       }
     } finally {
+      // Mark as fetched even on error to prevent tryFetch from auto-retrying.
+      // Users can still explicitly call refetch()/refresh()/reset() to retry.
+      _fetched = true;
       loading = false;
     }
   };

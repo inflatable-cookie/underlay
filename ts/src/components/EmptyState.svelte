@@ -1,10 +1,14 @@
 <script lang="ts">
-  import type { Component, Snippet } from "svelte";
+  import type { Component, SvelteComponent, Snippet } from "svelte";
   import Button from "./Button.svelte";
+
+  type IconComponent =
+    | Component<{ size?: number }>
+    | (new (...args: any[]) => SvelteComponent);
 
   interface Props {
     /** Lucide icon or custom component displayed above the title */
-    icon?: Component<{ size?: number }>;
+    icon?: IconComponent;
     /** Primary message */
     title: string;
     /** Secondary explanatory text */

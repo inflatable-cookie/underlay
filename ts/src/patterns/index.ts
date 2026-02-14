@@ -64,7 +64,9 @@ export type {
   AutonomousListProps,
   ListFilterField,
   ListReorderConfig,
-  ListItemContext
+  ListItemContext,
+  FilterBarContext,
+  ServerFetcher
 } from "./AutonomousList/autonomous-list-types.js";
 
 // DetailPageShell pattern
