@@ -55,6 +55,14 @@
     clearable?: boolean;
     /** Value to reset to when cleared (default: "") */
     defaultValue?: string;
+    /** Async function to load items on first open. When provided, items are fetched lazily. */
+    loadItems?: () => Promise<SelectItem[]>;
+    /** Async function to load grouped items on first open. */
+    loadGroups?: () => Promise<SelectGroup[]>;
+    /** Label to display for the current value before items are loaded */
+    valueLabel?: string;
+    /** Key to invalidate cached loaded items (e.g. parent filter value for cascading dropdowns) */
+    loadKey?: string;
   }
 
   let {
@@ -83,6 +91,10 @@
     class: className,
     clearable = false,
     defaultValue = "",
+    loadItems = undefined,
+    loadGroups = undefined,
+    valueLabel = undefined,
+    loadKey = undefined,
   }: Props = $props();
 
   // Get FormValidationProvider context if present
@@ -188,6 +200,65 @@
     return rows;
   }
 
+  // --- Lazy loading ---
+  const isLazy = $derived(Boolean(loadItems || loadGroups));
+  let loadedItems = $state<SelectItem[] | null>(null);
+  let loadedGroups = $state<SelectGroup[] | null>(null);
+  let loadState = $state<"idle" | "loading" | "loaded" | "error">("idle");
+  let loadError = $state<string | null>(null);
+  let lastLoadKey = $state<string | undefined>(undefined);
+
+  // Effective items/groups: loaded data takes precedence, then fall back to props
+  const effectiveItems = $derived(loadedItems ?? items ?? null);
+  const effectiveGroups = $derived(loadedGroups ?? groups ?? null);
+
+  // Invalidate cache when loadKey changes
+  $effect(() => {
+    if (loadKey !== lastLoadKey) {
+      lastLoadKey = loadKey;
+      if (loadedItems || loadedGroups) {
+        loadedItems = null;
+        loadedGroups = null;
+        loadState = "idle";
+        loadError = null;
+      }
+    }
+  });
+
+  // Trigger load on first open
+  $effect(() => {
+    if (open && isLazy && loadState === "idle") {
+      loadState = "loading";
+      const loader = loadGroups
+        ? loadGroups().then((g) => { loadedGroups = g; })
+        : loadItems!().then((i) => { loadedItems = i; });
+      loader
+        .then(() => { loadState = "loaded"; })
+        .catch((e) => {
+          loadState = "error";
+          loadError = e?.message ?? "Failed to load options";
+        });
+    }
+  });
+
+  function retryLoad() {
+    loadState = "idle";
+    loadError = null;
+    // Re-trigger by opening again (already open)
+    if (open && isLazy) {
+      loadState = "loading";
+      const loader = loadGroups
+        ? loadGroups().then((g) => { loadedGroups = g; })
+        : loadItems!().then((i) => { loadedItems = i; });
+      loader
+        .then(() => { loadState = "loaded"; })
+        .catch((e) => {
+          loadState = "error";
+          loadError = e?.message ?? "Failed to load options";
+        });
+    }
+  }
+
   $effect(() => {
     if (lastOpen && !open && returnFocusOnClose && typeof window !== "undefined") {
       void tick().then(() => triggerRef?.focus());
@@ -198,13 +269,13 @@
   // BitsSelect doesn't emit native "change" events in a way we can forward
   // without opting into internal types, so we dispatch when bound value changes.
   let allItems = $derived(
-    groups?.length
-      ? flattenGroupItems(groups)
-      : (items ?? [])
+    effectiveGroups?.length
+      ? flattenGroupItems(effectiveGroups)
+      : (effectiveItems ?? [])
   );
 
-  let hasGroups = $derived(Boolean(groups?.length));
-  let groupRows = $derived(buildGroupRows(groups));
+  let hasGroups = $derived(Boolean(effectiveGroups?.length));
+  let groupRows = $derived(buildGroupRows(effectiveGroups));
 
   $effect(() => {
     if (allItems.length && value !== lastDispatchedValue) {
@@ -214,7 +285,10 @@
     }
   });
 
-  let selectedLabel = $derived(allItems.find((item) => item.value === value)?.label);
+  let selectedLabel = $derived(
+    allItems.find((item) => item.value === value)?.label
+    ?? (isLazy && loadState !== "loaded" ? valueLabel : undefined)
+  );
   let hasSelection = $derived(typeof selectedLabel === "string" && selectedLabel.length > 0);
   let isDefaultValue = $derived(value === defaultValue || value === "");
   let showClearButton = $derived(clearable && hasSelection && value !== defaultValue && !disabled);
@@ -253,7 +327,7 @@
   }
 </script>
 
-{#if allItems.length}
+{#if allItems.length || isLazy}
   <BitsSelect.Root
     type="single"
     items={allItems}
@@ -305,7 +379,14 @@
         {collisionPadding}
       >
         <BitsSelect.Viewport class="underlay-select-viewport">
-          {#if hasGroups}
+          {#if isLazy && loadState === "loading"}
+            <div class="underlay-select-loading">Loading…</div>
+          {:else if isLazy && loadState === "error"}
+            <div class="underlay-select-error">
+              <span>{loadError}</span>
+              <button class="underlay-select-error__retry" onclick={retryLoad}>Retry</button>
+            </div>
+          {:else if hasGroups}
             {#each groupRows as row (row.key)}
               {#if row.kind === "heading"}
                 <div
@@ -333,7 +414,7 @@
               {/if}
             {/each}
           {:else}
-            {#each items ?? [] as item (item.value)}
+            {#each effectiveItems ?? [] as item (item.value)}
               {@const isSelected = item.value === value}
               <BitsSelect.Item
                 value={item.value}
@@ -592,5 +673,38 @@
   /* Override bits-ui floating wrapper z-index to ensure Select appears above popovers */
   :global([data-bits-floating-content-wrapper]:has(.underlay-select-content)) {
     z-index: 200 !important;
+  }
+
+  /* Lazy-loading states */
+  .underlay-select-loading {
+    padding: 0.55rem 0.7rem;
+    font-size: 0.8rem;
+    color: var(--underlay-color-text-muted, #9ca3af);
+    text-align: center;
+  }
+
+  .underlay-select-error {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.55rem 0.7rem;
+    font-size: 0.8rem;
+    color: var(--underlay-color-danger, #ef4444);
+    text-align: center;
+  }
+
+  .underlay-select-error__retry {
+    padding: 0.2rem 0.5rem;
+    border: none;
+    border-radius: 0.25rem;
+    background: var(--underlay-color-field-bg, rgba(148, 163, 184, 0.18));
+    color: var(--underlay-color-text, #e5e7eb);
+    font-size: 0.75rem;
+    cursor: pointer;
+  }
+
+  .underlay-select-error__retry:hover {
+    background: var(--underlay-color-hover-bg, rgba(148, 163, 184, 0.3));
   }
 </style>

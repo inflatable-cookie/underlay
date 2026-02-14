@@ -16,6 +16,7 @@ Admin and consumer views accrue wasteful API calls through a small number of rec
 | **D** | Dead or vestigial endpoint calls | Calling a `syllabus` endpoint for a page structure that was removed | Wasted request with no consumer |
 | **E** | Exhaustive pagination in page load | Looping through all pages of a paginated endpoint (`limit=200`, repeat until done) | Unbounded request count, grows with data |
 | **F** | N+1 client-side fan-out | Fetch a list, then make one request per item | Request count scales with data volume |
+| **G** | Eager filter/selector data fetch | Filter dropdowns or RelationSelector backing data loaded in the data fetch regardless of visibility | Fetches kilobytes of options the user may never see |
 
 ---
 
@@ -132,23 +133,24 @@ if (propModuleId) {
 
 ### 2.3 Fix pattern
 
-When in constrained/tab mode, skip the global fetches entirely:
+Two complementary fixes — use both for best results:
+
+**1. Constrained data fetch:** When in tab mode, skip global fetches and use scoped endpoints:
 
 ```typescript
 // GOOD: only fetch what's needed for the constrained context
 if (propModuleId) {
-  // Tab mode: skip filter data, fetch only the scoped list
-  const sections = await getSectionsAdmin(propModuleId, fetch, token);
-  return { pathways: [], modules: [], sections };
+  // Tab mode: fetch only the scoped data
+  const syllabus = await getModuleSyllabusAdmin(propModuleId, fetch, token);
+  return { sections: extractSections(syllabus) };
 }
 
-// Page mode: fetch filter data for dropdowns
-const [pathways, modules] = await Promise.all([
-  getPathwaysAdmin(fetch, token),
-  getModulesAdmin(fetch, token)
-]);
-// ... full page-mode logic
+// Page mode: fetch core list data (modules needed to enumerate syllabi)
+const modules = await getModulesAdmin(fetch, token);
+// ... page-mode logic that needs module list for enumeration
 ```
+
+**2. Lazy-load filter dropdowns:** Remove filter dropdown data from the main data fetch entirely. Use the Underlay Select `loadItems` / `loadGroups` props so dropdown options are only fetched when the user opens the dropdown (see Step 8 for full details).
 
 ### 2.4 Downstream check: filter UI visibility
 
@@ -162,6 +164,7 @@ rg -n "isConstrained|variant.*tab|showFilters" "$ADMIN_REPO/src/lib/lists"
 
 - Tab-mode components only fetch data relevant to their constrained context
 - Global filter data (all pathways, all modules, etc.) is only fetched when filter UI is visible
+- Filter dropdown data is fetched lazily via `loadItems`/`loadGroups`, not eagerly in the data loader
 - No redundant `.filter()` or `.find()` on a full dataset when a scoped endpoint exists
 
 ---
@@ -329,6 +332,8 @@ For representative pages (detail views with tabs, list views with filters):
 - [ ] No `modules`, `pathways`, `schedules`, or similar global endpoints on a detail page load
 - [ ] No paginated-exhaust patterns on load
 - [ ] No per-item fan-out on load
+- [ ] Filter dropdown data is not fetched until the dropdown is opened
+- [ ] RelationSelector backing data in tabs is deferred by lazy-mount
 
 ### Capture baseline metrics
 
@@ -343,11 +348,196 @@ For representative pages (detail views with tabs, list views with filters):
 
 ---
 
+## Step 8 — Lazy-load filter dropdowns and selector backing data (Pattern G)
+
+Filter dropdowns and RelationSelector components commonly fetch their options eagerly in the parent's data loader. When those dropdowns are hidden (constrained/tab mode) or never opened, the fetches are pure waste. This step extends Pattern B's fix into a repeatable component-level solution.
+
+### 8.1 Audit filter dropdown data sources
+
+For each list component, trace where filter dropdown items come from:
+
+```bash
+rg -n "items=\{|groups=\{|modules=\{" "$ADMIN_REPO/src/lib/lists" --type svelte
+```
+
+For each hit, answer:
+
+- Does the data come from the main `useAuthenticatedData` fetch?
+- Is it a global dataset (all pathways, all modules, all schedules)?
+- Is the dropdown hidden in constrained/tab mode?
+
+Common waste pattern:
+
+```typescript
+// BAD: filter dropdown data fetched eagerly in data loader
+const pageData = useAuthenticatedData(async (fetch, token) => {
+  const [pathways, modules, sections] = await Promise.all([
+    getPathwaysAdmin(fetch, token),    // only for dropdown
+    getModulesAdmin(fetch, token),     // only for dropdown
+    getSectionsForModule(moduleId, fetch, token)  // actual list data
+  ]);
+  return { pathways, modules, sections };
+});
+
+// Template: dropdowns hidden in tab mode, but data still fetched
+{#if !isConstrained}
+  <Select items={pathwayItems} ... />
+  <Select items={moduleItems} ... />
+{/if}
+```
+
+### 8.2 Fix pattern: Select `loadItems` / `loadGroups`
+
+The Underlay `Select` component supports lazy loading via `loadItems` and `loadGroups` props. Options are fetched on first dropdown open, cached for the session, and invalidated via `loadKey` for cascading filters.
+
+**Before (eager):**
+
+```svelte
+<!-- Parent data fetch includes pathways + modules -->
+<Select items={pathwayItems} ... />
+<Select items={moduleItems} ... />
+```
+
+**After (lazy):**
+
+```svelte
+<script>
+  // Remove pathways/modules from useAuthenticatedData entirely
+
+  async function loadPathwayItems() {
+    const token = auth.getToken();
+    if (!token) return [];
+    const pathways = await getPathwaysAdmin(fetch, token);
+    return [
+      { value: "All", label: "All pathways" },
+      ...pathways.map(p => ({ value: p.pathwayId, label: p.name }))
+    ];
+  }
+
+  async function loadModuleItems() {
+    const token = auth.getToken();
+    if (!token) return [];
+    const modules = await getModulesAdmin(fetch, token);
+    const filtered = selectedPathwayId === "All"
+      ? modules
+      : modules.filter(m => m.pathwayId === selectedPathwayId);
+    return [
+      { value: "All", label: "All modules" },
+      ...filtered.map(m => ({ value: m.moduleId, label: m.code }))
+    ];
+  }
+</script>
+
+<Select loadItems={loadPathwayItems} placeholder="All pathways" ... />
+<Select
+  loadItems={loadModuleItems}
+  loadKey={selectedPathwayId}
+  placeholder="All modules"
+  ...
+/>
+```
+
+Key `Select` lazy-load props:
+
+| Prop | Type | Purpose |
+|------|------|---------|
+| `loadItems` | `() => Promise<SelectItem[]>` | Async function called on first open; replaces `items` prop |
+| `loadGroups` | `() => Promise<SelectGroup[]>` | Async function for grouped options; replaces `groups` prop |
+| `valueLabel` | `string` | Label to display for current value before items load |
+| `loadKey` | `string` | When this value changes, cached items are invalidated and re-fetched on next open (cascading filters) |
+
+Behaviour:
+
+- Items are fetched on **first open**, not on mount
+- Loading and error states render inside the dropdown viewport
+- If the dropdown is hidden (`{#if !isConstrained}`) or never opened, **no fetch occurs**
+- Cached results persist until `loadKey` changes or the component unmounts
+
+### 8.3 Cascading filter invalidation
+
+When a parent filter changes (e.g. pathway changes, modules need to refresh), pass the parent value as `loadKey`:
+
+```svelte
+<!-- Module dropdown refreshes when pathway selection changes -->
+<Select loadItems={loadModuleItems} loadKey={selectedPathwayId} ... />
+```
+
+On `loadKey` change:
+
+1. Cached items are discarded
+2. Load state resets to `idle`
+3. Next open triggers a fresh `loadItems` call with the new context
+
+For the child filter value, reset it to "All" when the parent changes rather than trying to validate the old selection against an eagerly-loaded list:
+
+```typescript
+let lastPathwayId = $state("All");
+$effect(() => {
+  if (selectedPathwayId !== lastPathwayId) {
+    lastPathwayId = selectedPathwayId;
+    if (selectedModuleId !== "All") {
+      selectedModuleId = "All";
+    }
+  }
+});
+```
+
+### 8.4 RelationSelector and drilldown backing data
+
+RelationSelector drilldowns use a **different loading strategy** from filter dropdowns and generally do not need `loadItems`-style lazy loading. However, they are susceptible to Pattern B waste.
+
+**How drilldowns work:**
+
+- Each drilldown level calls a `suggestions` function when entered, receiving prior selections as context
+- Most implementations use `createLocalDrillDownSearchFns` which filters **pre-loaded in-memory data**
+- The backing data is typically fetched eagerly via `useAuthenticatedData` when the containing component mounts
+
+**Where the waste occurs:**
+
+The containing component (e.g. an outcomes selector in a form) fetches all backing data on mount even if the user never opens the selector. On a form page this is usually acceptable — the selector is the primary purpose of the page. But watch for:
+
+1. **Selectors in tab panels** — if a RelationSelector is inside a tab that may never be activated, the backing data fetch is waste. The lazy-mount tab fix (Pattern A) already prevents this.
+
+2. **Selectors in collapsible/optional form sections** — if a form section with a RelationSelector is collapsed by default, consider deferring the backing data load until the section is expanded.
+
+3. **Heavy backing data** — if a selector loads thousands of items into memory for client-side filtering, consider switching from `createLocalDrillDownSearchFns` to a remote search function that queries the API with the user's search term and drill-down context.
+
+**Drilldown vs Select lazy loading — when to use which:**
+
+| Component | Data depends on prior selection? | Use `loadItems`? | Use drilldown search? |
+|-----------|----------------------------------|-------------------|-----------------------|
+| Filter dropdown (Select) | No, or only on parent filter | Yes | No |
+| Cascading filter (Select) | Yes, on parent filter value | Yes + `loadKey` | No |
+| RelationSelector drill-down | Yes, on prior level selections | No | Yes — local or remote |
+| RelationSelector final level | Yes, on full drill-down path | No | Yes — `suggestions` fn |
+
+### 8.5 Audit checklist
+
+For each list component and form:
+
+```bash
+# Find filter data included in data loaders
+rg -n "pathways|modules|schedules" "$ADMIN_REPO/src/lib/lists" --type svelte -A3 | grep -E "useAuthenticatedData|Promise\.all"
+
+# Find RelationSelectors with eager data loading
+rg -n "RelationSelector" "$ADMIN_REPO/src" --type svelte -l | xargs rg -n "useAuthenticatedData"
+```
+
+### Pass criteria
+
+- Filter dropdown data is **not** included in `useAuthenticatedData` callbacks
+- Dropdowns use `loadItems` / `loadGroups` and only fetch on first open
+- Cascading filters use `loadKey` for cache invalidation
+- RelationSelector backing data in tab panels is protected by lazy-mount (Pattern A)
+- RelationSelector components with very large datasets use remote search instead of client-side filtering
+
+---
+
 ## Severity rubric
 
 - `critical`: All tabs mount simultaneously causing cascade of fetches on every detail page load
-- `high`: Global dataset fetch on constrained page / exhaustive pagination on load / N+1 fan-out
-- `medium`: Duplicate identical requests across siblings / unnecessary filter data fetch
+- `high`: Global dataset fetch on constrained page / exhaustive pagination on load / N+1 fan-out / eager filter data for hidden dropdowns
+- `medium`: Duplicate identical requests across siblings / eager filter data for visible but unopened dropdowns / eager RelationSelector backing data in optional sections
 - `low`: Vestigial endpoint call with minimal payload
 - `note`: Optimization opportunity with limited current impact
 
@@ -358,7 +548,7 @@ For representative pages (detail views with tabs, list views with filters):
 ```md
 ### [SEVERITY] Wasteful endpoint call - <component/page>
 
-- **Pattern:** A / B / C / D / E / F
+- **Pattern:** A / B / C / D / E / F / G
 - **Location:** `src/...`
 - **Current behavior:** (what gets called, when, and how many requests)
 - **Observed cost:** (request count, payload size, latency impact)
