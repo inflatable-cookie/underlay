@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { untrack } from "svelte";
   import type { Component, SvelteComponent, Snippet } from "svelte";
   import PageHeader from "../PageHeader.svelte";
   import FilterBar from "../FilterBar.svelte";
@@ -84,7 +85,7 @@
   // Derive header level from variant if not explicitly set
   const effectiveLevel = $derived(level ?? (variant === "page" ? 1 : 3));
 
-  const listState = createAutonomousListState({
+  const listState = untrack(() => createAutonomousListState({
     fetcher,
     serverFetcher,
     idField,
@@ -93,7 +94,7 @@
     pageSize,
     persistKey,
     onDataChange
-  });
+  }));
 
   const { batch } = listState;
 
