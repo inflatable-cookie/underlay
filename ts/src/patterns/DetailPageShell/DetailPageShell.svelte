@@ -94,14 +94,26 @@
   /**
    * Track which tabs have been visited so we can lazy-mount their content.
    * Once a tab is activated it stays mounted to preserve component state.
+   *
+   * We use a plain (non-reactive) Set and a reactive counter to avoid an
+   * effect that reads and writes the same state (which triggers Svelte's
+   * effect_update_depth_exceeded error).
    */
-  let mountedTabs = $state<Set<string>>(new Set());
+  const mountedTabsSet = new Set<string>();
+  let mountedTabsVersion = $state(0);
 
   $effect(() => {
-    if (activeTab) {
-      mountedTabs = new Set([...mountedTabs, activeTab]);
+    if (activeTab && !mountedTabsSet.has(activeTab)) {
+      mountedTabsSet.add(activeTab);
+      mountedTabsVersion++;
     }
   });
+
+  function isTabMounted(value: string): boolean {
+    // Read the reactive counter to subscribe to changes
+    void mountedTabsVersion;
+    return mountedTabsSet.has(value);
+  }
 </script>
 
 <div class="underlay-detail-page {className}">
@@ -139,7 +151,7 @@
 
       {#each tabs as tab (tab.value)}
         <TabsContent value={tab.value}>
-          {#if mountedTabs.has(tab.value)}
+          {#if isTabMounted(tab.value)}
             {@render tabContent(tab.value)}
           {/if}
         </TabsContent>
