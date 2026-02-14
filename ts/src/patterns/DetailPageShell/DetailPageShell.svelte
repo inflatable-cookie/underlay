@@ -4,6 +4,7 @@
   import TabsRoot from "../../components/TabsRoot.svelte";
   import TabsList from "../../components/TabsList.svelte";
   import TabsTrigger from "../../components/TabsTrigger.svelte";
+  import TabsSeparator from "../../components/TabsSeparator.svelte";
   import TabsContent from "../../components/TabsContent.svelte";
   import type { BreadcrumbItem, PageHeaderLevel } from "../types";
   import type { BannerVariant } from "../banner";
@@ -12,6 +13,8 @@
     value: string;
     label: string;
     count?: number;
+    /** Render a vertical separator before this tab */
+    separator?: boolean;
   }
 
   interface Props {
@@ -113,6 +116,9 @@
     <TabsRoot bind:value={activeTab} variant="boxed" size="sm" historyKey={tabsHistoryKey}>
       <TabsList>
         {#each tabs as tab (tab.value)}
+          {#if tab.separator}
+            <TabsSeparator />
+          {/if}
           <TabsTrigger value={tab.value} count={tab.count}>
             {tab.label}
           </TabsTrigger>
