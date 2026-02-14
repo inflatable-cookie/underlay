@@ -90,6 +90,18 @@
       activeTab = tabs[0].value;
     }
   });
+
+  /**
+   * Track which tabs have been visited so we can lazy-mount their content.
+   * Once a tab is activated it stays mounted to preserve component state.
+   */
+  let mountedTabs = $state<Set<string>>(new Set());
+
+  $effect(() => {
+    if (activeTab) {
+      mountedTabs = new Set([...mountedTabs, activeTab]);
+    }
+  });
 </script>
 
 <div class="underlay-detail-page {className}">
@@ -127,7 +139,9 @@
 
       {#each tabs as tab (tab.value)}
         <TabsContent value={tab.value}>
-          {@render tabContent(tab.value)}
+          {#if mountedTabs.has(tab.value)}
+            {@render tabContent(tab.value)}
+          {/if}
         </TabsContent>
       {/each}
     </TabsRoot>
