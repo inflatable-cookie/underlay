@@ -18,6 +18,7 @@ Admin and consumer views accrue wasteful API calls through a small number of rec
 | **F** | N+1 client-side fan-out | Fetch a list, then make one request per item | Request count scales with data volume |
 | **G** | Eager filter/selector data fetch | Filter dropdowns or RelationSelector backing data loaded in the data fetch regardless of visibility | Fetches kilobytes of options the user may never see |
 | **H** | Missing supplementary data on list DTO | List endpoint returns only IDs; frontend makes N+1 calls or global fetches to resolve labels/counts | Request count scales with data volume; global lookups waste bandwidth |
+| **I** | One-size-fits-all DTO | Single endpoint/DTO serves list cards, filter dropdowns, and detail views with the same shape | Filter dropdowns transfer counts/joins they don't need; detail views may still lack fields; naming is ambiguous |
 
 ---
 
@@ -717,10 +718,142 @@ They are **never acceptable** on:
 
 ---
 
+## Step 10 — DTO and endpoint naming normalisation (Pattern I)
+
+A single DTO shape serving every consumer context (list card, filter dropdown, detail view) leads to ambiguity and waste. Filter dropdowns only need an ID and a label, list cards need a handful of display fields and counts, and detail views may need the full entity plus relations. When these all share one DTO, filter dropdowns transfer unnecessary counts and joins, and the naming gives no signal about which context the data is shaped for.
+
+### 10.1 Naming convention
+
+Adopt a consumer-oriented naming scheme for **API routes**, DTOs, and client types:
+
+| Suffix | Purpose | Typical fields | Route pattern | Example type |
+|--------|---------|----------------|---------------|--------------|
+| `ForList` | List card rendering | Display fields, badge counts, related labels | `GET /v1/admin/{domain}/{entities}-for-list` | `ModuleForList` |
+| `ForFilter` | Filter dropdown / Select items | ID + label only (minimal projection) | `GET /v1/admin/{domain}/{entities}-for-filter` | `ModuleForFilter` |
+| `ForDetail` | Detail page / edit form | Full entity fields, relations, nested data | `GET /v1/admin/{domain}/{entities}/{id}` | `ModuleForDetail` |
+
+The convention applies across the full stack:
+
+- **API routes:** `/v1/admin/learning/modules-for-list`, `/v1/admin/learning/modules-for-filter`
+- **Farmyard (Rust):** `ModuleForListRow` (DB model), `ModuleForListDto` (API DTO)
+- **Cattle Grid (TypeScript):** `ModuleForList`, `ModuleForFilter`, `ModuleForDetail` (types); `listModulesForListAdmin`, `listModulesForFilterAdmin` (commands)
+- **Dairy/Cream (Svelte):** consume the appropriately-shaped type per context
+
+**Route naming rules:**
+- List endpoints: `{entities}-for-list` — paginated, filtered, sorted, with counts and JOINed labels
+- Filter endpoints: `{entities}-for-filter` — flat list of ID + label, no pagination needed
+- Detail endpoints: `{entities}/{id}` — single entity by ID (no suffix needed, the path parameter signals detail context)
+- Existing generic routes can be deprecated gradually and aliased to the appropriate variant during migration
+
+### 10.2 Audit existing routes and endpoints
+
+```bash
+# Find API routes that serve multiple contexts
+rg -n '\.get\(|\.post\(' "$API_REPO/crates/api/src/routes/admin" --type rust | grep -oP '/v1/admin/[^"]+' | sort -u
+
+# Find DTO structs that serve multiple contexts
+rg -n "pub struct \w+Dto" "$API_REPO/crates/api/src/dto" --type rust
+
+# Find TypeScript types that may be overloaded
+rg -n "export interface (Module|Pathway|ExamEdition|ExamSchedule|Area|Section|Outcome)\b" "$CLIENT_REPO/src/types"
+
+# Find filter dropdowns consuming full list DTOs
+rg -n "getModulesAdmin|getPathwaysAdmin|listExamSchedulesAdmin" "$ADMIN_REPO/src/lib/lists" --type svelte
+
+# Find client commands that don't signal their consumer context
+rg -n "export async function (get|list)\w+Admin" "$CLIENT_REPO/src/commands" --type ts
+```
+
+For each hit, classify the consumer context:
+
+1. Is this a **filter dropdown** that only needs ID + label? → Should use a `ForFilter` endpoint/type
+2. Is this a **list card** that needs display fields + counts? → Should use a `ForList` endpoint/type
+3. Is this a **detail view** or **edit form** that needs the full entity? → Should use a `ForDetail` endpoint/type
+
+### 10.3 Fix pattern
+
+**Phase 1 — Backend (Farmyard):**
+
+Add purpose-specific query/DTO pairs. The `ForFilter` variant is typically the cheapest to add — it's a SELECT of just `id` and `name`/`code`/`title` with no JOINs or subqueries:
+
+```rust
+// Minimal projection for filter dropdowns
+#[derive(Debug, Clone, FromRow, Serialize)]
+pub struct ModuleForFilterRow {
+    pub id: Uuid,
+    pub code: Option<String>,
+    pub title: Option<String>,
+}
+
+// Full projection for list cards (with counts and labels)
+#[derive(Debug, Clone, FromRow)]
+pub struct ModuleForListRow {
+    pub id: Uuid,
+    pub code: Option<String>,
+    pub title: Option<String>,
+    pub pathway_name: Option<String>,
+    pub section_count: i64,
+    pub area_count: i64,
+    // ...
+}
+```
+
+**Phase 2 — Client (Cattle Grid):**
+
+```typescript
+// Minimal type for filter dropdowns
+export interface ModuleForFilter {
+  moduleId: string;
+  moduleCode?: string | null;
+  moduleTitle?: string | null;
+}
+
+// Full type for list cards
+export interface ModuleForList {
+  moduleId: string;
+  moduleCode?: string | null;
+  moduleTitle?: string | null;
+  pathwayName?: string | null;
+  sectionCount: number;
+  areaCount: number;
+  // ...
+}
+```
+
+**Phase 3 — Frontend (Dairy/Cream):**
+
+- Filter dropdowns use `loadItems` calling a `ForFilter` endpoint
+- List components consume `ForList` types
+- Detail pages consume `ForDetail` types
+
+### 10.4 Key entities requiring split
+
+These are the primary entities where a single DTO currently serves multiple contexts:
+
+| Entity | Current generic DTO | Contexts served | Priority |
+|--------|-------------------|-----------------|----------|
+| Module | `LearningModule` / `ModuleWithCounts` | List cards, filter dropdowns, syllabus lookups, detail | High |
+| Pathway | `Pathway` | List cards, filter dropdowns | Medium |
+| Exam Schedule | `ExamSchedule` | List cards, filter dropdowns, edition label derivation | Medium |
+| Exam Edition | `ExamEdition` | List cards, filter dropdowns, document page lookups | Medium |
+| Area | `Area` / `AreaWithCounts` | List cards, filter dropdowns, form options | Medium |
+| Section | `Section` | List cards, form cascading selectors | Low |
+| Outcome | `Outcome` | List cards, form cascading selectors | Low |
+
+### Pass criteria
+
+- Every API route, DTO, and client type name signals its consumer context (`for-list`, `for-filter`, `ForList`, `ForFilter`, `ForDetail`)
+- Filter routes (`-for-filter`) return only ID + label fields — no counts, no JOINs to unrelated tables
+- List routes (`-for-list`) return all fields needed for card rendering — no more, no less
+- No single route/DTO/type serves both filter dropdowns and list cards
+- Client commands mirror route naming (`listModulesForListAdmin`, `listModulesForFilterAdmin`)
+
+---
+
 ## Severity rubric
 
 - `critical`: All tabs mount simultaneously causing cascade of fetches on every detail page load / N+1 fan-out on list views (scales with data volume)
-- `high`: Global dataset fetch on constrained page / exhaustive pagination on load / missing supplementary data on list DTO requiring global lookups / eager filter data for hidden dropdowns
+- `high`: Global dataset fetch on constrained page / exhaustive pagination on load / missing supplementary data on list DTO requiring global lookups / eager filter data for hidden dropdowns / one-size-fits-all DTO transferring unnecessary data to filter dropdowns
 - `medium`: Duplicate identical requests across siblings / eager filter data for visible but unopened dropdowns / eager RelationSelector backing data in optional sections
 - `low`: Vestigial endpoint call with minimal payload
 - `note`: Optimization opportunity with limited current impact
