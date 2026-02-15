@@ -17,6 +17,7 @@ Admin and consumer views accrue wasteful API calls through a small number of rec
 | **E** | Exhaustive pagination in page load | Looping through all pages of a paginated endpoint (`limit=200`, repeat until done) | Unbounded request count, grows with data |
 | **F** | N+1 client-side fan-out | Fetch a list, then make one request per item | Request count scales with data volume |
 | **G** | Eager filter/selector data fetch | Filter dropdowns or RelationSelector backing data loaded in the data fetch regardless of visibility | Fetches kilobytes of options the user may never see |
+| **H** | Missing supplementary data on list DTO | List endpoint returns only IDs; frontend makes N+1 calls or global fetches to resolve labels/counts | Request count scales with data volume; global lookups waste bandwidth |
 
 ---
 
@@ -288,30 +289,83 @@ rg -n "for.*of.*\{[\s\S]{0,300}await|\.map\(async|Promise\.all\(.*\.map\(" "$ADM
 - Could a batch/list endpoint serve the same data in one call?
 - Does the number of iterations scale with data volume?
 
-Common pattern:
+There are two distinct sub-patterns to watch for:
+
+**Sub-pattern F1: Per-item API call to get a count or summary**
+
+The list endpoint doesn't include a count field, so the frontend calls another endpoint per row just to read `.total`:
 
 ```typescript
-// BAD: one request per edition to check for documents
-const editions = await listEditions(moduleId, fetch, token);
-for (const edition of editions) {
-  const docs = await listDocuments(edition.editionId, fetch, token);
-  edition.documentCount = docs.length;
-}
-
-// GOOD: include count on the list endpoint response
-const editions = await listEditions(moduleId, fetch, token);
-// editions[].documentCount already present
+// BAD: one request per edition to get document count
+const editions = await listEditions(fetch, token, query);
+const countEntries = await Promise.all(
+  editions.data.map(async (edition) => {
+    const docs = await listDocumentsAdmin(fetch, token, {
+      limit: 1, offset: 0,
+      exam_edition_id: edition.examEditionId
+    });
+    return [edition.examEditionId, docs.total] as const;
+  })
+);
 ```
 
-### 6.3 Fix pattern
+**Fix:** Add the count as a subquery on the list endpoint's SQL (see Step 9).
 
-1. **Add count/summary fields to the list DTO** so the frontend doesn't need per-item requests
-2. **Create a batch endpoint** if per-item data cannot be summarised as a count
-3. **Defer to user action** — only fetch per-item data when a row is expanded or clicked
+**Sub-pattern F2: Per-item API call to resolve detail data**
+
+The list endpoint returns only an ID for a related entity, so the frontend fetches the full entity per item:
+
+```typescript
+// BAD: one request per document to get title/kind
+const uniqueDocumentIds = [...new Set(items.map(i => i.documentId))];
+const details = await Promise.all(
+  uniqueDocumentIds.map(async (id) => {
+    const doc = await getDocumentForAdmin(id, fetch, token);
+    return [id, { title: doc.title, kind: doc.kind }] as const;
+  })
+);
+```
+
+**Fix:** JOIN the related table in the list endpoint query and include the needed fields on the DTO (see Step 9).
+
+### 6.3 Broader audit: global fetches that are N+1 in disguise (Pattern F + H)
+
+Sometimes the N+1 isn't a loop per item but a single global fetch used to build a lookup map. While this avoids N requests, it still transfers an entire dataset just to resolve labels for a handful of IDs:
+
+```typescript
+// BAD: fetch ALL schedules just to map schedule_id → label for ~10 editions
+const [editions, allSchedules] = await Promise.all([
+  listEditionsAdmin(fetch, token, query),
+  listAllExamSchedulesAdmin(fetch, token)  // paginated exhaust, all schedules ever
+]);
+const labelById = new Map(allSchedules.map(s => [s.id, getDisplayLabel(s)]));
+```
+
+This combines Pattern E (paginated exhaust) with Pattern H (missing supplementary data). The fix is the same: include the label data on the list endpoint response.
+
+### 6.4 Known instances
+
+| Component | List endpoint | N+1 / global lookup endpoint | Per-item field needed | Fix |
+|-----------|--------------|------------------------------|----------------------|-----|
+| `ExamEditionsList` | `listExamEditionsAdmin` | `listExamDocumentsAdmin` × N editions | `documentCount` | Add subquery to editions list SQL |
+| `ExamEditionsList` | `listExamEditionsAdmin` | `listAllExamSchedulesAdmin` (paginated exhaust) | schedule label (dates/on-demand) | JOIN `exams.exam_schedule` in editions list SQL |
+| `ExamDocumentsInlineList` | `listExamDocumentsAdmin` | `getDocumentForAdmin` × N documents | `documentTitle`, `documentKind` | JOIN `content.document` in exam documents list SQL |
+| `SectionsList` (page mode) | `getModulesAdmin` | `getModuleSyllabusAdmin` × N modules | sections list | Consider a bulk sections endpoint |
+| `AreasList` (page mode) | `getModulesAdmin` | `getModuleSyllabusAdmin` × N modules | sections list | Consider a bulk sections endpoint |
+| `OutcomesList` (page mode) | `getModulesAdmin` | `getModuleSyllabusAdmin` × N modules | outcomes/sections | Consider a bulk outcomes endpoint |
+| `ActivityDetailPage` | QA target IDs | `getQaItemForAdmin` × N targets | QA item title/status | Consider batch QA item endpoint |
+
+### 6.5 Fix pattern
+
+1. **Add count/summary fields to the list DTO** so the frontend doesn't need per-item requests (see Step 9)
+2. **JOIN related tables** in the list query and include label fields on the DTO
+3. **Create a batch endpoint** if per-item data cannot be summarised as a count
+4. **Defer to user action** — only fetch per-item data when a row is expanded or clicked
 
 ### Pass criteria
 
 - No loops making one API call per list item on page load
+- No paginated-exhaust global fetches used purely for ID → label lookups
 - Per-item data is either included in the list response or fetched lazily on interaction
 
 ---
@@ -331,7 +385,8 @@ For representative pages (detail views with tabs, list views with filters):
 - [ ] Each tab click: at most one scoped data fetch for that tab's content
 - [ ] No `modules`, `pathways`, `schedules`, or similar global endpoints on a detail page load
 - [ ] No paginated-exhaust patterns on load
-- [ ] No per-item fan-out on load
+- [ ] No per-item fan-out on load (no `Promise.all(items.map(async ...))` in data loaders)
+- [ ] No global dataset fetches used purely for ID → label lookups (Pattern H)
 - [ ] Filter dropdown data is not fetched until the dropdown is opened
 - [ ] RelationSelector backing data in tabs is deferred by lazy-mount
 
@@ -533,10 +588,139 @@ rg -n "RelationSelector" "$ADMIN_REPO/src" --type svelte -l | xargs rg -n "useAu
 
 ---
 
+## Step 9 — Missing supplementary data on list endpoints (Pattern H)
+
+This is the **backend counterpart** to Patterns F and E. When a list endpoint returns only raw IDs for related entities — with no JOINed labels, no subquery counts — the frontend is forced into N+1 fan-out or global-fetch-and-lookup patterns to display basic information like names, dates, and counts.
+
+### 9.1 Why this pattern is critical to prevent
+
+This is the single most wasteful pattern in the codebase. A list of 30 editions with per-item document count lookups produces **30 additional API requests**. Combined with global schedule/module lookups, a single list page can produce **32+ requests** instead of 1. This scales with data volume and compounds with pagination — every page turn re-triggers the fan-out.
+
+**This pattern is never acceptable in production.** List endpoints must return all the data needed to render their list cards.
+
+### 9.2 Audit list endpoints
+
+For every admin list endpoint in the API, verify:
+
+1. **Does the frontend fetch additional data per row?** Check the frontend `useAuthenticatedData` callback for `Promise.all(response.data.map(...))` patterns.
+2. **Does the frontend fetch a global dataset to build a lookup map?** Check for parallel fetches of ALL modules, ALL schedules, ALL pathways alongside the list query.
+3. **Does the list card component make its own API call?** Check card components for `useAuthenticatedData` or `$effect` with fetch logic.
+
+```bash
+# Find per-item fan-out in data loaders
+rg -n "response\.data\.map\(async|\.data\.map\(async" "$ADMIN_REPO/src"
+
+# Find global lookup fetches alongside list queries
+rg -n "Promise\.all\(\[" "$ADMIN_REPO/src/lib/lists" --type svelte -A10 | grep -E "getModulesAdmin|getPathwaysAdmin|listAll"
+
+# Find card components that fetch their own data
+rg -n "useAuthenticatedData" "$ADMIN_REPO/src/lib/cards" --type svelte
+```
+
+### 9.3 Fix pattern: enrich the list endpoint
+
+The fix is always the same: **move the data to the SQL query**.
+
+**Counts:** Add a correlated subquery:
+
+```sql
+-- Add document count to exam editions list
+SELECT
+    e.id,
+    e.module_id,
+    m.code AS module_code,
+    -- ... existing columns ...
+    COALESCE((
+        SELECT COUNT(*)
+        FROM exams.exam_document ed
+        WHERE ed.exam_edition_id = e.id
+          AND ed.deleted_at IS NULL
+    ), 0) AS document_count
+FROM exams.exam_edition e
+LEFT JOIN learning.module m ON m.id = e.module_id
+```
+
+**Labels from related tables:** Add a JOIN and select the needed columns:
+
+```sql
+-- Add schedule info to exam editions list
+SELECT
+    e.id,
+    es.start_date AS schedule_start_date,
+    es.end_date AS schedule_end_date,
+    es.is_on_demand AS schedule_is_on_demand,
+    -- ... existing columns ...
+FROM exams.exam_edition e
+LEFT JOIN exams.exam_schedule es ON es.id = e.exam_schedule_id
+```
+
+**Update the DTO:** Add the new fields to the Rust response struct and the TypeScript type:
+
+```rust
+// farmyard: ExamEditionDetailRow
+pub struct ExamEditionDetailRow {
+    // ... existing fields ...
+    pub document_count: i64,
+    pub schedule_start_date: Option<NaiveDate>,
+    pub schedule_end_date: Option<NaiveDate>,
+    pub schedule_is_on_demand: bool,
+}
+```
+
+```typescript
+// cattle-grid: ExamEdition type
+export interface ExamEdition {
+  // ... existing fields ...
+  documentCount: number;
+  scheduleStartDate?: string | null;
+  scheduleEndDate?: string | null;
+  scheduleIsOnDemand: boolean;
+}
+```
+
+**Remove frontend workarounds:** Once the list endpoint returns the enriched data:
+
+1. Delete the `Promise.all(response.data.map(...))` fan-out
+2. Delete the global lookup fetch (e.g. `listAllExamSchedulesAdmin`)
+3. Delete the lookup map construction
+4. Read the supplementary data directly from the list response
+
+### 9.4 Checklist: what every list endpoint should include
+
+| Data need | Wrong approach | Correct approach |
+|-----------|---------------|-----------------|
+| Count of child entities | Client fetches children with `limit: 1` per item | Correlated subquery `COUNT(*)` in list SQL |
+| Related entity label | Client fetches ALL related entities globally | `LEFT JOIN` in list SQL, select label columns |
+| Related entity status | Client fetches entity per item | `LEFT JOIN` in list SQL, select status column |
+| Computed display value | Client computes from fetched global data | Compute in SQL or return raw fields for client formatting |
+
+### 9.5 When secondary queries are justified
+
+N+1 patterns are sometimes acceptable on **detail pages** (single entity) for **optional/expandable sections**:
+
+- Detail page inline lists (e.g. documents within an edition detail) — these fetch on mount of the detail page which loads one entity, not N
+- Lazy-mounted tab content that loads on activation — deferred, not N+1
+- User-initiated expand/drill-down — fetched on interaction
+
+They are **never acceptable** on:
+
+- List views — every row triggers a fetch
+- Data loaders that run on page load — no user interaction to justify
+- Paginated lists — re-triggers on every page turn
+
+### Pass criteria
+
+- Every list endpoint returns all data needed to render its list cards without supplementary fetches
+- No `Promise.all(items.map(async ...))` patterns in list component data loaders
+- No global dataset fetches (`listAll*`, `getModulesAdmin`, etc.) used purely for ID → label resolution in list views
+- Related entity labels and child counts are available directly on the list response DTO
+
+---
+
 ## Severity rubric
 
-- `critical`: All tabs mount simultaneously causing cascade of fetches on every detail page load
-- `high`: Global dataset fetch on constrained page / exhaustive pagination on load / N+1 fan-out / eager filter data for hidden dropdowns
+- `critical`: All tabs mount simultaneously causing cascade of fetches on every detail page load / N+1 fan-out on list views (scales with data volume)
+- `high`: Global dataset fetch on constrained page / exhaustive pagination on load / missing supplementary data on list DTO requiring global lookups / eager filter data for hidden dropdowns
 - `medium`: Duplicate identical requests across siblings / eager filter data for visible but unopened dropdowns / eager RelationSelector backing data in optional sections
 - `low`: Vestigial endpoint call with minimal payload
 - `note`: Optimization opportunity with limited current impact
@@ -548,7 +732,7 @@ rg -n "RelationSelector" "$ADMIN_REPO/src" --type svelte -l | xargs rg -n "useAu
 ```md
 ### [SEVERITY] Wasteful endpoint call - <component/page>
 
-- **Pattern:** A / B / C / D / E / F / G
+- **Pattern:** A / B / C / D / E / F / G / H
 - **Location:** `src/...`
 - **Current behavior:** (what gets called, when, and how many requests)
 - **Observed cost:** (request count, payload size, latency impact)
