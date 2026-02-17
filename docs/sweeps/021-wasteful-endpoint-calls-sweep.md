@@ -19,6 +19,7 @@ Admin and consumer views accrue wasteful API calls through a small number of rec
 | **G** | Eager filter/selector data fetch | Filter dropdowns or RelationSelector backing data loaded in the data fetch regardless of visibility | Fetches kilobytes of options the user may never see |
 | **H** | Missing supplementary data on list DTO | List endpoint returns only IDs; frontend makes N+1 calls or global fetches to resolve labels/counts | Request count scales with data volume; global lookups waste bandwidth |
 | **I** | One-size-fits-all DTO | Single endpoint/DTO serves list cards, filter dropdowns, and detail views with the same shape | Filter dropdowns transfer counts/joins they don't need; detail views may still lack fields; naming is ambiguous |
+| **J** | Unguarded queryKey refetch in tab-mounted components | `$effect` calls `refetch()` on every URL change without comparing previous value | Tab-mounted list components re-fetch on every tab switch or sibling filter change |
 
 ---
 
@@ -390,6 +391,7 @@ For representative pages (detail views with tabs, list views with filters):
 - [ ] No global dataset fetches used purely for ID → label lookups (Pattern H)
 - [ ] Filter dropdown data is not fetched until the dropdown is opened
 - [ ] RelationSelector backing data in tabs is deferred by lazy-mount
+- [ ] Tab-mounted list components do not re-fetch when switching to a different tab (Pattern J)
 
 ### Capture baseline metrics
 
@@ -850,10 +852,129 @@ These are the primary entities where a single DTO currently serves multiple cont
 
 ---
 
+## Step 11 — Unguarded queryKey refetch in tab-mounted components (Pattern J)
+
+When a list component is embedded inside a `DetailPageShell` tab, it mounts on first tab visit and **stays mounted** thereafter (lazy-mount keeps tabs alive). If that component's URL-change `$effect` calls `refetch()` without comparing the previous value, every subsequent URL change — including tab switches and sibling tab filter changes — triggers a spurious API call.
+
+### 11.1 Why this happens
+
+`DetailPageShell` lazy-mounts tab content via `{#if isTabMounted(tab.value)}`. Once mounted, the component's Svelte 5 `$effect` hooks remain active even when the tab is hidden (bits-ui applies the `hidden` attribute but keeps the DOM and reactivity intact). Any `$effect` that reads `$page.url.searchParams` (directly or via a `$derived`) will re-evaluate on every URL change.
+
+The bug pattern:
+
+```typescript
+// BAD: calls refetch() on every effect run, including mount
+const queryKey = $derived(dataSearchParams($page.url.searchParams).toString());
+$effect(() => {
+    queryKey;
+    if ($currentUser) {
+      void pageData.refetch();
+    }
+});
+```
+
+Problems:
+1. **Double-fetch on mount:** `tryFetch()` handles initial load, but this effect also fires on mount and calls `refetch()`.
+2. **Spurious refetch on tab switch:** When the user switches tabs, `$page.url.searchParams` changes (the `tab` param changes). Even though `dataSearchParams` strips `tab`, the effect may still re-run.
+3. **Cross-tab param pollution:** If a sibling tab writes filter/sort params to the URL (e.g. PreSeenReleasesList writes `sort`, `status`), this component's `queryKey` picks up those params and triggers a refetch with irrelevant filter state.
+
+### 11.2 Detect
+
+```bash
+# Find $effect blocks that call refetch() without a previous-value guard
+rg -n "refetch\(\)" "$ADMIN_REPO/src/lib/lists" --type svelte -B5 | grep -E "queryKey|\$effect"
+
+# Find $derived queryKey patterns
+rg -n "queryKey.*=.*\$derived" "$ADMIN_REPO/src/lib/lists" --type svelte
+
+# Find $effect blocks reading $page.url.searchParams that call refetch
+rg -n "\$page\.url\.searchParams" "$ADMIN_REPO/src/lib/lists" --type svelte -A3 | grep -E "refetch"
+```
+
+### 11.3 Fix pattern: previousQueryKey comparison guard
+
+Track the previous queryKey value and only call `refetch()` when it actually changes. Set the initial key in the `onSuccess` callback so it's established after the first fetch completes (not during mount).
+
+**Before (buggy):**
+
+```typescript
+const queryKey = $derived(dataSearchParams($page.url.searchParams).toString());
+$effect(() => {
+    queryKey;
+    if ($currentUser) {
+      void pageData.refetch();
+    }
+});
+```
+
+**After (guarded):**
+
+```typescript
+let previousQueryKey = $state<string | null>(null);
+
+const pageData = useAuthenticatedData(
+    async (fetchFn, token) => { /* ... */ },
+    {
+      // ... other options ...
+      onSuccess: () => {
+        // Set initial key after first successful fetch
+        previousQueryKey = dataSearchParams($page.url.searchParams).toString();
+      }
+    }
+);
+
+$effect(() => {
+    pageData.tryFetch($authLoading, $currentUser);
+});
+
+// Refetch only when data-relevant URL params actually change
+$effect(() => {
+    const currentKey = dataSearchParams($page.url.searchParams).toString();
+    if (previousQueryKey !== null && previousQueryKey !== currentKey) {
+      previousQueryKey = currentKey;
+      pageData.refetch();
+    }
+});
+```
+
+Key properties:
+- **No double-fetch on mount:** `previousQueryKey` is `null` until `onSuccess` fires, so the guard `previousQueryKey !== null` prevents the comparison effect from firing until after the initial fetch.
+- **No spurious refetch on tab switch:** `dataSearchParams` strips the `tab` param, and the comparison guard ensures refetch only fires when the remaining params genuinely change.
+- **Cross-tab pollution still possible** if sibling tabs write shared URL params — but at least the component only refetches when those params change, not on every tab switch. For full isolation, consider migrating tab-mode components to local state instead of URL params.
+
+### 11.4 Known instances
+
+| Component | Tab mode? | Status |
+|-----------|-----------|--------|
+| `ExamEditionsList` | Yes (module detail) | Fixed — `dairy@447371b` |
+| `ExamSchedulesList` | Yes (pathway detail) | Fixed — same commit as below |
+| `MockExamsList` | No (page only) | Fixed — unguarded pattern eliminated |
+| `PreSeenReleasesList` | Yes (module detail) | Already correct — uses `previousUrl` comparison guard |
+| `PathwaysList` | No (page only) | Already correct — uses `previousUrl` comparison guard |
+| `BundlesList` | No (page only) | Already correct — uses `previousUrl` comparison guard |
+| `SectionsList` | Yes (module detail) | Not affected — uses local state, no URL-param refetch |
+| `AreasList` | Yes (module detail) | Not affected — uses local state, no URL-param refetch |
+| `SyllabusUpdatesList` | Yes (module detail) | Not affected — no URL-param refetch |
+| `ActivitiesList` | Yes (various) | Not affected — uses local state, no URL-param refetch |
+| `SummariesList` | No (page only) | Minor — `pagination.reset()` on mount, no tab impact |
+| `DocumentsList` | No (page only) | Minor — `pagination.reset()` on mount, no tab impact |
+| `AudiosList` | No (page only) | Minor — `pagination.reset()` on mount, no tab impact |
+| `VideosList` | No (page only) | Minor — `pagination.reset()` on mount, no tab impact |
+| QA page (`content/qa`) | No (page only) | Minor — `pagination.reset()` on mount, no tab impact |
+
+### Pass criteria
+
+- No `$effect` calls `refetch()` without comparing against a previous value
+- Tab-mounted list components do not re-fetch when switching to a different tab
+- Tab-mounted list components do not re-fetch when a sibling tab changes its filter/sort params
+- Initial mount triggers exactly one fetch (via `tryFetch`), not two
+
+---
+
 ## Severity rubric
 
 - `critical`: All tabs mount simultaneously causing cascade of fetches on every detail page load / N+1 fan-out on list views (scales with data volume)
-- `high`: Global dataset fetch on constrained page / exhaustive pagination on load / missing supplementary data on list DTO requiring global lookups / eager filter data for hidden dropdowns / one-size-fits-all DTO transferring unnecessary data to filter dropdowns
+- `high`: Global dataset fetch on constrained page / exhaustive pagination on load / missing supplementary data on list DTO requiring global lookups / eager filter data for hidden dropdowns / one-size-fits-all DTO transferring unnecessary data to filter dropdowns / unguarded queryKey refetch causing repeated API calls on every tab switch (Pattern J)
 - `medium`: Duplicate identical requests across siblings / eager filter data for visible but unopened dropdowns / eager RelationSelector backing data in optional sections
 - `low`: Vestigial endpoint call with minimal payload
 - `note`: Optimization opportunity with limited current impact
@@ -865,7 +986,7 @@ These are the primary entities where a single DTO currently serves multiple cont
 ```md
 ### [SEVERITY] Wasteful endpoint call - <component/page>
 
-- **Pattern:** A / B / C / D / E / F / G / H
+- **Pattern:** A / B / C / D / E / F / G / H / I / J
 - **Location:** `src/...`
 - **Current behavior:** (what gets called, when, and how many requests)
 - **Observed cost:** (request count, payload size, latency impact)
