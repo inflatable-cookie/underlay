@@ -891,9 +891,9 @@ rg -n "queryKey.*=.*\$derived" "$ADMIN_REPO/src/lib/lists" --type svelte
 rg -n "\$page\.url\.searchParams" "$ADMIN_REPO/src/lib/lists" --type svelte -A3 | grep -E "refetch"
 ```
 
-### 11.3 Fix pattern: previousQueryKey comparison guard
+### 11.3 Fix pattern: `queryKey` option (preferred)
 
-Track the previous queryKey value and only call `refetch()` when it actually changes. Set the initial key in the `onSuccess` callback so it's established after the first fetch completes (not during mount).
+Use the built-in `queryKey` option on `useAuthenticatedData`. It internally tracks the previous key value, sets the initial key after the first successful fetch, and only calls `refetch()` when the key genuinely changes. Combined with global `configureAuth()` providing `getAuthLoading`/`getCurrentUser`, this eliminates all manual `$effect` boilerplate.
 
 **Before (buggy):**
 
@@ -907,51 +907,42 @@ $effect(() => {
 });
 ```
 
-**After (guarded):**
+**After (using `queryKey` option):**
 
 ```typescript
-let previousQueryKey = $state<string | null>(null);
-
 const pageData = useAuthenticatedData(
     async (fetchFn, token) => { /* ... */ },
     {
-      // ... other options ...
-      onSuccess: () => {
-        // Set initial key after first successful fetch
-        previousQueryKey = dataSearchParams($page.url.searchParams).toString();
-      }
+      defaultValue: { data: [], total: 0 },
+      queryKey: () => dataSearchParams($page.url.searchParams).toString()
     }
 );
-
-$effect(() => {
-    pageData.tryFetch($authLoading, $currentUser);
-});
-
-// Refetch only when data-relevant URL params actually change
-$effect(() => {
-    const currentKey = dataSearchParams($page.url.searchParams).toString();
-    if (previousQueryKey !== null && previousQueryKey !== currentKey) {
-      previousQueryKey = currentKey;
-      pageData.refetch();
-    }
-});
+// No $effect needed — auto-fetch and queryKey watching are handled internally
 ```
 
+Prerequisites:
+- `configureAuth()` in the app layout must include `getAuthLoading` and `getCurrentUser` getters (enables auto-fetch without manual `tryFetch` `$effect`)
+- The `queryKey` getter must strip UI-only params (use `dataSearchParams()` to remove `tab`, etc.)
+
 Key properties:
-- **No double-fetch on mount:** `previousQueryKey` is `null` until `onSuccess` fires, so the guard `previousQueryKey !== null` prevents the comparison effect from firing until after the initial fetch.
-- **No spurious refetch on tab switch:** `dataSearchParams` strips the `tab` param, and the comparison guard ensures refetch only fires when the remaining params genuinely change.
+- **No double-fetch on mount:** The internal `_previousQueryKey` is `null` until `onSuccess` fires, so the queryKey `$effect` won't fire until after the initial fetch.
+- **No spurious refetch on tab switch:** `dataSearchParams` strips the `tab` param, and the internal comparison guard ensures refetch only fires when the remaining params genuinely change.
 - **Cross-tab pollution still possible** if sibling tabs write shared URL params — but at least the component only refetches when those params change, not on every tab switch. For full isolation, consider migrating tab-mode components to local state instead of URL params.
+
+#### Manual fallback (when `queryKey` option isn't suitable)
+
+If you need custom refetch logic beyond what `queryKey` provides, use the manual `previousQueryKey` comparison guard pattern. See the git history for `ExamEditionsList.svelte` at `dairy@447371b` for the full before/after.
 
 ### 11.4 Known instances
 
 | Component | Tab mode? | Status |
 |-----------|-----------|--------|
-| `ExamEditionsList` | Yes (module detail) | Fixed — `dairy@447371b` |
-| `ExamSchedulesList` | Yes (pathway detail) | Fixed — same commit as below |
-| `MockExamsList` | No (page only) | Fixed — unguarded pattern eliminated |
-| `PreSeenReleasesList` | Yes (module detail) | Already correct — uses `previousUrl` comparison guard |
-| `PathwaysList` | No (page only) | Already correct — uses `previousUrl` comparison guard |
-| `BundlesList` | No (page only) | Already correct — uses `previousUrl` comparison guard |
+| `ExamEditionsList` | Yes (module detail) | Fixed — uses `queryKey` option |
+| `ExamSchedulesList` | Yes (pathway detail) | Fixed — uses `queryKey` option |
+| `MockExamsList` | No (page only) | Fixed — uses `queryKey` option |
+| `PreSeenReleasesList` | Yes (module detail) | Fixed — uses `queryKey` option |
+| `PathwaysList` | No (page only) | Fixed — uses `queryKey` option |
+| `BundlesList` | No (page only) | Fixed — uses `queryKey` option |
 | `SectionsList` | Yes (module detail) | Not affected — uses local state, no URL-param refetch |
 | `AreasList` | Yes (module detail) | Not affected — uses local state, no URL-param refetch |
 | `SyllabusUpdatesList` | Yes (module detail) | Not affected — no URL-param refetch |

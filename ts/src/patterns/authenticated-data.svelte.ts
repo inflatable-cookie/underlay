@@ -27,10 +27,14 @@ import { getAuthConfig } from "./auth";
  *
  * ## Usage
  *
+ * ### Basic (with global auth config)
+ *
+ * When configureAuth() includes getAuthLoading and getCurrentUser, the hook
+ * auto-fetches — no manual $effect needed:
+ *
  * ```svelte
  * <script lang="ts">
  *   import { useAuthenticatedData } from '@decodelabs/underlay/patterns';
- *   import { authLoading, currentUser } from '$lib/stores/auth';
  *
  *   const pageData = useAuthenticatedData(
  *     async (fetch, token) => {
@@ -39,20 +43,48 @@ import { getAuthConfig } from "./auth";
  *     },
  *     { defaultValue: { items: [] } }
  *   );
+ * </script>
+ * ```
+ *
+ * ### With URL-param-driven refetch (queryKey)
+ *
+ * For list components that refetch when URL search params change, pass a
+ * queryKey getter. The hook internally tracks the previous key and only
+ * refetches when data-relevant params genuinely change:
+ *
+ * ```svelte
+ * <script lang="ts">
+ *   import { useAuthenticatedData } from '@decodelabs/underlay/patterns';
+ *   import { dataSearchParams } from '$lib/utils/list-query';
+ *   import { page } from '$app/stores';
+ *
+ *   const pageData = useAuthenticatedData(
+ *     async (fetch, token) => listItemsAdmin(fetch, token, query),
+ *     {
+ *       defaultValue: { data: [], total: 0 },
+ *       queryKey: () => dataSearchParams($page.url.searchParams).toString()
+ *     }
+ *   );
+ * </script>
+ * ```
+ *
+ * ### Manual wiring (legacy / no global auth config)
+ *
+ * ```svelte
+ * <script lang="ts">
+ *   import { useAuthenticatedData } from '@decodelabs/underlay/patterns';
+ *   import { authLoading, currentUser } from '$lib/stores/auth';
+ *
+ *   const pageData = useAuthenticatedData(
+ *     async (fetch, token) => someApiCall(fetch, token),
+ *     { defaultValue: { items: [] } }
+ *   );
  *
  *   // Trigger fetch when auth is ready
  *   $effect(() => {
  *     pageData.tryFetch($authLoading, $currentUser);
  *   });
  * </script>
- *
- * {#if pageData.loading}
- *   <PageLoading />
- * {:else if pageData.error}
- *   <FormError message={pageData.error} />
- * {:else}
- *   {pageData.data.items.length} items
- * {/if}
  * ```
  *
  * For +page.ts files in protected routes, keep them simple:
@@ -81,6 +113,9 @@ export interface AuthenticatedDataOptions<T> {
   /**
    * Callback after successful fetch.
    * Useful for post-load actions like handling URL parameters.
+   *
+   * When `queryKey` is also provided, onSuccess is called after the
+   * internal query key is updated, so you don't need to track it yourself.
    */
   onSuccess?: (data: T) => void;
 
@@ -92,6 +127,42 @@ export interface AuthenticatedDataOptions<T> {
    * If not provided, uses the global auth config set via configureAuth().
    */
   onRefresh?: (fetchFn: typeof fetch) => Promise<string | null>;
+
+  /**
+   * Reactive getter that returns a string key representing the current
+   * query state (e.g. URL search params minus UI-only params like ?tab=).
+   *
+   * When provided, useAuthenticatedData will:
+   * 1. Internally track the previous key value
+   * 2. Set the initial key after the first successful fetch
+   * 3. Create a $effect that compares current vs previous key
+   * 4. Call refetch() only when the key genuinely changes
+   *
+   * This eliminates the manual previousQueryKey / previousUrl boilerplate.
+   *
+   * @example
+   * queryKey: () => dataSearchParams($page.url.searchParams).toString()
+   */
+  queryKey?: () => string;
+
+  /**
+   * Reactive getter for whether auth is still initializing.
+   * When both getAuthLoading and getCurrentUser are available (either
+   * here or via configureAuth), the hook automatically creates a $effect
+   * that calls tryFetch — no manual wiring needed.
+   *
+   * Must read a reactive source when called (e.g. () => $authLoading).
+   * Resolves from: instance option → global configureAuth().
+   */
+  getAuthLoading?: () => boolean;
+
+  /**
+   * Reactive getter for the current user (null if not authenticated).
+   * See getAuthLoading for details.
+   *
+   * @example () => $currentUser
+   */
+  getCurrentUser?: () => unknown;
 }
 
 export interface AuthenticatedDataResult<T> {
@@ -149,6 +220,16 @@ export function useAuthenticatedData<T>(
   let error = $state<string | null>(null);
   let _fetched = false;
 
+  // Query key tracking: intercept onSuccess to capture the key after each fetch.
+  // This must be set up before doFetch is defined since doFetch calls the hook.
+  let _previousQueryKey: string | null = null;
+  const _onSuccessHook: ((data: T) => void) | undefined = options.queryKey
+    ? (result: T) => {
+        _previousQueryKey = options.queryKey!();
+        options.onSuccess?.(result);
+      }
+    : options.onSuccess;
+
   const doFetch = async (isRefetch = false) => {
     const token = getToken();
     if (!token) {
@@ -167,7 +248,7 @@ export function useAuthenticatedData<T>(
     try {
       const result = await fetcher(fetch, token);
       data = result;
-      options.onSuccess?.(result);
+      _onSuccessHook?.(result);
     } catch (e) {
       // Check if this is a 401 error and we have a refresh handler
       const is401 = e && typeof e === 'object' && 'status' in e && (e as { status: number }).status === 401;
@@ -180,7 +261,7 @@ export function useAuthenticatedData<T>(
           try {
             const result = await fetcher(fetch, newToken);
             data = result;
-            options.onSuccess?.(result);
+            _onSuccessHook?.(result);
             return;
           } catch (retryError) {
             error = retryError instanceof Error ? retryError.message : "Failed to load data";
@@ -212,6 +293,29 @@ export function useAuthenticatedData<T>(
     _fetched = false;
     await doFetch(true);
   };
+
+  // --- Auto-fetch: create $effect for tryFetch when auth getters are available ---
+  const resolvedGetAuthLoading = options.getAuthLoading ?? globalConfig?.getAuthLoading;
+  const resolvedGetCurrentUser = options.getCurrentUser ?? globalConfig?.getCurrentUser;
+
+  if (resolvedGetAuthLoading && resolvedGetCurrentUser) {
+    $effect(() => {
+      tryFetch(resolvedGetAuthLoading(), resolvedGetCurrentUser());
+    });
+  }
+
+  // --- Query key watching: create $effect that refetches on genuine key changes ---
+  if (options.queryKey) {
+    const queryKeyGetter = options.queryKey;
+
+    $effect(() => {
+      const currentKey = queryKeyGetter();
+      if (_previousQueryKey !== null && _previousQueryKey !== currentKey) {
+        _previousQueryKey = currentKey;
+        refetch();
+      }
+    });
+  }
 
   return {
     get data() {

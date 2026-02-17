@@ -25,6 +25,26 @@ export interface AuthConfig {
    * Should return the new token on success, or null if refresh failed.
    */
   onRefresh: (fetchFn: typeof fetch) => Promise<string | null>;
+
+  /**
+   * Reactive getter for whether auth is still initializing.
+   * When provided (along with getCurrentUser), enables automatic initial
+   * fetch in useAuthenticatedData without manual $effect wiring.
+   *
+   * Must be called from a reactive context (e.g. inside $effect) to
+   * track changes. Typically: () => $authLoading
+   */
+  getAuthLoading?: () => boolean;
+
+  /**
+   * Reactive getter for the current user (null if not authenticated).
+   * When provided (along with getAuthLoading), enables automatic initial
+   * fetch in useAuthenticatedData without manual $effect wiring.
+   *
+   * Must be called from a reactive context (e.g. inside $effect) to
+   * track changes. Typically: () => $currentUser
+   */
+  getCurrentUser?: () => unknown;
 }
 
 let globalAuthConfig: AuthConfig | null = null;
