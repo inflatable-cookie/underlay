@@ -20,6 +20,7 @@ Admin and consumer views accrue wasteful API calls through a small number of rec
 | **H** | Missing supplementary data on list DTO | List endpoint returns only IDs; frontend makes N+1 calls or global fetches to resolve labels/counts | Request count scales with data volume; global lookups waste bandwidth |
 | **I** | One-size-fits-all DTO | Single endpoint/DTO serves list cards, filter dropdowns, and detail views with the same shape | Filter dropdowns transfer counts/joins they don't need; detail views may still lack fields; naming is ambiguous |
 | **J** | Unguarded queryKey refetch in tab-mounted components | `$effect` calls `refetch()` on every URL change without comparing previous value | Tab-mounted list components re-fetch on every tab switch or sibling filter change |
+| **K** | Redundant manual `tryFetch` alongside global auto-fetch | Page has explicit `getToken` option AND manual `$effect` calling `tryFetch`, but `configureAuth()` already provides global auto-fetch | Every page fetches its data twice on load — the global auto-fetch and the manual `$effect` race each other |
 
 ---
 
@@ -392,6 +393,7 @@ For representative pages (detail views with tabs, list views with filters):
 - [ ] Filter dropdown data is not fetched until the dropdown is opened
 - [ ] RelationSelector backing data in tabs is deferred by lazy-mount
 - [ ] Tab-mounted list components do not re-fetch when switching to a different tab (Pattern J)
+- [ ] Each page's `useAuthenticatedData` fires exactly one fetch on load, not two (Pattern K)
 
 ### Capture baseline metrics
 
@@ -962,10 +964,93 @@ If you need custom refetch logic beyond what `queryKey` provides, use the manual
 
 ---
 
+## Step 12 — Redundant manual `tryFetch` alongside global auto-fetch (Pattern K)
+
+When `configureAuth()` provides `getAuthLoading` and `getCurrentUser` getters, `useAuthenticatedData` creates an internal `$effect` that calls `tryFetch()` automatically when auth becomes ready. If a page **also** passes `getToken` in its options and has a manual `$effect(() => { pageData.tryFetch($authLoading, $currentUser); })`, both effects fire on auth readiness, causing the fetch to run twice.
+
+### 12.1 Why this happens
+
+The auto-fetch feature was added to `useAuthenticatedData` after ~100 pages already used the manual pattern. When the global `configureAuth()` in the app layout was updated with `getAuthLoading`/`getCurrentUser`, all existing pages gained the internal auto-fetch `$effect` — but the old manual `$effect` was not removed. Both effects react to the same auth readiness signals and race each other, resulting in two identical API calls on every page load.
+
+The explicit `getToken` option is also redundant when `configureAuth()` provides `getToken` globally — the `useAuthenticatedData` internals resolve getToken from global config when no option-level override is present.
+
+### 12.2 Detect
+
+```bash
+# Find pages with explicit getToken AND manual tryFetch (the double-fetch pattern)
+rg -l "getToken.*auth\.getToken" "$ADMIN_REPO/src/routes" | xargs rg -l "tryFetch\(\\\$authLoading"
+
+# Count total instances
+rg -c "pageData\.tryFetch\(\\\$authLoading" "$ADMIN_REPO/src/routes"
+```
+
+### 12.3 Fix pattern
+
+Remove both the explicit `getToken` option and the manual `tryFetch` `$effect`. The global auto-fetch handles everything.
+
+**Before (double-fetch):**
+
+```typescript
+import { auth, authLoading, currentUser } from "$lib/stores/auth";
+
+const pageData = useAuthenticatedData(
+    async (fetch, token) => { /* ... */ },
+    {
+      getToken: () => auth.getToken()
+    }
+);
+
+$effect(() => {
+    pageData.tryFetch($authLoading, $currentUser);
+});
+```
+
+**After (single fetch):**
+
+```typescript
+import { auth } from "$lib/stores/auth";
+
+const pageData = useAuthenticatedData(
+    async (fetch, token) => { /* ... */ },
+    {}
+);
+// No $effect needed — auto-fetch is handled internally via configureAuth()
+```
+
+Notes:
+- Keep `import { auth }` if the page uses `auth.getToken()` elsewhere (e.g. for mutation calls)
+- Remove `authLoading` and `currentUser` from the import unless used elsewhere
+- If the `useAuthenticatedData` options only contained `getToken`, replace with `{}`
+- If the options also contain `defaultValue`, `queryKey`, etc., just remove the `getToken` property
+
+### 12.4 Import cleanup
+
+After removing the manual `$effect`, the `authLoading` and `currentUser` store imports become unused on most pages. Clean up:
+
+```typescript
+// Before
+import { auth, authLoading, currentUser } from "$lib/stores/auth";
+
+// After (if auth is still needed for mutations)
+import { auth } from "$lib/stores/auth";
+
+// After (if auth is not needed at all)
+// Remove the import entirely
+```
+
+### Pass criteria
+
+- No page has both `getToken` in options AND a manual `tryFetch` `$effect`
+- No page has a manual `$effect` calling `tryFetch($authLoading, $currentUser)` when global auto-fetch is active
+- Each `useAuthenticatedData` triggers exactly one fetch on page load
+- `authLoading` and `currentUser` are not imported unless used for purposes other than the tryFetch `$effect`
+
+---
+
 ## Severity rubric
 
 - `critical`: All tabs mount simultaneously causing cascade of fetches on every detail page load / N+1 fan-out on list views (scales with data volume)
-- `high`: Global dataset fetch on constrained page / exhaustive pagination on load / missing supplementary data on list DTO requiring global lookups / eager filter data for hidden dropdowns / one-size-fits-all DTO transferring unnecessary data to filter dropdowns / unguarded queryKey refetch causing repeated API calls on every tab switch (Pattern J)
+- `high`: Global dataset fetch on constrained page / exhaustive pagination on load / missing supplementary data on list DTO requiring global lookups / eager filter data for hidden dropdowns / one-size-fits-all DTO transferring unnecessary data to filter dropdowns / unguarded queryKey refetch causing repeated API calls on every tab switch (Pattern J) / redundant manual tryFetch causing double-fetch on every page load (Pattern K)
 - `medium`: Duplicate identical requests across siblings / eager filter data for visible but unopened dropdowns / eager RelationSelector backing data in optional sections
 - `low`: Vestigial endpoint call with minimal payload
 - `note`: Optimization opportunity with limited current impact
@@ -977,7 +1062,7 @@ If you need custom refetch logic beyond what `queryKey` provides, use the manual
 ```md
 ### [SEVERITY] Wasteful endpoint call - <component/page>
 
-- **Pattern:** A / B / C / D / E / F / G / H / I / J
+- **Pattern:** A / B / C / D / E / F / G / H / I / J / K
 - **Location:** `src/...`
 - **Current behavior:** (what gets called, when, and how many requests)
 - **Observed cost:** (request count, payload size, latency impact)
