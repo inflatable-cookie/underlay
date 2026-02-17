@@ -507,7 +507,7 @@ Here's a complete example of building an autonomous list component:
   } from "@decodelabs/underlay/components";
   import { gotoWithContext } from "@decodelabs/underlay/client";
   import { learningCommands } from "@cattle-grid";
-  import { auth, authLoading, currentUser } from "$lib/stores/auth";
+  import { auth } from "$lib/stores/auth";
   import { AreaListCard } from "$lib/cards";
   import Plus from "lucide-svelte/icons/plus";
   import Trash2 from "lucide-svelte/icons/trash-2";
@@ -526,17 +526,13 @@ Here's a complete example of building an autonomous list component:
   const toastStore = useToasts();
   const isConstrained = $derived(!!sectionId);
 
-  // Data fetching
+  // Data fetching — auto-fetches when auth is ready via global configureAuth()
   const pageData = useAuthenticatedData(
     async (fetchFn, token) => {
       return await learningCommands.getAreas(fetchFn, token, { sectionId });
     },
-    { getToken: () => auth.getToken(), defaultValue: [] }
+    { defaultValue: [] }
   );
-
-  $effect(() => {
-    pageData.tryFetch($authLoading, $currentUser);
-  });
 
   // Batch selection and actions
   const batch = useBatchActions<string>();

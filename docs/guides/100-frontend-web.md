@@ -1074,28 +1074,22 @@ export const load: PageLoad = async ({ parent }) => {
 
 Instead of fetching in `+page.ts`, use `useAuthenticatedData` in the component. It waits for auth to be ready, then fetches data.
 
+When `configureAuth()` includes `getAuthLoading` and `getCurrentUser` (recommended), the hook auto-fetches with no manual `$effect` needed:
+
 ```svelte
 <script lang="ts">
   import { useAuthenticatedData } from '@decodelabs/underlay/patterns';
   import { PageLoading, FormError } from '@decodelabs/underlay/components';
-  import { auth, authLoading, currentUser } from '$lib/stores/auth';
   import { myApiCommand } from '@myorg/client';
 
+  // Auto-fetches when auth is ready — no $effect or getToken needed
   const pageData = useAuthenticatedData(
     async (fetch, token) => {
       const result = await myApiCommand(fetch, token);
       return { items: result.items };
     },
-    {
-      getToken: () => auth.getToken(),
-      defaultValue: { items: [] }
-    }
+    { defaultValue: { items: [] } }
   );
-
-  // Trigger fetch when auth is ready
-  $effect(() => {
-    pageData.tryFetch($authLoading, $currentUser);
-  });
 </script>
 
 {#if pageData.loading}
@@ -1137,18 +1131,23 @@ Creates a reactive data fetcher that waits for auth to be ready.
 
 | Option | Type | Required | Description |
 |--------|------|----------|-------------|
-| `getToken` | `() => string \| null` | Yes | Function to get current access token |
+| `getToken` | `() => string \| null` | No | Function to get current access token. Falls back to global `configureAuth()`. |
 | `defaultValue` | `T` | No | Initial value before data is fetched |
-| `onSuccess` | `(data: T) => void` | No | Callback after successful fetch |
+| `onSuccess` | `(data: T) => void` | No | Callback after successful fetch. When `queryKey` is also set, called after the internal key is updated. |
+| `onRefresh` | `(fetchFn) => Promise<string \| null>` | No | Token refresh handler for 401 errors. Falls back to global `configureAuth()`. |
+| `queryKey` | `() => string` | No | Reactive getter for query state (e.g. URL search params). When provided, the hook tracks the previous value and only refetches when it genuinely changes. Use `dataSearchParams()` to strip UI-only params like `?tab=`. |
+| `getAuthLoading` | `() => boolean` | No | Reactive getter for auth loading state. When both this and `getCurrentUser` are available (per-instance or via `configureAuth()`), the hook auto-creates a `$effect` for `tryFetch`. |
+| `getCurrentUser` | `() => unknown` | No | Reactive getter for current user. See `getAuthLoading`. |
 
 **Returns:** `AuthenticatedDataResult<T>`
 
 | Property | Type | Description |
 |----------|------|-------------|
 | `data` | `T \| undefined` | The fetched data (or default value) |
-| `loading` | `boolean` | Whether data is currently being fetched |
+| `loading` | `boolean` | Whether data is being fetched for the first time (no data yet) |
+| `refetching` | `boolean` | Whether data is being refetched (data already exists) |
 | `error` | `string \| null` | Error message if fetch failed |
-| `tryFetch` | `(authLoading, currentUser) => Promise<void>` | Attempt fetch if auth ready |
+| `tryFetch` | `(authLoading, currentUser) => Promise<void>` | Attempt fetch if auth ready (one-shot unless `refetch` is called) |
 | `refetch` | `() => Promise<void>` | Force a refetch of the data |
 
 #### Common Patterns
@@ -1165,11 +1164,28 @@ Creates a reactive data fetcher that waits for auth to be ready.
       ]);
       return { users, settings };
     },
+    { defaultValue: { users: [], settings: null } }
+  );
+</script>
+```
+
+##### URL-Param-Driven Refetch (queryKey)
+
+For list components that refetch when URL search params change:
+
+```svelte
+<script lang="ts">
+  import { dataSearchParams } from '$lib/utils/list-query';
+  import { page } from '$app/stores';
+
+  const pageData = useAuthenticatedData(
+    async (fetch, token) => listItems(fetch, token, $page.url.searchParams),
     {
-      getToken: () => auth.getToken(),
-      defaultValue: { users: [], settings: null }
+      defaultValue: { data: [], total: 0 },
+      queryKey: () => dataSearchParams($page.url.searchParams).toString()
     }
   );
+  // No $effect needed — auto-fetch and queryKey watching handled internally
 </script>
 ```
 
@@ -1186,7 +1202,6 @@ Use `onSuccess` to handle URL parameters or other initialization after data load
   const pageData = useAuthenticatedData(
     async (fetch, token) => getSecuritySettings(fetch, token),
     {
-      getToken: () => auth.getToken(),
       onSuccess: (data) => {
         // Handle URL parameters after data loads
         const tab = $page.url.searchParams.get('tab');
@@ -1228,10 +1243,7 @@ Use Svelte's `$derived` to compute values from the fetched data:
       totpEnabled: (await getTotpStatus(fetch, token)).enabled,
       hasPasskeys: (await listPasskeys(fetch, token)).length > 0
     }),
-    {
-      getToken: () => auth.getToken(),
-      defaultValue: { totpEnabled: false, hasPasskeys: false }
-    }
+    { defaultValue: { totpEnabled: false, hasPasskeys: false } }
   );
 
   // Derived state

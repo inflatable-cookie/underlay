@@ -1378,25 +1378,32 @@ In your app's authenticated layout, configure the global auth handlers:
 <!-- src/routes/(app)/+layout.svelte -->
 <script lang="ts">
   import { configureAuth } from '@decodelabs/underlay/patterns';
-  import { auth } from '$lib/stores/auth';
+  import { auth, authLoading, currentUser } from '$lib/stores/auth';
 
   // Configure global auth handlers for useAuthenticatedData
   // This enables automatic token refresh on 401 errors
+  // and automatic initial fetch when auth is ready
   configureAuth({
     getToken: () => auth.getToken(),
-    onRefresh: auth.getRefreshHandler()
+    onRefresh: auth.getRefreshHandler(),
+    getAuthLoading: () => $authLoading,
+    getCurrentUser: () => $currentUser
   });
 </script>
 ```
 
 ### How It Works
 
-When `configureAuth()` is called, it registers two handlers:
+When `configureAuth()` is called, it registers handlers:
 
 | Handler | Purpose |
 |---------|---------|
 | `getToken` | Returns the current access token (synchronous) |
 | `onRefresh` | Attempts to refresh the token, returns new token or null |
+| `getAuthLoading` | (Optional) Reactive getter for auth loading state — enables auto-fetch |
+| `getCurrentUser` | (Optional) Reactive getter for current user — enables auto-fetch |
+
+When both `getAuthLoading` and `getCurrentUser` are provided, `useAuthenticatedData` automatically creates an internal `$effect` that calls `tryFetch` when auth is ready. This eliminates the need for manual `$effect` wiring in each component.
 
 When `useAuthenticatedData` makes an API call and receives a 401 error:
 
@@ -1460,26 +1467,20 @@ getRefreshHandler() {
 
 ### Using useAuthenticatedData
 
-Once configured, `useAuthenticatedData` automatically uses the global handlers. You no longer need to pass `getToken` explicitly:
+Once configured, `useAuthenticatedData` automatically uses the global handlers. No need to pass `getToken` explicitly, and when `getAuthLoading`/`getCurrentUser` are in the global config, no manual `$effect` is needed:
 
 ```svelte
 <script lang="ts">
   import { useAuthenticatedData } from '@decodelabs/underlay/patterns';
-  import { authLoading, currentUser } from '$lib/stores/auth';
   import { myApiCommands } from 'my-api-client';
 
-  // No need to pass getToken - uses global config
+  // Auto-fetches when auth is ready — no $effect needed
   const pageData = useAuthenticatedData(
     async (fetch, token) => {
       return await myApiCommands.getItems(fetch, token);
     },
     { defaultValue: { items: [] } }
   );
-
-  // Trigger fetch when auth is ready
-  $effect(() => {
-    pageData.tryFetch($authLoading, $currentUser);
-  });
 </script>
 
 {#if pageData.loading}
@@ -1491,9 +1492,55 @@ Once configured, `useAuthenticatedData` automatically uses the global handlers. 
 {/if}
 ```
 
+### URL-Param-Driven Refetch (queryKey)
+
+For list components that refetch when URL search params change (sorting, filtering, pagination), use the `queryKey` option. The hook internally tracks the previous key value and only calls `refetch()` when data-relevant params genuinely change:
+
+```svelte
+<script lang="ts">
+  import { useAuthenticatedData } from '@decodelabs/underlay/patterns';
+  import { dataSearchParams } from '$lib/utils/list-query';
+  import { page } from '$app/stores';
+
+  const pageData = useAuthenticatedData(
+    async (fetch, token) => listItemsAdmin(fetch, token, query),
+    {
+      defaultValue: { data: [], total: 0 },
+      queryKey: () => dataSearchParams($page.url.searchParams).toString()
+    }
+  );
+</script>
+```
+
+Key properties of `queryKey`:
+- **No double-fetch on mount:** The initial key is set after the first successful fetch, so the queryKey effect won't fire until then.
+- **No spurious refetch on tab switch:** Use `dataSearchParams()` to strip UI-only params like `?tab=`.
+- **Automatic comparison:** The hook compares the current key against the previous one and only refetches on genuine changes.
+
+### Manual Wiring (Legacy / No Global Auth Config)
+
+If `getAuthLoading`/`getCurrentUser` are not in the global config, you can wire `tryFetch` manually:
+
+```svelte
+<script lang="ts">
+  import { useAuthenticatedData } from '@decodelabs/underlay/patterns';
+  import { authLoading, currentUser } from '$lib/stores/auth';
+
+  const pageData = useAuthenticatedData(
+    async (fetch, token) => someApiCall(fetch, token),
+    { defaultValue: { items: [] } }
+  );
+
+  // Manual trigger — only needed without global auth readiness getters
+  $effect(() => {
+    pageData.tryFetch($authLoading, $currentUser);
+  });
+</script>
+```
+
 ### Backwards Compatibility
 
-For backwards compatibility, you can still pass explicit handlers:
+You can still pass explicit per-instance handlers. Explicit options take precedence over global configuration:
 
 ```typescript
 const pageData = useAuthenticatedData(
@@ -1505,8 +1552,6 @@ const pageData = useAuthenticatedData(
   }
 );
 ```
-
-Explicit options take precedence over global configuration.
 
 ### Error Handling
 
@@ -1541,8 +1586,10 @@ const authManager = createAuthManager({
 
 ### Best Practices
 
-1. **Configure once** - Call `configureAuth()` in your root authenticated layout
-2. **Use with auth initialization** - Ensure auth is initialized before data fetching
-3. **Handle loading states** - Show loading UI while auth initializes
-4. **Don't over-refresh** - The pattern handles 401s automatically; don't add manual refresh logic
-5. **Test inactive scenarios** - Verify the refresh works after periods of inactivity
+1. **Configure once** - Call `configureAuth()` in your root authenticated layout, including `getAuthLoading`/`getCurrentUser` to enable auto-fetch
+2. **Use `queryKey` for lists** - Pass a `queryKey` getter to list components instead of manually tracking previous URL state
+3. **Use `dataSearchParams()`** - Strip UI-only params (like `?tab=`) from query keys to prevent spurious refetches on tab switch
+4. **Handle loading states** - Show loading UI while auth initializes
+5. **Don't over-refresh** - The pattern handles 401s automatically; don't add manual refresh logic
+6. **Test inactive scenarios** - Verify the refresh works after periods of inactivity
+7. **Test tab switching** - For tab-mounted lists, verify switching tabs doesn't trigger refetches
