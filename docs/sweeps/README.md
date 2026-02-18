@@ -34,6 +34,7 @@ Unlike implementation guides, sweeps are runbooks for reviewing an existing code
 | [017-dependency-and-supply-chain-hygiene-sweep.md](./017-dependency-and-supply-chain-hygiene-sweep.md) | Detect vulnerable, stale, or risky dependencies and enforce dependency hygiene across Rust and TypeScript stacks | Platform/security reviewers |
 | [018-privacy-and-sensitive-data-handling-sweep.md](./018-privacy-and-sensitive-data-handling-sweep.md) | Verify PII/secret handling, redaction, retention, and safe data exposure across API, jobs, logs, and frontends | Security/platform reviewers |
 | [019-pagination-contract-consistency-sweep.md](./019-pagination-contract-consistency-sweep.md) | Catch cursor/page pagination drift across API routes, client commands, and frontend list controllers | API/client/frontend maintainers |
+| [022-api-endpoint-naming-convention-sweep.md](./022-api-endpoint-naming-convention-sweep.md) | Enforce consistent endpoint naming policy (`for-list`/`for-filter`, action routes, and alias cleanup) across API, client, and frontend consumers | API/client/frontend maintainers |
 
 ## How to run a sweep
 

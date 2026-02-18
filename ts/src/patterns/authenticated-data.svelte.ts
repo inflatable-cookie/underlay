@@ -219,6 +219,7 @@ export function useAuthenticatedData<T>(
   let refetching = $state(false);
   let error = $state<string | null>(null);
   let _fetched = false;
+  let _inFlight: Promise<void> | null = null;
 
   // Query key tracking: intercept onSuccess to capture the key after each fetch.
   // This must be set up before doFetch is defined since doFetch calls the hook.
@@ -231,54 +232,67 @@ export function useAuthenticatedData<T>(
     : options.onSuccess;
 
   const doFetch = async (isRefetch = false) => {
-    const token = getToken();
-    if (!token) {
-      loading = false;
-      return;
+    if (_inFlight) {
+      return _inFlight;
     }
 
-    // On initial load, show loading. On refetch, show refetching (keeps existing data visible)
-    if (isRefetch) {
-      refetching = true;
-    } else {
-      loading = true;
-    }
-    error = null;
+    const run = (async () => {
+      const token = getToken();
+      if (!token) {
+        loading = false;
+        return;
+      }
 
-    try {
-      const result = await fetcher(fetch, token);
-      data = result;
-      _onSuccessHook?.(result);
-    } catch (e) {
-      // Check if this is a 401 error and we have a refresh handler
-      const is401 = e && typeof e === 'object' && 'status' in e && (e as { status: number }).status === 401;
+      // On initial load, show loading. On refetch, show refetching (keeps existing data visible)
+      if (isRefetch) {
+        refetching = true;
+      } else {
+        loading = true;
+      }
+      error = null;
 
-      if (is401 && onRefresh) {
-        // Attempt to refresh the token
-        const newToken = await onRefresh(fetch);
-        if (newToken) {
-          // Retry the fetch with the new token
-          try {
-            const result = await fetcher(fetch, newToken);
-            data = result;
-            _onSuccessHook?.(result);
-            return;
-          } catch (retryError) {
-            error = retryError instanceof Error ? retryError.message : "Failed to load data";
+      try {
+        const result = await fetcher(fetch, token);
+        data = result;
+        _onSuccessHook?.(result);
+      } catch (e) {
+        // Check if this is a 401 error and we have a refresh handler
+        const is401 = e && typeof e === "object" && "status" in e && (e as { status: number }).status === 401;
+
+        if (is401 && onRefresh) {
+          // Attempt to refresh the token
+          const newToken = await onRefresh(fetch);
+          if (newToken) {
+            // Retry the fetch with the new token
+            try {
+              const result = await fetcher(fetch, newToken);
+              data = result;
+              _onSuccessHook?.(result);
+              return;
+            } catch (retryError) {
+              error = retryError instanceof Error ? retryError.message : "Failed to load data";
+            }
+          } else {
+            // Refresh failed - propagate original error
+            error = e instanceof Error ? e.message : "Session expired";
           }
         } else {
-          // Refresh failed - propagate original error
-          error = e instanceof Error ? e.message : "Session expired";
+          error = e instanceof Error ? e.message : "Failed to load data";
         }
-      } else {
-        error = e instanceof Error ? e.message : "Failed to load data";
+      } finally {
+        // Mark as fetched even on error to prevent tryFetch from auto-retrying.
+        // Users can still explicitly call refetch() to retry.
+        _fetched = true;
+        loading = false;
+        refetching = false;
       }
+    })();
+
+    _inFlight = run;
+    try {
+      await run;
     } finally {
-      // Mark as fetched even on error to prevent tryFetch from auto-retrying.
-      // Users can still explicitly call refetch() to retry.
-      _fetched = true;
-      loading = false;
-      refetching = false;
+      _inFlight = null;
     }
   };
 

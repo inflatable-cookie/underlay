@@ -146,6 +146,7 @@ export function createPaginationController<T>(
   // Cursor history for backward navigation
   let cursorHistory: string[] = [];
   let _fetched = false;
+  let _inFlight: Promise<void> | null = null;
 
   // Derived values
   const hasNextPage = $derived(hasMore || nextCursor !== null);
@@ -155,6 +156,11 @@ export function createPaginationController<T>(
   const totalPages = $derived(total !== null ? Math.ceil(total / pageSize) : null);
 
   const doFetch = async (cursor: string | null = null, direction: "forward" | "backward" = "forward") => {
+    if (_inFlight) {
+      return _inFlight;
+    }
+
+    const run = (async () => {
     const token = getToken();
     if (!token) {
       loading = false;
@@ -222,6 +228,14 @@ export function createPaginationController<T>(
       // Users can still explicitly call refetch()/refresh()/reset() to retry.
       _fetched = true;
       loading = false;
+    }
+    })();
+
+    _inFlight = run;
+    try {
+      await run;
+    } finally {
+      _inFlight = null;
     }
   };
 

@@ -56,11 +56,12 @@ Read these documents in order for a complete understanding:
 28. **[150 - CI/CD](./150-ci-cd.md)** - GitHub Actions template
 29. **[160 - Troubleshooting](./160-troubleshooting.md)** - Common issues and solutions
 30. **[170 - Checklist](./170-checklist.md)** - Completion verification
-31. **[176 - AI Runtime Routing](./176-ai-runtime-routing.md)** - Provider-agnostic backend LLM runtime boundary
-32. **[180 - Admin Workflow Playbook](./180-admin-workflow-playbook.md)** - Start-here implementation flow for admin features
-33. **[185 - Recipe Map and Testing Matrix](./185-recipe-map-and-testing-matrix.md)** - Recipe-to-code references + minimum tests
-34. **[190 - Upgrade Compatibility Matrix](./190-upgrade-compatibility.md)** - Upgrade expectations and breakage checks
-35. **[200 - Project Sync](./200-project-sync.md)** - Migration/sync checklist for existing projects
+31. **[172 - Lean AGENTS.md Files](./172-agents-files.md)** - Keep agent instructions concise and operational
+32. **[176 - AI Runtime Routing](./176-ai-runtime-routing.md)** - Provider-agnostic backend LLM runtime boundary
+33. **[180 - Admin Workflow Playbook](./180-admin-workflow-playbook.md)** - Start-here implementation flow for admin features
+34. **[185 - Recipe Map and Testing Matrix](./185-recipe-map-and-testing-matrix.md)** - Recipe-to-code references + minimum tests
+35. **[190 - Upgrade Compatibility Matrix](./190-upgrade-compatibility.md)** - Upgrade expectations and breakage checks
+36. **[200 - Project Sync](./200-project-sync.md)** - Migration/sync checklist for existing projects
 
 ## Code Examples
 
