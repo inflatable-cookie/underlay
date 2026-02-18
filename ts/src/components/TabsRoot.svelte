@@ -3,7 +3,6 @@
   import type { Snippet } from "svelte";
   import { setContext, onMount } from "svelte";
   import { browser } from "$app/environment";
-  import { goto } from "$app/navigation";
   import { page } from "$app/stores";
 
   export type TabsVariant = "pills" | "boxed" | "underline" | "plain" | "form";
@@ -74,6 +73,13 @@
   // Track the last value we synced to URL to prevent loops
   let lastSyncedValue = $state<string | null>(null);
 
+  function replaceUrlTabParam(nextValue: string) {
+    if (!browser || !historyKey) return;
+    const url = new URL(window.location.href);
+    url.searchParams.set(historyKey, nextValue);
+    window.history.replaceState(window.history.state, "", url);
+  }
+
   // Read initial tab from URL on mount
   onMount(() => {
     if (!browser || !historyKey) return;
@@ -83,11 +89,9 @@
       value = urlValue;
       lastSyncedValue = urlValue;
     } else {
-      // Set initial value in URL without creating history entry
-      const url = new URL($page.url);
-      url.searchParams.set(historyKey, value);
+      // Set initial value in URL without navigation or history entry churn
+      replaceUrlTabParam(value);
       lastSyncedValue = value;
-      goto(url.toString(), { replaceState: true, keepFocus: true, noScroll: true });
     }
 
     // Listen for back/forward navigation
@@ -110,10 +114,8 @@
     // Skip if this is the same value we just synced (prevents loops)
     if (value === lastSyncedValue) return;
 
-    const url = new URL($page.url);
-    url.searchParams.set(historyKey, value);
+    replaceUrlTabParam(value);
     lastSyncedValue = value;
-    goto(url.toString(), { replaceState: true, keepFocus: true, noScroll: true });
   });
 </script>
 
