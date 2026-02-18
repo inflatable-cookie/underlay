@@ -1,62 +1,40 @@
 # 022 - API Endpoint Naming Convention Sweep
 
-This sweep verifies that API endpoint naming stays consistent, predictable, and consumer-oriented across Underlay-based projects.
+This sweep verifies that API route naming and projection strategy stays consistent across Underlay-based apps.
 
-It is designed as a repeatable policy check for existing projects and as a rollout checklist for new projects.
+## Problem This Sweep Targets
 
-## Problem this sweep targets
+Naming drift causes recurring contract regressions:
 
-Naming drift creates long-term API entropy:
+- projection in path names (`-for-list`, `-for-filter`)
+- mechanics in path names (`/paginated`, `with-counts`)
+- inconsistent command naming and frontend endpoint assumptions
+- alias buildup with no sunset
 
-- route names leak implementation details (`/paginated`, `with-counts`)
-- equivalent endpoint families use mixed conventions across domains
-- client commands become inconsistent and harder to discover
-- frontend teams guess endpoint purpose from naming and get it wrong
-- legacy aliases accumulate and are never removed
+## Policy Baseline (Platform Standard)
 
-## Policy baseline (platform standard)
+See [073-api-profiles-and-query-contract.md](../guides/073-api-profiles-and-query-contract.md).
 
-These rules apply to all Underlay consuming apps unless an explicit project ADR overrides them.
+### Canonical routes
 
-### 1) Resource and detail routes
-
-- List route: `GET /v1/{scope}/{domain}/{resource}` or project-approved variant
+- List route: `GET /v1/{scope}/{domain}/{resource}`
 - Detail route: `GET /v1/{scope}/{domain}/{resource}/{id}`
-- Create route: `POST /v1/{scope}/{domain}/{resource}`
-- Update route: `PUT /v1/{scope}/{domain}/{resource}/{id}`
 
-### 2) Consumer-projection list routes
+### Profile projections
 
-When a list serves a specific UI projection (cards/table rows), use:
+- List profiles: `profile=list|filter`
+- Detail enrichment profile: `profile=details` (default detail without profile is base record)
 
-- `GET /v1/{scope}/{domain}/{resource}-for-list`
+### Disallowed naming
 
-Optional lightweight selector projection:
+- `/paginated`, `/cursor`, `/offset` path suffix conventions
+- route tokens like `with-counts`, `with-joins`, `flat`
+- projection path suffixes `-for-list`, `-for-filter` (post-migration target)
 
-- `GET /v1/{scope}/{domain}/{resource}-for-filter`
+### Alias policy
 
-### 3) Naming anti-patterns (not allowed)
-
-- Route suffixes describing mechanics: `/paginated`, `/cursor`, `/offset`
-- Route names describing internal SQL shape: `with-counts`, `with-joins`, `flat`
-- Verb-heavy CRUD naming in path segments where HTTP method already encodes action
-
-### 4) Action routes
-
-For non-CRUD actions, use explicit action subpaths, for example:
-
-- `POST /.../{id}/soft-delete`
-- `POST /.../batch-soft-delete`
-- `POST /.../reorder`
-- `POST /.../validate-field`
-
-### 5) Alias policy
-
-- Prefer no long-lived aliases in active development projects.
-- If aliases exist temporarily, they must have:
-  - explicit deprecation logs
-  - an owner and removal date
-  - tracking in roadmap/issues
+- Prefer no aliases in active dev mode.
+- If temporary aliases exist, track owner + removal date in roadmap.
 
 ## Scope
 
@@ -76,67 +54,85 @@ Acowtancy mapping: `farmyard`, `cattle-grid`, `dairy`, `cream`.
 ## Step 1 - Inventory all public route paths
 
 ```bash
-rg -n 'path\s*=\s*"/v1/' "$API_REPO/crates/api/src/routes" --type rust
+rg -n 'path\\s*=\\s*"/v1/' "$API_REPO/crates/api/src/routes" --type rust
 ```
 
-Build a table with:
+Build a route table including:
 
 - method
 - path
 - handler
-- entity/domain
-- endpoint purpose (`list`, `detail`, `mutation`, `action`)
+- domain/resource
+- endpoint role (`list`, `detail`, `mutation`, `action`)
 
 Pass criteria:
 
-- each endpoint family is classifiable by a small, stable set of patterns
-- no unexplained one-off naming shapes
+- each resource follows canonical list/detail path shapes
+- non-CRUD operations are explicit action paths
 
 ---
 
-## Step 2 - Detect policy violations directly in API routes
+## Step 2 - Detect disallowed naming tokens in API routes
 
 ```bash
-rg -n 'path\s*=\s*"/v1/.+(paginated|with-counts|with-joins|flat|cursor|offset)' "$API_REPO/crates/api/src/routes" --type rust
+rg -n 'path\\s*=\\s*"/v1/.+(paginated|with-counts|with-joins|flat|-for-list|-for-filter)' "$API_REPO/crates/api/src/routes" --type rust
 ```
 
 Pass criteria:
 
-- no route paths contain mechanical/implementation suffixes
-- projection endpoints use `-for-list` / `-for-filter` where applicable
+- no route paths contain disallowed naming tokens
 
 ---
 
-## Step 3 - Cross-check client command naming and paths
+## Step 3 - Verify profile contract support
+
+```bash
+rg -n 'profile|ListProfile|DetailProfile|profile=' "$API_REPO/crates/api/src" --type rust
+```
+
+For each list/detail endpoint family, verify:
+
+- list route supports documented list profiles (`list`, `filter` where applicable)
+- detail route supports `profile=details` where detail badges/enrichments exist
+- profile values are typed/enumerated (not free-form include strings)
+
+Pass criteria:
+
+- profile behavior is explicit and documented per endpoint family
+
+---
+
+## Step 4 - Cross-check client command naming and paths
 
 ```bash
 rg -n '"/v1/' "$CLIENT_REPO/src/commands" --type ts
-rg -n 'list.*ForList|for-list|for-filter|paginated|with-counts' "$CLIENT_REPO/src/commands" --type ts
+rg -n 'profile|for-list|for-filter|paginated|with-counts' "$CLIENT_REPO/src/commands" --type ts
 ```
 
 Pass criteria:
 
-- command names match endpoint intent (`listXForListAdmin`, `getXAdmin`, etc.)
-- no client commands target banned route naming patterns
-- no duplicate command surface for equivalent list purpose
+- client commands target canonical resource routes
+- commands pass typed `profile` params where projection differs
+- no command targets disallowed route naming
 
 ---
 
-## Step 4 - Cross-check frontend callsites
+## Step 5 - Cross-check frontend callsites
 
 ```bash
-rg -n 'list.*ForList|get.*WithCounts|paginated|for-list|for-filter' "$ADMIN_REPO/src" "$WEB_REPO/src"
+rg -n 'profile\\s*:\\s*\"(list|filter|details)\"|for-list|for-filter|paginated|with-counts' "$ADMIN_REPO/src" "$WEB_REPO/src"
 ```
 
 Pass criteria:
 
-- list pages/tabs use canonical list commands
-- no frontend code depends on deprecated route names
-- feature behavior does not require route aliases
+- list views use list endpoints with explicit list profile where required
+- lazy selectors use `profile=filter`
+- detail pages with badge counts use `profile=details`
+- no frontend callsites depend on deprecated route names
 
 ---
 
-## Step 5 - Verify alias cleanup state
+## Step 6 - Verify alias cleanup state
 
 ```bash
 rg -n 'deprecated|alias|replacement_endpoint|deprecated_endpoint' "$API_REPO/crates/api/src/routes"
@@ -145,26 +141,12 @@ rg -n 'deprecated|alias|replacement_endpoint|deprecated_endpoint' "$API_REPO/cra
 For each alias found, record:
 
 - replacement route
-- consumers still using alias
+- active consumers
 - removal plan/date
 
 Pass criteria:
 
-- either zero aliases, or all aliases have explicit removal commitments
-
----
-
-## Step 6 - Enforce domain-level consistency
-
-For each domain (for example `learning`, `content`, `media`, `exams`), compare sibling resources:
-
-- are list routes named with the same pattern?
-- do equivalent operations use the same action suffixes?
-- are detail routes uniformly id-based?
-
-Pass criteria:
-
-- naming convention is consistent both across the app and within each domain
+- zero aliases, or all aliases have explicit removal commitments
 
 ---
 
@@ -177,57 +159,41 @@ cd "$WEB_REPO" && bun check && bun lint
 cd "$API_REPO" && cargo check -p api --all-features
 ```
 
-Use project-appropriate crate/package names where they differ.
-
 ---
 
-## Recurring sweep cadence (recommended)
-
-Run this sweep:
-
-- before each release
-- monthly for active projects
-- after major API/domain refactors
-
-Optional CI gate:
-
-- add a lightweight lint check that fails on banned path tokens (`paginated`, `with-counts`) in route annotations and command paths
-
----
-
-## Correction playbook
+## Correction Playbook
 
 When violations are found, apply this sequence:
 
-1. Define target canonical route names per domain.
-2. Rename API routes first and keep temporary aliases only if operationally required.
-3. Rename/update client commands to canonical names.
-4. Update frontend callsites to canonical commands.
-5. Remove aliases and stale commands once consumers are migrated.
+1. Define canonical resource routes and profile map per domain.
+2. Implement/normalize API profile handling on canonical routes.
+3. Migrate client commands to canonical routes with typed profile params.
+4. Migrate frontend callsites to explicit profile usage.
+5. Remove aliases and deprecated path variants.
 6. Re-run this sweep and record closure.
 
 ---
 
-## Severity rubric
+## Severity Rubric
 
-- `high`: multiple naming schemes actively used for same endpoint purpose, causing active consumer confusion or break risk
-- `medium`: legacy naming still present but migration path exists
-- `low`: isolated naming inconsistency with no immediate break risk
-- `note`: documentation or cleanup follow-up
+- `high`: mixed naming/projection models causing active consumer confusion or break risk
+- `medium`: deprecated naming still present with clear migration path
+- `low`: isolated inconsistency with low immediate risk
+- `note`: documentation or follow-up cleanup
 
 ---
 
-## Findings template
+## Findings Template
 
 ```md
-### [SEVERITY] Endpoint naming drift - <domain/resource>
+### [SEVERITY] Endpoint naming/profile drift - <domain/resource>
 
 - **API location:** `crates/api/src/routes/...`
 - **Client location:** `src/commands/...`
 - **Frontend location:** `src/routes/...` or `src/lib/...`
 - **Check step:** Step X
-- **Observed naming mismatch:**
-- **Expected canonical pattern:**
+- **Observed mismatch:**
+- **Expected canonical/profile pattern:**
 - **Impact:**
 - **Fix plan:**
 - **Owner:**
@@ -241,17 +207,17 @@ Summary section:
 ## Endpoint naming sweep summary
 
 - Routes reviewed: N
-- Violations found: N
-- Domains with mixed conventions: N
+- Naming violations found: N
+- Profile contract gaps found: N
 - Aliases still active: N
 - Violations fixed during sweep: N
 ```
 
 ---
 
-## Related docs
+## Related Docs
 
+- [073-api-profiles-and-query-contract.md](../guides/073-api-profiles-and-query-contract.md)
 - [016-api-versioning-and-backward-compat-sweep.md](./016-api-versioning-and-backward-compat-sweep.md)
 - [019-pagination-contract-consistency-sweep.md](./019-pagination-contract-consistency-sweep.md)
-- [020-list-endpoint-for-detail-views-sweep.md](./020-list-endpoint-for-detail-views-sweep.md)
 - [021-wasteful-endpoint-calls-sweep.md](./021-wasteful-endpoint-calls-sweep.md)

@@ -33,6 +33,17 @@ apps/web/src/
 
 See code examples in `/code/100-frontend-web/`
 
+## API Fetch Contract (Profiles)
+
+Frontend consumers should target canonical resource endpoints and select payload shape via query `profile`.
+
+- Lists/tables/cards: call list endpoints with `profile=list`
+- Selector/filter dropdowns: call list endpoints with `profile=filter` and lazy-load on interaction
+- CRUD detail pages with tab badge counts: call detail endpoint with `profile=details`
+- Avoid supplementary count-only calls for badge counts; counts should come from the detail response
+
+See [073-api-profiles-and-query-contract.md](./073-api-profiles-and-query-contract.md).
+
 ## Static Deployment (Acowtancy-Style)
 
 Acowtancy deploys SvelteKit frontends with `@sveltejs/adapter-static` and uses:

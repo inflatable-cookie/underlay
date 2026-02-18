@@ -30,22 +30,25 @@ Acowtancy mapping: `farmyard`, `cattle-grid`, `dairy`, `cream`, `underlay`.
 
 ---
 
-## Step 1 - Inventory paginated endpoints and response DTOs
+## Step 1 - Inventory list endpoints and response DTOs
 
 ```bash
-rg -n "path = \"/v1/.*/paginated\"|PaginationQuery|PaginationParams|PaginatedResponseDto" "$API_REPO/crates/api/src"
+rg -n 'path\\s*=\\s*"/v1/' "$API_REPO/crates/api/src/routes" --type rust
+rg -n "PaginationQuery|PaginationParams|PaginatedResponseDto|profile|ListProfile" "$API_REPO/crates/api/src"
 ```
 
-Capture per endpoint:
+Capture per list endpoint:
 
 - route path + method
+- supported profile values
 - accepted query params (`limit`, `cursor`, `direction`, `includeTotal`)
 - response envelope fields
 
 Pass criteria:
 
-- paginated endpoints expose a single, explicit pagination contract
+- list endpoints expose a single, explicit pagination contract
 - route handlers do not silently mix cursor and page-number styles
+- list endpoints use canonical resource paths (no `/paginated` suffix)
 
 ---
 
@@ -53,13 +56,14 @@ Pass criteria:
 
 ```bash
 rg -n "PaginationParams|PaginatedResponse|appendPaginationParams" "$CLIENT_REPO/src/commands" "$CLIENT_REPO/src/types"
-rg -n "types/pagination-types|toLegacyPaginationParams|toUnderlayPaginatedResponse|total_pages|pagination\.page" "$CLIENT_REPO/src"
+rg -n "profile|types/pagination-types|toLegacyPaginationParams|toUnderlayPaginatedResponse|total_pages|pagination\.page" "$CLIENT_REPO/src"
 ```
 
 Pass criteria:
 
 - client commands use Underlay pagination contracts directly
 - command signatures and return types align with endpoint response shape
+- list commands accept typed profile params when projection differs
 - no command-level references to legacy page metadata (`total_pages`, `page`, `sort_by`, `sort_order`) unless explicitly grandfathered
 
 ---
@@ -68,7 +72,7 @@ Pass criteria:
 
 ```bash
 rg -n "createPaginationController|Pagination controller|persistKey" "$ADMIN_REPO/src" "$WEB_REPO/src"
-rg -n "toLegacyPaginationParams|toUnderlayPaginatedResponse|pagination-adapter|total_pages|response\.pagination" "$ADMIN_REPO/src" "$WEB_REPO/src"
+rg -n "profile\\s*:\\s*\"(list|filter|details)\"|toLegacyPaginationParams|toUnderlayPaginatedResponse|pagination-adapter|total_pages|response\.pagination" "$ADMIN_REPO/src" "$WEB_REPO/src"
 ```
 
 Review each paginated list page:
@@ -76,6 +80,7 @@ Review each paginated list page:
 - does the controller pass `params` directly to the client command?
 - does the fetcher return the command response as-is?
 - are next/prev controls driven by `nextCursor`/`prevCursor`/`hasMore`?
+- are list/filter contexts using explicit profile params where needed?
 
 Pass criteria:
 
@@ -87,7 +92,7 @@ Pass criteria:
 ## Step 4 - Query key parity across API, client, and frontend
 
 ```bash
-rg -n "cursor|direction|includeTotal|limit|offset|page|total_pages" "$API_REPO/crates/api/src/routes" "$CLIENT_REPO/src/commands" "$ADMIN_REPO/src" "$WEB_REPO/src"
+rg -n "profile|cursor|direction|includeTotal|limit|offset|page|total_pages" "$API_REPO/crates/api/src/routes" "$CLIENT_REPO/src/commands" "$ADMIN_REPO/src" "$WEB_REPO/src"
 ```
 
 Manual review notes:
@@ -99,6 +104,7 @@ Pass criteria:
 
 - query keys used by frontend/client exactly match API parser expectations
 - no mixed pagination keyset on one endpoint family
+- profile values passed by clients/frontend match documented endpoint profile enums
 
 ---
 
@@ -212,6 +218,7 @@ Summary section:
 ## Related docs
 
 - [093-pagination.md](../guides/093-pagination.md)
+- [073-api-profiles-and-query-contract.md](../guides/073-api-profiles-and-query-contract.md)
 - [080-typescript-client.md](../guides/080-typescript-client.md)
 - [100-frontend-web.md](../guides/100-frontend-web.md)
 - [097-autonomous-list-components.md](../guides/097-autonomous-list-components.md)

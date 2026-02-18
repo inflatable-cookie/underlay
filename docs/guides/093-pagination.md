@@ -68,6 +68,12 @@ Underlay provides a complete pagination solution that scales from small client-s
 
 ## API Design
 
+Pagination is a query-level contract on canonical resource list routes.
+
+- Use `GET /v1/{scope}/{domain}/{resource}` for list endpoints.
+- Use `profile` query params to select list projection (`list` vs `filter`) where relevant.
+- Never use path suffixes (for example `/paginated`) to indicate pagination behavior.
+
 ### Response Format
 
 All paginated endpoints return this structure:
@@ -90,6 +96,8 @@ interface PaginatedResponse<T> {
 | `cursor` | string | null | Opaque cursor for position |
 | `direction` | string | "forward" | "forward" or "backward" |
 | `includeTotal` | boolean | true | Whether to compute total count |
+
+Resource filters and `profile` are additional endpoint-specific query params layered on this shared pagination set.
 
 ### Cursor Encoding
 
@@ -963,3 +971,4 @@ See the [Design Tokens](#design-tokens) section for the full list.
 - [Rust Backend](./040-rust-backend.md) - Axum handler patterns
 - [TypeScript Client](./080-typescript-client.md) - HTTP client utilities
 - [Database](./050-database.md) - PostgreSQL query patterns
+- [API Profiles and Unified Query Contract](./073-api-profiles-and-query-contract.md) - Canonical route and profile policy

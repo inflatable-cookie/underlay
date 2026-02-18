@@ -722,135 +722,65 @@ They are **never acceptable** on:
 
 ---
 
-## Step 10 — DTO and endpoint naming normalisation (Pattern I)
+## Step 10 — Profile contract and projection hygiene (Pattern I)
 
-A single DTO shape serving every consumer context (list card, filter dropdown, detail view) leads to ambiguity and waste. Filter dropdowns only need an ID and a label, list cards need a handful of display fields and counts, and detail views may need the full entity plus relations. When these all share one DTO, filter dropdowns transfer unnecessary counts and joins, and the naming gives no signal about which context the data is shaped for.
+A single route/DTO shape serving list cards, filter dropdowns, and detail views without explicit profile selection creates ambiguity and waste. The fix is canonical resource routes with typed projection profiles.
 
-### 10.1 Naming convention
+### 10.1 Canonical contract
 
-Adopt a consumer-oriented naming scheme for **API routes**, DTOs, and client types:
-
-| Suffix | Purpose | Typical fields | Route pattern | Example type |
-|--------|---------|----------------|---------------|--------------|
-| `ForList` | List card rendering | Display fields, badge counts, related labels | `GET /v1/admin/{domain}/{entities}-for-list` | `ModuleForList` |
-| `ForFilter` | Filter dropdown / Select items | ID + label only (minimal projection) | `GET /v1/admin/{domain}/{entities}-for-filter` | `ModuleForFilter` |
-| `ForDetail` | Detail page / edit form | Full entity fields, relations, nested data | `GET /v1/admin/{domain}/{entities}/{id}` | `ModuleForDetail` |
-
-The convention applies across the full stack:
-
-- **API routes:** `/v1/admin/learning/modules-for-list`, `/v1/admin/learning/modules-for-filter`
-- **Farmyard (Rust):** `ModuleForListRow` (DB model), `ModuleForListDto` (API DTO)
-- **Cattle Grid (TypeScript):** `ModuleForList`, `ModuleForFilter`, `ModuleForDetail` (types); `listModulesForListAdmin`, `listModulesForFilterAdmin` (commands)
-- **Dairy/Cream (Svelte):** consume the appropriately-shaped type per context
-
-**Route naming rules:**
-- List endpoints: `{entities}-for-list` — paginated, filtered, sorted, with counts and JOINed labels
-- Filter endpoints: `{entities}-for-filter` — flat list of ID + label, no pagination needed
-- Detail endpoints: `{entities}/{id}` — single entity by ID (no suffix needed, the path parameter signals detail context)
-- Existing generic routes can be deprecated gradually and aliased to the appropriate variant during migration
+| Context | Route pattern | Profile | Expected payload shape |
+|---------|---------------|---------|------------------------|
+| List cards/tables | `GET /v1/admin/{domain}/{resource}` | `profile=list` | Display fields, labels, counts, status needed by the list |
+| Filter dropdowns | `GET /v1/admin/{domain}/{resource}` | `profile=filter` | Minimal selector shape (id + label + tiny metadata only) |
+| Detail with badges | `GET /v1/admin/{domain}/{resource}/{id}` | `profile=details` | Base entity + detail enrichments (including tab badge counts) |
 
 ### 10.2 Audit existing routes and endpoints
 
 ```bash
-# Find API routes that serve multiple contexts
-rg -n '\.get\(|\.post\(' "$API_REPO/crates/api/src/routes/admin" --type rust | grep -oP '/v1/admin/[^"]+' | sort -u
+# Deprecated projection path naming
+rg -n '"/v1/admin/.+(-for-list|-for-filter|paginated|with-counts)' "$API_REPO/crates/api/src/routes" --type rust
 
-# Find DTO structs that serve multiple contexts
-rg -n "pub struct \w+Dto" "$API_REPO/crates/api/src/dto" --type rust
+# Profile support in API/client/frontend
+rg -n 'profile|ListProfile|DetailProfile' "$API_REPO/crates/api/src" "$CLIENT_REPO/src" "$ADMIN_REPO/src" "$WEB_REPO/src"
 
-# Find TypeScript types that may be overloaded
-rg -n "export interface (Module|Pathway|ExamEdition|ExamSchedule|Area|Section|Outcome)\b" "$CLIENT_REPO/src/types"
-
-# Find filter dropdowns consuming full list DTOs
-rg -n "getModulesAdmin|getPathwaysAdmin|listExamSchedulesAdmin" "$ADMIN_REPO/src/lib/lists" --type svelte
-
-# Find client commands that don't signal their consumer context
-rg -n "export async function (get|list)\w+Admin" "$CLIENT_REPO/src/commands" --type ts
+# Filter dropdowns that may still consume list profile data
+rg -n 'loadItems|loadGroups|getModulesAdmin|getPathwaysAdmin|list.*ForList' "$ADMIN_REPO/src/lib" --type svelte
 ```
 
-For each hit, classify the consumer context:
+For each hit, classify:
 
-1. Is this a **filter dropdown** that only needs ID + label? → Should use a `ForFilter` endpoint/type
-2. Is this a **list card** that needs display fields + counts? → Should use a `ForList` endpoint/type
-3. Is this a **detail view** or **edit form** that needs the full entity? → Should use a `ForDetail` endpoint/type
+1. Filter selector should use `profile=filter`
+2. List view should use `profile=list`
+3. Detail with tab badges should use `profile=details`
 
 ### 10.3 Fix pattern
 
 **Phase 1 — Backend (Farmyard):**
 
-Add purpose-specific query/DTO pairs. The `ForFilter` variant is typically the cheapest to add — it's a SELECT of just `id` and `name`/`code`/`title` with no JOINs or subqueries:
-
-```rust
-// Minimal projection for filter dropdowns
-#[derive(Debug, Clone, FromRow, Serialize)]
-pub struct ModuleForFilterRow {
-    pub id: Uuid,
-    pub code: Option<String>,
-    pub title: Option<String>,
-}
-
-// Full projection for list cards (with counts and labels)
-#[derive(Debug, Clone, FromRow)]
-pub struct ModuleForListRow {
-    pub id: Uuid,
-    pub code: Option<String>,
-    pub title: Option<String>,
-    pub pathway_name: Option<String>,
-    pub section_count: i64,
-    pub area_count: i64,
-    // ...
-}
-```
+- Keep canonical resource route paths.
+- Add typed profile enum/query parsing and route to profile-specific SQL projection.
+- Ensure detail `profile=details` includes all badge count subqueries required by the detail tabs.
 
 **Phase 2 — Client (Cattle Grid):**
 
-```typescript
-// Minimal type for filter dropdowns
-export interface ModuleForFilter {
-  moduleId: string;
-  moduleCode?: string | null;
-  moduleTitle?: string | null;
-}
-
-// Full type for list cards
-export interface ModuleForList {
-  moduleId: string;
-  moduleCode?: string | null;
-  moduleTitle?: string | null;
-  pathwayName?: string | null;
-  sectionCount: number;
-  areaCount: number;
-  // ...
-}
-```
+- Keep canonical resource command names.
+- Add typed `profile` parameter to commands.
+- Reuse shared pagination/query helpers for list profiles.
 
 **Phase 3 — Frontend (Dairy/Cream):**
 
-- Filter dropdowns use `loadItems` calling a `ForFilter` endpoint
-- List components consume `ForList` types
-- Detail pages consume `ForDetail` types
-
-### 10.4 Key entities requiring split
-
-These are the primary entities where a single DTO currently serves multiple contexts:
-
-| Entity | Current generic DTO | Contexts served | Priority |
-|--------|-------------------|-----------------|----------|
-| Module | `LearningModule` / `ModuleWithCounts` | List cards, filter dropdowns, syllabus lookups, detail | High |
-| Pathway | `Pathway` | List cards, filter dropdowns | Medium |
-| Exam Schedule | `ExamSchedule` | List cards, filter dropdowns, edition label derivation | Medium |
-| Exam Edition | `ExamEdition` | List cards, filter dropdowns, document page lookups | Medium |
-| Area | `Area` / `AreaWithCounts` | List cards, filter dropdowns, form options | Medium |
-| Section | `Section` | List cards, form cascading selectors | Low |
-| Outcome | `Outcome` | List cards, form cascading selectors | Low |
+- List components call canonical list route with `profile=list`.
+- Filter dropdowns lazy-load with `profile=filter`.
+- Detail pages with badge tabs use detail fetch with `profile=details`.
+- Remove supplementary count-only calls and route-name-specific wrappers.
 
 ### Pass criteria
 
-- Every API route, DTO, and client type name signals its consumer context (`for-list`, `for-filter`, `ForList`, `ForFilter`, `ForDetail`)
-- Filter routes (`-for-filter`) return only ID + label fields — no counts, no JOINs to unrelated tables
-- List routes (`-for-list`) return all fields needed for card rendering — no more, no less
-- No single route/DTO/type serves both filter dropdowns and list cards
-- Client commands mirror route naming (`listModulesForListAdmin`, `listModulesForFilterAdmin`)
+- Canonical resource paths are used (no `-for-list`, `-for-filter`, `/paginated`, `with-counts`)
+- List/filter/detail contexts use explicit profile selection
+- Filter payloads are minimal and no longer receive list-count fields
+- Detail badge counts come from main detail response (`profile=details`)
+- No single unprofiled endpoint payload is forced to satisfy incompatible consumer contexts
 
 ---
 

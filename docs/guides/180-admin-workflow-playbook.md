@@ -15,6 +15,7 @@ Use this guide when the request is:
 - Confirm entity boundaries and whether this is standalone CRUD or nested under a parent.
 - Identify whether ordering, trash, or relation picking is required.
 - Set expected file/module boundaries up front using `docs/guides/020-project-structure.md` (anti-god-file policy).
+- Define API profiles up front (`list`, `filter`, `details`) using `docs/guides/073-api-profiles-and-query-contract.md`.
 
 2. Choose the base recipe
 - Standalone CRUD: `docs/patterns/crud-admin-interface.md`

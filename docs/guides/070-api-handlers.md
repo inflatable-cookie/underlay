@@ -11,6 +11,25 @@ The patterns here are intentionally simple and align with Underlay's primitives:
 - Errors use `underlay_http::ApiError` and `ApiResult<T>` as the canonical path.
 - JSON field names use snake_case (see [071-json-naming.md](./071-json-naming.md)).
 
+## Route Shape Policy
+
+Underlay standard is canonical resource routes with typed `profile` query params for approved projections.
+
+- List route: `GET /v1/{scope}/{domain}/{resource}`
+- Detail route: `GET /v1/{scope}/{domain}/{resource}/{id}`
+- List profiles: `profile=list|filter`
+- Detail enrichment profile: `profile=details` (default detail without profile is base record)
+
+Do not encode projection/mechanics in path names.
+
+Disallowed route tokens:
+
+- `/paginated`
+- `with-counts`, `with-joins`
+- `-for-list`, `-for-filter` (migration target is canonical routes + `profile`)
+
+See [073-api-profiles-and-query-contract.md](./073-api-profiles-and-query-contract.md) for full contract details.
+
 ## Handler Structure
 
 For small-to-medium services, keep things inline in `main.rs`:
