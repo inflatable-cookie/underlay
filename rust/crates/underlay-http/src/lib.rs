@@ -1,5 +1,6 @@
 pub mod context;
 pub mod cookies;
+pub mod caching;
 mod cors;
 mod errors;
 mod http_config;
@@ -21,6 +22,9 @@ pub mod openapi;
 mod cors_tests;
 
 #[cfg(test)]
+mod caching_tests;
+
+#[cfg(test)]
 mod errors_tests;
 
 #[cfg(all(test, feature = "error-logging"))]
@@ -31,6 +35,10 @@ mod responses_tests;
 
 pub use crate::context::{
     headers, AuthenticatedContext, AuthenticatedUser, ContextError, RequestContext,
+};
+pub use crate::caching::{
+    etag_header_value, if_none_match_matches, weak_etag_for_bytes,
+    MicroCache, CACHE_CONTROL_ADMIN_REVALIDATE, CACHE_CONTROL_NO_STORE,
 };
 pub use crate::cookies::{
     clear_auth_cookies, extract_refresh_token, extract_refresh_token_default, set_auth_cookies,
