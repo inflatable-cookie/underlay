@@ -107,7 +107,7 @@ Admin clients should use conditional GET with response metadata access:
 
 This keeps payload transfer low while preserving freshness semantics and enabling tiny short-lived memory caches at the query layer.
 
-For shared command clients, prefer a thin utility wrapper (for example `getWithAdminEtagRevalidation` / `getWithAdminEtagRevalidationWithMeta`) so each command does not reimplement `304` handling, fallback behavior, and ETag storage logic.
+For shared command clients, prefer a thin utility wrapper (for example `getWithAdminEtagRevalidation` / `getWithAdminEtagRevalidationWithMeta`) so each command does not reimplement `304` handling, fallback behavior, ETag storage logic, and in-flight request dedupe.
 
 ## Decision Matrix
 
