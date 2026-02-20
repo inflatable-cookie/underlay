@@ -25,5 +25,6 @@ Status overview of all Underlay roadmaps. Check individual files for detailed pr
 | 019 | [Codebase Improvements](./019-codebase-improvements.md) | In progress | Simplification, deduplication, reorganisation |
 | 020 | [Configuration Standardization](./020-configuration-standardization-and-env-reduction.md) | In progress | Move app behavior config from env files into typed structures |
 | 021 | [Shared Admin Components](./021-shared-admin-components.md) | In progress | EmptyState, EntityActionsMenu, Drawer, DetailPageShell, AutonomousList, InlineEditableField, KeyboardShortcuts, ErrorBoundary |
+| 022 | [CLI Runner & Pulse](./022-underlay-cli-runner-and-pulse.md) | In progress | Add `underlay pulse`, shared root detection infrastructure, and checker contract |
 
-**Complete:** 9 | **In progress:** 12
+**Complete:** 9 | **In progress:** 13

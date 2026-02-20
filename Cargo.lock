@@ -5114,6 +5114,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "underlay-cli"
+version = "0.0.1"
+dependencies = [
+ "serde_json",
+]
+
+[[package]]
 name = "underlay-core"
 version = "0.0.1"
 dependencies = [
