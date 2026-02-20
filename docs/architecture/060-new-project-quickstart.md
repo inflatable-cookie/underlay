@@ -133,7 +133,7 @@ This monorepo contains several related projects:
 ```bash
 # Assuming Underlay is cloned at the same level as your new project
 cd new-project
-ln -s ../libraries/underlay libs/underlay
+ln -s ../legacy/libraries/underlay libs/underlay
 ```
 
 ### 4.2 Option B: Use Underlay as a Git Submodule (For Stable Dependencies)

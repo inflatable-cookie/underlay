@@ -25,7 +25,7 @@ Use this when you're actively developing both Underlay and your project.
 
 ```bash
 cd my-project
-ln -s ../libraries/underlay libs/underlay
+ln -s ../legacy/libraries/underlay libs/underlay
 ```
 
 ### Option B: Git Submodule (Recommended for Stable Dependencies)

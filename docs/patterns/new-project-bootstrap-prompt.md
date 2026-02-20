@@ -47,7 +47,7 @@ After I answer, do the following:
 
 2) Symlink Underlay into the workspace root
    - Check if an "underlay" directory already exists.
-   - If not present, ask me for the path to my local Underlay checkout (offer a default guess like ../underlay or ../libraries/underlay), then create a symlink named "underlay" in the workspace root.
+   - If not present, ask me for the path to my local Underlay checkout (offer a default guess like ../underlay or ../legacy/libraries/underlay), then create a symlink named "underlay" in the workspace root.
    - Verify the symlink works by confirming underlay/package.json and underlay/docs/guides/README.md exist.
    - If this is a monorepo: add "underlay/" to the root .gitignore (create the file if needed).
 
