@@ -223,8 +223,25 @@ export function createAuthHandle(options: SvelteKitAuthOptions): Handle {
           // Ensure refresh requests do not include Authorization.
           const rawHttp = {
             request: ctx.rawRequest,
+            requestWithMeta: async <T>(req: {
+              method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+              path: string;
+              headers?: Record<string, string>;
+              body?: unknown;
+            }, _options?: { acceptedStatuses?: number[] }) => {
+              const body = await ctx.rawRequest<T>(req);
+              return { status: 200, headers: {}, body };
+            },
             get: (path: string, headers?: Record<string, string>) =>
               ctx.rawRequest({ method: "GET", path, headers }),
+            getWithMeta: async <T>(
+              path: string,
+              headers?: Record<string, string>,
+              _options?: { acceptedStatuses?: number[] }
+            ) => {
+              const body = await ctx.rawRequest<T>({ method: "GET", path, headers });
+              return { status: 200, headers: {}, body };
+            },
             post: (path: string, body?: unknown, headers?: Record<string, string>) =>
               ctx.rawRequest({ method: "POST", path, body, headers }),
             put: (path: string, body?: unknown, headers?: Record<string, string>) =>

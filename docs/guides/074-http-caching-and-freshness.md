@@ -96,6 +96,17 @@ Guardrails:
 - Use short in-memory reuse windows only when paired with quick revalidation.
 - On `412`, show conflict UX and reload canonical latest server state before retry.
 
+### TypeScript client pattern (`@decodelabs/underlay/client/http`)
+
+Admin clients should use conditional GET with response metadata access:
+
+- call `getWithMeta(...)` with `acceptedStatuses: [304]`
+- send cached validator via `If-None-Match`
+- on `304`, reuse cached payload
+- on `200`, replace payload and validator (`ETag`)
+
+This keeps payload transfer low while preserving freshness semantics and enabling tiny short-lived memory caches at the query layer.
+
 ## Decision Matrix
 
 Use validator-only when:

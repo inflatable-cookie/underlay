@@ -129,9 +129,25 @@ export interface HttpRequest {
   body?: unknown;
 }
 
+export interface HttpResponse<T> {
+  status: number;
+  headers: Record<string, string>;
+  body: T | null;
+}
+
+export interface HttpRequestOptions {
+  acceptedStatuses?: number[];
+}
+
 export interface HttpClient {
   request<T>(req: HttpRequest): Promise<T>;
+  requestWithMeta<T>(req: HttpRequest, options?: HttpRequestOptions): Promise<HttpResponse<T>>;
   get<T>(path: string, headers?: Record<string, string>): Promise<T>;
+  getWithMeta<T>(
+    path: string,
+    headers?: Record<string, string>,
+    options?: HttpRequestOptions
+  ): Promise<HttpResponse<T>>;
   post<T>(path: string, body?: unknown, headers?: Record<string, string>): Promise<T>;
   put<T>(path: string, body?: unknown, headers?: Record<string, string>): Promise<T>;
   patch<T>(path: string, body?: unknown, headers?: Record<string, string>): Promise<T>;
@@ -171,6 +187,15 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
     }
   }
 
+  function headersToRecord(headers: Headers | undefined): Record<string, string> {
+    const result: Record<string, string> = {};
+    if (!headers || typeof headers.forEach !== "function") return result;
+    headers.forEach((value, key) => {
+      result[key] = value;
+    });
+    return result;
+  }
+
   const tokenStore = options.auth?.tokenStore;
 
   const getAccessToken =
@@ -189,7 +214,10 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
 
   let refreshInFlight: Promise<RefreshResult> | null = null;
 
-  async function rawRequest<T>(req: HttpRequest, opts?: { skipRetry?: boolean }): Promise<T> {
+  async function rawRequest<T>(
+    req: HttpRequest,
+    opts?: { skipRetry?: boolean; acceptedStatuses?: number[] }
+  ): Promise<HttpResponse<T>> {
     const url = new URL(req.path, options.baseUrl).toString();
     const headers: Record<string, string> = {
       ...options.defaultHeaders,
@@ -243,7 +271,10 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
         const contentType = res.headers?.get?.("content-type") ?? "application/json";
         const hasJson = contentType.includes("application/json");
 
-        if (!res.ok) {
+        const acceptedStatuses = new Set(opts?.acceptedStatuses ?? []);
+        const isAccepted = res.ok || acceptedStatuses.has(res.status);
+
+        if (!isAccepted) {
           const parsed = hasJson ? await res.json().catch(() => undefined) : undefined;
           const envelope = isErrorEnvelope(parsed) ? parsed : undefined;
           const message = envelope?.error.message ?? `HTTP ${res.status}`;
@@ -268,15 +299,29 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
           throw new UnderlayHttpError(res.status, message, envelope);
         }
 
+        const responseHeaders = headersToRecord(res.headers);
+
         if (res.status === 204) {
-          return null as T;
+          return { status: res.status, headers: responseHeaders, body: null };
+        }
+
+        if (res.status === 304) {
+          return { status: res.status, headers: responseHeaders, body: null };
         }
 
         if (!hasJson) {
-          return (await res.text()) as unknown as T;
+          return {
+            status: res.status,
+            headers: responseHeaders,
+            body: (await res.text()) as unknown as T,
+          };
         }
 
-        return await res.json();
+        return {
+          status: res.status,
+          headers: responseHeaders,
+          body: (await res.json()) as T,
+        };
       } catch (err) {
         if (timeout != null) {
           clearTimeout(timeout);
@@ -293,7 +338,15 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
     }
   }
 
-  async function request<T>(req: HttpRequest): Promise<T> {
+  async function rawRequestBody<T>(req: HttpRequest): Promise<T> {
+    const response = await rawRequest<T>(req);
+    return response.body as T;
+  }
+
+  async function requestWithMeta<T>(
+    req: HttpRequest,
+    requestOptions?: HttpRequestOptions
+  ): Promise<HttpResponse<T>> {
     const token = hasHeader(req.headers ?? {}, "Authorization")
       ? null
       : (await getAccessToken?.()) ?? null;
@@ -304,7 +357,7 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
     }
 
     try {
-      return await rawRequest<T>({ ...req, headers });
+      return await rawRequest<T>({ ...req, headers }, requestOptions);
     } catch (err) {
       if (!(err instanceof UnderlayHttpError)) throw err;
 
@@ -315,7 +368,7 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
       if (!refreshInFlight) {
         refreshInFlight = options.auth
           .refresh({
-            rawRequest,
+            rawRequest: rawRequestBody,
             tokenStore,
             getRefreshToken: async () => (await getRefreshToken?.()) ?? null,
             setAccessToken: async (t) => {
@@ -352,13 +405,21 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
         setHeaderIfMissing(retryHeaders, "Authorization", `Bearer ${retryToken}`);
       }
 
-      return await rawRequest<T>({ ...req, headers: retryHeaders });
+      return await rawRequest<T>({ ...req, headers: retryHeaders }, requestOptions);
     }
+  }
+
+  async function request<T>(req: HttpRequest): Promise<T> {
+    const response = await requestWithMeta<T>(req);
+    return response.body as T;
   }
 
   return {
     request,
+    requestWithMeta,
     get: (path, headers) => request({ method: "GET", path, headers }),
+    getWithMeta: (path, headers, options) =>
+      requestWithMeta({ method: "GET", path, headers }, options),
     post: (path, body, headers) => request({ method: "POST", path, body, headers }),
     put: (path, body, headers) => request({ method: "PUT", path, body, headers }),
     patch: (path, body, headers) => request({ method: "PATCH", path, body, headers }),

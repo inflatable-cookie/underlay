@@ -503,6 +503,55 @@ describe('createHttpClient', () => {
 			consoleSpy.mockRestore();
 		});
 	});
+
+	describe('response metadata', () => {
+		it('should return status, headers, and body from getWithMeta', async () => {
+			fetchMock.mockResolvedValueOnce({
+				ok: true,
+				status: 200,
+				headers: new Headers({
+					'content-type': 'application/json',
+					etag: 'W/"abc123"'
+				}),
+				json: async () => ({ data: { id: '123' } })
+			});
+
+			const client = createHttpClient({
+				baseUrl: 'https://api.example.com',
+				fetch: fetchMock
+			});
+
+			const response = await client.getWithMeta<{ data: { id: string } }>('/resource');
+			expect(response.status).toBe(200);
+			expect(response.headers.etag).toBe('W/"abc123"');
+			expect(response.body).toEqual({ data: { id: '123' } });
+		});
+
+		it('should allow accepted 304 responses without throwing', async () => {
+			fetchMock.mockResolvedValueOnce({
+				ok: false,
+				status: 304,
+				headers: new Headers({
+					etag: 'W/"abc123"'
+				}),
+				json: async () => {
+					throw new Error('Not modified');
+				}
+			});
+
+			const client = createHttpClient({
+				baseUrl: 'https://api.example.com',
+				fetch: fetchMock
+			});
+
+			const response = await client.getWithMeta('/resource', undefined, {
+				acceptedStatuses: [304]
+			});
+			expect(response.status).toBe(304);
+			expect(response.headers.etag).toBe('W/"abc123"');
+			expect(response.body).toBeNull();
+		});
+	});
 });
 
 describe('MemoryTokenStore', () => {

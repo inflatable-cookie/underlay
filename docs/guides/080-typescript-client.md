@@ -259,6 +259,23 @@ export class HttpClient {
 }
 ```
 
+### Conditional GET for admin reads
+
+For admin list/detail routes that emit `ETag`, use `getWithMeta` so clients can revalidate with `If-None-Match` and safely handle `304`:
+
+```ts
+const response = await http.getWithMeta<ListResponse<Item>>(
+  "/v1/admin/items",
+  cachedEtag ? { "If-None-Match": cachedEtag } : undefined,
+  { acceptedStatuses: [304] }
+);
+
+if (response.status === 304 && cachedPayload) return cachedPayload;
+if (response.body == null) throw new Error("Expected response body");
+
+const nextEtag = response.headers.etag;
+```
+
 ## Step 3: Client Factory
 
 Create `stem/src/utils/client-factory.ts`:
