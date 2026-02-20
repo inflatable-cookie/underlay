@@ -1,8 +1,11 @@
 use std::time::Duration;
 
-use axum::http::{header::IF_NONE_MATCH, HeaderMap, HeaderValue};
+use axum::http::{
+    header::{IF_MATCH, IF_NONE_MATCH},
+    HeaderMap, HeaderValue,
+};
 
-use crate::caching::{if_none_match_matches, weak_etag_for_bytes, MicroCache};
+use crate::caching::{if_match_matches, if_none_match_matches, weak_etag_for_bytes, MicroCache};
 
 #[test]
 fn weak_etag_is_stable_for_same_bytes() {
@@ -38,6 +41,27 @@ fn if_none_match_matches_exact_or_wildcard() {
     let mut headers = HeaderMap::new();
     headers.insert(IF_NONE_MATCH, HeaderValue::from_static("W/\"nope\""));
     assert!(!if_none_match_matches(&headers, current));
+}
+
+#[test]
+fn if_match_matches_exact_or_wildcard() {
+    let current = "W/\"abc\"";
+
+    let mut headers = HeaderMap::new();
+    headers.insert(IF_MATCH, HeaderValue::from_static("W/\"abc\""));
+    assert!(if_match_matches(&headers, current));
+
+    let mut headers = HeaderMap::new();
+    headers.insert(IF_MATCH, HeaderValue::from_static("W/\"zzz\", W/\"abc\""));
+    assert!(if_match_matches(&headers, current));
+
+    let mut headers = HeaderMap::new();
+    headers.insert(IF_MATCH, HeaderValue::from_static("*"));
+    assert!(if_match_matches(&headers, current));
+
+    let mut headers = HeaderMap::new();
+    headers.insert(IF_MATCH, HeaderValue::from_static("W/\"nope\""));
+    assert!(!if_match_matches(&headers, current));
 }
 
 #[test]

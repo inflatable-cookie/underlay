@@ -37,7 +37,7 @@ pub use crate::context::{
     headers, AuthenticatedContext, AuthenticatedUser, ContextError, RequestContext,
 };
 pub use crate::caching::{
-    etag_header_value, if_none_match_matches, weak_etag_for_bytes,
+    etag_header_value, if_match_matches, if_none_match_matches, weak_etag_for_bytes,
     MicroCache, CACHE_CONTROL_ADMIN_REVALIDATE, CACHE_CONTROL_NO_STORE,
 };
 pub use crate::cookies::{

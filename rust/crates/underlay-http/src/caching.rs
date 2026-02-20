@@ -112,6 +112,22 @@ pub fn if_none_match_matches(headers: &HeaderMap, current_etag: &str) -> bool {
         .any(|candidate| candidate == "*" || candidate == current_etag)
 }
 
+/// Matches `If-Match` header values against a current ETag.
+pub fn if_match_matches(headers: &HeaderMap, current_etag: &str) -> bool {
+    let Some(raw) = headers.get(axum::http::header::IF_MATCH) else {
+        return false;
+    };
+
+    let Ok(raw_str) = raw.to_str() else {
+        return false;
+    };
+
+    raw_str
+        .split(',')
+        .map(|part| part.trim())
+        .any(|candidate| candidate == "*" || candidate == current_etag)
+}
+
 pub fn etag_header_value(etag: &str) -> Option<HeaderValue> {
     HeaderValue::from_str(etag).ok()
 }
