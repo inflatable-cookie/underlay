@@ -155,12 +155,17 @@ To validate impact in live environments, emit counters for:
 
 - conditional cache revalidation hits (`304`)
 - microcache hits on hot admin reads
+- DB-backed fetch executions on hot admin reads (for query-pressure trend)
 - stale-write precondition rejections (`412`)
 
 Example metric shapes:
 
-- `*_admin_cache_events_total{endpoint,event}` where `event` includes `conditional_304`, `microcache_hit`
+- `*_admin_cache_events_total{endpoint,event}` where `event` includes `conditional_304`, `microcache_hit`, `db_fetch`
 - `*_admin_write_precondition_total{endpoint,event}` where `event` includes `precondition_failed`
+
+Interpretation note:
+
+- for microcached endpoints, `db_fetch` trend over time is a practical proxy for backend query pressure; compare it against `microcache_hit` and `conditional_304` to validate load reduction.
 
 These metrics complement static sweep checks and make before/after trend analysis possible during rollout.
 
