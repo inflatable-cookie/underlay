@@ -1,6 +1,6 @@
 # 022 - Underlay CLI Runner and Pulse Checker
 
-Status: In Progress
+Status: Complete
 Owner: Platform (Underlay + consuming apps)
 Created: 2026-02-20
 Depends on: 019, 020, 021
@@ -93,23 +93,23 @@ Current gaps:
 ### Phase 22.4 - Packaging and invocation validation
 
 - [x] Validate repo-local invocation (`cargo run ... -- pulse`).
-- [ ] Validate wrapper-script invocation from a consuming app.
-- [ ] Validate one ubiquitous mode (global install or CI invocation).
+- [x] Validate wrapper-script invocation from a consuming app.
+- [x] Validate one ubiquitous mode (global install or CI invocation).
 
 ### Phase 22.5 - Trial verification
 
 - [x] Run three real-repo trials (nucleus, acowtancy, loophole).
-- [ ] Score recommendation actionability and setup friction.
-- [ ] Feed checkpoint evidence back into experiment docs.
+- [x] Score recommendation actionability and setup friction.
+- [x] Feed checkpoint evidence into roadmap/report docs (`docs/reports/2026-02-20-1722-pulse-packaging-and-trial-checkpoint.md`).
 
 ## 7) Acceptance Criteria
 
 - [x] `underlay pulse` works without requiring `--repo` in normal cwd usage.
 - [x] Root detection correctly resolves representative nested-workspace layouts.
-- [ ] At least two invocation modes are proven working.
-- [ ] Setup time to first successful run is <= 10 minutes from clean checkout.
+- [x] At least two invocation modes are proven working.
+- [x] Setup time to first successful run is <= 10 minutes from clean checkout.
 - [x] Pulse outputs include actionable next actions with explicit file/command targets.
-- [ ] Runner can evolve new commands without checker-specific root detection rewrites.
+- [x] Runner can evolve new commands without checker-specific root detection rewrites.
 
 ## 8) Risks and Mitigations
 
@@ -122,8 +122,8 @@ Current gaps:
 
 ## 9) Deliverables
 
-- [ ] New Underlay runner command surface with `pulse`.
-- [ ] Shared root-resolution infrastructure + tests.
-- [ ] Pulse checker with deterministic markdown output schema.
-- [ ] Packaging validation notes across supported invocation modes.
-- [ ] Trial checkpoint report references in roadmap updates.
+- [x] New Underlay runner command surface with `pulse`.
+- [x] Shared root-resolution infrastructure + tests.
+- [x] Pulse checker with deterministic markdown output schema.
+- [x] Packaging validation notes across supported invocation modes.
+- [x] Trial checkpoint report references in roadmap updates.
