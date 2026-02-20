@@ -2,7 +2,7 @@
 
 ## Context
 
-The Underlay library at `/Users/betterthanclay/Dev/libraries/underlay` has 8 new shared admin patterns (roadmap 021). Full documentation is at:
+The Underlay library at `.` has 8 new shared admin patterns (roadmap 021). Full documentation is at:
 - **Roadmap**: `docs/roadmap/021-shared-admin-components.md`
 - **Guide**: `docs/guides/098-shared-admin-patterns.md`
 
@@ -120,9 +120,9 @@ Paste the prompt above into each agent session, run from the project root.
 
 | Session | App Path | Priority | Notes |
 |---------|----------|----------|-------|
-| 1 | `/Users/betterthanclay/Dev/apps/acowtancy` | Highest | 14 action menus, 38+ detail pages, 18 lists, 14 empty states |
-| 2 | `/Users/betterthanclay/Dev/apps/compli-me` | High | 3 action menus, 8+ detail pages, 9+ lists |
-| 3 | `/Users/betterthanclay/Dev/apps/underlay-reference` | Medium | Reference app, good for showcasing patterns |
-| 4 | `/Users/betterthanclay/Dev/apps/songsprout` | Low | Minimal underlay integration currently |
+| 1 | `../acowtancy` | Highest | 14 action menus, 38+ detail pages, 18 lists, 14 empty states |
+| 2 | `../compli-me` | High | 3 action menus, 8+ detail pages, 9+ lists |
+| 3 | `../underlay-reference` | Medium | Reference app, good for showcasing patterns |
+| 4 | `../songsprout` | Low | Minimal underlay integration currently |
 
 Skip Loophole Composer — it's marked "out of date" and has zero underlay integration.

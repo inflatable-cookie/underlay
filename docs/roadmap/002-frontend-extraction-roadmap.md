@@ -21,18 +21,18 @@ Non-goals (for this doc):
 
 ## Inputs audited (current state)
 
-### 1) Froyo (`/Users/betterthanclay/Dev/apps/acowtancy/froyo`)
+### 1) Froyo (`../acowtancy/froyo`)
 - Lightweight package for **Acowtancy-specific** Nightfire blocks (render/editor/validation registrations).
 - Depends on `@decodelabs/underlay` for shared primitives and Nightfire engine.
 - Does not aim to be a general shared UI kit.
 
-### 2) Dairy (`/Users/betterthanclay/Dev/apps/acowtancy/dairy`)
+### 2) Dairy (`../acowtancy/dairy`)
 - SvelteKit admin app.
 - Consumes Froyo for Acowtancy Nightfire blocks (registrations via `@acowtancy/froyo/editor|render|validation`).
 - Consumes Underlay primitives directly (`@decodelabs/underlay/components`, `@decodelabs/underlay/nightfire`).
 - Avoids source-level aliasing; prefers `file:` deps for local development.
 
-### 3) Petal (`/Users/betterthanclay/Dev/apps/songsprout/petal`)
+### 3) Petal (`../songsprout/petal`)
 - Lightweight package reserved for Songsprout-specific UI extensions.
 - Intentionally minimal until Songsprout has shared cross-app UI extensions to centralize.
 

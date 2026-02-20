@@ -39,9 +39,9 @@ cargo check -p <crate> --all-features
 
 ## Source of Truth
 
-- Architecture: `/Users/betterthanclay/Dev/libraries/underlay/docs/architecture/`
-- Guides: `/Users/betterthanclay/Dev/libraries/underlay/docs/guides/`
-- AGENTS standardization guide: `/Users/betterthanclay/Dev/libraries/underlay/docs/guides/172-agents-files.md`
-- JSON naming: `/Users/betterthanclay/Dev/libraries/underlay/docs/guides/071-json-naming.md`
-- Error logging: `/Users/betterthanclay/Dev/libraries/underlay/docs/guides/078-error-logging.md`
-- Package map and crate inventory: `/Users/betterthanclay/Dev/libraries/underlay/docs/architecture/010-package-map.md`
+- Architecture: `docs/architecture/`
+- Guides: `docs/guides/`
+- AGENTS standardization guide: `docs/guides/172-agents-files.md`
+- JSON naming: `docs/guides/071-json-naming.md`
+- Error logging: `docs/guides/078-error-logging.md`
+- Package map and crate inventory: `docs/architecture/010-package-map.md`

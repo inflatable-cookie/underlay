@@ -8,11 +8,11 @@ Address findings from the 2026-02-08 codebase audit (`docs/reports/2026-02-08-co
 
 | App | Location | Status |
 |-----|----------|--------|
-| Acowtancy | `/Users/betterthanclay/Dev/apps/acowtancy` | Active, heaviest underlay consumer |
-| Compli-me | `/Users/betterthanclay/Dev/apps/compli-me` | Active |
-| Songsprout | `/Users/betterthanclay/Dev/apps/songsprout` | Active |
-| Loophole Composer | `/Users/betterthanclay/Dev/apps/loophole/composer` | Out of date, minimal underlay usage |
-| Underlay Reference | `/Users/betterthanclay/Dev/apps/underlay-reference` | Reference implementation |
+| Acowtancy | `../acowtancy` | Active, heaviest underlay consumer |
+| Compli-me | `../compli-me` | Active |
+| Songsprout | `../songsprout` | Active |
+| Loophole Composer | `../loophole/composer` | Out of date, minimal underlay usage |
+| Underlay Reference | `../underlay-reference` | Reference implementation |
 
 ## Decision
 

@@ -11,11 +11,11 @@ Extract reusable admin interface components and patterns identified from auditin
 
 | App | Location | Status |
 |-----|----------|--------|
-| Acowtancy | `/Users/betterthanclay/Dev/apps/acowtancy` | Active, heaviest consumer |
-| Compli-me | `/Users/betterthanclay/Dev/apps/compli-me` | Active |
-| Songsprout | `/Users/betterthanclay/Dev/apps/songsprout` | Active |
-| Loophole Composer | `/Users/betterthanclay/Dev/apps/loophole/composer` | Out of date |
-| Underlay Reference | `/Users/betterthanclay/Dev/apps/underlay-reference` | Reference |
+| Acowtancy | `../acowtancy` | Active, heaviest consumer |
+| Compli-me | `../compli-me` | Active |
+| Songsprout | `../songsprout` | Active |
+| Loophole Composer | `../loophole/composer` | Out of date |
+| Underlay Reference | `../underlay-reference` | Reference |
 
 ## Progress Checklist
 
