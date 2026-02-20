@@ -74,6 +74,8 @@ Where resources have version semantics:
 
 Within process, coalesce concurrent identical read requests so only one backend query executes.
 
+Underlay primitive: `underlay_http::SingleFlight` (keyed async coordinator for identical in-flight loads).
+
 Use when:
 
 - repeated bursts of identical reads are observed,

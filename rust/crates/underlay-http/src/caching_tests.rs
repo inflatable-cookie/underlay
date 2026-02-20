@@ -1,11 +1,19 @@
-use std::time::Duration;
+use std::{
+    sync::{
+        atomic::{AtomicUsize, Ordering},
+        Arc,
+    },
+    time::Duration,
+};
 
 use axum::http::{
     header::{IF_MATCH, IF_NONE_MATCH},
     HeaderMap, HeaderValue,
 };
 
-use crate::caching::{if_match_matches, if_none_match_matches, weak_etag_for_bytes, MicroCache};
+use crate::caching::{
+    if_match_matches, if_none_match_matches, weak_etag_for_bytes, MicroCache, SingleFlight,
+};
 
 #[test]
 fn weak_etag_is_stable_for_same_bytes() {
@@ -72,4 +80,65 @@ fn microcache_expires_entries() {
 
     std::thread::sleep(Duration::from_millis(20));
     assert_eq!(cache.get("k"), None);
+}
+
+#[tokio::test]
+async fn singleflight_coalesces_same_key() {
+    let sf = Arc::new(SingleFlight::<usize>::new());
+    let executions = Arc::new(AtomicUsize::new(0));
+
+    let mut tasks = Vec::new();
+    for _ in 0..12 {
+        let sf = Arc::clone(&sf);
+        let executions = Arc::clone(&executions);
+        tasks.push(tokio::spawn(async move {
+            sf.run("same-key", || async move {
+                executions.fetch_add(1, Ordering::SeqCst);
+                tokio::time::sleep(Duration::from_millis(20)).await;
+                7
+            })
+            .await
+        }));
+    }
+
+    for task in tasks {
+        let value = task.await.expect("singleflight task should join");
+        assert_eq!(value, 7);
+    }
+    assert_eq!(executions.load(Ordering::SeqCst), 1);
+}
+
+#[tokio::test]
+async fn singleflight_allows_distinct_keys() {
+    let sf = Arc::new(SingleFlight::<usize>::new());
+    let executions = Arc::new(AtomicUsize::new(0));
+
+    let (a, b) = tokio::join!(
+        {
+            let sf = Arc::clone(&sf);
+            let executions = Arc::clone(&executions);
+            async move {
+                sf.run("k1", || async move {
+                    executions.fetch_add(1, Ordering::SeqCst);
+                    1
+                })
+                .await
+            }
+        },
+        {
+            let sf = Arc::clone(&sf);
+            let executions = Arc::clone(&executions);
+            async move {
+                sf.run("k2", || async move {
+                    executions.fetch_add(1, Ordering::SeqCst);
+                    2
+                })
+                .await
+            }
+        }
+    );
+
+    assert_eq!(a, 1);
+    assert_eq!(b, 2);
+    assert_eq!(executions.load(Ordering::SeqCst), 2);
 }

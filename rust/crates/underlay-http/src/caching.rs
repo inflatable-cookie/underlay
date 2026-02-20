@@ -1,11 +1,13 @@
 use std::{
     collections::HashMap,
+    future::Future,
     sync::Mutex,
     time::{Duration, Instant},
 };
 
 use axum::http::{HeaderMap, HeaderValue};
 use sha2::{Digest, Sha256};
+use tokio::sync::{oneshot, Mutex as AsyncMutex};
 
 pub const CACHE_CONTROL_ADMIN_REVALIDATE: &str = "private, no-cache, must-revalidate";
 pub const CACHE_CONTROL_NO_STORE: &str = "no-store";
@@ -85,6 +87,62 @@ impl<V: Clone> MicroCache<V> {
     pub fn clear(&self) {
         let mut guard = self.entries.lock().expect("microcache mutex poisoned");
         guard.clear();
+    }
+}
+
+/// In-process keyed single-flight coordinator for async read paths.
+///
+/// For a given key, only one caller executes the loader; concurrent callers
+/// await the same result from the leader.
+pub struct SingleFlight<V> {
+    inflight: AsyncMutex<HashMap<String, Vec<oneshot::Sender<V>>>>,
+}
+
+impl<V: Clone> Default for SingleFlight<V> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl<V: Clone> SingleFlight<V> {
+    pub fn new() -> Self {
+        Self {
+            inflight: AsyncMutex::new(HashMap::new()),
+        }
+    }
+
+    pub async fn run<F, Fut>(&self, key: impl Into<String>, loader: F) -> V
+    where
+        F: FnOnce() -> Fut,
+        Fut: Future<Output = V>,
+    {
+        let key = key.into();
+
+        let waiter = {
+            let mut guard = self.inflight.lock().await;
+            if let Some(waiters) = guard.get_mut(&key) {
+                let (tx, rx) = oneshot::channel();
+                waiters.push(tx);
+                Some(rx)
+            } else {
+                guard.insert(key.clone(), Vec::new());
+                None
+            }
+        };
+
+        if let Some(rx) = waiter {
+            return rx.await.expect("singleflight leader dropped before send");
+        }
+
+        let value = loader().await;
+        let waiters = {
+            let mut guard = self.inflight.lock().await;
+            guard.remove(&key).unwrap_or_default()
+        };
+        for tx in waiters {
+            let _ = tx.send(value.clone());
+        }
+        value
     }
 }
 
