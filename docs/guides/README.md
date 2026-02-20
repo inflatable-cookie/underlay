@@ -41,29 +41,31 @@ Read these documents in order for a complete understanding:
 14. **[071 - JSON Naming Policy](./071-json-naming.md)** - Canonical `snake_case` JSON conventions
 15. **[072 - Admin/Front Separation](./072-admin-front-separation.md)** - Audience routing conventions
 16. **[073 - API Profiles and Unified Query Contract](./073-api-profiles-and-query-contract.md)** - Canonical resource routes with profile-driven projections
-17. **[075 - Validation](./075-validation.md)** - Request validation patterns
-18. **[076 - Nightfire](./076-nightfire.md)** - Block-based structured content
-19. **[077 - Media Library](./077-media-library.md)** - File uploads, blob storage, media management
-20. **[080 - TypeScript Client](./080-typescript-client.md)** - HTTP client, commands
-21. **[090 - UI Kit](./090-ui-kit.md)** - Component patterns
-22. **[092 - Selection Suggestions](./092-selection-suggestions.md)** - Intelligent suggestions with selection history
-23. **[095 - Navigation Context](./095-navigation-context.md)** - Contextual back buttons and form redirects
-24. **[098 - Shared Admin Patterns](./098-shared-admin-patterns.md)** - Higher-level admin components (EmptyState, Drawer, DetailPageShell, AutonomousList, etc.)
-25. **[100 - Frontend (Web)](./100-frontend-web.md)** - SvelteKit setup, routing
-26. **[110 - Admin Frontend](./110-admin.md)** - Admin UI structure
-27. **[120 - Configuration](./120-configuration.md)** - Typed config model, env boundaries, migration checklist
-28. **[130 - Testing](./130-testing.md)** - Test patterns for all layers
-29. **[140 - Local Development](./140-local-development.md)** - Running locally, debugging
-30. **[150 - CI/CD](./150-ci-cd.md)** - GitHub Actions template
-31. **[160 - Troubleshooting](./160-troubleshooting.md)** - Common issues and solutions
-32. **[170 - Checklist](./170-checklist.md)** - Completion verification
-33. **[172 - Lean AGENTS.md Files](./172-agents-files.md)** - Keep agent instructions concise and operational
-34. **[176 - AI Runtime Routing](./176-ai-runtime-routing.md)** - Provider-agnostic backend LLM runtime boundary
-35. **[180 - Admin Workflow Playbook](./180-admin-workflow-playbook.md)** - Start-here implementation flow for admin features
-36. **[181 - Temporary API Profile Migration Playbook](./181-temporary-api-profile-migration-playbook.md)** - Cross-app migration checklist (temporary)
-37. **[185 - Recipe Map and Testing Matrix](./185-recipe-map-and-testing-matrix.md)** - Recipe-to-code references + minimum tests
-38. **[190 - Upgrade Compatibility Matrix](./190-upgrade-compatibility.md)** - Upgrade expectations and breakage checks
-39. **[200 - Project Sync](./200-project-sync.md)** - Migration/sync checklist for existing projects
+
+17. **[074 - HTTP Caching and Freshness Contract](./074-http-caching-and-freshness.md)** - Validator-first caching, concurrency preconditions, and bounded microcache policy
+18. **[075 - Validation](./075-validation.md)** - Request validation patterns
+19. **[076 - Nightfire](./076-nightfire.md)** - Block-based structured content
+20. **[077 - Media Library](./077-media-library.md)** - File uploads, blob storage, media management
+21. **[080 - TypeScript Client](./080-typescript-client.md)** - HTTP client, commands
+22. **[090 - UI Kit](./090-ui-kit.md)** - Component patterns
+23. **[092 - Selection Suggestions](./092-selection-suggestions.md)** - Intelligent suggestions with selection history
+24. **[095 - Navigation Context](./095-navigation-context.md)** - Contextual back buttons and form redirects
+25. **[098 - Shared Admin Patterns](./098-shared-admin-patterns.md)** - Higher-level admin components (EmptyState, Drawer, DetailPageShell, AutonomousList, etc.)
+26. **[100 - Frontend (Web)](./100-frontend-web.md)** - SvelteKit setup, routing
+27. **[110 - Admin Frontend](./110-admin.md)** - Admin UI structure
+28. **[120 - Configuration](./120-configuration.md)** - Typed config model, env boundaries, migration checklist
+29. **[130 - Testing](./130-testing.md)** - Test patterns for all layers
+30. **[140 - Local Development](./140-local-development.md)** - Running locally, debugging
+31. **[150 - CI/CD](./150-ci-cd.md)** - GitHub Actions template
+32. **[160 - Troubleshooting](./160-troubleshooting.md)** - Common issues and solutions
+33. **[170 - Checklist](./170-checklist.md)** - Completion verification
+34. **[172 - Lean AGENTS.md Files](./172-agents-files.md)** - Keep agent instructions concise and operational
+35. **[176 - AI Runtime Routing](./176-ai-runtime-routing.md)** - Provider-agnostic backend LLM runtime boundary
+36. **[180 - Admin Workflow Playbook](./180-admin-workflow-playbook.md)** - Start-here implementation flow for admin features
+37. **[181 - Temporary API Profile Migration Playbook](./181-temporary-api-profile-migration-playbook.md)** - Cross-app migration checklist (temporary)
+38. **[185 - Recipe Map and Testing Matrix](./185-recipe-map-and-testing-matrix.md)** - Recipe-to-code references + minimum tests
+39. **[190 - Upgrade Compatibility Matrix](./190-upgrade-compatibility.md)** - Upgrade expectations and breakage checks
+40. **[200 - Project Sync](./200-project-sync.md)** - Migration/sync checklist for existing projects
 
 ## Code Examples
 
