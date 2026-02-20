@@ -107,6 +107,16 @@ For SPA admin apps, configure auth and shared runtime services in `(app)/+layout
 </script>
 ```
 
+### 5) Optimistic Concurrency (`If-Match` / `412`)
+
+For admin edit forms where concurrent writes are possible:
+
+- load detail with `ETag` (for example `getModuleAdminWithEtag`)
+- send `If-Match` on update
+- on `412 Precondition Failed`, reload latest server state and show a conflict message
+
+This prevents silent overwrite when two admins edit the same record.
+
 ```
 apps/admin/src/
 ├── app.html                  # HTML shell
