@@ -38,7 +38,7 @@ Review likely duplicates:
 ## Step 2 - Verify request-level dedupe usage
 
 ```bash
-rg -n "dedupeInFlight|singleFlight|inFlight" "$ADMIN_REPO/src" "$CLIENT_REPO/src" --glob '!node_modules/**'
+rg -n "dedupeInFlight|singleFlight|inFlight|getWithAdminEtagRevalidation" "$ADMIN_REPO/src" "$CLIENT_REPO/src" --glob '!node_modules/**'
 ```
 
 Review:

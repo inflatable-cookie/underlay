@@ -1,6 +1,6 @@
+pub mod caching;
 pub mod context;
 pub mod cookies;
-pub mod caching;
 mod cors;
 mod errors;
 mod http_config;
@@ -33,12 +33,12 @@ mod error_logging_tests;
 #[cfg(test)]
 mod responses_tests;
 
+pub use crate::caching::{
+    etag_header_value, if_match_matches, if_none_match_matches, weak_etag_for_bytes, MicroCache,
+    CACHE_CONTROL_ADMIN_REVALIDATE, CACHE_CONTROL_NO_STORE,
+};
 pub use crate::context::{
     headers, AuthenticatedContext, AuthenticatedUser, ContextError, RequestContext,
-};
-pub use crate::caching::{
-    etag_header_value, if_match_matches, if_none_match_matches, weak_etag_for_bytes,
-    MicroCache, CACHE_CONTROL_ADMIN_REVALIDATE, CACHE_CONTROL_NO_STORE,
 };
 pub use crate::cookies::{
     clear_auth_cookies, extract_refresh_token, extract_refresh_token_default, set_auth_cookies,
