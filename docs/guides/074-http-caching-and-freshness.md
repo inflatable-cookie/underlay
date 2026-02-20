@@ -149,6 +149,21 @@ Use `no-store` when:
 - Cache-Control policy matches route audience and sensitivity.
 - Hotspot endpoints are explicitly documented if microcache-enabled.
 
+## Suggested Telemetry
+
+To validate impact in live environments, emit counters for:
+
+- conditional cache revalidation hits (`304`)
+- microcache hits on hot admin reads
+- stale-write precondition rejections (`412`)
+
+Example metric shapes:
+
+- `*_admin_cache_events_total{endpoint,event}` where `event` includes `conditional_304`, `microcache_hit`
+- `*_admin_write_precondition_total{endpoint,event}` where `event` includes `precondition_failed`
+
+These metrics complement static sweep checks and make before/after trend analysis possible during rollout.
+
 ## Related Docs
 
 - [073-api-profiles-and-query-contract.md](./073-api-profiles-and-query-contract.md)
