@@ -15,10 +15,10 @@ fn main() {
         Command::Help => {
             print_usage();
         }
-        Command::Pulse(args) => match underlay_cli::runner::run_pulse(args) {
+        _ => match underlay_cli::runner::run_command(cmd) {
             Ok(output) => println!("{output}"),
             Err(err) => {
-                eprintln!("pulse failed: {err}");
+                eprintln!("task failed: {err}");
                 std::process::exit(1);
             }
         },

@@ -1,12 +1,13 @@
-pub mod checkers;
 pub mod resolver;
 pub mod runner;
+pub mod tasks;
 
 use std::path::PathBuf;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Command {
     Pulse(PulseArgs),
+    Task(TaskInvocation),
     Help,
 }
 
@@ -17,10 +18,15 @@ pub struct PulseArgs {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+pub struct TaskInvocation {
+    pub name: String,
+    pub args: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum CliParseError {
     MissingRepoValue,
     UnknownArgument(String),
-    UnknownCommand(String),
 }
 
 impl std::fmt::Display for CliParseError {
@@ -28,7 +34,6 @@ impl std::fmt::Display for CliParseError {
         match self {
             CliParseError::MissingRepoValue => write!(f, "--repo requires a value"),
             CliParseError::UnknownArgument(arg) => write!(f, "unknown argument: {arg}"),
-            CliParseError::UnknownCommand(cmd) => write!(f, "unknown command: {cmd}"),
         }
     }
 }
@@ -48,45 +53,55 @@ where
         return Ok(Command::Help);
     }
 
-    match cmd.as_str() {
-        "pulse" => {
-            let mut repo_override: Option<PathBuf> = None;
-            let mut verbose_root = false;
-
-            while let Some(arg) = args.next() {
-                match arg.as_str() {
-                    "--repo" => {
-                        let Some(path) = args.next() else {
-                            return Err(CliParseError::MissingRepoValue);
-                        };
-                        repo_override = Some(PathBuf::from(path));
-                    }
-                    "--verbose-root" => {
-                        verbose_root = true;
-                    }
-                    "--help" | "-h" => return Ok(Command::Help),
-                    other => return Err(CliParseError::UnknownArgument(other.to_owned())),
-                }
-            }
-
-            Ok(Command::Pulse(PulseArgs {
-                repo_override,
-                verbose_root,
-            }))
-        }
-        other => Err(CliParseError::UnknownCommand(other.to_owned())),
+    if cmd == "pulse" {
+        return parse_pulse(args);
     }
+
+    Ok(Command::Task(TaskInvocation {
+        name: cmd,
+        args: args.collect(),
+    }))
+}
+
+fn parse_pulse<I>(args: I) -> Result<Command, CliParseError>
+where
+    I: IntoIterator<Item = String>,
+{
+    let mut args = args.into_iter();
+    let mut repo_override: Option<PathBuf> = None;
+    let mut verbose_root = false;
+
+    while let Some(arg) = args.next() {
+        match arg.as_str() {
+            "--repo" => {
+                let Some(path) = args.next() else {
+                    return Err(CliParseError::MissingRepoValue);
+                };
+                repo_override = Some(PathBuf::from(path));
+            }
+            "--verbose-root" => {
+                verbose_root = true;
+            }
+            "--help" | "-h" => return Ok(Command::Help),
+            other => return Err(CliParseError::UnknownArgument(other.to_owned())),
+        }
+    }
+
+    Ok(Command::Pulse(PulseArgs {
+        repo_override,
+        verbose_root,
+    }))
 }
 
 pub fn print_usage() {
     eprintln!(
-        "underlay\n\nUSAGE:\n  underlay pulse [--repo <PATH>] [--verbose-root]\n\nCOMMANDS:\n  pulse             Run the repo pulse checker\n\nOPTIONS:\n  --repo <PATH>     Override target repository path\n  --verbose-root    Print root resolution trace\n  -h, --help        Print help\n"
+        "underlay\n\nUSAGE:\n  underlay <task> [task args]\n  underlay pulse [--repo <PATH>] [--verbose-root]\n\nTASKS:\n  pulse             Run the built-in repo pulse task\n  <task>            Run task defined in underlay.tasks.toml at resolved project root\n\nOPTIONS (pulse):\n  --repo <PATH>     Override target repository path\n  --verbose-root    Print root resolution trace\n  -h, --help        Print help\n"
     );
 }
 
 #[cfg(test)]
 mod tests {
-    use super::{parse_command, Command, PulseArgs};
+    use super::{parse_command, Command, PulseArgs, TaskInvocation};
     use std::path::PathBuf;
 
     #[test]
@@ -121,6 +136,24 @@ mod tests {
             Command::Pulse(PulseArgs {
                 repo_override: None,
                 verbose_root: true,
+            })
+        );
+    }
+
+    #[test]
+    fn parse_runtime_task_passthrough() {
+        let cmd = parse_command(vec![
+            "snapshot".to_owned(),
+            "--json".to_owned(),
+            "--repo".to_owned(),
+            ".".to_owned(),
+        ])
+        .expect("parse should succeed");
+        assert_eq!(
+            cmd,
+            Command::Task(TaskInvocation {
+                name: "snapshot".to_owned(),
+                args: vec!["--json".to_owned(), "--repo".to_owned(), ".".to_owned()],
             })
         );
     }

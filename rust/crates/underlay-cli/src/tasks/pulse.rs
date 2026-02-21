@@ -1,8 +1,8 @@
-use super::{Checker, CheckerError, PulseReport, ResolutionMode, RunnerContext};
+use super::{PulseReport, ResolutionMode, Task, TaskContext, TaskError};
 use std::fs;
 use std::path::{Path, PathBuf};
 
-pub struct PulseChecker;
+pub struct PulseTask;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PulseCollected {
@@ -20,19 +20,19 @@ pub struct PulseCollected {
     has_updated_dates_script: bool,
 }
 
-impl PulseChecker {
+impl PulseTask {
     pub fn new() -> Self {
         Self
     }
 }
 
-impl Default for PulseChecker {
+impl Default for PulseTask {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl Checker for PulseChecker {
+impl Task for PulseTask {
     type Collected = PulseCollected;
     type Evaluated = PulseReport;
 
@@ -40,7 +40,7 @@ impl Checker for PulseChecker {
         "pulse"
     }
 
-    fn collect(&self, ctx: &RunnerContext) -> Result<Self::Collected, CheckerError> {
+    fn collect(&self, ctx: &TaskContext) -> Result<Self::Collected, TaskError> {
         let repo_path = ctx.target_repo.clone();
         let mut marker_hits: Vec<String> = Vec::new();
         for marker in ["package.json", "Cargo.toml", ".git"] {
@@ -74,7 +74,7 @@ impl Checker for PulseChecker {
         })
     }
 
-    fn evaluate(&self, collected: Self::Collected) -> Result<Self::Evaluated, CheckerError> {
+    fn evaluate(&self, collected: Self::Collected) -> Result<Self::Evaluated, TaskError> {
         let mut evidence: Vec<String> = Vec::new();
         let mut risk: Vec<String> = Vec::new();
         let mut next_action: Vec<String> = Vec::new();
@@ -192,7 +192,7 @@ impl Checker for PulseChecker {
         })
     }
 
-    fn render(&self, report: Self::Evaluated) -> Result<String, CheckerError> {
+    fn render(&self, report: Self::Evaluated) -> Result<String, TaskError> {
         let mut out = String::new();
         out.push_str("# Pulse Report\n\n");
         out.push_str(&format!("- repo: {}\n", report.repo));

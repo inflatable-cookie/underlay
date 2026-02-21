@@ -1,7 +1,7 @@
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use crate::checkers::ResolutionMode;
+use crate::tasks::ResolutionMode;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ResolvedTarget {
@@ -157,7 +157,7 @@ fn canonicalize_best_effort(path: PathBuf) -> PathBuf {
 #[cfg(test)]
 mod tests {
     use super::{canonicalize_best_effort, resolve_target_root};
-    use crate::checkers::ResolutionMode;
+    use crate::tasks::ResolutionMode;
     use std::fs;
     use std::path::{Path, PathBuf};
     use std::time::{SystemTime, UNIX_EPOCH};

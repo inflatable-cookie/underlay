@@ -3,7 +3,7 @@ pub mod pulse;
 use std::path::PathBuf;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct RunnerContext {
+pub struct TaskContext {
     pub target_repo: PathBuf,
     pub cwd: PathBuf,
     pub resolution_mode: ResolutionMode,
@@ -28,27 +28,27 @@ pub struct PulseReport {
     pub eta: String,
 }
 
-pub trait Checker {
+pub trait Task {
     type Collected;
     type Evaluated;
 
     fn id(&self) -> &'static str;
-    fn collect(&self, ctx: &RunnerContext) -> Result<Self::Collected, CheckerError>;
-    fn evaluate(&self, collected: Self::Collected) -> Result<Self::Evaluated, CheckerError>;
-    fn render(&self, evaluated: Self::Evaluated) -> Result<String, CheckerError>;
+    fn collect(&self, ctx: &TaskContext) -> Result<Self::Collected, TaskError>;
+    fn evaluate(&self, collected: Self::Collected) -> Result<Self::Evaluated, TaskError>;
+    fn render(&self, evaluated: Self::Evaluated) -> Result<String, TaskError>;
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum CheckerError {
+pub enum TaskError {
     Io(String),
 }
 
-impl std::fmt::Display for CheckerError {
+impl std::fmt::Display for TaskError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            CheckerError::Io(msg) => write!(f, "{msg}"),
+            TaskError::Io(msg) => write!(f, "{msg}"),
         }
     }
 }
 
-impl std::error::Error for CheckerError {}
+impl std::error::Error for TaskError {}

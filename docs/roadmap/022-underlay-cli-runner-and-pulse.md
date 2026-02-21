@@ -1,4 +1,4 @@
-# 022 - Underlay CLI Runner and Pulse Checker
+# 022 - Underlay CLI Runner and Pulse Task
 
 Status: Complete
 Owner: Platform (Underlay + consuming apps)
@@ -26,11 +26,12 @@ Current gaps:
 ## 3) Non-Goals
 
 - [ ] No full CI platform/orchestrator scope in this roadmap.
-- [ ] No deep coupling of checker logic into Underlay core runtime crates.
+- [ ] No deep coupling of task logic into Underlay core runtime crates.
 - [ ] No TUI in v0 unless command discoverability proves insufficient.
 
 ## 4) Command Contract (v0)
 
+- [x] Generic command entry: `underlay <task> [task args]`
 - [x] Primary command: `underlay pulse`
 - [x] Explicit override: `underlay pulse --repo <path>`
 - [x] Output schema fields:
@@ -41,14 +42,14 @@ Current gaps:
   - `owner`
   - `eta`
 
-`run` is implicit in this model. Command verbs should remain action-first and short.
+`run` is implicit in this model. Command verbs should remain action-first and short. Runtime task dispatch resolves project tasks from `underlay.tasks.toml` at repo scope.
 
 ## 5) Shared Root Resolution Infrastructure
 
 ### 5.1 Runner-owned root resolution
 
 - [x] Implement `resolve_target_root()` in runner infrastructure, not in `pulse`.
-- [x] All checkers consume resolved root context from runner.
+- [x] All tasks consume resolved root context from runner.
 
 ### 5.2 Resolution order
 
@@ -76,7 +77,7 @@ Current gaps:
 
 - [x] Add `underlay` CLI entry with `pulse` command route.
 - [x] Keep runner crate/module boundaries explicit and isolated.
-- [x] Define checker lifecycle contract (`collect`, `evaluate`, `render`).
+- [x] Define task lifecycle contract (`collect`, `evaluate`, `render`).
 
 ### Phase 22.2 - Shared root resolution
 
@@ -84,11 +85,11 @@ Current gaps:
 - [x] Add root-resolution diagnostics and trace mode.
 - [x] Add unit tests for flat repo and nested repo cases.
 
-### Phase 22.3 - Pulse checker integration
+### Phase 22.3 - Pulse task integration
 
-- [x] Implement v0 signal checks under checker module.
+- [x] Implement v0 signal checks under task module.
 - [x] Emit markdown report using fixed schema fields.
-- [x] Ensure checker only depends on runner context and checker contract.
+- [x] Ensure task only depends on runner context and task contract.
 
 ### Phase 22.4 - Packaging and invocation validation
 
@@ -109,7 +110,7 @@ Current gaps:
 - [x] At least two invocation modes are proven working.
 - [x] Setup time to first successful run is <= 10 minutes from clean checkout.
 - [x] Pulse outputs include actionable next actions with explicit file/command targets.
-- [x] Runner can evolve new commands without checker-specific root detection rewrites.
+- [x] Runner can evolve new commands without task-specific root detection rewrites.
 
 ## 8) Risks and Mitigations
 
@@ -124,6 +125,6 @@ Current gaps:
 
 - [x] New Underlay runner command surface with `pulse`.
 - [x] Shared root-resolution infrastructure + tests.
-- [x] Pulse checker with deterministic markdown output schema.
+- [x] Pulse task with deterministic markdown output schema.
 - [x] Packaging validation notes across supported invocation modes.
 - [x] Trial checkpoint report references in roadmap updates.
