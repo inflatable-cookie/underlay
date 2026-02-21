@@ -15,6 +15,7 @@ pub struct PulseCollected {
     package_scripts: Vec<String>,
     package_parse_warning: Option<String>,
     subrepo_candidates: Vec<String>,
+    has_underlay_link: bool,
     is_coordination_repo: bool,
     has_updated_dates_script: bool,
 }
@@ -51,6 +52,7 @@ impl Checker for PulseChecker {
 
         let (package_scripts, package_parse_warning) = read_package_scripts(&repo_path);
         let subrepo_candidates = find_subrepo_candidates(&repo_path);
+        let has_underlay_link = repo_path.join("underlay").exists();
         let is_coordination_repo = ["strategy", "experiments", "projects"]
             .iter()
             .all(|dir| repo_path.join(dir).is_dir());
@@ -66,6 +68,7 @@ impl Checker for PulseChecker {
             package_scripts,
             package_parse_warning,
             subrepo_candidates,
+            has_underlay_link,
             is_coordination_repo,
             has_updated_dates_script,
         })
@@ -100,6 +103,10 @@ impl Checker for PulseChecker {
                 collected.subrepo_candidates.join(", ")
             ));
         }
+        evidence.push(format!(
+            "underlay link present: {}",
+            if collected.has_underlay_link { "yes" } else { "no" }
+        ));
 
         if collected.is_coordination_repo {
             evidence.push("Detected coordination-style markdown repo layout (strategy/experiments/projects).".to_owned());
@@ -133,7 +140,12 @@ impl Checker for PulseChecker {
             .package_scripts
             .iter()
             .any(|script| script == "health:workspace" || script == "health");
-        if !has_health_script {
+        let should_expect_task_surface = should_expect_root_task_surface(
+            &collected.marker_hits,
+            &collected.package_scripts,
+            collected.has_underlay_link,
+        );
+        if !has_health_script && should_expect_task_surface {
             if collected.package_scripts.is_empty() && collected.subrepo_candidates.len() >= 3 {
                 risk.push("Workspace appears to have multiple subrepos but no root task surface.".to_owned());
                 next_action.push(format!(
@@ -210,6 +222,19 @@ fn ctx_lines_from_mode(mode: ResolutionMode) -> [&'static str; 1] {
     }
 }
 
+fn should_expect_root_task_surface(
+    marker_hits: &[String],
+    package_scripts: &[String],
+    has_underlay_link: bool,
+) -> bool {
+    if !package_scripts.is_empty() || has_underlay_link {
+        return true;
+    }
+    marker_hits
+        .iter()
+        .any(|m| m == "package.json" || m == "Cargo.toml")
+}
+
 fn read_package_scripts(repo_root: &Path) -> (Vec<String>, Option<String>) {
     let package_path = repo_root.join("package.json");
     if !package_path.exists() {
@@ -284,7 +309,7 @@ fn find_subrepo_candidates(repo_root: &Path) -> Vec<String> {
 
 #[cfg(test)]
 mod tests {
-    use super::{find_subrepo_candidates, read_package_scripts};
+    use super::{find_subrepo_candidates, read_package_scripts, should_expect_root_task_surface};
     use std::fs;
     use std::path::PathBuf;
     use std::time::{SystemTime, UNIX_EPOCH};
@@ -321,6 +346,14 @@ mod tests {
 
         let candidates = find_subrepo_candidates(&root);
         assert_eq!(candidates, vec!["alpha".to_owned(), "beta".to_owned()]);
+    }
+
+    #[test]
+    fn task_surface_expectation_skips_umbrella_git_repo_without_underlay() {
+        let marker_hits = vec![".git".to_owned()];
+        let scripts: Vec<String> = Vec::new();
+        assert!(!should_expect_root_task_surface(&marker_hits, &scripts, false));
+        assert!(should_expect_root_task_surface(&marker_hits, &scripts, true));
     }
 
     fn temp_dir(name: &str) -> PathBuf {
