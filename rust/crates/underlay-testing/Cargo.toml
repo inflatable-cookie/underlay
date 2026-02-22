@@ -14,12 +14,12 @@ async-trait = { workspace = true }
 # Database testing (optional)
 sqlx = { workspace = true, optional = true }
 underlay-db = { path = "../underlay-db", optional = true }
-testcontainers = { version = "0.15", optional = true }
-testcontainers-modules = { version = "0.3", features = ["postgres"], optional = true }
+testcontainers = { version = "0.27", optional = true }
+testcontainers-modules = { version = "0.15", features = ["postgres"], optional = true }
 
 # HTTP testing (optional)
 axum = { workspace = true, optional = true }
-reqwest = { version = "0.12", features = ["json"], optional = true }
+reqwest = { version = "0.13", features = ["json"], optional = true }
 tower = { workspace = true, optional = true }
 http = { workspace = true, optional = true }
 serde = { workspace = true, optional = true }

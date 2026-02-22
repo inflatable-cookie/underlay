@@ -1,6 +1,6 @@
 //! Code generation utilities for email TOTP.
 
-use rand::Rng;
+use rand::RngExt;
 
 /// Generate a secure random numeric code of the specified length.
 ///
@@ -14,9 +14,9 @@ use rand::Rng;
 /// assert!(code.chars().all(|c| c.is_ascii_digit()));
 /// ```
 pub fn generate_code(length: usize) -> String {
-    let mut rng = rand::thread_rng();
+    let mut rng = rand::rng();
     let max = 10_u64.pow(length as u32);
-    let code: u64 = rng.gen_range(0..max);
+    let code: u64 = rng.random_range(0..max);
     format!("{:0width$}", code, width = length)
 }
 

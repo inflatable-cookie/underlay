@@ -8,8 +8,7 @@
 //!
 //! Storage, encryption, and credential association are owned by the app.
 
-use rand::rngs::OsRng;
-use rand::RngCore;
+use rand::RngExt;
 use sha2::Digest;
 use std::borrow::Cow;
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -203,7 +202,7 @@ impl TotpService {
     pub fn generate_secret(&self) -> TotpSecret {
         // 160-bit is the common baseline.
         let mut bytes = vec![0_u8; 20];
-        OsRng.fill_bytes(&mut bytes);
+        rand::rng().fill(&mut bytes[..]);
 
         let base32 = base32::encode(base32::Alphabet::Rfc4648 { padding: false }, &bytes);
         TotpSecret { base32, bytes }
@@ -464,7 +463,7 @@ fn generate_backup_code() -> String {
     const ALPHABET: &[u8] = b"ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
     let mut raw = [0_u8; 10];
-    OsRng.fill_bytes(&mut raw);
+    rand::rng().fill(&mut raw);
 
     let mut out = String::with_capacity(11);
     for (i, b) in raw.into_iter().enumerate() {

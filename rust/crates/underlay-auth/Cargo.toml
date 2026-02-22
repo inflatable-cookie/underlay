@@ -15,7 +15,7 @@ chrono = { workspace = true, features = ["serde"] }
 underlay-core = { path = "../underlay-core" }
 sqlx = { workspace = true, optional = true }
 thiserror = { version = "2", optional = true }
-argon2 = { version = "0.6.0-rc.5", optional = true }
+argon2 = { version = "0.6.0-rc.7", optional = true }
 
 [features]
 postgres = ["dep:sqlx", "dep:thiserror"]

@@ -25,7 +25,6 @@ struct GoogleTokenResponse {
 
 #[derive(Debug, Clone)]
 pub struct GoogleOAuthService {
-    client: BasicClient,
     http: reqwest::Client,
     token_url: Url,
     userinfo_url: Url,
@@ -37,27 +36,11 @@ pub struct GoogleOAuthService {
 
 impl GoogleOAuthService {
     pub fn new(config: GoogleOAuthConfig) -> AuthResult<Self> {
-        let auth_url = AuthUrl::new("https://accounts.google.com/o/oauth2/v2/auth".to_string())
-            .map_err(|_| OAuthServiceError::InvalidConfig)?;
-
         let token_url_string = "https://oauth2.googleapis.com/token".to_string();
-        let token_url = TokenUrl::new(token_url_string.clone())
-            .map_err(|_| OAuthServiceError::InvalidConfig)?;
-
         let redirect_uri = config.redirect_uri;
-        let redirect_url =
-            RedirectUrl::new(redirect_uri.clone()).map_err(|_| OAuthServiceError::InvalidConfig)?;
 
         let client_id = config.client_id;
         let client_secret = config.client_secret;
-
-        let client = BasicClient::new(
-            ClientId::new(client_id.clone()),
-            Some(ClientSecret::new(client_secret.clone())),
-            auth_url,
-            Some(token_url),
-        )
-        .set_redirect_uri(redirect_url);
 
         let token_url =
             Url::parse(&token_url_string).map_err(|_| OAuthServiceError::InvalidConfig)?;
@@ -75,7 +58,6 @@ impl GoogleOAuthService {
         };
 
         Ok(Self {
-            client,
             http: reqwest::Client::new(),
             token_url,
             userinfo_url,
@@ -120,9 +102,22 @@ impl OAuthProvider for GoogleOAuthService {
 
     fn start_login(&self) -> AuthResult<OAuthStart> {
         let (pkce_challenge, pkce_verifier) = PkceCodeChallenge::new_random_sha256();
+        let client = BasicClient::new(ClientId::new(self.client_id.clone()))
+            .set_client_secret(ClientSecret::new(self.client_secret.clone()))
+            .set_auth_uri(
+                AuthUrl::new("https://accounts.google.com/o/oauth2/v2/auth".to_string())
+                    .map_err(|_| OAuthServiceError::InvalidConfig)?,
+            )
+            .set_token_uri(
+                TokenUrl::new(self.token_url.to_string())
+                    .map_err(|_| OAuthServiceError::InvalidConfig)?,
+            )
+            .set_redirect_uri(
+                RedirectUrl::new(self.redirect_uri.clone())
+                    .map_err(|_| OAuthServiceError::InvalidConfig)?,
+            );
 
-        let (authorization_url, csrf_state) = self
-            .client
+        let (authorization_url, csrf_state) = client
             .authorize_url(CsrfToken::new_random)
             .add_scopes(self.scopes.clone())
             .set_pkce_challenge(pkce_challenge)
@@ -138,9 +133,22 @@ impl OAuthProvider for GoogleOAuthService {
     fn start_login_with(&self, csrf_state: &str, pkce_verifier: &str) -> AuthResult<String> {
         let pkce_verifier = PkceCodeVerifier::new(pkce_verifier.to_string());
         let pkce_challenge = PkceCodeChallenge::from_code_verifier_sha256(&pkce_verifier);
+        let client = BasicClient::new(ClientId::new(self.client_id.clone()))
+            .set_client_secret(ClientSecret::new(self.client_secret.clone()))
+            .set_auth_uri(
+                AuthUrl::new("https://accounts.google.com/o/oauth2/v2/auth".to_string())
+                    .map_err(|_| OAuthServiceError::InvalidConfig)?,
+            )
+            .set_token_uri(
+                TokenUrl::new(self.token_url.to_string())
+                    .map_err(|_| OAuthServiceError::InvalidConfig)?,
+            )
+            .set_redirect_uri(
+                RedirectUrl::new(self.redirect_uri.clone())
+                    .map_err(|_| OAuthServiceError::InvalidConfig)?,
+            );
 
-        let (authorization_url, _csrf_state) = self
-            .client
+        let (authorization_url, _csrf_state) = client
             .authorize_url(|| CsrfToken::new(csrf_state.to_string()))
             .add_scopes(self.scopes.clone())
             .set_pkce_challenge(pkce_challenge)

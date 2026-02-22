@@ -15,11 +15,11 @@ underlay-core = { path = "../underlay-core" }
 
 # Optional: PostgreSQL persistence
 sqlx = { workspace = true, optional = true }
-thiserror = { version = "1", optional = true }
+thiserror = { version = "2", optional = true }
 uuid = { workspace = true, optional = true }
 
 # Optional: Cron scheduling
-cron = { version = "0.13", optional = true }
+cron = { version = "0.15", optional = true }
 
 [dev-dependencies]
 tokio = { workspace = true, features = ["macros", "rt", "time", "test-util"] }

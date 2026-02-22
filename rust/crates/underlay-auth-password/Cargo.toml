@@ -7,13 +7,13 @@ license.workspace = true
 [dependencies]
 async-trait = { workspace = true }
 base64 = "0.22"
-rand = "0.8"
+rand = "0.10"
 serde = { workspace = true }
 underlay-auth = { path = "../underlay-auth", features = ["hashing"] }
 underlay-core = { path = "../underlay-core" }
 underlay-ratelimit = { path = "../underlay-ratelimit" }
 uuid = { workspace = true }
-zxcvbn = "2"
+zxcvbn = "3"
 
 underlay-http-client = { workspace = true, optional = true }
 sha1 = { version = "0.10", optional = true }

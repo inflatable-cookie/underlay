@@ -15,10 +15,10 @@ aes-gcm = "0.10"
 base64 = "0.22"
 
 # OAuth2 protocol + PKCE helpers.
-oauth2 = { version = "4.4.2", features = ["reqwest"] }
+oauth2 = { version = "5.0.0", features = ["reqwest"] }
 
 # HTTP client used by oauth2's reqwest integration and for userinfo.
-reqwest = { version = "0.11", default-features = false, features = ["json", "rustls-tls"] }
+reqwest = { version = "0.13", default-features = false, features = ["json", "form", "rustls"] }
 
 underlay-auth = { path = "../underlay-auth" }
 underlay-core = { path = "../underlay-core" }

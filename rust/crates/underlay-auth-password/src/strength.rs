@@ -213,26 +213,24 @@ impl PasswordStrengthAnalyzer {
 
         // Prefer zxcvbn score for overall strength.
         // It is more robust than composition rules (and is still fully offline).
-        let (zxcvbn_score, zxcvbn_guesses, zxcvbn_feedback) = match zxcvbn(password, &[]) {
-            Ok(entropy) => (
-                entropy.score() as u8,
-                entropy.guesses(),
-                match entropy.feedback() {
-                    Some(f) => {
-                        let mut msgs = Vec::new();
-                        if let Some(w) = f.warning() {
-                            msgs.push(w.to_string());
-                        }
-                        for s in f.suggestions() {
-                            msgs.push(s.to_string());
-                        }
-                        msgs
+        let entropy = zxcvbn(password, &[]);
+        let (zxcvbn_score, zxcvbn_guesses, zxcvbn_feedback) = (
+            entropy.score() as u8,
+            entropy.guesses(),
+            match entropy.feedback() {
+                Some(f) => {
+                    let mut msgs = Vec::new();
+                    if let Some(w) = f.warning() {
+                        msgs.push(w.to_string());
                     }
-                    None => Vec::new(),
-                },
-            ),
-            Err(_) => (0, 0_u64, Vec::new()),
-        };
+                    for s in f.suggestions() {
+                        msgs.push(s.to_string());
+                    }
+                    msgs
+                }
+                None => Vec::new(),
+            },
+        );
 
         // Rough entropy estimate from guesses; not perfect but useful as an informational metric.
         let entropy_bits = if zxcvbn_guesses > 0 {
