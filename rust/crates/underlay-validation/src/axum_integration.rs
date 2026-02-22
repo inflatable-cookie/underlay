@@ -4,7 +4,6 @@
 //! and returns proper HTTP error responses.
 
 use axum::{
-    async_trait,
     extract::{FromRequest, Request},
     http::StatusCode,
     response::{IntoResponse, Response},
@@ -99,7 +98,6 @@ impl From<ValidationError> for ValidatedJsonRejection {
     }
 }
 
-#[async_trait]
 impl<S, T> FromRequest<S> for ValidatedJson<T>
 where
     S: Send + Sync,
@@ -107,14 +105,19 @@ where
 {
     type Rejection = ValidatedJsonRejection;
 
-    async fn from_request(req: Request, state: &S) -> Result<Self, Self::Rejection> {
-        // First, extract and deserialize the JSON
-        let Json(value) = Json::<T>::from_request(req, state).await?;
+    fn from_request(
+        req: Request,
+        state: &S,
+    ) -> impl std::future::Future<Output = Result<Self, Self::Rejection>> + Send {
+        async move {
+            // First, extract and deserialize the JSON
+            let Json(value) = Json::<T>::from_request(req, state).await?;
 
-        // Then validate it
-        value.validate()?;
+            // Then validate it
+            value.validate()?;
 
-        Ok(ValidatedJson(value))
+            Ok(ValidatedJson(value))
+        }
     }
 }
 
