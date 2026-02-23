@@ -26,7 +26,7 @@
  */
 
 import { writable, type Writable } from "svelte/store";
-import { browser } from "$app/environment";
+import { BROWSER } from "esm-env";
 
 // ============================================================================
 // Types
@@ -87,7 +87,7 @@ export interface StorageWrapper {
  * Check if we're in a browser environment with storage available.
  */
 function isStorageAvailable(type: "localStorage" | "sessionStorage"): boolean {
-  if (!browser) return false;
+  if (!BROWSER) return false;
 
   try {
     const storage = window[type];
@@ -197,7 +197,7 @@ function createStorageWrapper(
     }
 
     // Listen for storage events from other tabs (localStorage only)
-    if (browser && type === "localStorage") {
+    if (BROWSER && type === "localStorage") {
       const handleStorageEvent = (event: StorageEvent) => {
         if (event.key !== key) return;
         if (event.storageArea !== window.localStorage) return;

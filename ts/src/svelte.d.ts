@@ -28,6 +28,8 @@ declare module "*.svelte" {
 
   export interface DataTableAction<T = unknown> {
     label: string;
+    separator?: boolean;
+    disabled?: boolean;
     icon?: string;
     href?: string | ((row: T) => string);
     onClick?: (row: T) => void;

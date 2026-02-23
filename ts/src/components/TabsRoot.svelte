@@ -2,8 +2,7 @@
   import { Tabs as BitsTabs } from "bits-ui";
   import type { Snippet } from "svelte";
   import { setContext, onMount } from "svelte";
-  import { browser } from "$app/environment";
-  import { page } from "$app/stores";
+  import { BROWSER } from "esm-env";
 
   export type TabsVariant = "pills" | "boxed" | "underline" | "plain" | "form";
   export type TabsSize = "default" | "sm";
@@ -74,7 +73,7 @@
   let lastSyncedValue = $state<string | null>(null);
 
   function replaceUrlTabParam(nextValue: string) {
-    if (!browser || !historyKey) return;
+    if (!BROWSER || !historyKey) return;
     const url = new URL(window.location.href);
     url.searchParams.set(historyKey, nextValue);
     window.history.replaceState(window.history.state, "", url);
@@ -82,9 +81,9 @@
 
   // Read initial tab from URL on mount
   onMount(() => {
-    if (!browser || !historyKey) return;
+    if (!BROWSER || !historyKey) return;
 
-    const urlValue = $page.url.searchParams.get(historyKey);
+    const urlValue = new URL(window.location.href).searchParams.get(historyKey);
     if (urlValue) {
       value = urlValue;
       lastSyncedValue = urlValue;
@@ -110,7 +109,7 @@
 
   // Update URL when tab changes (without creating history entry)
   $effect(() => {
-    if (!browser || !historyKey) return;
+    if (!BROWSER || !historyKey) return;
     // Skip if this is the same value we just synced (prevents loops)
     if (value === lastSyncedValue) return;
 

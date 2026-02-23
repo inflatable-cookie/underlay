@@ -22,7 +22,12 @@
     {#if action.href}
       <a href={getActionHref(action, row)} class="underlay-action-link">{action.label}</a>
     {:else}
-      <button type="button" class="underlay-action-button" onclick={() => onActionClick(action, row)}>
+      <button
+        type="button"
+        class="underlay-action-button"
+        disabled={action.disabled}
+        onclick={() => onActionClick(action, row)}
+      >
         {action.label}
       </button>
     {/if}
@@ -48,13 +53,16 @@
       </svg>
     {/snippet}
     {#each rowActions as action}
-      {#if action.href}
+      {#if action.separator}
+        <div class="underlay-menu-separator" aria-hidden="true"></div>
+      {:else if action.href}
         <a href={getActionHref(action, row)} class="underlay-menu-item">{action.label}</a>
       {:else}
         <button
           type="button"
           class="underlay-menu-item"
           class:underlay-danger={action.variant === "danger"}
+          disabled={action.disabled}
           onclick={() => onActionClick(action, row)}
         >
           {action.label}
@@ -104,7 +112,24 @@
     background: var(--dt-row-hover);
   }
 
+  .underlay-menu-item:disabled,
+  .underlay-action-button:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+
+  .underlay-menu-item:disabled:hover,
+  .underlay-action-button:disabled:hover {
+    background: none;
+  }
+
   .underlay-menu-item.underlay-danger {
     color: var(--color-danger, #dc2626);
+  }
+
+  .underlay-menu-separator {
+    height: 1px;
+    margin: 0.35rem 0;
+    background: rgba(148, 163, 184, 0.22);
   }
 </style>

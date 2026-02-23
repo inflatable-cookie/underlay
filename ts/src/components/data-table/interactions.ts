@@ -73,6 +73,7 @@ export function runRowAction<T>(
   onAction?: (event: { action: string; row: T }) => void,
   confirmFn: (message?: string) => boolean = () => true
 ): void {
+  if (action.disabled || action.separator) return;
   if (action.confirm && !confirmFn(action.confirm)) return;
 
   action.onClick?.(row);

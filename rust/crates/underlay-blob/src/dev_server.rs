@@ -103,7 +103,7 @@ impl DevBlobRoutes {
             adapter: self.adapter,
         };
 
-        let route_pattern = format!("{}/*key", self.route_path.trim_end_matches('/'));
+        let route_pattern = format!("{}/{{*key}}", self.route_path.trim_end_matches('/'));
 
         let router = Router::new()
             .route(&route_pattern, put(upload).get(download))

@@ -37,6 +37,10 @@
 	export interface DataTableAction<T = unknown> {
 		/** Action label */
 		label: string;
+		/** Render a menu separator instead of an action */
+		separator?: boolean;
+		/** Disable action interaction */
+		disabled?: boolean;
 		/** Action icon (optional) */
 		icon?: string;
 		/** Link href (for navigation actions) */

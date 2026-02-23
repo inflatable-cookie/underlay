@@ -20,7 +20,7 @@
  * ```
  */
 
-import { browser } from "$app/environment";
+import { BROWSER } from "esm-env";
 
 /**
  * Timezone store state.
@@ -114,7 +114,7 @@ export const timezoneStore = {
  * @returns IANA timezone identifier (e.g., "Europe/London")
  */
 export function detectBrowserTimezone(): string {
-  if (!browser) return "UTC";
+  if (!BROWSER) return "UTC";
 
   try {
     return Intl.DateTimeFormat().resolvedOptions().timeZone;
