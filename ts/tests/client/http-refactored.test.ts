@@ -307,6 +307,54 @@ describe('createHttpClient', () => {
 			tokenStore.expectTokens('fresh-access-token', 'fresh-refresh-token');
 			expect(refresh).toHaveBeenCalledTimes(1);
 		});
+
+		it('rethrows non-http errors from refresh handler', async () => {
+			fetchMock = mockFetchSequence(
+				{ ok: false, status: 401, error: { code: 'auth.token_expired', message: 'Expired' } }
+			);
+			const refresh = vi.fn(async () => {
+				throw new Error('refresh exploded');
+			});
+			const client = createHttpClient({
+				baseUrl: 'https://api.example.com',
+				auth: { refresh },
+				fetch: fetchMock
+			});
+
+			await expect(client.get('/protected')).rejects.toThrow('refresh exploded');
+			expect(refresh).toHaveBeenCalledTimes(1);
+		});
+
+		it('shares in-flight refresh across concurrent 401 requests', async () => {
+			fetchMock = mockFetchSequence(
+				{ ok: false, status: 401, error: { code: 'auth.token_expired', message: 'Expired' } },
+				{ ok: false, status: 401, error: { code: 'auth.token_expired', message: 'Expired' } },
+				{ ok: true, status: 200, data: { id: 'a' } },
+				{ ok: true, status: 200, data: { id: 'b' } }
+			);
+
+			const refresh = vi.fn(
+				() =>
+					new Promise<{ success: true }>((resolve) => {
+						setTimeout(() => resolve({ success: true }), 0);
+					})
+			);
+
+			const client = createHttpClient({
+				baseUrl: 'https://api.example.com',
+				auth: { refresh },
+				fetch: fetchMock
+			});
+
+			const [a, b] = await Promise.all([
+				client.get<{ id: string }>('/one'),
+				client.get<{ id: string }>('/two')
+			]);
+
+			expect(a).toEqual({ data: { id: 'a' } });
+			expect(b).toEqual({ data: { id: 'b' } });
+			expect(refresh).toHaveBeenCalledTimes(1);
+		});
 	});
 
 	describe('retry logic', () => {
