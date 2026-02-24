@@ -190,6 +190,19 @@ describe("createOptimisticList", () => {
 
 			expect(get(list)).toHaveLength(1);
 		});
+
+		it("rollback appends removed item when original index is out of bounds", () => {
+			const list = createOptimisticList<Item>([
+				{ id: "1", name: "First" },
+				{ id: "2", name: "Second" }
+			]);
+
+			const { rollback } = list.remove("2");
+			list.set([]); // mutate list so stored index is no longer valid
+			rollback();
+
+			expect(get(list)).toEqual([{ id: "2", name: "Second" }]);
+		});
 	});
 
 	describe("update", () => {
@@ -240,6 +253,19 @@ describe("createOptimisticList", () => {
 			rollback();
 
 			expect(get(list)[0].name).toBe("Original");
+		});
+
+		it("handles update operations for non-existent IDs", () => {
+			const list = createOptimisticList<Item>([{ id: "1", name: "Original" }]);
+			const { confirm, rollback } = list.update("missing", { name: "Updated" });
+
+			expect(get(list)).toEqual([{ id: "1", name: "Original" }]);
+
+			confirm({ id: "missing", name: "From Server" } as any);
+			expect(get(list)).toEqual([{ id: "1", name: "Original" }]);
+
+			rollback();
+			expect(get(list)).toEqual([{ id: "1", name: "Original" }]);
 		});
 	});
 

@@ -27,6 +27,7 @@ pub enum SecurityAlertType {
     LoginFailuresFromIp,
     MultiAccountFailuresFromIp,
     LockoutsFromIp,
+    DormantAccountAccessAttempt,
 }
 
 impl SecurityAlertType {
@@ -35,6 +36,7 @@ impl SecurityAlertType {
             Self::LoginFailuresFromIp => "login_failures_from_ip",
             Self::MultiAccountFailuresFromIp => "multi_account_failures_from_ip",
             Self::LockoutsFromIp => "lockouts_from_ip",
+            Self::DormantAccountAccessAttempt => "dormant_account_access_attempt",
         }
     }
 }

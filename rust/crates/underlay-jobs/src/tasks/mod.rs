@@ -39,7 +39,7 @@ mod log_cleanup;
 
 pub use auth_cleanup::{
     PurgeAuthStatesJob, PurgeEmailTotpCodesJob, PurgeExpiredSessionsJob, PurgeLoginAttemptsJob,
-    PurgeRateLimitEntriesJob, PurgeVerificationSessionsJob,
+    PurgeRateLimitEntriesJob, PurgeVerificationSessionsJob, SuspendInactiveAccountsJob,
 };
 pub use job_maintenance::{ArchiveCompletedJobsJob, PurgeJobHistoryJob, RecoverAbandonedJobsJob};
 pub use log_cleanup::{PurgeCapturedEmailsJob, PurgeErrorLogsJob};
