@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { sanitizeEmbedHtml } from "../utils/html.js";
+
   interface Props {
     title: string | undefined;
     provider: string | null | undefined;
@@ -18,6 +20,8 @@
         ? `https://www.youtube.com/embed/${externalId}`
         : null
   );
+
+  const safeEmbedSource = $derived(sanitizeEmbedHtml(embedSource));
 </script>
 
 <figure data-video-player>
@@ -38,7 +42,7 @@
       </div>
     {/if}
     <div data-video-raw-embed>
-      {@html embedSource}
+      {@html safeEmbedSource}
     </div>
   {/if}
 

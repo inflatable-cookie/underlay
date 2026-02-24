@@ -1,6 +1,8 @@
-import type { SvelteComponent } from "svelte";
+import type { Component, SvelteComponent } from "svelte";
 
-export type BlockRendererComponent = new (...args: any[]) => SvelteComponent;
+export type BlockRendererComponent =
+  | Component<any>
+  | (new (...args: any[]) => SvelteComponent);
 
 type RegistryKey = string;
 

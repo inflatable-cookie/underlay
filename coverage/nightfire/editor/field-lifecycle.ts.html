@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/6</span>
+                <span class='fraction'>6/6</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/2</span>
+                <span class='fraction'>2/2</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/3</span>
+                <span class='fraction'>3/3</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/6</span>
+                <span class='fraction'>6/6</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -107,15 +107,15 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -125,8 +125,8 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import type { NightfireValue } from "../index";
@@ -135,31 +135,31 @@ import { writeNightfireToFormData } from "../utils";
 &nbsp;
 export type NightfireFieldMode = "single" | "multi";
 &nbsp;
-export function <span class="fstat-no" title="function not covered" >createRequiredInitialValue(</span>
+export function createRequiredInitialValue(
   schema: string,
   mode: NightfireFieldMode,
   defaultType: string
 ): NightfireValue {
-  const <span class="cstat-no" title="statement not covered" >defaultBlock = createDefaultBlock(defaultType);</span>
-<span class="cstat-no" title="statement not covered" >  if (mode === "multi") {</span>
-<span class="cstat-no" title="statement not covered" >    return {</span>
+  const defaultBlock = createDefaultBlock(defaultType);
+  if (mode === "multi") {
+    return {
       schema,
       blocks: [defaultBlock]
     } as NightfireValue;
   }
 &nbsp;
-<span class="cstat-no" title="statement not covered" >  return {</span>
+  return {
     schema,
     block: defaultBlock
   } as NightfireValue;
 }
 &nbsp;
-export function <span class="fstat-no" title="function not covered" >createPrepareWriter(</span>
+export function createPrepareWriter(
   getValue: () =&gt; NightfireValue,
   getName: () =&gt; string
 ): (formData: FormData) =&gt; void {
-<span class="cstat-no" title="statement not covered" >  return <span class="fstat-no" title="function not covered" >(f</span>ormData: FormData) =&gt; {</span>
-<span class="cstat-no" title="statement not covered" >    writeNightfireToFormData(formData, getName(), getValue());</span>
+  return (formData: FormData) =&gt; {
+    writeNightfireToFormData(formData, getName(), getValue());
   };
 }
 &nbsp;</pre></td></tr></table></pre>
@@ -169,7 +169,7 @@ export function <span class="fstat-no" title="function not covered" >createPrepa
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-02-24T09:36:01.871Z
+                at 2026-02-24T14:06:11.938Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

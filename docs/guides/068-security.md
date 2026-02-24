@@ -1030,6 +1030,38 @@ let entries = list_audit_logs(&pool, "infra.audit_log", filters).await?;
 
 ---
 
+## Frontend HTML Sanitization
+
+Svelte `{@html ...}` bypasses auto-escaping, so all HTML sinks must sanitize before render.
+
+Use shared Underlay helpers from `@decodelabs/underlay/utils`:
+
+- `sanitizeHtml(...)` for general rich text/markdown output
+- `sanitizeEmbedHtml(...)` for media embed HTML (`iframe`/`audio`/`video`)
+- `sanitizeSvgHtml(...)` for trusted SVG payloads such as QR codes
+
+Example:
+
+```ts
+import { sanitizeEmbedHtml } from "@decodelabs/underlay/utils";
+
+const safeEmbedHtml = $derived(embedHtml ? sanitizeEmbedHtml(embedHtml) : "");
+```
+
+```svelte
+{#if safeEmbedHtml}
+  {@html safeEmbedHtml}
+{/if}
+```
+
+Policy:
+
+- Never pass API/user-provided HTML directly into `{@html}`.
+- Prefer removing `{@html}` entirely when plain text/structured markup can be used.
+- For every remaining sink, keep an explicit trust boundary + sanitizer call in the same file.
+
+---
+
 ## Further Reading
 
 - [060-authentication](./060-authentication.md) - Authentication providers

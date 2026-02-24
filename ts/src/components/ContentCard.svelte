@@ -1,6 +1,7 @@
 <script lang="ts">
   import { NightfireRenderer, type NightfireValue } from "../nightfire";
   import { marked } from "marked";
+  import { sanitizeHtml } from "../utils/html.js";
 
   interface Props {
     title?: string | null;
@@ -44,6 +45,10 @@
     typeof value === "string" && markdown
       ? marked.parse(value, { async: false }) as string
       : value
+  );
+
+  const safeRenderedHtml = $derived(
+    typeof renderedHtml === "string" ? sanitizeHtml(renderedHtml) : renderedHtml
   );
 
   const hasTitle = $derived(typeof title === "string" && title.trim().length > 0);
@@ -99,7 +104,7 @@
       {#if isNightfire}
         <NightfireRenderer value={value as NightfireValue} />
       {:else}
-        {@html renderedHtml}
+        {@html safeRenderedHtml}
       {/if}
     {:else}
       <p class="underlay-content-card__empty">{emptyMessage}</p>

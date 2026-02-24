@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/10</span>
+                <span class='fraction'>10/10</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">84.61% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/13</span>
+                <span class='fraction'>11/13</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/3</span>
+                <span class='fraction'>3/3</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/10</span>
+                <span class='fraction'>10/10</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -143,9 +143,9 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -155,23 +155,11 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -179,8 +167,20 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -201,48 +201,48 @@ export type PasswordLoginOutcome =
   | { kind: "complete" }
   | { kind: "noop" };
 &nbsp;
-export function <span class="fstat-no" title="function not covered" >resolvePasswordLoginOutcome(</span>
+export function resolvePasswordLoginOutcome(
   result: LoginResult | undefined,
   email: string
 ): PasswordLoginOutcome {
-<span class="cstat-no" title="statement not covered" >  if (result?.requiresTwoFactor) {</span>
-    const isEmailVerification = <span class="cstat-no" title="statement not covered" >result.isEmailVerification ?? false;</span>
-<span class="cstat-no" title="statement not covered" >    return {</span>
+  if (result?.requiresTwoFactor) {
+    const isEmailVerification = result.isEmailVerification ?? <span class="branch-1 cbranch-no" title="branch not covered" >false;</span>
+    return {
       kind: "2fa",
       loginStateId: result.loginStateId,
       isEmailVerification,
       hadTotpConfigured: !isEmailVerification,
       usedEmailFallback: false,
-      twoFactorEmail: result.email ?? email
+      twoFactorEmail: result.email ?? <span class="branch-1 cbranch-no" title="branch not covered" >email</span>
     };
   }
 &nbsp;
-<span class="cstat-no" title="statement not covered" >  if (result?.complete !== false) {</span>
-<span class="cstat-no" title="statement not covered" >    return { kind: "complete" };</span>
+  if (result?.complete !== false) {
+    return { kind: "complete" };
   }
 &nbsp;
-<span class="cstat-no" title="statement not covered" >  return { kind: "noop" };</span>
+  return { kind: "noop" };
 }
 &nbsp;
-export function <span class="fstat-no" title="function not covered" >getPostTwoFactorOutcome(</span>
+export function getPostTwoFactorOutcome(
   showSetupPrompt: boolean,
   isEmailVerification: boolean,
   usedEmailFallback: boolean
 ): "setup-prompt" | "complete" {
-<span class="cstat-no" title="statement not covered" >  if (showSetupPrompt &amp;&amp; (isEmailVerification || usedEmailFallback)) {</span>
-<span class="cstat-no" title="statement not covered" >    return "setup-prompt";</span>
+  if (showSetupPrompt &amp;&amp; (isEmailVerification || usedEmailFallback)) {
+    return "setup-prompt";
   }
 &nbsp;
-<span class="cstat-no" title="statement not covered" >  return "complete";</span>
+  return "complete";
 }
 &nbsp;
-export function <span class="fstat-no" title="function not covered" >resolveEmailFallbackOutcome(r</span>esult: EmailFallbackResult): {
+export function resolveEmailFallbackOutcome(result: EmailFallbackResult): {
   loginStateId: string;
   twoFactorEmail: string;
   isEmailVerification: true;
   usedEmailFallback: true;
 } {
-<span class="cstat-no" title="statement not covered" >  return {</span>
+  return {
     loginStateId: result.loginStateId,
     twoFactorEmail: result.email,
     isEmailVerification: true,
@@ -256,7 +256,7 @@ export function <span class="fstat-no" title="function not covered" >resolveEmai
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-02-24T09:36:01.871Z
+                at 2026-02-24T14:06:11.938Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

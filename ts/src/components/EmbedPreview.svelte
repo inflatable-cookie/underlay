@@ -4,6 +4,7 @@
     type ParsedEmbed,
     type RenderOptions,
   } from "../embed/index.js";
+  import { sanitizeEmbedHtml } from "../utils/html.js";
   import Film from "lucide-svelte/icons/film";
   import Headphones from "lucide-svelte/icons/headphones";
   import AlertCircle from "lucide-svelte/icons/alert-circle";
@@ -55,6 +56,10 @@
     return renderEmbed(parsed, options);
   });
 
+  const sanitizedHtml = $derived(
+    html ? sanitizeEmbedHtml(html) : null
+  );
+
   // Determine if we should use aspect ratio container
   const useAspectRatio = $derived(
     aspectRatio !== "auto" && mediaType === "video"
@@ -81,17 +86,17 @@
       <AlertCircle size={48} />
       <p>{error}</p>
     </div>
-  {:else if html}
+  {:else if sanitizedHtml}
     {#if useAspectRatio}
       <div
         class="underlay-embed-preview__aspect"
         style:padding-bottom={aspectPadding}
       >
-        {@html html}
+        {@html sanitizedHtml}
       </div>
     {:else}
       <div class="underlay-embed-preview__content">
-        {@html html}
+        {@html sanitizedHtml}
       </div>
     {/if}
   {:else}

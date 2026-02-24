@@ -108,4 +108,14 @@ describe("nightfire/editor/grouped-options", () => {
 			"z:Sub Z",
 		]);
 	});
+
+	it("sorts unknown and null categories lexically when priority ties", () => {
+		const result = buildGroupedOptions([
+			{ type: "none", label: "No Category" },
+			{ type: "beta", label: "Beta", category: "beta" },
+			{ type: "alpha", label: "Alpha", category: "alpha" },
+		]);
+
+		expect(result.map((group) => group.category)).toEqual(["alpha", "beta", null]);
+	});
 });

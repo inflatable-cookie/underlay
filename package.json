@@ -94,6 +94,7 @@
   },
   "dependencies": {
     "easymde": "^2.20.0",
+    "isomorphic-dompurify": "^3.0.0",
     "marked": "^17.0.3",
     "svelte-dnd-action": "^0.9.69"
   },

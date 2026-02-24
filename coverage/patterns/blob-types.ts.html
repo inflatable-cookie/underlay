@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/8</span>
+                <span class='fraction'>8/8</span>
             </div>
         
             
@@ -37,16 +37,16 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/1</span>
+                <span class='fraction'>1/1</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/8</span>
+                <span class='fraction'>8/8</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -288,13 +288,11 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">7x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">7x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -311,7 +309,9 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -319,17 +319,17 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -425,13 +425,13 @@ export interface StoredObject {
  * Error thrown during upload operations.
  */
 export class BlobUploadError extends Error {
-<span class="fstat-no" title="function not covered" >  constructor(</span>
+  constructor(
     message: string,
-    public readonly <span class="cstat-no" title="statement not covered" >code: BlobErrorCode,</span>
-    public readonly <span class="cstat-no" title="statement not covered" >statusCode?: number</span>
+    public readonly code: BlobErrorCode,
+    public readonly statusCode?: number
   ) {
-<span class="cstat-no" title="statement not covered" >    super(message);</span>
-<span class="cstat-no" title="statement not covered" >    this.name = "BlobUploadError";</span>
+    super(message);
+    this.name = "BlobUploadError";
   }
 }
 &nbsp;
@@ -450,7 +450,7 @@ export type BlobErrorCode =
 /**
  * Allowed file types for media uploads.
  */
-export const ALLOWED_IMAGE_TYPES = <span class="cstat-no" title="statement not covered" >[</span>
+export const ALLOWED_IMAGE_TYPES = [
   "image/jpeg",
   "image/png",
   "image/gif",
@@ -458,9 +458,9 @@ export const ALLOWED_IMAGE_TYPES = <span class="cstat-no" title="statement not c
   "image/svg+xml",
 ] as const;
 &nbsp;
-export const ALLOWED_PDF_TYPES = <span class="cstat-no" title="statement not covered" >["application/pdf"] as const;</span>
+export const ALLOWED_PDF_TYPES = ["application/pdf"] as const;
 &nbsp;
-export const ALLOWED_MEDIA_TYPES = <span class="cstat-no" title="statement not covered" >[</span>
+export const ALLOWED_MEDIA_TYPES = [
   ...ALLOWED_IMAGE_TYPES,
   ...ALLOWED_PDF_TYPES,
 ] as const;
@@ -468,7 +468,7 @@ export const ALLOWED_MEDIA_TYPES = <span class="cstat-no" title="statement not c
 /**
  * Video types that should be rejected.
  */
-export const REJECTED_VIDEO_TYPES = <span class="cstat-no" title="statement not covered" >[</span>
+export const REJECTED_VIDEO_TYPES = [
   "video/mp4",
   "video/webm",
   "video/ogg",
@@ -487,7 +487,7 @@ export type AllowedMediaType = (typeof ALLOWED_MEDIA_TYPES)[number];
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-02-24T09:36:01.871Z
+                at 2026-02-24T14:06:11.938Z
             </div>
         <script src="../prettify.js"></script>
         <script>

@@ -107,10 +107,7 @@
   const totpHint = "Enter the 6-digit code from your authenticator app.";
   const backupHint = "Enter one of your backup codes. Each code can only be used once.";
   const emailHintPending = "We'll send a verification code to your email address.";
-  // Use $derived since emailHintSent depends on the email prop
-  const emailHintSent = $derived(email
-    ? `We've sent a verification code to <strong>${email}</strong>.`
-    : "We've sent a verification code to your email.");
+  const hasEmail = $derived(typeof email === "string" && email.length > 0);
 </script>
 
 {#if hasTotpSetup}
@@ -191,7 +188,11 @@
       <form onsubmit={handleSubmit} class="underlay-two-factor-step">
         <p class="underlay-two-factor-step__hint">
           {#if emailCodeRequested}
-            {@html emailHintSent}
+            {#if hasEmail}
+              We've sent a verification code to <strong>{email}</strong>.
+            {:else}
+              We've sent a verification code to your email.
+            {/if}
           {:else}
             {emailHintPending}
           {/if}
@@ -261,7 +262,11 @@
   <!-- Email-only verification (no TOTP set up) -->
   <form onsubmit={handleSubmit} class="underlay-two-factor-step">
     <p class="underlay-two-factor-step__hint">
-      {@html emailHintSent}
+      {#if hasEmail}
+        We've sent a verification code to <strong>{email}</strong>.
+      {:else}
+        We've sent a verification code to your email.
+      {/if}
     </p>
 
     <TotpInput

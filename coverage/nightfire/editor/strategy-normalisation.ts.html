@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/20</span>
+                <span class='fraction'>20/20</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/33</span>
+                <span class='fraction'>33/33</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/2</span>
+                <span class='fraction'>2/2</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/19</span>
+                <span class='fraction'>19/19</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -122,33 +122,33 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">5x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -162,38 +162,38 @@ export interface StrategyNormalisationResult {
   schemaMismatch: string | null;
 }
 &nbsp;
-export function <span class="fstat-no" title="function not covered" >normaliseForStrategy(</span>
+export function normaliseForStrategy(
   value: NightfireValue,
   schema: string,
   mode: NightfireFieldMode
 ): StrategyNormalisationResult {
-  const <span class="cstat-no" title="statement not covered" >normalised = normaliseNightfireValue(value, schema);</span>
-  const <span class="cstat-no" title="statement not covered" >actualSchema = (<span class="fstat-no" title="function not covered" >() =&gt; {</span></span>
-<span class="cstat-no" title="statement not covered" >    if (!value || typeof value !== "object") <span class="cstat-no" title="statement not covered" >return null;</span></span>
-    const current = (<span class="cstat-no" title="statement not covered" >value as Record&lt;string, unknown&gt;).schema;</span>
-<span class="cstat-no" title="statement not covered" >    return typeof current === "string" ? current : null;</span>
+  const normalised = normaliseNightfireValue(value, schema);
+  const actualSchema = (() =&gt; {
+    if (!value || typeof value !== "object") return null;
+    const current = (value as Record&lt;string, unknown&gt;).schema;
+    return typeof current === "string" ? current : null;
   })();
 &nbsp;
-  let coerced: NightfireValue = <span class="cstat-no" title="statement not covered" >{ ...normalised, schema } as NightfireValue;</span>
-  const record = <span class="cstat-no" title="statement not covered" >coerced as unknown as Record&lt;string, unknown&gt;;</span>
-  const single = <span class="cstat-no" title="statement not covered" >record.block ?? null;</span>
-  const multi = <span class="cstat-no" title="statement not covered" >Array.isArray(record.blocks) ? (record.blocks as unknown[]) : undefined;</span>
+  let coerced: NightfireValue = { ...normalised, schema } as NightfireValue;
+  const record = coerced as unknown as Record&lt;string, unknown&gt;;
+  const single = record.block ?? null;
+  const multi = Array.isArray(record.blocks) ? (record.blocks as unknown[]) : undefined;
 &nbsp;
-<span class="cstat-no" title="statement not covered" >  if (mode === "single") {</span>
-<span class="cstat-no" title="statement not covered" >    if (!single &amp;&amp; multi &amp;&amp; multi.length &gt; 0) {</span>
-<span class="cstat-no" title="statement not covered" >      coerced = { ...coerced, block: multi[0], blocks: undefined } as NightfireValue;</span>
-<span class="cstat-no" title="statement not covered" >    } else if (single &amp;&amp; multi) {</span>
-<span class="cstat-no" title="statement not covered" >      coerced = { ...coerced, blocks: undefined } as NightfireValue;</span>
+  if (mode === "single") {
+    if (!single &amp;&amp; multi &amp;&amp; multi.length &gt; 0) {
+      coerced = { ...coerced, block: multi[0], blocks: undefined } as NightfireValue;
+    } else if (single &amp;&amp; multi) {
+      coerced = { ...coerced, blocks: undefined } as NightfireValue;
     }
   } else {
-<span class="cstat-no" title="statement not covered" >    if (!multi &amp;&amp; single) {</span>
-<span class="cstat-no" title="statement not covered" >      coerced = { ...coerced, block: undefined, blocks: [single] } as NightfireValue;</span>
-<span class="cstat-no" title="statement not covered" >    } else if (multi &amp;&amp; single) {</span>
-<span class="cstat-no" title="statement not covered" >      coerced = { ...coerced, block: undefined } as NightfireValue;</span>
+    if (!multi &amp;&amp; single) {
+      coerced = { ...coerced, block: undefined, blocks: [single] } as NightfireValue;
+    } else if (multi &amp;&amp; single) {
+      coerced = { ...coerced, block: undefined } as NightfireValue;
     }
   }
 &nbsp;
-<span class="cstat-no" title="statement not covered" >  return {</span>
+  return {
     coerced,
     schemaMismatch: actualSchema &amp;&amp; actualSchema !== schema ? actualSchema : null
   };
@@ -205,7 +205,7 @@ export function <span class="fstat-no" title="function not covered" >normaliseFo
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-02-24T09:36:01.871Z
+                at 2026-02-24T14:06:11.938Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

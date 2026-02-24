@@ -37,6 +37,7 @@ Unlike implementation guides, sweeps are runbooks for reviewing an existing code
 | [022-api-endpoint-naming-convention-sweep.md](./022-api-endpoint-naming-convention-sweep.md) | Enforce consistent endpoint naming policy (`for-list`/`for-filter`, action routes, and alias cleanup) across API, client, and frontend consumers | API/client/frontend maintainers |
 | [023-cache-contract-consistency-sweep.md](./023-cache-contract-consistency-sweep.md) | Verify validator headers, conditional requests, write preconditions, and cache directive consistency | API/client/frontend maintainers |
 | [024-admin-fetch-and-caching-pressure-sweep.md](./024-admin-fetch-and-caching-pressure-sweep.md) | Identify repeated admin-fetch hotspots and ensure dedupe/microcache controls are applied proportionately | API/client/frontend maintainers |
+| [025-html-sanitization-sinks-sweep.md](./025-html-sanitization-sinks-sweep.md) | Verify every `{@html}` sink has explicit sanitizer coverage and a documented trust boundary | Frontend/security reviewers |
 
 ## How to run a sweep
 

@@ -22,3 +22,10 @@ export {
   getNextNumber,
   type GetNextLetterOptions,
 } from "./sequence.js";
+
+// HTML sanitization helpers
+export {
+  sanitizeHtml,
+  sanitizeEmbedHtml,
+  sanitizeSvgHtml,
+} from "./html.js";

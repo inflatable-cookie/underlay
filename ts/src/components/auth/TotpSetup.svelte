@@ -2,6 +2,7 @@
   import type { Snippet } from "svelte";
 
   import type { TotpSetupPayload } from "./types";
+  import { sanitizeSvgHtml } from "../../utils/html.js";
 
   import Card from "../Card.svelte";
   import Button from "../Button.svelte";
@@ -38,6 +39,8 @@
   function handleConfirm() {
     onConfirm?.({ code: code.trim() });
   }
+
+  const safeQrSvg = $derived(qrSvg ? sanitizeSvgHtml(qrSvg) : null);
 </script>
 
 <Card class="underlay-totp-setup">
@@ -52,9 +55,9 @@
     {/if}
   </header>
 
-  {#if qrSvg}
+  {#if safeQrSvg}
     <div class="underlay-totp-setup__qr" aria-hidden="true">
-      {@html qrSvg}
+      {@html safeQrSvg}
     </div>
   {/if}
 
