@@ -97,4 +97,62 @@ describe("nightfire/editor/summary-transform", () => {
 		});
 		expect(toImagePages.warning).toContain("drops image selections");
 	});
+
+	it("supports image-page to image-page and text-page to image-page conversions", () => {
+		const fromImagePages = transformSummaryBlockOnLayoutChange(
+			{ type: "summary.diagram", data: { pages: [{ title: "T", body: "B", image_id: "img-1" }] } },
+			"summary.slideshow",
+			label
+		);
+		expect(fromImagePages.block).toEqual({
+			type: "summary.slideshow",
+			data: { pages: [{ title: "T", body: "B", image_id: "img-1" }] },
+		});
+		expect(fromImagePages.warning).toBeNull();
+
+		const fromTextPages = transformSummaryBlockOnLayoutChange(
+			{ type: "summary.book", data: { pages: [{ title: "T", body: "B" }] } },
+			"summary.diagram",
+			label
+		);
+		expect(fromTextPages.block).toEqual({
+			type: "summary.diagram",
+			data: { pages: [{ title: "T", body: "B", image_id: null }] },
+		});
+		expect(fromTextPages.warning).toBeNull();
+	});
+
+	it("handles non-dropping slider and slider-to-text conversions", () => {
+		const toSlider = transformSummaryBlockOnLayoutChange(
+			{ type: "summary.book", data: { pages: [{ title: "A", body: "desc" }] } },
+			"summary.imageSlider",
+			label
+		);
+		expect(toSlider.warning).toContain("keeps the first page's text as the slider description.");
+		expect(toSlider.warning).not.toContain("discards other pages");
+
+		const fromSliderNoImages = transformSummaryBlockOnLayoutChange(
+			{ type: "summary.imageSlider", data: { description: "Only text" } },
+			"summary.steps",
+			label
+		);
+		expect(fromSliderNoImages.block).toEqual({
+			type: "summary.steps",
+			data: { pages: [{ title: null, body: "Only text" }] },
+		});
+		expect(fromSliderNoImages.warning).toContain("keeps the description as the first page's body.");
+		expect(fromSliderNoImages.warning).not.toContain("drops image selections");
+	});
+
+	it("falls back to a plain type swap for unrelated layouts", () => {
+		const result = transformSummaryBlockOnLayoutChange(
+			{ type: "summary.unknown", data: { something: true } } as any,
+			"summary.diagram",
+			label
+		);
+		expect(result).toEqual({
+			block: { type: "summary.diagram", data: { something: true } },
+			warning: null,
+		});
+	});
 });
