@@ -66,6 +66,10 @@
     highlightedIds?: string[];
     /** Optional label builder for a11y announcements */
     getItemLabel?: (item: T) => string;
+    /** Threshold for long-list warning. Set to null/0 to disable. */
+    longListThreshold?: number | null;
+    /** Optional custom long-list warning text */
+    longListWarningText?: string;
   }
 
   let {
@@ -81,7 +85,9 @@
     empty,
     showMoveButtons = false,
     highlightedIds = [],
-    getItemLabel = (item: T) => item.id
+    getItemLabel = (item: T) => item.id,
+    longListThreshold = 50,
+    longListWarningText
   }: Props = $props();
 
   // Track submission state locally for error handling
@@ -169,6 +175,13 @@
   // Combine disabled prop with controller pending state
   let isDisabled = $derived(disabled || controller.isPending);
   let highlightedSet = $derived(new Set(highlightedIds));
+  let isLongList = $derived(
+    longListThreshold !== null && longListThreshold > 0 && controller.pending.length > longListThreshold
+  );
+  let effectiveLongListWarning = $derived(
+    longListWarningText ??
+      `This list has ${controller.pending.length} items. Reordering large lists can be error-prone; consider chunked moves and save often.`
+  );
 </script>
 
 <div class="underlay-reorderable-list" class:underlay-reorderable-list--disabled={isDisabled}>
@@ -197,6 +210,12 @@
   {#if submitError}
     <div class="underlay-reorderable-list__error" role="alert">
       {submitError}
+    </div>
+  {/if}
+
+  {#if isLongList}
+    <div class="underlay-reorderable-list__info" role="status">
+      {effectiveLongListWarning}
     </div>
   {/if}
 
@@ -301,6 +320,15 @@
     border: 1px solid var(--underlay-color-error, #ef4444);
     border-radius: var(--underlay-radius-md, 0.5rem);
     color: var(--underlay-color-error, #ef4444);
+    font-size: 0.875rem;
+  }
+
+  .underlay-reorderable-list__info {
+    padding: var(--underlay-space-3, 0.75rem);
+    background: rgba(37, 99, 235, 0.08);
+    border: 1px solid rgba(37, 99, 235, 0.2);
+    border-radius: var(--underlay-radius-md, 0.5rem);
+    color: var(--underlay-color-text, #1e293b);
     font-size: 0.875rem;
   }
 

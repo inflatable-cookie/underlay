@@ -74,6 +74,7 @@ Optional UX improvements:
 - pass `highlightedIds` to visually mark newly-added items after conflict merge,
 - enable `showMoveButtons` for touch and precision fallback,
 - pass `getItemLabel` for better screen reader announcements.
+- keep `longListThreshold` enabled (default `50`) so operators see a warning before reordering very large lists.
 
 ## UX Expectations
 

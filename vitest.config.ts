@@ -1,12 +1,14 @@
 import { defineConfig } from 'vitest/config';
 import { resolve } from 'path';
+import { svelte } from '@sveltejs/vite-plugin-svelte';
 
 export default defineConfig({
+	plugins: [svelte()],
 	test: {
 		globals: true,
 		environment: 'node',
 		include: ['ts/tests/**/*.test.ts'],
-		exclude: ['node_modules', 'dist'],
+		exclude: ['node_modules', 'dist', 'ts/tests/**/*.component.test.ts'],
 			coverage: {
 				provider: 'v8',
 				reporter: ['text', 'json', 'html'],
