@@ -93,6 +93,22 @@ describe('createHttpClient', () => {
 			expect(headers['X-Client-Version']).toBe('1.0.0');
 			expect(headers['X-Custom-Header']).toBe('value');
 		});
+
+		it('should support PUT and PATCH helpers', async () => {
+			fetchMock = mockFetchSuccess({ ok: true });
+
+			const client = createHttpClient({
+				baseUrl: 'https://api.example.com',
+				fetch: fetchMock
+			});
+
+			await client.put('/users/123', { name: 'Updated' });
+			await client.patch('/users/123', { name: 'Partial' });
+
+			expect(fetchMock).toHaveBeenCalledTimes(2);
+			expect(fetchMock.mock.calls[0]?.[1]?.method).toBe('PUT');
+			expect(fetchMock.mock.calls[1]?.[1]?.method).toBe('PATCH');
+		});
 	});
 
 	describe('authentication', () => {
@@ -195,6 +211,51 @@ describe('createHttpClient', () => {
 			await expect(client.get('/protected')).rejects.toThrow(UnderlayHttpError);
 
 			tokenStore.expectTokens(null, null);
+		});
+
+		it('should not override explicit Authorization headers', async () => {
+			fetchMock = mockFetchSuccess({ ok: true });
+
+			const tokenStore = new FakeTokenStore();
+			tokenStore.seedTokens('store-access-token', 'store-refresh-token');
+
+			const client = createHttpClient({
+				baseUrl: 'https://api.example.com',
+				auth: { tokenStore },
+				fetch: fetchMock
+			});
+
+			await client.get('/protected', { Authorization: 'Bearer explicit-token' });
+
+			const { headers } = getFetchCallArgs(fetchMock);
+			expect(headers.Authorization).toBe('Bearer explicit-token');
+		});
+
+		it('passes refresh-context token setters through to token store', async () => {
+			const tokenStore = new FakeTokenStore();
+			tokenStore.seedTokens('expired-token', 'refresh-token');
+
+			fetchMock = mockFetchSequence(
+				{ ok: false, status: 401, error: { code: 'auth.token_expired', message: 'Token expired' } },
+				{ ok: true, status: 200, data: { id: '123' } }
+			);
+
+			const refresh = vi.fn(async ({ setAccessToken, setRefreshToken }) => {
+				await setAccessToken('fresh-access-token');
+				await setRefreshToken('fresh-refresh-token');
+				return { success: true };
+			});
+
+			const client = createHttpClient({
+				baseUrl: 'https://api.example.com',
+				auth: { tokenStore, refresh },
+				fetch: fetchMock
+			});
+
+			await client.get('/protected');
+
+			tokenStore.expectTokens('fresh-access-token', 'fresh-refresh-token');
+			expect(refresh).toHaveBeenCalledTimes(1);
 		});
 	});
 
@@ -340,6 +401,20 @@ describe('createHttpClient', () => {
 
 			await expect(client.get('/resource')).rejects.toThrow(UnderlayHttpError);
 		});
+
+		it('should map non-Error throws to a generic network message', async () => {
+			fetchMock.mockRejectedValueOnce('boom');
+
+			const client = createHttpClient({
+				baseUrl: 'https://api.example.com',
+				fetch: fetchMock
+			});
+
+			await expect(client.get('/resource')).rejects.toMatchObject({
+				status: 0,
+				message: 'Network error'
+			});
+		});
 	});
 
 	describe('debug logging', () => {
@@ -411,6 +486,26 @@ describe('createHttpClient', () => {
 			expect(response.status).toBe(304);
 			expect(response.headers.etag).toBe('W/"abc123"');
 			expect(response.body).toBeNull();
+		});
+
+		it('should parse text responses when content-type is non-json', async () => {
+			fetchMock = vi.fn().mockResolvedValueOnce({
+				ok: true,
+				status: 200,
+				headers: new Headers({
+					'content-type': 'text/plain'
+				}),
+				text: async () => 'plain-text-response'
+			});
+
+			const client = createHttpClient({
+				baseUrl: 'https://api.example.com',
+				fetch: fetchMock
+			});
+
+			const response = await client.getWithMeta<string>('/resource');
+			expect(response.status).toBe(200);
+			expect(response.body).toBe('plain-text-response');
 		});
 	});
 });
