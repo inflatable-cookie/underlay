@@ -1,5 +1,7 @@
 # 020 - Configuration Standardization and .env Reduction
 
+Status: In progress
+
 ## Overview
 
 Standardize configuration across Underlay-consuming apps so `.env` is used only for secrets and true environment-specific runtime values, while stable app behavior config is moved into typed Rust config structures committed with code.
@@ -96,15 +98,21 @@ Current app configuration is spread across many `.env` keys, including values th
 
 ### 20.2.1 Inventory and classify Acowtancy env keys
 
-- [ ] Enumerate env keys used across Acowtancy repos (`farmyard`, `dairy`, `cream`, `cattle-grid`, jobs)
-- [ ] Classify each as:
+- [x] Enumerate env keys used across Acowtancy repos (`farmyard`, `dairy`, `cream`, `cattle-grid`, jobs)
+- [x] Classify each as:
   - `secret`
   - `runtime-env`
   - `app-behavior`
-- [ ] Produce a mapping table (old env key -> new config field)
+- [x] Produce a mapping table (old env key -> new config field)
+- [x] Publish inventory report: `docs/reports/2026-02-24-acowtancy-env-inventory-and-classification.md`
 
 ### 20.2.2 Introduce typed config structures
 
+- [x] Add reusable typed JWT behavior defaults path in Underlay (`JwtBehaviorDefaults` + `JwtConfig::from_env_with_defaults`) so consuming apps can keep key material in env and move behavior defaults to typed config
+- [x] Document and example typed auth bootstrap (JWT/WebAuthn/Argon2/OAuth scopes as typed behavior config, secrets/runtime env retained in env)
+- [x] Apply typed JWT behavior defaults in Acowtancy Farmyard auth bootstrap (`farmyard-auth`) with compatibility env overrides + deprecation warnings
+- [x] Apply the same typed-config-first compatibility/deprecation pattern to Farmyard WebAuthn + Argon2 behavior overrides (`WEBAUTHN_RP_*`, `ARGON2_*`)
+- [x] Add startup diagnostics for auth behavior source resolution (typed config vs legacy env override) and focused helper tests in `farmyard-auth`
 - [ ] Add logical config modules for app-behavior settings in the Rust backend
 - [ ] Add defaults for all non-secret stable behavior settings
 - [ ] Keep secrets and runtime-env keys in env with typed parsing
@@ -118,6 +126,7 @@ Current app configuration is spread across many `.env` keys, including values th
 
 ### 20.2.4 Remove migrated app-level env usage
 
+- [x] Remove migrated auth behavior keys (`AUTH_*` JWT tuning, `WEBAUTHN_RP_*`, `ARGON2_*`) from `farmyard/.env.example` and point docs to typed `[auth]` config fields
 - [ ] Delete migrated keys from `.env.example` and setup docs
 - [ ] Update app docs to point to config modules and default files
 
@@ -127,6 +136,15 @@ Current app configuration is spread across many `.env` keys, including values th
 - [ ] `.env` in Acowtancy contains only secrets/runtime-env keys
 - [ ] Startup fails fast on invalid config with actionable errors
 - [ ] Migration report captures remaining legacy keys and timeline
+
+### Legacy Key Removal Timeline (Phase 20.2)
+
+Timeline anchor date: **February 24, 2026**.
+
+1. **Now (completed)**: typed defaults + deprecation warnings + `.env.example` cleanup for auth behavior keys.
+2. **By March 10, 2026**: update consuming local/dev setups to stop setting deprecated auth behavior env keys.
+3. **By March 24, 2026**: remove compatibility reads for migrated auth behavior keys in Farmyard auth bootstrap.
+4. **By April 7, 2026**: run a no-legacy-key verification sweep across Acowtancy repos and close remaining 20.2 acceptance items.
 
 ---
 

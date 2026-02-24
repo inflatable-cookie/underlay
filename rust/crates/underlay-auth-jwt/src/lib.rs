@@ -13,7 +13,7 @@ mod service;
 mod session;
 
 pub use crate::claims::{AccessTokenClaims, RefreshTokenClaims, TokenUse};
-pub use crate::config::JwtConfig;
+pub use crate::config::{JwtBehaviorDefaults, JwtConfig};
 pub use crate::error::{JwtError, JwtResult};
 pub use crate::fingerprint::token_fingerprint;
 pub use crate::keys::KeyPair;

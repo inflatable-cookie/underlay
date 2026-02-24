@@ -171,6 +171,28 @@ Ed25519 keys for signing JWTs. Generate using the script in `docs/guides/code/06
 | `AUTH_REFRESH_TOKEN_LIFETIME_DAYS` | `30` | Refresh token expiry |
 | `AUTH_JWT_LEEWAY_SECONDS` | `30` | Clock skew tolerance |
 
+Preferred migration pattern: keep JWT key material in env, and move behavior defaults (`issuer`, lifetimes, audience, leeway) to typed config.
+
+```rust
+use underlay_auth_jwt::{JwtBehaviorDefaults, JwtConfig, JwtService};
+
+let jwt_defaults = JwtBehaviorDefaults {
+    access_token_lifetime_minutes: 15,
+    refresh_token_lifetime_days: 30,
+    issuer: "myapp-api".to_string(),
+    audience: Some("myapp-clients".to_string()),
+    leeway_seconds: 30,
+};
+
+let jwt_config = JwtConfig::from_env_with_defaults(&jwt_defaults)?;
+let jwt_service = JwtService::new(jwt_config)?;
+```
+
+This keeps these keys as env-only secrets:
+
+- `AUTH_JWT_PRIVATE_KEY`
+- `AUTH_JWT_PUBLIC_KEY`
+
 ### OAuth (underlay-auth-oauth)
 
 For storing encrypted OAuth refresh tokens:
@@ -202,6 +224,58 @@ Google OAuth provider:
 | `ARGON2_MEMORY_KB` | `65536` | Memory cost in KB (64 MiB) |
 | `ARGON2_ITERATIONS` | `3` | Time cost (iterations) |
 | `ARGON2_PARALLELISM` | `4` | Parallelism degree |
+
+### Auth Behavior Migration Pattern
+
+Use one typed auth behavior config at bootstrap so non-secret auth behavior does not drift across env files.
+
+Keep in env (`secret` / `runtime-env`):
+
+- `AUTH_JWT_PRIVATE_KEY`
+- `AUTH_JWT_PUBLIC_KEY`
+- `AUTH_GOOGLE_CLIENT_ID`
+- `AUTH_GOOGLE_CLIENT_SECRET`
+- `AUTH_GOOGLE_REDIRECT_URI`
+
+Move to typed behavior config (`app-behavior`):
+
+- JWT tuning: issuer, audience, lifetimes, leeway
+- WebAuthn RP settings: id, origin, name
+- Argon2 params: memory, iterations, parallelism
+- OAuth provider scopes
+
+Recommended bootstrap shape:
+
+```rust
+use underlay_auth::hashing::Argon2Hasher;
+use underlay_auth_jwt::{JwtBehaviorDefaults, JwtConfig, JwtService};
+use underlay_auth_oauth::{GoogleOAuthConfig, GoogleOAuthService};
+use underlay_auth_webauthn::{WebAuthnConfig, WebAuthnService};
+
+let jwt_defaults = JwtBehaviorDefaults {
+    access_token_lifetime_minutes: 15,
+    refresh_token_lifetime_days: 30,
+    issuer: "myapp-api".to_string(),
+    audience: Some("myapp-clients".to_string()),
+    leeway_seconds: 30,
+};
+
+let jwt = JwtService::new(JwtConfig::from_env_with_defaults(&jwt_defaults)?)?;
+
+let argon2 = Argon2Hasher::with_params(65536, 3, 4);
+let webauthn = WebAuthnService::new(WebAuthnConfig {
+    rp_id: "myapp.com".to_string(),
+    rp_origin: "https://myapp.com".to_string(),
+    rp_name: "My App".to_string(),
+})?;
+
+let oauth = GoogleOAuthService::new(GoogleOAuthConfig {
+    client_id: std::env::var("AUTH_GOOGLE_CLIENT_ID")?,
+    client_secret: std::env::var("AUTH_GOOGLE_CLIENT_SECRET")?,
+    redirect_uri: std::env::var("AUTH_GOOGLE_REDIRECT_URI")?,
+    scopes: vec!["openid".to_string(), "email".to_string(), "profile".to_string()],
+})?;
+```
 
 ---
 

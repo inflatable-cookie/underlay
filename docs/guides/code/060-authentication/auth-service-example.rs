@@ -17,7 +17,7 @@ use underlay_auth::{
     AuthError, AuthProvider, AuthResult, Credential, CredentialMetadata, CredentialRepository,
     HasAuthProvider, Principal, RoleSet, User, UserRepository, UserStatus,
 };
-use underlay_auth_jwt::{JwtConfig, JwtService};
+use underlay_auth_jwt::{JwtBehaviorDefaults, JwtConfig, JwtService};
 use underlay_auth_oauth::{
     GoogleOAuthAppService, GoogleOAuthConfig, GoogleOAuthService, OAuthCallbackRequest,
     OAuthLoginResult, OAuthLoginState,
@@ -73,7 +73,69 @@ impl From<underlay_auth::User> for User {
 }
 
 // ============================================================================
-// 2. App State with All Auth Services
+// 2. Typed Auth Behavior Config
+// ============================================================================
+
+#[derive(Clone)]
+pub struct AppAuthBehaviorConfig {
+    pub jwt: JwtBehaviorDefaults,
+    pub webauthn: WebAuthnBehaviorConfig,
+    pub password_hashing: Argon2BehaviorConfig,
+    pub oauth: OAuthBehaviorConfig,
+}
+
+#[derive(Clone)]
+pub struct WebAuthnBehaviorConfig {
+    pub rp_id: String,
+    pub rp_origin: String,
+    pub rp_name: String,
+}
+
+#[derive(Clone)]
+pub struct Argon2BehaviorConfig {
+    pub memory_kb: u32,
+    pub iterations: u32,
+    pub parallelism: u32,
+}
+
+#[derive(Clone)]
+pub struct OAuthBehaviorConfig {
+    pub google_scopes: Vec<String>,
+}
+
+impl Default for AppAuthBehaviorConfig {
+    fn default() -> Self {
+        Self {
+            jwt: JwtBehaviorDefaults {
+                access_token_lifetime_minutes: 20,
+                refresh_token_lifetime_days: 14,
+                issuer: "myapp-api".to_string(),
+                audience: Some("myapp-clients".to_string()),
+                leeway_seconds: 30,
+            },
+            webauthn: WebAuthnBehaviorConfig {
+                rp_id: "myapp.com".to_string(),
+                rp_origin: "https://myapp.com".to_string(),
+                rp_name: "My App".to_string(),
+            },
+            password_hashing: Argon2BehaviorConfig {
+                memory_kb: 65536,
+                iterations: 3,
+                parallelism: 4,
+            },
+            oauth: OAuthBehaviorConfig {
+                google_scopes: vec![
+                    "openid".to_string(),
+                    "email".to_string(),
+                    "profile".to_string(),
+                ],
+            },
+        }
+    }
+}
+
+// ============================================================================
+// 3. App State with All Auth Services
 // ============================================================================
 
 #[derive(Clone)]
@@ -94,7 +156,7 @@ impl HasAuthProvider for AppState {
 }
 
 // ============================================================================
-// 3. Auth Provider Implementation
+// 4. Auth Provider Implementation
 // ============================================================================
 
 #[derive(Clone)]
@@ -125,7 +187,7 @@ impl AuthProvider for AppAuthProvider {
 }
 
 // ============================================================================
-// 4. Password Auth Repository Implementation
+// 5. Password Auth Repository Implementation
 // ============================================================================
 
 #[derive(Clone)]
@@ -387,7 +449,7 @@ impl PasswordAuthRepository for PgAuthRepository {
 }
 
 // ============================================================================
-// 5. TOTP Service Helpers
+// 6. TOTP Service Helpers
 // ============================================================================
 
 impl AppState {
@@ -434,7 +496,7 @@ impl AppState {
 }
 
 // ============================================================================
-// 6. WebAuthn Service Helpers
+// 7. WebAuthn Service Helpers
 // ============================================================================
 
 impl AppState {
@@ -530,7 +592,7 @@ impl AppState {
 }
 
 // ============================================================================
-// 7. OAuth Service Helpers
+// 8. OAuth Service Helpers
 // ============================================================================
 
 impl AppState {
@@ -588,22 +650,28 @@ impl AppState {
 }
 
 // ============================================================================
-// 8. Factory Function
+// 9. Factory Function
 // ============================================================================
 
 pub async fn create_app_state(pool: sqlx::PgPool) -> Result<Arc<AppState>, anyhow::Error> {
     let pool = Arc::new(pool);
+    let auth_behavior = AppAuthBehaviorConfig::default();
 
     // JWT Service
-    let jwt_config =
-        JwtConfig::from_env().map_err(|e| anyhow::anyhow!("JWT config error: {}", e))?;
+    // Keep key material in env, but move non-secret JWT behavior into typed defaults.
+    let jwt_config = JwtConfig::from_env_with_defaults(&auth_behavior.jwt)
+        .map_err(|e| anyhow::anyhow!("JWT config error: {}", e))?;
     let jwt_service = Arc::new(
         JwtService::new(jwt_config).map_err(|e| anyhow::anyhow!("JWT service error: {}", e))?,
     );
 
     // Password Service with repository
     let repo = Arc::new(PgAuthRepository::new(pool.clone()));
-    let hasher = Arc::new(Argon2Hasher::new());
+    let hasher = Arc::new(Argon2Hasher::with_params(
+        auth_behavior.password_hashing.memory_kb,
+        auth_behavior.password_hashing.iterations,
+        auth_behavior.password_hashing.parallelism,
+    ));
     let password_service = Arc::new(PasswordAuthService::new(
         repo.clone(),
         hasher.clone(),
@@ -617,16 +685,25 @@ pub async fn create_app_state(pool: sqlx::PgPool) -> Result<Arc<AppState>, anyho
     // WebAuthn Service
     let webauthn_service = Arc::new(
         WebAuthnService::new(WebAuthnConfig {
-            rp_id: "myapp.com".to_string(),
-            rp_origin: "https://myapp.com".to_string(),
-            rp_name: "My App".to_string(),
+            rp_id: auth_behavior.webauthn.rp_id.clone(),
+            rp_origin: auth_behavior.webauthn.rp_origin.clone(),
+            rp_name: auth_behavior.webauthn.rp_name.clone(),
         })
         .map_err(|e| anyhow::anyhow!("WebAuthn service error: {}", e))?,
     );
 
     // OAuth Service
-    let google_oauth =
-        GoogleOAuthService::from_env().map_err(|e| anyhow::anyhow!("OAuth config error: {}", e))?;
+    // Keep client ID/secret/redirect URI in env, but keep provider scopes in typed behavior config.
+    let google_oauth = GoogleOAuthService::new(GoogleOAuthConfig {
+        client_id: std::env::var("AUTH_GOOGLE_CLIENT_ID")
+            .map_err(|_| anyhow::anyhow!("missing AUTH_GOOGLE_CLIENT_ID"))?,
+        client_secret: std::env::var("AUTH_GOOGLE_CLIENT_SECRET")
+            .map_err(|_| anyhow::anyhow!("missing AUTH_GOOGLE_CLIENT_SECRET"))?,
+        redirect_uri: std::env::var("AUTH_GOOGLE_REDIRECT_URI")
+            .map_err(|_| anyhow::anyhow!("missing AUTH_GOOGLE_REDIRECT_URI"))?,
+        scopes: auth_behavior.oauth.google_scopes.clone(),
+    })
+    .map_err(|e| anyhow::anyhow!("OAuth config error: {}", e))?;
     let oauth_service = Arc::new(GoogleOAuthAppService::new(google_oauth));
 
     // Dev mode check
@@ -646,7 +723,7 @@ pub async fn create_app_state(pool: sqlx::PgPool) -> Result<Arc<AppState>, anyho
 }
 
 // ============================================================================
-// 9. Usage Example: Auth Handlers
+// 10. Usage Example: Auth Handlers
 // ============================================================================
 
 use axum::{Extension, Json};
@@ -749,7 +826,7 @@ pub async fn login_totp_verify(
 }
 
 // ============================================================================
-// 10. Password Auth Handlers (Complete Example)
+// 11. Password Auth Handlers (Complete Example)
 // ============================================================================
 
 use axum::{TypedHeader, headers};
@@ -903,7 +980,7 @@ pub async fn request_password_reset(
 }
 
 // ============================================================================
-// 11. Password Auth Error Type (re-export)
+// 12. Password Auth Error Type (re-export)
 // ============================================================================
 
 pub use underlay_auth_password::errors::PasswordAuthError;
