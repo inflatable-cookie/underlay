@@ -213,6 +213,56 @@ describe('createHttpClient', () => {
 			tokenStore.expectTokens(null, null);
 		});
 
+		it('rethrows 401 errors when no refresh handler is configured', async () => {
+			const tokenStore = new FakeTokenStore();
+			tokenStore.seedTokens('expired-token', 'refresh-token');
+			fetchMock = mockFetchSequence(
+				{ ok: false, status: 401, error: { code: 'auth.token_expired', message: 'Token expired' } }
+			);
+
+			const client = createHttpClient({
+				baseUrl: 'https://api.example.com',
+				auth: { tokenStore },
+				fetch: fetchMock
+			});
+
+			await expect(client.get('/protected')).rejects.toThrow(UnderlayHttpError);
+			expect(fetchMock).toHaveBeenCalledTimes(1);
+		});
+
+		it('does not call refresh for non-401 auth errors', async () => {
+			fetchMock = mockFetchSequence(
+				{ ok: false, status: 403, error: { code: 'auth.forbidden', message: 'Forbidden' } }
+			);
+			const refresh = vi.fn(async () => ({ success: true }));
+			const client = createHttpClient({
+				baseUrl: 'https://api.example.com',
+				auth: { refresh },
+				fetch: fetchMock
+			});
+
+			await expect(client.get('/protected')).rejects.toThrow(UnderlayHttpError);
+			expect(refresh).not.toHaveBeenCalled();
+		});
+
+		it('retries refresh-success requests even without token providers', async () => {
+			fetchMock = mockFetchSequence(
+				{ ok: false, status: 401, error: { code: 'auth.token_expired', message: 'Expired' } },
+				{ ok: true, status: 200, data: { id: '123' } }
+			);
+
+			const refresh = vi.fn(async () => ({ success: true }));
+			const client = createHttpClient({
+				baseUrl: 'https://api.example.com',
+				auth: { refresh },
+				fetch: fetchMock
+			});
+
+			const result = await client.get<{ id: string }>('/protected');
+			expect(result).toEqual({ data: { id: '123' } });
+			expect(refresh).toHaveBeenCalledTimes(1);
+		});
+
 		it('should not override explicit Authorization headers', async () => {
 			fetchMock = mockFetchSuccess({ ok: true });
 
