@@ -147,6 +147,28 @@ describe("patterns/storage (browser mode)", () => {
 		expect(warn).toHaveBeenCalledOnce();
 	});
 
+	it("falls back safely when storage availability checks fail", async () => {
+		const windowMock = createWindowMock();
+		(windowMock.localStorage as any).setItem = vi.fn(() => {
+			throw new Error("blocked");
+		});
+		(globalThis as { window?: unknown }).window = windowMock;
+		const { storage } = await import("../../src/patterns/storage");
+
+		expect(storage.local.get("theme", "light")).toBe("light");
+		expect(storage.local.has("theme")).toBe(false);
+		expect(() => storage.local.set("theme", "dark")).not.toThrow();
+	});
+
+	it("returns default for malformed json payloads", async () => {
+		const windowMock = createWindowMock();
+		(globalThis as { window?: unknown }).window = windowMock;
+		const { storage } = await import("../../src/patterns/storage");
+
+		windowMock.localStorage.setItem("bad", "{not-json");
+		expect(storage.local.get("bad", { safe: true })).toEqual({ safe: true });
+	});
+
 	it("persisted stores round-trip values and react to storage events", async () => {
 		const windowMock = createWindowMock();
 		(globalThis as { window?: unknown }).window = windowMock;
@@ -168,5 +190,37 @@ describe("patterns/storage (browser mode)", () => {
 			storageArea: windowMock.localStorage
 		});
 		expect(get(store)).toEqual({ count: 9 });
+
+		windowMock.dispatchStorageEvent({
+			key: "other",
+			newValue: JSON.stringify({ count: 11 }),
+			storageArea: windowMock.localStorage
+		});
+		expect(get(store)).toEqual({ count: 9 });
+
+		windowMock.dispatchStorageEvent({
+			key: "prefs",
+			newValue: JSON.stringify({ count: 12 }),
+			storageArea: windowMock.sessionStorage
+		});
+		expect(get(store)).toEqual({ count: 9 });
+
+		windowMock.dispatchStorageEvent({
+			key: "prefs",
+			newValue: null,
+			storageArea: windowMock.localStorage
+		});
+		expect(get(store)).toEqual({ count: 0 });
+	});
+
+	it("creates session-backed stores via createSessionStore", async () => {
+		const windowMock = createWindowMock();
+		(globalThis as { window?: unknown }).window = windowMock;
+		const { createSessionStore } = await import("../../src/patterns/storage");
+
+		const store = createSessionStore("draft", { step: 1 });
+		store.set({ step: 2 });
+		expect(get(store)).toEqual({ step: 2 });
+		expect(windowMock.sessionStorage.getItem("draft")).toBe(JSON.stringify({ step: 2 }));
 	});
 });

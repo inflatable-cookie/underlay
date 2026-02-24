@@ -76,6 +76,53 @@ describe("components/file-upload/state", () => {
 		expect(result.nextFiles[0]).toEqual(expect.objectContaining({ id: "id-1", file: compressed, originalFile: file, previewUrl: "blob:new" }));
 	});
 
+	it("appends files when multiple mode is enabled", async () => {
+		mocks.generateFileUploadId.mockReturnValueOnce("id-2");
+		mocks.validateUploadFile.mockReturnValue(null);
+		mocks.compressImage.mockResolvedValue({ name: "b.png", type: "image/png", size: 20 } as File);
+
+		const file = { name: "b.png", type: "image/png", size: 50 } as File;
+		const result = await processUploadFiles({
+			fileList: [file] as unknown as FileList,
+			currentFiles: [{ id: "existing", file: { name: "old" } as any, progress: 0, status: "pending" } as any],
+			accept: "image/*",
+			maxSize: 100,
+			multiple: true,
+			maxFiles: 3,
+			showPreview: false,
+			compress: true,
+			compressionOptions: {} as any,
+		});
+
+		expect(result.filesToUpload).toHaveLength(1);
+		expect(result.nextFiles).toHaveLength(2);
+		expect(result.nextFiles[0]).toEqual(expect.objectContaining({ id: "existing" }));
+		expect(result.nextFiles[1]).toEqual(expect.objectContaining({ id: "id-2" }));
+		expect(result.replacedPreviewUrls).toEqual([]);
+	});
+
+	it("keeps original file when compression returns same object and skips preview replacement", async () => {
+		mocks.generateFileUploadId.mockReturnValueOnce("id-3");
+		mocks.validateUploadFile.mockReturnValue(null);
+		const file = { name: "c.png", type: "image/png", size: 50 } as File;
+		mocks.compressImage.mockResolvedValue(file);
+
+		const result = await processUploadFiles({
+			fileList: [file] as unknown as FileList,
+			currentFiles: [{ id: "old", file: { name: "old" } as any, progress: 0, status: "pending" } as any],
+			accept: "image/*",
+			maxSize: 100,
+			multiple: false,
+			maxFiles: 1,
+			showPreview: false,
+			compress: true,
+			compressionOptions: {} as any,
+		});
+
+		expect(result.nextFiles[0]).toEqual(expect.objectContaining({ id: "id-3", file, originalFile: undefined }));
+		expect(result.replacedPreviewUrls).toEqual([]);
+	});
+
 	it("skips invalid files and emits validation errors", async () => {
 		mocks.validateUploadFile.mockReturnValue("nope");
 		const onValidationError = vi.fn();
@@ -121,5 +168,15 @@ describe("components/file-upload/state", () => {
 		expect(updateUploadProgress(current, "i2", 50)[1]).toEqual(expect.objectContaining({ status: "uploading", progress: 50 }));
 		expect(updateUploadProgress(current, "i2", 100)[1]).toEqual(expect.objectContaining({ status: "complete", progress: 100 }));
 		expect(setUploadError(current, "i2", "failed")[1]).toEqual(expect.objectContaining({ status: "error", error: "failed" }));
+	});
+
+	it("removeUploadItem does not revoke when preview is absent", () => {
+		(globalThis as any).URL = {
+			revokeObjectURL: mocks.revokeObjectURL,
+		};
+		mocks.revokeObjectURL.mockClear();
+		const item = { id: "i3", file: { name: "a" } as any, progress: 0, status: "pending" } as any;
+		removeUploadItem([item], item);
+		expect(mocks.revokeObjectURL).not.toHaveBeenCalled();
 	});
 });

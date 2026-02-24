@@ -79,6 +79,16 @@ describe("createFormState", () => {
 		expect(form.isSuccess).toBe(true);
 	});
 
+	it("calls onSuccess with undefined payload when no data is provided", async () => {
+		const onSuccess = vi.fn(async () => {});
+		const form = createFormState<undefined>({ onSuccess });
+
+		form.setSuccess();
+		await vi.runAllTimersAsync();
+
+		expect(onSuccess).toHaveBeenCalledWith(undefined);
+	});
+
 	it("setSuccess triggers async reset when resetOnSuccess is enabled", async () => {
 		const form = createFormState({
 			resetOnSuccess: true,
@@ -225,6 +235,32 @@ describe("createFormState.enhance", () => {
 
 		await formEl.submit();
 		expect(form.error).toBe("offline");
+	});
+
+	it("handles method fallback, redirect without location, and non-Error thrown values", async () => {
+		const form = createFormState();
+		const formEl = createMockForm("https://example.com/form", "");
+		(globalThis as any).fetch = vi
+			.fn()
+			.mockResolvedValueOnce({ json: async () => ({ type: "redirect" }) })
+			.mockResolvedValueOnce({ json: async () => ({ type: "error" }) })
+			.mockRejectedValueOnce("string-failure");
+
+		form.enhance(formEl as unknown as HTMLFormElement);
+
+		await formEl.submit();
+		expect((globalThis as any).fetch).toHaveBeenNthCalledWith(
+			1,
+			"https://example.com/form",
+			expect.objectContaining({ method: "POST" })
+		);
+		expect(form.isSuccess).toBe(true);
+
+		await formEl.submit();
+		expect(form.error).toBe("An unexpected error occurred");
+
+		await formEl.submit();
+		expect(form.error).toBe("An unexpected error occurred");
 	});
 
 	it("unsubscribes submit listener on destroy", () => {

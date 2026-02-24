@@ -47,4 +47,35 @@ describe("components/data-table/csv", () => {
 		(globalThis as any).document = originalDocument;
 		(globalThis as any).URL = originalUrl;
 	});
+
+	it("handles nested lookup through non-object values", () => {
+		const originalDocument = globalThis.document;
+		const originalUrl = globalThis.URL;
+
+		const click = vi.fn();
+		(globalThis as any).document = {
+			createElement: vi.fn(() => ({
+				setAttribute: vi.fn(),
+				click,
+				style: { visibility: "" },
+			})),
+			body: { appendChild: vi.fn(), removeChild: vi.fn() },
+		};
+		(globalThis as any).URL = {
+			createObjectURL: vi.fn(() => "blob:456"),
+			revokeObjectURL: vi.fn(),
+		};
+
+		expect(() =>
+			exportRowsToCsv(
+				[{ user: { name: "clay" } }],
+				[{ key: "user.name.first", label: "First" }],
+				"users.csv"
+			)
+		).not.toThrow();
+		expect(click).toHaveBeenCalledOnce();
+
+		(globalThis as any).document = originalDocument;
+		(globalThis as any).URL = originalUrl;
+	});
 });

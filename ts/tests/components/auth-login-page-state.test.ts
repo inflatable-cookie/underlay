@@ -29,6 +29,23 @@ describe("components/auth/login-page-state", () => {
 			usedEmailFallback: false,
 			twoFactorEmail: "twofa@example.com",
 		});
+
+		expect(
+			resolvePasswordLoginOutcome(
+				{
+					requiresTwoFactor: true,
+					loginStateId: "ls2",
+				} as any,
+				"fallback@example.com"
+			)
+		).toEqual({
+			kind: "2fa",
+			loginStateId: "ls2",
+			isEmailVerification: false,
+			hadTotpConfigured: true,
+			usedEmailFallback: false,
+			twoFactorEmail: "fallback@example.com",
+		});
 	});
 
 	it("resolves post-2fa and email fallback outcomes", () => {
