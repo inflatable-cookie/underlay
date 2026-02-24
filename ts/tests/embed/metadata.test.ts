@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
 	createMetaCache,
 	formatDuration,
@@ -49,6 +49,49 @@ describe("embed/metadata", () => {
 			success: false,
 			error: "Unknown provider: definitely-missing",
 		});
+
+		const noMetaProvider = "metadata-no-lookup-provider";
+		defaultRegistry.register({
+			name: noMetaProvider,
+			parse: () => null,
+			getEmbedUrl: () => "",
+		});
+		expect(
+			await lookupMetaWithResult({ provider: noMetaProvider, id: "x" })
+		).toEqual({
+			success: false,
+			error: `Provider "${noMetaProvider}" does not support metadata lookup`,
+		});
+
+		const nullMetaProvider = "metadata-null-provider";
+		defaultRegistry.register({
+			name: nullMetaProvider,
+			parse: () => null,
+			getEmbedUrl: () => "",
+			lookupMeta: async () => null,
+		});
+		expect(
+			await lookupMetaWithResult({ provider: nullMetaProvider, id: "x" })
+		).toEqual({
+			success: false,
+			error: "Metadata lookup returned no results",
+		});
+
+		const thrownStringProvider = "metadata-string-error-provider";
+		defaultRegistry.register({
+			name: thrownStringProvider,
+			parse: () => null,
+			getEmbedUrl: () => "",
+			lookupMeta: async () => {
+				throw "nope";
+			},
+		});
+		expect(
+			await lookupMetaWithResult({ provider: thrownStringProvider, id: "x" })
+		).toEqual({
+			success: false,
+			error: "Metadata lookup failed",
+		});
 	});
 
 	it("supports batch lookup and cache behavior", async () => {
@@ -84,6 +127,22 @@ describe("embed/metadata", () => {
 
 		cache.clear();
 		expect(cache.has(providerName, "a")).toBe(false);
+	});
+
+	it("expires cache entries after TTL and supports direct set/get", () => {
+		vi.useFakeTimers();
+		const now = vi.spyOn(Date, "now");
+		now.mockReturnValue(1_000);
+
+		const cache = createMetaCache();
+		cache.set("youtube", "id1", { title: "hello" });
+		expect(cache.get("youtube", "id1")).toEqual({ title: "hello" });
+
+		now.mockReturnValue(1_000 + 5 * 60 * 1000 + 1);
+		expect(cache.get("youtube", "id1")).toBeNull();
+		expect(cache.has("youtube", "id1")).toBe(false);
+
+		vi.useRealTimers();
 	});
 
 	it("formats and parses duration values", () => {
