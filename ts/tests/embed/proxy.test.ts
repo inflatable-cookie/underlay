@@ -24,11 +24,23 @@ describe("embed/proxy", () => {
 				thumbnailUrl: "https://img",
 				authorName: null,
 			})
+			).toEqual({
+				title: "Title",
+				description: undefined,
+				duration: 120,
+				thumbnailUrl: "https://img",
+				authorName: undefined,
+			});
+		expect(
+			proxyResponseToMeta({
+				success: true,
+				title: null,
+			})
 		).toEqual({
-			title: "Title",
+			title: undefined,
 			description: undefined,
-			duration: 120,
-			thumbnailUrl: "https://img",
+			duration: undefined,
+			thumbnailUrl: undefined,
 			authorName: undefined,
 		});
 	});

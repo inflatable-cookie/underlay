@@ -91,4 +91,18 @@ describe("components/media-picker/upload", () => {
 		await uploadNewMedia({ file, fileHash: "h", maxFileSize: 1, createMedia, initiateUpload, finaliseUpload, onProgress: vi.fn() });
 		expect(createMedia).toHaveBeenCalledWith(expect.objectContaining({ kind: "pdf" }));
 	});
+
+	it("falls back unknown mime types to image media kind", async () => {
+		const file = { name: "data.bin", type: "application/octet-stream", size: 100 } as File;
+		const createMedia = vi.fn().mockResolvedValue({ id: "m3" });
+		const initiateUpload = vi.fn().mockResolvedValue({
+			versionId: "v3",
+			uploadPlan: { uploadUrl: "u", method: "PUT", headers: {}, expiresAt: "x", maxBytes: 1, allowedContentTypes: [] },
+		});
+		const finaliseUpload = vi.fn().mockResolvedValue({ media: { id: "m3", kind: "image", visibility: "public", title: "data", originalFilename: "data.bin", currentVersionId: "v3", createdAt: "x", updatedAt: "x", currentVersion: null } });
+		mocks.uploadToBlob.mockResolvedValue(undefined);
+
+		await uploadNewMedia({ file, fileHash: "h", maxFileSize: 1, createMedia, initiateUpload, finaliseUpload, onProgress: vi.fn() });
+		expect(createMedia).toHaveBeenCalledWith(expect.objectContaining({ kind: "image" }));
+	});
 });

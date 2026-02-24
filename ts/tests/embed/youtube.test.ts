@@ -10,12 +10,15 @@ describe("embed/providers/youtube", () => {
 		expect(youtube.parse("https://youtu.be/dQw4w9WgXcQ?t=1m30s")).toEqual(
 			expect.objectContaining({ provider: "youtube", id: "dQw4w9WgXcQ", queryParams: expect.objectContaining({ start: "90" }) })
 		);
-		expect(youtube.parse("https://www.youtube.com/embed/dQw4w9WgXcQ?end=2m")).toEqual(
-			expect.objectContaining({ queryParams: expect.objectContaining({ end: "120" }) })
-		);
-		expect(youtube.parse("https://www.youtube.com/shorts/dQw4w9WgXcQ")).toEqual(
-			expect.objectContaining({ id: "dQw4w9WgXcQ" })
-		);
+			expect(youtube.parse("https://www.youtube.com/embed/dQw4w9WgXcQ?end=2m")).toEqual(
+				expect.objectContaining({ queryParams: expect.objectContaining({ end: "120" }) })
+			);
+			expect(youtube.parse("https://www.youtube.com/v/dQw4w9WgXcQ")).toEqual(
+				expect.objectContaining({ id: "dQw4w9WgXcQ" })
+			);
+			expect(youtube.parse("https://www.youtube.com/shorts/dQw4w9WgXcQ")).toEqual(
+				expect.objectContaining({ id: "dQw4w9WgXcQ" })
+			);
 		expect(youtube.parse("https://youtu.be/short")).toBeNull();
 		expect(youtube.parse("https://www.youtube.com/embed/")).toBeNull();
 		expect(youtube.parse("https://www.youtube.com/shorts/")).toBeNull();

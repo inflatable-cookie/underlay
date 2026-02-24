@@ -106,6 +106,16 @@ describe("components/file-upload/compression", () => {
 		expect(URL.revokeObjectURL).toHaveBeenCalledWith("blob:mock-url");
 	});
 
+	it("keeps original dimensions when image is within limits", async () => {
+		const file = new File([new Uint8Array(100)], "photo.jpg", { type: "image/jpeg" });
+		state.width = 800;
+		state.height = 600;
+		state.blob = new Blob([new Uint8Array(10)], { type: "image/jpeg" });
+
+		await compressImage(file, { maxWidth: 1000, maxHeight: 1000, quality: 0.7 });
+		expect(state.ctx?.drawImage).toHaveBeenCalledWith(expect.any(MockImage), 0, 0, 800, 600);
+	});
+
 	it("uses PNG output by default for PNG input", async () => {
 		const file = new File([new Uint8Array(100)], "photo.png", { type: "image/png" });
 		await compressImage(file);

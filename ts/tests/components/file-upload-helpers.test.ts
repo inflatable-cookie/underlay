@@ -36,5 +36,10 @@ describe("components/file-upload/helpers", () => {
 				validate: () => "custom error",
 			})
 		).toBe("custom error");
+
+		const pdfFile = { size: 500, type: "application/pdf", name: "file.PDF" } as File;
+		expect(
+			validateUploadFile({ file: pdfFile, maxSize: 1000, accept: "application/pdf" })
+		).toBeNull();
 	});
 });

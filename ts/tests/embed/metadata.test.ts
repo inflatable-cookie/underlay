@@ -78,7 +78,7 @@ describe("embed/metadata", () => {
 			error: "Metadata lookup returned no results",
 		});
 
-		const thrownStringProvider = "metadata-string-error-provider";
+			const thrownStringProvider = "metadata-string-error-provider";
 		defaultRegistry.register({
 			name: thrownStringProvider,
 			parse: () => null,
@@ -87,12 +87,28 @@ describe("embed/metadata", () => {
 				throw "nope";
 			},
 		});
-		expect(
-			await lookupMetaWithResult({ provider: thrownStringProvider, id: "x" })
-		).toEqual({
-			success: false,
-			error: "Metadata lookup failed",
-		});
+			expect(
+				await lookupMetaWithResult({ provider: thrownStringProvider, id: "x" })
+			).toEqual({
+				success: false,
+				error: "Metadata lookup failed",
+			});
+
+			const thrownErrorProvider = "metadata-error-object-provider";
+			defaultRegistry.register({
+				name: thrownErrorProvider,
+				parse: () => null,
+				getEmbedUrl: () => "",
+				lookupMeta: async () => {
+					throw new Error("explicit boom");
+				},
+			});
+			expect(
+				await lookupMetaWithResult({ provider: thrownErrorProvider, id: "x" })
+			).toEqual({
+				success: false,
+				error: "explicit boom",
+			});
 
 		const successProvider = "metadata-success-provider";
 		defaultRegistry.register({
@@ -138,11 +154,12 @@ describe("embed/metadata", () => {
 		expect(await cache.getOrFetch({ provider: providerName, id: "a" })).toEqual({
 			title: "cached:a",
 		});
-		expect(calls).toBe(3);
+			expect(calls).toBe(3);
 
-		cache.clear();
-		expect(cache.has(providerName, "a")).toBe(false);
-	});
+			cache.clear();
+			expect(cache.has(providerName, "a")).toBe(false);
+			expect(await cache.getOrFetch({ provider: "missing-provider", id: "none" })).toBeNull();
+		});
 
 	it("expires cache entries after TTL and supports direct set/get", () => {
 		vi.useFakeTimers();
