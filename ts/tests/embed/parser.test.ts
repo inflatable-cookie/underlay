@@ -22,6 +22,7 @@ import { youtube } from "../../src/embed/providers/youtube";
 import { vimeo } from "../../src/embed/providers/vimeo";
 import { audioboom } from "../../src/embed/providers/audioboom";
 import { defaultRegistry } from "../../src/embed/providers";
+import * as genericProviderModule from "../../src/embed/providers/generic";
 import type { ParsedEmbed, EmbedOptions } from "../../src/embed/types";
 
 // ============================================================================
@@ -314,6 +315,19 @@ describe("parseEmbed", () => {
 			expect(result.error).toBe("Domain not in allowed list");
 		});
 
+		it("allows URLs in allowedDomains when generic fallback is used", () => {
+			const result = parseEmbed("https://trusted.com/video", {
+				allowedDomains: ["trusted.com"],
+			});
+			expect(result.success).toBe(true);
+			expect(result.parsed).toEqual(
+				expect.objectContaining({
+					provider: "generic",
+					fallbackUrl: "https://trusted.com/video",
+				})
+			);
+		});
+
 		it("rejects unsafe generic embed HTML", () => {
 			const result = parseEmbed(
 				`<iframe src="https://example.com"></iframe><script>alert(1)</script>`
@@ -373,7 +387,45 @@ describe("parseEmbed", () => {
 					height: 360,
 					originalEmbed: embedWithoutSrc,
 				})
+				);
+			});
+
+		it("preserves existing originalEmbed from generic parser output", () => {
+			const originalGet = defaultRegistry.get.bind(defaultRegistry);
+			vi.spyOn(defaultRegistry, "get").mockImplementation((name: string) => {
+				if (name === "generic") {
+					return {
+						name: "generic",
+						parse: () => ({
+							provider: "generic",
+							id: "embedded",
+							originalEmbed: "<iframe src='already-present'></iframe>",
+						}),
+						getEmbedUrl: () => "",
+					} as any;
+				}
+				return originalGet(name);
+			});
+
+			const embedWithoutSrc = `<iframe width="640" height="360"></iframe>`;
+			const result = parseEmbed(embedWithoutSrc);
+			expect(result.success).toBe(true);
+			expect(result.parsed).toEqual(
+				expect.objectContaining({
+					provider: "generic",
+					originalEmbed: "<iframe src='already-present'></iframe>",
+				})
 			);
+		});
+
+		it("falls back to generic invalid-html message when validator provides no reason", () => {
+			vi.spyOn(genericProviderModule, "validateEmbedHtml").mockReturnValue({
+				valid: false,
+			} as any);
+
+			const result = parseEmbed(`<iframe src="https://example.com"></iframe>`);
+			expect(result.success).toBe(false);
+			expect(result.error).toBe("Invalid embed HTML");
 		});
 	});
 

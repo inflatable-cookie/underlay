@@ -260,6 +260,14 @@ describe("i18n formatting", () => {
 			expect(result).toContain("1,234");
 		});
 
+		it("uses code display when hideSymbol is enabled", () => {
+			const result = formatCurrency(1234.56, "usd", {
+				locale: "en-US",
+				hideSymbol: true,
+			});
+			expect(result).toContain("USD");
+		});
+
 		it("handles null/undefined", () => {
 			expect(formatCurrency(null, "GBP")).toBe("");
 			expect(formatCurrency(undefined, "USD")).toBe("");
