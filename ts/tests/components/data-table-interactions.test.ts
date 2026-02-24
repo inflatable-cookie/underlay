@@ -67,4 +67,13 @@ describe("components/data-table/interactions", () => {
 		runRowAction({ label: "Delete", confirm: "Sure?" } as any, row, onAction, denied);
 		expect(onAction).toHaveBeenCalledTimes(1);
 	});
+
+	it("uses default confirm function when none is provided", () => {
+		const row = { id: 2 };
+		const onAction = vi.fn();
+
+		runRowAction({ label: "View", confirm: "Proceed?" } as any, row, onAction);
+
+		expect(onAction).toHaveBeenCalledWith({ action: "View", row });
+	});
 });
