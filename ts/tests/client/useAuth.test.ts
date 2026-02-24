@@ -107,6 +107,45 @@ describe("client/useAuth", () => {
 		});
 	});
 
+	it("clears tokens and keeps 401 error when refreshOnUnauthorized is disabled", async () => {
+		const { commands, tokenStore } = makeDeps();
+		const unauthorized = new UnderlayHttpError(401, "Unauthorized");
+		commands.session.mockRejectedValue(unauthorized);
+		const auth = createAuthStore({
+			commands: commands as any,
+			tokenStore: tokenStore as any,
+			refreshOnUnauthorized: false,
+		});
+
+		await auth.init();
+
+		expect(commands.refresh).not.toHaveBeenCalled();
+		expect(tokenStore.clear).toHaveBeenCalledOnce();
+		expect(get(auth.state)).toEqual({
+			status: "anonymous",
+			session: null,
+			loading: false,
+			error: unauthorized,
+		});
+	});
+
+	it("sets anonymous with null error when refresh throws non-http error during init", async () => {
+		const { commands, tokenStore } = makeDeps();
+		commands.session.mockRejectedValue(new UnderlayHttpError(401, "Unauthorized"));
+		commands.refresh.mockRejectedValue(new Error("refresh exploded"));
+		const auth = createAuthStore({ commands: commands as any, tokenStore: tokenStore as any });
+
+		await auth.init();
+
+		expect(tokenStore.clear).toHaveBeenCalledOnce();
+		expect(get(auth.state)).toEqual({
+			status: "anonymous",
+			session: null,
+			loading: false,
+			error: null,
+		});
+	});
+
 	it("register/login flows set authenticated state and preserve non-http errors", async () => {
 		const { commands, tokenStore } = makeDeps();
 		const auth = createAuthStore({ commands: commands as any, tokenStore: tokenStore as any });
@@ -157,6 +196,43 @@ describe("client/useAuth", () => {
 		expect(tokenStore.clear).toHaveBeenCalledOnce();
 		expect(get(auth.state).status).toBe("anonymous");
 		expect(get(auth.state).error).toBe(unauthorized);
+	});
+
+	it("sets state error for http failures in register/login/passkey/refresh non-401 branch", async () => {
+		const { commands, tokenStore } = makeDeps();
+		const auth = createAuthStore({ commands: commands as any, tokenStore: tokenStore as any });
+
+		const registerErr = new UnderlayHttpError(409, "Conflict");
+		commands.register.mockRejectedValueOnce(registerErr);
+		await expect(
+			auth.register({ email: "u@example.com", password: "pw", displayName: "User" })
+		).rejects.toBe(registerErr);
+		expect(get(auth.state).error).toBe(registerErr);
+
+		const passwordErr = new UnderlayHttpError(422, "Validation");
+		commands.loginWithPassword.mockRejectedValueOnce(passwordErr);
+		await expect(
+			auth.loginWithPassword({ email: "u@example.com", password: "pw" })
+		).rejects.toBe(passwordErr);
+		expect(get(auth.state).error).toBe(passwordErr);
+
+		const passkeyErr = new UnderlayHttpError(401, "Passkey rejected");
+		commands.loginWithPasskey.mockRejectedValueOnce(passkeyErr);
+		await expect(
+			auth.loginWithPasskey({ credential: { id: "cred-1" } })
+		).rejects.toBe(passkeyErr);
+		expect(get(auth.state).error).toBe(passkeyErr);
+
+		const refreshErr = new UnderlayHttpError(500, "Server exploded");
+		commands.refresh.mockRejectedValueOnce(refreshErr);
+		await expect(auth.refresh()).rejects.toBe(refreshErr);
+		expect(tokenStore.clear).not.toHaveBeenCalled();
+		expect(get(auth.state)).toEqual(
+			expect.objectContaining({
+				loading: false,
+				error: refreshErr,
+			})
+		);
 	});
 
 	it("logout always clears tokens and returns anonymous, even when command fails", async () => {

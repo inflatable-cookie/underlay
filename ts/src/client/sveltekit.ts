@@ -3,7 +3,7 @@ import type { Cookies, Handle, RequestEvent } from "@sveltejs/kit";
 import type { AuthCommands, AuthRoutes, AuthSession } from "./auth";
 import { createAuthCommands } from "./auth";
 import { UnderlayHttpError } from "./errors";
-import { createHttpClient, type HttpClient, type RefreshResult, type TokenStore } from "./http";
+import { createHttpClient, type HttpClient, type TokenStore } from "./http";
 import type { SingleResponse } from "./types";
 
 export interface CookieTokenStoreOptions {
@@ -191,28 +191,6 @@ export function createAuthHandle(options: SvelteKitAuthOptions): Handle {
       baseUrl: options.baseUrl,
       fetch: event.fetch,
     });
-
-    const refresh = async (): Promise<RefreshResult> => {
-      const refreshToken = await tokenStore.getRefreshToken();
-
-      try {
-        const session = options.refreshRequest
-          ? await options.refreshRequest({ rawHttp, routes: options.routes, refreshToken })
-          : await defaultRefreshRequest(rawHttp, options.routes, refreshToken);
-
-        await tokenStore.setAccessToken(session.accessToken);
-        await tokenStore.setRefreshToken(session.refreshToken);
-
-        return {
-          success: true,
-          accessToken: session.accessToken,
-          refreshToken: session.refreshToken,
-        };
-      } catch {
-        await tokenStore.clear();
-        return { success: false, accessToken: null, refreshToken: null };
-      }
-    };
 
     const http = createHttpClient({
       baseUrl: options.baseUrl,
