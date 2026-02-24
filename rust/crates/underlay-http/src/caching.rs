@@ -117,6 +117,7 @@ impl<V: Clone> SingleFlight<V> {
         Fut: Future<Output = V>,
     {
         let key = key.into();
+        let mut loader = Some(loader);
 
         let waiter = {
             let mut guard = self.inflight.lock().await;
@@ -131,10 +132,29 @@ impl<V: Clone> SingleFlight<V> {
         };
 
         if let Some(rx) = waiter {
-            return rx.await.expect("singleflight leader dropped before send");
+            if let Ok(value) = rx.await {
+                return value;
+            }
+            // If the leader task exited after waiter registration but before
+            // sending, recompute instead of panicking.
+            let value = loader
+                .take()
+                .expect("singleflight loader should only be consumed once")()
+                .await;
+            let waiters = {
+                let mut guard = self.inflight.lock().await;
+                guard.remove(&key).unwrap_or_default()
+            };
+            for tx in waiters {
+                let _ = tx.send(value.clone());
+            }
+            return value;
         }
 
-        let value = loader().await;
+        let value = loader
+            .take()
+            .expect("singleflight loader should only be consumed once")()
+            .await;
         let waiters = {
             let mut guard = self.inflight.lock().await;
             guard.remove(&key).unwrap_or_default()
@@ -143,6 +163,18 @@ impl<V: Clone> SingleFlight<V> {
             let _ = tx.send(value.clone());
         }
         value
+    }
+
+    #[cfg(test)]
+    pub(crate) async fn test_insert_inflight_key(&self, key: &str) {
+        let mut guard = self.inflight.lock().await;
+        guard.insert(key.to_string(), Vec::new());
+    }
+
+    #[cfg(test)]
+    pub(crate) async fn test_remove_inflight_key(&self, key: &str) {
+        let mut guard = self.inflight.lock().await;
+        guard.remove(key);
     }
 }
 

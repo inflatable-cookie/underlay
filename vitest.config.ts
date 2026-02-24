@@ -7,17 +7,23 @@ export default defineConfig({
 		environment: 'node',
 		include: ['ts/tests/**/*.test.ts'],
 		exclude: ['node_modules', 'dist'],
-		coverage: {
-			provider: 'v8',
-			reporter: ['text', 'json', 'html'],
-			include: ['ts/src/**/*.ts'],
-			exclude: [
-				'ts/src/**/*.d.ts',
-				'ts/src/**/index.ts', // Barrel exports
-				'ts/src/tools/**' // CLI tools
-			]
-		}
-	},
+			coverage: {
+				provider: 'v8',
+				reporter: ['text', 'json', 'html'],
+				include: ['ts/src/**/*.ts'],
+				exclude: [
+					'ts/src/**/*.d.ts',
+					'ts/src/**/index.ts', // Barrel exports
+					'ts/src/tools/**' // CLI tools
+				],
+				thresholds: {
+					statements: 31,
+					branches: 32,
+					functions: 30,
+					lines: 31
+				}
+			}
+		},
 	resolve: {
 		alias: {
 			'@decodelabs/underlay': resolve(__dirname, './ts/src'),

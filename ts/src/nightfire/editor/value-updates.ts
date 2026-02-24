@@ -3,8 +3,15 @@ import { addBlockToList, moveBlockInList, removeBlockFromList } from "./block-li
 import { SUMMARY_SCHEMA_ID, transformSummaryBlockOnLayoutChange } from "./summary-transform";
 
 type TypeLabelFn = (type: string) => string;
+type NightfireBlock = Record<string, unknown>;
 
-export function asSingleBlockValue(schema: string, block: any): NightfireValue {
+function asBlockObject(value: unknown): NightfireBlock {
+  return value !== null && typeof value === "object" && !Array.isArray(value)
+    ? { ...(value as NightfireBlock) }
+    : {};
+}
+
+export function asSingleBlockValue(schema: string, block: unknown): NightfireValue {
   return {
     schema,
     block,
@@ -12,7 +19,7 @@ export function asSingleBlockValue(schema: string, block: any): NightfireValue {
   };
 }
 
-export function asMultiBlockValue(schema: string, blocks: any[]): NightfireValue {
+export function asMultiBlockValue(schema: string, blocks: unknown[]): NightfireValue {
   return {
     schema,
     block: undefined,
@@ -20,7 +27,7 @@ export function asMultiBlockValue(schema: string, blocks: any[]): NightfireValue
   };
 }
 
-export function replaceBlockAtIndex(blocks: any[], index: number, nextBlock: any): any[] {
+export function replaceBlockAtIndex(blocks: unknown[], index: number, nextBlock: unknown): unknown[] {
   const nextBlocks = blocks.slice();
   nextBlocks[index] = nextBlock;
   return nextBlocks;
@@ -28,11 +35,11 @@ export function replaceBlockAtIndex(blocks: any[], index: number, nextBlock: any
 
 export function changeSingleBlockType(
   schema: string,
-  currentBlock: any,
+  currentBlock: unknown,
   nextType: string,
   getLabelForType: TypeLabelFn
-): { block: any; warning: string | null } {
-  const current = currentBlock ?? {};
+): { block: NightfireBlock; warning: string | null } {
+  const current = asBlockObject(currentBlock);
   if (schema !== SUMMARY_SCHEMA_ID) {
     return {
       block: { ...current, type: nextType },
@@ -47,21 +54,21 @@ export function changeSingleBlockType(
   };
 }
 
-export function changeBlockType(currentBlock: any, nextType: string): any {
+export function changeBlockType(currentBlock: unknown, nextType: string): NightfireBlock {
   return {
-    ...(currentBlock ?? {}),
+    ...asBlockObject(currentBlock),
     type: nextType
   };
 }
 
-export function addBlock(blocks: any[], defaultType: string): any[] {
+export function addBlock(blocks: unknown[], defaultType: string): unknown[] {
   return addBlockToList(blocks, defaultType);
 }
 
-export function removeBlock(blocks: any[], index: number): any[] {
+export function removeBlock(blocks: unknown[], index: number): unknown[] {
   return removeBlockFromList(blocks, index);
 }
 
-export function moveBlock(blocks: any[], from: number, to: number): any[] | null {
+export function moveBlock(blocks: unknown[], from: number, to: number): unknown[] | null {
   return moveBlockInList(blocks, from, to);
 }

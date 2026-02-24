@@ -28,8 +28,8 @@ impl RequestId {
         Some(RequestId(parsed))
     }
 
-    pub fn to_header_value(self) -> HeaderValue {
-        HeaderValue::from_str(&self.0.to_string()).expect("UUIDv7 should be a valid header")
+    pub fn to_header_value(self) -> Option<HeaderValue> {
+        HeaderValue::from_str(&self.0.to_string()).ok()
     }
 }
 
@@ -80,7 +80,7 @@ pin_project_lite::pin_project! {
         #[pin]
         inner: F,
         header_name: HeaderName,
-        request_id: HeaderValue,
+        request_id: Option<HeaderValue>,
     }
 }
 
@@ -98,8 +98,9 @@ where
 
         match this.inner.poll(cx) {
             std::task::Poll::Ready(Ok(mut res)) => {
-                res.headers_mut()
-                    .insert(this.header_name.clone(), this.request_id.clone());
+                if let Some(request_id) = this.request_id.clone() {
+                    res.headers_mut().insert(this.header_name.clone(), request_id);
+                }
                 std::task::Poll::Ready(Ok(res))
             }
             std::task::Poll::Ready(Err(err)) => std::task::Poll::Ready(Err(err)),

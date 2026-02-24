@@ -142,3 +142,24 @@ async fn singleflight_allows_distinct_keys() {
     assert_eq!(b, 2);
     assert_eq!(executions.load(Ordering::SeqCst), 2);
 }
+
+#[tokio::test]
+async fn singleflight_waiter_falls_back_if_sender_drops() {
+    let sf = Arc::new(SingleFlight::<usize>::new());
+    sf.test_insert_inflight_key("drop-key").await;
+
+    let sf_for_cleanup = Arc::clone(&sf);
+    tokio::spawn(async move {
+        tokio::time::sleep(Duration::from_millis(5)).await;
+        sf_for_cleanup.test_remove_inflight_key("drop-key").await;
+    });
+
+    let value = sf
+        .run("drop-key", || async move {
+            tokio::time::sleep(Duration::from_millis(1)).await;
+            99
+        })
+        .await;
+
+    assert_eq!(value, 99);
+}

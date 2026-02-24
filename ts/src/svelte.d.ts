@@ -1,5 +1,7 @@
 declare module "*.svelte" {
-  const component: any;
+  import type { Component } from "svelte";
+
+  const component: Component<Record<string, unknown>>;
   export default component;
 
   // Named exports used by some components via `<script module>`.

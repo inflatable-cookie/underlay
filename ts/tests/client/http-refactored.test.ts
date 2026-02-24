@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
-import { createHttpClient, type HttpClientOptions } from '../../src/client/http';
+import { createHttpClient, MemoryTokenStore, type HttpClientOptions } from '../../src/client/http';
 import { UnderlayHttpError } from '../../src/client/errors';
 import {
 	mockFetchSuccess,
@@ -327,7 +327,18 @@ describe('createHttpClient', () => {
 				expect(httpError.code).toBe('validation.failed');
 				expect(httpError.message).toBe('Validation failed');
 				expect(httpError.fieldErrors).toEqual({ email: 'Invalid email' });
-			}
+				}
+			});
+
+		it('should throw UnderlayHttpError for network errors', async () => {
+			fetchMock.mockRejectedValueOnce(new Error('Network error'));
+
+			const client = createHttpClient({
+				baseUrl: 'https://api.example.com',
+				fetch: fetchMock
+			});
+
+			await expect(client.get('/resource')).rejects.toThrow(UnderlayHttpError);
 		});
 	});
 
@@ -401,5 +412,34 @@ describe('createHttpClient', () => {
 			expect(response.headers.etag).toBe('W/"abc123"');
 			expect(response.body).toBeNull();
 		});
+	});
+});
+
+describe('MemoryTokenStore', () => {
+	it('should store and retrieve access token', () => {
+		const store = new MemoryTokenStore();
+		expect(store.getAccessToken()).toBeNull();
+
+		store.setAccessToken('test-token');
+		expect(store.getAccessToken()).toBe('test-token');
+	});
+
+	it('should store and retrieve refresh token', () => {
+		const store = new MemoryTokenStore();
+		expect(store.getRefreshToken()).toBeNull();
+
+		store.setRefreshToken('refresh-token');
+		expect(store.getRefreshToken()).toBe('refresh-token');
+	});
+
+	it('should clear all tokens', () => {
+		const store = new MemoryTokenStore();
+		store.setAccessToken('access');
+		store.setRefreshToken('refresh');
+
+		store.clear();
+
+		expect(store.getAccessToken()).toBeNull();
+		expect(store.getRefreshToken()).toBeNull();
 	});
 });
