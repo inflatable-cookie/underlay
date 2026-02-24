@@ -19,6 +19,14 @@
       "types": "./ts/src/patterns/index.ts",
       "default": "./ts/src/patterns/index.ts"
     },
+    "./patterns/pagination-types": {
+      "types": "./ts/src/patterns/pagination-types.ts",
+      "default": "./ts/src/patterns/pagination-types.ts"
+    },
+    "./patterns/media-types": {
+      "types": "./ts/src/patterns/media-types.ts",
+      "default": "./ts/src/patterns/media-types.ts"
+    },
     "./nightfire": {
       "svelte": "./ts/src/nightfire/index.ts",
       "types": "./ts/src/nightfire/index.ts",
