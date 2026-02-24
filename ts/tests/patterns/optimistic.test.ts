@@ -590,5 +590,16 @@ describe("createOptimisticCounter", () => {
 
 			expect(get(counter.pending)).toBe(false);
 		});
+
+		it("rollback restores previous count after set", () => {
+			const counter = createOptimisticCounter(5);
+			const { rollback } = counter.set(10);
+			expect(get(counter)).toBe(10);
+
+			rollback();
+
+			expect(get(counter)).toBe(5);
+			expect(get(counter.pending)).toBe(false);
+		});
 	});
 });
