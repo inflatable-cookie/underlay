@@ -263,6 +263,28 @@ describe('createHttpClient', () => {
 			expect(refresh).toHaveBeenCalledTimes(1);
 		});
 
+		it('provides null refresh token when no refresh source exists', async () => {
+			fetchMock = mockFetchSequence(
+				{ ok: false, status: 401, error: { code: 'auth.token_expired', message: 'Expired' } },
+				{ ok: true, status: 200, data: { id: '123' } }
+			);
+
+			const observed: Array<string | null> = [];
+			const refresh = vi.fn(async ({ getRefreshToken }) => {
+				observed.push(await getRefreshToken());
+				return { success: true };
+			});
+			const client = createHttpClient({
+				baseUrl: 'https://api.example.com',
+				auth: { refresh },
+				fetch: fetchMock
+			});
+
+			await client.get('/protected');
+
+			expect(observed).toEqual([null]);
+		});
+
 		it('should not override explicit Authorization headers', async () => {
 			fetchMock = mockFetchSuccess({ ok: true });
 
@@ -521,6 +543,30 @@ describe('createHttpClient', () => {
 			await expect(client.get('/resource')).rejects.toMatchObject({
 				status: 0,
 				message: 'Network error'
+			});
+		});
+
+		it('falls back to HTTP status message when error json parsing fails', async () => {
+			fetchMock = vi.fn().mockResolvedValueOnce({
+				ok: false,
+				status: 502,
+				headers: new Headers({
+					'content-type': 'application/json'
+				}),
+				json: async () => {
+					throw new Error('Invalid JSON');
+				}
+			});
+
+			const client = createHttpClient({
+				baseUrl: 'https://api.example.com',
+				maxRetries: 0,
+				fetch: fetchMock
+			});
+
+			await expect(client.get('/resource')).rejects.toMatchObject({
+				status: 502,
+				message: 'HTTP 502'
 			});
 		});
 	});
