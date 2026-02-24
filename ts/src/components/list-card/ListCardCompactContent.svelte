@@ -89,15 +89,16 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 24px;
-    height: 24px;
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
     color: var(--underlay-color-text-muted, #9ca3af);
     opacity: 0.6;
     cursor: grab;
     touch-action: none;
     flex-shrink: 0;
-    margin-left: -4px;
-    margin-right: -2px;
+    margin-left: -6px;
+    margin-right: 0;
   }
 
   .underlay-list-card__drag-handle:hover {

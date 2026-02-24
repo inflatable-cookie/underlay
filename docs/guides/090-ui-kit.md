@@ -2638,6 +2638,9 @@ Wraps a list of items with drag-and-drop functionality, Save/Cancel header, and 
 | `disabled` | `boolean` | `false` | Disable drag-and-drop |
 | `saveLabel` | `string` | `"Save Order"` | Custom save button text |
 | `cancelLabel` | `string` | `"Cancel"` | Custom cancel button text |
+| `showMoveButtons` | `boolean` | `false` | Show explicit up/down buttons (mobile and keyboard fallback) |
+| `highlightedIds` | `string[]` | `[]` | IDs to visually highlight (for conflict-merged new items) |
+| `getItemLabel` | `(item: T) => string` | `(item) => item.id` | Accessible item label for move button text and screen reader announcements |
 
 **Snippets:**
 
@@ -2822,6 +2825,8 @@ For hierarchical data (e.g., sections containing areas), you can have multiple r
 5. **Use compact ListCard** - The `variant="compact"` + `showDragHandle` combo is designed for reorder mode
 6. **Handle nested structures** - Use separate state/controllers for each reorderable level
 7. **Place Reorder button logically** - Next to section headers, not in page header
+8. **Provide `getItemLabel`** - Improve screen reader and keyboard move announcements
+9. **Enable `showMoveButtons` when needed** - Useful fallback on touch devices and for precise ordering
 
 **Refreshing data after reorder:**
 

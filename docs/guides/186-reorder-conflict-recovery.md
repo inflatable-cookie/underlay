@@ -69,6 +69,12 @@ From `@decodelabs/underlay/patterns`:
 
 Return value from `onsubmiterror` is shown in the inline reorder error panel.
 
+Optional UX improvements:
+
+- pass `highlightedIds` to visually mark newly-added items after conflict merge,
+- enable `showMoveButtons` for touch and precision fallback,
+- pass `getItemLabel` for better screen reader announcements.
+
 ## UX Expectations
 
 - Keep user in reorder mode after conflict.
