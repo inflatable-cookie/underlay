@@ -235,6 +235,32 @@ describe("client/useAuth", () => {
 		);
 	});
 
+	it("clears state error for non-http failures in password/passkey login", async () => {
+		const { commands, tokenStore } = makeDeps();
+		const auth = createAuthStore({ commands: commands as any, tokenStore: tokenStore as any });
+
+		const httpErr = new UnderlayHttpError(401, "bad credentials");
+		commands.loginWithPassword.mockRejectedValueOnce(httpErr);
+		await expect(
+			auth.loginWithPassword({ email: "u@example.com", password: "pw" })
+		).rejects.toBe(httpErr);
+		expect(get(auth.state).error).toBe(httpErr);
+
+		const nonHttpPasswordErr = new Error("offline");
+		commands.loginWithPassword.mockRejectedValueOnce(nonHttpPasswordErr);
+		await expect(
+			auth.loginWithPassword({ email: "u@example.com", password: "pw" })
+		).rejects.toBe(nonHttpPasswordErr);
+		expect(get(auth.state).error).toBeNull();
+
+		const nonHttpPasskeyErr = new Error("aborted");
+		commands.loginWithPasskey.mockRejectedValueOnce(nonHttpPasskeyErr);
+		await expect(
+			auth.loginWithPasskey({ credential: { id: "cred-1" } })
+		).rejects.toBe(nonHttpPasskeyErr);
+		expect(get(auth.state).error).toBeNull();
+	});
+
 	it("logout always clears tokens and returns anonymous, even when command fails", async () => {
 		const { commands, tokenStore } = makeDeps();
 		const auth = createAuthStore({ commands: commands as any, tokenStore: tokenStore as any });
