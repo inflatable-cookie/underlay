@@ -21,6 +21,7 @@ Pass criteria:
 
 - API/auth crate depends on `underlay-security-alerts`.
 - Detection path uses shared helpers, not ad-hoc duplicated SQL.
+- If inactivity suspension policy is enabled, app uses shared `underlay-jobs` `SuspendInactiveAccountsJob`.
 
 ## Step 2 - Migration coverage
 
@@ -43,6 +44,7 @@ Pass criteria:
 
 - Failed login flow invokes alert evaluation.
 - Cooldown dedupe is applied before event insertion.
+- Suspended-account login attempts are logged and surfaced through alert/audit signals.
 
 ## Step 4 - Operator-facing outputs
 
@@ -66,6 +68,7 @@ Pass criteria:
 
 - Thresholds are configurable via typed app config.
 - Tests cover threshold crossing and cooldown dedupe behavior.
+- Inactivity suspension threshold (for example 1095 days) is explicitly configured and documented.
 
 ## Report Template
 
@@ -82,6 +85,7 @@ Repo: <path>
 - [ ] Failed-login path emits deduped alerts.
 - [ ] Operator outputs (logs/audit/notifications) present.
 - [ ] Threshold/cooldown config + tests in place.
+- [ ] Inactive-account suspension policy is configured and scheduled.
 
 ## Issues
 - <file>:<line> - <issue>

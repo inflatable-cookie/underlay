@@ -12,6 +12,11 @@ Use `underlay-security-alerts` to:
 - dedupe alerts with cooldown windows,
 - persist alert events for auditability.
 
+Use `underlay-jobs` auth maintenance to:
+
+- suspend long-inactive accounts on a scheduled policy window,
+- revoke active sessions when accounts are auto-suspended.
+
 ## Shared crate
 
 Crate: `underlay-security-alerts`
@@ -60,6 +65,31 @@ At failed-login write time:
    - emit app-level log/audit/notification.
 
 The shared crate intentionally does not send email/webhooks directly. Notification transport remains app-specific.
+
+## Inactive Account Maintenance (3-year example)
+
+`underlay-jobs` exposes `SuspendInactiveAccountsJob` in `underlay_jobs::tasks`.
+
+Example:
+
+```rust,ignore
+registry.register(
+  tasks::SuspendInactiveAccountsJob::new(pool.clone())
+    .with_inactivity_days(1095)
+    .with_roles(vec!["student".to_string(), "tester".to_string()])
+);
+```
+
+Recommended schedule:
+
+- daily (`0 40 3 * * *`)
+
+Behavior:
+
+- candidate users are active users in configured roles,
+- inactivity uses latest active session `last_used_at` (fallback to account creation),
+- status transitions to `suspended`,
+- active sessions are revoked with reason `inactive_account_auto_suspend`.
 
 ## App-level outputs
 
