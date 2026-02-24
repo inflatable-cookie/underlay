@@ -55,6 +55,10 @@ describe("client/sveltekit", () => {
 
 		expect(helpers.readAccessToken(cookies as any)).toBe("access-token");
 		expect(helpers.readRefreshToken(cookies as any)).toBe("refresh-token");
+		cookies.jar.set("access", "   ");
+		cookies.jar.delete("refresh");
+		expect(helpers.readAccessToken(cookies as any)).toBeNull();
+		expect(helpers.readRefreshToken(cookies as any)).toBeNull();
 
 		helpers.writeAuthTokens(cookies as any, {
 			accessToken: "a1",
@@ -91,6 +95,7 @@ describe("client/sveltekit", () => {
 		await store.setAccessToken(null);
 		expect(cookies.delete).toHaveBeenCalledWith("access", { path: "/" });
 
+		expect(await store.getRefreshToken()).toBeNull();
 		await store.setRefreshToken("r1");
 		expect(await store.getRefreshToken()).toBe("r1");
 		await store.setRefreshToken(null);
