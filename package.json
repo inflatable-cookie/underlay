@@ -45,6 +45,10 @@
       "types": "./ts/src/client/types.ts",
       "default": "./ts/src/client/types.ts"
     },
+    "./testing": {
+      "types": "./ts/src/testing/index.ts",
+      "default": "./ts/src/testing/index.ts"
+    },
     "./server": {
       "types": "./ts/src/server/index.ts",
       "default": "./ts/src/server/index.ts"

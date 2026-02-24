@@ -305,36 +305,20 @@ export default defineConfig({
 
 ### Unit Tests for API Commands
 
-Test API client commands using fake HTTP clients:
+Test API client commands using `@decodelabs/underlay/testing` mock HTTP clients:
 
 ```typescript
 // libs/client/tests/learning-commands.test.ts
 
 import { describe, expect, it } from "vitest";
-import type { HttpClient } from "../src/utils/http-client";
 import type { LearningModule } from "../src/types/learning-types";
 import type { ListResponse, SingleResponse } from "../src/types/common-types";
 import { createLearningCommands } from "../src/commands/learning-commands";
-
-/** Fake HTTP client for testing */
-class FakeHttpClient implements Pick<HttpClient, "get" | "post"> {
-  public calls: { method: string; path: string; body?: unknown }[] = [];
-  public nextResponse: unknown;
-
-  async get<T>(path: string): Promise<T> {
-    this.calls.push({ method: "GET", path });
-    return this.nextResponse as T;
-  }
-
-  async post<T>(path: string, body: unknown): Promise<T> {
-    this.calls.push({ method: "POST", path, body });
-    return this.nextResponse as T;
-  }
-}
+import { createMockHttpClient } from "@decodelabs/underlay/testing";
 
 describe("learning commands", () => {
   it("getModules calls the correct path and returns the data", async () => {
-    const http = new FakeHttpClient();
+    const http = createMockHttpClient();
     const expected: ListResponse<LearningModule> = {
       data: [
         {
@@ -348,7 +332,7 @@ describe("learning commands", () => {
     };
     http.nextResponse = expected;
 
-    const learning = createLearningCommands(http as unknown as HttpClient);
+    const learning = createLearningCommands(http as any);
 
     const result = await learning.getModules();
 
@@ -357,7 +341,7 @@ describe("learning commands", () => {
   });
 
   it("getModule calls the correct path with encoded moduleId", async () => {
-    const http = new FakeHttpClient();
+    const http = createMockHttpClient();
     const expected: SingleResponse<LearningModule> = {
       data: {
         moduleId: "mod/with special",
@@ -369,7 +353,7 @@ describe("learning commands", () => {
     };
     http.nextResponse = expected;
 
-    const learning = createLearningCommands(http as unknown as HttpClient);
+    const learning = createLearningCommands(http as any);
 
     const moduleId = "mod/with special";
     const result = await learning.getModule(moduleId);
