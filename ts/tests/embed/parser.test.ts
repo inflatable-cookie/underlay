@@ -323,6 +323,33 @@ describe("parseEmbed", () => {
 			expect(result.success).toBe(false);
 			expect(result.error).toBe("Could not parse embed");
 		});
+
+		it("hydrates dimensions and originalEmbed on generic fallback results", () => {
+			const originalGet = defaultRegistry.get.bind(defaultRegistry);
+			vi.spyOn(defaultRegistry, "get").mockImplementation((name: string) => {
+				if (name === "generic") {
+					return {
+						name: "generic",
+						parse: () => ({ provider: "generic", id: "embedded" }),
+						getEmbedUrl: () => "",
+					} as any;
+				}
+				return originalGet(name);
+			});
+
+			const embedWithoutSrc = `<iframe width="640" height="360"></iframe>`;
+			const result = parseEmbed(embedWithoutSrc);
+			expect(result.success).toBe(true);
+			expect(result.parsed).toEqual(
+				expect.objectContaining({
+					provider: "generic",
+					id: "embedded",
+					width: 640,
+					height: 360,
+					originalEmbed: embedWithoutSrc,
+				})
+			);
+		});
 	});
 
 	describe("URL normalization", () => {

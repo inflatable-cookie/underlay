@@ -39,7 +39,8 @@ describe("embed/metadata", () => {
 			title: "title:ok-2",
 		});
 		expect(await lookupMeta({ provider: providerName, id: "throw" })).toBeNull();
-		expect(calls).toBe(3);
+		expect(await lookupMetaById(providerName, "throw")).toBeNull();
+		expect(calls).toBe(4);
 	});
 
 	it("returns detailed lookup results", async () => {
@@ -91,6 +92,20 @@ describe("embed/metadata", () => {
 		).toEqual({
 			success: false,
 			error: "Metadata lookup failed",
+		});
+
+		const successProvider = "metadata-success-provider";
+		defaultRegistry.register({
+			name: successProvider,
+			parse: () => null,
+			getEmbedUrl: () => "",
+			lookupMeta: async (id) => ({ title: `ok:${id}` }),
+		});
+		expect(
+			await lookupMetaWithResult({ provider: successProvider, id: "x" })
+		).toEqual({
+			success: true,
+			meta: { title: "ok:x" },
 		});
 	});
 
