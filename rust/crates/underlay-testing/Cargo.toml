@@ -14,7 +14,7 @@ async-trait = { workspace = true }
 # Database testing (optional)
 sqlx = { workspace = true, optional = true }
 underlay-db = { path = "../underlay-db", optional = true }
-testcontainers = { version = "0.27", optional = true }
+testcontainers = { version = "0.27", features = ["blocking"], optional = true }
 testcontainers-modules = { version = "0.15", features = ["postgres"], optional = true }
 
 # HTTP testing (optional)

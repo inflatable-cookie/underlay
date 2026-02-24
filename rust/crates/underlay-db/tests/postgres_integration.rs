@@ -9,11 +9,11 @@ use underlay_db::{create_pool, drop_schemas, validate_schema_name, DbConfig, Des
 // Run with:
 //   cargo test -p underlay-db --test postgres_integration -- --ignored
 
-use testcontainers::clients::Cli;
+use testcontainers::runners::SyncRunner;
 use testcontainers::Container;
 use testcontainers_modules::postgres::Postgres;
 
-fn docker_client() -> Cli {
+fn assert_docker_available() {
     // `testcontainers` uses the `docker` CLI. We check it exists up front so
     // failures are actionable.
     match std::process::Command::new("docker").arg("version").output() {
@@ -32,10 +32,9 @@ macOS (Homebrew):\n\
         }
     }
 
-    Cli::default()
 }
 
-fn postgres_database_url(node: &Container<'_, Postgres>) -> String {
+fn postgres_database_url(node: &Container<Postgres>) -> String {
     // Using testcontainers so we don't require any preinstalled Postgres.
     // The Docker runtime can be Docker Desktop, Colima, OrbStack, etc.
     //
@@ -45,14 +44,17 @@ fn postgres_database_url(node: &Container<'_, Postgres>) -> String {
     format!(
         "postgres://postgres:postgres@127.0.0.1:{}/postgres",
         node.get_host_port_ipv4(5432)
+            .expect("postgres port 5432 should be mapped")
     )
 }
 
 #[tokio::test]
 #[ignore]
 async fn create_pool_connects() {
-    let docker = docker_client();
-    let node = docker.run(Postgres::default());
+    assert_docker_available();
+    let node = Postgres::default()
+        .start()
+        .expect("failed to start postgres test container");
 
     let database_url = postgres_database_url(&node);
     let config = DbConfig::new(database_url).with_max_connections(5);
@@ -68,8 +70,10 @@ async fn create_pool_connects() {
 #[tokio::test]
 #[ignore]
 async fn drop_schemas_requires_guard() {
-    let docker = docker_client();
-    let node = docker.run(Postgres::default());
+    assert_docker_available();
+    let node = Postgres::default()
+        .start()
+        .expect("failed to start postgres test container");
 
     let database_url = postgres_database_url(&node);
     let config = DbConfig::new(database_url).with_max_connections(5);
@@ -95,8 +99,10 @@ async fn drop_schemas_requires_guard() {
 #[tokio::test]
 #[ignore]
 async fn drop_schemas_drops_schema() {
-    let docker = docker_client();
-    let node = docker.run(Postgres::default());
+    assert_docker_available();
+    let node = Postgres::default()
+        .start()
+        .expect("failed to start postgres test container");
 
     let database_url = postgres_database_url(&node);
     let config = DbConfig::new(database_url).with_max_connections(5);
@@ -136,8 +142,10 @@ async fn drop_schemas_drops_schema() {
 #[tokio::test]
 #[ignore]
 async fn drop_schemas_rejects_invalid_schema_name() {
-    let docker = docker_client();
-    let node = docker.run(Postgres::default());
+    assert_docker_available();
+    let node = Postgres::default()
+        .start()
+        .expect("failed to start postgres test container");
 
     let database_url = postgres_database_url(&node);
     let config = DbConfig::new(database_url).with_max_connections(5);

@@ -250,12 +250,29 @@ mod tests {
 
     #[test]
     fn test_route_path_formatting() {
-        // Test that trailing slashes are handled
-        let builder = DevBlobRoutes::new(Arc::new(unsafe {
-            // This is just for testing the builder logic
-            std::mem::zeroed()
-        }));
+        // Build a valid adapter instance so the test does not rely on UB.
+        let mut base = std::env::temp_dir();
+        let nanos = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .expect("time should be monotonic")
+            .as_nanos();
+        base.push(format!("underlay_blob_dev_server_test_{}", nanos));
+
+        let runtime = tokio::runtime::Runtime::new().expect("runtime should build");
+        let adapter = runtime
+            .block_on(async {
+                LocalAdapter::new(crate::adapters::LocalConfig::new(
+                    &base,
+                    "http://localhost/dev-blobs",
+                ))
+                .await
+            })
+            .expect("adapter should initialize");
+
+        let builder = DevBlobRoutes::new(Arc::new(adapter));
 
         assert_eq!(builder.route_path, "/dev-blobs");
+
+        let _ = std::fs::remove_dir_all(base);
     }
 }

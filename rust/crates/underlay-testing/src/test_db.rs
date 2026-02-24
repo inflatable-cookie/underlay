@@ -30,7 +30,7 @@
 
 use sqlx::PgPool;
 use std::sync::Arc;
-use testcontainers::clients::Cli;
+use testcontainers::runners::SyncRunner;
 use testcontainers::Container;
 use testcontainers_modules::postgres::Postgres;
 use underlay_db::{create_pool, DbConfig};
@@ -44,9 +44,7 @@ pub struct TestDb {
     pool: PgPool,
     schema_name: String,
     // Keep container alive for the lifetime of the test
-    _container: Arc<Container<'static, Postgres>>,
-    // Keep docker client alive
-    _docker: Arc<Cli>,
+    _container: Arc<Container<Postgres>>,
 }
 
 impl TestDb {
@@ -59,16 +57,18 @@ impl TestDb {
     ///
     /// Panics if Docker is not available or the database cannot be created.
     pub async fn new() -> Self {
-        let docker = Arc::new(docker_client());
-
-        // Use a static container reference via Box::leak for the 'static lifetime
-        // This is safe because we keep Arc<Container> alive for the test duration
-        let docker_ref: &'static Cli = Box::leak(Box::new(Cli::default()));
-        let container = Arc::new(docker_ref.run(Postgres::default()));
+        assert_docker_available();
+        let container = Arc::new(
+            Postgres::default()
+                .start()
+                .expect("failed to start postgres test container"),
+        );
 
         let database_url = format!(
             "postgres://postgres:postgres@127.0.0.1:{}/postgres",
-            container.get_host_port_ipv4(5432)
+            container
+                .get_host_port_ipv4(5432)
+                .expect("postgres port 5432 should be mapped")
         );
 
         let config = DbConfig::new(database_url)
@@ -99,7 +99,6 @@ impl TestDb {
             pool,
             schema_name,
             _container: container,
-            _docker: docker,
         }
     }
 
@@ -233,10 +232,10 @@ impl Drop for TestDb {
     }
 }
 
-/// Check for Docker availability and return a client
-fn docker_client() -> Cli {
+/// Check for Docker availability.
+fn assert_docker_available() {
     match std::process::Command::new("docker").arg("version").output() {
-        Ok(_) => {}
+        Ok(_) => (),
         Err(err) if err.kind() == std::io::ErrorKind::NotFound => {
             panic!(
                 "docker CLI not found. Install Colima + docker CLI and run `colima start`.\n\n\
@@ -250,8 +249,6 @@ macOS (Homebrew):\n\
             panic!("failed to run `docker version`: {err}");
         }
     }
-
-    Cli::default()
 }
 
 #[cfg(test)]

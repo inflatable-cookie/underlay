@@ -16,5 +16,5 @@ uuid = { workspace = true }
 [dev-dependencies]
 tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
 # Integration tests (run with Colima/Docker)
-testcontainers = "0.27"
+testcontainers = { version = "0.27", features = ["blocking"] }
 testcontainers-modules = { version = "0.15", features = ["postgres"] }
