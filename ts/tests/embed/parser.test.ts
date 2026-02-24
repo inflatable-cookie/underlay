@@ -9,7 +9,7 @@
  * - Metadata normalization tests
  */
 
-import { describe, it, expect } from "vitest";
+import { afterEach, describe, it, expect, vi } from "vitest";
 import {
 	parseEmbed,
 	getEmbedUrl,
@@ -21,6 +21,7 @@ import {
 import { youtube } from "../../src/embed/providers/youtube";
 import { vimeo } from "../../src/embed/providers/vimeo";
 import { audioboom } from "../../src/embed/providers/audioboom";
+import { defaultRegistry } from "../../src/embed/providers";
 import type { ParsedEmbed, EmbedOptions } from "../../src/embed/types";
 
 // ============================================================================
@@ -28,6 +29,10 @@ import type { ParsedEmbed, EmbedOptions } from "../../src/embed/types";
 // ============================================================================
 
 describe("parseEmbed", () => {
+	afterEach(() => {
+		vi.restoreAllMocks();
+	});
+
 	describe("empty and invalid input", () => {
 		it("returns error for empty string", () => {
 			const result = parseEmbed("");
@@ -272,6 +277,51 @@ describe("parseEmbed", () => {
 			});
 			expect(result.success).toBe(false);
 			expect(result.error).toContain("not allowed");
+		});
+	});
+
+	describe("generic fallback guardrails", () => {
+		it("blocks URLs not in allowedDomains when generic fallback is used", () => {
+			const result = parseEmbed("https://example.com/video", {
+				allowedDomains: ["trusted.com"],
+			});
+			expect(result.success).toBe(false);
+			expect(result.error).toBe("Domain not in allowed list");
+		});
+
+		it("rejects unsafe generic embed HTML", () => {
+			const result = parseEmbed(
+				`<iframe src="https://example.com"></iframe><script>alert(1)</script>`
+			);
+			expect(result.success).toBe(false);
+			expect(result.error).toContain("Inline script");
+		});
+
+		it("returns error when generic provider is unavailable", () => {
+			vi.spyOn(defaultRegistry, "get").mockImplementation((name: string) => {
+				if (name === "generic") return undefined;
+				return undefined;
+			});
+			const result = parseEmbed("https://example.com/video");
+			expect(result.success).toBe(false);
+			expect(result.error).toBe("Generic provider not available");
+		});
+
+		it("returns parse error when generic provider cannot parse input", () => {
+			const originalGet = defaultRegistry.get.bind(defaultRegistry);
+			vi.spyOn(defaultRegistry, "get").mockImplementation((name: string) => {
+				if (name === "generic") {
+					return {
+						name: "generic",
+						parse: () => null,
+						getEmbedUrl: () => "",
+					} as any;
+				}
+				return originalGet(name);
+			});
+			const result = parseEmbed("https://example.com/video");
+			expect(result.success).toBe(false);
+			expect(result.error).toBe("Could not parse embed");
 		});
 	});
 
