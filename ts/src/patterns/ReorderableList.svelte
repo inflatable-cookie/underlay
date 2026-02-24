@@ -46,6 +46,8 @@
     oncancel: () => void;
     /** Called after successful submit (controller handles the API call) */
     onsuccess?: () => void;
+    /** Optional error hook; can transform submit errors into user-facing text */
+    onsubmiterror?: (error: unknown) => void | string | Promise<void | string>;
     /** Flip animation duration in ms */
     flipDurationMs?: number;
     /** Whether the list is disabled (e.g. during submit) */
@@ -64,6 +66,7 @@
     controller,
     oncancel,
     onsuccess,
+    onsubmiterror,
     flipDurationMs = 200,
     disabled = false,
     saveLabel = "Save Order",
@@ -89,7 +92,8 @@
       await controller.submit();
       onsuccess?.();
     } catch (e) {
-      submitError = e instanceof Error ? e.message : String(e);
+      const transformed = await onsubmiterror?.(e);
+      submitError = transformed ?? (e instanceof Error ? e.message : String(e));
     }
   }
 

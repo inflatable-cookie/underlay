@@ -29,6 +29,12 @@ export {
   type ReorderController,
   type ReorderableItem
 } from "./reorder-controller.svelte";
+export {
+  extractReorderConflict,
+  applyReorderConflict,
+  type ReorderConflictDetails,
+  type ReorderConflictResolution
+} from "./reorder-conflict";
 
 export { default as FilterBar } from "./FilterBar.svelte";
 export { default as FormShell } from "./FormShell.svelte";

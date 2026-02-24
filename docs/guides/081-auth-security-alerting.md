@@ -88,8 +88,13 @@ Behavior:
 
 - candidate users are active users in configured roles,
 - inactivity uses latest active session `last_used_at` (fallback to account creation),
-- status transitions to `suspended`,
+- status transitions to `suspended` with `auth.users.suspension_reason = inactive_account_auto_suspend`,
 - active sessions are revoked with reason `inactive_account_auto_suspend`.
+
+Reactivation policy:
+
+- self-service password reset should only unsuspend accounts with `suspension_reason = inactive_account_auto_suspend`,
+- manually suspended accounts should remain admin-only to reactivate.
 
 ## App-level outputs
 

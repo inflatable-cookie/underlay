@@ -2633,6 +2633,7 @@ Wraps a list of items with drag-and-drop functionality, Save/Cancel header, and 
 | `controller` | `ReorderController<T>` | required | Controller from `createReorderController` |
 | `oncancel` | `() => void` | required | Called when user clicks Cancel |
 | `onsuccess` | `() => void` | optional | Called after successful submit |
+| `onsubmiterror` | `(error: unknown) => void \| string \| Promise<void \| string>` | optional | Optional hook to transform submit errors (for conflict recovery) |
 | `flipDurationMs` | `number` | `200` | Animation duration for reorder transitions |
 | `disabled` | `boolean` | `false` | Disable drag-and-drop |
 | `saveLabel` | `string` | `"Save Order"` | Custom save button text |
@@ -2857,6 +2858,60 @@ Example endpoint pattern:
 POST /v1/admin/learning/modules/{moduleId}/sections/reorder
 Body: { "ids": ["section-1", "section-3", "section-2"] }
 Response: { "reorderedCount": 3 }
+```
+
+#### Conflict Recovery Contract
+
+For concurrency-safe reorder UX, treat reorder as optimistic with server-side conflict detection.
+
+Backend conflict response requirements:
+
+1. Return `409 Conflict` when submitted IDs are out of sync with current server state.
+2. Include conflict context:
+
+```json
+{
+  "error": {
+    "code": "learning.reorder_conflict",
+    "message": "Items have changed since you started reordering."
+  },
+  "context": {
+    "added_ids": ["new-id-1"],
+    "removed_ids": ["deleted-id-1"]
+  }
+}
+```
+
+Frontend recovery pattern:
+
+1. Parse conflict payload from the error.
+2. Remove deleted items from pending reorder state.
+3. Append newly added items (from latest snapshot) to pending state.
+4. Keep user in reorder mode and require an explicit second save.
+
+Shared helpers:
+
+- `extractReorderConflict(error)`
+- `applyReorderConflict(controller, conflict, latestItems)`
+
+Example:
+
+```svelte
+<ReorderableList
+  controller={controller}
+  oncancel={exitReorderMode}
+  onsuccess={handleSuccess}
+  onsubmiterror={async (error) => {
+    const conflict = extractReorderConflict(error);
+    if (!conflict) return;
+
+    const latestItems = await loadLatestItems();
+    applyReorderConflict(controller, conflict, latestItems);
+    return "List changed while reordering. Review updates and save again.";
+  }}
+>
+  ...
+</ReorderableList>
 ```
 
 ### RelationSelector

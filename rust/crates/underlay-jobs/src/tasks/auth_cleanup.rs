@@ -407,6 +407,7 @@ impl JobHandler for SuspendInactiveAccountsJob {
             )
             UPDATE auth.users u
             SET status = 'suspended',
+                suspension_reason = 'inactive_account_auto_suspend',
                 updated_at = NOW()
             FROM candidate c
             WHERE u.id = c.id
