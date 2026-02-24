@@ -52,11 +52,7 @@ export function buildGroupedOptions(
 		if (priorityA !== priorityB) {
 			return priorityA - priorityB;
 		}
-		const labelA = (a ?? "").toLowerCase();
-		const labelB = (b ?? "").toLowerCase();
-		if (labelA < labelB) return -1;
-		if (labelA > labelB) return 1;
-		return 0;
+		return String(a).localeCompare(String(b), undefined, { sensitivity: "base" });
 	});
 
 	return sortedKeys.map((key) => {
@@ -68,10 +64,10 @@ export function buildGroupedOptions(
 				return priorityA - priorityB;
 			}
 
-			const subA = (a.subcategory ?? "").toLowerCase();
-			const subB = (b.subcategory ?? "").toLowerCase();
-			if (subA < subB) return -1;
-			if (subA > subB) return 1;
+			const subA = String(a.subcategory ?? "").toLowerCase();
+			const subB = String(b.subcategory ?? "").toLowerCase();
+			const subCompare = subA.localeCompare(subB);
+			if (subCompare !== 0) return subCompare;
 			return a.label.localeCompare(b.label);
 		});
 		return {
