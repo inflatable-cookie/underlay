@@ -94,6 +94,20 @@ describe('createHttpClient', () => {
 			expect(headers['X-Custom-Header']).toBe('value');
 		});
 
+		it('respects existing Accept header case-insensitively', async () => {
+			fetchMock = mockFetchSuccess({});
+			const client = createHttpClient({
+				baseUrl: 'https://api.example.com',
+				fetch: fetchMock
+			});
+
+			await client.get('/custom-accept', { accept: 'text/plain' });
+
+			const { headers } = getFetchCallArgs(fetchMock);
+			expect(headers.accept).toBe('text/plain');
+			expect(headers.Accept).toBeUndefined();
+		});
+
 		it('should support PUT and PATCH helpers', async () => {
 			fetchMock = mockFetchSuccess({ ok: true });
 
@@ -532,6 +546,15 @@ describe('createHttpClient', () => {
 			await expect(client.get('/resource')).rejects.toThrow(UnderlayHttpError);
 		});
 
+		it('rethrows non-http errors from requestWithMeta setup', async () => {
+			const client = createHttpClient({
+				baseUrl: 'not-a-valid-url',
+				fetch: fetchMock
+			});
+
+			await expect(client.get('/resource')).rejects.toBeInstanceOf(TypeError);
+		});
+
 		it('should map non-Error throws to a generic network message', async () => {
 			fetchMock.mockRejectedValueOnce('boom');
 
@@ -567,6 +590,28 @@ describe('createHttpClient', () => {
 			await expect(client.get('/resource')).rejects.toMatchObject({
 				status: 502,
 				message: 'HTTP 502'
+			});
+		});
+
+		it('falls back to HTTP status message for non-json error responses', async () => {
+			fetchMock = vi.fn().mockResolvedValueOnce({
+				ok: false,
+				status: 500,
+				headers: new Headers({
+					'content-type': 'text/plain'
+				}),
+				text: async () => 'no-json'
+			});
+
+			const client = createHttpClient({
+				baseUrl: 'https://api.example.com',
+				maxRetries: 0,
+				fetch: fetchMock
+			});
+
+			await expect(client.get('/resource')).rejects.toMatchObject({
+				status: 500,
+				message: 'HTTP 500'
 			});
 		});
 	});
@@ -660,6 +705,24 @@ describe('createHttpClient', () => {
 			const response = await client.getWithMeta<string>('/resource');
 			expect(response.status).toBe(200);
 			expect(response.body).toBe('plain-text-response');
+		});
+
+		it('returns empty headers when response headers are missing iterable APIs', async () => {
+			fetchMock = vi.fn().mockResolvedValueOnce({
+				ok: true,
+				status: 200,
+				headers: {},
+				json: async () => ({ data: true })
+			});
+
+			const client = createHttpClient({
+				baseUrl: 'https://api.example.com',
+				fetch: fetchMock
+			});
+
+			const response = await client.getWithMeta<{ data: boolean }>('/resource');
+			expect(response.headers).toEqual({});
+			expect(response.body).toEqual({ data: true });
 		});
 	});
 });

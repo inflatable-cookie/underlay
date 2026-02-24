@@ -51,4 +51,41 @@ describe("nightfire/editor/grouped-options", () => {
 		expect(result[0].label).toBe("Custom Category");
 		expect(result[0].options.map((o) => o.subcategory)).toEqual(["A", "B"]);
 	});
+
+	it("covers category and subcategory comparator tie branches", () => {
+		const result = buildGroupedOptions([
+			{ type: "a", label: "Zulu", category: "MiscB", subcategory: "A" },
+			{ type: "b", label: "Alpha", category: "MiscA", subcategory: "A" },
+			{ type: "c", label: "Gamma", category: "CustomCategory", subcategory: "z" },
+			{ type: "d", label: "Beta", category: "CustomCategory", subcategory: "a" },
+			{ type: "e", label: "Delta", category: "CustomCategory", subcategory: "a" },
+		]);
+
+		expect(result.map((group) => group.category)).toEqual(["CustomCategory", "MiscA", "MiscB"]);
+		const custom = result[0];
+		expect(custom.options.map((o) => `${o.subcategory}:${o.label}`)).toEqual([
+			"a:Beta",
+			"a:Delta",
+			"z:Gamma",
+		]);
+	});
+
+	it("formats acronym labels and preserves whitespace-only category labels", () => {
+		const result = buildGroupedOptions([
+			{ type: "api", label: "API Block", category: "API_tools" },
+			{ type: "blank", label: "Blank Category", category: "   " },
+		]);
+
+		expect(result.find((group) => group.category === "API_tools")?.label).toBe("API Tools");
+		expect(result.find((group) => group.category === "   ")?.label).toBe("   ");
+	});
+
+	it("handles case-insensitive category label ties", () => {
+		const result = buildGroupedOptions([
+			{ type: "one", label: "One", category: "Alpha" },
+			{ type: "two", label: "Two", category: "alpha" },
+		]);
+
+		expect(result.map((group) => group.label)).toEqual(["Alpha", "Alpha"]);
+	});
 });

@@ -63,4 +63,37 @@ describe("nightfire/strategies", () => {
 		await store.ensure();
 		expect(calls).toBe(3);
 	});
+
+	it("returns null when strategy context is missing", async () => {
+		const strategies = await import("../../src/nightfire/strategies");
+		expect(strategies.useNightfireStrategies()).toBeNull();
+	});
+
+	it("handles strategy fetch failures and stale cache re-fetch", async () => {
+		const strategies = await import("../../src/nightfire/strategies");
+		let calls = 0;
+		strategies.configureNightfireStrategies({
+			fetchStrategies: async () => {
+				calls += 1;
+				if (calls === 1) {
+					throw "boom";
+				}
+				return [
+					{ id: `ok-${calls}`, cardinality: { mode: "single" }, allowedTypes: [], allowedCategories: [], defaultType: "markdown" },
+				];
+			},
+			cacheTtl: -1,
+		});
+
+		const store = strategies.createNightfireStrategiesContext();
+		await expect(store.ensure()).resolves.toEqual([]);
+		expect(get(store.error)).toBe("Failed to load strategies");
+
+		const loaded = await store.ensure();
+		expect(loaded[0]?.id).toBe("ok-2");
+		expect(get(store.error)).toBeNull();
+
+		await store.ensure();
+		expect(calls).toBe(3);
+	});
 });

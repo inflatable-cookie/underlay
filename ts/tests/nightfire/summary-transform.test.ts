@@ -52,6 +52,23 @@ describe("nightfire/editor/summary-transform", () => {
 		expect(result.warning).toContain("drops image selections");
 	});
 
+	it("removes subtitle when converting image pages to non-subtitled text layouts", () => {
+		const result = transformSummaryBlockOnLayoutChange(
+			{
+				type: "summary.diagram",
+				data: { pages: [{ title: "A", body: "B", image_id: null }], subTitle: "keep?" },
+			},
+			"summary.book",
+			label
+		);
+
+		expect(result.block).toEqual({
+			type: "summary.book",
+			data: { pages: [{ title: "A", body: "B" }] },
+		});
+		expect(result.warning).toBeNull();
+	});
+
 	it("maps text/image pages to slider with warning behavior", () => {
 		const current = {
 			type: "summary.book",

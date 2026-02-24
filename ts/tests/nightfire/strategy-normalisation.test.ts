@@ -33,4 +33,27 @@ describe("nightfire/editor/strategy-normalisation", () => {
 			blocks: [{ type: "b" }],
 		});
 	});
+
+	it("handles non-object values and single-mode branch fallthroughs", () => {
+		mocks.normaliseNightfireValue.mockReturnValue({ blocks: [] });
+		expect(normaliseForStrategy(null as any, "schema-a", "single")).toEqual({
+			coerced: { schema: "schema-a", blocks: [] },
+			schemaMismatch: null,
+		});
+
+		mocks.normaliseNightfireValue.mockReturnValue({ block: { type: "x" }, blocks: [{ type: "y" }] });
+		expect(normaliseForStrategy({ schema: "schema-a" } as any, "schema-a", "single").coerced).toEqual({
+			schema: "schema-a",
+			block: { type: "x" },
+			blocks: undefined,
+		});
+	});
+
+	it("keeps multi arrays when single block is missing in multi mode", () => {
+		mocks.normaliseNightfireValue.mockReturnValue({ blocks: [{ type: "a" }] });
+		expect(normaliseForStrategy({ schema: 123 } as any, "schema-b", "multi")).toEqual({
+			coerced: { schema: "schema-b", blocks: [{ type: "a" }] },
+			schemaMismatch: null,
+		});
+	});
 });

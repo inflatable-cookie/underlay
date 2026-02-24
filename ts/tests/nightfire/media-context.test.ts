@@ -32,4 +32,10 @@ describe("nightfire/media/context", () => {
 		const mod = await import("../../src/nightfire/media/context");
 		expect(mod.useNightfireMedia()).toBeNull();
 	});
+
+	it("returns null when context resolves to undefined", async () => {
+		const mod = await import("../../src/nightfire/media/context");
+		mod.createNightfireMediaContext(undefined as any);
+		expect(mod.useNightfireMedia()).toBeNull();
+	});
 });
