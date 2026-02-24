@@ -13,6 +13,7 @@ import {
 	pluralCount,
 	configureFormat
 } from "../../src/patterns/i18n";
+import { resolveLocale, resolveTimezone } from "../../src/patterns/i18n/intl-context";
 
 describe("i18n formatting", () => {
 	// Reset config before each test
@@ -72,6 +73,11 @@ describe("i18n formatting", () => {
 			expect(formatTime(null)).toBe("");
 			expect(formatTime(undefined)).toBe("");
 		});
+
+		it("handles invalid date input", () => {
+			expect(formatTime("not-a-date")).toBe("");
+			expect(formatTime(NaN)).toBe("");
+		});
 	});
 
 	describe("formatDateTime", () => {
@@ -129,9 +135,27 @@ describe("i18n formatting", () => {
 			expect(result).toBe("in 2 days");
 		});
 
+		it("formats weeks, months, and years ranges", () => {
+			const now = new Date("2026-01-12T14:30:00Z");
+			expect(formatRelative(new Date("2025-12-29T14:30:00Z"), { locale: "en-GB", now })).toContain(
+				"week"
+			);
+			expect(formatRelative(new Date("2025-11-13T14:30:00Z"), { locale: "en-GB", now })).toContain(
+				"month"
+			);
+			expect(formatRelative(new Date("2024-01-13T14:30:00Z"), { locale: "en-GB", now })).toContain(
+				"year"
+			);
+		});
+
 		it("handles null/undefined", () => {
 			expect(formatRelative(null)).toBe("");
 			expect(formatRelative(undefined)).toBe("");
+		});
+
+		it("handles invalid date input and defaults now when omitted", () => {
+			expect(formatRelative("not-a-date")).toBe("");
+			expect(typeof formatRelative(new Date())).toBe("string");
 		});
 	});
 
@@ -308,6 +332,30 @@ describe("i18n formatting", () => {
 			const result = formatNumber(1234.56);
 			// German uses comma for decimals and period for thousands
 			expect(result).toContain("1.234");
+		});
+
+		it("resolves locale and timezone from config and per-call override", () => {
+			configureFormat({ locale: "fr-FR", timezone: "Europe/Paris" });
+			expect(resolveLocale()).toBe("fr-FR");
+			expect(resolveLocale("en-US")).toBe("en-US");
+			expect(resolveTimezone()).toBe("Europe/Paris");
+			expect(resolveTimezone("UTC")).toBe("UTC");
+		});
+
+		it("falls back to navigator locale when no config is set", () => {
+			const originalNavigator = (globalThis as { navigator?: Navigator }).navigator;
+			Object.defineProperty(globalThis, "navigator", {
+				value: { language: "it-IT" } as Navigator,
+				writable: true,
+				configurable: true
+			});
+			configureFormat({ locale: undefined, timezone: undefined });
+			expect(resolveLocale()).toBe("it-IT");
+			Object.defineProperty(globalThis, "navigator", {
+				value: originalNavigator,
+				writable: true,
+				configurable: true
+			});
 		});
 	});
 });

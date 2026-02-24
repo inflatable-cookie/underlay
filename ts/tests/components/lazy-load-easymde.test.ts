@@ -12,8 +12,10 @@ describe("components/lazy-load-easymde", () => {
 	it("loads and caches the EasyMDE module", async () => {
 		const mod = await import("../../src/components/lazy-load-easymde");
 		const [a, b] = await Promise.all([mod.lazyLoadEasyMde(), mod.lazyLoadEasyMde()]);
+		const c = await mod.lazyLoadEasyMde();
 		expect(a).toEqual({ name: "mock-easymde" });
 		expect(b).toBe(a);
+		expect(c).toBe(a);
 	});
 
 	it("prefetches only in browser contexts and never throws", async () => {

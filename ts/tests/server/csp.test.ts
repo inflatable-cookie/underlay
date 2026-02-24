@@ -284,6 +284,17 @@ describe("applyCspHeaders", () => {
 		expect(response.headers.get("X-Frame-Options")).toBe("SAMEORIGIN");
 	});
 
+	it("sets xss protection header when configured", () => {
+		const response = new Response();
+		const cspConfig = createCspConfig();
+		const securityConfig = createSecurityHeadersConfig({
+			xssProtection: "1; mode=block",
+		});
+		applyCspHeaders(response, cspConfig, undefined, securityConfig);
+
+		expect(response.headers.get("X-XSS-Protection")).toBe("1; mode=block");
+	});
+
 	it("omits disabled security headers", () => {
 		const response = new Response();
 		const cspConfig = createCspConfig();

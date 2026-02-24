@@ -34,6 +34,15 @@ describe("navigation-back-info", () => {
 		});
 	});
 
+	it("uses fallback when no context exists", () => {
+		const result = resolveBackButtonInfo(null, "Back", "/home", () => true);
+		expect(result).toEqual({
+			label: "Back",
+			href: "/home",
+			isContextual: false
+		});
+	});
+
 	it("consumeBackNavigation returns context href and returnTo for valid context", () => {
 		const result = consumeBackNavigation(
 			{ label: "Projects", href: "/projects", targetHref: "/projects/1" },
