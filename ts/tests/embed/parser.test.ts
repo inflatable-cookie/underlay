@@ -50,6 +50,22 @@ describe("parseEmbed", () => {
 			const result = parseEmbed("random text here", { allowGeneric: false });
 			expect(result.success).toBe(false);
 		});
+
+		it("returns extraction error for embed html without URL when generic fallback is disabled", () => {
+			const result = parseEmbed(`<iframe width="560" height="315"></iframe>`, {
+				allowGeneric: false,
+			});
+			expect(result.success).toBe(false);
+			expect(result.error).toBe("Could not extract URL from embed code");
+		});
+
+		it("returns provider-detection error for unsupported URLs when generic fallback is disabled", () => {
+			const result = parseEmbed("https://unsupported.example.com/video/123", {
+				allowGeneric: false,
+			});
+			expect(result.success).toBe(false);
+			expect(result.error).toBe("Could not detect provider from URL");
+		});
 	});
 
 	describe("YouTube URL parsing", () => {
@@ -256,6 +272,15 @@ describe("parseEmbed", () => {
 
 		it("returns error for unrecognized raw ID", () => {
 			const result = parseEmbed("xyz", { allowGeneric: false });
+			expect(result.success).toBe(false);
+			expect(result.error).toContain("Could not detect provider");
+		});
+
+		it("returns raw-id detection error when allowedProviders excludes matching providers", () => {
+			const result = parseEmbed("123456789", {
+				allowGeneric: false,
+				allowedProviders: ["youtube"],
+			});
 			expect(result.success).toBe(false);
 			expect(result.error).toContain("Could not detect provider");
 		});
