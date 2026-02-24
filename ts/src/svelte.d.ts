@@ -12,6 +12,30 @@ declare module "*.svelte" {
     suggestion?: string;
   }
 
+  export type DateRangeInput = string | Date | null | undefined;
+  export type DateRangeStyle = "adaptive" | "full";
+  export interface DateRangeFormatOptions {
+    locale?: string;
+    style?: DateRangeStyle;
+    hideDays?: boolean;
+  }
+  export function formatDateWithOrdinal(
+    input: DateRangeInput,
+    locale?: string
+  ): string | null;
+  export function formatAdaptiveDateRange(
+    startInput: DateRangeInput,
+    endInput: DateRangeInput,
+    options?: DateRangeFormatOptions
+  ): string | null;
+
+  export interface RangeSliderOption {
+    value: string;
+    label?: string;
+    tone?: "default" | "primary" | "success" | "warning" | "danger";
+    color?: string;
+  }
+
   export interface DataTableColumn<T = unknown> {
     key: string;
     label: string;
@@ -88,6 +112,49 @@ declare module "*.svelte" {
     limit: number;
     total: number;
   }
+
+  export interface LogEntry {
+    id: string;
+    occurredAt: string;
+    actor?: LogActor | null;
+    action: string;
+    resourceType: string;
+    resourceId: string;
+    resourceLabel?: string;
+    details?: Record<string, unknown>;
+  }
+
+  export interface LogActor {
+    id: string;
+    email?: string;
+    name?: string;
+  }
+
+  export interface LogFilter {
+    field: string;
+    label: string;
+    type: "select" | "date";
+    options?: { value: string; label: string }[];
+    placeholder?: string;
+  }
+
+  export type LogActionType =
+    | "create"
+    | "update"
+    | "delete"
+    | "restore"
+    | "upload"
+    | "login"
+    | "logout"
+    | "security"
+    | "other";
+
+  export type StatVariant =
+    | "default"
+    | "success"
+    | "warning"
+    | "danger"
+    | "info";
 
   export type TabsVariant = "pills" | "boxed" | "underline" | "plain";
   export type TabsSize = "default" | "sm";
