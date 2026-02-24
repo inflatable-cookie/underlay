@@ -76,6 +76,10 @@ describe("patterns/selection-history", () => {
 		history.track("x");
 		history.trackMultiple(["a", "b", "x", "c"]);
 		expect(history.getRecentIds()).toEqual(["a", "b", "x", "c"]);
+
+		history.trackMultiple([]);
+		expect(history.getRecentIds()).toEqual(["a", "b", "x", "c"]);
+
 		expect(history.getStorageKey()).toBe("underlay:selection-history:ns:items");
 	});
 

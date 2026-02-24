@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
 	generic,
 	isDomainAllowed,
@@ -93,6 +93,31 @@ describe("embed/providers/generic", () => {
 		});
 		expect(
 			validateEmbedHtml(`<script src="https://cdn.example.com/embed.js"></script>`)
-		).toEqual({ valid: true });
+			).toEqual({ valid: true });
+	});
+
+	it("handles defensive URL safety and hostname fallback branches", async () => {
+		vi.resetModules();
+		vi.doMock("../../src/embed/utils.js", async () => {
+			const actual = await vi.importActual<typeof import("../../src/embed/utils.js")>(
+				"../../src/embed/utils.js"
+			);
+			return {
+				...actual,
+				isUrl: () => true,
+				isSafeEmbedUrl: (url: string) => !url.includes("unsafe"),
+				getHostname: () => null,
+				normalizeUrl: (url: string) => url,
+			};
+		});
+
+		const { generic: mockedGeneric } = await import("../../src/embed/providers/generic");
+		expect(mockedGeneric.parse("https://unsafe.example.com")).toBeNull();
+		expect(mockedGeneric.parse("https://safe.example.com")).toEqual(
+			expect.objectContaining({ provider: "generic", id: "unknown" })
+		);
+
+		vi.doUnmock("../../src/embed/utils.js");
+		vi.resetModules();
 	});
 });

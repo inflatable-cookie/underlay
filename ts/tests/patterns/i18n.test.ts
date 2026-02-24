@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import {
 	format,
 	formatDate,
@@ -89,6 +89,21 @@ describe("i18n formatting", () => {
 
 		it("handles null/undefined", () => {
 			expect(formatDateTime(null)).toBe("");
+		});
+
+		it("returns date-only when time formatter returns empty", async () => {
+			vi.resetModules();
+			vi.doMock("../../src/patterns/i18n/date-format", () => ({
+				formatDate: () => "12 Jan 2026",
+				formatTime: () => "",
+				formatRelative: () => "now"
+			}));
+
+			const { formatDateTime: mockedFormatDateTime } = await import("../../src/patterns/i18n");
+			expect(mockedFormatDateTime(new Date("2026-01-12T14:30:00Z"))).toBe("12 Jan 2026");
+
+			vi.doUnmock("../../src/patterns/i18n/date-format");
+			vi.resetModules();
 		});
 	});
 
@@ -293,6 +308,11 @@ describe("i18n formatting", () => {
 		it("uses zero form when provided", () => {
 			const result = plural(0, { zero: "no items", one: "item", other: "items" }, { locale: "en-GB" });
 			expect(result).toBe("no items");
+		});
+
+		it("falls back to other when locale rule-specific form is missing", () => {
+			const result = plural(2, { one: "item", other: "items" }, { locale: "ru" });
+			expect(result).toBe("items");
 		});
 	});
 

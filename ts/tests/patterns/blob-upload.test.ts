@@ -12,7 +12,7 @@ import {
 import { BlobUploadError } from "../../src/patterns/blob-types";
 
 class MockXHR {
-	static nextBehavior: "success" | "httpError" | "networkError" | "pending" = "success";
+	static nextBehavior: "success" | "successNoLength" | "httpError" | "networkError" | "pending" = "success";
 	status = 200;
 	statusText = "OK";
 	headers: Record<string, string> = {};
@@ -38,7 +38,11 @@ class MockXHR {
 			this.listeners.error?.();
 			return;
 		}
-		this.uploadListeners.progress?.({ lengthComputable: true, loaded: 5, total: 10 });
+		this.uploadListeners.progress?.({
+			lengthComputable: MockXHR.nextBehavior !== "successNoLength",
+			loaded: 5,
+			total: 10,
+		});
 		if (MockXHR.nextBehavior === "httpError") {
 			this.status = 403;
 			this.statusText = "Forbidden";
@@ -98,6 +102,28 @@ describe("patterns/blob-upload", () => {
 			contentType: "text/plain",
 		});
 		expect(onProgress).toHaveBeenCalledWith({ loaded: 5, total: 10, percent: 50 });
+	});
+
+	it("skips progress callback when progress event is not length-computable", async () => {
+		const file = new File(["hello"], "f.txt", { type: "text/plain" });
+		const onProgress = vi.fn();
+		const plan = {
+			uploadUrl: "https://upload",
+			method: "PUT",
+			requiredHeaders: {},
+			maxBytes: 100,
+			allowedContentTypes: ["text/plain"],
+			expiresAt: "2099-01-01T00:00:00.000Z",
+			objectKey: "obj-1",
+		};
+
+		MockXHR.nextBehavior = "successNoLength";
+		await expect(uploadToBlob(plan as any, file, { onProgress })).resolves.toEqual({
+			objectKey: "obj-1",
+			size: file.size,
+			contentType: "text/plain",
+		});
+		expect(onProgress).not.toHaveBeenCalled();
 	});
 
 	it("maps xhr failures to BlobUploadError variants", async () => {
@@ -160,12 +186,15 @@ describe("patterns/blob-upload", () => {
 			valid: false,
 			error: "Video files are not supported. Please use Vimeo for video content.",
 		});
-		expect(validateFile(unknown, 100)).toEqual(
-			expect.objectContaining({ valid: false, error: expect.stringContaining("not supported") })
-		);
-		expect(validateFile(new File([new Uint8Array(5)], "a.png", { type: "image/png" }), 2)).toEqual(
-			expect.objectContaining({ valid: false, error: expect.stringContaining("too large") })
-		);
+			expect(validateFile(unknown, 100)).toEqual(
+				expect.objectContaining({ valid: false, error: expect.stringContaining("not supported") })
+			);
+			expect(validateFile(new File(["x"], "unknown.bin", { type: "" }), 100)).toEqual(
+				expect.objectContaining({ valid: false, error: expect.stringContaining('"unknown"') })
+			);
+			expect(validateFile(new File([new Uint8Array(5)], "a.png", { type: "image/png" }), 2)).toEqual(
+				expect.objectContaining({ valid: false, error: expect.stringContaining("too large") })
+			);
 		expect(validateFile(image, 100)).toEqual({ valid: true });
 	});
 

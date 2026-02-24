@@ -22,6 +22,7 @@ import { youtube } from "../../src/embed/providers/youtube";
 import { vimeo } from "../../src/embed/providers/vimeo";
 import { audioboom } from "../../src/embed/providers/audioboom";
 import { defaultRegistry } from "../../src/embed/providers";
+import * as providersModule from "../../src/embed/providers";
 import * as genericProviderModule from "../../src/embed/providers/generic";
 import type { ParsedEmbed, EmbedOptions } from "../../src/embed/types";
 
@@ -336,6 +337,27 @@ describe("parseEmbed", () => {
 			expect(result.error).toContain("Inline script");
 		});
 
+		it("returns generic passthrough for embed html without extractable URL", () => {
+			const result = parseEmbed(`<iframe width="640" height="360"></iframe>`);
+			expect(result.success).toBe(true);
+			expect(result.parsed).toEqual(
+				expect.objectContaining({
+					provider: "generic",
+					originalEmbed: `<iframe width="640" height="360"></iframe>`,
+				})
+			);
+		});
+
+		it("returns extraction error when embed html fallback fails after URL extraction misses", () => {
+			vi.spyOn(defaultRegistry, "get").mockImplementation((name: string) => {
+				if (name === "generic") return undefined;
+				return undefined;
+			});
+			const result = parseEmbed(`<iframe width="640" height="360"></iframe>`);
+			expect(result.success).toBe(false);
+			expect(result.error).toBe("Could not extract URL from embed code");
+		});
+
 		it("returns error when generic provider is unavailable", () => {
 			vi.spyOn(defaultRegistry, "get").mockImplementation((name: string) => {
 				if (name === "generic") return undefined;
@@ -426,6 +448,34 @@ describe("parseEmbed", () => {
 			const result = parseEmbed(`<iframe src="https://example.com"></iframe>`);
 			expect(result.success).toBe(false);
 			expect(result.error).toBe("Invalid embed HTML");
+		});
+
+		it("falls back to generic parser when detected provider parser returns null", () => {
+			const originalGet = defaultRegistry.get.bind(defaultRegistry);
+			vi.spyOn(defaultRegistry, "get").mockImplementation((name: string) => {
+				if (name === "youtube") {
+					return {
+						name: "youtube",
+						parse: () => null,
+						getEmbedUrl: () => "",
+					} as any;
+				}
+				return originalGet(name);
+			});
+
+			const result = parseEmbed("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
+			expect(result.success).toBe(true);
+			expect(result.parsed?.provider).toBe("generic");
+		});
+
+		it("falls back to generic parser when detected provider is unavailable in registry", () => {
+			vi.spyOn(providersModule, "detectProviderFromUrl").mockReturnValue(
+				"missing-provider" as any
+			);
+
+			const result = parseEmbed("https://example.com/video");
+			expect(result.success).toBe(true);
+			expect(result.parsed?.provider).toBe("generic");
 		});
 	});
 

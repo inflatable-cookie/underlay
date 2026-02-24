@@ -20,8 +20,9 @@ describe("embed/providers/youtube", () => {
 				expect.objectContaining({ id: "dQw4w9WgXcQ" })
 			);
 		expect(youtube.parse("https://youtu.be/short")).toBeNull();
-		expect(youtube.parse("https://www.youtube.com/embed/")).toBeNull();
-		expect(youtube.parse("https://www.youtube.com/shorts/")).toBeNull();
+			expect(youtube.parse("https://www.youtube.com/embed/")).toBeNull();
+			expect(youtube.parse("https://www.youtube.com/v/")).toBeNull();
+			expect(youtube.parse("https://www.youtube.com/shorts/")).toBeNull();
 		expect(youtube.parse("https://www.youtube.com/watch?v=dQw4w9WgXcQ&t=not-a-time")).toEqual(
 			expect.objectContaining({
 				id: "dQw4w9WgXcQ",

@@ -267,6 +267,21 @@ describe("createOptimisticList", () => {
 			rollback();
 			expect(get(list)).toEqual([{ id: "1", name: "Original" }]);
 		});
+
+		it("rollback preserves unrelated items while restoring updated item", () => {
+			const list = createOptimisticList<Item>([
+				{ id: "1", name: "Original" },
+				{ id: "2", name: "Other" }
+			]);
+
+			const { rollback } = list.update("1", { name: "Updated" });
+			rollback();
+
+			expect(get(list)).toEqual([
+				{ id: "1", name: "Original" },
+				{ id: "2", name: "Other" }
+			]);
+		});
 	});
 
 	describe("set", () => {

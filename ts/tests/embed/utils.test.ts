@@ -531,6 +531,13 @@ describe("generateIframeHtml", () => {
 		expect(html).toContain('allow="autoplay; fullscreen"');
 	});
 
+	it("omits allow attribute when allow is empty", () => {
+		const html = generateIframeHtml("https://example.com/embed", {
+			allow: "",
+		});
+		expect(html).not.toContain('allow="');
+	});
+
 	it("sets loading attribute", () => {
 		const htmlLazy = generateIframeHtml("https://example.com/embed", {
 			loading: "lazy",
