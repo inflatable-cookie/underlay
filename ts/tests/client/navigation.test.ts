@@ -119,6 +119,44 @@ describe("client/navigation", () => {
 		expect(patternsNav.retrievePageState("/items")).toEqual({ tab: "active" });
 	});
 
+	it("gotoWithContext skips state storage when state is omitted", async () => {
+		(globalThis as { window?: unknown }).window = createWindowMock("/from");
+		const clientNav = await import("../../src/client/navigation");
+		const patternsNav = await import("../../src/patterns/navigation");
+
+		patternsNav.configureNavigationContext({ storageKey: "client-nav:no-state", maxDepth: 3 });
+		patternsNav.clearNavigationContext();
+		patternsNav.clearPageStates();
+
+		await clientNav.gotoWithContext("/target", {
+			label: "Items",
+			href: "/items",
+			type: "list",
+		});
+
+		expect(patternsNav.retrievePageState("/items")).toBeNull();
+	});
+
+	it("gotoWithContext handles absolute hrefs without a global origin", async () => {
+		(globalThis as { window?: unknown }).window = createWindowMock("/from");
+		(globalThis as { location?: unknown }).location = undefined;
+		const clientNav = await import("../../src/client/navigation");
+		const patternsNav = await import("../../src/patterns/navigation");
+
+		patternsNav.configureNavigationContext({ storageKey: "client-nav:no-origin", maxDepth: 3 });
+		patternsNav.clearNavigationContext();
+		patternsNav.clearPageStates();
+
+		await clientNav.gotoWithContext("/target", {
+			label: "Items",
+			href: "https://example.com/items?tab=active",
+			type: "list",
+			state: { tab: "active" },
+		});
+
+		expect(patternsNav.retrievePageState("https://example.com/items")).toEqual({ tab: "active" });
+	});
+
 	it("navigateBack prefers stack context and falls back to parent path", async () => {
 		(globalThis as { window?: unknown }).window = createWindowMock("/projects/1/edit");
 		const clientNav = await import("../../src/client/navigation");
@@ -176,6 +214,29 @@ describe("client/navigation", () => {
 		expect(patternsNav.consumePageState("/reports")).toBeNull();
 
 		expect(clientNav.capturePageState({ q: "hello", page: 3 })).toEqual({ q: "hello", page: 3 });
+	});
+
+	it("initPageState returns defaults when no state was stored", async () => {
+		(globalThis as { window?: unknown }).window = createWindowMock("/none");
+		const clientNav = await import("../../src/client/navigation");
+		const defaults = { activeTab: "overview", currentPage: 1 };
+		expect(clientNav.initPageState(defaults)).toEqual(defaults);
+	});
+
+	it("initPageState ignores undefined restored values", async () => {
+		(globalThis as { window?: unknown }).window = createWindowMock("/reports");
+		const clientNav = await import("../../src/client/navigation");
+		const patternsNav = await import("../../src/patterns/navigation");
+
+		patternsNav.storePageState("/reports", {
+			activeTab: undefined,
+			currentPage: 2,
+		});
+
+		expect(clientNav.initPageState({ activeTab: "overview", currentPage: 1 })).toEqual({
+			activeTab: "overview",
+			currentPage: 2,
+		});
 	});
 
 	it("uses safe fallbacks when browser mode is disabled", async () => {

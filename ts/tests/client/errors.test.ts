@@ -50,6 +50,7 @@ describe("client/errors", () => {
 		expect(toUserMessage({ status: 401, message: "custom 401" })).toBe(
 			"custom 401"
 		);
+		expect(toUserMessage({ status: 401 })).toBe("Please sign in to continue.");
 		expect(toUserMessage({ status: 403 })).toBe(
 			"You do not have permission to do that."
 		);
@@ -62,6 +63,9 @@ describe("client/errors", () => {
 			"The server is unavailable right now."
 		);
 		expect(toUserMessage({ status: 418, message: "teapot" })).toBe("teapot");
+		expect(toUserMessage({ status: 418 })).toBe(
+			"Something went wrong while talking to the server."
+		);
 		expect(toUserMessage(new Error("boom"))).toBe("boom");
 		expect(toUserMessage({})).toBe(
 			"Something went wrong while talking to the server."
