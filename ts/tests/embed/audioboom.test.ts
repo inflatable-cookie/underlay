@@ -16,6 +16,17 @@ describe("embed/providers/audioboom", () => {
 		expect(audioboom.parse("https://embeds.audioboom.com/posts/456/embed/v4")).toEqual(
 			expect.objectContaining({ provider: "audioboom", id: "456", embedType: "single" })
 		);
+		expect(audioboom.parse("https://audioboom.com/boos/abc-slug")).toEqual(
+			expect.objectContaining({ provider: "audioboom", id: "abc-slug", embedType: "single" })
+		);
+		expect(audioboom.parse("https://embeds.audioboom.com/posts/slug-only/embed/v4")).toEqual(
+			expect.objectContaining({ provider: "audioboom", id: "slug-only", embedType: "single" })
+		);
+		expect(audioboom.parse("https://embeds.audioboom.com/x/posts/777-episode/embed/v4")).toEqual(
+			expect.objectContaining({ provider: "audioboom", id: "777", embedType: "single" })
+		);
+		expect(audioboom.parse("https://embeds.audioboom.com/not-posts/slug/embed/v4")).toBeNull();
+		expect(audioboom.parse("https://audioboom.com/posts/")).toBeNull();
 
 		expect(
 			audioboom.parse("https://audioboom.com/publishing/playlist/v4?data_for_content_type=pl-1&channel_id=c1")
@@ -26,6 +37,28 @@ describe("embed/providers/audioboom", () => {
 				embedType: "playlist",
 				queryParams: expect.objectContaining({ channel_id: "c1" }),
 			})
+		);
+		expect(
+			audioboom.parse("https://audioboom.com/publishing/playlist/v4?playlist_id=pl-2")
+		).toEqual(
+			expect.objectContaining({
+				provider: "audioboom",
+				id: "pl-2",
+				embedType: "playlist",
+			})
+		);
+		expect(
+			audioboom.parse("https://audioboom.com/publishing/playlist/v4?channel_id=channel-only")
+		).toEqual(
+			expect.objectContaining({
+				provider: "audioboom",
+				id: "channel-only",
+				embedType: "playlist",
+			})
+		);
+		expect(audioboom.parse("https://audioboom.com/publishing/playlist/v4")).toBeNull();
+		expect(audioboom.parse("https://embeds.audioboom.com/x/posts/slug-only/embed/v4")).toEqual(
+			expect.objectContaining({ provider: "audioboom", id: "slug-only", embedType: "single" })
 		);
 
 		expect(audioboom.parse("https://example.com/video/1")).toBeNull();
@@ -42,6 +75,9 @@ describe("embed/providers/audioboom", () => {
 			getAudioboomPlaylistUrl("pl-1", { autoplay: true, channelId: "c1", contentType: "episodes" })
 		).toBe(
 			"https://embeds.audioboom.com/publishing/playlist/v4?data_for_content_type=pl-1&channel_id=c1&content_type=episodes&autoplay=1"
+		);
+		expect(getAudioboomPlaylistUrl("pl-1")).toBe(
+			"https://embeds.audioboom.com/publishing/playlist/v4?data_for_content_type=pl-1"
 		);
 	});
 
@@ -119,7 +155,7 @@ describe("embed/providers/audioboom", () => {
 					playlist: {
 						title: "P",
 						description: "D",
-						clips: [],
+						clips: [{ duration: 0 }, {}],
 						image_url: "https://fallback",
 						channel: { title: "C" },
 					},
@@ -132,6 +168,26 @@ describe("embed/providers/audioboom", () => {
 			duration: undefined,
 			thumbnailUrl: "https://fallback",
 			authorName: "C",
+		});
+
+		const noClips = vi.fn().mockResolvedValue({
+			ok: true,
+			json: async () => ({
+				body: {
+					playlist: {
+						title: "No Clips",
+						description: "No clips field",
+						image_url: "https://fallback-2",
+					},
+				},
+			}),
+		});
+		await expect(lookupPlaylistMeta("pl-3b", noClips as any)).resolves.toEqual({
+			title: "No Clips",
+			description: "No clips field",
+			duration: undefined,
+			thumbnailUrl: "https://fallback-2",
+			authorName: undefined,
 		});
 
 		const bad = vi.fn().mockResolvedValue({ ok: false });

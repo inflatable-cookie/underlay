@@ -271,7 +271,7 @@ export function deriveParentPath(currentPath: string): string {
 
   if (segments.length > 0) {
     segments.pop();
-    return "/" + segments.join("/") || "/";
+    return "/" + segments.join("/");
   }
 
   return "/";

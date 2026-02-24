@@ -16,6 +16,21 @@ describe("embed/providers/youtube", () => {
 		expect(youtube.parse("https://www.youtube.com/shorts/dQw4w9WgXcQ")).toEqual(
 			expect.objectContaining({ id: "dQw4w9WgXcQ" })
 		);
+		expect(youtube.parse("https://youtu.be/short")).toBeNull();
+		expect(youtube.parse("https://www.youtube.com/embed/")).toBeNull();
+		expect(youtube.parse("https://www.youtube.com/shorts/")).toBeNull();
+		expect(youtube.parse("https://www.youtube.com/watch?v=dQw4w9WgXcQ&t=not-a-time")).toEqual(
+			expect.objectContaining({
+				id: "dQw4w9WgXcQ",
+				queryParams: expect.objectContaining({ t: "not-a-time" }),
+			})
+		);
+		expect(youtube.parse("https://www.youtube.com/watch?v=dQw4w9WgXcQ&end=oops")).toEqual(
+			expect.objectContaining({
+				id: "dQw4w9WgXcQ",
+				queryParams: expect.objectContaining({ end: "oops" }),
+			})
+		);
 		expect(youtube.parse("https://example.com/video/1")).toBeNull();
 	});
 
@@ -34,6 +49,9 @@ describe("embed/providers/youtube", () => {
 			})
 		).toBe(
 			"https://www.youtube-nocookie.com/embed/abc123xyz00?autoplay=1&start=12&end=30&enablejsapi=1&origin=https%3A%2F%2Fapp.example&rel=0"
+		);
+		expect(youtube.getEmbedUrl("abc123xyz00", { autoplay: false, consent: true })).toBe(
+			"https://www.youtube.com/embed/abc123xyz00?rel=0"
 		);
 	});
 

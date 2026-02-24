@@ -19,6 +19,13 @@ describe("embed/providers/vimeo", () => {
 		expect(vimeo.parse("https://vimeo.com/123456?h=secret")).toEqual(
 			expect.objectContaining({ provider: "vimeo", id: "123456", queryParams: expect.objectContaining({ h: "secret" }) })
 		);
+		expect(vimeo.parse("https://player.vimeo.com/video/not-numeric")).toBeNull();
+		expect(vimeo.parse("https://vimeo.com/channels/staffpicks/not-numeric")).toBeNull();
+		expect(vimeo.parse("https://vimeo.com/groups/name/videos/not-numeric")).toBeNull();
+		expect(vimeo.parse("https://vimeo.com/not-numeric")).toBeNull();
+		expect(vimeo.parse("https://vimeo.com/123456")).toEqual(
+			expect.objectContaining({ provider: "vimeo", id: "123456", queryParams: expect.not.objectContaining({ h: expect.anything() }) })
+		);
 		expect(vimeo.parse("https://example.com/video/1")).toBeNull();
 		expect(vimeo.parse("not-vimeo")).toBeNull();
 	});

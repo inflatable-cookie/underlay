@@ -36,6 +36,13 @@ describe("utils/webauthn", () => {
 		expect(converted.allowCredentials?.[0].id).toBe(credentialId);
 	});
 
+	it("handles request options without allowCredentials array", () => {
+		const challenge = arrayBufferToBase64url(new Uint8Array([9, 9, 9]).buffer);
+		const converted = toPublicKeyRequestOptions({ challenge });
+		expect(converted.challenge).toBeInstanceOf(ArrayBuffer);
+		expect(converted.allowCredentials).toBeUndefined();
+	});
+
 	it("converts creation options from base64url strings", () => {
 		const challenge = arrayBufferToBase64url(new Uint8Array([9, 8, 7]).buffer);
 		const userId = arrayBufferToBase64url(new Uint8Array([6, 5, 4]).buffer);
@@ -68,6 +75,16 @@ describe("utils/webauthn", () => {
 		expect(converted.challenge).toBe(challenge);
 		expect(converted.user.id).toBe(userId);
 		expect(converted.excludeCredentials?.[0].id).toBe(excludeId);
+	});
+
+	it("handles creation options without excludeCredentials array", () => {
+		const challenge = arrayBufferToBase64url(new Uint8Array([1, 2, 3]).buffer);
+		const converted = toPublicKeyCreationOptions({
+			challenge,
+			user: { id: "dXNlcg", name: "u", displayName: "User" },
+		});
+		expect(converted.challenge).toBeInstanceOf(ArrayBuffer);
+		expect(converted.excludeCredentials).toBeUndefined();
 	});
 
 	it("serializes assertion credentials into JSON-safe payload", () => {

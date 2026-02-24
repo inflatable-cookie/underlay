@@ -118,6 +118,9 @@ describe("patterns/navigation", () => {
 			href: "/fallback",
 			isContextual: false,
 		});
+
+		nav.clearNavigationContext();
+		expect(nav.getReturnUrl("/fallback-only")).toBe("/fallback-only");
 	});
 
 	it("consumes context once and computes fallback-aware back info", async () => {
