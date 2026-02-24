@@ -105,4 +105,20 @@ describe("client/query", () => {
 			limit: 25,
 		});
 	});
+
+	it("returns empty params when no supported keys are present", () => {
+		const params = new URLSearchParams("q=search&archived=true");
+		expect(parseQueryParams(params)).toEqual({});
+	});
+
+	it("ignores malformed filter keys while parsing valid pagination", () => {
+		const params = new URLSearchParams(
+			"filter[not-valid-key]=x&filter[weight][gte]=10&page=1&limit=20"
+		);
+		expect(parseQueryParams(params)).toEqual({
+			filters: [{ field: "weight", operator: "gte", value: "10" }],
+			page: 1,
+			limit: 20,
+		});
+	});
 });
