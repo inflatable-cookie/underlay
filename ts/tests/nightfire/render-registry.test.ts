@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { getBlockRenderer, registerBlockRenderer } from "../../src/nightfire/render-registry";
 
 class A {}
@@ -17,5 +17,16 @@ describe("nightfire/render-registry", () => {
 		expect(getBlockRenderer("other", "markdown")).toBe(A as any);
 		expect(getBlockRenderer(undefined, "markdown")).toBe(A as any);
 		expect(getBlockRenderer("schema-1", "unknown")).toBeNull();
+	});
+
+	it("loads default render registrations", async () => {
+		const loaded = { markupRender: false };
+		vi.resetModules();
+		vi.doMock("../../src/nightfire/markup/render", () => {
+			loaded.markupRender = true;
+			return {};
+		});
+		await import("../../src/nightfire/render-registrations");
+		expect(loaded).toEqual({ markupRender: true });
 	});
 });

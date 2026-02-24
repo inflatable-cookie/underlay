@@ -282,4 +282,47 @@ describe("nightfire/editor/summary-transform", () => {
 		);
 		expect(fromSliderSecondImageOnly.warning).toContain("drops image selections");
 	});
+
+	it("handles malformed data payloads for text and slider transitions", () => {
+		const fromTextWithNonObjectData = transformSummaryBlockOnLayoutChange(
+			{
+				type: "summary.book",
+				data: "bad-data" as any,
+			},
+			"summary.pie",
+			label
+		);
+		expect(fromTextWithNonObjectData.block).toEqual({
+			type: "summary.pie",
+			data: {
+				pages: [],
+				subTitle: null,
+			},
+		});
+		expect(fromTextWithNonObjectData.warning).toBeNull();
+
+		const toSliderWithMissingPages = transformSummaryBlockOnLayoutChange(
+			{
+				type: "summary.book",
+				data: { pages: "not-array" as any, subTitle: "kept" },
+			},
+			"summary.imageSlider",
+			label
+		);
+		expect(toSliderWithMissingPages.block).toEqual({
+			type: "summary.imageSlider",
+			data: {
+				subTitle: "kept",
+				description: null,
+				image1Id: null,
+				image1Alt: null,
+				image2Id: null,
+				image2Alt: null,
+				startPosition: "left",
+			},
+		});
+		expect(toSliderWithMissingPages.warning).toContain(
+			"keeps the first page's text as the slider description."
+		);
+	});
 });

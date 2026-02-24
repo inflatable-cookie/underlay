@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
 	getBlockEditor,
 	getBlockTypeLabel,
@@ -52,5 +52,20 @@ describe("nightfire/editor-registry", () => {
 		expect(isBlockContentEmpty({ type: "markdown", data: { text: "" } })).toBe(true);
 		expect(isBlockContentEmpty({ type: "markdown", data: { text: "  " } })).toBe(true);
 		expect(isBlockContentEmpty({ type: "markdown", data: { text: "hello" } })).toBe(false);
+	});
+
+	it("loads editor registrations for markup and media", async () => {
+		const loaded = { markup: false, media: false };
+		vi.resetModules();
+		vi.doMock("../../src/nightfire/markup/editor", () => {
+			loaded.markup = true;
+			return {};
+		});
+		vi.doMock("../../src/nightfire/media/editor", () => {
+			loaded.media = true;
+			return {};
+		});
+		await import("../../src/nightfire/editor-registrations");
+		expect(loaded).toEqual({ markup: true, media: true });
 	});
 });

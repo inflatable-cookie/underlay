@@ -118,4 +118,17 @@ describe("nightfire/editor/grouped-options", () => {
 
 		expect(result.map((group) => group.category)).toEqual(["alpha", "beta", null]);
 	});
+
+	it("covers reverse subcategory comparator branch", () => {
+		const result = buildGroupedOptions([
+			{ type: "s1", label: "One", category: "SortBranch", subcategory: "b" },
+			{ type: "s2", label: "Two", category: "SortBranch", subcategory: "a" },
+		]);
+
+		const group = result.find((entry) => entry.category === "SortBranch");
+		expect(group?.options.map((entry) => `${entry.subcategory}:${entry.label}`)).toEqual([
+			"a:Two",
+			"b:One",
+		]);
+	});
 });
