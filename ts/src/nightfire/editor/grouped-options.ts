@@ -56,7 +56,7 @@ export function buildGroupedOptions(
 	});
 
 	return sortedKeys.map((key) => {
-		const grouped = groups.get(key) ?? [];
+		const grouped = groups.get(key)!;
 		grouped.sort((a, b) => {
 			const priorityA = getSubcategoryPriority(a);
 			const priorityB = getSubcategoryPriority(b);
@@ -87,11 +87,11 @@ function getSubcategoryPriority(option: NightfireBlockOptionInput): number {
 		return 100;
 	}
 
-	const normalisedSubcategory = (option.subcategory ?? "")
+	const normalisedSubcategory = option.subcategory!
 		.toLowerCase()
 		.replace(/[^a-z0-9]/g, "");
 
-	return INTERACTIVE_QUESTION_SUBCATEGORY_PRIORITY[normalisedSubcategory] ?? 99;
+	return INTERACTIVE_QUESTION_SUBCATEGORY_PRIORITY[normalisedSubcategory];
 }
 
 function formatCategoryLabel(input: string): string {
