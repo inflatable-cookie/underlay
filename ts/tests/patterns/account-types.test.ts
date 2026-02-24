@@ -13,6 +13,10 @@ describe("deriveDisplayName", () => {
 		expect(deriveDisplayName("  María José García  ")).toBe("María");
 	});
 
+	it("returns full single-word non-CJK names", () => {
+		expect(deriveDisplayName("Prince")).toBe("Prince");
+	});
+
 	it("returns full CJK names without splitting", () => {
 		expect(deriveDisplayName("李明")).toBe("李明");
 		expect(deriveDisplayName("山田 太郎")).toBe("山田 太郎");

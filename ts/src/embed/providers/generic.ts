@@ -168,16 +168,14 @@ export function validateEmbedHtml(html: string): {
   if (/<script[^>]*>[\s\S]*<\/script>/i.test(html)) {
     // Allow script tags only if they have a src attribute and no inline code
     const scriptMatch = html.match(/<script([^>]*)>([\s\S]*?)<\/script>/gi);
-    if (scriptMatch) {
-      for (const script of scriptMatch) {
-        // If there's content between script tags, it's inline code
-        const contentMatch = script.match(/<script[^>]*>([\s\S]*?)<\/script>/i);
-        if (contentMatch && contentMatch[1].trim()) {
-          return {
-            valid: false,
-            reason: "Inline script content not allowed",
-          };
-        }
+    for (const script of scriptMatch ?? []) {
+      // If there's content between script tags, it's inline code
+      const contentMatch = script.match(/<script[^>]*>([\s\S]*?)<\/script>/i);
+      if (contentMatch && contentMatch[1].trim()) {
+        return {
+          valid: false,
+          reason: "Inline script content not allowed",
+        };
       }
     }
   }

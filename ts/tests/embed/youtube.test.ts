@@ -23,9 +23,10 @@ describe("embed/providers/youtube", () => {
 			expect(youtube.parse("https://www.youtube.com/embed/")).toBeNull();
 			expect(youtube.parse("https://www.youtube.com/v/")).toBeNull();
 			expect(youtube.parse("https://www.youtube.com/shorts/")).toBeNull();
-		expect(youtube.parse("https://www.youtube.com/watch?v=dQw4w9WgXcQ&t=not-a-time")).toEqual(
-			expect.objectContaining({
-				id: "dQw4w9WgXcQ",
+			expect(youtube.parse("https://www.youtube.com/channel/UC1234567890")).toBeNull();
+			expect(youtube.parse("https://www.youtube.com/watch?v=dQw4w9WgXcQ&t=not-a-time")).toEqual(
+				expect.objectContaining({
+					id: "dQw4w9WgXcQ",
 				queryParams: expect.objectContaining({ t: "not-a-time" }),
 			})
 		);
