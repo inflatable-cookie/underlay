@@ -70,6 +70,7 @@ export type {
   AutonomousListProps,
   ListFilterField,
   ListReorderConfig,
+  ListReorderSubmitErrorContext,
   ListItemContext,
   FilterBarContext,
   ServerFetcher

@@ -269,6 +269,7 @@
       controller={listState.reorder}
       oncancel={listState.exitReorderMode}
       onsuccess={listState.handleReorderSuccess}
+      onsubmiterror={listState.handleReorderSubmitError}
     >
       {#snippet item(reorderableItem)}
         {#if reorderItemSnippet}

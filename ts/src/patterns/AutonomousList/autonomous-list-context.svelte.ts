@@ -30,6 +30,7 @@ export interface AutonomousListState<T> {
   enterReorderMode: () => void;
   exitReorderMode: () => void;
   handleReorderSuccess: () => Promise<void>;
+  handleReorderSubmitError: (error: unknown) => Promise<void | string>;
   handleKeydown: (event: KeyboardEvent) => void;
   readonly allItemIds: string[];
   readonly canReorder: boolean;
@@ -209,6 +210,16 @@ export function createAutonomousListState<T>(
     props.onDataChange?.();
   }
 
+  async function handleReorderSubmitError(error: unknown): Promise<void | string> {
+    if (!props.reorderable?.onSubmitError || !reorderController) {
+      return;
+    }
+    return props.reorderable.onSubmitError(error, {
+      controller: reorderController,
+      latestItems: getItems()
+    });
+  }
+
   function handleKeydown(event: KeyboardEvent) {
     if (event.key === "Escape") {
       if (selectionMode) {
@@ -281,6 +292,7 @@ export function createAutonomousListState<T>(
     enterReorderMode,
     exitReorderMode,
     handleReorderSuccess,
+    handleReorderSubmitError,
     handleKeydown,
     get allItemIds() { return allItemIds; },
     get canReorder() { return canReorder; },

@@ -54,15 +54,22 @@ export function extractReorderConflict(error: unknown): ReorderConflictDetails |
   const top = asRecord(error);
   if (!top) return null;
 
-  const status = typeof top.status === "number" ? top.status : null;
+  const raw = asRecord(top.raw);
+  const status =
+    typeof top.status === "number"
+      ? top.status
+      : typeof raw?.status === "number"
+        ? raw.status
+        : null;
   if (status !== 409) return null;
 
   const topMessage = typeof top.message === "string" ? top.message : null;
-  const raw = asRecord(top.raw);
   const rawError = asRecord(raw?.error);
 
   const candidates: unknown[] = [
+    top.context,
     raw?.context,
+    raw?.details,
     rawError?.context,
     rawError?.details,
     top.details

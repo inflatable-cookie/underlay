@@ -4,6 +4,7 @@ import type { BatchAction } from "../batch-actions.svelte";
 import type { NavigationContext } from "../navigation-types";
 import type { PageHeaderLevel, BreadcrumbItem } from "../types";
 import type { PaginatedResponse, PaginationParams } from "../pagination-types";
+import type { ReorderController, ReorderableItem } from "../reorder-controller.svelte";
 
 /**
  * Filter field definition for the AutonomousList FilterBar.
@@ -32,11 +33,21 @@ export interface ListFilterField {
 /**
  * Reorder configuration.
  */
-export interface ListReorderConfig {
+export interface ListReorderConfig<T = unknown> {
   /** Async function to persist the new order */
   execute: (orderedIds: string[], fetchFn: typeof fetch, token: string) => Promise<void>;
   /** When reordering is available (e.g., only when no filters active) */
   condition?: (filters: Record<string, unknown>) => boolean;
+  /** Optional submit-error hook for conflict recovery and custom error copy. */
+  onSubmitError?: (
+    error: unknown,
+    context: ListReorderSubmitErrorContext<T>
+  ) => void | string | Promise<void | string>;
+}
+
+export interface ListReorderSubmitErrorContext<T> {
+  controller: ReorderController<ReorderableItem>;
+  latestItems: readonly T[];
 }
 
 /**
@@ -116,7 +127,7 @@ export interface AutonomousListProps<T> {
   // ── Reordering ──
 
   /** Reorder configuration (omit for non-reorderable lists) */
-  reorderable?: ListReorderConfig;
+  reorderable?: ListReorderConfig<T>;
 
   // ── Navigation ──
 

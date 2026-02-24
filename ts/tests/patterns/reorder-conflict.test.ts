@@ -62,6 +62,25 @@ describe("extractReorderConflict", () => {
     expect(conflict).toBeNull();
   });
 
+  it("extracts conflict details from top-level context and raw status", () => {
+    const conflict = extractReorderConflict({
+      message: "Conflict",
+      context: {
+        added_ids: ["new-a"],
+        removed_ids: ["old-z"]
+      },
+      raw: {
+        status: 409
+      }
+    });
+
+    expect(conflict).toEqual({
+      addedIds: ["new-a"],
+      removedIds: ["old-z"],
+      message: "Conflict"
+    });
+  });
+
   it("returns null when 409 has no usable context or empty context arrays", () => {
     expect(
       extractReorderConflict({
