@@ -55,6 +55,8 @@ export function transformSummaryBlockOnLayoutChange(
 		};
 	}
 
+	const baseBlock = currentBlock as Record<string, unknown>;
+
 	const fromIsTextPages = SUMMARY_TEXT_PAGE_TYPES.has(fromType);
 	const toIsTextPages = SUMMARY_TEXT_PAGE_TYPES.has(nextType);
 	const fromIsImagePages = SUMMARY_IMAGE_PAGE_TYPES.has(fromType);
@@ -67,8 +69,8 @@ export function transformSummaryBlockOnLayoutChange(
 
 	let warning: string | null = null;
 	let data: Record<string, unknown> =
-		currentBlock && typeof currentBlock.data === "object"
-			? (currentBlock.data as Record<string, unknown>)
+		typeof baseBlock.data === "object" && baseBlock.data !== null
+			? (baseBlock.data as Record<string, unknown>)
 			: {};
 
 	if (fromIsTextPages && toIsTextPages) {
@@ -90,15 +92,15 @@ export function transformSummaryBlockOnLayoutChange(
 			delete data.subTitle;
 		}
 
-		return {
-			block: { ...(currentBlock ?? {}), type: nextType, data },
-			warning: null
-		};
-	}
+			return {
+				block: { ...baseBlock, type: nextType, data },
+				warning: null
+			};
+		}
 
 	if (fromIsImagePages && toIsImagePages) {
 		return {
-			block: { ...(currentBlock ?? {}), type: nextType },
+			block: { ...baseBlock, type: nextType },
 			warning: null
 		};
 	}
@@ -126,11 +128,11 @@ export function transformSummaryBlockOnLayoutChange(
 			warning = `Changing layout from ${fromLabel} to ${toLabel} keeps titles and bodies but drops image selections.`;
 		}
 
-		return {
-			block: { ...(currentBlock ?? {}), type: nextType, data },
-			warning
-		};
-	}
+			return {
+				block: { ...baseBlock, type: nextType, data },
+				warning
+			};
+		}
 
 	if (fromIsTextPages && toIsImagePages) {
 		const pages = clonePagesWithTitleBody({ pages: data.pages }).map((page) => ({
@@ -140,7 +142,7 @@ export function transformSummaryBlockOnLayoutChange(
 
 		data = { ...data, pages };
 		return {
-			block: { ...(currentBlock ?? {}), type: nextType, data },
+			block: { ...baseBlock, type: nextType, data },
 			warning: null
 		};
 	}
@@ -166,14 +168,14 @@ export function transformSummaryBlockOnLayoutChange(
 			startPosition: "left"
 		};
 
-		if (pagesArray.length > 1 || hasAnyImageIds(currentBlock?.data)) {
+		if (pagesArray.length > 1 || hasAnyImageIds(baseBlock.data)) {
 			warning = `Changing layout from ${fromLabel} to ${toLabel} keeps the first page's text as the slider description but discards other pages and any image selections.`;
 		} else {
 			warning = `Changing layout from ${fromLabel} to ${toLabel} keeps the first page's text as the slider description.`;
 		}
 
 		return {
-			block: { ...(currentBlock ?? {}), type: nextType, data },
+			block: { ...baseBlock, type: nextType, data },
 			warning
 		};
 	}
@@ -205,14 +207,14 @@ export function transformSummaryBlockOnLayoutChange(
 		}
 
 		return {
-			block: { ...(currentBlock ?? {}), type: nextType, data },
+			block: { ...baseBlock, type: nextType, data },
 			warning
 		};
 	}
 
 	return {
 		block: {
-			...(currentBlock ?? {}),
+			...baseBlock,
 			type: nextType
 		},
 		warning: null
