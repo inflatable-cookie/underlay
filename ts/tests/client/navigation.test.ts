@@ -55,6 +55,7 @@ function createWindowMock(pathname = "/", historyLength = 2) {
 
 describe("client/navigation", () => {
 	const originalWindow = (globalThis as { window?: unknown }).window;
+	const originalLocation = (globalThis as { location?: unknown }).location;
 
 	beforeEach(() => {
 		vi.resetModules();
@@ -64,6 +65,7 @@ describe("client/navigation", () => {
 
 	afterEach(() => {
 		(globalThis as { window?: unknown }).window = originalWindow;
+		(globalThis as { location?: unknown }).location = originalLocation;
 	});
 
 	it("gotoWithContext stores state, pushes context with targetHref, and navigates", async () => {
@@ -95,6 +97,26 @@ describe("client/navigation", () => {
 			targetHref: "/items/1/edit",
 		});
 		expect(patternsNav.retrievePageState("/items")).toEqual({ tab: "active", page: 2 });
+	});
+
+	it("gotoWithContext stores state for absolute hrefs using global location origin", async () => {
+		(globalThis as { window?: unknown }).window = createWindowMock("/from");
+		(globalThis as { location?: unknown }).location = { origin: "https://example.com" };
+		const clientNav = await import("../../src/client/navigation");
+		const patternsNav = await import("../../src/patterns/navigation");
+
+		patternsNav.configureNavigationContext({ storageKey: "client-nav:absolute", maxDepth: 3 });
+		patternsNav.clearNavigationContext();
+		patternsNav.clearPageStates();
+
+		await clientNav.gotoWithContext("/target", {
+			label: "Items",
+			href: "https://example.com/items?tab=active",
+			type: "list",
+			state: { tab: "active" },
+		});
+
+		expect(patternsNav.retrievePageState("/items")).toEqual({ tab: "active" });
 	});
 
 	it("navigateBack prefers stack context and falls back to parent path", async () => {
@@ -154,5 +176,24 @@ describe("client/navigation", () => {
 		expect(patternsNav.consumePageState("/reports")).toBeNull();
 
 		expect(clientNav.capturePageState({ q: "hello", page: 3 })).toEqual({ q: "hello", page: 3 });
+	});
+
+	it("uses safe fallbacks when browser mode is disabled", async () => {
+		(globalThis as { window?: unknown }).window = createWindowMock("/reports");
+		vi.resetModules();
+		vi.doMock("$app/environment", () => ({ browser: false }));
+		const clientNav = await import("../../src/client/navigation");
+
+		expect(clientNav.navigateBack()).toBe("/");
+		expect(mocks.goto).toHaveBeenCalledWith("/");
+
+		const hrefBefore = (globalThis as any).window.location.href;
+		clientNav.navigateOnCancel("/ignored-when-server");
+		expect((globalThis as any).window.location.href).toBe(hrefBefore);
+
+		expect(clientNav.initPageState({ activeTab: "overview", page: 1 })).toEqual({
+			activeTab: "overview",
+			page: 1,
+		});
 	});
 });
