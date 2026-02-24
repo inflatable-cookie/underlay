@@ -51,22 +51,23 @@ Read these documents in order for a complete understanding:
 23. **[090 - UI Kit](./090-ui-kit.md)** - Component patterns
 24. **[092 - Selection Suggestions](./092-selection-suggestions.md)** - Intelligent suggestions with selection history
 25. **[095 - Navigation Context](./095-navigation-context.md)** - Contextual back buttons and form redirects
-26. **[098 - Shared Admin Patterns](./098-shared-admin-patterns.md)** - Higher-level admin components (EmptyState, Drawer, DetailPageShell, AutonomousList, etc.)
-27. **[100 - Frontend (Web)](./100-frontend-web.md)** - SvelteKit setup, routing
-28. **[110 - Admin Frontend](./110-admin.md)** - Admin UI structure
-29. **[120 - Configuration](./120-configuration.md)** - Typed config model, env boundaries, migration checklist
-30. **[130 - Testing](./130-testing.md)** - Test patterns for all layers
-31. **[140 - Local Development](./140-local-development.md)** - Running locally, debugging
-32. **[150 - CI/CD](./150-ci-cd.md)** - GitHub Actions template
-33. **[160 - Troubleshooting](./160-troubleshooting.md)** - Common issues and solutions
-34. **[170 - Checklist](./170-checklist.md)** - Completion verification
-35. **[172 - Lean AGENTS.md Files](./172-agents-files.md)** - Keep agent instructions concise and operational
-36. **[176 - AI Runtime Routing](./176-ai-runtime-routing.md)** - Provider-agnostic backend LLM runtime boundary
-37. **[180 - Admin Workflow Playbook](./180-admin-workflow-playbook.md)** - Start-here implementation flow for admin features
-38. **[181 - Temporary API Profile Migration Playbook](./181-temporary-api-profile-migration-playbook.md)** - Cross-app migration checklist (temporary)
-39. **[185 - Recipe Map and Testing Matrix](./185-recipe-map-and-testing-matrix.md)** - Recipe-to-code references + minimum tests
-40. **[190 - Upgrade Compatibility Matrix](./190-upgrade-compatibility.md)** - Upgrade expectations and breakage checks
-41. **[200 - Project Sync](./200-project-sync.md)** - Migration/sync checklist for existing projects
+26. **[097 - Autonomous List Components](./097-autonomous-list-components.md)** - Self-contained list architecture, props contract, and batch patterns
+27. **[098 - Shared Admin Patterns](./098-shared-admin-patterns.md)** - Higher-level admin components (EmptyState, Drawer, DetailPageShell, AutonomousList, etc.)
+28. **[100 - Frontend (Web)](./100-frontend-web.md)** - SvelteKit setup, routing
+29. **[110 - Admin Frontend](./110-admin.md)** - Admin UI structure
+30. **[120 - Configuration](./120-configuration.md)** - Typed config model, env boundaries, migration checklist
+31. **[130 - Testing](./130-testing.md)** - Test patterns for all layers
+32. **[140 - Local Development](./140-local-development.md)** - Running locally, debugging
+33. **[150 - CI/CD](./150-ci-cd.md)** - GitHub Actions template
+34. **[160 - Troubleshooting](./160-troubleshooting.md)** - Common issues and solutions
+35. **[170 - Checklist](./170-checklist.md)** - Completion verification
+36. **[172 - Lean AGENTS.md Files](./172-agents-files.md)** - Keep agent instructions concise and operational
+37. **[176 - AI Runtime Routing](./176-ai-runtime-routing.md)** - Provider-agnostic backend LLM runtime boundary
+38. **[180 - Admin Workflow Playbook](./180-admin-workflow-playbook.md)** - Start-here implementation flow for admin features
+39. **[181 - Temporary API Profile Migration Playbook](./181-temporary-api-profile-migration-playbook.md)** - Cross-app migration checklist (temporary)
+40. **[185 - Recipe Map and Testing Matrix](./185-recipe-map-and-testing-matrix.md)** - Recipe-to-code references + minimum tests
+41. **[190 - Upgrade Compatibility Matrix](./190-upgrade-compatibility.md)** - Upgrade expectations and breakage checks
+42. **[200 - Project Sync](./200-project-sync.md)** - Migration/sync checklist for existing projects
 
 ## Code Examples
 

@@ -20,6 +20,48 @@ The Autonomous List Component pattern solves the "god file" problem where parent
 - Parent pages become thin coordinators
 - Adding new actions happens in one place per entity
 
+## Component Interface Contract
+
+Use a consistent props contract for all autonomous list components:
+
+```ts
+interface EntityListProps {
+  // Context filters. More specific scopes override broader scopes.
+  pathwayId?: string;
+  moduleId?: string;
+  sectionId?: string;
+  areaId?: string;
+  outcomeId?: string;
+
+  // Shared navigation context for redirects/back links.
+  sourceContext: NavigationContext;
+
+  // UI presentation.
+  variant?: "page" | "tab";
+
+  // Optional parent coordination callback.
+  onDataChange?: () => void;
+}
+```
+
+### Variant Rules (`page` vs `tab`)
+
+- `variant="page"`: use root-page framing (`h1`, full spacing, root actions visible).
+- `variant="tab"`: use embedded framing (`h3`, tighter spacing, context-reduced actions).
+- Keep data and action behavior identical across variants; only presentation/context should differ.
+
+### Filter Precedence Rules
+
+When multiple context filters are present, apply the narrowest scope:
+
+1. `outcomeId`
+2. `areaId`
+3. `sectionId`
+4. `moduleId`
+5. `pathwayId`
+
+If a narrower filter is set, ignore broader filters in the query call to avoid ambiguous fetch behavior.
+
 ## Core Hooks
 
 ### `useBatchSelection`
