@@ -333,8 +333,13 @@ describe('createHttpClient', () => {
 	});
 
 	describe('timeout', () => {
-		it.skip('should timeout GET requests after specified time', async () => {
-			fetchMock = mockFetchWithDelay({}, 10000); // 10 seconds
+		it('should timeout GET requests after specified time', async () => {
+			vi.useFakeTimers();
+			fetchMock = vi.fn().mockImplementation((_url, init?: RequestInit) => {
+				return new Promise((_resolve, reject) => {
+					init?.signal?.addEventListener('abort', () => reject(new Error('Aborted')));
+				});
+			});
 
 			const client = createHttpClient({
 				baseUrl: 'https://api.example.com',
@@ -343,11 +348,16 @@ describe('createHttpClient', () => {
 			});
 
 			const promise = client.get('/slow-endpoint');
+			const rejection = expect(promise).rejects.toMatchObject({
+				status: 0,
+				message: 'Aborted'
+			});
 
 			// Advance timers to trigger timeout
 			await vi.advanceTimersByTimeAsync(5000);
 
-			await expect(promise).rejects.toThrow();
+			await rejection;
+			vi.useRealTimers();
 		});
 
 		it.skip('should not timeout POST requests', async () => {
