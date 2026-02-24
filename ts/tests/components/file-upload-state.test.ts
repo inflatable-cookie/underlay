@@ -123,6 +123,29 @@ describe("components/file-upload/state", () => {
 		expect(result.replacedPreviewUrls).toEqual([]);
 	});
 
+	it("skips compression for non-image files even when compression is enabled", async () => {
+		mocks.generateFileUploadId.mockReturnValueOnce("id-4");
+		mocks.validateUploadFile.mockReturnValue(null);
+		mocks.compressImage.mockClear();
+
+		const file = { name: "notes.txt", type: "text/plain", size: 10 } as File;
+		const result = await processUploadFiles({
+			fileList: [file] as unknown as FileList,
+			currentFiles: [],
+			accept: "*",
+			maxSize: 100,
+			multiple: true,
+			maxFiles: 3,
+			showPreview: true,
+			compress: true,
+			compressionOptions: {} as any,
+		});
+
+		expect(mocks.compressImage).not.toHaveBeenCalled();
+		expect(result.filesToUpload).toEqual([file]);
+		expect(result.nextFiles[0]).toEqual(expect.objectContaining({ id: "id-4", file }));
+	});
+
 	it("skips invalid files and emits validation errors", async () => {
 		mocks.validateUploadFile.mockReturnValue("nope");
 		const onValidationError = vi.fn();

@@ -301,11 +301,13 @@ describe("applyCspHeaders", () => {
 		const securityConfig = createSecurityHeadersConfig({
 			frameOptions: false,
 			contentTypeOptions: false,
+			referrerPolicy: false,
 		});
 		applyCspHeaders(response, cspConfig, undefined, securityConfig);
 
 		expect(response.headers.has("X-Frame-Options")).toBe(false);
 		expect(response.headers.has("X-Content-Type-Options")).toBe(false);
+		expect(response.headers.has("Referrer-Policy")).toBe(false);
 	});
 
 	it("sets permissions policy when configured", () => {
