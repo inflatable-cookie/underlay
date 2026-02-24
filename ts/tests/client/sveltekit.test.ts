@@ -93,6 +93,8 @@ describe("client/sveltekit", () => {
 
 		await store.setRefreshToken("r1");
 		expect(await store.getRefreshToken()).toBe("r1");
+		await store.setRefreshToken(null);
+		expect(cookies.delete).toHaveBeenCalledWith("refresh", { path: "/" });
 		await store.clear();
 		expect(cookies.delete).toHaveBeenCalledWith("access", { path: "/" });
 		expect(cookies.delete).toHaveBeenCalledWith("refresh", { path: "/" });
@@ -175,5 +177,115 @@ describe("client/sveltekit", () => {
 		expect(resolve).not.toHaveBeenCalled();
 		expect(cookies.delete).toHaveBeenCalledWith("access", { path: "/" });
 		expect(cookies.delete).toHaveBeenCalledWith("refresh", { path: "/" });
+	});
+
+	it("returns default 401 response when protected and unauthenticated without override", async () => {
+		const { createAuthHandle } = await import("../../src/client/sveltekit");
+
+		mocks.createHttpClient.mockReturnValue({});
+		mocks.createAuthCommands.mockReturnValue({
+			session: vi.fn().mockResolvedValue(null),
+		});
+
+		const event = {
+			cookies: createCookiesMock(),
+			fetch: vi.fn(),
+			locals: {},
+			url: new URL("https://example.com/private"),
+		} as any;
+		const resolve = vi.fn(async () => new Response("ok", { status: 200 }));
+
+		const handle = createAuthHandle({
+			baseUrl: "https://api.example.com",
+			routes: {
+				register: "/register",
+				loginPassword: "/login/password",
+				loginPasskey: "/login/passkey",
+				logout: "/logout",
+				refresh: "/refresh",
+				session: "/session",
+			},
+			cookies: { accessTokenCookie: "access", refreshTokenCookie: "refresh" },
+			shouldProtect: () => true,
+		});
+
+		const response = await handle({ event, resolve } as any);
+		expect(response.status).toBe(401);
+		expect(await response.text()).toBe("Unauthorized");
+		expect(resolve).not.toHaveBeenCalled();
+	});
+
+	it("uses default refresh request through auth refresh adapter", async () => {
+		const { createAuthHandle } = await import("../../src/client/sveltekit");
+
+		mocks.createHttpClient.mockReturnValue({});
+		mocks.createAuthCommands.mockReturnValue({ session: vi.fn().mockResolvedValue({ id: "ok" }) });
+
+		const event = {
+			cookies: createCookiesMock(),
+			fetch: vi.fn(),
+			locals: {},
+			url: new URL("https://example.com/private"),
+		} as any;
+		const resolve = vi.fn(async () => new Response("ok", { status: 200 }));
+
+		const handle = createAuthHandle({
+			baseUrl: "https://api.example.com",
+			routes: {
+				register: "/register",
+				loginPassword: "/login/password",
+				loginPasskey: "/login/passkey",
+				logout: "/logout",
+				refresh: "/refresh",
+				session: "/session",
+			},
+			cookies: { accessTokenCookie: "access", refreshTokenCookie: "refresh" },
+		});
+
+		await handle({ event, resolve } as any);
+		const cfg = mocks.createHttpClient.mock.calls[1][0];
+		const refresh = cfg.auth.refresh as (ctx: {
+			rawRequest: (req: any) => Promise<any>;
+			getRefreshToken: () => Promise<string | null>;
+		}) => Promise<any>;
+
+		const rawRequest = vi
+			.fn()
+			.mockResolvedValueOnce({ data: { accessToken: "a2", refreshToken: "r2" } })
+			.mockRejectedValueOnce(new Error("boom"));
+
+		await expect(
+			refresh({
+				rawRequest,
+				getRefreshToken: vi.fn().mockResolvedValue("rt"),
+			})
+		).resolves.toEqual({
+			success: true,
+			accessToken: "a2",
+			refreshToken: "r2",
+		});
+		expect(rawRequest).toHaveBeenNthCalledWith(1, {
+			method: "POST",
+			path: "/refresh",
+			body: { refreshToken: "rt" },
+			headers: undefined,
+		});
+
+		await expect(
+			refresh({
+				rawRequest,
+				getRefreshToken: vi.fn().mockResolvedValue(null),
+			})
+		).resolves.toEqual({
+			success: false,
+			accessToken: null,
+			refreshToken: null,
+		});
+		expect(rawRequest).toHaveBeenNthCalledWith(2, {
+			method: "POST",
+			path: "/refresh",
+			body: undefined,
+			headers: undefined,
+		});
 	});
 });
