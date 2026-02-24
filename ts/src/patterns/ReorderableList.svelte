@@ -70,6 +70,8 @@
     longListThreshold?: number | null;
     /** Optional custom long-list warning text */
     longListWarningText?: string;
+    /** Optional page/window size for large-list reorder mode. Null disables. */
+    windowSize?: number | null;
   }
 
   let {
@@ -87,21 +89,14 @@
     highlightedIds = [],
     getItemLabel = (item: T) => item.id,
     longListThreshold = 50,
-    longListWarningText
+    longListWarningText,
+    windowSize = null
   }: Props = $props();
 
   // Track submission state locally for error handling
   let submitError = $state<string | null>(null);
   let liveMessage = $state("");
   let grabbedIndex = $state<number | null>(null);
-
-  function handleDndConsider(e: CustomEvent<DndEvent<T>>) {
-    controller.updatePending(e.detail.items);
-  }
-
-  function handleDndFinalize(e: CustomEvent<DndEvent<T>>) {
-    controller.updatePending(e.detail.items);
-  }
 
   async function handleSubmit() {
     submitError = null;
@@ -182,6 +177,50 @@
     longListWarningText ??
       `This list has ${controller.pending.length} items. Reordering large lists can be error-prone; consider chunked moves and save often.`
   );
+  let windowPageIndex = $state(0);
+  let effectiveWindowSize = $derived(
+    windowSize !== null && windowSize > 0 ? windowSize : controller.pending.length
+  );
+  let isWindowed = $derived(
+    windowSize !== null && windowSize > 0 && controller.pending.length > effectiveWindowSize
+  );
+  let windowPageCount = $derived(
+    isWindowed ? Math.ceil(controller.pending.length / effectiveWindowSize) : 1
+  );
+  let windowStart = $derived(
+    isWindowed ? windowPageIndex * effectiveWindowSize : 0
+  );
+  let windowEnd = $derived(Math.min(windowStart + effectiveWindowSize, controller.pending.length));
+  let visibleItems = $derived(controller.pending.slice(windowStart, windowEnd));
+
+  $effect(() => {
+    if (!isWindowed) {
+      windowPageIndex = 0;
+      return;
+    }
+    if (windowPageIndex >= windowPageCount) {
+      windowPageIndex = Math.max(windowPageCount - 1, 0);
+    }
+  });
+
+  function previousWindowPage() {
+    windowPageIndex = Math.max(windowPageIndex - 1, 0);
+  }
+
+  function nextWindowPage() {
+    windowPageIndex = Math.min(windowPageIndex + 1, windowPageCount - 1);
+  }
+
+  function updatePendingFromDndItems(items: T[]) {
+    if (!isWindowed) {
+      controller.updatePending(items);
+      return;
+    }
+
+    const merged = [...controller.pending];
+    merged.splice(windowStart, items.length, ...items);
+    controller.updatePending(merged);
+  }
 </script>
 
 <div class="underlay-reorderable-list" class:underlay-reorderable-list--disabled={isDisabled}>
@@ -219,6 +258,24 @@
     </div>
   {/if}
 
+  {#if isWindowed}
+    <div class="underlay-reorderable-list__window-nav">
+      <Button variant="subtle" onclick={previousWindowPage} disabled={isDisabled || windowPageIndex === 0}>
+        Previous
+      </Button>
+      <span class="underlay-reorderable-list__window-label">
+        Page {windowPageIndex + 1} of {windowPageCount}
+      </span>
+      <Button
+        variant="subtle"
+        onclick={nextWindowPage}
+        disabled={isDisabled || windowPageIndex >= windowPageCount - 1}
+      >
+        Next
+      </Button>
+    </div>
+  {/if}
+
   {#if controller.pending.length === 0 && empty}
     <div class="underlay-reorderable-list__empty">
       {@render empty()}
@@ -228,15 +285,16 @@
       class="underlay-reorderable-list__items"
       role="list"
       use:dndzone={{
-        items: controller.pending,
+        items: visibleItems,
         flipDurationMs,
         dropTargetStyle: {},
         dragDisabled: isDisabled
       }}
-      onconsider={handleDndConsider}
-      onfinalize={handleDndFinalize}
+      onconsider={(event: CustomEvent<DndEvent<T>>) => updatePendingFromDndItems(event.detail.items)}
+      onfinalize={(event: CustomEvent<DndEvent<T>>) => updatePendingFromDndItems(event.detail.items)}
     >
-      {#each controller.pending as pendingItem, index (pendingItem.id)}
+      {#each visibleItems as pendingItem, localIndex (pendingItem.id)}
+        {@const index = windowStart + localIndex}
         <div
           class="underlay-reorderable-list__item"
           class:underlay-reorderable-list__item--highlighted={highlightedSet.has(pendingItem.id)}
@@ -337,6 +395,20 @@
     flex-direction: column;
     gap: var(--underlay-space-2, 0.5rem);
     min-height: 100px;
+  }
+
+  .underlay-reorderable-list__window-nav {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--underlay-space-2, 0.5rem);
+  }
+
+  .underlay-reorderable-list__window-label {
+    font-size: 0.875rem;
+    color: var(--underlay-color-text-muted, #64748b);
+    min-width: 110px;
+    text-align: center;
   }
 
   .underlay-reorderable-list__item {

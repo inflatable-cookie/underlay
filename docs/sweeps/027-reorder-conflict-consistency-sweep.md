@@ -42,7 +42,16 @@ On conflict:
 - Warning toast and inline error are shown.
 - User must explicitly save again.
 
-## Step 5 - Tests
+## Step 5 - Large List Handling
+
+For reorderable lists expected to exceed practical drag lengths:
+
+- Enable `ReorderableList` `windowSize` (for example `50`) to page reorder interactions.
+- Keep `longListThreshold` warning enabled (default `50`) unless justified.
+- Ensure page/window controls are visible and functional.
+- Confirm reorder still submits against canonical full-order state.
+
+## Step 6 - Tests
 
 Minimum coverage:
 
@@ -50,7 +59,7 @@ Minimum coverage:
 - Merge logic removes/ appends correctly.
 - Non-conflict errors remain unchanged.
 
-## Step 6 - Docs and Roadmaps
+## Step 7 - Docs and Roadmaps
 
 - Link implementation to `docs/guides/186-reorder-conflict-recovery.md`.
 - Update app roadmap entries to only include truly reorderable entities.

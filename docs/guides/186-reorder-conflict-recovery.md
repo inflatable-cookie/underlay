@@ -75,6 +75,7 @@ Optional UX improvements:
 - enable `showMoveButtons` for touch and precision fallback,
 - pass `getItemLabel` for better screen reader announcements.
 - keep `longListThreshold` enabled (default `50`) so operators see a warning before reordering very large lists.
+- use `windowSize` (for example `50`) to enable page-window reorder UI for large lists.
 
 ## UX Expectations
 
