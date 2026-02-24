@@ -99,6 +99,19 @@ describe("getNextLetter", () => {
 			).flat();
 			expect(getNextLetter([...allSingle, ...allDouble])).toBe("ZZ");
 		});
+
+		it("returns lowercase zz fallback when all single and double labels are used", () => {
+			const allSingle = Array.from({ length: 26 }, (_, i) =>
+				String.fromCharCode(65 + i)
+			);
+			const allDouble = Array.from({ length: 26 }, (_, i) =>
+				Array.from(
+					{ length: 26 },
+					(_, j) => `${String.fromCharCode(65 + i)}${String.fromCharCode(65 + j)}`
+				)
+			).flat();
+			expect(getNextLetter([...allSingle, ...allDouble], { lowercase: true })).toBe("zz");
+		});
 	});
 
 	describe("edge cases", () => {

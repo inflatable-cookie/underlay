@@ -47,10 +47,17 @@ describe("testing/http-client-mock", () => {
 				{ method: "GET", path: "/coerce" },
 				{ acceptedStatuses: [200] }
 			)
-		).resolves.toEqual({
+			).resolves.toEqual({
+				status: 200,
+				headers: {},
+				body: { fallback: true },
+			});
+
+		client.setNextResponse(123);
+		await expect(client.requestWithMeta<number>({ method: "GET", path: "/primitive" })).resolves.toEqual({
 			status: 200,
 			headers: {},
-			body: { fallback: true },
+			body: 123,
 		});
 	});
 

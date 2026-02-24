@@ -33,10 +33,11 @@ describe("nightfire/editor-registry", () => {
 			{ type: "markdown", label: "Markdown" },
 			{ type: "callout", label: "Callout" },
 		]);
-		expect(getBlockTypeLabel("s2", "markdown")).toBe("Markdown");
-		expect(getBlockTypeLabel("s2", "missing")).toBeNull();
-		expect(getBlockTypeLabel("missing", "markdown")).toBeNull();
-	});
+			expect(getBlockTypeLabel("s2", "markdown")).toBe("Markdown");
+			expect(getBlockTypeLabel("s2", "missing")).toBeNull();
+			expect(getBlockTypeLabel("missing", "markdown")).toBeNull();
+			expect(getBlockTypeOptionsForSchema("missing")).toEqual([]);
+		});
 
 	it("checks block emptiness via registered checker with safe defaults", () => {
 		expect(isBlockContentEmpty(null)).toBe(true);

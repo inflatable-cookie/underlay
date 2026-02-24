@@ -15,6 +15,7 @@ describe("nightfire/render-registry", () => {
 
 		expect(getBlockRenderer("schema-1", "markdown")).toBe(B as any);
 		expect(getBlockRenderer("other", "markdown")).toBe(A as any);
+		expect(getBlockRenderer(undefined, "markdown")).toBe(A as any);
 		expect(getBlockRenderer("schema-1", "unknown")).toBeNull();
 	});
 });

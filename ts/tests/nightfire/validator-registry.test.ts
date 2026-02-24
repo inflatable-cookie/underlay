@@ -36,5 +36,26 @@ describe("nightfire/validator-registry", () => {
 		expect(validateNightfireValue(null as any)).toBeNull();
 		const value = { schema: "s", block: { type: "x" } } as any;
 		expect(prepareNightfireForSave(value)).toEqual(validateNightfireValue(value));
+
+		const noBlockValue = { schema: "s" } as any;
+		expect(validateNightfireValue(noBlockValue)).toBe(noBlockValue);
+
+			expect(
+				validateNightfireValue({
+					schema: "schema-x",
+					blocks: [null, { data: {} }],
+				} as any)
+		).toEqual({
+			schema: "schema-x",
+				blocks: [null, { data: {} }],
+			});
+
+			expect(
+				validateNightfireValue({
+					block: { type: "markdown", data: {} },
+				} as any)
+			).toEqual({
+				block: { type: "markdown", data: {}, wildcard: true },
+			});
 	});
 });

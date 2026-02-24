@@ -90,6 +90,19 @@ describe("normaliseNightfireValue", () => {
 			});
 		});
 
+		it("falls back to markdown type when allowed block types list is empty", () => {
+			const result = normaliseNightfireValue("Hello", testSchema, []);
+			expect(result).toEqual({
+				schema: testSchema,
+				block: {
+					type: "markdown",
+					version: "initial",
+					hash: "",
+					data: {},
+				},
+			});
+		});
+
 		it("converts string if markdown is in allowed types", () => {
 			const result = normaliseNightfireValue("Hello", testSchema, ["markdown", "custom"]);
 			expect(result.block?.type).toBe("markdown");
@@ -207,6 +220,22 @@ describe("normaliseNightfireBlock", () => {
 			const emptyOptions: NightfireTypeOption[] = [];
 			const result = normaliseNightfireBlock(block, emptyOptions, definition);
 			expect(result.type).toBe("markdown"); // From definition.defaultType
+		});
+
+		it("falls back to markdown when no options and no definition defaultType", () => {
+			const block = { type: "unknown" };
+			const emptyOptions: NightfireTypeOption[] = [];
+			const noDefaultDefinition = {
+				schema: "test:schema@1",
+				mode: "single",
+				defaultType: undefined,
+			} as any;
+			const result = normaliseNightfireBlock(
+				block,
+				emptyOptions,
+				noDefaultDefinition
+			);
+			expect(result.type).toBe("markdown");
 		});
 	});
 
@@ -336,6 +365,22 @@ describe("isEmptyNightfire", () => {
 				block: { type: "markdown", version: "initial", hash: "", data: {} },
 			};
 			expect(isEmptyNightfire(value)).toBe(false);
+		});
+
+		it("treats structurally present block as non-empty when contentLevel is false", () => {
+			const value = {
+				schema: "test@1",
+				block: { type: "markdown", version: "initial", hash: "", data: { text: "" } },
+			};
+			expect(isEmptyNightfire(value, false)).toBe(false);
+		});
+
+		it("treats structurally present blocks array as non-empty when contentLevel is false", () => {
+			const value = {
+				schema: "test@1",
+				blocks: [{ type: "markdown", version: "initial", hash: "", data: { text: "" } }],
+			} as any;
+			expect(isEmptyNightfire(value, false)).toBe(false);
 		});
 	});
 });
