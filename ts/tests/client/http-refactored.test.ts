@@ -25,6 +25,23 @@ describe('createHttpClient', () => {
 	});
 
 	describe('basic requests', () => {
+		it('uses global fetch when no fetch implementation is provided', async () => {
+			const globalFetch = vi.fn().mockResolvedValue({
+				ok: true,
+				status: 200,
+				headers: new Headers({ 'content-type': 'application/json' }),
+				json: async () => ({ data: { id: 'global' } })
+			});
+			vi.stubGlobal('fetch', globalFetch);
+
+			const client = createHttpClient({
+				baseUrl: 'https://api.example.com'
+			});
+
+			await expect(client.get('/global')).resolves.toEqual({ data: { id: 'global' } });
+			expect(globalFetch).toHaveBeenCalledTimes(1);
+		});
+
 		it('should make GET request with correct URL and headers', async () => {
 			fetchMock = mockFetchSuccess({ id: '123', name: 'Test' });
 

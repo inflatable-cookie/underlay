@@ -16,7 +16,7 @@ const items: Item[] = [
 
 describe("patterns/drilldown-search", () => {
 	it("searches case-insensitively and returns totals", async () => {
-		const { search } = createLocalDrillDownSearchFns(
+		const { search, suggest } = createLocalDrillDownSearchFns(
 			() => items,
 			{
 				toItem: (item) => ({ id: item.id, label: item.label }),
@@ -33,6 +33,12 @@ describe("patterns/drilldown-search", () => {
 			items: [{ id: "2", label: "Install" }],
 			total: 1,
 		});
+
+		await expect(suggest({})).resolves.toEqual([
+			{ id: "1", label: "Intro" },
+			{ id: "2", label: "Install" },
+			{ id: "3", label: "Advanced" },
+		]);
 	});
 
 	it("applies context filtering to search and suggestions", async () => {

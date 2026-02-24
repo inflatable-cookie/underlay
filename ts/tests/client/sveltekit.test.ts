@@ -220,6 +220,41 @@ describe("client/sveltekit", () => {
 		expect(resolve).not.toHaveBeenCalled();
 	});
 
+	it("resolves protected requests when a valid session exists", async () => {
+		const { createAuthHandle } = await import("../../src/client/sveltekit");
+
+		mocks.createHttpClient.mockReturnValue({});
+		mocks.createAuthCommands.mockReturnValue({
+			session: vi.fn().mockResolvedValue({ id: "session-1" }),
+		});
+
+		const event = {
+			cookies: createCookiesMock(),
+			fetch: vi.fn(),
+			locals: {},
+			url: new URL("https://example.com/private"),
+		} as any;
+		const resolve = vi.fn(async () => new Response("ok", { status: 200 }));
+
+		const handle = createAuthHandle({
+			baseUrl: "https://api.example.com",
+			routes: {
+				register: "/register",
+				loginPassword: "/login/password",
+				loginPasskey: "/login/passkey",
+				logout: "/logout",
+				refresh: "/refresh",
+				session: "/session",
+			},
+			cookies: { accessTokenCookie: "access", refreshTokenCookie: "refresh" },
+			shouldProtect: () => true,
+		});
+
+		const response = await handle({ event, resolve } as any);
+		expect(response.status).toBe(200);
+		expect(resolve).toHaveBeenCalledWith(event);
+	});
+
 	it("uses default refresh request through auth refresh adapter", async () => {
 		const { createAuthHandle } = await import("../../src/client/sveltekit");
 

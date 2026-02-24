@@ -69,6 +69,12 @@ describe("nightfire/strategies", () => {
 		expect(strategies.useNightfireStrategies()).toBeNull();
 	});
 
+	it("returns null when context lookup succeeds but value is undefined", async () => {
+		const strategies = await import("../../src/nightfire/strategies");
+		mockGetContext.mockImplementationOnce(() => undefined);
+		expect(strategies.useNightfireStrategies()).toBeNull();
+	});
+
 	it("handles strategy fetch failures and stale cache re-fetch", async () => {
 		const strategies = await import("../../src/nightfire/strategies");
 		let calls = 0;
@@ -95,5 +101,33 @@ describe("nightfire/strategies", () => {
 
 		await store.ensure();
 		expect(calls).toBe(3);
+	});
+
+	it("uses default cache ttl and preserves Error messages", async () => {
+		const strategies = await import("../../src/nightfire/strategies");
+		let calls = 0;
+		strategies.configureNightfireStrategies({
+			fetchStrategies: async () => {
+				calls += 1;
+				if (calls === 1) {
+					throw new Error("explicit boom");
+				}
+				return [{ id: "s-default-ttl", cardinality: { mode: "single" }, allowedTypes: [], allowedCategories: [], defaultType: "markdown" }];
+			},
+		});
+
+		const store = strategies.createNightfireStrategiesContext();
+		await expect(store.ensure()).resolves.toEqual([]);
+		expect(get(store.error)).toBe("explicit boom");
+
+		await expect(store.ensure()).resolves.toEqual([
+			{ id: "s-default-ttl", cardinality: { mode: "single" }, allowedTypes: [], allowedCategories: [], defaultType: "markdown" },
+		]);
+		expect(calls).toBe(2);
+
+		// Cached result should be reused under default TTL.
+		await store.ensure();
+		expect(calls).toBe(2);
+		expect(store.findById("missing-id")).toBeNull();
 	});
 });
