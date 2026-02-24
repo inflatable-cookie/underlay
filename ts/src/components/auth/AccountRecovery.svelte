@@ -1,4 +1,8 @@
 <script lang="ts">
+  /**
+   * @deprecated Use `ForgotPasswordFlow` for all new implementations.
+   * This component is kept for backwards compatibility only.
+   */
   import type { Snippet } from "svelte";
 
   import type { AuthFieldErrors, RecoveryPayload } from "./types";

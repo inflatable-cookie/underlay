@@ -129,6 +129,7 @@ export { default as PassKeyButton } from "./auth/PassKeyButton.svelte";
 export { default as GoogleSignInButton } from "./auth/GoogleSignInButton.svelte";
 export { default as SessionList } from "./auth/SessionList.svelte";
 export { default as SecuritySettings } from "./auth/SecuritySettings.svelte";
+// Deprecated: prefer `ForgotPasswordFlow` for new password recovery flows.
 export { default as AccountRecovery } from "./auth/AccountRecovery.svelte";
 
 // Auth building blocks (Phase 1 of auth consolidation)

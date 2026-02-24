@@ -41,6 +41,11 @@ These components were available before the consolidation:
 | `SessionList` | Active session management |
 | `SecuritySettings` | 2FA and passkey settings |
 
+### Legacy Component Status
+
+- `AccountRecovery` is deprecated and retained only for backwards compatibility.
+- Use `ForgotPasswordFlow` for all new password recovery implementations.
+
 ## Quick Start
 
 ### Basic Login Page
