@@ -357,5 +357,21 @@ describe("i18n formatting", () => {
 				configurable: true
 			});
 		});
+
+		it("falls back to en-GB when neither config nor navigator is available", () => {
+			const originalNavigator = (globalThis as { navigator?: Navigator }).navigator;
+			Object.defineProperty(globalThis, "navigator", {
+				value: undefined,
+				writable: true,
+				configurable: true
+			});
+			configureFormat({ locale: undefined, timezone: undefined });
+			expect(resolveLocale()).toBe("en-GB");
+			Object.defineProperty(globalThis, "navigator", {
+				value: originalNavigator,
+				writable: true,
+				configurable: true
+			});
+		});
 	});
 });
