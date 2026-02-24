@@ -2,7 +2,7 @@
 
 Underlay is split by layer, mirroring how consuming apps are structured.
 
-## Rust Crates (30)
+## Rust Crates (31)
 
 ### Core
 
@@ -49,6 +49,7 @@ Underlay is split by layer, mirroring how consuming apps are structured.
 | `underlay-email` | Email infrastructure with pluggable backends (SMTP, SES) and templates |
 | `underlay-ratelimit` | Rate limiting with pluggable backends |
 | `underlay-audit` | Audit logging for admin actions and security-relevant events |
+| `underlay-security-alerts` | Shared failed-login/lockout security alert thresholds, dedupe checks, and event persistence helpers |
 | `underlay-suggestions` | Server-side suggestion query building for `RelationSelector` components |
 | `underlay-ai-runtime` | Provider-agnostic AI runtime contracts, OpenAI-compatible client, routing candidate selection |
 

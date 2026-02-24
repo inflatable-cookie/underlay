@@ -47,25 +47,26 @@ Read these documents in order for a complete understanding:
 19. **[076 - Nightfire](./076-nightfire.md)** - Block-based structured content
 20. **[077 - Media Library](./077-media-library.md)** - File uploads, blob storage, media management
 21. **[080 - TypeScript Client](./080-typescript-client.md)** - HTTP client, commands
-22. **[090 - UI Kit](./090-ui-kit.md)** - Component patterns
-23. **[092 - Selection Suggestions](./092-selection-suggestions.md)** - Intelligent suggestions with selection history
-24. **[095 - Navigation Context](./095-navigation-context.md)** - Contextual back buttons and form redirects
-25. **[098 - Shared Admin Patterns](./098-shared-admin-patterns.md)** - Higher-level admin components (EmptyState, Drawer, DetailPageShell, AutonomousList, etc.)
-26. **[100 - Frontend (Web)](./100-frontend-web.md)** - SvelteKit setup, routing
-27. **[110 - Admin Frontend](./110-admin.md)** - Admin UI structure
-28. **[120 - Configuration](./120-configuration.md)** - Typed config model, env boundaries, migration checklist
-29. **[130 - Testing](./130-testing.md)** - Test patterns for all layers
-30. **[140 - Local Development](./140-local-development.md)** - Running locally, debugging
-31. **[150 - CI/CD](./150-ci-cd.md)** - GitHub Actions template
-32. **[160 - Troubleshooting](./160-troubleshooting.md)** - Common issues and solutions
-33. **[170 - Checklist](./170-checklist.md)** - Completion verification
-34. **[172 - Lean AGENTS.md Files](./172-agents-files.md)** - Keep agent instructions concise and operational
-35. **[176 - AI Runtime Routing](./176-ai-runtime-routing.md)** - Provider-agnostic backend LLM runtime boundary
-36. **[180 - Admin Workflow Playbook](./180-admin-workflow-playbook.md)** - Start-here implementation flow for admin features
-37. **[181 - Temporary API Profile Migration Playbook](./181-temporary-api-profile-migration-playbook.md)** - Cross-app migration checklist (temporary)
-38. **[185 - Recipe Map and Testing Matrix](./185-recipe-map-and-testing-matrix.md)** - Recipe-to-code references + minimum tests
-39. **[190 - Upgrade Compatibility Matrix](./190-upgrade-compatibility.md)** - Upgrade expectations and breakage checks
-40. **[200 - Project Sync](./200-project-sync.md)** - Migration/sync checklist for existing projects
+22. **[081 - Auth Security Alerting](./081-auth-security-alerting.md)** - Failed-login/lockout alerting with shared thresholds and dedupe
+23. **[090 - UI Kit](./090-ui-kit.md)** - Component patterns
+24. **[092 - Selection Suggestions](./092-selection-suggestions.md)** - Intelligent suggestions with selection history
+25. **[095 - Navigation Context](./095-navigation-context.md)** - Contextual back buttons and form redirects
+26. **[098 - Shared Admin Patterns](./098-shared-admin-patterns.md)** - Higher-level admin components (EmptyState, Drawer, DetailPageShell, AutonomousList, etc.)
+27. **[100 - Frontend (Web)](./100-frontend-web.md)** - SvelteKit setup, routing
+28. **[110 - Admin Frontend](./110-admin.md)** - Admin UI structure
+29. **[120 - Configuration](./120-configuration.md)** - Typed config model, env boundaries, migration checklist
+30. **[130 - Testing](./130-testing.md)** - Test patterns for all layers
+31. **[140 - Local Development](./140-local-development.md)** - Running locally, debugging
+32. **[150 - CI/CD](./150-ci-cd.md)** - GitHub Actions template
+33. **[160 - Troubleshooting](./160-troubleshooting.md)** - Common issues and solutions
+34. **[170 - Checklist](./170-checklist.md)** - Completion verification
+35. **[172 - Lean AGENTS.md Files](./172-agents-files.md)** - Keep agent instructions concise and operational
+36. **[176 - AI Runtime Routing](./176-ai-runtime-routing.md)** - Provider-agnostic backend LLM runtime boundary
+37. **[180 - Admin Workflow Playbook](./180-admin-workflow-playbook.md)** - Start-here implementation flow for admin features
+38. **[181 - Temporary API Profile Migration Playbook](./181-temporary-api-profile-migration-playbook.md)** - Cross-app migration checklist (temporary)
+39. **[185 - Recipe Map and Testing Matrix](./185-recipe-map-and-testing-matrix.md)** - Recipe-to-code references + minimum tests
+40. **[190 - Upgrade Compatibility Matrix](./190-upgrade-compatibility.md)** - Upgrade expectations and breakage checks
+41. **[200 - Project Sync](./200-project-sync.md)** - Migration/sync checklist for existing projects
 
 ## Code Examples
 

@@ -5859,6 +5859,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "underlay-security-alerts"
+version = "0.0.1"
+dependencies = [
+ "chrono",
+ "serde",
+ "serde_json",
+ "sqlx",
+ "thiserror 2.0.18",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
 name = "underlay-soft-delete"
 version = "0.0.1"
 dependencies = [

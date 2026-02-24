@@ -1,0 +1,77 @@
+# 081 - Auth Security Alerting (Failed Logins and Lockouts)
+
+This guide standardises login-failure alerting across Underlay-consuming APIs.
+
+## Purpose
+
+Rate limiting and lockout prevent abuse, but operators still need signals when attacks are underway.
+
+Use `underlay-security-alerts` to:
+
+- evaluate suspicious login-attempt pressure from one IP,
+- dedupe alerts with cooldown windows,
+- persist alert events for auditability.
+
+## Shared crate
+
+Crate: `underlay-security-alerts`
+
+Primary API:
+
+- `SecurityAlertConfig` - threshold/cooldown/window settings
+- `load_ip_signal_counts(...)` - query failed-attempt signals from login attempts
+- `evaluate_alerts(...)` - map counts to alert types
+- `has_recent_alert(...)` - cooldown dedupe check
+- `insert_alert_event(...)` - persist emitted alert event
+
+## Migration baseline
+
+Copy and adapt:
+
+- `underlay/rust/crates/underlay-security-alerts/migrations/0001__security_alert_events.sql`
+
+Expected tables:
+
+- login attempts table (for example `auth.login_attempts`)
+- alert events table (for example `auth.security_alert_events`)
+
+## Recommended alert policy
+
+Baseline thresholds:
+
+- 20+ failed attempts from one IP in 10 minutes
+- 5+ distinct user accounts failed from one IP in 10 minutes
+- 3+ lockouts from one IP in 10 minutes
+
+Cooldown:
+
+- 30 minutes per `(alert_type, ip)` before re-emitting
+
+## Integration pattern
+
+At failed-login write time:
+
+1. Insert login attempt record.
+2. Load recent signal counts for that IP.
+3. Evaluate threshold breaches.
+4. For each alert type:
+   - skip if `has_recent_alert(...)` is true,
+   - insert alert event with counts/details,
+   - emit app-level log/audit/notification.
+
+The shared crate intentionally does not send email/webhooks directly. Notification transport remains app-specific.
+
+## App-level outputs
+
+Each app should emit, at minimum:
+
+- structured warning log with alert type, IP, counts, and event id,
+- audit event in its platform audit log,
+- optional email/webhook/pager integration.
+
+## Validation checklist
+
+- Alert table exists and is indexed by `(alert_type, ip_address, created_at DESC)`.
+- Alert threshold config is loaded from typed app config (no magic constants).
+- Cooldown dedupe prevents repeated alerts from flooding operators.
+- Tests cover threshold crossing and cooldown behaviour.
