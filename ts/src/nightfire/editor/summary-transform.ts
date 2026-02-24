@@ -179,6 +179,10 @@ export function transformSummaryBlockOnLayoutChange(
 	}
 
 	if (fromIsSlider && (toIsTextPages || toIsImagePages)) {
+		const hadImages =
+			(typeof data.image1Id === "string" && (data.image1Id as string).length > 0) ||
+			(typeof data.image2Id === "string" && (data.image2Id as string).length > 0);
+
 		const description =
 			typeof data.description === "string" && (data.description as string).length > 0
 				? data.description
@@ -193,10 +197,6 @@ export function transformSummaryBlockOnLayoutChange(
 		if (toIsImagePages) {
 			data.pages = [{ ...page, image_id: null }];
 		}
-
-		const hadImages =
-			(typeof data.image1Id === "string" && (data.image1Id as string).length > 0) ||
-			(typeof data.image2Id === "string" && (data.image2Id as string).length > 0);
 
 		if (hadImages) {
 			warning = `Changing layout from ${fromLabel} to ${toLabel} keeps the description as the first page's body but drops image selections.`;
