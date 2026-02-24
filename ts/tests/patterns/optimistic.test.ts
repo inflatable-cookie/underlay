@@ -372,6 +372,17 @@ describe("createOptimisticToggle", () => {
 
 			expect(get(toggle)).toBe(false);
 		});
+
+		it("confirm clears pending state after set", () => {
+			const toggle = createOptimisticToggle(false);
+			const { confirm } = toggle.set(true);
+			expect(get(toggle.pending)).toBe(true);
+
+			confirm();
+
+			expect(get(toggle)).toBe(true);
+			expect(get(toggle.pending)).toBe(false);
+		});
 	});
 });
 
@@ -506,6 +517,17 @@ describe("createOptimisticCounter", () => {
 
 			expect(get(counter)).toBe(5);
 		});
+
+		it("confirm clears pending state", () => {
+			const counter = createOptimisticCounter(5);
+			const { confirm } = counter.increment(2);
+			expect(get(counter.pending)).toBe(true);
+
+			confirm();
+
+			expect(get(counter)).toBe(7);
+			expect(get(counter.pending)).toBe(false);
+		});
 	});
 
 	describe("decrement", () => {
@@ -550,6 +572,16 @@ describe("createOptimisticCounter", () => {
 			confirm(12); // Server says actual count is 12
 
 			expect(get(counter)).toBe(12);
+		});
+
+		it("confirm without server value keeps optimistic count", () => {
+			const counter = createOptimisticCounter(5);
+			const { confirm } = counter.set(10);
+
+			confirm();
+
+			expect(get(counter)).toBe(10);
+			expect(get(counter.pending)).toBe(false);
 		});
 
 		it("no-op when setting same value", () => {
