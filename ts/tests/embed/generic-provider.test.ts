@@ -13,7 +13,19 @@ describe("embed/providers/generic", () => {
 		expect(parsed?.fallbackUrl).toBe("https://example.com/embed/123");
 
 		expect(generic.parse("javascript:alert(1)")).toBeNull();
+		expect(generic.parse("data:text/html,hi")).toBeNull();
 		expect(generic.parse("raw-id-without-html")).toBeNull();
+		expect(generic.parse("   ")).toBeNull();
+	});
+
+	it("returns direct URL ids from getEmbedUrl and rejects non-url ids", () => {
+		expect(generic.getEmbedUrl("https://example.com/embed/1")).toBe(
+			"https://example.com/embed/1"
+		);
+		expect(generic.getEmbedUrl("http://example.com/embed/1")).toBe(
+			"http://example.com/embed/1"
+		);
+		expect(generic.getEmbedUrl("abc123")).toBe("");
 	});
 
 	it("parses passthrough embed HTML", () => {
@@ -39,6 +51,11 @@ describe("embed/providers/generic", () => {
 		expect(out).toContain(`title="External Media"`);
 		expect(out).toContain(`loading="eager"`);
 		expect(out).toContain(`class="embed-frame"`);
+	});
+
+	it("returns empty output when generic embed has neither passthrough HTML nor fallback URL", () => {
+		const out = renderGenericEmbed({ provider: "generic", id: "x" });
+		expect(out).toBe("");
 	});
 
 	it("checks domain allow-list logic", () => {
@@ -74,5 +91,8 @@ describe("embed/providers/generic", () => {
 			valid: false,
 			reason: "Inline script content not allowed",
 		});
+		expect(
+			validateEmbedHtml(`<script src="https://cdn.example.com/embed.js"></script>`)
+		).toEqual({ valid: true });
 	});
 });
