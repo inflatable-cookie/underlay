@@ -172,4 +172,63 @@ describe("nightfire/editor/summary-transform", () => {
 			warning: null,
 		});
 	});
+
+	it("preserves non-empty subtitle on image-to-text subtitle layouts", () => {
+		const result = transformSummaryBlockOnLayoutChange(
+			{
+				type: "summary.diagram",
+				data: { pages: [{ title: "A", body: "B", image_id: null }], subTitle: "Kept subtitle" },
+			},
+			"summary.steps",
+			label
+		);
+
+		expect(result.block).toEqual({
+			type: "summary.steps",
+			data: { pages: [{ title: "A", body: "B" }], subTitle: "Kept subtitle" },
+		});
+		expect(result.warning).toBeNull();
+	});
+
+	it("normalises malformed text/slider inputs to nullable fields", () => {
+		const toTextPages = transformSummaryBlockOnLayoutChange(
+			{
+				type: "summary.book",
+				data: {
+					pages: [{ title: 42 as any, body: "" }, { title: "Valid", body: false as any }],
+					subTitle: "",
+				},
+			},
+			"summary.pie",
+			label
+		);
+		expect(toTextPages.block).toEqual({
+			type: "summary.pie",
+			data: {
+				pages: [
+					{ title: null, body: null },
+					{ title: "Valid", body: null },
+				],
+				subTitle: null,
+			},
+		});
+
+		const fromSlider = transformSummaryBlockOnLayoutChange(
+			{
+				type: "summary.imageSlider",
+				data: {
+					description: "",
+					image1Id: "   ",
+					image2Id: "img-2",
+				},
+			},
+			"summary.book",
+			label
+		);
+		expect(fromSlider.block).toEqual({
+			type: "summary.book",
+			data: { pages: [{ title: null, body: null }] },
+		});
+		expect(fromSlider.warning).toContain("drops image selections");
+	});
 });

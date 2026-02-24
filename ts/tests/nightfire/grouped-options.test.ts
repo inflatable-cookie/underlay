@@ -88,4 +88,24 @@ describe("nightfire/editor/grouped-options", () => {
 
 		expect(result.map((group) => group.label)).toEqual(["Alpha", "Alpha"]);
 	});
+
+	it("sorts reverse category and subcategory comparisons", () => {
+		const result = buildGroupedOptions([
+			{ type: "z-cat", label: "Zulu Category", category: "zeta" },
+			{ type: "a-cat", label: "Alpha Category", category: "alpha" },
+			{ type: "sub-z", label: "Sub Z", category: "SubSort", subcategory: "z" },
+			{ type: "sub-a", label: "Sub A", category: "SubSort", subcategory: "a" },
+			{ type: "sub-none", label: "Sub None", category: "SubSort" },
+			{ type: "none-1", label: "No Category A" },
+			{ type: "none-2", label: "No Category B" },
+		]);
+
+		expect(result.map((group) => group.category)).toEqual(["alpha", "SubSort", "zeta", null]);
+		const subSort = result.find((group) => group.category === "SubSort");
+		expect(subSort?.options.map((o) => `${o.subcategory ?? "null"}:${o.label}`)).toEqual([
+			"null:Sub None",
+			"a:Sub A",
+			"z:Sub Z",
+		]);
+	});
 });
