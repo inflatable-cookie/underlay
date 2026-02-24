@@ -17,10 +17,10 @@ export default defineConfig({
 					'ts/src/tools/**' // CLI tools
 				],
 				thresholds: {
-					statements: 31,
-					branches: 32,
-					functions: 30,
-					lines: 31
+					statements: 32,
+					branches: 33,
+					functions: 31,
+					lines: 32
 				}
 			}
 		},
