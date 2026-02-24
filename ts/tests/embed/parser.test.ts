@@ -498,6 +498,16 @@ describe("getEmbedUrl", () => {
 		expect(url).not.toContain("start=30");
 	});
 
+	it("merges end time from queryParams when options do not override", () => {
+		const parsed: ParsedEmbed = {
+			provider: "youtube",
+			id: "dQw4w9WgXcQ",
+			queryParams: { end: "180" },
+		};
+		const url = getEmbedUrl(parsed);
+		expect(url).toContain("end=180");
+	});
+
 	it("returns empty string for unknown provider", () => {
 		const parsed: ParsedEmbed = {
 			provider: "unknown",
@@ -578,6 +588,38 @@ describe("renderEmbed", () => {
 
 		const htmlEager = renderEmbed(parsed, { loading: "eager" });
 		expect(htmlEager).toContain('loading="eager"');
+	});
+
+	it("returns passthrough HTML for generic embeds", () => {
+		const passthrough = `<iframe src="https://example.com/embed"></iframe>`;
+		const parsed = {
+			provider: "generic",
+			id: "embedded",
+			isPassthrough: true,
+			embedHtml: passthrough,
+		} as unknown as ParsedEmbed;
+
+		expect(renderEmbed(parsed)).toBe(passthrough);
+	});
+
+	it("renders iframe for generic fallback URLs", () => {
+		const parsed = {
+			provider: "generic",
+			id: "example.com",
+			fallbackUrl: "https://example.com/embed",
+		} as unknown as ParsedEmbed;
+		const html = renderEmbed(parsed);
+
+		expect(html).toContain("<iframe");
+		expect(html).toContain("https://example.com/embed");
+	});
+
+	it("returns empty HTML when provider cannot generate embed URL", () => {
+		const parsed: ParsedEmbed = {
+			provider: "unknown",
+			id: "abc123",
+		};
+		expect(renderEmbed(parsed)).toBe("");
 	});
 });
 
