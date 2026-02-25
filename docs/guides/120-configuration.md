@@ -64,6 +64,15 @@ For each consuming app:
 6. Enforce allowlist/guardrails in CI.
 7. Remove deprecated keys after the agreed transition window.
 
+### Reference Migration Feedback (2026-02-25)
+
+Applied from `underlay-reference/acme-api` migration:
+
+1. Remove migrated behavior keys from `.env.example` as soon as typed defaults exist in `config/default.toml`.
+2. Keep JWT key material in env, but source JWT behavior from typed config using `JwtConfig::from_values(...)`.
+3. Add startup warnings for legacy behavior env keys that are now ignored, with typed replacement field names.
+4. Keep focused bootstrap tests that assert migrated behavior env keys do not override typed config.
+
 ## Rollout PR Template (Copy/Paste)
 
 ```md
@@ -184,7 +193,9 @@ let jwt_defaults = JwtBehaviorDefaults {
     leeway_seconds: 30,
 };
 
-let jwt_config = JwtConfig::from_env_with_defaults(&jwt_defaults)?;
+let private_key_b64 = std::env::var("AUTH_JWT_PRIVATE_KEY")?;
+let public_key_b64 = std::env::var("AUTH_JWT_PUBLIC_KEY")?;
+let jwt_config = JwtConfig::from_values(private_key_b64, public_key_b64, jwt_defaults);
 let jwt_service = JwtService::new(jwt_config)?;
 ```
 
@@ -260,7 +271,13 @@ let jwt_defaults = JwtBehaviorDefaults {
     leeway_seconds: 30,
 };
 
-let jwt = JwtService::new(JwtConfig::from_env_with_defaults(&jwt_defaults)?)?;
+let jwt_private_key = std::env::var("AUTH_JWT_PRIVATE_KEY")?;
+let jwt_public_key = std::env::var("AUTH_JWT_PUBLIC_KEY")?;
+let jwt = JwtService::new(JwtConfig::from_values(
+    jwt_private_key,
+    jwt_public_key,
+    jwt_defaults,
+))?;
 
 let argon2 = Argon2Hasher::with_params(65536, 3, 4);
 let webauthn = WebAuthnService::new(WebAuthnConfig {

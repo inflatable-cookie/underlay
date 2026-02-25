@@ -24,7 +24,7 @@ This roadmap defines a reusable migration pattern that can be applied app-by-app
 
 - [x] Phase 20.1 complete (Underlay standard and documentation)
 - [ ] Phase 20.2 complete (Acowtancy pilot migration)
-- [ ] Phase 20.3 complete (Underlay Reference migration)
+- [x] Phase 20.3 complete (Underlay Reference migration)
 - [ ] Phase 20.4 complete (consumer rollout kit + enforcement)
 
 ## Problem Statement
@@ -167,12 +167,12 @@ Timeline anchor date: **February 24, 2026**.
 ### 20.3.2 Validate template quality
 
 - [x] Confirm the process works without Acowtancy-specific assumptions
-- [ ] Refine guide/checklist based on reference migration feedback
+- [x] Refine guide/checklist based on reference migration feedback (`docs/guides/120-configuration.md`)
 
 ### Acceptance Criteria (Phase 20.3)
 
 - [x] underlay-reference follows the same config standard
-- [ ] Any checklist/documentation gaps are fixed in Underlay docs
+- [x] Any checklist/documentation gaps are fixed in Underlay docs
 
 ---
 
@@ -202,7 +202,7 @@ Timeline anchor date: **February 24, 2026**.
 
 - [ ] Underlay docs updated and cross-linked
 - [ ] Acowtancy migration completes without behavior regressions
-- [ ] underlay-reference migration completes with same checklist
+- [x] underlay-reference migration completes with same checklist
 - [ ] For each migrated app:
   - [ ] config bootstrap tests pass
   - [ ] app starts with only required secrets/runtime vars present
