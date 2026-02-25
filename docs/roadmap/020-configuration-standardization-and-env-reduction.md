@@ -115,6 +115,7 @@ Current app configuration is spread across many `.env` keys, including values th
 - [x] Add startup diagnostics for auth behavior source resolution (typed config vs legacy env override) and focused helper tests in `farmyard-auth`
 - [x] Apply typed-config-only email behavior defaults in Farmyard infra bootstrap (remove `EMAIL_DEFAULT_FROM`/`EMAIL_APP_NAME`/`EMAIL_APP_URL`/`EMAIL_SUPPORT`/`EMAIL_TEMPLATES_DIR` env behavior overrides)
 - [x] Apply typed-config-only AI behavior defaults in Farmyard infra bootstrap (remove `AI_ROUTER_PROVIDER_NAME` and `AI_SCHEDULED_*` env behavior overrides)
+- [x] Add focused infra config tests proving migrated auth/email/AI behavior keys no longer override typed config while runtime AI wiring env keys still apply
 - [ ] Add logical config modules for app-behavior settings in the Rust backend
 - [ ] Add defaults for all non-secret stable behavior settings
 - [ ] Keep secrets and runtime-env keys in env with typed parsing
@@ -140,7 +141,7 @@ Current app configuration is spread across many `.env` keys, including values th
 - [ ] Acowtancy behavior config is primarily code-defined and typed
 - [ ] `.env` in Acowtancy contains only secrets/runtime-env keys
 - [ ] Startup fails fast on invalid config with actionable errors
-- [ ] Migration report captures remaining legacy keys and timeline
+- [x] Migration report captures remaining legacy keys and timeline
 
 ### Legacy Key Removal Timeline (Phase 20.2)
 
@@ -149,7 +150,7 @@ Timeline anchor date: **February 24, 2026**.
 1. **Now (completed)**: typed defaults + deprecation warnings + `.env.example` cleanup for auth behavior keys.
 2. **By March 10, 2026**: update consuming local/dev setups to stop setting deprecated auth behavior env keys.
 3. **Completed on February 24, 2026**: compatibility reads removed for migrated auth behavior keys in Farmyard auth bootstrap.
-4. **By April 7, 2026**: run a no-legacy-key verification sweep across Acowtancy repos and close remaining 20.2 acceptance items.
+4. **Completed on February 25, 2026**: no-legacy-key sweep across Acowtancy env/docs/config manifests for migrated auth/email/AI behavior keys; only test fixtures remained as expected.
 
 ---
 

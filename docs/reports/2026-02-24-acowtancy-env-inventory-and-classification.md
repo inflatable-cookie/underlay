@@ -137,6 +137,12 @@ It combines:
    - `AI_SCHEDULED_OUTCOME_NOTES_AREA_ID`
    - `AI_SCHEDULED_QA_SOURCE_ID`
    are removed from bootstrap reads and `.env.example`.
+11. Focused infra config tests now verify migrated behavior keys are ignored even when present in env, while runtime AI wiring keys still use env:
+   - migrated keys covered: auth (`AUTH_*` JWT tuning, `WEBAUTHN_RP_*`, `ARGON2_*`), email (`EMAIL_*` behavior keys), AI behavior (`AI_ROUTER_PROVIDER_NAME`, `AI_SCHEDULED_*`)
+   - runtime keys covered: `AI_RUNTIME_ENABLED`, `AI_ROUTER_BASE_URL`, `AI_ROUTER_API_KEY`, `AI_ROUTER_ALLOWED_HOSTS`
+12. No-legacy-key sweep completed on 2026-02-25 across Acowtancy `.env*`, Markdown setup docs, and TOML config manifests for migrated auth/email/AI behavior keys:
+   - no active manifest/doc references found for migrated keys
+   - remaining code references are expected test fixtures and one passkey troubleshooting message updated to typed config field names
 
 ## Legacy Key Removal Timeline
 
@@ -165,6 +171,9 @@ Timeline anchor date: **2026-02-24**.
 4. **Target by 2026-04-07**:
    - Verify no migrated auth behavior keys remain in Acowtancy `.env` docs/manifests.
    - Mark corresponding roadmap acceptance items complete for this migration slice.
+5. **Completed on 2026-02-25**:
+   - Verification sweep run for migrated auth/email/AI behavior keys across Acowtancy `.env*`, docs, and TOML manifests.
+   - No legacy manifest/doc key usage remained for that migrated set.
 
 ## Evidence pointers
 
@@ -191,3 +200,7 @@ Timeline anchor date: **2026-02-24**.
   - `../../acowtancy/farmyard/crates/auth/src/local/mod.rs`
   - `../../acowtancy/farmyard/config/default.toml`
   - `../../acowtancy/farmyard/.env.example`
+- Farmyard infra bootstrap/source-precedence tests:
+  - `../../acowtancy/farmyard/crates/infra/src/config.rs` (`config::tests::migrated_behavior_keys_use_typed_config_not_env_overrides`, `config::tests::runtime_ai_env_keys_still_override_runtime_wiring`)
+- Farmyard passkey troubleshooting guidance aligned to typed auth config naming:
+  - `../../acowtancy/farmyard/crates/api/src/routes/shared/auth/passkeys.rs`
