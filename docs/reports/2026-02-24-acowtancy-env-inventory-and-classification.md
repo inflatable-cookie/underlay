@@ -125,6 +125,13 @@ It combines:
    - Argon2 behavior keys: `ARGON2_MEMORY_KB`, `ARGON2_ITERATIONS`, `ARGON2_PARALLELISM`
 7. Farmyard `.env.example` no longer lists migrated auth behavior keys; README now points auth behavior config to typed `[auth]` TOML defaults while preserving env-only secret guidance.
 8. Farmyard auth startup now logs behavior-source diagnostics per domain (`jwt`, `webauthn`, `argon2`) as `typed_config` vs `legacy_env_override`, with focused helper tests validating override/parse fallback behavior.
+9. Farmyard infra bootstrap now sources email behavior from typed `[email]` config only; behavior env overrides for:
+   - `EMAIL_DEFAULT_FROM`
+   - `EMAIL_APP_NAME`
+   - `EMAIL_APP_URL`
+   - `EMAIL_SUPPORT`
+   - `EMAIL_TEMPLATES_DIR`
+   are removed from bootstrap reads and `.env.example`.
 
 ## Legacy Key Removal Timeline
 
