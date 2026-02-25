@@ -133,6 +133,13 @@
       </div>
 
       <div class="underlay-alert-dialog-footer">
+        <BitsAlertDialog.Action
+          class={`underlay-alert-dialog-action underlay-button underlay-button--pill underlay-button--${confirmVariant}`}
+          disabled={confirming}
+          onclick={handleConfirm}
+        >
+          {confirming ? "Working…" : confirmLabel}
+        </BitsAlertDialog.Action>
         <TextButton
           type="button"
           variant={getCancelTextVariant()}
@@ -142,13 +149,6 @@
         >
           {cancelLabel}
         </TextButton>
-        <BitsAlertDialog.Action
-          class={`underlay-alert-dialog-action underlay-button underlay-button--pill underlay-button--${confirmVariant}`}
-          disabled={confirming}
-          onclick={handleConfirm}
-        >
-          {confirming ? "Working…" : confirmLabel}
-        </BitsAlertDialog.Action>
       </div>
     </BitsAlertDialog.Content>
   </BitsAlertDialog.Portal>
