@@ -134,19 +134,23 @@
 
       {#if itemLabel || itemValue || children}
         <div class="underlay-alert-dialog-body">
-          <div class="underlay-alert-dialog-item-card">
-            {#if itemLabel}
-              <p class="underlay-alert-dialog-item-label">{itemLabel}</p>
-            {/if}
-            {#if itemValue}
-              <p class="underlay-alert-dialog-item-value">{itemValue}</p>
-            {/if}
-            {#if children}
-              <div class="underlay-alert-dialog-item-extra">
-                {@render children?.()}
-              </div>
-            {/if}
-          </div>
+          {#if itemLabel || itemValue}
+            <div class="underlay-alert-dialog-item-card">
+              {#if itemLabel}
+                <p class="underlay-alert-dialog-item-label">{itemLabel}</p>
+              {/if}
+              {#if itemValue}
+                <p class="underlay-alert-dialog-item-value">{itemValue}</p>
+              {/if}
+              {#if children}
+                <div class="underlay-alert-dialog-item-extra">
+                  {@render children?.()}
+                </div>
+              {/if}
+            </div>
+          {:else if children}
+            {@render children?.()}
+          {/if}
         </div>
       {/if}
 
