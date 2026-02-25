@@ -13,6 +13,8 @@
     triggerType?: "button" | "submit" | "reset";
     confirmLabel?: string;
     cancelLabel?: string;
+    confirmVariant?: "primary" | "secondary" | "subtle" | "danger" | "danger-subtle";
+    cancelVariant?: "primary" | "secondary" | "subtle" | "danger" | "danger-subtle";
     onConfirm?: () => void | Promise<void>;
     onCancel?: () => void;
     contentClassName?: string;
@@ -34,6 +36,8 @@
     triggerType = "button",
     confirmLabel = "Confirm",
     cancelLabel = "Cancel",
+    confirmVariant = "danger",
+    cancelVariant = "subtle",
     onConfirm,
     onCancel,
     contentClassName = "",
@@ -120,15 +124,16 @@
       </div>
 
       <div class="underlay-alert-dialog-footer">
-        <BitsAlertDialog.Cancel
-          class="underlay-alert-dialog-cancel"
+        <button
+          type="button"
+          class={`underlay-alert-dialog-cancel underlay-button underlay-button--pill underlay-button--${cancelVariant}`}
           disabled={confirming}
           onclick={handleCancel}
         >
           {cancelLabel}
-        </BitsAlertDialog.Cancel>
+        </button>
         <BitsAlertDialog.Action
-          class="underlay-alert-dialog-action"
+          class={`underlay-alert-dialog-action underlay-button underlay-button--pill underlay-button--${confirmVariant}`}
           disabled={confirming}
           onclick={handleConfirm}
         >
@@ -190,7 +195,7 @@
     transform: translate(-50%, -50%);
     z-index: 51;
 
-    width: min(40rem, calc(100vw - 2rem));
+    width: min(42rem, calc(100vw - 2rem));
     max-height: min(80vh, 48rem);
     overflow: auto;
 
@@ -204,7 +209,7 @@
       --underlay-color-dialog-bg,
       var(--underlay-color-bg-surface, #020617)
     );
-    padding: 1rem;
+    padding: 1.25rem;
 
     box-shadow: var(
       --underlay-shadow-dialog,
@@ -215,7 +220,7 @@
   :global(.underlay-alert-dialog-header) {
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
+    gap: 0.35rem;
   }
 
   :global(.underlay-alert-dialog-title) {
@@ -228,66 +233,45 @@
   :global(.underlay-alert-dialog-description) {
     color: var(--underlay-color-text-muted, var(--underlay-color-text-muted, #9ca3af));
     font-size: 0.9rem;
+    line-height: 1.45;
   }
 
   :global(.underlay-alert-dialog-body) {
-    margin-top: 0.9rem;
+    margin-top: 1rem;
   }
 
   :global(.underlay-alert-dialog-footer) {
-    margin-top: 1rem;
+    margin-top: 1.25rem;
     display: flex;
-    justify-content: flex-end;
-    gap: 0.5rem;
-  }
-
-  :global(.underlay-alert-dialog-cancel),
-  :global(.underlay-alert-dialog-action) {
-    display: inline-flex;
     align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    border-radius: 0.5rem;
-    padding: 0.5rem 0.875rem;
-
-    border: 1px solid
-      var(
-        --underlay-color-border-subtle,
-        var(--underlay-color-border-subtle, rgba(148, 163, 184, 0.35))
-      );
-
-    background: var(
-      --underlay-color-field-bg,
-      var(--underlay-color-field-bg, rgba(255, 255, 255, 0.03))
-    );
-
-    color: var(--underlay-color-text, var(--underlay-color-text, #e5e7eb));
-    cursor: pointer;
+    justify-content: flex-end;
+    gap: 0.625rem;
   }
 
-  :global(.underlay-alert-dialog-cancel:hover),
-  :global(.underlay-alert-dialog-action:hover) {
-    background: var(
-      --underlay-color-field-bg-hover,
-      var(--underlay-color-field-bg-hover, rgba(148, 163, 184, 0.08))
-    );
-  }
-
-  :global(.underlay-alert-dialog-cancel:focus-visible),
-  :global(.underlay-alert-dialog-action:focus-visible) {
-    outline: var(--underlay-focus-ring-width, var(--underlay-focus-ring-width, 2px)) solid
-      var(--underlay-color-primary, var(--underlay-color-primary, #2563eb));
-    outline-offset: var(--underlay-focus-ring-offset, var(--underlay-focus-ring-offset, 2px));
-  }
-
-  :global(.underlay-alert-dialog-action) {
-    border-color: rgba(239, 68, 68, 0.5);
-    background: rgba(239, 68, 68, 0.16);
-  }
-
-  :global(.underlay-alert-dialog-cancel:disabled),
   :global(.underlay-alert-dialog-action:disabled) {
     opacity: 0.6;
     cursor: not-allowed;
+  }
+
+  :global(.underlay-alert-dialog-cancel:disabled) {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  @media (max-width: 40rem) {
+    :global(.underlay-alert-dialog-content) {
+      width: calc(100vw - 1.25rem);
+      padding: 1rem;
+      border-radius: 0.625rem;
+    }
+
+    :global(.underlay-alert-dialog-footer) {
+      justify-content: stretch;
+    }
+
+    :global(.underlay-alert-dialog-footer .underlay-button) {
+      flex: 1 1 auto;
+      justify-content: center;
+    }
   }
 </style>
