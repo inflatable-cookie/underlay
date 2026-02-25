@@ -20,10 +20,14 @@ Changes applied:
 - Replaced local page wrapper CSS (`display:flex; flex-direction:column; gap`) with shared utility class:
   - `.underlay-page-stack`
 - Removed redundant local wrapper styles from the three files above.
+- Migrated scheduled-task detail view to shared detail layout structure:
+  - `src/routes/(app)/system/scheduled-tasks/[id]/+page.svelte`
+  - replaced local wrapper/grid stack with `.underlay-details-content` + `.span-full`
 - Kept feature-specific styles:
   - message body formatting
   - header separator
   - link affordances
+  - scheduled-task content presentation + jobs table theming
 
 Validation:
 - `bun run check` in `compli-me/admin` passed.
