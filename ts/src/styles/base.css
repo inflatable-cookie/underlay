@@ -16,6 +16,12 @@
   gap: var(--underlay-space-6, 1.5rem);
 }
 
+.underlay-page-stack-tight {
+  display: flex;
+  flex-direction: column;
+  gap: var(--underlay-space-4, 1rem);
+}
+
 /*
   Utility class for admin detail tab content.
   2-column grid that collapses to 1 column on narrow containers.

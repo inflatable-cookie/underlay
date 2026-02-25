@@ -33,6 +33,12 @@ Changes applied:
   - link affordances
   - scheduled-task content presentation + jobs table theming
   - per-surface system detail styling (email preview, error metadata blocks, job payload/error cards)
+- Migrated additional non-detail top-level wrappers that only provided vertical spacing:
+  - `src/routes/(app)/system/audit/+page.svelte`
+  - `src/routes/(app)/system/emails/+page.svelte`
+  - `src/routes/(app)/system/scheduled-tasks/+page.svelte`
+  - `src/routes/(app)/compliments/trash/+page.svelte`
+  - replaced local wrapper blocks with `.underlay-page-stack-tight`
 
 Validation:
 - `bun run check` in `compli-me/admin` passed.
@@ -53,6 +59,8 @@ No changes required in this pass.
 
 Underlay updated with a reusable page-level stack helper:
 - `.underlay-page-stack` in `ts/src/styles/base.css`
+- documented in `docs/guides/090-ui-kit.md`
+- `.underlay-page-stack-tight` in `ts/src/styles/base.css`
 - documented in `docs/guides/090-ui-kit.md`
 
 This utility is now available for all consuming apps to replace trivial per-page vertical stack wrappers.

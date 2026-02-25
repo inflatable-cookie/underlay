@@ -3342,6 +3342,8 @@ Use `.underlay-page-stack` for pages that need a simple vertical rhythm between 
 </section>
 ```
 
+Use `.underlay-page-stack-tight` when the page needs the same structure with tighter spacing.
+
 ---
 
 ## Complete Form Example
