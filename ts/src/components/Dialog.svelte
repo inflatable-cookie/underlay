@@ -269,7 +269,7 @@
   @keyframes underlay-dialog-content-in {
     from {
       opacity: 0;
-      transform: translate(-50%, -50%) scale(0.98);
+      transform: translate(-50%, -50%) scale(var(--underlay-dialog-content-in-scale, 0.98));
     }
     to {
       opacity: 1;
@@ -284,7 +284,7 @@
     }
     to {
       opacity: 0;
-      transform: translate(-50%, -50%) scale(0.985);
+      transform: translate(-50%, -50%) scale(var(--underlay-dialog-content-out-scale, 0.985));
     }
   }
 
