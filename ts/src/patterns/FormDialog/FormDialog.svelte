@@ -114,11 +114,17 @@
   }
 
   :global(.form-dialog__overlay[data-state="open"]) {
-    animation: underlay-form-dialog-overlay-in 160ms ease-out;
+    animation:
+      underlay-form-dialog-overlay-in
+      var(--underlay-dialog-overlay-in-duration, 160ms)
+      var(--underlay-dialog-overlay-in-easing, ease-out);
   }
 
   :global(.form-dialog__overlay[data-state="closed"]) {
-    animation: underlay-form-dialog-overlay-out 120ms ease-in;
+    animation:
+      underlay-form-dialog-overlay-out
+      var(--underlay-dialog-overlay-out-duration, 120ms)
+      var(--underlay-dialog-overlay-out-easing, ease-in);
   }
 
   :global(.form-dialog__content) {
@@ -141,11 +147,17 @@
   }
 
   :global(.form-dialog__content[data-state="open"]) {
-    animation: underlay-form-dialog-content-in 190ms cubic-bezier(0.16, 1, 0.3, 1);
+    animation:
+      underlay-form-dialog-content-in
+      var(--underlay-dialog-content-in-duration, 190ms)
+      var(--underlay-dialog-content-in-easing, cubic-bezier(0.16, 1, 0.3, 1));
   }
 
   :global(.form-dialog__content[data-state="closed"]) {
-    animation: underlay-form-dialog-content-out 130ms ease-in;
+    animation:
+      underlay-form-dialog-content-out
+      var(--underlay-dialog-content-out-duration, 130ms)
+      var(--underlay-dialog-content-out-easing, ease-in);
   }
 
   :global(.form-dialog__header) {

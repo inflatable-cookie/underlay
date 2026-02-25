@@ -221,11 +221,17 @@
   }
 
   :global(.underlay-alert-dialog-overlay[data-state="open"]) {
-    animation: underlay-alert-dialog-overlay-in 160ms ease-out;
+    animation:
+      underlay-alert-dialog-overlay-in
+      var(--underlay-dialog-overlay-in-duration, 160ms)
+      var(--underlay-dialog-overlay-in-easing, ease-out);
   }
 
   :global(.underlay-alert-dialog-overlay[data-state="closed"]) {
-    animation: underlay-alert-dialog-overlay-out 120ms ease-in;
+    animation:
+      underlay-alert-dialog-overlay-out
+      var(--underlay-dialog-overlay-out-duration, 120ms)
+      var(--underlay-dialog-overlay-out-easing, ease-in);
   }
 
   :global(.underlay-alert-dialog-content) {
@@ -258,11 +264,17 @@
   }
 
   :global(.underlay-alert-dialog-content[data-state="open"]) {
-    animation: underlay-alert-dialog-content-in 190ms cubic-bezier(0.16, 1, 0.3, 1);
+    animation:
+      underlay-alert-dialog-content-in
+      var(--underlay-dialog-content-in-duration, 190ms)
+      var(--underlay-dialog-content-in-easing, cubic-bezier(0.16, 1, 0.3, 1));
   }
 
   :global(.underlay-alert-dialog-content[data-state="closed"]) {
-    animation: underlay-alert-dialog-content-out 130ms ease-in;
+    animation:
+      underlay-alert-dialog-content-out
+      var(--underlay-dialog-content-out-duration, 130ms)
+      var(--underlay-dialog-content-out-easing, ease-in);
   }
 
   :global(.underlay-alert-dialog-header) {
