@@ -140,5 +140,5 @@ pub fn map_db_error_ref(operation: &str, err: &sqlx::Error) -> AppError {
 }
 
 #[cfg(test)]
-#[path = "db_errors_tests.rs"]
+#[path = "tests/db_errors_tests.rs"]
 mod tests;

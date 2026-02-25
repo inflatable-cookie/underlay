@@ -272,5 +272,5 @@ fn derive_display_name(userinfo: &GoogleUserInfo, email: &str) -> String {
 }
 
 #[cfg(test)]
-#[path = "lib_tests.rs"]
+#[path = "tests/lib_tests.rs"]
 mod tests;

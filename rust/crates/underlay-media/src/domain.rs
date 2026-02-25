@@ -489,5 +489,5 @@ pub struct ListMediaParams {
 }
 
 #[cfg(test)]
-#[path = "domain_tests.rs"]
+#[path = "tests/domain_tests.rs"]
 mod tests;

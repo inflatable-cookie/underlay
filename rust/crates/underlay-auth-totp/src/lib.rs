@@ -496,5 +496,5 @@ fn constant_time_eq_hex(a: &str, b: &str) -> bool {
 }
 
 #[cfg(test)]
-#[path = "lib_tests.rs"]
+#[path = "tests/lib_tests.rs"]
 mod tests;

@@ -30,6 +30,10 @@
     confirmLabel?: string;
     /** Cancel button label */
     cancelLabel?: string;
+    /** Confirm button visual variant */
+    confirmVariant?: "primary" | "secondary" | "subtle" | "danger" | "danger-subtle";
+    /** Cancel button visual variant */
+    cancelVariant?: "primary" | "secondary" | "subtle" | "danger" | "danger-subtle";
     /** Callback when confirmed */
     onConfirm: () => void;
     /** Callback when cancelled or dialog closed */
@@ -42,6 +46,8 @@
     description,
     confirmLabel = "Confirm",
     cancelLabel = "Cancel",
+    confirmVariant = "primary",
+    cancelVariant = "subtle",
     onConfirm,
     onCancel
   }: Props = $props();
@@ -54,6 +60,8 @@
   {description}
   {confirmLabel}
   {cancelLabel}
+  {confirmVariant}
+  {cancelVariant}
   onConfirm={() => {
     onConfirm();
   }}

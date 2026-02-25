@@ -8,4 +8,5 @@ pub use crate::registry::{
 pub use crate::serve::metrics_handler;
 
 #[cfg(test)]
+#[path = "tests/metrics_tests.rs"]
 mod tests;

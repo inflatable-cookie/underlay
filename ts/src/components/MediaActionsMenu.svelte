@@ -234,6 +234,8 @@
     description="Soft deleting will hide this media from listings. You can restore it later from trash."
     confirmLabel="Soft delete"
     cancelLabel="Cancel"
+    confirmVariant="danger-subtle"
+    cancelVariant="subtle"
     onConfirm={confirmSoftDelete}
     onCancel={() => (softDeleteOpen = false)}
   >
@@ -252,6 +254,8 @@
     description="This will restore the media back to the library."
     confirmLabel="Restore"
     cancelLabel="Cancel"
+    confirmVariant="primary"
+    cancelVariant="subtle"
     onConfirm={confirmRestore}
     onCancel={() => (restoreOpen = false)}
   >
@@ -270,6 +274,8 @@
     description="This will permanently delete the media and all its versions. This cannot be undone."
     confirmLabel="Permanently delete"
     cancelLabel="Cancel"
+    confirmVariant="danger"
+    cancelVariant="subtle"
     onConfirm={confirmPurge}
     onCancel={() => (purgeOpen = false)}
   >

@@ -152,6 +152,8 @@
     description={deleteConfig.description}
     confirmLabel={deleteConfig.confirmLabel ?? "Delete"}
     cancelLabel="Cancel"
+    confirmVariant="danger"
+    cancelVariant="subtle"
     onConfirm={confirmDelete}
     onCancel={cancelDelete}
   >

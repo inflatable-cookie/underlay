@@ -7,4 +7,5 @@ pub use crate::error::{AppError, AppResult};
 pub use crate::id::{IdGenerator, RawUuid, SystemIdGenerator, Uuid};
 
 #[cfg(test)]
+#[path = "tests/core_tests.rs"]
 mod tests;

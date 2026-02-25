@@ -596,5 +596,5 @@ impl WebAuthnService {
 }
 
 #[cfg(test)]
-#[path = "lib_tests.rs"]
+#[path = "tests/lib_tests.rs"]
 mod tests;

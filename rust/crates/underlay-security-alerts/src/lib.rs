@@ -16,10 +16,13 @@
 //! copy-paste-ready baseline table definition.
 
 mod detector;
-mod detector_tests;
 mod error;
 mod store;
 mod types;
+
+#[cfg(test)]
+#[path = "tests/detector_tests.rs"]
+mod detector_tests;
 
 pub use crate::detector::evaluate_alerts;
 pub use crate::error::{SecurityAlertError, SecurityAlertResult};

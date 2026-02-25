@@ -19,18 +19,23 @@ pub mod embed;
 pub mod openapi;
 
 #[cfg(test)]
+#[path = "tests/cors_tests.rs"]
 mod cors_tests;
 
 #[cfg(test)]
+#[path = "tests/caching_tests.rs"]
 mod caching_tests;
 
 #[cfg(test)]
+#[path = "tests/errors_tests.rs"]
 mod errors_tests;
 
 #[cfg(all(test, feature = "error-logging"))]
+#[path = "tests/error_logging_tests.rs"]
 mod error_logging_tests;
 
 #[cfg(test)]
+#[path = "tests/responses_tests.rs"]
 mod responses_tests;
 
 pub use crate::caching::{

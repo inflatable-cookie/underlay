@@ -589,5 +589,5 @@ macro_rules! field_mapping {
 }
 
 #[cfg(test)]
-#[path = "query_tests.rs"]
+#[path = "tests/query_tests.rs"]
 mod tests;

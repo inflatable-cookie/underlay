@@ -11,6 +11,8 @@
     description?: string | null;
     confirmLabel?: string;
     cancelLabel?: string;
+    confirmVariant?: "primary" | "secondary" | "subtle" | "danger" | "danger-subtle";
+    cancelVariant?: "primary" | "secondary" | "subtle" | "danger" | "danger-subtle";
     onConfirm?: () => void | Promise<void>;
     onCancel?: () => void;
     trigger?: Snippet;
@@ -24,6 +26,8 @@
     description = null,
     confirmLabel = "Confirm",
     cancelLabel = "Cancel",
+    confirmVariant = triggerVariant === "danger" ? "danger" : "primary",
+    cancelVariant = "subtle",
     onConfirm,
     onCancel,
     trigger
@@ -45,6 +49,8 @@
   {description}
   {confirmLabel}
   {cancelLabel}
+  {confirmVariant}
+  {cancelVariant}
   {onConfirm}
   {onCancel}
 />

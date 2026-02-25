@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
   import DropdownMenu from "./DropdownMenu.svelte";
+  import ActionArea from "./ActionArea.svelte";
 
   type DangerMenuItem = {
     label: string;
@@ -20,55 +21,47 @@
   let { align = "start", children, danger, dangerItems }: Props = $props();
 </script>
 
-<div class={`underlay-form-actions underlay-form-actions--${align}`}>
+<ActionArea
+  align={align}
+  class="underlay-form-actions"
+>
   {@render children?.()}
   {#if danger || dangerItems?.length}
-    <!-- Full danger slot - hidden on small screens -->
-    {#if danger}
-      <div class="underlay-form-actions__danger underlay-form-actions__danger--full">
-        {@render danger()}
-      </div>
-    {/if}
+    {#snippet aside()}
+      <!-- Full danger slot - hidden on small screens -->
+      {#if danger}
+        <div class="underlay-form-actions__danger underlay-form-actions__danger--full">
+          {@render danger()}
+        </div>
+      {/if}
 
-    <!-- Collapsed menu - shown on small screens -->
-    {#if dangerItems?.length}
-      <div class="underlay-form-actions__danger underlay-form-actions__danger--collapsed">
-        <DropdownMenu
-          triggerLabel="⋯"
-          triggerAriaLabel="More actions"
-          items={dangerItems.map(item => ({
-            label: item.label,
-            onSelect: item.onSelect,
-            destructive: item.destructive ?? true
-          }))}
-        />
-      </div>
-    {/if}
+      <!-- Collapsed menu - shown on small screens -->
+      {#if dangerItems?.length}
+        <div class="underlay-form-actions__danger underlay-form-actions__danger--collapsed">
+          <DropdownMenu
+            triggerLabel="⋯"
+            triggerAriaLabel="More actions"
+            items={dangerItems.map(item => ({
+              label: item.label,
+              onSelect: item.onSelect,
+              destructive: item.destructive ?? true
+            }))}
+          />
+        </div>
+      {/if}
+    {/snippet}
   {/if}
-</div>
+</ActionArea>
 
 <style>
-  .underlay-form-actions {
+  :global(.underlay-form-actions) {
     container-type: inline-size;
     margin-top: calc(
       var(--underlay-density-gap, 0.75rem) * 1.5
     );
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--underlay-form-actions-gap, 1.5rem);
-    align-items: center;
-  }
-
-  .underlay-form-actions--start {
-    justify-content: flex-start;
-  }
-
-  .underlay-form-actions--end {
-    justify-content: flex-end;
   }
 
   .underlay-form-actions__danger {
-    margin-left: auto;
     display: flex;
     align-items: center;
     gap: var(--underlay-form-actions-gap, 1.5rem);

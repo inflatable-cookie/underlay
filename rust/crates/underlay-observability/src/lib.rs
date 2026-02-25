@@ -3,6 +3,7 @@ mod request_id;
 mod tracing_init;
 
 #[cfg(test)]
+#[path = "tests/request_id_tests.rs"]
 mod request_id_tests;
 
 pub use crate::http_trace::trace_layer;
@@ -16,11 +17,5 @@ pub fn request_id_layer() -> RequestIdLayer {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::request_id_layer;
-
-    #[test]
-    fn request_id_layer_helper_constructs_default_layer() {
-        let _layer = request_id_layer();
-    }
-}
+#[path = "tests/lib_tests.rs"]
+mod tests;

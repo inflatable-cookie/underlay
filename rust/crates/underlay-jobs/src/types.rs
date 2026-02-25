@@ -488,5 +488,5 @@ pub trait JobHandler: Send + Sync {
 }
 
 #[cfg(test)]
-#[path = "types_tests.rs"]
+#[path = "tests/types_tests.rs"]
 mod tests;

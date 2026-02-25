@@ -14,6 +14,7 @@ declare const TextInput: UnderlayComponent;
 declare const TextArea: UnderlayComponent;
 declare const MarkdownEditor: UnderlayComponent;
 declare const Form: UnderlayComponent;
+declare const ActionArea: UnderlayComponent;
 declare const FormActions: UnderlayComponent;
 declare const FormError: UnderlayComponent;
 declare const Switch: UnderlayComponent;
@@ -107,6 +108,7 @@ export {
   FieldSetGrid,
   FileUpload,
   Form,
+  ActionArea,
   FormActions,
   FormError,
   LoginForm,

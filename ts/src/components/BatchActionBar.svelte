@@ -6,9 +6,11 @@
    * Supports both static actions (via props) and dynamic actions (via registeredActions).
    */
   import type { Component, Snippet } from "svelte";
+  import ActionArea from "./ActionArea.svelte";
   import Button from "./Button.svelte";
   import AlertDialog from "./AlertDialog.svelte";
   import Dialog from "./Dialog.svelte";
+  import TextButton from "./TextButton.svelte";
   import X from "lucide-svelte/icons/x";
   import Trash2 from "lucide-svelte/icons/trash-2";
   import CheckCheck from "lucide-svelte/icons/check-check";
@@ -222,6 +224,8 @@
   title="Confirm Delete"
   description={`Are you sure you want to delete ${selectedCount} ${itemText}? This action cannot be undone.`}
   confirmLabel={`Delete ${selectedCount} ${itemText}`}
+  confirmVariant="danger"
+  cancelVariant="subtle"
   onConfirm={confirmDelete}
 />
 
@@ -247,14 +251,7 @@
         </label>
       {/each}
     </div>
-    <div class="underlay-dialog-actions">
-      <Button
-        type="button"
-        variant="subtle"
-        onclick={() => showStatusModal = false}
-      >
-        Cancel
-      </Button>
+    <ActionArea class="underlay-dialog-actions">
       <Button
         type="button"
         variant="primary"
@@ -263,7 +260,15 @@
       >
         Update Status
       </Button>
-    </div>
+      {#snippet aside()}
+        <TextButton
+          type="button"
+          onclick={() => showStatusModal = false}
+        >
+          Cancel
+        </TextButton>
+      {/snippet}
+    </ActionArea>
   </Dialog>
 {/if}
 
@@ -343,10 +348,7 @@
     accent-color: var(--accent-color, #3b82f6);
   }
 
-  .underlay-dialog-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 0.5rem;
+  :global(.underlay-dialog-actions) {
     margin-top: 1.5rem;
   }
 </style>

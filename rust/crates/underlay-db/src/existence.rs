@@ -466,5 +466,5 @@ pub async fn number_exists_in_scope_excluding(
 }
 
 #[cfg(test)]
-#[path = "existence_tests.rs"]
+#[path = "tests/existence_tests.rs"]
 mod tests;

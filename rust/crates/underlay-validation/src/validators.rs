@@ -469,5 +469,5 @@ pub fn unique_items_detailed<T: std::hash::Hash + Eq>(value: &[T]) -> Result<(),
 }
 
 #[cfg(test)]
-#[path = "validators_tests.rs"]
+#[path = "tests/validators_tests.rs"]
 mod tests;

@@ -394,5 +394,5 @@ pub fn mime_from_format(format: ImageFormat) -> &'static str {
 }
 
 #[cfg(test)]
-#[path = "image_tests.rs"]
+#[path = "tests/image_tests.rs"]
 mod tests;

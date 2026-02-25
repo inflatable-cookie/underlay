@@ -12,6 +12,7 @@ pub mod state;
 pub mod hashing;
 
 #[cfg(test)]
+#[path = "tests/extractors_tests.rs"]
 mod extractors_tests;
 
 pub use crate::errors::{AuthError, AuthResult};

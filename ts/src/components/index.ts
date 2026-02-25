@@ -28,6 +28,7 @@ export { default as ColorPicker } from "./ColorPicker.svelte";
 export { default as TextArea } from "./TextArea.svelte";
 export { default as MarkdownEditor } from "./MarkdownEditor.svelte";
 export { default as Form } from "./Form.svelte";
+export { default as ActionArea } from "./ActionArea.svelte";
 export { default as FormActions } from "./FormActions.svelte";
 export { default as FormError } from "./FormError.svelte";
 export { default as FormValidationProvider } from "./FormValidationProvider.svelte";

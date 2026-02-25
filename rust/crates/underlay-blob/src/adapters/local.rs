@@ -406,5 +406,5 @@ fn guess_content_type(key: &str) -> String {
 }
 
 #[cfg(test)]
-#[path = "local_tests.rs"]
+#[path = "../tests/adapters/local_tests.rs"]
 mod tests;

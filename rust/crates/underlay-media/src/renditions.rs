@@ -557,5 +557,5 @@ impl<B: BlobAdapter> Clone for RenditionService<B> {
 }
 
 #[cfg(test)]
-#[path = "renditions_tests.rs"]
+#[path = "tests/renditions_tests.rs"]
 mod tests;

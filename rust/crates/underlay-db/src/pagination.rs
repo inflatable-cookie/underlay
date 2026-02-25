@@ -594,5 +594,5 @@ impl TimestampCursor {
 }
 
 #[cfg(test)]
-#[path = "pagination_tests.rs"]
+#[path = "tests/pagination_tests.rs"]
 mod tests;
