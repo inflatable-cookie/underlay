@@ -159,19 +159,19 @@ Timeline anchor date: **February 24, 2026**.
 
 ### 20.3.1 Apply the same migration checklist to underlay-reference
 
-- [ ] Run inventory and classification
-- [ ] Implement typed config modules and defaults
+- [x] Run inventory and classification (`docs/reports/2026-02-25-underlay-reference-env-inventory-and-classification.md`)
+- [x] Implement typed config modules and defaults (reference `acme-api` auth/email behavior defaults include JWT + WebAuthn + Argon2 typed behavior)
 - [ ] Add compatibility bridge and warnings
-- [ ] Remove migrated env keys from reference setup
+- [x] Remove migrated env keys from reference setup (`acme-api/.env.example` no longer lists migrated `EMAIL_*`, JWT behavior `AUTH_*`, `WEBAUTHN_RP_*`, `ARGON2_*`)
 
 ### 20.3.2 Validate template quality
 
-- [ ] Confirm the process works without Acowtancy-specific assumptions
+- [x] Confirm the process works without Acowtancy-specific assumptions
 - [ ] Refine guide/checklist based on reference migration feedback
 
 ### Acceptance Criteria (Phase 20.3)
 
-- [ ] underlay-reference follows the same config standard
+- [ ] underlay-reference follows the same config standard (compatibility warning bridge still pending)
 - [ ] Any checklist/documentation gaps are fixed in Underlay docs
 
 ---
