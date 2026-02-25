@@ -23,11 +23,16 @@ Changes applied:
 - Migrated scheduled-task detail view to shared detail layout structure:
   - `src/routes/(app)/system/scheduled-tasks/[id]/+page.svelte`
   - replaced local wrapper/grid stack with `.underlay-details-content` + `.span-full`
+- Migrated additional system detail wrapper surfaces to shared page stack:
+  - `src/routes/(app)/system/jobs/[id]/+page.svelte`
+  - `src/routes/(app)/system/emails/[id]/+page.svelte`
+  - `src/routes/(app)/system/errors/[id]/+page.svelte`
 - Kept feature-specific styles:
   - message body formatting
   - header separator
   - link affordances
   - scheduled-task content presentation + jobs table theming
+  - per-surface system detail styling (email preview, error metadata blocks, job payload/error cards)
 
 Validation:
 - `bun run check` in `compli-me/admin` passed.
