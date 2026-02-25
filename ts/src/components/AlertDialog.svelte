@@ -255,7 +255,7 @@
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    gap: 0.625rem;
+    gap: 1.25rem;
   }
 
   :global(.underlay-alert-dialog-action:disabled) {
