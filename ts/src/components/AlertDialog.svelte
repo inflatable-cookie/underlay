@@ -251,11 +251,15 @@
   }
 
   :global(.underlay-alert-dialog-footer) {
-    margin-top: 1.25rem;
+    margin-top: 1.75rem;
     display: flex;
     align-items: center;
-    justify-content: flex-end;
-    gap: 1.25rem;
+    justify-content: flex-start;
+    gap: 0.75rem;
+  }
+
+  :global(.underlay-alert-dialog-cancel) {
+    margin-left: auto;
   }
 
   :global(.underlay-alert-dialog-action:disabled) {
@@ -271,12 +275,7 @@
     }
 
     :global(.underlay-alert-dialog-footer) {
-      justify-content: stretch;
-    }
-
-    :global(.underlay-alert-dialog-action.underlay-button) {
-      flex: 1 1 auto;
-      justify-content: center;
+      margin-top: 1.5rem;
     }
   }
 </style>
