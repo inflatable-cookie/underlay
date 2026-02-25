@@ -114,6 +114,7 @@ Current app configuration is spread across many `.env` keys, including values th
 - [x] Apply the same typed-config-first compatibility/deprecation pattern to Farmyard WebAuthn + Argon2 behavior overrides (`WEBAUTHN_RP_*`, `ARGON2_*`)
 - [x] Add startup diagnostics for auth behavior source resolution (typed config vs legacy env override) and focused helper tests in `farmyard-auth`
 - [x] Apply typed-config-only email behavior defaults in Farmyard infra bootstrap (remove `EMAIL_DEFAULT_FROM`/`EMAIL_APP_NAME`/`EMAIL_APP_URL`/`EMAIL_SUPPORT`/`EMAIL_TEMPLATES_DIR` env behavior overrides)
+- [x] Apply typed-config-only AI behavior defaults in Farmyard infra bootstrap (remove `AI_ROUTER_PROVIDER_NAME` and `AI_SCHEDULED_*` env behavior overrides)
 - [ ] Add logical config modules for app-behavior settings in the Rust backend
 - [ ] Add defaults for all non-secret stable behavior settings
 - [ ] Keep secrets and runtime-env keys in env with typed parsing
@@ -130,6 +131,7 @@ Current app configuration is spread across many `.env` keys, including values th
 
 - [x] Remove migrated auth behavior keys (`AUTH_*` JWT tuning, `WEBAUTHN_RP_*`, `ARGON2_*`) from `farmyard/.env.example` and point docs to typed `[auth]` config fields
 - [x] Remove migrated email behavior keys (`EMAIL_DEFAULT_FROM`, `EMAIL_APP_NAME`, `EMAIL_APP_URL`, `EMAIL_SUPPORT`, `EMAIL_TEMPLATES_DIR`) from `farmyard/.env.example` and point docs to typed `[email]` config fields
+- [x] Remove migrated AI behavior keys (`AI_ROUTER_PROVIDER_NAME`, `AI_SCHEDULED_OUTCOME_NOTES_AREA_ID`, `AI_SCHEDULED_QA_SOURCE_ID`) from `farmyard/.env.example` and point docs to typed `[ai]` config fields
 - [ ] Delete migrated keys from `.env.example` and setup docs
 - [ ] Update app docs to point to config modules and default files
 

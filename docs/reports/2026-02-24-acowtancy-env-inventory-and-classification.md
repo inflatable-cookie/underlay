@@ -132,6 +132,11 @@ It combines:
    - `EMAIL_SUPPORT`
    - `EMAIL_TEMPLATES_DIR`
    are removed from bootstrap reads and `.env.example`.
+10. Farmyard infra bootstrap now sources AI behavior from typed `[ai]` config only; behavior env overrides for:
+   - `AI_ROUTER_PROVIDER_NAME`
+   - `AI_SCHEDULED_OUTCOME_NOTES_AREA_ID`
+   - `AI_SCHEDULED_QA_SOURCE_ID`
+   are removed from bootstrap reads and `.env.example`.
 
 ## Legacy Key Removal Timeline
 
