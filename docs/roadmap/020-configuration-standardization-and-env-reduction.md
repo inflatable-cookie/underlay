@@ -139,8 +139,8 @@ Current app configuration is spread across many `.env` keys, including values th
 
 ### Acceptance Criteria (Phase 20.2)
 
-- [ ] Acowtancy behavior config is primarily code-defined and typed
-- [ ] `.env` in Acowtancy contains only secrets/runtime-env keys
+- [x] Acowtancy behavior config is primarily code-defined and typed
+- [x] `.env` in Acowtancy contains only secrets/runtime-env keys
 - [x] Startup fails fast on invalid config with actionable errors
 - [x] Migration report captures remaining legacy keys and timeline
 

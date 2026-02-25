@@ -24,8 +24,8 @@ It combines:
 - 67 unique env keys observed.
 - Classification totals:
   - `secret`: 8
-  - `runtime-env`: 33
-  - `app-behavior`: 26
+  - `runtime-env`: 35
+  - `app-behavior`: 24
 
 ## Mapping table (old env key -> target)
 
@@ -41,7 +41,7 @@ It combines:
 | AI_SCHEDULED_OUTCOME_NOTES_AREA_ID | app-behavior | `AppBehaviorConfig.ai.scheduled_outcome_notes_area_id` |
 | AI_SCHEDULED_QA_SOURCE_ID | app-behavior | `AppBehaviorConfig.ai.scheduled_qa_source_id` |
 | API_BASE_URL | runtime-env | `API_BASE_URL` (test key, keep env) |
-| API_VERSION | app-behavior | `API_VERSION` (test key, keep env for integration tests) |
+| API_VERSION | runtime-env | `API_VERSION` (test/runtime contract key, keep env) |
 | ARGON2_ITERATIONS | app-behavior | `AppBehaviorConfig.auth.argon2_iterations` |
 | ARGON2_MEMORY_KB | app-behavior | `AppBehaviorConfig.auth.argon2_memory_kb` |
 | ARGON2_PARALLELISM | app-behavior | `AppBehaviorConfig.auth.argon2_parallelism` |
@@ -83,7 +83,7 @@ It combines:
 | PDF_THIRD_PARTY_TIMEOUT_SECS | app-behavior | `AppBehaviorConfig.pdf.third_party_timeout_secs` |
 | PORT | runtime-env | `AppConfig.http.port` (keep env) |
 | PUBLIC_API_URL | runtime-env | canonical public API base URL |
-| PUBLIC_API_VERSION | app-behavior | canonical public API version |
+| PUBLIC_API_VERSION | runtime-env | canonical public API version |
 | PUBLIC_FARMYARD_API_VERSION | runtime-env | deprecated -> `PUBLIC_API_VERSION` |
 | PUBLIC_FARMYARD_BASE_URL | runtime-env | deprecated -> `PUBLIC_API_URL` |
 | PUBLIC_HOST | runtime-env | `AppConfig.http.public_host` (keep env) |
@@ -151,6 +151,7 @@ It combines:
    - shared validator: `validate_behavior_config(&AppConfig)` in infra config module
    - enforced on startup in `farmyard-api` and `farmyard-jobs` before service boot
    - covered by focused infra test for invalid behavior values
+15. Env key inventory on 2026-02-25 for Acowtancy `.env`/`.env.example` files (`farmyard`, `dairy`, `cream`) contains only `secret` and `runtime-env` classes; migrated app-behavior keys are no longer present in env manifests.
 
 ## Legacy Key Removal Timeline
 
@@ -220,3 +221,9 @@ Timeline anchor date: **2026-02-24**.
   - `../../acowtancy/farmyard/crates/infra/src/config.rs`
   - `../../acowtancy/farmyard/crates/api/src/main.rs`
   - `../../acowtancy/farmyard/crates/jobs/src/main.rs`
+- Env-manifest verification snapshot inputs (2026-02-25):
+  - `../../acowtancy/farmyard/.env`
+  - `../../acowtancy/farmyard/.env.example`
+  - `../../acowtancy/dairy/.env`
+  - `../../acowtancy/cream/.env`
+  - `../../acowtancy/cream/.env.example`
