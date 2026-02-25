@@ -34,9 +34,10 @@
     trigger,
     class: className,
   }: Props = $props();
+  let hasTrigger = $derived(typeof trigger === "function");
 
   const triggerClass = $derived(
-    inline || trigger
+    inline || hasTrigger
       ? `underlay-tooltip-trigger--inline ${className ?? ""}`
       : `underlay-tooltip-trigger ${className ?? ""}`
   );
@@ -49,8 +50,8 @@
         class={triggerClass}
         aria-label={content}
       >
-        {#if trigger}
-          {@render trigger()}
+        {#if hasTrigger}
+          {@render trigger?.()}
         {:else}
           {triggerLabel}
         {/if}

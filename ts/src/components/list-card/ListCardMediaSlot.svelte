@@ -20,7 +20,8 @@
     onSelectionToggle
   }: Props = $props();
 
-  let hasActions = $derived(Boolean(actions));
+  let hasActions = $derived(typeof actions === "function");
+  let hasMedia = $derived(typeof media === "function");
 
   function handleSelectionToggle(event: Event) {
     onSelectionToggle?.(event);
@@ -30,8 +31,8 @@
 {#snippet mediaTrigger()}
   <span class="underlay-list-card__media-content">
     <span class="underlay-list-card__icon">
-      {#if media}
-        {@render media()}
+      {#if hasMedia}
+        {@render media?.()}
       {/if}
     </span>
     <span class="underlay-list-card__dots" aria-hidden="true">⋯</span>
@@ -64,8 +65,8 @@
 {:else}
   <div class="underlay-list-card__media-wrap">
     <div class="underlay-list-card__media">
-      {#if media}
-        {@render media()}
+      {#if hasMedia}
+        {@render media?.()}
       {/if}
     </div>
     {#if hasActions && actionsPlacement === "media-overlay"}

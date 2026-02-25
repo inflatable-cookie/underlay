@@ -24,6 +24,8 @@
   }: Props = $props();
 
   let isCompact = $derived(variant === "compact");
+  let hasActions = $derived(typeof actions === "function");
+  let hasChildren = $derived(typeof children === "function");
 
   function formatValue(value: number | string | null, defaultUnit: string): string | null {
     if (value == null) return null;
@@ -46,15 +48,15 @@
   ].filter(Boolean).join(" "));
 </script>
 
-{#if actions}
+{#if hasActions}
   <div class="underlay-list-grid-header">
-    {@render actions()}
+    {@render actions?.()}
   </div>
 {/if}
 
 <div class={gridClass} style={style || undefined}>
-  {#if children}
-    {@render children()}
+  {#if hasChildren}
+    {@render children?.()}
   {/if}
 </div>
 

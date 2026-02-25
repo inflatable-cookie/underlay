@@ -26,7 +26,11 @@
     children
   }: Props = $props();
 
-  let hasActions = $derived(Boolean(actions));
+  let hasActions = $derived(typeof actions === "function");
+  let hasTitleSnippet = $derived(typeof titleSnippet === "function");
+  let hasTitleSuffix = $derived(typeof titleSuffix === "function");
+  let hasTrailing = $derived(typeof trailing === "function");
+  let hasChildren = $derived(typeof children === "function");
 </script>
 
 {#snippet actionsTrigger()}
@@ -36,17 +40,17 @@
 <div class="underlay-list-card__body">
   <div class="underlay-list-card__title-row">
     <h3 class="underlay-list-card__title">
-      {#if titleSnippet}
-        {@render titleSnippet()}
+      {#if hasTitleSnippet}
+        {@render titleSnippet?.()}
       {:else}
         {title}
       {/if}
-      {#if titleSuffix}{@render titleSuffix()}{/if}
+      {#if hasTitleSuffix}{@render titleSuffix?.()}{/if}
     </h3>
-    {#if trailing || (hasActions && actionsPlacement === "trailing")}
+    {#if hasTrailing || (hasActions && actionsPlacement === "trailing")}
       <div class="underlay-list-card__title-actions">
-        {#if trailing}
-          {@render trailing()}
+        {#if hasTrailing}
+          {@render trailing?.()}
         {/if}
         {#if hasActions && actionsPlacement === "trailing"}
           <div class="underlay-list-card__actions">
@@ -62,8 +66,8 @@
   {/if}
 
   <div class="underlay-list-card__meta">
-    {#if children}
-      {@render children()}
+    {#if hasChildren}
+      {@render children?.()}
     {/if}
   </div>
 </div>

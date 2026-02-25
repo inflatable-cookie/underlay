@@ -51,6 +51,8 @@
     children,
     class: className,
   }: Props = $props();
+  let hasTrigger = $derived(typeof trigger === "function");
+  let hasChildren = $derived(typeof children === "function");
 
   let triggerRef: HTMLElement | null = $state(null);
   let lastOpen = $state(open);
@@ -71,8 +73,8 @@
       class={`underlay-dropdown-menu-trigger ${className ?? ""}`}
       aria-label={triggerAriaLabel}
     >
-      {#if trigger}
-        {@render trigger()}
+      {#if hasTrigger}
+        {@render trigger?.()}
       {:else if triggerLabel}
         {triggerLabel}
       {:else}
@@ -109,7 +111,9 @@
           {/each}
         </BitsDropdownMenu.Group>
       {:else}
-        {@render children?.()}
+        {#if hasChildren}
+          {@render children?.()}
+        {/if}
       {/if}
     </BitsDropdownMenu.Content>
   </BitsDropdownMenu.Portal>
