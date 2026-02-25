@@ -3,6 +3,12 @@
   --underlay-details-section-min-width: 12rem;
 }
 
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 /*
   Utility class for admin detail tab content.
   2-column grid that collapses to 1 column on narrow containers.
@@ -13,6 +19,43 @@
   grid-template-columns: repeat(2, 1fr);
   gap: var(--underlay-space-6, 1.5rem);
   align-items: stretch;
+}
+
+.underlay-details-content > * {
+  min-width: 0;
+}
+
+/* Common detail-tab cards should fill their grid cell width by default */
+.underlay-details-content > :global(.underlay-inline-list-card),
+.underlay-details-content > :global(.underlay-content-card),
+.underlay-details-content > :global(.underlay-details-card),
+.underlay-details-content > :global(.underlay-card) {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+}
+
+/* Same default behavior when cards are wrapped in a span-full row container */
+.underlay-details-content > .span-full > :global(.underlay-inline-list-card),
+.underlay-details-content > .span-full > :global(.underlay-content-card),
+.underlay-details-content > .span-full > :global(.underlay-details-card),
+.underlay-details-content > .span-full > :global(.underlay-card) {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+}
+
+/* Inline/content cards are commonly paired in side-by-side rows and should stretch */
+.underlay-details-content > :global(.underlay-inline-list-card),
+.underlay-details-content > :global(.underlay-content-card) {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.underlay-details-content > :global(.underlay-inline-list-card .underlay-inline-list-card__body),
+.underlay-details-content > :global(.underlay-content-card .underlay-content-card__body) {
+  flex: 1;
 }
 
 @container (max-width: 850px) {
@@ -29,4 +72,40 @@
 /* Tab groups (description tabs) always span full width */
 .underlay-details-content > .underlay-tabs {
   grid-column: 1 / -1;
+}
+
+/* Shared visual shell for embedded media preview regions */
+.underlay-preview-shell {
+  background: var(--underlay-color-surface-muted, rgba(255, 255, 255, 0.02));
+  border: 1px solid var(--underlay-color-border-subtle, rgba(148, 163, 184, 0.25));
+  border-radius: var(--underlay-radius-md, 0.5rem);
+  overflow: hidden;
+}
+
+/* Shared empty state block used inside preview shells */
+.underlay-preview-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 3rem;
+  color: var(--underlay-color-text-muted, #64748b);
+}
+
+.underlay-preview-empty > p {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+/* Shared thumbnail link treatment for detail pages */
+.underlay-thumbnail-link {
+  display: inline-block;
+  border-radius: var(--underlay-radius-md, 0.375rem);
+  overflow: hidden;
+  transition: opacity 0.15s ease;
+}
+
+.underlay-thumbnail-link:hover {
+  opacity: 0.8;
 }

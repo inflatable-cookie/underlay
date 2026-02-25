@@ -39,6 +39,7 @@ Unlike implementation guides, sweeps are runbooks for reviewing an existing code
 | [024-admin-fetch-and-caching-pressure-sweep.md](./024-admin-fetch-and-caching-pressure-sweep.md) | Identify repeated admin-fetch hotspots and ensure dedupe/microcache controls are applied proportionately | API/client/frontend maintainers |
 | [025-html-sanitization-sinks-sweep.md](./025-html-sanitization-sinks-sweep.md) | Verify every `{@html}` sink has explicit sanitizer coverage and a documented trust boundary | Frontend/security reviewers |
 | [026-auth-security-alerting-sweep.md](./026-auth-security-alerting-sweep.md) | Verify failed-login and lockout alerting uses shared Underlay thresholds, dedupe, persistence, and operator outputs | Backend/security reviewers |
+| [028-layout-foundation-and-detail-page-css-sweep.md](./028-layout-foundation-and-detail-page-css-sweep.md) | Keep layout behavior in shared Underlay primitives and remove per-page CSS hacks from admin detail pages | Frontend/platform reviewers |
 
 ## How to run a sweep
 

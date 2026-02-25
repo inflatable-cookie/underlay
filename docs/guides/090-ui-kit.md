@@ -1015,10 +1015,15 @@ Inline code styling component for displaying technical values like IDs, slugs, M
 
 <!-- Display a slug -->
 <p>Slug: <Code>{page.slug}</Code></p>
+
+<!-- Copyable multi-line block -->
+<Code copy block>{JSON.stringify(payload, null, 2)}</Code>
 ```
 
 **Props:**
 - `class` - Additional CSS classes
+- `copy` - Show one-click copy button (default: `false`)
+- `block` - Render as wrapped multi-line block (default: `false`)
 - All standard HTML `<code>` element attributes
 
 **Styling:**
@@ -1109,6 +1114,8 @@ Shows a subtle empty message when no content is set.
 - `emptyMessage` - Message shown when value is empty (default: "No content set.")
 - `maxHeight` - Max height when constrained. Number values are interpreted as pixels; strings can use CSS units like `"10em"` (default: `200`)
 - `overflowBehavior` - Overflow mode when `maxHeight` is set: `"reveal"` (default, show more/less toggle) or `"scroll"` (fixed height with internal scroll)
+- `fullWidth` - Expand to full container width (removes readable-width max; default: `false`)
+- `stretch` - Fill parent row height and allow body to flex (default: `false`)
 
 **Features:**
 - Auto-detects content type (object = Nightfire, string = HTML/Markdown)
@@ -1122,6 +1129,7 @@ Shows a subtle empty message when no content is set.
 - Automatic empty state handling with italic muted message
 - Built-in styling for common Markdown elements (headings, lists, code, blockquotes)
 - Proper paragraph margin handling within rendered content
+- Optional full-width and stretch behavior for detail-page side-by-side layouts
 
 **Note:** When rendering HTML strings without the `markdown` prop, only use with trusted/sanitized content.
 
@@ -1750,6 +1758,8 @@ A compact card for displaying related items in a vertical list. Commonly used al
 - `emptyMessage` - Message shown when there are no items (default: `"No items."`)
 - `action` - Optional snippet for action button (typically "Add")
 - `children` - List items to render (use `InlineListItem`)
+- `fullWidth` - Expand to full container width (removes readable-width max; default: `false`)
+- `stretch` - Fill parent row height and allow list body to flex (default: `false`)
 
 ### InlineListItem
 
@@ -3272,7 +3282,7 @@ import "@decodelabs/underlay/styles/base.css";
 
 ### Details Content Layout
 
-The `.underlay-details-content` class provides consistent vertical spacing for admin detail pages. Use it to wrap the content of a "Details" tab to ensure uniform gaps between sections.
+The `.underlay-details-content` class provides a responsive 2-column grid for admin detail pages, with common card defaults that avoid custom CSS for basic layout.
 
 ```svelte
 <TabsContent value="details">
@@ -3302,14 +3312,24 @@ The `.underlay-details-content` class provides consistent vertical spacing for a
 ```
 
 **What it does:**
-- Applies `display: flex` with `flex-direction: column` and `gap: 1.5rem`
-- Removes top margin from `ContentCard` components when nested inside
-- Handles nested underline tabs correctly
+- Uses a 2-column grid with `gap: 1.5rem`, collapsing to 1 column in narrow containers
+- Applies `align-items: stretch` and `min-width: 0` to prevent overflow in grid children
+- Makes direct child cards (`InlineListCard`, `ContentCard`, `DetailsCard`, `Card`) fill cell width by default
+- Stretches direct child `InlineListCard` and `ContentCard` so side-by-side rows align vertically
+- Supports `.span-full` and direct `.underlay-tabs` children spanning both columns
+
+### Media Preview Utilities
+
+Use shared utility classes for detail-page media previews instead of per-page shell CSS:
+
+- `.underlay-preview-shell` - bordered, rounded preview container
+- `.underlay-preview-empty` - centered empty-state block for preview fallbacks
+- `.underlay-thumbnail-link` - consistent thumbnail anchor hover/radius treatment
 
 **When to use:**
 - Inside `TabsContent value="details"` on admin detail pages
-- When you have multiple sections (DetailsGrid, ContentCard, nested tabs) that need consistent spacing
-- To avoid manual margin adjustments between sections
+- When you need side-by-side detail/auxiliary panels plus full-width follow-up rows
+- To avoid manual width, stretch, and margin overrides between sections
 
 ---
 

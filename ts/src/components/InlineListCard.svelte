@@ -12,6 +12,10 @@
     action?: Snippet;
     /** List items to render */
     children?: Snippet;
+    /** Use full available width instead of readable-measure max width */
+    fullWidth?: boolean;
+    /** Stretch card/body to fill parent row height */
+    stretch?: boolean;
   }
 
   let {
@@ -19,11 +23,17 @@
     emptyMessage = "No items.",
     hasItems = true,
     action,
-    children
+    children,
+    fullWidth = false,
+    stretch = false
   }: Props = $props();
 </script>
 
-<div class="underlay-inline-list-card">
+<div
+  class="underlay-inline-list-card"
+  class:underlay-inline-list-card--full-width={fullWidth}
+  class:underlay-inline-list-card--stretch={stretch}
+>
   <div class="underlay-inline-list-card__header">
     <h4 class="underlay-inline-list-card__title">{title}</h4>
     {#if action}
@@ -55,6 +65,17 @@
     border-radius: var(--underlay-radius-lg, 0.75rem);
   }
 
+  .underlay-inline-list-card--full-width {
+    max-width: none;
+    width: 100%;
+  }
+
+  .underlay-inline-list-card--stretch {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
   .underlay-inline-list-card__header {
     display: flex;
     align-items: center;
@@ -78,6 +99,10 @@
 
   .underlay-inline-list-card__body {
     margin: 0;
+  }
+
+  .underlay-inline-list-card--stretch .underlay-inline-list-card__body {
+    flex: 1;
   }
 
   .underlay-inline-list-card__list {

@@ -13,6 +13,10 @@
     maxHeight?: number | string;
     /** How overflow should behave when maxHeight is set. */
     overflowBehavior?: "reveal" | "scroll";
+    /** Use full available width instead of readable-measure max width */
+    fullWidth?: boolean;
+    /** Stretch card/body to fill parent row height */
+    stretch?: boolean;
   }
 
   let {
@@ -21,7 +25,9 @@
     markdown = false,
     emptyMessage = "No content set.",
     maxHeight = 200,
-    overflowBehavior = "reveal"
+    overflowBehavior = "reveal",
+    fullWidth = false,
+    stretch = false
   }: Props = $props();
 
   const maxHeightCss = $derived(
@@ -89,7 +95,11 @@
   }
 </script>
 
-<div class="underlay-content-card">
+<div
+  class="underlay-content-card"
+  class:underlay-content-card--full-width={fullWidth}
+  class:underlay-content-card--stretch={stretch}
+>
   {#if hasTitle}
     <h4 class="underlay-content-card__title">{title}</h4>
   {/if}
@@ -130,6 +140,17 @@
     border-radius: var(--underlay-radius-lg, 0.75rem);
   }
 
+  .underlay-content-card--full-width {
+    max-width: none;
+    width: 100%;
+  }
+
+  .underlay-content-card--stretch {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
   .underlay-content-card__title {
     margin: 0 0 0.75rem;
     font-size: 0.75rem;
@@ -143,6 +164,10 @@
     margin: 0;
     line-height: 1.6;
     color: var(--underlay-color-text, #e5e7eb);
+  }
+
+  .underlay-content-card--stretch .underlay-content-card__body {
+    flex: 1;
   }
 
   .underlay-content-card__body--collapsed {

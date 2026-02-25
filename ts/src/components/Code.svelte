@@ -10,9 +10,11 @@
     children?: Snippet;
     /** Show a one-click copy button */
     copy?: boolean;
+    /** Render as a wrapped block for multi-line code content */
+    block?: boolean;
   }
 
-  let { class: className = "", children, copy = false, ...restProps }: Props = $props();
+  let { class: className = "", children, copy = false, block = false, ...restProps }: Props = $props();
   let codeElement: HTMLElement | null = $state(null);
   let copied = $state(false);
   let resetTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -36,8 +38,15 @@
   }
 </script>
 
-<span class="underlay-code-wrap">
-  <code bind:this={codeElement} class="underlay-code {className}" {...restProps}>{@render children?.()}</code>
+<span class="underlay-code-wrap" class:underlay-code-wrap--block={block}>
+  <code
+    bind:this={codeElement}
+    class="underlay-code {className}"
+    class:underlay-code--block={block}
+    {...restProps}
+  >
+    {@render children?.()}
+  </code>
   {#if copy}
     <button type="button" class="underlay-code-copy" aria-label="Copy code" onclick={handleCopy}>
       {#if copied}
@@ -56,6 +65,12 @@
     gap: 0.35rem;
   }
 
+  .underlay-code-wrap--block {
+    display: flex;
+    width: 100%;
+    align-items: flex-start;
+  }
+
   :global(.underlay-code) {
     font-family: var(--underlay-font-mono, ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace);
     font-size: 0.9em;
@@ -65,6 +80,14 @@
     border: 1px solid var(--underlay-color-border-subtle, rgba(148, 163, 184, 0.2));
     color: var(--underlay-color-text-subtle, var(--underlay-color-text-muted, #6b7280));
     border-radius: var(--underlay-radius-sm, 0.25rem);
+  }
+
+  :global(.underlay-code--block) {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    white-space: pre-wrap;
+    word-break: break-word;
   }
 
   .underlay-code-copy {
