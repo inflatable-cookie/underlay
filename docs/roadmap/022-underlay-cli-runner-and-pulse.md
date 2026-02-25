@@ -25,9 +25,9 @@ Current gaps:
 
 ## 3) Non-Goals
 
-- [ ] No full CI platform/orchestrator scope in this roadmap.
-- [ ] No deep coupling of task logic into Underlay core runtime crates.
-- [ ] No TUI in v0 unless command discoverability proves insufficient.
+- [x] No full CI platform/orchestrator scope in this roadmap.
+- [x] No deep coupling of task logic into Underlay core runtime crates.
+- [x] No TUI in v0 unless command discoverability proves insufficient.
 
 ## 4) Command Contract (v0)
 
@@ -114,11 +114,11 @@ Current gaps:
 
 ## 8) Risks and Mitigations
 
-- [ ] Risk: root auto-detection picks wrong scope in nested repos.
+- [x] Risk: root auto-detection picks wrong scope in nested repos.
   - Mitigation: conservative promotion rules, verbose trace mode, clear `--repo` override.
-- [ ] Risk: CLI runner starts coupling into core runtime modules.
+- [x] Risk: CLI runner starts coupling into core runtime modules.
   - Mitigation: explicit dependency boundary review in Phase 22.1.
-- [ ] Risk: command surface becomes verbose or fragmented.
+- [x] Risk: command surface becomes verbose or fragmented.
   - Mitigation: keep action-first verbs and enforce short canonical aliases.
 
 ## 9) Deliverables

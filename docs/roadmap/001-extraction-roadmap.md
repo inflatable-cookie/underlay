@@ -1,5 +1,7 @@
 # 001 – Underlay Extraction Roadmap (Farmyard + Nursery)
 
+Status: Complete
+
 This roadmap defines a step-by-step plan to extract reusable, app-agnostic foundation code from:
 
 - Acowtancy backend: `farmyard/`

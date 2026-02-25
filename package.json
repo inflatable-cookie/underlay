@@ -79,12 +79,13 @@
     "check": "svelte-check --tsconfig ./ts/tsconfig.json",
     "check:types": "tsc -p ./ts/tsconfig.json",
     "check:exports": "node ts/scripts/check-exports.mjs",
+    "check:component-test-hygiene": "node ts/scripts/check-component-test-hygiene.mjs",
     "check:guardrails": "node --import tsx ts/src/tools/guardrails.ts",
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
     "test:components": "vitest run -c vitest.component.config.ts",
-    "validate": "bun run check && bun run check:types && bun run check:exports && bun run check:guardrails && bun run test:run"
+    "validate": "bun run check && bun run check:types && bun run check:exports && bun run check:component-test-hygiene && bun run check:guardrails && bun run test:run"
   },
   "peerDependencies": {
     "@sveltejs/kit": "^2.53.0",

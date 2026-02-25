@@ -4,6 +4,7 @@ import type {
   DataTableFilters,
   DataTableSort
 } from "../DataTable.svelte";
+import type { DataTableRowIdGetter } from "./types";
 import {
   getNextPage,
   getPageAfterLimitChange,
@@ -60,9 +61,10 @@ export function applySelectAll<T>(
 export function applySelectRow<T>(
   selected: T[],
   row: T,
+  getRowId: DataTableRowIdGetter<T>,
   onSelect?: (selected: T[]) => void
 ): T[] {
-  const nextSelected = toggleRowSelection(selected, row);
+  const nextSelected = toggleRowSelection(selected, row, getRowId);
   onSelect?.(nextSelected);
   return nextSelected;
 }

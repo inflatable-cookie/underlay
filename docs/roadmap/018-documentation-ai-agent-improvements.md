@@ -1,5 +1,7 @@
 # 018 – Documentation & AI Agent Improvements
 
+Status: Complete
+
 ## Overview
 
 Improve Underlay documentation for both human contributors and AI agents working on the codebase. The primary goal is reducing the number of exploration steps an agent needs to understand project structure, find the right crate, and follow established conventions.

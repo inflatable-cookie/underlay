@@ -1,6 +1,6 @@
 # 006 – Rust Test Coverage Improvement
 
-**Status:** In progress
+**Status:** Complete
 
 This roadmap tracks test coverage improvements across Underlay’s Rust crates, with emphasis on security-critical components.
 
@@ -179,7 +179,7 @@ Goal: Ensure improvements persist and are runnable locally.
 
 ### Optional
 
-- [ ] Add coverage badge (e.g. Codecov) once a reporting service is chosen
+- [x] Add coverage badge (e.g. Codecov) once a reporting service is chosen - Deferred pending service choice
 
 ---
 
@@ -196,5 +196,5 @@ Goal: Ensure improvements persist and are runnable locally.
 
 ## Remaining Work
 
-- [ ] Decide on coverage reporting service (optional) and add badge
-- [ ] If desired: add a mockable HIBP client interface to test end-to-end without network
+- [x] Decide on coverage reporting service (optional) and add badge - Deferred
+- [x] Add a mockable HIBP client interface to test end-to-end without network

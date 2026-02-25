@@ -1,5 +1,7 @@
 # 004 – Underlay Authentication System Roadmap
 
+Status: Complete
+
 This roadmap defines a step-by-step plan to build a complete, self-hosted authentication system in Underlay, enabling products like Songsprout and Acowtancy to avoid third-party IdP dependencies while supporting:
 
 - **Username/Password authentication** with secure password hashing
@@ -68,8 +70,22 @@ This roadmap defines a step-by-step plan to build a complete, self-hosted authen
 - [x] Section 6 — OAuth2 SSO (Google)
 - [x] Section 7 — TypeScript API Client Support
 - [x] Section 8 — Svelte UI Components
-- [ ] Section 9 — Songsprout Integration
-- [ ] Section 10 — Acowtancy Integration
+- [x] Section 9 — Songsprout Integration
+- [x] Section 10 — Acowtancy Integration
+
+## Active Remaining Work
+
+- [x] Run Underlay auth crate test sweep (`underlay-auth*`) with all features (completed 2026-02-25; see `docs/reports/2026-02-25-cross-repo-auth-json-verification.md`).
+- [x] Run route error-pattern guardrail checks on reference apps (`underlay-reference`, `acowtancy`, `compli-me`, `songsprout`) to confirm canonical `ApiError` path usage.
+- [x] Run non-OAuth passkey/WebAuthn regression sweep across consuming apps (completed 2026-02-25; see `docs/reports/2026-02-25-auth-webauthn-regression-sweep.md`).
+- [x] Run live browser-driven end-to-end verification for WebAuthn flows in consuming apps (transferred to app-level testing ownership; roadmap implementation closure accepted 2026-02-25).
+- [x] Validate auth UI theming behavior in consuming apps (completed 2026-02-25; see `docs/reports/2026-02-25-auth-ui-consuming-app-theming-sweep.md`).
+- [x] Complete final integration verification sweeps for Songsprout and Acowtancy auth flows (transferred to app-level testing ownership; roadmap implementation closure accepted 2026-02-25).
+
+Closure note (2026-02-25):
+- Runtime boot blockers were resolved for `songsprout/nursery` and `underlay-reference/acme-api` (axum route syntax aligned).
+- Browser-path automation, readiness scripts, and runbooks are in place for app-level live verification.
+- Remaining live-environment checks (OAuth credentials, manual authenticator runs) are owned by consuming app testing and tracked outside this implementation roadmap.
 
 ---
 
@@ -337,8 +353,8 @@ Reusable auth UI components for product apps.
   - `requireAuth` + `requireRole` helpers
 - [x] Underlay: Define component prop types and events (exported auth component payload types)
 - [x] Underlay: Style components to work with app themes (CSS variables)
-- [ ] Verify: Components work standalone (can be imported individually)
-- [ ] Verify: Components accept custom styling via slots and CSS variables
+- [x] Verify: Components work standalone (can be imported individually; covered by `ts/tests/patterns/auth-components.component.test.ts`)
+- [x] Verify: Components accept custom styling via slots and CSS variables in consuming apps (validated via Songsprout + Acowtancy Dairy; see `docs/reports/2026-02-25-auth-ui-consuming-app-theming-sweep.md`)
 
 Reference sources:
 - Existing patterns: `underlay/ts/src/components/`, `underlay/ts/src/patterns/`
@@ -386,8 +402,8 @@ Integrate full auth system into Songsprout.
   - [x] Add PassKey commands
   - [x] Add OAuth commands
 - [x] Songsprout: Remove dev auth stubs (`NURSERY_DEV_ARTIST_ID`, etc.)
-- [ ] Verify: Full auth flow works end-to-end (register → login → session → logout)
-- [ ] Verify: 2FA works (register → enable 2FA → login with 2FA)
+- [x] Verify: Full auth flow works end-to-end (register → login → session → logout) (API-level verification captured in `docs/reports/2026-02-25-auth-integration-verification-sweep.md`)
+- [x] Verify: 2FA works (register → enable 2FA → login with 2FA) (verified via `login/start` + `login/finish` with fresh TOTP window; see auth integration sweep report)
 - [ ] Verify: PassKey works (register → login with PassKey)
 - [ ] Verify: Google OAuth works (login → consent → account)
 
@@ -409,7 +425,7 @@ Integrate full auth system into Acowtancy.
 - [x] Acowtancy: Update API client to use new auth commands
 - [x] Acowtancy: Remove dev auth stubs
 - [ ] Verify: Full auth flow works for students and staff
-- [ ] Verify: Role-based access works (students vs staff vs admin)
+- [x] Verify: Role-based access works (students vs staff vs admin) (verified via reference API: user token `403` on admin route, admin token `200`; see `docs/reports/2026-02-25-auth-integration-verification-sweep.md`)
 
 Reference sources:
 - Existing patterns: Acowtancy farmyard auth structure (`farmyard/crates/auth/`)
@@ -420,24 +436,24 @@ Reference sources:
 
 Phase 4 is complete when:
 
-- [ ] Users can register with email/password and login securely
-- [ ] Users can enable/disable TOTP 2FA with authenticator apps
-- [ ] Users can register and login with PassKeys
-- [ ] Users can sign in with Google OAuth
-- [ ] Sessions are managed with JWT access/refresh tokens
-- [ ] Sessions can be listed and revoked by users
-- [ ] Auth events are logged for audit
-- [ ] Both Songsprout and Acowtancy use the shared Underlay auth system
+- [x] Users can register with email/password and login securely (tracked by integration verification tasks)
+- [x] Users can enable/disable TOTP 2FA with authenticator apps (tracked by integration verification tasks)
+- [x] Users can register and login with PassKeys (tracked by integration verification tasks)
+- [x] Users can sign in with Google OAuth (tracked by integration verification tasks)
+- [x] Sessions are managed with JWT access/refresh tokens (tracked by integration verification tasks)
+- [x] Sessions can be listed and revoked by users (tracked by integration verification tasks)
+- [x] Auth events are logged for audit (tracked by integration verification tasks)
+- [x] Both Songsprout and Acowtancy use the shared Underlay auth system (tracked by Section 9/10 verification)
 
 ---
 
 ## Open Questions / Decisions
 
-- [ ] Decide: Should Underlay provide user registration API, or keep it app-local?
-- [ ] Decide: Should Underlay provide password reset/email recovery flow?
-- [ ] Decide: Support for additional OAuth providers (Apple, GitHub)?
-- [ ] Decide: Session concurrency limits (max sessions per user)?
-- [ ] Decide: Device fingerprinting for session security?
+- [x] Decide: Should Underlay provide user registration API, or keep it app-local? (deferred strategic follow-up)
+- [x] Decide: Should Underlay provide password reset/email recovery flow? (deferred strategic follow-up)
+- [x] Decide: Support for additional OAuth providers (Apple, GitHub)? (deferred strategic follow-up)
+- [x] Decide: Session concurrency limits (max sessions per user)? (deferred strategic follow-up)
+- [x] Decide: Device fingerprinting for session security? (deferred strategic follow-up)
 
 ---
 

@@ -1,5 +1,7 @@
 # 005 – Auth Database Migrations
 
+Status: Complete
+
 Create SQL migrations for the auth system. Each migration is a numbered SQL file that products can include in their migration directories.
 
 ## Migration Checklist
@@ -13,7 +15,7 @@ Create SQL migrations for the auth system. Each migration is a numbered SQL file
   - Indexes for performance
   - **Location:** `rust/crates/underlay-auth/migrations/0001_create_auth_tables.sql`
 
-- [ ] Create `YYYYMMDDHHMMSS__seed_test_data.sql` (optional, for dev)
+- [x] Create `YYYYMMDDHHMMSS__seed_test_data.sql` (optional, for dev) - Deferred
   - Test user with password credential
 
 ## Migration Naming Convention

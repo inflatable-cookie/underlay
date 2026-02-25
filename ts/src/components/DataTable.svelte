@@ -1,5 +1,6 @@
 <script lang="ts" module>
 	import { exportRowsToCsv } from "./data-table/csv";
+	import type { DataTableRowId, DataTableRowIdGetter } from "./data-table/types";
 
 	/**
 	 * Column configuration for DataTable.
@@ -92,6 +93,8 @@
 	): void {
 		exportRowsToCsv(data, columns, filename);
 	}
+
+	export type { DataTableRowId, DataTableRowIdGetter };
 </script>
 
 <script lang="ts" generics="T extends object">
@@ -176,6 +179,8 @@
 		onExport?: (event: { data: T[]; columns: DataTableColumn<T>[] }) => void;
 		/** Callback when a row is clicked */
 		onRowClick?: (row: T) => void;
+		/** Optional stable row identity resolver used for selection checks */
+		getRowId?: DataTableRowIdGetter<T>;
 		/** Snippet for toolbar left area */
 		toolbarLeft?: Snippet;
 		/** Snippet for toolbar right area */
@@ -218,6 +223,7 @@
 		onAction,
 		onExport,
 		onRowClick,
+		getRowId,
 		toolbarLeft,
 		toolbarRight,
 		empty,
@@ -230,6 +236,29 @@
 	let internalFilters = $state<DataTableFilters>({});
 	let hiddenColumns = $state<Set<string>>(new Set());
 	let showColumnMenu = $state(false);
+	const objectRowIds = new WeakMap<object, number>();
+	let nextObjectRowId = 1;
+
+	function getFallbackRowId(row: T): DataTableRowId {
+		const maybeId = (row as { id?: unknown }).id;
+		if (typeof maybeId === "string" || typeof maybeId === "number") {
+			return maybeId;
+		}
+		if (typeof row === "object" && row !== null) {
+			let existing = objectRowIds.get(row);
+			if (existing === undefined) {
+				existing = nextObjectRowId;
+				nextObjectRowId += 1;
+				objectRowIds.set(row, existing);
+			}
+			return existing;
+		}
+		return String(row);
+	}
+
+	function resolveRowId(row: T): DataTableRowId {
+		return getRowId?.(row) ?? getFallbackRowId(row);
+	}
 
 	// Sync internal filters when prop changes
 	$effect(() => {
@@ -245,6 +274,7 @@
 	let totalPages = $derived(getTotalPages(pagination));
 	let allSelected = $derived(isAllSelected(data.length, selected.length));
 	let someSelected = $derived(isSomeSelected(data.length, selected.length));
+	let selectedRowIds = $derived(new Set(selected.map((row) => resolveRowId(row))));
 
 	// Handle sort
 	function handleSort(column: DataTableColumn<T>) {
@@ -286,7 +316,7 @@
 	}
 
 	function handleSelectRow(row: T) {
-		selected = applySelectRow(selected, row, onSelect);
+		selected = applySelectRow(selected, row, resolveRowId, onSelect);
 	}
 
 	// Handle action click
@@ -338,16 +368,17 @@
 		onFilterChange={handleFilterChange}
 	/>
 
-	<TableBody
-		{data}
+  <TableBody
+    {data}
 		{actions}
 		{loading}
 		{loadingRows}
 		{selectable}
 		{visibleColumns}
 		{hasActions}
-		{selected}
-		{emptyMessage}
+    {selectedRowIds}
+    rowIdFor={resolveRowId}
+    {emptyMessage}
 		{onRowClick}
 		onSelectRow={handleSelectRow}
 		onActionClick={handleActionClick}

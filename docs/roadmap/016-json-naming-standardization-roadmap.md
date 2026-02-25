@@ -1,5 +1,7 @@
 # 016 – JSON Naming Standardization (snake_case)
 
+Status: In progress
+
 ## Overview
 
 This roadmap standardizes JSON naming across all Underlay-based systems on a single convention: `snake_case`.
@@ -32,6 +34,16 @@ Target outcome:
 - [ ] Phase 16.6 complete
 - [ ] Validation plan complete
 - [ ] Success metrics achieved
+
+## Active Remaining Work
+
+- [ ] Validate critical `acowtancy` admin pages and integrations after DB reset.
+- [ ] Remove compatibility adapters after migration cutover.
+- [x] Run naming guardrail scripts in all repos (executed 2026-02-25; see `docs/reports/2026-02-25-cross-repo-auth-json-verification.md`).
+- [x] Sample key API responses and confirm `snake_case` field names (Songsprout + Acowtancy runtime samples captured; see `docs/reports/2026-02-25-cross-repo-auth-json-verification.md`).
+- [x] Confirm error logs and job payload records use `snake_case` keys (Songsprout + Acowtancy `platform.error_log`/job payload samples captured; see verification report).
+- [x] Resolve Acowtancy camelCase findings in `farmyard/crates/nightfire/src/lib.rs` and `farmyard/crates/api/src/routes/admin/learning/outcomes/questions.rs` (route DTOs migrated, `nightfire` allowlisted as external-contract exception).
+- [x] Resolve Songsprout camelCase query fields in `nursery/crates/api/src/handlers.rs` (`includeTotal` now compatibility alias on canonical `include_total`).
 
 ## Problem Statement
 
@@ -104,11 +116,11 @@ Current API and export payloads are inconsistent across projects (`camelCase` an
 
 ### Implementation Tickets
 
-- [ ] `acme-api/crates/api/src/dto/`
-- [ ] `acme-api/crates/jobs/src/`
-- [ ] `acme-client/src/`
-- [ ] `acme-admin/src/lib/api/` and route loaders/actions
-- [ ] `acme-front/src/lib/api/` and route loaders/actions
+- [x] `acme-api/crates/api/src/dto/`
+- [x] `acme-api/crates/jobs/src/`
+- [x] `acme-client/src/`
+- [x] `acme-admin/src/lib/api/` and route loaders/actions
+- [x] `acme-front/src/lib/api/` and route loaders/actions
 
 ### Acceptance Criteria
 
@@ -122,12 +134,12 @@ Current API and export payloads are inconsistent across projects (`camelCase` an
 - [x] Sweep API DTOs and handlers for mixed JSON naming.
 - [x] Update app clients and boundary adapters.
 - [x] Update seed/export/import and test fixtures.
-- [ ] Validate critical admin pages and integration flows after DB reset.
+- [ ] Validate critical admin pages and integration flows after DB reset (tracked in Active Remaining Work).
 
 ### Acceptance Criteria
 
-- [ ] `acowtancy` API contracts are `snake_case` end-to-end.
-- [ ] No mixed-case payloads in captured logs or exported JSON.
+- [ ] `acowtancy` API contracts are `snake_case` end-to-end (final confirmation tracked in Active Remaining Work).
+- [ ] No mixed-case payloads in captured logs or exported JSON (validation tracked in Active Remaining Work).
 
 ## Phase 16.5 – `compli-me` Migration
 
@@ -150,30 +162,30 @@ Current API and export payloads are inconsistent across projects (`camelCase` an
 - [x] Identify endpoints requiring temporary dual-read compatibility (`camelCase` + `snake_case`).
 - [x] Implement short-lived compatibility adapters at the boundary.
 - [x] Publish sunset dates for compatibility mode.
-- [ ] Remove compatibility adapters after migration cutover.
+- [ ] Remove compatibility adapters after migration cutover (tracked in Active Remaining Work).
 
 ### Acceptance Criteria
 
-- [ ] Legacy compatibility is explicit, time-boxed, and removed on schedule.
-- [ ] No internal codepaths rely on `camelCase` after cutoff.
+- [x] Legacy compatibility is explicit and time-boxed.
+- [ ] Final adapter removal and cutoff confirmation tracked in Active Remaining Work.
 
 Compatibility inventory is tracked in `docs/roadmap/016-compatibility-adapters.csv`.
 Sunset guardrail is enforced by `scripts/check-compatibility-sunset.sh`.
 
 ## Validation Plan
 
-- [ ] Run naming guardrail scripts in all repos.
+- [x] Run naming guardrail scripts in all repos (tracked in Active Remaining Work).
 - [x] Run Rust checks/tests for touched crates in each project.
 - [x] Run frontend type checks (`bun check`) for touched apps.
-- [ ] Sample key API responses and confirm field names are `snake_case`.
-- [ ] Confirm error logs and job payload records use `snake_case` keys.
+- [x] Sample key API responses and confirm field names are `snake_case` (completed; tracked in verification report).
+- [x] Confirm error logs and job payload records use `snake_case` keys (completed; tracked in verification report).
 
 ## Success Metrics
 
-- [ ] 0 newly introduced internal `camelCase` DTO naming directives in migration scope.
+- [x] 0 newly introduced internal `camelCase` DTO naming directives in migration scope.
 - [ ] 0 mixed-case fields in sampled API payloads across the 3 app families.
 - [ ] 0 naming-mismatch runtime errors in smoke tests after DB reset and seed load.
-- [ ] Documentation and guardrails are in place to prevent regression.
+- [x] Documentation and guardrails are in place to prevent regression.
 
 ## Execution Notes
 

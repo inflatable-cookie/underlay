@@ -5,6 +5,7 @@
   import type { PickerSection, PickableItem } from "../relation-picker-types.js";
 
   const ctx = useRelationSelector<SelectableRelation>();
+  let modalOpen = $state(ctx.state.modalOpen);
 
   let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -61,6 +62,18 @@
     ctx.retrySearch();
   }
 
+  $effect(() => {
+    if (modalOpen !== ctx.state.modalOpen) {
+      modalOpen = ctx.state.modalOpen;
+    }
+  });
+
+  $effect(() => {
+    if (ctx.state.modalOpen !== modalOpen) {
+      ctx.state.modalOpen = modalOpen;
+    }
+  });
+
   // Build sections based on current state
   const sections = $derived.by((): PickerSection[] | undefined => {
     const result: PickerSection[] = [];
@@ -115,7 +128,7 @@
 </script>
 
 <RelationPickerDialog
-  bind:open={ctx.state.modalOpen}
+  bind:open={modalOpen}
   title={ctx.props.label}
   emptyMessage={ctx.props.emptyMessage ?? "No results found"}
   {sections}

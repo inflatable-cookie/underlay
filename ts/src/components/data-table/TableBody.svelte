@@ -1,6 +1,10 @@
 <script lang="ts" generics="T extends object">
   import type { Snippet } from "svelte";
-  import type { DataTableAction, DataTableColumn } from "../DataTable.svelte";
+  import type {
+    DataTableAction,
+    DataTableColumn
+  } from "../DataTable.svelte";
+  import type { DataTableRowId, DataTableRowIdGetter } from "./types";
   import {
     getRenderedActionHref,
     getRenderedCellValue,
@@ -18,7 +22,8 @@
     selectable: boolean;
     visibleColumns: DataTableColumn<T>[];
     hasActions: boolean;
-    selected: T[];
+    selectedRowIds: Set<DataTableRowId>;
+    rowIdFor: DataTableRowIdGetter<T>;
     emptyMessage: string;
     onRowClick?: (row: T) => void;
     onSelectRow: (row: T) => void;
@@ -37,7 +42,8 @@
     selectable,
     visibleColumns,
     hasActions,
-    selected,
+    selectedRowIds,
+    rowIdFor,
     emptyMessage,
     onRowClick,
     onSelectRow,
@@ -59,10 +65,11 @@
   {:else}
     {#each data as row, rowIndex}
       {@const rowActions = getRenderedRowActions(row, actions)}
+      {@const rowId = rowIdFor(row)}
       <!-- svelte-ignore a11y_click_events_have_key_events -->
       <div
         class="underlay-table-row"
-        class:underlay-selected={selected.includes(row)}
+        class:underlay-selected={selectedRowIds.has(rowId)}
         class:underlay-has-extended={!!extendedRow && extendedRowWhen(row)}
         class:underlay-clickable={!!onRowClick}
         role="row"
@@ -73,7 +80,7 @@
           <div class="underlay-table-cell underlay-checkbox-cell" role="cell">
             <input
               type="checkbox"
-              checked={selected.includes(row)}
+              checked={selectedRowIds.has(rowId)}
               onchange={() => onSelectRow(row)}
               aria-label={`Select row ${rowIndex + 1}`}
             />

@@ -57,9 +57,9 @@ Rich empty state with icon, title, description, and optional CTA. Replaces plain
 - `children?: Snippet` — Override entire content
 
 **Files:**
-- [ ] Create `ts/src/components/EmptyState.svelte`
-- [ ] Export from `ts/src/components/index.ts`
-- [ ] Update DataTable empty slot default to use EmptyState
+- [x] Create `ts/src/components/EmptyState.svelte`
+- [x] Export from `ts/src/components/index.ts`
+- [x] Update DataTable empty slot default to use EmptyState
 
 ---
 
@@ -95,8 +95,8 @@ Extends CopyActionsMenu with built-in soft-delete flow. Eliminates ~80% of per-e
 **Consumers provide:** Copy items, edit href + source context, delete config, optional custom actions array.
 
 **Files:**
-- [ ] Create `ts/src/patterns/EntityActionsMenu.svelte`
-- [ ] Export from `ts/src/patterns/index.ts`
+- [x] Create `ts/src/patterns/EntityActionsMenu.svelte`
+- [x] Export from `ts/src/patterns/index.ts`
 
 ---
 
@@ -117,8 +117,8 @@ Slide-out panel from right/left edge. Based on Acowtancy's ContextPanel, general
 **Features:** Focus trap in overlay mode, Escape closes, backdrop click closes, CSS transition (transform 0.25s), responsive (absolute on desktop, fixed overlay on mobile ≤900px).
 
 **Files:**
-- [ ] Create `ts/src/components/Drawer.svelte`
-- [ ] Export from `ts/src/components/index.ts`
+- [x] Create `ts/src/components/Drawer.svelte`
+- [x] Export from `ts/src/components/index.ts`
 
 ---
 
@@ -163,9 +163,9 @@ Composable shell for entity detail pages. Standardizes PageHeader + meta + tabs 
 **Handles:** PageHeader with breadcrumbs/back navigation, banner support, tab management with URL sync, lazy content loading, responsive layout.
 
 **Files:**
-- [ ] Create `ts/src/patterns/DetailPageShell/` directory with sub-components
-- [ ] Create `index.ts` barrel export
-- [ ] Export from `ts/src/patterns/index.ts`
+- [x] Create `ts/src/patterns/DetailPageShell/` directory with sub-components
+- [x] Create `index.ts` barrel export
+- [x] Export from `ts/src/patterns/index.ts`
 
 ---
 
@@ -201,11 +201,11 @@ Composable pattern wiring together createListController, useBatchActions, create
 **Consumers provide:** Fetcher function, item/reorder snippets, filter config, batch action config, domain card components.
 
 **Files:**
-- [ ] Create `ts/src/patterns/AutonomousList/` directory
-- [ ] `AutonomousList.svelte`, `autonomous-list-types.ts`, `autonomous-list-context.svelte.ts`
-- [ ] `AutonomousListHeader.svelte`, `AutonomousListContent.svelte`, `AutonomousListFilters.svelte`
-- [ ] `index.ts` barrel export
-- [ ] Export from `ts/src/patterns/index.ts`
+- [x] Create `ts/src/patterns/AutonomousList/` directory
+- [x] `AutonomousList.svelte`, `autonomous-list-types.ts`, `autonomous-list-context.svelte.ts`
+- [x] `AutonomousListHeader.svelte`, `AutonomousListContent.svelte`, `AutonomousListFilters.svelte`
+- [x] `index.ts` barrel export
+- [x] Export from `ts/src/patterns/index.ts`
 
 ---
 
@@ -228,8 +228,8 @@ Click-to-edit field: displays as text, becomes input on click/Enter.
 **Keyboard:** Click/Enter → edit, Enter → save, Escape → cancel.
 
 **Files:**
-- [ ] Create `ts/src/components/InlineEditableField.svelte`
-- [ ] Export from `ts/src/components/index.ts`
+- [x] Create `ts/src/components/InlineEditableField.svelte`
+- [x] Export from `ts/src/components/index.ts`
 
 ---
 
@@ -248,8 +248,8 @@ shortcuts.register("mod+k", () => openSearch());
 **Features:** `mod+` resolves to Cmd/Ctrl per platform, priority system, `when` guard, auto-cleanup, readable shortcut list.
 
 **Files:**
-- [ ] Create `ts/src/patterns/keyboard-shortcuts.svelte.ts`
-- [ ] Export from `ts/src/patterns/index.ts`
+- [x] Create `ts/src/patterns/keyboard-shortcuts.svelte.ts`
+- [x] Export from `ts/src/patterns/index.ts`
 
 ---
 
@@ -272,8 +272,8 @@ Catches render errors in children, displays recovery UI.
 **Default fallback:** Uses EmptyState (21.1) with error message and retry button.
 
 **Files:**
-- [ ] Create `ts/src/components/ErrorBoundary.svelte`
-- [ ] Export from `ts/src/components/index.ts`
+- [x] Create `ts/src/components/ErrorBoundary.svelte`
+- [x] Export from `ts/src/components/index.ts`
 
 ---
 

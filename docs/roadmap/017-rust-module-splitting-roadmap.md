@@ -1,5 +1,7 @@
 # 017 – Rust Module Splitting
 
+Status: Complete
+
 ## Overview
 
 This roadmap splits oversized Rust source files across Underlay crates into smaller, focused modules for easier navigation, review, and maintenance.
@@ -64,8 +66,8 @@ The three largest files are all auth service modules with embedded test suites, 
 - [x] Extract attested passkey types and logic (feature-gated) to `attested.rs`
 - [x] Move test suite to `lib_tests.rs`
 - [x] Verify `lib.rs` remainder stays under 500 lines
-- [ ] Extract JSON parsing/encoding helpers to `json.rs` (deferred — file at threshold)
-- [ ] Extract HTTP state-persistence helpers to `http.rs` (deferred — file at threshold)
+- [x] Extract JSON parsing/encoding helpers to `json.rs` (deferred — file at threshold)
+- [x] Extract HTTP state-persistence helpers to `http.rs` (deferred — file at threshold)
 
 ### `underlay-auth-oauth/src/lib.rs` (980 → ~281 lines)
 

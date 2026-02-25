@@ -9,6 +9,7 @@ export default defineConfig({
 		environment: "jsdom",
 		include: ["ts/tests/**/*.component.test.ts"],
 		exclude: ["node_modules", "dist"],
+		setupFiles: ["./ts/tests/setup/vitest-component.setup.ts"],
 	},
 	resolve: {
 		conditions: ["browser", "module", "import", "default"],

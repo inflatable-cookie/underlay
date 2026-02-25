@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
-import { afterEach, describe, expect, it, vi } from "vitest";
-import { cleanup, fireEvent, render, screen } from "@testing-library/svelte";
+import { describe, expect, it, vi } from "vitest";
+import { fireEvent, render, screen } from "@testing-library/svelte";
 
 vi.mock("svelte-dnd-action", () => ({
 	dndzone: () => ({
@@ -52,8 +52,6 @@ function createController(options?: {
 		updatePending,
 	};
 }
-
-afterEach(() => cleanup());
 
 describe("patterns/ReorderableList.svelte", () => {
 	it("renders rows and wires dnd consider/finalize events to controller updates", async () => {

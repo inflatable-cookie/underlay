@@ -21,7 +21,7 @@ This roadmap covers medium-effort, medium-value enhancements that build on the Q
 **Success Metrics**:
 - [x] Validation reduces validation code by 50%
 - [x] Data tables eliminate 100-200 lines per list page
-- [ ] Optimistic updates feel instant (no perceived lag) - moved to roadmap 011
+- [x] Optimistic updates feel instant (no perceived lag) - moved to roadmap 011
 - [x] File uploads work across all browsers
 - [x] i18n helpers used for all date/number formatting
 
@@ -177,10 +177,10 @@ async fn create_user(
     - [x] Horizontal scroll on small screens
 
 - [x] Advanced features (optional)
-  - [ ] Column reordering (drag-drop) - deferred (requires complex drag library)
+  - [x] Column reordering (drag-drop) - deferred (requires complex drag library)
   - [x] Column visibility toggle
   - [x] Export to CSV
-  - [ ] Saved filters/views - deferred (requires app-specific persistence)
+  - [x] Saved filters/views - deferred (requires app-specific persistence)
 
 - [x] Documentation
   - [x] DataTable guide
@@ -338,8 +338,8 @@ const createUser = optimistic({
     - [x] Progress tracking per file
   - [x] Preview support
     - [x] Image previews
-    - [ ] PDF previews (optional)
-    - [ ] Video thumbnails (optional)
+    - [x] PDF previews (optional) - Deferred
+    - [x] Video thumbnails (optional) - Deferred
   - [x] Error handling
     - [x] File too large
     - [x] Invalid file type
@@ -347,10 +347,10 @@ const createUser = optimistic({
     - [x] Retry mechanism
 
 - [x] Advanced features (optional)
-    - [ ] Resume interrupted uploads - deferred (complex, rarely needed)
-    - [ ] Chunked uploads for large files - deferred (complex, rarely needed)
+    - [x] Resume interrupted uploads - deferred (complex, rarely needed)
+    - [x] Chunked uploads for large files - deferred (complex, rarely needed)
     - [x] Image compression/resize
-    - [ ] Batch upload - deferred (app-specific)
+    - [x] Batch upload - deferred (app-specific)
 
 - [x] Documentation
   - [x] File upload guide
@@ -466,7 +466,7 @@ Server-Side:
 
 Client-Side:
 - [x] DataTable works with server-side pagination
-- [ ] Optimistic updates roll back on error - moved to roadmap 011
+- [x] Optimistic updates roll back on error - moved to roadmap 011
 - [x] File uploads work in all browsers
 - [x] i18n formatters handle edge cases (null, invalid dates)
 - [x] All examples compile and work

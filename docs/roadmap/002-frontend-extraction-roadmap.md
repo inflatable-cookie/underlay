@@ -1,6 +1,6 @@
 # 002 — Frontend (TS/Svelte) Extraction Roadmap
 
-**Status:** In progress
+**Status:** Complete
 
 This roadmap covers the **TypeScript + Svelte** side of the shared architecture.
 It complements `docs/roadmap/001-extraction-roadmap.md` (Rust/backend/infra).

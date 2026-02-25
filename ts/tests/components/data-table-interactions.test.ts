@@ -39,13 +39,14 @@ describe("components/data-table/interactions", () => {
 	it("applies select-all and single-row selection", () => {
 		const rows = [{ id: 1 }, { id: 2 }];
 		const onSelect = vi.fn();
+		const getRowId = (row: { id: number }) => row.id;
 
 		expect(applySelectAll(rows, [], false, onSelect)).toEqual(rows);
 		expect(onSelect).toHaveBeenCalledWith(rows);
 
 		expect(applySelectAll(rows, rows, true)).toEqual([]);
-		expect(applySelectRow([], rows[0])).toEqual([rows[0]]);
-		expect(applySelectRow([rows[0]], rows[0])).toEqual([]);
+		expect(applySelectRow([], rows[0], getRowId)).toEqual([rows[0]]);
+		expect(applySelectRow([rows[0]], rows[0], getRowId)).toEqual([]);
 	});
 
 	it("runs row actions with guards and callbacks", () => {

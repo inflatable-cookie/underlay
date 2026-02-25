@@ -16,9 +16,10 @@ describe("components/data-table/pagination-selection", () => {
 
 	it("toggles select-all and single-row selection", () => {
 		const rows = [{ id: 1 }, { id: 2 }];
+		const getRowId = (row: { id: number }) => row.id;
 		expect(toggleSelectAllRows(rows, [], false)).toEqual(rows);
 		expect(toggleSelectAllRows(rows, rows, true)).toEqual([]);
-		expect(toggleRowSelection([], rows[0])).toEqual([rows[0]]);
-		expect(toggleRowSelection([rows[0], rows[1]], rows[0])).toEqual([rows[1]]);
+		expect(toggleRowSelection([], rows[0], getRowId)).toEqual([rows[0]]);
+		expect(toggleRowSelection([rows[0], rows[1]], rows[0], getRowId)).toEqual([rows[1]]);
 	});
 });

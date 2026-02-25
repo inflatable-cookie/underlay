@@ -1,6 +1,6 @@
 # 003 — Frontend Guardrails + Quirk Management Roadmap (Svelte + TS)
 
-**Status:** In progress
+**Status:** Complete
 
 This roadmap defines the “hardening pass” that follows Section 2 (shared primitives and wrappers).
 

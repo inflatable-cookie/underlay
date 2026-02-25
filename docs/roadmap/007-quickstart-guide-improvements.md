@@ -1,6 +1,6 @@
 # 007 – Quickstart Guide Improvements (Acowtancy Audit Findings)
 
-**Status:** Not started
+**Status:** Core scope complete; optional backlog deferred
 
 This roadmap addresses gaps, errors, and missing patterns in the Underlay quickstart documentation based on a comprehensive audit comparing the guides to the Acowtancy production implementation.
 
@@ -19,7 +19,7 @@ Audit completed: 2026-01-11
 - [x] Section 3 — Frontend Integration Expansion
 - [x] Section 4 — Reusable Patterns from Acowtancy
 - [x] Section 5 — Code Quality & Consistency
-- [ ] Section 6 — Optional Enhancements
+- [x] Section 6 — Optional Enhancements (deferred to follow-on roadmap)
 
 ---
 
@@ -322,86 +322,13 @@ File: `docs/guides/quickstart/060-authentication.md`
 
 **Priority:** Low - Nice-to-haves that improve but don't block users.
 
-### 6.1 Additional Missing Topics
+Normalized on 2026-02-25: this section is treated as follow-on backlog, not active scope for roadmap 007.
 
-- [ ] File upload guide
-  - [ ] Multipart form handling
-  - [ ] File storage patterns
-  - [ ] Image processing (optional)
-- [ ] Email guide
-  - [ ] Email templates
-  - [ ] Sending patterns
-  - [ ] Email verification flows
-- [ ] Background jobs expansion
-  - [ ] Task queue patterns beyond basic outbox
-  - [ ] Scheduled jobs
-  - [ ] Long-running operations
-- [ ] Real-time features guide
-  - [ ] WebSocket integration
-  - [ ] Server-sent events
-  - [ ] Push notifications
-
-### 6.2 Testing Expansion
-
-File: `docs/guides/quickstart/130-testing.md` (currently minimal)
-
-- [x] Expand testing guide with:
-  - [x] Integration testing patterns
-  - [x] Database test helpers and fixtures
-  - [x] E2E testing setup (Playwright/Cypress)
-  - [x] Test organization strategies
-  - [x] CI integration examples
-  - [x] Performance testing patterns
-
-### 6.3 Deployment & Operations
-
-- [ ] Add deployment best practices
-  - [ ] Docker/containerization
-  - [ ] Environment management
-  - [ ] Secrets management
-  - [ ] Health checks
-- [ ] Add monitoring guidance
-  - [ ] Metrics collection
-  - [ ] Log aggregation
-  - [ ] Alerting strategies
-  - [ ] Dashboard examples
-- [ ] Add database operations
-  - [ ] Migration rollback strategies
-  - [ ] Backup/restore
-  - [ ] Connection pooling tuning
-  - [ ] Query optimization
-
-### 6.4 Advanced Patterns
-
-- [ ] Pagination implementation guide
-  - [ ] Backend pagination (despite having Pagination type)
-  - [ ] Frontend integration
-  - [ ] Cursor-based pagination
-- [ ] Search & filtering guide
-  - [ ] Query parameter handling
-  - [ ] Filter composition
-  - [ ] Search UI patterns
-- [ ] Audit logging guide
-  - [ ] What to log
-  - [ ] How to query audit logs
-  - [ ] Retention policies
-
-### 6.5 Complete End-to-End Example
-
-- [ ] Add new guide with complete feature implementation
-- [ ] Choose example: User registration with email verification
-- [ ] Show all layers:
-  - [ ] Database migration
-  - [ ] Rust domain types
-  - [ ] Repository implementation
-  - [ ] API handlers
-  - [ ] TypeScript types
-  - [ ] API client commands
-  - [ ] Frontend forms
-  - [ ] Error handling
-  - [ ] Validation
-  - [ ] Testing
-- [ ] Link to all related guide sections
+- [x] 6.1 Additional Missing Topics deferred to follow-on roadmap planning
+- [x] 6.2 Testing Expansion completed in `docs/guides/quickstart/130-testing.md`
+- [x] 6.3 Deployment & Operations deferred to follow-on roadmap planning
+- [x] 6.4 Advanced Patterns deferred to follow-on roadmap planning
+- [x] 6.5 Complete End-to-End Example deferred to follow-on roadmap planning
 
 ---
 

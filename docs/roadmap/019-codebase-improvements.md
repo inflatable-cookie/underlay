@@ -1,5 +1,7 @@
 # 019 – Codebase Improvements: Simplification, Deduplication & Reorganisation
 
+Status: Complete
+
 ## Overview
 
 Address findings from the 2026-02-08 codebase audit (`docs/reports/2026-02-08-codebase-audit.md`). Improvements are grouped into four phases by breaking-change blast radius. Each item that changes public API is followed by updates to all consuming apps.

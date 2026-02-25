@@ -1,5 +1,3 @@
-<svelte:options runes={false} />
-
 <script lang="ts">
   import { marked } from "marked";
   import { sanitizeHtml } from "../../utils/html.js";
@@ -10,11 +8,14 @@
     };
   };
 
-  export let block: MarkdownBlock;
+  interface Props {
+    block: MarkdownBlock;
+  }
 
-  const text =
-    typeof block?.data?.text === "string" ? block.data.text : "";
-  const html = text.trim() ? (marked.parse(text, { async: false }) as string) : "";
+  let { block }: Props = $props();
+
+  const text = $derived(typeof block?.data?.text === "string" ? block.data.text : "");
+  const html = $derived(text.trim() ? (marked.parse(text, { async: false }) as string) : "");
   const safeHtml = $derived(sanitizeHtml(html));
 </script>
 

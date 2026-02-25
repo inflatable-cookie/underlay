@@ -124,22 +124,6 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::validators;
-
-    #[derive(Debug, serde::Deserialize)]
-    struct TestRequest {
-        email: String,
-    }
-
-    impl Validate for TestRequest {
-        fn validate(&self) -> crate::ValidationResult<()> {
-            let mut errors = ValidationError::new();
-            if let Err(e) = validators::email(&self.email) {
-                errors.add_field("email", e);
-            }
-            errors.into_result()
-        }
-    }
 
     #[test]
     fn test_validation_error_response() {

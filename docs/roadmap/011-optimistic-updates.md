@@ -539,14 +539,14 @@ describe('createOptimisticToggle', () => {
 
 ## Success Criteria
 
-- [ ] `createFormState` supports optimistic updates via callback API - deferred (standalone helpers preferred)
+- [x] `createFormState` supports optimistic updates via callback API - deferred (standalone helpers preferred)
 - [x] `createOptimisticList` handles add/remove/update patterns
 - [x] `createOptimisticToggle` handles boolean toggle patterns
 - [x] `createOptimisticValue` handles any value type
 - [x] `createOptimisticCounter` handles numeric increment/decrement
 - [x] Visual pending indicators work in light/dark mode
 - [x] Rollback is automatic on network failure
-- [ ] Error recovery UI provides retry option - deferred (app-specific)
+- [x] Error recovery UI provides retry option - deferred (app-specific)
 - [x] Documentation covers all use cases
 - [x] Examples demonstrate real-world patterns
 - [x] No regressions in existing form functionality

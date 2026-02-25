@@ -1,5 +1,7 @@
 # 023 – Underlay Quality Hardening Roadmap
 
+Status: Complete
+
 ## Overview
 
 This roadmap turns the latest full-repo scan into an execution plan focused on reliability, type-safety, and maintainability. It prioritizes high-leverage work that improves consumer safety and catches regressions earlier in CI.
@@ -42,9 +44,9 @@ This roadmap turns the latest full-repo scan into an execution plan focused on r
 
 ### Acceptance Criteria (Phase 23.1)
 
-- [ ] Public TS exports no longer rely on blanket `any` for core components.
-- [ ] `bun run check:types` passes without widening declarations to bypass errors.
-- [ ] No regressions in `bun check` and export checks.
+- [x] Public TS exports no longer rely on blanket `any` for core components.
+- [x] `bun run check:types` passes without widening declarations to bypass errors.
+- [x] No regressions in `bun check` and export checks.
 
 ---
 
@@ -85,9 +87,9 @@ This roadmap turns the latest full-repo scan into an execution plan focused on r
 
 ### Acceptance Criteria (Phase 23.3)
 
-- [ ] No `expect`/`unwrap` in targeted runtime hot paths without explicit invariants documented.
-- [ ] `cargo test --all-features` passes.
-- [ ] Behavior under failure is explicit and test-covered.
+- [x] No `expect`/`unwrap` in targeted runtime hot paths without explicit invariants documented.
+- [x] `cargo test --all-features` passes.
+- [x] Behavior under failure is explicit and test-covered.
 
 ---
 
@@ -113,9 +115,18 @@ Intentional coverage exclusions currently enforced in `vitest.config.ts`:
 
 ### Acceptance Criteria (Phase 23.4)
 
-- [ ] Single canonical HTTP client suite, no overlapping redundant cases.
-- [ ] CI remains green with equal or better defect detection.
-- [ ] Test runtime for TS suite decreases or stays stable while coverage is preserved.
+- [x] Single canonical HTTP client suite, no overlapping redundant cases.
+- [x] CI remains green with equal or better defect detection.
+- [x] Test runtime for TS suite decreases or stays stable while coverage is preserved.
+
+### Verification Evidence (2026-02-24)
+
+- [x] Added component-test hygiene guardrail: `ts/scripts/check-component-test-hygiene.mjs`.
+- [x] Added shared component setup hook: `ts/tests/setup/vitest-component.setup.ts`.
+- [x] Wired hygiene guardrail into `package.json` `validate`.
+- [x] Full verification command: `cargo test --all-features`.
+- [x] Full verification command: `bun validate`.
+- [x] Full verification command: `bun run test:components`.
 
 ---
 

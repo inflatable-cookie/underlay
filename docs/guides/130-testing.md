@@ -303,6 +303,30 @@ export default defineConfig({
 });
 ```
 
+### Underlay Component Test Hygiene (Svelte/Vitest)
+
+Underlay component tests use a shared lifecycle setup to prevent jsdom teardown races and keep tests consistent.
+
+**Required rules:**
+
+1. Component tests must rely on shared setup (`vitest.component.config.ts` `setupFiles`) for cleanup.
+2. Do not call `cleanup()` directly inside `*.component.test.ts` files.
+3. Do not import `cleanup` from `@testing-library/svelte` in `*.component.test.ts`.
+4. If a test uses `vi.useFakeTimers()`, it must restore with `vi.useRealTimers()` in the same file.
+5. Do not use `window.alert`, `window.confirm`, or `window.prompt` in tests.
+
+**Shared setup location:**
+
+- `ts/tests/setup/vitest-component.setup.ts`
+
+**Guardrail check:**
+
+```bash
+bun run check:component-test-hygiene
+```
+
+This check is part of `bun validate` and should remain green before merge.
+
 ### Unit Tests for API Commands
 
 Test API client commands using `@decodelabs/underlay/testing` mock HTTP clients:

@@ -18,8 +18,13 @@ export function toggleSelectAllRows<T>(
 	return [...data];
 }
 
-export function toggleRowSelection<T>(selected: T[], row: T): T[] {
-	const index = selected.indexOf(row);
+export function toggleRowSelection<T>(
+	selected: T[],
+	row: T,
+	getRowId: (row: T) => string | number
+): T[] {
+	const rowId = getRowId(row);
+	const index = selected.findIndex((value) => getRowId(value) === rowId);
 	if (index >= 0) {
 		return [...selected.slice(0, index), ...selected.slice(index + 1)];
 	}

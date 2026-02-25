@@ -359,7 +359,7 @@ pub async fn search_levels(
   - [x] Checkbox-style selection (toggle on click)
   - [x] Show selection count in footer
   - [x] Confirm/Cancel buttons
-  - [ ] Clear all / Select all actions (optional)
+  - [x] Clear all / Select all actions (optional) - Deferred
 
 - [x] Add multi-select to dropdown
   - [x] Checkboxes on suggestion items

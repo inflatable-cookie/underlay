@@ -1,15 +1,7 @@
 // @vitest-environment jsdom
-import { afterEach, describe, expect, it } from "vitest";
-import { vi } from "vitest";
-
-vi.mock("svelte", async () => {
-	return await vi.importActual("svelte/src/index-client.js");
-});
-
-import { cleanup, render } from "@testing-library/svelte";
+import { describe, expect, it } from "vitest";
+import { render } from "@testing-library/svelte";
 import Banner from "../../src/patterns/Banner.svelte";
-
-afterEach(() => cleanup());
 
 describe("patterns/Banner.svelte", () => {
 	it("renders message, default warning variant, and icon markup", () => {

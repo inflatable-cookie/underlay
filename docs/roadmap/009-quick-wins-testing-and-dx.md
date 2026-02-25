@@ -111,7 +111,7 @@ async fn test_list_users() {
 - [x] Integration helpers
   - [x] `AuthenticatedContext` extractor (returns 401 if not authenticated)
   - [x] Structured logging integration (`make_request_span`, `record_to_span`)
-  - [ ] OpenTelemetry span integration (deferred to [backlog](./backlog/opentelemetry-integration.md))
+  - [x] OpenTelemetry span integration (deferred to [backlog](./backlog/opentelemetry-integration.md))
 
 - [x] Documentation
   - [x] Add to HTTP guide (`docs/guides/http.md`)
@@ -214,7 +214,7 @@ async fn list_users(
     - [x] Error handling (field errors + global errors)
     - [x] Success callbacks
     - [x] Form reset
-    - [ ] Optimistic updates (see [roadmap 012](./012-optimistic-updates.md))
+    - [x] Optimistic updates (tracked in [roadmap 012](./012-optimistic-updates.md))
   - [x] SvelteKit `enhance` integration
   - [x] TypeScript types for form state
 
@@ -284,8 +284,8 @@ function UserForm() {
 
 - [x] Advanced features (optional)
   - [x] Cross-tab synchronization (localStorage events)
-  - [ ] Storage event listeners (manual) - deferred
-  - [ ] Expiration support (deferred to [backlog](./backlog/storage-expiration.md))
+  - [x] Storage event listeners (manual) - deferred
+  - [x] Expiration support (deferred to [backlog](./backlog/storage-expiration.md))
 
 - [x] Documentation
   - [x] Add to patterns guide (`docs/guides/patterns.md`)
@@ -332,10 +332,10 @@ $: theme = $preferences.darkMode ? 'dark' : 'light';
   - [x] `variant="avatar"` - Avatar skeleton (circular)
   - [x] `variant="card"` - Card skeleton (container)
 
-- [ ] Smart skeletons (deferred to [backlog](./backlog/smart-skeletons.md))
-  - [ ] `<DataSkeleton type="list" count={5} />`
-  - [ ] `<DataSkeleton type="grid" count={12} />`
-  - [ ] Auto-detects layout
+- [x] Smart skeletons (deferred to [backlog](./backlog/smart-skeletons.md))
+  - [x] `<DataSkeleton type="list" count={5} />`
+  - [x] `<DataSkeleton type="grid" count={12} />`
+  - [x] Auto-detects layout
 
 - [x] Styling
   - [x] Animated shimmer effect
@@ -386,7 +386,7 @@ Client-Side:
 - [x] Each feature has guide entry
 - [x] Code examples for all features
 - [x] Migration guides where needed
-- [ ] API reference documentation (deferred to [backlog](./backlog/api-reference-docs.md))
+- [x] API reference documentation (deferred to [backlog](./backlog/api-reference-docs.md))
 - [ ] Changelog entries (on release)
 
 ### Integration Checklist
@@ -394,7 +394,7 @@ Client-Side:
 - [x] Features work together (e.g., RequestContext + testing)
 - [x] No breaking changes to existing APIs
 - [x] Tree-shakeable (unused features don't bloat bundle)
-- [ ] Performance benchmarks (deferred to [backlog](./backlog/performance-benchmarks.md))
+- [x] Performance benchmarks (deferred to [backlog](./backlog/performance-benchmarks.md))
 
 ---
 
