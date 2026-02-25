@@ -170,8 +170,8 @@
     border-radius: var(--underlay-radius-lg, 0.75rem);
     border: 1px solid var(--underlay-color-border-subtle, rgba(148, 163, 184, 0.25));
     background: var(--underlay-color-surface-muted, rgba(15, 23, 42, 0.65));
-    padding: 0.4rem 0.75rem;
-    margin-bottom: var(--underlay-space-4, 1rem);
+    padding: var(--underlay-space-2, 0.5rem) var(--underlay-space-3, 0.75rem);
+    margin-bottom: var(--underlay-list-rhythm-gap, var(--underlay-space-4, 1rem));
     display: flex;
     flex-direction: column;
     gap: var(--underlay-space-2, 0.5rem);
@@ -179,6 +179,12 @@
 
   .underlay-filter-bar--expanded {
     padding: var(--underlay-space-3, 0.75rem);
+  }
+
+  @media (max-width: 640px) {
+    .underlay-filter-bar {
+      margin-bottom: var(--underlay-space-3, 0.75rem);
+    }
   }
 
   .underlay-filter-bar__row {
