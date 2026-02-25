@@ -128,9 +128,13 @@
         {/if}
       </div>
 
-      <div class="underlay-alert-dialog-body">
-        {@render children?.()}
-      </div>
+      {#if children}
+        <div class="underlay-alert-dialog-body">
+          <div class="underlay-alert-dialog-item-card">
+            {@render children?.()}
+          </div>
+        </div>
+      {/if}
 
       <div class="underlay-alert-dialog-footer">
         <BitsAlertDialog.Action
@@ -248,6 +252,22 @@
 
   :global(.underlay-alert-dialog-body) {
     margin-top: 1rem;
+  }
+
+  :global(.underlay-alert-dialog-item-card) {
+    border: 1px solid var(--underlay-color-border-subtle, rgba(148, 163, 184, 0.35));
+    border-radius: 0.75rem;
+    background: var(--underlay-color-field-bg, rgba(255, 255, 255, 0.03));
+    padding: 0.75rem 0.875rem;
+  }
+
+  :global(.underlay-alert-dialog-item-card p) {
+    margin: 0;
+    line-height: 1.45;
+  }
+
+  :global(.underlay-alert-dialog-item-card p + p) {
+    margin-top: 0.35rem;
   }
 
   :global(.underlay-alert-dialog-footer) {
