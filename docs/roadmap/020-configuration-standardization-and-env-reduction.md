@@ -120,7 +120,7 @@ Current app configuration is spread across many `.env` keys, including values th
 - [ ] Add logical config modules for app-behavior settings in the Rust backend
 - [ ] Add defaults for all non-secret stable behavior settings
 - [ ] Keep secrets and runtime-env keys in env with typed parsing
-- [ ] Add startup validation and human-readable config diagnostics (redacted)
+- [x] Add startup validation and human-readable config diagnostics (redacted)
 
 ### 20.2.3 Add compatibility bridge and deprecations
 
@@ -141,7 +141,7 @@ Current app configuration is spread across many `.env` keys, including values th
 
 - [ ] Acowtancy behavior config is primarily code-defined and typed
 - [ ] `.env` in Acowtancy contains only secrets/runtime-env keys
-- [ ] Startup fails fast on invalid config with actionable errors
+- [x] Startup fails fast on invalid config with actionable errors
 - [x] Migration report captures remaining legacy keys and timeline
 
 ### Legacy Key Removal Timeline (Phase 20.2)

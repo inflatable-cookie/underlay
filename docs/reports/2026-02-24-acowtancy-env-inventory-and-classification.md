@@ -147,6 +147,10 @@ It combines:
    - `pdf.chromium_timeout_secs`
    - `pdf.third_party_timeout_secs`
    - `PDF_CHROMIUM_TIMEOUT_SECS` and `PDF_THIRD_PARTY_TIMEOUT_SECS` are no longer used for behavior selection in job bootstrap wiring
+14. Farmyard now fails fast on invalid typed behavior config in both API and jobs startup paths:
+   - shared validator: `validate_behavior_config(&AppConfig)` in infra config module
+   - enforced on startup in `farmyard-api` and `farmyard-jobs` before service boot
+   - covered by focused infra test for invalid behavior values
 
 ## Legacy Key Removal Timeline
 
@@ -211,4 +215,8 @@ Timeline anchor date: **2026-02-24**.
 - Farmyard typed PDF timeout behavior integration:
   - `../../acowtancy/farmyard/crates/infra/src/config.rs`
   - `../../acowtancy/farmyard/config/default.toml`
+  - `../../acowtancy/farmyard/crates/jobs/src/main.rs`
+- Farmyard fail-fast typed behavior validation:
+  - `../../acowtancy/farmyard/crates/infra/src/config.rs`
+  - `../../acowtancy/farmyard/crates/api/src/main.rs`
   - `../../acowtancy/farmyard/crates/jobs/src/main.rs`
