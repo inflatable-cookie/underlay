@@ -8,6 +8,8 @@
     open?: boolean;
     title: string;
     description?: string | null;
+    itemLabel?: string | null;
+    itemValue?: string | null;
     showTrigger?: boolean;
     triggerLabel?: string;
     triggerAriaLabel?: string | null;
@@ -31,6 +33,8 @@
     open = $bindable(false),
     title,
     description = null,
+    itemLabel = null,
+    itemValue = null,
     showTrigger = true,
     triggerLabel = "Open",
     triggerAriaLabel = null,
@@ -128,10 +132,20 @@
         {/if}
       </div>
 
-      {#if children}
+      {#if itemLabel || itemValue || children}
         <div class="underlay-alert-dialog-body">
           <div class="underlay-alert-dialog-item-card">
-            {@render children?.()}
+            {#if itemLabel}
+              <p class="underlay-alert-dialog-item-label">{itemLabel}</p>
+            {/if}
+            {#if itemValue}
+              <p class="underlay-alert-dialog-item-value">{itemValue}</p>
+            {/if}
+            {#if children}
+              <div class="underlay-alert-dialog-item-extra">
+                {@render children?.()}
+              </div>
+            {/if}
           </div>
         </div>
       {/if}
@@ -268,6 +282,25 @@
 
   :global(.underlay-alert-dialog-item-card p + p) {
     margin-top: 0.35rem;
+  }
+
+  :global(.underlay-alert-dialog-item-label) {
+    color: var(--underlay-color-text-muted, #9ca3af);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  :global(.underlay-alert-dialog-item-value) {
+    color: var(--underlay-color-text, #e5e7eb);
+    font-size: 1rem;
+    font-weight: 600;
+    word-break: break-word;
+  }
+
+  :global(.underlay-alert-dialog-item-extra) {
+    margin-top: 0.5rem;
   }
 
   :global(.underlay-alert-dialog-footer) {
