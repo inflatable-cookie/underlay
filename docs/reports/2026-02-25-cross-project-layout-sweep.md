@@ -90,3 +90,44 @@ Representative intentional custom surfaces:
 - `dairy/src/routes/(app)/system/scheduled-tasks/[id]/+page.svelte` (schedule/payload/job detail surface)
 - `dairy/src/routes/(app)/assessment/marking/[submissionId]/+page.svelte` (marking metadata + form structure + history rows)
 - `dairy/src/routes/(app)/content/quiz-questions/[quizQuestionId]/+page.svelte` and `dairy/src/routes/(app)/content/digital-exam-questions/[digitalExamQuestionId]/+page.svelte` (attempt parity diagnostic cards)
+
+## Cross-Project Closure Pass (Compli-Me + Songsprout)
+
+### Compli-Me (`compli-me/admin`)
+
+Additional structural wrapper migrations completed:
+- `src/routes/(app)/account/+page.svelte`
+  - replaced `.account-overview` structural wrapper with `.underlay-page-stack-tight`
+- `src/routes/(app)/users/[userId]/+page.svelte`
+  - replaced `.user-view` structural wrapper with `.underlay-page-stack-tight`
+- `src/routes/(app)/system/errors/+page.svelte`
+  - wrapped loaded state in `.underlay-page-stack-tight`
+  - removed `stats-grid` margin-only spacing
+- `src/routes/(app)/system/jobs/+page.svelte`
+  - wrapped loaded state in `.underlay-page-stack-tight`
+  - removed `stats-grid` margin-only spacing
+
+Validation:
+- `bun run check` in `compli-me/admin` passed.
+
+Remaining Compli-Me route CSS is intentionally feature-specific:
+- table theming and row state visuals
+- details tab/metadata section rendering
+- auth/account-specific UI composition
+
+### Songsprout (`songsprout/*`)
+
+Scan coverage:
+- `bloom`
+- `greenhouse`
+- `stem`
+- `nursery`
+- `petal`
+- `trellis`
+
+Result:
+- no safe Underlay structural-wrapper migrations were identified for this sweep.
+- surfaced CSS is largely app-specific page composition (marketing/product layout, billing/plan sections, bespoke list cards) rather than shared admin rhythm wrappers.
+
+Conclusion:
+- no Songsprout code changes applied in this pass.
