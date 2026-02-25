@@ -58,6 +58,7 @@ These migrated behavior keys are now typed-config sourced in `acme-api/config/de
    - WebAuthn relying-party behavior (`WEBAUTHN_RP_*`)
    - Argon2 tuning (`ARGON2_*`)
 4. Focused infra config test verifies migrated behavior env keys do not override typed config values.
+5. Reference bootstrap now emits compatibility warnings when migrated legacy behavior env keys are present, including typed replacement field names.
 
 ## Evidence pointers
 
@@ -69,3 +70,5 @@ These migrated behavior keys are now typed-config sourced in `acme-api/config/de
   - `../../underlay-reference/acme-api/config/default.toml`
   - `../../underlay-reference/acme-api/crates/infra/src/config.rs`
   - `../../underlay-reference/acme-api/crates/auth/src/local/mod.rs`
+- Legacy compatibility warning layer:
+  - `../../underlay-reference/acme-api/crates/infra/src/config.rs` (`warn_legacy_behavior_env_keys`, `collect_set_legacy_behavior_env_keys`)

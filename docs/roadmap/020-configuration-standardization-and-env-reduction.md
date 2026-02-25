@@ -161,7 +161,7 @@ Timeline anchor date: **February 24, 2026**.
 
 - [x] Run inventory and classification (`docs/reports/2026-02-25-underlay-reference-env-inventory-and-classification.md`)
 - [x] Implement typed config modules and defaults (reference `acme-api` auth/email behavior defaults include JWT + WebAuthn + Argon2 typed behavior)
-- [ ] Add compatibility bridge and warnings
+- [x] Add compatibility warnings for legacy behavior env keys (legacy keys are ignored and logged with typed replacement fields)
 - [x] Remove migrated env keys from reference setup (`acme-api/.env.example` no longer lists migrated `EMAIL_*`, JWT behavior `AUTH_*`, `WEBAUTHN_RP_*`, `ARGON2_*`)
 
 ### 20.3.2 Validate template quality
@@ -171,7 +171,7 @@ Timeline anchor date: **February 24, 2026**.
 
 ### Acceptance Criteria (Phase 20.3)
 
-- [ ] underlay-reference follows the same config standard (compatibility warning bridge still pending)
+- [x] underlay-reference follows the same config standard
 - [ ] Any checklist/documentation gaps are fixed in Underlay docs
 
 ---
