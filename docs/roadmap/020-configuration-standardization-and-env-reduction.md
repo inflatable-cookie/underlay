@@ -116,6 +116,7 @@ Current app configuration is spread across many `.env` keys, including values th
 - [x] Apply typed-config-only email behavior defaults in Farmyard infra bootstrap (remove `EMAIL_DEFAULT_FROM`/`EMAIL_APP_NAME`/`EMAIL_APP_URL`/`EMAIL_SUPPORT`/`EMAIL_TEMPLATES_DIR` env behavior overrides)
 - [x] Apply typed-config-only AI behavior defaults in Farmyard infra bootstrap (remove `AI_ROUTER_PROVIDER_NAME` and `AI_SCHEDULED_*` env behavior overrides)
 - [x] Add focused infra config tests proving migrated auth/email/AI behavior keys no longer override typed config while runtime AI wiring env keys still apply
+- [x] Apply typed-config-first PDF behavior defaults for renderer timeouts in Farmyard jobs (`[pdf].chromium_timeout_secs`, `[pdf].third_party_timeout_secs`) and stop using `PDF_*_TIMEOUT_SECS` env behavior reads in bootstrap wiring
 - [ ] Add logical config modules for app-behavior settings in the Rust backend
 - [ ] Add defaults for all non-secret stable behavior settings
 - [ ] Keep secrets and runtime-env keys in env with typed parsing

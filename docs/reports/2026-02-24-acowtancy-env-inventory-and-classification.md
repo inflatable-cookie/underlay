@@ -76,11 +76,11 @@ It combines:
 | HOST | runtime-env | `AppConfig.http.bind_addr` (keep env) |
 | LOG_LEVEL | runtime-env | `AppConfig.logging.level` (keep env) |
 | PDF_CHROMIUM_BINARY | runtime-env | `PdfRendererConfig.chromium_binary_path` (keep env) |
-| PDF_CHROMIUM_TIMEOUT_SECS | app-behavior | `PdfRendererConfig.chromium_timeout_secs` (candidate typed config file target) |
+| PDF_CHROMIUM_TIMEOUT_SECS | app-behavior | `AppBehaviorConfig.pdf.chromium_timeout_secs` |
 | PDF_RENDERER_PROVIDER | runtime-env | `PdfRendererConfig.provider` (keep env for infra switching) |
 | PDF_THIRD_PARTY_API_KEY | secret | `PdfRendererConfig.third_party_api_key` (keep env secret) |
 | PDF_THIRD_PARTY_ENDPOINT | runtime-env | `PdfRendererConfig.third_party_endpoint` (keep env) |
-| PDF_THIRD_PARTY_TIMEOUT_SECS | app-behavior | `PdfRendererConfig.third_party_timeout_secs` (candidate typed config file target) |
+| PDF_THIRD_PARTY_TIMEOUT_SECS | app-behavior | `AppBehaviorConfig.pdf.third_party_timeout_secs` |
 | PORT | runtime-env | `AppConfig.http.port` (keep env) |
 | PUBLIC_API_URL | runtime-env | canonical public API base URL |
 | PUBLIC_API_VERSION | app-behavior | canonical public API version |
@@ -143,6 +143,10 @@ It combines:
 12. No-legacy-key sweep completed on 2026-02-25 across Acowtancy `.env*`, Markdown setup docs, and TOML config manifests for migrated auth/email/AI behavior keys:
    - no active manifest/doc references found for migrated keys
    - remaining code references are expected test fixtures and one passkey troubleshooting message updated to typed config field names
+13. Farmyard job bootstrap now sources PDF timeout behavior from typed `[pdf]` config defaults:
+   - `pdf.chromium_timeout_secs`
+   - `pdf.third_party_timeout_secs`
+   - `PDF_CHROMIUM_TIMEOUT_SECS` and `PDF_THIRD_PARTY_TIMEOUT_SECS` are no longer used for behavior selection in job bootstrap wiring
 
 ## Legacy Key Removal Timeline
 
@@ -204,3 +208,7 @@ Timeline anchor date: **2026-02-24**.
   - `../../acowtancy/farmyard/crates/infra/src/config.rs` (`config::tests::migrated_behavior_keys_use_typed_config_not_env_overrides`, `config::tests::runtime_ai_env_keys_still_override_runtime_wiring`)
 - Farmyard passkey troubleshooting guidance aligned to typed auth config naming:
   - `../../acowtancy/farmyard/crates/api/src/routes/shared/auth/passkeys.rs`
+- Farmyard typed PDF timeout behavior integration:
+  - `../../acowtancy/farmyard/crates/infra/src/config.rs`
+  - `../../acowtancy/farmyard/config/default.toml`
+  - `../../acowtancy/farmyard/crates/jobs/src/main.rs`
