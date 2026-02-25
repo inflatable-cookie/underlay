@@ -223,14 +223,17 @@
 
   :global(.underlay-dialog-title) {
     margin: 0;
-    font-size: 1.05rem;
-    font-weight: 650;
+    font-size: var(--underlay-dialog-title-size, 1.05rem);
+    font-weight: var(--underlay-dialog-title-weight, 650);
+    line-height: var(--underlay-dialog-title-line-height, 1.3);
+    color: var(--underlay-dialog-title-color, var(--underlay-color-text, #e5e7eb));
   }
 
   :global(.underlay-dialog-description) {
     margin-top: 0.25rem;
-    color: var(--underlay-color-text-muted, var(--underlay-color-text-muted, #9ca3af));
-    font-size: 0.9rem;
+    color: var(--underlay-dialog-description-color, var(--underlay-color-text-muted, #9ca3af));
+    font-size: var(--underlay-dialog-description-size, 0.9rem);
+    line-height: var(--underlay-dialog-description-line-height, 1.45);
   }
 
   :global(.underlay-dialog-body) {

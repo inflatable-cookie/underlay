@@ -175,15 +175,17 @@
 
   :global(.form-dialog__title) {
     margin: 0;
-    font-size: 1.125rem;
-    font-weight: 600;
-    color: var(--underlay-color-text, #e5e7eb);
+    font-size: var(--underlay-dialog-title-size, 1.125rem);
+    font-weight: var(--underlay-dialog-title-weight, 600);
+    line-height: var(--underlay-dialog-title-line-height, 1.3);
+    color: var(--underlay-dialog-title-color, var(--underlay-color-text, #e5e7eb));
   }
 
   :global(.form-dialog__subtitle) {
     margin: 0.25rem 0 0;
-    font-size: 0.875rem;
-    color: var(--underlay-color-text-muted, #9ca3af);
+    font-size: var(--underlay-dialog-description-size, 0.875rem);
+    line-height: var(--underlay-dialog-description-line-height, 1.45);
+    color: var(--underlay-dialog-description-color, var(--underlay-color-text-muted, #9ca3af));
   }
 
   :global(.form-dialog__close) {
