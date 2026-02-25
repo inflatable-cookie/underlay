@@ -150,6 +150,14 @@
     z-index: 50;
   }
 
+  :global(.underlay-dialog-overlay[data-state="open"]) {
+    animation: underlay-dialog-overlay-in 160ms ease-out;
+  }
+
+  :global(.underlay-dialog-overlay[data-state="closed"]) {
+    animation: underlay-dialog-overlay-out 120ms ease-in;
+  }
+
   :global(.underlay-dialog-content) {
     position: fixed;
     left: 50%;
@@ -177,6 +185,14 @@
       --underlay-shadow-dialog,
       0 20px 40px rgba(0, 0, 0, 0.55)
     );
+  }
+
+  :global(.underlay-dialog-content[data-state="open"]) {
+    animation: underlay-dialog-content-in 190ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  :global(.underlay-dialog-content[data-state="closed"]) {
+    animation: underlay-dialog-content-out 130ms ease-in;
   }
 
   :global(.underlay-dialog-close-x) {
@@ -214,5 +230,56 @@
     display: flex;
     justify-content: flex-end;
     gap: 0.5rem;
+  }
+
+  :global(.underlay-dialog-footer > .underlay-action-area) {
+    width: 100%;
+  }
+
+  @keyframes underlay-dialog-overlay-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes underlay-dialog-overlay-out {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+    }
+  }
+
+  @keyframes underlay-dialog-content-in {
+    from {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+  }
+
+  @keyframes underlay-dialog-content-out {
+    from {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+    to {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0.985);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :global(.underlay-dialog-overlay),
+    :global(.underlay-dialog-content) {
+      animation: none !important;
+    }
   }
 </style>

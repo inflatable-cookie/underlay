@@ -113,6 +113,14 @@
     z-index: 50;
   }
 
+  :global(.form-dialog__overlay[data-state="open"]) {
+    animation: underlay-form-dialog-overlay-in 160ms ease-out;
+  }
+
+  :global(.form-dialog__overlay[data-state="closed"]) {
+    animation: underlay-form-dialog-overlay-out 120ms ease-in;
+  }
+
   :global(.form-dialog__content) {
     position: fixed;
     left: 50%;
@@ -130,6 +138,14 @@
     padding: var(--underlay-card-padding, 1rem);
 
     box-shadow: var(--underlay-shadow-dialog, 0 20px 40px rgba(0, 0, 0, 0.55));
+  }
+
+  :global(.form-dialog__content[data-state="open"]) {
+    animation: underlay-form-dialog-content-in 190ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  :global(.form-dialog__content[data-state="closed"]) {
+    animation: underlay-form-dialog-content-out 130ms ease-in;
   }
 
   :global(.form-dialog__header) {
@@ -203,4 +219,51 @@
   }
 
   /* .form-dialog__body: Form content renders here, no additional global styles needed */
+
+  @keyframes underlay-form-dialog-overlay-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes underlay-form-dialog-overlay-out {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+    }
+  }
+
+  @keyframes underlay-form-dialog-content-in {
+    from {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+  }
+
+  @keyframes underlay-form-dialog-content-out {
+    from {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+    to {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0.985);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :global(.form-dialog__overlay),
+    :global(.form-dialog__content) {
+      animation: none !important;
+    }
+  }
 </style>

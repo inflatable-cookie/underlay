@@ -220,6 +220,14 @@
     z-index: 50;
   }
 
+  :global(.underlay-alert-dialog-overlay[data-state="open"]) {
+    animation: underlay-alert-dialog-overlay-in 160ms ease-out;
+  }
+
+  :global(.underlay-alert-dialog-overlay[data-state="closed"]) {
+    animation: underlay-alert-dialog-overlay-out 120ms ease-in;
+  }
+
   :global(.underlay-alert-dialog-content) {
     position: fixed;
     left: 50%;
@@ -247,6 +255,14 @@
       --underlay-shadow-dialog,
       0 20px 40px rgba(0, 0, 0, 0.55)
     );
+  }
+
+  :global(.underlay-alert-dialog-content[data-state="open"]) {
+    animation: underlay-alert-dialog-content-in 190ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  :global(.underlay-alert-dialog-content[data-state="closed"]) {
+    animation: underlay-alert-dialog-content-out 130ms ease-in;
   }
 
   :global(.underlay-alert-dialog-header) {
@@ -333,6 +349,53 @@
 
     :global(.underlay-alert-dialog-footer) {
       margin-top: 1.5rem;
+    }
+  }
+
+  @keyframes underlay-alert-dialog-overlay-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes underlay-alert-dialog-overlay-out {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+    }
+  }
+
+  @keyframes underlay-alert-dialog-content-in {
+    from {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+  }
+
+  @keyframes underlay-alert-dialog-content-out {
+    from {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+    to {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0.985);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :global(.underlay-alert-dialog-overlay),
+    :global(.underlay-alert-dialog-content) {
+      animation: none !important;
     }
   }
 </style>
