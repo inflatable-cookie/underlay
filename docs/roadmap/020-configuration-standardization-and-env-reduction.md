@@ -108,7 +108,7 @@ Current app configuration is spread across many `.env` keys, including values th
 
 ### 20.2.2 Introduce typed config structures
 
-- [x] Add reusable typed JWT behavior defaults path in Underlay (`JwtBehaviorDefaults` + `JwtConfig::from_env_with_defaults`) so consuming apps can keep key material in env and move behavior defaults to typed config
+- [x] Add reusable typed JWT behavior defaults path in Underlay (`JwtBehaviorDefaults` + `JwtConfig::from_env_with_defaults` / `JwtConfig::from_values`) so consuming apps can keep key material in env and move behavior defaults to typed config
 - [x] Document and example typed auth bootstrap (JWT/WebAuthn/Argon2/OAuth scopes as typed behavior config, secrets/runtime env retained in env)
 - [x] Apply typed JWT behavior defaults in Acowtancy Farmyard auth bootstrap (`farmyard-auth`) with compatibility env overrides + deprecation warnings
 - [x] Apply the same typed-config-first compatibility/deprecation pattern to Farmyard WebAuthn + Argon2 behavior overrides (`WEBAUTHN_RP_*`, `ARGON2_*`)
@@ -120,6 +120,7 @@ Current app configuration is spread across many `.env` keys, including values th
 
 ### 20.2.3 Add compatibility bridge and deprecations
 
+- [x] Complete auth behavior compatibility bridge window and remove migrated auth behavior key reads from Farmyard bootstrap (`AUTH_*` JWT tuning, `WEBAUTHN_RP_*`, `ARGON2_*`)
 - [ ] Continue reading legacy env keys for one transition window
 - [ ] Emit deprecation warnings with replacement field names
 - [ ] Prefer new config fields when both old and new are set
@@ -143,7 +144,7 @@ Timeline anchor date: **February 24, 2026**.
 
 1. **Now (completed)**: typed defaults + deprecation warnings + `.env.example` cleanup for auth behavior keys.
 2. **By March 10, 2026**: update consuming local/dev setups to stop setting deprecated auth behavior env keys.
-3. **By March 24, 2026**: remove compatibility reads for migrated auth behavior keys in Farmyard auth bootstrap.
+3. **Completed on February 24, 2026**: compatibility reads removed for migrated auth behavior keys in Farmyard auth bootstrap.
 4. **By April 7, 2026**: run a no-legacy-key verification sweep across Acowtancy repos and close remaining 20.2 acceptance items.
 
 ---

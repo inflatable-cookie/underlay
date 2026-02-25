@@ -104,13 +104,10 @@ It combines:
 ## Notes that unblock 20.2.2
 
 1. Farmyard already has typed behavior structs for 14 app-behavior keys and file-based defaults (`config/default.toml`, `config/local.toml`).
-2. Remaining high-value app-behavior env keys still live in auth/JWT loader env reads:
-   - `AUTH_ACCESS_TOKEN_LIFETIME_MINUTES`
-   - `AUTH_REFRESH_TOKEN_LIFETIME_DAYS`
-   - `AUTH_JWT_ISSUER`
-   - `AUTH_JWT_AUDIENCE`
-   - `AUTH_JWT_LEEWAY_SECONDS`
-   - Progress: Underlay now exposes `JwtBehaviorDefaults` + `JwtConfig::from_env_with_defaults` so apps can source these from typed config while keeping JWT keys in env.
+2. Auth behavior cutover status:
+   - Underlay exposes `JwtBehaviorDefaults` + `JwtConfig::from_env_with_defaults`.
+   - Farmyard auth bootstrap now sources JWT/WebAuthn/Argon2 behavior from typed `[auth]` config.
+   - JWT/WebAuthn/Argon2 legacy behavior env compatibility reads have been removed from Farmyard bootstrap.
 3. Frontend env cleanup should remove legacy aliases once apps and tests use canonical names only:
    - `PUBLIC_FARMYARD_BASE_URL` -> `PUBLIC_API_URL`
    - `PUBLIC_FARMYARD_API_VERSION` -> `PUBLIC_API_VERSION`
@@ -120,12 +117,12 @@ It combines:
    - `docs/guides/120-configuration.md`
    - `docs/guides/code/060-authentication/auth-service-example.rs`
 5. Farmyard auth bootstrap now consumes typed JWT behavior defaults directly:
-   - `../../acowtancy/farmyard/crates/auth/src/local/mod.rs` now uses `JwtConfig::from_env_with_defaults(...)`
+   - `../../acowtancy/farmyard/crates/auth/src/local/mod.rs` now builds JWT config from explicit env key material + typed behavior defaults (`JwtConfig::from_values(...)`)
    - `../../acowtancy/farmyard/crates/infra/src/config.rs` + `../../acowtancy/farmyard/config/default.toml` now include `[auth].jwt_*` typed defaults
-   - Legacy JWT behavior env keys are still supported as compatibility overrides and now emit deprecation warnings
-6. Farmyard auth now uses the same typed-config-first compatibility/deprecation pattern for:
-   - WebAuthn behavior env overrides: `WEBAUTHN_RP_ID`, `WEBAUTHN_RP_ORIGIN`, `WEBAUTHN_RP_NAME`
-   - Argon2 behavior env overrides: `ARGON2_MEMORY_KB`, `ARGON2_ITERATIONS`, `ARGON2_PARALLELISM`
+6. Farmyard auth no longer reads migrated behavior env keys in bootstrap:
+   - JWT behavior keys: `AUTH_ACCESS_TOKEN_LIFETIME_MINUTES`, `AUTH_REFRESH_TOKEN_LIFETIME_DAYS`, `AUTH_JWT_ISSUER`, `AUTH_JWT_AUDIENCE`, `AUTH_JWT_LEEWAY_SECONDS`
+   - WebAuthn behavior keys: `WEBAUTHN_RP_ID`, `WEBAUTHN_RP_ORIGIN`, `WEBAUTHN_RP_NAME`
+   - Argon2 behavior keys: `ARGON2_MEMORY_KB`, `ARGON2_ITERATIONS`, `ARGON2_PARALLELISM`
 7. Farmyard `.env.example` no longer lists migrated auth behavior keys; README now points auth behavior config to typed `[auth]` TOML defaults while preserving env-only secret guidance.
 8. Farmyard auth startup now logs behavior-source diagnostics per domain (`jwt`, `webauthn`, `argon2`) as `typed_config` vs `legacy_env_override`, with focused helper tests validating override/parse fallback behavior.
 
@@ -135,13 +132,13 @@ Timeline anchor date: **2026-02-24**.
 
 1. **Completed on 2026-02-24**:
    - Typed auth behavior defaults live in `config/default.toml`.
-   - Legacy env behavior keys still read for compatibility, with deprecation warnings.
    - Migrated auth behavior keys removed from `farmyard/.env.example`.
+   - Compatibility reads removed in Farmyard auth bootstrap for migrated auth behavior keys.
 2. **Target by 2026-03-10**:
    - Local/dev operators stop setting deprecated auth behavior env keys.
    - Any remaining deployment env manifests updated to typed TOML behavior defaults.
-3. **Target by 2026-03-24**:
-   - Remove compatibility reads for these legacy auth behavior keys in Farmyard auth bootstrap:
+3. **Completed on 2026-02-24**:
+   - Compatibility reads removed for these migrated auth behavior keys in Farmyard auth bootstrap:
      - `AUTH_ACCESS_TOKEN_LIFETIME_MINUTES`
      - `AUTH_REFRESH_TOKEN_LIFETIME_DAYS`
      - `AUTH_JWT_ISSUER`
