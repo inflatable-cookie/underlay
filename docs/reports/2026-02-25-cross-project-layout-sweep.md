@@ -72,3 +72,21 @@ This utility is now available for all consuming apps to replace trivial per-page
   1. Remove structural wrapper CSS first.
   2. Replace with shared utilities/props.
   3. Keep only feature-specific CSS and document exceptions.
+
+## Dairy Closure Status (2026-02-25)
+
+Additional Dairy sweeps completed after the initial report:
+- migrated account/security, system list pages, assessment session/marking pages, media upload/trash wrappers to shared stack utilities
+- replaced several plain empty-state paragraphs with shared `EmptyState`
+- normalized top-level page rhythm to `.underlay-page-stack` / `.underlay-page-stack-tight`
+
+Current closure assessment:
+- no remaining high-confidence structural-only wrappers were found in `(app)` routes that should be converted in this sweep
+- remaining route-level CSS is intentionally feature-specific (table theming, media/upload token overrides, detailed metadata grids, preview/payload blocks, domain selector layouts, and per-surface interaction affordances)
+
+Representative intentional custom surfaces:
+- `dairy/src/routes/(app)/media/upload/+page.svelte` (upload token overrides + action row layout)
+- `dairy/src/routes/(app)/system/jobs/[id]/+page.svelte` (detail grid + payload/error panels)
+- `dairy/src/routes/(app)/system/scheduled-tasks/[id]/+page.svelte` (schedule/payload/job detail surface)
+- `dairy/src/routes/(app)/assessment/marking/[submissionId]/+page.svelte` (marking metadata + form structure + history rows)
+- `dairy/src/routes/(app)/content/quiz-questions/[quizQuestionId]/+page.svelte` and `dairy/src/routes/(app)/content/digital-exam-questions/[digitalExamQuestionId]/+page.svelte` (attempt parity diagnostic cards)
