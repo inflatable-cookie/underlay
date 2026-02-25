@@ -301,9 +301,16 @@
   }
 
   :global(.underlay-alert-dialog-item-card) {
-    border: 1px solid var(--underlay-color-border-subtle, rgba(148, 163, 184, 0.35));
+    border: 1px solid
+      var(
+        --underlay-color-dialog-item-border,
+        var(--underlay-color-border-subtle, rgba(148, 163, 184, 0.35))
+      );
     border-radius: 0.75rem;
-    background: var(--underlay-color-field-bg, rgba(255, 255, 255, 0.03));
+    background: var(
+      --underlay-color-dialog-item-bg,
+      var(--underlay-color-surface-raised, rgba(255, 255, 255, 0.04))
+    );
     padding: 0.75rem 0.875rem;
   }
 
