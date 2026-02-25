@@ -2,6 +2,7 @@
   import type { Snippet } from "svelte";
   import { tick } from "svelte";
   import { AlertDialog as BitsAlertDialog } from "bits-ui";
+  import TextButton from "./TextButton.svelte";
 
   interface Props {
     open?: boolean;
@@ -80,6 +81,14 @@
     open = false;
   }
 
+  function getCancelTextVariant(): "default" | "danger" | "success" {
+    if (cancelVariant === "danger" || cancelVariant === "danger-subtle") {
+      return "danger";
+    }
+
+    return "default";
+  }
+
 </script>
 
 <BitsAlertDialog.Root bind:open>
@@ -124,14 +133,15 @@
       </div>
 
       <div class="underlay-alert-dialog-footer">
-        <button
+        <TextButton
           type="button"
-          class={`underlay-alert-dialog-cancel underlay-button underlay-button--pill underlay-button--${cancelVariant}`}
+          variant={getCancelTextVariant()}
+          class="underlay-alert-dialog-cancel"
           disabled={confirming}
           onclick={handleCancel}
         >
           {cancelLabel}
-        </button>
+        </TextButton>
         <BitsAlertDialog.Action
           class={`underlay-alert-dialog-action underlay-button underlay-button--pill underlay-button--${confirmVariant}`}
           disabled={confirming}
@@ -253,11 +263,6 @@
     cursor: not-allowed;
   }
 
-  :global(.underlay-alert-dialog-cancel:disabled) {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-
   @media (max-width: 40rem) {
     :global(.underlay-alert-dialog-content) {
       width: calc(100vw - 1.25rem);
@@ -269,7 +274,7 @@
       justify-content: stretch;
     }
 
-    :global(.underlay-alert-dialog-footer .underlay-button) {
+    :global(.underlay-alert-dialog-action.underlay-button) {
       flex: 1 1 auto;
       justify-content: center;
     }
