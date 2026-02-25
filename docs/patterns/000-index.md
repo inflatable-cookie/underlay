@@ -133,6 +133,7 @@ Individual techniques referenced by the recipes above.
 | Typed config + env boundary | Keep app behavior config in typed structs; reserve `.env` for secrets/runtime-env values | [120-configuration.md](../guides/120-configuration.md) |
 | Layered config loading | Defaults -> `config/default.toml` -> `config/local.toml` -> allowlisted env overrides | [120-configuration.md](../guides/120-configuration.md) |
 | Config migration checklist | Repeatable per-app migration flow from env-heavy setup to typed config | [120-configuration.md](../guides/120-configuration.md) |
+| Consumer rollout + enforcement kit | Migration issue template, cutover checklist, deprecation schedule, and CI guardrails | [121-consumer-config-rollout-kit.md](../guides/121-consumer-config-rollout-kit.md) |
 
 ### Internal Development Patterns
 

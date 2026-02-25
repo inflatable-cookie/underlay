@@ -25,7 +25,7 @@ This roadmap defines a reusable migration pattern that can be applied app-by-app
 - [x] Phase 20.1 complete (Underlay standard and documentation)
 - [ ] Phase 20.2 complete (Acowtancy pilot migration)
 - [x] Phase 20.3 complete (Underlay Reference migration)
-- [ ] Phase 20.4 complete (consumer rollout kit + enforcement)
+- [x] Phase 20.4 complete (consumer rollout kit + enforcement)
 
 ## Problem Statement
 
@@ -180,27 +180,27 @@ Timeline anchor date: **February 24, 2026**.
 
 ### 20.4.1 Publish rollout kit for remaining apps
 
-- [ ] Add reusable migration issue template for consuming apps
-- [ ] Add cutover checklist and verification commands
-- [ ] Provide deprecation removal schedule guidance
+- [x] Add reusable migration issue template for consuming apps
+- [x] Add cutover checklist and verification commands
+- [x] Provide deprecation removal schedule guidance
 
 ### 20.4.2 Add enforcement guardrails
 
-- [ ] Add lint/check guidance to avoid direct `std::env::var` use outside config bootstrap
-- [ ] Add allowlist approach for recognized env keys per app
-- [ ] Document CI checks for unknown env keys and missing required secrets
+- [x] Add lint/check guidance to avoid direct `std::env::var` use outside config bootstrap
+- [x] Add allowlist approach for recognized env keys per app
+- [x] Document CI checks for unknown env keys and missing required secrets
 
 ### Acceptance Criteria (Phase 20.4)
 
-- [ ] Remaining consumers have a standard rollout path
-- [ ] Guardrails are documented and usable in CI
-- [ ] New apps default to the standardized config model
+- [x] Remaining consumers have a standard rollout path
+- [x] Guardrails are documented and usable in CI
+- [x] New apps default to the standardized config model
 
 ---
 
 ## Validation Plan
 
-- [ ] Underlay docs updated and cross-linked
+- [x] Underlay docs updated and cross-linked
 - [ ] Acowtancy migration completes without behavior regressions
 - [x] underlay-reference migration completes with same checklist
 - [ ] For each migrated app:

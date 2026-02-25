@@ -4,6 +4,8 @@ This document defines the canonical configuration model for Underlay application
 
 Primary rule: keep `.env` for secrets and true environment-dependent runtime values, and keep stable app behavior settings in typed Rust config structures committed with code.
 
+Rollout/enforcement assets for consumers are in `docs/guides/121-consumer-config-rollout-kit.md`.
+
 ## Configuration Classes
 
 Classify every setting before adding it:

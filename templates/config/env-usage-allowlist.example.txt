@@ -1,0 +1,9 @@
+# Allow direct env access only in bootstrap/config entrypoints.
+# Each non-empty line is either:
+# - a path prefix relative to app root
+# - re:<regex>
+
+crates/infra/src/config.rs
+crates/api/src/main.rs
+crates/auth/src/local/mod.rs
+re:^crates/.+/src/bin/.*\.rs$
