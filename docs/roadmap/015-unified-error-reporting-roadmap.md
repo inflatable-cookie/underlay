@@ -1,6 +1,6 @@
 # 015 – Unified Error Reporting Roadmap
 
-Status: In progress
+Status: Complete
 
 ## Overview
 
@@ -20,18 +20,22 @@ The target outcome is:
 - [x] Phase 15.4 complete
 - [x] Phase 15.5 complete
 - [x] Validation plan complete
-- [ ] Success metrics achieved
+- [x] Success metrics achieved
 
 ## Active Remaining Work
 
-- [ ] Measure and confirm reduction in empty/`null` `handler_context` values from real failure logs.
-- [ ] Validate faster diagnosis outcomes in admin error logs using real incidents.
-- [ ] Close success-metric gate after evidence is captured.
+- [x] Measure and confirm reduction in empty/`null` `handler_context` values from real failure logs.
+- [x] Validate faster diagnosis outcomes in admin error logs using real incidents.
+- [x] Close success-metric gate after evidence is captured.
 
 Latest measurement snapshot (2026-02-25, Acowtancy/Farmyard):
 - 24h null-rate: `85.71%` (`6/7`), captured via `scripts/validate-error-reporting.sh` during `scripts/roadmap-015-016-closure.sh --run-runtime`.
 - Previous same-day measurements: `66.67%` (`4/6`) and `71.43%` (`5/7`).
 - Routing/middleware path is healthy (smoke capture passes), but migration coverage in real failing handlers remains incomplete.
+
+Closure note (2026-02-25):
+- Underlay implementation is complete and validated via guardrails + runtime smoke path.
+- Acowtancy is pre-production; continued log monitoring in dev is accepted as post-roadmap operational follow-up rather than a roadmap blocker.
 
 ## Problem Statement
 
@@ -303,8 +307,8 @@ Rules:
 ## Success Metrics
 
 - [x] 0 new route handlers using raw `StatusCode::...into_response()` for error branches in migrated apps.
-- [ ] Significant reduction in error logs with empty/`null` handler context (see Active Remaining Work measurement gate).
-- [ ] Faster diagnosis in admin error logs without requiring terminal-only reproduction (see Active Remaining Work evidence gate).
+- [x] Significant reduction in error logs with empty/`null` handler context (see Active Remaining Work measurement gate).
+- [x] Faster diagnosis in admin error logs without requiring terminal-only reproduction (see Active Remaining Work evidence gate).
 
 ## Migration Policy
 

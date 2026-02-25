@@ -18,8 +18,8 @@ Status overview of all Underlay roadmaps. Check individual files for detailed pr
 | 012 | [Nightfire Extraction](./012-nightfire-extraction.md) | Complete | Extract Nightfire content protocol |
 | 013 | [RelationSelector](./013-relation-selector.md) | Complete | RelationSelector component |
 | 014 | [Generic Validation](./014-generic-field-validation.md) | Complete | Generic field validation system |
-| 015 | [Error Reporting](./015-unified-error-reporting-roadmap.md) | In progress | Unified error reporting across layers |
-| 016 | [JSON Naming](./016-json-naming-standardization-roadmap.md) | In progress | snake_case JSON standardisation |
+| 015 | [Error Reporting](./015-unified-error-reporting-roadmap.md) | Complete | Unified error reporting across layers |
+| 016 | [JSON Naming](./016-json-naming-standardization-roadmap.md) | Complete | snake_case JSON standardisation |
 | 017 | [Module Splitting](./017-rust-module-splitting-roadmap.md) | Complete | Split oversized Rust modules |
 | 018 | [Documentation & AI](./018-documentation-ai-agent-improvements.md) | Complete | Documentation and AI agent context improvements |
 | 019 | [Codebase Improvements](./019-codebase-improvements.md) | Complete | Simplification, deduplication, reorganisation |
@@ -28,4 +28,4 @@ Status overview of all Underlay roadmaps. Check individual files for detailed pr
 | 022 | [CLI Runner & Pulse](./022-underlay-cli-runner-and-pulse.md) | Complete | Add `underlay pulse`, shared root detection infrastructure, and task contract |
 | 023 | [Quality Hardening](./023-underlay-quality-hardening-roadmap.md) | Complete | Type-safety tightening, TS coverage gates, Rust panic-path hardening, and test deduplication |
 
-**Complete:** 21 | **In progress:** 2 | **Not started:** 0
+**Complete:** 23 | **In progress:** 0 | **Not started:** 0

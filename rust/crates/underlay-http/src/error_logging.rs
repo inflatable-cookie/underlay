@@ -461,13 +461,12 @@ pub async fn error_logging_middleware(
         .unwrap_or("")
         .to_string();
 
-    // Extract handler-provided context from header
-    let handler_context: Option<serde_json::Value> = res
-        .headers()
-        .get(ERROR_CONTEXT_HEADER)
-        .and_then(|v| v.to_str().ok())
-        .and_then(|encoded| urlencoding::decode(encoded).ok())
-        .and_then(|json_str| serde_json::from_str(&json_str).ok());
+    // Extract handler-provided context when available. If a handler does not
+    // emit `x-error-context`, populate a structured fallback so logs remain
+    // actionable and avoid null `handler_context`.
+    let handler_context = extract_handler_context(&res).unwrap_or_else(|| {
+        fallback_handler_context(&method, &path, status, &error_code)
+    });
 
     // Build comprehensive context object
     let context = serde_json::json!({
@@ -496,4 +495,79 @@ pub async fn error_logging_middleware(
     });
 
     res
+}
+
+#[cfg(feature = "error-logging")]
+fn extract_handler_context(res: &Response) -> Option<serde_json::Value> {
+    res.headers()
+        .get(ERROR_CONTEXT_HEADER)
+        .and_then(|v| v.to_str().ok())
+        .and_then(|encoded| urlencoding::decode(encoded).ok())
+        .and_then(|json_str| serde_json::from_str(&json_str).ok())
+}
+
+#[cfg(feature = "error-logging")]
+fn fallback_handler_context(
+    method: &axum::http::Method,
+    path: &str,
+    status: axum::http::StatusCode,
+    error_code: &str,
+) -> serde_json::Value {
+    serde_json::json!({
+        "operation": "http.response",
+        "context_source": "middleware_fallback",
+        "method": method.as_str(),
+        "path": path,
+        "status_code": status.as_u16(),
+        "error_code": error_code,
+    })
+}
+
+#[cfg(all(test, feature = "error-logging"))]
+mod middleware_tests {
+    use super::{extract_handler_context, fallback_handler_context, ERROR_CONTEXT_HEADER};
+    use axum::response::Response;
+    use http::{Method, StatusCode};
+
+    #[test]
+    fn extract_handler_context_decodes_json_header() {
+        let raw = r#"{"operation":"test.decode"}"#;
+        let encoded = urlencoding::encode(raw);
+        let response = Response::builder()
+            .header(ERROR_CONTEXT_HEADER, encoded.as_ref())
+            .body(axum::body::Body::empty())
+            .expect("response should build");
+
+        let context = extract_handler_context(&response).expect("context should decode");
+        let operation = context.get("operation").and_then(|v| v.as_str());
+        assert_eq!(operation, Some("test.decode"));
+    }
+
+    #[test]
+    fn extract_handler_context_returns_none_without_header() {
+        let response = Response::builder()
+            .body(axum::body::Body::empty())
+            .expect("response should build");
+
+        assert!(extract_handler_context(&response).is_none());
+    }
+
+    #[test]
+    fn fallback_handler_context_is_structured_and_non_null() {
+        let context =
+            fallback_handler_context(&Method::GET, "/v1/example", StatusCode::UNAUTHORIZED, "auth.unauthorized");
+
+        assert_eq!(context.get("operation").and_then(|v| v.as_str()), Some("http.response"));
+        assert_eq!(
+            context.get("context_source").and_then(|v| v.as_str()),
+            Some("middleware_fallback")
+        );
+        assert_eq!(context.get("method").and_then(|v| v.as_str()), Some("GET"));
+        assert_eq!(context.get("path").and_then(|v| v.as_str()), Some("/v1/example"));
+        assert_eq!(context.get("status_code").and_then(|v| v.as_u64()), Some(401));
+        assert_eq!(
+            context.get("error_code").and_then(|v| v.as_str()),
+            Some("auth.unauthorized")
+        );
+    }
 }

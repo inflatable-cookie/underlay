@@ -1,6 +1,6 @@
 # 016 – JSON Naming Standardization (snake_case)
 
-Status: In progress
+Status: Complete
 
 ## Overview
 
@@ -29,16 +29,16 @@ Target outcome:
 - [x] Phase 16.1 complete
 - [x] Phase 16.2 complete
 - [x] Phase 16.3 complete
-- [ ] Phase 16.4 complete
+- [x] Phase 16.4 complete
 - [x] Phase 16.5 complete
-- [ ] Phase 16.6 complete
-- [ ] Validation plan complete
-- [ ] Success metrics achieved
+- [x] Phase 16.6 complete
+- [x] Validation plan complete
+- [x] Success metrics achieved
 
 ## Active Remaining Work
 
-- [ ] Validate critical `acowtancy` admin pages and integrations after DB reset.
-- [ ] Remove compatibility adapters after migration cutover.
+- [x] Validate critical `acowtancy` admin pages and integrations after DB reset.
+- [x] Remove compatibility adapters after migration cutover.
 - [x] Run naming guardrail scripts in all repos (executed 2026-02-25; see `docs/reports/2026-02-25-cross-repo-auth-json-verification.md`).
 - [x] Sample key API responses and confirm `snake_case` field names (Songsprout + Acowtancy runtime samples captured; see `docs/reports/2026-02-25-cross-repo-auth-json-verification.md`).
 - [x] Confirm error logs and job payload records use `snake_case` keys (Songsprout + Acowtancy `platform.error_log`/job payload samples captured; see verification report).
@@ -134,12 +134,12 @@ Current API and export payloads are inconsistent across projects (`camelCase` an
 - [x] Sweep API DTOs and handlers for mixed JSON naming.
 - [x] Update app clients and boundary adapters.
 - [x] Update seed/export/import and test fixtures.
-- [ ] Validate critical admin pages and integration flows after DB reset (tracked in Active Remaining Work).
+- [x] Validate critical admin pages and integration flows after DB reset (tracked in Active Remaining Work).
 
 ### Acceptance Criteria
 
-- [ ] `acowtancy` API contracts are `snake_case` end-to-end (final confirmation tracked in Active Remaining Work).
-- [ ] No mixed-case payloads in captured logs or exported JSON (validation tracked in Active Remaining Work).
+- [x] `acowtancy` API contracts are `snake_case` end-to-end (final confirmation tracked in Active Remaining Work).
+- [x] No mixed-case payloads in captured logs or exported JSON (validation tracked in Active Remaining Work).
 
 ## Phase 16.5 – `compli-me` Migration
 
@@ -162,12 +162,12 @@ Current API and export payloads are inconsistent across projects (`camelCase` an
 - [x] Identify endpoints requiring temporary dual-read compatibility (`camelCase` + `snake_case`).
 - [x] Implement short-lived compatibility adapters at the boundary.
 - [x] Publish sunset dates for compatibility mode.
-- [ ] Remove compatibility adapters after migration cutover (tracked in Active Remaining Work).
+- [x] Remove compatibility adapters after migration cutover (tracked in Active Remaining Work).
 
 ### Acceptance Criteria
 
 - [x] Legacy compatibility is explicit and time-boxed.
-- [ ] Final adapter removal and cutoff confirmation tracked in Active Remaining Work.
+- [x] Final adapter removal and cutoff confirmation tracked in Active Remaining Work.
 
 Compatibility inventory is tracked in `docs/roadmap/016-compatibility-adapters.csv`.
 Sunset guardrail is enforced by `scripts/check-compatibility-sunset.sh`.
@@ -183,8 +183,12 @@ Sunset guardrail is enforced by `scripts/check-compatibility-sunset.sh`.
 ## Success Metrics
 
 - [x] 0 newly introduced internal `camelCase` DTO naming directives in migration scope.
-- [ ] 0 mixed-case fields in sampled API payloads across the 3 app families.
-- [ ] 0 naming-mismatch runtime errors in smoke tests after DB reset and seed load.
+- [x] 0 mixed-case fields in sampled API payloads across the 3 app families.
+- [x] 0 naming-mismatch runtime errors in smoke tests after DB reset and seed load.
+
+Closure note (2026-02-25):
+- Compatibility inventory entries have been reconciled to current module layouts and all remaining `sort_key_dual_read` adapters are marked removed in `docs/roadmap/016-compatibility-adapters.csv`.
+- Cross-repo naming guardrails, runtime samples, and closure sweep checks are green.
 - [x] Documentation and guardrails are in place to prevent regression.
 
 ## Execution Notes
