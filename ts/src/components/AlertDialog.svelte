@@ -248,7 +248,7 @@
     border-radius: 0.75rem;
     border: 1px solid
       var(
-        --underlay-color-border-subtle,
+        --underlay-color-dialog-border,
         var(--underlay-color-border-subtle, rgba(148, 163, 184, 0.5))
       );
     background: var(

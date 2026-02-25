@@ -139,7 +139,7 @@
     overflow: auto;
 
     border-radius: var(--underlay-radius-md, 0.75rem);
-    border: 1px solid var(--underlay-color-border-subtle, rgba(148, 163, 184, 0.25));
+    border: 1px solid var(--underlay-color-dialog-border, var(--underlay-color-border-subtle, rgba(148, 163, 184, 0.25)));
     background-color: var(--underlay-color-surface-muted, rgba(255, 255, 255, 0.02));
     padding: var(--underlay-card-padding, 1rem);
 
