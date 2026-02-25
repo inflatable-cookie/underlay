@@ -3331,6 +3331,17 @@ Use shared utility classes for detail-page media previews instead of per-page sh
 - When you need side-by-side detail/auxiliary panels plus full-width follow-up rows
 - To avoid manual width, stretch, and margin overrides between sections
 
+### Page Stack Utility
+
+Use `.underlay-page-stack` for pages that need a simple vertical rhythm between major sections (for example: header + details grid + tabs).
+
+```svelte
+<section class="underlay-page-stack">
+  <PageHeader ... />
+  <div class="underlay-details-content">...</div>
+</section>
+```
+
 ---
 
 ## Complete Form Example

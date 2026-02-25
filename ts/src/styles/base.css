@@ -9,6 +9,13 @@
   box-sizing: border-box;
 }
 
+/* Generic vertical stack utility for page sections */
+.underlay-page-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--underlay-space-6, 1.5rem);
+}
+
 /*
   Utility class for admin detail tab content.
   2-column grid that collapses to 1 column on narrow containers.
