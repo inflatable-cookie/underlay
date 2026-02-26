@@ -25,8 +25,8 @@ Status overview of all Underlay roadmaps. Check individual files for detailed pr
 | 019 | [Codebase Improvements](./019-codebase-improvements.md) | Complete | Simplification, deduplication, reorganisation |
 | 020 | [Configuration Standardization](./020-configuration-standardization-and-env-reduction.md) | Complete | Move app behavior config from env files into typed structures |
 | 021 | [Shared Admin Components](./021-shared-admin-components.md) | Complete | EmptyState, EntityActionsMenu, Drawer, DetailPageShell, AutonomousList, InlineEditableField, KeyboardShortcuts, ErrorBoundary |
-| 022 | [CLI Runner & Pulse](./022-underlay-cli-runner-and-pulse.md) | Complete | Add `underlay pulse`, shared root detection infrastructure, and task contract |
+| 022 | [CLI Runner & Pulse](./022-underlay-cli-runner-and-pulse.md) | Extracted | Runner and pulse were extracted from Underlay into the standalone `effigy` repository |
 | 023 | [Quality Hardening](./023-underlay-quality-hardening-roadmap.md) | Complete | Type-safety tightening, TS coverage gates, Rust panic-path hardening, and test deduplication |
-| 024 | [Nested Task Catalogs & Config Consolidation](./024-nested-task-catalogs-and-config-consolidation.md) | Complete | Add nested `underlay.tasks.toml` discovery with prefix/unprefixed resolution and consolidate runtime task/config surfaces |
+| 024 | [Nested Task Catalogs & Config Consolidation](./024-nested-task-catalogs-and-config-consolidation.md) | Extracted | Nested task-catalog runner behavior was extracted to `effigy`; Underlay retains historical implementation notes |
 
-**Complete:** 24 | **In progress:** 0 | **Not started:** 0
+**Complete:** 22 | **Extracted:** 2 | **In progress:** 0 | **Not started:** 0

@@ -1,9 +1,13 @@
 # 024 - Nested Task Catalogs and Config Consolidation
 
-Status: Complete
+Status: Extracted (runner moved to effigy)
 Owner: Platform (Underlay + Acowtancy consuming apps)
 Created: 2026-02-26
 Depends on: 020, 022
+
+## Extraction Note (2026-02-26)
+
+The nested task-catalog execution behavior documented here now lives in the standalone `effigy` repository. This file remains as historical context for the migration and design rationale.
 
 ## 1) Problem
 

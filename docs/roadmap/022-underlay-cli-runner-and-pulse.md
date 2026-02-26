@@ -1,9 +1,13 @@
 # 022 - Underlay CLI Runner and Pulse Task
 
-Status: Complete
+Status: Extracted (moved to effigy)
 Owner: Platform (Underlay + consuming apps)
 Created: 2026-02-20
 Depends on: 019, 020, 021
+
+## Extraction Note (2026-02-26)
+
+The runner implemented by this roadmap was extracted from Underlay into the standalone `effigy` repository. Underlay no longer ships the `underlay-cli` crate.
 
 ## 1) Problem
 
