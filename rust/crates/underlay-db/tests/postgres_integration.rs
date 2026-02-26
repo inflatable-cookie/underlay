@@ -31,7 +31,6 @@ macOS (Homebrew):\n\
             panic!("failed to run `docker version`: {err}");
         }
     }
-
 }
 
 fn postgres_database_url(node: &Container<Postgres>) -> String {

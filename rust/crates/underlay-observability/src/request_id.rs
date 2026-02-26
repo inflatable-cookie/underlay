@@ -99,7 +99,8 @@ where
         match this.inner.poll(cx) {
             std::task::Poll::Ready(Ok(mut res)) => {
                 if let Some(request_id) = this.request_id.clone() {
-                    res.headers_mut().insert(this.header_name.clone(), request_id);
+                    res.headers_mut()
+                        .insert(this.header_name.clone(), request_id);
                 }
                 std::task::Poll::Ready(Ok(res))
             }

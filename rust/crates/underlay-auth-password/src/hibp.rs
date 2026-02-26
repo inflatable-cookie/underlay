@@ -1,7 +1,7 @@
 //! HIBP (Have I Been Pwned) k-anonymity password checking.
 
-use async_trait::async_trait;
 use crate::errors::{PasswordAuthError, PasswordAuthResult};
+use async_trait::async_trait;
 use sha1::{Digest, Sha1};
 
 /// Check a password against the HIBP Pwned Passwords k-anonymity range API.

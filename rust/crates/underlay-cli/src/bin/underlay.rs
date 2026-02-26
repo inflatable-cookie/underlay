@@ -16,7 +16,11 @@ fn main() {
             print_usage();
         }
         _ => match underlay_cli::runner::run_command(cmd) {
-            Ok(output) => println!("{output}"),
+            Ok(output) => {
+                if !output.trim().is_empty() {
+                    println!("{output}");
+                }
+            }
             Err(err) => {
                 eprintln!("task failed: {err}");
                 std::process::exit(1);

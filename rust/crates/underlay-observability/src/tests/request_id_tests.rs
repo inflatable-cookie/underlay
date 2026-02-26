@@ -27,7 +27,9 @@ mod tests {
     #[test]
     fn request_id_round_trips_as_header_value() {
         let id = RequestId::new();
-        let header = id.to_header_value().expect("UUIDv7 should serialize as header");
+        let header = id
+            .to_header_value()
+            .expect("UUIDv7 should serialize as header");
         let parsed = RequestId::from_header_value(&header).expect("should parse");
         assert_eq!(id, parsed);
     }

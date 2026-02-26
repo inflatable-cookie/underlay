@@ -139,8 +139,9 @@ impl<V: Clone> SingleFlight<V> {
             // sending, recompute instead of panicking.
             let value = loader
                 .take()
-                .expect("singleflight loader should only be consumed once")()
-                .await;
+                .expect("singleflight loader should only be consumed once")(
+            )
+            .await;
             let waiters = {
                 let mut guard = self.inflight.lock().await;
                 guard.remove(&key).unwrap_or_default()
@@ -154,7 +155,7 @@ impl<V: Clone> SingleFlight<V> {
         let value = loader
             .take()
             .expect("singleflight loader should only be consumed once")()
-            .await;
+        .await;
         let waiters = {
             let mut guard = self.inflight.lock().await;
             guard.remove(&key).unwrap_or_default()

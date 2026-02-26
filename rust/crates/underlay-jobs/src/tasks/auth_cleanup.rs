@@ -380,11 +380,10 @@ impl JobHandler for SuspendInactiveAccountsJob {
             return Ok(());
         }
 
-        let mut tx = self
-            .pool
-            .begin()
-            .await
-            .map_err(|e| JobHandlerError::new(format!("Database transaction begin error: {e}")))?;
+        let mut tx =
+            self.pool.begin().await.map_err(|e| {
+                JobHandlerError::new(format!("Database transaction begin error: {e}"))
+            })?;
 
         let suspended_user_ids = sqlx::query_scalar::<_, uuid::Uuid>(
             r#"
@@ -419,7 +418,9 @@ impl JobHandler for SuspendInactiveAccountsJob {
         .bind(self.batch_limit)
         .fetch_all(&mut *tx)
         .await
-        .map_err(|e| JobHandlerError::new(format!("Database error suspending inactive accounts: {e}")))?;
+        .map_err(|e| {
+            JobHandlerError::new(format!("Database error suspending inactive accounts: {e}"))
+        })?;
 
         let mut revoked_sessions = 0_i64;
         if self.revoke_sessions && !suspended_user_ids.is_empty() {
@@ -441,7 +442,11 @@ impl JobHandler for SuspendInactiveAccountsJob {
             .bind(&suspended_user_ids)
             .fetch_one(&mut *tx)
             .await
-            .map_err(|e| JobHandlerError::new(format!("Database error revoking inactive-account sessions: {e}")))?;
+            .map_err(|e| {
+                JobHandlerError::new(format!(
+                    "Database error revoking inactive-account sessions: {e}"
+                ))
+            })?;
         }
 
         tx.commit()

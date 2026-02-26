@@ -37,12 +37,13 @@ where
         state: &S,
     ) -> impl std::future::Future<Output = Result<Self, Self::Rejection>> + Send {
         async move {
-            let token = extract_bearer(parts.headers.get(AUTHORIZATION_HEADER)).ok_or_else(|| {
-                reject(
-                    StatusCode::UNAUTHORIZED,
-                    AuthError::Unauthorized.into_app_error(),
-                )
-            })?;
+            let token =
+                extract_bearer(parts.headers.get(AUTHORIZATION_HEADER)).ok_or_else(|| {
+                    reject(
+                        StatusCode::UNAUTHORIZED,
+                        AuthError::Unauthorized.into_app_error(),
+                    )
+                })?;
 
             let principal = state
                 .auth_provider()

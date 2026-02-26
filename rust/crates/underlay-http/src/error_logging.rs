@@ -464,9 +464,8 @@ pub async fn error_logging_middleware(
     // Extract handler-provided context when available. If a handler does not
     // emit `x-error-context`, populate a structured fallback so logs remain
     // actionable and avoid null `handler_context`.
-    let handler_context = extract_handler_context(&res).unwrap_or_else(|| {
-        fallback_handler_context(&method, &path, status, &error_code)
-    });
+    let handler_context = extract_handler_context(&res)
+        .unwrap_or_else(|| fallback_handler_context(&method, &path, status, &error_code));
 
     // Build comprehensive context object
     let context = serde_json::json!({
@@ -554,17 +553,30 @@ mod middleware_tests {
 
     #[test]
     fn fallback_handler_context_is_structured_and_non_null() {
-        let context =
-            fallback_handler_context(&Method::GET, "/v1/example", StatusCode::UNAUTHORIZED, "auth.unauthorized");
+        let context = fallback_handler_context(
+            &Method::GET,
+            "/v1/example",
+            StatusCode::UNAUTHORIZED,
+            "auth.unauthorized",
+        );
 
-        assert_eq!(context.get("operation").and_then(|v| v.as_str()), Some("http.response"));
+        assert_eq!(
+            context.get("operation").and_then(|v| v.as_str()),
+            Some("http.response")
+        );
         assert_eq!(
             context.get("context_source").and_then(|v| v.as_str()),
             Some("middleware_fallback")
         );
         assert_eq!(context.get("method").and_then(|v| v.as_str()), Some("GET"));
-        assert_eq!(context.get("path").and_then(|v| v.as_str()), Some("/v1/example"));
-        assert_eq!(context.get("status_code").and_then(|v| v.as_u64()), Some(401));
+        assert_eq!(
+            context.get("path").and_then(|v| v.as_str()),
+            Some("/v1/example")
+        );
+        assert_eq!(
+            context.get("status_code").and_then(|v| v.as_u64()),
+            Some(401)
+        );
         assert_eq!(
             context.get("error_code").and_then(|v| v.as_str()),
             Some("auth.unauthorized")

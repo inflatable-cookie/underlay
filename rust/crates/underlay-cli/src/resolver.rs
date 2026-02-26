@@ -23,7 +23,11 @@ impl std::fmt::Display for ResolveError {
         match self {
             ResolveError::Cwd(err) => write!(f, "failed to resolve current directory: {err}"),
             ResolveError::InvalidExplicitRoot { path } => {
-                write!(f, "explicit --repo path is not a directory: {}", path.display())
+                write!(
+                    f,
+                    "explicit --repo path is not a directory: {}",
+                    path.display()
+                )
             }
             ResolveError::NoCandidateRoot { cwd } => write!(
                 f,
@@ -134,7 +138,9 @@ fn maybe_promote_to_parent_workspace(child: &Path) -> Option<ResolvedTarget> {
                 "child repo {} has standalone .git; kept nearest root",
                 child.display()
             )],
-            warnings: vec!["workspace promotion skipped due to standalone child repository".to_owned()],
+            warnings: vec![
+                "workspace promotion skipped due to standalone child repository".to_owned(),
+            ],
         });
     }
 

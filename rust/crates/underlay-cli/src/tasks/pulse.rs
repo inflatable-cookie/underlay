@@ -105,14 +105,25 @@ impl Task for PulseTask {
         }
         evidence.push(format!(
             "underlay link present: {}",
-            if collected.has_underlay_link { "yes" } else { "no" }
+            if collected.has_underlay_link {
+                "yes"
+            } else {
+                "no"
+            }
         ));
 
         if collected.is_coordination_repo {
-            evidence.push("Detected coordination-style markdown repo layout (strategy/experiments/projects).".to_owned());
+            evidence.push(
+                "Detected coordination-style markdown repo layout (strategy/experiments/projects)."
+                    .to_owned(),
+            );
             evidence.push(format!(
                 "check-updated-dates script present: {}",
-                if collected.has_updated_dates_script { "yes" } else { "no" }
+                if collected.has_updated_dates_script {
+                    "yes"
+                } else {
+                    "no"
+                }
             ));
         }
 
@@ -147,7 +158,10 @@ impl Task for PulseTask {
         );
         if !has_health_script && should_expect_task_surface {
             if collected.package_scripts.is_empty() && collected.subrepo_candidates.len() >= 3 {
-                risk.push("Workspace appears to have multiple subrepos but no root task surface.".to_owned());
+                risk.push(
+                    "Workspace appears to have multiple subrepos but no root task surface."
+                        .to_owned(),
+                );
                 next_action.push(format!(
                     "Add `{}` with scripts `list:repos` and `health:workspace`, then run `underlay pulse --repo {}`.",
                     collected.repo_path.join("package.json").display(),
@@ -163,7 +177,9 @@ impl Task for PulseTask {
         }
 
         if collected.is_coordination_repo && !collected.has_updated_dates_script {
-            risk.push("Coordination repo is missing an automated `updated:` staleness guard.".to_owned());
+            risk.push(
+                "Coordination repo is missing an automated `updated:` staleness guard.".to_owned(),
+            );
             next_action.push(format!(
                 "Add `{}` and wire a root command (`check:updated-dates`) to enforce markdown `updated:` freshness.",
                 collected.repo_path.join("scripts/check-updated-dates.sh").display()
@@ -179,7 +195,8 @@ impl Task for PulseTask {
         }
 
         if next_action.is_empty() {
-            next_action.push("No high-priority structural gaps detected by pulse v0 signals.".to_owned());
+            next_action
+                .push("No high-priority structural gaps detected by pulse v0 signals.".to_owned());
         }
 
         Ok(PulseReport {

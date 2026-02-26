@@ -357,7 +357,7 @@ where
     /// Get a verification session without consuming it.
     ///
     /// Returns None if the session doesn't exist, is expired, or already used.
-pub async fn get_session(
+    pub async fn get_session(
         &self,
         session_id: &str,
         user_id: &str,

@@ -27,5 +27,6 @@ Status overview of all Underlay roadmaps. Check individual files for detailed pr
 | 021 | [Shared Admin Components](./021-shared-admin-components.md) | Complete | EmptyState, EntityActionsMenu, Drawer, DetailPageShell, AutonomousList, InlineEditableField, KeyboardShortcuts, ErrorBoundary |
 | 022 | [CLI Runner & Pulse](./022-underlay-cli-runner-and-pulse.md) | Complete | Add `underlay pulse`, shared root detection infrastructure, and task contract |
 | 023 | [Quality Hardening](./023-underlay-quality-hardening-roadmap.md) | Complete | Type-safety tightening, TS coverage gates, Rust panic-path hardening, and test deduplication |
+| 024 | [Nested Task Catalogs & Config Consolidation](./024-nested-task-catalogs-and-config-consolidation.md) | Complete | Add nested `underlay.tasks.toml` discovery with prefix/unprefixed resolution and consolidate runtime task/config surfaces |
 
-**Complete:** 23 | **In progress:** 0 | **Not started:** 0
+**Complete:** 24 | **In progress:** 0 | **Not started:** 0

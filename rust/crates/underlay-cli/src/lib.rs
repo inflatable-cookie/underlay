@@ -7,6 +7,7 @@ use std::path::PathBuf;
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Command {
     Pulse(PulseArgs),
+    Tasks(TasksArgs),
     Task(TaskInvocation),
     Help,
 }
@@ -18,6 +19,12 @@ pub struct PulseArgs {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+pub struct TasksArgs {
+    pub repo_override: Option<PathBuf>,
+    pub task_name: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct TaskInvocation {
     pub name: String,
     pub args: Vec<String>,
@@ -26,6 +33,7 @@ pub struct TaskInvocation {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum CliParseError {
     MissingRepoValue,
+    MissingTaskNameValue,
     UnknownArgument(String),
 }
 
@@ -33,6 +41,7 @@ impl std::fmt::Display for CliParseError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             CliParseError::MissingRepoValue => write!(f, "--repo requires a value"),
+            CliParseError::MissingTaskNameValue => write!(f, "--task requires a value"),
             CliParseError::UnknownArgument(arg) => write!(f, "unknown argument: {arg}"),
         }
     }
@@ -55,6 +64,9 @@ where
 
     if cmd == "pulse" {
         return parse_pulse(args);
+    }
+    if cmd == "tasks" {
+        return parse_tasks(args);
     }
 
     Ok(Command::Task(TaskInvocation {
@@ -93,9 +105,42 @@ where
     }))
 }
 
+fn parse_tasks<I>(args: I) -> Result<Command, CliParseError>
+where
+    I: IntoIterator<Item = String>,
+{
+    let mut args = args.into_iter();
+    let mut repo_override: Option<PathBuf> = None;
+    let mut task_name: Option<String> = None;
+
+    while let Some(arg) = args.next() {
+        match arg.as_str() {
+            "--repo" => {
+                let Some(path) = args.next() else {
+                    return Err(CliParseError::MissingRepoValue);
+                };
+                repo_override = Some(PathBuf::from(path));
+            }
+            "--task" => {
+                let Some(name) = args.next() else {
+                    return Err(CliParseError::MissingTaskNameValue);
+                };
+                task_name = Some(name);
+            }
+            "--help" | "-h" => return Ok(Command::Help),
+            other => return Err(CliParseError::UnknownArgument(other.to_owned())),
+        }
+    }
+
+    Ok(Command::Tasks(TasksArgs {
+        repo_override,
+        task_name,
+    }))
+}
+
 pub fn print_usage() {
     eprintln!(
-        "underlay\n\nUSAGE:\n  underlay <task> [task args]\n  underlay pulse [--repo <PATH>] [--verbose-root]\n\nTASKS:\n  pulse             Run the built-in repo pulse task\n  <task>            Run task defined in underlay.tasks.toml at resolved project root\n\nOPTIONS (pulse):\n  --repo <PATH>     Override target repository path\n  --verbose-root    Print root resolution trace\n  -h, --help        Print help\n"
+        "underlay\n\nUSAGE:\n  underlay <task> [task args]\n  underlay <catalog>:<task> [task args]\n  underlay pulse [--repo <PATH>] [--verbose-root]\n  underlay tasks [--repo <PATH>] [--task <TASK_NAME>]\n\nTASKS:\n  pulse             Run the built-in repo pulse task\n  tasks             List discovered catalogs and available tasks\n  <task>            Resolve task name across discovered underlay.tasks.toml catalogs\n  <catalog>:<task>  Run a task from an explicit catalog alias\n\nOPTIONS (task run):\n  --repo <PATH>     Override target repository path\n  --verbose-root    Print root + catalog resolution trace for task execution\n\nOPTIONS (pulse):\n  --repo <PATH>     Override target repository path\n  --verbose-root    Print root resolution trace\n\nOPTIONS (tasks):\n  --repo <PATH>     Override target repository path\n  --task <NAME>     Filter output to a single task name\n\nGENERAL:\n  -h, --help        Print help\n"
     );
 }
 
