@@ -148,6 +148,7 @@ This creates drift, weak discoverability, and inconsistent config resolution.
 - [x] `cd /Users/betterthanclay/Dev/projects/acowtancy && bun underlay tasks --task farmyard:reset-db`
 - [x] `cd /Users/betterthanclay/Dev/projects/acowtancy && bun underlay farmyard:load-admin-rate-limit-smoke --verbose-root --dry-run`
 - [x] `cd /Users/betterthanclay/Dev/projects/acowtancy && bun underlay guardrail-task-shell-wrappers`
+- [x] Cross-repo Effigy validation closure: `docs/reports/2026-02-28-underlay-effigy-cross-repo-validation.md`
 
 ## 11) Validation
 

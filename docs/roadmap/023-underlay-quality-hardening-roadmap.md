@@ -127,6 +127,7 @@ Intentional coverage exclusions currently enforced in `vitest.config.ts`:
 - [x] Full verification command: `cargo test --all-features`.
 - [x] Full verification command: `bun validate`.
 - [x] Full verification command: `bun run test:components`.
+- [x] Cross-repo Effigy validation closure: `docs/reports/2026-02-28-underlay-effigy-cross-repo-validation.md`.
 
 ---
 
