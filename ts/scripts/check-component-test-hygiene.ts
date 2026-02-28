@@ -1,22 +1,18 @@
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
+import { fileURLToPath } from "node:url";
 
-const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..", "..");
+const scriptDir = path.dirname(fileURLToPath(import.meta.url));
+const repoRoot = path.resolve(scriptDir, "..", "..");
 const testsRoot = path.join(repoRoot, "ts", "tests");
 const vitestComponentConfigPath = path.join(repoRoot, "vitest.component.config.ts");
 const sharedSetupPath = path.join(repoRoot, "ts", "tests", "setup", "vitest-component.setup.ts");
 
-/** @type {string[]} */
-const violations = [];
+const violations: string[] = [];
 
-/**
- * @param {string} dir
- * @returns {string[]}
- */
-function listFiles(dir) {
-	/** @type {string[]} */
-	const out = [];
+function listFiles(dir: string): string[] {
+	const out: string[] = [];
 	for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
 		const full = path.join(dir, entry.name);
 		if (entry.isDirectory()) {
@@ -30,28 +26,15 @@ function listFiles(dir) {
 	return out;
 }
 
-/**
- * @param {string} content
- * @param {RegExp} regex
- * @returns {boolean}
- */
-function has(content, regex) {
+function has(content: string, regex: RegExp): boolean {
 	return regex.test(content);
 }
 
-/**
- * @param {string} content
- * @returns {boolean}
- */
-function hasWindowPromptApis(content) {
+function hasWindowPromptApis(content: string): boolean {
 	return has(content, /\bwindow\.(alert|confirm|prompt)\b/);
 }
 
-/**
- * @param {string} file
- * @param {string} content
- */
-function checkGenericTestFile(file, content) {
+function checkGenericTestFile(file: string, content: string): void {
 	const rel = path.relative(repoRoot, file);
 
 	if (hasWindowPromptApis(content)) {
@@ -65,7 +48,7 @@ function checkGenericTestFile(file, content) {
 	}
 }
 
-function checkSharedSetupWiring() {
+function checkSharedSetupWiring(): void {
 	if (!fs.existsSync(vitestComponentConfigPath)) {
 		violations.push("Missing vitest.component.config.ts");
 		return;
@@ -73,7 +56,7 @@ function checkSharedSetupWiring() {
 	const vitestConfig = fs.readFileSync(vitestComponentConfigPath, "utf8");
 	if (!vitestConfig.includes('setupFiles: ["./ts/tests/setup/vitest-component.setup.ts"]')) {
 		violations.push(
-			"vitest.component.config.ts must declare setupFiles with ./ts/tests/setup/vitest-component.setup.ts"
+			"vitest.component.config.ts must declare setupFiles with ./ts/tests/setup/vitest-component.setup.ts",
 		);
 	}
 
@@ -84,21 +67,17 @@ function checkSharedSetupWiring() {
 	const setupContent = fs.readFileSync(sharedSetupPath, "utf8");
 	if (!has(setupContent, /\bcleanup\s*\(\s*\)/)) {
 		violations.push(
-			"Shared component setup must call cleanup() in afterEach (ts/tests/setup/vitest-component.setup.ts)"
+			"Shared component setup must call cleanup() in afterEach (ts/tests/setup/vitest-component.setup.ts)",
 		);
 	}
 	if (!has(setupContent, /\bsetTimeout\s*\(/)) {
 		violations.push(
-			"Shared component setup must include deferred timer flush in afterEach (setTimeout)"
+			"Shared component setup must include deferred timer flush in afterEach (setTimeout)",
 		);
 	}
 }
 
-/**
- * @param {string} file
- * @param {string} content
- */
-function checkComponentTestFile(file, content) {
+function checkComponentTestFile(file: string, content: string): void {
 	const rel = path.relative(repoRoot, file);
 
 	// Enforce shared setup ownership of cleanup lifecycle.

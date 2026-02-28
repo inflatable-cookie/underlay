@@ -121,7 +121,7 @@ Intentional coverage exclusions currently enforced in `vitest.config.ts`:
 
 ### Verification Evidence (2026-02-24)
 
-- [x] Added component-test hygiene guardrail: `ts/scripts/check-component-test-hygiene.mjs`.
+- [x] Added component-test hygiene guardrail: `ts/scripts/check-component-test-hygiene.ts`.
 - [x] Added shared component setup hook: `ts/tests/setup/vitest-component.setup.ts`.
 - [x] Wired hygiene guardrail into `package.json` `validate`.
 - [x] Full verification command: `cargo test --all-features`.

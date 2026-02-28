@@ -1,0 +1,23 @@
+[catalog]
+alias = "underlay"
+
+[package_manager]
+js = "bun"
+
+[tasks]
+check = "svelte-check --tsconfig ./ts/tsconfig.json"
+"check:types" = "tsc -p ./ts/tsconfig.json"
+"check:exports" = "bun ts/scripts/check-exports.ts"
+"check:component-test-hygiene" = "bun ts/scripts/check-component-test-hygiene.ts"
+"check:guardrails" = "bun ts/src/tools/guardrails.ts"
+"test:ui" = "vitest --ui {args}"
+"test:components" = "vitest run -c vitest.component.config.ts {args}"
+
+validate = [
+  { task = "check" },
+  { task = "check:types" },
+  { task = "check:exports" },
+  { task = "check:component-test-hygiene" },
+  { task = "check:guardrails" },
+  { task = "test vitest" },
+]

@@ -190,7 +190,7 @@ Create `.guardrailsrc.json` in your project root:
 ```json
 {
   "scripts": {
-    "lint:guardrails": "node --import tsx ../underlay/ts/src/tools/guardrails.ts"
+    "lint:guardrails": "bun ../underlay/ts/src/tools/guardrails.ts"
   }
 }
 ```
@@ -323,16 +323,16 @@ someProblematicCode();
 
 ```bash
 # Use default config (.guardrailsrc.json)
-node --import tsx underlay/ts/src/tools/guardrails.ts
+bun underlay/ts/src/tools/guardrails.ts
 
 # Custom config file
-node --import tsx underlay/ts/src/tools/guardrails.ts --config custom-config.json
+bun underlay/ts/src/tools/guardrails.ts --config custom-config.json
 
 # Custom source directory
-node --import tsx underlay/ts/src/tools/guardrails.ts --src ./app
+bun underlay/ts/src/tools/guardrails.ts --src ./app
 
 # Show help
-node --import tsx underlay/ts/src/tools/guardrails.ts --help
+bun underlay/ts/src/tools/guardrails.ts --help
 ```
 
 ### Common Patterns

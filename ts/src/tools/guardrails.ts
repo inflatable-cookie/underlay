@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
 
 /**
  * Guardrails - Architectural rule enforcement for TypeScript and Svelte projects
@@ -14,13 +14,13 @@
  * @example
  * ```bash
  * # Use default config
- * node --import tsx underlay/ts/src/tools/guardrails.ts
+ * bun underlay/ts/src/tools/guardrails.ts
  *
  * # Custom config
- * node --import tsx underlay/ts/src/tools/guardrails.ts --config .guardrailsrc.json
+ * bun underlay/ts/src/tools/guardrails.ts --config .guardrailsrc.json
  *
  * # Custom source directory
- * node --import tsx underlay/ts/src/tools/guardrails.ts --src ./app
+ * bun underlay/ts/src/tools/guardrails.ts --src ./app
  * ```
  */
 
@@ -211,7 +211,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 Guardrails - Architectural rule enforcement for TypeScript and Svelte
 
 Usage:
-  node --import tsx underlay/ts/src/tools/guardrails.ts [options]
+  bun underlay/ts/src/tools/guardrails.ts [options]
 
 Options:
   --config <path>   Path to config file (.guardrailsrc.json)

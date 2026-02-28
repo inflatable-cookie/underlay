@@ -1,129 +1,129 @@
 {
-  "name": "@decodelabs/underlay",
-  "version": "0.0.1",
-  "private": true,
-  "type": "module",
-  "exports": {
-    ".": {
-      "svelte": "./ts/src/index.ts",
-      "types": "./ts/src/index.ts",
-      "default": "./ts/src/index.ts"
+    "name": "@decodelabs/underlay",
+    "version": "0.0.1",
+    "private": true,
+    "type": "module",
+    "exports": {
+        ".": {
+            "svelte": "./ts/src/index.ts",
+            "types": "./ts/src/index.ts",
+            "default": "./ts/src/index.ts"
+        },
+        "./components": {
+            "svelte": "./ts/src/components/index.ts",
+            "types": "./ts/src/components/index.ts",
+            "default": "./ts/src/components/index.ts"
+        },
+        "./patterns": {
+            "svelte": "./ts/src/patterns/index.ts",
+            "types": "./ts/src/patterns/index.ts",
+            "default": "./ts/src/patterns/index.ts"
+        },
+        "./patterns/pagination-types": {
+            "types": "./ts/src/patterns/pagination-types.ts",
+            "default": "./ts/src/patterns/pagination-types.ts"
+        },
+        "./patterns/media-types": {
+            "types": "./ts/src/patterns/media-types.ts",
+            "default": "./ts/src/patterns/media-types.ts"
+        },
+        "./nightfire": {
+            "svelte": "./ts/src/nightfire/index.ts",
+            "types": "./ts/src/nightfire/index.ts",
+            "default": "./ts/src/nightfire/index.ts"
+        },
+        "./styles": {
+            "svelte": "./ts/src/styles/index.ts",
+            "types": "./ts/src/styles/index.ts",
+            "default": "./ts/src/styles/index.ts"
+        },
+        "./client": {
+            "types": "./ts/src/client/index.ts",
+            "default": "./ts/src/client/index.ts"
+        },
+        "./client/http": {
+            "types": "./ts/src/client/http.ts",
+            "default": "./ts/src/client/http.ts"
+        },
+        "./client/errors": {
+            "types": "./ts/src/client/errors.ts",
+            "default": "./ts/src/client/errors.ts"
+        },
+        "./client/types": {
+            "types": "./ts/src/client/types.ts",
+            "default": "./ts/src/client/types.ts"
+        },
+        "./testing": {
+            "types": "./ts/src/testing/index.ts",
+            "default": "./ts/src/testing/index.ts"
+        },
+        "./server": {
+            "types": "./ts/src/server/index.ts",
+            "default": "./ts/src/server/index.ts"
+        },
+        "./utils": {
+            "types": "./ts/src/utils/index.ts",
+            "default": "./ts/src/utils/index.ts"
+        },
+        "./embed": {
+            "types": "./ts/src/embed/index.ts",
+            "default": "./ts/src/embed/index.ts"
+        },
+        "./styles/base.css": "./ts/src/styles/base.css",
+        "./styles/forms.css": "./ts/src/styles/forms.css",
+        "./styles/markdown-editor.css": "./ts/src/styles/markdown-editor.css",
+        "./styles/tokens.css": "./ts/src/styles/tokens.css",
+        "./styles/optimistic.css": "./ts/src/styles/optimistic.css"
     },
-    "./components": {
-      "svelte": "./ts/src/components/index.ts",
-      "types": "./ts/src/components/index.ts",
-      "default": "./ts/src/components/index.ts"
+    "scripts": {
+        "check": "effigy check",
+        "check:types": "effigy check:types",
+        "check:exports": "effigy check:exports",
+        "check:component-test-hygiene": "effigy check:component-test-hygiene",
+        "check:guardrails": "effigy check:guardrails",
+        "test": "effigy test",
+        "test:ui": "effigy test:ui",
+        "test:run": "effigy test vitest",
+        "test:components": "effigy test:components",
+        "validate": "effigy validate"
     },
-    "./patterns": {
-      "svelte": "./ts/src/patterns/index.ts",
-      "types": "./ts/src/patterns/index.ts",
-      "default": "./ts/src/patterns/index.ts"
+    "peerDependencies": {
+        "@sveltejs/kit": "^2.53.0",
+        "bits-ui": "^2.0.0",
+        "lucide-svelte": "^0.563.0",
+        "svelte": "^5.0.0",
+        "vite": "^7.0.0"
     },
-    "./patterns/pagination-types": {
-      "types": "./ts/src/patterns/pagination-types.ts",
-      "default": "./ts/src/patterns/pagination-types.ts"
+    "dependencies": {
+        "easymde": "^2.20.0",
+        "isomorphic-dompurify": "^3.0.0",
+        "marked": "^17.0.3",
+        "svelte-dnd-action": "^0.9.69"
     },
-    "./patterns/media-types": {
-      "types": "./ts/src/patterns/media-types.ts",
-      "default": "./ts/src/patterns/media-types.ts"
+    "devDependencies": {
+        "@sveltejs/vite-plugin-svelte": "^6.2.4",
+        "@testing-library/dom": "^10.4.1",
+        "@testing-library/svelte": "^5.3.1",
+        "@types/node": "^25.3.0",
+        "@vitest/coverage-v8": "^4.0.18",
+        "@vitest/ui": "^4.0.18",
+        "bits-ui": "^2.16.2",
+        "lucide-svelte": "^0.575.0",
+        "svelte": "^5.53.3",
+        "svelte-check": "^4.4.3",
+        "tsx": "^4.21.0",
+        "typescript": "^5.9.3",
+        "vite": "^7.3.1",
+        "vitest": "^4.0.18"
     },
-    "./nightfire": {
-      "svelte": "./ts/src/nightfire/index.ts",
-      "types": "./ts/src/nightfire/index.ts",
-      "default": "./ts/src/nightfire/index.ts"
-    },
-    "./styles": {
-      "svelte": "./ts/src/styles/index.ts",
-      "types": "./ts/src/styles/index.ts",
-      "default": "./ts/src/styles/index.ts"
-    },
-    "./client": {
-      "types": "./ts/src/client/index.ts",
-      "default": "./ts/src/client/index.ts"
-    },
-    "./client/http": {
-      "types": "./ts/src/client/http.ts",
-      "default": "./ts/src/client/http.ts"
-    },
-    "./client/errors": {
-      "types": "./ts/src/client/errors.ts",
-      "default": "./ts/src/client/errors.ts"
-    },
-    "./client/types": {
-      "types": "./ts/src/client/types.ts",
-      "default": "./ts/src/client/types.ts"
-    },
-    "./testing": {
-      "types": "./ts/src/testing/index.ts",
-      "default": "./ts/src/testing/index.ts"
-    },
-    "./server": {
-      "types": "./ts/src/server/index.ts",
-      "default": "./ts/src/server/index.ts"
-    },
-    "./utils": {
-      "types": "./ts/src/utils/index.ts",
-      "default": "./ts/src/utils/index.ts"
-    },
-    "./embed": {
-      "types": "./ts/src/embed/index.ts",
-      "default": "./ts/src/embed/index.ts"
-    },
-    "./styles/base.css": "./ts/src/styles/base.css",
-    "./styles/forms.css": "./ts/src/styles/forms.css",
-    "./styles/markdown-editor.css": "./ts/src/styles/markdown-editor.css",
-    "./styles/tokens.css": "./ts/src/styles/tokens.css",
-    "./styles/optimistic.css": "./ts/src/styles/optimistic.css"
-  },
-  "scripts": {
-    "check": "svelte-check --tsconfig ./ts/tsconfig.json",
-    "check:types": "tsc -p ./ts/tsconfig.json",
-    "check:exports": "node ts/scripts/check-exports.mjs",
-    "check:component-test-hygiene": "node ts/scripts/check-component-test-hygiene.mjs",
-    "check:guardrails": "node --import tsx ts/src/tools/guardrails.ts",
-    "test": "vitest",
-    "test:ui": "vitest --ui",
-    "test:run": "vitest run",
-    "test:components": "vitest run -c vitest.component.config.ts",
-    "validate": "bun run check && bun run check:types && bun run check:exports && bun run check:component-test-hygiene && bun run check:guardrails && bun run test:run"
-  },
-  "peerDependencies": {
-    "@sveltejs/kit": "^2.53.0",
-    "bits-ui": "^2.0.0",
-    "lucide-svelte": "^0.563.0",
-    "svelte": "^5.0.0",
-    "vite": "^7.0.0"
-  },
-  "dependencies": {
-    "easymde": "^2.20.0",
-    "isomorphic-dompurify": "^3.0.0",
-    "marked": "^17.0.3",
-    "svelte-dnd-action": "^0.9.69"
-  },
-  "devDependencies": {
-    "@sveltejs/vite-plugin-svelte": "^6.2.4",
-    "@testing-library/dom": "^10.4.1",
-    "@testing-library/svelte": "^5.3.1",
-    "@types/node": "^25.3.0",
-    "@vitest/coverage-v8": "^4.0.18",
-    "@vitest/ui": "^4.0.18",
-    "bits-ui": "^2.16.2",
-    "lucide-svelte": "^0.575.0",
-    "svelte": "^5.53.3",
-    "svelte-check": "^4.4.3",
-    "tsx": "^4.21.0",
-    "typescript": "^5.9.3",
-    "vite": "^7.3.1",
-    "vitest": "^4.0.18"
-  },
-  "guardrails": {
-    "srcDir": "./ts/src",
-    "extensions": [
-      ".ts",
-      ".svelte"
-    ],
-    "bannedPatterns": [],
-    "moduleScopeChecks": "@decodelabs/underlay/tools/templates/sveltekit-ssr",
-    "suppressionPrefix": "guardrails-disable"
-  }
+    "guardrails": {
+        "srcDir": "./ts/src",
+        "extensions": [
+            ".ts",
+            ".svelte"
+        ],
+        "bannedPatterns": [],
+        "moduleScopeChecks": "@decodelabs/underlay/tools/templates/sveltekit-ssr",
+        "suppressionPrefix": "guardrails-disable"
+    }
 }

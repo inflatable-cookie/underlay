@@ -426,7 +426,7 @@ Extracted Dairy's guardrails system to Underlay as a reusable CLI tool for enfor
 node guardrails.mjs
 
 # After (Underlay)
-node --import tsx ../underlay/ts/src/tools/guardrails.ts
+bun ../underlay/ts/src/tools/guardrails.ts
 ```
 
 **Config File** (`.guardrailsrc.json`):

@@ -139,7 +139,7 @@ export function navigateOnCancel(cancelHref: string | undefined): void {
   if (!browser) return;
 
   if (cancelHref) {
-    void goto(cancelHref);
+    window.location.href = cancelHref;
     return;
   }
 
@@ -148,7 +148,7 @@ export function navigateOnCancel(cancelHref: string | undefined): void {
   if (parentPath !== "/") {
     const url = new URL(window.location.href);
     url.pathname = parentPath;
-    void goto(url.pathname + url.search + url.hash);
+    window.location.href = url.toString();
     return;
   }
 

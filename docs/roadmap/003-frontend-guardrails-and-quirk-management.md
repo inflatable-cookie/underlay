@@ -177,7 +177,7 @@ Goal: prevent regressions and reduce “paper-cut” churn.
 - [x] Add lint rules (or equivalent guardrails) that enforce:
   - [x] no `window.alert` / `window.confirm`
   - [x] no raw `navigator.clipboard` usage outside shared clipboard helper
-  - [x] no module-scope browser API usage (Dairy: `dairy/guardrails.mjs`, Underlay: `scripts/check-guardrails.mjs`)
+  - [x] no module-scope browser API usage (Dairy: `dairy/guardrails.mjs`, Underlay: `ts/src/tools/guardrails.ts`)
 
 - [x] Standardize Svelte 5 typing patterns used in this repo constellation:
   - Prefer a named `Props` type over inline object casts.

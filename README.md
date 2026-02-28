@@ -26,6 +26,18 @@ Start reading: `docs/architecture/000-overview.md`.
 - Rust: `cargo test --workspace`
 - TS/Svelte: `bun check`
 
+### Effigy Tasks
+
+- Typecheck + Svelte diagnostics: `effigy check`
+- TypeScript compile check: `effigy check:types`
+- Export surface check: `effigy check:exports`
+- Component test hygiene: `effigy check:component-test-hygiene`
+- Guardrails: `effigy check:guardrails`
+- Built-in test orchestration: `effigy test`
+- Vitest UI mode: `effigy test:ui`
+- Component-only tests: `effigy test:components`
+- Full validation batch: `effigy validate`
+
 ### Postgres Integration Tests (Colima)
 
 Some `underlay-db` tests spin up a Postgres container via `testcontainers`.
