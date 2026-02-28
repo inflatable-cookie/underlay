@@ -19,5 +19,5 @@ validate = [
     { task = "check:exports" },
     { task = "check:component-test-hygiene" },
     { task = "check:guardrails" },
-    { task = "test:run" },
+    { task = "test:components" },
 ]

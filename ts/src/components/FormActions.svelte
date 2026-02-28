@@ -19,14 +19,15 @@
   }
 
   let { align = "start", children, danger, dangerItems }: Props = $props();
+  const hasDangerActions = $derived(Boolean(danger) || (dangerItems?.length ?? 0) > 0);
 </script>
 
-<ActionArea
-  align={align}
-  class="underlay-form-actions"
->
-  {@render children?.()}
-  {#if danger || dangerItems?.length}
+{#if hasDangerActions}
+  <ActionArea
+    align={align}
+    class="underlay-form-actions"
+  >
+    {@render children?.()}
     {#snippet aside()}
       <!-- Full danger slot - hidden on small screens -->
       {#if danger}
@@ -50,8 +51,15 @@
         </div>
       {/if}
     {/snippet}
-  {/if}
-</ActionArea>
+  </ActionArea>
+{:else}
+  <ActionArea
+    align={align}
+    class="underlay-form-actions"
+  >
+    {@render children?.()}
+  </ActionArea>
+{/if}
 
 <style>
   :global(.underlay-form-actions) {

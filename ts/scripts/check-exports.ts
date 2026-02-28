@@ -26,7 +26,11 @@ function checkTarget(target: unknown, exportKey: string, condition?: string): vo
 	// Ignore package self references (none expected here, but safe)
 	if (!target.startsWith("./")) return;
 
-	const fullPath = path.join(repoRoot, target);
+	// For wildcard export targets, validate the base directory exists.
+	const normalizedTarget = target.includes("*")
+		? target.slice(0, target.indexOf("*")).replace(/\/$/, "")
+		: target;
+	const fullPath = path.join(repoRoot, normalizedTarget);
 	if (!fs.existsSync(fullPath)) {
 		const label = condition ? `${exportKey} (${condition})` : exportKey;
 		missing.push(`${label} -> ${target}`);
