@@ -83,7 +83,7 @@
         "check:guardrails": "effigy check:guardrails",
         "test": "effigy test",
         "test:ui": "effigy test:ui",
-        "test:run": "effigy test vitest",
+        "test:run": "effigy test:run",
         "test:components": "effigy test:components",
         "validate": "effigy validate"
     },
