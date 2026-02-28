@@ -14,6 +14,11 @@
             "types": "./ts/src/components/index.ts",
             "default": "./ts/src/components/index.ts"
         },
+        "./components/*": {
+            "svelte": "./ts/src/components/*",
+            "types": "./ts/src/components/*",
+            "default": "./ts/src/components/*"
+        },
         "./patterns": {
             "svelte": "./ts/src/patterns/index.ts",
             "types": "./ts/src/patterns/index.ts",
@@ -74,18 +79,6 @@
         "./styles/markdown-editor.css": "./ts/src/styles/markdown-editor.css",
         "./styles/tokens.css": "./ts/src/styles/tokens.css",
         "./styles/optimistic.css": "./ts/src/styles/optimistic.css"
-    },
-    "scripts": {
-        "check": "effigy check",
-        "check:types": "effigy check:types",
-        "check:exports": "effigy check:exports",
-        "check:component-test-hygiene": "effigy check:component-test-hygiene",
-        "check:guardrails": "effigy check:guardrails",
-        "test": "effigy test",
-        "test:ui": "effigy test:ui",
-        "test:run": "effigy test:run",
-        "test:components": "effigy test:components",
-        "validate": "effigy validate"
     },
     "peerDependencies": {
         "@sveltejs/kit": "^2.53.0",
