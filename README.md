@@ -44,7 +44,7 @@ Start reading: `docs/architecture/000-overview.md`.
 Rust Effigy tasks use project-local Cargo cache paths:
 
 - `CARGO_HOME=underlay/.cache/cargo/home`
-- `CARGO_TARGET_DIR=underlay/.cache/cargo/target`
+- target directory is configured in `underlay/.cargo/config.toml` as `.cache/cargo/target`
 
 ### Postgres Integration Tests (Colima)
 

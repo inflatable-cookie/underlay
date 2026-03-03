@@ -5,10 +5,7 @@ alias = "underlay"
 js = "bun"
 
 [env]
-cargo = [
-    { CARGO_HOME = "{project}/.cache/cargo/home" },
-    { CARGO_TARGET_DIR = "{project}/.cache/cargo/target" },
-]
+CARGO_HOME = "{project}/.cache/cargo/home"
 
 [tasks]
 check = "svelte-check --tsconfig ./ts/tsconfig.json"
@@ -17,15 +14,15 @@ check = "svelte-check --tsconfig ./ts/tsconfig.json"
 "check:component-test-hygiene" = "bun ts/scripts/check-component-test-hygiene.ts"
 "check:guardrails" = "bun ts/src/tools/guardrails.ts"
 "rust:build" = [
-    { env = "cargo" },
+    { env = "CARGO_HOME" },
     { run = "cargo build --workspace" },
 ]
 "rust:check" = [
-    { env = "cargo" },
+    { env = "CARGO_HOME" },
     { run = "cargo check --workspace --all-features" },
 ]
 "rust:test" = [
-    { env = "cargo" },
+    { env = "CARGO_HOME" },
     { run = "cargo test --workspace --all-features" },
 ]
 "test:ui" = "vitest --ui {args}"
