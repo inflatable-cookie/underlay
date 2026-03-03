@@ -33,10 +33,18 @@ Start reading: `docs/architecture/000-overview.md`.
 - Export surface check: `effigy check:exports`
 - Component test hygiene: `effigy check:component-test-hygiene`
 - Guardrails: `effigy check:guardrails`
+- Rust workspace build: `effigy rust:build`
+- Rust workspace check (`--all-features`): `effigy rust:check`
+- Rust workspace tests (`--all-features`): `effigy rust:test`
 - Built-in test orchestration: `effigy test`
 - Vitest UI mode: `effigy test:ui`
 - Component-only tests: `effigy test:components`
 - Full validation batch: `effigy validate`
+
+Rust Effigy tasks use project-local Cargo cache paths:
+
+- `CARGO_HOME=underlay/.cache/cargo/home`
+- `CARGO_TARGET_DIR=underlay/.cache/cargo/target`
 
 ### Postgres Integration Tests (Colima)
 

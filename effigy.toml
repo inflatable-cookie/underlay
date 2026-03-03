@@ -4,12 +4,30 @@ alias = "underlay"
 [package_manager]
 js = "bun"
 
+[env]
+cargo = [
+    { CARGO_HOME = "{project}/.cache/cargo/home" },
+    { CARGO_TARGET_DIR = "{project}/.cache/cargo/target" },
+]
+
 [tasks]
 check = "svelte-check --tsconfig ./ts/tsconfig.json"
 "check:types" = "tsc -p ./ts/tsconfig.json"
 "check:exports" = "bun ts/scripts/check-exports.ts"
 "check:component-test-hygiene" = "bun ts/scripts/check-component-test-hygiene.ts"
 "check:guardrails" = "bun ts/src/tools/guardrails.ts"
+"rust:build" = [
+    { env = "cargo" },
+    { run = "cargo build --workspace" },
+]
+"rust:check" = [
+    { env = "cargo" },
+    { run = "cargo check --workspace --all-features" },
+]
+"rust:test" = [
+    { env = "cargo" },
+    { run = "cargo test --workspace --all-features" },
+]
 "test:ui" = "vitest --ui {args}"
 "test:components" = "vitest run -c vitest.component.config.ts {args}"
 
