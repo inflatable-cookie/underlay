@@ -1,0 +1,71 @@
+{
+  "schema": "underlay.migration.promotion_release_note.v1",
+  "schema_version": 1,
+  "generated_at": "2026-03-02T21:02:02.275Z",
+  "project_name": "acowtancy",
+  "run_scope": "demo",
+  "run_date_utc": "2026-03-02",
+  "recommendation": "promote",
+  "can_promote": true,
+  "decision_lint_status": "passed",
+  "decision_lint_error_count": 0,
+  "decision_lint_errors": [],
+  "digest_refs": {
+    "bundle_ref": "registry.example.com/underlay/site-migration@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "reuse_from_digest_ref": "registry.example.com/underlay/site-migration@sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  },
+  "gate_statuses": [
+    {
+      "gate": "evidence_generate",
+      "status": "passed",
+      "required": true
+    },
+    {
+      "gate": "evidence_verify",
+      "status": "passed",
+      "required": true
+    },
+    {
+      "gate": "report_integrity",
+      "status": "passed",
+      "required": true
+    },
+    {
+      "gate": "report_drift",
+      "status": "passed",
+      "required": true
+    },
+    {
+      "gate": "report_verify",
+      "status": "passed",
+      "required": true
+    },
+    {
+      "gate": "report_policy",
+      "status": "passed",
+      "required": true
+    }
+  ],
+  "blocking_reasons": [],
+  "artifact_checksums": [
+    {
+      "artifact_name": "run-report",
+      "path": "run-report.json",
+      "sha256": "abc123"
+    },
+    {
+      "artifact_name": "artifact_manifest",
+      "path": "metadata/acowtancy.demo.2026-03-02.artifact-manifest.json",
+      "sha256": "def456"
+    }
+  ],
+  "source_files": {
+    "promotion_decision_file": "/Users/betterthanclay/Dev/projects/underlay/runtime/promotion-release-note-smoke/metadata/acowtancy.demo.2026-03-02.promotion-decision.json",
+    "promotion_decision_lint_file": "/Users/betterthanclay/Dev/projects/underlay/runtime/promotion-release-note-smoke/metadata/acowtancy.demo.2026-03-02.promotion-decision-lint.json",
+    "artifact_manifest_file": "/Users/betterthanclay/Dev/projects/underlay/runtime/promotion-release-note-smoke/metadata/acowtancy.demo.2026-03-02.artifact-manifest.json"
+  },
+  "outputs": {
+    "json_file": "/Users/betterthanclay/Dev/projects/underlay/runtime/promotion-release-note-smoke/metadata/acowtancy.demo.2026-03-02.promotion-release-note.json",
+    "markdown_file": "/Users/betterthanclay/Dev/projects/underlay/runtime/promotion-release-note-smoke/metadata/acowtancy.demo.2026-03-02.promotion-release-note.md"
+  }
+}

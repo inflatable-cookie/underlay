@@ -1,0 +1,68 @@
+{
+  "schema": "underlay.migration.promotion_check.v1",
+  "schema_version": 1,
+  "generated_at": "2026-03-02T21:00:00Z",
+  "project_name": "acowtancy",
+  "run_scope": "demo",
+  "run_date_utc": "2026-03-02",
+  "recommendation": "promote",
+  "can_promote": true,
+  "thresholds": {
+    "drift_max_unresolved": 0,
+    "drift_max_governance": 0,
+    "drift_max_lineage": 0
+  },
+  "checks": [
+    {
+      "id": "evidence_generate",
+      "required": true,
+      "status": "passed",
+      "command": "bun run ./docs/guides/code/205-legacy-migration-framework/04_evidence_manifest.ts",
+      "exit_code": 0
+    },
+    {
+      "id": "evidence_verify",
+      "required": true,
+      "status": "passed",
+      "command": "bun run ./docs/guides/code/205-legacy-migration-framework/05_evidence_verify.ts --input ./runtime/demo-pass/metadata/acowtancy.demo.2026-03-02.artifact-manifest.json",
+      "exit_code": 0
+    },
+    {
+      "id": "report_integrity",
+      "required": true,
+      "status": "passed",
+      "command": "underlay-devtools migration report integrity --input ./runtime/demo-pass/run-report.json",
+      "exit_code": 0
+    },
+    {
+      "id": "report_drift",
+      "required": true,
+      "status": "passed",
+      "command": "underlay-devtools migration report drift --input ./runtime/demo-pass/run-report.json --max-unresolved 0 --max-governance 0 --max-lineage 0",
+      "exit_code": 0
+    },
+    {
+      "id": "report_verify",
+      "required": true,
+      "status": "passed",
+      "command": "underlay-devtools migration report verify --input ./runtime/demo-pass/run-report.json --output-dir ./runtime/demo-pass",
+      "exit_code": 0
+    },
+    {
+      "id": "report_policy",
+      "required": true,
+      "status": "passed",
+      "command": "underlay-devtools migration report policy --input ./runtime/governance-policy.json",
+      "exit_code": 0
+    }
+  ],
+  "blocking_reasons": [],
+  "files": {
+    "config_file": "/workspace/migration.config.json",
+    "run_report": "/workspace/runtime/demo-pass/run-report.json",
+    "output_dir": "/workspace/runtime/demo-pass",
+    "governance_policy_file": "/workspace/runtime/governance-policy.json",
+    "artifact_manifest_file": "/workspace/runtime/demo-pass/metadata/acowtancy.demo.2026-03-02.artifact-manifest.json",
+    "decision_file": "/workspace/runtime/demo-pass/metadata/acowtancy.demo.2026-03-02.promotion-decision.json"
+  }
+}

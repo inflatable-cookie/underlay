@@ -1,0 +1,21 @@
+{
+  "schema": "underlay.migration.refresh_drift_gate.v1",
+  "schema_version": 1,
+  "generated_at": "2026-03-02T13:00:00Z",
+  "status": "passed",
+  "command": "underlay-devtools migration report drift --input /workspace/runtime/refresh-pass/run-report.json --max-unresolved 0 --max-governance 0 --max-lineage 0 --decision-index /workspace/runtime/refresh-pass/decision_index.json --decision-journal /workspace/runtime/refresh-pass/decision_journal.ndjson",
+  "exit_code": 0,
+  "output_excerpt": "drift report passed",
+  "files": {
+    "config_file": "/workspace/migration.config.json",
+    "run_report": "/workspace/runtime/refresh-pass/run-report.json",
+    "decision_index_file": "/workspace/runtime/refresh-pass/decision_index.json",
+    "decision_journal_file": "/workspace/runtime/refresh-pass/decision_journal.ndjson",
+    "gate_file": "/workspace/runtime/refresh-pass/metadata/acowtancy.refresh.2026-03-02.refresh-drift-gate.json"
+  },
+  "thresholds": {
+    "drift_max_unresolved": 0,
+    "drift_max_governance": 0,
+    "drift_max_lineage": 0
+  }
+}

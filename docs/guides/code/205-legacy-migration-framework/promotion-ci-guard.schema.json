@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://underlay.local/schemas/migration-promotion-ci-guard.schema.json",
+  "title": "Underlay Migration Promotion CI Guard Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "schema_version",
+    "generated_at",
+    "status",
+    "reason_count",
+    "reasons",
+    "files"
+  ],
+  "properties": {
+    "schema": { "type": "string", "const": "underlay.migration.promotion_ci_guard.v1" },
+    "schema_version": { "type": "number", "const": 1 },
+    "generated_at": { "type": "string", "minLength": 1 },
+    "status": { "type": "string", "enum": ["passed", "failed"] },
+    "reason_count": { "type": "number", "minimum": 0 },
+    "reasons": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "files": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "decision_file",
+        "lint_file",
+        "release_note_file",
+        "guard_file"
+      ],
+      "properties": {
+        "decision_file": { "type": "string", "minLength": 1 },
+        "lint_file": { "type": "string", "minLength": 1 },
+        "release_note_file": { "type": "string", "minLength": 1 },
+        "guard_file": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

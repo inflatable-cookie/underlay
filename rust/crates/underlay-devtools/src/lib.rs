@@ -1,5 +1,23 @@
+mod migration_bundle;
+mod migration_report;
 mod sync_migrations;
 
+pub use migration_bundle::{
+    migration_bundle_build, migration_bundle_publish, migration_bundle_pull, migration_run,
+    BundleBuildOptions, BundleBuildReport, BundlePublishOptions, BundlePublishReport,
+    BundlePullOptions, BundlePullReport, BundleRunOptions, BundleRunReport, MigrationBundleError,
+};
+pub use migration_report::{
+    build_audit_report, build_drift_report, build_drift_report_with_lineage,
+    build_integrity_report, build_policy_report, build_recovery_advisories,
+    build_verification_report, format_audit_summary, format_decision_governance_report,
+    format_decision_invalidation_report, format_drift_category_summary, format_drift_report,
+    format_integrity_summary, format_policy_summary, format_recovery_advisories,
+    format_verification_summary, load_decide_stage_output, load_decision_index,
+    load_decision_journal, load_governance_policy, load_pipeline_run_report,
+    load_pipeline_run_report_from_path, top_governance_issues, write_audit_artifact,
+    write_verification_artifact, MigrationReportError,
+};
 pub use sync_migrations::{sync_migrations, SyncMigrationsError, SyncMigrationsReport};
 
 use std::future::Future;

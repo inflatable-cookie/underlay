@@ -1,0 +1,10 @@
+{
+  "schema": "underlay.migration.promotion_decision_lint.v1",
+  "schema_version": 1,
+  "generated_at": "2026-03-02T21:05:00Z",
+  "decision_file": "/workspace/runtime/demo-pass/metadata/acowtancy.demo.2026-03-02.promotion-decision.json",
+  "schema_file": "/workspace/docs/guides/code/205-legacy-migration-framework/promotion-decision.schema.json",
+  "status": "passed",
+  "error_count": 0,
+  "errors": []
+}

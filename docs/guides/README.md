@@ -68,6 +68,7 @@ Read these documents in order for a complete understanding:
 40. **[185 - Recipe Map and Testing Matrix](./185-recipe-map-and-testing-matrix.md)** - Recipe-to-code references + minimum tests
 41. **[190 - Upgrade Compatibility Matrix](./190-upgrade-compatibility.md)** - Upgrade expectations and breakage checks
 42. **[200 - Project Sync](./200-project-sync.md)** - Migration/sync checklist for existing projects
+43. **[205 - Legacy Migration Framework (End-to-End)](./205-legacy-migration-framework.md)** - Complete migration setup and operations playbook for humans and AI agents
 
 ## Code Examples
 
@@ -88,7 +89,8 @@ code/
 ├── 110-admin/              # SvelteKit pages (admin)
 ├── 120-configuration/      # Environment examples
 ├── 130-testing/            # Test examples
-└── 150-ci-cd/              # CI/CD workflows
+├── 150-ci-cd/              # CI/CD workflows
+└── 205-legacy-migration-framework/ # End-to-end migration framework artifacts
 ```
 
 ## Quick Reference

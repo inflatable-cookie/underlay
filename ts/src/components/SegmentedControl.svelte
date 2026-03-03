@@ -2,6 +2,8 @@
   interface Option {
     label: string;
     value: string;
+    disabled?: boolean;
+    title?: string;
   }
 
   interface Props {
@@ -13,8 +15,14 @@
     value?: string;
     /** Disable all segments */
     disabled?: boolean;
+    /** Size of each segment */
+    size?: "md" | "sm" | "xs";
+    /** When false, each segment sizes to content instead of equal width. */
+    equalWidth?: boolean;
     /** Accessible label for the radiogroup */
     ariaLabel?: string;
+    /** Callback when selected value changes */
+    onchange?: (value: string) => void;
   }
 
   let {
@@ -22,12 +30,17 @@
     options,
     value = $bindable(options[0]?.value ?? ""),
     disabled = false,
-    ariaLabel
+    size = "md",
+    equalWidth = true,
+    ariaLabel,
+    onchange
   }: Props = $props();
 
   function select(v: string) {
     if (disabled) return;
+    if (value === v) return;
     value = v;
+    onchange?.(v);
   }
 </script>
 
@@ -49,9 +62,13 @@
       class="underlay-segmented__option"
       class:underlay-segmented__option--active={isActive}
       class:underlay-segmented__option--before-active={nextActive}
+      class:underlay-segmented__option--fit={!equalWidth}
+      class:underlay-segmented__option--sm={size === "sm"}
+      class:underlay-segmented__option--xs={size === "xs"}
       role="radio"
       aria-checked={isActive}
-      {disabled}
+      disabled={disabled || !!opt.disabled}
+      title={opt.title}
       onclick={() => select(opt.value)}
     >
       {opt.label}
@@ -102,6 +119,22 @@
     transition: background-color 0.15s ease, color 0.15s ease;
   }
 
+  .underlay-segmented__option--fit {
+    flex: 0 0 auto;
+  }
+
+  .underlay-segmented__option--sm {
+    padding: 0.4em 0.58em;
+    font-size: 0.74rem;
+    line-height: 1.3;
+  }
+
+  .underlay-segmented__option--xs {
+    padding: 0.3em 0.48em;
+    font-size: 0.68rem;
+    line-height: 1.2;
+  }
+
   .underlay-segmented__option:last-child {
     border-right: none;
   }
@@ -136,5 +169,10 @@
       var(--underlay-focus-ring-offset, 2px)
     );
     z-index: 1;
+  }
+
+  .underlay-segmented__option:disabled {
+    opacity: 0.55;
+    cursor: default;
   }
 </style>

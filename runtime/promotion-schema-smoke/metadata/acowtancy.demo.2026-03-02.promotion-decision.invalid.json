@@ -1,0 +1,25 @@
+{
+  "schema": "underlay.migration.promotion_check.v1",
+  "schema_version": 2,
+  "generated_at": "2026-03-02T21:00:00Z",
+  "project_name": "acowtancy",
+  "run_scope": "demo",
+  "run_date_utc": "2026-03-02",
+  "recommendation": "promote",
+  "can_promote": true,
+  "thresholds": {
+    "drift_max_unresolved": 0,
+    "drift_max_governance": 0,
+    "drift_max_lineage": 0
+  },
+  "checks": [],
+  "blocking_reasons": [],
+  "files": {
+    "config_file": "/tmp/migration.config.json",
+    "run_report": "/tmp/run-report.json",
+    "output_dir": "/tmp/runtime",
+    "governance_policy_file": "/tmp/governance-policy.json",
+    "artifact_manifest_file": "/tmp/artifact-manifest.json",
+    "decision_file": "/tmp/promotion-decision.json"
+  }
+}

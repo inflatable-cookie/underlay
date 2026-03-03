@@ -1,0 +1,74 @@
+{
+  "schema": "underlay.migration.promotion_check.v1",
+  "schema_version": 1,
+  "generated_at": "2026-03-02T20:42:09.070Z",
+  "project_name": "acowtancy",
+  "run_scope": "demo",
+  "run_date_utc": "2026-03-02",
+  "recommendation": "promote",
+  "can_promote": true,
+  "thresholds": {
+    "drift_max_unresolved": 0,
+    "drift_max_governance": 0,
+    "drift_max_lineage": 0
+  },
+  "checks": [
+    {
+      "id": "evidence_generate",
+      "required": true,
+      "status": "passed",
+      "command": "bun run ./docs/guides/code/205-legacy-migration-framework/04_evidence_manifest.ts",
+      "exit_code": 0,
+      "output_excerpt": "using config file: /Users/betterthanclay/Dev/projects/underlay/migration.config.json (not found/empty; env+defaults only)\nevidence manifest written: /Users/betterthanclay/Dev/projects/underlay/runtime/promotion-smoke/metadata/acowtancy.demo.2026-03-02.artifact-manifest.json\nevidence artifact migration-doctor e52f6244daeadbd2776163db63551372640b9f54036747e2c7df5b5d753aa251 migration-doctor.json\nevidence artifact run-report 0b82b320e57995153cadf5d123b8981c30e7af0160f4dca8cae6ff5828b224ff run-report.json\nevidence artifact decision_index c05cdb3b7087f6138550657cd9c11b86bfe1d0225508f38f4ed75e2f110b387f decision_index.json\nevidence artifact decision_journal ea1fae0f970dfd1671c8eb3b4c15db2bfe1071c37893017c29f4991b5d519c0c decision_journal.ndjson\nevidence artifact verify_artifact 239adfa54da4adef339e0f70d9c26d3f2db7e9bb1ad9acbc7db0e0def9f09443 verification-artifacts/0195f8f2-6ba2-75ff-9f02-2a2f5310d999.json\nevidence artifact audit_artifact 884f31923ec361e71062a69836137eb2bbaf9075e19724fffa92310a6d192049 audit-artifacts/0195f8f2-6ba2-75ff-9f02-2a2f5310d999.json"
+    },
+    {
+      "id": "evidence_verify",
+      "required": true,
+      "status": "passed",
+      "command": "bun run ./docs/guides/code/205-legacy-migration-framework/05_evidence_verify.ts --input /Users/betterthanclay/Dev/projects/underlay/runtime/promotion-smoke/metadata/acowtancy.demo.2026-03-02.artifact-manifest.json",
+      "exit_code": 0,
+      "output_excerpt": "using config file: /Users/betterthanclay/Dev/projects/underlay/migration.config.json (not found/empty; env+defaults only)\nevidence verify passed: /Users/betterthanclay/Dev/projects/underlay/runtime/promotion-smoke/metadata/acowtancy.demo.2026-03-02.artifact-manifest.json\nevidence verified migration-doctor e52f6244daeadbd2776163db63551372640b9f54036747e2c7df5b5d753aa251 migration-doctor.json\nevidence verified run-report 0b82b320e57995153cadf5d123b8981c30e7af0160f4dca8cae6ff5828b224ff run-report.json\nevidence verified decision_index c05cdb3b7087f6138550657cd9c11b86bfe1d0225508f38f4ed75e2f110b387f decision_index.json\nevidence verified decision_journal ea1fae0f970dfd1671c8eb3b4c15db2bfe1071c37893017c29f4991b5d519c0c decision_journal.ndjson\nevidence verified verify_artifact 239adfa54da4adef339e0f70d9c26d3f2db7e9bb1ad9acbc7db0e0def9f09443 verification-artifacts/0195f8f2-6ba2-75ff-9f02-2a2f5310d999.json\nevidence verified audit_artifact 884f31923ec361e71062a69836137eb2bbaf9075e19724fffa92310a6d192049 audit-artifacts/0195f8f2-6ba2-75ff-9f02-2a2f5310d999.json"
+    },
+    {
+      "id": "report_integrity",
+      "required": true,
+      "status": "passed",
+      "command": "underlay-devtools migration report integrity --input /Users/betterthanclay/Dev/projects/underlay/runtime/promotion-smoke/run-report.json",
+      "exit_code": 0,
+      "output_excerpt": "mock underlay-devtools migration report integrity --input /Users/betterthanclay/Dev/projects/underlay/runtime/promotion-smoke/run-report.json"
+    },
+    {
+      "id": "report_drift",
+      "required": true,
+      "status": "passed",
+      "command": "underlay-devtools migration report drift --input /Users/betterthanclay/Dev/projects/underlay/runtime/promotion-smoke/run-report.json --max-unresolved 0 --max-governance 0 --max-lineage 0",
+      "exit_code": 0,
+      "output_excerpt": "mock underlay-devtools migration report drift --input /Users/betterthanclay/Dev/projects/underlay/runtime/promotion-smoke/run-report.json --max-unresolved 0 --max-governance 0 --max-lineage 0"
+    },
+    {
+      "id": "report_verify",
+      "required": true,
+      "status": "passed",
+      "command": "underlay-devtools migration report verify --input /Users/betterthanclay/Dev/projects/underlay/runtime/promotion-smoke/run-report.json --output-dir /Users/betterthanclay/Dev/projects/underlay/runtime/promotion-smoke",
+      "exit_code": 0,
+      "output_excerpt": "mock underlay-devtools migration report verify --input /Users/betterthanclay/Dev/projects/underlay/runtime/promotion-smoke/run-report.json --output-dir /Users/betterthanclay/Dev/projects/underlay/runtime/promotion-smoke"
+    },
+    {
+      "id": "report_policy",
+      "required": true,
+      "status": "passed",
+      "command": "underlay-devtools migration report policy --input /Users/betterthanclay/Dev/projects/underlay/runtime/promotion-smoke/governance-policy.json",
+      "exit_code": 0,
+      "output_excerpt": "mock underlay-devtools migration report policy --input /Users/betterthanclay/Dev/projects/underlay/runtime/promotion-smoke/governance-policy.json"
+    }
+  ],
+  "blocking_reasons": [],
+  "files": {
+    "config_file": "/Users/betterthanclay/Dev/projects/underlay/migration.config.json",
+    "run_report": "/Users/betterthanclay/Dev/projects/underlay/runtime/promotion-smoke/run-report.json",
+    "output_dir": "/Users/betterthanclay/Dev/projects/underlay/runtime/promotion-smoke",
+    "governance_policy_file": "/Users/betterthanclay/Dev/projects/underlay/runtime/promotion-smoke/governance-policy.json",
+    "artifact_manifest_file": "/Users/betterthanclay/Dev/projects/underlay/runtime/promotion-smoke/metadata/acowtancy.demo.2026-03-02.artifact-manifest.json",
+    "decision_file": "/Users/betterthanclay/Dev/projects/underlay/runtime/promotion-smoke/metadata/acowtancy.demo.2026-03-02.promotion-decision.json"
+  }
+}

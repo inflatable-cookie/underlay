@@ -1,0 +1,110 @@
+[catalog]
+alias = "migration"
+
+[tasks."migration:config:lint"]
+run = "MIGRATION_CONFIG_FILE={repo}/migration.config.json MIGRATION_CONFIG_SCHEMA_FILE={repo}/docs/guides/code/205-legacy-migration-framework/config.schema.json bun run {repo}/docs/guides/code/205-legacy-migration-framework/00_config_lint.ts"
+
+[tasks."migration:doctor"]
+run = "MIGRATION_CONFIG_FILE={repo}/migration.config.json MIGRATION_CONFIG_SCHEMA_FILE={repo}/docs/guides/code/205-legacy-migration-framework/config.schema.json bun run {repo}/docs/guides/code/205-legacy-migration-framework/00_doctor.ts"
+
+[tasks."migration:preflight"]
+run = [
+  { task = "migration:config:lint" },
+  { run = "MIGRATION_CONFIG_FILE={repo}/migration.config.json bun run {repo}/docs/guides/code/205-legacy-migration-framework/00_preflight.ts --mode general" }
+]
+
+[tasks."migration:preflight:reports"]
+run = [
+  { task = "migration:config:lint" },
+  { run = "MIGRATION_CONFIG_FILE={repo}/migration.config.json bun run {repo}/docs/guides/code/205-legacy-migration-framework/00_preflight.ts --mode reports" }
+]
+
+[tasks."migration:preflight:refresh"]
+run = [
+  { task = "migration:config:lint" },
+  { run = "MIGRATION_CONFIG_FILE={repo}/migration.config.json bun run {repo}/docs/guides/code/205-legacy-migration-framework/00_preflight.ts --mode refresh" }
+]
+
+[tasks."migration:bundle"]
+run = "MIGRATION_CONFIG_FILE={repo}/migration.config.json bun run {repo}/docs/guides/code/205-legacy-migration-framework/01_build_publish.ts {args}"
+
+[tasks."migration:reports"]
+run = "MIGRATION_CONFIG_FILE={repo}/migration.config.json bun run {repo}/docs/guides/code/205-legacy-migration-framework/02_run_reports.ts {args}"
+
+[tasks."migration:refresh:run"]
+run = "MIGRATION_CONFIG_FILE={repo}/migration.config.json bun run {repo}/docs/guides/code/205-legacy-migration-framework/03_refresh_cycle.ts {args}"
+
+[tasks."migration:reuse:summary"]
+run = "MIGRATION_CONFIG_FILE={repo}/migration.config.json RUN_SCOPE=refresh bun run {repo}/docs/guides/code/205-legacy-migration-framework/10_decision_reuse_summary.ts {args}"
+
+[tasks."migration:reuse:summary:lint"]
+run = "MIGRATION_CONFIG_FILE={repo}/migration.config.json RUN_SCOPE=refresh bun run {repo}/docs/guides/code/205-legacy-migration-framework/12_decision_reuse_summary_lint.ts {args}"
+
+[tasks."migration:evidence"]
+run = "MIGRATION_CONFIG_FILE={repo}/migration.config.json bun run {repo}/docs/guides/code/205-legacy-migration-framework/04_evidence_manifest.ts {args}"
+
+[tasks."migration:evidence:verify"]
+run = "MIGRATION_CONFIG_FILE={repo}/migration.config.json bun run {repo}/docs/guides/code/205-legacy-migration-framework/05_evidence_verify.ts {args}"
+
+[tasks."migration:refresh:drift-gate"]
+run = "MIGRATION_CONFIG_FILE={repo}/migration.config.json RUN_SCOPE=refresh bun run {repo}/docs/guides/code/205-legacy-migration-framework/13_refresh_drift_gate.ts {args}"
+
+[tasks."migration:refresh:drift-gate:lint"]
+run = "MIGRATION_CONFIG_FILE={repo}/migration.config.json RUN_SCOPE=refresh bun run {repo}/docs/guides/code/205-legacy-migration-framework/14_refresh_drift_gate_lint.ts {args}"
+
+[tasks."migration:error-codes:lint"]
+run = "bun run {repo}/docs/guides/code/205-legacy-migration-framework/15_error_code_registry_lint.ts {args}"
+
+[tasks."migration:error-codes:sync"]
+run = "bun run {repo}/docs/guides/code/205-legacy-migration-framework/16_error_code_registry_sync.ts {args}"
+
+[tasks."migration:error-codes:sync:check"]
+run = "bun run {repo}/docs/guides/code/205-legacy-migration-framework/16_error_code_registry_sync.ts --check {args}"
+
+[tasks."migration:refresh:validate"]
+run = [
+  { task = "migration:preflight:refresh" },
+  { task = "migration:refresh:run" },
+  { task = "migration:reuse:summary" },
+  { task = "migration:reuse:summary:lint" },
+  { task = "migration:refresh:drift-gate" },
+  { task = "migration:refresh:drift-gate:lint" },
+  { run = "MIGRATION_CONFIG_FILE={repo}/migration.config.json RUN_SCOPE=refresh bun run {repo}/docs/guides/code/205-legacy-migration-framework/04_evidence_manifest.ts" },
+  { run = "MIGRATION_CONFIG_FILE={repo}/migration.config.json RUN_SCOPE=refresh bun run {repo}/docs/guides/code/205-legacy-migration-framework/05_evidence_verify.ts" },
+]
+
+[tasks."migration:promote:check"]
+run = [
+  { run = "MIGRATION_CONFIG_FILE={repo}/migration.config.json bun run {repo}/docs/guides/code/205-legacy-migration-framework/06_promotion_check.ts {args}" },
+  { run = "MIGRATION_CONFIG_FILE={repo}/migration.config.json bun run {repo}/docs/guides/code/205-legacy-migration-framework/07_promotion_decision_lint.ts" },
+  { run = "MIGRATION_CONFIG_FILE={repo}/migration.config.json bun run {repo}/docs/guides/code/205-legacy-migration-framework/08_promotion_release_note.ts" }
+]
+
+[tasks."migration:promote:guard"]
+run = [
+  { run = "MIGRATION_CONFIG_FILE={repo}/migration.config.json bun run {repo}/docs/guides/code/205-legacy-migration-framework/09_promotion_ci_guard.ts {args}" },
+  { run = "MIGRATION_CONFIG_FILE={repo}/migration.config.json bun run {repo}/docs/guides/code/205-legacy-migration-framework/11_promotion_ci_guard_lint.ts" }
+]
+
+[tasks."migration:refresh"]
+run = [
+  { task = "migration:refresh:validate" }
+]
+
+[tasks."migration:demo"]
+run = [
+  { task = "migration:preflight" },
+  { task = "migration:bundle" },
+  { task = "migration:preflight:reports" },
+  { task = "migration:reports" },
+  { run = "MIGRATION_CONFIG_FILE={repo}/migration.config.json RUN_SCOPE=demo bun run {repo}/docs/guides/code/205-legacy-migration-framework/04_evidence_manifest.ts" },
+  { run = "MIGRATION_CONFIG_FILE={repo}/migration.config.json RUN_SCOPE=demo bun run {repo}/docs/guides/code/205-legacy-migration-framework/05_evidence_verify.ts" }
+]
+
+[tasks."migration:validate"]
+run = [
+  { task = "migration:error-codes:sync:check" },
+  { task = "migration:error-codes:lint" },
+  { task = "migration:promote:check" },
+  { task = "migration:promote:guard" }
+]

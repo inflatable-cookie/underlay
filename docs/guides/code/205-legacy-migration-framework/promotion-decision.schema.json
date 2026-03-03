@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://underlay.local/schemas/migration-promotion-decision.schema.json",
+  "title": "Underlay Migration Promotion Decision",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "schema_version",
+    "generated_at",
+    "project_name",
+    "run_scope",
+    "run_date_utc",
+    "recommendation",
+    "can_promote",
+    "thresholds",
+    "checks",
+    "blocking_reasons",
+    "files"
+  ],
+  "properties": {
+    "schema": { "type": "string", "const": "underlay.migration.promotion_check.v1" },
+    "schema_version": { "type": "number", "const": 1 },
+    "generated_at": { "type": "string", "minLength": 1 },
+    "project_name": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+    "run_scope": { "type": "string", "enum": ["demo", "refresh", "pre_production"] },
+    "run_date_utc": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+    "recommendation": { "type": "string", "enum": ["promote", "hold"] },
+    "can_promote": { "type": "boolean" },
+    "thresholds": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "drift_max_unresolved",
+        "drift_max_governance",
+        "drift_max_lineage"
+      ],
+      "properties": {
+        "drift_max_unresolved": { "type": "number" },
+        "drift_max_governance": { "type": "number" },
+        "drift_max_lineage": { "type": "number" }
+      }
+    },
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "required", "status"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "required": { "type": "boolean" },
+          "status": { "type": "string", "enum": ["passed", "failed", "skipped"] },
+          "command": { "type": "string" },
+          "exit_code": { "type": "number" },
+          "output_excerpt": { "type": "string" },
+          "reason": { "type": "string" }
+        }
+      }
+    },
+    "blocking_reasons": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "files": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "config_file",
+        "run_report",
+        "output_dir",
+        "governance_policy_file",
+        "artifact_manifest_file",
+        "decision_file"
+      ],
+      "properties": {
+        "config_file": { "type": "string", "minLength": 1 },
+        "run_report": { "type": "string", "minLength": 1 },
+        "output_dir": { "type": "string", "minLength": 1 },
+        "governance_policy_file": { "type": "string", "minLength": 1 },
+        "artifact_manifest_file": { "type": "string", "minLength": 1 },
+        "decision_file": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

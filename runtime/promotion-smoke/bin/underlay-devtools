@@ -1,0 +1,3 @@
+#!/bin/sh
+printf 'mock underlay-devtools %s\n' "$*"
+exit 0

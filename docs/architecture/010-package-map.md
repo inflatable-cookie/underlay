@@ -2,7 +2,7 @@
 
 Underlay is split by layer, mirroring how consuming apps are structured.
 
-## Rust Crates (31)
+## Rust Crates (32)
 
 ### Core
 
@@ -38,6 +38,7 @@ Underlay is split by layer, mirroring how consuming apps are structured.
 | `underlay-blob` | Blob storage with pluggable backends (S3, local filesystem) |
 | `underlay-image` | Image processing: thumbnails, renditions, format detection |
 | `underlay-media` | Media library: file management, storage orchestration, usage tracking |
+| `underlay-migration-core` | Deterministic migration contracts: pipeline stages, plugin traits, run-store and decision journal types |
 | `underlay-nightfire` | Block-based structured content protocol (JSON document format) |
 
 ### Infrastructure

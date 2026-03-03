@@ -1,0 +1,10 @@
+{
+  "schema": "underlay.migration.promotion_decision_lint.v1",
+  "schema_version": 1,
+  "generated_at": "2026-03-02T21:05:00Z",
+  "decision_file": "x",
+  "schema_file": "y",
+  "status": "passed",
+  "error_count": 0,
+  "errors": []
+}

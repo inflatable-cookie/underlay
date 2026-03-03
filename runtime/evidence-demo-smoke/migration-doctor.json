@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://underlay.local/schemas/migration-doctor.schema.json",
+  "title": "Underlay Migration Doctor Report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "schema_version",
+    "generated_at",
+    "config_file",
+    "output_file",
+    "checks",
+    "effective_settings",
+    "summary"
+  ],
+  "properties": {
+    "schema": { "const": "underlay.migration.doctor.v1" },
+    "schema_version": { "type": "integer", "const": 1 },
+    "generated_at": { "type": "string", "format": "date-time" },
+    "config_file": { "type": "string", "minLength": 1 },
+    "output_file": { "type": "string", "minLength": 1 },
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "status"],
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "status": { "enum": ["passed", "failed", "skipped"] },
+          "command": { "type": "string" },
+          "exit_code": { "type": "integer" },
+          "output_excerpt": { "type": "string" },
+          "reason": { "type": "string" }
+        }
+      }
+    },
+    "effective_settings": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["value", "source"],
+        "properties": {
+          "value": { "type": "string" },
+          "source": { "enum": ["config", "env", "default", "unset"] }
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["passed_count", "failed_count", "skipped_count", "status"],
+      "properties": {
+        "passed_count": { "type": "integer", "minimum": 0 },
+        "failed_count": { "type": "integer", "minimum": 0 },
+        "skipped_count": { "type": "integer", "minimum": 0 },
+        "status": { "enum": ["passed", "failed"] }
+      }
+    }
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://underlay.local/schemas/migration-promotion-decision-lint.schema.json",
+  "title": "Underlay Migration Promotion Decision Lint Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "schema_version",
+    "generated_at",
+    "decision_file",
+    "schema_file",
+    "status",
+    "error_count",
+    "errors"
+  ],
+  "properties": {
+    "schema": { "type": "string", "const": "underlay.migration.promotion_decision_lint.v1" },
+    "schema_version": { "type": "number", "const": 1 },
+    "generated_at": { "type": "string", "minLength": 1 },
+    "decision_file": { "type": "string", "minLength": 1 },
+    "schema_file": { "type": "string", "minLength": 1 },
+    "status": { "type": "string", "enum": ["passed", "failed"] },
+    "error_count": { "type": "number", "minimum": 0 },
+    "errors": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  }
+}

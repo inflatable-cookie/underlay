@@ -1,0 +1,17 @@
+[package]
+name = "underlay-migration-core"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+async-trait = { workspace = true }
+chrono = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+sha2 = "0.10"
+thiserror = { workspace = true }
+underlay-core = { path = "../underlay-core" }
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["macros", "rt"] }

@@ -1,0 +1,21 @@
+{
+  "schema": "underlay.migration.evidence_manifest.v1",
+  "schema_version": 1,
+  "generated_at": "2026-03-02T21:06:00Z",
+  "project_name": "acowtancy",
+  "run_scope": "demo",
+  "run_date_utc": "2026-03-02",
+  "output_dir": "/workspace/runtime/demo-pass",
+  "artifacts": [
+    {
+      "artifact_name": "run-report",
+      "path": "run-report.json",
+      "sha256": "abc123"
+    },
+    {
+      "artifact_name": "artifact_manifest",
+      "path": "metadata/acowtancy.demo.2026-03-02.artifact-manifest.json",
+      "sha256": "def456"
+    }
+  ]
+}

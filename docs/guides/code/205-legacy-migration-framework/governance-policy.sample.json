@@ -1,0 +1,51 @@
+{
+  "policy_id": "migration-governance-v1",
+  "owners": [
+    {
+      "domain": "migration",
+      "owner": "platform-team",
+      "contact": "platform@example.com"
+    },
+    {
+      "domain": "security",
+      "owner": "security-team",
+      "contact": "security@example.com"
+    }
+  ],
+  "retention": {
+    "rules": [
+      { "artifact": "decision_journal", "min_days": 365 },
+      { "artifact": "decision_index", "min_days": 365 },
+      { "artifact": "audit_artifact", "min_days": 365 },
+      { "artifact": "verification_artifact", "min_days": 365 }
+    ]
+  },
+  "access_control": {
+    "rules": [
+      {
+        "artifact": "decision_journal",
+        "allowed_roles": ["migration_admin"],
+        "break_glass_role": "migration_break_glass"
+      },
+      {
+        "artifact": "decision_index",
+        "allowed_roles": ["migration_admin"],
+        "break_glass_role": "migration_break_glass"
+      },
+      {
+        "artifact": "audit_artifact",
+        "allowed_roles": ["migration_auditor"],
+        "break_glass_role": "migration_break_glass"
+      },
+      {
+        "artifact": "verification_artifact",
+        "allowed_roles": ["migration_auditor"],
+        "break_glass_role": "migration_break_glass"
+      }
+    ]
+  },
+  "redaction": {
+    "allowed_redacted_fields": ["email", "full_name", "billing_postcode"],
+    "forbidden_redacted_fields": ["fingerprint", "access_token", "signing_key"]
+  }
+}

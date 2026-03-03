@@ -1,0 +1,305 @@
+{
+  "schema": "underlay.migration.error_registry.v1",
+  "schema_version": 1,
+  "generated_at": "2026-03-02T22:17:29.316Z",
+  "codes": [
+    {
+      "code": "MIG_CFG_001",
+      "category": "config",
+      "scripts": [
+        "00_config_lint.ts"
+      ],
+      "meaning": "Migration config file is missing.",
+      "remediation": "Create/fix the migration config path."
+    },
+    {
+      "code": "MIG_CFG_002",
+      "category": "config",
+      "scripts": [
+        "00_config_lint.ts"
+      ],
+      "meaning": "Migration config schema file is missing.",
+      "remediation": "Fix MIGRATION_CONFIG_SCHEMA_FILE path."
+    },
+    {
+      "code": "MIG_CFG_003",
+      "category": "config",
+      "scripts": [
+        "00_config_lint.ts"
+      ],
+      "meaning": "Migration config must be a JSON object.",
+      "remediation": "Fix root JSON shape."
+    },
+    {
+      "code": "MIG_CFG_004",
+      "category": "config",
+      "scripts": [
+        "00_config_lint.ts"
+      ],
+      "meaning": "Config schema must define object root type.",
+      "remediation": "Fix schema contract root type."
+    },
+    {
+      "code": "MIG_CFG_005",
+      "category": "config",
+      "scripts": [
+        "00_config_lint.ts"
+      ],
+      "meaning": "Config key/value validation failed.",
+      "remediation": "Fix unknown keys/type/pattern violations."
+    },
+    {
+      "code": "MIG_CFG_006",
+      "category": "config",
+      "scripts": [
+        "00_preflight.ts",
+        "06_promotion_check.ts"
+      ],
+      "meaning": "Required tool is missing from PATH.",
+      "remediation": "Install required tool and verify PATH."
+    },
+    {
+      "code": "MIG_CFG_007",
+      "category": "config",
+      "scripts": [
+        "00_preflight.ts"
+      ],
+      "meaning": "Required source/schema values are empty.",
+      "remediation": "Set SOURCE_SYSTEM and TARGET_SCHEMA_VERSION."
+    },
+    {
+      "code": "MIG_CFG_008",
+      "category": "config",
+      "scripts": [
+        "04_evidence_manifest.ts",
+        "06_promotion_check.ts"
+      ],
+      "meaning": "RUN_SCOPE is invalid.",
+      "remediation": "Use demo, refresh, or pre_production."
+    },
+    {
+      "code": "MIG_CFG_009",
+      "category": "config",
+      "scripts": [
+        "04_evidence_manifest.ts"
+      ],
+      "meaning": "PROJECT_NAME format is invalid.",
+      "remediation": "Use lowercase kebab-case."
+    },
+    {
+      "code": "MIG_CFG_010",
+      "category": "config",
+      "scripts": [
+        "04_evidence_manifest.ts"
+      ],
+      "meaning": "RUN_DATE_UTC format is invalid.",
+      "remediation": "Use YYYY-MM-DD."
+    },
+    {
+      "code": "MIG_CFG_011",
+      "category": "config",
+      "scripts": [
+        "06_promotion_check.ts"
+      ],
+      "meaning": "Threshold value must be an unsigned integer string.",
+      "remediation": "Fix drift threshold numeric fields."
+    },
+    {
+      "code": "MIG_CFG_012",
+      "category": "config",
+      "scripts": [
+        "00_doctor.ts"
+      ],
+      "meaning": "Doctor check set failed.",
+      "remediation": "Inspect doctor report check failures."
+    },
+    {
+      "code": "MIG_CLI_001",
+      "category": "cli",
+      "scripts": [
+        "00_preflight.ts",
+        "04_evidence_manifest.ts",
+        "05_evidence_verify.ts",
+        "06_promotion_check.ts",
+        "07_promotion_decision_lint.ts",
+        "09_promotion_ci_guard.ts",
+        "11_promotion_ci_guard_lint.ts",
+        "12_decision_reuse_summary_lint.ts",
+        "14_refresh_drift_gate_lint.ts"
+      ],
+      "meaning": "Unknown or unsupported CLI argument.",
+      "remediation": "Re-run with documented flags only."
+    },
+    {
+      "code": "MIG_CLI_002",
+      "category": "cli",
+      "scripts": [
+        "00_doctor.ts"
+      ],
+      "meaning": "Output flag requires a non-empty path.",
+      "remediation": "Provide a valid output file path."
+    },
+    {
+      "code": "MIG_EVID_001",
+      "category": "evidence",
+      "scripts": [
+        "04_evidence_manifest.ts"
+      ],
+      "meaning": "run-report is missing run_id.",
+      "remediation": "Fix run-report contract output."
+    },
+    {
+      "code": "MIG_EVID_002",
+      "category": "evidence",
+      "scripts": [
+        "04_evidence_manifest.ts"
+      ],
+      "meaning": "Required artifact is missing.",
+      "remediation": "Generate missing artifact before manifest build."
+    },
+    {
+      "code": "MIG_EVID_003",
+      "category": "evidence",
+      "scripts": [
+        "04_evidence_manifest.ts"
+      ],
+      "meaning": "Artifact path exists but is not a file.",
+      "remediation": "Correct artifact path/type."
+    },
+    {
+      "code": "MIG_EVID_004",
+      "category": "evidence",
+      "scripts": [
+        "05_evidence_verify.ts"
+      ],
+      "meaning": "Required file is missing.",
+      "remediation": "Restore or regenerate referenced file."
+    },
+    {
+      "code": "MIG_EVID_005",
+      "category": "evidence",
+      "scripts": [
+        "05_evidence_verify.ts"
+      ],
+      "meaning": "Expected file path is not a file.",
+      "remediation": "Correct manifest path entry."
+    },
+    {
+      "code": "MIG_EVID_006",
+      "category": "evidence",
+      "scripts": [
+        "05_evidence_verify.ts"
+      ],
+      "meaning": "Artifact manifest is not a JSON object.",
+      "remediation": "Regenerate artifact manifest."
+    },
+    {
+      "code": "MIG_EVID_007",
+      "category": "evidence",
+      "scripts": [
+        "05_evidence_verify.ts"
+      ],
+      "meaning": "Manifest schema id is unsupported.",
+      "remediation": "Use canonical manifest generator."
+    },
+    {
+      "code": "MIG_EVID_008",
+      "category": "evidence",
+      "scripts": [
+        "05_evidence_verify.ts"
+      ],
+      "meaning": "Manifest schema version is unsupported.",
+      "remediation": "Regenerate manifest with current script."
+    },
+    {
+      "code": "MIG_EVID_009",
+      "category": "evidence",
+      "scripts": [
+        "05_evidence_verify.ts"
+      ],
+      "meaning": "Manifest missing output_dir.",
+      "remediation": "Regenerate artifact manifest."
+    },
+    {
+      "code": "MIG_EVID_010",
+      "category": "evidence",
+      "scripts": [
+        "05_evidence_verify.ts"
+      ],
+      "meaning": "Manifest missing artifacts array.",
+      "remediation": "Regenerate artifact manifest."
+    },
+    {
+      "code": "MIG_EVID_011",
+      "category": "evidence",
+      "scripts": [
+        "05_evidence_verify.ts"
+      ],
+      "meaning": "Evidence verification failed.",
+      "remediation": "Inspect mismatches and rebuild manifest."
+    },
+    {
+      "code": "MIG_EVID_012",
+      "category": "evidence",
+      "scripts": [
+        "05_evidence_verify.ts"
+      ],
+      "meaning": "Artifact checksum or manifest entry mismatch.",
+      "remediation": "Regenerate artifact and manifest pair."
+    },
+    {
+      "code": "MIG_PROMO_001",
+      "category": "promotion",
+      "scripts": [
+        "06_promotion_check.ts"
+      ],
+      "meaning": "Promotion blocker detected.",
+      "remediation": "Resolve blocking gates before promotion."
+    },
+    {
+      "code": "MIG_PROMO_002",
+      "category": "promotion",
+      "scripts": [
+        "07_promotion_decision_lint.ts"
+      ],
+      "meaning": "Promotion decision lint failed.",
+      "remediation": "Fix decision artifact/schema drift."
+    },
+    {
+      "code": "MIG_PROMO_003",
+      "category": "promotion",
+      "scripts": [
+        "09_promotion_ci_guard.ts"
+      ],
+      "meaning": "Promotion CI guard failed.",
+      "remediation": "Resolve guard failure reasons and regenerate inputs."
+    },
+    {
+      "code": "MIG_PROMO_004",
+      "category": "promotion",
+      "scripts": [
+        "11_promotion_ci_guard_lint.ts"
+      ],
+      "meaning": "Promotion CI guard lint failed.",
+      "remediation": "Fix guard artifact/schema drift."
+    },
+    {
+      "code": "MIG_REFRESH_001",
+      "category": "refresh",
+      "scripts": [
+        "12_decision_reuse_summary_lint.ts"
+      ],
+      "meaning": "Decision reuse summary lint failed.",
+      "remediation": "Fix summary contract/semantics and rerun."
+    },
+    {
+      "code": "MIG_REFRESH_002",
+      "category": "refresh",
+      "scripts": [
+        "14_refresh_drift_gate_lint.ts"
+      ],
+      "meaning": "Refresh drift gate lint failed.",
+      "remediation": "Fix drift gate contract/semantics and rerun."
+    }
+  ]
+}

@@ -1,0 +1,105 @@
+{
+  "schema": "underlay.migration.doctor.v1",
+  "schema_version": 1,
+  "generated_at": "2026-03-02T19:34:23.629Z",
+  "config_file": "/Users/betterthanclay/Dev/projects/underlay/docs/guides/code/205-legacy-migration-framework/migration.config.sample.json",
+  "output_file": "/Users/betterthanclay/Dev/projects/underlay/runtime/migration-doctor.json",
+  "checks": [
+    {
+      "name": "bun run ./docs/guides/code/205-legacy-migration-framework/00_config_lint.ts",
+      "status": "passed",
+      "command": "bun run ./docs/guides/code/205-legacy-migration-framework/00_config_lint.ts",
+      "exit_code": 0,
+      "output_excerpt": "config lint passed: /Users/betterthanclay/Dev/projects/underlay/docs/guides/code/205-legacy-migration-framework/migration.config.sample.json\nschema: /Users/betterthanclay/Dev/projects/underlay/docs/guides/code/205-legacy-migration-framework/config.schema.json"
+    },
+    {
+      "name": "bun run ./docs/guides/code/205-legacy-migration-framework/00_preflight.ts --mode general",
+      "status": "failed",
+      "command": "bun run ./docs/guides/code/205-legacy-migration-framework/00_preflight.ts --mode general",
+      "exit_code": 1,
+      "output_excerpt": "27 | }\n28 | \n29 | function requireTool(name: string): void {\n30 |   const result = spawnSync(\"which\", [name], { stdio: \"ignore\" });\n31 |   if (result.status !== 0) {\n32 |     throw new Error(`${name} is required in PATH`);\n                   ^\nerror: underlay-devtools is required in PATH\n      at requireTool (/Users/betterthanclay/Dev/projects/underlay/docs/guides/code/205-legacy-migration-framework/00_preflight.ts:32:15)\n      at main (/Users/betterthanclay/Dev/projects/underlay/docs/guides/code/205-legacy-migration-framework/00_preflight.ts:52:3)\n      at /Users/betterthanclay/Dev/projects/underlay/docs/guides/code/205-legacy-migration-framework/00_preflight.ts:101:1\n      at loadAndEvaluateModule (2:1)\n\nBun v1.3.8 (macOS arm64)"
+    },
+    {
+      "name": "bun run ./docs/guides/code/205-legacy-migration-framework/00_preflight.ts --mode reports",
+      "status": "failed",
+      "command": "bun run ./docs/guides/code/205-legacy-migration-framework/00_preflight.ts --mode reports",
+      "exit_code": 1,
+      "output_excerpt": "27 | }\n28 | \n29 | function requireTool(name: string): void {\n30 |   const result = spawnSync(\"which\", [name], { stdio: \"ignore\" });\n31 |   if (result.status !== 0) {\n32 |     throw new Error(`${name} is required in PATH`);\n                   ^\nerror: underlay-devtools is required in PATH\n      at requireTool (/Users/betterthanclay/Dev/projects/underlay/docs/guides/code/205-legacy-migration-framework/00_preflight.ts:32:15)\n      at main (/Users/betterthanclay/Dev/projects/underlay/docs/guides/code/205-legacy-migration-framework/00_preflight.ts:52:3)\n      at /Users/betterthanclay/Dev/projects/underlay/docs/guides/code/205-legacy-migration-framework/00_preflight.ts:101:1\n      at loadAndEvaluateModule (2:1)\n\nBun v1.3.8 (macOS arm64)"
+    },
+    {
+      "name": "bun run ./docs/guides/code/205-legacy-migration-framework/00_preflight.ts --mode refresh",
+      "status": "failed",
+      "command": "bun run ./docs/guides/code/205-legacy-migration-framework/00_preflight.ts --mode refresh",
+      "exit_code": 1,
+      "output_excerpt": "27 | }\n28 | \n29 | function requireTool(name: string): void {\n30 |   const result = spawnSync(\"which\", [name], { stdio: \"ignore\" });\n31 |   if (result.status !== 0) {\n32 |     throw new Error(`${name} is required in PATH`);\n                   ^\nerror: underlay-devtools is required in PATH\n      at requireTool (/Users/betterthanclay/Dev/projects/underlay/docs/guides/code/205-legacy-migration-framework/00_preflight.ts:32:15)\n      at main (/Users/betterthanclay/Dev/projects/underlay/docs/guides/code/205-legacy-migration-framework/00_preflight.ts:52:3)\n      at /Users/betterthanclay/Dev/projects/underlay/docs/guides/code/205-legacy-migration-framework/00_preflight.ts:101:1\n      at loadAndEvaluateModule (2:1)\n\nBun v1.3.8 (macOS arm64)"
+    }
+  ],
+  "effective_settings": {
+    "SOURCE_SYSTEM": {
+      "value": "legacy_site",
+      "source": "config"
+    },
+    "TARGET_SCHEMA_VERSION": {
+      "value": "schema-v1",
+      "source": "config"
+    },
+    "MEDIA_DIR": {
+      "value": "./legacy-export/media",
+      "source": "config"
+    },
+    "BUNDLE_FILE": {
+      "value": "./dist/migration-bundle.oci",
+      "source": "config"
+    },
+    "OCI_REF_TAG": {
+      "value": "registry.example.com/underlay/site-migration:demo-20260302",
+      "source": "config"
+    },
+    "BUNDLE_REF": {
+      "value": "registry.example.c...aaaaaaaa",
+      "source": "config"
+    },
+    "OUTPUT_DIR": {
+      "value": "./runtime/demo-pass",
+      "source": "config"
+    },
+    "RUN_REPORT": {
+      "value": "./runtime/demo-pass/run-report.json",
+      "source": "config"
+    },
+    "GOVERNANCE_POLICY_FILE": {
+      "value": "./runtime/governance-policy.json",
+      "source": "config"
+    },
+    "REUSE_FROM_DIGEST_REF": {
+      "value": "registry.example.c...bbbbbbbb",
+      "source": "config"
+    },
+    "APP_MIGRATION_RUNNER_CMD": {
+      "value": "cargo run -p myapp-migration -- run",
+      "source": "config"
+    },
+    "DECISION_INDEX_FILE": {
+      "value": "./runtime/refresh-pass/decision_index.json",
+      "source": "config"
+    },
+    "DECISION_JOURNAL_FILE": {
+      "value": "./runtime/refresh-pass/decision_journal.ndjson",
+      "source": "config"
+    },
+    "MIGRATION_CONFIG_FILE": {
+      "value": "/Users/betterthanclay/Dev/projects/underlay/docs/guides/code/205-legacy-migration-framework/migration.config.sample.json",
+      "source": "env"
+    },
+    "MIGRATION_CONFIG_SCHEMA_FILE": {
+      "value": "/Users/betterthanclay/Dev/projects/underlay/docs/guides/code/205-legacy-migration-framework/config.schema.json",
+      "source": "env"
+    }
+  },
+  "summary": {
+    "passed_count": 1,
+    "failed_count": 3,
+    "skipped_count": 0,
+    "status": "failed"
+  }
+}

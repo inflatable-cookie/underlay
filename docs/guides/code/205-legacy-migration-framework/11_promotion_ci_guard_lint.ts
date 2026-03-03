@@ -1,0 +1,282 @@
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { dirname, resolve } from "node:path";
+
+import { loadConfig, readOptional, readString } from "./config.ts";
+import { fail } from "./error_codes.ts";
+
+type JsonSchema = {
+  type?: string;
+  const?: unknown;
+  enum?: unknown[];
+  minLength?: number;
+  pattern?: string;
+  required?: string[];
+  additionalProperties?: boolean;
+  properties?: Record<string, JsonSchema>;
+  items?: JsonSchema;
+};
+
+type LintStatus = "passed" | "failed";
+
+type GuardLintResult = {
+  schema: "underlay.migration.promotion_ci_guard_lint.v1";
+  schema_version: 1;
+  generated_at: string;
+  guard_file: string;
+  schema_file: string;
+  status: LintStatus;
+  error_count: number;
+  errors: string[];
+};
+
+type GuardReport = {
+  status?: string;
+  reason_count?: number;
+  reasons?: unknown[];
+};
+
+function utcDate(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function parseArgs(argv: string[]): { input?: string; schema?: string; output?: string; json?: boolean } {
+  const parsed: { input?: string; schema?: string; output?: string; json?: boolean } = {};
+  for (let i = 0; i < argv.length; i += 1) {
+    const token = argv[i];
+    if (token === "--input" && i + 1 < argv.length) {
+      parsed.input = argv[i + 1].trim();
+      i += 1;
+      continue;
+    }
+    if (token.startsWith("--input=")) {
+      parsed.input = token.slice("--input=".length).trim();
+      continue;
+    }
+    if (token === "--schema" && i + 1 < argv.length) {
+      parsed.schema = argv[i + 1].trim();
+      i += 1;
+      continue;
+    }
+    if (token.startsWith("--schema=")) {
+      parsed.schema = token.slice("--schema=".length).trim();
+      continue;
+    }
+    if (token === "--output" && i + 1 < argv.length) {
+      parsed.output = argv[i + 1].trim();
+      i += 1;
+      continue;
+    }
+    if (token.startsWith("--output=")) {
+      parsed.output = token.slice("--output=".length).trim();
+      continue;
+    }
+    if (token === "--json") {
+      parsed.json = true;
+      continue;
+    }
+    fail("MIG_CLI_001", `unknown argument: ${token}`);
+  }
+  return parsed;
+}
+
+function readJson(path: string): unknown {
+  return JSON.parse(readFileSync(path, "utf-8"));
+}
+
+function defaultGuardPath(config: Record<string, string>): string {
+  const configured = readOptional(config, "PROMOTION_CI_GUARD_FILE");
+  if (configured.length > 0) {
+    return resolve(configured);
+  }
+  const outputDir = resolve(readString(config, "OUTPUT_DIR", "./runtime/demo-pass"));
+  const project = readString(config, "PROJECT_NAME", "migration");
+  const scope = readString(config, "RUN_SCOPE", "demo");
+  const runDate = readString(config, "RUN_DATE_UTC", utcDate());
+  return resolve(`${outputDir}/metadata/${project}.${scope}.${runDate}.promotion-ci-guard.json`);
+}
+
+function defaultSchemaPath(config: Record<string, string>): string {
+  const configured = readOptional(config, "PROMOTION_CI_GUARD_SCHEMA_FILE");
+  if (configured.length > 0) {
+    return resolve(configured);
+  }
+  return resolve("./docs/guides/code/205-legacy-migration-framework/promotion-ci-guard.schema.json");
+}
+
+function defaultLintOutputPath(config: Record<string, string>): string {
+  const configured = readOptional(config, "PROMOTION_CI_GUARD_LINT_FILE");
+  if (configured.length > 0) {
+    return resolve(configured);
+  }
+  const outputDir = resolve(readString(config, "OUTPUT_DIR", "./runtime/demo-pass"));
+  const project = readString(config, "PROJECT_NAME", "migration");
+  const scope = readString(config, "RUN_SCOPE", "demo");
+  const runDate = readString(config, "RUN_DATE_UTC", utcDate());
+  return resolve(`${outputDir}/metadata/${project}.${scope}.${runDate}.promotion-ci-guard-lint.json`);
+}
+
+function typeOfValue(value: unknown): string {
+  if (Array.isArray(value)) return "array";
+  if (value === null) return "null";
+  return typeof value;
+}
+
+function validateAgainstSchema(
+  value: unknown,
+  schema: JsonSchema,
+  path: string,
+  errors: string[],
+): void {
+  if (schema.type) {
+    const actual = typeOfValue(value);
+    if (actual !== schema.type) {
+      errors.push(`${path}: expected type ${schema.type}, got ${actual}`);
+      return;
+    }
+  }
+
+  if (schema.const !== undefined && value !== schema.const) {
+    errors.push(`${path}: expected const ${JSON.stringify(schema.const)}, got ${JSON.stringify(value)}`);
+  }
+
+  if (Array.isArray(schema.enum) && !schema.enum.some((item) => item === value)) {
+    errors.push(`${path}: expected one of ${JSON.stringify(schema.enum)}, got ${JSON.stringify(value)}`);
+  }
+
+  if (typeof value === "string") {
+    if (typeof schema.minLength === "number" && value.length < schema.minLength) {
+      errors.push(`${path}: string length must be >= ${schema.minLength}`);
+    }
+    if (schema.pattern) {
+      const re = new RegExp(schema.pattern);
+      if (!re.test(value)) {
+        errors.push(`${path}: string does not match pattern ${schema.pattern}`);
+      }
+    }
+  }
+
+  if (Array.isArray(value)) {
+    if (schema.items) {
+      for (let i = 0; i < value.length; i += 1) {
+        validateAgainstSchema(value[i], schema.items, `${path}[${i}]`, errors);
+      }
+    }
+    return;
+  }
+
+  if (value && typeof value === "object" && !Array.isArray(value)) {
+    const obj = value as Record<string, unknown>;
+    const properties = schema.properties ?? {};
+    const required = schema.required ?? [];
+
+    for (const key of required) {
+      if (!(key in obj)) {
+        errors.push(`${path}.${key}: missing required field`);
+      }
+    }
+
+    if (schema.additionalProperties === false) {
+      for (const key of Object.keys(obj)) {
+        if (!(key in properties)) {
+          errors.push(`${path}.${key}: additional property not allowed`);
+        }
+      }
+    }
+
+    for (const [key, childSchema] of Object.entries(properties)) {
+      if (key in obj) {
+        validateAgainstSchema(obj[key], childSchema, `${path}.${key}`, errors);
+      }
+    }
+  }
+}
+
+function validateSemantics(report: GuardReport, errors: string[]): void {
+  if (!Array.isArray(report.reasons)) {
+    return;
+  }
+
+  const reasonCount = typeof report.reason_count === "number" ? report.reason_count : -1;
+  if (reasonCount !== report.reasons.length) {
+    errors.push(`$.reason_count: expected ${report.reasons.length} to match reasons length, got ${String(report.reason_count)}`);
+  }
+
+  if (report.status === "passed" && report.reasons.length !== 0) {
+    errors.push(`$.reasons: must be empty when status=passed`);
+  }
+
+  if (report.status === "failed" && report.reasons.length === 0) {
+    errors.push(`$.reasons: must contain at least one reason when status=failed`);
+  }
+}
+
+function writeLintResult(path: string, result: GuardLintResult): void {
+  mkdirSync(dirname(path), { recursive: true });
+  writeFileSync(path, JSON.stringify(result, null, 2) + "\n", "utf-8");
+}
+
+function main(): void {
+  const args = parseArgs(process.argv.slice(2));
+  const { filePath, values } = loadConfig();
+  console.log(
+    `using config file: ${filePath}${Object.keys(values).length === 0 ? " (not found/empty; env+defaults only)" : ""}`,
+  );
+
+  const guardPath = resolve(args.input || defaultGuardPath(values as Record<string, string>));
+  const schemaPath = resolve(args.schema || defaultSchemaPath(values as Record<string, string>));
+  const lintOutputPath = resolve(args.output || defaultLintOutputPath(values as Record<string, string>));
+
+  const errors: string[] = [];
+  let report: unknown = null;
+
+  if (!existsSync(guardPath)) {
+    errors.push(`guard file not found: ${guardPath}`);
+  }
+  if (!existsSync(schemaPath)) {
+    errors.push(`schema file not found: ${schemaPath}`);
+  }
+
+  if (errors.length === 0) {
+    report = readJson(guardPath);
+    const schemaRoot = readJson(schemaPath) as JsonSchema & { properties?: Record<string, JsonSchema> };
+    const rootSchema: JsonSchema = {
+      type: schemaRoot.type,
+      required: schemaRoot.required,
+      additionalProperties: schemaRoot.additionalProperties,
+      properties: schemaRoot.properties,
+    };
+    validateAgainstSchema(report, rootSchema, "$", errors);
+    validateSemantics(report as GuardReport, errors);
+  }
+
+  const status: LintStatus = errors.length === 0 ? "passed" : "failed";
+  const lintResult: GuardLintResult = {
+    schema: "underlay.migration.promotion_ci_guard_lint.v1",
+    schema_version: 1,
+    generated_at: new Date().toISOString(),
+    guard_file: guardPath,
+    schema_file: schemaPath,
+    status,
+    error_count: errors.length,
+    errors,
+  };
+
+  writeLintResult(lintOutputPath, lintResult);
+  if (args.json) {
+    console.log(JSON.stringify(lintResult, null, 2));
+  } else {
+    console.log(`promotion ci guard lint ${status}: ${guardPath}`);
+    console.log(`schema: ${schemaPath}`);
+    console.log(`lint report: ${lintOutputPath}`);
+  }
+
+  if (status === "failed") {
+    const message = [
+      `promotion ci guard lint failed (${errors.length} issue${errors.length === 1 ? "" : "s"})`,
+      ...errors.map((error) => `- ${error}`),
+    ].join("\n");
+    fail("MIG_PROMO_004", message);
+  }
+}
+
+main();

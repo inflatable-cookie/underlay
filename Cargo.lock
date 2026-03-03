@@ -4059,7 +4059,9 @@ dependencies = [
  "base64 0.22.1",
  "bytes",
  "encoding_rs",
+ "futures-channel",
  "futures-core",
+ "futures-util",
  "h2 0.4.13",
  "http 1.4.0",
  "http-body 1.0.1",
@@ -5655,9 +5657,19 @@ dependencies = [
 name = "underlay-devtools"
 version = "0.0.1"
 dependencies = [
+ "base64 0.22.1",
+ "chrono",
+ "reqwest 0.13.2",
+ "serde",
+ "serde_json",
+ "sha2",
  "sqlx",
  "tokio",
+ "underlay-core",
  "underlay-db",
+ "underlay-media",
+ "underlay-migration-core",
+ "uuid",
 ]
 
 [[package]]
@@ -5764,6 +5776,20 @@ dependencies = [
  "axum",
  "prometheus",
  "tokio",
+]
+
+[[package]]
+name = "underlay-migration-core"
+version = "0.0.1"
+dependencies = [
+ "async-trait",
+ "chrono",
+ "serde",
+ "serde_json",
+ "sha2",
+ "thiserror 2.0.18",
+ "tokio",
+ "underlay-core",
 ]
 
 [[package]]

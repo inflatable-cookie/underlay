@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://underlay.local/schemas/migration-refresh-drift-gate.schema.json",
+  "title": "Underlay Migration Refresh Drift Gate",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "schema_version",
+    "generated_at",
+    "status",
+    "command",
+    "exit_code",
+    "output_excerpt",
+    "files",
+    "thresholds"
+  ],
+  "properties": {
+    "schema": { "type": "string", "const": "underlay.migration.refresh_drift_gate.v1" },
+    "schema_version": { "type": "number", "const": 1 },
+    "generated_at": { "type": "string", "minLength": 1 },
+    "status": { "type": "string", "enum": ["passed", "failed"] },
+    "command": { "type": "string", "minLength": 1 },
+    "exit_code": { "type": "number" },
+    "output_excerpt": { "type": "string" },
+    "files": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "config_file",
+        "run_report",
+        "decision_index_file",
+        "decision_journal_file",
+        "gate_file"
+      ],
+      "properties": {
+        "config_file": { "type": "string", "minLength": 1 },
+        "run_report": { "type": "string", "minLength": 1 },
+        "decision_index_file": { "type": "string", "minLength": 1 },
+        "decision_journal_file": { "type": "string", "minLength": 1 },
+        "gate_file": { "type": "string", "minLength": 1 }
+      }
+    },
+    "thresholds": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "drift_max_unresolved",
+        "drift_max_governance",
+        "drift_max_lineage"
+      ],
+      "properties": {
+        "drift_max_unresolved": { "type": "number", "minimum": 0 },
+        "drift_max_governance": { "type": "number", "minimum": 0 },
+        "drift_max_lineage": { "type": "number", "minimum": 0 }
+      }
+    }
+  }
+}

@@ -28,5 +28,15 @@ Status overview of all Underlay roadmaps. Check individual files for detailed pr
 | 022 | [CLI Runner & Pulse](./022-underlay-cli-runner-and-pulse.md) | Extracted | Runner and pulse were extracted from Underlay into the standalone `effigy` repository |
 | 023 | [Quality Hardening](./023-underlay-quality-hardening-roadmap.md) | Complete | Type-safety tightening, TS coverage gates, Rust panic-path hardening, and test deduplication (see [2026-02-28 cross-repo validation](../reports/2026-02-28-underlay-effigy-cross-repo-validation.md)) |
 | 024 | [Nested Task Catalogs & Config Consolidation](./024-nested-task-catalogs-and-config-consolidation.md) | Extracted | Nested task-catalog runner behavior was extracted to `effigy`; Underlay retains historical implementation notes (see [2026-02-28 cross-repo validation](../reports/2026-02-28-underlay-effigy-cross-repo-validation.md)) |
+| 025 | [Universal Legacy Migration Foundation](./025-universal-legacy-migration-foundation.md) | Complete | Core reusable migration framework boundaries, deterministic stage model, and plugin contracts |
+| 026 | [Migration Bundles and OCI Distribution](./026-migration-bundles-and-oci-distribution.md) | Complete | OCI bundle spec, digest-pinned replay contract, bundle lifecycle tooling, and promotion record contracts |
+| 027 | [Incremental Decision Memory and AI Reuse](./027-incremental-decision-memory-and-ai-reuse.md) | Complete | Decision fingerprinting, deterministic sidecar merge/reuse rules, invalidation policy, and refresh AI-call suppression KPIs |
+| 028 | [Migration Operations and Hardening](./028-migration-operations-and-hardening.md) | Complete | Resume/recovery, drift detection, integrity/audit enforcement, governance policy reporting, signature rollout gates, rollout readiness matrix, and promotion artifact-chain gates |
 
-**Complete:** 22 | **Extracted:** 2 | **In progress:** 0 | **Not started:** 0
+**Complete:** 26 | **Extracted:** 2 | **In progress:** 0 | **Planned:** 0
+
+## Canonical Implementation Guides
+
+1. [Legacy Migration Framework (End-to-End)](../guides/205-legacy-migration-framework.md)
+2. [Migration System Setup Playbook](../guides/code/205-legacy-migration-framework/migration-system-setup.md)
+3. [AI Migration Handoff Prompt Template](../guides/code/205-legacy-migration-framework/ai-migration-handoff.prompt.md)

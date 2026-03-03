@@ -1,0 +1,67 @@
+{
+  "schema": "underlay.migration.evidence_manifest.v1",
+  "schema_version": 1,
+  "generated_at": "2026-03-02T21:41:57.023Z",
+  "project_name": "acowtancy",
+  "run_scope": "refresh",
+  "run_date_utc": "2026-03-02",
+  "output_dir": "/Users/betterthanclay/Dev/projects/underlay/runtime/reuse-summary-smoke",
+  "artifacts": [
+    {
+      "artifact_name": "migration-doctor",
+      "path": "/Users/betterthanclay/Dev/projects/underlay/runtime/evidence-refresh-smoke/migration-doctor.json",
+      "sha256": "4ae1fd35bd10fff1c30a266aee7e4404543a5439f756585d20fd628370b53fb0",
+      "size_bytes": 2012,
+      "generated_at": "2026-03-02T21:33:04.669Z"
+    },
+    {
+      "artifact_name": "run-report",
+      "path": "run-report.json",
+      "sha256": "0b82b320e57995153cadf5d123b8981c30e7af0160f4dca8cae6ff5828b224ff",
+      "size_bytes": 1679,
+      "generated_at": "2026-03-02T21:41:56.934Z"
+    },
+    {
+      "artifact_name": "decision_index",
+      "path": "/Users/betterthanclay/Dev/projects/underlay/runtime/evidence-refresh-smoke/decision_index.json",
+      "sha256": "563b43e4d174d229db77f6a3b4112e6be8c023a3b1920428c07f2a7a6a11658c",
+      "size_bytes": 721,
+      "generated_at": "2026-03-02T21:33:04.662Z"
+    },
+    {
+      "artifact_name": "decision_journal",
+      "path": "/Users/betterthanclay/Dev/projects/underlay/runtime/evidence-refresh-smoke/decision_journal.ndjson",
+      "sha256": "aa309fecece8bfcd5799c049328995f31751570e5f3abbb58f6b89dd6ec35d5d",
+      "size_bytes": 901,
+      "generated_at": "2026-03-02T21:33:04.666Z"
+    },
+    {
+      "artifact_name": "verify_artifact",
+      "path": "/Users/betterthanclay/Dev/projects/underlay/runtime/evidence-refresh-smoke/verification-artifacts/0195f8f2-6ba2-75ff-9f02-2a2f5310d999.json",
+      "sha256": "95c6ce07cdd071c4e48b1b72f5e23a437f3561de636dac82b2e275ba5dbab0aa",
+      "size_bytes": 1418,
+      "generated_at": "2026-03-02T21:33:04.672Z"
+    },
+    {
+      "artifact_name": "audit_artifact",
+      "path": "/Users/betterthanclay/Dev/projects/underlay/runtime/evidence-refresh-smoke/audit-artifacts/0195f8f2-6ba2-75ff-9f02-2a2f5310d999.json",
+      "sha256": "95c6ce07cdd071c4e48b1b72f5e23a437f3561de636dac82b2e275ba5dbab0aa",
+      "size_bytes": 1418,
+      "generated_at": "2026-03-02T21:33:04.674Z"
+    },
+    {
+      "artifact_name": "decision_reuse_summary",
+      "path": "metadata/acowtancy.refresh.2026-03-02.decision-reuse-summary.json",
+      "sha256": "950e7be3259f6a945e4847fd8b1f08f0d956eb98b1cc5a4f615528887187be5a",
+      "size_bytes": 1081,
+      "generated_at": "2026-03-02T21:41:56.964Z"
+    },
+    {
+      "artifact_name": "decision_reuse_summary_lint",
+      "path": "metadata/acowtancy.refresh.2026-03-02.decision-reuse-summary-lint.json",
+      "sha256": "3f768339e31b97beb9f28ff992193083fa6f8df37cc304ce452f8d98b226be97",
+      "size_bytes": 501,
+      "generated_at": "2026-03-02T21:41:56.988Z"
+    }
+  ]
+}

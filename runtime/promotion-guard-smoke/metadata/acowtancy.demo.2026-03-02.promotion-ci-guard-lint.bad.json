@@ -1,0 +1,10 @@
+{
+  "schema": "underlay.migration.promotion_ci_guard_lint.v1",
+  "schema_version": 1,
+  "generated_at": "2026-03-02T21:20:16.446Z",
+  "guard_file": "/Users/betterthanclay/Dev/projects/underlay/runtime/promotion-guard-smoke/metadata/acowtancy.demo.2026-03-02.promotion-ci-guard.bad.json",
+  "schema_file": "/Users/betterthanclay/Dev/projects/underlay/docs/guides/code/205-legacy-migration-framework/promotion-ci-guard.schema.json",
+  "status": "passed",
+  "error_count": 0,
+  "errors": []
+}

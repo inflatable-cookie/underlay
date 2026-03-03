@@ -1,0 +1,53 @@
+{
+  "schema": "underlay.migration.evidence_manifest.v1",
+  "schema_version": 1,
+  "generated_at": "2026-03-02T20:36:26.486Z",
+  "project_name": "acowtancy",
+  "run_scope": "demo",
+  "run_date_utc": "2026-03-02",
+  "output_dir": "/Users/betterthanclay/Dev/projects/underlay/runtime/evidence-smoke",
+  "artifacts": [
+    {
+      "artifact_name": "migration-doctor",
+      "path": "migration-doctor.json",
+      "sha256": "e52f6244daeadbd2776163db63551372640b9f54036747e2c7df5b5d753aa251",
+      "size_bytes": 42,
+      "generated_at": "2026-03-02T20:36:05.817Z"
+    },
+    {
+      "artifact_name": "run-report",
+      "path": "run-report.json",
+      "sha256": "35a974241372c7d6334c76d00e286b73094f70b7f7a1484c2969f2842c3f6fdd",
+      "size_bytes": 55,
+      "generated_at": "2026-03-02T20:36:05.817Z"
+    },
+    {
+      "artifact_name": "decision_index",
+      "path": "decision_index.json",
+      "sha256": "c05cdb3b7087f6138550657cd9c11b86bfe1d0225508f38f4ed75e2f110b387f",
+      "size_bytes": 36,
+      "generated_at": "2026-03-02T20:36:26.267Z"
+    },
+    {
+      "artifact_name": "decision_journal",
+      "path": "decision_journal.ndjson",
+      "sha256": "ea1fae0f970dfd1671c8eb3b4c15db2bfe1071c37893017c29f4991b5d519c0c",
+      "size_bytes": 55,
+      "generated_at": "2026-03-02T20:36:05.817Z"
+    },
+    {
+      "artifact_name": "verify_artifact",
+      "path": "verification-artifacts/0195f8f2-6ba2-75ff-9f02-2a2f5310d999.json",
+      "sha256": "239adfa54da4adef339e0f70d9c26d3f2db7e9bb1ad9acbc7db0e0def9f09443",
+      "size_bytes": 23,
+      "generated_at": "2026-03-02T20:36:05.817Z"
+    },
+    {
+      "artifact_name": "audit_artifact",
+      "path": "audit-artifacts/0195f8f2-6ba2-75ff-9f02-2a2f5310d999.json",
+      "sha256": "884f31923ec361e71062a69836137eb2bbaf9075e19724fffa92310a6d192049",
+      "size_bytes": 19,
+      "generated_at": "2026-03-02T20:36:05.817Z"
+    }
+  ]
+}
