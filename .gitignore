@@ -5,3 +5,6 @@ target/
 .cache/cargo/
 tarpaulin-report.html
 .DS_Store
+
+# Generated migration/runtime artifacts
+runtime/
