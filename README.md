@@ -41,10 +41,9 @@ Start reading: `docs/architecture/000-overview.md`.
 - Component-only tests: `effigy test:components`
 - Full validation batch: `effigy validate`
 
-Rust Effigy tasks use project-local Cargo cache paths:
+Rust Effigy tasks use Cargo defaults unless you set overrides.
 
-- `CARGO_HOME=underlay/.cache/cargo/home`
-- target directory is configured in `underlay/.cargo/config.toml` as `.cache/cargo/target`
+- You can still override `CARGO_HOME` and `CARGO_TARGET_DIR` when needed.
 
 ### Postgres Integration Tests (Colima)
 
