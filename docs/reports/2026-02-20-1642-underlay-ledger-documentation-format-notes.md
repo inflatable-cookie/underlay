@@ -4,6 +4,8 @@
 
 Capture the shared documentation format conventions observed in Underlay and Ledger so future roadmap/process docs stay consistent.
 
+Ledger was migrated to the Northstar contract on 2026-03-05. Notes below reflect Ledger's current structure rather than its older flat layout.
+
 ## Underlay docs format observations
 
 - Roadmaps are numbered and ordered in `docs/roadmap/` (`001` onward) with index in `docs/roadmap/README.md`.
@@ -23,12 +25,12 @@ Capture the shared documentation format conventions observed in Underlay and Led
 
 ## Ledger docs format observations
 
-- Ledger uses parallel numbered roadmap structure in `ledger/roadmap/` (currently up to `051`).
-- Ledger roadmap files also use explicit metadata lines (`Status`, `Owner`, `Created`, `Depends on`) and numbered sections (`## 1)`, `## 2)`, etc.).
-- Sweep/report-driven process is explicit:
+- Ledger keeps platform direction in `ledger/vision/`, executable milestones in `ledger/roadmaps/g01/`, and execution evidence in `ledger/logs/YYYY-MM/`.
+- Ledger roadmap files use explicit metadata lines (`Status`, `Owner`, `Created`, `Depends on`) and numbered sections (`## 1)`, `## 2)`, etc.).
+- Sweep/log-driven process is explicit:
   - roadmaps often reference scripts under `ledger/scripts/`
   - acceptance criteria are tied to measurable sweep outputs.
-- Reports are timestamped artifacts in `ledger/reports/` and should be additive rather than rewriting history.
+- Logs are timestamped artifacts in `ledger/logs/YYYY-MM/` and should be additive rather than rewriting history.
 - AGENTS guidance explicitly requires roadmap progress accuracy and parent checklist updates.
 
 ## Cross-repo consistency notes
@@ -38,7 +40,7 @@ Capture the shared documentation format conventions observed in Underlay and Led
 - Keep index files current immediately after adding a new roadmap.
 - When adding new capability tracks, pair:
   - roadmap item (what to build),
-  - report/sweep artifact (how to verify it worked).
+  - log/sweep artifact (how to verify it worked).
 
 ## Actionable guardrails for future work
 
