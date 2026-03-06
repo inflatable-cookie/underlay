@@ -10,7 +10,7 @@ Roadmaps are executable delivery plans for Underlay library work.
 - Keep roadmap status in the file itself and keep this index aligned when statuses change.
 - Generation rollover is manual only.
 - Keep unscheduled work in [backlog/](backlog/).
-- Keep supporting artifacts such as inventories and CSVs in [supporting/](supporting/).
+- Keep durable inventories, CSVs, and machine-readable reference artifacts in [../contracts/](../contracts/).
 
 ## Active generation
 

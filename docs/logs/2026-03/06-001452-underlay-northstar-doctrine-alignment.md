@@ -5,7 +5,7 @@ Roadmap: `g01.029`
 ## Change summary
 
 - added a Northstar core inside `docs/` with `vision/`, `roadmaps/`, and `logs/`
-- moved flat roadmap files into `docs/roadmaps/g01/`, backlog items into `docs/roadmaps/backlog/`, and supporting CSV material into `docs/roadmaps/supporting/`
+- moved flat roadmap files into `docs/roadmaps/g01/`, backlog items into `docs/roadmaps/backlog/`, and compatibility inventory CSV material into `docs/contracts/`
 - moved report files into month-sharded `docs/logs/YYYY-MM/`
 - rewrote root doctrine and internal references so `docs/roadmaps/` and `docs/logs/` are the only live planning and execution contract
 

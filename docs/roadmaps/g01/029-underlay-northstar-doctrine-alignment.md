@@ -21,7 +21,7 @@ Bring the Underlay docs system onto the Northstar contract while keeping `docs/`
 - [x] create the `docs/vision/`, `docs/roadmaps/`, and `docs/logs/` spine
 - [x] move numbered roadmap files into `docs/roadmaps/g01/`
 - [x] move backlog items into `docs/roadmaps/backlog/`
-- [x] move supporting CSV material into `docs/roadmaps/supporting/`
+- [x] move compatibility inventory material into `docs/contracts/`
 - [x] move report files into month-sharded `docs/logs/YYYY-MM/`
 - [x] move the shared-admin migration prompt out of logs into guide-supporting material
 - [x] rewrite Underlay doctrine and internal references to the new paths

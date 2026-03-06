@@ -65,7 +65,7 @@ psql "$DATABASE_URL" -c "select status_code,error_code,context from platform.err
   - `acowtancy/farmyard`
   - `compli-me/api`
   - `songsprout/nursery`
-- Compatibility sunset guardrail passes (`docs/roadmaps/supporting/016-compatibility-adapters.csv`).
+- Compatibility sunset guardrail passes (`docs/contracts/016-compatibility-adapters.csv`).
 - Underlay auth crates test pass completed successfully:
   - `underlay-auth` (5 tests)
   - `underlay-auth-jwt` (37 tests)

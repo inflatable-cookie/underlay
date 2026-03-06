@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-CSV_FILE="${1:-docs/roadmap/016-compatibility-adapters.csv}"
+CSV_FILE="${1:-docs/contracts/016-compatibility-adapters.csv}"
 
 if [[ ! -f "$CSV_FILE" ]]; then
   echo "Compatibility inventory not found: $CSV_FILE" >&2

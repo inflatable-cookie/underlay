@@ -169,7 +169,7 @@ Current API and export payloads are inconsistent across projects (`camelCase` an
 - [x] Legacy compatibility is explicit and time-boxed.
 - [x] Final adapter removal and cutoff confirmation tracked in Active Remaining Work.
 
-Compatibility inventory is tracked in `docs/roadmaps/supporting/016-compatibility-adapters.csv`.
+Compatibility inventory is tracked in `docs/contracts/016-compatibility-adapters.csv`.
 Sunset guardrail is enforced by `scripts/check-compatibility-sunset.sh`.
 
 ## Validation Plan
@@ -187,7 +187,7 @@ Sunset guardrail is enforced by `scripts/check-compatibility-sunset.sh`.
 - [x] 0 naming-mismatch runtime errors in smoke tests after DB reset and seed load.
 
 Closure note (2026-02-25):
-- Compatibility inventory entries have been reconciled to current module layouts and all remaining `sort_key_dual_read` adapters are marked removed in `docs/roadmaps/supporting/016-compatibility-adapters.csv`.
+- Compatibility inventory entries have been reconciled to current module layouts and all remaining `sort_key_dual_read` adapters are marked removed in `docs/contracts/016-compatibility-adapters.csv`.
 - Cross-repo naming guardrails, runtime samples, and closure sweep checks are green.
 - [x] Documentation and guardrails are in place to prevent regression.
 
