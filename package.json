@@ -3,6 +3,25 @@
     "version": "0.0.1",
     "private": true,
     "type": "module",
+    "scripts": {
+        "tasks": "effigy tasks --repo .",
+        "health": "effigy health --repo .",
+        "doctor": "effigy doctor --repo .",
+        "test:plan": "effigy test --plan --repo .",
+        "check": "effigy check --repo .",
+        "check:types": "effigy check:types --repo .",
+        "check:exports": "effigy check:exports --repo .",
+        "check:component-test-hygiene": "effigy check:component-test-hygiene --repo .",
+        "check:guardrails": "effigy check:guardrails --repo .",
+        "validate": "effigy validate --repo .",
+        "qa": "effigy qa --repo .",
+        "rust:build": "effigy rust:build --repo .",
+        "rust:check": "effigy rust:check --repo .",
+        "rust:test": "effigy rust:test --repo .",
+        "test:components": "effigy test:components --repo .",
+        "test:ui": "effigy test:ui --repo .",
+        "effigy:dev": "effigy-dev --repo ."
+    },
     "exports": {
         ".": {
             "svelte": "./ts/src/index.ts",

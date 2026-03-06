@@ -70,6 +70,19 @@ Read these documents in order for a complete understanding:
 42. **[200 - Project Sync](./200-project-sync.md)** - Migration/sync checklist for existing projects
 43. **[205 - Legacy Migration Framework (End-to-End)](./205-legacy-migration-framework.md)** - Complete migration setup and operations playbook for humans and AI agents
 
+## Effigy-First Repo Loop
+
+When a repo in your workspace publishes `effigy.toml`, prefer its Effigy surface before raw tool commands:
+
+```bash
+effigy tasks --repo /path/to/repo
+effigy health --repo /path/to/repo
+effigy test --plan --repo /path/to/repo
+```
+
+Then use repo-owned tasks such as `effigy validate --repo /path/to/repo` or `effigy dev --repo /path/to/repo`.
+Use raw `cargo`, `bun`, or framework CLIs directly only when the repo has not represented that path in Effigy yet.
+
 ## Code Examples
 
 Code examples referenced in the guides are located in the `code/` subdirectory:
@@ -97,7 +110,16 @@ code/
 
 ### Essential Commands
 
-**Multi-repo (default):** run commands from each repo root.
+**Effigy-first:** when a repo publishes `effigy.toml`, prefer its task surface first.
+
+```bash
+effigy tasks --repo /path/to/repo
+effigy health --repo /path/to/repo
+effigy test --plan --repo /path/to/repo
+effigy validate --repo /path/to/repo
+```
+
+**Multi-repo raw fallback:** run direct tool commands only when the repo has not represented that path in Effigy yet.
 
 ```bash
 # API (backend)
@@ -122,7 +144,7 @@ cd myapp-ui && bun install
 cd myapp-ui && bun check
 ```
 
-**Monorepo:** run workspace scripts from repo root.
+**Monorepo raw fallback:** run workspace scripts from repo root when the repo does not expose an Effigy surface.
 
 ```bash
 bun install:all

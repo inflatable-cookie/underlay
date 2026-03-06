@@ -16,11 +16,19 @@ check = "svelte-check --tsconfig ./ts/tsconfig.json"
 "test:ui" = "vitest --ui {args}"
 "test:components" = "vitest run -c vitest.component.config.ts {args}"
 
-validate = [
-    { task = "check" },
-    { task = "check:types" },
+health = [
     { task = "check:exports" },
     { task = "check:component-test-hygiene" },
     { task = "check:guardrails" },
+]
+
+validate = [
+    { task = "health" },
+    { task = "check" },
+    { task = "check:types" },
     { task = "test:components" },
+]
+
+qa = [
+    { task = "validate" },
 ]

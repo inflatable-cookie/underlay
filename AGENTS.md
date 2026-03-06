@@ -1,51 +1,37 @@
-# Underlay AGENTS
+# AGENTS (Underlay)
 
 ## Scope
 
-Underlay is an app-agnostic shared foundation, not a product app.
+`underlay` is the shared foundation repo for reusable Rust crates, TypeScript utilities, Svelte components, and cross-project guidance.
 
 ## Hard Rules
 
-- Keep APIs and components reusable across consuming apps.
-- Prefer stable boundaries and composable primitives over app-specific behavior.
-- Keep TypeScript in `ts/` and Rust in `rust/`.
-- Do not introduce app-style TS workspaces (`packages/*`) inside Underlay.
-- Keep wire JSON conventions aligned with `snake_case` policy.
-- Use UUID v7 for new persistent IDs unless there is a clear exception.
-- In SQL migrations, do not use `SET search_path`; fully qualify schema/table names.
-- In SvelteKit form actions, do not wrap `throw redirect(...)` in `try/catch` that returns `fail(...)`.
-- Use `docs/roadmaps/` for active planning and `docs/logs/` for execution evidence.
-- Do not leave compatibility shim docs behind when changing doc structure.
+- Keep shared code generic and project-agnostic.
+- Do not move app-specific behavior from consumer repos into Underlay without a clear reusable boundary.
+- Preserve the separation between `rust/`, `ts/`, `contracts/`, and `docs/`.
+- Prefer extracting stable patterns over adding one-off compatibility shims.
 
-## Reference apps in this repo
+## Effigy-First Execution
 
-`reference/` exists to demonstrate patterns. It is not a production app.
-
-- Rust commands in `reference/acme-api/` are fine.
-- Avoid TypeScript install/build commands inside `reference/*` unless explicitly requested, due to local `file:` linking constraints.
+- Start with `effigy tasks --repo .` to inspect Underlay's local task surface.
+- Prefer `effigy health --repo .` as the default repo-owned baseline.
+- Use `effigy test --plan --repo .` before picking a concrete test runner.
+- Prefer local Effigy tasks such as `effigy validate --repo .`, `effigy rust:check --repo .`, `effigy rust:test --repo .`, and `effigy test:components --repo .`.
+- Use `effigy doctor --repo .` when you want broader repo scans; it currently includes structural scan findings beyond the task surface itself.
+- Fall back to raw `cargo`, `bun`, or `vitest` only when the needed operation is not represented in `effigy.toml`.
 
 ## Validation
 
-Run checks scoped to changed areas:
-
 ```bash
-# TypeScript/Svelte
-bun check
-
-# Rust
-cargo test --all-features
-# or targeted crates when iterating
-cargo test -p <crate> --all-features
-cargo check -p <crate> --all-features
+effigy health --repo .
+effigy validate --repo .
+effigy test --plan --repo .
+# Use targeted raw tool commands only when Effigy does not cover the path
 ```
 
 ## Source of Truth
 
-- Vision: `docs/vision/`
-- Architecture: `docs/architecture/`
-- Guides: `docs/guides/`
-- Roadmaps: `docs/roadmaps/`
-- Logs: `docs/logs/`
-- AGENTS standardization guide: `docs/guides/172-agents-files.md`
-- JSON naming: `docs/guides/071-json-naming.md`
-- Error logging: `docs/guides/078-error-logging.md`
+- `./README.md`
+- `./docs/guides/README.md`
+- `./docs/guides/000-overview.md`
+- `./docs/guides/172-agents-files.md`

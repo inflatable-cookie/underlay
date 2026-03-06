@@ -29,9 +29,28 @@ It provides:
 
 ## Development
 
-- Install JS deps: `bun install`
-- Rust workspace tests: `cargo test --workspace`
-- TypeScript and Svelte check: `bun check`
+Use Effigy as the default command surface from the Underlay repo root:
+
+```bash
+effigy tasks --repo .
+effigy health --repo .
+effigy test --plan --repo .
+```
+
+Common local commands:
+
+```bash
+effigy validate --repo .
+effigy qa --repo .
+effigy rust:build --repo .
+effigy rust:check --repo .
+effigy rust:test --repo .
+effigy test:components --repo .
+```
+
+Package scripts remain convenience wrappers, but direct `effigy ... --repo .` is canonical.
+
+Use `effigy doctor --repo .` when you want broader repo scans. Underlay currently carries structural scan backlog in that surface, so `health` is the better day-to-day baseline.
 
 ### Postgres Integration Tests
 
@@ -42,7 +61,7 @@ Some `underlay-db` tests spin up Postgres via `testcontainers`.
   - `colima start`
   - verify with `docker ps`
 - Run the integration suite:
-  - `cargo test -p underlay-db --test postgres_integration -- --ignored`
+  - `effigy rust:test --repo . -- -p underlay-db --test postgres_integration -- --ignored`
 
 ### Coverage
 
