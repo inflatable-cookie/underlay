@@ -17,6 +17,12 @@ Roadmaps are executable delivery plans for Underlay library work.
 - [g01/README.md](g01/README.md)
 - [generation-index.md](generation-index.md)
 
+## Historical language boundary
+
+- New or actively maintained roadmap docs must use roadmap IDs and batch language.
+- Historical logs or imported roadmap content may retain phase-era wording when they are recording past work.
+- Normalize local historical wording only when the affected doc is reopened for active work or when an old label causes live path/reference drift.
+
 ## g01 Status Overview
 
 | ID | Title | Status | Summary |

@@ -364,12 +364,14 @@ frontend-web/
 documentation/
 ├── AGENTS.md
 ├── .gitignore
+├── vision/
 ├── architecture/
-├── domain/
+├── guides/
+├── patterns/
+├── contracts/
 ├── processes/
-├── decisions/
-├── roadmap/
-└── reports/
+├── roadmaps/
+└── logs/
 ```
 
 ## Code Organization and Anti-God-File Policy
