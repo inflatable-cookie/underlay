@@ -22,10 +22,10 @@ Covered areas:
 
 Read in this order:
 
-1. `docs/roadmap/025-universal-legacy-migration-foundation.md`
-2. `docs/roadmap/026-migration-bundles-and-oci-distribution.md`
-3. `docs/roadmap/027-incremental-decision-memory-and-ai-reuse.md`
-4. `docs/roadmap/028-migration-operations-and-hardening.md`
+1. `docs/roadmaps/g01/025-universal-legacy-migration-foundation.md`
+2. `docs/roadmaps/g01/026-migration-bundles-and-oci-distribution.md`
+3. `docs/roadmaps/g01/027-incremental-decision-memory-and-ai-reuse.md`
+4. `docs/roadmaps/g01/028-migration-operations-and-hardening.md`
 5. `docs/guides/205-legacy-migration-framework.md`
 6. `docs/guides/code/205-legacy-migration-framework/migration-system-setup.md`
 7. `docs/guides/code/205-legacy-migration-framework/README.md`

@@ -112,12 +112,12 @@ When standardizing AGENTS across multiple Underlay-based apps:
 
 ## Roadmap Status Sync Protocol
 
-When touching `docs/roadmap/*` files, keep status metadata and the index aligned in the same change.
+When touching `docs/roadmaps/g01/*` files, keep status metadata and the index aligned in the same change.
 
 Rules:
 
-1. Every numbered roadmap file (`docs/roadmap/NNN-*.md`) should declare a top-level `Status: <value>` line near the title.
-2. Keep `docs/roadmap/README.md` status column aligned with each file's `Status:` value.
-3. Update aggregate totals in `docs/roadmap/README.md` whenever status counts change.
+1. Every numbered roadmap file (`docs/roadmaps/g01/NNN-*.md`) should declare a top-level `Status: <value>` line near the title.
+2. Keep `docs/roadmaps/README.md` status column aligned with each file's `Status:` value.
+3. Update aggregate totals in `docs/roadmaps/README.md` whenever status counts change.
 4. Prefer canonical status values: `Complete`, `In progress`, `Not started`.
 5. Run `bun validate` after roadmap status/index updates to ensure no unrelated regressions.

@@ -60,7 +60,7 @@ cargo install sqlx-cli --no-default-features --features postgres
 
 ```bash
 # Create project directory
-mkdir -p new-project/apps new-project/libs new-project/trellis/docs
+mkdir -p new-project/apps new-project/libs new-project/trellis
 cd new-project
 
 # Initialize Git
@@ -108,7 +108,7 @@ This monorepo contains several related projects:
 - App frontends: `apps/bloom/` and `apps/greenhouse/` (routes, Svelte components, assets).
 - Backend: `apps/nursery/` (Rust crates, domain modules, HTTP handlers, integrations).
 - Shared libraries: `libs/petal/` (UI components, design tokens) and `libs/stem/` (HTTP client, commands, typed models).
-- Documentation: `trellis/docs` (architecture, domain, processes, decisions).
+- Documentation: `trellis/` (vision, architecture, domain, processes, roadmaps, logs).
 
 ## Build, Test, and Development Commands
 

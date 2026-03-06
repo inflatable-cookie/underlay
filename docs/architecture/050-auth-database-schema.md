@@ -221,4 +221,4 @@ Underlay provides the base schema; apps own their domain-specific extensions.
 
 ## Migrations
 
-See `docs/roadmap/004-underlay-auth-system-roadmap.md` for migration SQL files.
+See `docs/roadmaps/g01/004-underlay-auth-system-roadmap.md` for migration SQL files.

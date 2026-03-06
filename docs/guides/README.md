@@ -161,7 +161,7 @@ my-project/
 │   ├── ui/
 │   ├── client/
 │   └── underlay/
-└── trellis/docs/
+└── trellis/
 ```
 
 ## Getting Help

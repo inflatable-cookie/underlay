@@ -10,10 +10,10 @@ This guide describes how to set up and operate an Underlay migration system from
 
 It is implementation-oriented and complements roadmap design docs:
 
-1. [025 Universal Legacy Migration Foundation](../roadmap/025-universal-legacy-migration-foundation.md)
-2. [026 Migration Bundles and OCI Distribution](../roadmap/026-migration-bundles-and-oci-distribution.md)
-3. [027 Incremental Decision Memory and AI Reuse](../roadmap/027-incremental-decision-memory-and-ai-reuse.md)
-4. [028 Migration Operations and Hardening](../roadmap/028-migration-operations-and-hardening.md)
+1. [025 Universal Legacy Migration Foundation](../roadmaps/g01/025-universal-legacy-migration-foundation.md)
+2. [026 Migration Bundles and OCI Distribution](../roadmaps/g01/026-migration-bundles-and-oci-distribution.md)
+3. [027 Incremental Decision Memory and AI Reuse](../roadmaps/g01/027-incremental-decision-memory-and-ai-reuse.md)
+4. [028 Migration Operations and Hardening](../roadmaps/g01/028-migration-operations-and-hardening.md)
 
 ## 1. Scope and Guarantees
 

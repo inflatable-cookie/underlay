@@ -128,8 +128,8 @@ Following naming and structure patterns from reference apps ensures:
 
 | Directory | Responsibility |
 |-----------|---------------|
-| `trellis/docs/` | Architecture decisions, domain modeling, process docs |
-| `docs/guides/` | How-to guides, tutorials, quickstarts |
+| `trellis/` | Vision, architecture, domain docs, roadmaps, and logs for product repos |
+| `docs/` | Vision, architecture, guides, roadmaps, logs, and patterns for library repos like Underlay |
 
 ## How to Use This Guide
 

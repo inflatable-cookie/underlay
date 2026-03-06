@@ -2,66 +2,49 @@
 
 ![Rust CI](https://github.com/decodelabs/underlay/actions/workflows/rust.yml/badge.svg)
 
-Underlay is a reusable foundation for building full-stack apps with the same architecture patterns as Acowtancy:
+Underlay is a reusable foundation for building full-stack apps with stable cross-project patterns.
 
-- Rust API + domain crates
-- Typed TypeScript API client
-- Shared Svelte UI kit
-- SvelteKit Admin UI + SvelteKit Frontend UI (as consumers of the shared layers)
+It provides:
 
-This repo is intentionally *app-agnostic*: it centralises stable primitives (errors, envelopes, IDs, client patterns, UI building blocks) without locking projects into one domain model.
+- Rust backend primitives and crates
+- typed TypeScript client contracts
+- shared Svelte UI components and patterns
+- auth, observability, storage, and migration foundations
+- docs and guidance for integrating the library into real projects
 
 ## Repo Layout
 
-- `rust/` – Rust crates (start with `underlay-core`).
-- `ts/` – TypeScript + Svelte library exports.
-- `contracts/` – shared contract artefacts (OpenAPI schemas, shared DTO envelopes).
-- `docs/` – architecture + integration docs (source of truth).
+- `rust/` - Rust crates
+- `ts/` - TypeScript and Svelte exports
+- `contracts/` - shared contract artifacts
+- `docs/` - documentation authority
 
-Start reading: `docs/architecture/000-overview.md`.
+## Docs Start Here
+
+- `docs/vision/001-underlay-foundation-vision.md`
+- `docs/architecture/000-overview.md`
+- `docs/guides/000-overview.md`
+- `docs/roadmaps/README.md`
+- `docs/logs/README.md`
 
 ## Development
 
 - Install JS deps: `bun install`
-- Rust: `cargo test --workspace`
-- TS/Svelte: `bun check`
+- Rust workspace tests: `cargo test --workspace`
+- TypeScript and Svelte check: `bun check`
 
-### Effigy Tasks
+### Postgres Integration Tests
 
-- Typecheck + Svelte diagnostics: `effigy check`
-- TypeScript compile check: `effigy check:types`
-- Export surface check: `effigy check:exports`
-- Component test hygiene: `effigy check:component-test-hygiene`
-- Guardrails: `effigy check:guardrails`
-- Rust workspace build: `effigy rust:build`
-- Rust workspace check (`--all-features`): `effigy rust:check`
-- Rust workspace tests (`--all-features`): `effigy rust:test`
-- Built-in test orchestration: `effigy test`
-- Vitest UI mode: `effigy test:ui`
-- Component-only tests: `effigy test:components`
-- Full validation batch: `effigy validate`
+Some `underlay-db` tests spin up Postgres via `testcontainers`.
 
-Rust Effigy tasks use Cargo defaults unless you set overrides.
-
-- You can still override `CARGO_HOME` and `CARGO_TARGET_DIR` when needed.
-
-### Postgres Integration Tests (Colima)
-
-Some `underlay-db` tests spin up a Postgres container via `testcontainers`.
-
-- Install runtime + CLI:
+- Install runtime and CLI:
   - `brew install colima docker`
   - `colima start`
-  - verify: `docker ps`
-
-Run the integration tests:
-- `cargo test -p underlay-db --test postgres_integration -- --ignored`
+  - verify with `docker ps`
+- Run the integration suite:
+  - `cargo test -p underlay-db --test postgres_integration -- --ignored`
 
 ### Coverage
 
 - Install tarpaulin: `cargo install cargo-tarpaulin`
-- Run check: `rust/scripts/check-coverage.sh`
-
-## Status
-
-Early scaffold: the goal is to extract the smallest stable layer from reference implementations (e.g. Acowtancy) and harden the boundaries here.
+- Run coverage check: `rust/scripts/check-coverage.sh`

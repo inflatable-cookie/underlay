@@ -98,4 +98,4 @@ pub use crate::postgres_scheduled::Notifier;
 
 ## Reference
 
-See `docs/roadmap/017-rust-module-splitting-roadmap.md` for the initial splitting work and per-file decisions.
+See `docs/roadmaps/g01/017-rust-module-splitting-roadmap.md` for the initial splitting work and per-file decisions.
