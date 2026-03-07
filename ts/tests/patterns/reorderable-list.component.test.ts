@@ -33,6 +33,13 @@ function createController(options?: {
 	const updatePending = vi.fn((items: Item[]) => {
 		pending = items;
 	});
+	const move = vi.fn((fromIndex: number, toIndex: number) => {
+		if (toIndex < 0 || toIndex >= pending.length) return;
+		const next = [...pending];
+		const [item] = next.splice(fromIndex, 1);
+		next.splice(toIndex, 0, item);
+		pending = next;
+	});
 
 	return {
 		get pending() {
@@ -47,6 +54,7 @@ function createController(options?: {
 		get isPending() {
 			return options?.isPending ?? false;
 		},
+		move,
 		submit,
 		reset,
 		updatePending,
@@ -80,8 +88,32 @@ describe("patterns/ReorderableList.svelte", () => {
 		);
 
 		expect(controller.updatePending).toHaveBeenCalledTimes(2);
-		expect(controller.updatePending).toHaveBeenNthCalledWith(1, [{ id: "x", label: "X" }]);
-		expect(controller.updatePending).toHaveBeenNthCalledWith(2, [{ id: "y", label: "Y" }]);
+	expect(controller.updatePending).toHaveBeenNthCalledWith(1, [{ id: "x", label: "X" }]);
+	expect(controller.updatePending).toHaveBeenNthCalledWith(2, [{ id: "y", label: "Y" }]);
+	});
+
+	it("uses the item wrapper for keyboard reorder and hides the legacy control strip", async () => {
+		const controller = createController({
+			items: [
+				{ id: "a", label: "Alpha" },
+				{ id: "b", label: "Beta" },
+			],
+		});
+		render(ReorderableListHarness, { controller });
+
+		expect(screen.queryByText("Reorder")).toBeNull();
+		expect(screen.queryByRole("button", { name: /move alpha up/i })).toBeNull();
+		expect(screen.queryByRole("button", { name: /move alpha down/i })).toBeNull();
+
+		const firstItem = screen.getByTestId("row-a").closest(".underlay-reorderable-list__item");
+		const firstHandle = firstItem?.querySelector(".underlay-reorderable-list__kbd-handle");
+		expect(firstHandle?.getAttribute("aria-label")).toContain("Reorder a");
+
+		await fireEvent.keyDown(firstHandle!, { key: " " });
+		await fireEvent.keyDown(firstHandle!, { key: "ArrowDown" });
+
+		expect(controller.move).toHaveBeenCalledWith(0, 1);
+		expect(controller.pending.map((item) => item.id)).toEqual(["b", "a"]);
 	});
 
 	it("handles cancel, submit success, submit error transform, and empty state", async () => {

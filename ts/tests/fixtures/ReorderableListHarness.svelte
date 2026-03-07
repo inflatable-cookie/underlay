@@ -10,6 +10,7 @@
     pending: ReorderItem[];
     isDirty: boolean;
     isPending: boolean;
+    move: (fromIndex: number, toIndex: number) => void;
     submit: () => Promise<void>;
     reset: () => void;
     updatePending: (items: ReorderItem[]) => void;

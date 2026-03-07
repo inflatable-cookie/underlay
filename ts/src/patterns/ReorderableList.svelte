@@ -60,7 +60,7 @@
     item: Snippet<[T]>;
     /** Optional empty state snippet */
     empty?: Snippet;
-    /** Optional explicit move buttons (up/down) for touch and keyboard fallback */
+    /** Legacy no-op; reorder uses drag handles and keyboard on the item wrapper */
     showMoveButtons?: boolean;
     /** Optional highlighted IDs (for conflict recovery newly-added items) */
     highlightedIds?: string[];
@@ -85,7 +85,7 @@
     cancelLabel = "Cancel",
     item: itemSnippet,
     empty,
-    showMoveButtons = false,
+    showMoveButtons: _showMoveButtons = false,
     highlightedIds = [],
     getItemLabel = (item: T) => item.id,
     longListThreshold = 50,
@@ -307,31 +307,7 @@
             disabled={isDisabled}
             aria-label={`Reorder ${getItemLabel(pendingItem)}. Position ${index + 1} of ${controller.pending.length}. Press space to grab, then arrow keys to move.`}
             onkeydown={(event) => handleItemKeydown(event, index)}
-          >
-            Reorder
-          </button>
-          {#if showMoveButtons}
-            <div class="underlay-reorderable-list__move-buttons">
-              <button
-                type="button"
-                class="underlay-reorderable-list__move-btn"
-                onclick={() => moveItem(index, index - 1)}
-                disabled={isDisabled || index === 0}
-                aria-label={`Move ${getItemLabel(pendingItem)} up`}
-              >
-                ↑
-              </button>
-              <button
-                type="button"
-                class="underlay-reorderable-list__move-btn"
-                onclick={() => moveItem(index, index + 1)}
-                disabled={isDisabled || index === controller.pending.length - 1}
-                aria-label={`Move ${getItemLabel(pendingItem)} down`}
-              >
-                ↓
-              </button>
-            </div>
-          {/if}
+          ></button>
           {@render itemSnippet(pendingItem)}
         </div>
       {/each}
@@ -412,11 +388,17 @@
   }
 
   .underlay-reorderable-list__item {
+    position: relative;
     cursor: grab;
     display: flex;
     align-items: center;
-    gap: var(--underlay-space-2, 0.5rem);
     border-radius: var(--underlay-radius-md, 0.5rem);
+    width: 100%;
+  }
+
+  .underlay-reorderable-list__item:focus-within {
+    outline: 2px solid var(--underlay-color-primary, #2563eb);
+    outline-offset: 2px;
   }
 
   .underlay-reorderable-list__item--highlighted {
@@ -425,44 +407,20 @@
   }
 
   .underlay-reorderable-list__kbd-handle {
-    min-width: 56px;
-    height: 28px;
-    border: 1px solid var(--underlay-color-border-subtle, rgba(148, 163, 184, 0.3));
-    border-radius: var(--underlay-radius-sm, 0.375rem);
-    background: var(--underlay-color-surface, #fff);
-    color: var(--underlay-color-text-muted, #475569);
-    font-size: 0.75rem;
-    cursor: pointer;
-    flex-shrink: 0;
+    position: absolute;
+    inset: 0;
+    padding: 0;
+    margin: 0;
+    border: 0;
+    background: transparent;
+    opacity: 0;
+    pointer-events: none;
   }
 
-  .underlay-reorderable-list__kbd-handle:focus-visible {
-    outline: 2px solid var(--underlay-color-primary, #2563eb);
-    outline-offset: 2px;
-  }
-
-  .underlay-reorderable-list__move-buttons {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    flex-shrink: 0;
-  }
-
-  .underlay-reorderable-list__move-btn {
-    width: 28px;
-    height: 24px;
-    border: 1px solid var(--underlay-color-border-subtle, rgba(148, 163, 184, 0.3));
-    background: var(--underlay-color-surface, #fff);
-    border-radius: var(--underlay-radius-sm, 0.375rem);
-    color: var(--underlay-color-text-muted, #475569);
-    font-size: 12px;
-    line-height: 1;
-    cursor: pointer;
-  }
-
-  .underlay-reorderable-list__move-btn:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
+  .underlay-reorderable-list__item > :global(*) {
+    flex: 1 1 auto;
+    min-width: 0;
+    width: 100%;
   }
 
   .underlay-reorderable-list__empty {
