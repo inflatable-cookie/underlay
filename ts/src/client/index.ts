@@ -8,3 +8,4 @@ export * from "./sveltekit";
 export * from "./route-protection";
 export * from "./navigation";
 export * from "./query";
+export * from "./soft-delete";

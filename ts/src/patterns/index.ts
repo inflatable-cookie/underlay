@@ -12,6 +12,8 @@ export * from "./optimistic";
 export * from "./banner";
 export * from "./slugify";
 export * from "./selection-history";
+export * from "./restore-blocked";
+export * from "./restore-resolution";
 export {
   createLocalSearchFns,
   type LocalSearchOptions,
@@ -55,6 +57,11 @@ export { default as OpsCardGrid } from "./OpsCardGrid.svelte";
 export { default as OpsSection } from "./OpsSection.svelte";
 export { default as AiRoutingAdmin } from "./AiRoutingAdmin.svelte";
 export { default as Banner } from "./Banner.svelte";
+export { default as RestoreBlockedPanel } from "./RestoreBlockedPanel.svelte";
+export { default as RestoreResolutionDialog } from "./RestoreResolutionDialog.svelte";
+export { default as RestoreResolutionModalView } from "./RestoreResolutionModalView.svelte";
+export { default as RestoreResolutionPlanner } from "./RestoreResolutionPlanner.svelte";
+export { default as RestoreResolutionShell } from "./RestoreResolutionShell.svelte";
 export { default as ReorderableList } from "./ReorderableList.svelte";
 export { default as SlugField } from "./SlugField.svelte";
 export { default as SpaFormShell } from "./SpaFormShell.svelte";

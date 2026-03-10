@@ -77,6 +77,10 @@
             "types": "./ts/src/client/types.ts",
             "default": "./ts/src/client/types.ts"
         },
+        "./client/soft-delete": {
+            "types": "./ts/src/client/soft-delete.ts",
+            "default": "./ts/src/client/soft-delete.ts"
+        },
         "./testing": {
             "types": "./ts/src/testing/index.ts",
             "default": "./ts/src/testing/index.ts"

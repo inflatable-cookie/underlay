@@ -70,12 +70,46 @@ pub enum SoftDeleteResult {
     Deleted { batch_id: DeleteBatchId },
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum RestoreBlockerKind {
+    Conflict,
+    ParentState,
+    InvalidState,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct RestoreReference {
+    pub entity_type: String,
+    pub entity_id: Uuid,
+    pub display_name: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct RestoreFieldConflict {
+    pub field_name: String,
+    pub candidate_value: Option<String>,
+    pub active_occupant: Option<RestoreReference>,
+    pub resolution_hints: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct RestoreBlocker {
+    pub kind: RestoreBlockerKind,
+    pub entity: RestoreReference,
+    pub parent: Option<RestoreReference>,
+    pub parent_state: Option<String>,
+    pub message: Option<String>,
+    pub field_conflicts: Vec<RestoreFieldConflict>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum RestoreBatchResult {
     /// No rows were restored for this batch id.
     NotFound,
     /// One or more rows were restored.
     Restored,
+    /// Restore is blocked and should not mutate any rows.
+    Blocked { blockers: Vec<RestoreBlocker> },
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

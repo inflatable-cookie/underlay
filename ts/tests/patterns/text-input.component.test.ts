@@ -61,4 +61,58 @@ describe("components/TextInput.svelte", () => {
       vi.useRealTimers();
     }
   });
+
+  it("flushes pending validation immediately on change instead of restarting debounce", async () => {
+    vi.useFakeTimers();
+    const validate = vi.fn(async () => ({ valid: true }));
+
+    try {
+      const view = render(TextInputHarness, {
+        initialValue: "",
+        validate,
+        showValidationStatus: true
+      });
+
+      const input = view.container.querySelector("input.underlay-input") as HTMLInputElement;
+      await fireEvent.input(input, { target: { value: "C" } });
+      expect(validate).toHaveBeenCalledTimes(0);
+
+      await fireEvent.change(input);
+
+      await waitFor(() => {
+        expect(validate).toHaveBeenCalledTimes(1);
+      });
+      expect(validate).toHaveBeenCalledWith("C", undefined);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("does not revalidate on change when the current value was already validated", async () => {
+    vi.useFakeTimers();
+    const validate = vi.fn(async () => ({ valid: true }));
+
+    try {
+      const view = render(TextInputHarness, {
+        initialValue: "",
+        validate,
+        showValidationStatus: true
+      });
+
+      const input = view.container.querySelector("input.underlay-input") as HTMLInputElement;
+      await fireEvent.input(input, { target: { value: "C" } });
+      vi.advanceTimersByTime(300);
+
+      await waitFor(() => {
+        expect(validate).toHaveBeenCalledTimes(1);
+      });
+
+      await fireEvent.change(input);
+      vi.runOnlyPendingTimers();
+
+      expect(validate).toHaveBeenCalledTimes(1);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
 });

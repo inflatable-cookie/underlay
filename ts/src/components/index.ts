@@ -6,6 +6,7 @@ export { default as Button } from "./Button.svelte";
 export { default as Code } from "./Code.svelte";
 export { default as TextButton } from "./TextButton.svelte";
 export { default as Card } from "./Card.svelte";
+export { default as CardRadioGroup } from "./CardRadioGroup.svelte";
 export { default as CheckboxChip } from "./CheckboxChip.svelte";
 export { default as Field } from "./Field.svelte";
 export { default as FieldHint } from "./FieldHint.svelte";

@@ -88,6 +88,7 @@ import {
 
   let debounceTimer: ReturnType<typeof setTimeout> | null = null;
   let validationTimer: ReturnType<typeof setTimeout> | null = null;
+  let activeValidationKey = $state<string | null>(null);
 
   // Validation state
   let validationStatus = $state<InputValidationStatus>("idle");
@@ -173,15 +174,28 @@ import {
   });
 
   function triggerValidation(inputValue: string) {
+    triggerValidationWithMode(inputValue, false);
+  }
+
+  function buildValidationKey(inputValue: string, context: unknown): string {
+    return JSON.stringify({
+      value: inputValue,
+      context: context ?? null
+    });
+  }
+
+  function triggerValidationWithMode(inputValue: string, immediate: boolean) {
     // Clear any pending validation
     if (validationTimer) {
       clearTimeout(validationTimer);
+      validationTimer = null;
     }
 
     // Don't validate empty values
     if (!inputValue) {
       validationStatus = "idle";
       validationMessage = "";
+      activeValidationKey = null;
       return;
     }
 
@@ -191,22 +205,37 @@ import {
 
     // Debounce the async validation
     const ctx = validationContext;
-    validationTimer = setTimeout(async () => {
+    const validationKey = buildValidationKey(inputValue, ctx);
+    activeValidationKey = validationKey;
+
+    const runValidation = async () => {
       try {
         const result = await validate!(inputValue, ctx);
-        // Only update if this is still the current value
-        if (inputValue === value) {
+        // Only update if this is still the current value and active validation
+        if (inputValue === value && activeValidationKey === validationKey) {
           lastValidatedValue = inputValue;
           validationStatus = result.valid ? "valid" : "invalid";
           validationMessage = result.message || "";
+          activeValidationKey = null;
         }
       } catch (error) {
-        // Only update if this is still the current value
-        if (inputValue === value) {
+        // Only update if this is still the current value and active validation
+        if (inputValue === value && activeValidationKey === validationKey) {
           validationStatus = "idle";
           validationMessage = "Could not validate";
+          activeValidationKey = null;
         }
       }
+    };
+
+    if (immediate) {
+      void runValidation();
+      return;
+    }
+
+    validationTimer = setTimeout(() => {
+      validationTimer = null;
+      void runValidation();
     }, validationDebounce);
   }
 
@@ -231,11 +260,13 @@ import {
   function handleChange() {
     // Validate on blur if enabled
     if (validate && validateOnBlur && hasUserInteracted && value) {
-      // Clear validation timer and validate immediately
-      if (validationTimer) {
-        clearTimeout(validationTimer);
+      const currentValidationKey = buildValidationKey(value, validationContext);
+      const hasInFlightValidation = validationTimer === null && activeValidationKey === currentValidationKey;
+      const alreadyValidatedCurrentValue = value === lastValidatedValue;
+
+      if (!alreadyValidatedCurrentValue && !hasInFlightValidation) {
+        triggerValidationWithMode(value, true);
       }
-      triggerValidation(value);
     }
 
     // Only fire onchange on blur if debounce is not enabled
