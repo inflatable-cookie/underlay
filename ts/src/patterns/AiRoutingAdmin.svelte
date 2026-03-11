@@ -83,7 +83,7 @@
     { key: "successRate", label: "Success", width: "100px" },
     { key: "latency", label: "Latency", width: "120px", hideOnMobile: true },
     { key: "tokens", label: "Tokens", width: "130px", hideOnMobile: true },
-    { key: "fallback", label: "Fallback", width: "100px" }
+    { key: "recovery", label: "Recovery", width: "minmax(190px, 1.4fr)" }
   ];
 
   const costColumns: DataTableColumn<AiRoutingDailyCost>[] = [
@@ -186,6 +186,7 @@
         <Badge variant="danger">Runtime failures: {ops.alerts?.runtimeFailureCount24h ?? 0}</Badge>
         <Badge variant="warning">Circuit open: {ops.alerts?.circuitOpenCount24h ?? 0}</Badge>
         <Badge variant="info">Fallback runs: {ops.alerts?.fallbackRunCount24h ?? 0}</Badge>
+        <Badge variant="warning">Chain exhausted: {ops.alerts?.exhaustedChainRunCount24h ?? 0}</Badge>
       </div>
     </OpsCard>
 
@@ -230,8 +231,21 @@
           {/if}
         {:else if column.key === "tokens"}
           {row.inputTokensSum + row.outputTokensSum}
-        {:else if column.key === "fallback"}
-          {row.fallbackRunCount}
+        {:else if column.key === "recovery"}
+          <div class="metric-recovery-cell">
+            <span class="summary-text">
+              {#if row.avgRouteAttemptCount !== null}
+                Avg {row.avgRouteAttemptCount.toFixed(1)} routes
+              {:else}
+                Avg —
+              {/if}
+            </span>
+            <div class="pill-row">
+              <Badge variant="info">Fallback: {row.fallbackRunCount}</Badge>
+              <Badge variant="warning">Circuit: {row.circuitOpenRunCount}</Badge>
+              <Badge variant="danger">Exhausted: {row.exhaustedChainRunCount}</Badge>
+            </div>
+          </div>
         {/if}
       {/snippet}
     </DataTable>
@@ -313,5 +327,11 @@
     gap: 0.5rem;
     margin-bottom: 0.5rem;
     max-width: 240px;
+  }
+
+  .metric-recovery-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
   }
 </style>

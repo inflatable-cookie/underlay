@@ -17,8 +17,11 @@ export interface AiRoutingMetric {
   successCount: number;
   failedCount: number;
   fallbackRunCount: number;
+  circuitOpenRunCount: number;
+  exhaustedChainRunCount: number;
   avgLatencyMs: number | null;
   p95LatencyMs: number | null;
+  avgRouteAttemptCount: number | null;
   inputTokensSum: number;
   outputTokensSum: number;
   terminalRuntimeFailures: number;
@@ -52,6 +55,7 @@ export interface AiRoutingAlertSummary {
   runtimeFailureCount24h: number;
   circuitOpenCount24h: number;
   fallbackRunCount24h: number;
+  exhaustedChainRunCount24h: number;
 }
 
 export interface AiRoutingParity {

@@ -121,6 +121,7 @@ Reusable templates:
   - circuit-breaker state is in-memory per process in this batch
   - validation failures stop route fallback instead of silently trying another provider
   - cost tracking and dead-letter ownership remain app-specific
+  - routing admin consumers that use the shared `AiRoutingAdmin` surface can now pass through richer recovery fields (`avgRouteAttemptCount`, `circuitOpenRunCount`, `exhaustedChainRunCount`, `exhaustedChainRunCount24h`) when their backend exposes them
 
 ### Background Job Reliability and Observability (`2026-03-11`)
 
