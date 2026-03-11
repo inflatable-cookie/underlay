@@ -611,12 +611,18 @@ where
         } else {
             let verification_input = VerificationInput {
                 transform_record_count: transform_output.record_count,
+                transform_records: transform_output
+                    .batches
+                    .iter()
+                    .flat_map(|batch| batch.records.clone())
+                    .collect(),
                 decision_count: decide_output.decision_count,
                 unresolved_decision_count: decide_output.unresolved_count,
                 decision_governance_issue_count: decide_output.governance_issues.len(),
                 transform_checksum: transform_checksum(&transform_output)?,
                 materialize: materialize_output.clone(),
                 assets: assets_output.clone(),
+                rules: ctx.policy.verification_rules.clone(),
             };
 
             let verification = verify_stage(&self.plugin, ctx, &verification_input).await?;

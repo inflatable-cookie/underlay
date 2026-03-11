@@ -1,15 +1,11 @@
 /// <reference types="vitest" />
 // @vitest-environment jsdom
 
-import { afterEach, describe, expect, it } from "vitest";
-import { cleanup, fireEvent, render, screen } from "@testing-library/svelte";
+import { describe, expect, it } from "vitest";
+import { fireEvent, render, screen } from "@testing-library/svelte";
 import Search from "lucide-svelte/icons/search";
 import Copy from "lucide-svelte/icons/copy";
 import CardRadioGroup from "../../src/components/CardRadioGroup.svelte";
-
-afterEach(() => {
-  cleanup();
-});
 
 describe("components/CardRadioGroup.svelte", () => {
   it("renders card options with descriptions and submits the selected hidden value", () => {

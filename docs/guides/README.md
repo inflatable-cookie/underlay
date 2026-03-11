@@ -186,6 +186,14 @@ my-project/
 └── trellis/
 ```
 
+## Research
+
+When making architecture or implementation decisions that depend on external comparison or source-backed learning:
+
+- Check the [Research section](../research/) for evidence-based recommendations
+- Use `master-index.md` to navigate from questions to relevant artifacts
+- Follow the `research-to-implementation-playbook.md` to carry research into delivery
+
 ## Getting Help
 
 - Check [160-troubleshooting](./160-troubleshooting.md) for common issues

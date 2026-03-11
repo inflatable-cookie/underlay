@@ -38,6 +38,7 @@ tracing = ["dep:tracing"]
 error-logging = ["underlay-db", "sqlx", "chrono", "tokio/rt", "tracing"]
 embed = ["underlay-http-client"]
 openapi = ["dep:utoipa"]
+opentelemetry = ["underlay-observability/opentelemetry"]
 
 [dev-dependencies]
 tokio = { workspace = true, features = ["macros", "rt", "time"] }

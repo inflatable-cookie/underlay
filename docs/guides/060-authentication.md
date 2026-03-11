@@ -707,6 +707,79 @@ Login:
 6. Server verifies and creates session
 ```
 
+### Client-Side Passkey Helpers
+
+Underlay now provides higher-level client helpers for the WebAuthn ceremony:
+
+- `usePasskeyRegistration()` from `@decodelabs/underlay/patterns`
+- `usePasskeyAuthentication()` from `@decodelabs/underlay/patterns`
+- `PasskeyManager` from `@decodelabs/underlay/components`
+- shared error and capability helpers from `@decodelabs/underlay/utils`
+
+Use them when you want shared browser capability checks, error mapping, and JSON serialization instead of direct `navigator.credentials.*` orchestration in every app.
+
+```ts
+import {
+  usePasskeyAuthentication,
+  usePasskeyRegistration,
+} from "@decodelabs/underlay/patterns";
+
+const registerPasskey = usePasskeyRegistration({
+  onStart: async () => api.auth.startPasskeyRegistration(),
+  onFinish: async (credential) => {
+    await api.auth.finishPasskeyRegistration(credential);
+  },
+});
+
+const authenticatePasskey = usePasskeyAuthentication({
+  conditional: true,
+  onStart: async () => api.auth.startPasskeyAuthentication(),
+  onFinish: async (credential) => {
+    await api.auth.finishPasskeyAuthentication(credential);
+  },
+});
+```
+
+```svelte
+<PasskeyManager
+  {passkeys}
+  onRegister={() => registerPasskey.start()}
+  onRename={(id, name) => api.auth.renamePasskey(id, name)}
+  onDelete={(id) => api.auth.deletePasskey(id)}
+/>
+```
+
+Notes:
+
+- This is additive. Existing passkey implementations do not need to change immediately.
+- Conditional mediation support still depends on the browser; detect it through the shared helper instead of assuming uniform support.
+- Existing `LoginPage` / `LoginPasskeyTab` composites remain app-owned wrappers around `onPasskeyLogin(email?)`. They do not adopt the new hooks internally yet because the hook contract needs explicit start/finish callbacks, not a single app-owned login action.
+
+### Browser Support Matrix for the Shared Passkey Helpers
+
+Use this as the default rollout expectation for `usePasskeyAuthentication()` and conditional mediation:
+
+| Browser family | Basic passkey ceremony | Conditional mediation expectation | Rollout note |
+|---|---|---|---|
+| Chrome / Chromium | Supported | Treat as the primary conditional-mediation target | Validate autofill UX in the consuming app |
+| Safari | Supported | Validate explicitly before depending on conditional UX | Keep a visible button path even when conditional checks pass |
+| Firefox | Supported for core ceremony | Do not assume conditional mediation parity | Prefer explicit button-triggered authentication |
+| Edge | Supported | Follow Chromium expectations, but still smoke-test in app | Reuse Chrome rollout guidance |
+
+Operational rule:
+
+- Always ship a visible button-triggered passkey path even when conditional mediation is available.
+- Treat conditional mediation as an enhancement, not the only login path.
+- Validate the final UX in the consuming app because browser support shifts faster than the shared Underlay API.
+
+### Shared Hook Boundary for This Batch
+
+The completion decision for this Underlay batch is:
+
+- keep `usePasskeyRegistration()` and `usePasskeyAuthentication()` as the recommended shared surface
+- keep `LoginPage` and `LoginPasskeyTab` app-owned until a consuming app proves that widening the composite prop contract is worth the migration cost
+- treat existing auth composites as wrappers around app-owned backend start/finish actions, not as the canonical shared WebAuthn orchestration layer
+
 ---
 
 ## Multi-Step Authentication Flows

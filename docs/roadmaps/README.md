@@ -11,6 +11,7 @@ Roadmaps are executable delivery plans for Underlay library work.
 - Generation rollover is manual only.
 - Keep unscheduled work in [backlog/](backlog/).
 - Keep durable inventories, CSVs, and machine-readable reference artifacts in [../contracts/](../contracts/).
+- If active work changes consumer-visible behavior, APIs, configuration, migrations, or integration patterns, include a `Consumer Upgrade Impact` section in the roadmap and point to the compatibility note plan.
 
 ## Active generation
 
@@ -56,5 +57,17 @@ Roadmaps are executable delivery plans for Underlay library work.
 | 027 | [Incremental Decision Memory and AI Reuse](./g01/027-incremental-decision-memory-and-ai-reuse.md) | Complete | Decision fingerprinting, sidecar merge and reuse rules, invalidation policy, and AI-call suppression metrics |
 | 028 | [Migration Operations and Hardening](./g01/028-migration-operations-and-hardening.md) | Complete | Resume and recovery, drift detection, integrity and audit enforcement, governance reporting, signature rollout gates, and promotion readiness |
 | 029 | [Northstar Doctrine Alignment](./g01/029-underlay-northstar-doctrine-alignment.md) | Complete | Move Underlay docs onto the Northstar contract inside `docs/` |
+| 030 | [Research Execution Intake and Wave Planning](./g01/030-research-execution-intake-and-wave-planning.md) | Complete | Assess the March 2026 research corpus, schedule only canonical IDR-backed work, and open the next execution wave |
+| 031 | [Consumer Upgrade and Change Communication](./g01/031-consumer-upgrade-and-change-communication.md) | Complete | Make downstream app upgrade guidance a required deliverable for any Underlay behavior, API, config, or migration change |
+| 032 | [Passkey Client Abstractions](./g01/032-passkey-client-abstractions.md) | Complete | Shared passkey hooks, error mapping, and management UI for WebAuthn consumer flows |
+| 033 | [AI Runtime Resilience Middleware](./g01/033-ai-runtime-resilience-middleware.md) | Complete | Opt-in retry, circuit-breaker, and route-chain primitives for `underlay-ai-runtime` |
+| 034 | [Cross-Language Validation with Zod](./g01/034-cross-language-validation-zod.md) | Complete | Optional Zod schema export and Svelte form helpers for client-side validation |
+| 035 | [Background Job Reliability and Observability](./g01/035-background-job-reliability-and-observability.md) | Complete | Retry jitter, dead letters, and lifecycle events for `underlay-jobs` |
+| 036 | [Declarative Migration Verification Rules](./g01/036-declarative-migration-verification-rules.md) | Complete | Add reusable declarative verification to `underlay-migration-core` without removing custom verification |
+| 037 | [Nightfire Slash Command Palette](./g01/037-nightfire-slash-command-palette.md) | Complete | Add keyboard-driven slash-command insertion to `NightfireEditor` |
+| 038 | [OpenTelemetry Span Integration](./g01/038-opentelemetry-span-integration.md) | Complete | Add feature-gated trace-context propagation and request-span correlation across `underlay-http` and `underlay-observability` |
+| 039 | [Storage Expiration Support](./g01/039-storage-expiration-support.md) | Complete | Add optional TTL and expiration support to the SSR-safe storage wrappers without breaking existing persisted values |
+| 040 | [Smart Skeletons](./g01/040-smart-skeletons.md) | Complete | Add a higher-level `DataSkeleton` surface and reusable preset registry over the existing `Skeleton` primitives |
+| 041 | [Form Draft Persistence](./g01/041-form-draft-persistence.md) | Complete | Add opt-in draft persistence and restoration to `createFormState` using the shared storage wrappers |
 
-**Complete:** 27 | **Extracted:** 2 | **In progress:** 0 | **Planned:** 0
+**Complete:** 39 | **Extracted:** 2 | **In progress:** 0 | **Not started:** 0

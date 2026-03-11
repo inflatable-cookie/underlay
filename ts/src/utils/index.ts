@@ -14,6 +14,14 @@ export {
   toPublicKeyCreationOptions,
   assertionToJson,
   credentialCreationToJson,
+  sanitizePasskeyErrorMessage,
+  isPasskeySupported,
+  supportsConditionalMediation,
+  mapWebAuthnError,
+  type PasskeyError,
+  type PasskeyErrorCode,
+  type RegistrationCredentialJson,
+  type AuthenticationCredentialJson,
 } from "./webauthn.js";
 
 // Sequence utilities

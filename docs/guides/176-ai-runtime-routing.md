@@ -17,6 +17,9 @@ Use `underlay-ai-runtime` for app-agnostic runtime pieces:
 - `ProviderRegistry`
 - route candidate and capability types
 - request/response/error contracts
+- `RetryMiddleware`
+- `CircuitBreakerMiddleware`
+- `RouteChainExecutor`
 
 ## Recommended architecture in consuming apps
 
@@ -39,6 +42,101 @@ Use `underlay-ai-runtime` for app-agnostic runtime pieces:
 - request timeout
 - structured JSON response mode
 - sanitized provider metadata passthrough (allowlisted keys only)
+
+## Opt-in resilience middleware
+
+The runtime now includes additive resilience primitives for apps that want shared retry,
+circuit-breaker, and fallback-chain behavior without changing provider configuration ownership.
+
+### Retry and circuit breaker composition
+
+```rust
+use std::sync::Arc;
+
+use underlay_ai_runtime::{
+    CircuitBreakerConfig,
+    CircuitBreakerMiddleware,
+    OpenAiCompatibleClient,
+    ProviderRegistry,
+    RetryConfig,
+    RetryMiddleware,
+};
+
+let openai = CircuitBreakerMiddleware::new(
+    RetryMiddleware::new(
+        OpenAiCompatibleClient::new("https://api.openai.com/v1", "openai-key")?,
+        RetryConfig::default(),
+    ),
+    CircuitBreakerConfig::default(),
+);
+
+let anthropic = CircuitBreakerMiddleware::new(
+    RetryMiddleware::new(
+        OpenAiCompatibleClient::new("https://api.anthropic.com/v1", "anthropic-key")?,
+        RetryConfig::default(),
+    ),
+    CircuitBreakerConfig::default(),
+);
+
+let mut registry = ProviderRegistry::new();
+registry.register("openai", Arc::new(openai));
+registry.register("anthropic", Arc::new(anthropic));
+```
+
+Defaults:
+
+- retry middleware retries `RateLimit`, `Timeout`, `Provider`, and `Unknown` failures
+- circuit breaker state is in-memory and process-local
+- middleware is opt-in; existing clients keep current behavior until wrapped explicitly
+
+### Route fallback chains
+
+Use `RouteChainExecutor` when an app already resolved an ordered list of routes and wants
+deterministic fallback across providers or models.
+
+```rust
+use underlay_ai_runtime::{RouteChainExecutor, ResolvedModelRoute};
+
+let routes = vec![
+    ResolvedModelRoute {
+        alias: "authoring.primary".to_string(),
+        provider_name: "openai".to_string(),
+        model_name: "gpt-4.1-mini".to_string(),
+        provider_metadata: None,
+    },
+    ResolvedModelRoute {
+        alias: "authoring.fallback".to_string(),
+        provider_name: "anthropic".to_string(),
+        model_name: "claude-3-5-sonnet".to_string(),
+        provider_metadata: None,
+    },
+];
+
+let result = RouteChainExecutor::new(registry)
+    .execute_with_fallback(&routes, &request)
+    .await?;
+
+let selected_route = result.route;
+let attempt_history = result.attempts;
+```
+
+Behavior notes:
+
+- fallback continues for `Auth`, `RateLimit`, `Timeout`, `Provider`, `Unknown`, and `CircuitOpen`
+- validation errors stop the chain immediately because a second provider is unlikely to fix a bad request or malformed response contract
+- successful results include the winning route plus the attempt history for logging or diagnostics
+
+### First-batch non-goals
+
+- shared cost tracking or budget enforcement
+- dead-letter ownership for failed AI actions
+- streaming-specific fallback semantics
+
+Consumers that already have local retry or route-chain code can replace it incrementally:
+
+1. Wrap one provider client with `RetryMiddleware` only.
+2. Add `CircuitBreakerMiddleware` once thresholds are tuned for that action class.
+3. Replace app-local fallback loops with `RouteChainExecutor` when the app already produces an ordered route list.
 
 ## What remains app-specific
 

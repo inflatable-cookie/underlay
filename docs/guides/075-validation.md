@@ -1714,6 +1714,54 @@ FormValidationProvider scales well to forms with many fields (tested with 20+ va
 
 Use progressive enhancement with server-side validation as the source of truth.
 
+### Opt-In Shared Zod Validation
+
+Underlay now exposes `@decodelabs/underlay/validation` for shared client-side schemas and `useValidatedForm()` in `@decodelabs/underlay/patterns` for lightweight form orchestration.
+
+Install `zod` in the consuming app only if you use this surface:
+
+```bash
+bun add zod
+```
+
+```ts
+import { useValidatedForm } from "@decodelabs/underlay/patterns";
+import { registerRequestSchema } from "@decodelabs/underlay/validation";
+
+const form = useValidatedForm({
+  schema: registerRequestSchema,
+  initialValues: {
+    email: "",
+    password: "",
+    displayName: "",
+  },
+  onSubmit: async (values) => {
+    await api.auth.register(values);
+  },
+});
+```
+
+This surface is for UX only:
+
+- server validation remains authoritative
+- shared schemas should cover stable generic rules
+- app-specific business rules stay in the consuming app unless they become broadly reusable
+- expect a modest client bundle increase from `zod`; keep shared schemas focused on broadly reused contracts
+
+Current scope decision for this batch:
+
+- stop the shared schema surface at stable generic primitives and auth-adjacent request shapes already proven reusable here
+- defer wider schema expansion until a consuming app shows duplicated rules that are both stable and project-agnostic
+
+Common mapping:
+
+| Rust validation | Zod equivalent |
+|---|---|
+| email validator | `z.string().trim().email()` |
+| length min/max | `z.string().min(...).max(...)` |
+| slug regex | `z.string().regex(/^[a-z0-9-]+$/)` |
+| optional field | `.optional()` |
+
 In `apps/web/src/routes/register/+page.server.ts`:
 
 ```typescript

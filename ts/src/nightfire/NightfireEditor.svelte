@@ -1,8 +1,10 @@
 <script lang="ts">
-  import { getContext, onMount, untrack } from "svelte";
+  import { getContext, onMount, tick, untrack } from "svelte";
+  import type { MarkdownEditorContext } from "../components/markdown-editor-events";
   import type { NightfireValue } from "./index";
   import NightfireBlockEditor from "./NightfireBlockEditor.svelte";
   import NightfireFieldError from "./NightfireFieldError.svelte";
+  import SlashCommandPalette from "./SlashCommandPalette.svelte";
   // Ensure registrations are loaded before we lookup schema definitions
   import "./editor-registrations";
   import {
@@ -37,10 +39,19 @@
     asSingleBlockValue,
     changeBlockType,
     changeSingleBlockType,
+    insertBlockAfter,
     moveBlock as moveEditorBlock,
     removeBlock as removeEditorBlock,
     replaceBlockAtIndex
   } from "./editor/value-updates";
+  import {
+    buildNightfireSlashCommands,
+    filterNightfireSlashCommands,
+    findNightfireSlashMatch,
+    removeNightfireSlashText,
+    type NightfireSlashCommand,
+    type NightfireSlashCommandsConfig
+  } from "./slash-commands";
 
   /**
    * Field-level Nightfire editor.
@@ -102,6 +113,7 @@
      * This allows the parent to display a warning to the user.
      */
     onSchemaMismatch?: (info: SchemaMismatchInfo) => void;
+    slashCommands?: NightfireSlashCommandsConfig | null;
   }
 
   let {
@@ -114,7 +126,8 @@
     required = false,
     onChange = () => {},
     prepare = $bindable(() => {}),
-    onSchemaMismatch
+    onSchemaMismatch,
+    slashCommands = null
   }: Props = $props();
 
   // Form validation integration
@@ -279,6 +292,12 @@
   );
 
   const isMulti = $derived(effectiveDef.mode === "multi" || Array.isArray(value?.blocks));
+  const slashCommandsEnabled = $derived(Boolean(slashCommands?.enabled) && isMulti);
+  const availableSlashCommands = $derived(
+    slashCommandsEnabled
+      ? buildNightfireSlashCommands(editorTypeOptions, slashCommands)
+      : []
+  );
 
   // Single-block view - derives from value reactively
   // This ensures child editors always receive the latest data
@@ -291,6 +310,23 @@
       return value.blocks as any[];
     }
     return [];
+  });
+  let slashState = $state<{
+    blockIndex: number;
+    start: number;
+    end: number;
+    query: string;
+  } | null>(null);
+  const filteredSlashCommands = $derived(
+    slashState
+      ? filterNightfireSlashCommands(availableSlashCommands, slashState.query)
+      : []
+  );
+
+  $effect(() => {
+    if (!slashCommandsEnabled && slashState) {
+      closeSlashPalette();
+    }
   });
 
   function emit(nextValue: NightfireValue) {
@@ -337,6 +373,107 @@
       return;
     }
     emit(asMultiBlockValue(schema, nextBlocks));
+  }
+
+  function closeSlashPalette() {
+    slashState = null;
+  }
+
+  function focusBlockCard(index: number) {
+    void tick().then(() => {
+      const root = document.querySelector(
+        `[data-nightfire-block-card][data-block-index="${index}"]`
+      ) as HTMLElement | null;
+
+      if (!root) {
+        return;
+      }
+
+      const focusTarget = root.querySelector<HTMLElement>(
+        [
+          ".CodeMirror textarea",
+          "textarea:not(.underlay-is-hidden)",
+          "input:not([type='hidden'])",
+          "select",
+          "button"
+        ].join(", ")
+      );
+
+      focusTarget?.focus();
+    });
+  }
+
+  function handleSlashContextChange(index: number, context: MarkdownEditorContext) {
+    if (!slashCommandsEnabled) {
+      if (slashState?.blockIndex === index) {
+        closeSlashPalette();
+      }
+      return;
+    }
+
+    const block = blocks[index] as { type?: string } | undefined;
+    if (block?.type !== "markdown") {
+      if (slashState?.blockIndex === index) {
+        closeSlashPalette();
+      }
+      return;
+    }
+
+    const match = findNightfireSlashMatch(context);
+    if (!match) {
+      if (slashState?.blockIndex === index) {
+        closeSlashPalette();
+      }
+      return;
+    }
+
+    slashState = {
+      blockIndex: index,
+      start: match.start,
+      end: match.end,
+      query: match.query
+    };
+  }
+
+  function handleSlashQueryChange(query: string) {
+    if (!slashState) {
+      return;
+    }
+
+    slashState = {
+      ...slashState,
+      query
+    };
+  }
+
+  function handleSlashCommandSelect(command: NightfireSlashCommand) {
+    if (!slashState) {
+      return;
+    }
+
+    const slashTarget = slashState;
+    const currentBlock = blocks[slashState.blockIndex] as {
+      type?: string;
+      version?: string;
+      hash?: string;
+      data?: { text?: string };
+    } | undefined;
+    const currentText = currentBlock?.data?.text ?? "";
+    const nextCurrentBlock = {
+      type: currentBlock?.type ?? "markdown",
+      version: currentBlock?.version ?? "initial",
+      hash: currentBlock?.hash ?? "",
+      data: {
+        ...(currentBlock?.data ?? {}),
+        text: removeNightfireSlashText(currentText, slashState)
+      }
+    };
+    const updatedBlocks = replaceBlockAtIndex(blocks, slashTarget.blockIndex, nextCurrentBlock);
+    const nextBlocks = insertBlockAfter(updatedBlocks, slashTarget.blockIndex, command.type);
+
+    closeSlashPalette();
+    emit(asMultiBlockValue(schema, nextBlocks));
+    focusBlockCard(slashTarget.blockIndex + 1);
   }
 
   // For required fields, ensure there is at least one block when the
@@ -415,7 +552,22 @@
             onMove={moveBlock}
             onRemove={removeBlock}
             onBlockChange={handleBlockChange}
+            onBlockContextChange={handleSlashContextChange}
           />
+          {#if slashState?.blockIndex === index}
+            <div class="nightfire-field-multi__slash-palette">
+              <SlashCommandPalette
+                commands={filteredSlashCommands}
+                query={slashState.query}
+                onQueryChange={handleSlashQueryChange}
+                onSelect={handleSlashCommandSelect}
+                onClose={() => {
+                  focusBlockCard(index);
+                  closeSlashPalette();
+                }}
+              />
+            </div>
+          {/if}
         </div>
       {/each}
 
@@ -455,6 +607,10 @@
   .nightfire-field-multi {
     display: grid;
     gap: var(--underlay-density-gap);
+  }
+
+  .nightfire-field-multi__slash-palette {
+    margin-top: var(--underlay-space-2);
   }
 
   .nightfire-field-single {

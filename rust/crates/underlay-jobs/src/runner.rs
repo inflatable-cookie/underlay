@@ -30,6 +30,7 @@ use std::time::Duration;
 
 use tracing::{debug, error, info, warn};
 
+use crate::events::{JobEvent, JobEventHub, JobEventSink};
 use crate::registry::JobRegistry;
 use crate::store::JobStore;
 
@@ -66,6 +67,7 @@ pub struct JobRunner<S> {
     store: S,
     registry: JobRegistry,
     config: JobRunnerConfig,
+    events: JobEventHub,
 }
 
 impl<S> JobRunner<S>
@@ -78,12 +80,18 @@ where
             store,
             registry,
             config: JobRunnerConfig::default(),
+            events: JobEventHub::new(),
         }
     }
 
     /// Configure the runner.
     pub fn with_config(mut self, config: JobRunnerConfig) -> Self {
         self.config = config;
+        self
+    }
+
+    pub fn with_event_sink(mut self, sink: std::sync::Arc<dyn JobEventSink>) -> Self {
+        self.events = self.events.with_sink(sink);
         self
     }
 
@@ -112,11 +120,33 @@ where
             "Processing job"
         );
 
+        self.events.emit(JobEvent::Claimed {
+            job_id: job.id,
+            job_type: job.job_type.clone(),
+            worker_id: job.claimed_by.clone(),
+            attempt: job.attempts,
+        });
+        self.events.emit(JobEvent::Started {
+            job_id: job.id,
+            job_type: job.job_type.clone(),
+            attempt: job.attempts,
+        });
+
         let handler_config = handler.config();
 
         match handler.handle(job.clone()).await {
             Ok(()) => {
                 self.store.mark_success(job.id).await?;
+                let duration = job
+                    .started_at
+                    .or(job.claimed_at)
+                    .and_then(|started_at| (chrono::Utc::now() - started_at).to_std().ok());
+                self.events.emit(JobEvent::Completed {
+                    job_id: job.id,
+                    job_type: job.job_type.clone(),
+                    attempt: job.attempts,
+                    duration,
+                });
                 info!(
                     job_type = %job.job_type,
                     job_id = %job.id,
@@ -126,9 +156,23 @@ where
             }
             Err(err) => {
                 let is_permanent = err.is_permanent;
-                self.store
-                    .mark_failure(job.id, err, &handler_config)
-                    .await?;
+                let error_message = err.message.clone();
+                let outcome = self.store.mark_failure(&job, err, &handler_config).await?;
+                self.events.emit(JobEvent::Failed {
+                    job_id: job.id,
+                    job_type: job.job_type.clone(),
+                    error: error_message,
+                    attempt: job.attempts,
+                    will_retry: outcome.will_retry,
+                    next_retry_delay: outcome.retry_delay,
+                });
+                if let Some(dead_letter_id) = outcome.dead_letter_id {
+                    self.events.emit(JobEvent::DeadLettered {
+                        job_id: job.id,
+                        job_type: job.job_type.clone(),
+                        dead_letter_id,
+                    });
+                }
 
                 if is_permanent {
                     error!(

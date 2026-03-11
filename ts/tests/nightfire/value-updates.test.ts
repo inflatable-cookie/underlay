@@ -6,6 +6,7 @@ import {
 	changeSingleBlockType,
 	changeBlockType,
 	addBlock,
+	insertBlockAfter,
 	removeBlock,
 	moveBlock
 } from "../../src/nightfire/editor/value-updates";
@@ -82,6 +83,18 @@ describe("nightfire value-updates", () => {
 				hash: "",
 				data: {}
 			}
+		]);
+
+		const inserted = insertBlockAfter([{ type: "a" }, { type: "b" }], 0, "markdown");
+		expect(inserted).toEqual([
+			{ type: "a" },
+			{
+				type: "markdown",
+				version: "initial",
+				hash: "",
+				data: {}
+			},
+			{ type: "b" }
 		]);
 
 		const removed = removeBlock([{ type: "a" }, { type: "b" }], 0);

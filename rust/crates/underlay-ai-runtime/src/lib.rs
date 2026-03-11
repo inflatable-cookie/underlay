@@ -6,12 +6,24 @@ use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+mod chain;
+mod circuit_breaker;
+mod retry;
+
+pub use crate::chain::{
+    default_fallback_error_kinds, RouteChainAttempt, RouteChainConfig, RouteChainExecutor,
+    RouteChainFailure, RouteChainResult,
+};
+pub use crate::circuit_breaker::{CircuitBreakerConfig, CircuitBreakerMiddleware, CircuitState};
+pub use crate::retry::{default_retriable_error_kinds, RetryConfig, RetryMiddleware};
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum AiErrorKind {
     Auth,
     RateLimit,
     Timeout,
     Provider,
+    CircuitOpen,
     Validation,
     Unknown,
 }
@@ -28,6 +40,14 @@ impl AiRuntimeError {
             kind,
             message: message.into(),
         }
+    }
+
+    pub fn is_retriable(&self) -> bool {
+        default_retriable_error_kinds().contains(&self.kind)
+    }
+
+    pub fn allows_fallback(&self) -> bool {
+        default_fallback_error_kinds().contains(&self.kind)
     }
 }
 

@@ -1,5 +1,6 @@
 <script lang="ts">
   import UnderlayMarkdownEditor from "../../components/MarkdownEditor.svelte";
+  import type { MarkdownEditorContext } from "../../components/markdown-editor-events";
 
   type MarkdownBlock = {
     type?: string;
@@ -13,9 +14,10 @@
   interface Props {
     block: MarkdownBlock;
     onChange?: (next: MarkdownBlock) => void;
+    onContextChange?: ((context: MarkdownEditorContext) => void) | null;
   }
 
-  let { block, onChange = () => {} }: Props = $props();
+  let { block, onChange = () => {}, onContextChange = null }: Props = $props();
 
   // Keep local editor text in sync with incoming block updates.
   let text = $state("");
@@ -41,7 +43,7 @@
 </script>
 
 <div class="markdown-editor">
-  <UnderlayMarkdownEditor value={text} onChange={handleInput} />
+  <UnderlayMarkdownEditor value={text} onChange={handleInput} {onContextChange} />
 </div>
 
 <style>

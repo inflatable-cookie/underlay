@@ -1,5 +1,10 @@
 import type { NightfireValue } from "../index";
-import { addBlockToList, moveBlockInList, removeBlockFromList } from "./block-list";
+import {
+  addBlockToList,
+  insertBlockIntoList,
+  moveBlockInList,
+  removeBlockFromList
+} from "./block-list";
 import { SUMMARY_SCHEMA_ID, transformSummaryBlockOnLayoutChange } from "./summary-transform";
 
 type TypeLabelFn = (type: string) => string;
@@ -63,6 +68,10 @@ export function changeBlockType(currentBlock: unknown, nextType: string): Nightf
 
 export function addBlock(blocks: unknown[], defaultType: string): unknown[] {
   return addBlockToList(blocks, defaultType);
+}
+
+export function insertBlockAfter(blocks: unknown[], index: number, defaultType: string): unknown[] {
+  return insertBlockIntoList(blocks, index, defaultType);
 }
 
 export function removeBlock(blocks: unknown[], index: number): unknown[] {

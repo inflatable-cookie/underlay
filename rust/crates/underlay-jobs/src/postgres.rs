@@ -9,10 +9,13 @@ use sqlx::{PgPool, QueryBuilder};
 use thiserror::Error;
 use tracing::{debug, instrument};
 
+use crate::events::{JobEvent, JobEventHub, JobEventSink};
+use crate::postgres_dead_letters::PgDeadLetterRepository;
 use crate::postgres_rows::JobRow;
 use crate::store::JobStore;
 use crate::types::{
-    Job, JobConfig, JobErrorRecord, JobFilters, JobHandlerError, JobId, JobProgress,
+    Job, JobConfig, JobErrorRecord, JobFailureOutcome, JobFilters, JobHandlerError, JobId,
+    JobProgress,
 };
 use underlay_core::Uuid;
 
@@ -26,6 +29,8 @@ fn to_raw(id: Uuid) -> uuid::Uuid {
 pub enum RepoError {
     #[error("Job not found: {0}")]
     NotFound(Uuid),
+    #[error("Conflict: {0}")]
+    Conflict(String),
     #[error("Database error: {0}")]
     Database(#[from] sqlx::Error),
     #[error("Serialization error: {0}")]
@@ -37,11 +42,20 @@ pub type Result<T> = std::result::Result<T, RepoError>;
 /// Repository for job operations.
 pub struct JobRepository {
     pool: PgPool,
+    events: JobEventHub,
 }
 
 impl JobRepository {
     pub fn new(pool: PgPool) -> Self {
-        Self { pool }
+        Self {
+            pool,
+            events: JobEventHub::new(),
+        }
+    }
+
+    pub fn with_event_sink(mut self, sink: std::sync::Arc<dyn JobEventSink>) -> Self {
+        self.events = self.events.with_sink(sink);
+        self
     }
 
     /// Create a new job to run immediately.
@@ -76,6 +90,11 @@ impl JobRepository {
         .execute(&self.pool)
         .await?;
 
+        self.events.emit(JobEvent::Enqueued {
+            job_id: id,
+            job_type: job_type.to_string(),
+            scheduled_for,
+        });
         debug!(job_id = %id, "Created job");
         Ok(id)
     }
@@ -218,12 +237,14 @@ impl JobRepository {
     #[instrument(skip(self, config))]
     pub async fn mark_failed(
         &self,
-        job_id: Uuid,
+        job: &Job,
         error: &str,
         config: &JobConfig,
         is_permanent: bool,
-    ) -> Result<bool> {
+    ) -> Result<JobFailureOutcome> {
+        let job_id = job.id;
         let now = Utc::now();
+        let mut tx = self.pool.begin().await?;
 
         // Get current attempt count
         let row: Option<(i32, i32, Value)> = sqlx::query_as(
@@ -234,7 +255,7 @@ impl JobRepository {
             "#,
         )
         .bind(to_raw(job_id))
-        .fetch_optional(&self.pool)
+        .fetch_optional(&mut *tx)
         .await?;
 
         let Some((attempts, max_attempts, mut error_history)) = row else {
@@ -255,7 +276,9 @@ impl JobRepository {
 
         if should_retry {
             // Schedule for retry with backoff
-            let delay = config.backoff.delay_for_attempt((attempts - 1) as u32);
+            let delay = config
+                .backoff
+                .delay_for_attempt_with_seed((attempts - 1) as u32, job_id.0.as_u128() as u64);
             let retry_at = now + chrono::Duration::from_std(delay).unwrap_or_default();
 
             sqlx::query(
@@ -276,11 +299,20 @@ impl JobRepository {
             .bind(error)
             .bind(&error_history)
             .bind(retry_at)
-            .execute(&self.pool)
+            .execute(&mut *tx)
             .await?;
 
+            tx.commit().await?;
             debug!(job_id = %job_id, retry_at = %retry_at, "Job scheduled for retry");
+            Ok(JobFailureOutcome {
+                will_retry: true,
+                retry_delay: Some(delay),
+                dead_letter_id: None,
+            })
         } else {
+            let dead_letter_id =
+                PgDeadLetterRepository::insert_dead_letter(&mut tx, job, error, &error_history)
+                    .await?;
             // Permanent failure
             sqlx::query(
                 r#"
@@ -296,13 +328,17 @@ impl JobRepository {
             .bind(now)
             .bind(error)
             .bind(&error_history)
-            .execute(&self.pool)
+            .execute(&mut *tx)
             .await?;
 
+            tx.commit().await?;
             debug!(job_id = %job_id, "Job permanently failed");
+            Ok(JobFailureOutcome {
+                will_retry: false,
+                retry_delay: None,
+                dead_letter_id: Some(dead_letter_id),
+            })
         }
-
-        Ok(should_retry)
     }
 
     /// Cancel a job.
@@ -500,12 +536,11 @@ impl JobStore for JobRepository {
 
     async fn mark_failure(
         &self,
-        job_id: JobId,
+        job: &Job,
         error: JobHandlerError,
         config: &JobConfig,
-    ) -> Result<()> {
-        self.mark_failed(job_id, &error.message, config, error.is_permanent)
-            .await?;
-        Ok(())
+    ) -> Result<JobFailureOutcome> {
+        self.mark_failed(job, &error.message, config, error.is_permanent)
+            .await
     }
 }

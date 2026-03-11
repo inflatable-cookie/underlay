@@ -97,10 +97,13 @@ describe("patterns/storage (browser mode)", () => {
 	beforeEach(() => {
 		vi.resetModules();
 		vi.doMock("esm-env", () => ({ BROWSER: true }));
+		vi.useFakeTimers();
+		vi.setSystemTime(new Date("2026-03-11T12:00:00Z"));
 	});
 
 	afterEach(() => {
 		vi.restoreAllMocks();
+		vi.useRealTimers();
 		(globalThis as { window?: unknown }).window = originalWindow;
 	});
 
@@ -134,6 +137,41 @@ describe("patterns/storage (browser mode)", () => {
 		expect(storage.local.get("counter", 0, {
 			deserialize: (value) => Number(value.replace("v:", ""))
 		})).toBe(42);
+	});
+
+	it("supports ttl-backed values and lazily removes expired entries", async () => {
+		const windowMock = createWindowMock();
+		(globalThis as { window?: unknown }).window = windowMock;
+		const { storage } = await import("../../src/patterns/storage");
+
+		storage.local.set("api-cache", { ok: true }, { ttl: 60 });
+		expect(storage.local.get("api-cache", { ok: false })).toEqual({ ok: true });
+		expect(storage.local.isExpired("api-cache")).toBe(false);
+
+		vi.advanceTimersByTime(60_001);
+
+		expect(storage.local.isExpired("api-cache")).toBe(true);
+		expect(storage.local.get("api-cache", { ok: false })).toEqual({ ok: false });
+		expect(windowMock.localStorage.getItem("api-cache")).toBeNull();
+	});
+
+	it("supports absolute expiration dates and preserves existing raw payloads", async () => {
+		const windowMock = createWindowMock();
+		(globalThis as { window?: unknown }).window = windowMock;
+		const { storage } = await import("../../src/patterns/storage");
+
+		windowMock.localStorage.setItem("legacy", JSON.stringify({ dark: true }));
+		expect(storage.local.get("legacy", { dark: false })).toEqual({ dark: true });
+
+		storage.local.set("token", "abc", {
+			expiresAt: new Date("2026-03-11T12:05:00Z")
+		});
+		expect(storage.local.get("token", "missing")).toBe("abc");
+
+		vi.setSystemTime(new Date("2026-03-11T12:05:01Z"));
+
+		expect(storage.local.has("token")).toBe(false);
+		expect(storage.local.get("token", "missing")).toBe("missing");
 	});
 
 	it("logs and does not throw when storage write fails", async () => {
@@ -211,6 +249,21 @@ describe("patterns/storage (browser mode)", () => {
 			storageArea: windowMock.localStorage
 		});
 		expect(get(store)).toEqual({ count: 0 });
+	});
+
+	it("storage-backed stores reset to defaults when ttl expires", async () => {
+		const windowMock = createWindowMock();
+		(globalThis as { window?: unknown }).window = windowMock;
+		const { createPersistedStore } = await import("../../src/patterns/storage");
+
+		const store = createPersistedStore("draft", { count: 0 }, { ttl: 30 });
+		store.set({ count: 4 });
+		expect(get(store)).toEqual({ count: 4 });
+
+		vi.advanceTimersByTime(30_001);
+
+		expect(get(store)).toEqual({ count: 0 });
+		expect(windowMock.localStorage.getItem("draft")).toBeNull();
 	});
 
 	it("creates session-backed stores via createSessionStore", async () => {

@@ -54,6 +54,8 @@
 //! The crate provides a migration file in `migrations/0001_create_job_tables.sql`.
 //! Sync this to your application's migrations folder using `underlay-devtools`.
 
+mod dead_letters;
+mod events;
 mod registry;
 mod runner;
 mod store;
@@ -62,6 +64,8 @@ pub mod types;
 // PostgreSQL implementation (optional)
 #[cfg(feature = "postgres")]
 pub mod postgres;
+#[cfg(feature = "postgres")]
+mod postgres_dead_letters;
 #[cfg(feature = "postgres")]
 mod postgres_rows;
 #[cfg(feature = "postgres")]
@@ -84,10 +88,13 @@ mod scheduler;
 pub use crate::scheduler::{SchedulerConfig, DEFAULT_SCHEDULER_TICK_INTERVAL_SECS};
 
 // Re-exports from types
+pub use crate::dead_letters::DeadLetterStore;
+pub use crate::events::{JobEvent, JobEventHub, JobEventSink};
 pub use crate::types::{
-    BackoffStrategy, Job, JobConfig, JobErrorRecord, JobFilters, JobHandler, JobHandlerError,
-    JobId, JobProgress, JobResult, JobStatus, ScheduledTask, ScheduledTaskDefinition,
-    DEFAULT_BACKOFF_BASE_SECS, DEFAULT_BACKOFF_MAX_SECS, DEFAULT_LONG_RUNNING_TIMEOUT_SECS,
+    BackoffJitter, BackoffStrategy, DeadLetter, DeadLetterFilters, DeadLetterId, Job, JobConfig,
+    JobErrorRecord, JobFailureOutcome, JobFilters, JobHandler, JobHandlerError, JobId, JobProgress,
+    JobResult, JobStatus, ScheduledTask, ScheduledTaskDefinition, DEFAULT_BACKOFF_BASE_SECS,
+    DEFAULT_BACKOFF_MAX_SECS, DEFAULT_LONG_RUNNING_TIMEOUT_SECS,
 };
 
 // Core exports
@@ -98,6 +105,8 @@ pub use crate::store::JobStore;
 // PostgreSQL exports
 #[cfg(feature = "postgres")]
 pub use crate::postgres::{JobRepository, RepoError};
+#[cfg(feature = "postgres")]
+pub use crate::postgres_dead_letters::PgDeadLetterRepository;
 #[cfg(feature = "postgres")]
 pub use crate::postgres_scheduled::{PgJobNotifier, ScheduledTaskRepository, JOB_NOTIFY_CHANNEL};
 
@@ -125,3 +134,9 @@ pub const JOB_NOTIFY_SQL: &str = include_str!("../migrations/0002_add_job_notify
 #[cfg(feature = "outbox")]
 pub const DOMAIN_EVENT_NOTIFY_SQL: &str =
     include_str!("../migrations/0003_add_domain_event_notify.sql");
+
+/// SQL for dead-letter persistence.
+///
+/// This migration adds `platform.job_dead_letter` for failed job inspection and retry.
+#[cfg(feature = "postgres")]
+pub const JOB_DEAD_LETTERS_SQL: &str = include_str!("../migrations/0004_add_job_dead_letters.sql");

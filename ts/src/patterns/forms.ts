@@ -43,6 +43,7 @@ import {
   resolveActionFailureResult,
   type ActionResult
 } from "./forms-action-result";
+import { storage, type StorageOptions, type StorageWrapper } from "./storage";
 
 // ============================================================================
 // Types
@@ -70,6 +71,28 @@ export interface FormStateOptions<T = unknown> {
 
   /** Auto-reset form state after successful submission */
   resetOnSuccess?: boolean;
+
+  /** Optional draft persistence for form values */
+  autoSave?: FormAutoSaveOptions;
+}
+
+/** Draft persistence configuration for `createFormState` */
+export interface FormAutoSaveOptions
+  extends Pick<StorageOptions, "ttl" | "expiresAt"> {
+  /** Storage key used for the saved draft */
+  key: string;
+
+  /** Draft storage location (`session` by default) */
+  storage?: "local" | "session" | StorageWrapper;
+
+  /** Debounce delay for writes in milliseconds (`600` by default) */
+  debounce?: number;
+
+  /** Whether to restore the draft when `enhance` attaches (`true` by default) */
+  restoreOnMount?: boolean;
+
+  /** Whether to clear the draft after `setSuccess()` (`true` by default) */
+  clearOnSuccess?: boolean;
 }
 
 /** The reactive form state object */
@@ -104,6 +127,9 @@ export interface FormState<T = unknown> {
   /** Reset form to initial state */
   reset: () => void;
 
+  /** Remove the persisted draft when auto-save is enabled */
+  clearDraft: () => void;
+
   /**
    * SvelteKit enhance function wrapper.
    * Use with: `use:enhance={form.enhance}`
@@ -127,6 +153,265 @@ interface FormStateInternal {
   error: string | null;
   fieldErrors: FieldErrors;
   isSuccess: boolean;
+}
+
+type DraftValue =
+  | { kind: "single"; value: string }
+  | { kind: "boolean"; checked: boolean }
+  | { kind: "multi"; values: string[] };
+
+type FormDraft = Record<string, DraftValue>;
+
+interface DraftControlBase {
+  name: string;
+  type?: string;
+  value?: string;
+  checked?: boolean;
+  disabled?: boolean;
+  multiple?: boolean;
+  tagName?: string;
+  options?: ArrayLike<{ value: string; selected: boolean }>;
+  dispatchEvent?: (event: Event) => boolean;
+}
+
+type DraftControl = DraftControlBase & {
+  type?: string;
+  value: string;
+};
+
+function isDraftControl(control: unknown): control is DraftControl {
+  if (typeof control !== "object" || control === null) {
+    return false;
+  }
+
+  const entry = control as DraftControlBase;
+  const tagName = getControlTagName(entry);
+  return (
+    typeof entry.name === "string" &&
+    (tagName === "input" || tagName === "select" || tagName === "textarea")
+  );
+}
+
+function getControlTagName(control: DraftControlBase): string {
+  return typeof control.tagName === "string" ? control.tagName.toLowerCase() : "";
+}
+
+function getControlType(control: DraftControlBase): string {
+  return typeof control.type === "string" ? control.type.toLowerCase() : "";
+}
+
+function isFileInput(control: DraftControlBase): boolean {
+  return getControlTagName(control) === "input" && getControlType(control) === "file";
+}
+
+function isCheckboxControl(control: DraftControlBase): boolean {
+  return getControlTagName(control) === "input" && getControlType(control) === "checkbox";
+}
+
+function isRadioControl(control: DraftControlBase): boolean {
+  return getControlTagName(control) === "input" && getControlType(control) === "radio";
+}
+
+function isMultiSelectControl(control: DraftControlBase): boolean {
+  return getControlTagName(control) === "select" && control.multiple === true;
+}
+
+function createDraftEventsFor(control: DraftControlBase): Event[] {
+  const type = getControlType(control);
+  if (type === "checkbox" || type === "radio" || getControlTagName(control) === "select") {
+    return [new Event("change", { bubbles: true })];
+  }
+
+  return [
+    new Event("input", { bubbles: true }),
+    new Event("change", { bubbles: true })
+  ];
+}
+
+function dispatchDraftEvents(control: DraftControlBase): void {
+  if (!control.dispatchEvent) {
+    return;
+  }
+
+  for (const event of createDraftEventsFor(control)) {
+    control.dispatchEvent(event);
+  }
+}
+
+function collectDraftControls(formEl: HTMLFormElement): Map<string, DraftControl[]> {
+  const controls = new Map<string, DraftControl[]>();
+
+  for (const entry of Array.from(formEl.elements ?? [])) {
+    if (!isDraftControl(entry)) {
+      continue;
+    }
+
+    if (!entry.name || isFileInput(entry)) {
+      continue;
+    }
+
+    const group = controls.get(entry.name) ?? [];
+    group.push(entry);
+    controls.set(entry.name, group);
+  }
+
+  return controls;
+}
+
+function captureFormDraft(formEl: HTMLFormElement): FormDraft {
+  const controlsByName = collectDraftControls(formEl);
+  const draft: FormDraft = {};
+
+  for (const [name, controls] of controlsByName.entries()) {
+    const first = controls[0];
+
+    if (isCheckboxControl(first)) {
+      if (controls.length === 1) {
+        draft[name] = {
+          kind: "boolean",
+          checked: Boolean(first.checked)
+        };
+        continue;
+      }
+
+      draft[name] = {
+        kind: "multi",
+        values: controls.filter((control) => control.checked).map((control) => control.value)
+      };
+      continue;
+    }
+
+    if (isRadioControl(first)) {
+      const selected = controls.find((control) => control.checked);
+      if (selected) {
+        draft[name] = {
+          kind: "single",
+          value: selected.value
+        };
+      }
+      continue;
+    }
+
+    if (isMultiSelectControl(first)) {
+      draft[name] = {
+        kind: "multi",
+        values: Array.from(first.options ?? [])
+          .filter((option) => option.selected)
+          .map((option) => option.value)
+      };
+      continue;
+    }
+
+    draft[name] = {
+      kind: "single",
+      value: first.value ?? ""
+    };
+  }
+
+  return draft;
+}
+
+function restoreFormDraft(formEl: HTMLFormElement, draft: FormDraft): void {
+  const controlsByName = collectDraftControls(formEl);
+
+  for (const [name, entry] of Object.entries(draft)) {
+    const controls = controlsByName.get(name);
+    if (!controls || controls.length === 0) {
+      continue;
+    }
+
+    const first = controls[0];
+
+    switch (entry.kind) {
+      case "boolean": {
+        if (!isCheckboxControl(first) || controls.length !== 1) {
+          break;
+        }
+
+        if (Boolean(first.checked) !== entry.checked) {
+          first.checked = entry.checked;
+          dispatchDraftEvents(first);
+        }
+        break;
+      }
+
+      case "multi": {
+        if (isMultiSelectControl(first)) {
+          const nextValues = new Set(entry.values);
+          let changed = false;
+
+          for (const option of Array.from(first.options ?? [])) {
+            const shouldSelect = nextValues.has(option.value);
+            if (option.selected !== shouldSelect) {
+              option.selected = shouldSelect;
+              changed = true;
+            }
+          }
+
+          if (changed) {
+            dispatchDraftEvents(first);
+          }
+          break;
+        }
+
+        if (isCheckboxControl(first)) {
+          const nextValues = new Set(entry.values);
+          let changed = false;
+
+          for (const control of controls) {
+            const shouldCheck = nextValues.has(control.value);
+            if (Boolean(control.checked) !== shouldCheck) {
+              control.checked = shouldCheck;
+              changed = true;
+              dispatchDraftEvents(control);
+            }
+          }
+
+          if (changed) {
+            dispatchDraftEvents(first);
+          }
+        }
+        break;
+      }
+
+      case "single": {
+        if (isRadioControl(first)) {
+          for (const control of controls) {
+            const shouldCheck = control.value === entry.value;
+            if (Boolean(control.checked) !== shouldCheck) {
+              control.checked = shouldCheck;
+              dispatchDraftEvents(control);
+            }
+          }
+          break;
+        }
+
+        if ((first.value ?? "") !== entry.value) {
+          first.value = entry.value;
+          dispatchDraftEvents(first);
+        }
+        break;
+      }
+    }
+  }
+}
+
+function resolveDraftStorage(
+  autoSave?: FormAutoSaveOptions
+): StorageWrapper | null {
+  if (!autoSave) {
+    return null;
+  }
+
+  if (!autoSave.storage || autoSave.storage === "session") {
+    return storage.session;
+  }
+
+  if (autoSave.storage === "local") {
+    return storage.local;
+  }
+
+  return autoSave.storage;
 }
 
 /**
@@ -158,7 +443,8 @@ export function createFormState<T = unknown>(
     onSubmit,
     initialFieldErrors = {},
     initialError = null,
-    resetOnSuccess = false
+    resetOnSuccess = false,
+    autoSave
   } = options;
 
   const initialState: FormStateInternal = {
@@ -169,6 +455,68 @@ export function createFormState<T = unknown>(
   };
 
   const state: Writable<FormStateInternal> = writable({ ...initialState });
+  const autoSaveStorage = resolveDraftStorage(autoSave);
+  const autoSaveStorageOptions =
+    autoSave === undefined
+      ? undefined
+      : {
+          ttl: autoSave.ttl,
+          expiresAt: autoSave.expiresAt
+        };
+  const autoSaveDebounce = autoSave?.debounce ?? 600;
+  let draftTimer: ReturnType<typeof setTimeout> | null = null;
+
+  function clearDraftTimer(): void {
+    if (draftTimer !== null) {
+      clearTimeout(draftTimer);
+      draftTimer = null;
+    }
+  }
+
+  function clearDraft(): void {
+    clearDraftTimer();
+    if (autoSaveStorage && autoSave) {
+      autoSaveStorage.remove(autoSave.key);
+    }
+  }
+
+  function writeDraft(formEl: HTMLFormElement): void {
+    if (!autoSaveStorage || !autoSave) {
+      return;
+    }
+
+    autoSaveStorage.set(autoSave.key, captureFormDraft(formEl), autoSaveStorageOptions);
+  }
+
+  function scheduleDraftWrite(formEl: HTMLFormElement): void {
+    if (!autoSaveStorage || !autoSave) {
+      return;
+    }
+
+    clearDraftTimer();
+    draftTimer = setTimeout(() => {
+      writeDraft(formEl);
+      draftTimer = null;
+    }, Math.max(0, autoSaveDebounce));
+  }
+
+  function restoreDraft(formEl: HTMLFormElement): void {
+    if (!autoSaveStorage || !autoSave || autoSave.restoreOnMount === false) {
+      return;
+    }
+
+    const savedDraft = autoSaveStorage.get<FormDraft>(
+      autoSave.key,
+      {},
+      autoSaveStorageOptions
+    );
+
+    if (Object.keys(savedDraft).length === 0) {
+      return;
+    }
+
+    restoreFormDraft(formEl, savedDraft);
+  }
 
   function startSubmit(): void {
     state.update((s) => ({
@@ -194,6 +542,10 @@ export function createFormState<T = unknown>(
       Promise.resolve(onSuccess(data)).catch(console.error);
     } else if (onSuccess) {
       Promise.resolve(onSuccess(undefined as T)).catch(console.error);
+    }
+
+    if (autoSave?.clearOnSuccess !== false) {
+      clearDraft();
     }
 
     if (resetOnSuccess) {
@@ -242,8 +594,16 @@ export function createFormState<T = unknown>(
    * 3. Extracting field errors from ActionData
    */
   function enhance(formEl: HTMLFormElement): { destroy?: () => void } {
+    restoreDraft(formEl);
+
+    function handleDraftUpdate() {
+      scheduleDraftWrite(formEl);
+    }
+
     async function handleSubmit(event: SubmitEvent) {
       event.preventDefault();
+      clearDraftTimer();
+      writeDraft(formEl);
       startSubmit();
 
       const formData = new FormData(formEl);
@@ -312,10 +672,20 @@ export function createFormState<T = unknown>(
       }
     }
 
+    if (autoSaveStorage && autoSave) {
+      formEl.addEventListener("input", handleDraftUpdate);
+      formEl.addEventListener("change", handleDraftUpdate);
+    }
+
     formEl.addEventListener("submit", handleSubmit);
 
     return {
       destroy() {
+        clearDraftTimer();
+        if (autoSaveStorage && autoSave) {
+          formEl.removeEventListener("input", handleDraftUpdate);
+          formEl.removeEventListener("change", handleDraftUpdate);
+        }
         formEl.removeEventListener("submit", handleSubmit);
       }
     };
@@ -343,6 +713,7 @@ export function createFormState<T = unknown>(
     setFieldErrors,
     clearFieldError,
     reset,
+    clearDraft,
     enhance
   };
 }

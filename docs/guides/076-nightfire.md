@@ -899,6 +899,53 @@ The `NightfireEditor` component provides a block-based editor for Nightfire cont
 | `modeOverride` | `"single" \| "multi"` | `null` | Override the strategy's cardinality mode |
 | `blockOptionsOverride` | `NightfireBlockOption[]` | `null` | Override the available block types |
 | `onSchemaMismatch` | `(info: SchemaMismatchInfo) => void` | `null` | Callback when loaded content has a different schema |
+| `slashCommands` | `NightfireSlashCommandsConfig` | `null` | Opt-in slash-command palette for multi-block editors |
+
+### Opt-In Slash Commands
+
+Slash commands are available for multi-block `NightfireEditor` fields, but the first Underlay release keeps them disabled by default so existing editors do not change keyboard behavior on upgrade.
+
+When enabled:
+
+1. Type `/` inside a markdown block to open the palette.
+2. Pick a command with arrow keys, Enter, or click.
+3. Underlay removes the slash token from the markdown block and inserts the chosen block immediately below it.
+
+```svelte
+<script lang="ts">
+  import {
+    NightfireEditor,
+    type NightfireSlashCommandsConfig,
+    type NightfireValue
+  } from "@decodelabs/underlay/nightfire";
+
+  let body = $state<NightfireValue>({ schema: "myapp:content/body@1" });
+
+  const slashCommands: NightfireSlashCommandsConfig = {
+    enabled: true,
+    commands: [
+      {
+        type: "media",
+        aliases: ["image", "photo"],
+        description: "Insert a reusable media block."
+      }
+    ]
+  };
+</script>
+
+<NightfireEditor
+  name="body"
+  schema="myapp:content/body@1"
+  bind:value={body}
+  {slashCommands}
+/>
+```
+
+Notes:
+
+- The default command list is derived from the block types registered for the active schema.
+- Custom commands are metadata overrides for existing registered block types; this batch does not add arbitrary app-specific command actions.
+- The palette is only shown for markdown blocks in multi-block editors, because single-block fields do not support block insertion and non-text blocks do not have slash-entry semantics.
 
 ### Form Integration
 

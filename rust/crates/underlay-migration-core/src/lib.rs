@@ -12,6 +12,7 @@ mod policy;
 mod recovery;
 mod run_store;
 mod verification;
+mod verification_rules;
 
 pub use crate::audit::{
     build_audit_artifact, AuditAction, AuditArtifact, AuditOutcome, AuditRecord,
@@ -74,6 +75,11 @@ pub use crate::verification::{
     VerificationIntegrityGateSection, VerificationIssue, VerificationPromotionGate,
     VerificationReferentialIntegritySection, VerificationReport, VerificationRowCountSection,
     VerificationSeverity,
+};
+pub use crate::verification_rules::{
+    benchmark_verification_paths, evaluate_verification_rules, standard_verification_rules,
+    CountExpectation, RuleEngineResult, VerificationBenchmarkResult, VerificationMetric,
+    VerificationRule, VerificationRuleKind,
 };
 
 #[cfg(test)]

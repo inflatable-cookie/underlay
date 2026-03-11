@@ -7,6 +7,119 @@
 
 import { base64urlToArrayBuffer, arrayBufferToBase64url } from "./base64url.js";
 
+export type RegistrationCredentialJson = ReturnType<typeof credentialCreationToJson>;
+export type AuthenticationCredentialJson = ReturnType<typeof assertionToJson>;
+
+export type PasskeyErrorCode =
+  | "not_supported"
+  | "cancelled"
+  | "timeout"
+  | "invalid_state"
+  | "security_error"
+  | "network_error"
+  | "unknown";
+
+export interface PasskeyError {
+  code: PasskeyErrorCode;
+  message: string;
+  cause?: unknown;
+}
+
+export function sanitizePasskeyErrorMessage(message: string): string {
+  return message
+    .replace(/https?:\/\/\S+/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+export function isPasskeySupported(): boolean {
+  return typeof PublicKeyCredential !== "undefined" &&
+    typeof navigator !== "undefined" &&
+    !!navigator.credentials;
+}
+
+export async function supportsConditionalMediation(): Promise<boolean> {
+  if (
+    typeof PublicKeyCredential === "undefined" ||
+    typeof PublicKeyCredential.isConditionalMediationAvailable !== "function"
+  ) {
+    return false;
+  }
+
+  try {
+    return await PublicKeyCredential.isConditionalMediationAvailable();
+  } catch {
+    return false;
+  }
+}
+
+export function mapWebAuthnError(cause: unknown): PasskeyError {
+  if (!isPasskeySupported()) {
+    return {
+      code: "not_supported",
+      message: "Passkeys are not supported in this browser.",
+      cause,
+    };
+  }
+
+  if (cause instanceof DOMException) {
+    const message = sanitizePasskeyErrorMessage(cause.message || cause.name);
+    switch (cause.name) {
+      case "AbortError":
+      case "NotAllowedError":
+        return {
+          code: "cancelled",
+          message: message || "Passkey request was cancelled.",
+          cause,
+        };
+      case "TimeoutError":
+        return {
+          code: "timeout",
+          message: message || "Passkey request timed out.",
+          cause,
+        };
+      case "InvalidStateError":
+        return {
+          code: "invalid_state",
+          message: message || "This passkey request is not valid for the current device or account state.",
+          cause,
+        };
+      case "SecurityError":
+        return {
+          code: "security_error",
+          message: message || "The browser blocked this passkey request for security reasons.",
+          cause,
+        };
+      case "NetworkError":
+        return {
+          code: "network_error",
+          message: message || "A network-related passkey error occurred.",
+          cause,
+        };
+      default:
+        return {
+          code: "unknown",
+          message: message || "Passkey request failed.",
+          cause,
+        };
+    }
+  }
+
+  if (cause instanceof Error) {
+    return {
+      code: "unknown",
+      message: sanitizePasskeyErrorMessage(cause.message) || "Passkey request failed.",
+      cause,
+    };
+  }
+
+  return {
+    code: "unknown",
+    message: "Passkey request failed.",
+    cause,
+  };
+}
+
 /**
  * Convert server-provided options to PublicKeyCredentialRequestOptions.
  *

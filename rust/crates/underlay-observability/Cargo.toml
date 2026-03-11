@@ -4,6 +4,10 @@ version.workspace = true
 edition.workspace = true
 license.workspace = true
 
+[features]
+default = []
+opentelemetry = []
+
 [dependencies]
 http = { workspace = true }
 pin-project-lite = "0.2"

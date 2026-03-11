@@ -9,6 +9,7 @@ use std::time::Duration;
 use underlay_core::Uuid;
 
 pub type JobId = Uuid;
+pub type DeadLetterId = Uuid;
 
 /// Job status enum matching the database constraint.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -114,6 +115,23 @@ impl JobConfig {
             backoff: BackoffStrategy::Exponential {
                 base: Duration::from_secs(DEFAULT_BACKOFF_BASE_SECS),
                 max: Duration::from_secs(DEFAULT_BACKOFF_MAX_SECS),
+                jitter: None,
+            },
+            ..Self::default()
+        }
+    }
+
+    /// Config for critical tasks that should retry on failure with deterministic jitter.
+    ///
+    /// Existing retry presets keep their previous timing. Use this preset when you want
+    /// retry spread for new or updated jobs without changing unrelated callers.
+    pub fn with_retries_and_jitter(max_attempts: u32) -> Self {
+        Self {
+            max_attempts,
+            backoff: BackoffStrategy::Exponential {
+                base: Duration::from_secs(DEFAULT_BACKOFF_BASE_SECS),
+                max: Duration::from_secs(DEFAULT_BACKOFF_MAX_SECS),
+                jitter: Some(BackoffJitter::default()),
             },
             ..Self::default()
         }
@@ -141,6 +159,22 @@ impl JobConfig {
             backoff: BackoffStrategy::Exponential {
                 base: Duration::from_secs(DEFAULT_BACKOFF_BASE_SECS),
                 max: Duration::from_secs(DEFAULT_BACKOFF_MAX_SECS),
+                jitter: None,
+            },
+            ..Self::default()
+        }
+    }
+
+    /// Config for long-running tasks with retries and deterministic jitter.
+    pub fn long_running_with_retries_and_jitter(max_attempts: u32) -> Self {
+        Self {
+            max_attempts,
+            tracks_progress: true,
+            timeout_seconds: Some(DEFAULT_LONG_RUNNING_TIMEOUT_SECS),
+            backoff: BackoffStrategy::Exponential {
+                base: Duration::from_secs(DEFAULT_BACKOFF_BASE_SECS),
+                max: Duration::from_secs(DEFAULT_BACKOFF_MAX_SECS),
+                jitter: Some(BackoffJitter::default()),
             },
             ..Self::default()
         }
@@ -176,6 +210,7 @@ impl JobConfig {
     ///     .with_backoff(BackoffStrategy::Exponential {
     ///         base: Duration::from_secs(30),  // Start with 30s delay
     ///         max: Duration::from_secs(600),  // Cap at 10 minutes
+    ///         jitter: None,
     ///     });
     /// ```
     pub fn with_backoff(mut self, backoff: BackoffStrategy) -> Self {
@@ -190,6 +225,17 @@ impl JobConfig {
         self.backoff = BackoffStrategy::Exponential {
             base: Duration::from_secs(base_secs),
             max: Duration::from_secs(max_secs),
+            jitter: None,
+        };
+        self
+    }
+
+    /// Set exponential backoff with deterministic jitter spread.
+    pub fn with_jittered_exponential_backoff(mut self, base_secs: u64, max_secs: u64) -> Self {
+        self.backoff = BackoffStrategy::Exponential {
+            base: Duration::from_secs(base_secs),
+            max: Duration::from_secs(max_secs),
+            jitter: Some(BackoffJitter::default()),
         };
         self
     }
@@ -222,23 +268,74 @@ pub enum BackoffStrategy {
     None,
     /// Fixed delay between retries
     Fixed(Duration),
-    /// Exponential backoff: min(base * 2^attempt, max)
-    Exponential { base: Duration, max: Duration },
+    /// Exponential backoff: min(base * 2^attempt, max), with optional deterministic jitter.
+    Exponential {
+        base: Duration,
+        max: Duration,
+        jitter: Option<BackoffJitter>,
+    },
+}
+
+/// Jitter settings for exponential backoff.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct BackoffJitter {
+    /// Maximum extra percentage to add to the base delay.
+    pub max_percent: u8,
+}
+
+impl Default for BackoffJitter {
+    fn default() -> Self {
+        Self { max_percent: 30 }
+    }
+}
+
+impl BackoffJitter {
+    fn extra_delay(&self, base_delay: Duration, seed: u64) -> Duration {
+        if self.max_percent == 0 || base_delay.is_zero() {
+            return Duration::ZERO;
+        }
+
+        let max_extra_millis =
+            ((base_delay.as_millis() * self.max_percent as u128) / 100).max(1_u128);
+        let mixed = splitmix64(seed);
+        let extra_millis = (mixed as u128) % (max_extra_millis + 1);
+        Duration::from_millis(extra_millis as u64)
+    }
 }
 
 impl BackoffStrategy {
     /// Calculate the delay for a given attempt number (0-indexed).
     pub fn delay_for_attempt(&self, attempt: u32) -> Duration {
+        self.delay_for_attempt_with_seed(attempt, 0)
+    }
+
+    /// Calculate the delay for a given attempt number (0-indexed) with a deterministic seed.
+    pub fn delay_for_attempt_with_seed(&self, attempt: u32, seed: u64) -> Duration {
         match self {
             BackoffStrategy::None => Duration::ZERO,
             BackoffStrategy::Fixed(d) => *d,
-            BackoffStrategy::Exponential { base, max } => {
+            BackoffStrategy::Exponential { base, max, jitter } => {
                 let multiplier = 2u64.saturating_pow(attempt);
-                let delay = base.saturating_mul(multiplier as u32);
-                std::cmp::min(delay, *max)
+                let base_delay = base.saturating_mul(multiplier as u32);
+                let capped = std::cmp::min(base_delay, *max);
+                match jitter {
+                    Some(jitter) => std::cmp::min(
+                        capped.saturating_add(jitter.extra_delay(capped, seed)),
+                        *max,
+                    ),
+                    None => capped,
+                }
             }
         }
     }
+}
+
+fn splitmix64(mut value: u64) -> u64 {
+    value = value.wrapping_add(0x9E3779B97F4A7C15);
+    let mut z = value;
+    z = (z ^ (z >> 30)).wrapping_mul(0xBF58476D1CE4E5B9);
+    z = (z ^ (z >> 27)).wrapping_mul(0x94D049BB133111EB);
+    z ^ (z >> 31)
 }
 
 /// Progress information for long-running jobs.
@@ -311,12 +408,82 @@ pub struct Job {
     pub updated_at: DateTime<Utc>,
 }
 
+/// A dead-letter record for a job that exhausted retries or failed permanently.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub struct DeadLetter {
+    pub id: DeadLetterId,
+    pub original_job_id: JobId,
+    pub job_type: String,
+    pub payload: Value,
+    pub attempts: i32,
+    pub max_attempts: i32,
+    pub priority: i32,
+    pub last_error: String,
+    pub error_history: Vec<JobErrorRecord>,
+    pub failed_at: DateTime<Utc>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub retried_at: Option<DateTime<Utc>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub retried_job_id: Option<JobId>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub archived_at: Option<DateTime<Utc>>,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
+}
+
+/// Filters for listing dead letters.
+#[derive(Debug, Default, Clone)]
+pub struct DeadLetterFilters {
+    pub job_type: Option<String>,
+    pub include_archived: bool,
+    pub limit: usize,
+    pub offset: usize,
+}
+
+impl DeadLetterFilters {
+    pub fn new() -> Self {
+        Self {
+            limit: 50,
+            ..Default::default()
+        }
+    }
+
+    pub fn with_job_type(mut self, job_type: impl Into<String>) -> Self {
+        self.job_type = Some(job_type.into());
+        self
+    }
+
+    pub fn include_archived(mut self) -> Self {
+        self.include_archived = true;
+        self
+    }
+
+    pub fn with_limit(mut self, limit: usize) -> Self {
+        self.limit = limit;
+        self
+    }
+
+    pub fn with_offset(mut self, offset: usize) -> Self {
+        self.offset = offset;
+        self
+    }
+}
+
 /// Error information for failed attempts.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct JobErrorRecord {
     pub attempt: i32,
     pub error: String,
     pub at: DateTime<Utc>,
+}
+
+/// Storage outcome for a failed job attempt.
+#[derive(Debug, Clone, Default)]
+pub struct JobFailureOutcome {
+    pub will_retry: bool,
+    pub retry_delay: Option<Duration>,
+    pub dead_letter_id: Option<DeadLetterId>,
 }
 
 /// A scheduled task definition from the database.

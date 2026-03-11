@@ -14,6 +14,8 @@ export * from "./slugify";
 export * from "./selection-history";
 export * from "./restore-blocked";
 export * from "./restore-resolution";
+export * from "./passkey.svelte";
+export * from "./validated-form.svelte";
 export {
   createLocalSearchFns,
   type LocalSearchOptions,

@@ -45,6 +45,8 @@ cp underlay/rust/crates/underlay-jobs/migrations/0001_create_job_tables.sql \
    your-api/migrations/XXXXXX_create_job_tables.sql
 cp underlay/rust/crates/underlay-jobs/migrations/0002_add_job_notify.sql \
    your-api/migrations/XXXXXX_add_job_notify.sql
+cp underlay/rust/crates/underlay-jobs/migrations/0004_add_job_dead_letters.sql \
+   your-api/migrations/XXXXXX_add_job_dead_letters.sql
 ```
 
 ### 2. Run Migrations
@@ -61,6 +63,7 @@ The migrations create tables and triggers in the `platform` schema:
 platform.job            - Individual job instances
 platform.scheduled_task - Cron-scheduled recurring task definitions
 platform.job_history    - Archive of completed/failed jobs
+platform.job_dead_letter - Failed jobs available for inspection and requeue
 platform.notify_job_inserted() - Trigger function for LISTEN/NOTIFY
 ```
 
@@ -128,6 +131,9 @@ let config = JobConfig::default();
 // With retries
 let config = JobConfig::with_retries(3);
 
+// With retries and deterministic jitter spread
+let config = JobConfig::with_retries_and_jitter(3);
+
 // Long-running job with custom timeout
 let config = JobConfig::long_running()
     .with_timeout(Duration::from_secs(3600));
@@ -137,9 +143,9 @@ let config = JobConfig {
     max_attempts: 5,
     timeout_seconds: Some(300),
     backoff: BackoffStrategy::Exponential {
-        initial_delay: Duration::from_secs(10),
-        multiplier: 2.0,
-        max_delay: Duration::from_secs(3600),
+        base: Duration::from_secs(10),
+        max: Duration::from_secs(3600),
+        jitter: None,
     },
     allow_overlap: false,
     priority: 10,  // Higher = more important
@@ -153,7 +159,11 @@ let config = JobConfig {
 |----------|-------------|
 | `None` | Retry immediately |
 | `Fixed { delay }` | Wait a fixed duration between retries |
-| `Exponential { initial_delay, multiplier, max_delay }` | Increasing delays, capped at max |
+| `Exponential { base, max, jitter }` | Increasing delays, capped at max, with optional deterministic spread |
+
+Retry jitter is opt-in. Existing `with_retries()` and `long_running_with_retries()` calls keep
+their previous timing; use `with_retries_and_jitter()` or
+`with_jittered_exponential_backoff()` when you want retry spread.
 
 ## Running Jobs
 
@@ -317,6 +327,75 @@ let job_id = job_repo.create_scheduled(
 ).await?;
 ```
 
+## Dead Letters
+
+When a job fails permanently or exhausts its retry budget, `underlay-jobs` now copies the final
+state into `platform.job_dead_letter`. This keeps failed-job inspection and manual requeue out of
+the hot queue path.
+
+```rust
+use chrono::{Duration as ChronoDuration, Utc};
+use underlay_jobs::{DeadLetterFilters, PgDeadLetterRepository};
+
+let dead_letters = PgDeadLetterRepository::new(pool.clone())
+    .list(DeadLetterFilters::new().with_job_type("send_email"))
+    .await?;
+
+let retried_job_id = PgDeadLetterRepository::new(pool.clone())
+    .retry(dead_letters[0].id)
+    .await?;
+
+PgDeadLetterRepository::new(pool.clone())
+    .archive_old(Utc::now() - ChronoDuration::days(30))
+    .await?;
+```
+
+Operational expectations:
+
+- copy and run `0004_add_job_dead_letters.sql` before deploying this batch
+- retrying a dead letter creates a fresh `platform.job` row and records the new job id on the dead-letter entry
+- archive or purge old dead letters on a retention schedule that matches your incident/debugging needs
+
+## Lifecycle Events
+
+`underlay-jobs` now exposes lightweight synchronous event hooks so apps can attach metrics,
+structured logs, tracing, or dashboards without framework lock-in.
+
+```rust
+use std::sync::Arc;
+use underlay_jobs::{JobEvent, JobEventSink, JobRepository, JobRunner};
+
+#[derive(Debug)]
+struct MetricsSink;
+
+impl JobEventSink for MetricsSink {
+    fn on_event(&self, event: JobEvent) {
+        match event {
+            JobEvent::Failed { job_type, will_retry, .. } => {
+                tracing::warn!(%job_type, will_retry, "job failed");
+            }
+            JobEvent::DeadLettered { job_id, dead_letter_id, .. } => {
+                tracing::error!(%job_id, %dead_letter_id, "job moved to dead letter");
+            }
+            _ => {}
+        }
+    }
+}
+
+let sink = Arc::new(MetricsSink);
+let job_repo = JobRepository::new(pool.clone()).with_event_sink(sink.clone());
+let runner = JobRunner::new(job_repo, registry).with_event_sink(sink);
+```
+
+Event coverage in this batch:
+
+- `Enqueued`
+- `Claimed`
+- `Started`
+- `Completed`
+- `Failed`
+- `DeadLettered`
+
 ## Scheduled Tasks (Cron)
 
 For recurring tasks, use the scheduler (requires `scheduler` + `postgres` features):
@@ -462,13 +541,9 @@ tokio::select! {
 Track job metrics in your observability stack:
 
 ```rust
-// The runner emits tracing events at various levels
-// Set RUST_LOG=underlay_jobs=debug for detailed logging
-
-// Key events:
-// - INFO: Job completed successfully, Job failed permanently
-// - WARN: Job failed (may retry)
-// - DEBUG: Job processing started, scheduling decisions
+// Built-in tracing remains useful for operator logs.
+// Event sinks let apps attach metrics/tracing/dashboards without changing the crate.
+// Set RUST_LOG=underlay_jobs=debug for detailed queue diagnostics.
 ```
 
 ## Testing

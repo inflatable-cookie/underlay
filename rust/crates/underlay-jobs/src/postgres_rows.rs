@@ -3,7 +3,7 @@
 use chrono::{DateTime, Utc};
 use serde_json::Value;
 
-use crate::types::{Job, JobStatus, ScheduledTask};
+use crate::types::{DeadLetter, Job, JobErrorRecord, JobStatus, ScheduledTask};
 
 // Helper to convert raw uuid to underlay_core::Uuid
 fn from_raw(id: uuid::Uuid) -> underlay_core::Uuid {
@@ -100,6 +100,50 @@ impl From<ScheduledTaskRow> for ScheduledTask {
             enabled: row.enabled,
             last_scheduled_at: row.last_scheduled_at,
             last_completed_at: row.last_completed_at,
+            created_at: row.created_at,
+            updated_at: row.updated_at,
+        }
+    }
+}
+
+#[derive(sqlx::FromRow)]
+pub(crate) struct DeadLetterRow {
+    pub id: uuid::Uuid,
+    pub original_job_id: uuid::Uuid,
+    pub job_type: String,
+    pub payload: Value,
+    pub attempts: i32,
+    pub max_attempts: i32,
+    pub priority: i32,
+    pub last_error: String,
+    pub error_history: Value,
+    pub failed_at: DateTime<Utc>,
+    pub retried_at: Option<DateTime<Utc>>,
+    pub retried_job_id: Option<uuid::Uuid>,
+    pub archived_at: Option<DateTime<Utc>>,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
+}
+
+impl From<DeadLetterRow> for DeadLetter {
+    fn from(row: DeadLetterRow) -> Self {
+        let error_history =
+            serde_json::from_value::<Vec<JobErrorRecord>>(row.error_history).unwrap_or_default();
+
+        DeadLetter {
+            id: from_raw(row.id),
+            original_job_id: from_raw(row.original_job_id),
+            job_type: row.job_type,
+            payload: row.payload,
+            attempts: row.attempts,
+            max_attempts: row.max_attempts,
+            priority: row.priority,
+            last_error: row.last_error,
+            error_history,
+            failed_at: row.failed_at,
+            retried_at: row.retried_at,
+            retried_job_id: row.retried_job_id.map(from_raw),
+            archived_at: row.archived_at,
             created_at: row.created_at,
             updated_at: row.updated_at,
         }

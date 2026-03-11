@@ -1,18 +1,14 @@
 /// <reference types="vitest" />
 // @vitest-environment jsdom
 
-import { afterEach, describe, expect, it } from "vitest";
-import { cleanup, fireEvent, render, screen } from "@testing-library/svelte";
+import { describe, expect, it } from "vitest";
+import { fireEvent, render, screen } from "@testing-library/svelte";
 import RestoreResolutionPlanner from "../../src/patterns/RestoreResolutionPlanner.svelte";
 import { normalizeRestoreResolutionOrder } from "../../src/patterns/restore-resolution";
 import {
   SHADOW_ITEM_MARKER_PROPERTY_NAME,
   SHADOW_PLACEHOLDER_ITEM_ID,
 } from "svelte-dnd-action";
-
-afterEach(() => {
-  cleanup();
-});
 
 function normalize(text: string | null | undefined): string {
   return (text ?? "").replace(/\s+/g, " ").trim();

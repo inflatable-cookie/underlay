@@ -121,3 +121,12 @@ Rules:
 3. Update aggregate totals in `docs/roadmaps/README.md` whenever status counts change.
 4. Prefer canonical status values: `Complete`, `In progress`, `Not started`.
 5. Run `bun validate` after roadmap status/index updates to ensure no unrelated regressions.
+
+## Upgrade Documentation Protocol
+
+When active Underlay work changes consumer-visible behavior, APIs, configuration, migrations, or recommended integration patterns:
+
+1. Add a `Consumer Upgrade Impact` section to the active roadmap.
+2. Update `docs/guides/190-upgrade-compatibility.md` or the linked subsystem upgrade note in the same batch.
+3. Include consumer upgrade notes in the delivery log for the batch.
+4. Use the templates under `docs/guides/code/190-upgrade-compatibility/` instead of ad hoc rollout prose.

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import type { MarkdownEditorContext } from "../../components/markdown-editor-events";
   import type { NightfireBlockDefinition, NightfireTypeOption } from "../utils";
   import type { GroupedOptions } from "./grouped-options";
   import NightfireBlockEditor from "../NightfireBlockEditor.svelte";
@@ -16,6 +17,7 @@
     onMove: (from: number, to: number) => void;
     onRemove: (index: number) => void;
     onBlockChange: (index: number, next: any) => void;
+    onBlockContextChange?: (index: number, context: MarkdownEditorContext) => void;
   }
 
   let {
@@ -29,11 +31,16 @@
     onTypeChange,
     onMove,
     onRemove,
-    onBlockChange
+    onBlockChange,
+    onBlockContextChange = () => {}
   }: Props = $props();
 </script>
 
-<div class="nightfire-field-multi__item">
+<div
+  class="nightfire-field-multi__item"
+  data-nightfire-block-card
+  data-block-index={index}
+>
   <div class="nightfire-field-multi__toolbar">
     <NightfireTypeSelect
       value={(block as any)?.type ??
@@ -78,6 +85,7 @@
     definition={effectiveDef}
     typeOptions={editorTypeOptions}
     onChange={(next) => onBlockChange(index, next)}
+    onContextChange={(context) => onBlockContextChange(index, context)}
   />
 </div>
 

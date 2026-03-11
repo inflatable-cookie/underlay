@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use sha2::{Digest, Sha256};
 
 use crate::context::MigrationContext;
@@ -7,6 +8,7 @@ use crate::pipeline::{
     AssetsStageOutput, MaterializeStageOutput, PipelineRunReport, TransformStageOutput,
 };
 use crate::plugin::MigrationPlugin;
+use crate::verification_rules::{evaluate_verification_rules, VerificationRule};
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
@@ -35,12 +37,16 @@ pub struct VerificationCheckResult {
 #[serde(rename_all = "snake_case")]
 pub struct VerificationInput {
     pub transform_record_count: usize,
+    #[serde(default)]
+    pub transform_records: Vec<Value>,
     pub decision_count: usize,
     pub unresolved_decision_count: usize,
     pub decision_governance_issue_count: usize,
     pub transform_checksum: String,
     pub materialize: MaterializeStageOutput,
     pub assets: AssetsStageOutput,
+    #[serde(default)]
+    pub rules: Vec<VerificationRule>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -119,6 +125,10 @@ where
 {
     let mut checks = Vec::new();
     let mut issues = Vec::new();
+
+    let rule_result = evaluate_verification_rules(input);
+    checks.extend(rule_result.checks);
+    issues.extend(rule_result.issues);
 
     let decision_coverage_pass = input.transform_record_count == input.decision_count;
     checks.push(VerificationCheckResult {

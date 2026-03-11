@@ -2,6 +2,7 @@
   import { onDestroy, onMount, untrack } from "svelte";
   import type { Snippet } from "svelte";
   import { lazyLoadEasyMde } from "./lazy-load-easymde";
+  import type { MarkdownEditorContext } from "./markdown-editor-events";
 
   interface Props {
     label?: string | null;
@@ -15,6 +16,7 @@
     children?: Snippet | null;
     placeholder?: string | null;
     onChange?: ((next: string) => void) | null;
+    onContextChange?: ((context: MarkdownEditorContext) => void) | null;
   }
 
   let {
@@ -28,7 +30,8 @@
     className = "",
     children = null,
     placeholder = null,
-    onChange = null
+    onChange = null,
+    onContextChange = null
   }: Props = $props();
 
   let textareaElement: HTMLTextAreaElement | null = $state(null);
@@ -54,6 +57,65 @@
       changeScheduled = false;
       handleChange(queuedChange);
     });
+  }
+
+  function emitContext(context: MarkdownEditorContext) {
+    onContextChange?.(context);
+  }
+
+  function readTextareaContext(textarea: HTMLTextAreaElement): MarkdownEditorContext {
+    const nextValue = textarea.value ?? "";
+    const selectionStart = textarea.selectionStart ?? nextValue.length;
+    const selectionEnd = textarea.selectionEnd ?? selectionStart;
+
+    return {
+      value: nextValue,
+      selectionStart,
+      selectionEnd
+    };
+  }
+
+  function emitTextareaContext(textarea: HTMLTextAreaElement | null) {
+    if (!textarea) {
+      return;
+    }
+
+    emitContext(readTextareaContext(textarea));
+  }
+
+  function emitCodeMirrorContext() {
+    const cm = editorInstance?.codemirror;
+    if (!cm) {
+      return;
+    }
+
+    const value = editorInstance?.value?.() ?? "";
+    const from = typeof cm.getCursor === "function" ? cm.getCursor("from") : null;
+    const to = typeof cm.getCursor === "function" ? cm.getCursor("to") : null;
+    const selectionStart =
+      from && typeof cm.indexFromPos === "function"
+        ? cm.indexFromPos(from)
+        : value.length;
+    const selectionEnd =
+      to && typeof cm.indexFromPos === "function"
+        ? cm.indexFromPos(to)
+        : selectionStart;
+
+    emitContext({
+      value,
+      selectionStart,
+      selectionEnd
+    });
+  }
+
+  function handleTextareaInput(event: Event) {
+    const textarea = event.currentTarget as HTMLTextAreaElement;
+    scheduleChange(textarea.value ?? "");
+    emitTextareaContext(textarea);
+  }
+
+  function handleTextareaSelection(event: Event) {
+    emitTextareaContext(event.currentTarget as HTMLTextAreaElement);
   }
 
   async function ensureEditor() {
@@ -177,9 +239,15 @@
     editorInstance.codemirror.on("change", () => {
       const next = editorInstance?.value?.() ?? "";
       scheduleChange(next);
+      emitCodeMirrorContext();
+    });
+
+    editorInstance.codemirror.on("cursorActivity", () => {
+      emitCodeMirrorContext();
     });
 
     editorReady = true;
+    emitCodeMirrorContext();
   }
 
   function destroyEditor() {
@@ -244,6 +312,10 @@
         bind:value
         required={required}
         placeholder={placeholder ?? undefined}
+        oninput={handleTextareaInput}
+        onclick={handleTextareaSelection}
+        onkeyup={handleTextareaSelection}
+        onselect={handleTextareaSelection}
       ></textarea>
     </label>
   {:else}
@@ -255,6 +327,10 @@
       bind:value
       required={required}
       placeholder={placeholder ?? undefined}
+      oninput={handleTextareaInput}
+      onclick={handleTextareaSelection}
+      onkeyup={handleTextareaSelection}
+      onselect={handleTextareaSelection}
     ></textarea>
   {/if}
 

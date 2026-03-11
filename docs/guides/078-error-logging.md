@@ -97,6 +97,8 @@ This ensures:
 2. Tracing spans are established
 3. Errors are captured before CORS headers are added
 
+If you also enable `opentelemetry` on `underlay-http` and `underlay-observability`, the same tracing layer records incoming `traceparent` / `tracestate` values onto the request span. That keeps database-backed error logs, request IDs, and distributed trace IDs aligned without adding extra app-local middleware.
+
 ## Canonical Handler Path
 
 Use `ApiError` and `ApiResult<T>` in handlers. This is the canonical Underlay path for rich error logging:

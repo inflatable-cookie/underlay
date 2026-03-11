@@ -469,6 +469,8 @@ underlay-http = { path = "../underlay/rust/crates/underlay-http" }
 
 # Optional features
 underlay-http = { path = "...", features = ["tracing"] }
+underlay-http = { path = "...", features = ["tracing", "opentelemetry"] }
+underlay-observability = { path = "...", features = ["opentelemetry"] }
 ```
 
 ### Request Context
@@ -500,6 +502,10 @@ async fn my_handler(ctx: RequestContext) -> Json<String> {
 | `ip_address()` | `Option<IpAddr>` | Client IP (from CF-Connecting-IP, X-Real-IP, or X-Forwarded-For) |
 | `user_agent()` | `Option<&str>` | User-Agent header value |
 | `is_authenticated()` | `bool` | Whether a user ID is present |
+| `trace_context()` | `Option<&TraceContext>` | Parsed incoming W3C trace context (`opentelemetry` feature only) |
+| `trace_id()` | `Option<&str>` | Incoming trace ID from `traceparent` (`opentelemetry` feature only) |
+| `parent_span_id()` | `Option<&str>` | Incoming parent span ID from `traceparent` (`opentelemetry` feature only) |
+| `inject_trace_context(&mut HeaderMap)` | `()` | Write `traceparent` / `tracestate` to outgoing headers (`opentelemetry` feature only) |
 
 #### Header Priority for IP Extraction
 
@@ -574,6 +580,43 @@ async fn my_handler(ctx: RequestContext) -> Json<String> {
     Json("ok".to_string())
 }
 ```
+
+### Trace Context Propagation
+
+Enable the `opentelemetry` feature when you want `RequestContext` and Underlay's request spans to understand incoming W3C trace headers without forcing exporter setup into the shared crate:
+
+```toml
+underlay-http = { path = "...", features = ["tracing", "opentelemetry"] }
+underlay-observability = { path = "...", features = ["opentelemetry"] }
+```
+
+With that feature enabled:
+
+- `RequestContext` parses inbound `traceparent` and `tracestate` headers.
+- `underlay_observability::trace_layer()` records `trace_id`, `parent_span_id`, `trace_flags`, and `tracestate` on the request span when the headers are present.
+- `make_request_span()` and `record_to_span()` include the same correlation fields for handler-owned spans.
+
+```rust
+use axum::{http::HeaderMap, Json};
+use underlay_http::RequestContext;
+
+async fn proxy_handler(ctx: RequestContext) -> Json<String> {
+    let mut outgoing_headers = HeaderMap::new();
+
+    // Forward the current trace context to a downstream HTTP client request.
+    ctx.inject_trace_context(&mut outgoing_headers);
+
+    tracing::info!(
+        request_id = %ctx.request_id(),
+        trace_id = ?ctx.trace_id(),
+        "forwarding request"
+    );
+
+    Json("ok".to_string())
+}
+```
+
+Keep OTLP exporter configuration, sampler choice, and backend credentials in the consuming app. Underlay only provides header parsing, propagation, and span-field correlation in this batch.
 
 ### Pagination
 

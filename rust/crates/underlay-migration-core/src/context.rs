@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 use crate::integrity::{IntegrityEvidence, IntegrityPolicy};
+use crate::verification_rules::VerificationRule;
 
 use underlay_core::Uuid;
 
@@ -37,6 +38,8 @@ pub struct PipelinePolicy {
     pub strict_determinism: bool,
     pub fail_on_unresolved_decisions: bool,
     pub ai_threshold_policy: AiThresholdPolicy,
+    #[serde(default)]
+    pub verification_rules: Vec<VerificationRule>,
     pub integrity_policy: IntegrityPolicy,
     pub integrity_evidence: IntegrityEvidence,
 }
@@ -66,6 +69,7 @@ impl Default for PipelinePolicy {
                 default_confidence_threshold: 0.92,
                 decision_type_overrides: HashMap::new(),
             },
+            verification_rules: Vec::new(),
             integrity_policy: IntegrityPolicy::default(),
             integrity_evidence: IntegrityEvidence::default(),
         }

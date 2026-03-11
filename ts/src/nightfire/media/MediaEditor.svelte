@@ -2,6 +2,7 @@
   import TextInput from "../../components/TextInput.svelte";
   import Select from "../../components/Select.svelte";
   import MediaThumbnail from "../../components/MediaThumbnail.svelte";
+  import type { MarkdownEditorContext } from "../../components/markdown-editor-events";
   import { type MediaKind } from "../../patterns/media-types/enums";
   import { useNightfireMedia, type NightfireMediaPickResult } from "./context";
 
@@ -20,9 +21,10 @@
   interface Props {
     block: MediaBlock;
     onChange: (block: MediaBlock) => void;
+    onContextChange?: ((context: MarkdownEditorContext) => void) | null;
   }
 
-  let { block, onChange }: Props = $props();
+  let { block, onChange, onContextChange = null }: Props = $props();
 
   const mediaContext = useNightfireMedia();
 

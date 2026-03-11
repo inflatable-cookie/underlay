@@ -60,6 +60,7 @@ export { default as Tooltip } from "./Tooltip.svelte";
 export { default as TimeAgo } from "./TimeAgo.svelte";
 export { default as Popover } from "./Popover.svelte";
 export { default as Skeleton } from "./Skeleton.svelte";
+export { default as DataSkeleton } from "./DataSkeleton.svelte";
 export { default as EmptyState } from "./EmptyState.svelte";
 export { default as ErrorBoundary } from "./ErrorBoundary.svelte";
 export { default as InlineEditableField } from "./InlineEditableField.svelte";
@@ -130,6 +131,16 @@ export { default as ListContainer } from "./ListContainer.svelte";
 export { default as StatCard } from "./StatCard.svelte";
 export type { StatVariant } from "./StatCard.svelte";
 export { default as StatGrid } from "./StatGrid.svelte";
+export {
+	registerDataSkeletonPreset,
+	unregisterDataSkeletonPreset,
+	getDataSkeletonPreset,
+	type DataSkeletonType,
+	type DataSkeletonListPattern,
+	type DataSkeletonGridPattern,
+	type DataSkeletonDetailSection,
+	type DataSkeletonPreset
+} from "./data-skeleton";
 
 export { default as LoginForm } from "./auth/LoginForm.svelte";
 export { default as RegisterForm } from "./auth/RegisterForm.svelte";
@@ -140,6 +151,7 @@ export { default as PassKeyButton } from "./auth/PassKeyButton.svelte";
 export { default as GoogleSignInButton } from "./auth/GoogleSignInButton.svelte";
 export { default as SessionList } from "./auth/SessionList.svelte";
 export { default as SecuritySettings } from "./auth/SecuritySettings.svelte";
+export { default as PasskeyManager } from "./auth/PasskeyManager.svelte";
 // Deprecated: prefer `ForgotPasswordFlow` for new password recovery flows.
 export { default as AccountRecovery } from "./auth/AccountRecovery.svelte";
 

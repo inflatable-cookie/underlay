@@ -4,8 +4,10 @@ use async_trait::async_trait;
 use chrono::Utc;
 use serde_json::json;
 
-use crate::types::{Job, JobConfig, JobHandler, JobHandlerError, JobId, JobStatus};
-use crate::{JobRegistry, JobRunner, JobRunnerConfig, JobStore};
+use crate::types::{
+    Job, JobConfig, JobFailureOutcome, JobHandler, JobHandlerError, JobId, JobStatus,
+};
+use crate::{JobEvent, JobEventSink, JobRegistry, JobRunner, JobRunnerConfig, JobStore};
 
 #[derive(Debug, Default)]
 struct MemStore {
@@ -13,6 +15,7 @@ struct MemStore {
     successes: Mutex<Vec<JobId>>,
     failures: Mutex<Vec<JobId>>,
     failure_calls: Mutex<Vec<FailureCall>>,
+    dead_letters: Mutex<Vec<JobId>>,
 }
 
 #[derive(Debug, Clone)]
@@ -53,18 +56,47 @@ impl JobStore for Arc<MemStore> {
 
     async fn mark_failure(
         &self,
-        job_id: JobId,
+        job: &Job,
         error: JobHandlerError,
         config: &crate::types::JobConfig,
-    ) -> Result<(), Self::Error> {
-        self.failures.lock().unwrap().push(job_id);
+    ) -> Result<JobFailureOutcome, Self::Error> {
+        self.failures.lock().unwrap().push(job.id);
+        let will_retry = !error.is_permanent && (job.attempts + 1) < config.max_attempts as i32;
+        let dead_letter_id = if will_retry {
+            None
+        } else {
+            let dead_letter_id = underlay_core::Uuid::new_v7();
+            self.dead_letters.lock().unwrap().push(dead_letter_id);
+            Some(dead_letter_id)
+        };
         self.failure_calls.lock().unwrap().push(FailureCall {
-            job_id,
+            job_id: job.id,
             is_permanent: error.is_permanent,
             max_attempts: config.max_attempts,
             retry_delay_secs: config.backoff.delay_for_attempt(0).as_secs(),
         });
-        Ok(())
+        Ok(JobFailureOutcome {
+            will_retry,
+            retry_delay: will_retry.then(|| config.backoff.delay_for_attempt(0)),
+            dead_letter_id,
+        })
+    }
+}
+
+#[derive(Debug, Default)]
+struct RecordingEventSink {
+    events: Mutex<Vec<JobEvent>>,
+}
+
+impl RecordingEventSink {
+    fn events(&self) -> Vec<JobEvent> {
+        self.events.lock().unwrap().clone()
+    }
+}
+
+impl JobEventSink for RecordingEventSink {
+    fn on_event(&self, event: JobEvent) {
+        self.events.lock().unwrap().push(event);
     }
 }
 
@@ -111,14 +143,26 @@ async fn runner_dispatches_jobs_to_registered_handler() {
     let job = make_test_job("test");
     let job_id = job.id;
     store.queue.lock().unwrap().push(job);
+    let event_sink = Arc::new(RecordingEventSink::default());
 
     let mut registry = JobRegistry::new();
     registry.register(TestHandler);
 
-    let runner = JobRunner::new(store.clone(), registry);
+    let runner = JobRunner::new(store.clone(), registry).with_event_sink(event_sink.clone());
     let did_work = runner.run_once().await.expect("run_once");
     assert!(did_work);
     assert_eq!(store.successes.lock().unwrap().as_slice(), &[job_id]);
+
+    let events = event_sink.events();
+    assert!(
+        matches!(events[0], JobEvent::Claimed { job_id: event_job_id, .. } if event_job_id == job_id)
+    );
+    assert!(
+        matches!(events[1], JobEvent::Started { job_id: event_job_id, .. } if event_job_id == job_id)
+    );
+    assert!(
+        matches!(events[2], JobEvent::Completed { job_id: event_job_id, .. } if event_job_id == job_id)
+    );
 }
 
 #[tokio::test]
@@ -168,6 +212,7 @@ async fn runner_records_failures() {
 
     let store = Arc::new(MemStore::default());
     let called = Arc::new(AtomicBool::new(false));
+    let event_sink = Arc::new(RecordingEventSink::default());
 
     store.queue.lock().unwrap().push(make_test_job("failing"));
 
@@ -176,12 +221,22 @@ async fn runner_records_failures() {
         called: called.clone(),
     });
 
-    let runner = JobRunner::new(store.clone(), registry);
+    let runner = JobRunner::new(store.clone(), registry).with_event_sink(event_sink.clone());
     let did_work = runner.run_once().await.expect("run_once");
     assert!(did_work);
     assert!(called.load(Ordering::SeqCst));
     assert_eq!(store.failures.lock().unwrap().len(), 1);
     assert_eq!(store.failure_calls.lock().unwrap().len(), 1);
+
+    let events = event_sink.events();
+    assert!(matches!(
+        events[2],
+        JobEvent::Failed {
+            will_retry: false,
+            ..
+        }
+    ));
+    assert!(matches!(events[3], JobEvent::DeadLettered { .. }));
 }
 
 #[tokio::test]
@@ -222,6 +277,7 @@ async fn runner_passes_handler_config_to_failure_path() {
     assert!(!calls[0].is_permanent);
     assert_eq!(calls[0].max_attempts, 4);
     assert_eq!(calls[0].retry_delay_secs, 42);
+    assert_eq!(store.dead_letters.lock().unwrap().len(), 0);
 }
 
 #[tokio::test]
@@ -261,6 +317,7 @@ async fn runner_flags_permanent_failures_for_store() {
     assert_eq!(calls[0].job_id, job_id);
     assert!(calls[0].is_permanent);
     assert_eq!(calls[0].max_attempts, 7);
+    assert_eq!(store.dead_letters.lock().unwrap().len(), 1);
 }
 
 #[test]

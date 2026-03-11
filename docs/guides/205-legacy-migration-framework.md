@@ -66,7 +66,8 @@ Configure through `PipelinePolicy`:
 
 1. AI threshold policy (`default 0.92` with decision-type overrides).
 2. Fail-on-unresolved behavior.
-3. Integrity policy/evidence, including signature rollout phase:
+3. Optional declarative verification rules for common migration checks.
+4. Integrity policy/evidence, including signature rollout phase:
    1. `observe`
    2. `enforce_preprod`
    3. `enforce_all`
@@ -128,7 +129,46 @@ where
 }
 ```
 
-### 3.4 Start-to-finish setup checklist
+### 3.4 Declarative verification rules
+
+`underlay-migration-core` now supports optional declarative verification rules in the existing
+`verify` stage. These rules run before `MigrationPlugin::verify_semantics()`, and custom
+verification code still runs unchanged after them.
+
+```rust
+use underlay_migration_core::{
+    standard_verification_rules, MigrationContext, PipelinePolicy, RunMetadata,
+    VerificationMetric,
+};
+
+let mut policy = PipelinePolicy::default();
+policy.verification_rules = vec![
+    standard_verification_rules::unique("id"),
+    standard_verification_rules::not_null("email"),
+    standard_verification_rules::referential_integrity("manager_id", "id"),
+    standard_verification_rules::row_count_min(VerificationMetric::TransformRecordCount, 1),
+];
+
+let ctx = MigrationContext::new(
+    RunMetadata::new("app-migration-plugin-v1", "schema-v1"),
+    policy,
+);
+```
+
+Supported declarative checks in this batch:
+
+1. Row-count expectations over transform, decision, materialize, and asset totals.
+2. Not-null checks for transformed record fields using dotted JSON paths.
+3. Uniqueness checks for transformed record fields.
+4. Referential-integrity checks where one transformed field must resolve against another field in the transformed set.
+
+Mixed-mode rule:
+
+1. Shared declarative rules handle common operator-facing checks.
+2. `verify_semantics()` remains the place for migration-specific logic that cannot be expressed declaratively yet.
+3. Verification fails if either declarative rules or plugin verification emit `error` severity issues.
+
+### 3.5 Start-to-finish setup checklist
 
 Use this order for new projects to avoid partial setups:
 
@@ -437,6 +477,21 @@ Before marking migration release-ready:
 3. Demo replay passes with digest pinning.
 4. Refresh replay reuses expected decision set.
 5. Pre-production replay passes all promotion gates.
+
+### 12.1 Declarative verification guidance
+
+Use declarative rules when you want repeatable, reviewable checks for common conditions:
+
+1. unique identifiers after transform
+2. required fields after normalization/transform
+3. self-contained referential checks within transformed records
+4. minimum or exact row-count expectations for operator signoff
+
+Keep these out of scope for this roadmap:
+
+1. CDC cutover integrations
+2. heavyweight external validation suites
+3. replacing migration-specific `verify_semantics()` logic wholesale
 
 ## 13. Related Guides
 

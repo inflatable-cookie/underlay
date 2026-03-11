@@ -45,6 +45,8 @@ pub use crate::caching::{
 pub use crate::context::{
     headers, AuthenticatedContext, AuthenticatedUser, ContextError, RequestContext,
 };
+#[cfg(feature = "opentelemetry")]
+pub use underlay_observability::{TraceContext, TRACEPARENT_HEADER, TRACESTATE_HEADER};
 pub use crate::cookies::{
     clear_auth_cookies, extract_refresh_token, extract_refresh_token_default, set_auth_cookies,
     AuthCookieConfig, SameSite,

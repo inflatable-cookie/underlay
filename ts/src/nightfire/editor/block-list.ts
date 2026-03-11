@@ -21,6 +21,16 @@ export function addBlockToList(
 	return blocks.concat(createDefaultBlock(defaultType));
 }
 
+export function insertBlockIntoList(
+	blocks: unknown[],
+	index: number,
+	defaultType: string
+): unknown[] {
+	const next = blocks.slice();
+	next.splice(index + 1, 0, createDefaultBlock(defaultType));
+	return next;
+}
+
 export function removeBlockFromList(
 	blocks: unknown[],
 	index: number

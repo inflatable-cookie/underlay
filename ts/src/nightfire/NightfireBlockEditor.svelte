@@ -1,4 +1,5 @@
 <script lang="ts">
+  import type { MarkdownEditorContext } from "../components/markdown-editor-events";
   import { getBlockEditor } from "./editor-registry";
   import "./render-registrations";
   import "./editor-registrations";
@@ -34,6 +35,7 @@
      */
     definition: NightfireBlockDefinition;
     typeOptions: NightfireTypeOption[];
+    onContextChange?: ((context: MarkdownEditorContext) => void) | null;
   }
 
   let {
@@ -41,7 +43,8 @@
     block,
     onChange = () => {},
     definition,
-    typeOptions
+    typeOptions,
+    onContextChange = null
   }: Props = $props();
 
   // Normalize the block and derive values reactively
@@ -67,6 +70,7 @@
         block={normalisedBlock}
         value={{ schema, block: normalisedBlock }}
         onChange={handleBlockEditorChange}
+        {onContextChange}
       />
     {/key}
   {:else}

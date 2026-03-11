@@ -38,6 +38,17 @@ export interface StorageOptions {
   serialize?: (value: unknown) => string;
   /** Custom deserializer (default: JSON.parse) */
   deserialize?: (value: string) => unknown;
+  /** Time-to-live in seconds from the moment the value is written */
+  ttl?: number;
+  /** Absolute expiration time for the stored value */
+  expiresAt?: Date | number;
+}
+
+interface StoredEnvelope {
+  __underlay: true;
+  version: 1;
+  value: string;
+  expiresAt?: number;
 }
 
 /** A storage wrapper with SSR-safe methods */
@@ -65,6 +76,12 @@ export interface StorageWrapper {
    * Returns false during SSR.
    */
   has(key: string): boolean;
+
+  /**
+   * Check whether a key exists but is expired.
+   * Expired keys are removed lazily when checked.
+   */
+  isExpired(key: string): boolean;
 
   /**
    * Create a reactive Svelte store backed by storage.
@@ -109,10 +126,93 @@ function createStorageWrapper(
 ): StorageWrapper {
   const defaultSerialize = (value: unknown): string => JSON.stringify(value);
   const defaultDeserialize = (value: string): unknown => JSON.parse(value);
+  const UNDERLAY_STORAGE_VERSION = 1;
 
   function getStorage(): Storage | null {
     if (!isStorageAvailable(type)) return null;
     return window[type];
+  }
+
+  function resolveExpiresAt(options?: StorageOptions): number | undefined {
+    if (!options) return undefined;
+
+    if (options.expiresAt instanceof Date) {
+      return options.expiresAt.getTime();
+    }
+
+    if (typeof options.expiresAt === "number" && Number.isFinite(options.expiresAt)) {
+      return options.expiresAt;
+    }
+
+    if (typeof options.ttl === "number" && Number.isFinite(options.ttl)) {
+      return Date.now() + (options.ttl * 1000);
+    }
+
+    return undefined;
+  }
+
+  function isStoredEnvelope(value: unknown): value is StoredEnvelope {
+    return (
+      value !== null &&
+      typeof value === "object" &&
+      (value as Record<string, unknown>).__underlay === true &&
+      (value as Record<string, unknown>).version === UNDERLAY_STORAGE_VERSION &&
+      typeof (value as Record<string, unknown>).value === "string"
+    );
+  }
+
+  function parseStoredItem(raw: string | null): {
+    serialized: string | null;
+    expiresAt?: number;
+    expired: boolean;
+  } {
+    if (raw === null) {
+      return {
+        serialized: null,
+        expired: false
+      };
+    }
+
+    try {
+      const parsed = JSON.parse(raw) as unknown;
+      if (isStoredEnvelope(parsed)) {
+        const expiresAt = typeof parsed.expiresAt === "number" ? parsed.expiresAt : undefined;
+        const expired = typeof expiresAt === "number" && expiresAt <= Date.now();
+
+        return {
+          serialized: parsed.value,
+          expiresAt,
+          expired
+        };
+      }
+    } catch {
+      // Raw values that are not valid JSON should still be passed through
+      // to the configured deserializer for backward compatibility.
+    }
+
+    return {
+      serialized: raw,
+      expired: false
+    };
+  }
+
+  function serializeForStorage(value: unknown, options?: StorageOptions): string {
+    const serialize = options?.serialize ?? defaultSerialize;
+    const serialized = serialize(value);
+    const expiresAt = resolveExpiresAt(options);
+
+    if (expiresAt === undefined) {
+      return serialized;
+    }
+
+    const envelope: StoredEnvelope = {
+      __underlay: true,
+      version: UNDERLAY_STORAGE_VERSION,
+      value: serialized,
+      expiresAt
+    };
+
+    return JSON.stringify(envelope);
   }
 
   function get<T>(key: string, defaultValue: T, options?: StorageOptions): T {
@@ -120,11 +220,15 @@ function createStorageWrapper(
     if (!storage) return defaultValue;
 
     try {
-      const item = storage.getItem(key);
-      if (item === null) return defaultValue;
+      const item = parseStoredItem(storage.getItem(key));
+      if (item.serialized === null) return defaultValue;
+      if (item.expired) {
+        storage.removeItem(key);
+        return defaultValue;
+      }
 
       const deserialize = options?.deserialize ?? defaultDeserialize;
-      return deserialize(item) as T;
+      return deserialize(item.serialized) as T;
     } catch {
       // Parsing failed, return default
       return defaultValue;
@@ -136,8 +240,13 @@ function createStorageWrapper(
     if (!storage) return;
 
     try {
-      const serialize = options?.serialize ?? defaultSerialize;
-      storage.setItem(key, serialize(value));
+      const expiresAt = resolveExpiresAt(options);
+      if (typeof expiresAt === "number" && expiresAt <= Date.now()) {
+        storage.removeItem(key);
+        return;
+      }
+
+      storage.setItem(key, serializeForStorage(value, options));
     } catch (err) {
       // Quota exceeded or other error - log but don't throw
       console.warn(`Failed to set storage key "${key}":`, err);
@@ -155,7 +264,26 @@ function createStorageWrapper(
     const storage = getStorage();
     if (!storage) return false;
 
-    return storage.getItem(key) !== null;
+    const item = parseStoredItem(storage.getItem(key));
+    if (item.expired) {
+      storage.removeItem(key);
+      return false;
+    }
+
+    return item.serialized !== null;
+  }
+
+  function isExpired(key: string): boolean {
+    const storage = getStorage();
+    if (!storage) return false;
+
+    const item = parseStoredItem(storage.getItem(key));
+    if (!item.expired) {
+      return false;
+    }
+
+    storage.removeItem(key);
+    return true;
   }
 
   function clear(): void {
@@ -181,11 +309,60 @@ function createStorageWrapper(
     // Get initial value from storage
     const initial = get(key, defaultValue, options);
     const { subscribe, set: setStore, update } = writable<T>(initial);
+    let expiryTimer: ReturnType<typeof setTimeout> | null = null;
+
+    function clearExpiryTimer() {
+      if (expiryTimer !== null) {
+        clearTimeout(expiryTimer);
+        expiryTimer = null;
+      }
+    }
+
+    function scheduleExpiry(expiresAt?: number) {
+      clearExpiryTimer();
+      if (!BROWSER || typeof expiresAt !== "number") {
+        return;
+      }
+
+      const delay = expiresAt - Date.now();
+      if (delay <= 0) {
+        remove(key);
+        setStore(defaultValue);
+        return;
+      }
+
+      expiryTimer = setTimeout(() => {
+        remove(key);
+        setStore(defaultValue);
+        expiryTimer = null;
+      }, delay);
+    }
+
+    function refreshExpiryFromStorage() {
+      const storage = getStorage();
+      if (!storage) {
+        clearExpiryTimer();
+        return;
+      }
+
+      const parsed = parseStoredItem(storage.getItem(key));
+      if (parsed.expired) {
+        storage.removeItem(key);
+        setStore(defaultValue);
+        clearExpiryTimer();
+        return;
+      }
+
+      scheduleExpiry(parsed.expiresAt);
+    }
+
+    refreshExpiryFromStorage();
 
     // Wrap set/update to persist changes
     function persistingSet(value: T): void {
       set(key, value, options);
       setStore(value);
+      refreshExpiryFromStorage();
     }
 
     function persistingUpdate(updater: (value: T) => T): void {
@@ -194,6 +371,7 @@ function createStorageWrapper(
         set(key, next, options);
         return next;
       });
+      refreshExpiryFromStorage();
     }
 
     // Listen for storage events from other tabs (localStorage only)
@@ -203,12 +381,14 @@ function createStorageWrapper(
         if (event.storageArea !== window.localStorage) return;
 
         try {
+          const parsed = parseStoredItem(event.newValue);
           const deserialize = options?.deserialize ?? defaultDeserialize;
           const newValue =
-            event.newValue === null
+            parsed.serialized === null || parsed.expired
               ? defaultValue
-              : (deserialize(event.newValue) as T);
+              : (deserialize(parsed.serialized) as T);
           setStore(newValue);
+          scheduleExpiry(parsed.expired ? undefined : parsed.expiresAt);
         } catch {
           // Ignore deserialization errors
         }
@@ -228,7 +408,7 @@ function createStorageWrapper(
     };
   }
 
-  return { get, set, remove, has, store, clear };
+  return { get, set, remove, has, isExpired, store, clear };
 }
 
 // ============================================================================

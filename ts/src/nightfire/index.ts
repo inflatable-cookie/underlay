@@ -3,6 +3,7 @@
 export { default as NightfireRenderer } from "./NightfireRenderer.svelte";
 export { default as NightfireBlockEditor } from "./NightfireBlockEditor.svelte";
 export { default as NightfireEditor } from "./NightfireEditor.svelte";
+export { default as SlashCommandPalette } from "./SlashCommandPalette.svelte";
 
 export type NightfireValue = {
   schema: string;
@@ -59,3 +60,8 @@ export type {
 
 // Re-export SchemaMismatchInfo from editor for convenience
 export type { SchemaMismatchInfo } from "./NightfireEditor.svelte";
+export type {
+  NightfireSlashCommand,
+  NightfireSlashCommandInput,
+  NightfireSlashCommandsConfig
+} from "./slash-commands";

@@ -934,9 +934,39 @@ const form = createFormState({
   initialError: 'Please fix the errors below',
   
   // Reset form after success
-  resetOnSuccess: true
+  resetOnSuccess: true,
+
+  // Optional draft persistence
+  autoSave: {
+    key: 'user-form-draft',
+    storage: 'session',
+    debounce: 600,
+    ttl: 1800
+  }
 });
 ```
+
+#### Draft Auto-Save
+
+`createFormState` can persist and restore draft values when you attach it to a real HTML form with `use:enhance={form.enhance}`.
+
+```typescript
+const form = createFormState({
+  autoSave: {
+    key: 'article-draft',
+    storage: 'session',
+    debounce: 750,
+    ttl: 1800
+  }
+});
+```
+
+Behavior notes:
+
+- Draft restore/save wiring happens inside `form.enhance`.
+- Successful `setSuccess()` clears the saved draft by default. Set `clearOnSuccess: false` to keep it.
+- Draft expiration uses the shared storage `ttl` / `expiresAt` options.
+- File inputs are skipped in this first batch.
 
 #### State Properties
 
@@ -969,6 +999,9 @@ form.clearFieldError('email');
 
 // Reset to initial state
 form.reset();
+
+// Remove a saved draft manually
+form.clearDraft();
 ```
 
 #### SubmitButton Component
@@ -1433,6 +1466,31 @@ if (storage.local.has('theme')) {
 storage.local.clear();
 ```
 
+#### Expiring Values
+
+Storage expiration is opt-in per key. Existing `set()` and `store()` calls keep their current persistence behavior unless you pass `ttl` or `expiresAt`.
+
+```typescript
+// Expire 15 minutes after write
+storage.local.set('api-cache', { ok: true }, { ttl: 900 });
+
+// Expire at an absolute time
+storage.session.set('invite-flow', { step: 2 }, {
+  expiresAt: new Date('2026-03-12T09:00:00Z')
+});
+
+// Probe whether a key has gone stale
+if (storage.local.isExpired('api-cache')) {
+  // refetch data
+}
+```
+
+Behavior notes:
+
+- Expired values are removed lazily when read with `get()`, checked with `has()`, or probed with `isExpired()`.
+- Existing raw values stored before this feature remain readable; Underlay only uses an envelope format when expiration is requested.
+- `ttl` is expressed in seconds.
+
 #### Session Storage
 
 Same API for session-scoped storage:
@@ -1466,6 +1524,19 @@ const preferences = storage.local.store('preferences', {
 
 Changes automatically persist to localStorage and sync across browser tabs.
 
+Expiring stores also reset to their default values in the current page session once the timer elapses:
+
+```typescript
+const draft = storage.session.store('post-draft', {
+  title: '',
+  body: ''
+}, {
+  ttl: 1800
+});
+```
+
+When the draft expires, Underlay removes the stored value and updates `$draft` back to the default object.
+
 #### Shorthand Functions
 
 ```typescript
@@ -1487,25 +1558,66 @@ const dateStore = storage.local.store('lastVisit', new Date(), {
 });
 ```
 
+Custom serializers also work with expiration. Underlay stores the serialized payload inside a small metadata envelope only when `ttl` or `expiresAt` is present.
+
 ### Loading Skeletons
 
-The `Skeleton` component provides loading placeholders with shimmer animation.
+The `Skeleton` component provides low-level loading placeholders with shimmer animation. For common data layouts, prefer `DataSkeleton` so list, grid, table, and detail loading states stay visually consistent without hand-composing the same placeholder structure repeatedly.
 
 #### Basic Usage
 
 ```svelte
 <script>
-  import { Skeleton } from '@decodelabs/underlay/components';
+  import { DataSkeleton, Skeleton } from '@decodelabs/underlay/components';
 </script>
 
 {#if loading}
-  <Skeleton variant="title" />
-  <Skeleton variant="text" lines={3} />
+  <DataSkeleton type="detail" sections={['header', 'description']} />
 {:else}
   <h1>{data.title}</h1>
   <p>{data.description}</p>
 {/if}
 ```
+
+#### DataSkeleton Presets
+
+```svelte
+<!-- Repeating list rows -->
+<DataSkeleton type="list" count={5} />
+
+<!-- List with avatar affordance -->
+<DataSkeleton type="list" pattern="avatar-text" count={4} />
+
+<!-- Grid cards -->
+<DataSkeleton type="grid" count={6} columns={3} />
+
+<!-- Table placeholder -->
+<DataSkeleton type="table" rows={8} columns={4} header />
+
+<!-- Detail page shell -->
+<DataSkeleton type="detail" sections={['header', 'stats', 'description', 'actions']} />
+```
+
+#### Registered Presets
+
+Use the preset registry when an app repeats the same built-in skeleton layout in multiple places:
+
+```typescript
+import { registerDataSkeletonPreset } from '@decodelabs/underlay/components';
+
+registerDataSkeletonPreset('user-grid', {
+  type: 'grid',
+  pattern: 'product-card',
+  count: 4,
+  columns: 2
+});
+```
+
+```svelte
+<DataSkeleton pattern="user-grid" />
+```
+
+The first Underlay batch keeps custom presets declarative. If you need arbitrary app-specific skeleton markup, continue composing `Skeleton` manually in the consuming app.
 
 #### Variants
 
@@ -1569,6 +1681,7 @@ Customize appearance with CSS variables:
 
 - Skeletons have `role="presentation"` and `aria-hidden="true"`
 - Animation respects `prefers-reduced-motion`
+- `DataSkeleton` inherits the same accessibility defaults because it is composed from `Skeleton`
 
 ### Internationalization (i18n) Helpers
 
@@ -2220,19 +2333,17 @@ uploadComponent.clear();
 
 ```svelte
 <script lang="ts">
-  import { createFormState, SubmitButton, storage } from '@decodelabs/underlay/patterns';
+  import { createFormState, SubmitButton } from '@decodelabs/underlay/patterns';
   import { Skeleton, FormError } from '@decodelabs/underlay/components';
   import { page } from '$app/stores';
 
-  // Auto-save form draft
-  const formDraft = storage.session.store('user-form-draft', {
-    name: '',
-    email: ''
-  });
-
   const form = createFormState({
+    autoSave: {
+      key: 'user-form-draft',
+      storage: 'session',
+      ttl: 1800
+    },
     onSuccess: () => {
-      storage.session.remove('user-form-draft');
       goto('/users');
     }
   });
@@ -2251,13 +2362,11 @@ uploadComponent.clear();
   <form method="post" use:enhance={form.enhance}>
     <input 
       name="name" 
-      bind:value={$formDraft.name}
       disabled={$form.state.isSubmitting}
     />
     
     <input 
       name="email" 
-      bind:value={$formDraft.email}
       disabled={$form.state.isSubmitting}
     />
 

@@ -23,9 +23,40 @@ These helpers extract these patterns into reusable, tested utilities.
 | `useSyncedSelection()` | `@decodelabs/underlay/patterns` | Manage selection state |
 | `createLocalSearchFns()` | `@decodelabs/underlay/patterns` | Search/suggest for RelationSelector |
 | `SlugField` | `@decodelabs/underlay/patterns` | Auto-slug field component |
+| `useValidatedForm()` | `@decodelabs/underlay/patterns` | Lightweight Zod-backed client-side form orchestration |
 | `FormTabsProvider` + `FormTabsSection` | `@decodelabs/underlay/components` | Multi-section form tabs with validation indicators |
 | `getNextLetter()` | `@decodelabs/underlay/utils` | Next letter in sequence |
 | `getNextNumber()` | `@decodelabs/underlay/utils` | Next number in sequence |
+
+---
+
+## Zod-Backed Validated Forms
+
+Use `useValidatedForm()` when the form benefits from immediate client-side schema checks but you do not want to replace Underlay's existing field or submit primitives.
+
+```ts
+import { useValidatedForm } from "@decodelabs/underlay/patterns";
+import { registerRequestSchema } from "@decodelabs/underlay/validation";
+
+const form = useValidatedForm({
+  schema: registerRequestSchema,
+  initialValues: {
+    email: "",
+    password: "",
+    displayName: "",
+  },
+  onSubmit: async (values) => {
+    await api.auth.register(values);
+  },
+  validateOnChange: true,
+});
+```
+
+Use it alongside `FormValidationProvider`, not as a replacement:
+
+- `useValidatedForm()` owns schema parsing, submit state, and field-error mapping.
+- `FormValidationProvider` still handles form-wide field validity when you are using `TextInput`, `SlugField`, and related Underlay components.
+- Keep server validation in place for every submission path.
 
 ---
 

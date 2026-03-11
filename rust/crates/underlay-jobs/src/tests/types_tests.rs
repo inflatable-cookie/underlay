@@ -6,12 +6,31 @@ fn test_backoff_strategy() {
     let strategy = BackoffStrategy::Exponential {
         base: Duration::from_secs(60),
         max: Duration::from_secs(3600),
+        jitter: None,
     };
 
     assert_eq!(strategy.delay_for_attempt(0), Duration::from_secs(60));
     assert_eq!(strategy.delay_for_attempt(1), Duration::from_secs(120));
     assert_eq!(strategy.delay_for_attempt(2), Duration::from_secs(240));
     assert_eq!(strategy.delay_for_attempt(6), Duration::from_secs(3600)); // Capped at max
+}
+
+#[test]
+fn test_backoff_strategy_with_jitter_stays_bounded_and_spreads() {
+    let strategy = BackoffStrategy::Exponential {
+        base: Duration::from_millis(100),
+        max: Duration::from_millis(1000),
+        jitter: Some(BackoffJitter { max_percent: 30 }),
+    };
+
+    let delay_a = strategy.delay_for_attempt_with_seed(1, 11);
+    let delay_b = strategy.delay_for_attempt_with_seed(1, 29);
+
+    assert!(delay_a >= Duration::from_millis(200));
+    assert!(delay_a <= Duration::from_millis(260));
+    assert!(delay_b >= Duration::from_millis(200));
+    assert!(delay_b <= Duration::from_millis(260));
+    assert_ne!(delay_a, delay_b);
 }
 
 #[test]
@@ -82,6 +101,15 @@ fn job_config_presets() {
 
     let with_retries = JobConfig::with_retries(3);
     assert_eq!(with_retries.max_attempts, 3);
+
+    let with_jitter = JobConfig::with_retries_and_jitter(3);
+    assert!(matches!(
+        with_jitter.backoff,
+        BackoffStrategy::Exponential {
+            jitter: Some(_),
+            ..
+        }
+    ));
 
     let long_running = JobConfig::long_running();
     assert!(long_running.tracks_progress);

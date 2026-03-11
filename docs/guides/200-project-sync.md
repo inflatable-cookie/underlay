@@ -14,6 +14,15 @@ This guide provides a reproducible checklist for bringing a project up to curren
 - TypeScript API client
 - JSON naming policy reviewed: [071-json-naming.md](./071-json-naming.md)
 
+## Before You Upgrade
+
+Before taking a new Underlay feature or behavior change into an app:
+
+1. Read [190-upgrade-compatibility.md](./190-upgrade-compatibility.md).
+2. Find the subsystem-specific upgrade note or linked roadmap/log batch.
+3. Copy the relevant checklist into the app repo issue or rollout task.
+4. Use concrete dates for any deprecation or cutover plan.
+
 ---
 
 ## Phase 1: Dependencies
@@ -515,6 +524,8 @@ Use this section as the required closeout checklist after implementing or updati
 - [ ] `docs/patterns/000-index.md` includes the new or changed recipe and prompt.
 - [ ] `docs/guides/README.md` reading order includes any new guide.
 - [ ] Changed APIs/components are reflected in the relevant guide and recipe snippets.
+- [ ] `docs/guides/190-upgrade-compatibility.md` or a linked upgrade note covers the consumer-facing change.
+- [ ] The delivery log includes consumer upgrade notes when the batch changes behavior, APIs, config, migrations, or integration patterns.
 
 ### If Work Affects Admin Flows
 

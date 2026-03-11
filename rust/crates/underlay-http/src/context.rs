@@ -24,6 +24,8 @@ use axum::{
     http::{header, request::Parts, HeaderMap, StatusCode},
 };
 use std::net::IpAddr;
+#[cfg(feature = "opentelemetry")]
+use underlay_observability::TraceContext;
 use uuid::Uuid;
 
 /// Common request header names
@@ -49,6 +51,8 @@ pub struct RequestContext {
     user_agent: Option<String>,
     // User ID would come from auth middleware, stored in extensions
     user_id: Option<Uuid>,
+    #[cfg(feature = "opentelemetry")]
+    trace_context: Option<TraceContext>,
 }
 
 impl RequestContext {
@@ -64,6 +68,8 @@ impl RequestContext {
             ip_address,
             user_agent,
             user_id,
+            #[cfg(feature = "opentelemetry")]
+            trace_context: None,
         }
     }
 
@@ -92,6 +98,34 @@ impl RequestContext {
     /// Check if the request is authenticated
     pub fn is_authenticated(&self) -> bool {
         self.user_id.is_some()
+    }
+
+    #[cfg(feature = "opentelemetry")]
+    pub fn with_trace_context(mut self, trace_context: TraceContext) -> Self {
+        self.trace_context = Some(trace_context);
+        self
+    }
+
+    #[cfg(feature = "opentelemetry")]
+    pub fn trace_context(&self) -> Option<&TraceContext> {
+        self.trace_context.as_ref()
+    }
+
+    #[cfg(feature = "opentelemetry")]
+    pub fn trace_id(&self) -> Option<&str> {
+        self.trace_context().map(TraceContext::trace_id)
+    }
+
+    #[cfg(feature = "opentelemetry")]
+    pub fn parent_span_id(&self) -> Option<&str> {
+        self.trace_context().map(TraceContext::parent_span_id)
+    }
+
+    #[cfg(feature = "opentelemetry")]
+    pub fn inject_trace_context(&self, headers: &mut HeaderMap) {
+        if let Some(trace_context) = self.trace_context() {
+            trace_context.inject_into(headers);
+        }
     }
 }
 
@@ -176,6 +210,26 @@ impl AuthenticatedContext {
     pub fn context(&self) -> &RequestContext {
         &self.inner
     }
+
+    #[cfg(feature = "opentelemetry")]
+    pub fn trace_context(&self) -> Option<&TraceContext> {
+        self.inner.trace_context()
+    }
+
+    #[cfg(feature = "opentelemetry")]
+    pub fn trace_id(&self) -> Option<&str> {
+        self.inner.trace_id()
+    }
+
+    #[cfg(feature = "opentelemetry")]
+    pub fn parent_span_id(&self) -> Option<&str> {
+        self.inner.parent_span_id()
+    }
+
+    #[cfg(feature = "opentelemetry")]
+    pub fn inject_trace_context(&self, headers: &mut HeaderMap) {
+        self.inner.inject_trace_context(headers);
+    }
 }
 
 impl<S> FromRequestParts<S> for AuthenticatedContext
@@ -231,11 +285,16 @@ where
             // Extract user ID from extensions (set by auth middleware)
             let user_id = parts.extensions.get::<AuthenticatedUser>().map(|u| u.0);
 
+            #[cfg(feature = "opentelemetry")]
+            let trace_context = TraceContext::from_headers(headers);
+
             Ok(RequestContext {
                 request_id,
                 ip_address,
                 user_agent,
                 user_id,
+                #[cfg(feature = "opentelemetry")]
+                trace_context,
             })
         }
     }
@@ -308,12 +367,37 @@ fn extract_ip_address(headers: &HeaderMap) -> Option<IpAddr> {
 /// ```
 #[cfg(feature = "tracing")]
 pub fn make_request_span(ctx: &RequestContext) -> tracing::Span {
-    tracing::info_span!(
+    #[cfg(feature = "opentelemetry")]
+    let span = tracing::info_span!(
         "request",
         request_id = %ctx.request_id(),
         user_id = ?ctx.user_id(),
         ip = ?ctx.ip_address(),
-    )
+        trace_id = tracing::field::Empty,
+        parent_span_id = tracing::field::Empty,
+        trace_flags = tracing::field::Empty,
+        tracestate = tracing::field::Empty,
+    );
+
+    #[cfg(not(feature = "opentelemetry"))]
+    let span = tracing::info_span!(
+        "request",
+        request_id = %ctx.request_id(),
+        user_id = ?ctx.user_id(),
+        ip = ?ctx.ip_address(),
+    );
+
+    #[cfg(feature = "opentelemetry")]
+    if let Some(trace_context) = ctx.trace_context() {
+        span.record("trace_id", trace_context.trace_id());
+        span.record("parent_span_id", trace_context.parent_span_id());
+        span.record("trace_flags", trace_context.trace_flags());
+        if let Some(tracestate) = trace_context.tracestate() {
+            span.record("tracestate", tracestate);
+        }
+    }
+
+    span
 }
 
 impl RequestContext {
@@ -328,6 +412,15 @@ impl RequestContext {
         }
         if let Some(ip) = self.ip_address() {
             span.record("ip", tracing::field::display(ip));
+        }
+        #[cfg(feature = "opentelemetry")]
+        if let Some(trace_context) = self.trace_context() {
+            span.record("trace_id", trace_context.trace_id());
+            span.record("parent_span_id", trace_context.parent_span_id());
+            span.record("trace_flags", trace_context.trace_flags());
+            if let Some(tracestate) = trace_context.tracestate() {
+                span.record("tracestate", tracestate);
+            }
         }
     }
 }
