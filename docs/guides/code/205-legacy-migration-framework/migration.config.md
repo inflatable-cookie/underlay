@@ -17,14 +17,17 @@ Config resolution order:
 | `MEDIA_DIR` | No | `./legacy-export/media` | `00_preflight.ts`, `01_build_publish.ts`, `03_refresh_cycle.ts` | Preflight warns if missing (allowed for data-only migrations). |
 | `BUNDLE_FILE` | No | `./dist/migration-bundle.oci` | `00_preflight.ts`, `01_build_publish.ts`, `03_refresh_cycle.ts` | Build output path; preflight validates writable parent dir. |
 | `OCI_REF_TAG` | No | auto timestamped demo/refresh tag | `01_build_publish.ts`, `03_refresh_cycle.ts` | Publish target tag; scripts derive digest-pinned ref from publish output. |
-| `BUNDLE_REF` | Yes for `reports` mode | none | `00_preflight.ts` (`reports` mode), `02_run_reports.ts` | Must be digest-pinned (`<repo>@sha256:<64 hex>`). |
+| `BUNDLE_REF` | Yes for `reports` mode unless `BUNDLE_REF_FILE` is set | none | `00_preflight.ts` (`reports` mode), `02_run_reports.ts` | Must be digest-pinned (`<repo>@sha256:<64 hex>`). |
+| `BUNDLE_REF_FILE` | No | derived from `BUNDLE_FILE` as `<stem>.digest-ref.txt` for bundle publish | `01_build_publish.ts`, `00_preflight.ts` (`reports` mode), `02_run_reports.ts`, `08_promotion_release_note.ts` | File containing a digest-pinned bundle ref. Lets bundle and reports chain without manual copy/paste. |
 | `OUTPUT_DIR` | No | `./runtime/demo-pass` or `./runtime/refresh-pass` | `00_preflight.ts`, `02_run_reports.ts`, `03_refresh_cycle.ts` | Runtime artifact/output directory. |
-| `RUN_REPORT` | No | `${OUTPUT_DIR}/run-report.json` | `02_run_reports.ts`, `03_refresh_cycle.ts` | Must exist after orchestrator execution for report steps. |
+| `RUN_REPORT` | No | `${OUTPUT_DIR}/run-report.json` | `02_run_reports.ts`, `03_refresh_cycle.ts` | Must be written by the app migration runner before report steps continue. |
 | `GOVERNANCE_POLICY_FILE` | No | `./runtime/governance-policy.json` | `00_preflight.ts` (optional check), `02_run_reports.ts` | If missing, policy report is skipped. |
-| `REUSE_FROM_DIGEST_REF` | Yes for `refresh` mode | none | `00_preflight.ts` (`refresh` mode), `03_refresh_cycle.ts` | Must be digest-pinned baseline for decision reuse. |
-| `APP_MIGRATION_RUNNER_CMD` | No | empty | `03_refresh_cycle.ts` | Optional command that runs app orchestrator after `migration run`. |
-| `DECISION_INDEX_FILE` | No | `${OUTPUT_DIR}/decision_index.json` | `03_refresh_cycle.ts` | Used for lineage-aware drift checks. |
-| `DECISION_JOURNAL_FILE` | No | `${OUTPUT_DIR}/decision_journal.ndjson` | `03_refresh_cycle.ts` | Used for lineage-aware drift checks. |
+| `REUSE_FROM_DIGEST_REF` | Yes for `refresh` mode unless `REUSE_FROM_DIGEST_REF_FILE` is set | none | `00_preflight.ts` (`refresh` mode), `03_refresh_cycle.ts`, `10_decision_reuse_summary.ts` | Must be digest-pinned baseline for decision reuse. |
+| `REUSE_FROM_DIGEST_REF_FILE` | No | none | `00_preflight.ts` (`refresh` mode), `03_refresh_cycle.ts`, `10_decision_reuse_summary.ts`, `08_promotion_release_note.ts` | File containing a digest-pinned reuse baseline ref, typically the latest published bundle ref from a prior run. |
+| `UNDERLAY_DEVTOOLS_CMD` | No | `underlay-devtools` | most scripts that invoke Underlay CLI | Override when the CLI is not globally installed, for example `cargo run --manifest-path ../underlay/rust/Cargo.toml -p underlay-devtools --`. |
+| `APP_MIGRATION_RUNNER_CMD` | No | empty | `02_run_reports.ts`, `03_refresh_cycle.ts` | Optional command that runs the consuming app migration runner after `migration run`; receives runner artifact paths via environment variables. |
+| `DECISION_INDEX_FILE` | No | `${OUTPUT_DIR}/decision_index.json` | `02_run_reports.ts`, `03_refresh_cycle.ts` | Must be written by the app migration runner; used for lineage-aware drift checks and evidence. |
+| `DECISION_JOURNAL_FILE` | No | `${OUTPUT_DIR}/decision_journal.ndjson` | `02_run_reports.ts`, `03_refresh_cycle.ts` | Must be written by the app migration runner; used for lineage-aware drift checks and evidence. |
 | `DECISION_REUSE_SUMMARY_FILE` | No | `${OUTPUT_DIR}/metadata/<project>.<scope>.<date>.decision-reuse-summary.json` | `10_decision_reuse_summary.ts`, `04_evidence_manifest.ts` | Refresh-only evidence artifact with sidecar merge stats and AI suppression KPIs. |
 | `DECISION_REUSE_SUMMARY_SCHEMA_FILE` | No | `./docs/guides/code/205-legacy-migration-framework/decision-reuse-summary.schema.json` | `12_decision_reuse_summary_lint.ts` | Schema file used to validate decision reuse summary contract. |
 | `DECISION_REUSE_SUMMARY_LINT_FILE` | No | `${OUTPUT_DIR}/metadata/<project>.<scope>.<date>.decision-reuse-summary-lint.json` | `12_decision_reuse_summary_lint.ts`, `04_evidence_manifest.ts` | Refresh-only lint artifact for summary schema/semantic checks. |
@@ -68,22 +71,22 @@ Validated:
 
 Required keys:
 
-1. `BUNDLE_REF`
+1. `BUNDLE_REF` or `BUNDLE_REF_FILE`
 
 Validated:
 
-1. `BUNDLE_REF` digest format
+1. resolved bundle ref digest format
 2. general-mode checks
 
 ### `00_preflight.ts --mode refresh`
 
 Required keys:
 
-1. `REUSE_FROM_DIGEST_REF`
+1. `REUSE_FROM_DIGEST_REF` or `REUSE_FROM_DIGEST_REF_FILE`
 
 Validated:
 
-1. `REUSE_FROM_DIGEST_REF` digest format
+1. resolved reuse baseline digest format
 2. general-mode checks
 
 ### `04_evidence_manifest.ts`
@@ -137,7 +140,7 @@ Failure behavior:
 
 Required keys:
 
-1. `REUSE_FROM_DIGEST_REF`
+1. `REUSE_FROM_DIGEST_REF` or `REUSE_FROM_DIGEST_REF_FILE`
 
 Inputs:
 
@@ -152,7 +155,7 @@ Outputs:
 Failure behavior:
 
 1. hard-fails when `RUN_SCOPE` is not `refresh`
-2. hard-fails when `REUSE_FROM_DIGEST_REF` is missing or not digest-pinned
+2. hard-fails when the resolved refresh baseline ref is missing or not digest-pinned
 3. hard-fails when `run-report.json` is missing or invalid
 
 ### `06_promotion_check.ts`

@@ -8,10 +8,13 @@ export type ConfigKey =
   | "BUNDLE_FILE"
   | "OCI_REF_TAG"
   | "BUNDLE_REF"
+  | "BUNDLE_REF_FILE"
   | "OUTPUT_DIR"
   | "RUN_REPORT"
   | "GOVERNANCE_POLICY_FILE"
   | "REUSE_FROM_DIGEST_REF"
+  | "REUSE_FROM_DIGEST_REF_FILE"
+  | "UNDERLAY_DEVTOOLS_CMD"
   | "APP_MIGRATION_RUNNER_CMD"
   | "DECISION_INDEX_FILE"
   | "DECISION_JOURNAL_FILE"
@@ -106,6 +109,49 @@ export function readOptional(config: MigrationConfig, key: ConfigKey): string {
     return envValue;
   }
   return "";
+}
+
+function readValueFromFile(pathValue: string, key: ConfigKey): string {
+  const resolved = resolve(pathValue);
+  if (!existsSync(resolved)) {
+    throw new Error(`${key} file not found: ${resolved}`);
+  }
+  const value = readFileSync(resolved, "utf-8").trim();
+  if (value.length === 0) {
+    throw new Error(`${key} file is empty: ${resolved}`);
+  }
+  return value;
+}
+
+export function readOptionalFromFile(
+  config: MigrationConfig,
+  directKey: ConfigKey,
+  fileKey: ConfigKey,
+): string {
+  const directValue = readOptional(config, directKey);
+  if (directValue.length > 0) {
+    return directValue;
+  }
+
+  const pathValue = readOptional(config, fileKey);
+  if (pathValue.length === 0) {
+    return "";
+  }
+
+  return readValueFromFile(pathValue, fileKey);
+}
+
+export function readStringFromFile(
+  config: MigrationConfig,
+  directKey: ConfigKey,
+  fileKey: ConfigKey,
+): string {
+  const value = readOptionalFromFile(config, directKey, fileKey);
+  if (value.length > 0) {
+    return value;
+  }
+
+  throw new Error(`missing required configuration value: ${directKey} (or ${fileKey})`);
 }
 
 export function validateDigestRef(value: string, key: ConfigKey): void {

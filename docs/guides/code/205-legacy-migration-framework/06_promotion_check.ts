@@ -1,9 +1,10 @@
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
-import { spawnSync } from "node:child_process";
 
 import { loadConfig, readOptional, readString } from "./config.ts";
 import { fail, withCode } from "./error_codes.ts";
+import { frameworkScriptPath } from "./script_paths.ts";
+import { commandString, requireCommand, spawnCommand, underlayDevtoolsCommand } from "./tooling.ts";
 
 type RunScope = "demo" | "refresh" | "pre_production";
 type CheckStatus = "passed" | "failed" | "skipped";
@@ -67,9 +68,10 @@ function parseArgs(argv: string[]): { output?: string } {
 }
 
 function requireTool(name: string): void {
-  const result = spawnSync("which", [name], { stdio: "ignore" });
-  if (result.status !== 0) {
-    fail("MIG_CFG_006", `${name} is required in PATH`);
+  try {
+    requireCommand(name);
+  } catch (error) {
+    fail("MIG_CFG_006", error instanceof Error ? error.message : `${name} is required in PATH`);
   }
 }
 
@@ -87,12 +89,8 @@ function runCheck(
   args: string[],
   env?: NodeJS.ProcessEnv,
 ): CheckRecord {
-  const cmd = `${command} ${args.join(" ")}`;
-  const result = spawnSync(command, args, {
-    encoding: "utf-8",
-    stdio: ["ignore", "pipe", "pipe"],
-    env,
-  });
+  const cmd = commandString(command, args);
+  const result = spawnCommand(command, args, { env });
   const output = `${result.stdout ?? ""}${result.stderr ?? ""}`.trim();
   return {
     id,
@@ -123,12 +121,20 @@ function parseNumber(value: string, key: string): number {
 function main(): void {
   const args = parseArgs(process.argv.slice(2));
   requireTool("bun");
-  requireTool("underlay-devtools");
 
   const { filePath, values } = loadConfig();
   console.log(
     `using config file: ${filePath}${Object.keys(values).length === 0 ? " (not found/empty; env+defaults only)" : ""}`,
   );
+  const underlayDevtools = underlayDevtoolsCommand(values);
+  try {
+    requireCommand(underlayDevtools);
+  } catch (error) {
+    fail(
+      "MIG_CFG_006",
+      error instanceof Error ? error.message : "underlay-devtools command unavailable",
+    );
+  }
 
   const outputDir = resolve(readString(values, "OUTPUT_DIR", "./runtime/demo-pass"));
   const runReport = resolve(readString(values, "RUN_REPORT", `${outputDir}/run-report.json`));
@@ -176,7 +182,7 @@ function main(): void {
       "evidence_generate",
       true,
       "bun",
-      ["run", "./docs/guides/code/205-legacy-migration-framework/04_evidence_manifest.ts"],
+      ["run", frameworkScriptPath("04_evidence_manifest.ts")],
       configEnv,
     ),
   );
@@ -187,7 +193,7 @@ function main(): void {
       "bun",
       [
         "run",
-        "./docs/guides/code/205-legacy-migration-framework/05_evidence_verify.ts",
+        frameworkScriptPath("05_evidence_verify.ts"),
         "--input",
         artifactManifestFile,
       ],
@@ -195,7 +201,7 @@ function main(): void {
     ),
   );
   checks.push(
-    runCheck("report_integrity", true, "underlay-devtools", [
+    runCheck("report_integrity", true, underlayDevtools, [
       "migration",
       "report",
       "integrity",
@@ -204,7 +210,7 @@ function main(): void {
     ]),
   );
   checks.push(
-    runCheck("report_drift", true, "underlay-devtools", [
+    runCheck("report_drift", true, underlayDevtools, [
       "migration",
       "report",
       "drift",
@@ -219,7 +225,7 @@ function main(): void {
     ]),
   );
   checks.push(
-    runCheck("report_verify", true, "underlay-devtools", [
+    runCheck("report_verify", true, underlayDevtools, [
       "migration",
       "report",
       "verify",
@@ -232,7 +238,7 @@ function main(): void {
 
   if (existsSync(governancePolicyFile)) {
     checks.push(
-      runCheck("report_policy", true, "underlay-devtools", [
+      runCheck("report_policy", true, underlayDevtools, [
         "migration",
         "report",
         "policy",

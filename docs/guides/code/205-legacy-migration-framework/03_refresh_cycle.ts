@@ -1,46 +1,20 @@
-import { existsSync, mkdirSync } from "node:fs";
-import { dirname } from "node:path";
-import { spawnSync } from "node:child_process";
+import { mkdirSync, writeFileSync } from "node:fs";
+import { basename, dirname, extname, join } from "node:path";
 
-import { loadConfig, readOptional, readString, validateDigestRef } from "./config.ts";
-
-function runCommand(command: string, args: string[]): string {
-  const result = spawnSync(command, args, {
-    encoding: "utf-8",
-    stdio: ["inherit", "pipe", "pipe"],
-  });
-
-  if (result.stdout) process.stdout.write(result.stdout);
-  if (result.stderr) process.stderr.write(result.stderr);
-
-  if (result.status !== 0) {
-    throw new Error(`command failed: ${command} ${args.join(" ")}`);
-  }
-
-  return result.stdout ?? "";
-}
-
-function runShell(command: string, env: Record<string, string>): void {
-  const result = spawnSync("zsh", ["-lc", command], {
-    encoding: "utf-8",
-    stdio: ["inherit", "pipe", "pipe"],
-    env: { ...process.env, ...env },
-  });
-
-  if (result.stdout) process.stdout.write(result.stdout);
-  if (result.stderr) process.stderr.write(result.stderr);
-
-  if (result.status !== 0) {
-    throw new Error(`command failed: ${command}`);
-  }
-}
-
-function requireTool(name: string): void {
-  const result = spawnSync("which", [name], { stdio: "ignore" });
-  if (result.status !== 0) {
-    throw new Error(`${name} is required in PATH`);
-  }
-}
+import {
+  loadConfig,
+  readOptional,
+  readString,
+  readStringFromFile,
+  validateDigestRef,
+} from "./config.ts";
+import {
+  maybeRunAppMigrationRunner,
+  repositoryFromTaggedRef,
+  requireRunnerArtifacts,
+  runStandardReports,
+} from "./runner_support.ts";
+import { requireCommand, runCommandText, underlayDevtoolsCommand } from "./tooling.ts";
 
 function extractDigest(output: string): string {
   const match = output.match(/digest=(sha256:[0-9a-f]{64})/);
@@ -50,19 +24,30 @@ function extractDigest(output: string): string {
   return match[1];
 }
 
-function main(): void {
-  requireTool("underlay-devtools");
+function defaultBundleRefFile(bundleFile: string): string {
+  const extension = extname(bundleFile);
+  const stem = extension.length > 0 ? basename(bundleFile, extension) : basename(bundleFile);
+  return join(dirname(bundleFile), `${stem}.digest-ref.txt`);
+}
 
+function main(): void {
   const { filePath, values } = loadConfig();
   console.log(`using config file: ${filePath}${Object.keys(values).length === 0 ? " (not found/empty; env+defaults only)" : ""}`);
+  const underlayDevtools = underlayDevtoolsCommand(values);
+  requireCommand(underlayDevtools);
 
-  const reuseFromDigestRef = readString(values, "REUSE_FROM_DIGEST_REF");
+  const reuseFromDigestRef = readStringFromFile(
+    values,
+    "REUSE_FROM_DIGEST_REF",
+    "REUSE_FROM_DIGEST_REF_FILE",
+  );
   validateDigestRef(reuseFromDigestRef, "REUSE_FROM_DIGEST_REF");
 
   const sourceSystem = readString(values, "SOURCE_SYSTEM", "legacy_site");
   const targetSchemaVersion = readString(values, "TARGET_SCHEMA_VERSION", "schema-v1");
   const mediaDir = readString(values, "MEDIA_DIR", "./legacy-export/media");
   const bundleFile = readString(values, "BUNDLE_FILE", "./dist/migration-bundle-refresh.oci");
+  const bundleRefFile = readOptional(values, "BUNDLE_REF_FILE") || defaultBundleRefFile(bundleFile);
   const ociRefTag = readString(
     values,
     "OCI_REF_TAG",
@@ -74,10 +59,15 @@ function main(): void {
   const outputDir = readString(values, "OUTPUT_DIR", "./runtime/refresh-pass");
   const runReport = readString(values, "RUN_REPORT", `${outputDir}/run-report.json`);
   const appMigrationRunnerCmd = readOptional(values, "APP_MIGRATION_RUNNER_CMD");
+  const governancePolicyFile = readString(
+    values,
+    "GOVERNANCE_POLICY_FILE",
+    "./runtime/governance-policy.json",
+  );
 
   mkdirSync(dirname(bundleFile), { recursive: true });
 
-  runCommand("underlay-devtools", [
+  runCommandText(underlayDevtools, [
     "migration",
     "bundle",
     "build",
@@ -91,7 +81,7 @@ function main(): void {
     mediaDir,
   ]);
 
-  const publishOutput = runCommand("underlay-devtools", [
+  const publishOutput = runCommandText(underlayDevtools, [
     "migration",
     "bundle",
     "publish",
@@ -102,34 +92,10 @@ function main(): void {
   ]);
 
   const digest = extractDigest(publishOutput);
-  const repository = ociRefTag.split(":")[0];
+  const repository = repositoryFromTaggedRef(ociRefTag);
   const bundleRef = `${repository}@${digest}`;
-
-  runCommand("underlay-devtools", [
-    "migration",
-    "run",
-    "--bundle",
-    bundleRef,
-    "--output",
-    outputDir,
-  ]);
-
-  if (appMigrationRunnerCmd.trim().length > 0) {
-    runShell(appMigrationRunnerCmd, {
-      REUSE_FROM_DIGEST_REF: reuseFromDigestRef,
-      BUNDLE_REF: bundleRef,
-      OUTPUT_DIR: outputDir,
-    });
-  }
-
-  if (!existsSync(runReport)) {
-    throw new Error(
-      [
-        `expected run report not found at: ${runReport}`,
-        "set APP_MIGRATION_RUNNER_CMD to invoke your migration orchestrator so it writes run-report.json.",
-      ].join("\n"),
-    );
-  }
+  mkdirSync(dirname(bundleRefFile), { recursive: true });
+  writeFileSync(bundleRefFile, `${bundleRef}\n`, "utf-8");
 
   const decisionIndexFile = readString(values, "DECISION_INDEX_FILE", `${outputDir}/decision_index.json`);
   const decisionJournalFile = readString(
@@ -138,7 +104,38 @@ function main(): void {
     `${outputDir}/decision_journal.ndjson`,
   );
 
-  runCommand("underlay-devtools", [
+  maybeRunAppMigrationRunner({
+    underlayDevtoolsCmd: underlayDevtools,
+    bundleRef,
+    outputDir,
+    appMigrationRunnerCmd,
+    artifacts: {
+      runReport,
+      decisionIndexFile,
+      decisionJournalFile,
+    },
+    runnerEnv: {
+      REUSE_FROM_DIGEST_REF: reuseFromDigestRef,
+    },
+  });
+
+  requireRunnerArtifacts(
+    {
+      runReport,
+      decisionIndexFile,
+      decisionJournalFile,
+    },
+    appMigrationRunnerCmd,
+  );
+
+  runStandardReports({
+    underlayDevtoolsCmd: underlayDevtools,
+    runReport,
+    outputDir,
+    governancePolicyFile,
+  });
+
+  runCommandText(underlayDevtools, [
     "migration",
     "report",
     "drift",
@@ -159,6 +156,7 @@ function main(): void {
   ]);
 
   console.log("\nREFRESH_BUNDLE_REF=" + bundleRef);
+  console.log("REFRESH_BUNDLE_REF_FILE=" + bundleRefFile);
   console.log("REUSE_FROM_DIGEST_REF=" + reuseFromDigestRef);
 }
 

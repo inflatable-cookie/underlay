@@ -13,19 +13,21 @@
 
 ## Effigy-First Execution
 
-- Start with `effigy tasks --repo .` to inspect Underlay's local task surface.
-- Prefer `effigy health --repo .` as the default repo-owned baseline.
-- Use `effigy test --plan --repo .` before picking a concrete test runner.
-- Prefer local Effigy tasks such as `effigy validate --repo .`, `effigy rust:check --repo .`, `effigy rust:test --repo .`, and `effigy test:components --repo .`.
-- Use `effigy doctor --repo .` when you want broader repo scans; it currently includes structural scan findings beyond the task surface itself.
+- Start with `effigy tasks` to inspect Underlay's local task surface.
+- Prefer `effigy health` as the default repo-owned baseline.
+- Use `effigy test --plan` before picking a concrete test runner.
+- Prefer local Effigy tasks such as `effigy qa:docs`, `effigy qa:northstar`, `effigy validate`, `effigy rust:check`, `effigy rust:test`, and `effigy test:components`.
+- Use `effigy doctor` when you want broader repo scans; it currently includes structural scan findings beyond the task surface itself.
 - Fall back to raw `cargo`, `bun`, or `vitest` only when the needed operation is not represented in `effigy.toml`.
 
 ## Validation
 
 ```bash
-effigy health --repo .
-effigy validate --repo .
-effigy test --plan --repo .
+effigy health
+effigy qa:docs
+effigy qa:northstar
+effigy validate
+effigy test --plan
 # Use targeted raw tool commands only when Effigy does not cover the path
 ```
 

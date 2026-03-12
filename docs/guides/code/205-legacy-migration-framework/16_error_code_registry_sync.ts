@@ -9,6 +9,7 @@ import {
   type Registry,
   type RegistryEntry,
 } from "./error_registry_shared.ts";
+import { frameworkDir, frameworkPath } from "./script_paths.ts";
 
 type ParsedArgs = {
   registry?: string;
@@ -103,11 +104,11 @@ function comparableRegistry(value: Registry): Pick<Registry, "schema" | "schema_
 function main(): void {
   const args = parseArgs(process.argv.slice(2));
   const registryPath = resolve(
-    args.registry || "./docs/guides/code/205-legacy-migration-framework/migration-error-registry.json",
+    args.registry || frameworkPath("migration-error-registry.json"),
   );
   const scriptNames = [...DEFAULT_ERROR_CODE_SCRIPTS].sort((a, b) => a.localeCompare(b));
   const scriptPaths = scriptNames.map((name) =>
-    resolve("./docs/guides/code/205-legacy-migration-framework", name),
+    resolve(frameworkDir(), name),
   );
 
   const missingScripts = scriptPaths.filter((path) => !existsSync(path));

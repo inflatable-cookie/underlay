@@ -1,8 +1,8 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
-import { spawnSync } from "node:child_process";
 
 import { loadConfig, readOptional, readString } from "./config.ts";
+import { commandString, requireCommand, spawnCommand, underlayDevtoolsCommand } from "./tooling.ts";
 
 type GateStatus = "passed" | "failed";
 
@@ -61,13 +61,6 @@ function parseNumber(value: string, key: string): number {
   return Number(value);
 }
 
-function requireTool(name: string): void {
-  const result = spawnSync("which", [name], { stdio: "ignore" });
-  if (result.status !== 0) {
-    throw new Error(`${name} is required in PATH`);
-  }
-}
-
 function defaultOutputPath(config: Record<string, string>): string {
   const configured = readOptional(config, "REFRESH_DRIFT_GATE_FILE");
   if (configured.length > 0) {
@@ -81,12 +74,12 @@ function defaultOutputPath(config: Record<string, string>): string {
 
 function main(): void {
   const args = parseArgs(process.argv.slice(2));
-  requireTool("underlay-devtools");
-
   const { filePath, values } = loadConfig();
   console.log(
     `using config file: ${filePath}${Object.keys(values).length === 0 ? " (not found/empty; env+defaults only)" : ""}`,
   );
+  const underlayDevtools = underlayDevtoolsCommand(values);
+  requireCommand(underlayDevtools);
 
   const runScope = readString(values, "RUN_SCOPE", "refresh");
   if (runScope !== "refresh") {
@@ -135,11 +128,8 @@ function main(): void {
     decisionJournalFile,
   ];
 
-  const command = `underlay-devtools ${driftArgs.join(" ")}`;
-  const result = spawnSync("underlay-devtools", driftArgs, {
-    encoding: "utf-8",
-    stdio: ["ignore", "pipe", "pipe"],
-  });
+  const command = commandString(underlayDevtools, driftArgs);
+  const result = spawnCommand(underlayDevtools, driftArgs);
 
   if (result.stdout) process.stdout.write(result.stdout);
   if (result.stderr) process.stderr.write(result.stderr);

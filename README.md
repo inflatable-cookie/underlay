@@ -32,25 +32,27 @@ It provides:
 Use Effigy as the default command surface from the Underlay repo root:
 
 ```bash
-effigy tasks --repo .
-effigy health --repo .
-effigy test --plan --repo .
+effigy tasks
+effigy health
+effigy test --plan
 ```
 
 Common local commands:
 
 ```bash
-effigy validate --repo .
-effigy qa --repo .
-effigy rust:build --repo .
-effigy rust:check --repo .
-effigy rust:test --repo .
-effigy test:components --repo .
+effigy qa:docs
+effigy qa:northstar
+effigy validate
+effigy qa
+effigy rust:build
+effigy rust:check
+effigy rust:test
+effigy test:components
 ```
 
-Package scripts remain convenience wrappers, but direct `effigy ... --repo .` is canonical.
+Package scripts remain convenience wrappers, but direct `effigy ...` is canonical when you are already in this repo.
 
-Use `effigy doctor --repo .` when you want broader repo scans. Underlay currently carries structural scan backlog in that surface, so `health` is the better day-to-day baseline.
+Use `effigy doctor` when you want broader repo scans. Underlay currently carries structural scan backlog in that surface, so `health` is the better day-to-day baseline.
 
 ### Postgres Integration Tests
 
@@ -61,7 +63,7 @@ Some `underlay-db` tests spin up Postgres via `testcontainers`.
   - `colima start`
   - verify with `docker ps`
 - Run the integration suite:
-  - `effigy rust:test --repo . -- -p underlay-db --test postgres_integration -- --ignored`
+  - `effigy rust:test -- -p underlay-db --test postgres_integration -- --ignored`
 
 ### Coverage
 

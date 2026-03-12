@@ -4,6 +4,9 @@ This playbook defines the complete setup sequence for a consuming Underlay app.
 
 Use it as an execution checklist, not just reference material.
 
+App runner contract reference:
+1. `migration-runner-contract.md`
+
 ## 1. Outcomes
 
 A setup is complete only when all outcomes are true:
@@ -35,6 +38,7 @@ Deliverables:
 3. `DecisionResolver` implementation with canonical fingerprinting.
 4. `AssetResolver` implementation for media transfer.
 5. `RunStore` implementation for checkpoints, journal, unresolved queue, and summaries.
+6. app runner output contract that writes `run-report.json`, `decision_index.json`, and `decision_journal.ndjson` to configured paths.
 
 Acceptance criteria:
 
@@ -170,5 +174,9 @@ effigy migration:doctor
 effigy migration:demo
 effigy migration:refresh
 effigy migration:refresh:validate
+
+If you want bundle publish and later report/refresh steps to chain automatically,
+set `BUNDLE_REF_FILE` and optionally `REUSE_FROM_DIGEST_REF_FILE` in your config.
+The bundle step writes the latest digest-pinned ref there for downstream scripts.
 effigy migration:validate
 ```

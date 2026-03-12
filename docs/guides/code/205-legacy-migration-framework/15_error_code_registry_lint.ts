@@ -8,6 +8,7 @@ import {
   type Registry,
   type RegistryEntry,
 } from "./error_registry_shared.ts";
+import { frameworkDir, frameworkPath } from "./script_paths.ts";
 
 type JsonSchema = {
   type?: string;
@@ -191,10 +192,10 @@ function validateRegistrySemantics(registry: Registry, errors: string[]): void {
 function main(): void {
   const args = parseArgs(process.argv.slice(2));
   const registryPath = resolve(
-    args.registry || "./docs/guides/code/205-legacy-migration-framework/migration-error-registry.json",
+    args.registry || frameworkPath("migration-error-registry.json"),
   );
   const schemaPath = resolve(
-    args.schema || "./docs/guides/code/205-legacy-migration-framework/migration-error-registry.schema.json",
+    args.schema || frameworkPath("migration-error-registry.schema.json"),
   );
   if (!existsSync(registryPath)) {
     fail("MIG_CFG_001", `registry file not found: ${registryPath}`);
@@ -226,7 +227,7 @@ function main(): void {
 
   const scriptNames = [...DEFAULT_ERROR_CODE_SCRIPTS].sort((a, b) => a.localeCompare(b));
   const scriptPaths = scriptNames.map((name) =>
-    resolve("./docs/guides/code/205-legacy-migration-framework", name),
+    resolve(frameworkDir(), name),
   );
   const missingScripts = scriptPaths.filter((path) => !existsSync(path));
   if (missingScripts.length > 0) {

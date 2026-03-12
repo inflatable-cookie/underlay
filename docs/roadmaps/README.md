@@ -18,6 +18,12 @@ Roadmaps are executable delivery plans for Underlay library work.
 - [g01/README.md](g01/README.md)
 - [generation-index.md](generation-index.md)
 
+## Current Queue
+
+- `g01.001` through `g01.041` record the current Underlay roadmap corpus
+- the next net-new active roadmap should open as `g01.042`
+- use `backlog/` for deferred work that is not yet active execution scope
+
 ## Historical language boundary
 
 - New or actively maintained roadmap docs must use roadmap IDs and batch language.
@@ -71,3 +77,8 @@ Roadmaps are executable delivery plans for Underlay library work.
 | 041 | [Form Draft Persistence](./g01/041-form-draft-persistence.md) | Complete | Add opt-in draft persistence and restoration to `createFormState` using the shared storage wrappers |
 
 **Complete:** 39 | **Extracted:** 2 | **In progress:** 0 | **Not started:** 0
+
+## Next Task
+
+Open `g01.042` when the next real Underlay milestone is ready to move from
+foundation intent into active execution.

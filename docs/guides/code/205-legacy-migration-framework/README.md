@@ -13,6 +13,12 @@ For operator-to-agent delegation, use `ai-migration-handoff.prompt.md`.
 For gate evidence and artifact naming rules, use `migration-evidence-matrix.md`.
 For failure diagnosis by gate and script, use `migration-troubleshooting.md`.
 For stable CI/agent error parsing, use `migration-error-codes.md`.
+For the consuming-app artifact contract, use `migration-runner-contract.md`.
+
+Runner note:
+
+1. `underlay-devtools migration run` prepares replay input only.
+2. The consuming app runner is still responsible for writing the core migration artifacts described in `migration-runner-contract.md`.
 
 ## Config precedence
 
@@ -39,6 +45,8 @@ Shared helper:
    - Machine-readable source of truth for all migration error codes and script mappings.
 3. `migration-error-registry.schema.json`
    - JSON schema contract for registry shape, code format, categories, and script list constraints.
+4. `runner_support.ts`
+   - Shared helper for invoking the app migration runner, enforcing required runner artifacts, and running the standard report suite.
 
 1. `00_config_lint.ts`
    - Validates `migration.config.json` against `config.schema.json`.
@@ -51,14 +59,14 @@ Shared helper:
    - Modes: `general`, `reports`, `refresh`.
 4. `01_build_publish.ts`
    - Builds and publishes a bundle.
-   - Prints `DIGEST_REF` for downstream steps.
+   - Prints `DIGEST_REF` for downstream steps and writes `BUNDLE_REF_FILE` when configured.
 5. `02_run_reports.ts`
-   - Prepares digest-pinned run input and runs report commands.
-   - Expects your orchestrator to produce `run-report.json`.
+   - Prepares digest-pinned run input, invokes `APP_MIGRATION_RUNNER_CMD` when configured, and runs the standard report suite.
+   - Requires `run-report.json`, `decision_index.json`, and `decision_journal.ndjson`.
 6. `03_refresh_cycle.ts`
    - Builds/publishes a refresh bundle.
-   - Supports decision reuse baseline via `REUSE_FROM_DIGEST_REF`.
-   - Runs drift checks with decision index/journal artifacts.
+   - Supports decision reuse baseline via `REUSE_FROM_DIGEST_REF` or `REUSE_FROM_DIGEST_REF_FILE`.
+   - Invokes `APP_MIGRATION_RUNNER_CMD` when configured, runs the standard report suite, and then runs refresh drift checks.
 7. `04_evidence_manifest.ts`
    - Verifies required evidence artifacts exist and computes SHA-256 checksums.
    - Emits `underlay.migration.evidence_manifest.v1` JSON contract.
@@ -122,6 +130,12 @@ Note: this sample is root-oriented. It assumes:
 1. `effigy.toml` is at repo root.
 2. scripts remain at `docs/guides/code/205-legacy-migration-framework/`.
 3. config file is `./migration.config.json`.
+
+Digest ref note:
+
+1. `01_build_publish.ts` now writes the digest-pinned ref to `BUNDLE_REF_FILE` when configured.
+2. `02_run_reports.ts` and refresh flows accept either direct digest refs or file-backed refs, which makes `migration:demo` usable without manually copying `DIGEST_REF` back into config.
+3. Set `UNDERLAY_DEVTOOLS_CMD` when the CLI is not installed globally and you need to run the workspace-local Rust crate instead.
 
 ## Typical usage (direct)
 

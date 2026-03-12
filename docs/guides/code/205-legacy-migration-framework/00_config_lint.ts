@@ -2,6 +2,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 import { fail } from "./error_codes.ts";
+import { frameworkPath } from "./script_paths.ts";
 
 type JsonSchemaProperty = {
   type?: string;
@@ -22,7 +23,7 @@ function loadJson(path: string): unknown {
 function main(): void {
   const configPath = resolve(process.env.MIGRATION_CONFIG_FILE?.trim() || "./migration.config.json");
   const schemaPath = resolve(
-    process.env.MIGRATION_CONFIG_SCHEMA_FILE?.trim() || "./docs/guides/code/205-legacy-migration-framework/config.schema.json",
+    process.env.MIGRATION_CONFIG_SCHEMA_FILE?.trim() || frameworkPath("config.schema.json"),
   );
 
   if (!existsSync(configPath)) {

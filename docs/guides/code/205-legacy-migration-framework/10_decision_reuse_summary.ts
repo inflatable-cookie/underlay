@@ -1,7 +1,12 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 
-import { loadConfig, readOptional, readString } from "./config.ts";
+import {
+  loadConfig,
+  readOptional,
+  readString,
+  readStringFromFile,
+} from "./config.ts";
 
 type DecideStage = {
   decision_count?: number;
@@ -136,7 +141,11 @@ function main(): void {
   const runReportPath = resolve(args.input || defaultRunReportPath(values as Record<string, string>));
   const outputPath = resolve(args.output || defaultOutputPath(values as Record<string, string>));
 
-  const reuseFromDigestRef = readString(values, "REUSE_FROM_DIGEST_REF");
+  const reuseFromDigestRef = readStringFromFile(
+    values,
+    "REUSE_FROM_DIGEST_REF",
+    "REUSE_FROM_DIGEST_REF_FILE",
+  );
   if (!/@sha256:[0-9a-f]{64}$/.test(reuseFromDigestRef)) {
     throw new Error("REUSE_FROM_DIGEST_REF must be digest-pinned (<repo>@sha256:<64 hex>)");
   }

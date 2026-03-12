@@ -1,7 +1,12 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 
-import { loadConfig, readOptional, readString } from "./config.ts";
+import {
+  loadConfig,
+  readOptional,
+  readOptionalFromFile,
+  readString,
+} from "./config.ts";
 
 type CheckStatus = "passed" | "failed" | "skipped";
 
@@ -290,8 +295,12 @@ function main(): void {
     decision_lint_error_count: lint.error_count,
     decision_lint_errors: lint.errors,
     digest_refs: {
-      bundle_ref: readOptional(values, "BUNDLE_REF"),
-      reuse_from_digest_ref: readOptional(values, "REUSE_FROM_DIGEST_REF"),
+      bundle_ref: readOptionalFromFile(values, "BUNDLE_REF", "BUNDLE_REF_FILE"),
+      reuse_from_digest_ref: readOptionalFromFile(
+        values,
+        "REUSE_FROM_DIGEST_REF",
+        "REUSE_FROM_DIGEST_REF_FILE",
+      ),
     },
     gate_statuses: decision.checks.map((check) => ({
       gate: check.id,

@@ -4,17 +4,46 @@ alias = "underlay"
 [package_manager]
 js = "bun"
 
+[docs_policy.indexes.vision]
+file = "docs/vision/README.md"
+dir = "docs/vision"
+
+[docs_policy.next_actions.vision]
+index = "vision"
+heading = "## Next Task"
+allowlist_file = "docs/policy/vision-next-task-verbs.txt"
+
 [tasks]
-check = "svelte-check --tsconfig ./ts/tsconfig.json"
-"check:types" = "tsc -p ./ts/tsconfig.json"
+check = "bun x svelte-check --tsconfig ./ts/tsconfig.json"
+"check:types" = "bun x tsc -p ./ts/tsconfig.json"
 "check:exports" = "bun ts/scripts/check-exports.ts"
 "check:component-test-hygiene" = "bun ts/scripts/check-component-test-hygiene.ts"
 "check:guardrails" = "bun ts/src/tools/guardrails.ts"
 "rust:build" = "cargo build --workspace"
 "rust:check" = "cargo check --workspace --all-features"
 "rust:test" = "cargo test --workspace --all-features"
-"test:ui" = "vitest --ui {args}"
-"test:components" = "vitest run -c vitest.component.config.ts {args}"
+"test:ui" = "bun x vitest --ui {args}"
+"test:components" = "bun x vitest run -c vitest.component.config.ts {args}"
+
+"qa:docs:links" = "effigy docs check-links README.md docs/README.md docs/vision/README.md docs/vision/001-underlay-foundation-vision.md docs/roadmaps/README.md docs/roadmaps/g01/README.md docs/logs/README.md docs/guides/README.md"
+"qa:docs:index:vision" = "effigy docs check-index --policy-index vision"
+"qa:docs:agent-defaults" = "effigy docs check-forbidden AGENTS.md README.md package.json docs/README.md docs/guides/README.md --forbid '--repo .'"
+"qa:docs:vision:next-action" = "effigy docs check-next-action --policy vision"
+"qa:docs" = [
+    { task = "qa:docs:links" },
+    { task = "qa:docs:index:vision" },
+    { task = "qa:docs:agent-defaults" },
+    { task = "qa:docs:vision:next-action" },
+]
+
+"qa:northstar:vision" = "effigy docs check-headings docs/vision/001-underlay-foundation-vision.md --require-heading '## Long-Term Outcome' --require-heading '## Core Platform Behaviors' --require-heading '## Strategic Constraints' --require-heading '## Longer-Term Focus' --require-heading '## Next Task'"
+"qa:northstar:roadmaps" = "effigy docs check-headings docs/roadmaps/README.md --require-heading '## Rules' --require-heading '## Active generation' --require-heading '## Current Queue' --require-heading '## Next Task'"
+"qa:northstar:g01" = "effigy docs check-headings docs/roadmaps/g01/README.md --require-heading '## Current Generation' --require-heading '## Historical Language Boundary' --require-heading '## Next Task'"
+"qa:northstar" = [
+    { task = "qa:northstar:vision" },
+    { task = "qa:northstar:roadmaps" },
+    { task = "qa:northstar:g01" },
+]
 
 health = [
     { task = "check:exports" },
@@ -31,4 +60,6 @@ validate = [
 
 qa = [
     { task = "validate" },
+    { task = "qa:docs" },
+    { task = "qa:northstar" },
 ]

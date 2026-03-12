@@ -1,110 +1,67 @@
-import { existsSync } from "node:fs";
-import { spawnSync } from "node:child_process";
-
-import { loadConfig, readString, validateDigestRef } from "./config.ts";
-
-function runCommand(command: string, args: string[]): string {
-  const result = spawnSync(command, args, {
-    encoding: "utf-8",
-    stdio: ["inherit", "pipe", "pipe"],
-  });
-
-  if (result.stdout) process.stdout.write(result.stdout);
-  if (result.stderr) process.stderr.write(result.stderr);
-
-  if (result.status !== 0) {
-    throw new Error(`command failed: ${command} ${args.join(" ")}`);
-  }
-
-  return result.stdout ?? "";
-}
-
-function requireTool(name: string): void {
-  const result = spawnSync("which", [name], { stdio: "ignore" });
-  if (result.status !== 0) {
-    throw new Error(`${name} is required in PATH`);
-  }
-}
+import {
+  loadConfig,
+  readString,
+  readStringFromFile,
+  validateDigestRef,
+} from "./config.ts";
+import {
+  maybeRunAppMigrationRunner,
+  requireRunnerArtifacts,
+  runStandardReports,
+} from "./runner_support.ts";
+import { requireCommand, underlayDevtoolsCommand } from "./tooling.ts";
 
 function main(): void {
-  requireTool("underlay-devtools");
-
   const { filePath, values } = loadConfig();
   console.log(`using config file: ${filePath}${Object.keys(values).length === 0 ? " (not found/empty; env only)" : ""}`);
+  const underlayDevtools = underlayDevtoolsCommand(values);
+  requireCommand(underlayDevtools);
 
-  const bundleRef = readString(values, "BUNDLE_REF");
+  const bundleRef = readStringFromFile(values, "BUNDLE_REF", "BUNDLE_REF_FILE");
   validateDigestRef(bundleRef, "BUNDLE_REF");
 
   const outputDir = readString(values, "OUTPUT_DIR", "./runtime/demo-pass");
   const runReport = readString(values, "RUN_REPORT", `${outputDir}/run-report.json`);
+  const appMigrationRunnerCmd = readString(values, "APP_MIGRATION_RUNNER_CMD", "");
+  const decisionIndexFile = readString(values, "DECISION_INDEX_FILE", `${outputDir}/decision_index.json`);
+  const decisionJournalFile = readString(
+    values,
+    "DECISION_JOURNAL_FILE",
+    `${outputDir}/decision_journal.ndjson`,
+  );
   const governancePolicyFile = readString(
     values,
     "GOVERNANCE_POLICY_FILE",
     "./runtime/governance-policy.json",
   );
 
-  runCommand("underlay-devtools", [
-    "migration",
-    "run",
-    "--bundle",
+  maybeRunAppMigrationRunner({
+    underlayDevtoolsCmd: underlayDevtools,
     bundleRef,
-    "--output",
     outputDir,
-  ]);
+    appMigrationRunnerCmd,
+    artifacts: {
+      runReport,
+      decisionIndexFile,
+      decisionJournalFile,
+    },
+  });
 
-  if (!existsSync(runReport)) {
-    throw new Error(
-      [
-        `expected run report not found at: ${runReport}`,
-        "the bundle run command prepares deterministic replay input;",
-        "run your app migration orchestrator to produce run-report.json, then retry.",
-      ].join("\n"),
-    );
-  }
+  requireRunnerArtifacts(
+    {
+      runReport,
+      decisionIndexFile,
+      decisionJournalFile,
+    },
+    appMigrationRunnerCmd,
+  );
 
-  runCommand("underlay-devtools", [
-    "migration",
-    "report",
-    "governance",
-    "--input",
+  runStandardReports({
+    underlayDevtoolsCmd: underlayDevtools,
     runReport,
-    "--limit",
-    "20",
-  ]);
-  runCommand("underlay-devtools", ["migration", "report", "integrity", "--input", runReport]);
-  runCommand("underlay-devtools", ["migration", "report", "recovery", "--input", runReport]);
-  runCommand("underlay-devtools", [
-    "migration",
-    "report",
-    "verify",
-    "--input",
-    runReport,
-    "--output-dir",
     outputDir,
-  ]);
-  runCommand("underlay-devtools", [
-    "migration",
-    "report",
-    "audit",
-    "--input",
-    outputDir,
-    "--output-dir",
-    outputDir,
-  ]);
-
-  if (existsSync(governancePolicyFile)) {
-    runCommand("underlay-devtools", [
-      "migration",
-      "report",
-      "policy",
-      "--input",
-      governancePolicyFile,
-    ]);
-  } else {
-    console.warn(
-      `governance policy file not found (skipping policy report): ${governancePolicyFile}`,
-    );
-  }
+    governancePolicyFile,
+  });
 }
 
 main();

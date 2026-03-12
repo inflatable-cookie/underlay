@@ -2,8 +2,15 @@ import { mkdirSync, writeFileSync, unlinkSync, existsSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { spawnSync } from "node:child_process";
 
-import { loadConfig, readString, readOptional, validateDigestRef } from "./config.ts";
+import {
+  loadConfig,
+  readOptional,
+  readString,
+  readStringFromFile,
+  validateDigestRef,
+} from "./config.ts";
 import { fail } from "./error_codes.ts";
+import { requireCommand, underlayDevtoolsCommand } from "./tooling.ts";
 
 type Mode = "general" | "reports" | "refresh";
 
@@ -48,12 +55,16 @@ function assertWritablePath(pathValue: string, label: string): void {
 
 function main(): void {
   const mode = parseMode(process.argv.slice(2));
-
-  requireTool("bun");
-  requireTool("underlay-devtools");
-
   const { filePath, values } = loadConfig();
   const hasFileValues = Object.keys(values).length > 0;
+
+  requireTool("bun");
+  try {
+    requireCommand(underlayDevtoolsCommand(values));
+  } catch (error) {
+    fail("MIG_CFG_006", error instanceof Error ? error.message : "underlay-devtools command unavailable");
+  }
+
   console.log(`mode=${mode}`);
   console.log(`config=${filePath}${hasFileValues ? "" : " (not found/empty; env+defaults only)"}`);
 
@@ -72,15 +83,30 @@ function main(): void {
   assertWritablePath(outputDir, "OUTPUT_DIR");
 
   if (mode === "reports") {
-    const bundleRef = readString(values, "BUNDLE_REF");
+    const bundleRef = readStringFromFile(values, "BUNDLE_REF", "BUNDLE_REF_FILE");
     validateDigestRef(bundleRef, "BUNDLE_REF");
     console.log("ok digest BUNDLE_REF");
   }
 
   if (mode === "refresh") {
-    const reuseFromDigestRef = readString(values, "REUSE_FROM_DIGEST_REF");
+    const reuseFromDigestRef = readStringFromFile(
+      values,
+      "REUSE_FROM_DIGEST_REF",
+      "REUSE_FROM_DIGEST_REF_FILE",
+    );
     validateDigestRef(reuseFromDigestRef, "REUSE_FROM_DIGEST_REF");
     console.log("ok digest REUSE_FROM_DIGEST_REF");
+  }
+
+  if (mode === "reports" || mode === "refresh") {
+    const appMigrationRunnerCmd = readOptional(values, "APP_MIGRATION_RUNNER_CMD");
+    if (appMigrationRunnerCmd.trim().length > 0) {
+      console.log("ok APP_MIGRATION_RUNNER_CMD configured");
+    } else {
+      console.warn(
+        "warn APP_MIGRATION_RUNNER_CMD not configured; report and refresh flows expect the consuming app runner to write run-report.json, decision_index.json, and decision_journal.ndjson",
+      );
+    }
   }
 
   const governancePolicyFile = readOptional(values, "GOVERNANCE_POLICY_FILE");

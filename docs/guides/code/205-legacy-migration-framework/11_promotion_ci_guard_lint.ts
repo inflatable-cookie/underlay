@@ -3,6 +3,7 @@ import { dirname, resolve } from "node:path";
 
 import { loadConfig, readOptional, readString } from "./config.ts";
 import { fail } from "./error_codes.ts";
+import { frameworkPath } from "./script_paths.ts";
 
 type JsonSchema = {
   type?: string;
@@ -100,7 +101,7 @@ function defaultSchemaPath(config: Record<string, string>): string {
   if (configured.length > 0) {
     return resolve(configured);
   }
-  return resolve("./docs/guides/code/205-legacy-migration-framework/promotion-ci-guard.schema.json");
+  return frameworkPath("promotion-ci-guard.schema.json");
 }
 
 function defaultLintOutputPath(config: Record<string, string>): string {

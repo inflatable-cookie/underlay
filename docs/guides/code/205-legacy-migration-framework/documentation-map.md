@@ -30,10 +30,11 @@ Read in this order:
 6. `docs/guides/code/205-legacy-migration-framework/migration-system-setup.md`
 7. `docs/guides/code/205-legacy-migration-framework/README.md`
 8. `docs/guides/code/205-legacy-migration-framework/migration.config.md`
-9. `docs/guides/code/205-legacy-migration-framework/migration-evidence-matrix.md`
-10. `docs/guides/code/205-legacy-migration-framework/ai-migration-handoff.prompt.md`
-11. `docs/guides/code/205-legacy-migration-framework/migration-troubleshooting.md`
-12. `docs/guides/code/205-legacy-migration-framework/migration-error-codes.md`
+9. `docs/guides/code/205-legacy-migration-framework/migration-runner-contract.md`
+10. `docs/guides/code/205-legacy-migration-framework/migration-evidence-matrix.md`
+11. `docs/guides/code/205-legacy-migration-framework/ai-migration-handoff.prompt.md`
+12. `docs/guides/code/205-legacy-migration-framework/migration-troubleshooting.md`
+13. `docs/guides/code/205-legacy-migration-framework/migration-error-codes.md`
 
 ## 3. Role-Based Entry Points
 
@@ -43,9 +44,10 @@ Read:
 
 1. `migration-system-setup.md`
 2. `README.md`
-3. `migration-evidence-matrix.md`
-4. `migration-troubleshooting.md`
-5. `migration-error-codes.md`
+3. `migration-runner-contract.md`
+4. `migration-evidence-matrix.md`
+5. `migration-troubleshooting.md`
+6. `migration-error-codes.md`
 
 Run:
 
@@ -63,9 +65,10 @@ Read:
 
 1. `ai-migration-handoff.prompt.md`
 2. `migration.config.md`
-3. `migration-evidence-matrix.md`
-4. `migration-troubleshooting.md`
-5. `migration-error-codes.md`
+3. `migration-runner-contract.md`
+4. `migration-evidence-matrix.md`
+5. `migration-troubleshooting.md`
+6. `migration-error-codes.md`
 
 Execute:
 
@@ -84,8 +87,8 @@ Execute:
 | `00_doctor.ts` | `README.md`, `migration-system-setup.md` |
 | `00_preflight.ts` | `README.md`, `migration-system-setup.md` |
 | `01_build_publish.ts` | `205-legacy-migration-framework.md` |
-| `02_run_reports.ts` | `205-legacy-migration-framework.md` |
-| `03_refresh_cycle.ts` | `205-legacy-migration-framework.md`, `migration-system-setup.md` |
+| `02_run_reports.ts` | `205-legacy-migration-framework.md`, `migration-runner-contract.md` |
+| `03_refresh_cycle.ts` | `205-legacy-migration-framework.md`, `migration-system-setup.md`, `migration-runner-contract.md` |
 | `10_decision_reuse_summary.ts` | `205-legacy-migration-framework.md`, `migration-evidence-matrix.md` |
 | `12_decision_reuse_summary_lint.ts` | `README.md`, `migration.config.md` |
 | `13_refresh_drift_gate.ts` | `README.md`, `migration.config.md` |

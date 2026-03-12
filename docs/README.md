@@ -1,6 +1,17 @@
 # Underlay Documentation
 
-Comprehensive documentation for the Underlay foundation project.
+This is the documentation authority for Underlay as a reusable foundation repo.
+
+Start here when you need to understand what Underlay is for, how to use it
+effectively, and which planning surfaces are active now.
+
+## Start Here
+
+- [vision/001-underlay-foundation-vision.md](./vision/001-underlay-foundation-vision.md)
+- [architecture/000-overview.md](./architecture/000-overview.md)
+- [guides/README.md](./guides/README.md)
+- [roadmaps/README.md](./roadmaps/README.md)
+- [logs/README.md](./logs/README.md)
 
 ## Documentation Structure
 
@@ -41,8 +52,12 @@ Systematic improvement sweeps across the codebase.
 ### [Vision](./vision/)
 Project vision, goals, and strategic direction.
 
-## Getting Started
+## What To Use
 
-1. Start with the [Guides README](./guides/README.md) for implementation guidance
-2. Review [Architecture Overview](./guides/000-overview.md) for high-level concepts
-3. Check [Research](./research/) when making evidence-based decisions
+- `vision/` defines the long-horizon foundation boundary and success bar.
+- `roadmaps/` turns that direction into concrete Underlay delivery milestones.
+- `logs/` records meaningful batches and roadmap-linked evidence.
+- `guides/`, `architecture/`, and `patterns/` explain how to apply Underlay in
+  real consuming projects.
+- `research/` is where external evidence and comparison work should live before
+  it becomes architecture or roadmap scope.

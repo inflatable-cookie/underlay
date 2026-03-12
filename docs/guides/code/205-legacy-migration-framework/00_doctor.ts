@@ -1,9 +1,10 @@
-import { mkdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { spawnSync } from "node:child_process";
 
 import { loadConfig, readOptional } from "./config.ts";
 import { fail, withCode } from "./error_codes.ts";
+import { frameworkPath, frameworkScriptPath } from "./script_paths.ts";
 
 type CheckStatus = "passed" | "failed" | "skipped";
 
@@ -59,10 +60,13 @@ const KNOWN_KEYS = [
   "BUNDLE_FILE",
   "OCI_REF_TAG",
   "BUNDLE_REF",
+  "BUNDLE_REF_FILE",
   "OUTPUT_DIR",
   "RUN_REPORT",
   "GOVERNANCE_POLICY_FILE",
   "REUSE_FROM_DIGEST_REF",
+  "REUSE_FROM_DIGEST_REF_FILE",
+  "UNDERLAY_DEVTOOLS_CMD",
   "APP_MIGRATION_RUNNER_CMD",
   "DECISION_INDEX_FILE",
   "DECISION_JOURNAL_FILE",
@@ -160,14 +164,33 @@ function effectiveValue(configValues: Record<string, string>, key: string): stri
 }
 
 function defaultOutputFile(configValues: Record<string, string>): string {
+  const outputDir = effectiveValue(configValues, "OUTPUT_DIR") || "./runtime/demo-pass";
   const runReport =
-    readOptional(configValues, "RUN_REPORT") ||
-    process.env.RUN_REPORT ||
-    "./runtime/demo-pass/run-report.json";
+    configValues.RUN_REPORT?.trim() ||
+    process.env.RUN_REPORT?.trim() ||
+    `${outputDir}/run-report.json`;
   if (runReport.endsWith("run-report.json")) {
     return runReport.replace(/run-report\.json$/, "migration-doctor.json");
   }
   return "./runtime/migration-doctor.json";
+}
+
+function hasReadyRefInput(
+  configValues: Record<string, string>,
+  directKey: string,
+  fileKey: string,
+): boolean {
+  const directValue = effectiveValue(configValues, directKey).trim();
+  if (directValue.length > 0) {
+    return true;
+  }
+
+  const fileValue = effectiveValue(configValues, fileKey).trim();
+  if (fileValue.length === 0) {
+    return false;
+  }
+
+  return existsSync(resolve(fileValue));
 }
 
 function main(): void {
@@ -182,13 +205,13 @@ function main(): void {
     MIGRATION_CONFIG_FILE: process.env.MIGRATION_CONFIG_FILE ?? filePath,
     MIGRATION_CONFIG_SCHEMA_FILE:
       process.env.MIGRATION_CONFIG_SCHEMA_FILE ??
-      "./docs/guides/code/205-legacy-migration-framework/config.schema.json",
+      frameworkPath("config.schema.json"),
   };
 
   checks.push(
     runCommandCapture(
       "bun",
-      ["run", "./docs/guides/code/205-legacy-migration-framework/00_config_lint.ts"],
+      ["run", frameworkScriptPath("00_config_lint.ts")],
       baseEnv,
     ),
   );
@@ -197,7 +220,7 @@ function main(): void {
       "bun",
       [
         "run",
-        "./docs/guides/code/205-legacy-migration-framework/00_preflight.ts",
+        frameworkScriptPath("00_preflight.ts"),
         "--mode",
         "general",
       ],
@@ -205,14 +228,13 @@ function main(): void {
     ),
   );
 
-  const bundleRef = effectiveValue(values as Record<string, string>, "BUNDLE_REF");
-  if (bundleRef.trim().length > 0) {
+  if (hasReadyRefInput(values as Record<string, string>, "BUNDLE_REF", "BUNDLE_REF_FILE")) {
     checks.push(
       runCommandCapture(
         "bun",
         [
           "run",
-          "./docs/guides/code/205-legacy-migration-framework/00_preflight.ts",
+          frameworkScriptPath("00_preflight.ts"),
           "--mode",
           "reports",
         ],
@@ -223,18 +245,23 @@ function main(): void {
     checks.push({
       name: "preflight reports",
       status: "skipped",
-      reason: "BUNDLE_REF not configured",
+      reason: "BUNDLE_REF not configured and BUNDLE_REF_FILE not generated yet",
     });
   }
 
-  const reuseFrom = effectiveValue(values as Record<string, string>, "REUSE_FROM_DIGEST_REF");
-  if (reuseFrom.trim().length > 0) {
+  if (
+    hasReadyRefInput(
+      values as Record<string, string>,
+      "REUSE_FROM_DIGEST_REF",
+      "REUSE_FROM_DIGEST_REF_FILE",
+    )
+  ) {
     checks.push(
       runCommandCapture(
         "bun",
         [
           "run",
-          "./docs/guides/code/205-legacy-migration-framework/00_preflight.ts",
+          frameworkScriptPath("00_preflight.ts"),
           "--mode",
           "refresh",
         ],
@@ -245,7 +272,7 @@ function main(): void {
     checks.push({
       name: "preflight refresh",
       status: "skipped",
-      reason: "REUSE_FROM_DIGEST_REF not configured",
+      reason: "REUSE_FROM_DIGEST_REF not configured and REUSE_FROM_DIGEST_REF_FILE not generated yet",
     });
   }
 
