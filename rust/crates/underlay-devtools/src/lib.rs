@@ -1,5 +1,6 @@
-mod migration_bundle;
+pub(crate) mod migration_bundle;
 mod migration_report;
+mod seed_bundle;
 mod sync_migrations;
 
 pub use migration_bundle::{
@@ -17,6 +18,10 @@ pub use migration_report::{
     load_decision_journal, load_governance_policy, load_pipeline_run_report,
     load_pipeline_run_report_from_path, top_governance_issues, write_audit_artifact,
     write_verification_artifact, MigrationReportError,
+};
+pub use seed_bundle::{
+    seed_bundle_build, seed_bundle_publish, seed_bundle_pull, SeedBundleBuildOptions,
+    SeedBundleBuildReport, SeedBundlePullOptions, SeedBundlePullReport,
 };
 pub use sync_migrations::{sync_migrations, SyncMigrationsError, SyncMigrationsReport};
 

@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 fn print_usage() {
     eprintln!(
-        "underlay-devtools\n\nUSAGE:\n  underlay-devtools sync-migrations --target <DIR> [--dry-run]\n  underlay-devtools migration bundle build --output <FILE> --source-system <NAME> --target-schema-version <VERSION> [--media-dir <DIR>]\n  underlay-devtools migration bundle publish --bundle <FILE> --oci-ref <REF>\n  underlay-devtools migration bundle pull --oci-ref <REF> --output <DIR>\n  underlay-devtools migration run --bundle <REF@DIGEST> --output <DIR>\n  underlay-devtools migration report governance --input <FILE> [--limit <N>]\n  underlay-devtools migration report policy --input <FILE>\n  underlay-devtools migration report drift --input <FILE> [--max-unresolved <N>] [--max-governance <N>] [--max-lineage <N>] [--decision-index <FILE>] [--decision-journal <FILE>] [--expected-bundle-digest <sha256:...>]\n  underlay-devtools migration report recovery --input <FILE>\n  underlay-devtools migration report verify --input <FILE> [--output-dir <DIR>]\n  underlay-devtools migration report integrity --input <FILE>\n  underlay-devtools migration report audit --input <FILE|DIR> [--output-dir <DIR>]\n\nCOMMANDS:\n  sync-migrations    Copy Underlay-owned SQL migrations into an app's migrations directory\n  migration bundle   Manage migration OCI bundle packages (build/publish/pull)\n  migration run      Prepare and validate a digest-pinned migration replay input\n  migration report   Summarize migration governance, policy, drift, integrity, and recovery outcomes\n\nOPTIONS:\n  --target <DIR>              Target migrations directory (must exist)\n  --dry-run                   Print what would be written, without writing\n  --output <FILE|DIR>         Output file (build) or output directory (pull/run)\n  --source-system <NAME>      Legacy source identifier for bundle metadata\n  --target-schema-version <V> Target schema version for bundle metadata\n  --media-dir <DIR>           Optional directory of media files to embed in media shard payload\n  --bundle <FILE|REF>         Bundle file path (publish) or digest-pinned OCI reference (run)\n  --oci-ref <REF>             OCI reference (tag or digest)\n  --input <FILE>              Decide stage JSON, policy JSON, or full pipeline run report JSON\n  --output-dir <DIR>          Directory for generated verification/audit artifact output\n  --decision-index <FILE>     Decision index JSON for lineage drift checks\n  --decision-journal <FILE>   Decision journal NDJSON for lineage drift checks\n  --expected-bundle-digest <D> Expected bundle digest for index linkage checks\n  --limit <N>                 Maximum governance issue examples to print (default 5)\n  --max-unresolved <N>        Drift threshold for unresolved decisions (default 0)\n  --max-governance <N>        Drift threshold for governance issues (default 0)\n  --max-lineage <N>           Drift threshold for lineage mismatches (default 0)\n"
+        "underlay-devtools\n\nUSAGE:\n  underlay-devtools sync-migrations --target <DIR> [--dry-run]\n  underlay-devtools migration bundle build --output <FILE> --source-system <NAME> --target-schema-version <VERSION> [--media-dir <DIR>]\n  underlay-devtools migration bundle publish --bundle <FILE> --oci-ref <REF>\n  underlay-devtools migration bundle pull --oci-ref <REF> --output <DIR>\n  underlay-devtools migration run --bundle <REF@DIGEST> --output <DIR>\n  underlay-devtools migration report governance --input <FILE> [--limit <N>]\n  underlay-devtools migration report policy --input <FILE>\n  underlay-devtools migration report drift --input <FILE> [--max-unresolved <N>] [--max-governance <N>] [--max-lineage <N>] [--decision-index <FILE>] [--decision-journal <FILE>] [--expected-bundle-digest <sha256:...>]\n  underlay-devtools migration report recovery --input <FILE>\n  underlay-devtools migration report verify --input <FILE> [--output-dir <DIR>]\n  underlay-devtools migration report integrity --input <FILE>\n  underlay-devtools migration report audit --input <FILE|DIR> [--output-dir <DIR>]\n  underlay-devtools seed bundle build --source <DIR> --output <FILE>\n  underlay-devtools seed bundle publish --bundle <FILE> --oci-ref <REF>\n  underlay-devtools seed bundle pull --oci-ref <REF> --output <DIR>\n\nCOMMANDS:\n  sync-migrations    Copy Underlay-owned SQL migrations into an app's migrations directory\n  migration bundle   Manage migration OCI bundle packages (build/publish/pull)\n  migration run      Prepare and validate a digest-pinned migration replay input\n  migration report   Summarize migration governance, policy, drift, integrity, and recovery outcomes\n  seed bundle        Package seed-data SQL directories as OCI bundles (build/publish/pull)\n\nOPTIONS:\n  --target <DIR>              Target migrations directory (must exist)\n  --dry-run                   Print what would be written, without writing\n  --output <FILE|DIR>         Output file (build) or output directory (pull/run)\n  --source <DIR>              Source seed-bundle directory containing manifest.json + SQL files\n  --source-system <NAME>      Legacy source identifier for bundle metadata\n  --target-schema-version <V> Target schema version for bundle metadata\n  --media-dir <DIR>           Optional directory of media files to embed in media shard payload\n  --bundle <FILE|REF>         Bundle file path (publish) or digest-pinned OCI reference (run)\n  --oci-ref <REF>             OCI reference (tag or digest)\n  --input <FILE>              Decide stage JSON, policy JSON, or full pipeline run report JSON\n  --output-dir <DIR>          Directory for generated verification/audit artifact output\n  --decision-index <FILE>     Decision index JSON for lineage drift checks\n  --decision-journal <FILE>   Decision journal NDJSON for lineage drift checks\n  --expected-bundle-digest <D> Expected bundle digest for index linkage checks\n  --limit <N>                 Maximum governance issue examples to print (default 5)\n  --max-unresolved <N>        Drift threshold for unresolved decisions (default 0)\n  --max-governance <N>        Drift threshold for governance issues (default 0)\n  --max-lineage <N>           Drift threshold for lineage mismatches (default 0)\n"
     );
 }
 
@@ -22,6 +22,7 @@ fn main() {
     match cmd.as_str() {
         "sync-migrations" => run_sync_migrations(args),
         "migration" => run_migration(args),
+        "seed" => run_seed(args),
         other => {
             eprintln!("unknown command: {other}");
             print_usage();
@@ -874,6 +875,228 @@ fn run_bundle_pull(mut args: impl Iterator<Item = String>) {
         }
         Err(err) => {
             eprintln!("migration bundle pull failed: {err}");
+            std::process::exit(1);
+        }
+    }
+}
+
+// ── Seed bundle subcommands ────────────────────────────────────────────
+
+fn run_seed(mut args: impl Iterator<Item = String>) {
+    let Some(subcommand) = args.next() else {
+        eprintln!("missing seed subcommand");
+        print_usage();
+        std::process::exit(2);
+    };
+
+    if subcommand != "bundle" {
+        eprintln!("unknown seed subcommand: {subcommand}");
+        print_usage();
+        std::process::exit(2);
+    }
+
+    let Some(action) = args.next() else {
+        eprintln!("missing seed bundle action");
+        print_usage();
+        std::process::exit(2);
+    };
+
+    match action.as_str() {
+        "build" => run_seed_bundle_build(args),
+        "publish" => run_seed_bundle_publish(args),
+        "pull" => run_seed_bundle_pull(args),
+        other => {
+            eprintln!("unknown seed bundle action: {other}");
+            print_usage();
+            std::process::exit(2);
+        }
+    }
+}
+
+fn run_seed_bundle_build(mut args: impl Iterator<Item = String>) {
+    let mut source: Option<PathBuf> = None;
+    let mut output: Option<PathBuf> = None;
+
+    while let Some(arg) = args.next() {
+        match arg.as_str() {
+            "--source" => {
+                let Some(v) = args.next() else {
+                    eprintln!("--source requires a value");
+                    std::process::exit(2);
+                };
+                source = Some(PathBuf::from(v));
+            }
+            "--output" => {
+                let Some(v) = args.next() else {
+                    eprintln!("--output requires a value");
+                    std::process::exit(2);
+                };
+                output = Some(PathBuf::from(v));
+            }
+            "--help" | "-h" => {
+                print_usage();
+                return;
+            }
+            other => {
+                eprintln!("unknown argument: {other}");
+                print_usage();
+                std::process::exit(2);
+            }
+        }
+    }
+
+    let Some(source_dir) = source else {
+        eprintln!("missing --source");
+        std::process::exit(2);
+    };
+    let Some(output_file) = output else {
+        eprintln!("missing --output");
+        std::process::exit(2);
+    };
+
+    match underlay_devtools::seed_bundle_build(&underlay_devtools::SeedBundleBuildOptions {
+        source_dir,
+        output_file,
+    }) {
+        Ok(report) => {
+            println!(
+                "seed bundle written {} (name={}, artifact_type={}, layers={}, sql_files={}, sql_bytes={})",
+                report.output_file.display(),
+                report.bundle_name,
+                report.artifact_type,
+                report.layer_count,
+                report.sql_file_count,
+                report.total_sql_bytes,
+            );
+            println!("seed bundle digest {}", report.bundle_digest);
+        }
+        Err(err) => {
+            eprintln!("seed bundle build failed: {err}");
+            std::process::exit(1);
+        }
+    }
+}
+
+fn run_seed_bundle_publish(mut args: impl Iterator<Item = String>) {
+    let mut bundle: Option<PathBuf> = None;
+    let mut oci_ref: Option<String> = None;
+
+    while let Some(arg) = args.next() {
+        match arg.as_str() {
+            "--bundle" => {
+                let Some(v) = args.next() else {
+                    eprintln!("--bundle requires a value");
+                    std::process::exit(2);
+                };
+                bundle = Some(PathBuf::from(v));
+            }
+            "--oci-ref" => {
+                let Some(v) = args.next() else {
+                    eprintln!("--oci-ref requires a value");
+                    std::process::exit(2);
+                };
+                oci_ref = Some(v);
+            }
+            "--help" | "-h" => {
+                print_usage();
+                return;
+            }
+            other => {
+                eprintln!("unknown argument: {other}");
+                print_usage();
+                std::process::exit(2);
+            }
+        }
+    }
+
+    let Some(bundle_file) = bundle else {
+        eprintln!("missing --bundle");
+        std::process::exit(2);
+    };
+    let Some(oci_ref) = oci_ref else {
+        eprintln!("missing --oci-ref");
+        std::process::exit(2);
+    };
+
+    match underlay_devtools::seed_bundle_publish(&underlay_devtools::BundlePublishOptions {
+        bundle_file,
+        oci_ref,
+        local_store_dir: None,
+    }) {
+        Ok(report) => {
+            println!(
+                "seed publish {} -> {} ({}, digest={})",
+                report.bundle_file.display(),
+                report.oci_ref,
+                report.status,
+                report.digest
+            );
+        }
+        Err(err) => {
+            eprintln!("seed bundle publish failed: {err}");
+            std::process::exit(1);
+        }
+    }
+}
+
+fn run_seed_bundle_pull(mut args: impl Iterator<Item = String>) {
+    let mut output: Option<PathBuf> = None;
+    let mut oci_ref: Option<String> = None;
+
+    while let Some(arg) = args.next() {
+        match arg.as_str() {
+            "--output" => {
+                let Some(v) = args.next() else {
+                    eprintln!("--output requires a value");
+                    std::process::exit(2);
+                };
+                output = Some(PathBuf::from(v));
+            }
+            "--oci-ref" => {
+                let Some(v) = args.next() else {
+                    eprintln!("--oci-ref requires a value");
+                    std::process::exit(2);
+                };
+                oci_ref = Some(v);
+            }
+            "--help" | "-h" => {
+                print_usage();
+                return;
+            }
+            other => {
+                eprintln!("unknown argument: {other}");
+                print_usage();
+                std::process::exit(2);
+            }
+        }
+    }
+
+    let Some(output_dir) = output else {
+        eprintln!("missing --output");
+        std::process::exit(2);
+    };
+    let Some(oci_ref) = oci_ref else {
+        eprintln!("missing --oci-ref");
+        std::process::exit(2);
+    };
+
+    match underlay_devtools::seed_bundle_pull(&underlay_devtools::SeedBundlePullOptions {
+        oci_ref,
+        output_dir,
+        local_store_dir: None,
+    }) {
+        Ok(report) => {
+            println!(
+                "seed pull {} -> {} ({}, digest={}, sql_files={})",
+                report.oci_ref,
+                report.output_dir.display(),
+                report.status,
+                report.digest,
+                report.sql_file_count,
+            );
+        }
+        Err(err) => {
+            eprintln!("seed bundle pull failed: {err}");
             std::process::exit(1);
         }
     }
