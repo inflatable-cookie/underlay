@@ -85,7 +85,7 @@ Reusable templates:
   - optionally adopt `PasskeyManager` from `@decodelabs/underlay/components`
   - keep existing backend start/finish endpoints; this batch does not change backend contracts
 - Validation:
-  - `effigy validate --repo .`
+  - `effigy validate`
   - consumer auth smoke tests for passkey registration and login
 - Caveat:
   - conditional mediation still depends on browser support; do not assume it is universally available
@@ -100,7 +100,7 @@ Reusable templates:
   - import schemas from `@decodelabs/underlay/validation`
   - optionally use `useValidatedForm()` from `@decodelabs/underlay/patterns`
 - Validation:
-  - `effigy validate --repo .`
+  - `effigy validate`
   - consumer form smoke tests for client-side validation plus server-side submit handling
 - Caveat:
   - shared Zod schemas are a UX layer; server validation remains authoritative
@@ -202,7 +202,7 @@ Reusable templates:
   - keep existing callers unchanged if no expiration behavior is needed
 - Validation:
   - `bun x vitest run ts/tests/patterns/storage.test.ts`
-  - `effigy validate --repo .`
+  - `effigy validate`
   - app smoke tests for any draft/cache flows that adopt TTL
 - Caveat:
   - expiration is opt-in and does not rewrite existing non-expiring values
@@ -219,7 +219,7 @@ Reusable templates:
   - keep existing manual `Skeleton` composition where app-specific markup is still clearer
 - Validation:
   - `bun x vitest --config vitest.component.config.ts run ts/tests/components/data-skeleton.component.test.ts ts/tests/patterns/skeleton.component.test.ts`
-  - `effigy validate --repo .`
+  - `effigy validate`
   - app smoke checks on key loading states that adopt the new component
 - Caveat:
   - the preset registry in this batch is intentionally declarative and limited to shared built-in layout configuration
@@ -236,7 +236,7 @@ Reusable templates:
   - remove app-local draft-clearing code after success only if it is now redundant with the shared default behavior
 - Validation:
   - `bun x vitest run ts/tests/patterns/forms.test.ts`
-  - `effigy validate --repo .`
+  - `effigy validate`
   - app smoke tests for any draft restore flow that adopts the shared pattern
 - Caveat:
   - draft persistence is opt-in and existing `createFormState` usage remains unchanged

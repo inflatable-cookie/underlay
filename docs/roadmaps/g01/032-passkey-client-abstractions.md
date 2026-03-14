@@ -60,8 +60,8 @@ Provide higher-level TypeScript hooks and app-agnostic Svelte UI for passkey reg
 ## Validation
 
 ```bash
-effigy validate --repo .
-effigy test:components --repo . -- ts/tests/utils/webauthn.test.ts ts/tests/patterns/auth-components.component.test.ts
+effigy validate
+effigy test:components -- ts/tests/utils/webauthn.test.ts ts/tests/patterns/auth-components.component.test.ts
 ```
 
 ## Next Task

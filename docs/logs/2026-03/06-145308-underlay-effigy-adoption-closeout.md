@@ -6,7 +6,7 @@ Date: 2026-03-06
 
 - Established Effigy as the default day-to-day command surface for the Underlay root repo.
 - Added repo-owned `health`, `validate`, and `qa` tasks alongside the existing Rust, TypeScript, and component test tasks.
-- Normalized root contributor guidance and package-script entrypoints around direct `effigy ... --repo .` usage.
+- Normalized root contributor guidance and package-script entrypoints around direct `effigy ...` usage.
 - Updated the active guides index so cross-project documentation now teaches Effigy-first repo loops before raw tool commands.
 
 ## Main outcomes
@@ -19,9 +19,9 @@ Date: 2026-03-06
 ## Validation highlights
 
 - Root task discovery now exposes `health`, `validate`, and `qa` alongside the existing low-level tasks.
-- `effigy health --repo .` passes with the exports, component-test-hygiene, and guardrails checks.
-- `effigy validate --repo .` remains the aggregated local verification path.
-- `effigy test --plan --repo .` remains the canonical first step for selecting the appropriate test runner.
+- `effigy health` passes with the exports, component-test-hygiene, and guardrails checks.
+- `effigy validate` remains the aggregated local verification path.
+- `effigy test --plan` remains the canonical first step for selecting the appropriate test runner.
 
 ## Remaining caveats
 

@@ -61,7 +61,7 @@ Improve `underlay-jobs` with safer retry behavior, dead-letter handling, and job
 ```bash
 cargo check -p underlay-jobs --all-features
 cargo test -p underlay-jobs --all-features
-effigy validate --repo .
+effigy validate
 ```
 
 ## Next Task

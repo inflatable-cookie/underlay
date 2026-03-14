@@ -62,7 +62,7 @@ Add an app-agnostic slash command palette to `NightfireEditor` so users can inse
 ```bash
 bun x vitest run ts/tests/nightfire/slash-commands.test.ts ts/tests/nightfire/value-updates.test.ts
 bun x vitest --config vitest.component.config.ts run ts/tests/components/nightfire-slash-command-palette.component.test.ts ts/tests/components/nightfire-editor-slash-commands.component.test.ts
-effigy validate --repo .
+effigy validate
 ```
 
 ## Completion

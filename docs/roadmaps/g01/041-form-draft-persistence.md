@@ -59,7 +59,7 @@ Add opt-in draft persistence to `createFormState` so consuming apps can restore 
 
 ```bash
 bun x vitest run ts/tests/patterns/forms.test.ts
-effigy validate --repo .
+effigy validate
 ```
 
 ## Completion

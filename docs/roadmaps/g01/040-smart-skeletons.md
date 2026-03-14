@@ -57,7 +57,7 @@ Add a higher-level `DataSkeleton` component so consuming apps can render consist
 
 ```bash
 bun x vitest --config vitest.component.config.ts run ts/tests/components/data-skeleton.component.test.ts ts/tests/patterns/skeleton.component.test.ts
-effigy validate --repo .
+effigy validate
 ```
 
 ## Completion

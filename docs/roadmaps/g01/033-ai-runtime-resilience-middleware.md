@@ -59,7 +59,7 @@ Add opt-in resilience primitives to `underlay-ai-runtime` so consuming apps can 
 ```bash
 cargo check -p underlay-ai-runtime --all-features
 cargo test -p underlay-ai-runtime --all-features
-effigy validate --repo .
+effigy validate
 ```
 
 ## Next Task

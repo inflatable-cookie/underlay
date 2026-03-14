@@ -57,7 +57,7 @@ Policy decision:
 Run after roadmap and guide updates land:
 
 ```bash
-effigy validate --repo .
+effigy validate
 ```
 
 ## Next Task

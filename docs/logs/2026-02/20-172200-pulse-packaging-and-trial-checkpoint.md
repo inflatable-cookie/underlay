@@ -22,7 +22,7 @@ Result: success (validated previously in roadmap execution cycle).
 
 Command (from Acowtancy root):
 
-`cargo run --manifest-path /Users/betterthanclay/Dev/projects/underlay/rust/crates/underlay-cli/Cargo.toml --bin underlay -- pulse --repo .`
+`cargo run --manifest-path /Users/betterthanclay/Dev/projects/underlay/rust/crates/underlay-cli/Cargo.toml --bin underlay -- pulse`
 
 Result: success.
 Timing:
@@ -35,7 +35,7 @@ Timing:
 
 Command:
 
-`cargo build -p underlay-cli && ./rust/target/debug/underlay pulse --repo .`
+`cargo build -p underlay-cli && ./rust/target/debug/underlay pulse`
 
 Result: success.
 Timing:

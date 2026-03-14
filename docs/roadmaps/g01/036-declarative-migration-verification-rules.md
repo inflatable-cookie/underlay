@@ -61,7 +61,7 @@ Add reusable declarative verification rules to `underlay-migration-core` so migr
 ```bash
 cargo check -p underlay-migration-core --all-features
 cargo test -p underlay-migration-core --all-features
-effigy validate --repo .
+effigy validate
 ```
 
 ## Next Task

@@ -56,7 +56,7 @@ Add optional TTL and expiration support to the SSR-safe storage wrappers in `pat
 
 ```bash
 bun x vitest run ts/tests/patterns/storage.test.ts
-effigy validate --repo .
+effigy validate
 ```
 
 ## Completion

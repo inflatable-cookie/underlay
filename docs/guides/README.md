@@ -75,12 +75,14 @@ Read these documents in order for a complete understanding:
 When a repo in your workspace publishes `effigy.toml`, prefer its Effigy surface before raw tool commands:
 
 ```bash
-effigy tasks --repo /path/to/repo
-effigy health --repo /path/to/repo
-effigy test --plan --repo /path/to/repo
+effigy tasks
+effigy health
+effigy test --plan
 ```
 
-Then use repo-owned tasks such as `effigy validate --repo /path/to/repo` or `effigy dev --repo /path/to/repo`.
+Then use repo-owned tasks such as `effigy validate` or `effigy dev`.
+If you are not already in the repo root, `cd` there first instead of adding a
+redundant `--repo` flag for the current tree.
 Use raw `cargo`, `bun`, or framework CLIs directly only when the repo has not represented that path in Effigy yet.
 
 ## Code Examples
@@ -113,10 +115,10 @@ code/
 **Effigy-first:** when a repo publishes `effigy.toml`, prefer its task surface first.
 
 ```bash
-effigy tasks --repo /path/to/repo
-effigy health --repo /path/to/repo
-effigy test --plan --repo /path/to/repo
-effigy validate --repo /path/to/repo
+effigy tasks
+effigy health
+effigy test --plan
+effigy validate
 ```
 
 **Multi-repo raw fallback:** run direct tool commands only when the repo has not represented that path in Effigy yet.

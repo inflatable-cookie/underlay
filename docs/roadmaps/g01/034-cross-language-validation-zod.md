@@ -61,8 +61,8 @@ Add an opt-in `@decodelabs/underlay/validation` surface for reusable Zod schemas
 ## Validation
 
 ```bash
-effigy validate --repo .
-effigy test:components --repo . -- ts/tests/components/text-input-form-validation.test.ts ts/tests/patterns/form-validation-provider.component.test.ts
+effigy validate
+effigy test:components -- ts/tests/components/text-input-form-validation.test.ts ts/tests/patterns/form-validation-provider.component.test.ts
 ```
 
 ## Next Task

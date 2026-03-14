@@ -121,8 +121,8 @@ For large migrations with minimal downtime:
 
 ### Phase 1: Bulk Migration (Underlay)
 ```bash
-effigy migration:bundle:prep --repo .
-effigy migration:bundle:run --repo .
+effigy migration:bundle:prep
+effigy migration:bundle:run
 ```
 
 ### Phase 2: CDC Setup (Debezium)

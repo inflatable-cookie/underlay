@@ -63,7 +63,7 @@ cargo check -p underlay-http --all-features
 cargo test -p underlay-http --all-features
 cargo check -p underlay-observability --all-features
 cargo test -p underlay-observability --all-features
-effigy validate --repo .
+effigy validate
 ```
 
 ## Completion
