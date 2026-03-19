@@ -20,6 +20,9 @@
 - Use `effigy doctor` when you want broader repo scans; it currently includes structural scan findings beyond the task surface itself.
 - Fall back to raw `cargo`, `bun`, or `vitest` only when the needed operation is not represented in `effigy.toml`.
 
+For first-time local bring-up from outside this repo:
+- use `effigy bootstrap git@github.com:inflatable-cookie/underlay.git`
+
 ## Validation
 
 ```bash

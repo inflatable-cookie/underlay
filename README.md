@@ -37,6 +37,12 @@ effigy health
 effigy test --plan
 ```
 
+First-time bring-up from another directory:
+
+```bash
+effigy bootstrap git@github.com:inflatable-cookie/underlay.git
+```
+
 Common local commands:
 
 ```bash
