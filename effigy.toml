@@ -4,6 +4,9 @@ alias = "underlay"
 [package_manager]
 js = "bun"
 
+[bootstrap]
+setup = ["bootstrap:deps"]
+
 [docs_policy.indexes.vision]
 file = "docs/vision/README.md"
 dir = "docs/vision"
@@ -14,6 +17,11 @@ heading = "## Next Task"
 allowlist_file = "docs/policy/vision-next-task-verbs.txt"
 
 [tasks]
+"bootstrap:deps" = [
+    "bun install",
+    "cargo fetch",
+]
+
 check = "bun x svelte-check --tsconfig ./ts/tsconfig.json"
 "check:types" = "bun x tsc -p ./ts/tsconfig.json"
 "check:exports" = "bun ts/scripts/check-exports.ts"
