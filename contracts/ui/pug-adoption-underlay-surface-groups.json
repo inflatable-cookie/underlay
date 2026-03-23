@@ -403,8 +403,8 @@
         "export": "FieldSet",
         "entrypoint": "@decodelabs/underlay/components",
         "successor_package": "@pug/svelte-primitives",
-        "successor_export": "Eyebrow + Grid",
-        "notes": "Visual field grouping is composition over Eyebrow (legend) + Grid (layout). No grouped-field contract gap."
+        "successor_export": "FieldSet",
+        "notes": "Direct replacement. Pug FieldSet provides semantic <fieldset> + <legend> with grid layout. Props: legend, columns, gap, span."
       }
     ],
     "keep_in_underlay_after_assessment": [
