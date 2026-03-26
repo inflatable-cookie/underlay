@@ -1,7 +1,5 @@
 <script lang="ts">
-  import Button from "../Button.svelte";
-  import FormActions from "../FormActions.svelte";
-  import FormError from "../FormError.svelte";
+  import { Button, Callout, FormActions } from "@poodle/svelte-primitives";
   import GoogleSignInButton from "./GoogleSignInButton.svelte";
 
   interface Props {
@@ -24,7 +22,9 @@
 <div class="underlay-login-page__google">
   <p class="underlay-login-page__hint">{googleHint}</p>
 
-  <FormError message={error} />
+  {#if error}
+    <Callout tone="danger" message={error} announceMode="assertive" />
+  {/if}
 
   <FormActions>
     {#if onGoogleLogin}

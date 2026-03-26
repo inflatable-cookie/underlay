@@ -1,8 +1,4 @@
 <script lang="ts">
-  import { getContext, onMount, untrack } from "svelte";
-  import { createStableId } from "../patterns/dom";
-  import type { FormValidationContext } from "./text-input/form-validation";
-
   export interface RangeSliderOption {
     value: string;
     label?: string;
@@ -37,10 +33,6 @@
     onchange,
     class: className
   }: Props = $props();
-
-  const formValidation = getContext<FormValidationContext | undefined>("formValidation");
-  const fieldId = untrack(() => id) ?? createStableId("underlay-range-slider");
-  const isRequired = $derived(required ?? false);
 
   const normalizedOptions = $derived.by<RangeSliderOption[]>(() => {
     const items: RangeSliderOption[] = [];
@@ -128,43 +120,6 @@
     const index = Math.max(selectedIndex, 0);
     const ratio = index / maxIndex;
     return `calc(0.5em + (100% - 1em) * ${ratio})`;
-  });
-
-  let prevValue = $state("");
-
-  function registerField() {
-    if (!formValidation) return;
-
-    formValidation.registerField(
-      fieldId,
-      isRequired,
-      selectedOption !== null,
-      "valid",
-      true
-    );
-  }
-
-  function updateField() {
-    if (!formValidation) return;
-
-    formValidation.updateField(fieldId, selectedOption !== null, "valid", true);
-  }
-
-  onMount(() => {
-    if (!formValidation) return;
-
-    registerField();
-    prevValue = untrack(() => value);
-
-    return () => {
-      formValidation.unregisterField(fieldId);
-    };
-  });
-
-  $effect(() => {
-    if (!formValidation || value === prevValue) return;
-    updateField();
-    prevValue = value;
   });
 
   $effect(() => {

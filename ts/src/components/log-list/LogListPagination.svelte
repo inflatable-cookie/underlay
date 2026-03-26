@@ -1,7 +1,5 @@
 <script lang="ts">
-  import Button from "../Button.svelte";
-  import ChevronLeft from "lucide-svelte/icons/chevron-left";
-  import ChevronRight from "lucide-svelte/icons/chevron-right";
+  import { IconButton, PaginationSummary } from "@poodle/svelte-primitives";
 
   interface Props {
     page?: number;
@@ -27,29 +25,29 @@
 <div class="underlay-log-list__pagination">
   <span class="underlay-log-list__pagination-info">
     {#if total}
-      Showing {(page - 1) * pageSize + 1}–{Math.min(page * pageSize, total)} of {total}
+      <PaginationSummary currentPage={page} totalPages={totalPages} totalItems={total} {pageSize} />
     {/if}
   </span>
   <div class="underlay-log-list__pagination-controls">
-    <Button
-      variant="subtle"
+    <IconButton
+      icon="chevron-left"
+      variant="ghost"
       size="sm"
-      onclick={onPrevPage}
+      ariaLabel="Previous page"
+      on:click={() => onPrevPage?.()}
       disabled={page <= 1 || loading}
-    >
-      <ChevronLeft size={16} />
-    </Button>
+    />
     <span class="underlay-log-list__pagination-page">
       Page {page} of {totalPages}
     </span>
-    <Button
-      variant="subtle"
+    <IconButton
+      icon="chevron-right"
+      variant="ghost"
       size="sm"
-      onclick={onNextPage}
+      ariaLabel="Next page"
+      on:click={() => onNextPage?.()}
       disabled={page >= totalPages || loading}
-    >
-      <ChevronRight size={16} />
-    </Button>
+    />
   </div>
 </div>
 
@@ -67,6 +65,10 @@
 
   .underlay-log-list__pagination-info {
     color: var(--underlay-color-text-muted, #94a3b8);
+  }
+
+  .underlay-log-list__pagination-info :global(.pagination-summary) {
+    color: inherit;
   }
 
   .underlay-log-list__pagination-controls {

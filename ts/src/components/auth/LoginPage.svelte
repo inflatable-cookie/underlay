@@ -5,7 +5,7 @@
    * Supports password, passkey, and Google OAuth login methods with
    * tab-based navigation when multiple methods are enabled. Handles
    * 2FA flows and optional post-login setup prompts.
-   */
+  */
 
   import { untrack } from "svelte";
   import type { LoginMethod, LoginPageProps, LoginStep } from "./login-page.types";
@@ -14,10 +14,6 @@
     resolveEmailFallbackOutcome,
     resolvePasswordLoginOutcome
   } from "./login-page-state";
-
-  import Card from "../Card.svelte";
-  import TabsContent from "../TabsContent.svelte";
-  import TabsRoot from "../TabsRoot.svelte";
 
   import LoginGoogleTab from "./LoginGoogleTab.svelte";
   import LoginMethodTabs from "./LoginMethodTabs.svelte";
@@ -208,7 +204,7 @@
   }
 </script>
 
-<Card class="underlay-login-page {className}">
+<div class={`underlay-login-page ${className}`.trim()}>
   {#if step === "2fa"}
     <TwoFactorStep
       hasTotpSetup={hadTotpConfigured && !usedEmailFallback}
@@ -230,63 +226,45 @@
     />
 
   {:else}
-    {#if !showTabs}
-      {#if methods.includes("password")}
-        <LoginPasswordForm
-          bind:email
-          bind:password
-          {loading}
-          {error}
-          {forgotPasswordHref}
-          onSubmit={handlePasswordLogin}
-        />
-      {/if}
-    {:else}
-      <TabsRoot bind:value={activeMethod}>
-        <LoginMethodTabs {methods} {onGoogleLogin} />
+    {#if showTabs}
+      <LoginMethodTabs
+        {methods}
+        {activeMethod}
+        {onGoogleLogin}
+        onSelect={(method) => { activeMethod = method; }}
+      />
+    {/if}
 
-        {#if methods.includes("password")}
-          <TabsContent value="password">
-            <LoginPasswordForm
-              bind:email
-              bind:password
-              {loading}
-              {error}
-              {forgotPasswordHref}
-              onSubmit={handlePasswordLogin}
-            />
-          </TabsContent>
-        {/if}
-
-        {#if methods.includes("passkey")}
-          <TabsContent value="passkey">
-            <LoginPasskeyTab
-              {showPasskeyEmailField}
-              {passkeyHint}
-              bind:passkeyEmail
-              {passkeyLoading}
-              passkeyError={passkeyError}
-              onPasskeyLogin={handlePasskeyLogin}
-            />
-          </TabsContent>
-        {/if}
-
-        {#if methods.includes("google")}
-          <TabsContent value="google">
-            <LoginGoogleTab
-              {googleHint}
-              {loading}
-              {error}
-              {onGoogleLogin}
-              onGoogleClick={handleGoogleLogin}
-            />
-          </TabsContent>
-        {/if}
-      </TabsRoot>
+    {#if activeMethod === "password" && methods.includes("password")}
+      <LoginPasswordForm
+        bind:email
+        bind:password
+        {loading}
+        {error}
+        {forgotPasswordHref}
+        onSubmit={handlePasswordLogin}
+      />
+    {:else if activeMethod === "passkey" && methods.includes("passkey")}
+      <LoginPasskeyTab
+        {showPasskeyEmailField}
+        {passkeyHint}
+        bind:passkeyEmail
+        {passkeyLoading}
+        passkeyError={passkeyError}
+        onPasskeyLogin={handlePasskeyLogin}
+      />
+    {:else if activeMethod === "google" && methods.includes("google")}
+      <LoginGoogleTab
+        {googleHint}
+        {loading}
+        {error}
+        {onGoogleLogin}
+        onGoogleClick={handleGoogleLogin}
+      />
     {/if}
 
     {#if registerHref}
       <LoginRegisterFooter {registerHref} />
     {/if}
   {/if}
-</Card>
+</div>

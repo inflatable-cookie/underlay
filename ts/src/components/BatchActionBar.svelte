@@ -5,12 +5,13 @@
    * Shows selection count and action buttons for batch operations.
    * Supports both static actions (via props) and dynamic actions (via registeredActions).
    */
+  import {
+    AlertDialog as PoodleAlertDialog,
+    Button,
+    Dialog as PoodleDialog
+  } from "@poodle/svelte-primitives";
   import type { Component, Snippet } from "svelte";
   import ActionArea from "./ActionArea.svelte";
-  import Button from "./Button.svelte";
-  import AlertDialog from "./AlertDialog.svelte";
-  import Dialog from "./Dialog.svelte";
-  import TextButton from "./TextButton.svelte";
   import X from "lucide-svelte/icons/x";
   import Trash2 from "lucide-svelte/icons/trash-2";
   import CheckCheck from "lucide-svelte/icons/check-check";
@@ -91,14 +92,17 @@
   /**
    * Map action variant to Button variant.
    */
-  function getButtonVariant(actionVariant: DynamicAction["variant"]): "subtle" | "danger" | "danger-subtle" {
+  function getButtonProps(actionVariant: DynamicAction["variant"]): {
+    variant: "ghost" | "secondary";
+    tone?: "danger";
+  } {
     switch (actionVariant) {
       case "danger":
-        return "danger";
+        return { variant: "ghost", tone: "danger" };
       case "warning":
-        return "danger-subtle";
+        return { variant: "secondary" };
       default:
-        return "subtle";
+        return { variant: "ghost" };
     }
   }
 
@@ -142,46 +146,53 @@
       {#if onSelectAll && totalCount > 0}
         <Button
           type="button"
-          variant="subtle"
+          variant="ghost"
           size="sm"
-          onclick={allSelected ? onClearSelection : onSelectAll}
+          on:click={allSelected ? onClearSelection : onSelectAll}
           disabled={loading}
         >
-          {#if allSelected}
-            <Square size={16} />
-            Deselect All
-          {:else}
-            <CheckSquare size={16} />
-            Select All ({totalCount})
-          {/if}
+          <svelte:fragment slot="leading">
+            {#if allSelected}
+              <Square size={16} />
+            {:else}
+              <CheckSquare size={16} />
+            {/if}
+          </svelte:fragment>
+          {#if allSelected}Deselect All{:else}Select All ({totalCount}){/if}
         </Button>
       {/if}
 
       {#if showStatusUpdate && statusOptions.length > 0}
         <Button
           type="button"
-          variant="subtle"
+          variant="ghost"
           size="sm"
-          onclick={handleStatusClick}
+          on:click={handleStatusClick}
           disabled={loading}
         >
-          <CheckCheck size={16} />
+          <svelte:fragment slot="leading">
+            <CheckCheck size={16} />
+          </svelte:fragment>
           Update Status
         </Button>
       {/if}
 
       {#each registeredActions as action (action.id)}
         {@const ActionIcon = action.icon}
+        {@const buttonProps = getButtonProps(action.variant)}
         <Button
           type="button"
-          variant={getButtonVariant(action.variant)}
+          variant={buttonProps.variant}
+          tone={buttonProps.tone}
           size="sm"
-          onclick={() => onAction?.(action.id)}
+          on:click={() => onAction?.(action.id)}
           disabled={loading}
         >
-          {#if ActionIcon}
-            <ActionIcon size={16} />
-          {/if}
+          <svelte:fragment slot="leading">
+            {#if ActionIcon}
+              <ActionIcon size={16} />
+            {/if}
+          </svelte:fragment>
           {action.label}
         </Button>
       {/each}
@@ -193,24 +204,29 @@
       {#if showDelete}
         <Button
           type="button"
-          variant="danger"
+          variant="secondary"
+          tone="danger"
           size="sm"
-          onclick={handleDeleteClick}
+          on:click={handleDeleteClick}
           disabled={loading}
         >
-          <Trash2 size={16} />
+          <svelte:fragment slot="leading">
+            <Trash2 size={16} />
+          </svelte:fragment>
           Delete
         </Button>
       {/if}
 
       <Button
         type="button"
-        variant="subtle"
+        variant="ghost"
         size="sm"
-        onclick={onClearSelection}
+        on:click={onClearSelection}
         disabled={loading}
       >
-        <X size={16} />
+        <svelte:fragment slot="leading">
+          <X size={16} />
+        </svelte:fragment>
         Clear
       </Button>
     </div>
@@ -218,22 +234,21 @@
 {/if}
 
 <!-- Delete confirmation -->
-<AlertDialog
+<PoodleAlertDialog
   bind:open={showDeleteConfirm}
-  showTrigger={false}
   title="Confirm Delete"
   description={`Are you sure you want to delete ${selectedCount} ${itemText}? This action cannot be undone.`}
   confirmLabel={`Delete ${selectedCount} ${itemText}`}
-  confirmVariant="danger"
-  cancelVariant="subtle"
   onConfirm={confirmDelete}
+  tone="danger"
 />
 
 <!-- Status update dialog -->
 {#if showStatusUpdate}
-  <Dialog
+  <PoodleDialog
     bind:open={showStatusModal}
     title="Update Status"
+    showCloseButton
   >
     <p class="underlay-confirm-text">
       Update status for <strong>{selectedCount}</strong> {itemText}:
@@ -251,25 +266,28 @@
         </label>
       {/each}
     </div>
-    <ActionArea class="underlay-dialog-actions">
-      <Button
-        type="button"
-        variant="primary"
-        onclick={confirmStatusUpdate}
-        disabled={!selectedStatus}
-      >
-        Update Status
-      </Button>
-      {#snippet aside()}
-        <TextButton
+    <svelte:fragment slot="actions">
+      <ActionArea class="underlay-dialog-actions">
+        <Button
           type="button"
-          onclick={() => showStatusModal = false}
+          variant="primary"
+          on:click={confirmStatusUpdate}
+          disabled={!selectedStatus}
         >
-          Cancel
-        </TextButton>
-      {/snippet}
-    </ActionArea>
-  </Dialog>
+          Update Status
+        </Button>
+        {#snippet aside()}
+          <Button
+            type="button"
+            variant="ghost"
+            on:click={() => showStatusModal = false}
+          >
+            Cancel
+          </Button>
+        {/snippet}
+      </ActionArea>
+    </svelte:fragment>
+  </PoodleDialog>
 {/if}
 
 <style>

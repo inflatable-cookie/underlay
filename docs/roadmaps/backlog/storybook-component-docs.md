@@ -35,7 +35,7 @@ Set up [Storybook](https://storybook.js.org/) for the Underlay component library
 ### Components to Document (Priority Order)
 
 **High Priority** (frequently used):
-- Button, IconButton, TextButton
+- Button, IconButton
 - TextInput, Select, Switch, DateInput
 - Card, ListCard, ContentCard
 - Dialog, AlertDialog, DropdownMenu

@@ -1,11 +1,11 @@
 <script lang="ts">
+  import { Button } from "@poodle/svelte-primitives";
   import type { Snippet } from "svelte";
 
   import type { TotpSetupPayload } from "./types";
   import { sanitizeSvgHtml } from "../../utils/html.js";
 
   import Card from "../Card.svelte";
-  import Button from "../Button.svelte";
   import FormActions from "../FormActions.svelte";
 
   import TotpInput from "./TotpInput.svelte";
@@ -89,8 +89,8 @@
         type="button"
         variant="primary"
         disabled={loading || !code.trim()}
-        aria-busy={loading}
-        onclick={handleConfirm}
+        loading={loading}
+        on:click={handleConfirm}
       >
         {confirmLabel}
       </Button>

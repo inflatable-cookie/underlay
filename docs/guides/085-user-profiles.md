@@ -262,7 +262,7 @@ async loadProfile(): Promise<UserProfile | null> {
 
 ```svelte
 <script lang="ts">
-  import { Field, TextInput, Select } from "@decodelabs/underlay/components";
+  import { Field, TextInput, Select } from "@poodle/svelte-primitives";
   import { accountCommands, type UserProfileUpdate } from "@cattle-grid";
   import { auth } from "$lib/stores/auth";
 

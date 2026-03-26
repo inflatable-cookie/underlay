@@ -1,11 +1,9 @@
 <script lang="ts">
   import { untrack } from "svelte";
+  import { Button, Callout, Card, NumberEntry } from "@poodle/svelte-primitives";
   import {
     Badge,
-    Button,
     DataTable,
-    FormError,
-    NumberInput,
     PageLoading,
     TimeAgo,
     type DataTableColumn
@@ -15,9 +13,6 @@
   import GitCompare from "lucide-svelte/icons/git-compare";
   import RefreshCw from "lucide-svelte/icons/refresh-cw";
   import PageHeader from "./PageHeader.svelte";
-  import OpsCard from "./OpsCard.svelte";
-  import OpsCardGrid from "./OpsCardGrid.svelte";
-  import OpsSection from "./OpsSection.svelte";
   import {
     createAiRoutingOpsController,
     maxCostSpike,
@@ -112,19 +107,19 @@
 
   const topSpike = $derived(maxCostSpike(ops.anomalies));
 
-  let metricHoursInput = $state("24");
-  let anomalyDaysInput = $state("14");
-  let parityHoursInput = $state("24");
-  let costDaysInput = $state("30");
+  let metricHoursInput = $state<number | null>(24);
+  let anomalyDaysInput = $state<number | null>(14);
+  let parityHoursInput = $state<number | null>(24);
+  let costDaysInput = $state<number | null>(30);
 
   $effect(() => {
-    metricHoursInput = String(ops.metricHours);
-    anomalyDaysInput = String(ops.anomalyDays);
-    parityHoursInput = String(ops.parityHours);
-    costDaysInput = String(ops.costDays);
+    metricHoursInput = ops.metricHours;
+    anomalyDaysInput = ops.anomalyDays;
+    parityHoursInput = ops.parityHours;
+    costDaysInput = ops.costDays;
   });
 
-  function parseWindow(raw: string, fallback: number, min: number, max: number): number {
+  function parseWindow(raw: number | null, fallback: number, min: number, max: number): number {
     const value = Number(raw);
     if (!Number.isFinite(value)) return fallback;
     return Math.max(min, Math.min(max, Math.trunc(value)));
@@ -153,8 +148,10 @@
 
 <PageHeader {section} {backHref} {backLabel}>
   {#snippet actions()}
-    <Button type="button" variant="subtle" onclick={() => ops.refreshAll()} disabled={ops.loading}>
-      <RefreshCw size={16} />
+    <Button type="button" variant="ghost" on:click={() => ops.refreshAll()} disabled={ops.loading}>
+      <svelte:fragment slot="leading">
+        <RefreshCw size={16} />
+      </svelte:fragment>
       {labels.refresh}
     </Button>
   {/snippet}
@@ -163,58 +160,86 @@
 {#if ops.loading && !ops.diagnostics}
   <PageLoading message={loadingMessage} />
 {:else if ops.error && !ops.diagnostics}
-  <FormError message={ops.error} />
+  <Callout tone="danger" message={ops.error} announceMode="polite" />
 {:else}
-  <OpsCardGrid>
-    <OpsCard title="Routing config">
-      <p class="summary-text">
-        Version <strong>{ops.diagnostics?.configVersion ?? 0}</strong>
-        {#if ops.diagnostics?.latestUpdatedAt}
-          · Updated <TimeAgo date={ops.diagnostics.latestUpdatedAt} short tooltipFormat="datetime" />
-        {/if}
-      </p>
-      <p class="summary-text">
-        Providers {ops.diagnostics?.enabledProviderCount ?? 0}/{ops.diagnostics?.providerCount ?? 0}
-        · Aliases {ops.diagnostics?.enabledAliasCount ?? 0}/{ops.diagnostics?.aliasCount ?? 0}
-        · Bindings {ops.diagnostics?.enabledBindingCount ?? 0}/{ops.diagnostics?.bindingCount ?? 0}
-      </p>
-    </OpsCard>
+  <div class="ops-card-grid">
+    <div class="ops-card">
+      <Card>
+        <div class="ops-card__header">
+          <h2 class="ops-card__title">Routing config</h2>
+        </div>
+        <div class="ops-card__body">
+          <p class="summary-text">
+            Version <strong>{ops.diagnostics?.configVersion ?? 0}</strong>
+            {#if ops.diagnostics?.latestUpdatedAt}
+              · Updated <TimeAgo date={ops.diagnostics.latestUpdatedAt} short tooltipFormat="datetime" />
+            {/if}
+          </p>
+          <p class="summary-text">
+            Providers {ops.diagnostics?.enabledProviderCount ?? 0}/{ops.diagnostics?.providerCount ?? 0}
+            · Aliases {ops.diagnostics?.enabledAliasCount ?? 0}/{ops.diagnostics?.aliasCount ?? 0}
+            · Bindings {ops.diagnostics?.enabledBindingCount ?? 0}/{ops.diagnostics?.bindingCount ?? 0}
+          </p>
+        </div>
+      </Card>
+    </div>
 
-    <OpsCard title="Alert summary (24h)">
-      <div class="pill-row">
-        <Badge variant="danger">Dead letters: {ops.alerts?.deadLetterCount24h ?? 0}</Badge>
-        <Badge variant="danger">Runtime failures: {ops.alerts?.runtimeFailureCount24h ?? 0}</Badge>
-        <Badge variant="warning">Circuit open: {ops.alerts?.circuitOpenCount24h ?? 0}</Badge>
-        <Badge variant="info">Fallback runs: {ops.alerts?.fallbackRunCount24h ?? 0}</Badge>
-        <Badge variant="warning">Chain exhausted: {ops.alerts?.exhaustedChainRunCount24h ?? 0}</Badge>
-      </div>
-    </OpsCard>
+    <div class="ops-card">
+      <Card>
+        <div class="ops-card__header">
+          <h2 class="ops-card__title">Alert summary (24h)</h2>
+        </div>
+        <div class="ops-card__body">
+          <div class="pill-row">
+            <Badge variant="danger">Dead letters: {ops.alerts?.deadLetterCount24h ?? 0}</Badge>
+            <Badge variant="danger">Runtime failures: {ops.alerts?.runtimeFailureCount24h ?? 0}</Badge>
+            <Badge variant="warning">Circuit open: {ops.alerts?.circuitOpenCount24h ?? 0}</Badge>
+            <Badge variant="info">Fallback runs: {ops.alerts?.fallbackRunCount24h ?? 0}</Badge>
+            <Badge variant="warning">Chain exhausted: {ops.alerts?.exhaustedChainRunCount24h ?? 0}</Badge>
+          </div>
+        </div>
+      </Card>
+    </div>
 
-    <OpsCard title="Cost spike">
-      {#if topSpike}
-        <p class="summary-text">
-          <strong>{topSpike.actionKey}</strong> on {topSpike.providerName}/{topSpike.modelName}
-        </p>
-        <p class="summary-text">
-          Delta <strong>{topSpike.deltaPercent.toFixed(1)}%</strong> · Today ${topSpike.todayEstimatedCostUsd.toFixed(4)}
-        </p>
-      {:else}
-        <p class="summary-text">{labels.noSpike}</p>
-      {/if}
-    </OpsCard>
-  </OpsCardGrid>
+    <div class="ops-card">
+      <Card>
+        <div class="ops-card__header">
+          <h2 class="ops-card__title">Cost spike</h2>
+        </div>
+        <div class="ops-card__body">
+          {#if topSpike}
+            <p class="summary-text">
+              <strong>{topSpike.actionKey}</strong> on {topSpike.providerName}/{topSpike.modelName}
+            </p>
+            <p class="summary-text">
+              Delta <strong>{topSpike.deltaPercent.toFixed(1)}%</strong> · Today ${topSpike.todayEstimatedCostUsd.toFixed(4)}
+            </p>
+          {:else}
+            <p class="summary-text">{labels.noSpike}</p>
+          {/if}
+        </div>
+      </Card>
+    </div>
+  </div>
 
   {#if ops.error}
-    <FormError message={ops.error} />
+    <Callout tone="danger" message={ops.error} announceMode="polite" />
   {/if}
 
-  <OpsSection title="Routing metrics" icon={ChartLine}>
-    {#snippet controls()}
-      <div class="controls-row">
-        <NumberInput bind:value={metricHoursInput} min={1} max={720} />
-        <Button type="button" variant="secondary" onclick={applyMetricWindow}>{labels.apply}</Button>
+  <section class="ops-section">
+    <div class="ops-section__header">
+      <h2 class="ops-section__title">
+        <ChartLine size={16} aria-hidden="true" />
+        Routing metrics
+      </h2>
+      <div class="ops-section__controls">
+        <div class="controls-row">
+          <NumberEntry id="ai-routing-metric-hours" bind:value={metricHoursInput} min={1} max={720} />
+          <Button type="button" variant="secondary" on:click={applyMetricWindow}>{labels.apply}</Button>
+        </div>
       </div>
-    {/snippet}
+    </div>
+    <div class="ops-section__content">
     <DataTable data={ops.metrics} columns={metricColumns} emptyMessage={labels.metricsEmpty} showLimitSelector={false}>
       {#snippet cell({ column, row })}
         {#if column.key === "providerModel"}
@@ -249,15 +274,23 @@
         {/if}
       {/snippet}
     </DataTable>
-  </OpsSection>
+    </div>
+  </section>
 
-  <OpsSection title="Cost anomalies" icon={AlertTriangle}>
-    {#snippet controls()}
-      <div class="controls-row">
-        <NumberInput bind:value={anomalyDaysInput} min={2} max={90} />
-        <Button type="button" variant="secondary" onclick={applyAnomalyWindow}>{labels.apply}</Button>
+  <section class="ops-section">
+    <div class="ops-section__header">
+      <h2 class="ops-section__title">
+        <AlertTriangle size={16} aria-hidden="true" />
+        Cost anomalies
+      </h2>
+      <div class="ops-section__controls">
+        <div class="controls-row">
+          <NumberEntry id="ai-routing-anomaly-days" bind:value={anomalyDaysInput} min={2} max={90} />
+          <Button type="button" variant="secondary" on:click={applyAnomalyWindow}>{labels.apply}</Button>
+        </div>
       </div>
-    {/snippet}
+    </div>
+    <div class="ops-section__content">
     <DataTable data={ops.anomalies} columns={anomalyColumns} emptyMessage={labels.anomaliesEmpty} showLimitSelector={false}>
       {#snippet cell({ column, row })}
         {#if column.key === "providerModel"}
@@ -269,15 +302,23 @@
         {/if}
       {/snippet}
     </DataTable>
-  </OpsSection>
+    </div>
+  </section>
 
-  <OpsSection title="Alias parity" icon={GitCompare}>
-    {#snippet controls()}
-      <div class="controls-row">
-        <NumberInput bind:value={parityHoursInput} min={1} max={720} />
-        <Button type="button" variant="secondary" onclick={applyParityWindow}>{labels.apply}</Button>
+  <section class="ops-section">
+    <div class="ops-section__header">
+      <h2 class="ops-section__title">
+        <GitCompare size={16} aria-hidden="true" />
+        Alias parity
+      </h2>
+      <div class="ops-section__controls">
+        <div class="controls-row">
+          <NumberEntry id="ai-routing-parity-hours" bind:value={parityHoursInput} min={1} max={720} />
+          <Button type="button" variant="secondary" on:click={applyParityWindow}>{labels.apply}</Button>
+        </div>
       </div>
-    {/snippet}
+    </div>
+    <div class="ops-section__content">
     <DataTable data={ops.parity} columns={parityColumns} emptyMessage={labels.parityEmpty} showLimitSelector={false}>
       {#snippet cell({ column, row })}
         {#if column.key === "successRate"}
@@ -285,15 +326,20 @@
         {/if}
       {/snippet}
     </DataTable>
-  </OpsSection>
+    </div>
+  </section>
 
-  <OpsSection title="Daily cost">
-    {#snippet controls()}
-      <div class="controls-row">
-        <NumberInput bind:value={costDaysInput} min={1} max={365} />
-        <Button type="button" variant="secondary" onclick={applyCostWindow}>{labels.apply}</Button>
+  <section class="ops-section">
+    <div class="ops-section__header">
+      <h2 class="ops-section__title">Daily cost</h2>
+      <div class="ops-section__controls">
+        <div class="controls-row">
+          <NumberEntry id="ai-routing-cost-days" bind:value={costDaysInput} min={1} max={365} />
+          <Button type="button" variant="secondary" on:click={applyCostWindow}>{labels.apply}</Button>
+        </div>
       </div>
-    {/snippet}
+    </div>
+    <div class="ops-section__content">
     <DataTable data={ops.cost} columns={costColumns} emptyMessage={labels.costEmpty} showLimitSelector={false}>
       {#snippet cell({ column, row })}
         {#if column.key === "providerModel"}
@@ -305,10 +351,39 @@
         {/if}
       {/snippet}
     </DataTable>
-  </OpsSection>
+    </div>
+  </section>
 {/if}
 
 <style>
+  .ops-card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .ops-card {
+    gap: 0.4rem;
+  }
+
+  .ops-card__header {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+  }
+
+  .ops-card__title {
+    margin: 0;
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+
+  .ops-card__body {
+    font-size: 0.86rem;
+    color: var(--underlay-color-text-muted, rgba(148, 163, 184, 0.9));
+  }
+
   .summary-text {
     margin: 0.2rem 0;
     font-size: 0.86rem;
@@ -333,5 +408,43 @@
     display: flex;
     flex-direction: column;
     gap: 0.35rem;
+  }
+
+  .ops-section {
+    margin-top: 1rem;
+  }
+
+  .ops-section__header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .ops-section__title {
+    margin: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 1rem;
+  }
+
+  .ops-section__controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: min(100%, 16rem);
+  }
+
+  .ops-section__content {
+    min-width: 0;
+  }
+
+  @media (max-width: 640px) {
+    .ops-card-grid {
+      grid-template-columns: 1fr;
+    }
   }
 </style>

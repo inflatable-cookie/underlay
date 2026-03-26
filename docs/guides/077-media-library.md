@@ -11,7 +11,7 @@ This guide covers implementing a complete media library for managing uploaded fi
 Underlay provides shared types and components to reduce boilerplate. For new implementations:
 
 1. **Use shared types** - Import from `underlay-db` (Rust) or `@decodelabs/underlay/patterns` (TypeScript)
-2. **Use shared UI components** - `MediaPicker` and `MediaActionsMenu` from `@decodelabs/underlay/components`
+2. **Use shared workflow components** - `MediaPicker` and `MediaActionsMenu` from `@decodelabs/underlay/components`, Poodle `MediaThumbnail` for display-only previews, and Poodle `FileUpload` for generic file selection/compression
 3. **Use the upload flow pattern** - `createMediaUploadFlow` for consistent upload state management
 
 | Layer | Package | Exports |
@@ -19,6 +19,8 @@ Underlay provides shared types and components to reduce boilerplate. For new imp
 | Rust types | `underlay-db` | `MediaKind`, `MediaVisibility`, `MediaVersionState` |
 | TypeScript types | `@decodelabs/underlay/patterns` | All types, enums, and utility functions |
 | UI components | `@decodelabs/underlay/components` | `MediaPicker`, `MediaActionsMenu` |
+| Display composites | `@poodle/svelte-composites` | `MediaThumbnail` |
+| Upload primitive | `@poodle/svelte-primitives` | `FileUpload` |
 | Upload pattern | `@decodelabs/underlay/patterns` | `createMediaUploadFlow` |
 
 See [Shared Underlay Components](#shared-underlay-components) for detailed usage. The sections below cover implementing the backend and custom frontend if needed.
@@ -1013,7 +1015,7 @@ The upload page uses Underlay's blob upload utilities:
   } from "@decodelabs/underlay/patterns";
   import { mediaCommands, MediaKind, MediaVisibility } from "@my-client";
   import { auth } from "$lib/stores/auth";
-  import { Button, Field, TextInput, Select } from "@decodelabs/underlay/components";
+  import { Button, Field, TextInput, Select } from "@poodle/svelte-primitives";
 
   const toastStore = useToasts();
 
@@ -1408,33 +1410,32 @@ The upload page uses Underlay's blob upload utilities:
 
 <AlertDialog
   bind:open={softDeleteOpen}
-  showTrigger={false}
   title="Move to trash?"
   description="This media will be moved to trash. You can restore it later."
   confirmLabel="Move to trash"
   onConfirm={confirmSoftDelete}
   onCancel={() => { softDeleteOpen = false; }}
+  tone="danger"
 />
 
 <AlertDialog
   bind:open={restoreOpen}
-  showTrigger={false}
   title="Restore media?"
   description="This will restore the media back to the library."
   confirmLabel="Restore"
   onConfirm={confirmRestore}
   onCancel={() => { restoreOpen = false; }}
+  tone="warning"
 />
 
 <AlertDialog
   bind:open={purgeOpen}
-  showTrigger={false}
   title="Permanently delete?"
   description="This will permanently delete the media and all versions. This cannot be undone."
   confirmLabel="Delete permanently"
-  variant="danger"
   onConfirm={confirmPurge}
   onCancel={() => { purgeOpen = false; }}
+  tone="danger"
 />
 
 <CopyActionsMenu label={media.title || "Media"} copyText={media.id}>
@@ -1502,6 +1503,37 @@ import {
 These types match the API contracts, so your TypeScript client can use them directly. Consuming apps typically re-export these from their API client package for convenience.
 
 ### MediaPicker Component
+
+Use Underlay `MediaPicker` when you need the richer callback-driven browse and upload workflow. For plain media rendering, use Poodle `MediaThumbnail` directly, use Poodle `FileUpload` for generic file intake, and use Poodle `MediaBrowsePanel` / `MediaUploadStatusPanel` for reusable media-library browse and upload-state presentation. Poodle `MediaPicker` remains the lighter local-item selector; it is not a drop-in replacement for the callback-driven Underlay media-library shell.
+
+```svelte
+<script lang="ts">
+  import { MediaThumbnail } from "@poodle/svelte-composites";
+  import type { MediaKind } from "@decodelabs/underlay/patterns";
+
+  export let thumbnailUrl: string | null = null;
+  export let title = "Media thumbnail";
+  export let kind: MediaKind = "image";
+
+  function toPoodleMediaKind(kind: MediaKind): "image" | "audio" | "video" | "document" | "embed" {
+    if (kind === "image") return "image";
+    if (kind === "audio") return "audio";
+    if (kind === "video") return "video";
+    return "document";
+  }
+</script>
+
+<MediaThumbnail
+  kind={toPoodleMediaKind(kind)}
+  presentation="compact"
+  aspectRatio="square"
+  ariaLabel={title}
+>
+  {#if thumbnailUrl}
+    <img src={thumbnailUrl} alt={title} class="media-thumbnail-image" />
+  {/if}
+</MediaThumbnail>
+```
 
 A modal dialog for selecting existing media or uploading new files:
 
@@ -1581,6 +1613,16 @@ A modal dialog for selecting existing media or uploading new files:
 | `finaliseUpload` | `function` | Callback to finalize upload |
 | `onselect` | `function` | Called when media is selected |
 | `oncancel` | `function` | Called when picker is cancelled |
+
+**Boundary note:**
+
+- Use Poodle `MediaPicker` when you already have a local `items` array and only
+  need lightweight browse/search/upload-tab composition.
+- Use Poodle `MediaBrowsePanel` and `MediaUploadStatusPanel` when you need the
+  reusable browse-grid or upload-status UI but still own the workflow locally.
+- Use Underlay `MediaPicker` when the picker itself still needs to own paginated
+  browse loading, duplicate detection, create/initiate/finalise callbacks, and
+  media-library upload orchestration.
 
 **Creating a thin wrapper:**
 

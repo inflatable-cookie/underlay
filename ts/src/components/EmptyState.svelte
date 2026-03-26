@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { Component, SvelteComponent, Snippet } from "svelte";
-  import Button from "./Button.svelte";
+  import { Button } from "@poodle/svelte-primitives";
 
   type IconComponent =
     | Component<{ size?: number }>
@@ -64,11 +64,11 @@
     {#if hasAction}
       <div class="underlay-empty-state__action">
         {#if actionHref}
-          <a href={actionHref} class="underlay-button underlay-button--pill underlay-button--subtle underlay-button--sm">
+          <a href={actionHref} class="underlay-empty-state__action-link">
             {actionLabel}
           </a>
         {:else if onaction}
-          <Button variant="subtle" size="sm" onclick={onaction}>
+          <Button variant="ghost" size="sm" on:click={onaction}>
             {actionLabel}
           </Button>
         {/if}
@@ -134,5 +134,31 @@
 
   :global(.underlay-empty-state__action a) {
     text-decoration: none;
+  }
+
+  :global(.underlay-empty-state__action-link) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(var(--poodle-size-control-height) - 0.375rem);
+    padding: 0 calc(var(--poodle-space-control-x) - 0.125rem);
+    border: 0.0625rem solid transparent;
+    border-radius: var(--poodle-treatment-interactive-radius, var(--poodle-radius-control));
+    background: transparent;
+    color: var(--poodle-color-text-primary);
+    font-family: var(--poodle-typography-label-family);
+    font-size: 0.75rem;
+    font-weight: var(--poodle-typography-label-weight);
+    line-height: 1;
+    text-decoration: none;
+  }
+
+  :global(.underlay-empty-state__action-link:hover) {
+    background: color-mix(in srgb, var(--poodle-color-background-surface) 72%, transparent);
+  }
+
+  :global(.underlay-empty-state__action-link:focus-visible) {
+    outline: var(--poodle-border-width-focus) solid var(--poodle-color-accent-focusRing);
+    outline-offset: 0.125rem;
   }
 </style>

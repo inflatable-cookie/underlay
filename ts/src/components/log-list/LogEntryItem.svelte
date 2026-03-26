@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Badge from "../Badge.svelte";
+  import { Pill } from "@poodle/svelte-primitives";
   import { formatRelative } from "../../patterns/i18n";
   import User from "lucide-svelte/icons/user";
   import Plus from "lucide-svelte/icons/plus";
@@ -40,6 +40,12 @@
     actionIcon,
     entryDetails
   }: Props = $props();
+
+  function mapActionTone(variant: BadgeVariant): "neutral" | "success" | "danger" {
+    if (variant === "success") return "success";
+    if (variant === "danger") return "danger";
+    return "neutral";
+  }
 </script>
 
 <li class="underlay-log-entry">
@@ -80,9 +86,9 @@
           System
         {/if}
       </span>
-      <Badge variant={actionVariant} size="sm">
+      <Pill tone={mapActionTone(actionVariant)} appearance="badge" size="sm">
         {actionLabel}
-      </Badge>
+      </Pill>
       {#if resourceHref}
         <a href={resourceHref} class="underlay-log-entry__resource-link">
           {resourceTypeLabel}

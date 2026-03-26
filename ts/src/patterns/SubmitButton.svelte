@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
-  import { Button } from "@decodelabs/underlay/components";
+  import { Button } from "@poodle/svelte-primitives";
 
   interface Props {
     /** Whether the button is disabled (typically bound to form.isSubmitting) */
@@ -10,7 +10,7 @@
     /** Text to show while submitting */
     submittingText?: string;
     /** Button variant */
-    variant?: "primary" | "secondary" | "subtle";
+    variant?: "primary" | "secondary" | "ghost";
     /** Additional CSS class */
     class?: string;
     /** Default slot content */
@@ -33,10 +33,10 @@
   type="submit"
   {variant}
   disabled={isDisabled}
-  aria-busy={submitting}
-  class={className}
+  loading={submitting}
+  className={className}
 >
-  {#if submitting}
+  {#if submitting && !children}
     <span class="underlay-submit-button__spinner" aria-hidden="true"></span>
     {submittingText}
   {:else if children}

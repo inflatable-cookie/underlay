@@ -15,8 +15,9 @@
    *   onSoftDeleteSuccess={() => refetch()}
    * />
    * ```
-   */
+  */
   import type { Snippet } from "svelte";
+  import { AlertDialog as PoodleAlertDialog } from "@poodle/svelte-primitives";
   import {
     CopyActionsMenu,
     useToasts,
@@ -27,8 +28,6 @@
     type MediaDetail,
     getMediaDisplayName,
   } from "../patterns/media-types.js";
-  import AlertDialog from "./AlertDialog.svelte";
-
   type MediaItem = MediaSummary | MediaDetail;
 
   interface Props {
@@ -227,60 +226,54 @@
 
 <!-- Soft Delete Dialog -->
 {#if softDelete}
-  <AlertDialog
+  <PoodleAlertDialog
     bind:open={softDeleteOpen}
-    showTrigger={false}
     title="Soft delete media?"
     description="Soft deleting will hide this media from listings. You can restore it later from trash."
     confirmLabel="Soft delete"
     cancelLabel="Cancel"
-    confirmVariant="danger-subtle"
-    cancelVariant="subtle"
     onConfirm={confirmSoftDelete}
     onCancel={() => (softDeleteOpen = false)}
+    tone="danger"
   >
     <p>
       Media: <strong>{mediaDisplayName}</strong>
     </p>
-  </AlertDialog>
+  </PoodleAlertDialog>
 {/if}
 
 <!-- Restore Dialog -->
 {#if restore}
-  <AlertDialog
+  <PoodleAlertDialog
     bind:open={restoreOpen}
-    showTrigger={false}
     title="Restore media?"
     description="This will restore the media back to the library."
     confirmLabel="Restore"
     cancelLabel="Cancel"
-    confirmVariant="primary"
-    cancelVariant="subtle"
     onConfirm={confirmRestore}
     onCancel={() => (restoreOpen = false)}
+    tone="warning"
   >
     <p>
       Media: <strong>{mediaDisplayName}</strong>
     </p>
-  </AlertDialog>
+  </PoodleAlertDialog>
 {/if}
 
 <!-- Purge Dialog -->
 {#if purge}
-  <AlertDialog
+  <PoodleAlertDialog
     bind:open={purgeOpen}
-    showTrigger={false}
     title="Permanently delete media?"
     description="This will permanently delete the media and all its versions. This cannot be undone."
     confirmLabel="Permanently delete"
     cancelLabel="Cancel"
-    confirmVariant="danger"
-    cancelVariant="subtle"
     onConfirm={confirmPurge}
     onCancel={() => (purgeOpen = false)}
+    tone="danger"
   >
     <p>
       Media: <strong>{mediaDisplayName}</strong>
     </p>
-  </AlertDialog>
+  </PoodleAlertDialog>
 {/if}

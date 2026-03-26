@@ -20,12 +20,7 @@
    * ```
    */
 
-  import Button from "../Button.svelte";
-  import Card from "../Card.svelte";
-  import Field from "../Field.svelte";
-  import FormActions from "../FormActions.svelte";
-  import FormError from "../FormError.svelte";
-  import TextInput from "../TextInput.svelte";
+  import { Button, Callout, Field, FormActions, TextInput } from "@poodle/svelte-primitives";
 
   import PasswordResetStep from "./PasswordResetStep.svelte";
   import SuccessStep from "./SuccessStep.svelte";
@@ -155,30 +150,32 @@
   }
 </script>
 
-<Card class="underlay-forgot-password-flow {className}">
+<div class={`underlay-forgot-password-flow ${className}`.trim()}>
   {#if step === "email"}
     <form onsubmit={handleRequestCode} class="underlay-forgot-password-flow__form">
       <p class="underlay-forgot-password-flow__hint">{emailHint}</p>
 
-      <Field label="Email">
+      <Field id="forgot-password-email" label="Email" required let:describedBy>
         <TextInput
+          id="forgot-password-email"
           name="email"
           type="email"
-          bind:value={email}
-          autocomplete="email"
-          required
+          value={email}
+          describedBy={describedBy}
           disabled={loading}
+          on:valueChange={(event) => { email = event.detail.value; }}
         />
       </Field>
 
-      <FormError message={error} />
+      {#if error}
+        <Callout tone="danger" message={error} announceMode="assertive" />
+      {/if}
 
-      <FormActions>
-        <Button type="submit" variant="primary" disabled={loading}>
+      <FormActions align="between">
+        <a href={loginHref} class="underlay-forgot-password-flow__link">Back to login</a>
+        <Button type="submit" variant="primary" loading={loading}>
           {loading ? "Sending..." : "Send reset code"}
         </Button>
-        <span class="underlay-forgot-password-flow__spacer"></span>
-        <a href={loginHref} class="underlay-forgot-password-flow__link">Back to login</a>
       </FormActions>
     </form>
 
@@ -211,7 +208,7 @@
       actionHref={loginHref}
     />
   {/if}
-</Card>
+</div>
 
 <style>
   .underlay-forgot-password-flow__form {
@@ -225,10 +222,6 @@
     font-size: var(--underlay-font-size-sm, 0.875rem);
     line-height: 1.5;
     color: var(--underlay-color-text-muted, #64748b);
-  }
-
-  .underlay-forgot-password-flow__spacer {
-    flex: 1;
   }
 
   .underlay-forgot-password-flow__link {

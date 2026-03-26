@@ -14,11 +14,7 @@
    * ```
    */
 
-  import Button from "../Button.svelte";
-  import Field from "../Field.svelte";
-  import FormActions from "../FormActions.svelte";
-  import FormError from "../FormError.svelte";
-  import TextInput from "../TextInput.svelte";
+  import { Button, Callout, Field, FormActions, TextInput } from "@poodle/svelte-primitives";
 
   import PasswordRequirements from "./PasswordRequirements.svelte";
 
@@ -93,32 +89,36 @@
     {fetchRequirements}
   />
 
-  <Field label="New password">
+  <Field id="password-reset-new-password" label="New password" required let:describedBy>
     <TextInput
+      id="password-reset-new-password"
       name="newPassword"
       type="password"
-      bind:value={newPassword}
-      autocomplete="new-password"
-      required
+      value={newPassword}
+      describedBy={describedBy}
       disabled={loading}
+      on:valueChange={(event) => { newPassword = event.detail.value; }}
     />
   </Field>
 
-  <Field label="Confirm password">
+  <Field id="password-reset-confirm-password" label="Confirm password" required let:describedBy>
     <TextInput
+      id="password-reset-confirm-password"
       name="confirmPassword"
       type="password"
-      bind:value={confirmPassword}
-      autocomplete="new-password"
-      required
+      value={confirmPassword}
+      describedBy={describedBy}
       disabled={loading}
+      on:valueChange={(event) => { confirmPassword = event.detail.value; }}
     />
   </Field>
 
-  <FormError message={displayError} />
+  {#if displayError}
+    <Callout tone="danger" message={displayError} announceMode="assertive" />
+  {/if}
 
-  <FormActions>
-    <Button type="submit" variant="primary" disabled={loading}>
+  <FormActions align="end">
+    <Button type="submit" variant="primary" loading={loading}>
       {loading ? "Resetting..." : submitLabel}
     </Button>
   </FormActions>

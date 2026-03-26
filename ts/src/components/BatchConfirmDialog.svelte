@@ -17,7 +17,7 @@
    * />
    * ```
    */
-  import AlertDialog from "./AlertDialog.svelte";
+  import { AlertDialog as PoodleAlertDialog } from "@poodle/svelte-primitives";
 
   interface Props {
     /** Whether the dialog is open */
@@ -53,15 +53,13 @@
   }: Props = $props();
 </script>
 
-<AlertDialog
+<PoodleAlertDialog
   bind:open
-  showTrigger={false}
   {title}
   {description}
   {confirmLabel}
   {cancelLabel}
-  {confirmVariant}
-  {cancelVariant}
+  tone={confirmVariant === "danger" || confirmVariant === "danger-subtle" ? "danger" : "warning"}
   onConfirm={() => {
     onConfirm();
   }}

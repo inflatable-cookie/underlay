@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { getContext, onMount, tick, untrack } from "svelte";
+  import { onMount, tick, untrack } from "svelte";
   import type { MarkdownEditorContext } from "../components/markdown-editor-events";
   import type { NightfireValue } from "./index";
   import NightfireBlockEditor from "./NightfireBlockEditor.svelte";
@@ -13,8 +13,6 @@
   import {
     isEmptyNightfire
   } from "./utils";
-  import { createStableId } from "../patterns/dom";
-  import type { FormValidationContext } from "../components/text-input/form-validation";
   import {
     useNightfireStrategies,
     type NightfireStrategy,
@@ -129,31 +127,6 @@
     onSchemaMismatch,
     slashCommands = null
   }: Props = $props();
-
-  // Form validation integration
-  const formValidation = getContext<FormValidationContext | undefined>("formValidation");
-  const fieldId = createStableId("underlay-nightfire");
-  let prevIsEmpty = $state<boolean | null>(null);
-
-  onMount(() => {
-    if (formValidation) {
-      const empty = untrack(() => isEmptyNightfire(value));
-      formValidation.registerField(fieldId, required, !empty, "idle", true);
-      prevIsEmpty = empty;
-
-      return () => {
-        formValidation.unregisterField(fieldId);
-      };
-    }
-  });
-
-  $effect(() => {
-    const empty = isEmptyNightfire(value);
-    if (formValidation && empty !== prevIsEmpty) {
-      formValidation.updateField(fieldId, !empty, "idle", true);
-      prevIsEmpty = empty;
-    }
-  });
 
   // Strategy loading
   const strategiesStore = useNightfireStrategies();

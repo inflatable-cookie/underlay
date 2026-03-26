@@ -1,9 +1,9 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
+  import { Breadcrumbs, Pill } from "@poodle/svelte-primitives";
   import type { BannerVariant } from "./banner";
   import type { PageHeaderLevel, BreadcrumbItem } from "./types";
   import Banner from "./Banner.svelte";
-  import ChevronRight from "lucide-svelte/icons/chevron-right";
 
   interface Props {
     /** Primary heading text. Required when `section` is not set. */
@@ -93,13 +93,20 @@
   const displayBackLabel = $derived(
     backIsContextual ? truncateLabel(formattedBackLabel, 35) : formattedBackLabel
   );
+  const poodleBreadcrumbs = $derived(
+    breadcrumbs?.map((crumb, index) => ({
+      label: crumb.label,
+      href: crumb.href,
+      value: crumb.href ?? `breadcrumb-${index}`
+    })) ?? []
+  );
 </script>
 
 <header class="underlay-page-header underlay-page-header--level-{level}">
   <div class="underlay-page-header__row">
     <div class="underlay-page-header__top">
       <svelte:element this={headingTag} class="underlay-page-header__title">
-        {primaryHeading}{#if count !== undefined}<span class="underlay-page-header__count-badge">{count}</span>{/if}{#if !secondaryHeading && titleSuffix}<span class="underlay-page-header__title-suffix">{@render titleSuffix()}</span>{/if}
+        {primaryHeading}{#if count !== undefined}<span class="underlay-page-header__count-badge"><Pill appearance="badge" size="sm" muted ariaLabel={`${count}`}>{count}</Pill></span>{/if}{#if !secondaryHeading && titleSuffix}<span class="underlay-page-header__title-suffix">{@render titleSuffix()}</span>{/if}
       </svelte:element>
 
       <div class="underlay-page-header__right">
@@ -128,12 +135,9 @@
     {/if}
 
     {#if breadcrumbs && breadcrumbs.length > 0}
-      <nav class="underlay-page-header__breadcrumbs" aria-label="Breadcrumb">
-        {#each breadcrumbs as crumb, i}
-          {#if i > 0}<span class="underlay-page-header__breadcrumb-sep" aria-hidden="true"><ChevronRight size={14} /></span>{/if}
-          {#if crumb.href}<a href={crumb.href} class="underlay-page-header__breadcrumb-link">{crumb.label}</a>{:else}<span class="underlay-page-header__breadcrumb-current" aria-current="page">{crumb.label}</span>{/if}
-        {/each}
-      </nav>
+      <div class="underlay-page-header__breadcrumbs">
+        <Breadcrumbs items={poodleBreadcrumbs} />
+      </div>
     {:else if subtitle || subtitleSuffix}
       <svelte:element this={subtitleTag} class="underlay-page-header__subtitle">{subtitle}{#if subtitleSuffix}<span class="underlay-page-header__subtitle-suffix">{@render subtitleSuffix()}</span>{/if}</svelte:element>
     {/if}
@@ -238,20 +242,8 @@
 
   .underlay-page-header__count-badge {
     display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 1.5em;
-    height: 1.5em;
-    padding: 0 0.4em;
     margin-left: 0.4em;
-    font-size: 0.4em;
-    font-weight: 600;
-    font-style: normal;
-    color: var(--underlay-color-text-muted, rgba(148, 163, 184, 0.85));
-    background: var(--underlay-color-surface-subtle, rgba(148, 163, 184, 0.1));
-    border-radius: 9999px;
-    vertical-align: super;
-    transform: translateY(-0.3em);
+    transform: translateY(-0.15em);
   }
 
   .underlay-page-header__title-suffix {
@@ -293,32 +285,7 @@
   }
 
   .underlay-page-header__breadcrumbs {
-    display: flex;
-    align-items: center;
-    gap: 0.4em;
-    font-size: 0.95em;
-    color: var(--underlay-color-text-muted, rgba(148, 163, 184, 0.85));
-  }
-
-  .underlay-page-header__breadcrumb-link {
-    color: var(--underlay-color-text-muted, rgba(148, 163, 184, 0.85));
-    text-decoration: none;
-  }
-
-  .underlay-page-header__breadcrumb-link:hover {
-    color: var(--underlay-color-text, #e5e7eb);
-    text-decoration: underline;
-    text-underline-offset: 0.12em;
-  }
-
-  .underlay-page-header__breadcrumb-current {
-    color: var(--underlay-color-text, #e5e7eb);
-  }
-
-  .underlay-page-header__breadcrumb-sep {
-    display: inline-flex;
-    align-items: center;
-    color: var(--underlay-color-text-muted, rgba(148, 163, 184, 0.5));
+    min-height: 1.5rem;
   }
 
   .underlay-page-header__right {
@@ -335,7 +302,7 @@
     flex-wrap: wrap;
   }
 
-  /* Smaller buttons in header actions (doesn't affect TextButton) */
+  /* Smaller buttons in header actions */
   .underlay-page-header__actions :global(.underlay-button) {
     --underlay-button-font-size: calc(1em * 0.8);
     --underlay-button-padding-block: 0.4em;

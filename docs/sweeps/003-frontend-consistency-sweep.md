@@ -166,7 +166,7 @@ Pass criteria:
 ### 5.3 Dialog/footer action consistency
 
 ```bash
-rg -n "FormDialog|Dialog|AlertDialog|FormActions|TextButton|Cancel" "$ADMIN_REPO/src" "$WEB_REPO/src"
+rg -n "FormDialog|Dialog|AlertDialog|FormActions|Button|Cancel" "$ADMIN_REPO/src" "$WEB_REPO/src"
 ```
 
 Pass criteria:

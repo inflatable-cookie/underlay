@@ -1,0 +1,93 @@
+{
+  "version": 1,
+  "updated": "2026-03-23",
+  "status": "active",
+  "objective": "Define how Underlay and Poodle coexist inside a consuming app during migration so theme ownership, component ownership, and migration behavior stay explicit.",
+  "app_contract": {
+    "allowed_dependency_shape": [
+      "@poodle/svelte-tokens",
+      "@poodle/svelte-primitives",
+      "@poodle/svelte-composites",
+      "@decodelabs/underlay"
+    ],
+    "rule": "Apps may depend on both Poodle and Underlay during migration, but new or touched foundational UI should move to Poodle instead of widening Underlay primitive usage."
+  },
+  "theme_contract": {
+    "canonical_owner": "poodle",
+    "requirements": [
+      "The app root imports the Poodle token stylesheet.",
+      "The app root applies Poodle theme attributes using data-theme, data-density, and data-control-size.",
+      "Poodle token selection is the only canonical theme and density selection for mixed-surface apps."
+    ],
+    "temporary_compatibility": [
+      "Underlay retained surfaces may continue to read temporary --underlay-* variables during migration.",
+      "If temporary Underlay token aliases are needed, derive them from Poodle theme selection rather than treating Underlay tokens as a second canonical source."
+    ],
+    "forbidden": [
+      "Do not let apps select an Underlay theme independently of Poodle theme selection.",
+      "Do not introduce new app-facing theme APIs that bypass Poodle token ownership."
+    ]
+  },
+  "component_contract": {
+    "new_work_rule": "Use Poodle directly for primitives and generic composites in all new or materially touched app UI.",
+    "retained_underlay_rule": "Keep Underlay for website shells, operational flows, product-oriented composites, and domain-specific systems that do not belong in Poodle.",
+    "internal_adoption_rule": "When a retained Underlay surface shares generic UI behavior with Poodle, prefer consuming Poodle internally rather than maintaining duplicate UI logic.",
+    "gap_rule": "If an Underlay migration is blocked by missing domain-neutral behavior, add that behavior in Poodle only after the surface passes the Poodle eligibility rubric.",
+    "ergonomics_rule": "If a generic Poodle surface is present but feels awkward, style-constrained, or behaviorally insufficient for everyday product workflows, treat that as a Poodle improvement requirement rather than justification for retaining a second canonical Underlay surface."
+  },
+  "import_guardrails": {
+    "allow": [
+      "Direct app imports from @poodle/svelte-primitives and @poodle/svelte-composites for primitives and generic composites.",
+      "Direct app imports from retained Underlay surfaces that are explicitly classified keep_in_underlay."
+    ],
+    "forbid": [
+      "New app usage of legacy Underlay primitive exports once a Poodle replacement or agreed composition exists.",
+      "New Underlay exports that preserve old primitive APIs without an explicit migration-only retirement path."
+    ]
+  },
+  "migration_sequence": [
+    {
+      "step": 1,
+      "name": "Theme bootstrap",
+      "rule": "Install Poodle tokens and make the app root use Poodle theme attributes before broad component replacement."
+    },
+    {
+      "step": 2,
+      "name": "Direct component replacement",
+      "rule": "Replace Underlay primitives and generic composites with Poodle in touched pages and shared app UI."
+    },
+    {
+      "step": 3,
+      "name": "Retained Underlay internal adoption",
+      "rule": "Refactor surviving Underlay structural surfaces to resolve styling and shared interaction logic through Poodle where it reduces duplication."
+    },
+    {
+      "step": 4,
+      "name": "Burn-down and removal",
+      "rule": "Track remaining legacy Underlay primitive usage until only retained structural and domain-specific surfaces remain."
+    }
+  ],
+  "pilot_rule": {
+    "first_proof_targets": [
+      "underlay-reference",
+      "acowtancy"
+    ],
+    "evidence_required": [
+      "Poodle theme bootstrap works in a mixed-surface app.",
+      "At least one retained Underlay structural surface renders correctly under Poodle-owned theme selection.",
+      "At least one page can mix direct Poodle usage with retained Underlay surfaces without a second theme system."
+    ]
+  },
+  "validation": {
+    "required_checks": [
+      "effigy qa:docs",
+      "effigy qa:northstar"
+    ],
+    "runtime_checks": [
+      "Verify the app root applies Poodle theme attributes exactly once.",
+      "Verify mixed Poodle and retained Underlay surfaces render under the same theme selection.",
+      "Verify no new app imports were added from deprecated Underlay primitive surfaces."
+    ]
+  },
+  "next_step": "Use this coexistence contract to reclassify all remaining retained generic UI surfaces with the stricter ergonomics rule, then feed any blocked migrations back into Poodle as contract or behavior updates instead of preserving those gaps in Underlay."
+}

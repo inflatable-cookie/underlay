@@ -985,7 +985,8 @@ const restored = initPageState({
 ```svelte
 <!-- $lib/forms/VideoForm.svelte -->
 <script lang="ts">
-  import { Field, TextInput, FormActions, SaveSplitButton } from "@decodelabs/underlay/components";
+  import { Field, TextInput, FormActions } from "@poodle/svelte-primitives";
+  import { Button, SplitButton } from "@poodle/svelte-primitives";
   import { navigateOnCancel } from "@decodelabs/underlay/client";
 
   interface Props {
@@ -1007,6 +1008,18 @@ const restored = initPageState({
   function handleCancel() {
     navigateOnCancel(cancelHref);
   }
+
+  let intent = $state<"save" | "save-close">("save-close");
+  let actionBarElement = $state<HTMLDivElement | null>(null);
+  const editIntentItems = [
+    { value: "save", label: "Save changes" },
+    { value: "save-close", label: "Save & close" }
+  ];
+
+  function submitWithIntent(nextIntent: "save" | "save-close") {
+    intent = nextIntent;
+    actionBarElement?.closest("form")?.requestSubmit();
+  }
 </script>
 
 <Field label="Title" error={errors?.title}>
@@ -1018,14 +1031,28 @@ const restored = initPageState({
 </Field>
 
 <FormActions>
-  <button type="button" onclick={handleCancel}>Cancel</button>
+  <div bind:this={actionBarElement}>
+    <Button type="button" variant="ghost" on:click={handleCancel}>Cancel</Button>
 
-  <input type="hidden" name="intent" value="save-close" />
-  {#if returnTo}
-    <input type="hidden" name="returnTo" value={returnTo} />
-  {/if}
+    <input type="hidden" name="intent" value={intent} />
+    {#if returnTo}
+      <input type="hidden" name="returnTo" value={returnTo} />
+    {/if}
 
-  <SaveSplitButton type="submit" {mode} />
+    {#if mode === "create"}
+      <Button type="submit" variant="primary">Create video</Button>
+    {:else}
+      <SplitButton
+        type="submit"
+        variant="primary"
+        items={editIntentItems}
+        on:click={() => submitWithIntent(intent)}
+        on:action={(event) => submitWithIntent(event.detail.value as "save" | "save-close")}
+      >
+        {intent === "save" ? "Save changes" : "Save & close"}
+      </SplitButton>
+    {/if}
+  </div>
 </FormActions>
 ```
 
@@ -1215,11 +1242,17 @@ For pages where the form is defined inline (not in a separate component), includ
   import { getBackButtonInfo, getReturnUrl } from "@decodelabs/underlay/patterns";
   import { navigateOnCancel } from "@decodelabs/underlay/client";
   import CrudFormShell from "$lib/forms/CrudFormShell.svelte";
-  import { Field, TextInput, FormActions, SaveSplitButton } from "@decodelabs/underlay/components";
+  import { Field, TextInput, FormActions } from "@poodle/svelte-primitives";
+  import { Button, SplitButton } from "@poodle/svelte-primitives";
 
   export let form: ActionData | null = null;
 
   let intent: "save" | "save-close" = "save-close";
+  let actionBarElement = $state<HTMLDivElement | null>(null);
+  const createIntentItems = [
+    { value: "save", label: "Create & continue" },
+    { value: "save-close", label: "Create & close" }
+  ];
 
   const defaultBackHref = "/assessment/questions";
   const backInfo = getBackButtonInfo("Back to questions", defaultBackHref);
@@ -1227,6 +1260,11 @@ For pages where the form is defined inline (not in a separate component), includ
 
   function handleCancel() {
     navigateOnCancel(backInfo.href);
+  }
+
+  function submitWithIntent(nextIntent: "save" | "save-close") {
+    intent = nextIntent;
+    actionBarElement?.closest("form")?.requestSubmit();
   }
 </script>
 
@@ -1245,16 +1283,24 @@ For pages where the form is defined inline (not in a separate component), includ
   <!-- More fields... -->
 
   <FormActions>
-    {#snippet danger()}
-      <button type="button" onclick={handleCancel}>Cancel</button>
-    {/snippet}
+    <div bind:this={actionBarElement}>
+      <Button type="button" variant="ghost" on:click={handleCancel}>Cancel</Button>
 
-    <input type="hidden" name="intent" value={intent} />
-    {#if returnTo}
-      <input type="hidden" name="returnTo" value={returnTo} />
-    {/if}
+      <input type="hidden" name="intent" value={intent} />
+      {#if returnTo}
+        <input type="hidden" name="returnTo" value={returnTo} />
+      {/if}
 
-    <SaveSplitButton type="submit" mode="create" bind:intent />
+      <SplitButton
+        type="submit"
+        variant="primary"
+        items={createIntentItems}
+        on:click={() => submitWithIntent(intent)}
+        on:action={(event) => submitWithIntent(event.detail.value as "save" | "save-close")}
+      >
+        {intent === "save" ? "Create & continue" : "Create & close"}
+      </SplitButton>
+    </div>
   </FormActions>
 </CrudFormShell>
 ```

@@ -22,9 +22,9 @@ These helpers extract these patterns into reusable, tested utilities.
 | `submitFormWithIntent()` | `@decodelabs/underlay/patterns` | Submit form with intent |
 | `useSyncedSelection()` | `@decodelabs/underlay/patterns` | Manage selection state |
 | `createLocalSearchFns()` | `@decodelabs/underlay/patterns` | Search/suggest for RelationSelector |
-| `SlugField` | `@decodelabs/underlay/patterns` | Auto-slug field component |
+| `slugify` / `validateSlug` | `@decodelabs/underlay/patterns` | Pure slug helpers for app-owned slug fields |
 | `useValidatedForm()` | `@decodelabs/underlay/patterns` | Lightweight Zod-backed client-side form orchestration |
-| `FormTabsProvider` + `FormTabsSection` | `@decodelabs/underlay/components` | Multi-section form tabs with validation indicators |
+| `TabsRoot` + `TabsList` + `TabsTrigger` + `TabsContent` | `@decodelabs/underlay/components` | Multi-section form tabs |
 | `getNextLetter()` | `@decodelabs/underlay/utils` | Next letter in sequence |
 | `getNextNumber()` | `@decodelabs/underlay/utils` | Next number in sequence |
 
@@ -52,10 +52,10 @@ const form = useValidatedForm({
 });
 ```
 
-Use it alongside `FormValidationProvider`, not as a replacement:
+Use it as the form-state owner rather than alongside hidden field registries:
 
 - `useValidatedForm()` owns schema parsing, submit state, and field-error mapping.
-- `FormValidationProvider` still handles form-wide field validity when you are using `TextInput`, `SlugField`, and related Underlay components.
+- Derive submit enablement from the field state your form already owns.
 - Keep server validation in place for every submission path.
 
 ---
@@ -67,54 +67,38 @@ Use form tabs when a single form has multiple conceptual sections (for example: 
 ### Why this pattern exists
 
 - Keeps long forms scannable without splitting into separate routes
-- Preserves one submit surface (`SaveSplitButton`, hidden intent field, form action)
-- Surfaces per-tab validation state so users can quickly find missing/invalid fields
+- Preserves one submit surface (typically a Poodle `SplitButton` plus hidden intent field and form action)
 - Works with rich editors that break when mounted under `display: none`
 
-### Required wiring
+### Recommended wiring
 
-For section-level validation indicators to work, the hierarchy must be:
+The recommended hierarchy is:
 
-1. `FormValidationProvider`
-2. `FormTabsProvider`
-3. `TabsRoot variant="form"`
+1. `TabsRoot variant="form"`
+2. `TabsList`
+3. `TabsTrigger`
 4. `TabsContent`
-5. `FormTabsSection sectionId="..."`
-6. Fields/inputs
+5. Fields/inputs
 
 ```svelte
-<FormValidationProvider bind:isValid={isFormValid}>
-  <FormTabsProvider>
-    <TabsRoot bind:value={activeTab} variant="form">
-      <TabsList
-        collapsible
-        tabs={[
-          { value: "details", label: "Details" },
-          { value: "notes", label: "Notes" }
-        ]}
-      >
-        <TabsTrigger value="details">Details</TabsTrigger>
-        <TabsTrigger value="notes">Notes</TabsTrigger>
-      </TabsList>
+<TabsRoot bind:value={activeTab} variant="form">
+  <TabsList collapsible>
+    <TabsTrigger value="details">Details</TabsTrigger>
+    <TabsTrigger value="notes">Notes</TabsTrigger>
+  </TabsList>
 
-      <TabsContent value="details">
-        <FormTabsSection sectionId="details">
-          <div class="underlay-form-grid">
-            <!-- details fields -->
-          </div>
-        </FormTabsSection>
-      </TabsContent>
+  <TabsContent value="details">
+    <div class="underlay-form-grid">
+      <!-- details fields -->
+    </div>
+  </TabsContent>
 
-      <TabsContent value="notes">
-        <FormTabsSection sectionId="notes">
-          <div class="underlay-form-grid">
-            <!-- notes fields -->
-          </div>
-        </FormTabsSection>
-      </TabsContent>
-    </TabsRoot>
-  </FormTabsProvider>
-</FormValidationProvider>
+  <TabsContent value="notes">
+    <div class="underlay-form-grid">
+      <!-- notes fields -->
+    </div>
+  </TabsContent>
+</TabsRoot>
 ```
 
 ### Section ID/value alignment rule
@@ -123,33 +107,14 @@ Use one canonical id per tab section and keep it aligned across:
 
 - `TabsTrigger value="details"`
 - `TabsContent value="details"`
-- `FormTabsSection sectionId="details"`
-
-If these diverge, the section registry cannot map field validation to the correct tab.
-
-### Validation states and indicators
-
-`FormTabsProvider` tracks fields per section and exposes four states:
-
-- `invalid` - a field in the section has a validation error
-- `incomplete` - a required field in the section has no value
-- `valid` - all required fields are filled and no errors are present
-- `idle` - no fields registered yet
-
-`TabsTrigger` renders these states as colored dots (and the same indicators appear in collapsed dropdown mode).
+If these diverge, the active section and rendered panel will drift apart.
 
 ### Collapsible tabs for narrow layouts
 
-Use `TabsList collapsible` with a parallel `tabs` array so tabs can collapse into a dropdown without losing labels/counts/state indicators.
+Use `TabsList collapsible` so tabs can collapse into a dropdown without losing labels or counts.
 
 ```svelte
-<TabsList
-  collapsible
-  tabs={[
-    { value: "details", label: "Details" },
-    { value: "notes", label: "Notes", count: 3 }
-  ]}
->
+<TabsList collapsible>
   <TabsTrigger value="details">Details</TabsTrigger>
   <TabsTrigger value="notes" count={3}>Notes</TabsTrigger>
 </TabsList>
@@ -164,15 +129,12 @@ The `form` variant keeps inactive tab panels mounted (hidden without `display: n
 - Put top-level sections in form tabs (`details`, `notes`, `marking`, etc.)
 - Keep micro-modes (e.g. `Edit` / `Preview`) as nested tabs *inside* a section
 - Keep `FormActions` outside tab panels so submit controls remain constant
+- Keep section-specific completion logic app-owned if you need it
 
 ### Common mistakes
 
-- Missing `FormTabsProvider` (no section dots/state)
-- Missing `FormTabsSection` around tab content (fields not tracked)
-- Mismatched `value`/`sectionId`
+- Mismatched `TabsTrigger.value` / `TabsContent.value`
 - Moving `FormActions` inside a tab panel (actions disappear when switching tabs)
-
-See also: [090-ui-kit.md#form-tabs-multi-section-forms](./090-ui-kit.md#form-tabs-multi-section-forms)
 
 ---
 
@@ -439,98 +401,93 @@ const { search, suggest } = createLocalSearchFns(
 
 ## Slug Field
 
-### `SlugField` Component
+### App-Owned Slug Fields
 
-Auto-generates URL slugs from a source field (e.g., title), with built-in validation.
+Underlay no longer exports a `SlugField` component. Build slug fields with
+Poodle `Field` and `TextInput`, keep the generation state in the form, and use
+Underlay slug helpers only where you want to share pure formatting rules.
 
 ```svelte
 <script lang="ts">
-  import { SlugField } from "@decodelabs/underlay/patterns";
+  import { Field, TextInput, type InputValidationStatus } from "@poodle/svelte-primitives";
+  import { slugify, isReservedSlug, isValidSlugFormat } from "@decodelabs/underlay/patterns";
 
   let title = $state("");
   let slug = $state("");
-</script>
+  let lastAutoSlug = $state("");
+  let slugStatus = $state<InputValidationStatus>("idle");
+  let slugError = $state<string | null>(null);
 
-<Field label="Title">
-  <TextInput name="title" bind:value={title} />
-</Field>
+  $effect(() => {
+    const nextAutoSlug = slugify(title);
+    if (!slug.trim() || slug === lastAutoSlug) {
+      slug = nextAutoSlug;
+    }
+    lastAutoSlug = nextAutoSlug;
+  });
 
-<SlugField
-  bind:value={slug}
-  source={title}
-  validate={validateSlug}
-/>
-```
+  async function validateSlug(value: string) {
+    const normalized = value.trim();
 
-**Props:**
+    if (!isValidSlugFormat(normalized, 64)) {
+      return { valid: false, message: "Use lowercase letters, numbers, and hyphens only." };
+    }
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `value` | `string` | `""` | Current slug (bindable) |
-| `source` | `string` | `""` | Source value to generate slug from |
-| `validate` | `(slug: string) => Promise<ValidationResult>` | - | Async uniqueness validator |
-| `validationKey` | `unknown` | - | Revalidate when this changes |
-| `label` | `string` | `"Slug"` | Field label |
-| `name` | `string` | `"slug"` | Form field name |
-| `prefix` | `string` | - | Static prefix to display |
-| `maxlength` | `number` | - | Maximum slug length |
-| `disabled` | `boolean` | `false` | Disable input |
-| `required` | `boolean` | `false` | Mark as required |
-| `hint` | `string` | - | Help text |
-| `error` | `string` | - | Error message from form |
+    if (isReservedSlug(normalized)) {
+      return { valid: false, message: "This slug is reserved." };
+    }
 
-**Auto-slug behavior:**
-
-The component tracks the last auto-generated slug to detect user customizations:
-
-- **Empty value:** Auto-generates from source
-- **Value matches last auto-slug:** Updates when source changes
-- **Value differs (user customized):** Preserves user's slug
-
-This handles edit mode correctly - if the server returns a custom slug that differs from what would be auto-generated, it's preserved.
-
-**With async validation:**
-
-```svelte
-<script lang="ts">
-  import { SlugField } from "@decodelabs/underlay/patterns";
-  import { learningCommands } from "@cattle-grid";
-
-  async function validateSlug(slug: string) {
-    const token = auth.getToken();
-    if (!token) return { valid: false, message: "Not authenticated" };
-
-    return await learningCommands.validateField(
-      {
-        entity: "module",
-        field: "slug",
-        value: slug,
-        context: { excludeId: moduleId }
-      },
-      fetch,
-      token
-    );
+    return await api.validateSlug(normalized);
   }
 </script>
 
-<SlugField
-  bind:value={slug}
-  source={title}
-  validate={validateSlug}
-  validationKey={moduleId}
-/>
+<Field label="Title">
+  <TextInput
+    id="title"
+    name="title"
+    value={title}
+    on:valueChange={(event) => {
+      title = event.detail.value;
+    }}
+  />
+</Field>
+
+<Field
+  id="slug"
+  label="Slug"
+  error={slugStatus === "invalid" ? slugError : null}
+  validationState={slugStatus === "validating" ? "pending" : slugStatus === "invalid" ? "invalid" : slugStatus === "valid" ? "valid" : "none"}
+>
+  <TextInput
+    id="slug"
+    name="slug"
+    value={slug}
+    autocomplete="off"
+    required
+    pattern="[a-z0-9]+(?:-[a-z0-9]+)*"
+    maxLength={64}
+    validate={validateSlug}
+    on:valueChange={(event) => {
+      slug = event.detail.value;
+    }}
+    on:validationChange={(event) => {
+      slugStatus = event.detail.status;
+      slugError = event.detail.status === "invalid" ? event.detail.message || null : null;
+    }}
+    on:blur={() => {
+      slug = slugify(slug);
+    }}
+  />
+</Field>
 ```
 
-**With prefix:**
+Use the same pattern for prefixes, scoped uniqueness, or edit-mode exclusion:
+- prepend display-only keys with `TextInput.prefix`
+- pass sibling IDs through `validationContext`
+- derive submit gating from real values plus `validationChange`
 
-```svelte
-<SlugField
-  bind:value={slug}
-  source={title}
-  prefix="acca-fa-"
-/>
-<!-- Displays: acca-fa-[input field] -->
-```
+For the reusable cross-app recipe, see Poodle
+[Slug Field Recipes](../../../poodle/docs/guides/007-slug-field-recipes.md).
 
 ---
 
@@ -617,8 +574,8 @@ Here's a complete example combining multiple helpers in a form page:
 <!-- /learning/areas/new/+page.svelte -->
 <script lang="ts">
   import type { PageData } from "./$types";
-  import { useSyncedSelection, createLocalSearchFns, submitFormWithIntent } from "@decodelabs/underlay/patterns";
-  import { SlugField } from "@decodelabs/underlay/patterns";
+  import { useSyncedSelection, createLocalSearchFns, submitFormWithIntent, slugify } from "@decodelabs/underlay/patterns";
+  import { Field, TextInput } from "@poodle/svelte-primitives";
   import { getNextNumber } from "@decodelabs/underlay/utils";
   import RelationSelector from "@decodelabs/underlay/patterns/RelationSelector";
 
@@ -685,11 +642,19 @@ Here's a complete example combining multiple helpers in a form page:
     <TextInput name="title" bind:value={title} required />
   </Field>
 
-  <SlugField
-    bind:value={slug}
-    source={title}
-    validate={validateSlug}
-  />
+  <Field label="Slug">
+    <TextInput
+      id="slug"
+      name="slug"
+      value={slug}
+      on:valueChange={(event) => {
+        slug = event.detail.value;
+      }}
+      on:blur={() => {
+        slug = slugify(slug);
+      }}
+    />
+  </Field>
 
   <Field label="Number">
     <TextInput
@@ -713,7 +678,7 @@ Here's a complete example combining multiple helpers in a form page:
 
 2. **Prefer `createLocalSearchFns()` for small datasets** - For large datasets or server-side filtering, use async search functions instead.
 
-3. **Let SlugField handle auto-slug logic** - Don't add separate `$effect` blocks for slug generation; the component handles it internally.
+3. **Keep slug logic app-owned** - auto-generation, validation wiring, and submit gating should live in the form, not in a shared wrapper.
 
 4. **Use sequence helpers for suggested defaults** - They provide sensible suggestions but allow user override.
 

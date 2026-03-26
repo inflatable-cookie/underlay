@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
   import { untrack } from "svelte";
+  import { Callout } from "@poodle/svelte-primitives";
   import type { BannerVariant } from "./banner";
   import type { SpaFormResult, SpaSubmitHandler, SpaNavigateFn } from "./spa-form-types";
   import FormShell from "./FormShell.svelte";
@@ -167,40 +168,12 @@
   autocomplete="off"
 >
   {#if loading}
-    <div class="underlay-spa-form-shell__loading">
-      <span class="underlay-spa-form-shell__spinner"></span>
-      Saving...
-    </div>
+    <Callout
+      tone="pending"
+      title="Saving"
+      message="Your changes are being submitted."
+      announceMode="polite"
+    />
   {/if}
   {@render children?.()}
 </FormShell>
-
-<style>
-  .underlay-spa-form-shell__loading {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.75rem 1rem;
-    margin-bottom: 1rem;
-    border-radius: 0.5rem;
-    background: color-mix(in srgb, var(--underlay-color-primary, #3b82f6) 15%, transparent);
-    border: 1px solid color-mix(in srgb, var(--underlay-color-primary, #3b82f6) 30%, transparent);
-    color: var(--underlay-color-text, inherit);
-    font-size: 0.9rem;
-  }
-
-  .underlay-spa-form-shell__spinner {
-    width: 1rem;
-    height: 1rem;
-    border: 2px solid currentColor;
-    border-top-color: transparent;
-    border-radius: 50%;
-    animation: underlay-spa-form-spin 0.75s linear infinite;
-  }
-
-  @keyframes underlay-spa-form-spin {
-    to {
-      transform: rotate(360deg);
-    }
-  }
-</style>

@@ -441,7 +441,7 @@ export const actions: Actions = {
 ```svelte
 <!-- src/routes/login/+page.svelte -->
 <script lang="ts">
-  import { Field, TextInput, Button, FormActions } from "@decodelabs/underlay";
+  import { Field, TextInput, Button, FormActions } from "@poodle/svelte-primitives";
   import { enhance } from "$app/forms";
   import type { ActionData } from "./$types";
 
@@ -886,7 +886,7 @@ The `createFormState` function provides reactive form state management with Svel
 ```svelte
 <script lang="ts">
   import { createFormState, SubmitButton } from '@decodelabs/underlay/patterns';
-  import { FormError } from '@decodelabs/underlay/components';
+  import { Callout } from '@poodle/svelte-primitives';
 
   const form = createFormState({
     onSuccess: () => {
@@ -907,7 +907,7 @@ The `createFormState` function provides reactive form state management with Svel
   {/if}
 
   {#if $form.state.error}
-    <FormError message={$form.state.error} />
+    <Callout tone="danger" message={$form.state.error} announceMode="polite" />
   {/if}
 
   <SubmitButton submitting={$form.state.isSubmitting}>
@@ -1123,7 +1123,8 @@ When `configureAuth()` includes `getAuthLoading` and `getCurrentUser` (recommend
 ```svelte
 <script lang="ts">
   import { useAuthenticatedData } from '@decodelabs/underlay/patterns';
-  import { PageLoading, FormError } from '@decodelabs/underlay/components';
+  import { PageLoading } from '@decodelabs/underlay/components';
+  import { Callout } from '@poodle/svelte-primitives';
   import { myApiCommand } from '@myorg/client';
 
   // Auto-fetches when auth is ready — no $effect or getToken needed
@@ -1139,7 +1140,7 @@ When `configureAuth()` includes `getAuthLoading` and `getCurrentUser` (recommend
 {#if pageData.loading}
   <PageLoading message="Loading data..." />
 {:else if pageData.error}
-  <FormError message={pageData.error} />
+  <Callout tone="danger" message={pageData.error} announceMode="polite" />
 {:else}
   <p>Found {pageData.data?.items.length} items</p>
 {/if}
@@ -1329,7 +1330,7 @@ Errors are automatically caught and stored in `pageData.error`:
 
 ```svelte
 {#if pageData.error}
-  <FormError message={pageData.error} />
+  <Callout tone="danger" message={pageData.error} announceMode="polite" />
   <Button onclick={() => pageData.refetch()}>Try Again</Button>
 {/if}
 ```
@@ -1344,7 +1345,7 @@ Here's a full example of a security settings page:
   import {
     PageLoading,
     Card,
-    FormError,
+    Callout,
     Button
   } from '@decodelabs/underlay/components';
   import { auth, authLoading, currentUser } from '$lib/stores/auth';
@@ -1396,7 +1397,7 @@ Here's a full example of a security settings page:
   {#if pageData.loading}
     <PageLoading message="Loading security settings..." />
   {:else if pageData.error}
-    <FormError message={pageData.error} />
+    <Callout tone="danger" message={pageData.error} announceMode="polite" />
   {:else}
     <Card>
       <h2>Two-Factor Authentication</h2>
@@ -2100,13 +2101,15 @@ CSS variables for customization:
 
 ### File Uploads
 
-The `FileUpload` component provides drag-and-drop file uploads with progress tracking.
+Use Poodle `FileUpload` for generic file selection, preview, compression, and
+client-side validation. Keep duplicate checking, upload queues, and backend
+progress orchestration app-owned above it.
 
 #### Basic Usage
 
 ```svelte
 <script lang="ts">
-  import { FileUpload, type FileUploadItem } from '@decodelabs/underlay/components';
+  import { FileUpload, type FileUploadItem } from '@poodle/svelte-primitives';
   
   let files: FileUploadItem[] = [];
   
@@ -2168,12 +2171,12 @@ Automatically compress and resize images before uploading to reduce bandwidth an
 
 ```svelte
 <script lang="ts">
-  import { 
-    FileUpload, 
-    compressImage, 
+  import {
+    FileUpload,
+    compressImage,
     DEFAULT_COMPRESSION,
-    type ImageCompressionOptions 
-  } from '@decodelabs/underlay/components';
+    type ImageCompressionOptions
+  } from '@poodle/svelte-primitives';
   
   // Custom compression options
   const compressionOptions: ImageCompressionOptions = {
@@ -2212,7 +2215,7 @@ Automatically compress and resize images before uploading to reduce bandwidth an
 **Standalone compression function:**
 
 ```typescript
-import { compressImage } from '@decodelabs/underlay/components';
+import { compressImage } from '@poodle/svelte-primitives';
 
 // Compress a single file
 const originalFile = event.target.files[0];
@@ -2334,7 +2337,8 @@ uploadComponent.clear();
 ```svelte
 <script lang="ts">
   import { createFormState, SubmitButton } from '@decodelabs/underlay/patterns';
-  import { Skeleton, FormError } from '@decodelabs/underlay/components';
+  import { Skeleton } from '@decodelabs/underlay/components';
+  import { Callout } from '@poodle/svelte-primitives';
   import { page } from '$app/stores';
 
   const form = createFormState({
@@ -2371,7 +2375,7 @@ uploadComponent.clear();
     />
 
     {#if $form.state.error}
-      <FormError message={$form.state.error} />
+      <Callout tone="danger" message={$form.state.error} announceMode="polite" />
     {/if}
 
     <SubmitButton submitting={$form.state.isSubmitting}>

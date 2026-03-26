@@ -1,10 +1,9 @@
 <script lang="ts">
-  import { tick, getContext, onMount, untrack } from "svelte";
+  import { tick, getContext } from "svelte";
   import { Select as BitsSelect } from "bits-ui";
   import type { Snippet } from "svelte";
   import X from "lucide-svelte/icons/x";
   import ChevronDown from "lucide-svelte/icons/chevron-down";
-  import { createStableId } from "../patterns/dom";
   import {
     FIELD_A11Y_CONTEXT_KEY,
     mergeAriaDescribedBy,
@@ -97,18 +96,9 @@
     loadKey = undefined,
   }: Props = $props();
 
-  // Get FormValidationProvider context if present
-  const formValidation = getContext<{
-    registerField: (id: string, required: boolean, hasValue: boolean, validationStatus: string, isValidationValid: boolean) => void;
-    unregisterField: (id: string) => void;
-    updateField: (id: string, hasValue: boolean, validationStatus?: string, isValidationValid?: boolean) => void;
-  } | undefined>("formValidation");
   const fieldA11y = getContext<FieldA11yContext | undefined>(FIELD_A11Y_CONTEXT_KEY);
 
-  // Generate stable ID for form validation tracking
-  const fieldId = untrack(() => id) ?? createStableId("underlay-select");
-  const controlId = $derived(id ?? fieldA11y?.controlId() ?? fieldId);
-  const isRequired = $derived(required ?? false);
+  const controlId = $derived(id ?? fieldA11y?.controlId());
 
   const matchesField = $derived(fieldA11y?.matchesControl(controlId) ?? false);
   const hasFieldError = $derived(matchesField && (fieldA11y?.hasError() ?? false));
@@ -117,36 +107,6 @@
   const ariaInvalid = $derived(hasFieldError ? true : undefined);
   const ariaDescribedBy = $derived(mergeAriaDescribedBy(fieldErrorId));
   const ariaErrorMessage = $derived(hasFieldError ? fieldErrorId : undefined);
-
-  // Track previous value to prevent unnecessary updates
-  let prevValue = $state("");
-
-  // Helper to check if field has value
-  function checkHasValue(val: string): boolean {
-    return val !== "" && val !== defaultValue;
-  }
-
-  // Register with FormValidationProvider on mount
-  onMount(() => {
-    if (formValidation) {
-      const hasValue = untrack(() => checkHasValue(value));
-      formValidation.registerField(fieldId, isRequired, hasValue, "idle", true);
-      prevValue = untrack(() => value);
-
-      return () => {
-        formValidation.unregisterField(fieldId);
-      };
-    }
-  });
-
-  // Update FormValidationProvider when value changes
-  $effect(() => {
-    if (formValidation && value !== prevValue) {
-      const hasValue = checkHasValue(value);
-      formValidation.updateField(fieldId, hasValue, "idle", true);
-      prevValue = value;
-    }
-  });
 
   let triggerRef: HTMLElement | null = $state(null);
   let lastOpen = $state(open);

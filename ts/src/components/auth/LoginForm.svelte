@@ -1,16 +1,13 @@
 <script lang="ts">
+  import { Button, Callout, Field, TextInput } from "@poodle/svelte-primitives";
   import type { Snippet } from "svelte";
 
   import type { AuthFieldErrors, LoginPayload } from "./types";
 
   import { createStableId } from "../../patterns/dom";
 
-  import Button from "../Button.svelte";
-  import Field from "../Field.svelte";
   import Form from "../Form.svelte";
   import FormActions from "../FormActions.svelte";
-  import FormError from "../FormError.svelte";
-  import TextInput from "../TextInput.svelte";
 
   import TotpInput from "./TotpInput.svelte";
 
@@ -60,37 +57,47 @@
 </script>
 
 <Form {onSubmit} {enhance}>
-  <FormError message={error} />
+  {#if error}
+    <Callout tone="danger" message={error} announceMode="polite" />
+  {/if}
 
   <Field
+    id={emailId}
     label="Email"
-    forId={emailId}
-    error={fieldErrors?.email}
+    error={fieldErrors?.email ?? null}
+    validationState={fieldErrors?.email ? "invalid" : "none"}
+    required
+    let:describedBy
   >
     <TextInput
       id={emailId}
       name="email"
       type="email"
-      autocomplete="email"
-      bind:value={email}
+      value={email}
+      describedBy={describedBy}
       disabled={loading}
-      aria-invalid={fieldErrors?.email ? "true" : "false"}
+      validationState={fieldErrors?.email ? "invalid" : "none"}
+      on:valueChange={(event) => { email = event.detail.value; }}
     />
   </Field>
 
   <Field
+    id={passwordId}
     label="Password"
-    forId={passwordId}
-    error={fieldErrors?.password}
+    error={fieldErrors?.password ?? null}
+    validationState={fieldErrors?.password ? "invalid" : "none"}
+    required
+    let:describedBy
   >
     <TextInput
       id={passwordId}
       name="password"
       type="password"
-      autocomplete="current-password"
-      bind:value={password}
+      value={password}
+      describedBy={describedBy}
       disabled={loading}
-      aria-invalid={fieldErrors?.password ? "true" : "false"}
+      validationState={fieldErrors?.password ? "invalid" : "none"}
+      on:valueChange={(event) => { password = event.detail.value; }}
     />
   </Field>
 
@@ -103,7 +110,7 @@
   {/if}
 
   <FormActions align="end">
-    <Button type="submit" variant="primary" disabled={loading} aria-busy={loading}>
+    <Button type="submit" variant="primary" disabled={loading} loading={loading}>
       {submitLabel}
     </Button>
   </FormActions>

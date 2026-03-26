@@ -8,12 +8,6 @@ declare module "*.svelte" {
   // These are declared broadly so `tsc` can typecheck our TS entrypoints
   // that re-export them; `svelte-check` remains the source of truth.
 
-  export interface ValidationResult {
-    valid: boolean;
-    message?: string;
-    suggestion?: string;
-  }
-
   export type DateRangeInput = string | Date | null | undefined;
   export type DateRangeStyle = "adaptive" | "full";
   export interface DateRangeFormatOptions {
@@ -84,30 +78,6 @@ declare module "*.svelte" {
     columns: DataTableColumn<T>[],
     filename?: string
   ): void;
-
-  export interface FileUploadItem {
-    file: File;
-    id: string;
-    progress: number;
-    status: "pending" | "uploading" | "complete" | "error";
-    error?: string;
-    previewUrl?: string;
-    originalFile?: File;
-  }
-
-  export interface ImageCompressionOptions {
-    maxWidth?: number;
-    maxHeight?: number;
-    quality?: number;
-    format?: "image/jpeg" | "image/png" | "image/webp";
-  }
-
-  export const DEFAULT_COMPRESSION: ImageCompressionOptions;
-
-  export function compressImage(
-    file: File,
-    options?: ImageCompressionOptions
-  ): Promise<File>;
 
   export interface PaginationState {
     page: number;

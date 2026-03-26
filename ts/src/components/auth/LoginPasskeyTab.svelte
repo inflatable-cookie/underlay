@@ -1,8 +1,5 @@
 <script lang="ts">
-  import Field from "../Field.svelte";
-  import FormActions from "../FormActions.svelte";
-  import FormError from "../FormError.svelte";
-  import TextInput from "../TextInput.svelte";
+  import { Callout, Field, FormActions, TextInput } from "@poodle/svelte-primitives";
   import PassKeyButton from "./PassKeyButton.svelte";
 
   interface Props {
@@ -28,19 +25,24 @@
   <p class="underlay-login-page__hint">{passkeyHint}</p>
 
   {#if showPasskeyEmailField}
-    <Field label="Email (optional)">
+    <Field id="underlay-passkey-email" label="Email" description="Optional" let:describedBy>
       <TextInput
+        id="underlay-passkey-email"
         type="email"
-        bind:value={passkeyEmail}
-        autocomplete="username"
+        value={passkeyEmail}
+        describedBy={describedBy}
         disabled={passkeyLoading}
+        on:valueChange={(event) => { passkeyEmail = event.detail.value; }}
       />
     </Field>
   {/if}
 
-  <FormError message={passkeyError} />
+  {#if passkeyError}
+    <Callout tone="danger" message={passkeyError} announceMode="assertive" />
+  {/if}
 
-  <FormActions>
+  <FormActions align="between">
+    <span class="underlay-login-page__microcopy">You will be prompted by your device or password manager.</span>
     <PassKeyButton
       variant="primary"
       onStart={onPasskeyLogin}
@@ -69,5 +71,11 @@
     font-size: var(--underlay-font-size-sm, 0.875rem);
     line-height: 1.5;
     color: var(--underlay-color-text-muted, #64748b);
+  }
+
+  .underlay-login-page__microcopy {
+    color: var(--underlay-color-text-muted, #64748b);
+    font-size: 0.8125rem;
+    line-height: 1.5;
   }
 </style>

@@ -15,4 +15,6 @@ Historical language boundary:
 
 ## Next Task
 
-Open `g01.042` when the next active Underlay milestone is ready to begin.
+Execute `g01.043` by starting the Poodle-side primitive prop normalization
+audit and first rename batch, then continue `g01.042` migration work against
+that stabilized naming contract.

@@ -1,12 +1,16 @@
 # 090 - UI Kit
 
-This document covers creating and using a shared Svelte UI kit with Underlay. Underlay provides pre-built components for common UI needs.
+This document covers creating and using a shared Svelte UI kit with Underlay.
+Use Underlay for shared composites and patterns. Use Poodle directly for
+foundational primitives.
+
+> Note: foundational button-family primitives now belong in Poodle. Keep using Underlay for shared composites and patterns, but prefer `@poodle/svelte-primitives` for `Button`, `IconButton`, and related low-level action controls.
 
 ## Overview
 
-The UI kit provides:
-- **Form components** - Field, TextInput, Select, Switch, TextArea
-- **UI primitives** - Button, Badge, Pill, Breadcrumbs, Card, Dialog, DropdownMenu, OrderBy, Pagination
+The UI kit guidance covers:
+- **Form primitives** - prefer Poodle `Field`, `TextInput`, `Select`, `Switch`, and `TextArea`
+- **UI primitives** - Badge, Pill, Breadcrumbs, Card, DropdownMenu, OrderBy, Pagination
 - **Patterns** - ListCard, NavCard, NavCardGrid, Form, FormActions, PageHeader, ReorderableList
 - **Design tokens** - CSS custom properties for theming
 
@@ -17,13 +21,12 @@ The UI kit provides:
 ```
 libs/myapp-ui/src/
 ├── components/          # Reusable Svelte components
-│   ├── Button.svelte
-│   ├── TextInput.svelte
+│   ├── Button.svelte           # Wrap Poodle only if your app needs a stable local façade
+│   ├── TextInput.svelte        # Prefer wrapping Poodle, not Underlay
 │   ├── Select.svelte
 │   ├── Switch.svelte
-│   ├── Field.svelte
+│   ├── Field.svelte            # Prefer the Poodle primitive here
 │   ├── Card.svelte
-│   ├── Dialog.svelte
 │   ├── DropdownMenu.svelte
 │   └── index.ts
 ├── patterns/            # Higher-level UI patterns
@@ -43,11 +46,11 @@ libs/myapp-ui/src/
 
 ### Field Wrapper
 
-`Field` wraps form inputs with label, hint, and error display:
+`Field` is now a Poodle primitive and should wrap form inputs with label, hint, and error display:
 
 ```svelte
 <script lang="ts">
-  import { Field, TextInput } from "@decodelabs/underlay";
+  import { Field, TextInput } from "@poodle/svelte-primitives";
 
   export let form; // ActionData from SvelteKit
 </script>
@@ -84,7 +87,7 @@ Standard text input with consistent styling:
 
 ```svelte
 <script>
-  import { Field, TextInput } from "@decodelabs/underlay";
+  import { Field, TextInput } from "@poodle/svelte-primitives";
 </script>
 
 <Field label="Username" forId="username">
@@ -132,7 +135,7 @@ Use the `debounce` prop for filter/search fields that trigger server-side querie
 
 ```svelte
 <script>
-  import { Field, TextInput } from "@decodelabs/underlay/components";
+  import { Field, TextInput } from "@poodle/svelte-primitives";
 
   function handleSearch(value: string) {
     // Called after user stops typing for 500ms
@@ -194,7 +197,7 @@ Dropdown select component:
 
 ```svelte
 <script>
-  import { Field, Select } from "@decodelabs/underlay";
+  import { Field, Select } from "@poodle/svelte-primitives";
   
   const options = [
     { value: "active", label: "Active" },
@@ -229,7 +232,7 @@ Use `clearable` for filter dropdowns where users should be able to reset to a de
 
 ```svelte
 <script>
-  import { Field, Select } from "@decodelabs/underlay/components";
+  import { Field, Select } from "@poodle/svelte-primitives";
 
   const yearOptions = [
     { value: "All", label: "All years" },
@@ -260,7 +263,7 @@ Toggle switch (checkbox alternative):
 
 ```svelte
 <script>
-  import { Field, Switch } from "@decodelabs/underlay";
+  import { Field, Switch } from "@poodle/svelte-primitives";
   
   let enabled = false;
 </script>
@@ -1216,7 +1219,7 @@ Modal dialog component:
 
 ```svelte
 <script>
-  import { Dialog, Button } from "@decodelabs/underlay";
+  import { Dialog, Button } from "@poodle/svelte-primitives";
   
   let open = false;
 </script>
@@ -1225,7 +1228,7 @@ Modal dialog component:
   Open Dialog
 </Button>
 
-<Dialog bind:open title="Confirm Action">
+<Dialog bind:open title="Confirm Action" showCloseButton>
   <p>Are you sure you want to proceed?</p>
   
   <svelte:fragment slot="actions">
@@ -1253,7 +1256,7 @@ Confirmation dialog with destructive action styling:
 
 ```svelte
 <script>
-  import { AlertDialog, Button } from "@decodelabs/underlay";
+  import { AlertDialog } from "@poodle/svelte-primitives";
   
   let open = false;
 </script>
@@ -1262,9 +1265,10 @@ Confirmation dialog with destructive action styling:
   bind:open
   title="Delete Article"
   description="This action cannot be undone."
-  confirmText="Delete"
-  cancelText="Cancel"
-  on:confirm={handleDelete}
+  confirmLabel="Delete"
+  cancelLabel="Cancel"
+  onConfirm={handleDelete}
+  tone="danger"
 >
   <p>Are you sure you want to delete this article?</p>
 </AlertDialog>
@@ -1941,88 +1945,57 @@ A tabbed interface component with multiple visual variants. Supports URL query s
 
 #### Form Tabs (Multi-Section Forms)
 
-Use this pattern for long forms (2+ sections) where each section has its own validation state.
+Use this pattern for long forms (2+ sections) where one form is easier to scan as sections than as one long column.
 
 ```svelte
 <script lang="ts">
   import {
     Field,
-    FieldSet,
-    FormTabsProvider,
-    FormTabsSection,
-    FormValidationProvider,
     TabsRoot,
     TabsList,
     TabsTrigger,
     TabsContent,
     TextInput
   } from "@decodelabs/underlay/components";
+  import { FormLayout } from "@poodle/svelte-composites";
+  import { FieldSet } from "@poodle/svelte-primitives";
 
   let activeTab = $state("details");
-  let isFormValid = $state(false);
   let title = $state("");
   let notes = $state("");
 </script>
 
-<FormValidationProvider bind:isValid={isFormValid}>
-  <FormTabsProvider>
-    <TabsRoot bind:value={activeTab} variant="form">
-      <TabsList
-        collapsible
-        tabs={[
-          { value: "details", label: "Details" },
-          { value: "notes", label: "Notes" }
-        ]}
-      >
-        <TabsTrigger value="details">Details</TabsTrigger>
-        <TabsTrigger value="notes">Notes</TabsTrigger>
-      </TabsList>
+<TabsRoot bind:value={activeTab} variant="form">
+  <TabsList collapsible>
+    <TabsTrigger value="details">Details</TabsTrigger>
+    <TabsTrigger value="notes">Notes</TabsTrigger>
+  </TabsList>
 
-      <TabsContent value="details">
-        <FormTabsSection sectionId="details">
-          <div class="underlay-form-grid">
-            <FieldSet legend="Core">
-              <Field label="Title" required>
-                <TextInput name="title" bind:value={title} required />
-              </Field>
-            </FieldSet>
-          </div>
-        </FormTabsSection>
-      </TabsContent>
+  <TabsContent value="details">
+    <FieldSet legend="Core">
+      <FormLayout columns={1}>
+        <Field label="Title" required>
+          <TextInput name="title" bind:value={title} required />
+        </Field>
+      </FormLayout>
+    </FieldSet>
+  </TabsContent>
 
-      <TabsContent value="notes">
-        <FormTabsSection sectionId="notes">
-          <div class="underlay-form-grid">
-            <FieldSet legend="Notes">
-              <Field label="Notes">
-                <TextInput name="notes" bind:value={notes} />
-              </Field>
-            </FieldSet>
-          </div>
-        </FormTabsSection>
-      </TabsContent>
-    </TabsRoot>
-  </FormTabsProvider>
-</FormValidationProvider>
+  <TabsContent value="notes">
+    <FieldSet legend="Notes">
+      <FormLayout columns={1}>
+        <Field label="Notes">
+          <TextInput name="notes" bind:value={notes} />
+        </Field>
+      </FormLayout>
+    </FieldSet>
+  </TabsContent>
+</TabsRoot>
 ```
 
-**Form tabs components:**
-- `FormTabsProvider` - Creates a section registry and wires tab state to form validation state
-- `FormTabsSection sectionId="..."` - Assigns enclosed fields to a tab section (required for validation dots)
-
-**How section validation indicators work:**
-- `invalid` - At least one field in the section has validation errors
-- `incomplete` - A required field has no value
-- `valid` - No errors and required fields are filled
-- `idle` - No registered fields yet
-
-Those states automatically appear as dots on `TabsTrigger` and in collapsed dropdown tabs.
-
 **Important requirements:**
-- Wrap form tabs in `FormValidationProvider` first
-- Wrap tabbed sections in `FormTabsProvider`
-- Put each tab panel's form controls inside a matching `FormTabsSection`
-- Keep `TabsTrigger.value`, `TabsContent.value`, and `FormTabsSection.sectionId` aligned by section
+- Keep `TabsTrigger.value` and `TabsContent.value` aligned by section
+- Keep submit-state derivation in the form layer rather than in the tabs shell
 
 **Editor compatibility note:**
 - The `form` tab variant keeps inactive panels mounted (hidden with height/visibility, not `display: none`) so editors like CodeMirror/EasyMDE don't break when switching tabs
@@ -2037,7 +2010,7 @@ Form wrapper with enhanced submission handling:
 
 ```svelte
 <script>
-  import { Form, Field, TextInput, FormActions, Button } from "@decodelabs/underlay";
+  import { Form, Field, TextInput, FormActions, Button } from "@poodle/svelte-primitives";
   import { enhance } from "$app/forms";
   import type { ActionData } from "./$types";
   
@@ -2090,7 +2063,8 @@ Container for form action buttons with consistent spacing. Supports a right-alig
 
 ```svelte
 <script>
-  import { FormActions, Button, TextButton } from "@decodelabs/underlay/components";
+  import { FormActions, Button } from "@decodelabs/underlay/components";
+  import { Button as PoodleButton } from "@poodle/svelte-primitives";
 </script>
 
 <!-- Basic usage -->
@@ -2102,7 +2076,7 @@ Container for form action buttons with consistent spacing. Supports a right-alig
 <FormActions>
   <Button type="submit" variant="primary">Save Changes</Button>
   {#snippet danger()}
-    <TextButton onclick={handleCancel}>Cancel</TextButton>
+    <PoodleButton variant="ghost" on:click={handleCancel}>Cancel</PoodleButton>
   {/snippet}
 </FormActions>
 ```
@@ -2363,47 +2337,48 @@ Navigation card components for index/dashboard pages. NavCards are substantial l
 
 ### PageHeader
 
-Page header component with section heading, optional entity title, breadcrumbs, back link, and action buttons. Use this for consistent page headers across your application.
+Page header component with section heading, optional entity title, breadcrumbs, back link, and action buttons. Use Poodle `PageHeader` for simple title/back/actions and subtitle-only headers. Keep Underlay `PageHeader` only for the richer shell cases that still need section/title split, count treatment, contextual back behavior, banner wiring, or header-meta composition.
 
 ```svelte
 <script>
+  import { PageHeader as PoodlePageHeader } from "@poodle/svelte-composites";
   import {
     PageHeader,
-    PageHeaderMeta,
-    PageHeaderMetaRow,
-    PageHeaderMetaItem,
-    PageHeaderMetaSeparator,
+    DetailMeta,
+    DetailMetaId,
+    DetailMetaItem,
+    DetailMetaSeparator,
     type BreadcrumbItem
   } from "@decodelabs/underlay/patterns";
   import { Button, Code, Pill } from "@decodelabs/underlay/components";
 </script>
 
-<!-- List page: section only (renders as h1) -->
-<PageHeader section="Projects" backHref="/" backLabel="Back to dashboard">
-  {#snippet actions()}
+<!-- Simple list page -->
+<PoodlePageHeader title="Projects" backHref="/" backLabel="Back to dashboard">
+  <svelte:fragment slot="actions">
     <Button href="/projects/new">Add Project</Button>
-  {/snippet}
-</PageHeader>
+  </svelte:fragment>
+</PoodlePageHeader>
 
-<!-- List page with count badge -->
-<PageHeader section="Users" count={total} backHref="/" backLabel="Back to dashboard" />
+<!-- Count-bearing list page -->
+<PoodlePageHeader title="Users" count={total} backHref="/" backLabel="Back to dashboard" />
 
-<!-- Detail page: section (h1) + title (h2) -->
+<!-- Rich detail page: retained Underlay shell -->
 <PageHeader
   section="Project"
   title={project.name}
   backHref="/projects"
   backLabel="Back to projects"
+  bannerMessage="This project is archived and tasks cannot be modified."
+  bannerVariant="warning"
 >
-  <PageHeaderMeta>
-    <PageHeaderMetaRow>
-      <PageHeaderMetaItem label="ID">
-        <Code copy>{project.id}</Code>
-      </PageHeaderMetaItem>
-      <PageHeaderMetaSeparator />
+  <DetailMeta>
+    <DetailMetaId value={project.id} />
+    <DetailMetaSeparator />
+    <DetailMetaItem>
       <Pill accent="#22c55e">Active</Pill>
-    </PageHeaderMetaRow>
-  </PageHeaderMeta>
+    </DetailMetaItem>
+  </DetailMeta>
 </PageHeader>
 
 <!-- Detail page with breadcrumbs -->
@@ -2435,6 +2410,15 @@ Page header component with section heading, optional entity title, breadcrumbs, 
   ...
 />
 ```
+
+`DetailPageShell` remains an Underlay-owned detail-page workflow shell, but its
+tab chrome now rides on Poodle `Tabs` and its metadata/status display should
+prefer the `DetailMeta*` helpers rather than bespoke header rows.
+
+`SpaFormShell` remains an Underlay-owned workflow shell. Keep save/delete
+intent handling, navigation, and submit orchestration there, but treat status
+messages and framing UI as Poodle-owned internals rather than rebuilding local
+success/error/loading chrome in app code.
 
 **Props:**
 - `section` - Section heading (renders as h1). Use for the page type or action phrase.
@@ -2482,7 +2466,8 @@ The component renders in this order:
 - On detail pages, use `subtitle` for supplementary text (e.g., a slug) and `title` for the primary entity identifier
 - Use `breadcrumbs` on deeply nested pages to show the navigation hierarchy. The last breadcrumb item can omit `href` to render as plain text for the current page.
 - The `count` badge stays on the section/title h1 heading
-- Use `PageHeaderMeta*` components to standardize metadata layout below the heading
+- Use `DetailMeta*` for page-header metadata rows, including edit headers when you need copyable IDs or compact labeled values
+- Compose labeled copyable values with `DetailMetaItem` plus `Code copy` instead of relying on a separate header-metadata wrapper family
 
 **Breadcrumbs:**
 
@@ -2945,6 +2930,10 @@ The RelationSelector provides:
 - **Single and multi-select modes**: Toggle individual items or select multiple with confirmation
 - **Embedded create form**: Add new related records without leaving the modal
 - **Full accessibility**: Keyboard navigation, ARIA attributes, focus management
+
+The relation-selection workflow remains Underlay-owned, but its modal chrome now
+resolves through Poodle `Dialog`, `SearchField`, `Callout`, and `Button`
+instead of a separate local dialog/search/status stack.
 
 ```
 ┌─────────────────────────────────────┐
@@ -3469,7 +3458,7 @@ All Underlay components follow accessibility best practices:
 
 ### Form Labels
 
-Always use `Field` with `label` and `forId`:
+Always use Poodle `Field` with `label` and `forId`:
 
 ```svelte
 <!-- ✅ CORRECT -->
@@ -3557,7 +3546,7 @@ Use the `Field` error prop to show validation errors:
 
 ```svelte
 <script lang="ts">
-  import { Field, TextInput } from "@decodelabs/underlay";
+  import { Field, TextInput } from "@poodle/svelte-primitives";
   import type { ActionData } from "./$types";
   
   export let form: ActionData;
@@ -3797,7 +3786,9 @@ For temporary success/error messages:
 
 ## Domain UI Kit Pattern
 
-For app-specific customizations, create a domain UI kit that wraps Underlay components.
+For app-specific customizations, create a domain UI kit that wraps Poodle
+primitives and selectively re-exports Underlay patterns where they still earn a
+shared boundary.
 
 > **Naming Your Domain UI Kit**: Choose a name that reflects your project. For example:
 > - A learning platform called "EduPro" might use `edupro-ui`
@@ -3811,9 +3802,9 @@ For app-specific customizations, create a domain UI kit that wraps Underlay comp
 ```
 myapp-ui/src/
 ├── components/
-│   ├── MyAppButton.svelte      # Wrapped Underlay Button
-│   ├── MyAppField.svelte       # Wrapped Underlay Field
-│   ├── MyAppTextInput.svelte   # Wrapped Underlay TextInput
+│   ├── MyAppButton.svelte      # Wrapped Poodle Button
+│   ├── MyAppField.svelte       # Wrapped Poodle Field
+│   ├── MyAppTextInput.svelte   # Wrapped Poodle TextInput
 │   ├── ProductCard.svelte      # Domain-specific component
 │   └── OrderList.svelte        # Domain-specific component
 ├── styles/
@@ -3828,15 +3819,12 @@ Create wrappers with app-specific defaults:
 ```svelte
 <!-- myapp-ui/src/components/MyAppButton.svelte -->
 <script lang="ts">
-  import { Button } from "@decodelabs/underlay";
+  import { Button } from "@poodle/svelte-primitives";
   
-  // Override Underlay defaults for your app
-  export let variant: "primary" | "secondary" | "subtle" = "primary";
-  export let pill: boolean = false; // Your app uses square buttons by default
-  export let type: "button" | "submit" | "reset" = "button";
+  export let variant: "primary" | "secondary" | "ghost" = "primary";
 </script>
 
-<Button {variant} {pill} {type} {...$$restProps}>
+<Button {variant} {...$$restProps}>
   <slot />
 </Button>
 ```
@@ -3848,7 +3836,7 @@ Build on Underlay primitives for domain features:
 ```svelte
 <!-- myapp-ui/src/components/ProductCard.svelte -->
 <script lang="ts">
-  import { Card, Button } from "@decodelabs/underlay";
+  import { Card, Button } from "@poodle/svelte-primitives";
   
   export let product: {
     id: string;
@@ -3926,21 +3914,15 @@ Override Underlay tokens in your domain UI kit:
 ```typescript
 // myapp-ui/src/index.ts
 
-// Re-export Underlay components
+// Re-export Underlay shared patterns only when they still add value
 export { 
-  Dialog, 
-  AlertDialog, 
-  Card, 
-  Select,
-  Switch,
-  TextArea,
   FormActions,
   ListCard
 } from "@decodelabs/underlay";
 
-// Export wrapped components
+// Export wrapped primitives
 export { default as Button } from "./components/MyAppButton.svelte";
-export { default as Field } from "./components/MyAppField.svelte";
+export { Field, Card, Dialog, Select, Switch, TextArea } from "@poodle/svelte-primitives";
 export { default as TextInput } from "./components/MyAppTextInput.svelte";
 
 // Export domain components

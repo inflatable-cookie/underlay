@@ -1198,7 +1198,7 @@ Here's a complete example of a form with Nightfire content:
 ```svelte
 <!-- ArticleForm.svelte -->
 <script lang="ts">
-  import { Field } from "@decodelabs/underlay/components";
+  import { Field } from "@poodle/svelte-primitives";
   import { NightfireEditor, type NightfireValue } from "@decodelabs/underlay/nightfire";
 
   interface Props {

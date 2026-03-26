@@ -1,0 +1,170 @@
+{
+  "version": 1,
+  "updated": "2026-03-25",
+  "scope": "Public Poodle Svelte primitive and composite exports whose current public props use `is*` or `has*` boolean naming and therefore require a coordinated prop-language normalization sweep plus downstream call-site migration across Underlay and consuming apps.",
+  "decision": {
+    "canonical_boolean_prop_style": "plain_state_name",
+    "rule": "Use plain boolean state names for public props across Poodle primitives and composites. Do not split naming style by primitive versus composite layer.",
+    "examples": {
+      "disabled": "preferred over isDisabled",
+      "loading": "preferred over isLoading",
+      "readonly": "preferred over isReadOnly",
+      "required": "preferred over isRequired",
+      "checked": "preferred over isChecked",
+      "selected": "preferred over isSelected",
+      "open": "preferred over isOpen",
+      "collapsed": "preferred over isCollapsed"
+    },
+    "non_goal": "Do not preserve a permanent primitive/composite naming split such as `disabled` on some components and `isDisabled` on others."
+  },
+  "migration_scope": {
+    "repos": [
+      "poodle",
+      "underlay",
+      "acowtancy",
+      "compli-me",
+      "contact-patch",
+      "songsprout",
+      "loophole/composer",
+      "underlay-reference"
+    ],
+    "notes": [
+      "The sweep must update Poodle implementation, contracts, docs, and preview specimens together.",
+      "Underlay and all six app groups must migrate their Poodle call sites in coordinated batches.",
+      "Underlay roadmap 042 remains the broad UI-boundary migration umbrella; this manifest tracks the specific prop-language normalization dependency that now blocks clean migration work."
+    ]
+  },
+  "audit_status": {
+    "updated": "2026-03-25",
+    "live_downstream_poodle_old_name_residue": "effectively_clear",
+    "notes": [
+      "A focused live-source audit across Underlay shared source, underlay-reference, and the six app groups found no meaningful remaining use of retired Poodle public `is*` or `has*` prop names.",
+      "The final missed live residue was a small shared Underlay auth and guide-example tail, which has now been migrated.",
+      "Remaining `is*` hits in live source are primarily Underlay-local helper or state naming and should not be treated as open Poodle prop normalization debt.",
+      "Underlay now enforces a dedicated guardrail check that fails on reintroduced retired Poodle prop names in shared source and active guides."
+    ]
+  },
+  "scan_baseline": {
+    "poodle_public_components_with_is_or_has_props": 58,
+    "downstream_poodle_import_matches_across_underlay_and_consuming_repos": 267,
+    "notes": [
+      "Component count was generated from the current public `.svelte` files under `packages/svelte/primitives/src` and `packages/svelte/composites/src`.",
+      "Downstream import count is a coarse whole-portfolio signal for call-site migration scope, not a per-prop usage count."
+    ]
+  },
+  "rename_policy": {
+    "rename_groups": [
+      {
+        "from_prefixes": [
+          "is"
+        ],
+        "to_style": "plain_state_name",
+        "examples": [
+          ["isDisabled", "disabled"],
+          ["isLoading", "loading"],
+          ["isPressed", "pressed"],
+          ["isChecked", "checked"],
+          ["isCollapsed", "collapsed"],
+          ["isInteractive", "interactive"]
+        ]
+      },
+      {
+        "from_prefixes": [
+          "has"
+        ],
+        "to_style": "plain_state_name",
+        "examples": [
+          ["hasMedia", "media"]
+        ],
+        "notes": [
+          "Where a direct plain-state rename reads poorly, use the simplest domain-neutral noun or adjective instead of keeping `has*`."
+        ]
+      }
+    ],
+    "html_adjacency_rule": [
+      "HTML-like control props should converge on the same plain-state naming rule instead of using a special primitive-only convention.",
+      "Native attribute passthrough decisions remain separate from naming normalization and should be tracked independently in component contracts."
+    ]
+  },
+  "components": [
+    { "component": "Accordion", "layer": "primitive", "props": [["isCollapsible", "collapsible"]], "status": "completed" },
+    { "component": "Button", "layer": "primitive", "props": [["isDisabled", "disabled"], ["isLoading", "loading"]], "status": "completed" },
+    { "component": "Calendar", "layer": "primitive", "props": [["isDisabled", "disabled"]], "status": "completed" },
+    { "component": "Callout", "layer": "primitive", "props": [["isDismissible", "dismissible"]], "status": "completed" },
+    { "component": "Breadcrumbs", "layer": "primitive", "props": [["isCurrent", "current"]], "status": "completed" },
+    { "component": "Card", "layer": "primitive", "props": [["isInteractive", "interactive"], ["isSelected", "selected"], ["hasMedia", "media"]], "status": "completed" },
+    { "component": "Checkbox", "layer": "primitive", "props": [["isChecked", "checked"], ["isMixed", "mixed"], ["isDisabled", "disabled"], ["isReadOnly", "readOnly"]], "status": "completed" },
+    { "component": "CollapseToggle", "layer": "primitive", "props": [["isCollapsed", "collapsed"], ["isDisabled", "disabled"]], "status": "completed" },
+    { "component": "Collapsible", "layer": "primitive", "props": [["isDisabled", "disabled"]], "status": "completed" },
+    { "component": "ColorPicker", "layer": "primitive", "props": [["isDisabled", "disabled"]], "status": "completed" },
+    { "component": "Combobox", "layer": "primitive", "props": [["isDisabled", "disabled"]], "status": "completed" },
+    { "component": "DatePicker", "layer": "primitive", "props": [["isDisabled", "disabled"]], "status": "completed" },
+    { "component": "DateRangePicker", "layer": "primitive", "props": [["isDisabled", "disabled"]], "status": "completed" },
+    { "component": "DateTimePicker", "layer": "primitive", "props": [["isDisabled", "disabled"]], "status": "completed" },
+    { "component": "DateTimeRangePicker", "layer": "primitive", "props": [["isDisabled", "disabled"]], "status": "completed" },
+    { "component": "Drawer", "layer": "primitive", "props": [["isModal", "modal"]], "status": "completed" },
+    { "component": "DurationInput", "layer": "primitive", "props": [["isDisabled", "disabled"]], "status": "completed" },
+    { "component": "ContextMenu", "layer": "primitive", "props": [["isDisabled", "disabled"], ["isChecked", "checked"]], "status": "completed" },
+    { "component": "EditableLabel", "layer": "primitive", "props": [["isDisabled", "disabled"]], "status": "completed" },
+    { "component": "Field", "layer": "primitive", "props": [["isRequired", "required"]], "status": "completed" },
+    { "component": "IconButton", "layer": "primitive", "props": [["isDisabled", "disabled"], ["isLoading", "loading"], ["isPressed", "pressed"]], "status": "completed" },
+    { "component": "ListCard", "layer": "primitive", "props": [["isInteractive", "interactive"], ["isDisabled", "disabled"], ["isNotLive", "notLive"]], "status": "completed" },
+    { "component": "Menu", "layer": "primitive", "props": [["isDisabled", "disabled"], ["isChecked", "checked"]], "status": "completed" },
+    { "component": "Menubar", "layer": "primitive", "props": [["isDisabled", "disabled"], ["isChecked", "checked"]], "status": "completed" },
+    { "component": "NavCard", "layer": "primitive", "props": [["isDisabled", "disabled"]], "status": "completed" },
+    { "component": "NavigationMenu", "layer": "primitive", "props": [["isDisabled", "disabled"]], "status": "completed" },
+    { "component": "NumberEntry", "layer": "primitive", "props": [["isDisabled", "disabled"], ["isReadOnly", "readOnly"]], "status": "completed" },
+    { "component": "OrderBy", "layer": "primitive", "props": [["isDisabled", "disabled"]], "status": "completed" },
+    { "component": "Pill", "layer": "primitive", "props": [["isMuted", "muted"]], "status": "completed" },
+    { "component": "PinInput", "layer": "primitive", "props": [["isDisabled", "disabled"]], "status": "completed" },
+    { "component": "Progress", "layer": "primitive", "props": [["isIndeterminate", "indeterminate"]], "status": "completed" },
+    { "component": "RadioGroup", "layer": "primitive", "props": [["isDisabled", "disabled"]], "status": "completed" },
+    { "component": "RangeCalendar", "layer": "primitive", "props": [["isDisabled", "disabled"]], "status": "completed" },
+    { "component": "RangeSlider", "layer": "primitive", "props": [["isDisabled", "disabled"]], "status": "completed" },
+    { "component": "Rating", "layer": "primitive", "props": [["isDisabled", "disabled"]], "status": "completed" },
+    { "component": "ResizeHandle", "layer": "primitive", "props": [["isDisabled", "disabled"]], "status": "completed" },
+    { "component": "ScrollShell", "layer": "primitive", "props": [["isFocusable", "focusable"]], "status": "completed" },
+    { "component": "SearchField", "layer": "primitive", "props": [["isDisabled", "disabled"], ["isReadOnly", "readOnly"]], "status": "completed" },
+    { "component": "SegmentedControl", "layer": "primitive", "props": [["isDisabled", "disabled"]], "status": "completed" },
+    { "component": "Select", "layer": "primitive", "props": [["isDisabled", "disabled"]], "status": "completed" },
+    { "component": "Skeleton", "layer": "primitive", "props": [["isAnimated", "animated"]], "status": "completed" },
+    { "component": "Slider", "layer": "primitive", "props": [["isDisabled", "disabled"]], "status": "completed" },
+    { "component": "SplitButton", "layer": "primitive", "props": [["isDisabled", "disabled"], ["isLoading", "loading"]], "status": "completed" },
+    { "component": "Surface", "layer": "primitive", "props": [["isElevated", "elevated"]], "status": "completed" },
+    { "component": "Switch", "layer": "primitive", "props": [["isChecked", "checked"], ["isDisabled", "disabled"], ["isReadOnly", "readOnly"]], "status": "completed" },
+    { "component": "Tabs", "layer": "primitive", "props": [["isReorderable", "reorderable"], ["isClosable", "closable"]], "status": "completed" },
+    { "component": "TextArea", "layer": "primitive", "props": [["isDisabled", "disabled"], ["isReadOnly", "readOnly"]], "status": "completed" },
+    { "component": "TextInput", "layer": "primitive", "props": [["isDisabled", "disabled"], ["isReadOnly", "readOnly"]], "status": "completed" },
+    { "component": "TimeField", "layer": "primitive", "props": [["isDisabled", "disabled"]], "status": "completed" },
+    { "component": "TimeZoneSelect", "layer": "primitive", "props": [["isDisabled", "disabled"]], "status": "completed" },
+    { "component": "Toggle", "layer": "primitive", "props": [["isPressed", "pressed"], ["isDisabled", "disabled"]], "status": "completed" },
+    { "component": "ToggleGroup", "layer": "primitive", "props": [["isDisabled", "disabled"]], "status": "completed" },
+    { "component": "TriStateSwitch", "layer": "primitive", "props": [["isDisabled", "disabled"]], "status": "completed" },
+    { "component": "ZonedDateTimePicker", "layer": "primitive", "props": [["isDisabled", "disabled"]], "status": "completed" },
+    { "component": "AppHeader", "layer": "composite", "props": [["isDragRegion", "dragRegion"]], "status": "completed" },
+    { "component": "BlockEditor", "layer": "composite", "props": [["isDisabled", "disabled"]], "status": "completed" },
+    { "component": "CardRadioGroup", "layer": "composite", "props": [["isDisabled", "disabled"]], "status": "completed" },
+    { "component": "DetailSection", "layer": "composite", "props": [["isSeparated", "separated"]], "status": "completed" },
+    { "component": "DockRegion", "layer": "composite", "props": [["isCollapsed", "collapsed"], ["isClosable", "closable"]], "status": "completed" },
+    { "component": "EditableList", "layer": "composite", "props": [["isDisabled", "disabled"], ["isReorderable", "reorderable"]], "status": "completed" },
+    { "component": "FilterToolbar", "layer": "composite", "props": [["isSticky", "sticky"]], "status": "completed" },
+    { "component": "ActionDiscoveryPanel", "layer": "composite", "props": [["isDisabled", "disabled"]], "status": "completed" },
+    { "component": "CommandPalette", "layer": "composite", "props": [["isDisabled", "disabled"]], "status": "completed" },
+    { "component": "MarkdownEditor", "layer": "composite", "props": [["isDisabled", "disabled"]], "status": "completed" },
+    { "component": "PageLoading", "layer": "composite", "props": [["isVisible", "visible"]], "status": "completed" },
+    { "component": "ReorderableList", "layer": "composite", "props": [["isDisabled", "disabled"]], "status": "completed" },
+    { "component": "SplitView", "layer": "composite", "props": [["isPrimaryCollapsed", "primaryCollapsed"], ["isSecondaryCollapsed", "secondaryCollapsed"], ["isDisabled", "disabled"]], "status": "completed" },
+    { "component": "DataTable", "layer": "composite-type", "props": [["TableColumn.isSortable", "TableColumn.sortable"], ["TableColumn.isHideable", "TableColumn.hideable"]], "status": "completed" },
+    { "component": "BreadcrumbItem", "layer": "composite-type", "props": [["BreadcrumbItem.isCurrent", "BreadcrumbItem.current"]], "status": "completed" },
+    { "component": "RelationPicker", "layer": "composite-type", "props": [["DrillDownItem.hasChildren", "DrillDownItem.expandable"]], "status": "completed" }
+  ],
+  "blocked_follow_on_work": {
+    "text_input_validation_gap": {
+      "status": "open",
+      "notes": [
+        "Validation-heavy Underlay `TextInput` call sites are still blocked by missing Poodle-native async validation orchestration and broader native input attribute coverage.",
+        "Resolve that capability in Poodle directly instead of preserving Underlay-only input behavior."
+      ]
+    }
+  }
+}

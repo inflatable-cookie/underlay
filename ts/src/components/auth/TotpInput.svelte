@@ -12,7 +12,7 @@
    * - Accessible - single input for screen readers
    */
 
-  import Field from "../Field.svelte";
+  import { Field } from "@poodle/svelte-primitives";
 
   interface Props {
     /** The complete code value (bindable) */
@@ -115,7 +115,13 @@
   }
 </script>
 
-<Field {label} {hint} {error}>
+<Field
+  id={`totp-${name}`}
+  {label}
+  hint={hint}
+  error={error}
+  validationState={error ? "invalid" : "none"}
+>
   <!-- Hidden input for form submission -->
   <input type="hidden" {name} {value} />
 

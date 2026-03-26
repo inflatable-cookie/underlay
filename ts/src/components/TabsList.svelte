@@ -3,7 +3,6 @@
   import type { Snippet } from "svelte";
   import { getContext, onMount } from "svelte";
   import type { TabsVariant, TabsSize, RegisteredTab } from "./TabsRoot.svelte";
-  import type { FormTabsSectionRegistryContext, SectionValidationState } from "./form-tabs/types";
   import ChevronDown from "lucide-svelte/icons/chevron-down";
 
   interface Props {
@@ -23,7 +22,6 @@
   const getValue = getContext<() => string>("underlay-tabs-value");
   const setValue = getContext<((v: string) => void) | undefined>("underlay-tabs-set-value");
   const setParentCollapsed = getContext<((v: boolean) => void) | undefined>("underlay-tabs-set-collapsed");
-  const registry = getContext<FormTabsSectionRegistryContext | undefined>("underlay-form-tabs-registry");
   const getRegisteredTabs = getContext<(() => RegisteredTab[]) | undefined>("underlay-tabs-get-registered");
 
   let variant = $derived(getVariant?.() ?? "pills");
@@ -47,14 +45,6 @@
 
   // Find the current tab for dropdown display
   const currentTab = $derived(registeredTabs.find((t) => t.value === currentValue));
-
-  // Get section validation state for the current tab (form variant only)
-  let currentTabState = $derived<SectionValidationState>(registry?.getSectionState(currentValue) ?? "idle");
-
-  // Helper to get validation state for any tab
-  function getTabState(value: string): SectionValidationState {
-    return registry?.getSectionState(value) ?? "idle";
-  }
 
   // Sync collapsed state to parent TabsRoot
   $effect(() => {
@@ -136,11 +126,6 @@
             {#if currentTab?.count != null}
               <span class="underlay-tabs-dropdown__count">{currentTab.count}</span>
             {/if}
-            {#if currentTabState === "invalid"}
-              <span class="underlay-tabs-dropdown__dot underlay-tabs-dropdown__dot--error" aria-label="Has validation errors"></span>
-            {:else if currentTabState === "incomplete"}
-              <span class="underlay-tabs-dropdown__dot underlay-tabs-dropdown__dot--warning" aria-label="Has required fields"></span>
-            {/if}
           </span>
           <ChevronDown size={16} class="underlay-tabs-dropdown__chevron" />
         </button>
@@ -165,11 +150,6 @@
                 >
                   <span class="underlay-tabs-dropdown__item-label">
                     {tab.label}
-                    {#if getTabState(tab.value) === "invalid"}
-                      <span class="underlay-tabs-dropdown__dot underlay-tabs-dropdown__dot--error" aria-label="Has validation errors"></span>
-                    {:else if getTabState(tab.value) === "incomplete"}
-                      <span class="underlay-tabs-dropdown__dot underlay-tabs-dropdown__dot--warning" aria-label="Has required fields"></span>
-                    {/if}
                   </span>
                   {#if tab.count != null}
                     <span class="underlay-tabs-dropdown__count">{tab.count}</span>

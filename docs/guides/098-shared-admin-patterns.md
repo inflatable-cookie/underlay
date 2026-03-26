@@ -13,7 +13,7 @@ All components are additive — importing them is optional and they introduce no
 | Drawer | `components/Drawer.svelte` | Slide-out side panel |
 | DetailPageShell | `patterns/DetailPageShell/` | Composable entity detail page with tabs |
 | AutonomousList | `patterns/AutonomousList/` | Self-contained list with filters, batch actions, reorder |
-| InlineEditableField | `components/InlineEditableField.svelte` | Click-to-edit text field |
+| EditableLabel | `@poodle/svelte-primitives` | Click-to-edit text field |
 | KeyboardShortcuts | `patterns/keyboard-shortcuts.svelte.ts` | Centralized shortcut registration |
 | ErrorBoundary | `components/ErrorBoundary.svelte` | Render error catch with recovery UI |
 
@@ -189,7 +189,7 @@ Slide-out side panel from the right or left edge. Responsive — absolute positi
 
 ## DetailPageShell
 
-Composable shell for entity detail pages. Standardizes the PageHeader + metadata + tabs + actions composition pattern.
+Composable shell for entity detail pages. Standardizes the PageHeader + metadata + tabs + actions composition pattern. The shell stays in Underlay because it owns the detail-page assembly and lazy-mount behavior, but the tab chrome is now provided by Poodle `Tabs`.
 
 ```svelte
 <script lang="ts">
@@ -263,7 +263,8 @@ Composable shell for entity detail pages. Standardizes the PageHeader + metadata
 
 | Component | Purpose |
 |-----------|---------|
-| `DetailMeta` | Wraps metadata items in a row (uses PageHeaderMeta + PageHeaderMetaRow) |
+| `DetailMeta` | Wraps metadata items in a detail-page metadata row |
+| `DetailMetaItem` | Generic metadata value with optional label inside DetailMeta |
 | `DetailMetaId` | Displays an ID with Code formatting and copy support |
 | `DetailMetaStatus` | Boolean status badge (value, trueLabel, falseLabel, variant) |
 | `DetailMetaSeparator` | Visual separator between metadata items |
@@ -426,23 +427,22 @@ The AutonomousList replaces the manual pattern documented in guide 097 ("Buildin
 
 ---
 
-## InlineEditableField
+## EditableLabel
 
-Click-to-edit field that displays as text and becomes an input on click or Enter.
+Click-to-edit field that displays as text and becomes an input on activation.
 
 ```svelte
 <script lang="ts">
-  import { InlineEditableField } from "@decodelabs/underlay/components";
+  import { EditableLabel } from "@poodle/svelte-primitives";
 </script>
 
-<InlineEditableField
+<EditableLabel
   value={item.title}
-  onSave={async (newValue) => {
-    await api.updateTitle(item.id, newValue);
+  activationMode="enterOrSpace"
+  showEditIcon
+  on:commit={async (event) => {
+    await api.updateTitle(item.id, event.detail.value);
   }}
-  validate={(v) => v.trim().length > 0
-    ? { valid: true }
-    : { valid: false, message: "Required" }}
 />
 ```
 
@@ -451,37 +451,32 @@ Click-to-edit field that displays as text and becomes an input on click or Enter
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
 | `value` | `string` | **required** | Current display value |
-| `onSave` | `(newValue: string) => Promise<void>` | **required** | Async save callback |
-| `validate` | `(value: string) => ValidationResult` | - | Validation function |
+| `activationMode` | `"doubleClick" \| "enterOrSpace" \| "programmatic"` | `"doubleClick"` | How edit mode is entered |
+| `showEditIcon` | `boolean` | `false` | Show pencil icon on hover/focus |
 | `placeholder` | `string` | `""` | Placeholder text |
-| `inputType` | `"text" \| "number"` | `"text"` | Input type |
 | `disabled` | `boolean` | `false` | Disabled state |
-| `class` | `string` | `""` | Additional CSS class |
+| `emptyText` | `string \| null` | `null` | Text shown when the current value is empty |
+| `maxLength` | `number \| null` | `null` | Input max length |
+| `variant` | `"default" \| "flush"` | `"default"` | Inline visual treatment |
 
 ### States
 
-1. **Display** — Shows text with pencil icon on hover. Click or Enter to edit.
-2. **Edit** — Shows input with save (check) and cancel (x) buttons.
-3. **Saving** — Input disabled, spinner shown while `onSave` resolves.
-4. **Error** — Error message below input. Remains in edit mode for retry.
+1. **Display** — Shows text with optional pencil icon on hover/focus.
+2. **Edit** — Shows inline input.
+3. **Commit** — Emits `commit` on Enter or blur.
+4. **Cancel** — Emits `cancel` on Escape.
 
 ### Keyboard
 
 | Key | Action |
 |-----|--------|
-| Click / Enter / Space | Enter edit mode (from display) |
-| Enter | Save (from edit) |
-| Escape | Cancel and revert (from edit) |
+| Double-click / Click / Enter / Space | Enter edit mode depending on `activationMode` |
+| Enter | Commit |
+| Escape | Cancel and revert |
 
-### Validation
-
-Uses the same `ValidationResult` type as `TextInput`:
-
-```typescript
-type ValidationResult = { valid: true } | { valid: false; message?: string };
-```
-
-Validation runs synchronously before save. If invalid, the error message is shown and save is prevented.
+Keep validation, save state, and optimistic update policy in the host. If the
+save can fail, handle that in the parent after `commit` rather than expecting a
+shared inline-edit wrapper to own the whole async workflow.
 
 ---
 
@@ -644,8 +639,7 @@ All components and patterns are available from their respective barrel exports:
 import {
   EmptyState,
   ErrorBoundary,
-  Drawer,
-  InlineEditableField
+  Drawer
 } from "@decodelabs/underlay/components";
 
 // Patterns (composed, stateful)
@@ -684,7 +678,7 @@ All components use the standard Underlay design token CSS custom properties for 
 | `--underlay-color-border` | `rgba(148, 163, 184, 0.12)` | Borders, separators |
 | `--underlay-color-field-bg` | `rgba(148, 163, 184, 0.18)` | Input backgrounds, hover states |
 | `--underlay-color-primary` | `#2563eb` | Focus rings, active states |
-| `--underlay-color-success` | `#22c55e` | Save buttons (InlineEditableField) |
+| `--underlay-color-success` | `#22c55e` | Success affordances |
 | `--underlay-color-error` | `#ef4444` | Error messages |
 | `--underlay-radius-sm` | `0.25rem` | Small border radius |
 | `--underlay-radius-md` | `0.5rem` | Medium border radius |

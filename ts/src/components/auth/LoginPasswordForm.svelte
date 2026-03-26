@@ -1,9 +1,5 @@
 <script lang="ts">
-  import Button from "../Button.svelte";
-  import Field from "../Field.svelte";
-  import FormActions from "../FormActions.svelte";
-  import FormError from "../FormError.svelte";
-  import TextInput from "../TextInput.svelte";
+  import { Button, Callout, Field, FormActions, TextInput } from "@poodle/svelte-primitives";
 
   interface Props {
     email?: string;
@@ -25,38 +21,41 @@
 </script>
 
 <form onsubmit={onSubmit} class="underlay-login-page__form">
-  <Field label="Email">
+  <Field id="underlay-login-email" label="Email" required let:describedBy>
     <TextInput
+      id="underlay-login-email"
       name="email"
       type="email"
-      bind:value={email}
-      autocomplete="email"
-      required
+      value={email}
+      describedBy={describedBy}
       disabled={loading}
+      on:valueChange={(event) => { email = event.detail.value; }}
     />
   </Field>
 
-  <Field label="Password">
+  <Field id="underlay-login-password" label="Password" required let:describedBy>
     <TextInput
+      id="underlay-login-password"
       name="password"
       type="password"
-      bind:value={password}
-      autocomplete="current-password"
-      required
+      value={password}
+      describedBy={describedBy}
       disabled={loading}
+      on:valueChange={(event) => { password = event.detail.value; }}
     />
   </Field>
 
-  <FormError message={error} />
+  {#if error}
+    <Callout tone="danger" message={error} announceMode="assertive" />
+  {/if}
 
-  <FormActions>
-    <Button type="submit" variant="primary" disabled={loading}>
-      {loading ? "Logging in..." : "Log in"}
-    </Button>
+  <FormActions align="between">
     {#if forgotPasswordHref}
-      <span class="underlay-login-page__spacer"></span>
       <a href={forgotPasswordHref} class="underlay-login-page__link">Forgot password?</a>
     {/if}
+    <Button type="submit" variant="primary" loading={loading}>
+      {loading ? "Logging in..." : "Log in"}
+    </Button>
   </FormActions>
 </form>
 
@@ -65,10 +64,6 @@
     display: flex;
     flex-direction: column;
     gap: var(--underlay-density-gap, 0.75rem);
-  }
-
-  .underlay-login-page__spacer {
-    flex: 1;
   }
 
   .underlay-login-page__link {

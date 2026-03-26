@@ -16,6 +16,7 @@
    */
 
   import type { Snippet } from "svelte";
+  import { Card } from "@poodle/svelte-primitives";
 
   interface Props {
     /** Optional title displayed above the content */
@@ -44,6 +45,7 @@
 
 <div class="underlay-auth-layout {className}">
   <div class="underlay-auth-layout__card" style:max-width={maxWidth}>
+    <Card variant="elevated">
     {#if logo}
       <div class="underlay-auth-layout__logo">
         {@render logo()}
@@ -63,6 +65,7 @@
         {@render footer()}
       </div>
     {/if}
+    </Card>
   </div>
 </div>
 
@@ -72,7 +75,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: var(--underlay-space-4, 1rem);
+    padding: clamp(1.5rem, 4vw, 3rem);
     box-sizing: border-box;
   }
 
@@ -88,10 +91,10 @@
 
   .underlay-auth-layout__title {
     text-align: center;
-    font-size: var(--underlay-font-size-xl, 1.5rem);
-    font-weight: 600;
+    font-size: clamp(1.75rem, 2vw, 2.25rem);
+    font-weight: 650;
     margin: 0 0 var(--underlay-space-4, 1.25rem);
-    letter-spacing: 0.04em;
+    letter-spacing: -0.02em;
     color: var(--underlay-color-text, #e5e7eb);
   }
 
@@ -112,4 +115,5 @@
   .underlay-auth-layout__footer :global(a:hover) {
     text-decoration-thickness: 2px;
   }
+
 </style>

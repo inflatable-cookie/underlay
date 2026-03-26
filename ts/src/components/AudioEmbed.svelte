@@ -1,13 +1,11 @@
 <script lang="ts">
-  import type { ParsedEmbed, RenderOptions } from "../embed/index.js";
+  import type { ParsedEmbed } from "../embed/index.js";
+  import { EmbedPreview } from "@poodle/svelte-composites";
   import AudioPlayer from "./AudioPlayer.svelte";
-  import EmbedPreview from "./EmbedPreview.svelte";
 
   interface Props {
     /** Parsed embed to render */
     parsed?: ParsedEmbed | null;
-    /** Render options for fallback iframe */
-    options?: RenderOptions;
     /** Title to display in player */
     title?: string;
     /** Show volume control in player */
@@ -20,7 +18,6 @@
 
   let {
     parsed,
-    options,
     title,
     showVolume = true,
     forceIframe = false,
@@ -115,7 +112,6 @@
   {#if !parsed}
     <EmbedPreview
       parsed={null}
-      mediaType="audio"
       emptyMessage="No audio source available"
     />
   {:else if usePlayer && audioSource}
@@ -128,8 +124,6 @@
   {:else}
     <EmbedPreview
       {parsed}
-      {options}
-      mediaType="audio"
       aspectRatio="auto"
     />
   {/if}

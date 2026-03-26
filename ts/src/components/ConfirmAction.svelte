@@ -1,7 +1,6 @@
 <script lang="ts">
+  import { AlertDialog as PoodleAlertDialog, Button } from "@poodle/svelte-primitives";
   import type { Snippet } from "svelte";
-  import AlertDialog from "./AlertDialog.svelte";
-  import TextButton from "./TextButton.svelte";
 
   interface Props {
     open?: boolean;
@@ -34,23 +33,26 @@
   }: Props = $props();
 </script>
 
-<TextButton type="button" variant={triggerVariant} onclick={() => (open = true)}>
+<Button
+  type="button"
+  variant="ghost"
+  tone={triggerVariant === "danger" ? "danger" : "default"}
+  on:click={() => (open = true)}
+>
   {#if trigger}
     {@render trigger()}
   {:else}
     {triggerLabel}
   {/if}
-</TextButton>
+</Button>
 
-<AlertDialog
+<PoodleAlertDialog
   bind:open
-  showTrigger={false}
   {title}
   {description}
   {confirmLabel}
   {cancelLabel}
-  {confirmVariant}
-  {cancelVariant}
   {onConfirm}
   {onCancel}
+  tone={confirmVariant === "danger" || confirmVariant === "danger-subtle" ? "danger" : "warning"}
 />

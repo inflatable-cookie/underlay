@@ -3,7 +3,6 @@
   import type { Snippet } from "svelte";
   import { getContext, onMount, onDestroy } from "svelte";
   import type { TabsVariant, TabsSize } from "./TabsRoot.svelte";
-  import type { FormTabsSectionRegistryContext } from "./form-tabs/types";
 
   interface Props {
     value: string;
@@ -24,7 +23,6 @@
 
   const getVariant = getContext<() => TabsVariant>("underlay-tabs-variant");
   const getSize = getContext<() => TabsSize>("underlay-tabs-size");
-  const registry = getContext<FormTabsSectionRegistryContext | undefined>("underlay-form-tabs-registry");
   const registerTab = getContext<((tab: { value: string; label: string; count?: number | null }) => void) | undefined>(
     "underlay-tabs-register"
   );
@@ -32,7 +30,6 @@
 
   let variant = $derived(getVariant?.() ?? "pills");
   let size = $derived(getSize?.() ?? "default");
-  let sectionState = $derived(registry?.getSectionState(value) ?? "idle");
 
   let triggerRef = $state<HTMLElement | null>(null);
 
@@ -57,16 +54,10 @@
   {value}
   {disabled}
   class={`underlay-tabs-trigger underlay-tabs-trigger--${variant} underlay-tabs-trigger--${size} ${className ?? ""}`}
-  data-section-state={sectionState}
 >
   {@render children?.()}
   {#if count != null}
     <span class="underlay-tabs-trigger__count">{count}</span>
-  {/if}
-  {#if sectionState === "invalid"}
-    <span class="underlay-tabs-trigger__validation-dot underlay-tabs-trigger__validation-dot--error" aria-label="Has validation errors"></span>
-  {:else if sectionState === "incomplete"}
-    <span class="underlay-tabs-trigger__validation-dot underlay-tabs-trigger__validation-dot--warning" aria-label="Has required fields"></span>
   {/if}
 </BitsTabs.Trigger>
 
@@ -208,21 +199,4 @@
     color: var(--underlay-color-text, #e5e7eb);
   }
 
-  /* Validation indicator dots */
-  .underlay-tabs-trigger__validation-dot {
-    display: inline-block;
-    width: 0.5rem;
-    height: 0.5rem;
-    border-radius: 50%;
-    flex-shrink: 0;
-    margin-left: 0.25rem;
-  }
-
-  .underlay-tabs-trigger__validation-dot--error {
-    background: var(--underlay-color-error, #ef4444);
-  }
-
-  .underlay-tabs-trigger__validation-dot--warning {
-    background: var(--underlay-color-warning, #f59e0b);
-  }
 </style>

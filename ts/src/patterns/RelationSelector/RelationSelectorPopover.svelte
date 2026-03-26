@@ -1,11 +1,11 @@
 <script lang="ts">
+  import { Button } from "@poodle/svelte-primitives";
   import { tick } from "svelte";
   import { Popover as BitsPopover } from "bits-ui";
   import Loader from "lucide-svelte/icons/loader-circle";
   import X from "lucide-svelte/icons/x";
   import type { SelectableRelation, FilterConfig } from "./types.js";
   import { useRelationSelector } from "./context.svelte.js";
-  import Button from "../../components/Button.svelte";
   import RelationSelectorPopoverCreateAction from "./RelationSelectorPopoverCreateAction.svelte";
   import RelationSelectorPopoverFilters from "./RelationSelectorPopoverFilters.svelte";
   import RelationSelectorPopoverListSection from "./RelationSelectorPopoverListSection.svelte";
@@ -368,7 +368,7 @@
 
     {#if ctx.isMultiSelect}
       <div class="relation-selector-popover__footer">
-        <Button variant="primary" onclick={handleConfirm}>
+        <Button variant="primary" on:click={handleConfirm}>
           Done ({ctx.selectedItems.length})
         </Button>
       </div>

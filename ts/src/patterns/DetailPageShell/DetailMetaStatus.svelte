@@ -1,6 +1,5 @@
 <script lang="ts">
-  import type { Snippet } from "svelte";
-  import StatusBadge from "../../components/StatusBadge.svelte";
+  import { Pill } from "@poodle/svelte-primitives";
 
   interface Props {
     /** Current status value */
@@ -19,6 +18,18 @@
     falseLabel = "Inactive",
     variant = "success"
   }: Props = $props();
+
+  const tone = $derived(
+    value
+      ? variant === "danger"
+        ? "danger"
+        : "success"
+      : "neutral"
+  );
+
+  const label = $derived(value ? trueLabel : falseLabel);
 </script>
 
-<StatusBadge {value} {trueLabel} {falseLabel} {variant} />
+<Pill tone={tone} appearance="badge" size="sm">
+  {label}
+</Pill>

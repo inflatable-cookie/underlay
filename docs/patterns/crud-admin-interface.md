@@ -505,7 +505,7 @@ Use these extension phases whenever the admin surface has nested entities, riche
 
 - [ ] Use `useAuthenticatedData()` instead of plain `+page.ts` data-only loading for protected routes.
 - [ ] Trigger fetch using auth readiness (`authLoading` + current user state).
-- [ ] Expose clear loading, empty, and error states (`PageLoading`, `FormError`).
+- [ ] Expose clear loading, empty, and error states (`PageLoading`, danger `Callout`).
 - [ ] Keep token access in auth store (do not pass tokens through page data).
 
 Primary references:

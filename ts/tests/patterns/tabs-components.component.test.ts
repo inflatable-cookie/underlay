@@ -44,17 +44,6 @@ describe("components/Tabs*.svelte", () => {
 		expect(screen.getByTestId("content-two")).toBeTruthy();
 	});
 
-	it("renders form-registry validation dots for invalid/incomplete sections", () => {
-		render(TabsComponentsHarness, {
-			variant: "form",
-			stateOne: "invalid",
-			stateTwo: "incomplete",
-		});
-
-		expect(screen.getByLabelText("Has validation errors")).toBeTruthy();
-		expect(screen.getByLabelText("Has required fields")).toBeTruthy();
-	});
-
 	it("renders collapsible container path when collapsible mode is enabled", () => {
 		const originalResizeObserver = globalThis.ResizeObserver;
 		class ResizeObserverMock {

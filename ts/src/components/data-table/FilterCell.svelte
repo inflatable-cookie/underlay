@@ -1,8 +1,7 @@
 <script lang="ts">
+  import { SearchField, TextInput } from "@poodle/svelte-primitives";
   import type { DataTableColumn } from "../DataTable.svelte";
   import Select from "../Select.svelte";
-  import DateInput from "../DateInput.svelte";
-  import TextInput from "../TextInput.svelte";
 
   interface Props {
     column: DataTableColumn<any>;
@@ -15,6 +14,27 @@
     value,
     onChange
   }: Props = $props();
+
+  let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+
+  $effect(() => {
+    return () => {
+      if (debounceTimer) {
+        clearTimeout(debounceTimer);
+      }
+    };
+  });
+
+  function handleSearchValueChange(nextValue: string): void {
+    if (debounceTimer) {
+      clearTimeout(debounceTimer);
+    }
+
+    debounceTimer = setTimeout(() => {
+      debounceTimer = null;
+      onChange(nextValue);
+    }, 300);
+  }
 </script>
 
 {#if column.filterable}
@@ -31,17 +51,18 @@
       ]}
     />
   {:else if column.filterType === "date"}
-    <DateInput
+    <TextInput
+      id={`filter-${column.key ?? column.label.toLowerCase().replace(/\s+/g, "-")}`}
+      type="date"
       {value}
-      onchange={onChange}
+      on:valueChange={(event) => onChange(event.detail.value)}
     />
   {:else}
-    <TextInput
-      search
+    <SearchField
+      id={`filter-${column.key ?? column.label.toLowerCase().replace(/\s+/g, "-")}`}
       placeholder={`Filter ${column.label.toLowerCase()}...`}
       {value}
-      debounce={300}
-      onchange={onChange}
+      on:valueChange={(event) => handleSearchValueChange(event.detail.value)}
     />
   {/if}
 {/if}

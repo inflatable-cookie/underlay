@@ -801,17 +801,18 @@ Forms should NOT contain `<form>` elements or submission logic. They render fiel
 ```svelte
 <script lang="ts">
   import {
-    ConfirmAction,
+    ConfirmAction
+  } from "@decodelabs/underlay/components";
+  import { FormLayout } from "@poodle/svelte-composites";
+  import {
+    Button,
     Field,
     FieldSet,
-    FieldSetGrid,
     FormActions,
-    FormValidationProvider,
-    SaveSplitButton,
+    SplitButton,
     Switch,
-    TextButton,
     TextInput
-  } from "@decodelabs/underlay/components";
+  } from "@poodle/svelte-primitives";
   import { navigateOnCancel } from "@decodelabs/underlay/client";
 
   interface Props {
@@ -836,7 +837,11 @@ Forms should NOT contain `<form>` elements or submission logic. They render fiel
 
   let nameValue = $state(values.name ?? "");
   let isLiveValue = $state(values.isLive ?? false);
-  let isFormValid = $state(false);
+  let actionBarElement = $state<HTMLDivElement | null>(null);
+  const editIntentItems = [
+    { value: "save", label: "Save changes" },
+    { value: "save-close", label: "Save & close" }
+  ];
 
   function handleCancel() {
     navigateOnCancel(cancelHref);
@@ -845,6 +850,11 @@ Forms should NOT contain `<form>` elements or submission logic. They render fiel
   function handleDeleteConfirm() {
     const form = document.getElementById('entity-delete-form') as HTMLFormElement | null;
     form?.requestSubmit();
+  }
+
+  function submitWithIntent(nextIntent: "save" | "save-close") {
+    intent = nextIntent;
+    actionBarElement?.closest("form")?.requestSubmit();
   }
 
   const dangerItems = $derived(mode === "edit"
@@ -857,45 +867,58 @@ Forms should NOT contain `<form>` elements or submission logic. They render fiel
       ]);
 </script>
 
-<FormValidationProvider bind:isValid={isFormValid}>
-  <FieldSet legend="Details">
-    <FieldSetGrid>
-      <Field label="Name" error={errors?.name} required>
-        <TextInput name="name" bind:value={nameValue} required />
-      </Field>
-    </FieldSetGrid>
-  </FieldSet>
+<FieldSet legend="Details">
+  <FormLayout columns={1}>
+    <Field label="Name" error={errors?.name} required>
+      <TextInput name="name" bind:value={nameValue} required />
+    </Field>
+  </FormLayout>
+</FieldSet>
 
-  <FieldSet legend="Status">
-    <FieldSetGrid>
-      <Field label="Visibility">
-        <input type="hidden" name="isLive" value={isLiveValue ? "true" : "false"} />
-        <Switch leftLabel="Draft" rightLabel="Live" bind:checked={isLiveValue} />
-      </Field>
-    </FieldSetGrid>
-  </FieldSet>
-</FormValidationProvider>
+<FieldSet legend="Status">
+  <FormLayout columns={1}>
+    <Field label="Visibility">
+      <input type="hidden" name="isLive" value={isLiveValue ? "true" : "false"} />
+      <Switch leftLabel="Draft" rightLabel="Live" bind:checked={isLiveValue} />
+    </Field>
+  </FormLayout>
+</FieldSet>
 
 <FormActions align="start" {dangerItems}>
-  {#snippet danger()}
-    <TextButton type="button" onclick={handleCancel} disabled={submitting}>
-      Cancel
-    </TextButton>
-    {#if mode === "edit"}
-      <ConfirmAction
-        triggerLabel="Soft delete entity"
-        triggerVariant="danger"
-        onConfirm={handleDeleteConfirm}
-      />
+  <div bind:this={actionBarElement}>
+    {#snippet danger()}
+      <Button type="button" variant="ghost" on:click={handleCancel} disabled={submitting}>
+        Cancel
+      </Button>
+      {#if mode === "edit"}
+        <ConfirmAction
+          triggerLabel="Soft delete entity"
+          triggerVariant="danger"
+          onConfirm={handleDeleteConfirm}
+        />
+      {/if}
+    {/snippet}
+
+    <input type="hidden" name="intent" value={intent} />
+    {#if returnTo}
+      <input type="hidden" name="returnTo" value={returnTo} />
     {/if}
-  {/snippet}
 
-  <input type="hidden" name="intent" value={intent} />
-  {#if returnTo}
-    <input type="hidden" name="returnTo" value={returnTo} />
-  {/if}
-
-  <SaveSplitButton type="submit" mode={mode} disabled={submitting} bind:intent />
+    {#if mode === "create"}
+      <Button type="submit" variant="primary" disabled={submitting}>Create entity</Button>
+    {:else}
+      <SplitButton
+        type="submit"
+        variant="primary"
+        items={editIntentItems}
+        disabled={submitting}
+        on:click={() => submitWithIntent(intent)}
+        on:action={(event) => submitWithIntent(event.detail.value as "save" | "save-close")}
+      >
+        {intent === "save" ? "Save changes" : "Save & close"}
+      </SplitButton>
+    {/if}
+  </div>
 </FormActions>
 ```
 
@@ -973,6 +996,14 @@ Both create and edit pages use `SpaFormShell`:
 </form>
 ```
 
+Boundary note:
+- keep `SpaFormShell` for save/save-close/delete workflow orchestration,
+  navigation, and field-error/result wiring
+- let Poodle own the visual shell pieces inside it, especially callouts and
+  card framing, instead of reintroducing app-local status wrappers
+- use `DetailMeta*` for both detail-page and edit-header metadata rows, and
+  compose copyable values with `Code copy` inside `DetailMetaItem` when needed
+
 ### Tab Content Pattern (List View)
 
 Tab content should ONLY handle navigation and display - no forms or dialogs:
@@ -980,7 +1011,8 @@ Tab content should ONLY handle navigation and display - no forms or dialogs:
 ```svelte
 <script lang="ts">
   import { FilterBar, PageHeader, type NavigationContext } from "@decodelabs/underlay/patterns";
-  import { Button, Field, ListGrid, TextInput } from "@decodelabs/underlay/components";
+  import { ListGrid } from "@decodelabs/underlay/components";
+  import { Button, Field, TextInput } from "@poodle/svelte-primitives";
   import { EntityListCard } from "$lib/cards";
   import { gotoWithContext } from "@decodelabs/underlay/client";
   import Plus from "lucide-svelte/icons/plus";
@@ -1029,24 +1061,21 @@ Detail pages show entity metadata in the PageHeader meta area:
 
 ```svelte
 <PageHeader title={entity.name} backHref={backInfo.href} backLabel={backInfo.label}>
-  <PageHeaderMeta>
-    <PageHeaderMetaRow>
-      <PageHeaderMetaItem label="ID">
+  <DetailMeta>
+      <DetailMetaItem label="ID">
         <Code copy>{entity.id}</Code>
-      </PageHeaderMetaItem>
-      <PageHeaderMetaSeparator />
+      </DetailMetaItem>
+      <DetailMetaSeparator />
       <StatusBadge value={entity.isFree} trueLabel="Free" falseLabel="Restricted">
         {#snippet trueIcon()}<LockOpen size={14} />{/snippet}
         {#snippet falseIcon()}<Lock size={14} />{/snippet}
       </StatusBadge>
-    </PageHeaderMetaRow>
-    <PageHeaderMetaRow>
+      <DetailMetaSeparator />
       <StatusBadge value={entity.isLive} trueLabel="Live" falseLabel="Draft" variant="danger">
         {#snippet trueIcon()}<Eye size={14} />{/snippet}
         {#snippet falseIcon()}<EyeOff size={14} />{/snippet}
       </StatusBadge>
-    </PageHeaderMetaRow>
-  </PageHeaderMeta>
+  </DetailMeta>
 </PageHeader>
 ```
 

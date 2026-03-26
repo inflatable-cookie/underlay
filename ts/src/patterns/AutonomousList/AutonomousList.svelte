@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { Button, Callout, IconButton, SearchField } from "@poodle/svelte-primitives";
   import { untrack } from "svelte";
   import type { Component, SvelteComponent, Snippet } from "svelte";
   import PageHeader from "../PageHeader.svelte";
@@ -7,13 +8,10 @@
   import ListGrid from "../../components/ListGrid.svelte";
   import ListCard from "../../components/ListCard.svelte";
   import PageLoading from "../../components/PageLoading.svelte";
-  import FormError from "../../components/FormError.svelte";
   import EmptyState from "../../components/EmptyState.svelte";
   import Pagination from "../../components/Pagination.svelte";
   import BatchActionBar from "../../components/BatchActionBar.svelte";
   import BatchConfirmDialog from "../../components/BatchConfirmDialog.svelte";
-  import Button from "../../components/Button.svelte";
-  import TextInput from "../../components/TextInput.svelte";
   import type { BatchAction } from "../batch-actions.svelte";
   import type { PageHeaderLevel, BreadcrumbItem } from "../types";
   import type {
@@ -100,6 +98,16 @@
 
   // Active filter state for FilterBar display
   let activeFilterValues = $state<Record<string, string>>({});
+  let textFilterTimers = new Map<string, ReturnType<typeof setTimeout>>();
+
+  $effect(() => {
+    return () => {
+      for (const timer of textFilterTimers.values()) {
+        clearTimeout(timer);
+      }
+      textFilterTimers.clear();
+    };
+  });
 
   function handleFilterChange(key: string, value: string | undefined) {
     if (value) {
@@ -124,6 +132,20 @@
       // the fetcher's closure. Trigger a refresh.
       listState.resetPagination();
     }
+  }
+
+  function handleDebouncedTextFilterChange(key: string, value: string | undefined, debounceMs: number): void {
+    const existingTimer = textFilterTimers.get(key);
+    if (existingTimer) {
+      clearTimeout(existingTimer);
+    }
+
+    const timer = setTimeout(() => {
+      textFilterTimers.delete(key);
+      handleFilterChange(key, value);
+    }, debounceMs);
+
+    textFilterTimers.set(key, timer);
   }
 
   function clearFilter(key: string) {
@@ -184,29 +206,25 @@
     {#snippet actions()}
       <div class="underlay-autonomous-list__actions">
         {#if batchActions.length > 0}
-          <Button
-            variant={listState.selectionMode ? "primary" : "subtle"}
-            size="icon-sm"
-            onclick={listState.toggleSelectionMode}
-            aria-label={listState.selectionMode ? "Exit selection" : "Select items"}
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="3" width="18" height="18" rx="2" /><path d="m9 12 2 2 4-4" />
-            </svg>
-          </Button>
+          <IconButton
+            icon="check-square"
+            variant={listState.selectionMode ? "primary" : "ghost"}
+            size="sm"
+            ariaLabel={listState.selectionMode ? "Exit selection" : "Select items"}
+            tooltip={listState.selectionMode ? "Exit selection" : "Select items"}
+            on:click={listState.toggleSelectionMode}
+          />
         {/if}
 
         {#if listState.canReorder}
-          <Button
-            variant={listState.reorderMode ? "primary" : "subtle"}
-            size="icon-sm"
-            onclick={() => listState.reorderMode ? listState.exitReorderMode() : listState.enterReorderMode()}
-            aria-label={listState.reorderMode ? "Exit reorder" : "Reorder items"}
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="m3 16 4 4 4-4" /><path d="M7 20V4" /><path d="m21 8-4-4-4 4" /><path d="M17 4v16" />
-            </svg>
-          </Button>
+          <IconButton
+            icon="arrow-up-down"
+            variant={listState.reorderMode ? "primary" : "ghost"}
+            size="sm"
+            ariaLabel={listState.reorderMode ? "Exit reorder" : "Reorder items"}
+            tooltip={listState.reorderMode ? "Exit reorder" : "Reorder items"}
+            on:click={() => listState.reorderMode ? listState.exitReorderMode() : listState.enterReorderMode()}
+          />
         {/if}
 
         {#if headerActionsSnippet}
@@ -214,10 +232,12 @@
         {/if}
 
         {#if addHref}
-          <Button variant="primary" size="sm" onclick={() => { window.location.href = addHref! }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M5 12h14" /><path d="M12 5v14" />
-            </svg>
+          <Button variant="primary" size="sm" on:click={() => { window.location.href = addHref! }}>
+            <svelte:fragment slot="leading">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 12h14" /><path d="M12 5v14" />
+              </svg>
+            </svelte:fragment>
             {addLabel}
           </Button>
         {/if}
@@ -236,11 +256,16 @@
     >
       {#each filterFields as field (field.key)}
         {#if field.type === "text"}
-          <TextInput
+          <SearchField
+            id={`autonomous-list-filter-${field.key}`}
             placeholder={field.placeholder ?? "Search..."}
             value={activeFilterValues[field.key] ?? ""}
-            oninput={(value) => handleFilterChange(field.key, value || undefined)}
-            debounce={field.debounce ?? 400}
+            on:valueChange={(event) =>
+              handleDebouncedTextFilterChange(
+                field.key,
+                event.detail.value || undefined,
+                field.debounce ?? 400
+              )}
           />
         {:else if field.type === "select" && field.options}
           <select
@@ -263,7 +288,7 @@
   {#if listState.loading}
     <PageLoading message={`Loading ${title.toLowerCase()}...`} />
   {:else if listState.error}
-    <FormError message={listState.error} />
+    <Callout tone="danger" message={listState.error} announceMode="polite" />
   {:else if listState.reorderMode && listState.reorder}
     <ReorderableList
       controller={listState.reorder}

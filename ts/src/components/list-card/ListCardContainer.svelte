@@ -87,6 +87,14 @@
     min-width: 0;
   }
 
+  .underlay-list-card-shell:hover {
+    z-index: 2;
+  }
+
+  .underlay-list-card-shell:focus-within {
+    z-index: 10;
+  }
+
   .underlay-list-card {
     --underlay-list-card-accent: var(
       --underlay-color-primary,

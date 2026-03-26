@@ -1,13 +1,12 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
+  import { Button } from "@poodle/svelte-primitives";
 
   import type { PassKeyStartPayload } from "./types";
 
-  import Button from "../Button.svelte";
-
   interface Props {
     label?: string;
-    variant?: "primary" | "secondary" | "subtle";
+    variant?: "primary" | "secondary" | "ghost";
     disabled?: boolean;
     loading?: boolean;
     class?: string;
@@ -17,7 +16,7 @@
 
   let {
     label = "Use a passkey",
-    variant = "subtle",
+    variant = "secondary",
     disabled = false,
     loading = false,
     class: className = "",
@@ -25,9 +24,9 @@
     onStart,
   }: Props = $props();
 
-  function handleClick(event: MouseEvent) {
+  function handleClick(event: CustomEvent<MouseEvent>) {
     if (disabled || loading) return;
-    event.preventDefault();
+    event.detail.preventDefault();
     onStart?.({ source: "button" });
   }
 </script>
@@ -35,10 +34,10 @@
 <Button
   type="button"
   {variant}
-  class={`underlay-passkey-button ${className}`}
+  className={`underlay-passkey-button ${className}`}
   disabled={disabled || loading}
-  aria-busy={loading}
-  onclick={handleClick}
+  loading={loading}
+  on:click={handleClick}
 >
   {#if children}
     {@render children()}

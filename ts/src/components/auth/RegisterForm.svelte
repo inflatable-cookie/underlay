@@ -1,16 +1,13 @@
 <script lang="ts">
+  import { Button, Callout, Field, TextInput } from "@poodle/svelte-primitives";
   import type { Snippet } from "svelte";
 
   import type { AuthFieldErrors, RegisterPayload } from "./types";
 
   import { createStableId } from "../../patterns/dom";
 
-  import Button from "../Button.svelte";
-  import Field from "../Field.svelte";
   import Form from "../Form.svelte";
   import FormActions from "../FormActions.svelte";
-  import FormError from "../FormError.svelte";
-  import TextInput from "../TextInput.svelte";
 
   interface Props {
     email?: string;
@@ -56,74 +53,92 @@
 </script>
 
 <Form {onSubmit} {enhance}>
-  <FormError message={error} />
+  {#if error}
+    <Callout tone="danger" message={error} announceMode="polite" />
+  {/if}
 
   <Field
+    id={emailId}
     label="Email"
-    forId={emailId}
-    error={fieldErrors?.email}
+    error={fieldErrors?.email ?? null}
+    validationState={fieldErrors?.email ? "invalid" : "none"}
+    required
+    let:describedBy
   >
     <TextInput
       id={emailId}
       name="email"
       type="email"
-      autocomplete="email"
-      bind:value={email}
+      value={email}
+      describedBy={describedBy}
       disabled={loading}
-      aria-invalid={fieldErrors?.email ? "true" : "false"}
+      validationState={fieldErrors?.email ? "invalid" : "none"}
+      on:valueChange={(event) => { email = event.detail.value; }}
     />
   </Field>
 
   <Field
+    id={displayNameId}
     label="Display name"
-    forId={displayNameId}
-    error={fieldErrors?.displayName}
+    error={fieldErrors?.displayName ?? null}
+    validationState={fieldErrors?.displayName ? "invalid" : "none"}
+    required
+    let:describedBy
   >
     <TextInput
       id={displayNameId}
       name="displayName"
       type="text"
-      autocomplete="name"
-      bind:value={displayName}
+      value={displayName}
+      describedBy={describedBy}
       disabled={loading}
-      aria-invalid={fieldErrors?.displayName ? "true" : "false"}
+      validationState={fieldErrors?.displayName ? "invalid" : "none"}
+      on:valueChange={(event) => { displayName = event.detail.value; }}
     />
   </Field>
 
   <Field
+    id={passwordId}
     label="Password"
-    forId={passwordId}
-    error={fieldErrors?.password}
+    error={fieldErrors?.password ?? null}
+    validationState={fieldErrors?.password ? "invalid" : "none"}
+    required
+    let:describedBy
   >
     <TextInput
       id={passwordId}
       name="password"
       type="password"
-      autocomplete="new-password"
-      bind:value={password}
+      value={password}
+      describedBy={describedBy}
       disabled={loading}
-      aria-invalid={fieldErrors?.password ? "true" : "false"}
+      validationState={fieldErrors?.password ? "invalid" : "none"}
+      on:valueChange={(event) => { password = event.detail.value; }}
     />
   </Field>
 
   <Field
+    id={passwordConfirmId}
     label="Confirm password"
-    forId={passwordConfirmId}
-    error={fieldErrors?.passwordConfirm}
+    error={fieldErrors?.passwordConfirm ?? null}
+    validationState={fieldErrors?.passwordConfirm ? "invalid" : "none"}
+    required
+    let:describedBy
   >
     <TextInput
       id={passwordConfirmId}
       name="passwordConfirm"
       type="password"
-      autocomplete="new-password"
-      bind:value={passwordConfirm}
+      value={passwordConfirm}
+      describedBy={describedBy}
       disabled={loading}
-      aria-invalid={fieldErrors?.passwordConfirm ? "true" : "false"}
+      validationState={fieldErrors?.passwordConfirm ? "invalid" : "none"}
+      on:valueChange={(event) => { passwordConfirm = event.detail.value; }}
     />
   </Field>
 
   <FormActions align="end">
-    <Button type="submit" variant="primary" disabled={loading} aria-busy={loading}>
+    <Button type="submit" variant="primary" disabled={loading} loading={loading}>
       {submitLabel}
     </Button>
   </FormActions>

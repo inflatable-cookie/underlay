@@ -41,7 +41,7 @@ Ops pages combine **inspection** and **safe control actions**:
 
 - [ ] Use `useAuthenticatedData()` across all ops pages
 - [ ] Refetch on filter changes and post-action success
-- [ ] Show `PageLoading`/`FormError` and stable empty states
+- [ ] Show `PageLoading` plus a danger `Callout` and stable empty states
 
 ### Phase 5: Safety and Feedback
 

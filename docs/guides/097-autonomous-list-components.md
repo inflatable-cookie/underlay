@@ -192,13 +192,13 @@ Extends `useBatchSelection` with action registration and execution. This is the 
 {#if batch.pendingAction}
   <AlertDialog
     open={true}
-    showTrigger={false}
     title={batch.pendingAction.confirm?.title ?? 'Confirm'}
     description={batch.getConfirmDescription()}
     confirmLabel={batch.pendingAction.confirm?.confirmLabel ?? 'Confirm'}
     cancelLabel="Cancel"
     onConfirm={async () => { await batch.confirmPendingAction(); }}
     onCancel={() => batch.cancelPendingAction()}
+    tone="danger"
   />
 {/if}
 ```
@@ -334,7 +334,7 @@ Provides unified state management for list data fetching with filters. Use this 
 {#if list.loading}
   <PageLoading />
 {:else if list.error}
-  <FormError message={list.error} />
+  <Callout tone="danger" message={list.error} announceMode="polite" />
 {:else}
   {#each list.items as item}
     <ListCard title={item.title} />
@@ -542,7 +542,7 @@ Here's a complete example of building an autonomous list component:
     AlertDialog,
     BatchActionBar,
     Button,
-    FormError,
+    Callout,
     ListGrid,
     PageLoading,
     Tooltip
@@ -665,7 +665,7 @@ Here's a complete example of building an autonomous list component:
 {#if pageData.loading}
   <PageLoading message="Loading areas..." />
 {:else if pageData.error}
-  <FormError message={pageData.error} />
+  <Callout tone="danger" message={pageData.error} announceMode="polite" />
 {:else if areas.length === 0}
   <p>No areas defined yet.</p>
 {:else}

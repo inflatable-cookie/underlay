@@ -12,6 +12,7 @@
         "check:types": "effigy check:types",
         "check:exports": "effigy check:exports",
         "check:component-test-hygiene": "effigy check:component-test-hygiene",
+        "check:poodle-prop-names": "effigy check:poodle-prop-names",
         "check:guardrails": "effigy check:guardrails",
         "qa:docs": "effigy qa:docs",
         "qa:northstar": "effigy qa:northstar",
@@ -44,6 +45,27 @@
             "svelte": "./ts/src/patterns/index.ts",
             "types": "./ts/src/patterns/index.ts",
             "default": "./ts/src/patterns/index.ts"
+        },
+        "./patterns/PageHeader": {
+            "svelte": "./ts/src/patterns/PageHeader.svelte",
+            "types": "./ts/src/patterns/PageHeader.svelte",
+            "default": "./ts/src/patterns/PageHeader.svelte"
+        },
+        "./patterns/FormDialog": {
+            "types": "./ts/src/patterns/FormDialog/index.ts",
+            "default": "./ts/src/patterns/FormDialog/index.ts"
+        },
+        "./patterns/useToasts": {
+            "types": "./ts/src/patterns/useToasts.ts",
+            "default": "./ts/src/patterns/useToasts.ts"
+        },
+        "./patterns/authenticated-data": {
+            "types": "./ts/src/patterns/authenticated-data.svelte.ts",
+            "default": "./ts/src/patterns/authenticated-data.svelte.ts"
+        },
+        "./patterns/selection-history": {
+            "types": "./ts/src/patterns/selection-history.ts",
+            "default": "./ts/src/patterns/selection-history.ts"
         },
         "./patterns/pagination-types": {
             "types": "./ts/src/patterns/pagination-types.ts",
@@ -123,6 +145,8 @@
         }
     },
     "dependencies": {
+        "@poodle/svelte-composites": "file:../poodle/packages/svelte/composites",
+        "@poodle/svelte-primitives": "file:../poodle/packages/svelte/primitives",
         "easymde": "^2.20.0",
         "isomorphic-dompurify": "^3.0.0",
         "marked": "^17.0.3",

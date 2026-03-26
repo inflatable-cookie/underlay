@@ -1,7 +1,6 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
-
-  import Button from "../Button.svelte";
+  import { Button } from "@poodle/svelte-primitives";
 
   type NavigateEvent = { url: string };
   type ErrorEvent = { message: string };
@@ -12,7 +11,7 @@
     /** Custom click handler (alternative to URL-based navigation) */
     onclick?: () => void | Promise<void>;
     label?: string;
-    variant?: "primary" | "secondary" | "subtle";
+    variant?: "primary" | "secondary" | "ghost";
     disabled?: boolean;
     class?: string;
     onNavigate?: (event: NavigateEvent) => void;
@@ -24,7 +23,7 @@
     getAuthorizationUrl = null,
     onclick,
     label = "Continue with Google",
-    variant = "subtle",
+    variant = "secondary",
     disabled = false,
     class: className = "",
     onNavigate,
@@ -33,12 +32,12 @@
 
   let loading = $state(false);
 
-  async function handleClick(e: MouseEvent) {
+  async function handleClick(e: CustomEvent<MouseEvent>) {
     if (disabled || loading) {
       return;
     }
 
-    e.preventDefault();
+    e.detail.preventDefault();
 
     try {
       loading = true;
@@ -75,10 +74,10 @@
 <Button
   type="button"
   {variant}
-  class={`underlay-google-signin ${className}`}
+  className={`underlay-google-signin ${className}`}
   disabled={disabled || loading}
-  aria-busy={loading}
-  onclick={handleClick}
+  loading={loading}
+  on:click={handleClick}
 >
   <span class="underlay-google-signin__logo" aria-hidden="true">G</span>
   <span class="underlay-google-signin__label">{label}</span>

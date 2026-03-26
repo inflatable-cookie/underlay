@@ -1,7 +1,8 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
   import type { HTMLFormAttributes } from "svelte/elements";
-  import { Card, Form } from "@decodelabs/underlay/components";
+  import { Card, Callout } from "@poodle/svelte-primitives";
+  import { Form } from "@decodelabs/underlay/components";
   import PageHeader from "./PageHeader.svelte";
   import type { BannerVariant } from "./banner";
 
@@ -74,6 +75,9 @@
     headerMeta,
     children
   }: Props = $props();
+
+  const hasFieldErrors = $derived(Boolean(fieldErrors && Object.keys(fieldErrors).length > 0));
+  const visibleError = $derived(hasFieldErrors ? null : error);
 </script>
 
 {#if showTitle}
@@ -85,56 +89,46 @@
 {/if}
 
 {#if success && successMessage}
-  <p class="underlay-form-shell__success">{successMessage}</p>
+  <Callout
+    tone="success"
+    title="Saved"
+    message={successMessage}
+    announceMode="polite"
+  />
 {/if}
 
-{#if error}
-  <p class="underlay-form-shell__error">{error}</p>
+{#if visibleError}
+  <Callout
+    tone="danger"
+    title="Could not save"
+    message={visibleError}
+    announceMode="assertive"
+  />
 {/if}
 
-{#if fieldErrors && Object.keys(fieldErrors).length > 0}
-  <div class="underlay-form-shell__error-summary" role="alert" aria-live="polite">
-    <p>There are problems with some fields:</p>
-    <ul>
-      {#each Object.entries(fieldErrors) as [field, message]}
+{#if hasFieldErrors}
+  <Callout
+    tone="danger"
+    title="There are problems with some fields"
+    announceMode="polite"
+  >
+    <ul class="underlay-form-shell__error-list">
+      {#each Object.entries(fieldErrors ?? {}) as [field, message]}
         <li><strong>{field}</strong>: {message}</li>
       {/each}
     </ul>
-  </div>
+  </Callout>
 {/if}
 
-<Card as="section">
+<Card>
   <Form {method} class={formClass} {prepare} {enhance} {autocomplete}>
     {@render children?.()}
   </Form>
 </Card>
 
 <style>
-  .underlay-form-shell__success {
-    color: var(--underlay-color-success, #22c55e);
-    margin-bottom: var(--underlay-space-4, 1rem);
-  }
-
-  .underlay-form-shell__error {
-    color: var(--underlay-color-error, #ef4444);
-    margin-bottom: var(--underlay-space-4, 1rem);
-  }
-
-  .underlay-form-shell__error-summary {
-    margin-bottom: var(--underlay-space-4, 1rem);
-    padding: var(--underlay-space-3, 0.75rem) var(--underlay-space-4, 1rem);
-    border-radius: var(--underlay-radius-md, 0.5rem);
-    background-color: rgba(239, 68, 68, 0.08);
-    border: 1px solid rgba(239, 68, 68, 0.6);
-    font-size: 0.9em;
-  }
-
-  .underlay-form-shell__error-summary p:first-child {
-    margin-top: 0;
-  }
-
-  .underlay-form-shell__error-summary ul {
-    margin: var(--underlay-space-2, 0.5rem) 0 0;
+  .underlay-form-shell__error-list {
+    margin: 0;
     padding-left: 1.25rem;
   }
 </style>

@@ -40,8 +40,8 @@ describe("components/AudioEmbed.svelte", () => {
       }
     });
 
-    expect(view.container.querySelector(".underlay-embed-preview")).toBeTruthy();
     expect(view.container.querySelector(".underlay-audio-player")).toBeNull();
+    expect(view.container.querySelector(".embed-preview")).toBeTruthy();
     expect(view.container.querySelector("iframe")).toBeTruthy();
   });
 });

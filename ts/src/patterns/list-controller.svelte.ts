@@ -49,7 +49,7 @@
  * {#if list.loading}
  *   <PageLoading />
  * {:else if list.error}
- *   <FormError message={list.error} />
+ *   <Callout tone="danger" message={list.error} announceMode="polite" />
  * {:else}
  *   {#each list.items as item}
  *     <ListCard title={item.title} />

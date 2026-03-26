@@ -713,7 +713,6 @@ Underlay now provides higher-level client helpers for the WebAuthn ceremony:
 
 - `usePasskeyRegistration()` from `@decodelabs/underlay/patterns`
 - `usePasskeyAuthentication()` from `@decodelabs/underlay/patterns`
-- `PasskeyManager` from `@decodelabs/underlay/components`
 - shared error and capability helpers from `@decodelabs/underlay/utils`
 
 Use them when you want shared browser capability checks, error mapping, and JSON serialization instead of direct `navigator.credentials.*` orchestration in every app.
@@ -740,20 +739,14 @@ const authenticatePasskey = usePasskeyAuthentication({
 });
 ```
 
-```svelte
-<PasskeyManager
-  {passkeys}
-  onRegister={() => registerPasskey.start()}
-  onRename={(id, name) => api.auth.renamePasskey(id, name)}
-  onDelete={(id) => api.auth.deletePasskey(id)}
-/>
-```
-
 Notes:
 
 - This is additive. Existing passkey implementations do not need to change immediately.
 - Conditional mediation support still depends on the browser; detect it through the shared helper instead of assuming uniform support.
 - Existing `LoginPage` / `LoginPasskeyTab` composites remain app-owned wrappers around `onPasskeyLogin(email?)`. They do not adopt the new hooks internally yet because the hook contract needs explicit start/finish callbacks, not a single app-owned login action.
+- Build passkey settings screens directly in the app over the shared hooks and
+  Poodle primitives. Underlay no longer exposes a shared `PasskeyManager`
+  surface.
 
 ### Browser Support Matrix for the Shared Passkey Helpers
 

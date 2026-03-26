@@ -1,7 +1,7 @@
 <script lang="ts">
-  import TextInput from "../../components/TextInput.svelte";
+  import { MediaThumbnail } from "@poodle/svelte-composites";
+  import { TextInput } from "@poodle/svelte-primitives";
   import Select from "../../components/Select.svelte";
-  import MediaThumbnail from "../../components/MediaThumbnail.svelte";
   import type { MarkdownEditorContext } from "../../components/markdown-editor-events";
   import { type MediaKind } from "../../patterns/media-types/enums";
   import { useNightfireMedia, type NightfireMediaPickResult } from "./context";
@@ -89,6 +89,13 @@
     selectedKind = null;
     emit({ mediaId: "" });
   }
+
+  function toPoodleMediaKind(kind: MediaKind | null): "image" | "audio" | "video" | "document" | "embed" {
+    if (kind === "image") return "image";
+    if (kind === "audio") return "audio";
+    if (kind === "video") return "video";
+    return "document";
+  }
 </script>
 
 <div class="media-editor">
@@ -97,12 +104,19 @@
     {#if mediaId}
       <div class="media-editor__preview">
         <MediaThumbnail
-          thumbnailUrl={selectedThumbnailUrl}
-          kind={(selectedKind ?? "other") as MediaKind}
-          alt={selectedTitle ?? "Selected media"}
-          size="xl"
-          showAccent
-        />
+          kind={toPoodleMediaKind(selectedKind as MediaKind | null)}
+          presentation="compact"
+          aspectRatio="square"
+          ariaLabel={selectedTitle ?? "Selected media"}
+        >
+          {#if selectedThumbnailUrl}
+            <img
+              src={selectedThumbnailUrl}
+              alt={selectedTitle ?? "Selected media"}
+              class="media-editor__thumbnail-image"
+            />
+          {/if}
+        </MediaThumbnail>
         <div class="media-editor__preview-info">
           <span class="media-editor__preview-title">
             {selectedTitle ?? mediaId}
@@ -132,9 +146,10 @@
     {:else}
       <!-- Fallback: plain text input when no media context is configured -->
       <TextInput
+        id="nightfire-media-id"
         placeholder="Media ID"
         value={mediaId}
-        oninput={(v) => emit({ mediaId: v })}
+        on:valueChange={(event) => emit({ mediaId: event.detail.value })}
       />
     {/if}
   </div>
@@ -143,14 +158,16 @@
   {#if mediaId}
     <div class="media-editor__fields">
       <TextInput
+        id="nightfire-media-caption"
         placeholder="Caption (optional)"
         value={caption}
-        oninput={(v) => emit({ caption: v })}
+        on:valueChange={(event) => emit({ caption: event.detail.value })}
       />
       <TextInput
+        id="nightfire-media-alt"
         placeholder="Alt text (optional)"
         value={alt}
-        oninput={(v) => emit({ alt: v })}
+        on:valueChange={(event) => emit({ alt: event.detail.value })}
       />
       <Select
         value={display}
@@ -180,6 +197,18 @@
     border: 1px solid var(--underlay-color-border-subtle, rgba(148, 163, 184, 0.35));
     border-radius: var(--underlay-radius-md, 0.375rem);
     background: var(--underlay-color-surface-secondary, rgba(255, 255, 255, 0.03));
+  }
+
+  .media-editor__preview :global(.media-thumbnail) {
+    width: 6rem;
+    flex-shrink: 0;
+  }
+
+  .media-editor__thumbnail-image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
 
   .media-editor__preview-info {

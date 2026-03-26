@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { Button, Callout, Field, TextInput } from "@poodle/svelte-primitives";
   /**
    * @deprecated Use `ForgotPasswordFlow` for all new implementations.
    * This component is kept for backwards compatibility only.
@@ -9,12 +10,8 @@
 
   import { createStableId } from "../../patterns/dom";
 
-  import Button from "../Button.svelte";
-  import Field from "../Field.svelte";
   import Form from "../Form.svelte";
   import FormActions from "../FormActions.svelte";
-  import FormError from "../FormError.svelte";
-  import TextInput from "../TextInput.svelte";
 
   interface Props {
     email?: string;
@@ -43,22 +40,32 @@
 </script>
 
 <Form {onSubmit}>
-  <FormError message={error} />
+  {#if error}
+    <Callout tone="danger" message={error} announceMode="polite" />
+  {/if}
 
-  <Field label="Email" forId={emailId} error={fieldErrors?.email}>
+  <Field
+    id={emailId}
+    label="Email"
+    error={fieldErrors?.email ?? null}
+    validationState={fieldErrors?.email ? "invalid" : "none"}
+    required
+    let:describedBy
+  >
     <TextInput
       id={emailId}
       name="email"
       type="email"
-      autocomplete="email"
-      bind:value={email}
+      value={email}
+      describedBy={describedBy}
       disabled={loading}
-      aria-invalid={fieldErrors?.email ? "true" : "false"}
+      validationState={fieldErrors?.email ? "invalid" : "none"}
+      on:valueChange={(event) => { email = event.detail.value; }}
     />
   </Field>
 
   <FormActions align="end">
-    <Button type="submit" variant="primary" disabled={loading} aria-busy={loading}>
+    <Button type="submit" variant="primary" disabled={loading} loading={loading}>
       {submitLabel}
     </Button>
   </FormActions>

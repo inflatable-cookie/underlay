@@ -27,7 +27,7 @@ Reusable templates:
 | SvelteKit admin deployment | SPA with adapter-static fallback | See `docs/guides/110-admin.md` |
 | Underlay client auth flow | `configureAuth()` + token refresh handler | Required for `useAuthenticatedData()` auto-refresh |
 | Admin navigation pattern | Navigation context helpers | Use `gotoWithContext` + `consumeNavigationContext` |
-| Form pattern | `SpaFormShell` + intent submit | Save/save-close/delete intent model |
+| Form pattern | `SpaFormShell` + intent submit | Save/save-close/delete intent model; shell stays in Underlay, but status/framing UI inside it now follows Poodle surfaces |
 | Underlay change notes | Compatibility note plus linked roadmap/log context | Use this guide as the first stop for downstream upgrades |
 
 ## Required Output by Change Type
@@ -76,13 +76,46 @@ Reusable templates:
 
 ## Current Feature Notes
 
+### Poodle Public Prop Normalization (`2026-03-25`)
+
+- Impact class: `breaking`
+- Affected consumers: any app, shared component, or guide snippet using `@poodle/svelte-primitives` or `@poodle/svelte-composites`
+- What changed:
+  - Poodle public boolean props now use plain state names consistently across primitives and composites
+  - examples: `disabled`, `loading`, `readOnly`, `required`, `collapsed`, `visible`, `sticky`, `sortable`, `hideable`, `current`, `expandable`
+  - retired forms like `isDisabled`, `isVisible`, `isSticky`, `isSortable`, `isHideable`, and `hasChildren` are removed API, not long-lived compatibility aliases
+- Required actions:
+  1. re-run `bun install` in consumer repos that use local `file:` Poodle packages
+  2. replace retired `is*` / `has*` Poodle prop names with the normalized names at every call site
+  3. update option-object shapes as well as direct component props
+     - `TabItem.disabled`
+     - `MenuItem.disabled` / `MenuItem.checked`
+     - `TableColumn.sortable` / `TableColumn.hideable`
+     - `BreadcrumbItem.current`
+     - `DrillDownItem.expandable`
+  4. do not add app-local compatibility shims or restore legacy aliases in Poodle
+- Cutover:
+  - canonical contract date: `2026-03-25`
+  - no compatibility window is planned after this cutover; the normalized names are the active API from `2026-03-25`
+- Validation:
+  - in `poodle`: `effigy svelte:build`
+  - in `underlay`: `effigy health && effigy qa:docs && effigy qa:northstar`
+  - in direct consumer apps: run the repo-owned Svelte check or equivalent smoke validation after upgrading
+- Changed guidance:
+  - [090-ui-kit.md](./090-ui-kit.md)
+  - [075-validation.md](./075-validation.md)
+  - [110-admin.md](./110-admin.md)
+  - [043-poodle-public-prop-normalization.md](../roadmaps/g01/043-poodle-public-prop-normalization.md)
+
 ### Passkey Hooks and Manager (`2026-03-11`)
 
 - Impact class: `additive`
 - Affected consumers: apps with custom WebAuthn ceremony code or passkey settings UIs
 - Required actions:
   - import `usePasskeyRegistration()` / `usePasskeyAuthentication()` from `@decodelabs/underlay/patterns`
-  - optionally adopt `PasskeyManager` from `@decodelabs/underlay/components`
+  - build passkey settings screens directly in the app over shared auth hooks
+    and Poodle primitives; `PasskeyManager` is no longer part of the public
+    Underlay component surface
   - keep existing backend start/finish endpoints; this batch does not change backend contracts
 - Validation:
   - `effigy validate`

@@ -13,7 +13,7 @@ Read both files thoroughly before starting. The patterns are:
 3. **Drawer** (`@decodelabs/underlay/components`) — Slide-out side panel
 4. **DetailPageShell** (`@decodelabs/underlay/patterns`) — Composable entity detail page with tabs
 5. **AutonomousList** (`@decodelabs/underlay/patterns`) — Self-contained list with filters, batch, reorder
-6. **InlineEditableField** (`@decodelabs/underlay/components`) — Click-to-edit text field
+6. **EditableLabel** (`@poodle/svelte-primitives`) — Click-to-edit text field
 7. **KeyboardShortcuts** (`@decodelabs/underlay/patterns`) — Centralized shortcut registration
 8. **ErrorBoundary** (`@decodelabs/underlay/components`) — Render error catch with recovery UI
 
@@ -64,7 +64,7 @@ The `deleteConfig.execute` should contain the async delete logic (auth check + A
 
 Find detail pages that manually compose:
 - PageHeader with title, breadcrumbs, backHref
-- PageHeaderMeta / PageHeaderMetaRow / PageHeaderMetaItem with ID + StatusBadge
+- DetailMeta / DetailMetaItem / DetailMetaSeparator with ID + StatusBadge
 - TabsRoot / TabsList / TabsTrigger / TabsContent
 
 Replace with DetailPageShell + DetailMeta sub-components. This is the highest-effort migration because each page has unique metadata and tab configurations.
@@ -93,7 +93,7 @@ Wrap top-level route components or risky async components:
 
 ### Lower Priority (opportunistic)
 
-- **InlineEditableField**: Only if click-to-edit patterns exist
+- **EditableLabel**: Only if click-to-edit patterns exist
 - **KeyboardShortcuts**: Only if there are manual keyboard handlers beyond what AutonomousList already handles
 - **Drawer**: Only if there are slide-out panels
 

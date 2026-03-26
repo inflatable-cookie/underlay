@@ -1,11 +1,7 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
+  import { Tabs, type TabItem } from "@poodle/svelte-primitives";
   import PageHeader from "../PageHeader.svelte";
-  import TabsRoot from "../../components/TabsRoot.svelte";
-  import TabsList from "../../components/TabsList.svelte";
-  import TabsTrigger from "../../components/TabsTrigger.svelte";
-  import TabsSeparator from "../../components/TabsSeparator.svelte";
-  import TabsContent from "../../components/TabsContent.svelte";
   import type { BreadcrumbItem, PageHeaderLevel } from "../types";
   import type { BannerVariant } from "../banner";
 
@@ -114,6 +110,17 @@
     void mountedTabsVersion;
     return mountedTabsSet.has(value);
   }
+
+  const tabItems = $derived(
+    tabs?.map(
+      (tab): TabItem => ({
+        value: tab.value,
+        label: tab.label,
+        count: tab.count,
+        separator: tab.separator
+      })
+    ) ?? []
+  );
 </script>
 
 <div class="underlay-detail-page {className}">
@@ -137,26 +144,11 @@
   </PageHeader>
 
   {#if tabs && tabs.length > 0 && tabContent}
-    <TabsRoot bind:value={activeTab} variant="boxed" size="sm" historyKey={tabsHistoryKey}>
-      <TabsList>
-        {#each tabs as tab (tab.value)}
-          {#if tab.separator}
-            <TabsSeparator />
-          {/if}
-          <TabsTrigger value={tab.value} count={tab.count}>
-            {tab.label}
-          </TabsTrigger>
-        {/each}
-      </TabsList>
-
-      {#each tabs as tab (tab.value)}
-        <TabsContent value={tab.value}>
-          {#if isTabMounted(tab.value)}
-            {@render tabContent(tab.value)}
-          {/if}
-        </TabsContent>
-      {/each}
-    </TabsRoot>
+    <Tabs bind:value={activeTab} items={tabItems} variant="card" size="sm" historyKey={tabsHistoryKey} ariaLabel="Detail sections" let:activeValue>
+      {#if isTabMounted(activeValue)}
+        {@render tabContent(activeValue)}
+      {/if}
+    </Tabs>
   {:else if children}
     {@render children()}
   {/if}

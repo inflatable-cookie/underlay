@@ -26,6 +26,7 @@ check = "bun x svelte-check --tsconfig ./ts/tsconfig.json"
 "check:types" = "bun x tsc -p ./ts/tsconfig.json"
 "check:exports" = "bun ts/scripts/check-exports.ts"
 "check:component-test-hygiene" = "bun ts/scripts/check-component-test-hygiene.ts"
+"check:poodle-prop-names" = "bun ts/scripts/check-poodle-prop-names.ts"
 "check:guardrails" = "bun ts/src/tools/guardrails.ts"
 "rust:build" = "cargo build --workspace"
 "rust:check" = "cargo check --workspace --all-features"
@@ -56,6 +57,7 @@ check = "bun x svelte-check --tsconfig ./ts/tsconfig.json"
 health = [
     { task = "check:exports" },
     { task = "check:component-test-hygiene" },
+    { task = "check:poodle-prop-names" },
     { task = "check:guardrails" },
 ]
 

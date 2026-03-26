@@ -1,10 +1,5 @@
 <script lang="ts">
-  import Button from "../Button.svelte";
-  import Select from "../Select.svelte";
-  import TextInput from "../TextInput.svelte";
-  import Download from "lucide-svelte/icons/download";
-  import RefreshCw from "lucide-svelte/icons/refresh-cw";
-  import X from "lucide-svelte/icons/x";
+  import { Button, Field, IconButton, Select, TextInput } from "@poodle/svelte-primitives";
   import type { LogFilter } from "../LogList.svelte";
 
   interface Props {
@@ -46,29 +41,38 @@
             {filter.label}
           </label>
           {#if filter.type === "select" && filter.options}
-            <Select
-              id="filter-{filter.field}"
-              name={filter.field}
-              items={[
-                { value: "", label: filter.placeholder ?? "All" },
-                ...filter.options
-              ]}
-              value={filterValues[filter.field] ?? ""}
-              onchange={(value) => handleFilterChange(filter.field, value)}
-            />
+            <div class="underlay-log-list__filter-field">
+              <Field id={`filter-${filter.field}`} label={filter.label} let:describedBy>
+                <Select
+                  id={`filter-${filter.field}`}
+                  name={filter.field}
+                  options={[
+                    { value: "", label: filter.placeholder ?? "All" },
+                    ...filter.options
+                  ]}
+                  value={filterValues[filter.field] ?? ""}
+                  describedBy={describedBy}
+                  on:valueChange={(event) => handleFilterChange(filter.field, event.detail.value)}
+                />
+              </Field>
+            </div>
           {:else if filter.type === "date"}
-            <TextInput
-              id="filter-{filter.field}"
-              type="date"
-              value={filterValues[filter.field] ?? ""}
-              onchange={(value) => handleFilterChange(filter.field, value)}
-            />
+            <div class="underlay-log-list__filter-field">
+              <Field id={`filter-${filter.field}`} label={filter.label} let:describedBy>
+                <TextInput
+                  id={`filter-${filter.field}`}
+                  type="date"
+                  value={filterValues[filter.field] ?? ""}
+                  describedBy={describedBy}
+                  on:valueChange={(event) => handleFilterChange(filter.field, event.detail.value)}
+                />
+              </Field>
+            </div>
           {/if}
         </div>
       {/each}
       {#if hasActiveFilters && onClearFilters}
-        <Button variant="subtle" size="sm" onclick={onClearFilters}>
-          <X size={14} />
+        <Button variant="ghost" size="sm" leadingIcon="x" on:click={onClearFilters}>
           Clear
         </Button>
       {/if}
@@ -77,21 +81,18 @@
 
   <div class="underlay-log-list__actions">
     {#if onRefresh}
-      <Button
-        variant="subtle"
+      <IconButton
+        icon="refresh-cw"
+        variant="ghost"
         size="sm"
-        onclick={onRefresh}
-        disabled={loading}
-        title="Refresh"
-      >
-        <span class={loading ? "underlay-spinning" : ""}>
-          <RefreshCw size={14} />
-        </span>
-      </Button>
+        loading={loading}
+        ariaLabel="Refresh"
+        tooltip="Refresh"
+        on:click={onRefresh}
+      />
     {/if}
     {#if onExport}
-      <Button variant="subtle" size="sm" onclick={onExport} disabled={loading}>
-        <Download size={14} />
+      <Button variant="ghost" size="sm" leadingIcon="download" disabled={loading} on:click={onExport}>
         Export
       </Button>
     {/if}
@@ -124,7 +125,11 @@
     min-width: 120px;
   }
 
-  .underlay-log-list__filter-label {
+  .underlay-log-list__filter :global(.field) {
+    gap: 0.25rem;
+  }
+
+  .underlay-log-list__filter :global(.field__label) {
     font-size: 0.7rem;
     font-weight: 500;
     color: var(--underlay-color-text-muted, #94a3b8);
@@ -132,7 +137,7 @@
     letter-spacing: 0.025em;
   }
 
-  .underlay-log-list__filter :global(.underlay-input[type="date"]) {
+  .underlay-log-list__filter :global(.text-input__control[type="date"]) {
     min-width: 130px;
   }
 
@@ -143,16 +148,4 @@
     margin-left: auto;
   }
 
-  .underlay-spinning {
-    animation: spin 1s linear infinite;
-  }
-
-  @keyframes spin {
-    from {
-      transform: rotate(0deg);
-    }
-    to {
-      transform: rotate(360deg);
-    }
-  }
 </style>

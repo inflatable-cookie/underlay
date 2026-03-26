@@ -456,38 +456,38 @@ bun add -D @testing-library/svelte @testing-library/jest-dom
 ```
 
 ```typescript
-// apps/web/tests/Button.test.ts
+// apps/web/tests/TextInput.test.ts
 
 import { describe, it, expect } from "vitest";
 import { render, fireEvent } from "@testing-library/svelte";
-import Button from "$lib/components/Button.svelte";
+import { TextInput } from "@poodle/svelte-primitives";
 
-describe("Button", () => {
-  it("renders with label", () => {
-    const { getByText } = render(Button, { props: { label: "Click me" } });
-    expect(getByText("Click me")).toBeInTheDocument();
+describe("TextInput", () => {
+  it("renders with placeholder text", () => {
+    const { getByPlaceholderText } = render(TextInput, {
+      props: { placeholder: "Search projects" },
+    });
+    expect(getByPlaceholderText("Search projects")).toBeInTheDocument();
   });
 
-  it("calls onClick when clicked", async () => {
-    let clicked = false;
-    const { getByRole } = render(Button, {
+  it("updates value when typed into", async () => {
+    const { getByRole } = render(TextInput, {
       props: {
-        label: "Click me",
-        onClick: () => {
-          clicked = true;
-        },
+        value: "",
+        placeholder: "Search projects",
       },
     });
 
-    await fireEvent.click(getByRole("button"));
-    expect(clicked).toBe(true);
+    const input = getByRole("textbox");
+    await fireEvent.input(input, { target: { value: "alpha" } });
+    expect(input).toHaveValue("alpha");
   });
 
   it("is disabled when disabled prop is true", () => {
-    const { getByRole } = render(Button, {
-      props: { label: "Click me", disabled: true },
+    const { getByRole } = render(TextInput, {
+      props: { value: "", disabled: true },
     });
-    expect(getByRole("button")).toBeDisabled();
+    expect(getByRole("textbox")).toBeDisabled();
   });
 });
 ```
@@ -601,10 +601,10 @@ apps/web/
 │   │   └── +page.server.ts
 │   └── lib/
 │       └── components/
-│           └── Button.svelte
+│           └── TextInput.svelte
 ├── tests/
 │   ├── unit/
-│   │   ├── Button.test.ts
+│   │   ├── TextInput.test.ts
 │   │   └── utils.test.ts
 │   ├── integration/
 │   │   └── api-client.test.ts

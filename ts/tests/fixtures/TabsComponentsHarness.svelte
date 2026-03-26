@@ -1,12 +1,9 @@
 <script lang="ts">
-  import { setContext } from "svelte";
   import TabsRoot from "../../src/components/TabsRoot.svelte";
   import TabsList from "../../src/components/TabsList.svelte";
   import TabsTrigger from "../../src/components/TabsTrigger.svelte";
   import TabsSeparator from "../../src/components/TabsSeparator.svelte";
   import TabsContent from "../../src/components/TabsContent.svelte";
-
-  type SectionValidationState = "valid" | "invalid" | "incomplete" | "idle";
 
   interface Props {
     variant?: "pills" | "boxed" | "underline" | "plain" | "form";
@@ -14,8 +11,6 @@
     initialValue?: string;
     countOne?: number | null;
     countTwo?: number | null;
-    stateOne?: SectionValidationState;
-    stateTwo?: SectionValidationState;
     withSeparator?: boolean;
     collapsible?: boolean;
   }
@@ -26,8 +21,6 @@
     initialValue = "one",
     countOne = 2,
     countTwo = null,
-    stateOne = "idle",
-    stateTwo = "idle",
     withSeparator = true,
     collapsible = false
   }: Props = $props();
@@ -36,15 +29,6 @@
 
   $effect(() => {
     value = initialValue;
-  });
-
-  setContext("underlay-form-tabs-registry", {
-    registerSection: () => undefined,
-    unregisterSection: () => undefined,
-    registerFieldInSection: () => undefined,
-    unregisterFieldFromSection: () => undefined,
-    getSectionState: (sectionId: string): SectionValidationState =>
-      sectionId === "one" ? stateOne : stateTwo
   });
 </script>
 

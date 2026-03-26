@@ -21,7 +21,9 @@ Roadmaps are executable delivery plans for Underlay library work.
 ## Current Queue
 
 - `g01.001` through `g01.041` record the current Underlay roadmap corpus
-- the next net-new active roadmap should open as `g01.042`
+- `g01.042` is now active for Poodle adoption and Underlay UI contraction
+- `g01.043` is now active for Poodle public prop normalization and downstream API migration
+- the next net-new active roadmap should open as `g01.043`
 - use `backlog/` for deferred work that is not yet active execution scope
 
 ## Historical language boundary
@@ -75,10 +77,13 @@ Roadmaps are executable delivery plans for Underlay library work.
 | 039 | [Storage Expiration Support](./g01/039-storage-expiration-support.md) | Complete | Add optional TTL and expiration support to the SSR-safe storage wrappers without breaking existing persisted values |
 | 040 | [Smart Skeletons](./g01/040-smart-skeletons.md) | Complete | Add a higher-level `DataSkeleton` surface and reusable preset registry over the existing `Skeleton` primitives |
 | 041 | [Form Draft Persistence](./g01/041-form-draft-persistence.md) | Complete | Add opt-in draft persistence and restoration to `createFormState` using the shared storage wrappers |
+| 042 | [Poodle Adoption and Underlay UI Contraction](./g01/042-poodle-adoption-and-underlay-ui-contraction.md) | In Progress | Move primitives and generic composites to Poodle, keep Underlay focused on structural shells and specialized systems, and run the coexistence migration across consuming apps |
+| 043 | [Poodle Public Prop Normalization](./g01/043-poodle-public-prop-normalization.md) | In Progress | Normalize Poodle onto one plain-state boolean prop language, migrate Underlay and all consumer app call sites, and track the sweep through a durable manifest |
 
-**Complete:** 39 | **Extracted:** 2 | **In progress:** 0 | **Not started:** 0
+**Complete:** 39 | **Extracted:** 2 | **In progress:** 2 | **Not started:** 0
 
 ## Next Task
 
-Open `g01.042` when the next real Underlay milestone is ready to move from
-foundation intent into active execution.
+Execute `g01.043` by starting the Poodle-side primitive prop normalization audit
+and first rename batch, then feed those contract-valid prop changes back into
+the ongoing `g01.042` migration work.

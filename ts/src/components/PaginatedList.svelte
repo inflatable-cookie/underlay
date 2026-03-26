@@ -4,8 +4,8 @@
 
 <script lang="ts" generics="T">
 	import type { Snippet } from "svelte";
+	import { Callout } from "@poodle/svelte-primitives";
 	import PageLoading from "./PageLoading.svelte";
-	import FormError from "./FormError.svelte";
 	import Pagination from "./Pagination.svelte";
 
 	/**
@@ -107,7 +107,7 @@
 	{#if error}
 		{@render error(controller.error)}
 	{:else}
-		<FormError message={controller.error} />
+		<Callout tone="danger" message={controller.error} announceMode="polite" />
 	{/if}
 {:else if !hasItems}
 	{#if empty}

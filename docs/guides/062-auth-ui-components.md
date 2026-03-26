@@ -38,13 +38,14 @@ These components were available before the consolidation:
 | `PasswordRequirements` | Password strength indicator |
 | `PassKeyButton` | WebAuthn passkey button |
 | `GoogleSignInButton` | Google OAuth button |
-| `SessionList` | Active session management |
-| `SecuritySettings` | 2FA and passkey settings |
 
 ### Legacy Component Status
 
 - `AccountRecovery` is deprecated and retained only for backwards compatibility.
 - Use `ForgotPasswordFlow` for all new password recovery implementations.
+- The old account-settings surfaces (`PasskeyManager`, `SecuritySettings`,
+  `SessionList`) are retired. Build account security pages directly in the app
+  over shared auth hooks, `PassKeyButton`, `TotpSetup`, and Poodle primitives.
 
 ## Quick Start
 
@@ -132,6 +133,9 @@ These components were available before the consolidation:
 ### AuthLayout
 
 Centered authentication layout container with optional branding slots.
+`AuthLayout` owns the primary card shell for auth pages. `LoginPage` and
+`ForgotPasswordFlow` render flow content intended to live inside that shell
+rather than adding a second nested card.
 
 ```svelte
 <AuthLayout
@@ -164,6 +168,7 @@ Centered authentication layout container with optional branding slots.
 ### LoginPage
 
 Full-featured login page supporting multiple authentication methods.
+Use it inside `AuthLayout` for the standard framed auth-page posture.
 
 ```svelte
 <LoginPage
@@ -214,6 +219,7 @@ interface LoginResult {
 ### ForgotPasswordFlow
 
 Multi-step password reset flow: email → verify → reset → success.
+Use it inside `AuthLayout` for the standard framed auth-page posture.
 
 ```svelte
 <ForgotPasswordFlow

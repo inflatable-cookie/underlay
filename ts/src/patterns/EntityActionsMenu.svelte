@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
-  import AlertDialog from "../components/AlertDialog.svelte";
+  import { AlertDialog as PoodleAlertDialog } from "@poodle/svelte-primitives";
   import CopyActionsMenu from "./CopyActionsMenu.svelte";
   import { useToasts } from "./useToasts";
   import type { ToastStore } from "./toasts";
@@ -145,20 +145,17 @@
 />
 
 {#if deleteConfig}
-  <AlertDialog
+  <PoodleAlertDialog
     bind:open={deleteOpen}
-    showTrigger={false}
     title={deleteConfig.title}
     description={deleteConfig.description}
     confirmLabel={deleteConfig.confirmLabel ?? "Delete"}
-    cancelLabel="Cancel"
-    confirmVariant="danger"
-    cancelVariant="subtle"
     onConfirm={confirmDelete}
     onCancel={cancelDelete}
+    tone="danger"
   >
     <p>
       <strong>{deleteConfig.entityLabel}</strong>
     </p>
-  </AlertDialog>
+  </PoodleAlertDialog>
 {/if}

@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
-  import DropdownMenu from "./DropdownMenu.svelte";
-  import ActionArea from "./ActionArea.svelte";
+  import { FormActions as PoodleFormActions, IconButton, Menu } from "@poodle/svelte-primitives";
+  import type { MenuItem } from "@poodle/svelte-primitives";
 
   type DangerMenuItem = {
     label: string;
@@ -20,49 +20,55 @@
 
   let { align = "start", children, danger, dangerItems }: Props = $props();
   const hasDangerActions = $derived(Boolean(danger) || (dangerItems?.length ?? 0) > 0);
+  const collapsedDangerItems = $derived<MenuItem[]>(
+    (dangerItems ?? []).map((item) => ({
+      value: item.label,
+      label: item.label
+    }))
+  );
+
+  function handleDangerAction(value: string): void {
+    const item = (dangerItems ?? []).find((candidate) => candidate.label === value);
+    item?.onSelect();
+  }
 </script>
 
 {#if hasDangerActions}
-  <ActionArea
+  <PoodleFormActions
     align={align}
-    class="underlay-form-actions"
   >
     {@render children?.()}
-    {#snippet aside()}
-      <!-- Full danger slot - hidden on small screens -->
-      {#if danger}
-        <div class="underlay-form-actions__danger underlay-form-actions__danger--full">
-          {@render danger()}
-        </div>
-      {/if}
+    {#if danger}
+      <div class="underlay-form-actions__danger underlay-form-actions__danger--full">
+        {@render danger()}
+      </div>
+    {/if}
 
-      <!-- Collapsed menu - shown on small screens -->
-      {#if dangerItems?.length}
-        <div class="underlay-form-actions__danger underlay-form-actions__danger--collapsed">
-          <DropdownMenu
-            triggerLabel="⋯"
-            triggerAriaLabel="More actions"
-            items={dangerItems.map(item => ({
-              label: item.label,
-              onSelect: item.onSelect,
-              destructive: item.destructive ?? true
-            }))}
-          />
-        </div>
-      {/if}
-    {/snippet}
-  </ActionArea>
+    {#if dangerItems?.length}
+      <div class="underlay-form-actions__danger underlay-form-actions__danger--collapsed">
+        <Menu
+          items={collapsedDangerItems}
+          placement="top-end"
+          ariaLabel="More actions"
+          on:action={(event) => handleDangerAction(event.detail.value)}
+        >
+          <div slot="trigger">
+            <IconButton icon="ellipsis" ariaLabel="More actions" variant="ghost" size="sm" />
+          </div>
+        </Menu>
+      </div>
+    {/if}
+  </PoodleFormActions>
 {:else}
-  <ActionArea
+  <PoodleFormActions
     align={align}
-    class="underlay-form-actions"
   >
     {@render children?.()}
-  </ActionArea>
+  </PoodleFormActions>
 {/if}
 
 <style>
-  :global(.underlay-form-actions) {
+  :global(.form-actions) {
     container-type: inline-size;
     margin-top: calc(
       var(--underlay-density-gap, 0.75rem) * 1.5

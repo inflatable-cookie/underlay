@@ -1,86 +1,48 @@
 <script lang="ts">
   import { tick } from "svelte";
   import type { Snippet } from "svelte";
-  import { Dialog as BitsDialog } from "bits-ui";
-  import X from "lucide-svelte/icons/x";
-  import RelationPickerCreateButton from "./relation-picker/RelationPickerCreateButton.svelte";
-  import RelationPickerFooter from "./relation-picker/RelationPickerFooter.svelte";
+  import {
+    Button,
+    Callout,
+    Dialog as PoodleDialog,
+    SearchField
+  } from "@poodle/svelte-primitives";
+
   import RelationPickerList from "./relation-picker/RelationPickerList.svelte";
-  import RelationPickerSearch from "./relation-picker/RelationPickerSearch.svelte";
-  import RelationPickerStatus from "./relation-picker/RelationPickerStatus.svelte";
   import type { PickableItem, PickerSection } from "./relation-picker-types.js";
 
   interface Props {
-    /** Whether the dialog is open */
     open?: boolean;
-    /** Dialog title */
     title: string;
-    /** Message shown when no items available */
     emptyMessage?: string;
-    /** Items to display (flat list mode) */
     items?: PickableItem[];
-    /** Sections to display (sectioned mode - takes precedence over items) */
     sections?: PickerSection[];
-    /** Currently selected IDs (for showing check marks) */
     selectedIds?: string[];
-    /** Whether to show search input */
     searchable?: boolean;
-    /** Placeholder for search input */
     searchPlaceholder?: string;
-    /** Current search query (controlled mode) */
     searchQuery?: string;
-    /** Whether search is in progress */
     searching?: boolean;
-    /** Section label above the list - only used with flat items mode */
     sectionLabel?: string;
-    /** Callback when an item is selected */
     onSelect?: (item: PickableItem) => void;
-    /** Callback when dialog is closed without selection */
     onClose?: () => void;
-    /** Callback when search query changes (for external search handling) */
     onSearch?: (query: string) => void;
-    /** Custom rendering for items */
     renderItem?: Snippet<[item: PickableItem, selected: boolean]>;
-    /** Header content (rendered after title, before search) */
     headerExtra?: Snippet;
-    /** Footer content - if provided, shows a footer section */
     footer?: Snippet;
-
-    // Error handling
-    /** Error message to display */
     error?: string;
-    /** Callback for retry button */
     onRetry?: () => void;
-
-    // Clear selection
-    /** Whether to show clear selection button in header */
     showClear?: boolean;
-    /** Callback when clear is clicked */
     onClear?: () => void;
-
-    // Create mode
-    /** Whether to show create button */
     allowCreate?: boolean;
-    /** Label for create button */
     createLabel?: string;
-    /** Callback when create button is clicked */
     onCreate?: () => void;
-    /** Whether the create form is currently open */
     createFormOpen?: boolean;
-    /** The create form content */
     createForm?: Snippet<[onSuccess: (item: PickableItem) => void, onCancel: () => void]>;
-    /** Callbacks for create form */
     onCreateSuccess?: (item: PickableItem) => void;
     onCreateCancel?: () => void;
-
-    // Multi-select footer
-    /** Whether this is a multi-select dialog with confirm/cancel */
     multiSelect?: boolean;
-    /** Number of selected items (for confirm button label) */
     selectedCount?: number;
-    /** Callback when confirm is clicked */
     onConfirm?: () => void;
-    /** Callback when cancel is clicked */
     onCancel?: () => void;
   }
 
@@ -119,41 +81,29 @@
     onCancel
   }: Props = $props();
 
-  let searchInputRef: HTMLInputElement | null = $state(null);
   let listRef: HTMLUListElement | null = $state(null);
   let internalSearchQuery = $state("");
   let focusedIndex = $state(-1);
+  const searchFieldId = "relation-picker-dialog-search";
 
-  // Use external search query if provided, otherwise internal
   const searchQuery = $derived(externalSearchQuery ?? internalSearchQuery);
 
-  // Focus search input when dialog opens
   $effect(() => {
     if (open && searchable && !createFormOpen) {
       internalSearchQuery = "";
       focusedIndex = -1;
       void tick().then(() => {
-        searchInputRef?.focus();
+        (document.getElementById(searchFieldId) as HTMLInputElement | null)?.focus();
       });
     }
   });
 
-  // Reset focused index when items change
   $effect(() => {
     if (items || sections) {
       focusedIndex = -1;
     }
   });
 
-  // Get all items across all sections for keyboard navigation
-  const allItems = $derived.by((): PickableItem[] => {
-    if (sections && sections.length > 0) {
-      return sections.flatMap((s: PickerSection) => s.items);
-    }
-    return items;
-  });
-
-  // Filter items based on search (only if no external search handler)
   const displayItems = $derived.by((): PickableItem[] => {
     if (onSearch || !searchQuery.trim()) return items;
     const query = searchQuery.toLowerCase();
@@ -164,23 +114,23 @@
     );
   });
 
-  // Display sections (filtered if no external handler)
   const displaySections = $derived.by((): PickerSection[] | null => {
     if (!sections) return null;
     if (onSearch || !searchQuery.trim()) return sections;
     const query = searchQuery.toLowerCase();
-    return sections.map((section: PickerSection) => ({
-      ...section,
-      items: section.items.filter(
-        (item: PickableItem) =>
-          item.label.toLowerCase().includes(query) ||
-          item.description?.toLowerCase().includes(query)
-      )
-    })).filter((s: PickerSection) => s.items.length > 0);
+    return sections
+      .map((section: PickerSection) => ({
+        ...section,
+        items: section.items.filter(
+          (item: PickableItem) =>
+            item.label.toLowerCase().includes(query) ||
+            item.description?.toLowerCase().includes(query)
+        )
+      }))
+      .filter((section: PickerSection) => section.items.length > 0);
   });
 
-  function handleSearchInput(event: Event) {
-    const value = (event.target as HTMLInputElement).value;
+  function handleSearchInput(value: string) {
     internalSearchQuery = value;
     focusedIndex = -1;
 
@@ -191,7 +141,7 @@
 
   function handleSearchKeyDown(event: KeyboardEvent) {
     const itemsList = displaySections
-      ? displaySections.flatMap((s: PickerSection) => s.items)
+      ? displaySections.flatMap((section: PickerSection) => section.items)
       : displayItems;
     if (itemsList.length === 0) return;
 
@@ -208,7 +158,7 @@
 
   function handleListKeyDown(event: KeyboardEvent) {
     const itemsList = displaySections
-      ? displaySections.flatMap((s: PickerSection) => s.items)
+      ? displaySections.flatMap((section: PickerSection) => section.items)
       : displayItems;
     if (itemsList.length === 0) return;
 
@@ -221,7 +171,7 @@
       event.preventDefault();
       if (focusedIndex <= 0) {
         focusedIndex = -1;
-        searchInputRef?.focus();
+        (document.getElementById(searchFieldId) as HTMLInputElement | null)?.focus();
       } else {
         const prevIndex = focusedIndex - 1;
         focusedIndex = prevIndex;
@@ -240,9 +190,9 @@
 
   function focusItem(index: number) {
     void tick().then(() => {
-      const items = listRef?.querySelectorAll<HTMLElement>('[role="option"]');
-      if (items && items[index]) {
-        items[index].focus();
+      const options = listRef?.querySelectorAll<HTMLElement>('[role="option"]');
+      if (options && options[index]) {
+        options[index].focus();
       }
     });
   }
@@ -257,236 +207,199 @@
     open = false;
   }
 
-  function handleOpenChange(newOpen: boolean) {
-    if (!newOpen) {
+  function handleOpenChange(nextOpen: boolean) {
+    if (!nextOpen) {
       handleClose();
     }
   }
 
-  // Get flat index within all sections for an item
   function getGlobalIndex(sectionIndex: number, itemIndex: number): number {
     if (!displaySections) return itemIndex;
     let globalIndex = 0;
-    for (let i = 0; i < sectionIndex; i++) {
-      globalIndex += displaySections[i]?.items.length ?? 0;
+    for (let index = 0; index < sectionIndex; index++) {
+      globalIndex += displaySections[index]?.items.length ?? 0;
     }
     return globalIndex + itemIndex;
   }
 
   const hasItems = $derived(
     displaySections
-      ? displaySections.some(s => s.items.length > 0)
+      ? displaySections.some((section) => section.items.length > 0)
       : displayItems.length > 0
   );
 
-  const showEmpty = $derived(
-    !searching && !hasItems && !createFormOpen
-  );
-
-  const showLoading = $derived(
-    searching && !hasItems && !createFormOpen
-  );
-
-  const displayTitle = $derived(
-    createFormOpen ? createLabel : title
-  );
+  const showEmpty = $derived(!searching && !hasItems && !createFormOpen);
+  const showLoading = $derived(searching && !hasItems && !createFormOpen);
+  const displayTitle = $derived(createFormOpen ? createLabel : title);
 </script>
 
-<BitsDialog.Root bind:open onOpenChange={handleOpenChange}>
-  <BitsDialog.Portal>
-    <BitsDialog.Overlay class="relation-picker-dialog__overlay" />
-
-    <BitsDialog.Content class="relation-picker-dialog__content {createFormOpen ? 'relation-picker-dialog__content--create-mode' : ''}">
-      <BitsDialog.Close class="relation-picker-dialog__close" aria-label="Close">
-        <span aria-hidden="true">×</span>
-      </BitsDialog.Close>
-
-      <div class="relation-picker-dialog__header">
-        <BitsDialog.Title class="relation-picker-dialog__title">
-          {displayTitle}
-        </BitsDialog.Title>
-        {#if showClear && !createFormOpen}
-          <button
-            type="button"
-            class="relation-picker-dialog__clear-btn"
-            onclick={() => onClear?.()}
-          >
-            <X size="0.9em" strokeWidth={2.5} />
-            <span>Clear</span>
-          </button>
-        {/if}
-        {#if headerExtra && !createFormOpen}
+<PoodleDialog
+  {open}
+  title={displayTitle}
+  showCloseButton
+  closeLabel={`Close ${displayTitle}`}
+  contentClassName={`relation-picker-dialog__content ${createFormOpen ? "relation-picker-dialog__content--create-mode" : ""}`}
+  overlayClassName="relation-picker-dialog__overlay"
+  on:openChange={(event) => handleOpenChange(event.detail.open)}
+>
+  {#if (showClear || headerExtra) && !createFormOpen}
+    <div class="relation-picker-dialog__topbar">
+      {#if showClear}
+        <Button type="button" variant="ghost" size="sm" on:click={() => onClear?.()}>
+          Clear
+        </Button>
+      {/if}
+      {#if headerExtra}
+        <div class="relation-picker-dialog__header-extra">
           {@render headerExtra()}
-        {/if}
-      </div>
+        </div>
+      {/if}
+    </div>
+  {/if}
 
-      {#if searchable && !createFormOpen}
-        <RelationPickerSearch
-          placeholder={searchPlaceholder}
-          value={searchQuery}
-          {searching}
-          onInput={handleSearchInput}
-          onKeyDown={handleSearchKeyDown}
-          onInputRef={(input) => (searchInputRef = input)}
+  {#if searchable && !createFormOpen}
+    <div class="relation-picker-dialog__search">
+      <SearchField
+        id={searchFieldId}
+        value={searchQuery}
+        placeholder={searchPlaceholder}
+        ariaLabel={`${displayTitle} search`}
+        on:valueChange={(event) => handleSearchInput(event.detail.value)}
+        on:keydown={(event) => handleSearchKeyDown(event.detail)}
+      />
+    </div>
+  {/if}
+
+  <div class="relation-picker-dialog__body">
+    {#if createFormOpen && createForm}
+      <div class="relation-picker-dialog__create-form">
+        {@render createForm(
+          (item) => onCreateSuccess?.(item),
+          () => onCreateCancel?.()
+        )}
+      </div>
+    {:else}
+      {#if error}
+        <Callout tone="danger" message={error} announceMode="polite">
+          <svelte:fragment slot="actions">
+            {#if onRetry}
+              <Button type="button" variant="ghost" size="sm" on:click={onRetry}>
+                Retry
+              </Button>
+            {/if}
+          </svelte:fragment>
+        </Callout>
+      {/if}
+
+      {#if showLoading}
+        <Callout tone="pending" title="Loading" message="Loading relation candidates..." />
+      {:else if showEmpty}
+        <div class="relation-picker-dialog__empty">
+          {searchQuery.trim() ? "No matches found." : emptyMessage}
+        </div>
+      {:else}
+        <RelationPickerList
+          {displaySections}
+          {displayItems}
+          {sectionLabel}
+          {selectedIds}
+          {focusedIndex}
+          {renderItem}
+          onItemClick={handleItemClick}
+          onListKeyDown={handleListKeyDown}
+          {getGlobalIndex}
+          onListRef={(node) => (listRef = node)}
         />
       {/if}
 
-      <div class="relation-picker-dialog__body">
-        {#if createFormOpen && createForm}
-          <!-- Create form mode -->
-          <div class="relation-picker-dialog__create-form">
-            {@render createForm(
-              (item) => onCreateSuccess?.(item),
-              () => onCreateCancel?.()
-            )}
-          </div>
-        {:else}
-          <!-- Selection mode -->
-          <RelationPickerStatus
-            {error}
-            {onRetry}
-            {showLoading}
-            {showEmpty}
-            {searchQuery}
-            {emptyMessage}
-          />
-
-          {#if !showLoading && !showEmpty}
-            <RelationPickerList
-              {displaySections}
-              {displayItems}
-              {sectionLabel}
-              {selectedIds}
-              {focusedIndex}
-              {renderItem}
-              onItemClick={handleItemClick}
-              onListKeyDown={handleListKeyDown}
-              {getGlobalIndex}
-              onListRef={(node) => (listRef = node)}
-            />
-          {/if}
-
-          <RelationPickerCreateButton
-            {allowCreate}
-            {createFormOpen}
-            {createForm}
+      {#if allowCreate && createForm && !createFormOpen}
+        <div class="relation-picker-dialog__create">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            leadingIcon="plus"
+            on:click={() => onCreate?.()}
+          >
             {createLabel}
-            {onCreate}
-          />
-        {/if}
-      </div>
+          </Button>
+        </div>
+      {/if}
+    {/if}
+  </div>
 
-      <RelationPickerFooter
-        {footer}
-        {multiSelect}
-        {createFormOpen}
-        {selectedCount}
-        {onCancel}
-        {onConfirm}
-      />
-    </BitsDialog.Content>
-  </BitsDialog.Portal>
-</BitsDialog.Root>
+  <svelte:fragment slot="actions">
+    {#if footer && !createFormOpen}
+      {@render footer()}
+    {:else if multiSelect && !createFormOpen}
+      <Button type="button" variant="ghost" on:click={() => onCancel?.()}>
+        Cancel
+      </Button>
+      <Button type="button" variant="primary" on:click={() => onConfirm?.()}>
+        Confirm ({selectedCount})
+      </Button>
+    {/if}
+  </svelte:fragment>
+</PoodleDialog>
 
 <style>
   :global(.relation-picker-dialog__overlay) {
-    position: fixed;
-    inset: 0;
     background: var(--underlay-color-overlay-backdrop, rgba(0, 0, 0, 0.65));
-    z-index: 50;
   }
 
   :global(.relation-picker-dialog__content) {
-    position: fixed;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 51;
-
     width: min(32rem, calc(100vw - 2rem));
     max-height: min(80vh, 40rem);
     display: flex;
     flex-direction: column;
-
-    border-radius: var(--underlay-radius-md, 0.75rem);
-    border: 1px solid var(--underlay-color-border-subtle, rgba(148, 163, 184, 0.25));
-    background-color: var(--underlay-color-surface-muted, rgba(255, 255, 255, 0.02));
-    box-shadow: var(--underlay-shadow-dialog, 0 20px 40px rgba(0, 0, 0, 0.55));
   }
 
   :global(.relation-picker-dialog__content--create-mode) {
-    /* 40em form max-width + 2rem padding */
     width: min(calc(40em + 2rem), calc(100vw - 2rem));
     max-height: min(90vh, 50rem);
   }
 
-  :global(.relation-picker-dialog__close) {
-    position: absolute;
-    top: 0.65rem;
-    right: 0.65rem;
-    border: none;
-    border-radius: 0.5rem;
-    background: transparent;
-    color: inherit;
-    cursor: pointer;
-    padding: 0.25rem 0.5rem;
-    font-size: 1.25rem;
-    line-height: 1;
-    z-index: 1;
-  }
-
-  :global(.relation-picker-dialog__close:hover) {
-    background: var(--underlay-color-hover-bg, rgba(148, 163, 184, 0.2));
-  }
-
-  .relation-picker-dialog__header {
+  .relation-picker-dialog__topbar {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-end;
     gap: 0.75rem;
-    padding: 1rem 1rem 0.75rem;
-    padding-right: 2.5rem;
+    padding-bottom: 0.75rem;
     flex-shrink: 0;
   }
 
-  :global(.relation-picker-dialog__title) {
-    margin: 0;
-    font-size: 1.05rem;
-    font-weight: 650;
-  }
-
-  .relation-picker-dialog__clear-btn {
+  .relation-picker-dialog__header-extra {
     display: flex;
     align-items: center;
-    gap: 0.3rem;
-    padding: 0.35rem 0.6rem;
-    border: none;
-    border-radius: 0.3rem;
-    background: transparent;
-    color: var(--underlay-color-text-muted, #9ca3af);
-    font-size: 0.8rem;
-    cursor: pointer;
-    transition: background-color 0.15s ease, color 0.15s ease;
+    gap: 0.75rem;
+    margin-left: auto;
   }
 
-  .relation-picker-dialog__clear-btn:hover {
-    background: var(--underlay-color-hover-bg, rgba(148, 163, 184, 0.2));
-    color: var(--underlay-color-danger, #ef4444);
-  }
-
-  .relation-picker-dialog__clear-btn:focus-visible {
-    outline: 2px solid var(--underlay-color-primary, #2563eb);
-    outline-offset: 1px;
+  .relation-picker-dialog__search {
+    padding-bottom: 0.75rem;
+    flex-shrink: 0;
   }
 
   .relation-picker-dialog__body {
-    flex: 1;
-    overflow-y: auto;
-    padding: 0 1rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    min-height: 0;
   }
 
   .relation-picker-dialog__create-form {
-    margin: 0.5rem 0 1rem;
+    min-height: 0;
   }
 
+  .relation-picker-dialog__empty {
+    padding: 2rem 0;
+    text-align: center;
+    color: var(--underlay-color-text-muted, #9ca3af);
+    font-size: 0.9rem;
+  }
+
+  .relation-picker-dialog__create {
+    padding-top: 0.25rem;
+    border-top: 1px solid var(--underlay-color-border-subtle, rgba(148, 163, 184, 0.3));
+  }
 </style>

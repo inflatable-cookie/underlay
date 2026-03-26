@@ -1,6 +1,6 @@
 <script lang="ts">
   import Code from "../../components/Code.svelte";
-  import PageHeaderMetaItem from "../PageHeaderMetaItem.svelte";
+  import DetailMetaItem from "./DetailMetaItem.svelte";
 
   interface Props {
     /** The ID value to display */
@@ -15,6 +15,6 @@
   }: Props = $props();
 </script>
 
-<PageHeaderMetaItem label={label}>
+<DetailMetaItem {label}>
   <Code copy>{value}</Code>
-</PageHeaderMetaItem>
+</DetailMetaItem>

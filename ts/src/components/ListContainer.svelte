@@ -1,8 +1,8 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
+  import { Callout } from "@poodle/svelte-primitives";
   import PageHeader from "../patterns/PageHeader.svelte";
   import PageLoading from "./PageLoading.svelte";
-  import FormError from "./FormError.svelte";
 
   type ListVariant = "page" | "tab";
 
@@ -80,7 +80,7 @@
   {#if loading}
     <PageLoading />
   {:else if error}
-    <FormError message={error} />
+    <Callout tone="danger" message={error} announceMode="polite" />
   {:else}
     {#if hasItems && filters}
       <div class="underlay-list-container__filters">

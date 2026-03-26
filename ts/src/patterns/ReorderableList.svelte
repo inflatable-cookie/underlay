@@ -37,7 +37,7 @@
   import { flip } from "svelte/animate";
   import { dndzone, type DndEvent } from "svelte-dnd-action";
   import type { ReorderController } from "./reorder-controller.svelte";
-  import Button from "../components/Button.svelte";
+  import { Button } from "@poodle/svelte-primitives";
 
   interface Props {
     /** Reorder controller instance from createReorderController */
@@ -227,15 +227,15 @@
   <div class="underlay-reorderable-list__sr" aria-live="polite" aria-atomic="true">{liveMessage}</div>
   <div class="underlay-reorderable-list__header">
     <Button
-      variant="subtle"
-      onclick={handleCancel}
+      variant="secondary"
+      on:click={handleCancel}
       disabled={isDisabled}
     >
       {cancelLabel}
     </Button>
     <Button
       variant="primary"
-      onclick={handleSubmit}
+      on:click={handleSubmit}
       disabled={!controller.isDirty || isDisabled}
     >
       {#if controller.isPending}
@@ -260,15 +260,15 @@
 
   {#if isWindowed}
     <div class="underlay-reorderable-list__window-nav">
-      <Button variant="subtle" onclick={previousWindowPage} disabled={isDisabled || windowPageIndex === 0}>
+      <Button variant="secondary" on:click={previousWindowPage} disabled={isDisabled || windowPageIndex === 0}>
         Previous
       </Button>
       <span class="underlay-reorderable-list__window-label">
         Page {windowPageIndex + 1} of {windowPageCount}
       </span>
       <Button
-        variant="subtle"
-        onclick={nextWindowPage}
+        variant="secondary"
+        on:click={nextWindowPage}
         disabled={isDisabled || windowPageIndex >= windowPageCount - 1}
       >
         Next

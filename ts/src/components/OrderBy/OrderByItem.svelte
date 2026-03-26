@@ -1,5 +1,5 @@
 <script lang="ts">
-  import IconButton from "../IconButton.svelte";
+  import { IconButton } from "@poodle/svelte-primitives";
   import type { OrderByFieldDefinition, OrderByField } from "./types";
 
   interface Props {
@@ -21,31 +21,33 @@
   }: Props = $props();
 
   let directionLabel = $derived(direction === "asc" ? "Ascending" : "Descending");
-  let directionIcon = $derived(direction === "asc" ? "↑" : "↓");
+  let directionIcon = $derived(direction === "asc" ? "arrow-up" : "arrow-down");
 </script>
 
 <div class="underlay-order-by-item">
   <span class="underlay-order-by-item__handle" aria-hidden="true">⠿</span>
   <span class="underlay-order-by-item__label">{field.label}</span>
-  <IconButton
-    label="Toggle direction to {direction === 'asc' ? 'descending' : 'ascending'}"
-    onclick={onToggleDirection}
-    sizeRem={1.75}
-    class="underlay-order-by-item__direction"
-  >
-    <span class="underlay-order-by-item__direction-icon" aria-label={directionLabel}>
-      {directionIcon}
-    </span>
-  </IconButton>
-  <IconButton
-    label="Remove {field.label} from sort"
-    onclick={onRemove}
-    sizeRem={1.75}
-    variant="danger"
-    class="underlay-order-by-item__remove"
-  >
-    <span aria-hidden="true">×</span>
-  </IconButton>
+  <span class="underlay-order-by-item__action underlay-order-by-item__direction">
+    <IconButton
+      icon={directionIcon}
+      ariaLabel={`Toggle direction to ${direction === "asc" ? "descending" : "ascending"}`}
+      tooltip={directionLabel}
+      size="sm"
+      variant="ghost"
+      on:click={onToggleDirection}
+    />
+  </span>
+  <span class="underlay-order-by-item__action underlay-order-by-item__remove">
+    <IconButton
+      icon="x"
+      ariaLabel={`Remove ${field.label} from sort`}
+      tooltip={`Remove ${field.label}`}
+      size="sm"
+      variant="ghost"
+      tone="danger"
+      on:click={onRemove}
+    />
+  </span>
 </div>
 
 <style>
@@ -76,26 +78,25 @@
     color: var(--underlay-color-text, #e5e7eb);
   }
 
-  .underlay-order-by-item__direction-icon {
-    font-size: 0.875rem;
-    font-weight: 600;
+  .underlay-order-by-item__action {
+    display: inline-flex;
   }
 
-  :global(.underlay-order-by-item__direction) {
+  :global(.underlay-order-by-item__direction .icon-button) {
     border: none;
     background: transparent;
   }
 
-  :global(.underlay-order-by-item__direction:hover) {
+  :global(.underlay-order-by-item__direction .icon-button:hover) {
     background: var(--underlay-color-hover-bg, rgba(148, 163, 184, 0.15));
   }
 
-  :global(.underlay-order-by-item__remove) {
+  :global(.underlay-order-by-item__remove .icon-button) {
     border: none;
     background: transparent;
   }
 
-  :global(.underlay-order-by-item__remove:hover) {
+  :global(.underlay-order-by-item__remove .icon-button:hover) {
     background: rgba(239, 68, 68, 0.15);
   }
 </style>

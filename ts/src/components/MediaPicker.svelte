@@ -45,12 +45,17 @@
     createResetBrowseState,
     type MediaPickerUploadStep,
   } from "./media-picker/state";
-  import MediaBrowseTab from "./media-picker/MediaBrowseTab.svelte";
-  import MediaUploadStatusPanel from "./media-picker/MediaUploadStatusPanel.svelte";
-  import Button from "./Button.svelte";
-  import Dialog from "./Dialog.svelte";
-  import FileUpload from "./FileUpload.svelte";
-  import type { FileUploadItem } from "./file-upload/types";
+  import {
+    MediaBrowsePanel,
+    MediaUploadStatusPanel,
+    type MediaPickerItem,
+  } from "@poodle/svelte-composites";
+  import {
+    Button,
+    Dialog as PoodleDialog,
+    FileUpload,
+    type FileUploadItem
+  } from "@poodle/svelte-primitives";
   import TabsRoot from "./TabsRoot.svelte";
   import TabsList from "./TabsList.svelte";
   import TabsTrigger from "./TabsTrigger.svelte";
@@ -289,6 +294,30 @@
     closeAndReset();
   }
 
+  function toMediaPickerItem(media: MediaSummary): MediaPickerItem {
+    return {
+      id: media.id,
+      label: media.title ?? media.originalFilename ?? "Untitled",
+      thumbnailUrl: media.thumbnailUrl,
+      kind:
+        media.kind === MediaKind.Image
+          ? "image"
+          : media.kind === MediaKind.Audio
+            ? "audio"
+            : media.kind === MediaKind.Video
+              ? "video"
+              : "document",
+      meta:
+        media.kind === MediaKind.Image
+          ? "Image"
+          : media.kind === MediaKind.Audio
+            ? "Audio"
+            : media.kind === MediaKind.Video
+              ? "Video"
+              : "Document"
+    };
+  }
+
   function closeAndReset() {
     open = false;
     activeTab = "browse";
@@ -303,10 +332,10 @@
 
 </script>
 
-<Dialog
+<PoodleDialog
   bind:open
-  showTrigger={false}
   contentClassName="media-picker-dialog"
+  showCloseButton
 >
   <TabsRoot bind:value={activeTab}>
     <div class="underlay-media-picker-tabs-center">
@@ -323,13 +352,16 @@
     </div>
 
     <TabsContent value="browse">
-      <MediaBrowseTab
+      <MediaBrowsePanel
         loading={browseLoading}
         error={browseError}
-        items={browseItems}
+        items={browseItems.map(toMediaPickerItem)}
         hasMore={browseHasMore}
-        onLoadMore={loadMoreItems}
-        onSelectMedia={selectMedia}
+        on:loadMore={loadMoreItems}
+        on:select={(event) => {
+          const media = browseItems.find((item) => item.id === event.detail.item.id);
+          if (media) selectMedia(media);
+        }}
       />
     </TabsContent>
 
@@ -345,9 +377,11 @@
 
           {#if selectedFile}
             <div class="underlay-upload-actions">
-              <Button variant="secondary" onclick={clearUpload}>Clear</Button>
-              <Button variant="primary" onclick={startUpload}>
-                <Upload size={14} />
+              <Button variant="secondary" on:click={clearUpload}>Clear</Button>
+              <Button variant="primary" on:click={startUpload}>
+                <svelte:fragment slot="leading">
+                  <Upload size={14} />
+                </svelte:fragment>
                 Upload
               </Button>
             </div>
@@ -355,20 +389,20 @@
         {:else}
           <MediaUploadStatusPanel
             {uploadStep}
-            {duplicateMedia}
             {uploadProgress}
             {uploadError}
-            onUploadAnyway={uploadAnyway}
-            onSelectDuplicate={selectDuplicate}
-            onClearUpload={clearUpload}
-            onSelectUploaded={selectUploaded}
+            duplicateLabel={duplicateMedia ? (duplicateMedia.title ?? duplicateMedia.originalFilename ?? "Existing media") : null}
+            on:uploadAnyway={uploadAnyway}
+            on:selectDuplicate={selectDuplicate}
+            on:clearUpload={clearUpload}
+            on:selectUploaded={selectUploaded}
           />
         {/if}
       </div>
     </TabsContent>
   </TabsRoot>
 
-</Dialog>
+</PoodleDialog>
 
 <style>
   :global(.media-picker-dialog) {

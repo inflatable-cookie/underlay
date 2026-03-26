@@ -1,29 +1,35 @@
 <script lang="ts">
-  import TabsList from "../TabsList.svelte";
-  import TabsTrigger from "../TabsTrigger.svelte";
+  import { Tabs } from "@poodle/svelte-primitives";
+  import type { TabItem } from "@poodle/svelte-primitives";
 
   type LoginMethod = "password" | "passkey" | "google";
 
   interface Props {
     methods: LoginMethod[];
+    activeMethod: LoginMethod;
+    onSelect: (method: LoginMethod) => void;
     onGoogleLogin?: () => Promise<void>;
   }
 
-  let { methods, onGoogleLogin }: Props = $props();
+  let { methods, activeMethod, onSelect, onGoogleLogin }: Props = $props();
+
+  const items = $derived<TabItem[]>(
+    methods.map((method) => ({
+      value: method,
+      label: method === "password" ? "Password" : method === "passkey" ? "Passkeys" : "Google",
+      disabled: method === "google" ? !onGoogleLogin : false,
+    }))
+  );
 </script>
 
 <div class="underlay-login-page__tabs">
-  <TabsList>
-    {#if methods.includes("password")}
-      <TabsTrigger value="password">Password</TabsTrigger>
-    {/if}
-    {#if methods.includes("passkey")}
-      <TabsTrigger value="passkey">Passkeys</TabsTrigger>
-    {/if}
-    {#if methods.includes("google")}
-      <TabsTrigger value="google" disabled={!onGoogleLogin}>Google</TabsTrigger>
-    {/if}
-  </TabsList>
+  <Tabs
+    value={activeMethod}
+    items={items}
+    variant="pill"
+    ariaLabel="Authentication methods"
+    on:valueChange={(event) => onSelect(event.detail.value as LoginMethod)}
+  />
 </div>
 
 <style>
@@ -31,5 +37,6 @@
     display: flex;
     justify-content: center;
     margin-bottom: var(--underlay-space-3, 0.75rem);
+    width: 100%;
   }
 </style>

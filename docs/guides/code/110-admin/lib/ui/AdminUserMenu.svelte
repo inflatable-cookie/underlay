@@ -2,7 +2,7 @@
   import User from "lucide-svelte/icons/user";
   import LogOut from "lucide-svelte/icons/log-out";
   import { goto } from "$app/navigation";
-  import { AlertDialog, Popover } from "@decodelabs/underlay/components";
+  import { AlertDialog, Popover } from "@poodle/svelte-primitives";
 
   interface CurrentUser {
     displayName?: string;
@@ -100,13 +100,13 @@
 
   <AlertDialog
     bind:open={logoutOpen}
-    showTrigger={false}
     title="Log out?"
     description="You'll be signed out."
     confirmLabel={loggingOut ? "Logging out..." : "Log out"}
     cancelLabel="Cancel"
     onConfirm={confirmLogout}
     onCancel={() => (logoutOpen = false)}
+    tone="danger"
   />
 </div>
 

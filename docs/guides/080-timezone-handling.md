@@ -180,10 +180,10 @@ When the profile timezone differs from the browser, you should show a conflict r
 
 ### Date-Only Fields
 
-For date-only fields (release dates, expiry dates), use the `DateInput` component which works with `YYYY-MM-DD` strings. These are timezone-agnostic:
+For date-only fields (release dates, expiry dates), use a date-type `TextInput` bound to a `YYYY-MM-DD` string. These are timezone-agnostic:
 
 ```svelte
-<DateInput name="releaseAt" bind:value={releaseDate} />
+<TextInput id="releaseAt" name="releaseAt" type="date" bind:value={releaseDate} />
 ```
 
 The database stores these as `DATE` type (no time component), avoiding timezone issues entirely.

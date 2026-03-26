@@ -3,10 +3,10 @@
   import { flip } from "svelte/animate";
   import { dndzone, type DndEvent } from "svelte-dnd-action";
   import { Popover as BitsPopover } from "bits-ui";
+  import { Button } from "@poodle/svelte-primitives";
   import ChevronDown from "lucide-svelte/icons/chevron-down";
   import X from "lucide-svelte/icons/x";
   import Select from "../Select.svelte";
-  import TextButton from "../TextButton.svelte";
   import OrderByItem from "./OrderByItem.svelte";
   import type { OrderByFieldDefinition, OrderByField, OrderByValue } from "./types";
 
@@ -243,12 +243,12 @@
 
         {#if value.length > 0}
           <div class="underlay-order-by-actions">
-            <TextButton onclick={reverseAll}>
+            <Button variant="ghost" size="sm" on:click={reverseAll}>
               ↕ Reverse All
-            </TextButton>
-            <TextButton onclick={clearAll} variant="danger">
+            </Button>
+            <Button variant="ghost" size="sm" tone="danger" on:click={clearAll}>
               Clear
-            </TextButton>
+            </Button>
           </div>
         {/if}
       </BitsPopover.Content>

@@ -2,34 +2,21 @@ type UnderlayComponent = import("svelte").Component<Record<string, unknown>>;
 
 declare const Badge: UnderlayComponent;
 declare const Breadcrumbs: UnderlayComponent;
-declare const Button: UnderlayComponent;
-declare const TextButton: UnderlayComponent;
 declare const Card: UnderlayComponent;
-declare const Field: UnderlayComponent;
-declare const FieldHint: UnderlayComponent;
-declare const FieldSet: UnderlayComponent;
-declare const FieldSetGrid: UnderlayComponent;
 declare const Pill: UnderlayComponent;
-declare const TextInput: UnderlayComponent;
 declare const TextArea: UnderlayComponent;
 declare const MarkdownEditor: UnderlayComponent;
 declare const Form: UnderlayComponent;
 declare const ActionArea: UnderlayComponent;
 declare const FormActions: UnderlayComponent;
-declare const FormError: UnderlayComponent;
 declare const Switch: UnderlayComponent;
 declare const ListGrid: UnderlayComponent;
 declare const ListCard: UnderlayComponent;
-declare const SplitButton: UnderlayComponent;
-declare const SaveSplitButton: UnderlayComponent;
 declare const VideoPlayer: UnderlayComponent;
 declare const Select: UnderlayComponent;
-declare const Dialog: UnderlayComponent;
-declare const AlertDialog: UnderlayComponent;
 declare const ConfirmAction: UnderlayComponent;
 declare const ToastHost: UnderlayComponent;
 declare const DropdownMenu: UnderlayComponent;
-declare const IconButton: UnderlayComponent;
 declare const Tooltip: UnderlayComponent;
 declare const TimeAgo: UnderlayComponent;
 declare const DateRange: UnderlayComponent;
@@ -40,7 +27,6 @@ declare const DetailsCard: UnderlayComponent;
 declare const DetailsItem: UnderlayComponent;
 declare const DetailsSection: UnderlayComponent;
 declare const ContentCard: UnderlayComponent;
-declare const FileUpload: UnderlayComponent;
 declare const TabsRoot: UnderlayComponent;
 declare const TabsList: UnderlayComponent;
 declare const TabsTrigger: UnderlayComponent;
@@ -68,8 +54,6 @@ declare const TotpInput: UnderlayComponent;
 declare const PasswordRequirements: UnderlayComponent;
 declare const PassKeyButton: UnderlayComponent;
 declare const GoogleSignInButton: UnderlayComponent;
-declare const SessionList: UnderlayComponent;
-declare const SecuritySettings: UnderlayComponent;
 declare const AccountRecovery: UnderlayComponent;
 declare const AuthLayout: UnderlayComponent;
 declare const TwoFactorStep: UnderlayComponent;
@@ -88,10 +72,8 @@ declare function formatDateWithOrdinal(
 ): string | null;
 
 export {
-  AlertDialog,
   Badge,
   Breadcrumbs,
-  Button,
   Card,
   ConfirmAction,
   DataTable,
@@ -100,17 +82,10 @@ export {
   DetailsItem,
   DetailsSection,
   ContentCard,
-  Dialog,
   DropdownMenu,
-  Field,
-  FieldHint,
-  FieldSet,
-  FieldSetGrid,
-  FileUpload,
   Form,
   ActionArea,
   FormActions,
-  FormError,
   LoginForm,
   RegisterForm,
   TotpSetup,
@@ -118,8 +93,6 @@ export {
   PasswordRequirements,
   PassKeyButton,
   GoogleSignInButton,
-  SessionList,
-  SecuritySettings,
   AccountRecovery,
   AuthLayout,
   TwoFactorStep,
@@ -128,25 +101,20 @@ export {
   ForgotPasswordFlow,
   LoginPage,
   MarkdownEditor,
-  IconButton,
   ListCard,
   ListGrid,
   OrderBy,
   Pagination,
   Pill,
   Popover,
-  SaveSplitButton,
   Select,
   Skeleton,
-  SplitButton,
   Switch,
   TabsContent,
   TabsList,
   TabsRoot,
   TabsTrigger,
   TextArea,
-  TextButton,
-  TextInput,
   TimeAgo,
   ToastHost,
   Tooltip,

@@ -17,8 +17,7 @@
    */
 
   import type { Snippet } from "svelte";
-
-  import Button from "../Button.svelte";
+  import { Button, StatusIndicator } from "@poodle/svelte-primitives";
 
   interface Props {
     /** Title text */
@@ -61,9 +60,7 @@
     {#if icon}
       {@render icon()}
     {:else}
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
+      <StatusIndicator status="success" label="Success" ariaLabel="Success" />
     {/if}
   </div>
 
@@ -75,7 +72,7 @@
 
   {#if actionLabel && (actionHref || onAction)}
     <div class="underlay-success-step__action">
-      <Button variant="primary" onclick={handleAction}>
+      <Button variant="primary" on:click={handleAction}>
         {actionLabel}
       </Button>
     </div>
@@ -93,14 +90,8 @@
   }
 
   .underlay-success-step__icon {
-    width: 4rem;
-    height: 4rem;
-    color: var(--underlay-color-success, #22c55e);
-  }
-
-  .underlay-success-step__icon :global(svg) {
-    width: 100%;
-    height: 100%;
+    display: flex;
+    justify-content: center;
   }
 
   .underlay-success-step__title {

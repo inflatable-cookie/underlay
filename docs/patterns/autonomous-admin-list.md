@@ -64,7 +64,7 @@ Make the list component own its own data lifecycle and controls:
 ### Phase 7: UX States
 
 - [ ] Show `PageLoading` for initial load
-- [ ] Show `FormError` for failures
+- [ ] Show a danger `Callout` for failures
 - [ ] Show empty state copy distinct from "no matches"
 - [ ] Use `useToasts()` for action success/failure feedback
 
