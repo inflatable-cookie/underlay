@@ -85,6 +85,19 @@ If you are not already in the repo root, `cd` there first instead of adding a
 redundant `--repo` flag for the current tree.
 Use raw `cargo`, `bun`, or framework CLIs directly only when the repo has not represented that path in Effigy yet.
 
+## Shared UI Catalog
+
+Underlay now ships a local Storybook catalog for the retained shared UI surface.
+Use it when you need to understand shared workflow shells and helpers quickly:
+
+```bash
+effigy storybook
+effigy storybook:build
+```
+
+Use Poodle's own preview/docs for primitives and generic composites that were
+migrated out of Underlay during the Poodle adoption wave.
+
 ## Code Examples
 
 Code examples referenced in the guides are located in the `code/` subdirectory:

@@ -14,6 +14,16 @@ The UI kit guidance covers:
 - **Patterns** - ListCard, NavCard, NavCardGrid, Form, FormActions, PageHeader, ReorderableList
 - **Design tokens** - CSS custom properties for theming
 
+For interactive retained-surface examples in this repo, use the local
+Storybook catalog:
+
+```bash
+effigy storybook
+```
+
+Use Poodle's preview/docs for primitives and generic composites that no longer
+belong to Underlay.
+
 ## UI Kit Structure
 
 > **Naming Convention**: Choose names that reflect your project's domain. For example, a project called "Acme" might use `acme-ui` for its UI kit. The examples below use placeholder names like `myapp-ui` - replace these with your own project-specific names.
@@ -1057,62 +1067,27 @@ Container component with consistent styling:
 </Card>
 ```
 
-### ContentCard
+### Rich Content Blocks
 
-Display card for rendering rich text content with a title. Automatically detects the content type and renders appropriately:
-- **NightfireValue objects** are rendered using the NightfireRenderer
-- **HTML strings** are rendered directly (for pre-rendered HTML)
-- **Markdown strings** are parsed and rendered when `markdown` prop is set
-
-Shows a subtle empty message when no content is set.
+`ContentCard` is retired. For long-form Nightfire, HTML, or markdown content,
+compose directly over Poodle `Card` and the renderer you already need at the
+call site.
 
 ```svelte
 <script>
-  import { ContentCard } from "@decodelabs/underlay/components";
+  import { Card } from "@poodle/svelte-primitives";
+  import { NightfireRenderer } from "@decodelabs/underlay/nightfire";
 </script>
 
-<!-- With Nightfire content -->
-<ContentCard
-  title="Description"
-  value={data.description}
-  emptyMessage="No description set."
-/>
-
-<!-- With HTML string -->
-<ContentCard
-  title="Notes"
-  value={data.notesHtml}
-  emptyMessage="No notes added."
-/>
-
-<!-- With Markdown string -->
-<ContentCard
-  title="Learning Aims"
-  value={data.learningAims}
-  markdown
-  emptyMessage="No learning aims set."
-/>
-
-<!-- With custom max height (no collapse) -->
-<ContentCard
-  title="Full Content"
-  value={data.content}
-  maxHeight={0}
-/>
-
-<!-- Scroll instead of reveal toggle -->
-<ContentCard
-  title="Stitched Preview"
-  value={data.stitchedMarkdown}
-  markdown
-  maxHeight="10em"
-  overflowBehavior="scroll"
-/>
+<Card>
+  <h4>Description</h4>
+  {#if entity.description}
+    <NightfireRenderer value={entity.description} />
+  {:else}
+    <p>No description set.</p>
+  {/if}
+</Card>
 ```
-
-**Props:**
-- `title` - Card heading text (required)
-- `value` - NightfireValue object, HTML string, or Markdown string to render (optional)
 - `markdown` - When true, string values are parsed as Markdown (default: false)
 - `emptyMessage` - Message shown when value is empty (default: "No content set.")
 - `maxHeight` - Max height when constrained. Number values are interpreted as pixels; strings can use CSS units like `"10em"` (default: `200`)
@@ -1276,7 +1251,9 @@ Confirmation dialog with destructive action styling:
 
 ### DropdownMenu
 
-Dropdown menu component:
+Use `DropdownMenu` for the remaining Underlay-owned menu workflows that still
+need either callback-oriented `items`, destructive row-action treatment, or
+child-composed menu content. For simpler shared menus, prefer Poodle `Menu`.
 
 ```svelte
 <script>
@@ -1295,87 +1272,34 @@ Dropdown menu component:
 </DropdownMenu>
 ```
 
+`DropdownMenu` is intentionally still retained in Underlay because Poodle
+`Menu` is not yet a drop-in replacement for the remaining live callers such as
+the data-table row actions path.
+
 ### Tooltip
 
-Tooltip component for showing additional information on hover. Supports both icon triggers (default) and inline text triggers.
+Use Poodle `Tooltip` for shared tooltip behavior. Underlay no longer exports its own tooltip wrapper.
 
 ```svelte
 <script>
-  import { Tooltip } from "@decodelabs/underlay/components";
+  import { Tooltip } from "@poodle/svelte-primitives";
 </script>
 
-<!-- Default icon trigger (ⓘ) -->
-<Tooltip content="This is helpful information">
-  <!-- Uses default ⓘ icon -->
+<Tooltip content="January 21, 2026 at 3:45 PM" delayMs={200}>
+  <span>3 days ago</span>
 </Tooltip>
-
-<!-- Custom trigger label -->
-<Tooltip content="Click for more info" triggerLabel="?">
-  <!-- Uses ? instead of ⓘ -->
-</Tooltip>
-
-<!-- Inline text trigger (for TimeAgo, definitions, etc.) -->
-<Tooltip content="January 21, 2026 at 3:45 PM" inline>
-  {#snippet trigger()}
-    <span>3 days ago</span>
-  {/snippet}
-</Tooltip>
-
-<!-- Custom snippet trigger -->
-<Tooltip content="User profile settings">
-  {#snippet trigger()}
-    <button class="custom-trigger">⚙️ Settings</button>
-  {/snippet}
-</Tooltip>
-
-<!-- Positioning -->
-<Tooltip content="Appears below" side="bottom" />
-<Tooltip content="Appears left" side="left" align="start" />
 ```
 
 **Props:**
 - `content` - Tooltip text content (required)
-- `open` - Boolean controlling visibility (bindable)
-- `showTrigger` - Show trigger element (default: `true`)
-- `triggerLabel` - Label for default trigger (default: `"ⓘ"`)
-- `side` - `"top"` | `"right"` | `"bottom"` | `"left"` (default: `"top"`)
-- `sideOffset` - Distance from trigger in pixels (default: `6`)
-- `align` - `"start"` | `"center"` | `"end"` (default: `"center"`)
-- `alignOffset` - Alignment offset in pixels (default: `0`)
-- `delayDuration` - Delay before showing in ms (default: `500`)
-- `disabled` - Disable tooltip (default: `false`)
-- `inline` - Use inline trigger styling for text content (default: `false`)
-- `trigger` - Custom trigger snippet
-- `class` - Additional CSS classes for trigger
-
-**Snippets:**
-- `trigger` - Custom content for the trigger element
-
-**Inline Mode:**
-
-Use `inline={true}` when the tooltip trigger is text within a sentence or paragraph. This mode:
-- Inherits font size, color, and line-height from the parent
-- Removes default trigger dimensions and background
-- Sets `cursor: help` for the trigger
-- Preserves text flow without disrupting layout
+- `delayMs` - Delay before showing in ms
+- `placement` - Overlay placement (`"top"`, `"bottom"`, `"left"`, `"right"`, with `-start` / `-end` variants)
 
 ```svelte
 <p>
-  Updated <Tooltip content="January 21, 2026" inline>
-    {#snippet trigger()}
-      <span>3 days ago</span>
-    {/snippet}
-  </Tooltip> by admin.
+  Updated <Tooltip content="January 21, 2026" delayMs={200}><span>3 days ago</span></Tooltip> by admin.
 </p>
 ```
-
-**Styling:**
-
-The tooltip uses these CSS classes:
-- `.underlay-tooltip-trigger` - Default icon trigger styling
-- `.underlay-tooltip-trigger--inline` - Inline trigger styling
-- `.underlay-tooltip-content` - Tooltip popup container
-- `.underlay-tooltip-arrow` - Arrow pointing to trigger
 
 ### TimeAgo
 
@@ -1842,106 +1766,43 @@ A list item for use inside `InlineListCard`. Supports links, click handlers, acc
 
 ### Tabs
 
-A tabbed interface component with multiple visual variants. Supports URL query synchronization, responsive collapse to dropdown, and a dedicated `form` variant for large multi-section forms.
+Use Poodle `Tabs` for shared tab chrome. Underlay no longer exports the old `TabsRoot` / `TabsList` / `TabsTrigger` / `TabsContent` stack.
 
 ```svelte
-<script>
-  import { TabsRoot, TabsList, TabsTrigger, TabsContent } from "@decodelabs/underlay/components";
+<script lang="ts">
+  import { Tabs, type TabItem } from "@poodle/svelte-primitives";
 
   let activeTab = $state("details");
+  const tabItems: TabItem[] = [
+    { value: "details", label: "Details" },
+    { value: "settings", label: "Settings" }
+  ];
 </script>
 
-<!-- Basic tabs with pills variant (default) -->
-<TabsRoot bind:value={activeTab}>
-  <TabsList>
-    <TabsTrigger value="details">Details</TabsTrigger>
-    <TabsTrigger value="settings">Settings</TabsTrigger>
-  </TabsList>
-
-  <TabsContent value="details">
+<Tabs bind:value={activeTab} items={tabItems} variant="card" size="sm" ariaLabel="Sections" let:activeValue>
+  {#if activeValue === "details"}
     <p>Details content here</p>
-  </TabsContent>
-  <TabsContent value="settings">
+  {/if}
+
+  {#if activeValue === "settings"}
     <p>Settings content here</p>
-  </TabsContent>
-</TabsRoot>
-
-<!-- Underline variant -->
-<TabsRoot bind:value={activeTab} variant="underline">
-  <TabsList>
-    <TabsTrigger value="overview">Overview</TabsTrigger>
-    <TabsTrigger value="history">History</TabsTrigger>
-  </TabsList>
-  <!-- TabsContent sections... -->
-</TabsRoot>
-
-<!-- Boxed variant -->
-<TabsRoot bind:value={activeTab} variant="boxed">
-  <TabsList>
-    <TabsTrigger value="code">Code</TabsTrigger>
-    <TabsTrigger value="preview">Preview</TabsTrigger>
-  </TabsList>
-  <!-- TabsContent sections... -->
-</TabsRoot>
-
-<!-- With URL history synchronization -->
-<TabsRoot bind:value={activeTab} historyKey="tab">
-  <TabsList>
-    <TabsTrigger value="details">Details</TabsTrigger>
-    <TabsTrigger value="modules">Modules</TabsTrigger>
-  </TabsList>
-  <!-- Tab state syncs with ?tab=details or ?tab=modules -->
-</TabsRoot>
-
-<!-- With count badges -->
-<TabsRoot bind:value={activeTab}>
-  <TabsList>
-    <TabsTrigger value="all">All</TabsTrigger>
-    <TabsTrigger value="active" count={12}>Active</TabsTrigger>
-    <TabsTrigger value="archived" count={3}>Archived</TabsTrigger>
-  </TabsList>
-</TabsRoot>
-
-<!-- Collapsible tabs (collapse to dropdown on narrow screens) -->
-<TabsRoot bind:value={activeTab}>
-  <TabsList
-    collapsible
-    tabs={[
-      { value: "details", label: "Details" },
-      { value: "modules", label: "Modules", count: 5 },
-      { value: "settings", label: "Settings" }
-    ]}
-  >
-    <TabsTrigger value="details">Details</TabsTrigger>
-    <TabsTrigger value="modules" count={5}>Modules</TabsTrigger>
-    <TabsTrigger value="settings">Settings</TabsTrigger>
-  </TabsList>
-</TabsRoot>
+  {/if}
+</Tabs>
 ```
 
-**TabsRoot Props:**
+**Tabs Props:**
 - `value` - Current active tab value (bindable)
-- `variant` - Visual style: `"pills"` (default), `"underline"`, `"boxed"`, `"plain"`, or `"form"`
-- `size` - Size variant: `"default"` or `"sm"`
-- `historyKey` - When provided, syncs tab state with URL query param (e.g., `historyKey="tab"` stores as `?tab=value`)
+- `items` - Array of `{ value, label, count?, disabled?, separator? }`
+- `variant` - Visual style: `"underline"`, `"card"`, `"pill"`, or `"strip"`
+- `size` - Control size, commonly `"sm"` for admin detail tabs
+- `historyKey` - Optional query-param sync (for example `historyKey="tab"`)
+- slot prop `activeValue` - Use this to render the active panel content
 
-**TabsList Props:**
-- `class` - Additional CSS class
-- `collapsible` - Enable responsive collapse to dropdown (requires `tabs` prop)
-- `tabs` - Array of `{ value, label, count? }` for collapsible mode
-
-**TabsTrigger Props:**
-- `value` - Tab value (must match `TabsContent` value)
-- `disabled` - Disable the tab
-- `count` - Optional count badge displayed after the label
-- `class` - Additional CSS class
-
-**Variant Styling:**
-- **pills** - Rounded pill-shaped tabs with subtle background, contained in a rounded border
-- **underline** - Minimal tabs with bottom border highlight on active tab
-- **boxed** - Traditional raised tabs with background color
-- **plain** - Minimal text tabs without underline border treatment
-- **form** - Larger section-navigation tabs intended for long, multi-section forms
+**Variant guidance:**
+- **card** - Best default for admin detail pages and multi-section views
+- **underline** - Good for lighter in-page secondary navigation
+- **pill** - Good for settings/account shells and compact switches
+- **strip** - Best for broad toolbar-like tab sets
 
 #### Form Tabs (Multi-Section Forms)
 
@@ -1949,29 +1810,21 @@ Use this pattern for long forms (2+ sections) where one form is easier to scan a
 
 ```svelte
 <script lang="ts">
-  import {
-    Field,
-    TabsRoot,
-    TabsList,
-    TabsTrigger,
-    TabsContent,
-    TextInput
-  } from "@decodelabs/underlay/components";
+  import { Field, TextInput } from "@decodelabs/underlay/components";
   import { FormLayout } from "@poodle/svelte-composites";
-  import { FieldSet } from "@poodle/svelte-primitives";
+  import { FieldSet, Tabs, type TabItem } from "@poodle/svelte-primitives";
 
   let activeTab = $state("details");
   let title = $state("");
   let notes = $state("");
+  const tabItems: TabItem[] = [
+    { value: "details", label: "Details" },
+    { value: "notes", label: "Notes" }
+  ];
 </script>
 
-<TabsRoot bind:value={activeTab} variant="form">
-  <TabsList collapsible>
-    <TabsTrigger value="details">Details</TabsTrigger>
-    <TabsTrigger value="notes">Notes</TabsTrigger>
-  </TabsList>
-
-  <TabsContent value="details">
+<Tabs bind:value={activeTab} items={tabItems} variant="card" size="sm" ariaLabel="Form sections" let:activeValue>
+  {#if activeValue === "details"}
     <FieldSet legend="Core">
       <FormLayout columns={1}>
         <Field label="Title" required>
@@ -1979,9 +1832,9 @@ Use this pattern for long forms (2+ sections) where one form is easier to scan a
         </Field>
       </FormLayout>
     </FieldSet>
-  </TabsContent>
+  {/if}
 
-  <TabsContent value="notes">
+  {#if activeValue === "notes"}
     <FieldSet legend="Notes">
       <FormLayout columns={1}>
         <Field label="Notes">
@@ -1989,16 +1842,13 @@ Use this pattern for long forms (2+ sections) where one form is easier to scan a
         </Field>
       </FormLayout>
     </FieldSet>
-  </TabsContent>
-</TabsRoot>
+  {/if}
+</Tabs>
 ```
 
 **Important requirements:**
-- Keep `TabsTrigger.value` and `TabsContent.value` aligned by section
+- Keep each `items[].value` aligned with your `activeValue` panel checks
 - Keep submit-state derivation in the form layer rather than in the tabs shell
-
-**Editor compatibility note:**
-- The `form` tab variant keeps inactive panels mounted (hidden with height/visibility, not `display: none`) so editors like CodeMirror/EasyMDE don't break when switching tabs
 
 ---
 
@@ -2216,7 +2066,8 @@ When displaying related entity counts (e.g., "3 modules", "5 sections"), use an 
 
 ```svelte
 <script>
-  import { ListCard, Tooltip } from "@decodelabs/underlay/components";
+  import { ListCard } from "@decodelabs/underlay/components";
+  import { Tooltip } from "@poodle/svelte-primitives";
   import BookOpen from "lucide-svelte/icons/book-open";
   import Layers from "lucide-svelte/icons/layers";
   import Package from "lucide-svelte/icons/package";
@@ -2229,21 +2080,17 @@ When displaying related entity counts (e.g., "3 modules", "5 sections"), use an 
 
   <!-- Child counts with icon + tooltip -->
   <span class="counts">
-    <Tooltip content="Modules: {pathway.moduleCount}" inline delayDuration={200}>
-      {#snippet trigger()}
-        <span class="counts__item">
-          <BookOpen size={14} />
-          {pathway.moduleCount}
-        </span>
-      {/snippet}
+    <Tooltip content="Modules: {pathway.moduleCount}" delayMs={200}>
+      <span class="counts__item">
+        <BookOpen size={14} />
+        {pathway.moduleCount}
+      </span>
     </Tooltip>
-    <Tooltip content="Levels: {pathway.levelCount}" inline delayDuration={200}>
-      {#snippet trigger()}
-        <span class="counts__item">
-          <Layers size={14} />
-          {pathway.levelCount}
-        </span>
-      {/snippet}
+    <Tooltip content="Levels: {pathway.levelCount}" delayMs={200}>
+      <span class="counts__item">
+        <Layers size={14} />
+        {pathway.levelCount}
+      </span>
     </Tooltip>
   </span>
 </ListCard>
@@ -2268,8 +2115,7 @@ When displaying related entity counts (e.g., "3 modules", "5 sections"), use an 
 - Use a relevant icon for each count type (e.g., `BookOpen` for modules, `Layers` for sections/levels, `Package` for bundles, `Target` for outcomes)
 - Icon size should be 14px for consistency
 - Tooltip format: `"{Label}: {count}"` (e.g., "Modules: 5")
-- Set `delayDuration={200}` for quick hover response
-- Use `inline` mode on the Tooltip component
+- Set `delayMs={200}` for quick hover response
 - Multiple counts are separated with `gap: 0.75rem`
 
 ### NavCard & NavCardGrid
@@ -2931,9 +2777,11 @@ The RelationSelector provides:
 - **Embedded create form**: Add new related records without leaving the modal
 - **Full accessibility**: Keyboard navigation, ARIA attributes, focus management
 
-The relation-selection workflow remains Underlay-owned, but its modal chrome now
-resolves through Poodle `Dialog`, `SearchField`, `Callout`, and `Button`
-instead of a separate local dialog/search/status stack.
+The relation-selection workflow remains Underlay-owned, but its modal and
+popover/drilldown chrome now resolves through Poodle `Dialog`, `SearchField`,
+`Callout`, `Button`, and `Pill` instead of separate local dialog/search/status
+helper stacks. The remaining filter menus, option lists, and drilldown
+navigation are the actual retained Underlay workflow boundary.
 
 ```
 ┌─────────────────────────────────────┐
@@ -3274,7 +3122,7 @@ import "@decodelabs/underlay/styles/base.css";
 The `.underlay-details-content` class provides a responsive 2-column grid for admin detail pages, with common card defaults that avoid custom CSS for basic layout.
 
 ```svelte
-<TabsContent value="details">
+{#if activeValue === "details"}
   <PageHeader title={item.title} level={3}>
     <p><strong>Slug:</strong> <code>{item.slug}</code></p>
   </PageHeader>
@@ -3287,25 +3135,24 @@ The `.underlay-details-content` class provides a responsive 2-column grid for ad
       </DetailsSection>
     </DetailsGrid>
 
-    <ContentCard
-      title="Description"
-      value={item.description}
-      emptyMessage="No description set."
-    />
+    <Card>
+      <h4>Description</h4>
+      <p>{item.description || "No description set."}</p>
+    </Card>
 
-    <TabsRoot value="tab1" variant="underline" size="sm">
+    <Tabs value="tab1" items={[{ value: "tab1", label: "Tab 1" }]} variant="underline" size="sm">
       <!-- Nested tabs for grouped content -->
-    </TabsRoot>
+    </Tabs>
   </div>
-</TabsContent>
+{/if}
 ```
 
 **What it does:**
 - Uses a 2-column grid with `gap: 1.5rem`, collapsing to 1 column in narrow containers
 - Applies `align-items: stretch` and `min-width: 0` to prevent overflow in grid children
-- Makes direct child cards (`InlineListCard`, `ContentCard`, `DetailsCard`, `Card`) fill cell width by default
-- Stretches direct child `InlineListCard` and `ContentCard` so side-by-side rows align vertically
-- Supports `.span-full` and direct `.underlay-tabs` children spanning both columns
+- Makes direct child cards (`InlineListCard`, `DetailsCard`, `Card`) fill cell width by default
+- Stretches direct child `InlineListCard` and direct `Card` content blocks so side-by-side rows align vertically
+- Supports `.span-full` and direct Poodle `Tabs` sections spanning both columns
 
 ### Media Preview Utilities
 
@@ -3316,7 +3163,7 @@ Use shared utility classes for detail-page media previews instead of per-page sh
 - `.underlay-thumbnail-link` - consistent thumbnail anchor hover/radius treatment
 
 **When to use:**
-- Inside `TabsContent value="details"` on admin detail pages
+- Inside the active details tab block on admin detail pages
 - When you need side-by-side detail/auxiliary panels plus full-width follow-up rows
 - To avoid manual width, stretch, and margin overrides between sections
 
@@ -3340,7 +3187,6 @@ Use `.underlay-page-stack-tight` when the page needs the same structure with tig
 ```svelte
 <script lang="ts">
   import { 
-    Form, 
     Field, 
     TextInput, 
     TextArea, 
@@ -3372,7 +3218,7 @@ Use `.underlay-page-stack-tight` when the page needs the same structure with tig
   </div>
 {/if}
 
-<Form method="POST" use:enhance={() => {
+<form method="POST" use:enhance={() => {
   loading = true;
   return async ({ update }) => {
     await update();
@@ -3433,7 +3279,7 @@ Use `.underlay-page-stack-tight` when the page needs the same structure with tig
       Cancel
     </Button>
   </FormActions>
-</Form>
+</form>
 
 <style>
   .alert {

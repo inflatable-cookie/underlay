@@ -4,48 +4,40 @@ This guide covers the reusable authentication UI components provided by Underlay
 
 ## Overview
 
-Underlay provides two types of auth components:
+Underlay provides two public auth layers:
 
-1. **Building Blocks** - Small, focused components for specific UI elements
-2. **Composite Pages** - Full-featured page components that combine building blocks
+1. **Workflow shells** - framed auth pages and multi-step flows
+2. **Shared field helpers** - focused inputs and password-rule display used by both shared flows and app-owned account pages
 
-### Building Blocks
+Storybook coverage:
+- `Auth/AuthLayout`
+- `Auth/LoginPage`
+- `Auth/ForgotPasswordFlow`
+- `Auth/TotpInput`
+- `Auth/PasswordRequirements`
+
+Run `effigy storybook` from the repo root to inspect the retained auth surface interactively.
+
+### Workflow Shells
 
 | Component | Description |
 |-----------|-------------|
 | `AuthLayout` | Centered container with branding slots |
-| `TwoFactorStep` | 2FA code entry (TOTP or email) |
-| `SuccessStep` | Generic success confirmation |
-| `PasswordResetStep` | New password entry with requirements |
-
-### Composite Pages
-
-| Component | Description |
-|-----------|-------------|
 | `LoginPage` | Full login flow with multiple auth methods |
 | `ForgotPasswordFlow` | Multi-step password reset flow |
 
-### Existing Auth Components
-
-These components were available before the consolidation:
+### Shared Field Helpers
 
 | Component | Description |
 |-----------|-------------|
-| `LoginForm` | Simple login form (password only) |
-| `RegisterForm` | Registration form |
-| `TotpSetup` | TOTP setup wizard |
 | `TotpInput` | 6-digit code input |
 | `PasswordRequirements` | Password strength indicator |
-| `PassKeyButton` | WebAuthn passkey button |
-| `GoogleSignInButton` | Google OAuth button |
 
-### Legacy Component Status
+### Internal and Retired Auth Pieces
 
-- `AccountRecovery` is deprecated and retained only for backwards compatibility.
-- Use `ForgotPasswordFlow` for all new password recovery implementations.
-- The old account-settings surfaces (`PasskeyManager`, `SecuritySettings`,
-  `SessionList`) are retired. Build account security pages directly in the app
-  over shared auth hooks, `PassKeyButton`, `TotpSetup`, and Poodle primitives.
+- `TwoFactorStep`, `SuccessStep`, and `PasswordResetStep` remain internal implementation detail inside the shared auth flows. They are not part of the public `@decodelabs/underlay/components` surface.
+- `LoginForm`, `RegisterForm`, `TotpSetup`, `PassKeyButton`, `GoogleSignInButton`, and `AccountRecovery` are retired from the public component surface and removed from the live shared implementation set. The passkey and Google button treatments now live directly inside the shared login tabs instead of as separate wrapper components.
+- The old account-settings surfaces (`PasskeyManager`, `SecuritySettings`, `SessionList`) are retired. Build account security pages directly in the app over shared auth hooks, `TotpInput`, `PasswordRequirements`, and Poodle primitives.
 
 ## Quick Start
 
@@ -244,86 +236,6 @@ Use it inside `AuthLayout` for the standard framed auth-page posture.
 | `emailHint` | `string` | Default text | Hint for email step |
 | `successMessage` | `string` | Default text | Success message |
 
-### TwoFactorStep
-
-Reusable 2FA verification step for TOTP or email codes.
-
-```svelte
-<TwoFactorStep
-  type="email"                    <!-- "totp" or "email" -->
-  email="j***@example.com"        <!-- For email type display -->
-  bind:code                       <!-- 6-digit code -->
-  loading={false}
-  error={null}
-  onVerify={(code) => verify(code)}
-  onResend={() => resendCode()}   <!-- Email type only -->
-  onBack={() => goBack()}
-  backLabel="Use a different account"
-/>
-```
-
-**Props:**
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `type` | `"totp" \| "email"` | required | Type of 2FA |
-| `email` | `string` | - | Email for display (email type) |
-| `code` | `string` | `""` | Bindable code value |
-| `loading` | `boolean` | `false` | Loading state |
-| `error` | `string \| null` | `null` | Error message |
-| `onVerify` | `(code) => void` | - | Submit handler |
-| `onResend` | `() => void` | - | Resend handler (email only) |
-| `onBack` | `() => void` | - | Back handler |
-| `submitLabel` | `string` | `"Verify"` | Submit button text |
-| `backLabel` | `string` | `"Back"` | Back button text |
-
-### SuccessStep
-
-Generic success confirmation with action button.
-
-```svelte
-<SuccessStep
-  title="Password reset successfully"
-  message="You can now log in with your new password."
-  actionLabel="Go to login"
-  actionHref="/login"
-/>
-```
-
-**Props:**
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `title` | `string` | required | Success title |
-| `message` | `string` | - | Additional message |
-| `actionLabel` | `string` | `"Continue"` | Button text |
-| `actionHref` | `string` | - | Navigation URL |
-| `onAction` | `() => void` | - | Click handler (alternative to href) |
-| `icon` | `Snippet` | Checkmark | Custom icon |
-
-### PasswordResetStep
-
-New password entry with requirements display.
-
-```svelte
-<PasswordResetStep
-  loading={false}
-  error={null}
-  fetchRequirements={() => api.getPasswordRequirements()}
-  onSubmit={(password) => resetPassword(password)}
-  submitLabel="Reset password"
-  hint="Create a new password for your account."
-/>
-```
-
-**Props:**
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `loading` | `boolean` | `false` | Loading state |
-| `error` | `string \| null` | `null` | Error message |
-| `fetchRequirements` | `() => Promise<PasswordRequirements>` | required | Get password rules |
-| `onSubmit` | `(password) => void` | - | Submit handler |
-| `submitLabel` | `string` | `"Reset password"` | Button text |
-| `hint` | `string` | Default text | Hint above form |
-
 ## Integration with cattle-grid
 
 The auth components are designed to work with cattle-grid API commands. Here's a complete example:
@@ -421,7 +333,7 @@ All components use CSS variables for theming. Override these in your app's globa
 
 ## Migration from Old Components
 
-If you're migrating from the older `LoginForm` component to `LoginPage`:
+If you're migrating from the retired historical `LoginForm` surface to `LoginPage`:
 
 ### Before (LoginForm)
 ```svelte

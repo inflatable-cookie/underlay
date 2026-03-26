@@ -7,7 +7,6 @@ Use this sweep to keep layout behavior centralized in Underlay primitives and ut
 - Underlay shared layout primitives:
   - `styles/base.css`
   - `InlineListCard`
-  - `ContentCard`
   - `DetailsCard`
   - `ContainerGrid`
 - Consuming admin apps (for example Dairy) detail tabs and list-card surfaces.
@@ -20,19 +19,20 @@ Confirm all of the following exist in Underlay:
   - `*, *::before, *::after { box-sizing: border-box; }`
 - `.underlay-details-content` is a responsive 2-column grid with `align-items: stretch`.
 - `.underlay-details-content > * { min-width: 0; }` exists to prevent overflow.
-- Direct child cards (`InlineListCard`, `ContentCard`, `DetailsCard`, `Card`) default to full-width in detail grids.
+- Direct child cards (`InlineListCard`, `DetailsCard`, `Card`) default to full-width in detail grids.
 - `.span-full` rows are supported and child cards inside `.span-full` also default to full-width.
 
 ## Step 2 - Verify Component Capabilities
 
-Check that common “no custom CSS” use cases are supported by props:
+Check that common “no custom CSS” use cases are supported by props or direct
+composition:
 
 - `InlineListCard` supports:
   - `fullWidth`
   - `stretch`
-- `ContentCard` supports:
-  - `fullWidth`
-  - `stretch`
+- Long-form content blocks use direct `Card` composition plus `NightfireRenderer`
+  or caller-owned HTML/markdown rendering instead of a dedicated `ContentCard`
+  wrapper.
 
 ## Step 3 - Scan for Layout-Hack CSS in Consumers
 
@@ -56,7 +56,7 @@ Manual review:
 For each admin detail page:
 
 - Use `.underlay-details-content` as the main details container.
-- Prefer direct `DetailsCard` / `InlineListCard` / `ContentCard` composition over local wrapper grids.
+- Prefer direct `DetailsCard` / `InlineListCard` / `Card` composition over local wrapper grids.
 - Use `.span-full` for full-width rows beneath side-by-side content.
 
 ## Step 5 - Pass Criteria

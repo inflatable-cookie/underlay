@@ -55,8 +55,8 @@ rg -n "^export \{ default as |^export \{" "$UNDERLAY_REPO/ts/src/patterns/index.
 
 Focus on these canonical items for this sweep:
 
-- **Form widgets:** `Field`, `TextInput`, `TextArea`, `Select`, `Switch`, `DateInput`, `DateTimeInput`, `NumberInput`, `DurationInput`, `MarkdownEditor`, `Form`, `FormActions`
-- **List controls:** `FilterBar`, `OrderBy`, `Pagination`, `PaginatedList`, `DataTable`, `ListContainer`, `createListController`
+- **Form widgets:** `Field`, `TextInput`, `TextArea`, `Select`, `Switch`, `DateInput`, `DateTimeInput`, `NumberInput`, `DurationInput`, `MarkdownEditor`, `FormActions`
+- **List controls:** `FilterBar`, `OrderBy`, `Pagination`, `DataTable`, `createListController`, `BatchActionBar`, `LogList`, `CopyActionsMenu`
 - **List cards:** `ListCard`, `InlineListCard`, `InlineListItem`
 - **Form dialogs:** `FormDialog` (patterns), `Dialog`, `AlertDialog`, `FormActions`
 
@@ -117,7 +117,7 @@ rg -n "filter|search|sort|order|page|pagination|limit" "$ADMIN_REPO/src/routes" 
 Check if those areas use shared list controls:
 
 ```bash
-rg -n "FilterBar|OrderBy|Pagination|PaginatedList|DataTable|ListContainer|createListController" "$ADMIN_REPO/src" "$WEB_REPO/src"
+rg -n "FilterBar|OrderBy|Pagination|DataTable|createListController|BatchActionBar|LogList|CopyActionsMenu" "$ADMIN_REPO/src" "$WEB_REPO/src"
 ```
 
 Flag candidates where list functionality exists but shared controls are absent.
@@ -214,7 +214,7 @@ Replace:
 
 With:
 
-- `FilterBar`, `OrderBy`, `Pagination`/`PaginatedList`, or `DataTable` where tabular
+- `FilterBar`, `OrderBy`, `Pagination`, or `DataTable` where tabular
 
 Checklist:
 

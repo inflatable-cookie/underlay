@@ -54,14 +54,11 @@
     Button,
     Dialog as PoodleDialog,
     FileUpload,
+    Tabs,
+    type TabItem,
     type FileUploadItem
   } from "@poodle/svelte-primitives";
-  import TabsRoot from "./TabsRoot.svelte";
-  import TabsList from "./TabsList.svelte";
-  import TabsTrigger from "./TabsTrigger.svelte";
-  import TabsContent from "./TabsContent.svelte";
   import Upload from "lucide-svelte/icons/upload";
-  import Search from "lucide-svelte/icons/search";
 
   interface Props {
     /** Whether the picker dialog is open */
@@ -122,6 +119,10 @@
 
   // Tabs state
   let activeTab = $state("browse");
+  const tabItems = $derived<TabItem[]>([
+    { value: "browse", label: "Browse Library" },
+    { value: "upload", label: "Upload New" }
+  ]);
 
   // Browse state
   let browseLoading = $state(false);
@@ -337,21 +338,8 @@
   contentClassName="media-picker-dialog"
   showCloseButton
 >
-  <TabsRoot bind:value={activeTab}>
-    <div class="underlay-media-picker-tabs-center">
-      <TabsList>
-        <TabsTrigger value="browse">
-          <Search size={14} />
-          Browse Library
-        </TabsTrigger>
-        <TabsTrigger value="upload">
-          <Upload size={14} />
-          Upload New
-        </TabsTrigger>
-      </TabsList>
-    </div>
-
-    <TabsContent value="browse">
+  <Tabs bind:value={activeTab} items={tabItems} ariaLabel="Media picker sections" let:activeValue>
+    {#if activeValue === "browse"}
       <MediaBrowsePanel
         loading={browseLoading}
         error={browseError}
@@ -363,9 +351,7 @@
           if (media) selectMedia(media);
         }}
       />
-    </TabsContent>
-
-    <TabsContent value="upload">
+    {:else if activeValue === "upload"}
       <div class="underlay-upload-content">
         {#if uploadStep === "select"}
           <FileUpload
@@ -399,8 +385,8 @@
           />
         {/if}
       </div>
-    </TabsContent>
-  </TabsRoot>
+    {/if}
+  </Tabs>
 
 </PoodleDialog>
 
@@ -408,11 +394,6 @@
   :global(.media-picker-dialog) {
     width: min(50rem, calc(100vw - 2rem)) !important;
     max-height: min(85vh, 50rem) !important;
-  }
-
-  .underlay-media-picker-tabs-center {
-    display: flex;
-    justify-content: center;
   }
 
   .underlay-upload-content {

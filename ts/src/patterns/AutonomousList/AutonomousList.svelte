@@ -11,7 +11,7 @@
   import EmptyState from "../../components/EmptyState.svelte";
   import Pagination from "../../components/Pagination.svelte";
   import BatchActionBar from "../../components/BatchActionBar.svelte";
-  import BatchConfirmDialog from "../../components/BatchConfirmDialog.svelte";
+  import { AlertDialog as PoodleAlertDialog } from "@poodle/svelte-primitives";
   import type { BatchAction } from "../batch-actions.svelte";
   import type { PageHeaderLevel, BreadcrumbItem } from "../types";
   import type {
@@ -349,11 +349,12 @@
   {/if}
 
   {#if batch.pendingAction}
-    <BatchConfirmDialog
+    <PoodleAlertDialog
       open={true}
       title={batch.pendingAction.confirm?.title ?? "Confirm action"}
       description={batch.getConfirmDescription()}
       confirmLabel={batch.pendingAction.confirm?.confirmLabel ?? "Confirm"}
+      tone="warning"
       onConfirm={async () => { await batch.confirmPendingAction(); }}
       onCancel={() => batch.cancelPendingAction()}
     />

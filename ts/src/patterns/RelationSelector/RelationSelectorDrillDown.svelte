@@ -1,12 +1,10 @@
 <script lang="ts">
+  import { Button, Callout, Pill, SearchField } from "@poodle/svelte-primitives";
   import { tick } from "svelte";
-  import ArrowLeft from "lucide-svelte/icons/arrow-left";
   import ChevronRight from "lucide-svelte/icons/chevron-right";
-  import Loader from "lucide-svelte/icons/loader-circle";
   import type { SelectableRelation } from "./types.js";
   import type { DrillDownItem } from "./drilldown-types.js";
   import { useRelationSelector } from "./context.svelte.js";
-  import RelationSelectorPopoverSearch from "./RelationSelectorPopoverSearch.svelte";
   import RelationSelectorPopoverFilters from "./RelationSelectorPopoverFilters.svelte";
   import type { FilterConfig } from "./types.js";
 
@@ -14,11 +12,10 @@
   const dd = ctx.drillDown;
 
   // Local UI state
-  let searchInputRef: HTMLInputElement | null = $state(null);
   let listRef: HTMLUListElement | null = $state(null);
-  let debounceTimer: ReturnType<typeof setTimeout> | null = null;
   let focusedIndex = $state(-1);
   let openFilterKey = $state<string | null>(null);
+  const searchFieldId = "relation-selector-drilldown-search";
 
   // Focus search input when level changes
   $effect(() => {
@@ -27,7 +24,7 @@
       const _depth = ctx.state.drillDown.depth;
       focusedIndex = -1;
       void tick().then(() => {
-        searchInputRef?.focus();
+        document.getElementById(searchFieldId)?.focus();
       });
     }
   });
@@ -105,20 +102,11 @@
   }
 
   // Search handling
-  function handleSearchInput(event: Event) {
-    const value = (event.target as HTMLInputElement).value;
+  function handleSearchInput(value: string) {
     dd.setDrillDownSearch(value);
     focusedIndex = -1;
 
-    if (debounceTimer) {
-      clearTimeout(debounceTimer);
-    }
-
-    if (value.trim()) {
-      debounceTimer = setTimeout(() => {
-        void dd.performDrillDownSearch(value);
-      }, 300);
-    } else {
+    if (!value.trim()) {
       // Clear search results, show suggestions
       const ddState = ctx.state.drillDown;
       if (ddState) {
@@ -166,7 +154,7 @@
       event.preventDefault();
       if (focusedIndex <= 0) {
         focusedIndex = -1;
-        searchInputRef?.focus();
+        document.getElementById(searchFieldId)?.focus();
       } else {
         const prevIndex = focusedIndex - 1;
         focusedIndex = prevIndex;
@@ -223,26 +211,29 @@
 <div class="drilldown" role="presentation" onclick={handlePopoverClick}>
   {#if breadcrumbs.length > 0}
     <div class="drilldown__breadcrumbs">
-      <button
+      <Button
         type="button"
-        class="drilldown__back-btn"
-        onclick={handleBackClick}
-        aria-label="Go back"
-      >
-        <ArrowLeft size="0.9em" strokeWidth={2.5} />
-      </button>
+        variant="ghost"
+        size="sm"
+        leadingIcon="arrow-left"
+        ariaLabel="Go back"
+        className="drilldown__back-btn"
+        on:click={handleBackClick}
+      />
       <div class="drilldown__breadcrumb-trail">
         {#each breadcrumbs as crumb, i (crumb.key)}
           {#if i > 0}
             <span class="drilldown__breadcrumb-sep">/</span>
           {/if}
-          <button
+          <Button
             type="button"
-            class="drilldown__breadcrumb-item"
-            onclick={() => handleBreadcrumbClick(crumb.depth)}
+            variant="ghost"
+            size="sm"
+            className="drilldown__breadcrumb-item"
+            on:click={() => handleBreadcrumbClick(crumb.depth)}
           >
             {crumb.itemLabel}
-          </button>
+          </Button>
         {/each}
       </div>
     </div>
@@ -264,27 +255,38 @@
       />
     {/if}
 
-    <RelationSelectorPopoverSearch
-      placeholder={currentLevel.searchPlaceholder ?? `Search ${currentLevel.label.toLowerCase()}...`}
-      value={ctx.state.drillDown?.searchQuery ?? ""}
-      {showLoading}
-      onInput={handleSearchInput}
-      onKeyDown={handleSearchKeyDown}
-      onInputRef={(input) => (searchInputRef = input)}
-    />
+    <div class="drilldown__search">
+      <SearchField
+        id={searchFieldId}
+        value={ctx.state.drillDown?.searchQuery ?? ""}
+        debounce={300}
+        placeholder={currentLevel.searchPlaceholder ?? `Search ${currentLevel.label.toLowerCase()}...`}
+        ariaLabel={`${currentLevel.label} search`}
+        on:valueChange={(event) => handleSearchInput(event.detail.value)}
+        on:submit={(event) => {
+          const value = event.detail.value;
+          if (value.trim()) {
+            void dd.performDrillDownSearch(value);
+          }
+        }}
+        on:keydown={(event) => handleSearchKeyDown(event.detail)}
+      />
+    </div>
 
     <div class="drilldown__body">
       {#if ctx.state.drillDown?.searchError}
-        <div class="drilldown__error">
-          <span>{ctx.state.drillDown.searchError}</span>
-          <button
-            type="button"
-            class="drilldown__error-retry"
-            onclick={() => dd.performDrillDownSearch(ctx.state.drillDown?.searchQuery ?? "")}
-          >
-            Retry
-          </button>
-        </div>
+        <Callout tone="danger" message={ctx.state.drillDown.searchError} announceMode="polite">
+          <svelte:fragment slot="actions">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              on:click={() => dd.performDrillDownSearch(ctx.state.drillDown?.searchQuery ?? "")}
+            >
+              Retry
+            </Button>
+          </svelte:fragment>
+        </Callout>
       {/if}
 
       {#if showSuggestions || showSearchResults}
@@ -325,7 +327,9 @@
               </div>
               <div class="drilldown__item-meta">
                 {#if item.count !== undefined}
-                  <span class="drilldown__item-count">{item.count}</span>
+                  <Pill tone="neutral" appearance="badge" size="sm" muted ariaLabel={`${item.count}`}>
+                    {item.count}
+                  </Pill>
                 {/if}
                 <ChevronRight size="0.85em" class="drilldown__item-chevron" />
               </div>
@@ -341,10 +345,7 @@
       {/if}
 
       {#if showLoading && !showSuggestions && !showSearchResults}
-        <div class="drilldown__loading">
-          <Loader size="1.2em" class="drilldown__loading-spinner" />
-          <span>Loading...</span>
-        </div>
+        <Callout tone="pending" title="Loading" message="Loading relation candidates..." />
       {/if}
     </div>
   {/if}
@@ -366,25 +367,10 @@
     flex-shrink: 0;
   }
 
-  .drilldown__back-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 1.5rem;
-    height: 1.5rem;
-    flex-shrink: 0;
-    padding: 0;
-    border: none;
-    border-radius: 0.25rem;
-    background: transparent;
-    color: var(--underlay-color-text-muted, #9ca3af);
-    cursor: pointer;
-    transition: background-color 0.15s ease, color 0.15s ease;
-  }
-
-  .drilldown__back-btn:hover {
-    background: var(--underlay-color-hover-bg, rgba(148, 163, 184, 0.2));
-    color: var(--underlay-color-text, #e5e7eb);
+  :global(.drilldown__back-btn) {
+    min-width: 0;
+    width: 1.75rem;
+    padding-inline: 0;
   }
 
   .drilldown__breadcrumb-trail {
@@ -402,24 +388,13 @@
     opacity: 0.6;
   }
 
-  .drilldown__breadcrumb-item {
-    padding: 0.15rem 0.3rem;
-    border: none;
-    border-radius: 0.2rem;
-    background: transparent;
-    color: var(--underlay-color-primary, #2563eb);
-    font-size: 0.75rem;
-    font-weight: 500;
-    cursor: pointer;
+  :global(.drilldown__breadcrumb-item) {
+    min-width: 0;
+    padding-inline: 0.375rem;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 8rem;
-    transition: background-color 0.15s ease;
-  }
-
-  .drilldown__breadcrumb-item:hover {
-    background: var(--underlay-color-hover-bg, rgba(148, 163, 184, 0.15));
   }
 
   .drilldown__header {
@@ -523,11 +498,6 @@
     color: var(--underlay-color-text-muted, #9ca3af);
   }
 
-  .drilldown__item-count {
-    font-size: 0.7rem;
-    opacity: 0.7;
-  }
-
   :global(.drilldown__item-chevron) {
     opacity: 0.5;
   }
@@ -539,51 +509,4 @@
     font-size: 0.8rem;
   }
 
-  .drilldown__loading {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.4rem;
-    padding: 1.25rem 0.75rem;
-    color: var(--underlay-color-text-muted, #9ca3af);
-    font-size: 0.8rem;
-  }
-
-  :global(.drilldown__loading-spinner) {
-    animation: drilldown-spin 1s linear infinite;
-  }
-
-  @keyframes drilldown-spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-  }
-
-  .drilldown__error {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.5rem;
-    padding: 0.5rem;
-    margin-bottom: 0.5rem;
-    border-radius: 0.3rem;
-    background: var(--underlay-color-danger, #ef4444);
-    color: white;
-    font-size: 0.75rem;
-  }
-
-  .drilldown__error-retry {
-    flex-shrink: 0;
-    padding: 0.25rem 0.5rem;
-    border: 1px solid rgba(255, 255, 255, 0.5);
-    border-radius: 0.2rem;
-    background: transparent;
-    color: white;
-    font-size: 0.7rem;
-    cursor: pointer;
-    transition: background-color 0.15s ease;
-  }
-
-  .drilldown__error-retry:hover {
-    background: rgba(255, 255, 255, 0.15);
-  }
 </style>

@@ -18,11 +18,7 @@
   */
   import type { Snippet } from "svelte";
   import { AlertDialog as PoodleAlertDialog } from "@poodle/svelte-primitives";
-  import {
-    CopyActionsMenu,
-    useToasts,
-    type NavigationContext,
-  } from "../patterns/index.js";
+  import { CopyActionsMenu, useToasts } from "../patterns/index.js";
   import {
     type MediaSummary,
     type MediaDetail,
@@ -33,8 +29,6 @@
   interface Props {
     /** Media data */
     media: MediaItem;
-    /** Navigation context for actions */
-    sourceContext?: NavigationContext;
     /** Optional custom trigger snippet (for ListCard usage) */
     trigger?: Snippet;
 
@@ -73,7 +67,6 @@
 
   let {
     media,
-    sourceContext,
     trigger,
     softDelete,
     restore,

@@ -1,6 +1,5 @@
 <script lang="ts">
-  import { Callout, Field, FormActions, TextInput } from "@poodle/svelte-primitives";
-  import PassKeyButton from "./PassKeyButton.svelte";
+  import { Button, Callout, Field, FormActions, TextInput } from "@poodle/svelte-primitives";
 
   interface Props {
     showPasskeyEmailField: boolean;
@@ -43,14 +42,16 @@
 
   <FormActions align="between">
     <span class="underlay-login-page__microcopy">You will be prompted by your device or password manager.</span>
-    <PassKeyButton
+    <Button
+      type="button"
       variant="primary"
-      onStart={onPasskeyLogin}
+      onclick={onPasskeyLogin}
       disabled={passkeyLoading}
       loading={passkeyLoading}
+      className="underlay-login-page__passkey-button"
     >
       Sign in with passkey
-    </PassKeyButton>
+    </Button>
   </FormActions>
 </div>
 
@@ -77,5 +78,9 @@
     color: var(--underlay-color-text-muted, #64748b);
     font-size: 0.8125rem;
     line-height: 1.5;
+  }
+
+  :global(.underlay-login-page__passkey-button) {
+    gap: 0.65em;
   }
 </style>

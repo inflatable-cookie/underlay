@@ -885,8 +885,8 @@ The `createFormState` function provides reactive form state management with Svel
 
 ```svelte
 <script lang="ts">
-  import { createFormState, SubmitButton } from '@decodelabs/underlay/patterns';
-  import { Callout } from '@poodle/svelte-primitives';
+  import { createFormState } from '@decodelabs/underlay/patterns';
+  import { Button, Callout } from '@poodle/svelte-primitives';
 
   const form = createFormState({
     onSuccess: () => {
@@ -910,9 +910,9 @@ The `createFormState` function provides reactive form state management with Svel
     <Callout tone="danger" message={$form.state.error} announceMode="polite" />
   {/if}
 
-  <SubmitButton submitting={$form.state.isSubmitting}>
-    Save
-  </SubmitButton>
+  <Button type="submit" loading={$form.state.isSubmitting} disabled={$form.state.isSubmitting}>
+    {#if $form.state.isSubmitting}Saving...{:else}Save{/if}
+  </Button>
 </form>
 ```
 
@@ -1004,20 +1004,21 @@ form.reset();
 form.clearDraft();
 ```
 
-#### SubmitButton Component
+#### Submit Buttons
 
 ```svelte
 <script>
-  import { SubmitButton } from '@decodelabs/underlay/patterns';
+  import { Button } from '@poodle/svelte-primitives';
 </script>
 
-<SubmitButton
-  submitting={$form.state.isSubmitting}
-  submittingText="Saving..."
+<Button
+  type="submit"
+  loading={$form.state.isSubmitting}
+  disabled={$form.state.isSubmitting}
   variant="primary"
 >
-  Save Changes
-</SubmitButton>
+  {#if $form.state.isSubmitting}Saving...{:else}Save Changes{/if}
+</Button>
 ```
 
 #### Form Intent Helpers
@@ -2336,9 +2337,9 @@ uploadComponent.clear();
 
 ```svelte
 <script lang="ts">
-  import { createFormState, SubmitButton } from '@decodelabs/underlay/patterns';
+  import { createFormState } from '@decodelabs/underlay/patterns';
   import { Skeleton } from '@decodelabs/underlay/components';
-  import { Callout } from '@poodle/svelte-primitives';
+  import { Button, Callout } from '@poodle/svelte-primitives';
   import { page } from '$app/stores';
 
   const form = createFormState({
@@ -2378,9 +2379,9 @@ uploadComponent.clear();
       <Callout tone="danger" message={$form.state.error} announceMode="polite" />
     {/if}
 
-    <SubmitButton submitting={$form.state.isSubmitting}>
-      Create User
-    </SubmitButton>
+    <Button type="submit" loading={$form.state.isSubmitting} disabled={$form.state.isSubmitting}>
+      {#if $form.state.isSubmitting}Saving...{:else}Create User{/if}
+    </Button>
   </form>
 {/if}
 ```

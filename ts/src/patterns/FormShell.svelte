@@ -2,7 +2,7 @@
   import type { Snippet } from "svelte";
   import type { HTMLFormAttributes } from "svelte/elements";
   import { Card, Callout } from "@poodle/svelte-primitives";
-  import { Form } from "@decodelabs/underlay/components";
+  import Form from "../components/Form.svelte";
   import PageHeader from "./PageHeader.svelte";
   import type { BannerVariant } from "./banner";
 

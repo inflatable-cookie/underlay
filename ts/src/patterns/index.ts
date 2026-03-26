@@ -42,9 +42,7 @@ export { default as FilterBar } from "./FilterBar.svelte";
 export { default as PageHeader } from "./PageHeader.svelte";
 export type { PageHeaderLevel, BreadcrumbItem } from "./types";
 export { default as CopyActionsMenu } from "./CopyActionsMenu.svelte";
-export { default as EntityActionsMenu } from "./EntityActionsMenu.svelte";
 export { default as CardActions } from "./CardActions.svelte";
-export { default as SubmitButton } from "./SubmitButton.svelte";
 export { default as NavCard } from "./NavCard.svelte";
 export { default as NavCardGrid } from "./NavCardGrid.svelte";
 export { default as AiRoutingAdmin } from "./AiRoutingAdmin.svelte";
@@ -109,10 +107,6 @@ export {
   type DrillDownState,
   type DrillDownBreadcrumb
 } from "./RelationSelector/index.js";
-
-// RelationPickerDialog - item picker dialog (base component for relation selection)
-export { default as RelationPickerDialog } from "./RelationPickerDialog.svelte";
-export type { PickableItem, PickerSection } from "./relation-picker-types.js";
 
 // Keyboard shortcuts manager
 export {

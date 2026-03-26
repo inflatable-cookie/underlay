@@ -518,7 +518,7 @@ Primary references:
 - [ ] Support intents: `save`, `save-close`, and `delete` (edit mode).
 - [ ] Return `SpaFormResult` with `fieldErrors` mapped to form fields.
 - [ ] Use a reusable form component that renders fields only (no page-level routing logic inside form component).
-- [ ] Keep destructive actions explicit using `ConfirmAction`/`AlertDialog`.
+- [ ] Keep destructive actions explicit using `AlertDialog`.
 
 Primary references:
 - [110-admin.md#form-component-pattern](../guides/110-admin.md#form-component-pattern)
@@ -562,7 +562,7 @@ Primary references:
 
 - [ ] Use `MarkdownEditor` for `TEXT` fields and `NightfireEditor` for `JSONB`.
 - [ ] Run field validation endpoints for uniqueness and scoped constraints.
-- [ ] Show rich content on detail pages with `ContentCard` and structured details sections.
+- [ ] Show rich content on detail pages with direct `Card` composition and structured details sections.
 - [ ] Keep server-side validation as source of truth (`validation_to_app_error`, Nightfire validation mapping).
 
 Primary references:
@@ -651,16 +651,17 @@ Detail pages should use `DetailsGrid` with `DetailsSection` to organize informat
 </style>
 ```
 
-**Markdown content**: Use `ContentCard` with `markdown` prop for rich text fields:
+**Markdown content**: Use direct `Card` plus the appropriate renderer for rich text fields:
 
 ```svelte
-<ContentCard
-  title="Description"
-  value={entity.description}
-  markdown
-  emptyMessage="No description set."
-  maxHeight={0}
-/>
+<Card>
+  <h4>Description</h4>
+  {#if entity.description}
+    <NightfireRenderer value={entity.description} />
+  {:else}
+    <p>No description set.</p>
+  {/if}
+</Card>
 ```
 
 ---

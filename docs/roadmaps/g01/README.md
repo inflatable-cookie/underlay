@@ -15,6 +15,5 @@ Historical language boundary:
 
 ## Next Task
 
-Execute `g01.043` by starting the Poodle-side primitive prop normalization
-audit and first rename batch, then continue `g01.042` migration work against
-that stabilized naming contract.
+Execute `g01.044` Batch 44.3 by broadening Storybook coverage across the
+highest-value retained Underlay workflow shells and helpers.

@@ -6,6 +6,13 @@ This guide covers the **Autonomous List Component** pattern - a set of hooks and
 
 The Autonomous List Component pattern solves the "god file" problem where parent pages accumulate excessive business logic from managing multiple entity types across tabs.
 
+Storybook coverage:
+- `Components/LogList`
+- `Components/BatchActionBar`
+- `Patterns/CopyActionsMenu`
+
+Run `effigy storybook` from the repo root to inspect the retained batch/list helper surface interactively.
+
 **Traditional approach problems:**
 - Parent pages fetch ALL data for ALL tabs upfront
 - Parent pages define individual CRUD handlers for each entity type
@@ -413,23 +420,30 @@ interface ListControllerResult<T, F> {
 
 ### `ListContainer`
 
-**Location:** `@decodelabs/underlay/components`
+Underlay `ListContainer` is retired. Use Poodle `ListContainer` for the page-level list shell, then compose batch controls, filter content, card or grid content, and pagination around it.
 
-A layout component that provides consistent structure for autonomous lists with variant-aware styling.
+**Location:** `@poodle/svelte-composites`
+
+A list shell that provides consistent structure for autonomous lists with caller-owned filters, batch actions, content, and pagination.
 
 ```svelte
 <script lang="ts">
-  import { ListContainer } from '@decodelabs/underlay/components';
+  import { ListContainer } from '@poodle/svelte-composites';
 </script>
 
 <ListContainer
   title="Areas"
-  variant="tab"
-  loading={list.loading}
-  error={list.error}
-  count={items.length}
-  hasItems={items.length > 0}
-  emptyMessage="No areas found."
+  subtitle="Managed learning areas"
+  eyebrow="Learning"
+  state={list.loading ? "loading" : list.error ? "error" : pagination.items.length > 0 ? "ready" : "empty"}
+  errorMessage={list.error}
+  emptyTitle="No areas found"
+  emptyMessage="Create an area to get started."
+  currentPage={pagination.currentPage}
+  totalPages={pagination.totalPages ?? 1}
+  totalItems={items.length}
+  pageSize={pagination.pageSize}
+  on:pageChange={(event) => pagination.goToPage?.(event.detail.page)}
 >
   {#snippet actions()}
     <Button onclick={handleAdd}>Add</Button>
@@ -441,45 +455,23 @@ A layout component that provides consistent structure for autonomous lists with 
     </FilterBar>
   {/snippet}
 
-  {#snippet content()}
-    <ListGrid>
-      {#each items as item}
-        <ListCard title={item.title} />
-      {/each}
-    </ListGrid>
-  {/snippet}
-
-  {#snippet batchBar()}
+  {#snippet batch()}
     <BatchActionBar ... />
   {/snippet}
+
+  <ListGrid>
+    {#each pagination.items as item}
+      <ListCard title={item.title} />
+    {/each}
+  </ListGrid>
 </ListContainer>
 ```
-
-#### Props
-
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `title` | `string` | required | List title |
-| `variant` | `"page" \| "tab"` | `"page"` | Display variant (affects header level and spacing) |
-| `loading` | `boolean` | `false` | Whether data is loading |
-| `error` | `string \| null` | `null` | Error message to display |
-| `count` | `number` | - | Total item count (shown in header) |
-| `hasItems` | `boolean` | `true` | Whether the list has items (for empty state) |
-| `emptyMessage` | `string` | `"No items found."` | Empty state message |
-| `backHref` | `string \| null` | `null` | Back link URL |
-| `backLabel` | `string` | `"Back"` | Back link label |
-
-#### Snippets
-
-- `actions` - Header action buttons (trash, add, etc.)
-- `filters` - Filter bar content
-- `content` - Main list content (ListGrid, etc.)
-- `batchBar` - Batch action bar component
-- `pagination` - Pagination component
 
 ---
 
 ### `BatchActionBar`
+
+`BatchActionBar` is the retained Underlay batch-selection workflow shell. Use it when the bar needs to coordinate selection counts, select-all or deselect-all behavior, optional status-update confirmation, and registered batch actions. Poodle `BulkActionBar` is a narrower generic primitive and not a drop-in replacement for this workflow surface.
 
 **Location:** `@decodelabs/underlay/components`
 
@@ -544,9 +536,9 @@ Here's a complete example of building an autonomous list component:
     Button,
     Callout,
     ListGrid,
-    PageLoading,
-    Tooltip
+    PageLoading
   } from "@decodelabs/underlay/components";
+  import { Tooltip } from "@poodle/svelte-primitives";
   import { gotoWithContext } from "@decodelabs/underlay/client";
   import { learningCommands } from "@cattle-grid";
   import { auth } from "$lib/stores/auth";
@@ -628,24 +620,20 @@ Here's a complete example of building an autonomous list component:
 <PageHeader title="Areas" level={headerLevel} count={areas.length}>
   {#snippet actions()}
     {#if areas.length > 0}
-      <Tooltip content={selectionMode ? "Exit selection (Esc)" : "Select items"} inline>
-        {#snippet trigger()}
-          <Button
-            variant={selectionMode ? "primary" : "subtle"}
-            size="icon"
-            onclick={toggleSelectionMode}
-          >
-            <CheckSquare size={16} />
-          </Button>
-        {/snippet}
+      <Tooltip content={selectionMode ? "Exit selection (Esc)" : "Select items"} delayMs={200}>
+        <Button
+          variant={selectionMode ? "primary" : "subtle"}
+          size="icon"
+          onclick={toggleSelectionMode}
+        >
+          <CheckSquare size={16} />
+        </Button>
       </Tooltip>
     {/if}
-    <Tooltip content="Add Area" inline>
-      {#snippet trigger()}
-        <Button variant="primary" size="icon" disabled={selectionMode}>
-          <Plus size={16} />
-        </Button>
-      {/snippet}
+    <Tooltip content="Add Area" delayMs={200}>
+      <Button variant="primary" size="icon" disabled={selectionMode}>
+        <Plus size={16} />
+      </Button>
     </Tooltip>
   {/snippet}
 </PageHeader>
@@ -707,13 +695,13 @@ Here's a complete example of building an autonomous list component:
 **As an embedded tab:**
 ```svelte
 <!-- /routes/(app)/sections/[sectionId]/+page.svelte -->
-<TabsContent value="areas">
+{#if activeValue === "areas"}
   <AreasList
     variant="tab"
     sectionId={section.sectionId}
     onDataChange={() => pageData.refetch()}
   />
-</TabsContent>
+{/if}
 ```
 
 ---

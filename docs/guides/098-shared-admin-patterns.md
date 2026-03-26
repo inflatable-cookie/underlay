@@ -4,12 +4,21 @@ Higher-level, pre-composed patterns for common admin interface needs. These buil
 
 All components are additive — importing them is optional and they introduce no breaking changes.
 
+Storybook coverage:
+- `Patterns/PageHeader`
+- `Patterns/FormDialog`
+- `Patterns/SpaFormShell`
+- `Components/ErrorBoundary`
+- `Components/DropdownMenu`
+
+`AiRoutingAdmin` is intentionally guide-only in this wave. It remains a retained operational shell, but its useful demo posture depends on richer diagnostics payloads than the initial catalog should fake.
+
 ## Overview
 
 | Pattern | Location | Purpose |
 |---------|----------|---------|
 | EmptyState | `components/EmptyState.svelte` | Rich empty state with icon, message, and CTA |
-| EntityActionsMenu | `patterns/EntityActionsMenu.svelte` | Dropdown with edit, custom actions, and soft-delete flow |
+| CopyActionsMenu + AlertDialog | `patterns/CopyActionsMenu.svelte` + Poodle `AlertDialog` | Copy-to-clipboard actions with caller-owned destructive confirmation |
 | Drawer | `components/Drawer.svelte` | Slide-out side panel |
 | DetailPageShell | `patterns/DetailPageShell/` | Composable entity detail page with tabs |
 | AutonomousList | `patterns/AutonomousList/` | Self-contained list with filters, batch actions, reorder |
@@ -71,74 +80,54 @@ Pass `children` to replace the entire default layout:
 
 ---
 
-## EntityActionsMenu
+## Entity Action Menus
 
-Dropdown menu combining copy-to-clipboard, edit, custom actions, and soft-delete with confirmation dialog. Eliminates the per-entity actions menu boilerplate found in most detail/list pages.
+`EntityActionsMenu` is retired. The stable shared boundary is direct `CopyActionsMenu` plus caller-owned `AlertDialog` composition for destructive actions. `CopyActionsMenu` remains a retained Underlay helper because it bundles clipboard and toast workflow, not just raw menu chrome.
 
 ```svelte
 <script lang="ts">
-  import { EntityActionsMenu, useToasts } from "@decodelabs/underlay/patterns";
+  import { CopyActionsMenu, useToasts } from "@decodelabs/underlay/patterns";
   import { gotoWithContext } from "@decodelabs/underlay/client";
+  import { AlertDialog } from "@poodle/svelte-primitives";
 
   const toastStore = useToasts();
+  let showDeleteConfirm = $state(false);
 
   function handleEdit() {
     gotoWithContext(`/items/${item.id}/edit`, sourceContext);
   }
+
+  async function handleDelete() {
+    await api.softDelete(item.id);
+  }
 </script>
 
-<EntityActionsMenu
+<CopyActionsMenu
   toastStore={toastStore}
+  triggerLabel="Actions"
   copies={[
     { label: "Copy slug", text: item.slug, successMessage: "Copied slug" },
     { label: "Copy ID", text: item.id, successMessage: "Copied ID" }
   ]}
-  onEdit={handleEdit}
-  deleteConfig={{
-    entityLabel: item.title,
-    title: "Soft delete item?",
-    description: "This will hide the item. You can restore it later.",
-    confirmLabel: "Soft delete",
-    execute: async () => { await api.softDelete(item.id); }
-  }}
-  onDeleteSuccess={() => goto("/items")}
+  actions={[
+    { label: "Edit", onSelect: handleEdit },
+    { label: "Soft delete", destructive: true, onSelect: () => { showDeleteConfirm = true; } }
+  ]}
 />
-```
 
-### Props
-
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `toastStore` | `ToastStore` | context | Toast store (falls back to `useToasts()`) |
-| `copies` | `CopyItem[]` | `[]` | Copy-to-clipboard items |
-| `editLabel` | `string` | `"Edit"` | Edit action label |
-| `onEdit` | `() => void` | - | Edit callback (omit to hide edit action) |
-| `deleteConfig` | `DeleteConfig` | - | Soft-delete config (omit to hide delete action) |
-| `onDeleteSuccess` | `() => void` | - | Callback after successful delete |
-| `customActions` | `DropdownMenuItem[]` | `[]` | Extra actions between edit and delete |
-| `trigger` | `Snippet` | - | Custom trigger button |
-| `align` | `"start" \| "center" \| "end"` | `"end"` | Dropdown alignment |
-| `side` | `"top" \| "right" \| "bottom" \| "left"` | `"bottom"` | Dropdown side |
-| `class` | `string` | - | Additional CSS class |
-
-### DeleteConfig
-
-```typescript
-interface DeleteConfig {
-  entityLabel: string;   // Shown in confirmation dialog
-  title: string;         // Dialog title
-  description: string;   // Dialog description
-  confirmLabel?: string; // Confirm button label (default: "Delete")
-  execute: () => Promise<void>; // Async delete function
-}
-```
-
-### Design Note
-
-`EntityActionsMenu` uses `onEdit` (a callback) rather than `editHref` to avoid coupling the library to SvelteKit's `$app/navigation`. Consumers wire up their own navigation:
-
-```svelte
-onEdit={() => gotoWithContext(`/items/${item.id}/edit`, sourceContext)}
+<AlertDialog
+  open={showDeleteConfirm}
+  title="Soft delete item?"
+  description="This will hide the item. You can restore it later."
+  confirmLabel="Soft delete"
+  tone="danger"
+  onConfirm={handleDelete}
+  onCancel={() => {
+    showDeleteConfirm = false;
+  }}
+>
+  <p><strong>{item.title}</strong></p>
+</AlertDialog>
 ```
 
 ---
@@ -286,7 +275,7 @@ For detail pages without tabs, use `children` instead of `tabs`/`tabContent`:
 
 ## AutonomousList
 
-Self-contained list component that wires together `createListController`, `useBatchActions`, `createReorderController`, FilterBar, BatchActionBar, and loading/error/empty states. Targets the 18+ list views found in typical admin apps.
+Self-contained list component that wires together `createListController`, `useBatchActions`, `createReorderController`, FilterBar, BatchActionBar, and loading/error/empty states. Targets the 18+ list views found in typical admin apps. `BatchActionBar` remains the retained Underlay batch workflow shell here; do not substitute Poodle `BulkActionBar` unless the surrounding workflow has first been simplified to the narrower primitive contract.
 
 ```svelte
 <script lang="ts">
@@ -644,7 +633,7 @@ import {
 
 // Patterns (composed, stateful)
 import {
-  EntityActionsMenu,
+  CopyActionsMenu,
   DetailPageShell,
   DetailMeta,
   DetailMetaId,

@@ -58,7 +58,7 @@
     grid-column: span 2;
   }
 
-  /* TabsRoot (description tab groups) always span 2 columns */
+  /* Tab groups (description sections) always span 2 columns */
   .underlay-details-section__items :global(.underlay-tabs) {
     grid-column: span 2;
   }

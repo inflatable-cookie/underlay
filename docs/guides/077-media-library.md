@@ -14,6 +14,12 @@ Underlay provides shared types and components to reduce boilerplate. For new imp
 2. **Use shared workflow components** - `MediaPicker` and `MediaActionsMenu` from `@decodelabs/underlay/components`, Poodle `MediaThumbnail` for display-only previews, and Poodle `FileUpload` for generic file selection/compression
 3. **Use the upload flow pattern** - `createMediaUploadFlow` for consistent upload state management
 
+Storybook coverage:
+- `Components/MediaPicker`
+- `Components/MediaActionsMenu`
+
+Run `effigy storybook` from the repo root to inspect the retained media workflow shell coverage interactively.
+
 | Layer | Package | Exports |
 |-------|---------|---------|
 | Rust types | `underlay-db` | `MediaKind`, `MediaVisibility`, `MediaVersionState` |
@@ -1212,9 +1218,9 @@ The upload page uses Underlay's blob upload utilities:
   import {
     DetailsCard, DetailsItem, DetailsSection,
     InlineListCard, InlineListItem,
-    TabsRoot, TabsList, TabsTrigger, TabsContent,
     Pill, TimeAgo, PageLoading
   } from "@decodelabs/underlay/components";
+  import { Tabs, type TabItem } from "@poodle/svelte-primitives";
   import { MediaActionsMenu } from "$lib/menus";
   import { mediaCommands, MediaKind, MediaVisibility, MediaVersionState } from "@my-client";
   import { auth, authLoading, currentUser } from "$lib/stores/auth";
@@ -1243,6 +1249,10 @@ The upload page uses Underlay's blob upload utilities:
 
   let activeTab = $state("details");
   const usageCount = $derived(usages.length);
+  const tabItems = $derived<TabItem[]>([
+    { value: "details", label: "Details" },
+    { value: "usage", label: "Usage", count: usageCount }
+  ]);
   const backInfo = getBackButtonInfo("Back to media", "/media");
 
   function formatFileSize(bytes: number | null): string {
@@ -1281,13 +1291,8 @@ The upload page uses Underlay's blob upload utilities:
     {/snippet}
   </PageHeader>
 
-  <TabsRoot bind:value={activeTab} variant="boxed" size="sm" historyKey="tab">
-    <TabsList>
-      <TabsTrigger value="details">Details</TabsTrigger>
-      <TabsTrigger value="usage" count={usageCount}>Usage</TabsTrigger>
-    </TabsList>
-
-    <TabsContent value="details">
+  <Tabs bind:value={activeTab} items={tabItems} variant="card" size="sm" historyKey="tab" ariaLabel="Media sections" let:activeValue>
+    {#if activeValue === "details"}
       <div class="underlay-details-content">
         <DetailsCard>
           <DetailsSection legend="File Details">
@@ -1325,9 +1330,9 @@ The upload page uses Underlay's blob upload utilities:
           {/each}
         </InlineListCard>
       </div>
-    </TabsContent>
+    {/if}
 
-    <TabsContent value="usage">
+    {#if activeValue === "usage"}
       <div class="underlay-details-content">
         {#if usages.length === 0}
           <p>This media is not used anywhere yet.</p>
@@ -1346,8 +1351,8 @@ The upload page uses Underlay's blob upload utilities:
           </InlineListCard>
         {/if}
       </div>
-    </TabsContent>
-  </TabsRoot>
+    {/if}
+  </Tabs>
 {/if}
 ```
 
@@ -1504,7 +1509,7 @@ These types match the API contracts, so your TypeScript client can use them dire
 
 ### MediaPicker Component
 
-Use Underlay `MediaPicker` when you need the richer callback-driven browse and upload workflow. For plain media rendering, use Poodle `MediaThumbnail` directly, use Poodle `FileUpload` for generic file intake, and use Poodle `MediaBrowsePanel` / `MediaUploadStatusPanel` for reusable media-library browse and upload-state presentation. Poodle `MediaPicker` remains the lighter local-item selector; it is not a drop-in replacement for the callback-driven Underlay media-library shell.
+Use Underlay `MediaPicker` when you need the richer callback-driven browse and upload workflow. For plain media rendering, use Poodle `MediaThumbnail` directly, use Poodle `FileUpload` for generic file intake, and use Poodle `MediaBrowsePanel` / `MediaUploadStatusPanel` for reusable media-library browse and upload-state presentation. Poodle `MediaPicker` remains the lighter local-item selector; it is not a drop-in replacement for the callback-driven Underlay media-library shell. Treat Underlay `MediaPicker` as the final retained media-library orchestration surface rather than another generic picker waiting to move.
 
 ```svelte
 <script lang="ts">
@@ -1726,7 +1731,6 @@ A context menu for media item actions (edit, delete, restore, etc.):
 | Prop | Type | Description |
 |------|------|-------------|
 | `media` | `MediaSummary \| MediaDetail` | The media item |
-| `sourceContext` | `NavigationContext` | For navigation context tracking |
 | `trigger` | `Snippet` | Custom trigger element |
 | `softDelete` | `function` | Callback for soft delete |
 | `restore` | `function` | Callback for restore |
@@ -1738,6 +1742,10 @@ A context menu for media item actions (edit, delete, restore, etc.):
 | `onEditRequest` | `function` | Called when edit is requested |
 
 The menu automatically shows appropriate actions based on the media's deleted state.
+It is the retained Underlay media-operation shell: copy, edit, replace-file,
+soft-delete, restore, and purge workflow orchestration stay here, while generic
+modal, button, upload, thumbnail, and status chrome should resolve through
+Poodle.
 
 ### Upload Flow Pattern
 

@@ -1,15 +1,12 @@
 <script lang="ts">
-  import { Button } from "@poodle/svelte-primitives";
+  import { Button, Callout, SearchField } from "@poodle/svelte-primitives";
   import { tick } from "svelte";
   import { Popover as BitsPopover } from "bits-ui";
-  import Loader from "lucide-svelte/icons/loader-circle";
   import X from "lucide-svelte/icons/x";
   import type { SelectableRelation, FilterConfig } from "./types.js";
   import { useRelationSelector } from "./context.svelte.js";
-  import RelationSelectorPopoverCreateAction from "./RelationSelectorPopoverCreateAction.svelte";
   import RelationSelectorPopoverFilters from "./RelationSelectorPopoverFilters.svelte";
   import RelationSelectorPopoverListSection from "./RelationSelectorPopoverListSection.svelte";
-  import RelationSelectorPopoverSearch from "./RelationSelectorPopoverSearch.svelte";
   import RelationSelectorDrillDown from "./RelationSelectorDrillDown.svelte";
   import ArrowLeft from "lucide-svelte/icons/arrow-left";
 
@@ -58,17 +55,16 @@
     }
   }
 
-  let searchInputRef: HTMLInputElement | null = $state(null);
   let listRef: HTMLUListElement | null = $state(null);
-  let debounceTimer: ReturnType<typeof setTimeout> | null = null;
   let focusedIndex = $state(-1);
+  const searchFieldId = "relation-selector-popover-search";
 
   // Focus search input when popover opens
   $effect(() => {
     if (ctx.state.popoverOpen) {
       focusedIndex = -1;
       void tick().then(() => {
-        searchInputRef?.focus();
+        document.getElementById(searchFieldId)?.focus();
       });
     }
   });
@@ -80,21 +76,11 @@
     }
   });
 
-  function handleSearchInput(event: Event) {
-    const value = (event.target as HTMLInputElement).value;
+  function handleSearchInput(value: string) {
     ctx.setSearchQuery(value);
     focusedIndex = -1;
 
-    // Debounce the search
-    if (debounceTimer) {
-      clearTimeout(debounceTimer);
-    }
-
-    if (value.trim()) {
-      debounceTimer = setTimeout(() => {
-        void ctx.performSearch(value);
-      }, 300);
-    } else {
+    if (!value.trim()) {
       ctx.clearSearch();
     }
   }
@@ -129,7 +115,7 @@
       if (focusedIndex <= 0) {
         // Move focus back to search input
         focusedIndex = -1;
-        searchInputRef?.focus();
+        document.getElementById(searchFieldId)?.focus();
       } else {
         const prevIndex = focusedIndex - 1;
         focusedIndex = prevIndex;
@@ -229,7 +215,7 @@
     collisionPadding={8}
     onOpenAutoFocus={(e) => {
       e.preventDefault();
-      searchInputRef?.focus();
+      document.getElementById(searchFieldId)?.focus();
     }}
     onInteractOutside={() => {
       ctx.closePopover();
@@ -247,39 +233,44 @@
     <div class="relation-selector-popover__header">
       <span class="relation-selector-popover__title">{ctx.props.label}</span>
       {#if showClearButton}
-        <button
+        <Button
           type="button"
-          class="relation-selector-popover__clear-btn"
-          onclick={handleClear}
+          variant="ghost"
+          size="sm"
+          leadingIcon="x"
+          className="relation-selector-popover__clear-btn"
+          on:click={handleClear}
         >
-          <X size="0.85em" strokeWidth={2.5} />
-          <span>Clear</span>
-        </button>
+          Clear
+        </Button>
       {/if}
     </div>
 
     {#if hasDrillDown && drillDownBreadcrumbs.length > 0}
       <div class="relation-selector-popover__drilldown-breadcrumbs">
-        <button
+        <Button
           type="button"
-          class="relation-selector-popover__drilldown-back"
-          onclick={() => ctx.drillDown.drillDownBack()}
-          aria-label="Go back"
-        >
-          <ArrowLeft size="0.9em" strokeWidth={2.5} />
-        </button>
+          variant="ghost"
+          size="sm"
+          leadingIcon="arrow-left"
+          ariaLabel="Go back"
+          className="relation-selector-popover__drilldown-back"
+          on:click={() => ctx.drillDown.drillDownBack()}
+        />
         <div class="relation-selector-popover__drilldown-trail">
           {#each drillDownBreadcrumbs as crumb, i (crumb.key)}
             {#if i > 0}
               <span class="relation-selector-popover__drilldown-sep">/</span>
             {/if}
-            <button
+            <Button
               type="button"
-              class="relation-selector-popover__drilldown-crumb"
-              onclick={() => ctx.drillDown.drillDownNavigateTo(crumb.depth)}
+              variant="ghost"
+              size="sm"
+              className="relation-selector-popover__drilldown-crumb"
+              on:click={() => ctx.drillDown.drillDownNavigateTo(crumb.depth)}
             >
               {crumb.itemLabel}
-            </button>
+            </Button>
           {/each}
         </div>
       </div>
@@ -296,27 +287,34 @@
       />
     {/if}
 
-    <RelationSelectorPopoverSearch
-      placeholder={ctx.props.searchPlaceholder ?? "Search..."}
-      value={ctx.state.searchQuery}
-      {showLoading}
-      onInput={handleSearchInput}
-      onKeyDown={handleSearchKeyDown}
-      onInputRef={(input) => (searchInputRef = input)}
-    />
+    <div class="relation-selector-popover__search">
+      <SearchField
+        id={searchFieldId}
+        value={ctx.state.searchQuery}
+        debounce={300}
+        placeholder={ctx.props.searchPlaceholder ?? "Search..."}
+        ariaLabel={`${ctx.props.label} search`}
+        on:valueChange={(event) => handleSearchInput(event.detail.value)}
+        on:submit={(event) => {
+          const value = event.detail.value;
+          if (value.trim()) {
+            void ctx.performSearch(value);
+          }
+        }}
+        on:clear={() => ctx.clearSearch()}
+        on:keydown={(event) => handleSearchKeyDown(event.detail)}
+      />
+    </div>
 
     <div class="relation-selector-popover__body">
       {#if ctx.state.searchError}
-        <div class="relation-selector-popover__error">
-          <span>{ctx.state.searchError}</span>
-          <button
-            type="button"
-            class="relation-selector-popover__error-retry"
-            onclick={() => ctx.retrySearch()}
-          >
-            Retry
-          </button>
-        </div>
+        <Callout tone="danger" message={ctx.state.searchError} announceMode="polite">
+          <svelte:fragment slot="actions">
+            <Button type="button" variant="ghost" size="sm" on:click={() => ctx.retrySearch()}>
+              Retry
+            </Button>
+          </svelte:fragment>
+        </Callout>
       {/if}
 
       {#if showSuggestions}
@@ -352,18 +350,22 @@
       {/if}
 
       {#if showLoading && !showSuggestions && !showSearchResults}
-        <div class="relation-selector-popover__loading">
-          <Loader size="1.2em" class="relation-selector-popover__loading-spinner" />
-          <span>Loading...</span>
-        </div>
+        <Callout tone="pending" title="Loading" message="Loading relation candidates..." />
       {/if}
 
-      <RelationSelectorPopoverCreateAction
-        allowCreate={ctx.props.allowCreate}
-        hasCreateForm={!!ctx.props.createForm}
-        createLabel={ctx.props.createLabel ?? "Add new"}
-        onCreate={handleCreateClick}
-      />
+      {#if ctx.props.allowCreate && ctx.props.createForm}
+        <div class="relation-selector-popover__create">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            leadingIcon="plus"
+            on:click={handleCreateClick}
+          >
+            {ctx.props.createLabel ?? "Add new"}
+          </Button>
+        </div>
+      {/if}
     </div>
 
     {#if ctx.isMultiSelect}
@@ -433,32 +435,8 @@
     color: var(--underlay-color-text-muted, #9ca3af);
   }
 
-  .relation-selector-popover__clear-btn {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-    padding: 0.2rem 0.4rem;
-    border: none;
-    border-radius: 0.25rem;
-    background: transparent;
-    color: var(--underlay-color-text-muted, #9ca3af);
-    font-size: 0.7rem;
-    cursor: pointer;
-    transition: background-color 0.15s ease, color 0.15s ease;
-  }
-
-  .relation-selector-popover__clear-btn:hover {
-    background: var(--underlay-color-hover-bg, rgba(148, 163, 184, 0.2));
-    color: var(--underlay-color-danger, #ef4444);
-  }
-
-  @keyframes spin {
-    from {
-      transform: rotate(0deg);
-    }
-    to {
-      transform: rotate(360deg);
-    }
+  :global(.relation-selector-popover__clear-btn) {
+    min-width: 0;
   }
 
   .relation-selector-popover__body {
@@ -472,49 +450,6 @@
     text-align: center;
     color: var(--underlay-color-text-muted, #9ca3af);
     font-size: 0.8rem;
-  }
-
-  .relation-selector-popover__loading {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.4rem;
-    padding: 1.25rem 0.75rem;
-    color: var(--underlay-color-text-muted, #9ca3af);
-    font-size: 0.8rem;
-  }
-
-  :global(.relation-selector-popover__loading-spinner) {
-    animation: spin 1s linear infinite;
-  }
-
-  .relation-selector-popover__error {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.5rem;
-    padding: 0.5rem;
-    margin-bottom: 0.5rem;
-    border-radius: 0.3rem;
-    background: var(--underlay-color-danger, #ef4444);
-    color: white;
-    font-size: 0.75rem;
-  }
-
-  .relation-selector-popover__error-retry {
-    flex-shrink: 0;
-    padding: 0.25rem 0.5rem;
-    border: 1px solid rgba(255, 255, 255, 0.5);
-    border-radius: 0.2rem;
-    background: transparent;
-    color: white;
-    font-size: 0.7rem;
-    cursor: pointer;
-    transition: background-color 0.15s ease;
-  }
-
-  .relation-selector-popover__error-retry:hover {
-    background: rgba(255, 255, 255, 0.15);
   }
 
   .relation-selector-popover__footer {
@@ -535,25 +470,10 @@
     flex-shrink: 0;
   }
 
-  .relation-selector-popover__drilldown-back {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 1.5rem;
-    height: 1.5rem;
-    flex-shrink: 0;
-    padding: 0;
-    border: none;
-    border-radius: 0.25rem;
-    background: transparent;
-    color: var(--underlay-color-text-muted, #9ca3af);
-    cursor: pointer;
-    transition: background-color 0.15s ease, color 0.15s ease;
-  }
-
-  .relation-selector-popover__drilldown-back:hover {
-    background: var(--underlay-color-hover-bg, rgba(148, 163, 184, 0.2));
-    color: var(--underlay-color-text, #e5e7eb);
+  :global(.relation-selector-popover__drilldown-back) {
+    min-width: 0;
+    width: 1.75rem;
+    padding-inline: 0;
   }
 
   .relation-selector-popover__drilldown-trail {
@@ -571,23 +491,12 @@
     opacity: 0.6;
   }
 
-  .relation-selector-popover__drilldown-crumb {
-    padding: 0.15rem 0.3rem;
-    border: none;
-    border-radius: 0.2rem;
-    background: transparent;
-    color: var(--underlay-color-primary, #2563eb);
-    font-size: 0.75rem;
-    font-weight: 500;
-    cursor: pointer;
+  :global(.relation-selector-popover__drilldown-crumb) {
+    min-width: 0;
+    padding-inline: 0.375rem;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 8rem;
-    transition: background-color 0.15s ease;
-  }
-
-  .relation-selector-popover__drilldown-crumb:hover {
-    background: var(--underlay-color-hover-bg, rgba(148, 163, 184, 0.15));
   }
 </style>

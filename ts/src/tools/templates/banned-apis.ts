@@ -37,7 +37,7 @@ export const bannedPatterns: BannedPattern[] = [
 	{
 		name: 'window.confirm',
 		regex: /\bwindow\.confirm\s*\(/g,
-		message: 'Use AlertDialog/ConfirmAction instead of window.confirm().'
+		message: 'Use AlertDialog instead of window.confirm().'
 	},
 	{
 		name: 'window.prompt',

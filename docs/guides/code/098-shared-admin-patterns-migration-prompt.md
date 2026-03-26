@@ -9,7 +9,7 @@ The Underlay library at `.` has 8 new shared admin patterns (roadmap 021). Full 
 Read both files thoroughly before starting. The patterns are:
 
 1. **EmptyState** (`@decodelabs/underlay/components`) — Rich empty state replacing plain `<p>` text
-2. **EntityActionsMenu** (`@decodelabs/underlay/patterns`) — Dropdown with edit, custom actions, and soft-delete flow
+2. **CopyActionsMenu + AlertDialog** (`@decodelabs/underlay/patterns`, `@poodle/svelte-primitives`) — Dropdown with copy actions plus caller-owned destructive confirmation
 3. **Drawer** (`@decodelabs/underlay/components`) — Slide-out side panel
 4. **DetailPageShell** (`@decodelabs/underlay/patterns`) — Composable entity detail page with tabs
 5. **AutonomousList** (`@decodelabs/underlay/patterns`) — Self-contained list with filters, batch, reorder
@@ -39,33 +39,22 @@ Find all plain `<p>` empty state messages in list views and detail page tabs. Re
 
 or with an icon/description/action as appropriate. Don't change InlineListCard `emptyMessage` props — those already work fine.
 
-### Priority 2: EntityActionsMenu (medium effort, high value)
+### Priority 2: CopyActionsMenu + AlertDialog (medium effort, high value)
 
-Find entity action menus that follow this pattern:
-- Import CopyActionsMenu + AlertDialog
-- Define copies array and actions array
-- Manage `softDeleteOpen` state
-- Have requestSoftDelete/confirmSoftDelete/cancelSoftDelete functions
-- Auth token check + API call + toast
+Find old entity action wrappers and replace them with direct `CopyActionsMenu` plus caller-owned `AlertDialog` state. Keep:
+- `copies` as-is
+- edit navigation in the caller
+- destructive confirmation text and async delete logic in the caller
+- any extra actions in the `actions` array passed to `CopyActionsMenu`
 
-Replace with EntityActionsMenu. Key mapping:
-- `copies` → `copies` (same format)
-- Edit action `gotoWithContext(...)` → `onEdit={() => gotoWithContext(...)}`
-- `confirmLabel` on soft delete → `deleteConfig.confirmLabel`
-- `onSoftDeleteSuccess` → `onDeleteSuccess`
-- Any extra actions between edit and delete → `customActions`
-- `trigger` snippet → `trigger`
-
-The `deleteConfig.execute` should contain the async delete logic (auth check + API call). EntityActionsMenu handles the AlertDialog, error toasting, and state internally.
-
-**Important**: EntityActionsMenu does NOT import from `$app/navigation` or use `gotoWithContext` — it takes an `onEdit` callback. The consuming app provides its own navigation logic.
+Do not recreate `EntityActionsMenu`. That wrapper is retired.
 
 ### Priority 3: DetailPageShell (high effort, high value)
 
 Find detail pages that manually compose:
 - PageHeader with title, breadcrumbs, backHref
 - DetailMeta / DetailMetaItem / DetailMetaSeparator with ID + StatusBadge
-- TabsRoot / TabsList / TabsTrigger / TabsContent
+- Poodle Tabs
 
 Replace with DetailPageShell + DetailMeta sub-components. This is the highest-effort migration because each page has unique metadata and tab configurations.
 

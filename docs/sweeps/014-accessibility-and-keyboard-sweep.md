@@ -29,7 +29,7 @@ Acowtancy mapping: `underlay`, `dairy`, `cream`.
 Find key interactive constructs:
 
 ```bash
-rg -n "Dialog|AlertDialog|Popover|Dropdown|Combobox|TabsRoot|TabsList|RelationSelector|Form|Field" "$UNDERLAY_REPO/ts/src" "$ADMIN_REPO/src" "$WEB_REPO/src"
+rg -n "Dialog|AlertDialog|Popover|Dropdown|Combobox|Tabs|RelationSelector|Field" "$UNDERLAY_REPO/ts/src" "$ADMIN_REPO/src" "$WEB_REPO/src"
 ```
 
 Build a shortlist of high-impact screens:

@@ -10,7 +10,7 @@ Admin and consumer views accrue wasteful API calls through a small number of rec
 
 | # | Pattern | Example | Impact |
 |---|---------|---------|--------|
-| **A** | All tabs mount simultaneously | bits-ui `TabsContent` renders hidden panels with full children | Every tab's data fetching runs on page load |
+| **A** | All tabs mount simultaneously | tab containers keep inactive panels mounted with full children | Every tab's data fetching runs on page load |
 | **B** | Global dataset fetch in constrained context | Component fetches ALL modules/pathways when it already has a fixed `moduleId` prop | Transfers kilobytes of unused data |
 | **C** | Duplicate identical requests | Two sibling tabs each call `getPathwaysAdmin()` | Same payload fetched N times in parallel |
 | **D** | Dead or vestigial endpoint calls | Calling a `syllabus` endpoint for a page structure that was removed | Wasted request with no consumer |
@@ -43,7 +43,7 @@ Acowtancy mapping: `farmyard`, `cattle-grid`, `dairy`, `cream`, `underlay`.
 ### 1.1 Identify tab container implementations
 
 ```bash
-rg -n "TabsContent|TabPanel|TabsRoot" "$UI_LIB/src"
+rg -n "Tabs|TabPanel|activeValue|mountedTabs" "$UI_LIB/src"
 ```
 
 Review each tab container component:
@@ -55,7 +55,7 @@ Review each tab container component:
 ### 1.2 Search for tab-based layouts in consuming apps
 
 ```bash
-rg -n "DetailPageShell|TabsRoot|TabsContent" "$ADMIN_REPO/src" "$WEB_REPO/src" --type svelte
+rg -n "DetailPageShell|Tabs|activeValue|mountedTabs" "$ADMIN_REPO/src" "$WEB_REPO/src" --type svelte
 ```
 
 For each page with tabs, verify:
@@ -81,11 +81,9 @@ Tab containers must lazy-mount content. The recommended implementation:
 </script>
 
 {#each tabs as tab (tab.value)}
-  <TabsContent value={tab.value}>
-    {#if mountedTabs.has(tab.value)}
-      {@render tabContent(tab.value)}
-    {/if}
-  </TabsContent>
+  {#if mountedTabs.has(tab.value) && activeTab === tab.value}
+    {@render tabContent(tab.value)}
+  {/if}
 {/each}
 ```
 
@@ -93,7 +91,7 @@ Key properties:
 
 - Content only mounts when the tab is first activated
 - Once mounted, content stays in the DOM (preserves scroll position, selection state, loaded data)
-- Empty `TabsContent` wrapper still renders for bits-ui panel structure
+- Inactive tab panels are not mounted on initial load
 
 ### Pass criteria
 

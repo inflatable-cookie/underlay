@@ -21,9 +21,10 @@ Roadmaps are executable delivery plans for Underlay library work.
 ## Current Queue
 
 - `g01.001` through `g01.041` record the current Underlay roadmap corpus
-- `g01.042` is now active for Poodle adoption and Underlay UI contraction
-- `g01.043` is now active for Poodle public prop normalization and downstream API migration
-- the next net-new active roadmap should open as `g01.043`
+- `g01.042` is complete for Poodle adoption and Underlay UI contraction
+- `g01.043` is complete for Poodle public prop normalization and downstream API migration
+- `g01.044` is now active for the shared UI documentation and demo refresh
+- the next net-new active roadmap should open as `g01.045`
 - use `backlog/` for deferred work that is not yet active execution scope
 
 ## Historical language boundary
@@ -77,13 +78,14 @@ Roadmaps are executable delivery plans for Underlay library work.
 | 039 | [Storage Expiration Support](./g01/039-storage-expiration-support.md) | Complete | Add optional TTL and expiration support to the SSR-safe storage wrappers without breaking existing persisted values |
 | 040 | [Smart Skeletons](./g01/040-smart-skeletons.md) | Complete | Add a higher-level `DataSkeleton` surface and reusable preset registry over the existing `Skeleton` primitives |
 | 041 | [Form Draft Persistence](./g01/041-form-draft-persistence.md) | Complete | Add opt-in draft persistence and restoration to `createFormState` using the shared storage wrappers |
-| 042 | [Poodle Adoption and Underlay UI Contraction](./g01/042-poodle-adoption-and-underlay-ui-contraction.md) | In Progress | Move primitives and generic composites to Poodle, keep Underlay focused on structural shells and specialized systems, and run the coexistence migration across consuming apps |
-| 043 | [Poodle Public Prop Normalization](./g01/043-poodle-public-prop-normalization.md) | In Progress | Normalize Poodle onto one plain-state boolean prop language, migrate Underlay and all consumer app call sites, and track the sweep through a durable manifest |
+| 042 | [Poodle Adoption and Underlay UI Contraction](./g01/042-poodle-adoption-and-underlay-ui-contraction.md) | Complete | Move primitives and generic composites to Poodle, keep Underlay focused on structural shells and specialized systems, and run the coexistence migration across consuming apps |
+| 043 | [Poodle Public Prop Normalization](./g01/043-poodle-public-prop-normalization.md) | Complete | Normalize Poodle onto one plain-state boolean prop language, migrate Underlay and all consumer app call sites, and track the sweep through a durable manifest |
+| 044 | [Shared UI Documentation and Demo Refresh](./g01/044-shared-ui-documentation-and-demo-refresh.md) | In Progress | Rebuild the shared UI documentation and demo layer around the stabilized post-migration Underlay surface and its boundary with Poodle |
 
-**Complete:** 39 | **Extracted:** 2 | **In progress:** 2 | **Not started:** 0
+**Complete:** 41 | **Extracted:** 2 | **In progress:** 1 | **Not started:** 0
 
 ## Next Task
 
-Execute `g01.043` by starting the Poodle-side primitive prop normalization audit
-and first rename batch, then feed those contract-valid prop changes back into
-the ongoing `g01.042` migration work.
+Execute `g01.044` Batch 44.3 by broadening Storybook coverage across the
+highest-value retained Underlay workflow shells and helpers now that the
+bootstrap and first catalog shell are in place.

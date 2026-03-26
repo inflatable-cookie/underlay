@@ -14,6 +14,8 @@
         "check:component-test-hygiene": "effigy check:component-test-hygiene",
         "check:poodle-prop-names": "effigy check:poodle-prop-names",
         "check:guardrails": "effigy check:guardrails",
+        "storybook": "effigy storybook",
+        "storybook:build": "effigy storybook:build",
         "qa:docs": "effigy qa:docs",
         "qa:northstar": "effigy qa:northstar",
         "validate": "effigy validate",
@@ -153,6 +155,10 @@
         "svelte-dnd-action": "^0.9.69"
     },
     "devDependencies": {
+        "@storybook/addon-a11y": "^10.3.3",
+        "@storybook/addon-docs": "^10.3.3",
+        "@storybook/addon-svelte-csf": "^5.1.1",
+        "@storybook/svelte-vite": "^10.3.3",
         "@sveltejs/vite-plugin-svelte": "^6.2.4",
         "@testing-library/dom": "^10.4.1",
         "@testing-library/svelte": "^5.3.1",
@@ -161,6 +167,7 @@
         "@vitest/ui": "^4.0.18",
         "bits-ui": "^2.16.2",
         "lucide-svelte": "^0.575.0",
+        "storybook": "^10.3.3",
         "svelte": "^5.53.3",
         "svelte-check": "^4.4.3",
         "tsx": "^4.21.0",

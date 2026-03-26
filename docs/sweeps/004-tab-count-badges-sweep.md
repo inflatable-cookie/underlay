@@ -75,7 +75,7 @@ export WEB_REPO="/path/to/myapp-web"
 Find all tab triggers with counts:
 
 ```bash
-rg -n "TabsTrigger[^\n]*count=\{" "$ADMIN_REPO/src" "$WEB_REPO/src"
+rg -n "count:\\s*|items=\\{.*count|TabItem" "$ADMIN_REPO/src" "$WEB_REPO/src"
 ```
 
 Create a worksheet row per detail page:
@@ -170,7 +170,7 @@ Pass criteria:
 ### 4.2 Tabs use count fields from detail entity
 
 ```bash
-rg -n "TabsTrigger[^\n]*count=\{" "$ADMIN_REPO/src/routes" "$WEB_REPO/src/routes"
+rg -n "count:\\s*|items=\\{.*count|TabItem" "$ADMIN_REPO/src/routes" "$WEB_REPO/src/routes"
 ```
 
 Pass criteria:

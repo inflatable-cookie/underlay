@@ -35,7 +35,11 @@ Add an opt-in `@decodelabs/underlay/validation` surface for reusable Zod schemas
 ## Phase 34.2 - Form Integration
 
 - [x] Add a validated-form helper that works with existing form primitives instead of replacing them wholesale.
-- [x] Document how the new helper fits with `FormValidationProvider`.
+- [x] Document how the new helper fits with the then-current `FormValidationProvider` model.
+
+Historical note:
+- The provider-based form-validation layer mentioned in this roadmap was later retired during `g01.042`.
+- Current guidance should use app-owned form validity with Poodle field-level validation surfaces instead.
 - [x] Add focused TS and component tests for schema usage and form-state behavior.
 
 ## Phase 34.3 - Consumer Rollout and Documentation

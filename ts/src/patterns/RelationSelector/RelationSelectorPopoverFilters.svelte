@@ -1,6 +1,6 @@
 <script lang="ts">
+  import { Button } from "@poodle/svelte-primitives";
   import Check from "lucide-svelte/icons/check";
-  import ChevronDown from "lucide-svelte/icons/chevron-down";
   import type { FilterConfig } from "./types.js";
 
   interface Props {
@@ -27,14 +27,16 @@
     <div class="relation-selector-popover__filter">
       <span class="relation-selector-popover__filter-label">{filter.label}:</span>
       <div class="relation-selector-popover__filter-dropdown">
-        <button
+        <Button
           type="button"
-          class="relation-selector-popover__filter-trigger"
-          onclick={() => onToggleFilter(filter.key)}
+          variant="ghost"
+          size="sm"
+          chevron
+          className="relation-selector-popover__filter-trigger"
+          on:click={() => onToggleFilter(filter.key)}
         >
-          <span>{getActiveFilterLabel(filter)}</span>
-          <ChevronDown size="0.8em" />
-        </button>
+          {getActiveFilterLabel(filter)}
+        </Button>
         {#if openFilterKey === filter.key}
           <div class="relation-selector-popover__filter-menu">
             {#if filter.includeAll !== false}
@@ -95,23 +97,8 @@
     position: relative;
   }
 
-  .relation-selector-popover__filter-trigger {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-    padding: 0.25rem 0.5rem;
-    border: 1px solid var(--underlay-color-border-subtle, rgba(148, 163, 184, 0.4));
-    border-radius: 0.25rem;
-    background: var(--underlay-color-field-bg, rgba(148, 163, 184, 0.12));
-    color: var(--underlay-color-text, #e5e7eb);
-    font-size: 0.75rem;
-    cursor: pointer;
-    transition: border-color 0.15s ease, background-color 0.15s ease;
-  }
-
-  .relation-selector-popover__filter-trigger:hover {
-    border-color: var(--underlay-color-border, rgba(148, 163, 184, 0.6));
-    background: var(--underlay-color-hover-bg, rgba(148, 163, 184, 0.18));
+  :global(.relation-selector-popover__filter-trigger) {
+    min-width: 0;
   }
 
   .relation-selector-popover__filter-menu {

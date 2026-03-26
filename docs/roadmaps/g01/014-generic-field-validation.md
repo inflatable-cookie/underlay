@@ -49,12 +49,16 @@ Non-goals (for this doc):
 - `cattle-grid:787d719` - Removed deprecated check-slug functions
 - `farmyard:015e1e6` - Removed deprecated check-slug endpoints
 
-**Additional enhancements (beyond original scope):**
+**Additional enhancements (beyond original scope at the time):**
 - FormValidationProvider component for automatic form-level validation tracking
 - Colored validation icons (green checkmark, red alert)
 - Switch color variants (leftVariant/rightVariant) for semantic state colors
 - SlugField prefix prop for displaying key prefixes (e.g., "sa3f2e-")
 - Client-side key generation utility for Section/Area forms
+
+Historical note:
+- `FormValidationProvider` was part of the original implementation wave recorded here.
+- The provider-based form registry was later retired during `g01.042` in favor of app-owned form validity above Poodle field-level validation surfaces.
 
 ---
 

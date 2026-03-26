@@ -155,7 +155,7 @@ Pass criteria:
 ### 5.2 List page consistency
 
 ```bash
-rg -n "FilterBar|OrderBy|Pagination|PaginatedList|DataTable|ListContainer|ListCard" "$ADMIN_REPO/src" "$WEB_REPO/src"
+rg -n "FilterBar|OrderBy|Pagination|DataTable|ListCard|BatchActionBar|LogList|CopyActionsMenu" "$ADMIN_REPO/src" "$WEB_REPO/src"
 ```
 
 Pass criteria:

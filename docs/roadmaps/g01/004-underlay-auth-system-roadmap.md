@@ -337,6 +337,11 @@ Reference sources:
 
 Reusable auth UI components for product apps.
 
+Historical note:
+- This section records the original auth UI extraction plan.
+- The current shared auth surface is narrower: `AuthLayout`, `LoginPage`, `ForgotPasswordFlow`, `TotpInput`, and `PasswordRequirements`.
+- Older wrappers such as `LoginForm`, `RegisterForm`, `TotpSetup`, and `AccountRecovery` were later retired during `g01.042`.
+
 - [x] Underlay: Create `ts/src/components/auth/` directory
 - [x] Underlay: Implement components:
   - `LoginForm.svelte` (username/password, 2FA input)

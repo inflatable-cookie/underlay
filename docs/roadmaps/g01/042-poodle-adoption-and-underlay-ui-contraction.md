@@ -1,6 +1,6 @@
 # 042 - Poodle Adoption and Underlay UI Contraction
 
-Status: In Progress
+Status: Complete
 Owner: Platform
 Created: 2026-03-23
 Depends on: 021, 031
@@ -63,6 +63,16 @@ A surface should stay in Underlay when one or more of the following dominate:
 - `docs/guides/190-upgrade-compatibility.md`
 - `contracts/ui/poodle-adoption-underlay-surface-groups.json`
 - `contracts/ui/poodle-underlay-coexistence-contract.json`
+
+## Progress Notes
+
+- Retired the old Underlay tabs stack (`TabsRoot`, `TabsList`, `TabsTrigger`, `TabsContent`, `TabsSeparator`) after migrating the last live callers onto Poodle `Tabs`. Active guidance now teaches caller-owned `items` plus `activeValue` rendering instead of the deleted wrapper family.
+- Settled `DropdownMenu` as a retained thin Underlay shell instead of leaving it in the generic replacement queue. The remaining live callers still depend on child-composed menu content and destructive row-action treatment that Poodle `Menu` does not yet expose cleanly, especially in `RowActionsCell`.
+- Closed the retained-helper decision batch for `CopyActionsMenu`, `LogList`, and `BatchActionBar`. `CopyActionsMenu` stays because it owns clipboard-plus-toast workflow; `LogList` and `BatchActionBar` are now explicitly recorded as settled retained workflow surfaces rather than open migration candidates.
+- Closed the remaining auth/media candidate batch as well. `MediaPicker` and `MediaActionsMenu` are now explicitly settled retained media workflow shells, while `AuthLayout`, `LoginPage`, `ForgotPasswordFlow`, `TotpInput`, and `PasswordRequirements` are recorded as the final shared auth shell/helper surface with live callers.
+- Closed the retained-infrastructure cleanup batch. `ContentCard` is retired because it had no live callers beyond docs, the public `Form` export is internalized back into Underlay shells, the stale `FormValidationProvider` / form-tabs inventory residue is removed, and `ErrorBoundary` is now the only clearly retained public infrastructure helper left in this cluster.
+- Closed the deprecated auth-internals cleanup batch. Dead historical wrappers such as `LoginForm`, `RegisterForm`, `AccountRecovery`, and `TotpSetup` are now removed from the live shared implementation set instead of lingering as unused internal baggage.
+- Closed the remaining active docs and contract tail. The inventory and current-generation guidance now reflect the settled retained Underlay surface closely enough that the migration roadmap itself is complete; the leftover residue is historical documentation rather than active migration scope.
 
 ## Batch 42.1 - Boundary Reset and Documentation Alignment
 
@@ -141,6 +151,29 @@ A surface should stay in Underlay when one or more of the following dominate:
   `LoginPage` and `ForgotPasswordFlow` render flow content inside it instead of
   nesting a second card. Two-factor method switching and success/setup states
   also now resolve through Poodle tabs and status/callout primitives.
+- The auth public surface has now been narrowed to the real live contract.
+  `AuthLayout`, `LoginPage`, and `ForgotPasswordFlow` remain the shared auth
+  workflow shells, while `TotpInput` and `PasswordRequirements` remain public
+  field helpers for shared flows and app-owned account pages. Older step-level
+  and single-purpose auth components such as `LoginForm`, `RegisterForm`,
+  `TotpSetup`, `PassKeyButton`, `GoogleSignInButton`, `AccountRecovery`,
+  `TwoFactorStep`, `SuccessStep`, and `PasswordResetStep` are no longer part of
+  the public `@decodelabs/underlay/components` surface.
+- The live auth shell family is now at its final retained Underlay boundary.
+  `AuthLayout`, `LoginPage`, and `ForgotPasswordFlow` keep the real auth-flow
+  orchestration, while the remaining visual chrome inside them resolves through
+  Poodle primitives. Thin internal one-caller wrappers like the old passkey and
+  Google sign-in buttons have been collapsed back into the login tabs.
+- `TotpInput` and `PasswordRequirements` are also now treated as settled
+  retained auth helpers. They still earn shared Underlay ownership because they
+  encapsulate reusable auth-field behavior that is used across both auth flows
+  and account-security pages, and there is no equivalent Poodle auth field
+  contract yet.
+- The thin helper layer has narrowed further. `DiagnosticsToolbar` and
+  `SubmitButton` are now retired in favor of local composition over Poodle
+  primitives, while `CopyActionsMenu` remains a retained shared helper because
+  it still owns reusable clipboard-plus-toast workflow rather than just menu
+  chrome.
 - The old restore-resolution workflow family (`RestoreBlockedPanel`,
   `RestoreResolutionDialog`, `RestoreResolutionModalView`,
   `RestoreResolutionPlanner`, `RestoreResolutionShell`) has now been retired
@@ -186,6 +219,48 @@ A surface should stay in Underlay when one or more of the following dominate:
   including close-button support, surface-class hooks, and async confirm
   workflows; shared Underlay components and the reference admin apps now
   consume those Poodle surfaces directly.
+- `MediaActionsMenu` is now treated as the final retained media-operation shell
+  in Underlay. It still earns a shared contract because it owns copy/edit/
+  replace/delete/restore/purge workflow orchestration and shared success/error
+  handling, but its contract has been narrowed so app-specific navigation
+  context remains in app wrappers rather than leaking into the shared surface.
+- `MediaPicker` is also now fully settled as a retained Underlay media-library
+  workflow shell. Poodle owns the generic picker dialog, browse panel,
+  upload-status panel, thumbnail, and file-upload surfaces, while Underlay
+  keeps the callback-driven library browse and upload orchestration that still
+  binds to portfolio media APIs.
+- The adjacent workflow family is now also settled. `MediaPicker` remains the
+  final retained media-library orchestration shell; `LogList` remains the
+  retained audit-log list surface; and `BatchActionBar` remains the retained
+  batch-selection workflow bar. Poodle ships related generic components, but
+  not drop-in replacements for those richer Underlay workflows.
+- `CopyActionsMenu` is also now a clearly settled retained helper. It remains
+  shared because it owns reusable clipboard-plus-toast workflow over the
+  retained menu shell, not because Underlay still needs another generic menu
+  primitive.
+- The pointless app-local adapter layer over those retained surfaces is now
+  gone. `acme-admin` and `cp-admin` import `LogList` and `BatchActionBar`
+  directly from Underlay instead of keeping one-file wrapper components that
+  only re-export the same shared contract.
+- The old generic `Tooltip` and `Popover` exports are now retired from
+  Underlay. Poodle owns the shared tooltip and popover layer, and the last
+  live tooltip call sites have moved either to direct Poodle tooltip usage or
+  to built-in tooltip support on Poodle `IconButton`.
+- `DropdownMenu` is now treated as a settled retained Underlay interaction
+  shell. Poodle `Menu` covers simpler item-driven menus, but the remaining live
+  Underlay callers still need callback-oriented `items`, destructive treatment,
+  and arbitrary child-composed menu content, particularly in `RowActionsCell`.
+- The old Underlay `ListContainer` and `PaginatedList` surfaces are now
+  retired. Poodle `ListContainer` is the shared list-shell path, with
+  caller-owned pagination controllers and slots handling the remaining page
+  composition.
+- `ContentCard` is now retired as well. Shared docs should teach caller-owned
+  composition over Poodle `Card` plus `NightfireRenderer` or sanitized
+  HTML/markdown rendering instead of relying on a dead dedicated wrapper.
+- The public `Form` export has been internalized. The wrapper still exists for
+  Underlay shells and deprecated auth internals that need its `prepare` /
+  `enhance` behavior, but it no longer needs to be part of the app-facing
+  shared components surface.
 - Decision: form-wide validity stays app-owned or shared-workflow-owned above
   Poodle. Poodle owns field-level state and validation affordances, not a hidden
   form registry.
@@ -205,8 +280,8 @@ effigy qa:northstar
 
 ## Next Task
 
-Take the next broad retained interaction family after the relation-selector
-modal contraction, especially the remaining Underlay-owned prompt and picker
-workflow shells adjacent to `RelationSelector`, and decide in one coordinated
-pass which pieces are now generic enough for Poodle versus which are genuinely
-workflow-specific enough to keep.
+Roadmap complete.
+
+If more cleanup is worthwhile, treat it as backlog hygiene: modernize or archive
+older historical logs, sweeps, and research opportunistically rather than
+keeping `g01.042` open for non-blocking residue.

@@ -621,9 +621,9 @@ There are two distinct patterns for displaying lists of related entities. Choosi
 
 A typical detail page has:
 1. **PageHeader** - Title, subtitle, back navigation, and entity-level actions
-2. **TabsRoot** - Container for tabbed content
-3. **TabsList/TabsTrigger** - Tab navigation
-4. **TabsContent** - Content for each tab
+2. **Poodle `Tabs`** - Container plus tab navigation for detail sections
+3. **Caller-owned `items`** - Section metadata
+4. **Active panel block** - Content for the current tab
 
 ```svelte
 <PageHeader
@@ -633,25 +633,39 @@ A typical detail page has:
   backLabel={backInfo.label}
 >
   {#snippet actions()}
-    <EntityActionsMenu entity={entity} authToken={authToken} />
+    <CopyActionsMenu
+      toastStore={toastStore}
+      triggerLabel="Actions"
+      copies={[{ label: "Copy ID", text: entity.id, successMessage: "Copied entity ID" }]}
+      actions={[
+        { label: "Edit", onSelect: handleEdit },
+        { label: "Delete", destructive: true, onSelect: () => { showDeleteConfirm = true; } }
+      ]}
+    />
   {/snippet}
 </PageHeader>
 
-<TabsRoot bind:value={activeTab} variant="boxed" historyKey="tab">
-  <TabsList>
-    <TabsTrigger value="details">Details</TabsTrigger>
-    <TabsTrigger value="children">Children</TabsTrigger>
-    <TabsTrigger value="related">Related</TabsTrigger>
-  </TabsList>
-
-  <TabsContent value="details">
+<Tabs
+  bind:value={activeTab}
+  items={[
+    { value: "details", label: "Details" },
+    { value: "children", label: "Children" },
+    { value: "related", label: "Related" }
+  ]}
+  variant="card"
+  size="sm"
+  historyKey="tab"
+  ariaLabel="Entity sections"
+  let:activeValue
+>
+  {#if activeValue === "details"}
     <!-- Entity details -->
-  </TabsContent>
+  {/if}
 
-  <TabsContent value="children">
+  {#if activeValue === "children"}
     <!-- List of child entities -->
-  </TabsContent>
-</TabsRoot>
+  {/if}
+</Tabs>
 ```
 
 ### Tab Content with Lists
@@ -800,11 +814,9 @@ Forms should NOT contain `<form>` elements or submission logic. They render fiel
 
 ```svelte
 <script lang="ts">
-  import {
-    ConfirmAction
-  } from "@decodelabs/underlay/components";
   import { FormLayout } from "@poodle/svelte-composites";
   import {
+    AlertDialog,
     Button,
     Field,
     FieldSet,
@@ -837,6 +849,7 @@ Forms should NOT contain `<form>` elements or submission logic. They render fiel
 
   let nameValue = $state(values.name ?? "");
   let isLiveValue = $state(values.isLive ?? false);
+  let showDeleteConfirm = $state(false);
   let actionBarElement = $state<HTMLDivElement | null>(null);
   const editIntentItems = [
     { value: "save", label: "Save changes" },
@@ -891,11 +904,9 @@ Forms should NOT contain `<form>` elements or submission logic. They render fiel
         Cancel
       </Button>
       {#if mode === "edit"}
-        <ConfirmAction
-          triggerLabel="Soft delete entity"
-          triggerVariant="danger"
-          onConfirm={handleDeleteConfirm}
-        />
+        <Button type="button" variant="ghost" tone="danger" on:click={() => (showDeleteConfirm = true)}>
+          Soft delete entity
+        </Button>
       {/if}
     {/snippet}
 
@@ -920,6 +931,18 @@ Forms should NOT contain `<form>` elements or submission logic. They render fiel
     {/if}
   </div>
 </FormActions>
+
+<AlertDialog
+  open={showDeleteConfirm}
+  title="Soft delete entity"
+  description="Are you sure you want to move this entity to trash?"
+  confirmLabel="Soft delete"
+  tone="danger"
+  onConfirm={handleDeleteConfirm}
+  onCancel={() => {
+    showDeleteConfirm = false;
+  }}
+/>
 ```
 
 ### Create/Edit Page Pattern
@@ -1100,10 +1123,11 @@ In ListCards, pills should only show **positive/notable states**. Don't show bot
 
 ### Markdown Content Fields
 
-For long-form markdown fields (descriptions, notes, etc.), use `ContentCard` instead of `DetailsItem`:
+For long-form markdown fields (descriptions, notes, etc.), use caller-owned `Card`
+composition instead of `DetailsItem`:
 
 ```svelte
-<TabsContent value="details">
+{#if activeValue === "details"}
   <ContainerGrid>
     <DetailsGrid>
       <!-- Short fields in DetailsGrid -->
@@ -1112,14 +1136,15 @@ For long-form markdown fields (descriptions, notes, etc.), use `ContentCard` ins
   </ContainerGrid>
 
   <!-- Markdown content OUTSIDE ContainerGrid -->
-  <ContentCard
-    title="Description"
-    value={entity.description}
-    markdown
-    emptyMessage="No description set."
-    maxHeight={0}
-  />
-</TabsContent>
+  <Card>
+    <h4>Description</h4>
+    {#if entity.description}
+      <NightfireRenderer value={entity.description} />
+    {:else}
+      <p>No description set.</p>
+    {/if}
+  </Card>
+{/if}
 ```
 
 ### Navigation Context with Tabs
@@ -1148,7 +1173,7 @@ const sourceContext = $derived(entity ? {
 7. **StatusBadge without icon snippets** - Always provide `trueIcon` and `falseIcon` snippets
 8. **Showing both Pill states** - Only show pills for positive/notable states (e.g., "Free"), not negative defaults
 9. **sourceContext.href missing tab** - Include `?tab={activeTab}` for proper back navigation from child routes
-10. **Description in DetailsItem** - Use `ContentCard` with `markdown` prop for long-form content
+10. **Description in DetailsItem** - Use direct `Card` + renderer composition for long-form content
 
 ## Key Points
 

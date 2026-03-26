@@ -15,15 +15,15 @@
     "poodle_ergonomics_rule": "If a surface clearly belongs in a design system but Poodle's current API, styling constraints, or interaction model make common application workflows awkward, extend Poodle rather than retaining a second canonical Underlay implementation."
   },
   "summary": {
-    "total_exports": 139,
-    "replace_with_poodle_direct": 65,
+    "total_exports": 135,
+    "replace_with_poodle_direct": 62,
     "resolve_via_existing_poodle_surface": 29,
     "poodle_gap": 0,
     "resolved_from_poodle_review": 3,
-    "keep_in_underlay": 7,
-    "keep_in_underlay_after_assessment": 6,
-    "candidate_to_keep_in_underlay": 18,
-    "delete": 17
+    "keep_in_underlay": 6,
+    "keep_in_underlay_after_assessment": 10,
+    "candidate_to_keep_in_underlay": 0,
+    "delete": 22
   },
   "eligibility_rubric": {
     "candidate_for_poodle_when": [
@@ -66,9 +66,7 @@
           "Drawer",
           "AlertDialog",
           "IconButton",
-          "Tooltip",
           "TimeAgo",
-          "Popover",
           "Skeleton",
           "Pagination",
           "OrderBy",
@@ -83,17 +81,14 @@
         "exports": [
           "CardRadioGroup",
           "FilterToolbar",
-          "MarkdownEditor",
-          "ConfirmAction",
-          "EmptyState",
-          "PageLoading",
-          "DataTable",
-          "AudioPlayer",
-          "ListContainer",
-          "LogList",
-          "ReorderableList",
-          "SlugField"
-        ]
+        "MarkdownEditor",
+        "EmptyState",
+        "PageLoading",
+        "DataTable",
+        "AudioPlayer",
+        "ReorderableList",
+        "SlugField"
+      ]
       }
     ],
     "api_translation_replacements": [
@@ -119,13 +114,6 @@
         "notes": "Poodle replacement exists but migration will need import and API translation."
       },
       {
-        "export": "DropdownMenu",
-        "entrypoint": "@decodelabs/underlay/components",
-        "successor_package": "@poodle/svelte-primitives",
-        "successor_export": "Menu",
-        "notes": "Poodle replacement exists but migration will need import and API translation."
-      },
-      {
         "export": "StatusBadge",
         "entrypoint": "@decodelabs/underlay/components",
         "successor_package": "@poodle/svelte-primitives",
@@ -137,13 +125,6 @@
         "entrypoint": "@decodelabs/underlay/components",
         "successor_package": "@poodle/svelte-primitives",
         "successor_export": "Progress",
-        "notes": "Poodle replacement exists but migration will need import and API translation."
-      },
-      {
-        "export": "BatchActionBar",
-        "entrypoint": "@decodelabs/underlay/components",
-        "successor_package": "@poodle/svelte-primitives",
-        "successor_export": "BulkActionBar",
         "notes": "Poodle replacement exists but migration will need import and API translation."
       },
       {
@@ -160,50 +141,15 @@
         "successor_export": "FilterToolbar",
         "notes": "Poodle replacement exists but migration will need import and API translation."
       },
-      {
-        "export": "TabsRoot",
-        "entrypoint": "@decodelabs/underlay/components",
-        "successor_package": "@poodle/svelte-primitives",
-        "successor_export": "Tabs",
-        "notes": "Poodle replacement exists but migration will need import and API translation."
-      },
-      {
-        "export": "TabsList",
-        "entrypoint": "@decodelabs/underlay/components",
-        "successor_package": "@poodle/svelte-primitives",
-        "successor_export": "Tabs",
-        "notes": "Poodle replacement exists but migration will need import and API translation."
-      },
-      {
-        "export": "TabsTrigger",
-        "entrypoint": "@decodelabs/underlay/components",
-        "successor_package": "@poodle/svelte-primitives",
-        "successor_export": "Tabs",
-        "notes": "Poodle replacement exists but migration will need import and API translation."
-      },
-      {
-        "export": "TabsContent",
-        "entrypoint": "@decodelabs/underlay/components",
-        "successor_package": "@poodle/svelte-primitives",
-        "successor_export": "Tabs",
-        "notes": "Poodle replacement exists but migration will need import and API translation."
-      },
-      {
-        "export": "TabsSeparator",
-        "entrypoint": "@decodelabs/underlay/components",
-        "successor_package": "@poodle/svelte-primitives",
-        "successor_export": "Tabs",
-        "notes": "Poodle replacement exists but migration will need import and API translation."
-      }
     ]
   },
   "keep_in_underlay": [
     {
       "entrypoint": "@decodelabs/underlay/components",
       "exports": [
-        "Form"
+        "DropdownMenu"
       ],
-      "notes": "Retain as an Underlay-owned workflow surface."
+      "notes": "Retain as a thin Underlay interaction shell for now. Poodle `Menu` is not yet a drop-in replacement for the live remaining callers because `DropdownMenu` still supports callback-oriented `items`, destructive row-action treatment, and arbitrary child-composed menu content used by `RowActionsCell`."
     },
     {
       "entrypoint": "@decodelabs/underlay/patterns",
@@ -212,10 +158,9 @@
         "Banner",
         "FormDialog",
         "PageHeader",
-        "RelationPickerDialog",
         "SpaFormShell"
       ],
-      "notes": "Retain as Underlay-owned structural shells, operational flows, or app-facing product composites. `PageHeader` is now reserved for richer section/title split, contextual-back, banner, and header-meta cases after the simple title/back/actions, count-bearing list headers, and plain upload/detail pages moved to Poodle `PageHeader`. `FormDialog` remains the flexible modal-form workflow shell for custom body/actions, but now resolves its close and status chrome through Poodle `IconButton` and `Callout` rather than a second local implementation. `RelationPickerDialog` remains the relation-selection workflow shell, but its modal, search, status, and action chrome now resolve through Poodle `Dialog`, `SearchField`, `Callout`, and `Button` instead of a second local modal stack."
+      "notes": "Retain as Underlay-owned structural shells, operational flows, or app-facing product composites. `PageHeader` is now reserved for richer section/title split, contextual-back, banner, and header-meta cases after the simple title/back/actions, count-bearing list headers, and plain upload/detail pages moved to Poodle `PageHeader`. `FormDialog` remains the flexible modal-form workflow shell for custom body/actions, but now resolves its close and status chrome through Poodle `IconButton` and `Callout` rather than a second local implementation. `RelationSelector` is now at its retained Underlay boundary: Poodle owns its dialog, search, status, button, and badge chrome, while Underlay keeps the actual relation filters, option list behavior, drilldown navigation, and selection workflow."
     }
   ],
   "delete": [
@@ -229,6 +174,15 @@
         "MetricFilterStrip"
       ],
       "notes": "Retire entirely. The structural bar family had no live shared-source or consuming-app callers beyond its own harness/test, so preserving it as a retained Underlay vocabulary would only keep dead surface area alive."
+    },
+    {
+      "entrypoint": "@decodelabs/underlay/patterns",
+      "exports": [
+        "RelationPickerDialog",
+        "PickableItem",
+        "PickerSection"
+      ],
+      "replacement": "Internalized into RelationSelectorModal over Poodle Dialog/SearchField/Button/Callout; not a retained public pattern."
     },
     {
       "entrypoint": "@decodelabs/underlay/patterns",
@@ -290,6 +244,25 @@
         "AlertDialog"
       ],
       "notes": "Retire entirely. Poodle now owns the generic modal and confirmation surface, including close-button support, surface-class hooks, and async confirm handling."
+    },
+    {
+      "entrypoint": "@decodelabs/underlay/components",
+      "exports": [
+        "Tooltip",
+        "Popover"
+      ],
+      "notes": "Retire entirely. Poodle now owns the generic tooltip and popover surface; the remaining live tooltip usage moved directly to Poodle or to existing Poodle `IconButton` tooltip support."
+    },
+    {
+      "entrypoint": "@decodelabs/underlay/components",
+      "exports": [
+        "TabsRoot",
+        "TabsList",
+        "TabsTrigger",
+        "TabsContent",
+        "TabsSeparator"
+      ],
+      "notes": "Retire entirely. Poodle `Tabs` now covers the live runtime needs, including `historyKey`, count badges, separators, and caller-owned panel rendering."
     }
   ],
   "candidate_for_poodle": {
@@ -407,6 +380,13 @@
         "notes": "Use existing inline layout or toolbar-style composition rather than adding a dedicated action-group contract."
       },
       {
+        "export": "ConfirmAction",
+        "entrypoint": "@decodelabs/underlay/components",
+        "successor_package": "@poodle/svelte-primitives",
+        "successor_export": "AlertDialog",
+        "notes": "Compose the destructive trigger button and `AlertDialog` at the caller instead of routing through a dedicated Underlay wrapper."
+      },
+      {
         "export": "BatchConfirmDialog",
         "entrypoint": "@decodelabs/underlay/components",
         "successor_package": "@poodle/svelte-primitives",
@@ -474,35 +454,35 @@
         "entrypoint": "@decodelabs/underlay/patterns",
         "successor_package": "@poodle/svelte-primitives",
         "successor_export": "Button",
-        "notes": "Fold the useful loading and submit ergonomics into Poodle `Button` itself; do not mint a separate submit-button surface."
+        "notes": "Retired. Use Poodle `Button` with `type=\"submit\"`, `loading`, and caller-owned label logic instead of a named Underlay wrapper."
       },
       {
         "export": "CopyActionsMenu",
         "entrypoint": "@decodelabs/underlay/patterns",
-        "successor_package": "@poodle/svelte-primitives",
-        "successor_export": "Menu",
-        "notes": "Use `Menu` plus clipboard and toast helpers. Shared action vocabularies should live in app-level composition rather than a canonical design-system wrapper."
+        "successor_package": "@decodelabs/underlay/patterns",
+        "successor_export": "CopyActionsMenu",
+        "notes": "Keep in Underlay. This remains the shared copy-and-actions helper over clipboard and toast utilities rather than a Poodle design-system component."
       },
       {
         "export": "EntityActionsMenu",
         "entrypoint": "@decodelabs/underlay/patterns",
         "successor_package": "@poodle/svelte-primitives",
         "successor_export": "Menu",
-        "notes": "Use `Menu` plus dialog composition. Entity-specific action sets should remain in app-level shared components instead of becoming a Poodle composite."
+        "notes": "Retired in favor of caller-owned `CopyActionsMenu` plus `AlertDialog` composition. Entity-specific action sets should remain in app-level composition rather than a shared Underlay wrapper."
       },
       {
         "export": "DiagnosticsToolbar",
         "entrypoint": "@decodelabs/underlay/components",
         "successor_package": "@poodle/svelte-primitives",
         "successor_export": "Toolbar",
-        "notes": "Drop as a named component. Express the pattern through `Toolbar`, `Card` or `Surface`, and text-treatment composition instead of preserving a dedicated diagnostics wrapper."
+        "notes": "Retired. Express the pattern through local `Toolbar`, `Card` or `Surface` composition instead of preserving a dedicated diagnostics wrapper."
       },
       {
         "export": "PaginatedList",
         "entrypoint": "@decodelabs/underlay/components",
         "successor_package": "@poodle/svelte-composites",
         "successor_export": "ListContainer",
-        "notes": "Treat `PaginatedList` as folded into the Poodle-native `ListContainer` direction rather than preserving a separate canonical paginated-list surface."
+        "notes": "Retired. Fold paginated list experiences into Poodle `ListContainer` plus caller-owned pagination controllers instead of preserving a separate Underlay list shell."
       }
     ],
     "promote_to_poodle_contract_review": [],
@@ -533,49 +513,51 @@
       {
         "entrypoint": "@decodelabs/underlay/components",
         "exports": [
-          "ContentCard",
-          "FormValidationProvider",
-          "ErrorBoundary",
-          "FormTabsProvider",
-          "FormTabsSection"
+          "LogList",
+          "BatchActionBar"
         ],
-        "notes": "These are better treated as Underlay or app-level helpers for now. They are either framework-oriented behavior wrappers, content-orchestration surfaces, or tabs-validation helpers rather than clean design-system contracts."
+        "notes": "These are now settled retained Underlay workflow surfaces. Poodle ships adjacent generic components, but not drop-in replacements for Underlay's audit-log filtering and pagination model or its richer batch-selection workflow with select-all, status update, and registered action handling."
+      },
+      {
+        "entrypoint": "@decodelabs/underlay/components",
+        "exports": [
+          "MediaActionsMenu",
+          "MediaPicker",
+          "TotpInput",
+          "PasswordRequirements",
+          "AuthLayout",
+          "ForgotPasswordFlow",
+          "LoginPage"
+        ],
+        "notes": "These are now settled retained Underlay auth and media surfaces. `MediaActionsMenu` and `MediaPicker` remain callback-driven media workflow shells rather than clean design-system composites. `AuthLayout`, `LoginPage`, and `ForgotPasswordFlow` remain the shared auth-flow shells, while `TotpInput` and `PasswordRequirements` remain shared auth field helpers with live use across login, recovery, and account-security pages."
+      },
+      {
+        "entrypoint": "@decodelabs/underlay/components",
+        "exports": [
+          "ErrorBoundary"
+        ],
+        "notes": "This remains a small retained Underlay infrastructure surface. It still has live app-shell callers and encapsulates Svelte boundary recovery UI rather than a generic design-system primitive."
       }
     ]
   },
   "poodle_gap": [],
-  "candidate_to_keep_in_underlay": [
-    {
-      "entrypoint": "@decodelabs/underlay/components",
-      "exports": [
-        "MediaActionsMenu",
-        "LoginForm",
-        "RegisterForm",
-        "TotpSetup",
-        "TotpInput",
-        "PasswordRequirements",
-        "PassKeyButton",
-        "GoogleSignInButton",
-        "SessionList",
-        "SecuritySettings",
-        "PasskeyManager",
-        "AccountRecovery",
-        "AuthLayout",
-        "TwoFactorStep",
-        "SuccessStep",
-        "PasswordResetStep",
-        "ForgotPasswordFlow",
-        "LoginPage"
-      ],
-      "notes": "These currently look more like Underlay- or app-level orchestration surfaces than clean design-system contracts. Keep them out of the first Poodle gap batch unless a tighter cross-app contract is written first."
-    }
-  ],
+  "candidate_to_keep_in_underlay": [],
   "delete": [
     {
       "export": "AudioEmbed",
       "entrypoint": "@decodelabs/underlay/components",
       "notes": "No long-term Underlay ownership intended. Remove or fold into neighboring Poodle-backed surfaces during migration."
+    },
+    {
+      "export": "ContentCard",
+      "entrypoint": "@decodelabs/underlay/components",
+      "notes": "Retired. The shared rich-content card had no live callers beyond docs. Use caller-owned composition over Poodle `Card` plus `NightfireRenderer` or sanitized HTML/markdown rendering instead of preserving a dedicated wrapper."
+    },
+    {
+      "export": "Form",
+      "entrypoint": "@decodelabs/underlay/components",
+      "notes": "Internalized. The lightweight enhance/prepare form wrapper is still used inside Underlay shells and deprecated auth internals, but it no longer needs a public app-facing export."
     }
   ],
-  "next_step": "Use the new Poodle-native `ListContainer` as the replacement target for remaining Underlay `ListContainer` and `PaginatedList` usage in consuming apps. Keep treating `DiagnosticsToolbar`, `SubmitButton`, `CopyActionsMenu`, and `EntityActionsMenu` as primitive ergonomics or composition guidance rather than new canonical Poodle components."
+  "next_step": "`g01.042` is ready for closure review. Remaining mentions of retired surfaces should now be treated as historical documentation hygiene, not active migration scope."
 }

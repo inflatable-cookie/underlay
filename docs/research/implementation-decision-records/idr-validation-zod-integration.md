@@ -117,7 +117,7 @@ export type RegisterRequest = z.infer<typeof registerRequestSchema>;
 
 **Risks**
 - API design may need iteration based on usage
-- Must integrate well with existing `FormValidationProvider`
+- Must integrate well with the then-existing `FormValidationProvider`
 
 **Proposed API**
 
@@ -256,4 +256,4 @@ Create implementation roadmap:
 **Success criteria:**
 - Acme can use `registerRequestSchema` for client-side validation
 - Bundle size impact documented
-- Form validation works with existing `FormValidationProvider`
+- Historical validation target: form validation works with the then-existing `FormValidationProvider`

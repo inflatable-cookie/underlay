@@ -11,7 +11,6 @@
     Dialog as PoodleDialog
   } from "@poodle/svelte-primitives";
   import type { Component, Snippet } from "svelte";
-  import ActionArea from "./ActionArea.svelte";
   import X from "lucide-svelte/icons/x";
   import Trash2 from "lucide-svelte/icons/trash-2";
   import CheckCheck from "lucide-svelte/icons/check-check";
@@ -267,7 +266,7 @@
       {/each}
     </div>
     <svelte:fragment slot="actions">
-      <ActionArea class="underlay-dialog-actions">
+      <div class="underlay-dialog-actions">
         <Button
           type="button"
           variant="primary"
@@ -276,7 +275,7 @@
         >
           Update Status
         </Button>
-        {#snippet aside()}
+        <div class="underlay-dialog-actions__aside">
           <Button
             type="button"
             variant="ghost"
@@ -284,8 +283,8 @@
           >
             Cancel
           </Button>
-        {/snippet}
-      </ActionArea>
+        </div>
+      </div>
     </svelte:fragment>
   </PoodleDialog>
 {/if}
@@ -336,6 +335,20 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
+  }
+
+  .underlay-dialog-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--underlay-form-actions-gap, 1.5rem);
+  }
+
+  .underlay-dialog-actions__aside {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: var(--underlay-form-actions-gap, 1.5rem);
   }
 
   .underlay-confirm-text {

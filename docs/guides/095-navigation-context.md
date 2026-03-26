@@ -681,12 +681,16 @@ Here's a complete example of a Module detail page with tabbed content that prese
 <script lang="ts">
   import { onMount } from "svelte";
   import { PageHeader, CopyActionsMenu } from "@decodelabs/underlay/patterns";
-  import { TabsRoot, TabsList, TabsTrigger, TabsContent } from "@decodelabs/underlay/components";
+  import { Tabs, type TabItem } from "@poodle/svelte-primitives";
   import { gotoWithContext, initPageState } from "@decodelabs/underlay/client";
 
   let { data } = $props();
   
   let activeTab = $state("details");
+  const tabItems: TabItem[] = [
+    { value: "details", label: "Details" },
+    { value: "syllabus", label: "Syllabus" }
+  ];
 
   onMount(() => {
     // Restore tab selection if returning via back navigation
@@ -714,17 +718,12 @@ Here's a complete example of a Module detail page with tabbed content that prese
   {/snippet}
 </PageHeader>
 
-<TabsRoot bind:value={activeTab} variant="boxed">
-  <TabsList>
-    <TabsTrigger value="details">Details</TabsTrigger>
-    <TabsTrigger value="syllabus">Syllabus</TabsTrigger>
-  </TabsList>
-
-  <TabsContent value="details">
+<Tabs bind:value={activeTab} items={tabItems} variant="card" size="sm" ariaLabel="Module sections" let:activeValue>
+  {#if activeValue === "details"}
     <!-- Details content -->
-  </TabsContent>
+  {/if}
 
-  <TabsContent value="syllabus">
+  {#if activeValue === "syllabus"}
     <!-- Syllabus content with nested edit links that also save activeTab -->
     {#each data.syllabus.sections as section}
       <CopyActionsMenu
@@ -742,8 +741,8 @@ Here's a complete example of a Module detail page with tabbed content that prese
         ]}
       />
     {/each}
-  </TabsContent>
-</TabsRoot>
+  {/if}
+</Tabs>
 ```
 
 ### What State to Save

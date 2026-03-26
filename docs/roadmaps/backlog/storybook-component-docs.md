@@ -1,6 +1,6 @@
 # Backlog: Storybook Component Documentation
 
-**Status**: Backlog
+**Status**: Promoted and reframed by `g01.044`
 **Priority**: Low
 **Estimated Effort**: 8-12 hours
 **Source**: Deferred from Acowtancy roadmap 032 (Acme Features to Underlay)
@@ -8,6 +8,17 @@
 ---
 
 ## Problem Statement
+
+Historical note:
+- This backlog item was written before the Poodle adoption wave materially
+  reduced Underlay's generic UI ownership.
+- The active execution path is now [g01.044](../g01/044-shared-ui-documentation-and-demo-refresh.md),
+  which reframes the work around the retained post-migration Underlay surface
+  and an explicit demo-tool decision instead of assuming a broad Storybook
+  catalog for every shared component.
+- `g01.044` Batch 44.1 kept Storybook as the chosen tool, but narrowed the
+  scope to retained Underlay workflow shells and helpers rather than a full
+  primitive catalog.
 
 Underlay's TypeScript component library (`ts/src/components/`) contains 60+ reusable Svelte components but lacks interactive documentation. Developers need to:
 
@@ -37,22 +48,20 @@ Set up [Storybook](https://storybook.js.org/) for the Underlay component library
 **High Priority** (frequently used):
 - Button, IconButton
 - TextInput, Select, Switch, DateInput
-- Card, ListCard, ContentCard
+- Card, ListCard
 - Dialog, AlertDialog, DropdownMenu
 - Badge, Pill, StatusBadge
-- Form, Field, FieldSet
+- Field, FieldSet
 
 **Medium Priority** (specialized):
 - LogList, BatchActionBar
 - StatCard, StatGrid
 - DataTable, Pagination
 - MediaPicker, FileUpload
-- TabsRoot, TabsList, TabsTrigger, TabsContent
+- Tabs
 
 **Lower Priority** (auth-specific):
-- LoginForm, RegisterForm
-- TotpSetup, TotpInput
-- SessionList, SecuritySettings
+- TotpInput
 
 ---
 

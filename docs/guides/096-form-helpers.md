@@ -24,7 +24,7 @@ These helpers extract these patterns into reusable, tested utilities.
 | `createLocalSearchFns()` | `@decodelabs/underlay/patterns` | Search/suggest for RelationSelector |
 | `slugify` / `validateSlug` | `@decodelabs/underlay/patterns` | Pure slug helpers for app-owned slug fields |
 | `useValidatedForm()` | `@decodelabs/underlay/patterns` | Lightweight Zod-backed client-side form orchestration |
-| `TabsRoot` + `TabsList` + `TabsTrigger` + `TabsContent` | `@decodelabs/underlay/components` | Multi-section form tabs |
+| `Tabs` | `@poodle/svelte-primitives` | Multi-section form tabs |
 | `getNextLetter()` | `@decodelabs/underlay/utils` | Next letter in sequence |
 | `getNextNumber()` | `@decodelabs/underlay/utils` | Next number in sequence |
 
@@ -74,55 +74,56 @@ Use form tabs when a single form has multiple conceptual sections (for example: 
 
 The recommended hierarchy is:
 
-1. `TabsRoot variant="form"`
-2. `TabsList`
-3. `TabsTrigger`
-4. `TabsContent`
-5. Fields/inputs
+1. `Tabs variant="card"` or `Tabs variant="pill"`
+2. Caller-owned `items`
+3. `let:activeValue`
+4. Fields/inputs
 
 ```svelte
-<TabsRoot bind:value={activeTab} variant="form">
-  <TabsList collapsible>
-    <TabsTrigger value="details">Details</TabsTrigger>
-    <TabsTrigger value="notes">Notes</TabsTrigger>
-  </TabsList>
+<script lang="ts">
+  import { Tabs, type TabItem } from "@poodle/svelte-primitives";
 
-  <TabsContent value="details">
+  let activeTab = $state("details");
+  const tabItems: TabItem[] = [
+    { value: "details", label: "Details" },
+    { value: "notes", label: "Notes" }
+  ];
+</script>
+
+<Tabs bind:value={activeTab} items={tabItems} variant="card" size="sm" ariaLabel="Form sections" let:activeValue>
+  {#if activeValue === "details"}
     <div class="underlay-form-grid">
       <!-- details fields -->
     </div>
-  </TabsContent>
+  {/if}
 
-  <TabsContent value="notes">
+  {#if activeValue === "notes"}
     <div class="underlay-form-grid">
       <!-- notes fields -->
     </div>
-  </TabsContent>
-</TabsRoot>
+  {/if}
+</Tabs>
 ```
 
 ### Section ID/value alignment rule
 
-Use one canonical id per tab section and keep it aligned across:
-
-- `TabsTrigger value="details"`
-- `TabsContent value="details"`
+Use one canonical id per tab section and keep it aligned across the `items` array and the active panel checks.
 If these diverge, the active section and rendered panel will drift apart.
 
-### Collapsible tabs for narrow layouts
+### Narrow layouts
 
-Use `TabsList collapsible` so tabs can collapse into a dropdown without losing labels or counts.
+Poodle `Tabs` handles narrow layouts without a separate Underlay collapse wrapper. Keep labels short, and use `count` in the `items` array when the badge matters.
 
 ```svelte
-<TabsList collapsible>
-  <TabsTrigger value="details">Details</TabsTrigger>
-  <TabsTrigger value="notes" count={3}>Notes</TabsTrigger>
-</TabsList>
+const tabItems: TabItem[] = [
+  { value: "details", label: "Details" },
+  { value: "notes", label: "Notes", count: 3 }
+];
 ```
 
 ### Rich-editor compatibility
 
-The `form` variant keeps inactive tab panels mounted (hidden without `display: none`) so editors like CodeMirror/EasyMDE can initialize correctly and keep state while switching tabs.
+Only mount the active panel by default. If a specific editor needs to stay mounted, keep that mount policy in the caller rather than depending on a shared tabs wrapper.
 
 ### Recommended composition
 
@@ -133,7 +134,7 @@ The `form` variant keeps inactive tab panels mounted (hidden without `display: n
 
 ### Common mistakes
 
-- Mismatched `TabsTrigger.value` / `TabsContent.value`
+- Mismatched `items[].value` / active panel checks
 - Moving `FormActions` inside a tab panel (actions disappear when switching tabs)
 
 ---

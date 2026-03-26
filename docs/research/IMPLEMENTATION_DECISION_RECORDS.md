@@ -107,7 +107,7 @@ Acme reference uses server-only with HTML5, providing poor UX for complex valida
 ### Success Criteria
 - [ ] Acme can use `registerRequestSchema` for client-side validation
 - [ ] Bundle size impact documented
-- [ ] Form validation works with existing `FormValidationProvider`
+- [ ] Historical: form validation worked with the then-existing `FormValidationProvider`
 - [ ] Validation mapping table in docs
 
 ### Dependencies

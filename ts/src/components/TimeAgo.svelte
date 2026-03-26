@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Tooltip from "./Tooltip.svelte";
+  import { Tooltip } from "@poodle/svelte-primitives";
 
   interface Props {
     /** The date to display as relative time. Accepts ISO string or Date object. */
@@ -140,10 +140,8 @@
 </script>
 
 {#if isValidDate}
-  <Tooltip content={tooltipText} inline delayDuration={300} class={className}>
-    {#snippet trigger()}
-      <time class="underlay-time-ago" datetime={safeDate?.toISOString() ?? ""}>{relativeTime}</time>
-    {/snippet}
+  <Tooltip content={tooltipText} delayMs={300}>
+    <time class="underlay-time-ago {className ?? ''}" datetime={safeDate?.toISOString() ?? ""}>{relativeTime}</time>
   </Tooltip>
 {:else}
   <span class="underlay-time-ago underlay-time-ago--empty {className ?? ''}">—</span>
