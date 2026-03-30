@@ -60,7 +60,7 @@ export interface QueryParams {
  * @example
  * ```ts
  * import { orderByToSortFields } from "@decodelabs/underlay/client";
- * import type { OrderByValue } from "@decodelabs/underlay/components";
+ * import type { OrderByValue } from "@poodle/svelte-primitives";
  *
  * const orderBy: OrderByValue = [
  *   { key: "title", direction: "asc" },

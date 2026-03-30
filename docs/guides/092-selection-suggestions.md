@@ -41,7 +41,7 @@ When users work with relation selectors (e.g., selecting a Level for a Module), 
 | Layer | Component | Package | Purpose |
 |-------|-----------|---------|---------|
 | Client Storage | `createSelectionHistory()` | `@decodelabs/underlay/patterns` | Track selections in localStorage |
-| UI Integration | `selectionHistory` prop | `RelationSelector` | Auto-track and provide hints |
+| UI Integration | `selectionHistory` prop | App-local selector shell | Auto-track and provide hints |
 | Request Building | `appendSuggestionParams()` | `@decodelabs/underlay/patterns` | Build API URLs with hints |
 | Server Parsing | `SuggestionParams` | `underlay-suggestions` (Rust) | Parse query parameters |
 | Query Building | `SuggestionQuery` | `underlay-suggestions` (Rust) | Build prioritized SQL |
@@ -54,7 +54,7 @@ Create a history tracker for each entity type you want to track:
 
 ```typescript
 // src/lib/stores/selection-history.ts
-import { createSelectionHistory } from "@decodelabs/underlay/patterns";
+import { createSelectionHistory } from "@decodelabs/underlay/runtime/data";
 
 // Track recently selected levels
 export const levelSelectionHistory = createSelectionHistory("learning.levels", {
@@ -131,15 +131,17 @@ if (levelSelectionHistory.hasRecent("level-456")) {
 levelSelectionHistory.remove("deleted-level-id");
 ```
 
-## UI Integration: RelationSelector
+## UI Integration: App-Local Selector Shell
 
 ### Automatic Tracking
 
-Pass a `selectionHistory` prop to RelationSelector for automatic tracking:
+Pass a `selectionHistory` prop through your app-local selector shell for
+automatic tracking:
 
 ```svelte
 <script lang="ts">
-  import { RelationSelector, type SuggestionOptions } from "@decodelabs/underlay/patterns";
+  import CategorySelector from "$lib/components/CategorySelector.svelte";
+  import type { SuggestionOptions } from "@decodelabs/underlay/runtime/relations";
   import { levelSelectionHistory } from "$lib/stores/selection-history";
   import { api } from "$lib/api";
 
@@ -154,7 +156,7 @@ Pass a `selectionHistory` prop to RelationSelector for automatic tracking:
   }
 </script>
 
-<RelationSelector
+<CategorySelector
   label="Select Level"
   bind:value={levelId}
   search={searchLevels}
@@ -167,7 +169,7 @@ Pass a `selectionHistory` prop to RelationSelector for automatic tracking:
 
 1. **On selection**: `selectionHistory.track(item.id)` is called
 2. **On open**: `selectionHistory.getRecentIds()` is called and passed to `suggestions()`
-3. **On create**: New items are tracked when created via the embedded form
+3. **On create**: New items are tracked when created via the app-local inline-create flow
 
 ### SuggestionOptions Type
 
@@ -375,7 +377,7 @@ LIMIT 15
 
 ```typescript
 // dairy/src/lib/stores/selection-history.ts
-import { createSelectionHistory } from "@decodelabs/underlay/patterns";
+import { createSelectionHistory } from "@decodelabs/underlay/runtime/data";
 
 export const levelSelectionHistory = createSelectionHistory("learning.levels", {
   maxItems: 20,
@@ -413,11 +415,11 @@ export async function getLevelsForPathway(
 ```svelte
 <!-- dairy/src/lib/forms/learning/ModuleForm.svelte -->
 <script lang="ts">
-  import {
-    RelationSelector,
-    type SelectableRelation,
-    type SuggestionOptions
-  } from "@decodelabs/underlay/patterns";
+  import LevelSelector from "$lib/components/LevelSelector.svelte";
+  import type {
+    SelectableRelation,
+    SuggestionOptions
+  } from "@decodelabs/underlay/runtime/relations";
   import { levelSelectionHistory } from "$lib/stores/selection-history";
   import { learningCommands } from "@cattle-grid";
 
@@ -454,7 +456,7 @@ export async function getLevelsForPathway(
   }
 </script>
 
-<RelationSelector
+<LevelSelector
   label="Select Level"
   bind:value={levelId}
   search={searchLevels}
@@ -606,13 +608,14 @@ Always limit suggestion queries to prevent large result sets:
 
 ### Suggestions Not Updating After Selection
 
-RelationSelector only loads suggestions once per mount (when `suggestionItems.length === 0`). To see updated hints:
+Selector shells built over the retained helper layer usually only load
+suggestions once per mount. To see updated hints:
 - Remount the component (e.g., navigate away and back)
 - Use `{#key}` blocks for dependent fields that should remount
 
 ```svelte
 {#key pathwayId}
-  <RelationSelector
+  <LevelSelector
     selectionHistory={levelSelectionHistory}
     suggestions={suggestLevels}
     ...
@@ -626,7 +629,7 @@ Ensure you're importing from the correct packages:
 
 ```typescript
 // For component integration
-import { type SuggestionOptions } from "@decodelabs/underlay/patterns";
+import { type SuggestionOptions } from "@decodelabs/underlay/runtime/relations";
 
 // For API request building
 import { type SuggestionRequestOptions } from "@decodelabs/underlay/patterns";
@@ -634,7 +637,7 @@ import { type SuggestionRequestOptions } from "@decodelabs/underlay/patterns";
 
 ## Related Documentation
 
-- [UI Kit - RelationSelector](./090-ui-kit.md#relationselector) - Full component documentation
+- [UI Kit - Relation Selector Boundary](./090-ui-kit.md#relationselector) - Current retained helper-layer boundary
 - [TypeScript Client](./080-typescript-client.md) - HTTP client utilities
 - [Rust Backend](./040-rust-backend.md) - Axum handler patterns
 - [Database](./050-database.md) - PostgreSQL query patterns

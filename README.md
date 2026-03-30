@@ -8,7 +8,8 @@ It provides:
 
 - Rust backend primitives and crates
 - typed TypeScript client contracts
-- shared Svelte UI components and patterns
+- retained Svelte workflow/page shells and Nightfire editor/runtime surfaces
+- shared runtime and utility helpers
 - auth, observability, storage, and migration foundations
 - docs and guidance for integrating the library into real projects
 
@@ -18,6 +19,23 @@ It provides:
 - `ts/` - TypeScript and Svelte exports
 - `contracts/` - shared contract artifacts
 - `docs/` - documentation authority
+
+## TS Package Surface
+
+Underlay’s current TypeScript/Svelte package boundary is explicit:
+
+- `@decodelabs/underlay/patterns`
+  - retained workflow/page-shell UI
+- `@decodelabs/underlay/runtime`
+  - shared app/runtime helpers and controllers
+- `@decodelabs/underlay/utils`
+  - small standalone helpers
+- `@decodelabs/underlay/client`
+  - transport and SvelteKit-facing client helpers
+- `@decodelabs/underlay/nightfire`
+  - structured content editor/runtime package
+
+Use Poodle directly for foundational primitives and generic composites.
 
 ## Docs Start Here
 

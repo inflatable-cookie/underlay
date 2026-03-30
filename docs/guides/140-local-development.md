@@ -23,9 +23,8 @@ export default defineConfig({
     // List each subpath export you import from.
     exclude: [
       "@decodelabs/underlay",
-      "@decodelabs/underlay/components",
       "@decodelabs/underlay/nightfire",
-      "@decodelabs/underlay/patterns",
+      "@decodelabs/underlay/runtime",
       "@decodelabs/underlay/styles",
       "@decodelabs/underlay/client"
     ]
@@ -381,9 +380,11 @@ window.alert("Saved!");
 **Solutions**:
 
 ```typescript
-// ✅ GOOD: Toast notification
-import { showToast } from '@decodelabs/underlay/patterns';
-showToast({ message: "Saved!", type: "success" });
+// ✅ GOOD: Use the app's configured toast store
+import { useToasts } from '@decodelabs/underlay/runtime/feedback';
+
+const toastStore = useToasts();
+toastStore.push({ variant: "success", message: "Saved!" });
 
 // ✅ GOOD: Dialog component
 <AlertDialog title="Success" message="Saved!" />

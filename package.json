@@ -33,58 +33,95 @@
             "types": "./ts/src/index.ts",
             "default": "./ts/src/index.ts"
         },
-        "./components": {
-            "svelte": "./ts/src/components/index.ts",
-            "types": "./ts/src/components/index.ts",
-            "default": "./ts/src/components/index.ts"
-        },
-        "./components/*": {
-            "svelte": "./ts/src/components/*",
-            "types": "./ts/src/components/*",
-            "default": "./ts/src/components/*"
-        },
-        "./patterns": {
-            "svelte": "./ts/src/patterns/index.ts",
-            "types": "./ts/src/patterns/index.ts",
-            "default": "./ts/src/patterns/index.ts"
-        },
-        "./patterns/PageHeader": {
-            "svelte": "./ts/src/patterns/PageHeader.svelte",
-            "types": "./ts/src/patterns/PageHeader.svelte",
-            "default": "./ts/src/patterns/PageHeader.svelte"
-        },
-        "./patterns/FormDialog": {
-            "types": "./ts/src/patterns/FormDialog/index.ts",
-            "default": "./ts/src/patterns/FormDialog/index.ts"
-        },
-        "./patterns/useToasts": {
-            "types": "./ts/src/patterns/useToasts.ts",
-            "default": "./ts/src/patterns/useToasts.ts"
-        },
-        "./patterns/authenticated-data": {
-            "types": "./ts/src/patterns/authenticated-data.svelte.ts",
-            "default": "./ts/src/patterns/authenticated-data.svelte.ts"
-        },
-        "./patterns/selection-history": {
-            "types": "./ts/src/patterns/selection-history.ts",
-            "default": "./ts/src/patterns/selection-history.ts"
-        },
-        "./patterns/pagination-types": {
-            "types": "./ts/src/patterns/pagination-types.ts",
-            "default": "./ts/src/patterns/pagination-types.ts"
-        },
-        "./patterns/media-types": {
-            "types": "./ts/src/patterns/media-types.ts",
-            "default": "./ts/src/patterns/media-types.ts"
-        },
+    "./patterns": {
+      "svelte": "./ts/src/patterns/index.ts",
+      "types": "./ts/src/patterns/index.ts",
+      "default": "./ts/src/patterns/index.ts"
+    },
+    "./runtime": {
+      "svelte": "./ts/src/runtime/index.ts",
+      "types": "./ts/src/runtime/index.ts",
+      "default": "./ts/src/runtime/index.ts"
+    },
+    "./runtime/auth": {
+      "svelte": "./ts/src/runtime/auth.ts",
+      "types": "./ts/src/runtime/auth.ts",
+      "default": "./ts/src/runtime/auth.ts"
+    },
+    "./runtime/browser": {
+      "svelte": "./ts/src/runtime/browser.ts",
+      "types": "./ts/src/runtime/browser.ts",
+      "default": "./ts/src/runtime/browser.ts"
+    },
+    "./runtime/forms": {
+      "svelte": "./ts/src/runtime/forms.ts",
+      "types": "./ts/src/runtime/forms.ts",
+      "default": "./ts/src/runtime/forms.ts"
+    },
+    "./runtime/navigation": {
+      "svelte": "./ts/src/runtime/navigation.ts",
+      "types": "./ts/src/runtime/navigation.ts",
+      "default": "./ts/src/runtime/navigation.ts"
+    },
+    "./runtime/feedback": {
+      "svelte": "./ts/src/runtime/feedback.ts",
+      "types": "./ts/src/runtime/feedback.ts",
+      "default": "./ts/src/runtime/feedback.ts"
+    },
+    "./runtime/i18n": {
+      "svelte": "./ts/src/runtime/i18n.ts",
+      "types": "./ts/src/runtime/i18n.ts",
+      "default": "./ts/src/runtime/i18n.ts"
+    },
+    "./runtime/data": {
+      "svelte": "./ts/src/runtime/data.ts",
+      "types": "./ts/src/runtime/data.ts",
+      "default": "./ts/src/runtime/data.ts"
+    },
+    "./runtime/relations": {
+      "svelte": "./ts/src/runtime/relations.ts",
+      "types": "./ts/src/runtime/relations.ts",
+      "default": "./ts/src/runtime/relations.ts"
+    },
+    "./runtime/media": {
+      "svelte": "./ts/src/runtime/media.ts",
+      "types": "./ts/src/runtime/media.ts",
+      "default": "./ts/src/runtime/media.ts"
+    },
+    "./runtime/ai": {
+      "svelte": "./ts/src/runtime/ai.ts",
+      "types": "./ts/src/runtime/ai.ts",
+      "default": "./ts/src/runtime/ai.ts"
+    },
+    "./runtime/useToasts": {
+      "svelte": "./ts/src/patterns/useToasts.ts",
+      "types": "./ts/src/patterns/useToasts.ts",
+      "default": "./ts/src/patterns/useToasts.ts"
+    },
+    "./runtime/authenticated-data": {
+      "svelte": "./ts/src/patterns/authenticated-data.svelte.ts",
+      "types": "./ts/src/patterns/authenticated-data.svelte.ts",
+      "default": "./ts/src/patterns/authenticated-data.svelte.ts"
+    },
+    "./runtime/selection-history": {
+      "svelte": "./ts/src/patterns/selection-history.ts",
+      "types": "./ts/src/patterns/selection-history.ts",
+      "default": "./ts/src/patterns/selection-history.ts"
+    },
+    "./runtime/pagination-types": {
+      "svelte": "./ts/src/patterns/pagination-types.ts",
+      "types": "./ts/src/patterns/pagination-types.ts",
+      "default": "./ts/src/patterns/pagination-types.ts"
+    },
+    "./runtime/media-types": {
+      "svelte": "./ts/src/patterns/media-types.ts",
+      "types": "./ts/src/patterns/media-types.ts",
+      "default": "./ts/src/patterns/media-types.ts"
+    },
         "./nightfire": {
             "svelte": "./ts/src/nightfire/index.ts",
             "types": "./ts/src/nightfire/index.ts",
             "default": "./ts/src/nightfire/index.ts"
-        },
-        "./validation": {
-            "types": "./ts/src/validation/index.ts",
-            "default": "./ts/src/validation/index.ts"
         },
         "./styles": {
             "svelte": "./ts/src/styles/index.ts",
@@ -123,11 +160,27 @@
             "types": "./ts/src/utils/index.ts",
             "default": "./ts/src/utils/index.ts"
         },
-        "./embed": {
-            "types": "./ts/src/embed/index.ts",
-            "default": "./ts/src/embed/index.ts"
+        "./utils/webauthn": {
+            "types": "./ts/src/utils/webauthn.ts",
+            "default": "./ts/src/utils/webauthn.ts"
         },
-        "./styles/base.css": "./ts/src/styles/base.css",
+        "./utils/html": {
+            "types": "./ts/src/utils/html.ts",
+            "default": "./ts/src/utils/html.ts"
+        },
+        "./utils/sequence": {
+            "types": "./ts/src/utils/sequence.ts",
+            "default": "./ts/src/utils/sequence.ts"
+        },
+        "./utils/i18n": {
+            "types": "./ts/src/utils/i18n.ts",
+            "default": "./ts/src/utils/i18n.ts"
+        },
+        "./utils/slug": {
+            "types": "./ts/src/utils/slug.ts",
+            "default": "./ts/src/utils/slug.ts"
+        },
+    "./styles/base.css": "./ts/src/styles/base.css",
         "./styles/forms.css": "./ts/src/styles/forms.css",
         "./styles/markdown-editor.css": "./ts/src/styles/markdown-editor.css",
         "./styles/tokens.css": "./ts/src/styles/tokens.css",

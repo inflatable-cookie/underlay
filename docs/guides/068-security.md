@@ -1034,7 +1034,7 @@ let entries = list_audit_logs(&pool, "infra.audit_log", filters).await?;
 
 Svelte `{@html ...}` bypasses auto-escaping, so all HTML sinks must sanitize before render.
 
-Use shared Underlay helpers from `@decodelabs/underlay/utils`:
+Use focused Underlay helpers from `@decodelabs/underlay/utils/html`:
 
 - `sanitizeHtml(...)` for general rich text/markdown output
 - `sanitizeEmbedHtml(...)` for media embed HTML (`iframe`/`audio`/`video`)
@@ -1043,7 +1043,7 @@ Use shared Underlay helpers from `@decodelabs/underlay/utils`:
 Example:
 
 ```ts
-import { sanitizeEmbedHtml } from "@decodelabs/underlay/utils";
+import { sanitizeEmbedHtml } from "@decodelabs/underlay/utils/html";
 
 const safeEmbedHtml = $derived(embedHtml ? sanitizeEmbedHtml(embedHtml) : "");
 ```

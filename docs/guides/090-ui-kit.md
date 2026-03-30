@@ -1,8 +1,19 @@
 # 090 - UI Kit
 
 This document covers creating and using a shared Svelte UI kit with Underlay.
-Use Underlay for shared composites and patterns. Use Poodle directly for
-foundational primitives.
+Poodle is the default home for foundational UI. Underlay now keeps only the
+retained shared package surfaces that still express workflow shells, runtime
+orchestration, transport integration, or Nightfire-specific editor/runtime
+behavior.
+
+Use:
+- Underlay `patterns` for retained workflow/page shells
+- Underlay `runtime` for shared app/runtime helpers and controllers
+- Underlay `utils` for small standalone helpers
+- Underlay `client` for transport and framework-specific helpers such as
+  SvelteKit navigation wrappers
+- Underlay `nightfire` for structured content editor/runtime features
+- Poodle directly for primitives and generic composites
 
 > Note: foundational button-family primitives now belong in Poodle. Keep using Underlay for shared composites and patterns, but prefer `@poodle/svelte-primitives` for `Button`, `IconButton`, and related low-level action controls.
 
@@ -10,8 +21,9 @@ foundational primitives.
 
 The UI kit guidance covers:
 - **Form primitives** - prefer Poodle `Field`, `TextInput`, `Select`, `Switch`, and `TextArea`
-- **UI primitives** - Badge, Pill, Breadcrumbs, Card, DropdownMenu, OrderBy, Pagination
-- **Patterns** - ListCard, NavCard, NavCardGrid, Form, FormActions, PageHeader, ReorderableList
+- **UI primitives** - Poodle `Pill`, Poodle `Menu`, Poodle `OrderBy`, Poodle `DataTable`, Poodle `Pagination`
+- **Retained Underlay shells** - `LoginPage`, `ForgotPasswordFlow`, `PasswordRequirements`, `SpaFormShell`, `DetailMeta*`
+- **Runtime helpers** - prefer focused `@decodelabs/underlay/runtime/*` subpaths where they match the feature area
 - **Design tokens** - CSS custom properties for theming
 
 For interactive retained-surface examples in this repo, use the local
@@ -23,6 +35,41 @@ effigy storybook
 
 Use Poodle's preview/docs for primitives and generic composites that no longer
 belong to Underlay.
+
+Do not deep-import internal Underlay component files such as
+`@decodelabs/underlay/patterns/Foo.svelte`. Use the supported package
+surfaces only:
+- `@decodelabs/underlay/patterns`
+- `@decodelabs/underlay/runtime`
+- `@decodelabs/underlay/utils`
+- `@decodelabs/underlay/nightfire`
+- Poodle packages directly for primitives and generic composites
+
+When importing runtime helpers, prefer the narrower domain subpaths when they
+match the feature area:
+- `@decodelabs/underlay/runtime/auth`
+- `@decodelabs/underlay/runtime/browser`
+- `@decodelabs/underlay/runtime/forms`
+- `@decodelabs/underlay/runtime/navigation`
+- `@decodelabs/underlay/runtime/feedback`
+- `@decodelabs/underlay/runtime/i18n`
+- `@decodelabs/underlay/runtime/data`
+- `@decodelabs/underlay/runtime/relations`
+- `@decodelabs/underlay/runtime/media`
+- `@decodelabs/underlay/runtime/ai`
+
+Use the root `@decodelabs/underlay/runtime` barrel as a stable convenience
+surface for existing consumers when convenience matters more than narrow import
+paths. For new focused guidance and new contracts, prefer the narrower runtime
+subpaths instead of teaching the root barrel by default, and do not treat it as
+a catch-all replacement for `patterns`.
+
+For small standalone helpers, prefer the explicit utility subpaths:
+- `@decodelabs/underlay/utils/webauthn`
+- `@decodelabs/underlay/utils/html`
+- `@decodelabs/underlay/utils/sequence`
+- `@decodelabs/underlay/utils/i18n`
+- `@decodelabs/underlay/utils/slug`
 
 ## UI Kit Structure
 
@@ -37,11 +84,10 @@ libs/myapp-ui/src/
 │   ├── Switch.svelte
 │   ├── Field.svelte            # Prefer the Poodle primitive here
 │   ├── Card.svelte
-│   ├── DropdownMenu.svelte
+│   ├── Menu.svelte
 │   └── index.ts
 ├── patterns/            # Higher-level UI patterns
 │   ├── Form.svelte
-│   ├── FormActions.svelte
 │   ├── ListCard.svelte
 │   └── index.ts
 ├── styles/              # Design tokens and CSS
@@ -362,35 +408,20 @@ Status indicators, counts, and labels:
 
 ```svelte
 <script>
-  import { Badge } from "@decodelabs/underlay";
+  import { Pill } from "@poodle/svelte-primitives";
 </script>
 
-<!-- Variants -->
-<Badge>Default</Badge>
-<Badge variant="success">Active</Badge>
-<Badge variant="warning">Pending</Badge>
-<Badge variant="danger">Error</Badge>
-<Badge variant="info">New</Badge>
-<Badge variant="muted">Archived</Badge>
-
-<!-- Sizes -->
-<Badge size="sm">Small</Badge>
-<Badge size="md">Medium</Badge>
-<Badge size="lg">Large</Badge>
-
-<!-- Pill shape -->
-<Badge pill>Pill Badge</Badge>
-
-<!-- With icon -->
-<Badge variant="success" icon="✓">Complete</Badge>
+<Pill appearance="badge">New</Pill>
+<Pill appearance="badge" tone="success">Active</Pill>
+<Pill appearance="badge" tone="warning">Pending</Pill>
+<Pill appearance="badge" tone="danger">Error</Pill>
+<Pill appearance="badge" tone="neutral">Archived</Pill>
 ```
 
 **Props:**
-- `variant` - `"default"` | `"success"` | `"warning"` | `"danger"` | `"info"` | `"muted"` (default: `"default"`)
-- `size` - `"sm"` | `"md"` | `"lg"` (default: `"md"`)
-- `pill` - Fully rounded shape (default: `false`)
-- `icon` - Optional icon to display before text
-- `className` - Additional CSS classes
+- use Poodle `Pill` with `appearance="badge"`
+- `tone` - `"neutral"` | `"info"` | `"success"` | `"warning"` | `"danger"`
+- `size` - `"xs"` | `"sm"` | `"md"` | `"lg"` | `"xl"`
 
 ### Pill
 
@@ -398,7 +429,7 @@ Compact inline labels for metadata like type, category, year, or code. Unlike Ba
 
 ```svelte
 <script>
-  import { Pill } from "@decodelabs/underlay";
+  import { Pill } from "@poodle/svelte-primitives";
 </script>
 
 <!-- Neutral (default) - gray/slate colored -->
@@ -414,8 +445,10 @@ Compact inline labels for metadata like type, category, year, or code. Unlike Ba
 ```
 
 **Props:**
-- `accent` - Optional hex color for accent styling (uses `color-mix()` for background, border, and text)
-- `className` - Additional CSS classes
+- `tone` - semantic neutral/info/success/warning/danger treatment
+- `appearance` - `"solid"` | `"subtle"` | `"badge"`
+- `accent` - Optional custom accent color
+- `size` - `"xs"` | `"sm"` | `"md"` | `"lg"` | `"xl"`
 
 **When to use Pill vs Badge:**
 - Use **Pill** for inline metadata labels within content (year, code, type, category)
@@ -426,53 +459,34 @@ Compact inline labels for metadata like type, category, year, or code. Unlike Ba
 - Neutral pills use a muted slate color scheme
 - Accent pills derive background (18% mix), border (30% mix), and text (88% mix) from the accent color
 
-### ProgressBar
+### Progress
 
 Visual progress indicator for task completion, upload progress, or metrics:
 
 ```svelte
 <script>
-  import { ProgressBar } from "@decodelabs/underlay/components";
+  import { Progress } from "@poodle/svelte-primitives";
 </script>
 
 <!-- Basic usage -->
-<ProgressBar value={50} />
-<ProgressBar value={75} max={100} />
-
-<!-- Variants -->
-<ProgressBar value={100} variant="success" />
-<ProgressBar value={50} variant="warning" />
-<ProgressBar value={25} variant="danger" />
-<ProgressBar value={80} variant="info" />
+<Progress value={50} ariaLabel="Half complete" />
+<Progress value={75} max={100} ariaLabel="Upload progress" />
 
 <!-- Sizes -->
-<ProgressBar value={60} size="sm" />
-<ProgressBar value={60} size="md" />
-<ProgressBar value={60} size="lg" />
+<Progress value={60} size="sm" ariaLabel="Small progress" />
+<Progress value={60} size="md" ariaLabel="Medium progress" />
+<Progress value={60} size="lg" ariaLabel="Large progress" />
 
-<!-- With label -->
-<ProgressBar value={75} showLabel />
-
-<!-- Animated stripes -->
-<ProgressBar value={50} animated />
-
-<!-- Custom label format -->
-<ProgressBar
+<!-- Custom value text -->
+<Progress
   value={3}
   max={10}
-  showLabel
-  formatLabel={(value, max) => `${value} of ${max} tasks`}
+  ariaLabel="Task progress"
+  valueText="3 of 10 tasks complete"
 />
-
-<!-- Custom label snippet -->
-<ProgressBar value={75}>
-  {#snippet label({ value, percentage })}
-    <strong>{percentage.toFixed(0)}%</strong> complete
-  {/snippet}
-</ProgressBar>
 ```
 
-**Props:**
+Use direct Poodle `Progress` for determinate and indeterminate bars. Underlay no longer keeps a separate `ProgressBar` wrapper.
 - `value` - Current progress value (required)
 - `max` - Maximum value (default: `100`)
 - `variant` - `"default"` | `"success"` | `"warning"` | `"danger"` | `"info"` (default: `"default"`)
@@ -493,11 +507,11 @@ Visual progress indicator for task completion, upload progress, or metrics:
 
 ### Breadcrumbs
 
-Navigation breadcrumb trail:
+Use Poodle `Breadcrumbs` directly for navigation trails:
 
 ```svelte
 <script>
-  import { Breadcrumbs } from "@decodelabs/underlay";
+  import { Breadcrumbs } from "@poodle/svelte-primitives";
   
   const items = [
     { label: "Home", href: "/" },
@@ -520,16 +534,9 @@ Navigation breadcrumb trail:
 ]} />
 ```
 
-**Props:**
-- `items` - Array of `{ label, href?, icon? }` objects
-- `separator` - Separator character (default: `"›"`)
-- `collapseOnMobile` - Collapse middle items on small screens (default: `true`)
-- `maxItems` - Max items before collapsing (default: `4`)
-- `className` - Additional CSS classes
-
-**Accessibility:**
-- Uses `<nav>` with `aria-label="Breadcrumb"`
-- Current page marked with `aria-current="page"`
+Underlay no longer owns a separate shared `Breadcrumbs` primitive. Keep using
+the Poodle version directly, including inside higher-order shells like
+`PageHeader`.
 
 ### Pagination
 
@@ -537,7 +544,7 @@ Standalone pagination component for navigating pages:
 
 ```svelte
 <script>
-  import { Pagination } from "@decodelabs/underlay";
+  import { Pagination } from "@poodle/svelte-primitives";
   import { goto } from "$app/navigation";
   
   export let data;
@@ -546,12 +553,12 @@ Standalone pagination component for navigating pages:
   let limit = 20;
   
   function handlePageChange(event) {
-    page = event.detail;
+    page = event.detail.page;
     goto(`?page=${page}&limit=${limit}`);
   }
   
   function handleLimitChange(event) {
-    limit = event.detail;
+    limit = event.detail.limit;
     page = 1;  // Reset to first page
     goto(`?page=1&limit=${limit}`);
   }
@@ -561,7 +568,7 @@ Standalone pagination component for navigating pages:
   {page}
   {limit}
   total={data.total}
-  on:page={handlePageChange}
+  on:pageChange={handlePageChange}
 />
 
 <!-- With limit selector -->
@@ -571,8 +578,8 @@ Standalone pagination component for navigating pages:
   total={data.total}
   showLimitSelector
   limitOptions={[10, 25, 50, 100]}
-  on:page={handlePageChange}
-  on:limit={handleLimitChange}
+  on:pageChange={handlePageChange}
+  on:limitChange={handleLimitChange}
 />
 
 <!-- Compact mode -->
@@ -581,7 +588,7 @@ Standalone pagination component for navigating pages:
   {limit}
   total={data.total}
   compact
-  on:page={handlePageChange}
+  on:pageChange={handlePageChange}
 />
 ```
 
@@ -596,14 +603,20 @@ Standalone pagination component for navigating pages:
 - `className` - Additional CSS classes
 
 **Events:**
-- `on:page` - Fired with new page number
-- `on:limit` - Fired with new limit value
+- `on:pageChange` - Fired with `{ page }`
+- `on:limitChange` - Fired with `{ limit }`
 
-**Note:** For data tables, use the built-in pagination in `DataTable` component. This standalone `Pagination` component is for non-table contexts like card grids, galleries, or custom list layouts.
+**Note:** For data tables, use the built-in pagination in `DataTable` component. This standalone Poodle `Pagination` component is for non-table contexts like card grids, galleries, or custom list layouts.
 
 ### OrderBy
 
-Multi-field sorting component with drag-and-drop reordering. Use this for list views that need configurable sort order.
+Multi-field sorting component. Use this for list views that need configurable
+ordered sort state.
+
+Poodle `OrderBy` now owns the stage-1 multi-field sort-builder contract:
+ordered sort arrays, field add/remove, per-field direction, compact trigger
+summaries, and caller-owned URL/state round-tripping. Drag reordering remains
+the next follow-on capability slice.
 
 > **Important**: Filters and sorting should be implemented **server-side** for production use. Client-side filtering/sorting won't scale with pagination, large datasets, or complex queries. Use the OrderBy component to build the UI, but send sort parameters to your API and let the server handle the actual sorting. See "Server-Side Sorting" below for the recommended pattern.
 
@@ -612,19 +625,18 @@ Multi-field sorting component with drag-and-drop reordering. Use this for list v
 The OrderBy component provides a popover-based UI for configuring multi-field sorting. Users can:
 
 - Add sort fields from a dropdown
-- Reorder fields by dragging
+- Reorder fields with up/down controls
 - Toggle sort direction (ascending/descending) per field
 - Remove individual fields or clear all
-- Reverse all directions at once
 
 ```
 ┌─────────────────────────────────────┐
-│ [≡] Title                    ↑  [×] │  ← Drag handle, label, direction, remove
-│ [≡] Created                  ↓  [×] │
+│ Title             ↑  [↑] [↓] [×]    │
+│ Created           ↓  [↑] [↓] [×]    │
 ├─────────────────────────────────────┤
 │ [+ Add field ▾]                     │  ← Dropdown to add more fields
 ├─────────────────────────────────────┤
-│ [↕ Reverse All]        [Clear]      │  ← Global actions
+│ [Clear all]                         │
 └─────────────────────────────────────┘
 ```
 
@@ -632,7 +644,7 @@ The OrderBy component provides a popover-based UI for configuring multi-field so
 
 ```svelte
 <script>
-  import { OrderBy, type OrderByValue } from "@decodelabs/underlay/components";
+  import { OrderBy, type OrderByValue } from "@poodle/svelte-primitives";
 
   const fields = [
     { key: "title", label: "Title" },
@@ -653,20 +665,22 @@ The OrderBy component provides a popover-based UI for configuring multi-field so
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `fields` | `OrderByFieldDefinition[]` | required | Available fields that can be sorted |
+| `fields` | `SortField[]` | required | Available fields that can be sorted |
 | `value` | `OrderByValue` | `[]` | Current sort order (bindable) |
+| `activeSort` | `ActiveSort \| null` | `null` | Legacy first-sort compatibility signal |
 | `onChange` | `(value: OrderByValue) => void` | - | Callback when sort order changes |
 | `maxFields` | `number` | unlimited | Maximum number of sort fields allowed |
 | `compact` | `boolean` | `false` | Truncate trigger text in tight spaces |
-| `class` | `string` | - | Additional CSS class for trigger |
 
 #### Types
 
 ```typescript
-interface OrderByFieldDefinition {
-  key: string;           // Unique field identifier (matches data property name)
+interface SortField {
+  key?: string;          // Preferred multi-field identifier
+  value?: string;        // Legacy single-sort identifier
   label: string;         // Display label shown in UI
-  defaultDirection?: "asc" | "desc";  // Direction when field is first added (default: "asc")
+  defaultDirection?: "asc" | "desc";  // Direction when field is first added
+  disabled?: boolean;
 }
 
 interface OrderByField {
@@ -688,21 +702,19 @@ The trigger button shows a summary of the current sort order:
 | Multiple fields | "Title ↑, Created ↓" |
 | Compact mode (3+ fields) | "Title ↑, Created ↓ +2" |
 
-#### Usage in FilterBar
+#### Usage in FilterToolbar
 
-The most common pattern is placing OrderBy inside a FilterBar alongside other filters:
+The most common pattern is placing OrderBy inside a Poodle `FilterToolbar` alongside other filters:
 
 ```svelte
 <script lang="ts">
   import { onMount } from "svelte";
-  import { FilterBar } from "@decodelabs/underlay/patterns";
+  import { FilterToolbar } from "@poodle/svelte-composites";
   import {
     Field,
-    ListGrid,
-    OrderBy,
-    Select,
-    type OrderByValue
-  } from "@decodelabs/underlay/components";
+    Select
+  } from "@poodle/svelte-primitives";
+  import { OrderBy, type OrderByValue } from "@poodle/svelte-primitives";
   import { initPageState } from "@decodelabs/underlay/client";
 
   interface Props {
@@ -772,7 +784,7 @@ The most common pattern is placing OrderBy inside a FilterBar alongside other fi
   });
 </script>
 
-<FilterBar title="Filters">
+<FilterToolbar ariaLabel="Item filters" summaryText="Filters">
   <Field label="Category" forId="category">
     <Select
       id="category"
@@ -784,13 +796,13 @@ The most common pattern is placing OrderBy inside a FilterBar alongside other fi
   <Field label="Sort" forId="sort">
     <OrderBy fields={sortFields} bind:value={orderBy} />
   </Field>
-</FilterBar>
+</FilterToolbar>
 
-<ListGrid>
+<Grid columns="repeat(auto-fit, minmax(min(22.5rem, 100%), 1fr))" gap="lg">
   {#each displayItems() as item}
     <ItemCard {item} />
   {/each}
-</ListGrid>
+</Grid>
 ```
 
 #### Client-Side Sorting Implementation
@@ -875,7 +887,7 @@ For shareable/bookmarkable sort states, sync with URL parameters:
 <script>
   import { page } from "$app/stores";
   import { goto } from "$app/navigation";
-  import { OrderBy, type OrderByValue } from "@decodelabs/underlay/components";
+  import { OrderBy, type OrderByValue } from "@poodle/svelte-primitives";
 
   const fields = [
     { key: "title", label: "Title" },
@@ -947,7 +959,7 @@ The OrderBy component includes:
 
 #### Styling
 
-The component uses BEM class names with `underlay-order-by` prefix:
+The component uses `order-by` class names from Poodle primitives:
 
 | Class | Element |
 |-------|---------|
@@ -969,7 +981,7 @@ Override styles using CSS custom properties or global class selectors.
 
 ```svelte
 <script>
-  import { Button } from "@decodelabs/underlay/components";
+  import { Button } from "@poodle/svelte-primitives";
 </script>
 
 <!-- Primary button (blue) -->
@@ -1017,27 +1029,24 @@ Inline code styling component for displaying technical values like IDs, slugs, M
 
 ```svelte
 <script>
-  import { Code } from "@decodelabs/underlay/components";
+  import { Code } from "@poodle/svelte-primitives";
 </script>
 
 <!-- Display an ID -->
-<p><strong>ID:</strong> <Code>{item.id}</Code></p>
+<p><strong>ID:</strong> <Code inline source={item.id} /></p>
 
 <!-- Display a MIME type -->
-<p>Type: <Code>{file.mimeType}</Code></p>
+<p>Type: <Code inline source={file.mimeType} /></p>
 
 <!-- Display a slug -->
-<p>Slug: <Code>{page.slug}</Code></p>
+<p>Slug: <Code inline source={page.slug} /></p>
 
 <!-- Copyable multi-line block -->
-<Code copy block>{JSON.stringify(payload, null, 2)}</Code>
+<Code source={JSON.stringify(payload, null, 2)} showCopyButton />
 ```
 
 **Props:**
-- `class` - Additional CSS classes
-- `copy` - Show one-click copy button (default: `false`)
-- `block` - Render as wrapped multi-line block (default: `false`)
-- All standard HTML `<code>` element attributes
+- Use Poodle `Code` props such as `inline`, `source`, and `showCopyButton`
 
 **Styling:**
 - Monospace font family
@@ -1053,7 +1062,7 @@ Container component with consistent styling:
 
 ```svelte
 <script>
-  import { Card } from "@decodelabs/underlay";
+  import { Card } from "@poodle/svelte-primitives";
 </script>
 
 <Card>
@@ -1062,7 +1071,7 @@ Container component with consistent styling:
 </Card>
 
 <!-- With custom class -->
-<Card className="custom-card">
+<Card class="custom-card">
   <slot />
 </Card>
 ```
@@ -1117,15 +1126,13 @@ Compact horizontal key-value list for displaying related information. Each item 
 
 ```svelte
 <script>
-  import { Card, DetailList, DetailItem } from "@decodelabs/underlay/components";
+  import { Card, DetailRow } from "@poodle/svelte-primitives";
 </script>
 
 <Card>
-  <DetailList title="Locale">
-    <DetailItem label="Time Zone" value={profile.timeZone} />
-    <DetailItem label="Language" value={profile.language} />
-    <DetailItem label="Country" value={profile.countryCode} />
-  </DetailList>
+  <DetailRow label="Time Zone" value={profile.timeZone} />
+  <DetailRow label="Language" value={profile.language} />
+  <DetailRow label="Country" value={profile.countryCode} />
 </Card>
 
 <!-- Without title -->
@@ -1249,32 +1256,35 @@ Confirmation dialog with destructive action styling:
 </AlertDialog>
 ```
 
-### DropdownMenu
+### Menu
 
-Use `DropdownMenu` for the remaining Underlay-owned menu workflows that still
-need either callback-oriented `items`, destructive row-action treatment, or
-child-composed menu content. For simpler shared menus, prefer Poodle `Menu`.
+Use Poodle `Menu` directly for shared action menus. Underlay no longer exports
+`DropdownMenu`.
 
 ```svelte
 <script>
-  import { DropdownMenu, Button } from "@decodelabs/underlay";
+  import { Menu, Button } from "@poodle/svelte-primitives";
+
+  const items = [
+    { value: "edit", label: "Edit" },
+    { value: "duplicate", label: "Duplicate" },
+    { separator: true },
+    { value: "delete", label: "Delete", tone: "danger" }
+  ];
+
+  function handleAction(value: string) {
+    if (value === "edit") handleEdit();
+    else if (value === "duplicate") handleDuplicate();
+    else if (value === "delete") handleDelete();
+  }
 </script>
 
-<DropdownMenu>
+<Menu items={items} ariaLabel="Article actions" on:action={(event) => handleAction(event.detail.value)}>
   <Button slot="trigger" variant="secondary">
-    Actions ▼
+    Actions
   </Button>
-  
-  <button on:click={handleEdit}>Edit</button>
-  <button on:click={handleDuplicate}>Duplicate</button>
-  <hr />
-  <button class="danger" on:click={handleDelete}>Delete</button>
-</DropdownMenu>
+</Menu>
 ```
-
-`DropdownMenu` is intentionally still retained in Underlay because Poodle
-`Menu` is not yet a drop-in replacement for the remaining live callers such as
-the data-table row actions path.
 
 ### Tooltip
 
@@ -1307,32 +1317,33 @@ Displays a date as relative time (e.g., "3 days ago", "just now") with a tooltip
 
 ```svelte
 <script>
-  import { TimeAgo } from "@decodelabs/underlay/components";
+  import { TimeAgo } from "@poodle/svelte-primitives";
 </script>
 
 <!-- Basic usage with Date object -->
-<TimeAgo date={new Date()} />
+<TimeAgo datetime={new Date()} />
 
 <!-- With ISO string -->
-<TimeAgo date="2026-01-18T10:30:00Z" />
+<TimeAgo datetime="2026-01-18T10:30:00Z" />
 
 <!-- Different tooltip formats -->
-<TimeAgo date={item.createdAt} tooltipFormat="date" />
-<TimeAgo date={item.createdAt} tooltipFormat="datetime" />
-<TimeAgo date={item.createdAt} tooltipFormat="full" />
+<TimeAgo datetime={item.createdAt} tooltipFormat="date" />
+<TimeAgo datetime={item.createdAt} tooltipFormat="datetime" />
+<TimeAgo datetime={item.createdAt} tooltipFormat="full" />
 
 <!-- In context -->
-<p>Created <TimeAgo date={article.createdAt} /></p>
-<p>Last updated <TimeAgo date={article.updatedAt} /></p>
+<p>Created <TimeAgo datetime={article.createdAt} /></p>
+<p>Last updated <TimeAgo datetime={article.updatedAt} /></p>
 ```
 
 **Props:**
-- `date` - Date to display. Accepts ISO string or Date object (required)
+- `datetime` - Date/time to display. Accepts ISO string, Date object, or timestamp (required)
 - `tooltipFormat` - Format for tooltip display (default: `"datetime"`)
   - `"date"` - "January 21, 2026"
   - `"datetime"` - "January 21, 2026 at 3:45 PM"
   - `"full"` - "January 21, 2026 at 3:45:30 PM EST"
-- `class` - Additional CSS classes
+- `short` - Use compact output such as `"3h ago"` (default: `true`)
+- `timezone` - Optional IANA timezone for tooltip display
 
 **Relative Time Output:**
 
@@ -1382,22 +1393,39 @@ The component renders as a `<time>` element with semantic `datetime` attribute. 
 
 ```svelte
 <script>
-  import { DataTable, TimeAgo } from "@decodelabs/underlay/components";
+  import { TimeAgo } from "@poodle/svelte-primitives";
+  import { DataTable } from "@poodle/svelte-composites";
+  import type { TableColumn, TableRow } from "@poodle/svelte-composites";
+
+  const columns: TableColumn[] = [
+    { id: "title", label: "Title" },
+    { id: "createdAt", label: "Created" }
+  ];
+
+  const rows: TableRow[] = articles.map((article) => ({
+    id: article.id,
+    cells: {
+      title: article.title,
+      createdAt: article.createdAt
+    },
+    data: article
+  }));
 </script>
 
 <DataTable
-  data={articles}
-  columns={[
-    { key: "title", label: "Title" },
-    {
-      key: "createdAt",
-      label: "Created",
-      render: (row) => {
-        return { component: TimeAgo, props: { date: row.createdAt } };
-      }
-    }
-  ]}
-/>
+  {columns}
+  {rows}
+  showRowActions={false}
+>
+  <svelte:fragment slot="cell" let:column let:row>
+    {@const article = row.data}
+    {#if column.id === "createdAt"}
+      <TimeAgo datetime={article.createdAt} />
+    {:else}
+      {row.cells[column.id]}
+    {/if}
+  </svelte:fragment>
+</DataTable>
 ```
 
 **With Page Headers:**
@@ -1405,44 +1433,30 @@ The component renders as a `<time>` element with semantic `datetime` attribute. 
 ```svelte
 <PageHeader title="Edit Article" subtitle={article.title}>
   <div class="meta">
-    <span>Created: <TimeAgo date={article.createdAt} /></span>
-    <span>Updated: <TimeAgo date={article.updatedAt} /></span>
+    <span>Created: <TimeAgo datetime={article.createdAt} /></span>
+    <span>Updated: <TimeAgo datetime={article.updatedAt} /></span>
   </div>
 </PageHeader>
 ```
 
 ### DateRange
 
-Displays a date range using adaptive formatting:
+The `DateRange` component is retired. Use the shared formatter helpers for
+plain-text labels, or use direct Poodle date-range input controls for
+interactive selection.
+
+The shared formatter uses adaptive formatting:
 - Same month/year: `1st to 25th Feb 2025`
 - Same year: `1st Feb to 25th Mar 2025`
 - Different years: `1st Feb 2025 to 25th Mar 2026`
 
-```svelte
-<script>
-  import { DateRange } from "@decodelabs/underlay/components";
-</script>
-
-<DateRange startDate="2025-02-01" endDate="2025-02-25" />
-<DateRange startDate="2025-02-01" endDate="2025-03-25" />
-<DateRange startDate="2025-12-01" endDate="2026-01-15" />
-```
-
-**Props:**
-- `startDate` - Range start date (ISO string or `Date`)
-- `endDate` - Range end date (ISO string or `Date`)
-- `locale` - Locale for month names (default: `"en-GB"`)
-- `style` - `"adaptive"` (default) or `"full"`
-- `emptyText` - Text when start/end is missing or invalid (default: `"—"`)
-- `class` - Additional CSS classes
-
-You can also use the shared formatter for places that require plain text (e.g. `ListCard.subtitle`):
-
 ```ts
-import { formatAdaptiveDateRange } from "@decodelabs/underlay/components";
+import { formatAdaptiveDateRange } from "@decodelabs/underlay/utils/i18n";
 
 const label = formatAdaptiveDateRange(startDate, endDate, { locale: "en-GB" }) ?? "No date window";
 ```
+
+For interactive range input, use Poodle `DateRangePicker` directly.
 
 ### DetailsGrid & DetailsItem
 
@@ -1450,31 +1464,17 @@ Grid layout for displaying key-value detail information in a visually appealing 
 
 ```svelte
 <script>
-  import { DetailsGrid, DetailsItem, TimeAgo } from "@decodelabs/underlay/components";
+  import { TimeAgo } from "@poodle/svelte-primitives";
 </script>
 
 <!-- Basic usage -->
-<DetailsGrid>
-  <DetailsItem label="Name" value="John Smith" />
-  <DetailsItem label="Email" value="john@example.com" />
-  <DetailsItem label="Role" value="Administrator" />
-  <DetailsItem label="Status" value="Active" />
-</DetailsGrid>
-
-<!-- With code values and custom content -->
-<DetailsGrid>
-  <DetailsItem label="Slug" value="my-article" code />
-  <DetailsItem label="ID" value="018f2a3b-3c4d-7e8f" code />
-  <DetailsItem label="Created">
-    <TimeAgo date={createdAt} />
-  </DetailsItem>
-  <DetailsItem label="Last Updated">
-    <TimeAgo date={updatedAt} />
-  </DetailsItem>
-</DetailsGrid>
+<div class="metadata">
+  <span>Created <TimeAgo datetime={createdAt} /></span>
+  <span>Updated <TimeAgo datetime={updatedAt} /></span>
+</div>
 
 <!-- Spanning multiple columns -->
-<DetailsGrid>
+<div class="metadata metadata--wide">
   <DetailsItem label="Title" value={article.title} span={2} />
   <DetailsItem label="Author" value={article.author} />
   <DetailsItem label="Category" value={article.category} />
@@ -1538,12 +1538,13 @@ The grid uses CSS `auto-fill` with `minmax()` for responsive column counts:
 ```svelte
 <script lang="ts">
   import {
-    DetailsGrid,
-    DetailsItem,
+    DetailMeta,
+    DetailMetaItem,
+    DetailMetaStatus,
     TimeAgo,
-    Badge
-  } from "@decodelabs/underlay/components";
-  import { PageHeader } from "@decodelabs/underlay/patterns";
+    PageHeader
+  } from "@decodelabs/underlay/patterns";
+  import { Pill } from "@poodle/svelte-primitives";
 
   let { data } = $props();
 </script>
@@ -1565,10 +1566,10 @@ The grid uses CSS `auto-fill` with `minmax()` for responsive column counts:
     </Badge>
   </DetailsItem>
   <DetailsItem label="Created">
-    <TimeAgo date={data.user.createdAt} />
+    <TimeAgo datetime={data.user.createdAt} />
   </DetailsItem>
   <DetailsItem label="Last Login">
-    <TimeAgo date={data.user.lastLoginAt} />
+    <TimeAgo datetime={data.user.lastLoginAt} />
   </DetailsItem>
   <DetailsItem label="Bio" value={data.user.bio} span="full" />
 </DetailsGrid>
@@ -1592,23 +1593,18 @@ A responsive two-column grid layout that uses CSS container queries to collapse 
 
 ```svelte
 <script>
-  import { ContainerGrid, DetailsGrid, DetailsItem } from "@decodelabs/underlay/components";
-  import { InlineListCard, InlineListItem } from "@decodelabs/underlay/components";
+  import { Card, DetailRow } from "@poodle/svelte-primitives";
 </script>
 
-<!-- Basic usage: DetailsGrid alongside an InlineListCard -->
-<ContainerGrid>
-  <DetailsGrid>
-    <DetailsItem label="Name" value={item.name} />
-    <DetailsItem label="Status" value={item.status} />
-  </DetailsGrid>
+<!-- Basic usage: DetailsGrid alongside direct Card composition -->
+<div class="container-grid">
+  <Card>
+    <DetailRow label="Name" value={item.name} />
+    <DetailRow label="Status" value={item.status} />
+  </Card>
 
-  <InlineListCard title="Related Items" hasItems={items.length > 0}>
-    {#each items as item}
-      <InlineListItem label={item.name} href={item.href} />
-    {/each}
-  </InlineListCard>
-</ContainerGrid>
+  <Card>Caller-owned related-items list here</Card>
+</div>
 
 <!-- With custom gap -->
 <ContainerGrid gap="2rem">
@@ -1632,7 +1628,7 @@ A responsive two-column grid layout that uses CSS container queries to collapse 
 **Behavior:**
 - At container widths above `breakpoint`, displays as a two-column grid
 - At container widths at or below `breakpoint`, collapses to single column
-- Automatically removes `margin-top` and `max-width` from nested `DetailsGrid` and `InlineListCard` components
+- Automatically removes `margin-top` and `max-width` from nested `DetailsGrid` and direct `Card` content blocks
 - Adds bottom margin between consecutive `ContainerGrid` components (removed on last child)
 
 **Why Container Queries?**
@@ -1643,126 +1639,16 @@ Container queries allow the grid to respond to its own available space rather th
 - Modal dialogs
 - Any constrained container
 
-### InlineListCard
+### Compact Related Lists
 
-A compact card for displaying related items in a vertical list. Commonly used alongside `DetailsGrid` within a `ContainerGrid` to show associations like "Related Items" or "Assigned Users".
+`InlineListCard` / `InlineListItem` are retired. The current direction is
+direct Poodle `Card` composition with caller-owned rows, actions, and metadata.
 
-```svelte
-<script>
-  import { InlineListCard, InlineListItem, Button } from "@decodelabs/underlay/components";
-
-  const items = [
-    { id: "1", name: "Item One", href: "/items/1" },
-    { id: "2", name: "Item Two", href: "/items/2" }
-  ];
-</script>
-
-<!-- Basic usage -->
-<InlineListCard title="Related Items" hasItems={items.length > 0}>
-  {#each items as item}
-    <InlineListItem label={item.name} href={item.href} />
-  {/each}
-</InlineListCard>
-
-<!-- With action button -->
-<InlineListCard
-  title="Assigned Users"
-  hasItems={users.length > 0}
-  emptyMessage="No users assigned."
->
-  {#snippet action()}
-    <Button size="sm" variant="ghost" onclick={handleAdd}>Add</Button>
-  {/snippet}
-
-  {#each users as user}
-    <InlineListItem label={user.name} href={`/users/${user.id}`} />
-  {/each}
-</InlineListCard>
-```
-
-**Props:**
-- `title` - Card title displayed in uppercase
-- `hasItems` - Whether the list has items (controls empty state display)
-- `emptyMessage` - Message shown when there are no items (default: `"No items."`)
-- `action` - Optional snippet for action button (typically "Add")
-- `children` - List items to render (use `InlineListItem`)
-- `fullWidth` - Expand to full container width (removes readable-width max; default: `false`)
-- `stretch` - Fill parent row height and allow list body to flex (default: `false`)
-
-### InlineListItem
-
-A list item for use inside `InlineListCard`. Supports links, click handlers, accent colors, badges, and trailing content.
-
-```svelte
-<script>
-  import { InlineListCard, InlineListItem, Pill } from "@decodelabs/underlay/components";
-</script>
-
-<InlineListCard title="Modules" hasItems={true}>
-  <!-- Basic link item -->
-  <InlineListItem label="Getting Started" href="/modules/getting-started" />
-
-  <!-- With accent color (colored dot) -->
-  <InlineListItem
-    label="Advanced Topics"
-    href="/modules/advanced"
-    accent="#14b8a6"
-  />
-
-  <!-- With badge (inline after label) -->
-  <InlineListItem label="FA1" href="/modules/fa1">
-    {#snippet badge()}
-      <Pill accent="#6b7280">2024</Pill>
-    {/snippet}
-  </InlineListItem>
-
-  <!-- With trailing content (right-aligned) -->
-  <InlineListItem label="Module ABC" href="/modules/abc">
-    {#snippet trailing()}
-      <Pill accent="#6366f1">after:10</Pill>
-    {/snippet}
-  </InlineListItem>
-
-  <!-- With both badge and trailing -->
-  <InlineListItem label="Complete Example" href="/items/1">
-    {#snippet badge()}
-      <Pill>Code</Pill>
-    {/snippet}
-    {#snippet trailing()}
-      <Pill accent="#22c55e">Active</Pill>
-    {/snippet}
-  </InlineListItem>
-
-  <!-- With delete button (appears on hover) -->
-  <InlineListItem
-    label="Deletable Item"
-    href="/items/2"
-    showDelete
-    ondelete={() => handleDelete(item.id)}
-  />
-
-  <!-- Click handler instead of link -->
-  <InlineListItem
-    label="Clickable Item"
-    onclick={() => console.log("clicked")}
-  />
-</InlineListCard>
-```
-
-**Props:**
-- `label` - Primary text to display
-- `href` - Optional link URL
-- `onclick` - Optional click handler (used when no href)
-- `accent` - Optional hex color for the indicator dot
-- `badge` - Snippet for inline content immediately after the label
-- `trailing` - Snippet for right-aligned content (badges, pills, etc.)
-- `showDelete` - Whether to show delete button on hover (default: `false`)
-- `ondelete` - Delete handler called when delete button is clicked
-
-**Styling Notes:**
-- The `badge` snippet renders inline next to the label, useful for codes or years
-- The `trailing` snippet is pushed to the right with `margin-left: auto`
-- When `showDelete` is enabled, trailing content shifts left on hover to make room for the delete button
+For compact related-item blocks, prefer:
+- Poodle `Card` for the titled shell
+- caller-owned header action controls
+- caller-owned rows using links or buttons
+- Poodle `Pill`, `Code`, and `IconButton` for metadata and actions
 
 ### Tabs
 
@@ -1810,9 +1696,8 @@ Use this pattern for long forms (2+ sections) where one form is easier to scan a
 
 ```svelte
 <script lang="ts">
-  import { Field, TextInput } from "@decodelabs/underlay/components";
   import { FormLayout } from "@poodle/svelte-composites";
-  import { FieldSet, Tabs, type TabItem } from "@poodle/svelte-primitives";
+  import { Field, FieldSet, Tabs, TextInput, type TabItem } from "@poodle/svelte-primitives";
 
   let activeTab = $state("details");
   let title = $state("");
@@ -1909,12 +1794,20 @@ Form wrapper with enhanced submission handling:
 
 ### FormActions
 
-Container for form action buttons with consistent spacing. Supports a right-aligned `danger` slot for secondary actions:
+Container for form action buttons with consistent spacing. Underlay no longer
+ships a separate public `FormActions` wrapper; use Poodle `FormActions`
+directly.
 
 ```svelte
 <script>
-  import { FormActions, Button } from "@decodelabs/underlay/components";
-  import { Button as PoodleButton } from "@poodle/svelte-primitives";
+  import { FormActions, Button } from "@poodle/svelte-primitives";
+
+  const dangerItems = [
+    {
+      label: "Cancel",
+      onSelect: handleCancel
+    }
+  ];
 </script>
 
 <!-- Basic usage -->
@@ -1922,12 +1815,12 @@ Container for form action buttons with consistent spacing. Supports a right-alig
   <Button type="submit">Save</Button>
 </FormActions>
 
-<!-- With right-aligned secondary action -->
-<FormActions>
+<!-- With responsive danger action -->
+<FormActions {dangerItems}>
   <Button type="submit" variant="primary">Save Changes</Button>
-  {#snippet danger()}
-    <PoodleButton variant="ghost" on:click={handleCancel}>Cancel</PoodleButton>
-  {/snippet}
+  <svelte:fragment slot="danger">
+    <Button variant="ghost" tone="danger" on:click={handleCancel}>Cancel</Button>
+  </svelte:fragment>
 </FormActions>
 ```
 
@@ -1935,7 +1828,8 @@ Container for form action buttons with consistent spacing. Supports a right-alig
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `align` | `"start" \| "end"` | `"start"` | Horizontal alignment of primary buttons |
+| `align` | `"start" \| "end" \| "between"` | `"end"` | Horizontal alignment of primary buttons |
+| `dangerItems` | `FormActionDangerItem[]` | `[]` | Overflow actions used when the `danger` slot collapses on narrow containers |
 | `dangerItems` | `DangerMenuItem[]` | - | Menu items for collapsed menu on small screens |
 
 **Slots:**
@@ -1947,12 +1841,16 @@ Container for form action buttons with consistent spacing. Supports a right-alig
 
 ### ListCard
 
-Card component for displaying items in a list, with support for media, actions, and a compact variant for reorder mode.
+Poodle `ListCard` is the shared card component for displaying list items with
+leading media, actions, selection mode, clickable navigation, and compact
+reorder treatment. Underlay no longer exports a public `ListCard`.
 
 ```svelte
 <script>
-  import { ListCard } from "@decodelabs/underlay/components";
+  import { ListCard, Pill } from "@poodle/svelte-primitives";
+  import LocalActionsMenu from "$lib/components/LocalActionsMenu.svelte";
   import BookOpen from "lucide-svelte/icons/book-open";
+  import Layers from "lucide-svelte/icons/layers";
 </script>
 
 <!-- Standard list card with link -->
@@ -1960,17 +1858,19 @@ Card component for displaying items in a list, with support for media, actions, 
   href="/articles/123"
   title="Getting Started with Svelte"
   subtitle="A beginner's guide to Svelte 5"
-  accent="#14b8a6"
+  accentColor="#14b8a6"
 >
-  {#snippet media()}
+  <svelte:fragment slot="leading">
     <BookOpen size={30} />
-  {/snippet}
+  </svelte:fragment>
   
-  {#snippet trailing()}
+  <svelte:fragment slot="trailing">
     <Pill>Tutorial</Pill>
-  {/snippet}
+  </svelte:fragment>
   
-  <span class="meta">Published: 2024-01-15</span>
+  <svelte:fragment slot="footer">
+    <span class="meta">Published: 2024-01-15</span>
+  </svelte:fragment>
 </ListCard>
 
 <!-- With actions menu -->
@@ -1978,31 +1878,31 @@ Card component for displaying items in a list, with support for media, actions, 
   href="/modules/abc"
   title="FA1"
   subtitle="Introduction to Financial Accounting"
-  accent="#14b8a6"
+  accentColor="#14b8a6"
 >
-  {#snippet media()}
+  <svelte:fragment slot="leading">
     <BookOpen size={30} />
-  {/snippet}
+  </svelte:fragment>
   
-  {#snippet actions({ trigger })}
-    <CopyActionsMenu
-      {trigger}
+  <svelte:fragment slot="actions">
+    <LocalActionsMenu
+      triggerLabel="Actions"
       copies={[{ label: "Copy ID", text: module.id }]}
       actions={[{ label: "Edit", onSelect: handleEdit }]}
     />
-  {/snippet}
+  </svelte:fragment>
 </ListCard>
 
 <!-- Compact variant for reorder mode -->
 <ListCard
   title="Section A: Revenue Recognition"
-  variant="compact"
-  showDragHandle
-  accent="#14b8a6"
+  layout="compact"
+  showReorderHandle
+  accentColor="#14b8a6"
 >
-  {#snippet media()}
+  <svelte:fragment slot="leading">
     <Layers size={16} />
-  {/snippet}
+  </svelte:fragment>
 </ListCard>
 ```
 
@@ -2013,6 +1913,11 @@ Card component for displaying items in a list, with support for media, actions, 
 | `href` | `string \| null` | `null` | Link destination (makes card clickable) |
 | `title` | `string` | required | Primary card title |
 | `subtitle` | `string \| null` | `null` | Secondary text below title |
+| `layout` | `"default" \| "compact"` | `"default"` | Compact layout is used for reorder mode |
+| `selectable` | `boolean` | `false` | Enables card-level selection behavior |
+| `selected` | `boolean` | `false` | Current selection state |
+| `showReorderHandle` | `boolean` | `false` | Shows reorder affordance in compact mode |
+| `accentColor` | `string \| null` | `null` | Accent border/highlight color |
 | `ariaLabel` | `string \| null` | `null` | Accessible label (defaults to title) |
 | `accent` | `string \| null` | `null` | Accent color for media background/border |
 | `variant` | `"default" \| "compact"` | `"default"` | Visual variant |
@@ -2066,7 +1971,7 @@ When displaying related entity counts (e.g., "3 modules", "5 sections"), use an 
 
 ```svelte
 <script>
-  import { ListCard } from "@decodelabs/underlay/components";
+  import { ListCard } from "@poodle/svelte-primitives";
   import { Tooltip } from "@poodle/svelte-primitives";
   import BookOpen from "lucide-svelte/icons/book-open";
   import Layers from "lucide-svelte/icons/layers";
@@ -2074,11 +1979,12 @@ When displaying related entity counts (e.g., "3 modules", "5 sections"), use an 
 </script>
 
 <ListCard href="/pathways/123" title="ACCA" subtitle="Association of Chartered Certified Accountants">
-  {#snippet media()}
+  <svelte:fragment slot="leading">
     <Route size={30} />
-  {/snippet}
+  </svelte:fragment>
 
   <!-- Child counts with icon + tooltip -->
+  <svelte:fragment slot="footer">
   <span class="counts">
     <Tooltip content="Modules: {pathway.moduleCount}" delayMs={200}>
       <span class="counts__item">
@@ -2093,6 +1999,7 @@ When displaying related entity counts (e.g., "3 modules", "5 sections"), use an 
       </span>
     </Tooltip>
   </span>
+  </svelte:fragment>
 </ListCard>
 
 <style>
@@ -2118,13 +2025,15 @@ When displaying related entity counts (e.g., "3 modules", "5 sections"), use an 
 - Set `delayMs={200}` for quick hover response
 - Multiple counts are separated with `gap: 0.75rem`
 
-### NavCard & NavCardGrid
+### Poodle NavCard & NavCardGrid
 
-Navigation card components for index/dashboard pages. NavCards are substantial link blocks with icons and descriptions, ideal for section landing pages.
+Underlay no longer owns a shared `NavCard` pattern. Use Poodle `NavCard` and
+`NavCardGrid` directly for section landing pages and dashboard-style link
+surfaces.
 
 ```svelte
 <script>
-  import { NavCard, NavCardGrid } from "@decodelabs/underlay/patterns";
+  import { NavCard, NavCardGrid } from "@poodle/svelte-primitives";
   import Users from "lucide-svelte/icons/users";
   import Settings from "lucide-svelte/icons/settings";
   import Trash2 from "lucide-svelte/icons/trash-2";
@@ -2133,57 +2042,34 @@ Navigation card components for index/dashboard pages. NavCards are substantial l
 <h1>Dashboard</h1>
 
 <NavCardGrid>
-  <NavCard
-    href="/users"
-    title="Users"
-    description="Manage user accounts and permissions."
-    icon={Users}
-  />
-  <NavCard
-    href="/settings"
-    title="Settings"
-    description="Configure application preferences."
-    icon={Settings}
-  />
-  <NavCard
-    href="/trash"
-    title="Trash"
-    description="View and restore deleted items."
-    icon={Trash2}
-    variant="danger"
-  />
+  <NavCard href="/users" title="Users" description="Manage user accounts and permissions.">
+    <svelte:fragment slot="icon">
+      <span class="nav-icon nav-icon--blue"><Users /></span>
+    </svelte:fragment>
+  </NavCard>
+  <NavCard href="/settings" title="Settings" description="Configure application preferences.">
+    <svelte:fragment slot="icon">
+      <span class="nav-icon nav-icon--purple"><Settings /></span>
+    </svelte:fragment>
+  </NavCard>
+  <NavCard href="/trash" title="Trash" description="View and restore deleted items.">
+    <svelte:fragment slot="icon">
+      <span class="nav-icon nav-icon--red"><Trash2 /></span>
+    </svelte:fragment>
+  </NavCard>
 </NavCardGrid>
 ```
 
-**NavCard Props:**
-- `href` - Link destination (required)
-- `title` - Card title (required)
-- `description` - Description text shown below title
-- `icon` - Svelte component for the icon (e.g., lucide-svelte icons)
-- `variant` - `"default"` | `"danger"` (default: `"default"`)
-- `children` - Optional extra content via slot
-
-**NavCardGrid Props:**
-- `children` - NavCard components (required)
-
-**Grid Behavior:**
-- Uses CSS `auto-fit` with `minmax(20rem, 1fr)` for adaptive columns
-- Automatically adjusts column count based on available width
-- Falls back to single column on narrow viewports (<480px)
-
-**Variants:**
-- `default` - Standard styling with primary-colored icon badge
-- `danger` - Red-tinted styling for destructive actions (trash, delete sections)
-
-**Usage Notes:**
-- NavCards work with any icon component that accepts a `class` prop
-- Icons are displayed in a colored badge (primary blue for default, red gradient for danger)
-- The grid has no maximum column count - it adapts entirely to available space
-- Use for section index pages where links are the primary content
+Use local icon-slot composition when you need accent backgrounds or branded
+colors. The retained shared Underlay surface no longer includes a dedicated
+`iconBackground` or `danger` wrapper for this pattern.
 
 ### PageHeader
 
-Page header component with section heading, optional entity title, breadcrumbs, back link, and action buttons. Use Poodle `PageHeader` for simple title/back/actions and subtitle-only headers. Keep Underlay `PageHeader` only for the richer shell cases that still need section/title split, count treatment, contextual back behavior, banner wiring, or header-meta composition.
+Page header composition now uses Poodle `PageHeader` directly for both simple
+title/back/actions cases and richer section/title/banner cases. Keep
+`DetailMeta` and other shell-specific detail content outside the header instead
+of relying on an Underlay wrapper.
 
 ```svelte
 <script>
@@ -2196,7 +2082,8 @@ Page header component with section heading, optional entity title, breadcrumbs, 
     DetailMetaSeparator,
     type BreadcrumbItem
   } from "@decodelabs/underlay/patterns";
-  import { Button, Code, Pill } from "@decodelabs/underlay/components";
+  import { Button } from "@poodle/svelte-primitives";
+  import { Code, Pill } from "@poodle/svelte-primitives";
 </script>
 
 <!-- Simple list page -->
@@ -2257,9 +2144,14 @@ Page header component with section heading, optional entity title, breadcrumbs, 
 />
 ```
 
-`DetailPageShell` remains an Underlay-owned detail-page workflow shell, but its
-tab chrome now rides on Poodle `Tabs` and its metadata/status display should
-prefer the `DetailMeta*` helpers rather than bespoke header rows.
+`DetailPageShell` is retired from the public Underlay surface. New detail
+pages should compose directly from Poodle `PageHeader` and `Tabs`, with
+`DetailMeta*` helpers used only for the metadata row when that compact
+detail-header treatment is still useful.
+
+`DetailMeta*` remains an explicit retained Underlay helper family. The
+surrounding shells are gone, but the compact metadata-row vocabulary still has
+enough live repetition to earn shared ownership for now.
 
 `SpaFormShell` remains an Underlay-owned workflow shell. Keep save/delete
 intent handling, navigation, and submit orchestration there, but treat status
@@ -2334,14 +2226,15 @@ Drag-and-drop reordering pattern for admin list pages. Uses `svelte-dnd-action` 
 
 The reordering pattern consists of two parts:
 1. **`createReorderController`** - Svelte 5 reactive state controller for managing reorder state
-2. **`ReorderableList`** - UI component that wraps items with drag-and-drop and Save/Cancel buttons
+2. **Poodle `ReorderableList`** - UI component that wraps items with drag-and-drop and optional save/cancel workflow chrome
 
 #### Basic Usage
 
 ```svelte
 <script lang="ts">
-  import { ReorderableList, createReorderController } from "@decodelabs/underlay/patterns";
-  import { ListCard, Button } from "@decodelabs/underlay/components";
+  import { createReorderController } from "@decodelabs/underlay/patterns";
+  import { ReorderableList } from "@poodle/svelte-composites";
+  import { Button, ListCard } from "@poodle/svelte-primitives";
   import { myApi } from "$lib/api";
 
   let { data } = $props();
@@ -2359,6 +2252,19 @@ The reordering pattern consists of two parts:
       await myApi.reorderItems(orderedIds);
     })
   );
+  let submitError = $state<string | null>(null);
+
+  async function handleReorderSubmit() {
+    submitError = null;
+    await controller.submit();
+    isReorderMode = false;
+  }
+
+  function handleReorderCancel() {
+    submitError = null;
+    controller.reset();
+    isReorderMode = false;
+  }
 </script>
 
 <header>
@@ -2372,20 +2278,24 @@ The reordering pattern consists of two parts:
 
 {#if isReorderMode}
   <ReorderableList
-    {controller}
-    oncancel={() => isReorderMode = false}
-    onsuccess={() => isReorderMode = false}
+    items={controller.pending}
+    dirty={controller.isDirty}
+    submitting={controller.isPending}
+    errorMessage={submitError}
+    onsubmit={handleReorderSubmit}
+    oncancel={handleReorderCancel}
+    on:reorder={(event) => controller.updatePending(event.detail.items)}
   >
     {#snippet item(item)}
       <ListCard
         title={item.name}
-        variant="compact"
-        showDragHandle
-        accent="#14b8a6"
+        layout="compact"
+        showReorderHandle
+        accentColor="#14b8a6"
       >
-        {#snippet media()}
+        <svelte:fragment slot="leading">
           <MyIcon size={16} />
-        {/snippet}
+        </svelte:fragment>
       </ListCard>
     {/snippet}
   </ReorderableList>
@@ -2446,23 +2356,24 @@ const controller = createReorderController(items, submitFn);
 
 #### ReorderableList Component
 
-Wraps a list of items with drag-and-drop functionality, Save/Cancel header, and error handling.
+Wraps a list of items with drag-and-drop functionality, optional Save/Cancel workflow chrome, long-list guidance, and windowed large-list handling.
 
 ```svelte
 <ReorderableList
-  controller={controller}
+  items={controller.pending}
+  dirty={controller.isDirty}
+  submitting={controller.isPending}
+  errorMessage={submitError}
+  onsubmit={handleSubmit}
   oncancel={handleCancel}
-  onsuccess={handleSuccess}
-  flipDurationMs={200}
+  on:reorder={(event) => controller.updatePending(event.detail.items)}
   saveLabel="Save Order"
   cancelLabel="Cancel"
+  longListThreshold={50}
+  windowSize={50}
 >
   {#snippet item(itemData)}
     <!-- Render each item -->
-  {/snippet}
-  
-  {#snippet empty()}
-    <p>No items to reorder.</p>
   {/snippet}
 </ReorderableList>
 ```
@@ -2471,19 +2382,18 @@ Wraps a list of items with drag-and-drop functionality, Save/Cancel header, and 
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `controller` | `ReorderController<T>` | required | Controller from `createReorderController` |
-| `oncancel` | `() => void` | required | Called when user clicks Cancel |
-| `onsuccess` | `() => void` | optional | Called after successful submit |
-| `onsubmiterror` | `(error: unknown) => void \| string \| Promise<void \| string>` | optional | Optional hook to transform submit errors (for conflict recovery) |
-| `flipDurationMs` | `number` | `200` | Animation duration for reorder transitions |
+| `items` | `ReorderableItem[]` | required | Bound reorder items, usually `controller.pending` |
+| `dirty` | `boolean` | `false` | Usually `controller.isDirty` |
+| `submitting` | `boolean` | `false` | Usually `controller.isPending` |
+| `errorMessage` | `string \| null` | `null` | Caller-owned submit error text |
 | `disabled` | `boolean` | `false` | Disable drag-and-drop |
 | `saveLabel` | `string` | `"Save Order"` | Custom save button text |
 | `cancelLabel` | `string` | `"Cancel"` | Custom cancel button text |
-| `showMoveButtons` | `boolean` | `false` | Show explicit up/down buttons (mobile and keyboard fallback) |
-| `highlightedIds` | `string[]` | `[]` | IDs to visually highlight (for conflict-merged new items) |
-| `getItemLabel` | `(item: T) => string` | `(item) => item.id` | Accessible item label for move button text and screen reader announcements |
+| `onsubmit` | `() => void \| Promise<void>` | optional | Called when user clicks Save |
+| `oncancel` | `() => void` | optional | Called when user clicks Cancel |
 | `longListThreshold` | `number \| null` | `50` | Show long-list warning when item count exceeds threshold (`null`/`0` disables) |
 | `longListWarningText` | `string` | autogenerated | Optional custom warning copy for long-list reorder mode |
+| `windowSize` | `number \| null` | `null` | Enables page-window reorder UI for very large lists |
 
 **Snippets:**
 
@@ -2494,18 +2404,19 @@ Wraps a list of items with drag-and-drop functionality, Save/Cancel header, and 
 
 #### ListCard Compact Variant
 
-When in reorder mode, use `ListCard` with `variant="compact"` and `showDragHandle` for a streamlined drag-and-drop experience.
+When in reorder mode, use `ListCard` with `layout="compact"` and
+`showReorderHandle` for a streamlined drag-and-drop experience.
 
 ```svelte
 <ListCard
   title={item.name}
-  variant="compact"
-  showDragHandle
-  accent="#14b8a6"
+  layout="compact"
+  showReorderHandle
+  accentColor="#14b8a6"
 >
-  {#snippet media()}
+  <svelte:fragment slot="leading">
     <BookOpen size={16} />
-  {/snippet}
+  </svelte:fragment>
 </ListCard>
 ```
 
@@ -2529,8 +2440,10 @@ A full example showing reorder mode for sections within a module:
 
 ```svelte
 <script lang="ts">
-  import { ReorderableList, createReorderController } from "@decodelabs/underlay/patterns";
-  import { Button, ListCard } from "@decodelabs/underlay/components";
+  import { createReorderController } from "@decodelabs/underlay/patterns";
+  import { ReorderableList } from "@poodle/svelte-composites";
+  import { Button } from "@poodle/svelte-primitives";
+  import { ListCard } from "@poodle/svelte-primitives";
   import { learningCommands } from "@cattle-grid";
   import Layers from "lucide-svelte/icons/layers";
 
@@ -2578,20 +2491,29 @@ A full example showing reorder mode for sections within a module:
     <p>No sections defined.</p>
   {:else if isSectionReorderMode}
     <ReorderableList
-      controller={sectionController}
-      oncancel={exitReorderMode}
-      onsuccess={exitReorderMode}
+      items={sectionController.pending}
+      dirty={sectionController.isDirty}
+      submitting={sectionController.isPending}
+      onsubmit={async () => {
+        await sectionController.submit();
+        exitReorderMode();
+      }}
+      oncancel={() => {
+        sectionController.reset();
+        exitReorderMode();
+      }}
+      on:reorder={(event) => sectionController.updatePending(event.detail.items)}
     >
       {#snippet item(section)}
         <ListCard
           title={`Section ${section.label}: ${section.title}`}
-          variant="compact"
-          showDragHandle
-          accent="#14b8a6"
+          layout="compact"
+          showReorderHandle
+          accentColor="#14b8a6"
         >
-          {#snippet media()}
+          <svelte:fragment slot="leading">
             <Layers size={16} />
-          {/snippet}
+          </svelte:fragment>
         </ListCard>
       {/snippet}
     </ReorderableList>
@@ -2665,12 +2587,12 @@ For hierarchical data (e.g., sections containing areas), you can have multiple r
 2. **Invalidate data on success** - Call `invalidateAll()` in `onsuccess` to refresh the list with new order
 3. **Use consistent icons** - Pick meaningful icons for each item type
 4. **Map IDs correctly** - Ensure items have `id` field (map from `itemId`, `sectionId`, etc.)
-5. **Use compact ListCard** - The `variant="compact"` + `showDragHandle` combo is designed for reorder mode
+5. **Use compact ListCard** - The `layout="compact"` + `showReorderHandle` combo is designed for reorder mode
 6. **Handle nested structures** - Use separate state/controllers for each reorderable level
 7. **Place Reorder button logically** - Next to section headers, not in page header
 8. **Provide `getItemLabel`** - Improve screen reader and keyboard move announcements
-9. **Enable `showMoveButtons` when needed** - Useful fallback on touch devices and for precise ordering
-10. **Use `longListThreshold` intentionally** - Keep default warning for large lists, or disable only when list size is known safe
+9. **Use `longListThreshold` intentionally** - Keep default warning for large lists, or disable only when list size is known safe
+10. **Use `windowSize` for operational lists** - Switch very large reorder sessions to page-window mode instead of exposing one huge drag surface
 
 **Refreshing data after reorder:**
 
@@ -2687,9 +2609,18 @@ For hierarchical data (e.g., sections containing areas), you can have multiple r
 </script>
 
 <ReorderableList
-  controller={controller}
-  oncancel={() => isReorderMode = false}
-  onsuccess={handleReorderSuccess}
+  items={controller.pending}
+  dirty={controller.isDirty}
+  submitting={controller.isPending}
+  onsubmit={async () => {
+    await controller.submit();
+    await handleReorderSuccess();
+  }}
+  oncancel={() => {
+    controller.reset();
+    isReorderMode = false;
+  }}
+  on:reorder={(event) => controller.updatePending(event.detail.items)}
 >
   ...
 </ReorderableList>
@@ -2747,17 +2678,16 @@ Example:
 
 ```svelte
 <ReorderableList
-  controller={controller}
-  oncancel={exitReorderMode}
-  onsuccess={handleSuccess}
-  onsubmiterror={async (error) => {
-    const conflict = extractReorderConflict(error);
-    if (!conflict) return;
-
-    const latestItems = await loadLatestItems();
-    applyReorderConflict(controller, conflict, latestItems);
-    return "List changed while reordering. Review updates and save again.";
+  items={controller.pending}
+  dirty={controller.isDirty}
+  submitting={controller.isPending}
+  errorMessage={submitError}
+  onsubmit={handleReorderSubmit}
+  oncancel={() => {
+    controller.reset();
+    exitReorderMode();
   }}
+  on:reorder={(event) => controller.updatePending(event.detail.items)}
 >
   ...
 </ReorderableList>
@@ -2765,211 +2695,28 @@ Example:
 
 ### RelationSelector
 
-Modal-based relation picker for selecting related records. Provides a richer experience than simple `<select>` dropdowns for relation fields with large datasets.
+Underlay no longer exports a public `RelationSelector` UI wrapper.
 
-#### Overview
+Use app-local selector shells composed over Poodle `Dialog`, `SearchField`,
+`Button`, `Callout`, and badge/pill primitives, while keeping the retained
+Underlay helper layer for:
 
-The RelationSelector provides:
-- **Two-tier interaction**: Quick dropdown for fast selection, full modal for search/browse
-- **Server-side search**: Debounced search with configurable suggestions
-- **Intelligent suggestions**: Track user selections and prioritize recently-used items (see [Selection Suggestions Guide](./092-selection-suggestions.md))
-- **Single and multi-select modes**: Toggle individual items or select multiple with confirmation
-- **Embedded create form**: Add new related records without leaving the modal
-- **Full accessibility**: Keyboard navigation, ARIA attributes, focus management
+- `createLocalSearchFns`
+- `createLocalDrillDownSearchFns`
+- `createRelationSelectorContext`
+- `useRelationSelector`
+- `SelectionHistory`
+- relation/drilldown/search/filter types
 
-The relation-selection workflow remains Underlay-owned, but its modal and
-popover/drilldown chrome now resolves through Poodle `Dialog`, `SearchField`,
-`Callout`, `Button`, and `Pill` instead of separate local dialog/search/status
-helper stacks. The remaining filter menus, option lists, and drilldown
-navigation are the actual retained Underlay workflow boundary.
+That is now the honest shared boundary. The modal/popover UI, inline-create
+presentation, and route- or form-specific selector chrome belong in the app.
 
-```
-┌─────────────────────────────────────┐
-│  [Selected: Applied Skills    ▼]   │  ← Trigger button
-└─────────────────────────────────────┘
-                 │
-                 ▼ (click)
-┌─────────────────────────────────────┐
-│  Recent                             │  ← Quick dropdown (tier 1)
-│  ┌───────────────────────────────┐  │
-│  │ Applied Skills            ✓   │  │
-│  │ Strategic Professional        │  │
-│  │ Operational                   │  │
-│  └───────────────────────────────┘  │
-│  ┌───────────────────────────────┐  │
-│  │ 🔍 Search all levels...       │  │  ← Opens full modal
-│  └───────────────────────────────┘  │
-└─────────────────────────────────────┘
-```
+For the retained helper contracts, see:
 
-#### Basic Single-Select
-
-```svelte
-<script lang="ts">
-  import { RelationSelector, type SelectableRelation } from "@decodelabs/underlay/patterns";
-
-  let pathwayId = $state<string | null>(null);
-
-  // Server-side search function
-  async function searchPathways(query: string): Promise<{ items: SelectableRelation[]; total: number }> {
-    const response = await fetch(`/api/pathways/search?q=${encodeURIComponent(query)}`);
-    return response.json();
-  }
-
-  // Optional: fetch recent/suggested items
-  async function getSuggestions(): Promise<SelectableRelation[]> {
-    const response = await fetch('/api/pathways/recent');
-    return response.json();
-  }
-</script>
-
-<Field label="Pathway" forId="pathway">
-  <RelationSelector
-    label="Select Pathway"
-    bind:value={pathwayId}
-    search={searchPathways}
-    suggestions={getSuggestions}
-    suggestionsLabel="Recent"
-    placeholder="Choose a pathway..."
-  />
-</Field>
-```
-
-#### Multi-Select with Pills
-
-```svelte
-<script lang="ts">
-  import { RelationSelector } from "@decodelabs/underlay/patterns";
-
-  let moduleIds = $state<string[]>([]);
-</script>
-
-<Field label="Modules" forId="modules">
-  <RelationSelector
-    label="Select Modules"
-    mode="multi"
-    bind:values={moduleIds}
-    search={searchModules}
-    placeholder="Choose modules..."
-  />
-</Field>
-```
-
-Multi-select mode shows:
-- Pills for selected items (up to 3 visible, then "+N more")
-- Checkboxes in dropdown and modal
-- Confirm/Cancel buttons in modal
-
-#### Dependent Fields
-
-Handle field dependencies (e.g., Level depends on Pathway) at the form level:
-
-```svelte
-<script lang="ts">
-  let pathwayId = $state<string | null>(null);
-  let levelId = $state<string | null>(null);
-
-  // Clear dependent field when parent changes
-  $effect(() => {
-    if (!pathwayId) {
-      levelId = null;
-    }
-  });
-
-  // Search function scoped to selected pathway
-  const searchLevels = (query: string) =>
-    api.searchLevels(pathwayId!, query);
-</script>
-
-<Field label="Pathway" required>
-  <RelationSelector
-    label="Select Pathway"
-    bind:value={pathwayId}
-    search={searchPathways}
-  />
-</Field>
-
-<Field label="Level">
-  <RelationSelector
-    label="Select Level"
-    bind:value={levelId}
-    search={searchLevels}
-    disabled={!pathwayId}
-    placeholder={!pathwayId ? "Select a pathway first" : "Select a level..."}
-  />
-</Field>
-```
-
-#### With Create Form
-
-Embed a form to create new items without leaving the modal:
-
-```svelte
-<RelationSelector
-  label="Select Level"
-  bind:value={levelId}
-  search={searchLevels}
-  allowCreate
-  createLabel="Add new level"
->
-  {#snippet createForm(onSuccess, onCancel)}
-    <LevelQuickCreateForm
-      pathwayId={pathwayId}
-      onSuccess={(level) => onSuccess(level)}
-      onCancel={onCancel}
-    />
-  {/snippet}
-</RelationSelector>
-```
-
-The create form:
-- Appears as a collapsible section in the modal
-- Calls `onSuccess(item)` when created - item is auto-selected
-- Calls `onCancel()` to close without creating
-
-#### Custom Item Rendering
-
-Use the `renderItem` snippet for custom item display:
-
-```svelte
-<RelationSelector
-  label="Select Module"
-  bind:value={moduleId}
-  search={searchModules}
->
-  {#snippet renderItem(item, selected)}
-    <div class="module-item" class:selected>
-      <span class="code">{item.metadata?.code}</span>
-      <span class="title">{item.label}</span>
-      <span class="pathway">{item.metadata?.pathwayName}</span>
-    </div>
-  {/snippet}
-</RelationSelector>
-```
-
-#### Props Reference
-
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `value` | `string \| null` | `null` | Selected value ID (single-select) |
-| `values` | `string[]` | `[]` | Selected value IDs (multi-select) |
-| `mode` | `"single" \| "multi"` | `"single"` | Selection mode |
-| `search` | `(query, options?) => Promise<SearchResult>` | required | Server-side search function |
-| `suggestions` | `(options?: SuggestionOptions) => Promise<T[]>` | - | Fetch suggestions/recent items |
-| `selectionHistory` | `SelectionHistory` | - | Track selections for intelligent suggestions ([guide](./092-selection-suggestions.md)) |
-| `label` | `string` | required | Modal title |
-| `placeholder` | `string` | `"Select..."` | Trigger button placeholder |
-| `searchPlaceholder` | `string` | `"Search..."` | Search input placeholder |
-| `emptyMessage` | `string` | `"No results found"` | Empty search results message |
-| `suggestionsLabel` | `string` | `"Suggestions"` | Label for suggestions section |
-| `searchAllLabel` | `string` | `"Search all..."` | Label for search button in dropdown |
-| `disabled` | `boolean` | `false` | Disable the selector |
-| `required` | `boolean` | `false` | Mark as required field |
-| `error` | `string` | - | Error message to display |
-| `quickSelect` | `boolean` | `true` if suggestions provided | Enable quick-select dropdown |
-| `quickSelectLimit` | `number` | `5` | Max items in quick dropdown |
-| `allowCreate` | `boolean` | `false` | Show "Add new" button |
-| `createLabel` | `string` | `"Add new"` | Create button label |
+- [Selection Suggestions](./092-selection-suggestions.md)
+- [Form Helpers](./096-form-helpers.md)
+- [Relation Selector Drill-Down Recipe](../patterns/relation-selector-drilldown.md)
+- [Relation Selector Inline Create Recipe](../patterns/relation-selector-inline-create.md)
 | `onCreate` | `(item: T) => void` | - | Called when item created |
 
 #### Callbacks
@@ -3150,8 +2897,8 @@ The `.underlay-details-content` class provides a responsive 2-column grid for ad
 **What it does:**
 - Uses a 2-column grid with `gap: 1.5rem`, collapsing to 1 column in narrow containers
 - Applies `align-items: stretch` and `min-width: 0` to prevent overflow in grid children
-- Makes direct child cards (`InlineListCard`, `DetailsCard`, `Card`) fill cell width by default
-- Stretches direct child `InlineListCard` and direct `Card` content blocks so side-by-side rows align vertically
+- Makes direct child cards (`DetailsCard`, `Card`) fill cell width by default
+- Stretches direct `Card` content blocks so side-by-side rows align vertically
 - Supports `.span-full` and direct Poodle `Tabs` sections spanning both columns
 
 ### Media Preview Utilities
@@ -3554,78 +3301,34 @@ Handle errors at the page level with SvelteKit's error handling:
 
 ### Toast Notifications (Optional)
 
-For temporary success/error messages:
+For temporary success/error messages, keep rendering on Poodle `ToastHost` and
+use Underlay's retained feedback runtime helpers for the store/context layer:
 
 ```svelte
 <script>
-  import { writable } from "svelte/store";
-  
-  const toasts = writable<Array<{ id: number; message: string; type: "success" | "error" }>>([]);
-  
-  export function showToast(message: string, type: "success" | "error" = "success") {
-    const id = Date.now();
-    toasts.update(t => [...t, { id, message, type }]);
-    
-    setTimeout(() => {
-      toasts.update(t => t.filter(toast => toast.id !== id));
-    }, 5000);
-  }
+  import { setContext } from "svelte";
+  import { ToastHost } from "@poodle/svelte-composites";
+  import {
+    UNDERLAY_TOASTS_CONTEXT_KEY,
+    createToastStore
+  } from "@decodelabs/underlay/runtime/feedback";
+
+  const toastStore = createToastStore();
+  setContext(UNDERLAY_TOASTS_CONTEXT_KEY, toastStore);
 </script>
 
-<!-- Toast Container -->
-<div class="toast-container">
-  {#each $toasts as toast (toast.id)}
-    <div class="toast toast--{toast.type}">
-      {toast.message}
-      <button on:click={() => toasts.update(t => t.filter(t => t.id !== toast.id))}>
-        ×
-      </button>
-    </div>
-  {/each}
-</div>
+<ToastHost store={toastStore} />
 
-<style>
-  .toast-container {
-    position: fixed;
-    top: 1rem;
-    right: 1rem;
-    z-index: 9999;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
+<!-- Later in child components -->
+<script>
+  import { useToasts } from "@decodelabs/underlay/runtime/feedback";
+
+  const toastStore = useToasts();
+
+  function handleSave() {
+    toastStore.push({ variant: "success", message: "Saved!" });
   }
-  
-  .toast {
-    padding: 1rem 1.5rem;
-    border-radius: var(--underlay-border-radius);
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    animation: slide-in 0.3s ease-out;
-  }
-  
-  .toast--success {
-    background: var(--underlay-color-success);
-    color: white;
-  }
-  
-  .toast--error {
-    background: var(--underlay-color-error);
-    color: white;
-  }
-  
-  @keyframes slide-in {
-    from {
-      transform: translateX(100%);
-      opacity: 0;
-    }
-    to {
-      transform: translateX(0);
-      opacity: 1;
-    }
-  }
-</style>
+</script>
 ```
 
 ---

@@ -1,12 +1,15 @@
 # 000 - Architecture Overview
 
-This guide provides step-by-step instructions for initializing a new project that follows an Underlay-based multi-repo (default) or monorepo architecture. This architecture is designed for full-stack applications requiring:
+This guide provides step-by-step instructions for initializing a new project
+that follows an Underlay-based multi-repo (default) or monorepo architecture.
+This architecture is designed for full-stack applications requiring:
 
 - **Rust API backend** with domain-driven design
 - **TypeScript API client** with typed commands
 - **SvelteKit frontends** (artist-facing + admin)
-- **Shared UI kit** for consistent design
-- **Underlay integration** for cross-cutting primitives
+- **Shared UI kit** built on Poodle primitives and generic composites
+- **Underlay integration** for workflow shells, client/runtime helpers, and
+  specialized shared systems
 
 ## When to Use This Guide
 
@@ -84,7 +87,18 @@ impl AuthProvider for MyAppAuthProvider {
 }
 ```
 
-### 3. No Forced Stack Choices
+### 3. UI Boundary Is Explicit
+
+Use the package that actually owns the contract:
+
+- Poodle for primitives and generic composites
+- Underlay `patterns` for retained workflow and page-shell UI
+- Underlay `runtime` for shared browser/app orchestration and controllers
+- Underlay `utils` for small standalone helpers
+- Underlay `client` for transport and SvelteKit-facing integration helpers
+- Underlay `nightfire` for structured content editing/runtime
+
+### 4. No Forced Stack Choices
 
 Underlay provides **defaults** but they are **optional**.
 
@@ -98,7 +112,7 @@ Underlay provides **defaults** but they are **optional**.
 | UI Framework | Svelte | React, Vue |
 | Styling | CSS + Underlay tokens | Tailwind, Bootstrap |
 
-### 4. Consistent Conventions
+### 5. Consistent Conventions
 
 Following naming and structure patterns from reference apps ensures:
 

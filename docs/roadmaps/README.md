@@ -23,8 +23,49 @@ Roadmaps are executable delivery plans for Underlay library work.
 - `g01.001` through `g01.041` record the current Underlay roadmap corpus
 - `g01.042` is complete for Poodle adoption and Underlay UI contraction
 - `g01.043` is complete for Poodle public prop normalization and downstream API migration
-- `g01.044` is now active for the shared UI documentation and demo refresh
-- the next net-new active roadmap should open as `g01.045`
+- `g01.044` is complete for the shared UI documentation and demo refresh
+- `g01.045` is complete for the remaining Underlay surface contraction tail
+- `g01.046` is complete for reassessing the supposedly retained generic Underlay surface, retiring the card and action residue that really belonged in Poodle, and freezing the remaining true workflow/runtime holds explicitly
+- `g01.047` is complete for moving the richer generic table runtime from Underlay `DataTable` into Poodle and retiring the public Underlay table surface
+- `g01.048` is complete for moving the richer generic multi-field sort-builder runtime from Underlay `OrderBy` into Poodle and retiring the public Underlay sort-builder surface
+- `g01.049` is complete for moving the reusable reorder-session workflow shell from Underlay `ReorderableList` into Poodle and retiring the public Underlay reorder pattern
+- `g01.050` is complete for splitting the final runtime-facing generic holds, moving the inline loading contract into Poodle `PageLoading`, and retiring public Underlay `PageLoading`
+- `g01.051` is complete for moving the final retained runtime host from Underlay `ToastHost` into a Poodle-owned toast runtime shell over `ToastStack` and retiring the public Underlay host
+- `g01.052` is complete for challenging the remaining obvious-equivalent public Underlay residue, opening the focused successor waves, and carrying that direct-successor queue through to completion
+- `g01.053` is complete for expanding Poodle `LogList` from a console-style log viewer into the broader audit/activity list contract, migrating the active caller family, and retiring public Underlay `LogList`
+- `g01.054` is complete for widening Poodle `BulkActionBar`, migrating the grouped caller families, and retiring public Underlay `BatchActionBar`
+- `g01.055` is complete for moving the remaining shared `PageHeader` shell onto Poodle `PageHeader` or direct Poodle-based composition, then retiring the public Underlay header wrapper
+- `g01.056` is complete for moving the reusable callback-driven media workflow out of Underlay and retiring public Underlay `MediaPicker`
+- `g01.057` is complete for replacing Underlay `DropdownMenu` with direct Poodle `Menu` composition plus the smallest honest Poodle menu-ergonomics expansion, then retiring public Underlay `DropdownMenu`
+- `g01.058` is complete for confirming `AutonomousList` has no live caller family and retiring the dead public shell, helper, and type exports
+- `g01.059` is complete for removing the dead public `PageHeaderMeta` family after the broader `PageHeader` successor wave
+- `g01.060` is complete for retiring public Underlay `MediaActionsMenu` after moving the app-local wrappers onto direct Poodle `Menu` / `AlertDialog` plus local workflow wiring
+- `g01.061` is complete for retiring public Underlay `ErrorBoundary` after proving the remaining caller family had collapsed to two tiny app-root wrappers
+- `g01.062` is complete for retiring public Underlay `CopyActionsMenu` after proving the remaining caller family was just a small admin-local convenience helper
+- `g01.063` is complete for retiring public Underlay `DetailPageShell` after migrating the final Dairy route and internal caller tail onto direct Poodle `PageHeader` / `Tabs` composition
+- `g01.064` is complete for reassessing the remaining public auth component family, retiring `AuthLayout`, confirming `LoginPage` / `ForgotPasswordFlow` as retained shared workflow surfaces for now, and splitting the helper layer cleanly
+- `g01.065` is complete for moving the reusable one-time-code input contract from Underlay `TotpInput` into Poodle, migrating the retained shared auth and grouped account-security proof family, and retiring public Underlay `TotpInput`
+- `g01.066` is complete for confirming `PasswordRequirements` still earns retained Underlay ownership for now because it bundles auth-policy fetch, fallback defaults, and shared password-rule rendering across retained auth internals and grouped account-password pages
+- `g01.067` is complete for confirming `SpaFormShell` as an explicit retained Underlay structural shell after the strict create/edit caller review and resetting the queue around the next honest shell challenge
+- `g01.068` is complete for confirming that `AiRoutingAdmin` no longer earns a public Underlay export, moving the guide/example surface onto direct Poodle composition over `createAiRoutingOpsController`, and retiring the public shell
+- `g01.069` is complete for retiring the public `RelationSelector` UI wrapper family, keeping only the retained lower-level helper layer in Underlay, and moving the guide surface to app-local selector composition
+- `g01.070` is complete for confirming that `DetailMeta*` still earns retained Underlay ownership as a broad compact metadata-row helper family and aligning the guide/inventory surface to that stop point
+- `g01.071` is complete for confirming that the remaining retained auth workflow surface still earns shared public Underlay ownership and closing the auth family out as an explicit retained stop point
+- `g01.072` is complete for refining the auth boundary by moving `LoginPage` / `ForgotPasswordFlow` to public `patterns` and splitting `PasswordRequirements` into a Poodle UI surface plus an Underlay auth-policy adapter
+- `g01.075` is complete for auditing the remaining TypeScript surface after the Svelte contraction line, classifying what is truly retained, what may become future Poodle helper work, and what looks more like standalone-package material than Underlay UI debt
+- `g01.076` is complete for retiring the dead `embed` package surface, introducing a dedicated `runtime` namespace, and narrowing `patterns` to retained workflow/page shells
+- `g01.077` is complete for organizing the retained `runtime` helper surface into deliberate domain sub-barrels so the namespace is explicit rather than flat compatibility residue
+- `g01.078` is complete for confirming that the retained toast/context helper family is still runtime orchestration, not Poodle UI, and belongs explicitly on `@decodelabs/underlay/runtime/feedback`
+- `g01.079` is complete for removing duplicated client auth-store exports from `runtime/auth`, confirming the retained auth-runtime boundary, and aligning the active guides to the narrower `@decodelabs/underlay/runtime/auth` surface
+- `g01.080` is complete for confirming the retained browser-runtime boundary, keeping storage/timezone/keyboard helpers on `@decodelabs/underlay/runtime/browser`, and moving clipboard-plus-toast workflow to `@decodelabs/underlay/runtime/feedback`
+- `g01.081` is complete for confirming the retained `data`, `media`, and `relations` runtime families, narrowing `runtime/relations` to the actual helper/context/type layer, and aligning the active guides to the stable subpaths
+- `g01.082` is complete for confirming the root `@decodelabs/underlay/runtime` barrel as an explicit retained convenience surface rather than trimming it into churn now that the stable subpaths are documented
+- `g01.083` is complete for confirming the `client` / `runtime` seam as an explicit retained split: SvelteKit navigation and transport stay on `client`, while framework-agnostic navigation context/state stays on `runtime`
+- `g01.084` is complete for confirming the retained `nightfire` package surface, keeping the public package boundary stable, and cleaning up the internal editor-only widget placement for future extraction readiness
+- `g01.085` is complete for confirming the retained `utils` package surface, exposing focused `utils/*` subpaths, and removing raw Base64URL helpers from the root public barrel
+- `g01.086` is complete for aligning the front-door and architecture docs to the real retained TypeScript/Svelte package surfaces after the contraction and runtime audit line
+- `g01.087` is complete for splitting the pure formatting and slug helpers out of `runtime/i18n` into explicit `utils/i18n` and `utils/slug` homes while keeping `runtime/i18n` stable as a compatibility barrel
+- `g01.088` is complete for closing the sibling-repo package-boundary recovery line, restoring Dairy validation after the manual import repair, and confirming that only historical references remain to the retired `components`, `embed`, and deep `patterns` entrypoints
 - use `backlog/` for deferred work that is not yet active execution scope
 
 ## Historical language boundary
@@ -80,12 +121,90 @@ Roadmaps are executable delivery plans for Underlay library work.
 | 041 | [Form Draft Persistence](./g01/041-form-draft-persistence.md) | Complete | Add opt-in draft persistence and restoration to `createFormState` using the shared storage wrappers |
 | 042 | [Poodle Adoption and Underlay UI Contraction](./g01/042-poodle-adoption-and-underlay-ui-contraction.md) | Complete | Move primitives and generic composites to Poodle, keep Underlay focused on structural shells and specialized systems, and run the coexistence migration across consuming apps |
 | 043 | [Poodle Public Prop Normalization](./g01/043-poodle-public-prop-normalization.md) | Complete | Normalize Poodle onto one plain-state boolean prop language, migrate Underlay and all consumer app call sites, and track the sweep through a durable manifest |
-| 044 | [Shared UI Documentation and Demo Refresh](./g01/044-shared-ui-documentation-and-demo-refresh.md) | In Progress | Rebuild the shared UI documentation and demo layer around the stabilized post-migration Underlay surface and its boundary with Poodle |
+| 044 | [Shared UI Documentation and Demo Refresh](./g01/044-shared-ui-documentation-and-demo-refresh.md) | Complete | Rebuild the shared UI documentation and demo layer around the stabilized post-migration Underlay surface and its boundary with Poodle |
+| 045 | [Remaining Underlay Surface Contraction](./g01/045-remaining-underlay-surface-contraction.md) | Complete | Remove the remaining low-value generic Underlay export tail so the public surface matches the true retained workflow-shell boundary |
+| 046 | [Retained Underlay Surface Reassessment](./g01/046-retained-underlay-surface-reassessment.md) | Complete | Reassess the supposedly final retained generic surface, move the real design-system capability into Poodle, and leave only the explicit workflow/runtime holds in Underlay |
+| 047 | [Poodle DataTable Capability Expansion](./g01/047-poodle-data-table-capability-expansion.md) | Complete | Expand Poodle `DataTable` in staged batches, migrate the active caller family, and retire the public Underlay `DataTable` surface |
+| 048 | [Poodle OrderBy Capability Expansion](./g01/048-poodle-order-by-capability-expansion.md) | Complete | Expand Poodle `OrderBy` from a single-sort toolbar into the multi-field sort-builder contract the active admin caller family needed, then retire public Underlay `OrderBy` |
+| 049 | [Poodle ReorderableList Workflow Expansion](./g01/049-poodle-reorderable-list-workflow-expansion.md) | Complete | Expand Poodle reorder support from a low-level list primitive into the reusable reorder-session workflow shell the active admin caller family still needed, then retire public Underlay `ReorderableList` |
+| 050 | [Runtime Host And Inline Loading Reassessment](./g01/050-runtime-host-and-inline-loading-reassessment.md) | Complete | Split `ToastHost` and `PageLoading` into explicit runtime capability decisions, move inline loading into Poodle `PageLoading`, and retire public Underlay `PageLoading` |
+| 051 | [Poodle Toast Host Runtime Expansion](./g01/051-poodle-toast-host-runtime-expansion.md) | Complete | Expand Poodle over `ToastStack` to absorb the final store-aware toast host/runtime shell, migrate the root-layout callers, and retire public Underlay `ToastHost` |
+| 052 | [Obvious Equivalent Surface Reassessment](./g01/052-obvious-equivalent-surface-reassessment.md) | Complete | Reassess the remaining public Underlay surface that already has direct Poodle equivalents or thin composition boundaries, retire the clean residue, and route the harder surfaces into focused follow-on waves |
+| 053 | [Poodle LogList Capability Expansion](./g01/053-poodle-log-list-capability-expansion.md) | Complete | Expand Poodle `LogList` into the generic audit/activity log-list contract, migrate the active proof family, and retire the public Underlay `LogList` surface |
+| 054 | [BatchActionBar Successor Wave](./g01/054-batch-action-bar-successor-wave.md) | Complete | Widen Poodle `BulkActionBar`, migrate the grouped live caller family, and retire public Underlay `BatchActionBar` |
+| 055 | [PageHeader Successor Wave](./g01/055-page-header-successor-wave.md) | Complete | Reassess the remaining shared header shell, expand Poodle `PageHeader` only where the live retained/app caller family proves it is reusable, then retire public Underlay `PageHeader` |
+| 056 | [MediaPicker Successor Wave](./g01/056-media-picker-successor-wave.md) | Complete | Move the reusable callback-driven media workflow layer into a Poodle-owned helper/controller split over the existing media surfaces, then retire public Underlay `MediaPicker` |
+| 057 | [DropdownMenu Successor Wave](./g01/057-dropdown-menu-successor-wave.md) | Complete | Reassess the thin Underlay menu wrapper against Poodle `Menu`, add only the smallest generic ergonomics gap if needed, then retire public Underlay `DropdownMenu` |
+| 058 | [AutonomousList Successor Wave](./g01/058-autonomous-list-successor-wave.md) | Complete | Reassess the retained `AutonomousList` shell, confirm whether any live caller family remains, then retire the dead public shell if the active surface is already gone |
+| 059 | [PageHeaderMeta Cleanup Wave](./g01/059-page-header-meta-cleanup-wave.md) | Complete | Sweep the dead public `PageHeaderMeta` helper family after the `PageHeader` migration and retire the export residue if live callers are gone |
+| 060 | [MediaActionsMenu Reassessment Wave](./g01/060-media-actions-menu-reassessment-wave.md) | Complete | Reassess the shared media action workflow helper, move the app-local wrappers onto direct Poodle composition, and retire the public Underlay export |
+| 061 | [ErrorBoundary Reassessment Wave](./g01/061-error-boundary-reassessment-wave.md) | Complete | Reassess the remaining public error-boundary shell, confirm the shared contract is gone, and retire the public export in favor of local app-root composition |
+| 062 | [CopyActionsMenu Reassessment Wave](./g01/062-copy-actions-menu-reassessment-wave.md) | Complete | Reassess the remaining public clipboard action helper, confirm the shared contract is gone, and retire the public export in favor of app-local helpers |
+| 063 | [DetailPageShell Reassessment Wave](./g01/063-detail-page-shell-reassessment-wave.md) | Complete | Reassess the retained structural detail-page shell, migrate the live caller family onto direct Poodle composition, and retire the public export |
+| 064 | [Auth Surface Reassessment Wave](./g01/064-auth-surface-reassessment-wave.md) | Complete | Reassess the remaining public auth component family and decide which parts belong in Poodle, local app composition, or explicit retained Underlay ownership |
+| 065 | [Poodle TotpInput Capability Wave](./g01/065-poodle-totp-input-capability-wave.md) | Complete | Move the reusable one-time-code input behavior from Underlay `TotpInput` into Poodle, migrate the grouped auth/account proof family, and retire public Underlay `TotpInput` |
+| 066 | [PasswordRequirements Reassessment Wave](./g01/066-password-requirements-reassessment-wave.md) | Complete | Reassess whether `PasswordRequirements` still earns public Underlay ownership; confirm that it remains an explicit retained Underlay auth helper for now |
+| 067 | [SpaFormShell Reassessment Wave](./g01/067-spa-form-shell-reassessment-wave.md) | Complete | Confirm `SpaFormShell` as an explicit retained Underlay structural shell after the strict create/edit caller review and reset the queue around the next honest shell challenge |
+| 068 | [AiRoutingAdmin Reassessment Wave](./g01/068-ai-routing-admin-reassessment-wave.md) | Complete | Confirm that `AiRoutingAdmin` no longer earns a public Underlay export, move the guide/example surface onto direct Poodle composition over `createAiRoutingOpsController`, and retire the public shell |
+| 069 | [RelationSelector Reassessment Wave](./g01/069-relation-selector-reassessment-wave.md) | Complete | Split `RelationSelector` into a retained helper layer plus app-local UI composition, then retire the public Underlay UI wrapper family |
+| 070 | [DetailMeta Reassessment Wave](./g01/070-detail-meta-reassessment-wave.md) | Complete | Reassess the remaining public `DetailMeta` helper family and confirm that it still earns retained Underlay ownership after the broader shell retirements |
+| 071 | [Auth Workflow Reassessment Wave](./g01/071-auth-workflow-reassessment-wave.md) | Complete | Recheck the remaining retained auth workflow surface, confirm the remaining auth workflows/helpers still earn shared public Underlay ownership, and close the family out as an explicit retained stop point |
+| 072 | [Auth Boundary Refinement Wave](./g01/072-auth-boundary-refinement-wave.md) | Complete | Move the retained auth workflow pages to public `patterns` and split `PasswordRequirements` into a Poodle UI surface plus an Underlay auth-policy adapter |
+| 073 | [Retained Public Surface Classification](./g01/073-retained-public-surface-classification.md) | Complete | Classify the remaining public Underlay surface across `components`, `patterns`, and `nightfire` so the post-contraction boundary is explicit and durable |
+| 074 | [Non-Public Svelte Surface Recovery](./g01/074-non-public-svelte-surface-recovery.md) | Complete | Recover from the too-optimistic post-contraction stop point by deleting dead non-public Svelte wrappers, removing the old `components` namespace, and reducing the remaining internal `ts/src` surface to the truly necessary retained implementation files |
+| 075 | [TS Surface Boundary Audit](./g01/075-ts-surface-boundary-audit.md) | Complete | Audit the remaining TypeScript surface after the Svelte contraction line and classify which retained helpers belong in Underlay, which may become future Poodle helper work, and which look more like standalone package candidates |
+| 076 | [Runtime Namespace and Embed Retirement](./g01/076-runtime-namespace-and-embed-retirement.md) | Complete | Retire the dead `embed` surface, introduce `@decodelabs/underlay/runtime`, and narrow `patterns` to retained workflow/page shells |
+| 077 | [Runtime Surface Organization](./g01/077-runtime-surface-organization.md) | Complete | Organize the retained runtime helper surface into explicit domain sub-barrels so the namespace no longer behaves like a flat compatibility dump |
+| 078 | [Feedback Runtime Reassessment](./g01/078-feedback-runtime-reassessment.md) | Complete | Confirm the retained toast/context helper family as runtime orchestration under `@decodelabs/underlay/runtime/feedback` rather than design-system UI |
+| 079 | [Auth Browser Runtime Seam](./g01/079-auth-browser-runtime-seam.md) | Complete | Remove duplicated client auth-store exports from `runtime/auth` and confirm the narrower retained auth-runtime boundary |
+| 080 | [Browser Runtime Seam](./g01/080-browser-runtime-seam.md) | Complete | Confirm the retained browser-runtime boundary, keeping storage/timezone/keyboard helpers on `runtime/browser` and clipboard-plus-toast workflow on `runtime/feedback` |
+| 081 | [Data Media Relations Runtime Seam](./g01/081-data-media-relations-runtime-seam.md) | Complete | Confirm the retained `data`, `media`, and `relations` runtime families and narrow `runtime/relations` to the actual helper/context/type layer |
+| 082 | [Runtime Root Barrel Reassessment](./g01/082-runtime-root-barrel-reassessment.md) | Complete | Confirm the root `@decodelabs/underlay/runtime` barrel as an explicit retained convenience surface while teaching the narrower subpaths for new focused contracts |
+| 083 | [Client Runtime Navigation Seam](./g01/083-client-runtime-navigation-seam.md) | Complete | Confirm the retained split between `@decodelabs/underlay/client` and `@decodelabs/underlay/runtime` so further namespace churn is avoided |
+| 084 | [Nightfire Surface Audit](./g01/084-nightfire-surface-audit.md) | Complete | Confirm the retained `nightfire` package surface and remove duplicated tiny editor wrappers where direct Poodle or local Nightfire markup already covers the needed behavior |
+| 085 | [Utils Surface Audit](./g01/085-utils-surface-audit.md) | Complete | Confirm the retained `utils` package surface, tighten its public boundary, and expose focused helper subpaths for WebAuthn, HTML sanitization, and sequence utilities |
+| 086 | [Retained Package Surface Docs Alignment](./g01/086-retained-package-surface-docs-alignment.md) | Complete | Align the architecture and front-door docs to the real retained `patterns`, `runtime`, `utils`, `client`, and `nightfire` package surfaces |
+| 087 | [Runtime I18n Helper Split](./g01/087-runtime-i18n-helper-split.md) | Complete | Move the pure formatting and slug helpers out of `runtime/i18n` into explicit `utils` homes while keeping the runtime surface stable for compatibility |
+| 088 | [Sibling Repo Package Boundary Recovery](./g01/088-sibling-repo-package-boundary-recovery.md) | Complete | Close the loop on the package-boundary recovery by manually repairing Dairy import fallout, revalidating the active sibling repos, and proving that only historical references remain to retired Underlay entrypoints |
 
-**Complete:** 41 | **Extracted:** 2 | **In progress:** 1 | **Not started:** 0
+**Complete:** 85 | **Extracted:** 2 | **In progress:** 0 | **Not started:** 0
+
+## Current Boundary
+
+There are no remaining meaningful generic Underlay holds or hidden package
+boundary surprises in the active app/docs surface. The non-public `ts/src`
+recovery sweep is complete too, so the supported Svelte boundary is now aligned
+with the real retained surface.
+
+The remaining public API is intentionally retained and more explicit:
+
+- `@decodelabs/underlay/patterns`
+  - `LoginPage`
+  - `ForgotPasswordFlow`
+  - `PasswordRequirements`
+  - `SpaFormShell`
+  - `DetailMeta*`
+  - retained workflow/page-shell exports only
+- `@decodelabs/underlay/runtime`
+  - retained helper/controller exports
+  - auth shared types
+  - formatter helpers
+- `@decodelabs/underlay/nightfire`
+  - retained editor/runtime package surface
+
+Dead public residue like `SlugField`, `EntityActionsMenu`, the old restore
+views, and the unused `embed` package surface is no longer exported.
+
+## Complete
+
+`g01.088` is complete. The Svelte contraction line, non-public residue
+recovery, retained TS package-surface audit, front-door package-language
+alignment, the final obvious pure-helper split out of `runtime`, and the
+active sibling-repo package-boundary recovery are now explicit and durable.
 
 ## Next Task
 
-Execute `g01.044` Batch 44.3 by broadening Storybook coverage across the
-highest-value retained Underlay workflow shells and helpers now that the
-bootstrap and first catalog shell are in place.
+This contraction and retained-surface audit line is complete. If work continues
+immediately, the next honest follow-on is a fresh boundary challenge on one
+retained package surface such as `client` or future `nightfire` extraction
+planning rather than more helper reshuffling.

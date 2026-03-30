@@ -1,6 +1,6 @@
 <script lang="ts">
-  import UnderlayMarkdownEditor from "../../components/MarkdownEditor.svelte";
-  import type { MarkdownEditorContext } from "../../components/markdown-editor-events";
+  import MarkdownEditorSurface from "./MarkdownEditorSurface.svelte";
+  import type { MarkdownEditorContext } from "./markdown-editor-context";
 
   type MarkdownBlock = {
     type?: string;
@@ -43,7 +43,7 @@
 </script>
 
 <div class="markdown-editor">
-  <UnderlayMarkdownEditor value={text} onChange={handleInput} {onContextChange} />
+  <MarkdownEditorSurface value={text} onChange={handleInput} {onContextChange} />
 </div>
 
 <style>

@@ -43,10 +43,18 @@
  *   />
  * {/each}
  *
- * <BatchActionBar
- *   selectedCount={batch.count}
- *   actions={batch.actions}
- *   onAction={(actionId) => batch.requestAction(actionId)}
+ * <BulkActionBar
+ *   selectionCount={batch.count}
+ *   actions={batch.availableActions.map((action) => ({
+ *     id: action.id,
+ *     label: action.label,
+ *     icon: action.icon,
+ *     tone: action.variant === "danger" ? "danger" : action.variant === "warning" ? "warning" : "default"
+ *   }))}
+ *   showSelectAll
+ *   on:clear={() => batch.clear()}
+ *   on:selectAll={() => batch.selectAll(items.map((item) => item.id))}
+ *   on:action={(event) => batch.requestAction(event.detail.id)}
  * />
  *
  * {#if batch.pendingAction}

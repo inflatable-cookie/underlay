@@ -1,6 +1,6 @@
 <script lang="ts">
   import { TextInput } from "@poodle/svelte-primitives";
-  import PasswordRequirements from "../../src/components/auth/PasswordRequirements.svelte";
+  import PasswordRequirements from "../../src/patterns/auth-workflows/PasswordRequirements.svelte";
 
   let password = $state("");
 

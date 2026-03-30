@@ -1,13 +1,17 @@
 <script lang="ts">
-  // @ts-nocheck
-  import { auth, authLoading, currentUser } from "$lib/stores/auth";
+import {
+  type AiRoutingAdminMessages,
+  type AiRoutingOpsOptions,
+  type AiRoutingOpsSource
+} from "@decodelabs/underlay/runtime";
+import {
+  auth,
+  authLoading,
+  currentUser } from "$lib/stores/auth";
   import { platformCommands } from "@your-org/client";
-  import {
-    AiRoutingAdmin,
-    type AiRoutingAdminMessages,
-    type AiRoutingOpsOptions,
-    type AiRoutingOpsSource
-  } from "@decodelabs/underlay/patterns";
+  import { PageHeader } from "@poodle/svelte-composites";
+  // @ts-nocheck
+    import AiRoutingOpsPanel from "./AiRoutingOpsPanel.svelte";
 
   const getToken = auth.getTokenProvider();
 
@@ -41,12 +45,11 @@
   };
 </script>
 
-<AiRoutingAdmin
+<PageHeader section="AI Routing" backHref="/system" backLabel="Back to system" />
+
+<AiRoutingOpsPanel
   {source}
   {enabled}
   {windowDefaults}
   {messages}
-  section="AI Routing"
-  backHref="/system"
-  backLabel="Back to system"
 />

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Select from "../../components/Select.svelte";
+  import { Select } from "@poodle/svelte-primitives";
   import type { GroupedOptions, NightfireBlockOptionInput } from "./grouped-options";
 
   type TypeOption = Pick<NightfireBlockOptionInput, "type" | "label">;
@@ -92,6 +92,6 @@
   value={value ?? ""}
   items={groups ? undefined : items}
   {groups}
-  triggerAriaLabel="Block type"
+  ariaLabel="Block type"
   onchange={onChange}
 />

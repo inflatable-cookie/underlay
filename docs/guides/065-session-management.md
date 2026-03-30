@@ -1377,7 +1377,7 @@ In your app's authenticated layout, configure the global auth handlers:
 ```svelte
 <!-- src/routes/(app)/+layout.svelte -->
 <script lang="ts">
-  import { configureAuth } from '@decodelabs/underlay/patterns';
+  import { configureAuth } from '@decodelabs/underlay/runtime/auth';
   import { auth, authLoading, currentUser } from '$lib/stores/auth';
 
   // Configure global auth handlers for useAuthenticatedData
@@ -1471,7 +1471,7 @@ Once configured, `useAuthenticatedData` automatically uses the global handlers. 
 
 ```svelte
 <script lang="ts">
-  import { useAuthenticatedData } from '@decodelabs/underlay/patterns';
+  import { useAuthenticatedData } from '@decodelabs/underlay/runtime/auth';
   import { myApiCommands } from 'my-api-client';
 
   // Auto-fetches when auth is ready — no $effect needed
@@ -1498,7 +1498,7 @@ For list components that refetch when URL search params change (sorting, filteri
 
 ```svelte
 <script lang="ts">
-  import { useAuthenticatedData } from '@decodelabs/underlay/patterns';
+  import { useAuthenticatedData } from '@decodelabs/underlay/runtime/auth';
   import { dataSearchParams } from '$lib/utils/list-query';
   import { page } from '$app/stores';
 
@@ -1523,7 +1523,7 @@ If `getAuthLoading`/`getCurrentUser` are not in the global config, you can wire 
 
 ```svelte
 <script lang="ts">
-  import { useAuthenticatedData } from '@decodelabs/underlay/patterns';
+  import { useAuthenticatedData } from '@decodelabs/underlay/runtime/auth';
   import { authLoading, currentUser } from '$lib/stores/auth';
 
   const pageData = useAuthenticatedData(

@@ -50,12 +50,11 @@ Set up [Storybook](https://storybook.js.org/) for the Underlay component library
 - TextInput, Select, Switch, DateInput
 - Card, ListCard
 - Dialog, AlertDialog, DropdownMenu
-- Badge, Pill, StatusBadge
+- Badge, Pill
 - Field, FieldSet
 
 **Medium Priority** (specialized):
 - LogList, BatchActionBar
-- StatCard, StatGrid
 - DataTable, Pagination
 - MediaPicker, FileUpload
 - Tabs

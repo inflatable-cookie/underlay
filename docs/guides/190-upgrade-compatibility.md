@@ -112,7 +112,7 @@ Reusable templates:
 - Impact class: `additive`
 - Affected consumers: apps with custom WebAuthn ceremony code or passkey settings UIs
 - Required actions:
-  - import `usePasskeyRegistration()` / `usePasskeyAuthentication()` from `@decodelabs/underlay/patterns`
+  - import `usePasskeyRegistration()` / `usePasskeyAuthentication()` from `@decodelabs/underlay/runtime/auth`
   - build passkey settings screens directly in the app over shared auth hooks
     and Poodle primitives; `PasskeyManager` is no longer part of the public
     Underlay component surface
@@ -126,17 +126,17 @@ Reusable templates:
 
 ### Zod Validation Export (`2026-03-11`)
 
-- Impact class: `additive`
-- Affected consumers: apps that want shared client-side schema validation
+- Impact class: `retired`
+- Affected consumers: apps that previously depended on the short-lived shared validation export
 - Required actions:
   - install `zod` in the consuming app: `bun add zod`
-  - import schemas from `@decodelabs/underlay/validation`
-  - optionally use `useValidatedForm()` from `@decodelabs/underlay/patterns`
+  - move any imported schemas into app-local code
+  - keep using `useValidatedForm()` from `@decodelabs/underlay/runtime` if the orchestration hook is still useful
 - Validation:
   - `effigy validate`
   - consumer form smoke tests for client-side validation plus server-side submit handling
 - Caveat:
-  - shared Zod schemas are a UX layer; server validation remains authoritative
+  - server validation remains authoritative; Underlay no longer ships a canned shared validation schema package
 
 ### AI Runtime Resilience Middleware (`2026-03-11`)
 
@@ -154,7 +154,7 @@ Reusable templates:
   - circuit-breaker state is in-memory per process in this batch
   - validation failures stop route fallback instead of silently trying another provider
   - cost tracking and dead-letter ownership remain app-specific
-  - routing admin consumers that use the shared `AiRoutingAdmin` surface can now pass through richer recovery fields (`avgRouteAttemptCount`, `circuitOpenRunCount`, `exhaustedChainRunCount`, `exhaustedChainRunCount24h`) when their backend exposes them
+  - AI routing admin pages should now compose directly over `createAiRoutingOpsController` plus Poodle surfaces rather than depending on a shared `AiRoutingAdmin` page shell
 
 ### Background Job Reliability and Observability (`2026-03-11`)
 
@@ -244,20 +244,18 @@ Reusable templates:
 
 ### Smart Skeletons (`2026-03-11`)
 
-- Impact class: `additive`
-- Affected consumers: apps using `Skeleton` for repeated loading layouts in lists, grids, tables, or detail pages
+- Impact class: `historical`
+- Affected consumers: older apps that previously adopted Underlay `DataSkeleton`
 - Required actions:
-  - optionally adopt `DataSkeleton` from `@decodelabs/underlay/components` for common data-shaped loading states
-  - optionally register named presets with `registerDataSkeletonPreset()` when the same shared layout config is reused across an app
-  - keep existing manual `Skeleton` composition where app-specific markup is still clearer
+  - replace Underlay `DataSkeleton` usage with direct Poodle `Skeleton` composition
+  - use the built-in Poodle presets (`table-row`, `card`, `list-item`, `detail-section`, `avatar-line`) where they fit
+  - keep app-specific loading markup local instead of depending on a shared Underlay preset registry
 - Validation:
-  - `bun x vitest --config vitest.component.config.ts run ts/tests/components/data-skeleton.component.test.ts ts/tests/patterns/skeleton.component.test.ts`
   - `effigy validate`
-  - app smoke checks on key loading states that adopt the new component
+  - app smoke checks on key loading states migrated to direct Poodle `Skeleton`
 - Caveat:
-  - the preset registry in this batch is intentionally declarative and limited to shared built-in layout configuration
-  - container auto-detection and arbitrary custom skeleton DSL work remain out of scope
-  - existing `Skeleton` usage remains valid and unchanged
+  - the old `DataSkeleton` preset registry is gone; if a repeated loading layout still matters, keep it app-owned
+  - Underlay `Skeleton` has already been internalized; all public loading placeholder composition should use Poodle `Skeleton`
 
 ### Form Draft Persistence (`2026-03-11`)
 

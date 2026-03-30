@@ -7,8 +7,8 @@ This guide covers the **Autonomous List Component** pattern - a set of hooks and
 The Autonomous List Component pattern solves the "god file" problem where parent pages accumulate excessive business logic from managing multiple entity types across tabs.
 
 Storybook coverage:
-- `Components/LogList`
-- `Components/BatchActionBar`
+- Poodle `LogList`
+- Poodle `BulkActionBar`
 - `Patterns/CopyActionsMenu`
 
 Run `effigy storybook` from the repo root to inspect the retained batch/list helper surface interactively.
@@ -80,10 +80,11 @@ Basic selection state management for multi-select list operations. Use this when
 ```svelte
 <script lang="ts">
   import { useBatchSelection } from '@decodelabs/underlay/patterns';
-  import { BatchActionBar } from '@decodelabs/underlay/components';
+  import { AlertDialog, BulkActionBar } from '@poodle/svelte-primitives';
 
   const items = $derived(data.projects);
   const selection = useBatchSelection<string>();
+  let showBatchDeleteConfirm = $state(false);
 
   async function handleBatchDelete() {
     const ids = selection.selectedIds;
@@ -100,12 +101,24 @@ Basic selection state management for multi-select list operations. Use this when
   />
 {/each}
 
-<BatchActionBar
-  selectedCount={selection.count}
+<BulkActionBar
+  selectionCount={selection.count}
   totalCount={items.length}
-  onClearSelection={selection.clear}
-  onSelectAll={() => selection.selectAll(items.map(i => i.id))}
-  onBatchDelete={handleBatchDelete}
+  actions={[{ id: "delete", label: "Delete", icon: "trash-2", tone: "danger" }]}
+  showSelectAll
+  on:clear={selection.clear}
+  on:selectAll={() => selection.selectAll(items.map(i => i.id))}
+  on:action={() => { showBatchDeleteConfirm = true; }}
+/>
+
+<AlertDialog
+  open={showBatchDeleteConfirm}
+  title="Delete selected items"
+  description={`Delete ${selection.count} selected item${selection.count === 1 ? "" : "s"}?`}
+  confirmLabel={`Delete ${selection.count} item${selection.count === 1 ? "" : "s"}`}
+  tone="danger"
+  onConfirm={handleBatchDelete}
+  onCancel={() => { showBatchDeleteConfirm = false; }}
 />
 ```
 
@@ -156,7 +169,7 @@ Extends `useBatchSelection` with action registration and execution. This is the 
 ```svelte
 <script lang="ts">
   import { useBatchActions } from '@decodelabs/underlay/patterns';
-  import { AlertDialog, BatchActionBar } from '@decodelabs/underlay/components';
+  import { AlertDialog, BulkActionBar } from '@poodle/svelte-primitives';
 
   const batch = useBatchActions<string>();
 
@@ -185,14 +198,19 @@ Extends `useBatchSelection` with action registration and execution. This is the 
 {/each}
 
 <!-- Batch action bar (fixed at bottom of screen when items selected) -->
-<BatchActionBar
-  selectedCount={batch.count}
+<BulkActionBar
+  selectionCount={batch.count}
   totalCount={items.length}
-  showDelete={false}
-  registeredActions={batch.availableActions}
-  onClearSelection={() => batch.clear()}
-  onSelectAll={() => batch.selectAll(items.map(i => i.id))}
-  onAction={(actionId) => batch.requestAction(actionId)}
+  actions={batch.availableActions.map((action) => ({
+    id: action.id,
+    label: action.label,
+    icon: action.icon,
+    tone: action.variant === "danger" ? "danger" : action.variant === "warning" ? "warning" : "default"
+  }))}
+  showSelectAll
+  on:clear={() => batch.clear()}
+  on:selectAll={() => batch.selectAll(items.map(i => i.id))}
+  on:action={(event) => batch.requestAction(event.detail.id)}
 />
 
 <!-- Confirmation dialog for pending actions -->
@@ -209,6 +227,11 @@ Extends `useBatchSelection` with action registration and execution. This is the 
   />
 {/if}
 ```
+
+This example now uses Poodle `ListCard` directly. The earlier `g01.046`
+reassessment moved the generic card behavior into Poodle, and `g01.058`
+retired public Underlay `AutonomousList`, so list assembly should now compose
+directly over Poodle list surfaces plus lower-level Underlay state helpers.
 
 #### Action Registration
 
@@ -339,7 +362,7 @@ Provides unified state management for list data fetching with filters. Use this 
 </script>
 
 {#if list.loading}
-  <PageLoading />
+  <PageLoading presentation="inline" />
 {:else if list.error}
   <Callout tone="danger" message={list.error} announceMode="polite" />
 {:else}
@@ -450,45 +473,48 @@ A list shell that provides consistent structure for autonomous lists with caller
   {/snippet}
 
   {#snippet filters()}
-    <FilterBar>
+    <FilterToolbar ariaLabel="Area filters" summaryText="Filters">
       <TextInput bind:value={search} placeholder="Search..." />
-    </FilterBar>
+    </FilterToolbar>
   {/snippet}
 
   {#snippet batch()}
-    <BatchActionBar ... />
+    <BulkActionBar ... />
   {/snippet}
 
-  <ListGrid>
+  <Grid columns="repeat(auto-fit, minmax(min(22.5rem, 100%), 1fr))" gap="lg">
     {#each pagination.items as item}
       <ListCard title={item.title} />
     {/each}
-  </ListGrid>
+  </Grid>
 </ListContainer>
 ```
 
 ---
 
-### `BatchActionBar`
+### `BulkActionBar`
 
-`BatchActionBar` is the retained Underlay batch-selection workflow shell. Use it when the bar needs to coordinate selection counts, select-all or deselect-all behavior, optional status-update confirmation, and registered batch actions. Poodle `BulkActionBar` is a narrower generic primitive and not a drop-in replacement for this workflow surface.
+`BulkActionBar` is now the shared batch-selection surface. Keep destructive confirmation and status-update flows explicit in the surrounding route or list controller instead of hiding them inside a wrapper.
 
-**Location:** `@decodelabs/underlay/components`
+**Location:** `@poodle/svelte-primitives`
 
 A fixed toolbar that appears at the bottom of the screen when items are selected.
 
 ```svelte
-<BatchActionBar
-  selectedCount={batch.count}
+<BulkActionBar
+  selectionCount={batch.count}
   totalCount={allItems.length}
   loading={batch.executing}
-  showDelete={false}
-  itemLabel="area"
-  itemLabelPlural="areas"
-  registeredActions={batch.availableActions}
-  onClearSelection={() => batch.clear()}
-  onSelectAll={() => batch.selectAll(allItems.map(i => i.id))}
-  onAction={(actionId) => batch.requestAction(actionId)}
+  actions={batch.availableActions.map((action) => ({
+    id: action.id,
+    label: action.label,
+    icon: action.icon,
+    tone: action.variant === "danger" ? "danger" : action.variant === "warning" ? "warning" : "default"
+  }))}
+  showSelectAll
+  on:clear={() => batch.clear()}
+  on:selectAll={() => batch.selectAll(allItems.map(i => i.id))}
+  on:action={(event) => batch.requestAction(event.detail.id)}
 />
 ```
 
@@ -496,19 +522,15 @@ A fixed toolbar that appears at the bottom of the screen when items are selected
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `selectedCount` | `number` | required | Number of selected items |
+| `selectionCount` | `number` | required | Number of selected items |
 | `totalCount` | `number` | `0` | Total items available for selection |
 | `loading` | `boolean` | `false` | Whether an operation is in progress |
-| `showDelete` | `boolean` | `true` | Show built-in delete button |
-| `showStatusUpdate` | `boolean` | `false` | Show status update button |
-| `statusOptions` | `array` | `[]` | Status options for status update |
-| `itemLabel` | `string` | `"item"` | Singular item label |
-| `itemLabelPlural` | `string` | `"items"` | Plural item label |
-| `registeredActions` | `DynamicAction[]` | `[]` | Dynamic actions from `useBatchActions` |
-| `onClearSelection` | `() => void` | required | Clear selection callback |
-| `onSelectAll` | `() => void` | - | Select all callback |
-| `onBatchDelete` | `() => void` | - | Built-in delete callback |
-| `onAction` | `(actionId: string) => void` | - | Dynamic action callback |
+| `actions` | `BulkAction[]` | `[]` | Bulk actions rendered in the bar |
+| `showSelectAll` | `boolean` | `false` | Show the select-all / deselect-all control |
+| `allSelected` | `boolean` | `false` | Whether the current selection already covers the whole list |
+| `on:clear` | event | - | Clear selection callback |
+| `on:selectAll` | event | - | Select all or deselect all callback |
+| `on:action` | `{ id: string }` | - | Bulk action callback |
 
 ---
 
@@ -525,19 +547,18 @@ Here's a complete example of building an autonomous list component:
   import {
     useBatchActions,
     useAuthenticatedData,
-    FilterBar,
     PageHeader,
-    useToasts,
     type NavigationContext
   } from "@decodelabs/underlay/patterns";
+  import { useToasts } from "@decodelabs/underlay/runtime/feedback";
+  import { FilterToolbar } from "@poodle/svelte-composites";
   import {
-    AlertDialog,
-    BatchActionBar,
     Button,
-    Callout,
-    ListGrid,
-    PageLoading
-  } from "@decodelabs/underlay/components";
+    BulkActionBar,
+    AlertDialog,
+    Callout
+  } from "@poodle/svelte-primitives";
+  import { PageLoading } from "@poodle/svelte-composites";
   import { Tooltip } from "@poodle/svelte-primitives";
   import { gotoWithContext } from "@decodelabs/underlay/client";
   import { learningCommands } from "@cattle-grid";
@@ -617,7 +638,7 @@ Here's a complete example of building an autonomous list component:
 
 <svelte:window onkeydown={handleKeydown} />
 
-<PageHeader title="Areas" level={headerLevel} count={areas.length}>
+<PoodlePageHeader title="Areas" count={areas.length}>
   {#snippet actions()}
     {#if areas.length > 0}
       <Tooltip content={selectionMode ? "Exit selection (Esc)" : "Select items"} delayMs={200}>
@@ -636,7 +657,7 @@ Here's a complete example of building an autonomous list component:
       </Button>
     </Tooltip>
   {/snippet}
-</PageHeader>
+</PoodlePageHeader>
 
 {#if batch.pendingAction}
   <AlertDialog
@@ -651,13 +672,13 @@ Here's a complete example of building an autonomous list component:
 {/if}
 
 {#if pageData.loading}
-  <PageLoading message="Loading areas..." />
+  <PageLoading presentation="inline" message="Loading areas..." />
 {:else if pageData.error}
   <Callout tone="danger" message={pageData.error} announceMode="polite" />
 {:else if areas.length === 0}
   <p>No areas defined yet.</p>
 {:else}
-  <ListGrid minItemWidth={26}>
+  <Grid columns="repeat(auto-fit, minmax(min(26em, 100%), 1fr))" gap="lg">
     {#each areas as area (area.areaId)}
       <AreaListCard
         {area}
@@ -667,20 +688,23 @@ Here's a complete example of building an autonomous list component:
           : undefined}
       />
     {/each}
-  </ListGrid>
+  </Grid>
 {/if}
 
-<BatchActionBar
-  selectedCount={batch.count}
+<BulkActionBar
+  selectionCount={batch.count}
   totalCount={allAreaIds.length}
   loading={batch.executing}
-  showDelete={false}
-  itemLabel="area"
-  itemLabelPlural="areas"
-  onClearSelection={() => batch.clear()}
-  onSelectAll={() => batch.selectAll(allAreaIds)}
-  registeredActions={batch.availableActions}
-  onAction={(actionId) => batch.requestAction(actionId)}
+  actions={batch.availableActions.map((action) => ({
+    id: action.id,
+    label: action.label,
+    icon: action.icon,
+    tone: action.variant === "danger" ? "danger" : action.variant === "warning" ? "warning" : "default"
+  }))}
+  showSelectAll
+  on:clear={() => batch.clear()}
+  on:selectAll={() => batch.selectAll(allAreaIds)}
+  on:action={(event) => batch.requestAction(event.detail.id)}
 />
 ```
 
@@ -721,3 +745,6 @@ Here's a complete example of building an autonomous list component:
 6. **Pass selection props only when in selection mode** - Only pass `selected` and `onSelectionChange` to cards when `selectionMode` is true, otherwise pass `undefined`.
 
 7. **Use `variant` prop consistently** - `"page"` for root pages (h1 header), `"tab"` for embedded tabs (h3 header).
+`Pagination` is now a direct Poodle surface, so list pages should compose over
+Poodle `Pagination` rather than expecting a retained Underlay list wrapper to
+own that controller-driven integration.

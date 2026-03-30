@@ -1,6 +1,8 @@
 # Recipe: Relation Selector with Drill-Down
 
-**Use when**: A RelationSelector targets items from a deep hierarchy and a flat list of hundreds of options is impractical. The user should narrow by level (e.g., Module → Section → Outcome) before picking.
+**Use when**: An app-local selector shell targets items from a deep hierarchy
+and a flat list of hundreds of options is impractical. The user should narrow
+by level (e.g., Module → Section → Outcome) before picking.
 
 **Example prompt**: "Add drill-down navigation for Outcome selection scoped to Module → Section"
 
@@ -8,12 +10,13 @@
 
 ## Key Principle
 
-Layer a Finder-style columnar navigation **on top** of an existing `RelationSelector`:
+Layer a Finder-style columnar navigation **on top** of an app-local selector
+shell built over the retained Underlay helper layer:
 
 1. **Drill-down levels** narrow the scope one hierarchy step at a time.
 2. At the **final level**, the standard search/suggestions/filters take over.
 3. Drill-down selections are injected into `activeFilters` automatically, so the existing `applyFilters` callback filters results without changes.
-4. The `drillDown` prop is entirely opt-in — existing RelationSelectors are unaffected.
+4. The `drillDown` prop is entirely opt-in — existing selector shells are unaffected.
 
 ---
 
@@ -22,7 +25,7 @@ Layer a Finder-style columnar navigation **on top** of an existing `RelationSele
 ### Component layout
 
 ```
-RelationSelectorPopover
+App-local selector shell
 ├── (drill-down active?)
 │   └── RelationSelectorDrillDown      ← hierarchy level UI
 │       ├── Breadcrumb bar (back + trail)
@@ -56,7 +59,7 @@ level.suggestions(ctx)            Consumer's suggest fn receives context
 (user clicks item)                drillDownSelect() advances depth
         │
         ▼
-(depth === levels.length)         Final level reached → relay to RelationSelector
+(depth === levels.length)         Final level reached → relay to local selector shell
         │                          Drill-down keys injected into activeFilters
         ▼
 applyFilters(items, filters)      Consumer's existing filter callback sees
@@ -78,7 +81,8 @@ applyFilters(items, filters)      Consumer's existing filter callback sees
 
 ### DrillDownConfig
 
-The top-level configuration passed to `RelationSelector` via the `drillDown` prop.
+The top-level configuration passed to an app-local selector shell via the
+`drillDown` prop.
 
 ```typescript
 interface DrillDownConfig {
@@ -192,7 +196,7 @@ const derivedModules = $derived.by((): DerivedModule[] => {
 **Client-side helper:**
 
 ```typescript
-import { createLocalDrillDownSearchFns } from "@decodelabs/underlay/patterns";
+import { createLocalDrillDownSearchFns } from "@decodelabs/underlay/runtime";
 
 const moduleDrillDown = $derived(
   createLocalDrillDownSearchFns(() => derivedModules, {
@@ -272,14 +276,14 @@ const drillDownConfig = $derived.by((): DrillDownConfig | undefined => {
 });
 ```
 
-### Phase 4: Wire to RelationSelector
+### Phase 4: Wire to Your Local Selector Shell
 
-- [ ] Pass `drillDown={drillDownConfig}` to `<RelationSelector>`
+- [ ] Pass `drillDown={drillDownConfig}` to your local selector shell
 - [ ] Update `applyFilters` to handle filter keys from all drill-down levels
 - [ ] Set `filters` to the fallback filters (used when drill-down is not active)
 
 ```svelte
-<RelationSelector
+<OutcomeSelector
   label="Add outcome"
   {search}
   suggestions={suggest}
@@ -349,7 +353,7 @@ function buildAreaFilters(ddCtx: DrillDownContext): FilterConfig[] {
 
 ## Imports
 
-All drill-down types and helpers are exported from `@decodelabs/underlay/patterns`:
+All drill-down types and helpers are exported from `@decodelabs/underlay/runtime`:
 
 ```typescript
 import {
@@ -364,7 +368,7 @@ import {
   type DrillDownSuggestionsFn,
   type FilterConfig,
   type SelectableRelation
-} from "@decodelabs/underlay/patterns";
+} from "@decodelabs/underlay/runtime";
 ```
 
 ---
@@ -372,10 +376,10 @@ import {
 ## How It Works Internally
 
 1. **`drillDown` prop** → `context.svelte.ts` creates a `DrillDownContext` via `createDrillDownContext()`.
-2. **Popover opens** → if drill-down is configured, `isDrillDownActive` is true and `RelationSelectorDrillDown` renders the first level.
+2. **Popover opens** → if drill-down is configured, `isDrillDownActive` is true and the drill-down UI renders the first level.
 3. **User clicks an item** → `drillDownSelect(item)` stores the selection and advances `depth`.
 4. **At each level** → `buildContext()` assembles a `DrillDownContext` containing all prior selections + current-level filter values. This context is passed to `search()` and `suggestions()`.
-5. **Final level reached** (`depth === levels.length`) → drill-down UI hides, standard RelationSelector UI shows. Drill-down selections are merged into `activeFilters` via `getDrillDownFilters()`.
+5. **Final level reached** (`depth === levels.length`) → drill-down UI hides and the final selector level takes over. Drill-down selections are merged into `activeFilters` via `getDrillDownFilters()`.
 6. **`finalLevelFilters`** (if configured) → computes filter dropdown options scoped by drill-down context. Overrides `props.filters` at the final level.
 7. **`applyFilters`** → receives merged filters (drill-down selections + explicit filters) and filters the final item list.
 8. **Breadcrumbs** → shown at the final level so the user can navigate back. Clicking a breadcrumb resets to that depth.

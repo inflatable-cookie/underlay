@@ -12,7 +12,7 @@ Underlay provides a complete pagination solution that scales from small client-s
 - Unified UI components that work with both pagination modes
 - Simple REST-style API (not Relay/GraphQL complexity)
 - Total counts available with opt-out for performance
-- Seamless integration with existing patterns (`useAuthenticatedData`, `FilterBar`, etc.)
+- Seamless integration with existing patterns (`useAuthenticatedData`, `FilterToolbar`, etc.)
 
 ### Architecture
 
@@ -59,12 +59,12 @@ Underlay provides a complete pagination solution that scales from small client-s
 | Rust Core | `PaginationBuilder` | `underlay-db` | Helper for building responses |
 | Rust API | `PaginationQuery` | App-specific | Axum query extractor |
 | Rust API | `PaginatedResponseDto<T>` | App-specific | DTO with utoipa support |
-| TypeScript | `PaginationParams` | `@decodelabs/underlay/patterns` | Query parameter interface |
-| TypeScript | `PaginatedResponse<T>` | `@decodelabs/underlay/patterns` | Response interface |
-| TypeScript | `PaginationController<T>` | `@decodelabs/underlay/patterns` | Unified controller interface |
-| TypeScript | `createPaginationController` | `@decodelabs/underlay/patterns` | Server-side controller |
-| TypeScript | `createClientPagination` | `@decodelabs/underlay/patterns` | Client-side controller |
-| Svelte | `<Pagination>` | `@decodelabs/underlay/components` | UI component |
+| TypeScript | `PaginationParams` | `@decodelabs/underlay/runtime/data` | Query parameter interface |
+| TypeScript | `PaginatedResponse<T>` | `@decodelabs/underlay/runtime/data` | Response interface |
+| TypeScript | `PaginationController<T>` | `@decodelabs/underlay/runtime/data` | Unified controller interface |
+| TypeScript | `createPaginationController` | `@decodelabs/underlay/runtime/data` | Server-side controller |
+| TypeScript | `createClientPagination` | `@decodelabs/underlay/runtime/data` | Client-side controller |
+| Svelte | `<Pagination>` | `@poodle/svelte-primitives` | UI component |
 
 ## API Design
 
@@ -434,7 +434,7 @@ import {
   // Helpers
   buildPaginationQuery,
   appendPaginationParams,
-} from "@decodelabs/underlay/patterns";
+} from "@decodelabs/underlay/runtime/data";
 ```
 
 ### PaginationParams
@@ -514,7 +514,7 @@ Use this for large datasets where you want cursor-based navigation:
 import {
   createPaginationController,
   type ServerPaginationOptions
-} from "@decodelabs/underlay/patterns";
+} from "@decodelabs/underlay/runtime";
 ```
 
 #### Options
@@ -537,8 +537,8 @@ interface ServerPaginationOptions<T> {
   import {
     createPaginationController,
     type PaginationParams
-  } from "@decodelabs/underlay/patterns";
-  import { Pagination } from "@decodelabs/underlay/components";
+  } from "@decodelabs/underlay/runtime/data";
+  import { Pagination } from "@poodle/svelte-primitives";
   import { getBundleActivitiesPaginated } from "@cattle-grid";
   import { authLoading, currentUser } from "$lib/stores/auth";
 
@@ -582,7 +582,7 @@ interface ServerPaginationOptions<T> {
 Use this for pre-loaded data where you want instant page switching:
 
 ```typescript
-import { createClientPagination } from "@decodelabs/underlay/patterns";
+import { createClientPagination } from "@decodelabs/underlay/runtime/data";
 ```
 
 #### Options
@@ -598,8 +598,8 @@ interface ClientPaginationOptions {
 
 ```svelte
 <script lang="ts">
-  import { createClientPagination } from "@decodelabs/underlay/patterns";
-  import { Pagination } from "@decodelabs/underlay/components";
+  import { createClientPagination } from "@decodelabs/underlay/runtime/data";
+  import { Pagination } from "@poodle/svelte-primitives";
 
   interface Props {
     activities: Activity[];
@@ -663,7 +663,7 @@ interface ClientPaginationOptions {
 
 ```svelte
 <script>
-  import { Pagination } from "@decodelabs/underlay/components";
+  import { Pagination } from "@poodle/svelte-primitives";
 </script>
 ```
 
@@ -674,12 +674,12 @@ interface Props {
   // Controller mode (recommended)
   controller?: PaginationController<unknown>;
 
-  // Legacy props mode (for backwards compatibility)
+  // Props mode
   page?: number;
   limit?: number;
   total?: number;
-  onPage?: (page: number) => void;
-  onLimit?: (limit: number) => void;
+  on:pageChange?: (event: CustomEvent<{ page: number }>) => void;
+  on:limitChange?: (event: CustomEvent<{ limit: number }>) => void;
 
   // Appearance
   variant?: "full" | "simple";     // "full" shows page numbers, "simple" shows prev/next
@@ -693,7 +693,7 @@ interface Props {
 
 ### Variants
 
-**Full variant** (default) - shows page numbers and first/last buttons:
+**Full variant** - shows first/prev, page summary, and next/last buttons:
 ```
 [««] [«]  Page 2 of 10  [»] [»»]   |  Show: [50 ▼]
 ```
@@ -722,15 +722,15 @@ interface Props {
 />
 ```
 
-#### Legacy Props Mode
+#### Props Mode
 
 ```svelte
 <Pagination
   page={currentPage}
   limit={itemsPerPage}
   total={totalItems}
-  onPage={(p) => currentPage = p}
-  onLimit={(l) => itemsPerPage = l}
+  on:pageChange={(event) => currentPage = event.detail.page}
+  on:limitChange={(event) => itemsPerPage = event.detail.limit}
   showLimitSelector
 />
 ```
@@ -767,7 +767,7 @@ import {
   appendPaginationParams,
   type PaginatedResponse,
   type PaginationParams
-} from "@decodelabs/underlay/patterns";
+} from "@decodelabs/underlay/runtime";
 
 export async function getItemsPaginated(
   fetchFn: typeof fetch,
@@ -788,16 +788,15 @@ export async function getItemsPaginated(
   import {
     createPaginationController,
     createClientPagination,
-    FilterBar,
     PageHeader
-  } from "@decodelabs/underlay/patterns";
+  } from "@decodelabs/underlay/runtime";
+  import { FilterToolbar } from "@poodle/svelte-composites";
   import {
     Field,
-    ListGrid,
     Pagination,
     Select,
     TextInput
-  } from "@decodelabs/underlay/components";
+  } from "@poodle/svelte-primitives";
   import { page } from "$app/stores";
   import { authLoading, currentUser } from "$lib/stores/auth";
   import { getItemsPaginated } from "@cattle-grid";
@@ -839,14 +838,14 @@ export async function getItemsPaginated(
 
 <PageHeader title="Items" />
 
-<FilterBar>
+<FilterToolbar ariaLabel="Item filters" summaryText="Filters">
   <Field label="Category">
     <Select bind:value={categoryFilter} items={categoryOptions} />
   </Field>
   <Field label="Search">
     <TextInput bind:value={searchFilter} placeholder="Search..." debounce={300} />
   </Field>
-</FilterBar>
+</FilterToolbar>
 
 {#if pagination.loading && pagination.items.length === 0}
   <p>Loading items...</p>
@@ -855,11 +854,11 @@ export async function getItemsPaginated(
 {:else if pagination.items.length === 0}
   <p>No items found.</p>
 {:else}
-  <ListGrid>
+  <Grid columns="repeat(auto-fit, minmax(min(22.5rem, 100%), 1fr))" gap="lg">
     {#each pagination.items as item}
       <ItemCard {item} />
     {/each}
-  </ListGrid>
+  </Grid>
 
   <Pagination
     controller={pagination}

@@ -32,59 +32,6 @@ declare module "*.svelte" {
     color?: string;
   }
 
-  export interface DataTableColumn<T = unknown> {
-    key: string;
-    label: string;
-    width?: string;
-    sortable?: boolean;
-    filterable?: boolean;
-    filterType?: "text" | "select" | "date";
-    filterOptions?: Array<{ value: string; label: string } | string>;
-    formatter?: (value: unknown, row: T) => string;
-    align?: "left" | "center" | "right";
-    hideOnMobile?: boolean;
-    hideable?: boolean;
-  }
-
-  export interface DataTableAction<T = unknown> {
-    label: string;
-    separator?: boolean;
-    disabled?: boolean;
-    icon?: string;
-    href?: string | ((row: T) => string);
-    onClick?: (row: T) => void;
-    variant?: "default" | "danger" | "primary";
-    confirm?: string;
-    show?: (row: T) => boolean;
-  }
-
-  export interface DataTablePagination {
-    page: number;
-    limit: number;
-    total: number;
-  }
-
-  export interface DataTableSort {
-    key: string;
-    direction: "asc" | "desc";
-  }
-
-  export type DataTableFilters = Record<string, string>;
-
-  export const DEFAULT_LIMIT_OPTIONS: number[];
-
-  export function exportToCsv<T extends Record<string, unknown>>(
-    data: T[],
-    columns: DataTableColumn<T>[],
-    filename?: string
-  ): void;
-
-  export interface PaginationState {
-    page: number;
-    limit: number;
-    total: number;
-  }
-
   export interface LogEntry {
     id: string;
     occurredAt: string;

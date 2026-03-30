@@ -28,24 +28,26 @@ When navigating to an edit page, use `gotoWithContext()` to record where the use
 ```svelte
 <script lang="ts">
   import { gotoWithContext } from "@decodelabs/underlay/client";
-  import { CopyActionsMenu } from "@decodelabs/underlay/patterns";
+  import { Menu } from "@poodle/svelte-primitives";
 
   export let data;
 </script>
 
-<CopyActionsMenu
-  actions={[
-    {
-      label: "Edit video",
-      onSelect: () =>
-        void gotoWithContext(`/videos/${data.video.videoId}/edit`, {
-          label: data.video.title,
-          href: `/videos/${data.video.videoId}`,
-          type: "detail"
-        })
-    }
-  ]}
-/>
+<Menu
+  items={[{ value: "edit", label: "Edit video" }]}
+  triggerAriaLabel="Video actions"
+  on:action={() =>
+    void gotoWithContext(`/videos/${data.video.videoId}/edit`, {
+      label: data.video.title,
+      href: `/videos/${data.video.videoId}`,
+      type: "detail"
+    })
+  }
+>
+  <svelte:fragment slot="trigger">
+    <button type="button">Actions</button>
+  </svelte:fragment>
+</Menu>
 ```
 
 ### 2. Consume Context in Edit/Create Page
@@ -54,8 +56,8 @@ In the edit or create page, use `consumeNavigationContext()` to **pop** the cont
 
 ```svelte
 <script lang="ts">
-  import { consumeNavigationContext } from "@decodelabs/underlay/patterns";
-  import { PageHeader } from "@decodelabs/underlay/patterns";
+  import { consumeNavigationContext } from "@decodelabs/underlay/runtime";
+  import { PageHeader } from "@decodelabs/underlay/runtime";
 
   export let data;
 
@@ -75,6 +77,10 @@ In the edit or create page, use `consumeNavigationContext()` to **pop** the cont
 ```
 
 > **Important:** Use `consumeNavigationContext()` for edit/create pages. This function **pops** the context from the stack, ensuring it's only used once and doesn't persist across multiple navigations.
+
+Navigation seam:
+- use `@decodelabs/underlay/client` for SvelteKit navigation wrappers like `gotoWithContext()`, `navigateBack()`, and `navigateOnCancel()`
+- use `@decodelabs/underlay/runtime` for framework-agnostic navigation context and page-state helpers like `consumeNavigationContext()`, `getBackButtonInfo()`, and `storePageState()`
 
 ### 3. Handle Server Redirect
 
@@ -166,7 +172,7 @@ interface BackButtonInfo {
 }
 ```
 
-### Framework-Agnostic Functions (`@decodelabs/underlay/patterns`)
+### Framework-Agnostic Functions (`@decodelabs/underlay/runtime`)
 
 These functions work in any JavaScript environment with sessionStorage.
 
@@ -175,7 +181,7 @@ These functions work in any JavaScript environment with sessionStorage.
 Push a navigation context onto the stack.
 
 ```typescript
-import { pushNavigationContext } from "@decodelabs/underlay/patterns";
+import { pushNavigationContext } from "@decodelabs/underlay/runtime";
 
 pushNavigationContext({
   label: "Videos",
@@ -194,7 +200,7 @@ pushNavigationContext({
 Remove and return the most recent context from the stack.
 
 ```typescript
-import { popNavigationContext } from "@decodelabs/underlay/patterns";
+import { popNavigationContext } from "@decodelabs/underlay/runtime";
 
 const context = popNavigationContext();
 if (context) {
@@ -210,7 +216,7 @@ if (context) {
 Read the most recent context without removing it.
 
 ```typescript
-import { peekNavigationContext } from "@decodelabs/underlay/patterns";
+import { peekNavigationContext } from "@decodelabs/underlay/runtime";
 
 const context = peekNavigationContext();
 console.log(`User came from: ${context?.label ?? "unknown"}`);
@@ -223,7 +229,7 @@ console.log(`User came from: ${context?.label ?? "unknown"}`);
 Get the full navigation context stack (for debugging or breadcrumbs).
 
 ```typescript
-import { getNavigationContextStack } from "@decodelabs/underlay/patterns";
+import { getNavigationContextStack } from "@decodelabs/underlay/runtime";
 
 const stack = getNavigationContextStack();
 // [
@@ -240,7 +246,7 @@ const stack = getNavigationContextStack();
 Clear all navigation context.
 
 ```typescript
-import { clearNavigationContext } from "@decodelabs/underlay/patterns";
+import { clearNavigationContext } from "@decodelabs/underlay/runtime";
 
 clearNavigationContext();
 ```
@@ -254,7 +260,7 @@ If the stored context includes a `targetHref` and it doesn't match the current U
 > **Note:** For edit/create pages, prefer `consumeNavigationContext()` which pops the context.
 
 ```typescript
-import { getReturnUrl } from "@decodelabs/underlay/patterns";
+import { getReturnUrl } from "@decodelabs/underlay/runtime";
 
 const returnTo = getReturnUrl(`/items/${itemId}`);
 // If context exists: "/content/videos"
@@ -275,7 +281,7 @@ If the stored context includes a `targetHref` and it doesn't match the current U
 > **Note:** For edit/create pages, prefer `consumeNavigationContext()` which pops the context. Use `getBackButtonInfo()` for detail pages that display a back button but don't have forms.
 
 ```typescript
-import { getBackButtonInfo } from "@decodelabs/underlay/patterns";
+import { getBackButtonInfo } from "@decodelabs/underlay/runtime";
 
 const { label, href } = getBackButtonInfo("Back to item", `/items/${itemId}`);
 // If context exists: { label: "Back to Videos", href: "/content/videos" }
@@ -295,7 +301,7 @@ const { label, href } = getBackButtonInfo("Back to item", `/items/${itemId}`);
 **Stale context detection:** If the context has a `targetHref` that doesn't match the current URL pathname, the context is considered stale and discarded. This prevents showing incorrect "Back to X" labels when users navigate to edit pages via bookmarks, direct links, or from pages that don't push context.
 
 ```typescript
-import { consumeNavigationContext } from "@decodelabs/underlay/patterns";
+import { consumeNavigationContext } from "@decodelabs/underlay/runtime";
 
 const { backInfo, returnTo } = consumeNavigationContext("Back to videos", "/content/videos");
 // backInfo: { label: "Back to Module: FA1", href: "/learning/modules/abc" }
@@ -321,7 +327,7 @@ Compute back button info with a data-dependent fallback, while always respecting
 **Use this when:** Your fallback depends on data that loads asynchronously (e.g., the entity being edited).
 
 ```typescript
-import { computeBackInfo, consumeNavigationContext } from "@decodelabs/underlay/patterns";
+import { computeBackInfo, consumeNavigationContext } from "@decodelabs/underlay/runtime";
 
 // In page initialization
 const { backInfo, returnTo } = consumeNavigationContext("Back to module", defaultBackHref);
@@ -378,7 +384,7 @@ The helper ensures:
 Derive a sensible parent URL from a path.
 
 ```typescript
-import { deriveParentPath } from "@decodelabs/underlay/patterns";
+import { deriveParentPath } from "@decodelabs/underlay/runtime";
 
 deriveParentPath("/content/videos/123/edit");  // "/content/videos/123"
 deriveParentPath("/content/videos/123");       // "/content/videos"
@@ -396,7 +402,7 @@ deriveParentPath("/");                         // "/"
 Configure the navigation context system. Call early in app initialization if needed.
 
 ```typescript
-import { configureNavigationContext } from "@decodelabs/underlay/patterns";
+import { configureNavigationContext } from "@decodelabs/underlay/runtime";
 
 configureNavigationContext({
   storageKey: "myapp:nav-context",
@@ -546,14 +552,14 @@ onMount(() => {
 
 ### API Reference
 
-#### State Storage Functions (`@decodelabs/underlay/patterns`)
+#### State Storage Functions (`@decodelabs/underlay/runtime`)
 
 ##### `storePageState(pathname, state)`
 
 Store state for a specific pathname. Called automatically by `gotoWithContext()` when state is provided, but can be called manually.
 
 ```typescript
-import { storePageState } from "@decodelabs/underlay/patterns";
+import { storePageState } from "@decodelabs/underlay/runtime";
 
 storePageState("/learning/modules/123", {
   activeTab: "syllabus",
@@ -570,7 +576,7 @@ storePageState("/learning/modules/123", {
 Retrieve stored state for a pathname without consuming it.
 
 ```typescript
-import { retrievePageState } from "@decodelabs/underlay/patterns";
+import { retrievePageState } from "@decodelabs/underlay/runtime";
 
 const state = retrievePageState<{ activeTab: string }>("/learning/modules/123");
 if (state) {
@@ -588,7 +594,7 @@ if (state) {
 Retrieve and **remove** stored state. The state is deleted from storage after retrieval.
 
 ```typescript
-import { consumePageState } from "@decodelabs/underlay/patterns";
+import { consumePageState } from "@decodelabs/underlay/runtime";
 
 // Uses current pathname by default
 const state = consumePageState<{ activeTab: string }>();
@@ -604,7 +610,7 @@ const state = consumePageState<{ activeTab: string }>();
 Clear all stored page states.
 
 ```typescript
-import { clearPageStates } from "@decodelabs/underlay/patterns";
+import { clearPageStates } from "@decodelabs/underlay/runtime";
 
 clearPageStates();
 ```
@@ -680,7 +686,8 @@ Here's a complete example of a Module detail page with tabbed content that prese
 <!-- /learning/modules/[moduleId]/+page.svelte -->
 <script lang="ts">
   import { onMount } from "svelte";
-  import { PageHeader, CopyActionsMenu } from "@decodelabs/underlay/patterns";
+  import { PageHeader } from "@decodelabs/underlay/runtime";
+  import LocalActionsMenu from "$lib/components/LocalActionsMenu.svelte";
   import { Tabs, type TabItem } from "@poodle/svelte-primitives";
   import { gotoWithContext, initPageState } from "@decodelabs/underlay/client";
 
@@ -701,7 +708,7 @@ Here's a complete example of a Module detail page with tabbed content that prese
 
 <PageHeader title={data.module.code} subtitle={data.module.title}>
   {#snippet actions()}
-    <CopyActionsMenu
+    <LocalActionsMenu
       actions={[
         {
           label: "Edit module",
@@ -726,7 +733,7 @@ Here's a complete example of a Module detail page with tabbed content that prese
   {#if activeValue === "syllabus"}
     <!-- Syllabus content with nested edit links that also save activeTab -->
     {#each data.syllabus.sections as section}
-      <CopyActionsMenu
+      <LocalActionsMenu
         actions={[
           {
             label: "Edit section",
@@ -797,7 +804,7 @@ Good candidates for state restoration:
 
 **Debug:**
 ```typescript
-import { retrievePageState } from "@decodelabs/underlay/patterns";
+import { retrievePageState } from "@decodelabs/underlay/runtime";
 
 // Check if state exists (without consuming)
 console.log("Stored state:", retrievePageState(window.location.pathname));
@@ -811,7 +818,7 @@ console.log("Stored state:", retrievePageState(window.location.pathname));
 
 **Solution:**
 ```typescript
-import { clearPageStates } from "@decodelabs/underlay/patterns";
+import { clearPageStates } from "@decodelabs/underlay/runtime";
 
 // Clear all states (e.g., on logout)
 clearPageStates();
@@ -843,8 +850,8 @@ const restored = initPageState({
 <!-- /content/videos/+page.svelte -->
 <script lang="ts">
   import type { PageData } from "./$types";
-  import { PageHeader } from "@decodelabs/underlay/patterns";
-  import { ListGrid } from "@decodelabs/underlay/components";
+  import { PageHeader } from "@decodelabs/underlay/runtime";
+  import { Grid } from "@poodle/svelte-primitives";
   import { VideoListCard } from "$lib/cards";
 
   export let data: PageData;
@@ -852,11 +859,11 @@ const restored = initPageState({
 
 <PageHeader title="Videos" backHref="/content" backLabel="Back to content" />
 
-<ListGrid>
+<Grid columns="repeat(auto-fit, minmax(min(22.5rem, 100%), 1fr))" gap="lg">
   {#each data.videos as video}
     <VideoListCard {video} />
   {/each}
-</ListGrid>
+</Grid>
 ```
 
 ### List Card Component
@@ -864,8 +871,8 @@ const restored = initPageState({
 ```svelte
 <!-- $lib/cards/VideoListCard.svelte -->
 <script lang="ts">
-  import { CopyActionsMenu } from "@decodelabs/underlay/patterns";
-  import { ListCard } from "@decodelabs/underlay/components";
+  import LocalActionsMenu from "$lib/components/LocalActionsMenu.svelte";
+  import { ListCard } from "@poodle/svelte-primitives";
   import { gotoWithContext } from "@decodelabs/underlay/client";
   import Video from "lucide-svelte/icons/video";
 
@@ -883,13 +890,13 @@ const restored = initPageState({
 </script>
 
 <ListCard href={videoHref} title={video.title}>
-  {#snippet media()}
+  <svelte:fragment slot="leading">
     <Video size={24} />
-  {/snippet}
+  </svelte:fragment>
 
-  {#snippet actions({ trigger })}
-    <CopyActionsMenu
-      {trigger}
+  <svelte:fragment slot="actions">
+    <LocalActionsMenu
+      triggerLabel="Actions"
       actions={[
         {
           label: "Edit video",
@@ -902,9 +909,9 @@ const restored = initPageState({
         }
       ]}
     />
-  {/snippet}
+  </svelte:fragment>
 
-  <span>{video.duration}s</span>
+  <svelte:fragment slot="footer">{video.duration}s</svelte:fragment>
 </ListCard>
 ```
 
@@ -914,7 +921,8 @@ const restored = initPageState({
 <!-- /content/videos/[videoId]/+page.svelte -->
 <script lang="ts">
   import type { PageData } from "./$types";
-  import { CopyActionsMenu, PageHeader } from "@decodelabs/underlay/patterns";
+  import { PageHeader } from "@decodelabs/underlay/runtime";
+  import LocalActionsMenu from "$lib/components/LocalActionsMenu.svelte";
   import { gotoWithContext } from "@decodelabs/underlay/client";
 
   export let data: PageData;
@@ -927,7 +935,7 @@ const restored = initPageState({
   backLabel="Back to videos"
 >
   {#snippet actions()}
-    <CopyActionsMenu
+    <LocalActionsMenu
       actions={[
         {
           label: "Edit video",
@@ -950,7 +958,7 @@ const restored = initPageState({
 <!-- /content/videos/[videoId]/edit/+page.svelte -->
 <script lang="ts">
   import type { PageData, ActionData } from "./$types";
-  import { getBackButtonInfo, getReturnUrl } from "@decodelabs/underlay/patterns";
+  import { getBackButtonInfo, getReturnUrl } from "@decodelabs/underlay/runtime";
   import CrudFormShell from "$lib/forms/CrudFormShell.svelte";
   import VideoForm from "$lib/forms/VideoForm.svelte";
 
@@ -1130,7 +1138,7 @@ Create pages follow a similar pattern to edit pages, but with a key difference: 
 <!-- /content/videos/new/+page.svelte -->
 <script lang="ts">
   import type { ActionData } from "./$types";
-  import { getBackButtonInfo, getReturnUrl } from "@decodelabs/underlay/patterns";
+  import { getBackButtonInfo, getReturnUrl } from "@decodelabs/underlay/runtime";
   import CrudFormShell from "$lib/forms/CrudFormShell.svelte";
   import VideoForm from "$lib/forms/VideoForm.svelte";
 
@@ -1238,7 +1246,7 @@ For pages where the form is defined inline (not in a separate component), includ
 <!-- /assessment/questions/new/+page.svelte -->
 <script lang="ts">
   import type { ActionData } from "./$types";
-  import { getBackButtonInfo, getReturnUrl } from "@decodelabs/underlay/patterns";
+  import { getBackButtonInfo, getReturnUrl } from "@decodelabs/underlay/runtime";
   import { navigateOnCancel } from "@decodelabs/underlay/client";
   import CrudFormShell from "$lib/forms/CrudFormShell.svelte";
   import { Field, TextInput, FormActions } from "@poodle/svelte-primitives";
@@ -1313,7 +1321,7 @@ When adding navigation context support to an existing page, follow this checklis
 ### For Pages with Separate Form Components
 
 **1. Update the page component (`+page.svelte`):**
-- [ ] Import `consumeNavigationContext` (and `computeBackInfo` if using async data) from `@decodelabs/underlay/patterns`
+- [ ] Import `consumeNavigationContext` (and `computeBackInfo` if using async data) from `@decodelabs/underlay/runtime`
 - [ ] Define `defaultBackHref` constant with the fallback destination
 - [ ] Call `const { backInfo, returnTo } = consumeNavigationContext(label, defaultBackHref)`
 - [ ] If fallback depends on async data (e.g., entity name), use `computeBackInfo()`:
@@ -1342,7 +1350,7 @@ When adding navigation context support to an existing page, follow this checklis
 ### For Pages with Inline Forms
 
 **1. Update the page component:**
-- [ ] Import `consumeNavigationContext` from `@decodelabs/underlay/patterns`
+- [ ] Import `consumeNavigationContext` from `@decodelabs/underlay/runtime`
 - [ ] Import `navigateOnCancel` from `@decodelabs/underlay/client`
 - [ ] Define `defaultBackHref` and call `const { backInfo, returnTo } = consumeNavigationContext(...)`
 - [ ] Add hidden `returnTo` input directly in the form
@@ -1460,7 +1468,7 @@ const redirectTarget = returnTo && returnTo.startsWith("/")
 **Debug:**
 ```svelte
 <script>
-  import { getNavigationContextStack } from "@decodelabs/underlay/patterns";
+  import { getNavigationContextStack } from "@decodelabs/underlay/runtime";
   console.log("Nav context:", getNavigationContextStack());
 </script>
 ```
@@ -1477,7 +1485,7 @@ const redirectTarget = returnTo && returnTo.startsWith("/")
 **Debug:**
 ```svelte
 <script>
-  import { getNavigationContextStack } from "@decodelabs/underlay/patterns";
+  import { getNavigationContextStack } from "@decodelabs/underlay/runtime";
   const stack = getNavigationContextStack();
   if (stack.length > 0) {
     console.log("Top context targetHref:", stack[stack.length - 1].targetHref);
@@ -1504,7 +1512,7 @@ console.log("returnTo value:", formData.get("returnTo"));
 This shouldn't happen due to built-in sanity rules, but if it does:
 
 ```typescript
-import { clearNavigationContext } from "@decodelabs/underlay/patterns";
+import { clearNavigationContext } from "@decodelabs/underlay/runtime";
 
 // Reset on logout or major navigation events
 clearNavigationContext();

@@ -1,8 +1,4 @@
-// RelationSelector - A popover/modal relation picker component
-export { default as RelationSelector } from "./RelationSelector.svelte";
-export { default as RelationSelectorTrigger } from "./RelationSelectorTrigger.svelte";
-export { default as RelationSelectorPopover } from "./RelationSelectorPopover.svelte";
-export { default as RelationSelectorModal } from "./RelationSelectorModal.svelte";
+// Relation-selector helper layer retained after public UI wrapper retirement.
 
 export {
   createRelationSelectorContext,

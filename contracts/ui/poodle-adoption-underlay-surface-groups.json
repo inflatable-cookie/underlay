@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "updated": "2026-03-26",
+  "updated": "2026-03-30",
   "scope": "Public Svelte component and pattern exports from ts/src/components/index.ts and ts/src/patterns/index.ts. Utility and type-only exports are intentionally excluded from this batch.",
   "decision": {
     "canonical_primitive_owner": "poodle",
@@ -16,12 +16,12 @@
   },
   "summary": {
     "total_exports": 135,
-    "replace_with_poodle_direct": 62,
-    "resolve_via_existing_poodle_surface": 29,
+    "replace_with_poodle_direct": 54,
+    "resolve_via_existing_poodle_surface": 28,
     "poodle_gap": 0,
     "resolved_from_poodle_review": 3,
-    "keep_in_underlay": 6,
-    "keep_in_underlay_after_assessment": 10,
+    "keep_in_underlay": 5,
+    "keep_in_underlay_after_assessment": 15,
     "candidate_to_keep_in_underlay": 0,
     "delete": 22
   },
@@ -39,6 +39,497 @@
       "The surface carries auth-policy, recovery-flow, or other orchestration assumptions that are not clean design-system contracts."
     ]
   },
+  "wave_045_reassessment": {
+    "purpose": "Post-g01.042 reassessment of the still-exported Underlay Svelte surface. This section tracks the remaining public exports that should be removed or migrated in the follow-on contraction wave, distinct from the historical g01.042 migration record below.",
+    "final_retained_underlay_components": [
+      "DataSkeleton",
+      "MediaPicker",
+      "LogList",
+      "BatchActionBar",
+      "TotpInput",
+      "PasswordRequirements",
+      "AuthLayout",
+      "ForgotPasswordFlow",
+      "LoginPage"
+    ],
+    "final_retained_underlay_patterns": [
+      "AiRoutingAdmin",
+      "AutonomousList",
+      "DetailPageShell",
+      "PageHeader",
+      "RelationSelector",
+      "SpaFormShell"
+    ],
+    "replace_with_existing_poodle_next_wave": [
+      "FilterBar",
+      "ReorderableList"
+    ],
+    "replace_via_poodle_composition_or_internalization_next_wave": [],
+    "completed_in_wave_045_batch_45_2": [
+      "DetailsCard",
+      "DetailsItem",
+      "DetailsSection",
+      "DetailList",
+      "DetailItem",
+      "ContainerGrid",
+      "InlineActionGroup",
+      "CardActions"
+    ],
+    "notes": [
+      "These groups are the strict next-wave review set after g01.042 and g01.044. They reflect the live public export list rather than only the already-executed retirements.",
+      "Batch 45.2 already removed the generic detail/layout wrapper family from the public Underlay surface. The remaining tail is now concentrated in the inline-list and stats/grid wrappers.",
+      "`ListCard` and `FormActions` were the first two broad retained-surface reassessment targets. `ListCard` needed capability work first; `FormActions` followed once the card wave settled.",
+      "The `ListCard` review confirmed four real remaining gaps against current Poodle `ListCard`: route-style `href` navigation, compact reorder treatment with drag handles, card-level selection mode, and the existing action-trigger composition pattern.",
+      "`AudioPlayer` and `AudioEmbed` are now retired from the public Underlay surface. Direct shared audio playback belongs to Poodle `AudioPlayer`, and the only former `AudioEmbed` callers in Dairy now compose Poodle `AudioPlayer` and `EmbedPreview` directly over an app-owned direct-audio utility instead of preserving a shared Underlay wrapper.",
+      "`CardRadioGroup` is now retired from the public Underlay surface. The remaining live caller in Dairy now uses direct Poodle `CardRadioGroup` with caller-owned icon and tone composition instead of keeping a second shared card-choice wrapper.",
+      "`DateRange` is now internalized to shared formatter exports only. The component form had no live callers, while the formatter helpers still serve app list-card and schedule-label text generation.",
+      "`DurationInput` is now retired from the public Underlay surface. The last live callers in Dairy now use direct Poodle `DurationInput` with caller-owned hidden inputs and duration-string conversion instead of preserving a second segmented-duration wrapper.",
+      "`RangeSlider` is now retired from the public Underlay surface. The live Dairy caller set turned out to be a discrete labeled single-value difficulty scale, so those forms now use direct Poodle `Slider` with caller-owned labels instead of preserving a second shared Underlay wrapper or forcing a false Poodle `RangeSlider` parity story.",
+      "`ColorPicker` and `TextArea` are now retired from the public Underlay surface. Neither retained a live consumer-app caller family once the active forms moved to direct Poodle primitives, so keeping those same-name wrappers exported was only stale surface area.",
+      "`VideoPlayer` is now retired from the public Underlay surface. It no longer had live consumer-app callers, and direct shared video playback belongs to Poodle `VideoPlayer`.",
+      "`MarkdownEditor` is no longer part of shared Underlay `components`. The EasyMDE-backed editor runtime and selection-context contract now live under `nightfire/markup`, where the only remaining retained callers actually belong.",
+      "`Badge`, `Pill`, and `Switch` are now retired from the public Underlay surface. Their live consumer-app caller families are gone, and direct Poodle `Pill` and `Switch` now carry the real shared successor behavior without a second Underlay wrapper layer.",
+      "`Select` is no longer part of shared Underlay `components`. The only remaining retained callers were Nightfire editors, so the richer native-select contract now lives under `nightfire` ownership instead of posing as a shared widget.",
+      "`TimeAgo` is now retired from the public Underlay surface. The broad remaining caller family in Acowtancy Dairy and retained Underlay docs/examples now uses direct Poodle `TimeAgo`, so keeping a second shared relative-time wrapper exported no longer adds contract value.",
+      "`InlineListCard` and `InlineListItem` are now retired from the public Underlay surface. The full caller family across Dairy and the admin media-detail pages collapsed onto direct Poodle `Card` composition with caller-owned rows and actions, so the old shared wrapper pair no longer adds honest contract value.",
+      "`DataTable` is now retired from the public Underlay surface. g01.047 moved the richer generic table runtime into Poodle `DataTable`, migrated the active app and retained-shell caller family, and removed the old Underlay table wrapper plus its helper/test files.",
+      "`Pagination` is now retired from the public Underlay surface. Poodle `Pagination` now carries the generic controller-driven contract the live caller family needed, including limit selector, info text, simple/full variants, and scroll-target behavior.",
+      "`ReorderableList` remains a deliberate retained hold for now. The latest g01.046 reassessment confirmed that even after the `ListCard` migration wave, the active caller family still depends on a workflow-first shell over reordering: batch-submit/cancel flow, dirty-state handling, async error presentation, long-list warnings, optional windowed reorder mode, and richer keyboard/live-region guidance that current Poodle `ReorderableList` does not aim to own.",
+      "`OrderBy` remains a deliberate retained Underlay surface for now. The latest g01.046 reassessment confirmed that the active admin caller family still depends on a materially broader sort-builder contract than current Poodle `OrderBy`: ordered multi-field sorting with add/remove, per-field direction, drag reordering, compact trigger summaries, and URL round-tripping for sort arrays.",
+      "`ListCard` is now retired from the public Underlay surface. The g01.046 reassessment pushed the remaining generic card behavior into Poodle `ListCard`, migrated the live caller family, and moved retained Underlay shells like `AutonomousList` onto direct Poodle card composition.",
+      "`FormActions` is now retired from the public Underlay surface. Poodle `FormActions` now owns the responsive inline-danger versus collapsed-danger-menu behavior and `dangerItems` callback wiring that previously blocked migration, and the live consumer-app caller family is off the old Underlay wrapper.",
+      "`Drawer` and `SegmentedControl` are now retired from the public Underlay surface. Neither had live consumer-app callers once the active admin guides moved to direct Poodle usage.",
+      "`Code` is now retired from the public Underlay surface. The remaining live app and retained-shell callers now use direct Poodle `Code` with explicit `inline` and `source` props.",
+      "`Skeleton` is now internal-only in Underlay. There are no live consumer-app callers left, and low-level manual loading composition should use direct Poodle `Skeleton` instead.",
+      "`ToastHost` and `PageLoading` are both now retired from the public Underlay surface. Poodle owns the final generic runtime host and inline page-state loading contracts that were still left in Underlay after the earlier reassessment wave.",
+      "`DataSkeleton` is now retired from the public Underlay surface. It had no live consumer-app or internal runtime callers left, so repeated loading layouts should now compose directly from Poodle `Skeleton` presets in the consuming app instead of depending on a second shared wrapper and preset registry.",
+      "`ProgressBar` is now retired from the public Underlay surface. Poodle `Progress` now carries the only missing shared behavior, size-aware bar height, and the live admin plus Acowtancy callers use it directly.",
+      "Utility and type-only exports remain intentionally out of scope for this surface reassessment."
+    ]
+  },
+  "wave_046_reassessment": {
+    "purpose": "Post-g01.045 reassessment of the supposedly retained generic Underlay surface. This section tracks the next focused capability wave where retained holds should be challenged again, starting with ListCard and adjacent card/list infrastructure.",
+    "active_capability_wave": [
+      "InlineListCard",
+      "InlineListItem",
+      "OrderBy",
+      "ReorderableList"
+    ],
+    "lead_target": "ListCard",
+    "notes": [
+      "The lead target for g01.046 is `ListCard`. The current Underlay contract still owns real behavior, but much of that behavior looks generic rather than workflow-specific: navigable cards, selection mode, compact treatment, reorder affordances, action-trigger composition, and not-live state handling.",
+      "The strict live-caller review across `acme-admin`, `cp-admin`, `acme-front`, `dairy`, `AutonomousList`, and `ReorderableList` confirmed that most of the remaining `ListCard` gap belongs in Poodle rather than Underlay.",
+      "The smallest honest Poodle `ListCard` expansion is now explicit: add link-root support, explicit selection state, compact layout, and reorder-affordance presentation. Keep actual reorder workflow in `ReorderableList`.",
+      "The old Underlay `actions({ trigger, align })` contract should not be preserved mechanically. The preferred migration direction is explicit action composition in the newer Poodle card language rather than media-as-menu-trigger coupling.",
+      "The first Poodle `ListCard` expansion is now landed: link roots, explicit selection state, compact layout, reorder-handle presentation, and an explicit `actions` slot for future caller migration.",
+      "`InlineListCard` and `InlineListItem` should be reassessed immediately after the `ListCard` capability push, because their remaining contract may shrink materially once the base card and row affordances move into Poodle.",
+      "`FormActions`, `OrderBy`, and `DataTable` were the original follow-on capability candidates, but `FormActions` and `DataTable` have now been completed and retired from the public Underlay surface.",
+      "The latest g01.046 `OrderBy` reassessment confirmed that it is still a deliberate retained hold rather than the next honest Poodle capability project. Its active contract is still a broader multi-field sort-builder model, not a narrow primitive gap.",
+      "The later g01.047 capability wave resolved the `DataTable` hold directly by expanding Poodle `DataTable`, migrating the live caller family, and retiring the public Underlay table wrapper.",
+      "The latest g01.046 `ReorderableList` reassessment confirmed the same pattern in the reorder layer: Poodle now owns the low-level reorderable list, but Underlay still owns the higher-order reorder workflow shell, so this is also a deliberate retained hold rather than the next focused expansion.",
+      "`ReorderableList` remains retained for now, but the hold should be revisited after the `ListCard` capability work lands so the decision reflects the smaller remaining workflow contract rather than the old card dependency.",
+      "The retained `ListCard` hold has now been resolved. Poodle `ListCard` owns the shared card behavior, the live caller family is migrated, retained `AutonomousList` now composes directly over Poodle `ListCard`, and the old public Underlay export is gone."
+    ]
+  },
+  "wave_088_sibling_repo_package_boundary_recovery": {
+    "purpose": "Close the loop on the package-boundary recovery by proving that the active sibling repo surface no longer depends on retired Underlay `components`, `embed`, or deep `patterns` entrypoints after the manual Dairy import repair.",
+    "lead_target": "sibling_repo_live_surface",
+    "notes": [
+      "The broad manual Dairy recovery is now complete and `dairy` validates cleanly again after repairing the bad import rewrite without losing the open app work.",
+      "The active sibling repo surface no longer contains live imports of `@decodelabs/underlay/components`, `@decodelabs/underlay/embed`, or legacy deep `@decodelabs/underlay/patterns/...` paths.",
+      "The remaining references to those retired entrypoints are historical roadmap/docs/accounting records and scratch notes only, not active supported source usage."
+    ]
+  },
+  "wave_047_data_table": {
+    "purpose": "Focused post-g01.046 capability wave for moving the richer generic table runtime from Underlay `DataTable` into Poodle in staged batches rather than preserving it as a long-term retained Underlay surface.",
+    "active_capability_wave": [],
+    "lead_target": "DataTable",
+    "notes": [
+      "The first proof caller family for g01.047 is the error-log tables in `acme-admin`, `cp-admin`, and `dairy`, because they exercise custom cells, row-local actions, extended rows, and row-local loading/detail state.",
+      "The second grouped caller family is the users/jobs table layer across `acme-admin`, `cp-admin`, and `dairy`, because it exercises host-owned pagination, limit selector, sort/filter integration, and operational loading/empty behavior.",
+      "The first honest Poodle `DataTable` expansion should cover custom cell rendering, extended rows, richer row actions, and row click before adding pagination/footer behavior.",
+      "Stage 47.2 is now landed: Poodle `DataTable` owns custom cell slots, expanded-row slots, richer row action arrays, row click handling, and the wider generic column metadata needed by the first proof family.",
+      "The stage-1 proof family is now migrated and green in `acme-admin`, `cp-admin`, and `dairy` system error tables.",
+      "Stage 47.3 is now landed too: Poodle `DataTable` owns host-controlled filters, pagination footer, limit selector, loading rows, and compact/striped/sticky-header presentation.",
+      "The grouped users and jobs families are now migrated and green in `acme-admin`, `cp-admin`, and `dairy`.",
+      "Stage 47.4 is now complete too: the remaining Dairy operational tables and retained `AiRoutingAdmin` are migrated, the public Underlay `DataTable` surface is removed, and the old helper/test files are deleted."
+    ]
+  },
+  "wave_048_order_by": {
+    "purpose": "Focused post-g01.047 capability wave for moving the richer generic multi-field sort-builder runtime from Underlay `OrderBy` into Poodle in staged batches rather than preserving it as a long-term retained Underlay surface.",
+    "active_capability_wave": [
+      "OrderBy"
+    ],
+    "lead_target": "OrderBy",
+    "notes": [
+      "The first proof caller family for g01.048 is the media/category/project list family in `acme-admin` plus the media list in `cp-admin`, because that set isolates the real live contract without mixing in unrelated workflow shells.",
+      "The original Poodle `OrderBy` was intentionally a single-sort toolbar, but stage 48.2 is now landed: Poodle owns ordered multi-field sort arrays, field add/remove, per-field direction, compact trigger summaries, and compatibility emission for the older single-sort signal.",
+      "The first proof family is now migrated and green in `acme-admin` media/categories/projects/project detail plus `cp-admin` media.",
+      "Stage 48.3 is now complete too: Poodle `OrderBy` owns drag-reordering ergonomics, the active caller family is already migrated, and the public Underlay `OrderBy` surface is removed."
+    ]
+  },
+  "wave_049_reorderable_list": {
+    "purpose": "Focused post-g01.048 capability wave for moving the reusable reorder-session workflow shell from Underlay `ReorderableList` into Poodle in staged batches rather than preserving it as a long-term retained Underlay pattern.",
+    "active_capability_wave": [
+      "ReorderableList"
+    ],
+    "lead_target": "ReorderableList",
+    "notes": [
+      "The first proof caller family for g01.049 is the grouped `acme-admin` category/project/project-detail reorder flows, because they already share the same Underlay controller and conflict-recovery wiring without mixing in unrelated workflow shells.",
+      "Current Poodle `ReorderableList` already owns the low-level drag and keyboard movement primitive. The retained Underlay `ReorderableList` surface still owns a broader reorder-session workflow shell: submit/cancel actions, dirty-state gating, async submit error presentation, long-list warning behavior, optional windowed mode, and stronger live-announcement guidance.",
+      "Stage 49.2 is now landed: Poodle `ReorderableList` owns submit/cancel workflow chrome, dirty-state gating, async submit error surface, and the richer keyboard/live-announcement guidance previously trapped in the Underlay shell.",
+      "The first proof family is now migrated and green in `acme-admin` categories, projects, and project detail.",
+      "Stage 49.3 is now complete too: Poodle `ReorderableList` owns long-list guidance and optional page-window mode, retained `AutonomousList` is migrated onto direct Poodle `ReorderableList`, and the public Underlay `ReorderableList` pattern is removed."
+    ]
+  },
+  "wave_050_runtime_host_and_inline_loading": {
+    "purpose": "Focused post-g01.049 reassessment wave for splitting the final runtime-facing generic Underlay holds, `ToastHost` and `PageLoading`, into explicit Poodle capability decisions rather than leaving them as one blended tail.",
+    "active_capability_wave": [
+    ],
+    "lead_target": "PageLoading",
+    "notes": [
+      "The remaining generic Underlay tail at wave start was purely runtime-facing. `ToastHost` and `PageLoading` should not be treated as one shared migration problem.",
+      "The strict caller sweep showed two distinct contracts: `ToastHost` is a store-driven host with dismissal policy and fixed-position layout over toast items, while `PageLoading` is an inline centered loading shell used across route bodies, detail tabs, and embedded panels.",
+      "Batch 50.1 is now complete: the split is explicit, and `PageLoading` is the stronger next capability target because the live caller family is much broader than the small layout-only `ToastHost` family.",
+      "The next honest runtime capability wave inside g01.050 is inline loading, not the toast host. `ToastHost` remains the smaller later decision around store-aware host behavior over presentational `ToastStack`.",
+      "Batch 50.2 is now complete too: the strict `PageLoading` comparison shows that the missing reusable capability belongs as an inline presentation mode on current Poodle `PageLoading`, not as a second overlapping loading component.",
+      "The first proof family for inline loading is fixed to the grouped `acme-admin` media/account/system routes before mirroring into `cp-admin` and then the broader Dairy wave.",
+      "Stage 50.3 is now landed: Poodle `PageLoading` owns an inline presentation mode, and the grouped `acme-admin` media/account/system proof family is migrated and green.",
+      "Stage 50.4 is now complete too: the grouped `cp-admin` mirror, broad Dairy sweep, remaining `acme-admin` and `acme-front` tails, and retained Underlay internal callers are migrated, and the public Underlay `PageLoading` surface is removed.",
+      "After g01.050 completion, `ToastHost` was the only meaningful generic runtime hold still left in Underlay until the focused follow-on runtime-host wave landed."
+    ]
+  },
+  "wave_051_toast_host": {
+    "purpose": "Focused post-g01.050 capability wave for moving the final retained generic runtime host from Underlay `ToastHost` into a Poodle-owned runtime shell over presentational `ToastStack`.",
+    "active_capability_wave": [],
+    "lead_target": "ToastHost",
+    "notes": [
+      "The live caller family is intentionally small and concentrated: the app-root layouts in `acme-admin` and `cp-admin`.",
+      "Current Underlay `ToastHost` owns runtime behavior rather than new presentational UI: store subscription, timer lifecycle, sticky error treatment, dismiss wiring, and viewport layout over toast items.",
+      "Current Poodle `ToastStack` already owns the presentational half of the contract, so the next honest move is a small runtime-host expansion rather than a second parallel toast surface.",
+      "The first proof family for g01.051 is the grouped `acme-admin` and `cp-admin` root-layout caller set.",
+      "Stage 51.2 is now complete: Poodle `ToastHost` owns the small store-aware runtime shell over `ToastStack`, the grouped root-layout proof family is migrated and green, and the public Underlay `ToastHost` export is removed.",
+      "There are no meaningful generic Underlay holds left after g01.051."
+    ]
+  },
+  "wave_052_obvious_equivalent_reassessment": {
+    "purpose": "Focused post-g01.051 reassessment wave for the remaining public Underlay surface that already has direct Poodle equivalents or thin composition boundaries and should not default to implicit retention.",
+    "active_capability_wave": [],
+    "lead_target": "AutonomousList",
+    "notes": [
+      "There are no meaningful generic Underlay holds left after g01.051, but the public surface still includes obvious-equivalent residue that should be challenged directly.",
+      "`Banner` is now retired from the public Underlay surface. Retained `PageHeader` composes Poodle `Callout` directly for banner messaging instead of preserving a second wrapper.",
+      "`FormDialog` is now retired from the public Underlay surface. Poodle `FormDialog` owns both the built-in submit/cancel path and the caller-owned shell path needed by the live modal-form family.",
+      "`MediaPicker`, `PageHeader`, and `BatchActionBar` became the remaining broad obvious-equivalent successor family after `LogList` moved into its own focused wave because Poodle already exported either direct replacements or the base primitive successor.",
+      "The strict reassessment after `Banner` retirement showed that `LogList` is the strongest next focused capability wave: its live caller family is small and real, and the missing behavior is still generic audit-log list behavior that belongs in Poodle rather than a retained Underlay shell.",
+      "After `g01.053`, `BatchActionBar` is now the strongest next clean successor wave: the live caller family is small, grouped, and already close to current Poodle `BulkActionBar` capability.",
+      "After `g01.054`, `PageHeader` is now the strongest next clean successor wave: Poodle already owns the simpler route/list/system header cases, while the remaining Underlay caller family is concentrated in richer detail/admin shells that should be reassessed as one grouped structural header project.",
+      "`DropdownMenu` is now retired from the public Underlay surface. Poodle `Menu` owns the small remaining ergonomics gap, retained `CopyActionsMenu` now composes directly over it, and the thin Underlay menu wrapper is gone.",
+      "`AutonomousList` is now retired from the public Underlay surface. The live reassessment confirmed there was no remaining direct app or retained-shell caller family, so the right move was export retirement rather than another Poodle capability push.",
+      "The umbrella `g01.052` queue is now complete: every focused successor wave it opened has landed, and there is no active obvious-equivalent residue left waiting on a direct-successor migration."
+    ]
+  },
+  "wave_073_retained_public_surface_classification": {
+    "purpose": "Final classification closeout for the remaining public Underlay surface after the Poodle-adoption contraction line. This wave records what remains public across `patterns` and `nightfire`, and why.",
+    "active_capability_wave": [],
+    "lead_target": null,
+    "notes": [
+      "The package-boundary cleanup is complete. There are no live `@decodelabs/underlay/components/*.svelte` deep imports left in the active app/docs surface, and the wildcard `components/*` export is removed from `package.json`.",
+      "There is no remaining public `components` surface. `PasswordRequirements` and the retained auth shared types now live under `patterns/`, and the date-range formatter lives under `patterns/i18n`.",
+      "The remaining public `patterns` surface is intentionally split between retained workflow/shell UI (`LoginPage`, `ForgotPasswordFlow`, `SpaFormShell`, `DetailMeta*`) and retained helper/controller exports.",
+      "The repo's own app/docs surface no longer uses `@decodelabs/underlay/patterns/...` subpath imports; the explicit helper subpath exports may remain for external consumers, but they no longer indicate hidden migration residue.",
+      "`nightfire` is a retained editor/runtime package surface, not leftover generic UI contraction debt. Future changes there should start as editor-specific package work rather than continue the Poodle-adoption line by inertia."
+    ]
+  },
+  "wave_074_non_public_svelte_surface_recovery": {
+    "purpose": "Recovery wave for the non-public Svelte wrapper tail still present in `ts/src` after the public contraction line stopped short of the actual on-disk residue.",
+    "active_capability_wave": [],
+    "lead_target": "dead_internal_wrapper_tier",
+    "notes": [
+      "The public boundary is now clean, but the non-public `ts/src` Svelte surface still contained wrapper residue that should have been removed during the earlier contraction work.",
+      "Batch 74.1 is focused on the clearly dead wrapper tier with no remaining live internal callers: `ActionArea`, `AlertDialog`, `CompactGroupedBar`, `CompactGroupedBarGroup`, `ContentCard`, `DetailsCard`, `DetailsItem`, `DetailsSection`, `Dialog`, `FileUpload`, `InlineActionGroup`, `MediaThumbnail`, and `Skeleton`.",
+      "The follow-on retained-looking internal tier is now materially reduced. `Tabs*`, `TextInput`, `NumberInput`, `Select`, `MarkdownEditor`, and the single-caller `Form` helper are gone from shared `components/`; Nightfire owns its own editor/select runtime, and the retained auth workflow implementation now lives under `patterns/auth-workflows/` where it actually belongs.",
+      "Batch 74.5 completes the helper-placement tail and the final namespace cut: the date-range formatter now lives under `patterns/i18n`, the dead field a11y helper is gone, `PasswordRequirements.svelte` moved under `patterns/auth-workflows/`, and the `components/` package surface was removed entirely."
+    ]
+  },
+  "wave_075_ts_surface_boundary_audit": {
+    "purpose": "Broad audit of the remaining TypeScript surface after the Svelte contraction line. This wave classifies what remains as retained Underlay helper/runtime surface, what may become future Poodle helper work, and what looks more like standalone package material.",
+    "active_capability_wave": [],
+    "lead_target": null,
+    "notes": [
+      "There is no broad hidden Poodle migration tail left in the TypeScript surface. The main remaining work is package-boundary quality, not missed UI extraction.",
+      "`patterns/` is now a mixed namespace: it contains both retained workflow/shell UI and a broad runtime-helper layer (`forms`, `storage`, `navigation`, `authenticated-data`, pagination/list controllers, passkey helpers, timezone, keyboard shortcuts, relation search/history).",
+      "The clearest remaining Poodle-adjacent helper boundary is the toast runtime helper layer (`toasts.ts` and `useToasts.ts`) because Poodle now owns `ToastHost`.",
+      "The stronger extraction candidates are standalone packages rather than Poodle work: `client`, `embed`, and `nightfire`, with `server` as a possible later split if the CSP/security surface grows.",
+      "`validation/` is too small to justify a standalone package today; it should either grow into a meaningful shared validation surface or collapse into a more specific auth/client boundary later.",
+      "The root barrel remains broader than ideal because it still re-exports `patterns`, `nightfire`, `styles`, and `client`. Future cleanup should challenge that convenience surface instead of expanding it."
+    ]
+  },
+  "wave_053_log_list_capability_expansion": {
+    "purpose": "Focused follow-on capability wave for moving the generic audit/activity log-list contract from Underlay `LogList` into Poodle.",
+    "active_capability_wave": [
+      "LogList"
+    ],
+    "lead_target": "LogList",
+    "notes": [
+      "Current Poodle `LogList` is a console-style streaming log viewer, while current Underlay `LogList` is a paginated audit/activity list with callback-driven filters, refresh/export controls, empty/loading/error states, and custom actor/resource/detail formatting.",
+      "The live proof family is grouped and small: dashboard and audit pages in `acme-admin` and `cp-admin`, plus the later Dairy audit page.",
+      "`PageHeader` and `MediaPicker` remain later successor questions after `LogList` because they still reflect larger shell/workflow decisions than the first clean next capability wave.",
+      "Stage 53.2 is now complete: Poodle `LogList` supports the broader audit/activity list contract alongside the earlier stream-viewer shape, and the grouped `acme-admin` / `cp-admin` dashboard and audit proof family now uses direct Poodle `LogList`.",
+      "Stage 53.3 is now complete: the remaining Dairy audit caller is migrated, public Underlay `LogList` plus its helper/story residue is deleted, and `LogList` is no longer part of the public Underlay surface."
+    ]
+  },
+  "wave_054_batch_action_bar_successor": {
+    "purpose": "Focused successor wave for replacing Underlay `BatchActionBar` with Poodle `BulkActionBar` or direct Poodle-based composition.",
+    "active_capability_wave": [],
+    "lead_target": "BatchActionBar",
+    "notes": [
+      "Current Underlay `BatchActionBar` still bundles selection summary, clear/select-all toggles, dynamic action buttons, and optional built-in delete/status-update workflows.",
+      "Current Poodle `BulkActionBar` already owns the base primitive shell for selection summary, generic actions, and clear behavior.",
+      "The live proof family is small and concrete: `acme-admin` media/projects/project-detail, `cp-admin` media, and retained Underlay `AutonomousList`.",
+      "The next honest move is to add only the smallest truly generic capability to Poodle `BulkActionBar`, while pushing destructive confirmation and status-update dialogs into explicit caller-owned workflow where appropriate.",
+      "Stage 54.2 is now complete: Poodle `BulkActionBar` owns select-all / deselect-all affordance, loading and disabled gating, warning-tone actions, and richer icon input that can accept retained Underlay batch-action component icons.",
+      "The first grouped proof family is now migrated and green in `acme-admin` media/projects/project-detail, `cp-admin` media, and retained Underlay `AutonomousList`.",
+      "Stage 54.3 is now complete too: the remaining Dairy caller family moved onto a local Poodle-based successor, the public Underlay `BatchActionBar` export and story/demo residue are deleted, and the hidden delete/status workflow is not being preserved in the primitive."
+    ]
+  },
+  "wave_055_page_header_successor": {
+    "purpose": "Focused successor wave for replacing Underlay `PageHeader` with Poodle `PageHeader` or direct Poodle-based composition.",
+    "active_capability_wave": [],
+    "lead_target": "PageHeader",
+    "notes": [
+      "Current Poodle `PageHeader` already owns the simpler title, back-link, count, and actions cases and is proven across many media, list, account, and system pages in `acme-admin`, `cp-admin`, and `acme-front`.",
+      "Underlay `PageHeader` is retired in `g01.055`. Poodle `PageHeader` now owns the reusable section/title hierarchy and banner-level composition needed by the retained detail/admin header family.",
+      "The grouped proof family is complete: retained Underlay shells such as `DetailPageShell`, `AutonomousList`, `AiRoutingAdmin`, and `FormShell`, plus the remaining `acme-admin` and `cp-admin` detail routes, now use direct Poodle `PageHeader`.",
+      "Shell-specific detail meta stayed outside the generic header. `DetailMeta` and related page-specific structure remain caller or shell composition rather than new header API."
+    ]
+  },
+  "wave_056_media_picker_successor": {
+    "purpose": "Focused successor wave for replacing Underlay `MediaPicker` with a Poodle-owned media workflow successor.",
+    "active_capability_wave": [],
+    "lead_target": "MediaPicker",
+    "notes": [
+      "Current Poodle `MediaPicker`, `MediaBrowsePanel`, and `MediaUploadStatusPanel` already own the browse shell and upload-status presentation primitives.",
+      "Current Underlay `MediaPicker` still owns the generic callback-driven media workflow layer: paginated browse loading, duplicate-hash detection, metadata creation, upload initiation/finalisation, progress tracking, and duplicate-resolution state.",
+      "The live caller sweep is small and honest right now: no active consumer-app callers remain, so the next batch should define the reusable workflow contract first instead of preserving the public wrapper by inertia.",
+      "Stage 56.2 is now complete: the reusable successor boundary is a shared media-workflow helper/controller layer over `MediaBrowsePanel` and `MediaUploadStatusPanel`, not a widened monolithic Poodle `MediaPicker`.",
+      "Poodle `MediaPicker` remains the lighter local-item browse/upload shell. The callback-driven browse, duplicate-detection, metadata creation, upload orchestration, and upload-state transitions should move into a Poodle-owned helper layer instead.",
+      "Stage 56.3 is now complete too: the reusable media workflow helpers live in Poodle, the public Underlay `MediaPicker` wrapper and local helper/story residue are deleted, and the active media-library guide now teaches direct Poodle composition for both the lightweight selector and callback-driven workflow cases."
+    ]
+  },
+  "wave_057_dropdown_menu_successor": {
+    "purpose": "Focused successor wave for replacing Underlay `DropdownMenu` with direct Poodle `Menu` composition or the smallest honest Poodle menu-ergonomics expansion.",
+    "active_capability_wave": [],
+    "lead_target": "DropdownMenu",
+    "notes": [
+      "Current Underlay `DropdownMenu` is a thin interaction shell over Bits UI with callback-oriented item arrays, optional child-composed content, and a small trigger ergonomics layer.",
+      "Current Poodle `Menu` already owns the canonical generic menu primitive, so the next honest move is a strict parity review rather than treating `DropdownMenu` as implicitly retained.",
+      "The grouped live caller family is small and concrete: retained `CopyActionsMenu` plus a handful of `cp-admin` detail-route actions.",
+      "Stage 57.2 is now complete: the strict review shows that Poodle `Menu` already covers most of the contract, and the remaining reusable gaps are small and explicit: destructive item styling, icon-trigger aria-label ergonomics, and optional callback-item mapping.",
+      "Route-specific action behavior, navigation, confirmation, and clipboard side effects stay caller-owned; they are not part of the generic menu primitive.",
+      "Stage 57.3 is now complete too: Poodle `Menu` owns the small remaining ergonomics additions, retained `CopyActionsMenu` and the grouped detail-route callers are migrated, the broader Dairy recovery fallout is clean, and public Underlay `DropdownMenu` is removed.",
+      "`AutonomousList` remains the next broader composition/system question after `DropdownMenu`; even after the generic list pieces moved into Poodle it is still a structural and runtime shell rather than a thin interaction wrapper."
+    ]
+  },
+  "wave_058_autonomous_list_successor": {
+    "purpose": "Focused successor wave for reassessing the retained `AutonomousList` shell now that the generic list infrastructure it depended on lives in Poodle.",
+    "active_capability_wave": [],
+    "lead_target": "AutonomousList",
+    "notes": [
+      "The retained shell already composes over Poodle `ListCard`, `BulkActionBar`, `Pagination`, `Menu`, `ReorderableList`, and `PageHeader`.",
+      "The next honest question is not primitive parity but whether the remaining shell orchestration still earns a public Underlay boundary: filter/query wiring, selection and reorder-mode assembly, empty/loading/error assembly, and page-level composition around the migrated Poodle pieces.",
+      "Batch 58.1 is now complete: there are no live direct app callers of `AutonomousList`, `createAutonomousListState`, or the exported types across `acme-admin`, `cp-admin`, or `dairy`, and there are no retained Underlay shell callers either.",
+      "The current component is already mostly a composition layer over Poodle `PageHeader`, `FilterToolbar`, `PageLoading`, `EmptyState`, `ListCard`, `Pagination`, `BulkActionBar`, `ReorderableList`, and `AlertDialog`.",
+      "No smaller Poodle gap is proven by the live surface.",
+      "Batch 58.2 is now complete too: the dead public `AutonomousList` shell, helper, and type exports are retired, the guide surface now teaches direct Poodle list composition plus lower-level Underlay state helpers, and the wave is closed."
+    ]
+  },
+  "wave_059_page_header_meta_cleanup": {
+    "purpose": "Focused cleanup wave for retiring the dead public `PageHeaderMeta` helper family after the broader `PageHeader` migration.",
+    "active_capability_wave": [],
+    "lead_target": "PageHeaderMeta",
+    "notes": [
+      "The strict residue sweep found no live source callers in Underlay, `acme-admin`, `cp-admin`, or `dairy`.",
+      "The family was only still present as stale public export residue after the `PageHeader` migration wave.",
+      "The public `PageHeaderMeta`, `PageHeaderMetaRow`, `PageHeaderMetaItem`, and `PageHeaderMetaSeparator` exports are now retired."
+    ]
+  },
+  "wave_060_media_actions_menu_reassessment": {
+    "purpose": "Focused reassessment wave for deciding whether `MediaActionsMenu` still earns a shared public Underlay surface.",
+    "active_capability_wave": [],
+    "lead_target": "MediaActionsMenu",
+    "notes": [
+      "The next honest question is workflow ownership: how much shared behavior still belongs in Underlay after the earlier menu/dialog/media workflow migrations versus what should be local wrapper composition in the consuming apps.",
+      "Batch 60.1 is now complete: the local wrappers in `acme-admin`, `cp-admin`, and `dairy` are nearly identical and the remaining differences are app-specific command wiring, auth-token access, route navigation, and Dairy's optional `sourceContext`.",
+      "No missing Poodle capability is proven by the live contract. The retained Underlay helper is just bundling `CopyActionsMenu`, local toasts, confirmation dialogs, and media-specific workflow decisions.",
+      "The strongest next batch is direct retirement of public Underlay `MediaActionsMenu` by moving the three local wrappers onto direct Poodle `Menu` / `AlertDialog` plus local clipboard/toast/media-command wiring.",
+      "That retirement is now complete. Public Underlay `MediaActionsMenu` is removed, and the active media-library guidance now teaches app-local wrapper composition instead of a shared exported helper."
+    ]
+  },
+  "wave_061_error_boundary_reassessment": {
+    "purpose": "Focused reassessment wave for deciding whether `ErrorBoundary` still earns a public shared Underlay surface.",
+    "active_capability_wave": [
+      "ErrorBoundary"
+    ],
+    "lead_target": "ErrorBoundary",
+    "notes": [
+      "The remaining question was infrastructure ownership, not a design-system primitive gap.",
+      "Stage 61.1 is now complete: there were no retained Underlay shell callers and only two tiny admin app-root callers using the default fallback behavior.",
+      "Public Underlay `ErrorBoundary` is removed. The admin roots now own local `svelte:boundary` composition over Poodle `EmptyState` and `Button` instead of preserving a shared export."
+    ]
+  },
+  "wave_062_copy_actions_menu_reassessment": {
+    "purpose": "Focused reassessment wave for deciding whether `CopyActionsMenu` still earns a public shared Underlay surface after the broader menu-action workflow family was retired.",
+    "active_capability_wave": [
+      "CopyActionsMenu"
+    ],
+    "lead_target": "CopyActionsMenu",
+    "notes": [
+      "The next honest question was whether the remaining shared value was still real once `MediaActionsMenu` and the old `DropdownMenu` wrapper were both gone.",
+      "Stage 62.1 is now complete: the live caller family was a small set of `acme-admin` and `cp-admin` routes with no `dairy` or retained Underlay shell callers.",
+      "Public Underlay `CopyActionsMenu` is removed. The remaining convenience is now owned by app-local helpers over Poodle `Menu` and Underlay clipboard/toast utilities."
+    ]
+  },
+  "wave_063_detail_page_shell_reassessment": {
+    "purpose": "Focused reassessment wave for deciding whether `DetailPageShell` still earns a public shared Underlay surface now that most of its former generic dependencies have moved into Poodle.",
+    "active_capability_wave": [],
+    "lead_target": "DetailPageShell",
+    "notes": [
+      "The shell is thinner than before, but the live caller family is still real: seven active detail routes across `acme-admin` and `cp-admin`.",
+      "Batch 63.1 is now complete: the remaining shared value is structural-shell composition rather than a missing primitive/composite gap.",
+      "Batch 63.2 is now complete: representative `acme-admin` media detail and `cp-admin` user detail routes now use direct Poodle `PageHeader` and `Tabs` plus tiny route-local mounted-tab helpers, and both validate cleanly.",
+      "Batch 63.3 is now complete: the remaining `acme-admin` and `cp-admin` category, system, user, and media detail routes now use direct Poodle composition too, and both proof apps still validate cleanly.",
+      "Batch 63.4 is now complete: the first broad Dairy `DetailPageShell` family is off the shell too, including levels, areas, modules, QA, documents, and exam schedules, and `dairy` validates cleanly again after sweeping the stale local `CopyActionsMenu` fallout.",
+      "Batch 63.5 is now complete too: the next higher-variance Dairy learning long tail is off `DetailPageShell`, including pathways, sections, outcomes, and bundles, and `dairy` still validates cleanly.",
+      "Batch 63.6 is now complete too: the simpler Dairy system/detail family is off `DetailPageShell`, including jobs, emails, errors, pre-seen releases, and module variants.",
+      "Batch 63.7 is now complete too: the simpler Dairy operational route tail is fully off `DetailPageShell`, including scheduled-task detail alongside the other system/detail routes.",
+      "Batch 63.8 is now complete too: the grouped question-detail family is off `DetailPageShell`, including quiz, digital exam, and written exam question detail routes.",
+      "Batch 63.9 is now complete too: the small Dairy content-media and bundle-topic tail is off `DetailPageShell`, including summaries, audios, videos, and bundle topics.",
+      "Batch 63.10 is now complete too: the final Dairy exams, assessment-session, user, and internal caller tail is off `DetailPageShell`, and the public Underlay shell export plus its dedicated test fixture are removed.",
+      "The shell no longer proves a durable public shared contract. The surviving shared detail-header value is only the `DetailMeta*` helper family."
+    ]
+  },
+  "wave_064_auth_surface_reassessment": {
+    "purpose": "Focused reassessment wave for deciding whether the remaining public auth component family still earns shared Underlay ownership or should move toward Poodle or thinner local composition.",
+    "active_capability_wave": [],
+    "lead_target": "TotpInput",
+    "notes": [
+      "After `g01.063`, the remaining public component surface is concentrated in auth: `AuthLayout`, `LoginPage`, `ForgotPasswordFlow`, `TotpInput`, and `PasswordRequirements`.",
+      "Batch 64.1 confirmed the family splits cleanly instead of forming one retained bundle: `AuthLayout` is thin wrapper residue, `LoginPage` and `ForgotPasswordFlow` are the real shared auth workflow surface, and `TotpInput` / `PasswordRequirements` are lower-level helper follow-ons.",
+      "Batch 64.2 is now complete too: the three live auth layouts in `acme-admin`, `cp-admin`, and `dairy` now use direct local Poodle `Card` composition, and the public Underlay `AuthLayout` export plus its story/test residue are removed.",
+      "Batch 64.3 is now complete too: `LoginPage` and `ForgotPasswordFlow` still prove a real shared auth workflow boundary across all three active apps, so they remain explicit retained Underlay auth composites for now rather than collapsing into thin local composition.",
+      "Batch 64.4 is now complete too: the helper layer splits cleanly instead of resolving as one bundle. `TotpInput` is a genuine reusable one-time-code input candidate with no current Poodle equivalent, while `PasswordRequirements` is still more tightly coupled to auth-policy fetch and password-reset/change workflow UI.",
+      "`TotpInput` is therefore the strongest next focused auth-helper capability wave, while `PasswordRequirements` remains explicit retained Underlay auth helper surface for now."
+    ]
+  },
+  "wave_065_totp_input_capability": {
+    "purpose": "Focused auth-helper capability wave for moving the reusable one-time-code input behavior from Underlay `TotpInput` into Poodle, then retiring the public Underlay helper after the retained auth and account-security proof family migrates.",
+    "active_capability_wave": [
+      "TotpInput"
+    ],
+    "lead_target": "TotpInput",
+    "notes": [
+      "Batch 64.4 established the key boundary: `TotpInput` is a genuine reusable input surface, while `PasswordRequirements` remains more tightly coupled to auth-policy workflow UI.",
+      "There is no current Poodle equivalent for a one-time-code input with one hidden real input, visual digit slots, one-time-code autofill, and password-manager-compatible paste behavior.",
+      "The proof family is intentionally grouped and concrete: retained shared auth internals in `TwoFactorStep` plus the account 2FA and password pages in `acme-admin`, `cp-admin`, and `dairy`.",
+      "Batch 65.1 is now complete: the contract review against Poodle `Field`, `TextInput`, and `PinInput` confirmed that `PinInput` is the wrong behavioral model because it uses multiple real inputs. The honest target is a dedicated Poodle one-time-code input primitive that keeps the hidden-real-input plus visual-slot contract.",
+      "Batch 65.2 is now complete too: Poodle owns the new `TotpInput` primitive, retained shared auth internals use it, and the grouped account-security proof family in `acme-admin`, `cp-admin`, and `dairy` is migrated cleanly."
+    ]
+  },
+  "wave_066_password_requirements_reassessment": {
+    "purpose": "Focused auth-helper reassessment wave for deciding whether `PasswordRequirements` still earns public Underlay ownership after `TotpInput` moved into Poodle.",
+    "active_reassessment_wave": [
+      "PasswordRequirements"
+    ],
+    "lead_target": "PasswordRequirements",
+    "notes": [
+      "`TotpInput` is now retired from the public Underlay surface, so `PasswordRequirements` is the remaining lower-level auth helper boundary to challenge directly.",
+      "The next honest move is a strict caller and contract matrix across retained shared auth flows plus grouped account-password pages in `acme-admin`, `cp-admin`, and `dairy` before opening any capability or migration batch.",
+      "Batch 66.1 is now complete: `PasswordRequirements` still earns retained Underlay ownership for now because the live surface is workflow-adjacent rather than purely design-system-oriented. It bundles auth-policy fetch on mount, fallback defaults, and shared password-rule rendering across `PasswordResetStep` plus the grouped account-password pages."
+    ]
+  },
+  "wave_067_spa_form_shell_reassessment": {
+    "purpose": "Focused structural-shell reassessment wave for deciding whether `SpaFormShell` still earns public Underlay ownership after the broader framing, action, loading, and status surfaces moved into Poodle.",
+    "active_reassessment_wave": [
+      "SpaFormShell"
+    ],
+    "lead_target": "SpaFormShell",
+    "notes": [
+      "The auth family is at a sensible stop point for now, so the strongest next public shell to challenge is `SpaFormShell`.",
+      "The surface still has a broad live caller family across create/edit routes, especially in Dairy, so the next honest move is a strict caller and contract matrix before opening any migration batch.",
+      "Batch 67.1 is now complete: the strict caller review confirmed that `SpaFormShell` is not thin wrapper residue. It still owns shared SPA submit interception, submit/loading/result lifecycle, redirect and navigate handoff, optional `prepare(formData)` transformation, and consistent success/error/field-error framing over a broad grouped create/edit route family.",
+      "Current Poodle already owns the surrounding generic visual pieces such as `PageHeader`, `Card`, `FormActions`, `PageLoading`, and status callout surfaces, but the remaining value in `SpaFormShell` is controller-style workflow rather than a missing design-system capability.",
+      "`SpaFormShell` therefore remains an explicit retained Underlay structural shell for now rather than the next direct migration or Poodle capability wave.",
+      "Batch 67.2 is now complete too: the active guide surface records `SpaFormShell` as an explicit retained shell, and the queue is reset around `AiRoutingAdmin` as the next honest public-surface challenge."
+    ]
+  },
+  "wave_068_ai_routing_admin_reassessment": {
+    "purpose": "Focused structural-shell reassessment wave for deciding whether `AiRoutingAdmin` still earns a public Underlay export now that its residue appears concentrated in the retained shell itself plus guide/example surface.",
+    "active_reassessment_wave": [
+      "AiRoutingAdmin"
+    ],
+    "lead_target": "AiRoutingAdmin",
+    "notes": [
+      "`SpaFormShell` remains retained after g01.067, so the strongest next shell to challenge is `AiRoutingAdmin`.",
+      "Initial residue scan shows no live consumer-app callers across `acme-admin`, `cp-admin`, or `dairy`; the visible surface is concentrated in the retained shell itself, guide prose, and guide example files.",
+      "Batch 68.1 is now complete: the strict caller and contract matrix confirmed that the public shell no longer earns export status. The reusable value is now primarily in `createAiRoutingOpsController` and the related data contracts, while the page-shaped shell is assembly over direct Poodle `PageHeader`, `Card`, `Callout`, `PageLoading`, and `DataTable`.",
+      "Batch 68.2 is now complete too: the guide/example surface moved onto direct Poodle composition over `createAiRoutingOpsController`, the public `AiRoutingAdmin` export is removed, and the shell is no longer part of the public Underlay surface."
+    ]
+  },
+  "wave_069_relation_selector_reassessment": {
+    "purpose": "Focused reassessment wave for deciding whether `RelationSelector` still earns a public Underlay export now that most generic dialog, search, badge, button, loading, and card chrome already lives in Poodle.",
+    "active_reassessment_wave": [],
+    "lead_target": "RelationSelector",
+    "notes": [
+      "`AiRoutingAdmin` is retired after g01.068, so `RelationSelector` is now the strongest remaining non-auth public pattern to challenge directly.",
+      "Batch 69.1 is now complete: the strict caller and contract matrix shows that the live app caller family is much smaller than the historical retained boundary suggests, while the lower-level search, suggestion, drilldown, selection-history, and relation-context helpers still prove real shared value.",
+      "The public `RelationSelector` UI wrapper family no longer has strong evidence as a durable export boundary. It is now mostly assembly over Poodle dialog/search/button/badge chrome plus the retained helper layer.",
+      "Batch 69.2 is now complete too: the first proof family in `acme-admin` projects moved onto an app-local selector over the retained helper layer plus direct Poodle `Dialog`, `SearchField`, `Button`, and `Callout` surfaces.",
+      "Batch 69.3 is now complete too: Dairy now owns a local `RelationSelector` compatibility shell over the retained helper layer plus direct Poodle surfaces, and the broad learning/content/exams/transform form family is off the public Underlay UI wrapper.",
+      "Batch 69.4 is now complete too: the higher-level Dairy tail in `QuestionOutcomesInlineList`, `CrossKindActivityTransformPage`, and the grouped learning-activity route family is also off the public Underlay UI wrapper.",
+      "The exact live app import scan now shows no active app repo importing the public Underlay `RelationSelector` UI wrapper family anymore.",
+      "Batch 69.5 is now complete too: the public `RelationSelector` UI exports, implementation files, and UI-specific tests/fixtures are removed, while the lower-level helper layer stays public in Underlay.",
+      "The active guide surface now teaches app-local selector shells over retained Underlay relation-search, drilldown, selection-history, and context helpers plus direct Poodle composition."
+    ]
+  },
+  "wave_070_detail_meta_reassessment": {
+    "purpose": "Focused reassessment wave for deciding whether the remaining public `DetailMeta` helper family still earns public Underlay ownership after the retirement of `PageHeader` and `DetailPageShell`.",
+    "active_reassessment_wave": [],
+    "lead_target": "DetailMeta",
+    "notes": [
+      "`RelationSelector` is now settled at a thinner retained helper-layer boundary after the public UI wrapper retirement in g01.069.",
+      "The strongest next public helper family to challenge is `DetailMeta`, because it still appears broadly across active detail pages even though the surrounding shared header and detail-page shells have already been retired.",
+      "Batch 70.1 is now complete: the strict caller and contract review shows that `DetailMeta*` still has a broad live app surface, with 11 active files in `acme-admin`, 6 in `cp-admin`, and 44 in `dairy`.",
+      "The retained helper family still expresses one stable compact metadata-row contract across both detail and edit headers: wrapping row layout, labeled inline values, copyable IDs, compact status pills, and shared separators.",
+      "Direct Poodle detail composition is possible, but forcing route-local replacement now would mostly duplicate a stable helper vocabulary across dozens of active pages.",
+      "Batch 70.2 is now complete too: the active guide surface and durable inventory now record `DetailMeta*` as an explicit retained Underlay helper family, and the queue no longer treats it as the next likely retirement."
+    ]
+  },
+  "wave_071_auth_workflow_reassessment": {
+    "purpose": "Focused reassessment wave for rechecking the remaining retained auth workflow surface now that the public Underlay UI surface is much smaller.",
+    "active_reassessment_wave": [],
+    "lead_target": "LoginPage",
+    "notes": [
+      "`DetailMeta*` is now settled as an explicit retained helper family after g01.070.",
+      "The strongest next challenge is the remaining auth workflow surface because it now represents most of the remaining public component exports.",
+      "Batch 71.1 is now complete: the fresh caller and contract review across `acme-admin`, `cp-admin`, and `dairy` confirmed that `LoginPage`, `ForgotPasswordFlow`, and `PasswordRequirements` still earn shared public Underlay ownership.",
+      "Current Poodle primitives cover the low-level form and layout pieces, but they do not replace the retained auth-state orchestration or policy-fetch behavior that these three surfaces still own.",
+      "Batch 71.2 is now complete too: the auth guide, roadmap front doors, and durable inventory now record the remaining auth surface as an explicit retained stop point.",
+      "There is no smaller honest follow-on migration wave in this auth family right now."
+    ]
+  },
+  "wave_072_auth_boundary_refinement": {
+    "purpose": "Focused follow-on wave for tightening the remaining auth boundary after the auth reassessment stop point by moving workflow pages to public `patterns` and splitting `PasswordRequirements` into a Poodle UI surface plus an Underlay auth-policy adapter.",
+    "active_reassessment_wave": [],
+    "lead_target": "LoginPage",
+    "notes": [
+      "The auth workflow reassessment stop point from g01.071 is still correct directionally, but the public boundary can be tightened further without collapsing the retained auth workflows themselves.",
+      "`LoginPage` and `ForgotPasswordFlow` are workflow/page shells and should be public `patterns`, not public `components`.",
+      "`PasswordRequirements` should split cleanly: Poodle owns the agnostic checklist UI, while Underlay keeps auth-policy fetch, fallback defaults, and shared auth-specific adapter behavior.",
+      "Batch 72.1 is now complete: `LoginPage` and `ForgotPasswordFlow` are exported from public `patterns`, the public `components` barrel no longer owns them, and the grouped auth route callers plus active guide surface are migrated.",
+      "Batch 72.2 is now complete too: Poodle owns the agnostic `PasswordRequirements` checklist UI, while Underlay `PasswordRequirements` is reduced to the auth-policy adapter layer over that primitive."
+    ]
+  },
   "replace_with_poodle_direct": {
     "same_name_primitive_replacements": [
       {
@@ -49,27 +540,14 @@
           "Code",
           "Card",
           "Field",
-          "Pill",
           "TextInput",
-          "DurationInput",
-          "RangeSlider",
-          "ColorPicker",
-          "TextArea",
           "FormActions",
-          "SegmentedControl",
-          "Switch",
           "ListCard",
           "SplitButton",
-          "VideoPlayer",
-          "Select",
           "Dialog",
-          "Drawer",
           "AlertDialog",
           "IconButton",
-          "TimeAgo",
-          "Skeleton",
           "Pagination",
-          "OrderBy",
           "NavCard",
           "NavCardGrid"
         ]
@@ -79,16 +557,9 @@
       {
         "successor_package": "@poodle/svelte-composites",
         "exports": [
-          "CardRadioGroup",
-          "FilterToolbar",
-        "MarkdownEditor",
-        "EmptyState",
-        "PageLoading",
-        "DataTable",
-        "AudioPlayer",
-        "ReorderableList",
-        "SlugField"
-      ]
+          "DataTable",
+          "ReorderableList"
+        ]
       }
     ],
     "api_translation_replacements": [
@@ -97,7 +568,7 @@
         "entrypoint": "@decodelabs/underlay/components",
         "successor_package": "@poodle/svelte-primitives",
         "successor_export": "DatePicker",
-        "notes": "Poodle replacement exists but migration will need import and API translation."
+        "notes": "Retired in g01.045. Use Poodle `FilterToolbar` directly for filter layout and collapse behavior; Underlay no longer needs a second filter-shell wrapper."
       },
       {
         "export": "DateTimeInput",
@@ -114,53 +585,58 @@
         "notes": "Poodle replacement exists but migration will need import and API translation."
       },
       {
-        "export": "StatusBadge",
-        "entrypoint": "@decodelabs/underlay/components",
-        "successor_package": "@poodle/svelte-primitives",
-        "successor_export": "StatusIndicator",
-        "notes": "Poodle replacement exists but migration will need import and API translation."
-      },
-      {
-        "export": "ProgressBar",
-        "entrypoint": "@decodelabs/underlay/components",
-        "successor_package": "@poodle/svelte-primitives",
-        "successor_export": "Progress",
-        "notes": "Poodle replacement exists but migration will need import and API translation."
-      },
-      {
-        "export": "ToastHost",
-        "entrypoint": "@decodelabs/underlay/components",
-        "successor_package": "@poodle/svelte-composites",
-        "successor_export": "ToastStack",
-        "notes": "Poodle replacement exists but migration will need import and API translation."
-      },
-      {
         "export": "FilterBar",
         "entrypoint": "@decodelabs/underlay/patterns",
         "successor_package": "@poodle/svelte-composites",
         "successor_export": "FilterToolbar",
-        "notes": "Poodle replacement exists but migration will need import and API translation."
-      },
+        "notes": "Retired in g01.045. Use Poodle `FilterToolbar` directly for filter layout and collapse behavior; Underlay no longer needs a second filter-shell wrapper."
+      }
     ]
   },
   "keep_in_underlay": [
     {
       "entrypoint": "@decodelabs/underlay/components",
       "exports": [
-        "DropdownMenu"
+        "Select"
       ],
-      "notes": "Retain as a thin Underlay interaction shell for now. Poodle `Menu` is not yet a drop-in replacement for the live remaining callers because `DropdownMenu` still supports callback-oriented `items`, destructive row-action treatment, and arbitrary child-composed menu content used by `RowActionsCell`."
+      "notes": "Internalize rather than keep public. There are no live consumer-app callers left, but retained internals such as Nightfire editor helpers still depend on the local richer select contract."
     },
     {
       "entrypoint": "@decodelabs/underlay/patterns",
       "exports": [
-        "AiRoutingAdmin",
-        "Banner",
-        "FormDialog",
-        "PageHeader",
-        "SpaFormShell"
+        "SpaFormShell",
+        "DetailMeta",
+        "DetailMetaItem",
+        "DetailMetaId",
+        "DetailMetaStatus",
+        "DetailMetaSeparator"
       ],
-      "notes": "Retain as Underlay-owned structural shells, operational flows, or app-facing product composites. `PageHeader` is now reserved for richer section/title split, contextual-back, banner, and header-meta cases after the simple title/back/actions, count-bearing list headers, and plain upload/detail pages moved to Poodle `PageHeader`. `FormDialog` remains the flexible modal-form workflow shell for custom body/actions, but now resolves its close and status chrome through Poodle `IconButton` and `Callout` rather than a second local implementation. `RelationSelector` is now at its retained Underlay boundary: Poodle owns its dialog, search, status, button, and badge chrome, while Underlay keeps the actual relation filters, option list behavior, drilldown navigation, and selection workflow."
+      "notes": "Retain as Underlay-owned structural shells, helper families, operational flows, or app-facing product composites. `PageHeader` and `Banner` are no longer part of this retained public surface. `RelationSelector` is now at its retained Underlay boundary: Poodle owns its dialog, search, status, button, and badge chrome, while Underlay keeps the actual relation filters, option list behavior, drilldown navigation, and selection workflow. `SpaFormShell` was rechecked in g01.067 and still earns retained ownership because it bundles SPA submit/result/navigation workflow across a broad create/edit caller family rather than just stale framing. `DetailMeta*` was rechecked in g01.070 and still earns retained ownership because it expresses a stable compact metadata-row contract across a broad active detail/edit caller family."
+    },
+    {
+      "entrypoint": "@decodelabs/underlay/components",
+      "exports": [
+        "PasswordRequirements"
+      ],
+      "notes": "Retain as the Underlay auth-policy adapter layer. Poodle now owns the agnostic `PasswordRequirements` checklist UI, while Underlay still owns policy fetch, fallback defaults, and shared password-reset/change adapter behavior."
+    },
+    {
+      "entrypoint": "@decodelabs/underlay/patterns",
+      "exports": [
+        "LoginPage",
+        "ForgotPasswordFlow"
+      ],
+      "notes": "Retain as shared auth workflow patterns. `LoginPage` still owns multi-method auth state, 2FA transitions, and setup-prompt/email-fallback handoff; `ForgotPasswordFlow` still owns the reset request/verify/reset/success sequence."
+    },
+    {
+      "entrypoint": "@decodelabs/underlay/nightfire",
+      "exports": [
+        "NightfireRenderer",
+        "NightfireBlockEditor",
+        "NightfireEditor",
+        "SlashCommandPalette"
+      ],
+      "notes": "Retain as a separate Underlay editor/runtime package surface. `nightfire` is not generic Poodle-contraction residue; it is a deliberate rich-content editor boundary with associated registries, validation, strategies, and media context."
     }
   ],
   "delete": [
@@ -282,13 +758,6 @@
         "notes": "Use the standard Poodle `Button` with `variant=\"ghost\"`. No separate text-button contract is needed."
       },
       {
-        "export": "DataSkeleton",
-        "entrypoint": "@decodelabs/underlay/components",
-        "successor_package": "@poodle/svelte-primitives",
-        "successor_export": "Skeleton",
-        "notes": "Use Poodle skeleton presets and composition instead of recreating an Underlay-specific wrapper."
-      },
-      {
         "export": "SaveSplitButton",
         "entrypoint": "@decodelabs/underlay/components",
         "successor_package": "@poodle/svelte-primitives",
@@ -296,25 +765,11 @@
         "notes": "Remove the Underlay surface entirely. Treat save semantics as caller-owned labels, hidden intent fields, and actions over standard Poodle `Button` and `SplitButton` primitives."
       },
       {
-        "export": "StatCard",
-        "entrypoint": "@decodelabs/underlay/components",
-        "successor_package": "@poodle/svelte-composites",
-        "successor_export": "MetricTile",
-        "notes": "The metric-tile surface appears to cover the generic metric-card use case without a new Poodle contract."
-      },
-      {
-        "export": "StatGrid",
-        "entrypoint": "@decodelabs/underlay/components",
-        "successor_package": "@poodle/svelte-composites",
-        "successor_export": "MetricTile",
-        "notes": "Use `MetricTile` composed in layout primitives rather than minting a dedicated stat-grid surface immediately."
-      },
-      {
         "export": "CheckboxChip",
         "entrypoint": "@decodelabs/underlay/components",
         "successor_package": "@poodle/svelte-primitives",
         "successor_export": "Checkbox",
-        "notes": "Treat this as checkbox-plus-chip styling composed from existing Poodle primitives instead of a new canonical component."
+        "notes": "Retired in g01.045. No live callers remained; use direct checkbox composition if this interaction resurfaces."
       },
       {
         "export": "FieldSetGrid",
@@ -362,15 +817,15 @@
         "export": "InlineListCard",
         "entrypoint": "@decodelabs/underlay/components",
         "successor_package": "@poodle/svelte-primitives",
-        "successor_export": "ListCard",
-        "notes": "Use `ListCard` plus standard slots/composition instead of introducing a dedicated inline-list-card contract."
+        "successor_export": null,
+        "notes": "Under active reassessment in g01.046. The first broad Dairy family already collapsed onto direct Poodle `Card` composition with local rows (`AliasInlineList`, `NoticesInlineList`, `PreSeenReleasesInlineList`, `VariantsInlineList`, `BundleModulesInlineList`, `MediaUsageTab`, `MediaVersionsList`). The remaining tail is now narrow: reorder hybrids and the relation-driven `QuestionOutcomesInlineList` surface."
       },
       {
         "export": "InlineListItem",
         "entrypoint": "@decodelabs/underlay/components",
         "successor_package": "@poodle/svelte-primitives",
-        "successor_export": "ListCard",
-        "notes": "Treat as list-item composition over existing list/card, checkbox, button, and pill primitives."
+        "successor_export": null,
+        "notes": "Under active reassessment in g01.046. The simpler row family no longer needs the old shared wrapper contract and now uses caller-owned rows over direct Poodle `Card` shells. The unresolved tail is limited to reorder-aware inline rows and the relation-driven `QuestionOutcomesInlineList` case, which will determine whether any smaller row/item capability belongs in Poodle."
       },
       {
         "export": "InlineActionGroup",
@@ -426,7 +881,7 @@
         "entrypoint": "@decodelabs/underlay/components",
         "successor_package": "@poodle/svelte-primitives",
         "successor_export": "Grid",
-        "notes": "Use Poodle `Grid` with card/list composition rather than retaining a second list-grid implementation."
+        "notes": "Retired in g01.045. Use Poodle `Grid` with card/list composition rather than retaining a second list-grid implementation."
       },
       {
         "export": "CardActions",
@@ -455,20 +910,6 @@
         "successor_package": "@poodle/svelte-primitives",
         "successor_export": "Button",
         "notes": "Retired. Use Poodle `Button` with `type=\"submit\"`, `loading`, and caller-owned label logic instead of a named Underlay wrapper."
-      },
-      {
-        "export": "CopyActionsMenu",
-        "entrypoint": "@decodelabs/underlay/patterns",
-        "successor_package": "@decodelabs/underlay/patterns",
-        "successor_export": "CopyActionsMenu",
-        "notes": "Keep in Underlay. This remains the shared copy-and-actions helper over clipboard and toast utilities rather than a Poodle design-system component."
-      },
-      {
-        "export": "EntityActionsMenu",
-        "entrypoint": "@decodelabs/underlay/patterns",
-        "successor_package": "@poodle/svelte-primitives",
-        "successor_export": "Menu",
-        "notes": "Retired in favor of caller-owned `CopyActionsMenu` plus `AlertDialog` composition. Entity-specific action sets should remain in app-level composition rather than a shared Underlay wrapper."
       },
       {
         "export": "DiagnosticsToolbar",
@@ -511,43 +952,25 @@
     ],
     "keep_in_underlay_after_assessment": [
       {
-        "entrypoint": "@decodelabs/underlay/components",
+        "entrypoint": "@decodelabs/underlay/patterns",
         "exports": [
-          "LogList",
-          "BatchActionBar"
+          "PasswordRequirements"
         ],
-        "notes": "These are now settled retained Underlay workflow surfaces. Poodle ships adjacent generic components, but not drop-in replacements for Underlay's audit-log filtering and pagination model or its richer batch-selection workflow with select-all, status update, and registered action handling."
+        "notes": "This is now the settled retained Underlay auth adapter surface. Poodle owns the agnostic `PasswordRequirements` checklist UI, while Underlay keeps auth-policy fetch, fallback defaults, and shared reset/change adapter behavior. The adapter now lives on the retained `patterns` namespace alongside the other auth workflow shells."
       },
       {
-        "entrypoint": "@decodelabs/underlay/components",
+        "entrypoint": "@decodelabs/underlay/patterns",
         "exports": [
-          "MediaActionsMenu",
-          "MediaPicker",
-          "TotpInput",
-          "PasswordRequirements",
-          "AuthLayout",
           "ForgotPasswordFlow",
           "LoginPage"
         ],
-        "notes": "These are now settled retained Underlay auth and media surfaces. `MediaActionsMenu` and `MediaPicker` remain callback-driven media workflow shells rather than clean design-system composites. `AuthLayout`, `LoginPage`, and `ForgotPasswordFlow` remain the shared auth-flow shells, while `TotpInput` and `PasswordRequirements` remain shared auth field helpers with live use across login, recovery, and account-security pages."
-      },
-      {
-        "entrypoint": "@decodelabs/underlay/components",
-        "exports": [
-          "ErrorBoundary"
-        ],
-        "notes": "This remains a small retained Underlay infrastructure surface. It still has live app-shell callers and encapsulates Svelte boundary recovery UI rather than a generic design-system primitive."
+        "notes": "These are now the settled retained Underlay auth workflow patterns. `LoginPage` and `ForgotPasswordFlow` remain shared auth-flow shells, but they now live on the correct public `patterns` layer."
       }
     ]
   },
   "poodle_gap": [],
   "candidate_to_keep_in_underlay": [],
   "delete": [
-    {
-      "export": "AudioEmbed",
-      "entrypoint": "@decodelabs/underlay/components",
-      "notes": "No long-term Underlay ownership intended. Remove or fold into neighboring Poodle-backed surfaces during migration."
-    },
     {
       "export": "ContentCard",
       "entrypoint": "@decodelabs/underlay/components",
@@ -559,5 +982,5 @@
       "notes": "Internalized. The lightweight enhance/prepare form wrapper is still used inside Underlay shells and deprecated auth internals, but it no longer needs a public app-facing export."
     }
   ],
-  "next_step": "`g01.042` is ready for closure review. Remaining mentions of retired surfaces should now be treated as historical documentation hygiene, not active migration scope."
+  "next_step": "If the TypeScript reduction line continues, take the next broad audit on the retained utils surface, and decide whether it is already clean as a small standalone helper package boundary or whether there is any dead or misplaced utility residue left to remove."
 }

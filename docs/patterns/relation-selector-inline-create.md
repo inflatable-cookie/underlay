@@ -1,6 +1,7 @@
 # Recipe: Relation Selector with Inline Create
 
-**Use when**: A form needs to pick related entities and optionally create missing ones without leaving context.
+**Use when**: A form needs an app-local selector shell to pick related
+entities and optionally create missing ones without leaving context.
 
 **Example prompt**: "Add relation selector for Audio with inline create"
 
@@ -8,7 +9,7 @@
 
 ## Key Principle
 
-Treat relation picking as a reusable pattern:
+Treat relation picking as a reusable helper-driven pattern:
 1. **Search/suggest/select** existing entities
 2. **Remember recent selections**
 3. **Inline create** when no suitable relation exists
@@ -25,7 +26,7 @@ Treat relation picking as a reusable pattern:
 
 ### Phase 2: Base Selector Wiring
 
-- [ ] Use `RelationSelector` with hidden form field binding
+- [ ] Use your local selector shell with hidden form field binding
 - [ ] Provide `initialSelection` and `selectionHistory` store
 - [ ] Handle `onchange` -> update selected relation ID
 

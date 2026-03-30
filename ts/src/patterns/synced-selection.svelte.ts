@@ -28,7 +28,7 @@
  *   });
  * </script>
  *
- * <RelationSelector
+ * <AreaSelector
  *   value={selection.value}
  *   onchange={(val) => { selection.value = val; }}
  * />

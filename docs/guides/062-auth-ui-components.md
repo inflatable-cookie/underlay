@@ -4,16 +4,14 @@ This guide covers the reusable authentication UI components provided by Underlay
 
 ## Overview
 
-Underlay provides two public auth layers:
+Underlay now provides two retained auth layers:
 
-1. **Workflow shells** - framed auth pages and multi-step flows
-2. **Shared field helpers** - focused inputs and password-rule display used by both shared flows and app-owned account pages
+1. **Workflow shells** - shared multi-step auth pages and flows
+2. **Retained auth helpers** - focused workflow-adjacent helpers that still earn shared Underlay ownership
 
 Storybook coverage:
-- `Auth/AuthLayout`
 - `Auth/LoginPage`
 - `Auth/ForgotPasswordFlow`
-- `Auth/TotpInput`
 - `Auth/PasswordRequirements`
 
 Run `effigy storybook` from the repo root to inspect the retained auth surface interactively.
@@ -22,22 +20,48 @@ Run `effigy storybook` from the repo root to inspect the retained auth surface i
 
 | Component | Description |
 |-----------|-------------|
-| `AuthLayout` | Centered container with branding slots |
-| `LoginPage` | Full login flow with multiple auth methods |
-| `ForgotPasswordFlow` | Multi-step password reset flow |
+| Underlay `LoginPage` pattern | Full login flow with multiple auth methods |
+| Underlay `ForgotPasswordFlow` pattern | Multi-step password reset flow |
 
-### Shared Field Helpers
+### Retained Auth Adapter
 
-| Component | Description |
+| Surface | Description |
 |-----------|-------------|
-| `TotpInput` | 6-digit code input |
-| `PasswordRequirements` | Password strength indicator |
+| Poodle `TotpInput` | 6-digit one-time-code input with a single real input and visual digit slots |
+| Poodle `PasswordRequirements` | Agnostic password-policy checklist UI driven by caller-supplied requirements |
+| Underlay `PasswordRequirements` pattern | Auth-policy adapter over the Poodle checklist, including retained fetch, fallback defaults, and shared password-reset/change workflow behavior |
 
 ### Internal and Retired Auth Pieces
 
-- `TwoFactorStep`, `SuccessStep`, and `PasswordResetStep` remain internal implementation detail inside the shared auth flows. They are not part of the public `@decodelabs/underlay/components` surface.
+- `TwoFactorStep`, `SuccessStep`, and `PasswordResetStep` remain internal implementation detail inside the shared auth flows. They are not part of the public `@decodelabs/underlay/patterns` surface.
 - `LoginForm`, `RegisterForm`, `TotpSetup`, `PassKeyButton`, `GoogleSignInButton`, and `AccountRecovery` are retired from the public component surface and removed from the live shared implementation set. The passkey and Google button treatments now live directly inside the shared login tabs instead of as separate wrapper components.
-- The old account-settings surfaces (`PasskeyManager`, `SecuritySettings`, `SessionList`) are retired. Build account security pages directly in the app over shared auth hooks, `TotpInput`, `PasswordRequirements`, and Poodle primitives.
+- The old account-settings surfaces (`PasskeyManager`, `SecuritySettings`, `SessionList`) are retired. Build account security pages directly in the app over shared auth hooks, Poodle `TotpInput`, Underlay `PasswordRequirements`, and other Poodle primitives.
+
+### Retained Helper Boundary
+
+`PasswordRequirements` stays in Underlay for now because its live contract is
+still workflow-adjacent rather than purely presentational:
+
+- it fetches password policy on mount
+- it provides fallback defaults when that fetch fails
+- it renders the shared password-rule checklist used by retained reset/change
+  flows and grouped account-password pages
+
+If this surface is split later, the likely successor is not a direct Poodle
+component. It would be a shared auth-policy utility plus caller-owned Poodle
+composition for the rendered checklist.
+
+### Current Stop Point
+
+The auth reassessment line is now at an explicit retained boundary:
+
+- keep `LoginPage` as the shared multi-method auth workflow shell under `@decodelabs/underlay/patterns`
+- keep `ForgotPasswordFlow` as the shared reset workflow shell under `@decodelabs/underlay/patterns`
+- keep `PasswordRequirements` as the shared auth-policy adapter under `@decodelabs/underlay/patterns`
+- use Poodle `TotpInput` directly for one-time-code entry
+- use Poodle `PasswordRequirements` directly when password-policy loading is already caller-owned
+
+There is no smaller honest follow-on migration wave for this family right now.
 
 ## Quick Start
 
@@ -46,7 +70,8 @@ Run `effigy storybook` from the repo root to inspect the retained auth surface i
 ```svelte
 <script lang="ts">
   import { goto } from "$app/navigation";
-  import { AuthLayout, LoginPage } from "@decodelabs/underlay/components";
+  import { Card } from "@poodle/svelte-primitives";
+  import { LoginPage } from "@decodelabs/underlay/patterns";
   import { auth } from "$lib/stores/auth";
 
   async function handlePasswordLogin(email: string, password: string) {
@@ -73,16 +98,20 @@ Run `effigy storybook` from the repo root to inspect the retained auth surface i
   }
 </script>
 
-<AuthLayout>
-  <h1>My App</h1>
-  <LoginPage
-    methods={['password']}
-    onPasswordLogin={handlePasswordLogin}
-    onTwoFactorVerify={handleTwoFactorVerify}
-    onComplete={handleComplete}
-    forgotPasswordHref="/forgot-password"
-  />
-</AuthLayout>
+<div class="auth-layout">
+  <div class="auth-layout__card">
+    <Card variant="elevated">
+      <h1>My App</h1>
+      <LoginPage
+        methods={['password']}
+        onPasswordLogin={handlePasswordLogin}
+        onTwoFactorVerify={handleTwoFactorVerify}
+        onComplete={handleComplete}
+        forgotPasswordHref="/forgot-password"
+      />
+    </Card>
+  </div>
+</div>
 ```
 
 ### Password Reset Flow
@@ -90,7 +119,8 @@ Run `effigy storybook` from the repo root to inspect the retained auth surface i
 ```svelte
 <script lang="ts">
   import { authCommands } from "@cattle-grid";
-  import { AuthLayout, ForgotPasswordFlow } from "@decodelabs/underlay/components";
+  import { Card } from "@poodle/svelte-primitives";
+  import { ForgotPasswordFlow } from "@decodelabs/underlay/patterns";
 
   async function handleRequestCode(email: string) {
     await authCommands.requestPasswordReset({ email }, fetch);
@@ -109,58 +139,37 @@ Run `effigy storybook` from the repo root to inspect the retained auth surface i
   }
 </script>
 
-<AuthLayout title="Forgot Password">
-  <ForgotPasswordFlow
-    onRequestCode={handleRequestCode}
-    onVerifyCode={handleVerifyCode}
-    onResetPassword={handleResetPassword}
-    {fetchRequirements}
-    loginHref="/login"
-  />
-</AuthLayout>
+<div class="auth-layout">
+  <div class="auth-layout__card">
+    <Card variant="elevated">
+      <h1>Forgot Password</h1>
+      <ForgotPasswordFlow
+        onRequestCode={handleRequestCode}
+        onVerifyCode={handleVerifyCode}
+        onResetPassword={handleResetPassword}
+        {fetchRequirements}
+        loginHref="/login"
+      />
+    </Card>
+  </div>
+</div>
 ```
 
 ## Component Reference
 
-### AuthLayout
+### Auth Page Framing
 
-Centered authentication layout container with optional branding slots.
-`AuthLayout` owns the primary card shell for auth pages. `LoginPage` and
-`ForgotPasswordFlow` render flow content intended to live inside that shell
-rather than adding a second nested card.
-
-```svelte
-<AuthLayout
-  title="Admin"           <!-- Optional title -->
-  maxWidth="24rem"        <!-- Content max width -->
-  class="custom-class"    <!-- Additional CSS class -->
->
-  {#snippet logo()}<img src="/logo.svg" alt="Logo" />{/snippet}
-
-  <LoginPage ... />
-
-  {#snippet footer()}<a href="/terms">Terms</a>{/snippet}
-</AuthLayout>
-```
-
-**Props:**
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `title` | `string` | - | Title displayed above content |
-| `maxWidth` | `string` | `"24rem"` | Maximum width of content |
-| `class` | `string` | `""` | Additional CSS class |
-
-**Slots:**
-| Slot | Description |
-|------|-------------|
-| `logo` | Branding/logo above the title |
-| `children` | Main content |
-| `footer` | Footer links below content |
+`AuthLayout` is retired. Compose auth pages directly with a small local route
+shell over Poodle `Card`. The retained Underlay auth workflow surface now
+starts in `@decodelabs/underlay/patterns` (`LoginPage`, `ForgotPasswordFlow`,
+`PasswordRequirements`). Use Poodle `TotpInput` directly for
+one-time-code entry and Poodle `PasswordRequirements` directly when the caller
+already owns password-policy loading.
 
 ### LoginPage
 
-Full-featured login page supporting multiple authentication methods.
-Use it inside `AuthLayout` for the standard framed auth-page posture.
+Full-featured login page supporting multiple authentication methods. Compose it
+inside a local auth-page shell built over Poodle `Card`.
 
 ```svelte
 <LoginPage
@@ -210,8 +219,8 @@ interface LoginResult {
 
 ### ForgotPasswordFlow
 
-Multi-step password reset flow: email → verify → reset → success.
-Use it inside `AuthLayout` for the standard framed auth-page posture.
+Multi-step password reset flow: email → verify → reset → success. Compose it
+inside a local auth-page shell built over Poodle `Card`.
 
 ```svelte
 <ForgotPasswordFlow
@@ -244,7 +253,8 @@ The auth components are designed to work with cattle-grid API commands. Here's a
 <script lang="ts">
   import { goto } from "$app/navigation";
   import { authCommands } from "@cattle-grid";
-  import { AuthLayout, LoginPage } from "@decodelabs/underlay/components";
+  import { Card } from "@poodle/svelte-primitives";
+  import { LoginPage } from "@decodelabs/underlay/patterns";
   import { auth } from "$lib/stores/auth";
 
   // Password login with 2FA support
@@ -290,19 +300,23 @@ The auth components are designed to work with cattle-grid API commands. Here's a
   }
 </script>
 
-<AuthLayout>
-  <h1>Admin</h1>
-  <LoginPage
-    methods={['password', 'passkey']}
-    {handlePasswordLogin}
-    {handleTwoFactorVerify}
-    {handlePasskeyLogin}
-    onComplete={handleComplete}
-    forgotPasswordHref="/forgot-password"
-    showSetupPrompt={true}
-    setupHref="/account/security?setup=totp"
-  />
-</AuthLayout>
+<div class="auth-layout">
+  <div class="auth-layout__card">
+    <Card variant="elevated">
+      <h1>Admin</h1>
+      <LoginPage
+        methods={['password', 'passkey']}
+        {handlePasswordLogin}
+        {handleTwoFactorVerify}
+        {handlePasskeyLogin}
+        onComplete={handleComplete}
+        forgotPasswordHref="/forgot-password"
+        showSetupPrompt={true}
+        setupHref="/account/security?setup=totp"
+      />
+    </Card>
+  </div>
+</div>
 ```
 
 ## Styling

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Select from "../../src/components/Select.svelte";
+  import Select from "../../src/nightfire/Select.svelte";
 
   type SelectItem = {
     value: string;

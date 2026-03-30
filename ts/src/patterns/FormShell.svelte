@@ -2,8 +2,7 @@
   import type { Snippet } from "svelte";
   import type { HTMLFormAttributes } from "svelte/elements";
   import { Card, Callout } from "@poodle/svelte-primitives";
-  import Form from "../components/Form.svelte";
-  import PageHeader from "./PageHeader.svelte";
+  import { PageHeader as PoodlePageHeader } from "@poodle/svelte-composites";
   import type { BannerVariant } from "./banner";
 
   type PrepareHook = ((formData: FormData) => void) | null;
@@ -78,14 +77,68 @@
 
   const hasFieldErrors = $derived(Boolean(fieldErrors && Object.keys(fieldErrors).length > 0));
   const visibleError = $derived(hasFieldErrors ? null : error);
+
+  function handleFormData(event: FormDataEvent) {
+    if (enhance) return;
+    prepare?.(event.formData);
+  }
+
+  const useEnhanced = (
+    node: HTMLFormElement,
+    params: { enhance: EnhanceHook; prepare: PrepareHook }
+  ) => {
+    let teardown: (() => void) | null = null;
+
+    function apply(next: { enhance: EnhanceHook; prepare: PrepareHook }) {
+      teardown?.();
+      teardown = null;
+
+      if (!next.enhance) {
+        return;
+      }
+
+      const enhanced = next.enhance(node, ({ formData }) => {
+        next.prepare?.(formData);
+      });
+
+      if (enhanced && typeof (enhanced as { destroy?: () => void }).destroy === "function") {
+        teardown = () => (enhanced as { destroy: () => void }).destroy();
+      }
+    }
+
+    apply(params);
+
+    return {
+      update(next: { enhance: EnhanceHook; prepare: PrepareHook }) {
+        apply(next);
+      },
+      destroy() {
+        teardown?.();
+        teardown = null;
+      }
+    };
+  };
 </script>
 
 {#if showTitle}
-  <PageHeader {title} {section} {subtitle} {backHref} {backLabel} {backIsContextual} {bannerMessage} {bannerVariant}>
+  <div class="underlay-form-shell__header">
+    <PoodlePageHeader
+      {title}
+      {section}
+      {subtitle}
+      {backHref}
+      {backLabel}
+      backIsContextual={backIsContextual}
+      {bannerMessage}
+      bannerTone={bannerVariant === "error" ? "danger" : bannerVariant}
+    />
+
     {#if headerMeta}
-      {@render headerMeta()}
+      <div class="underlay-form-shell__meta">
+        {@render headerMeta()}
+      </div>
     {/if}
-  </PageHeader>
+  </div>
 {/if}
 
 {#if success && successMessage}
@@ -121,12 +174,30 @@
 {/if}
 
 <Card>
-  <Form {method} class={formClass} {prepare} {enhance} {autocomplete}>
+  <form
+    {method}
+    onformdata={handleFormData}
+    use:useEnhanced={{ enhance, prepare }}
+    class={formClass}
+    {autocomplete}
+  >
     {@render children?.()}
-  </Form>
+  </form>
 </Card>
 
 <style>
+  .underlay-form-shell__header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .underlay-form-shell__meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
   .underlay-form-shell__error-list {
     margin: 0;
     padding-left: 1.25rem;

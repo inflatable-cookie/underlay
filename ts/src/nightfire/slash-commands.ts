@@ -1,4 +1,4 @@
-import type { MarkdownEditorContext } from "../components/markdown-editor-events";
+import type { MarkdownEditorContext } from "./markup/markdown-editor-context";
 
 export interface NightfireSlashCommandInput {
   type: string;

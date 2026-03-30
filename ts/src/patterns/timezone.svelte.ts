@@ -7,7 +7,7 @@
  * @example
  * ```svelte
  * <script lang="ts">
- *   import { initTimezone, timezoneStore } from "@decodelabs/underlay/patterns";
+ *   import { initTimezone, timezoneStore } from "@decodelabs/underlay/runtime/browser";
  *
  *   initTimezone({
  *     profileTimezone: userProfile?.time_zone ?? null,
@@ -16,7 +16,7 @@
  *   });
  * </script>
  *
- * <TimeAgo date={item.createdAt} timezone={$timezoneStore.effective} />
+ * <TimeAgo datetime={item.createdAt} timezone={$timezoneStore.effective} />
  * ```
  */
 
@@ -83,7 +83,7 @@ let state = $state<TimezoneState>({
  * @example
  * ```svelte
  * <script lang="ts">
- *   import { timezoneStore } from "@decodelabs/underlay/patterns";
+ *   import { timezoneStore } from "@decodelabs/underlay/runtime/browser";
  *
  *   // Reactive access
  *   const tz = $derived($timezoneStore.effective);

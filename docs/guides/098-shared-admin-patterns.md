@@ -6,75 +6,45 @@ All components are additive — importing them is optional and they introduce no
 
 Storybook coverage:
 - `Patterns/PageHeader`
-- `Patterns/FormDialog`
 - `Patterns/SpaFormShell`
-- `Components/ErrorBoundary`
-- `Components/DropdownMenu`
+- `Primitives/Menu`
 
-`AiRoutingAdmin` is intentionally guide-only in this wave. It remains a retained operational shell, but its useful demo posture depends on richer diagnostics payloads than the initial catalog should fake.
+AI routing ops pages now compose directly over `createAiRoutingOpsController`
+plus Poodle `PageHeader`, `Card`, `Callout`, `PageLoading`, and `DataTable`.
+Underlay no longer exports a public `AiRoutingAdmin` shell.
 
 ## Overview
 
 | Pattern | Location | Purpose |
 |---------|----------|---------|
-| EmptyState | `components/EmptyState.svelte` | Rich empty state with icon, message, and CTA |
-| CopyActionsMenu + AlertDialog | `patterns/CopyActionsMenu.svelte` + Poodle `AlertDialog` | Copy-to-clipboard actions with caller-owned destructive confirmation |
-| Drawer | `components/Drawer.svelte` | Slide-out side panel |
-| DetailPageShell | `patterns/DetailPageShell/` | Composable entity detail page with tabs |
-| AutonomousList | `patterns/AutonomousList/` | Self-contained list with filters, batch actions, reorder |
+| EmptyState | `@poodle/svelte-composites` | Rich empty state with message, optional actions, and optional custom visual slot |
+| Local actions menu + AlertDialog | app-local wrapper or direct Poodle `Menu` + Poodle `AlertDialog` | Copy-to-clipboard actions with caller-owned destructive confirmation |
+| Poodle `PageHeader` + `Tabs` + `DetailMeta*` | direct composition | Standard entity detail page framing without a shared shell wrapper |
+| `SpaFormShell` | `@decodelabs/underlay/patterns` | Retained SPA create/edit workflow shell with submit/result/navigation orchestration |
 | EditableLabel | `@poodle/svelte-primitives` | Click-to-edit text field |
 | KeyboardShortcuts | `patterns/keyboard-shortcuts.svelte.ts` | Centralized shortcut registration |
-| ErrorBoundary | `components/ErrorBoundary.svelte` | Render error catch with recovery UI |
 
 ---
 
 ## EmptyState
 
-Rich empty state component replacing plain `<p>` text in lists, tables, and filtered views.
+Use Poodle `EmptyState` directly for page-level and inline empty views.
 
 ```svelte
 <script lang="ts">
-  import { EmptyState } from "@decodelabs/underlay/components";
+  import { EmptyState } from "@poodle/svelte-composites";
   import InboxIcon from "lucide-svelte/icons/inbox";
 </script>
 
 <EmptyState
-  icon={InboxIcon}
   title="No outcomes found"
-  description="Try adjusting your filters or add a new outcome."
-  actionLabel="Add outcome"
-  actionHref="/outcomes/new"
-/>
-```
-
-### Props
-
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `icon` | `Component<{ size?: number }>` | - | Lucide or custom icon |
-| `title` | `string` | **required** | Primary message |
-| `description` | `string` | - | Secondary text |
-| `actionLabel` | `string` | - | CTA button text |
-| `actionHref` | `string` | - | CTA link URL |
-| `onaction` | `() => void` | - | CTA callback (alternative to href) |
-| `variant` | `"default" \| "compact"` | `"default"` | Size variant |
-| `children` | `Snippet` | - | Override entire content |
-| `class` | `string` | `""` | Additional CSS class |
-
-### Variants
-
-- **default** — Full-size with large icon (40px), generous padding. Use for page-level empty states.
-- **compact** — Smaller icon (24px), tighter padding. Use for inline empty states within cards or tabs.
-
-### Overriding Content
-
-Pass `children` to replace the entire default layout:
-
-```svelte
-<EmptyState title="unused">
-  <div class="my-custom-empty">
-    <p>Custom empty content here</p>
-  </div>
+  message="Try adjusting your filters or add a new outcome."
+  size="compact"
+>
+  <svelte:fragment slot="visual">
+    <InboxIcon size={16} />
+  </svelte:fragment>
+  <a slot="actions" href="/outcomes/new">Add outcome</a>
 </EmptyState>
 ```
 
@@ -82,13 +52,14 @@ Pass `children` to replace the entire default layout:
 
 ## Entity Action Menus
 
-`EntityActionsMenu` is retired. The stable shared boundary is direct `CopyActionsMenu` plus caller-owned `AlertDialog` composition for destructive actions. `CopyActionsMenu` remains a retained Underlay helper because it bundles clipboard and toast workflow, not just raw menu chrome.
+`EntityActionsMenu` and `CopyActionsMenu` are retired. The stable boundary is now app-local action-menu composition over Poodle `Menu`, caller-owned `AlertDialog`, and local clipboard/toast wiring.
 
 ```svelte
 <script lang="ts">
-  import { CopyActionsMenu, useToasts } from "@decodelabs/underlay/patterns";
+  import { copyToClipboard } from "@decodelabs/underlay/runtime/feedback";
+  import { useToasts } from "@decodelabs/underlay/runtime/feedback";
   import { gotoWithContext } from "@decodelabs/underlay/client";
-  import { AlertDialog } from "@poodle/svelte-primitives";
+  import { AlertDialog, Menu } from "@poodle/svelte-primitives";
 
   const toastStore = useToasts();
   let showDeleteConfirm = $state(false);
@@ -102,18 +73,30 @@ Pass `children` to replace the entire default layout:
   }
 </script>
 
-<CopyActionsMenu
-  toastStore={toastStore}
-  triggerLabel="Actions"
-  copies={[
-    { label: "Copy slug", text: item.slug, successMessage: "Copied slug" },
-    { label: "Copy ID", text: item.id, successMessage: "Copied ID" }
+<Menu
+  items={[
+    { value: "edit", label: "Edit" },
+    { value: "delete", label: "Soft delete", tone: "danger" },
+    { value: "separator-copy", label: "", kind: "separator" },
+    { value: "copy-slug", label: "Copy slug" },
+    { value: "copy-id", label: "Copy ID" }
   ]}
-  actions={[
-    { label: "Edit", onSelect: handleEdit },
-    { label: "Soft delete", destructive: true, onSelect: () => { showDeleteConfirm = true; } }
-  ]}
-/>
+  triggerAriaLabel="Actions"
+  on:action={(event) => {
+    if (event.detail.value === "edit") handleEdit();
+    if (event.detail.value === "delete") showDeleteConfirm = true;
+    if (event.detail.value === "copy-slug") {
+      void copyToClipboard(toastStore, item.slug, "Copied slug");
+    }
+    if (event.detail.value === "copy-id") {
+      void copyToClipboard(toastStore, item.id, "Copied ID");
+    }
+  }}
+>
+  <svelte:fragment slot="trigger">
+    <button type="button">Actions</button>
+  </svelte:fragment>
+</Menu>
 
 <AlertDialog
   open={showDeleteConfirm}
@@ -134,40 +117,8 @@ Pass `children` to replace the entire default layout:
 
 ## Drawer
 
-Slide-out side panel from the right or left edge. Responsive — absolute positioned on desktop, fixed overlay on mobile.
-
-```svelte
-<script lang="ts">
-  import { Drawer } from "@decodelabs/underlay/components";
-
-  let panelOpen = $state(false);
-</script>
-
-<button onclick={() => panelOpen = true}>Open filters</button>
-
-<Drawer bind:open={panelOpen} title="Filters" position="right" width="28rem">
-  <FilterForm ... />
-</Drawer>
-```
-
-### Props
-
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `open` | `boolean` | `false` | Open state (bindable) |
-| `title` | `string` | - | Panel header title |
-| `position` | `"right" \| "left"` | `"right"` | Slide direction |
-| `width` | `string` | `"28rem"` | Panel width (CSS value) |
-| `overlay` | `boolean \| "auto"` | `"auto"` | Backdrop mode. `"auto"` = backdrop on mobile only |
-| `onclose` | `() => void` | - | Close callback |
-| `children` | `Snippet` | - | Panel content |
-| `headerActions` | `Snippet` | - | Extra header content (before close button) |
-| `class` | `string` | `""` | Additional CSS class |
-
-### Behavior
-
-- **Escape** key closes the panel
-- Backdrop click closes the panel
+Use Poodle `Drawer` directly for slide-out side panels. Underlay no longer
+ships a second drawer surface.
 - Focus is trapped and restored on close
 - CSS transition: `transform 0.25s ease` (respects `prefers-reduced-motion`)
 - Desktop (>900px): absolute positioned within parent container
@@ -176,14 +127,25 @@ Slide-out side panel from the right or left edge. Responsive — absolute positi
 
 ---
 
-## DetailPageShell
+## Detail Headers
 
-Composable shell for entity detail pages. Standardizes the PageHeader + metadata + tabs + actions composition pattern. The shell stays in Underlay because it owns the detail-page assembly and lazy-mount behavior, but the tab chrome is now provided by Poodle `Tabs`.
+`DetailPageShell` is retired from the public Underlay surface.
+
+The stable boundary is now direct composition:
+- Poodle `PageHeader` for title, back link, actions, banner, and breadcrumbs
+- Poodle `Tabs` for top-level detail sections
+- Underlay `DetailMeta*` helpers for the compact metadata row when useful
+
+`DetailMeta*` remains an explicit retained Underlay helper family. It still
+earns shared ownership because the compact metadata-row contract repeats
+broadly across live detail and edit surfaces in `acme-admin`, `cp-admin`, and
+`dairy`.
 
 ```svelte
 <script lang="ts">
+  import { PageHeader } from "@poodle/svelte-composites";
+  import { Breadcrumbs, Tabs } from "@poodle/svelte-primitives";
   import {
-    DetailPageShell,
     DetailMeta,
     DetailMetaId,
     DetailMetaStatus,
@@ -191,228 +153,80 @@ Composable shell for entity detail pages. Standardizes the PageHeader + metadata
   } from "@decodelabs/underlay/patterns";
 </script>
 
-<DetailPageShell
-  title={module.code}
-  subtitle={module.slug}
-  breadcrumbs={breadcrumbs}
-  backHref={backHref}
-  tabs={[
-    { value: "details", label: "Details" },
-    { value: "sections", label: "Sections", count: sections.length }
-  ]}
-  activeTab="details"
->
-  {#snippet meta()}
+<section class="detail-page">
+  <div class="detail-page__header">
+    <PageHeader title={module.code} subtitle={module.slug} backHref={backHref}>
+      <svelte:fragment slot="breadcrumbs">
+        <Breadcrumbs items={breadcrumbs} />
+      </svelte:fragment>
+      <svelte:fragment slot="actions">
+        <ModuleActionsMenu {module} />
+      </svelte:fragment>
+    </PageHeader>
+
     <DetailMeta>
       <DetailMetaId value={module.moduleId} />
       <DetailMetaSeparator />
       <DetailMetaStatus value={module.isLive} trueLabel="Live" falseLabel="Draft" />
     </DetailMeta>
-  {/snippet}
+  </div>
 
-  {#snippet actions()}
-    <ModuleActionsMenu {module} />
-  {/snippet}
-
-  {#snippet tabContent(tab)}
-    {#if tab === "details"}
-      <DetailsCard sections={detailsSections} />
-    {:else if tab === "sections"}
-      <SectionsList moduleId={module.moduleId} />
-    {/if}
-  {/snippet}
-</DetailPageShell>
-```
-
-### DetailPageShell Props
-
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `title` | `string` | - | Primary heading text |
-| `section` | `string` | - | Section name (renders as prominent h1) |
-| `subtitle` | `string` | - | Subtitle text (e.g., slug) |
-| `breadcrumbs` | `BreadcrumbItem[]` | - | Breadcrumb trail |
-| `level` | `PageHeaderLevel` | - | Heading level (1-4) |
-| `backHref` | `string \| null` | - | Back button URL |
-| `backLabel` | `string` | - | Back button label |
-| `backIsContextual` | `boolean` | - | Whether back came from navigation context |
-| `bannerMessage` | `string` | - | Banner message below header |
-| `bannerVariant` | `BannerVariant` | - | Banner variant (warning, error, info) |
-| `titleSuffix` | `Snippet` | - | Inline content after title |
-| `meta` | `Snippet` | - | Metadata row (use DetailMeta sub-components) |
-| `actions` | `Snippet` | - | Actions menu snippet |
-| `tabs` | `TabConfig[]` | - | Tab definitions (value, label, count) |
-| `activeTab` | `string` | first tab | Current active tab (bindable) |
-| `tabsHistoryKey` | `string` | `"tab"` | URL query key for tab sync |
-| `tabContent` | `Snippet<[string]>` | - | Tab content renderer (receives tab value) |
-| `children` | `Snippet` | - | Content when no tabs defined |
-| `class` | `string` | - | Additional CSS class |
-
-### Sub-Components
-
-| Component | Purpose |
-|-----------|---------|
-| `DetailMeta` | Wraps metadata items in a detail-page metadata row |
-| `DetailMetaItem` | Generic metadata value with optional label inside DetailMeta |
-| `DetailMetaId` | Displays an ID with Code formatting and copy support |
-| `DetailMetaStatus` | Boolean status badge (value, trueLabel, falseLabel, variant) |
-| `DetailMetaSeparator` | Visual separator between metadata items |
-
-### Without Tabs
-
-For detail pages without tabs, use `children` instead of `tabs`/`tabContent`:
-
-```svelte
-<DetailPageShell title={item.title} {breadcrumbs}>
-  {#snippet meta()}...{/snippet}
-  {#snippet actions()}...{/snippet}
-
-  <DetailsCard sections={sections} />
-</DetailPageShell>
+  <Tabs
+    value={activeTab}
+    items={[
+      { value: "details", label: "Details" },
+      { value: "sections", label: "Sections", count: sections.length }
+    ]}
+    variant="card"
+    size="sm"
+    ariaLabel="Detail sections"
+  >
+    <!-- caller-owned tab content -->
+  </Tabs>
+</section>
 ```
 
 ---
 
 ## AutonomousList
 
-Self-contained list component that wires together `createListController`, `useBatchActions`, `createReorderController`, FilterBar, BatchActionBar, and loading/error/empty states. Targets the 18+ list views found in typical admin apps. `BatchActionBar` remains the retained Underlay batch workflow shell here; do not substitute Poodle `BulkActionBar` unless the surrounding workflow has first been simplified to the narrower primitive contract.
+`AutonomousList` is retired from the public Underlay surface.
 
-```svelte
-<script lang="ts">
-  import { AutonomousList } from "@decodelabs/underlay/patterns";
-  import type { BatchAction } from "@decodelabs/underlay/patterns";
-  import { learningCommands } from "@cattle-grid";
+The shell no longer has live consumer-app callers, and its generic building
+blocks now live in Poodle:
+- `PageHeader`
+- `FilterToolbar`
+- `PageLoading`
+- `EmptyState`
+- `ListCard`
+- `Pagination`
+- `BulkActionBar`
+- `ReorderableList`
+- `AlertDialog`
 
-  async function fetchModules(fetchFn: typeof fetch, token: string, filters: Record<string, unknown>) {
-    return await learningCommands.getModules(fetchFn, token, filters);
-  }
+For new list pages, compose directly over those Poodle surfaces plus
+Underlay’s lower-level state helpers such as `createListController`,
+`createPaginationController`, `useBatchSelection`, `useBatchActions`, and
+`createReorderController` now sit most naturally under
+`@decodelabs/underlay/runtime/data`.
 
-  const batchActions: BatchAction<string>[] = [{
-    id: "delete",
-    label: "Delete",
-    variant: "danger",
-    confirm: {
-      title: "Delete Modules",
-      description: (count) => `Delete ${count} module(s)?`,
-      confirmLabel: "Delete"
-    },
-    execute: async (ids) => {
-      for (const id of ids) await api.softDelete(id);
-      return { success: true, affected: ids.length };
-    }
-  }];
-</script>
+---
 
-<AutonomousList
-  title="Modules"
-  fetcher={fetchModules}
-  filters={[
-    { key: "search", label: "Search", type: "text", placeholder: "Search modules..." },
-    { key: "status", label: "Status", type: "select", options: [
-      { value: "live", label: "Live" },
-      { value: "draft", label: "Draft" }
-    ]}
-  ]}
-  {batchActions}
-  reorderable={{
-    execute: async (orderedIds, fetchFn, token) => {
-      await api.reorderModules(orderedIds, fetchFn, token);
-    }
-  }}
-  addHref="/modules/new"
-  emptyMessage="No modules found"
->
-  {#snippet item(module, { selected, onSelectionChange, selectionMode })}
-    <ModuleListCard {module} {selected} {onSelectionChange} {selectionMode} />
-  {/snippet}
+## SPA Create/Edit Pages
 
-  {#snippet reorderItem(module)}
-    <ListCard title={module.code} subtitle={module.title} variant="compact" />
-  {/snippet}
-</AutonomousList>
-```
+`SpaFormShell` remains a retained Underlay structural shell.
 
-### Props
+Keep it when the page needs:
+- SPA submit interception
+- shared loading/result lifecycle
+- success/error/field-error framing
+- redirect and navigation handoff
+- optional `prepare(formData)` transformation before submit
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `title` | `string` | **required** | Page/section title |
-| `level` | `PageHeaderLevel` | - | Heading level |
-| `breadcrumbs` | `BreadcrumbItem[]` | - | Breadcrumb trail |
-| `fetcher` | `(fetch, token, filters) => Promise<T[]>` | **required** | Data fetcher function |
-| `idField` | `string` | `"id"` | Field name containing the item ID |
-| `filters` | `ListFilterField[]` | `[]` | Filter field definitions |
-| `batchActions` | `BatchAction<string>[]` | `[]` | Batch action definitions |
-| `reorderable` | `ListReorderConfig` | - | Reorder configuration (omit for non-reorderable) |
-| `addHref` | `string` | - | URL for "Add" button |
-| `addLabel` | `string` | `"Add"` | Label for "Add" button |
-| `emptyMessage` | `string` | `"No items found"` | Message when list is empty |
-| `emptyIcon` | `Component<{ size?: number }>` | - | Icon for empty state |
-| `item` | `Snippet<[T, ListItemContext]>` | - | Item card renderer |
-| `reorderItem` | `Snippet<[T]>` | - | Reorder mode item renderer |
-| `class` | `string` | `""` | Additional CSS class |
-
-### ListFilterField
-
-```typescript
-interface ListFilterField {
-  key: string;          // Unique filter key (sent to fetcher)
-  label: string;        // Display label
-  type: "text" | "select";
-  placeholder?: string; // For text inputs
-  options?: Array<{ value: string; label: string }>; // For selects
-  includeAll?: boolean; // Show "All" option (default: true)
-  allLabel?: string;    // Custom "All" label
-  defaultValue?: string;
-  debounce?: number;    // For text inputs (default: 400ms)
-}
-```
-
-### ListReorderConfig
-
-```typescript
-interface ListReorderConfig {
-  execute: (orderedIds: string[], fetchFn: typeof fetch, token: string) => Promise<void>;
-  condition?: (filters: Record<string, unknown>) => boolean; // When reordering is available
-}
-```
-
-### ListItemContext
-
-The `item` snippet receives the data item and a context object:
-
-```typescript
-interface ListItemContext {
-  selected: boolean;
-  onSelectionChange: (selected: boolean) => void;
-  selectionMode: boolean;
-}
-```
-
-### State Management
-
-`AutonomousList` creates its state internally via `createAutonomousListState()`, which composes:
-
-- `createListController` — data fetching, loading/error states, filters
-- `useBatchActions` — selection and batch operations
-- `createReorderController` — drag-and-drop reorder (created lazily on mode enter)
-
-The `createAutonomousListState` function is also exported for advanced use cases where you need direct access to the composed state outside the component.
-
-### What It Handles
-
-- Auth-integrated data fetching (via `configureAuth()`)
-- Filter bar with text inputs and native select dropdowns
-- Filter pill display with clear individual / clear all
-- Selection mode toggle + Escape key handler
-- Batch action bar + confirmation dialogs
-- Reorder mode with drag-and-drop
-- Loading / Error / Empty / Content state machine
-- ListGrid rendering with item snippets
-
-### Comparison with Manual Approach
-
-The AutonomousList replaces the manual pattern documented in guide 097 ("Building an Autonomous List Component"). Where the manual approach requires ~100 lines of boilerplate per list, AutonomousList reduces this to ~20 lines of configuration.
+Do not treat it like stale wrapper residue around Poodle visuals. The visual
+pieces inside it should stay Poodle-owned, but the shell still earns shared
+Underlay ownership because the remaining value is workflow orchestration across
+the broad create/edit route family.
 
 ---
 
@@ -563,90 +377,20 @@ The `register` function returns an unregister function. Call it when the compone
 
 ---
 
-## ErrorBoundary
-
-Catches render errors in child components and displays recovery UI. Uses Svelte 5's `<svelte:boundary>` element.
-
-```svelte
-<script lang="ts">
-  import { ErrorBoundary, EmptyState } from "@decodelabs/underlay/components";
-</script>
-
-<ErrorBoundary>
-  <AsyncComponent />
-</ErrorBoundary>
-```
-
-### Props
-
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `children` | `Snippet` | **required** | Normal content |
-| `fallback` | `Snippet<[Error, () => void]>` | EmptyState | Custom error UI |
-| `onError` | `(error: Error) => void` | - | Error reporting callback |
-
-### Default Fallback
-
-When no `fallback` snippet is provided, ErrorBoundary renders an EmptyState with the error message and a "Try again" button that resets the boundary.
-
-### Custom Fallback
-
-```svelte
-<ErrorBoundary onError={(e) => reportError(e)}>
-  {#snippet fallback(error, reset)}
-    <div class="my-error-ui">
-      <p>Error: {error.message}</p>
-      <button onclick={reset}>Retry</button>
-    </div>
-  {/snippet}
-
-  <RiskyComponent />
-</ErrorBoundary>
-```
-
-### Error Reporting
-
-Use `onError` to send errors to your logging service:
-
-```svelte
-<ErrorBoundary onError={(error) => {
-  console.error("Component error:", error);
-  errorTracker.capture(error);
-}}>
-  <Dashboard />
-</ErrorBoundary>
-```
-
----
-
 ## Import Paths
 
-All components and patterns are available from their respective barrel exports:
+Use the retained Underlay `patterns` barrel for workflow/shell surfaces and
+Poodle directly for low-level primitives:
 
 ```typescript
-// Components (primitives)
+// Underlay patterns (composed, stateful)
 import {
   EmptyState,
-  ErrorBoundary,
-  Drawer
-} from "@decodelabs/underlay/components";
-
-// Patterns (composed, stateful)
-import {
-  CopyActionsMenu,
-  DetailPageShell,
   DetailMeta,
   DetailMetaId,
   DetailMetaStatus,
   DetailMetaSeparator,
-  AutonomousList,
-  createAutonomousListState,
   createKeyboardShortcuts,
-  type AutonomousListProps,
-  type ListFilterField,
-  type ListReorderConfig,
-  type ListItemContext,
-  type AutonomousListState,
   type KeyboardShortcutManager,
   type ShortcutOptions,
   type RegisteredShortcut

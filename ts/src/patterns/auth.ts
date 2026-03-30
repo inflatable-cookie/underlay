@@ -3,8 +3,11 @@ import type { Readable } from "svelte/store";
 import type { AuthSession } from "../client/auth";
 import type { AuthState, AuthStore } from "../client/useAuth";
 
-export { createAuthStore } from "../client/useAuth";
-export type { AuthState, AuthStore } from "../client/useAuth";
+export type {
+  AuthFieldErrors,
+  PassKeyStartPayload,
+  SessionListItem
+} from "./auth-workflows/types";
 
 // ============================================================================
 // Global Auth Configuration

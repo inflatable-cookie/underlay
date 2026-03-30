@@ -3,19 +3,20 @@
 ## Context
 
 The Underlay library at `.` has 8 new shared admin patterns (roadmap 021). Full documentation is at:
+
 - **Roadmap**: `docs/roadmaps/g01/021-shared-admin-components.md`
 - **Guide**: `docs/guides/098-shared-admin-patterns.md`
 
 Read both files thoroughly before starting. The patterns are:
 
-1. **EmptyState** (`@decodelabs/underlay/components`) — Rich empty state replacing plain `<p>` text
+1. **EmptyState** (`@poodle/svelte-composites`) — Rich empty state replacing plain `<p>` text
 2. **CopyActionsMenu + AlertDialog** (`@decodelabs/underlay/patterns`, `@poodle/svelte-primitives`) — Dropdown with copy actions plus caller-owned destructive confirmation
-3. **Drawer** (`@decodelabs/underlay/components`) — Slide-out side panel
+3. **Poodle Drawer** (`@poodle/svelte-primitives`) — Slide-out side panel
 4. **DetailPageShell** (`@decodelabs/underlay/patterns`) — Composable entity detail page with tabs
 5. **AutonomousList** (`@decodelabs/underlay/patterns`) — Self-contained list with filters, batch, reorder
 6. **EditableLabel** (`@poodle/svelte-primitives`) — Click-to-edit text field
 7. **KeyboardShortcuts** (`@decodelabs/underlay/patterns`) — Centralized shortcut registration
-8. **ErrorBoundary** (`@decodelabs/underlay/components`) — Render error catch with recovery UI
+8. **Error handling** (`svelte:boundary` + local recovery UI) — Render error catch with app-owned recovery UI
 
 ## Your Task
 
@@ -42,6 +43,7 @@ or with an icon/description/action as appropriate. Don't change InlineListCard `
 ### Priority 2: CopyActionsMenu + AlertDialog (medium effort, high value)
 
 Find old entity action wrappers and replace them with direct `CopyActionsMenu` plus caller-owned `AlertDialog` state. Keep:
+
 - `copies` as-is
 - edit navigation in the caller
 - destructive confirmation text and async delete logic in the caller
@@ -52,8 +54,9 @@ Do not recreate `EntityActionsMenu`. That wrapper is retired.
 ### Priority 3: DetailPageShell (high effort, high value)
 
 Find detail pages that manually compose:
+
 - PageHeader with title, breadcrumbs, backHref
-- DetailMeta / DetailMetaItem / DetailMetaSeparator with ID + StatusBadge
+- DetailMeta / DetailMetaItem / DetailMetaSeparator with ID + explicit `Pill` state badges
 - Poodle Tabs
 
 Replace with DetailPageShell + DetailMeta sub-components. This is the highest-effort migration because each page has unique metadata and tab configurations.
@@ -61,10 +64,11 @@ Replace with DetailPageShell + DetailMeta sub-components. This is the highest-ef
 ### Priority 4: AutonomousList (highest effort, highest value)
 
 Find list components that manually wire up:
+
 - useAuthenticatedData or createListController
 - useBatchActions with registerAction
-- FilterBar with custom filter components
-- BatchActionBar + confirmation dialogs
+- Poodle `FilterToolbar` with custom filter components
+- Poodle `BulkActionBar` + explicit confirmation dialogs
 - Escape key handler for selection mode
 - Loading/error/empty state machine
 
@@ -84,11 +88,12 @@ Wrap top-level route components or risky async components:
 
 - **EditableLabel**: Only if click-to-edit patterns exist
 - **KeyboardShortcuts**: Only if there are manual keyboard handlers beyond what AutonomousList already handles
-- **Drawer**: Only if there are slide-out panels
+- **Poodle Drawer**: Only if there are slide-out panels
 
 ## Verification
 
 After each batch of changes:
+
 1. `npx svelte-check` — zero new errors
 2. Visual review — ensure the UI looks the same
 3. Functional check — ensure behavior is preserved
@@ -107,11 +112,11 @@ After each batch of changes:
 
 Paste the prompt above into each agent session, run from the project root.
 
-| Session | App Path | Priority | Notes |
-|---------|----------|----------|-------|
-| 1 | `../acowtancy` | Highest | 14 action menus, 38+ detail pages, 18 lists, 14 empty states |
-| 2 | `../compli-me` | High | 3 action menus, 8+ detail pages, 9+ lists |
-| 3 | `../underlay-reference` | Medium | Reference app, good for showcasing patterns |
-| 4 | `../songsprout` | Low | Minimal underlay integration currently |
+| Session | App Path                | Priority | Notes                                                        |
+| ------- | ----------------------- | -------- | ------------------------------------------------------------ |
+| 1       | `../acowtancy`          | Highest  | 14 action menus, 38+ detail pages, 18 lists, 14 empty states |
+| 2       | `../compli-me`          | High     | 3 action menus, 8+ detail pages, 9+ lists                    |
+| 3       | `../underlay-reference` | Medium   | Reference app, good for showcasing patterns                  |
+| 4       | `../songsprout`         | Low      | Minimal underlay integration currently                       |
 
 Skip Loophole Composer — it's marked "out of date" and has zero underlay integration.

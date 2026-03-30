@@ -29,6 +29,13 @@ export {
 	type DateStyle,
 	type TimeStyle
 } from "./i18n/date-format";
+export {
+  formatAdaptiveDateRange,
+  formatDateWithOrdinal,
+  type DateRangeInput,
+  type DateRangeStyle,
+  type DateRangeFormatOptions
+} from "./i18n/date-range";
 import {
 	formatDate,
 	formatTime,
@@ -36,6 +43,10 @@ import {
 	type DateStyle,
 	type TimeStyle
 } from "./i18n/date-format";
+import {
+  formatAdaptiveDateRange,
+  formatDateWithOrdinal,
+} from "./i18n/date-range";
 export {
 	formatNumber,
 	formatPercent,
@@ -133,6 +144,12 @@ export const format = {
 
 	/** Format a relative time (e.g., "2 hours ago") */
 	relative: formatRelative,
+
+  /** Format a date with an ordinal day suffix */
+  ordinalDate: formatDateWithOrdinal,
+
+  /** Format a start/end date range in adaptive or full text form */
+  adaptiveDateRange: formatAdaptiveDateRange,
 
 	/** Format a number with locale-aware separators */
 	number: formatNumber,

@@ -431,7 +431,7 @@ shared slug helpers only where they are still useful.
     type InputValidationStatus,
     type ValidationResult
   } from "@poodle/svelte-primitives";
-  import { slugify, isReservedSlug, isValidSlugFormat } from "@decodelabs/underlay/patterns";
+  import { slugify, isReservedSlug, isValidSlugFormat } from "@decodelabs/underlay/utils/slug";
 
   let titleValue = $state("");
   let slugValue = $state("");
@@ -1237,9 +1237,11 @@ plus field-level validation status callbacks.
 
 Use progressive enhancement with server-side validation as the source of truth.
 
-### Opt-In Shared Zod Validation
+### Client-Side Zod Validation
 
-Underlay now exposes `@decodelabs/underlay/validation` for shared client-side schemas and `useValidatedForm()` in `@decodelabs/underlay/patterns` for lightweight form orchestration.
+Underlay keeps `useValidatedForm()` in `@decodelabs/underlay/patterns` for
+lightweight client-side orchestration, but consuming apps should own their
+actual Zod schemas.
 
 Install `zod` in the consuming app only if you use this surface:
 
@@ -1249,7 +1251,13 @@ bun add zod
 
 ```ts
 import { useValidatedForm } from "@decodelabs/underlay/patterns";
-import { registerRequestSchema } from "@decodelabs/underlay/validation";
+import { z } from "zod";
+
+const registerRequestSchema = z.object({
+  email: z.string().trim().email("Invalid email address"),
+  password: z.string().min(12, "Password must be at least 12 characters"),
+  displayName: z.string().trim().min(1, "Display name is required").max(100).optional(),
+});
 
 const form = useValidatedForm({
   schema: registerRequestSchema,

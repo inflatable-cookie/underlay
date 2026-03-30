@@ -3,9 +3,9 @@ import {
 	getPostTwoFactorOutcome,
 	resolveEmailFallbackOutcome,
 	resolvePasswordLoginOutcome,
-} from "../../src/components/auth/login-page-state";
+} from "../../src/patterns/auth-workflows/login-page-state";
 
-describe("components/auth/login-page-state", () => {
+describe("patterns/auth-workflows/login-page-state", () => {
 	it("resolves password login outcomes", () => {
 		expect(resolvePasswordLoginOutcome(undefined, "u@example.com")).toEqual({ kind: "complete" });
 		expect(resolvePasswordLoginOutcome({ complete: true } as any, "u@example.com")).toEqual({ kind: "complete" });

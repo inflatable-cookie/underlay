@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { MarkdownEditorContext } from "../components/markdown-editor-events";
+  import type { MarkdownEditorContext } from "./markup/markdown-editor-context";
   import { getBlockEditor } from "./editor-registry";
   import "./render-registrations";
   import "./editor-registrations";

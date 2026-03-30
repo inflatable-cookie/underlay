@@ -1,12 +1,16 @@
 <script lang="ts">
+import {
+  UNDERLAY_TOASTS_CONTEXT_KEY,
+  createToastStore
+} from "@decodelabs/underlay/runtime/feedback";
+import {
+  setContext } from "svelte";
+  import { page } from "$app/stores";
+  import { ToastHost } from "@poodle/svelte-composites";
   import Menu from "lucide-svelte/icons/menu";
   import X from "lucide-svelte/icons/x";
   import PanelRight from "lucide-svelte/icons/panel-right";
-  import { setContext } from "svelte";
-  import { page } from "$app/stores";
-  import { ToastHost } from "@decodelabs/underlay/components";
-  import { UNDERLAY_TOASTS_CONTEXT_KEY, createToastStore } from "@decodelabs/underlay/patterns";
-  import AdminNavList from "$lib/ui/AdminNavList.svelte";
+    import AdminNavList from "$lib/ui/AdminNavList.svelte";
   import AdminUserMenu from "$lib/ui/AdminUserMenu.svelte";
 
   let { children, data } = $props();

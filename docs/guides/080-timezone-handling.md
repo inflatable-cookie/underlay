@@ -39,7 +39,7 @@ In your app's root layout, initialize the timezone system after authentication:
 
 ```svelte
 <script lang="ts">
-  import { initTimezone, timezoneStore } from "@decodelabs/underlay/patterns";
+  import { initTimezone, timezoneStore } from "@decodelabs/underlay/runtime";
   import { currentUser } from "$lib/stores/auth";
 
   // Initialize when user profile is available
@@ -75,7 +75,7 @@ Components can read the resolved timezone:
 
 ```svelte
 <script lang="ts">
-  import { timezoneStore } from "@decodelabs/underlay/patterns";
+  import { timezoneStore } from "@decodelabs/underlay/runtime";
 
   // Reactive access to effective timezone
   const tz = $derived($timezoneStore.effective);
@@ -103,20 +103,21 @@ interface TimezoneState {
 
 ### TimeAgo Component
 
-The `TimeAgo` component automatically uses the effective timezone:
+Poodle `TimeAgo` accepts an explicit `timezone` prop when you want tooltip
+output to follow the effective timezone:
 
 ```svelte
-<TimeAgo date={item.createdAt} />
+<TimeAgo datetime={item.createdAt} timezone={$timezoneStore.effective} />
 ```
 
-The tooltip shows the full date/time in the user's timezone.
+Without `timezone`, the tooltip uses the browser locale timezone.
 
 ### Manual Formatting
 
 For custom date formatting, use the `formatInTimezone` utility:
 
 ```typescript
-import { formatInTimezone, timezoneStore } from "@decodelabs/underlay/patterns";
+import { formatInTimezone, timezoneStore } from "@decodelabs/underlay/runtime";
 import { get } from "svelte/store";
 
 const tz = get(timezoneStore).effective;
@@ -130,7 +131,7 @@ Or reactively:
 
 ```svelte
 <script lang="ts">
-  import { formatInTimezone, timezoneStore } from "@decodelabs/underlay/patterns";
+  import { formatInTimezone, timezoneStore } from "@decodelabs/underlay/runtime";
 
   let { date } = $props();
 
@@ -151,7 +152,7 @@ When the profile timezone differs from the browser, you should show a conflict r
 
 ```svelte
 <script lang="ts">
-  import { timezoneStore, resolveTimezoneConflict } from "@decodelabs/underlay/patterns";
+  import { timezoneStore, resolveTimezoneConflict } from "@decodelabs/underlay/runtime";
 
   function useProfile() {
     resolveTimezoneConflict("profile");

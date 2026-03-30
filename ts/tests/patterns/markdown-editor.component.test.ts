@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/svelte";
 import MarkdownEditorHarness from "../fixtures/MarkdownEditorHarness.svelte";
 
-describe("components/MarkdownEditor.svelte", () => {
+describe("nightfire/markup/MarkdownEditorSurface.svelte", () => {
   it("renders textarea mode with label/hint and updates bound value", async () => {
     const view = render(MarkdownEditorHarness, {
       showPreview: false,

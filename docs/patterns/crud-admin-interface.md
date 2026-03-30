@@ -538,8 +538,8 @@ Primary references:
 ### Phase 12: List Controllers (Pagination, Batch Actions, Reorder)
 
 - [ ] Use `createPaginationController()` for server pagination.
-- [ ] Add `FilterBar` + search/filter inputs where datasets are non-trivial.
-- [ ] Add `useBatchActions()` + `BatchActionBar` for multi-select delete/archive workflows.
+- [ ] Add Poodle `FilterToolbar` + search/filter inputs where datasets are non-trivial.
+- [ ] Add `useBatchActions()` + `BulkActionBar` plus explicit confirmation dialogs for multi-select delete/archive workflows.
 - [ ] Add `createReorderController()` + `ReorderableList` when sequence/order matters.
 - [ ] Keep list components autonomous and reusable between page and tab contexts.
 
@@ -600,36 +600,33 @@ Detail pages should use `DetailsGrid` with `DetailsSection` to organize informat
 
 ```svelte
 <script lang="ts">
-  import {
-    DetailsGrid,
-    DetailsItem,
-    DetailsSection,
-    TimeAgo
-  } from "@decodelabs/underlay/components";
+  import { DetailRow, TimeAgo } from "@poodle/svelte-primitives";
 </script>
 
 <div class="underlay-details-content">
-  <DetailsGrid>
+  <div class="underlay-details-grid">
     <!-- Domain-specific sections -->
-    <DetailsSection legend="Details">
-      <DetailsItem label="Name" value={entity.name} />
-      <DetailsItem label="Slug" value={entity.slug} code />
-    </DetailsSection>
+    <section>
+      <h3>Details</h3>
+      <DetailRow label="Name" value={entity.name} />
+      <DetailRow label="Slug" value={entity.slug} code />
+    </section>
 
     <!-- Timestamps section - always last -->
-    <DetailsSection legend="Timestamps">
-      <DetailsItem label="Created">
-        <TimeAgo date={entity.createdAt} />
-      </DetailsItem>
-      <DetailsItem label="Last Updated">
-        <TimeAgo date={entity.updatedAt} />
-      </DetailsItem>
-    </DetailsSection>
-  </DetailsGrid>
+    <section>
+      <h3>Timestamps</h3>
+      <DetailRow label="Created">
+        <TimeAgo datetime={entity.createdAt} />
+      </DetailRow>
+      <DetailRow label="Last Updated">
+        <TimeAgo datetime={entity.updatedAt} />
+      </DetailRow>
+    </section>
+  </div>
 </div>
 ```
 
-**DetailsItem props**:
+**DetailRow props**:
 - `label` - Field label (uppercase styling applied)
 - `value` - Plain text/number value
 - `code` - Display value as monospace code

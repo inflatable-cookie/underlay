@@ -7,11 +7,17 @@ This document covers Underlay's form helper patterns for common operations in SP
 Form pages in SPA apps often share similar patterns:
 - Submitting forms with specific intents (save, save-close, delete)
 - Syncing selection state from multiple sources
-- Creating search/suggest functions for RelationSelector
+- Creating search/suggest functions for app-local selector shells
 - Auto-generating slugs from titles
 - Calculating next values in sequences
 
 These helpers extract these patterns into reusable, tested utilities.
+
+`SpaFormShell` remains the retained Underlay page-level workflow shell for SPA
+create/edit pages. Use the helpers in this guide for smaller pieces of form
+behavior, and use `SpaFormShell` when the page also needs shared submit/result
+state, redirect/navigation handoff, and consistent success/error/field-error
+framing.
 
 ---
 
@@ -19,14 +25,14 @@ These helpers extract these patterns into reusable, tested utilities.
 
 | Helper | Import | Purpose |
 |--------|--------|---------|
-| `submitFormWithIntent()` | `@decodelabs/underlay/patterns` | Submit form with intent |
-| `useSyncedSelection()` | `@decodelabs/underlay/patterns` | Manage selection state |
-| `createLocalSearchFns()` | `@decodelabs/underlay/patterns` | Search/suggest for RelationSelector |
-| `slugify` / `validateSlug` | `@decodelabs/underlay/patterns` | Pure slug helpers for app-owned slug fields |
-| `useValidatedForm()` | `@decodelabs/underlay/patterns` | Lightweight Zod-backed client-side form orchestration |
+| `submitFormWithIntent()` | `@decodelabs/underlay/runtime` | Submit form with intent |
+| `useSyncedSelection()` | `@decodelabs/underlay/runtime/data` | Manage selection state |
+| `createLocalSearchFns()` | `@decodelabs/underlay/runtime/relations` | Search/suggest for app-local selector shells |
+| `slugify` / `validateSlug` | `@decodelabs/underlay/utils/slug` | Pure slug helpers for app-owned slug fields |
+| `useValidatedForm()` | `@decodelabs/underlay/runtime` | Lightweight Zod-backed client-side form orchestration |
 | `Tabs` | `@poodle/svelte-primitives` | Multi-section form tabs |
-| `getNextLetter()` | `@decodelabs/underlay/utils` | Next letter in sequence |
-| `getNextNumber()` | `@decodelabs/underlay/utils` | Next number in sequence |
+| `getNextLetter()` | `@decodelabs/underlay/utils/sequence` | Next letter in sequence |
+| `getNextNumber()` | `@decodelabs/underlay/utils/sequence` | Next number in sequence |
 
 ---
 
@@ -35,8 +41,14 @@ These helpers extract these patterns into reusable, tested utilities.
 Use `useValidatedForm()` when the form benefits from immediate client-side schema checks but you do not want to replace Underlay's existing field or submit primitives.
 
 ```ts
-import { useValidatedForm } from "@decodelabs/underlay/patterns";
-import { registerRequestSchema } from "@decodelabs/underlay/validation";
+import { useValidatedForm } from "@decodelabs/underlay/runtime";
+import { z } from "zod";
+
+const registerRequestSchema = z.object({
+  email: z.string().trim().email("Invalid email address"),
+  password: z.string().min(12, "Password must be at least 12 characters"),
+  displayName: z.string().trim().min(1, "Display name is required").max(100).optional(),
+});
 
 const form = useValidatedForm({
   schema: registerRequestSchema,
@@ -51,6 +63,9 @@ const form = useValidatedForm({
   validateOnChange: true,
 });
 ```
+
+Keep the schema app-owned. Underlay retains the orchestration hook, not a
+shared canned validation package.
 
 Use it as the form-state owner rather than alongside hidden field registries:
 
@@ -146,7 +161,7 @@ Only mount the active panel by default. If a specific editor needs to stay mount
 Submit a form with a specific intent value. Useful for delete buttons that need to submit the main form with `intent="delete"`.
 
 ```typescript
-import { submitFormWithIntent } from "@decodelabs/underlay/patterns";
+import { submitFormWithIntent } from "@decodelabs/underlay/runtime";
 
 function handleDelete() {
   submitFormWithIntent("delete");
@@ -169,7 +184,7 @@ submitFormWithIntent("archive", "#settings-form", "action");
 
 ```svelte
 <script lang="ts">
-  import { submitFormWithIntent } from "@decodelabs/underlay/patterns";
+  import { submitFormWithIntent } from "@decodelabs/underlay/runtime";
 
   function handleDelete() {
     // This sets the hidden "intent" input to "delete" and submits
@@ -202,7 +217,7 @@ Manage selection state that needs to sync from multiple sources:
 **File:** Uses Svelte 5 runes (requires `.svelte.ts` extension or Svelte component)
 
 ```typescript
-import { useSyncedSelection } from "@decodelabs/underlay/patterns";
+import { useSyncedSelection } from "@decodelabs/underlay/runtime/data";
 
 // Create selection state
 const selection = useSyncedSelection<string>();
@@ -245,8 +260,8 @@ interface SyncedSelectionResult<T> {
 
 ```svelte
 <script lang="ts">
-  import { useSyncedSelection } from "@decodelabs/underlay/patterns";
-  import RelationSelector from "@decodelabs/underlay/patterns/RelationSelector";
+  import { useSyncedSelection } from "@decodelabs/underlay/runtime/data";
+  import AreaSelector from "$lib/components/AreaSelector.svelte";
 
   let { data } = $props();
   let formValues = $state<Record<string, unknown> | undefined>(undefined);
@@ -267,7 +282,7 @@ interface SyncedSelectionResult<T> {
   });
 </script>
 
-<RelationSelector
+<AreaSelector
   name="areaId"
   bind:value={areaSelection.value}
   search={searchAreas}
@@ -288,10 +303,11 @@ interface SyncedSelectionResult<T> {
 
 ### `createLocalSearchFns()`
 
-Create search and suggest functions for `RelationSelector` when filtering client-side data.
+Create search and suggest functions for app-local selector shells when filtering
+client-side data.
 
 ```typescript
-import { createLocalSearchFns } from "@decodelabs/underlay/patterns";
+import { createLocalSearchFns } from "@decodelabs/underlay/runtime/relations";
 
 const { search, suggest } = createLocalSearchFns(
   () => sections,  // Getter for current items
@@ -347,12 +363,12 @@ const { search, suggest } = createLocalSearchFns(
 );
 ```
 
-**In RelationSelector:**
+**In an app-local selector shell:**
 
 ```svelte
 <script lang="ts">
-  import { createLocalSearchFns } from "@decodelabs/underlay/patterns";
-  import RelationSelector from "@decodelabs/underlay/patterns/RelationSelector";
+  import { createLocalSearchFns } from "@decodelabs/underlay/runtime/relations";
+  import SectionSelector from "$lib/components/SectionSelector.svelte";
 
   interface Props {
     sections: Array<{
@@ -389,7 +405,7 @@ const { search, suggest } = createLocalSearchFns(
   );
 </script>
 
-<RelationSelector
+<SectionSelector
   name="sectionId"
   label="Section"
   search={searchSections}
@@ -411,7 +427,7 @@ Underlay slug helpers only where you want to share pure formatting rules.
 ```svelte
 <script lang="ts">
   import { Field, TextInput, type InputValidationStatus } from "@poodle/svelte-primitives";
-  import { slugify, isReservedSlug, isValidSlugFormat } from "@decodelabs/underlay/patterns";
+  import { slugify, isReservedSlug, isValidSlugFormat } from "@decodelabs/underlay/utils/slug";
 
   let title = $state("");
   let slug = $state("");
@@ -499,7 +515,7 @@ For the reusable cross-app recipe, see Poodle
 Get the next available letter not in the existing set.
 
 ```typescript
-import { getNextLetter } from "@decodelabs/underlay/utils";
+import { getNextLetter } from "@decodelabs/underlay/utils/sequence";
 
 getNextLetter(["A", "B", "C"]);        // "D"
 getNextLetter(["A", "C", "D"]);        // "B" (fills gap)
@@ -522,7 +538,7 @@ getNextLetter(["A", "B"], { lowercase: true }); // "c"
 Get the next available positive integer.
 
 ```typescript
-import { getNextNumber } from "@decodelabs/underlay/utils";
+import { getNextNumber } from "@decodelabs/underlay/utils/sequence";
 
 getNextNumber([1, 2, 3]);   // 4
 getNextNumber([1, 5, 3]);   // 6 (max + 1, doesn't fill gaps)
@@ -541,7 +557,7 @@ getNextNumber([]);          // 1
 
 ```svelte
 <script lang="ts">
-  import { getNextLetter, getNextNumber } from "@decodelabs/underlay/utils";
+  import { getNextLetter, getNextNumber } from "@decodelabs/underlay/utils/sequence";
 
   interface Props {
     sections: Array<{ label: string }>;
@@ -575,10 +591,13 @@ Here's a complete example combining multiple helpers in a form page:
 <!-- /learning/areas/new/+page.svelte -->
 <script lang="ts">
   import type { PageData } from "./$types";
-  import { useSyncedSelection, createLocalSearchFns, submitFormWithIntent, slugify } from "@decodelabs/underlay/patterns";
+  import { useSyncedSelection } from "@decodelabs/underlay/runtime/data";
+  import { createLocalSearchFns } from "@decodelabs/underlay/runtime/relations";
+  import { submitFormWithIntent } from "@decodelabs/underlay/runtime";
+  import { slugify } from "@decodelabs/underlay/utils/slug";
   import { Field, TextInput } from "@poodle/svelte-primitives";
-  import { getNextNumber } from "@decodelabs/underlay/utils";
-  import RelationSelector from "@decodelabs/underlay/patterns/RelationSelector";
+  import { getNextNumber } from "@decodelabs/underlay/utils/sequence";
+  import SectionSelector from "$lib/components/SectionSelector.svelte";
 
   interface Props {
     data: PageData;
@@ -630,7 +649,7 @@ Here's a complete example combining multiple helpers in a form page:
 </script>
 
 <form method="post">
-  <RelationSelector
+  <SectionSelector
     name="sectionId"
     label="Section"
     bind:value={sectionSelection.value}

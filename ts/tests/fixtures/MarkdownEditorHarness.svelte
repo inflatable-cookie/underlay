@@ -1,5 +1,5 @@
 <script lang="ts">
-  import MarkdownEditor from "../../src/components/MarkdownEditor.svelte";
+  import MarkdownEditor from "../../src/nightfire/markup/MarkdownEditorSurface.svelte";
 
   interface Props {
     label?: string | null;

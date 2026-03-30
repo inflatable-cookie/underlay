@@ -57,7 +57,7 @@ class FakeEasyMDE {
   }
 }
 
-vi.mock("../../src/components/lazy-load-easymde", () => ({
+vi.mock("../../src/nightfire/markup/lazy-load-easymde", () => ({
   lazyLoadEasyMde: vi.fn(async () => FakeEasyMDE)
 }));
 

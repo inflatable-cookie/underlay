@@ -32,7 +32,7 @@ Make the list component own its own data lifecycle and controls:
 **File**: `dairy/src/lib/lists/{Entity}List.svelte`
 
 - [ ] Add props for `variant`, context filters (`pathwayId`-style), and `onDataChange`
-- [ ] Render with `PageHeader`, `FilterBar`, `ListGrid`/`DataTable`, `Pagination`
+- [ ] Render with `PageHeader`, Poodle `FilterToolbar`, Poodle `Grid`/`DataTable`, `Pagination`
 - [ ] Keep list reusable in both root pages and tab content
 
 ### Phase 3: Data Loading Pattern
@@ -53,7 +53,7 @@ Make the list component own its own data lifecycle and controls:
 - [ ] Use `useBatchActions<string>()`
 - [ ] Register destructive action(s) (`delete`, `archive`, etc.)
 - [ ] Add confirmation copy with count-aware message
-- [ ] Render `BatchActionBar` only in selection mode
+- [ ] Render `BulkActionBar` only in selection mode
 
 ### Phase 6: Row/Card Actions + Navigation Context
 
@@ -76,7 +76,7 @@ Make the list component own its own data lifecycle and controls:
 |---------|---------|
 | `createPaginationController` | Server pagination state + fetch lifecycle |
 | `useBatchActions` | Multi-select actions + confirmation |
-| `FilterBar` | Unified filtering UI |
+| `FilterToolbar` | Unified filtering UI |
 | `gotoWithContext` | Context-preserving navigation |
 | `useAuthenticatedData` | Auth-gated fetch and retries |
 

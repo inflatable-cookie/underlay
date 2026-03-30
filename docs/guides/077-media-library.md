@@ -11,20 +11,15 @@ This guide covers implementing a complete media library for managing uploaded fi
 Underlay provides shared types and components to reduce boilerplate. For new implementations:
 
 1. **Use shared types** - Import from `underlay-db` (Rust) or `@decodelabs/underlay/patterns` (TypeScript)
-2. **Use shared workflow components** - `MediaPicker` and `MediaActionsMenu` from `@decodelabs/underlay/components`, Poodle `MediaThumbnail` for display-only previews, and Poodle `FileUpload` for generic file selection/compression
+2. **Use shared workflow components** - Poodle `MediaPicker` for local item selectors, Poodle `MediaBrowsePanel` / `MediaUploadStatusPanel` plus media-workflow helpers for callback-driven library flows, an app-local media actions wrapper over Poodle `Menu` / `AlertDialog`, and Poodle `MediaThumbnail` for display-only previews
 3. **Use the upload flow pattern** - `createMediaUploadFlow` for consistent upload state management
-
-Storybook coverage:
-- `Components/MediaPicker`
-- `Components/MediaActionsMenu`
-
-Run `effigy storybook` from the repo root to inspect the retained media workflow shell coverage interactively.
 
 | Layer | Package | Exports |
 |-------|---------|---------|
 | Rust types | `underlay-db` | `MediaKind`, `MediaVisibility`, `MediaVersionState` |
 | TypeScript types | `@decodelabs/underlay/patterns` | All types, enums, and utility functions |
-| UI components | `@decodelabs/underlay/components` | `MediaPicker`, `MediaActionsMenu` |
+| App-local media actions | local app UI | Compose `Menu`, `AlertDialog`, clipboard helpers, and media commands |
+| Media workflow UI/helpers | `@poodle/svelte-composites` | `MediaPicker`, `MediaBrowsePanel`, `MediaUploadStatusPanel`, `loadMediaBrowsePage`, `mergeMediaBrowseItems`, `createResetMediaBrowseState`, `runMediaUploadWorkflow`, `uploadMediaWithKnownHash` |
 | Display composites | `@poodle/svelte-composites` | `MediaThumbnail` |
 | Upload primitive | `@poodle/svelte-primitives` | `FileUpload` |
 | Upload pattern | `@decodelabs/underlay/patterns` | `createMediaUploadFlow` |
@@ -954,8 +949,9 @@ Add media section to admin navigation:
 ```svelte
 <!-- src/routes/(app)/media/+page.svelte -->
 <script lang="ts">
-  import { PageHeader, useToasts, useAuthenticatedData } from "@decodelabs/underlay/patterns";
-  import { ListCard, ListGrid, PageLoading, Pill } from "@decodelabs/underlay/components";
+  import { useAuthenticatedData } from "@decodelabs/underlay/runtime";
+  import { PageHeader as PoodlePageHeader, PageLoading } from "@poodle/svelte-composites";
+  import { Grid, ListCard, Pill } from "@poodle/svelte-primitives";
   import { mediaCommands, type MediaSummary, MediaKind } from "@my-client";
   import { auth, authLoading, currentUser } from "$lib/stores/auth";
   import Image from "lucide-svelte/icons/image";
@@ -979,26 +975,26 @@ Add media section to admin navigation:
   }
 </script>
 
-<PageHeader title="Media Library">
+<PoodlePageHeader title="Media Library">
   <a href="/media/upload" class="button-primary">Upload Media</a>
-</PageHeader>
+</PoodlePageHeader>
 
 {#if pageData.loading}
-  <PageLoading message="Loading media..." />
+  <PageLoading presentation="inline" message="Loading media..." />
 {:else if pageData.data}
-  <ListGrid>
+  <Grid columns="repeat(auto-fit, minmax(min(22.5rem, 100%), 1fr))" gap="lg">
     {#each pageData.data as item}
       {@const Icon = getMediaIcon(item.kind)}
       <ListCard href={`/media/${item.id}`} title={item.title || item.originalFilename || "Untitled"}>
-        {#snippet media()}
+        <svelte:fragment slot="leading">
           <Icon size={30} />
-        {/snippet}
-        {#snippet trailing()}
+        </svelte:fragment>
+        <svelte:fragment slot="trailing">
           <Pill accent={getKindAccent(item.kind)}>{item.kind}</Pill>
-        {/snippet}
+        </svelte:fragment>
       </ListCard>
     {/each}
-  </ListGrid>
+  </Grid>
 {/if}
 ```
 
@@ -1010,7 +1006,7 @@ The upload page uses Underlay's blob upload utilities:
 <!-- src/routes/(app)/media/upload/+page.svelte -->
 <script lang="ts">
   import { goto } from "$app/navigation";
-  import { PageHeader, useToasts } from "@decodelabs/underlay/patterns";
+  import { useToasts } from "@decodelabs/underlay/runtime/feedback";
   import {
     uploadToBlob,
     computeFileHash,
@@ -1018,9 +1014,10 @@ The upload page uses Underlay's blob upload utilities:
     formatFileSize,
     ALLOWED_MEDIA_TYPES,
     type UploadPlan
-  } from "@decodelabs/underlay/patterns";
+  } from "@decodelabs/underlay/runtime/media";
   import { mediaCommands, MediaKind, MediaVisibility } from "@my-client";
   import { auth } from "$lib/stores/auth";
+  import { PageHeader as PoodlePageHeader } from "@poodle/svelte-composites";
   import { Button, Field, TextInput, Select } from "@poodle/svelte-primitives";
 
   const toastStore = useToasts();
@@ -1214,13 +1211,16 @@ The upload page uses Underlay's blob upload utilities:
 <!-- src/routes/(app)/media/[id]/+page.svelte -->
 <script lang="ts">
   import { page } from "$app/stores";
-  import { PageHeader, getBackButtonInfo, useAuthenticatedData } from "@decodelabs/underlay/patterns";
   import {
-    DetailsCard, DetailsItem, DetailsSection,
-    InlineListCard, InlineListItem,
-    Pill, TimeAgo, PageLoading
-  } from "@decodelabs/underlay/components";
-  import { Tabs, type TabItem } from "@poodle/svelte-primitives";
+    PageHeader,
+    DetailMeta,
+    DetailMetaItem,
+    DetailMetaStatus,
+    getBackButtonInfo,
+    useAuthenticatedData
+  } from "@decodelabs/underlay/patterns";
+  import { PageLoading } from "@poodle/svelte-composites";
+  import { Card, Code, Pill, Tabs, TimeAgo, type TabItem } from "@poodle/svelte-primitives";
   import { MediaActionsMenu } from "$lib/menus";
   import { mediaCommands, MediaKind, MediaVisibility, MediaVersionState } from "@my-client";
   import { auth, authLoading, currentUser } from "$lib/stores/auth";
@@ -1264,7 +1264,7 @@ The upload page uses Underlay's blob upload utilities:
 </script>
 
 {#if pageData.loading}
-  <PageLoading message="Loading media..." />
+  <PageLoading presentation="inline" message="Loading media..." />
 {:else if media}
   <PageHeader
     title={media.title || media.originalFilename || "Untitled"}
@@ -1306,29 +1306,15 @@ The upload page uses Underlay's blob upload utilities:
 
           <DetailsSection legend="Timestamps">
             <DetailsItem label="Created">
-              <TimeAgo date={media.createdAt} />
+              <TimeAgo datetime={media.createdAt} />
             </DetailsItem>
             <DetailsItem label="Last Updated">
-              <TimeAgo date={media.updatedAt} />
+              <TimeAgo datetime={media.updatedAt} />
             </DetailsItem>
           </DetailsSection>
         </DetailsCard>
 
-        <InlineListCard title="Versions" hasItems={versions.length > 0}>
-          {#each versions as version}
-            <InlineListItem label={version.sha256 ?? "No hash"}>
-              {#snippet sublabelContent()}
-                {formatFileSize(version.byteSize)} · {version.mimeType ?? "Unknown"} · <TimeAgo date={version.createdAt} />
-              {/snippet}
-              {#snippet trailing()}
-                <Pill>{version.state}</Pill>
-                {#if version.id === media.currentVersionId}
-                  <Pill accent="#3b82f6">Current</Pill>
-                {/if}
-              {/snippet}
-            </InlineListItem>
-          {/each}
-        </InlineListCard>
+        <Card>Caller-owned versions list here</Card>
       </div>
     {/if}
 
@@ -1337,18 +1323,7 @@ The upload page uses Underlay's blob upload utilities:
         {#if usages.length === 0}
           <p>This media is not used anywhere yet.</p>
         {:else}
-          <InlineListCard title="Usages" hasItems={true}>
-            {#each usages as usage}
-              <InlineListItem label={usage.usedByType} accent="#6366f1">
-                {#snippet sublabelContent()}
-                  <code>{usage.usedById}</code>
-                  {#if usage.field}
-                    <span> · {usage.field}</span>
-                  {/if}
-                {/snippet}
-              </InlineListItem>
-            {/each}
-          </InlineListCard>
+          <Card>Caller-owned usages list here</Card>
         {/if}
       </div>
     {/if}
@@ -1356,13 +1331,16 @@ The upload page uses Underlay's blob upload utilities:
 {/if}
 ```
 
+The current media-detail direction is direct Poodle `Card` composition with
+caller-owned rows rather than a retained Underlay inline-list wrapper pair.
+
 ### Actions Menu
 
 ```svelte
 <!-- src/lib/menus/MediaActionsMenu.svelte -->
 <script lang="ts">
-  import { CopyActionsMenu, useToasts } from "@decodelabs/underlay/patterns";
-  import { AlertDialog } from "@decodelabs/underlay/components";
+  import { useToasts } from "@decodelabs/underlay/runtime/feedback";
+  import { AlertDialog } from "@poodle/svelte-primitives";
   import { mediaCommands, type MediaDetail } from "@my-client";
   import { auth } from "$lib/stores/auth";
   import Trash2 from "lucide-svelte/icons/trash-2";
@@ -1443,7 +1421,7 @@ The upload page uses Underlay's blob upload utilities:
   tone="danger"
 />
 
-<CopyActionsMenu label={media.title || "Media"} copyText={media.id}>
+<Menu items={menuItems} triggerAriaLabel="Media actions">
   {#if media.deletedAt}
     <button onclick={() => { restoreOpen = true; }}>
       <RotateCcw size={14} /> Restore
@@ -1456,7 +1434,7 @@ The upload page uses Underlay's blob upload utilities:
       <Trash2 size={14} /> Move to Trash
     </button>
   {/if}
-</CopyActionsMenu>
+</Menu>
 ```
 
 ## Shared Underlay Components
@@ -1509,7 +1487,11 @@ These types match the API contracts, so your TypeScript client can use them dire
 
 ### MediaPicker Component
 
-Use Underlay `MediaPicker` when you need the richer callback-driven browse and upload workflow. For plain media rendering, use Poodle `MediaThumbnail` directly, use Poodle `FileUpload` for generic file intake, and use Poodle `MediaBrowsePanel` / `MediaUploadStatusPanel` for reusable media-library browse and upload-state presentation. Poodle `MediaPicker` remains the lighter local-item selector; it is not a drop-in replacement for the callback-driven Underlay media-library shell. Treat Underlay `MediaPicker` as the final retained media-library orchestration surface rather than another generic picker waiting to move.
+Underlay `MediaPicker` is retired. Use the Poodle media surfaces directly:
+
+- Poodle `MediaPicker` for lightweight local-item selection
+- Poodle `MediaBrowsePanel` and `MediaUploadStatusPanel` for callback-driven media-library UI
+- Poodle media-workflow helpers for paginated browse, duplicate detection, and upload orchestration
 
 ```svelte
 <script lang="ts">
@@ -1540,18 +1522,45 @@ Use Underlay `MediaPicker` when you need the richer callback-driven browse and u
 </MediaThumbnail>
 ```
 
-A modal dialog for selecting existing media or uploading new files:
+A callback-driven media-library picker is now caller-owned composition:
 
 ```svelte
 <script lang="ts">
-  import { MediaPicker } from "@decodelabs/underlay/components";
+  import {
+    Dialog,
+    FileUpload,
+    Tabs,
+    type FileUploadItem,
+    type TabItem,
+  } from "@poodle/svelte-primitives";
+  import {
+    MediaBrowsePanel,
+    MediaUploadStatusPanel,
+    createResetMediaBrowseState,
+    loadMediaBrowsePage,
+    mergeMediaBrowseItems,
+    runMediaUploadWorkflow,
+    uploadMediaWithKnownHash,
+    type MediaPickerItem,
+    type MediaUploadDisplayStep,
+  } from "@poodle/svelte-composites";
   import { mediaCommands, type MediaSummary } from "@my-client";
   import { auth } from "$lib/stores/auth";
 
   let pickerOpen = $state(false);
   let selectedMedia = $state<MediaSummary | null>(null);
+  let activeTab = $state("browse");
+  let uploadFiles = $state<FileUploadItem[]>([]);
+  let uploadStep = $state<MediaUploadDisplayStep>("select");
+  let uploadProgress = $state(0);
+  let uploadError = $state<string | null>(null);
+  let duplicateMedia = $state<MediaSummary | null>(null);
+  let createdMedia = $state<MediaSummary | null>(null);
 
-  // Bind your API commands as callback props
+  let browseItems = $state<MediaSummary[]>([]);
+  let browseNextCursor = $state<string | null>(null);
+  let browseHasMore = $state(false);
+
   async function listMediaPaginated(params?: PaginationParams) {
     const token = auth.getToken();
     if (!token) throw new Error("Not authenticated");
@@ -1584,103 +1593,180 @@ A modal dialog for selecting existing media or uploading new files:
 
   function handleSelect(mediaId: string, media: MediaSummary) {
     selectedMedia = media;
-    // Use the selected media...
+    pickerOpen = false;
+  }
+
+  function toPickerItem(media: MediaSummary): MediaPickerItem {
+    return {
+      id: media.id,
+      label: media.title ?? media.originalFilename ?? "Untitled",
+      thumbnailUrl: media.thumbnailUrl,
+      kind: media.kind === "image" ? "image" : "document",
+    };
+  }
+
+  async function loadInitialBrowse() {
+    const page = await loadMediaBrowsePage({ listPage: listMediaPaginated });
+    browseItems = page.items;
+    browseNextCursor = page.nextCursor;
+    browseHasMore = page.hasMore;
+  }
+
+  async function loadMoreBrowse() {
+    if (!browseNextCursor) return;
+    const page = await loadMediaBrowsePage({
+      listPage: listMediaPaginated,
+      cursor: browseNextCursor,
+    });
+    browseItems = mergeMediaBrowseItems(browseItems, page.items, browseNextCursor);
+    browseNextCursor = page.nextCursor;
+    browseHasMore = page.hasMore;
+  }
+
+  async function startUpload() {
+    const file = uploadFiles[0]?.file;
+    if (!file) return;
+
+    const result = await runMediaUploadWorkflow({
+      file,
+      maxFileSize: 25 * 1024 * 1024,
+      checkDuplicate: async (sha256) => {
+        const duplicate = await checkDuplicate(sha256);
+        return { exists: duplicate.exists, item: duplicate.media ?? null };
+      },
+      createRecord: createMedia,
+      buildCreateRequest: (nextFile) => ({
+        kind: nextFile.type.startsWith("image/") ? "image" : "document",
+        visibility: "public",
+        title: nextFile.name.replace(/\.[^/.]+$/, ""),
+        originalFilename: nextFile.name,
+      }),
+      initiateUpload: (media, request) => initiateUpload(media.id, request),
+      buildInitiateRequest: (nextFile, fileHash) => ({
+        contentType: nextFile.type,
+        contentLength: nextFile.size,
+        sha256: fileHash,
+      }),
+      finaliseUpload: (media, versionId, request) =>
+        finaliseUpload(media.id, versionId, request),
+      buildFinaliseRequest: (nextFile, fileHash) => ({
+        sha256: fileHash,
+        contentType: nextFile.type,
+      }),
+      toCreatedItem: (result) => result.media,
+      onStep: (step) => (uploadStep = step),
+      onProgress: (percent) => (uploadProgress = percent),
+    });
+
+    if (result.kind === "duplicate") {
+      duplicateMedia = result.existingItem;
+      return;
+    }
+
+    createdMedia = result.createdItem;
   }
 </script>
 
 <button onclick={() => pickerOpen = true}>Select Media</button>
 
-<MediaPicker
-  bind:open={pickerOpen}
-  title="Select an image"
-  {listMediaPaginated}
-  {checkDuplicate}
-  {createMedia}
-  {initiateUpload}
-  {finaliseUpload}
-  onselect={handleSelect}
-  oncancel={() => pickerOpen = false}
-/>
+<Dialog bind:open={pickerOpen} title="Select an image">
+  <Tabs
+    value={activeTab}
+    items={[
+      { value: "browse", label: "Browse" },
+      { value: "upload", label: "Upload" },
+    ] satisfies TabItem[]}
+    on:valueChange={(event) => (activeTab = event.detail.value)}
+  />
+
+  {#if activeTab === "browse"}
+    <MediaBrowsePanel
+      items={browseItems.map(toPickerItem)}
+      hasMore={browseHasMore}
+      on:loadMore={loadMoreBrowse}
+      on:select={(event) => {
+        const media = browseItems.find((item) => item.id === event.detail.item.id);
+        if (media) handleSelect(media.id, media);
+      }}
+    />
+  {:else if uploadStep === "select"}
+    <FileUpload bind:files={uploadFiles} showPreview={false} />
+    <button onclick={startUpload}>Upload</button>
+  {:else}
+    <MediaUploadStatusPanel
+      {uploadStep}
+      {uploadProgress}
+      {uploadError}
+      duplicateLabel={duplicateMedia?.title ?? duplicateMedia?.originalFilename ?? null}
+      on:selectDuplicate={() => duplicateMedia && handleSelect(duplicateMedia.id, duplicateMedia)}
+      on:selectUploaded={() => createdMedia && handleSelect(createdMedia.id, createdMedia)}
+      on:uploadAnyway={async () => {
+        const file = uploadFiles[0]?.file;
+        if (!file) return;
+        const result = await uploadMediaWithKnownHash({
+          file,
+          fileHash: "",
+          maxFileSize: 25 * 1024 * 1024,
+          createRecord: createMedia,
+          buildCreateRequest: (nextFile) => ({
+            kind: nextFile.type.startsWith("image/") ? "image" : "document",
+            visibility: "public",
+            title: nextFile.name.replace(/\.[^/.]+$/, ""),
+            originalFilename: nextFile.name,
+          }),
+          initiateUpload: (media, request) => initiateUpload(media.id, request),
+          buildInitiateRequest: (nextFile, fileHash) => ({
+            contentType: nextFile.type,
+            contentLength: nextFile.size,
+            sha256: fileHash,
+          }),
+          finaliseUpload: (media, versionId, request) =>
+            finaliseUpload(media.id, versionId, request),
+          buildFinaliseRequest: (nextFile, fileHash) => ({
+            sha256: fileHash,
+            contentType: nextFile.type,
+          }),
+          toCreatedItem: (result) => result.media,
+        });
+        createdMedia = result;
+      }}
+      on:clearUpload={() => {
+        uploadFiles = [];
+        uploadStep = "select";
+        duplicateMedia = null;
+        createdMedia = null;
+        uploadError = null;
+      }}
+    />
+  {/if}
+</Dialog>
 ```
 
-**Props:**
-
-| Prop | Type | Description |
-|------|------|-------------|
-| `open` | `boolean` | Controls dialog visibility (bindable) |
-| `title` | `string` | Dialog title (default: "Select Media") |
-| `filterKind` | `MediaKind \| null` | Filter to specific media type |
-| `maxFileSize` | `number` | Max upload size (default: 25MB) |
-| `listMediaPaginated` | `function` | Callback to list media with pagination |
-| `checkDuplicate` | `function` | Callback to check for duplicates |
-| `createMedia` | `function` | Callback to create media record |
-| `initiateUpload` | `function` | Callback to get upload URL |
-| `finaliseUpload` | `function` | Callback to finalize upload |
-| `onselect` | `function` | Called when media is selected |
-| `oncancel` | `function` | Called when picker is cancelled |
+For app convenience, it is still reasonable to make a local wrapper that
+pre-binds your media commands and auth wiring. That wrapper should be
+app-owned now, not exported from Underlay.
 
 **Boundary note:**
 
 - Use Poodle `MediaPicker` when you already have a local `items` array and only
   need lightweight browse/search/upload-tab composition.
 - Use Poodle `MediaBrowsePanel` and `MediaUploadStatusPanel` when you need the
-  reusable browse-grid or upload-status UI but still own the workflow locally.
-- Use Underlay `MediaPicker` when the picker itself still needs to own paginated
+  reusable browse-grid or upload-status UI.
+- Use the Poodle media-workflow helpers when the host still owns paginated
   browse loading, duplicate detection, create/initiate/finalise callbacks, and
   media-library upload orchestration.
 
-**Creating a thin wrapper:**
+### MediaActionsMenu Wrapper
 
-For convenience, create an app-specific wrapper that pre-binds your commands:
-
-```svelte
-<!-- src/lib/components/MediaPicker.svelte -->
-<script lang="ts">
-  import { MediaPicker as BaseMediaPicker } from "@decodelabs/underlay/components";
-  import { mediaCommands } from "@my-client";
-  import { auth } from "$lib/stores/auth";
-
-  interface Props {
-    open?: boolean;
-    title?: string;
-    filterKind?: MediaKind | null;
-    onselect?: (mediaId: string, media: MediaSummary) => void;
-    oncancel?: () => void;
-  }
-
-  let { open = $bindable(false), title, filterKind, onselect, oncancel }: Props = $props();
-
-  // Pre-bind all the command callbacks with auth
-  async function listMediaPaginated(params?: PaginationParams) {
-    const token = auth.getToken();
-    if (!token) throw new Error("Not authenticated");
-    return mediaCommands.listMediaPaginated(fetch, token, params);
-  }
-
-  // ... other callbacks
-</script>
-
-<BaseMediaPicker
-  bind:open
-  {title}
-  {filterKind}
-  {listMediaPaginated}
-  {checkDuplicate}
-  {createMedia}
-  {initiateUpload}
-  {finaliseUpload}
-  {onselect}
-  {oncancel}
-/>
-```
-
-### MediaActionsMenu Component
-
-A context menu for media item actions (edit, delete, restore, etc.):
+Keep media actions local to the consuming app. Build the wrapper directly from
+Poodle `Menu` and `AlertDialog`, plus local media-command wiring and
+Underlay clipboard/toast helpers:
 
 ```svelte
 <script lang="ts">
-  import { MediaActionsMenu } from "@decodelabs/underlay/components";
+  import { AlertDialog, Button, Menu } from "@poodle/svelte-primitives";
+  import { copyToClipboard } from "@decodelabs/underlay/runtime/feedback";
+  import { useToasts } from "@decodelabs/underlay/runtime/feedback";
   import { mediaCommands, type MediaDetail } from "@my-client";
   import { auth } from "$lib/stores/auth";
 
@@ -1690,7 +1776,9 @@ A context menu for media item actions (edit, delete, restore, etc.):
 
   let { media }: Props = $props();
 
-  // Bind commands with auth
+  const toastStore = useToasts();
+  let softDeleteOpen = $state(false);
+
   async function softDelete(mediaId: string) {
     const token = auth.getToken();
     if (!token) throw new Error("Not authenticated");
@@ -1709,37 +1797,38 @@ A context menu for media item actions (edit, delete, restore, etc.):
     await mediaCommands.purgeMedia(mediaId, fetch, token);
   }
 
-  function navigateToReplace(mediaId: string) {
-    goto(`/media/${mediaId}/upload`);
+  async function handleAction(value: string) {
+    if (value === "copy-id") {
+      await copyToClipboard(toastStore, media.id, "Copied ID", "Failed to copy ID");
+    } else if (value === "replace") {
+      goto(`/media/upload?replace=${media.id}`);
+    } else if (value === "soft-delete") {
+      softDeleteOpen = true;
+    }
   }
+
+  const items = [
+    { value: "replace", label: "Replace file" },
+    { value: "soft-delete", label: "Soft delete", tone: "danger" as const },
+    { value: "separator-copy", label: "", kind: "separator" as const },
+    { value: "copy-id", label: "Copy ID" }
+  ];
 </script>
 
-<MediaActionsMenu
-  {media}
-  {softDelete}
-  {restore}
-  {purge}
-  {navigateToReplace}
-  onSoftDeleteSuccess={() => refetchMedia()}
-  onRestoreSuccess={() => refetchMedia()}
-  onPurgeSuccess={() => goto('/media')}
+<Menu items={items} ariaLabel="Media actions" triggerAriaLabel="Media actions" on:action={(event) => void handleAction(event.detail.value)}>
+  <Button slot="trigger" variant="secondary">Actions</Button>
+</Menu>
+
+<AlertDialog
+  bind:open={softDeleteOpen}
+  title="Soft delete media?"
+  description="Soft deleting will hide this media from listings. You can restore it later from trash."
+  confirmLabel="Soft delete"
+  tone="danger"
+  onConfirm={() => softDelete(media.id)}
+  onCancel={() => (softDeleteOpen = false)}
 />
 ```
-
-**Props:**
-
-| Prop | Type | Description |
-|------|------|-------------|
-| `media` | `MediaSummary \| MediaDetail` | The media item |
-| `trigger` | `Snippet` | Custom trigger element |
-| `softDelete` | `function` | Callback for soft delete |
-| `restore` | `function` | Callback for restore |
-| `purge` | `function` | Callback for permanent delete |
-| `navigateToReplace` | `function` | Callback to navigate to replace file page |
-| `onSoftDeleteSuccess` | `function` | Called after successful soft delete |
-| `onRestoreSuccess` | `function` | Called after successful restore |
-| `onPurgeSuccess` | `function` | Called after successful purge |
-| `onEditRequest` | `function` | Called when edit is requested |
 
 The menu automatically shows appropriate actions based on the media's deleted state.
 It is the retained Underlay media-operation shell: copy, edit, replace-file,
@@ -1752,7 +1841,7 @@ Poodle.
 For building custom upload pages, use the `createMediaUploadFlow` state machine:
 
 ```typescript
-import { createMediaUploadFlow, type MediaUploadFlowController } from "@decodelabs/underlay/patterns";
+import { createMediaUploadFlow, type MediaUploadFlowController } from "@decodelabs/underlay/runtime/media";
 import { mediaCommands } from "@my-client";
 import { auth } from "$lib/stores/auth";
 
@@ -1852,7 +1941,7 @@ interface MediaUploadFlowController {
   <Button onclick={() => uploadFlow.proceedWithUpload()}>Upload anyway</Button>
 
 {:else if uploadFlow.step === "uploading"}
-  <ProgressBar value={uploadFlow.progress} />
+  <Progress value={uploadFlow.progress} ariaLabel="Upload progress" />
 
 {:else if uploadFlow.step === "complete"}
   <p>Upload complete!</p>

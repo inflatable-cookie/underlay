@@ -1,5 +1,5 @@
 <script lang="ts">
-  import LoginPage from "../../src/components/auth/LoginPage.svelte";
+  import LoginPage from "../../src/patterns/auth-workflows/LoginPage.svelte";
 
   let completed = $state(false);
 

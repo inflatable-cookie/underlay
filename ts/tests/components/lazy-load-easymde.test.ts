@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-describe("components/lazy-load-easymde", () => {
+describe("nightfire/markup/lazy-load-easymde", () => {
 	afterEach(() => {
 		vi.resetModules();
 	});
@@ -9,7 +9,7 @@ describe("components/lazy-load-easymde", () => {
 		vi.doMock("easymde", () => ({
 			default: { name: "mock-easymde" },
 		}));
-		const mod = await import("../../src/components/lazy-load-easymde");
+		const mod = await import("../../src/nightfire/markup/lazy-load-easymde");
 		const [a, b] = await Promise.all([mod.lazyLoadEasyMde(), mod.lazyLoadEasyMde()]);
 		const c = await mod.lazyLoadEasyMde();
 		expect(a).toEqual({ name: "mock-easymde" });
@@ -22,7 +22,7 @@ describe("components/lazy-load-easymde", () => {
 			throw new Error("mock import failure");
 		});
 		const originalWindow = (globalThis as { window?: unknown }).window;
-		const mod = await import("../../src/components/lazy-load-easymde");
+		const mod = await import("../../src/nightfire/markup/lazy-load-easymde");
 
 		(globalThis as { window?: unknown }).window = undefined;
 		await expect(mod.prefetchEasyMde()).resolves.toBeUndefined();
@@ -38,7 +38,7 @@ describe("components/lazy-load-easymde", () => {
 			default: undefined,
 			name: "module-only-export",
 		}));
-		const mod = await import("../../src/components/lazy-load-easymde");
+		const mod = await import("../../src/nightfire/markup/lazy-load-easymde");
 		await expect(mod.lazyLoadEasyMde()).resolves.toMatchObject({
 			name: "module-only-export",
 		});

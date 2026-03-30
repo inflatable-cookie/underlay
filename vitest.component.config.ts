@@ -17,7 +17,6 @@ export default defineConfig({
 			"@decodelabs/underlay": resolve(__dirname, "./ts/src"),
 			"@decodelabs/underlay/client": resolve(__dirname, "./ts/src/client"),
 			"@decodelabs/underlay/patterns": resolve(__dirname, "./ts/src/patterns"),
-			"@decodelabs/underlay/components": resolve(__dirname, "./ts/src/components"),
 		},
 	},
 });

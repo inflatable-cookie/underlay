@@ -711,8 +711,8 @@ Login:
 
 Underlay now provides higher-level client helpers for the WebAuthn ceremony:
 
-- `usePasskeyRegistration()` from `@decodelabs/underlay/patterns`
-- `usePasskeyAuthentication()` from `@decodelabs/underlay/patterns`
+- `usePasskeyRegistration()` from `@decodelabs/underlay/runtime/auth`
+- `usePasskeyAuthentication()` from `@decodelabs/underlay/runtime/auth`
 - shared error and capability helpers from `@decodelabs/underlay/utils`
 
 Use them when you want shared browser capability checks, error mapping, and JSON serialization instead of direct `navigator.credentials.*` orchestration in every app.
@@ -722,6 +722,7 @@ import {
   usePasskeyAuthentication,
   usePasskeyRegistration,
 } from "@decodelabs/underlay/patterns";
+} from "@decodelabs/underlay/runtime/auth";
 
 const registerPasskey = usePasskeyRegistration({
   onStart: async () => api.auth.startPasskeyRegistration(),

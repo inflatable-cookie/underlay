@@ -1,5 +1,5 @@
 <script lang="ts">
-  import ForgotPasswordFlow from "../../src/components/auth/ForgotPasswordFlow.svelte";
+  import ForgotPasswordFlow from "../../src/patterns/auth-workflows/ForgotPasswordFlow.svelte";
 
   async function wait(ms: number) {
     return new Promise<void>((resolve) => setTimeout(resolve, ms));

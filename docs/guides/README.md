@@ -2,6 +2,16 @@
 
 Comprehensive guides for building full-stack applications with Underlay. This documentation covers architecture, implementation, testing, and deployment.
 
+Poodle is the canonical home for shared UI primitives and generic composites.
+Underlay’s guides now describe the retained package surfaces that still belong
+here:
+
+- `@decodelabs/underlay/patterns` for retained workflow/page-shell UI
+- `@decodelabs/underlay/runtime` for shared app/runtime helpers and controllers
+- `@decodelabs/underlay/utils` for small standalone helpers
+- `@decodelabs/underlay/client` for transport and SvelteKit-facing client helpers
+- `@decodelabs/underlay/nightfire` for structured content editor/runtime
+
 ## Modes (Multi-repo vs Monorepo)
 
 This guide supports two layouts:
@@ -51,8 +61,8 @@ Read these documents in order for a complete understanding:
 23. **[090 - UI Kit](./090-ui-kit.md)** - Component patterns
 24. **[092 - Selection Suggestions](./092-selection-suggestions.md)** - Intelligent suggestions with selection history
 25. **[095 - Navigation Context](./095-navigation-context.md)** - Contextual back buttons and form redirects
-26. **[097 - Autonomous List Components](./097-autonomous-list-components.md)** - Self-contained list architecture, props contract, and batch patterns
-27. **[098 - Shared Admin Patterns](./098-shared-admin-patterns.md)** - Higher-level admin components (EmptyState, Drawer, DetailPageShell, AutonomousList, etc.)
+26. **[097 - Autonomous List Components](./097-autonomous-list-components.md)** - List state architecture, composition guidance, and batch patterns
+27. **[098 - Shared Admin Patterns](./098-shared-admin-patterns.md)** - Higher-level admin composition guidance (EmptyState, detail headers, keyboard patterns, etc.)
 28. **[100 - Frontend (Web)](./100-frontend-web.md)** - SvelteKit setup, routing
 29. **[110 - Admin Frontend](./110-admin.md)** - Admin UI structure
 30. **[120 - Configuration](./120-configuration.md)** - Typed config model, env boundaries, migration checklist

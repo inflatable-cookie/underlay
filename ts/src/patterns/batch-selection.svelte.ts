@@ -6,13 +6,13 @@
  * - Individual item toggle
  * - Select all / deselect all
  * - Selection count tracking
- * - Integration with BatchActionBar component
+ * - Integration with Poodle BulkActionBar
  *
  * @example
  * ```svelte
  * <script lang="ts">
  *   import { useBatchSelection } from '@decodelabs/underlay/patterns';
- *   import { BatchActionBar } from '@decodelabs/underlay/components';
+ *   import { AlertDialog, BulkActionBar } from '@poodle/svelte-primitives';
  *
  *   const items = $derived(data.projects);
  *   const selection = useBatchSelection<string>();
@@ -32,12 +32,26 @@
  *   />
  * {/each}
  *
- * <BatchActionBar
- *   selectedCount={selection.count}
+ * let showBatchDeleteConfirm = $state(false);
+ *
+ * <BulkActionBar
+ *   selectionCount={selection.count}
  *   totalCount={items.length}
- *   onClearSelection={selection.clear}
- *   onSelectAll={() => selection.selectAll(items.map(i => i.id))}
- *   onBatchDelete={handleBatchDelete}
+ *   actions={[{ id: "delete", label: "Delete", icon: "trash-2", tone: "danger" }]}
+ *   showSelectAll
+ *   on:clear={selection.clear}
+ *   on:selectAll={() => selection.selectAll(items.map(i => i.id))}
+ *   on:action={() => { showBatchDeleteConfirm = true; }}
+ * />
+ *
+ * <AlertDialog
+ *   open={showBatchDeleteConfirm}
+ *   title="Delete selected items"
+ *   description={`Delete ${selection.count} selected item${selection.count === 1 ? "" : "s"}?`}
+ *   confirmLabel={`Delete ${selection.count} item${selection.count === 1 ? "" : "s"}`}
+ *   tone="danger"
+ *   onConfirm={handleBatchDelete}
+ *   onCancel={() => { showBatchDeleteConfirm = false; }}
  * />
  * ```
  *

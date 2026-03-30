@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen, waitFor } from "@testing-library/svelte";
 import SelectHarness from "../fixtures/SelectHarness.svelte";
 
-describe("components/Select.svelte", () => {
+describe("nightfire/Select.svelte", () => {
   it("renders native select fallback and emits change/input", async () => {
     const onChange = vi.fn();
     const onInput = vi.fn();

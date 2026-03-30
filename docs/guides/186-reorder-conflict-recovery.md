@@ -44,36 +44,55 @@ From `@decodelabs/underlay/patterns`:
 - appends `added_ids` (resolved from `latestItems`) to pending list,
 - returns a resolution summary (added/removed/unresolved counts).
 
-## ReorderableList Hook
+## Reorder Submission Hook
 
-`ReorderableList` supports `onsubmiterror`:
+Use Poodle `ReorderableList` with an app-owned submit wrapper:
 
 ```svelte
+<script lang="ts">
+  import { ReorderableList } from "@poodle/svelte-composites";
+
+  let submitError = $state<string | null>(null);
+
+  async function handleReorderSubmit() {
+    submitError = null;
+
+    try {
+      await controller.submit();
+      await handleSuccess();
+    } catch (error) {
+      const conflict = extractReorderConflict(error);
+      if (!conflict) {
+        submitError = error instanceof Error ? error.message : String(error);
+        return;
+      }
+
+      const latestItems = await loadLatestItems();
+      applyReorderConflict(controller, conflict, latestItems);
+      submitError = "List changed while reordering. Review updates and save again.";
+    }
+  }
+</script>
+
 <ReorderableList
-  controller={controller}
-  oncancel={exitReorderMode}
-  onsuccess={handleSuccess}
-  onsubmiterror={async (error) => {
-    const conflict = extractReorderConflict(error);
-    if (!conflict) return;
-
-    const latestItems = await loadLatestItems();
-    applyReorderConflict(controller, conflict, latestItems);
-
-    return "List changed while reordering. Review updates and save again.";
+  items={controller.pending}
+  dirty={controller.isDirty}
+  submitting={controller.isPending}
+  errorMessage={submitError}
+  onsubmit={handleReorderSubmit}
+  oncancel={() => {
+    submitError = null;
+    controller.reset();
+    exitReorderMode();
   }}
+  on:reorder={(event) => controller.updatePending(event.detail.items)}
 >
   ...
 </ReorderableList>
 ```
 
-Return value from `onsubmiterror` is shown in the inline reorder error panel.
-
 Optional UX improvements:
 
-- pass `highlightedIds` to visually mark newly-added items after conflict merge,
-- enable `showMoveButtons` for touch and precision fallback,
-- pass `getItemLabel` for better screen reader announcements.
 - keep `longListThreshold` enabled (default `50`) so operators see a warning before reordering very large lists.
 - use `windowSize` (for example `50`) to enable page-window reorder UI for large lists.
 
@@ -89,6 +108,6 @@ Optional UX improvements:
 
 1. Confirm entity is truly reorderable (not derived sort).
 2. Ensure backend endpoint returns `409` with `added_ids`/`removed_ids`.
-3. Use Underlay helpers in `onsubmiterror`.
+3. Use Underlay helpers in your submit wrapper.
 4. Add local warning copy indicating changes were merged.
 5. Add tests for conflict parsing and merge behavior.

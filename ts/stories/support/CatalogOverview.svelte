@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Card from "../../src/components/Card.svelte";
+  import { Card } from "@poodle/svelte-primitives";
 </script>
 
 <div class="catalog-overview">

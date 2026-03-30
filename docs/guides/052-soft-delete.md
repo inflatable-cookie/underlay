@@ -448,15 +448,16 @@ interface BatchSoftDeleteResponse {
 
 ### Batch Selection UI Pattern
 
-Use `useBatchSelection` from Underlay patterns with `BatchActionBar`:
+Use `useBatchSelection` from Underlay patterns with Poodle `BulkActionBar` plus an explicit confirmation dialog:
 
 ```svelte
 <script lang="ts">
   import { useBatchSelection } from "@decodelabs/underlay/patterns";
-  import { BatchActionBar } from "@decodelabs/underlay/components";
+  import { AlertDialog, BulkActionBar } from "@poodle/svelte-primitives";
 
   const selection = useBatchSelection<string>();
   let isSelectionMode = $state(false);
+  let showBatchDeleteConfirm = $state(false);
 
   async function handleBatchDelete() {
     const result = await api.batchSoftDelete({ ids: selection.selectedIds });
@@ -470,14 +471,24 @@ Use `useBatchSelection` from Underlay patterns with `BatchActionBar`:
   }
 </script>
 
-<BatchActionBar
-  selectedCount={selection.count}
+<BulkActionBar
+  selectionCount={selection.count}
   totalCount={items.length}
-  onClearSelection={() => { selection.clear(); isSelectionMode = false; }}
-  onSelectAll={() => selection.selectAll(items.map(i => i.id))}
-  onBatchDelete={handleBatchDelete}
-  itemLabel="module"
-  itemLabelPlural="modules"
+  actions={[{ id: "delete", label: "Delete", icon: "trash-2", tone: "danger" }]}
+  showSelectAll
+  on:clear={() => { selection.clear(); isSelectionMode = false; }}
+  on:selectAll={() => selection.selectAll(items.map(i => i.id))}
+  on:action={() => { showBatchDeleteConfirm = true; }}
+/>
+
+<AlertDialog
+  open={showBatchDeleteConfirm}
+  title="Delete selected modules"
+  description={`Delete ${selection.count} selected module${selection.count === 1 ? "" : "s"}?`}
+  confirmLabel={`Delete ${selection.count} module${selection.count === 1 ? "" : "s"}`}
+  tone="danger"
+  onConfirm={handleBatchDelete}
+  onCancel={() => { showBatchDeleteConfirm = false; }}
 />
 ```
 
@@ -513,4 +524,4 @@ The trait-based `batch_soft_delete` loops through items, which is necessary for 
 
 - **[050-database.md](./050-database.md)** - Database setup and migrations
 - **[070-api-handlers.md](./070-api-handlers.md)** - API endpoint patterns
-- **[090-ui-kit.md](./090-ui-kit.md)** - BatchActionBar component documentation
+- **[090-ui-kit.md](./090-ui-kit.md)** - Shared UI kit guidance and Poodle primitive usage

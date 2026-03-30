@@ -154,17 +154,24 @@ while keeping state and refresh behavior reusable across admin apps.
 
 ## Svelte admin dashboard pattern
 
-Underlay also exports `AiRoutingAdmin` from `ts/src/patterns/AiRoutingAdmin.svelte`.
+`AiRoutingAdmin` is retired from the public Underlay surface.
 
-Use it when you want a ready-made AI routing operations page with:
+The stable boundary is now:
 
-- summary cards (routing config, alert counts, top spike)
-- window controls for metrics/anomalies/parity/cost
-- preconfigured tables for metrics, anomalies, parity, and daily cost
+- `createAiRoutingOpsController` for state, refresh behavior, and window control
+- direct Poodle composition for page framing, cards, loading/error states, and tables
 
-Apps only need to provide an `AiRoutingOpsSource` implementation and auth gating.
+That keeps the reusable operational data contract in Underlay without preserving
+a second page-shaped public shell by inertia.
 
-Optional customization:
+Typical page composition:
+
+- Poodle `PageHeader` for route framing
+- Poodle `Card` for summary panels
+- Poodle `PageLoading` and `Callout` for loading/error handling
+- Poodle `DataTable` for metrics, anomalies, parity, and daily cost tables
+
+Optional customization stays app-owned:
 
 - `windowDefaults` (`AiRoutingOpsOptions`) for default metric/cost/parity/anomaly windows
 - `messages` (`AiRoutingAdminMessages`) for empty-state and button labels
@@ -185,12 +192,13 @@ Reference file: `docs/guides/code/176-ai-runtime-routing/ai-routing-admin-page.s
 <script lang="ts">
   import { auth, authLoading, currentUser } from "$lib/stores/auth";
   import { platformCommands } from "@cattle-grid";
+  import { PageHeader } from "@poodle/svelte-composites";
   import {
-    AiRoutingAdmin,
     type AiRoutingOpsSource,
     type AiRoutingOpsOptions,
     type AiRoutingAdminMessages
-  } from "@decodelabs/underlay/patterns";
+  } from "@decodelabs/underlay/runtime";
+  import AiRoutingOpsPanel from "./AiRoutingOpsPanel.svelte";
 
   const getToken = auth.getTokenProvider();
 
@@ -224,14 +232,13 @@ Reference file: `docs/guides/code/176-ai-runtime-routing/ai-routing-admin-page.s
   };
 </script>
 
-<AiRoutingAdmin
+<PageHeader section="AI Routing" backHref="/system" backLabel="Back to system" />
+
+<AiRoutingOpsPanel
   {source}
   {enabled}
   {windowDefaults}
   {messages}
-  section="AI Routing"
-  backHref="/system"
-  backLabel="Back to system"
 />
 ```
 
@@ -239,15 +246,13 @@ Reference file: `docs/guides/code/176-ai-runtime-routing/ai-routing-admin-page.s
 
 Reference file: `docs/guides/code/176-ai-runtime-routing/ai-routing-admin-embedded.svelte`
 
-Use this variant when AI routing appears inside a nested admin tab, where you want custom labels and no back link:
+Use this variant when AI routing appears inside a nested admin tab, where you want custom labels and no page header:
 
 ```svelte
-<AiRoutingAdmin
+<AiRoutingOpsPanel
   {source}
   {enabled}
   {messages}
-  section="Routing ops"
-  backHref={null}
 />
 ```
 
@@ -256,5 +261,5 @@ Use this variant when AI routing appears inside a nested admin tab, where you wa
 - **`Not authenticated` errors**: Ensure your token provider returns a non-null token before invoking command calls.
 - **Page stays on loading/empty**: Verify `enabled` becomes `true` only after auth state resolves and a user is present.
 - **No diagnostics data**: Confirm backend endpoints for diagnostics/metrics/cost/anomalies/alerts/parity are wired and authorized for the current role.
-- **Unexpected window values**: `AiRoutingAdmin` clamps window inputs to safe ranges before refresh (`metric/parity: 1-720h`, `anomaly: 2-90d`, `cost: 1-365d`).
-- **Label overrides not applied**: Pass `messages` and/or `windowDefaults` directly to `AiRoutingAdmin` (not only to your source adapter).
+- **Unexpected window values**: `createAiRoutingOpsController` clamps window inputs to safe ranges before refresh (`metric/parity: 1-720h`, `anomaly: 2-90d`, `cost: 1-365d`).
+- **Label overrides not applied**: Pass `messages` and/or `windowDefaults` directly to your composed panel/controller layer (not only to your source adapter).

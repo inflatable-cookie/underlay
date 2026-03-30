@@ -1,8 +1,7 @@
 <script lang="ts">
   import { MediaThumbnail } from "@poodle/svelte-composites";
-  import { TextInput } from "@poodle/svelte-primitives";
-  import Select from "../../components/Select.svelte";
-  import type { MarkdownEditorContext } from "../../components/markdown-editor-events";
+  import { Select, TextInput } from "@poodle/svelte-primitives";
+  import type { MarkdownEditorContext } from "../markup/markdown-editor-context";
   import { type MediaKind } from "../../patterns/media-types/enums";
   import { useNightfireMedia, type NightfireMediaPickResult } from "./context";
 

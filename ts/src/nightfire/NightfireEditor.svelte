@@ -1,9 +1,8 @@
 <script lang="ts">
   import { onMount, tick, untrack } from "svelte";
-  import type { MarkdownEditorContext } from "../components/markdown-editor-events";
+  import type { MarkdownEditorContext } from "./markup/markdown-editor-context";
   import type { NightfireValue } from "./index";
   import NightfireBlockEditor from "./NightfireBlockEditor.svelte";
-  import NightfireFieldError from "./NightfireFieldError.svelte";
   import SlashCommandPalette from "./SlashCommandPalette.svelte";
   // Ensure registrations are loaded before we lookup schema definitions
   import "./editor-registrations";
@@ -554,7 +553,9 @@
     </div>
   {/if}
 
-  <NightfireFieldError message={showRequiredError ? "This field is required." : null} />
+  {#if showRequiredError}
+    <p class="nightfire-field__error">This field is required.</p>
+  {/if}
   {#if typeChangeWarning}
     <p class="nightfire-layout-warning">
       {typeChangeWarning}
@@ -609,6 +610,12 @@
     background: transparent;
     color: inherit;
     cursor: pointer;
+  }
+
+  .nightfire-field__error {
+    margin-top: calc(var(--underlay-space-2) * 0.8);
+    font-size: var(--underlay-font-size-sm);
+    color: var(--underlay-color-danger);
   }
 
   .nightfire-layout-warning {

@@ -35,7 +35,7 @@ Ops pages combine **inspection** and **safe control actions**:
 - [ ] Jobs page with status filter + stats cards + row actions
 - [ ] Scheduled tasks page with enabled filter + trigger/toggle actions
 - [ ] Error log page with expandable row details
-- [ ] Audit log page with reusable `LogList` and URL-backed filters
+- [ ] Audit log page with Poodle `LogList` and URL-backed filters
 
 ### Phase 4: Data Lifecycle
 

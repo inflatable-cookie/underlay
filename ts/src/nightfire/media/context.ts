@@ -2,7 +2,7 @@
  * Context injection for the Nightfire media block editor.
  *
  * The media editor lives in Underlay (generic library) but needs to
- * open a MediaPicker that requires app-specific API callbacks.
+ * open a media picker dialog that requires app-specific API callbacks.
  * Consuming apps (e.g. Dairy) configure a context provider in their
  * root layout, following the same pattern as NightfireStrategies.
  */

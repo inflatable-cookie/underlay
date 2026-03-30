@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Code from "../../components/Code.svelte";
+  import { Code } from "@poodle/svelte-primitives";
   import DetailMetaItem from "./DetailMetaItem.svelte";
 
   interface Props {
@@ -16,5 +16,5 @@
 </script>
 
 <DetailMetaItem {label}>
-  <Code copy>{value}</Code>
+  <Code inline source={value} showCopyButton />
 </DetailMetaItem>

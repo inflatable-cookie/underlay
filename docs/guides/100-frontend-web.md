@@ -136,7 +136,6 @@ export default defineConfig({
   optimizeDeps: {
     exclude: [
       "@decodelabs/underlay",
-      "@decodelabs/underlay/components",
       "@decodelabs/underlay/nightfire",
       "@decodelabs/underlay/patterns",
       "@decodelabs/underlay/styles",
@@ -1123,8 +1122,8 @@ When `configureAuth()` includes `getAuthLoading` and `getCurrentUser` (recommend
 
 ```svelte
 <script lang="ts">
-  import { useAuthenticatedData } from '@decodelabs/underlay/patterns';
-  import { PageLoading } from '@decodelabs/underlay/components';
+  import { useAuthenticatedData } from '@decodelabs/underlay/runtime/auth';
+  import { PageLoading } from '@poodle/svelte-composites';
   import { Callout } from '@poodle/svelte-primitives';
   import { myApiCommand } from '@myorg/client';
 
@@ -1139,7 +1138,7 @@ When `configureAuth()` includes `getAuthLoading` and `getCurrentUser` (recommend
 </script>
 
 {#if pageData.loading}
-  <PageLoading message="Loading data..." />
+  <PageLoading presentation="inline" message="Loading data..." />
 {:else if pageData.error}
   <Callout tone="danger" message={pageData.error} announceMode="polite" />
 {:else}
@@ -1303,21 +1302,22 @@ Use Svelte's `$derived` to compute values from the fetched data:
 
 #### PageLoading Component
 
-Use the `PageLoading` component for consistent loading states:
+Use Poodle `PageLoading presentation="inline"` for inline centered page-state
+loading in authenticated routes:
 
 ```svelte
 <script lang="ts">
-  import { PageLoading } from '@decodelabs/underlay/components';
+  import { PageLoading } from '@poodle/svelte-composites';
 </script>
 
 <!-- Basic usage -->
-<PageLoading />
+<PageLoading presentation="inline" />
 
 <!-- Custom message -->
-<PageLoading message="Loading your settings..." />
+<PageLoading presentation="inline" message="Loading your settings..." />
 
 <!-- Different sizes: "sm" | "md" | "lg" -->
-<PageLoading size="lg" />
+<PageLoading presentation="inline" size="lg" />
 ```
 
 The component includes:
@@ -1342,13 +1342,10 @@ Here's a full example of a security settings page:
 
 ```svelte
 <script lang="ts">
-  import { useAuthenticatedData } from '@decodelabs/underlay/patterns';
-  import {
-    PageLoading,
-    Card,
-    Callout,
-    Button
-  } from '@decodelabs/underlay/components';
+  import { useAuthenticatedData } from '@decodelabs/underlay/runtime/auth';
+  import { Button, Callout } from '@poodle/svelte-primitives';
+  import { PageLoading } from '@poodle/svelte-composites';
+  import { Card } from '@poodle/svelte-primitives';
   import { auth, authLoading, currentUser } from '$lib/stores/auth';
   import { authCommands } from '@myorg/client';
 
@@ -1396,7 +1393,7 @@ Here's a full example of a security settings page:
   <h1>Security Settings</h1>
 
   {#if pageData.loading}
-    <PageLoading message="Loading security settings..." />
+    <PageLoading presentation="inline" message="Loading security settings..." />
   {:else if pageData.error}
     <Callout tone="danger" message={pageData.error} announceMode="polite" />
   {:else}
@@ -1564,64 +1561,32 @@ Custom serializers also work with expiration. Underlay stores the serialized pay
 
 ### Loading Skeletons
 
-The `Skeleton` component provides low-level loading placeholders with shimmer animation. For common data layouts, prefer `DataSkeleton` so list, grid, table, and detail loading states stay visually consistent without hand-composing the same placeholder structure repeatedly.
+Use Poodle `Skeleton` directly for both low-level placeholders and repeated
+loading layouts. Underlay no longer keeps a separate public `DataSkeleton`
+surface or preset registry.
 
 #### Basic Usage
 
 ```svelte
 <script>
-  import { DataSkeleton, Skeleton } from '@decodelabs/underlay/components';
+  import { Skeleton } from '@poodle/svelte-primitives';
 </script>
 
 {#if loading}
-  <DataSkeleton type="detail" sections={['header', 'description']} />
+  <div class="detail-loading">
+    <Skeleton preset="detail-section" lines={2} />
+  </div>
 {:else}
   <h1>{data.title}</h1>
   <p>{data.description}</p>
 {/if}
 ```
 
-#### DataSkeleton Presets
+For repeated app-specific loading shells, compose the built-in Poodle presets
+(`table-row`, `card`, `list-item`, `detail-section`, `avatar-line`) locally in
+the consuming app instead of depending on a second shared Underlay wrapper.
 
-```svelte
-<!-- Repeating list rows -->
-<DataSkeleton type="list" count={5} />
-
-<!-- List with avatar affordance -->
-<DataSkeleton type="list" pattern="avatar-text" count={4} />
-
-<!-- Grid cards -->
-<DataSkeleton type="grid" count={6} columns={3} />
-
-<!-- Table placeholder -->
-<DataSkeleton type="table" rows={8} columns={4} header />
-
-<!-- Detail page shell -->
-<DataSkeleton type="detail" sections={['header', 'stats', 'description', 'actions']} />
-```
-
-#### Registered Presets
-
-Use the preset registry when an app repeats the same built-in skeleton layout in multiple places:
-
-```typescript
-import { registerDataSkeletonPreset } from '@decodelabs/underlay/components';
-
-registerDataSkeletonPreset('user-grid', {
-  type: 'grid',
-  pattern: 'product-card',
-  count: 4,
-  columns: 2
-});
-```
-
-```svelte
-<DataSkeleton pattern="user-grid" />
-```
-
-The first Underlay batch keeps custom presets declarative. If you need arbitrary app-specific skeleton markup, continue composing `Skeleton` manually in the consuming app.
-
-#### Variants
+#### Low-Level Poodle Skeleton Usage
 
 | Variant | Description | Default Size |
 |---------|-------------|--------------|
@@ -1683,7 +1648,7 @@ Customize appearance with CSS variables:
 
 - Skeletons have `role="presentation"` and `aria-hidden="true"`
 - Animation respects `prefers-reduced-motion`
-- `DataSkeleton` inherits the same accessibility defaults because it is composed from `Skeleton`
+- repeated loading layouts should inherit the same accessibility defaults by composing Poodle `Skeleton` presets directly
 
 ### Internationalization (i18n) Helpers
 
@@ -1831,48 +1796,51 @@ format.currency(null, 'GBP'); // ""
 
 ### Data Tables
 
-The `DataTable` component provides a feature-rich table with sorting, filtering, pagination, and row actions.
+Use Poodle `DataTable` for table rendering, row actions, expanded rows, and host-controlled pagination/filter state.
 
 #### Basic Usage
 
 ```svelte
 <script lang="ts">
-  import { DataTable, type DataTableColumn } from '@decodelabs/underlay/components';
-  
-  interface User {
-    id: string;
-    name: string;
-    email: string;
-    createdAt: Date;
-  }
-  
-  const columns: DataTableColumn<User>[] = [
-    { key: 'name', label: 'Name', sortable: true },
-    { key: 'email', label: 'Email', sortable: true },
-    { key: 'createdAt', label: 'Created', formatter: (d) => format.date(d, 'short') }
+  import { DataTable, type TableColumn, type TableRow } from '@poodle/svelte-composites';
+
+  const columns: TableColumn[] = [
+    { id: 'name', label: 'Name', sortable: true },
+    { id: 'email', label: 'Email', sortable: true },
+    { id: 'createdAt', label: 'Created' }
   ];
-  
-  export let data: { users: User[] };
+
+  export let data: { users: Array<{ id: string; name: string; email: string; createdAt: string }> };
+
+  const rows: TableRow[] = data.users.map((user) => ({
+    id: user.id,
+    cells: {
+      name: user.name,
+      email: user.email,
+      createdAt: user.createdAt
+    },
+    data: user
+  }));
 </script>
 
-<DataTable data={data.users} {columns} />
+<DataTable {columns} {rows} />
 ```
 
 #### Column Configuration
 
 ```typescript
-const columns: DataTableColumn<User>[] = [
+const columns: TableColumn[] = [
   { 
-    key: 'name',           // Property key (supports dot notation: 'user.name')
+    id: 'name',            // Cell id
     label: 'Name',         // Header label
     sortable: true,        // Enable sorting
     filterable: true,      // Enable text filter
     width: '200px',        // Column width
-    align: 'left',         // 'left' | 'center' | 'right'
+    align: 'start',        // 'start' | 'center' | 'end'
     hideOnMobile: false    // Hide on small screens
   },
   {
-    key: 'status',
+    id: 'status',
     label: 'Status',
     filterable: true,
     filterType: 'select',  // 'text' | 'select' | 'date'
@@ -1882,87 +1850,52 @@ const columns: DataTableColumn<User>[] = [
     ]
   },
   {
-    key: 'createdAt',
-    label: 'Created',
-    formatter: (value, row) => format.date(value, 'short')
+    id: 'createdAt',
+    label: 'Created'
   }
 ];
 ```
 
-#### Row Actions
+#### Custom Cells And Expanded Rows
 
 ```svelte
-<script>
-  const actions = (user) => [
-    { label: 'Edit', href: `/users/${user.id}/edit` },
-    { 
-      label: 'Delete', 
-      onClick: () => deleteUser(user.id),
-      variant: 'danger',
-      confirm: 'Are you sure you want to delete this user?'
-    }
-  ];
+<script lang="ts">
+  import { DataTable, type TableColumn, type TableRow } from '@poodle/svelte-composites';
+  import { TimeAgo } from '@poodle/svelte-primitives';
 </script>
 
-<DataTable {data} {columns} {actions} />
+<DataTable
+  {columns}
+  {rows}
+  expandedRowWhen={(row) => Boolean(row.data?.details)}
+>
+  <svelte:fragment slot="cell" let:column let:row>
+    {#if column.id === 'createdAt'}
+      <TimeAgo datetime={row.data.createdAt} />
+    {:else}
+      {row.cells[column.id]}
+    {/if}
+  </svelte:fragment>
+
+  <svelte:fragment slot="expandedRow" let:row>
+    <p>{row.data.details}</p>
+  </svelte:fragment>
+</DataTable>
 ```
 
 #### Pagination
 
 ```svelte
 <script>
-  let page = 1;
-  
-  // From your +page.server.ts load function
-  export let data: { users: User[], total: number };
-  
-  function handlePageChange(event) {
-    page = event.detail;
-    goto(`?page=${page}`);
-  }
+  let pagination = { page: 1, limit: 20, total: data.total };
 </script>
 
 <DataTable 
-  data={data.users} 
   {columns}
-  pagination={{ page, limit, total: data.total }}
-  on:page={handlePageChange}
-  on:limit={handleLimitChange}
-/>
-```
-
-With items per page selector handling:
-
-```svelte
-<script>
-  import { goto } from '$app/navigation';
-  import { page } from '$app/stores';
-  
-  // Get pagination from URL params
-  $: currentPage = Number($page.url.searchParams.get('page')) || 1;
-  $: limit = Number($page.url.searchParams.get('limit')) || 20;
-  
-  function handlePageChange(event) {
-    const params = new URLSearchParams($page.url.searchParams);
-    params.set('page', event.detail);
-    goto(`?${params}`);
-  }
-  
-  function handleLimitChange(event) {
-    const params = new URLSearchParams($page.url.searchParams);
-    params.set('limit', event.detail);
-    params.set('page', '1');  // Reset to first page
-    goto(`?${params}`);
-  }
-</script>
-
-<DataTable 
-  data={data.users} 
-  {columns}
-  pagination={{ page: currentPage, limit, total: data.total }}
-  limitOptions={[10, 25, 50, 100]}
-  on:page={handlePageChange}
-  on:limit={handleLimitChange}
+  {rows}
+  {pagination}
+  on:pageChange={(event) => goto(`?page=${event.detail.page}`)}
+  on:limitChange={(event) => goto(`?limit=${event.detail.limit}&page=1`)}
 />
 ```
 
@@ -1970,48 +1903,59 @@ With items per page selector handling:
 
 ```svelte
 <script>
-  import type { DataTableSort, DataTableFilters } from '@decodelabs/underlay/components';
-  
-  let sort: DataTableSort | null = null;
-  let filters: DataTableFilters = {};
-  
-  function handleSort(event) {
-    sort = event.detail;
-    // Trigger server-side sort
-    goto(`?sort=${sort.key}&dir=${sort.direction}`);
-  }
-  
-  function handleFilter(event) {
-    filters = event.detail;
-    // Trigger server-side filter
-    const params = new URLSearchParams(filters);
-    goto(`?${params}`);
-  }
+  let sortColumnId = 'createdAt';
+  let sortDirection = 'desc';
+  let filters = { status: '' };
 </script>
 
 <DataTable 
-  {data} 
   {columns}
-  {sort}
+  {rows}
   {filters}
-  on:sort={handleSort}
-  on:filter={handleFilter}
+  {sortColumnId}
+  {sortDirection}
+  on:sortChange={(event) => {
+    sortColumnId = event.detail.columnId;
+    sortDirection = event.detail.direction;
+  }}
+  on:filterChange={(event) => {
+    filters = event.detail.filters;
+  }}
 />
 ```
 
-#### Selection (Bulk Actions)
+#### Row Actions
 
 ```svelte
-<script>
-  let selected: User[] = [];
-  
-  function handleBulkDelete() {
-    if (confirm(`Delete ${selected.length} users?`)) {
-      selected.forEach(user => deleteUser(user.id));
-      selected = [];
-    }
-  }
-</script>
+<DataTable
+  {columns}
+  {rows}
+  rowActions={(row) => [
+    { value: 'edit', label: 'Edit' },
+    { value: 'delete', label: 'Delete', tone: 'danger' }
+  ]}
+  on:rowActionSelect={(event) => {
+    const { row, action } = event.detail;
+    if (action.value === 'edit') goto(`/users/${row.id}/edit`);
+    if (action.value === 'delete') deleteUser(row.id);
+  }}
+/>
+```
+
+#### Selection
+
+```svelte
+<DataTable
+  {columns}
+  {rows}
+  selectable
+  selectedRowIds={selectedIds}
+  on:rowToggle={(event) => updateSelection(event.detail)}
+  on:toggleAll={(event) => toggleAll(event.detail.selected)}
+/>
+```
+
+Poodle `DataTable` is now the shared table surface. Underlay no longer exports its older table wrapper.
 
 {#if selected.length > 0}
   <div class="bulk-actions">
@@ -2338,8 +2282,7 @@ uploadComponent.clear();
 ```svelte
 <script lang="ts">
   import { createFormState } from '@decodelabs/underlay/patterns';
-  import { Skeleton } from '@decodelabs/underlay/components';
-  import { Button, Callout } from '@poodle/svelte-primitives';
+  import { Button, Callout, Skeleton } from '@poodle/svelte-primitives';
   import { page } from '$app/stores';
 
   const form = createFormState({
@@ -2402,12 +2345,15 @@ For managing lists with add/remove/update operations:
 
 ```typescript
 import { createOptimisticList } from '@decodelabs/underlay/patterns';
+import { useToasts } from '@decodelabs/underlay/runtime/feedback';
 
 interface Todo {
   id: string;
   name: string;
   completed: boolean;
 }
+
+const toastStore = useToasts();
 
 // Create the optimistic list
 const todos = createOptimisticList<Todo>([]);
@@ -2421,7 +2367,7 @@ async function addTodo(name: string) {
     confirm(newTodo);  // Replace temp item with real data
   } catch (error) {
     rollback();  // Remove the optimistic item
-    showToast({ message: 'Failed to add todo', type: 'error' });
+    toastStore.push({ message: 'Failed to add todo', variant: 'error' });
   }
 }
 
@@ -2434,7 +2380,7 @@ async function deleteTodo(id: string) {
     confirm();
   } catch {
     rollback();  // Restore the removed item
-    showToast({ message: 'Failed to delete', type: 'error' });
+    toastStore.push({ message: 'Failed to delete', variant: 'error' });
   }
 }
 
@@ -2481,8 +2427,10 @@ For boolean toggle operations (like/unlike, follow/unfollow):
 
 ```typescript
 import { createOptimisticToggle } from '@decodelabs/underlay/patterns';
+import { useToasts } from '@decodelabs/underlay/runtime/feedback';
 
 const liked = createOptimisticToggle(false);
+const toastStore = useToasts();
 
 async function toggleLike() {
   const { confirm, rollback } = liked.toggle();
@@ -2492,7 +2440,7 @@ async function toggleLike() {
     confirm();
   } catch {
     rollback();
-    showToast({ message: 'Failed to update', type: 'error' });
+    toastStore.push({ message: 'Failed to update', variant: 'error' });
   }
 }
 ```
@@ -2540,9 +2488,11 @@ For any value type with optimistic updates:
 
 ```typescript
 import { createOptimisticValue } from '@decodelabs/underlay/patterns';
+import { useToasts } from '@decodelabs/underlay/runtime/feedback';
 
 type Status = 'draft' | 'published' | 'archived';
 const status = createOptimisticValue<Status>('draft');
+const toastStore = useToasts();
 
 async function publish() {
   const { confirm, rollback } = status.set('published');
@@ -2552,7 +2502,7 @@ async function publish() {
     confirm();
   } catch {
     rollback();
-    showToast({ message: 'Failed to publish', type: 'error' });
+    toastStore.push({ message: 'Failed to publish', variant: 'error' });
   }
 }
 ```

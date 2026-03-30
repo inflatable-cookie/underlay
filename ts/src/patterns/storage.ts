@@ -7,7 +7,7 @@
  *
  * @example
  * ```typescript
- * import { storage } from '@decodelabs/underlay/patterns';
+ * import { storage } from '@decodelabs/underlay/runtime/browser';
  *
  * // Simple get/set (SSR-safe)
  * const theme = storage.local.get('theme', 'light');
@@ -422,7 +422,7 @@ function createStorageWrapper(
  *
  * @example
  * ```typescript
- * import { storage } from '@decodelabs/underlay/patterns';
+ * import { storage } from '@decodelabs/underlay/runtime/browser';
  *
  * // Get with default value (SSR-safe)
  * const theme = storage.local.get('theme', 'light');

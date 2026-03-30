@@ -1,12 +1,9 @@
 /**
  * Utility functions for Underlay.
+ *
+ * Keep this root barrel stable as a convenience surface, but prefer focused
+ * `@decodelabs/underlay/utils/*` subpaths for new code and docs.
  */
-
-// Base64URL encoding/decoding
-export {
-  base64urlToArrayBuffer,
-  arrayBufferToBase64url,
-} from "./base64url.js";
 
 // WebAuthn credential helpers
 export {
@@ -30,6 +27,42 @@ export {
   getNextNumber,
   type GetNextLetterOptions,
 } from "./sequence.js";
+
+// Pure formatting helpers
+export {
+  configureFormat,
+  format,
+  formatDate,
+  formatTime,
+  formatDateTime,
+  formatRelative,
+  formatAdaptiveDateRange,
+  formatDateWithOrdinal,
+  formatNumber,
+  formatPercent,
+  formatFileSize,
+  formatCurrency,
+  plural,
+  pluralCount,
+  type FormatConfig,
+  type DateStyle,
+  type TimeStyle,
+  type DateRangeInput,
+  type DateRangeStyle,
+  type DateRangeFormatOptions,
+  type PluralForms,
+} from "./i18n.js";
+
+// Slug helpers
+export {
+  RESERVED_SLUGS,
+  slugify,
+  isValidSlugFormat,
+  isReservedSlug,
+  validateSlug,
+  type SlugValidationError,
+  type SlugValidationResult,
+} from "./slug.js";
 
 // HTML sanitization helpers
 export {
