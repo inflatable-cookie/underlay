@@ -140,6 +140,51 @@
       "The remaining references to those retired entrypoints are historical roadmap/docs/accounting records and scratch notes only, not active supported source usage."
     ]
   },
+  "wave_090_retained_patterns_stop_point": {
+    "purpose": "Final stop-point clarification for the remaining public `@decodelabs/underlay/patterns` workflow surface after the `DetailMeta*` successor wave.",
+    "active_capability_wave": [],
+    "lead_target": null,
+    "notes": [
+      "The remaining public `patterns` surface is now intentionally limited to `LoginPage`, `ForgotPasswordFlow`, `PasswordRequirements`, and `SpaFormShell`.",
+      "The live caller review confirms that `LoginPage` and `ForgotPasswordFlow` still form a shared auth workflow shell family across the three active admin apps rather than generic page framing.",
+      "`PasswordRequirements` remains a retained auth-policy adapter over the Poodle checklist rather than a second generic primitive.",
+      "`SpaFormShell` still has the broadest retained Svelte caller family and continues to own submit/result/navigation workflow behavior rather than just stale presentation framing.",
+      "There is no smaller honest follow-on migration wave left inside `patterns`; future work there should start as a fresh challenge against one retained workflow surface rather than as assumed cleanup debt."
+    ]
+  },
+  "wave_091_client_surface_organization": {
+    "purpose": "Clarify the retained `@decodelabs/underlay/client` package boundary after the Svelte contraction line by making its real feature-family subpaths explicit.",
+    "active_capability_wave": [],
+    "lead_target": null,
+    "notes": [
+      "The retained `client` surface splits cleanly into SvelteKit/browser-facing app helpers and transport/error/type helpers used by generated client packages.",
+      "The root `@decodelabs/underlay/client` barrel remains stable as a convenience surface because live consumer usage is still broad.",
+      "Explicit public `client/*` subpaths now exist for the real feature families, so new focused contracts do not need to depend on the flat root barrel by default.",
+      "This is boundary clarification, not an extraction wave. There is no worthwhile standalone `client` package split to force right now."
+    ]
+  },
+  "wave_092_nightfire_extraction_readiness": {
+    "purpose": "Clarify the retained `@decodelabs/underlay/nightfire` package boundary by exposing additive public subpaths for the real extension families without forcing extraction yet.",
+    "active_capability_wave": [],
+    "lead_target": null,
+    "notes": [
+      "The retained Nightfire surface still has real editor and renderer usage in Dairy, plus registry-extension usage in Froyo and Acme UI.",
+      "The root `@decodelabs/underlay/nightfire` barrel remains stable as a convenience surface because broad live usage still centers on editor and renderer imports.",
+      "Explicit public `nightfire/*` subpaths now exist for registry, strategy, media-context, validation, and utility families so a future extraction starts from real package seams instead of one flat barrel.",
+      "This is extraction-readiness work, not an extraction wave. There is no honest consumer migration or package split to force right now."
+    ]
+  },
+  "wave_093_root_package_barrel_reassessment": {
+    "purpose": "Clarify the root `@decodelabs/underlay` package barrel as a compatibility-only surface after the retained package seams became explicit.",
+    "active_capability_wave": [],
+    "lead_target": null,
+    "notes": [
+      "The live active-source surface no longer imports directly from the root `@decodelabs/underlay` barrel.",
+      "The real public package seams are now `patterns`, `runtime`, `utils`, `client`, `nightfire`, and `styles`.",
+      "The root barrel remains exported for compatibility, but active docs should no longer teach it as the preferred import surface.",
+      "This is a guidance and boundary-clarity wave, not a breaking removal wave."
+    ]
+  },
   "wave_047_data_table": {
     "purpose": "Focused post-g01.046 capability wave for moving the richer generic table runtime from Underlay `DataTable` into Poodle in staged batches rather than preserving it as a long-term retained Underlay surface.",
     "active_capability_wave": [],
@@ -502,7 +547,19 @@
       "Batch 70.1 is now complete: the strict caller and contract review shows that `DetailMeta*` still has a broad live app surface, with 11 active files in `acme-admin`, 6 in `cp-admin`, and 44 in `dairy`.",
       "The retained helper family still expresses one stable compact metadata-row contract across both detail and edit headers: wrapping row layout, labeled inline values, copyable IDs, compact status pills, and shared separators.",
       "Direct Poodle detail composition is possible, but forcing route-local replacement now would mostly duplicate a stable helper vocabulary across dozens of active pages.",
-      "Batch 70.2 is now complete too: the active guide surface and durable inventory now record `DetailMeta*` as an explicit retained Underlay helper family, and the queue no longer treats it as the next likely retirement."
+      "Batch 70.2 is now complete too: the active guide surface and durable inventory recorded `DetailMeta*` as an explicit retained Underlay helper family at that point in the contraction line.",
+      "That retained stop point did not hold permanently. The later g01.089 successor wave proved the real generic contract had collapsed to a tiny metadata-ribbon pair, so Poodle now owns `MetaBar` / `MetaItem` and the public Underlay wrappers are retired."
+    ]
+  },
+  "wave_089_meta_bar_successor": {
+    "purpose": "Focused successor wave for collapsing the old `DetailMeta*` helper family into a smaller generic Poodle metadata-ribbon contract and retiring the public Underlay wrappers.",
+    "active_reassessment_wave": [],
+    "lead_target": "MetaBar",
+    "notes": [
+      "The old `DetailMeta*` family no longer earned five Underlay exports once the active admin caller family was compared against the actual live contract.",
+      "The real reusable surface was just a metadata ribbon plus an optional labeled item. IDs and status pills were already direct composition over `Code` and `Pill`.",
+      "Batch 89.1 is now complete: Poodle owns the generic successor surface through `MetaBar` and `MetaItem`.",
+      "Batch 89.2 is now complete too: the live `acme-admin` and `cp-admin` caller family is migrated, the public Underlay `DetailMeta*` wrappers are removed, and the active guide/inventory surface now teaches the Poodle contract directly."
     ]
   },
   "wave_071_auth_workflow_reassessment": {
@@ -604,14 +661,9 @@
     {
       "entrypoint": "@decodelabs/underlay/patterns",
       "exports": [
-        "SpaFormShell",
-        "DetailMeta",
-        "DetailMetaItem",
-        "DetailMetaId",
-        "DetailMetaStatus",
-        "DetailMetaSeparator"
+        "SpaFormShell"
       ],
-      "notes": "Retain as Underlay-owned structural shells, helper families, operational flows, or app-facing product composites. `PageHeader` and `Banner` are no longer part of this retained public surface. `RelationSelector` is now at its retained Underlay boundary: Poodle owns its dialog, search, status, button, and badge chrome, while Underlay keeps the actual relation filters, option list behavior, drilldown navigation, and selection workflow. `SpaFormShell` was rechecked in g01.067 and still earns retained ownership because it bundles SPA submit/result/navigation workflow across a broad create/edit caller family rather than just stale framing. `DetailMeta*` was rechecked in g01.070 and still earns retained ownership because it expresses a stable compact metadata-row contract across a broad active detail/edit caller family."
+      "notes": "Retain as Underlay-owned structural shells, helper families, operational flows, or app-facing product composites. `PageHeader` and `Banner` are no longer part of this retained public surface. `RelationSelector` is now at its retained Underlay boundary: Poodle owns its dialog, search, status, button, and badge chrome, while Underlay keeps the actual relation filters, option list behavior, drilldown navigation, and selection workflow. `SpaFormShell` was rechecked in g01.067 and still earns retained ownership because it bundles SPA submit/result/navigation workflow across a broad create/edit caller family rather than just stale framing."
     },
     {
       "entrypoint": "@decodelabs/underlay/components",

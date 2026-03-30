@@ -572,7 +572,7 @@ Create `tsconfig.json`:
 Create `libs/stem/src/http.ts`:
 
 ```typescript
-import type { ErrorEnvelope } from '@decodelabs/underlay';
+import type { ErrorEnvelope } from '@decodelabs/underlay/client/types';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 

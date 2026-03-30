@@ -66,6 +66,11 @@ Roadmaps are executable delivery plans for Underlay library work.
 - `g01.086` is complete for aligning the front-door and architecture docs to the real retained TypeScript/Svelte package surfaces after the contraction and runtime audit line
 - `g01.087` is complete for splitting the pure formatting and slug helpers out of `runtime/i18n` into explicit `utils/i18n` and `utils/slug` homes while keeping `runtime/i18n` stable as a compatibility barrel
 - `g01.088` is complete for closing the sibling-repo package-boundary recovery line, restoring Dairy validation after the manual import repair, and confirming that only historical references remain to the retired `components`, `embed`, and deep `patterns` entrypoints
+- `g01.089` is complete for moving the compact metadata-ribbon contract into Poodle `MetaBar` / `MetaItem`, migrating the live admin caller family, and retiring the public Underlay `DetailMeta*` wrappers
+- `g01.090` is complete for confirming that the remaining public `@decodelabs/underlay/patterns` surface is the true retained workflow stop point rather than unresolved migration debt
+- `g01.091` is complete for confirming the retained `client` package boundary, exposing explicit `client/*` public subpaths for the live feature families, and keeping the root barrel stable as a convenience surface
+- `g01.092` is complete for confirming the retained `nightfire` package boundary, exposing explicit `nightfire/*` public subpaths for the live extension families, and keeping the root barrel stable as a convenience surface
+- `g01.093` is complete for confirming the root `@decodelabs/underlay` barrel as a compatibility-only surface and stopping active docs from teaching the old flat import path
 - use `backlog/` for deferred work that is not yet active execution scope
 
 ## Historical language boundary
@@ -147,7 +152,7 @@ Roadmaps are executable delivery plans for Underlay library work.
 | 067 | [SpaFormShell Reassessment Wave](./g01/067-spa-form-shell-reassessment-wave.md) | Complete | Confirm `SpaFormShell` as an explicit retained Underlay structural shell after the strict create/edit caller review and reset the queue around the next honest shell challenge |
 | 068 | [AiRoutingAdmin Reassessment Wave](./g01/068-ai-routing-admin-reassessment-wave.md) | Complete | Confirm that `AiRoutingAdmin` no longer earns a public Underlay export, move the guide/example surface onto direct Poodle composition over `createAiRoutingOpsController`, and retire the public shell |
 | 069 | [RelationSelector Reassessment Wave](./g01/069-relation-selector-reassessment-wave.md) | Complete | Split `RelationSelector` into a retained helper layer plus app-local UI composition, then retire the public Underlay UI wrapper family |
-| 070 | [DetailMeta Reassessment Wave](./g01/070-detail-meta-reassessment-wave.md) | Complete | Reassess the remaining public `DetailMeta` helper family and confirm that it still earns retained Underlay ownership after the broader shell retirements |
+| 070 | [DetailMeta Reassessment Wave](./g01/070-detail-meta-reassessment-wave.md) | Complete | Reassess the remaining public `DetailMeta` helper family and record the then-current retained stop point before the later successor wave |
 | 071 | [Auth Workflow Reassessment Wave](./g01/071-auth-workflow-reassessment-wave.md) | Complete | Recheck the remaining retained auth workflow surface, confirm the remaining auth workflows/helpers still earn shared public Underlay ownership, and close the family out as an explicit retained stop point |
 | 072 | [Auth Boundary Refinement Wave](./g01/072-auth-boundary-refinement-wave.md) | Complete | Move the retained auth workflow pages to public `patterns` and split `PasswordRequirements` into a Poodle UI surface plus an Underlay auth-policy adapter |
 | 073 | [Retained Public Surface Classification](./g01/073-retained-public-surface-classification.md) | Complete | Classify the remaining public Underlay surface across `components`, `patterns`, and `nightfire` so the post-contraction boundary is explicit and durable |
@@ -166,8 +171,13 @@ Roadmaps are executable delivery plans for Underlay library work.
 | 086 | [Retained Package Surface Docs Alignment](./g01/086-retained-package-surface-docs-alignment.md) | Complete | Align the architecture and front-door docs to the real retained `patterns`, `runtime`, `utils`, `client`, and `nightfire` package surfaces |
 | 087 | [Runtime I18n Helper Split](./g01/087-runtime-i18n-helper-split.md) | Complete | Move the pure formatting and slug helpers out of `runtime/i18n` into explicit `utils` homes while keeping the runtime surface stable for compatibility |
 | 088 | [Sibling Repo Package Boundary Recovery](./g01/088-sibling-repo-package-boundary-recovery.md) | Complete | Close the loop on the package-boundary recovery by manually repairing Dairy import fallout, revalidating the active sibling repos, and proving that only historical references remain to retired Underlay entrypoints |
+| 089 | [MetaBar Successor Wave](./g01/089-meta-bar-successor-wave.md) | Complete | Move the compact metadata-ribbon contract into Poodle `MetaBar` / `MetaItem`, migrate the live admin caller family, and retire the public Underlay `DetailMeta*` wrappers |
+| 090 | [Retained Patterns Stop Point](./g01/090-retained-patterns-stop-point.md) | Complete | Confirm the remaining public `@decodelabs/underlay/patterns` surface as the true retained workflow stop point and close the last implied contraction ambiguity |
+| 091 | [Client Surface Organization](./g01/091-client-surface-organization.md) | Complete | Confirm the retained `client` package boundary, expose explicit `client/*` public subpaths for the live feature families, and keep the root barrel stable as a convenience surface |
+| 092 | [Nightfire Extraction Readiness](./g01/092-nightfire-extraction-readiness.md) | Complete | Confirm the retained `nightfire` package boundary, expose explicit `nightfire/*` public subpaths for the live extension families, and make the future extraction seam explicit without forcing churn now |
+| 093 | [Root Package Barrel Reassessment](./g01/093-root-package-barrel-reassessment.md) | Complete | Confirm the root `@decodelabs/underlay` barrel as compatibility-only and stop active docs from teaching the old flat import path |
 
-**Complete:** 85 | **Extracted:** 2 | **In progress:** 0 | **Not started:** 0
+**Complete:** 89 | **Extracted:** 2 | **In progress:** 0 | **Not started:** 0
 
 ## Current Boundary
 
@@ -183,7 +193,6 @@ The remaining public API is intentionally retained and more explicit:
   - `ForgotPasswordFlow`
   - `PasswordRequirements`
   - `SpaFormShell`
-  - `DetailMeta*`
   - retained workflow/page-shell exports only
 - `@decodelabs/underlay/runtime`
   - retained helper/controller exports
@@ -197,14 +206,18 @@ views, and the unused `embed` package surface is no longer exported.
 
 ## Complete
 
-`g01.088` is complete. The Svelte contraction line, non-public residue
+`g01.091` is complete. The Svelte contraction line, non-public residue
 recovery, retained TS package-surface audit, front-door package-language
-alignment, the final obvious pure-helper split out of `runtime`, and the
-active sibling-repo package-boundary recovery are now explicit and durable.
+alignment, the final obvious pure-helper split out of `runtime`, the active
+sibling-repo package-boundary recovery, the `DetailMeta*` successor cleanup,
+the explicit retained `patterns` stop point, the retained `client` surface
+organization, the Nightfire extraction-readiness seam, and the root-barrel
+compatibility boundary are now durable.
 
 ## Next Task
 
 This contraction and retained-surface audit line is complete. If work continues
-immediately, the next honest follow-on is a fresh boundary challenge on one
-retained package surface such as `client` or future `nightfire` extraction
-planning rather than more helper reshuffling.
+this package-surface audit line is complete. If work continues immediately, the
+next honest follow-on is outside this boundary cleanup track, or a future
+breaking-change program if the root compatibility barrel should eventually be
+removed.

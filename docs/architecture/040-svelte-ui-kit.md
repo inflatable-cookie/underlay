@@ -20,7 +20,7 @@ workflow shells, app/runtime orchestration, or retained specialized systems.
   - canonical design-system primitives and generic composites
 - `@decodelabs/underlay/patterns`
   - retained workflow and page-shell surface
-  - auth workflows, `SpaFormShell`, and `DetailMeta*`
+  - auth workflows and `SpaFormShell`
 - `@decodelabs/underlay/runtime`
   - retained app/runtime helpers, controllers, and framework-agnostic
     browser/state orchestration
@@ -32,8 +32,15 @@ workflow shells, app/runtime orchestration, or retained specialized systems.
 - `@decodelabs/underlay/client`
   - transport, SvelteKit integration, query parsing, and client-only
     navigation helpers
+  - keep the root barrel stable as a convenience API, but prefer narrower
+    `client/*` subpaths for new focused imports
 - `@decodelabs/underlay/nightfire`
   - retained structured-content editor/runtime package
+  - keep the root barrel stable as a convenience API, but prefer narrower
+    `nightfire/*` subpaths for future extension-oriented contracts
+- `@decodelabs/underlay`
+  - compatibility-only root barrel
+  - do not use this as the preferred import surface for new code
 - `@decodelabs/underlay/styles/base.css`
   - minimal CSS variables
 

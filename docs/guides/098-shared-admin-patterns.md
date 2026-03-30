@@ -19,7 +19,7 @@ Underlay no longer exports a public `AiRoutingAdmin` shell.
 |---------|----------|---------|
 | EmptyState | `@poodle/svelte-composites` | Rich empty state with message, optional actions, and optional custom visual slot |
 | Local actions menu + AlertDialog | app-local wrapper or direct Poodle `Menu` + Poodle `AlertDialog` | Copy-to-clipboard actions with caller-owned destructive confirmation |
-| Poodle `PageHeader` + `Tabs` + `DetailMeta*` | direct composition | Standard entity detail page framing without a shared shell wrapper |
+| Poodle `PageHeader` + `Tabs` + `MetaBar` | direct composition | Standard entity detail page framing without a shared shell wrapper |
 | `SpaFormShell` | `@decodelabs/underlay/patterns` | Retained SPA create/edit workflow shell with submit/result/navigation orchestration |
 | EditableLabel | `@poodle/svelte-primitives` | Click-to-edit text field |
 | KeyboardShortcuts | `patterns/keyboard-shortcuts.svelte.ts` | Centralized shortcut registration |
@@ -134,23 +134,13 @@ ships a second drawer surface.
 The stable boundary is now direct composition:
 - Poodle `PageHeader` for title, back link, actions, banner, and breadcrumbs
 - Poodle `Tabs` for top-level detail sections
-- Underlay `DetailMeta*` helpers for the compact metadata row when useful
-
-`DetailMeta*` remains an explicit retained Underlay helper family. It still
-earns shared ownership because the compact metadata-row contract repeats
-broadly across live detail and edit surfaces in `acme-admin`, `cp-admin`, and
-`dairy`.
+- Poodle `MetaBar`, `MetaItem`, `Code`, and `Pill` for the compact metadata
+  row when useful
 
 ```svelte
 <script lang="ts">
   import { PageHeader } from "@poodle/svelte-composites";
-  import { Breadcrumbs, Tabs } from "@poodle/svelte-primitives";
-  import {
-    DetailMeta,
-    DetailMetaId,
-    DetailMetaStatus,
-    DetailMetaSeparator
-  } from "@decodelabs/underlay/patterns";
+  import { Breadcrumbs, Code, MetaBar, MetaItem, Pill, Tabs } from "@poodle/svelte-primitives";
 </script>
 
 <section class="detail-page">
@@ -164,11 +154,14 @@ broadly across live detail and edit surfaces in `acme-admin`, `cp-admin`, and
       </svelte:fragment>
     </PageHeader>
 
-    <DetailMeta>
-      <DetailMetaId value={module.moduleId} />
-      <DetailMetaSeparator />
-      <DetailMetaStatus value={module.isLive} trueLabel="Live" falseLabel="Draft" />
-    </DetailMeta>
+    <MetaBar ariaLabel="Module metadata">
+      <MetaItem label="ID">
+        <Code inline source={module.moduleId} showCopyButton />
+      </MetaItem>
+      <Pill tone={module.isLive ? "success" : "danger"} appearance="badge" size="lg">
+        {module.isLive ? "Live" : "Draft"}
+      </Pill>
+    </MetaBar>
   </div>
 
   <Tabs
@@ -385,16 +378,13 @@ Poodle directly for low-level primitives:
 ```typescript
 // Underlay patterns (composed, stateful)
 import {
-  EmptyState,
-  DetailMeta,
-  DetailMetaId,
-  DetailMetaStatus,
-  DetailMetaSeparator,
-  createKeyboardShortcuts,
-  type KeyboardShortcutManager,
-  type ShortcutOptions,
-  type RegisteredShortcut
+  ForgotPasswordFlow,
+  LoginPage,
+  PasswordRequirements,
+  SpaFormShell
 } from "@decodelabs/underlay/patterns";
+
+import { createKeyboardShortcuts } from "@decodelabs/underlay/runtime";
 ```
 
 ---

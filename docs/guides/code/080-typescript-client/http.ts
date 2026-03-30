@@ -4,7 +4,7 @@ import {
   UnderlayHttpError,
   type ErrorEnvelope,
   isErrorEnvelope,
-} from "@decodelabs/underlay";
+} from "@decodelabs/underlay/client";
 
 export interface StemHttpConfig {
   baseUrl: string;

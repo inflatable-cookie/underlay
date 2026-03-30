@@ -15,7 +15,7 @@ Historical language boundary:
 
 ## Current State
 
-The active roadmap is `g01.088`.
+The active roadmap is `g01.093`.
 
 The retained-surface reassessment wave is complete, and the focused follow-on
 capability projects for shared tables, sorting, reorder workflow, inline
@@ -126,7 +126,22 @@ runtime family, and now have explicit `utils/i18n` and `utils/slug` homes while
 the sibling-repo package-boundary recovery is closed cleanly, Dairy validates
 green again after the manual import repair, and the retired `components`,
 `embed`, and deep `patterns` entrypoints no longer appear anywhere in the live
-active-source surface.
+active-source surface. `g01.089` is now complete too: the old `DetailMeta*`
+helper family proved to be a tiny generic metadata-ribbon contract, so Poodle
+now owns the smaller `MetaBar` / `MetaItem` successor surface and the public
+Underlay wrappers are retired. `g01.090` is now complete too: the remaining
+public `@decodelabs/underlay/patterns` surface has been rechecked as a final
+retained stop point, and the only remaining public pattern exports are now
+explicit as intentional workflow shells rather than unresolved migration debt.
+`g01.091` is now complete too: the retained `client` package is confirmed as a
+coherent boundary, explicit `client/*` public subpaths now match the real live
+feature families, and the root barrel remains stable as a convenience surface.
+`g01.092` is now complete too: the retained `nightfire` package is confirmed as
+an extraction-ready boundary, additive `nightfire/*` public subpaths now match
+the real extension families, and the root barrel remains stable for the broad
+editor/renderer caller set. `g01.093` is now complete too: the root
+`@decodelabs/underlay` barrel is confirmed as compatibility-only, and active
+docs now teach the narrower package surfaces instead of the old flat barrel.
 
 The remaining public Underlay surface is intentionally:
 
@@ -135,7 +150,6 @@ The remaining public Underlay surface is intentionally:
   - `ForgotPasswordFlow`
   - `PasswordRequirements`
   - `SpaFormShell`
-  - `DetailMeta*`
 - `@decodelabs/underlay/runtime`
   - `auth`
   - `browser`
@@ -155,12 +169,19 @@ The remaining public Underlay surface is intentionally:
 
 `g01` public-surface contraction, non-public residue recovery, retained TS
 package-surface audit, front-door package-language alignment, the final obvious
-pure-helper split out of `runtime`, and the active sibling-repo package-boundary
-recovery are complete through `g01.088`.
+pure-helper split out of `runtime`, the active sibling-repo package-boundary
+recovery, the `DetailMeta*` successor cleanup, the retained `patterns`
+stop-point clarification, and the retained `client` surface organization are
+complete through `g01.091`. `g01.092` adds the Nightfire extraction-readiness
+layer so the retained editor/runtime package now has explicit future seams too.
+`g01.093` closes the package-surface audit line by making the root barrel
+compatibility-only in guidance rather than a first-class teaching surface.
 
 ## Next Task
 
 This generation is complete. If work continues immediately, the strongest next
 follow-on is a fresh boundary challenge on one retained package surface such as
-`client` or future `nightfire` extraction planning rather than more helper
-reshuffling inside `runtime`.
+this package-surface audit line is complete. If work continues immediately, the
+next honest follow-on is outside this boundary cleanup track, or a future
+breaking-change program if the root compatibility barrel should eventually be
+removed.

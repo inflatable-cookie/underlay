@@ -1,4 +1,4 @@
-import type { ListResponse, SingleResponse } from "@decodelabs/underlay";
+import type { ListResponse, SingleResponse } from "@decodelabs/underlay/client/types";
 
 export interface ArtistDto {
   artistId: string;

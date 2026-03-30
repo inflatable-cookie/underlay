@@ -22,7 +22,7 @@ Use:
 The UI kit guidance covers:
 - **Form primitives** - prefer Poodle `Field`, `TextInput`, `Select`, `Switch`, and `TextArea`
 - **UI primitives** - Poodle `Pill`, Poodle `Menu`, Poodle `OrderBy`, Poodle `DataTable`, Poodle `Pagination`
-- **Retained Underlay shells** - `LoginPage`, `ForgotPasswordFlow`, `PasswordRequirements`, `SpaFormShell`, `DetailMeta*`
+- **Retained Underlay shells** - `LoginPage`, `ForgotPasswordFlow`, `PasswordRequirements`, `SpaFormShell`
 - **Runtime helpers** - prefer focused `@decodelabs/underlay/runtime/*` subpaths where they match the feature area
 - **Design tokens** - CSS custom properties for theming
 
@@ -42,6 +42,7 @@ surfaces only:
 - `@decodelabs/underlay/patterns`
 - `@decodelabs/underlay/runtime`
 - `@decodelabs/underlay/utils`
+- `@decodelabs/underlay/client`
 - `@decodelabs/underlay/nightfire`
 - Poodle packages directly for primitives and generic composites
 
@@ -64,12 +65,33 @@ paths. For new focused guidance and new contracts, prefer the narrower runtime
 subpaths instead of teaching the root barrel by default, and do not treat it as
 a catch-all replacement for `patterns`.
 
+Use the same rule for `@decodelabs/underlay/client`: keep the root barrel
+stable for existing convenience imports, but prefer narrower public subpaths
+for new focused contracts when they match the feature area:
+- `@decodelabs/underlay/client/http`
+- `@decodelabs/underlay/client/errors`
+- `@decodelabs/underlay/client/types`
+- `@decodelabs/underlay/client/navigation`
+- `@decodelabs/underlay/client/query`
+- `@decodelabs/underlay/client/sveltekit`
+
 For small standalone helpers, prefer the explicit utility subpaths:
 - `@decodelabs/underlay/utils/webauthn`
 - `@decodelabs/underlay/utils/html`
 - `@decodelabs/underlay/utils/sequence`
 - `@decodelabs/underlay/utils/i18n`
 - `@decodelabs/underlay/utils/slug`
+
+Use the same rule for `@decodelabs/underlay/nightfire`: keep the root barrel
+stable for existing editor/renderer consumers, but prefer narrower public
+subpaths for future extension-oriented contracts:
+- `@decodelabs/underlay/nightfire/editor-registry`
+- `@decodelabs/underlay/nightfire/render-registry`
+- `@decodelabs/underlay/nightfire/validator-registry`
+- `@decodelabs/underlay/nightfire/strategies`
+- `@decodelabs/underlay/nightfire/media`
+- `@decodelabs/underlay/nightfire/utils`
+- `@decodelabs/underlay/nightfire/validation`
 
 ## UI Kit Structure
 
@@ -1537,14 +1559,8 @@ The grid uses CSS `auto-fill` with `minmax()` for responsive column counts:
 
 ```svelte
 <script lang="ts">
-  import {
-    DetailMeta,
-    DetailMetaItem,
-    DetailMetaStatus,
-    TimeAgo,
-    PageHeader
-  } from "@decodelabs/underlay/patterns";
-  import { Pill } from "@poodle/svelte-primitives";
+  import { TimeAgo } from "@decodelabs/underlay/runtime";
+  import { MetaBar, MetaItem, PageHeader, Pill } from "@poodle/svelte-primitives";
 
   let { data } = $props();
 </script>
@@ -2068,22 +2084,13 @@ colors. The retained shared Underlay surface no longer includes a dedicated
 
 Page header composition now uses Poodle `PageHeader` directly for both simple
 title/back/actions cases and richer section/title/banner cases. Keep
-`DetailMeta` and other shell-specific detail content outside the header instead
+`MetaBar` and other shell-specific detail content outside the header instead
 of relying on an Underlay wrapper.
 
 ```svelte
 <script>
   import { PageHeader as PoodlePageHeader } from "@poodle/svelte-composites";
-  import {
-    PageHeader,
-    DetailMeta,
-    DetailMetaId,
-    DetailMetaItem,
-    DetailMetaSeparator,
-    type BreadcrumbItem
-  } from "@decodelabs/underlay/patterns";
-  import { Button } from "@poodle/svelte-primitives";
-  import { Code, Pill } from "@poodle/svelte-primitives";
+  import { Button, Code, MetaBar, MetaItem, Pill } from "@poodle/svelte-primitives";
 </script>
 
 <!-- Simple list page -->
@@ -2096,8 +2103,8 @@ of relying on an Underlay wrapper.
 <!-- Count-bearing list page -->
 <PoodlePageHeader title="Users" count={total} backHref="/" backLabel="Back to dashboard" />
 
-<!-- Rich detail page: retained Underlay shell -->
-<PageHeader
+<!-- Rich detail page -->
+<PoodlePageHeader
   section="Project"
   title={project.name}
   backHref="/projects"
@@ -2105,14 +2112,15 @@ of relying on an Underlay wrapper.
   bannerMessage="This project is archived and tasks cannot be modified."
   bannerVariant="warning"
 >
-  <DetailMeta>
-    <DetailMetaId value={project.id} />
-    <DetailMetaSeparator />
-    <DetailMetaItem>
+  <MetaBar ariaLabel="Project metadata">
+    <MetaItem label="ID">
+      <Code inline source={project.id} showCopyButton />
+    </MetaItem>
+    <MetaItem>
       <Pill accent="#22c55e">Active</Pill>
-    </DetailMetaItem>
-  </DetailMeta>
-</PageHeader>
+    </MetaItem>
+  </MetaBar>
+</PoodlePageHeader>
 
 <!-- Detail page with breadcrumbs -->
 <PageHeader
@@ -2146,12 +2154,8 @@ of relying on an Underlay wrapper.
 
 `DetailPageShell` is retired from the public Underlay surface. New detail
 pages should compose directly from Poodle `PageHeader` and `Tabs`, with
-`DetailMeta*` helpers used only for the metadata row when that compact
-detail-header treatment is still useful.
-
-`DetailMeta*` remains an explicit retained Underlay helper family. The
-surrounding shells are gone, but the compact metadata-row vocabulary still has
-enough live repetition to earn shared ownership for now.
+Poodle `MetaBar`, `MetaItem`, `Code`, and `Pill` used for compact metadata
+rows when that treatment is still useful.
 
 `SpaFormShell` remains an Underlay-owned workflow shell. Keep save/delete
 intent handling, navigation, and submit orchestration there, but treat status
@@ -2204,8 +2208,8 @@ The component renders in this order:
 - On detail pages, use `subtitle` for supplementary text (e.g., a slug) and `title` for the primary entity identifier
 - Use `breadcrumbs` on deeply nested pages to show the navigation hierarchy. The last breadcrumb item can omit `href` to render as plain text for the current page.
 - The `count` badge stays on the section/title h1 heading
-- Use `DetailMeta*` for page-header metadata rows, including edit headers when you need copyable IDs or compact labeled values
-- Compose labeled copyable values with `DetailMetaItem` plus `Code copy` instead of relying on a separate header-metadata wrapper family
+- Use Poodle `MetaBar` and `MetaItem` for page-header metadata rows, including edit headers when you need copyable IDs or compact labeled values
+- Compose copyable IDs and compact status badges directly with Poodle `Code` and `Pill`
 
 **Breadcrumbs:**
 
@@ -2933,15 +2937,15 @@ Use `.underlay-page-stack-tight` when the page needs the same structure with tig
 
 ```svelte
 <script lang="ts">
-  import { 
-    Field, 
-    TextInput, 
-    TextArea, 
-    Select, 
-    Switch, 
-    FormActions, 
-    Button 
-  } from "@decodelabs/underlay";
+  import {
+    Field,
+    TextArea,
+    Select,
+    Switch,
+    FormActions,
+    Button,
+    TextInput
+  } from "@poodle/svelte-primitives";
   import { enhance } from "$app/forms";
   import type { ActionData } from "./$types";
   
@@ -3102,7 +3106,7 @@ Create wrapper components for app-specific defaults:
 ```svelte
 <!-- MyButton.svelte -->
 <script>
-  import { Button } from "@decodelabs/underlay";
+  import { Button } from "@poodle/svelte-primitives";
   
   export let variant = "primary";
   export let pill = false; // Override default
@@ -3199,7 +3203,7 @@ Show loading indicators during async operations:
 
 ```svelte
 <script>
-  import { Button } from "@decodelabs/underlay";
+  import { Button } from "@poodle/svelte-primitives";
   
   let loading = false;
   
@@ -3251,7 +3255,7 @@ Handle errors at the page level with SvelteKit's error handling:
 <!-- +error.svelte -->
 <script>
   import { page } from "$app/stores";
-  import { Button } from "@decodelabs/underlay";
+  import { Button } from "@poodle/svelte-primitives";
 </script>
 
 <div class="error-page">

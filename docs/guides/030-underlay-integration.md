@@ -160,7 +160,7 @@ mod tests {
 Underlay’s error envelope shape is:
 
 ```ts
-import type { ErrorEnvelope } from "@decodelabs/underlay";
+import type { ErrorEnvelope } from "@decodelabs/underlay/client/types";
 
 const example: ErrorEnvelope = {
   error: {

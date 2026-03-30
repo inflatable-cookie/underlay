@@ -784,6 +784,18 @@ import {
 } from "@decodelabs/underlay/nightfire";
 ```
 
+Keep using the root `@decodelabs/underlay/nightfire` barrel for broad editor or
+renderer imports. For focused extension contracts, the public Nightfire subpaths
+are now explicit too:
+
+- `@decodelabs/underlay/nightfire/editor-registry`
+- `@decodelabs/underlay/nightfire/render-registry`
+- `@decodelabs/underlay/nightfire/validator-registry`
+- `@decodelabs/underlay/nightfire/strategies`
+- `@decodelabs/underlay/nightfire/media`
+- `@decodelabs/underlay/nightfire/utils`
+- `@decodelabs/underlay/nightfire/validation`
+
 ---
 
 ## Strategies: Lazy Loading and Caching

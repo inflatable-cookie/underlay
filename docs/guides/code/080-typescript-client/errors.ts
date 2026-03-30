@@ -1,4 +1,5 @@
-import { UnderlayHttpError, type ErrorEnvelope } from "@decodelabs/underlay";
+import { UnderlayHttpError } from "@decodelabs/underlay/client/errors";
+import type { ErrorEnvelope } from "@decodelabs/underlay/client/types";
 
 export function isUnderlayHttpError(err: unknown): err is UnderlayHttpError {
   return err instanceof UnderlayHttpError;

@@ -1022,11 +1022,9 @@ Boundary note:
   navigation, and field-error/result wiring
 - let Poodle own the visual shell pieces inside it, especially callouts and
   card framing, instead of reintroducing app-local status wrappers
-- use `DetailMeta*` for both detail-page and edit-header metadata rows, and
-  compose copyable values with Poodle `Code` and `showCopyButton` inside
-  `DetailMetaItem` when needed
-- treat `DetailMeta*` as an explicit retained Underlay helper family rather
-  than stale residue from the retired header/detail shells
+- use Poodle `MetaBar` and `MetaItem` for both detail-page and edit-header
+  metadata rows, and compose copyable values with Poodle `Code` and
+  `showCopyButton` when needed
 
 ### Tab Content Pattern (List View)
 
@@ -1087,23 +1085,21 @@ shared wrapper:
 
 ```svelte
 <PageHeader title={entity.name} backHref={backInfo.href} backLabel={backInfo.label}>
-  <DetailMeta>
-      <DetailMetaItem label="ID">
+  <MetaBar ariaLabel="Entity metadata">
+      <MetaItem label="ID">
         <Code inline source={entity.id} showCopyButton />
-      </DetailMetaItem>
-      <DetailMetaSeparator />
+      </MetaItem>
       {#if entity.isFree}
         <Pill appearance="badge" tone="success"><LockOpen size={14} /> Free</Pill>
       {:else}
         <Pill appearance="badge" tone="neutral"><Lock size={14} /> Restricted</Pill>
       {/if}
-      <DetailMetaSeparator />
       {#if entity.isLive}
         <Pill appearance="badge" tone="success"><Eye size={14} /> Live</Pill>
       {:else}
         <Pill appearance="badge" tone="danger"><EyeOff size={14} /> Draft</Pill>
       {/if}
-  </DetailMeta>
+  </MetaBar>
 </PageHeader>
 ```
 

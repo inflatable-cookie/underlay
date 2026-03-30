@@ -1212,15 +1212,11 @@ The upload page uses Underlay's blob upload utilities:
 <script lang="ts">
   import { page } from "$app/stores";
   import {
-    PageHeader,
-    DetailMeta,
-    DetailMetaItem,
-    DetailMetaStatus,
     getBackButtonInfo,
     useAuthenticatedData
-  } from "@decodelabs/underlay/patterns";
+  } from "@decodelabs/underlay/runtime";
   import { PageLoading } from "@poodle/svelte-composites";
-  import { Card, Code, Pill, Tabs, TimeAgo, type TabItem } from "@poodle/svelte-primitives";
+  import { Card, Code, MetaBar, MetaItem, PageHeader, Pill, Tabs, TimeAgo, type TabItem } from "@poodle/svelte-primitives";
   import { MediaActionsMenu } from "$lib/menus";
   import { mediaCommands, MediaKind, MediaVisibility, MediaVersionState } from "@my-client";
   import { auth, authLoading, currentUser } from "$lib/stores/auth";

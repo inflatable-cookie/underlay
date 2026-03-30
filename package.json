@@ -123,6 +123,34 @@
             "types": "./ts/src/nightfire/index.ts",
             "default": "./ts/src/nightfire/index.ts"
         },
+        "./nightfire/editor-registry": {
+            "types": "./ts/src/nightfire/editor-registry.ts",
+            "default": "./ts/src/nightfire/editor-registry.ts"
+        },
+        "./nightfire/render-registry": {
+            "types": "./ts/src/nightfire/render-registry.ts",
+            "default": "./ts/src/nightfire/render-registry.ts"
+        },
+        "./nightfire/validator-registry": {
+            "types": "./ts/src/nightfire/validator-registry.ts",
+            "default": "./ts/src/nightfire/validator-registry.ts"
+        },
+        "./nightfire/strategies": {
+            "types": "./ts/src/nightfire/strategies.ts",
+            "default": "./ts/src/nightfire/strategies.ts"
+        },
+        "./nightfire/media": {
+            "types": "./ts/src/nightfire/media/context.ts",
+            "default": "./ts/src/nightfire/media/context.ts"
+        },
+        "./nightfire/utils": {
+            "types": "./ts/src/nightfire/utils.ts",
+            "default": "./ts/src/nightfire/utils.ts"
+        },
+        "./nightfire/validation": {
+            "types": "./ts/src/nightfire/validation.ts",
+            "default": "./ts/src/nightfire/validation.ts"
+        },
         "./styles": {
             "svelte": "./ts/src/styles/index.ts",
             "types": "./ts/src/styles/index.ts",
@@ -136,9 +164,29 @@
             "types": "./ts/src/client/http.ts",
             "default": "./ts/src/client/http.ts"
         },
+        "./client/auth": {
+            "types": "./ts/src/client/auth.ts",
+            "default": "./ts/src/client/auth.ts"
+        },
         "./client/errors": {
             "types": "./ts/src/client/errors.ts",
             "default": "./ts/src/client/errors.ts"
+        },
+        "./client/format": {
+            "types": "./ts/src/client/format.ts",
+            "default": "./ts/src/client/format.ts"
+        },
+        "./client/navigation": {
+            "types": "./ts/src/client/navigation.ts",
+            "default": "./ts/src/client/navigation.ts"
+        },
+        "./client/query": {
+            "types": "./ts/src/client/query.ts",
+            "default": "./ts/src/client/query.ts"
+        },
+        "./client/route-protection": {
+            "types": "./ts/src/client/route-protection.ts",
+            "default": "./ts/src/client/route-protection.ts"
         },
         "./client/types": {
             "types": "./ts/src/client/types.ts",
@@ -147,6 +195,14 @@
         "./client/soft-delete": {
             "types": "./ts/src/client/soft-delete.ts",
             "default": "./ts/src/client/soft-delete.ts"
+        },
+        "./client/sveltekit": {
+            "types": "./ts/src/client/sveltekit.ts",
+            "default": "./ts/src/client/sveltekit.ts"
+        },
+        "./client/useAuth": {
+            "types": "./ts/src/client/useAuth.ts",
+            "default": "./ts/src/client/useAuth.ts"
         },
         "./testing": {
             "types": "./ts/src/testing/index.ts",

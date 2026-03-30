@@ -36,7 +36,8 @@ stem/
 
 ## Underlay Types and Errors
 
-Underlay exports the following from `@decodelabs/underlay`:
+For new TypeScript client code, prefer the explicit `client/*` subpaths instead
+of the root `@decodelabs/underlay` barrel.
 
 ### Core HTTP Client
 
