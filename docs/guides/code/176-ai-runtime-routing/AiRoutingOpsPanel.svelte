@@ -16,7 +16,7 @@ import {
   import { Button,
   Callout,
   Card,
-  NumberEntry,
+  NumberInput,
   Pill,
   TimeAgo } from "@poodle/svelte-primitives";
   import { DataTable,
@@ -282,7 +282,7 @@ import {
       </h2>
       <div class="ops-section__controls">
         <div class="controls-row">
-          <NumberEntry id="ai-routing-metric-hours" bind:value={metricHoursInput} min={1} max={720} />
+          <NumberInput id="ai-routing-metric-hours" bind:value={metricHoursInput} min={1} max={720} />
           <Button type="button" variant="secondary" on:click={applyMetricWindow}>{labels.apply}</Button>
         </div>
       </div>
@@ -336,7 +336,7 @@ import {
       </h2>
       <div class="ops-section__controls">
         <div class="controls-row">
-          <NumberEntry id="ai-routing-anomaly-days" bind:value={anomalyDaysInput} min={2} max={90} />
+          <NumberInput id="ai-routing-anomaly-days" bind:value={anomalyDaysInput} min={2} max={90} />
           <Button type="button" variant="secondary" on:click={applyAnomalyWindow}>{labels.apply}</Button>
         </div>
       </div>
@@ -367,7 +367,7 @@ import {
       </h2>
       <div class="ops-section__controls">
         <div class="controls-row">
-          <NumberEntry id="ai-routing-parity-hours" bind:value={parityHoursInput} min={1} max={720} />
+          <NumberInput id="ai-routing-parity-hours" bind:value={parityHoursInput} min={1} max={720} />
           <Button type="button" variant="secondary" on:click={applyParityWindow}>{labels.apply}</Button>
         </div>
       </div>
@@ -391,7 +391,7 @@ import {
       <h2 class="ops-section__title">Daily cost</h2>
       <div class="ops-section__controls">
         <div class="controls-row">
-          <NumberEntry id="ai-routing-cost-days" bind:value={costDaysInput} min={1} max={365} />
+          <NumberInput id="ai-routing-cost-days" bind:value={costDaysInput} min={1} max={365} />
           <Button type="button" variant="secondary" on:click={applyCostWindow}>{labels.apply}</Button>
         </div>
       </div>

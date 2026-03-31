@@ -593,7 +593,7 @@ Detail pages should use `DetailsGrid` with `DetailsSection` to organize informat
 **Components**:
 - `DetailsGrid` - Container for all detail sections
 - `DetailsSection` - Groups related fields with a legend
-- `DetailsItem` - Individual field display (label + value)
+- `DetailItem` - Individual field display (label + value)
 - `TimeAgo` - Renders relative time with tooltip for exact time
 
 **Standard pattern**:

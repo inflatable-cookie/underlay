@@ -164,6 +164,9 @@ The stable boundary is now:
 That keeps the reusable operational data contract in Underlay without preserving
 a second page-shaped public shell by inertia.
 
+This is also the preferred UI posture for the broader guide set: keep Underlay
+on the controller/runtime side and build the visible screen in Poodle.
+
 Typical page composition:
 
 - Poodle `PageHeader` for route framing

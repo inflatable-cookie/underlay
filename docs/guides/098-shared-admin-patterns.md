@@ -1,13 +1,18 @@
 # 098 - Shared Admin Patterns
 
-Higher-level, pre-composed patterns for common admin interface needs. These build on the core UI kit (090) and autonomous list hooks (097) to eliminate boilerplate across consuming apps.
+This page is now a bridge note.
 
-All components are additive — importing them is optional and they introduce no breaking changes.
+The actual admin UI implementation guidance now lives in Poodle:
+- `Page Shell And Admin Recipes` in the Poodle guide set
+- `List And Filter Recipes` in the Poodle guide set
+- `Dialog And Detail Recipes` in the Poodle guide set
+
+Read this Underlay page as a retained-boundary explanation only.
 
 Storybook coverage:
-- `Patterns/PageHeader`
-- `Patterns/SpaFormShell`
-- `Primitives/Menu`
+- Poodle `PageHeader`
+- Underlay `SpaFormShell`
+- Poodle `Menu`
 
 AI routing ops pages now compose directly over `createAiRoutingOpsController`
 plus Poodle `PageHeader`, `Card`, `Callout`, `PageLoading`, and `DataTable`.
@@ -41,10 +46,12 @@ Use Poodle `EmptyState` directly for page-level and inline empty views.
   message="Try adjusting your filters or add a new outcome."
   size="compact"
 >
-  <svelte:fragment slot="visual">
+  {#snippet visual()}
     <InboxIcon size={16} />
-  </svelte:fragment>
-  <a slot="actions" href="/outcomes/new">Add outcome</a>
+  {/snippet}
+  {#snippet actions()}
+    <a href="/outcomes/new">Add outcome</a>
+  {/snippet}
 </EmptyState>
 ```
 
@@ -146,12 +153,12 @@ The stable boundary is now direct composition:
 <section class="detail-page">
   <div class="detail-page__header">
     <PageHeader title={module.code} subtitle={module.slug} backHref={backHref}>
-      <svelte:fragment slot="breadcrumbs">
+      {#snippet breadcrumbs()}
         <Breadcrumbs items={breadcrumbs} />
-      </svelte:fragment>
-      <svelte:fragment slot="actions">
+      {/snippet}
+      {#snippet actions()}
         <ModuleActionsMenu {module} />
-      </svelte:fragment>
+      {/snippet}
     </PageHeader>
 
     <MetaBar ariaLabel="Module metadata">

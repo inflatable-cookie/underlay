@@ -2111,7 +2111,7 @@ Key differences:
 
 **Related Guides:**
 - **[065-session-management.md](./065-session-management.md)** - Login form validation, error handling
-- **[090-ui-kit.md](./090-ui-kit.md)** - Form components (Field, TextInput, validation props)
+- **Poodle form guides** - Generic field, input, and validation-state UI composition
 - **[100-frontend-web.md](./100-frontend-web.md)** - Complete form examples with validation
 - **[070-api-handlers.md](./070-api-handlers.md)** - Backend validation in API handlers
 

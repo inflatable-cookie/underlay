@@ -4,6 +4,8 @@ export { default as NightfireRenderer } from "./NightfireRenderer.svelte";
 export { default as NightfireBlockEditor } from "./NightfireBlockEditor.svelte";
 export { default as NightfireEditor } from "./NightfireEditor.svelte";
 export { default as SlashCommandPalette } from "./SlashCommandPalette.svelte";
+export { default as MarkdownEditor } from "./markup/MarkdownEditor.svelte";
+export { default as MarkdownEditorSurface } from "./markup/MarkdownEditorSurface.svelte";
 
 export type NightfireValue = {
   schema: string;

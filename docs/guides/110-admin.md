@@ -4,6 +4,23 @@
 
 This document covers creating the admin/author SvelteKit frontend following the admin frontend pattern.
 
+For UI implementation, use Poodle as the canonical guide source:
+- `Poodle Svelte Developer Guide`
+- `Page Shell And Admin Recipes`
+- `Form Layout And Field Recipes`
+- `Admin Feature Delivery Recipes`
+- `Admin App Shell Recipes`
+
+This Underlay page should now be read for admin app structure, retained
+workflow/runtime usage, and integration rules rather than generic shared UI
+implementation.
+
+Reference UI implementations now live in the ACME admin app in the separate
+`underlay-reference` repository and should be treated as the real examples.
+
+The snippets under [code/110-admin](./code/110-admin)
+are now integration-oriented stubs, not the canonical UI recipe surface.
+
 ## Admin Frontend Structure
 
 The admin frontend uses **layout groups** to separate authenticated routes (with sidebar) from unauthenticated routes (login/register with minimal centered layout).
@@ -19,7 +36,8 @@ Acowtancy’s admin frontend (Dairy) is deployed as a **pure SPA**:
 
 ### Dependencies
 
-Most Underlay UI components expect these peer dependencies to be installed in the consuming app:
+Most Poodle and retained Underlay UI surfaces expect these peer dependencies to
+be installed in the consuming app:
 
 ```bash
 bun add bits-ui lucide-svelte
@@ -91,6 +109,9 @@ For SPA admin apps, configure auth and shared runtime services in `(app)/+layout
 - toast context (`createToastStore()` + Poodle `ToastHost`)
 - Nightfire strategy loading (`configureNightfireStrategies()`)
 - optional timezone initialization (`initTimezone()`) if profiles store timezone
+
+The visible shell itself should follow the Poodle app-shell recipes. This
+section is only about the retained runtime services that belong in the layout.
 
 ```svelte
 <script lang="ts">
@@ -225,6 +246,10 @@ The `(app)/+layout.svelte` hosts the default admin shell:
 - Left panel: brand + navigation + user menu
 - Main content: scrollable
 - Right panel: a pop-in context panel (AI/help/tools/actions) with a collapsed strip on desktop and a slide-in drawer on mobile
+
+Use `Admin App Shell Recipes` in the Poodle guide set
+for the visible shell composition. Keep this section as an integration note for
+how retained runtime services fit into that shell.
 
 ```svelte
 <!-- apps/admin/src/routes/(app)/+layout.svelte -->
@@ -386,7 +411,8 @@ The `(app)/+layout.svelte` hosts the default admin shell:
 </div>
 ```
 
-For a complete, copy/paste-ready example (including the CSS for mobile nav and the context panel), see `docs/guides/code/110-admin/(app)/+layout.svelte`.
+For retained integration snippets, see [code/110-admin/README.md](./code/110-admin/README.md).
+Use ACME plus the Poodle admin-shell guides for the visible implementation.
 
 ### App Layout Server (Auth Check)
 
@@ -528,245 +554,24 @@ export function createAdminClient(
 }
 ```
 
-## Admin Detail Page Pattern
+## Admin Detail And CRUD UI
 
-Admin detail pages for entities (pathways, modules, etc.) typically use a tabbed interface to organize different views and related data. This section documents the standard patterns.
+The generic visible admin page patterns are no longer maintained here in full.
 
-### List Display Patterns
+Use these as the canonical implementation references instead:
 
-There are two distinct patterns for displaying lists of related entities. Choosing the wrong one creates confusion and inconsistent UX.
+- `Page Shell And Admin Recipes` in the Poodle guide set
+- `Admin Feature Delivery Recipes` in the Poodle guide set
+- `Admin App Shell Recipes` in the Poodle guide set
+- the ACME admin list, detail, edit, and media-detail routes in the separate
+  `underlay-reference` repository
 
-#### Pattern 1: Tab Content Lists (Full Poodle ListCard Pattern)
+What still belongs here:
 
-**When to use**: Displaying lists of entities in their own tab (e.g., "Sections" tab, "Topics" tab, "Variants" tab).
-
-**Components**: `PageHeader` (level=3) + Poodle `FilterToolbar` + Poodle `Grid` + entity-specific `*ListCard` over Poodle `ListCard`
-
-**Structure**:
-```svelte
-<PageHeader title="Sections" level={3}>
-  {#snippet actions()}
-    <Button variant="primary" onclick={addItem}>
-      <Plus size={16} />
-      Add Section
-    </Button>
-  {/snippet}
-</PageHeader>
-
-{#if items.length > 0}
-  <FilterToolbar ariaLabel="Section filters" summaryText="Filter">
-    <Field label="Search" forId="search">
-      <TextInput id="search" bind:value={searchFilter} search />
-    </Field>
-  </FilterToolbar>
-{/if}
-
-{#if filteredItems.length === 0}
-  <p class="empty">No items.</p>
-{:else}
-  <Grid columns="repeat(auto-fit, minmax(min(26em, 100%), 1fr))" gap="lg">
-    {#each filteredItems as item}
-      <EntityListCard {item} {sourceContext} />
-    {/each}
-  </Grid>
-{/if}
-```
-
-**File organization**:
-- Create `EntityListCard.svelte` in `$lib/cards/` (e.g., `SectionListCard.svelte`, `TopicListCard.svelte`)
-- Create `EntityTabContent.svelte` in the route folder (e.g., `SectionsTabContent.svelte`)
-- Export the ListCard from `$lib/cards/index.ts`
-
-#### Pattern 2: Detail Page Auxiliary Lists (Card + Caller-Owned Rows)
-
-**When to use**: Displaying small, secondary lists alongside other detail content (e.g., showing associated modules on a Bundle's Details tab, showing aliases on a Module's Details tab).
-
-**Components**: Poodle `Card` + caller-owned row markup (often wrapped in caller-owned grid layout with other content)
-
-**Structure**:
-```svelte
-<ContainerGrid>
-  <DetailsGrid>
-    <!-- Main entity details -->
-  </DetailsGrid>
-
-  <Card title="Related Items">
-    <svelte:fragment slot="actions">
-      <IconButton label="Add" onclick={addItem}>
-        <Plus size={16} />
-      </IconButton>
-    </svelte:fragment>
-
-    {#if items.length === 0}
-      <p>No items.</p>
-    {:else}
-      {#each items as item}
-        <button class="inline-row" type="button" onclick={() => edit(item)}>
-          <span>{item.name}</span>
-          <Pill>{item.status}</Pill>
-        </button>
-      {/each}
-    {/if}
-  </Card>
-</ContainerGrid>
-```
-
-**When this card-plus-rows pattern is appropriate**:
-- The list is auxiliary/secondary information (not the main focus of a tab)
-- Items are typically edited via dialog rather than dedicated pages
-- The list appears alongside DetailsGrid or other components
-- Expected item count is small (< 10-15 items)
-
-**When this pattern is NOT appropriate**:
-- The list is the primary content of a tab
-- Items have their own detail/edit pages
-- The list needs filtering/search
-- Expected item count is large
-
-### Page Structure
-
-A typical detail page has:
-1. **Poodle `PageHeader`** - Title, subtitle, back navigation, and entity-level actions
-2. **Poodle `Tabs`** - Container plus tab navigation for detail sections
-3. **Caller-owned `items`** - Section metadata
-4. **Active panel block** - Content for the current tab
-
-```svelte
-<PageHeader
-  title={entity.code}
-  subtitle={entity.parentName}
-  backHref={backInfo.href}
-  backLabel={backInfo.label}
->
-  {#snippet actions()}
-    <EntityActionsMenu
-      item={entity}
-      onEdit={handleEdit}
-      onDelete={() => { showDeleteConfirm = true; }}
-    />
-  {/snippet}
-</PageHeader>
-
-<Tabs
-  bind:value={activeTab}
-  items={[
-    { value: "details", label: "Details" },
-    { value: "children", label: "Children" },
-    { value: "related", label: "Related" }
-  ]}
-  variant="card"
-  size="sm"
-  historyKey="tab"
-  ariaLabel="Entity sections"
-  let:activeValue
->
-  {#if activeValue === "details"}
-    <!-- Entity details -->
-  {/if}
-
-  {#if activeValue === "children"}
-    <!-- List of child entities -->
-  {/if}
-</Tabs>
-```
-
-### Tab Content with Lists
-
-When a tab displays a list of related entities (e.g., Sections within a Module), use the following structure:
-
-1. **Poodle `PageHeader`** - Section title with action buttons
-2. **FilterToolbar** - Optional search/filter controls (only when items exist)
-3. **Grid** - Poodle auto-fit grid of entity cards, or Poodle `ReorderableList` when in reorder mode
-
-```svelte
-<PageHeader title="Sections" level={3}>
-  {#snippet actions()}
-    {#if canReorder}
-      <Button
-        variant={isReorderMode ? "danger" : "subtle"}
-        onclick={toggleReorderMode}
-      >
-        <ArrowUpDown size={16} />
-        Reorder
-      </Button>
-    {/if}
-    <Button
-      variant="primary"
-      onclick={() => gotoWithContext(addUrl, sourceContext)}
-    >
-      <Plus size={16} />
-      Add Section
-    </Button>
-  {/snippet}
-</PageHeader>
-
-{#if items.length > 0}
-  <FilterToolbar ariaLabel="Section filters" summaryText="Filter">
-    <Field label="Search" forId="search">
-      <TextInput
-        id="search"
-        placeholder="Filter by title..."
-        bind:value={searchFilter}
-        debounce={300}
-        search
-      />
-    </Field>
-  </FilterToolbar>
-{/if}
-
-{#if filteredItems.length === 0}
-  <p class="empty-message">
-    {searchFilter ? "No items match your filter." : "No items yet."}
-  </p>
-{:else if isReorderMode}
-  <ReorderableList
-    items={reorderController.pending}
-    dirty={reorderController.isDirty}
-    submitting={reorderController.isPending}
-    onsubmit={handleReorderSubmit}
-    oncancel={handleReorderCancel}
-    on:reorder={(event) => reorderController.updatePending(event.detail.items)}
-  >
-    {#snippet item(item)}
-      <ListCard title={item.title} layout="compact" showReorderHandle />
-    {/snippet}
-  </ReorderableList>
-{:else}
-  <Grid columns="repeat(auto-fit, minmax(min(26em, 100%), 1fr))" gap="lg">
-    {#each filteredItems as item}
-      <EntityListCard {item} {sourceContext} onRequestDelete={handleDelete} />
-    {/each}
-  </Grid>
-{/if}
-```
-
-### List Card Actions
-
-Entity list cards should use an app-local actions menu with:
-- **Copy actions**: Key, ID, slug (when present)
-- **Edit action**: Navigate to edit page with context
-- **Delete action**: Trigger soft delete confirmation (format: "Soft delete {entityType}")
-
-```svelte
-<ListCard title={`Section ${section.label}`} subtitle={section.title}>
-  <svelte:fragment slot="actions">
-    <SectionActionsMenu
-      section={section}
-      onEdit={() => gotoWithContext(editHref, sourceContext)}
-      onRequestDelete={() => onRequestDelete(section.sectionId)}
-    />
-  </svelte:fragment>
-</ListCard>
-```
-
-### Key Conventions
-
-1. **Tab-level PageHeader**: Use `level={3}` for section headers within tabs
-2. **Action button order**: Reorder (when applicable), then Add
-3. **Reorder button state**: Use `variant="danger"` when active, `variant="subtle"` when inactive
-4. **Filter visibility**: Only show `FilterToolbar` when there are items to filter
-5. **Delete label format**: "Soft delete {entityType}" (e.g., "Soft delete section")
-6. **Empty states**: Differentiate between "no items" and "no matches for filter"
+- admin app structure
+- retained runtime setup in layouts
+- client and auth integration rules
+- when and why `SpaFormShell` still earns shared Underlay ownership
 
 ## Complete CRUD Admin Pattern
 
@@ -1026,153 +831,14 @@ Boundary note:
   metadata rows, and compose copyable values with Poodle `Code` and
   `showCopyButton` when needed
 
-### Tab Content Pattern (List View)
+For navigation-context behavior inside tabbed detail routes, keep the current
+rule explicit:
 
-Tab content should ONLY handle navigation and display - no forms or dialogs:
+- when a detail page has tabs, `sourceContext.href` should include the current
+  tab so back navigation returns to the correct panel
 
-```svelte
-<script lang="ts">
-  import { PageHeader, type NavigationContext } from "@decodelabs/underlay/patterns";
-  import { FilterToolbar } from "@poodle/svelte-composites";
-  import { Grid } from "@poodle/svelte-primitives";
-  import { Button, Field, TextInput } from "@poodle/svelte-primitives";
-  import { EntityListCard } from "$lib/cards";
-  import { gotoWithContext } from "@decodelabs/underlay/client";
-  import Plus from "lucide-svelte/icons/plus";
-
-  interface Props {
-    items: Entity[];
-    parentId: string;
-    sourceContext: NavigationContext;
-    onRequestDelete?: (id: string) => void;
-  }
-
-  let { items, parentId, sourceContext, onRequestDelete }: Props = $props();
-
-  let searchFilter = $state("");
-  const filteredItems = $derived(/* filter logic */);
-  const addUrl = $derived(`/learning/parents/${parentId}/entities/new`);
-</script>
-
-<PageHeader title="Entities" level={3}>
-  {#snippet actions()}
-    <Button variant="primary" onclick={() => gotoWithContext(addUrl, sourceContext)}>
-      <Plus size={16} />
-      Add Entity
-    </Button>
-  {/snippet}
-</PageHeader>
-
-{#if items.length > 0}
-  <FilterToolbar ariaLabel="Entity filters" summaryText="Filter">
-    <Field label="Search" forId="search">
-      <TextInput id="search" bind:value={searchFilter} search />
-    </Field>
-  </FilterToolbar>
-{/if}
-
-<Grid columns="repeat(auto-fit, minmax(min(26em, 100%), 1fr))" gap="lg">
-  {#each filteredItems as item}
-    <EntityListCard {item} {parentId} {sourceContext} {onRequestDelete} />
-  {/each}
-</Grid>
-```
-
-### Detail Page Header Pattern
-
-Detail pages show entity metadata beneath the Poodle `PageHeader`, not inside a
-shared wrapper:
-
-```svelte
-<PageHeader title={entity.name} backHref={backInfo.href} backLabel={backInfo.label}>
-  <MetaBar ariaLabel="Entity metadata">
-      <MetaItem label="ID">
-        <Code inline source={entity.id} showCopyButton />
-      </MetaItem>
-      {#if entity.isFree}
-        <Pill appearance="badge" tone="success"><LockOpen size={14} /> Free</Pill>
-      {:else}
-        <Pill appearance="badge" tone="neutral"><Lock size={14} /> Restricted</Pill>
-      {/if}
-      {#if entity.isLive}
-        <Pill appearance="badge" tone="success"><Eye size={14} /> Live</Pill>
-      {:else}
-        <Pill appearance="badge" tone="danger"><EyeOff size={14} /> Draft</Pill>
-      {/if}
-  </MetaBar>
-</PageHeader>
-```
-
-**Icon conventions**:
-- **isFree** (access): `LockOpen` (free) / `Lock` (restricted)
-- **isLive** (visibility): `Eye` (live) / `EyeOff` (draft)
-
-### List Card Trailing Pills
-
-In ListCards, pills should only show **positive/notable states**. Don't show both states:
-
-```svelte
-{#snippet trailing()}
-  {#if item.isFree}
-    <Pill accent="#22c55e">Free</Pill>
-  {/if}
-  <!-- Do NOT show "Restricted" pill when isFree is false -->
-{/snippet}
-```
-
-### Markdown Content Fields
-
-For long-form markdown fields (descriptions, notes, etc.), use caller-owned `Card`
-composition instead of `DetailsItem`:
-
-```svelte
-{#if activeValue === "details"}
-  <ContainerGrid>
-    <DetailsGrid>
-      <!-- Short fields in DetailsGrid -->
-    </DetailsGrid>
-    <InlineListCard><!-- Related items --></InlineListCard>
-  </ContainerGrid>
-
-  <!-- Markdown content OUTSIDE ContainerGrid -->
-  <Card>
-    <h4>Description</h4>
-    {#if entity.description}
-      <NightfireRenderer value={entity.description} />
-    {:else}
-      <p>No description set.</p>
-    {/if}
-  </Card>
-{/if}
-```
-
-### Navigation Context with Tabs
-
-When a detail page has tabs, `sourceContext.href` must include the current tab so back navigation returns to the correct tab:
-
-```svelte
-let activeTab = $state("details");
-
-// Include tab in href when not on default tab
-const sourceContext = $derived(entity ? {
-  label: entity.name,
-  href: `/learning/entities/${entity.id}${activeTab !== "details" ? `?tab=${activeTab}` : ""}`,
-  type: "detail" as const
-} : null);
-```
-
-### Common Mistakes to Avoid
-
-1. **Using dialogs for create/edit** - Always use dedicated routes
-2. **Putting form submission in tab content** - Tab content is for list display only
-3. **Using InlineListCard for tab content** - InlineListCard is only for auxiliary lists on detail pages
-4. **Forgetting delete handling** - Parent page needs AlertDialog for list deletion
-5. **Missing hidden form for delete** - Edit pages need `<form id="entity-delete-form">`
-6. **Using onsubmit|preventDefault** - Use `onsubmit={(e) => { e.preventDefault(); ... }}`
-7. **Forgetting explicit state pills** - Compose access/live state directly with `Pill`
-8. **Showing both Pill states** - Only show pills for positive/notable states (e.g., "Free"), not negative defaults
-9. **sourceContext.href missing tab** - Include `?tab={activeTab}` for proper back navigation from child routes
-10. **Description in DetailsItem** - Use direct `Card` + renderer composition for long-form content
+For visible tab/list/header examples, use the Poodle guides and ACME route
+family above instead of the older embedded examples that used to live here.
 
 ## Key Points
 

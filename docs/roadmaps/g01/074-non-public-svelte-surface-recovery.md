@@ -45,7 +45,7 @@ and leave only the truly necessary retained pattern/auth/editor components.
   - `CompactGroupedBarGroup`
   - `ContentCard`
   - `DetailsCard`
-  - `DetailsItem`
+  - `DetailItem`
   - `DetailsSection`
   - `Dialog`
   - `FileUpload`

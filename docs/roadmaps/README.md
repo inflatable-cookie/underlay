@@ -13,12 +13,27 @@ Roadmaps are executable delivery plans for Underlay library work.
 - Keep durable inventories, CSVs, and machine-readable reference artifacts in [../contracts/](../contracts/).
 - If active work changes consumer-visible behavior, APIs, configuration, migrations, or integration patterns, include a `Consumer Upgrade Impact` section in the roadmap and point to the compatibility note plan.
 
+## Evidence Boundary
+
+Roadmap bodies are execution records as well as plans. They may retain
+sibling-repo file references, local path evidence, and concrete caller
+inventories when that is necessary to preserve delivery history. Do not treat
+that historical evidence style as the model for active library-facing guides or
+README surfaces.
+
 ## Active generation
 
 - [g01/README.md](g01/README.md)
 - [generation-index.md](generation-index.md)
 
 ## Current Queue
+
+- there is no active UI-guide cleanup wave; `g01.094` and `g01.095` are both
+  complete, so generic visible UI implementation guidance now lives in Poodle
+  and the ACME reference apps rather than Underlay
+- there is no active archival-doc cleanup wave either; `g01.096` confirmed
+  that the remaining raw local-path residue now lives in frozen historical
+  records rather than the active library-facing docs surface
 
 - `g01.001` through `g01.041` record the current Underlay roadmap corpus
 - `g01.042` is complete for Poodle adoption and Underlay UI contraction
@@ -176,8 +191,9 @@ Roadmaps are executable delivery plans for Underlay library work.
 | 091 | [Client Surface Organization](./g01/091-client-surface-organization.md) | Complete | Confirm the retained `client` package boundary, expose explicit `client/*` public subpaths for the live feature families, and keep the root barrel stable as a convenience surface |
 | 092 | [Nightfire Extraction Readiness](./g01/092-nightfire-extraction-readiness.md) | Complete | Confirm the retained `nightfire` package boundary, expose explicit `nightfire/*` public subpaths for the live extension families, and make the future extraction seam explicit without forcing churn now |
 | 093 | [Root Package Barrel Reassessment](./g01/093-root-package-barrel-reassessment.md) | Complete | Confirm the root `@decodelabs/underlay` barrel as compatibility-only and stop active docs from teaching the old flat import path |
+| 096 | [Archival Doc Evidence Boundary Audit](./g01/096-archival-doc-evidence-boundary-audit.md) | Complete | Confirm that the active docs surface is normalized while the remaining raw local-path residue is acceptable frozen evidence in archival logs, roadmaps, research notes, and sweeps |
 
-**Complete:** 89 | **Extracted:** 2 | **In progress:** 0 | **Not started:** 0
+**Complete:** 90 | **Extracted:** 2 | **In progress:** 0 | **Not started:** 0
 
 ## Current Boundary
 
@@ -212,7 +228,10 @@ alignment, the final obvious pure-helper split out of `runtime`, the active
 sibling-repo package-boundary recovery, the `DetailMeta*` successor cleanup,
 the explicit retained `patterns` stop point, the retained `client` surface
 organization, the Nightfire extraction-readiness seam, and the root-barrel
-compatibility boundary are now durable.
+compatibility boundary are now durable. `g01.094` and `g01.095` completed the
+Poodle-first UI-guide translation and long-tail Underlay prune line. `g01.096`
+completed the archival-doc evidence audit, making the active-doc normalization
+rule explicit while leaving historical records as frozen evidence by policy.
 
 ## Next Task
 

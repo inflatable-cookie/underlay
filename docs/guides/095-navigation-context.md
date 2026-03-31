@@ -2,6 +2,12 @@
 
 This document covers Underlay's navigation context system for contextual back buttons and form redirects. This pattern enables edit forms to know where users came from and provide appropriate "back" navigation.
 
+UI note:
+- page headers, breadcrumbs, tabs, and dialog shells now belong in Poodle
+- use this guide only for retained navigation/runtime orchestration
+- for visible browse/detail/edit page composition, use the Poodle page-shell
+  and admin guides
+
 ## Overview
 
 When users navigate to an edit form, they could arrive from multiple places:
@@ -1522,6 +1528,6 @@ clearNavigationContext();
 
 ## Next Steps
 
-- [090-ui-kit](./090-ui-kit.md) - UI components including PageHeader
+- [098-shared-admin-patterns](./098-shared-admin-patterns.md) - Retained admin workflow and page-shell boundary notes
 - [100-frontend-web](./100-frontend-web.md) - Frontend routing patterns
 - [110-admin](./110-admin.md) - Admin interface patterns

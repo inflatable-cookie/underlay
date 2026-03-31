@@ -67,7 +67,7 @@
     "replace_via_poodle_composition_or_internalization_next_wave": [],
     "completed_in_wave_045_batch_45_2": [
       "DetailsCard",
-      "DetailsItem",
+      "DetailItem",
       "DetailsSection",
       "DetailList",
       "DetailItem",
@@ -292,7 +292,7 @@
     "lead_target": "dead_internal_wrapper_tier",
     "notes": [
       "The public boundary is now clean, but the non-public `ts/src` Svelte surface still contained wrapper residue that should have been removed during the earlier contraction work.",
-      "Batch 74.1 is focused on the clearly dead wrapper tier with no remaining live internal callers: `ActionArea`, `AlertDialog`, `CompactGroupedBar`, `CompactGroupedBarGroup`, `ContentCard`, `DetailsCard`, `DetailsItem`, `DetailsSection`, `Dialog`, `FileUpload`, `InlineActionGroup`, `MediaThumbnail`, and `Skeleton`.",
+      "Batch 74.1 is focused on the clearly dead wrapper tier with no remaining live internal callers: `ActionArea`, `AlertDialog`, `CompactGroupedBar`, `CompactGroupedBarGroup`, `ContentCard`, `DetailsCard`, `DetailItem`, `DetailsSection`, `Dialog`, `FileUpload`, `InlineActionGroup`, `MediaThumbnail`, and `Skeleton`.",
       "The follow-on retained-looking internal tier is now materially reduced. `Tabs*`, `TextInput`, `NumberInput`, `Select`, `MarkdownEditor`, and the single-caller `Form` helper are gone from shared `components/`; Nightfire owns its own editor/select runtime, and the retained auth workflow implementation now lives under `patterns/auth-workflows/` where it actually belongs.",
       "Batch 74.5 completes the helper-placement tail and the final namespace cut: the date-range formatter now lives under `patterns/i18n`, the dead field a11y helper is gone, `PasswordRequirements.svelte` moved under `patterns/auth-workflows/`, and the `components/` package surface was removed entirely."
     ]
@@ -638,7 +638,7 @@
         "export": "NumberInput",
         "entrypoint": "@decodelabs/underlay/components",
         "successor_package": "@poodle/svelte-primitives",
-        "successor_export": "NumberEntry",
+        "successor_export": "NumberInput",
         "notes": "Poodle replacement exists but migration will need import and API translation."
       },
       {
@@ -838,7 +838,7 @@
         "notes": "Treat as card-plus-layout composition over existing Poodle surfaces."
       },
       {
-        "export": "DetailsItem",
+        "export": "DetailItem",
         "entrypoint": "@decodelabs/underlay/components",
         "successor_package": "@poodle/svelte-primitives",
         "successor_export": "DetailRow",

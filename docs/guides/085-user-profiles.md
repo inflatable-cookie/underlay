@@ -431,4 +431,4 @@ ALTER TABLE account.user_profile RENAME COLUMN temp_display_name TO display_name
 
 - **[060-authentication.md](./060-authentication.md)** - Auth layer (separate from profiles)
 - **[080-timezone-handling.md](./080-timezone-handling.md)** - Timezone integration with profiles
-- **[090-ui-kit.md](./090-ui-kit.md)** - UI components for profile forms
+- **Poodle form guides** - Generic form-field and layout composition for profile pages

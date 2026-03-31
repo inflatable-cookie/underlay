@@ -841,4 +841,5 @@ This pattern provides:
 
 ## Next Steps
 
-Proceed to [090-ui-kit](./090-ui-kit.md).
+Proceed to [100-frontend-web](./100-frontend-web.md) for frontend integration
+or [110-admin](./110-admin.md) for admin integration.

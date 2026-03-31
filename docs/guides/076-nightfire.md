@@ -1273,7 +1273,7 @@ Here's a complete example of a form with Nightfire content:
 - **[070-api-handlers.md](./070-api-handlers.md)** - Using Nightfire in API handlers
 - **[075-validation.md](./075-validation.md)** - Request validation patterns
 - **[050-database.md](./050-database.md)** - Storing JSONB content
-- **[090-ui-kit.md](./090-ui-kit.md)** - UI component library
+- **Poodle guides** - Generic UI composition outside retained Nightfire-specific runtime/editor behavior
 
 **Crate Documentation:**
 - `underlay-nightfire/README.md` - Quick reference

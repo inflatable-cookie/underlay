@@ -4,7 +4,27 @@
 
 This document covers creating the user-facing SvelteKit frontend following the web frontend pattern.
 
+For UI implementation, use Poodle as the canonical guide source:
+- `Poodle Svelte Developer Guide`
+- `List And Filter Recipes`
+- `Dialog And Detail Recipes`
+- `Admin App Shell Recipes`
+
+This Underlay page should now be read for frontend architecture, integration,
+and retained runtime/client usage rather than generic UI implementation.
+
+Reference UI implementations now live in the ACME reference apps in the
+separate `underlay-reference` repository and should be treated as the real
+examples.
+
+The snippets under [code/100-frontend-web](./code/100-frontend-web)
+are now integration-oriented stubs, not the canonical UI recipe surface.
+
 ## Frontend Structure
+
+Visible shell/layout decisions should be taken from the Poodle guides above.
+Treat the structure below as an integration and route-ownership reference, not
+as canonical shared UI implementation.
 
 ```
 apps/web/src/
@@ -31,7 +51,9 @@ apps/web/src/
 
 ## Creating Frontend
 
-See code examples in `/code/100-frontend-web/`
+See [code/100-frontend-web/README.md](./code/100-frontend-web/README.md)
+for the retained integration snippets. Use ACME and Poodle for the visible UI
+layer.
 
 ## API Fetch Contract (Profiles)
 
@@ -145,7 +167,9 @@ export default defineConfig({
 });
 ```
 
-This setup avoids duplicate Underlay module instances and stale prebundled exports when using local `file:` dependencies.
+This setup avoids duplicate Underlay module instances and stale prebundled
+exports when using local `file:` dependencies. Apply the same dedupe discipline
+to local Poodle package usage in active workspace apps.
 
 ## App.d.ts (Locals Pattern)
 
@@ -856,7 +880,7 @@ For more details, see:
 
 **Related Guides:**
 - **[080-typescript-client.md](./080-typescript-client.md)** - API client setup, type-safe commands
-- **[090-ui-kit.md](./090-ui-kit.md)** - UI components, form components, design tokens
+- **Poodle guides** - Generic UI components, form composition, and design-system usage
 - **[065-session-management.md](./065-session-management.md)** - Login/logout implementation, cookie management
 - **[075-validation.md](./075-validation.md)** - Form validation, error display patterns
 - **[067-authorization.md](./067-authorization.md)** - Protected routes, role-based UI
@@ -1300,130 +1324,20 @@ Use Svelte's `$derived` to compute values from the fetched data:
 {/if}
 ```
 
-#### PageLoading Component
+#### UI Composition Boundary
 
-Use Poodle `PageLoading presentation="inline"` for inline centered page-state
-loading in authenticated routes:
+Do not use this guide as the canonical source for `PageLoading`, `Callout`,
+`Card`, or other visible Poodle composition anymore.
 
-```svelte
-<script lang="ts">
-  import { PageLoading } from '@poodle/svelte-composites';
-</script>
+Use:
 
-<!-- Basic usage -->
-<PageLoading presentation="inline" />
+- `Poodle Svelte Developer Guide`
+- `Dialog And Detail Recipes`
+- the ACME front dashboard and project-detail routes in the separate
+  `underlay-reference` repository
 
-<!-- Custom message -->
-<PageLoading presentation="inline" message="Loading your settings..." />
-
-<!-- Different sizes: "sm" | "md" | "lg" -->
-<PageLoading presentation="inline" size="lg" />
-```
-
-The component includes:
-- Accessible `role="status"` and `aria-live="polite"` attributes
-- Reduced motion support for accessibility
-- Consistent styling with Underlay CSS variables
-
-#### Error Handling
-
-Errors are automatically caught and stored in `pageData.error`:
-
-```svelte
-{#if pageData.error}
-  <Callout tone="danger" message={pageData.error} announceMode="polite" />
-  <Button onclick={() => pageData.refetch()}>Try Again</Button>
-{/if}
-```
-
-#### Complete Example
-
-Here's a full example of a security settings page:
-
-```svelte
-<script lang="ts">
-  import { useAuthenticatedData } from '@decodelabs/underlay/runtime/auth';
-  import { Button, Callout } from '@poodle/svelte-primitives';
-  import { PageLoading } from '@poodle/svelte-composites';
-  import { Card } from '@poodle/svelte-primitives';
-  import { auth, authLoading, currentUser } from '$lib/stores/auth';
-  import { authCommands } from '@myorg/client';
-
-  const pageData = useAuthenticatedData(
-    async (fetch, token) => {
-      const [totpStatus, passkeys, sessions] = await Promise.all([
-        authCommands.totpStatus(fetch, token).catch(() => ({ enabled: false })),
-        authCommands.listPasskeys(fetch, token).catch(() => []),
-        authCommands.listSessions(fetch, token)
-      ]);
-      return {
-        totpEnabled: totpStatus.enabled,
-        passkeys,
-        sessions
-      };
-    },
-    {
-      getToken: () => auth.getToken(),
-      defaultValue: { totpEnabled: false, passkeys: [], sessions: [] }
-    }
-  );
-
-  $effect(() => {
-    pageData.tryFetch($authLoading, $currentUser);
-  });
-
-  let has2fa = $derived(
-    pageData.data?.totpEnabled || (pageData.data?.passkeys?.length ?? 0) > 0
-  );
-
-  const handleRevokeSession = async (sessionId: string) => {
-    const token = auth.getToken();
-    if (!token) return;
-
-    await authCommands.revokeSession(sessionId, fetch, token);
-    await pageData.refetch();
-  };
-</script>
-
-<svelte:head>
-  <title>Security Settings</title>
-</svelte:head>
-
-<div class="security-settings">
-  <h1>Security Settings</h1>
-
-  {#if pageData.loading}
-    <PageLoading presentation="inline" message="Loading security settings..." />
-  {:else if pageData.error}
-    <Callout tone="danger" message={pageData.error} announceMode="polite" />
-  {:else}
-    <Card>
-      <h2>Two-Factor Authentication</h2>
-      {#if has2fa}
-        <p>2FA is enabled on your account.</p>
-      {:else}
-        <p>Add an extra layer of security to your account.</p>
-        <Button href="/account/security/setup-2fa">Enable 2FA</Button>
-      {/if}
-    </Card>
-
-    <Card>
-      <h2>Active Sessions</h2>
-      {#each pageData.data?.sessions ?? [] as session}
-        <div class="session">
-          <span>{session.userAgent}</span>
-          <Button
-            variant="secondary"
-            onclick={() => handleRevokeSession(session.id)}
-          >
-            Revoke
-          </Button>
-        </div>
-      {/each}
-    </Card>
-  {/if}
-</div>
-```
+What still belongs here is the `useAuthenticatedData()` runtime pattern and
+other frontend-web integration guidance, not the generic visible Poodle markup.
 
 ### SSR-Safe Storage
 
@@ -1561,94 +1475,16 @@ Custom serializers also work with expiration. Underlay stores the serialized pay
 
 ### Loading Skeletons
 
-Use Poodle `Skeleton` directly for both low-level placeholders and repeated
-loading layouts. Underlay no longer keeps a separate public `DataSkeleton`
-surface or preset registry.
+Skeleton composition is now fully a Poodle concern.
 
-#### Basic Usage
+Use:
 
-```svelte
-<script>
-  import { Skeleton } from '@poodle/svelte-primitives';
-</script>
+- `Poodle Svelte Developer Guide`
+- the ACME front dashboard routes in the separate `underlay-reference`
+  repository
 
-{#if loading}
-  <div class="detail-loading">
-    <Skeleton preset="detail-section" lines={2} />
-  </div>
-{:else}
-  <h1>{data.title}</h1>
-  <p>{data.description}</p>
-{/if}
-```
-
-For repeated app-specific loading shells, compose the built-in Poodle presets
-(`table-row`, `card`, `list-item`, `detail-section`, `avatar-line`) locally in
-the consuming app instead of depending on a second shared Underlay wrapper.
-
-#### Low-Level Poodle Skeleton Usage
-
-| Variant | Description | Default Size |
-|---------|-------------|--------------|
-| `text` | Single line of text | 100% × 1rem |
-| `title` | Heading/title | 60% × 1.5rem |
-| `button` | Button shape | 6rem × 2.5rem |
-| `avatar` | Circular avatar | 2.5rem × 2.5rem |
-| `card` | Card container | 100% × auto |
-
-#### Multiple Text Lines
-
-```svelte
-<Skeleton variant="text" lines={3} />
-<!-- Renders 3 lines, last one is 75% width -->
-```
-
-#### Card with Children
-
-```svelte
-<Skeleton variant="card">
-  <Skeleton variant="title" />
-  <Skeleton variant="text" lines={2} />
-  <Skeleton variant="button" />
-</Skeleton>
-```
-
-#### Customization
-
-```svelte
-<!-- Custom dimensions -->
-<Skeleton 
-  variant="custom"
-  width="200px"
-  height="100px"
-  radius="1rem"
-/>
-
-<!-- Disable animation -->
-<Skeleton variant="text" animate={false} />
-```
-
-#### CSS Variables
-
-Customize appearance with CSS variables:
-
-```css
-:root {
-  --underlay-skeleton-bg: rgba(148, 163, 184, 0.15);
-  --underlay-skeleton-shimmer: rgba(255, 255, 255, 0.08);
-}
-
-[data-theme="dark"] {
-  --underlay-skeleton-bg-dark: rgba(148, 163, 184, 0.1);
-  --underlay-skeleton-shimmer-dark: rgba(255, 255, 255, 0.05);
-}
-```
-
-#### Accessibility
-
-- Skeletons have `role="presentation"` and `aria-hidden="true"`
-- Animation respects `prefers-reduced-motion`
-- repeated loading layouts should inherit the same accessibility defaults by composing Poodle `Skeleton` presets directly
+Keep this Underlay page focused on runtime and integration, not low-level
+placeholder composition.
 
 ### Internationalization (i18n) Helpers
 
@@ -1796,538 +1632,29 @@ format.currency(null, 'GBP'); // ""
 
 ### Data Tables
 
-Use Poodle `DataTable` for table rendering, row actions, expanded rows, and host-controlled pagination/filter state.
+`DataTable` is now fully a Poodle documentation concern.
 
-#### Basic Usage
+Use:
 
-```svelte
-<script lang="ts">
-  import { DataTable, type TableColumn, type TableRow } from '@poodle/svelte-composites';
+- `Dialog And Detail Recipes`
+- Poodle contract docs for `DataTable`
+- ACME reference pages that exercise current table posture
 
-  const columns: TableColumn[] = [
-    { id: 'name', label: 'Name', sortable: true },
-    { id: 'email', label: 'Email', sortable: true },
-    { id: 'createdAt', label: 'Created' }
-  ];
-
-  export let data: { users: Array<{ id: string; name: string; email: string; createdAt: string }> };
-
-  const rows: TableRow[] = data.users.map((user) => ({
-    id: user.id,
-    cells: {
-      name: user.name,
-      email: user.email,
-      createdAt: user.createdAt
-    },
-    data: user
-  }));
-</script>
-
-<DataTable {columns} {rows} />
-```
-
-#### Column Configuration
-
-```typescript
-const columns: TableColumn[] = [
-  { 
-    id: 'name',            // Cell id
-    label: 'Name',         // Header label
-    sortable: true,        // Enable sorting
-    filterable: true,      // Enable text filter
-    width: '200px',        // Column width
-    align: 'start',        // 'start' | 'center' | 'end'
-    hideOnMobile: false    // Hide on small screens
-  },
-  {
-    id: 'status',
-    label: 'Status',
-    filterable: true,
-    filterType: 'select',  // 'text' | 'select' | 'date'
-    filterOptions: [
-      { value: 'active', label: 'Active' },
-      { value: 'inactive', label: 'Inactive' }
-    ]
-  },
-  {
-    id: 'createdAt',
-    label: 'Created'
-  }
-];
-```
-
-#### Custom Cells And Expanded Rows
-
-```svelte
-<script lang="ts">
-  import { DataTable, type TableColumn, type TableRow } from '@poodle/svelte-composites';
-  import { TimeAgo } from '@poodle/svelte-primitives';
-</script>
-
-<DataTable
-  {columns}
-  {rows}
-  expandedRowWhen={(row) => Boolean(row.data?.details)}
->
-  <svelte:fragment slot="cell" let:column let:row>
-    {#if column.id === 'createdAt'}
-      <TimeAgo datetime={row.data.createdAt} />
-    {:else}
-      {row.cells[column.id]}
-    {/if}
-  </svelte:fragment>
-
-  <svelte:fragment slot="expandedRow" let:row>
-    <p>{row.data.details}</p>
-  </svelte:fragment>
-</DataTable>
-```
-
-#### Pagination
-
-```svelte
-<script>
-  let pagination = { page: 1, limit: 20, total: data.total };
-</script>
-
-<DataTable 
-  {columns}
-  {rows}
-  {pagination}
-  on:pageChange={(event) => goto(`?page=${event.detail.page}`)}
-  on:limitChange={(event) => goto(`?limit=${event.detail.limit}&page=1`)}
-/>
-```
-
-#### Sorting and Filtering
-
-```svelte
-<script>
-  let sortColumnId = 'createdAt';
-  let sortDirection = 'desc';
-  let filters = { status: '' };
-</script>
-
-<DataTable 
-  {columns}
-  {rows}
-  {filters}
-  {sortColumnId}
-  {sortDirection}
-  on:sortChange={(event) => {
-    sortColumnId = event.detail.columnId;
-    sortDirection = event.detail.direction;
-  }}
-  on:filterChange={(event) => {
-    filters = event.detail.filters;
-  }}
-/>
-```
-
-#### Row Actions
-
-```svelte
-<DataTable
-  {columns}
-  {rows}
-  rowActions={(row) => [
-    { value: 'edit', label: 'Edit' },
-    { value: 'delete', label: 'Delete', tone: 'danger' }
-  ]}
-  on:rowActionSelect={(event) => {
-    const { row, action } = event.detail;
-    if (action.value === 'edit') goto(`/users/${row.id}/edit`);
-    if (action.value === 'delete') deleteUser(row.id);
-  }}
-/>
-```
-
-#### Selection
-
-```svelte
-<DataTable
-  {columns}
-  {rows}
-  selectable
-  selectedRowIds={selectedIds}
-  on:rowToggle={(event) => updateSelection(event.detail)}
-  on:toggleAll={(event) => toggleAll(event.detail.selected)}
-/>
-```
-
-Poodle `DataTable` is now the shared table surface. Underlay no longer exports its older table wrapper.
-
-{#if selected.length > 0}
-  <div class="bulk-actions">
-    <span>{selected.length} selected</span>
-    <button on:click={handleBulkDelete}>Delete Selected</button>
-  </div>
-{/if}
-
-<DataTable 
-  {data} 
-  {columns}
-  selectable
-  bind:selected
-/>
-```
-
-#### Loading State
-
-```svelte
-<DataTable 
-  {data} 
-  {columns}
-  loading={$navigating !== null}
-  loadingRows={10}
-/>
-```
-
-#### Custom Cell Content
-
-```svelte
-<DataTable {data} {columns} let:column let:row let:value>
-  <svelte:fragment slot="cell">
-    {#if column.key === 'status'}
-      <span class="badge" class:active={value === 'active'}>{value}</span>
-    {:else}
-      {value}
-    {/if}
-  </svelte:fragment>
-</DataTable>
-```
-
-#### Empty State
-
-```svelte
-<DataTable {data} {columns}>
-  <svelte:fragment slot="empty">
-    <div class="empty-state">
-      <p>No users found</p>
-      <a href="/users/new">Create your first user</a>
-    </div>
-  </svelte:fragment>
-</DataTable>
-```
-
-#### Styling Options
-
-| Prop | Type | Description |
-|------|------|-------------|
-| `compact` | `boolean` | Reduce cell padding |
-| `striped` | `boolean` | Alternate row backgrounds |
-| `stickyHeader` | `boolean` | Sticky header on scroll |
-| `showLimitSelector` | `boolean` | Show items per page selector (default: true) |
-| `limitOptions` | `number[]` | Available items per page options (default: `[10, 20, 50, 100]`) |
-
-CSS variables for customization:
-
-```css
-:root {
-  --underlay-table-border: 1px solid #e2e8f0;
-  --underlay-table-header-bg: #f8fafc;
-  --underlay-table-row-hover: #f1f5f9;
-  --underlay-table-row-selected: #eff6ff;
-  --underlay-table-stripe: #f8fafc;
-  --underlay-table-gap: 0.75rem;
-}
-```
-
-#### Events
-
-| Event | Detail | Description |
-|-------|--------|-------------|
-| `sort` | `{ key, direction }` | Column sort changed |
-| `filter` | `Record<string, string>` | Filter values changed |
-| `page` | `number` | Page changed |
-| `limit` | `number` | Items per page changed |
-| `select` | `T[]` | Selection changed |
-| `action` | `{ action, row }` | Action clicked |
+Keep this Underlay page focused on frontend-web integration and runtime usage,
+not table composition.
 
 ### File Uploads
 
-Use Poodle `FileUpload` for generic file selection, preview, compression, and
-client-side validation. Keep duplicate checking, upload queues, and backend
-progress orchestration app-owned above it.
+`FileUpload` and related visible upload composition now belong in Poodle and
+the media-specific Poodle guides.
 
-#### Basic Usage
+Use:
 
-```svelte
-<script lang="ts">
-  import { FileUpload, type FileUploadItem } from '@poodle/svelte-primitives';
-  
-  let files: FileUploadItem[] = [];
-  
-  async function handleUpload(event: CustomEvent<File[]>) {
-    const filesToUpload = event.detail;
-    
-    for (const file of filesToUpload) {
-      const formData = new FormData();
-      formData.append('file', file);
-      
-      await fetch('/api/uploads', {
-        method: 'POST',
-        body: formData
-      });
-    }
-  }
-</script>
+- `File Upload Recipes` in the Poodle guide set
+- `Media Library And Upload Recipes` in the Poodle guide set
 
-<FileUpload 
-  bind:files
-  on:upload={handleUpload}
-/>
-```
-
-#### Props
-
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `accept` | `string` | `"*"` | Accepted file types (e.g., `"image/*,.pdf"`) |
-| `maxSize` | `number` | `10MB` | Maximum file size in bytes |
-| `multiple` | `boolean` | `false` | Allow multiple files |
-| `maxFiles` | `number` | `10` | Maximum number of files |
-| `showPreview` | `boolean` | `true` | Show image previews |
-| `disabled` | `boolean` | `false` | Disable the input |
-| `files` | `FileUploadItem[]` | `[]` | Current files (bindable) |
-| `compress` | `boolean` | `false` | Enable image compression before upload |
-| `compressionOptions` | `ImageCompressionOptions` | `DEFAULT_COMPRESSION` | Compression settings |
-
-#### Image Uploads with Preview
-
-```svelte
-<FileUpload 
-  accept="image/*"
-  maxSize={5 * 1024 * 1024}
-  multiple
-  showPreview
-  on:upload={handleUpload}
->
-  <svelte:fragment slot="dropzone">
-    <p>Drop images here or click to browse</p>
-    <small>PNG, JPG up to 5MB</small>
-  </svelte:fragment>
-</FileUpload>
-```
-
-#### Image Compression
-
-Automatically compress and resize images before uploading to reduce bandwidth and storage:
-
-```svelte
-<script lang="ts">
-  import {
-    FileUpload,
-    compressImage,
-    DEFAULT_COMPRESSION,
-    type ImageCompressionOptions
-  } from '@poodle/svelte-primitives';
-  
-  // Custom compression options
-  const compressionOptions: ImageCompressionOptions = {
-    maxWidth: 1200,
-    maxHeight: 800,
-    quality: 0.8,
-    format: 'image/webp'  // Convert to WebP for smaller sizes
-  };
-</script>
-
-<!-- Automatic compression during upload -->
-<FileUpload 
-  accept="image/*"
-  compress
-  {compressionOptions}
-  on:upload={handleUpload}
-/>
-```
-
-**Compression Options:**
-
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `maxWidth` | `number` | `1920` | Maximum width in pixels |
-| `maxHeight` | `number` | `1080` | Maximum height in pixels |
-| `quality` | `number` | `0.85` | JPEG/WebP quality (0-1) |
-| `format` | `string` | auto | Output format: `image/jpeg`, `image/png`, or `image/webp` |
-
-**Notes:**
-- Original file is preserved in `FileUploadItem.originalFile` if compression occurred
-- Compression only applies to raster images (JPEG, PNG, WebP)
-- SVG and GIF files are passed through unchanged
-- If compressed file is larger than original, original is kept
-- Uses browser canvas API (no external dependencies)
-
-**Standalone compression function:**
-
-```typescript
-import { compressImage } from '@poodle/svelte-primitives';
-
-// Compress a single file
-const originalFile = event.target.files[0];
-const compressed = await compressImage(originalFile, {
-  maxWidth: 800,
-  quality: 0.7
-});
-
-console.log(`Original: ${originalFile.size}, Compressed: ${compressed.size}`);
-```
-
-#### Progress Tracking
-
-```svelte
-<script>
-  let uploadComponent: FileUpload;
-  
-  async function handleUpload(event) {
-    for (const file of event.detail) {
-      const item = files.find(f => f.file === file);
-      if (!item) continue;
-      
-      try {
-        await uploadWithProgress(file, (progress) => {
-          uploadComponent.updateProgress(item.id, progress);
-        });
-      } catch (error) {
-        uploadComponent.setError(item.id, error.message);
-      }
-    }
-  }
-  
-  async function uploadWithProgress(file, onProgress) {
-    return new Promise((resolve, reject) => {
-      const xhr = new XMLHttpRequest();
-      
-      xhr.upload.addEventListener('progress', (e) => {
-        if (e.lengthComputable) {
-          onProgress(Math.round((e.loaded / e.total) * 100));
-        }
-      });
-      
-      xhr.addEventListener('load', () => {
-        if (xhr.status >= 200 && xhr.status < 300) {
-          resolve(JSON.parse(xhr.responseText));
-        } else {
-          reject(new Error('Upload failed'));
-        }
-      });
-      
-      xhr.addEventListener('error', () => reject(new Error('Network error')));
-      
-      const formData = new FormData();
-      formData.append('file', file);
-      
-      xhr.open('POST', '/api/uploads');
-      xhr.send(formData);
-    });
-  }
-</script>
-
-<FileUpload 
-  bind:this={uploadComponent}
-  bind:files
-  on:upload={handleUpload}
-/>
-```
-
-#### Custom Validation
-
-```svelte
-<FileUpload 
-  validate={(file) => {
-    if (file.name.includes(' ')) {
-      return 'Filename cannot contain spaces';
-    }
-    return null; // Valid
-  }}
-/>
-```
-
-#### Events
-
-| Event | Detail | Description |
-|-------|--------|-------------|
-| `change` | `FileUploadItem[]` | Files list changed |
-| `upload` | `File[]` | New files to upload |
-| `error` | `{ file, message }` | Validation error |
-| `remove` | `FileUploadItem` | File removed |
-
-#### File States
-
-Each `FileUploadItem` has a status:
-
-| Status | Description |
-|--------|-------------|
-| `pending` | File added, not yet uploading |
-| `uploading` | Upload in progress |
-| `complete` | Upload finished successfully |
-| `error` | Upload failed (with error message) |
-
-#### Methods
-
-Call these methods on the component instance:
-
-```typescript
-// Update upload progress (0-100)
-uploadComponent.updateProgress(itemId, 75);
-
-// Set error for a file
-uploadComponent.setError(itemId, 'Server rejected the file');
-
-// Clear all files
-uploadComponent.clear();
-```
-
-### Complete Client Patterns Example
-
-```svelte
-<script lang="ts">
-  import { createFormState } from '@decodelabs/underlay/patterns';
-  import { Button, Callout, Skeleton } from '@poodle/svelte-primitives';
-  import { page } from '$app/stores';
-
-  const form = createFormState({
-    autoSave: {
-      key: 'user-form-draft',
-      storage: 'session',
-      ttl: 1800
-    },
-    onSuccess: () => {
-      goto('/users');
-    }
-  });
-
-  export let data;
-</script>
-
-{#if data.loading}
-  <Skeleton variant="card">
-    <Skeleton variant="title" />
-    <Skeleton variant="text" />
-    <Skeleton variant="text" />
-    <Skeleton variant="button" />
-  </Skeleton>
-{:else}
-  <form method="post" use:enhance={form.enhance}>
-    <input 
-      name="name" 
-      disabled={$form.state.isSubmitting}
-    />
-    
-    <input 
-      name="email" 
-      disabled={$form.state.isSubmitting}
-    />
-
-    {#if $form.state.error}
-      <Callout tone="danger" message={$form.state.error} announceMode="polite" />
-    {/if}
-
-    <Button type="submit" loading={$form.state.isSubmitting} disabled={$form.state.isSubmitting}>
-      {#if $form.state.isSubmitting}Saving...{:else}Create User{/if}
-    </Button>
-  </form>
-{/if}
-```
+Keep this Underlay page focused on frontend-web integration, client wiring, and
+retained runtime patterns instead of generic upload UI.
 
 ### Optimistic Updates
 

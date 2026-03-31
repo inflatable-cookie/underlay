@@ -1,17 +1,27 @@
 # 096 - Form Helpers
 
-This document covers Underlay's form helper patterns for common operations in SPA form pages.
+This guide now assumes a Poodle-first form implementation.
+
+Use Poodle for fields, layout, tabs, editors, and action chrome. Use Underlay
+only for the retained runtime helpers and `SpaFormShell` where shared workflow
+orchestration still earns its place.
+
+Canonical UI implementation guides:
+- `Form Layout And Field Recipes` in the Poodle guide set
+- `Form Validity Recipes` in the Poodle guide set
+- `Page Shell And Admin Recipes` in the Poodle guide set
 
 ## Overview
 
-Form pages in SPA apps often share similar patterns:
+Form pages in SPA apps still share a few orchestration patterns:
 - Submitting forms with specific intents (save, save-close, delete)
 - Syncing selection state from multiple sources
 - Creating search/suggest functions for app-local selector shells
 - Auto-generating slugs from titles
 - Calculating next values in sequences
 
-These helpers extract these patterns into reusable, tested utilities.
+These helpers are the retained non-visual layer. They are not a second shared
+component kit.
 
 `SpaFormShell` remains the retained Underlay page-level workflow shell for SPA
 create/edit pages. Use the helpers in this guide for smaller pieces of form
@@ -79,6 +89,10 @@ Use it as the form-state owner rather than alongside hidden field registries:
 
 Use form tabs when a single form has multiple conceptual sections (for example: Details / Notes / Marking).
 
+The visible tabs contract is Poodle-owned. This section exists only to record
+the retained composition rules that still matter around host mount policy and
+submit orchestration.
+
 ### Why this pattern exists
 
 - Keeps long forms scannable without splitting into separate routes
@@ -89,7 +103,7 @@ Use form tabs when a single form has multiple conceptual sections (for example: 
 
 The recommended hierarchy is:
 
-1. `Tabs variant="card"` or `Tabs variant="pill"`
+1. Poodle `Tabs variant="card"` or `Tabs variant="pill"`
 2. Caller-owned `items`
 3. `let:activeValue`
 4. Fields/inputs
@@ -144,7 +158,7 @@ Only mount the active panel by default. If a specific editor needs to stay mount
 
 - Put top-level sections in form tabs (`details`, `notes`, `marking`, etc.)
 - Keep micro-modes (e.g. `Edit` / `Preview`) as nested tabs *inside* a section
-- Keep `FormActions` outside tab panels so submit controls remain constant
+- Keep Poodle `FormActions` outside tab panels so submit controls remain constant
 - Keep section-specific completion logic app-owned if you need it
 
 ### Common mistakes
@@ -759,6 +773,6 @@ createLocalSearchFns(() => sectionsCopy, ...)
 
 ## Next Steps
 
-- [090-ui-kit](./090-ui-kit.md) - UI components used in forms
+- Poodle form guides - canonical field, layout, and validation-state UI composition
 - [092-selection-suggestions](./092-selection-suggestions.md) - RelationSelector patterns
 - [095-navigation-context](./095-navigation-context.md) - Navigation context for form redirects

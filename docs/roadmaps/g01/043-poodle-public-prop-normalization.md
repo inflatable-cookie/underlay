@@ -53,7 +53,7 @@ Normalize Poodle's public Svelte prop language onto one consistent boolean namin
 Completed so far in 43.2:
 - `Button`, `IconButton`, `TextInput`, `TextArea`, `SearchField`, `Select`, `SplitButton`, `TimeField`, and `TimeZoneSelect`
 - `Switch`, `Checkbox`, `RadioGroup`, and `TriStateSwitch`
-- `Calendar`, `RangeCalendar`, `DatePicker`, `DateRangePicker`, `DateTimePicker`, `DateTimeRangePicker`, `ZonedDateTimePicker`, `Slider`, `RangeSlider`, `NumberEntry`, `Combobox`, `DurationInput`, and `ResizeHandle`
+- `Calendar`, `RangeCalendar`, `DatePicker`, `DateRangePicker`, `DateTimePicker`, `DateTimeRangePicker`, `ZonedDateTimePicker`, `Slider`, `RangeSlider`, `NumberInput`, `Combobox`, `DurationInput`, and `ResizeHandle`
 - `ColorPicker`, `PinInput`, `Rating`, `NavCard`, `ListCard`, and `OrderBy`
 - `Toggle`, `ToggleGroup`, `SegmentedControl`, `CollapseToggle`, `Collapsible`, and `Progress`
 - `Card`, `EditableLabel`, `Accordion`, `NavigationMenu`, `Tabs`, `Menu`, `Menubar`, `ContextMenu`, and `Breadcrumbs`

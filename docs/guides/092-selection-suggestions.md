@@ -2,6 +2,12 @@
 
 This guide covers Underlay's infrastructure for intelligent suggestions in relation selectors. The pattern tracks user selections client-side and sends them as hints to the server, which returns a prioritized list of suggestions.
 
+UI note:
+- selector and picker-shell composition now belongs in Poodle plus app-local
+  code
+- use this guide for the retained suggestion/history runtime only
+- use Poodle’s picker/detail/dialog guides for the visible selector posture
+
 ## Overview
 
 When users work with relation selectors (e.g., selecting a Level for a Module), showing intelligent suggestions improves UX significantly. Rather than always showing items alphabetically or by creation date, we can prioritize items the user has recently selected.
@@ -637,7 +643,7 @@ import { type SuggestionRequestOptions } from "@decodelabs/underlay/patterns";
 
 ## Related Documentation
 
-- [UI Kit - Relation Selector Boundary](./090-ui-kit.md#relationselector) - Current retained helper-layer boundary
+- [098 - Shared Admin Patterns](./098-shared-admin-patterns.md) - Current retained relation-selector helper-layer boundary
 - [TypeScript Client](./080-typescript-client.md) - HTTP client utilities
 - [Rust Backend](./040-rust-backend.md) - Axum handler patterns
 - [Database](./050-database.md) - PostgreSQL query patterns

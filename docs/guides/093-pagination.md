@@ -966,7 +966,7 @@ See the [Design Tokens](#design-tokens) section for the full list.
 
 ## Related Documentation
 
-- [UI Kit](./090-ui-kit.md) - Component documentation
+- [097 - Autonomous List Components](./097-autonomous-list-components.md) - Retained pagination and list-controller runtime guidance
 - [Rust Backend](./040-rust-backend.md) - Axum handler patterns
 - [TypeScript Client](./080-typescript-client.md) - HTTP client utilities
 - [Database](./050-database.md) - PostgreSQL query patterns

@@ -524,4 +524,5 @@ The trait-based `batch_soft_delete` loops through items, which is necessary for 
 
 - **[050-database.md](./050-database.md)** - Database setup and migrations
 - **[070-api-handlers.md](./070-api-handlers.md)** - API endpoint patterns
-- **[090-ui-kit.md](./090-ui-kit.md)** - Shared UI kit guidance and Poodle primitive usage
+- **[097-autonomous-list-components.md](./097-autonomous-list-components.md)** - Retained selection and batch-action runtime patterns
+- **Poodle list and dialog guides** - Generic visible list, bulk-action, and confirmation UI composition

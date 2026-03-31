@@ -58,3 +58,10 @@ When adding a new sweep:
 3. Distinguish "pass criteria" from "manual review required" cases.
 4. Link to relevant Underlay guides/patterns for remediation.
 5. Add the new sweep to the catalogue table above.
+
+## Evidence Boundary
+
+Sweeps are operational runbooks and may reference sibling repos, concrete app
+paths, or exact commands when that specificity is necessary for execution.
+Treat that as runbook evidence, not as a documentation-linking pattern for the
+active library-facing guides and front doors.

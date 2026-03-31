@@ -1,6 +1,6 @@
 <script lang="ts">
   import { untrack } from "svelte";
-  import { Button, Callout, Field, FormActions, Tabs, TextInput, TotpInput } from "@poodle/svelte-primitives";
+  import { Button, Callout, Field, FormActions, Tabs, TextInput, CodeInput } from "@poodle/svelte-primitives";
   import type { TabItem } from "@poodle/svelte-primitives";
 
   type Method = "totp" | "backup" | "email";
@@ -100,7 +100,7 @@
     </p>
 
     {#if activeMethod === "totp"}
-      <TotpInput
+      <CodeInput
         value={code}
         label="2FA code"
         disabled={loading}
@@ -122,7 +122,7 @@
         <Callout tone="danger" message={error} announceMode="assertive" />
       {/if}
     {:else if emailCodeRequested}
-      <TotpInput
+      <CodeInput
         value={code}
         label="Email code"
         disabled={loading}
@@ -172,7 +172,7 @@
       {/if}
     </p>
 
-    <TotpInput
+    <CodeInput
       value={code}
       label="Email code"
       disabled={loading}

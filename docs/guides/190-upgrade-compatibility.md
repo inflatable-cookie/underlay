@@ -102,7 +102,7 @@ Reusable templates:
   - in `underlay`: `effigy health && effigy qa:docs && effigy qa:northstar`
   - in direct consumer apps: run the repo-owned Svelte check or equivalent smoke validation after upgrading
 - Changed guidance:
-  - [090-ui-kit.md](./090-ui-kit.md)
+  - Poodle guide surface and retained Underlay boundary docs
   - [075-validation.md](./075-validation.md)
   - [110-admin.md](./110-admin.md)
   - [043-poodle-public-prop-normalization.md](../roadmaps/g01/043-poodle-public-prop-normalization.md)

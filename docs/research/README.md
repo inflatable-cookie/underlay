@@ -47,6 +47,15 @@ Keep tentative findings here until they can answer all of:
 - which tradeoffs the project accepts
 - what must be measured or prototyped before adoption
 
+## Evidence Boundary
+
+Research notes may preserve raw source evidence, including sibling-repo file
+paths, specimen file references, and local capture details, when that fidelity
+matters to the analysis. Once findings are promoted into active guides,
+architecture docs, contracts, or front-door READMEs, rewrite those references
+into normalized repo-local links or prose references rather than copying the
+raw evidence format forward.
+
 ## Using This Research During Delivery
 
 As the corpus grows:
@@ -141,8 +150,8 @@ See [`RESEARCH_TOPICS.md`](./RESEARCH_TOPICS.md) for a catalog of strategic rese
 ### Finding 1: Passkey Client Abstraction Gap (High Confidence)
 
 **Evidence**: Analysis of Acme reference implementation shows:
-- `acme-admin/src/routes/account/passkeys/+page.svelte`: 422 lines, ~40 lines direct WebAuthn API
-- `acme-admin/src/routes/login/+page.svelte`: Similar `navigator.credentials.get()` implementation
+- the ACME admin passkeys page: 422 lines, ~40 lines direct WebAuthn API
+- the ACME admin login page: similar `navigator.credentials.get()` implementation
 - Error sanitization manually implemented (`sanitizePasskeyError`)
 - Loading/error/success state management repeated
 

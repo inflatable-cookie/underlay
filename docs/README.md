@@ -61,3 +61,16 @@ Project vision, goals, and strategic direction.
   real consuming projects.
 - `research/` is where external evidence and comparison work should live before
   it becomes architecture or roadmap scope.
+
+## Documentation Boundary
+
+Treat the active library-facing docs surface as:
+
+- repo-local links only for Underlay content
+- prose references only for sibling repositories or external reference apps
+- no absolute local filesystem paths
+
+Historical evidence surfaces such as archived logs, roadmap bodies, and
+research notes may retain raw local paths or sibling-repo file references when
+they are part of the frozen record. Do not copy that style back into active
+guides, architecture docs, contracts, or front-door READMEs.

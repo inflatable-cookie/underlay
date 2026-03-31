@@ -1,6 +1,7 @@
 # 180 - Admin Workflow Playbook
 
-A practical "start here" playbook for building admin functionality with Underlay.
+A practical "start here" playbook for building admin functionality with
+Underlay’s retained runtime/client surfaces plus Poodle-first UI composition.
 
 ## When To Use This
 
@@ -31,9 +32,20 @@ Use this guide when the request is:
 4. Build backend -> client -> UI in order
 - DB/data functions, then API handlers/routes, then TS client commands/types, then Svelte pages/components.
 - Keep response/error shapes consistent with `docs/guides/070-api-handlers.md`.
+- For the UI implementation layer, use the Poodle guides as the canonical
+  source:
+  - `Admin Feature Delivery Recipes`
+  - `Page Shell And Admin Recipes`
+  - `List And Filter Recipes`
+  - `Dialog And Detail Recipes`
 
 5. Apply app shell/runtime requirements (SPA admin)
 - Follow `docs/guides/110-admin.md` for auth runtime setup, toasts, and Nightfire strategy configuration.
+- Use the ACME admin route family as the concrete implementation reference:
+  - the ACME admin project list/detail/edit routes
+  - the ACME admin media detail route
+  - the ACME admin user detail route
+  - all in the separate `underlay-reference` repository
 
 6. Verify with minimum testing matrix
 - Use the per-recipe matrix in `docs/guides/185-recipe-map-and-testing-matrix.md`.

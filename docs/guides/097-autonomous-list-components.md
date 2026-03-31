@@ -1,6 +1,16 @@
 # Autonomous List Components
 
-This guide covers the **Autonomous List Component** pattern - a set of hooks and components that enable list views to be fully self-contained, handling their own data fetching, state management, and batch operations.
+This guide now describes a retained runtime pattern, not a shared component
+layer.
+
+Build list chrome with Poodle directly. Use the helpers here for state,
+selection, batch actions, and controller logic when that orchestration still
+belongs in a shared runtime layer.
+
+Canonical UI implementation guides:
+- `List And Filter Recipes` in the Poodle guide set
+- `Page Shell And Admin Recipes` in the Poodle guide set
+- `Admin Feature Delivery Recipes` in the Poodle guide set
 
 ## Overview
 
@@ -9,7 +19,6 @@ The Autonomous List Component pattern solves the "god file" problem where parent
 Storybook coverage:
 - Poodle `LogList`
 - Poodle `BulkActionBar`
-- `Patterns/CopyActionsMenu`
 
 Run `effigy storybook` from the repo root to inspect the retained batch/list helper surface interactively.
 
@@ -73,13 +82,18 @@ If a narrower filter is set, ignore broader filters in the query call to avoid a
 
 ### `useBatchSelection`
 
-**Location:** `@decodelabs/underlay/patterns`
+**Location:** `@decodelabs/underlay/runtime/data`
 
 Basic selection state management for multi-select list operations. Use this when you only need selection without registered batch actions.
 
+UI note:
+- the `BulkActionBar`, `AlertDialog`, `ListCard`, and surrounding list shell are
+  Poodle concerns
+- this section is about the retained shared selection/runtime layer only
+
 ```svelte
 <script lang="ts">
-  import { useBatchSelection } from '@decodelabs/underlay/patterns';
+  import { useBatchSelection } from '@decodelabs/underlay/runtime/data';
   import { AlertDialog, BulkActionBar } from '@poodle/svelte-primitives';
 
   const items = $derived(data.projects);
@@ -162,13 +176,13 @@ interface BatchSelectionResult<T> {
 
 ### `useBatchActions`
 
-**Location:** `@decodelabs/underlay/patterns`
+**Location:** `@decodelabs/underlay/runtime/data`
 
 Extends `useBatchSelection` with action registration and execution. This is the recommended hook for autonomous list components.
 
 ```svelte
 <script lang="ts">
-  import { useBatchActions } from '@decodelabs/underlay/patterns';
+  import { useBatchActions } from '@decodelabs/underlay/runtime/data';
   import { AlertDialog, BulkActionBar } from '@poodle/svelte-primitives';
 
   const batch = useBatchActions<string>();

@@ -38,7 +38,7 @@ Underlay ownership.
     internalized into callers
 - The easiest and highest-value deletions were the generic detail/layout
   wrapper family and adjacent stat/list shells:
-  - `DetailsCard`, `DetailsItem`, `DetailsSection`, `DetailList`, `DetailItem`
+  - `DetailsCard`, `DetailItem`, `DetailsSection`, `DetailList`, `DetailItem`
   - `ContainerGrid`
   - `InlineActionGroup`
   - `StatCard`, `StatGrid`
@@ -78,7 +78,7 @@ Completed in 45.1:
 ## Batch 45.2 - Easy Generic Wrapper Contraction
 
 - [x] Remove or migrate the generic detail/layout wrapper family:
-  - `DetailsCard`, `DetailsItem`, `DetailsSection`, `DetailList`, `DetailItem`
+  - `DetailsCard`, `DetailItem`, `DetailsSection`, `DetailList`, `DetailItem`
   - `ContainerGrid`
 - [x] Remove or migrate the simplest adjacent thin composition helpers:
   - `InlineActionGroup`
@@ -88,7 +88,7 @@ Completed in 45.1:
 - [x] Remove the public exports once the callers are moved.
 
 Completed so far in 45.2:
-- `DetailsCard`, `DetailsItem`, `DetailsSection`, `DetailList`, `DetailItem`,
+- `DetailsCard`, `DetailItem`, `DetailsSection`, `DetailList`, `DetailItem`,
   `ContainerGrid`, `InlineActionGroup`, and `CardActions` are now gone from the
   public Underlay surface
 - the live detail/account/system callers in `underlay-reference/acme-admin` and
@@ -198,7 +198,7 @@ Completed so far in 45.3:
 - non-exported compatibility shims now exist for the deleted deep file-path
   imports that still had broad live app usage during the transition:
   `Dialog`, `AlertDialog`, `ActionArea`, `InlineActionGroup`, `DetailsCard`,
-  `DetailsSection`, `DetailsItem`, `TextInput`, `CompactGroupedBar`, and
+  `DetailsSection`, `DetailItem`, `TextInput`, `CompactGroupedBar`, and
   `CompactGroupedBarGroup`
 - the safety-net layer is intentionally not a public-surface reversal; the
   deleted components remain removed from `ts/src/components/index.ts`, but the
@@ -257,7 +257,7 @@ Completed so far in 45.3:
   stale styling wrapper: route-style navigation, compact reorder affordances,
   card-level selection behavior, and action-trigger composition all remain in
   real live use
-- the old generic `ActionArea`, `DetailsCard`, `DetailsItem`, `DetailsSection`,
+- the old generic `ActionArea`, `DetailsCard`, `DetailItem`, `DetailsSection`,
   `ListCard`, `ListGrid`, and `Tooltip` deep-import family is now also cleared
   from live consumer code across all six app groups; in `acowtancy/dairy`
   those callers now resolve through app-owned local replacements rather than

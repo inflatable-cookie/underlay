@@ -1,13 +1,22 @@
 # 062 - Auth UI Components
 
-This guide covers the reusable authentication UI components provided by Underlay. These components handle common auth flows like login, password reset, and two-factor authentication.
+This page is now a bridge note, not the primary implementation guide.
+
+Generic auth UI implementation guidance now lives in Poodle:
+- `Auth UI And Workflow Recipes` in the Poodle guide set
+
+Keep using this Underlay page only for the retained boundary:
+- `LoginPage`
+- `ForgotPasswordFlow`
+- `PasswordRequirements`
 
 ## Overview
 
-Underlay now provides two retained auth layers:
+The current auth boundary has two layers:
 
-1. **Workflow shells** - shared multi-step auth pages and flows
-2. **Retained auth helpers** - focused workflow-adjacent helpers that still earn shared Underlay ownership
+1. **Poodle auth UI atoms** - generic inputs and checklist rendering
+2. **Retained Underlay auth workflows/helpers** - shared orchestration that is
+   still not just generic design-system UI
 
 Storybook coverage:
 - `Auth/LoginPage`
@@ -27,7 +36,7 @@ Run `effigy storybook` from the repo root to inspect the retained auth surface i
 
 | Surface | Description |
 |-----------|-------------|
-| Poodle `TotpInput` | 6-digit one-time-code input with a single real input and visual digit slots |
+| Poodle `CodeInput` | 6-digit one-time-code input with a single real input and visual digit slots |
 | Poodle `PasswordRequirements` | Agnostic password-policy checklist UI driven by caller-supplied requirements |
 | Underlay `PasswordRequirements` pattern | Auth-policy adapter over the Poodle checklist, including retained fetch, fallback defaults, and shared password-reset/change workflow behavior |
 
@@ -35,7 +44,7 @@ Run `effigy storybook` from the repo root to inspect the retained auth surface i
 
 - `TwoFactorStep`, `SuccessStep`, and `PasswordResetStep` remain internal implementation detail inside the shared auth flows. They are not part of the public `@decodelabs/underlay/patterns` surface.
 - `LoginForm`, `RegisterForm`, `TotpSetup`, `PassKeyButton`, `GoogleSignInButton`, and `AccountRecovery` are retired from the public component surface and removed from the live shared implementation set. The passkey and Google button treatments now live directly inside the shared login tabs instead of as separate wrapper components.
-- The old account-settings surfaces (`PasskeyManager`, `SecuritySettings`, `SessionList`) are retired. Build account security pages directly in the app over shared auth hooks, Poodle `TotpInput`, Underlay `PasswordRequirements`, and other Poodle primitives.
+- The old account-settings surfaces (`PasskeyManager`, `SecuritySettings`, `SessionList`) are retired. Build account security pages directly in the app over shared auth hooks, Poodle `CodeInput`, Underlay `PasswordRequirements`, and other Poodle primitives.
 
 ### Retained Helper Boundary
 
@@ -51,6 +60,17 @@ If this surface is split later, the likely successor is not a direct Poodle
 component. It would be a shared auth-policy utility plus caller-owned Poodle
 composition for the rendered checklist.
 
+### Poodle-First Rule
+
+For new auth screens:
+
+- use Poodle `Card`, `Field`, `TextInput`, `Button`, `Tabs`, and `Callout`
+- use Poodle `CodeInput` directly
+- use Poodle `PasswordRequirements` directly when password-policy loading is
+  caller-owned
+- use Underlay only for `LoginPage`, `ForgotPasswordFlow`, or the retained
+  auth-policy adapter layer
+
 ### Current Stop Point
 
 The auth reassessment line is now at an explicit retained boundary:
@@ -58,14 +78,14 @@ The auth reassessment line is now at an explicit retained boundary:
 - keep `LoginPage` as the shared multi-method auth workflow shell under `@decodelabs/underlay/patterns`
 - keep `ForgotPasswordFlow` as the shared reset workflow shell under `@decodelabs/underlay/patterns`
 - keep `PasswordRequirements` as the shared auth-policy adapter under `@decodelabs/underlay/patterns`
-- use Poodle `TotpInput` directly for one-time-code entry
+- use Poodle `CodeInput` directly for one-time-code entry
 - use Poodle `PasswordRequirements` directly when password-policy loading is already caller-owned
 
 There is no smaller honest follow-on migration wave for this family right now.
 
-## Quick Start
+## Retained Underlay Boundary
 
-### Basic Login Page
+### Workflow Shells
 
 ```svelte
 <script lang="ts">
@@ -98,9 +118,8 @@ There is no smaller honest follow-on migration wave for this family right now.
   }
 </script>
 
-<div class="auth-layout">
-  <div class="auth-layout__card">
-    <Card variant="elevated">
+<div class="auth-shell">
+  <Card variant="elevated">
       <h1>My App</h1>
       <LoginPage
         methods={['password']}
@@ -109,12 +128,11 @@ There is no smaller honest follow-on migration wave for this family right now.
         onComplete={handleComplete}
         forgotPasswordHref="/forgot-password"
       />
-    </Card>
-  </div>
+  </Card>
 </div>
 ```
 
-### Password Reset Flow
+### Auth Policy Adapter
 
 ```svelte
 <script lang="ts">
@@ -139,9 +157,8 @@ There is no smaller honest follow-on migration wave for this family right now.
   }
 </script>
 
-<div class="auth-layout">
-  <div class="auth-layout__card">
-    <Card variant="elevated">
+<div class="auth-shell">
+  <Card variant="elevated">
       <h1>Forgot Password</h1>
       <ForgotPasswordFlow
         onRequestCode={handleRequestCode}
@@ -150,8 +167,7 @@ There is no smaller honest follow-on migration wave for this family right now.
         {fetchRequirements}
         loginHref="/login"
       />
-    </Card>
-  </div>
+  </Card>
 </div>
 ```
 
@@ -159,12 +175,12 @@ There is no smaller honest follow-on migration wave for this family right now.
 
 ### Auth Page Framing
 
-`AuthLayout` is retired. Compose auth pages directly with a small local route
-shell over Poodle `Card`. The retained Underlay auth workflow surface now
-starts in `@decodelabs/underlay/patterns` (`LoginPage`, `ForgotPasswordFlow`,
-`PasswordRequirements`). Use Poodle `TotpInput` directly for
-one-time-code entry and Poodle `PasswordRequirements` directly when the caller
-already owns password-policy loading.
+`AuthLayout` is retired. Compose auth pages directly with a small app-local
+route shell over Poodle `Card`. The retained Underlay auth workflow surface now
+starts in `@decodelabs/underlay/patterns` (`LoginPage`,
+`ForgotPasswordFlow`, `PasswordRequirements`). Use Poodle `CodeInput`
+directly for one-time-code entry and Poodle `PasswordRequirements` directly
+when the caller already owns password-policy loading.
 
 ### LoginPage
 

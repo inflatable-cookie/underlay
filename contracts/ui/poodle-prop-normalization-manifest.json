@@ -113,7 +113,7 @@
     { "component": "Menubar", "layer": "primitive", "props": [["isDisabled", "disabled"], ["isChecked", "checked"]], "status": "completed" },
     { "component": "NavCard", "layer": "primitive", "props": [["isDisabled", "disabled"]], "status": "completed" },
     { "component": "NavigationMenu", "layer": "primitive", "props": [["isDisabled", "disabled"]], "status": "completed" },
-    { "component": "NumberEntry", "layer": "primitive", "props": [["isDisabled", "disabled"], ["isReadOnly", "readOnly"]], "status": "completed" },
+    { "component": "NumberInput", "layer": "primitive", "props": [["isDisabled", "disabled"], ["isReadOnly", "readOnly"]], "status": "completed" },
     { "component": "OrderBy", "layer": "primitive", "props": [["isDisabled", "disabled"]], "status": "completed" },
     { "component": "Pill", "layer": "primitive", "props": [["isMuted", "muted"]], "status": "completed" },
     { "component": "PinInput", "layer": "primitive", "props": [["isDisabled", "disabled"]], "status": "completed" },

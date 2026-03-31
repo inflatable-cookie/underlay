@@ -12,6 +12,14 @@ here:
 - `@decodelabs/underlay/client` for transport and SvelteKit-facing client helpers
 - `@decodelabs/underlay/nightfire` for structured content editor/runtime
 
+UI guide translation status:
+
+- Poodle now owns the canonical implementation guides for shared UI
+- Underlay UI-shaped guides should shrink to retained boundary notes,
+  workflow/runtime exceptions, and full-stack integration guidance
+- new generic UI implementation recipes should be added in Poodle, organised on
+  a per-implementation basis
+
 ## Modes (Multi-repo vs Monorepo)
 
 This guide supports two layouts:
@@ -122,9 +130,9 @@ code/
 ├── 070-api-handlers/       # Handler examples
 ├── 077-media-library/      # Media upload, blob storage examples
 ├── 080-typescript-client/  # HTTP client, types
-├── 090-ui-kit/             # Svelte components
-├── 100-frontend-web/       # SvelteKit pages (web)
-├── 110-admin/              # SvelteKit pages (admin)
+├── 090-ui-kit/             # Deprecated: generic UI recipes now live in Poodle
+├── 100-frontend-web/       # Integration-oriented frontend-web snippets
+├── 110-admin/              # Integration-oriented admin snippets
 ├── 120-configuration/      # Environment examples
 ├── 130-testing/            # Test examples
 ├── 150-ci-cd/              # CI/CD workflows
@@ -132,6 +140,11 @@ code/
 ```
 
 ## Quick Reference
+
+UI example rule:
+
+- use Poodle guides plus ACME reference apps for generic visible UI
+- use Underlay `code/` examples only for retained integration or runtime wiring
 
 ### Essential Commands
 

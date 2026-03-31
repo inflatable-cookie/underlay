@@ -15,7 +15,7 @@ Historical language boundary:
 
 ## Current State
 
-The active roadmap is `g01.093`.
+There is no active roadmap right now.
 
 The retained-surface reassessment wave is complete, and the focused follow-on
 capability projects for shared tables, sorting, reorder workflow, inline
@@ -142,6 +142,14 @@ the real extension families, and the root barrel remains stable for the broad
 editor/renderer caller set. `g01.093` is now complete too: the root
 `@decodelabs/underlay` barrel is confirmed as compatibility-only, and active
 docs now teach the narrower package surfaces instead of the old flat barrel.
+`g01.094` is now complete too: generic visible UI implementation guidance is
+now Poodle-owned and anchored to ACME reference implementations instead of
+living in Underlay. `g01.095` is now complete too: the long-tail Underlay
+integration guides and example folders have been pruned so only retained
+runtime/client/full-stack evidence remains. `g01.096` is now complete too: the
+active docs surface is explicitly normalized while the remaining raw local-path
+and sibling-repo residue is confirmed as acceptable frozen evidence in archival
+logs, roadmap bodies, research notes, and sweep runbooks.
 
 The remaining public Underlay surface is intentionally:
 
@@ -171,17 +179,12 @@ The remaining public Underlay surface is intentionally:
 package-surface audit, front-door package-language alignment, the final obvious
 pure-helper split out of `runtime`, the active sibling-repo package-boundary
 recovery, the `DetailMeta*` successor cleanup, the retained `patterns`
-stop-point clarification, and the retained `client` surface organization are
-complete through `g01.091`. `g01.092` adds the Nightfire extraction-readiness
-layer so the retained editor/runtime package now has explicit future seams too.
-`g01.093` closes the package-surface audit line by making the root barrel
-compatibility-only in guidance rather than a first-class teaching surface.
+stop-point clarification, the retained `client` surface organization, the
+Nightfire extraction-readiness layer, the root-barrel compatibility guidance,
+the UI-guide translation wave, the long-tail Underlay UI-guide prune wave, and
+the archival-doc evidence-boundary audit are now complete through `g01.096`.
 
 ## Next Task
 
-This generation is complete. If work continues immediately, the strongest next
-follow-on is a fresh boundary challenge on one retained package surface such as
-this package-surface audit line is complete. If work continues immediately, the
-next honest follow-on is outside this boundary cleanup track, or a future
-breaking-change program if the root compatibility barrel should eventually be
-removed.
+Open a fresh roadmap only when a new retained package or runtime boundary
+challenge is ready. The UI-guide translation and prune line is complete.

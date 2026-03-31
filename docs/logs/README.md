@@ -10,3 +10,15 @@ Logs capture meaningful documentation and delivery batches for Underlay.
 - Do not create a separate log for every tiny task.
 - When work is driven by a roadmap, include the roadmap ID in the log body.
 - If the batch changes consumer-visible behavior, APIs, configuration, migrations, or integration patterns, include a `Consumer Upgrade Notes` block using the compatibility template or link the fuller upgrade note.
+
+## Historical Evidence Boundary
+
+Logs are archival records. They may preserve:
+
+- raw local filesystem paths
+- sibling-repo file references
+- exact shell commands captured during the batch
+
+Keep that evidence intact when it is part of the historical record. Do not use
+log formatting as the model for active guide, architecture, or README content,
+where repo-local links and normalized prose references are required instead.
