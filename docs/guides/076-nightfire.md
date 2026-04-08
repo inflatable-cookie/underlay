@@ -771,23 +771,24 @@ Underlay provides TypeScript components for editing and rendering Nightfire cont
 
 ### Installation
 
-Import Nightfire components from `@decodelabs/underlay/nightfire`:
+Import Nightfire components from explicit Nightfire subpaths:
 
 ```typescript
+import { NightfireEditor, type NightfireValue } from "@decodelabs/underlay/nightfire/editor";
+import { NightfireRenderer } from "@decodelabs/underlay/nightfire/renderer";
 import {
-  NightfireEditor,
-  NightfireRenderer,
-  type NightfireValue,
   configureNightfireStrategies,
   createNightfireStrategiesContext,
   useNightfireStrategies
-} from "@decodelabs/underlay/nightfire";
+} from "@decodelabs/underlay/nightfire/strategies";
 ```
 
-Keep using the root `@decodelabs/underlay/nightfire` barrel for broad editor or
-renderer imports. For focused extension contracts, the public Nightfire subpaths
-are now explicit too:
+The public Nightfire subpaths are:
 
+- `@decodelabs/underlay/nightfire/editor`
+- `@decodelabs/underlay/nightfire/renderer`
+- `@decodelabs/underlay/nightfire/block-editor`
+- `@decodelabs/underlay/nightfire/markdown`
 - `@decodelabs/underlay/nightfire/editor-registry`
 - `@decodelabs/underlay/nightfire/render-registry`
 - `@decodelabs/underlay/nightfire/validator-registry`
@@ -817,7 +818,7 @@ Configure the strategies fetcher once in your app's root layout:
   import {
     configureNightfireStrategies,
     createNightfireStrategiesContext
-  } from "@decodelabs/underlay/nightfire";
+  } from "@decodelabs/underlay/nightfire/strategies";
   import { nightfireCommands } from "@my-app/api";
   import { auth } from "$lib/stores/auth";
 
@@ -882,7 +883,7 @@ The `NightfireEditor` component provides a block-based editor for Nightfire cont
 
 ```svelte
 <script lang="ts">
-  import { NightfireEditor, type NightfireValue } from "@decodelabs/underlay/nightfire";
+  import { NightfireEditor, type NightfireValue } from "@decodelabs/underlay/nightfire/editor";
 
   let description = $state<NightfireValue>({ schema: "myapp:content/description@1" });
   let prepare = $state<(formData: FormData) => void>(() => {});
@@ -929,7 +930,7 @@ When enabled:
     NightfireEditor,
     type NightfireSlashCommandsConfig,
     type NightfireValue
-  } from "@decodelabs/underlay/nightfire";
+  } from "@decodelabs/underlay/nightfire/editor";
 
   let body = $state<NightfireValue>({ schema: "myapp:content/body@1" });
 
@@ -1040,7 +1041,7 @@ When editing existing content, the stored schema may differ from the expected sc
 
 ```svelte
 <script lang="ts">
-  import { NightfireEditor, type NightfireValue, type SchemaMismatchInfo } from "@decodelabs/underlay/nightfire";
+  import { NightfireEditor, type NightfireValue, type SchemaMismatchInfo } from "@decodelabs/underlay/nightfire/editor";
 
   let description = $state<NightfireValue>({ schema: "myapp:content/markup@1" });
   let schemaMismatch = $state<SchemaMismatchInfo | null>(null);
@@ -1085,7 +1086,7 @@ For advanced use cases, you can access the strategies store directly:
 
 ```svelte
 <script lang="ts">
-  import { useNightfireStrategies } from "@decodelabs/underlay/nightfire";
+  import { useNightfireStrategies } from "@decodelabs/underlay/nightfire/strategies";
   import { onMount } from "svelte";
 
   const strategiesStore = useNightfireStrategies();
@@ -1142,7 +1143,7 @@ For read-only display of Nightfire content:
 
 ```svelte
 <script lang="ts">
-  import { NightfireRenderer, type NightfireValue } from "@decodelabs/underlay/nightfire";
+  import { NightfireRenderer, type NightfireValue } from "@decodelabs/underlay/nightfire/renderer";
 
   interface Props {
     content: NightfireValue;
@@ -1161,7 +1162,7 @@ For read-only display of Nightfire content:
 ### Checking for Empty Content
 
 ```typescript
-import { isEmptyNightfire, type NightfireValue } from "@decodelabs/underlay/nightfire";
+import { isEmptyNightfire, type NightfireValue } from "@decodelabs/underlay/nightfire/utils";
 
 const value: NightfireValue = { schema: "myapp:content/body@1" };
 
@@ -1173,7 +1174,7 @@ if (isEmptyNightfire(value)) {
 ### Normalising Values
 
 ```typescript
-import { normaliseNightfireValue, type NightfireValue } from "@decodelabs/underlay/nightfire";
+import { normaliseNightfireValue, type NightfireValue } from "@decodelabs/underlay/nightfire/utils";
 
 // Normalise to a specific schema, coercing cardinality as needed
 const normalised = normaliseNightfireValue(
@@ -1186,7 +1187,7 @@ const normalised = normaliseNightfireValue(
 ### Preparing for Save
 
 ```typescript
-import { prepareNightfireForSave, type NightfireValue } from "@decodelabs/underlay/nightfire";
+import { prepareNightfireForSave, type NightfireValue } from "@decodelabs/underlay/nightfire/validation";
 
 // Strips transient properties, recomputes hashes
 const prepared = prepareNightfireForSave(value);
@@ -1195,7 +1196,7 @@ const prepared = prepareNightfireForSave(value);
 ### Writing to FormData
 
 ```typescript
-import { writeNightfireToFormData, type NightfireValue } from "@decodelabs/underlay/nightfire";
+import { writeNightfireToFormData, type NightfireValue } from "@decodelabs/underlay/nightfire/utils";
 
 const formData = new FormData();
 writeNightfireToFormData(formData, "body", value);
@@ -1211,7 +1212,7 @@ Here's a complete example of a form with Nightfire content:
 <!-- ArticleForm.svelte -->
 <script lang="ts">
   import { Field } from "@poodle/svelte-primitives";
-  import { NightfireEditor, type NightfireValue } from "@decodelabs/underlay/nightfire";
+  import { NightfireEditor, type NightfireValue } from "@decodelabs/underlay/nightfire/editor";
 
   interface Props {
     values: { title: string; body: NightfireValue };

@@ -514,7 +514,7 @@ Use this for large datasets where you want cursor-based navigation:
 import {
   createPaginationController,
   type ServerPaginationOptions
-} from "@decodelabs/underlay/runtime";
+} from "@decodelabs/underlay/runtime/data";
 ```
 
 #### Options
@@ -767,7 +767,7 @@ import {
   appendPaginationParams,
   type PaginatedResponse,
   type PaginationParams
-} from "@decodelabs/underlay/runtime";
+} from "@decodelabs/underlay/runtime/data";
 
 export async function getItemsPaginated(
   fetchFn: typeof fetch,
@@ -789,7 +789,7 @@ export async function getItemsPaginated(
     createPaginationController,
     createClientPagination,
     PageHeader
-  } from "@decodelabs/underlay/runtime";
+  } from "@decodelabs/underlay/runtime/data";
   import { FilterToolbar } from "@poodle/svelte-composites";
   import {
     Field,

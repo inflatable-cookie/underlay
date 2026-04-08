@@ -7,10 +7,10 @@ Underlay’s guides now describe the retained package surfaces that still belong
 here:
 
 - `@decodelabs/underlay/patterns` for retained workflow/page-shell UI
-- `@decodelabs/underlay/runtime` for shared app/runtime helpers and controllers
-- `@decodelabs/underlay/utils` for small standalone helpers
-- `@decodelabs/underlay/client` for transport and SvelteKit-facing client helpers
-- `@decodelabs/underlay/nightfire` for structured content editor/runtime
+- `@decodelabs/underlay/runtime/*` for shared app/runtime helpers and controllers
+- `@decodelabs/underlay/utils/*` for small standalone helpers
+- `@decodelabs/underlay/client/*` for transport and SvelteKit-facing client helpers
+- `@decodelabs/underlay/nightfire/*` for structured content editor/runtime
 
 UI guide translation status:
 

@@ -15,7 +15,7 @@ This guide maps each composite recipe to real Acowtancy reference files and defi
 | Delete Batch Cascades | `dairy/src/routes/(app)/learning/trash/+page.svelte` | `cattle-grid/src/commands/learning-commands.ts` | `farmyard/crates/db/src/learning/soft_delete/simple/cascade/*.rs` |
 | Media Upload Pipeline | `dairy/src/routes/(app)/media/upload/+page.svelte` | `cattle-grid/src/commands/media-commands.ts` | `farmyard/crates/api/src/routes/admin/media/uploads/*.rs` |
 | Relation Selector with Inline Create | `dairy/src/lib/forms/learning/activity-form/*-selector.svelte` | `cattle-grid/src/commands/content-commands.ts` | `farmyard/crates/api/src/routes/admin/content/*/mutations*.rs` |
-| Context-Preserving Navigation | `dairy/src/lib/cards/*ActionsMenu.svelte` | `@decodelabs/underlay/client` usage | N/A |
+| Context-Preserving Navigation | `dairy/src/lib/cards/*ActionsMenu.svelte` | `@decodelabs/underlay/client/navigation` usage | N/A |
 | Synced Hierarchical Selection | `dairy/src/routes/(app)/learning/outcomes/new/+page.svelte` | `cattle-grid/src/commands/learning/modules.ts` | `farmyard/crates/api/src/routes/admin/learning/*` |
 | Admin Ops Console | `dairy/src/routes/(app)/system/*` | `cattle-grid/src/commands/platform-commands.ts` | `farmyard/crates/api/src/routes/admin/{platform,infra}.rs` |
 | Nightfire Integration | `dairy/src/routes/(app)/+layout.svelte` | `cattle-grid/src/commands/nightfire-commands.ts` | `farmyard/crates/api/src/routes/admin/nightfire*.rs` |

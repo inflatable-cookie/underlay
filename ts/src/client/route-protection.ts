@@ -7,7 +7,7 @@
  * @example
  * ```typescript
  * // In hooks.server.ts
- * import { isPublicPath, createLoginRedirect } from "@decodelabs/underlay/client";
+ * import { isPublicPath, createLoginRedirect } from "@decodelabs/underlay/client/route-protection";
  *
  * const PUBLIC_PATHS = ["/login", "/register", "/auth/callback", "/health"];
  *

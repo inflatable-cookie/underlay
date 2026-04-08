@@ -196,7 +196,7 @@ const derivedModules = $derived.by((): DerivedModule[] => {
 **Client-side helper:**
 
 ```typescript
-import { createLocalDrillDownSearchFns } from "@decodelabs/underlay/runtime";
+import { createLocalDrillDownSearchFns } from "@decodelabs/underlay/runtime/relations";
 
 const moduleDrillDown = $derived(
   createLocalDrillDownSearchFns(() => derivedModules, {
@@ -353,7 +353,7 @@ function buildAreaFilters(ddCtx: DrillDownContext): FilterConfig[] {
 
 ## Imports
 
-All drill-down types and helpers are exported from `@decodelabs/underlay/runtime`:
+All drill-down types and helpers are exported from `@decodelabs/underlay/runtime/relations`:
 
 ```typescript
 import {
@@ -368,7 +368,7 @@ import {
   type DrillDownSuggestionsFn,
   type FilterConfig,
   type SelectableRelation
-} from "@decodelabs/underlay/runtime";
+} from "@decodelabs/underlay/runtime/relations";
 ```
 
 ---

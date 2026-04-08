@@ -61,7 +61,7 @@ interface UserProfileBase {
 Use `deriveDisplayName()` to automatically derive a display name:
 
 ```typescript
-import { deriveDisplayName } from "@decodelabs/underlay/runtime";
+import { deriveDisplayName } from "@decodelabs/underlay/runtime/auth";
 
 deriveDisplayName("Alice Smith");        // "Alice"
 deriveDisplayName("李明");               // "李明" (CJK names kept whole)
@@ -76,7 +76,7 @@ The function handles CJK names specially - it doesn't split them since they're t
 Use `getEffectiveDisplayName()` for robust fallback:
 
 ```typescript
-import { getEffectiveDisplayName } from "@decodelabs/underlay/runtime";
+import { getEffectiveDisplayName } from "@decodelabs/underlay/runtime/auth";
 
 // Falls back through: displayName → fullName → email → "User"
 getEffectiveDisplayName(profile, user.email);
@@ -87,7 +87,7 @@ getEffectiveDisplayName(profile, user.email);
 ### Base Profile Type
 
 ```typescript
-import { type UserProfileBase } from "@decodelabs/underlay/runtime";
+import { type UserProfileBase } from "@decodelabs/underlay/runtime/auth";
 
 // Underlay provides the baseline
 interface UserProfileBase {
@@ -106,7 +106,7 @@ interface UserProfileBase {
 
 ```typescript
 // cattle-grid/src/types/account-types.ts
-import { type UserProfileBase } from "@decodelabs/underlay/runtime";
+import { type UserProfileBase } from "@decodelabs/underlay/runtime/auth";
 
 export interface UserProfile extends UserProfileBase {
   // App-specific fields
@@ -122,7 +122,7 @@ export interface UserProfile extends UserProfileBase {
 ### Update Type
 
 ```typescript
-import { type UserProfileUpdateBase } from "@decodelabs/underlay/runtime";
+import { type UserProfileUpdateBase } from "@decodelabs/underlay/runtime/auth";
 
 // All fields optional - only provided fields are updated
 // Use null to explicitly clear a field
@@ -303,7 +303,7 @@ Initialize timezone from the profile:
 
 ```svelte
 <script lang="ts">
-  import { initTimezone, resetTimezone } from "@decodelabs/underlay/runtime";
+  import { initTimezone, resetTimezone } from "@decodelabs/underlay/runtime/browser";
   import { userProfile, currentUser } from "$lib/stores/auth";
 
   // Initialize timezone when profile loads
@@ -337,7 +337,7 @@ Initialize timezone from the profile:
 
 ```svelte
 <script lang="ts">
-  import { getEffectiveDisplayName } from "@decodelabs/underlay/runtime";
+  import { getEffectiveDisplayName } from "@decodelabs/underlay/runtime/auth";
   import { userProfile, currentUser } from "$lib/stores/auth";
 
   const displayName = $derived(

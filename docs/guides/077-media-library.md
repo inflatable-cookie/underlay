@@ -14,6 +14,8 @@ as the canonical source for:
 - media picker posture
 - thumbnail and preview posture
 - direct file-upload UI
+- simple display-facing helpers used in media UI such as file-size and
+  display-date labels
 
 Use these Poodle guides for the UI layer:
 
@@ -1306,7 +1308,7 @@ Underlay provides client-side utilities for blob uploads in `@decodelabs/underla
 | `validateFile(file, maxBytes)` | Validate file type and size |
 | `validateFileType(file, allowedTypes)` | Check if file type is allowed |
 | `validateFileSize(file, maxBytes)` | Check if file size is within limit |
-| `formatFileSize(bytes)` | Format bytes to human-readable string |
+| `formatFileSize(bytes)` | Format bytes to human-readable string for UI display; use Poodle `@poodle/svelte-primitives` |
 | `getFileTypeDescription(mimeType)` | Get friendly file type name |
 | `isVideoFile(file)` | Check if file is a video (to reject) |
 

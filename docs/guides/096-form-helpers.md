@@ -35,11 +35,11 @@ framing.
 
 | Helper | Import | Purpose |
 |--------|--------|---------|
-| `submitFormWithIntent()` | `@decodelabs/underlay/runtime` | Submit form with intent |
+| `submitFormWithIntent()` | `@decodelabs/underlay/runtime/forms` | Submit form with intent |
 | `useSyncedSelection()` | `@decodelabs/underlay/runtime/data` | Manage selection state |
 | `createLocalSearchFns()` | `@decodelabs/underlay/runtime/relations` | Search/suggest for app-local selector shells |
 | `slugify` / `validateSlug` | `@decodelabs/underlay/utils/slug` | Pure slug helpers for app-owned slug fields |
-| `useValidatedForm()` | `@decodelabs/underlay/runtime` | Lightweight Zod-backed client-side form orchestration |
+| `useValidatedForm()` | `@decodelabs/underlay/runtime/forms` | Lightweight Zod-backed client-side form orchestration |
 | `Tabs` | `@poodle/svelte-primitives` | Multi-section form tabs |
 | `getNextLetter()` | `@decodelabs/underlay/utils/sequence` | Next letter in sequence |
 | `getNextNumber()` | `@decodelabs/underlay/utils/sequence` | Next number in sequence |
@@ -51,7 +51,7 @@ framing.
 Use `useValidatedForm()` when the form benefits from immediate client-side schema checks but you do not want to replace Underlay's existing field or submit primitives.
 
 ```ts
-import { useValidatedForm } from "@decodelabs/underlay/runtime";
+import { useValidatedForm } from "@decodelabs/underlay/runtime/forms";
 import { z } from "zod";
 
 const registerRequestSchema = z.object({
@@ -175,7 +175,7 @@ Only mount the active panel by default. If a specific editor needs to stay mount
 Submit a form with a specific intent value. Useful for delete buttons that need to submit the main form with `intent="delete"`.
 
 ```typescript
-import { submitFormWithIntent } from "@decodelabs/underlay/runtime";
+import { submitFormWithIntent } from "@decodelabs/underlay/runtime/forms";
 
 function handleDelete() {
   submitFormWithIntent("delete");
@@ -198,7 +198,7 @@ submitFormWithIntent("archive", "#settings-form", "action");
 
 ```svelte
 <script lang="ts">
-  import { submitFormWithIntent } from "@decodelabs/underlay/runtime";
+  import { submitFormWithIntent } from "@decodelabs/underlay/runtime/forms";
 
   function handleDelete() {
     // This sets the hidden "intent" input to "delete" and submits
@@ -607,7 +607,7 @@ Here's a complete example combining multiple helpers in a form page:
   import type { PageData } from "./$types";
   import { useSyncedSelection } from "@decodelabs/underlay/runtime/data";
   import { createLocalSearchFns } from "@decodelabs/underlay/runtime/relations";
-  import { submitFormWithIntent } from "@decodelabs/underlay/runtime";
+  import { submitFormWithIntent } from "@decodelabs/underlay/runtime/forms";
   import { slugify } from "@decodelabs/underlay/utils/slug";
   import { Field, TextInput } from "@poodle/svelte-primitives";
   import { getNextNumber } from "@decodelabs/underlay/utils/sequence";

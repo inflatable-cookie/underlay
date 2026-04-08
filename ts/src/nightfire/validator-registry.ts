@@ -1,8 +1,9 @@
-import type { NightfireValue } from "./index";
+import type { NightfireValue } from "./types";
 
 type ValidatorKey = string;
 
 type BlockValidator = (block: unknown) => unknown;
+type TypedBlock = { type: string } & Record<string, unknown>;
 
 function makeKey(schema: string | null, type: string): ValidatorKey {
   return `${schema ?? "*"}|${type}`;
@@ -18,20 +19,26 @@ export function registerBlockValidator(
   validators.set(makeKey(schema, type), fn);
 }
 
-function validateBlock(schema: string | null, block: any): any {
-  if (!block || typeof block !== "object" || !block.type) {
+function validateBlock(schema: string | null, block: unknown): unknown {
+  if (!block || typeof block !== "object") {
     return block;
   }
 
-  const key = makeKey(schema, block.type as string);
+  const candidate = block as Partial<TypedBlock>;
+  if (typeof candidate.type !== "string") {
+    return block;
+  }
+
+  const typedBlock = block as TypedBlock;
+  const key = makeKey(schema, typedBlock.type);
 
   const fn =
     validators.get(key) ??
-    validators.get(makeKey(null, block.type as string));
+    validators.get(makeKey(null, typedBlock.type));
 
   if (!fn) return block;
 
-  return fn(block);
+  return fn(typedBlock);
 }
 
 export function validateNightfireValue(
@@ -50,7 +57,7 @@ export function validateNightfireValue(
   }
 
   if (Array.isArray(value.blocks)) {
-    const nextBlocks = value.blocks.map((b) => validateBlock(schema, b));
+    const nextBlocks = value.blocks.map((block) => validateBlock(schema, block));
     return {
       ...value,
       blocks: nextBlocks

@@ -2,7 +2,7 @@
 import {
   type AiRoutingAdminMessages,
   type AiRoutingOpsSource
-} from "@decodelabs/underlay/runtime";
+} from "@decodelabs/underlay/runtime/ai";
 import {
   auth,
   authLoading,

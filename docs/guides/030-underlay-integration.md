@@ -102,7 +102,14 @@ underlay-metrics = { path = "../../libs/underlay/rust/crates/underlay-metrics" }
 
 ## Path Configuration (TypeScript)
 
-Underlay’s TS package is `@decodelabs/underlay`.
+Underlay’s TS package name is `@decodelabs/underlay`, but source imports
+should target explicit subpaths such as:
+
+- `@decodelabs/underlay/client/*`
+- `@decodelabs/underlay/runtime/*`
+- `@decodelabs/underlay/patterns`
+- `@decodelabs/underlay/nightfire/*`
+- `@decodelabs/underlay/utils/*`
 
 ### Multi-repo workspace (default)
 
@@ -176,9 +183,18 @@ const example: ErrorEnvelope = {
 
 Cause: wrong path dependencies in Cargo workspace.
 
-### Issue: "Module not found: @decodelabs/underlay"
+### Issue: "Package path . is not exported from @decodelabs/underlay"
 
-Cause: missing bun install or incorrect `file:` path.
+Cause: source code is importing the retired root barrel `@decodelabs/underlay`
+instead of an explicit package subpath.
+
+Fix: move the import onto the real package surface:
+
+- `@decodelabs/underlay/client/*`
+- `@decodelabs/underlay/runtime/*`
+- `@decodelabs/underlay/patterns`
+- `@decodelabs/underlay/nightfire/*`
+- `@decodelabs/underlay/utils/*`
 
 ## Next Steps
 

@@ -7,7 +7,7 @@
  * @example
  * ```typescript
  * // In hooks.server.ts
- * import { createCspConfig, generateNonce, buildCspHeader, applyCspHeaders } from "@decodelabs/underlay/client";
+ * import { createCspConfig, generateNonce, buildCspHeader, applyCspHeaders } from "@decodelabs/underlay/server";
  *
  * const cspConfig = createCspConfig({
  *   connectSrc: ["https://api.example.com"],

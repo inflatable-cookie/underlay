@@ -36,8 +36,8 @@ stem/
 
 ## Underlay Types and Errors
 
-For new TypeScript client code, prefer the explicit `client/*` subpaths instead
-of the root `@decodelabs/underlay` barrel.
+For TypeScript client code, import from the explicit `client/*` surface. The
+root `@decodelabs/underlay` barrel is retired.
 
 ### Core HTTP Client
 
@@ -154,7 +154,9 @@ Ensure:
 - the TS client sets it on every request
 - the API expects/reads the same header (if you enforce versioning)
 
-**Important:** Do not reimplement HTTP client logic. Use Underlay's `createHttpClient` and wrap it with your app-specific configuration.
+**Important:** Do not reimplement HTTP client logic. Use Underlay's
+`@decodelabs/underlay/client/http`, `client/errors`, `client/types`, and related subpaths, then wrap them with your app-specific
+configuration.
 
 Create `stem/src/utils/http-client.ts`:
 
@@ -168,7 +170,8 @@ import {
   type HttpClient as UnderlayHttpClient,
   type HttpClientOptions,
   UnderlayHttpError
-} from '@decodelabs/underlay/client';
+} from '@decodelabs/underlay/client/http';
+import { UnderlayHttpError } from '@decodelabs/underlay/client/errors';
 
 export interface StemClientConfig {
   baseUrl: string;
@@ -586,7 +589,7 @@ Configure the client at module load and set up response header filtering for uni
 // web/src/hooks.server.ts
 
 import type { Handle } from "@sveltejs/kit";
-import { createCookieTokenStore } from "@decodelabs/underlay/client";
+import { createCookieTokenStore } from "@decodelabs/underlay/client/sveltekit";
 import { configureStem, authCommands } from "@stem";
 import { env } from "$env/dynamic/public";
 
@@ -716,7 +719,7 @@ export const load: PageLoad = async ({ fetch, parent }) => {
 import type { Actions } from "./$types";
 import { fail, redirect } from "@sveltejs/kit";
 import { authCommands } from "@stem";
-import { createCookieTokenStore } from "@decodelabs/underlay/client";
+import { createCookieTokenStore } from "@decodelabs/underlay/client/sveltekit";
 
 export const actions: Actions = {
   default: async ({ request, fetch, cookies }) => {
@@ -754,7 +757,7 @@ Convert `UnderlayHttpError` to SvelteKit errors with proper status codes:
 ```ts
 // hooks.server.ts
 import { type HandleServerError } from "@sveltejs/kit";
-import { UnderlayHttpError } from "@decodelabs/underlay/client";
+import { UnderlayHttpError } from "@decodelabs/underlay/client/errors";
 
 export const handleError: HandleServerError = async ({ error: err }) => {
   if (err instanceof UnderlayHttpError) {

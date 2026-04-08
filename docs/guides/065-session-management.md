@@ -812,7 +812,7 @@ Instead of implementing hooks manually, use Underlay's `createAuthHandle`:
 
 ```typescript
 // apps/pasture/src/hooks.server.ts
-import { createAuthHandle } from '@decodelabs/underlay/client';
+import { createAuthHandle } from '@decodelabs/underlay/client/sveltekit';
 
 export const handle = createAuthHandle({
   baseUrl: 'https://api.example.com',
@@ -930,7 +930,7 @@ See your project for a complete working example:
 
 ## Route Protection Utilities
 
-Underlay provides route protection utilities in `@decodelabs/underlay/client` for centralized authentication checks in SvelteKit hooks.
+Underlay provides route protection utilities in `@decodelabs/underlay/client/route-protection` for centralized authentication checks in SvelteKit hooks.
 
 ### Available Functions
 
@@ -939,7 +939,7 @@ import {
   isPublicPath,
   createLoginRedirect,
   createRouteProtection,
-} from '@decodelabs/underlay/client';
+} from '@decodelabs/underlay/client/route-protection';
 ```
 
 ### `isPublicPath(pathname, publicPaths)`
@@ -1002,7 +1002,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 ```typescript
 // src/hooks.server.ts
 import type { Handle } from '@sveltejs/kit';
-import { isPublicPath, createLoginRedirect } from '@decodelabs/underlay/client';
+import { isPublicPath, createLoginRedirect } from '@decodelabs/underlay/client/route-protection';
 import { authCommands } from 'my-api-client';
 
 const PUBLIC_PATHS = ['/login', '/register', '/auth/*', '/health'];
@@ -1156,7 +1156,7 @@ Underlay provides `createAuthCookieHelpers()` to generate app-specific cookie ut
 Factory function that returns cookie read/write/clear helpers.
 
 ```typescript
-import { createAuthCookieHelpers } from '@decodelabs/underlay/client';
+import { createAuthCookieHelpers } from '@decodelabs/underlay/client/sveltekit';
 
 // Create helpers with app-specific configuration
 const {
@@ -1210,7 +1210,7 @@ interface AuthCookieHelpers {
 
 ```typescript
 // src/lib/utils/auth-tokens.ts
-import { createAuthCookieHelpers } from '@decodelabs/underlay/client';
+import { createAuthCookieHelpers } from '@decodelabs/underlay/client/sveltekit';
 
 export const {
   readAccessToken,

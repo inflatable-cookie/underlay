@@ -769,7 +769,7 @@ event.cookies.set("refresh_token", tokens.refreshToken, {
 Underlay provides `createCookieTokenStore` for consistent cookie management:
 
 ```typescript
-import { createCookieTokenStore } from "@decodelabs/underlay/client";
+import { createCookieTokenStore } from "@decodelabs/underlay/client/sveltekit";
 import { env } from "$env/dynamic/public";
 
 const isSecure = env.PUBLIC_API_BASE_URL?.startsWith("https://") ?? false;

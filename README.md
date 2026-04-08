@@ -26,14 +26,17 @@ Underlay’s current TypeScript/Svelte package boundary is explicit:
 
 - `@decodelabs/underlay/patterns`
   - retained workflow/page-shell UI
-- `@decodelabs/underlay/runtime`
-  - shared app/runtime helpers and controllers
-- `@decodelabs/underlay/utils`
-  - small standalone helpers
-- `@decodelabs/underlay/client`
-  - transport and SvelteKit-facing client helpers
-- `@decodelabs/underlay/nightfire`
-  - structured content editor/runtime package
+- `@decodelabs/underlay/runtime/*`
+  - shared app/runtime helpers and controllers via explicit feature subpaths
+- `@decodelabs/underlay/utils/*`
+  - small standalone helpers via focused subpaths
+- `@decodelabs/underlay/client/*`
+  - transport and SvelteKit-facing client helpers via explicit feature subpaths
+- `@decodelabs/underlay/nightfire/*`
+  - structured content editor/runtime package via explicit subpaths
+
+The flat root import surface `@decodelabs/underlay` is retired. Import from
+the explicit package subpaths above instead.
 
 Use Poodle directly for foundational primitives and generic composites.
 

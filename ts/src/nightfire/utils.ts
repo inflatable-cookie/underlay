@@ -1,4 +1,4 @@
-import type { NightfireValue } from "./index";
+import type { NightfireValue } from "./types";
 import { isBlockContentEmpty } from "./editor-registry";
 
 export interface NightfireBlockDefinition {

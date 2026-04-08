@@ -39,7 +39,7 @@ In your app's root layout, initialize the timezone system after authentication:
 
 ```svelte
 <script lang="ts">
-  import { initTimezone, timezoneStore } from "@decodelabs/underlay/runtime";
+  import { initTimezone, timezoneStore } from "@decodelabs/underlay/runtime/browser";
   import { currentUser } from "$lib/stores/auth";
 
   // Initialize when user profile is available
@@ -75,7 +75,7 @@ Components can read the resolved timezone:
 
 ```svelte
 <script lang="ts">
-  import { timezoneStore } from "@decodelabs/underlay/runtime";
+  import { timezoneStore } from "@decodelabs/underlay/runtime/browser";
 
   // Reactive access to effective timezone
   const tz = $derived($timezoneStore.effective);
@@ -117,7 +117,7 @@ Without `timezone`, the tooltip uses the browser locale timezone.
 For custom date formatting, use the `formatInTimezone` utility:
 
 ```typescript
-import { formatInTimezone, timezoneStore } from "@decodelabs/underlay/runtime";
+import { formatInTimezone, timezoneStore } from "@decodelabs/underlay/runtime/browser";
 import { get } from "svelte/store";
 
 const tz = get(timezoneStore).effective;
@@ -131,7 +131,7 @@ Or reactively:
 
 ```svelte
 <script lang="ts">
-  import { formatInTimezone, timezoneStore } from "@decodelabs/underlay/runtime";
+  import { formatInTimezone, timezoneStore } from "@decodelabs/underlay/runtime/browser";
 
   let { date } = $props();
 
@@ -152,7 +152,7 @@ When the profile timezone differs from the browser, you should show a conflict r
 
 ```svelte
 <script lang="ts">
-  import { timezoneStore, resolveTimezoneConflict } from "@decodelabs/underlay/runtime";
+  import { timezoneStore, resolveTimezoneConflict } from "@decodelabs/underlay/runtime/browser";
 
   function useProfile() {
     resolveTimezoneConflict("profile");

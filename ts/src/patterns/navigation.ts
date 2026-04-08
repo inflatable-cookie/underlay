@@ -5,7 +5,8 @@
  * context, enabling edit forms to know where users came from and display
  * appropriate back button labels and redirect targets.
  *
- * For SvelteKit-specific helpers (gotoWithContext), see `@decodelabs/underlay/client`.
+ * For SvelteKit-specific helpers (gotoWithContext), see
+ * `@decodelabs/underlay/client/navigation`.
  *
  * @example
  * ```typescript

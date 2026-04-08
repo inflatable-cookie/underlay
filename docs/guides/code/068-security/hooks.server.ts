@@ -6,11 +6,8 @@
  */
 
 import type { Handle } from "@sveltejs/kit";
-import {
-  createCookieTokenStore,
-  isPublicPath,
-  createLoginRedirect
-} from "@decodelabs/underlay/client";
+import { createLoginRedirect, isPublicPath } from "@decodelabs/underlay/client/route-protection";
+import { createCookieTokenStore } from "@decodelabs/underlay/client/sveltekit";
 import {
   createCspConfig,
   generateNonce,

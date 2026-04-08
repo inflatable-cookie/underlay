@@ -28,21 +28,11 @@
         "effigy:dev": "effigy-dev"
     },
     "exports": {
-        ".": {
-            "svelte": "./ts/src/index.ts",
-            "types": "./ts/src/index.ts",
-            "default": "./ts/src/index.ts"
+        "./patterns": {
+            "svelte": "./ts/src/patterns/index.ts",
+            "types": "./ts/src/patterns/index.ts",
+            "default": "./ts/src/patterns/index.ts"
         },
-    "./patterns": {
-      "svelte": "./ts/src/patterns/index.ts",
-      "types": "./ts/src/patterns/index.ts",
-      "default": "./ts/src/patterns/index.ts"
-    },
-    "./runtime": {
-      "svelte": "./ts/src/runtime/index.ts",
-      "types": "./ts/src/runtime/index.ts",
-      "default": "./ts/src/runtime/index.ts"
-    },
     "./runtime/auth": {
       "svelte": "./ts/src/runtime/auth.ts",
       "types": "./ts/src/runtime/auth.ts",
@@ -68,11 +58,6 @@
       "types": "./ts/src/runtime/feedback.ts",
       "default": "./ts/src/runtime/feedback.ts"
     },
-    "./runtime/i18n": {
-      "svelte": "./ts/src/runtime/i18n.ts",
-      "types": "./ts/src/runtime/i18n.ts",
-      "default": "./ts/src/runtime/i18n.ts"
-    },
     "./runtime/data": {
       "svelte": "./ts/src/runtime/data.ts",
       "types": "./ts/src/runtime/data.ts",
@@ -93,35 +78,25 @@
       "types": "./ts/src/runtime/ai.ts",
       "default": "./ts/src/runtime/ai.ts"
     },
-    "./runtime/useToasts": {
-      "svelte": "./ts/src/patterns/useToasts.ts",
-      "types": "./ts/src/patterns/useToasts.ts",
-      "default": "./ts/src/patterns/useToasts.ts"
-    },
-    "./runtime/authenticated-data": {
-      "svelte": "./ts/src/patterns/authenticated-data.svelte.ts",
-      "types": "./ts/src/patterns/authenticated-data.svelte.ts",
-      "default": "./ts/src/patterns/authenticated-data.svelte.ts"
-    },
-    "./runtime/selection-history": {
-      "svelte": "./ts/src/patterns/selection-history.ts",
-      "types": "./ts/src/patterns/selection-history.ts",
-      "default": "./ts/src/patterns/selection-history.ts"
-    },
-    "./runtime/pagination-types": {
-      "svelte": "./ts/src/patterns/pagination-types.ts",
-      "types": "./ts/src/patterns/pagination-types.ts",
-      "default": "./ts/src/patterns/pagination-types.ts"
-    },
-    "./runtime/media-types": {
-      "svelte": "./ts/src/patterns/media-types.ts",
-      "types": "./ts/src/patterns/media-types.ts",
-      "default": "./ts/src/patterns/media-types.ts"
-    },
-        "./nightfire": {
-            "svelte": "./ts/src/nightfire/index.ts",
-            "types": "./ts/src/nightfire/index.ts",
-            "default": "./ts/src/nightfire/index.ts"
+        "./nightfire/editor": {
+            "svelte": "./ts/src/nightfire/editor.ts",
+            "types": "./ts/src/nightfire/editor.ts",
+            "default": "./ts/src/nightfire/editor.ts"
+        },
+        "./nightfire/renderer": {
+            "svelte": "./ts/src/nightfire/renderer.ts",
+            "types": "./ts/src/nightfire/renderer.ts",
+            "default": "./ts/src/nightfire/renderer.ts"
+        },
+        "./nightfire/block-editor": {
+            "svelte": "./ts/src/nightfire/block-editor.ts",
+            "types": "./ts/src/nightfire/block-editor.ts",
+            "default": "./ts/src/nightfire/block-editor.ts"
+        },
+        "./nightfire/markdown": {
+            "svelte": "./ts/src/nightfire/markdown.ts",
+            "types": "./ts/src/nightfire/markdown.ts",
+            "default": "./ts/src/nightfire/markdown.ts"
         },
         "./nightfire/editor-registry": {
             "types": "./ts/src/nightfire/editor-registry.ts",
@@ -155,10 +130,6 @@
             "svelte": "./ts/src/styles/index.ts",
             "types": "./ts/src/styles/index.ts",
             "default": "./ts/src/styles/index.ts"
-        },
-        "./client": {
-            "types": "./ts/src/client/index.ts",
-            "default": "./ts/src/client/index.ts"
         },
         "./client/http": {
             "types": "./ts/src/client/http.ts",
@@ -211,10 +182,6 @@
         "./server": {
             "types": "./ts/src/server/index.ts",
             "default": "./ts/src/server/index.ts"
-        },
-        "./utils": {
-            "types": "./ts/src/utils/index.ts",
-            "default": "./ts/src/utils/index.ts"
         },
         "./utils/webauthn": {
             "types": "./ts/src/utils/webauthn.ts",

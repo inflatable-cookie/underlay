@@ -26,7 +26,10 @@ export default defineConfig({
       "@decodelabs/underlay/nightfire",
       "@decodelabs/underlay/runtime",
       "@decodelabs/underlay/styles",
-      "@decodelabs/underlay/client"
+      "@decodelabs/underlay/client/http",
+      "@decodelabs/underlay/client/navigation",
+      "@decodelabs/underlay/client/query",
+      "@decodelabs/underlay/client/sveltekit"
     ]
   },
   ssr: {

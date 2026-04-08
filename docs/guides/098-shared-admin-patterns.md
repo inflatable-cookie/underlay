@@ -65,7 +65,7 @@ Use Poodle `EmptyState` directly for page-level and inline empty views.
 <script lang="ts">
   import { copyToClipboard } from "@decodelabs/underlay/runtime/feedback";
   import { useToasts } from "@decodelabs/underlay/runtime/feedback";
-  import { gotoWithContext } from "@decodelabs/underlay/client";
+  import { gotoWithContext } from "@decodelabs/underlay/client/navigation";
   import { AlertDialog, Menu } from "@poodle/svelte-primitives";
 
   const toastStore = useToasts();
@@ -391,7 +391,7 @@ import {
   SpaFormShell
 } from "@decodelabs/underlay/patterns";
 
-import { createKeyboardShortcuts } from "@decodelabs/underlay/runtime";
+import { createKeyboardShortcuts } from "@decodelabs/underlay/runtime/browser";
 ```
 
 ---

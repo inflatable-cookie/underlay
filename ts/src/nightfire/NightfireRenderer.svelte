@@ -1,7 +1,7 @@
 <script lang="ts">
   import { getBlockRenderer } from "./render-registry";
   import "./render-registrations";
-  import type { NightfireValue } from "./index";
+  import type { NightfireValue } from "./types";
 
   type BlockLike = {
     type?: string;

@@ -90,7 +90,7 @@ Convert Underlay HTTP errors into SvelteKit error metadata:
 
 ```ts
 import { type HandleServerError } from "@sveltejs/kit";
-import { UnderlayHttpError } from "@decodelabs/underlay/client";
+import { UnderlayHttpError } from "@decodelabs/underlay/client/errors";
 
 export const handleError: HandleServerError = async ({ error: err }) => {
   if (err instanceof UnderlayHttpError) {
@@ -116,7 +116,7 @@ section is only about the retained runtime services that belong in the layout.
 ```svelte
 <script lang="ts">
   import { configureAuth } from "@decodelabs/underlay/runtime/auth";
-  import { configureNightfireStrategies } from "@decodelabs/underlay/nightfire";
+  import { configureNightfireStrategies } from "@decodelabs/underlay/nightfire/strategies";
   import { nightfireCommands } from "@cattle-grid";
   import { auth } from "$lib/stores/auth";
 
@@ -621,7 +621,7 @@ Forms should NOT contain `<form>` elements or submission logic. They render fiel
     Switch,
     TextInput
   } from "@poodle/svelte-primitives";
-  import { navigateOnCancel } from "@decodelabs/underlay/client";
+  import { navigateOnCancel } from "@decodelabs/underlay/client/navigation";
 
   interface Props {
     mode?: "create" | "edit";

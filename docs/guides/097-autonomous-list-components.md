@@ -574,7 +574,7 @@ Here's a complete example of building an autonomous list component:
   } from "@poodle/svelte-primitives";
   import { PageLoading } from "@poodle/svelte-composites";
   import { Tooltip } from "@poodle/svelte-primitives";
-  import { gotoWithContext } from "@decodelabs/underlay/client";
+  import { gotoWithContext } from "@decodelabs/underlay/client/navigation";
   import { learningCommands } from "@cattle-grid";
   import { auth } from "$lib/stores/auth";
   import { AreaListCard } from "$lib/cards";

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount, tick, untrack } from "svelte";
   import type { MarkdownEditorContext } from "./markup/markdown-editor-context";
-  import type { NightfireValue } from "./index";
+  import type { NightfireValue } from "./types";
   import NightfireBlockEditor from "./NightfireBlockEditor.svelte";
   import SlashCommandPalette from "./SlashCommandPalette.svelte";
   // Ensure registrations are loaded before we lookup schema definitions

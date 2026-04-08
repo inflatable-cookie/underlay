@@ -21,26 +21,19 @@ workflow shells, app/runtime orchestration, or retained specialized systems.
 - `@decodelabs/underlay/patterns`
   - retained workflow and page-shell surface
   - auth workflows and `SpaFormShell`
-- `@decodelabs/underlay/runtime`
+- `@decodelabs/underlay/runtime/*`
   - retained app/runtime helpers, controllers, and framework-agnostic
-    browser/state orchestration
-  - keep the root barrel stable as a convenience API, but prefer the narrower
-    `runtime/*` subpaths for new focused contracts
-- `@decodelabs/underlay/utils`
-  - small standalone helper surface
-  - prefer `utils/webauthn`, `utils/html`, and `utils/sequence` for new code
-- `@decodelabs/underlay/client`
+    browser/state orchestration via explicit feature subpaths
+- `@decodelabs/underlay/utils/*`
+  - small standalone helper surface via focused subpaths
+  - use `utils/webauthn`, `utils/html`, `utils/sequence`, and `utils/slug`
+  - keep broader app-formatting helpers on `utils/i18n` for now; presentational
+    display-format helpers that earn shared UI ownership should move to Poodle
+- `@decodelabs/underlay/client/*`
   - transport, SvelteKit integration, query parsing, and client-only
-    navigation helpers
-  - keep the root barrel stable as a convenience API, but prefer narrower
-    `client/*` subpaths for new focused imports
-- `@decodelabs/underlay/nightfire`
-  - retained structured-content editor/runtime package
-  - keep the root barrel stable as a convenience API, but prefer narrower
-    `nightfire/*` subpaths for future extension-oriented contracts
-- `@decodelabs/underlay`
-  - compatibility-only root barrel
-  - do not use this as the preferred import surface for new code
+    navigation helpers via explicit feature subpaths
+- `@decodelabs/underlay/nightfire/*`
+  - retained structured-content editor/runtime package via explicit subpaths
 - `@decodelabs/underlay/styles/base.css`
   - minimal CSS variables
 

@@ -8,7 +8,7 @@
  *
  * @example
  * ```typescript
- * import { gotoWithContext, navigateBack } from '@decodelabs/underlay/client';
+ * import { gotoWithContext, navigateBack } from '@decodelabs/underlay/client/navigation';
  *
  * // Navigate to edit while remembering where user came from
  * await gotoWithContext(`/items/${id}/edit`, {

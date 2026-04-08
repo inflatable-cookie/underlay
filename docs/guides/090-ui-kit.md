@@ -10,6 +10,8 @@ the canonical source for:
 - page/header/list/detail/dialog composition
 - admin shell composition
 - media browse and picker composition
+- shared presentational display-format helpers like file-size and simple
+  display-date labels
 
 Start with these Poodle guides:
 
@@ -32,10 +34,14 @@ editor/runtime behavior.
 Use:
 
 - `@decodelabs/underlay/patterns` for retained workflow/page shells only
-- `@decodelabs/underlay/runtime` for shared app/runtime helpers and controllers
-- `@decodelabs/underlay/utils` for small standalone helpers
-- `@decodelabs/underlay/client` for transport and framework-facing helpers
-- `@decodelabs/underlay/nightfire` for structured content editor/runtime
+- `@decodelabs/underlay/runtime/*` for shared app/runtime helpers and controllers
+- `@decodelabs/underlay/utils/*` for small standalone helpers
+- keep broader app-formatting helpers on `@decodelabs/underlay/utils/i18n`
+  until they earn a true shared UI contract
+- treat only direct presentation helpers as Poodle candidates: things like
+  file-size and simple display-date labels, not broader app formatting policy
+- `@decodelabs/underlay/client/*` for transport and framework-facing helpers
+- `@decodelabs/underlay/nightfire/*` for structured content editor/runtime
 
 ## Import Rules
 
@@ -43,8 +49,6 @@ Use:
 - use Poodle packages directly for primitives and generic composites
 - use the narrow `runtime/*`, `client/*`, `utils/*`, and `nightfire/*`
   subpaths when they match the feature area
-- keep the root Underlay barrels only as stable convenience surfaces where
-  compatibility matters
 
 ## Reference Surface
 
