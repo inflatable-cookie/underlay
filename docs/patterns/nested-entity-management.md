@@ -110,11 +110,19 @@ Keep tab items and counts host-owned. Do not revive old Underlay tab examples.
 
 Choose the shell based on workflow:
 
-- route page + `SpaFormShell` for larger create/edit flows
+- route page + `PageHeader` + `Card` for simple single-submit child forms
+- route page + `SpaFormShell` for larger intent-driven create/edit flows
 - `FormDialog` for compact modal create/edit
 - `AlertDialog` for destructive confirm
 
 Keep all visible field and action composition in Poodle.
+
+For route-page child forms:
+
+- keep parent context explicit in the back link and header subtitle
+- keep the editable body inside one carded form section
+- use `SpaFormShell` only when save-vs-save-close/delete intent handling or
+  navigation-context return behavior is part of the route workflow
 
 ### Phase 7: Navigation and Return Context
 
