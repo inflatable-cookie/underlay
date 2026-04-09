@@ -71,6 +71,14 @@ For new auth screens:
 - use Underlay only for `LoginPage`, `ForgotPasswordFlow`, or the retained
   auth-policy adapter layer
 
+For signed-in account security pages:
+
+- build profile, password-change, passkeys, and 2FA pages directly in the app
+- use Underlay auth/runtime hooks plus app API commands for transport/state
+- use Poodle `Card`, `Callout`, `Field`, `TextInput`, `CodeInput`,
+  `FormActions`, and `AlertDialog` for the visible shell
+- do not recreate retired Underlay account-settings components
+
 ### Current Stop Point
 
 The auth reassessment line is now at an explicit retained boundary:
