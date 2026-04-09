@@ -82,6 +82,8 @@ That means:
 - [ ] use batch-selection helpers
 - [ ] register destructive or bulk actions explicitly
 - [ ] render `BulkActionBar` only when selection mode is active
+- [ ] treat selection mode as mutually exclusive with reorder mode; entering one
+      should clear or exit the other instead of trying to blend both states
 - [ ] keep destructive copy and permission rules host-owned
 
 ### Phase 6: Row/Card Actions + Navigation Context
@@ -103,6 +105,8 @@ That means:
 - keep pagination, auth, and selection runtime in Underlay or host code
 - prefer `FilterToolbar` with `summaryText="Filters"` and a small ghost
   `Refresh` action in the actions slot for broad admin browse surfaces
+- prefer an explicit selection-mode toggle in the page header and hide normal
+  create/trash row affordances while that mode is active
 - do not recreate a reusable Underlay list shell when `ListContainer`,
   `FilterToolbar`, `BulkActionBar`, `DataTable`, and `Grid` already express
   the visible contract

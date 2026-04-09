@@ -66,6 +66,7 @@ Treat reorder as a first-class workflow:
 - [ ] add a dedicated reorder-mode toggle
 - [ ] load the full scoped dataset when entering reorder mode
 - [ ] use `createReorderController()` with Poodle `ReorderableList`
+- [ ] exit any active batch-selection mode before entering reorder mode
 - [ ] use guarded submit plus conflict recovery when the backend returns reorder conflicts
 - [ ] page large reorder sessions with `windowSize` instead of exposing one giant drag surface
 - [ ] exit reorder mode on success, cancel, or invalidating filter/scope changes

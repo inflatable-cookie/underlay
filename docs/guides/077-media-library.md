@@ -22,6 +22,14 @@ Use these Poodle guides for the UI layer:
 - `Media Library And Upload Recipes` in the Poodle guide set
 - `Media Picker Workflow Recipes` in the Poodle guide set
 
+For detail routes specifically, use the Poodle media-detail posture:
+
+- one `PageHeader`
+- one `MetaBar`
+- `Tabs variant="card"` with `historyKey="tab"`
+- `Card` + `DetailSection` + `DetailItem` for the details tab
+- host-owned versions/usage cards under the tab surface
+
 Use the Underlay recipe layer for the upload lifecycle and full-stack delivery
 only:
 - [Media Upload Pipeline](../patterns/media-upload-pipeline.md)
