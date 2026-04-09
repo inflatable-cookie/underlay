@@ -22,13 +22,17 @@ Use these Poodle guides for the UI layer:
 - `Media Library And Upload Recipes` in the Poodle guide set
 - `Media Picker Workflow Recipes` in the Poodle guide set
 
+Use the Underlay recipe layer for the upload lifecycle and full-stack delivery
+only:
+- [Media Upload Pipeline](../patterns/media-upload-pipeline.md)
+
 ## Quick Start
 
 Underlay provides shared types and components to reduce boilerplate. For new implementations:
 
 1. **Use shared types** - Import from `underlay-db` (Rust) or `@decodelabs/underlay/patterns` (TypeScript)
 2. **Use Poodle for the UI layer** - Poodle `MediaPicker` for local item selectors, Poodle `MediaBrowsePanel` / `MediaUploadStatusPanel` for heavier browse/upload shells, app-local media actions over Poodle `Menu` / `AlertDialog`, and Poodle `MediaThumbnail` / `MediaPreview` for display posture
-3. **Use the upload flow pattern** - `createMediaUploadFlow` for consistent upload state management
+3. **Use the upload flow pattern** - the `Media Upload Pipeline` recipe for lifecycle order, and `createMediaUploadFlow` where the shared state helper still earns its place
 
 | Layer | Package | Exports |
 |-------|---------|---------|

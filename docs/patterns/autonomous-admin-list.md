@@ -1,90 +1,128 @@
 # Recipe: Autonomous Admin List (Paginated + Filtered + Batch)
 
-**Use when**: You need a self-contained admin list component that can run as a full page or embedded tab, with pagination, filtering, and batch actions.
+**Use when**: You need a self-contained admin list surface that can run as a
+page or embedded tab with pagination, filtering, and selection-driven actions.
 
 **Example prompt**: "Build an autonomous list for Resources with filters and batch delete"
 
----
+This is now a **mixed recipe**:
+
+- Underlay owns the pagination/auth/runtime/controller guidance
+- Poodle owns the visible list/filter/bulk-action composition
+
+## Ownership Boundary
+
+Use Underlay for:
+
+- paginated API and command contracts
+- auth-aware data loading
+- pagination controller and selection/runtime helpers
+- navigation context and toasts
+- testing expectations
+
+Use Poodle for:
+
+- `ListContainer`
+- `FilterToolbar`
+- `DataTable` or `Grid`
+- `BulkActionBar`
+- empty/loading/error presentation
+
+Start the visible layer from:
+
+- `List And Filter Recipes`
+- `Admin Feature Delivery Recipes`
+- `Page Shell And Admin Recipes`
 
 ## Key Principle
 
-Make the list component own its own data lifecycle and controls:
-1. **Fetch + paginate inside the component**
-2. **Keep filter/query state local and URL-safe where needed**
-3. **Use batch action hooks for multi-select destructive operations**
+The list surface should own its own data lifecycle and controls, but it should
+not own a second app-specific UI kit.
 
----
+That means:
+
+1. fetch and paginate in one place
+2. keep filter/query state explicit
+3. keep selection/batch behavior explicit
+4. compose the visible shell from Poodle directly
 
 ## Checklist
 
 ### Phase 1: API + Client Contract
 
-- [ ] Provide paginated list endpoint returning `PaginatedResponse<T>`
-- [ ] Support filter/sort query params
-- [ ] Add client command with `pagination` + `filters` arguments
-
-**References**:
-- `cattle-grid/src/commands/learning/modules.ts`
-- `cattle-grid/src/commands/media-commands.ts`
+- [ ] paginated list endpoint
+- [ ] filter/sort query support
+- [ ] client command with pagination and filter args
 
 ### Phase 2: Component Skeleton
 
-**File**: `dairy/src/lib/lists/{Entity}List.svelte`
-
-- [ ] Add props for `variant`, context filters (`pathwayId`-style), and `onDataChange`
-- [ ] Render with `PageHeader`, Poodle `FilterToolbar`, Poodle `Grid`/`DataTable`, `Pagination`
-- [ ] Keep list reusable in both root pages and tab content
+- [ ] props for context filters and reuse mode
+- [ ] `ListContainer` as the outer shell
+- [ ] `FilterToolbar` for filter posture
+- [ ] `DataTable` or `Grid` for list rendering
+- [ ] pagination controls at the list boundary
 
 ### Phase 3: Data Loading Pattern
 
-- [ ] Use `createPaginationController()` for server pagination
-- [ ] Use `useAuthenticatedData()` for supporting data (dropdown options, etc.)
-- [ ] Call `tryFetch($authLoading, $currentUser)` in `$effect`
+- [ ] use `createPaginationController()`
+- [ ] use `useAuthenticatedData()` for auth-gated load and retries
+- [ ] centralize query mapping in one helper
 
 ### Phase 4: Filters and Query Mapping
 
-- [ ] Keep filter state local (`search`, `status`, etc.)
-- [ ] Map filter state to command query shape in one helper function
-- [ ] Use `pagination.reset()` or `refresh()` on filter changes
-- [ ] Persist pagination state via `persistKey` when useful
+- [ ] local filter state
+- [ ] one mapping function from local state to command query
+- [ ] reset or refresh pagination on filter changes
+- [ ] persist pagination state only when it materially improves navigation
 
 ### Phase 5: Batch Selection and Actions
 
-- [ ] Use `useBatchActions<string>()`
-- [ ] Register destructive action(s) (`delete`, `archive`, etc.)
-- [ ] Add confirmation copy with count-aware message
-- [ ] Render `BulkActionBar` only in selection mode
+- [ ] use batch-selection helpers
+- [ ] register destructive or bulk actions explicitly
+- [ ] render `BulkActionBar` only when selection mode is active
+- [ ] keep destructive copy and permission rules host-owned
 
 ### Phase 6: Row/Card Actions + Navigation Context
 
-- [ ] Create `sourceContext` from current route
-- [ ] Use `gotoWithContext()` for create/edit/detail navigation
-- [ ] Keep per-row actions in list card or action menu components
+- [ ] build `sourceContext` from the current route
+- [ ] use `gotoWithContext()` for create/edit/detail navigation
+- [ ] keep row actions in local card/menu components
 
 ### Phase 7: UX States
 
-- [ ] Show `PageLoading` for initial load
-- [ ] Show a danger `Callout` for failures
-- [ ] Show empty state copy distinct from "no matches"
-- [ ] Use `useToasts()` for action success/failure feedback
+- [ ] loading state
+- [ ] failure state
+- [ ] empty state
+- [ ] success/failure toasts for list actions
 
----
+## Composition Rules
 
-## Atomic Patterns Used
+- keep visible list chrome Poodle-first
+- keep pagination, auth, and selection runtime in Underlay or host code
+- do not recreate a reusable Underlay list shell when `ListContainer`,
+  `FilterToolbar`, `BulkActionBar`, `DataTable`, and `Grid` already express
+  the visible contract
 
-| Pattern | Purpose |
-|---------|---------|
-| `createPaginationController` | Server pagination state + fetch lifecycle |
-| `useBatchActions` | Multi-select actions + confirmation |
-| `FilterToolbar` | Unified filtering UI |
-| `gotoWithContext` | Context-preserving navigation |
-| `useAuthenticatedData` | Auth-gated fetch and retries |
+## Reference Implementations
 
----
+Good proof families:
 
-## References in Acowtancy
+- Dairy list surfaces
+- ACME admin paginated list/detail flows
 
-- `dairy/src/lib/lists/ModulesList.svelte`
-- `dairy/src/lib/lists/MediaList.svelte`
-- `dairy/src/lib/lists/VideosList.svelte`
-- `dairy/src/lib/lists/DocumentsList.svelte`
+Use them as implementation references after following the Poodle recipe layer.
+
+## Related Recipes
+
+- [CRUD Admin Interface](./crud-admin-interface.md)
+- [Nested Entity Management](./nested-entity-management.md)
+- [Reorderable Collections](./reorderable-collections.md)
+- [Trash Lifecycle](./trash-lifecycle.md)
+- [Context-Preserving Navigation](./context-preserving-navigation.md)
+
+## Next Task
+
+If the list also needs explicit reorder mode or trash-specific lifecycle
+behavior, move to [Reorderable Collections](./reorderable-collections.md) or
+[Trash Lifecycle](./trash-lifecycle.md) instead of overloading the base list
+recipe.

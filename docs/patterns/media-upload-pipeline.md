@@ -1,64 +1,103 @@
-# Recipe: Media Upload Pipeline (Dedup + Initiate + Finalise)
+# Recipe: Media Upload Pipeline (Dedup + Initiate + Finalize)
 
-**Use when**: You need direct-to-blob media uploads with duplicate detection and server-side finalisation.
+**Use when**: You need direct-to-blob media uploads with duplicate detection
+and server-side finalization.
 
 **Example prompt**: "Implement admin media upload with duplicate detection"
 
----
+This is now a **mixed recipe**:
+
+- Underlay owns the upload lifecycle, command/API contract, and runtime
+  orchestration
+- Poodle owns the visible browse/upload/picker shell composition
+
+## Ownership Boundary
+
+Use Underlay for:
+
+- deduplication by hash
+- initiate/finalize endpoints
+- blob upload client step integration
+- upload queue state and retry orchestration
+- media lifecycle semantics
+
+Use Poodle for:
+
+- file intake and upload controls
+- browse and upload shell composition
+- thumbnail and preview posture
+- picker and progress presentation
+
+Start visible composition from:
+
+- `File Upload Recipes`
+- `Media Picker Workflow Recipes`
+- `Media Library And Upload Recipes`
 
 ## Key Principle
 
 Model upload as a pipeline, not a single API call:
-1. **Check duplicate by hash**
-2. **Create/initiate upload plan**
-3. **Upload bytes directly to blob store**
-4. **Finalise and activate metadata/version**
 
----
+1. check duplicates by hash
+2. create or initiate an upload plan
+3. upload bytes directly to blob storage
+4. finalize and activate the media version
 
 ## Checklist
 
 ### Phase 1: Dedup Endpoint
 
-- [ ] Add hash lookup endpoint (`check-duplicate`)
-- [ ] Return `exists` + existing media summary
-- [ ] Validate request and return typed errors
+- [ ] add hash lookup endpoint
+- [ ] return `exists` plus existing media summary
+- [ ] validate request and return typed errors
 
 ### Phase 2: Initiate Upload Endpoint
 
-- [ ] Verify media exists
-- [ ] Create uploading version row
-- [ ] Generate object key and pre-signed upload plan
-- [ ] Return `versionId` + `uploadPlan`
+- [ ] verify target media or create target record
+- [ ] create uploading version row
+- [ ] generate object key and presigned upload plan
+- [ ] return `versionId` and `uploadPlan`
 
 ### Phase 3: Blob Upload Client Step
 
-- [ ] Use `uploadToBlob()` with progress callbacks
-- [ ] Track queue item state (`pending`, `uploading`, `done`, `error`, `duplicate`)
+- [ ] upload bytes with progress callbacks
+- [ ] track queue item state (`pending`, `uploading`, `done`, `error`, `duplicate`)
 
-### Phase 4: Finalise Endpoint
+### Phase 4: Finalize Endpoint
 
-- [ ] Verify version/media relation
-- [ ] Verify blob object exists
-- [ ] Finalise version metadata (size/hash/content type)
-- [ ] Return updated media + version
-- [ ] Optionally enqueue post-processing jobs (renditions)
+- [ ] verify version/media relation
+- [ ] verify blob object exists
+- [ ] finalize version metadata
+- [ ] return updated media/version
+- [ ] optionally enqueue post-processing
 
 ### Phase 5: Admin Upload UI
 
-- [ ] Support bulk queue mode and single replace mode
-- [ ] Provide duplicate flow (reuse vs force upload)
-- [ ] Show per-file progress + retries
-- [ ] Show aggregated completion summary
+- [ ] support bulk queue mode and single replace mode
+- [ ] provide duplicate flow
+- [ ] show per-file progress and retries
+- [ ] show aggregated completion summary
 
----
+## Composition Rules
 
-## References in Acowtancy
+- keep upload lifecycle and policy in Underlay or host code
+- keep visible upload shell and picker UI Poodle-first
+- do not rebuild a second shared Underlay media-library UI kit
+- only add to Poodle when multiple apps prove the same generic visible media
+  interaction, not when one app wants a more convenient upload wrapper
 
-- `dairy/src/routes/(app)/media/upload/+page.svelte`
-- `dairy/src/lib/media-upload/bulk-upload.ts`
-- `dairy/src/lib/media-upload/single-upload.ts`
-- `cattle-grid/src/commands/media-commands.ts`
-- `farmyard/crates/api/src/routes/admin/media/dedup.rs`
-- `farmyard/crates/api/src/routes/admin/media/uploads/initiate.rs`
-- `farmyard/crates/api/src/routes/admin/media/uploads/finalise.rs`
+## Reference Implementations
+
+Use Dairy media-upload flows plus `cattle-grid` and `farmyard` media command
+and route families as the proof set.
+
+## Related Recipes
+
+- [Admin Ops Console](./admin-ops-console.md)
+- [CRUD Admin Interface](./crud-admin-interface.md)
+
+## Next Task
+
+If the flow also needs richer library browsing or picker behavior, pair this
+recipe with the Poodle media guides rather than extending Underlay back into a
+visible media UI layer.

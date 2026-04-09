@@ -1,69 +1,108 @@
 # Recipe: Reorderable Collections (Admin)
 
-**Use when**: Items have explicit ordering and admins need drag/drop reorder with conflict-safe persistence.
+**Use when**: Items have explicit ordering and admins need drag/drop reorder
+with conflict-safe persistence.
 
 **Example prompt**: "Add reorder support for Lessons within Module"
 
----
+This is now a **mixed recipe**:
+
+- Underlay owns the reorder workflow, endpoint contract, controller logic, and
+  conflict handling
+- Poodle owns the visible reorder-mode list and surrounding page chrome
+
+## Ownership Boundary
+
+Use Underlay for:
+
+- scope-aware reorder DB functions
+- reorder API payloads and conflict responses
+- client reorder commands
+- `createReorderController()` and related runtime helpers
+- toasts, auth-aware load, and refresh wiring
+
+Use Poodle for:
+
+- list shell
+- reorder-mode toggle/action placement
+- `ReorderableList`
+- loading, empty, and error presentation
+
+Start visible implementation from:
+
+- `List And Filter Recipes`
+- `Admin Feature Delivery Recipes`
+- `Page Shell And Admin Recipes`
 
 ## Key Principle
 
 Treat reorder as a first-class workflow:
-1. **Explicit reorder endpoint** per scope
-2. **Strict payload validation** (duplicates/invalid IDs)
-3. **UI reorder mode** separate from normal list mode
 
----
+1. explicit reorder endpoint per scope
+2. strict payload validation
+3. separate reorder mode from normal browse mode
 
 ## Checklist
 
 ### Phase 1: DB Reorder Function
 
-- [ ] Add scope-aware reorder function (`reorder_X_in_Y`)
-- [ ] Only reorder IDs valid for that scope
-- [ ] Return `reordered_count` and conflict metadata when needed
-
-**References**:
-- `farmyard/crates/db/src/learning/activities/reorder/*.rs`
-- `farmyard/crates/db/src/exams/reorder.rs`
+- [ ] add scope-aware reorder function
+- [ ] only reorder IDs valid for that scope
+- [ ] return enough success/conflict metadata to explain the outcome
 
 ### Phase 2: API Endpoint
 
-- [ ] Add `POST /.../reorder` route
-- [ ] Validate payload shape and duplicate IDs
-- [ ] Map DB result to `ReorderSuccessDto`
-- [ ] Return conflict error code when optimistic assumptions fail
+- [ ] add explicit `POST .../reorder` route
+- [ ] validate payload shape and duplicate IDs
+- [ ] return success DTO or clear conflict error
 
 ### Phase 3: Client Command
 
-- [ ] Add `reorder*` command taking ordered IDs (or sectioned items)
-- [ ] Keep endpoint encoding centralized in command layer
+- [ ] add `reorder*` command
+- [ ] keep endpoint and payload encoding centralized in the command layer
 
 ### Phase 4: UI Reorder Mode
 
-- [ ] Add dedicated `reorderMode` toggle button
-- [ ] Load full scoped dataset when entering reorder mode
-- [ ] Use `createReorderController()` + `ReorderableList`
-- [ ] Exit reorder mode on success/cancel/filter changes
+- [ ] add a dedicated reorder-mode toggle
+- [ ] load the full scoped dataset when entering reorder mode
+- [ ] use `createReorderController()` with Poodle `ReorderableList`
+- [ ] exit reorder mode on success, cancel, or invalidating filter/scope changes
 
 ### Phase 5: Save + Feedback
 
-- [ ] Save ordered IDs via command
-- [ ] Refresh normal paginated list after success
-- [ ] Show toast for success/failure
+- [ ] save ordered IDs through the command layer
+- [ ] refresh the normal list after success
+- [ ] show success/failure toasts
 
 ### Phase 6: Guardrails
 
-- [ ] Disable reorder when scope missing or list too small
-- [ ] Prevent reorder submit while auth token missing
-- [ ] Keep reorder and batch selection mutually exclusive
+- [ ] disable reorder when scope is missing or list is too small
+- [ ] keep reorder and batch-selection modes mutually exclusive
+- [ ] prevent submit while auth/runtime prerequisites are unavailable
 
----
+## Composition Rules
 
-## References in Acowtancy
+- keep reorder semantics in Underlay and host code
+- keep visible reorder-mode UI Poodle-first
+- do not build a new shared Underlay reorder shell around Poodle
+- only add Poodle capability if multiple apps prove a missing generic reorder
+  interaction, not because one app wants a convenience wrapper
 
-- `dairy/src/lib/lists/ModulesList.svelte`
-- `dairy/src/lib/lists/ActivitiesList.svelte`
-- `dairy/src/lib/views/VariantsTabContent.svelte`
-- `cattle-grid/src/commands/learning/reorder.ts`
-- `farmyard/crates/api/src/routes/admin/exams/reorder.rs`
+## Reference Implementations
+
+Use these as proof families:
+
+- Dairy module/activity/variant reorder flows
+- ACME-style admin list/detail families when reorder is nested under a parent
+
+## Related Recipes
+
+- [Autonomous Admin List](./autonomous-admin-list.md)
+- [Nested Entity Management](./nested-entity-management.md)
+- [Context-Preserving Navigation](./context-preserving-navigation.md)
+
+## Next Task
+
+If the reordered entities also have soft-delete recovery, layer in
+[Trash Lifecycle](./trash-lifecycle.md) rather than mixing irreversible and
+recoverable lifecycle behavior into one reorder recipe.

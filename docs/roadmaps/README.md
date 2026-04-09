@@ -28,6 +28,10 @@ README surfaces.
 
 ## Current Queue
 
+- there is no active pattern-catalogue translation wave now; `g01.097` is
+  complete, so the `docs/patterns` spine now routes visible Svelte
+  implementation to Poodle and keeps Underlay responsible only for retained
+  full-stack/runtime recipe value
 - there is no active UI-guide cleanup wave; `g01.094` and `g01.095` are both
   complete, so generic visible UI implementation guidance now lives in Poodle
   and the ACME reference apps rather than Underlay

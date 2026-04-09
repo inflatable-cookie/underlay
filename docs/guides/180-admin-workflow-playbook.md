@@ -23,6 +23,10 @@ Use this guide when the request is:
 - Nested children: `docs/patterns/nested-entity-management.md`
 - Live field validation: `docs/patterns/live-validation-endpoint.md`
 
+Recipe ownership rule:
+- treat the Underlay pattern as the backend/client/runtime delivery checklist
+- treat the Poodle guides as the canonical visible Svelte composition layer
+
 3. Add common Dairy-scale extensions
 - Autonomous lists: `docs/patterns/autonomous-admin-list.md`
 - Reorder: `docs/patterns/reorderable-collections.md`
@@ -39,6 +43,12 @@ Use this guide when the request is:
   - `List And Filter Recipes`
   - `Dialog And Detail Recipes`
 
+Default visible mapping:
+- list pages -> `ListContainer` + `FilterToolbar`
+- detail pages -> `PageHeader` + `MetaBar` + `DetailSection` / `DetailItem`
+- create/edit pages -> Poodle fields/actions, plus `SpaFormShell` only when its retained SPA workflow still earns its place
+- destructive flows -> `AlertDialog`
+
 5. Apply app shell/runtime requirements (SPA admin)
 - Follow `docs/guides/110-admin.md` for auth runtime setup, toasts, and Nightfire strategy configuration.
 - Use the ACME admin route family as the concrete implementation reference:
@@ -52,6 +62,10 @@ Use this guide when the request is:
 
 7. Sync docs and index
 - Update `docs/patterns/000-index.md` and `docs/guides/200-project-sync.md` when introducing/altering patterns.
+
+Do not add new visible UI examples to the Underlay pattern files unless they
+explain a retained runtime/workflow seam. New generic visible examples belong
+in the Poodle guides instead.
 
 ## Decision Shortcuts
 

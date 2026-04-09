@@ -1,28 +1,62 @@
 # Recipe: CRUD Admin Interface
 
-**Use when**: You need a complete admin interface for a database table.
+**Use when**: You need a complete admin interface for one entity or resource.
 
-**Example prompt**: "Build the CRUD interface for the Bundles table"
+**Example prompt**: "Build the CRUD interface for Bundles"
 
-## Outcome Profile (Quickstart vs Dairy-Scale Admin)
+This recipe is now **Underlay-led for implementation order and contracts, but
+Poodle-led for the visible Svelte UI layer**.
 
-If you stop at the base checklist in this recipe, you get a correct but **minimal CRUD surface**. That is usually enough for a simple table, but it will underdeliver for complex admin areas like Dairy's `learning`, `content`, and `system` flows.
+## Ownership Boundary
 
-| Area | Base recipe outcome | Dairy-scale outcome (recommended) |
-|------|----------------------|-----------------------------------|
-| Data loading | Single load call per page | Auth-aware loading with `useAuthenticatedData()` and retry/empty/loading states |
-| List UX | Basic table/list and row click | Pagination controller, filters, search, selection mode, batch actions, reorder mode |
-| Form UX | Local submit handler | `SpaFormShell`, intent-based submit (`save`, `save-close`, `delete`), field-level error mapping |
-| Navigation | Static breadcrumb/back link | Context-aware back links with `consumeNavigationContext()` + `gotoWithContext()` |
-| Related entities | Separate screens only | Parent detail tabs plus nested child routes and inline list actions |
-| Rich fields | Plain text inputs | `MarkdownEditor`/`NightfireEditor`, content cards, schema-aware save prep |
-| Operational polish | Minimal success/failure handling | Toasts, optimistic local updates, structured errors, analytics hooks |
+Use Underlay for:
 
-**Rule of thumb**:
-- Use this recipe alone for straightforward one-entity admin pages.
-- Combine this recipe with the extension checklist below for Dairy-style admin surfaces.
+- database shape and repository functions
+- API DTOs and handlers
+- TypeScript command contracts
+- runtime helpers like navigation context, `SpaFormShell`, toasts, and auth-aware data loading
+- testing expectations across DB/API/client/UI
 
----
+Use Poodle for:
+
+- list/detail/edit page structure
+- fields, actions, tabs, filters, detail sections, dialogs, and cards
+- page-level metadata and list chrome
+
+Start visible composition from these Poodle guides:
+
+- `Admin Feature Delivery Recipes`
+- `Page Shell And Admin Recipes`
+- `List And Filter Recipes`
+- `Dialog And Detail Recipes`
+- `Form Layout And Field Recipes`
+
+Use the ACME admin route family in the separate `underlay-reference`
+repository as the concrete visible reference implementation.
+
+## Outcome Profile
+
+If you stop at the base checklist in this recipe, you should end with a clean
+full-stack CRUD surface:
+
+- DB/repository functions
+- API routes and DTOs
+- TypeScript commands
+- a Poodle-composed list page
+- a Poodle-composed detail page
+- a Poodle-composed create/edit form using host runtime wiring
+
+For more involved admin families, layer in:
+
+- pagination and filters
+- navigation context
+- batch selection
+- reorder or trash workflows
+- relation selectors
+- Nightfire or rich-text fields
+
+Those are separate concerns and should be brought in explicitly rather than
+smuggled into a one-size-fits-all CRUD wrapper.
 
 ## Checklist
 
@@ -30,658 +64,118 @@ If you stop at the base checklist in this recipe, you get a correct but **minima
 
 **File**: `crates/db/src/{domain}.rs`
 
-- [ ] `list_{entities}(pool) -> Vec<Row>` - List all (with soft-delete filter)
-- [ ] `get_{entity}_by_id(pool, id) -> Option<Row>` - Single record lookup
-- [ ] `create_{entity}(pool, ..fields..) -> Row` - Insert with RETURNING
-- [ ] `update_{entity}(pool, id, ..fields..) -> Option<Row>` - Update with RETURNING
-- [ ] `soft_delete_{entity}(pool, id)` - Set deleted_at + delete_batch_id
-- [ ] Existence checks using `ExistsCheck` for unique fields
-
-**Existence check pattern** ([050-database.md](../guides/050-database.md#existscheck-builder)):
-
-```rust
-pub async fn {entity}_slug_exists(
-    pool: &DbPool,
-    slug: &str,
-    exclude_id: Option<Uuid>,
-) -> Result<bool, sqlx::Error> {
-    let mut check = ExistsCheck::new("schema", "table").value("slug", slug);
-    if let Some(id) = exclude_id {
-        check = check.excluding(id);
-    }
-    check.check(pool).await
-}
-```
-
----
+- [ ] `list_{entities}(pool) -> Vec<Row>`
+- [ ] `get_{entity}_by_id(pool, id) -> Option<Row>`
+- [ ] `create_{entity}(pool, ..fields..) -> Row`
+- [ ] `update_{entity}(pool, id, ..fields..) -> Option<Row>`
+- [ ] `soft_delete_{entity}(pool, id)`
+- [ ] existence checks for unique fields
 
 ### Phase 2: Backend - DTOs
 
 **File**: `crates/api/src/dto/{domain}.rs`
 
-- [ ] `{Entity}Dto` - Response shape (camelCase via serde rename_all)
-- [ ] `Create{Entity}Payload` - Create request body with validation
-- [ ] `Update{Entity}Payload` - Update request body with validation
+- [ ] `{Entity}Dto`
+- [ ] `Create{Entity}Payload`
+- [ ] `Update{Entity}Payload`
 
-**DTO pattern**:
-
-```rust
-#[derive(Debug, Serialize, ToSchema)]
-#[serde(rename_all = "camelCase")]
-pub struct BundleDto {
-    pub id: String,
-    pub name: String,
-    pub slug: String,
-    pub is_live: bool,
-    pub created_at: String,
-    pub updated_at: String,
-}
-
-#[derive(Debug, Deserialize, Validate, ToSchema)]
-#[serde(rename_all = "camelCase")]
-pub struct CreateBundlePayload {
-    #[validate(length(min = 1, max = 100))]
-    pub name: String,
-    #[validate(length(min = 1, max = 100))]
-    pub slug: String,
-    pub is_live: bool,
-}
-
-#[derive(Debug, Deserialize, Validate, ToSchema)]
-#[serde(rename_all = "camelCase")]
-pub struct UpdateBundlePayload {
-    #[validate(length(min = 1, max = 100))]
-    pub name: String,
-    #[validate(length(min = 1, max = 100))]
-    pub slug: String,
-    pub is_live: bool,
-}
-```
-
----
+Keep the payload and DTO contract explicit before any UI work starts.
 
 ### Phase 3: Backend - Routes
 
 **File**: `crates/api/src/routes/admin/{domain}.rs`
 
-- [ ] `GET /v1/admin/{domain}/{entities}` - List all
-- [ ] `GET /v1/admin/{domain}/{entities}/:id` - Get single
-- [ ] `POST /v1/admin/{domain}/{entities}` - Create
-- [ ] `PUT /v1/admin/{domain}/{entities}/:id` - Update
-- [ ] `DELETE /v1/admin/{domain}/{entities}/:id` - Soft delete
+- [ ] list endpoint
+- [ ] detail endpoint
+- [ ] create endpoint
+- [ ] update endpoint
+- [ ] delete endpoint
 
-**Route setup pattern**:
+Use the canonical Underlay handler guidance from:
 
-```rust
-pub fn routes() -> Router<AppState> {
-    Router::new()
-        .route("/v1/admin/domain/entities", get(list_entities).post(create_entity))
-        .route("/v1/admin/domain/entities/:id", get(get_entity).put(update_entity).delete(delete_entity))
-}
-```
+- [070-api-handlers.md](../guides/070-api-handlers.md)
+- [071-json-naming.md](../guides/071-json-naming.md)
+- [073-api-profiles-and-query-contract.md](../guides/073-api-profiles-and-query-contract.md)
 
-**Handler patterns** ([070-api-handlers.md](../guides/070-api-handlers.md)):
+### Phase 4: Client Commands
 
-```rust
-// GET single
-async fn get_entity(
-    State(state): State<AppState>,
-    Path(id): Path<String>,
-) -> impl IntoResponse {
-    let id = parse_uuid_path_raw(&id, "id")?;
+**File**: `client/src/commands/{domain}.ts`
 
-    let row = db::get_entity_by_id(&state.pool, id).await
-        .map_err(|e| error_response(StatusCode::INTERNAL_SERVER_ERROR,
-            AppError::new("db.error", e.to_string())))?;
+- [ ] list command
+- [ ] detail command
+- [ ] create command
+- [ ] update command
+- [ ] delete command
 
-    let Some(row) = row else {
-        return error_response(StatusCode::NOT_FOUND,
-            AppError::new("entity.not_found", "Entity not found")).into_response();
-    };
+Keep URL encoding, query shape, and envelope parsing centralized here.
 
-    ok(EntityDto::from(row)).into_response()
-}
+### Phase 5: UI - Browse, Detail, Edit
 
-// POST create
-async fn create_entity(
-    State(state): State<AppState>,
-    Json(payload): Json<CreateEntityPayload>,
-) -> impl IntoResponse {
-    if let Err(e) = payload.validate() {
-        let err = validation_to_app_error(&e, "entity.invalid", "Validation failed.");
-        return error_response(StatusCode::BAD_REQUEST, err).into_response();
-    }
+Do **not** recreate old Underlay component examples here. Compose the visible
+route family directly from Poodle.
 
-    // Check uniqueness
-    if db::entity_slug_exists(&state.pool, &payload.slug, None).await.unwrap_or(false) {
-        return error_response(StatusCode::CONFLICT,
-            AppError::new("entity.slug_exists", "Slug already exists")).into_response();
-    }
+Default posture:
 
-    let row = db::create_entity(&state.pool, &payload.name, &payload.slug, payload.is_live).await
-        .map_err(|e| error_response(StatusCode::INTERNAL_SERVER_ERROR,
-            AppError::new("db.error", e.to_string())))?;
+- list page: `ListContainer` + `FilterToolbar`
+- detail page: `PageHeader` + `MetaBar` + `DetailSection` / `DetailItem`
+- edit page: `Field` + `TextInput` / `Select` / `FormActions`
+- destructive flows: `AlertDialog`
 
-    created(EntityDto::from(row)).into_response()
-}
+Use `SpaFormShell` only when the shared SPA intent workflow is genuinely
+helpful for the form route. Otherwise keep the form submit flow app-local over
+Poodle primitives.
 
-// PUT update
-async fn update_entity(
-    State(state): State<AppState>,
-    Path(id): Path<String>,
-    Json(payload): Json<UpdateEntityPayload>,
-) -> impl IntoResponse {
-    let id = parse_uuid_path_raw(&id, "id")?;
+### Phase 6: Runtime and Navigation
 
-    if let Err(e) = payload.validate() {
-        let err = validation_to_app_error(&e, "entity.invalid", "Validation failed.");
-        return error_response(StatusCode::BAD_REQUEST, err).into_response();
-    }
+Add the retained Underlay runtime layer where it actually earns its place:
 
-    // Check uniqueness excluding current record
-    if db::entity_slug_exists(&state.pool, &payload.slug, Some(id)).await.unwrap_or(false) {
-        return error_response(StatusCode::CONFLICT,
-            AppError::new("entity.slug_exists", "Slug already exists")).into_response();
-    }
+- [Context-Preserving Navigation](./context-preserving-navigation.md)
+- `gotoWithContext()`
+- `consumeNavigationContext()`
+- `useAuthenticatedData()`
+- `useToasts()`
+- `SpaFormShell`
 
-    let row = db::update_entity(&state.pool, id, &payload.name, &payload.slug, payload.is_live).await
-        .map_err(|e| error_response(StatusCode::INTERNAL_SERVER_ERROR,
-            AppError::new("db.error", e.to_string())))?;
+### Phase 7: Verification
 
-    let Some(row) = row else {
-        return error_response(StatusCode::NOT_FOUND,
-            AppError::new("entity.not_found", "Entity not found")).into_response();
-    };
+Minimum expectations:
 
-    ok(EntityDto::from(row)).into_response()
-}
+- DB test for the main query/mutation path
+- API test for success and failure paths
+- client command test for endpoint/query shape
+- UI flow test for load, success, and error state
 
-// DELETE soft delete
-async fn delete_entity(
-    State(state): State<AppState>,
-    Path(id): Path<String>,
-) -> impl IntoResponse {
-    let id = parse_uuid_path_raw(&id, "id")?;
+Use [185 - Recipe Map and Testing Matrix](../guides/185-recipe-map-and-testing-matrix.md).
 
-    db::soft_delete_entity(&state.pool, id).await
-        .map_err(|e| error_response(StatusCode::INTERNAL_SERVER_ERROR,
-            AppError::new("db.error", e.to_string())))?;
+## Composition Rules
 
-    no_content().into_response()
-}
-```
+- keep route wiring, redirects, and entity wording in host code
+- use Poodle directly for visible UI
+- keep Underlay focused on the full-stack seam, not a second UI wrapper layer
+- add to Poodle only if multiple apps need the same generic visible behavior
 
----
+## Related Recipes
 
-### Phase 4: Client - Types
+- [Nested Entity Management](./nested-entity-management.md)
+- [Autonomous Admin List](./autonomous-admin-list.md)
+- [Trash Lifecycle](./trash-lifecycle.md)
+- [Reorderable Collections](./reorderable-collections.md)
+- [Context-Preserving Navigation](./context-preserving-navigation.md)
 
-**File**: `cattle-grid/src/types/{domain}-types.ts`
+## Reference Implementations
 
-- [ ] `{Entity}` interface matching `{Entity}Dto`
-- [ ] `Create{Entity}Payload` interface
-- [ ] `Update{Entity}Payload` interface
+Concrete reference families:
 
-**Type pattern**:
+- ACME admin route families in `underlay-reference`
+- Dairy learning/content/system route families in `acowtancy/dairy`
 
-```typescript
-export interface Bundle {
-  id: string;
-  name: string;
-  slug: string;
-  isLive: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
+Use them to confirm real file/module boundaries after following the Poodle
+guide layer.
 
-export interface CreateBundlePayload {
-  name: string;
-  slug: string;
-  isLive: boolean;
-}
+## Next Task
 
-export interface UpdateBundlePayload {
-  name: string;
-  slug: string;
-  isLive: boolean;
-}
-```
-
----
-
-### Phase 5: Client - Commands
-
-**File**: `cattle-grid/src/commands/{domain}-commands.ts`
-
-- [ ] `get{Entities}()` - List all
-- [ ] `get{Entity}(id)` - Get single
-- [ ] `create{Entity}(payload)` - Create
-- [ ] `update{Entity}(id, payload)` - Update
-- [ ] `delete{Entity}(id)` - Soft delete
-
-**Command pattern**:
-
-```typescript
-import { apiClient, type ApiResponse } from '../client';
-import type { Bundle, CreateBundlePayload, UpdateBundlePayload } from '../types';
-
-export function getBundles(): Promise<ApiResponse<Bundle[]>> {
-  return apiClient.get('/v1/admin/domain/bundles');
-}
-
-export function getBundle(id: string): Promise<ApiResponse<Bundle>> {
-  return apiClient.get(`/v1/admin/domain/bundles/${id}`);
-}
-
-export function createBundle(payload: CreateBundlePayload): Promise<ApiResponse<Bundle>> {
-  return apiClient.post('/v1/admin/domain/bundles', payload);
-}
-
-export function updateBundle(id: string, payload: UpdateBundlePayload): Promise<ApiResponse<Bundle>> {
-  return apiClient.put(`/v1/admin/domain/bundles/${id}`, payload);
-}
-
-export function deleteBundle(id: string): Promise<ApiResponse<void>> {
-  return apiClient.delete(`/v1/admin/domain/bundles/${id}`);
-}
-```
-
----
-
-### Phase 6: Frontend - List Page
-
-**File**: `dairy/src/routes/(app)/{domain}/{entities}/+page.svelte`
-
-- [ ] Load function fetching list via command
-- [ ] DataTable with columns for key fields
-- [ ] Status pills for boolean fields (is_live, etc.)
-- [ ] Row click navigates to detail page
-- [ ] "New" button linking to create page
-
-**Load function** (`+page.ts`):
-
-```typescript
-import { getBundles } from '@cattle-grid/commands';
-import type { PageLoad } from './$types';
-
-export const load: PageLoad = async () => {
-  const response = await getBundles();
-  return { bundles: response.data };
-};
-```
-
-**List page pattern**:
-
-```svelte
-<script lang="ts">
-  import { goto } from '$app/navigation';
-  import { DataTable, Button } from '@underlay/components';
-  import type { Bundle } from '@cattle-grid/types';
-
-  export let data: { bundles: Bundle[] };
-</script>
-
-<div class="page-header">
-  <h1>Bundles</h1>
-  <Button href="/domain/bundles/new">New Bundle</Button>
-</div>
-
-<DataTable
-  items={data.bundles}
-  columns={[
-    { key: 'name', label: 'Name', sortable: true },
-    { key: 'slug', label: 'Slug' },
-    {
-      key: 'isLive',
-      label: 'Status',
-      render: (value) => value ? 'Live' : 'Draft'
-    },
-  ]}
-  onRowClick={(bundle) => goto(`/domain/bundles/${bundle.id}`)}
-/>
-```
-
----
-
-### Phase 7: Frontend - Detail Page
-
-**File**: `dairy/src/routes/(app)/{domain}/{entities}/[id]/+page.svelte`
-
-- [ ] Load function fetching single entity
-- [ ] Form with fields matching Update payload
-- [ ] Save button calling update command
-- [ ] Delete button with confirmation modal
-- [ ] Breadcrumb navigation
-
-**Load function** (`+page.ts`):
-
-```typescript
-import { getBundle } from '@cattle-grid/commands';
-import type { PageLoad } from './$types';
-
-export const load: PageLoad = async ({ params }) => {
-  const response = await getBundle(params.id);
-  return { bundle: response.data };
-};
-```
-
-**Detail page pattern**:
-
-```svelte
-<script lang="ts">
-  import { goto } from '$app/navigation';
-  import { AlertDialog, Field, TextInput, Switch, Button } from '@underlay/components';
-  import { updateBundle, deleteBundle } from '@cattle-grid/commands';
-  import type { Bundle } from '@cattle-grid/types';
-
-  export let data: { bundle: Bundle };
-
-  let form = { ...data.bundle };
-  let showDeleteModal = false;
-  let saving = false;
-
-  async function handleSave() {
-    saving = true;
-    try {
-      await updateBundle(data.bundle.id, {
-        name: form.name,
-        slug: form.slug,
-        isLive: form.isLive,
-      });
-      // Show success toast or refresh
-    } finally {
-      saving = false;
-    }
-  }
-
-  async function handleDelete() {
-    await deleteBundle(data.bundle.id);
-    goto('/domain/bundles');
-  }
-</script>
-
-<div class="page-header">
-  <nav class="breadcrumb">
-    <a href="/domain/bundles">Bundles</a> / {data.bundle.name}
-  </nav>
-</div>
-
-<form on:submit|preventDefault={handleSave}>
-  <Field label="Name">
-    <TextInput bind:value={form.name} />
-  </Field>
-
-  <Field label="Slug">
-    <TextInput bind:value={form.slug} />
-  </Field>
-
-  <Field label="Live">
-    <Switch bind:checked={form.isLive} />
-  </Field>
-
-  <div class="form-actions">
-    <Button type="submit" loading={saving}>Save</Button>
-    <Button variant="danger" on:click={() => showDeleteModal = true}>Delete</Button>
-  </div>
-</form>
-
-{#if showDeleteModal}
-  <AlertDialog
-    title="Delete Bundle"
-    description="Are you sure you want to delete this bundle?"
-    onConfirm={handleDelete}
-    onCancel={() => showDeleteModal = false}
-  />
-{/if}
-```
-
----
-
-### Phase 8: Frontend - Create Page
-
-**File**: `dairy/src/routes/(app)/{domain}/{entities}/new/+page.svelte`
-
-- [ ] Form with fields matching Create payload
-- [ ] Create button calling create command
-- [ ] Redirect to detail page on success
-
-**Create page pattern**:
-
-```svelte
-<script lang="ts">
-  import { goto } from '$app/navigation';
-  import { Field, TextInput, Switch, Button } from '@underlay/components';
-  import { createBundle } from '@cattle-grid/commands';
-
-  let form = {
-    name: '',
-    slug: '',
-    isLive: false,
-  };
-  let saving = false;
-
-  async function handleCreate() {
-    saving = true;
-    try {
-      const response = await createBundle(form);
-      goto(`/domain/bundles/${response.data.id}`);
-    } finally {
-      saving = false;
-    }
-  }
-</script>
-
-<div class="page-header">
-  <nav class="breadcrumb">
-    <a href="/domain/bundles">Bundles</a> / New
-  </nav>
-</div>
-
-<form on:submit|preventDefault={handleCreate}>
-  <Field label="Name">
-    <TextInput bind:value={form.name} />
-  </Field>
-
-  <Field label="Slug">
-    <TextInput bind:value={form.slug} />
-  </Field>
-
-  <Field label="Live">
-    <Switch bind:checked={form.isLive} />
-  </Field>
-
-  <div class="form-actions">
-    <Button type="submit" loading={saving}>Create</Button>
-  </div>
-</form>
-```
-
----
-
-## Dairy-Scale Extension Checklist (Required for Complex Admin Areas)
-
-Use these extension phases whenever the admin surface has nested entities, richer forms, or operational workflows.
-
-### Phase 9: Authenticated SPA Data Flow
-
-- [ ] Use `useAuthenticatedData()` instead of plain `+page.ts` data-only loading for protected routes.
-- [ ] Trigger fetch using auth readiness (`authLoading` + current user state).
-- [ ] Expose clear loading, empty, and error states (`PageLoading`, danger `Callout`).
-- [ ] Keep token access in auth store (do not pass tokens through page data).
-
-Primary references:
-- [110-admin.md#complete-crud-admin-pattern](../guides/110-admin.md#complete-crud-admin-pattern)
-- [110-admin.md#createedit-page-pattern](../guides/110-admin.md#createedit-page-pattern)
-
-### Phase 10: Form Shell + Intent Pattern
-
-- [ ] Wrap create/edit pages in `SpaFormShell`.
-- [ ] Support intents: `save`, `save-close`, and `delete` (edit mode).
-- [ ] Return `SpaFormResult` with `fieldErrors` mapped to form fields.
-- [ ] Use a reusable form component that renders fields only (no page-level routing logic inside form component).
-- [ ] Keep destructive actions explicit using `AlertDialog`.
-
-Primary references:
-- [110-admin.md#form-component-pattern](../guides/110-admin.md#form-component-pattern)
-- [110-admin.md#createedit-page-pattern](../guides/110-admin.md#createedit-page-pattern)
-
-### Phase 11: Navigation Context and Tab-Aware Back Links
-
-- [ ] Use `consumeNavigationContext()` on create/edit/detail routes.
-- [ ] Use `gotoWithContext()` from list cards/tab lists.
-- [ ] Include active tab in context href for detail pages with tabs.
-- [ ] Compute back links dynamically with `computeBackInfo()`.
-
-Primary references:
-- [110-admin.md#navigation-context-with-tabs](../guides/110-admin.md#navigation-context-with-tabs)
-- [110-admin.md#detail-page-header-pattern](../guides/110-admin.md#detail-page-header-pattern)
-
-### Phase 12: List Controllers (Pagination, Batch Actions, Reorder)
-
-- [ ] Use `createPaginationController()` for server pagination.
-- [ ] Add Poodle `FilterToolbar` + search/filter inputs where datasets are non-trivial.
-- [ ] Add `useBatchActions()` + `BulkActionBar` plus explicit confirmation dialogs for multi-select delete/archive workflows.
-- [ ] Add `createReorderController()` + `ReorderableList` when sequence/order matters.
-- [ ] Keep list components autonomous and reusable between page and tab contexts.
-
-Primary references:
-- [110-admin.md#tab-content-pattern-list-view](../guides/110-admin.md#tab-content-pattern-list-view)
-- [nested-entity-management.md#phase-5-frontend---tab-on-parent-page](./nested-entity-management.md#phase-5-frontend---tab-on-parent-page)
-
-### Phase 13: Nested Entity and Relation Workflows
-
-- [ ] For child entities under a parent, apply the nested recipe (`/parents/:id/children` list + independent child CRUD).
-- [ ] Use tab content for child lists and dedicated child create/edit/detail routes.
-- [ ] Add relation picking/search where entities reference other resources (`RelationSelector` + local/remote search functions).
-- [ ] Support inline-create relations only when it clearly reduces authoring friction.
-
-Primary references:
-- [nested-entity-management.md](./nested-entity-management.md)
-- [live-validation-endpoint.md](./live-validation-endpoint.md)
-
-### Phase 14: Rich Content and Validation
-
-- [ ] Use `MarkdownEditor` for `TEXT` fields and `NightfireEditor` for `JSONB`.
-- [ ] Run field validation endpoints for uniqueness and scoped constraints.
-- [ ] Show rich content on detail pages with direct `Card` composition and structured details sections.
-- [ ] Keep server-side validation as source of truth (`validation_to_app_error`, Nightfire validation mapping).
-
-Primary references:
-- [050-database.md#rich-text-field-conventions](../guides/050-database.md#rich-text-field-conventions)
-- [070-api-handlers.md#nightfire-content-validation](../guides/070-api-handlers.md#nightfire-content-validation)
-- [live-validation-endpoint.md](./live-validation-endpoint.md)
-
----
-
-## Atomic Patterns Used
-
-This recipe uses these atomic patterns:
-
-| Pattern | Phase | Guide |
-|---------|-------|-------|
-| ExistsCheck | 1 | [050-database.md#existscheck-builder](../guides/050-database.md#existscheck-builder) |
-| parse_uuid_path_raw | 3 | [070-api-handlers.md#uuid-path-parameter-parsing](../guides/070-api-handlers.md#uuid-path-parameter-parsing) |
-| validation_to_app_error | 3 | [070-api-handlers.md#validator-crate-integration](../guides/070-api-handlers.md#validator-crate-integration) |
-| ok/created/no_content | 3 | [070-api-handlers.md#response-helpers](../guides/070-api-handlers.md#response-helpers) |
-| error_response | 3 | [070-api-handlers.md#errors](../guides/070-api-handlers.md#errors) |
-
----
-
-### Detail Page View Structure
-
-Detail pages should use `DetailsGrid` with `DetailsSection` to organize information. Always include a **Timestamps** section at the end showing creation and update times.
-
-**Components**:
-- `DetailsGrid` - Container for all detail sections
-- `DetailsSection` - Groups related fields with a legend
-- `DetailItem` - Individual field display (label + value)
-- `TimeAgo` - Renders relative time with tooltip for exact time
-
-**Standard pattern**:
-
-```svelte
-<script lang="ts">
-  import { DetailRow, TimeAgo } from "@poodle/svelte-primitives";
-</script>
-
-<div class="underlay-details-content">
-  <div class="underlay-details-grid">
-    <!-- Domain-specific sections -->
-    <section>
-      <h3>Details</h3>
-      <DetailRow label="Name" value={entity.name} />
-      <DetailRow label="Slug" value={entity.slug} code />
-    </section>
-
-    <!-- Timestamps section - always last -->
-    <section>
-      <h3>Timestamps</h3>
-      <DetailRow label="Created">
-        <TimeAgo datetime={entity.createdAt} />
-      </DetailRow>
-      <DetailRow label="Last Updated">
-        <TimeAgo datetime={entity.updatedAt} />
-      </DetailRow>
-    </section>
-  </div>
-</div>
-```
-
-**DetailRow props**:
-- `label` - Field label (uppercase styling applied)
-- `value` - Plain text/number value
-- `code` - Display value as monospace code
-- `span` - Column span (`number` or `"full"` for entire row)
-- `muted` - Show as secondary/less important
-- `children` - Custom content snippet instead of plain value
-
-**Full-width grid**: For simpler detail views, make the grid single-column:
-
-```svelte
-<DetailsGrid class="my-details-grid">
-  ...
-</DetailsGrid>
-
-<style>
-  :global(.my-details-grid) {
-    grid-template-columns: 1fr !important;
-  }
-</style>
-```
-
-**Markdown content**: Use direct `Card` plus the appropriate renderer for rich text fields:
-
-```svelte
-<Card>
-  <h4>Description</h4>
-  {#if entity.description}
-    <NightfireRenderer value={entity.description} />
-  {:else}
-    <p>No description set.</p>
-  {/if}
-</Card>
-```
-
----
-
-## Variations
-
-### With Pagination
-
-Add to list endpoint:
-- Use `PaginationParams` in handler
-- Return `Paginated<EntityDto>`
-- See [070-api-handlers.md#pagination](../guides/070-api-handlers.md#pagination)
-
-### With Sorting/Filtering
-
-Add to list endpoint:
-- Use `QueryParams` and `FieldMapping`
-- See [070-api-handlers.md#query-field-mapping](../guides/070-api-handlers.md#query-field-mapping)
-
-### With Nightfire Content
-
-Add to DTOs and forms:
-- Use `serde_json::Value` for JSONB fields
-- Use `NightfireEditor` component
-- Validate with `nightfire_validation_to_app_error()`
-- See [070-api-handlers.md#nightfire-content-validation](../guides/070-api-handlers.md#nightfire-content-validation)
+When the entity needs nested children, move to
+[Nested Entity Management](./nested-entity-management.md). When the main list
+needs more than simple browse/detail/edit, move to
+[Autonomous Admin List](./autonomous-admin-list.md) instead of growing a local
+one-off shell.

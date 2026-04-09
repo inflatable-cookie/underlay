@@ -13,6 +13,13 @@ For UI implementation, use Poodle as the canonical guide source:
 This Underlay page should now be read for frontend architecture, integration,
 and retained runtime/client usage rather than generic UI implementation.
 
+Ownership rule:
+- use Poodle for visible page, form, list, detail, and shell composition
+- use Underlay for frontend structure, client/runtime helpers, transport, auth,
+  CSP, and deployment wiring
+- use the recipe files in `docs/patterns/` only as full-stack/runtime delivery
+  guides, not as a second UI implementation layer
+
 Reference UI implementations now live in the ACME reference apps in the
 separate `underlay-reference` repository and should be treated as the real
 examples.
@@ -54,6 +61,11 @@ apps/web/src/
 See [code/100-frontend-web/README.md](./code/100-frontend-web/README.md)
 for the retained integration snippets. Use ACME and Poodle for the visible UI
 layer.
+
+For feature delivery:
+- use [CRUD Admin Interface](../patterns/crud-admin-interface.md) and related
+  pattern files when the work needs a full-stack sequence
+- use the Poodle guides when the question is purely visible composition
 
 ## API Fetch Contract (Profiles)
 

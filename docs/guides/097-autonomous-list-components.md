@@ -1,16 +1,28 @@
 # Autonomous List Components
 
 This guide now describes a retained runtime pattern, not a shared component
-layer.
+layer or a second list-implementation manual.
 
 Build list chrome with Poodle directly. Use the helpers here for state,
 selection, batch actions, and controller logic when that orchestration still
 belongs in a shared runtime layer.
 
-Canonical UI implementation guides:
+Canonical visible implementation guides:
 - `List And Filter Recipes` in the Poodle guide set
 - `Page Shell And Admin Recipes` in the Poodle guide set
 - `Admin Feature Delivery Recipes` in the Poodle guide set
+
+Use the Underlay recipe layer for full-stack/runtime delivery only:
+- [Autonomous Admin List](../patterns/autonomous-admin-list.md)
+- [Reorderable Collections](../patterns/reorderable-collections.md)
+- [Trash Lifecycle](../patterns/trash-lifecycle.md)
+
+## Ownership Boundary
+
+- Poodle owns list chrome, filter chrome, bulk-action chrome, reorder list UI,
+  and empty/loading presentation
+- Underlay owns pagination, auth-aware loading, batch-selection state,
+  controller logic, and navigation/runtime helpers
 
 ## Overview
 
@@ -87,8 +99,8 @@ If a narrower filter is set, ignore broader filters in the query call to avoid a
 Basic selection state management for multi-select list operations. Use this when you only need selection without registered batch actions.
 
 UI note:
-- the `BulkActionBar`, `AlertDialog`, `ListCard`, and surrounding list shell are
-  Poodle concerns
+- the `BulkActionBar`, `AlertDialog`, `ListCard`, `DataTable`, `Grid`, and
+  surrounding list shell are Poodle concerns
 - this section is about the retained shared selection/runtime layer only
 
 ```svelte

@@ -17,6 +17,11 @@ Historical language boundary:
 
 There is no active roadmap right now.
 
+`g01.097` is complete. The remaining `docs/patterns` catalogue no longer acts
+like an Underlay-led visible UI playbook; it now routes visible composition to
+Poodle and keeps Underlay responsible only for retained full-stack/runtime
+recipe value.
+
 The retained-surface reassessment wave is complete, and the focused follow-on
 capability projects for shared tables, sorting, reorder workflow, inline
 loading, and toast runtime hosting are complete too. There are no meaningful
@@ -186,5 +191,6 @@ the archival-doc evidence-boundary audit are now complete through `g01.096`.
 
 ## Next Task
 
-Open a fresh roadmap only when a new retained package or runtime boundary
-challenge is ready. The UI-guide translation and prune line is complete.
+Open a fresh roadmap only when a new retained boundary or consumer-app
+normalization wave is ready. The pattern-catalogue translation line is
+complete.

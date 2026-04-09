@@ -1,61 +1,100 @@
 # Recipe: Admin Ops Console (Jobs, Schedules, Errors, Audit)
 
-**Use when**: You need operational admin pages for platform observability and controls.
+**Use when**: You need operational admin pages for platform observability and
+controls.
 
 **Example prompt**: "Build system pages for jobs, scheduled tasks, errors, and audit logs"
 
----
+This is now a **mixed recipe**:
+
+- Underlay owns the command/runtime/error-handling side of the operational
+  workflow
+- Poodle owns the visible list/detail/filter/log presentation
+
+## Ownership Boundary
+
+Use Underlay for:
+
+- API and client command structure
+- auth-aware loading and refresh behavior
+- operational action safety rules
+- toasts, error handling, and runtime orchestration
+
+Use Poodle for:
+
+- page shell
+- filters and list chrome
+- log presentation
+- detail/dialog presentation for operational records
+
+Start visible composition from:
+
+- `Page Shell And Admin Recipes`
+- `List And Filter Recipes`
+- `Dialog And Detail Recipes`
+- `Admin Feature Delivery Recipes`
 
 ## Key Principle
 
-Ops pages combine **inspection** and **safe control actions**:
+Ops pages combine inspection and safe control actions:
+
 - list and filter operational records
 - show enough detail for triage
-- expose guarded actions (retry/cancel/toggle/trigger)
-
----
+- expose guarded actions like retry/cancel/toggle/trigger
 
 ## Checklist
 
 ### Phase 1: API Surface
 
-- [ ] Jobs list/detail/stats/cancel/retry endpoints
-- [ ] Scheduled tasks list/detail/toggle/trigger endpoints
-- [ ] Error log list/detail endpoints
-- [ ] Audit log list/detail endpoints
+- [ ] jobs list/detail/stats/cancel/retry endpoints
+- [ ] scheduled task list/detail/toggle/trigger endpoints
+- [ ] error log list/detail endpoints
+- [ ] audit log list/detail endpoints
 
 ### Phase 2: Client Commands
 
-- [ ] Create dedicated commands modules (`platformCommands`, `infraCommands`)
-- [ ] Include typed query param builders
-- [ ] Return normalized DTOs for UI components
+- [ ] dedicated command modules
+- [ ] typed query-param builders
+- [ ] normalized DTOs for UI usage
 
 ### Phase 3: UI Pages
 
-- [ ] Jobs page with status filter + stats cards + row actions
-- [ ] Scheduled tasks page with enabled filter + trigger/toggle actions
-- [ ] Error log page with expandable row details
-- [ ] Audit log page with Poodle `LogList` and URL-backed filters
+- [ ] jobs page with status filters and row actions
+- [ ] scheduled tasks page with enabled filters and trigger/toggle actions
+- [ ] error log page with expandable details
+- [ ] audit log page with log-list posture and URL-backed filters
 
 ### Phase 4: Data Lifecycle
 
-- [ ] Use `useAuthenticatedData()` across all ops pages
-- [ ] Refetch on filter changes and post-action success
-- [ ] Show `PageLoading` plus a danger `Callout` and stable empty states
+- [ ] use `useAuthenticatedData()`
+- [ ] refetch on filter changes and post-action success
+- [ ] show stable loading, failure, and empty states
 
 ### Phase 5: Safety and Feedback
 
-- [ ] Use toasts for action outcomes
-- [ ] Confirm destructive/cancel actions where appropriate
-- [ ] Keep action menus role-restricted and status-aware
+- [ ] toasts for action outcomes
+- [ ] confirmation for destructive or cancel actions
+- [ ] role- and status-aware actions
 
----
+## Composition Rules
 
-## References in Acowtancy
+- keep operational command and safety behavior in Underlay or host code
+- keep visible console/list/detail chrome Poodle-first
+- do not build a second shared Underlay ops page shell unless a real runtime
+  seam emerges beyond the existing controllers/helpers
 
-- `dairy/src/routes/(app)/system/jobs/+page.svelte`
-- `dairy/src/routes/(app)/system/scheduled-tasks/+page.svelte`
-- `dairy/src/routes/(app)/system/errors/+page.svelte`
-- `dairy/src/routes/(app)/system/audit/+page.svelte`
-- `cattle-grid/src/commands/platform-commands.ts`
-- `cattle-grid/src/commands/infra-commands.ts`
+## Reference Implementations
+
+Use Dairy system routes plus the corresponding `cattle-grid` and `farmyard`
+command/route families as the proof set.
+
+## Related Recipes
+
+- [Autonomous Admin List](./autonomous-admin-list.md)
+- [Context-Preserving Navigation](./context-preserving-navigation.md)
+
+## Next Task
+
+If the console also exposes media or Nightfire operational flows, pair this
+recipe with the media or Nightfire integration recipes instead of growing one
+catch-all ops document.

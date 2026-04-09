@@ -1,6 +1,12 @@
 # 185 - Recipe Map and Testing Matrix
 
-This guide maps each composite recipe to real Acowtancy reference files and defines minimum testing expectations.
+This guide maps each composite recipe to real Acowtancy reference files and
+defines minimum testing expectations.
+
+Ownership rule:
+- treat the recipe files in `docs/patterns/` as full-stack/runtime delivery guides
+- treat Poodle as the canonical visible UI composition layer for any recipe that
+  builds Svelte pages, forms, lists, dialogs, detail headers, or media shells
 
 ## Recipe To Acowtancy References
 

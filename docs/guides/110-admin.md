@@ -15,11 +15,24 @@ This Underlay page should now be read for admin app structure, retained
 workflow/runtime usage, and integration rules rather than generic shared UI
 implementation.
 
+Ownership rule:
+- use Poodle for visible admin shell, list, detail, form, dialog, and metadata
+  composition
+- use Underlay for retained workflow shells, runtime/client helpers, Nightfire
+  integration, and admin deployment/runtime wiring
+- use the pattern files in `docs/patterns/` as full-stack/runtime delivery
+  guides rather than as a second shared UI kit
+
 Reference UI implementations now live in the ACME admin app in the separate
 `underlay-reference` repository and should be treated as the real examples.
 
 The snippets under [code/110-admin](./code/110-admin)
 are now integration-oriented stubs, not the canonical UI recipe surface.
+
+For admin feature work:
+- start with [180-admin-workflow-playbook.md](./180-admin-workflow-playbook.md)
+- choose the appropriate Underlay full-stack recipe in `docs/patterns/`
+- follow the Poodle guides for the visible route composition inside that recipe
 
 ## Admin Frontend Structure
 

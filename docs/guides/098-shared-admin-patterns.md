@@ -9,6 +9,12 @@ The actual admin UI implementation guidance now lives in Poodle:
 
 Read this Underlay page as a retained-boundary explanation only.
 
+The recipe layer that sits above this page now follows a split model:
+- use [CRUD Admin Interface](../patterns/crud-admin-interface.md) for full-stack delivery order
+- use [Nested Entity Management](../patterns/nested-entity-management.md) when parent/child route structure matters
+- use [Autonomous Admin List](../patterns/autonomous-admin-list.md), [Reorderable Collections](../patterns/reorderable-collections.md), and [Trash Lifecycle](../patterns/trash-lifecycle.md) when list/runtime workflows are the real problem
+- use the Poodle guides for the visible page/list/detail/dialog composition inside those recipes
+
 Storybook coverage:
 - Poodle `PageHeader`
 - Underlay `SpaFormShell`
@@ -28,6 +34,15 @@ Underlay no longer exports a public `AiRoutingAdmin` shell.
 | `SpaFormShell` | `@decodelabs/underlay/patterns` | Retained SPA create/edit workflow shell with submit/result/navigation orchestration |
 | EditableLabel | `@poodle/svelte-primitives` | Click-to-edit text field |
 | KeyboardShortcuts | `patterns/keyboard-shortcuts.svelte.ts` | Centralized shortcut registration |
+
+## Ownership Boundary
+
+- Poodle owns visible admin page composition
+- Underlay owns retained workflow shells and runtime helpers
+- app code owns entity wording, menus, permission rules, and route orchestration
+
+Do not treat this page as a substitute for the Poodle guides. It exists to
+explain what still belongs in Underlay after the UI translation wave.
 
 ---
 
