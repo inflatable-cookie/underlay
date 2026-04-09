@@ -129,6 +129,14 @@ For route-page child forms:
 - use `SpaFormShell` only when save-vs-save-close/delete intent handling or
   navigation-context return behavior is part of the route workflow
 
+For inline dialogs launched from the parent detail route:
+
+- keep the trigger in the local section header or page actions
+- use `FormDialog` with a mutation-specific title and a subtitle that carries
+  the parent context
+- keep close-on-success and parent detail refetch or local patch behavior in
+  host code
+
 ### Phase 7: Navigation and Return Context
 
 Nested routes are where context drift becomes expensive. Apply:
