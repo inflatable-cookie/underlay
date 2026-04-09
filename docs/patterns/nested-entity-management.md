@@ -55,6 +55,11 @@ Keep the visible parent detail shell stable:
   `InlineListSection` under that shell
 - richer child browse collections like aliases, notices, and variants kept on
   host-owned list-card/grid composition, not revived mini page shells
+- compact child collections inside a detail tab should still expose a local
+  title, count badge, empty copy, and row-level actions
+- richer child collections that need filters, reorder, selection mode, or batch
+  actions should live on a dedicated tab or section body instead of being
+  squeezed into the overview/details tab
 
 ## Checklist
 
