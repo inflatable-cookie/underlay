@@ -34,6 +34,13 @@ For admin feature work:
 - choose the appropriate Underlay full-stack recipe in `docs/patterns/`
 - follow the Poodle guides for the visible route composition inside that recipe
 
+For dashboard and overview routes:
+- use Poodle `PageHeader` for the page title/subtitle shell
+- use host-owned `MetricTile` link cards for summary metrics
+- use secondary sections like `LogList` or `NavCard` below that first metrics
+  band
+- keep overview data loading and command wiring in host code
+
 ## Admin Frontend Structure
 
 The admin frontend uses **layout groups** to separate authenticated routes (with sidebar) from unauthenticated routes (login/register with minimal centered layout).
