@@ -1,4 +1,4 @@
-import type { NightfireValue } from "../index";
+import type { NightfireValue } from "../types";
 import { normaliseNightfireValue } from "../utils";
 import type { NightfireFieldMode } from "./field-lifecycle";
 

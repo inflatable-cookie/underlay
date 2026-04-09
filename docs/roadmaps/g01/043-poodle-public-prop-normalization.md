@@ -51,7 +51,7 @@ Normalize Poodle's public Svelte prop language onto one consistent boolean namin
 - [x] Handle deprecation intentionally if a compatibility window is needed, but do not leave long-lived dual naming in place.
 
 Completed so far in 43.2:
-- `Button`, `IconButton`, `TextInput`, `TextArea`, `SearchField`, `Select`, `SplitButton`, `TimeField`, and `TimeZoneSelect`
+- `Button`, `IconButton`, `TextInput`, `SearchField`, `Select`, `SplitButton`, `TimeField`, and `TimeZoneSelect`
 - `Switch`, `Checkbox`, `RadioGroup`, and `TriStateSwitch`
 - `Calendar`, `RangeCalendar`, `DatePicker`, `DateRangePicker`, `DateTimePicker`, `DateTimeRangePicker`, `ZonedDateTimePicker`, `Slider`, `RangeSlider`, `NumberInput`, `Combobox`, `DurationInput`, and `ResizeHandle`
 - `ColorPicker`, `PinInput`, `Rating`, `NavCard`, `ListCard`, and `OrderBy`
@@ -82,6 +82,7 @@ Audit result after Batch 43.4:
 - live Poodle old-name call-site debt is effectively clear across Underlay shared source, `underlay-reference`, and the six app groups
 - remaining `is*` hits in live source are overwhelmingly Underlay-local helper/state names like `selection.isSelected(...)`, `isLoading`, or `hasChildren`, not retired Poodle public prop usage
 - the only missed live normalization tail found during the audit was shared Underlay auth and guide examples, and that residue is now closed
+- later Poodle cleanup also collapsed `TextArea` into `TextInput`, so `TextArea` should now be treated as historical context rather than a live public primitive
 
 ## Batch 43.5 - Validation, Upgrade Notes, and Guardrails
 

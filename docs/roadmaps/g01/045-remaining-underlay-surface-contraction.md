@@ -349,9 +349,10 @@ effigy qa:northstar
   difficulty scale, so those forms now use direct Poodle `Slider` with
   caller-owned labels instead of preserving a second shared Underlay wrapper
   or forcing a false `RangeSlider` parity story.
-- `ColorPicker` and `TextArea` are now retired from the public Underlay
-  surface. Neither retained a live consumer-app caller family once the active
-  forms moved to direct Poodle primitives, so keeping those same-name wrappers
+- `ColorPicker` and the old standalone `TextArea` surface are now retired from
+  the public Underlay surface. Neither retained a live consumer-app caller
+  family once the active forms moved to direct Poodle primitives, and multiline
+  text entry now lives on Poodle `TextInput`, so keeping those wrappers
   exported was only stale surface area.
 - `VideoPlayer` is now retired from the public Underlay surface. It no longer
   had live consumer-app callers, and direct shared video playback belongs to

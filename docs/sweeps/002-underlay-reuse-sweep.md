@@ -55,7 +55,7 @@ rg -n "^export \{ default as |^export \{" "$UNDERLAY_REPO/ts/src/patterns/index.
 
 Focus on these canonical items for this sweep:
 
-- **Form widgets:** `Field`, `TextInput`, `TextArea`, `Select`, `Switch`, `DateInput`, `DateTimeInput`, `NumberInput`, `DurationInput`, `MarkdownEditor`, `FormActions`
+- **Form widgets:** `Field`, `TextInput` (including multiline/textarea usage), `Select`, `Switch`, `DateInput`, `DateTimeInput`, `NumberInput`, `DurationInput`, `MarkdownEditor`, `FormActions`
 - **List controls:** `FilterBar`, `OrderBy`, `Pagination`, `DataTable`, `createListController`, `BatchActionBar`, `LogList`, `CopyActionsMenu`
 - **List cards:** `ListCard`, `InlineListCard`, `InlineListItem`
 - **Form dialogs:** `FormDialog` (patterns), `Dialog`, `AlertDialog`, `FormActions`
@@ -197,7 +197,7 @@ Replace:
 
 With:
 
-- `Field` + `TextInput`/`Select`/`TextArea`/`Switch`
+- `Field` + `TextInput`/`Select`/`Switch`
 
 Checklist:
 
