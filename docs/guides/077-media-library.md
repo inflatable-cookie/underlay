@@ -30,6 +30,15 @@ For detail routes specifically, use the Poodle media-detail posture:
 - `Card` + `DetailSection` + `DetailItem` for the details tab
 - `InlineListSection` for compact versions and usage sections under the tab
   surface
+- `AlertDialog` for activate/delete version confirms, with action-specific
+  titles, concise consequence copy, and `itemLabel` / `itemValue` for the
+  selected version identifier
+
+Keep the action sequencing in host code:
+
+- open the confirm from the local row action
+- perform the command in the route or host controller
+- close on success and refetch or patch the detail surface locally
 
 Use the Underlay recipe layer for the upload lifecycle and full-stack delivery
 only:
