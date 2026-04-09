@@ -40,6 +40,9 @@ For dashboard and overview routes:
 - use secondary sections like `LogList` or `NavCard` below that first metrics
   band
 - keep overview data loading and command wiring in host code
+- if the page is a workflow launcher rather than a true dashboard, prefer
+  grouped `NavCard` sections with short intro copy and skip the metric band
+  entirely instead of inventing placeholder stats
 
 ## Admin Frontend Structure
 
