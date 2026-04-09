@@ -87,6 +87,9 @@ Ops pages combine inspection and safe control actions:
 - for review-style queues, prefer the Poodle review queue pattern: the same
   browse shell plus an action-oriented state band and row-level claim/release
   or open actions
+- for review drill-in routes, prefer the Poodle review detail pattern:
+  `PageHeader` + `MetaBar` + carded summary block first, then app-owned answer,
+  result, or history sections
 - prefer the Poodle ops detail pattern for job and scheduled-task drill-in:
   `PageHeader` + `MetaBar` + carded `DetailSection` summary + carded code/error
   blocks
