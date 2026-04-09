@@ -44,6 +44,14 @@ Child entities should usually be managed through:
 3. a parent detail route that composes the child surface using Poodle tabs and
    host-owned actions
 
+Keep the visible parent detail shell stable:
+
+- one `PageHeader`
+- one `MetaBar` directly beneath it
+- one top-level `Tabs` control for child surfaces
+- detail-tab content rendered as cards and `DetailSection`s, not a second inner
+  page header
+
 ## Checklist
 
 ### Phase 1: Backend - Database Layer
@@ -90,6 +98,7 @@ Compose the visible parent route in Poodle:
 - `MetaBar`
 - `Tabs`
 - `ListContainer` or direct tab content
+- `Card` + `DetailSection` for the parent overview tab
 
 Keep tab items and counts host-owned. Do not revive old Underlay tab examples.
 

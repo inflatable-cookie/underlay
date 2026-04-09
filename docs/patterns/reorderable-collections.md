@@ -66,6 +66,8 @@ Treat reorder as a first-class workflow:
 - [ ] add a dedicated reorder-mode toggle
 - [ ] load the full scoped dataset when entering reorder mode
 - [ ] use `createReorderController()` with Poodle `ReorderableList`
+- [ ] use guarded submit plus conflict recovery when the backend returns reorder conflicts
+- [ ] page large reorder sessions with `windowSize` instead of exposing one giant drag surface
 - [ ] exit reorder mode on success, cancel, or invalidating filter/scope changes
 
 ### Phase 5: Save + Feedback
@@ -84,6 +86,9 @@ Treat reorder as a first-class workflow:
 
 - keep reorder semantics in Underlay and host code
 - keep visible reorder-mode UI Poodle-first
+- prefer the shared workflow posture already used in live admin and Dairy lists:
+  reorder toggle, `ReorderableList`, guarded submit, and `windowSize={50}` for
+  larger sessions
 - do not build a new shared Underlay reorder shell around Poodle
 - only add Poodle capability if multiple apps prove a missing generic reorder
   interaction, not because one app wants a convenience wrapper

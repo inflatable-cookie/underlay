@@ -74,6 +74,8 @@ That means:
 - [ ] one mapping function from local state to command query
 - [ ] reset or refresh pagination on filter changes
 - [ ] persist pagination state only when it materially improves navigation
+- [ ] use current Poodle filter input/select events rather than legacy `onchange`
+      handlers or raw DOM controls in shared filter shells
 
 ### Phase 5: Batch Selection and Actions
 
@@ -99,6 +101,8 @@ That means:
 
 - keep visible list chrome Poodle-first
 - keep pagination, auth, and selection runtime in Underlay or host code
+- prefer `FilterToolbar` with `summaryText="Filters"` and a small ghost
+  `Refresh` action in the actions slot for broad admin browse surfaces
 - do not recreate a reusable Underlay list shell when `ListContainer`,
   `FilterToolbar`, `BulkActionBar`, `DataTable`, and `Grid` already express
   the visible contract

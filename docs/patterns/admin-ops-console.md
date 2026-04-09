@@ -23,6 +23,7 @@ Use Underlay for:
 Use Poodle for:
 
 - page shell
+- stats-card summary band
 - filters and list chrome
 - log presentation
 - detail/dialog presentation for operational records
@@ -61,7 +62,7 @@ Ops pages combine inspection and safe control actions:
 
 - [ ] jobs page with status filters and row actions
 - [ ] scheduled tasks page with enabled filters and trigger/toggle actions
-- [ ] error log page with expandable details
+- [ ] error log page with expandable details via `DataTable expandedRowIds`
 - [ ] audit log page with log-list posture and URL-backed filters
 
 ### Phase 4: Data Lifecycle
@@ -80,6 +81,10 @@ Ops pages combine inspection and safe control actions:
 
 - keep operational command and safety behavior in Underlay or host code
 - keep visible console/list/detail chrome Poodle-first
+- prefer the Poodle diagnostics browse pattern: `PageHeader` + stats cards +
+  local filter control + `DataTable`
+- use `expandedRowIds` for inline operational detail expansion rather than
+  reviving old row-predicate APIs
 - do not build a second shared Underlay ops page shell unless a real runtime
   seam emerges beyond the existing controllers/helpers
 
