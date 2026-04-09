@@ -84,6 +84,9 @@ Ops pages combine inspection and safe control actions:
 - keep visible console/list/detail chrome Poodle-first
 - prefer the Poodle diagnostics browse pattern: `PageHeader` + stats cards +
   local filter control + `DataTable`
+- for review-style queues, prefer the Poodle review queue pattern: the same
+  browse shell plus an action-oriented state band and row-level claim/release
+  or open actions
 - prefer the Poodle ops detail pattern for job and scheduled-task drill-in:
   `PageHeader` + `MetaBar` + carded `DetailSection` summary + carded code/error
   blocks
