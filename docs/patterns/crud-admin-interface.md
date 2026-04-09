@@ -120,6 +120,9 @@ Default posture:
 - detail page: `PageHeader` + `MetaBar` + `DetailSection` / `DetailItem`
 - edit page: `Field` + `TextInput` / `Select` / `FormActions`
 - destructive flows: `AlertDialog`
+- for user-management families with sessions/activity tabs, use the Poodle
+  admin delivery guide as the canonical visible shell rather than inventing a
+  separate account-management wrapper
 
 Use `SpaFormShell` only when the shared SPA intent workflow is genuinely
 helpful for the form route. Otherwise keep the form submit flow app-local over
