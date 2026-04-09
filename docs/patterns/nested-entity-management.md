@@ -51,6 +51,10 @@ Keep the visible parent detail shell stable:
 - one top-level `Tabs` control for child surfaces
 - detail-tab content rendered as cards and `DetailSection`s, not a second inner
   page header
+- related inline lists like versions or usages rendered with
+  `InlineListSection` under that shell
+- richer child browse collections like aliases, notices, and variants kept on
+  host-owned list-card/grid composition, not revived mini page shells
 
 ## Checklist
 

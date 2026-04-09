@@ -28,7 +28,8 @@ For detail routes specifically, use the Poodle media-detail posture:
 - one `MetaBar`
 - `Tabs variant="card"` with `historyKey="tab"`
 - `Card` + `DetailSection` + `DetailItem` for the details tab
-- host-owned versions/usage cards under the tab surface
+- `InlineListSection` for compact versions and usage sections under the tab
+  surface
 
 Use the Underlay recipe layer for the upload lifecycle and full-stack delivery
 only:
