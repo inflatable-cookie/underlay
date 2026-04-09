@@ -64,6 +64,7 @@ Ops pages combine inspection and safe control actions:
 - [ ] scheduled tasks page with enabled filters and trigger/toggle actions
 - [ ] error log page with expandable details via `DataTable expandedRowIds`
 - [ ] audit log page with log-list posture and URL-backed filters
+- [ ] job and scheduled-task detail pages with the standard ops detail shell
 
 ### Phase 4: Data Lifecycle
 
@@ -83,6 +84,11 @@ Ops pages combine inspection and safe control actions:
 - keep visible console/list/detail chrome Poodle-first
 - prefer the Poodle diagnostics browse pattern: `PageHeader` + stats cards +
   local filter control + `DataTable`
+- prefer the Poodle ops detail pattern for job and scheduled-task drill-in:
+  `PageHeader` + `MetaBar` + carded `DetailSection` summary + carded code/error
+  blocks
+- prefer inline-expanded `DataTable` detail for error-log inspection, with a
+  dedicated route only as a permalink or cross-navigation fallback
 - use `expandedRowIds` for inline operational detail expansion rather than
   reviving old row-predicate APIs
 - do not build a second shared Underlay ops page shell unless a real runtime

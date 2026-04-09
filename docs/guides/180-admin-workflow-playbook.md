@@ -48,6 +48,9 @@ Default visible mapping:
 - detail pages -> `PageHeader` + `MetaBar` + `DetailSection` / `DetailItem`
 - create/edit pages -> Poodle fields/actions, plus `SpaFormShell` only when its retained SPA workflow still earns its place
 - destructive flows -> `AlertDialog`
+- diagnostics/error inspection -> stats + `DataTable` with inline expansion by
+  default, not a separate first-class detail page unless the app needs a
+  permalink
 
 5. Apply app shell/runtime requirements (SPA admin)
 - Follow `docs/guides/110-admin.md` for auth runtime setup, toasts, and Nightfire strategy configuration.
