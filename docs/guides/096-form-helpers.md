@@ -29,6 +29,14 @@ behavior, and use `SpaFormShell` when the page also needs shared submit/result
 state, redirect/navigation handoff, and consistent success/error/field-error
 framing.
 
+For route-level status props, prefer:
+
+- `success={success === true}`
+- `error={success === false && !fieldErrors ? error : null}`
+
+That keeps field-level validation failures from also rendering a duplicate
+banner error.
+
 ---
 
 ## Quick Reference

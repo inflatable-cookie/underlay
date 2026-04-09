@@ -838,6 +838,9 @@ Both create and edit pages use `SpaFormShell`:
 Boundary note:
 - keep `SpaFormShell` for save/save-close/delete workflow orchestration,
   navigation, and field-error/result wiring
+- pass a banner error only when there is a real top-level route failure; if
+  `fieldErrors` are present, suppress the banner error instead of repeating the
+  same problem twice
 - let Poodle own the visual shell pieces inside it, especially callouts and
   card framing, instead of reintroducing app-local status wrappers
 - use Poodle `MetaBar` and `MetaItem` for both detail-page and edit-header
