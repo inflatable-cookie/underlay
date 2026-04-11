@@ -195,7 +195,7 @@ Reference file: `docs/guides/code/176-ai-runtime-routing/ai-routing-admin-page.s
 <script lang="ts">
   import { auth, authLoading, currentUser } from "$lib/stores/auth";
   import { platformCommands } from "@cattle-grid";
-  import { PageHeader } from "@poodle/svelte-composites";
+  import { PageHeader } from "@poodle/svelte";
   import {
     type AiRoutingOpsSource,
     type AiRoutingOpsOptions,

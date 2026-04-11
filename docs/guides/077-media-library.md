@@ -57,9 +57,9 @@ Underlay provides shared types and components to reduce boilerplate. For new imp
 | Rust types | `underlay-db` | `MediaKind`, `MediaVisibility`, `MediaVersionState` |
 | TypeScript types | `@decodelabs/underlay/patterns` | All types, enums, and utility functions |
 | App-local media actions | local app UI | Compose `Menu`, `AlertDialog`, clipboard helpers, and media commands |
-| Media workflow UI/helpers | `@poodle/svelte-composites` | `MediaPicker`, `MediaBrowsePanel`, `MediaUploadStatusPanel`, `loadMediaBrowsePage`, `mergeMediaBrowseItems`, `createResetMediaBrowseState`, `runMediaUploadWorkflow`, `uploadMediaWithKnownHash` |
-| Display composites | `@poodle/svelte-composites` | `MediaThumbnail` |
-| Upload primitive | `@poodle/svelte-primitives` | `FileUpload` |
+| Media workflow UI/helpers | `@poodle/svelte` | `MediaPicker`, `MediaBrowsePanel`, `MediaUploadStatusPanel`, `loadMediaBrowsePage`, `mergeMediaBrowseItems`, `createResetMediaBrowseState`, `runMediaUploadWorkflow`, `uploadMediaWithKnownHash` |
+| Display composites | `@poodle/svelte` | `MediaThumbnail` |
+| Upload primitive | `@poodle/svelte` | `FileUpload` |
 | Upload pattern | `@decodelabs/underlay/patterns` | `createMediaUploadFlow` |
 
 See [Shared Underlay Components](#shared-underlay-components) for detailed usage. The sections below cover implementing the backend and custom frontend if needed.
@@ -1330,7 +1330,7 @@ Underlay provides client-side utilities for blob uploads in `@decodelabs/underla
 | `validateFile(file, maxBytes)` | Validate file type and size |
 | `validateFileType(file, allowedTypes)` | Check if file type is allowed |
 | `validateFileSize(file, maxBytes)` | Check if file size is within limit |
-| `formatFileSize(bytes)` | Format bytes to human-readable string for UI display; use Poodle `@poodle/svelte-primitives` |
+| `formatFileSize(bytes)` | Format bytes to human-readable string for UI display; use Poodle `@poodle/svelte` |
 | `getFileTypeDescription(mimeType)` | Get friendly file type name |
 | `isVideoFile(file)` | Check if file is a video (to reject) |
 

@@ -64,7 +64,7 @@ Underlay provides a complete pagination solution that scales from small client-s
 | TypeScript | `PaginationController<T>` | `@decodelabs/underlay/runtime/data` | Unified controller interface |
 | TypeScript | `createPaginationController` | `@decodelabs/underlay/runtime/data` | Server-side controller |
 | TypeScript | `createClientPagination` | `@decodelabs/underlay/runtime/data` | Client-side controller |
-| Svelte | `<Pagination>` | `@poodle/svelte-primitives` | UI component |
+| Svelte | `<Pagination>` | `@poodle/svelte` | UI component |
 
 ## API Design
 
@@ -538,7 +538,7 @@ interface ServerPaginationOptions<T> {
     createPaginationController,
     type PaginationParams
   } from "@decodelabs/underlay/runtime/data";
-  import { Pagination } from "@poodle/svelte-primitives";
+  import { Pagination } from "@poodle/svelte";
   import { getBundleActivitiesPaginated } from "@cattle-grid";
   import { authLoading, currentUser } from "$lib/stores/auth";
 
@@ -599,7 +599,7 @@ interface ClientPaginationOptions {
 ```svelte
 <script lang="ts">
   import { createClientPagination } from "@decodelabs/underlay/runtime/data";
-  import { Pagination } from "@poodle/svelte-primitives";
+  import { Pagination } from "@poodle/svelte";
 
   interface Props {
     activities: Activity[];
@@ -663,7 +663,7 @@ interface ClientPaginationOptions {
 
 ```svelte
 <script>
-  import { Pagination } from "@poodle/svelte-primitives";
+  import { Pagination } from "@poodle/svelte";
 </script>
 ```
 
@@ -790,13 +790,13 @@ export async function getItemsPaginated(
     createClientPagination,
     PageHeader
   } from "@decodelabs/underlay/runtime/data";
-  import { FilterToolbar } from "@poodle/svelte-composites";
+  import { FilterToolbar } from "@poodle/svelte";
   import {
     Field,
     Pagination,
     Select,
     TextInput
-  } from "@poodle/svelte-primitives";
+  } from "@poodle/svelte";
   import { page } from "$app/stores";
   import { authLoading, currentUser } from "$lib/stores/auth";
   import { getItemsPaginated } from "@cattle-grid";

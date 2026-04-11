@@ -98,6 +98,8 @@ That means:
 - [ ] failure state
 - [ ] empty state
 - [ ] success/failure toasts for list actions
+- [ ] local retry affordance for recoverable load failures when the surface can
+      refetch without navigation
 
 ## Composition Rules
 
@@ -105,6 +107,9 @@ That means:
 - keep pagination, auth, and selection runtime in Underlay or host code
 - prefer `FilterToolbar` with `summaryText="Filters"` and a small ghost
   `Refresh` action in the actions slot for broad admin browse surfaces
+- prefer `PageLoading` for loading branches, `Callout tone="danger"` plus a
+  local retry action for recoverable failures, and `EmptyState` for real
+  no-results posture
 - prefer an explicit selection-mode toggle in the page header and hide normal
   create/trash row affordances while that mode is active
 - do not recreate a reusable Underlay list shell when `ListContainer`,

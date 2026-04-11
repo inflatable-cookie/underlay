@@ -2,7 +2,7 @@
   import User from "lucide-svelte/icons/user";
   import LogOut from "lucide-svelte/icons/log-out";
   import { goto } from "$app/navigation";
-  import { AlertDialog, Popover } from "@poodle/svelte-primitives";
+  import { AlertDialog, Popover } from "@poodle/svelte";
 
   interface CurrentUser {
     displayName?: string;

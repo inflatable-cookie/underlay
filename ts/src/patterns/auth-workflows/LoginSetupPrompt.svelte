@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Button, Callout } from "@poodle/svelte-primitives";
+  import { Button, Callout } from "@poodle/svelte";
 
   interface Props {
     hadTotpConfigured: boolean;

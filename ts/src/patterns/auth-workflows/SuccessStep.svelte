@@ -17,7 +17,7 @@
    */
 
   import type { Snippet } from "svelte";
-  import { Button, StatusIndicator } from "@poodle/svelte-primitives";
+  import { Button, StatusIndicator } from "@poodle/svelte";
 
   interface Props {
     /** Title text */

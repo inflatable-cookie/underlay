@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
   import { untrack } from "svelte";
-  import { Callout } from "@poodle/svelte-primitives";
+  import { Callout } from "@poodle/svelte";
   import type { BannerVariant } from "./banner";
   import type { SpaFormResult, SpaSubmitHandler, SpaNavigateFn } from "./spa-form-types";
   import FormShell from "./FormShell.svelte";

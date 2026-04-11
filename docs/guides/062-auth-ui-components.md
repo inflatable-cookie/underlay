@@ -98,7 +98,7 @@ There is no smaller honest follow-on migration wave for this family right now.
 ```svelte
 <script lang="ts">
   import { goto } from "$app/navigation";
-  import { Card } from "@poodle/svelte-primitives";
+  import { Card } from "@poodle/svelte";
   import { LoginPage } from "@decodelabs/underlay/patterns";
   import { auth } from "$lib/stores/auth";
 
@@ -145,7 +145,7 @@ There is no smaller honest follow-on migration wave for this family right now.
 ```svelte
 <script lang="ts">
   import { authCommands } from "@cattle-grid";
-  import { Card } from "@poodle/svelte-primitives";
+  import { Card } from "@poodle/svelte";
   import { ForgotPasswordFlow } from "@decodelabs/underlay/patterns";
 
   async function handleRequestCode(email: string) {
@@ -277,7 +277,7 @@ The auth components are designed to work with cattle-grid API commands. Here's a
 <script lang="ts">
   import { goto } from "$app/navigation";
   import { authCommands } from "@cattle-grid";
-  import { Card } from "@poodle/svelte-primitives";
+  import { Card } from "@poodle/svelte";
   import { LoginPage } from "@decodelabs/underlay/patterns";
   import { auth } from "$lib/stores/auth";
 

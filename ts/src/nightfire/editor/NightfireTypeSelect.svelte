@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Select } from "@poodle/svelte-primitives";
+  import { Select } from "@poodle/svelte";
   import type { GroupedOptions, NightfireBlockOptionInput } from "./grouped-options";
 
   type TypeOption = Pick<NightfireBlockOptionInput, "type" | "label">;

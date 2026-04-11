@@ -479,7 +479,7 @@ export const actions: Actions = {
 ```svelte
 <!-- src/routes/login/+page.svelte -->
 <script lang="ts">
-  import { Field, TextInput, Button, FormActions } from "@poodle/svelte-primitives";
+  import { Field, TextInput, Button, FormActions } from "@poodle/svelte";
   import { enhance } from "$app/forms";
   import type { ActionData } from "./$types";
 
@@ -924,7 +924,7 @@ The `createFormState` function provides reactive form state management with Svel
 ```svelte
 <script lang="ts">
   import { createFormState } from '@decodelabs/underlay/patterns';
-  import { Button, Callout } from '@poodle/svelte-primitives';
+  import { Button, Callout } from '@poodle/svelte';
 
   const form = createFormState({
     onSuccess: () => {
@@ -1046,7 +1046,7 @@ form.clearDraft();
 
 ```svelte
 <script>
-  import { Button } from '@poodle/svelte-primitives';
+  import { Button } from '@poodle/svelte';
 </script>
 
 <Button
@@ -1162,8 +1162,8 @@ When `configureAuth()` includes `getAuthLoading` and `getCurrentUser` (recommend
 ```svelte
 <script lang="ts">
   import { useAuthenticatedData } from '@decodelabs/underlay/runtime/auth';
-  import { PageLoading } from '@poodle/svelte-composites';
-  import { Callout } from '@poodle/svelte-primitives';
+  import { PageLoading } from '@poodle/svelte';
+  import { Callout } from '@poodle/svelte';
   import { myApiCommand } from '@myorg/client';
 
   // Auto-fetches when auth is ready — no $effect or getToken needed

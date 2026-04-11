@@ -46,11 +46,11 @@ From `@decodelabs/underlay/patterns`:
 
 ## Reorder Submission Hook
 
-Use Poodle `ReorderableList` with an app-owned submit wrapper:
+Use Poodle `EditableList` with an app-owned submit wrapper:
 
 ```svelte
 <script lang="ts">
-  import { ReorderableList } from "@poodle/svelte-composites";
+  import { EditableList } from "@poodle/svelte";
 
   let submitError = $state<string | null>(null);
 
@@ -74,7 +74,7 @@ Use Poodle `ReorderableList` with an app-owned submit wrapper:
   }
 </script>
 
-<ReorderableList
+<EditableList
   items={controller.pending}
   dirty={controller.isDirty}
   submitting={controller.isPending}
@@ -88,7 +88,7 @@ Use Poodle `ReorderableList` with an app-owned submit wrapper:
   on:reorder={(event) => controller.updatePending(event.detail.items)}
 >
   ...
-</ReorderableList>
+</EditableList>
 ```
 
 Optional UX improvements:

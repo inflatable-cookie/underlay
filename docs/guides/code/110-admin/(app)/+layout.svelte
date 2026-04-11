@@ -6,7 +6,7 @@ import {
 import {
   setContext } from "svelte";
   import { page } from "$app/stores";
-  import { ToastHost } from "@poodle/svelte-composites";
+  import { ToastHost } from "@poodle/svelte";
   import Menu from "lucide-svelte/icons/menu";
   import X from "lucide-svelte/icons/x";
   import PanelRight from "lucide-svelte/icons/panel-right";

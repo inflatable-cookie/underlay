@@ -1,8 +1,8 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
   import type { HTMLFormAttributes } from "svelte/elements";
-  import { Card, Callout } from "@poodle/svelte-primitives";
-  import { PageHeader as PoodlePageHeader } from "@poodle/svelte-composites";
+  import { Card, Callout } from "@poodle/svelte";
+  import { PageHeader as PoodlePageHeader } from "@poodle/svelte";
   import type { BannerVariant } from "./banner";
 
   type PrepareHook = ((formData: FormData) => void) | null;

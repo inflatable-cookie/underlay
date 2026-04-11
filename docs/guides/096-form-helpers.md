@@ -48,7 +48,7 @@ banner error.
 | `createLocalSearchFns()` | `@decodelabs/underlay/runtime/relations` | Search/suggest for app-local selector shells |
 | `slugify` / `validateSlug` | `@decodelabs/underlay/utils/slug` | Pure slug helpers for app-owned slug fields |
 | `useValidatedForm()` | `@decodelabs/underlay/runtime/forms` | Lightweight Zod-backed client-side form orchestration |
-| `Tabs` | `@poodle/svelte-primitives` | Multi-section form tabs |
+| `Tabs` | `@poodle/svelte` | Multi-section form tabs |
 | `getNextLetter()` | `@decodelabs/underlay/utils/sequence` | Next letter in sequence |
 | `getNextNumber()` | `@decodelabs/underlay/utils/sequence` | Next number in sequence |
 
@@ -118,7 +118,7 @@ The recommended hierarchy is:
 
 ```svelte
 <script lang="ts">
-  import { Tabs, type TabItem } from "@poodle/svelte-primitives";
+  import { Tabs, type TabItem } from "@poodle/svelte";
 
   let activeTab = $state("details");
   const tabItems: TabItem[] = [
@@ -448,7 +448,7 @@ Underlay slug helpers only where you want to share pure formatting rules.
 
 ```svelte
 <script lang="ts">
-  import { Field, TextInput, type InputValidationStatus } from "@poodle/svelte-primitives";
+  import { Field, TextInput, type InputValidationStatus } from "@poodle/svelte";
   import { slugify, isReservedSlug, isValidSlugFormat } from "@decodelabs/underlay/utils/slug";
 
   let title = $state("");
@@ -617,7 +617,7 @@ Here's a complete example combining multiple helpers in a form page:
   import { createLocalSearchFns } from "@decodelabs/underlay/runtime/relations";
   import { submitFormWithIntent } from "@decodelabs/underlay/runtime/forms";
   import { slugify } from "@decodelabs/underlay/utils/slug";
-  import { Field, TextInput } from "@poodle/svelte-primitives";
+  import { Field, TextInput } from "@poodle/svelte";
   import { getNextNumber } from "@decodelabs/underlay/utils/sequence";
   import SectionSelector from "$lib/components/SectionSelector.svelte";
 

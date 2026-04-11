@@ -23,21 +23,29 @@ README surfaces.
 
 ## Active generation
 
-- [g01/README.md](g01/README.md)
+- [g02/README.md](g02/README.md)
 - [generation-index.md](generation-index.md)
 
 ## Current Queue
 
-- there is no active pattern-catalogue translation wave now; `g01.097` is
-  complete, so the `docs/patterns` spine now routes visible Svelte
-  implementation to Poodle and keeps Underlay responsible only for retained
-  full-stack/runtime recipe value
-- there is no active UI-guide cleanup wave; `g01.094` and `g01.095` are both
-  complete, so generic visible UI implementation guidance now lives in Poodle
-  and the ACME reference apps rather than Underlay
-- there is no active archival-doc cleanup wave either; `g01.096` confirmed
-  that the remaining raw local-path residue now lives in frozen historical
-  records rather than the active library-facing docs surface
+- `g02.001` is now active as the Poodle-era consumer normalization and
+  overhaul runway. It carries forward the `g01.098` recovery findings, freezes
+  the live shared-surface posture across Underlay and the current consumer
+  family, and sequences the first honest bounded execution waves from that
+  evidence.
+- `g01.098` is complete as the generation-closing recovery lane. It stopped the
+  old “no active roadmap” drift, reopened the real queue, and proved the next
+  work belonged in a fresh generation rather than as one more oversized `g01`
+  tail milestone.
+- `g01.094` through `g01.097` remain complete as the Poodle-first UI-guide,
+  long-tail prune, archival-doc evidence, and pattern-catalogue translation
+  line. They are useful lineage inside the now-complete `g01` generation, but
+  they are no longer the live queue.
+- the active problem now is not generic visible UI migration itself. It is
+  shared-surface normalization across the current consuming apps
+  (`acowtancy`, `compli-me`, `contact-patch`, `underlay-reference`,
+  `loophole/composer`, and `songsprout`) while Underlay, Poodle, and the app
+  layer settle on honest ownership boundaries again.
 
 - `g01.001` through `g01.041` record the current Underlay roadmap corpus
 - `g01.042` is complete for Poodle adoption and Underlay UI contraction
@@ -195,9 +203,17 @@ README surfaces.
 | 091 | [Client Surface Organization](./g01/091-client-surface-organization.md) | Complete | Confirm the retained `client` package boundary, expose explicit `client/*` public subpaths for the live feature families, and keep the root barrel stable as a convenience surface |
 | 092 | [Nightfire Extraction Readiness](./g01/092-nightfire-extraction-readiness.md) | Complete | Confirm the retained `nightfire` package boundary, expose explicit `nightfire/*` public subpaths for the live extension families, and make the future extraction seam explicit without forcing churn now |
 | 093 | [Root Package Barrel Reassessment](./g01/093-root-package-barrel-reassessment.md) | Complete | Confirm the root `@decodelabs/underlay` barrel as compatibility-only and stop active docs from teaching the old flat import path |
+| 098 | [Poodle-Era Consumer Normalization And Overhaul Recovery](./g01/098-poodle-era-consumer-normalization-and-overhaul-recovery.md) | Complete | Recover the real active shared-surface queue across Underlay and the current consumer family, then compile the next bounded normalization waves from current evidence |
 | 096 | [Archival Doc Evidence Boundary Audit](./g01/096-archival-doc-evidence-boundary-audit.md) | Complete | Confirm that the active docs surface is normalized while the remaining raw local-path residue is acceptable frozen evidence in archival logs, roadmaps, research notes, and sweeps |
 
-**Complete:** 90 | **Extracted:** 2 | **In progress:** 0 | **Not started:** 0
+## Active Generation Snapshot
+
+| ID | Roadmap | Status | Summary |
+| --- | --- | --- | --- |
+| 001 | [Poodle-Era Consumer Normalization And Overhaul Runway](./g02/001-poodle-era-consumer-normalization-and-overhaul-runway.md) | Active | Carry the recovered overhaul queue into a fresh generation and compile the first bounded execution waves across Underlay, Poodle, and the current consumer family |
+
+**g01 Complete:** 91 | **Extracted:** 2 | **In progress:** 0 | **Not started:** 0
+**g02 Active:** 1 | **In progress:** 1 | **Not started:** 0
 
 ## Current Boundary
 
@@ -224,6 +240,16 @@ The remaining public API is intentionally retained and more explicit:
 Dead public residue like `SlugField`, `EntityActionsMenu`, the old restore
 views, and the unused `embed` package surface is no longer exported.
 
+## Active Lane
+
+`g02.001` is now the live planning/control lane.
+
+Underlay’s old Poodle-contraction queue is materially complete and `g01`
+closed by reopening the real shared-surface queue. The live work now belongs
+in a fresh generation focused on consumer normalization and overhaul delivery
+across Underlay, Poodle, and the current app family rather than as one more
+oversized contraction tail card.
+
 ## Complete
 
 `g01.091` is complete. The Svelte contraction line, non-public residue
@@ -236,11 +262,11 @@ compatibility boundary are now durable. `g01.094` and `g01.095` completed the
 Poodle-first UI-guide translation and long-tail Underlay prune line. `g01.096`
 completed the archival-doc evidence audit, making the active-doc normalization
 rule explicit while leaving historical records as frozen evidence by policy.
+`g01.098` then closed the generation by recovering the real live overhaul
+queue and proving the next honest work belonged in `g02`.
 
 ## Next Task
 
-This contraction and retained-surface audit line is complete. If work continues
-this package-surface audit line is complete. If work continues immediately, the
-next honest follow-on is outside this boundary cleanup track, or a future
-breaking-change program if the root compatibility barrel should eventually be
-removed.
+Execute `g02.001`: freeze the real active overhaul posture across Underlay and
+the current consumer family in the new generation, then compile the first
+bounded normalization waves from that evidence.

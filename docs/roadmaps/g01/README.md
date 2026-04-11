@@ -1,10 +1,13 @@
 # g01
 
-`g01` is the active Underlay roadmap generation.
+`g01` is complete.
 
 ## Current Generation
 
-Use the next available three-digit ID when opening new Underlay work in this generation.
+`g01` is no longer the active generation.
+
+Do not open new roadmap work in `g01`. Use `g02` for active Underlay roadmap
+work.
 
 ## Historical Language Boundary
 
@@ -13,9 +16,14 @@ Historical language boundary:
 - Keep new roadmap work in roadmap-ID form.
 - Treat inherited phase-era wording in imported roadmap bodies as historical record, not the current planning contract.
 
-## Current State
+## Closing State
 
-There is no active roadmap right now.
+`g01.098` is complete as the generation-closing recovery lane.
+
+The older Poodle-contraction and docs-translation line is materially complete,
+but Underlay is no longer in a “nothing active” state. Real work has moved into
+broader shared-surface normalization across Underlay, Poodle, and the current
+consumer family, and the queue needs to reflect that explicitly.
 
 `g01.097` is complete. The remaining `docs/patterns` catalogue no longer acts
 like an Underlay-led visible UI playbook; it now routes visible composition to
@@ -178,6 +186,13 @@ The remaining public Underlay surface is intentionally:
 - `@decodelabs/underlay/nightfire`
   - retained editor/runtime package surface
 
+## Generation Closeout
+
+`g01.098` recovered the real active shared-surface queue across Underlay and
+the current consumer family, froze that posture from evidence, and proved the
+next honest work belonged in a new generation rather than as one more `g01`
+tail milestone. Active execution/planning now continues in `g02.001`.
+
 ## Complete
 
 `g01` public-surface contraction, non-public residue recovery, retained TS
@@ -191,6 +206,5 @@ the archival-doc evidence-boundary audit are now complete through `g01.096`.
 
 ## Next Task
 
-Open a fresh roadmap only when a new retained boundary or consumer-app
-normalization wave is ready. The pattern-catalogue translation line is
-complete.
+Use `g02.001` for active work, carrying forward the recovered overhaul posture
+from `g01.098` into the new consumer-normalization generation.

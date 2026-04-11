@@ -282,7 +282,7 @@ how retained runtime services fit into that shell.
   import PanelRight from "lucide-svelte/icons/panel-right";
   import { setContext } from "svelte";
   import { page } from "$app/stores";
-  import { ToastHost } from "@poodle/svelte-composites";
+  import { ToastHost } from "@poodle/svelte";
   import { UNDERLAY_TOASTS_CONTEXT_KEY, createToastStore } from "@decodelabs/underlay/runtime/feedback";
   import AdminNavList from "$lib/ui/AdminNavList.svelte";
   import AdminUserMenu from "$lib/ui/AdminUserMenu.svelte";
@@ -633,7 +633,7 @@ Forms should NOT contain `<form>` elements or submission logic. They render fiel
 
 ```svelte
 <script lang="ts">
-  import { FormLayout } from "@poodle/svelte-composites";
+  import { FormLayout } from "@poodle/svelte";
   import {
     AlertDialog,
     Button,
@@ -643,7 +643,7 @@ Forms should NOT contain `<form>` elements or submission logic. They render fiel
     SplitButton,
     Switch,
     TextInput
-  } from "@poodle/svelte-primitives";
+  } from "@poodle/svelte";
   import { navigateOnCancel } from "@decodelabs/underlay/client/navigation";
 
   interface Props {

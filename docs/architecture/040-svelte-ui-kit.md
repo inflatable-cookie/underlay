@@ -16,7 +16,7 @@ workflow shells, app/runtime orchestration, or retained specialized systems.
 
 ## Exports
 
-- `@poodle/svelte-primitives` / `@poodle/svelte-composites`
+- `@poodle/svelte` / `@poodle/svelte`
   - canonical design-system primitives and generic composites
 - `@decodelabs/underlay/patterns`
   - retained workflow and page-shell surface

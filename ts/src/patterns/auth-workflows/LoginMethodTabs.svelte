@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { Tabs } from "@poodle/svelte-primitives";
-  import type { TabItem } from "@poodle/svelte-primitives";
+  import { Tabs } from "@poodle/svelte";
+  import type { TabItem } from "@poodle/svelte";
 
   type LoginMethod = "password" | "passkey" | "google";
 

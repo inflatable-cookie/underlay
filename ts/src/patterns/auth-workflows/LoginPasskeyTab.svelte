@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Button, Callout, Field, FormActions, TextInput } from "@poodle/svelte-primitives";
+  import { Button, Callout, Field, FormActions, TextInput } from "@poodle/svelte";
 
   interface Props {
     showPasskeyEmailField: boolean;

@@ -34,7 +34,7 @@ When navigating to an edit page, use `gotoWithContext()` to record where the use
 ```svelte
 <script lang="ts">
   import { gotoWithContext } from "@decodelabs/underlay/client/navigation";
-  import { Menu } from "@poodle/svelte-primitives";
+  import { Menu } from "@poodle/svelte";
 
   export let data;
 </script>
@@ -694,7 +694,7 @@ Here's a complete example of a Module detail page with tabbed content that prese
   import { onMount } from "svelte";
   import { PageHeader } from "@decodelabs/underlay/patterns";
   import LocalActionsMenu from "$lib/components/LocalActionsMenu.svelte";
-  import { Tabs, type TabItem } from "@poodle/svelte-primitives";
+  import { Tabs, type TabItem } from "@poodle/svelte";
   import { gotoWithContext, initPageState } from "@decodelabs/underlay/client/navigation";
 
   let { data } = $props();
@@ -857,7 +857,7 @@ const restored = initPageState({
 <script lang="ts">
   import type { PageData } from "./$types";
   import { PageHeader } from "@decodelabs/underlay/patterns";
-  import { Grid } from "@poodle/svelte-primitives";
+  import { Grid } from "@poodle/svelte";
   import { VideoListCard } from "$lib/cards";
 
   export let data: PageData;
@@ -878,7 +878,7 @@ const restored = initPageState({
 <!-- $lib/cards/VideoListCard.svelte -->
 <script lang="ts">
   import LocalActionsMenu from "$lib/components/LocalActionsMenu.svelte";
-  import { ListCard } from "@poodle/svelte-primitives";
+  import { ListCard } from "@poodle/svelte";
   import { gotoWithContext } from "@decodelabs/underlay/client/navigation";
   import Video from "lucide-svelte/icons/video";
 
@@ -998,8 +998,8 @@ const restored = initPageState({
 ```svelte
 <!-- $lib/forms/VideoForm.svelte -->
 <script lang="ts">
-  import { Field, TextInput, FormActions } from "@poodle/svelte-primitives";
-  import { Button, SplitButton } from "@poodle/svelte-primitives";
+  import { Field, TextInput, FormActions } from "@poodle/svelte";
+  import { Button, SplitButton } from "@poodle/svelte";
   import { navigateOnCancel } from "@decodelabs/underlay/client/navigation";
 
   interface Props {
@@ -1255,8 +1255,8 @@ For pages where the form is defined inline (not in a separate component), includ
   import { getBackButtonInfo, getReturnUrl } from "@decodelabs/underlay/runtime/navigation";
   import { navigateOnCancel } from "@decodelabs/underlay/client/navigation";
   import CrudFormShell from "$lib/forms/CrudFormShell.svelte";
-  import { Field, TextInput, FormActions } from "@poodle/svelte-primitives";
-  import { Button, SplitButton } from "@poodle/svelte-primitives";
+  import { Field, TextInput, FormActions } from "@poodle/svelte";
+  import { Button, SplitButton } from "@poodle/svelte";
 
   export let form: ActionData | null = null;
 

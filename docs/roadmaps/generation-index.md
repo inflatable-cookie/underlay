@@ -2,8 +2,14 @@
 
 ## Active
 
-- `g01` - active Underlay roadmap generation
+- `g02` - active Underlay roadmap generation for the Poodle-era consumer
+  normalization and overhaul runway
+
+## Complete
+
+- `g01` - completed extraction, contraction, retained-surface definition, and
+  queue-recovery generation
 
 ## Reserved
 
-- `g02` - create only when Underlay explicitly rolls the sequence forward
+- create `g03` only when Underlay explicitly rolls the sequence forward again

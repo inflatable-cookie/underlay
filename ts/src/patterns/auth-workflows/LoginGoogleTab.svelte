@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Button, Callout, FormActions } from "@poodle/svelte-primitives";
+  import { Button, Callout, FormActions } from "@poodle/svelte";
 
   interface Props {
     googleHint: string;

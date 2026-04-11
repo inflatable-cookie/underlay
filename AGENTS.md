@@ -10,6 +10,9 @@
 - Do not move app-specific behavior from consumer repos into Underlay without a clear reusable boundary.
 - Preserve the separation between `rust/`, `ts/`, `contracts/`, and `docs/`.
 - Prefer extracting stable patterns over adding one-off compatibility shims.
+- Treat `docs/roadmaps/README.md` and `docs/roadmaps/g01/README.md` as the
+  live queue authority when active shared-surface or consumer-normalization
+  work is in flight.
 
 ## Effigy-First Execution
 
@@ -37,6 +40,8 @@ effigy test --plan
 ## Source of Truth
 
 - `./README.md`
+- `./docs/roadmaps/README.md`
+- `./docs/roadmaps/g01/README.md`
 - `./docs/guides/README.md`
 - `./docs/guides/000-overview.md`
 - `./docs/guides/172-agents-files.md`

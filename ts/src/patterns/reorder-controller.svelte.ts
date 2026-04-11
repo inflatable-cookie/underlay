@@ -2,7 +2,7 @@
  * Reorder Controller
  *
  * A Svelte 5 reactive controller for managing drag-and-drop reordering state.
- * Used with ReorderableList component for batch-commit reordering.
+ * Used with EditableList component for batch-commit reordering.
  *
  * @example
  * ```svelte

@@ -14,8 +14,8 @@
    * ```
    */
 
-  import { Button, Callout, Field, FormActions, TextInput } from "@poodle/svelte-primitives";
-  import type { PasswordRequirementsPolicy } from "@poodle/svelte-primitives";
+  import { Button, Callout, Field, FormActions, TextInput } from "@poodle/svelte";
+  import type { PasswordRequirementsPolicy } from "@poodle/svelte";
 
   import PasswordRequirements from "./PasswordRequirements.svelte";
 

@@ -18,11 +18,11 @@ import {
   Card,
   NumberInput,
   Pill,
-  TimeAgo } from "@poodle/svelte-primitives";
+  TimeAgo } from "@poodle/svelte";
   import { DataTable,
   PageLoading,
   type TableColumn,
-  type TableRow } from "@poodle/svelte-composites";
+  type TableRow } from "@poodle/svelte";
   import AlertTriangle from "lucide-svelte/icons/alert-triangle";
   import ChartLine from "lucide-svelte/icons/chart-line";
   import GitCompare from "lucide-svelte/icons/git-compare";

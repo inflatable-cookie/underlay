@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { PasswordRequirements as PoodlePasswordRequirements } from "@poodle/svelte-primitives";
-  import type { PasswordRequirementsPolicy } from "@poodle/svelte-primitives";
+  import { PasswordRequirements as PoodlePasswordRequirements } from "@poodle/svelte";
+  import type { PasswordRequirementsPolicy } from "@poodle/svelte";
 
   /**
    * Password requirements display with real-time validation feedback.

@@ -223,8 +223,7 @@
         }
     },
     "dependencies": {
-        "@poodle/svelte-composites": "file:../poodle/packages/svelte/composites",
-        "@poodle/svelte-primitives": "file:../poodle/packages/svelte/primitives",
+        "@poodle/svelte": "file:../poodle/packages/svelte/components",
         "easymde": "^2.20.0",
         "isomorphic-dompurify": "^3.0.0",
         "marked": "^17.0.3",

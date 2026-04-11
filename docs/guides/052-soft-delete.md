@@ -453,7 +453,7 @@ Use `useBatchSelection` from Underlay patterns with Poodle `BulkActionBar` plus 
 ```svelte
 <script lang="ts">
   import { useBatchSelection } from "@decodelabs/underlay/patterns";
-  import { AlertDialog, BulkActionBar } from "@poodle/svelte-primitives";
+  import { AlertDialog, BulkActionBar } from "@poodle/svelte";
 
   const selection = useBatchSelection<string>();
   let isSelectionMode = $state(false);
