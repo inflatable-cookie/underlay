@@ -16,3 +16,9 @@
 - Put execution evidence in `docs/logs/YYYY-MM/`
 - Keep one log per meaningful update cycle or batch
 - Do not leave compatibility shim docs behind when paths or sections change
+
+## Internal Writing Style
+
+Use the repo-local style reference for internal work and normal replies:
+
+- `docs/policy/internal-writing-style.md`
