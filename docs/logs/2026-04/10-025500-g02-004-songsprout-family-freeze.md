@@ -31,7 +31,7 @@ treated as shared rollout versus app-local workflow composition.
 ## Validation
 
 - local roadmap review in
-  `/Users/betterthanclay/Dev/projects/underlay/docs/roadmaps/g02`
+  `~/Dev/projects/underlay/docs/roadmaps/g02`
 
 ## Next Task
 

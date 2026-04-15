@@ -144,10 +144,10 @@ This creates drift, weak discoverability, and inconsistent config resolution.
 
 - [x] `cd underlay && cargo test -p underlay-cli`
 - [x] `cd farmyard && cargo test -p farmyard-infra`
-- [x] `cd /Users/betterthanclay/Dev/projects/acowtancy && bun underlay tasks`
-- [x] `cd /Users/betterthanclay/Dev/projects/acowtancy && bun underlay tasks --task farmyard:reset-db`
-- [x] `cd /Users/betterthanclay/Dev/projects/acowtancy && bun underlay farmyard:load-admin-rate-limit-smoke --verbose-root --dry-run`
-- [x] `cd /Users/betterthanclay/Dev/projects/acowtancy && bun underlay guardrail-task-shell-wrappers`
+- [x] `cd ~/Dev/projects/acowtancy && bun underlay tasks`
+- [x] `cd ~/Dev/projects/acowtancy && bun underlay tasks --task farmyard:reset-db`
+- [x] `cd ~/Dev/projects/acowtancy && bun underlay farmyard:load-admin-rate-limit-smoke --verbose-root --dry-run`
+- [x] `cd ~/Dev/projects/acowtancy && bun underlay guardrail-task-shell-wrappers`
 - [x] Cross-repo Effigy validation closure: `docs/logs/2026-02/28-000000-underlay-effigy-cross-repo-validation.md`
 
 ## 11) Validation

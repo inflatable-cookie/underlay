@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-SONGSPROUT_NURSERY_DIR="/Users/betterthanclay/Dev/projects/songsprout/nursery"
-SONGSPROUT_BLOOM_DIR="/Users/betterthanclay/Dev/projects/songsprout/bloom"
-ACOWTANCY_FARMYARD_DIR="/Users/betterthanclay/Dev/projects/acowtancy/farmyard"
-ACOWTANCY_DAIRY_DIR="/Users/betterthanclay/Dev/projects/acowtancy/dairy"
+SONGSPROUT_NURSERY_DIR="/Users/tom/Dev/projects/songsprout/nursery"
+SONGSPROUT_BLOOM_DIR="/Users/tom/Dev/projects/songsprout/bloom"
+ACOWTANCY_FARMYARD_DIR="/Users/tom/Dev/projects/acowtancy/farmyard"
+ACOWTANCY_DAIRY_DIR="/Users/tom/Dev/projects/acowtancy/dairy"
 
 SONGSPROUT_API_BASE="${SONGSPROUT_API_BASE:-http://127.0.0.1:4100}"
 DAIRY_API_BASE="${DAIRY_API_BASE:-http://localhost:40001}"

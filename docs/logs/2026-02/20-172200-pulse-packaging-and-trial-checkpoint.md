@@ -22,7 +22,7 @@ Result: success (validated previously in roadmap execution cycle).
 
 Command (from Acowtancy root):
 
-`cargo run --manifest-path /Users/betterthanclay/Dev/projects/underlay/rust/crates/underlay-cli/Cargo.toml --bin underlay -- pulse`
+`cargo run --manifest-path ~/Dev/projects/underlay/rust/crates/underlay-cli/Cargo.toml --bin underlay -- pulse`
 
 Result: success.
 Timing:
@@ -48,7 +48,7 @@ Timing:
 
 Clean-run measurement:
 
-`cargo clean -p underlay-cli && cargo run -p underlay-cli -- pulse --repo /Users/betterthanclay/Dev/projects/underlay`
+`cargo clean -p underlay-cli && cargo run -p underlay-cli -- pulse --repo ~/Dev/projects/underlay`
 
 Timing:
 
@@ -62,17 +62,17 @@ Checkpoint call: setup-to-first-run is well below `10 minutes`.
 
 ### Trial A - nucleus
 
-- Recommendation: add `/Users/betterthanclay/Dev/projects/nucleus/scripts/check-updated-dates.sh` and wire `check:updated-dates`.
+- Recommendation: add `~/Dev/projects/nucleus/scripts/check-updated-dates.sh` and wire `check:updated-dates`.
 - Actionability score: **5/5** (single target file + explicit command contract).
 
 ### Trial B - acowtancy
 
-- Recommendation: add `health:workspace` in `/Users/betterthanclay/Dev/projects/acowtancy/package.json`.
+- Recommendation: add `health:workspace` in `~/Dev/projects/acowtancy/package.json`.
 - Actionability score: **5/5** (single-file edit with explicit script name).
 
 ### Trial C - loophole
 
-- Recommendation: add `/Users/betterthanclay/Dev/projects/loophole/package.json` with `list:repos` and `health:workspace`.
+- Recommendation: add `~/Dev/projects/loophole/package.json` with `list:repos` and `health:workspace`.
 - Actionability score: **5/5** (single-file addition with explicit script names).
 
 Average actionability score: **5.0/5**.

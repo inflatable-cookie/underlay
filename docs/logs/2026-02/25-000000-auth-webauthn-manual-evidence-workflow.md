@@ -6,7 +6,7 @@ Provide a repeatable way to generate a single manual-evidence dossier for non-OA
 
 ## Script
 
-- `/Users/betterthanclay/Dev/projects/underlay/scripts/auth-webauthn-manual-dossier.sh`
+- `~/Dev/projects/underlay/scripts/auth-webauthn-manual-dossier.sh`
 
 What it does:
 1. Runs readiness gate (`auth-live-e2e-readiness.sh`) with current environment.
@@ -18,11 +18,11 @@ What it does:
 
 ## Recommended command in this environment
 
-- `SKIP_GOOGLE_OAUTH_CHECKS=1 /Users/betterthanclay/Dev/projects/underlay/scripts/auth-webauthn-manual-dossier.sh`
+- `SKIP_GOOGLE_OAUTH_CHECKS=1 ~/Dev/projects/underlay/scripts/auth-webauthn-manual-dossier.sh`
 
 ## Latest generated dossier
 
-- `/Users/betterthanclay/Dev/projects/underlay/docs/logs/2026-02/25-105622-auth-webauthn-manual-evidence-dossier.md`
+- `~/Dev/projects/underlay/docs/logs/2026-02/25-105622-auth-webauthn-manual-evidence-dossier.md`
 
 ## Usage notes
 

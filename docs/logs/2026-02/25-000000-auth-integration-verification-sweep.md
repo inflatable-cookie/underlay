@@ -9,11 +9,11 @@
 ## Environment + Setup
 
 1. Reset DBs:
-   - `cd /Users/betterthanclay/Dev/projects/songsprout/nursery && bun run db:reset`
-   - `cd /Users/betterthanclay/Dev/projects/underlay-reference/acme-api && bun run db:reset`
+   - `cd ~/Dev/projects/songsprout/nursery && bun run db:reset`
+   - `cd ~/Dev/projects/underlay-reference/acme-api && bun run db:reset`
 2. Startup fixes applied:
    - `acme-api` route syntax migrated for axum 0.8 (`:param` -> `{param}`) in:
-     - `/Users/betterthanclay/Dev/projects/underlay-reference/acme-api/crates/api/src/routes/mod.rs`
+     - `~/Dev/projects/underlay-reference/acme-api/crates/api/src/routes/mod.rs`
 3. Local auth enablement for Nursery runtime verification:
    - `LOCAL_AUTH=true` with JWT/WebAuthn env values set for process start.
 

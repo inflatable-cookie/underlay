@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-UNDERLAY_DIR="/Users/betterthanclay/Dev/projects/underlay"
+UNDERLAY_DIR="/Users/tom/Dev/projects/underlay"
 READINESS_SCRIPT="$UNDERLAY_DIR/scripts/auth-live-e2e-readiness.sh"
 REGRESSION_SCRIPT="$UNDERLAY_DIR/scripts/auth-webauthn-regression.sh"
 REPORT_DIR="$UNDERLAY_DIR/docs/reports"

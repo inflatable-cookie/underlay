@@ -3,11 +3,11 @@
 ## Preconditions
 
 1. Readiness script passes:
-   - `/Users/betterthanclay/Dev/projects/underlay/scripts/auth-live-e2e-readiness.sh`
+   - `~/Dev/projects/underlay/scripts/auth-live-e2e-readiness.sh`
    - and non-OAuth regression is green:
-   - `/Users/betterthanclay/Dev/projects/underlay/scripts/auth-webauthn-regression.sh`
+   - `~/Dev/projects/underlay/scripts/auth-webauthn-regression.sh`
    - and a manual evidence dossier is generated:
-   - `/Users/betterthanclay/Dev/projects/underlay/scripts/auth-webauthn-manual-dossier.sh`
+   - `~/Dev/projects/underlay/scripts/auth-webauthn-manual-dossier.sh`
 2. If OAuth is in scope, Google OAuth credentials are configured for both backends:
    - Songsprout `nursery/.env`
    - Acowtancy `farmyard/.env`

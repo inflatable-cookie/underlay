@@ -43,7 +43,7 @@ Date: 2026-02-25T10:55:11Z
 
 ## Songsprout Bloom (server auth actions)
 
- RUN  v4.0.18 /Users/betterthanclay/Dev/projects/songsprout/bloom
+ RUN  v4.0.18 ~/Dev/projects/songsprout/bloom
 
  ✓ src/lib/server-tests/security-page.server.test.ts (7 tests) 53ms
  ✓ src/lib/server-tests/auth-login-page.server.test.ts (7 tests) 56ms
@@ -56,7 +56,7 @@ Date: 2026-02-25T10:55:11Z
 
 ## Acowtancy Dairy (browser-path auth route)
 
- RUN  v4.0.18 /Users/betterthanclay/Dev/projects/acowtancy/dairy
+ RUN  v4.0.18 ~/Dev/projects/acowtancy/dairy
 
  ✓ tests/auth-login-page.test.ts (2 tests) 268ms
 

@@ -19,14 +19,14 @@ Produce a narrow Poodle-side decision and implementation brief for a new Poodle-
 
 ## Inputs
 
-- [/Users/betterthanclay/Dev/projects/underlay/docs/roadmaps/g01/042-poodle-adoption-and-underlay-ui-contraction.md](/Users/betterthanclay/Dev/projects/underlay/docs/roadmaps/g01/042-poodle-adoption-and-underlay-ui-contraction.md)
-- [/Users/betterthanclay/Dev/projects/underlay/contracts/ui/poodle-adoption-underlay-surface-groups.json](/Users/betterthanclay/Dev/projects/underlay/contracts/ui/poodle-adoption-underlay-surface-groups.json)
-- [/Users/betterthanclay/Dev/projects/underlay/ts/src/components/ListContainer.svelte](/Users/betterthanclay/Dev/projects/underlay/ts/src/components/ListContainer.svelte)
-- [/Users/betterthanclay/Dev/projects/underlay/ts/src/components/PaginatedList.svelte](/Users/betterthanclay/Dev/projects/underlay/ts/src/components/PaginatedList.svelte)
-- [/Users/betterthanclay/Dev/projects/underlay-reference/acme-admin/src/routes/(app)/system/poodle-gap-review/+page.svelte](/Users/betterthanclay/Dev/projects/underlay-reference/acme-admin/src/routes/(app)/system/poodle-gap-review/+page.svelte)
-- [/Users/betterthanclay/Dev/projects/poodle/packages/svelte/primitives/src/index.ts](/Users/betterthanclay/Dev/projects/poodle/packages/svelte/primitives/src/index.ts)
-- [/Users/betterthanclay/Dev/projects/poodle/packages/svelte/composites/src/index.ts](/Users/betterthanclay/Dev/projects/poodle/packages/svelte/composites/src/index.ts)
-- [/Users/betterthanclay/Dev/projects/poodle/docs/guides/svelte-developer-guide.md](/Users/betterthanclay/Dev/projects/poodle/docs/guides/svelte-developer-guide.md)
+- [~/Dev/projects/underlay/docs/roadmaps/g01/042-poodle-adoption-and-underlay-ui-contraction.md](~/Dev/projects/underlay/docs/roadmaps/g01/042-poodle-adoption-and-underlay-ui-contraction.md)
+- [~/Dev/projects/underlay/contracts/ui/poodle-adoption-underlay-surface-groups.json](~/Dev/projects/underlay/contracts/ui/poodle-adoption-underlay-surface-groups.json)
+- [~/Dev/projects/underlay/ts/src/components/ListContainer.svelte](~/Dev/projects/underlay/ts/src/components/ListContainer.svelte)
+- [~/Dev/projects/underlay/ts/src/components/PaginatedList.svelte](~/Dev/projects/underlay/ts/src/components/PaginatedList.svelte)
+- [~/Dev/projects/underlay-reference/acme-admin/src/routes/(app)/system/poodle-gap-review/+page.svelte](~/Dev/projects/underlay-reference/acme-admin/src/routes/(app)/system/poodle-gap-review/+page.svelte)
+- [~/Dev/projects/poodle/packages/svelte/primitives/src/index.ts](~/Dev/projects/poodle/packages/svelte/primitives/src/index.ts)
+- [~/Dev/projects/poodle/packages/svelte/composites/src/index.ts](~/Dev/projects/poodle/packages/svelte/composites/src/index.ts)
+- [~/Dev/projects/poodle/docs/guides/svelte-developer-guide.md](~/Dev/projects/poodle/docs/guides/svelte-developer-guide.md)
 
 ## Constraints
 
@@ -40,11 +40,11 @@ Produce a narrow Poodle-side decision and implementation brief for a new Poodle-
 
 ## Deliverables
 
-- [/Users/betterthanclay/Dev/projects/poodle/docs/logs/2026-03/24-084410-poodle-list-container-review.md](/Users/betterthanclay/Dev/projects/poodle/docs/logs/2026-03/24-084410-poodle-list-container-review.md)
-- [/Users/betterthanclay/Dev/projects/poodle/packages/svelte/composites/src/ListContainer.svelte](/Users/betterthanclay/Dev/projects/poodle/packages/svelte/composites/src/ListContainer.svelte)
-- [/Users/betterthanclay/Dev/projects/poodle/packages/svelte/composites/src/index.ts](/Users/betterthanclay/Dev/projects/poodle/packages/svelte/composites/src/index.ts)
-- [/Users/betterthanclay/Dev/projects/poodle/docs/guides/svelte-developer-guide.md](/Users/betterthanclay/Dev/projects/poodle/docs/guides/svelte-developer-guide.md)
-- [/Users/betterthanclay/Dev/projects/underlay/contracts/ui/poodle-adoption-underlay-surface-groups.json](/Users/betterthanclay/Dev/projects/underlay/contracts/ui/poodle-adoption-underlay-surface-groups.json)
+- [~/Dev/projects/poodle/docs/logs/2026-03/24-084410-poodle-list-container-review.md](~/Dev/projects/poodle/docs/logs/2026-03/24-084410-poodle-list-container-review.md)
+- [~/Dev/projects/poodle/packages/svelte/composites/src/ListContainer.svelte](~/Dev/projects/poodle/packages/svelte/composites/src/ListContainer.svelte)
+- [~/Dev/projects/poodle/packages/svelte/composites/src/index.ts](~/Dev/projects/poodle/packages/svelte/composites/src/index.ts)
+- [~/Dev/projects/poodle/docs/guides/svelte-developer-guide.md](~/Dev/projects/poodle/docs/guides/svelte-developer-guide.md)
+- [~/Dev/projects/underlay/contracts/ui/poodle-adoption-underlay-surface-groups.json](~/Dev/projects/underlay/contracts/ui/poodle-adoption-underlay-surface-groups.json)
 
 ## Acceptance Criteria
 
@@ -56,7 +56,7 @@ Produce a narrow Poodle-side decision and implementation brief for a new Poodle-
 
 ## Notes
 
-- Current context: this handoff advances Underlay roadmap `g01.042` in [/Users/betterthanclay/Dev/projects/underlay/docs/roadmaps/g01/042-poodle-adoption-and-underlay-ui-contraction.md](/Users/betterthanclay/Dev/projects/underlay/docs/roadmaps/g01/042-poodle-adoption-and-underlay-ui-contraction.md) after a live demo review in `acme-admin` cut the ambiguous workflow surfaces down to a single real gap: `ListContainer`.
+- Current context: this handoff advances Underlay roadmap `g01.042` in [~/Dev/projects/underlay/docs/roadmaps/g01/042-poodle-adoption-and-underlay-ui-contraction.md](~/Dev/projects/underlay/docs/roadmaps/g01/042-poodle-adoption-and-underlay-ui-contraction.md) after a live demo review in `acme-admin` cut the ambiguous workflow surfaces down to a single real gap: `ListContainer`.
 - Decisions: the user explicitly wants `ListContainer` in Poodle, but not as a mechanical carry-over from Underlay. `DiagnosticsToolbar` and `OpsSection` were judged redundant and should collapse into composition; `SubmitButton`, `CopyActionsMenu`, and `EntityActionsMenu` should improve primitive ergonomics or stay app-level rather than becoming named Poodle composites.
 - Watch-outs: Underlay `ListContainer` currently relies on Underlay `PageHeader`, `PageLoading`, and `FormError`; that dependency graph must not come across unchanged. The contract should be rebuilt around Poodle `PageHeader`, loading/empty/error surfaces, and pagination composition. Keep the API small enough that apps are not forced into a rigid list-page shape when they only need partial scaffolding.
 - Next move: in the Poodle thread, compare the current Underlay `ListContainer` behavior against the `acme-admin` review route and draft the minimal Poodle-native contract before implementing or documenting it.
@@ -64,6 +64,6 @@ Produce a narrow Poodle-side decision and implementation brief for a new Poodle-
 ## Completion Protocol
 
 1. Update the Poodle log and any touched guides or exports with the result of this batch.
-2. If the Poodle-side decision changes the Underlay migration posture, update [/Users/betterthanclay/Dev/projects/underlay/contracts/ui/poodle-adoption-underlay-surface-groups.json](/Users/betterthanclay/Dev/projects/underlay/contracts/ui/poodle-adoption-underlay-surface-groups.json) and keep the next task aligned with roadmap `g01.042`.
+2. If the Poodle-side decision changes the Underlay migration posture, update [~/Dev/projects/underlay/contracts/ui/poodle-adoption-underlay-surface-groups.json](~/Dev/projects/underlay/contracts/ui/poodle-adoption-underlay-surface-groups.json) and keep the next task aligned with roadmap `g01.042`.
 3. Record unresolved risks explicitly, especially any uncertainty about how much pagination and empty/loading/error state should live inside `ListContainer` versus outside it.
 4. Leave one clear next task for the following thread.

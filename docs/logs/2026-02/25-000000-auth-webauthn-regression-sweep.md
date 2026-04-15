@@ -5,7 +5,7 @@
 Create and run a single repeatable non-OAuth auth regression command across consuming apps, focused on passkey/WebAuthn-related flows.
 
 Script added:
-- `/Users/betterthanclay/Dev/projects/underlay/scripts/auth-webauthn-regression.sh`
+- `~/Dev/projects/underlay/scripts/auth-webauthn-regression.sh`
 
 ## Coverage Included
 
@@ -17,7 +17,7 @@ Script added:
 
 ## Command Run
 
-- `/Users/betterthanclay/Dev/projects/underlay/scripts/auth-webauthn-regression.sh`
+- `~/Dev/projects/underlay/scripts/auth-webauthn-regression.sh`
 
 ## Result
 

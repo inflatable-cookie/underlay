@@ -13,8 +13,8 @@ Targets:
 ## Acowtancy Dairy
 
 Added route-level passkey browser-path tests:
-- `/Users/betterthanclay/Dev/projects/acowtancy/dairy/tests/auth-login-page.test.ts`
-- `/Users/betterthanclay/Dev/projects/acowtancy/dairy/tests/fixtures/LoginPageStub.svelte`
+- `~/Dev/projects/acowtancy/dairy/tests/auth-login-page.test.ts`
+- `~/Dev/projects/acowtancy/dairy/tests/fixtures/LoginPageStub.svelte`
 
 What is verified:
 1. Passkey login success path in route logic:
@@ -32,7 +32,7 @@ Test/runtime support changes:
 - Added test deps in Dairy:
   - `@testing-library/svelte`
   - `@testing-library/dom`
-- Updated `/Users/betterthanclay/Dev/projects/acowtancy/dairy/vite.config.ts` resolve conditions to prefer browser/module entrypoints in jsdom test runs.
+- Updated `~/Dev/projects/acowtancy/dairy/vite.config.ts` resolve conditions to prefer browser/module entrypoints in jsdom test runs.
 
 ## Songsprout
 

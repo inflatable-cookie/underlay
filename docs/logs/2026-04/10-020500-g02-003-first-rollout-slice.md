@@ -29,7 +29,7 @@ proof-app admin patterns were usable outside Dairy, `acme-admin`, and
 ## Validation
 
 - `bun x svelte-check --tsconfig ./tsconfig.json` in
-  `/Users/betterthanclay/Dev/projects/compli-me/admin`
+  `~/Dev/projects/compli-me/admin`
 - residue scan in `compli-me/admin` for `expandedRowWhen`, `onchange=`, and
   legacy pill `accent=` usage in the direct-rollout surfaces
 

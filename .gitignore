@@ -9,3 +9,4 @@ tarpaulin-report.html
 # Generated migration/runtime artifacts
 /runtime/
 .effigy/
+.claude/settings.local.json

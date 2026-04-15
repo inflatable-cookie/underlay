@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-SONGSPROUT_BLOOM_DIR="/Users/betterthanclay/Dev/projects/songsprout/bloom"
-ACOWTANCY_DAIRY_DIR="/Users/betterthanclay/Dev/projects/acowtancy/dairy"
+SONGSPROUT_BLOOM_DIR="/Users/tom/Dev/projects/songsprout/bloom"
+ACOWTANCY_DAIRY_DIR="/Users/tom/Dev/projects/acowtancy/dairy"
 
 printf 'Auth WebAuthn Regression\n'
 printf 'Date: %s\n\n' "$(date -u +"%Y-%m-%dT%H:%M:%SZ")"

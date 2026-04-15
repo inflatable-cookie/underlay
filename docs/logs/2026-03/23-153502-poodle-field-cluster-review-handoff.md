@@ -18,15 +18,15 @@ Produce a narrow Poodle-side decision and implementation brief for the Underlay 
 
 ## Inputs
 
-- [/Users/betterthanclay/Dev/projects/underlay/docs/roadmaps/g01/042-poodle-adoption-and-underlay-ui-contraction.md](/Users/betterthanclay/Dev/projects/underlay/docs/roadmaps/g01/042-poodle-adoption-and-underlay-ui-contraction.md)
-- [/Users/betterthanclay/Dev/projects/underlay/contracts/ui/poodle-adoption-underlay-surface-groups.json](/Users/betterthanclay/Dev/projects/underlay/contracts/ui/poodle-adoption-underlay-surface-groups.json)
-- [/Users/betterthanclay/Dev/projects/underlay/ts/src/components/FieldHint.svelte](/Users/betterthanclay/Dev/projects/underlay/ts/src/components/FieldHint.svelte)
-- [/Users/betterthanclay/Dev/projects/underlay/ts/src/components/FormError.svelte](/Users/betterthanclay/Dev/projects/underlay/ts/src/components/FormError.svelte)
-- [/Users/betterthanclay/Dev/projects/underlay/ts/src/components/FieldSet.svelte](/Users/betterthanclay/Dev/projects/underlay/ts/src/components/FieldSet.svelte)
-- [/Users/betterthanclay/Dev/projects/underlay/ts/src/components/FieldSetGrid.svelte](/Users/betterthanclay/Dev/projects/underlay/ts/src/components/FieldSetGrid.svelte)
-- [/Users/betterthanclay/Dev/projects/poodle/packages/svelte/primitives/src/Field.svelte](/Users/betterthanclay/Dev/projects/poodle/packages/svelte/primitives/src/Field.svelte)
-- [/Users/betterthanclay/Dev/projects/poodle/packages/svelte/primitives/src/Grid.svelte](/Users/betterthanclay/Dev/projects/poodle/packages/svelte/primitives/src/Grid.svelte)
-- [/Users/betterthanclay/Dev/projects/poodle/docs/guides/svelte-developer-guide.md](/Users/betterthanclay/Dev/projects/poodle/docs/guides/svelte-developer-guide.md)
+- [~/Dev/projects/underlay/docs/roadmaps/g01/042-poodle-adoption-and-underlay-ui-contraction.md](~/Dev/projects/underlay/docs/roadmaps/g01/042-poodle-adoption-and-underlay-ui-contraction.md)
+- [~/Dev/projects/underlay/contracts/ui/poodle-adoption-underlay-surface-groups.json](~/Dev/projects/underlay/contracts/ui/poodle-adoption-underlay-surface-groups.json)
+- [~/Dev/projects/underlay/ts/src/components/FieldHint.svelte](~/Dev/projects/underlay/ts/src/components/FieldHint.svelte)
+- [~/Dev/projects/underlay/ts/src/components/FormError.svelte](~/Dev/projects/underlay/ts/src/components/FormError.svelte)
+- [~/Dev/projects/underlay/ts/src/components/FieldSet.svelte](~/Dev/projects/underlay/ts/src/components/FieldSet.svelte)
+- [~/Dev/projects/underlay/ts/src/components/FieldSetGrid.svelte](~/Dev/projects/underlay/ts/src/components/FieldSetGrid.svelte)
+- [~/Dev/projects/poodle/packages/svelte/primitives/src/Field.svelte](~/Dev/projects/poodle/packages/svelte/primitives/src/Field.svelte)
+- [~/Dev/projects/poodle/packages/svelte/primitives/src/Grid.svelte](~/Dev/projects/poodle/packages/svelte/primitives/src/Grid.svelte)
+- [~/Dev/projects/poodle/docs/guides/svelte-developer-guide.md](~/Dev/projects/poodle/docs/guides/svelte-developer-guide.md)
 
 ## Constraints
 
@@ -39,10 +39,10 @@ Produce a narrow Poodle-side decision and implementation brief for the Underlay 
 
 ## Deliverables
 
-- [/Users/betterthanclay/Dev/projects/poodle/docs/logs/2026-03/23-153503-poodle-field-cluster-review.md](/Users/betterthanclay/Dev/projects/poodle/docs/logs/2026-03/23-153503-poodle-field-cluster-review.md)
-- [/Users/betterthanclay/Dev/projects/poodle/docs/architecture/001-poodle-system-shape.md](/Users/betterthanclay/Dev/projects/poodle/docs/architecture/001-poodle-system-shape.md)
-- [/Users/betterthanclay/Dev/projects/poodle/docs/guides/svelte-developer-guide.md](/Users/betterthanclay/Dev/projects/poodle/docs/guides/svelte-developer-guide.md)
-- [/Users/betterthanclay/Dev/projects/underlay/contracts/ui/poodle-adoption-underlay-surface-groups.json](/Users/betterthanclay/Dev/projects/underlay/contracts/ui/poodle-adoption-underlay-surface-groups.json)
+- [~/Dev/projects/poodle/docs/logs/2026-03/23-153503-poodle-field-cluster-review.md](~/Dev/projects/poodle/docs/logs/2026-03/23-153503-poodle-field-cluster-review.md)
+- [~/Dev/projects/poodle/docs/architecture/001-poodle-system-shape.md](~/Dev/projects/poodle/docs/architecture/001-poodle-system-shape.md)
+- [~/Dev/projects/poodle/docs/guides/svelte-developer-guide.md](~/Dev/projects/poodle/docs/guides/svelte-developer-guide.md)
+- [~/Dev/projects/underlay/contracts/ui/poodle-adoption-underlay-surface-groups.json](~/Dev/projects/underlay/contracts/ui/poodle-adoption-underlay-surface-groups.json)
 
 ## Acceptance Criteria
 
@@ -54,7 +54,7 @@ Produce a narrow Poodle-side decision and implementation brief for the Underlay 
 
 ## Notes
 
-- Current context: this handoff advances Underlay roadmap `g01.042` in [/Users/betterthanclay/Dev/projects/underlay/docs/roadmaps/g01/042-poodle-adoption-and-underlay-ui-contraction.md](/Users/betterthanclay/Dev/projects/underlay/docs/roadmaps/g01/042-poodle-adoption-and-underlay-ui-contraction.md), after the Underlay Svelte export inventory was reduced from a broad “maybe Poodle” list to a narrow field-only review batch.
+- Current context: this handoff advances Underlay roadmap `g01.042` in [~/Dev/projects/underlay/docs/roadmaps/g01/042-poodle-adoption-and-underlay-ui-contraction.md](~/Dev/projects/underlay/docs/roadmaps/g01/042-poodle-adoption-and-underlay-ui-contraction.md), after the Underlay Svelte export inventory was reduced from a broad “maybe Poodle” list to a narrow field-only review batch.
 - Decisions: the user explicitly wants careful filtering so only truly non-domain-specific surfaces move into Poodle; `Badge` and `TextButton` were already removed from the real Poodle-work queue because Poodle `Pill` and `Button variant="ghost"` already cover them.
 - Watch-outs: Underlay `FormTabsProvider` and `FormTabsSection` are form-orchestration helpers, not good first Poodle candidates; detail/list-card surfaces mostly collapse to composition over existing Poodle `Card`, `ListCard`, `DetailRow`, `DetailSection`, and layout primitives.
 - Next move: in the Poodle thread, compare the Underlay field surfaces directly against Poodle `Field` and decide whether the missing behavior should become `Field` slots/props, a grouped-field contract, or remain external composition.
@@ -62,6 +62,6 @@ Produce a narrow Poodle-side decision and implementation brief for the Underlay 
 ## Completion Protocol
 
 1. Update the Poodle log and any touched architecture or guide docs with the outcome of this batch.
-2. If the review changes Underlay’s migration posture, update [/Users/betterthanclay/Dev/projects/underlay/contracts/ui/poodle-adoption-underlay-surface-groups.json](/Users/betterthanclay/Dev/projects/underlay/contracts/ui/poodle-adoption-underlay-surface-groups.json) and leave the next task aligned with roadmap `g01.042`.
+2. If the review changes Underlay’s migration posture, update [~/Dev/projects/underlay/contracts/ui/poodle-adoption-underlay-surface-groups.json](~/Dev/projects/underlay/contracts/ui/poodle-adoption-underlay-surface-groups.json) and leave the next task aligned with roadmap `g01.042`.
 3. Record unresolved risks explicitly, especially any ambiguity about whether grouped-field behavior is a real design-system contract or just layout composition.
 4. Leave one clear next task for the following thread.

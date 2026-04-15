@@ -15,8 +15,8 @@ Adopt Poodle as the canonical Svelte design-system surface for Underlay-based ap
 - `ts/src/patterns/index.ts`
 - `docs/guides/090-ui-kit.md`
 - `docs/guides/100-frontend-web.md`
-- `/Users/betterthanclay/Dev/projects/poodle/docs/guides/svelte-developer-guide.md`
-- `/Users/betterthanclay/Dev/projects/poodle/docs/architecture/004-underlay-bridge-and-adapter-ownership.md`
+- `~/Dev/projects/poodle/docs/guides/svelte-developer-guide.md`
+- `~/Dev/projects/poodle/docs/architecture/004-underlay-bridge-and-adapter-ownership.md`
 - `contracts/ui/poodle-adoption-underlay-surface-groups.json`
 
 ## Decision Summary

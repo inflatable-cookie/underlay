@@ -31,9 +31,9 @@ consistent.
 ## Validation
 
 - `bun x svelte-check --tsconfig ./tsconfig.json` in
-  `/Users/betterthanclay/Dev/projects/compli-me/admin`
+  `~/Dev/projects/compli-me/admin`
 - roadmap and log reconciliation in
-  `/Users/betterthanclay/Dev/projects/underlay/docs/roadmaps/g02`
+  `~/Dev/projects/underlay/docs/roadmaps/g02`
 
 ## Next Task
 

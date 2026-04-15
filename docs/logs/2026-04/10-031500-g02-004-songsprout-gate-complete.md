@@ -24,9 +24,9 @@ the workflow content became more domain-specific.
 ## Validation
 
 - `bun x svelte-check --tsconfig ./tsconfig.json` in
-  `/Users/betterthanclay/Dev/projects/songsprout/bloom`
+  `~/Dev/projects/songsprout/bloom`
 - `bun x svelte-check --tsconfig ./tsconfig.json` in
-  `/Users/betterthanclay/Dev/projects/songsprout/greenhouse`
+  `~/Dev/projects/songsprout/greenhouse`
   - result: `0 errors, 4 warnings`
   - the warnings are pre-existing state-capture warnings in catalogue/programs
     routes outside the normalized direct-rollout slice

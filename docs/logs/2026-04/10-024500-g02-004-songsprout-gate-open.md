@@ -22,7 +22,7 @@ execution by habit.
 ## Validation
 
 - local roadmap/front-door review in
-  `/Users/betterthanclay/Dev/projects/underlay/docs/roadmaps/g02`
+  `~/Dev/projects/underlay/docs/roadmaps/g02`
 
 ## Next Task
 

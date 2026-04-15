@@ -37,8 +37,8 @@ surfaces again.
 
 ## Validation
 
-- `effigy qa:docs --repo /Users/betterthanclay/Dev/projects/underlay`
-- `effigy qa:northstar --repo /Users/betterthanclay/Dev/projects/underlay`
+- `effigy qa:docs --repo ~/Dev/projects/underlay`
+- `effigy qa:northstar --repo ~/Dev/projects/underlay`
 
 ## Next Task
 

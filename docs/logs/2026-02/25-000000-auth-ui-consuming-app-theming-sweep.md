@@ -4,8 +4,8 @@
 
 Validate roadmap `004` theming gate for auth UI components in consuming apps:
 
-- Songsprout (`/Users/betterthanclay/Dev/projects/songsprout/bloom`)
-- Acowtancy Dairy (`/Users/betterthanclay/Dev/projects/acowtancy/dairy`)
+- Songsprout (`~/Dev/projects/songsprout/bloom`)
+- Acowtancy Dairy (`~/Dev/projects/acowtancy/dairy`)
 
 ## Findings
 
@@ -17,7 +17,7 @@ Observed before fix:
 - Result: auth route styling relied on component fallbacks instead of app-level token contract.
 
 Fix applied:
-- Added `/Users/betterthanclay/Dev/projects/songsprout/bloom/src/routes/(auth)/+layout.svelte`.
+- Added `~/Dev/projects/songsprout/bloom/src/routes/(auth)/+layout.svelte`.
 - Layout now imports:
   - `@decodelabs/underlay/styles/tokens.css`
   - `@decodelabs/underlay/styles/forms.css`

@@ -16,11 +16,11 @@ Validation target was cross-repo invocation from `acowtancy` root against the sy
 From `effigy` workspace (using local binary via `cargo run`):
 
 ```bash
-cargo run --manifest-path /Users/betterthanclay/Dev/projects/effigy/Cargo.toml --bin effigy -- tasks --task check:exports
+cargo run --manifest-path ~/Dev/projects/effigy/Cargo.toml --bin effigy -- tasks --task check:exports
 
-cargo run --manifest-path /Users/betterthanclay/Dev/projects/effigy/Cargo.toml --bin effigy -- underlay/check:exports
+cargo run --manifest-path ~/Dev/projects/effigy/Cargo.toml --bin effigy -- underlay/check:exports
 
-cargo run --manifest-path /Users/betterthanclay/Dev/projects/effigy/Cargo.toml --bin effigy -- underlay/validate
+cargo run --manifest-path ~/Dev/projects/effigy/Cargo.toml --bin effigy -- underlay/validate
 ```
 
 ## Results

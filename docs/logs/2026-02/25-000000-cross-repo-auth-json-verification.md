@@ -15,22 +15,22 @@ From `underlay`:
 
 ```bash
 ./scripts/check-json-naming.sh rust
-./scripts/check-json-naming.sh /Users/betterthanclay/Dev/projects/underlay-reference/acme-api/crates
-./scripts/check-json-naming.sh /Users/betterthanclay/Dev/projects/acowtancy/farmyard/crates /Users/betterthanclay/Dev/projects/underlay/scripts/json-naming-allowlist.txt
-./scripts/check-json-naming.sh /Users/betterthanclay/Dev/projects/compli-me/api/crates
-./scripts/check-json-naming.sh /Users/betterthanclay/Dev/projects/songsprout/nursery/crates
+./scripts/check-json-naming.sh ~/Dev/projects/underlay-reference/acme-api/crates
+./scripts/check-json-naming.sh ~/Dev/projects/acowtancy/farmyard/crates ~/Dev/projects/underlay/scripts/json-naming-allowlist.txt
+./scripts/check-json-naming.sh ~/Dev/projects/compli-me/api/crates
+./scripts/check-json-naming.sh ~/Dev/projects/songsprout/nursery/crates
 
-./scripts/check-route-error-patterns.sh /Users/betterthanclay/Dev/projects/underlay-reference/acme-api/crates/api/src/routes
-./scripts/check-route-error-patterns.sh /Users/betterthanclay/Dev/projects/acowtancy/farmyard/crates/api/src/routes
-./scripts/check-route-error-patterns.sh /Users/betterthanclay/Dev/projects/compli-me/api/crates/api/src/routes
-./scripts/check-route-error-patterns.sh /Users/betterthanclay/Dev/projects/songsprout/nursery/crates/api/src/routes
+./scripts/check-route-error-patterns.sh ~/Dev/projects/underlay-reference/acme-api/crates/api/src/routes
+./scripts/check-route-error-patterns.sh ~/Dev/projects/acowtancy/farmyard/crates/api/src/routes
+./scripts/check-route-error-patterns.sh ~/Dev/projects/compli-me/api/crates/api/src/routes
+./scripts/check-route-error-patterns.sh ~/Dev/projects/songsprout/nursery/crates/api/src/routes
 
 ./scripts/check-compatibility-sunset.sh
 
 cargo test -p underlay-auth -p underlay-auth-password -p underlay-auth-jwt -p underlay-auth-totp -p underlay-auth-webauthn -p underlay-auth-oauth --all-features
 
 # Acowtancy runtime validation
-cd /Users/betterthanclay/Dev/projects/acowtancy/farmyard
+cd ~/Dev/projects/acowtancy/farmyard
 bun run db:reset
 API_BASE_URL=http://0.0.0.0:40001 bash scripts/validate-error-reporting.sh
 curl -i http://0.0.0.0:40001/health
@@ -40,7 +40,7 @@ psql "$DATABASE_URL" -c "select status_code,error_code,context from platform.err
 psql "$DATABASE_URL" -c "select id,payload from platform.job order by created_at desc limit 5;"
 
 # Songsprout reset/validation prep
-cd /Users/betterthanclay/Dev/projects/songsprout/nursery
+cd ~/Dev/projects/songsprout/nursery
 bun run db:reset
 cargo check -p nursery-api --all-features
 AUTH_JWT_ISSUER=local AUTH_JWT_AUDIENCE=nursery bun run api
@@ -78,12 +78,12 @@ psql "$DATABASE_URL" -c "select status_code,error_code,context from platform.err
 
 1. Acowtancy route DTO drift fixed:
 - removed `#[serde(rename_all = "camelCase")]` from:
-  - `/Users/betterthanclay/Dev/projects/acowtancy/farmyard/crates/api/src/routes/admin/learning/outcomes/questions.rs`
+  - `~/Dev/projects/acowtancy/farmyard/crates/api/src/routes/admin/learning/outcomes/questions.rs`
 
 1b. Acowtancy OpenAPI query naming drift fixed:
 - changed residual `includeTotal` query parameter annotations to `include_total` in:
-  - `/Users/betterthanclay/Dev/projects/acowtancy/farmyard/crates/api/src/routes/admin/assessment.rs`
-  - `/Users/betterthanclay/Dev/projects/acowtancy/farmyard/crates/api/src/routes/admin/learning/modules/core/queries.rs`
+  - `~/Dev/projects/acowtancy/farmyard/crates/api/src/routes/admin/assessment.rs`
+  - `~/Dev/projects/acowtancy/farmyard/crates/api/src/routes/admin/learning/modules/core/queries.rs`
 - `cargo check -p farmyard-api --all-features` passes after the update.
 - OpenAPI verification now reports:
   - `include_total=3`
@@ -91,39 +91,39 @@ psql "$DATABASE_URL" -c "select status_code,error_code,context from platform.err
 
 2. Songsprout query naming normalized:
 - replaced `#[serde(rename = "includeTotal")]` with `#[serde(alias = "includeTotal")]` on `include_total` fields in:
-  - `/Users/betterthanclay/Dev/projects/songsprout/nursery/crates/api/src/handlers.rs`
+  - `~/Dev/projects/songsprout/nursery/crates/api/src/handlers.rs`
 - OpenAPI query parameter names updated to `include_total`.
 
 3. Songsprout migration reset blocker fixed:
 - corrected FK references from `accounts.user(id)` to `artists.artist(id)` in:
-  - `/Users/betterthanclay/Dev/projects/songsprout/nursery/migrations/202602091900__add_email_totp_tables.sql`
-  - `/Users/betterthanclay/Dev/projects/songsprout/nursery/migrations/202602101000__sliding_window_email_totp_rate_limits.sql`
+  - `~/Dev/projects/songsprout/nursery/migrations/202602091900__add_email_totp_tables.sql`
+  - `~/Dev/projects/songsprout/nursery/migrations/202602101000__sliding_window_email_totp_rate_limits.sql`
 - `bun run db:reset` now succeeds in Nursery.
 
 4. Songsprout runtime dependency/version split fixed:
 - aligned workspace dependency versions in:
-  - `/Users/betterthanclay/Dev/projects/songsprout/nursery/Cargo.toml`
+  - `~/Dev/projects/songsprout/nursery/Cargo.toml`
     - `axum: 0.7 -> 0.8`
     - `prometheus: 0.13 -> 0.14`
 - removed `#[async_trait]` wrappers from `FromRequestParts` impls in:
-  - `/Users/betterthanclay/Dev/projects/songsprout/nursery/crates/auth/src/extractor.rs`
+  - `~/Dev/projects/songsprout/nursery/crates/auth/src/extractor.rs`
 - migrated legacy axum route params (`:id`) to `{id}` in:
-  - `/Users/betterthanclay/Dev/projects/songsprout/nursery/crates/api/src/routes/auth.rs`
-  - `/Users/betterthanclay/Dev/projects/songsprout/nursery/crates/api/src/routes/artist.rs`
-  - `/Users/betterthanclay/Dev/projects/songsprout/nursery/crates/api/src/routes/billing.rs`
-  - `/Users/betterthanclay/Dev/projects/songsprout/nursery/crates/api/src/routes/admin.rs`
+  - `~/Dev/projects/songsprout/nursery/crates/api/src/routes/auth.rs`
+  - `~/Dev/projects/songsprout/nursery/crates/api/src/routes/artist.rs`
+  - `~/Dev/projects/songsprout/nursery/crates/api/src/routes/billing.rs`
+  - `~/Dev/projects/songsprout/nursery/crates/api/src/routes/admin.rs`
 - `cargo check -p nursery-api --all-features` now passes.
 
 5. Underlay-reference runtime route syntax migration (axum 0.8 compatibility):
 - updated route path syntax in:
-  - `/Users/betterthanclay/Dev/projects/underlay-reference/acme-api/crates/api/src/routes/mod.rs`
+  - `~/Dev/projects/underlay-reference/acme-api/crates/api/src/routes/mod.rs`
 - migrated `/:param` segments to `/{param}` to avoid startup panic.
 
 3. Acowtancy `nightfire` explicitly allowlisted as external-contract exception:
 - allowlist file added:
-  - `/Users/betterthanclay/Dev/projects/underlay/scripts/json-naming-allowlist.txt`
+  - `~/Dev/projects/underlay/scripts/json-naming-allowlist.txt`
 - allowlisted path:
-  - `/Users/betterthanclay/Dev/projects/acowtancy/farmyard/crates/nightfire/src/lib.rs`
+  - `~/Dev/projects/acowtancy/farmyard/crates/nightfire/src/lib.rs`
 
 ## Remaining Action Required
 

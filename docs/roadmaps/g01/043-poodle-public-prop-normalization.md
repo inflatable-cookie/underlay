@@ -11,9 +11,9 @@ Normalize Poodle's public Svelte prop language onto one consistent boolean namin
 
 ## Research Basis
 
-- `/Users/betterthanclay/Dev/projects/poodle/packages/svelte/primitives/src/index.ts`
-- `/Users/betterthanclay/Dev/projects/poodle/packages/svelte/composites/src/index.ts`
-- `/Users/betterthanclay/Dev/projects/poodle/docs/contracts/foundation/text-input.md`
+- `~/Dev/projects/poodle/packages/svelte/primitives/src/index.ts`
+- `~/Dev/projects/poodle/packages/svelte/composites/src/index.ts`
+- `~/Dev/projects/poodle/docs/contracts/foundation/text-input.md`
 - `contracts/ui/poodle-adoption-underlay-surface-groups.json`
 - `contracts/ui/poodle-prop-normalization-manifest.json`
 
@@ -28,10 +28,10 @@ Normalize Poodle's public Svelte prop language onto one consistent boolean namin
 
 ## Likely Implementation Surface
 
-- `/Users/betterthanclay/Dev/projects/poodle/packages/svelte/primitives/src/`
-- `/Users/betterthanclay/Dev/projects/poodle/packages/svelte/composites/src/`
-- `/Users/betterthanclay/Dev/projects/poodle/docs/contracts/`
-- `/Users/betterthanclay/Dev/projects/poodle/packages/svelte/preview/src/`
+- `~/Dev/projects/poodle/packages/svelte/primitives/src/`
+- `~/Dev/projects/poodle/packages/svelte/composites/src/`
+- `~/Dev/projects/poodle/docs/contracts/`
+- `~/Dev/projects/poodle/packages/svelte/preview/src/`
 - `contracts/ui/poodle-prop-normalization-manifest.json`
 - `contracts/ui/poodle-adoption-underlay-surface-groups.json`
 - `docs/guides/190-upgrade-compatibility.md`

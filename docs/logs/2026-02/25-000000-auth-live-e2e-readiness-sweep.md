@@ -5,7 +5,7 @@
 Establish a repeatable readiness gate before running live browser WebAuthn/OAuth E2E for roadmap `004`.
 
 Script added:
-- `/Users/betterthanclay/Dev/projects/underlay/scripts/auth-live-e2e-readiness.sh`
+- `~/Dev/projects/underlay/scripts/auth-live-e2e-readiness.sh`
 
 ## What The Script Checks
 
@@ -27,7 +27,7 @@ Script added:
 ### Initial run (2026-02-25T10:31:27Z)
 
 Command:
-- `/Users/betterthanclay/Dev/projects/underlay/scripts/auth-live-e2e-readiness.sh`
+- `~/Dev/projects/underlay/scripts/auth-live-e2e-readiness.sh`
 
 Summary:
 - `5 pass, 7 blocked`
@@ -59,7 +59,7 @@ Remaining blockers:
 ### OAuth-deferred run (2026-02-25T10:43:59Z)
 
 Command:
-- `SKIP_GOOGLE_OAUTH_CHECKS=1 /Users/betterthanclay/Dev/projects/underlay/scripts/auth-live-e2e-readiness.sh`
+- `SKIP_GOOGLE_OAUTH_CHECKS=1 ~/Dev/projects/underlay/scripts/auth-live-e2e-readiness.sh`
 
 Summary:
 - `12 pass, 0 blocked`
