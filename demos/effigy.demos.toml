@@ -1,0 +1,10 @@
+[demos.storybook]
+title = "Underlay — Storybook Component Browser"
+summary = "Starts the Storybook interactive component browser for the Underlay design system."
+proof = "Confirms Storybook starts and all Underlay components are browsable at port 6006 — live stories validate the component library surface, variant coverage, and interactive documentation."
+owner = "underlay"
+mode = "interactive"
+status = "ready"
+covers = ["underlay.components", "underlay.design-system"]
+tags = ["components", "storybook", "interactive", "design-system"]
+task = "storybook"

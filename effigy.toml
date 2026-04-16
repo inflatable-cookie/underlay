@@ -4,6 +4,9 @@ alias = "underlay"
 [package_manager]
 js = "bun"
 
+[manifest]
+include = ["demos/effigy.demos.toml"]
+
 [bootstrap]
 setup = ["bootstrap:deps"]
 
