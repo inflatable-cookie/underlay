@@ -9,6 +9,13 @@ Roadmaps are executable delivery plans for Underlay library work.
 - Roadmap references use generation-qualified IDs such as `g01.021`.
 - Keep roadmap status in the file itself and keep this index aligned when statuses change.
 - Generation rollover is manual only.
+- Treat generations as substantial sequencing eras, not one-or-two-file
+  buckets. As a healthy default, expect roughly 20 to 40 roadmap files in one
+  generation before rollover is even worth discussing.
+- Treat rollover as full generation closeout, not a convenience reset: close,
+  supersede, or rehome every roadmap in the current generation first, then
+  purge stale generation-specific specs and batch cards from `docs/specs/`
+  before opening the next generation.
 - Keep unscheduled work in [backlog/](backlog/).
 - Keep durable inventories, CSVs, and machine-readable reference artifacts in [../contracts/](../contracts/).
 - If active work changes consumer-visible behavior, APIs, configuration, migrations, or integration patterns, include a `Consumer Upgrade Impact` section in the roadmap and point to the compatibility note plan.
@@ -20,6 +27,20 @@ sibling-repo file references, local path evidence, and concrete caller
 inventories when that is necessary to preserve delivery history. Do not treat
 that historical evidence style as the model for active library-facing guides or
 README surfaces.
+
+## Rollover guardrail
+
+Do not open `gNN+1` while the current generation still has live roadmap files
+or stale strict-lane debris in the active specs tree.
+
+Before rollover:
+
+- every roadmap in the closing generation must be explicitly closed, paused,
+  superseded, or moved to backlog
+- the roadmap front doors must agree that the old generation is no longer the
+  live queue
+- `docs/specs/` must be purged so only live or near-live planning artifacts
+  remain in the active tree
 
 ## Active generation
 
