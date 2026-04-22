@@ -19,7 +19,7 @@ thiserror = { version = "2", optional = true }
 uuid = { workspace = true, optional = true }
 
 # Optional: Cron scheduling
-cron = { version = "0.15", optional = true }
+cron = { version = "0.16", optional = true }
 
 [dev-dependencies]
 tokio = { workspace = true, features = ["macros", "rt", "time", "test-util"] }

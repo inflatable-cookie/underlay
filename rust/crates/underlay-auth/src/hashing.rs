@@ -1,6 +1,10 @@
 //! Password hashing using Argon2id.
 
-use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
+use argon2::{
+    password_hash::SaltString,
+    Argon2, PasswordHash, PasswordHasher, PasswordVerifier,
+};
+use rand_core::OsRng;
 use std::io;
 
 /// Trait for hashing passwords securely.
@@ -78,8 +82,9 @@ impl PasswordHasherExt for Argon2Hasher {
             argon2::Version::V0x13,
             self.params()?,
         );
+        let salt = SaltString::generate(&mut OsRng);
 
-        let password_hash = argon2.hash_password(password).map_err(|e| {
+        let password_hash = argon2.hash_password(password, &salt).map_err(|e| {
             io::Error::new(
                 io::ErrorKind::Other,
                 format!("Failed to hash password: {}", e),
@@ -136,7 +141,7 @@ impl PasswordVerifierExt for Argon2Hasher {
 
                 match result {
                     Ok(()) => Ok(true),
-                    Err(argon2::password_hash::Error::PasswordInvalid) => Ok(false),
+                    Err(argon2::password_hash::Error::Password) => Ok(false),
                     Err(e) => Err(io::Error::new(
                         io::ErrorKind::Other,
                         format!("Failed to verify password: {}", e),

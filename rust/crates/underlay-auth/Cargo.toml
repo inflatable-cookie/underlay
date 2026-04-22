@@ -15,11 +15,12 @@ chrono = { workspace = true, features = ["serde"] }
 underlay-core = { path = "../underlay-core" }
 sqlx = { workspace = true, optional = true }
 thiserror = { version = "2", optional = true }
-argon2 = { version = "0.6.0-rc.7", optional = true }
+argon2 = { version = "0.5.3", optional = true }
+rand_core = { version = "0.6", features = ["getrandom"], optional = true }
 
 [features]
 postgres = ["dep:sqlx", "dep:thiserror"]
-hashing = ["dep:argon2"]
+hashing = ["dep:argon2", "dep:rand_core"]
 
 [dev-dependencies]
 tokio = { workspace = true, features = ["macros", "rt"] }
