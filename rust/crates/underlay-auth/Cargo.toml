@@ -16,11 +16,11 @@ underlay-core = { path = "../underlay-core" }
 sqlx = { workspace = true, optional = true }
 thiserror = { version = "2", optional = true }
 argon2 = { version = "0.5.3", optional = true }
-rand_core = { version = "0.6", features = ["getrandom"], optional = true }
+getrandom = { version = "0.4.2", optional = true }
 
 [features]
 postgres = ["dep:sqlx", "dep:thiserror"]
-hashing = ["dep:argon2", "dep:rand_core"]
+hashing = ["dep:argon2", "dep:getrandom"]
 
 [dev-dependencies]
 tokio = { workspace = true, features = ["macros", "rt"] }

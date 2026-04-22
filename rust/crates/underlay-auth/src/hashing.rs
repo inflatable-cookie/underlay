@@ -4,7 +4,6 @@ use argon2::{
     password_hash::SaltString,
     Argon2, PasswordHash, PasswordHasher, PasswordVerifier,
 };
-use rand_core::OsRng;
 use std::io;
 
 /// Trait for hashing passwords securely.
@@ -82,13 +81,14 @@ impl PasswordHasherExt for Argon2Hasher {
             argon2::Version::V0x13,
             self.params()?,
         );
-        let salt = SaltString::generate(&mut OsRng);
+        let mut salt_bytes = [0_u8; argon2::password_hash::Salt::RECOMMENDED_LENGTH];
+        getrandom::fill(&mut salt_bytes)
+            .map_err(|e| io::Error::other(format!("Failed to generate password salt: {e}")))?;
+        let salt = SaltString::encode_b64(&salt_bytes)
+            .map_err(|e| io::Error::other(format!("Failed to encode password salt: {e}")))?;
 
         let password_hash = argon2.hash_password(password, &salt).map_err(|e| {
-            io::Error::new(
-                io::ErrorKind::Other,
-                format!("Failed to hash password: {}", e),
-            )
+            io::Error::other(format!("Failed to hash password: {}", e))
         })?;
 
         Ok(password_hash.to_string())
@@ -142,16 +142,10 @@ impl PasswordVerifierExt for Argon2Hasher {
                 match result {
                     Ok(()) => Ok(true),
                     Err(argon2::password_hash::Error::Password) => Ok(false),
-                    Err(e) => Err(io::Error::new(
-                        io::ErrorKind::Other,
-                        format!("Failed to verify password: {}", e),
-                    )),
+                    Err(e) => Err(io::Error::other(format!("Failed to verify password: {}", e))),
                 }
             }
-            Err(e) => Err(io::Error::new(
-                io::ErrorKind::Other,
-                format!("Failed to parse password hash: {}", e),
-            )),
+            Err(e) => Err(io::Error::other(format!("Failed to parse password hash: {}", e))),
         }
     }
 }
