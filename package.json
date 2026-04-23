@@ -1,38 +1,14 @@
 {
-    "name": "@decodelabs/underlay",
-    "version": "0.0.1",
-    "private": true,
-    "type": "module",
-    "scripts": {
-        "tasks": "effigy tasks",
-        "health": "effigy health",
-        "doctor": "effigy doctor",
-        "test:plan": "effigy test --plan",
-        "check": "effigy check",
-        "check:types": "effigy check:types",
-        "check:exports": "effigy check:exports",
-        "check:component-test-hygiene": "effigy check:component-test-hygiene",
-        "check:poodle-prop-names": "effigy check:poodle-prop-names",
-        "check:guardrails": "effigy check:guardrails",
-        "storybook": "effigy storybook",
-        "storybook:build": "effigy storybook:build",
-        "qa:docs": "effigy qa:docs",
-        "qa:northstar": "effigy qa:northstar",
-        "validate": "effigy validate",
-        "qa": "effigy qa",
-        "rust:build": "effigy rust:build",
-        "rust:check": "effigy rust:check",
-        "rust:test": "effigy rust:test",
-        "test:components": "effigy test:components",
-        "test:ui": "effigy test:ui",
-        "effigy:dev": "effigy-dev"
+  "name": "@decodelabs/underlay",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./patterns": {
+      "svelte": "./ts/src/patterns/index.ts",
+      "types": "./ts/src/patterns/index.ts",
+      "default": "./ts/src/patterns/index.ts"
     },
-    "exports": {
-        "./patterns": {
-            "svelte": "./ts/src/patterns/index.ts",
-            "types": "./ts/src/patterns/index.ts",
-            "default": "./ts/src/patterns/index.ts"
-        },
     "./runtime/auth": {
       "svelte": "./ts/src/runtime/auth.ts",
       "types": "./ts/src/runtime/auth.ts",
@@ -78,187 +54,199 @@
       "types": "./ts/src/runtime/ai.ts",
       "default": "./ts/src/runtime/ai.ts"
     },
-        "./nightfire/editor": {
-            "svelte": "./ts/src/nightfire/editor.ts",
-            "types": "./ts/src/nightfire/editor.ts",
-            "default": "./ts/src/nightfire/editor.ts"
-        },
-        "./nightfire/renderer": {
-            "svelte": "./ts/src/nightfire/renderer.ts",
-            "types": "./ts/src/nightfire/renderer.ts",
-            "default": "./ts/src/nightfire/renderer.ts"
-        },
-        "./nightfire/block-editor": {
-            "svelte": "./ts/src/nightfire/block-editor.ts",
-            "types": "./ts/src/nightfire/block-editor.ts",
-            "default": "./ts/src/nightfire/block-editor.ts"
-        },
-        "./nightfire/markdown": {
-            "svelte": "./ts/src/nightfire/markdown.ts",
-            "types": "./ts/src/nightfire/markdown.ts",
-            "default": "./ts/src/nightfire/markdown.ts"
-        },
-        "./nightfire/editor-registry": {
-            "types": "./ts/src/nightfire/editor-registry.ts",
-            "default": "./ts/src/nightfire/editor-registry.ts"
-        },
-        "./nightfire/render-registry": {
-            "types": "./ts/src/nightfire/render-registry.ts",
-            "default": "./ts/src/nightfire/render-registry.ts"
-        },
-        "./nightfire/validator-registry": {
-            "types": "./ts/src/nightfire/validator-registry.ts",
-            "default": "./ts/src/nightfire/validator-registry.ts"
-        },
-        "./nightfire/strategies": {
-            "types": "./ts/src/nightfire/strategies.ts",
-            "default": "./ts/src/nightfire/strategies.ts"
-        },
-        "./nightfire/media": {
-            "types": "./ts/src/nightfire/media/context.ts",
-            "default": "./ts/src/nightfire/media/context.ts"
-        },
-        "./nightfire/utils": {
-            "types": "./ts/src/nightfire/utils.ts",
-            "default": "./ts/src/nightfire/utils.ts"
-        },
-        "./nightfire/validation": {
-            "types": "./ts/src/nightfire/validation.ts",
-            "default": "./ts/src/nightfire/validation.ts"
-        },
-        "./styles": {
-            "svelte": "./ts/src/styles/index.ts",
-            "types": "./ts/src/styles/index.ts",
-            "default": "./ts/src/styles/index.ts"
-        },
-        "./client/http": {
-            "types": "./ts/src/client/http.ts",
-            "default": "./ts/src/client/http.ts"
-        },
-        "./client/auth": {
-            "types": "./ts/src/client/auth.ts",
-            "default": "./ts/src/client/auth.ts"
-        },
-        "./client/errors": {
-            "types": "./ts/src/client/errors.ts",
-            "default": "./ts/src/client/errors.ts"
-        },
-        "./client/format": {
-            "types": "./ts/src/client/format.ts",
-            "default": "./ts/src/client/format.ts"
-        },
-        "./client/navigation": {
-            "types": "./ts/src/client/navigation.ts",
-            "default": "./ts/src/client/navigation.ts"
-        },
-        "./client/query": {
-            "types": "./ts/src/client/query.ts",
-            "default": "./ts/src/client/query.ts"
-        },
-        "./client/route-protection": {
-            "types": "./ts/src/client/route-protection.ts",
-            "default": "./ts/src/client/route-protection.ts"
-        },
-        "./client/types": {
-            "types": "./ts/src/client/types.ts",
-            "default": "./ts/src/client/types.ts"
-        },
-        "./client/soft-delete": {
-            "types": "./ts/src/client/soft-delete.ts",
-            "default": "./ts/src/client/soft-delete.ts"
-        },
-        "./client/sveltekit": {
-            "types": "./ts/src/client/sveltekit.ts",
-            "default": "./ts/src/client/sveltekit.ts"
-        },
-        "./client/useAuth": {
-            "types": "./ts/src/client/useAuth.ts",
-            "default": "./ts/src/client/useAuth.ts"
-        },
-        "./testing": {
-            "types": "./ts/src/testing/index.ts",
-            "default": "./ts/src/testing/index.ts"
-        },
-        "./server": {
-            "types": "./ts/src/server/index.ts",
-            "default": "./ts/src/server/index.ts"
-        },
-        "./utils/webauthn": {
-            "types": "./ts/src/utils/webauthn.ts",
-            "default": "./ts/src/utils/webauthn.ts"
-        },
-        "./utils/html": {
-            "types": "./ts/src/utils/html.ts",
-            "default": "./ts/src/utils/html.ts"
-        },
-        "./utils/sequence": {
-            "types": "./ts/src/utils/sequence.ts",
-            "default": "./ts/src/utils/sequence.ts"
-        },
-        "./utils/i18n": {
-            "types": "./ts/src/utils/i18n.ts",
-            "default": "./ts/src/utils/i18n.ts"
-        },
-        "./utils/slug": {
-            "types": "./ts/src/utils/slug.ts",
-            "default": "./ts/src/utils/slug.ts"
-        },
+    "./nightfire/editor": {
+      "svelte": "./ts/src/nightfire/editor.ts",
+      "types": "./ts/src/nightfire/editor.ts",
+      "default": "./ts/src/nightfire/editor.ts"
+    },
+    "./nightfire/renderer": {
+      "svelte": "./ts/src/nightfire/renderer.ts",
+      "types": "./ts/src/nightfire/renderer.ts",
+      "default": "./ts/src/nightfire/renderer.ts"
+    },
+    "./nightfire/block-editor": {
+      "svelte": "./ts/src/nightfire/block-editor.ts",
+      "types": "./ts/src/nightfire/block-editor.ts",
+      "default": "./ts/src/nightfire/block-editor.ts"
+    },
+    "./nightfire/markdown": {
+      "svelte": "./ts/src/nightfire/markdown.ts",
+      "types": "./ts/src/nightfire/markdown.ts",
+      "default": "./ts/src/nightfire/markdown.ts"
+    },
+    "./nightfire/editor-registry": {
+      "types": "./ts/src/nightfire/editor-registry.ts",
+      "default": "./ts/src/nightfire/editor-registry.ts"
+    },
+    "./nightfire/render-registry": {
+      "types": "./ts/src/nightfire/render-registry.ts",
+      "default": "./ts/src/nightfire/render-registry.ts"
+    },
+    "./nightfire/validator-registry": {
+      "types": "./ts/src/nightfire/validator-registry.ts",
+      "default": "./ts/src/nightfire/validator-registry.ts"
+    },
+    "./nightfire/strategies": {
+      "types": "./ts/src/nightfire/strategies.ts",
+      "default": "./ts/src/nightfire/strategies.ts"
+    },
+    "./nightfire/media": {
+      "types": "./ts/src/nightfire/media/context.ts",
+      "default": "./ts/src/nightfire/media/context.ts"
+    },
+    "./nightfire/utils": {
+      "types": "./ts/src/nightfire/utils.ts",
+      "default": "./ts/src/nightfire/utils.ts"
+    },
+    "./nightfire/validation": {
+      "types": "./ts/src/nightfire/validation.ts",
+      "default": "./ts/src/nightfire/validation.ts"
+    },
+    "./styles": {
+      "svelte": "./ts/src/styles/index.ts",
+      "types": "./ts/src/styles/index.ts",
+      "default": "./ts/src/styles/index.ts"
+    },
+    "./client/http": {
+      "types": "./ts/src/client/http.ts",
+      "default": "./ts/src/client/http.ts"
+    },
+    "./client/auth": {
+      "types": "./ts/src/client/auth.ts",
+      "default": "./ts/src/client/auth.ts"
+    },
+    "./client/errors": {
+      "types": "./ts/src/client/errors.ts",
+      "default": "./ts/src/client/errors.ts"
+    },
+    "./client/format": {
+      "types": "./ts/src/client/format.ts",
+      "default": "./ts/src/client/format.ts"
+    },
+    "./client/navigation": {
+      "types": "./ts/src/client/navigation.ts",
+      "default": "./ts/src/client/navigation.ts"
+    },
+    "./client/query": {
+      "types": "./ts/src/client/query.ts",
+      "default": "./ts/src/client/query.ts"
+    },
+    "./client/pagination": {
+      "types": "./ts/src/client/pagination.ts",
+      "default": "./ts/src/client/pagination.ts"
+    },
+    "./client/suggestions": {
+      "types": "./ts/src/client/suggestions.ts",
+      "default": "./ts/src/client/suggestions.ts"
+    },
+    "./client/media": {
+      "types": "./ts/src/client/media.ts",
+      "default": "./ts/src/client/media.ts"
+    },
+    "./client/route-protection": {
+      "types": "./ts/src/client/route-protection.ts",
+      "default": "./ts/src/client/route-protection.ts"
+    },
+    "./client/types": {
+      "types": "./ts/src/client/types.ts",
+      "default": "./ts/src/client/types.ts"
+    },
+    "./client/soft-delete": {
+      "types": "./ts/src/client/soft-delete.ts",
+      "default": "./ts/src/client/soft-delete.ts"
+    },
+    "./client/sveltekit": {
+      "types": "./ts/src/client/sveltekit.ts",
+      "default": "./ts/src/client/sveltekit.ts"
+    },
+    "./client/useAuth": {
+      "types": "./ts/src/client/useAuth.ts",
+      "default": "./ts/src/client/useAuth.ts"
+    },
+    "./testing": {
+      "types": "./ts/src/testing/index.ts",
+      "default": "./ts/src/testing/index.ts"
+    },
+    "./server": {
+      "types": "./ts/src/server/index.ts",
+      "default": "./ts/src/server/index.ts"
+    },
+    "./utils/webauthn": {
+      "types": "./ts/src/utils/webauthn.ts",
+      "default": "./ts/src/utils/webauthn.ts"
+    },
+    "./utils/html": {
+      "types": "./ts/src/utils/html.ts",
+      "default": "./ts/src/utils/html.ts"
+    },
+    "./utils/sequence": {
+      "types": "./ts/src/utils/sequence.ts",
+      "default": "./ts/src/utils/sequence.ts"
+    },
+    "./utils/i18n": {
+      "types": "./ts/src/utils/i18n.ts",
+      "default": "./ts/src/utils/i18n.ts"
+    },
+    "./utils/slug": {
+      "types": "./ts/src/utils/slug.ts",
+      "default": "./ts/src/utils/slug.ts"
+    },
     "./styles/base.css": "./ts/src/styles/base.css",
-        "./styles/forms.css": "./ts/src/styles/forms.css",
-        "./styles/markdown-editor.css": "./ts/src/styles/markdown-editor.css",
-        "./styles/tokens.css": "./ts/src/styles/tokens.css",
-        "./styles/optimistic.css": "./ts/src/styles/optimistic.css"
-    },
-    "peerDependencies": {
-        "@sveltejs/kit": "^2.53.0",
-        "bits-ui": "^2.0.0",
-        "lucide-svelte": "^0.563.0",
-        "svelte": "^5.0.0",
-        "vite": "^7.0.0",
-        "zod": "^3.25.0"
-    },
-    "peerDependenciesMeta": {
-        "zod": {
-            "optional": true
-        }
-    },
-    "dependencies": {
-        "@poodle/svelte": "file:../poodle/packages/svelte/components",
-        "easymde": "^2.20.0",
-        "isomorphic-dompurify": "^3.0.0",
-        "marked": "^17.0.3",
-        "svelte-dnd-action": "^0.9.69"
-    },
-    "devDependencies": {
-        "@storybook/addon-a11y": "^10.3.3",
-        "@storybook/addon-docs": "^10.3.3",
-        "@storybook/addon-svelte-csf": "^5.1.1",
-        "@storybook/svelte-vite": "^10.3.3",
-        "@sveltejs/vite-plugin-svelte": "^6.2.4",
-        "@testing-library/dom": "^10.4.1",
-        "@testing-library/svelte": "^5.3.1",
-        "@types/node": "^25.3.0",
-        "@vitest/coverage-v8": "^4.0.18",
-        "@vitest/ui": "^4.0.18",
-        "bits-ui": "^2.16.2",
-        "lucide-svelte": "^0.575.0",
-        "storybook": "^10.3.3",
-        "svelte": "^5.53.3",
-        "svelte-check": "^4.4.3",
-        "tsx": "^4.21.0",
-        "typescript": "^5.9.3",
-        "vite": "^7.3.1",
-        "vitest": "^4.0.18",
-        "zod": "^3.25.0"
-    },
-    "guardrails": {
-        "srcDir": "./ts/src",
-        "extensions": [
-            ".ts",
-            ".svelte"
-        ],
-        "bannedPatterns": [],
-        "moduleScopeChecks": "@decodelabs/underlay/tools/templates/sveltekit-ssr",
-        "suppressionPrefix": "guardrails-disable"
+    "./styles/forms.css": "./ts/src/styles/forms.css",
+    "./styles/markdown-editor.css": "./ts/src/styles/markdown-editor.css",
+    "./styles/tokens.css": "./ts/src/styles/tokens.css",
+    "./styles/optimistic.css": "./ts/src/styles/optimistic.css"
+  },
+  "peerDependencies": {
+    "@sveltejs/kit": "^2.53.0",
+    "bits-ui": "^2.0.0",
+    "lucide-svelte": "^0.563.0",
+    "svelte": "^5.0.0",
+    "vite": "^7.0.0",
+    "zod": "^3.25.0"
+  },
+  "peerDependenciesMeta": {
+    "zod": {
+      "optional": true
     }
+  },
+  "dependencies": {
+    "@poodle/svelte": "file:../poodle/packages/svelte/components",
+    "easymde": "^2.20.0",
+    "isomorphic-dompurify": "^3.0.0",
+    "marked": "^17.0.3",
+    "svelte-dnd-action": "^0.9.69"
+  },
+  "devDependencies": {
+    "@storybook/addon-a11y": "^10.3.3",
+    "@storybook/addon-docs": "^10.3.3",
+    "@storybook/addon-svelte-csf": "^5.1.1",
+    "@storybook/svelte-vite": "^10.3.3",
+    "@sveltejs/vite-plugin-svelte": "^6.2.4",
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/svelte": "^5.3.1",
+    "@types/node": "^25.3.0",
+    "@vitest/coverage-v8": "^4.0.18",
+    "@vitest/ui": "^4.0.18",
+    "bits-ui": "^2.16.2",
+    "lucide-svelte": "^0.575.0",
+    "storybook": "^10.3.3",
+    "svelte": "^5.53.3",
+    "svelte-check": "^4.4.3",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3",
+    "vite": "^7.3.1",
+    "vitest": "^4.0.18",
+    "zod": "^3.25.0"
+  },
+  "guardrails": {
+    "srcDir": "./ts/src",
+    "extensions": [
+      ".ts",
+      ".svelte"
+    ],
+    "bannedPatterns": [],
+    "moduleScopeChecks": "@decodelabs/underlay/tools/templates/sveltekit-ssr",
+    "suppressionPrefix": "guardrails-disable"
+  }
 }
