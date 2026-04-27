@@ -7,6 +7,14 @@ js = "bun"
 [manifest]
 include = ["demos/effigy.demos.toml"]
 
+[isolation]
+paths = [
+  "node_modules",
+  ".svelte-kit",
+  "ts/.svelte-kit",
+  "target",
+]
+
 [bootstrap]
 setup = ["bootstrap:deps"]
 
