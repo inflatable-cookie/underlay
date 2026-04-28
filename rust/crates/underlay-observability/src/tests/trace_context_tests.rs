@@ -43,11 +43,15 @@ fn trace_context_round_trips_through_headers() {
     context.inject_into(&mut headers);
 
     assert_eq!(
-        headers.get(TRACEPARENT_HEADER).and_then(|value| value.to_str().ok()),
+        headers
+            .get(TRACEPARENT_HEADER)
+            .and_then(|value| value.to_str().ok()),
         Some("00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01")
     );
     assert_eq!(
-        headers.get(TRACESTATE_HEADER).and_then(|value| value.to_str().ok()),
+        headers
+            .get(TRACESTATE_HEADER)
+            .and_then(|value| value.to_str().ok()),
         Some("vendor=value")
     );
     assert_eq!(TraceContext::from_headers(&headers), Some(context));

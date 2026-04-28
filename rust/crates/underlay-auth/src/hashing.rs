@@ -1,9 +1,6 @@
 //! Password hashing using Argon2id.
 
-use argon2::{
-    password_hash::SaltString,
-    Argon2, PasswordHash, PasswordHasher, PasswordVerifier,
-};
+use argon2::{password_hash::SaltString, Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
 use std::io;
 
 /// Trait for hashing passwords securely.
@@ -87,9 +84,9 @@ impl PasswordHasherExt for Argon2Hasher {
         let salt = SaltString::encode_b64(&salt_bytes)
             .map_err(|e| io::Error::other(format!("Failed to encode password salt: {e}")))?;
 
-        let password_hash = argon2.hash_password(password, &salt).map_err(|e| {
-            io::Error::other(format!("Failed to hash password: {}", e))
-        })?;
+        let password_hash = argon2
+            .hash_password(password, &salt)
+            .map_err(|e| io::Error::other(format!("Failed to hash password: {}", e)))?;
 
         Ok(password_hash.to_string())
     }
@@ -142,10 +139,16 @@ impl PasswordVerifierExt for Argon2Hasher {
                 match result {
                     Ok(()) => Ok(true),
                     Err(argon2::password_hash::Error::Password) => Ok(false),
-                    Err(e) => Err(io::Error::other(format!("Failed to verify password: {}", e))),
+                    Err(e) => Err(io::Error::other(format!(
+                        "Failed to verify password: {}",
+                        e
+                    ))),
                 }
             }
-            Err(e) => Err(io::Error::other(format!("Failed to parse password hash: {}", e))),
+            Err(e) => Err(io::Error::other(format!(
+                "Failed to parse password hash: {}",
+                e
+            ))),
         }
     }
 }

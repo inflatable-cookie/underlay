@@ -57,7 +57,9 @@ impl TraceContext {
 
     pub fn from_headers(headers: &HeaderMap) -> Option<Self> {
         let traceparent = headers.get(TRACEPARENT_HEADER)?.to_str().ok()?;
-        let tracestate = headers.get(TRACESTATE_HEADER).and_then(|value| value.to_str().ok());
+        let tracestate = headers
+            .get(TRACESTATE_HEADER)
+            .and_then(|value| value.to_str().ok());
         Self::parse(traceparent, tracestate)
     }
 

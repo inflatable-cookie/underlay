@@ -15,13 +15,11 @@ use base64::{engine::general_purpose::STANDARD as BASE64, Engine as _};
 use chrono::Utc;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
-use underlay_migration_core::{
-    OciBundleConfig, OciBundleLayout, OciLayerDescriptor, OciLayerKind,
-};
+use underlay_migration_core::{OciBundleConfig, OciBundleLayout, OciLayerDescriptor, OciLayerKind};
 
 use crate::migration_bundle::{
-    BundlePublishOptions, BundlePublishReport, BundlePullOptions,
-    MigrationBundleError, migration_bundle_pull,
+    migration_bundle_pull, BundlePublishOptions, BundlePublishReport, BundlePullOptions,
+    MigrationBundleError,
 };
 
 const SHA256_PREFIX: &str = "sha256:";
@@ -182,10 +180,7 @@ pub fn seed_bundle_build(
 
         let mut annotations = BTreeMap::new();
         annotations.insert("underlay.seed.file_name".to_string(), filename);
-        annotations.insert(
-            "underlay.seed.apply_order".to_string(),
-            order.to_string(),
-        );
+        annotations.insert("underlay.seed.apply_order".to_string(), order.to_string());
 
         let layer = layer_descriptor_with_annotations(
             OciLayerKind::DataChunk,
@@ -295,7 +290,9 @@ pub fn seed_bundle_pull(
             let name = manifest_data["seed_bundle_name"]
                 .as_str()
                 .unwrap_or("unknown");
-            let priority = manifest_data["seed_bundle_priority"].as_u64().unwrap_or(999);
+            let priority = manifest_data["seed_bundle_priority"]
+                .as_u64()
+                .unwrap_or(999);
             let tables = manifest_data["tables"]
                 .as_array()
                 .map(|arr| {
