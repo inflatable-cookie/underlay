@@ -31,9 +31,10 @@ as the first proof that the template system works in practice.
 - `g03.010`: Dairy complex validation — 7 gaps identified
 - `g03.011`: Underlay template skill created
 - `g03.012`: Consumer rollout plan documented
+- `g03.013`: `EntityForm` and `EntityFormPage` implemented
 
 ## Active Lane
 
-`g03.013` is the live execution lane.
+`g03.014` is the live execution lane.
 
-Its job is to build `EntityForm` and `EntityFormPage` — the form template family (create/edit/modal).
+Its job is to migrate acme-admin project create/edit pages to `EntityFormPage` as proof.

@@ -99,3 +99,65 @@ interface DetailItemConfig {
   emptyText?: string;
 }
 ```
+
+### FieldConfig
+
+```typescript
+type FieldType = "text" | "textarea" | "select" | "number" | "checkbox" | "custom";
+
+interface BaseFieldConfig {
+  id: string;
+  type: FieldType;
+  label: string;
+  required?: boolean;
+  placeholder?: string;
+  helpText?: string;
+}
+
+interface TextFieldConfig extends BaseFieldConfig {
+  type: "text";
+}
+
+interface TextareaFieldConfig extends BaseFieldConfig {
+  type: "textarea";
+  rows?: number;
+}
+
+interface SelectFieldConfig extends BaseFieldConfig {
+  type: "select";
+  options: { value: string; label: string }[];
+  loadOptions?: () => Promise<{ value: string; label: string }[]>;
+}
+
+interface NumberFieldConfig extends BaseFieldConfig {
+  type: "number";
+  min?: number;
+  max?: number;
+  step?: number;
+}
+
+interface CheckboxFieldConfig extends BaseFieldConfig {
+  type: "checkbox";
+  checkboxLabel?: string;
+}
+
+interface CustomFieldConfig extends BaseFieldConfig {
+  type: "custom";
+  render: Snippet<[FieldRenderContext]>;
+}
+
+interface FieldRenderContext {
+  value: unknown;
+  onChange: (value: unknown) => void;
+  error?: string;
+  disabled: boolean;
+}
+
+type FieldConfig =
+  | TextFieldConfig
+  | TextareaFieldConfig
+  | SelectFieldConfig
+  | NumberFieldConfig
+  | CheckboxFieldConfig
+  | CustomFieldConfig;
+```

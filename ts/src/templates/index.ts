@@ -9,9 +9,12 @@
 // Level 1 — Page Shells
 export { default as EntityListPage } from "./EntityListPage.svelte";
 export { default as EntityDetailPage } from "./EntityDetailPage.svelte";
-// export { default as EntityFormPage } from "./EntityFormPage.svelte";
+export { default as EntityFormPage } from "./EntityFormPage.svelte";
 
 // Level 2 — Sections
 export { default as EntityList } from "./EntityList.svelte";
 export { default as EntityDetail } from "./EntityDetail.svelte";
-// export { default as EntityForm } from "./EntityForm.svelte";
+export { default as EntityForm } from "./EntityForm.svelte";
+
+// Types
+export type { FieldConfig } from "./types";

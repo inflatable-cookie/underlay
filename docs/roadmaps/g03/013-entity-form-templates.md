@@ -1,6 +1,18 @@
 # 013 - EntityForm and EntityFormPage
 
-Status: not started
+Status: complete
+Owner: repo maintainers
+Updated: 2026-05-04
+
+## Results
+
+- `EntityForm` (Level 2) implemented with declarative field configuration
+- `EntityFormPage` (Level 1) implemented with data loading and page shell
+- Field types: text, textarea, select, number, checkbox, custom
+- Validation support: required fields + custom validate function
+- Async select options loading
+- Controlled and uncontrolled modes
+- Exported from `ts/src/templates/index.ts`
 Owner: repo maintainers
 Updated: 2026-05-04
 
