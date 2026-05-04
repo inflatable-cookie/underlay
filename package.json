@@ -9,6 +9,11 @@
       "types": "./ts/src/patterns/index.ts",
       "default": "./ts/src/patterns/index.ts"
     },
+    "./templates": {
+      "svelte": "./ts/src/templates/index.ts",
+      "types": "./ts/src/templates/index.ts",
+      "default": "./ts/src/templates/index.ts"
+    },
     "./runtime/auth": {
       "svelte": "./ts/src/runtime/auth.ts",
       "types": "./ts/src/runtime/auth.ts",

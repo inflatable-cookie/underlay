@@ -1,6 +1,19 @@
-# Underlay Guides
+# Underlay Guides (Deprecated)
 
-Comprehensive guides for building full-stack applications with Underlay. This documentation covers architecture, implementation, testing, and deployment.
+**This directory is deprecated.** Content has been migrated to `docs/usage/`.
+
+See:
+- [docs/usage/000-overview.md](../usage/000-overview.md) — New user-facing docs front door
+- [docs/usage/backend/](../usage/backend/) — Backend guides (Rust, DB, API)
+- [docs/usage/frontend/](../usage/frontend/) — Frontend guides (SvelteKit)
+- [docs/usage/runtime/](../usage/runtime/) — Runtime and client helpers
+- [docs/usage/templates/](../usage/templates/) — Admin template system
+
+This directory will be removed in a future update. Do not add new guides here.
+
+---
+
+Legacy content follows.
 
 Poodle is the canonical home for shared UI primitives and generic composites.
 Underlay’s guides now describe the retained package surfaces that still belong

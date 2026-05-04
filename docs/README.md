@@ -9,7 +9,7 @@ effectively, and which planning surfaces are active now.
 
 - [vision/001-underlay-foundation-vision.md](./vision/001-underlay-foundation-vision.md)
 - [architecture/000-overview.md](./architecture/000-overview.md)
-- [guides/README.md](./guides/README.md)
+- [usage/000-overview.md](./usage/000-overview.md) — User-facing docs (backend, frontend, templates, runtime)
 - [roadmaps/README.md](./roadmaps/README.md)
 - [logs/README.md](./logs/README.md)
 
@@ -21,8 +21,12 @@ System architecture, design principles, and technical decisions.
 ### [Contracts](./contracts/)
 Interface contracts and API specifications.
 
-### [Guides](./guides/)
-Step-by-step guides for building full-stack applications with Underlay.
+### [Usage](./usage/)
+User-facing docs for building applications with Underlay. Organized by domain:
+- `backend/` — Rust, database, API guides
+- `frontend/` — SvelteKit, routing, integration
+- `runtime/` — Client helpers, navigation, auth
+- `templates/` — Admin template system (EntityListPage, EntityDetailPage, etc.)
 
 ### [Logs](./logs/)
 Decision logs, roadmap deltas, and project history.
@@ -57,10 +61,14 @@ Project vision, goals, and strategic direction.
 - `vision/` defines the long-horizon foundation boundary and success bar.
 - `roadmaps/` turns that direction into concrete Underlay delivery milestones.
 - `logs/` records meaningful batches and roadmap-linked evidence.
-- `guides/`, `architecture/`, and `patterns/` explain how to apply Underlay in
+- `usage/`, `architecture/`, and `patterns/` explain how to apply Underlay in
   real consuming projects.
 - `research/` is where external evidence and comparison work should live before
   it becomes architecture or roadmap scope.
+
+## Deprecated
+
+`docs/guides/` is deprecated. Content has been migrated to `docs/usage/`.
 
 ## Documentation Boundary
 

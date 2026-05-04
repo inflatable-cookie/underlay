@@ -44,13 +44,20 @@ Before rollover:
 
 ## Active generation
 
-- [g02/README.md](g02/README.md)
+- [g03/README.md](g03/README.md)
 - [generation-index.md](generation-index.md)
 
 ## Current Queue
 
-- `g02.001` is now active as the Poodle-era consumer normalization and
-  overhaul runway. It carries forward the `g01.098` recovery findings, freezes
+- `g03.001` is now active as the admin template system generation.
+- `g02` is closed. All g02 roadmaps are complete.
+
+## Historical Generations
+
+- [g02/README.md](g02/README.md) — Poodle-era consumer normalization and
+  overhaul (complete)
+- [g01/README.md](g01/README.md) — Extraction, contraction, and retained-surface
+  definition (complete) It carries forward the `g01.098` recovery findings, freezes
   the live shared-surface posture across Underlay and the current consumer
   family, and sequences the first honest bounded execution waves from that
   evidence.
