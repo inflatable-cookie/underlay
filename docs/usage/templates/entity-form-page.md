@@ -2,98 +2,117 @@
 
 **Status:** Implemented (g03.013)
 
-`EntityFormPage` is the Level 1 page shell for create and edit forms. It wraps
-`EntityForm` with a `PageHeader`, data loading, and submit state management.
+`EntityFormPage` is a page shell for create and edit forms. It handles the boring
+parts (header, loading, error/success states) and lets you bring your own form
+content.
+
+**Why no declarative `EntityForm`?** Real forms have arbitrary layout, custom
+fields, conditional logic, complex validation, file uploads, rich text editors,
+multi-step flows, etc. A declarative field array is too restrictive and ends up
+fighting the consumer. Use Poodle primitives (`Field`, `TextInput`, `Select`,
+etc.) directly for the form itself.
 
 ## Usage
 
-### Create Form
-
 ```svelte
-<EntityFormPage
-  title="New Project"
-  section="New Project"
-  backHref="/projects"
-  backLabel="Back to projects"
-  
-  fields={[
-    { id: "name", type: "text", label: "Name", required: true },
-    { id: "description", type: "textarea", label: "Description", rows: 6 },
-    { id: "status", type: "select", label: "Status", options: [
-      { value: "active", label: "Active" },
-      { value: "archived", label: "Archived" }
-    ]}
-  ]}
-  
-  onSubmit={async (values) => {
-    await adminCommands.createProject(values);
-    goto("/projects");
-  }}
-/>
-```
+<script>
+  import { EntityFormPage } from "@decodelabs/underlay/templates";
+  import { Field, TextInput, Select, Button } from "@poodle/svelte";
+  import { ProjectCategorySelector } from "$lib/forms";
 
-### Edit Form
+  let { data } = $props();
+  let project = $state(data.project);
+  let saving = $state(false);
+  let error = $state(null);
+  let success = $state(false);
 
-```svelte
+  async function handleSubmit(event) {
+    event.preventDefault();
+    saving = true;
+    error = null;
+
+    const formData = new FormData(event.currentTarget);
+    try {
+      await adminCommands.updateProject(data.projectId, {
+        name: String(formData.get("name")),
+        description: String(formData.get("description"))
+      });
+      success = true;
+    } catch (e) {
+      error = e.message;
+    } finally {
+      saving = false;
+    }
+  }
+</script>
+
 <EntityFormPage
-  title={project.name}
+  title={project?.name ?? "Edit Project"}
   section="Edit Project"
-  backHref={`/projects/${id}`}
+  backHref={`/projects/${data.projectId}`}
   backLabel="Back to project"
-  
-  dataLoader={async (fetch, token) => {
-    const project = await adminCommands.getProject(id, fetch, token);
-    return { name: project.name, description: project.description, status: project.status };
-  }}
-  
-  fields={[...]}
-  
-  onSubmit={async (values) => {
-    await adminCommands.updateProject(id, values);
-  }}
-/>
+  loading={!project}
+  {error}
+  {success}
+>
+  <form onsubmit={handleSubmit}>
+    <Field label="Name" required>
+      <TextInput name="name" value={project?.name} />
+    </Field>
+
+    <Field label="Description">
+      <textarea name="description" rows={4}>{project?.description}</textarea>
+    </Field>
+
+    <ProjectCategorySelector
+      value={project?.categoryId}
+      onSelect={(id) => categoryId = id}
+    />
+
+    <div class="form-actions">
+      <Button type="submit" variant="primary" loading={saving}>Save</Button>
+      <Button type="button" variant="secondary"
+        onclick={() => goto(`/projects/${data.projectId}`)}>Cancel</Button>
+    </div>
+  </form>
+</EntityFormPage>
 ```
 
 ## Props
 
-### Page Shell
-
 | Prop | Type | Required | Description |
 |------|------|----------|-------------|
 | `title` | `string` | Yes | Page title |
-| `subtitle` | `string` | No | Subtitle or description |
-| `section` | `string` | No | Section label (e.g., "Edit Project") |
+| `section` | `string` | No | Section label |
 | `backHref` | `string` | No | Back link URL |
 | `backLabel` | `string` | No | Back link label |
 | `bannerMessage` | `string` | No | Banner warning/info |
 | `bannerTone` | `"warning" \| "info" \| "danger"` | No | Banner tone |
+| `loading` | `boolean` | No | Show loading spinner |
+| `loadingMessage` | `string` | No | Loading message |
+| `error` | `string` | No | Form-level error to display |
+| `success` | `boolean` | No | Show success message |
+| `successMessage` | `string` | No | Success message text |
+| `headerActions` | `Snippet` | No | Additional header actions |
+| `children` | `Snippet` | Yes | The form content |
 
-### Data
+## What It Provides
 
-| Prop | Type | Required | Description |
-|------|------|----------|-------------|
-| `dataLoader` | `(fetch, token) => Promise` | No | Data loader for edit mode |
-| `fields` | `FieldConfig[]` | Yes | Declarative field config |
+- **PageHeader** with title, section, back link, banner
+- **Loading state** — shows spinner while data loads
+- **Error display** — shows Callout when `error` is set
+- **Success display** — shows Callout when `success` is true
+- **Consistent spacing** — `entity-form-page` class with gap
 
-### Validation
+## What You Bring
 
-| Prop | Type | Required | Description |
-|------|------|----------|-------------|
-| `validate` | `(values) => Record<string, string> \| null` | No | Custom validation function |
-
-### Actions
-
-| Prop | Type | Required | Description |
-|------|------|----------|-------------|
-| `onSubmit` | `(values) => Promise<void>` | Yes | Submit handler |
-| `onCancel` | `() => void` | No | Cancel handler |
-| `submitLabel` | `string` | No | Submit button label (default: "Save") |
-| `cancelLabel` | `string` | No | Cancel button label (default: "Cancel") |
-| `showCancel` | `boolean` | No | Show cancel button (default: true) |
-| `successMessage` | `string` | No | Message shown after successful submit |
+- The actual `<form>` element
+- All form fields using Poodle primitives
+- Validation logic
+- Submit handler
+- Any custom components (RelationSelector, file upload, etc.)
 
 ## See Also
 
-- [Entity Form Section](./entity-form-section.md) — The underlying Level 2 component
 - [Template System Overview](./000-template-system-overview.md)
-- [Template API Reference](./template-api-reference.md) — FieldConfig types
+- Poodle form primitives: `Field`, `TextInput`, `Select`, `Textarea`, `Button`

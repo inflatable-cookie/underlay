@@ -1,120 +1,59 @@
 # Entity Form Section
 
-**Status:** Implemented (g03.013)
+**Status:** Not implemented — forms are too flexible to template meaningfully.
 
-`EntityForm` is the Level 2 form section. It handles form fields, validation,
-and submit orchestration.
+## Why No EntityForm?
 
-## When To Use
+Real-world forms have:
+- **Arbitrary layout** — side-by-side fields, field groups, tabs, accordions
+- **Custom fields** — relation selectors, file uploads, rich text editors, date pickers with custom logic
+- **Conditional fields** — show field B only when field A is "other"
+- **Complex validation** — cross-field validation, async validation, server-side validation
+- **Dynamic fields** — add/remove rows in a table, nested objects
+- **Multi-step flows** — wizard-style forms with validation per step
+- **Custom submit behavior** — optimistic updates, draft saving, confirmation dialogs
 
-- Inside a modal dialog for quick edits
-- Inside a detail tab for inline editing
-- Standalone when you don't need the full page shell
+A declarative field array (`[{ id, type, label }]`) fights all of this. Every
+consumer ends up needing `type: "custom"` for 80% of fields, at which point the
+template is just indirection.
 
-## Usage
+## What To Use Instead
 
-```svelte
-<EntityForm
-  fields={[
-    { id: "name", type: "text", label: "Name", required: true },
-    { id: "description", type: "textarea", label: "Description", rows: 4 },
-    { id: "priority", type: "select", label: "Priority", options: [
-      { value: "low", label: "Low" },
-      { value: "high", label: "High" }
-    ]}
-  ]}
-  initialValues={{ name: "My Task", priority: "low" }}
-  onSubmit={async (values) => {
-    await api.updateTask(values);
-  }}
-/>
-```
-
-### With Validation
+Use **Poodle primitives directly** for form fields:
 
 ```svelte
-<EntityForm
-  fields={[...]}
-  validate={(values) => {
-    const errors: Record<string, string> = {};
-    if (values.name && String(values.name).length < 3) {
-      errors.name = "Name must be at least 3 characters";
-    }
-    return Object.keys(errors).length > 0 ? errors : null;
-  }}
-  onSubmit={handleSubmit}
-/>
+<form onsubmit={handleSubmit}>
+  <FieldSet>
+    <Field label="Name" required>
+      <TextInput name="name" />
+    </Field>
+
+    <Field label="Category">
+      <RelationSelector
+        value={categoryId}
+        onSelect={(id) => categoryId = id}
+      />
+    </Field>
+
+    <!-- Custom layout: side by side -->
+    <div class="row">
+      <Field label="Start Date">
+        <DatePicker name="startDate" />
+      </Field>
+      <Field label="End Date">
+        <DatePicker name="endDate" />
+      </Field>
+    </div>
+  </FieldSet>
+
+  <Button type="submit" variant="primary">Save</Button>
+</form>
 ```
 
-### Custom Field
-
-```svelte
-{#snippet categoryField({ value, onChange, error, disabled })}
-  <RelationSelector
-    value={value}
-    onSelect={(id) => onChange(id)}
-    disabled={disabled}
-  />
-  {#if error}
-    <span class="error">{error}</span>
-  {/if}
-{/snippet}
-
-<EntityForm
-  fields={[
-    { id: "name", type: "text", label: "Name" },
-    { id: "categoryId", type: "custom", label: "Category", render: categoryField }
-  ]}
-  onSubmit={handleSubmit}
-/>
-```
-
-### Controlled Mode
-
-```svelte
-<script>
-  let values = $state({ name: "", priority: "low" });
-</script>
-
-<EntityForm
-  fields={[...]}
-  {values}
-  onSubmit={(submittedValues) => {
-    // submittedValues === values (controlled)
-  }}
-/>
-```
-
-## Props
-
-| Prop | Type | Required | Description |
-|------|------|----------|-------------|
-| `fields` | `FieldConfig[]` | Yes | Field definitions |
-| `initialValues` | `Record` | No | Initial values (uncontrolled) |
-| `values` | `Record` | No | Controlled values |
-| `fieldErrors` | `Record<string, string>` | No | External field errors (e.g., from API) |
-| `error` | `string` | No | Form-level error message |
-| `submitting` | `boolean` | No | Whether form is submitting |
-| `loading` | `boolean` | No | Whether form is loading initial data |
-| `submitLabel` | `string` | No | Default: "Save" |
-| `cancelLabel` | `string` | No | Default: "Cancel" |
-| `showCancel` | `boolean` | No | Default: true |
-| `onSubmit` | `(values) => Promise` | Yes | Submit handler |
-| `onCancel` | `() => void` | No | Cancel handler |
-| `validate` | `(values) => Record \| null` | No | Custom validation |
-
-## Field Types
-
-| Type | Description | Additional Props |
-|------|-------------|------------------|
-| `text` | Single-line text input | — |
-| `textarea` | Multi-line text area | `rows?: number` |
-| `select` | Dropdown | `options`, `loadOptions?: () => Promise` |
-| `number` | Numeric input | `min`, `max`, `step` |
-| `checkbox` | Boolean toggle | `checkboxLabel` |
-| `custom` | Arbitrary content | `render: Snippet<[FieldRenderContext]>` |
+Use **EntityFormPage** as a wrapper for the page shell (header, loading, error
+states) and bring your own form content.
 
 ## See Also
 
-- [Entity Form Page](./entity-form-page.md) — Full page shell with header and data loading
-- [Template API Reference](./template-api-reference.md) — Complete type definitions
+- [Entity Form Page](./entity-form-page.md) — Page shell wrapper
+- [Template System Overview](./000-template-system-overview.md)

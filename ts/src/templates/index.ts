@@ -3,8 +3,12 @@
 //
 // Three-level composition:
 // - Level 1: Page shells (EntityListPage, EntityDetailPage, EntityFormPage)
-// - Level 2: Sections (EntityList, EntityDetail, EntityForm) — reusable in tabs/dialogs
+// - Level 2: Sections (EntityList, EntityDetail) — reusable in tabs/dialogs
 // - Level 3: Primitives (Poodle: PageHeader, DataTable, DetailSection, etc.)
+//
+// Forms are intentionally NOT templated. Real forms have arbitrary layout,
+// custom fields, conditional logic, complex validation. Use EntityFormPage
+// as a wrapper (header + loading + error states) and bring your own form.
 
 // Level 1 — Page Shells
 export { default as EntityListPage } from "./EntityListPage.svelte";
@@ -14,7 +18,3 @@ export { default as EntityFormPage } from "./EntityFormPage.svelte";
 // Level 2 — Sections
 export { default as EntityList } from "./EntityList.svelte";
 export { default as EntityDetail } from "./EntityDetail.svelte";
-export { default as EntityForm } from "./EntityForm.svelte";
-
-// Types
-export type { FieldConfig } from "./types";

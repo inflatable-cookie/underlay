@@ -1,101 +1,76 @@
-# 013 - EntityForm and EntityFormPage
+# 013 - EntityFormPage
 
-Status: complete
+Status: complete (pivoted)
 Owner: repo maintainers
 Updated: 2026-05-04
 
 ## Results
 
-- `EntityForm` (Level 2) implemented with declarative field configuration
-- `EntityFormPage` (Level 1) implemented with data loading and page shell
-- Field types: text, textarea, select, number, checkbox, custom
-- Validation support: required fields + custom validate function
-- Async select options loading
-- Controlled and uncontrolled modes
-- Exported from `ts/src/templates/index.ts`
-Owner: repo maintainers
-Updated: 2026-05-04
+**Pivot:** Declarative `EntityForm` was removed. Real forms have arbitrary layout,
+custom fields, conditional logic, complex validation, file uploads, rich text
+editors, multi-step flows, etc. A declarative field array fights all of this.
 
-## Context
+**What was kept:**
+- `EntityFormPage` as a **page shell wrapper** — handles header, loading, error/success states
+- Consumer brings their own form content using Poodle primitives directly
+- Clean separation: templates own the shell, Poodle owns the primitives, consumer owns the form logic
 
-The template system has list (`EntityListPage`) and detail (`EntityDetailPage`) page
-shells. The third page shape is forms: create, edit, and modal dialogs. These are
-currently hand-rolled in every consumer app.
+## What EntityFormPage Provides
 
-## Goals
+- `PageHeader` with title, section, back link, banner
+- Loading state (spinner while data loads)
+- Error display (Callout when `error` is set)
+- Success display (Callout when `success` is true)
+- Consistent spacing via `entity-form-page` class
 
-- build `EntityForm` (Level 2) — self-contained form section for use in pages, tabs, dialogs
-- build `EntityFormPage` (Level 1) — full page shell with header, form, and actions
-- support declarative field configuration (text, textarea, select, number, date, etc.)
-- support validation integration (Zod schema or custom validate function)
-- support both page and dialog contexts
+## What The Consumer Brings
 
-## Planned API
+- The actual `\u003cform\u003e` element
+- All form fields using Poodle primitives (`Field`, `TextInput`, `Select`, etc.)
+- Validation logic
+- Submit handler
+- Any custom components (RelationSelector, file upload, etc.)
 
-### EntityFormPage
-
-```svelte
-<EntityFormPage
-  title="New Project"
-  backHref="/projects"
-  
-  dataLoader={async (fetch, token) => 
-    id ? adminCommands.getProject(id, fetch, token) : null
-  }
-  
-  fields={[
-    { id: "name", type: "text", label: "Name", required: true },
-    { id: "description", type: "textarea", label: "Description" },
-    { id: "status", type: "select", label: "Status", options: statusOptions }
-  ]}
-  
-  schema={projectSchema}
-  
-  onSubmit={async (values) => 
-    id 
-      ? adminCommands.updateProject(id, values)
-      : adminCommands.createProject(values)
-  }
-/>
-```
-
-### EntityForm (Level 2)
+## Example
 
 ```svelte
-<EntityForm
-  {fields}
-  {schema}
-  initialValues={existingData}
-  onSubmit={handleSubmit}
-/>
+\u003cEntityFormPage
+  title={project?.name ?? "Edit Project"}
+  section="Edit Project"
+  backHref={`/projects/${id}`}
+  loading={!project}
+  error={submitError}
+  success={submitSuccess}
+\u003e
+  \u003cform onsubmit={handleSubmit}\u003e
+    \u003cField label="Name" required\u003e
+      \u003cTextInput name="name" value={project?.name} /\u003e
+    \u003c/Field\u003e
+
+    \u003cProjectCategorySelector
+      value={categoryId}
+      onSelect={(id) =\u003e categoryId = id}
+    /\u003e
+
+    \u003cButton type="submit" variant="primary"\u003eSave\u003c/Button\u003e
+  \u003c/form\u003e
+\u003c/EntityFormPage\u003e
 ```
 
-## Field Types
+## Rationale
 
-- `text` — single-line text input
-- `textarea` — multi-line text input
-- `select` — dropdown with options
-- `number` — numeric input
-- `date` — date picker
-- `datetime` — date/time picker
-- `checkbox` — boolean toggle
-- `custom` — render a Snippet for arbitrary content
+After implementing a declarative `EntityForm` with field types, it became clear
+that every real-world form quickly needs:
+- Side-by-side field layouts
+- Conditional field visibility
+- Custom components (RelationSelector, file upload, rich text)
+- Cross-field validation
+- Dynamic field arrays
+- Custom submit orchestration
 
-## Non-Goals
-
-- Complex nested forms (use custom fields)
-- File upload (use custom fields)
-- WYSIWYG editors (use custom fields)
-- Multi-step wizards
-
-## Exit Criteria
-
-- `EntityForm` and `EntityFormPage` implemented and exported
-- Basic field types work: text, textarea, select, number
-- Validation works with Zod schemas
-- Form can be used standalone or inside a dialog
-- Docs updated with examples
-- At least one consumer page migrated as proof
+The `type: "custom"` escape hatch ended up being needed for 80% of fields. At
+that point the template is just indirection. Better to use Poodle primitives
+directly and let `EntityFormPage` handle only the page-level concerns.
 
 ## Next Task
 
