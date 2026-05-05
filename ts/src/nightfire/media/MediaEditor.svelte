@@ -97,11 +97,11 @@
   }
 </script>
 
-<div class="media-editor">
+<div class="underlay-media-editor">
   <!-- Media selection -->
-  <div class="media-editor__selector">
+  <div class="underlay-media-editor__selector">
     {#if mediaId}
-      <div class="media-editor__preview">
+      <div class="underlay-media-editor__preview">
         <MediaThumbnail
           kind={toPoodleMediaKind(selectedKind as MediaKind | null)}
           presentation="compact"
@@ -112,22 +112,22 @@
             <img
               src={selectedThumbnailUrl}
               alt={selectedTitle ?? "Selected media"}
-              class="media-editor__thumbnail-image"
+              class="underlay-media-editor__thumbnail-image"
             />
           {/if}
         </MediaThumbnail>
-        <div class="media-editor__preview-info">
-          <span class="media-editor__preview-title">
+        <div class="underlay-media-editor__preview-info">
+          <span class="underlay-media-editor__preview-title">
             {selectedTitle ?? mediaId}
           </span>
-          <span class="media-editor__preview-id">{mediaId}</span>
-          <div class="media-editor__preview-actions">
+          <span class="underlay-media-editor__preview-id">{mediaId}</span>
+          <div class="underlay-media-editor__preview-actions">
             {#if mediaContext}
-              <button type="button" class="media-editor__btn" onclick={handlePickMedia} disabled={picking}>
+              <button type="button" class="underlay-media-editor__btn" onclick={handlePickMedia} disabled={picking}>
                 Change
               </button>
             {/if}
-            <button type="button" class="media-editor__btn media-editor__btn--danger" onclick={handleRemove}>
+            <button type="button" class="underlay-media-editor__btn underlay-media-editor__btn--danger" onclick={handleRemove}>
               Remove
             </button>
           </div>
@@ -136,7 +136,7 @@
     {:else if mediaContext}
       <button
         type="button"
-        class="media-editor__pick-btn"
+        class="underlay-media-editor__pick-btn"
         onclick={handlePickMedia}
         disabled={picking}
       >
@@ -155,7 +155,7 @@
 
   <!-- Fields (only shown when media is selected) -->
   {#if mediaId}
-    <div class="media-editor__fields">
+    <div class="underlay-media-editor__fields">
       <TextInput
         id="nightfire-media-caption"
         placeholder="Caption (optional)"
@@ -179,16 +179,16 @@
 </div>
 
 <style>
-  .media-editor {
+  .underlay-media-editor {
     display: grid;
     gap: var(--underlay-space-3, 0.75rem);
   }
 
-  .media-editor__selector {
+  .underlay-media-editor__selector {
     display: grid;
   }
 
-  .media-editor__preview {
+  .underlay-media-editor__preview {
     display: flex;
     gap: var(--underlay-space-3, 0.75rem);
     align-items: flex-start;
@@ -198,19 +198,19 @@
     background: var(--underlay-color-surface-secondary, rgba(255, 255, 255, 0.03));
   }
 
-  .media-editor__preview :global(.media-thumbnail) {
+  .underlay-media-editor__preview :global(.media-thumbnail) {
     width: 6rem;
     flex-shrink: 0;
   }
 
-  .media-editor__thumbnail-image {
+  .underlay-media-editor__thumbnail-image {
     display: block;
     width: 100%;
     height: 100%;
     object-fit: cover;
   }
 
-  .media-editor__preview-info {
+  .underlay-media-editor__preview-info {
     display: flex;
     flex-direction: column;
     gap: var(--underlay-space-1, 0.25rem);
@@ -218,7 +218,7 @@
     flex: 1;
   }
 
-  .media-editor__preview-title {
+  .underlay-media-editor__preview-title {
     font-weight: 600;
     font-size: calc(1em * var(--underlay-font-scale-sm, 0.875));
     overflow: hidden;
@@ -226,7 +226,7 @@
     white-space: nowrap;
   }
 
-  .media-editor__preview-id {
+  .underlay-media-editor__preview-id {
     font-size: calc(1em * var(--underlay-font-scale-xs, 0.75));
     color: var(--underlay-color-text-muted, rgba(148, 163, 184, 0.7));
     overflow: hidden;
@@ -235,13 +235,13 @@
     font-family: var(--underlay-font-mono, monospace);
   }
 
-  .media-editor__preview-actions {
+  .underlay-media-editor__preview-actions {
     display: flex;
     gap: var(--underlay-space-2, 0.5rem);
     margin-top: var(--underlay-space-1, 0.25rem);
   }
 
-  .media-editor__btn {
+  .underlay-media-editor__btn {
     font-size: calc(1em * var(--underlay-font-scale-xs, 0.75));
     padding: var(--underlay-space-1, 0.25rem) var(--underlay-space-2, 0.5rem);
     border-radius: var(--underlay-radius-sm, 0.25rem);
@@ -251,16 +251,16 @@
     cursor: pointer;
   }
 
-  .media-editor__btn:hover {
+  .underlay-media-editor__btn:hover {
     background: var(--underlay-color-surface-hover, rgba(255, 255, 255, 0.06));
   }
 
-  .media-editor__btn--danger:hover {
+  .underlay-media-editor__btn--danger:hover {
     color: var(--underlay-color-danger, #ef4444);
     border-color: var(--underlay-color-danger, #ef4444);
   }
 
-  .media-editor__pick-btn {
+  .underlay-media-editor__pick-btn {
     padding: var(--underlay-space-3, 0.75rem) var(--underlay-space-4, 1rem);
     border-radius: var(--underlay-radius-md, 0.375rem);
     border: 2px dashed var(--underlay-color-border-strong, rgba(148, 163, 184, 0.5));
@@ -271,17 +271,17 @@
     transition: border-color 0.15s, color 0.15s;
   }
 
-  .media-editor__pick-btn:hover:not(:disabled) {
+  .underlay-media-editor__pick-btn:hover:not(:disabled) {
     border-color: var(--underlay-color-primary, #3b82f6);
     color: var(--underlay-color-primary, #3b82f6);
   }
 
-  .media-editor__pick-btn:disabled {
+  .underlay-media-editor__pick-btn:disabled {
     opacity: 0.6;
     cursor: wait;
   }
 
-  .media-editor__fields {
+  .underlay-media-editor__fields {
     display: grid;
     gap: var(--underlay-space-2, 0.5rem);
   }

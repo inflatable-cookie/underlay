@@ -37,11 +37,11 @@
 </script>
 
 <div
-  class="nightfire-field-multi__item"
+  class="underlay-nightfire-field__multi-item"
   data-nightfire-block-card
   data-block-index={index}
 >
-  <div class="nightfire-field-multi__toolbar">
+  <div class="underlay-nightfire-field__multi-toolbar">
     <NightfireTypeSelect
       value={(block as any)?.type ??
         editorTypeOptions[0]?.type ??
@@ -50,10 +50,10 @@
       {groupedOptions}
       typeOptions={editorTypeOptions}
     />
-    <div class="nightfire-field-multi__controls">
+    <div class="underlay-nightfire-field__multi-controls">
       <button
         type="button"
-        class="nightfire-field-multi__icon-btn"
+        class="underlay-nightfire-field__multi-icon-btn"
         onclick={() => onMove(index, index - 1)}
         disabled={index === 0}
         aria-label="Move block up"
@@ -62,7 +62,7 @@
       </button>
       <button
         type="button"
-        class="nightfire-field-multi__icon-btn"
+        class="underlay-nightfire-field__multi-icon-btn"
         onclick={() => onMove(index, index + 1)}
         disabled={index === totalBlocks - 1}
         aria-label="Move block down"
@@ -71,7 +71,7 @@
       </button>
       <button
         type="button"
-        class="nightfire-field-multi__icon-btn nightfire-field-multi__icon-btn--danger"
+        class="underlay-nightfire-field__multi-icon-btn underlay-nightfire-field__multi-icon-btn--danger"
         onclick={() => onRemove(index)}
         aria-label="Remove block"
       >
@@ -90,7 +90,7 @@
 </div>
 
 <style>
-  .nightfire-field-multi__toolbar {
+  .underlay-nightfire-field__multi-toolbar {
     display: flex;
     align-items: center;
     gap: var(--underlay-space-2);
@@ -99,19 +99,19 @@
     border-bottom: 1px solid var(--underlay-color-border-subtle, rgba(148, 163, 184, 0.35));
   }
 
-  .nightfire-field-multi__item {
+  .underlay-nightfire-field__multi-item {
     border-radius: var(--underlay-radius-control);
     display: grid;
     gap: var(--underlay-space-2);
   }
 
-  .nightfire-field-multi__controls {
+  .underlay-nightfire-field__multi-controls {
     display: flex;
     align-items: center;
     gap: var(--underlay-space-1);
   }
 
-  .nightfire-field-multi__icon-btn {
+  .underlay-nightfire-field__multi-icon-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -125,23 +125,23 @@
     cursor: pointer;
   }
 
-  .nightfire-field-multi__icon-btn:hover:not([disabled]) {
+  .underlay-nightfire-field__multi-icon-btn:hover:not([disabled]) {
     background: var(--underlay-color-field-bg);
     color: var(--underlay-color-text);
   }
 
-  .nightfire-field-multi__icon-btn[disabled] {
+  .underlay-nightfire-field__multi-icon-btn[disabled] {
     opacity: 0.35;
     cursor: default;
   }
 
-  .nightfire-field-multi__icon-btn--danger:hover:not([disabled]) {
+  .underlay-nightfire-field__multi-icon-btn--danger:hover:not([disabled]) {
     background: rgba(239, 68, 68, 0.15);
     color: #f87171;
     border-color: rgba(239, 68, 68, 0.4);
   }
 
-  .nightfire-field-multi__icon-btn svg {
+  .underlay-nightfire-field__multi-icon-btn svg {
     display: block;
   }
 </style>

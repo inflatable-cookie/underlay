@@ -71,6 +71,9 @@
  */
 
 import type { Component } from "svelte";
+import type { IconProp } from "@poodle/svelte";
+
+export type BatchActionIcon = IconProp | Component;
 
 /**
  * Result of executing a batch action.
@@ -106,8 +109,8 @@ export interface BatchAction<T = string> {
   id: string;
   /** Display label for the action */
   label: string;
-  /** Optional icon component */
-  icon?: Component;
+  /** Optional icon name, icon node array, or icon component */
+  icon?: BatchActionIcon;
   /** Visual variant (affects button styling) */
   variant?: "default" | "danger" | "warning";
   /**

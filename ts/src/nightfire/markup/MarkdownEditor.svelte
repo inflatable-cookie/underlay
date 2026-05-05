@@ -42,12 +42,12 @@
   }
 </script>
 
-<div class="markdown-editor">
+<div class="underlay-markdown-editor">
   <MarkdownEditorSurface value={text} onChange={handleInput} {onContextChange} />
 </div>
 
 <style>
-  .markdown-editor {
+  .underlay-markdown-editor {
     display: grid;
   }
 </style>

@@ -77,17 +77,17 @@
 </script>
 
 <div
-  class="nightfire-slash-palette"
+  class="underlay-nightfire-slash-palette"
   role="dialog"
   aria-label="Slash commands"
   tabindex="-1"
   onkeydown={handleKeydown}
 >
-  <label class="nightfire-slash-palette__search">
-    <span class="nightfire-slash-palette__label">Filter commands</span>
+  <label class="underlay-nightfire-slash-palette__search">
+    <span class="underlay-nightfire-slash-palette__label">Filter commands</span>
     <input
       bind:this={queryInput}
-      class="nightfire-slash-palette__input"
+      class="underlay-nightfire-slash-palette__input"
       type="text"
       value={query}
       oninput={(event) => {
@@ -102,7 +102,7 @@
 
   <ul
     id={listboxId}
-    class="nightfire-slash-palette__list"
+    class="underlay-nightfire-slash-palette__list"
     role="listbox"
     aria-label="Available slash commands"
   >
@@ -113,23 +113,23 @@
             id={`${listboxId}-${command.id}`}
             type="button"
             role="option"
-            class:selected={index === selectedIndex}
+            class:underlay-nightfire-slash-palette__item--selected={index === selectedIndex}
             aria-selected={index === selectedIndex}
-            class="nightfire-slash-palette__item"
+            class="underlay-nightfire-slash-palette__item"
             onclick={() => onSelect(command)}
             onmousemove={() => {
               selectedIndex = index;
             }}
           >
-            <span class="nightfire-slash-palette__item-label">{command.label}</span>
+            <span class="underlay-nightfire-slash-palette__item-label">{command.label}</span>
             {#if command.description}
-              <span class="nightfire-slash-palette__item-description">{command.description}</span>
+              <span class="underlay-nightfire-slash-palette__item-description">{command.description}</span>
             {/if}
           </button>
         </li>
       {/each}
     {:else}
-      <li class="nightfire-slash-palette__empty" aria-live="polite">
+      <li class="underlay-nightfire-slash-palette__empty" aria-live="polite">
         No matching commands.
       </li>
     {/if}
@@ -137,7 +137,7 @@
 </div>
 
 <style>
-  .nightfire-slash-palette {
+  .underlay-nightfire-slash-palette {
     display: grid;
     gap: var(--underlay-space-2, 0.5rem);
     padding: var(--underlay-space-3, 0.75rem);
@@ -149,17 +149,17 @@
     box-shadow: 0 18px 45px rgba(15, 23, 42, 0.28);
   }
 
-  .nightfire-slash-palette__search {
+  .underlay-nightfire-slash-palette__search {
     display: grid;
     gap: var(--underlay-space-1, 0.25rem);
   }
 
-  .nightfire-slash-palette__label {
+  .underlay-nightfire-slash-palette__label {
     font-size: calc(1em * var(--underlay-font-scale-xxs, 0.72));
     color: var(--underlay-color-text-muted, rgba(148, 163, 184, 0.82));
   }
 
-  .nightfire-slash-palette__input {
+  .underlay-nightfire-slash-palette__input {
     width: 100%;
     padding: var(--underlay-space-2, 0.5rem) var(--underlay-space-3, 0.75rem);
     border-radius: var(--underlay-radius-sm, 0.35rem);
@@ -168,7 +168,7 @@
     color: var(--underlay-color-text, #f8fafc);
   }
 
-  .nightfire-slash-palette__list {
+  .underlay-nightfire-slash-palette__list {
     list-style: none;
     margin: 0;
     padding: 0;
@@ -178,7 +178,7 @@
     overflow: auto;
   }
 
-  .nightfire-slash-palette__item {
+  .underlay-nightfire-slash-palette__item {
     width: 100%;
     display: grid;
     gap: 0.15rem;
@@ -191,23 +191,23 @@
     cursor: pointer;
   }
 
-  .nightfire-slash-palette__item:hover,
-  .nightfire-slash-palette__item.selected {
+  .underlay-nightfire-slash-palette__item:hover,
+  .underlay-nightfire-slash-palette__item.underlay-nightfire-slash-palette__item--selected {
     border-color: rgba(96, 165, 250, 0.32);
     background: rgba(59, 130, 246, 0.14);
   }
 
-  .nightfire-slash-palette__item-label {
+  .underlay-nightfire-slash-palette__item-label {
     font-weight: 600;
   }
 
-  .nightfire-slash-palette__item-description,
-  .nightfire-slash-palette__empty {
+  .underlay-nightfire-slash-palette__item-description,
+  .underlay-nightfire-slash-palette__empty {
     font-size: calc(1em * var(--underlay-font-scale-xs, 0.82));
     color: var(--underlay-color-text-muted, rgba(148, 163, 184, 0.82));
   }
 
-  .nightfire-slash-palette__empty {
+  .underlay-nightfire-slash-palette__empty {
     padding: var(--underlay-space-2, 0.5rem) var(--underlay-space-3, 0.75rem);
   }
 </style>

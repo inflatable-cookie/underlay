@@ -56,7 +56,7 @@
   }: Props = $props();
 </script>
 
-<div class="entity-form-page">
+<div class="underlay-entity-form-page">
   <PageHeader
     {title}
     {section}
@@ -86,7 +86,7 @@
 </div>
 
 <style>
-  .entity-form-page {
+  .underlay-entity-form-page {
     display: flex;
     flex-direction: column;
     gap: var(--underlay-space-4, 1rem);

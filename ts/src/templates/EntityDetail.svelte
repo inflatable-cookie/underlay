@@ -20,7 +20,7 @@
 
   interface DetailSectionConfig {
     title: string;
-    columns?: number;
+    columns?: 1 | 2 | 3;
     separated?: boolean;
     items: DetailItemConfig[];
   }
@@ -49,8 +49,6 @@
     /** Custom sections (non-standard content) */
     customSections?: CustomSectionConfig[];
     
-    /** Optional callback when data changes */
-    onDataChange?: () => void;
   }
 
   type T = $$Generic;
@@ -61,8 +59,7 @@
     dataLoader,
     meta = [],
     sections = [],
-    customSections = [],
-    onDataChange
+    customSections = []
   }: Props = $props();
 
   // --- Data loading ---
@@ -83,7 +80,7 @@
 {:else if pageData.error}
   <Callout tone="danger" message={pageData.error} announceMode="polite" />
 {:else if item}
-  <div class="entity-detail">
+  <div class="underlay-entity-detail">
     {#if meta.length > 0}
       <MetaBar ariaLabel="Metadata">
         {#each meta as metaItem}
@@ -100,7 +97,7 @@
 
     {#if hasContent}
       <Card>
-        <div class="detail-content">
+        <div class="underlay-entity-detail__content">
           {#each sections as section}
             <DetailSection
               title={section.title}
@@ -133,13 +130,13 @@
 {/if}
 
 <style>
-  .entity-detail {
+  .underlay-entity-detail {
     display: flex;
     flex-direction: column;
     gap: var(--underlay-space-4, 1rem);
   }
 
-  .detail-content {
+  .underlay-entity-detail__content {
     display: flex;
     flex-direction: column;
     gap: var(--underlay-space-4, 1rem);

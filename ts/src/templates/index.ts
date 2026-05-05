@@ -18,3 +18,12 @@ export { default as EntityFormPage } from "./EntityFormPage.svelte";
 // Level 2 — Sections
 export { default as EntityList } from "./EntityList.svelte";
 export { default as EntityDetail } from "./EntityDetail.svelte";
+
+// Level 2.5 — Entity Compositions
+export { default as EntityListCard } from "./EntityListCard.svelte";
+
+export type {
+  EntityListCardBadge,
+  EntityListCardCounter,
+  EntityListCardProps
+} from "./entity-list-card.types";

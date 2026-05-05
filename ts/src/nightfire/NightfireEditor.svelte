@@ -485,11 +485,11 @@
   );
 </script>
 
-<div class="nightfire-field">
+<div class="underlay-nightfire-field">
   {#if !isMulti}
-    <div class="nightfire-field__block-card">
-      <div class="nightfire-field-single">
-        <div class="nightfire-field-single__toolbar">
+    <div class="underlay-nightfire-field__block-card">
+      <div class="underlay-nightfire-field__single">
+        <div class="underlay-nightfire-field__single-toolbar">
           <NightfireTypeSelect
             value={(singleBlock as any)?.type ??
               editorTypeOptions[0]?.type ??
@@ -509,9 +509,9 @@
       </div>
     </div>
   {:else}
-    <div class="nightfire-field-multi">
+    <div class="underlay-nightfire-field__multi">
       {#each blocks as block, index (index)}
-        <div class="nightfire-field__block-card">
+        <div class="underlay-nightfire-field__block-card">
           <NightfireMultiBlockItem
             {block}
             {index}
@@ -527,7 +527,7 @@
             onBlockContextChange={handleSlashContextChange}
           />
           {#if slashState?.blockIndex === index}
-            <div class="nightfire-field-multi__slash-palette">
+            <div class="underlay-nightfire-field__multi-slash-palette">
               <SlashCommandPalette
                 commands={filteredSlashCommands}
                 query={slashState.query}
@@ -545,7 +545,7 @@
 
       <button
         type="button"
-        class="nightfire-field-multi__add"
+        class="underlay-nightfire-field__multi-add"
         onclick={addBlock}
       >
         + Add block
@@ -554,23 +554,23 @@
   {/if}
 
   {#if showRequiredError}
-    <p class="nightfire-field__error">This field is required.</p>
+    <p class="underlay-nightfire-field__error">This field is required.</p>
   {/if}
   {#if typeChangeWarning}
-    <p class="nightfire-layout-warning">
+    <p class="underlay-nightfire-field__layout-warning">
       {typeChangeWarning}
     </p>
   {/if}
 </div>
 
 <style>
-  .nightfire-field {
+  .underlay-nightfire-field {
     display: grid;
     gap: var(--underlay-space-2);
     color: var(--underlay-color-text);
   }
 
-  .nightfire-field__block-card {
+  .underlay-nightfire-field__block-card {
     border-radius: var(--underlay-radius-md);
     color: var(--underlay-color-text);
     padding: calc(var(--underlay-card-padding, 1.25rem) / 2);
@@ -578,21 +578,21 @@
     border: 1px solid var(--underlay-color-border-subtle, rgba(148, 163, 184, 0.2));
   }
 
-  .nightfire-field-multi {
+  .underlay-nightfire-field__multi {
     display: grid;
     gap: var(--underlay-density-gap);
   }
 
-  .nightfire-field-multi__slash-palette {
+  .underlay-nightfire-field__multi-slash-palette {
     margin-top: var(--underlay-space-2);
   }
 
-  .nightfire-field-single {
+  .underlay-nightfire-field__single {
     display: grid;
     gap: var(--underlay-space-2);
   }
 
-  .nightfire-field-single__toolbar {
+  .underlay-nightfire-field__single-toolbar {
     display: flex;
     align-items: flex-start;
     gap: var(--underlay-space-2);
@@ -601,7 +601,7 @@
     border-bottom: 1px solid var(--underlay-color-border-subtle, rgba(148, 163, 184, 0.35));
   }
 
-  .nightfire-field-multi__add {
+  .underlay-nightfire-field__multi-add {
     font-size: calc(1em * var(--underlay-font-scale-xxs));
     padding: var(--underlay-button-chip-padding-block)
       var(--underlay-button-chip-padding-inline);
@@ -612,13 +612,13 @@
     cursor: pointer;
   }
 
-  .nightfire-field__error {
+  .underlay-nightfire-field__error {
     margin-top: calc(var(--underlay-space-2) * 0.8);
     font-size: var(--underlay-font-size-sm);
     color: var(--underlay-color-danger);
   }
 
-  .nightfire-layout-warning {
+  .underlay-nightfire-field__layout-warning {
     margin-top: var(--underlay-space-2);
     font-size: calc(1em * var(--underlay-font-scale-xs));
     color: var(--underlay-color-danger);

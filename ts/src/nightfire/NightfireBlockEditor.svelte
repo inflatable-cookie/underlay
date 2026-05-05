@@ -62,7 +62,7 @@
   }
 </script>
 
-<div class="nightfire-editor nightfire-editor--single">
+<div class="underlay-nightfire-editor underlay-nightfire-editor--single">
   {#if BlockEditor}
     {#key currentBlockType}
       {@const EditorComponent = BlockEditor}
@@ -83,7 +83,7 @@
 </div>
 
 <style>
-  .nightfire-editor {
+  .underlay-nightfire-editor {
     display: grid;
     gap: var(--underlay-density-gap);
   }

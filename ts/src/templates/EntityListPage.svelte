@@ -2,11 +2,11 @@
   import type { Snippet } from "svelte";
   import {
     PageHeader,
-    IconButton,
-    Button
+    IconButton
   } from "@poodle/svelte";
   import EntityList from "./EntityList.svelte";
   import type { TableColumn, TableRow } from "@poodle/svelte";
+  import type { QueryParams } from "../client/query";
 
   // --- Types ---
 
@@ -36,7 +36,12 @@
     label: string;
     tone?: "default" | "danger" | "warning";
     icon?: string;
-    confirm?: boolean | { title: string; description: string | ((count: number) => string) };
+    confirm?: boolean | {
+      title: string;
+      description: string | ((count: number) => string);
+      confirmLabel?: string;
+      cancelLabel?: string;
+    };
     dialog?: BatchDialogConfig;
     handler: (ids: string[], values?: Record<string, unknown>) => Promise<void>;
   }
@@ -44,6 +49,13 @@
   interface ReorderConfig {
     enabled: boolean;
     handler: (orderedIds: string[]) => Promise<void>;
+  }
+
+  interface PagedListResult<TItem> {
+    data: TItem[];
+    /** Total matching items across all pages. Falls back to visible count if omitted. */
+    total?: number | null;
+    hasMore?: boolean;
   }
 
   interface Props {
@@ -56,8 +68,8 @@
     /** Back link label */
     backLabel?: string;
     
-    /** Data loading function */
-    dataLoader: (fetch: typeof window.fetch, token: string | null, query: Record<string, unknown>) => Promise<T[]>;
+    /** Data loading function. Must return paged results for the current query state. */
+    dataLoader: (fetch: typeof window.fetch, token: string | null, query: QueryParams) => Promise<PagedListResult<T>>;
     
     /** Unique identifier field (default: "id") */
     idField?: string;
@@ -95,17 +107,11 @@
     /** Additional actions in the header */
     headerActions?: Snippet;
 
-    /** External filter values (for URL sync) */
-    filterValues?: Record<string, string>;
+    /** Query state (filters, sort, page, limit) */
+    query?: QueryParams;
 
-    /** External sort state (for URL sync) */
-    sort?: { field: string; direction: "asc" | "desc" }[];
-
-    /** Called when filters change (parent manages URL sync) */
-    onFilterChange?: (id: string, value: string) => void;
-
-    /** Called when sort changes (parent manages URL sync) */
-    onSortChange?: (sort: { field: string; direction: "asc" | "desc" }[]) => void;
+    /** Called when query changes (parent manages URL sync) */
+    onQueryChange?: (query: QueryParams) => void;
 
     /** Custom reorder error handler for conflict recovery */
     onReorderError?: (error: unknown) => Promise<string | void> | string | void;
@@ -133,10 +139,8 @@
     addLabel = "Add",
     onDataChange,
     headerActions,
-    filterValues,
-    sort,
-    onFilterChange,
-    onSortChange,
+    query,
+    onQueryChange,
     onReorderError
   }: Props = $props();
 
@@ -144,7 +148,9 @@
 
   let selectionMode = $state(false);
   let reorderMode = $state(false);
-  let itemCount = $state(0);
+  let visibleItemCount = $state(0);
+  let totalItemCount = $state(0);
+  let reorderAvailable = $state(false);
 
   // Mode flags are managed internally by EntityList
   // We track them here only for header button state
@@ -169,22 +175,41 @@
     }
   }
 
-  function handleCountChange(count: number) {
-    itemCount = count;
+  function handleVisibleCountChange(count: number) {
+    visibleItemCount = count;
+  }
+
+  function handleTotalCountChange(count: number) {
+    totalItemCount = count;
+  }
+
+  function handleSelectionModeChange(enabled: boolean) {
+    selectionMode = enabled;
+  }
+
+  function handleReorderModeChange(enabled: boolean) {
+    reorderMode = enabled;
+  }
+
+  function handleReorderAvailabilityChange(enabled: boolean) {
+    reorderAvailable = enabled;
+    if (!enabled && reorderMode) {
+      reorderMode = false;
+    }
   }
 </script>
 
 <svelte:window onkeydown={handleKeydown} />
 
-<div class="entity-list-page">
+<div class="underlay-entity-list-page">
   <PageHeader
     {title}
-    count={itemCount}
+    count={totalItemCount}
     backHref={backHref ?? null}
     backLabel={backLabel}
   >
     {#snippet actions()}
-      {#if itemCount > 0 && !reorderMode && batchActions.length > 0}
+      {#if visibleItemCount > 0 && !reorderMode && batchActions.length > 0}
         <IconButton
           type="button"
           variant="secondary"
@@ -192,11 +217,11 @@
           icon={selectionMode ? "x" : "check-square"}
           ariaLabel={selectionMode ? "Cancel selection" : "Select items"}
           tooltip={selectionMode ? "Cancel Selection" : "Select Items"}
-          onclick={toggleSelectionMode}
+          on:click={toggleSelectionMode}
         />
       {/if}
       
-      {#if itemCount > 1 && !selectionMode && reorder?.enabled}
+      {#if reorderAvailable && !selectionMode}
         <IconButton
           type="button"
           variant="secondary"
@@ -204,7 +229,7 @@
           icon="arrow-up-down"
           ariaLabel={reorderMode ? "Cancel reorder" : "Reorder items"}
           tooltip={reorderMode ? "Cancel Reorder" : "Reorder Items"}
-          onclick={toggleReorderMode}
+          on:click={toggleReorderMode}
         />
       {/if}
       
@@ -215,7 +240,7 @@
           icon="plus"
           ariaLabel={addLabel}
           tooltip={addLabel}
-          onclick={onAdd}
+          on:click={onAdd}
         />
       {/if}
       
@@ -238,19 +263,21 @@
     {onAdd}
     {addLabel}
     {onDataChange}
-    {filterValues}
-    {sort}
-    {onFilterChange}
-    {onSortChange}
+    {query}
+    {onQueryChange}
     {onReorderError}
     selectionMode={selectionMode}
     reorderMode={reorderMode}
-    onCountChange={handleCountChange}
+    onSelectionModeChange={handleSelectionModeChange}
+    onReorderModeChange={handleReorderModeChange}
+    onVisibleCountChange={handleVisibleCountChange}
+    onTotalCountChange={handleTotalCountChange}
+    onReorderAvailabilityChange={handleReorderAvailabilityChange}
   />
 </div>
 
 <style>
-  .entity-list-page {
+  .underlay-entity-list-page {
     display: flex;
     flex-direction: column;
     gap: var(--underlay-space-4, 1rem);

@@ -1,16 +1,20 @@
 <script lang="ts">
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   type T = any;
-  import type { Snippet } from "svelte";
+  import { untrack, type Snippet } from "svelte";
   import { useAuthenticatedData } from "../runtime/auth";
   import { useBatchActions } from "../patterns/batch-actions.svelte";
-  import { createReorderController } from "../patterns/reorder-controller.svelte";
+  import {
+    createReorderController,
+    type ReorderController,
+    type ReorderableItem
+  } from "../patterns/reorder-controller.svelte";
   import { useToasts } from "../runtime/feedback";
   import {
     FilterToolbar,
     ListContainer,
     PageLoading,
-    Grid,
+    ListGrid,
     DataTable,
     BulkActionBar,
     AlertDialog,
@@ -19,15 +23,17 @@
     EmptyState,
     EditableList,
     ListCard,
-    Field,
     TextInput,
     Select,
     OrderBy,
     IconButton,
-    Button
+    Button,
+    Pagination,
+    PaginationSummary
   } from "@poodle/svelte";
   import type { TableColumn, TableRow, BulkAction, EditableListItem } from "@poodle/svelte";
-  import type { SortField, SortDirection } from "../client/query";
+  import type { FilterField, QueryParams, SortField, SortDirection } from "../client/query";
+  import { DEFAULT_PAGE_SIZE } from "../patterns/pagination-types";
 
   // --- Types ---
 
@@ -65,7 +71,12 @@
     label: string;
     tone?: "default" | "danger" | "warning";
     icon?: string;
-    confirm?: boolean | { title: string; description: string | ((count: number) => string) };
+    confirm?: boolean | {
+      title: string;
+      description: string | ((count: number) => string);
+      confirmLabel?: string;
+      cancelLabel?: string;
+    };
     dialog?: BatchDialogConfig;
     handler: (ids: string[], values?: Record<string, unknown>) => Promise<void>;
   }
@@ -75,12 +86,19 @@
     handler: (orderedIds: string[]) => Promise<void>;
   }
 
+  interface PagedListResult<TItem> {
+    data: TItem[];
+    /** Total matching items across all pages. Falls back to visible count if omitted. */
+    total?: number | null;
+    hasMore?: boolean;
+  }
+
   interface Props {
     /** Optional title for inline use (omitted when inside EntityListPage) */
     title?: string;
     
-    /** Data loading function */
-    dataLoader: (fetch: typeof window.fetch, token: string | null, query: Record<string, unknown>) => Promise<T[]>;
+    /** Data loading function. Must return paged results for the current query state. */
+    dataLoader: (fetch: typeof window.fetch, token: string | null, query: QueryParams) => Promise<PagedListResult<T>>;
     
     /** Unique identifier field (default: "id") */
     idField?: string;
@@ -113,11 +131,11 @@
     /** Optional callback when data changes */
     onDataChange?: () => void;
     
-    /** Optional callback when item count changes */
-    onCountChange?: (count: number) => void;
-    
-    /** Optional class for styling */
-    class?: string;
+    /** Optional callback when visible item count changes */
+    onVisibleCountChange?: (count: number) => void;
+
+    /** Optional callback when total item count changes */
+    onTotalCountChange?: (count: number) => void;
 
     /** External selection mode control */
     selectionMode?: boolean;
@@ -125,17 +143,20 @@
     /** External reorder mode control */
     reorderMode?: boolean;
 
-    /** External filter values (bypasses internal state if provided) */
-    filterValues?: Record<string, string>;
+    /** Called when selection mode changes */
+    onSelectionModeChange?: (enabled: boolean) => void;
 
-    /** External sort state */
-    sort?: SortField[];
+    /** Called when reorder mode changes */
+    onReorderModeChange?: (enabled: boolean) => void;
 
-    /** Called when a filter changes (parent manages URL sync) */
-    onFilterChange?: (id: string, value: string) => void;
+    /** External query state (filters, sort, page, limit) */
+    query?: QueryParams;
 
-    /** Called when sort changes (parent manages URL sync) */
-    onSortChange?: (sort: SortField[]) => void;
+    /** Called when query changes (parent manages URL sync) */
+    onQueryChange?: (query: QueryParams) => void;
+
+    /** Called when reorder can genuinely be used for the current result set */
+    onReorderAvailabilityChange?: (enabled: boolean) => void;
 
     /** Custom reorder error handler for conflict recovery */
     onReorderError?: (error: unknown) => Promise<string | void> | string | void;
@@ -157,14 +178,15 @@
     onAdd,
     addLabel = "Add",
     onDataChange,
-    onCountChange,
-    class: className,
+    onVisibleCountChange,
+    onTotalCountChange,
     selectionMode: externalSelectionMode,
     reorderMode: externalReorderMode,
-    filterValues: externalFilterValues,
-    sort: externalSort,
-    onFilterChange,
-    onSortChange,
+    onSelectionModeChange,
+    onReorderModeChange,
+    query: externalQuery,
+    onQueryChange,
+    onReorderAvailabilityChange,
     onReorderError
   }: Props = $props();
 
@@ -172,13 +194,14 @@
 
   const toastStore = useToasts();
 
-  // Filter state (external or internal)
-  let internalFilterValues = $state<Record<string, string>>({});
-  let filterValues = $derived(externalFilterValues ?? internalFilterValues);
-
-  // Sort state (external or internal)
-  let internalSort = $state<SortField[]>([]);
-  let currentSort = $derived(externalSort ?? internalSort);
+  let internalQuery = $state<QueryParams>({
+    page: 1,
+    limit: DEFAULT_PAGE_SIZE
+  });
+  let currentQuery = $derived(normalizeQuery(externalQuery ?? internalQuery));
+  let currentSort = $derived(currentQuery.sort ?? []);
+  let currentPage = $derived(currentQuery.page ?? 1);
+  let currentPageSize = $derived(currentQuery.limit ?? DEFAULT_PAGE_SIZE);
 
   // Async filter options
   let loadedFilterOptions = $state<Record<string, { value: string; label: string }[]>>({});
@@ -192,26 +215,67 @@
   let internalReorderMode = $state(false);
   let reorderMode = $derived(externalReorderMode ?? internalReorderMode);
   let reorderError = $state<string | null>(null);
+  let lastNotifiedVisibleCount = $state<number | null>(null);
+  let lastNotifiedTotalCount = $state<number | null>(null);
+  let lastNotifiedReorderAvailability = $state<boolean | null>(null);
 
   // Custom batch action dialog
   let pendingDialogAction = $state<BatchActionConfig | null>(null);
-  let dialogSubmitting = $state(false);
+  let reorderController = $state<ReorderController<ReorderableItem & T> | null>(null);
+
+  const listQueryKey = $derived.by(() => JSON.stringify(currentQuery));
 
   // Data loading (includes filters and sort)
-  const pageData = useAuthenticatedData<T[]>(
+  const pageData = useAuthenticatedData<PagedListResult<T>>(
     async (fetch, token) => {
-      const query = buildQueryFromFilters(filterValues, currentSort);
-      return await dataLoader(fetch, token, query);
+      return await dataLoader(fetch, token, currentQuery);
     },
-    { defaultValue: [] }
+    {
+      defaultValue: {
+        data: [],
+        total: 0
+      },
+      queryKey: () => listQueryKey
+    }
   );
 
-  const items = $derived(pageData.data ?? []);
+  const items = $derived(pageData.data?.data ?? []);
+  const itemCount = $derived(items.length);
+  const totalCount = $derived(resolveTotalCount(pageData.data, items.length));
+  const totalPages = $derived(Math.max(1, Math.ceil(totalCount / currentPageSize)));
+  const hasNextPage = $derived(currentPage < totalPages || Boolean(pageData.data?.hasMore));
+  const reorderAvailable = $derived(
+    Boolean(reorder?.enabled) &&
+      currentPage === 1 &&
+      itemCount > 1 &&
+      totalCount > 0 &&
+      totalCount <= currentPageSize
+  );
   const itemIds = $derived(items.map((item) => String((item as Record<string, unknown>)[idField])));
 
-  // Notify parent of count changes
+  // Batch actions
+  const batch = useBatchActions<string>();
+
+  // Notify parent of visible and total count changes
   $effect(() => {
-    onCountChange?.(items.length);
+    if (lastNotifiedVisibleCount !== items.length) {
+      lastNotifiedVisibleCount = items.length;
+      onVisibleCountChange?.(items.length);
+    }
+    if (lastNotifiedTotalCount !== totalCount) {
+      lastNotifiedTotalCount = totalCount;
+      onTotalCountChange?.(totalCount);
+    }
+    if (lastNotifiedReorderAvailability !== reorderAvailable) {
+      lastNotifiedReorderAvailability = reorderAvailable;
+      onReorderAvailabilityChange?.(reorderAvailable);
+    }
+  });
+
+  $effect(() => {
+    if (!selectionMode && batch.count > 0) {
+      batch.clear();
+    }
   });
 
   // Load async filter options on mount
@@ -229,112 +293,233 @@
     }
   });
 
-  // Batch actions
-  const batch = useBatchActions<string>();
-
   // Register batch actions (skip dialog actions — handled separately)
   $effect(() => {
-    for (const action of batchActions) {
-      if (action.dialog) continue;
-      batch.registerAction({
-        id: action.id,
-        label: action.label,
-        variant: action.tone,
-        confirm: action.confirm === true 
-          ? {
-              title: `${action.label} items`,
-              description: (count: number) => `Are you sure you want to ${action.label.toLowerCase()} ${count} item${count === 1 ? "" : "s"}?`,
-              confirmLabel: action.label
-            }
-          : typeof action.confirm === "object" 
+    untrack(() => {
+      const directActions = batchActions.filter((action) => !action.dialog);
+      const directActionIds = new Set(directActions.map((action) => action.id));
+
+      for (const existingAction of batch.actions) {
+        if (!directActionIds.has(existingAction.id)) {
+          batch.unregisterAction(existingAction.id);
+        }
+      }
+
+      for (const action of directActions) {
+        batch.registerAction({
+          id: action.id,
+          label: action.label,
+          icon: action.icon,
+          variant: action.tone,
+          confirm: action.confirm === true
             ? {
-                title: action.confirm.title,
-                description: action.confirm.description,
+                title: `${action.label} items`,
+                description: (count: number) => `Are you sure you want to ${action.label.toLowerCase()} ${count} item${count === 1 ? "" : "s"}?`,
                 confirmLabel: action.label
               }
-            : undefined,
-        execute: async (ids: string[]) => {
-          await action.handler(ids);
-          onDataChange?.();
-          await pageData.refetch();
-          return { success: true, affected: ids.length };
-        }
-      });
-    }
-  });
-
-  // Reorder controller
-  let reorderController = $derived(
-    reorder?.enabled
-      ? createReorderController(
-          items.map((item) => ({
-            id: String((item as Record<string, unknown>)[idField]),
-            ...item
-          })),
-          async (orderedIds) => {
-            await reorder!.handler(orderedIds);
+            : typeof action.confirm === "object"
+              ? {
+                  title: action.confirm.title,
+                  description: action.confirm.description,
+                  confirmLabel: action.confirm.confirmLabel ?? action.label,
+                  cancelLabel: action.confirm.cancelLabel
+                }
+              : undefined,
+          execute: async (ids: string[]) => {
+            await action.handler(ids);
+            onDataChange?.();
+            await pageData.refetch();
+            return { success: true, affected: ids.length };
           }
-        )
-      : null
-  );
+        });
+      }
+    });
+  });
 
   // --- Helpers ---
 
-  function buildQueryFromFilters(values: Record<string, string>, sortFields: SortField[]): Record<string, unknown> {
-    const query: Record<string, unknown> = {};
-    for (const [key, value] of Object.entries(values)) {
-      if (value && value !== "All") {
-        query[key] = value;
-      }
-    }
-    if (sortFields.length > 0) {
-      query.sort = sortFields.map((s) => `${s.field}:${s.direction}`).join(",");
-    }
-    return query;
+  function normalizeQuery(query: QueryParams): QueryParams {
+    return {
+      ...query,
+      page: Math.max(1, query.page ?? 1),
+      limit: Math.max(1, query.limit ?? DEFAULT_PAGE_SIZE),
+      filters: query.filters?.filter((filter) => filter.value.trim() !== "") ?? [],
+      sort: query.sort?.filter((field) => field.field.trim() !== "") ?? []
+    };
   }
 
-  function handleFilterChange(id: string, value: string) {
-    if (onFilterChange) {
-      onFilterChange(id, value);
-    } else {
-      internalFilterValues = { ...internalFilterValues, [id]: value };
+  function resolveTotalCount(result: PagedListResult<T> | undefined, visibleCount: number): number {
+    if (typeof result?.total === "number" && Number.isFinite(result.total) && result.total >= 0) {
+      return result.total;
     }
-    pageData.refetch();
+    return visibleCount;
+  }
+
+  function setQuery(nextQuery: QueryParams) {
+    const normalizedQuery = normalizeQuery(nextQuery);
+    if (onQueryChange) {
+      onQueryChange(normalizedQuery);
+    } else {
+      internalQuery = normalizedQuery;
+    }
+  }
+
+  function getFilterValue(filter: FilterConfig): string {
+    const activeFilter = currentQuery.filters?.find((entry) => entry.field === filter.id);
+    if (!activeFilter) {
+      return filter.type === "select" ? "All" : "";
+    }
+    if (filter.type === "search" && activeFilter.operator === "like") {
+      return activeFilter.value.replace(/^%|%$/g, "");
+    }
+    return activeFilter.value;
+  }
+
+  function buildNextFilters(filter: FilterConfig, value: string): FilterField[] {
+    const nextFilters = (currentQuery.filters ?? []).filter((entry) => entry.field !== filter.id);
+
+    if (!value || value === "All") {
+      return nextFilters;
+    }
+
+    if (filter.type === "search") {
+      const trimmedValue = value.trim();
+      if (!trimmedValue) {
+        return nextFilters;
+      }
+      return [
+        ...nextFilters,
+        {
+          field: filter.id,
+          operator: "like",
+          value: `%${trimmedValue}%`
+        }
+      ];
+    }
+
+    return [
+      ...nextFilters,
+      {
+        field: filter.id,
+        value
+      }
+    ];
+  }
+
+  function sortFieldsEqual(left: SortField[], right: SortField[]): boolean {
+    if (left.length !== right.length) return false;
+    return left.every((field, index) => {
+      const other = right[index];
+      return field.field === other.field && field.direction === other.direction;
+    });
+  }
+
+  function getSelectItems(filter: FilterConfig): { value: string; label: string }[] {
+    const providedItems = loadedFilterOptions[filter.id] ?? filter.options ?? [];
+    if (providedItems.some((item) => item.value === "All")) {
+      return providedItems;
+    }
+    return [{ value: "All", label: `All ${filter.label.toLowerCase()}` }, ...providedItems];
+  }
+
+  function getFilterAriaLabel(filter: FilterConfig): string {
+    return filter.label;
+  }
+
+  function getSearchPlaceholder(filter: FilterConfig): string {
+    return filter.placeholder ?? `Search ${filter.label.toLowerCase()}...`;
+  }
+
+  function getSelectPlaceholder(filter: FilterConfig): string {
+    return `All ${filter.label.toLowerCase()}`;
+  }
+
+  function handleFilterChange(filter: FilterConfig, value: string) {
+    if (getFilterValue(filter) === value) {
+      return;
+    }
+    setQuery({
+      ...currentQuery,
+      filters: buildNextFilters(filter, value),
+      page: 1
+    });
   }
 
   function handleSortChange(sortFields: SortField[]) {
-    if (onSortChange) {
-      onSortChange(sortFields);
-    } else {
-      internalSort = sortFields;
+    if (sortFieldsEqual(currentSort, sortFields)) {
+      return;
     }
-    pageData.refetch();
+    setQuery({
+      ...currentQuery,
+      sort: sortFields,
+      page: 1
+    });
+  }
+
+  function handlePageChange(page: number) {
+    if (page === currentPage) {
+      return;
+    }
+    setQuery({
+      ...currentQuery,
+      page
+    });
+  }
+
+  function clearSort() {
+    handleSortChange([]);
+  }
+
+  function setSelectionMode(enabled: boolean) {
+    if (externalSelectionMode === undefined) {
+      internalSelectionMode = enabled;
+    }
+    onSelectionModeChange?.(enabled);
+  }
+
+  function setReorderMode(enabled: boolean) {
+    if (externalReorderMode === undefined) {
+      internalReorderMode = enabled;
+    }
+    onReorderModeChange?.(enabled);
   }
 
   function toggleSelectionMode() {
-    if (internalReorderMode) {
-      internalReorderMode = false;
+    if (reorderMode) {
+      setReorderMode(false);
       reorderController?.reset();
     }
-    internalSelectionMode = !internalSelectionMode;
-    if (!internalSelectionMode) {
+    const nextSelectionMode = !selectionMode;
+    setSelectionMode(nextSelectionMode);
+    if (!nextSelectionMode) {
       batch.clear();
     }
   }
 
   function enterReorderMode() {
-    if (internalSelectionMode) {
-      internalSelectionMode = false;
+    if (!reorderAvailable || !reorder?.enabled) return;
+    if (selectionMode) {
+      setSelectionMode(false);
       batch.clear();
     }
-    internalReorderMode = true;
+    reorderController = createReorderController(
+      items.map((item) => ({
+        id: String((item as Record<string, unknown>)[idField]),
+        ...item
+      })),
+      async (orderedIds) => {
+        await reorder.handler(orderedIds);
+      }
+    );
+    setReorderMode(true);
     reorderError = null;
   }
 
   function exitReorderMode() {
-    internalReorderMode = false;
+    setReorderMode(false);
     reorderError = null;
     reorderController?.reset();
+    reorderController = null;
   }
 
   async function handleReorderSubmit() {
@@ -372,7 +557,7 @@
   function handleKeydown(event: KeyboardEvent) {
     if (event.key === "Escape") {
       if (selectionMode) {
-        selectionMode = false;
+        setSelectionMode(false);
         batch.clear();
       } else if (reorderMode) {
         exitReorderMode();
@@ -380,17 +565,26 @@
     }
   }
 
+  const tableColumns = $derived<TableColumn[]>(columns ?? []);
+
   // Table rows
   const tableRows = $derived<TableRow<T>[]>(
     items.map((item) => ({
       id: String((item as Record<string, unknown>)[idField]),
-      cells: columns?.reduce((acc, col) => {
+      cells: tableColumns.reduce((acc, col) => {
         acc[col.id] = String((item as Record<string, unknown>)[col.id] ?? "");
         return acc;
-      }, {} as Record<string, string>) ?? {},
+      }, {} as Record<string, string>),
       data: item
-    })) ?? []
+    }))
   );
+
+  function toBulkActionTone(tone: "default" | "danger" | "warning" | undefined): BulkAction["tone"] {
+    if (tone === "danger" || tone === "warning") {
+      return tone;
+    }
+    return "default";
+  }
 
   // Convert batch actions for BulkActionBar (include dialog actions)
   const bulkActions = $derived<BulkAction[]>([
@@ -398,7 +592,7 @@
       id: action.id,
       label: action.label,
       icon: action.icon,
-      tone: action.variant === "danger" ? "danger" : action.variant === "warning" ? "warning" : "default"
+      tone: toBulkActionTone(action.variant)
     })),
     ...batchActions
       .filter((a) => a.dialog)
@@ -406,7 +600,7 @@
         id: action.id,
         label: action.label,
         icon: action.icon,
-        tone: action.tone === "danger" ? "danger" : action.tone === "warning" ? "warning" : "default"
+        tone: toBulkActionTone(action.tone)
       }))
   ]);
 
@@ -426,7 +620,6 @@
 
   async function handleDialogSubmit(values: Record<string, unknown>) {
     if (!pendingDialogAction) return;
-    dialogSubmitting = true;
     try {
       const ids = batch.selectedIds;
       await pendingDialogAction.handler(ids, values);
@@ -437,8 +630,6 @@
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       toastStore.push({ message, variant: "error" });
-    } finally {
-      dialogSubmitting = false;
     }
   }
 
@@ -457,55 +648,108 @@
     errorMessage={pageData.error ?? undefined}
     emptyTitle="No items found"
     emptyMessage="Try adjusting your filters or add a new item."
+    currentPage={currentPage}
+    totalPages={totalPages}
+    totalItems={totalCount}
+    pageSize={currentPageSize}
+    showPaginationSummary={false}
+    on:pageChange={(event) => handlePageChange(event.detail.page)}
   >
-    {#snippet actions()}
-      {#if onAdd}
-        <Button variant="primary" onclick={onAdd}>{addLabel}</Button>
+    <svelte:fragment slot="actions">
+      {#if itemCount > 0 && !reorderMode && batchActions.length > 0}
+        <IconButton
+          type="button"
+          variant="secondary"
+          tone={selectionMode ? "danger" : "default"}
+          icon={selectionMode ? "x" : "check-square"}
+          ariaLabel={selectionMode ? "Cancel selection" : "Select items"}
+          tooltip={selectionMode ? "Cancel Selection" : "Select Items"}
+          on:click={toggleSelectionMode}
+        />
       {/if}
-    {/snippet}
+      {#if reorderAvailable && !selectionMode}
+        <IconButton
+          type="button"
+          variant="secondary"
+          tone={reorderMode ? "danger" : "default"}
+          icon="arrow-up-down"
+          ariaLabel={reorderMode ? "Cancel reorder" : "Reorder items"}
+          tooltip={reorderMode ? "Cancel Reorder" : "Reorder Items"}
+          on:click={() => (reorderMode ? exitReorderMode() : enterReorderMode())}
+        />
+      {/if}
+      {#if !selectionMode && !reorderMode && onAdd}
+        <Button variant="primary" on:click={onAdd}>{addLabel}</Button>
+      {/if}
+    </svelte:fragment>
 
-    {#snippet filters()}
+    <svelte:fragment slot="filters">
       {#if filters.length > 0 && !reorderMode}
         <FilterToolbar ariaLabel={`${title} filters`} summaryText="Filters">
-          {#snippet actions()}
+          <svelte:fragment slot="summary">
+            <PaginationSummary
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={totalCount}
+              pageSize={currentPageSize}
+            />
+          </svelte:fragment>
+
+          <svelte:fragment slot="actions">
+            {#if currentSort.length > 0}
+              <IconButton
+                icon="x"
+                variant="ghost"
+                size="sm"
+                ariaLabel="Clear sort"
+                tooltip="Clear sort"
+                on:click={clearSort}
+              />
+            {/if}
             <IconButton
               icon="refresh-cw"
               variant="ghost"
+              size="sm"
+              ariaLabel="Refresh list"
               tooltip="Refresh"
-              onclick={() => pageData.refetch()}
+              on:click={() => pageData.refetch()}
             />
-          {/snippet}
+          </svelte:fragment>
           
           {#each filters as filter}
-            <Field id={`filter-${filter.id}`} label={filter.label}>
+            <div class="underlay-entity-list__filter-control">
               {#if filter.type === "search"}
                 <TextInput
                   id={`filter-${filter.id}`}
                   type="search"
-                  value={filterValues[filter.id] ?? ""}
-                  placeholder={filter.placeholder ?? `Search ${filter.label.toLowerCase()}...`}
-                  oninput={(e: Event) => handleFilterChange(filter.id, (e.currentTarget as HTMLInputElement).value)}
+                  value={getFilterValue(filter)}
+                  ariaLabel={getFilterAriaLabel(filter)}
+                  placeholder={getSearchPlaceholder(filter)}
+                  on:valueChange={(event) => handleFilterChange(filter, event.detail.value)}
                 />
               {:else if filter.type === "select"}
                 <Select
                   id={`filter-${filter.id}`}
-                  value={filterValues[filter.id] ?? "All"}
-                  items={[{ value: "All", label: `All ${filter.label.toLowerCase()}` }, ...(loadedFilterOptions[filter.id] ?? filter.options ?? [])]}
-                  onchange={(e: Event) => handleFilterChange(filter.id, (e.currentTarget as HTMLSelectElement).value)}
+                  value={getFilterValue(filter)}
+                  items={getSelectItems(filter)}
+                  ariaLabel={getFilterAriaLabel(filter)}
+                  onchange={(value) => handleFilterChange(filter, value)}
                 />
               {:else if filter.type === "sort" && filter.sortFields}
                 <OrderBy
                   fields={filter.sortFields}
                   value={currentSort.map((s) => ({ key: s.field, direction: s.direction }))}
+                  ariaLabel={getFilterAriaLabel(filter)}
+                  showClearButton={false}
                   onChange={(value: { key: string; direction: string }[]) => handleSortChange(value.map((v) => ({ field: v.key, direction: v.direction as "asc" | "desc" })))}
                   compact
                 />
               {/if}
-            </Field>
+            </div>
           {/each}
         </FilterToolbar>
       {/if}
-    {/snippet}
+    </svelte:fragment>
 
     <!-- Content rendered below -->
     {#if pageData.loading && items.length === 0}
@@ -517,9 +761,11 @@
         title={`No ${title.toLowerCase()} found`}
         message="Try adjusting your filters or create a new item."
       >
-        {#if onAdd}
-          <Button variant="primary" onclick={onAdd}>{addLabel}</Button>
-        {/if}
+        <svelte:fragment slot="actions">
+          {#if onAdd}
+            <Button variant="primary" on:click={onAdd}>{addLabel}</Button>
+          {/if}
+        </svelte:fragment>
       </EmptyState>
     {:else if reorderMode && reorderController}
       <EditableList
@@ -543,31 +789,33 @@
         {/snippet}
       </EditableList>
     {:else if presentation === "cards"}
-      <Grid columns="repeat(auto-fit, minmax(min(26em, 100%), 1fr))" gap="lg">
+      <ListGrid minItemWidth="26rem" gap="1rem">
         {#each items as item (String((item as Record<string, unknown>)[idField]))}
           {#if renderItem}
             {@render renderItem(item, getItemContext(item))}
           {/if}
         {/each}
-      </Grid>
+      </ListGrid>
     {:else if presentation === "table"}
       <DataTable
-        {columns}
+        columns={tableColumns}
         rows={tableRows}
         rowActions={rowActions}
+        selectable={selectionMode}
+        selectedRowIds={batch.selectedIds}
         emptyMessage="No items found"
+        on:rowToggle={(event) => batch.toggle(event.detail.rowId, event.detail.selected)}
+        on:toggleAll={(event) => {
+          if (event.detail.selected) {
+            batch.selectAll(itemIds);
+          } else {
+            batch.clear();
+          }
+        }}
       >
-      {#snippet cell(column: TableColumn, row: TableRow<T>, value: string)}
-          {#if selectionMode && column.id === "__selection"}
-            <input
-              type="checkbox"
-              checked={batch.isSelected(row.id)}
-              onchange={(e: Event) => batch.toggle(row.id, (e.currentTarget as HTMLInputElement).checked)}
-            />
-          {:else}
-            {value}
-          {/if}
-        {/snippet}
+        <svelte:fragment slot="cell" let:column let:value>
+          {value}
+        </svelte:fragment>
       </DataTable>
     {/if}
   </ListContainer>
@@ -575,41 +823,66 @@
   <!-- When used inside EntityListPage, don't show ListContainer shell -->
   {#if filters.length > 0 && !reorderMode}
     <FilterToolbar ariaLabel="Filters" summaryText="Filters">
-      {#snippet actions()}
+      <svelte:fragment slot="summary">
+        <PaginationSummary
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={totalCount}
+          pageSize={currentPageSize}
+        />
+      </svelte:fragment>
+
+      <svelte:fragment slot="actions">
+        {#if currentSort.length > 0}
+          <IconButton
+            icon="x"
+            variant="ghost"
+            size="sm"
+            ariaLabel="Clear sort"
+            tooltip="Clear sort"
+            on:click={clearSort}
+          />
+        {/if}
         <IconButton
           icon="refresh-cw"
           variant="ghost"
+          size="sm"
+          ariaLabel="Refresh list"
           tooltip="Refresh"
-          onclick={() => pageData.refetch()}
+          on:click={() => pageData.refetch()}
         />
-      {/snippet}
+      </svelte:fragment>
       
-      {#each filters as filter}
-        <Field id={`filter-${filter.id}`} label={filter.label}>
+        {#each filters as filter}
+        <div class="underlay-entity-list__filter-control">
           {#if filter.type === "search"}
             <TextInput
               id={`filter-${filter.id}`}
               type="search"
-              value={filterValues[filter.id] ?? ""}
-              placeholder={filter.placeholder ?? `Search ${filter.label.toLowerCase()}...`}
-              oninput={(e: Event) => handleFilterChange(filter.id, (e.currentTarget as HTMLInputElement).value)}
+              value={getFilterValue(filter)}
+              ariaLabel={getFilterAriaLabel(filter)}
+              placeholder={getSearchPlaceholder(filter)}
+              on:valueChange={(event) => handleFilterChange(filter, event.detail.value)}
             />
           {:else if filter.type === "select"}
             <Select
               id={`filter-${filter.id}`}
-              value={filterValues[filter.id] ?? "All"}
-              items={[{ value: "All", label: `All ${filter.label.toLowerCase()}` }, ...(loadedFilterOptions[filter.id] ?? filter.options ?? [])]}
-              onchange={(e: Event) => handleFilterChange(filter.id, (e.currentTarget as HTMLSelectElement).value)}
+              value={getFilterValue(filter)}
+              items={getSelectItems(filter)}
+              ariaLabel={getFilterAriaLabel(filter)}
+              onchange={(value) => handleFilterChange(filter, value)}
             />
           {:else if filter.type === "sort" && filter.sortFields}
             <OrderBy
               fields={filter.sortFields}
               value={currentSort.map((s) => ({ key: s.field, direction: s.direction }))}
+              ariaLabel={getFilterAriaLabel(filter)}
+              showClearButton={false}
               onChange={(value: { key: string; direction: string }[]) => handleSortChange(value.map((v) => ({ field: v.key, direction: v.direction as "asc" | "desc" })))}
               compact
             />
           {/if}
-        </Field>
+        </div>
       {/each}
     </FilterToolbar>
   {/if}
@@ -645,32 +918,48 @@
       {/snippet}
     </EditableList>
   {:else if presentation === "cards"}
-    <Grid columns="repeat(auto-fit, minmax(min(26em, 100%), 1fr))" gap="lg">
+    <ListGrid minItemWidth="26rem" gap="1rem">
       {#each items as item (String((item as Record<string, unknown>)[idField]))}
         {#if renderItem}
           {@render renderItem(item, getItemContext(item))}
         {/if}
       {/each}
-    </Grid>
+    </ListGrid>
   {:else if presentation === "table"}
     <DataTable
-      {columns}
+      columns={tableColumns}
       rows={tableRows}
       rowActions={rowActions}
+      selectable={selectionMode}
+      selectedRowIds={batch.selectedIds}
       emptyMessage="No items found"
+      on:rowToggle={(event) => batch.toggle(event.detail.rowId, event.detail.selected)}
+      on:toggleAll={(event) => {
+        if (event.detail.selected) {
+          batch.selectAll(itemIds);
+        } else {
+          batch.clear();
+        }
+      }}
     >
-      {#snippet cell(column: TableColumn, row: TableRow<T>, value: string)}
-        {#if selectionMode && column.id === "__selection"}
-          <input
-            type="checkbox"
-            checked={batch.isSelected(row.id)}
-            onchange={(e: Event) => batch.toggle(row.id, (e.currentTarget as HTMLInputElement).checked)}
-          />
-        {:else}
-          {value}
-        {/if}
-      {/snippet}
+      <svelte:fragment slot="cell" let:column let:value>
+        {value}
+      </svelte:fragment>
     </DataTable>
+  {/if}
+
+  {#if totalPages > 1}
+    <div class="underlay-entity-list__pagination">
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        showInfo={false}
+        size="sm"
+        compact
+        ariaLabel="List pagination"
+        on:pageChange={(event) => handlePageChange(event.detail.page)}
+      />
+    </div>
   {/if}
 {/if}
 
@@ -683,7 +972,10 @@
     loading={batch.executing}
     showSelectAll
     allSelected={batch.count > 0 && batch.count === items.length}
-    on:clear={() => { batch.clear(); selectionMode = false; }}
+    on:clear={() => {
+      batch.clear();
+      setSelectionMode(false);
+    }}
     on:selectAll={() => batch.selectAll(itemIds)}
     on:action={handleBatchAction}
   />
@@ -696,7 +988,7 @@
     title={batch.pendingAction.confirm?.title ?? "Confirm"}
     description={batch.getConfirmDescription()}
     confirmLabel={batch.pendingAction.confirm?.confirmLabel ?? "Confirm"}
-    cancelLabel="Cancel"
+    cancelLabel={batch.pendingAction.confirm?.cancelLabel ?? "Cancel"}
     tone={batch.pendingAction.variant === "danger" ? "danger" : "warning"}
     onConfirm={async () => { await batch.confirmPendingAction(); }}
     onCancel={() => batch.cancelPendingAction()}
@@ -708,7 +1000,7 @@
   <Dialog
     open={true}
     title={pendingDialogAction.dialog.title}
-    onClose={handleDialogCancel}
+    on:requestClose={handleDialogCancel}
   >
     {@render pendingDialogAction.dialog.content({
       ids: batch.selectedIds,
@@ -719,5 +1011,12 @@
 {/if}
 
 <style>
+  .underlay-entity-list__filter-control {
+    min-width: 0;
+  }
 
+  .underlay-entity-list__pagination {
+    display: flex;
+    justify-content: flex-end;
+  }
 </style>

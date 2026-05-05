@@ -7,7 +7,6 @@
     AlertDialog
   } from "@poodle/svelte";
   import EntityDetail from "./EntityDetail.svelte";
-  import EntityList from "./EntityList.svelte";
 
   // --- Types ---
 
@@ -18,7 +17,7 @@
 
   interface DetailSectionConfig {
     title: string;
-    columns?: number;
+    columns?: 1 | 2 | 3;
     separated?: boolean;
     items: { label: string; value: string | Snippet; emptyText?: string }[];
   }
@@ -40,7 +39,12 @@
     label: string;
     tone?: "default" | "danger" | "warning";
     handler: () => void;
-    confirm?: boolean | { title: string; description: string };
+    confirm?: boolean | {
+      title: string;
+      description: string;
+      confirmLabel?: string;
+      cancelLabel?: string;
+    };
   }
 
   interface Props {
@@ -80,8 +84,6 @@
     /** Page actions */
     actions?: ActionConfig[];
     
-    /** Optional callback when data changes */
-    onDataChange?: () => void;
   }
 
   type T = $$Generic;
@@ -100,8 +102,7 @@
     detailSections = [],
     customSections = [],
     tabs = [],
-    actions = [],
-    onDataChange
+    actions: pageActions = []
   }: Props = $props();
 
   // --- State ---
@@ -119,6 +120,13 @@
     } else {
       action.handler();
     }
+  }
+
+  function toButtonTone(tone: ActionConfig["tone"]): "default" | "danger" | undefined {
+    if (tone === "danger") {
+      return "danger";
+    }
+    return tone === "default" ? "default" : undefined;
   }
 
   function handleConfirm() {
@@ -149,7 +157,7 @@
   );
 </script>
 
-<div class="entity-detail-page">
+<div class="underlay-entity-detail-page">
   <PageHeader
     {title}
     {section}
@@ -159,11 +167,11 @@
     bannerTone={bannerTone}
   >
     {#snippet actions()}
-      {#each actions as action}
+      {#each pageActions as action}
         <Button
           variant={action.tone === "danger" ? "ghost" : "secondary"}
-          tone={action.tone}
-          onclick={() => handleAction(action)}
+          tone={toButtonTone(action.tone)}
+          on:click={() => handleAction(action)}
         >
           {action.label}
         </Button>
@@ -183,6 +191,9 @@
       variant="card"
       size="sm"
       ariaLabel={`${title} sections`}
+      on:valueChange={(event) => {
+        activeTab = event.detail.value;
+      }}
     >
       {#each allTabs as tab}
           {#if tab.id === activeTab}
@@ -192,7 +203,6 @@
                 {meta}
                 sections={detailSections}
                 {customSections}
-                {onDataChange}
               />
             {:else if tab.content}
               {@render tab.content()}
@@ -206,7 +216,6 @@
       {meta}
       sections={detailSections}
       {customSections}
-      {onDataChange}
     />
   {/if}
 </div>
@@ -221,8 +230,12 @@
     description={typeof pendingAction.confirm === "object" 
       ? pendingAction.confirm.description 
       : `Are you sure you want to ${pendingAction.label.toLowerCase()}?`}
-    confirmLabel={pendingAction.label}
-    cancelLabel="Cancel"
+    confirmLabel={typeof pendingAction.confirm === "object"
+      ? pendingAction.confirm.confirmLabel ?? pendingAction.label
+      : pendingAction.label}
+    cancelLabel={typeof pendingAction.confirm === "object"
+      ? pendingAction.confirm.cancelLabel ?? "Cancel"
+      : "Cancel"}
     tone={pendingAction.tone === "danger" ? "danger" : "warning"}
     onConfirm={handleConfirm}
     onCancel={handleCancel}
@@ -230,7 +243,7 @@
 {/if}
 
 <style>
-  .entity-detail-page {
+  .underlay-entity-detail-page {
     display: flex;
     flex-direction: column;
     gap: var(--underlay-space-4, 1rem);
