@@ -25,5 +25,6 @@ export { default as EntityListCard } from "./EntityListCard.svelte";
 export type {
   EntityListCardBadge,
   EntityListCardCounter,
+  EntityListCardModeDisplay,
   EntityListCardProps
 } from "./entity-list-card.types";

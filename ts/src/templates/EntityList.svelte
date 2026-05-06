@@ -31,7 +31,7 @@
     Pagination,
     PaginationSummary
   } from "@poodle/svelte";
-  import type { TableColumn, TableRow, BulkAction, EditableListItem } from "@poodle/svelte";
+  import type { TableColumn, TableRow, TableRowAction, TableCellValue, BulkAction, EditableListItem } from "@poodle/svelte";
   import type { FilterField, QueryParams, SortField, SortDirection } from "../client/query";
   import { DEFAULT_PAGE_SIZE } from "../patterns/pagination-types";
 
@@ -50,6 +50,7 @@
 
   interface ItemContext {
     selectionMode: boolean;
+    reorderMode: boolean;
     selected: boolean;
     onToggle: (selected: boolean) => void;
     refetch: () => Promise<void>;
@@ -114,6 +115,12 @@
     
     /** For table: row actions */
     rowActions?: (row: TableRow<T>) => { value: string; label: string }[];
+
+    /** For table: custom cell rendering */
+    renderCell?: Snippet<[TableColumn, TableRow<T>, TableCellValue]>;
+
+    /** For table: row action selection handler */
+    onRowActionSelect?: (row: TableRow<T>, action: TableRowAction) => void;
     
     /** Declarative filter configuration */
     filters?: FilterConfig[];
@@ -172,6 +179,8 @@
     renderItem,
     columns,
     rowActions,
+    renderCell,
+    onRowActionSelect,
     filters = [],
     batchActions = [],
     reorder,
@@ -434,6 +443,23 @@
     return `All ${filter.label.toLowerCase()}`;
   }
 
+  function isFilterActive(filter: FilterConfig): boolean {
+    if (filter.type === "sort") {
+      return currentSort.length > 0;
+    }
+
+    const value = getFilterValue(filter);
+    if (filter.type === "search") {
+      return value.trim().length > 0;
+    }
+
+    if (filter.type === "select") {
+      return value !== "" && value !== "All";
+    }
+
+    return value.trim().length > 0;
+  }
+
   function handleFilterChange(filter: FilterConfig, value: string) {
     if (getFilterValue(filter) === value) {
       return;
@@ -496,12 +522,8 @@
     }
   }
 
-  function enterReorderMode() {
-    if (!reorderAvailable || !reorder?.enabled) return;
-    if (selectionMode) {
-      setSelectionMode(false);
-      batch.clear();
-    }
+  function createReorderSession() {
+    if (!reorder?.enabled) return;
     reorderController = createReorderController(
       items.map((item) => ({
         id: String((item as Record<string, unknown>)[idField]),
@@ -511,8 +533,17 @@
         await reorder.handler(orderedIds);
       }
     );
-    setReorderMode(true);
     reorderError = null;
+  }
+
+  function enterReorderMode() {
+    if (!reorderAvailable || !reorder?.enabled) return;
+    if (selectionMode) {
+      setSelectionMode(false);
+      batch.clear();
+    }
+    createReorderSession();
+    setReorderMode(true);
   }
 
   function exitReorderMode() {
@@ -548,11 +579,41 @@
     const itemId = String((item as Record<string, unknown>)[idField]);
     return {
       selectionMode,
+      reorderMode,
       selected: batch.isSelected(itemId),
       onToggle: (selected: boolean) => batch.toggle(itemId, selected),
       refetch: () => pageData.refetch()
     };
   }
+
+  $effect(() => {
+    if (reorderMode) {
+      if (!reorderAvailable || !reorder?.enabled) {
+        if (reorderController) {
+          reorderController.reset();
+          reorderController = null;
+        }
+        reorderError = null;
+        if (externalReorderMode !== undefined) {
+          onReorderModeChange?.(false);
+        } else {
+          internalReorderMode = false;
+        }
+        return;
+      }
+
+      if (!reorderController) {
+        createReorderSession();
+      }
+      return;
+    }
+
+    if (reorderController) {
+      reorderController.reset();
+      reorderController = null;
+      reorderError = null;
+    }
+  });
 
   function handleKeydown(event: KeyboardEvent) {
     if (event.key === "Escape") {
@@ -717,7 +778,10 @@
           </svelte:fragment>
           
           {#each filters as filter}
-            <div class="underlay-entity-list__filter-control">
+            <div
+              class="underlay-entity-list__filter-control"
+              data-active={isFilterActive(filter)}
+            >
               {#if filter.type === "search"}
                 <TextInput
                   id={`filter-${filter.id}`}
@@ -770,6 +834,7 @@
     {:else if reorderMode && reorderController}
       <EditableList
         items={reorderController.pending}
+        embeddedHandle
         dirty={reorderController.isDirty}
         submitting={reorderController.isPending}
         errorMessage={reorderError}
@@ -804,6 +869,7 @@
         selectable={selectionMode}
         selectedRowIds={batch.selectedIds}
         emptyMessage="No items found"
+        on:rowActionSelect={(event) => onRowActionSelect?.(event.detail.row as TableRow<T>, event.detail.action)}
         on:rowToggle={(event) => batch.toggle(event.detail.rowId, event.detail.selected)}
         on:toggleAll={(event) => {
           if (event.detail.selected) {
@@ -813,8 +879,12 @@
           }
         }}
       >
-        <svelte:fragment slot="cell" let:column let:value>
-          {value}
+        <svelte:fragment slot="cell" let:column let:row let:value>
+          {#if renderCell}
+            {@render renderCell(column, row as TableRow<T>, value)}
+          {:else}
+            {value}
+          {/if}
         </svelte:fragment>
       </DataTable>
     {/if}
@@ -854,7 +924,10 @@
       </svelte:fragment>
       
         {#each filters as filter}
-        <div class="underlay-entity-list__filter-control">
+        <div
+          class="underlay-entity-list__filter-control"
+          data-active={isFilterActive(filter)}
+        >
           {#if filter.type === "search"}
             <TextInput
               id={`filter-${filter.id}`}
@@ -899,6 +972,7 @@
   {:else if reorderMode && reorderController}
     <EditableList
       items={reorderController.pending}
+      embeddedHandle
       dirty={reorderController.isDirty}
       submitting={reorderController.isPending}
       errorMessage={reorderError}
@@ -933,6 +1007,7 @@
       selectable={selectionMode}
       selectedRowIds={batch.selectedIds}
       emptyMessage="No items found"
+      on:rowActionSelect={(event) => onRowActionSelect?.(event.detail.row as TableRow<T>, event.detail.action)}
       on:rowToggle={(event) => batch.toggle(event.detail.rowId, event.detail.selected)}
       on:toggleAll={(event) => {
         if (event.detail.selected) {
@@ -942,8 +1017,12 @@
         }
       }}
     >
-      <svelte:fragment slot="cell" let:column let:value>
-        {value}
+      <svelte:fragment slot="cell" let:column let:row let:value>
+        {#if renderCell}
+          {@render renderCell(column, row as TableRow<T>, value)}
+        {:else}
+          {value}
+        {/if}
       </svelte:fragment>
     </DataTable>
   {/if}
@@ -1013,6 +1092,21 @@
 <style>
   .underlay-entity-list__filter-control {
     min-width: 0;
+    opacity: 0.68;
+    transition:
+      opacity 120ms ease,
+      filter 120ms ease;
+  }
+
+  .underlay-entity-list__filter-control[data-active="true"],
+  .underlay-entity-list__filter-control:focus-within,
+  .underlay-entity-list__filter-control:hover {
+    opacity: 1;
+  }
+
+  .underlay-entity-list__filter-control[data-active="false"] :global(.poodle-select__value[data-placeholder="true"]),
+  .underlay-entity-list__filter-control[data-active="false"] :global(.poodle-order-by__summary[data-placeholder="true"]) {
+    color: var(--poodle-color-text-muted);
   }
 
   .underlay-entity-list__pagination {

@@ -87,4 +87,22 @@ describe("templates", () => {
 
     expect(screen.getByTestId("context-action").textContent).toBe("archive");
   });
+
+  it("collapses shared entity cards in reorder mode", async () => {
+    render(EntityListCardHarness);
+
+    expect(screen.getByText("Project Mercury")).toBeTruthy();
+    expect(screen.queryByText("This should be hidden in reorder mode")).toBeNull();
+    expect(screen.queryByText("Archived")).toBeNull();
+    expect(screen.queryByText("9")).toBeNull();
+  });
+
+  it("supports explicit selection-mode display config on shared entity cards", async () => {
+    render(EntityListCardHarness);
+
+    expect(screen.getByText("Project Gemini")).toBeTruthy();
+    expect(screen.getByText("Research")).toBeTruthy();
+    expect(screen.queryByText("Should hide subtitle in selection mode")).toBeNull();
+    expect(screen.queryByText("This should be hidden in selection mode")).toBeNull();
+  });
 });

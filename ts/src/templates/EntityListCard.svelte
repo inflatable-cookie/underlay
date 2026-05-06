@@ -5,7 +5,7 @@
     ListCardCounter,
     Pill,
   } from "@poodle/svelte";
-  import type { EntityListCardProps } from "./entity-list-card.types";
+  import type { EntityListCardModeDisplay, EntityListCardProps } from "./entity-list-card.types";
 
   const PoodleListCard: any = ListCard;
 
@@ -19,7 +19,10 @@
     layout = "default",
     interactive = false,
     disabled = false,
+    reorderMode = false,
     selectionMode = false,
+    reorderDisplay = undefined,
+    selectionDisplay = undefined,
     selected = false,
     selectionIndicator = "checkbox",
     showReorderHandle = false,
@@ -45,8 +48,44 @@
     footer: footerContent
   }: EntityListCardProps = $props();
 
-  let hasBadges = $derived(badgeItems.length > 0);
-  let hasFooter = $derived(Boolean(footerText) || counterItems.length > 0 || Boolean(footerContent));
+  const defaultReorderDisplay: EntityListCardModeDisplay = {
+    layout: "compact",
+    size: "xs",
+    showSubtitle: false,
+    showMeta: false,
+    showBadges: false,
+    showFooter: false,
+    showCounters: false
+  };
+
+  let activeDisplay = $derived.by((): EntityListCardModeDisplay | null => {
+    if (reorderMode) return { ...defaultReorderDisplay, ...(reorderDisplay ?? {}) };
+    if (selectionMode && selectionDisplay) return selectionDisplay;
+    return null;
+  });
+
+  let resolvedLayout = $derived(activeDisplay?.layout ?? layout);
+  let resolvedSize = $derived(
+    activeDisplay?.size ?? (resolvedLayout === "compact" ? "sm" : size)
+  );
+  let resolvedDensity = $derived(
+    activeDisplay?.density ?? (resolvedLayout === "compact" ? "compact" : density)
+  );
+  let resolvedHref = $derived(reorderMode ? null : href);
+  let resolvedInteractive = $derived(reorderMode ? false : (interactive || Boolean(onClick)));
+  let resolvedContextMenuItems = $derived(reorderMode ? [] : (contextMenuItems ?? []));
+  let resolvedShowReorderHandle = $derived(reorderMode || showReorderHandle);
+  let resolvedSubtitle = $derived(activeDisplay?.showSubtitle === false ? null : subtitle);
+  let resolvedMeta = $derived(activeDisplay?.showMeta === false ? null : meta);
+  let resolvedBadgeItems = $derived(activeDisplay?.showBadges === false ? [] : badgeItems);
+  let resolvedCounterItems = $derived(activeDisplay?.showCounters === false ? [] : counterItems);
+  let resolvedFooterText = $derived(activeDisplay?.showFooter === false ? null : footerText);
+  let resolvedFooterContent = $derived(activeDisplay?.showFooter === false ? null : footerContent);
+  let hasFooter = $derived(
+    Boolean(resolvedFooterText) ||
+      resolvedCounterItems.length > 0 ||
+      Boolean(resolvedFooterContent)
+  );
   let showLeading = $derived(Boolean(leadingImageUrl || leadingIcon || leadingContent));
 
   function handleContextAction(value: string): void {
@@ -66,18 +105,18 @@
   {#if hasFooter}
     <PoodleListCard
       {title}
-      {subtitle}
-      {meta}
-      {href}
-      {size}
-      {density}
-      {layout}
-      {interactive}
+      subtitle={resolvedSubtitle}
+      meta={resolvedMeta}
+      href={resolvedHref}
+      size={resolvedSize}
+      density={resolvedDensity}
+      layout={resolvedLayout}
+      interactive={resolvedInteractive}
       {disabled}
       selectable={selectionMode}
       {selected}
       {selectionIndicator}
-      {showReorderHandle}
+      showReorderHandle={resolvedShowReorderHandle}
       {notLive}
       {sash}
       {sashColor}
@@ -85,7 +124,7 @@
       {ariaLabel}
       {leadingShape}
       {leadingFill}
-      contextMenuItems={contextMenuItems ?? []}
+      contextMenuItems={resolvedContextMenuItems}
       {contextMenuAriaLabel}
       onContextAction={handleContextAction}
       on:selectedChange={handleSelectedChange}
@@ -107,7 +146,7 @@
       </svelte:fragment>
 
       <svelte:fragment slot="badges">
-        {#each badgeItems as badge (`${badge.label}:${badge.tone ?? "neutral"}`)}
+        {#each resolvedBadgeItems as badge (`${badge.label}:${badge.tone ?? "neutral"}`)}
           <Pill
             tone={badge.tone ?? "neutral"}
             appearance={badge.appearance ?? "subtle"}
@@ -122,11 +161,11 @@
       </svelte:fragment>
 
       <div slot="footer" class="underlay-entity-list-card__footer">
-        {#if footerText}
-          <span class="underlay-entity-list-card__footer-text">{footerText}</span>
+        {#if resolvedFooterText}
+          <span class="underlay-entity-list-card__footer-text">{resolvedFooterText}</span>
         {/if}
 
-        {#each counterItems as counter, index (`${index}:${counter.count}`)}
+        {#each resolvedCounterItems as counter, index (`${index}:${counter.count}`)}
           <ListCardCounter
             icon={counter.icon}
             count={counter.count}
@@ -136,8 +175,8 @@
           />
         {/each}
 
-        {#if footerContent}
-          {@render footerContent()}
+        {#if resolvedFooterContent}
+          {@render resolvedFooterContent()}
         {/if}
       </div>
 
@@ -145,18 +184,18 @@
   {:else}
     <PoodleListCard
       {title}
-      {subtitle}
-      {meta}
-      {href}
-      {size}
-      {density}
-      {layout}
-      {interactive}
+      subtitle={resolvedSubtitle}
+      meta={resolvedMeta}
+      href={resolvedHref}
+      size={resolvedSize}
+      density={resolvedDensity}
+      layout={resolvedLayout}
+      interactive={resolvedInteractive}
       {disabled}
       selectable={selectionMode}
       {selected}
       {selectionIndicator}
-      {showReorderHandle}
+      showReorderHandle={resolvedShowReorderHandle}
       {notLive}
       {sash}
       {sashColor}
@@ -164,7 +203,7 @@
       {ariaLabel}
       {leadingShape}
       {leadingFill}
-      contextMenuItems={contextMenuItems ?? []}
+      contextMenuItems={resolvedContextMenuItems}
       {contextMenuAriaLabel}
       onContextAction={handleContextAction}
       on:selectedChange={handleSelectedChange}
@@ -186,7 +225,7 @@
       </svelte:fragment>
 
       <svelte:fragment slot="badges">
-        {#each badgeItems as badge (`${badge.label}:${badge.tone ?? "neutral"}`)}
+        {#each resolvedBadgeItems as badge (`${badge.label}:${badge.tone ?? "neutral"}`)}
           <Pill
             tone={badge.tone ?? "neutral"}
             appearance={badge.appearance ?? "subtle"}
@@ -205,18 +244,18 @@
 {:else if hasFooter}
   <PoodleListCard
     {title}
-    {subtitle}
-    {meta}
-    {href}
-    {size}
-    {density}
-    {layout}
-    {interactive}
+    subtitle={resolvedSubtitle}
+    meta={resolvedMeta}
+    href={resolvedHref}
+    size={resolvedSize}
+    density={resolvedDensity}
+    layout={resolvedLayout}
+    interactive={resolvedInteractive}
     {disabled}
     selectable={selectionMode}
     {selected}
     {selectionIndicator}
-    {showReorderHandle}
+    showReorderHandle={resolvedShowReorderHandle}
     {notLive}
     {sash}
     {sashColor}
@@ -224,14 +263,14 @@
     {ariaLabel}
     {leadingShape}
     {leadingFill}
-    contextMenuItems={contextMenuItems ?? []}
+    contextMenuItems={resolvedContextMenuItems}
     {contextMenuAriaLabel}
     onContextAction={handleContextAction}
     on:selectedChange={handleSelectedChange}
     on:click={handleClick}
   >
     <svelte:fragment slot="badges">
-      {#each badgeItems as badge (`${badge.label}:${badge.tone ?? "neutral"}`)}
+      {#each resolvedBadgeItems as badge (`${badge.label}:${badge.tone ?? "neutral"}`)}
         <Pill
           tone={badge.tone ?? "neutral"}
           appearance={badge.appearance ?? "subtle"}
@@ -246,11 +285,11 @@
     </svelte:fragment>
 
     <div slot="footer" class="underlay-entity-list-card__footer">
-      {#if footerText}
-        <span class="underlay-entity-list-card__footer-text">{footerText}</span>
+      {#if resolvedFooterText}
+        <span class="underlay-entity-list-card__footer-text">{resolvedFooterText}</span>
       {/if}
 
-      {#each counterItems as counter, index (`${index}:${counter.count}`)}
+      {#each resolvedCounterItems as counter, index (`${index}:${counter.count}`)}
         <ListCardCounter
           icon={counter.icon}
           count={counter.count}
@@ -260,8 +299,8 @@
         />
       {/each}
 
-      {#if footerContent}
-        {@render footerContent()}
+      {#if resolvedFooterContent}
+        {@render resolvedFooterContent()}
       {/if}
     </div>
 
@@ -269,18 +308,18 @@
 {:else}
   <PoodleListCard
     {title}
-    {subtitle}
-    {meta}
-    {href}
-    {size}
-    {density}
-    {layout}
-    {interactive}
+    subtitle={resolvedSubtitle}
+    meta={resolvedMeta}
+    href={resolvedHref}
+    size={resolvedSize}
+    density={resolvedDensity}
+    layout={resolvedLayout}
+    interactive={resolvedInteractive}
     {disabled}
     selectable={selectionMode}
     {selected}
     {selectionIndicator}
-    {showReorderHandle}
+    showReorderHandle={resolvedShowReorderHandle}
     {notLive}
     {sash}
     {sashColor}
@@ -288,14 +327,14 @@
     {ariaLabel}
     {leadingShape}
     {leadingFill}
-    contextMenuItems={contextMenuItems ?? []}
+    contextMenuItems={resolvedContextMenuItems}
     {contextMenuAriaLabel}
     onContextAction={handleContextAction}
     on:selectedChange={handleSelectedChange}
     on:click={handleClick}
   >
     <svelte:fragment slot="badges">
-      {#each badgeItems as badge (`${badge.label}:${badge.tone ?? "neutral"}`)}
+      {#each resolvedBadgeItems as badge (`${badge.label}:${badge.tone ?? "neutral"}`)}
         <Pill
           tone={badge.tone ?? "neutral"}
           appearance={badge.appearance ?? "subtle"}

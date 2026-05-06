@@ -26,6 +26,17 @@ export interface EntityListCardCounter {
   onClick?: ((event: MouseEvent) => void) | null;
 }
 
+export interface EntityListCardModeDisplay {
+  layout?: "default" | "compact";
+  size?: ControlSize | null;
+  density?: ControlDensity | null;
+  showSubtitle?: boolean;
+  showMeta?: boolean;
+  showBadges?: boolean;
+  showFooter?: boolean;
+  showCounters?: boolean;
+}
+
 export interface EntityListCardProps {
   title: string;
   subtitle?: string | null;
@@ -36,7 +47,10 @@ export interface EntityListCardProps {
   layout?: "default" | "compact";
   interactive?: boolean;
   disabled?: boolean;
+  reorderMode?: boolean;
   selectionMode?: boolean;
+  reorderDisplay?: EntityListCardModeDisplay;
+  selectionDisplay?: EntityListCardModeDisplay;
   selected?: boolean;
   selectionIndicator?: "none" | "checkbox";
   showReorderHandle?: boolean;

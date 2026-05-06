@@ -5,7 +5,7 @@
     IconButton
   } from "@poodle/svelte";
   import EntityList from "./EntityList.svelte";
-  import type { TableColumn, TableRow } from "@poodle/svelte";
+  import type { TableColumn, TableRow, TableRowAction, TableCellValue } from "@poodle/svelte";
   import type { QueryParams } from "../client/query";
 
   // --- Types ---
@@ -78,13 +78,19 @@
     presentation: "cards" | "table";
     
     /** For cards: render snippet for each item (receives item + selection context) */
-    renderItem?: Snippet<[T, { selectionMode: boolean; selected: boolean; onToggle: (selected: boolean) => void; refetch: () => Promise<void> }]>;
+    renderItem?: Snippet<[T, { selectionMode: boolean; reorderMode: boolean; selected: boolean; onToggle: (selected: boolean) => void; refetch: () => Promise<void> }]>;
     
     /** For table: column definitions */
     columns?: TableColumn[];
     
     /** For table: row actions */
     rowActions?: (row: TableRow<T>) => { value: string; label: string }[];
+
+    /** For table: custom cell rendering */
+    renderCell?: Snippet<[TableColumn, TableRow<T>, TableCellValue]>;
+
+    /** For table: row action selection handler */
+    onRowActionSelect?: (row: TableRow<T>, action: TableRowAction) => void;
     
     /** Declarative filter configuration */
     filters?: FilterConfig[];
@@ -104,8 +110,19 @@
     /** Optional callback when data changes */
     onDataChange?: () => void;
     
-    /** Additional actions in the header */
-    headerActions?: Snippet;
+    /** Additional actions in the header before built-in list controls. */
+    headerLeadingActions?: Snippet<[{
+      selectionMode: boolean;
+      reorderMode: boolean;
+      visibleItemCount: number;
+    }]>;
+
+    /** Additional actions in the header after built-in list controls. */
+    headerActions?: Snippet<[{
+      selectionMode: boolean;
+      reorderMode: boolean;
+      visibleItemCount: number;
+    }]>;
 
     /** Query state (filters, sort, page, limit) */
     query?: QueryParams;
@@ -132,12 +149,15 @@
     renderItem,
     columns,
     rowActions,
+    renderCell,
+    onRowActionSelect,
     filters = [],
     batchActions = [],
     reorder,
     onAdd,
     addLabel = "Add",
     onDataChange,
+    headerLeadingActions,
     headerActions,
     query,
     onQueryChange,
@@ -149,7 +169,6 @@
   let selectionMode = $state(false);
   let reorderMode = $state(false);
   let visibleItemCount = $state(0);
-  let totalItemCount = $state(0);
   let reorderAvailable = $state(false);
 
   // Mode flags are managed internally by EntityList
@@ -179,10 +198,6 @@
     visibleItemCount = count;
   }
 
-  function handleTotalCountChange(count: number) {
-    totalItemCount = count;
-  }
-
   function handleSelectionModeChange(enabled: boolean) {
     selectionMode = enabled;
   }
@@ -204,12 +219,19 @@
 <div class="underlay-entity-list-page">
   <PageHeader
     {title}
-    count={totalItemCount}
     backHref={backHref ?? null}
     backLabel={backLabel}
   >
     {#snippet actions()}
-      {#if visibleItemCount > 0 && !reorderMode && batchActions.length > 0}
+      {#if headerLeadingActions}
+        {@render headerLeadingActions({
+          selectionMode,
+          reorderMode,
+          visibleItemCount
+        })}
+      {/if}
+
+      {#if (visibleItemCount > 0 || selectionMode) && batchActions.length > 0}
         <IconButton
           type="button"
           variant="secondary"
@@ -217,11 +239,12 @@
           icon={selectionMode ? "x" : "check-square"}
           ariaLabel={selectionMode ? "Cancel selection" : "Select items"}
           tooltip={selectionMode ? "Cancel Selection" : "Select Items"}
+          disabled={reorderMode}
           on:click={toggleSelectionMode}
         />
       {/if}
       
-      {#if reorderAvailable && !selectionMode}
+      {#if reorderAvailable || reorderMode}
         <IconButton
           type="button"
           variant="secondary"
@@ -229,23 +252,29 @@
           icon="arrow-up-down"
           ariaLabel={reorderMode ? "Cancel reorder" : "Reorder items"}
           tooltip={reorderMode ? "Cancel Reorder" : "Reorder Items"}
+          disabled={selectionMode}
           on:click={toggleReorderMode}
         />
       {/if}
       
-      {#if !selectionMode && !reorderMode && onAdd}
+      {#if onAdd}
         <IconButton
           type="button"
           variant="primary"
           icon="plus"
           ariaLabel={addLabel}
           tooltip={addLabel}
+          disabled={selectionMode || reorderMode}
           on:click={onAdd}
         />
       {/if}
       
       {#if headerActions}
-        {@render headerActions()}
+        {@render headerActions({
+          selectionMode,
+          reorderMode,
+          visibleItemCount
+        })}
       {/if}
     {/snippet}
   </PageHeader>
@@ -257,6 +286,8 @@
     {renderItem}
     {columns}
     {rowActions}
+    {renderCell}
+    {onRowActionSelect}
     {filters}
     {batchActions}
     {reorder}
@@ -271,7 +302,6 @@
     onSelectionModeChange={handleSelectionModeChange}
     onReorderModeChange={handleReorderModeChange}
     onVisibleCountChange={handleVisibleCountChange}
-    onTotalCountChange={handleTotalCountChange}
     onReorderAvailabilityChange={handleReorderAvailabilityChange}
   />
 </div>
