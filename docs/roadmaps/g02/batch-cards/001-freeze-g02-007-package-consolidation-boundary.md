@@ -1,8 +1,8 @@
 # 001 - Freeze g02.007 Package Consolidation Boundary
 
-Status: ready
+Status: archived
 Owner: repo maintainers
-Spec: `docs/specs/001-g02-package-consolidation-strict-lane.md`
+Spec: `docs/specs/archive/001-g02-package-consolidation-strict-lane.md`
 
 ## Goal
 
@@ -22,5 +22,4 @@ that actually belong in `g02.007`.
 
 ## Next Task
 
-Close out the batch or re-enter planning if the package-consolidation owner is
-exhausted.
+Closed with `g02.007`. Keep this card only as generation-local traceability.

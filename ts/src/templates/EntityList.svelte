@@ -1,7 +1,7 @@
 <script lang="ts">
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   type T = any;
-  import { untrack, type Snippet } from "svelte";
+  import { untrack } from "svelte";
   import { useAuthenticatedData } from "../runtime/auth";
   import { useBatchActions } from "../patterns/batch-actions.svelte";
   import {
@@ -23,6 +23,7 @@
     EmptyState,
     EditableList,
     ListCard,
+    LogList,
     TextInput,
     Select,
     OrderBy,
@@ -31,9 +32,24 @@
     Pagination,
     PaginationSummary
   } from "@poodle/svelte";
-  import type { TableColumn, TableRow, TableRowAction, TableCellValue, BulkAction, EditableListItem } from "@poodle/svelte";
+  import type {
+    TableColumn,
+    TableRow,
+    TableRowAction,
+    TableCellValue,
+    BulkAction,
+    EditableListItem,
+    LogEntry,
+    LogActionType,
+    LogActor
+  } from "@poodle/svelte";
   import type { FilterField, QueryParams, SortField, SortDirection } from "../client/query";
   import { DEFAULT_PAGE_SIZE } from "../patterns/pagination-types";
+
+  // Cross-package Svelte Snippet identity is brittle in linked local workspaces.
+  // Keep the shared template boundary permissive so consumers can pass local snippets cleanly.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  type TemplateSurface = any;
 
   // --- Types ---
 
@@ -64,7 +80,7 @@
 
   interface BatchDialogConfig {
     title: string;
-    content: Snippet<[BatchDialogContext]>;
+    content: TemplateSurface;
   }
 
   interface BatchActionConfig {
@@ -105,10 +121,10 @@
     idField?: string;
     
     /** Presentation mode */
-    presentation: "cards" | "table";
+    presentation: "cards" | "table" | "log";
     
     /** For cards: render snippet for each item (receives item + selection context) */
-    renderItem?: Snippet<[T, ItemContext]>;
+    renderItem?: TemplateSurface;
     
     /** For table: column definitions */
     columns?: TableColumn[];
@@ -116,11 +132,44 @@
     /** For table: row actions */
     rowActions?: (row: TableRow<T>) => { value: string; label: string }[];
 
+    /** For table: whether to show the actions column */
+    showRowActions?: boolean;
+
     /** For table: custom cell rendering */
-    renderCell?: Snippet<[TableColumn, TableRow<T>, TableCellValue]>;
+    renderCell?: TemplateSurface;
+
+    /** For table: expanded row rendering */
+    renderExpandedRow?: TemplateSurface;
+
+    /** For table: externally controlled expanded rows */
+    expandedRowIds?: string[];
 
     /** For table: row action selection handler */
     onRowActionSelect?: (row: TableRow<T>, action: TableRowAction) => void;
+
+    /** For log presentation: map loaded items into Poodle log entries. */
+    toLogEntries?: (items: T[]) => LogEntry[];
+
+    /** For log presentation: custom action icon snippet. */
+    actionIcon?: TemplateSurface;
+
+    /** For log presentation: custom entry details snippet. */
+    entryDetails?: TemplateSurface;
+
+    /** For log presentation: derive action type semantics. */
+    getActionType?: (action: string) => LogActionType;
+
+    /** For log presentation: format action labels. */
+    formatAction?: (action: string) => string;
+
+    /** For log presentation: format resource labels. */
+    formatResourceType?: (resourceType: string) => string;
+
+    /** For log presentation: derive actor hrefs. */
+    getActorHref?: (actor: LogActor) => string;
+
+    /** For log presentation: derive resource hrefs. */
+    getResourceHref?: (resourceType: string, resourceId: string, action: string) => string | null;
     
     /** Declarative filter configuration */
     filters?: FilterConfig[];
@@ -179,8 +228,19 @@
     renderItem,
     columns,
     rowActions,
+    showRowActions = true,
     renderCell,
+    renderExpandedRow,
+    expandedRowIds = [],
     onRowActionSelect,
+    toLogEntries,
+    actionIcon,
+    entryDetails,
+    getActionType,
+    formatAction,
+    formatResourceType,
+    getActorHref,
+    getResourceHref,
     filters = [],
     batchActions = [],
     reorder,
@@ -261,6 +321,7 @@
       totalCount <= currentPageSize
   );
   const itemIds = $derived(items.map((item) => String((item as Record<string, unknown>)[idField])));
+  const logEntries = $derived(toLogEntries ? toLogEntries(items) : []);
 
   // Batch actions
   const batch = useBatchActions<string>();
@@ -861,10 +922,25 @@
           {/if}
         {/each}
       </ListGrid>
+    {:else if presentation === "log"}
+      <LogList
+        entries={logEntries}
+        variant="audit"
+        emptyMessage={`No ${title.toLowerCase()} found`}
+        actionIcon={actionIcon}
+        entryDetails={entryDetails}
+        {getActionType}
+        {formatAction}
+        {formatResourceType}
+        {getActorHref}
+        {getResourceHref}
+      />
     {:else if presentation === "table"}
       <DataTable
         columns={tableColumns}
         rows={tableRows}
+        {expandedRowIds}
+        {showRowActions}
         rowActions={rowActions}
         selectable={selectionMode}
         selectedRowIds={batch.selectedIds}
@@ -884,6 +960,11 @@
             {@render renderCell(column, row as TableRow<T>, value)}
           {:else}
             {value}
+          {/if}
+        </svelte:fragment>
+        <svelte:fragment slot="expandedRow" let:row>
+          {#if renderExpandedRow}
+            {@render renderExpandedRow(row as TableRow<T>)}
           {/if}
         </svelte:fragment>
       </DataTable>
@@ -999,10 +1080,25 @@
         {/if}
       {/each}
     </ListGrid>
+  {:else if presentation === "log"}
+    <LogList
+      entries={logEntries}
+      variant="audit"
+      emptyMessage="No items found"
+      actionIcon={actionIcon}
+      entryDetails={entryDetails}
+      {getActionType}
+      {formatAction}
+      {formatResourceType}
+      {getActorHref}
+      {getResourceHref}
+    />
   {:else if presentation === "table"}
     <DataTable
       columns={tableColumns}
       rows={tableRows}
+      {expandedRowIds}
+      {showRowActions}
       rowActions={rowActions}
       selectable={selectionMode}
       selectedRowIds={batch.selectedIds}
@@ -1022,6 +1118,11 @@
           {@render renderCell(column, row as TableRow<T>, value)}
         {:else}
           {value}
+        {/if}
+      </svelte:fragment>
+      <svelte:fragment slot="expandedRow" let:row>
+        {#if renderExpandedRow}
+          {@render renderExpandedRow(row as TableRow<T>)}
         {/if}
       </svelte:fragment>
     </DataTable>

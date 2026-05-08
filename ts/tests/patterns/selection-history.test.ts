@@ -101,4 +101,10 @@ describe("patterns/selection-history", () => {
 		).toBe("/api/items?archived=true&suggestions=true");
 		expect(appendSuggestionParams("/api/items")).toBe("/api/items");
 	});
+
+	it("merges query params without duplicating keys", () => {
+		expect(
+			appendSuggestionParams("/api/items?suggestions=false", { suggestions: true })
+		).toBe("/api/items?suggestions=true");
+	});
 });

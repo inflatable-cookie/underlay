@@ -180,8 +180,68 @@ export function appendQueryParams(path: string, params: QueryParams): string {
   const queryString = buildQueryString(params);
   if (!queryString) return path;
 
-  const separator = path.includes("?") ? "&" : "?";
-  return `${path}${separator}${queryString}`;
+  const hasQuery = path.includes("?");
+  if (!hasQuery) {
+    return `${path}?${queryString}`;
+  }
+
+  // Merge new params into existing query string to avoid duplicates
+  const [basePath, existingQuery] = path.split("?", 2);
+  const merged = new URLSearchParams(existingQuery);
+  const newParams = new URLSearchParams(queryString);
+  for (const [key, value] of newParams) {
+    merged.set(key, value);
+  }
+  return `${basePath}?${merged.toString()}`;
+}
+
+/**
+ * Convert QueryParams to a flat Record<string, string> suitable for API commands.
+ *
+ * Cattle-grid API commands expect flat key-value queries (like URL search params).
+ * This converts the structured QueryParams back to that format.
+ *
+ * @example
+ * ```ts
+ * const params: QueryParams = {
+ *   sort: [{ field: "title", direction: "asc" }],
+ *   filters: [{ field: "status", operator: "eq", value: "active" }],
+ *   page: 2,
+ *   limit: 20
+ * };
+ *
+ * queryParamsToFlatRecord(params);
+ * // { sort: "title:asc", "filter[status]": "active", page: "2", limit: "20" }
+ * ```
+ */
+export function queryParamsToFlatRecord(params: QueryParams): Record<string, string> {
+  const result: Record<string, string> = {};
+
+  // Add sort
+  if (params.sort && params.sort.length > 0) {
+    result.sort = serializeSort(params.sort);
+  }
+
+  // Add filters
+  if (params.filters) {
+    for (const filter of params.filters) {
+      const key =
+        filter.operator && filter.operator !== "eq"
+          ? `filter[${filter.field}][${filter.operator}]`
+          : `filter[${filter.field}]`;
+      result[key] = filter.value;
+    }
+  }
+
+  // Add pagination
+  if (params.page !== undefined) {
+    result.page = String(params.page);
+  }
+  if (params.limit !== undefined) {
+    result.limit = String(params.limit);
+  }
+
+  return result;
 }
 
 /**

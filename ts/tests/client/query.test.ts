@@ -73,6 +73,14 @@ describe("client/query", () => {
 		expect(appendQueryParams("/v1/items", {})).toBe("/v1/items");
 	});
 
+	it("merges query strings without duplicating keys", () => {
+		expect(
+			appendQueryParams("/v1/items?limit=10", {
+				limit: 20,
+			})
+		).toBe("/v1/items?limit=20");
+	});
+
 	it("creates filter helpers for all operators", () => {
 		const f = createFilterBuilder();
 		expect(f.eq("status", "active")).toEqual({

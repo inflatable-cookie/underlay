@@ -1,144 +1,89 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
-  import { useAuthenticatedData } from "../runtime/auth";
-  import {
-    MetaBar,
-    MetaItem,
-    DetailSection,
-    DetailItem,
-    PageLoading,
-    Callout,
-    Card
-  } from "@poodle/svelte";
-
-  // --- Types ---
+  import { MetaBar, MetaItem, PageHeader } from "@poodle/svelte";
 
   interface MetaItemConfig {
     label: string;
     value: string | Snippet;
-  }
-
-  interface DetailSectionConfig {
-    title: string;
-    columns?: 1 | 2 | 3;
-    separated?: boolean;
-    items: DetailItemConfig[];
-  }
-
-  interface DetailItemConfig {
-    label: string;
-    value: string | Snippet;
-    emptyText?: string;
-  }
-
-  interface CustomSectionConfig {
-    title: string;
-    content: Snippet;
+    separator?: boolean;
   }
 
   interface Props {
-    /** Data loading function */
-    dataLoader: (fetch: typeof window.fetch, token: string | null) => Promise<T | null>;
-    
-    /** Metadata items for MetaBar */
+    title?: string | null;
+    subtitle?: string | null;
+    eyebrow?: string | null;
     meta?: MetaItemConfig[];
-    
-    /** Detail sections */
-    sections?: DetailSectionConfig[];
-    
-    /** Custom sections (non-standard content) */
-    customSections?: CustomSectionConfig[];
-    
+    header?: Snippet;
+    children?: Snippet;
   }
 
-  type T = $$Generic;
-
-  // --- Props ---
-
   let {
-    dataLoader,
-    meta = [],
-    sections = [],
-    customSections = []
+    title = null,
+    subtitle = null,
+    eyebrow = null,
+    meta: detailMeta = [],
+    header,
+    children
   }: Props = $props();
 
-  // --- Data loading ---
-
-  const pageData = useAuthenticatedData<T | null>(
-    async (fetch, token) => {
-      return await dataLoader(fetch, token);
-    },
-    { defaultValue: null }
-  );
-
-  const item = $derived(pageData.data);
-  const hasContent = $derived(sections.length > 0 || customSections.length > 0);
+  const hasSubHeader = $derived(Boolean(title || subtitle || eyebrow || detailMeta.length > 0 || header));
 </script>
 
-{#if pageData.loading}
-  <PageLoading presentation="inline" message="Loading..." />
-{:else if pageData.error}
-  <Callout tone="danger" message={pageData.error} announceMode="polite" />
-{:else if item}
-  <div class="underlay-entity-detail">
-    {#if meta.length > 0}
-      <MetaBar ariaLabel="Metadata">
-        {#each meta as metaItem}
-          <MetaItem label={metaItem.label}>
-            {#if typeof metaItem.value === "string"}
-              {metaItem.value}
-            {:else}
-              {@render metaItem.value()}
-            {/if}
-          </MetaItem>
-        {/each}
-      </MetaBar>
-    {/if}
+<div class="underlay-entity-detail">
+  {#if hasSubHeader}
+    <PageHeader
+      {title}
+      {subtitle}
+      {eyebrow}
+      level={3}
+      align="start"
+      ariaLabel="Detail section header"
+    >
+      {#snippet meta()}
+        {#if detailMeta.length > 0}
+          <MetaBar ariaLabel="Detail metadata">
+            {#each detailMeta as metaItem}
+              <MetaItem label={metaItem.label} separator={metaItem.separator ?? true}>
+                {#if typeof metaItem.value === "string"}
+                  {metaItem.value}
+                {:else}
+                  {@render metaItem.value()}
+                {/if}
+              </MetaItem>
+            {/each}
+          </MetaBar>
+        {/if}
+      {/snippet}
 
-    {#if hasContent}
-      <Card>
-        <div class="underlay-entity-detail__content">
-          {#each sections as section}
-            <DetailSection
-              title={section.title}
-              columns={section.columns ?? 2}
-              separated={section.separated ?? true}
-            >
-              {#each section.items as detailItem}
-                <DetailItem
-                  label={detailItem.label}
-                  value={typeof detailItem.value === "string" ? detailItem.value : undefined}
-                  emptyText={detailItem.emptyText}
-                >
-                  {#if typeof detailItem.value !== "string"}
-                    {@render detailItem.value()}
-                  {/if}
-                </DetailItem>
-              {/each}
-            </DetailSection>
-          {/each}
+      {#if header}
+        {@render header()}
+      {/if}
+    </PageHeader>
+  {/if}
 
-          {#each customSections as customSection}
-            <DetailSection title={customSection.title}>
-              {@render customSection.content()}
-            </DetailSection>
-          {/each}
-        </div>
-      </Card>
-    {/if}
-  </div>
-{/if}
+  {#if children}
+    <div class="underlay-entity-detail__modules">
+      {@render children()}
+    </div>
+  {/if}
+</div>
 
 <style>
   .underlay-entity-detail {
-    display: flex;
-    flex-direction: column;
-    gap: var(--underlay-space-4, 1rem);
+    display: grid;
+    gap: var(--poodle-space-stack-lg);
   }
 
-  .underlay-entity-detail__content {
-    display: flex;
-    flex-direction: column;
-    gap: var(--underlay-space-4, 1rem);
+  .underlay-entity-detail__modules {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--poodle-space-stack-lg);
+    align-items: stretch;
+  }
+
+  @media (max-width: 64rem) {
+    .underlay-entity-detail__modules {
+      grid-template-columns: 1fr;
+    }
   }
 </style>

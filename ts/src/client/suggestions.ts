@@ -41,6 +41,16 @@ export function appendSuggestionParams(
     return basePath;
   }
 
-  const separator = basePath.includes("?") ? "&" : "?";
-  return `${basePath}${separator}${queryString}`;
+  if (!basePath.includes("?")) {
+    return `${basePath}?${queryString}`;
+  }
+
+  // Merge into existing query string to avoid duplicate keys
+  const [path, existingQuery] = basePath.split("?", 2);
+  const merged = new URLSearchParams(existingQuery);
+  const newParams = new URLSearchParams(queryString);
+  for (const [key, value] of newParams) {
+    merged.set(key, value);
+  }
+  return `${path}?${merged.toString()}`;
 }

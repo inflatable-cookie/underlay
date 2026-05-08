@@ -30,7 +30,7 @@ complete detail view.
       id: "tasks",
       label: "Tasks",
       count: taskCount,
-      content: <EntityList ... />
+      content: <EntityListPage title="Tasks" headerLevel={3} ... />
     }
   ]}
   
@@ -38,6 +38,27 @@ complete detail view.
     { label: "Edit", handler: handleEdit },
     { label: "Delete", tone: "danger", confirm: true, handler: handleDelete }
   ]}
+/>
+```
+
+## Header posture
+
+- when `section` is set, the page header now treats that as the primary title
+- `title` becomes the subtitle underneath, which keeps long entity names out of
+  the large heading style and removes the old duplicated title stack
+- page actions render as a single ellipsis menu in the header action slot
+
+## Nested browse tabs
+
+Use `EntityListPage` inside tabs when you want the full list-page shell, but
+lower the header level so the tab content stays subordinate to the detail page:
+
+```svelte
+<EntityListPage
+  title="Tasks"
+  headerLevel={3}
+  presentation="table"
+  dataLoader={loadProjectTasks}
 />
 ```
 

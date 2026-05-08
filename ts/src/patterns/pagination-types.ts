@@ -133,5 +133,15 @@ export function appendPaginationParams(
     .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
     .join("&");
 
-  return path.includes("?") ? `${path}&${queryString}` : `${path}?${queryString}`;
+  if (!path.includes("?")) {
+    return `${path}?${queryString}`;
+  }
+
+  // Merge into existing query string to avoid duplicate keys
+  const [basePath, existingQuery] = path.split("?", 2);
+  const merged = new URLSearchParams(existingQuery);
+  for (const [key, value] of entries) {
+    merged.set(key, value);
+  }
+  return `${basePath}?${merged.toString()}`;
 }

@@ -61,6 +61,7 @@ pub mod error;
 pub mod image;
 pub mod repository;
 pub mod storage;
+pub mod sync;
 
 #[cfg(feature = "postgres")]
 pub mod postgres;
@@ -81,19 +82,30 @@ pub use domain::{
     ListMediaParams,
     // Entities
     Media,
+    MediaContentKind,
     // Identifiers
     MediaId,
     // Enums (from underlay-db)
     MediaKind,
+    MediaLocatorKind,
     MediaRendition,
     MediaRenditionId,
     MediaSummary,
     MediaTypeParseError,
     MediaUsage,
+    MediaUsageEdge,
+    MediaUsageEdgeInput,
+    MediaUsageEdgeKey,
+    MediaUsageFieldPayload,
+    MediaUsageProvenanceKind,
+    MediaUsageRole,
     MediaVersion,
     MediaVersionId,
     MediaVersionState,
     MediaVisibility,
+    MigratedAttachmentBinding,
+    MigratedAttachmentBindingInput,
+    MigratedAttachmentIdentity,
     RenditionType,
     UpdateMediaInput,
 };
@@ -108,6 +120,11 @@ pub use repository::{MediaRepository, MediaRepositoryExt};
 pub use storage::{
     mime_to_extension, rendition_key, version_filename, version_key, StorageKeyConfig,
     StorageKeyGenerator,
+};
+pub use sync::{
+    sync_media_usages_for_record, MediaUsageAuditSource, MediaUsageSyncReport,
+    MediaUsageSyncRepository, MigrationAttachmentBindingRepository,
+    StructuredContentMediaExtractor, StructuredContentWalker,
 };
 
 #[cfg(feature = "postgres")]

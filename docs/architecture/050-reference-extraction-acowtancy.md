@@ -59,3 +59,28 @@ Target: generic SvelteKit patterns (not routes or domain pages).
 - Navigation helpers that are role/capability-driven
 
 Avoid extracting any admin domain routes directly; Underlay should only provide the reusable shells.
+
+## 5. Farmyard media → Underlay
+
+Target: shared media semantics and sync framework, not Acowtancy-specific block
+schemas.
+
+- **Media library contract**
+  - Extract: stable `media`, `media_version`, `media_usage`, and migration
+    attachment-binding semantics.
+  - Landed reference contract:
+    `docs/contracts/050-media-library-and-usage.md`
+
+- **Usage-edge model**
+  - Extract: generalized usage edges with owner type/id, owner field,
+    locator-kind, locator-key, usage role, and provenance kind.
+  - Keep app-specific owner registrations in consumer repos.
+
+- **Usage sync engine**
+  - Extract: shared set-diff reconciliation for save/import flows and audit
+    scaffolding for forward/reverse consistency checks.
+
+- **Structured-content traversal**
+  - Extract: generic walker and extractor interfaces.
+  - Keep Nightfire block definitions and block-specific media extraction in
+    consumer repos until the block contract stabilizes across sites.

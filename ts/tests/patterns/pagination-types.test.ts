@@ -54,6 +54,12 @@ describe("patterns/pagination-types", () => {
 		expect(appendPaginationParams("/api/items", {})).toBe("/api/items");
 	});
 
+	it("merges query params without duplicating keys", () => {
+		expect(
+			appendPaginationParams("/api/items?limit=5", { limit: 10 })
+		).toBe("/api/items?limit=10");
+	});
+
 	it("supports type-level usage for response and controller contracts", async () => {
 		const response: PaginatedResponse<number> = {
 			data: [1, 2, 3],

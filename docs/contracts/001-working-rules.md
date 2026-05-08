@@ -16,29 +16,38 @@ Depends on: `docs/architecture/product-guardrails.md`
 - If there is no ready card, re-enter planning instead of widening the package
   migration by implication.
 
-## Generation Rollover Rule
+## Generation Rule
 
 Treat roadmap generations as substantial sequencing eras, not tiny buckets. In
 a long-running repo, expect roughly 20 to 40 roadmap files in one generation
 before rollover is even worth discussing.
 
-Treat rollover as full closeout:
+In sequential mode:
 
 - every roadmap in the old generation must be explicitly closed, paused,
   superseded, or moved to backlog
 - the roadmap front doors must reflect that closed state before the next
   generation opens
-- stale specs and batch cards from the closing generation must be archived or
-  removed from `docs/specs/`
+- stale specs from the closing generation must be archived or removed from
+  `docs/specs/`
 
-If those closeout conditions are not satisfied, repair the current generation
-instead of opening a new one.
+In parallel mode:
+
+- multiple active generations may coexist when the work streams are genuinely
+  independent
+- each generation operates as its own queue
+- batch cards stay with their generation under `docs/roadmaps/gNN/batch-cards/`
+- each generation README remains the authoritative front door for its thread
 
 ## Current Posture
 
-Underlay is in a strict-ready posture around the active `g02.007`
-package-consolidation lane.
+Underlay is in parallel mode:
+
+- `g03` owns the template-system thread
+- `g04` owns the contract-coverage and assessment thread
+- there is no active strict master spec at the repo level right now
 
 ## Next Task
 
-Execute the active strict lane in `docs/specs/001-g02-package-consolidation-strict-lane.md`.
+Keep the `g03` and `g04` front doors current independently and open a new spec
+only if one thread needs provisional planning beyond its roadmap and contracts.

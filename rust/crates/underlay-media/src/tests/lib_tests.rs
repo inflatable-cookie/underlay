@@ -7,6 +7,8 @@ fn test_re_exports() {
     let _id = MediaId::new();
     let _version_id = MediaVersionId::new();
     let _rendition_id = MediaRenditionId::new();
+    let _kind = MediaContentKind::RecordField;
+    let _role = MediaUsageRole::Embedded;
 }
 
 #[test]

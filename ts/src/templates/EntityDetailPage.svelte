@@ -1,37 +1,33 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
+  import type { BreadcrumbItem } from "../patterns/types";
+  import { useAuthenticatedData } from "../runtime/auth";
   import {
     PageHeader,
+    Breadcrumbs,
     Tabs,
-    Button,
-    AlertDialog
+    AlertDialog,
+    IconButton,
+    Menu,
+    MetaBar,
+    MetaItem,
+    PageLoading,
+    Callout
   } from "@poodle/svelte";
-  import EntityDetail from "./EntityDetail.svelte";
 
   // --- Types ---
 
   interface MetaItemConfig {
     label: string;
     value: string | Snippet;
-  }
-
-  interface DetailSectionConfig {
-    title: string;
-    columns?: 1 | 2 | 3;
-    separated?: boolean;
-    items: { label: string; value: string | Snippet; emptyText?: string }[];
-  }
-
-  interface CustomSectionConfig {
-    title: string;
-    content: Snippet;
+    separator?: boolean;
   }
 
   interface TabConfig {
     id: string;
     label: string;
     count?: number;
-    content?: Snippet;
+    content?: Snippet<[T]>;
     separator?: boolean;
   }
 
@@ -48,11 +44,26 @@
   }
 
   interface Props {
-    /** Page title (entity name) */
+    /** Entity name or item title */
     title: string;
     
-    /** Section label (e.g., "Project", "User") */
+    /** Entity type label (e.g., "Project", "User") */
     section?: string;
+
+    /** Optional eyebrow above the title */
+    eyebrow?: string;
+
+    /** Keep subtitle visible even when breadcrumbs are present */
+    showSubtitleWithBreadcrumbs?: boolean;
+
+    /** Heading level for nested composition */
+    headerLevel?: 1 | 2 | 3 | 4 | 5 | 6;
+
+    /** Optional breadcrumb trail above the header title */
+    breadcrumbs?: BreadcrumbItem[];
+
+    /** Mark the last breadcrumb as the current page */
+    breadcrumbsMarkLastCurrent?: boolean;
     
     /** Back link URL */
     backHref?: string;
@@ -64,26 +75,28 @@
     bannerMessage?: string;
     
     /** Banner tone */
-    bannerTone?: "warning" | "info" | "danger";
+    bannerTone?: "warning" | "info" | "danger" | "success";
     
     /** Data loading function */
     dataLoader: (fetch: typeof window.fetch, token: string | null) => Promise<T | null>;
+
+    /** Change this to force a refetch of the primary entity */
+    reloadKey?: string | number | null;
     
     /** Metadata items */
     meta?: MetaItemConfig[];
     
-    /** Detail sections (for the "details" tab) */
-    detailSections?: DetailSectionConfig[];
-    
-    /** Custom sections (for the "details" tab) */
-    customSections?: CustomSectionConfig[];
-    
     /** Tabs configuration */
     tabs?: TabConfig[];
-    
+
+    /** Notified when the active tab changes */
+    onTabChange?: (tabId: string) => void;
+
     /** Page actions */
     actions?: ActionConfig[];
-    
+
+    /** Fully custom header actions surface */
+    headerActions?: Snippet<[T]>;
   }
 
   type T = $$Generic;
@@ -93,23 +106,36 @@
   let {
     title,
     section,
+    eyebrow,
+    showSubtitleWithBreadcrumbs = false,
+    headerLevel = 2,
+    breadcrumbs: detailBreadcrumbs = [],
+    breadcrumbsMarkLastCurrent = true,
     backHref,
     backLabel,
     bannerMessage,
     bannerTone = "warning",
     dataLoader,
-    meta = [],
-    detailSections = [],
-    customSections = [],
+    reloadKey = null,
+    meta: detailMeta = [],
     tabs = [],
-    actions: pageActions = []
+    onTabChange,
+    actions: pageActions = [],
+    headerActions
   }: Props = $props();
 
   // --- State ---
 
-  let activeTab = $state("details");
+  let activeTab = $state("");
   let showConfirmDialog = $state(false);
   let pendingAction: ActionConfig | null = $state(null);
+  const pageActionItems = $derived(
+    pageActions.map((action, index) => ({
+      value: `action-${index}`,
+      label: action.label,
+      tone: (action.tone === "danger" ? "danger" : "default") as "default" | "danger"
+    }))
+  );
 
   // --- Actions ---
 
@@ -122,11 +148,12 @@
     }
   }
 
-  function toButtonTone(tone: ActionConfig["tone"]): "default" | "danger" | undefined {
-    if (tone === "danger") {
-      return "danger";
+  function handlePageActionSelect(actionValue: string) {
+    const actionIndex = Number(actionValue.replace("action-", ""));
+    const action = pageActions[actionIndex];
+    if (action) {
+      handleAction(action);
     }
-    return tone === "default" ? "default" : undefined;
   }
 
   function handleConfirm() {
@@ -142,83 +169,142 @@
     showConfirmDialog = false;
   }
 
-  // Combine detail sections into the "details" tab if provided
-  const hasDetailsTab = $derived(detailSections.length > 0 || customSections.length > 0);
-  const allTabs = $derived<TabConfig[]>(
-    hasDetailsTab
-      ? [
-          {
-            id: "details",
-            label: "Details"
-          },
-          ...tabs
-        ]
-      : tabs
+  const pageData = useAuthenticatedData<T | null>(
+    async (fetch, token) => {
+      return await dataLoader(fetch, token);
+    },
+    { defaultValue: null }
   );
+
+  const item = $derived(pageData.data);
+  const allTabs = $derived<TabConfig[]>(tabs);
+  let previousReloadKey = $state<string | number | null>(null);
+
+  $effect(() => {
+    const firstTabId = allTabs[0]?.id ?? "";
+    const hasActiveTab = allTabs.some((tab) => tab.id === activeTab);
+    if (!hasActiveTab) {
+      activeTab = firstTabId;
+    }
+  });
+
+  $effect(() => {
+    if (previousReloadKey === null) {
+      previousReloadKey = reloadKey;
+      return;
+    }
+
+    if (reloadKey !== previousReloadKey) {
+      previousReloadKey = reloadKey;
+      void pageData.refetch();
+    }
+  });
+
+  $effect(() => {
+    if (activeTab) {
+      onTabChange?.(activeTab);
+    }
+  });
 </script>
 
-<div class="underlay-entity-detail-page">
-  <PageHeader
-    {title}
-    {section}
-    backHref={backHref ?? null}
-    backLabel={backLabel}
-    bannerMessage={bannerMessage}
-    bannerTone={bannerTone}
-  >
-    {#snippet actions()}
-      {#each pageActions as action}
-        <Button
-          variant={action.tone === "danger" ? "ghost" : "secondary"}
-          tone={toButtonTone(action.tone)}
-          on:click={() => handleAction(action)}
-        >
-          {action.label}
-        </Button>
-      {/each}
-    {/snippet}
-  </PageHeader>
-
-  {#if allTabs.length > 0}
-    <Tabs
-      value={activeTab}
-      items={allTabs.map((tab) => ({
-        value: tab.id,
-        label: tab.label,
-        count: tab.count,
-        separator: tab.separator
-      }))}
-      variant="card"
-      size="sm"
-      ariaLabel={`${title} sections`}
-      on:valueChange={(event) => {
-        activeTab = event.detail.value;
-      }}
+{#if pageData.loading}
+  <PageLoading presentation="inline" message="Loading..." />
+{:else if pageData.error}
+  <Callout tone="danger" message={pageData.error} announceMode="polite" />
+{:else if item}
+  <div class="underlay-entity-detail-page">
+    <PageHeader
+      {title}
+      {section}
+      {eyebrow}
+      {showSubtitleWithBreadcrumbs}
+      backHref={backHref ?? null}
+      backLabel={backLabel}
+      bannerMessage={bannerMessage}
+      bannerTone={bannerTone}
+      level={headerLevel}
+      posture={section ? "entity-detail" : "default"}
     >
-      {#each allTabs as tab}
-          {#if tab.id === activeTab}
-            {#if tab.id === "details" && (detailSections.length > 0 || customSections.length > 0)}
-              <EntityDetail
-                {dataLoader}
-                {meta}
-                sections={detailSections}
-                {customSections}
+      {#snippet breadcrumbs()}
+        {#if detailBreadcrumbs.length > 0}
+          <Breadcrumbs
+            items={detailBreadcrumbs.map((crumb, index) => ({
+              value: crumb.href ?? crumb.label,
+              label: crumb.label,
+              href: crumb.href,
+              current: breadcrumbsMarkLastCurrent && index === detailBreadcrumbs.length - 1
+            }))}
+            forceLastItemCurrent={breadcrumbsMarkLastCurrent}
+            sizeRole="chrome"
+          />
+        {/if}
+      {/snippet}
+
+      {#snippet meta()}
+        {#if detailMeta.length > 0}
+          <MetaBar ariaLabel="Detail metadata">
+            {#each detailMeta as metaItem}
+              <MetaItem label={metaItem.label} separator={metaItem.separator ?? true}>
+                {#if typeof metaItem.value === "string"}
+                  {metaItem.value}
+                {:else}
+                  {@render metaItem.value()}
+                {/if}
+              </MetaItem>
+            {/each}
+          </MetaBar>
+        {/if}
+      {/snippet}
+
+      {#snippet actions()}
+        {#if headerActions}
+          {@render headerActions(item)}
+        {:else if pageActionItems.length > 0}
+          <Menu
+            items={pageActionItems}
+            ariaLabel={`${section ?? title} actions`}
+            triggerAriaLabel={`${section ?? title} actions`}
+            on:action={(event) => handlePageActionSelect(event.detail.value)}
+          >
+            <svelte:fragment slot="trigger">
+              <IconButton
+                type="button"
+                icon="ellipsis"
+                variant="secondary"
+                ariaLabel={`${section ?? title} actions`}
+                tooltip="Actions"
               />
-            {:else if tab.content}
-              {@render tab.content()}
-            {/if}
+            </svelte:fragment>
+          </Menu>
+        {/if}
+      {/snippet}
+    </PageHeader>
+
+    {#if allTabs.length > 0}
+      <Tabs
+        value={activeTab}
+        items={allTabs.map((tab) => ({
+          value: tab.id,
+          label: tab.label,
+          count: tab.count,
+          separator: tab.separator
+        }))}
+        variant="underline"
+        size="sm"
+        ariaLabel={`${title} sections`}
+        on:valueChange={(event) => {
+          activeTab = event.detail.value;
+        }}
+      >
+        {#each allTabs as tab}
+          {#if tab.id === activeTab && tab.content}
+            {@render tab.content(item)}
           {/if}
-      {/each}
-    </Tabs>
-  {:else}
-    <EntityDetail
-      {dataLoader}
-      {meta}
-      sections={detailSections}
-      {customSections}
-    />
-  {/if}
-</div>
+        {/each}
+      </Tabs>
+    {/if}
+  </div>
+{/if}
 
 <!-- Action confirmation dialog -->
 {#if showConfirmDialog && pendingAction}

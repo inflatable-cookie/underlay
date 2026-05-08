@@ -4,21 +4,38 @@ Roadmaps are executable delivery plans for Underlay library work.
 
 ## Rules
 
+- Keep one active queue per generation and use backlog for deferred scope.
+- In sequential mode, maintain one active generation.
+- In parallel mode, keep every active generation front door accurate for its
+  thread.
+- Keep durable inventories, CSVs, and machine-readable reference artifacts in
+  [../contracts/](../contracts/).
+- If active work changes consumer-visible behavior, APIs, configuration,
+  migrations, or integration patterns, include a `Consumer Upgrade Impact`
+  section in the roadmap.
+
+## Generation model
+
 - Use generation folders such as `docs/roadmaps/g01/`.
 - Roadmap filenames use `NNN-<slug>.md`.
 - Roadmap references use generation-qualified IDs such as `g01.021`.
-- Keep roadmap status in the file itself and keep this index aligned when statuses change.
 - Generation rollover is manual only.
 - Treat generations as substantial sequencing eras, not one-or-two-file
-  buckets. As a healthy default, expect roughly 20 to 40 roadmap files in one
+  buckets. A healthy default is roughly 20 to 40 roadmap files in one
   generation before rollover is even worth discussing.
-- Treat rollover as full generation closeout, not a convenience reset: close,
-  supersede, or rehome every roadmap in the current generation first, then
-  purge stale generation-specific specs and batch cards from `docs/specs/`
-  before opening the next generation.
-- Keep unscheduled work in [backlog/](backlog/).
-- Keep durable inventories, CSVs, and machine-readable reference artifacts in [../contracts/](../contracts/).
-- If active work changes consumer-visible behavior, APIs, configuration, migrations, or integration patterns, include a `Consumer Upgrade Impact` section in the roadmap and point to the compatibility note plan.
+- In sequential mode, close or rehome every roadmap in the current generation
+  and purge stale specs from `docs/specs/` before opening the next generation.
+- In parallel mode, multiple active generations may coexist when the work
+  streams are genuinely independent. Each generation then operates as its own
+  queue.
+
+## Layout
+
+- `gNN/` generation milestones
+- `gNN/batch-cards/` generation-local execution cards when that generation uses
+  strict posture
+- `generation-index.md` active generation mode and history
+- `backlog/` deferred items with promotion criteria
 
 ## Evidence Boundary
 
@@ -28,29 +45,21 @@ inventories when that is necessary to preserve delivery history. Do not treat
 that historical evidence style as the model for active library-facing guides or
 README surfaces.
 
-## Rollover guardrail
+## Mode
 
-Do not open `gNN+1` while the current generation still has live roadmap files
-or stale strict-lane debris in the active specs tree.
-
-Before rollover:
-
-- every roadmap in the closing generation must be explicitly closed, paused,
-  superseded, or moved to backlog
-- the roadmap front doors must agree that the old generation is no longer the
-  live queue
-- `docs/specs/` must be purged so only live or near-live planning artifacts
-  remain in the active tree
+- `parallel`
 
 ## Active generation
 
-- [g03/README.md](g03/README.md)
-- [generation-index.md](generation-index.md)
+- [g03/README.md](g03/README.md) — template-system thread
+- [g04/README.md](g04/README.md) — contract-coverage and assessment thread
 
 ## Current Queue
 
-- `g03.001` is now active as the admin template system generation.
-- `g02` is closed. All g02 roadmaps are complete.
+- `g03.014` is the active form-proof milestone for the template-system thread
+- `g04.001` is the active contract-program launch milestone for the contract
+  thread
+- `g02` is closed. Its batch-card history now lives under `g02/batch-cards/`
 
 ## Historical Generations
 
@@ -234,14 +243,16 @@ Before rollover:
 | 098 | [Poodle-Era Consumer Normalization And Overhaul Recovery](./g01/098-poodle-era-consumer-normalization-and-overhaul-recovery.md) | Complete | Recover the real active shared-surface queue across Underlay and the current consumer family, then compile the next bounded normalization waves from current evidence |
 | 096 | [Archival Doc Evidence Boundary Audit](./g01/096-archival-doc-evidence-boundary-audit.md) | Complete | Confirm that the active docs surface is normalized while the remaining raw local-path residue is acceptable frozen evidence in archival logs, roadmaps, research notes, and sweeps |
 
-## Active Generation Snapshot
+## Generation Snapshot
 
 | ID | Roadmap | Status | Summary |
 | --- | --- | --- | --- |
 | 001 | [Poodle-Era Consumer Normalization And Overhaul Runway](./g02/001-poodle-era-consumer-normalization-and-overhaul-runway.md) | Active | Carry the recovered overhaul queue into a fresh generation and compile the first bounded execution waves across Underlay, Poodle, and the current consumer family |
 
 **g01 Complete:** 91 | **Extracted:** 2 | **In progress:** 0 | **Not started:** 0
-**g02 Active:** 1 | **In progress:** 1 | **Not started:** 0
+**g02 Complete:** 7 | **In progress:** 0 | **Not started:** 0
+**g03 Active:** 14 | **In progress:** 1 | **Not started:** 1
+**g04 Active:** 1 | **In progress:** 1 | **Not started:** 0
 
 ## Current Boundary
 

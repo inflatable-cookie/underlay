@@ -10,16 +10,15 @@ Specs hold active Underlay planning and strict execution-control surfaces.
   contracts
 - keep `docs/specs/` mostly limited to active or still-useful planning
 - archive or remove stale specs once the durable outcome is carried elsewhere
-- before roadmap generation rollover, purge stale generation-specific specs and
-  batch cards from the active tree so the next generation does not inherit dead
-  planning debris
+- before roadmap generation rollover in sequential mode, purge stale
+  generation-specific specs from the active tree
+- batch cards now live under `docs/roadmaps/gNN/batch-cards/`
 
 ## Active Spec Set
 
-- `001-g02-package-consolidation-strict-lane.md`
-- `batch-cards/README.md`
+There is no active strict master spec at the moment.
 
 ## Next Task
 
-Use the active strict lane to keep `g02.007` bounded to the package
-consolidation seam now in flight.
+Open a new spec only when a live lane needs provisional planning beyond the
+roadmap and contract surfaces.

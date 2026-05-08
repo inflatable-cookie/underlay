@@ -4,6 +4,7 @@ This guide now covers the retained Underlay parts of a media-library
 implementation:
 
 - backend schema and media lifecycle
+- usage-graph and structured-content sync semantics
 - client/runtime helper boundaries
 - upload orchestration and app-owned workflow logic
 
@@ -43,6 +44,10 @@ Keep the action sequencing in host code:
 Use the Underlay recipe layer for the upload lifecycle and full-stack delivery
 only:
 - [Media Upload Pipeline](../patterns/media-upload-pipeline.md)
+
+Authoritative shared contract:
+
+- [050-media-library-and-usage.md](../contracts/050-media-library-and-usage.md)
 
 ## Quick Start
 
@@ -140,7 +145,8 @@ The upload process uses **direct-to-blob** uploads with pre-signed URLs:
 
 ### Tables
 
-The media library uses three tables in the `media` schema:
+The contract doc above is authoritative. The guide below shows the minimum
+implementation shape for a consumer app.
 
 ```sql
 -- Media items (images, PDFs, etc.)
@@ -169,15 +175,37 @@ CREATE TABLE media.media_version (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- Track where media is used (for reference counting)
+-- Track live media usage edges
 CREATE TABLE media.media_usage (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     media_id UUID NOT NULL REFERENCES media.media(id) ON DELETE CASCADE,
-    used_by_type TEXT NOT NULL,            -- 'qa_item', 'document', etc.
-    used_by_id UUID NOT NULL,              -- ID of the referencing entity
-    field TEXT,                            -- Which field references it
+    used_by_type TEXT NOT NULL,            -- app-defined owner type
+    used_by_id UUID,                       -- nullable for manual/external usage
+    owner_field TEXT,                      -- e.g. 'cover_media_id', 'body_blocks'
+    content_kind TEXT NOT NULL,            -- 'record_field' | 'structured_content' | 'external'
+    locator_kind TEXT NOT NULL,            -- 'field' | 'block_id' | 'path' | 'external_ref'
+    locator_key TEXT NOT NULL,             -- stable in-field address
+    usage_role TEXT NOT NULL,              -- 'primary' | 'attachment' | 'embedded' | 'external'
+    provenance_kind TEXT NOT NULL,         -- 'content_sync' | 'legacy_migration' | 'manual'
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    UNIQUE(media_id, used_by_type, used_by_id, field)
+    UNIQUE(media_id, used_by_type, used_by_id, owner_field, locator_kind, locator_key, provenance_kind)
+);
+
+-- Replay-safe migration provenance
+CREATE TABLE migration.migrated_attachment_binding (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    source_system TEXT NOT NULL,
+    source_attachment_type TEXT NOT NULL,
+    source_attachment_id TEXT NOT NULL,
+    source_owner_type TEXT NOT NULL,
+    source_owner_id TEXT NOT NULL,
+    field_or_purpose TEXT NOT NULL,
+    sha256 TEXT NOT NULL,
+    bundle_digest TEXT NOT NULL,
+    media_id UUID NOT NULL REFERENCES media.media(id) ON DELETE CASCADE,
+    media_version_id UUID NOT NULL REFERENCES media.media_version(id) ON DELETE CASCADE,
+    import_status TEXT NOT NULL,
+    imported_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 -- Indexes
@@ -187,6 +215,7 @@ CREATE INDEX idx_media_version_media_id ON media.media_version(media_id);
 CREATE INDEX idx_media_version_sha256 ON media.media_version(sha256);
 CREATE INDEX idx_media_usage_media_id ON media.media_usage(media_id);
 CREATE INDEX idx_media_usage_used_by ON media.media_usage(used_by_type, used_by_id);
+CREATE INDEX idx_media_usage_owner_field ON media.media_usage(used_by_type, used_by_id, owner_field);
 
 -- Foreign key for current version (added after both tables exist)
 ALTER TABLE media.media
@@ -242,6 +271,21 @@ assert!(state.is_terminal());
 ## Backend Implementation
 
 ### Repository Layer
+
+The older `field`-only usage helpers are too narrow for structured-content and
+manual/external usage. Prefer a full usage-edge model plus one shared sync
+path.
+
+Recommended shared surfaces:
+
+- `MediaUsageEdge`
+- `MediaUsageEdgeKey`
+- `MigratedAttachmentBinding`
+- `MediaUsageRepository`
+- `MigrationAttachmentBindingRepository`
+- `StructuredContentMediaExtractor`
+- `sync_media_usages_for_record(...)`
+- `audit_media_usages_for_record(...)`
 
 ```rust
 // crates/db/src/media.rs

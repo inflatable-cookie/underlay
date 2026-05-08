@@ -37,6 +37,10 @@ management.
 | Prop | Type | Required | Description |
 |------|------|----------|-------------|
 | `title` | `string` | Yes | Page title |
+| `section` | `string` | No | Optional section label above the title |
+| `subtitle` | `string` | No | Optional subtitle below the title |
+| `eyebrow` | `string` | No | Optional eyebrow above the header |
+| `headerLevel` | `1 \| 2 \| 3 \| 4 \| 5 \| 6` | No | Heading level for nested composition; defaults to `2` |
 | `backHref` | `string` | No | Back link URL |
 | `backLabel` | `string` | No | Back link label |
 

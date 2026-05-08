@@ -1,6 +1,6 @@
 # 001 - g02 Package Consolidation Strict Lane
 
-Status: active
+Status: archived
 Owner: repo maintainers
 Depends on: `docs/roadmaps/g02/README.md`, `docs/contracts/001-working-rules.md`
 
@@ -18,4 +18,5 @@ Keep `g02.007` bounded to the live `@poodle/svelte` package-consolidation seam.
 
 ## Next Task
 
-Execute `docs/specs/batch-cards/001-freeze-g02-007-package-consolidation-boundary.md`.
+Closed with `g02.007`. Use the historical roadmap and generation-local batch
+card for traceability only.

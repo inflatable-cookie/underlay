@@ -31,6 +31,8 @@ See [010-package-map.md](./010-package-map.md) for the full crate inventory, des
 
 ## Key Docs
 
+- [system-inventory.md](./system-inventory.md) (significant systems and
+  contract-planning inventory)
 - [010-package-map.md](./010-package-map.md) (full crate inventory and feature flags)
 - [015-error-and-envelopes.md](./015-error-and-envelopes.md) (API error and envelope contract)
 - [030-ts-api-client.md](./030-ts-api-client.md) (typed client conventions)

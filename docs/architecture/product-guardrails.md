@@ -10,9 +10,11 @@ Owner: repo maintainers
   consumers currently share a pattern.
 - Keep Underlay-owned runtime/client/pattern boundaries separate from
   Poodle-owned visible UI surfaces.
-- Treat the active `g02.007` lane as bounded package consolidation, not as a
-  pretext to reopen the old broad consumer-normalization wave.
+- Keep parallel generations genuinely independent when parallel mode is active.
+- Do not use the contract-coverage thread as a pretext to smuggle template
+  execution work out of `g03`.
 
 ## Next Task
 
-Execute the current `g02.007` lane inside a bounded package-consolidation card.
+Execute `g03` and `g04` as separate queues and keep their front doors
+accurate.

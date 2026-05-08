@@ -84,3 +84,33 @@ fn test_media_version_state_checks() {
     assert!(version.is_terminal());
     assert!(version.has_storage_info());
 }
+
+#[test]
+fn test_media_usage_edge_key_round_trip() {
+    let media_id = MediaId::new();
+    let input = MediaUsageEdgeInput {
+        media_id,
+        used_by_type: "blog_article".to_string(),
+        used_by_id: Some(Uuid::now_v7()),
+        owner_field: Some("body_blocks".to_string()),
+        content_kind: MediaContentKind::StructuredContent,
+        locator_kind: MediaLocatorKind::BlockId,
+        locator_key: "hero_01:image".to_string(),
+        usage_role: MediaUsageRole::Embedded,
+        provenance_kind: MediaUsageProvenanceKind::ContentSync,
+    };
+
+    let key = input.key();
+    assert_eq!(key.media_id, media_id);
+    assert_eq!(key.locator_key, "hero_01:image");
+    assert_eq!(key.locator_kind, MediaLocatorKind::BlockId);
+}
+
+#[test]
+fn test_custom_usage_enums_serialize_as_strings() {
+    let role = MediaUsageRole::Custom("campaign_asset".to_string());
+    let locator = MediaLocatorKind::Custom("widget_slot".to_string());
+
+    assert_eq!(serde_json::to_string(&role).unwrap(), "\"campaign_asset\"");
+    assert_eq!(serde_json::to_string(&locator).unwrap(), "\"widget_slot\"");
+}
