@@ -450,6 +450,7 @@ export async function getLevelsForPathway(
     const filtered = levels.filter(l =>
       l.title.toLowerCase().includes(query.toLowerCase())
     );
+    // This is selector search output, not an API wire envelope.
     return { items: filtered.map(levelToSelectable), total: filtered.length };
   }
 

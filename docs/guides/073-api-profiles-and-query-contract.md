@@ -133,6 +133,8 @@ Disallowed:
 Reference loader handshake:
 
 - [code/073-api-profiles-and-query-contract/entity-list-page-paged-loader.ts](./code/073-api-profiles-and-query-contract/entity-list-page-paged-loader.ts)
+- use `toPagedListResult(...)` from `@decodelabs/underlay/templates` as the
+  canonical client-to-template bridge
 
 ## Migration Sequence
 

@@ -24,6 +24,7 @@ export { default as EntityInlineListModule } from "./EntityInlineListModule.svel
 
 // Level 2.5 — Entity Compositions
 export { default as EntityListCard } from "./EntityListCard.svelte";
+export { toPagedListResult } from "./paged-list";
 
 export type {
   EntityListCardBadge,

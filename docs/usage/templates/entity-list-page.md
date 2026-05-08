@@ -11,6 +11,7 @@ management.
 ```svelte
 <script lang="ts">
   import { EntityListPage } from "@decodelabs/underlay/templates";
+  import { toPagedListResult } from "@decodelabs/underlay/templates";
   import type { PagedListResponse } from "@decodelabs/underlay/client/types";
   import ProjectCard from "$lib/cards/ProjectCard.svelte";
   import { adminCommands } from "$lib/client";
@@ -18,12 +19,7 @@ management.
   async function loadProjects(fetchFn: typeof fetch, token: string | null, query) {
     const response: PagedListResponse<ProjectListItem> =
       await adminCommands.listProjects(fetchFn, token, query);
-
-    return {
-      data: response.data,
-      total: response.total,
-      hasMore: response.hasMore
-    };
+    return toPagedListResult(response);
   }
 </script>
 
@@ -202,6 +198,17 @@ Reference recipe:
 Use bounded `ListResponse<T>` only for helper collections that are not real
 page shells. If a route feeds `EntityListPage`, it should be a page-shaped
 paginated resource surface, not a helper list disguised as one.
+
+Reference implementation examples in `underlay-reference`:
+
+- shared list wrappers:
+  [ProjectsListPage.svelte](</Users/tom/Dev/projects/underlay-reference/acme-admin/src/lib/lists/ProjectsListPage.svelte>)
+  and
+  [TasksListPage.svelte](</Users/tom/Dev/projects/underlay-reference/acme-admin/src/lib/lists/TasksListPage.svelte>)
+- route-local list pages:
+  [media/+page.svelte](</Users/tom/Dev/projects/underlay-reference/acme-admin/src/routes/(app)/media/+page.svelte>),
+  [users/+page.svelte](</Users/tom/Dev/projects/underlay-reference/acme-admin/src/routes/(app)/users/+page.svelte>),
+  [system/jobs/+page.svelte](</Users/tom/Dev/projects/underlay-reference/acme-admin/src/routes/(app)/system/jobs/+page.svelte>)
 
 ## See Also
 

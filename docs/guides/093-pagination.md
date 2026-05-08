@@ -2,6 +2,22 @@
 
 This guide covers Underlay's pagination infrastructure for both server-side (cursor-based) and client-side pagination with a unified UI layer.
 
+This is the lower-level pagination/runtime guide.
+
+It is not the same thing as the higher-level admin page-shape contract in:
+
+- [073-api-profiles-and-query-contract.md](./073-api-profiles-and-query-contract.md)
+- [../contracts/115-admin-resource-api-shapes.md](../contracts/115-admin-resource-api-shapes.md)
+
+Naming split:
+
+- `PaginatedResponse<T>`:
+  runtime/data pagination response with cursors
+- `PagedListResponse<T>`:
+  client-facing page-shaped admin list response
+- `PagedListResult<T>`:
+  template loader result for `EntityListPage` / `EntityList`
+
 ## Overview
 
 Underlay provides a complete pagination solution that scales from small client-side lists to server-side cursor-based pagination for millions of rows. Both modes expose the same `PaginationController` interface, allowing UI components to work seamlessly with either approach.
@@ -76,7 +92,8 @@ Pagination is a query-level contract on canonical resource list routes.
 
 ### Response Format
 
-All paginated endpoints return this structure:
+For the runtime/data pagination layer, paginated endpoints return this
+structure:
 
 ```typescript
 interface PaginatedResponse<T> {
@@ -87,6 +104,23 @@ interface PaginatedResponse<T> {
   total: number | null;         // Total count (null if opted out or unavailable)
 }
 ```
+
+Do not confuse this with the admin page-shaped list contract from `115`, which
+uses:
+
+```ts
+interface PagedListResponse<T> {
+  data: T[];
+  total: number;
+  hasMore: boolean;
+}
+```
+
+Rule of thumb:
+
+- use `PaginatedResponse<T>` for cursor-driven runtime pagination flows
+- use `PagedListResponse<T>` for admin resource pages and detail-tab child lists
+- use `PagedListResult<T>` at the template data-loader seam
 
 ### Query Parameters
 
@@ -437,6 +471,13 @@ import {
 } from "@decodelabs/underlay/runtime/data";
 ```
 
+For the higher-level admin page-list surface, import the public client type
+from `@decodelabs/underlay/client/types` instead:
+
+```ts
+import type { PagedListResponse } from "@decodelabs/underlay/client/types";
+```
+
 ### PaginationParams
 
 ```typescript
@@ -779,6 +820,13 @@ export async function getItemsPaginated(
   return await http.get<PaginatedResponse<Item>>(path);
 }
 ```
+
+This example is for a lower-level cursor-aware command surface. If the command
+is feeding `EntityListPage` or another page-shaped admin list, prefer the
+`PagedListResponse<T>` pattern from:
+
+- [073-api-profiles-and-query-contract.md](./073-api-profiles-and-query-contract.md)
+- [code/073-api-profiles-and-query-contract/entity-list-page-paged-loader.ts](./code/073-api-profiles-and-query-contract/entity-list-page-paged-loader.ts)
 
 ### 2. Page Component
 

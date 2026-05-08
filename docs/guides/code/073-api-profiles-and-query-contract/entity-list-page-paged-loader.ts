@@ -1,5 +1,5 @@
 import type { PagedListResponse } from "@decodelabs/underlay/client/types";
-import type { EntityListDataLoader } from "@decodelabs/underlay/templates";
+import { toPagedListResult, type EntityListDataLoader } from "@decodelabs/underlay/templates";
 
 interface ProjectListItem {
   id: string;
@@ -20,11 +20,6 @@ export function createProjectsListLoader(
 ): EntityListDataLoader<ProjectListItem> {
   return async (fetchFn, token, query) => {
     const response = await adminCommands.listProjects(fetchFn, token, query);
-
-    return {
-      data: response.data,
-      total: response.total,
-      hasMore: response.hasMore
-    };
+    return toPagedListResult(response);
   };
 }
