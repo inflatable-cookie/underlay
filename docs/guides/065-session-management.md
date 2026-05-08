@@ -1479,7 +1479,7 @@ Once configured, `useAuthenticatedData` automatically uses the global handlers. 
     async (fetch, token) => {
       return await myApiCommands.getItems(fetch, token);
     },
-    { defaultValue: { items: [] } }
+    { defaultValue: { data: [] } }
   );
 </script>
 
@@ -1488,7 +1488,7 @@ Once configured, `useAuthenticatedData` automatically uses the global handlers. 
 {:else if pageData.error}
   <ErrorMessage message={pageData.error} />
 {:else}
-  <ItemList items={pageData.data.items} />
+  <ItemList items={pageData.data.data} />
 {/if}
 ```
 
@@ -1528,7 +1528,7 @@ If `getAuthLoading`/`getCurrentUser` are not in the global config, you can wire 
 
   const pageData = useAuthenticatedData(
     async (fetch, token) => someApiCall(fetch, token),
-    { defaultValue: { items: [] } }
+    { defaultValue: { data: [] } }
   );
 
   // Manual trigger — only needed without global auth readiness getters

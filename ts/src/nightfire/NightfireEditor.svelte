@@ -1,9 +1,7 @@
 <script lang="ts">
   import { onMount, tick, untrack } from "svelte";
   import type { MarkdownEditorContext } from "./markup/markdown-editor-context";
-  import type { NightfireValue } from "./types";
-  import NightfireBlockEditor from "./NightfireBlockEditor.svelte";
-  import SlashCommandPalette from "./SlashCommandPalette.svelte";
+  import type { NightfireDraftValue } from "./types";
   // Ensure registrations are loaded before we lookup schema definitions
   import "./editor-registrations";
   import {
@@ -27,8 +25,7 @@
     createRequiredInitialValue,
     type NightfireFieldMode
   } from "./editor/field-lifecycle";
-  import NightfireTypeSelect from "./editor/NightfireTypeSelect.svelte";
-  import NightfireMultiBlockItem from "./editor/NightfireMultiBlockItem.svelte";
+  import NightfireFieldBlockShell from "./editor/NightfireFieldBlockShell.svelte";
   import { normaliseForStrategy } from "./editor/strategy-normalisation";
   import {
     addBlock as addEditorBlock,
@@ -69,7 +66,7 @@
   interface Props {
     name: string;
     schema: string;
-    value: NightfireValue;
+    value: NightfireDraftValue;
     /**
      * Optional overrides derived from a Nightfire strategy.
      * @deprecated Use automatic strategy loading via configureNightfireStrategies() instead.
@@ -97,7 +94,7 @@
     /**
      * Optional callback invoked whenever the NightfireValue changes.
      */
-    onChange?: (value: NightfireValue) => void;
+    onChange?: (value: NightfireDraftValue) => void;
     /**
      * Hook used with Underlay Form's `prepare`. When bound from a parent
      * (via `bind:prepare`), the editor will populate it with an
@@ -228,8 +225,8 @@
       onSchemaMismatch?.({ actualSchema: schemaMismatch, expectedSchema: schema });
     }
 
-    const current = value as Record<string, unknown> | null | undefined;
-    const next = coerced as Record<string, unknown>;
+    const current = value as unknown as Record<string, unknown> | null | undefined;
+    const next = coerced as unknown as Record<string, unknown>;
     const currentBlocks = Array.isArray(current?.blocks) ? (current?.blocks as unknown[]) : null;
     const nextBlocks = Array.isArray(next.blocks) ? (next.blocks as unknown[]) : null;
 
@@ -274,8 +271,6 @@
   // Single-block view - derives from value reactively
   // This ensures child editors always receive the latest data
   const singleBlock = $derived(isMulti ? null : ((value?.block as any) ?? null));
-  const singleBlockType = $derived(singleBlock?.type ?? null);
-
   // Multi-block state view - use $derived.by to ensure stable reference
   const blocks = $derived.by(() => {
     if (isMulti && Array.isArray(value?.blocks)) {
@@ -301,7 +296,7 @@
     }
   });
 
-  function emit(nextValue: NightfireValue) {
+  function emit(nextValue: NightfireDraftValue) {
     value = nextValue;
     onChange?.(nextValue);
   }
@@ -486,72 +481,31 @@
 </script>
 
 <div class="underlay-nightfire-field">
-  {#if !isMulti}
-    <div class="underlay-nightfire-field__block-card">
-      <div class="underlay-nightfire-field__single">
-        <div class="underlay-nightfire-field__single-toolbar">
-          <NightfireTypeSelect
-            value={(singleBlock as any)?.type ??
-              editorTypeOptions[0]?.type ??
-              effectiveDef.defaultType}
-            onChange={handleSingleTypeChange}
-            {groupedOptions}
-            typeOptions={editorTypeOptions}
-          />
-        </div>
-        <NightfireBlockEditor
-          schema={editorSchema}
-          block={singleBlock}
-          definition={effectiveDef}
-          typeOptions={editorTypeOptions}
-          onChange={handleSingleBlockChange}
-        />
-      </div>
-    </div>
-  {:else}
-    <div class="underlay-nightfire-field__multi">
-      {#each blocks as block, index (index)}
-        <div class="underlay-nightfire-field__block-card">
-          <NightfireMultiBlockItem
-            {block}
-            {index}
-            totalBlocks={blocks.length}
-            {editorSchema}
-            {effectiveDef}
-            {editorTypeOptions}
-            {groupedOptions}
-            onTypeChange={handleTypeChange}
-            onMove={moveBlock}
-            onRemove={removeBlock}
-            onBlockChange={handleBlockChange}
-            onBlockContextChange={handleSlashContextChange}
-          />
-          {#if slashState?.blockIndex === index}
-            <div class="underlay-nightfire-field__multi-slash-palette">
-              <SlashCommandPalette
-                commands={filteredSlashCommands}
-                query={slashState.query}
-                onQueryChange={handleSlashQueryChange}
-                onSelect={handleSlashCommandSelect}
-                onClose={() => {
-                  focusBlockCard(index);
-                  closeSlashPalette();
-                }}
-              />
-            </div>
-          {/if}
-        </div>
-      {/each}
-
-      <button
-        type="button"
-        class="underlay-nightfire-field__multi-add"
-        onclick={addBlock}
-      >
-        + Add block
-      </button>
-    </div>
-  {/if}
+  <NightfireFieldBlockShell
+    schema={editorSchema}
+    {isMulti}
+    definition={effectiveDef}
+    {editorTypeOptions}
+    {groupedOptions}
+    {singleBlock}
+    {blocks}
+    {slashState}
+    {filteredSlashCommands}
+    onSingleBlockChange={handleSingleBlockChange}
+    onBlocksChange={(nextBlocks) => emit(asMultiBlockValue(schema, nextBlocks))}
+    onSingleTypeChange={handleSingleTypeChange}
+    onTypeChange={handleTypeChange}
+    onBlockContextChange={handleSlashContextChange}
+    onSlashQueryChange={handleSlashQueryChange}
+    onSlashCommandSelect={handleSlashCommandSelect}
+    onCloseSlashPalette={() => {
+      if (slashState) {
+        focusBlockCard(slashState.blockIndex);
+      }
+      closeSlashPalette();
+    }}
+    onAddFirstBlock={addBlock}
+  />
 
   {#if showRequiredError}
     <p class="underlay-nightfire-field__error">This field is required.</p>
@@ -568,48 +522,6 @@
     display: grid;
     gap: var(--underlay-space-2);
     color: var(--underlay-color-text);
-  }
-
-  .underlay-nightfire-field__block-card {
-    border-radius: var(--underlay-radius-md);
-    color: var(--underlay-color-text);
-    padding: calc(var(--underlay-card-padding, 1.25rem) / 2);
-    background-color: rgba(255, 255, 255, 0.03);
-    border: 1px solid var(--underlay-color-border-subtle, rgba(148, 163, 184, 0.2));
-  }
-
-  .underlay-nightfire-field__multi {
-    display: grid;
-    gap: var(--underlay-density-gap);
-  }
-
-  .underlay-nightfire-field__multi-slash-palette {
-    margin-top: var(--underlay-space-2);
-  }
-
-  .underlay-nightfire-field__single {
-    display: grid;
-    gap: var(--underlay-space-2);
-  }
-
-  .underlay-nightfire-field__single-toolbar {
-    display: flex;
-    align-items: flex-start;
-    gap: var(--underlay-space-2);
-    padding-bottom: var(--underlay-space-2);
-    margin-bottom: var(--underlay-space-1);
-    border-bottom: 1px solid var(--underlay-color-border-subtle, rgba(148, 163, 184, 0.35));
-  }
-
-  .underlay-nightfire-field__multi-add {
-    font-size: calc(1em * var(--underlay-font-scale-xxs));
-    padding: var(--underlay-button-chip-padding-block)
-      var(--underlay-button-chip-padding-inline);
-    border-radius: var(--underlay-radius-pill);
-    border: 1px solid var(--underlay-color-border-strong);
-    background: transparent;
-    color: inherit;
-    cursor: pointer;
   }
 
   .underlay-nightfire-field__error {

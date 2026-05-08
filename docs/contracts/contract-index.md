@@ -17,7 +17,7 @@ It distinguishes:
 
 | ID | Status | Scope | Notes |
 |---|---|---|---|
-| [001-working-rules.md](./001-working-rules.md) | active | repo delivery rules | stale posture language still needs repair |
+| [001-working-rules.md](./001-working-rules.md) | active | repo delivery rules | updated for parallel generation mode |
 | [050-media-library-and-usage.md](./050-media-library-and-usage.md) | active | shared media library and usage graph | the only substantial feature contract today |
 | [`contracts/openapi/underlay.openapi.yaml`](/Users/tom/Dev/projects/underlay/contracts/openapi/underlay.openapi.yaml) | machine-readable reference | shared envelope and OpenAPI shapes | useful evidence, not complete system authority |
 
@@ -25,18 +25,19 @@ It distinguishes:
 
 | Proposed ID | Status | System family | Primary sources | Core questions |
 |---|---|---|---|---|
-| `010-foundation-primitives-and-envelopes.md` | planned | IDs, `AppError`, envelopes, validation primitives | `underlay-core`, `underlay-validation*`, `underlay-http` | what is the stable shared primitive model and where does it stop |
-| `020-http-transport-and-server-boundary.md` | planned | HTTP helpers, cookies, query/pagination, CSP/server TS helpers | `underlay-http`, `underlay-http-client`, `ts/src/client/**`, `ts/src/server/**` | what is the canonical transport contract across Rust and TS |
-| `030-auth-and-session-systems.md` | planned | auth boundary, sessions, MFA, WebAuthn, OAuth, browser auth runtime | `underlay-auth*`, `ts/src/client/auth.ts`, `ts/src/runtime/auth.ts`, `ts/src/patterns/auth-workflows/**` | which auth behaviors are foundational vs workflow-local |
-| `040-storage-blob-and-media-systems.md` | planned | DB bootstrap, blob backends, storage ownership, media orchestration, soft delete | `underlay-db`, `underlay-blob`, `underlay-media`, `underlay-soft-delete`, `underlay-aws` | what are the durable storage and media boundaries |
+| [010-foundation-primitives-and-envelopes.md](./010-foundation-primitives-and-envelopes.md) | active | IDs, `AppError`, envelopes, validation primitives | `underlay-core`, `underlay-validation*`, `underlay-http` | settles the shared primitive model and records current transport-normalization drift |
+| [020-http-transport-and-server-boundary.md](./020-http-transport-and-server-boundary.md) | active | HTTP helpers, cookies, query/pagination, CSP/server TS helpers | `underlay-http`, `underlay-http-client`, `ts/src/client/**`, `ts/src/server/**` | settles the shared transport contract and records current caller-shape drift |
+| [030-auth-and-session-systems.md](./030-auth-and-session-systems.md) | active | auth boundary, sessions, MFA, WebAuthn, OAuth, browser auth runtime | `underlay-auth*`, `ts/src/client/auth.ts`, `ts/src/runtime/auth.ts`, `ts/src/patterns/auth-workflows/**` | settles the shared auth/session boundary and records current schema/runtime drift |
+| [040-storage-blob-and-media-systems.md](./040-storage-blob-and-media-systems.md) | active | DB bootstrap, blob backends, storage ownership, media orchestration, soft delete | `underlay-db`, `underlay-blob`, `underlay-media`, `underlay-soft-delete`, `underlay-aws` | settles the durable storage/media seam and its relationship to `050` |
 | [050-media-library-and-usage.md](./050-media-library-and-usage.md) | active | media library contract | existing contract | does it still match implementation and repo goals |
-| `060-jobs-events-and-operator-systems.md` | planned | jobs, scheduled tasks, events, audit, security alerts, rate limiting, email | `underlay-jobs`, `underlay-events`, `underlay-audit`, `underlay-security-alerts`, `underlay-ratelimit`, `underlay-email` | what is the shared operator-facing async/control-plane contract |
-| `070-nightfire-and-migration-systems.md` | planned | Nightfire content model, editor/runtime, migration-core | `underlay-nightfire`, `underlay-migration-core`, `ts/src/nightfire/**` | what is the content-system contract and migration discipline |
-| `080-ai-runtime-and-suggestions.md` | planned | AI runtime, provider boundary, routing candidates, generic relation suggestions | `underlay-ai-runtime`, `underlay-suggestions`, TS AI/suggestion helpers | what does Underlay guarantee here vs leave open to apps |
-| `090-ts-runtime-and-client-orchestration.md` | planned | runtime helpers and browser/data/navigation/media orchestration | `ts/src/runtime/**`, selected `ts/src/client/**` | which TS helpers are true retained runtime systems |
-| `100-shared-patterns-and-workflow-shells.md` | planned | relation selector, form shells, batch/list/reorder/navigation state, upload flows, i18n | `ts/src/patterns/**` | which workflow shells earn retained Underlay ownership |
-| `110-admin-template-system.md` | planned | entity list/detail/form templates | `ts/src/templates/**`, template docs, consumer rollout evidence | what is the stable template contract and extension model |
-| `120-tooling-testing-and-contract-artifacts.md` | planned | testing helpers, devtools, scanners, guardrails, machine-readable contract artifacts | `underlay-testing`, `underlay-devtools`, `ts/src/tools/**`, `ts/src/testing/**`, `contracts/**` | what tooling is core platform surface vs repo-local support |
+| [060-jobs-events-and-operator-systems.md](./060-jobs-events-and-operator-systems.md) | active | jobs, scheduled tasks, events, audit, security alerts, rate limiting, email | `underlay-jobs`, `underlay-events`, `underlay-audit`, `underlay-security-alerts`, `underlay-ratelimit`, `underlay-email` | settles the shared operator-facing async/control-plane contract |
+| [070-nightfire-and-migration-systems.md](./070-nightfire-and-migration-systems.md) | active | Nightfire content model, editor/runtime, migration-core | `underlay-nightfire`, `underlay-migration-core`, `ts/src/nightfire/**` | settles the shared content-system and migration discipline and records current TS/runtime authority drift |
+| [080-ai-runtime-and-suggestions.md](./080-ai-runtime-and-suggestions.md) | active | AI runtime, provider boundary, routing candidates, generic relation suggestions | `underlay-ai-runtime`, `underlay-suggestions`, TS suggestion helpers | settles the lower AI/runtime and suggestion request boundary and records current TS authority drift |
+| [090-ts-runtime-and-client-orchestration.md](./090-ts-runtime-and-client-orchestration.md) | active | runtime helpers and browser/data/navigation/media orchestration | `ts/src/runtime/**`, selected `ts/src/client/**` | settles the retained TS runtime/client seam and records the remaining runtime-vs-pattern authority drift |
+| [100-shared-patterns-and-workflow-shells.md](./100-shared-patterns-and-workflow-shells.md) | active | relation selector, form shells, batch/list/reorder/navigation state, upload flows, i18n | `ts/src/patterns/**` | settles the retained workflow-shell boundary and records the remaining pattern-vs-runtime/template drift |
+| [110-admin-template-system.md](./110-admin-template-system.md) | active | entity list/detail/form templates | `ts/src/templates/**`, template docs, consumer rollout evidence | settles the stable template hierarchy, extension model, and form stop point while recording rollout-era drift |
+| [115-admin-resource-api-shapes.md](./115-admin-resource-api-shapes.md) | active | list/detail/tab API shapes for admin resource pages | template types, API profile guide, `underlay-reference` consumer evidence | settles the page-shaped API seam the template rollout depends on |
+| [120-tooling-testing-and-contract-artifacts.md](./120-tooling-testing-and-contract-artifacts.md) | active | testing helpers, devtools, scanners, guardrails, machine-readable contract artifacts | `underlay-testing`, `underlay-devtools`, `ts/src/tools/**`, `ts/src/testing/**`, `contracts/**` | settles the shared support-layer boundary and records current artifact/tooling drift |
 
 ## Assessment Order After Coverage
 
@@ -67,5 +68,5 @@ Do not promote a system into active implementation-assessment work until:
 
 ## Next Task
 
-Use [roadmaps/g04/001-underlay-contract-coverage-and-assessment-program.md](../roadmaps/g04/001-underlay-contract-coverage-and-assessment-program.md)
-as the active lane owner for this contract set.
+The first contract-coverage and assessment generation is complete. Open a new
+explicit roadmap generation before promoting fresh contract-driven work.

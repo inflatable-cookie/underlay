@@ -23,6 +23,48 @@ pub struct BlockDescriptor<C> {
     pub category: C,
 }
 
+/// One consumer-owned block registration bundle.
+///
+/// `M` is optional extra metadata owned by a higher layer. Underlay Nightfire
+/// stays generic by treating it as opaque. Shared downstream layers can use it
+/// for things like media-extraction registration without forcing that concern
+/// into the core protocol.
+#[derive(Debug, Clone)]
+pub struct BlockRegistration<C, M = ()> {
+    pub descriptor: BlockDescriptor<C>,
+    pub metadata: M,
+}
+
+impl<C> BlockRegistration<C, ()> {
+    pub fn from_descriptor(descriptor: BlockDescriptor<C>) -> Self {
+        Self {
+            descriptor,
+            metadata: (),
+        }
+    }
+}
+
+impl<C, M> BlockRegistration<C, M> {
+    pub fn new(descriptor: BlockDescriptor<C>, metadata: M) -> Self {
+        Self {
+            descriptor,
+            metadata,
+        }
+    }
+
+    pub fn descriptor(&self) -> &BlockDescriptor<C> {
+        &self.descriptor
+    }
+
+    pub fn metadata(&self) -> &M {
+        &self.metadata
+    }
+
+    pub fn into_parts(self) -> (BlockDescriptor<C>, M) {
+        (self.descriptor, self.metadata)
+    }
+}
+
 /// Registry of known Nightfire block descriptors.
 ///
 /// This allows strategies and APIs to resolve human-friendly labels
@@ -52,6 +94,21 @@ impl<C> BlockRegistry<C> {
     /// Register a block descriptor.
     pub fn register(&mut self, descriptor: BlockDescriptor<C>) {
         self.blocks.insert(descriptor.type_name, descriptor);
+    }
+
+    /// Register one block via a broader block-registration bundle.
+    pub fn register_registration<M>(&mut self, registration: BlockRegistration<C, M>) {
+        self.register(registration.descriptor);
+    }
+
+    /// Register many blocks via broader block-registration bundles.
+    pub fn extend_registrations<M>(
+        &mut self,
+        registrations: impl IntoIterator<Item = BlockRegistration<C, M>>,
+    ) {
+        for registration in registrations {
+            self.register_registration(registration);
+        }
     }
 
     /// Look up a block descriptor by type name.

@@ -49,6 +49,10 @@ pub trait MigrationAttachmentBindingRepository: Send + Sync {
 }
 
 /// Generic structured-content extractor.
+///
+/// This is the stable shared seam for media-reference extraction from any
+/// structured content family. Specific formats like Nightfire should satisfy
+/// this contract directly or by delegating to a narrower generic walker.
 pub trait StructuredContentMediaExtractor<T>: Send + Sync {
     fn extract_media_usages(
         &self,
@@ -58,6 +62,10 @@ pub trait StructuredContentMediaExtractor<T>: Send + Sync {
 }
 
 /// Generic structured-content walker.
+///
+/// This trait is intentionally format-agnostic. If Underlay later promotes a
+/// reusable JSON walker, that walker should plug in here rather than bypassing
+/// the shared `MediaUsageEdgeInput` contract, locator rules, or sync path.
 pub trait StructuredContentWalker<T>: Send + Sync {
     fn walk_media_usages(
         &self,

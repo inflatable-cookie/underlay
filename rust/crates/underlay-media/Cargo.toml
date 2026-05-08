@@ -9,7 +9,8 @@ description = "Media library types and repository for Underlay applications"
 default = []
 postgres = ["sqlx"]
 renditions = ["underlay-blob", "tracing"]
-full = ["postgres", "renditions"]
+nightfire = ["underlay-nightfire"]
+full = ["postgres", "renditions", "nightfire"]
 
 [dependencies]
 async-trait = { workspace = true }
@@ -24,6 +25,7 @@ image = { workspace = true }
 
 # Re-export enums from underlay-db
 underlay-db = { path = "../underlay-db" }
+underlay-nightfire = { path = "../underlay-nightfire", optional = true }
 
 # PostgreSQL support (optional)
 sqlx = { workspace = true, optional = true }

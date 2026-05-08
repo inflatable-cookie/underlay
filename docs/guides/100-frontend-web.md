@@ -259,7 +259,7 @@ Command wrappers are thin functions in `frontend-web` that wrap calls to `api-cl
 
 Command wrappers provide two benefits:
 
-1. **Response unwrapping** - Extract `.data` from `SingleResponse<T>` or `.items` from `ListResponse<T>`
+1. **Response unwrapping** - Extract `.data` from `SingleResponse<T>` or bounded `ListResponse<T>`. For page-shaped admin lists, preserve `PagedListResponse<T>` and unwrap only where the page shell expects it.
 2. **Consistent client instantiation** - Handle `fetchFn` and `accessToken` parameters uniformly
 
 ### Structure
@@ -323,6 +323,7 @@ export async function me(
 import type {
   Artist,
   ListResponse,
+  PagedListResponse,
   SingleResponse,
 } from "@myorg/api-client";
 import { createWebClient } from "$lib/api/client";
@@ -330,10 +331,9 @@ import { createWebClient } from "$lib/api/client";
 export async function listArtists(
   fetchFn: typeof fetch,
   accessToken: string,
-): Promise<Artist[]> {
+): Promise<PagedListResponse<Artist>> {
   const client = createWebClient(fetchFn, accessToken);
-  const response: ListResponse<Artist> = await client.core.listArtists();
-  return response.items;  // Unwrap list response
+  return await client.core.listArtists();
 }
 
 export async function getArtist(
@@ -356,8 +356,8 @@ import type { PageServerLoad } from "./$types";
 import { listArtists } from "$lib/commands/core-commands";
 
 export const load: PageServerLoad = async ({ fetch, locals }) => {
-  const artists = await listArtists(fetch, locals.authToken);
-  return { artists };
+  const artistsPage = await listArtists(fetch, locals.authToken);
+  return { artistsPage };
 };
 ```
 
@@ -367,7 +367,7 @@ Compare to calling the client directly:
 // Without command wrapper (more verbose)
 const client = createWebClient(fetch, locals.authToken);
 const response = await client.core.listArtists();
-const artists = response.items;
+const artists = response.data;
 ```
 
 ### When to Use Commands vs Direct Client
@@ -1170,9 +1170,9 @@ When `configureAuth()` includes `getAuthLoading` and `getCurrentUser` (recommend
   const pageData = useAuthenticatedData(
     async (fetch, token) => {
       const result = await myApiCommand(fetch, token);
-      return { items: result.items };
+      return { data: result.data };
     },
-    { defaultValue: { items: [] } }
+    { defaultValue: { data: [] } }
   );
 </script>
 
@@ -1181,7 +1181,7 @@ When `configureAuth()` includes `getAuthLoading` and `getCurrentUser` (recommend
 {:else if pageData.error}
   <Callout tone="danger" message={pageData.error} announceMode="polite" />
 {:else}
-  <p>Found {pageData.data?.items.length} items</p>
+  <p>Found {pageData.data?.data.length} items</p>
 {/if}
 ```
 

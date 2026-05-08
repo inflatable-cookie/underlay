@@ -11,6 +11,15 @@ use crate::value::NightfireValue;
 /// `NightfireStrategy`.
 #[derive(Debug, Clone)]
 pub enum NightfireValidationError {
+    /// The value shape is invalid before strategy validation runs.
+    ///
+    /// Nightfire values must encode either a single block or multiple blocks,
+    /// never both and never neither.
+    InvalidValueShape {
+        schema: String,
+        has_block: bool,
+        has_blocks: bool,
+    },
     /// The value's shape (single vs multi and block count) does not
     /// match the strategy's cardinality.
     CardinalityMismatch {
@@ -48,6 +57,16 @@ where
     C: Clone + Eq + Hash,
 {
     let schema_str = value.schema.as_str().to_owned();
+    let has_block = value.block.is_some();
+    let has_blocks = value.blocks.is_some();
+
+    if has_block == has_blocks {
+        return Err(NightfireValidationError::InvalidValueShape {
+            schema: schema_str,
+            has_block,
+            has_blocks,
+        });
+    }
 
     // Determine the effective block count and shape.
     let (is_single, block_count) = if value.block.is_some() {

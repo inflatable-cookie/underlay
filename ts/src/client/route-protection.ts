@@ -80,7 +80,6 @@ export interface LoginRedirectOptions {
  * Supports:
  * - Exact matches: `/login` matches only `/login`
  * - Prefix matches: `/auth/*` matches `/auth/callback`, `/auth/google`, etc.
- * - Simple prefix: `/api` matches `/api`, `/api/users`, etc. (startsWith behavior)
  */
 export function isPublicPath(path: string, publicPaths: string[]): boolean {
   return publicPaths.some((publicPath) => {
@@ -89,8 +88,8 @@ export function isPublicPath(path: string, publicPaths: string[]): boolean {
       const prefix = publicPath.slice(0, -1); // Remove the `*`
       return path.startsWith(prefix);
     }
-    // Default: prefix match (startsWith)
-    return path.startsWith(publicPath);
+    // Default: exact match
+    return path === publicPath;
   });
 }
 

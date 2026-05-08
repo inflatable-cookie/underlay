@@ -1,6 +1,6 @@
 # Entity List Page
 
-**Status:** In development (g03.004–005)
+Status: active
 
 `EntityListPage` is the Level 1 page shell for browse/list pages. It wraps
 `EntityList` with a `PageHeader`, action buttons, and page-level state
@@ -9,23 +9,44 @@ management.
 ## Usage
 
 ```svelte
+<script lang="ts">
+  import { EntityListPage } from "@decodelabs/underlay/templates";
+  import type { PagedListResponse } from "@decodelabs/underlay/client/types";
+  import ProjectCard from "$lib/cards/ProjectCard.svelte";
+  import { adminCommands } from "$lib/client";
+
+  async function loadProjects(fetchFn: typeof fetch, token: string | null, query) {
+    const response: PagedListResponse<ProjectListItem> =
+      await adminCommands.listProjects(fetchFn, token, query);
+
+    return {
+      data: response.data,
+      total: response.total,
+      hasMore: response.hasMore
+    };
+  }
+</script>
+
+{#snippet projectCard(item, context)}
+  <ProjectCard
+    project={item}
+    selectionMode={context.selectionMode}
+    reorderMode={context.reorderMode}
+    selected={context.selected}
+    onSelectionChange={context.onToggle}
+  />
+{/snippet}
+
 <EntityListPage
   title="Projects"
   backHref="/"
   backLabel="Back to dashboard"
-  
-  dataLoader={async (fetch, token, query) => 
-    adminCommands.listProjects(fetch, token, query)
-  }
-  
+  dataLoader={loadProjects}
   presentation="cards"
-  
   filters={[...]}
-  renderItem={(item) => <ProjectCard {item} />}
-  
+  renderItem={projectCard}
   batchActions={[...]}
   reorder={{ enabled: true, handler: ... }}
-  
   onAdd={() => goto("/projects/new")}
 />
 ```
@@ -54,8 +75,8 @@ management.
 
 | Prop | Type | Required | Description |
 |------|------|----------|-------------|
-| `presentation` | `"cards" | "table"` | Yes | List presentation mode |
-| `renderItem` | `(item) => Snippet` | For cards | Card renderer |
+| `presentation` | `"cards" \| "table" \| "log"` | Yes | List presentation mode |
+| `renderItem` | `Snippet<[item, context]>` | For cards | Card renderer |
 | `columns` | `TableColumn[]` | For table | Table column config |
 
 ### Filters
@@ -142,6 +163,45 @@ batchActions={[
 ```
 
 The `handler` receives `(ids, values)` where `values` is the object passed to `onSubmit` from the dialog snippet.
+
+## Public types
+
+The shared list-template config types are exported from
+`@decodelabs/underlay/templates`:
+
+- `FilterConfig`
+- `BatchActionConfig`
+- `BatchDialogConfig`
+- `BatchDialogContext`
+- `ReorderConfig`
+- `PagedListResult`
+- `EntityListDataLoader`
+
+## Data loader contract
+
+`EntityListPage` expects a loader that returns:
+
+```ts
+{
+  data: T[];
+  total?: number | null;
+  hasMore?: boolean;
+}
+```
+
+Recommended pattern:
+
+- backend route uses the canonical paged wire envelope from `115`
+- TS client normalizes `has_more` to `hasMore`
+- page loader returns that shaped result directly to the template
+
+Reference recipe:
+
+- [../guides/code/073-api-profiles-and-query-contract/entity-list-page-paged-loader.ts](../guides/code/073-api-profiles-and-query-contract/entity-list-page-paged-loader.ts)
+
+Use bounded `ListResponse<T>` only for helper collections that are not real
+page shells. If a route feeds `EntityListPage`, it should be a page-shaped
+paginated resource surface, not a helper list disguised as one.
 
 ## See Also
 

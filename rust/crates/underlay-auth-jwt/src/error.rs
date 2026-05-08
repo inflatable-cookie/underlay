@@ -1,6 +1,7 @@
 //! JWT/session errors.
 
 use thiserror::Error;
+use underlay_auth::AuthError;
 
 #[derive(Debug, Clone, Error, PartialEq, Eq)]
 pub enum JwtError {
@@ -40,19 +41,8 @@ pub enum JwtError {
 
 impl JwtError {
     pub fn code(&self) -> &'static str {
-        match self {
-            JwtError::Config(_) => "auth.jwt_config_error",
-            JwtError::Key(_) => "auth.jwt_key_error",
-            JwtError::Expired => "auth.token_expired",
-            JwtError::NotYetValid => "auth.token_not_yet_valid",
-            JwtError::InvalidToken => "auth.token_invalid",
-            JwtError::MalformedToken => "auth.token_malformed",
-            JwtError::SessionRevoked => "auth.session_revoked",
-            JwtError::TokenFingerprintMismatch => "auth.token_fingerprint_mismatch",
-            JwtError::RefreshReplayDetected => "auth.token_replay",
-            JwtError::UnsupportedTokenType => "auth.token_invalid",
-            JwtError::Internal(_) => "auth.internal",
-        }
+        let auth_error: AuthError = self.clone().into();
+        auth_error.code()
     }
 }
 

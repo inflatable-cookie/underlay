@@ -417,7 +417,9 @@ impl MediaContentKind {
 #[serde(rename_all = "snake_case")]
 pub enum MediaLocatorKind {
     Field,
+    /// Canonical Nightfire form: `<block-id>#<json-pointer-relative-to-block.data>`.
     BlockId,
+    /// Fallback form: JSON Pointer rooted at the stored field value.
     Path,
     ExternalRef,
     #[serde(untagged)]

@@ -1,7 +1,8 @@
 //! Audit logging for admin actions and security-relevant events.
 //!
-//! This crate provides types and database functions for recording audit trails
-//! of administrative actions. Audit logs are essential for:
+//! This crate provides the shared audit row, filter, and query contract for
+//! recording administrative actions. The consuming application still owns the
+//! concrete schema/table location. Audit logs are essential for:
 //!
 //! - Security forensics (who did what, when)
 //! - Compliance requirements (SOC 2, GDPR audit trails)
@@ -31,7 +32,9 @@
 //!
 //! # Schema
 //!
-//! The consuming application must create an audit log table. Example migration:
+//! The consuming application must create an audit log table. Underlay does not
+//! own a fixed shared table location here; it owns the row/query semantics over
+//! an app-supplied fully qualified table name. Example migration:
 //!
 //! ```sql
 //! CREATE TABLE platform.audit_log (

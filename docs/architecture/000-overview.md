@@ -4,8 +4,10 @@ Underlay is a reusable foundation for building full-stack apps with a consistent
 
 1. **Rust API** implements domain logic and exposes stable HTTP endpoints.
 2. **TypeScript API client** provides typed commands and DTOs for the API.
-3. **Shared Svelte UI kit** provides presentational components and app-agnostic UI patterns.
-4. **SvelteKit apps** (admin + frontend) compose the client and UI kit into user-facing products.
+3. **Shared TypeScript and Svelte layer** provides retained workflow shells,
+   admin templates, Nightfire editor/runtime surfaces, and app-facing runtime helpers.
+4. **SvelteKit apps** (admin + frontend) compose the client and shared UI/runtime
+   layer into user-facing products.
 
 ## Goals
 
@@ -25,7 +27,10 @@ Underlay is a reusable foundation for building full-stack apps with a consistent
 
 ## Rust Crates
 
-Underlay provides 29 Rust crates organised into five domains: Core, Auth, Data & Storage, Infrastructure, and Developer Tools. The auth system uses an umbrella + provider pattern (`underlay-auth` defines traits; `underlay-auth-jwt`, `underlay-auth-password`, etc. implement them).
+Underlay currently provides 31 Rust crates organised into five domains: Core,
+Auth, Data & Storage, Infrastructure, and Developer Tools. The auth system
+uses an umbrella + provider pattern (`underlay-auth` defines traits;
+`underlay-auth-jwt`, `underlay-auth-password`, etc. implement them).
 
 See [010-package-map.md](./010-package-map.md) for the full crate inventory, descriptions, and feature flags.
 

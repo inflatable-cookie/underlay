@@ -31,3 +31,22 @@ export type {
   EntityListCardModeDisplay,
   EntityListCardProps
 } from "./entity-list-card.types";
+export type {
+  BatchActionConfig,
+  BatchActionConfirm,
+  BatchDialogConfig,
+  BatchDialogContext,
+  DetailActionConfig,
+  DetailActionConfirm,
+  DetailItemConfig,
+  DetailMetaItemConfig,
+  DetailTabConfig,
+  EntityListDataLoader,
+  EntityListSharedProps,
+  FilterConfig,
+  PagedListResult,
+  ReorderConfig,
+  TemplateFilterOption,
+  TemplateSortField,
+  TemplateSurface
+} from "./template.types";

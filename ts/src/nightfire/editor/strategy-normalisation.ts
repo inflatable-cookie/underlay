@@ -1,40 +1,35 @@
-import type { NightfireValue } from "../types";
+import type { NightfireDraftValue } from "../types";
 import { normaliseNightfireValue } from "../utils";
 import type { NightfireFieldMode } from "./field-lifecycle";
 
 export interface StrategyNormalisationResult {
-  coerced: NightfireValue;
+  coerced: NightfireDraftValue;
   schemaMismatch: string | null;
 }
 
 export function normaliseForStrategy(
-  value: NightfireValue,
+  value: NightfireDraftValue,
   schema: string,
   mode: NightfireFieldMode
 ): StrategyNormalisationResult {
   const normalised = normaliseNightfireValue(value, schema);
-  const actualSchema = (() => {
-    if (!value || typeof value !== "object") return null;
-    const current = (value as Record<string, unknown>).schema;
-    return typeof current === "string" ? current : null;
-  })();
+  const actualSchema = value?.schema ?? null;
 
-  let coerced: NightfireValue = { ...normalised, schema } as NightfireValue;
-  const record = coerced as unknown as Record<string, unknown>;
-  const single = record.block ?? null;
-  const multi = Array.isArray(record.blocks) ? (record.blocks as unknown[]) : undefined;
+  let coerced: NightfireDraftValue = { ...normalised, schema };
+  const single = coerced.block ?? null;
+  const multi = Array.isArray(coerced.blocks) ? coerced.blocks : undefined;
 
   if (mode === "single") {
     if (!single && multi && multi.length > 0) {
-      coerced = { ...coerced, block: multi[0], blocks: undefined } as NightfireValue;
+      coerced = { schema, block: multi[0] };
     } else if (single && multi) {
-      coerced = { ...coerced, blocks: undefined } as NightfireValue;
+      coerced = { schema, block: single };
     }
   } else {
     if (!multi && single) {
-      coerced = { ...coerced, block: undefined, blocks: [single] } as NightfireValue;
+      coerced = { schema, blocks: [single] };
     } else if (multi && single) {
-      coerced = { ...coerced, block: undefined } as NightfireValue;
+      coerced = { schema, blocks: multi };
     }
   }
 

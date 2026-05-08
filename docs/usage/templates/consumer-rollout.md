@@ -1,7 +1,13 @@
-# Template Consumer Rollout Plan
+# Template Consumer Rollout Snapshot
 
-**Status:** Draft  
-**Updated:** 2026-05-04
+Status: historical snapshot
+Updated: 2026-05-08
+
+This page is no longer the live rollout authority.
+
+Use it as frozen rollout evidence only. The active template-system delivery
+state lives in `docs/roadmaps/g03/` and the contract/assessment state lives in
+`docs/roadmaps/g04/`.
 
 ## Rollout Order
 

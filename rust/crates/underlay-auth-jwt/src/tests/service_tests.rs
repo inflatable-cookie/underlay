@@ -619,15 +619,9 @@ mod error_handling {
 
     #[test]
     fn jwt_error_codes_are_correct() {
-        assert_eq!(
-            JwtError::Config("test".to_string()).code(),
-            "auth.jwt_config_error"
-        );
-        assert_eq!(
-            JwtError::Key("test".to_string()).code(),
-            "auth.jwt_key_error"
-        );
-        assert_eq!(JwtError::Expired.code(), "auth.token_expired");
+        assert_eq!(JwtError::Config("test".to_string()).code(), "auth.internal");
+        assert_eq!(JwtError::Key("test".to_string()).code(), "auth.internal");
+        assert_eq!(JwtError::Expired.code(), "auth.session_expired");
         assert_eq!(JwtError::NotYetValid.code(), "auth.token_not_yet_valid");
         assert_eq!(JwtError::InvalidToken.code(), "auth.token_invalid");
         assert_eq!(JwtError::MalformedToken.code(), "auth.token_malformed");
@@ -636,7 +630,7 @@ mod error_handling {
             JwtError::TokenFingerprintMismatch.code(),
             "auth.token_fingerprint_mismatch"
         );
-        assert_eq!(JwtError::RefreshReplayDetected.code(), "auth.token_replay");
+        assert_eq!(JwtError::RefreshReplayDetected.code(), "auth.token_invalid");
         assert_eq!(JwtError::UnsupportedTokenType.code(), "auth.token_invalid");
         assert_eq!(
             JwtError::Internal("test".to_string()).code(),

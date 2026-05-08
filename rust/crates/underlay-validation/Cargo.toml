@@ -32,7 +32,7 @@ deunicode = { version = "1.6", optional = true }
 [features]
 default = ["derive"]
 derive = ["underlay-validation-derive"]
-axum = ["dep:axum", "dep:http"]
+axum = ["dep:axum", "dep:http", "dep:underlay-core"]
 validator-compat = ["dep:validator", "dep:underlay-core"]
 nightfire = ["dep:underlay-nightfire", "dep:underlay-core"]
 field-validation = ["dep:uuid"]

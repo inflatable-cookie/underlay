@@ -2,17 +2,7 @@
   import type { Snippet } from "svelte";
   import { DetailItem, DetailSection } from "@poodle/svelte";
   import EntityDetailModule from "./EntityDetailModule.svelte";
-
-  interface DetailItemConfig {
-    label: string;
-    value: string | Snippet;
-    description?: string;
-    emptyText?: string;
-    truncateValue?: boolean;
-    layout?: "inline" | "stacked";
-    presentation?: "simple" | "surface";
-    span?: "full" | "half" | null;
-  }
+  import type { DetailItemConfig } from "./template.types";
 
   interface Props {
     title?: string | null;

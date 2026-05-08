@@ -52,13 +52,12 @@ README surfaces.
 ## Active generation
 
 - [g03/README.md](g03/README.md) — template-system thread
-- [g04/README.md](g04/README.md) — contract-coverage and assessment thread
 
 ## Current Queue
 
 - `g03.014` is the active form-proof milestone for the template-system thread
-- `g04.001` is the active contract-program launch milestone for the contract
-  thread
+- `g04` is closed. Its contract-coverage and assessment history remains
+  available under [g04/README.md](g04/README.md)
 - `g02` is closed. Its batch-card history now lives under `g02/batch-cards/`
 
 ## Historical Generations
@@ -252,7 +251,7 @@ README surfaces.
 **g01 Complete:** 91 | **Extracted:** 2 | **In progress:** 0 | **Not started:** 0
 **g02 Complete:** 7 | **In progress:** 0 | **Not started:** 0
 **g03 Active:** 14 | **In progress:** 1 | **Not started:** 1
-**g04 Active:** 1 | **In progress:** 1 | **Not started:** 0
+**g04 Active:** 8 | **In progress:** 1 | **Not started:** 0
 
 ## Current Boundary
 
@@ -306,6 +305,6 @@ queue and proving the next honest work belonged in `g02`.
 
 ## Next Task
 
-Execute `g02.001`: freeze the real active overhaul posture across Underlay and
-the current consumer family in the new generation, then compile the first
-bounded normalization waves from that evidence.
+Execute the live queue:
+
+- `g03.014`: complete the form-proof milestone for the template-system thread

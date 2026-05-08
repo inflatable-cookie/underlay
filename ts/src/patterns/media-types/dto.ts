@@ -89,6 +89,11 @@ export interface MediaUsage {
   mediaId: string;
   usedByType: string;
   usedById: string;
-  field: string | null;
+  ownerField: string | null;
+  contentKind: string;
+  locatorKind: string;
+  locatorKey: string;
+  usageRole: string;
+  provenanceKind: string;
   createdAt: string;
 }

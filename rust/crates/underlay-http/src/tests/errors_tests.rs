@@ -2,6 +2,7 @@
 mod tests {
     use std::collections::HashMap;
 
+    use axum::body::to_bytes;
     use axum::http::StatusCode;
     use axum::response::IntoResponse;
 
@@ -59,6 +60,15 @@ mod tests {
             .into_response();
 
         assert_eq!(res.status(), StatusCode::BAD_REQUEST);
+
+        let body = tokio::runtime::Runtime::new()
+            .expect("runtime")
+            .block_on(async move { to_bytes(res.into_body(), usize::MAX).await.expect("body") });
+        let json: serde_json::Value =
+            serde_json::from_slice(&body).expect("response should be json");
+        let error = json["error"].as_object().expect("error object");
+        assert!(error.get("fieldErrors").is_some());
+        assert!(error.get("field_errors").is_none());
     }
 
     #[test]

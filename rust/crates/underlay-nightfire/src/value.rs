@@ -1,6 +1,7 @@
 //! Nightfire value and schema identifier types.
 
 use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
 use crate::block::BlockData;
 
@@ -75,6 +76,44 @@ impl NightfireValue {
     pub fn is_multi(&self) -> bool {
         self.blocks.is_some()
     }
+}
+
+/// Ensure every block in this Nightfire value has a stable block ID.
+///
+/// Returns the number of block IDs that were assigned.
+pub fn ensure_block_ids(value: &mut NightfireValue) -> usize {
+    let mut assigned = 0usize;
+
+    if let Some(block) = value.block.as_mut() {
+        assigned += ensure_block_id(block);
+    }
+
+    if let Some(blocks) = value.blocks.as_mut() {
+        for block in blocks {
+            assigned += ensure_block_id(block);
+        }
+    }
+
+    assigned
+}
+
+fn ensure_block_id(block: &mut BlockData) -> usize {
+    if block
+        .id
+        .as_deref()
+        .map(str::trim)
+        .filter(|value| !value.is_empty())
+        .is_some()
+    {
+        return 0;
+    }
+
+    block.id = Some(generate_block_id());
+    1
+}
+
+fn generate_block_id() -> String {
+    format!("nf_{}", Uuid::now_v7().simple())
 }
 
 #[cfg(test)]

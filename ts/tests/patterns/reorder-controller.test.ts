@@ -1,15 +1,14 @@
 import { describe, expect, it, vi } from "vitest";
 
-async function loadReorderModule(isDirtyValue: boolean) {
+async function loadReorderModule() {
 	vi.resetModules();
 	(globalThis as any).$state = <T>(initial: T) => initial;
-	(globalThis as any).$derived = { by: () => isDirtyValue };
 	return await import("../../src/patterns/reorder-controller.svelte");
 }
 
 describe("patterns/reorder-controller.svelte.ts", () => {
 	it("handles move/reset/update/merge/remove operations", async () => {
-		const { createReorderController } = await loadReorderModule(false);
+		const { createReorderController } = await loadReorderModule();
 		const submitFn = vi.fn(async () => undefined);
 		const controller = createReorderController(
 			[
@@ -50,7 +49,7 @@ describe("patterns/reorder-controller.svelte.ts", () => {
 	});
 
 	it("skips submit when clean and handles submit success/error when dirty", async () => {
-		const cleanModule = await loadReorderModule(false);
+		const cleanModule = await loadReorderModule();
 		const cleanSubmit = vi.fn(async () => undefined);
 		const clean = cleanModule.createReorderController([{ id: "a" }], cleanSubmit);
 		await clean.submit();
@@ -58,20 +57,40 @@ describe("patterns/reorder-controller.svelte.ts", () => {
 		expect(clean.isPending).toBe(false);
 		expect(clean.error).toBeNull();
 
-		const dirtyModule = await loadReorderModule(true);
+		const dirtyModule = await loadReorderModule();
 		const successSubmit = vi.fn(async () => undefined);
-		const dirtySuccess = dirtyModule.createReorderController([{ id: "k" }], successSubmit);
+		const dirtySuccess = dirtyModule.createReorderController(
+			[
+				{ id: "k", label: "K" },
+				{ id: "m", label: "M" },
+			],
+			successSubmit
+		);
+		dirtySuccess.move(0, 1);
 		await dirtySuccess.submit();
-		expect(successSubmit).toHaveBeenCalledWith(["k"]);
+		expect(successSubmit).toHaveBeenCalledWith(["m", "k"]);
 		expect(dirtySuccess.isPending).toBe(false);
 		expect(dirtySuccess.error).toBeNull();
+		expect(dirtySuccess.original.map((x) => x.id)).toEqual(["m", "k"]);
+		expect(dirtySuccess.isDirty).toBe(false);
+		dirtySuccess.reset();
+		expect(dirtySuccess.pending.map((x) => x.id)).toEqual(["m", "k"]);
 
 		const failingSubmit = vi.fn(async () => {
 			throw new Error("submit failed");
 		});
-		const dirtyFail = dirtyModule.createReorderController([{ id: "z" }], failingSubmit);
+		const dirtyFail = dirtyModule.createReorderController(
+			[
+				{ id: "z", label: "Z" },
+				{ id: "q", label: "Q" },
+			],
+			failingSubmit
+		);
+		dirtyFail.move(0, 1);
 		await expect(dirtyFail.submit()).rejects.toThrow("submit failed");
 		expect(dirtyFail.isPending).toBe(false);
 		expect(dirtyFail.error?.message).toBe("submit failed");
+		expect(dirtyFail.original.map((x) => x.id)).toEqual(["z", "q"]);
+		expect(dirtyFail.isDirty).toBe(true);
 	});
 });

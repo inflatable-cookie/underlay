@@ -8,67 +8,26 @@
     TableColumn,
     TableRow,
     TableRowAction,
-    TableCellValue,
     LogEntry,
     LogActionType,
     LogActor
   } from "@poodle/svelte";
-  import type { QueryParams } from "../client/query";
-
-  // Cross-package Svelte Snippet identity is brittle in linked local workspaces.
-  // Keep the shared template boundary permissive so consumers can pass local snippets cleanly.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  type TemplateSurface = any;
-
-  // --- Types ---
-
-  interface FilterConfig {
-    id: string;
-    type: "search" | "select" | "date" | "number" | "sort";
-    label: string;
-    options?: { value: string; label: string }[];
-    loadOptions?: () => Promise<{ value: string; label: string }[]>;
-    placeholder?: string;
-    sortFields?: { key: string; label: string; defaultDirection?: "asc" | "desc" }[];
-  }
-
-  interface BatchDialogContext {
-    ids: string[];
-    onSubmit: (values: Record<string, unknown>) => void;
-    onCancel: () => void;
-  }
-
-  interface BatchDialogConfig {
-    title: string;
-    content: TemplateSurface;
-  }
-
-  interface BatchActionConfig {
-    id: string;
-    label: string;
-    tone?: "default" | "danger" | "warning";
-    icon?: string;
-    confirm?: boolean | {
-      title: string;
-      description: string | ((count: number) => string);
-      confirmLabel?: string;
-      cancelLabel?: string;
-    };
-    dialog?: BatchDialogConfig;
-    handler: (ids: string[], values?: Record<string, unknown>) => Promise<void>;
-  }
-
-  interface ReorderConfig {
-    enabled: boolean;
-    handler: (orderedIds: string[]) => Promise<void>;
-  }
-
-  interface PagedListResult<TItem> {
-    data: TItem[];
-    /** Total matching items across all pages. Falls back to visible count if omitted. */
-    total?: number | null;
-    hasMore?: boolean;
-  }
+  import type {
+    BatchActionConfig,
+    EntityListDataLoader,
+    EntityListSharedProps,
+    FilterConfig,
+    LogActionFormatter,
+    LogActionTypeResolver,
+    LogActorHrefResolver,
+    LogEntryMapper,
+    LogResourceHrefResolver,
+    LogResourceTypeFormatter,
+    PagedListResult,
+    ReorderConfig,
+    TableRowActionFactory,
+    TemplateSurface
+  } from "./template.types";
 
   interface Props {
     /** Page title */
@@ -96,7 +55,7 @@
     backLabel?: string;
     
     /** Data loading function. Must return paged results for the current query state. */
-    dataLoader: (fetch: typeof window.fetch, token: string | null, query: QueryParams) => Promise<PagedListResult<T>>;
+    dataLoader: EntityListDataLoader<T>;
     
     /** Unique identifier field (default: "id") */
     idField?: string;
@@ -111,7 +70,7 @@
     columns?: TableColumn[];
     
     /** For table: row actions */
-    rowActions?: (row: TableRow<T>) => { value: string; label: string }[];
+    rowActions?: TableRowActionFactory<T>;
 
     /** For table: whether to show the actions column */
     showRowActions?: boolean;
@@ -129,7 +88,7 @@
     onRowActionSelect?: (row: TableRow<T>, action: TableRowAction) => void;
 
     /** For log presentation: map loaded items into Poodle log entries. */
-    toLogEntries?: (items: T[]) => LogEntry[];
+    toLogEntries?: LogEntryMapper<T>;
 
     /** For log presentation: custom action icon snippet. */
     actionIcon?: TemplateSurface;
@@ -138,19 +97,19 @@
     entryDetails?: TemplateSurface;
 
     /** For log presentation: derive action type semantics. */
-    getActionType?: (action: string) => LogActionType;
+    getActionType?: LogActionTypeResolver;
 
     /** For log presentation: format action labels. */
-    formatAction?: (action: string) => string;
+    formatAction?: LogActionFormatter;
 
     /** For log presentation: format resource labels. */
-    formatResourceType?: (resourceType: string) => string;
+    formatResourceType?: LogResourceTypeFormatter;
 
     /** For log presentation: derive actor hrefs. */
-    getActorHref?: (actor: LogActor) => string;
+    getActorHref?: LogActorHrefResolver;
 
     /** For log presentation: derive resource hrefs. */
-    getResourceHref?: (resourceType: string, resourceId: string, action: string) => string | null;
+    getResourceHref?: LogResourceHrefResolver;
     
     /** Declarative filter configuration */
     filters?: FilterConfig[];
@@ -180,13 +139,13 @@
     beforeList?: TemplateSurface;
 
     /** Query state (filters, sort, page, limit) */
-    query?: QueryParams;
+    query?: EntityListSharedProps<T>["query"];
 
     /** Called when query changes (parent manages URL sync) */
-    onQueryChange?: (query: QueryParams) => void;
+    onQueryChange?: EntityListSharedProps<T>["onQueryChange"];
 
     /** Custom reorder error handler for conflict recovery */
-    onReorderError?: (error: unknown) => Promise<string | void> | string | void;
+    onReorderError?: EntityListSharedProps<T>["onReorderError"];
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

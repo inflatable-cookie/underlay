@@ -4,6 +4,12 @@ export interface ListResponse<T> {
   data: T[];
 }
 
+export interface PagedListResponse<T> {
+  data: T[];
+  total: number;
+  hasMore: boolean;
+}
+
 export interface SingleResponse<T> {
   data: T;
 }

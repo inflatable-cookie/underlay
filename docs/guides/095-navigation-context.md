@@ -63,7 +63,7 @@ In the edit or create page, use `consumeNavigationContext()` to **pop** the cont
 ```svelte
 <script lang="ts">
   import { consumeNavigationContext } from "@decodelabs/underlay/runtime/navigation";
-  import { PageHeader } from "@decodelabs/underlay/patterns";
+  import { PageHeader } from "@poodle/svelte";
 
   export let data;
 

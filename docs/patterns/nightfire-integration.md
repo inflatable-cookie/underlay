@@ -32,7 +32,8 @@ Centralize Nightfire setup once, then keep forms/details consistent:
 ### Phase 3: Form Editing Pattern
 
 - [ ] Use `NightfireEditor` for JSONB Nightfire fields
-- [ ] Normalize/save via `prepareNightfireForSave` where applicable
+- [ ] Normalize/save via `prepareNightfireForSave` or `writePreparedNightfireToFormData`
+- [ ] Preserve inner Nightfire JSON keys verbatim; only map outer DTO field names at the API boundary
 - [ ] Validate schema and handle parse/validation errors gracefully
 
 ### Phase 4: Detail Rendering Pattern

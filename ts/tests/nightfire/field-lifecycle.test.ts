@@ -2,15 +2,15 @@ import { describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
 	createDefaultBlock: vi.fn(),
-	writeNightfireToFormData: vi.fn(),
+	writePreparedNightfireToFormData: vi.fn(),
 }));
 
 vi.mock("../../src/nightfire/editor/block-list", () => ({
 	createDefaultBlock: mocks.createDefaultBlock,
 }));
 
-vi.mock("../../src/nightfire/utils", () => ({
-	writeNightfireToFormData: mocks.writeNightfireToFormData,
+vi.mock("../../src/nightfire/validation", () => ({
+	writePreparedNightfireToFormData: mocks.writePreparedNightfireToFormData,
 }));
 
 import { createPrepareWriter, createRequiredInitialValue } from "../../src/nightfire/editor/field-lifecycle";
@@ -38,7 +38,7 @@ describe("nightfire/editor/field-lifecycle", () => {
 		const writer = createPrepareWriter(getValue as any, getName);
 		writer(formData);
 
-		expect(mocks.writeNightfireToFormData).toHaveBeenCalledWith(
+		expect(mocks.writePreparedNightfireToFormData).toHaveBeenCalledWith(
 			formData,
 			"content",
 			{ schema: "s", block: { type: "markdown", data: {} } }

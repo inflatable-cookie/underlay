@@ -148,6 +148,23 @@ The upload process uses **direct-to-blob** uploads with pre-signed URLs:
 The contract doc above is authoritative. The guide below shows the minimum
 implementation shape for a consumer app.
 
+Treat it as an Underlay-owned consumer template for the steady-state media
+graph:
+
+- Underlay owns this recommended shape
+- consumer apps own their concrete migration files and rollout/backfill steps
+- older consumer apps may migrate into this shape in stages, but they should
+  converge on it rather than preserve field-only usage rows indefinitely
+
+Copyable template artifact:
+
+- [`docs/guides/code/077-media-library/media-usage-template.sql`](/Users/tom/Dev/projects/underlay/docs/guides/code/077-media-library/media-usage-template.sql)
+- [`docs/guides/code/077-media-library/migrated-attachment-binding-template.sql`](/Users/tom/Dev/projects/underlay/docs/guides/code/077-media-library/migrated-attachment-binding-template.sql)
+- [`docs/guides/code/077-media-library/locator-aware-rollout-recipe.md`](/Users/tom/Dev/projects/underlay/docs/guides/code/077-media-library/locator-aware-rollout-recipe.md)
+- [`docs/guides/code/077-media-library/media-usage-vocabulary.md`](/Users/tom/Dev/projects/underlay/docs/guides/code/077-media-library/media-usage-vocabulary.md)
+- [`docs/guides/code/077-media-library/nightfire-save-sync-resolve-recipe.md`](/Users/tom/Dev/projects/underlay/docs/guides/code/077-media-library/nightfire-save-sync-resolve-recipe.md)
+- [`docs/guides/code/077-media-library/nightfire-block-media-handler-recipe.md`](/Users/tom/Dev/projects/underlay/docs/guides/code/077-media-library/nightfire-block-media-handler-recipe.md)
+
 ```sql
 -- Media items (images, PDFs, etc.)
 CREATE TABLE media.media (
@@ -214,14 +231,35 @@ CREATE INDEX idx_media_kind ON media.media(kind);
 CREATE INDEX idx_media_version_media_id ON media.media_version(media_id);
 CREATE INDEX idx_media_version_sha256 ON media.media_version(sha256);
 CREATE INDEX idx_media_usage_media_id ON media.media_usage(media_id);
-CREATE INDEX idx_media_usage_used_by ON media.media_usage(used_by_type, used_by_id);
-CREATE INDEX idx_media_usage_owner_field ON media.media_usage(used_by_type, used_by_id, owner_field);
+CREATE INDEX idx_media_usage_used_by_scope ON media.media_usage(used_by_type, used_by_id, provenance_kind);
+CREATE INDEX idx_media_usage_owner_field ON media.media_usage(used_by_type, used_by_id, owner_field, provenance_kind);
 
 -- Foreign key for current version (added after both tables exist)
 ALTER TABLE media.media
     ADD CONSTRAINT fk_media_current_version
     FOREIGN KEY (current_version_id) REFERENCES media.media_version(id);
 ```
+
+Rollout rule for structured content:
+
+- if your structured-content engine does not yet provide stable block ids,
+  start with `locator_kind = 'path'`
+- once stable block ids exist, upgrade extractors to emit
+  `locator_kind = 'block_id'` where possible
+- that upgrade should change extractor output, not the shared table contract
+
+Canonical Nightfire locator format:
+
+- `locator_kind = 'block_id'` uses
+  `<block-id>#<json-pointer-relative-to-block.data>`
+- `locator_kind = 'path'` uses a JSON Pointer rooted at the stored Nightfire
+  value
+
+Examples:
+
+- `hero_01#/imageId`
+- `gallery_02#/pages/1/imageId`
+- fallback path: `/blocks/4/data/pages/1/imageId`
 
 ### Enums
 
@@ -284,8 +322,123 @@ Recommended shared surfaces:
 - `MediaUsageRepository`
 - `MigrationAttachmentBindingRepository`
 - `StructuredContentMediaExtractor`
+- `NightfireBlockMediaUsageExtractor` with the `underlay-media` `nightfire`
+  feature
+- `NightfireBlockMediaHandler`
+- `NightfireBlockMediaRegistration`
+- `NightfireBlockMediaHandlerRegistry` / `NightfireBlockMediaHandlerMap`
+- `NightfireMediaUsageExtractor`
+  - `NightfireMediaReferenceMatcher` / `NightfireFieldNameMatcher`
+  remain available as a compatibility path for older field-name matcher setups
+- `resolve_nightfire_media_usage(...)` for the inverse lookup from stored
+  `media_usage` rows back into the current Nightfire JSON
 - `sync_media_usages_for_record(...)`
 - `audit_media_usages_for_record(...)`
+
+Suggested Nightfire starting point:
+
+```rust
+use underlay_media::{
+    MediaId, MediaUsageProvenanceKind, MediaUsageRole,
+    NightfireBlockMediaHandler, NightfireBlockMediaHandlerMap,
+    NightfireBlockMediaReference, NightfireBlockMediaUsageExtractor,
+    NightfireBlockMediaRegistration, NightfireMediaVisitContext,
+};
+use underlay_nightfire::{BlockDescriptor, BlockRegistration};
+
+struct HeroBlockHandler;
+
+impl NightfireBlockMediaHandler for HeroBlockHandler {
+    fn extract_media_references(
+        &self,
+        context: &NightfireMediaVisitContext<'_>,
+    ) -> underlay_media::MediaResult<Vec<NightfireBlockMediaReference>> {
+        let Some(media_id) = context
+            .resolve_relative_pointer("/imageId")
+            .and_then(|value| value.as_str())
+            .and_then(|value| uuid::Uuid::parse_str(value).ok())
+            .map(MediaId::from_uuid)
+        else {
+            return Ok(Vec::new());
+        };
+
+        Ok(vec![NightfireBlockMediaReference::new(
+            media_id,
+            MediaUsageRole::Embedded,
+            "/imageId",
+        )])
+    }
+}
+
+fn hero_media_registration() -> NightfireBlockMediaRegistration {
+    NightfireBlockMediaRegistration::new("hero", HeroBlockHandler)
+}
+
+fn hero_block_registration() -> BlockRegistration<MyBlockCategory, NightfireBlockMediaRegistration> {
+    BlockRegistration::new(
+        BlockDescriptor {
+            type_name: "hero",
+            label: "Hero",
+            category: MyBlockCategory::Content,
+        },
+        hero_media_registration(),
+    )
+}
+
+let registry = NightfireBlockMediaHandlerMap::from_block_registrations([
+    hero_block_registration(),
+]);
+
+let extractor = NightfireBlockMediaUsageExtractor::new(
+    "lesson",
+    Some(lesson_id),
+    "body_blocks",
+    MediaUsageProvenanceKind::ContentSync,
+    registry,
+);
+```
+
+If you already have a usage-sync repository, the shared extractor can also do
+the full extract-plus-sync step directly:
+
+```rust
+let report = extractor
+    .extract_and_sync(&media_repo, &nightfire_value)
+    .await?;
+```
+
+For a fuller recipe, including nested Nightfire child values inside blocks, use:
+
+- [`docs/guides/code/077-media-library/nightfire-block-media-handler-recipe.md`](/Users/tom/Dev/projects/underlay/docs/guides/code/077-media-library/nightfire-block-media-handler-recipe.md)
+- and pair it with the broader block-module assembly guide:
+  [`docs/guides/code/076-nightfire/nightfire-block-module-pattern.md`](/Users/tom/Dev/projects/underlay/docs/guides/code/076-nightfire/nightfire-block-module-pattern.md)
+
+Later, when an audit or detail UI needs to follow a stored locator back into
+the structured content, use the shared resolver instead of reimplementing the
+lookup:
+
+```rust
+use underlay_media::{resolve_nightfire_media_usage, MediaLocatorKind};
+
+let current_value = resolve_nightfire_media_usage(
+    &nightfire_value,
+    &MediaLocatorKind::BlockId,
+    "gallery_02#/pages/1/imageId",
+);
+```
+
+If you want one short copyable reference for the whole Nightfire lifecycle,
+use:
+
+- [`docs/guides/code/077-media-library/nightfire-save-sync-resolve-recipe.md`](/Users/tom/Dev/projects/underlay/docs/guides/code/077-media-library/nightfire-save-sync-resolve-recipe.md)
+- pair it with the TS save-boundary guidance in
+  [`docs/guides/076-nightfire.md`](/Users/tom/Dev/projects/underlay/docs/guides/076-nightfire.md),
+  especially `writePreparedNightfireToFormData(...)` and the rule that inner
+  Nightfire block keys stay verbatim on the wire
+- and the API ingest recipe in
+  [`docs/guides/070-api-handlers.md`](/Users/tom/Dev/projects/underlay/docs/guides/070-api-handlers.md),
+  which shows the server-side order: ensure ids -> persist exact JSON ->
+  extract and sync
 
 ```rust
 // crates/db/src/media.rs

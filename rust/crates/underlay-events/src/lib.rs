@@ -1,3 +1,10 @@
+//! Shared domain-event row and append contract.
+//!
+//! This crate is intentionally narrow. It defines the durable event shape, the
+//! recommended schema artifact, and the append seam applications implement.
+//! Reliable asynchronous processing is a separate concern owned by
+//! `underlay-jobs::outbox`.
+
 mod schema;
 
 use async_trait::async_trait;

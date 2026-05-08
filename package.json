@@ -74,6 +74,10 @@
       "types": "./ts/src/nightfire/block-editor.ts",
       "default": "./ts/src/nightfire/block-editor.ts"
     },
+    "./nightfire/block-registration": {
+      "types": "./ts/src/nightfire/block-registration.ts",
+      "default": "./ts/src/nightfire/block-registration.ts"
+    },
     "./nightfire/markdown": {
       "svelte": "./ts/src/nightfire/markdown.ts",
       "types": "./ts/src/nightfire/markdown.ts",
@@ -95,14 +99,22 @@
       "types": "./ts/src/nightfire/strategies.ts",
       "default": "./ts/src/nightfire/strategies.ts"
     },
-    "./nightfire/media": {
-      "types": "./ts/src/nightfire/media/context.ts",
-      "default": "./ts/src/nightfire/media/context.ts"
-    },
-    "./nightfire/utils": {
-      "types": "./ts/src/nightfire/utils.ts",
-      "default": "./ts/src/nightfire/utils.ts"
-    },
+  "./nightfire/media": {
+    "types": "./ts/src/nightfire/media/context.ts",
+    "default": "./ts/src/nightfire/media/context.ts"
+  },
+  "./nightfire/media-locator": {
+    "types": "./ts/src/nightfire/media-locator.ts",
+    "default": "./ts/src/nightfire/media-locator.ts"
+  },
+  "./nightfire/block-ids": {
+    "types": "./ts/src/nightfire/block-ids.ts",
+    "default": "./ts/src/nightfire/block-ids.ts"
+  },
+  "./nightfire/utils": {
+    "types": "./ts/src/nightfire/utils.ts",
+    "default": "./ts/src/nightfire/utils.ts"
+  },
     "./nightfire/validation": {
       "types": "./ts/src/nightfire/validation.ts",
       "default": "./ts/src/nightfire/validation.ts"
@@ -172,6 +184,22 @@
       "types": "./ts/src/testing/index.ts",
       "default": "./ts/src/testing/index.ts"
     },
+    "./tools/guardrails": {
+      "types": "./ts/src/tools/guardrails.ts",
+      "default": "./ts/src/tools/guardrails.ts"
+    },
+    "./tools/guardrails-config": {
+      "types": "./ts/src/tools/guardrails-config.ts",
+      "default": "./ts/src/tools/guardrails-config.ts"
+    },
+    "./tools/templates/sveltekit-ssr": {
+      "types": "./ts/src/tools/templates/sveltekit-ssr.ts",
+      "default": "./ts/src/tools/templates/sveltekit-ssr.ts"
+    },
+    "./tools/templates/banned-apis": {
+      "types": "./ts/src/tools/templates/banned-apis.ts",
+      "default": "./ts/src/tools/templates/banned-apis.ts"
+    },
     "./server": {
       "types": "./ts/src/server/index.ts",
       "default": "./ts/src/server/index.ts"
@@ -216,6 +244,7 @@
     }
   },
   "dependencies": {
+    "@poodle/bridge-underlay": "file:../poodle/packages/bridges/underlay",
     "@poodle/svelte": "file:../poodle/packages/svelte/components",
     "easymde": "^2.20.0",
     "isomorphic-dompurify": "^3.0.0",

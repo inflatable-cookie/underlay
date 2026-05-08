@@ -1,7 +1,7 @@
 <script lang="ts">
   import { getBlockRenderer } from "./render-registry";
   import "./render-registrations";
-  import type { NightfireValue } from "./types";
+  import type { NightfireDraftValue } from "./types";
 
   type BlockLike = {
     type?: string;
@@ -9,12 +9,12 @@
   };
 
   interface Props {
-    value?: NightfireValue | null;
+    value?: NightfireDraftValue | null;
   }
 
   let { value = null }: Props = $props();
 
-  function normalizeBlocks(v: NightfireValue | null): BlockLike[] {
+  function normalizeBlocks(v: NightfireDraftValue | null): BlockLike[] {
     if (!v) return [];
     if (Array.isArray(v.blocks) && v.blocks.length > 0) {
       return v.blocks as BlockLike[];

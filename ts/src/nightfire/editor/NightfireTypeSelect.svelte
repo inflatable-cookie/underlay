@@ -11,13 +11,17 @@
     groupedOptions?: GroupedOptions[] | null;
     typeOptions?: TypeOption[];
     onChange: (value: string) => void;
+    variant?: "default" | "ghost";
+    menuMinWidth?: string | null;
   }
 
   let {
     value,
     groupedOptions = null,
     typeOptions = [],
-    onChange
+    onChange,
+    variant = "default",
+    menuMinWidth = null
   }: Props = $props();
 
   function formatSubgroupLabel(input: string): string {
@@ -93,5 +97,7 @@
   items={groups ? undefined : items}
   {groups}
   ariaLabel="Block type"
+  {variant}
+  {menuMinWidth}
   onchange={onChange}
 />

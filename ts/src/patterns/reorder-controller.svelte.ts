@@ -67,18 +67,17 @@ export function createReorderController<T extends ReorderableItem>(
   submitFn: (orderedIds: string[]) => Promise<void>
 ): ReorderController<T> {
   // Store original for comparison
-  const original: readonly T[] = [...initialItems];
+  let original = $state<readonly T[]>([...initialItems]);
 
   // Mutable pending state
   let pending = $state<T[]>([...initialItems]);
   let isPending = $state(false);
   let error = $state<Error | null>(null);
 
-  // Derived dirty check - compare IDs in order
-  const isDirty = $derived.by(() => {
+  function computeIsDirty(): boolean {
     if (pending.length !== original.length) return true;
     return pending.some((item, i) => item.id !== original[i].id);
-  });
+  }
 
   return {
     get pending() {
@@ -91,7 +90,7 @@ export function createReorderController<T extends ReorderableItem>(
       return original;
     },
     get isDirty() {
-      return isDirty;
+      return computeIsDirty();
     },
     get isPending() {
       return isPending;
@@ -127,13 +126,14 @@ export function createReorderController<T extends ReorderableItem>(
      * Submit the new order via the provided submit function
      */
     async submit() {
-      if (!isDirty) return;
+      if (!computeIsDirty()) return;
 
       isPending = true;
       error = null;
 
       try {
         await submitFn(pending.map((item) => item.id));
+        original = [...pending];
       } catch (e) {
         error = e instanceof Error ? e : new Error(String(e));
         throw e;

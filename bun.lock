@@ -5,6 +5,7 @@
     "": {
       "name": "@decodelabs/underlay",
       "dependencies": {
+        "@poodle/bridge-underlay": "file:../poodle/packages/bridges/underlay",
         "@poodle/svelte": "file:../poodle/packages/svelte/components",
         "easymde": "^2.20.0",
         "isomorphic-dompurify": "^3.0.0",
@@ -158,6 +159,8 @@
     "@mdx-js/react": ["@mdx-js/react@3.1.1", "", { "dependencies": { "@types/mdx": "^2.0.0" }, "peerDependencies": { "@types/react": ">=16", "react": ">=16" } }, "sha512-f++rKLQgUVYDAtECQ6fn/is15GkEH9+nZPM3MS0RcxVqoTfawHvDlSCH7JbMhAM6uJ32v3eXLvLmLvjGu7PTQw=="],
 
     "@polka/url": ["@polka/url@1.0.0-next.29", "", {}, "sha512-wwQAWhWSuHaag8c4q/KN/vCoeOJYshAIvMQwD4GpSb3OiZklFfvAgmj0VCBBImRpuF/aFgIRzllXlVX93Jevww=="],
+
+    "@poodle/bridge-underlay": ["@poodle/bridge-underlay@file:../poodle/packages/bridges/underlay", {}],
 
     "@poodle/svelte": ["@poodle/svelte@file:../poodle/packages/svelte/components", { "dependencies": { "marked": "^18.0.0" }, "peerDependencies": { "@poodle/icons-lucide": "0.0.0", "@poodle/svelte-tokens": "0.0.0", "svelte": "^5.38.6" }, "optionalPeers": ["@poodle/icons-lucide", "@poodle/svelte-tokens"] }],
 

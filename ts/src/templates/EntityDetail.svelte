@@ -1,18 +1,13 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
   import { MetaBar, MetaItem, PageHeader } from "@poodle/svelte";
-
-  interface MetaItemConfig {
-    label: string;
-    value: string | Snippet;
-    separator?: boolean;
-  }
+  import type { DetailMetaItemConfig } from "./template.types";
 
   interface Props {
     title?: string | null;
     subtitle?: string | null;
     eyebrow?: string | null;
-    meta?: MetaItemConfig[];
+    meta?: DetailMetaItemConfig[];
     header?: Snippet;
     children?: Snippet;
   }

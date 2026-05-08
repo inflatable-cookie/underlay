@@ -1,9 +1,22 @@
-import type { NightfireValue } from "./types";
+import type { NightfireDraftValue, NightfireValue } from "./types";
+export {
+  ensureNightfireBlockId,
+  ensureNightfireBlockIds,
+  generateNightfireBlockId
+} from "./block-ids";
+export {
+  findNightfireBlockById,
+  formatNightfireMediaLocator,
+  parseNightfireMediaLocator,
+  resolveNightfireMediaLocator
+} from "./media-locator";
 
 export {
   registerBlockValidator,
   validateNightfireValue,
-  prepareNightfireForSave
+  prepareNightfireForSave,
+  writePreparedNightfireToFormData
 } from "./validator-registry";
 
-export type { NightfireValue };
+export type { NightfireDraftValue, NightfireValue };
+export type { NightfireMediaLocator } from "./media-locator";

@@ -15,13 +15,41 @@ import type { BannedPattern, ModuleScopeCheck, GuardrailsConfig } from './guardr
 interface GuardrailsConfigFile {
 	srcDir?: string;
 	extensions?: string[];
-	bannedPatterns?: Array<{
+	bannedPatterns?:
+		| Array<{
 		name: string;
 		regex: string;
 		message: string;
-	}>;
+	}>
+		| string;
 	moduleScopeChecks?: ModuleScopeCheck[] | string; // Can be array or template reference
 	suppressionPrefix?: string;
+}
+
+function parsePatternConfigs(
+	patterns: Array<{
+		name: string;
+		regex: string;
+		message: string;
+	}>
+): BannedPattern[] {
+	return patterns.map((p) => ({
+		name: p.name,
+		regex: new RegExp(p.regex, 'g'),
+		message: p.message
+	}));
+}
+
+async function importTemplateModule(templateRef: string): Promise<unknown> {
+	try {
+		return await import(templateRef);
+	} catch {
+		const localTemplatePath = templateRef.replace(
+			'@decodelabs/underlay/tools/templates/',
+			resolve(process.cwd(), 'ts/src/tools/templates/') + '/'
+		);
+		return await import(localTemplatePath);
+	}
 }
 
 /**
@@ -57,25 +85,31 @@ export async function loadConfig(configPath?: string, srcDirOverride?: string): 
 		}
 	}
 
-	// Parse regex patterns from strings
-	const bannedPatterns: BannedPattern[] = (config.bannedPatterns ?? []).map((p) => ({
-		name: p.name,
-		regex: new RegExp(p.regex, 'g'),
-		message: p.message
-	}));
+	// Load banned patterns (can be template reference or inline array)
+	let bannedPatterns: BannedPattern[] = [];
+	if (typeof config.bannedPatterns === 'string') {
+		try {
+			const template = await importTemplateModule(config.bannedPatterns);
+			const resolved = (template as { bannedPatterns?: BannedPattern[]; default?: BannedPattern[] });
+			bannedPatterns = resolved.bannedPatterns ?? resolved.default ?? [];
+		} catch {
+			console.error(`Warning: Could not load template ${config.bannedPatterns}`);
+		}
+	} else {
+		bannedPatterns = parsePatternConfigs(config.bannedPatterns ?? []);
+	}
 
 	// Load module scope checks (can be template reference or inline array)
 	let moduleScopeChecks: ModuleScopeCheck[] = [];
 	if (typeof config.moduleScopeChecks === 'string') {
-		// Template reference (e.g., "@decodelabs/underlay/tools/templates/sveltekit-ssr")
 		try {
-			const templatePath = config.moduleScopeChecks.replace(
-				'@decodelabs/underlay/tools/templates/',
-				resolve(process.cwd(), 'ts/src/tools/templates/') + '/'
-			);
-			const template = await import(templatePath);
-			moduleScopeChecks = template.moduleScopeChecks ?? template.default ?? [];
-		} catch (error) {
+			const template = await importTemplateModule(config.moduleScopeChecks);
+			const resolved = (template as {
+				moduleScopeChecks?: ModuleScopeCheck[];
+				default?: ModuleScopeCheck[];
+			});
+			moduleScopeChecks = resolved.moduleScopeChecks ?? resolved.default ?? [];
+		} catch {
 			console.error(`Warning: Could not load template ${config.moduleScopeChecks}`);
 		}
 	} else if (Array.isArray(config.moduleScopeChecks)) {

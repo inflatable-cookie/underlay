@@ -39,28 +39,27 @@ and contracts actually satisfy each system's purpose.
 - [x] identify planning drift and stale front doors
 - [x] create a real system inventory
 - [x] create a canonical contract index
-- [ ] align the remaining stale authority surfaces to the live generation state
+- [x] align the remaining stale authority surfaces to the live generation state
 
 ### Batch 1.2 - Contract Compilation
 
-- [ ] write foundation and transport contracts
-- [ ] write auth, storage, and jobs/operator contracts
-- [ ] write Nightfire, AI, runtime, pattern, and template contracts
+- [x] write foundation and transport contracts
+- [x] write auth, storage, and jobs/operator contracts
+- [x] write Nightfire, AI, runtime, pattern, template, and tooling contracts
 
 ### Batch 1.3 - Assessment Sequencing
 
-- [ ] compile the implementation-vs-contract assessment chain
-- [ ] identify the first bounded repair lane after contract coverage exists
+- [x] compile the implementation-vs-contract assessment chain
+- [x] identify the first bounded repair lane after contract coverage exists
 
 ## Exit Criteria
 
 - the significant system inventory is explicit
 - the contract set is fully named and sequenced
 - the repo front doors acknowledge parallel mode cleanly
-- the next contract-writing batch is ready without reopening planning from
-  scratch
+- the next implementation-assessment batch is ready without reopening planning
+  from scratch
 
 ## Next Task
 
-Execute `g04.002`: repair the remaining stale authority surfaces and compile
-the first contract-writing tranche.
+The program is complete. `g04` is closed.

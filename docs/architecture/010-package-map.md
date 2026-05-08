@@ -2,7 +2,7 @@
 
 Underlay is split by layer, mirroring how consuming apps are structured.
 
-## Rust Crates (32)
+## Rust Crates (31)
 
 ### Core
 
@@ -12,7 +12,6 @@ Underlay is split by layer, mirroring how consuming apps are structured.
 | `underlay-http` | Axum HTTP utilities: response helpers, CORS, cookies, pagination, query builders, error logging |
 | `underlay-observability` | Tracing bootstrap, `request_id_layer()`, `trace_layer()` |
 | `underlay-metrics` | Prometheus registry wrapper + Axum `/metrics` handler |
-| `underlay-openapi` | OpenAPI schema types for API documentation |
 | `underlay-validation` | Declarative `Validate` trait + built-in validators (email, URL, length, range) |
 | `underlay-validation-derive` | `#[derive(Validate)]` proc macro for automatic validation codegen |
 
@@ -27,7 +26,6 @@ Underlay is split by layer, mirroring how consuming apps are structured.
 | `underlay-auth-email-totp` | Email-based OTP verification flows |
 | `underlay-auth-webauthn` | WebAuthn / Passkey registration and authentication |
 | `underlay-auth-oauth` | OAuth2 provider primitives (Google, etc.) |
-| `underlay-auth-state` | Authentication state storage and flow management |
 
 ### Data & Storage
 
@@ -36,7 +34,6 @@ Underlay is split by layer, mirroring how consuming apps are structured.
 | `underlay-db` | SQLx pool setup, migration runner, dev reset helpers |
 | `underlay-soft-delete` | Soft-delete column conventions, `include_deleted()` semantics |
 | `underlay-blob` | Blob storage with pluggable backends (S3, local filesystem) |
-| `underlay-image` | Image processing: thumbnails, renditions, format detection |
 | `underlay-media` | Media library: file management, storage orchestration, usage tracking |
 | `underlay-migration-core` | Deterministic migration contracts: pipeline stages, plugin traits, run-store and decision journal types |
 | `underlay-nightfire` | Block-based structured content protocol (JSON document format) |
@@ -79,11 +76,20 @@ Several crates use feature flags to keep optional dependencies out of the defaul
 
 ## TypeScript + Svelte
 
-- `ts/` exports a single package (`@decodelabs/underlay`) today.
-  - `components/`: low-level UI primitives.
-  - `patterns/`: higher-level building blocks (forms, list pages, error banners).
-  - `client/`: typed HTTP + envelope helpers for building API clients.
-  - `nightfire/`: structured content renderers.
+`ts/src/` is currently organized into these domains:
+
+- `client/`: HTTP, query, pagination, auth, navigation, media, and transport helpers
+- `nightfire/`: structured-content editor/runtime, markdown/media blocks, registries, validation
+- `patterns/`: retained workflow shells, auth flows, relation selector, optimistic/list/reorder/navigation helpers
+- `runtime/`: browser/runtime orchestration helpers and app-facing controllers
+- `server/`: CSP and security-header server helpers
+- `templates/`: higher-order admin template system (`EntityListPage`, `EntityDetailPage`, `EntityFormPage`, related modules/cards)
+- `testing/`: TS test helpers
+- `tools/`: repo guardrails and template-surface tooling
+- `utils/`: focused standalone helpers
+
+Public package guidance is documented in the repo root [README.md](../../README.md)
+and the architecture overview rather than repeated here as an old namespace map.
 
 ## Contracts
 

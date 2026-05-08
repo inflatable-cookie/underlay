@@ -46,9 +46,9 @@ When users work with relation selectors (e.g., selecting a Level for a Module), 
 
 | Layer | Component | Package | Purpose |
 |-------|-----------|---------|---------|
-| Client Storage | `createSelectionHistory()` | `@decodelabs/underlay/patterns` | Track selections in localStorage |
+| Client Storage | `createSelectionHistory()` | `@decodelabs/underlay/runtime/data` | Track selections in localStorage |
 | UI Integration | `selectionHistory` prop | App-local selector shell | Auto-track and provide hints |
-| Request Building | `appendSuggestionParams()` | `@decodelabs/underlay/patterns` | Build API URLs with hints |
+| Request Building | `appendSuggestionParams()` | `@decodelabs/underlay/client/suggestions` | Build API URLs with hints |
 | Server Parsing | `SuggestionParams` | `underlay-suggestions` (Rust) | Parse query parameters |
 | Query Building | `SuggestionQuery` | `underlay-suggestions` (Rust) | Build prioritized SQL |
 
@@ -196,7 +196,7 @@ Build API URLs with suggestion parameters:
 import {
   appendSuggestionParams,
   type SuggestionRequestOptions
-} from "@decodelabs/underlay/patterns";
+} from "@decodelabs/underlay/client/suggestions";
 
 async function getLevelsForPathway(
   pathwayId: string,
@@ -229,7 +229,7 @@ interface SuggestionRequestOptions {
 For more control, use `buildSuggestionParams` to get URLSearchParams:
 
 ```typescript
-import { buildSuggestionParams } from "@decodelabs/underlay/patterns";
+import { buildSuggestionParams } from "@decodelabs/underlay/client/suggestions";
 
 const params = buildSuggestionParams({
   suggestions: true,
@@ -247,7 +247,7 @@ const url = `/api/items?${params.toString()}`;
 If you need to parse hints on a TypeScript server:
 
 ```typescript
-import { parseHintsParam } from "@decodelabs/underlay/patterns";
+import { parseHintsParam } from "@decodelabs/underlay/client/suggestions";
 
 // In a SvelteKit server load function
 export async function load({ url }) {

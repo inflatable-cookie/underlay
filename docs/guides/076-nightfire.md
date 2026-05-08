@@ -13,6 +13,15 @@ Nightfire solves the problem of storing and validating structured content in dat
 - **Content hashing** for change detection
 - **Generic design** so applications define their own block types
 
+For the full consumer assembly pattern across Rust and TS, use:
+
+- [`docs/guides/code/076-nightfire/nightfire-block-module-pattern.md`](/Users/tom/Dev/projects/underlay/docs/guides/code/076-nightfire/nightfire-block-module-pattern.md)
+
+Use `@decodelabs/underlay/nightfire/block-registration` as the primary public
+home for TS block registration helpers. `nightfire/editor` still re-exports
+them for compatibility, but new consumer code should prefer the explicit
+block-registration subpath.
+
 ### When to Use Nightfire vs Plain Markdown
 
 Not all rich text fields need Nightfire. Follow this convention based on database column type:
@@ -193,6 +202,22 @@ impl Block for ParagraphBlock {
 // Active version is the first in the list
 assert_eq!(ParagraphBlock::active_version(), "v2");
 ```
+
+### Block Module Rule
+
+Keep each real block family in one module set that owns:
+
+- the Rust payload type
+- block registration bundle
+- strategy participation
+- TS block registration object for editor, renderer, validator, and empty-state
+  behavior
+- Rust media registration when the block references media
+
+Do not let one of those live in a separate app-wide heuristics file if it is
+really block-specific behavior. Use the block-module pattern:
+
+- [`docs/guides/code/076-nightfire/nightfire-block-module-pattern.md`](/Users/tom/Dev/projects/underlay/docs/guides/code/076-nightfire/nightfire-block-module-pattern.md)
 
 ---
 
@@ -788,6 +813,7 @@ The public Nightfire subpaths are:
 - `@decodelabs/underlay/nightfire/editor`
 - `@decodelabs/underlay/nightfire/renderer`
 - `@decodelabs/underlay/nightfire/block-editor`
+- `@decodelabs/underlay/nightfire/block-registration`
 - `@decodelabs/underlay/nightfire/markdown`
 - `@decodelabs/underlay/nightfire/editor-registry`
 - `@decodelabs/underlay/nightfire/render-registry`
@@ -906,7 +932,7 @@ The `NightfireEditor` component provides a block-based editor for Nightfire cont
 | `name` | `string` | **Required** | Form field name for the hidden input |
 | `schema` | `string` | **Required** | Strategy ID to use (e.g., `"myapp:content/body@1"`) |
 | `value` | `NightfireValue` | **Required** | Bindable value containing the content |
-| `prepare` | `(formData: FormData) => void` | **Required** | Bindable function to serialize content before form submission |
+| `prepare` | `(formData: FormData) => void` | **Required** | Bindable function to write the prepared Nightfire payload before form submission |
 | `required` | `boolean` | `false` | Whether the field is required |
 | `disabled` | `boolean` | `false` | Whether the editor is disabled |
 | `modeOverride` | `"single" \| "multi"` | `null` | Override the strategy's cardinality mode |
@@ -962,7 +988,12 @@ Notes:
 
 ### Form Integration
 
-The `prepare` function must be called before form submission to serialize the Nightfire content:
+The `prepare` function must be called before form submission to write the
+canonical save payload:
+
+- validated Nightfire JSON
+- stable block ids
+- verbatim inner block `data` keys
 
 ```svelte
 <script lang="ts">
@@ -972,10 +1003,10 @@ The `prepare` function must be called before form submission to serialize the Ni
   let bodyPrepare = $state<(formData: FormData) => void>(() => {});
 
   async function handleSubmit(formData: FormData) {
-    // Call prepare to serialize Nightfire content to the form
+    // Call prepare to write the prepared Nightfire payload to the form.
     bodyPrepare(formData);
 
-    // Now formData contains the serialized JSON
+    // Now formData contains the validated, block-id-stable JSON.
     const bodyJson = formData.get("body");
     // ...submit to API
   }
@@ -1025,6 +1056,13 @@ When a form has multiple Nightfire fields, combine the prepare functions:
   bind:prepare={prepareBody}
 />
 ```
+
+Boundary rule for all of these form patterns:
+
+- map outer DTO field names to API `snake_case` if needed
+- do not remap keys inside the Nightfire JSON itself
+- fields like `imageId` and `attachmentId` must reach the API unchanged or
+  shared media extractors will stop matching them
 
 ---
 
@@ -1187,10 +1225,17 @@ const normalised = normaliseNightfireValue(
 ### Preparing for Save
 
 ```typescript
-import { prepareNightfireForSave, type NightfireValue } from "@decodelabs/underlay/nightfire/validation";
+import {
+  prepareNightfireForSave,
+  writePreparedNightfireToFormData,
+  type NightfireValue
+} from "@decodelabs/underlay/nightfire/validation";
 
 // Strips transient properties, recomputes hashes
 const prepared = prepareNightfireForSave(value);
+
+const formData = new FormData();
+writePreparedNightfireToFormData(formData, "body", value);
 ```
 
 ### Writing to FormData
@@ -1201,6 +1246,18 @@ import { writeNightfireToFormData, type NightfireValue } from "@decodelabs/under
 const formData = new FormData();
 writeNightfireToFormData(formData, "body", value);
 ```
+
+Use `writeNightfireToFormData()` only when you deliberately want to serialize
+the current editor-local draft value as-is. For normal save paths, prefer
+`writePreparedNightfireToFormData()` so block ids are stable before persistence.
+
+Important boundary rule:
+
+- outer DTO field names may still be mapped to API `snake_case`
+- inner Nightfire JSON must stay verbatim
+- do not rename keys inside block `data` objects like `imageId` to `image_id`
+  on the way to the API, or shared media extractors and locators will stop
+  matching the stored JSON
 
 ---
 

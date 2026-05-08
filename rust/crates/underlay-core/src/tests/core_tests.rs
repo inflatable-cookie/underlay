@@ -40,3 +40,22 @@ fn app_error_field_error_round_trips_into_envelope() {
         Some(&"Must be a valid email".to_string())
     );
 }
+
+#[test]
+fn error_envelope_serializes_field_errors_as_field_errors_camel_case_on_wire() {
+    let err = AppError::with_field_error(
+        "test.invalid",
+        "Validation failed",
+        "email",
+        "Must be a valid email",
+    );
+
+    let json = serde_json::to_value(err.into_envelope()).expect("envelope should serialize");
+    let error = json
+        .get("error")
+        .and_then(|value| value.as_object())
+        .expect("error object should exist");
+
+    assert!(error.get("fieldErrors").is_some());
+    assert!(error.get("field_errors").is_none());
+}

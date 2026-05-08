@@ -1,6 +1,6 @@
 # Entity Detail Page
 
-**Status:** In development (g03.007–008)
+Status: active
 
 `EntityDetailPage` is the Level 1 page shell for read-only detail pages. It
 combines `PageHeader`, `MetaBar`, `Tabs`, and `EntityDetail` sections into a
@@ -9,31 +9,56 @@ complete detail view.
 ## Usage
 
 ```svelte
+<script lang="ts">
+  import {
+    EntityDetail,
+    EntityDetailPage,
+    EntityListPage
+  } from "@decodelabs/underlay/templates";
+
+  async function loadProject(fetchFn: typeof fetch, token: string | null) {
+    return await adminCommands.getProject(id, fetchFn, token);
+  }
+
+  async function loadProjectTasks(fetchFn: typeof fetch, token: string | null, query) {
+    return await adminCommands.listProjectTasks(id, fetchFn, token, query);
+  }
+</script>
+
+{#snippet detailsTab(project)}
+  <EntityDetail title="Details">
+    <!-- detail modules -->
+  </EntityDetail>
+{/snippet}
+
+{#snippet tasksTab(project)}
+  <EntityListPage
+    title="Tasks"
+    presentation="table"
+    dataLoader={loadProjectTasks}
+    headerLevel={3}
+  />
+{/snippet}
+
 <EntityDetailPage
   title={project.name}
   section="Project"
   backHref="/projects"
-  
-  dataLoader={async (fetch, token) => 
-    adminCommands.getProject(id, fetch, token)
-  }
-  
+  dataLoader={loadProject}
   meta={[...]}
-  
   tabs={[
     {
       id: "details",
       label: "Details",
-      content: <EntityDetail sections={detailSections} />
+      content: detailsTab
     },
     {
       id: "tasks",
       label: "Tasks",
       count: taskCount,
-      content: <EntityListPage title="Tasks" headerLevel={3} ... />
+      content: tasksTab
     }
   ]}
-  
   actions={[
     { label: "Edit", handler: handleEdit },
     { label: "Delete", tone: "danger", confirm: true, handler: handleDelete }
@@ -66,3 +91,12 @@ lower the header level so the tab content stays subordinate to the detail page:
 
 - [Entity Detail Section](./entity-detail-section.md)
 - [Template System Overview](./000-template-system-overview.md)
+
+## Public types
+
+The shared detail-template config types are exported from
+`@decodelabs/underlay/templates`:
+
+- `DetailMetaItemConfig`
+- `DetailTabConfig`
+- `DetailActionConfig`

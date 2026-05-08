@@ -1,3 +1,5 @@
+import { coerceNightfireBlock, type NightfireBlock } from "../types";
+
 export const SUMMARY_SCHEMA_ID = "acow:content/summary@1";
 
 const SUMMARY_TEXT_PAGE_TYPES = new Set([
@@ -39,23 +41,19 @@ function hasAnyImageIds(source: unknown): boolean {
 }
 
 export function transformSummaryBlockOnLayoutChange(
-	currentBlock: Record<string, unknown> | null | undefined,
+	currentBlock: NightfireBlock | null | undefined,
 	nextType: string,
 	getLabelForType: (type: string) => string
-): { block: Record<string, unknown>; warning: string | null } {
+): { block: NightfireBlock; warning: string | null } {
 	const fromType = typeof currentBlock?.type === "string" ? (currentBlock.type as string) : null;
+	const baseBlock = coerceNightfireBlock(currentBlock, nextType)!;
 
 	if (!fromType || fromType === nextType) {
 		return {
-			block: {
-				...(currentBlock ?? {}),
-				type: nextType
-			},
+			block: coerceNightfireBlock({ ...(currentBlock ?? {}), type: nextType }, nextType)!,
 			warning: null
 		};
 	}
-
-	const baseBlock = currentBlock as Record<string, unknown>;
 
 	const fromIsTextPages = SUMMARY_TEXT_PAGE_TYPES.has(fromType);
 	const toIsTextPages = SUMMARY_TEXT_PAGE_TYPES.has(nextType);
@@ -92,15 +90,15 @@ export function transformSummaryBlockOnLayoutChange(
 			delete data.subTitle;
 		}
 
-			return {
-				block: { ...baseBlock, type: nextType, data },
-				warning: null
-			};
-		}
+		return {
+			block: coerceNightfireBlock({ ...baseBlock, type: nextType, data }, nextType)!,
+			warning: null
+		};
+	}
 
 	if (fromIsImagePages && toIsImagePages) {
 		return {
-			block: { ...baseBlock, type: nextType },
+			block: coerceNightfireBlock({ ...baseBlock, type: nextType }, nextType)!,
 			warning: null
 		};
 	}
@@ -128,11 +126,11 @@ export function transformSummaryBlockOnLayoutChange(
 			warning = `Changing layout from ${fromLabel} to ${toLabel} keeps titles and bodies but drops image selections.`;
 		}
 
-			return {
-				block: { ...baseBlock, type: nextType, data },
-				warning
-			};
-		}
+		return {
+			block: coerceNightfireBlock({ ...baseBlock, type: nextType, data }, nextType)!,
+			warning
+		};
+	}
 
 	if (fromIsTextPages && toIsImagePages) {
 		const pages = clonePagesWithTitleBody({ pages: data.pages }).map((page) => ({
@@ -142,7 +140,7 @@ export function transformSummaryBlockOnLayoutChange(
 
 		data = { ...data, pages };
 		return {
-			block: { ...baseBlock, type: nextType, data },
+			block: coerceNightfireBlock({ ...baseBlock, type: nextType, data }, nextType)!,
 			warning: null
 		};
 	}
@@ -175,7 +173,7 @@ export function transformSummaryBlockOnLayoutChange(
 		}
 
 		return {
-			block: { ...baseBlock, type: nextType, data },
+			block: coerceNightfireBlock({ ...baseBlock, type: nextType, data }, nextType)!,
 			warning
 		};
 	}
@@ -207,16 +205,13 @@ export function transformSummaryBlockOnLayoutChange(
 		}
 
 		return {
-			block: { ...baseBlock, type: nextType, data },
+			block: coerceNightfireBlock({ ...baseBlock, type: nextType, data }, nextType)!,
 			warning
 		};
 	}
 
 	return {
-		block: {
-			...baseBlock,
-			type: nextType
-		},
+		block: coerceNightfireBlock({ ...baseBlock, type: nextType }, nextType)!,
 		warning: null
 	};
 }

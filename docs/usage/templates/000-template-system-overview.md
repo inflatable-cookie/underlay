@@ -4,6 +4,8 @@ The Underlay Template System provides reusable higher-order Svelte components
 for common admin page shapes. It replaces 300–800 line hand-rolled compositions
 with ~50–100 line declarative configurations.
 
+Status: active shared surface.
+
 ## Philosophy
 
 **Higher-order composition over hand-rolled assembly.**
@@ -49,8 +51,13 @@ Poodle owns the primitive layer:
 ## Installation
 
 ```svelte
-<script>
-  import { EntityListPage, EntityDetailPage } from "@decodelabs/underlay/templates";
+<script lang="ts">
+  import {
+    EntityDetail,
+    EntityDetailPage,
+    EntityList,
+    EntityListPage
+  } from "@decodelabs/underlay/templates";
 </script>
 ```
 
@@ -59,28 +66,42 @@ Poodle owns the primitive layer:
 ### List Page
 
 ```svelte
+<script lang="ts">
+  import { EntityListPage } from "@decodelabs/underlay/templates";
+  import ProjectCard from "$lib/cards/ProjectCard.svelte";
+
+  let { data } = $props();
+
+  async function loadProjects(fetchFn: typeof fetch, token: string | null, query) {
+    return await adminCommands.listProjects(fetchFn, token, query);
+  }
+</script>
+
+{#snippet projectCard(project, context)}
+  <ProjectCard
+    project={project}
+    selectionMode={context.selectionMode}
+    reorderMode={context.reorderMode}
+    selected={context.selected}
+    onSelectionChange={context.onToggle}
+  />
+{/snippet}
+
 <EntityListPage
   title="Projects"
   backHref="/"
-  
-  dataLoader={async (fetch, token, query) => 
-    adminCommands.listProjects(fetch, token, query)
-  }
-  
+  dataLoader={loadProjects}
   presentation="cards"
-  
   filters={[
     { id: "name", type: "search", label: "Name" },
     { id: "status", type: "select", label: "Status", options: statusOptions }
   ]}
-  
-  renderItem={(project) => <ProjectCard {project} />}
-  
+  renderItem={projectCard}
   batchActions={[
-    { 
-      id: "delete", 
-      label: "Delete", 
-      tone: "danger", 
+    {
+      id: "delete",
+      label: "Delete",
+      tone: "danger",
       confirm: true,
       handler: async (ids) => batchDeleteProjects(ids)
     }
@@ -93,38 +114,62 @@ Poodle owns the primitive layer:
 ### Detail Page
 
 ```svelte
+<script lang="ts">
+  import {
+    EntityDetail,
+    EntityDetailPage,
+    EntityList
+  } from "@decodelabs/underlay/templates";
+  import { Code, Pill } from "@poodle/svelte";
+
+  let { data } = $props();
+
+  async function loadProject(fetchFn: typeof fetch, token: string | null) {
+    return await adminCommands.getProject(data.projectId, fetchFn, token);
+  }
+
+  async function loadTasks(fetchFn: typeof fetch, token: string | null, query) {
+    return await adminCommands.listProjectTasks(data.projectId, fetchFn, token, query);
+  }
+</script>
+
+{#snippet detailsTab(project)}
+  <EntityDetail title="Details">
+    <!-- detail modules -->
+  </EntityDetail>
+{/snippet}
+
+{#snippet tasksTab(project)}
+  <EntityList
+    title="Tasks"
+    presentation="cards"
+    dataLoader={loadTasks}
+    renderItem={taskCard}
+  />
+{/snippet}
+
 <EntityDetailPage
-  title={project.name}
+  title={data.project.name}
   section="Project"
   backHref="/projects"
-  
-  dataLoader={async (fetch, token) => 
-    adminCommands.getProject(id, fetch, token)
-  }
-  
+  dataLoader={loadProject}
   meta={[
-    { label: "ID", value: <Code source={project.id} /> },
-    { label: "Status", value: <Pill tone={tone}>{status}</Pill> }
+    { label: "ID", value: codeMeta },
+    { label: "Status", value: statusMeta }
   ]}
-  
   tabs={[
     {
       id: "details",
       label: "Details",
-      content: <EntityDetail sections={detailSections} />
+      content: detailsTab
     },
     {
       id: "tasks",
       label: "Tasks",
-      count: taskCount,
-      content: <EntityList 
-        dataLoader={loadTasks}
-        presentation="cards"
-        renderItem={(task) => <TaskCard {task} />}
-      />
+      count: data.taskCount,
+      content: tasksTab
     }
   ]}
-  
   actions={[
     { label: "Edit", handler: handleEdit },
     { label: "Delete", tone: "danger", confirm: true, handler: handleDelete }
@@ -138,11 +183,13 @@ Poodle owns the primitive layer:
 - Building standard admin CRUD pages
 - The page shape matches a common pattern (list, detail, form)
 - You want consistency across admin pages
+- You can express the page with declarative config plus snippets
 
 **Don't use templates when:**
 - The page has a unique shape that doesn't fit standard patterns
 - You need fine-grained control over every element
 - Building public-facing pages (use Poodle primitives directly)
+- The template needs more escape hatch than leverage
 
 ## Next Steps
 

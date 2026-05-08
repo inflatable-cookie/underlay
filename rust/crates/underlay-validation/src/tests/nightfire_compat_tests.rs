@@ -2,6 +2,28 @@ use super::*;
 use underlay_nightfire::StrategyCardinality;
 
 #[test]
+fn converts_invalid_value_shape() {
+    let err = NightfireValidationError::InvalidValueShape {
+        schema: "test:schema@1".to_string(),
+        has_block: true,
+        has_blocks: true,
+    };
+
+    let app_err = nightfire_validation_to_app_error(
+        err,
+        "content.invalid",
+        "body",
+        "Content validation failed.",
+    );
+
+    let field_errors = app_err.field_errors.unwrap();
+    assert!(field_errors
+        .get("body")
+        .unwrap()
+        .contains("has_block=true, has_blocks=true"));
+}
+
+#[test]
 fn converts_cardinality_mismatch() {
     let err = NightfireValidationError::CardinalityMismatch {
         schema: "test:schema@1".to_string(),

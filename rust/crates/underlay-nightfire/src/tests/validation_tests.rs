@@ -13,6 +13,7 @@ enum TestCategory {
 
 fn make_block(type_name: &str) -> BlockData {
     BlockData {
+        id: None,
         r#type: type_name.to_string(),
         version: "initial".to_string(),
         hash: "abc123".to_string(),
@@ -33,6 +34,60 @@ fn test_registry() -> BlockRegistry<TestCategory> {
         category: TestCategory::Media,
     });
     registry
+}
+
+#[test]
+fn rejects_value_with_both_block_and_blocks() {
+    let registry = test_registry();
+    let strategy = NightfireStrategy {
+        id: SchemaId::from("test:single@1"),
+        cardinality: StrategyCardinality::Single,
+        allowed_types: vec![],
+        allowed_categories: vec![TestCategory::Text],
+        default_type: "paragraph".to_string(),
+    };
+
+    let value = NightfireValue {
+        schema: SchemaId::from("test:single@1"),
+        block: Some(make_block("paragraph")),
+        blocks: Some(vec![make_block("paragraph")]),
+    };
+    let result = validate_nightfire_value(&value, &strategy, &registry);
+    assert!(matches!(
+        result,
+        Err(NightfireValidationError::InvalidValueShape {
+            has_block: true,
+            has_blocks: true,
+            ..
+        })
+    ));
+}
+
+#[test]
+fn rejects_value_with_neither_block_nor_blocks() {
+    let registry = test_registry();
+    let strategy = NightfireStrategy {
+        id: SchemaId::from("test:single@1"),
+        cardinality: StrategyCardinality::Single,
+        allowed_types: vec![],
+        allowed_categories: vec![TestCategory::Text],
+        default_type: "paragraph".to_string(),
+    };
+
+    let value = NightfireValue {
+        schema: SchemaId::from("test:single@1"),
+        block: None,
+        blocks: None,
+    };
+    let result = validate_nightfire_value(&value, &strategy, &registry);
+    assert!(matches!(
+        result,
+        Err(NightfireValidationError::InvalidValueShape {
+            has_block: false,
+            has_blocks: false,
+            ..
+        })
+    ));
 }
 
 #[test]

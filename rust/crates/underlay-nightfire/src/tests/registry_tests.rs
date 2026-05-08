@@ -10,6 +10,7 @@ enum TestCategory {
 
 fn make_block(type_name: &str) -> BlockData {
     BlockData {
+        id: None,
         r#type: type_name.to_string(),
         version: "initial".to_string(),
         hash: "abc123".to_string(),
@@ -33,6 +34,24 @@ fn block_registry_stores_and_retrieves() {
     assert_eq!(desc.category, TestCategory::Text);
 
     assert!(registry.get("unknown").is_none());
+}
+
+#[test]
+fn block_registry_accepts_registration_bundles() {
+    let mut registry = BlockRegistry::new();
+
+    registry.register_registration(BlockRegistration::new(
+        BlockDescriptor {
+            type_name: "hero",
+            label: "Hero",
+            category: TestCategory::Text,
+        },
+        "media-handler-present",
+    ));
+
+    let desc = registry.get("hero").unwrap();
+    assert_eq!(desc.type_name, "hero");
+    assert_eq!(desc.label, "Hero");
 }
 
 #[test]

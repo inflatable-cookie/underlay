@@ -1,12 +1,9 @@
-interface NightfireBlock {
-	type: string;
-	version?: string;
-	hash?: string;
-	data?: Record<string, unknown>;
-}
+import type { NightfireBlock } from "../types";
+import { generateNightfireBlockId } from "../block-ids";
 
 export function createDefaultBlock(defaultType: string): NightfireBlock {
 	return {
+		id: generateNightfireBlockId(),
 		type: defaultType,
 		version: "initial",
 		hash: "",

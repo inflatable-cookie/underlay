@@ -1,7 +1,8 @@
-//! Email templating system using Tera.
+//! Optional email templating convenience layer using Tera.
 //!
-//! This module provides a template engine for rendering HTML emails with
-//! consistent styling and structure.
+//! This module is not the core email contract. The primary shared boundary is
+//! still the adapter/message/manager seam in `underlay-email`. This helper is a
+//! retained convenience when apps want shared HTML rendering.
 //!
 //! # Example
 //!

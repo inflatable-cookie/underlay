@@ -3,6 +3,7 @@ import {
 	prepareNightfireForSave,
 	registerBlockValidator,
 	validateNightfireValue,
+	writePreparedNightfireToFormData,
 } from "../../src/nightfire/validator-registry";
 
 describe("nightfire/validator-registry", () => {
@@ -12,11 +13,19 @@ describe("nightfire/validator-registry", () => {
 
 		expect(
 			validateNightfireValue({ schema: "schema-1", block: { type: "markdown", data: {} } } as any)
-		).toEqual({ schema: "schema-1", block: { type: "markdown", data: {}, scoped: true } });
+		).toEqual({
+			schema: "schema-1",
+			block: { id: undefined, type: "markdown", version: "initial", hash: "", data: {} },
+			blocks: undefined,
+		});
 
 		expect(
 			validateNightfireValue({ schema: "schema-x", block: { type: "markdown", data: {} } } as any)
-		).toEqual({ schema: "schema-x", block: { type: "markdown", data: {}, wildcard: true } });
+		).toEqual({
+			schema: "schema-x",
+			block: { id: undefined, type: "markdown", version: "initial", hash: "", data: {} },
+			blocks: undefined,
+		});
 
 		expect(
 			validateNightfireValue({
@@ -26,16 +35,25 @@ describe("nightfire/validator-registry", () => {
 		).toEqual({
 			schema: "schema-x",
 			blocks: [
-				{ type: "markdown", data: {}, wildcard: true },
-				{ type: "unknown", data: {} },
+				{ id: undefined, type: "markdown", version: "initial", hash: "", data: {} },
+				{ id: undefined, type: "unknown", version: "initial", hash: "", data: {} },
 			],
+			block: undefined,
 		});
 	});
 
 	it("preserves invalid values and prepare helper delegates to validation", () => {
 		expect(validateNightfireValue(null as any)).toBeNull();
 		const value = { schema: "s", block: { type: "x" } } as any;
-		expect(prepareNightfireForSave(value)).toEqual(validateNightfireValue(value));
+		const prepared = prepareNightfireForSave(value);
+		expect(prepared?.schema).toBe("s");
+		expect(prepared?.block).toMatchObject({
+			type: "x",
+			version: "initial",
+			hash: "",
+			data: {},
+		});
+		expect(prepared?.block?.id).toMatch(/^nf_/);
 
 		const noBlockValue = { schema: "s" } as any;
 		expect(validateNightfireValue(noBlockValue)).toBe(noBlockValue);
@@ -47,7 +65,6 @@ describe("nightfire/validator-registry", () => {
 				} as any)
 		).toEqual({
 			schema: "schema-x",
-				blocks: [null, { data: {} }],
 			});
 
 			expect(
@@ -55,7 +72,43 @@ describe("nightfire/validator-registry", () => {
 					block: { type: "markdown", data: {} },
 				} as any)
 			).toEqual({
-				block: { type: "markdown", data: {}, wildcard: true },
+				block: { id: undefined, type: "markdown", version: "initial", hash: "", data: {} },
+				blocks: undefined,
 			});
+	});
+
+	it("writes prepared Nightfire JSON to FormData with stable block ids", () => {
+		const formData = new FormData();
+
+		writePreparedNightfireToFormData(formData, "content", {
+			schema: "schema-x",
+			block: {
+				type: "markdown",
+				data: {
+					imageId: "media-1",
+				},
+			},
+		});
+
+		const raw = formData.get("content");
+		expect(typeof raw).toBe("string");
+
+		const parsed = JSON.parse(raw as string);
+		expect(parsed).toMatchObject({
+			schema: "schema-x",
+			block: {
+				type: "markdown",
+				data: {
+					imageId: "media-1",
+				},
+			},
+		});
+		expect(parsed.block.id).toMatch(/^nf_/);
+	});
+
+	it("writes empty string when prepared Nightfire content is empty", () => {
+		const formData = new FormData();
+		writePreparedNightfireToFormData(formData, "content", { schema: "schema-x" });
+		expect(formData.get("content")).toBe("");
 	});
 });

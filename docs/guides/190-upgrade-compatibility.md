@@ -135,9 +135,10 @@ Reusable templates:
 - Required actions:
   1. move editor imports to `@decodelabs/underlay/nightfire/editor`
   2. move renderer imports to `@decodelabs/underlay/nightfire/renderer`
-  3. move registry imports to `editor-registry`, `render-registry`, or `validator-registry`
-  4. move strategy imports to `@decodelabs/underlay/nightfire/strategies`
-  5. move utility imports to `@decodelabs/underlay/nightfire/utils` or `validation`
+  3. move block registration helpers to `@decodelabs/underlay/nightfire/block-registration`
+  4. move low-level registry imports to `editor-registry`, `render-registry`, or `validator-registry`
+  5. move strategy imports to `@decodelabs/underlay/nightfire/strategies`
+  6. move utility imports to `@decodelabs/underlay/nightfire/utils` or `validation`
 - Validation:
   - in `underlay`: `effigy check:exports && effigy qa:docs && effigy qa:northstar`
   - in consuming apps/packages: run the repo-owned Svelte check or TS check and

@@ -70,7 +70,13 @@ See "Advanced: Retry and Timeout" section below for configuration details.
 ### Response Types
 
 - `SingleResponse<T>` - Single item response: `{ data: T }`
-- `ListResponse<T>` - List response: `{ items: T[] }`
+- `ListResponse<T>` - Bounded helper list response: `{ data: T[] }`
+- `PagedListResponse<T>` - Page-shaped admin list response:
+  `{ data: T[]; total: number; hasMore: boolean }`
+
+Use `ListResponse<T>` for small bounded helper collections. Use
+`PagedListResponse<T>` for admin root lists and detail-tab child collections
+that feed `EntityListPage` / `EntityList`.
 
 ### Token Management
 
@@ -268,7 +274,9 @@ export class HttpClient {
 For admin list/detail routes that emit `ETag`, use `getWithMeta` so clients can revalidate with `If-None-Match` and safely handle `304`:
 
 ```ts
-const response = await http.getWithMeta<ListResponse<Item>>(
+import type { PagedListResponse } from "@decodelabs/underlay/client/types";
+
+const response = await http.getWithMeta<PagedListResponse<Item>>(
   "/v1/admin/items",
   cachedEtag ? { "If-None-Match": cachedEtag } : undefined,
   { acceptedStatuses: [304] }
@@ -438,7 +446,7 @@ export async function listTracks(
   const response = await http.get<ListResponse<Track>>(
     `/v1/artists/${encodeURIComponent(artistId)}/tracks`
   );
-  return response.items;
+  return response.data;
 }
 
 export async function listReleases(
@@ -450,7 +458,7 @@ export async function listReleases(
   const response = await http.get<ListResponse<Release>>(
     `/v1/artists/${encodeURIComponent(artistId)}/releases`
   );
-  return response.items;
+  return response.data;
 }
 ```
 
@@ -508,7 +516,7 @@ export async function listSessions(
 ): Promise<SessionSummary[]> {
   const http = getHttpClient({ fetchFn, accessToken });
   const response = await http.get<ListResponse<SessionSummary>>("/v1/auth/sessions");
-  return response.items;
+  return response.data;
 }
 
 export async function revokeSession(
@@ -527,7 +535,7 @@ export async function listPasskeys(
 ): Promise<PasskeyCredential[]> {
   const http = getHttpClient({ fetchFn, accessToken });
   const response = await http.get<ListResponse<PasskeyCredential>>("/v1/auth/passkeys");
-  return response.items;
+  return response.data;
 }
 
 // Google OAuth

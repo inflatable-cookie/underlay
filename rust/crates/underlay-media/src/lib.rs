@@ -59,6 +59,8 @@
 pub mod domain;
 pub mod error;
 pub mod image;
+#[cfg(feature = "nightfire")]
+pub mod nightfire;
 pub mod repository;
 pub mod storage;
 pub mod sync;
@@ -125,6 +127,16 @@ pub use sync::{
     sync_media_usages_for_record, MediaUsageAuditSource, MediaUsageSyncReport,
     MediaUsageSyncRepository, MigrationAttachmentBindingRepository,
     StructuredContentMediaExtractor, StructuredContentWalker,
+};
+
+#[cfg(feature = "nightfire")]
+pub use nightfire::{
+    resolve_nightfire_media_usage, NightfireBlockMediaHandler, NightfireBlockMediaHandlerMap,
+    NightfireBlockMediaHandlerRegistry, NightfireBlockMediaReference,
+    NightfireBlockMediaRegistration, NightfireBlockMediaUsageExtractor,
+    NightfireFieldNameMatcher, NightfireMediaFieldRule, NightfireMediaReferenceMatch,
+    NightfireMediaReferenceMatcher, NightfireMediaUsageExtractor, NightfireMediaVisitContext,
+    NightfireNestedValuePointer,
 };
 
 #[cfg(feature = "postgres")]

@@ -24,6 +24,7 @@ pub struct ErrorEnvelope {
 pub struct ErrorBody {
     pub code: String,
     pub message: String,
+    #[serde(rename = "fieldErrors")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub field_errors: Option<HashMap<String, String>>,
 }

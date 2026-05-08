@@ -36,33 +36,21 @@
     TableColumn,
     TableRow,
     TableRowAction,
-    TableCellValue,
     BulkAction,
     EditableListItem,
-    LogEntry,
-    LogActionType,
     LogActor
   } from "@poodle/svelte";
-  import type { FilterField, QueryParams, SortField, SortDirection } from "../client/query";
+  import type { FilterField, QueryParams, SortField } from "../client/query";
   import { DEFAULT_PAGE_SIZE } from "../patterns/pagination-types";
-
-  // Cross-package Svelte Snippet identity is brittle in linked local workspaces.
-  // Keep the shared template boundary permissive so consumers can pass local snippets cleanly.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  type TemplateSurface = any;
-
-  // --- Types ---
-
-  interface FilterConfig {
-    id: string;
-    type: "search" | "select" | "date" | "number" | "sort";
-    label: string;
-    options?: { value: string; label: string }[];
-    loadOptions?: () => Promise<{ value: string; label: string }[]>;
-    placeholder?: string;
-    /** For sort filters: available sort fields */
-    sortFields?: { key: string; label: string; defaultDirection?: SortDirection }[];
-  }
+  import type {
+    BatchActionConfig,
+    EntityListDataLoader,
+    EntityListSharedProps,
+    FilterConfig,
+    PagedListResult,
+    ReorderConfig,
+    TemplateSurface
+  } from "./template.types";
 
   interface ItemContext {
     selectionMode: boolean;
@@ -72,50 +60,12 @@
     refetch: () => Promise<void>;
   }
 
-  interface BatchDialogContext {
-    ids: string[];
-    onSubmit: (values: Record<string, unknown>) => void;
-    onCancel: () => void;
-  }
-
-  interface BatchDialogConfig {
-    title: string;
-    content: TemplateSurface;
-  }
-
-  interface BatchActionConfig {
-    id: string;
-    label: string;
-    tone?: "default" | "danger" | "warning";
-    icon?: string;
-    confirm?: boolean | {
-      title: string;
-      description: string | ((count: number) => string);
-      confirmLabel?: string;
-      cancelLabel?: string;
-    };
-    dialog?: BatchDialogConfig;
-    handler: (ids: string[], values?: Record<string, unknown>) => Promise<void>;
-  }
-
-  interface ReorderConfig {
-    enabled: boolean;
-    handler: (orderedIds: string[]) => Promise<void>;
-  }
-
-  interface PagedListResult<TItem> {
-    data: TItem[];
-    /** Total matching items across all pages. Falls back to visible count if omitted. */
-    total?: number | null;
-    hasMore?: boolean;
-  }
-
   interface Props {
     /** Optional title for inline use (omitted when inside EntityListPage) */
     title?: string;
     
     /** Data loading function. Must return paged results for the current query state. */
-    dataLoader: (fetch: typeof window.fetch, token: string | null, query: QueryParams) => Promise<PagedListResult<T>>;
+    dataLoader: EntityListDataLoader<T>;
     
     /** Unique identifier field (default: "id") */
     idField?: string;
@@ -130,7 +80,7 @@
     columns?: TableColumn[];
     
     /** For table: row actions */
-    rowActions?: (row: TableRow<T>) => { value: string; label: string }[];
+    rowActions?: EntityListSharedProps<T>["rowActions"];
 
     /** For table: whether to show the actions column */
     showRowActions?: boolean;
@@ -148,7 +98,7 @@
     onRowActionSelect?: (row: TableRow<T>, action: TableRowAction) => void;
 
     /** For log presentation: map loaded items into Poodle log entries. */
-    toLogEntries?: (items: T[]) => LogEntry[];
+    toLogEntries?: EntityListSharedProps<T>["toLogEntries"];
 
     /** For log presentation: custom action icon snippet. */
     actionIcon?: TemplateSurface;
@@ -157,19 +107,19 @@
     entryDetails?: TemplateSurface;
 
     /** For log presentation: derive action type semantics. */
-    getActionType?: (action: string) => LogActionType;
+    getActionType?: EntityListSharedProps<T>["getActionType"];
 
     /** For log presentation: format action labels. */
-    formatAction?: (action: string) => string;
+    formatAction?: EntityListSharedProps<T>["formatAction"];
 
     /** For log presentation: format resource labels. */
-    formatResourceType?: (resourceType: string) => string;
+    formatResourceType?: EntityListSharedProps<T>["formatResourceType"];
 
     /** For log presentation: derive actor hrefs. */
-    getActorHref?: (actor: LogActor) => string;
+    getActorHref?: EntityListSharedProps<T>["getActorHref"];
 
     /** For log presentation: derive resource hrefs. */
-    getResourceHref?: (resourceType: string, resourceId: string, action: string) => string | null;
+    getResourceHref?: EntityListSharedProps<T>["getResourceHref"];
     
     /** Declarative filter configuration */
     filters?: FilterConfig[];
@@ -206,16 +156,16 @@
     onReorderModeChange?: (enabled: boolean) => void;
 
     /** External query state (filters, sort, page, limit) */
-    query?: QueryParams;
+    query?: EntityListSharedProps<T>["query"];
 
     /** Called when query changes (parent manages URL sync) */
-    onQueryChange?: (query: QueryParams) => void;
+    onQueryChange?: EntityListSharedProps<T>["onQueryChange"];
 
     /** Called when reorder can genuinely be used for the current result set */
     onReorderAvailabilityChange?: (enabled: boolean) => void;
 
     /** Custom reorder error handler for conflict recovery */
-    onReorderError?: (error: unknown) => Promise<string | void> | string | void;
+    onReorderError?: EntityListSharedProps<T>["onReorderError"];
   }
 
   // --- Props ---
@@ -413,8 +363,9 @@
       ...query,
       page: Math.max(1, query.page ?? 1),
       limit: Math.max(1, query.limit ?? DEFAULT_PAGE_SIZE),
-      filters: query.filters?.filter((filter) => filter.value.trim() !== "") ?? [],
-      sort: query.sort?.filter((field) => field.field.trim() !== "") ?? []
+      filters:
+        query.filters?.filter((filter: FilterField) => filter.value.trim() !== "") ?? [],
+      sort: query.sort?.filter((field: SortField) => field.field.trim() !== "") ?? []
     };
   }
 
@@ -435,7 +386,9 @@
   }
 
   function getFilterValue(filter: FilterConfig): string {
-    const activeFilter = currentQuery.filters?.find((entry) => entry.field === filter.id);
+    const activeFilter = currentQuery.filters?.find(
+      (entry: FilterField) => entry.field === filter.id
+    );
     if (!activeFilter) {
       return filter.type === "select" ? "All" : "";
     }
@@ -446,7 +399,9 @@
   }
 
   function buildNextFilters(filter: FilterConfig, value: string): FilterField[] {
-    const nextFilters = (currentQuery.filters ?? []).filter((entry) => entry.field !== filter.id);
+    const nextFilters = (currentQuery.filters ?? []).filter(
+      (entry: FilterField) => entry.field !== filter.id
+    );
 
     if (!value || value === "All") {
       return nextFilters;
@@ -863,7 +818,7 @@
               {:else if filter.type === "sort" && filter.sortFields}
                 <OrderBy
                   fields={filter.sortFields}
-                  value={currentSort.map((s) => ({ key: s.field, direction: s.direction }))}
+                  value={currentSort.map((s: SortField) => ({ key: s.field, direction: s.direction }))}
                   ariaLabel={getFilterAriaLabel(filter)}
                   showClearButton={false}
                   onChange={(value: { key: string; direction: string }[]) => handleSortChange(value.map((v) => ({ field: v.key, direction: v.direction as "asc" | "desc" })))}
@@ -1029,7 +984,7 @@
           {:else if filter.type === "sort" && filter.sortFields}
             <OrderBy
               fields={filter.sortFields}
-              value={currentSort.map((s) => ({ key: s.field, direction: s.direction }))}
+              value={currentSort.map((s: SortField) => ({ key: s.field, direction: s.direction }))}
               ariaLabel={getFilterAriaLabel(filter)}
               showClearButton={false}
               onChange={(value: { key: string; direction: string }[]) => handleSortChange(value.map((v) => ({ field: v.key, direction: v.direction as "asc" | "desc" })))}

@@ -19,8 +19,17 @@ describe("nightfire/validation", () => {
 
 		expect(validateNightfireValue(value)).toEqual({
 			schema: "schema-v",
-			block: { type: "markdown", data: {}, validated: true },
+			block: { id: undefined, type: "markdown", version: "initial", hash: "", data: {} },
+			blocks: undefined,
 		});
-		expect(prepareNightfireForSave(value)).toEqual(validateNightfireValue(value));
+		const prepared = prepareNightfireForSave(value);
+		expect(prepared?.schema).toBe("schema-v");
+		expect(prepared?.block).toMatchObject({
+			type: "markdown",
+			version: "initial",
+			hash: "",
+			data: {},
+		});
+		expect(prepared?.block?.id).toMatch(/^nf_/);
 	});
 });

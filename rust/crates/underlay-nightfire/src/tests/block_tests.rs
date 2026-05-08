@@ -20,6 +20,7 @@ fn export_creates_block_data() {
     };
     let data = block.export();
 
+    assert_eq!(data.id, None);
     assert_eq!(data.r#type, "test");
     assert_eq!(data.version, "initial");
     assert!(!data.hash.is_empty());

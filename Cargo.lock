@@ -5617,6 +5617,7 @@ name = "underlay-core"
 version = "0.0.1"
 dependencies = [
  "serde",
+ "serde_json",
  "uuid",
 ]
 
@@ -5749,6 +5750,7 @@ dependencies = [
  "tracing",
  "underlay-blob",
  "underlay-db",
+ "underlay-nightfire",
  "uuid",
 ]
 
@@ -5782,6 +5784,7 @@ dependencies = [
  "blake3",
  "serde",
  "serde_json",
+ "uuid",
 ]
 
 [[package]]

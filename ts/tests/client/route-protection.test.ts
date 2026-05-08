@@ -7,12 +7,14 @@ import {
 } from "../../src/client/route-protection";
 
 describe("client/route-protection", () => {
-	it("matches exact, prefix, and wildcard public paths", () => {
+	it("matches exact and wildcard public paths without widening plain paths", () => {
 		const publicPaths = ["/login", "/auth/*", "/health"];
 
 		expect(isPublicPath("/login", publicPaths)).toBe(true);
+		expect(isPublicPath("/login-help", publicPaths)).toBe(false);
 		expect(isPublicPath("/auth/callback", publicPaths)).toBe(true);
-		expect(isPublicPath("/health/check", publicPaths)).toBe(true);
+		expect(isPublicPath("/health", publicPaths)).toBe(true);
+		expect(isPublicPath("/health/check", publicPaths)).toBe(false);
 		expect(isPublicPath("/private", publicPaths)).toBe(false);
 	});
 

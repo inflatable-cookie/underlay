@@ -39,9 +39,9 @@ import { getAuthConfig } from "./auth";
  *   const pageData = useAuthenticatedData(
  *     async (fetch, token) => {
  *       const result = await someApiCall(fetch, token);
- *       return { items: result.items };
+ *       return { data: result.data };
  *     },
- *     { defaultValue: { items: [] } }
+ *     { defaultValue: { data: [] } }
  *   );
  * </script>
  * ```
@@ -77,7 +77,7 @@ import { getAuthConfig } from "./auth";
  *
  *   const pageData = useAuthenticatedData(
  *     async (fetch, token) => someApiCall(fetch, token),
- *     { defaultValue: { items: [] } }
+ *     { defaultValue: { data: [] } }
  *   );
  *
  *   // Trigger fetch when auth is ready

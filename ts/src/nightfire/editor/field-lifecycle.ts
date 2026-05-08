@@ -1,6 +1,6 @@
-import type { NightfireValue } from "../types";
+import type { NightfireDraftValue, NightfireValue } from "../types";
 import { createDefaultBlock } from "./block-list";
-import { writeNightfireToFormData } from "../utils";
+import { writePreparedNightfireToFormData } from "../validation";
 
 export type NightfireFieldMode = "single" | "multi";
 
@@ -14,20 +14,20 @@ export function createRequiredInitialValue(
     return {
       schema,
       blocks: [defaultBlock]
-    } as NightfireValue;
+    };
   }
 
   return {
     schema,
     block: defaultBlock
-  } as NightfireValue;
+  };
 }
 
 export function createPrepareWriter(
-  getValue: () => NightfireValue,
+  getValue: () => NightfireDraftValue,
   getName: () => string
 ): (formData: FormData) => void {
   return (formData: FormData) => {
-    writeNightfireToFormData(formData, getName(), getValue());
+    writePreparedNightfireToFormData(formData, getName(), getValue());
   };
 }

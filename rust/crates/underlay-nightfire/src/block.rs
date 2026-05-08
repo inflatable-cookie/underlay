@@ -12,6 +12,12 @@ use crate::hash::compute_block_hash;
 /// opaque JSON payload for that block.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct BlockData {
+    /// Stable block identifier.
+    ///
+    /// This is optional for backward compatibility with older stored values.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub id: Option<String>,
+
     /// Block type identifier, e.g. "paragraph", "heading", "material.selector".
     pub r#type: String,
 
@@ -60,6 +66,7 @@ pub trait Block {
         let data = self.to_data();
 
         BlockData {
+            id: None,
             r#type: Self::TYPE_NAME.to_string(),
             version: Self::active_version().to_string(),
             hash: compute_block_hash(&data),

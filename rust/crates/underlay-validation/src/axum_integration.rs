@@ -10,6 +10,7 @@ use axum::{
     Json,
 };
 use serde::de::DeserializeOwned;
+use underlay_core::{ErrorBody, ErrorEnvelope};
 
 use crate::{Validate, ValidationError};
 
@@ -73,14 +74,23 @@ impl IntoResponse for ValidatedJsonRejection {
                 (StatusCode::BAD_REQUEST, Json(body)).into_response()
             }
             Self::ValidationError(error) => {
-                let body = serde_json::json!({
-                    "error": {
-                        "code": error.code.as_deref().unwrap_or("validation.failed"),
-                        "message": error.message.as_deref().unwrap_or("Validation failed"),
-                        "field_errors": error.field_errors,
-                    }
-                });
-                (StatusCode::BAD_REQUEST, Json(body)).into_response()
+                let field_errors = error
+                    .field_errors
+                    .into_iter()
+                    .map(|(field, err)| (field, err.message))
+                    .collect();
+                let envelope = ErrorEnvelope {
+                    error: ErrorBody {
+                        code: error
+                            .code
+                            .unwrap_or_else(|| "validation.failed".to_string()),
+                        message: error
+                            .message
+                            .unwrap_or_else(|| "Validation failed".to_string()),
+                        field_errors: Some(field_errors),
+                    },
+                };
+                (StatusCode::BAD_REQUEST, Json(envelope)).into_response()
             }
         }
     }

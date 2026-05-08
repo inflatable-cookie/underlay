@@ -52,6 +52,7 @@
 
 mod block;
 mod hash;
+mod media_locator;
 mod registry;
 mod strategy;
 mod validation;
@@ -60,7 +61,8 @@ mod value;
 // Re-export all public types at the crate root.
 pub use block::{Block, BlockData};
 pub use hash::compute_block_hash;
-pub use registry::{BlockDescriptor, BlockRegistry, StrategyRegistry};
+pub use media_locator::{NightfireMediaLocator, NightfireMediaLocatorError};
+pub use registry::{BlockDescriptor, BlockRegistration, BlockRegistry, StrategyRegistry};
 pub use strategy::{MultiConfig, NightfireStrategy, StrategyCardinality};
 pub use validation::{validate_nightfire_value, NightfireValidationError};
-pub use value::{NightfireValue, SchemaId};
+pub use value::{ensure_block_ids, NightfireValue, SchemaId};

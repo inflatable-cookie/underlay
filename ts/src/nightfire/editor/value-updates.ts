@@ -1,4 +1,8 @@
-import type { NightfireValue } from "../types";
+import {
+  coerceNightfireBlock,
+  type NightfireBlock,
+  type NightfireValue
+} from "../types";
 import {
   addBlockToList,
   insertBlockIntoList,
@@ -8,18 +12,15 @@ import {
 import { SUMMARY_SCHEMA_ID, transformSummaryBlockOnLayoutChange } from "./summary-transform";
 
 type TypeLabelFn = (type: string) => string;
-type NightfireBlock = Record<string, unknown>;
 
 function asBlockObject(value: unknown): NightfireBlock {
-  return value !== null && typeof value === "object" && !Array.isArray(value)
-    ? { ...(value as NightfireBlock) }
-    : {};
+  return coerceNightfireBlock(value, "markdown")!;
 }
 
 export function asSingleBlockValue(schema: string, block: unknown): NightfireValue {
   return {
     schema,
-    block,
+    block: asBlockObject(block),
     blocks: undefined
   };
 }
@@ -28,13 +29,13 @@ export function asMultiBlockValue(schema: string, blocks: unknown[]): NightfireV
   return {
     schema,
     block: undefined,
-    blocks
+    blocks: blocks.map((block) => asBlockObject(block))
   };
 }
 
 export function replaceBlockAtIndex(blocks: unknown[], index: number, nextBlock: unknown): unknown[] {
   const nextBlocks = blocks.slice();
-  nextBlocks[index] = nextBlock;
+  nextBlocks[index] = asBlockObject(nextBlock);
   return nextBlocks;
 }
 

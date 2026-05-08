@@ -26,6 +26,8 @@ type AnyComponent =
   | (new (...args: any[]) => SvelteComponent)
   | Component<any, any, any>;
 
+export type BlockEditorComponent = AnyComponent;
+
 function makeKey(schema: string, type: string): RegistryKey {
   return `${schema}|${type}`;
 }

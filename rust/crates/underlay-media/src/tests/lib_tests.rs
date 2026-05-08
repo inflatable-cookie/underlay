@@ -9,6 +9,8 @@ fn test_re_exports() {
     let _rendition_id = MediaRenditionId::new();
     let _kind = MediaContentKind::RecordField;
     let _role = MediaUsageRole::Embedded;
+    #[cfg(feature = "nightfire")]
+    let _registration: Option<NightfireBlockMediaRegistration> = None;
 }
 
 #[test]

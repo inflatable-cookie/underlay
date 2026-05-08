@@ -1,4 +1,8 @@
-import type { NightfireValue } from "./types";
+import {
+  coerceNightfireBlock,
+  type NightfireBlock,
+  type NightfireDraftValue
+} from "./types";
 import { isBlockContentEmpty } from "./editor-registry";
 
 export interface NightfireBlockDefinition {
@@ -13,32 +17,53 @@ export interface NightfireTypeOption {
 }
 
 /**
- * Normalises a value that may be a raw string (legacy data) into a proper
- * NightfireValue with a markdown block.
+ * Normalises a value that may be a raw string (legacy data) into Nightfire
+ * draft state with a durable block envelope when content exists.
  *
  * This handles cases where:
  * - The database stored a plain string instead of a NightfireValue object
  * - The value is already a valid NightfireValue (passed through unchanged)
- * - The value is null/undefined (returns a minimal NightfireValue with empty block)
+ * - The value is null/undefined (returns an editor-local empty draft value)
  *
  * @param value - The raw value from the database (may be string, object, or null)
- * @param schema - The schema identifier to use for the NightfireValue
+ * @param schema - The schema identifier to use for the Nightfire draft value
  * @param allowedBlockTypes - Optional list of allowed block types; if provided and
  *                            "markdown" is not in the list, raw strings won't be converted
- * @returns A properly structured NightfireValue
+ * @returns A normalized draft value suitable for editor state
  */
 export function normaliseNightfireValue(
   value: unknown,
   schema: string,
   allowedBlockTypes?: string[] | null
-): NightfireValue {
-  // Already a valid NightfireValue object
-  if (
-    value !== null &&
-    typeof value === "object" &&
-    "schema" in (value as object)
-  ) {
-    return value as NightfireValue;
+): NightfireDraftValue {
+  const defaultType = allowedBlockTypes?.[0] ?? "markdown";
+
+  if (value !== null && typeof value === "object" && !Array.isArray(value)) {
+    const record = value as Record<string, unknown>;
+    const nextSchema =
+      typeof record.schema === "string" ? record.schema : schema;
+    const single = coerceNightfireBlock(record.block, defaultType);
+    const multi = Array.isArray(record.blocks)
+      ? record.blocks
+          .map((block) => coerceNightfireBlock(block, defaultType))
+          .filter((block): block is NightfireBlock => block !== null)
+      : [];
+
+    if (single) {
+      return {
+        schema: nextSchema,
+        block: single
+      };
+    }
+
+    if (multi.length > 0) {
+      return {
+        schema: nextSchema,
+        blocks: multi
+      };
+    }
+
+    return { schema: nextSchema };
   }
 
   // Raw string - convert to markdown block if markdown is allowed
@@ -48,78 +73,41 @@ export function normaliseNightfireValue(
       // Can't convert to markdown, return empty value with schema
       return {
         schema,
-        block: {
-          type: allowedBlockTypes[0] ?? "markdown",
-          version: "initial",
-          hash: "",
-          data: {}
-        }
+        block: coerceNightfireBlock({}, defaultType)!
       };
     }
 
     // Convert raw string to markdown block
     return {
       schema,
-      block: {
-        type: "markdown",
-        version: "initial",
-        hash: "",
-        data: {
-          text: value
-        }
-      }
+      block: coerceNightfireBlock(
+        { type: "markdown", data: { text: value } },
+        "markdown"
+      )!
     };
   }
 
-  // Null, undefined, or empty - return minimal NightfireValue
-  return {
-    schema,
-    block: undefined
-  };
+  // Null, undefined, or empty - return editor-local empty draft state
+  return { schema };
 }
 
 export function normaliseNightfireBlock(
-  block: any,
+  block: unknown,
   typeOptions: NightfireTypeOption[],
   definition: NightfireBlockDefinition
-): {
-  type: string;
-  version: string;
-  hash: string;
-  data: unknown;
-} {
+): NightfireBlock {
   const allowed = typeOptions.map((o) => o.type);
   const defaultType =
     typeOptions[0]?.type ?? definition.defaultType ?? "markdown";
-
-  let next = block ?? null;
-
-  if (!next || typeof next !== "object") {
-    next = null;
+  const source = block === undefined || block === null ? {} : block;
+  const normalized = coerceNightfireBlock(source, defaultType)!;
+  if (allowed.includes(normalized.type)) {
+    return normalized;
   }
 
-  const type =
-    next && typeof (next as any).type === "string" &&
-    allowed.includes((next as any).type as string)
-      ? ((next as any).type as string)
-      : defaultType;
-
   return {
-    type,
-    version:
-      next && typeof (next as any).version === "string"
-        ? ((next as any).version as string)
-        : "initial",
-    hash:
-      next && typeof (next as any).hash === "string"
-        ? ((next as any).hash as string)
-        : "",
-    data:
-      next &&
-      typeof (next as any).data === "object" &&
-      (next as any).data !== null
-        ? (next as any).data
-        : {}
+    ...normalized,
+    type: defaultType
   };
 }
 
@@ -136,7 +124,7 @@ export function normaliseNightfireBlock(
  * (i.e. does a block/blocks array exist at all).
  */
 export function isEmptyNightfire(
-  value: NightfireValue | null | undefined,
+  value: NightfireDraftValue | null | undefined,
   contentLevel: boolean = true
 ): boolean {
   if (!value || typeof value !== "object") return true;
@@ -159,7 +147,7 @@ export function isEmptyNightfire(
 export function writeNightfireToFormData(
   formData: FormData,
   name: string,
-  value: NightfireValue | null | undefined
+  value: NightfireDraftValue | null | undefined
 ): void {
   if (isEmptyNightfire(value)) {
     formData.set(name, "");

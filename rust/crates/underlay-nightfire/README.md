@@ -112,6 +112,48 @@ Multi-block:
 }
 ```
 
+## Stable block ids and media locators
+
+Nightfire blocks may carry a stable `id`. Underlay uses those ids as the
+preferred anchor for media-usage references inside structured content.
+
+Canonical Nightfire media locator format:
+
+- `<block-id>#<json-pointer-relative-to-block.data>`
+
+Examples:
+
+- `hero_01#/imageId`
+- `gallery_02#/pages/1/imageId`
+
+Use `ensure_block_ids()` on the Rust side and `prepareNightfireForSave()` on
+the TS side so stored values have stable top-level block ids before media usage
+extraction or audit.
+
+Shared media lifecycle with Underlay:
+
+1. persist a `NightfireValue` with block ids
+2. extract usage edges with `underlay-media`'s registry-backed
+   `NightfireBlockMediaUsageExtractor`
+3. sync those edges into `media_usage`
+4. later resolve stored `block_id` or `path` locators back into the current
+   Nightfire JSON
+
+For new block work, keep the block payload type, validation, TS registrations,
+and Rust media handler registration in the same block module set. Underlay's
+media side now supports exporting one `NightfireBlockMediaRegistration` per
+block module and assembling the app registry from those exports.
+
+For cleaner Rust-side assembly, `underlay-nightfire` also provides a generic
+`BlockRegistration<C, M>` bundle so one block-module export can contribute:
+
+- the Nightfire block descriptor
+- optional higher-layer metadata such as media registration
+
+See also:
+
+- `docs/guides/code/076-nightfire/nightfire-block-module-pattern.md`
+
 ## Design Philosophy
 
 1. **Generic over Category**: The `C` type parameter allows applications to define their own block categories without modifying this crate.

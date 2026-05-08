@@ -7,7 +7,8 @@ This document covers implementing HTTP handlers and routing using Axum.
 The patterns here are intentionally simple and align with Underlay's primitives:
 
 - API routes use the `/v1/...` prefix.
-- Responses use `underlay_core::{SingleResponse, ListResponse}`.
+- Responses use the canonical envelopes from the transport and admin resource
+  contracts.
 - Errors use `underlay_http::ApiError` and `ApiResult<T>` as the canonical path.
 - JSON field names use snake_case (see [071-json-naming.md](./071-json-naming.md)).
 
@@ -56,17 +57,36 @@ apps/api/crates/api/src/
 
 ## Response Envelopes
 
-Underlay defines canonical response shapes:
+Underlay defines two main shared response shapes:
 
 ```rust
 use underlay_core::{ListResponse, SingleResponse};
 
-// list
+// bounded helper list
 ListResponse { data: vec![/* ... */] }
 
 // single
 SingleResponse { data: /* ... */ }
 ```
+
+For admin page-shaped root lists and detail-tab child collections, use the
+paged list envelope from
+[073-api-profiles-and-query-contract.md](./073-api-profiles-and-query-contract.md)
+and
+[../contracts/115-admin-resource-api-shapes.md](../contracts/115-admin-resource-api-shapes.md):
+
+```json
+{
+  "data": [],
+  "total": 0,
+  "has_more": false
+}
+```
+
+Rule:
+
+- use `ListResponse<T>` for bounded helper collections
+- use the paged list envelope for `EntityListPage`-class admin browsing surfaces
 
 ## Errors
 
@@ -274,6 +294,27 @@ pub fn create_router(state: AppState) -> Router {
         .with_state(state)
 }
 ```
+
+## Nightfire Persistence And Media Sync
+
+When a route accepts Nightfire JSON and also maintains `media_usage`, keep the
+server-side order explicit:
+
+1. ensure stable block ids on the Rust side
+2. persist the exact Nightfire JSON
+3. run the shared media extractor and sync path against that same value
+
+Copyable example:
+
+- [`docs/guides/code/070-api-handlers/nightfire-persist-and-media-sync.rs`](/Users/tom/Dev/projects/underlay/docs/guides/code/070-api-handlers/nightfire-persist-and-media-sync.rs)
+
+Important boundary rule:
+
+- API DTO field names may still be `snake_case`
+- inner Nightfire block `data` keys must already be in their final form
+- do not rename keys like `imageId` during server-side mapping before
+  extraction, or shared locator and media-field matching will drift from the
+  stored JSON
 
 ## Production Patterns
 

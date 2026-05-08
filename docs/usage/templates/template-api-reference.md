@@ -1,6 +1,6 @@
 # Template API Reference
 
-**Status:** In development
+Status: active
 
 Complete API reference for all template components.
 
@@ -26,15 +26,19 @@ Complete API reference for all template components.
 
 ## Types
 
+These types are exported from `@decodelabs/underlay/templates`.
+
 ### FilterConfig
 
 ```typescript
 interface FilterConfig {
   id: string;
-  type: "search" | "select" | "date" | "number";
+  type: "search" | "select" | "date" | "number" | "sort";
   label: string;
   options?: { value: string; label: string }[];
   loadOptions?: () => Promise<{ value: string; label: string }[]>;
+  placeholder?: string;
+  sortFields?: { key: string; label: string; defaultDirection?: "asc" | "desc" }[];
 }
 ```
 
@@ -76,24 +80,55 @@ interface ReorderConfig {
 }
 ```
 
-### DetailSectionConfig
-
-```typescript
-interface DetailSectionConfig {
-  title: string;
-  columns?: number;
-  items: DetailItemConfig[];
-}
-```
-
 ### DetailItemConfig
 
 ```typescript
 interface DetailItemConfig {
   label: string;
   value: string | Snippet;
+  description?: string;
   emptyText?: string;
+  truncateValue?: boolean;
+  layout?: "inline" | "stacked";
+  presentation?: "simple" | "surface";
+  span?: "full" | "half" | null;
 }
 ```
 
+### DetailMetaItemConfig
 
+```typescript
+interface DetailMetaItemConfig {
+  label: string;
+  value: string | Snippet;
+  separator?: boolean;
+}
+```
+
+### DetailTabConfig
+
+```typescript
+interface DetailTabConfig<T> {
+  id: string;
+  label: string;
+  count?: number;
+  content?: Snippet<[T]>;
+  separator?: boolean;
+}
+```
+
+### DetailActionConfig
+
+```typescript
+interface DetailActionConfig {
+  label: string;
+  tone?: "default" | "danger" | "warning";
+  handler: () => void;
+  confirm?: boolean | {
+    title: string;
+    description: string;
+    confirmLabel?: string;
+    cancelLabel?: string;
+  };
+}
+```

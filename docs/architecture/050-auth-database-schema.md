@@ -1,224 +1,180 @@
 # Auth Database Schema
 
-This document details the database schema for the Underlay authentication system. The schema is designed to be app-agnostic while supporting all auth methods (password, TOTP, PassKey, OAuth).
+Status: active reference
+Owner: repo maintainers
+
+This document describes the live shared auth persistence model.
+
+The canonical source of truth is the migration:
+
+- [rust/crates/underlay-auth/migrations/0001_create_auth_tables.sql](/Users/tom/Dev/projects/underlay/rust/crates/underlay-auth/migrations/0001_create_auth_tables.sql:1)
+
+The shared Rust type surface in
+[rust/crates/underlay-auth/src/types.rs](/Users/tom/Dev/projects/underlay/rust/crates/underlay-auth/src/types.rs:1)
+is the matching application model.
+
+If this doc drifts from either of those, the migration and shared types win.
+
+## Boundary
+
+`auth` owns authentication mechanics:
+
+- user account row
+- credentials
+- sessions
+- multi-step auth state
+- TOTP replay/backup-code support
+
+It does not own full identity and personalization. That belongs in
+`account.user_profile`; see
+[055-account-database-schema.md](./055-account-database-schema.md).
 
 ## Schema Overview
 
 ```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                           auth_users                                         │
-│  ┌───────────────────────────────────────────────────────────────────────┐  │
-│  │ id (UUID), email, display_name, status, created_at, updated_at        │  │
-│  └───────────────────────────────────────────────────────────────────────┘  │
-│                                    │                                         │
-│          ┌─────────────────────────┼─────────────────────────┐              │
-│          ▼                         ▼                         ▼              │
-│  ┌───────────────┐        ┌───────────────┐        ┌───────────────┐       │
-│  │auth_credentials│       │auth_sessions  │       │auth_audit_log │       │
-│  └───────────────┘        └───────────────┘        └───────────────┘       │
-└─────────────────────────────────────────────────────────────────────────────┘
+auth.users
+  ├─ auth.credentials
+  ├─ auth.sessions
+  └─ auth.auth_state
+
+auth.credentials
+  └─ auth.totp_credential
 ```
 
 ## Core Tables
 
-### auth_users
+### auth.users
 
-Stores user accounts.
-
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| id | UUID | PRIMARY KEY DEFAULT gen_random_uuid() | User identifier |
-| email | VARCHAR(255) | NOT NULL UNIQUE | User email address |
-| display_name | VARCHAR(255) | NOT NULL | User's display name |
-| status | VARCHAR(50) | NOT NULL DEFAULT 'active' | Account status (active, suspended, deleted) |
-| created_at | TIMESTAMPTZ | NOT NULL DEFAULT NOW() | Creation timestamp |
-| updated_at | TIMESTAMPTZ | NOT NULL DEFAULT NOW() | Last update timestamp |
-
-### auth_credentials
-
-Stores authentication methods for each user.
+Stores the shared authentication account row.
 
 | Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| id | UUID | PRIMARY KEY DEFAULT gen_random_uuid() | Credential identifier |
-| user_id | UUID | NOT NULL REFERENCES auth_users(id) ON DELETE CASCADE | Owning user |
-| type | VARCHAR(50) | NOT NULL CHECK (type IN ('password', 'totp', 'passkey', 'oauth_google')) | Credential type |
-| secret_encrypted | TEXT | NOT NULL | Encrypted credential data |
-| metadata | JSONB | NOT NULL DEFAULT '{}' | Type-specific metadata |
-| verified | BOOLEAN | NOT NULL DEFAULT FALSE | Whether credential is verified |
-| created_at | TIMESTAMPTZ | NOT NULL DEFAULT NOW() | Creation timestamp |
-| updated_at | TIMESTAMPTZ | NOT NULL DEFAULT NOW() | Last update timestamp |
-| last_used_at | TIMESTAMPTZ | NULL | Last usage timestamp |
+|---|---|---|---|
+| `id` | `UUID` | PK | Shared user identifier |
+| `email` | `TEXT` | NOT NULL, UNIQUE | Login email |
+| `role` | `TEXT` | NOT NULL, checked enum | Coarse primary role |
+| `status` | `TEXT` | NOT NULL, checked enum | `active`, `suspended`, `deleted` |
+| `created_at` | `TIMESTAMPTZ` | NOT NULL | Creation time |
+| `updated_at` | `TIMESTAMPTZ` | NOT NULL | Last update time |
 
-### auth_sessions
+Notes:
 
-Stores active sessions.
+- there is no `display_name` column in the live shared auth user table
+- `role` exists in the canonical migration even though higher auth logic also
+  supports multi-role principals and session role snapshots
+- richer profile and naming data belongs in `account.user_profile`
 
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| id | UUID | PRIMARY KEY DEFAULT gen_random_uuid() | Session identifier |
-| user_id | UUID | NOT NULL REFERENCES auth_users(id) ON DELETE CASCADE | Owning user |
-| access_token_fingerprint | VARCHAR(64) | NOT NULL | Hash of access token for lookup |
-| refresh_token_fingerprint | VARCHAR(64) | NOT NULL | Hash of refresh token for lookup |
-| access_token_expires_at | TIMESTAMPTZ | NOT NULL | Access token expiration |
-| refresh_token_expires_at | TIMESTAMPTZ | NOT NULL | Refresh token expiration |
-| created_at | TIMESTAMPTZ | NOT NULL DEFAULT NOW() | Creation timestamp |
-| last_used_at | TIMESTAMPTZ | NOT NULL DEFAULT NOW() | Last activity timestamp |
-| ip_address | INET | NULL | Client IP address |
-| user_agent | TEXT | NULL | Client user agent |
-| revoked | BOOLEAN | NOT NULL DEFAULT FALSE | Whether session is revoked |
-| revocation_reason | VARCHAR(100) | NULL | Reason for revocation |
-| revoked_at | TIMESTAMPTZ | NULL | Revocation timestamp |
+### auth.credentials
 
-### auth_audit_log
-
-Stores auth events for security review.
+Stores user authentication methods.
 
 | Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| id | UUID | PRIMARY KEY DEFAULT gen_random_uuid() | Log entry identifier |
-| event_type | VARCHAR(100) | NOT NULL | Event type code |
-| user_id | UUID | NULL REFERENCES auth_users(id) ON DELETE SET NULL | Related user |
-| session_id | UUID | NULL REFERENCES auth_sessions(id) ON DELETE SET NULL | Related session |
-| ip_address | INET | NULL | Client IP address |
-| user_agent | TEXT | NULL | Client user agent |
-| success | BOOLEAN | NOT NULL | Whether event succeeded |
-| details | JSONB | NOT NULL DEFAULT '{}' | Event-specific details |
-| created_at | TIMESTAMPTZ | NOT NULL DEFAULT NOW() | Event timestamp |
+|---|---|---|---|
+| `id` | `UUID` | PK | Credential identifier |
+| `user_id` | `UUID` | NOT NULL, FK -> `auth.users` | Owning user |
+| `type` | `TEXT` | NOT NULL, checked enum | `password`, `totp`, `passkey`, `oauth_google` |
+| `secret_encrypted` | `TEXT` | NOT NULL | Hash or encrypted blob |
+| `metadata` | `JSONB` | NOT NULL | Shared `CredentialMetadata` payload |
+| `verified` | `BOOLEAN` | NOT NULL | Verification state |
+| `display_name` | `TEXT` | NULL | Optional user-facing label, mainly for devices |
+| `created_at` | `TIMESTAMPTZ` | NOT NULL | Creation time |
+| `updated_at` | `TIMESTAMPTZ` | NOT NULL | Last update time |
+| `last_used_at` | `TIMESTAMPTZ` | NULL | Last use time |
 
-### auth_rate_limits
+Rules:
 
-Rate limiting for brute force protection.
+- password, TOTP, and OAuth Google are unique per user
+- passkeys allow multiple credentials per user
+- passkey credential IDs are globally unique through the metadata index
 
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| key | VARCHAR(255) | PRIMARY KEY | Rate limit key |
-| count | INTEGER | NOT NULL DEFAULT 0 | Request count in window |
-| window_start | TIMESTAMPTZ | NOT NULL | Window start time |
-| expires_at | TIMESTAMPTZ | NOT NULL | Key expiration |
+### auth.sessions
 
-## Optional Tables
-
-### auth_backup_codes
-
-One-time recovery codes for TOTP.
+Stores active and historical shared session state.
 
 | Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| id | UUID | PRIMARY KEY DEFAULT gen_random_uuid() | Code identifier |
-| user_id | UUID | NOT NULL REFERENCES auth_users(id) ON DELETE CASCADE | Owning user |
-| code_hash | VARCHAR(255) | NOT NULL UNIQUE | Hashed backup code |
-| used_at | TIMESTAMPTZ | NULL | When code was used |
-| created_at | TIMESTAMPTZ | NOT NULL DEFAULT NOW() | Creation timestamp |
+|---|---|---|---|
+| `id` | `UUID` | PK | Session identifier |
+| `user_id` | `UUID` | NOT NULL, FK -> `auth.users` | Owning user |
+| `roles` | `JSONB` | NOT NULL | Session role snapshot |
+| `is_active` | `BOOLEAN` | NOT NULL | Fast active flag |
+| `access_token_fingerprint` | `TEXT` | NOT NULL | Access-token fingerprint |
+| `refresh_token_fingerprint` | `TEXT` | NOT NULL | Refresh-token fingerprint |
+| `refresh_token_id` | `UUID` | NOT NULL | Current refresh token id |
+| `refresh_token_version` | `INTEGER` | NOT NULL | Rotation version counter |
+| `access_token_expires_at` | `TIMESTAMPTZ` | NOT NULL | Access expiry |
+| `refresh_token_expires_at` | `TIMESTAMPTZ` | NOT NULL | Refresh expiry |
+| `created_at` | `TIMESTAMPTZ` | NOT NULL | Creation time |
+| `updated_at` | `TIMESTAMPTZ` | NOT NULL | Last update time |
+| `last_used_at` | `TIMESTAMPTZ` | NOT NULL | Last use time |
+| `ip_address` | `TEXT` | NULL | Client IP |
+| `user_agent` | `TEXT` | NULL | Client user agent |
+| `status` | `TEXT` | NOT NULL, checked enum | `active`, `revoked`, `expired` |
+| `revocation_reason` | `TEXT` | NULL | Revocation reason |
+| `revoked_at` | `TIMESTAMPTZ` | NULL | Revocation time |
 
-### auth_oauth_connections
+Notes:
 
-External OAuth provider connections.
+- the live shared session model includes both `status` and `is_active`
+- refresh rotation state is first-class in the schema
+- role snapshots live on sessions, not only on users
+
+### auth.auth_state
+
+Stores short-lived workflow state for multi-step auth flows.
 
 | Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| id | UUID | PRIMARY KEY DEFAULT gen_random_uuid() | Connection identifier |
-| user_id | UUID | NOT NULL REFERENCES auth_users(id) ON DELETE CASCADE | Owning user |
-| provider | VARCHAR(50) | NOT NULL CHECK (provider IN ('google')) | OAuth provider |
-| provider_user_id | VARCHAR(255) | NOT NULL | Provider's user ID |
-| access_token_encrypted | TEXT | NOT NULL | Encrypted access token |
-| refresh_token_encrypted | TEXT | NULL | Encrypted refresh token |
-| token_expires_at | TIMESTAMPTZ | NULL | Token expiration |
-| scopes | TEXT[] | NULL | Granted scopes |
-| connected_at | TIMESTAMPTZ | NOT NULL DEFAULT NOW() | Connection timestamp |
-| last_used_at | TIMESTAMPTZ | NULL | Last usage timestamp |
+|---|---|---|---|
+| `id` | `UUID` | PK | State identifier |
+| `user_id` | `UUID` | NULL, FK -> `auth.users` | Related user when present |
+| `state_type` | `TEXT` | NOT NULL | Workflow state kind |
+| `state` | `JSONB` | NOT NULL | Opaque workflow payload |
+| `created_at` | `TIMESTAMPTZ` | NOT NULL | Creation time |
+| `expires_at` | `TIMESTAMPTZ` | NOT NULL | Expiry time |
 
-## Credential Storage
+Purpose:
 
-### Password
+- OAuth state
+- WebAuthn start/finish state
+- other expiring cross-request auth workflow state
 
-- `type`: `'password'`
-- `secret_encrypted`: Argon2id hash
-- `metadata`: `{ algorithm: 'argon2id', memory_kb: 65536, iterations: 3, parallelism: 4 }`
+### auth.totp_credential
 
-### TOTP
+Stores TOTP replay and recovery support alongside a TOTP credential.
 
-- `type`: `'totp'`
-- `secret_encrypted`: AES-256-GCM encrypted secret
-- `metadata`: `{ issuer: 'AppName', algorithm: 'SHA1', digits: 6, period: 30 }`
+| Column | Type | Constraints | Description |
+|---|---|---|---|
+| `credential_id` | `UUID` | PK, FK -> `auth.credentials` | TOTP credential id |
+| `last_counter` | `BIGINT` | NOT NULL | Last accepted counter |
+| `backup_code_hashes` | `JSONB` | NOT NULL | Stored backup-code hashes |
 
-### PassKey
+## Shared Types Mapping
 
-- `type`: `'passkey'`
-- `secret_encrypted`: CBOR-encoded credential data
-- `metadata`: `{ credential_id: 'base64...', transports: ['platform'], last_counter: 0 }`
+The live shared Rust types are similar but not identical to raw schema rows.
 
-### OAuth
+Important differences:
 
-- Stored in `auth_oauth_connections` with tokens
-- `auth_credentials` has `type: 'oauth_google'` as marker
+- `User.display_name` is optional in the shared type even though the canonical
+  auth table no longer stores it directly; apps may project profile data into
+  the type
+- `Session` in shared types is a cleaner app-facing shape and does not expose
+  every low-level rotation column directly
+- `CredentialMetadata` is the app-facing contract for the `metadata` JSONB
+  column
 
-## Audit Event Types
+## Security Model
 
-| Event Type | Description |
-|------------|-------------|
-| `auth.register` | New user registration |
-| `auth.login.attempt` | Login attempt |
-| `auth.login.password` | Password login |
-| `auth.login.totp` | TOTP verification |
-| `auth.login.passkey` | PassKey authentication |
-| `auth.login.oauth` | OAuth authentication |
-| `auth.logout` | User logged out |
-| `auth.session.refresh` | Token refresh |
-| `auth.session.revoke` | Session revoked |
-| `auth.2fa.enable` | 2FA enabled |
-| `auth.2fa.disable` | 2FA disabled |
-| `auth.passkey.register` | PassKey registered |
-| `auth.passkey.delete` | PassKey deleted |
-| `auth.oauth.connect` | OAuth connected |
-| `auth.oauth.disconnect` | OAuth disconnected |
-| `auth.password.change` | Password changed |
-| `auth.rate_limit.exceeded` | Rate limit triggered |
+- store only token fingerprints, never raw session tokens
+- refresh rotation state is durable and replay-sensitive
+- secrets and provider tokens live in encrypted or hashed form inside
+  `secret_encrypted`
+- timestamps are UTC `TIMESTAMPTZ`
 
-## Rate Limiting Keys
+## Extension Rule
 
-- `login:{email}` - Login attempts per email
-- `login:{ip}` - Login attempts per IP
-- `register:{ip}` - Registration attempts per IP
-- `2fa:{user_id}` - 2FA verification attempts
-- `password_reset:{email}` - Password reset requests
+Apps may add app-local tables or columns, but they should not fork the meaning
+of the shared core tables silently.
 
-## Indexes
+Preferred extension pattern:
 
-| Table | Index | Purpose |
-|-------|-------|---------|
-| auth_credentials | idx_auth_credentials_user_id | Find credentials by user |
-| auth_sessions | idx_auth_sessions_user_id | Find sessions by user |
-| auth_sessions | idx_auth_sessions_access_fingerprint | Validate access token |
-| auth_sessions | idx_auth_sessions_refresh_fingerprint | Refresh session |
-| auth_sessions | idx_auth_sessions_expires_at | Clean expired sessions |
-| auth_audit_log | idx_auth_audit_log_user_id | Audit by user |
-| auth_audit_log | idx_auth_audit_log_ip_address | Audit by IP |
-| auth_audit_log | idx_auth_audit_log_created_at | Audit by time |
-
-## Security Considerations
-
-1. Use Argon2id for password hashing (memory: 64MB, iterations: 3, parallelism: 4)
-2. Encrypt TOTP secrets and OAuth tokens with AES-256-GCM
-3. Store only token fingerprints (hashes), never plain tokens
-4. Use `TIMESTAMPTZ` for all timestamps (timezone-aware)
-5. Support both IPv4 and IPv6 with `INET` type
-6. Consider audit log retention policy (90 days active, 1 year archived)
-
-## Application Extensions
-
-Apps can extend tables with additional columns:
-
-```sql
--- Songsprout: Link users to artists
-ALTER TABLE auth_users ADD COLUMN artist_id UUID REFERENCES artists(id);
-
--- Acowtancy: Add role column
-ALTER TABLE auth_users ADD COLUMN role VARCHAR(50) DEFAULT 'student';
-```
-
-Underlay provides the base schema; apps own their domain-specific extensions.
-
-## Migrations
-
-See `docs/roadmaps/g01/004-underlay-auth-system-roadmap.md` for migration SQL files.
+- keep `auth` focused on authentication mechanics
+- put identity/personalization into `account`
+- put product/domain state in app-local schemas

@@ -14,34 +14,12 @@
     PageLoading,
     Callout
   } from "@poodle/svelte";
-
-  // --- Types ---
-
-  interface MetaItemConfig {
-    label: string;
-    value: string | Snippet;
-    separator?: boolean;
-  }
-
-  interface TabConfig {
-    id: string;
-    label: string;
-    count?: number;
-    content?: Snippet<[T]>;
-    separator?: boolean;
-  }
-
-  interface ActionConfig {
-    label: string;
-    tone?: "default" | "danger" | "warning";
-    handler: () => void;
-    confirm?: boolean | {
-      title: string;
-      description: string;
-      confirmLabel?: string;
-      cancelLabel?: string;
-    };
-  }
+  import type {
+    DetailActionConfig,
+    FetchFn,
+    DetailMetaItemConfig,
+    DetailTabConfig
+  } from "./template.types";
 
   interface Props {
     /** Entity name or item title */
@@ -78,22 +56,22 @@
     bannerTone?: "warning" | "info" | "danger" | "success";
     
     /** Data loading function */
-    dataLoader: (fetch: typeof window.fetch, token: string | null) => Promise<T | null>;
+    dataLoader: (fetch: FetchFn, token: string | null) => Promise<T | null>;
 
     /** Change this to force a refetch of the primary entity */
     reloadKey?: string | number | null;
     
     /** Metadata items */
-    meta?: MetaItemConfig[];
+    meta?: DetailMetaItemConfig[];
     
     /** Tabs configuration */
-    tabs?: TabConfig[];
+    tabs?: DetailTabConfig<T>[];
 
     /** Notified when the active tab changes */
     onTabChange?: (tabId: string) => void;
 
     /** Page actions */
-    actions?: ActionConfig[];
+    actions?: DetailActionConfig[];
 
     /** Fully custom header actions surface */
     headerActions?: Snippet<[T]>;
@@ -128,7 +106,7 @@
 
   let activeTab = $state("");
   let showConfirmDialog = $state(false);
-  let pendingAction: ActionConfig | null = $state(null);
+  let pendingAction: DetailActionConfig | null = $state(null);
   const pageActionItems = $derived(
     pageActions.map((action, index) => ({
       value: `action-${index}`,
@@ -139,7 +117,7 @@
 
   // --- Actions ---
 
-  function handleAction(action: ActionConfig) {
+  function handleAction(action: DetailActionConfig) {
     if (action.confirm) {
       pendingAction = action;
       showConfirmDialog = true;
@@ -177,7 +155,7 @@
   );
 
   const item = $derived(pageData.data);
-  const allTabs = $derived<TabConfig[]>(tabs);
+  const allTabs = $derived<DetailTabConfig<T>[]>(tabs);
   let previousReloadKey = $state<string | number | null>(null);
 
   $effect(() => {
