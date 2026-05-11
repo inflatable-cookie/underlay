@@ -5600,14 +5600,11 @@ version = "0.0.1"
 dependencies = [
  "async-trait",
  "aws-sdk-s3",
- "axum",
  "base64 0.22.1",
  "chrono",
  "serde",
  "thiserror 2.0.18",
  "tokio",
- "tower-http",
- "tracing",
  "underlay-aws",
  "url",
 ]

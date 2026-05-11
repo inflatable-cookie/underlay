@@ -1,6 +1,7 @@
 //! AWS S3-compatible blob storage adapter.
 
 use std::collections::HashMap;
+use std::env;
 use std::time::Duration;
 
 use async_trait::async_trait;
@@ -82,6 +83,58 @@ impl S3Config {
     pub fn path_style(mut self, enabled: bool) -> Self {
         self.path_style = enabled;
         self
+    }
+
+    /// Create a development-friendly MinIO config.
+    ///
+    /// This assumes:
+    /// - an S3-compatible endpoint such as MinIO
+    /// - path-style URLs
+    /// - a public base at `{endpoint}/{bucket}`
+    /// - the conventional local-dev region `us-east-1`
+    pub fn minio_dev(bucket: impl Into<String>, endpoint_url: impl Into<String>) -> Self {
+        let bucket = bucket.into();
+        let endpoint_url = endpoint_url.into().trim_end_matches('/').to_string();
+        let public_url_base = format!("{}/{}", endpoint_url, bucket);
+
+        Self::new(bucket, "us-east-1")
+            .endpoint_url(endpoint_url)
+            .public_url_base(public_url_base)
+            .path_style(true)
+    }
+
+    /// Build an S3 config from shared blob env vars, falling back to a MinIO
+    /// development shape when env overrides are absent.
+    ///
+    /// Recognized env vars:
+    /// - `BLOB_S3_BUCKET`
+    /// - `BLOB_S3_REGION`
+    /// - `BLOB_S3_ENDPOINT_URL`
+    /// - `BLOB_S3_PUBLIC_URL_BASE`
+    /// - `BLOB_S3_PATH_STYLE`
+    pub fn from_env_or_minio_dev(
+        default_bucket: impl Into<String>,
+        default_endpoint_url: impl Into<String>,
+    ) -> Self {
+        let default_bucket = default_bucket.into();
+        let default_endpoint_url = default_endpoint_url.into();
+
+        let bucket = env::var("BLOB_S3_BUCKET").unwrap_or(default_bucket);
+        let endpoint_url = env::var("BLOB_S3_ENDPOINT_URL").unwrap_or(default_endpoint_url);
+        let region = env::var("BLOB_S3_REGION").unwrap_or_else(|_| "us-east-1".to_string());
+        let path_style = env::var("BLOB_S3_PATH_STYLE")
+            .ok()
+            .map(|value| matches!(value.to_ascii_lowercase().as_str(), "1" | "true" | "yes"))
+            .unwrap_or(true);
+
+        let endpoint_url = endpoint_url.trim_end_matches('/').to_string();
+        let public_url_base = env::var("BLOB_S3_PUBLIC_URL_BASE")
+            .unwrap_or_else(|_| format!("{}/{}", endpoint_url, bucket));
+
+        Self::new(bucket, region)
+            .endpoint_url(endpoint_url)
+            .public_url_base(public_url_base)
+            .path_style(path_style)
     }
 }
 

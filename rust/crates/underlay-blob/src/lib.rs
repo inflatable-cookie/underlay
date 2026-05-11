@@ -1,7 +1,7 @@
 //! Blob storage infrastructure for Underlay applications.
 //!
 //! This crate provides a flexible, adapter-based blob storage system that supports
-//! multiple backends (AWS S3, local filesystem, etc.) for storing and retrieving
+//! multiple backends (AWS S3, MinIO, local filesystem, etc.) for storing and retrieving
 //! binary objects like images and PDFs.
 //!
 //! # Quick Start
@@ -32,30 +32,28 @@
 //! The crate uses the adapter pattern to support different storage backends:
 //!
 //! - `NoopAdapter` - Does nothing (for testing)
-//! - `S3Adapter` - AWS S3 or S3-compatible storage (requires `s3` feature)
-//! - `LocalAdapter` - Local filesystem (for development, requires `local` feature)
+//! - `S3Adapter` - AWS S3 or S3-compatible storage such as MinIO (requires `s3` feature)
+//! - `LocalAdapter` - Local filesystem (legacy/utility seam, requires `local` feature)
 //!
 //! All adapters implement the `BlobAdapter` trait.
 //!
 //! # Features
 //!
 //! - `s3` - Enable the AWS S3 adapter (adds `aws-sdk-s3` dependency)
-//! - `local` - Enable the local filesystem adapter (for development only)
+//! - `local` - Enable the local filesystem adapter
 //!
 //! # Security Note
 //!
-//! The `LocalAdapter` is intended for development only. Any HTTP endpoints that
-//! serve files from the local adapter **must be completely removed** in production
-//! builds. Use compile-time feature flags to ensure this.
+//! Underlay's preferred local-development blob path is the S3 adapter pointed at
+//! a bundled MinIO instance. The `LocalAdapter` remains available as a narrow
+//! filesystem seam, but browser-facing `dev-uploads` style flows should not be
+//! the default consumer pattern anymore.
 
 mod adapter;
 pub mod adapters;
 mod config;
 mod error;
 mod types;
-
-#[cfg(feature = "dev-server")]
-pub mod dev_server;
 
 // Re-export main types
 pub use adapter::{BlobAdapter, NoopAdapter};

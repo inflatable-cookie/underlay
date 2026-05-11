@@ -23,14 +23,14 @@ pub struct LocalConfig {
     /// Base directory where files are stored.
     pub base_path: PathBuf,
 
-    /// Base URL for serving files (e.g., "http://localhost:8080/dev-uploads").
+    /// Base URL for serving files (e.g., "http://localhost:8080/uploads").
     /// This should point to a development-only endpoint that serves files from base_path.
     pub serve_url_base: String,
 
     /// Virtual bucket name (for compatibility with the adapter interface).
     pub bucket: String,
 
-    /// Base URL for the upload endpoint (e.g., "http://localhost:8080/dev-uploads").
+    /// Base URL for the upload endpoint (e.g., "http://localhost:8080/uploads").
     /// If not set, uses serve_url_base.
     pub upload_url_base: Option<String>,
 }

@@ -225,11 +225,11 @@ Underlay currently ships backend implementations, not just traits:
 Rules:
 
 - S3-compatible storage is the production-facing backend model
-- local filesystem storage is development-only and must not be treated as a
-  production backend
+- local filesystem storage is a narrow utility seam and must not be treated as
+  the standard browser-facing development backend or as a production backend
 - shared AWS config owns region/endpoint setup reused across crates
-- public URL construction, presign durations, path-style mode, and local serve
-  endpoints are backend config concerns, not media-graph concerns
+- public URL construction, presign durations, and path-style mode are backend
+  config concerns, not media-graph concerns
 
 ### Media repository and lifecycle boundary
 
@@ -360,7 +360,7 @@ Not allowed:
 
 Current drift worth assessing later:
 
-- [050-media-library-and-usage.md](/Users/tom/Dev/projects/underlay/docs/contracts/050-media-library-and-usage.md:1)
+- [050-media-library-and-usage.md](/Users/tom/Dev/projects/underlay/docs/contracts/050-media-library-and-usage.md)
   is active but still labeled `Proposed shared contract`, so the lower/higher
   media authority chain is not yet expressed cleanly in file state
 - `underlay-db::ExistsCheck` assumes `deleted_at` unless callers opt out, which

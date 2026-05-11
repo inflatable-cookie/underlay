@@ -64,7 +64,7 @@ Several crates use feature flags to keep optional dependencies out of the defaul
 
 | Crate | Flags | Notes |
 |-------|-------|-------|
-| `underlay-blob` | `s3`, `local`, `dev-server` | Backend selection |
+| `underlay-blob` | `s3`, `local` | Backend selection |
 | `underlay-email` | `smtp`, `ses`, `templates` | Backend + template engine |
 | `underlay-http` | `tracing`, `validation`, `nightfire`, `error-logging`, `embed` | Modular HTTP features |
 | `underlay-jobs` | `postgres`, `scheduler`, `outbox`, `full` | Persistence + scheduling |
