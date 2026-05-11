@@ -15,6 +15,10 @@ It is implementation-oriented and complements roadmap design docs:
 3. [027 Incremental Decision Memory and AI Reuse](../roadmaps/g01/027-incremental-decision-memory-and-ai-reuse.md)
 4. [028 Migration Operations and Hardening](../roadmaps/g01/028-migration-operations-and-hardening.md)
 
+For current Underlay-site project layout policy and Effigy integration, use
+[Migration State Layout And Effigy](../usage/migration/000-state-layout-and-effigy.md).
+This guide remains the detailed migration-core operations playbook.
+
 ## 1. Scope and Guarantees
 
 This framework is designed for migrations where:

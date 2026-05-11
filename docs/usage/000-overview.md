@@ -5,16 +5,16 @@ This is the user-facing documentation for building applications with Underlay.
 ## Reading Order
 
 For **backend developers**:
-1. [Backend Overview](./backend/000-overview.md)
-2. [Rust Backend](./backend/040-rust-backend.md)
-3. [Database & Migrations](./backend/050-database.md)
-4. [API Handlers](./backend/070-api-handlers.md)
-5. [Authentication](./backend/060-authentication.md)
+1. [Architecture Overview](../guides/000-overview.md)
+2. [Rust Backend](../guides/040-rust-backend.md)
+3. [Database & Migrations](../guides/050-database.md)
+4. [API Handlers](../guides/070-api-handlers.md)
+5. [Authentication](../guides/060-authentication.md)
 
 For **frontend developers**:
-1. [Frontend Overview](./frontend/000-overview.md)
-2. [SvelteKit Setup](./frontend/100-sveltekit-setup.md)
-3. [Routing](./frontend/110-routing.md)
+1. [Frontend Web](../guides/100-frontend-web.md)
+2. [Admin Frontend](../guides/110-admin.md)
+3. [Admin/Front Separation](../guides/072-admin-front-separation.md)
 
 For **template system** (admin UIs):
 1. [Template System Overview](./templates/000-template-system-overview.md)
@@ -22,10 +22,13 @@ For **template system** (admin UIs):
 3. [Entity Detail Page](./templates/entity-detail-page.md)
 4. [Entity Form Page](./templates/entity-form-page.md)
 
+For **migration and state operations**:
+1. [Migration State Layout And Effigy](./migration/000-state-layout-and-effigy.md)
+
 For **runtime helpers**:
-1. [Runtime Overview](./runtime/000-overview.md)
-2. [Client & Navigation](./runtime/080-client.md)
-3. [Auth & Data](./runtime/095-navigation.md)
+1. [TypeScript Client](../guides/080-typescript-client.md)
+2. [Navigation Context](../guides/095-navigation-context.md)
+3. [Session Management](../guides/065-session-management.md)
 
 ## Quick Reference
 
