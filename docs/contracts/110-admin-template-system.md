@@ -113,9 +113,13 @@ Core pieces:
 Rules:
 
 - `EntityListPage` is the page-level shell around `EntityList`
-- `EntityList` is the real list engine and may be used standalone
-- there is no separate retained `EntityTabList` surface; page-shaped child tabs
-  should normally use `EntityList`
+- `EntityListPage` is the preferred shell for real browse/manage list surfaces,
+  including lists shown inside detail tabs
+- `EntityList` is the lower-level list engine and should normally sit underneath
+  `EntityListPage`, not compete with it as a peer default
+- there is no separate retained `EntityTabList` surface; tab browse surfaces
+  should use `EntityListPage` with tab-appropriate shell options unless a
+  narrower utility/embed posture is genuinely needed
 - data loading is caller-provided through `dataLoader(fetch, token, query)`
 - that loader shape is governed by `115-admin-resource-api-shapes.md`
 - presentation may be cards, table, or log
@@ -125,8 +129,14 @@ Rules:
 
 ### Child-tab migration acceptance
 
-Moving a child tab onto `EntityList` is allowed only when it preserves the real
-behavior of the existing surface.
+Moving a child tab onto the shared list templates is allowed only when it
+preserves the real behavior of the existing surface.
+
+Preferred target:
+
+- `EntityListPage` for real child-collection browse/manage tabs
+- `EntityList` only for narrower inline/embed utility lists where a page shell
+  would be artificial
 
 Required preservation:
 
@@ -139,7 +149,10 @@ Required preservation:
 
 Allowed outcomes:
 
-- move to `EntityList` when the tab is really a child-collection browse surface
+- move to `EntityListPage` when the tab is really a child-collection
+  browse/manage surface
+- use `EntityList` only when the surface is truly inline, subordinate, or
+  utility-like rather than a real browse surface
 - keep a compatibility wrapper when the behavior still fits the route contract
   but not the shared shell cleanly
 - grow the shared template surface deliberately when multiple consumers need
@@ -147,12 +160,15 @@ Allowed outcomes:
 
 Disallowed posture:
 
-- forcing a tab onto `EntityList` by dropping meaningful behavior
+- forcing a tab onto `EntityList` or `EntityListPage` by dropping meaningful
+  behavior
 - treating `variant="tab"` removal as success by itself
 
 Typical reasons to keep a compatibility wrapper for now:
 
 - the same component is still shared across root-page and detail-tab contexts
+  and `EntityListPage` does not yet expose one small shell seam needed in both
+  places
 - it still depends on cursor-style runtime pagination rather than the page-list
   bridge in `115`
 - it carries reorder, batch-transform, or other workflow behavior that the
@@ -197,9 +213,16 @@ Rules:
 
 - `EntityDetailPage` owns header, breadcrumbs, metadata bar, top-level tabs,
   load state, and page actions
+- `EntityDetailPage` may take either:
+  - `dataLoader` when the template should own the fetch/load/error posture
+  - `item` when the route already owns a stitched authenticated detail fetch
 - `EntityDetail` is the reusable section shell for detail modules
 - detail modules provide the framed content grid units used inside sections
-- child collections may use `EntityList` or `EntityInlineListModule`
+- top-level tabs may use card or underline posture and may stay mounted when
+  route-owned local tab state should persist
+- child collections should normally use `EntityListPage`
+- `EntityList` or `EntityInlineListModule` remain the narrower subordinate
+  surfaces for inline/embed utility cases
 - child collection tabs should use the canonical child-list API shape from
   `115-admin-resource-api-shapes.md`
 - the detail template supports nested list/detail compositions without forcing

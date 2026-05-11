@@ -8,6 +8,7 @@ import type {
   TableRowAction
 } from "@poodle/svelte";
 import type { QueryParams, SortDirection } from "../client/query";
+import type { ReorderController, ReorderableItem } from "../patterns/reorder-controller.svelte";
 
 // Cross-package Svelte Snippet identity is brittle in linked local workspaces.
 // Keep the shared template boundary permissive so consumers can pass local snippets cleanly.
@@ -31,6 +32,7 @@ export interface FilterConfig {
   label: string;
   options?: TemplateFilterOption[];
   loadOptions?: () => Promise<TemplateFilterOption[]>;
+  loadKey?: string;
   placeholder?: string;
   sortFields?: TemplateSortField[];
 }
@@ -63,15 +65,39 @@ export interface BatchActionConfig {
   handler: (ids: string[], values?: Record<string, unknown>) => Promise<void>;
 }
 
-export interface ReorderConfig {
+export interface InlineReorderConfig {
   enabled: boolean;
   handler: (orderedIds: string[]) => Promise<void>;
+  strategy?: "inline";
+  successMessage?: string;
 }
+
+export interface LoadedReorderConfig<TItem> {
+  enabled: boolean;
+  strategy: "loaded";
+  loadItems: (
+    fetch: FetchFn,
+    token: string | null,
+    query: QueryParams
+  ) => Promise<{ items: TItem[]; error?: string }>;
+  mapItems?: (items: TItem[]) => Array<TItem & ReorderableItem>;
+  handler: (orderedIds: string[]) => Promise<void>;
+  successMessage?: string;
+}
+
+export type ReorderConfig<TItem = unknown> =
+  | InlineReorderConfig
+  | LoadedReorderConfig<TItem>;
 
 export interface PagedListResult<TItem> {
   data: TItem[];
   total?: number | null;
   hasMore?: boolean;
+}
+
+export interface ReorderErrorResult {
+  message: string;
+  highlightedIds?: string[];
 }
 
 export type FetchFn = (
@@ -87,7 +113,7 @@ export type EntityListDataLoader<TItem> = (
 
 export interface DetailMetaItemConfig {
   label: string;
-  value: string | Snippet;
+  value: string | TemplateSurface;
   separator?: boolean;
 }
 
@@ -106,7 +132,7 @@ export interface DetailTabConfig<TItem> {
   id: string;
   label: string;
   count?: number;
-  content?: Snippet<[TItem]>;
+  content?: TemplateSurface;
   separator?: boolean;
 }
 
@@ -146,9 +172,11 @@ export type LogResourceHrefResolver = (
 
 export interface EntityListSharedProps<TItem> {
   dataLoader: EntityListDataLoader<TItem>;
+  reloadKey?: string | number;
   idField?: string;
   presentation: "cards" | "table" | "log";
   renderItem?: TemplateSurface;
+  renderReorderItem?: TemplateSurface;
   columns?: TableColumn[];
   rowActions?: TableRowActionFactory<TItem>;
   showRowActions?: boolean;
@@ -166,11 +194,16 @@ export interface EntityListSharedProps<TItem> {
   getResourceHref?: LogResourceHrefResolver;
   filters?: FilterConfig[];
   batchActions?: BatchActionConfig[];
-  reorder?: ReorderConfig;
+  reorder?: ReorderConfig<TItem>;
   onAdd?: () => void;
   addLabel?: string;
   onDataChange?: () => void;
+  onSelectedIdsChange?: (ids: string[]) => void;
   query?: QueryParams;
   onQueryChange?: (query: QueryParams) => void;
-  onReorderError?: (error: unknown) => Promise<string | void> | string | void;
+  onReorderError?: (context: {
+    error: unknown;
+    controller: ReorderController<ReorderableItem & TItem>;
+    items: Array<ReorderableItem & TItem>;
+  }) => Promise<string | ReorderErrorResult | void> | string | ReorderErrorResult | void;
 }

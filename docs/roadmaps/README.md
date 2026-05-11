@@ -51,12 +51,13 @@ README surfaces.
 
 ## Active generation
 
-- no live roadmap generation
+- [g05/README.md](g05/README.md) — active detail-page and tab-list convergence
+  thread
 - [g03/README.md](g03/README.md) — completed template-system thread
 
 ## Current Queue
 
-- there is no live `g03` queue item
+- `g05.001`: [Dairy detail pages and tab-list convergence sweep](g05/001-dairy-detail-and-tab-template-convergence-sweep.md)
 - `g03` is complete as the template-system thread
 - `g04` is closed. Its contract-coverage and assessment history remains
   available under [g04/README.md](g04/README.md)

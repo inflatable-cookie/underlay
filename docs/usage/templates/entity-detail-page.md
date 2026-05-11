@@ -6,6 +6,12 @@ Status: active
 combines `PageHeader`, `MetaBar`, `Tabs`, and `EntityDetail` sections into a
 complete detail view.
 
+It supports two normal loading modes:
+
+- caller-provided `dataLoader` for template-owned fetch/loading/error posture
+- caller-provided `item` for route-preloaded data, where the template still
+  owns the detail shell and tab system without refetch flicker
+
 ## Usage
 
 ```svelte
@@ -66,6 +72,30 @@ complete detail view.
 />
 ```
 
+## Preloaded detail routes
+
+When the route already owns the main fetch and context stitching, pass
+`item={...}` instead of forcing the template to refetch:
+
+```svelte
+<EntityDetailPage
+  item={pageData.data}
+  title={outcome.title}
+  section="Outcome"
+  subtitle={`Outcome ${outcome.label}`}
+  breadcrumbs={breadcrumbs}
+  meta={detailMeta}
+  tabs={detailTabs}
+  headerActions={detailHeaderActions}
+/>
+```
+
+Use this mode when the route already needs:
+
+- stitched parent context
+- custom not-found/error gating
+- one authenticated fetch that should not flicker or duplicate
+
 ## Header posture
 
 - when `section` is set, the page header now treats that as the primary title
@@ -75,8 +105,9 @@ complete detail view.
 
 ## Nested browse tabs
 
-Use `EntityListPage` inside tabs when you want the full list-page shell, but
-lower the header level so the tab content stays subordinate to the detail page:
+Use `EntityListPage` inside tabs for real child-collection browse/manage
+surfaces, and lower the header level so the tab content stays subordinate to
+the detail page:
 
 ```svelte
 <EntityListPage
@@ -87,8 +118,8 @@ lower the header level so the tab content stays subordinate to the detail page:
 />
 ```
 
-When the tab does not need a nested page shell, prefer `EntityList` instead of
-carrying a custom tab-specific list controller:
+Only fall back to raw `EntityList` when the tab content is genuinely narrower
+than a real browse surface, for example a picker-like or inline utility list:
 
 ```svelte
 <EntityList
@@ -101,6 +132,31 @@ Use the same bridge as root list pages:
 
 - client command returns `PagedListResponse<T>`
 - tab loader maps it with `toPagedListResult(...)`
+
+Normal tab differences should stay small:
+
+- parent filter clause
+- lower header level
+- optional reorder or batch-action mode differences
+- contextual actions/add behavior
+
+Those are expected `EntityListPage` modes, not a reason to keep a separate tab
+list pattern.
+
+## Tab modes
+
+`EntityDetailPage` supports the normal repeated tab variations directly:
+
+- `tabsVariant="underline" | "card"`
+- `tabsSize="sm" | "md" | "lg"`
+- `keepMountedTabs`
+
+Use `keepMountedTabs` when tab contents should stay mounted after first visit,
+for example when:
+
+- nested tab state should persist
+- editor or list state should not reset on every tab switch
+- the route already paid for the data and should keep the local UI warm
 
 Reference recipe:
 

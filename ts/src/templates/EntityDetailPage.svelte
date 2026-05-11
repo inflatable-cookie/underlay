@@ -18,7 +18,8 @@
     DetailActionConfig,
     FetchFn,
     DetailMetaItemConfig,
-    DetailTabConfig
+    DetailTabConfig,
+    TemplateSurface
   } from "./template.types";
 
   interface Props {
@@ -40,6 +41,9 @@
     /** Optional breadcrumb trail above the header title */
     breadcrumbs?: BreadcrumbItem[];
 
+    /** Optional subtitle below the title */
+    subtitle?: string;
+
     /** Mark the last breadcrumb as the current page */
     breadcrumbsMarkLastCurrent?: boolean;
     
@@ -55,8 +59,11 @@
     /** Banner tone */
     bannerTone?: "warning" | "info" | "danger" | "success";
     
+    /** Optional preloaded item. When present, the template uses it directly. */
+    item?: T | null;
+
     /** Data loading function */
-    dataLoader: (fetch: FetchFn, token: string | null) => Promise<T | null>;
+    dataLoader?: (fetch: FetchFn, token: string | null) => Promise<T | null>;
 
     /** Change this to force a refetch of the primary entity */
     reloadKey?: string | number | null;
@@ -70,11 +77,20 @@
     /** Notified when the active tab changes */
     onTabChange?: (tabId: string) => void;
 
+    /** Tabs visual variant */
+    tabsVariant?: "underline" | "card";
+
+    /** Tabs size */
+    tabsSize?: "sm" | "md" | "lg";
+
+    /** Keep visited tabs mounted after first activation */
+    keepMountedTabs?: boolean;
+
     /** Page actions */
     actions?: DetailActionConfig[];
 
     /** Fully custom header actions surface */
-    headerActions?: Snippet<[T]>;
+    headerActions?: TemplateSurface;
   }
 
   type T = $$Generic;
@@ -88,16 +104,21 @@
     showSubtitleWithBreadcrumbs = false,
     headerLevel = 2,
     breadcrumbs: detailBreadcrumbs = [],
+    subtitle,
     breadcrumbsMarkLastCurrent = true,
     backHref,
     backLabel,
     bannerMessage,
     bannerTone = "warning",
+    item: providedItem = null,
     dataLoader,
     reloadKey = null,
     meta: detailMeta = [],
     tabs = [],
     onTabChange,
+    tabsVariant = "underline",
+    tabsSize = "sm",
+    keepMountedTabs = false,
     actions: pageActions = [],
     headerActions
   }: Props = $props();
@@ -105,6 +126,8 @@
   // --- State ---
 
   let activeTab = $state("");
+  const mountedTabsSet = new Set<string>();
+  let mountedTabsVersion = $state(0);
   let showConfirmDialog = $state(false);
   let pendingAction: DetailActionConfig | null = $state(null);
   const pageActionItems = $derived(
@@ -149,12 +172,15 @@
 
   const pageData = useAuthenticatedData<T | null>(
     async (fetch, token) => {
+      if (!dataLoader) return providedItem;
       return await dataLoader(fetch, token);
     },
     { defaultValue: null }
   );
 
-  const item = $derived(pageData.data);
+  const item = $derived(providedItem ?? pageData?.data ?? null);
+  const loading = $derived(dataLoader ? (pageData?.loading ?? false) : false);
+  const error = $derived(dataLoader ? (pageData?.error ?? null) : null);
   const allTabs = $derived<DetailTabConfig<T>[]>(tabs);
   let previousReloadKey = $state<string | number | null>(null);
 
@@ -174,7 +200,7 @@
 
     if (reloadKey !== previousReloadKey) {
       previousReloadKey = reloadKey;
-      void pageData.refetch();
+      void pageData?.refetch();
     }
   });
 
@@ -183,18 +209,33 @@
       onTabChange?.(activeTab);
     }
   });
+
+  $effect(() => {
+    if (keepMountedTabs && activeTab && !mountedTabsSet.has(activeTab)) {
+      mountedTabsSet.add(activeTab);
+      mountedTabsVersion++;
+    }
+  });
+
+  function shouldRenderTab(tabId: string): boolean {
+    if (tabId === activeTab) return true;
+    if (!keepMountedTabs) return false;
+    void mountedTabsVersion;
+    return mountedTabsSet.has(tabId);
+  }
 </script>
 
-{#if pageData.loading}
+{#if loading}
   <PageLoading presentation="inline" message="Loading..." />
-{:else if pageData.error}
-  <Callout tone="danger" message={pageData.error} announceMode="polite" />
+{:else if error}
+  <Callout tone="danger" message={error} announceMode="polite" />
 {:else if item}
   <div class="underlay-entity-detail-page">
     <PageHeader
       {title}
       {section}
       {eyebrow}
+      {subtitle}
       {showSubtitleWithBreadcrumbs}
       backHref={backHref ?? null}
       backLabel={backLabel}
@@ -267,16 +308,18 @@
           count: tab.count,
           separator: tab.separator
         }))}
-        variant="underline"
-        size="sm"
+        variant={tabsVariant}
+        size={tabsSize}
         ariaLabel={`${title} sections`}
         on:valueChange={(event) => {
           activeTab = event.detail.value;
         }}
       >
         {#each allTabs as tab}
-          {#if tab.id === activeTab && tab.content}
-            {@render tab.content(item)}
+          {#if tab.content && shouldRenderTab(tab.id)}
+            <div hidden={tab.id !== activeTab}>
+              {@render tab.content(item)}
+            </div>
           {/if}
         {/each}
       </Tabs>

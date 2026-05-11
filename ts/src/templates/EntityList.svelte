@@ -2,6 +2,7 @@
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   type T = any;
   import { untrack } from "svelte";
+  import { getAuthConfig } from "../patterns/auth";
   import { useAuthenticatedData } from "../runtime/auth";
   import { useBatchActions } from "../patterns/batch-actions.svelte";
   import {
@@ -47,7 +48,9 @@
     EntityListDataLoader,
     EntityListSharedProps,
     FilterConfig,
+    LoadedReorderConfig,
     PagedListResult,
+    ReorderErrorResult,
     ReorderConfig,
     TemplateSurface
   } from "./template.types";
@@ -66,6 +69,9 @@
     
     /** Data loading function. Must return paged results for the current query state. */
     dataLoader: EntityListDataLoader<T>;
+
+    /** Optional external reload signal for non-query data refreshes. */
+    reloadKey?: string | number;
     
     /** Unique identifier field (default: "id") */
     idField?: string;
@@ -75,6 +81,9 @@
     
     /** For cards: render snippet for each item (receives item + selection context) */
     renderItem?: TemplateSurface;
+
+    /** For reorder mode: custom item rendering */
+    renderReorderItem?: TemplateSurface;
     
     /** For table: column definitions */
     columns?: TableColumn[];
@@ -128,7 +137,7 @@
     batchActions?: BatchActionConfig[];
     
     /** Reorder configuration */
-    reorder?: ReorderConfig;
+    reorder?: ReorderConfig<T>;
     
     /** Optional add button */
     onAdd?: () => void;
@@ -136,6 +145,9 @@
     
     /** Optional callback when data changes */
     onDataChange?: () => void;
+
+    /** Optional callback when selected item IDs change */
+    onSelectedIdsChange?: (ids: string[]) => void;
     
     /** Optional callback when visible item count changes */
     onVisibleCountChange?: (count: number) => void;
@@ -173,9 +185,11 @@
   let {
     title,
     dataLoader,
+    reloadKey,
     idField = "id",
     presentation,
     renderItem,
+    renderReorderItem,
     columns,
     rowActions,
     showRowActions = true,
@@ -197,6 +211,7 @@
     onAdd,
     addLabel = "Add",
     onDataChange,
+    onSelectedIdsChange,
     onVisibleCountChange,
     onTotalCountChange,
     selectionMode: externalSelectionMode,
@@ -225,6 +240,7 @@
   // Async filter options
   let loadedFilterOptions = $state<Record<string, { value: string; label: string }[]>>({});
   let filterOptionsLoading = $state<Record<string, boolean>>({});
+  let filterLoadKeys = $state<Record<string, string>>({});
 
   // Selection mode (internal or external)
   let internalSelectionMode = $state(false);
@@ -241,8 +257,14 @@
   // Custom batch action dialog
   let pendingDialogAction = $state<BatchActionConfig | null>(null);
   let reorderController = $state<ReorderController<ReorderableItem & T> | null>(null);
+  let loadedReorderItems = $state<Array<T & ReorderableItem>>([]);
+  let reorderHighlightedIds = $state<string[]>([]);
 
-  const listQueryKey = $derived.by(() => JSON.stringify(currentQuery));
+  const listQueryKey = $derived.by(() => JSON.stringify({
+    query: currentQuery,
+    reloadKey: reloadKey ?? null
+  }));
+  const selectedIdsKey = $derived.by(() => JSON.stringify(batch.selectedIds));
 
   // Data loading (includes filters and sort)
   const pageData = useAuthenticatedData<PagedListResult<T>>(
@@ -264,11 +286,13 @@
   const totalPages = $derived(Math.max(1, Math.ceil(totalCount / currentPageSize)));
   const hasNextPage = $derived(currentPage < totalPages || Boolean(pageData.data?.hasMore));
   const reorderAvailable = $derived(
-    Boolean(reorder?.enabled) &&
-      currentPage === 1 &&
-      itemCount > 1 &&
-      totalCount > 0 &&
-      totalCount <= currentPageSize
+    isLoadedReorderConfig(reorder)
+      ? Boolean(reorder.enabled) && totalCount > 1
+      : Boolean(reorder?.enabled) &&
+          currentPage === 1 &&
+          itemCount > 1 &&
+          totalCount > 0 &&
+          totalCount <= currentPageSize
   );
   const itemIds = $derived(items.map((item) => String((item as Record<string, unknown>)[idField])));
   const logEntries = $derived(toLogEntries ? toLogEntries(items) : []);
@@ -293,6 +317,11 @@
   });
 
   $effect(() => {
+    selectedIdsKey;
+    onSelectedIdsChange?.([...batch.selectedIds]);
+  });
+
+  $effect(() => {
     if (!selectionMode && batch.count > 0) {
       batch.clear();
     }
@@ -301,6 +330,15 @@
   // Load async filter options on mount
   $effect(() => {
     for (const filter of filters) {
+      const currentLoadKey = filter.loadKey ?? "";
+      if (filterLoadKeys[filter.id] !== currentLoadKey) {
+        filterLoadKeys = { ...filterLoadKeys, [filter.id]: currentLoadKey };
+        if (loadedFilterOptions[filter.id]) {
+          const nextOptions = { ...loadedFilterOptions };
+          delete nextOptions[filter.id];
+          loadedFilterOptions = nextOptions;
+        }
+      }
       if (filter.loadOptions && !loadedFilterOptions[filter.id] && !filterOptionsLoading[filter.id]) {
         filterOptionsLoading = { ...filterOptionsLoading, [filter.id]: true };
         filter.loadOptions().then((options) => {
@@ -538,8 +576,39 @@
     }
   }
 
-  function createReorderSession() {
-    if (!reorder?.enabled) return;
+  function isLoadedReorderConfig(
+    config: ReorderConfig<T> | undefined
+  ): config is LoadedReorderConfig<T> {
+    return Boolean(config && config.strategy === "loaded");
+  }
+
+  async function createReorderSession(): Promise<boolean> {
+    if (!reorder?.enabled) return false;
+    reorderHighlightedIds = [];
+
+    if (isLoadedReorderConfig(reorder)) {
+      const token = getAuthConfig()?.getToken() ?? null;
+      const result = await reorder.loadItems(fetch, token, currentQuery);
+      if (result.error) {
+        toastStore.push({ message: result.error, variant: "error" });
+        return false;
+      }
+
+      loadedReorderItems = reorder.mapItems
+        ? reorder.mapItems(result.items)
+        : result.items.map((item) => ({
+            ...(item as T & Record<string, unknown>),
+            id: String((item as Record<string, unknown>)[idField])
+          })) as Array<T & ReorderableItem>;
+
+      reorderController = createReorderController(loadedReorderItems, async (orderedIds) => {
+        await reorder.handler(orderedIds);
+      });
+      reorderError = null;
+      return true;
+    }
+
+    loadedReorderItems = [];
     reorderController = createReorderController(
       items.map((item) => ({
         id: String((item as Record<string, unknown>)[idField]),
@@ -550,23 +619,27 @@
       }
     );
     reorderError = null;
+    return true;
   }
 
-  function enterReorderMode() {
+  async function enterReorderMode() {
     if (!reorderAvailable || !reorder?.enabled) return;
     if (selectionMode) {
       setSelectionMode(false);
       batch.clear();
     }
-    createReorderSession();
+    const ready = await createReorderSession();
+    if (!ready) return;
     setReorderMode(true);
   }
 
   function exitReorderMode() {
     setReorderMode(false);
     reorderError = null;
+    reorderHighlightedIds = [];
     reorderController?.reset();
     reorderController = null;
+    loadedReorderItems = [];
   }
 
   async function handleReorderSubmit() {
@@ -574,19 +647,38 @@
     reorderError = null;
     try {
       await reorderController.submit();
+      if (reorder?.successMessage) {
+        toastStore.push({ message: reorder.successMessage, variant: "success" });
+      }
       exitReorderMode();
       onDataChange?.();
       await pageData.refetch();
     } catch (error) {
-      if (onReorderError) {
-        const result = await onReorderError(error);
-        if (result) {
+      if (onReorderError && reorderController) {
+        const result = await onReorderError({
+          error,
+          controller: reorderController,
+          items: isLoadedReorderConfig(reorder)
+            ? loadedReorderItems
+            : items.map((item) => ({
+                id: String((item as Record<string, unknown>)[idField]),
+                ...item
+              })) as Array<T & ReorderableItem>
+        });
+        if (typeof result === "string") {
           reorderError = result;
+          reorderHighlightedIds = [];
+        } else if (result) {
+          const recovery = result as ReorderErrorResult;
+          reorderError = recovery.message;
+          reorderHighlightedIds = recovery.highlightedIds ?? [];
         } else {
           reorderError = error instanceof Error ? error.message : String(error);
+          reorderHighlightedIds = [];
         }
       } else {
         reorderError = error instanceof Error ? error.message : String(error);
+        reorderHighlightedIds = [];
       }
     }
   }
@@ -610,16 +702,14 @@
           reorderController = null;
         }
         reorderError = null;
+        reorderHighlightedIds = [];
+        loadedReorderItems = [];
         if (externalReorderMode !== undefined) {
           onReorderModeChange?.(false);
         } else {
           internalReorderMode = false;
         }
         return;
-      }
-
-      if (!reorderController) {
-        createReorderSession();
       }
       return;
     }
@@ -628,7 +718,9 @@
       reorderController.reset();
       reorderController = null;
       reorderError = null;
+      reorderHighlightedIds = [];
     }
+    loadedReorderItems = [];
   });
 
   function handleKeydown(event: KeyboardEvent) {
@@ -643,6 +735,10 @@
   }
 
   const tableColumns = $derived<TableColumn[]>(columns ?? []);
+
+  function isReorderItemHighlighted(reorderEntryId: string): boolean {
+    return reorderHighlightedIds.includes(reorderEntryId);
+  }
 
   // Table rows
   const tableRows = $derived<TableRow<T>[]>(
@@ -713,6 +809,16 @@
   function handleDialogCancel() {
     pendingDialogAction = null;
   }
+
+  function getReorderOriginalItem(reorderEntryId: string): T | undefined {
+    if (isLoadedReorderConfig(reorder)) {
+      return loadedReorderItems.find((item) => item.id === reorderEntryId);
+    }
+
+    return items.find(
+      (item) => String((item as Record<string, unknown>)[idField]) === reorderEntryId
+    );
+  }
 </script>
 
 <svelte:window onkeydown={handleKeydown} />
@@ -752,7 +858,7 @@
           icon="arrow-up-down"
           ariaLabel={reorderMode ? "Cancel reorder" : "Reorder items"}
           tooltip={reorderMode ? "Cancel Reorder" : "Reorder Items"}
-          on:click={() => (reorderMode ? exitReorderMode() : enterReorderMode())}
+          on:click={async () => (reorderMode ? exitReorderMode() : await enterReorderMode())}
         />
       {/if}
       {#if !selectionMode && !reorderMode && onAdd}
@@ -859,10 +965,15 @@
         on:reorder={(event: CustomEvent<{ items: EditableListItem[] }>) => reorderController?.updatePending(event.detail.items)}
       >
         {#snippet item(reorderEntry: EditableListItem)}
-          {@const originalItem = items.find((item) => 
-            String((item as Record<string, unknown>)[idField]) === reorderEntry.id
-          )}
-          {#if renderItem && originalItem}
+          {@const originalItem = getReorderOriginalItem(reorderEntry.id)}
+          {#if renderReorderItem && originalItem}
+            <div data-reorder-highlighted={isReorderItemHighlighted(reorderEntry.id)}>
+              {@render renderReorderItem(originalItem, {
+                ...getItemContext(originalItem),
+                highlighted: isReorderItemHighlighted(reorderEntry.id)
+              })}
+            </div>
+          {:else if renderItem && originalItem}
             {@render renderItem(originalItem, getItemContext(originalItem))}
           {:else}
             <ListCard title={reorderEntry.id} layout="compact" showReorderHandle />
@@ -1017,10 +1128,15 @@
       on:reorder={(event: CustomEvent<{ items: EditableListItem[] }>) => reorderController?.updatePending(event.detail.items)}
     >
       {#snippet item(reorderEntry: EditableListItem)}
-        {@const originalItem = items.find((item) => 
-          String((item as Record<string, unknown>)[idField]) === reorderEntry.id
-        )}
-        {#if renderItem && originalItem}
+        {@const originalItem = getReorderOriginalItem(reorderEntry.id)}
+        {#if renderReorderItem && originalItem}
+          <div data-reorder-highlighted={isReorderItemHighlighted(reorderEntry.id)}>
+            {@render renderReorderItem(originalItem, {
+              ...getItemContext(originalItem),
+              highlighted: isReorderItemHighlighted(reorderEntry.id)
+            })}
+          </div>
+        {:else if renderItem && originalItem}
           {@render renderItem(originalItem, getItemContext(originalItem))}
         {:else}
           <ListCard title={reorderEntry.id} layout="compact" showReorderHandle />
@@ -1168,5 +1284,11 @@
   .underlay-entity-list__pagination {
     display: flex;
     justify-content: flex-end;
+  }
+
+  [data-reorder-highlighted="true"] {
+    outline: 2px solid var(--underlay-color-accent, #14b8a6);
+    outline-offset: 0.25rem;
+    border-radius: 0.75rem;
   }
 </style>

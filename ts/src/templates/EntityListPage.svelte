@@ -56,6 +56,9 @@
     
     /** Data loading function. Must return paged results for the current query state. */
     dataLoader: EntityListDataLoader<T>;
+
+    /** Optional external reload signal for non-query data refreshes. */
+    reloadKey?: string | number;
     
     /** Unique identifier field (default: "id") */
     idField?: string;
@@ -65,6 +68,9 @@
     
     /** For cards: render snippet for each item (receives item + selection context) */
     renderItem?: TemplateSurface;
+
+    /** For reorder mode: render snippet for each item in reorder posture */
+    renderReorderItem?: TemplateSurface;
     
     /** For table: column definitions */
     columns?: TableColumn[];
@@ -118,7 +124,7 @@
     batchActions?: BatchActionConfig[];
     
     /** Reorder configuration */
-    reorder?: ReorderConfig;
+    reorder?: ReorderConfig<T>;
     
     /** Add button handler */
     onAdd?: () => void;
@@ -128,6 +134,9 @@
     
     /** Optional callback when data changes */
     onDataChange?: () => void;
+
+    /** Optional callback when selected item IDs change */
+    onSelectedIdsChange?: (ids: string[]) => void;
     
     /** Additional actions in the header before built-in list controls. */
     headerLeadingActions?: TemplateSurface;
@@ -163,9 +172,11 @@
     backHref,
     backLabel,
     dataLoader,
+    reloadKey,
     idField = "id",
     presentation,
     renderItem,
+    renderReorderItem,
     columns,
     rowActions,
     showRowActions = true,
@@ -187,6 +198,7 @@
     onAdd,
     addLabel = "Add",
     onDataChange,
+    onSelectedIdsChange,
     headerLeadingActions,
     headerActions,
     beforeList,
@@ -199,6 +211,7 @@
 
   let selectionMode = $state(false);
   let reorderMode = $state(false);
+  let selectedIds = $state<string[]>([]);
   let visibleItemCount = $state(0);
   let reorderAvailable = $state(false);
   const headerActionSizeRole = $derived(headerLevel >= 3 ? "chrome" : "control");
@@ -238,6 +251,11 @@
     reorderMode = enabled;
   }
 
+  function handleSelectedIdsChange(ids: string[]) {
+    selectedIds = ids;
+    onSelectedIdsChange?.(ids);
+  }
+
   function handleReorderAvailabilityChange(enabled: boolean) {
     reorderAvailable = enabled;
     if (!enabled && reorderMode) {
@@ -263,7 +281,9 @@
         {@render headerLeadingActions({
           selectionMode,
           reorderMode,
-          visibleItemCount
+          visibleItemCount,
+          selectedIds,
+          selectedCount: selectedIds.length
         })}
       {/if}
 
@@ -312,7 +332,9 @@
         {@render headerActions({
           selectionMode,
           reorderMode,
-          visibleItemCount
+          visibleItemCount,
+          selectedIds,
+          selectedCount: selectedIds.length
         })}
       {/if}
     {/snippet}
@@ -323,16 +345,20 @@
       {@render beforeList({
         selectionMode,
         reorderMode,
-        visibleItemCount
+        visibleItemCount,
+        selectedIds,
+        selectedCount: selectedIds.length
       })}
     </div>
   {/if}
 
   <EntityList
     {dataLoader}
+    {reloadKey}
     {idField}
     {presentation}
     {renderItem}
+    {renderReorderItem}
     {columns}
     {rowActions}
     {showRowActions}
@@ -361,6 +387,7 @@
     reorderMode={reorderMode}
     onSelectionModeChange={handleSelectionModeChange}
     onReorderModeChange={handleReorderModeChange}
+    onSelectedIdsChange={handleSelectedIdsChange}
     onVisibleCountChange={handleVisibleCountChange}
     onReorderAvailabilityChange={handleReorderAvailabilityChange}
   />

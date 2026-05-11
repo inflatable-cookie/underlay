@@ -2,23 +2,22 @@
 
 Status: active
 
-`EntityList` is the Level 2 section component. It is a self-contained list
-surface with filters, pagination, batch actions, and empty states.
+`EntityList` is the Level 2 list engine under `EntityListPage`.
 
 ## When To Use
 
-- Inside a detail tab that shows a child collection
 - Inside a dialog that shows a picker list
 - Standalone when you don't need the full page shell
+- Rare inline list sections where page-shell chrome would be artificial
 
-For detail-tab child collections, this is the preferred target shape:
+For real detail-tab child collections, the preferred target shape is now
+`EntityListPage`, not raw `EntityList`.
 
-- route returns the same paged envelope as any other page-shaped child list
-- client command returns `PagedListResponse<T>`
-- loader maps it with `toPagedListResult(...)`
+Use raw `EntityList` when the surface is truly narrower:
 
-Custom cursor-style tab list components are compatibility posture, not the
-shared target pattern.
+- picker/dialog content
+- inline utility embeds
+- subordinate lists that are not acting like their own browse surface
 
 ## Usage
 
@@ -50,9 +49,12 @@ shared target pattern.
 />
 ```
 
+If a tab needs filters, pagination summary, batch actions, reorder, header
+actions, or add flows, prefer `EntityListPage` instead.
+
 ## Props
 
-Same as `EntityListPage` minus the page shell props (`title`, `backHref`, etc.).
+Same as `EntityListPage` minus the page-shell props (`title`, `backHref`, etc.).
 
 Use the shared exported list-template types from
 `@decodelabs/underlay/templates` when you need explicit config typing.

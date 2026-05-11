@@ -2,9 +2,18 @@
 
 Status: active
 
-`EntityListPage` is the Level 1 page shell for browse/list pages. It wraps
-`EntityList` with a `PageHeader`, action buttons, and page-level state
-management.
+`EntityListPage` is the Level 1 shell for real browse/manage list surfaces. It
+wraps `EntityList` with header, actions, filters, and list-state management.
+
+Use it for:
+
+- root browse pages
+- detail-tab browse pages
+- other real list surfaces where the user is browsing, filtering, selecting,
+  reordering, or batch-operating on a collection
+
+The location does not matter. If the surface is a real list, `EntityListPage`
+is the default answer.
 
 ## Usage
 
@@ -46,6 +55,31 @@ management.
   onAdd={() => goto("/projects/new")}
 />
 ```
+
+## Tab usage
+
+`EntityListPage` should also be the default answer for list tabs.
+
+Typical tab posture:
+
+```svelte
+<EntityListPage
+  title="Tasks"
+  headerLevel={3}
+  dataLoader={loadProjectTasks}
+  filters={[...]}
+  renderItem={taskCard}
+/>
+```
+
+Normal tab differences are small:
+
+- lower `headerLevel`
+- parent-scoped filter/query clause in the loader
+- optional reorder or batch-action mode changes
+- contextual add/back/action behavior
+
+Those are list modes, not a reason to switch to a different list template.
 
 ## Props
 
@@ -193,22 +227,32 @@ Recommended pattern:
 
 Reference recipe:
 
-- [../guides/code/073-api-profiles-and-query-contract/entity-list-page-paged-loader.ts](../guides/code/073-api-profiles-and-query-contract/entity-list-page-paged-loader.ts)
+- [entity-list-page-paged-loader.ts](../../guides/code/073-api-profiles-and-query-contract/entity-list-page-paged-loader.ts)
 
 Use bounded `ListResponse<T>` only for helper collections that are not real
 page shells. If a route feeds `EntityListPage`, it should be a page-shaped
 paginated resource surface, not a helper list disguised as one.
 
+## Relationship to `EntityList`
+
+`EntityList` is the lower-level engine under `EntityListPage`.
+
+Prefer `EntityListPage` unless the surface is genuinely narrower, for example:
+
+- inline utility lists inside a detail body
+- dialog/picker lists
+- embedded lists where page-shell chrome would be artificial
+
 Reference implementation examples in `underlay-reference`:
 
 - shared list wrappers:
-  [ProjectsListPage.svelte](</Users/tom/Dev/projects/underlay-reference/acme-admin/src/lib/lists/ProjectsListPage.svelte>)
+  `underlay-reference/acme-admin/src/lib/lists/ProjectsListPage.svelte`
   and
-  [TasksListPage.svelte](</Users/tom/Dev/projects/underlay-reference/acme-admin/src/lib/lists/TasksListPage.svelte>)
+  `underlay-reference/acme-admin/src/lib/lists/TasksListPage.svelte`
 - route-local list pages:
-  [media/+page.svelte](</Users/tom/Dev/projects/underlay-reference/acme-admin/src/routes/(app)/media/+page.svelte>),
-  [users/+page.svelte](</Users/tom/Dev/projects/underlay-reference/acme-admin/src/routes/(app)/users/+page.svelte>),
-  [system/jobs/+page.svelte](</Users/tom/Dev/projects/underlay-reference/acme-admin/src/routes/(app)/system/jobs/+page.svelte>)
+  `underlay-reference/acme-admin/src/routes/(app)/media/+page.svelte`
+  `underlay-reference/acme-admin/src/routes/(app)/users/+page.svelte`
+  `underlay-reference/acme-admin/src/routes/(app)/system/jobs/+page.svelte`
 
 ## See Also
 

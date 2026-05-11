@@ -186,13 +186,16 @@ This keeps the shell honest after domain splits and stops stale compatibility
 branches from surviving in type signatures after the behavior has already
 split.
 
-### Relationship to `EntityList`
+### Relationship to `EntityListPage` and `EntityList`
 
-`EntityList` remains the default answer for:
+`EntityListPage` remains the default answer for real browse/manage list
+surfaces, including tab lists.
 
-- plain child collections
-- card/table/log child tabs
-- simple search/filter/add/delete list behavior
+`EntityList` remains the lower-level engine for:
+
+- inline utility lists
+- dialog/picker lists
+- subordinate embeds where page-shell chrome would be artificial
 
 The hybrid shell family exists only when `EntityList` would otherwise need
 unclear or leaky extension points.
@@ -200,7 +203,9 @@ unclear or leaky extension points.
 Rules:
 
 - do not fork card/table rendering rules unnecessarily
-- reuse `EntityList` behavior where it still fits
+- prefer expanding `EntityListPage` with small honest mode props before
+  introducing app-local root-vs-tab divergence
+- reuse `EntityList` behavior underneath `EntityListPage` where it still fits
 - extract a second retained shape only for the extra shell/workflow layer, not
   for duplicated list primitives
 
