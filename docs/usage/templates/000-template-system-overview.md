@@ -34,6 +34,10 @@ Reusable components for use inside pages, tabs, or dialogs:
 Sections are public exports. Use them directly when you need a list inside a
 detail tab.
 
+There is no separate shared `EntityTabList` wrapper. `EntityList` is the
+retained shared tab-list surface when the tab is really a child collection
+browse/list.
+
 **Forms are not templated.** Real forms have arbitrary layout, custom fields,
 conditional logic, complex validation, file uploads, etc. Use Poodle primitives
 (`Field`, `TextInput`, `Select`, etc.) directly. Use `EntityFormPage` as a page

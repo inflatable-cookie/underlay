@@ -2,7 +2,7 @@
 
 Status: active
 Owner: repo maintainers
-Depends on: `020-http-transport-and-server-boundary.md`, `110-admin-template-system.md`
+Depends on: `020-http-transport-and-server-boundary.md`, `110-admin-template-system.md`, `116-canonical-collection-routes-and-query-profiles.md`
 
 ## Purpose
 
@@ -90,6 +90,9 @@ Out of scope:
 
 If a collection is not a page-shaped admin resource surface, `115` does not
 force it onto the paged envelope.
+
+Selector and filter consumers for the same resource family are governed by
+`116`. `115` only decides the page-shell side of the contract.
 
 ## Shared Boundary
 
@@ -198,10 +201,32 @@ Rules:
 
 - tab collection endpoints should behave like ordinary lists with query params,
   filters, batch actions, and reorder support where relevant
+- for template consumers, the preferred UI seam is:
+  - canonical child list route
+  - `PagedListResponse<T>` client command
+  - `toPagedListResult(...)`
+  - `EntityList` or `EntityListPage` in the tab
 - do not return tab collections embedded inside the detail record just because
   they render in a tab
 - do not invent special tab-only envelopes like
   `{ "tasks": { "items": [], "total": 0 } }`
+
+### Detail-tab migration rule
+
+Using the shared child-list route and `EntityList` is the preferred target, but
+it is not permission to reduce function.
+
+Migration rule:
+
+- a tab should move to the shared shape when it behaves like a real child
+  collection browse surface
+- a tab may stay on a compatibility wrapper when that wrapper still carries
+  meaningful behavior the shared shell does not express cleanly yet
+- if several consumers need the same extra tab behavior, extend the shared
+  Underlay surface instead of copying more app-local shells
+
+Success is measured by preserved behavior, not by removing `variant="tab"` or
+local wrapper names.
 
 ### Detail-tab summary and badge data
 
@@ -241,6 +266,9 @@ Rules:
 - `profile=details` still returns the same canonical detail envelope; only the
   detail payload enrichments change
 - profiles do not replace canonical child routes for tab collections
+- `116` governs the broader rule that selectors and other resource-backed
+  helper consumers should use the same canonical route family rather than
+  helper-specific path variants or separate command families
 
 ## Client and Template Boundary
 
@@ -317,8 +345,8 @@ Allowed:
   projection
 - app-owned summary fields on detail DTOs for tab badges or detail header
   metrics
-- bounded non-paged `ListResponse<T>` helpers for small selector/suggestion
-  surfaces
+- bounded non-paged `ListResponse<T>` helpers only for non-resource helper
+  routes that stay outside the canonical collection-route contract in `116`
 
 Not allowed:
 

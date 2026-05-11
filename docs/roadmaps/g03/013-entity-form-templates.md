@@ -11,21 +11,25 @@ custom fields, conditional logic, complex validation, file uploads, rich text
 editors, multi-step flows, etc. A declarative field array fights all of this.
 
 **What was kept:**
-- `EntityFormPage` as a **page shell wrapper** — handles header, loading, error/success states
+- `EntityFormPage` as a **page shell wrapper** — handles header, loading,
+  error/success states, field-error summary, and SPA submit wiring
 - Consumer brings their own form content using Poodle primitives directly
 - Clean separation: templates own the shell, Poodle owns the primitives, consumer owns the form logic
 
 ## What EntityFormPage Provides
 
 - `PageHeader` with title, section, back link, banner
+- `PageHeader` subtitle and contextual back-link support
+- optional header metadata block
 - Loading state (spinner while data loads)
 - Error display (Callout when `error` is set)
 - Success display (Callout when `success` is true)
+- field-error summary
+- internal form wrapper and SPA submit/redirect handling
 - Consistent spacing via `entity-form-page` class
 
 ## What The Consumer Brings
 
-- The actual `\u003cform\u003e` element
 - All form fields using Poodle primitives (`Field`, `TextInput`, `Select`, etc.)
 - Validation logic
 - Submit handler
@@ -42,7 +46,6 @@ editors, multi-step flows, etc. A declarative field array fights all of this.
   error={submitError}
   success={submitSuccess}
 \u003e
-  \u003cform onsubmit={handleSubmit}\u003e
     \u003cField label="Name" required\u003e
       \u003cTextInput name="name" value={project?.name} /\u003e
     \u003c/Field\u003e
@@ -53,7 +56,6 @@ editors, multi-step flows, etc. A declarative field array fights all of this.
     /\u003e
 
     \u003cButton type="submit" variant="primary"\u003eSave\u003c/Button\u003e
-  \u003c/form\u003e
 \u003c/EntityFormPage\u003e
 ```
 

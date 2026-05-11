@@ -87,6 +87,25 @@ lower the header level so the tab content stays subordinate to the detail page:
 />
 ```
 
+When the tab does not need a nested page shell, prefer `EntityList` instead of
+carrying a custom tab-specific list controller:
+
+```svelte
+<EntityList
+  presentation="table"
+  dataLoader={loadProjectTasks}
+/>
+```
+
+Use the same bridge as root list pages:
+
+- client command returns `PagedListResponse<T>`
+- tab loader maps it with `toPagedListResult(...)`
+
+Reference recipe:
+
+- [entity-detail-tab-paged-list.ts](../../guides/code/073-api-profiles-and-query-contract/entity-detail-tab-paged-list.ts)
+
 ## See Also
 
 - [Entity Detail Section](./entity-detail-section.md)

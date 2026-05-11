@@ -78,6 +78,11 @@ Use `ListResponse<T>` for small bounded helper collections. Use
 `PagedListResponse<T>` for admin root lists and detail-tab child collections
 that feed `EntityListPage` / `EntityList`.
 
+For canonical resource collection routes, prefer one route family per resource.
+You may still keep separate exported wrappers for page and filter consumers when
+they are thin typed wrappers over that same route family. Selector and filter
+consumers should not require separate path variants just to get a narrower DTO.
+
 ### Token Management
 
 - `TokenStore` - Interface for storing access/refresh tokens

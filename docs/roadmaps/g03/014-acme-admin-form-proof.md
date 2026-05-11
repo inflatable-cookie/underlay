@@ -1,13 +1,21 @@
 # 014 - Acme-Admin Form Page Proof
 
-Status: not started
+Status: complete
 Owner: repo maintainers
-Updated: 2026-05-04
+Updated: 2026-05-10
 
-## Context
+## Results
 
-`EntityFormPage` is now implemented. Need to prove it works in practice by
-migrating acme-admin's project create and edit pages.
+`EntityFormPage` now carries the real proof behavior the project forms needed:
+
+- subtitle and contextual back-link support
+- header metadata slot
+- field-error summary
+- internal form wrapper
+- SPA submit/result/redirect handling
+
+The acme-admin project create and edit pages now use `EntityFormPage` instead
+of `SpaFormShell`.
 
 ## Targets
 
@@ -29,12 +37,12 @@ migrating acme-admin's project create and edit pages.
 
 ## Exit Criteria
 
-- [ ] `/projects/new` renders and creates projects correctly
-- [ ] `/projects/[id]/edit` renders and updates projects correctly
-- [ ] Validation errors display inline
-- [ ] API errors display as form-level errors
-- [ ] Navigation context (back links) preserved
-- [ ] Etag handling for edit page preserved
+- [x] `/projects/new` renders and creates projects correctly
+- [x] `/projects/[id]/edit` renders and updates projects correctly
+- [x] Validation errors display inline
+- [x] API errors display as form-level errors
+- [x] Navigation context (back links) preserved
+- [x] Etag handling for edit page preserved
 
 ## Next Task
 

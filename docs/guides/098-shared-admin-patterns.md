@@ -13,6 +13,7 @@ The recipe layer that sits above this page now follows a split model:
 - use [CRUD Admin Interface](../patterns/crud-admin-interface.md) for full-stack delivery order
 - use [Nested Entity Management](../patterns/nested-entity-management.md) when parent/child route structure matters
 - use [Autonomous Admin List](../patterns/autonomous-admin-list.md), [Reorderable Collections](../patterns/reorderable-collections.md), and [Trash Lifecycle](../patterns/trash-lifecycle.md) when list/runtime workflows are the real problem
+- use [097-autonomous-list-components.md](./097-autonomous-list-components.md) when the missing piece is lower list workflow mechanics such as selection-mode state, transform-launch state, or local-vs-loaded reorder sessions
 - use the Poodle guides for the visible page/list/detail/dialog composition inside those recipes
 
 Storybook coverage:
@@ -224,6 +225,22 @@ Underlay’s lower-level state helpers such as `createListController`,
 `createPaginationController`, `useBatchSelection`, `useBatchActions`, and
 `createReorderController` now sit most naturally under
 `@decodelabs/underlay/runtime/data`.
+
+For hybrid wrappers that still need extra workflow state above those basics,
+prefer the retained lower helper set from `@decodelabs/underlay/runtime/data`:
+
+- `createSelectionModeController(...)`
+- `buildSelectionTransformState(...)`
+- `createLocalReorderSession(...)`
+- `createLoadedReorderSession(...)`
+
+Use the local reorder session when the visible constrained list is already the
+full reorder set. Use the loaded reorder session when browse mode is paged or
+cursor-backed and reorder needs a separate full-set fetch.
+
+Reference:
+- [097-autonomous-list-components.md](./097-autonomous-list-components.md)
+- [List workflow helpers recipe](./code/097-autonomous-list-components/list-workflow-helpers.ts)
 
 ---
 

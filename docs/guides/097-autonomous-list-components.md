@@ -17,12 +17,37 @@ Use the Underlay recipe layer for full-stack/runtime delivery only:
 - [Reorderable Collections](../patterns/reorderable-collections.md)
 - [Trash Lifecycle](../patterns/trash-lifecycle.md)
 
+For the retained lower helper layer behind hybrid list wrappers, use:
+- [List workflow helpers recipe](./code/097-autonomous-list-components/list-workflow-helpers.ts)
+
+For domain-heavy wrappers, also narrow broad transport DTOs at the fetch
+boundary before those values enter shell state. Do not carry broader API unions
+through local filters, reorder state, and card helpers if the shell only owns a
+smaller domain family.
+
 ## Ownership Boundary
 
 - Poodle owns list chrome, filter chrome, bulk-action chrome, reorder list UI,
   and empty/loading presentation
 - Underlay owns pagination, auth-aware loading, batch-selection state,
   controller logic, and navigation/runtime helpers
+
+## Fetch-Boundary Narrowing
+
+Use this rule when a list shell only owns a subset of a broader API union.
+
+- keep the transport DTO broad at the client/API seam
+- narrow in the fetch layer with explicit predicates
+- expose one shell-local entity type to the rest of the component tree
+
+Do not rely on repeated casts inside:
+
+- derived filters
+- reorder sessions
+- list content components
+- presentation helpers
+
+That usually means the narrowing happened too late.
 
 ## Overview
 
@@ -258,6 +283,37 @@ This example now uses Poodle `ListCard` directly. The earlier `g01.046`
 reassessment moved the generic card behavior into Poodle, and `g01.058`
 retired public Underlay `AutonomousList`, so list assembly should now compose
 directly over Poodle list surfaces plus lower-level Underlay state helpers.
+
+## Shared List Workflow Helpers
+
+These helpers are the retained shared layer behind the current hybrid list
+wrappers in consumer apps:
+
+- `createSelectionModeController(...)`
+- `buildSelectionTransformState(...)`
+- `createLocalReorderSession(...)`
+- `createLoadedReorderSession(...)`
+
+Use them when:
+
+- the visible list shell is still app-owned
+- `EntityList` is not the right fit yet
+- the reusable part is controller/workflow behavior rather than shell chrome
+
+Choose the reorder helper by data posture:
+
+- `createLocalReorderSession(...)`
+  use when the visible constrained list already contains the full reorder set
+- `createLoadedReorderSession(...)`
+  use when normal browsing is paged/cursor-backed and reorder needs a separate
+  fetch for the full ordered collection
+
+Do not use these helpers as a reason to keep duplicating shell composition.
+Their purpose is to share lower mechanics while the app still owns:
+
+- constrained filter/query posture
+- page-vs-tab shell wording
+- resource-specific reorder display shaping
 
 #### Action Registration
 

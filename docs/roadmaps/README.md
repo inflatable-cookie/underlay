@@ -55,7 +55,8 @@ README surfaces.
 
 ## Current Queue
 
-- `g03.014` is the active form-proof milestone for the template-system thread
+- `g03.025` is the active Dairy written-exam-question form proof milestone for
+  the template-system thread
 - `g04` is closed. Its contract-coverage and assessment history remains
   available under [g04/README.md](g04/README.md)
 - `g02` is closed. Its batch-card history now lives under `g02/batch-cards/`
@@ -307,4 +308,5 @@ queue and proving the next honest work belonged in `g02`.
 
 Execute the live queue:
 
-- `g03.014`: complete the form-proof milestone for the template-system thread
+- `g03.015`: execute the task-form proof milestone for the template-system
+  thread

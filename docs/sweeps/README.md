@@ -40,6 +40,8 @@ Unlike implementation guides, sweeps are runbooks for reviewing an existing code
 | [025-html-sanitization-sinks-sweep.md](./025-html-sanitization-sinks-sweep.md) | Verify every `{@html}` sink has explicit sanitizer coverage and a documented trust boundary | Frontend/security reviewers |
 | [026-auth-security-alerting-sweep.md](./026-auth-security-alerting-sweep.md) | Verify failed-login and lockout alerting uses shared Underlay thresholds, dedupe, persistence, and operator outputs | Backend/security reviewers |
 | [028-layout-foundation-and-detail-page-css-sweep.md](./028-layout-foundation-and-detail-page-css-sweep.md) | Keep layout behavior in shared Underlay primitives and remove per-page CSS hacks from admin detail pages | Frontend/platform reviewers |
+| [029-collection-route-and-command-convergence-sweep.md](./029-collection-route-and-command-convergence-sweep.md) | Separate good thin list/filter wrappers from real route/query drift across API, client, and frontend collection consumers | API/client/frontend maintainers |
+| [030-child-collection-capability-convergence-sweep.md](./030-child-collection-capability-convergence-sweep.md) | Classify child-tab list wrappers by capability set so shared-shell extraction targets are explicit instead of hidden behind app-local compatibility components | API/client/frontend maintainers |
 
 ## How to run a sweep
 

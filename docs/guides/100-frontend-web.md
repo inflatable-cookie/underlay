@@ -75,6 +75,9 @@ Frontend consumers should target canonical resource endpoints and select payload
 - Selector/filter dropdowns: call list endpoints with `profile=filter` and lazy-load on interaction
 - CRUD detail pages with tab badge counts: call detail endpoint with `profile=details`
 - Avoid supplementary count-only calls for badge counts; counts should come from the detail response
+- Prefer one canonical resource route family per resource. Selector and filter
+  UIs should vary query/profile, not route identity. Thin typed command
+  wrappers are still fine when they sit over that same route family.
 
 See [073-api-profiles-and-query-contract.md](./073-api-profiles-and-query-contract.md).
 

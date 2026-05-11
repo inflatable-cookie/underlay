@@ -10,6 +10,7 @@ The durable contract lives in:
 
 - [../contracts/115-admin-resource-api-shapes.md](../contracts/115-admin-resource-api-shapes.md)
 - [../contracts/020-http-transport-and-server-boundary.md](../contracts/020-http-transport-and-server-boundary.md)
+- [../contracts/116-canonical-collection-routes-and-query-profiles.md](../contracts/116-canonical-collection-routes-and-query-profiles.md)
 
 ## Policy Summary
 
@@ -23,8 +24,10 @@ The durable contract lives in:
 - Profiles are enum-style and documented per resource. No arbitrary include strings.
 - Root list pages and detail-tab child collections use the same paged list envelope.
 - Base detail reads and write returns use the same single-record envelope.
-- Utility collections like suggestions, relation pickers, and assignment helpers
-  are not forced onto the paged envelope unless they are actual page shells.
+- Resource-backed selectors and filter dropdowns should use the same canonical
+  resource route with `profile=filter`.
+- Utility collections like suggestions and other non-resource helpers are not
+  forced onto the paged envelope unless they are actual page shells.
 
 ## Why This Standard
 
@@ -42,6 +45,13 @@ Use one route per resource:
 
 - `GET /v1/admin/learning/modules?profile=list`
 - `GET /v1/admin/learning/modules?profile=filter`
+
+That same route should serve:
+
+- page lists
+- selector shells
+- filter dropdowns
+- other resource-backed helper reads
 
 Profile behavior, when the resource supports it:
 
@@ -87,6 +97,8 @@ All list endpoints must support:
 Notes:
 
 - Presence of pagination support is mandatory for page-shaped list surfaces.
+- Selector/filter consumers may use the same route with smaller `limit` values
+  and simply ignore `total` / `hasMore`.
 - Do not add path suffixes like `/paginated` to indicate pagination.
 - Use the shared sort/filter query vocabulary from the transport contract.
 
@@ -122,17 +134,23 @@ Disallowed:
 3. Reuse shared pagination/query param helpers.
 4. Normalize `has_more` to `hasMore` only at the client boundary if desired.
 5. Avoid per-profile path constants; only query params should vary.
+6. Prefer one canonical route family per resource. Separate exported wrappers
+   like `*ForList*` / `*ForFilter*` are acceptable when they are thin typed
+   wrappers over that same route family.
 
 ## Frontend Pattern (Dairy/Cream)
 
 1. Root lists and tab child collections both use the canonical paged list shape.
-2. Lazy filter dropdowns may use `profile=filter` on the same canonical list route.
+2. Lazy filter dropdowns should use `profile=filter` on the same canonical list route.
 3. CRUD detail pages load one detail DTO; tab collections load their own child-list routes.
 4. If tabs show badges, prefer main-detail summary fields over count-only side routes.
+5. Selector callers should unwrap `response.data` locally rather than requiring
+   helper-specific list routes.
 
 Reference loader handshake:
 
 - [code/073-api-profiles-and-query-contract/entity-list-page-paged-loader.ts](./code/073-api-profiles-and-query-contract/entity-list-page-paged-loader.ts)
+- [code/073-api-profiles-and-query-contract/entity-detail-tab-paged-list.ts](./code/073-api-profiles-and-query-contract/entity-detail-tab-paged-list.ts)
 - use `toPagedListResult(...)` from `@decodelabs/underlay/templates` as the
   canonical client-to-template bridge
 
@@ -143,7 +161,9 @@ Reference loader handshake:
 3. Migrate client commands to canonical routes and typed profile params where needed.
 4. Migrate frontend callsites and remove legacy route usage.
 5. Remove deprecated projection path variants.
-6. Run endpoint naming, pagination, and wasteful-calls sweeps.
+6. Collapse duplicated route families first. Only collapse wrapper commands
+   when doing so actually improves clarity rather than weakening typing.
+7. Run endpoint naming, pagination, and wasteful-calls sweeps.
 
 ## Verification Checklist
 
@@ -151,8 +171,10 @@ Reference loader handshake:
 - Root lists and child-tab lists return `data + total + has_more`
 - Detail endpoints return `{ data: record }`
 - Utility/helper collections still using `{ data: [] }` are intentionally
-  bounded and not admin page shells
+  bounded, non-resource helpers rather than alternate resource list routes
 - List endpoints accept and honor `profile=list|filter` only when needed
+- Selector/filter callers for the same resource family use the canonical route
+  and query/profile variation rather than helper-specific paths
 - Badge-bearing detail views keep counts on the main detail response rather
   than count-only side routes
 - Shared list pagination/filter/sort params work consistently across domains

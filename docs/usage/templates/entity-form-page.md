@@ -3,8 +3,14 @@
 **Status:** Implemented (g03.013)
 
 `EntityFormPage` is a page shell for create and edit forms. It handles the boring
-parts (header, loading, error/success states) and lets you bring your own form
-content.
+parts:
+
+- header and back-link framing
+- loading, success, error, and field-error states
+- SPA submit wiring and redirects when you provide `onSubmit`
+- the actual `form` wrapper
+
+You still bring your own field layout and custom form controls.
 
 **Why no declarative `EntityForm`?** Real forms have arbitrary layout, custom
 fields, conditional logic, complex validation, file uploads, rich text editors,
@@ -17,6 +23,7 @@ etc.) directly for the form itself.
 ```svelte
 <script>
   import { EntityFormPage } from "@decodelabs/underlay/templates";
+  import type { SpaFormResult } from "@decodelabs/underlay/patterns";
   import { Field, TextInput, Select, Button } from "@poodle/svelte";
   import { ProjectCategorySelector } from "$lib/forms";
 
@@ -26,55 +33,46 @@ etc.) directly for the form itself.
   let error = $state(null);
   let success = $state(false);
 
-  async function handleSubmit(event) {
-    event.preventDefault();
-    saving = true;
-    error = null;
-
-    const formData = new FormData(event.currentTarget);
+  async function handleSubmit(formData): Promise<SpaFormResult> {
     try {
       await adminCommands.updateProject(data.projectId, {
         name: String(formData.get("name")),
         description: String(formData.get("description"))
       });
-      success = true;
+      return { success: true };
     } catch (e) {
-      error = e.message;
-    } finally {
-      saving = false;
+      return { success: false, error: e.message };
     }
   }
 </script>
 
 <EntityFormPage
-  title={project?.name ?? "Edit Project"}
   section="Edit Project"
+  subtitle={project?.name}
   backHref={`/projects/${data.projectId}`}
-  backLabel="Back to project"
   loading={!project}
   {error}
   {success}
+  onSubmit={handleSubmit}
 >
-  <form onsubmit={handleSubmit}>
-    <Field label="Name" required>
-      <TextInput name="name" value={project?.name} />
-    </Field>
+  <Field label="Name" required>
+    <TextInput name="name" value={project?.name} />
+  </Field>
 
-    <Field label="Description">
-      <textarea name="description" rows={4}>{project?.description}</textarea>
-    </Field>
+  <Field label="Description">
+    <textarea name="description" rows={4}>{project?.description}</textarea>
+  </Field>
 
-    <ProjectCategorySelector
-      value={project?.categoryId}
-      onSelect={(id) => categoryId = id}
-    />
+  <ProjectCategorySelector
+    value={project?.categoryId}
+    onSelect={(id) => categoryId = id}
+  />
 
-    <div class="form-actions">
-      <Button type="submit" variant="primary" loading={saving}>Save</Button>
-      <Button type="button" variant="secondary"
-        onclick={() => goto(`/projects/${data.projectId}`)}>Cancel</Button>
-    </div>
-  </form>
+  <div class="form-actions">
+    <Button type="submit" variant="primary">Save</Button>
+    <Button type="button" variant="secondary"
+      onclick={() => goto(`/projects/${data.projectId}`)}>Cancel</Button>
+  </div>
 </EntityFormPage>
 ```
 
@@ -82,34 +80,44 @@ etc.) directly for the form itself.
 
 | Prop | Type | Required | Description |
 |------|------|----------|-------------|
-| `title` | `string` | Yes | Page title |
+| `title` | `string` | No | Page title |
 | `section` | `string` | No | Section label |
+| `subtitle` | `string` | No | Secondary line under title/section |
 | `backHref` | `string` | No | Back link URL |
 | `backLabel` | `string` | No | Back link label |
+| `backIsContextual` | `boolean` | No | Marks the back link as contextual |
 | `bannerMessage` | `string` | No | Banner warning/info |
 | `bannerTone` | `"warning" \| "info" \| "danger"` | No | Banner tone |
 | `loading` | `boolean` | No | Show loading spinner |
 | `loadingMessage` | `string` | No | Loading message |
 | `error` | `string` | No | Form-level error to display |
+| `fieldErrors` | `Record<string, string>` | No | Field-level errors for summary callout |
 | `success` | `boolean` | No | Show success message |
 | `successMessage` | `string` | No | Success message text |
+| `prepare` | `(formData) => void` | No | Modify form data before submit |
+| `onSubmit` | `SpaSubmitHandler` | No | SPA submit handler |
+| `onResult` | `(result) => void` | No | Submission result callback |
+| `navigate` | `SpaNavigateFn` | No | Redirect handler after success |
+| `headerMeta` | `Snippet` | No | Metadata block below the header |
 | `headerActions` | `Snippet` | No | Additional header actions |
 | `children` | `Snippet` | Yes | The form content |
 
 ## What It Provides
 
-- **PageHeader** with title, section, back link, banner
+- **PageHeader** with title, section, subtitle, back link, banner
+- **Header meta** block below the header when needed
 - **Loading state** — shows spinner while data loads
-- **Error display** — shows Callout when `error` is set
-- **Success display** — shows Callout when `success` is true
+- **Success/error display** — shows save feedback callouts
+- **Field-error summary** — shows a field-error list callout
+- **Internal `<form>` wrapper** — you provide fields, not the outer form tag
+- **SPA submit wiring** — handles client-side submit/redirect when `onSubmit` is provided
 - **Consistent spacing** — `entity-form-page` class with gap
 
 ## What You Bring
 
-- The actual `<form>` element
 - All form fields using Poodle primitives
 - Validation logic
-- Submit handler
+- Submit handler logic
 - Any custom components (RelationSelector, file upload, etc.)
 
 ## See Also

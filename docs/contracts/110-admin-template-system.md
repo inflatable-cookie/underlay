@@ -114,12 +114,53 @@ Rules:
 
 - `EntityListPage` is the page-level shell around `EntityList`
 - `EntityList` is the real list engine and may be used standalone
+- there is no separate retained `EntityTabList` surface; page-shaped child tabs
+  should normally use `EntityList`
 - data loading is caller-provided through `dataLoader(fetch, token, query)`
 - that loader shape is governed by `115-admin-resource-api-shapes.md`
 - presentation may be cards, table, or log
 - filter, batch, and reorder behavior is declarative where it fits
 - the parent may own URL query state, while the template owns list interaction
   behavior
+
+### Child-tab migration acceptance
+
+Moving a child tab onto `EntityList` is allowed only when it preserves the real
+behavior of the existing surface.
+
+Required preservation:
+
+- same user-facing actions still exist
+- same search/filter/reload behavior still exists
+- same delete, batch, or reorder behavior still exists where relevant
+- same navigation/context behavior still exists
+- no hidden downgrade from server-backed behavior to weaker local heuristics
+  unless the route already had that posture
+
+Allowed outcomes:
+
+- move to `EntityList` when the tab is really a child-collection browse surface
+- keep a compatibility wrapper when the behavior still fits the route contract
+  but not the shared shell cleanly
+- grow the shared template surface deliberately when multiple consumers need
+  the same extra behavior
+
+Disallowed posture:
+
+- forcing a tab onto `EntityList` by dropping meaningful behavior
+- treating `variant="tab"` removal as success by itself
+
+Typical reasons to keep a compatibility wrapper for now:
+
+- the same component is still shared across root-page and detail-tab contexts
+- it still depends on cursor-style runtime pagination rather than the page-list
+  bridge in `115`
+- it carries reorder, batch-transform, or other workflow behavior that the
+  shared shell does not yet express cleanly
+
+If multiple consumer wrappers share that same mixed capability set, treat that
+as pressure to extract another retained shared collection shape. Do not keep
+calling each wrapper "too complicated" forever.
 
 ### List-card composition seam
 

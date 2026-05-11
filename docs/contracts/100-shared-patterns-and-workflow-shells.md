@@ -19,6 +19,11 @@ This contract does not define visible admin page composition, design-system UI,
 or app-specific route wording and permission policy. Those remain app-owned or
 Poodle-owned.
 
+Page-shaped child-tab list composition is owned by the template layer, not the
+pattern layer. If a tab is really a child collection browse surface, the
+preferred target is `EntityList` plus the `115` paged-list seam, not a new
+pattern-owned tab-list shell.
+
 ## Sources of Truth
 
 Primary:
@@ -33,8 +38,11 @@ Primary:
 - [`ts/src/patterns/pagination.svelte.ts`](/Users/tom/Dev/projects/underlay/ts/src/patterns/pagination.svelte.ts)
 - [`ts/src/patterns/reorder-controller.svelte.ts`](/Users/tom/Dev/projects/underlay/ts/src/patterns/reorder-controller.svelte.ts)
 - [`ts/src/patterns/reorder-conflict.ts`](/Users/tom/Dev/projects/underlay/ts/src/patterns/reorder-conflict.ts)
+- [`ts/src/patterns/reorder-session.svelte.ts`](/Users/tom/Dev/projects/underlay/ts/src/patterns/reorder-session.svelte.ts)
 - [`ts/src/patterns/batch-selection.svelte.ts`](/Users/tom/Dev/projects/underlay/ts/src/patterns/batch-selection.svelte.ts)
 - [`ts/src/patterns/batch-actions.svelte.ts`](/Users/tom/Dev/projects/underlay/ts/src/patterns/batch-actions.svelte.ts)
+- [`ts/src/patterns/selection-mode-controller.svelte.ts`](/Users/tom/Dev/projects/underlay/ts/src/patterns/selection-mode-controller.svelte.ts)
+- [`ts/src/patterns/selection-transform-state.ts`](/Users/tom/Dev/projects/underlay/ts/src/patterns/selection-transform-state.ts)
 - [`ts/src/patterns/selection-history.ts`](/Users/tom/Dev/projects/underlay/ts/src/patterns/selection-history.ts)
 - [`ts/src/patterns/RelationSelector/types.ts`](/Users/tom/Dev/projects/underlay/ts/src/patterns/RelationSelector/types.ts)
 - [`ts/src/patterns/RelationSelector/context.svelte.ts`](/Users/tom/Dev/projects/underlay/ts/src/patterns/RelationSelector/context.svelte.ts)
@@ -161,12 +169,29 @@ Core pieces:
 - `ReorderController`
 - `ReorderableItem`
 - `reorder-conflict` helpers
+- `createLocalReorderSession()`
+- `createLoadedReorderSession()`
+- `createSelectionModeController()`
+- `buildSelectionTransformState()`
 
 Rules:
 
 - reorder state is local and batch-committed
 - apps provide submit semantics and conflict policy
-- shared logic covers pending order, dirtiness, reset, merge, and item removal
+- shared logic covers pending order, dirtiness, reset, merge, item removal,
+  local constrained reorder sessions, loaded fetch-all reorder sessions,
+  selection-mode transitions, and selection-derived transform-launch state
+- the preferred public import path for this lower helper set is
+  `@decodelabs/underlay/runtime/data`
+- use `createLocalReorderSession()` when the visible constrained list already
+  contains the full reorder set
+- use `createLoadedReorderSession()` when normal browsing is paged or
+  cursor-backed and reorder needs a separate full-set load
+
+Reference guide:
+
+- [`docs/guides/097-autonomous-list-components.md`](/Users/tom/Dev/projects/underlay/docs/guides/097-autonomous-list-components.md)
+- [`docs/guides/code/097-autonomous-list-components/list-workflow-helpers.ts`](/Users/tom/Dev/projects/underlay/docs/guides/code/097-autonomous-list-components/list-workflow-helpers.ts)
 
 ### Relation selector workflow family
 
@@ -192,6 +217,10 @@ Rules:
   flows
 - local search helpers are retained because they adapt app-local in-memory
   datasets to the shared selector contracts
+- when a selector is backed by a real resource collection route, the preferred
+  posture is to call the same canonical resource list command with
+  `profile=filter` rather than inventing a selector-only route or selector-only
+  command family
 
 ### Media upload workflow seam
 

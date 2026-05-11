@@ -4,7 +4,7 @@
 
 ## Current State
 
-`g03.014` is active. `g03.001`–`g03.013` are complete. `g02` is closed.
+`g03.025` is active. `g03.001`–`g03.024` are complete. `g02` is closed.
 
 `g03` begins from the posture confirmed in `g02.007`: Poodle's package
 consolidation is complete and the consumer normalization line is closed. The
@@ -13,9 +13,10 @@ composition with reusable higher-order Svelte templates.
 
 ## Active Lane
 
-`g03.014` is the live execution lane.
+`g03.025` is the live execution lane.
 
-Its job is to migrate acme-admin project create/edit pages to `EntityFormPage` as proof.
+Its job is to migrate the Dairy written exam question create/edit pair to
+`EntityFormPage` as the next adjacent markable-question proof batch.
 
 ## Completed Work
 
@@ -32,6 +33,17 @@ Its job is to migrate acme-admin project create/edit pages to `EntityFormPage` a
 - `g03.011`: Underlay template skill
 - `g03.012`: Consumer rollout plan
 - `g03.013`: `EntityForm` and `EntityFormPage`
+- `g03.014`: acme-admin project form proof
+- `g03.015`: acme-admin task form proof
+- `g03.016`: acme-admin simple form proof
+- `g03.017`: Dairy exam schedule form proof
+- `g03.018`: Dairy exam edition form proof
+- `g03.019`: Dairy audio form proof
+- `g03.020`: Dairy video form proof
+- `g03.021`: Dairy blog article form proof
+- `g03.022`: Dairy document form proof
+- `g03.023`: Dairy QA form proof
+- `g03.024`: Dairy digital exam question form proof
 
 ## Batch Cards
 

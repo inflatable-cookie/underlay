@@ -19,6 +19,9 @@ machine-readable policy files.
 | [090-ts-runtime-and-client-orchestration.md](./090-ts-runtime-and-client-orchestration.md) | L | Retained `runtime/*` subpath model, browser auth/controller layer, SvelteKit glue, and client-side orchestration seam |
 | [100-shared-patterns-and-workflow-shells.md](./100-shared-patterns-and-workflow-shells.md) | L | Shared SPA form shell, auth-aware loading, relation selector, list/reorder/upload controllers, optimistic helpers, and retained workflow-shell contract |
 | [110-admin-template-system.md](./110-admin-template-system.md) | L | Shared three-level admin template system contract for list/detail/form page shapes, section reuse, and declarative extension |
+| [115-admin-resource-api-shapes.md](./115-admin-resource-api-shapes.md) | M | Shared list/detail/tab API shape contract for page-shaped admin resource surfaces and child collection tabs |
+| [116-canonical-collection-routes-and-query-profiles.md](./116-canonical-collection-routes-and-query-profiles.md) | M | Shared canonical route, query-profile, and command-posture contract for page, selector, and filter collection consumers |
+| [117-hybrid-collection-shells.md](./117-hybrid-collection-shells.md) | M | Shared hybrid collection-shell contract for root/tab list surfaces with batch, reorder, and transform-launch behavior |
 | [120-tooling-testing-and-contract-artifacts.md](./120-tooling-testing-and-contract-artifacts.md) | M | Shared Rust/TS test harnesses, migration/schema devtools, guardrail scanners, and machine-readable contract-artifact boundary |
 
 ## Index

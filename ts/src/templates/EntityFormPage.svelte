@@ -1,87 +1,225 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
+  import type { HTMLFormAttributes } from "svelte/elements";
+  import { untrack } from "svelte";
   import {
-    PageHeader,
+    Card,
     Callout,
+    PageHeader,
     PageLoading
   } from "@poodle/svelte";
+  import type {
+    SpaFormResult,
+    SpaSubmitHandler,
+    SpaNavigateFn
+  } from "../patterns/spa-form-types";
 
-  // --- Types ---
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  type SnippetLike = Snippet | ((...args: any[]) => any);
 
   interface Props {
-    /** Page title */
-    title: string;
-    /** Section label (e.g., "Edit Project") */
+    title?: string;
     section?: string;
-    /** Back link URL */
-    backHref?: string;
-    /** Back link label */
+    subtitle?: string;
+    backHref?: string | null;
     backLabel?: string;
-    /** Banner message (e.g., for warnings) */
+    backIsContextual?: boolean;
     bannerMessage?: string;
-    /** Banner tone */
     bannerTone?: "warning" | "info" | "danger";
-    /** Whether data is loading */
     loading?: boolean;
-    /** Loading message */
     loadingMessage?: string;
-    /** Form-level error message */
     error?: string | null;
-    /** Success message */
-    success?: boolean;
-    /** Success message text */
+    fieldErrors?: Record<string, string> | null;
+    success?: boolean | null;
     successMessage?: string;
-    /** Additional actions in the header */
-    headerActions?: Snippet;
-    /** The form content */
-    children: Snippet;
+    prepare?: ((formData: FormData) => void) | null;
+    method?: "post" | "get";
+    formClass?: string;
+    autocomplete?: HTMLFormAttributes["autocomplete"];
+    headerMeta?: SnippetLike;
+    headerActions?: SnippetLike;
+    onSubmit?: SpaSubmitHandler;
+    onResult?: (result: SpaFormResult) => void;
+    navigate?: SpaNavigateFn;
+    children: SnippetLike;
   }
-
-  // --- Props ---
 
   let {
     title,
     section,
-    backHref,
-    backLabel,
+    subtitle,
+    backHref = null,
+    backLabel = "Back",
+    backIsContextual = false,
     bannerMessage,
     bannerTone = "warning",
     loading = false,
     loadingMessage = "Loading...",
-    error,
-    success = false,
+    error: initialError = null,
+    fieldErrors: initialFieldErrors = null,
+    success: initialSuccess = null,
     successMessage = "Saved successfully.",
+    prepare = null,
+    method = "post",
+    formClass = "underlay-form-grid",
+    autocomplete = "off",
+    headerMeta,
     headerActions,
+    onSubmit,
+    onResult,
+    navigate,
     children
   }: Props = $props();
+
+  let submitting = $state(false);
+  let success = $state<boolean | null>(untrack(() => initialSuccess));
+  let error = $state<string | null>(untrack(() => initialError));
+  let fieldErrors = $state<Record<string, string> | null>(untrack(() => initialFieldErrors));
+
+  $effect(() => {
+    success = initialSuccess;
+    error = initialError;
+    fieldErrors = initialFieldErrors;
+  });
+
+  const hasFieldErrors = $derived(Boolean(fieldErrors && Object.keys(fieldErrors).length > 0));
+  const visibleError = $derived(hasFieldErrors ? null : error);
+
+  const defaultNavigate: SpaNavigateFn = (url: string) => {
+    window.location.href = url;
+  };
+
+  function handleFormData(event: FormDataEvent) {
+    if (onSubmit) return;
+    prepare?.(event.formData);
+  }
+
+  const spaEnhance = (node: HTMLFormElement) => {
+    if (!onSubmit) {
+      return;
+    }
+
+    const handleSubmit = async (event: SubmitEvent) => {
+      event.preventDefault();
+
+      submitting = true;
+      error = null;
+      fieldErrors = null;
+      success = null;
+
+      try {
+        const formData = new FormData(node);
+        prepare?.(formData);
+
+        const result = await onSubmit(formData);
+
+        success = result.success;
+        error = result.error ?? null;
+        fieldErrors = result.fieldErrors ?? null;
+        onResult?.(result);
+
+        if (result.success && result.redirectTo) {
+          await (navigate ?? defaultNavigate)(result.redirectTo);
+        }
+      } catch (e) {
+        error = e instanceof Error ? e.message : "An unexpected error occurred";
+        success = false;
+      } finally {
+        submitting = false;
+      }
+    };
+
+    node.addEventListener("submit", handleSubmit);
+
+    return {
+      destroy() {
+        node.removeEventListener("submit", handleSubmit);
+      }
+    };
+  };
 </script>
 
 <div class="underlay-entity-form-page">
-  <PageHeader
-    {title}
-    {section}
-    backHref={backHref ?? null}
-    backLabel={backLabel}
-    bannerMessage={bannerMessage}
-    bannerTone={bannerTone}
-  >
-    {#snippet actions()}
-      {#if headerActions}
-        {@render headerActions()}
-      {/if}
-    {/snippet}
-  </PageHeader>
+  <div class="underlay-entity-form-page__header">
+    <PageHeader
+      {title}
+      {section}
+      {subtitle}
+      {backHref}
+      {backLabel}
+      {backIsContextual}
+      {bannerMessage}
+      {bannerTone}
+    >
+      {#snippet actions()}
+        {#if headerActions}
+          {@render headerActions()}
+        {/if}
+      {/snippet}
+    </PageHeader>
+
+    {#if headerMeta}
+      <div class="underlay-entity-form-page__meta">
+        {@render headerMeta()}
+      </div>
+    {/if}
+  </div>
 
   {#if loading}
     <PageLoading presentation="inline" message={loadingMessage} />
   {:else}
-    {#if error}
-      <Callout tone="danger" message={error} announceMode="polite" />
-    {:else if success}
-      <Callout tone="success" message={successMessage} announceMode="polite" />
+    {#if submitting}
+      <Callout
+        tone="pending"
+        title="Saving"
+        message="Your changes are being submitted."
+        announceMode="polite"
+      />
     {/if}
 
-    {@render children()}
+    {#if success && successMessage}
+      <Callout
+        tone="success"
+        title="Saved"
+        message={successMessage}
+        announceMode="polite"
+      />
+    {/if}
+
+    {#if visibleError}
+      <Callout
+        tone="danger"
+        title="Could not save"
+        message={visibleError}
+        announceMode="assertive"
+      />
+    {/if}
+
+    {#if hasFieldErrors}
+      <Callout
+        tone="danger"
+        title="There are problems with some fields"
+        announceMode="polite"
+      >
+        <ul class="underlay-entity-form-page__error-list">
+          {#each Object.entries(fieldErrors ?? {}) as [field, message]}
+            <li><strong>{field}</strong>: {message}</li>
+          {/each}
+        </ul>
+      </Callout>
+    {/if}
+
+    <Card>
+      <form
+        {method}
+        onformdata={handleFormData}
+        use:spaEnhance
+        class={formClass}
+        {autocomplete}
+      >
+        {@render children()}
+      </form>
+    </Card>
   {/if}
 </div>
 
@@ -90,5 +228,22 @@
     display: flex;
     flex-direction: column;
     gap: var(--underlay-space-4, 1rem);
+  }
+
+  .underlay-entity-form-page__header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .underlay-entity-form-page__meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .underlay-entity-form-page__error-list {
+    margin: 0;
+    padding-left: 1.25rem;
   }
 </style>

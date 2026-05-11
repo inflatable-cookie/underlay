@@ -11,15 +11,25 @@ surface with filters, pagination, batch actions, and empty states.
 - Inside a dialog that shows a picker list
 - Standalone when you don't need the full page shell
 
+For detail-tab child collections, this is the preferred target shape:
+
+- route returns the same paged envelope as any other page-shaped child list
+- client command returns `PagedListResponse<T>`
+- loader maps it with `toPagedListResult(...)`
+
+Custom cursor-style tab list components are compatibility posture, not the
+shared target pattern.
+
 ## Usage
 
 ```svelte
 <script lang="ts">
-  import { EntityList } from "@decodelabs/underlay/templates";
+  import { EntityList, toPagedListResult } from "@decodelabs/underlay/templates";
   import TaskCard from "$lib/cards/TaskCard.svelte";
 
   async function loadTasks(fetchFn: typeof fetch, token: string | null, query) {
-    return await adminCommands.listTasks(fetchFn, token, query);
+    const response = await adminCommands.listTasks(fetchFn, token, query);
+    return toPagedListResult(response);
   }
 </script>
 
