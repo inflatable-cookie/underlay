@@ -47,6 +47,7 @@ Primary:
 
 Supporting:
 
+- [`docs/usage/migration/000-state-layout-and-effigy.md`](/Users/tom/Dev/projects/underlay/docs/usage/migration/000-state-layout-and-effigy.md)
 - [`docs/contracts/040-storage-blob-and-media-systems.md`](/Users/tom/Dev/projects/underlay/docs/contracts/040-storage-blob-and-media-systems.md)
 - [`docs/contracts/050-media-library-and-usage.md`](/Users/tom/Dev/projects/underlay/docs/contracts/050-media-library-and-usage.md)
 - [`docs/architecture/010-package-map.md`](/Users/tom/Dev/projects/underlay/docs/architecture/010-package-map.md)
@@ -329,6 +330,31 @@ Rules:
 - verification and integrity gates are first-class stages, not post-hoc tests
 - drift detection and recovery advisories belong to the shared migration layer
   because they govern replayability and safety
+
+### App state layout and Effigy boundary
+
+Underlay owns the shared source-root policy for Underlay-based sites. Effigy
+owns execution of the state, artifact, capture, and deploy commands that operate
+against that policy.
+
+Canonical usage policy:
+
+- [`docs/usage/migration/000-state-layout-and-effigy.md`](/Users/tom/Dev/projects/underlay/docs/usage/migration/000-state-layout-and-effigy.md)
+
+Rules:
+
+- app state inputs and replay artifacts should live under one stable `state/`
+  root unless a repo has a documented compatibility reason
+- schema migrations, static seeds, dev overlays, legacy imports, captures,
+  runtime reports, and scratch tools must be named as separate concerns
+- Effigy config may point at app-owned tasks and artifacts, but app semantics
+  remain outside Effigy
+- generated OCI artifacts may be Effigy-staged and digest-pinned, but the app
+  owns the transform/import logic that created them
+- Underlay documents the implementation shape for Underlay-based sites; Effigy
+  docs document the tool surface
+- consumer app docs remain responsible for app-specific migration and
+  reconciliation behavior
 
 ## Integration Boundaries
 

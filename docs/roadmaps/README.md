@@ -51,12 +51,13 @@ README surfaces.
 
 ## Active generation
 
-- [g03/README.md](g03/README.md) — template-system thread
+- no live roadmap generation
+- [g03/README.md](g03/README.md) — completed template-system thread
 
 ## Current Queue
 
-- `g03.025` is the active Dairy written-exam-question form proof milestone for
-  the template-system thread
+- there is no live `g03` queue item
+- `g03` is complete as the template-system thread
 - `g04` is closed. Its contract-coverage and assessment history remains
   available under [g04/README.md](g04/README.md)
 - `g02` is closed. Its batch-card history now lives under `g02/batch-cards/`
@@ -251,7 +252,7 @@ README surfaces.
 
 **g01 Complete:** 91 | **Extracted:** 2 | **In progress:** 0 | **Not started:** 0
 **g02 Complete:** 7 | **In progress:** 0 | **Not started:** 0
-**g03 Active:** 14 | **In progress:** 1 | **Not started:** 1
+**g03 Complete:** 51 | **In progress:** 0 | **Not started:** 0
 **g04 Active:** 8 | **In progress:** 1 | **Not started:** 0
 
 ## Current Boundary

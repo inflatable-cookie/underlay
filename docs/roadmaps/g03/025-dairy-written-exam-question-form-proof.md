@@ -1,6 +1,6 @@
 # 025 - Dairy Written Exam Question Form Proof
 
-Status: not started
+Status: complete
 Owner: repo maintainers
 Updated: 2026-05-11
 
@@ -31,11 +31,20 @@ validation and authoring state.
 
 ## Exit Criteria
 
-- [ ] Dairy written exam question create/edit pages use `EntityFormPage`
-- [ ] loading and error states still render correctly
-- [ ] route-owned validation and authoring state still work correctly
-- [ ] edit-page metadata and back links remain correct
+- [x] Dairy written exam question create/edit pages use `EntityFormPage`
+- [x] loading and error states still render correctly
+- [x] route-owned validation and authoring state still work correctly
+- [x] edit-page metadata and back links remain correct
+
+## Results
+
+- migrated Dairy written exam question create/edit pages from `SpaFormShell`
+  to `EntityFormPage`
+- preserved route-owned validation and authoring state
+- preserved edit-page loading, error, and not-found handling
+- proved the shell across the adjacent written question family after the
+  digital question proof
 
 ## Next Task
 
-Execute this proof batch.
+Execute `g03.026`.
