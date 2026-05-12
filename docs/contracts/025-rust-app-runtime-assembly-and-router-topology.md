@@ -336,6 +336,25 @@ Rules:
 - health/metrics/OpenAPI routes belong to the runtime assembly layer, not to
   domain route modules
 
+Advanced runtime profile is allowed when the service has a real platform or
+operations need for it.
+
+Examples:
+
+- readiness/liveness split
+- build/runtime info endpoint
+- dependency-specific health checks such as email adapter readiness
+
+Rules:
+
+- use the richer runtime profile only when the extra surfaces are genuinely
+  consumed by platform operations, deployment checks, or support diagnostics
+- keep the richer runtime family internally coherent:
+  - health, readiness, liveness, metrics, and OpenAPI should still read as one
+    runtime surface
+- do not treat a richer runtime profile as permission to scatter runtime
+  endpoints across domain modules or admin route trees
+
 ### Config and runtime validation posture
 
 The binary entrypoint should own runtime safety validation.

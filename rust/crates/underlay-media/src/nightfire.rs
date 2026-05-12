@@ -684,9 +684,9 @@ where
                     .as_deref()
                     .map(str::trim)
                     .filter(|value| !value.is_empty())
-                .map(|_| BlockAnchor::from_block(block, rooted_pointer.clone()))
-                .or_else(|| fallback_anchor.cloned())
-                .unwrap_or_else(|| BlockAnchor::from_block(block, rooted_pointer.clone()));
+                    .map(|_| BlockAnchor::from_block(block, rooted_pointer.clone()))
+                    .or_else(|| fallback_anchor.cloned())
+                    .unwrap_or_else(|| BlockAnchor::from_block(block, rooted_pointer.clone()));
                 self.walk_block(block, anchor, &rooted_pointer, edges)?;
             }
         }

@@ -133,10 +133,9 @@ pub use sync::{
 pub use nightfire::{
     resolve_nightfire_media_usage, NightfireBlockMediaHandler, NightfireBlockMediaHandlerMap,
     NightfireBlockMediaHandlerRegistry, NightfireBlockMediaReference,
-    NightfireBlockMediaRegistration, NightfireBlockMediaUsageExtractor,
-    NightfireFieldNameMatcher, NightfireMediaFieldRule, NightfireMediaReferenceMatch,
-    NightfireMediaReferenceMatcher, NightfireMediaUsageExtractor, NightfireMediaVisitContext,
-    NightfireNestedValuePointer,
+    NightfireBlockMediaRegistration, NightfireBlockMediaUsageExtractor, NightfireFieldNameMatcher,
+    NightfireMediaFieldRule, NightfireMediaReferenceMatch, NightfireMediaReferenceMatcher,
+    NightfireMediaUsageExtractor, NightfireMediaVisitContext, NightfireNestedValuePointer,
 };
 
 #[cfg(feature = "postgres")]

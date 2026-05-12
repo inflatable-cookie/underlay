@@ -48,6 +48,7 @@ Primary TS support:
 Primary machine-readable artifacts:
 
 - [`contracts/openapi/underlay.openapi.yaml`](/Users/tom/Dev/projects/underlay/contracts/openapi/underlay.openapi.yaml)
+- [`docs/contracts/api-surface/endpoint-family-matrix.csv`](/Users/tom/Dev/projects/underlay/docs/contracts/api-surface/endpoint-family-matrix.csv)
 - [`contracts/ui/poodle-underlay-coexistence-contract.json`](/Users/tom/Dev/projects/underlay/contracts/ui/poodle-underlay-coexistence-contract.json)
 - [`contracts/ui/poodle-adoption-underlay-surface-groups.json`](/Users/tom/Dev/projects/underlay/contracts/ui/poodle-adoption-underlay-surface-groups.json)
 - [`contracts/ui/poodle-prop-normalization-manifest.json`](/Users/tom/Dev/projects/underlay/contracts/ui/poodle-prop-normalization-manifest.json)
@@ -204,6 +205,7 @@ alone is not enough.
 Core families:
 
 - `openapi/underlay.openapi.yaml`
+- `docs/contracts/api-surface/endpoint-family-matrix.csv`
 - `ui/poodle-underlay-coexistence-contract.json`
 - `ui/poodle-adoption-underlay-surface-groups.json`
 - `ui/poodle-prop-normalization-manifest.json`
@@ -214,6 +216,9 @@ Rules:
   benefit from automation, bulk audit, or cross-repo coordination
 - the OpenAPI artifact is currently a narrow schema reference for shared
   envelope shapes, not a full API catalog
+- the endpoint-family matrix is a durable planning and normalization artifact
+  for the current app-server route-family posture; it is not a generated route
+  dump and should stay human-reviewable
 - UI JSON artifacts are retained migration and coexistence policy records. They
   are currently preserved compatibility evidence, not part of the live automated
   repo check surface

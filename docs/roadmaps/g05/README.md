@@ -79,4 +79,4 @@ If `g05` later enters strict execution posture, keep its cards under
 
 ## Next Task
 
-Write `118`: the front/shared read API shape contract.
+Start the six-site API normalization sweep against the runtime contract set.
