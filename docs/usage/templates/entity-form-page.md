@@ -9,6 +9,7 @@ parts:
 - loading, success, error, and field-error states
 - SPA submit wiring and redirects when you provide `onSubmit`
 - the actual `form` wrapper
+- optional secondary panel content when the page still has one clear primary form
 
 You still bring your own field layout and custom form controls.
 
@@ -100,6 +101,8 @@ etc.) directly for the form itself.
 | `navigate` | `SpaNavigateFn` | No | Redirect handler after success |
 | `headerMeta` | `Snippet` | No | Metadata block below the header |
 | `headerActions` | `Snippet` | No | Additional header actions |
+| `secondaryContent` | `Snippet` | No | Extra content rendered beside or below the main form card |
+| `contentLayout` | `"single" \| "split"` | No | Layout for the main form card plus `secondaryContent` |
 | `children` | `Snippet` | Yes | The form content |
 
 ## What It Provides
@@ -112,6 +115,7 @@ etc.) directly for the form itself.
 - **Internal `<form>` wrapper** — you provide fields, not the outer form tag
 - **SPA submit wiring** — handles client-side submit/redirect when `onSubmit` is provided
 - **Consistent spacing** — `entity-form-page` class with gap
+- **Optional split content layout** — keeps one supporting panel beside the form when needed
 
 ## What You Bring
 
@@ -119,6 +123,7 @@ etc.) directly for the form itself.
 - Validation logic
 - Submit handler logic
 - Any custom components (RelationSelector, file upload, etc.)
+- Any route-owned supporting panel content
 
 ## Route ownership policy
 
@@ -133,6 +138,20 @@ Use an app-local form component when:
 - multiple routes share the same entity form
 - the form contains enough domain-specific layout that repeating it would be
   noisy
+
+Use `secondaryContent` when:
+
+- the page still has one primary create/edit form
+- it also needs one supporting sidecar surface like aliases, variations, or
+  instructions
+- the secondary surface stays route-owned and does not justify a separate
+  retained template
+
+Do not use `secondaryContent` when:
+
+- the page is really a multi-step workflow
+- there is no clear primary form anymore
+- the route is mostly a planner, transformer, or bulk-action workflow
 
 ## See Also
 

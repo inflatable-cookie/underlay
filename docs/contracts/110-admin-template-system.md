@@ -10,6 +10,7 @@ Define the shared admin template system contract Underlay owns across:
 
 - Level 1 page shells for list, detail, and form pages
 - Level 1 trash workflow page shells
+- retained media workflow page shells
 - Level 2 section components reusable inside pages, tabs, and dialogs
 - the retained `EntityListCard` composition surface
 - the declarative extension model proven by the current `g03` rollout
@@ -33,6 +34,7 @@ Primary:
 - [`ts/src/templates/EntityInlineListModule.svelte`](/Users/tom/Dev/projects/underlay/ts/src/templates/EntityInlineListModule.svelte)
 - [`ts/src/templates/EntityAttributeList.svelte`](/Users/tom/Dev/projects/underlay/ts/src/templates/EntityAttributeList.svelte)
 - [`ts/src/templates/EntityFormPage.svelte`](/Users/tom/Dev/projects/underlay/ts/src/templates/EntityFormPage.svelte)
+- [`ts/src/templates/MediaUploadPage.svelte`](/Users/tom/Dev/projects/underlay/ts/src/templates/MediaUploadPage.svelte)
 
 Primary docs:
 
@@ -40,6 +42,7 @@ Primary docs:
 - [`docs/usage/templates/entity-list-page.md`](/Users/tom/Dev/projects/underlay/docs/usage/templates/entity-list-page.md)
 - [`docs/usage/templates/entity-detail-page.md`](/Users/tom/Dev/projects/underlay/docs/usage/templates/entity-detail-page.md)
 - [`docs/usage/templates/entity-form-page.md`](/Users/tom/Dev/projects/underlay/docs/usage/templates/entity-form-page.md)
+- [`docs/usage/templates/media-upload-page.md`](/Users/tom/Dev/projects/underlay/docs/usage/templates/media-upload-page.md)
 - [`docs/usage/templates/template-api-reference.md`](/Users/tom/Dev/projects/underlay/docs/usage/templates/template-api-reference.md)
 - [`docs/usage/templates/consumer-rollout.md`](/Users/tom/Dev/projects/underlay/docs/usage/templates/consumer-rollout.md)
 
@@ -79,6 +82,7 @@ Levels:
   - `EntityDetailPage`
   - `EntityFormPage`
   - `EntityTrashPage`
+  - `MediaUploadPage`
 - Level 2: reusable sections
   - `EntityList`
   - `EntityDetail`
@@ -302,11 +306,38 @@ Rules:
 - forms stop at the page-shell boundary because real forms have arbitrary
   layout, custom fields, conditional logic, uploads, rich text, and custom
   validation
-- `EntityFormPage` owns header, loading, error/success state, and spacing only
+- `EntityFormPage` owns header, loading, error/success state, spacing, and one
+  optional sidecar content region for pages that still have one clear primary
+  form plus one supporting panel
 - apps bring the actual `<form>` markup and field logic with Poodle primitives
 - create/edit routes may use `EntityFormPage` directly, but repeated field
   bodies should live in app-local form components when a form serves more than
   one caller
+- if multiple consumer routes need a broader multi-surface form shape than the
+  retained sidecar seam, promote that shape deliberately instead of forcing it
+  through ad hoc route composition
+
+### Media upload workflow seam
+
+`MediaUploadPage` is the retained outer shell for repeated admin media-upload
+routes.
+
+Core piece:
+
+- `MediaUploadPage`
+
+Rules:
+
+- `MediaUploadPage` owns the repeated upload-page framing:
+  - page header and back-link
+  - optional intro region
+  - loading state
+  - upload-level error callout
+- routes still own queue state, duplicate handling, progress behavior, replace
+  mode, and post-upload navigation
+- this is a workflow shell, not a generic file-upload primitive
+- use it only for the repeated admin media-upload family unless another
+  consumer family later proves the same retained shape honestly
 
 ### Extension model
 
@@ -324,6 +355,32 @@ Rule:
 - template escape hatches are part of the contract, not signs of failure
 - if a page shape needs more escape hatch than template value, direct
   composition remains valid
+
+### Valid non-template exceptions
+
+Not every admin route should be forced onto an `Entity*` shell.
+
+Normal exceptions:
+
+- dashboard and overview pages
+- system index pages
+- media upload pages
+- billing, ops, or account utility pages
+- workflow-heavy planners or transform consoles
+- media detail pages where the route is primarily a usage, rendition, or
+  workflow surface rather than a normal entity detail shell
+
+Also allowed:
+
+- route-local not-found or pre-load fallback headers inside otherwise
+  converged `EntityDetailPage` routes
+- subordinate inner section headers inside a converged detail route
+
+Disallowed posture:
+
+- leaving a real entity browse/manage list, normal entity detail, or normal
+  create/edit route on raw `PageHeader` plus local shell composition just
+  because it existed first
 
 ## Ownership Split
 

@@ -24,6 +24,14 @@ Complete API reference for all template components.
 
 [See entity-form-page.md](./entity-form-page.md)
 
+## EntityTrashPage
+
+[See entity-trash-page.md](./entity-trash-page.md)
+
+## MediaUploadPage
+
+[See media-upload-page.md](./media-upload-page.md)
+
 ## Types
 
 These types are exported from `@decodelabs/underlay/templates`.

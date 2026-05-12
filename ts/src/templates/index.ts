@@ -15,6 +15,7 @@ export { default as EntityListPage } from "./EntityListPage.svelte";
 export { default as EntityDetailPage } from "./EntityDetailPage.svelte";
 export { default as EntityFormPage } from "./EntityFormPage.svelte";
 export { default as EntityTrashPage } from "./EntityTrashPage.svelte";
+export { default as MediaUploadPage } from "./MediaUploadPage.svelte";
 
 // Level 2 — Sections
 export { default as EntityList } from "./EntityList.svelte";

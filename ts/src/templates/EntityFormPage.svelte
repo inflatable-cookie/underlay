@@ -38,6 +38,8 @@
     autocomplete?: HTMLFormAttributes["autocomplete"];
     headerMeta?: SnippetLike;
     headerActions?: SnippetLike;
+    secondaryContent?: SnippetLike;
+    contentLayout?: "single" | "split";
     onSubmit?: SpaSubmitHandler;
     onResult?: (result: SpaFormResult) => void;
     navigate?: SpaNavigateFn;
@@ -65,6 +67,8 @@
     autocomplete = "off",
     headerMeta,
     headerActions,
+    secondaryContent,
+    contentLayout = "single",
     onSubmit,
     onResult,
     navigate,
@@ -209,17 +213,25 @@
       </Callout>
     {/if}
 
-    <Card>
-      <form
-        {method}
-        onformdata={handleFormData}
-        use:spaEnhance
-        class={formClass}
-        {autocomplete}
-      >
-        {@render children()}
-      </form>
-    </Card>
+    <div class={`underlay-entity-form-page__content underlay-entity-form-page__content--${contentLayout}`}>
+      <Card>
+        <form
+          {method}
+          onformdata={handleFormData}
+          use:spaEnhance
+          class={formClass}
+          {autocomplete}
+        >
+          {@render children()}
+        </form>
+      </Card>
+
+      {#if secondaryContent}
+        <div class="underlay-entity-form-page__secondary">
+          {@render secondaryContent()}
+        </div>
+      {/if}
+    </div>
   {/if}
 </div>
 
@@ -240,6 +252,20 @@
     display: flex;
     flex-direction: column;
     gap: 0.35rem;
+  }
+
+  .underlay-entity-form-page__content {
+    display: grid;
+    gap: var(--underlay-space-4, 1rem);
+  }
+
+  .underlay-entity-form-page__content--split {
+    grid-template-columns: repeat(auto-fit, minmax(22rem, 1fr));
+    align-items: start;
+  }
+
+  .underlay-entity-form-page__secondary {
+    display: contents;
   }
 
   .underlay-entity-form-page__error-list {

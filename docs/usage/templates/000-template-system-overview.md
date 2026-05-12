@@ -22,8 +22,9 @@ Full page components that include header, actions, and content:
 
 - `EntityListPage` — Browse page with filters, list, pagination, batch actions
 - `EntityDetailPage` — Detail page with metadata, tabs, child collections
-- `EntityFormPage` — Create/edit page with form shell and actions
+- `EntityFormPage` — Create/edit page with form shell, actions, and optional sidecar content
 - `EntityTrashPage` — Trash workflow shell with loading/error/empty and card grid
+- `MediaUploadPage` — Media upload workflow shell with header, loading, and upload-level error framing
 
 Reference posture:
 
@@ -59,10 +60,12 @@ repeated across apps.
 For reference-grade admin apps, repeated raw `ListCard` collection cards should
 be treated as drift unless the surface is an explicit exception.
 
-**Forms are not templated.** Real forms have arbitrary layout, custom fields,
-conditional logic, complex validation, file uploads, etc. Use Poodle primitives
-(`Field`, `TextInput`, `Select`, etc.) directly. Use `EntityFormPage` as a page
-shell wrapper that handles the header, loading, and error states.
+**Forms are not declaratively templated.** Real forms have arbitrary layout,
+custom fields, conditional logic, complex validation, file uploads, etc. Use
+Poodle primitives (`Field`, `TextInput`, `Select`, etc.) directly. Use
+`EntityFormPage` as a page shell wrapper that handles the header, loading, and
+error states, and one optional sidecar content region when the page still has
+one clear primary form.
 
 ### Level 3 — Primitives
 
@@ -218,6 +221,8 @@ Poodle owns the primitive layer:
 
 **Don't use templates when:**
 - The page has a unique shape that doesn't fit standard patterns
+- The route is a dashboard, system index, upload flow, planner, or similar
+  utility/workflow surface rather than a real entity list/detail/form/trash page
 - You need fine-grained control over every element
 - Building public-facing pages (use Poodle primitives directly)
 - The template needs more escape hatch than leverage

@@ -51,17 +51,22 @@ README surfaces.
 
 ## Active generation
 
-- none
+- `g05`
 
 ## Current Queue
 
+- `g05.004` is active as the cross-app media-library template consolidation
+  lane
+- `g05.005` is queued as the system index page template proof
+- `g05.006` is queued as the admin dashboard page template proof
+- `g05.007` is queued as the media upload page template proof
+- `g05.008` is queued as the media detail workflow template proof
 - `g05.003` is complete as the underlay-reference template completion and
   contract-hardening sweep
 - `g05.002` is complete as the compli-me and contact-patch detail-page
   convergence thread
 - `g05.001` is complete as the Dairy detail-page and tab-list convergence
   thread
-- `g05` is complete as the cross-consumer template convergence generation
 - `g03` is complete as the template-system thread
 - `g04` is closed. Its contract-coverage and assessment history remains
   available under [g04/README.md](g04/README.md)
@@ -69,7 +74,7 @@ README surfaces.
 
 ## Historical Generations
 
-- [g05/README.md](g05/README.md) — active template convergence generation
+- [g05/README.md](g05/README.md) — active shared-page and workflow-template generation
 - [g02/README.md](g02/README.md) — Poodle-era consumer normalization and
   overhaul (complete)
 - [g01/README.md](g01/README.md) — Extraction, contraction, and retained-surface
