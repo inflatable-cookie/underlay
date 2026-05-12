@@ -237,7 +237,96 @@ Expected non-goals:
    - media trash stays on `EntityTrashPage`
    - upload and detail become the real new retained shared work
 2. Prove the shared media upload shell in `underlay-reference`.
-3. Prove the shared media detail shell in `underlay-reference`.
+3. Roll the shared upload shell across the other three admin apps.
+4. Prove the shared media detail shell in `underlay-reference`.
+5. Roll the shared detail shell across the other three admin apps.
+
+## Progress
+
+### Upload proof complete
+
+The first extraction batch is done.
+
+Shared retained surface added in Underlay:
+
+- `MediaUploadPage`
+
+Shared contract updates:
+
+- `docs/contracts/110-admin-template-system.md`
+- `docs/usage/templates/000-template-system-overview.md`
+- `docs/usage/templates/template-api-reference.md`
+- `docs/usage/templates/media-upload-page.md`
+
+Proof coverage:
+
+- `underlay-reference/acme-admin/src/routes/(app)/media/upload/+page.svelte`
+- `contact-patch/cp-admin/src/routes/(app)/media/upload/+page.svelte`
+- `loophole/composer/composer-admin/src/routes/media/upload/+page.svelte`
+- `acowtancy/dairy/src/routes/(app)/media/upload/+page.svelte`
+
+Retained shape proved by the four-app rollout:
+
+- page header and back-link live in the shared shell
+- route-level loading and error posture live in the shared shell
+- upload queue, replace-mode form fields, duplicate handling, and submit logic
+  stay route-owned
+
+Key judgment:
+
+- the right retained seam is the page shell, not the whole upload pipeline
+- queue logic and app-local upload business rules still belong in consumers
+
+### Detail proof complete
+
+The second extraction batch is done.
+
+Shared retained surface added in Underlay:
+
+- `MediaDetailWorkflowPage`
+
+Shared contract updates:
+
+- `docs/contracts/110-admin-template-system.md`
+- `docs/usage/templates/000-template-system-overview.md`
+- `docs/usage/templates/template-api-reference.md`
+- `docs/usage/templates/media-detail-workflow-page.md`
+
+Proof coverage:
+
+- `underlay-reference/acme-admin/src/routes/(app)/media/[mediaId]/+page.svelte`
+- `contact-patch/cp-admin/src/routes/(app)/media/[mediaId]/+page.svelte`
+- `loophole/composer/composer-admin/src/routes/media/[mediaId]/+page.svelte`
+- `acowtancy/dairy/src/routes/(app)/media/[id]/+page.svelte`
+
+Retained shape proved by the four-app rollout:
+
+- shared media header, metadata, and deleted banner
+- shared loading, error, and retry posture
+- shared top-level tab shell
+- route-owned preview, versions, usages, renditions, and dialogs preserved
+
+Key judgment:
+
+- the right retained seam is the media-detail workflow shell, not one generic
+  lower-level section kit
+- Dairy's lower-level split remains the best source for future shared
+  extraction pressure if versions/usage/renditions later prove broadly reusable
+
+## Current State
+
+The media admin family is now converged at the retained-shell level:
+
+- media root stays on app-local wrappers over `EntityListPage`
+- media trash stays on `EntityTrashPage`
+- media upload is on `MediaUploadPage`
+- media detail is on `MediaDetailWorkflowPage`
+
+This lane is complete.
+
+## Next Task
+
+Move to `g05.005`: prove the retained `SystemIndexPage` shell.
 4. Migrate `contact-patch`, `composer-admin`, and `dairy` onto the retained
    media templates.
 5. Update the contracts and usage docs so the media-library system is reference

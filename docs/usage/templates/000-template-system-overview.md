@@ -25,6 +25,9 @@ Full page components that include header, actions, and content:
 - `EntityFormPage` — Create/edit page with form shell, actions, and optional sidecar content
 - `EntityTrashPage` — Trash workflow shell with loading/error/empty and card grid
 - `MediaUploadPage` — Media upload workflow shell with header, loading, and upload-level error framing
+- `MediaDetailWorkflowPage` — Media detail workflow shell with header, metadata, tabs, and load/error framing
+- `SystemIndexPage` — System/operator index shell with header and nav-card grid
+- `AdminDashboardPage` — Admin dashboard shell with header and stacked dashboard sections
 
 Reference posture:
 
@@ -231,6 +234,10 @@ Poodle owns the primitive layer:
 
 - [Entity List Page](./entity-list-page.md) — Browse and filter lists
 - [Entity Trash Page](./entity-trash-page.md) — Restore and purge trash flows
+- [Media Upload Page](./media-upload-page.md) — Media upload workflow shell
+- [Media Detail Workflow Page](./media-detail-workflow-page.md) — Media detail workflow shell
+- [System Index Page](./system-index-page.md) — System/operator index shell
+- [Admin Dashboard Page](./admin-dashboard-page.md) — Admin dashboard shell
 - [Entity List Card](./entity-list-card.md) — Shared card shell for list items
 - [Entity Detail Page](./entity-detail-page.md) — Read-only detail with tabs
 - [Entity Form Page](./entity-form-page.md) — Create and edit forms

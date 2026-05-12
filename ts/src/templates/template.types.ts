@@ -156,6 +156,20 @@ export interface DetailActionConfig {
   confirm?: boolean | DetailActionConfirm;
 }
 
+export interface SystemIndexCardConfig {
+  href: string;
+  title: string;
+  description: string;
+  accent?: string;
+  icon?: TemplateSurface;
+}
+
+export interface AdminDashboardSectionConfig {
+  id: string;
+  title?: string;
+  content: TemplateSurface;
+}
+
 export type TableRowActionFactory<TItem> = (
   row: TableRow<TItem>
 ) => { value: string; label: string }[];

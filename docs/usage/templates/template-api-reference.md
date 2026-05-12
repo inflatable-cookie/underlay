@@ -32,6 +32,18 @@ Complete API reference for all template components.
 
 [See media-upload-page.md](./media-upload-page.md)
 
+## MediaDetailWorkflowPage
+
+[See media-detail-workflow-page.md](./media-detail-workflow-page.md)
+
+## SystemIndexPage
+
+[See system-index-page.md](./system-index-page.md)
+
+## AdminDashboardPage
+
+[See admin-dashboard-page.md](./admin-dashboard-page.md)
+
 ## Types
 
 These types are exported from `@decodelabs/underlay/templates`.

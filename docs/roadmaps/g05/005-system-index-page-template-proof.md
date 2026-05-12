@@ -56,5 +56,33 @@ This introduces a retained shared shell for admin system index pages.
 
 ## Next Task
 
-Audit the six current system index pages and freeze the minimum retained shell
-before implementation.
+Shared proof is complete.
+
+Retained surface added:
+
+- `SystemIndexPage`
+
+Proof coverage:
+
+- `underlay-reference/acme-admin`
+- `acowtancy/dairy`
+- `compli-me/admin`
+- `contact-patch/cp-admin`
+- `songsprout/greenhouse`
+- `loophole/composer/composer-admin`
+
+Shared contract/docs updated:
+
+- `docs/contracts/110-admin-template-system.md`
+- `docs/usage/templates/000-template-system-overview.md`
+- `docs/usage/templates/template-api-reference.md`
+- `docs/usage/templates/system-index-page.md`
+
+The retained seam is narrow and honest:
+
+- shared header and nav-card grid
+- route-owned destination list, labels, descriptions, accents, and icons
+
+Next move:
+
+Execute `g05.006`: prove the retained `AdminDashboardPage` shell.

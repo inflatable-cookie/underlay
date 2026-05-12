@@ -16,6 +16,9 @@ export { default as EntityDetailPage } from "./EntityDetailPage.svelte";
 export { default as EntityFormPage } from "./EntityFormPage.svelte";
 export { default as EntityTrashPage } from "./EntityTrashPage.svelte";
 export { default as MediaUploadPage } from "./MediaUploadPage.svelte";
+export { default as MediaDetailWorkflowPage } from "./MediaDetailWorkflowPage.svelte";
+export { default as SystemIndexPage } from "./SystemIndexPage.svelte";
+export { default as AdminDashboardPage } from "./AdminDashboardPage.svelte";
 
 // Level 2 — Sections
 export { default as EntityList } from "./EntityList.svelte";
@@ -40,6 +43,7 @@ export type {
   BatchActionConfirm,
   BatchDialogConfig,
   BatchDialogContext,
+  AdminDashboardSectionConfig,
   DetailActionConfig,
   DetailActionConfirm,
   DetailItemConfig,
@@ -50,6 +54,7 @@ export type {
   FilterConfig,
   PagedListResult,
   ReorderConfig,
+  SystemIndexCardConfig,
   TemplateFilterOption,
   TemplateSortField,
   TemplateSurface

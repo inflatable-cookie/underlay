@@ -54,5 +54,34 @@ This introduces a retained dashboard shell for admin home pages.
 
 ## Next Task
 
-Audit the six dashboard routes and classify the minimum shared shell versus
-app-local metric content.
+Shared proof is complete.
+
+Retained surface added:
+
+- `AdminDashboardPage`
+
+Proof coverage:
+
+- `underlay-reference/acme-admin`
+- `acowtancy/dairy`
+- `compli-me/admin`
+- `contact-patch/cp-admin`
+- `songsprout/greenhouse`
+- `loophole/composer/composer-admin`
+
+Shared contract/docs updated:
+
+- `docs/contracts/110-admin-template-system.md`
+- `docs/usage/templates/000-template-system-overview.md`
+- `docs/usage/templates/template-api-reference.md`
+- `docs/usage/templates/admin-dashboard-page.md`
+
+The retained seam is narrow and honest:
+
+- shared dashboard header
+- shared stacked section layout
+- route-owned metrics, nav cards, callouts, and app-specific widgets
+
+Next move:
+
+None in `g05`. The repeated shared-page lane is complete.

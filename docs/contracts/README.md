@@ -10,6 +10,8 @@ machine-readable policy files.
 | [001-working-rules.md](./001-working-rules.md) | M | Shared authoring and delivery rules for Underlay work |
 | [010-foundation-primitives-and-envelopes.md](./010-foundation-primitives-and-envelopes.md) | M | Shared id, success-envelope, error-envelope, and validation-boundary contract |
 | [020-http-transport-and-server-boundary.md](./020-http-transport-and-server-boundary.md) | M | Shared Rust and TS HTTP helpers for envelopes, query, pagination, cookies, context, caching, and CSP/security headers |
+| [025-rust-app-runtime-assembly-and-router-topology.md](./025-rust-app-runtime-assembly-and-router-topology.md) | M | Shared Rust API workspace shape, thin entrypoint posture, `AppState`, router builder, middleware order, and operational endpoint/runtime assembly contract |
+| [026-route-families-and-access-model.md](./026-route-families-and-access-model.md) | M | Shared route-family taxonomy and access-model contract for runtime, shared, front/public, and admin API surfaces |
 | [030-auth-and-session-systems.md](./030-auth-and-session-systems.md) | M | Shared auth provider, session, credential-family, browser auth-store, passkey, OAuth, and retained workflow-shell contract |
 | [040-storage-blob-and-media-systems.md](./040-storage-blob-and-media-systems.md) | M | Shared DB/bootstrap, soft-delete, blob adapter, storage-key, and lower media repository/storage contract |
 | [050-media-library-and-usage.md](./050-media-library-and-usage.md) | L | Shared media asset, usage-graph, structured-content sync, and migration replay contract |

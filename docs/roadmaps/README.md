@@ -55,12 +55,15 @@ README surfaces.
 
 ## Current Queue
 
-- `g05.004` is active as the cross-app media-library template consolidation
+- `g05.009` is active as the Rust runtime contract audit and next contract set
+- `g05.006` is complete as the admin dashboard page template proof
+- `g05.005` is complete as the system index page template proof
+- `g05.004` is complete as the cross-app media-library template consolidation
   lane
-- `g05.005` is queued as the system index page template proof
-- `g05.006` is queued as the admin dashboard page template proof
-- `g05.007` is queued as the media upload page template proof
-- `g05.008` is queued as the media detail workflow template proof
+- `g05.007` is complete as the media upload page proof, absorbed into
+  `g05.004`
+- `g05.008` is complete as the media detail workflow page proof, absorbed into
+  `g05.004`
 - `g05.003` is complete as the underlay-reference template completion and
   contract-hardening sweep
 - `g05.002` is complete as the compli-me and contact-patch detail-page
@@ -74,7 +77,8 @@ README surfaces.
 
 ## Historical Generations
 
-- [g05/README.md](g05/README.md) — active shared-page and workflow-template generation
+- [g05/README.md](g05/README.md) — active shared-page and workflow-template
+  generation
 - [g02/README.md](g02/README.md) — Poodle-era consumer normalization and
   overhaul (complete)
 - [g01/README.md](g01/README.md) — Extraction, contraction, and retained-surface
@@ -146,7 +150,8 @@ README surfaces.
 
 ## Next Task
 
-None. The current template convergence lane is complete.
+Execute `g05.009`: write the next Rust/runtime contract set before starting the
+cross-app API normalization sweep.
 - `g01.090` is complete for confirming that the remaining public `@decodelabs/underlay/patterns` surface is the true retained workflow stop point rather than unresolved migration debt
 - `g01.091` is complete for confirming the retained `client` package boundary, exposing explicit `client/*` public subpaths for the live feature families, and keeping the root barrel stable as a convenience surface
 - `g01.092` is complete for confirming the retained `nightfire` package boundary, exposing explicit `nightfire/*` public subpaths for the live extension families, and keeping the root barrel stable as a convenience surface

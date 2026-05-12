@@ -35,6 +35,9 @@ Primary:
 - [`ts/src/templates/EntityAttributeList.svelte`](/Users/tom/Dev/projects/underlay/ts/src/templates/EntityAttributeList.svelte)
 - [`ts/src/templates/EntityFormPage.svelte`](/Users/tom/Dev/projects/underlay/ts/src/templates/EntityFormPage.svelte)
 - [`ts/src/templates/MediaUploadPage.svelte`](/Users/tom/Dev/projects/underlay/ts/src/templates/MediaUploadPage.svelte)
+- [`ts/src/templates/MediaDetailWorkflowPage.svelte`](/Users/tom/Dev/projects/underlay/ts/src/templates/MediaDetailWorkflowPage.svelte)
+- [`ts/src/templates/SystemIndexPage.svelte`](/Users/tom/Dev/projects/underlay/ts/src/templates/SystemIndexPage.svelte)
+- [`ts/src/templates/AdminDashboardPage.svelte`](/Users/tom/Dev/projects/underlay/ts/src/templates/AdminDashboardPage.svelte)
 
 Primary docs:
 
@@ -43,6 +46,9 @@ Primary docs:
 - [`docs/usage/templates/entity-detail-page.md`](/Users/tom/Dev/projects/underlay/docs/usage/templates/entity-detail-page.md)
 - [`docs/usage/templates/entity-form-page.md`](/Users/tom/Dev/projects/underlay/docs/usage/templates/entity-form-page.md)
 - [`docs/usage/templates/media-upload-page.md`](/Users/tom/Dev/projects/underlay/docs/usage/templates/media-upload-page.md)
+- [`docs/usage/templates/media-detail-workflow-page.md`](/Users/tom/Dev/projects/underlay/docs/usage/templates/media-detail-workflow-page.md)
+- [`docs/usage/templates/system-index-page.md`](/Users/tom/Dev/projects/underlay/docs/usage/templates/system-index-page.md)
+- [`docs/usage/templates/admin-dashboard-page.md`](/Users/tom/Dev/projects/underlay/docs/usage/templates/admin-dashboard-page.md)
 - [`docs/usage/templates/template-api-reference.md`](/Users/tom/Dev/projects/underlay/docs/usage/templates/template-api-reference.md)
 - [`docs/usage/templates/consumer-rollout.md`](/Users/tom/Dev/projects/underlay/docs/usage/templates/consumer-rollout.md)
 
@@ -83,6 +89,9 @@ Levels:
   - `EntityFormPage`
   - `EntityTrashPage`
   - `MediaUploadPage`
+  - `MediaDetailWorkflowPage`
+  - `SystemIndexPage`
+  - `AdminDashboardPage`
 - Level 2: reusable sections
   - `EntityList`
   - `EntityDetail`
@@ -338,6 +347,87 @@ Rules:
 - this is a workflow shell, not a generic file-upload primitive
 - use it only for the repeated admin media-upload family unless another
   consumer family later proves the same retained shape honestly
+
+### Media detail workflow seam
+
+`MediaDetailWorkflowPage` is the retained outer shell for repeated admin
+media-detail routes.
+
+Core piece:
+
+- `MediaDetailWorkflowPage`
+
+Rules:
+
+- `MediaDetailWorkflowPage` owns the repeated media-detail framing:
+  - media header and back-link
+  - metadata bar
+  - deleted-state banner
+  - top-level tab shell
+  - loading and error posture
+- it supports both:
+  - `dataLoader` when the template should own the media fetch shell
+  - `item` plus `loading` / `error` / `onRetry` when the route already owns
+    media-detail orchestration
+- routes or app-local modules still own:
+  - versions rendering
+  - usage rendering
+  - preview rendering
+  - renditions rendering
+  - action menus
+  - edit and version dialogs
+  - app-local media business logic
+- this is a workflow shell, not a generic media viewer
+- use it for the retained admin media-detail family unless another repeated
+  consumer family later proves the same shape honestly
+
+### System index seam
+
+`SystemIndexPage` is the retained outer shell for repeated admin system index
+routes.
+
+Core piece:
+
+- `SystemIndexPage`
+
+Rules:
+
+- it owns the repeated system-index framing:
+  - page header
+  - optional subtitle and back-link
+  - nav-card grid
+- routes still own:
+  - destination list
+  - card labels and descriptions
+  - accent colors
+  - icon choices
+  - any extra helper content above the grid
+- this is an operator index shell, not a dashboard and not a generic card-grid
+  primitive
+
+### Admin dashboard seam
+
+`AdminDashboardPage` is the retained outer shell for repeated admin dashboard
+routes.
+
+Core piece:
+
+- `AdminDashboardPage`
+
+Rules:
+
+- it owns the repeated dashboard framing:
+  - page header
+  - optional subtitle and back-link
+  - stacked dashboard sections
+- routes still own:
+  - metric tiles
+  - nav-card groups
+  - callouts and recovery actions
+  - app-specific summary widgets
+- this is a dashboard shell, not a generic layout primitive
+- keep the retained seam loose; do not force metric or nav-card schemas into
+  Underlay unless they later prove broadly reusable
 
 ### Extension model
 
