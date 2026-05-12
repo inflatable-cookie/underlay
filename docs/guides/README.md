@@ -99,7 +99,7 @@ Read these documents in order for a complete understanding:
 40. **[185 - Recipe Map and Testing Matrix](./185-recipe-map-and-testing-matrix.md)** - Recipe-to-code references + minimum tests
 41. **[190 - Upgrade Compatibility Matrix](./190-upgrade-compatibility.md)** - Upgrade expectations and breakage checks
 42. **[200 - Project Sync](./200-project-sync.md)** - Migration/sync checklist for existing projects
-43. **[205 - Legacy Migration Framework (End-to-End)](./205-legacy-migration-framework.md)** - Complete migration setup and operations playbook for humans and AI agents
+43. **[205 - Legacy Migration Framework (End-to-End)](./205-legacy-migration-framework.md)** - Historical detailed migration-core reference; use the state-layout/Effigy migration policy for active operator posture
 
 ## Effigy-First Repo Loop
 

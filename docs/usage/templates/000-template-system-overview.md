@@ -23,6 +23,7 @@ Full page components that include header, actions, and content:
 - `EntityListPage` — Browse page with filters, list, pagination, batch actions
 - `EntityDetailPage` — Detail page with metadata, tabs, child collections
 - `EntityFormPage` — Create/edit page with form shell and actions
+- `EntityTrashPage` — Trash workflow shell with loading/error/empty and card grid
 
 Reference posture:
 
@@ -51,6 +52,10 @@ that the root collection uses.
 normally own the repeated list-card posture instead of each app hand-rolling
 raw `ListCard` compositions.
 
+`EntityTrashPage` is the separate shell for repeated restore/purge pages. Use
+it when the route still owns trash workflow logic but the outer page shell is
+repeated across apps.
+
 For reference-grade admin apps, repeated raw `ListCard` collection cards should
 be treated as drift unless the surface is an explicit exception.
 
@@ -76,7 +81,8 @@ Poodle owns the primitive layer:
     EntityDetail,
     EntityDetailPage,
     EntityList,
-    EntityListPage
+    EntityListPage,
+    EntityTrashPage
   } from "@decodelabs/underlay/templates";
 </script>
 ```
@@ -202,6 +208,7 @@ Poodle owns the primitive layer:
 **Use templates when:**
 - Building standard admin CRUD pages
 - The page shape matches a common pattern (list, detail, form)
+- The page is a repeated trash/restore workflow
 - You want consistency across admin pages
 - You can express the page with declarative config plus snippets
 - You are willing to extract a reusable app-local list wrapper when the surface
@@ -218,6 +225,7 @@ Poodle owns the primitive layer:
 ## Next Steps
 
 - [Entity List Page](./entity-list-page.md) — Browse and filter lists
+- [Entity Trash Page](./entity-trash-page.md) — Restore and purge trash flows
 - [Entity List Card](./entity-list-card.md) — Shared card shell for list items
 - [Entity Detail Page](./entity-detail-page.md) — Read-only detail with tabs
 - [Entity Form Page](./entity-form-page.md) — Create and edit forms

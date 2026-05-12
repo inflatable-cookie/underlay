@@ -1,7 +1,17 @@
 # 205 - Legacy Migration Framework (End-to-End)
 
-Status: Canonical implementation guide  
-Last updated: 2026-03-02
+Status: Historical detailed reference  
+Last updated: 2026-05-13
+
+This guide remains the detailed reference for the older migration-core and
+sample-script posture.
+
+It is not the current operator front door for Underlay-based apps that have
+already moved to Effigy state/artifact/deploy plus app-owned migration/media
+tasks.
+
+Use [Migration State Layout And Effigy](../usage/migration/000-state-layout-and-effigy.md)
+for the current active project-layout and operator policy.
 
 This guide describes how to set up and operate an Underlay migration system from start to finish for:
 

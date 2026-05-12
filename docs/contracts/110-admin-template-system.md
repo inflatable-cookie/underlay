@@ -9,6 +9,7 @@ Depends on: `090-ts-runtime-and-client-orchestration.md`, `100-shared-patterns-a
 Define the shared admin template system contract Underlay owns across:
 
 - Level 1 page shells for list, detail, and form pages
+- Level 1 trash workflow page shells
 - Level 2 section components reusable inside pages, tabs, and dialogs
 - the retained `EntityListCard` composition surface
 - the declarative extension model proven by the current `g03` rollout
@@ -77,6 +78,7 @@ Levels:
   - `EntityListPage`
   - `EntityDetailPage`
   - `EntityFormPage`
+  - `EntityTrashPage`
 - Level 2: reusable sections
   - `EntityList`
   - `EntityDetail`
@@ -257,6 +259,34 @@ Rules:
   `115-admin-resource-api-shapes.md`
 - the detail template supports nested list/detail compositions without forcing
   the whole page into one monolith
+
+### Trash template seam
+
+`EntityTrashPage` defines the shared page-shell contract for admin trash
+surfaces.
+
+Core pieces:
+
+- `EntityTrashPage`
+- app-owned trash item cards, usually over `EntityListCard`
+- route-owned restore and purge workflow logic
+
+Rules:
+
+- `EntityTrashPage` owns the repeated outer shell:
+  - page header
+  - loading state
+  - error state
+  - empty state
+  - grid of trash cards or delete-batch cards
+- trash routes still own restore logic, purge confirmation, and any conflict
+  resolution workflow
+- trash routes are not normal browse/manage collections and should not be
+  forced into `EntityListPage` when the main behavior is restore/purge workflow
+- repeated trash cards should still prefer `EntityListCard` when they are real
+  card-shaped collection items
+- trash pages may use `beforeItems` for local search/sort or other trash-local
+  controls without falling back to `EntityListPage`
 
 ### Form template seam
 
