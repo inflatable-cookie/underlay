@@ -18,6 +18,7 @@ fn minio_dev_config_uses_path_style_endpoint_and_bucket_public_base() {
         Some("http://s3.acme.test:9000/acme-media")
     );
     assert!(config.path_style);
+    assert_eq!(config.presign_url_base, None);
 }
 
 #[test]
@@ -27,6 +28,7 @@ fn env_or_minio_dev_prefers_shared_blob_env_overrides() {
         std::env::set_var("BLOB_S3_REGION", "eu-west-1");
         std::env::set_var("BLOB_S3_ENDPOINT_URL", "http://s3.override.test:9000/");
         std::env::set_var("BLOB_S3_PUBLIC_URL_BASE", "https://cdn.override.test/media");
+        std::env::set_var("BLOB_S3_PRESIGN_URL_BASE", "https://s3.override.test/");
         std::env::set_var("BLOB_S3_PATH_STYLE", "false");
     }
 
@@ -42,6 +44,10 @@ fn env_or_minio_dev_prefers_shared_blob_env_overrides() {
         config.public_url_base.as_deref(),
         Some("https://cdn.override.test/media")
     );
+    assert_eq!(
+        config.presign_url_base.as_deref(),
+        Some("https://s3.override.test")
+    );
     assert!(!config.path_style);
 
     unsafe {
@@ -49,6 +55,7 @@ fn env_or_minio_dev_prefers_shared_blob_env_overrides() {
         std::env::remove_var("BLOB_S3_REGION");
         std::env::remove_var("BLOB_S3_ENDPOINT_URL");
         std::env::remove_var("BLOB_S3_PUBLIC_URL_BASE");
+        std::env::remove_var("BLOB_S3_PRESIGN_URL_BASE");
         std::env::remove_var("BLOB_S3_PATH_STYLE");
     }
 }

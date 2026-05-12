@@ -74,6 +74,9 @@
     /** Tabs configuration */
     tabs?: DetailTabConfig<T>[];
 
+    /** Non-tab detail body for single-surface pages */
+    content?: TemplateSurface;
+
     /** Notified when the active tab changes */
     onTabChange?: (tabId: string) => void;
 
@@ -115,6 +118,7 @@
     reloadKey = null,
     meta: detailMeta = [],
     tabs = [],
+    content,
     onTabChange,
     tabsVariant = "underline",
     tabsSize = "sm",
@@ -323,6 +327,8 @@
           {/if}
         {/each}
       </Tabs>
+    {:else if content}
+      {@render content(item)}
     {/if}
   </div>
 {/if}

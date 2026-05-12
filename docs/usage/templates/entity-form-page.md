@@ -120,6 +120,20 @@ etc.) directly for the form itself.
 - Submit handler logic
 - Any custom components (RelationSelector, file upload, etc.)
 
+## Route ownership policy
+
+Normal posture:
+
+- route mounts `EntityFormPage` directly
+- app-local shared form components own repeated field bodies
+
+Use an app-local form component when:
+
+- the same field body serves create and edit
+- multiple routes share the same entity form
+- the form contains enough domain-specific layout that repeating it would be
+  noisy
+
 ## See Also
 
 - [Template System Overview](./000-template-system-overview.md)

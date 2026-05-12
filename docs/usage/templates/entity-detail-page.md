@@ -12,6 +12,12 @@ It supports two normal loading modes:
 - caller-provided `item` for route-preloaded data, where the template still
   owns the detail shell and tab system without refetch flicker
 
+It supports two normal body modes:
+
+- `tabs={[...]}`
+- `content={...}` for single-surface detail pages that do not need top-level
+  tabs
+
 ## Usage
 
 ```svelte
@@ -96,6 +102,50 @@ Use this mode when the route already needs:
 - custom not-found/error gating
 - one authenticated fetch that should not flicker or duplicate
 
+## Single-surface detail pages
+
+When the page is still a real entity detail but does not need top-level tabs,
+use `content={...}` instead of inventing a fake one-tab layout:
+
+```svelte
+{#snippet jobContent(job)}
+  <EntityDetail title="Details">
+    <!-- detail modules -->
+  </EntityDetail>
+{/snippet}
+
+<EntityDetailPage
+  title={jobTitle}
+  section="Job"
+  backHref="/system/jobs"
+  dataLoader={loadJob}
+  meta={headerMeta}
+  headerActions={headerActions}
+  content={jobContent}
+/>
+```
+
+Use this mode when:
+
+- the route is still a repeated entity detail shell
+- the body is one continuous detail surface
+- adding top-level tabs would be artificial
+
+## Route ownership policy
+
+Unlike list pages, detail routes do not need an extra app-local wrapper by
+default.
+
+Normal posture:
+
+- route owns the entity-specific loader and workflow glue
+- route mounts `EntityDetailPage` directly
+- shared child collections inside tabs reuse app-local list wrappers over
+  `EntityListPage` when they are real browse/manage surfaces
+
+Create an extra app-local detail wrapper only when the same detail shell is
+truly reused across more than one caller.
+
 ## Header posture
 
 - when `section` is set, the page header now treats that as the primary title
@@ -157,6 +207,9 @@ for example when:
 - nested tab state should persist
 - editor or list state should not reset on every tab switch
 - the route already paid for the data and should keep the local UI warm
+
+Do not use tabs just to satisfy the template. If the page does not have a real
+top-level section split, use `content`.
 
 Reference recipe:
 

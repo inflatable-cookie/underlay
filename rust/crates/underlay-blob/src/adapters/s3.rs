@@ -5,9 +5,12 @@ use std::env;
 use std::time::Duration;
 
 use async_trait::async_trait;
+use aws_sdk_s3::error::ProvideErrorMetadata;
 use aws_sdk_s3::presigning::PresigningConfig;
+use aws_sdk_s3::types::{BucketLocationConstraint, CreateBucketConfiguration};
 use aws_sdk_s3::Client;
 use chrono::{DateTime, Utc};
+use tracing::warn;
 
 use crate::adapter::BlobAdapter;
 use crate::error::{BlobError, BlobResult};
@@ -31,6 +34,13 @@ pub struct S3Config {
     /// If not set, the standard S3 URL format is used.
     pub public_url_base: Option<String>,
 
+    /// Optional base URL used when returning pre-signed browser URLs.
+    ///
+    /// This is useful when the AWS SDK should talk to an internal endpoint
+    /// such as `http://minio:9000`, but browsers must receive an externally
+    /// reachable HTTPS route such as `https://s3.acme.test`.
+    pub presign_url_base: Option<String>,
+
     /// Default expiration for upload URLs.
     pub upload_url_expiry: Duration,
 
@@ -49,6 +59,7 @@ impl S3Config {
             region: region.into(),
             endpoint_url: None,
             public_url_base: None,
+            presign_url_base: None,
             upload_url_expiry: Duration::from_secs(3600), // 1 hour
             download_url_expiry: Duration::from_secs(300), // 5 minutes
             path_style: false,
@@ -64,6 +75,12 @@ impl S3Config {
     /// Set a custom public URL base (for CDN).
     pub fn public_url_base(mut self, url: impl Into<String>) -> Self {
         self.public_url_base = Some(url.into());
+        self
+    }
+
+    /// Set a custom base URL for browser-facing pre-signed URLs.
+    pub fn presign_url_base(mut self, url: impl Into<String>) -> Self {
+        self.presign_url_base = Some(url.into());
         self
     }
 
@@ -111,6 +128,7 @@ impl S3Config {
     /// - `BLOB_S3_REGION`
     /// - `BLOB_S3_ENDPOINT_URL`
     /// - `BLOB_S3_PUBLIC_URL_BASE`
+    /// - `BLOB_S3_PRESIGN_URL_BASE`
     /// - `BLOB_S3_PATH_STYLE`
     pub fn from_env_or_minio_dev(
         default_bucket: impl Into<String>,
@@ -130,21 +148,71 @@ impl S3Config {
         let endpoint_url = endpoint_url.trim_end_matches('/').to_string();
         let public_url_base = env::var("BLOB_S3_PUBLIC_URL_BASE")
             .unwrap_or_else(|_| format!("{}/{}", endpoint_url, bucket));
+        let presign_url_base = env::var("BLOB_S3_PRESIGN_URL_BASE")
+            .ok()
+            .map(|value| value.trim_end_matches('/').to_string())
+            .filter(|value| !value.is_empty());
 
-        Self::new(bucket, region)
+        let mut config = Self::new(bucket, region)
             .endpoint_url(endpoint_url)
             .public_url_base(public_url_base)
-            .path_style(path_style)
+            .path_style(path_style);
+
+        if let Some(base) = presign_url_base {
+            config = config.presign_url_base(base);
+        }
+
+        config
     }
 }
 
 /// AWS S3-compatible blob storage adapter.
 pub struct S3Adapter {
     client: Client,
+    presign_client: Client,
     config: S3Config,
 }
 
 impl S3Adapter {
+    fn sdk_error_details<E, R>(
+        err: &aws_smithy_runtime_api::client::result::SdkError<E, R>,
+    ) -> String
+    where
+        E: ProvideErrorMetadata + std::fmt::Debug + std::fmt::Display,
+        R: std::fmt::Debug,
+    {
+        let code = err
+            .as_service_error()
+            .map(ProvideErrorMetadata::code)
+            .flatten()
+            .unwrap_or("<none>");
+        let message = err
+            .as_service_error()
+            .map(ProvideErrorMetadata::message)
+            .flatten()
+            .unwrap_or("<none>");
+
+        format!("code={code}, message={message}, debug={err:?}")
+    }
+
+    fn build_client(
+        aws_config: &underlay_aws::SdkConfig,
+        config: &S3Config,
+        endpoint: Option<&str>,
+    ) -> Client {
+        let mut s3_config_builder = aws_sdk_s3::config::Builder::from(aws_config);
+
+        if let Some(endpoint) = endpoint {
+            s3_config_builder = s3_config_builder.endpoint_url(endpoint);
+        }
+
+        if config.path_style {
+            s3_config_builder = s3_config_builder.force_path_style(true);
+        }
+
+        Client::from_conf(s3_config_builder.build())
+    }
+
     /// Create a new S3 adapter with the given configuration.
     ///
     /// This uses the default AWS credential chain (environment variables,
@@ -158,28 +226,40 @@ impl S3Adapter {
 
         let aws_config = aws.load().await;
 
-        let mut s3_config_builder = aws_sdk_s3::config::Builder::from(&aws_config);
+        let client = Self::build_client(&aws_config, &config, config.endpoint_url.as_deref());
+        let presign_client = Self::build_client(
+            &aws_config,
+            &config,
+            config
+                .presign_url_base
+                .as_deref()
+                .or(config.endpoint_url.as_deref()),
+        );
 
-        if config.path_style {
-            s3_config_builder = s3_config_builder.force_path_style(true);
-        }
-
-        let client = Client::from_conf(s3_config_builder.build());
-
-        Ok(Self { client, config })
+        Ok(Self {
+            client,
+            presign_client,
+            config,
+        })
     }
 
     /// Create a new S3 adapter from an existing AWS SDK config.
     pub fn from_aws_config(aws_config: &underlay_aws::SdkConfig, config: S3Config) -> Self {
-        let mut s3_config_builder = aws_sdk_s3::config::Builder::from(aws_config);
+        let client = Self::build_client(aws_config, &config, config.endpoint_url.as_deref());
+        let presign_client = Self::build_client(
+            aws_config,
+            &config,
+            config
+                .presign_url_base
+                .as_deref()
+                .or(config.endpoint_url.as_deref()),
+        );
 
-        if config.path_style {
-            s3_config_builder = s3_config_builder.force_path_style(true);
+        Self {
+            client,
+            presign_client,
+            config,
         }
-
-        let client = Client::from_conf(s3_config_builder.build());
-
-        Self { client, config }
     }
 
     /// Generate the standard S3 public URL for an object.
@@ -217,11 +297,78 @@ impl S3Adapter {
             BlobError::TransportError(err_str)
         }
     }
+
+    async fn ensure_bucket_exists(&self) -> BlobResult<()> {
+        match self
+            .client
+            .head_bucket()
+            .bucket(&self.config.bucket)
+            .send()
+            .await
+        {
+            Ok(_) => return Ok(()),
+            Err(err) => {
+                let err_str = Self::sdk_error_details(&err);
+                let missing_bucket = err_str.contains("NoSuchBucket")
+                    || err_str.contains("NotFound")
+                    || err_str.contains("404");
+                warn!(
+                    bucket = %self.config.bucket,
+                    endpoint_url = self.config.endpoint_url.as_deref().unwrap_or("<none>"),
+                    missing_bucket,
+                    error = %err_str,
+                    "S3 head_bucket failed during ensure_bucket_exists"
+                );
+                if !missing_bucket {
+                    return Err(BlobError::BucketNotFound(format!(
+                        "head_bucket failed for '{}': {}",
+                        self.config.bucket, err_str
+                    )));
+                }
+            }
+        }
+
+        let mut request = self.client.create_bucket().bucket(&self.config.bucket);
+        if self.config.region != "us-east-1" {
+            request = request.create_bucket_configuration(
+                CreateBucketConfiguration::builder()
+                    .location_constraint(BucketLocationConstraint::from(
+                        self.config.region.as_str(),
+                    ))
+                    .build(),
+            );
+        }
+
+        match request.send().await {
+            Ok(_) => Ok(()),
+            Err(err) => {
+                let err_str = Self::sdk_error_details(&err);
+                warn!(
+                    bucket = %self.config.bucket,
+                    endpoint_url = self.config.endpoint_url.as_deref().unwrap_or("<none>"),
+                    error = %err_str,
+                    "S3 create_bucket failed during ensure_bucket_exists"
+                );
+                if err_str.contains("BucketAlreadyOwnedByYou")
+                    || err_str.contains("BucketAlreadyExists")
+                {
+                    Ok(())
+                } else {
+                    Err(BlobError::BucketNotFound(format!(
+                        "create_bucket failed for '{}': {}",
+                        self.config.bucket, err_str
+                    )))
+                }
+            }
+        }
+    }
 }
 
 #[async_trait]
 impl BlobAdapter for S3Adapter {
     async fn initiate_upload(&self, request: UploadRequest) -> BlobResult<UploadPlan> {
+        self.ensure_bucket_exists().await?;
+
         let expires_in = request.expires_in;
         let presigning_config = PresigningConfig::builder()
             .expires_in(expires_in)
@@ -229,7 +376,7 @@ impl BlobAdapter for S3Adapter {
             .map_err(|e| BlobError::PresignError(e.to_string()))?;
 
         let mut put_request = self
-            .client
+            .presign_client
             .put_object()
             .bucket(&self.config.bucket)
             .key(&request.key)
@@ -294,7 +441,7 @@ impl BlobAdapter for S3Adapter {
             .map_err(|e| BlobError::PresignError(e.to_string()))?;
 
         let mut get_request = self
-            .client
+            .presign_client
             .get_object()
             .bucket(&self.config.bucket)
             .key(&request.key);
@@ -391,6 +538,8 @@ impl BlobAdapter for S3Adapter {
         data: &[u8],
         content_type: &str,
     ) -> BlobResult<StoredObject> {
+        self.ensure_bucket_exists().await?;
+
         let body = aws_sdk_s3::primitives::ByteStream::from(data.to_vec());
 
         let response = self

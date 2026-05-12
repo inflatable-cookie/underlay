@@ -45,6 +45,7 @@
   import { DEFAULT_PAGE_SIZE } from "../patterns/pagination-types";
   import type {
     BatchActionConfig,
+    CustomReorderConfig,
     EntityListDataLoader,
     EntityListSharedProps,
     FilterConfig,
@@ -138,6 +139,9 @@
     
     /** Reorder configuration */
     reorder?: ReorderConfig<T>;
+
+    /** Optional custom reorder surface for non-flat reorder workflows */
+    customReorderContent?: TemplateSurface;
     
     /** Optional add button */
     onAdd?: () => void;
@@ -208,6 +212,7 @@
     filters = [],
     batchActions = [],
     reorder,
+    customReorderContent,
     onAdd,
     addLabel = "Add",
     onDataChange,
@@ -286,7 +291,9 @@
   const totalPages = $derived(Math.max(1, Math.ceil(totalCount / currentPageSize)));
   const hasNextPage = $derived(currentPage < totalPages || Boolean(pageData.data?.hasMore));
   const reorderAvailable = $derived(
-    isLoadedReorderConfig(reorder)
+    isCustomReorderConfig(reorder)
+      ? Boolean(reorder.enabled) && totalCount > 0
+      : isLoadedReorderConfig(reorder)
       ? Boolean(reorder.enabled) && totalCount > 1
       : Boolean(reorder?.enabled) &&
           currentPage === 1 &&
@@ -582,9 +589,22 @@
     return Boolean(config && config.strategy === "loaded");
   }
 
+  function isCustomReorderConfig(
+    config: ReorderConfig<T> | undefined
+  ): config is CustomReorderConfig<T> {
+    return Boolean(config && config.strategy === "custom");
+  }
+
   async function createReorderSession(): Promise<boolean> {
     if (!reorder?.enabled) return false;
     reorderHighlightedIds = [];
+
+    if (isCustomReorderConfig(reorder)) {
+      reorderController = null;
+      loadedReorderItems = [];
+      reorderError = null;
+      return true;
+    }
 
     if (isLoadedReorderConfig(reorder)) {
       const token = getAuthConfig()?.getToken() ?? null;
@@ -647,7 +667,7 @@
     reorderError = null;
     try {
       await reorderController.submit();
-      if (reorder?.successMessage) {
+      if (reorder && "successMessage" in reorder && reorder.successMessage) {
         toastStore.push({ message: reorder.successMessage, variant: "success" });
       }
       exitReorderMode();
@@ -953,6 +973,12 @@
           {/if}
         </svelte:fragment>
       </EmptyState>
+    {:else if reorderMode && customReorderContent}
+      {@render customReorderContent({
+        items,
+        cancel: exitReorderMode,
+        refetch: () => pageData.refetch()
+      })}
     {:else if reorderMode && reorderController}
       <EditableList
         items={reorderController.pending}
@@ -1116,6 +1142,12 @@
       title="No items found"
       message="Try adjusting your filters or create a new item."
     />
+  {:else if reorderMode && customReorderContent}
+    {@render customReorderContent({
+      items,
+      cancel: exitReorderMode,
+      refetch: () => pageData.refetch()
+    })}
   {:else if reorderMode && reorderController}
     <EditableList
       items={reorderController.pending}

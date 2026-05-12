@@ -29,6 +29,7 @@ export { toPagedListResult } from "./paged-list";
 export type {
   EntityListCardBadge,
   EntityListCardCounter,
+  EntityListCardMenuTrigger,
   EntityListCardModeDisplay,
   EntityListCardProps
 } from "./entity-list-card.types";

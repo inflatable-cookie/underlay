@@ -24,6 +24,15 @@ Full page components that include header, actions, and content:
 - `EntityDetailPage` — Detail page with metadata, tabs, child collections
 - `EntityFormPage` — Create/edit page with form shell and actions
 
+Reference posture:
+
+- real browse/manage lists should normally be wrapped in reusable app-local
+  components over `EntityListPage`
+- routes should thin-mount those wrappers instead of declaring the list page in
+  place
+- detail and form routes may still use `EntityDetailPage` and `EntityFormPage`
+  directly unless a repeated app-local wrapper is genuinely shared
+
 ### Level 2 — Sections
 
 Reusable components for use inside pages, tabs, or dialogs:
@@ -31,12 +40,19 @@ Reusable components for use inside pages, tabs, or dialogs:
 - `EntityList` — Self-contained list with filters, pagination, batch, reorder
 - `EntityDetail` — Metadata and detail sections
 
-Sections are public exports. Use them directly when you need a list inside a
-detail tab.
+Sections are public exports. Use them directly when you need a narrower inline
+surface that is not really a full browse/manage list tab.
 
-There is no separate shared `EntityTabList` wrapper. `EntityList` is the
-retained shared tab-list surface when the tab is really a child collection
-browse/list.
+There is no separate shared `EntityTabList` wrapper. Real child-collection
+tabs should normally reuse the same app-local wrapper over `EntityListPage`
+that the root collection uses.
+
+`EntityListCard` is the shared card shell under those list wrappers. It should
+normally own the repeated list-card posture instead of each app hand-rolling
+raw `ListCard` compositions.
+
+For reference-grade admin apps, repeated raw `ListCard` collection cards should
+be treated as drift unless the surface is an explicit exception.
 
 **Forms are not templated.** Real forms have arbitrary layout, custom fields,
 conditional logic, complex validation, file uploads, etc. Use Poodle primitives
@@ -188,6 +204,10 @@ Poodle owns the primitive layer:
 - The page shape matches a common pattern (list, detail, form)
 - You want consistency across admin pages
 - You can express the page with declarative config plus snippets
+- You are willing to extract a reusable app-local list wrapper when the surface
+  is a real admin collection
+- You are willing to extract a reusable app-local card over `EntityListCard`
+  when the list presentation is cards
 
 **Don't use templates when:**
 - The page has a unique shape that doesn't fit standard patterns
@@ -198,5 +218,6 @@ Poodle owns the primitive layer:
 ## Next Steps
 
 - [Entity List Page](./entity-list-page.md) — Browse and filter lists
+- [Entity List Card](./entity-list-card.md) — Shared card shell for list items
 - [Entity Detail Page](./entity-detail-page.md) — Read-only detail with tabs
 - [Entity Form Page](./entity-form-page.md) — Create and edit forms

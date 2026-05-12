@@ -51,13 +51,17 @@ README surfaces.
 
 ## Active generation
 
-- [g05/README.md](g05/README.md) — active detail-page and tab-list convergence
-  thread
-- [g03/README.md](g03/README.md) — completed template-system thread
+- none
 
 ## Current Queue
 
-- `g05.001`: [Dairy detail pages and tab-list convergence sweep](g05/001-dairy-detail-and-tab-template-convergence-sweep.md)
+- `g05.003` is complete as the underlay-reference template completion and
+  contract-hardening sweep
+- `g05.002` is complete as the compli-me and contact-patch detail-page
+  convergence thread
+- `g05.001` is complete as the Dairy detail-page and tab-list convergence
+  thread
+- `g05` is complete as the cross-consumer template convergence generation
 - `g03` is complete as the template-system thread
 - `g04` is closed. Its contract-coverage and assessment history remains
   available under [g04/README.md](g04/README.md)
@@ -65,6 +69,7 @@ README surfaces.
 
 ## Historical Generations
 
+- [g05/README.md](g05/README.md) — active template convergence generation
 - [g02/README.md](g02/README.md) — Poodle-era consumer normalization and
   overhaul (complete)
 - [g01/README.md](g01/README.md) — Extraction, contraction, and retained-surface
@@ -133,6 +138,10 @@ README surfaces.
 - `g01.087` is complete for splitting the pure formatting and slug helpers out of `runtime/i18n` into explicit `utils/i18n` and `utils/slug` homes while keeping `runtime/i18n` stable as a compatibility barrel
 - `g01.088` is complete for closing the sibling-repo package-boundary recovery line, restoring Dairy validation after the manual import repair, and confirming that only historical references remain to the retired `components`, `embed`, and deep `patterns` entrypoints
 - `g01.089` is complete for moving the compact metadata-ribbon contract into Poodle `MetaBar` / `MetaItem`, migrating the live admin caller family, and retiring the public Underlay `DetailMeta*` wrappers
+
+## Next Task
+
+None. The current template convergence lane is complete.
 - `g01.090` is complete for confirming that the remaining public `@decodelabs/underlay/patterns` surface is the true retained workflow stop point rather than unresolved migration debt
 - `g01.091` is complete for confirming the retained `client` package boundary, exposing explicit `client/*` public subpaths for the live feature families, and keeping the root barrel stable as a convenience surface
 - `g01.092` is complete for confirming the retained `nightfire` package boundary, exposing explicit `nightfire/*` public subpaths for the live extension families, and keeping the root barrel stable as a convenience surface

@@ -125,6 +125,9 @@
     
     /** Reorder configuration */
     reorder?: ReorderConfig<T>;
+
+    /** Optional custom reorder surface for non-flat reorder workflows */
+    customReorderContent?: TemplateSurface;
     
     /** Add button handler */
     onAdd?: () => void;
@@ -195,6 +198,7 @@
     filters = [],
     batchActions = [],
     reorder,
+    customReorderContent,
     onAdd,
     addLabel = "Add",
     onDataChange,
@@ -377,6 +381,7 @@
     {filters}
     {batchActions}
     {reorder}
+    {customReorderContent}
     {onAdd}
     {addLabel}
     {onDataChange}

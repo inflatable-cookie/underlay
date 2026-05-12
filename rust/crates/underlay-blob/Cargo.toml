@@ -7,7 +7,7 @@ description = "Blob storage adapter for Underlay applications"
 
 [features]
 default = []
-s3 = ["aws-sdk-s3", "underlay-aws"]
+s3 = ["aws-sdk-s3", "aws-smithy-runtime-api", "underlay-aws"]
 local = ["tokio/fs", "tokio/io-util"]
 
 [dependencies]
@@ -17,10 +17,12 @@ chrono = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
 thiserror = { workspace = true }
 tokio = { workspace = true }
+tracing = { workspace = true }
 url = "2"
 
 # AWS S3 adapter (optional)
 aws-sdk-s3 = { version = "1", optional = true }
+aws-smithy-runtime-api = { version = "1", optional = true }
 underlay-aws = { workspace = true, optional = true }
 
 [dev-dependencies]

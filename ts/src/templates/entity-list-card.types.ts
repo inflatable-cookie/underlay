@@ -37,6 +37,8 @@ export interface EntityListCardModeDisplay {
   showCounters?: boolean;
 }
 
+export type EntityListCardMenuTrigger = "context" | "leading";
+
 export interface EntityListCardProps {
   title: string;
   subtitle?: string | null;
@@ -69,6 +71,7 @@ export interface EntityListCardProps {
   footerText?: string | null;
   contextMenuItems?: MenuItem[] | null;
   contextMenuAriaLabel?: string | null;
+  contextMenuTrigger?: EntityListCardMenuTrigger;
   onClick?: ((event: MouseEvent) => void) | null;
   onSelectionChange?: ((selected: boolean) => void) | null;
   onContextAction?: ((value: string) => void) | null;

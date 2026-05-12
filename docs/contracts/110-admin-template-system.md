@@ -115,6 +115,16 @@ Rules:
 - `EntityListPage` is the page-level shell around `EntityList`
 - `EntityListPage` is the preferred shell for real browse/manage list surfaces,
   including lists shown inside detail tabs
+- in app consumers, those real list surfaces should normally live in reusable
+  app-local wrapper components such as `src/lib/lists/*` rather than being
+  declared directly in route files
+- root routes should thin-mount those wrappers
+- detail tabs should reuse the same wrapper when the collection semantics are
+  the same and the difference is only scope, query mode, or a small feature
+  toggle
+- route-local `EntityListPage` composition is acceptable only for:
+  - explicit workflow exceptions
+  - narrow proof spikes that are expected to collapse into a wrapper
 - `EntityList` is the lower-level list engine and should normally sit underneath
   `EntityListPage`, not compete with it as a peer default
 - there is no separate retained `EntityTabList` surface; tab browse surfaces
@@ -192,9 +202,20 @@ Rules:
 
 - `EntityListCard` wraps Poodle `ListCard` with Underlay-specific mode and
   content conventions
+- the default leading posture is the larger rounded-square shell used by media
+  thumbs; circular leading visuals are opt-in
 - card display may adapt for reorder or selection mode through the mode-display
   overrides
+- reference-grade admin apps should treat `EntityListCard` as the required
+  retained shell for repeated browse/manage collection cards
+- real admin card actions should normally use the leading visual as the menu
+  trigger through `contextMenuTrigger="leading"`
+- right-click context menus remain available through
+  `contextMenuTrigger="context"` when a consumer explicitly wants that posture
 - apps still own entity-specific card content choices and callbacks
+- raw Poodle `ListCard` remains acceptable only for explicit exceptions:
+  non-admin surfaces, one-off workflow cards, or subordinate embeds where the
+  `EntityListCard` posture would be artificial
 
 ### Detail template seam
 
@@ -213,6 +234,13 @@ Rules:
 
 - `EntityDetailPage` owns header, breadcrumbs, metadata bar, top-level tabs,
   load state, and page actions
+- `EntityDetailPage` supports both:
+  - `tabs` for real top-level section splits
+  - `content` for single-surface detail pages that still need the shared
+    header/meta/action shell
+- detail routes may use `EntityDetailPage` directly; unlike list pages, they do
+  not need app-local wrapper components by default unless the same detail shell
+  is truly reused across more than one caller
 - `EntityDetailPage` may take either:
   - `dataLoader` when the template should own the fetch/load/error posture
   - `item` when the route already owns a stitched authenticated detail fetch
@@ -220,6 +248,8 @@ Rules:
 - detail modules provide the framed content grid units used inside sections
 - top-level tabs may use card or underline posture and may stay mounted when
   route-owned local tab state should persist
+- fake one-tab detail layouts are not the intended posture; use `content`
+  instead when there is no real top-level tab split
 - child collections should normally use `EntityListPage`
 - `EntityList` or `EntityInlineListModule` remain the narrower subordinate
   surfaces for inline/embed utility cases
@@ -244,6 +274,9 @@ Rules:
   validation
 - `EntityFormPage` owns header, loading, error/success state, and spacing only
 - apps bring the actual `<form>` markup and field logic with Poodle primitives
+- create/edit routes may use `EntityFormPage` directly, but repeated field
+  bodies should live in app-local form components when a form serves more than
+  one caller
 
 ### Extension model
 

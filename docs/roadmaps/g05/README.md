@@ -1,31 +1,35 @@
 # g05
 
-`g05` is the active Underlay roadmap generation.
+`g05` is the template-convergence generation for the current consumer family.
 
 ## Current State
 
-`g05` opens the next template-system lane after `g03` closeout.
+`g05` opened the next template-system lane after `g03` closeout and is now
+complete.
 
 `g03` proved the shared form and list-page shells across Dairy and
 `underlay-reference`, but it stopped before the broader detail-page and tab-list
 convergence line.
 
-The active problem now is detail-page and child-list normalization:
+The generation problem is template convergence across the current consumers:
 
-- move Dairy detail routes onto `EntityDetailPage` where the shared shell can
+- converge detail routes onto `EntityDetailPage` where the shared shell can
   carry the real behavior
-- move tab child collections onto `EntityList` or reused root-list wrappers
-  where that keeps behavior intact
-- expand the shared template shape only when repeated real caller families prove
-  the current shape is too narrow
+- converge real browse/manage list surfaces onto reusable app-local wrappers
+  over `EntityListPage`
+- harden the written contract so `underlay-reference` becomes the reference
+  implementation style other apps should copy
 
 ## Active Lane
 
-- `g05.001`: Dairy detail pages and tab-list convergence sweep
+- none
 
 ## Completed Work
 
-- none yet
+- `g05.001`: Dairy detail pages and tab-list convergence sweep
+- `g05.002`: compli-me and contact-patch detail-page convergence sweep
+- `g05.003`: underlay-reference template completion and contract-hardening
+  sweep
 
 ## Batch Cards
 
@@ -34,6 +38,4 @@ If `g05` later enters strict execution posture, keep its cards under
 
 ## Next Task
 
-Execute `g05.001`: record the Dairy detail-page and tab-list caller inventory,
-classify direct migrations vs real shared-template gaps, and start with the
-highest-repeat family instead of scattered page rewrites.
+None. `g05` is complete.

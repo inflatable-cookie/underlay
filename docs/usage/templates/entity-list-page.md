@@ -81,6 +81,38 @@ Normal tab differences are small:
 
 Those are list modes, not a reason to switch to a different list template.
 
+## App wrapper policy
+
+When a consumer app implements a real browse/manage collection, the normal
+reference-grade posture is:
+
+- create an app-local wrapper in `src/lib/lists/*`
+- put the `EntityListPage` composition there
+- have the route thin-mount that wrapper
+- reuse the same wrapper in detail tabs when the collection semantics are the
+  same
+
+Typical wrapper jobs:
+
+- parent scope props
+- query mode choice
+- app-local add/delete/navigation wiring
+- card/table cell rendering
+- small workflow glue that still belongs to the collection surface
+
+Route-local `EntityListPage` composition should be treated as temporary or as
+an explicit exception, not as the normal long-term answer for reference apps.
+
+For card-mode lists, the normal reference posture is:
+
+- app-local `src/lib/cards/*` card over `EntityListCard`
+- app-local `src/lib/lists/*` wrapper over `EntityListPage`
+- thin route mount over that wrapper
+
+Do not leave repeated raw `ListCard` composition in the route or list wrapper
+when the surface is a normal admin collection. Promote that repeated card shell
+into `src/lib/cards/*` over `EntityListCard`.
+
 ## Props
 
 ### Page Shell
@@ -249,10 +281,9 @@ Reference implementation examples in `underlay-reference`:
   `underlay-reference/acme-admin/src/lib/lists/ProjectsListPage.svelte`
   and
   `underlay-reference/acme-admin/src/lib/lists/TasksListPage.svelte`
-- route-local list pages:
-  `underlay-reference/acme-admin/src/routes/(app)/media/+page.svelte`
-  `underlay-reference/acme-admin/src/routes/(app)/users/+page.svelte`
-  `underlay-reference/acme-admin/src/routes/(app)/system/jobs/+page.svelte`
+
+If a reference app still carries route-local list pages, treat those as
+remaining convergence work rather than as co-equal examples.
 
 ## See Also
 

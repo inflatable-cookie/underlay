@@ -85,9 +85,15 @@ export interface LoadedReorderConfig<TItem> {
   successMessage?: string;
 }
 
+export interface CustomReorderConfig<TItem> {
+  enabled: boolean;
+  strategy: "custom";
+}
+
 export type ReorderConfig<TItem = unknown> =
   | InlineReorderConfig
-  | LoadedReorderConfig<TItem>;
+  | LoadedReorderConfig<TItem>
+  | CustomReorderConfig<TItem>;
 
 export interface PagedListResult<TItem> {
   data: TItem[];
@@ -195,6 +201,7 @@ export interface EntityListSharedProps<TItem> {
   filters?: FilterConfig[];
   batchActions?: BatchActionConfig[];
   reorder?: ReorderConfig<TItem>;
+  customReorderContent?: TemplateSurface;
   onAdd?: () => void;
   addLabel?: string;
   onDataChange?: () => void;

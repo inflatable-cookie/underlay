@@ -3,6 +3,7 @@
     Icon,
     ListCard,
     ListCardCounter,
+    Menu,
     Pill,
   } from "@poodle/svelte";
   import type { EntityListCardModeDisplay, EntityListCardProps } from "./entity-list-card.types";
@@ -34,13 +35,14 @@
     leadingIcon = null,
     leadingImageUrl = null,
     leadingImageAlt = null,
-    leadingShape = "circle",
+    leadingShape = "rounded-square",
     leadingFill = "tint",
     badges: badgeItems = [],
     counters: counterItems = [],
     footerText = null,
     contextMenuItems = null,
     contextMenuAriaLabel = null,
+    contextMenuTrigger = "context",
     onClick = null,
     onSelectionChange = null,
     onContextAction = null,
@@ -74,6 +76,15 @@
   let resolvedHref = $derived(reorderMode ? null : href);
   let resolvedInteractive = $derived(reorderMode ? false : (interactive || Boolean(onClick)));
   let resolvedContextMenuItems = $derived(reorderMode ? [] : (contextMenuItems ?? []));
+  let showLeading = $derived(Boolean(leadingImageUrl || leadingIcon || leadingContent));
+  let useLeadingMenuTrigger = $derived(
+    contextMenuTrigger === "leading" &&
+      showLeading &&
+      resolvedContextMenuItems.length > 0
+  );
+  let listCardContextMenuItems = $derived(
+    useLeadingMenuTrigger ? [] : resolvedContextMenuItems
+  );
   let resolvedShowReorderHandle = $derived(reorderMode || showReorderHandle);
   let resolvedSubtitle = $derived(activeDisplay?.showSubtitle === false ? null : subtitle);
   let resolvedMeta = $derived(activeDisplay?.showMeta === false ? null : meta);
@@ -86,7 +97,6 @@
       resolvedCounterItems.length > 0 ||
       Boolean(resolvedFooterContent)
   );
-  let showLeading = $derived(Boolean(leadingImageUrl || leadingIcon || leadingContent));
 
   function handleContextAction(value: string): void {
     onContextAction?.(value);
@@ -100,6 +110,44 @@
     onClick?.(event.detail);
   }
 </script>
+
+{#snippet leadingVisual()}
+  {#if leadingContent}
+    {@render leadingContent()}
+  {:else if leadingImageUrl}
+    <img
+      class="underlay-entity-list-card__leading-image"
+      src={leadingImageUrl}
+      alt={leadingImageAlt ?? ""}
+      loading="lazy"
+    />
+  {:else if leadingIcon}
+    <Icon icon={leadingIcon} size="sm" />
+  {/if}
+{/snippet}
+
+{#snippet leadingSlot()}
+  {#if useLeadingMenuTrigger}
+    <Menu
+      items={resolvedContextMenuItems}
+      ariaLabel={contextMenuAriaLabel ?? `${title} actions`}
+      placement="bottom-start"
+      on:action={(event) => handleContextAction(event.detail.value)}
+    >
+      <button
+        slot="trigger"
+        type="button"
+        class="underlay-entity-list-card__leading-trigger"
+        aria-label={contextMenuAriaLabel ?? `${title} actions`}
+        onclick={(event) => event.stopPropagation()}
+      >
+        {@render leadingVisual()}
+      </button>
+    </Menu>
+  {:else}
+    {@render leadingVisual()}
+  {/if}
+{/snippet}
 
 {#if showLeading}
   {#if hasFooter}
@@ -124,25 +172,14 @@
       {ariaLabel}
       {leadingShape}
       {leadingFill}
-      contextMenuItems={resolvedContextMenuItems}
+      contextMenuItems={listCardContextMenuItems}
       {contextMenuAriaLabel}
       onContextAction={handleContextAction}
       on:selectedChange={handleSelectedChange}
       on:click={handleClick}
     >
       <svelte:fragment slot="leading">
-        {#if leadingContent}
-          {@render leadingContent()}
-        {:else if leadingImageUrl}
-          <img
-            class="underlay-entity-list-card__leading-image"
-            src={leadingImageUrl}
-            alt={leadingImageAlt ?? ""}
-            loading="lazy"
-          />
-        {:else if leadingIcon}
-          <Icon icon={leadingIcon} size="sm" />
-        {/if}
+        {@render leadingSlot()}
       </svelte:fragment>
 
       <svelte:fragment slot="badges">
@@ -203,25 +240,14 @@
       {ariaLabel}
       {leadingShape}
       {leadingFill}
-      contextMenuItems={resolvedContextMenuItems}
+      contextMenuItems={listCardContextMenuItems}
       {contextMenuAriaLabel}
       onContextAction={handleContextAction}
       on:selectedChange={handleSelectedChange}
       on:click={handleClick}
     >
       <svelte:fragment slot="leading">
-        {#if leadingContent}
-          {@render leadingContent()}
-        {:else if leadingImageUrl}
-          <img
-            class="underlay-entity-list-card__leading-image"
-            src={leadingImageUrl}
-            alt={leadingImageAlt ?? ""}
-            loading="lazy"
-          />
-        {:else if leadingIcon}
-          <Icon icon={leadingIcon} size="sm" />
-        {/if}
+        {@render leadingSlot()}
       </svelte:fragment>
 
       <svelte:fragment slot="badges">
@@ -263,7 +289,7 @@
     {ariaLabel}
     {leadingShape}
     {leadingFill}
-    contextMenuItems={resolvedContextMenuItems}
+    contextMenuItems={listCardContextMenuItems}
     {contextMenuAriaLabel}
     onContextAction={handleContextAction}
     on:selectedChange={handleSelectedChange}
@@ -327,7 +353,7 @@
     {ariaLabel}
     {leadingShape}
     {leadingFill}
-    contextMenuItems={resolvedContextMenuItems}
+    contextMenuItems={listCardContextMenuItems}
     {contextMenuAriaLabel}
     onContextAction={handleContextAction}
     on:selectedChange={handleSelectedChange}
@@ -357,6 +383,19 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
+  }
+
+  .underlay-entity-list-card__leading-trigger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    padding: 0;
   }
 
   .underlay-entity-list-card__footer-text {
