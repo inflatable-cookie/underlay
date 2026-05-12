@@ -46,7 +46,20 @@ import { EntityListPage, EntityDetailPage } from "@decodelabs/underlay/templates
 - **Level 2 — Sections:** `EntityList`, `EntityDetail`, `EntityForm` (reusable in tabs, dialogs)
 - **Level 3 — Primitives:** Poodle components (`PageHeader`, `DataTable`, `DetailSection`, etc.)
 
-### Developer Skill
+### Developer Skills
+
+Skills are installable via the `npx skills` CLI. After cloning the Underlay repo,
+install the build skill locally:
+
+```bash
+npx skills add ./underlay --skill underlay-build
+```
+
+Or install from the remote repository:
+
+```bash
+npx skills add inflatable-cookie/underlay --skill underlay-build
+```
 
 Use `/underlay-template` to look up template documentation:
 
@@ -55,6 +68,21 @@ Use `/underlay-template` to look up template documentation:
 /underlay-template detail    → entity-detail-page docs
 /underlay-template form      → entity-form-page docs
 /underlay-template overview  → template system overview
+```
+
+Use `/underlay-build` to stay on-contract when building or maintaining
+Underlay-based applications:
+
+```
+/underlay-build admin-list   → list page templates + guardrails
+/underlay-build admin-detail → detail page templates + guardrails
+/underlay-build admin-form   → form page templates + guardrails
+/underlay-build admin-api    → admin API shapes and query contracts
+/underlay-build bootstrap    → new project bootstrap workflow
+/underlay-build contract     → contract index by system area
+/underlay-build patterns     → pattern catalog
+/underlay-build check        → audit an app/page for contract compliance
+/underlay-build upgrade      → upgrade compatibility guidance
 ```
 
 ## Deprecated
