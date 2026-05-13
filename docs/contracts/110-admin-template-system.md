@@ -38,6 +38,7 @@ Primary:
 - [`ts/src/templates/MediaDetailWorkflowPage.svelte`](/Users/tom/Dev/projects/underlay/ts/src/templates/MediaDetailWorkflowPage.svelte)
 - [`ts/src/templates/SystemIndexPage.svelte`](/Users/tom/Dev/projects/underlay/ts/src/templates/SystemIndexPage.svelte)
 - [`ts/src/templates/AdminDashboardPage.svelte`](/Users/tom/Dev/projects/underlay/ts/src/templates/AdminDashboardPage.svelte)
+- [`ts/src/templates/ErrorLogListPage.svelte`](/Users/tom/Dev/projects/underlay/ts/src/templates/ErrorLogListPage.svelte)
 
 Primary docs:
 
@@ -92,6 +93,7 @@ Levels:
   - `MediaDetailWorkflowPage`
   - `SystemIndexPage`
   - `AdminDashboardPage`
+  - `ErrorLogListPage`
 - Level 2: reusable sections
   - `EntityList`
   - `EntityDetail`

@@ -79,9 +79,9 @@ Use this precedence (lowest to highest):
 - `uat.toml`
 - `production.toml`
 
-Use `UNDERLAY_ENV` to select the named overlay at runtime. Deployed services
-should set `UNDERLAY_ENV` to the same name used by `[deploy.<environment>]`.
-Local development should normally use `UNDERLAY_ENV=dev`.
+Use `ENVIRONMENT_NAME` to select the named overlay at runtime. It defaults to
+`dev` when unset. Deployed services should set `ENVIRONMENT_NAME` to the
+matching deploy environment name, such as `uat` or `production`.
 
 `local.toml` is not an environment. It is a developer-local last-mile override
 for non-secret values that should not be shared.

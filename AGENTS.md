@@ -16,6 +16,15 @@
 - Treat `docs/architecture/product-guardrails.md`,
   `docs/contracts/001-working-rules.md`, and `docs/specs/` as the strict
   control pack for the active lane.
+- Treat the current consumer-app sweep family as:
+  - `underlay-reference/acme-admin`
+  - `contact-patch/cp-admin`
+  - `compli-me/admin`
+  - `acowtancy/dairy`
+  - `songsprout/greenhouse`
+  - `loophole/composer/composer-admin`
+  - Check those six first when shared admin surfaces or retained template
+    behavior change.
 
 ## Effigy-First Execution
 

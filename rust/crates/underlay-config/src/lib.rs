@@ -11,7 +11,8 @@ use serde::de::DeserializeOwned;
 use toml::Value;
 
 pub const DEFAULT_CONFIG_DIR: &str = "config";
-pub const DEFAULT_ENV_VAR: &str = "UNDERLAY_ENV";
+pub const DEFAULT_ENVIRONMENT: &str = "dev";
+pub const DEFAULT_ENV_VAR: &str = "ENVIRONMENT_NAME";
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct ConfigStack {
@@ -25,7 +26,7 @@ impl ConfigStack {
     pub fn new(config_dir: impl Into<PathBuf>) -> Self {
         Self {
             config_dir: config_dir.into(),
-            environment: None,
+            environment: Some(DEFAULT_ENVIRONMENT.to_owned()),
             local_overlay: None,
             env_overrides: Vec::new(),
         }
@@ -46,10 +47,13 @@ impl ConfigStack {
     }
 
     pub fn with_environment_from_env(mut self) -> Self {
-        self.environment = env::var(DEFAULT_ENV_VAR)
-            .ok()
-            .map(|value| value.trim().to_owned())
-            .filter(|value| !value.is_empty());
+        self.environment = Some(
+            env::var(DEFAULT_ENV_VAR)
+                .ok()
+                .map(|value| value.trim().to_owned())
+                .filter(|value| !value.is_empty())
+                .unwrap_or_else(|| DEFAULT_ENVIRONMENT.to_owned()),
+        );
         self
     }
 
@@ -270,6 +274,36 @@ port = 4000
                 },
             }
         );
+    }
+
+    #[test]
+    fn defaults_to_dev_environment_overlay() {
+        let dir = temp_config_dir("default-dev");
+        fs::create_dir_all(&dir).expect("create config dir");
+        fs::write(
+            dir.join("default.toml"),
+            r#"
+[server]
+host = "127.0.0.1"
+port = 3000
+
+[auth]
+issuer = "default"
+"#,
+        )
+        .expect("write default");
+        fs::write(
+            dir.join("dev.toml"),
+            r#"
+[auth]
+issuer = "dev"
+"#,
+        )
+        .expect("write dev");
+
+        let config: AppConfig = ConfigStack::new(&dir).load().expect("load config");
+
+        assert_eq!(config.auth.issuer, "dev");
     }
 
     #[test]

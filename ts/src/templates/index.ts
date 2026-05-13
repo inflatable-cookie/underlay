@@ -19,6 +19,7 @@ export { default as MediaUploadPage } from "./MediaUploadPage.svelte";
 export { default as MediaDetailWorkflowPage } from "./MediaDetailWorkflowPage.svelte";
 export { default as SystemIndexPage } from "./SystemIndexPage.svelte";
 export { default as AdminDashboardPage } from "./AdminDashboardPage.svelte";
+export { default as ErrorLogListPage } from "./ErrorLogListPage.svelte";
 
 // Level 2 — Sections
 export { default as EntityList } from "./EntityList.svelte";
@@ -49,6 +50,13 @@ export type {
   DetailItemConfig,
   DetailMetaItemConfig,
   DetailTabConfig,
+  ErrorLogDetailItem,
+  ErrorLogDetailLoader,
+  ErrorLogListItem,
+  ErrorLogListLoader,
+  ErrorLogListRequest,
+  ErrorLogStatsLoader,
+  ErrorLogStatsSummary,
   EntityListDataLoader,
   EntityListSharedProps,
   FilterConfig,

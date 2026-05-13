@@ -164,6 +164,50 @@ export interface SystemIndexCardConfig {
   icon?: TemplateSurface;
 }
 
+export interface ErrorLogListRequest {
+  statusCode?: number;
+  limit: number;
+  offset: number;
+}
+
+export interface ErrorLogListItem {
+  id: string;
+  occurredAt: string;
+  statusCode: number;
+  method: string;
+  endpoint: string;
+  errorCode: string;
+  message: string | null;
+}
+
+export interface ErrorLogDetailItem extends ErrorLogListItem {
+  correlationId: string;
+  context?: unknown;
+}
+
+export interface ErrorLogStatsSummary {
+  totalLast24h: number;
+  serverErrorsLast24h: number;
+  clientErrorsLast24h: number;
+}
+
+export type ErrorLogListLoader = (
+  fetch: FetchFn,
+  token: string,
+  request: ErrorLogListRequest
+) => Promise<PagedListResult<ErrorLogListItem>>;
+
+export type ErrorLogDetailLoader = (
+  id: string,
+  fetch: FetchFn,
+  token: string
+) => Promise<ErrorLogDetailItem>;
+
+export type ErrorLogStatsLoader = (
+  fetch: FetchFn,
+  token: string
+) => Promise<ErrorLogStatsSummary | null>;
+
 export interface AdminDashboardSectionConfig {
   id: string;
   title?: string;

@@ -28,6 +28,7 @@ Full page components that include header, actions, and content:
 - `MediaDetailWorkflowPage` — Media detail workflow shell with header, metadata, tabs, and load/error framing
 - `SystemIndexPage` — System/operator index shell with header and nav-card grid
 - `AdminDashboardPage` — Admin dashboard shell with header and stacked dashboard sections
+- `ErrorLogListPage` — Retained error-log browse shell with status filter, compact table, stats cards, and expandable detail rows
 
 Reference posture:
 
@@ -86,6 +87,7 @@ Poodle owns the primitive layer:
   import {
     EntityDetail,
     EntityDetailPage,
+    ErrorLogListPage,
     EntityList,
     EntityListPage,
     EntityTrashPage

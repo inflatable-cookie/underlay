@@ -44,6 +44,10 @@ Complete API reference for all template components.
 
 [See admin-dashboard-page.md](./admin-dashboard-page.md)
 
+## ErrorLogListPage
+
+[See error-log-list-page.md](./error-log-list-page.md)
+
 ## Types
 
 These types are exported from `@decodelabs/underlay/templates`.

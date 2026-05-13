@@ -132,8 +132,8 @@ Rules:
   `uat`, and `production`
 - `local.toml` is not an environment; it is a gitignored personal non-secret
   patch
-- runtime selection should use `UNDERLAY_ENV`, and deployed services should set
-  it to the matching `[deploy.<environment>]` name
+- runtime selection should use `ENVIRONMENT_NAME`, defaulting to `dev` when
+  unset; deployed services should set it to the matching environment name
 - fail fast on invalid config
 - log effective config in redacted form where useful
 - reject or warn on unknown app env keys
