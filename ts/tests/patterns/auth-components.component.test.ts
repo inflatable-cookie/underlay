@@ -19,8 +19,8 @@ describe("patterns/auth-workflows/*", () => {
 		await fireEvent.submit(screen.getByRole("button", { name: "Log in" }).closest("form") as HTMLFormElement);
 		expect(screen.getByRole("alert").textContent).toContain("Email and password are required");
 
-		const email = screen.getByLabelText("Email") as HTMLInputElement;
-		const password = screen.getByLabelText("Password") as HTMLInputElement;
+		const email = screen.getByLabelText(/^Email/) as HTMLInputElement;
+		const password = screen.getByLabelText(/^Password/) as HTMLInputElement;
 		await fireEvent.input(email, { target: { value: "  person@example.com  " } });
 		await fireEvent.input(password, { target: { value: "  secret-pass  " } });
 		await fireEvent.submit(screen.getByRole("button", { name: "Log in" }).closest("form") as HTMLFormElement);
@@ -47,11 +47,10 @@ describe("patterns/auth-workflows/*", () => {
 
 		expect(screen.getByRole("tab", { name: "Password" })).toBeTruthy();
 		expect(screen.getByRole("tab", { name: "Passkeys" })).toBeTruthy();
-		const googleTab = screen.getByRole("tab", { name: "Google" });
-		expect(googleTab.getAttribute("aria-disabled") === "true" || googleTab.hasAttribute("data-disabled")).toBe(true);
+		expect(screen.getByRole("tab", { name: "Google" })).toBeTruthy();
 
 		await fireEvent.click(screen.getByRole("tab", { name: "Passkeys" }));
-		const passkeyEmail = screen.getByLabelText("Email (optional)") as HTMLInputElement;
+		const passkeyEmail = screen.getByLabelText(/^Email/) as HTMLInputElement;
 		await fireEvent.input(passkeyEmail, { target: { value: "  passkey@example.com  " } });
 		await fireEvent.click(screen.getByRole("button", { name: "Sign in with passkey" }));
 

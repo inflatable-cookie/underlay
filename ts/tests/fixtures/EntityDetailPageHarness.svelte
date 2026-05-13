@@ -20,6 +20,10 @@
   ] as const;
 </script>
 
+{#snippet overviewTab()}
+  <div>Status</div>
+{/snippet}
+
 {#snippet relatedTab()}
   <div data-testid="related-tab-content">Related content</div>
 {/snippet}
@@ -29,6 +33,11 @@
   {dataLoader}
   detailSections={detailSections}
   tabs={[
+    {
+      id: "overview",
+      label: "Overview",
+      content: overviewTab
+    },
     {
       id: "related",
       label: "Related",

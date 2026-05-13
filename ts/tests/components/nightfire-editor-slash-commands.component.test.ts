@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen, waitFor } from "@testing-library/svelte";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/svelte";
 
 class FakeEasyMDE {
   element: HTMLTextAreaElement;
@@ -96,7 +96,7 @@ describe("nightfire/NightfireEditor slash commands", () => {
     const dialog = await screen.findByRole("dialog", { name: "Slash commands" });
     expect(dialog).toBeTruthy();
 
-    await fireEvent.click(screen.getByRole("option", { name: /media/i }));
+    await fireEvent.click(within(dialog).getByRole("option", { name: /media/i }));
 
     await waitFor(() => {
       const payload = JSON.parse(screen.getByTestId("nightfire-value").textContent ?? "{}");

@@ -14,6 +14,26 @@ pub const DEFAULT_CONFIG_DIR: &str = "config";
 pub const DEFAULT_ENVIRONMENT: &str = "dev";
 pub const DEFAULT_ENV_VAR: &str = "ENVIRONMENT_NAME";
 
+pub fn discover_config_dir(config_dir_env_var: Option<&str>) -> PathBuf {
+    if let Some(env_var) = config_dir_env_var {
+        if let Ok(path) = env::var(env_var) {
+            let path = path.trim();
+            if !path.is_empty() {
+                return PathBuf::from(path);
+            }
+        }
+    }
+
+    for candidate in [DEFAULT_CONFIG_DIR, "../config"] {
+        let path = PathBuf::from(candidate);
+        if path.join("default.toml").is_file() {
+            return path;
+        }
+    }
+
+    PathBuf::from(DEFAULT_CONFIG_DIR)
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct ConfigStack {
     config_dir: PathBuf,
@@ -77,6 +97,14 @@ impl ConfigStack {
         T: DeserializeOwned,
     {
         let value = self.load_value()?;
+        value.try_into().map_err(ConfigError::Decode)
+    }
+
+    pub fn load_namespaced_or_legacy<T>(&self, namespace: &str) -> Result<T, ConfigError>
+    where
+        T: DeserializeOwned,
+    {
+        let value = select_namespaced_or_legacy(self.load_value()?, namespace);
         value.try_into().map_err(ConfigError::Decode)
     }
 
@@ -167,6 +195,20 @@ fn merge_values(base: &mut Value, overlay: Value) {
             *base = overlay;
         }
     }
+}
+
+fn select_namespaced_or_legacy(value: Value, namespace: &str) -> Value {
+    let Value::Table(mut root) = value else {
+        return value;
+    };
+
+    let namespaced = root.remove(namespace);
+    let mut selected = Value::Table(root);
+    if let Some(namespaced) = namespaced {
+        merge_values(&mut selected, namespaced);
+    }
+
+    selected
 }
 
 fn set_dotted_value(root: &mut Value, dotted_key: &str, value: Value) -> Result<(), ConfigError> {
@@ -330,6 +372,67 @@ issuer = "default"
 
         assert_eq!(config.server.port, 3000);
         assert_eq!(config.auth.issuer, "default");
+    }
+
+    #[test]
+    fn namespaced_config_overrides_legacy_root_values() {
+        let dir = temp_config_dir("namespaced");
+        fs::create_dir_all(&dir).expect("create config dir");
+        fs::write(
+            dir.join("default.toml"),
+            r#"
+[server]
+host = "127.0.0.1"
+port = 3000
+
+[auth]
+issuer = "legacy"
+
+[my_app.server]
+host = "0.0.0.0"
+
+[my_app.auth]
+issuer = "namespaced"
+audience = "clients"
+"#,
+        )
+        .expect("write default");
+
+        let config: AppConfig = ConfigStack::new(&dir)
+            .load_namespaced_or_legacy("my_app")
+            .expect("load config");
+
+        assert_eq!(
+            config,
+            AppConfig {
+                server: ServerConfig {
+                    host: "0.0.0.0".to_owned(),
+                    port: 3000,
+                },
+                auth: AuthConfig {
+                    issuer: "namespaced".to_owned(),
+                    audience: Some("clients".to_owned()),
+                },
+            }
+        );
+    }
+
+    #[test]
+    fn discovers_parent_config_dir_when_local_dir_missing() {
+        let root = temp_config_dir("discover");
+        let app = root.join("app");
+        let config = root.join("config");
+        fs::create_dir_all(&app).expect("create app dir");
+        fs::create_dir_all(&config).expect("create config dir");
+        fs::write(config.join("default.toml"), "[server]\nhost='127.0.0.1'\n")
+            .expect("write default");
+
+        let previous_dir = env::current_dir().expect("current dir");
+        env::set_current_dir(&app).expect("enter app dir");
+        let discovered = discover_config_dir(None);
+        env::set_current_dir(previous_dir).expect("restore dir");
+
+        assert_eq!(discovered, PathBuf::from("../config"));
     }
 
     fn temp_config_dir(name: &str) -> PathBuf {
