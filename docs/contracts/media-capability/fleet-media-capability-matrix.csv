@@ -1,0 +1,7 @@
+app_family,admin_app,api_app,current_status,target_status,media_root,media_upload,media_detail,media_trash,api_media_family,notes
+underlay-reference,acme-admin,acme-api,full,full,yes,yes,yes,yes,yes,"reference implementation"
+acowtancy,dairy,farmyard,full,full,yes,yes,yes,yes,yes,"route param uses /media/[id]"
+compli-me,admin,api,full,full,yes,yes,yes,yes,yes,"rolled out in g05.020"
+contact-patch,cp-admin,cp-api,full,full,yes,yes,yes,yes,yes,"full shared shell posture present"
+songsprout,greenhouse,nursery,full,full,yes,yes,yes,yes,yes,"rolled out in g05.020"
+loophole/composer,composer-admin,composer-api,full,full,yes,yes,yes,yes,yes,"full shared shell posture present"

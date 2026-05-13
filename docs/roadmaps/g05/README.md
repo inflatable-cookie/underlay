@@ -31,17 +31,26 @@ deserved shared ownership:
 - repeated admin dashboard shells
 - repeated media upload and detail shells inside that family
 
-The current generation problem is the Rust/runtime contract layer that still
-needs to be made explicit before the six APIs can converge on one declared app
-server posture:
+The current generation problem is now the broader Underlay dev-flow contract
+layer that sits above the shared runtime and template work:
 
-- app-runtime assembly and router topology
-- route-family and access-model rules
-- front/shared read API shapes beyond the admin template system
+- new app bootstrap and bring-up
+- migration and schema workflow
+- testing posture
+- template adoption rules
+- release and compatibility rollout
+- the remaining supporting delivery contracts around config, OpenAPI quality,
+  audit posture, and app review
+
+Another explicit `g05` lane is now reopened:
+
+- fleet media-library capability policy across all six consumer apps
+- rollout of the missing media family in `songsprout` and `compli-me`, now
+  complete
 
 ## Active Lane
 
-- `g05.009`: Rust runtime contract audit and next contract set
+- no active `g05` lane is promoted right now
 
 ## Completed Work
 
@@ -54,10 +63,33 @@ server posture:
 - `g05.006`: admin dashboard page template proof
 - `g05.007`: media upload page proof, absorbed into `g05.004`
 - `g05.008`: media detail workflow page proof, absorbed into `g05.004`
+- `g05.009`: Rust runtime contract audit and next contract set
+- `g05.010`: new Underlay app bootstrap and bring-up contract
+- `g05.011`: migration and schema workflow contract
+- `g05.012`: testing posture and shared harness contract
+- `g05.013`: consumer template adoption contract
+- `g05.014`: release and compatibility rollout contract
+- `g05.015`: config and secrets contract
+- `g05.016`: OpenAPI quality and declaration contract
+- `g05.017`: error-code and operator-audit contract
+- `g05.018`: Underlay app review checklist and audit artifact
+- `g05.019`: fleet media library capability mandate
+- `g05.020`: compli-me and songsprout media family rollout
 
 ## Current Queue
 
-- `g05.009` is active as the Rust runtime contract audit and next contract set
+- `g05.020` is complete as the compli-me and songsprout media family rollout
+- `g05.019` is complete as the fleet media library capability mandate
+- `g05.018` is complete as the Underlay app review checklist and audit artifact
+- `g05.017` is complete as the error-code and operator-audit contract
+- `g05.016` is complete as the OpenAPI quality and declaration contract
+- `g05.015` is complete as the config and secrets contract
+- `g05.014` is complete as the release and compatibility rollout contract
+- `g05.013` is complete as the consumer template adoption contract
+- `g05.012` is complete as the testing posture and shared harness contract
+- `g05.011` is complete as the migration and schema workflow contract
+- `g05.010` is complete as the new Underlay app bootstrap and bring-up contract
+- `g05.009` is complete as the Rust runtime contract audit and next contract set
 - `g05.008` is complete as the media detail workflow page proof, absorbed into
   `g05.004`
 - `g05.007` is complete as the media upload page proof, absorbed into
@@ -79,4 +111,6 @@ If `g05` later enters strict execution posture, keep its cards under
 
 ## Next Task
 
-Start the six-site API normalization sweep against the runtime contract set.
+No `g05` lane is promoted right now. Keep the generation active and only
+promote the next card when the next shared-surface or fleet-normalization lane
+is chosen explicitly.

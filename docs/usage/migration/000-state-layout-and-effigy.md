@@ -33,10 +33,12 @@ Effigy owns:
 
 - manifest parsing and runtime orchestration
 - state stack planning and application
-- artifact staging, OCI refs, and digest policy
+- artifact staging, local file/directory capture, OCI refs, and digest policy
 - capture profile execution
 - deploy plan/apply/status/history reports
 - invoking app-owned hooks at declared seams
+- declared secret injection into state, artifact, deploy, task, and container
+  seams without learning app-domain meaning
 
 Apps own:
 
@@ -47,6 +49,7 @@ Apps own:
 - manual review queues
 - conflict and reconciliation decisions
 - environment-specific operator runbooks
+- classification of app-specific config versus true secrets
 
 ## Vocabulary
 
@@ -127,6 +130,11 @@ it is safe and useful; ignore generated bundles and raw local snapshots.
 Use Effigy config to select and run state stacks. Keep app semantics inside
 app-owned tasks.
 
+Declare state/deploy credentials in the same root Effigy config as the state
+stack. Do not hide object-store or provider credentials in ad hoc shell setup.
+Non-secret values such as bucket names, endpoints, URL bases, regions, and
+prefixes remain config.
+
 Example shape:
 
 ```toml
@@ -164,6 +172,34 @@ task = "state:capture:new-content"
 
 The task names are app-owned seams. Effigy should not know what records are
 captured or how legacy rows map into target tables.
+
+## Artifact Payload Policy
+
+Use Effigy artifact capture for both file payloads and directory payloads.
+
+File payloads are appropriate for SQL dumps, JSON captures, and generated bundle
+archives:
+
+```sh
+effigy artifact capture state/legacy/dist/oci/content.oci \
+  --ref oci://registry.example.com/example/content:<snapshot> \
+  --kind app-specific --push
+```
+
+Directory payloads are appropriate for media and object-store handoffs where
+relative paths matter:
+
+```sh
+effigy artifact capture state/legacy/dist/media-replay/<snapshot>/ \
+  --ref oci://registry.example.com/example/media:<snapshot> \
+  --kind object-store --push
+```
+
+Directory capture preserves paths below the captured directory. Apps may still
+write app-specific manifests or integrity reports into that directory before
+capture. Do not add app-local tar wrappers just to make a directory captureable.
+Use an app task only for app-owned staging semantics, such as selecting media
+from a legacy library or writing domain-specific integrity evidence.
 
 ## Deployment Relationship
 

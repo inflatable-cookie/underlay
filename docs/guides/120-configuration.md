@@ -2,7 +2,10 @@
 
 This document defines the canonical configuration model for Underlay applications.
 
-Primary rule: keep `.env` for secrets and true environment-dependent runtime values, and keep stable app behavior settings in typed Rust config structures committed with code.
+Primary rule: keep stable app behavior settings in typed Rust config structures
+committed with code. Keep true secrets in a declared secret manager. For
+Effigy-managed Underlay apps, the local default is the Effigy `[secrets]` vault,
+not loose `.env` files.
 
 Rollout/enforcement assets for consumers are in `docs/guides/121-consumer-config-rollout-kit.md`.
 
@@ -12,11 +15,21 @@ Classify every setting before adding it:
 
 | Class | Where it belongs | Examples |
 |---|---|---|
-| `secret` | Environment / secret manager only | API keys, JWT private keys, SMTP passwords |
+| `secret` | Secret manager only; Effigy `[secrets]` vault for local Effigy-managed apps | API keys, JWT private keys, SMTP passwords |
 | `runtime-env` | Environment (deployment specific) | `DATABASE_URL`, `HOST`, `PORT`, public base URLs |
 | `app-behavior` | Typed Rust config + committed defaults | pagination limits, retries, feature knobs, timeout defaults |
 
 If a value is not secret and does not need to vary per environment, it should not live in `.env`.
+
+For local Effigy-managed apps, split values further:
+
+- true secrets are declared under root `[secrets.keys]` and stored with
+  `effigy secrets`
+- local ports, hostnames, service names, bucket names, regions, and public URLs
+  should come from bundle defaults, typed config, `config/local.toml`, or
+  generated `.effigy/runtime/` files
+- `.env` may remain as a compatibility bridge while an app still reads env
+  directly, but it should not be the long-term source of truth for true secrets
 
 ## Canonical Load Order
 

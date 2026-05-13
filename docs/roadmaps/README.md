@@ -55,7 +55,18 @@ README surfaces.
 
 ## Current Queue
 
-- `g05.009` is active as the Rust runtime contract audit and next contract set
+- `g05.020` is complete as the compli-me and songsprout media family rollout
+- `g05.019` is complete as the fleet media library capability mandate
+- `g05.018` is complete as the Underlay app review checklist and audit artifact
+- `g05.017` is complete as the error-code and operator-audit contract
+- `g05.016` is complete as the OpenAPI quality and declaration contract
+- `g05.015` is complete as the config and secrets contract
+- `g05.014` is complete as the release and compatibility rollout contract
+- `g05.013` is complete as the consumer template adoption contract
+- `g05.012` is complete as the testing posture and shared harness contract
+- `g05.011` is complete as the migration and schema workflow contract
+- `g05.010` is complete as the new Underlay app bootstrap and bring-up contract
+- `g05.009` is complete as the Rust runtime contract audit and next contract set
 - `g05.006` is complete as the admin dashboard page template proof
 - `g05.005` is complete as the system index page template proof
 - `g05.004` is complete as the cross-app media-library template consolidation
@@ -78,7 +89,7 @@ README surfaces.
 ## Historical Generations
 
 - [g05/README.md](g05/README.md) — active shared-page and workflow-template
-  generation
+  and dev-flow contract generation
 - [g02/README.md](g02/README.md) — Poodle-era consumer normalization and
   overhaul (complete)
 - [g01/README.md](g01/README.md) — Extraction, contraction, and retained-surface
@@ -150,8 +161,8 @@ README surfaces.
 
 ## Next Task
 
-Execute `g05.009`: write the next Rust/runtime contract set before starting the
-cross-app API normalization sweep.
+No `g05` card is promoted right now. Keep fresh shared-surface or
+fleet-normalization work inside `g05` until a new lane is chosen explicitly.
 - `g01.090` is complete for confirming that the remaining public `@decodelabs/underlay/patterns` surface is the true retained workflow stop point rather than unresolved migration debt
 - `g01.091` is complete for confirming the retained `client` package boundary, exposing explicit `client/*` public subpaths for the live feature families, and keeping the root barrel stable as a convenience surface
 - `g01.092` is complete for confirming the retained `nightfire` package boundary, exposing explicit `nightfire/*` public subpaths for the live extension families, and keeping the root barrel stable as a convenience surface

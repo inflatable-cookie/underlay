@@ -1,0 +1,105 @@
+{
+  "version": 1,
+  "artifact": "underlay-app-review-checklist",
+  "allowed_classifications": [
+    "compliant",
+    "drift",
+    "exception",
+    "not_applicable"
+  ],
+  "allowed_severities": [
+    "none",
+    "low",
+    "medium",
+    "high"
+  ],
+  "domains": [
+    {
+      "id": "bootstrap",
+      "label": "Bootstrap and docs authority",
+      "required": true,
+      "contracts": [
+        "024"
+      ]
+    },
+    {
+      "id": "migration_workflow",
+      "label": "Migration and schema workflow",
+      "required": true,
+      "contracts": [
+        "021"
+      ]
+    },
+    {
+      "id": "testing",
+      "label": "Testing posture and shared harnesses",
+      "required": true,
+      "contracts": [
+        "022",
+        "120"
+      ]
+    },
+    {
+      "id": "runtime_assembly",
+      "label": "Rust runtime assembly and router topology",
+      "required": true,
+      "contracts": [
+        "025",
+        "026"
+      ]
+    },
+    {
+      "id": "runtime_maturity",
+      "label": "Runtime surface and OpenAPI maturity",
+      "required": true,
+      "contracts": [
+        "028",
+        "032"
+      ]
+    },
+    {
+      "id": "config_secrets",
+      "label": "Config and secrets posture",
+      "required": true,
+      "contracts": [
+        "031"
+      ]
+    },
+    {
+      "id": "operator_evidence",
+      "label": "Error-code and operator-audit posture",
+      "required": true,
+      "contracts": [
+        "033",
+        "060"
+      ]
+    },
+    {
+      "id": "template_adoption",
+      "label": "Admin template adoption",
+      "required": false,
+      "contracts": [
+        "110",
+        "111"
+      ]
+    },
+    {
+      "id": "shared_shells",
+      "label": "Retained shared shell adoption",
+      "required": false,
+      "contracts": [
+        "110",
+        "111"
+      ]
+    },
+    {
+      "id": "rollout_posture",
+      "label": "Release and compatibility rollout posture",
+      "required": false,
+      "contracts": [
+        "023",
+        "027"
+      ]
+    }
+  ]
+}
