@@ -41,6 +41,14 @@ Reference consumer evidence:
 
 If these diverge, the contract plus the clearest modern posture win.
 
+Promoted implementation reference:
+
+- `acowtancy/farmyard`
+
+For runtime assembly and local bring-up, Acowtancy is the promoted
+implementation. Other consumers should converge on its config posture unless a
+documented exception is promoted here first.
+
 ## Contract Goal
 
 Underlay should make app config boring.
@@ -139,6 +147,83 @@ Rules:
 - log effective config in redacted form where useful
 - reject or warn on unknown app env keys
 - env override should be explicit and allowlisted, not open-ended
+
+### Runtime and browser-surface rule
+
+Normal Underlay API apps must keep local HTTP runtime and browser auth surface
+settings in typed config, not ad hoc `.env` files.
+
+Required typed sections:
+
+- `[<app>.runtime]`
+- `[<app>.cors]`
+- `[public_api]`
+- `[<app>.auth]`
+- `[<app>.email]`
+- `[<app>.database]`
+
+Rules:
+
+- `[<app>.runtime]` owns local bind host, bind port, and public API hostname
+- `[<app>.cors]` owns allowed origins, cookie domain, and cookie secure posture
+- `[public_api]` owns browser-visible API/front/admin base URLs
+- local WebAuthn RP values belong in typed auth config, not runtime env
+- local email app URL belongs in typed email config, not runtime env
+- the API bootstrap must read cookie/domain/port/host values from the loaded
+  typed config, with env only as an explicit allowlisted override path
+- Effigy bundles must not rely on generating repo `.env` files for normal
+  Underlay app bring-up
+
+Promoted local shape:
+
+```toml
+[public_api]
+base_url = "https://api.example.test"
+front_url = "https://example.test"
+admin_url = "https://admin.example.test"
+
+[app.runtime]
+host = "127.0.0.1"
+port = 3000
+public_host = "localhost"
+
+[app.cors]
+allowed_origins = []
+cookie_secure = false
+
+[app.database]
+# url is optional in committed defaults
+
+[app.email]
+app_url = "https://example.test"
+
+[app.auth]
+webauthn_rp_id = "localhost"
+webauthn_rp_origin = "http://localhost:4174"
+webauthn_rp_name = "Example"
+```
+
+Promoted local override shape:
+
+```toml
+[app.runtime]
+host = "0.0.0.0"
+port = 41001
+public_host = "api.example.test"
+
+[app.cors]
+allowed_origins = ["https://example.test", "https://admin.example.test"]
+cookie_domain = ".example.test"
+cookie_secure = true
+
+[app.email]
+app_url = "https://admin.example.test"
+
+[app.auth]
+webauthn_rp_id = "admin.example.test"
+webauthn_rp_origin = "https://admin.example.test"
+webauthn_rp_name = "Example"
+```
 
 ### Bootstrap boundary rule
 
