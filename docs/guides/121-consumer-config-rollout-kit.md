@@ -19,8 +19,11 @@ Use this kit for Phase 20.4 style migrations in any Underlay-consuming app.
 
 ### Typed Config Migration
 - [ ] Add typed behavior defaults in `config/default.toml`
+- [ ] Add named shared overlays as needed: `config/dev.toml`, `config/uat.toml`, `config/production.toml`
+- [ ] Keep `config/local.toml` as a gitignored personal override only
 - [ ] Wire bootstrap to typed config for `app-behavior` keys
 - [ ] Keep only `secret` + `runtime-env` in env bootstrap
+- [ ] Declare true secrets under root `[secrets.keys]` with Effigy targets
 
 ### Compatibility Window
 - [ ] Legacy keys are ignored for behavior selection
@@ -36,14 +39,17 @@ Use this kit for Phase 20.4 style migrations in any Underlay-consuming app.
 ## 2. Cutover Checklist
 
 1. Add typed defaults in `config/default.toml` for all migrated behavior keys.
-2. Update bootstrap to read behavior from typed config first and keep env only for secrets/runtime.
-3. Keep explicit legacy-key warnings during transition (no behavior fallback).
-4. Remove migrated behavior keys from `.env.example`.
-5. Run targeted checks:
+2. Add named overlays for shared environment drift: `config/dev.toml`, `config/uat.toml`, `config/production.toml`.
+3. Leave `config/local.toml` gitignored and optional for personal non-secret patches only.
+4. Update bootstrap to read behavior from typed config first and keep env only for secrets/runtime.
+5. Declare true secrets in root `effigy.toml` under `[secrets.keys]`.
+6. Keep explicit legacy-key warnings during transition (no behavior fallback).
+7. Remove migrated behavior keys from `.env.example`.
+8. Run targeted checks:
    - `cargo test -p <infra-crate> --all-features`
    - `cargo check -p <api-crate> --all-features`
    - `cargo check -p <auth-or-jobs-crate> --all-features`
-6. Update roadmap/report artifacts with exact key mapping and evidence pointers.
+9. Update roadmap/report artifacts with exact key mapping and evidence pointers.
 
 ## 3. Deprecation Removal Schedule Guidance
 

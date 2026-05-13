@@ -122,11 +122,18 @@ Canonical precedence is lowest to highest:
 
 1. typed defaults
 2. committed default config file
-3. optional local config override
-4. allowlisted env overrides
+3. named environment config file
+4. optional local config override
+5. allowlisted env overrides
 
 Rules:
 
+- named environment overlays should use deploy-aligned names such as `dev`,
+  `uat`, and `production`
+- `local.toml` is not an environment; it is a gitignored personal non-secret
+  patch
+- runtime selection should use `UNDERLAY_ENV`, and deployed services should set
+  it to the matching `[deploy.<environment>]` name
 - fail fast on invalid config
 - log effective config in redacted form where useful
 - reject or warn on unknown app env keys
@@ -184,7 +191,8 @@ Rules:
   secret authority
 - non-secret local values such as ports, hostnames, service names, database
   names, object-store bucket names, regions, and public URL bases should come
-  from typed config, bundle defaults, local config, or generated runtime config
+  from typed config, bundle defaults, `config/dev.toml`, optional
+  `config/local.toml`, or generated runtime config
 - true secrets should be declared with explicit Effigy targets such as
   `tasks`, `containers`, `state`, `artifacts`, and `deploy`
 - required sibling mounts and local setup expectations belong in bootstrap docs,

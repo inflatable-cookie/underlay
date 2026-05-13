@@ -3,9 +3,9 @@
 This document defines the canonical configuration model for Underlay applications.
 
 Primary rule: keep stable app behavior settings in typed Rust config structures
-committed with code. Keep true secrets in a declared secret manager. For
-Effigy-managed Underlay apps, the local default is the Effigy `[secrets]` vault,
-not loose `.env` files.
+backed by committed `config/*.toml` files. Keep true secrets in a declared
+secret manager. For Effigy-managed Underlay apps, the local default is the
+Effigy `[secrets]` vault, not loose `.env` files.
 
 Rollout/enforcement assets for consumers are in `docs/guides/121-consumer-config-rollout-kit.md`.
 
@@ -26,10 +26,42 @@ For local Effigy-managed apps, split values further:
 - true secrets are declared under root `[secrets.keys]` and stored with
   `effigy secrets`
 - local ports, hostnames, service names, bucket names, regions, and public URLs
-  should come from bundle defaults, typed config, `config/local.toml`, or
-  generated `.effigy/runtime/` files
+  should come from bundle defaults, typed config, `config/dev.toml`, optional
+  `config/local.toml`, or generated `.effigy/runtime/` files
 - `.env` may remain as a compatibility bridge while an app still reads env
   directly, but it should not be the long-term source of truth for true secrets
+
+Recommended Effigy vault declaration:
+
+```toml
+[secrets]
+backend = "effigy-vault"
+
+[secrets.vault]
+path = ".effigy/secrets/local.vault"
+identity = "passphrase"
+unlock = "passphrase"
+
+[secrets.keys.database_url]
+required = false
+targets = ["tasks", "containers"]
+description = "Application database connection URL."
+```
+
+Target meanings:
+
+| Target | Use |
+|---|---|
+| `tasks` | Host task process env injection |
+| `containers` | Compose/runtime process env injection |
+| `state` | State apply/capture hook injection |
+| `artifacts` | Artifact workflow injection |
+| `deploy` | Deploy provider script injection |
+| `rhai` | Explicit Rhai script `secrets::get(...)` access |
+
+Set `required = false` during transition while legacy `.env` bridges still
+exist. Set `required = true` once the vault path is normal for all developers
+and runtime surfaces.
 
 ## Canonical Load Order
 
@@ -37,8 +69,22 @@ Use this precedence (lowest to highest):
 
 1. Rust struct defaults
 2. `config/default.toml` (committed)
-3. `config/local.toml` (optional, gitignored)
-4. Environment overrides (allowlisted keys only)
+3. `config/<environment>.toml` (committed where shared)
+4. `config/local.toml` (optional personal patch, gitignored)
+5. Environment overrides (allowlisted keys only)
+
+`<environment>` should match the named Effigy environment where one exists:
+
+- `dev.toml`
+- `uat.toml`
+- `production.toml`
+
+Use `UNDERLAY_ENV` to select the named overlay at runtime. Deployed services
+should set `UNDERLAY_ENV` to the same name used by `[deploy.<environment>]`.
+Local development should normally use `UNDERLAY_ENV=dev`.
+
+`local.toml` is not an environment. It is a developer-local last-mile override
+for non-secret values that should not be shared.
 
 Recommended behavior:
 
@@ -52,6 +98,9 @@ Recommended behavior:
 apps/api/
   config/
     default.toml
+    dev.toml
+    uat.toml
+    production.toml
     local.toml.example
   crates/
     app-config/
@@ -59,6 +108,20 @@ apps/api/
 ```
 
 `app-config` should expose typed sections such as `ServerConfig`, `AuthConfig`, `EmailConfig`, and app-domain sections for behavior toggles/limits.
+
+Apps may use `underlay-config` for file stacking:
+
+```rust
+use underlay_config::ConfigStack;
+
+let config: AppConfig = ConfigStack::from_project_root(".")
+    .with_environment_from_env()
+    .with_optional_local_overlay("local")
+    .load()?;
+```
+
+`underlay-config` only owns TOML stacking. Apps still own typed structs,
+validation, redacted diagnostics, and explicit env override allowlists.
 
 ## Environment Key Policy
 
@@ -75,9 +138,13 @@ For each consuming app:
 2. Classify each key (`secret`, `runtime-env`, `app-behavior`).
 3. Move `app-behavior` keys into typed Rust config with defaults.
 4. Add compatibility bridge for legacy env keys with deprecation warnings.
-5. Update docs and `.env.example` to remove migrated keys.
-6. Enforce allowlist/guardrails in CI.
-7. Remove deprecated keys after the agreed transition window.
+5. Add or update `config/dev.toml`, `config/uat.toml`, and
+   `config/production.toml` where shared environment behavior differs.
+6. Declare true local secrets in root `[secrets.keys]` with the right Effigy
+   targets.
+7. Update docs and `.env.example` to remove migrated keys.
+8. Enforce allowlist/guardrails in CI.
+9. Remove deprecated keys after the agreed transition window.
 
 ### Reference Migration Feedback (2026-02-25)
 
