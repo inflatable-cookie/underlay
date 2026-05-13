@@ -23,7 +23,7 @@ Use this template in guides, roadmap closeout sections, or dedicated compatibili
 3. Apply data or migration changes:
    - `<SQL migration / copied file / backfill / manifest update>`
 4. Update local docs or manifests:
-   - `<.env.example / config docs / internal runbook>`
+   - `<config/env-manifest.txt / config docs / internal runbook>`
 
 ### Deprecation or Cutover Timeline
 

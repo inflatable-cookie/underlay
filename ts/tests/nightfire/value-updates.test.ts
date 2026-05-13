@@ -14,26 +14,34 @@ import {
 describe("nightfire value-updates", () => {
 	it("builds single-block values", () => {
 		const block = { type: "markdown", data: { text: "Hello" } };
-		expect(asSingleBlockValue("schema@1", block)).toEqual({
+		expect(asSingleBlockValue("schema@1", block)).toMatchObject({
 			schema: "schema@1",
-			block,
+			block: {
+				type: "markdown",
+				data: { text: "Hello" },
+				version: "initial",
+				hash: ""
+			},
 			blocks: undefined
 		});
 	});
 
 	it("builds multi-block values", () => {
 		const blocks = [{ type: "markdown" }, { type: "image" }];
-		expect(asMultiBlockValue("schema@1", blocks)).toEqual({
+		expect(asMultiBlockValue("schema@1", blocks)).toMatchObject({
 			schema: "schema@1",
 			block: undefined,
-			blocks
+			blocks: [
+				{ type: "markdown", data: {}, version: "initial", hash: "" },
+				{ type: "image", data: {}, version: "initial", hash: "" }
+			]
 		});
 	});
 
 	it("replaces a block by index without mutating source", () => {
 		const original = [{ type: "a" }, { type: "b" }];
 		const next = replaceBlockAtIndex(original, 1, { type: "c" });
-		expect(next).toEqual([{ type: "a" }, { type: "c" }]);
+		expect(next).toMatchObject([{ type: "a" }, { type: "c", data: {}, version: "initial", hash: "" }]);
 		expect(next).not.toBe(original);
 		expect(original).toEqual([{ type: "a" }, { type: "b" }]);
 	});
@@ -65,37 +73,42 @@ describe("nightfire value-updates", () => {
 	});
 
 	it("changes generic block type and normalises non-object input", () => {
-		expect(changeBlockType({ foo: "bar" }, "new.type")).toEqual({
-			foo: "bar",
-			type: "new.type"
+		expect(changeBlockType({ foo: "bar" }, "new.type")).toMatchObject({
+			type: "new.type",
+			data: {},
+			version: "initial",
+			hash: ""
 		});
-		expect(changeBlockType("not-an-object", "markdown")).toEqual({
-			type: "markdown"
+		expect(changeBlockType("not-an-object", "markdown")).toMatchObject({
+			type: "markdown",
+			data: {},
+			version: "initial",
+			hash: ""
 		});
 	});
 
 	it("adds, removes, and moves blocks", () => {
 		const added = addBlock([], "markdown");
-		expect(added).toEqual([
-			{
-				type: "markdown",
-				version: "initial",
-				hash: "",
-				data: {}
-			}
-		]);
+		expect(added).toHaveLength(1);
+		expect(added[0]).toMatchObject({
+			type: "markdown",
+			version: "initial",
+			hash: "",
+			data: {}
+		});
+		expect((added[0] as { id?: string }).id).toMatch(/^nf_/);
 
 		const inserted = insertBlockAfter([{ type: "a" }, { type: "b" }], 0, "markdown");
-		expect(inserted).toEqual([
-			{ type: "a" },
-			{
-				type: "markdown",
-				version: "initial",
-				hash: "",
-				data: {}
-			},
-			{ type: "b" }
-		]);
+		expect(inserted).toHaveLength(3);
+		expect(inserted[0]).toMatchObject({ type: "a" });
+		expect(inserted[1]).toMatchObject({
+			type: "markdown",
+			version: "initial",
+			hash: "",
+			data: {}
+		});
+		expect((inserted[1] as { id?: string }).id).toMatch(/^nf_/);
+		expect(inserted[2]).toMatchObject({ type: "b" });
 
 		const removed = removeBlock([{ type: "a" }, { type: "b" }], 0);
 		expect(removed).toEqual([{ type: "b" }]);

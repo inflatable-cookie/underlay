@@ -116,43 +116,23 @@ start_docker_services() {
 # =============================================================================
 
 setup_env_files() {
-    info "Setting up environment files..."
+    info "Setting up local config files..."
 
-    # API
-    if [ ! -f "$PROJECT_ROOT/{{PROJECT_SLUG}}-api/.env" ]; then
-        if [ -f "$PROJECT_ROOT/{{PROJECT_SLUG}}-api/.env.example" ]; then
-            cp "$PROJECT_ROOT/{{PROJECT_SLUG}}-api/.env.example" "$PROJECT_ROOT/{{PROJECT_SLUG}}-api/.env"
-            success "Created {{PROJECT_SLUG}}-api/.env"
-        else
-            warn "No .env.example found for API"
+    for app_path in \
+        "$PROJECT_ROOT/{{PROJECT_SLUG}}-api" \
+        "$PROJECT_ROOT/{{PROJECT_SLUG}}-admin" \
+        "$PROJECT_ROOT/{{PROJECT_SLUG}}-front"; do
+        if [ ! -d "$app_path" ]; then
+            continue
         fi
-    else
-        warn "{{PROJECT_SLUG}}-api/.env already exists, skipping"
-    fi
 
-    # Admin (if exists)
-    if [ -d "$PROJECT_ROOT/{{PROJECT_SLUG}}-admin" ]; then
-        if [ ! -f "$PROJECT_ROOT/{{PROJECT_SLUG}}-admin/.env" ]; then
-            if [ -f "$PROJECT_ROOT/{{PROJECT_SLUG}}-admin/.env.example" ]; then
-                cp "$PROJECT_ROOT/{{PROJECT_SLUG}}-admin/.env.example" "$PROJECT_ROOT/{{PROJECT_SLUG}}-admin/.env"
-                success "Created {{PROJECT_SLUG}}-admin/.env"
-            fi
-        else
-            warn "{{PROJECT_SLUG}}-admin/.env already exists, skipping"
+        if [ -f "$app_path/config/local.toml.example" ] && [ ! -f "$app_path/config/local.toml" ]; then
+            cp "$app_path/config/local.toml.example" "$app_path/config/local.toml"
+            success "Created ${app_path##*/}/config/local.toml"
         fi
-    fi
+    done
 
-    # Front (if exists)
-    if [ -d "$PROJECT_ROOT/{{PROJECT_SLUG}}-front" ]; then
-        if [ ! -f "$PROJECT_ROOT/{{PROJECT_SLUG}}-front/.env" ]; then
-            if [ -f "$PROJECT_ROOT/{{PROJECT_SLUG}}-front/.env.example" ]; then
-                cp "$PROJECT_ROOT/{{PROJECT_SLUG}}-front/.env.example" "$PROJECT_ROOT/{{PROJECT_SLUG}}-front/.env"
-                success "Created {{PROJECT_SLUG}}-front/.env"
-            fi
-        else
-            warn "{{PROJECT_SLUG}}-front/.env already exists, skipping"
-        fi
-    fi
+    warn "Configure secrets with Effigy vault entries instead of committed .env files"
 }
 
 # =============================================================================

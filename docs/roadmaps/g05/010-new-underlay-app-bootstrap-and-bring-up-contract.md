@@ -30,7 +30,7 @@ The six workspace families already repeat one recognizable bring-up shape:
 - one API package
 - one admin package
 - optional front/client/ui/docs packages
-- `.env.example` on runtime packages
+- env manifest plus secret-bootstrap docs on runtime packages
 - package-local READMEs that refine the root loop instead of fighting it
 
 The clearest modern root posture is now shared by:
@@ -84,7 +84,7 @@ Defines:
 - Effigy-first root and package loops
 - bootstrap behavior
 - local sibling dependency and mount posture
-- minimum `.env.example` and config expectations
+- minimum env-manifest, secret-bootstrap, and config expectations
 
 ## Consumer Upgrade Impact
 

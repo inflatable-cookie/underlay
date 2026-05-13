@@ -103,7 +103,7 @@
   }
 
   async function dataLoader(
-    fetchFn: typeof window.fetch,
+    fetchFn: typeof globalThis.fetch,
     token: string | null,
     nextQuery: QueryParams
   ) {

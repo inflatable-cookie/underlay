@@ -53,7 +53,7 @@ describe("nightfire/editor/strategy-normalisation", () => {
 		mocks.normaliseNightfireValue.mockReturnValue({ blocks: [{ type: "a" }] });
 		expect(normaliseForStrategy({ schema: 123 } as any, "schema-b", "multi")).toEqual({
 			coerced: { schema: "schema-b", blocks: [{ type: "a" }] },
-			schemaMismatch: null,
+			schemaMismatch: 123,
 		});
 	});
 });

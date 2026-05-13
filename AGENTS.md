@@ -17,14 +17,15 @@
   `docs/contracts/001-working-rules.md`, and `docs/specs/` as the strict
   control pack for the active lane.
 - Treat the current consumer-app sweep family as:
-  - `underlay-reference/acme-admin`
-  - `contact-patch/cp-admin`
-  - `compli-me/admin`
-  - `acowtancy/dairy`
-  - `songsprout/greenhouse`
-  - `loophole/composer/composer-admin`
-  - Check those six first when shared admin surfaces or retained template
-    behavior change.
+  - `underlay-reference`
+  - `contact-patch`
+  - `compli-me`
+  - `acowtancy`
+  - `songsprout`
+  - `loophole/composer`
+  - Treat each root as the rollout boundary. When config, secrets, shared admin
+    surfaces, or retained template behavior change, inspect the root and all
+    affected child packages inside that consumer workspace.
 
 ## Effigy-First Execution
 

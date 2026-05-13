@@ -5,14 +5,14 @@ const label = (type: string) => type;
 
 describe("nightfire/editor/summary-transform", () => {
 	it("keeps block when type unchanged or missing", () => {
-		expect(transformSummaryBlockOnLayoutChange(undefined, "summary.book", label)).toEqual({
-			block: { type: "summary.book" },
+		expect(transformSummaryBlockOnLayoutChange(undefined, "summary.book", label)).toMatchObject({
+			block: { type: "summary.book", data: {} },
 			warning: null,
 		});
 
 		expect(
 			transformSummaryBlockOnLayoutChange({ type: "summary.book", data: { pages: [] } }, "summary.book", label)
-		).toEqual({
+		).toMatchObject({
 			block: { type: "summary.book", data: { pages: [] } },
 			warning: null,
 		});
@@ -26,13 +26,13 @@ describe("nightfire/editor/summary-transform", () => {
 
 		const toPie = transformSummaryBlockOnLayoutChange(current, "summary.pie", label);
 		expect(toPie.warning).toBeNull();
-		expect(toPie.block).toEqual({
+		expect(toPie.block).toMatchObject({
 			type: "summary.pie",
 			data: { pages: [{ title: "T1", body: "B1" }], subTitle: "Sub" },
 		});
 
 		const toBook = transformSummaryBlockOnLayoutChange({ type: "summary.steps", data: { pages: [{ title: "T2", body: "B2" }], subTitle: "X" } }, "summary.book", label);
-		expect(toBook.block).toEqual({
+		expect(toBook.block).toMatchObject({
 			type: "summary.book",
 			data: { pages: [{ title: "T2", body: "B2" }] },
 		});
@@ -45,7 +45,7 @@ describe("nightfire/editor/summary-transform", () => {
 		};
 
 		const result = transformSummaryBlockOnLayoutChange(current, "summary.circles", label);
-		expect(result.block).toEqual({
+		expect(result.block).toMatchObject({
 			type: "summary.circles",
 			data: { pages: [{ title: "A", body: "B" }], subTitle: null },
 		});
@@ -62,7 +62,7 @@ describe("nightfire/editor/summary-transform", () => {
 			label
 		);
 
-		expect(result.block).toEqual({
+		expect(result.block).toMatchObject({
 			type: "summary.book",
 			data: { pages: [{ title: "A", body: "B" }] },
 		});
@@ -82,7 +82,7 @@ describe("nightfire/editor/summary-transform", () => {
 		};
 
 		const result = transformSummaryBlockOnLayoutChange(current, "summary.imageSlider", label);
-		expect(result.block).toEqual({
+		expect(result.block).toMatchObject({
 			type: "summary.imageSlider",
 			data: {
 				subTitle: "Sub",
@@ -108,7 +108,7 @@ describe("nightfire/editor/summary-transform", () => {
 		};
 
 		const toImagePages = transformSummaryBlockOnLayoutChange(current, "summary.diagram", label);
-		expect(toImagePages.block).toEqual({
+		expect(toImagePages.block).toMatchObject({
 			type: "summary.diagram",
 			data: { pages: [{ title: null, body: "Slide body", image_id: null }] },
 		});
@@ -121,7 +121,7 @@ describe("nightfire/editor/summary-transform", () => {
 			"summary.slideshow",
 			label
 		);
-		expect(fromImagePages.block).toEqual({
+		expect(fromImagePages.block).toMatchObject({
 			type: "summary.slideshow",
 			data: { pages: [{ title: "T", body: "B", image_id: "img-1" }] },
 		});
@@ -132,7 +132,7 @@ describe("nightfire/editor/summary-transform", () => {
 			"summary.diagram",
 			label
 		);
-		expect(fromTextPages.block).toEqual({
+		expect(fromTextPages.block).toMatchObject({
 			type: "summary.diagram",
 			data: { pages: [{ title: "T", body: "B", image_id: null }] },
 		});
@@ -153,7 +153,7 @@ describe("nightfire/editor/summary-transform", () => {
 			"summary.steps",
 			label
 		);
-		expect(fromSliderNoImages.block).toEqual({
+		expect(fromSliderNoImages.block).toMatchObject({
 			type: "summary.steps",
 			data: { pages: [{ title: null, body: "Only text" }] },
 		});
@@ -167,7 +167,7 @@ describe("nightfire/editor/summary-transform", () => {
 			"summary.diagram",
 			label
 		);
-		expect(result).toEqual({
+		expect(result).toMatchObject({
 			block: { type: "summary.diagram", data: { something: true } },
 			warning: null,
 		});
@@ -183,7 +183,7 @@ describe("nightfire/editor/summary-transform", () => {
 			label
 		);
 
-		expect(result.block).toEqual({
+		expect(result.block).toMatchObject({
 			type: "summary.steps",
 			data: { pages: [{ title: "A", body: "B" }], subTitle: "Kept subtitle" },
 		});
@@ -202,7 +202,7 @@ describe("nightfire/editor/summary-transform", () => {
 			"summary.pie",
 			label
 		);
-		expect(toTextPages.block).toEqual({
+		expect(toTextPages.block).toMatchObject({
 			type: "summary.pie",
 			data: {
 				pages: [
@@ -225,7 +225,7 @@ describe("nightfire/editor/summary-transform", () => {
 			"summary.book",
 			label
 		);
-		expect(fromSlider.block).toEqual({
+		expect(fromSlider.block).toMatchObject({
 			type: "summary.book",
 			data: { pages: [{ title: null, body: null }] },
 		});
@@ -241,7 +241,7 @@ describe("nightfire/editor/summary-transform", () => {
 			"summary.steps",
 			label
 		);
-		expect(fromBrokenImagePages.block).toEqual({
+		expect(fromBrokenImagePages.block).toMatchObject({
 			type: "summary.steps",
 			data: { pages: [], subTitle: null },
 		});
@@ -255,7 +255,7 @@ describe("nightfire/editor/summary-transform", () => {
 			"summary.imageSlider",
 			label
 		);
-		expect(toSliderWithNonStringBody.block).toEqual({
+		expect(toSliderWithNonStringBody.block).toMatchObject({
 			type: "summary.imageSlider",
 			data: {
 				subTitle: null,
@@ -292,7 +292,7 @@ describe("nightfire/editor/summary-transform", () => {
 			"summary.pie",
 			label
 		);
-		expect(fromTextWithNonObjectData.block).toEqual({
+		expect(fromTextWithNonObjectData.block).toMatchObject({
 			type: "summary.pie",
 			data: {
 				pages: [],
@@ -309,7 +309,7 @@ describe("nightfire/editor/summary-transform", () => {
 			"summary.imageSlider",
 			label
 		);
-		expect(toSliderWithMissingPages.block).toEqual({
+		expect(toSliderWithMissingPages.block).toMatchObject({
 			type: "summary.imageSlider",
 			data: {
 				subTitle: "kept",

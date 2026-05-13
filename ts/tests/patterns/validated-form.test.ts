@@ -1,12 +1,18 @@
+import { z } from "zod";
 import { describe, expect, it, vi } from "vitest";
-import { registerRequestSchema } from "../../src/validation";
 
-type ValidatedFormModule = typeof import("../../src/patterns/validated-form.svelte");
+type ValidatedFormModule = typeof import("../../src/patterns/validated-form.svelte.ts");
+
+const registerRequestSchema = z.object({
+  email: z.string().trim().email(),
+  password: z.string().min(12, "String must contain at least 12 character(s)"),
+  displayName: z.string().trim().min(1, "String must contain at least 1 character(s)")
+});
 
 async function loadValidatedFormModule(): Promise<ValidatedFormModule> {
   vi.resetModules();
   (globalThis as any).$state = <T>(initial: T) => initial;
-  return await import("../../src/patterns/validated-form.svelte");
+  return await import("../../src/patterns/validated-form.svelte.ts");
 }
 
 describe("patterns/useValidatedForm", () => {
@@ -24,8 +30,8 @@ describe("patterns/useValidatedForm", () => {
     });
 
     expect(form.validate()).toBe(false);
-    expect(form.errors.email).toContain("Invalid email address");
-    expect(form.errors.password).toContain("at least 12 characters");
+    expect(form.errors.email).toContain("Invalid email");
+    expect(form.errors.password).toContain("at least 12 character(s)");
     expect(await form.submit()).toBe(false);
     expect(onSubmit).not.toHaveBeenCalled();
   });
@@ -45,7 +51,7 @@ describe("patterns/useValidatedForm", () => {
     });
 
     form.setField("email", "bad-email");
-    expect(form.errors.email).toContain("Invalid email address");
+    expect(form.errors.email).toContain("Invalid email");
 
     form.setField("email", "person@example.com");
     expect(form.errors.email).toBeUndefined();

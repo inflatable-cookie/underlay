@@ -1,0 +1,10 @@
+# Declared env surface for startup and local validation.
+# Keep only true secrets and real runtime-env keys here.
+DATABASE_URL
+ENVIRONMENT_NAME
+HOST
+PORT
+PUBLIC_HOST
+AUTH_JWT_PRIVATE_KEY
+AUTH_JWT_PUBLIC_KEY
+AUTH_OAUTH_SECRET_KEY

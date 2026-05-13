@@ -77,7 +77,7 @@ In scope:
 - default package families
 - root and package README/Effigy posture
 - local bootstrap and bring-up flow
-- app-local `.env.example` expectations
+- app-local env-manifest and secret-bootstrap expectations
 - root-level dev orchestration
 
 Out of scope:
@@ -247,18 +247,20 @@ Rules:
 
 A normal workspace should expose at least:
 
-- `.env.example` for runtime app packages
+- `config/env-manifest.txt` for runtime app packages that still read env
+- `config/required-secrets.txt` for startup-critical secret/runtime keys
 - API config layering notes where the API supports typed config files
 
 Expected API config posture when applicable:
 
 1. committed defaults
 2. local override file
-3. env or `.env` highest precedence
+3. env injection highest precedence
 
 Rules:
 
 - runtime packages should not rely on undocumented env keys
+- runtime packages should not depend on committed `.env` files
 - admin/front packages should document the minimum public env surface
 - API packages should document config precedence when they support layered
   config
@@ -296,7 +298,7 @@ Bad outcomes:
 - root and child tasks duplicate each other arbitrarily
 - package roles are unclear from names and docs
 - bootstrap requires undocumented manual setup
-- `.env.example` is missing for runtime apps
+- `config/env-manifest.txt` is missing for runtime apps that still read env
 - docs authority is spread or implied
 
 ## Questions This Contract Should Settle

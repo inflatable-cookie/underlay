@@ -62,7 +62,7 @@ In scope:
 - API config ownership
 - admin/front runtime-public config posture
 - env naming and grouping
-- `.env.example` and local config file expectations
+- env manifest and local config file expectations
 - secret versus non-secret classification
 - config bootstrap boundary
 
@@ -89,7 +89,8 @@ Rules:
 
 - `secret` values live in environment or secret manager only
 - `runtime-env` values live in environment because they truly vary by deploy or
-  host
+  host, but for local Effigy-managed apps they should be injected by Effigy
+  rather than stored in `.env` files
 - `app-behavior` values live in typed config with committed defaults
 - if a value is not secret and does not need per-environment drift, it should
   not live in `.env`
@@ -175,20 +176,20 @@ Local development should keep secret handling simple but explicit.
 
 Expected posture:
 
-- `.env.example` documents any temporary env bridge keys with placeholders only
 - real secrets stay out of committed files
 - Effigy-managed apps declare true local secrets under root `[secrets.keys]`
 - local secret values are stored in an ignored Effigy vault, not committed files
 - optional `config/local.toml` or equivalent stays gitignored
+- `config/env-manifest.txt` documents the allowed env surface for runtime and
+  validation tooling
 
 Rules:
 
-- `.env.example` may show placeholders, never live secrets
+- do not keep `.env`, `.env.local`, or `.env.example` files in the target
+  posture for Effigy-managed Underlay apps
 - `config/local.toml.example` may document local non-secret overrides
 - do not commit real JWT keys, OAuth secrets, SMTP passwords, or database
   credentials
-- for Effigy-managed apps, `.env` is a compatibility bridge, not the target
-  secret authority
 - non-secret local values such as ports, hostnames, service names, database
   names, object-store bucket names, regions, and public URL bases should come
   from typed config, bundle defaults, `config/dev.toml`, optional
@@ -210,14 +211,14 @@ identity = "passphrase"
 unlock = "passphrase"
 
 [secrets.keys.database_url]
-required = false
+required = true
 targets = ["tasks", "containers"]
 description = "Application database connection URL."
 ```
 
-Use `required = false` while a consumer app still needs legacy `.env`
-compatibility. Switch to `required = true` only after bootstrap docs and local
-tooling make the vault path normal for all developers.
+Use `required = true` once the app posture is fully on Effigy vault plus typed
+config. If a consumer repo is still migrating, keep the temporary bridge local
+to that repo and remove it before calling the migration complete.
 
 ### Admin and front config rule
 
@@ -228,7 +229,7 @@ Rules:
 - browser-visible runtime values use `PUBLIC_*`
 - stable app behavior should not be hidden in ad hoc frontend env keys
 - frontend apps should document required `PUBLIC_*` keys plainly in
-  `.env.example` or equivalent setup docs
+  `config/env-manifest.txt`, setup docs, or generated runtime-config docs
 
 ### Auth-config split rule
 
@@ -249,7 +250,7 @@ Move to typed config:
 - Argon2 tuning
 - provider scopes and other non-secret auth behavior
 
-Do not let non-secret auth behavior drift across `.env` files.
+Do not let non-secret auth behavior drift across ad hoc env setup.
 
 ### Compatibility-window rule
 
@@ -259,15 +260,15 @@ Rules:
 
 - warn first, remove later
 - document the replacement field or key explicitly
-- remove migrated behavior keys from `.env.example` as soon as typed defaults
-  exist
+- remove migrated behavior keys from `config/env-manifest.txt` as soon as typed
+  defaults exist
 - do not keep behavior fallbacks to legacy env keys indefinitely
 
 ## Minimum App Shape
 
 A normal app should have:
 
-- `.env.example`
+- `config/env-manifest.txt`
 - committed default config file for API behavior where applicable
 - optional local config example for non-secret local overrides
 - one typed config bootstrap layer
@@ -287,7 +288,7 @@ Good outcomes:
 - stable behavior defaults live in typed config
 - startup fails fast on invalid config
 - env usage is concentrated in bootstrap
-- `.env.example` is short and honest
+- the env manifest is short and honest
 - legacy key bridges are explicit and temporary
 
 Bad outcomes:
@@ -301,4 +302,7 @@ Bad outcomes:
 ## Next Task
 
 Use this contract when bootstrapping new apps, migrating behavior out of env,
-or auditing secret posture across the consumer fleet.
+or auditing secret posture across the consumer fleet. The current rollout after
+`acowtancy` is `underlay-reference`, `contact-patch`, `compli-me`,
+`songsprout`, and `loophole/composer`, with each root treated as a workspace
+boundary that includes all affected child packages.

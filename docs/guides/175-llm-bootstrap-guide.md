@@ -146,10 +146,11 @@ CREATE SCHEMA acme → CREATE SCHEMA myapp
 acme.table_name → myapp.table_name
 ```
 
-### 4.6 Environment Variables
+### 4.6 Env Surface And Config Files
 
 **Files to modify:**
-- `api/.env.example`
+- `api/config/env-manifest.txt`
+- `api/config/default.toml`
 - Any code referencing ACME_* variables
 
 **Substitutions:**
@@ -216,12 +217,13 @@ createdb myapp
 ### 5.2 Configure Connection
 
 ```bash
-cp api/.env.example api/.env
+mkdir -p api/config
 ```
 
-Edit `api/.env`:
+Set the local secret through Effigy and keep non-secrets in `config/*.toml`:
 ```bash
-DATABASE_URL=postgres://your_user@localhost:5432/myapp
+effigy secrets init
+effigy secrets set database_url
 ```
 
 ### 5.3 Run Migrations

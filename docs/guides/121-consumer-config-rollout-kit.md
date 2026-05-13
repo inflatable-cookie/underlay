@@ -1,6 +1,7 @@
 # 121 - Consumer Config Rollout Kit
 
-Use this kit for Phase 20.4 style migrations in any Underlay-consuming app.
+Use this kit for the Effigy-vault plus typed-config migration in any
+Underlay-consuming app.
 
 ## 1. Migration Issue Template
 
@@ -13,7 +14,7 @@ Use this kit for Phase 20.4 style migrations in any Underlay-consuming app.
 - Milestone: <date>
 
 ### Env Inventory
-- [ ] Export current `.env.example` keys
+- [ ] Export current env surface from bootstrap docs, Effigy `[secrets.keys]`, and existing manifests
 - [ ] Enumerate direct env reads in code
 - [ ] Classify each key: `secret`, `runtime-env`, `app-behavior`
 
@@ -24,6 +25,7 @@ Use this kit for Phase 20.4 style migrations in any Underlay-consuming app.
 - [ ] Wire bootstrap to typed config for `app-behavior` keys
 - [ ] Keep only `secret` + `runtime-env` in env bootstrap
 - [ ] Declare true secrets under root `[secrets.keys]` with Effigy targets
+- [ ] Add `config/env-manifest.txt` for the remaining allowed env keys
 
 ### Compatibility Window
 - [ ] Legacy keys are ignored for behavior selection
@@ -31,7 +33,8 @@ Use this kit for Phase 20.4 style migrations in any Underlay-consuming app.
 - [ ] Typed replacement field documented for each legacy key
 
 ### Cleanup
-- [ ] Remove migrated keys from `.env.example`
+- [ ] Remove `.env`, `.env.local`, and `.env.example` from the repo if they still exist
+- [ ] Remove migrated keys from `config/env-manifest.txt`
 - [ ] Add/refresh focused bootstrap precedence tests
 - [ ] Update migration report and roadmap checklist
 ```
@@ -43,13 +46,15 @@ Use this kit for Phase 20.4 style migrations in any Underlay-consuming app.
 3. Leave `config/local.toml` gitignored and optional for personal non-secret patches only.
 4. Update bootstrap to read behavior from typed config first and keep env only for secrets/runtime.
 5. Declare true secrets in root `effigy.toml` under `[secrets.keys]`.
-6. Keep explicit legacy-key warnings during transition (no behavior fallback).
-7. Remove migrated behavior keys from `.env.example`.
-8. Run targeted checks:
+6. Add `config/env-manifest.txt` for the remaining runtime and secret env surface.
+7. Keep explicit legacy-key warnings during transition (no behavior fallback).
+8. Remove `.env`, `.env.local`, and `.env.example` from the repo.
+9. Remove migrated behavior keys from `config/env-manifest.txt`.
+10. Run targeted checks:
    - `cargo test -p <infra-crate> --all-features`
    - `cargo check -p <api-crate> --all-features`
    - `cargo check -p <auth-or-jobs-crate> --all-features`
-9. Update roadmap/report artifacts with exact key mapping and evidence pointers.
+11. Update roadmap/report artifacts with exact key mapping and evidence pointers.
 
 ## 3. Deprecation Removal Schedule Guidance
 
@@ -57,7 +62,7 @@ Use concrete dates.
 
 1. Day 0: typed config + warning layer ships.
 2. Day 14: deployments stop setting deprecated behavior keys.
-3. Day 28: remove deprecated keys from all setup docs/manifests.
+3. Day 28: remove deprecated keys from all setup docs, vault docs, and `config/env-manifest.txt`.
 4. Day 42: remove warning bridge if no legacy keys detected in verification sweep.
 
 ## 4. CI Guardrails
@@ -79,11 +84,12 @@ Recommended app-level file:
 Script: `scripts/check-env-manifest.sh`
 
 ```bash
-./scripts/check-env-manifest.sh ../your-app ../your-app/.env ../your-app/.env.example ./templates/config/required-secrets.example.txt
+./scripts/check-env-manifest.sh ../your-app ../your-app/config/env-manifest.txt ./templates/config/required-secrets.example.txt
 ```
 
 Recommended app-level file:
 
+- `config/env-manifest.txt` (copy from `templates/config/env-manifest.example.txt`)
 - `config/required-secrets.txt` (copy from `templates/config/required-secrets.example.txt`)
 
 ## 5. Example CI Job Snippet
@@ -93,5 +99,20 @@ Recommended app-level file:
   run: ./scripts/check-env-usage-boundary.sh ../your-app ../your-app/config/env-usage-allowlist.txt
 
 - name: Validate env manifest + required keys
-  run: ./scripts/check-env-manifest.sh ../your-app ../your-app/.env ../your-app/.env.example ../your-app/config/required-secrets.txt
+  run: ./scripts/check-env-manifest.sh ../your-app ../your-app/config/env-manifest.txt ../your-app/config/required-secrets.txt
 ```
+
+## 6. Current Consumer Queue
+
+`acowtancy` is the reference proof for this posture.
+
+Replicate the same model next in:
+
+1. `underlay-reference`
+2. `contact-patch`
+3. `compli-me`
+4. `songsprout`
+5. `loophole/composer`
+
+Treat each root as the rollout boundary. Update every affected child package
+inside that workspace, not just the admin surface.

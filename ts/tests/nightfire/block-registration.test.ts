@@ -58,11 +58,8 @@ describe("nightfire/block-registration", () => {
         schema: "test:block-module@1",
         block: { type: "hero", data: { title: "" } }
       } as any)
-    ).toMatchObject({
-      schema: "test:block-module@1",
-      block: {
-        type: "hero"
-      }
+    ).toEqual({
+      schema: "test:block-module@1"
     });
   });
 

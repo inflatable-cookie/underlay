@@ -28,8 +28,8 @@ For local Effigy-managed apps, split values further:
 - local ports, hostnames, service names, bucket names, regions, and public URLs
   should come from bundle defaults, typed config, `config/dev.toml`, optional
   `config/local.toml`, or generated `.effigy/runtime/` files
-- `.env` may remain as a compatibility bridge while an app still reads env
-  directly, but it should not be the long-term source of truth for true secrets
+- the target posture does not keep `.env`, `.env.local`, or `.env.example`
+  files in repo-managed local setup
 
 Recommended Effigy vault declaration:
 
@@ -43,7 +43,7 @@ identity = "passphrase"
 unlock = "passphrase"
 
 [secrets.keys.database_url]
-required = false
+required = true
 targets = ["tasks", "containers"]
 description = "Application database connection URL."
 ```
@@ -59,9 +59,9 @@ Target meanings:
 | `deploy` | Deploy provider script injection |
 | `rhai` | Explicit Rhai script `secrets::get(...)` access |
 
-Set `required = false` during transition while legacy `.env` bridges still
-exist. Set `required = true` once the vault path is normal for all developers
-and runtime surfaces.
+Use `required = true` for the steady-state posture. If a consumer app still
+needs a temporary bridge, keep that as local migration debt and remove it before
+declaring the rollout complete.
 
 ## Canonical Load Order
 
@@ -123,6 +123,22 @@ let config: AppConfig = ConfigStack::from_project_root(".")
 `underlay-config` only owns TOML stacking. Apps still own typed structs,
 validation, redacted diagnostics, and explicit env override allowlists.
 
+SvelteKit or other TypeScript apps that need build-time public config can use
+the server-only TypeScript stack:
+
+```ts
+import {
+  loadConfigStack,
+  readDottedValue,
+} from "@decodelabs/underlay/server/config-stack";
+
+const config = loadConfigStack({ projectRoot: "." });
+const apiBaseUrl = readDottedValue<string>(config, "public_api.base_url");
+```
+
+Do not import the server config stack from browser modules. Generate a public
+module or runtime payload from allowlisted non-secret config instead.
+
 ## Environment Key Policy
 
 - Keep an explicit allowlist of supported env keys per app
@@ -137,12 +153,13 @@ For each consuming app:
 1. Inventory all env keys currently read.
 2. Classify each key (`secret`, `runtime-env`, `app-behavior`).
 3. Move `app-behavior` keys into typed Rust config with defaults.
-4. Add compatibility bridge for legacy env keys with deprecation warnings.
+4. Add a temporary migration bridge for legacy env keys only if the consumer
+   repo cannot cut over in one move.
 5. Add or update `config/dev.toml`, `config/uat.toml`, and
    `config/production.toml` where shared environment behavior differs.
 6. Declare true local secrets in root `[secrets.keys]` with the right Effigy
    targets.
-7. Update docs and `.env.example` to remove migrated keys.
+7. Update docs and `config/env-manifest.txt` to remove migrated keys.
 8. Enforce allowlist/guardrails in CI.
 9. Remove deprecated keys after the agreed transition window.
 
@@ -150,7 +167,7 @@ For each consuming app:
 
 Applied from `underlay-reference/acme-api` migration:
 
-1. Remove migrated behavior keys from `.env.example` as soon as typed defaults exist in `config/default.toml`.
+1. Remove migrated behavior keys from `config/env-manifest.txt` as soon as typed defaults exist in `config/default.toml`.
 2. Keep JWT key material in env, but source JWT behavior from typed config using `JwtConfig::from_values(...)`.
 3. Add startup warnings for legacy behavior env keys that are now ignored, with typed replacement field names.
 4. Keep focused bootstrap tests that assert migrated behavior env keys do not override typed config.
@@ -214,7 +231,7 @@ When migrating from app-prefixed names, the API should accept both the generic n
 
 **Note on HOST vs PUBLIC_HOST:**
 
-`HOST` must be a valid IP address for socket binding (e.g., `127.0.0.1`, `0.0.0.0`). `PUBLIC_HOST` is used when constructing URLs that need to be accessible from browsers or external clients. For local development, set `HOST=localhost` in `.env` if you want browser-compatible URLs (the socket will bind to `127.0.0.1` by default).
+`HOST` must be a valid IP address for socket binding (e.g., `127.0.0.1`, `0.0.0.0`). `PUBLIC_HOST` is used when constructing URLs that need to be accessible from browsers or external clients. For local development, inject `PUBLIC_HOST=localhost` through Effigy or runtime setup if you want browser-compatible URLs while the socket still binds to `127.0.0.1` by default.
 
 Common patterns:
 - **Local dev:** `HOST` unset (defaults to `127.0.0.1`), `PUBLIC_HOST=localhost` for browser URLs

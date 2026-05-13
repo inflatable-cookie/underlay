@@ -99,22 +99,22 @@
       "types": "./ts/src/nightfire/strategies.ts",
       "default": "./ts/src/nightfire/strategies.ts"
     },
-  "./nightfire/media": {
-    "types": "./ts/src/nightfire/media/context.ts",
-    "default": "./ts/src/nightfire/media/context.ts"
-  },
-  "./nightfire/media-locator": {
-    "types": "./ts/src/nightfire/media-locator.ts",
-    "default": "./ts/src/nightfire/media-locator.ts"
-  },
-  "./nightfire/block-ids": {
-    "types": "./ts/src/nightfire/block-ids.ts",
-    "default": "./ts/src/nightfire/block-ids.ts"
-  },
-  "./nightfire/utils": {
-    "types": "./ts/src/nightfire/utils.ts",
-    "default": "./ts/src/nightfire/utils.ts"
-  },
+    "./nightfire/media": {
+      "types": "./ts/src/nightfire/media/context.ts",
+      "default": "./ts/src/nightfire/media/context.ts"
+    },
+    "./nightfire/media-locator": {
+      "types": "./ts/src/nightfire/media-locator.ts",
+      "default": "./ts/src/nightfire/media-locator.ts"
+    },
+    "./nightfire/block-ids": {
+      "types": "./ts/src/nightfire/block-ids.ts",
+      "default": "./ts/src/nightfire/block-ids.ts"
+    },
+    "./nightfire/utils": {
+      "types": "./ts/src/nightfire/utils.ts",
+      "default": "./ts/src/nightfire/utils.ts"
+    },
     "./nightfire/validation": {
       "types": "./ts/src/nightfire/validation.ts",
       "default": "./ts/src/nightfire/validation.ts"
@@ -204,6 +204,10 @@
       "types": "./ts/src/server/index.ts",
       "default": "./ts/src/server/index.ts"
     },
+    "./server/config-stack": {
+      "types": "./ts/src/server/config-stack.ts",
+      "default": "./ts/src/server/config-stack.ts"
+    },
     "./utils/webauthn": {
       "types": "./ts/src/utils/webauthn.ts",
       "default": "./ts/src/utils/webauthn.ts"
@@ -249,6 +253,7 @@
     "easymde": "^2.20.0",
     "isomorphic-dompurify": "^3.0.0",
     "marked": "^17.0.3",
+    "smol-toml": "^1.6.1",
     "svelte-dnd-action": "^0.9.69"
   },
   "devDependencies": {

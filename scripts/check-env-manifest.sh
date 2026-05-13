@@ -2,36 +2,62 @@
 set -euo pipefail
 
 if [[ $# -lt 1 || $# -gt 4 ]]; then
-  echo "Usage: $0 <app-root> [env-file] [example-file] [required-keys-file]" >&2
+  echo "Usage: $0 <app-root> [manifest-file] [required-keys-file|env-file] [env-file required-keys-file]" >&2
   exit 2
 fi
 
 APP_ROOT="$1"
-ENV_FILE="${2:-$APP_ROOT/.env}"
-EXAMPLE_FILE="${3:-$APP_ROOT/.env.example}"
-REQUIRED_FILE="${4:-$APP_ROOT/config/required-secrets.txt}"
+MANIFEST_FILE="${2:-$APP_ROOT/config/env-manifest.txt}"
+THIRD_ARG="${3:-}"
+FOURTH_ARG="${4:-}"
 
-if [[ ! -f "$EXAMPLE_FILE" ]]; then
-  echo "error: .env.example not found: $EXAMPLE_FILE" >&2
+ENV_FILE="$APP_ROOT/.env"
+REQUIRED_FILE="$APP_ROOT/config/required-secrets.txt"
+
+if [[ -n "$FOURTH_ARG" ]]; then
+  ENV_FILE="$THIRD_ARG"
+  REQUIRED_FILE="$FOURTH_ARG"
+elif [[ -n "$THIRD_ARG" ]]; then
+  case "$(basename "$THIRD_ARG")" in
+    .env|*.env|*.env.*)
+      ENV_FILE="$THIRD_ARG"
+      ;;
+    *)
+      REQUIRED_FILE="$THIRD_ARG"
+      ;;
+  esac
+fi
+
+if [[ ! -f "$MANIFEST_FILE" ]]; then
+  echo "error: env manifest not found: $MANIFEST_FILE" >&2
   exit 2
 fi
 
-extract_keys() {
+extract_env_keys() {
   local file="$1"
   awk -F= '/^[A-Za-z_][A-Za-z0-9_]*=/{print $1}' "$file" | sort -u
+}
+
+extract_manifest_keys() {
+  local file="$1"
+  awk '
+    /^[[:space:]]*#/ { next }
+    /^[[:space:]]*$/ { next }
+    /^[A-Za-z_][A-Za-z0-9_]*$/ { print $1 }
+  ' "$file" | sort -u
 }
 
 tmp_dir="$(mktemp -d)"
 trap 'rm -rf "$tmp_dir"' EXIT
 
-extract_keys "$EXAMPLE_FILE" > "$tmp_dir/example.keys"
+extract_manifest_keys "$MANIFEST_FILE" > "$tmp_dir/manifest.keys"
 
 if [[ -f "$ENV_FILE" ]]; then
-  extract_keys "$ENV_FILE" > "$tmp_dir/env.keys"
-  comm -13 "$tmp_dir/example.keys" "$tmp_dir/env.keys" > "$tmp_dir/unknown.keys" || true
+  extract_env_keys "$ENV_FILE" > "$tmp_dir/env.keys"
+  comm -13 "$tmp_dir/manifest.keys" "$tmp_dir/env.keys" > "$tmp_dir/unknown.keys" || true
 
   if [[ -s "$tmp_dir/unknown.keys" ]]; then
-    echo "Unknown keys in $ENV_FILE (not declared in $EXAMPLE_FILE):" >&2
+    echo "Unknown keys in $ENV_FILE (not declared in $MANIFEST_FILE):" >&2
     cat "$tmp_dir/unknown.keys" >&2
     exit 1
   fi

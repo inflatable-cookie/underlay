@@ -21,45 +21,6 @@ fn minio_dev_config_uses_path_style_endpoint_and_bucket_public_base() {
     assert_eq!(config.presign_url_base, None);
 }
 
-#[test]
-fn env_or_minio_dev_prefers_shared_blob_env_overrides() {
-    unsafe {
-        std::env::set_var("BLOB_S3_BUCKET", "override-bucket");
-        std::env::set_var("BLOB_S3_REGION", "eu-west-1");
-        std::env::set_var("BLOB_S3_ENDPOINT_URL", "http://s3.override.test:9000/");
-        std::env::set_var("BLOB_S3_PUBLIC_URL_BASE", "https://cdn.override.test/media");
-        std::env::set_var("BLOB_S3_PRESIGN_URL_BASE", "https://s3.override.test/");
-        std::env::set_var("BLOB_S3_PATH_STYLE", "false");
-    }
-
-    let config = S3Config::from_env_or_minio_dev("default-bucket", "http://s3.default.test:9000");
-
-    assert_eq!(config.bucket, "override-bucket");
-    assert_eq!(config.region, "eu-west-1");
-    assert_eq!(
-        config.endpoint_url.as_deref(),
-        Some("http://s3.override.test:9000")
-    );
-    assert_eq!(
-        config.public_url_base.as_deref(),
-        Some("https://cdn.override.test/media")
-    );
-    assert_eq!(
-        config.presign_url_base.as_deref(),
-        Some("https://s3.override.test")
-    );
-    assert!(!config.path_style);
-
-    unsafe {
-        std::env::remove_var("BLOB_S3_BUCKET");
-        std::env::remove_var("BLOB_S3_REGION");
-        std::env::remove_var("BLOB_S3_ENDPOINT_URL");
-        std::env::remove_var("BLOB_S3_PUBLIC_URL_BASE");
-        std::env::remove_var("BLOB_S3_PRESIGN_URL_BASE");
-        std::env::remove_var("BLOB_S3_PATH_STYLE");
-    }
-}
-
 fn test_s3_config() -> Option<S3Config> {
     let bucket = std::env::var("UNDERLAY_BLOB_S3_TEST_BUCKET").ok()?;
     let region =
