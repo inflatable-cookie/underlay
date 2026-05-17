@@ -29,6 +29,7 @@ Full page components that include header, actions, and content:
 - `SystemIndexPage` — System/operator index shell with header and nav-card grid
 - `AdminDashboardPage` — Admin dashboard shell with header and stacked dashboard sections
 - `ErrorLogListPage` — Retained error-log browse shell with status filter, compact table, stats cards, and expandable detail rows
+- `ContextActionBar` and `ContextActionDialog` — Route-aware contextual action shell for app-owned AI actions
 
 Reference posture:
 
@@ -45,6 +46,7 @@ Reusable components for use inside pages, tabs, or dialogs:
 
 - `EntityList` — Self-contained list with filters, pagination, batch, reorder
 - `EntityDetail` — Metadata and detail sections
+- `EntityInlineListModule` — Compact managed child-collection module for detail grids
 
 Sections are public exports. Use them directly when you need a narrower inline
 surface that is not really a full browse/manage list tab.
@@ -88,12 +90,16 @@ Poodle owns the primitive layer:
     EntityDetail,
     EntityDetailPage,
     ErrorLogListPage,
+    EntityInlineListModule,
     EntityList,
     EntityListPage,
     EntityTrashPage
   } from "@decodelabs/underlay/templates";
 </script>
 ```
+
+See `contextual-action-templates.md` for the contextual action bar and
+execution dialog shell.
 
 ## Quick Example
 

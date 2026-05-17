@@ -178,6 +178,20 @@ than a real browse surface, for example a picker-like or inline utility list:
 />
 ```
 
+When the child collection lives inside the detail grid rather than as a real
+top-level browse tab, prefer `EntityInlineListModule` instead of embedding a
+full `EntityListPage` shell:
+
+```svelte
+<EntityInlineListModule
+  title="Levels"
+  dataLoader={loadPathwayLevels}
+  addDialog={{ title: "Add level", content: addLevelDialog }}
+  itemActions={levelActions}
+  item={levelRow}
+/>
+```
+
 Use the same bridge as root list pages:
 
 - client command returns `PagedListResponse<T>`
@@ -200,6 +214,12 @@ list pattern.
 - `tabsVariant="underline" | "card"`
 - `tabsSize="sm" | "md" | "lg"`
 - `keepMountedTabs`
+
+Retained default posture:
+
+- use underline tabs by default
+- only pass `tabsVariant="card"` when the route has a proved workflow reason to
+  diverge from the normal detail-shell posture
 
 Use `keepMountedTabs` when tab contents should stay mounted after first visit,
 for example when:

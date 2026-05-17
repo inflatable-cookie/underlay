@@ -133,6 +133,8 @@ Rules:
 - do not require an app-local detail wrapper unless the same detail shell is
   genuinely reused across more than one caller
 - route-owned workflow sections may stay local inside the shared shell
+- the retained default top-level tab posture is underline; treat `tabsVariant="card"`
+  as an explicit exception, not the normal detail default
 
 ### Form route rule
 

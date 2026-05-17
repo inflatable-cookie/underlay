@@ -1,5 +1,9 @@
 <script lang="ts">
-  import { EntityDetailPage } from "../../src/templates";
+  import { EntityDetailPage, MetadataDialogTrigger } from "../../src/templates";
+
+  export let backHref = "/projects";
+  export let backLabel = "Back to projects";
+  export let backIsContextual = false;
 
   async function dataLoader() {
     return {
@@ -18,6 +22,11 @@
       ]
     }
   ] as const;
+
+  const metadata = {
+    provider: "manual",
+    flags: ["featured"]
+  };
 </script>
 
 {#snippet overviewTab()}
@@ -28,19 +37,35 @@
   <div data-testid="related-tab-content">Related content</div>
 {/snippet}
 
+{#snippet metadataDebug()}
+  <MetadataDialogTrigger value={metadata} title="Project metadata" />
+{/snippet}
+
 <EntityDetailPage
   title="Project One"
   {dataLoader}
+  {backHref}
+  {backLabel}
+  {backIsContextual}
+  meta={[
+    {
+      label: "",
+      value: metadataDebug,
+      separator: false
+    }
+  ]}
   detailSections={detailSections}
   tabs={[
     {
       id: "overview",
       label: "Overview",
+      separator: true,
       content: overviewTab
     },
     {
       id: "related",
       label: "Related",
+      separator: true,
       content: relatedTab
     }
   ]}

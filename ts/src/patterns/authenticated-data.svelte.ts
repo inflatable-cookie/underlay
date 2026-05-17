@@ -220,6 +220,7 @@ export function useAuthenticatedData<T>(
   let error = $state<string | null>(null);
   let _fetched = false;
   let _inFlight: Promise<void> | null = null;
+  let _queuedRefetch = false;
 
   // Query key tracking: intercept onSuccess to capture the key after each fetch.
   // This must be set up before doFetch is defined since doFetch calls the hook.
@@ -233,6 +234,9 @@ export function useAuthenticatedData<T>(
 
   const doFetch = async (isRefetch = false) => {
     if (_inFlight) {
+      if (isRefetch) {
+        _queuedRefetch = true;
+      }
       return _inFlight;
     }
 
@@ -293,6 +297,10 @@ export function useAuthenticatedData<T>(
       await run;
     } finally {
       _inFlight = null;
+      if (_queuedRefetch) {
+        _queuedRefetch = false;
+        await doFetch(true);
+      }
     }
   };
 

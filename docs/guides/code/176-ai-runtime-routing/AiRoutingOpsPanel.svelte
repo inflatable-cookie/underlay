@@ -283,13 +283,13 @@ import {
       <div class="ops-section__controls">
         <div class="controls-row">
           <NumberInput id="ai-routing-metric-hours" bind:value={metricHoursInput} min={1} max={720} />
-          <Button type="button" variant="secondary" on:click={applyMetricWindow}>{labels.apply}</Button>
+          <Button type="button" variant="secondary" onClick={applyMetricWindow}>{labels.apply}</Button>
         </div>
       </div>
     </div>
     <div class="ops-section__content">
       <DataTable rows={metricRows} columns={metricColumns} emptyMessage={labels.metricsEmpty} showLimitSelector={false}>
-        <svelte:fragment slot="cell" let:column let:row>
+        {#snippet cell(column, row)}
           {@const metric = row.data as AiRoutingMetric | undefined}
           {#if metric && column.id === "providerModel"}
             <code>{metric.providerName}</code>/<code>{metric.modelName}</code>
@@ -323,7 +323,7 @@ import {
           {:else}
             {row.cells[column.id] ?? "—"}
           {/if}
-        </svelte:fragment>
+        {/snippet}
       </DataTable>
     </div>
   </section>
@@ -337,13 +337,13 @@ import {
       <div class="ops-section__controls">
         <div class="controls-row">
           <NumberInput id="ai-routing-anomaly-days" bind:value={anomalyDaysInput} min={2} max={90} />
-          <Button type="button" variant="secondary" on:click={applyAnomalyWindow}>{labels.apply}</Button>
+          <Button type="button" variant="secondary" onClick={applyAnomalyWindow}>{labels.apply}</Button>
         </div>
       </div>
     </div>
     <div class="ops-section__content">
       <DataTable rows={anomalyRows} columns={anomalyColumns} emptyMessage={labels.anomaliesEmpty} showLimitSelector={false}>
-        <svelte:fragment slot="cell" let:column let:row>
+        {#snippet cell(column, row)}
           {@const anomaly = row.data as AiRoutingCostAnomaly | undefined}
           {#if anomaly && column.id === "providerModel"}
             <code>{anomaly.providerName}</code>/<code>{anomaly.modelName}</code>
@@ -354,7 +354,7 @@ import {
           {:else}
             {row.cells[column.id] ?? "—"}
           {/if}
-        </svelte:fragment>
+        {/snippet}
       </DataTable>
     </div>
   </section>
@@ -368,20 +368,20 @@ import {
       <div class="ops-section__controls">
         <div class="controls-row">
           <NumberInput id="ai-routing-parity-hours" bind:value={parityHoursInput} min={1} max={720} />
-          <Button type="button" variant="secondary" on:click={applyParityWindow}>{labels.apply}</Button>
+          <Button type="button" variant="secondary" onClick={applyParityWindow}>{labels.apply}</Button>
         </div>
       </div>
     </div>
     <div class="ops-section__content">
       <DataTable rows={parityRows} columns={parityColumns} emptyMessage={labels.parityEmpty} showLimitSelector={false}>
-        <svelte:fragment slot="cell" let:column let:row>
+        {#snippet cell(column, row)}
           {@const parity = row.data as AiRoutingParity | undefined}
           {#if parity && column.id === "successRate"}
             {toPercent(parity.successRate)}
           {:else}
             {row.cells[column.id] ?? "—"}
           {/if}
-        </svelte:fragment>
+        {/snippet}
       </DataTable>
     </div>
   </section>
@@ -392,13 +392,13 @@ import {
       <div class="ops-section__controls">
         <div class="controls-row">
           <NumberInput id="ai-routing-cost-days" bind:value={costDaysInput} min={1} max={365} />
-          <Button type="button" variant="secondary" on:click={applyCostWindow}>{labels.apply}</Button>
+          <Button type="button" variant="secondary" onClick={applyCostWindow}>{labels.apply}</Button>
         </div>
       </div>
     </div>
     <div class="ops-section__content">
       <DataTable rows={costRows} columns={costColumns} emptyMessage={labels.costEmpty} showLimitSelector={false}>
-        <svelte:fragment slot="cell" let:column let:row>
+        {#snippet cell(column, row)}
           {@const cost = row.data as AiRoutingDailyCost | undefined}
           {#if cost && column.id === "providerModel"}
             <code>{cost.providerName}</code>/<code>{cost.modelName}</code>
@@ -409,7 +409,7 @@ import {
           {:else}
             {row.cells[column.id] ?? "—"}
           {/if}
-        </svelte:fragment>
+        {/snippet}
       </DataTable>
     </div>
   </section>

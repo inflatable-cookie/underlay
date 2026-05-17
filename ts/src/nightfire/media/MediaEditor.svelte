@@ -148,7 +148,7 @@
         id="nightfire-media-id"
         placeholder="Media ID"
         value={mediaId}
-        on:valueChange={(event) => emit({ mediaId: event.detail.value })}
+        onValueChange={(nextValue) => emit({ mediaId: nextValue })}
       />
     {/if}
   </div>
@@ -160,18 +160,18 @@
         id="nightfire-media-caption"
         placeholder="Caption (optional)"
         value={caption}
-        on:valueChange={(event) => emit({ caption: event.detail.value })}
+        onValueChange={(nextValue) => emit({ caption: nextValue })}
       />
       <TextInput
         id="nightfire-media-alt"
         placeholder="Alt text (optional)"
         value={alt}
-        on:valueChange={(event) => emit({ alt: event.detail.value })}
+        onValueChange={(nextValue) => emit({ alt: nextValue })}
       />
       <Select
         value={display}
-        items={displayOptions}
-        onchange={(v) => emit({ display: v })}
+        options={displayOptions}
+        onValueChange={(value) => emit({ display: value })}
         placeholder="Display mode"
       />
     </div>

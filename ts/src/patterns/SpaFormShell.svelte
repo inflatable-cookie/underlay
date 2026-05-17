@@ -17,6 +17,7 @@
     backHref?: string | null;
     backLabel?: string;
     backIsContextual?: boolean;
+    resolveBackContext?: boolean;
     bannerMessage?: string;
     bannerVariant?: BannerVariant;
     /** Initial success state (from previous submission) */
@@ -51,6 +52,7 @@
     backHref = null,
     backLabel = "Back",
     backIsContextual = false,
+    resolveBackContext = true,
     bannerMessage,
     bannerVariant = "warning",
     success: initialSuccess = null,
@@ -153,6 +155,7 @@
   {backHref}
   {backLabel}
   {backIsContextual}
+  {resolveBackContext}
   {bannerMessage}
   {bannerVariant}
   method="post"

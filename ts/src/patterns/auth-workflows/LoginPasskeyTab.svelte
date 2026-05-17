@@ -47,7 +47,7 @@
     <Button
       type="button"
       variant="primary"
-      onclick={onPasskeyLogin}
+      onClick={onPasskeyLogin}
       disabled={passkeyLoading}
       loading={passkeyLoading}
       className="underlay-login-page__passkey-button"

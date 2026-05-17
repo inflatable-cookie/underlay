@@ -20,6 +20,10 @@ export { default as MediaDetailWorkflowPage } from "./MediaDetailWorkflowPage.sv
 export { default as SystemIndexPage } from "./SystemIndexPage.svelte";
 export { default as AdminDashboardPage } from "./AdminDashboardPage.svelte";
 export { default as ErrorLogListPage } from "./ErrorLogListPage.svelte";
+export { default as MetadataDialogTrigger } from "./MetadataDialogTrigger.svelte";
+export { default as ContextActionBar } from "./ContextActionBar.svelte";
+export { default as ContextActionDialog } from "./ContextActionDialog.svelte";
+export { default as ContextActionList } from "./ContextActionList.svelte";
 
 // Level 2 — Sections
 export { default as EntityList } from "./EntityList.svelte";
@@ -30,6 +34,8 @@ export { default as EntityInlineListModule } from "./EntityInlineListModule.svel
 
 // Level 2.5 — Entity Compositions
 export { default as EntityListCard } from "./EntityListCard.svelte";
+export { default as EntityReorderControls } from "./EntityReorderControls.svelte";
+export { default as EntityActionsMenu } from "./EntityActionsMenu.svelte";
 export { toPagedListResult } from "./paged-list";
 
 export type {
@@ -60,6 +66,10 @@ export type {
   EntityListDataLoader,
   EntityListSharedProps,
   FilterConfig,
+  InlineListDialogConfig,
+  InlineListDialogContext,
+  InlineListItemActionConfig,
+  InlineListItemDeleteConfig,
   PagedListResult,
   ReorderConfig,
   SystemIndexCardConfig,
@@ -67,3 +77,16 @@ export type {
   TemplateSortField,
   TemplateSurface
 } from "./template.types";
+
+export type {
+  ContextActionDefinition,
+  ContextActionDialogForm,
+  ContextActionDialogFormContext,
+  ContextActionFieldOption,
+  ContextActionFieldType,
+  ContextActionInputField,
+  ContextActionModelOption,
+  ContextActionResultMode,
+  ContextActionRunState,
+  ContextActionSubmitDetail
+} from "./contextual-action.types";

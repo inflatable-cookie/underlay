@@ -1045,7 +1045,7 @@ const restored = initPageState({
 
 <FormActions>
   <div bind:this={actionBarElement}>
-    <Button type="button" variant="ghost" on:click={handleCancel}>Cancel</Button>
+    <Button type="button" variant="ghost" onClick={handleCancel}>Cancel</Button>
 
     <input type="hidden" name="intent" value={intent} />
     {#if returnTo}
@@ -1297,7 +1297,7 @@ For pages where the form is defined inline (not in a separate component), includ
 
   <FormActions>
     <div bind:this={actionBarElement}>
-      <Button type="button" variant="ghost" on:click={handleCancel}>Cancel</Button>
+      <Button type="button" variant="ghost" onClick={handleCancel}>Cancel</Button>
 
       <input type="hidden" name="intent" value={intent} />
       {#if returnTo}

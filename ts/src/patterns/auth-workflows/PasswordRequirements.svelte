@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { PasswordRequirements as PoodlePasswordRequirements } from "@poodle/svelte";
+  import { PasswordRequirements } from "@poodle/svelte";
   import type { PasswordRequirementsPolicy } from "@poodle/svelte";
 
   /**
@@ -63,7 +63,7 @@
   </div>
 {:else if requirements}
   <div class="underlay-password-requirements {className}">
-    <PoodlePasswordRequirements
+    <PasswordRequirements
       {password}
       {requirements}
       hint="Avoid common words, patterns, and personal information."

@@ -268,8 +268,11 @@ Rules:
 - fake one-tab detail layouts are not the intended posture; use `content`
   instead when there is no real top-level tab split
 - child collections should normally use `EntityListPage`
-- `EntityList` or `EntityInlineListModule` remain the narrower subordinate
-  surfaces for inline/embed utility cases
+- `EntityList` remains the narrower raw list engine for picker-like or utility
+  embeds
+- `EntityInlineListModule` is the retained compact child-collection module for
+  detail-grid surfaces that still need managed behavior such as modal add,
+  per-item actions, and compact pagination without becoming a full browse page
 - child collection tabs should use the canonical child-list API shape from
   `115-admin-resource-api-shapes.md`
 - the detail template supports nested list/detail compositions without forcing

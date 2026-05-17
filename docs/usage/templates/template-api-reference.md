@@ -20,6 +20,10 @@ Complete API reference for all template components.
 
 [See entity-detail-section.md](./entity-detail-section.md)
 
+## EntityInlineListModule
+
+[See entity-inline-list-module.md](./entity-inline-list-module.md)
+
 ## EntityFormPage
 
 [See entity-form-page.md](./entity-form-page.md)
@@ -92,6 +96,46 @@ interface BatchDialogContext {
   ids: string[];
   onSubmit: (values: Record<string, unknown>) => void;
   onCancel: () => void;
+}
+```
+
+### InlineListDialogConfig
+
+```typescript
+interface InlineListDialogConfig {
+  title: string;
+  description?: string;
+  width?: "sm" | "md" | "lg" | "xl" | "full";
+  content: Snippet<[InlineListDialogContext]>;
+}
+
+interface InlineListDialogContext {
+  close: () => void;
+  refetch: () => Promise<void>;
+}
+```
+
+### InlineListItemActionConfig
+
+```typescript
+interface InlineListItemActionConfig<T> {
+  label: string;
+  handler: (item: T) => void | Promise<void>;
+  disabled?: boolean;
+  destructive?: boolean;
+  separator?: boolean;
+}
+```
+
+### InlineListItemDeleteConfig
+
+```typescript
+interface InlineListItemDeleteConfig<T> {
+  title: string;
+  description: string;
+  confirmLabel: string;
+  entityLabel?: (item: T) => string | null;
+  handler: (item: T) => void | Promise<void>;
 }
 ```
 

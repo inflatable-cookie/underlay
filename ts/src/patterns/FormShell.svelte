@@ -2,7 +2,8 @@
   import type { Snippet } from "svelte";
   import type { HTMLFormAttributes } from "svelte/elements";
   import { Card, Callout } from "@poodle/svelte";
-  import { PageHeader as PoodlePageHeader } from "@poodle/svelte";
+  import { PageHeader } from "@poodle/svelte";
+  import { getBackButtonInfo } from "./navigation";
   import type { BannerVariant } from "./banner";
 
   type PrepareHook = ((formData: FormData) => void) | null;
@@ -27,6 +28,7 @@
     backHref?: string | null;
     backLabel?: string;
     backIsContextual?: boolean;
+    resolveBackContext?: boolean;
     method?: "post" | "get";
 
     showTitle?: boolean;
@@ -59,6 +61,7 @@
     backHref = null,
     backLabel = "Back",
     backIsContextual = false,
+    resolveBackContext = true,
     method = "post",
     showTitle = true,
     bannerMessage,
@@ -77,6 +80,30 @@
 
   const hasFieldErrors = $derived(Boolean(fieldErrors && Object.keys(fieldErrors).length > 0));
   const visibleError = $derived(hasFieldErrors ? null : error);
+  let resolvedBackInfo = $state<{ href: string; label: string; contextual: boolean } | null>(null);
+
+  $effect(() => {
+    if (!backHref) {
+      resolvedBackInfo = null;
+      return;
+    }
+
+    if (!resolveBackContext) {
+      resolvedBackInfo = {
+        href: backHref,
+        label: backLabel,
+        contextual: backIsContextual
+      };
+      return;
+    }
+
+    const contextualBackInfo = getBackButtonInfo(backLabel, backHref);
+    resolvedBackInfo = {
+      href: contextualBackInfo.href,
+      label: contextualBackInfo.label,
+      contextual: Boolean(contextualBackInfo.isContextual || backIsContextual)
+    };
+  });
 
   function handleFormData(event: FormDataEvent) {
     if (enhance) return;
@@ -122,13 +149,13 @@
 
 {#if showTitle}
   <div class="underlay-form-shell__header">
-    <PoodlePageHeader
+    <PageHeader
       {title}
       {section}
       {subtitle}
-      {backHref}
-      {backLabel}
-      backIsContextual={backIsContextual}
+      backHref={resolvedBackInfo?.href ?? backHref}
+      backLabel={resolvedBackInfo?.label ?? backLabel}
+      backIsContextual={resolvedBackInfo?.contextual ?? backIsContextual}
       {bannerMessage}
       bannerTone={bannerVariant === "error" ? "danger" : bannerVariant}
     />

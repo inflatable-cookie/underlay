@@ -48,6 +48,21 @@
 />
 
 <EntityListCard
+  title="Project Artemis"
+  subtitle="Context actions available"
+  leadingIcon="briefcase-business"
+  interactive
+  contextMenuItems={[
+    { value: "archive", label: "Archive" },
+    { value: "delete", label: "Delete", tone: "danger" }
+  ]}
+  contextMenuAriaLabel="Project actions"
+  onContextAction={(value) => {
+    lastAction = value;
+  }}
+/>
+
+<EntityListCard
   title="Project Gemini"
   subtitle="Should hide subtitle in selection mode"
   footerText="This should be hidden in selection mode"

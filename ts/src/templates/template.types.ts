@@ -48,6 +48,44 @@ export interface BatchDialogConfig {
   content: TemplateSurface;
 }
 
+export interface InlineListDialogContext {
+  close: () => void;
+  refetch: () => Promise<void>;
+}
+
+export interface InlineListDialogConfig {
+  title: string;
+  description?: string;
+  width?: "sm" | "md" | "lg" | "xl" | "full";
+  content: TemplateSurface;
+}
+
+export interface InlineListItemActionConfig<TItem> {
+  label: string;
+  handler: (item: TItem) => void | Promise<void>;
+  disabled?: boolean;
+  destructive?: boolean;
+  separator?: boolean;
+}
+
+export interface InlineListItemDeleteConfig<TItem> {
+  title: string;
+  description: string;
+  confirmLabel: string;
+  entityLabel?: (item: TItem) => string | null;
+  handler: (item: TItem) => void | Promise<void>;
+}
+
+export interface ReorderActionState {
+  active: boolean;
+  available: boolean;
+  dirty: boolean;
+  saving: boolean;
+  enter: () => void | Promise<void>;
+  save: () => void | Promise<void>;
+  cancel: () => void;
+}
+
 export interface BatchActionConfirm {
   title: string;
   description: string | ((count: number) => string);
@@ -60,6 +98,7 @@ export interface BatchActionConfig {
   label: string;
   tone?: "default" | "danger" | "warning";
   icon?: string;
+  disabled?: boolean | ((ids: string[]) => boolean);
   confirm?: boolean | BatchActionConfirm;
   dialog?: BatchDialogConfig;
   handler: (ids: string[], values?: Record<string, unknown>) => Promise<void>;
@@ -121,6 +160,7 @@ export interface DetailMetaItemConfig {
   label: string;
   value: string | TemplateSurface;
   separator?: boolean;
+  code?: boolean;
 }
 
 export interface DetailItemConfig {

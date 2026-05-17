@@ -1,5 +1,6 @@
 <script lang="ts">
   import { PageHeader } from "@poodle/svelte";
+  import { getBackButtonInfo } from "../patterns/navigation";
   import type { AdminDashboardSectionConfig, TemplateSurface } from "./template.types";
 
   interface Props {
@@ -7,6 +8,8 @@
     subtitle?: string;
     backHref?: string | null;
     backLabel?: string;
+    backIsContextual?: boolean;
+    resolveBackContext?: boolean;
     headerLevel?: 1 | 2 | 3 | 4 | 5 | 6;
     beforeSections?: TemplateSurface;
     sections?: AdminDashboardSectionConfig[];
@@ -18,19 +21,48 @@
     subtitle,
     backHref = null,
     backLabel,
+    backIsContextual = false,
+    resolveBackContext = true,
     headerLevel = 2,
     beforeSections,
     sections = [],
     content
   }: Props = $props();
+
+  let resolvedBackInfo = $state<{ href: string; label: string; contextual: boolean } | null>(null);
+
+  $effect(() => {
+    if (!backHref) {
+      resolvedBackInfo = null;
+      return;
+    }
+
+    const fallbackLabel = backLabel ?? "Back";
+    if (!resolveBackContext) {
+      resolvedBackInfo = {
+        href: backHref,
+        label: fallbackLabel,
+        contextual: backIsContextual
+      };
+      return;
+    }
+
+    const contextualBackInfo = getBackButtonInfo(fallbackLabel, backHref);
+    resolvedBackInfo = {
+      href: contextualBackInfo.href,
+      label: contextualBackInfo.label,
+      contextual: Boolean(contextualBackInfo.isContextual || backIsContextual)
+    };
+  });
 </script>
 
 <div class="underlay-admin-dashboard-page">
   <PageHeader
     {title}
     {subtitle}
-    backHref={backHref ?? null}
-    {backLabel}
+    backHref={resolvedBackInfo?.href ?? null}
+    backLabel={resolvedBackInfo?.label ?? backLabel}
+    backIsContextual={resolvedBackInfo?.contextual ?? false}
     level={headerLevel}
   />
 

@@ -1,10 +1,9 @@
 <script lang="ts">
   import { Select } from "@poodle/svelte";
+  import type { SelectItems, SelectOptionGroup } from "@poodle/svelte/types";
   import type { GroupedOptions, NightfireBlockOptionInput } from "./grouped-options";
 
   type TypeOption = Pick<NightfireBlockOptionInput, "type" | "label">;
-  type SelectItem = { value: string; label: string; disabled?: boolean };
-  type SelectGroup = { label: string; items?: SelectItem[]; groups?: SelectGroup[] };
 
   interface Props {
     value?: string;
@@ -51,12 +50,14 @@
     typeOptions.map((opt) => ({ value: opt.type, label: formatOptionLabel(opt.label) }))
   );
 
-  const groups = $derived.by<SelectGroup[] | null>(() => {
-    if (!groupedOptions?.length) return null;
+  const options = $derived.by<SelectItems>(() => {
+    if (!groupedOptions?.length) return items;
 
-    return groupedOptions.map((group) => {
-      const subgroups = new Map<string, SelectItem[]>();
-      const directItems: SelectItem[] = [];
+    const renderedGroups: SelectOptionGroup[] = [];
+
+    for (const group of groupedOptions) {
+      const subgroups = new Map<string, Array<{ value: string; label: string }>>();
+      const directItems: Array<{ value: string; label: string }> = [];
 
       for (const option of group.options) {
         const item = { value: option.type, label: formatOptionLabel(option.label) };
@@ -69,7 +70,14 @@
         }
       }
 
-      const nestedGroups: SelectGroup[] = Array.from(subgroups.entries())
+      if (directItems.length) {
+        renderedGroups.push({
+          label: group.label,
+          options: directItems.sort((a, b) => a.label.localeCompare(b.label)),
+        });
+      }
+
+      const nestedGroups = Array.from(subgroups.entries())
         .sort(([a], [b]) => {
           const priorityA = subcategoryPriority(a);
           const priorityB = subcategoryPriority(b);
@@ -79,25 +87,22 @@
           return a.localeCompare(b);
         })
         .map(([subcategory, subgroupItems]) => ({
-          label: formatSubgroupLabel(subcategory),
-          items: subgroupItems.sort((a, b) => a.label.localeCompare(b.label))
+          label: `${group.label} / ${formatSubgroupLabel(subcategory)}`,
+          options: subgroupItems.sort((a, b) => a.label.localeCompare(b.label)),
         }));
 
-      return {
-        label: group.label,
-        items: directItems.length ? directItems.sort((a, b) => a.label.localeCompare(b.label)) : undefined,
-        groups: nestedGroups.length ? nestedGroups : undefined
-      };
-    });
+      renderedGroups.push(...nestedGroups);
+    }
+
+    return renderedGroups.length ? renderedGroups : items;
   });
 </script>
 
 <Select
   value={value ?? ""}
-  items={groups ? undefined : items}
-  {groups}
+  {options}
   ariaLabel="Block type"
   {variant}
   {menuMinWidth}
-  onchange={onChange}
+  onValueChange={onChange}
 />

@@ -18,12 +18,12 @@
       message="If you've lost access to your authenticator app, you can update your two-factor authentication settings or set up a new device."
     />
     <div class="underlay-login-page__setup-actions">
-      <Button variant="secondary" on:click={onSetupNow}>
+      <Button variant="secondary" onClick={onSetupNow}>
         Manage 2FA settings
       </Button>
     </div>
     <div class="underlay-login-page__setup-skip">
-      <Button variant="ghost" on:click={onSkipSetup}>
+      <Button variant="ghost" onClick={onSkipSetup}>
         Continue to dashboard
       </Button>
     </div>
@@ -36,10 +36,10 @@
       No need to wait for email codes. Works offline. Stronger than email verification.
     </Callout>
     <div class="underlay-login-page__setup-actions">
-      <Button variant="primary" on:click={onSetupNow}>
+      <Button variant="primary" onClick={onSetupNow}>
         Set up 2FA now
       </Button>
-      <Button variant="secondary" on:click={onSkipSetup}>
+      <Button variant="secondary" onClick={onSkipSetup}>
         Skip for now
       </Button>
     </div>

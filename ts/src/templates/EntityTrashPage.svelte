@@ -6,6 +6,7 @@
     PageHeader,
     PageLoading
   } from "@poodle/svelte";
+  import { getBackButtonInfo } from "../patterns/navigation";
   import type { TemplateSurface } from "./template.types";
 
   interface Props {
@@ -16,6 +17,8 @@
     headerLevel?: 1 | 2 | 3 | 4 | 5 | 6;
     backHref?: string;
     backLabel?: string;
+    backIsContextual?: boolean;
+    resolveBackContext?: boolean;
     loading?: boolean;
     loadingMessage?: string;
     error?: string | null;
@@ -38,6 +41,8 @@
     headerLevel = 1,
     backHref = undefined,
     backLabel = undefined,
+    backIsContextual = false,
+    resolveBackContext = true,
     loading = false,
     loadingMessage = "Loading...",
     error = null,
@@ -51,6 +56,32 @@
     emptyVisual = undefined,
     minItemWidth = "26rem"
   }: Props = $props();
+
+  let resolvedBackInfo = $state<{ href: string; label: string; contextual: boolean } | null>(null);
+
+  $effect(() => {
+    if (!backHref) {
+      resolvedBackInfo = null;
+      return;
+    }
+
+    const fallbackLabel = backLabel ?? "Back";
+    if (!resolveBackContext) {
+      resolvedBackInfo = {
+        href: backHref,
+        label: fallbackLabel,
+        contextual: backIsContextual
+      };
+      return;
+    }
+
+    const contextualBackInfo = getBackButtonInfo(fallbackLabel, backHref);
+    resolvedBackInfo = {
+      href: contextualBackInfo.href,
+      label: contextualBackInfo.label,
+      contextual: Boolean(contextualBackInfo.isContextual || backIsContextual)
+    };
+  });
 </script>
 
 <PageHeader
@@ -59,8 +90,9 @@
   {subtitle}
   {eyebrow}
   level={headerLevel}
-  backHref={backHref ?? null}
-  {backLabel}
+  backHref={resolvedBackInfo?.href ?? null}
+  backLabel={resolvedBackInfo?.label ?? backLabel}
+  backIsContextual={resolvedBackInfo?.contextual ?? false}
 />
 
 {#if loading}

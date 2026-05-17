@@ -171,7 +171,7 @@ $: validateSlug(slug, existingId);
   {#if slugValidation?.suggestion}
     <div class="suggestion">
       <span>Try: {slugValidation.suggestion}</span>
-      <Button size="sm" on:click={() => slug = slugValidation.suggestion}>
+      <Button size="sm" onClick={() => slug = slugValidation.suggestion}>
         Use this
       </Button>
     </div>

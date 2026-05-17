@@ -72,7 +72,7 @@
 
   {#if actionLabel && (actionHref || onAction)}
     <div class="underlay-success-step__action">
-      <Button variant="primary" on:click={handleAction}>
+      <Button variant="primary" onClick={handleAction}>
         {actionLabel}
       </Button>
     </div>

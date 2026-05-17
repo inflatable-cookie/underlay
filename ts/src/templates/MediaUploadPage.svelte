@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
   import { Callout, PageHeader, PageLoading } from "@poodle/svelte";
+  import { getBackButtonInfo } from "../patterns/navigation";
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   type SnippetLike = Snippet | ((...args: any[]) => any);
@@ -10,6 +11,8 @@
     subtitle?: string;
     backHref?: string | null;
     backLabel?: string;
+    backIsContextual?: boolean;
+    resolveBackContext?: boolean;
     bannerMessage?: string;
     bannerTone?: "warning" | "info" | "danger";
     loading?: boolean;
@@ -25,6 +28,8 @@
     subtitle,
     backHref = "/media",
     backLabel = "Back to library",
+    backIsContextual = false,
+    resolveBackContext = true,
     bannerMessage,
     bannerTone = "warning",
     loading = false,
@@ -34,14 +39,40 @@
     intro,
     children
   }: Props = $props();
+
+  let resolvedBackInfo = $state<{ href: string; label: string; contextual: boolean } | null>(null);
+
+  $effect(() => {
+    if (!backHref) {
+      resolvedBackInfo = null;
+      return;
+    }
+
+    if (!resolveBackContext) {
+      resolvedBackInfo = {
+        href: backHref,
+        label: backLabel,
+        contextual: backIsContextual
+      };
+      return;
+    }
+
+    const contextualBackInfo = getBackButtonInfo(backLabel, backHref);
+    resolvedBackInfo = {
+      href: contextualBackInfo.href,
+      label: contextualBackInfo.label,
+      contextual: Boolean(contextualBackInfo.isContextual || backIsContextual)
+    };
+  });
 </script>
 
 <div class="underlay-media-upload-page">
   <PageHeader
     {title}
     {subtitle}
-    {backHref}
-    {backLabel}
+    backHref={resolvedBackInfo?.href ?? backHref}
+    backLabel={resolvedBackInfo?.label ?? backLabel}
+    backIsContextual={resolvedBackInfo?.contextual ?? false}
     {bannerMessage}
     {bannerTone}
   />

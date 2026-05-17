@@ -284,26 +284,57 @@
   let loadedReorderItems = $state<Array<T & ReorderableItem>>([]);
   let reorderHighlightedIds = $state<string[]>([]);
   let reorderSessionPending = $state(false);
+  let previousListQueryKey = $state<string | null>(null);
+  let pendingFetchQuery = $state<QueryParams | null>(null);
+  let handledListQueryKey = $state<string | null>(null);
 
   const listQueryKey = $derived.by(() => JSON.stringify({
     query: currentQuery,
     reloadKey: reloadKey ?? null
   }));
   const selectedIdsKey = $derived.by(() => JSON.stringify(batch.selectedIds));
+  const getCurrentQuery = () => pendingFetchQuery ?? currentQuery;
+  const getDataLoader = () => dataLoader;
 
   // Data loading (includes filters and sort)
   const pageData = useAuthenticatedData<PagedListResult<T>>(
     async (fetch, token) => {
-      return await dataLoader(fetch, token, currentQuery);
+      return await getDataLoader()(fetch, token, getCurrentQuery());
     },
     {
       defaultValue: {
         data: [],
         total: 0
-      },
-      queryKey: () => listQueryKey
+      }
     }
   );
+
+  $effect(() => {
+    const currentKey = listQueryKey;
+    if (previousListQueryKey === null) {
+      previousListQueryKey = currentKey;
+      return;
+    }
+
+    if (previousListQueryKey !== currentKey) {
+      previousListQueryKey = currentKey;
+      if (handledListQueryKey === currentKey) {
+        handledListQueryKey = null;
+        return;
+      }
+      void pageData.refetch();
+    }
+  });
+
+  $effect(() => {
+    if (!pendingFetchQuery) {
+      return;
+    }
+
+    if (JSON.stringify(normalizeQuery(pendingFetchQuery)) === JSON.stringify(currentQuery)) {
+      pendingFetchQuery = null;
+    }
+  });
 
   const items = $derived(pageData.data?.data ?? []);
   const itemCount = $derived(items.length);
@@ -461,11 +492,17 @@
 
   function setQuery(nextQuery: QueryParams) {
     const normalizedQuery = normalizeQuery(nextQuery);
+    pendingFetchQuery = normalizedQuery;
+    handledListQueryKey = JSON.stringify({
+      query: normalizedQuery,
+      reloadKey: reloadKey ?? null
+    });
     if (onQueryChange) {
       onQueryChange(normalizedQuery);
     } else {
       internalQuery = normalizedQuery;
     }
+    void pageData.refetch();
   }
 
   function getFilterValue(filter: FilterConfig): string {

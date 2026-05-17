@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
-  import { MetaBar, MetaItem, PageHeader } from "@poodle/svelte";
+  import { MetaBar, PageHeader } from "@poodle/svelte";
+  import EntityMetaItem from "./EntityMetaItem.svelte";
   import type { DetailMetaItemConfig } from "./template.types";
 
   interface Props {
@@ -38,13 +39,7 @@
         {#if detailMeta.length > 0}
           <MetaBar ariaLabel="Detail metadata">
             {#each detailMeta as metaItem}
-              <MetaItem label={metaItem.label} separator={metaItem.separator ?? true}>
-                {#if typeof metaItem.value === "string"}
-                  {metaItem.value}
-                {:else}
-                  {@render metaItem.value()}
-                {/if}
-              </MetaItem>
+              <EntityMetaItem item={metaItem} />
             {/each}
           </MetaBar>
         {/if}

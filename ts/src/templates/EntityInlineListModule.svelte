@@ -103,6 +103,7 @@
   let selectedIds = $state<string[]>([]);
   let reorderAvailable = $state(false);
   let reorderActionState = $state<ReorderActionState | null>(null);
+  let previousQueryKey = $state<string | null>(null);
 
   $effect(() => {
     if (query || internalQuery.limit !== DEFAULT_PAGE_SIZE || pageSize === DEFAULT_PAGE_SIZE) {
@@ -115,7 +116,7 @@
     };
   });
 
-  const usesLoader = Boolean(dataLoader);
+  const usesLoader = $derived(Boolean(dataLoader));
   const effectiveQuery = $derived.by(() => {
     const source = query ?? internalQuery;
     return {
@@ -131,21 +132,43 @@
       refreshVersion
     })
   );
+  const getDataLoader = () => dataLoader;
+  const getEffectiveQuery = () => effectiveQuery;
 
-  const loadedData = dataLoader
-    ? useAuthenticatedData<PagedListResult<T>>(
-        async (fetch, token) => await dataLoader(fetch, token, effectiveQuery),
-        {
-          defaultValue: {
-            data: [],
-            total: 0
-          },
-          queryKey: () => queryKey
-        }
-      )
-    : null;
+  const loadedData = useAuthenticatedData<PagedListResult<T>>(
+    async (fetch, token) => {
+      const loader = getDataLoader();
+      if (!loader) {
+        return {
+          data: [],
+          total: 0
+        };
+      }
 
-  const visibleItems = $derived(usesLoader ? (loadedData?.data?.data ?? []) : items);
+      return await loader(fetch, token, getEffectiveQuery());
+    },
+    {
+      defaultValue: {
+        data: [],
+        total: 0
+      }
+    }
+  );
+
+  $effect(() => {
+    const currentKey = queryKey;
+    if (previousQueryKey === null) {
+      previousQueryKey = currentKey;
+      return;
+    }
+
+    if (previousQueryKey !== currentKey) {
+      previousQueryKey = currentKey;
+      void loadedData.refetch();
+    }
+  });
+
+  const visibleItems = $derived(usesLoader ? (loadedData.data?.data ?? []) : items);
   const derivedTotalCount = $derived.by(() => {
     if (!usesLoader) {
       return items.length;

@@ -5,3 +5,4 @@ export type { SpaFormResult, SpaSubmitHandler, SpaNavigateFn } from "./spa-form-
 export * from "./selection-mode-controller.svelte";
 export * from "./selection-transform-state";
 export * from "./reorder-session.svelte";
+export * from "./context-actions.svelte";

@@ -719,11 +719,11 @@ Forms should NOT contain `<form>` elements or submission logic. They render fiel
 <FormActions align="start" {dangerItems}>
   <div bind:this={actionBarElement}>
     <svelte:fragment slot="danger">
-      <Button type="button" variant="ghost" on:click={handleCancel} disabled={submitting}>
+      <Button type="button" variant="ghost" onClick={handleCancel} disabled={submitting}>
         Cancel
       </Button>
       {#if mode === "edit"}
-        <Button type="button" variant="ghost" tone="danger" on:click={() => (showDeleteConfirm = true)}>
+        <Button type="button" variant="ghost" tone="danger" onClick={() => (showDeleteConfirm = true)}>
           Soft delete entity
         </Button>
       {/if}
