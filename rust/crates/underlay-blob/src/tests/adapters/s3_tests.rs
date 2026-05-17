@@ -18,6 +18,7 @@ fn minio_dev_config_uses_path_style_endpoint_and_bucket_public_base() {
         Some("http://s3.acme.test:9000/acme-media")
     );
     assert!(config.path_style);
+    assert!(config.public_read);
     assert_eq!(config.presign_url_base, None);
 }
 

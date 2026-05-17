@@ -48,6 +48,13 @@ pub struct S3Config {
 
     /// Whether to use path-style URLs (required for some S3-compatible services).
     pub path_style: bool,
+
+    /// Whether the bucket should allow anonymous object reads.
+    ///
+    /// This is intended for local/dev buckets that are exposed through a
+    /// public URL base. Production buckets should normally manage policy
+    /// outside the adapter.
+    pub public_read: bool,
 }
 
 impl S3Config {
@@ -62,6 +69,7 @@ impl S3Config {
             upload_url_expiry: Duration::from_secs(3600), // 1 hour
             download_url_expiry: Duration::from_secs(300), // 5 minutes
             path_style: false,
+            public_read: false,
         }
     }
 
@@ -101,6 +109,12 @@ impl S3Config {
         self
     }
 
+    /// Enable or disable anonymous object reads for the configured bucket.
+    pub fn public_read(mut self, enabled: bool) -> Self {
+        self.public_read = enabled;
+        self
+    }
+
     /// Create a development-friendly MinIO config.
     ///
     /// This assumes:
@@ -116,6 +130,7 @@ impl S3Config {
         Self::new(bucket, "us-east-1")
             .endpoint_url(endpoint_url)
             .public_url_base(public_url_base)
+            .public_read(true)
             .path_style(true)
     }
 
@@ -129,6 +144,11 @@ pub struct S3Adapter {
 }
 
 impl S3Adapter {
+    /// Ensure the configured bucket exists and has any adapter-managed policy.
+    pub async fn ensure_bucket_ready(&self) -> BlobResult<()> {
+        self.ensure_bucket_exists().await
+    }
+
     fn sdk_error_details<E, R>(
         err: &aws_smithy_runtime_api::client::result::SdkError<E, R>,
     ) -> String
@@ -261,7 +281,7 @@ impl S3Adapter {
             .send()
             .await
         {
-            Ok(_) => return Ok(()),
+            Ok(_) => return self.ensure_bucket_policy().await,
             Err(err) => {
                 let err_str = Self::sdk_error_details(&err);
                 let missing_bucket = err_str.contains("NoSuchBucket")
@@ -295,7 +315,7 @@ impl S3Adapter {
         }
 
         match request.send().await {
-            Ok(_) => Ok(()),
+            Ok(_) => self.ensure_bucket_policy().await,
             Err(err) => {
                 let err_str = Self::sdk_error_details(&err);
                 warn!(
@@ -307,7 +327,7 @@ impl S3Adapter {
                 if err_str.contains("BucketAlreadyOwnedByYou")
                     || err_str.contains("BucketAlreadyExists")
                 {
-                    Ok(())
+                    self.ensure_bucket_policy().await
                 } else {
                     Err(BlobError::BucketNotFound(format!(
                         "create_bucket failed for '{}': {}",
@@ -316,6 +336,33 @@ impl S3Adapter {
                 }
             }
         }
+    }
+
+    async fn ensure_bucket_policy(&self) -> BlobResult<()> {
+        if !self.config.public_read {
+            return Ok(());
+        }
+
+        let policy = format!(
+            r#"{{"Version":"2012-10-17","Statement":[{{"Effect":"Allow","Principal":{{"AWS":["*"]}},"Action":["s3:GetObject"],"Resource":["arn:aws:s3:::{bucket}/*"]}}]}}"#,
+            bucket = self.config.bucket
+        );
+
+        self.client
+            .put_bucket_policy()
+            .bucket(&self.config.bucket)
+            .policy(policy)
+            .send()
+            .await
+            .map_err(|err| {
+                BlobError::TransportError(format!(
+                    "put_bucket_policy failed for '{}': {}",
+                    self.config.bucket,
+                    Self::sdk_error_details(&err)
+                ))
+            })?;
+
+        Ok(())
     }
 }
 
