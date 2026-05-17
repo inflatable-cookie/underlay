@@ -719,8 +719,8 @@ interface Props {
   page?: number;
   limit?: number;
   total?: number;
-  on:pageChange?: (event: CustomEvent<{ page: number }>) => void;
-  on:limitChange?: (event: CustomEvent<{ limit: number }>) => void;
+  onPageChange?: (page: number) => void;
+  onLimitChange?: (limit: number) => void;
 
   // Appearance
   variant?: "full" | "simple";     // "full" shows page numbers, "simple" shows prev/next
@@ -770,8 +770,8 @@ interface Props {
   page={currentPage}
   limit={itemsPerPage}
   total={totalItems}
-  on:pageChange={(event) => currentPage = event.detail.page}
-  on:limitChange={(event) => itemsPerPage = event.detail.limit}
+  onPageChange={(page) => currentPage = page}
+  onLimitChange={(limit) => itemsPerPage = limit}
   showLimitSelector
 />
 ```

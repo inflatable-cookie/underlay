@@ -24,15 +24,17 @@
   <p class="underlay-login-page__hint">{passkeyHint}</p>
 
   {#if showPasskeyEmailField}
-    <Field id="underlay-passkey-email" label="Email" description="Optional" let:describedBy>
-      <TextInput
-        id="underlay-passkey-email"
-        type="email"
-        value={passkeyEmail}
-        describedBy={describedBy}
-        disabled={passkeyLoading}
-        on:valueChange={(event) => { passkeyEmail = event.detail.value; }}
-      />
+    <Field id="underlay-passkey-email" label="Email" description="Optional">
+      {#snippet control({ describedBy })}
+        <TextInput
+          id="underlay-passkey-email"
+          type="email"
+          value={passkeyEmail}
+          describedBy={describedBy}
+          disabled={passkeyLoading}
+          onValueChange={(nextValue) => { passkeyEmail = nextValue; }}
+        />
+      {/snippet}
     </Field>
   {/if}
 

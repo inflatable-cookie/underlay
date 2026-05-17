@@ -76,8 +76,8 @@
       variant="pill"
       size="sm"
       ariaLabel="Two-factor verification methods"
-      on:valueChange={(event) => {
-        activeMethod = event.detail.value as Method;
+      onValueChange={(value) => {
+        activeMethod = value as Method;
       }}
     />
   </div>
@@ -105,18 +105,20 @@
         label="2FA code"
         disabled={loading}
         error={error ?? undefined}
-        on:valueChange={(event) => { code = event.detail.value; }}
+        onValueChange={(value) => { code = value; }}
       />
     {:else if activeMethod === "backup"}
-      <Field id="backup-code" label="Backup code" required let:describedBy>
-        <TextInput
-          id="backup-code"
-          value={code}
-          describedBy={describedBy}
-          placeholder="XXXXX-XXXXX"
-          disabled={loading}
-          on:valueChange={(event) => { code = event.detail.value; }}
-        />
+      <Field id="backup-code" label="Backup code" required>
+        {#snippet control({ describedBy })}
+          <TextInput
+            id="backup-code"
+            value={code}
+            describedBy={describedBy}
+            placeholder="XXXXX-XXXXX"
+            disabled={loading}
+            onValueChange={(nextValue) => { code = nextValue; }}
+          />
+        {/snippet}
       </Field>
       {#if error}
         <Callout tone="danger" message={error} announceMode="assertive" />
@@ -127,7 +129,7 @@
         label="Email code"
         disabled={loading}
         error={error ?? undefined}
-        on:valueChange={(event) => { code = event.detail.value; }}
+        onValueChange={(value) => { code = value; }}
       />
     {:else}
       <Callout tone="info" message={emailHintPending} />
@@ -135,14 +137,14 @@
 
     <FormActions align="between">
       {#if onBack}
-        <Button type="button" variant="ghost" on:click={onBack} disabled={loading}>
+        <Button type="button" variant="ghost" onClick={onBack} disabled={loading}>
           {backLabel}
         </Button>
       {/if}
 
       <div class="underlay-two-factor-step__actions">
         {#if activeMethod === "email" && !emailCodeRequested}
-          <Button type="button" variant="primary" on:click={handleRequestEmailCode} loading={loading}>
+          <Button type="button" variant="primary" onClick={handleRequestEmailCode} loading={loading}>
             {loading ? "Sending..." : "Send code"}
           </Button>
         {:else}
@@ -156,7 +158,7 @@
     {#if activeMethod === "email" && emailCodeRequested && onResendEmailCode}
       <div class="underlay-two-factor-step__resend">
         <span class="underlay-two-factor-step__resend-text">Didn't receive the code?</span>
-        <Button type="button" variant="ghost" size="sm" on:click={onResendEmailCode} disabled={loading}>
+        <Button type="button" variant="ghost" size="sm" onClick={onResendEmailCode} disabled={loading}>
           Resend code
         </Button>
       </div>
@@ -177,12 +179,12 @@
       label="Email code"
       disabled={loading}
       error={error ?? undefined}
-      on:valueChange={(event) => { code = event.detail.value; }}
+      onValueChange={(value) => { code = value; }}
     />
 
     <FormActions align="between">
       {#if onBack}
-        <Button type="button" variant="ghost" on:click={onBack} disabled={loading}>
+        <Button type="button" variant="ghost" onClick={onBack} disabled={loading}>
           {backLabel}
         </Button>
       {/if}
@@ -194,7 +196,7 @@
     {#if onResendEmailCode}
       <div class="underlay-two-factor-step__resend">
         <span class="underlay-two-factor-step__resend-text">Didn't receive the code?</span>
-        <Button type="button" variant="ghost" size="sm" on:click={onResendEmailCode} disabled={loading}>
+        <Button type="button" variant="ghost" size="sm" onClick={onResendEmailCode} disabled={loading}>
           Resend code
         </Button>
       </div>

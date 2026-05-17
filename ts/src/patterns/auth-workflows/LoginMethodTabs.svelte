@@ -28,7 +28,7 @@
     items={items}
     variant="pill"
     ariaLabel="Authentication methods"
-    on:valueChange={(event) => onSelect(event.detail.value as LoginMethod)}
+    onValueChange={(value) => onSelect(value as LoginMethod)}
   />
 </div>
 

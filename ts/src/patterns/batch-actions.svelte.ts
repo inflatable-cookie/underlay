@@ -52,9 +52,9 @@
  *     tone: action.variant === "danger" ? "danger" : action.variant === "warning" ? "warning" : "default"
  *   }))}
  *   showSelectAll
- *   on:clear={() => batch.clear()}
- *   on:selectAll={() => batch.selectAll(items.map((item) => item.id))}
- *   on:action={(event) => batch.requestAction(event.detail.id)}
+ *   onClear={() => batch.clear()}
+ *   onSelectAll={() => batch.selectAll(items.map((item) => item.id))}
+ *   onAction={(id) => batch.requestAction(id)}
  * />
  *
  * {#if batch.pendingAction}

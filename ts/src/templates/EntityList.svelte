@@ -1,7 +1,7 @@
 <script lang="ts">
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   type T = any;
-  import { untrack } from "svelte";
+  import { onDestroy, untrack } from "svelte";
   import { getAuthConfig } from "../patterns/auth";
   import { useAuthenticatedData } from "../runtime/auth";
   import { useBatchActions } from "../patterns/batch-actions.svelte";
@@ -43,6 +43,13 @@
   } from "@poodle/svelte";
   import type { FilterField, QueryParams, SortField } from "../client/query";
   import { DEFAULT_PAGE_SIZE } from "../patterns/pagination-types";
+  import {
+    claimListSelectionScope,
+    createListSelectionScopeId,
+    registerListSelectionScope,
+    releaseListSelectionScope
+  } from "../patterns/list-selection-scope.svelte";
+  import EntityReorderControls from "./EntityReorderControls.svelte";
   import type {
     BatchActionConfig,
     CustomReorderConfig,
@@ -51,6 +58,7 @@
     FilterConfig,
     LoadedReorderConfig,
     PagedListResult,
+    ReorderActionState,
     ReorderErrorResult,
     ReorderConfig,
     TemplateSurface
@@ -82,6 +90,10 @@
     
     /** For cards: render snippet for each item (receives item + selection context) */
     renderItem?: TemplateSurface;
+
+    /** For cards: compact the underlying ListGrid spacing/layout for embedded surfaces. */
+    listGridVariant?: "default" | "compact";
+    listGridGap?: number | string | null;
 
     /** For reorder mode: custom item rendering */
     renderReorderItem?: TemplateSurface;
@@ -180,6 +192,9 @@
     /** Called when reorder can genuinely be used for the current result set */
     onReorderAvailabilityChange?: (enabled: boolean) => void;
 
+    /** Called when template shells need to render reorder controls outside the list body. */
+    onReorderActionStateChange?: (state: ReorderActionState) => void;
+
     /** Custom reorder error handler for conflict recovery */
     onReorderError?: EntityListSharedProps<T>["onReorderError"];
   }
@@ -193,6 +208,8 @@
     idField = "id",
     presentation,
     renderItem,
+    listGridVariant = "default",
+    listGridGap = "1rem",
     renderReorderItem,
     columns,
     rowActions,
@@ -226,12 +243,14 @@
     query: externalQuery,
     onQueryChange,
     onReorderAvailabilityChange,
+    onReorderActionStateChange,
     onReorderError
   }: Props = $props();
 
   // --- State ---
 
   const toastStore = useToasts();
+  const selectionScopeId = createListSelectionScopeId();
 
   let internalQuery = $state<QueryParams>({
     page: 1,
@@ -264,6 +283,7 @@
   let reorderController = $state<ReorderController<ReorderableItem & T> | null>(null);
   let loadedReorderItems = $state<Array<T & ReorderableItem>>([]);
   let reorderHighlightedIds = $state<string[]>([]);
+  let reorderSessionPending = $state(false);
 
   const listQueryKey = $derived.by(() => JSON.stringify({
     query: currentQuery,
@@ -306,6 +326,12 @@
 
   // Batch actions
   const batch = useBatchActions<string>();
+  const unregisterSelectionScope = registerListSelectionScope(selectionScopeId, () => {
+    batch.clear();
+    setSelectionMode(false);
+  });
+
+  onDestroy(unregisterSelectionScope);
 
   // Notify parent of visible and total count changes
   $effect(() => {
@@ -326,6 +352,18 @@
   $effect(() => {
     selectedIdsKey;
     onSelectedIdsChange?.([...batch.selectedIds]);
+  });
+
+  $effect(() => {
+    onReorderActionStateChange?.({
+      active: reorderMode,
+      available: reorderAvailable,
+      dirty: Boolean(reorderController?.isDirty),
+      saving: Boolean(reorderController?.isPending),
+      enter: enterReorderMode,
+      save: handleReorderSubmit,
+      cancel: exitReorderMode
+    });
   });
 
   $effect(() => {
@@ -558,6 +596,11 @@
   }
 
   function setSelectionMode(enabled: boolean) {
+    if (enabled) {
+      claimListSelectionScope(selectionScopeId);
+    } else {
+      releaseListSelectionScope(selectionScopeId);
+    }
     if (externalSelectionMode === undefined) {
       internalSelectionMode = enabled;
     }
@@ -597,12 +640,14 @@
 
   async function createReorderSession(): Promise<boolean> {
     if (!reorder?.enabled) return false;
+    reorderSessionPending = true;
     reorderHighlightedIds = [];
 
     if (isCustomReorderConfig(reorder)) {
       reorderController = null;
       loadedReorderItems = [];
       reorderError = null;
+      reorderSessionPending = false;
       return true;
     }
 
@@ -611,6 +656,7 @@
       const result = await reorder.loadItems(fetch, token, currentQuery);
       if (result.error) {
         toastStore.push({ message: result.error, variant: "error" });
+        reorderSessionPending = false;
         return false;
       }
 
@@ -625,6 +671,7 @@
         await reorder.handler(orderedIds);
       });
       reorderError = null;
+      reorderSessionPending = false;
       return true;
     }
 
@@ -639,6 +686,7 @@
       }
     );
     reorderError = null;
+    reorderSessionPending = false;
     return true;
   }
 
@@ -731,6 +779,13 @@
         }
         return;
       }
+      if (!reorderController && !reorderSessionPending) {
+        void createReorderSession().then((ready) => {
+          if (!ready) {
+            setReorderMode(false);
+          }
+        });
+      }
       return;
     }
 
@@ -779,21 +834,33 @@
     return "default";
   }
 
+  function isBatchActionDisabled(action: BatchActionConfig | undefined): boolean {
+    if (!action?.disabled) return false;
+    return typeof action.disabled === "function"
+      ? action.disabled(batch.selectedIds)
+      : action.disabled;
+  }
+
   // Convert batch actions for BulkActionBar (include dialog actions)
   const bulkActions = $derived<BulkAction[]>([
-    ...batch.availableActions.map((action) => ({
-      id: action.id,
-      label: action.label,
-      icon: action.icon,
-      tone: toBulkActionTone(action.variant)
-    })),
+    ...batch.availableActions.map((action) => {
+      const config = batchActions.find((candidate) => candidate.id === action.id);
+      return {
+        id: action.id,
+        label: action.label,
+        icon: action.icon,
+        tone: toBulkActionTone(action.variant),
+        disabled: isBatchActionDisabled(config)
+      };
+    }),
     ...batchActions
       .filter((a) => a.dialog)
       .map((action) => ({
         id: action.id,
         label: action.label,
         icon: action.icon,
-        tone: toBulkActionTone(action.tone)
+        tone: toBulkActionTone(action.tone),
+        disabled: isBatchActionDisabled(action)
       }))
   ]);
 
@@ -802,6 +869,7 @@
   function handleBatchAction(event: CustomEvent<{ id: string }>) {
     const actionId = event.detail.id;
     const actionConfig = batchActions.find((a) => a.id === actionId);
+    if (isBatchActionDisabled(actionConfig)) return;
 
     if (actionConfig?.dialog) {
       pendingDialogAction = actionConfig;
@@ -856,9 +924,9 @@
     totalItems={totalCount}
     pageSize={currentPageSize}
     showPaginationSummary={false}
-    on:pageChange={(event) => handlePageChange(event.detail.page)}
+    onPageChange={handlePageChange}
   >
-    <svelte:fragment slot="actions">
+    {#snippet actions()}
       {#if itemCount > 0 && !reorderMode && batchActions.length > 0}
         <IconButton
           type="button"
@@ -867,38 +935,38 @@
           icon={selectionMode ? "x" : "check-square"}
           ariaLabel={selectionMode ? "Cancel selection" : "Select items"}
           tooltip={selectionMode ? "Cancel Selection" : "Select Items"}
-          on:click={toggleSelectionMode}
+          onClick={toggleSelectionMode}
         />
       {/if}
       {#if reorderAvailable && !selectionMode}
-        <IconButton
-          type="button"
-          variant="secondary"
-          tone={reorderMode ? "danger" : "default"}
-          icon="arrow-up-down"
-          ariaLabel={reorderMode ? "Cancel reorder" : "Reorder items"}
-          tooltip={reorderMode ? "Cancel Reorder" : "Reorder Items"}
-          on:click={async () => (reorderMode ? exitReorderMode() : await enterReorderMode())}
+        <EntityReorderControls
+          active={reorderMode}
+          available={reorderAvailable}
+          dirty={Boolean(reorderController?.isDirty)}
+          saving={Boolean(reorderController?.isPending)}
+          onEnter={enterReorderMode}
+          onSave={handleReorderSubmit}
+          onCancel={exitReorderMode}
         />
       {/if}
       {#if !selectionMode && !reorderMode && onAdd}
-        <Button variant="primary" on:click={onAdd}>{addLabel}</Button>
+        <Button variant="primary" onClick={onAdd}>{addLabel}</Button>
       {/if}
-    </svelte:fragment>
+    {/snippet}
 
-    <svelte:fragment slot="filters">
+    {#snippet filters()}
       {#if filters.length > 0 && !reorderMode}
         <FilterToolbar ariaLabel={`${title} filters`} summaryText="Filters">
-          <svelte:fragment slot="summary">
+          {#snippet summary()}
             <PaginationSummary
               currentPage={currentPage}
               totalPages={totalPages}
               totalItems={totalCount}
               pageSize={currentPageSize}
             />
-          </svelte:fragment>
+          {/snippet}
 
-          <svelte:fragment slot="actions">
+          {#snippet actions()}
             {#if currentSort.length > 0}
               <IconButton
                 icon="x"
@@ -906,7 +974,7 @@
                 size="sm"
                 ariaLabel="Clear sort"
                 tooltip="Clear sort"
-                on:click={clearSort}
+                onClick={clearSort}
               />
             {/if}
             <IconButton
@@ -915,9 +983,9 @@
               size="sm"
               ariaLabel="Refresh list"
               tooltip="Refresh"
-              on:click={() => pageData.refetch()}
+              onClick={() => pageData.refetch()}
             />
-          </svelte:fragment>
+          {/snippet}
           
           {#each filters as filter}
             <div
@@ -931,15 +999,15 @@
                   value={getFilterValue(filter)}
                   ariaLabel={getFilterAriaLabel(filter)}
                   placeholder={getSearchPlaceholder(filter)}
-                  on:valueChange={(event) => handleFilterChange(filter, event.detail.value)}
+                  onValueChange={(nextValue) => handleFilterChange(filter, nextValue)}
                 />
               {:else if filter.type === "select"}
                 <Select
                   id={`filter-${filter.id}`}
                   value={getFilterValue(filter)}
-                  items={getSelectItems(filter)}
+                  options={getSelectItems(filter)}
                   ariaLabel={getFilterAriaLabel(filter)}
-                  onchange={(value) => handleFilterChange(filter, value)}
+                  onValueChange={(value) => handleFilterChange(filter, value)}
                 />
               {:else if filter.type === "sort" && filter.sortFields}
                 <OrderBy
@@ -955,7 +1023,7 @@
           {/each}
         </FilterToolbar>
       {/if}
-    </svelte:fragment>
+    {/snippet}
 
     <!-- Content rendered below -->
     {#if pageData.loading && items.length === 0}
@@ -967,11 +1035,11 @@
         title={`No ${title.toLowerCase()} found`}
         message="Try adjusting your filters or create a new item."
       >
-        <svelte:fragment slot="actions">
+        {#snippet actions()}
           {#if onAdd}
-            <Button variant="primary" on:click={onAdd}>{addLabel}</Button>
+            <Button variant="primary" onClick={onAdd}>{addLabel}</Button>
           {/if}
-        </svelte:fragment>
+        {/snippet}
       </EmptyState>
     {:else if reorderMode && customReorderContent}
       {@render customReorderContent({
@@ -986,9 +1054,10 @@
         dirty={reorderController.isDirty}
         submitting={reorderController.isPending}
         errorMessage={reorderError}
-        onsubmit={handleReorderSubmit}
-        oncancel={exitReorderMode}
-        on:reorder={(event: CustomEvent<{ items: EditableListItem[] }>) => reorderController?.updatePending(event.detail.items)}
+        showWorkflowChrome={false}
+        onSubmit={handleReorderSubmit}
+        onCancel={exitReorderMode}
+        onReorder={(items: EditableListItem[]) => reorderController?.updatePending(items)}
       >
         {#snippet item(reorderEntry: EditableListItem)}
           {@const originalItem = getReorderOriginalItem(reorderEntry.id)}
@@ -1007,7 +1076,7 @@
         {/snippet}
       </EditableList>
     {:else if presentation === "cards"}
-      <ListGrid minItemWidth="26rem" gap="1rem">
+      <ListGrid minItemWidth="26rem" variant={listGridVariant} gap={listGridGap}>
         {#each items as item (String((item as Record<string, unknown>)[idField]))}
           {#if renderItem}
             {@render renderItem(item, getItemContext(item))}
@@ -1037,28 +1106,28 @@
         selectable={selectionMode}
         selectedRowIds={batch.selectedIds}
         emptyMessage="No items found"
-        on:rowActionSelect={(event) => onRowActionSelect?.(event.detail.row as TableRow<T>, event.detail.action)}
-        on:rowToggle={(event) => batch.toggle(event.detail.rowId, event.detail.selected)}
-        on:toggleAll={(event) => {
-          if (event.detail.selected) {
+        onRowActionSelect={({ row, action }) => onRowActionSelect?.(row as TableRow<T>, action)}
+        onRowToggle={({ rowId, selected }) => batch.toggle(rowId, selected)}
+        onToggleAll={({ selected }) => {
+          if (selected) {
             batch.selectAll(itemIds);
           } else {
             batch.clear();
           }
         }}
       >
-        <svelte:fragment slot="cell" let:column let:row let:value>
+        {#snippet cell(column, row, value)}
           {#if renderCell}
             {@render renderCell(column, row as TableRow<T>, value)}
           {:else}
             {value}
           {/if}
-        </svelte:fragment>
-        <svelte:fragment slot="expandedRow" let:row>
+        {/snippet}
+        {#snippet expandedRow(row)}
           {#if renderExpandedRow}
             {@render renderExpandedRow(row as TableRow<T>)}
           {/if}
-        </svelte:fragment>
+        {/snippet}
       </DataTable>
     {/if}
   </ListContainer>
@@ -1066,16 +1135,16 @@
   <!-- When used inside EntityListPage, don't show ListContainer shell -->
   {#if filters.length > 0 && !reorderMode}
     <FilterToolbar ariaLabel="Filters" summaryText="Filters">
-      <svelte:fragment slot="summary">
+      {#snippet summary()}
         <PaginationSummary
           currentPage={currentPage}
           totalPages={totalPages}
           totalItems={totalCount}
           pageSize={currentPageSize}
         />
-      </svelte:fragment>
+      {/snippet}
 
-      <svelte:fragment slot="actions">
+      {#snippet actions()}
         {#if currentSort.length > 0}
           <IconButton
             icon="x"
@@ -1083,7 +1152,7 @@
             size="sm"
             ariaLabel="Clear sort"
             tooltip="Clear sort"
-            on:click={clearSort}
+            onClick={clearSort}
           />
         {/if}
         <IconButton
@@ -1092,9 +1161,9 @@
           size="sm"
           ariaLabel="Refresh list"
           tooltip="Refresh"
-          on:click={() => pageData.refetch()}
+          onClick={() => pageData.refetch()}
         />
-      </svelte:fragment>
+      {/snippet}
       
         {#each filters as filter}
         <div
@@ -1108,15 +1177,15 @@
               value={getFilterValue(filter)}
               ariaLabel={getFilterAriaLabel(filter)}
               placeholder={getSearchPlaceholder(filter)}
-              on:valueChange={(event) => handleFilterChange(filter, event.detail.value)}
+              onValueChange={(nextValue) => handleFilterChange(filter, nextValue)}
             />
           {:else if filter.type === "select"}
             <Select
               id={`filter-${filter.id}`}
               value={getFilterValue(filter)}
-              items={getSelectItems(filter)}
+              options={getSelectItems(filter)}
               ariaLabel={getFilterAriaLabel(filter)}
-              onchange={(value) => handleFilterChange(filter, value)}
+              onValueChange={(value) => handleFilterChange(filter, value)}
             />
           {:else if filter.type === "sort" && filter.sortFields}
             <OrderBy
@@ -1155,9 +1224,10 @@
       dirty={reorderController.isDirty}
       submitting={reorderController.isPending}
       errorMessage={reorderError}
-      onsubmit={handleReorderSubmit}
-      oncancel={exitReorderMode}
-      on:reorder={(event: CustomEvent<{ items: EditableListItem[] }>) => reorderController?.updatePending(event.detail.items)}
+      showWorkflowChrome={false}
+      onSubmit={handleReorderSubmit}
+      onCancel={exitReorderMode}
+      onReorder={(items: EditableListItem[]) => reorderController?.updatePending(items)}
     >
       {#snippet item(reorderEntry: EditableListItem)}
         {@const originalItem = getReorderOriginalItem(reorderEntry.id)}
@@ -1176,7 +1246,7 @@
       {/snippet}
     </EditableList>
   {:else if presentation === "cards"}
-    <ListGrid minItemWidth="26rem" gap="1rem">
+    <ListGrid minItemWidth="26rem" variant={listGridVariant} gap={listGridGap}>
       {#each items as item (String((item as Record<string, unknown>)[idField]))}
         {#if renderItem}
           {@render renderItem(item, getItemContext(item))}
@@ -1206,28 +1276,28 @@
       selectable={selectionMode}
       selectedRowIds={batch.selectedIds}
       emptyMessage="No items found"
-      on:rowActionSelect={(event) => onRowActionSelect?.(event.detail.row as TableRow<T>, event.detail.action)}
-      on:rowToggle={(event) => batch.toggle(event.detail.rowId, event.detail.selected)}
-      on:toggleAll={(event) => {
-        if (event.detail.selected) {
+      onRowActionSelect={({ row, action }) => onRowActionSelect?.(row as TableRow<T>, action)}
+      onRowToggle={({ rowId, selected }) => batch.toggle(rowId, selected)}
+      onToggleAll={({ selected }) => {
+        if (selected) {
           batch.selectAll(itemIds);
         } else {
           batch.clear();
         }
       }}
     >
-      <svelte:fragment slot="cell" let:column let:row let:value>
+      {#snippet cell(column, row, value)}
         {#if renderCell}
           {@render renderCell(column, row as TableRow<T>, value)}
         {:else}
           {value}
         {/if}
-      </svelte:fragment>
-      <svelte:fragment slot="expandedRow" let:row>
+      {/snippet}
+      {#snippet expandedRow(row)}
         {#if renderExpandedRow}
           {@render renderExpandedRow(row as TableRow<T>)}
         {/if}
-      </svelte:fragment>
+      {/snippet}
     </DataTable>
   {/if}
 
@@ -1240,7 +1310,7 @@
         size="sm"
         compact
         ariaLabel="List pagination"
-        on:pageChange={(event) => handlePageChange(event.detail.page)}
+        onPageChange={handlePageChange}
       />
     </div>
   {/if}
@@ -1255,12 +1325,12 @@
     loading={batch.executing}
     showSelectAll
     allSelected={batch.count > 0 && batch.count === items.length}
-    on:clear={() => {
+    onClear={() => {
       batch.clear();
       setSelectionMode(false);
     }}
-    on:selectAll={() => batch.selectAll(itemIds)}
-    on:action={handleBatchAction}
+    onSelectAll={() => batch.selectAll(itemIds)}
+    onAction={handleBatchAction}
   />
 {/if}
 
@@ -1283,7 +1353,7 @@
   <Dialog
     open={true}
     title={pendingDialogAction.dialog.title}
-    on:requestClose={handleDialogCancel}
+    onRequestClose={handleDialogCancel}
   >
     {@render pendingDialogAction.dialog.content({
       ids: batch.selectedIds,

@@ -2,6 +2,7 @@
   import type { Snippet } from "svelte";
   import type { BreadcrumbItem } from "../patterns/types";
   import { useAuthenticatedData } from "../runtime/auth";
+  import { getBackButtonInfo } from "../patterns/navigation";
   import {
     PageHeader,
     Breadcrumbs,
@@ -10,10 +11,11 @@
     IconButton,
     Menu,
     MetaBar,
-    MetaItem,
     PageLoading,
-    Callout
+    Callout,
+    Button
   } from "@poodle/svelte";
+  import EntityMetaItem from "./EntityMetaItem.svelte";
   import type {
     DetailActionConfig,
     FetchFn,
@@ -52,6 +54,12 @@
     
     /** Back link label */
     backLabel?: string;
+
+    /** Explicit contextual-back state override when the caller resolved back info already. */
+    backIsContextual?: boolean;
+
+    /** Resolve contextual back navigation from shared Underlay navigation state. */
+    resolveBackContext?: boolean;
     
     /** Banner message (e.g., for warnings) */
     bannerMessage?: string;
@@ -61,6 +69,21 @@
     
     /** Optional preloaded item. When present, the template uses it directly. */
     item?: T | null;
+
+    /** Optional external loading state override. */
+    loading?: boolean;
+
+    /** Optional external error state override. */
+    error?: string | null;
+
+    /** Optional retry handler for the error state. */
+    onRetry?: () => void;
+
+    /** Loading message override. */
+    loadingMessage?: string;
+
+    /** Error title override. */
+    errorTitle?: string;
 
     /** Data loading function */
     dataLoader?: (fetch: FetchFn, token: string | null) => Promise<T | null>;
@@ -85,6 +108,9 @@
 
     /** Tabs size */
     tabsSize?: "sm" | "md" | "lg";
+
+    /** Optional tab history key passthrough for browser history persistence */
+    tabsHistoryKey?: string;
 
     /** Keep visited tabs mounted after first activation */
     keepMountedTabs?: boolean;
@@ -111,9 +137,16 @@
     breadcrumbsMarkLastCurrent = true,
     backHref,
     backLabel,
+    backIsContextual = false,
+    resolveBackContext = true,
     bannerMessage,
     bannerTone = "warning",
     item: providedItem = null,
+    loading: providedLoading,
+    error: providedError,
+    onRetry,
+    loadingMessage = "Loading...",
+    errorTitle = "Unable to load details",
     dataLoader,
     reloadKey = null,
     meta: detailMeta = [],
@@ -122,6 +155,7 @@
     onTabChange,
     tabsVariant = "underline",
     tabsSize = "sm",
+    tabsHistoryKey,
     keepMountedTabs = false,
     actions: pageActions = [],
     headerActions
@@ -183,10 +217,42 @@
   );
 
   const item = $derived(providedItem ?? pageData?.data ?? null);
-  const loading = $derived(dataLoader ? (pageData?.loading ?? false) : false);
-  const error = $derived(dataLoader ? (pageData?.error ?? null) : null);
+  const loading = $derived(
+    typeof providedLoading === "boolean"
+      ? providedLoading
+      : dataLoader
+        ? (pageData?.loading ?? false)
+        : false
+  );
+  const error = $derived(providedError ?? (dataLoader ? (pageData?.error ?? null) : null));
   const allTabs = $derived<DetailTabConfig<T>[]>(tabs);
+  const shouldShowSubtitleWithBreadcrumbs = $derived(showSubtitleWithBreadcrumbs || detailBreadcrumbs.length === 0);
+  let resolvedBackInfo = $state<{ href: string; label: string; contextual: boolean } | null>(null);
   let previousReloadKey = $state<string | number | null>(null);
+
+  $effect(() => {
+    if (!backHref) {
+      resolvedBackInfo = null;
+      return;
+    }
+
+    const fallbackLabel = backLabel ?? "Back";
+    if (!resolveBackContext) {
+      resolvedBackInfo = {
+        href: backHref,
+        label: fallbackLabel,
+        contextual: backIsContextual
+      };
+      return;
+    }
+
+    const contextualBackInfo = getBackButtonInfo(fallbackLabel, backHref);
+    resolvedBackInfo = {
+      href: contextualBackInfo.href,
+      label: contextualBackInfo.label,
+      contextual: Boolean(contextualBackInfo.isContextual || backIsContextual)
+    };
+  });
 
   $effect(() => {
     const firstTabId = allTabs[0]?.id ?? "";
@@ -227,12 +293,31 @@
     void mountedTabsVersion;
     return mountedTabsSet.has(tabId);
   }
+
+  function handleRetry() {
+    if (onRetry) {
+      onRetry();
+      return;
+    }
+
+    if (dataLoader) {
+      void pageData?.refetch();
+    }
+  }
 </script>
 
 {#if loading}
-  <PageLoading presentation="inline" message="Loading..." />
+  <PageLoading presentation="inline" message={loadingMessage} />
 {:else if error}
-  <Callout tone="danger" message={error} announceMode="polite" />
+  <Callout tone="danger" title={errorTitle} message={error} announceMode="polite">
+    {#if onRetry || dataLoader}
+      {#snippet actions()}
+        <Button type="button" variant="ghost" size="sm" onclick={handleRetry}>
+          Retry
+        </Button>
+      {/snippet}
+    {/if}
+  </Callout>
 {:else if item}
   <div class="underlay-entity-detail-page">
     <PageHeader
@@ -240,9 +325,10 @@
       {section}
       {eyebrow}
       {subtitle}
-      {showSubtitleWithBreadcrumbs}
-      backHref={backHref ?? null}
-      backLabel={backLabel}
+      showSubtitleWithBreadcrumbs={shouldShowSubtitleWithBreadcrumbs}
+      backHref={resolvedBackInfo?.href ?? null}
+      backLabel={resolvedBackInfo?.label ?? backLabel}
+      backIsContextual={resolvedBackInfo?.contextual ?? false}
       bannerMessage={bannerMessage}
       bannerTone={bannerTone}
       level={headerLevel}
@@ -267,13 +353,7 @@
         {#if detailMeta.length > 0}
           <MetaBar ariaLabel="Detail metadata">
             {#each detailMeta as metaItem}
-              <MetaItem label={metaItem.label} separator={metaItem.separator ?? true}>
-                {#if typeof metaItem.value === "string"}
-                  {metaItem.value}
-                {:else}
-                  {@render metaItem.value()}
-                {/if}
-              </MetaItem>
+              <EntityMetaItem item={metaItem} />
             {/each}
           </MetaBar>
         {/if}
@@ -287,9 +367,9 @@
             items={pageActionItems}
             ariaLabel={`${section ?? title} actions`}
             triggerAriaLabel={`${section ?? title} actions`}
-            on:action={(event) => handlePageActionSelect(event.detail.value)}
+            onAction={handlePageActionSelect}
           >
-            <svelte:fragment slot="trigger">
+            {#snippet trigger()}
               <IconButton
                 type="button"
                 icon="ellipsis"
@@ -297,7 +377,7 @@
                 ariaLabel={`${section ?? title} actions`}
                 tooltip="Actions"
               />
-            </svelte:fragment>
+            {/snippet}
           </Menu>
         {/if}
       {/snippet}
@@ -310,22 +390,28 @@
           value: tab.id,
           label: tab.label,
           count: tab.count,
-          separator: tab.separator
+          separator: tab.id === allTabs[allTabs.length - 1]?.id ? false : tab.separator
         }))}
         variant={tabsVariant}
         size={tabsSize}
+        historyKey={tabsHistoryKey}
         ariaLabel={`${title} sections`}
-        on:valueChange={(event) => {
-          activeTab = event.detail.value;
+        onValueChange={(value) => {
+          activeTab = value;
         }}
       >
+        {#snippet children(activeValue)}
         {#each allTabs as tab}
           {#if tab.content && shouldRenderTab(tab.id)}
-            <div hidden={tab.id !== activeTab}>
+            <div
+              class:underlay-entity-detail-page__tab-panel={tabsVariant === "underline"}
+              hidden={tab.id !== activeValue}
+            >
               {@render tab.content(item)}
             </div>
           {/if}
         {/each}
+        {/snippet}
       </Tabs>
     {:else if content}
       {@render content(item)}
@@ -360,5 +446,9 @@
     display: flex;
     flex-direction: column;
     gap: var(--underlay-space-4, 1rem);
+  }
+
+  .underlay-entity-detail-page__tab-panel {
+    padding-top: var(--underlay-space-3, 0.75rem);
   }
 </style>

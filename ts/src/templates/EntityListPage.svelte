@@ -3,7 +3,9 @@
     PageHeader,
     IconButton
   } from "@poodle/svelte";
+  import { getBackButtonInfo } from "../patterns/navigation";
   import EntityList from "./EntityList.svelte";
+  import EntityReorderControls from "./EntityReorderControls.svelte";
   import type {
     TableColumn,
     TableRow,
@@ -24,6 +26,7 @@
     LogResourceHrefResolver,
     LogResourceTypeFormatter,
     PagedListResult,
+    ReorderActionState,
     ReorderConfig,
     TableRowActionFactory,
     TemplateSurface
@@ -53,6 +56,12 @@
     
     /** Back link label */
     backLabel?: string;
+
+    /** Explicit contextual-back state override when the caller resolved back info already. */
+    backIsContextual?: boolean;
+
+    /** Resolve contextual back navigation from shared Underlay navigation state. */
+    resolveBackContext?: boolean;
     
     /** Data loading function. Must return paged results for the current query state. */
     dataLoader: EntityListDataLoader<T>;
@@ -174,6 +183,8 @@
     headerLevel = 2,
     backHref,
     backLabel,
+    backIsContextual = false,
+    resolveBackContext = true,
     dataLoader,
     reloadKey,
     idField = "id",
@@ -211,6 +222,8 @@
     onReorderError
   }: Props = $props();
 
+  let resolvedBackInfo = $state<{ href: string; label: string; contextual: boolean } | null>(null);
+
   // --- State ---
 
   let selectionMode = $state(false);
@@ -218,7 +231,32 @@
   let selectedIds = $state<string[]>([]);
   let visibleItemCount = $state(0);
   let reorderAvailable = $state(false);
+  let reorderActionState = $state<ReorderActionState | null>(null);
   const headerActionSizeRole = $derived(headerLevel >= 3 ? "chrome" : "control");
+
+  $effect(() => {
+    if (!backHref) {
+      resolvedBackInfo = null;
+      return;
+    }
+
+    const fallbackLabel = backLabel ?? "Back";
+    if (!resolveBackContext) {
+      resolvedBackInfo = {
+        href: backHref,
+        label: fallbackLabel,
+        contextual: backIsContextual
+      };
+      return;
+    }
+
+    const contextualBackInfo = getBackButtonInfo(fallbackLabel, backHref);
+    resolvedBackInfo = {
+      href: contextualBackInfo.href,
+      label: contextualBackInfo.label,
+      contextual: Boolean(contextualBackInfo.isContextual || backIsContextual)
+    };
+  });
 
   // Mode flags are managed internally by EntityList
   // We track them here only for header button state
@@ -230,6 +268,14 @@
 
   function toggleReorderMode() {
     if (selectionMode) selectionMode = false;
+    if (reorderActionState) {
+      if (reorderMode) {
+        reorderActionState.cancel();
+      } else {
+        void reorderActionState.enter();
+      }
+      return;
+    }
     reorderMode = !reorderMode;
   }
 
@@ -266,6 +312,10 @@
       reorderMode = false;
     }
   }
+
+  function handleReorderActionStateChange(state: ReorderActionState) {
+    reorderActionState = state;
+  }
 </script>
 
 <svelte:window onkeydown={handleKeydown} />
@@ -277,8 +327,9 @@
     {subtitle}
     {eyebrow}
     level={headerLevel}
-    backHref={backHref ?? null}
-    backLabel={backLabel}
+    backHref={resolvedBackInfo?.href ?? null}
+    backLabel={resolvedBackInfo?.label ?? backLabel}
+    backIsContextual={resolvedBackInfo?.contextual ?? false}
   >
     {#snippet actions()}
       {#if headerLeadingActions}
@@ -301,23 +352,34 @@
           ariaLabel={selectionMode ? "Cancel selection" : "Select items"}
           tooltip={selectionMode ? "Cancel Selection" : "Select Items"}
           disabled={reorderMode}
-          on:click={toggleSelectionMode}
+          onClick={toggleSelectionMode}
         />
       {/if}
       
-      {#if reorderAvailable || reorderMode}
-        <IconButton
-          type="button"
-          variant="secondary"
-          sizeRole={headerActionSizeRole}
-          tone={reorderMode ? "danger" : "default"}
-          icon="arrow-up-down"
-          ariaLabel={reorderMode ? "Cancel reorder" : "Reorder items"}
-          tooltip={reorderMode ? "Cancel Reorder" : "Reorder Items"}
-          disabled={selectionMode}
-          on:click={toggleReorderMode}
-        />
-      {/if}
+      <EntityReorderControls
+        active={reorderMode}
+        available={reorderAvailable}
+        dirty={reorderActionState?.dirty ?? false}
+        saving={reorderActionState?.saving ?? false}
+        disabled={selectionMode}
+        sizeRole={headerActionSizeRole}
+        onEnter={async () => {
+          if (selectionMode) selectionMode = false;
+          if (reorderActionState) {
+            await reorderActionState.enter();
+          } else {
+            toggleReorderMode();
+          }
+        }}
+        onSave={reorderActionState?.save}
+        onCancel={() => {
+          if (reorderActionState) {
+            reorderActionState.cancel();
+          } else {
+            toggleReorderMode();
+          }
+        }}
+      />
       
       {#if onAdd}
         <IconButton
@@ -328,7 +390,7 @@
           ariaLabel={addLabel}
           tooltip={addLabel}
           disabled={selectionMode || reorderMode}
-          on:click={onAdd}
+          onClick={onAdd}
         />
       {/if}
       
@@ -395,6 +457,7 @@
     onSelectedIdsChange={handleSelectedIdsChange}
     onVisibleCountChange={handleVisibleCountChange}
     onReorderAvailabilityChange={handleReorderAvailabilityChange}
+    onReorderActionStateChange={handleReorderActionStateChange}
   />
 </div>
 

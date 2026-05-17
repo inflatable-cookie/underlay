@@ -81,28 +81,32 @@
     {fetchRequirements}
   />
 
-  <Field id="password-reset-new-password" label="New password" required let:describedBy>
-    <TextInput
-      id="password-reset-new-password"
-      name="newPassword"
-      type="password"
-      value={newPassword}
-      describedBy={describedBy}
-      disabled={loading}
-      on:valueChange={(event) => { newPassword = event.detail.value; }}
-    />
+  <Field id="password-reset-new-password" label="New password" required>
+    {#snippet control({ describedBy })}
+      <TextInput
+        id="password-reset-new-password"
+        name="newPassword"
+        type="password"
+        value={newPassword}
+        describedBy={describedBy}
+        disabled={loading}
+        onValueChange={(nextValue) => { newPassword = nextValue; }}
+      />
+    {/snippet}
   </Field>
 
-  <Field id="password-reset-confirm-password" label="Confirm password" required let:describedBy>
-    <TextInput
-      id="password-reset-confirm-password"
-      name="confirmPassword"
-      type="password"
-      value={confirmPassword}
-      describedBy={describedBy}
-      disabled={loading}
-      on:valueChange={(event) => { confirmPassword = event.detail.value; }}
-    />
+  <Field id="password-reset-confirm-password" label="Confirm password" required>
+    {#snippet control({ describedBy })}
+      <TextInput
+        id="password-reset-confirm-password"
+        name="confirmPassword"
+        type="password"
+        value={confirmPassword}
+        describedBy={describedBy}
+        disabled={loading}
+        onValueChange={(nextValue) => { confirmPassword = nextValue; }}
+      />
+    {/snippet}
   </Field>
 
   {#if displayError}

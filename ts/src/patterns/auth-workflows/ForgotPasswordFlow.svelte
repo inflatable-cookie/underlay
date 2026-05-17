@@ -147,16 +147,18 @@
     <form onsubmit={handleRequestCode} class="underlay-forgot-password-flow__form">
       <p class="underlay-forgot-password-flow__hint">{emailHint}</p>
 
-      <Field id="forgot-password-email" label="Email" required let:describedBy>
-        <TextInput
-          id="forgot-password-email"
-          name="email"
-          type="email"
-          value={email}
-          describedBy={describedBy}
-          disabled={loading}
-          on:valueChange={(event) => { email = event.detail.value; }}
-        />
+      <Field id="forgot-password-email" label="Email" required>
+        {#snippet control({ describedBy })}
+          <TextInput
+            id="forgot-password-email"
+            name="email"
+            type="email"
+            value={email}
+            describedBy={describedBy}
+            disabled={loading}
+            onValueChange={(nextValue) => { email = nextValue; }}
+          />
+        {/snippet}
       </Field>
 
       {#if error}

@@ -39,9 +39,9 @@
  *   totalCount={items.length}
  *   actions={[{ id: "delete", label: "Delete", icon: "trash-2", tone: "danger" }]}
  *   showSelectAll
- *   on:clear={selection.clear}
- *   on:selectAll={() => selection.selectAll(items.map(i => i.id))}
- *   on:action={() => { showBatchDeleteConfirm = true; }}
+ *   onClear={selection.clear}
+ *   onSelectAll={() => selection.selectAll(items.map(i => i.id))}
+ *   onAction={() => { showBatchDeleteConfirm = true; }}
  * />
  *
  * <AlertDialog

@@ -170,9 +170,9 @@
     blockTypes={bridge.blockTypes}
     blockTypeItems={bridge.blockTypeItems}
     mode={isMulti ? "multi" : "single"}
-    on:change={(event) => handleShellChange(event.detail.blocks)}
+    onChange={handleShellChange}
   >
-    <svelte:fragment slot="type-picker" let:block let:index>
+    {#snippet typePicker({ block, index })}
       <NightfireTypeSelect
         value={block?.type ?? editorTypeOptions[0]?.type ?? definition.defaultType}
         onChange={(value) => handleTypePickerChange(index, value)}
@@ -181,9 +181,9 @@
         variant="ghost"
         menuMinWidth="10rem"
       />
-    </svelte:fragment>
+    {/snippet}
 
-    <svelte:fragment slot="block" let:block let:index>
+    {#snippet block({ block, index })}
       <div
         class="underlay-nightfire-field__block-content"
         data-nightfire-block-card
@@ -210,7 +210,7 @@
           </div>
         {/if}
       </div>
-    </svelte:fragment>
+    {/snippet}
   </BlockEditor>
 {/if}
 

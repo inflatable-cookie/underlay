@@ -548,7 +548,7 @@ A list shell that provides consistent structure for autonomous lists with caller
   totalPages={pagination.totalPages ?? 1}
   totalItems={items.length}
   pageSize={pagination.pageSize}
-  on:pageChange={(event) => pagination.goToPage?.(event.detail.page)}
+  onPageChange={(page) => pagination.goToPage?.(page)}
 >
   {#snippet actions()}
     <Button onclick={handleAdd}>Add</Button>

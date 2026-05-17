@@ -21,28 +21,32 @@
 </script>
 
 <form onsubmit={onSubmit} class="underlay-login-page__form">
-  <Field id="underlay-login-email" label="Email" required let:describedBy>
-    <TextInput
-      id="underlay-login-email"
-      name="email"
-      type="email"
-      value={email}
-      describedBy={describedBy}
-      disabled={loading}
-      on:valueChange={(event) => { email = event.detail.value; }}
-    />
+  <Field id="underlay-login-email" label="Email" required>
+    {#snippet control({ describedBy })}
+      <TextInput
+        id="underlay-login-email"
+        name="email"
+        type="email"
+        value={email}
+        describedBy={describedBy}
+        disabled={loading}
+        onValueChange={(nextValue) => { email = nextValue; }}
+      />
+    {/snippet}
   </Field>
 
-  <Field id="underlay-login-password" label="Password" required let:describedBy>
-    <TextInput
-      id="underlay-login-password"
-      name="password"
-      type="password"
-      value={password}
-      describedBy={describedBy}
-      disabled={loading}
-      on:valueChange={(event) => { password = event.detail.value; }}
-    />
+  <Field id="underlay-login-password" label="Password" required>
+    {#snippet control({ describedBy })}
+      <TextInput
+        id="underlay-login-password"
+        name="password"
+        type="password"
+        value={password}
+        describedBy={describedBy}
+        disabled={loading}
+        onValueChange={(nextValue) => { password = nextValue; }}
+      />
+    {/snippet}
   </Field>
 
   {#if error}

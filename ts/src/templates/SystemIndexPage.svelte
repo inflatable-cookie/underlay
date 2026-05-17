@@ -1,5 +1,6 @@
 <script lang="ts">
   import { Grid, NavCard, PageHeader } from "@poodle/svelte";
+  import { getBackButtonInfo } from "../patterns/navigation";
   import type { SystemIndexCardConfig, TemplateSurface } from "./template.types";
 
   interface Props {
@@ -7,6 +8,8 @@
     subtitle?: string;
     backHref?: string | null;
     backLabel?: string;
+    backIsContextual?: boolean;
+    resolveBackContext?: boolean;
     cards: SystemIndexCardConfig[];
     beforeCards?: TemplateSurface;
     columns?: string;
@@ -18,19 +21,48 @@
     subtitle,
     backHref = null,
     backLabel,
+    backIsContextual = false,
+    resolveBackContext = true,
     cards,
     beforeCards,
     columns = "repeat(auto-fit, minmax(18rem, 1fr))",
     headerLevel = 2
   }: Props = $props();
+
+  let resolvedBackInfo = $state<{ href: string; label: string; contextual: boolean } | null>(null);
+
+  $effect(() => {
+    if (!backHref) {
+      resolvedBackInfo = null;
+      return;
+    }
+
+    const fallbackLabel = backLabel ?? "Back";
+    if (!resolveBackContext) {
+      resolvedBackInfo = {
+        href: backHref,
+        label: fallbackLabel,
+        contextual: backIsContextual
+      };
+      return;
+    }
+
+    const contextualBackInfo = getBackButtonInfo(fallbackLabel, backHref);
+    resolvedBackInfo = {
+      href: contextualBackInfo.href,
+      label: contextualBackInfo.label,
+      contextual: Boolean(contextualBackInfo.isContextual || backIsContextual)
+    };
+  });
 </script>
 
 <div class="underlay-system-index-page">
   <PageHeader
     {title}
     {subtitle}
-    backHref={backHref ?? null}
-    {backLabel}
+    backHref={resolvedBackInfo?.href ?? null}
+    backLabel={resolvedBackInfo?.label ?? backLabel}
+    backIsContextual={resolvedBackInfo?.contextual ?? false}
     level={headerLevel}
   />
 
@@ -46,14 +78,14 @@
           title={card.title}
           description={card.description}
         >
-          <svelte:fragment slot="icon">
+          {#snippet icon()}
             <span
               class="underlay-system-index-page__icon"
               style:background={card.accent ?? "var(--poodle-color-accent-base)"}
             >
               {@render card.icon()}
             </span>
-          </svelte:fragment>
+          {/snippet}
         </NavCard>
       {:else}
         <NavCard
