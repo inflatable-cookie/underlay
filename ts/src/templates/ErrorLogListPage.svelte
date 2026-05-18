@@ -81,14 +81,6 @@
 
   const queryVariants = $derived<ListVariantDefinition[]>([
     {
-      id: "all",
-      label: "All",
-      description: "All captured errors.",
-      tone: "default",
-      count: stats?.totalLast24h,
-      isDefault: true
-    },
-    {
       id: "5xx",
       label: "5xx",
       description: "Server-side failures.",
@@ -117,7 +109,7 @@
   ]);
 
   function getStatusCodeVariant(nextQuery: QueryParams): number | undefined {
-    if (!nextQuery.variant || nextQuery.variant === "all" || nextQuery.variant === "4xx" || nextQuery.variant === "5xx") {
+    if (!nextQuery.variant || nextQuery.variant === "4xx" || nextQuery.variant === "5xx") {
       return undefined;
     }
 
@@ -328,7 +320,6 @@
   presentation="table"
   {columns}
   {queryVariants}
-  defaultVariantId="all"
   expandedRowIds={expandedLogId ? [expandedLogId] : []}
   showRowActions={false}
   beforeList={beforeList as TemplateSurface}

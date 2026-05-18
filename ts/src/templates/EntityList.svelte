@@ -1097,7 +1097,7 @@
             items={queryVariantItems}
             value={currentVariantId}
             columns={queryVariantColumns}
-            allowDeactivation={Boolean(resolvedDefaultVariantId)}
+            allowDeactivation
             ariaLabel={`${title ?? "List"} query variants`}
             onValueChange={handleQueryVariantChange}
           />
@@ -1288,7 +1288,7 @@
         items={queryVariantItems}
         value={currentVariantId}
         columns={queryVariantColumns}
-        allowDeactivation={Boolean(resolvedDefaultVariantId)}
+        allowDeactivation
         ariaLabel="Query variants"
         onValueChange={handleQueryVariantChange}
       />
