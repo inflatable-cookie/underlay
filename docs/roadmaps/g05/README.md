@@ -75,9 +75,17 @@ Another explicit `g05` lane is now reopened:
 - `g05.018`: Underlay app review checklist and audit artifact
 - `g05.019`: fleet media library capability mandate
 - `g05.020`: compli-me and songsprout media family rollout
+- `g05.021`: Poodle card toggle query variant control
+- `g05.022`: list query variant API contract
+- `g05.023`: EntityList query variant integration
+- `g05.024`: Marking Hub query variant proof and rollout
 
 ## Current Queue
 
+- `g05.024` is planned as the Acowtancy Marking Hub proof and six-app rollout
+- `g05.023` is planned as the EntityList query variant integration
+- `g05.022` is planned as the list query variant API contract
+- `g05.021` is promoted as the Poodle card toggle query variant control
 - `g05.020` is complete as the compli-me and songsprout media family rollout
 - `g05.019` is complete as the fleet media library capability mandate
 - `g05.018` is complete as the Underlay app review checklist and audit artifact
@@ -111,6 +119,5 @@ If `g05` later enters strict execution posture, keep its cards under
 
 ## Next Task
 
-No `g05` lane is promoted right now. Keep the generation active and only
-promote the next card when the next shared-surface or fleet-normalization lane
-is chosen explicitly.
+Execute `g05.021`: add the Poodle-side `CardToggleGroup` and deactivation
+support needed before Underlay wires query variants into `EntityList`.

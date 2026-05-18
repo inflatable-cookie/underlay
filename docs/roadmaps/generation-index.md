@@ -1,7 +1,7 @@
 # Underlay Roadmap Generation Index
 
 Status: active
-Updated: 2026-05-08
+Updated: 2026-05-18
 
 ## Mode
 
@@ -9,7 +9,7 @@ Updated: 2026-05-08
 
 ## Active generations
 
-- [g03 - Admin Template System](g03/README.md)
+- [g05 - Shared Page, Workflow Template, And Query Variant Work](g05/README.md)
 
 ## Generation log
 
@@ -19,6 +19,7 @@ Updated: 2026-05-08
 | `g02` | 2026-04-xx | Fresh sequencing boundary after `g01.098` recovery | Closed |
 | `g03` | 2026-05-04 | Template-system generation after `g02.007` closeout | Still active |
 | `g04` | 2026-05-08 | Independent contract-coverage thread under explicit parallel mode | Closed after contract coverage, assessment, and bounded repairs |
+| `g05` | 2026-05-xx | Shared page, workflow template, and consumer capability generation | Active |
 
 ## Historical generations
 
@@ -43,5 +44,4 @@ In parallel mode:
 
 ## Next Task
 
-Keep `g03` current. If new contract-driven work appears later, open a fresh
-generation instead of reopening closed `g04`.
+Keep `g05` current. The promoted next card is `g05.021`.
