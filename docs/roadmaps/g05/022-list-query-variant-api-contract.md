@@ -124,6 +124,18 @@ Expected:
 
 ## Next Task
 
-Execute after `g05.021` starts or lands. The API contract can progress in
-parallel with Poodle implementation, but Underlay UI wiring should wait for the
-Poodle component.
+Complete.
+
+Landed in Underlay:
+
+- `QueryParams` now includes `variant`
+- query helper serialization, parsing, and flat-record conversion preserve
+  `variant`
+- template types expose `ListVariantDefinition`, `ListFilterDefinition`, and
+  `ListCapabilities`
+- contracts define `variant` as named baseline query state
+- contracts define `profile=list-config` as the list capabilities payload
+
+Underlay commit:
+
+- `79fc478b` Add list query variant contract
