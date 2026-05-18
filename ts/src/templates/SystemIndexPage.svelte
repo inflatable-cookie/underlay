@@ -1,5 +1,9 @@
 <script lang="ts">
   import { Grid, NavCard, PageHeader } from "@poodle/svelte";
+  import AlertTriangle from "lucide-svelte/icons/alert-triangle";
+  import Calendar from "lucide-svelte/icons/calendar";
+  import ClipboardList from "lucide-svelte/icons/clipboard-list";
+  import Layers from "lucide-svelte/icons/layers";
   import { getBackButtonInfo } from "../patterns/navigation";
   import type { SystemIndexCardConfig, TemplateSurface } from "./template.types";
 
@@ -10,7 +14,9 @@
     backLabel?: string;
     backIsContextual?: boolean;
     resolveBackContext?: boolean;
-    cards: SystemIndexCardConfig[];
+    cards?: SystemIndexCardConfig[];
+    extraCards?: SystemIndexCardConfig[];
+    includeCoreCards?: boolean;
     beforeCards?: TemplateSurface;
     columns?: string;
     headerLevel?: 1 | 2 | 3 | 4 | 5 | 6;
@@ -23,13 +29,48 @@
     backLabel,
     backIsContextual = false,
     resolveBackContext = true,
-    cards,
+    cards = undefined,
+    extraCards = [],
+    includeCoreCards = true,
     beforeCards,
     columns = "repeat(auto-fit, minmax(18rem, 1fr))",
     headerLevel = 2
   }: Props = $props();
 
+  const coreCards: SystemIndexCardConfig[] = [
+    {
+      href: "/system/errors",
+      title: "Error log",
+      description: "View and investigate application errors and exceptions.",
+      accent: "var(--admin-color-danger, #dc2626)",
+      icon: errorsIconSnippet as never
+    },
+    {
+      href: "/system/jobs",
+      title: "Job queue",
+      description: "Monitor background jobs, view status, and retry failed jobs.",
+      accent: "var(--admin-color-primary, #8b5cf6)",
+      icon: jobsIconSnippet as never
+    },
+    {
+      href: "/system/scheduled-tasks",
+      title: "Scheduled tasks",
+      description: "Manage cron-scheduled maintenance tasks.",
+      accent: "var(--admin-color-success, #10b981)",
+      icon: tasksIconSnippet as never
+    },
+    {
+      href: "/system/audit",
+      title: "Audit log",
+      description: "Track changes made to content and configuration.",
+      accent: "var(--admin-color-info, #6366f1)",
+      icon: auditIconSnippet as never
+    }
+  ];
+
   let resolvedBackInfo = $state<{ href: string; label: string; contextual: boolean } | null>(null);
+
+  const visibleCards = $derived(cards ?? [...(includeCoreCards ? coreCards : []), ...extraCards]);
 
   $effect(() => {
     if (!backHref) {
@@ -71,8 +112,9 @@
   {/if}
 
   <Grid {columns} gap="md" asRole="navigation" ariaLabel={`${title} sections`}>
-    {#each cards as card}
+    {#each visibleCards as card}
       {#if card.icon}
+        {@const renderIcon = card.icon!}
         <NavCard
           href={card.href}
           title={card.title}
@@ -83,7 +125,7 @@
               class="underlay-system-index-page__icon"
               style:background={card.accent ?? "var(--poodle-color-accent-base)"}
             >
-              {@render card.icon()}
+              {@render renderIcon()}
             </span>
           {/snippet}
         </NavCard>
@@ -97,6 +139,22 @@
     {/each}
   </Grid>
 </div>
+
+{#snippet errorsIconSnippet()}
+  <AlertTriangle />
+{/snippet}
+
+{#snippet jobsIconSnippet()}
+  <Layers />
+{/snippet}
+
+{#snippet tasksIconSnippet()}
+  <Calendar />
+{/snippet}
+
+{#snippet auditIconSnippet()}
+  <ClipboardList />
+{/snippet}
 
 <style>
   .underlay-system-index-page {

@@ -13,7 +13,7 @@
   import { useAuthenticatedData } from "../runtime/auth";
   import { useToasts } from "../runtime/feedback";
   import type { QueryParams } from "../client/query";
-  import EntityListPage from "./EntityListPage.svelte";
+  import { default as EntityListPage } from "./EntityListPage.svelte";
   import type {
     ErrorLogDetailItem,
     ErrorLogDetailLoader,
@@ -21,7 +21,9 @@
     ErrorLogListLoader,
     ErrorLogListRequest,
     ErrorLogStatsLoader,
-    ErrorLogStatsSummary
+    ErrorLogStatsSummary,
+    FetchFn,
+    TemplateSurface
   } from "./template.types";
 
   interface Props {
@@ -77,14 +79,16 @@
     }
   ];
 
-  const statsData = useAuthenticatedData(
-    async (fetch, token) => {
-      if (!loadStats || !token) {
-        return null;
-      }
+  async function loadErrorStats(fetch: FetchFn, token: string | null) {
+    if (!loadStats || !token) {
+      return null;
+    }
 
-      return await loadStats(fetch, token);
-    },
+    return await loadStats(fetch, token);
+  }
+
+  const statsData = useAuthenticatedData(
+    loadErrorStats,
     {
       defaultValue: null as ErrorLogStatsSummary | null
     }
@@ -205,7 +209,7 @@
   {/if}
 {/snippet}
 
-{#snippet renderCell(column: TableColumn, row: TableRow<ErrorLogListItem>, value: string | number | null)}
+{#snippet renderCell(column, row, value)}
   {@const log = getRowLog(row)}
   {#if !log}
     —
@@ -243,9 +247,9 @@
   {/if}
 {/snippet}
 
-{#snippet renderExpandedRow(row: TableRow<ErrorLogListItem>)}
+{#snippet renderExpandedRow(row)}
   {@const log = getRowLog(row)}
-  {#if log && expandedLogId === row.id}
+  {#if log && expandedLogId === log.id}
     {#if loadingDetail}
       <div class="underlay-error-log-list-page__detail-loading">Loading details...</div>
     {:else if expandedLogDetail}
@@ -301,9 +305,9 @@
   {filters}
   expandedRowIds={expandedLogId ? [expandedLogId] : []}
   showRowActions={false}
-  beforeList={beforeList}
-  renderCell={renderCell as never}
-  renderExpandedRow={renderExpandedRow as never}
+  beforeList={beforeList as TemplateSurface}
+  renderCell={renderCell as TemplateSurface}
+  renderExpandedRow={renderExpandedRow as TemplateSurface}
 />
 
 <style>

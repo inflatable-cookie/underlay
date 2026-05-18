@@ -275,8 +275,12 @@ Rules:
   email contract
 - if used, template rendering belongs to the shared email system rather than
   leaking Tera-specific concerns into unrelated packages
-- development capture is a real shared testing/dev seam, not a production
-  delivery path
+- local development delivery should use SMTP against the Effigy-provided Mailpit
+  service
+- DB-backed email capture and `/system/emails` admin/API surfaces are deprecated
+  and must not be added to new Underlay apps
+- legacy `dev_capture` config aliases may map to SMTP during compatibility
+  cleanup, but they must not imply a retained captured-email store
 
 ### Rate limiting
 

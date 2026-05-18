@@ -37,6 +37,14 @@ Primary:
 - [`ts/src/templates/MediaUploadPage.svelte`](/Users/tom/Dev/projects/underlay/ts/src/templates/MediaUploadPage.svelte)
 - [`ts/src/templates/MediaDetailWorkflowPage.svelte`](/Users/tom/Dev/projects/underlay/ts/src/templates/MediaDetailWorkflowPage.svelte)
 - [`ts/src/templates/SystemIndexPage.svelte`](/Users/tom/Dev/projects/underlay/ts/src/templates/SystemIndexPage.svelte)
+- [`ts/src/templates/SystemAuditLogListPage.svelte`](/Users/tom/Dev/projects/underlay/ts/src/templates/SystemAuditLogListPage.svelte)
+- [`ts/src/templates/SystemJobDetailPage.svelte`](/Users/tom/Dev/projects/underlay/ts/src/templates/SystemJobDetailPage.svelte)
+- [`ts/src/templates/SystemJobListPage.svelte`](/Users/tom/Dev/projects/underlay/ts/src/templates/SystemJobListPage.svelte)
+- [`ts/src/templates/SystemMediaTrashListPage.svelte`](/Users/tom/Dev/projects/underlay/ts/src/templates/SystemMediaTrashListPage.svelte)
+- [`ts/src/templates/SystemMediaTrashListCard.svelte`](/Users/tom/Dev/projects/underlay/ts/src/templates/SystemMediaTrashListCard.svelte)
+- [`ts/src/templates/SystemScheduledTaskDetailPage.svelte`](/Users/tom/Dev/projects/underlay/ts/src/templates/SystemScheduledTaskDetailPage.svelte)
+- [`ts/src/templates/SystemScheduledTasksListPage.svelte`](/Users/tom/Dev/projects/underlay/ts/src/templates/SystemScheduledTasksListPage.svelte)
+- [`ts/src/templates/SystemScheduledTaskListCard.svelte`](/Users/tom/Dev/projects/underlay/ts/src/templates/SystemScheduledTaskListCard.svelte)
 - [`ts/src/templates/AdminDashboardPage.svelte`](/Users/tom/Dev/projects/underlay/ts/src/templates/AdminDashboardPage.svelte)
 - [`ts/src/templates/ErrorLogListPage.svelte`](/Users/tom/Dev/projects/underlay/ts/src/templates/ErrorLogListPage.svelte)
 
@@ -92,6 +100,12 @@ Levels:
   - `MediaUploadPage`
   - `MediaDetailWorkflowPage`
   - `SystemIndexPage`
+  - `SystemAuditLogListPage`
+  - `SystemJobDetailPage`
+  - `SystemJobListPage`
+  - `SystemMediaTrashListPage`
+  - `SystemScheduledTaskDetailPage`
+  - `SystemScheduledTasksListPage`
   - `AdminDashboardPage`
   - `ErrorLogListPage`
 - Level 2: reusable sections
@@ -409,6 +423,67 @@ Rules:
   - any extra helper content above the grid
 - this is an operator index shell, not a dashboard and not a generic card-grid
   primitive
+
+### System operator list seam
+
+System operator lists are retained shared templates when the same platform
+surface appears across normal Underlay apps.
+
+Core pieces:
+
+- `SystemJobListPage`
+- `SystemJobDetailPage`
+- `SystemMediaTrashListPage`
+- `SystemMediaTrashListCard`
+- `SystemScheduledTaskDetailPage`
+- `SystemScheduledTasksListPage`
+- `SystemScheduledTaskListCard`
+- `SystemAuditLogListPage`
+- `ErrorLogListPage`
+
+Rules:
+
+- `/system` should use `SystemIndexPage` with its built-in core cards unless an
+  app has a documented reason to replace the whole card set
+- app-local `/system` tools should be passed as `extraCards`, not copied into a
+  full repeated core card array
+- `/system/jobs` should use `SystemJobListPage` unless an app has a documented
+  operator workflow extension that the shared template cannot express
+- `/system/jobs/[id]` should use `SystemJobDetailPage`; apps adapt API-specific
+  job detail DTOs into `SystemJobDetailItem`
+- `/system/scheduled-tasks` should use `SystemScheduledTasksListPage` and
+  `SystemScheduledTaskListCard`
+- `/system/scheduled-tasks/[id]` should use `SystemScheduledTaskDetailPage`;
+  apps adapt task and job-run DTOs into the shared detail item shapes
+- `/system/errors` should use `ErrorLogListPage`
+- `/system/audit` should use `SystemAuditLogListPage`
+- media trash pages should use `SystemMediaTrashListPage` when no app-local
+  filtering is needed; if filtering is app-local, they should still use
+  `SystemMediaTrashListCard`
+- app API clients stay app-local; they adapt into shared loader/action callback
+  types
+- retry/cancel/trigger/toggle behavior belongs behind template callbacks, not
+  in repeated route-local table composition
+- `/system/emails` is not a retained operator list; DB-backed email capture is
+  deprecated and local inspection belongs in Mailpit via Effigy
+- app-local system sections may remain app-local when they are genuine domain
+  tools, such as migration, AI, or review utilities
+
+Retained cross-app `/system` inventory:
+
+- `/system`
+- `/system/errors`
+- `/system/jobs`
+- `/system/jobs/[id]`
+- `/system/scheduled-tasks`
+- `/system/scheduled-tasks/[id]`
+- `/system/audit`
+
+Known app-local `/system` extras:
+
+- `underlay-reference`: `/system/poodle-gap-review`
+- `acowtancy`: `/system/ai-routing`, `/system/ai-suggestions`,
+  `/system/learning-transforms`
 
 ### Admin dashboard seam
 

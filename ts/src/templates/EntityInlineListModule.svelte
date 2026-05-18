@@ -1,4 +1,4 @@
-<script lang="ts" generics="T">
+<script lang="ts" generics="TItem extends object = object">
   import {
     Callout,
     Dialog,
@@ -10,16 +10,17 @@
 
   import { DEFAULT_PAGE_SIZE } from "../patterns/pagination-types";
   import { useAuthenticatedData } from "../runtime/auth";
-  import EntityActionsMenu from "./EntityActionsMenu.svelte";
-  import EntityDetailModule from "./EntityDetailModule.svelte";
-  import EntityList from "./EntityList.svelte";
-  import EntityReorderControls from "./EntityReorderControls.svelte";
+  import { default as EntityActionsMenu } from "./EntityActionsMenu.svelte";
+  import { default as EntityDetailModule } from "./EntityDetailModule.svelte";
+  import { default as EntityList } from "./EntityList.svelte";
+  import { default as EntityReorderControls } from "./EntityReorderControls.svelte";
 
   import type { QueryParams } from "../client/query";
   import type {
     BatchActionConfig,
     EntityListDataLoader,
     EntityListSharedProps,
+    FetchFn,
     InlineListDialogConfig,
     InlineListItemActionConfig,
     InlineListItemDeleteConfig,
@@ -29,7 +30,7 @@
     TemplateSurface
   } from "./template.types";
 
-  interface InlineListItemContext<TItem> {
+  interface InlineListItemContext {
     refetch: () => Promise<void>;
     openActions: boolean;
     selectionMode: boolean;
@@ -40,14 +41,14 @@
 
   interface Props {
     title: string;
-    items?: T[];
+    items?: TItem[];
     item: TemplateSurface;
     actions?: TemplateSurface;
     emptyMessage?: string | null;
     span?: "half" | "full";
     listGridVariant?: "default" | "compact";
     listGridGap?: number | string | null;
-    dataLoader?: EntityListDataLoader<T>;
+    dataLoader?: EntityListDataLoader<TItem>;
     query?: QueryParams;
     onQueryChange?: (query: QueryParams) => void;
     pageSize?: number;
@@ -56,12 +57,12 @@
     addLabel?: string;
     addDialog?: InlineListDialogConfig;
     idField?: string;
-    itemActions?: ((item: T) => InlineListItemActionConfig<T>[]) | undefined;
-    itemDelete?: InlineListItemDeleteConfig<T> | undefined;
+    itemActions?: ((item: TItem) => InlineListItemActionConfig<TItem>[]) | undefined;
+    itemDelete?: InlineListItemDeleteConfig<TItem> | undefined;
     renderReorderItem?: TemplateSurface;
     batchActions?: BatchActionConfig[];
-    reorder?: ReorderConfig<T>;
-    onReorderError?: EntityListSharedProps<T>["onReorderError"];
+    reorder?: ReorderConfig<TItem>;
+    onReorderError?: EntityListSharedProps<TItem>["onReorderError"];
   }
 
   let {
@@ -135,18 +136,20 @@
   const getDataLoader = () => dataLoader;
   const getEffectiveQuery = () => effectiveQuery;
 
-  const loadedData = useAuthenticatedData<PagedListResult<T>>(
-    async (fetch, token) => {
-      const loader = getDataLoader();
-      if (!loader) {
-        return {
-          data: [],
-          total: 0
-        };
-      }
+  async function loadInlineData(fetch: FetchFn, token: string | null) {
+    const loader = getDataLoader();
+    if (!loader) {
+      return {
+        data: [],
+        total: 0
+      };
+    }
 
-      return await loader(fetch, token, getEffectiveQuery());
-    },
+    return await loader(fetch, token, getEffectiveQuery());
+  }
+
+  const loadedData = useAuthenticatedData<PagedListResult<TItem>>(
+    loadInlineData,
     {
       defaultValue: {
         data: [],
@@ -241,7 +244,43 @@
     closeAddDialog();
   }
 
-  function getItemContext(): InlineListItemContext<T> {
+  async function runItemAction(
+    action: InlineListItemActionConfig<TItem>,
+    entry: TItem
+  ): Promise<void> {
+    await action.handler(entry);
+    onDataChange?.();
+    await refetch();
+  }
+
+  function getCustomActions(entry: TItem) {
+    return (itemActions?.(entry) ?? []).map((action) => ({
+      label: action.label,
+      disabled: action.disabled,
+      destructive: action.destructive,
+      separator: action.separator,
+      onSelect: () => void runItemAction(action, entry)
+    }));
+  }
+
+  function getDeleteConfig(entry: TItem) {
+    return itemDelete
+      ? {
+          title: itemDelete.title,
+          description: itemDelete.description,
+          confirmLabel: itemDelete.confirmLabel,
+          entityLabel: itemDelete.entityLabel?.(entry) ?? null,
+          execute: () => itemDelete.handler(entry)
+        }
+      : undefined;
+  }
+
+  async function handleDeleteSuccess(): Promise<void> {
+    onDataChange?.();
+    await refetch();
+  }
+
+  function getItemContext(): InlineListItemContext {
     return {
       refetch,
       openActions: menuNeeded,
@@ -273,14 +312,18 @@
     }
     reorderMode = !reorderMode;
   }
+
+  async function enterReorderMode(): Promise<void> {
+    if (selectionMode) selectionMode = false;
+    if (reorderActionState) {
+      await reorderActionState.enter();
+    } else {
+      toggleReorderMode();
+    }
+  }
 </script>
 
-{#snippet managedItem(entry: T, listContext: {
-  selectionMode: boolean;
-  reorderMode: boolean;
-  selected: boolean;
-  onToggle: (selected: boolean) => void;
-})}
+{#snippet managedItem(entry, listContext)}
   {#if itemActions || itemDelete}
     <div class="underlay-inline-list-module__managed-item">
       <div class="underlay-inline-list-module__item-body">
@@ -296,32 +339,9 @@
           <EntityActionsMenu
             triggerAriaLabel={`${title} item actions`}
             triggerTooltip="Actions"
-            customActions={(itemActions?.(entry) ?? []).map((action) => ({
-              label: action.label,
-              disabled: action.disabled,
-              destructive: action.destructive,
-              separator: action.separator,
-              onSelect: async () => {
-                await action.handler(entry);
-                onDataChange?.();
-                await refetch();
-              }
-            }))}
-            deleteConfig={itemDelete
-              ? {
-                  title: itemDelete.title,
-                  description: itemDelete.description,
-                  confirmLabel: itemDelete.confirmLabel,
-                  entityLabel: itemDelete.entityLabel?.(entry) ?? null,
-                  execute: async () => {
-                    await itemDelete.handler(entry);
-                  }
-                }
-              : undefined}
-            onDeleteSuccess={async () => {
-              onDataChange?.();
-              await refetch();
-            }}
+            customActions={getCustomActions(entry)}
+            deleteConfig={getDeleteConfig(entry)}
+            onDeleteSuccess={handleDeleteSuccess}
           >
             {#snippet trigger()}
               <IconButton
@@ -380,14 +400,7 @@
             saving={reorderActionState?.saving ?? false}
             disabled={selectionMode}
             sizeRole="chrome"
-            onEnter={async () => {
-              if (selectionMode) selectionMode = false;
-              if (reorderActionState) {
-                await reorderActionState.enter();
-              } else {
-                toggleReorderMode();
-              }
-            }}
+            onEnter={enterReorderMode}
             onSave={reorderActionState?.save}
             onCancel={() => {
               if (reorderActionState) {

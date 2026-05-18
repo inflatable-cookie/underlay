@@ -628,7 +628,6 @@ use underlay_jobs::tasks::{
 
     // Log cleanup
     PurgeErrorLogsJob,           // Remove old error logs
-    PurgeCapturedEmailsJob,      // Remove old captured emails (dev/test)
 };
 
 let mut registry = JobRegistry::new();
@@ -673,7 +672,6 @@ registry.register(
 | PurgeJobHistoryJob | `purge_job_history` | Weekly Sunday 5 AM | 90-day retention |
 | RecoverAbandonedJobsJob | `recover_abandoned_jobs` | Every 5 min | 5-min stall timeout |
 | PurgeErrorLogsJob | `purge_error_logs` | Daily 4 AM | 90-day retention |
-| PurgeCapturedEmailsJob | `purge_captured_emails` | Daily 4:30 AM | 7-day retention |
 
 ### Example: Full Registration
 

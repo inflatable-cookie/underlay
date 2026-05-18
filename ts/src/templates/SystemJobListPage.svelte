@@ -1,0 +1,379 @@
+<script lang="ts">
+  import { getAuthConfig, useAuthenticatedData } from "../runtime/auth";
+  import { useToasts } from "../runtime/feedback";
+  import { default as EntityListPage } from "./EntityListPage.svelte";
+  import {
+    Card,
+    Icon,
+    Pill,
+    TimeAgo
+  } from "@poodle/svelte";
+  import type { QueryParams } from "../client/query";
+  import type {
+    SystemJobAction,
+    SystemJobListItem,
+    SystemJobListLoader,
+    SystemJobStatsLoader,
+    SystemJobStatus
+  } from "./template.types";
+  import type {
+    TableCellValue,
+    TableColumn,
+    TableRow,
+    TableRowAction
+  } from "@poodle/svelte";
+
+  interface Props {
+    title?: string;
+    backHref?: string;
+    backLabel?: string;
+    detailHref?: (job: SystemJobListItem) => string;
+    dataLoader: SystemJobListLoader;
+    statsLoader?: SystemJobStatsLoader;
+    retryAction?: SystemJobAction;
+    cancelAction?: SystemJobAction;
+    navigate?: (href: string) => unknown;
+    query: QueryParams;
+    onQueryChange: (query: QueryParams) => void;
+  }
+
+  let {
+    title = "Job Queue",
+    backHref = "/system",
+    backLabel = "Back to system",
+    detailHref = defaultDetailHref,
+    dataLoader,
+    statsLoader,
+    retryAction,
+    cancelAction,
+    navigate = defaultNavigate,
+    query,
+    onQueryChange
+  }: Props = $props();
+
+  const toastStore = useToasts();
+  const authConfig = getAuthConfig();
+
+  let refreshRevision = $state(0);
+
+  function defaultDetailHref(job: SystemJobListItem): string {
+    return `/system/jobs/${encodeURIComponent(job.id)}`;
+  }
+
+  const statsData = useAuthenticatedData(loadStats, {
+    defaultValue: null,
+    queryKey: () => `system-jobs-stats:${refreshRevision}`
+  });
+
+  const stats = $derived(statsData.data ?? null);
+
+  async function loadStats(fetch: typeof globalThis.fetch, token: unknown) {
+    void refreshRevision;
+    return statsLoader && typeof token === "string" ? await statsLoader(fetch, token) : null;
+  }
+
+  function defaultNavigate(href: string): void {
+    if (typeof globalThis.location !== "undefined") {
+      globalThis.location.assign(href);
+    }
+  }
+
+  const columns: TableColumn[] = [
+    { id: "jobType", label: "Job Type", width: "minmax(18rem, 2fr)" },
+    { id: "status", label: "Status", width: "8rem" },
+    { id: "attempts", label: "Attempts", width: "6rem", align: "center" },
+    { id: "createdAt", label: "Created", width: "8rem", hideOnMobile: true },
+    { id: "finishedAt", label: "Finished", width: "8rem", hideOnMobile: true }
+  ];
+
+  const filters = [
+    {
+      id: "status",
+      type: "select" as const,
+      label: "Status",
+      options: [
+        { value: "All", label: "All statuses" },
+        { value: "pending", label: "Pending" },
+        { value: "claimed", label: "Claimed" },
+        { value: "running", label: "Running" },
+        { value: "succeeded", label: "Succeeded" },
+        { value: "failed", label: "Failed" },
+        { value: "cancelled", label: "Cancelled" }
+      ]
+    }
+  ];
+
+  function getStatusFilter(nextQuery: QueryParams) {
+    const filter = nextQuery.filters?.find((entry) => entry.field === "status");
+    if (!filter || filter.value === "" || filter.value === "All") {
+      return undefined;
+    }
+    return filter.value;
+  }
+
+  async function loadJobs(fetch: typeof globalThis.fetch, token: unknown, nextQuery: QueryParams) {
+    if (typeof token !== "string") throw new Error("Not authenticated");
+
+    return await dataLoader(fetch, token, {
+      status: getStatusFilter(nextQuery),
+      page: nextQuery.page ?? 1,
+      limit: nextQuery.limit ?? 30
+    });
+  }
+
+  function formatJobType(jobType: string): string {
+    return jobType
+      .replace(/_/g, " ")
+      .replace(/\b\w/g, (char) => char.toUpperCase());
+  }
+
+  function getStatusTone(status: string) {
+    switch (status) {
+      case "succeeded":
+        return "success";
+      case "failed":
+      case "cancelled":
+        return "danger";
+      default:
+        return "neutral";
+    }
+  }
+
+  function getStatusLabel(status: string): string {
+    return status.charAt(0).toUpperCase() + status.slice(1);
+  }
+
+  function getToken() {
+    return authConfig?.getToken?.() ?? null;
+  }
+
+  async function runJobAction(
+    job: SystemJobListItem,
+    action: SystemJobAction,
+    successMessage: string,
+    failureMessage: string
+  ) {
+    const token = getToken();
+    if (!token) {
+      toastStore.push({ variant: "error", message: "Not authenticated" });
+      return;
+    }
+
+    try {
+      await action(job, fetch, token);
+      toastStore.push({ variant: "success", message: successMessage });
+      refreshRevision += 1;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : failureMessage;
+      toastStore.push({ variant: "error", message });
+    }
+  }
+
+  function rowActions(row: TableRow) {
+    const job = rowJob(row);
+    if (!job) return [];
+
+    const actions: { value: string; label: string }[] = [
+      { value: "view", label: "View details" }
+    ];
+
+    if (retryAction && (job.status === "failed" || job.status === "cancelled")) {
+      actions.push({ value: "retry", label: "Retry" });
+    }
+
+    if (cancelAction && (job.status === "pending" || job.status === "claimed" || job.status === "running")) {
+      actions.push({ value: "cancel", label: "Cancel" });
+    }
+
+    return actions;
+  }
+
+  function handleRowActionSelect(row: TableRow, action: TableRowAction) {
+    const job = rowJob(row);
+    if (!job) return;
+
+    if (action.value === "view") {
+      void navigate(detailHref(job));
+      return;
+    }
+
+    if (action.value === "retry" && retryAction) {
+      runJobAction(job, retryAction, "Job queued for retry", "Failed to retry job");
+      return;
+    }
+
+    if (action.value === "cancel" && cancelAction) {
+      runJobAction(job, cancelAction, "Job cancelled", "Failed to cancel job");
+    }
+  }
+
+  function rowJob(row: TableRow) {
+    return row.data ? row.data as SystemJobListItem : null;
+  }
+</script>
+
+{#snippet beforeList()}
+  {#if stats}
+    <div class="underlay-system-job-list-page__stats">
+      <Card>
+        <div class="underlay-system-job-list-page__stat">
+          <span class="underlay-system-job-list-page__stat-icon underlay-system-job-list-page__stat-icon--warning">
+            <Icon icon="clock-3" size="lg" />
+          </span>
+          <div class="underlay-system-job-list-page__stat-content">
+            <span class="underlay-system-job-list-page__stat-value">{stats.pending}</span>
+            <span class="underlay-system-job-list-page__stat-label">Pending</span>
+          </div>
+        </div>
+      </Card>
+      <Card>
+        <div class="underlay-system-job-list-page__stat">
+          <span class="underlay-system-job-list-page__stat-icon underlay-system-job-list-page__stat-icon--info">
+            <Icon icon="play" size="lg" />
+          </span>
+          <div class="underlay-system-job-list-page__stat-content">
+            <span class="underlay-system-job-list-page__stat-value">{stats.running}</span>
+            <span class="underlay-system-job-list-page__stat-label">Running</span>
+          </div>
+        </div>
+      </Card>
+      <Card>
+        <div class="underlay-system-job-list-page__stat">
+          <span class="underlay-system-job-list-page__stat-icon underlay-system-job-list-page__stat-icon--danger">
+            <Icon icon="circle-x" size="lg" />
+          </span>
+          <div class="underlay-system-job-list-page__stat-content">
+            <span class="underlay-system-job-list-page__stat-value">{stats.failed}</span>
+            <span class="underlay-system-job-list-page__stat-label">Failed</span>
+          </div>
+        </div>
+      </Card>
+      <Card>
+        <div class="underlay-system-job-list-page__stat">
+          <span class="underlay-system-job-list-page__stat-icon underlay-system-job-list-page__stat-icon--success">
+            <Icon icon="circle-check-big" size="lg" />
+          </span>
+          <div class="underlay-system-job-list-page__stat-content">
+            <span class="underlay-system-job-list-page__stat-value">{stats.succeededRecent}</span>
+            <span class="underlay-system-job-list-page__stat-label">Recent Success</span>
+          </div>
+        </div>
+      </Card>
+    </div>
+  {/if}
+{/snippet}
+
+{#snippet renderCell(column, row, value)}
+  {@const job = rowJob(row)}
+  {#if !job}
+    —
+  {:else if column.id === "jobType"}
+    <div class="underlay-system-job-list-page__job-cell">
+      <span class="underlay-system-job-list-page__job-title">{formatJobType(job.jobType)}</span>
+      {#if job.errorMessage}
+        <span class="underlay-system-job-list-page__job-error">{job.errorMessage}</span>
+      {/if}
+    </div>
+  {:else if column.id === "status"}
+    <Pill tone={getStatusTone(job.status)} appearance="badge" size="sm">
+      {getStatusLabel(job.status)}
+    </Pill>
+  {:else if column.id === "attempts"}
+    {job.attempts}/{job.maxAttempts}
+  {:else if column.id === "createdAt"}
+    <TimeAgo datetime={job.createdAt} tooltipFormat="datetime" short />
+  {:else if column.id === "finishedAt"}
+    {#if job.finishedAt}
+      <TimeAgo datetime={job.finishedAt} tooltipFormat="datetime" short />
+    {:else}
+      —
+    {/if}
+  {:else}
+    {value ?? "—"}
+  {/if}
+{/snippet}
+
+{#key refreshRevision}
+  <EntityListPage
+    {title}
+    {backHref}
+    {backLabel}
+    dataLoader={loadJobs}
+    presentation="table"
+    {columns}
+    {rowActions}
+    {renderCell}
+    onRowActionSelect={handleRowActionSelect}
+    {filters}
+    {query}
+    {onQueryChange}
+    beforeList={beforeList}
+  />
+{/key}
+
+<style>
+  .underlay-system-job-list-page__stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+    gap: 1rem;
+  }
+
+  .underlay-system-job-list-page__stat {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.5rem;
+  }
+
+  .underlay-system-job-list-page__stat-icon {
+    display: flex;
+    flex-shrink: 0;
+  }
+
+  .underlay-system-job-list-page__stat-icon--warning {
+    color: var(--admin-color-warning, #f59e0b);
+  }
+
+  .underlay-system-job-list-page__stat-icon--info {
+    color: var(--admin-color-info, #3b82f6);
+  }
+
+  .underlay-system-job-list-page__stat-icon--danger {
+    color: var(--admin-color-danger, #ef4444);
+  }
+
+  .underlay-system-job-list-page__stat-icon--success {
+    color: var(--admin-color-success, #10b981);
+  }
+
+  .underlay-system-job-list-page__stat-content {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .underlay-system-job-list-page__stat-value {
+    color: var(--poodle-color-text);
+    font-size: 1.5rem;
+    font-weight: 600;
+  }
+
+  .underlay-system-job-list-page__stat-label {
+    color: var(--poodle-color-text-muted);
+    font-size: 0.875rem;
+  }
+
+  .underlay-system-job-list-page__job-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .underlay-system-job-list-page__job-title {
+    font-weight: 500;
+  }
+
+  .underlay-system-job-list-page__job-error {
+    color: var(--admin-color-danger, #ef4444);
+    font-size: 0.875rem;
+  }
+</style>
