@@ -18,10 +18,14 @@ The durable contract lives in:
 - Canonical detail route: `GET /v1/{scope}/{domain}/{resource}/{id}`
 - Canonical child-list route: `GET /v1/{scope}/{domain}/{parent}/{parentId}/{child}`
 - Use `profile` only for approved projection variants:
-  - list endpoints may support `profile=list|filter`
+  - list endpoints may support `profile=list|filter|list-config`
   - detail endpoints may support `profile=details`
+- Use `variant` only for named baseline list queries such as `pending`,
+  `marked`, or `all`.
 - Pagination/filtering/sorting are query-level concerns, never path suffixes.
 - Profiles are enum-style and documented per resource. No arbitrary include strings.
+- Variants are enum-style and documented per list endpoint. No arbitrary SQL,
+  status, or filter pass-through.
 - Root list pages and detail-tab child collections use the same paged list envelope.
 - Base detail reads and write returns use the same single-record envelope.
 - Resource-backed selectors and filter dropdowns should use the same canonical
@@ -57,6 +61,17 @@ Profile behavior, when the resource supports it:
 
 - `profile=list`: list-card/table projection (labels, counts, status fields needed by the list view)
 - `profile=filter`: lightweight selector projection (id + label + minimal metadata)
+- `profile=list-config`: list capabilities payload containing query variants
+  and filter definitions for the list surface
+
+Variant behavior, when the resource supports it:
+
+- `variant=pending`: named server-understood baseline query
+- `variant=marked`: another named baseline query
+- `variant=all`: explicit "all records" baseline query when the product needs it
+
+Variants are not filters. Filters, sorting, and pagination apply after the
+active variant baseline.
 
 Canonical paged list wire shape:
 
@@ -94,6 +109,10 @@ All list endpoints must support:
 - `sort`
 - resource-specific filter params through `filter[...]`
 
+List endpoints may support:
+
+- `variant`
+
 Notes:
 
 - Presence of pagination support is mandatory for page-shaped list surfaces.
@@ -101,6 +120,29 @@ Notes:
   and simply ignore `total` / `hasMore`.
 - Do not add path suffixes like `/paginated` to indicate pagination.
 - Use the shared sort/filter query vocabulary from the transport contract.
+- Do not encode a named product view as `filter[status]=...` when the API and
+  UI need a stable variant contract.
+
+Canonical list capabilities wire shape:
+
+```json
+{
+  "data": {
+    "default_variant_id": "pending",
+    "variants": [
+      { "id": "pending", "label": "Pending", "count": 42, "is_default": true },
+      { "id": "marked", "label": "Marked", "count": 310 },
+      { "id": "void", "label": "Void", "count": 6 },
+      { "id": "all", "label": "All", "count": 358 }
+    ],
+    "filters": [
+      { "id": "marker_id", "type": "select", "label": "Marker", "variants": ["pending", "marked"] },
+      { "id": "search", "type": "search", "label": "Search" },
+      { "id": "sort", "type": "sort", "label": "Sort" }
+    ]
+  }
+}
+```
 
 ## Naming Rules
 
@@ -119,18 +161,21 @@ Disallowed:
 ## Backend Implementation Pattern (Rust)
 
 1. Parse `profile` with typed enums (`ListProfile`, `DetailProfile`).
-2. Dispatch to profile-specific query builders/repositories.
-3. Keep DTOs profile-specific but under one canonical route.
-4. Keep detail payloads focused on the record plus any tiny summary/count
+2. Parse `variant` with a typed per-endpoint enum when the endpoint supports
+   named base queries.
+3. Dispatch to profile-specific query builders/repositories.
+4. Apply the selected variant baseline before filters, sorting, and pagination.
+5. Keep DTOs profile-specific but under one canonical route.
+6. Keep detail payloads focused on the record plus any tiny summary/count
    enrichments that genuinely belong to the main detail view.
-5. Keep child tab collections on canonical child-list routes.
-6. Keep the paged list envelope consistent with the transport and API-shape
+7. Keep child tab collections on canonical child-list routes.
+8. Keep the paged list envelope consistent with the transport and API-shape
    contracts.
 
 ## TypeScript Client Pattern
 
 1. Keep canonical command names (`listModulesAdmin`, `getPathwayAdmin`).
-2. Accept typed `profile` in command params.
+2. Accept typed `profile` and endpoint-specific `variant` in command params.
 3. Reuse shared pagination/query param helpers.
 4. Normalize `has_more` to `hasMore` only at the client boundary if desired.
 5. Avoid per-profile path constants; only query params should vary.
@@ -142,9 +187,10 @@ Disallowed:
 
 1. Root lists and tab child collections both use the canonical paged list shape.
 2. Lazy filter dropdowns should use `profile=filter` on the same canonical list route.
-3. CRUD detail pages load one detail DTO; tab collections load their own child-list routes.
-4. If tabs show badges, prefer main-detail summary fields over count-only side routes.
-5. Selector callers should unwrap `response.data` locally rather than requiring
+3. Named list views should use `variant`, not hidden filter defaults.
+4. CRUD detail pages load one detail DTO; tab collections load their own child-list routes.
+5. If tabs show badges, prefer main-detail summary fields over count-only side routes.
+6. Selector callers should unwrap `response.data` locally rather than requiring
    helper-specific list routes.
 
 Reference loader handshake:
@@ -157,13 +203,15 @@ Reference loader handshake:
 ## Migration Sequence
 
 1. Add profile support to canonical resource routes in API.
-2. Normalize root list and child-tab list endpoints onto the canonical paged list envelope.
-3. Migrate client commands to canonical routes and typed profile params where needed.
-4. Migrate frontend callsites and remove legacy route usage.
-5. Remove deprecated projection path variants.
-6. Collapse duplicated route families first. Only collapse wrapper commands
+2. Add typed variant support to list endpoints that have named baseline views.
+3. Normalize root list and child-tab list endpoints onto the canonical paged list envelope.
+4. Migrate client commands to canonical routes and typed profile / variant
+   params where needed.
+5. Migrate frontend callsites and remove legacy route usage.
+6. Remove deprecated projection path variants.
+7. Collapse duplicated route families first. Only collapse wrapper commands
    when doing so actually improves clarity rather than weakening typing.
-7. Run endpoint naming, pagination, and wasteful-calls sweeps.
+8. Run endpoint naming, pagination, and wasteful-calls sweeps.
 
 ## Verification Checklist
 
@@ -173,6 +221,7 @@ Reference loader handshake:
 - Utility/helper collections still using `{ data: [] }` are intentionally
   bounded, non-resource helpers rather than alternate resource list routes
 - List endpoints accept and honor `profile=list|filter` only when needed
+- List endpoints with named base views accept and honor typed `variant` values
 - Selector/filter callers for the same resource family use the canonical route
   and query/profile variation rather than helper-specific paths
 - Badge-bearing detail views keep counts on the main detail response rather

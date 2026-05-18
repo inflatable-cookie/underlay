@@ -64,6 +64,7 @@ Underlay should give consuming apps one predictable resource-page API shape:
   bespoke tab payloads
 - profiles are optional and explicit when a resource truly needs multiple
   approved projections
+- variants are optional and explicit when a list needs named baseline queries
 
 The goal is to stop every site inventing a different page-shaped DTO for the
 same UI problems.
@@ -254,6 +255,7 @@ Allowed examples:
 
 - `profile=list`
 - `profile=filter`
+- `profile=list-config`
 - `profile=details`
 
 Rules:
@@ -263,12 +265,60 @@ Rules:
 - keep profiles enum-like and documented; never accept arbitrary include strings
 - `profile=list` and `profile=filter` still return the same canonical list
   envelope; only the row projection changes
+- `profile=list-config` returns list capabilities, not list rows
 - `profile=details` still returns the same canonical detail envelope; only the
   detail payload enrichments change
 - profiles do not replace canonical child routes for tab collections
 - `116` governs the broader rule that selectors and other resource-backed
   helper consumers should use the same canonical route family rather than
   helper-specific path variants or separate command families
+
+### Query variants
+
+Variants are optional and explicit.
+
+Allowed examples:
+
+- `variant=pending`
+- `variant=marked`
+- `variant=void`
+- `variant=all`
+
+Rules:
+
+- use variants only for named server-understood baseline list queries
+- filters, sorting, and pagination apply after the selected variant baseline
+- variants do not change the list envelope
+- variants do not replace projection profiles
+- `all` should be an explicit variant when the product needs it
+- unknown variants should fail with a clear request error
+
+Do not encode a named product view as a hidden default filter when the API and
+UI both need to understand it as a durable list view.
+
+### List capabilities payload
+
+`profile=list-config` returns list capabilities for dynamic list surfaces:
+
+```json
+{
+  "data": {
+    "default_variant_id": "pending",
+    "variants": [],
+    "filters": []
+  }
+}
+```
+
+Rules:
+
+- `variants` declares the list's named baseline queries
+- `default_variant_id` declares the API's preferred baseline when the UI has no
+  explicit variant
+- `filters` declares ephemeral refinements the UI may layer on top
+- filter definitions may list the variants where they apply
+- the normal paged list response should not repeat the full capabilities
+  payload on every request
 
 ## Client and Template Boundary
 
@@ -343,6 +393,8 @@ Allowed:
 - resource-specific item DTOs for list, filter, and detail projections
 - optional profile enums for resources that need more than one approved
   projection
+- optional variant enums for resources that need named baseline list queries
+- `profile=list-config` capabilities payloads for dynamic list surfaces
 - app-owned summary fields on detail DTOs for tab badges or detail header
   metrics
 - bounded non-paged `ListResponse<T>` helpers only for non-resource helper

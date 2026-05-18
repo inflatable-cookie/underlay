@@ -16,6 +16,11 @@
  * - Simple equality: `filter[pathwayId]=abc123`
  * - With operator: `filter[weight][gte]=10`
  * - Supported operators: eq, ne, gt, gte, lt, lte, like
+ *
+ * ### Variants
+ * Variant parameters use `variant=name`
+ * - Variants represent named baseline queries understood by the API
+ * - Filters and sorts refine the selected variant
  */
 
 /** Sort direction */
@@ -44,6 +49,8 @@ export interface FilterField {
 
 /** Query parameters for API requests */
 export interface QueryParams {
+  /** Named baseline query variant understood by the API */
+  variant?: string;
   /** Sort fields in order of priority */
   sort?: SortField[];
   /** Filter conditions */
@@ -123,6 +130,7 @@ export function parseSort(sortString: string): SortField[] {
  * @example
  * ```ts
  * const params: QueryParams = {
+ *   variant: "pending",
  *   sort: [{ field: "title", direction: "asc" }],
  *   filters: [{ field: "pathwayId", value: "abc123" }],
  *   page: 2,
@@ -130,11 +138,16 @@ export function parseSort(sortString: string): SortField[] {
  * };
  *
  * buildQueryString(params);
- * // "sort=title%3Aasc&filter%5BpathwayId%5D=abc123&page=2&limit=20"
+ * // "variant=pending&sort=title%3Aasc&filter%5BpathwayId%5D=abc123&page=2&limit=20"
  * ```
  */
 export function buildQueryString(params: QueryParams): string {
   const searchParams = new URLSearchParams();
+
+  // Add named baseline query variant
+  if (params.variant) {
+    searchParams.set("variant", params.variant);
+  }
 
   // Add sort
   if (params.sort && params.sort.length > 0) {
@@ -204,6 +217,7 @@ export function appendQueryParams(path: string, params: QueryParams): string {
  * @example
  * ```ts
  * const params: QueryParams = {
+ *   variant: "pending",
  *   sort: [{ field: "title", direction: "asc" }],
  *   filters: [{ field: "status", operator: "eq", value: "active" }],
  *   page: 2,
@@ -211,11 +225,16 @@ export function appendQueryParams(path: string, params: QueryParams): string {
  * };
  *
  * queryParamsToFlatRecord(params);
- * // { sort: "title:asc", "filter[status]": "active", page: "2", limit: "20" }
+ * // { variant: "pending", sort: "title:asc", "filter[status]": "active", page: "2", limit: "20" }
  * ```
  */
 export function queryParamsToFlatRecord(params: QueryParams): Record<string, string> {
   const result: Record<string, string> = {};
+
+  // Add named baseline query variant
+  if (params.variant) {
+    result.variant = params.variant;
+  }
 
   // Add sort
   if (params.sort && params.sort.length > 0) {
@@ -303,13 +322,19 @@ export function createFilterBuilder() {
  *
  * @example
  * ```ts
- * const url = new URL("https://example.com/api?sort=title:asc&filter[status]=active&page=2");
+ * const url = new URL("https://example.com/api?variant=pending&sort=title:asc&filter[status]=active&page=2");
  * const params = parseQueryParams(url.searchParams);
- * // { sort: [{ field: "title", direction: "asc" }], filters: [{ field: "status", value: "active" }], page: 2 }
+ * // { variant: "pending", sort: [{ field: "title", direction: "asc" }], filters: [{ field: "status", value: "active" }], page: 2 }
  * ```
  */
 export function parseQueryParams(searchParams: URLSearchParams): QueryParams {
   const result: QueryParams = {};
+
+  // Parse named baseline query variant
+  const variant = searchParams.get("variant");
+  if (variant) {
+    result.variant = variant;
+  }
 
   // Parse sort
   const sortParam = searchParams.get("sort");

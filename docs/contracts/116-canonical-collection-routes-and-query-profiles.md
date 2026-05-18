@@ -17,6 +17,7 @@ collection consumers onto:
 - one canonical route family per resource
 - one shared query vocabulary
 - one explicit projection model
+- one explicit named baseline-query model for lists that need product views
 - one explicit client-command posture
 
 The goal is to stop every app from carrying parallel commands like
@@ -51,6 +52,7 @@ Underlay should give consuming apps one predictable collection model:
 
 - one canonical collection route per resource
 - `profile` controls projection, not route identity
+- `variant` controls named baseline queries, not projection
 - selectors and filter dropdowns should use the same resource routes as page
   lists where they are reading the same resource family
 - client packages should expose a clear canonical command posture per resource,
@@ -116,11 +118,14 @@ Allowed collection profiles:
 
 - `profile=list`
 - `profile=filter`
+- `profile=list-config`
 
 Meaning:
 
 - `profile=list`: page/list/table/card projection
 - `profile=filter`: lightweight selector/dropdown projection
+- `profile=list-config`: capabilities payload for query variants and filter
+  definitions
 
 Rules:
 
@@ -131,11 +136,37 @@ Rules:
 - do not invent app-local synonyms such as `picker`, `search`, `simple`, or
   `minimal` without a shared contract update
 
+### Query variant rule
+
+Use `variant` for named baseline list queries.
+
+Allowed examples:
+
+- `variant=pending`
+- `variant=marked`
+- `variant=void`
+- `variant=all`
+
+Meaning:
+
+- the API applies the variant as the starting query scope
+- `filter[...]`, `search`, `sort`, `page`, and `limit` apply after that scope
+- `all` is an explicit variant when the product needs it, not an implicit
+  "nothing selected" state
+
+Rules:
+
+- variants must be enum-like and documented per endpoint
+- unknown variants should fail with a clear request error
+- do not model named product views as hidden UI filters
+- do not use `profile` for named query state
+
 ### Shared query vocabulary
 
 Canonical collection routes should converge on one query vocabulary:
 
 - `profile`
+- `variant`
 - `page`
 - `limit`
 - `search`
@@ -148,6 +179,8 @@ Rules:
 - selector/filter consumers may still use the same route with small `limit`
   values and `search`
 - route-level query keys should not change per consumer type
+- `variant` is optional; routes that do not have named product views do not
+  need to accept it
 - if a route still needs a lower-level cursor contract for legacy reasons, that
   is compatibility debt, not the preferred shared posture
 - if that compatibility debt is still live, keep it explicit:
@@ -202,6 +235,7 @@ Preferred options:
 Where params may include:
 
 - `profile`
+- `variant`
 - `page`
 - `limit`
 - `search`
@@ -238,6 +272,7 @@ second API vocabulary for the same resource family.
 - one canonical collection route per resource family
 - one shared query vocabulary for page and selector consumers
 - profiles vary projection, not route identity
+- variants vary named baseline query, not projection or envelope shape
 - page and selector consumers may share the same resource route even if one
   consumer only uses `response.data`
 - thin typed wrappers over the same route family are acceptable; duplicate
@@ -248,6 +283,7 @@ second API vocabulary for the same resource family.
 Allowed:
 
 - resource-specific filter params
+- resource-specific variant enums
 - resource-specific list and filter DTOs
 - thin typed list/filter wrappers over one canonical route family
 - temporary compatibility wrappers while a consumer fleet converges
@@ -258,6 +294,7 @@ Not allowed:
 - helper-only route families for selectors when a canonical resource list
   already exists
 - per-app query vocabularies for the same class of collection consumer
+- hidden filter defaults that represent named product views
 
 ## Rollout Target
 

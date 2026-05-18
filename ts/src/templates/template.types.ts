@@ -37,6 +37,25 @@ export interface FilterConfig {
   sortFields?: TemplateSortField[];
 }
 
+export interface ListVariantDefinition {
+  id: string;
+  label: string;
+  description?: string;
+  tone?: "default" | "info" | "success" | "warning" | "danger";
+  count?: number;
+  isDefault?: boolean;
+}
+
+export interface ListFilterDefinition extends FilterConfig {
+  variants?: string[];
+}
+
+export interface ListCapabilities {
+  defaultVariantId?: string;
+  variants: ListVariantDefinition[];
+  filters: ListFilterDefinition[];
+}
+
 export interface BatchDialogContext {
   ids: string[];
   onSubmit: (values: Record<string, unknown>) => void;

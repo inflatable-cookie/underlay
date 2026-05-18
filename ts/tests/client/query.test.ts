@@ -6,6 +6,7 @@ import {
 	orderByToSortFields,
 	parseQueryParams,
 	parseSort,
+	queryParamsToFlatRecord,
 	serializeSort,
 } from "../../src/client/query";
 
@@ -37,8 +38,9 @@ describe("client/query", () => {
 		expect(parseSort("")).toEqual([]);
 	});
 
-	it("builds query strings with sort, filters, and paging", () => {
+	it("builds query strings with variant, sort, filters, and paging", () => {
 		const query = buildQueryString({
+			variant: "pending",
 			sort: [{ field: "title", direction: "asc" }],
 			filters: [
 				{ field: "status", value: "active" },
@@ -49,6 +51,7 @@ describe("client/query", () => {
 		});
 		const params = new URLSearchParams(query);
 
+		expect(params.get("variant")).toBe("pending");
 		expect(params.get("sort")).toBe("title:asc");
 		expect(params.get("filter[status]")).toBe("active");
 		expect(params.get("filter[weight][gte]")).toBe("10");
@@ -75,10 +78,25 @@ describe("client/query", () => {
 
 	it("merges query strings without duplicating keys", () => {
 		expect(
-			appendQueryParams("/v1/items?limit=10", {
+			appendQueryParams("/v1/items?variant=all&limit=10", {
+				variant: "pending",
 				limit: 20,
 			})
-		).toBe("/v1/items?limit=20");
+		).toBe("/v1/items?variant=pending&limit=20");
+	});
+
+	it("converts query params with variant to flat records", () => {
+		expect(
+			queryParamsToFlatRecord({
+				variant: "pending",
+				filters: [{ field: "status", value: "active" }],
+				page: 1,
+			})
+		).toEqual({
+			variant: "pending",
+			"filter[status]": "active",
+			page: "1",
+		});
 	});
 
 	it("creates filter helpers for all operators", () => {
@@ -98,9 +116,10 @@ describe("client/query", () => {
 
 	it("parses query params back to structured values", () => {
 		const params = new URLSearchParams(
-			"sort=title:asc,created_at:desc&filter[status]=active&filter[weight][gte]=10&page=3&limit=25"
+			"variant=pending&sort=title:asc,created_at:desc&filter[status]=active&filter[weight][gte]=10&page=3&limit=25"
 		);
 		expect(parseQueryParams(params)).toEqual({
+			variant: "pending",
 			sort: [
 				{ field: "title", direction: "asc" },
 				{ field: "created_at", direction: "desc" },
