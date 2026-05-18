@@ -287,6 +287,7 @@
   let currentVariantId = $derived(
     currentQuery.variant ?? (defaultVariantCleared ? null : resolvedDefaultVariantId)
   );
+  let effectiveQuery = $derived(resolveEffectiveQuery(currentQuery));
   let queryVariantItems = $derived<CardToggleItem[]>(
     effectiveQueryVariants.map((variant) => ({
       value: variant.id,
@@ -327,11 +328,12 @@
   let handledListQueryKey = $state<string | null>(null);
 
   const listQueryKey = $derived.by(() => JSON.stringify({
-    query: currentQuery,
+    query: effectiveQuery,
     reloadKey: reloadKey ?? null
   }));
   const selectedIdsKey = $derived.by(() => JSON.stringify(batch.selectedIds));
-  const getCurrentQuery = () => pendingFetchQuery ?? currentQuery;
+  const getCurrentQuery = () =>
+    pendingFetchQuery ? resolveEffectiveQuery(pendingFetchQuery) : effectiveQuery;
   const getDataLoader = () => dataLoader;
 
   async function loadPageData(fetch: FetchFn, token: string | null) {
@@ -545,7 +547,7 @@
   function normalizeQuery(query: QueryParams): QueryParams {
     return {
       ...query,
-      variant: query.variant ?? (defaultVariantCleared ? undefined : resolvedDefaultVariantId ?? undefined),
+      variant: query.variant ?? undefined,
       page: Math.max(1, query.page ?? 1),
       limit: Math.max(1, query.limit ?? DEFAULT_PAGE_SIZE),
       filters:
@@ -559,6 +561,13 @@
       return result.total;
     }
     return visibleCount;
+  }
+
+  function resolveEffectiveQuery(query: QueryParams): QueryParams {
+    return {
+      ...query,
+      variant: query.variant ?? (defaultVariantCleared ? undefined : resolvedDefaultVariantId ?? undefined)
+    };
   }
 
   function setQuery(nextQuery: QueryParams) {
@@ -681,8 +690,7 @@
   function handleQueryVariantChange(value: string | null) {
     const nextDefaultVariantCleared = value === null;
     const nextVariant = value ?? undefined;
-    const currentEffectiveVariant =
-      currentQuery.variant ?? (defaultVariantCleared ? undefined : resolvedDefaultVariantId ?? undefined);
+    const currentEffectiveVariant = resolveEffectiveQuery(currentQuery).variant;
     if (currentEffectiveVariant === nextVariant && defaultVariantCleared === nextDefaultVariantCleared) {
       return;
     }
