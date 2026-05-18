@@ -28,6 +28,7 @@ export { default as SystemScheduledTaskListCard } from "./SystemScheduledTaskLis
 export { default as SystemScheduledTasksListPage } from "./SystemScheduledTasksListPage.svelte";
 export { default as AdminDashboardPage } from "./AdminDashboardPage.svelte";
 export { default as ErrorLogListPage } from "./ErrorLogListPage.svelte";
+export { default as ErrorLogDetailPage } from "./ErrorLogDetailPage.svelte";
 export { default as MetadataDialogTrigger } from "./MetadataDialogTrigger.svelte";
 export { default as ContextActionBar } from "./ContextActionBar.svelte";
 export { default as ContextActionDialog } from "./ContextActionDialog.svelte";

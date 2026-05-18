@@ -440,6 +440,7 @@ Core pieces:
 - `SystemScheduledTaskListCard`
 - `SystemAuditLogListPage`
 - `ErrorLogListPage`
+- `ErrorLogDetailPage`
 
 Rules:
 
@@ -456,6 +457,8 @@ Rules:
 - `/system/scheduled-tasks/[id]` should use `SystemScheduledTaskDetailPage`;
   apps adapt task and job-run DTOs into the shared detail item shapes
 - `/system/errors` should use `ErrorLogListPage`
+- `/system/errors/[id]` should use `ErrorLogDetailPage`; apps adapt API-specific
+  error-log DTOs into `ErrorLogDetailItem`
 - `/system/audit` should use `SystemAuditLogListPage`
 - media trash pages should use `SystemMediaTrashListPage` when no app-local
   filtering is needed; if filtering is app-local, they should still use
@@ -473,6 +476,7 @@ Retained cross-app `/system` inventory:
 
 - `/system`
 - `/system/errors`
+- `/system/errors/[id]`
 - `/system/jobs`
 - `/system/jobs/[id]`
 - `/system/scheduled-tasks`
