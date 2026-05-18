@@ -1091,21 +1091,8 @@
     {/snippet}
 
     {#snippet filters()}
-      {#if queryVariantItems.length > 0 && !reorderMode}
-        <div class="underlay-entity-list__query-variants">
-          <CardToggleGroup
-            items={queryVariantItems}
-            value={currentVariantId}
-            columns={queryVariantColumns}
-            allowDeactivation
-            ariaLabel={`${title ?? "List"} query variants`}
-            onValueChange={handleQueryVariantChange}
-          />
-        </div>
-      {/if}
-
-      {#if effectiveFilterConfigs.length > 0 && !reorderMode}
-        <FilterToolbar ariaLabel={`${title} filters`} summaryText="Filters">
+      {#if (queryVariantItems.length > 0 || effectiveFilterConfigs.length > 0) && !reorderMode}
+        <FilterToolbar ariaLabel={`${title} filters`} summaryText="Views & Filters">
           {#snippet summary()}
             <PaginationSummary
               currentPage={currentPage}
@@ -1135,7 +1122,22 @@
               onClick={() => pageData.refetch()}
             />
           {/snippet}
-          
+
+          {#if queryVariantItems.length > 0}
+            <div class="underlay-entity-list__query-variants">
+              <CardToggleGroup
+                items={queryVariantItems}
+                value={currentVariantId}
+                columns={queryVariantColumns}
+                allowDeactivation
+                size="sm"
+                density="compact"
+                ariaLabel={`${title ?? "List"} query variants`}
+                onValueChange={handleQueryVariantChange}
+              />
+            </div>
+          {/if}
+
           {#each effectiveFilterConfigs as filter}
             <div
               class="underlay-entity-list__filter-control"
@@ -1282,21 +1284,8 @@
   </ListContainer>
 {:else}
   <!-- When used inside EntityListPage, don't show ListContainer shell -->
-  {#if queryVariantItems.length > 0 && !reorderMode}
-    <div class="underlay-entity-list__query-variants">
-      <CardToggleGroup
-        items={queryVariantItems}
-        value={currentVariantId}
-        columns={queryVariantColumns}
-        allowDeactivation
-        ariaLabel="Query variants"
-        onValueChange={handleQueryVariantChange}
-      />
-    </div>
-  {/if}
-
-  {#if effectiveFilterConfigs.length > 0 && !reorderMode}
-    <FilterToolbar ariaLabel="Filters" summaryText="Filters">
+  {#if (queryVariantItems.length > 0 || effectiveFilterConfigs.length > 0) && !reorderMode}
+    <FilterToolbar ariaLabel="Filters" summaryText="Views & Filters">
       {#snippet summary()}
         <PaginationSummary
           currentPage={currentPage}
@@ -1326,7 +1315,22 @@
           onClick={() => pageData.refetch()}
         />
       {/snippet}
-      
+
+      {#if queryVariantItems.length > 0}
+        <div class="underlay-entity-list__query-variants">
+          <CardToggleGroup
+            items={queryVariantItems}
+            value={currentVariantId}
+            columns={queryVariantColumns}
+            allowDeactivation
+            size="sm"
+            density="compact"
+            ariaLabel="Query variants"
+            onValueChange={handleQueryVariantChange}
+          />
+        </div>
+      {/if}
+
       {#each effectiveFilterConfigs as filter}
         <div
           class="underlay-entity-list__filter-control"
@@ -1546,7 +1550,7 @@
   }
 
   .underlay-entity-list__query-variants {
-    margin-bottom: 0.75rem;
+    grid-column: 1 / -1;
   }
 
   .underlay-entity-list__pagination {
