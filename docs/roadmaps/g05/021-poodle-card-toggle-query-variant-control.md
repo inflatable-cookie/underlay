@@ -73,4 +73,15 @@ Expected:
 
 ## Next Task
 
-Execute this first in Poodle before wiring Underlay list templates.
+Complete.
+
+Landed in Poodle:
+
+- `ToggleGroup` now supports opt-in single-select deactivation
+- `CardToggleGroup` is exported from `@poodle/svelte`
+- `CardToggleGroup` has a component contract, preview metadata, and specimens
+- Poodle parity metadata includes the new public component
+
+Poodle commit:
+
+- `efe381eb` Add card toggle group component

@@ -44,4 +44,4 @@ In parallel mode:
 
 ## Next Task
 
-Keep `g05` current. The promoted next card is `g05.021`.
+Keep `g05` current. The promoted next card is `g05.022`.
