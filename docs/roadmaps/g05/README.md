@@ -50,7 +50,7 @@ Another explicit `g05` lane is now reopened:
 
 ## Active Lane
 
-- `g05.024`: Marking Hub query variant proof and rollout
+- no active `g05` lane is promoted right now
 
 ## Completed Work
 
@@ -82,7 +82,7 @@ Another explicit `g05` lane is now reopened:
 
 ## Current Queue
 
-- `g05.024` is promoted as the Acowtancy Marking Hub proof and six-app rollout
+- `g05.024` is complete as the Acowtancy Marking Hub proof and six-app rollout
 - `g05.023` is complete as the EntityList query variant integration
 - `g05.022` is complete as the list query variant API contract
 - `g05.021` is complete as the Poodle card toggle query variant control
@@ -119,6 +119,6 @@ If `g05` later enters strict execution posture, keep its cards under
 
 ## Next Task
 
-Execute `g05.024`: prove the query-variant contract through Acowtancy Marking
-Hub, then inventory follow-on named base-query lists across the six-app
-consumer family.
+Promote a follow-on query-variant batch only for a true named baseline-query
+surface. Current candidates are Composer moderation queue and the shared
+platform-system jobs lists.

@@ -1,6 +1,14 @@
 # g05.024 — Marking Hub Query Variant Proof And Rollout
 
-Status: promoted.
+Status: complete.
+
+Proof status:
+
+- Farmyard commit `7a52099` adds `variant` to
+  `GET /v1/admin/marking/queue`.
+- Cattle Grid commit `1291080` passes marking queue variant params.
+- Dairy commit `df737db3` replaces the Marking Queue stat-card filter strip
+  with `EntityListPage` query variants.
 
 ## Why
 
@@ -92,6 +100,22 @@ Classify each candidate list as:
 - API-published variants needed
 - app-local exception
 
+Initial inventory:
+
+| App | Candidate | Classification | Notes |
+|---|---|---|---|
+| `acowtancy` | Marking Queue | API-published variants needed | Proof landed with `pending`, `marked`, `void`, and `all`; API owns baseline statuses and existing status filter layers on top. |
+| `acowtancy` | Other Dairy browse lists | No variant needed for now | Most are ordinary entity lists with temporary filters, not named base queries. |
+| `underlay-reference` | Jobs list | Static UI variants enough later | Jobs already have status stats; a future platform-system pass can expose `active`, `failed`, `succeeded`, and `all` as variants. |
+| `underlay-reference` | Task lists | No variant needed for now | Status is an ordinary filter inside a project task list; no separate baseline query is required yet. |
+| `contact-patch` | Admin browse lists | No variant needed for now | No clear named base-list query surfaced beyond separate trash routes. |
+| `compli-me` | Messages list | No variant needed for now | Visibility and publishability are ordinary filters, not baseline variants. |
+| `songsprout` | Jobs list | Static UI variants enough later | Same platform-system candidate as `underlay-reference`. |
+| `songsprout` | Programs list | App-local exception for now | Dashboard-style stats are not yet a server-owned list variant contract. |
+| `loophole/composer` | Moderation queue | API-published variants needed later | Current page is still hand-rolled and defaults to pending; it is the closest follow-on to Marking Hub. |
+| `loophole/composer` | Scan history | Static UI variants enough later | Status filters could become variants if product wants processing/completed/failed as named views. |
+| `loophole/composer` | Jobs list | Static UI variants enough later | Same platform-system candidate as the other system jobs lists. |
+
 ## Consumer Upgrade Impact
 
 Expected:
@@ -103,13 +127,15 @@ Expected:
 
 ## Acceptance
 
-- Marking Hub defaults to pending answers
-- marked, void, and all variants work as first-class server queries
-- manual filters still layer on top
-- docs include the proof as the reference example
-- rollout inventory identifies follow-on candidates across the six apps
+- Marking Hub defaults to pending answers — complete
+- marked, void, and all variants work as first-class server queries — complete
+- manual filters still layer on top — complete
+- docs include the proof as the reference example — complete in this roadmap
+- rollout inventory identifies follow-on candidates across the six apps —
+  initial pass complete
 
 ## Next Task
 
-Execute after `g05.023` lands. Start with Acowtancy and only expand to other
-apps after the Marking Hub behavior is proven.
+Promote a follow-on batch for Composer moderation queue or the shared
+platform-system jobs list variants. Do not migrate ordinary status filters
+without a named baseline-query product reason.
