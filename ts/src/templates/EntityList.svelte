@@ -1558,16 +1558,22 @@
   .underlay-entity-list__query-variants :global(.poodle-card) {
     --poodle-treatment-surface-fill: color-mix(
       in srgb,
-      var(--poodle-color-background-elevated) 98%,
-      var(--poodle-color-background-panel)
+      var(--poodle-color-background-surface) 90%,
+      var(--poodle-color-background-elevated)
     );
     --poodle-treatment-surface-hover-fill: color-mix(
       in srgb,
-      var(--poodle-color-background-elevated) 94%,
-      var(--poodle-color-background-panel)
+      var(--poodle-color-background-surface) 84%,
+      var(--poodle-color-background-elevated)
+    );
+    --poodle-recipe-card-border: color-mix(
+      in srgb,
+      var(--poodle-color-border-default) 26%,
+      transparent
     );
     --poodle-treatment-surface-shadow:
-      inset 0 0 0 0.0625rem color-mix(in srgb, var(--poodle-color-border-default) 16%, transparent);
+      0 0.375rem 0.875rem color-mix(in srgb, black 16%, transparent),
+      inset 0 0 0 0.0625rem color-mix(in srgb, var(--poodle-color-border-default) 20%, transparent);
   }
 
   .underlay-entity-list__pagination {
