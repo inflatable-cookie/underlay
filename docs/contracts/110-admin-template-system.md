@@ -135,6 +135,7 @@ Core pieces:
 - `EntityListPage`
 - `EntityList`
 - declarative filter config
+- declarative query variant config
 - batch action config
 - reorder config
 - card/table/log presentation modes
@@ -163,6 +164,13 @@ Rules:
   narrower utility/embed posture is genuinely needed
 - data loading is caller-provided through `dataLoader(fetch, token, query)`
 - that loader shape is governed by `115-admin-resource-api-shapes.md`
+- `query.variant` represents the active named baseline query when the list
+  supports variants
+- query variants render above `FilterToolbar`; filters remain temporary
+  refinements layered on top
+- static `queryVariants` and `filters` may be replaced by
+  `capabilitiesLoader(fetch, token)` when the API publishes `profile=list-config`
+  capabilities
 - presentation may be cards, table, or log
 - filter, batch, and reorder behavior is declarative where it fits
 - the parent may own URL query state, while the template owns list interaction

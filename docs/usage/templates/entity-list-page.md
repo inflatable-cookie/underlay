@@ -146,6 +146,18 @@ into `src/lib/cards/*` over `EntityListCard`.
 | Prop | Type | Required | Description |
 |------|------|----------|-------------|
 | `filters` | `FilterConfig[]` | No | Declarative filter config |
+| `queryVariants` | `ListVariantDefinition[]` | No | Named baseline query variants rendered above filters |
+| `defaultVariantId` | `string` | No | Fallback variant used when query state does not name one explicitly |
+| `capabilitiesLoader` | `(fetch, token) => Promise<ListCapabilities>` | No | Loads API-published variants and filters |
+
+Query variants are not filters. They represent server-understood baseline
+queries such as `pending`, `marked`, or `all`. Filter controls then refine the
+active variant.
+
+Changing variants resets `page` to `1`.
+
+When `capabilitiesLoader` is provided, loaded `variants`, `filters`, and
+`defaultVariantId` override the static props.
 
 ### Actions
 

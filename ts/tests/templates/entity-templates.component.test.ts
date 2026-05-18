@@ -10,6 +10,7 @@ import EntityDetailPageHarness from "../fixtures/EntityDetailPageHarness.svelte"
 import EntityInlineListModuleHarness from "../fixtures/EntityInlineListModuleHarness.svelte";
 import EntityListCardHarness from "../fixtures/EntityListCardHarness.svelte";
 import EntityListControlledFilterHarness from "../fixtures/EntityListControlledFilterHarness.svelte";
+import EntityListQueryVariantHarness from "../fixtures/EntityListQueryVariantHarness.svelte";
 import EntityListSummaryFallbackHarness from "../fixtures/EntityListSummaryFallbackHarness.svelte";
 
 describe("templates", () => {
@@ -139,6 +140,36 @@ describe("templates", () => {
           }
         ]
       });
+    });
+  });
+
+  it("applies query variants as baseline query state", async () => {
+    const onQuery = vi.fn();
+    render(EntityListQueryVariantHarness, { onQuery });
+
+    await waitFor(() => {
+      expect(onQuery).toHaveBeenCalledWith({ page: 3, limit: 30, variant: "pending", filters: [], sort: [] });
+    });
+
+    await fireEvent.click(screen.getByRole("button", { name: /marked/i }));
+
+    await waitFor(() => {
+      expect(onQuery).toHaveBeenLastCalledWith({
+        page: 1,
+        limit: 30,
+        variant: "marked",
+        filters: [],
+        sort: []
+      });
+    });
+  });
+
+  it("applies API-published query variant capabilities", async () => {
+    const onQuery = vi.fn();
+    render(EntityListQueryVariantHarness, { onQuery, useCapabilities: true });
+
+    await waitFor(() => {
+      expect(onQuery).toHaveBeenLastCalledWith({ page: 3, limit: 30, variant: "marked", filters: [], sort: [] });
     });
   });
 

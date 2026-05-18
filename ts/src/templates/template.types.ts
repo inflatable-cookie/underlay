@@ -175,6 +175,11 @@ export type EntityListDataLoader<TItem> = (
   query: QueryParams
 ) => Promise<PagedListResult<TItem>>;
 
+export type EntityListCapabilitiesLoader = (
+  fetch: FetchFn,
+  token: string | null
+) => Promise<ListCapabilities>;
+
 export interface DetailMetaItemConfig {
   label: string;
   value: string | TemplateSurface;
@@ -502,6 +507,9 @@ export interface EntityListSharedProps<TItem> {
   getActorHref?: LogActorHrefResolver;
   getResourceHref?: LogResourceHrefResolver;
   filters?: FilterConfig[];
+  queryVariants?: ListVariantDefinition[];
+  defaultVariantId?: string;
+  capabilitiesLoader?: EntityListCapabilitiesLoader;
   batchActions?: BatchActionConfig[];
   reorder?: ReorderConfig<TItem>;
   customReorderContent?: TemplateSurface;

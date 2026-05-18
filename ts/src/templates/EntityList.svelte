@@ -31,7 +31,8 @@
     IconButton,
     Button,
     Pagination,
-    PaginationSummary
+    PaginationSummary,
+    CardToggleGroup
   } from "@poodle/svelte";
   import type {
     TableColumn,
@@ -39,7 +40,8 @@
     TableRowAction,
     BulkAction,
     EditableListItem,
-    LogActor
+    LogActor,
+    CardToggleItem
   } from "@poodle/svelte";
   import type { FilterField, QueryParams, SortField } from "../client/query";
   import { DEFAULT_PAGE_SIZE } from "../patterns/pagination-types";
@@ -53,10 +55,13 @@
   import type {
     BatchActionConfig,
     CustomReorderConfig,
+    EntityListCapabilitiesLoader,
     EntityListDataLoader,
     EntityListSharedProps,
     FilterConfig,
     FetchFn,
+    ListVariantDefinition,
+    ListCapabilities,
     LoadedReorderConfig,
     PagedListResult,
     ReorderActionState,
@@ -146,6 +151,15 @@
     
     /** Declarative filter configuration */
     filters?: FilterConfig[];
+
+    /** Named baseline query variants rendered above filters. */
+    queryVariants?: ListVariantDefinition[];
+
+    /** Fallback variant used when query state does not name one explicitly. */
+    defaultVariantId?: string;
+
+    /** Optional loader for API-published list variants and filter definitions. */
+    capabilitiesLoader?: EntityListCapabilitiesLoader;
     
     /** Batch action configuration */
     batchActions?: BatchActionConfig[];
@@ -228,6 +242,9 @@
     getActorHref,
     getResourceHref,
     filters: filterConfigs = [],
+    queryVariants = [],
+    defaultVariantId,
+    capabilitiesLoader,
     batchActions = [],
     reorder,
     customReorderContent,
@@ -258,7 +275,24 @@
     limit: DEFAULT_PAGE_SIZE
   });
   let currentQuery = $derived(normalizeQuery(externalQuery ?? internalQuery));
+  let loadedCapabilities = $state<ListCapabilities | null>(null);
+  let effectiveFilterConfigs = $derived(loadedCapabilities?.filters ?? filterConfigs);
+  let effectiveQueryVariants = $derived(loadedCapabilities?.variants ?? queryVariants);
+  let effectiveDefaultVariantId = $derived(loadedCapabilities?.defaultVariantId ?? defaultVariantId);
   let currentSort = $derived(currentQuery.sort ?? []);
+  let resolvedDefaultVariantId = $derived(
+    effectiveDefaultVariantId ?? effectiveQueryVariants.find((variant) => variant.isDefault)?.id ?? null
+  );
+  let currentVariantId = $derived(currentQuery.variant ?? resolvedDefaultVariantId);
+  let queryVariantItems = $derived<CardToggleItem[]>(
+    effectiveQueryVariants.map((variant) => ({
+      value: variant.id,
+      label: variant.label,
+      description: variant.description,
+      count: variant.count
+    }))
+  );
+  let queryVariantColumns = $derived(Math.min(4, Math.max(1, queryVariantItems.length)) as 1 | 2 | 3 | 4);
   let currentPage = $derived(currentQuery.page ?? 1);
   let currentPageSize = $derived(currentQuery.limit ?? DEFAULT_PAGE_SIZE);
 
@@ -301,6 +335,15 @@
     return await getDataLoader()(fetch, token, getCurrentQuery());
   }
 
+  async function loadCapabilities(fetch: FetchFn, token: string | null) {
+    if (!capabilitiesLoader) {
+      return null;
+    }
+    const result = await capabilitiesLoader(fetch, token);
+    loadedCapabilities = result;
+    return result;
+  }
+
   // Data loading (includes filters and sort)
   const pageData = useAuthenticatedData<PagedListResult<T>>(
     loadPageData,
@@ -309,6 +352,13 @@
         data: [],
         total: 0
       }
+    }
+  );
+
+  useAuthenticatedData<ListCapabilities | null>(
+    loadCapabilities,
+    {
+      defaultValue: null
     }
   );
 
@@ -408,7 +458,7 @@
 
   // Load async filter options on mount
   $effect(() => {
-    for (const filter of filterConfigs) {
+    for (const filter of effectiveFilterConfigs) {
       const currentLoadKey = filter.loadKey ?? "";
       if (filterLoadKeys[filter.id] !== currentLoadKey) {
         filterLoadKeys = { ...filterLoadKeys, [filter.id]: currentLoadKey };
@@ -486,6 +536,7 @@
   function normalizeQuery(query: QueryParams): QueryParams {
     return {
       ...query,
+      variant: query.variant ?? resolvedDefaultVariantId ?? undefined,
       page: Math.max(1, query.page ?? 1),
       limit: Math.max(1, query.limit ?? DEFAULT_PAGE_SIZE),
       filters:
@@ -614,6 +665,18 @@
     setQuery({
       ...currentQuery,
       filters: buildNextFilters(filter, value),
+      page: 1
+    });
+  }
+
+  function handleQueryVariantChange(value: string | null) {
+    const nextVariant = value ?? resolvedDefaultVariantId ?? undefined;
+    if ((currentQuery.variant ?? resolvedDefaultVariantId ?? undefined) === nextVariant) {
+      return;
+    }
+    setQuery({
+      ...currentQuery,
+      variant: nextVariant,
       page: 1
     });
   }
@@ -1028,7 +1091,20 @@
     {/snippet}
 
     {#snippet filters()}
-      {#if filterConfigs.length > 0 && !reorderMode}
+      {#if queryVariantItems.length > 0 && !reorderMode}
+        <div class="underlay-entity-list__query-variants">
+          <CardToggleGroup
+            items={queryVariantItems}
+            value={currentVariantId}
+            columns={queryVariantColumns}
+            allowDeactivation={Boolean(resolvedDefaultVariantId)}
+            ariaLabel={`${title ?? "List"} query variants`}
+            onValueChange={handleQueryVariantChange}
+          />
+        </div>
+      {/if}
+
+      {#if effectiveFilterConfigs.length > 0 && !reorderMode}
         <FilterToolbar ariaLabel={`${title} filters`} summaryText="Filters">
           {#snippet summary()}
             <PaginationSummary
@@ -1060,7 +1136,7 @@
             />
           {/snippet}
           
-          {#each filterConfigs as filter}
+          {#each effectiveFilterConfigs as filter}
             <div
               class="underlay-entity-list__filter-control"
               data-active={isFilterActive(filter)}
@@ -1206,7 +1282,20 @@
   </ListContainer>
 {:else}
   <!-- When used inside EntityListPage, don't show ListContainer shell -->
-  {#if filterConfigs.length > 0 && !reorderMode}
+  {#if queryVariantItems.length > 0 && !reorderMode}
+    <div class="underlay-entity-list__query-variants">
+      <CardToggleGroup
+        items={queryVariantItems}
+        value={currentVariantId}
+        columns={queryVariantColumns}
+        allowDeactivation={Boolean(resolvedDefaultVariantId)}
+        ariaLabel="Query variants"
+        onValueChange={handleQueryVariantChange}
+      />
+    </div>
+  {/if}
+
+  {#if effectiveFilterConfigs.length > 0 && !reorderMode}
     <FilterToolbar ariaLabel="Filters" summaryText="Filters">
       {#snippet summary()}
         <PaginationSummary
@@ -1238,7 +1327,7 @@
         />
       {/snippet}
       
-        {#each filterConfigs as filter}
+      {#each effectiveFilterConfigs as filter}
         <div
           class="underlay-entity-list__filter-control"
           data-active={isFilterActive(filter)}
@@ -1454,6 +1543,10 @@
   .underlay-entity-list__filter-control[data-active="false"] :global(.poodle-select__value[data-placeholder="true"]),
   .underlay-entity-list__filter-control[data-active="false"] :global(.poodle-order-by__summary[data-placeholder="true"]) {
     color: var(--poodle-color-text-muted);
+  }
+
+  .underlay-entity-list__query-variants {
+    margin-bottom: 0.75rem;
   }
 
   .underlay-entity-list__pagination {

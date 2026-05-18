@@ -52,6 +52,13 @@ Use raw `EntityList` when the surface is truly narrower:
 If a tab needs filters, pagination summary, batch actions, reorder, header
 actions, or add flows, prefer `EntityListPage` instead.
 
+`EntityList` also accepts `queryVariants`, `defaultVariantId`, and
+`capabilitiesLoader`. Variants are named baseline queries rendered above
+`FilterToolbar`; filters and sort controls then refine the active variant.
+
+Use `capabilitiesLoader` when the API publishes `profile=list-config`
+capabilities for the list surface.
+
 ## Props
 
 Same as `EntityListPage` minus the page-shell props (`title`, `backHref`, etc.).

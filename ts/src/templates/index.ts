@@ -72,6 +72,7 @@ export type {
   ErrorLogListRequest,
   ErrorLogStatsLoader,
   ErrorLogStatsSummary,
+  EntityListCapabilitiesLoader,
   EntityListDataLoader,
   EntityListSharedProps,
   FilterConfig,

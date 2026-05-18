@@ -16,9 +16,11 @@
   } from "@poodle/svelte";
   import type {
     BatchActionConfig,
+    EntityListCapabilitiesLoader,
     EntityListDataLoader,
     EntityListSharedProps,
     FilterConfig,
+    ListVariantDefinition,
     LogActionFormatter,
     LogActionTypeResolver,
     LogActorHrefResolver,
@@ -128,6 +130,15 @@
     
     /** Declarative filter configuration */
     filters?: FilterConfig[];
+
+    /** Named baseline query variants rendered above filters. */
+    queryVariants?: ListVariantDefinition[];
+
+    /** Fallback variant used when query state does not name one explicitly. */
+    defaultVariantId?: string;
+
+    /** Optional loader for API-published list variants and filter definitions. */
+    capabilitiesLoader?: EntityListCapabilitiesLoader;
     
     /** Batch action configuration */
     batchActions?: BatchActionConfig[];
@@ -207,6 +218,9 @@
     getActorHref,
     getResourceHref,
     filters = [],
+    queryVariants = [],
+    defaultVariantId,
+    capabilitiesLoader,
     batchActions = [],
     reorder,
     customReorderContent,
@@ -443,6 +457,9 @@
     {getActorHref}
     {getResourceHref}
     {filters}
+    {queryVariants}
+    {defaultVariantId}
+    {capabilitiesLoader}
     {batchActions}
     {reorder}
     {customReorderContent}
