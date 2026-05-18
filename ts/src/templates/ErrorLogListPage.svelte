@@ -23,6 +23,7 @@
     ErrorLogStatsLoader,
     ErrorLogStatsSummary,
     FetchFn,
+    ListVariantDefinition,
     TemplateSurface
   } from "./template.types";
 
@@ -61,24 +62,6 @@
     { id: "error", label: "Error", width: "minmax(20rem, 1.85fr)" }
   ];
 
-  const filters = [
-    {
-      id: "statusCode",
-      type: "select" as const,
-      label: "Status",
-      options: [
-        { value: "All", label: "All statuses" },
-        { value: "400", label: "400 Bad Request" },
-        { value: "401", label: "401 Unauthorized" },
-        { value: "403", label: "403 Forbidden" },
-        { value: "404", label: "404 Not Found" },
-        { value: "500", label: "500 Server Error" },
-        { value: "502", label: "502 Bad Gateway" },
-        { value: "503", label: "503 Unavailable" }
-      ]
-    }
-  ];
-
   async function loadErrorStats(fetch: FetchFn, token: string | null) {
     if (!loadStats || !token) {
       return null;
@@ -96,14 +79,54 @@
 
   const stats = $derived(statsData.data);
 
-  function getStatusCodeFilter(nextQuery: QueryParams): number | undefined {
-    const filter = nextQuery.filters?.find((entry) => entry.field === "statusCode");
-    if (!filter || filter.value === "" || filter.value === "All") {
+  const queryVariants = $derived<ListVariantDefinition[]>([
+    {
+      id: "all",
+      label: "All",
+      description: "All captured errors.",
+      tone: "default",
+      count: stats?.totalLast24h,
+      isDefault: true
+    },
+    {
+      id: "5xx",
+      label: "5xx",
+      description: "Server-side failures.",
+      tone: "danger",
+      count: stats?.serverErrorsLast24h
+    },
+    {
+      id: "4xx",
+      label: "4xx",
+      description: "Client/request failures.",
+      tone: "warning",
+      count: stats?.clientErrorsLast24h
+    },
+    {
+      id: "500",
+      label: "500",
+      description: "Internal server errors.",
+      tone: "danger"
+    },
+    {
+      id: "404",
+      label: "404",
+      description: "Not found responses.",
+      tone: "warning"
+    }
+  ]);
+
+  function getStatusCodeVariant(nextQuery: QueryParams): number | undefined {
+    if (!nextQuery.variant || nextQuery.variant === "all" || nextQuery.variant === "4xx" || nextQuery.variant === "5xx") {
       return undefined;
     }
 
-    const parsed = Number(filter.value);
+    const parsed = Number(nextQuery.variant);
     return Number.isFinite(parsed) ? parsed : undefined;
+  }
+
+  function getStatusClassVariant(nextQuery: QueryParams): ErrorLogListRequest["statusClass"] | undefined {
+    return nextQuery.variant === "4xx" || nextQuery.variant === "5xx" ? nextQuery.variant : undefined;
   }
 
   async function dataLoader(
@@ -119,7 +142,9 @@
     const pageNumber = Math.max(1, nextQuery.page ?? 1);
     const offset = (pageNumber - 1) * limit;
     const request: ErrorLogListRequest = {
-      statusCode: getStatusCodeFilter(nextQuery),
+      variant: nextQuery.variant,
+      statusClass: getStatusClassVariant(nextQuery),
+      statusCode: getStatusCodeVariant(nextQuery),
       limit,
       offset
     };
@@ -302,7 +327,8 @@
   dataLoader={dataLoader}
   presentation="table"
   {columns}
-  {filters}
+  {queryVariants}
+  defaultVariantId="all"
   expandedRowIds={expandedLogId ? [expandedLogId] : []}
   showRowActions={false}
   beforeList={beforeList as TemplateSurface}

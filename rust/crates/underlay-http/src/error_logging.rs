@@ -99,6 +99,7 @@ pub async fn append_error_log(
 pub struct ErrorLogFilters {
     pub since: Option<chrono::DateTime<chrono::Utc>>,
     pub until: Option<chrono::DateTime<chrono::Utc>>,
+    pub status_class: Option<ErrorLogStatusClass>,
     pub status_code: Option<i32>,
     pub error_code: Option<String>,
     pub endpoint: Option<String>,
@@ -107,11 +108,19 @@ pub struct ErrorLogFilters {
 }
 
 #[cfg(feature = "error-logging")]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ErrorLogStatusClass {
+    Client,
+    Server,
+}
+
+#[cfg(feature = "error-logging")]
 impl Default for ErrorLogFilters {
     fn default() -> Self {
         Self {
             since: None,
             until: None,
+            status_class: None,
             status_code: None,
             error_code: None,
             endpoint: None,
@@ -161,6 +170,15 @@ pub async fn list_error_logs(
     if filters.status_code.is_some() {
         let param_num = 1 + filters.since.is_some() as usize + filters.until.is_some() as usize;
         query_str.push_str(&format!(" AND status_code = ${}", param_num));
+    } else if let Some(status_class) = filters.status_class {
+        match status_class {
+            ErrorLogStatusClass::Client => {
+                query_str.push_str(" AND status_code >= 400 AND status_code < 500");
+            }
+            ErrorLogStatusClass::Server => {
+                query_str.push_str(" AND status_code >= 500 AND status_code < 600");
+            }
+        }
     }
     if filters.error_code.is_some() {
         let param_num = 1
@@ -310,6 +328,15 @@ pub async fn count_error_logs(
     if filters.status_code.is_some() {
         let param_num = 1 + filters.since.is_some() as usize + filters.until.is_some() as usize;
         query_str.push_str(&format!(" AND status_code = ${}", param_num));
+    } else if let Some(status_class) = filters.status_class {
+        match status_class {
+            ErrorLogStatusClass::Client => {
+                query_str.push_str(" AND status_code >= 400 AND status_code < 500");
+            }
+            ErrorLogStatusClass::Server => {
+                query_str.push_str(" AND status_code >= 500 AND status_code < 600");
+            }
+        }
     }
     if filters.error_code.is_some() {
         let param_num = 1

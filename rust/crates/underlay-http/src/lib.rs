@@ -65,8 +65,8 @@ pub use underlay_observability::{TraceContext, TRACEPARENT_HEADER, TRACESTATE_HE
 #[cfg(feature = "error-logging")]
 pub use crate::error_logging::{
     append_error_log, count_error_logs, error_logging_middleware, get_error_log_by_id,
-    list_error_logs, DbErrorLogSink, ErrorLogFilters, ErrorLogRow, ErrorLoggingConfig,
-    ERROR_CONTEXT_HEADER,
+    list_error_logs, DbErrorLogSink, ErrorLogFilters, ErrorLogRow, ErrorLogStatusClass,
+    ErrorLoggingConfig, ERROR_CONTEXT_HEADER,
 };
 
 #[cfg(feature = "embed")]

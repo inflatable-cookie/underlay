@@ -229,6 +229,8 @@ export interface SystemIndexCardConfig {
 }
 
 export interface ErrorLogListRequest {
+  variant?: string;
+  statusClass?: "4xx" | "5xx";
   statusCode?: number;
   limit: number;
   offset: number;
@@ -314,6 +316,7 @@ export interface SystemJobStatsSummary {
 }
 
 export interface SystemJobListRequest {
+  variant?: string;
   status?: SystemJobStatus;
   page: number;
   limit: number;
