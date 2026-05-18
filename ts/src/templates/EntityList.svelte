@@ -283,9 +283,10 @@
   let resolvedDefaultVariantId = $derived(
     effectiveDefaultVariantId ?? effectiveQueryVariants.find((variant) => variant.isDefault)?.id ?? null
   );
-  let defaultVariantCleared = $state(false);
+  let selectedVariantId = $state<string | null>(null);
+  let variantSelectionTouched = $state(false);
   let currentVariantId = $derived(
-    currentQuery.variant ?? (defaultVariantCleared ? null : resolvedDefaultVariantId)
+    currentQuery.variant ?? (variantSelectionTouched ? selectedVariantId : resolvedDefaultVariantId)
   );
   let effectiveQuery = $derived(resolveEffectiveQuery(currentQuery));
   let queryVariantItems = $derived<CardToggleItem[]>(
@@ -391,12 +392,6 @@
 
     if (JSON.stringify(normalizeQuery(pendingFetchQuery)) === JSON.stringify(currentQuery)) {
       pendingFetchQuery = null;
-    }
-  });
-
-  $effect(() => {
-    if (currentQuery.variant !== undefined && defaultVariantCleared) {
-      defaultVariantCleared = false;
     }
   });
 
@@ -566,7 +561,7 @@
   function resolveEffectiveQuery(query: QueryParams): QueryParams {
     return {
       ...query,
-      variant: query.variant ?? (defaultVariantCleared ? undefined : resolvedDefaultVariantId ?? undefined)
+      variant: query.variant ?? (variantSelectionTouched ? selectedVariantId ?? undefined : resolvedDefaultVariantId ?? undefined)
     };
   }
 
@@ -688,13 +683,13 @@
   }
 
   function handleQueryVariantChange(value: string | null) {
-    const nextDefaultVariantCleared = value === null;
     const nextVariant = value ?? undefined;
     const currentEffectiveVariant = resolveEffectiveQuery(currentQuery).variant;
-    if (currentEffectiveVariant === nextVariant && defaultVariantCleared === nextDefaultVariantCleared) {
+    if (currentEffectiveVariant === nextVariant && variantSelectionTouched && selectedVariantId === value) {
       return;
     }
-    defaultVariantCleared = nextDefaultVariantCleared;
+    variantSelectionTouched = true;
+    selectedVariantId = value;
     setQuery({
       ...currentQuery,
       variant: nextVariant,
