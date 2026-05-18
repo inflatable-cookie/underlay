@@ -1558,17 +1558,17 @@
   .underlay-entity-list__query-variants :global(.poodle-card) {
     --poodle-treatment-surface-fill: color-mix(
       in srgb,
-      var(--poodle-color-background-elevated) 78%,
+      var(--poodle-color-background-elevated) 95%,
       var(--poodle-color-text-primary)
     );
     --poodle-treatment-surface-hover-fill: color-mix(
       in srgb,
-      var(--poodle-color-background-elevated) 72%,
+      var(--poodle-color-background-elevated) 92%,
       var(--poodle-color-text-primary)
     );
     --poodle-recipe-card-border: color-mix(
       in srgb,
-      var(--poodle-color-border-default) 34%,
+      var(--poodle-color-border-default) 28%,
       transparent
     );
     --poodle-treatment-surface-shadow:
