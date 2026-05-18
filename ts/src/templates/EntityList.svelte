@@ -1130,7 +1130,7 @@
                 value={currentVariantId}
                 columns={queryVariantColumns}
                 allowDeactivation
-                size="sm"
+                size="xs"
                 density="compact"
                 ariaLabel={`${title ?? "List"} query variants`}
                 onValueChange={handleQueryVariantChange}
@@ -1323,7 +1323,7 @@
             value={currentVariantId}
             columns={queryVariantColumns}
             allowDeactivation
-            size="sm"
+            size="xs"
             density="compact"
             ariaLabel="Query variants"
             onValueChange={handleQueryVariantChange}
