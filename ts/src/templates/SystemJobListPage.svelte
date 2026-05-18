@@ -123,12 +123,6 @@
       label: "Cancelled",
       description: "Jobs cancelled before completion.",
       tone: "danger"
-    },
-    {
-      id: "all",
-      label: "All",
-      description: "All jobs.",
-      tone: "default"
     }
   ]);
 

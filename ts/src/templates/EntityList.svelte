@@ -283,7 +283,10 @@
   let resolvedDefaultVariantId = $derived(
     effectiveDefaultVariantId ?? effectiveQueryVariants.find((variant) => variant.isDefault)?.id ?? null
   );
-  let currentVariantId = $derived(currentQuery.variant ?? resolvedDefaultVariantId);
+  let defaultVariantCleared = $state(false);
+  let currentVariantId = $derived(
+    currentQuery.variant ?? (defaultVariantCleared ? null : resolvedDefaultVariantId)
+  );
   let queryVariantItems = $derived<CardToggleItem[]>(
     effectiveQueryVariants.map((variant) => ({
       value: variant.id,
@@ -386,6 +389,12 @@
 
     if (JSON.stringify(normalizeQuery(pendingFetchQuery)) === JSON.stringify(currentQuery)) {
       pendingFetchQuery = null;
+    }
+  });
+
+  $effect(() => {
+    if (currentQuery.variant !== undefined && defaultVariantCleared) {
+      defaultVariantCleared = false;
     }
   });
 
@@ -536,7 +545,7 @@
   function normalizeQuery(query: QueryParams): QueryParams {
     return {
       ...query,
-      variant: query.variant ?? resolvedDefaultVariantId ?? undefined,
+      variant: query.variant ?? (defaultVariantCleared ? undefined : resolvedDefaultVariantId ?? undefined),
       page: Math.max(1, query.page ?? 1),
       limit: Math.max(1, query.limit ?? DEFAULT_PAGE_SIZE),
       filters:
@@ -670,10 +679,14 @@
   }
 
   function handleQueryVariantChange(value: string | null) {
-    const nextVariant = value ?? resolvedDefaultVariantId ?? undefined;
-    if ((currentQuery.variant ?? resolvedDefaultVariantId ?? undefined) === nextVariant) {
+    const nextDefaultVariantCleared = value === null;
+    const nextVariant = value ?? undefined;
+    const currentEffectiveVariant =
+      currentQuery.variant ?? (defaultVariantCleared ? undefined : resolvedDefaultVariantId ?? undefined);
+    if (currentEffectiveVariant === nextVariant && defaultVariantCleared === nextDefaultVariantCleared) {
       return;
     }
+    defaultVariantCleared = nextDefaultVariantCleared;
     setQuery({
       ...currentQuery,
       variant: nextVariant,
