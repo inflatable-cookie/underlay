@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
   import { DetailItem, DetailSection } from "@poodle/svelte";
-  import EntityDetailModule from "./EntityDetailModule.svelte";
+  import { default as EntityDetailModule } from "./EntityDetailModule.svelte";
   import type { DetailItemConfig } from "./template.types";
 
   interface Props {

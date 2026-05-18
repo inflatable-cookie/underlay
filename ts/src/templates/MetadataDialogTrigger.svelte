@@ -1,16 +1,26 @@
 <script lang="ts">
   import { Code, Dialog, IconButton } from "@poodle/svelte";
 
-  export let value: unknown | null = null;
-  export let title = "Metadata";
-  export let triggerLabel = "Metadata";
-  export let maxHeight = "min(60vh, 32rem)";
-  export let showCloseButton = true;
-  export let closeLabel = "Close metadata dialog";
+  interface Props {
+    value?: unknown | null;
+    title?: string;
+    triggerLabel?: string;
+    maxHeight?: string;
+    showCloseButton?: boolean;
+    closeLabel?: string;
+  }
 
-  let open = false;
+  let {
+    value = null,
+    title = "Metadata",
+    triggerLabel = "Metadata",
+    maxHeight = "min(60vh, 32rem)",
+    showCloseButton = true,
+    closeLabel = "Close metadata dialog"
+  }: Props = $props();
 
-  $: source = normalizeValue(value);
+  let open = $state(false);
+  const source = $derived(normalizeValue(value));
 
   function normalizeValue(input: unknown): string | null {
     if (input === null || input === undefined) {

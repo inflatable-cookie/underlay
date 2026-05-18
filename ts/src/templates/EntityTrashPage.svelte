@@ -1,4 +1,4 @@
-<script lang="ts" generics="T">
+<script lang="ts">
   import {
     Callout,
     EmptyState,
@@ -25,7 +25,7 @@
     statusMessage?: string | null;
     statusTone?: "danger" | "info" | "success" | "neutral" | "warning";
     beforeItems?: TemplateSurface;
-    items: T[];
+    items: unknown[];
     renderItem: TemplateSurface;
     emptyTitle: string;
     emptyMessage: string;

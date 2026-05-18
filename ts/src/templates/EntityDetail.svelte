@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
   import { MetaBar, PageHeader } from "@poodle/svelte";
-  import EntityMetaItem from "./EntityMetaItem.svelte";
+  import { default as EntityMetaItem } from "./EntityMetaItem.svelte";
   import type { DetailMetaItemConfig } from "./template.types";
 
   interface Props {

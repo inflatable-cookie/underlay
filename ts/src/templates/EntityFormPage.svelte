@@ -129,8 +129,9 @@
     if (!onSubmit) {
       return;
     }
+    const submit = onSubmit;
 
-    const handleSubmit = async (event: SubmitEvent) => {
+    async function handleSubmit(event: SubmitEvent) {
       event.preventDefault();
 
       submitting = true;
@@ -142,7 +143,7 @@
         const formData = new FormData(node);
         prepare?.(formData);
 
-        const result = await onSubmit(formData);
+        const result = await submit(formData);
 
         success = result.success;
         error = result.error ?? null;
@@ -158,7 +159,7 @@
       } finally {
         submitting = false;
       }
-    };
+    }
 
     node.addEventListener("submit", handleSubmit);
 

@@ -15,7 +15,7 @@
     Callout,
     Button
   } from "@poodle/svelte";
-  import EntityMetaItem from "./EntityMetaItem.svelte";
+  import { default as EntityMetaItem } from "./EntityMetaItem.svelte";
   import type {
     DetailActionConfig,
     FetchFn,
@@ -208,11 +208,13 @@
     showConfirmDialog = false;
   }
 
+  async function loadPageData(fetch: FetchFn, token: string | null) {
+    if (!dataLoader) return providedItem;
+    return await dataLoader(fetch, token);
+  }
+
   const pageData = useAuthenticatedData<T | null>(
-    async (fetch, token) => {
-      if (!dataLoader) return providedItem;
-      return await dataLoader(fetch, token);
-    },
+    loadPageData,
     { defaultValue: null }
   );
 

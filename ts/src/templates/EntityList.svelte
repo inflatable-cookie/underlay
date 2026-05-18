@@ -49,13 +49,14 @@
     registerListSelectionScope,
     releaseListSelectionScope
   } from "../patterns/list-selection-scope.svelte";
-  import EntityReorderControls from "./EntityReorderControls.svelte";
+  import { default as EntityReorderControls } from "./EntityReorderControls.svelte";
   import type {
     BatchActionConfig,
     CustomReorderConfig,
     EntityListDataLoader,
     EntityListSharedProps,
     FilterConfig,
+    FetchFn,
     LoadedReorderConfig,
     PagedListResult,
     ReorderActionState,
@@ -226,7 +227,7 @@
     formatResourceType,
     getActorHref,
     getResourceHref,
-    filters = [],
+    filters: filterConfigs = [],
     batchActions = [],
     reorder,
     customReorderContent,
@@ -296,11 +297,13 @@
   const getCurrentQuery = () => pendingFetchQuery ?? currentQuery;
   const getDataLoader = () => dataLoader;
 
+  async function loadPageData(fetch: FetchFn, token: string | null) {
+    return await getDataLoader()(fetch, token, getCurrentQuery());
+  }
+
   // Data loading (includes filters and sort)
   const pageData = useAuthenticatedData<PagedListResult<T>>(
-    async (fetch, token) => {
-      return await getDataLoader()(fetch, token, getCurrentQuery());
-    },
+    loadPageData,
     {
       defaultValue: {
         data: [],
@@ -405,7 +408,7 @@
 
   // Load async filter options on mount
   $effect(() => {
-    for (const filter of filters) {
+    for (const filter of filterConfigs) {
       const currentLoadKey = filter.loadKey ?? "";
       if (filterLoadKeys[filter.id] !== currentLoadKey) {
         filterLoadKeys = { ...filterLoadKeys, [filter.id]: currentLoadKey };
@@ -459,18 +462,26 @@
                   cancelLabel: action.confirm.cancelLabel
                 }
               : undefined,
-          execute: async (ids: string[]) => {
-            await action.handler(ids);
-            onDataChange?.();
-            await pageData.refetch();
-            return { success: true, affected: ids.length };
-          }
+          execute: (ids: string[]) => executeBatchAction(action, ids)
         });
       }
     });
   });
 
   // --- Helpers ---
+
+  async function executeBatchAction(action: BatchActionConfig, ids: string[]) {
+    await action.handler(ids);
+    onDataChange?.();
+    await pageData.refetch();
+    return { success: true, affected: ids.length };
+  }
+
+  async function submitReorder(orderedIds: string[]) {
+    if (reorder && "handler" in reorder) {
+      await reorder.handler(orderedIds);
+    }
+  }
 
   function normalizeQuery(query: QueryParams): QueryParams {
     return {
@@ -632,6 +643,32 @@
     handleSortChange([]);
   }
 
+  function getSortOrderValue() {
+    return currentSort.map((field) => ({
+      key: field.field,
+      direction: field.direction
+    }));
+  }
+
+  function handleSortOrderChange(value: { key: string; direction: string }[]) {
+    handleSortChange(value.map((field) => ({
+      field: field.key,
+      direction: field.direction as "asc" | "desc"
+    })));
+  }
+
+  function handleEditableReorder(nextItems: EditableListItem[]) {
+    reorderController?.updatePending(nextItems);
+  }
+
+  function getItemKey(item: T): string {
+    return String((item as Record<string, unknown>)[idField]);
+  }
+
+  function handleRowActionSelect(event: { row: TableRow<T>; action: TableRowAction }) {
+    onRowActionSelect?.(event.row, event.action);
+  }
+
   function setSelectionMode(enabled: boolean) {
     if (enabled) {
       claimListSelectionScope(selectionScopeId);
@@ -661,6 +698,10 @@
     if (!nextSelectionMode) {
       batch.clear();
     }
+  }
+
+  async function confirmPendingBatchAction() {
+    await batch.confirmPendingAction();
   }
 
   function isLoadedReorderConfig(
@@ -704,9 +745,7 @@
             id: String((item as Record<string, unknown>)[idField])
           })) as Array<T & ReorderableItem>;
 
-      reorderController = createReorderController(loadedReorderItems, async (orderedIds) => {
-        await reorder.handler(orderedIds);
-      });
+      reorderController = createReorderController(loadedReorderItems, submitReorder);
       reorderError = null;
       reorderSessionPending = false;
       return true;
@@ -718,9 +757,7 @@
         id: String((item as Record<string, unknown>)[idField]),
         ...item
       })),
-      async (orderedIds) => {
-        await reorder.handler(orderedIds);
-      }
+      submitReorder
     );
     reorderError = null;
     reorderSessionPending = false;
@@ -903,8 +940,7 @@
 
   // --- Batch action dialog handlers ---
 
-  function handleBatchAction(event: CustomEvent<{ id: string }>) {
-    const actionId = event.detail.id;
+  function handleBatchAction(actionId: string) {
     const actionConfig = batchActions.find((a) => a.id === actionId);
     if (isBatchActionDisabled(actionConfig)) return;
 
@@ -992,7 +1028,7 @@
     {/snippet}
 
     {#snippet filters()}
-      {#if filters.length > 0 && !reorderMode}
+      {#if filterConfigs.length > 0 && !reorderMode}
         <FilterToolbar ariaLabel={`${title} filters`} summaryText="Filters">
           {#snippet summary()}
             <PaginationSummary
@@ -1024,7 +1060,7 @@
             />
           {/snippet}
           
-          {#each filters as filter}
+          {#each filterConfigs as filter}
             <div
               class="underlay-entity-list__filter-control"
               data-active={isFilterActive(filter)}
@@ -1049,10 +1085,10 @@
               {:else if filter.type === "sort" && filter.sortFields}
                 <OrderBy
                   fields={filter.sortFields}
-                  value={currentSort.map((s: SortField) => ({ key: s.field, direction: s.direction }))}
+                  value={getSortOrderValue()}
                   ariaLabel={getFilterAriaLabel(filter)}
                   showClearButton={false}
-                  onChange={(value: { key: string; direction: string }[]) => handleSortChange(value.map((v) => ({ field: v.key, direction: v.direction as "asc" | "desc" })))}
+                  onChange={handleSortOrderChange}
                   compact
                 />
               {/if}
@@ -1094,9 +1130,9 @@
         showWorkflowChrome={false}
         onSubmit={handleReorderSubmit}
         onCancel={exitReorderMode}
-        onReorder={(items: EditableListItem[]) => reorderController?.updatePending(items)}
+        onReorder={handleEditableReorder}
       >
-        {#snippet item(reorderEntry: EditableListItem)}
+        {#snippet item(reorderEntry)}
           {@const originalItem = getReorderOriginalItem(reorderEntry.id)}
           {#if renderReorderItem && originalItem}
             <div data-reorder-highlighted={isReorderItemHighlighted(reorderEntry.id)}>
@@ -1114,7 +1150,7 @@
       </EditableList>
     {:else if presentation === "cards"}
       <ListGrid minItemWidth="26rem" variant={listGridVariant} gap={listGridGap}>
-        {#each items as item (String((item as Record<string, unknown>)[idField]))}
+        {#each items as item (getItemKey(item))}
           {#if renderItem}
             {@render renderItem(item, getItemContext(item))}
           {/if}
@@ -1143,7 +1179,7 @@
         selectable={selectionMode}
         selectedRowIds={batch.selectedIds}
         emptyMessage="No items found"
-        onRowActionSelect={({ row, action }) => onRowActionSelect?.(row as TableRow<T>, action)}
+        onRowActionSelect={handleRowActionSelect}
         onRowToggle={({ rowId, selected }) => batch.toggle(rowId, selected)}
         onToggleAll={({ selected }) => {
           if (selected) {
@@ -1155,14 +1191,14 @@
       >
         {#snippet cell(column, row, value)}
           {#if renderCell}
-            {@render renderCell(column, row as TableRow<T>, value)}
+            {@render renderCell(column, row, value)}
           {:else}
             {value}
           {/if}
         {/snippet}
         {#snippet expandedRow(row)}
           {#if renderExpandedRow}
-            {@render renderExpandedRow(row as TableRow<T>)}
+            {@render renderExpandedRow(row)}
           {/if}
         {/snippet}
       </DataTable>
@@ -1170,7 +1206,7 @@
   </ListContainer>
 {:else}
   <!-- When used inside EntityListPage, don't show ListContainer shell -->
-  {#if filters.length > 0 && !reorderMode}
+  {#if filterConfigs.length > 0 && !reorderMode}
     <FilterToolbar ariaLabel="Filters" summaryText="Filters">
       {#snippet summary()}
         <PaginationSummary
@@ -1202,7 +1238,7 @@
         />
       {/snippet}
       
-        {#each filters as filter}
+        {#each filterConfigs as filter}
         <div
           class="underlay-entity-list__filter-control"
           data-active={isFilterActive(filter)}
@@ -1227,10 +1263,10 @@
           {:else if filter.type === "sort" && filter.sortFields}
             <OrderBy
               fields={filter.sortFields}
-              value={currentSort.map((s: SortField) => ({ key: s.field, direction: s.direction }))}
+              value={getSortOrderValue()}
               ariaLabel={getFilterAriaLabel(filter)}
               showClearButton={false}
-              onChange={(value: { key: string; direction: string }[]) => handleSortChange(value.map((v) => ({ field: v.key, direction: v.direction as "asc" | "desc" })))}
+              onChange={handleSortOrderChange}
               compact
             />
           {/if}
@@ -1264,9 +1300,9 @@
       showWorkflowChrome={false}
       onSubmit={handleReorderSubmit}
       onCancel={exitReorderMode}
-      onReorder={(items: EditableListItem[]) => reorderController?.updatePending(items)}
+      onReorder={handleEditableReorder}
     >
-      {#snippet item(reorderEntry: EditableListItem)}
+      {#snippet item(reorderEntry)}
         {@const originalItem = getReorderOriginalItem(reorderEntry.id)}
         {#if renderReorderItem && originalItem}
           <div data-reorder-highlighted={isReorderItemHighlighted(reorderEntry.id)}>
@@ -1284,7 +1320,7 @@
     </EditableList>
   {:else if presentation === "cards"}
     <ListGrid minItemWidth="26rem" variant={listGridVariant} gap={listGridGap}>
-      {#each items as item (String((item as Record<string, unknown>)[idField]))}
+      {#each items as item (getItemKey(item))}
         {#if renderItem}
           {@render renderItem(item, getItemContext(item))}
         {/if}
@@ -1313,7 +1349,7 @@
       selectable={selectionMode}
       selectedRowIds={batch.selectedIds}
       emptyMessage="No items found"
-      onRowActionSelect={({ row, action }) => onRowActionSelect?.(row as TableRow<T>, action)}
+      onRowActionSelect={handleRowActionSelect}
       onRowToggle={({ rowId, selected }) => batch.toggle(rowId, selected)}
       onToggleAll={({ selected }) => {
         if (selected) {
@@ -1325,14 +1361,14 @@
     >
       {#snippet cell(column, row, value)}
         {#if renderCell}
-          {@render renderCell(column, row as TableRow<T>, value)}
+          {@render renderCell(column, row, value)}
         {:else}
           {value}
         {/if}
       {/snippet}
       {#snippet expandedRow(row)}
         {#if renderExpandedRow}
-          {@render renderExpandedRow(row as TableRow<T>)}
+          {@render renderExpandedRow(row)}
         {/if}
       {/snippet}
     </DataTable>
@@ -1380,7 +1416,7 @@
     confirmLabel={batch.pendingAction.confirm?.confirmLabel ?? "Confirm"}
     cancelLabel={batch.pendingAction.confirm?.cancelLabel ?? "Cancel"}
     tone={batch.pendingAction.variant === "danger" ? "danger" : "warning"}
-    onConfirm={async () => { await batch.confirmPendingAction(); }}
+    onConfirm={confirmPendingBatchAction}
     onCancel={() => batch.cancelPendingAction()}
   />
 {/if}

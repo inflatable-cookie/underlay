@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Button, Drawer } from "@poodle/svelte";
-  import ContextActionList from "./ContextActionList.svelte";
+  import { default as ContextActionList } from "./ContextActionList.svelte";
   import type { ContextActionDefinition } from "./contextual-action.types";
 
   interface Props {

@@ -4,8 +4,8 @@
     IconButton
   } from "@poodle/svelte";
   import { getBackButtonInfo } from "../patterns/navigation";
-  import EntityList from "./EntityList.svelte";
-  import EntityReorderControls from "./EntityReorderControls.svelte";
+  import { default as EntityList } from "./EntityList.svelte";
+  import { default as EntityReorderControls } from "./EntityReorderControls.svelte";
   import type {
     TableColumn,
     TableRow,
@@ -316,6 +316,15 @@
   function handleReorderActionStateChange(state: ReorderActionState) {
     reorderActionState = state;
   }
+
+  async function enterReorderMode() {
+    if (selectionMode) selectionMode = false;
+    if (reorderActionState) {
+      await reorderActionState.enter();
+    } else {
+      toggleReorderMode();
+    }
+  }
 </script>
 
 <svelte:window onkeydown={handleKeydown} />
@@ -363,14 +372,7 @@
         saving={reorderActionState?.saving ?? false}
         disabled={selectionMode}
         sizeRole={headerActionSizeRole}
-        onEnter={async () => {
-          if (selectionMode) selectionMode = false;
-          if (reorderActionState) {
-            await reorderActionState.enter();
-          } else {
-            toggleReorderMode();
-          }
-        }}
+        onEnter={enterReorderMode}
         onSave={reorderActionState?.save}
         onCancel={() => {
           if (reorderActionState) {

@@ -159,6 +159,10 @@
     await entry.onSelect?.();
   }
 
+  function handleMenuAction(value: string): void {
+    void handleAction(value);
+  }
+
   async function handleDeleteConfirm(): Promise<void> {
     if (!deleteConfig || deleteBusy) return;
 
@@ -180,7 +184,7 @@
   {@render content({
     items: menuItems,
     ariaLabel: triggerAriaLabel,
-    onAction: (value: string) => void handleAction(value)
+    onAction: handleMenuAction
   })}
 {:else if showTrigger}
   <Menu
@@ -188,7 +192,7 @@
     ariaLabel="Entity actions"
     triggerAriaLabel={triggerAriaLabel}
     {placement}
-    onAction={(value) => void handleAction(value)}
+    onAction={handleMenuAction}
   >
     {#snippet trigger()}
       {#if trigger}

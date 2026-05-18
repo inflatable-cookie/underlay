@@ -1,9 +1,16 @@
 <script lang="ts">
   import { Code, Pill } from "@poodle/svelte";
-  import { getMediaKindLabel, getMediaVisibilityLabel } from "../runtime/media";
+  import {
+    getMediaKindLabel,
+    getMediaVisibilityLabel,
+    MediaKind,
+    MediaVisibility,
+    type MediaKind as MediaKindType,
+    type MediaVisibility as MediaVisibilityType
+  } from "../runtime/media";
   import type { BreadcrumbItem } from "../patterns/types";
   import type { DetailMetaItemConfig, DetailTabConfig, FetchFn, TemplateSurface } from "./template.types";
-  import EntityDetailPage from "./EntityDetailPage.svelte";
+  import { default as EntityDetailPage } from "./EntityDetailPage.svelte";
 
   interface MediaDetailLike {
     id: string;
@@ -80,30 +87,56 @@
 
   const title = $derived(item?.title || item?.originalFilename || "Untitled");
 
-  const headerMeta = $derived<DetailMetaItemConfig[]>([
-    {
-      label: "ID",
-      value: idSnippet as never
-    },
-    {
-      label: "",
-      value: kindSnippet as never,
-      separator: false
-    },
-    {
-      label: "",
-      value: visibilitySnippet as never,
-      separator: false
-    },
-    ...(item?.deletedAt
-      ? [{
-          label: "",
-          value: deletedSnippet as never,
-          separator: false
-        }]
-      : []),
-    ...extraMeta
-  ]);
+  const headerMeta = $derived.by<DetailMetaItemConfig[]>(() => {
+    const meta: DetailMetaItemConfig[] = [
+      {
+        label: "ID",
+        value: idSnippet
+      },
+      {
+        label: "",
+        value: kindSnippet,
+        separator: false
+      },
+      {
+        label: "",
+        value: visibilitySnippet,
+        separator: false
+      }
+    ];
+
+    if (item?.deletedAt) {
+      meta.push({
+        label: "",
+        value: deletedSnippet,
+        separator: false
+      });
+    }
+
+    return [...meta, ...extraMeta];
+  });
+
+  function normalizeMediaKind(kind: string): MediaKindType {
+    if (kind === MediaKind.Image) return MediaKind.Image;
+    if (kind === MediaKind.Audio) return MediaKind.Audio;
+    if (kind === MediaKind.Video) return MediaKind.Video;
+    if (kind === MediaKind.Pdf) return MediaKind.Pdf;
+    if (kind === MediaKind.Document) return MediaKind.Document;
+    return MediaKind.Other;
+  }
+
+  function normalizeMediaVisibility(visibility: string): MediaVisibilityType {
+    if (visibility === MediaVisibility.Public) return MediaVisibility.Public;
+    return MediaVisibility.Restricted;
+  }
+
+  function mediaKindLabel(kind: string): string {
+    return getMediaKindLabel(normalizeMediaKind(kind));
+  }
+
+  function mediaVisibilityLabel(visibility: string): string {
+    return getMediaVisibilityLabel(normalizeMediaVisibility(visibility));
+  }
 </script>
 
 <EntityDetailPage
@@ -148,7 +181,7 @@
 {#snippet kindSnippet()}
   {#if item}
     <Pill tone="neutral" appearance="badge" size="sm" typography="inherit">
-      {getMediaKindLabel(item.kind as never)}
+      {mediaKindLabel(item.kind)}
     </Pill>
   {/if}
 {/snippet}
@@ -156,7 +189,7 @@
 {#snippet visibilitySnippet()}
   {#if item}
     <Pill tone="neutral" appearance="badge" size="sm" typography="inherit">
-      {getMediaVisibilityLabel(item.visibility as never)}
+      {mediaVisibilityLabel(item.visibility)}
     </Pill>
   {/if}
 {/snippet}
