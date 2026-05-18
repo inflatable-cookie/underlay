@@ -107,7 +107,7 @@ Initial inventory:
 | `acowtancy` | Marking Queue | API-published variants needed | Proof landed with `pending`, `marked`, `void`, and `all`; API owns baseline statuses and existing status filter layers on top. |
 | `acowtancy` | Other Dairy browse lists | No variant needed for now | Most are ordinary entity lists with temporary filters, not named base queries. |
 | `underlay-reference` | Jobs list | Static UI variants enough later | Jobs already have status stats; a future platform-system pass can expose `active`, `failed`, `succeeded`, and `all` as variants. |
-| `underlay-reference` | Task lists | No variant needed for now | Status is an ordinary filter inside a project task list; no separate baseline query is required yet. |
+| `underlay-reference` | Task lists | Static UI variants complete | Reference task lists now use `open`, `completed`, and `all`; API applies the variant baseline before filters. |
 | `contact-patch` | Admin browse lists | No variant needed for now | No clear named base-list query surfaced beyond separate trash routes. |
 | `compli-me` | Messages list | No variant needed for now | Visibility and publishability are ordinary filters, not baseline variants. |
 | `songsprout` | Jobs list | Static UI variants enough later | Same platform-system candidate as `underlay-reference`. |

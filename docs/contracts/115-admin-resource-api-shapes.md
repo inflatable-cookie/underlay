@@ -283,6 +283,8 @@ Allowed examples:
 - `variant=marked`
 - `variant=void`
 - `variant=all`
+- `variant=open`
+- `variant=completed`
 
 Rules:
 
@@ -295,6 +297,13 @@ Rules:
 
 Do not encode a named product view as a hidden default filter when the API and
 UI both need to understand it as a durable list view.
+
+Reference examples:
+
+- Acowtancy Marking Hub uses `pending`, `marked`, `void`, and `all` for a
+  queue-style operational list.
+- `underlay-reference` project tasks use `open`, `completed`, and `all`; the
+  API applies the variant baseline before status and priority filters.
 
 ### List capabilities payload
 

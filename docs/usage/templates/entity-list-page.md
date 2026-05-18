@@ -159,6 +159,17 @@ Changing variants resets `page` to `1`.
 When `capabilitiesLoader` is provided, loaded `variants`, `filters`, and
 `defaultVariantId` override the static props.
 
+Example:
+
+- `underlay-reference/acme-admin/src/lib/lists/TasksListPage.svelte` declares
+  `open`, `completed`, and `all` variants for project tasks.
+- `open` is the default baseline and maps to pending plus in-progress tasks on
+  the API side.
+- the normal status, priority, and sort controls stay in `FilterToolbar` and
+  refine the active variant.
+- reorder is only available on the `all` baseline because the other variants
+  are filtered views.
+
 ### Actions
 
 | Prop | Type | Required | Description |
@@ -292,6 +303,8 @@ Reference implementation examples in `underlay-reference`:
 - shared list wrappers:
   `underlay-reference/acme-admin/src/lib/lists/ProjectsListPage.svelte`
   and
+  `underlay-reference/acme-admin/src/lib/lists/TasksListPage.svelte`
+- query variants:
   `underlay-reference/acme-admin/src/lib/lists/TasksListPage.svelte`
 
 If a reference app still carries route-local list pages, treat those as
