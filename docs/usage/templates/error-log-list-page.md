@@ -8,7 +8,7 @@ surfaces.
 It owns the repeated error-log posture:
 
 - URL-friendly query seam via `query` / `onQueryChange`
-- built-in status-code filter
+- built-in query variants for `all`, `5xx`, `4xx`, `500`, and `404`
 - compact request/error table layout
 - optional stats cards
 - expandable detail rows with message and context
@@ -37,6 +37,7 @@ stats data.
 
   async function loadList(fetchFn, token, request) {
     const response = await adminCommands.listErrorLogs(fetchFn, token, {
+      status_class: request.statusClass,
       status_code: request.statusCode,
       limit: request.limit,
       offset: request.offset
@@ -75,6 +76,20 @@ stats data.
 | `backHref` | `string` | No | Back-link target, defaults to `/system` |
 | `backLabel` | `string` | No | Back-link label, defaults to `Back to system` |
 
+## Query Variants
+
+`ErrorLogListPage` treats status classes as durable baseline views, not
+ephemeral filters:
+
+- `all` shows all captured errors and is the default
+- `5xx` passes `request.statusClass = "5xx"` to the loader
+- `4xx` passes `request.statusClass = "4xx"` to the loader
+- `500` and `404` pass `request.statusCode`
+
+App API clients should serialize `statusClass` as `status_class=4xx|5xx`.
+Exact status-code variants still serialize as `status_code=500` or
+`status_code=404`.
+
 ## App wrapper policy
 
 Keep `ErrorLogListPage` inside an app-local wrapper such as
@@ -86,5 +101,5 @@ The wrapper should own:
 - app-specific command wiring
 - any honest local deviations that still belong to the error-log workflow
 
-Do not copy the compact table, status filter, stats card, or expanded-detail
+Do not copy the compact table, query variants, stats card, or expanded-detail
 composition into each app again.

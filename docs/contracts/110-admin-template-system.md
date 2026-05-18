@@ -458,6 +458,8 @@ Rules:
   full repeated core card array
 - `/system/jobs` should use `SystemJobListPage` unless an app has a documented
   operator workflow extension that the shared template cannot express
+- `SystemJobListPage` owns job status query variants; app wrappers adapt
+  `request.status` into their API client's status parameter
 - `/system/jobs/[id]` should use `SystemJobDetailPage`; apps adapt API-specific
   job detail DTOs into `SystemJobDetailItem`
 - `/system/scheduled-tasks` should use `SystemScheduledTasksListPage` and
@@ -465,6 +467,9 @@ Rules:
 - `/system/scheduled-tasks/[id]` should use `SystemScheduledTaskDetailPage`;
   apps adapt task and job-run DTOs into the shared detail item shapes
 - `/system/errors` should use `ErrorLogListPage`
+- `ErrorLogListPage` owns error status query variants; app wrappers adapt
+  `request.statusClass` to `status_class=4xx|5xx` and `request.statusCode` to
+  exact `status_code` filters
 - `/system/errors/[id]` should use `ErrorLogDetailPage`; apps adapt API-specific
   error-log DTOs into `ErrorLogDetailItem`
 - `/system/audit` should use `SystemAuditLogListPage`

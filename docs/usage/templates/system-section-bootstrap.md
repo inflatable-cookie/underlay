@@ -306,6 +306,8 @@ This is the preferred list posture when the route is a real browse surface:
 - route owns URL query state
 - app-local wrapper owns command mapping
 - shared template owns the page shell and repeated UI
+- `SystemJobListPage` owns the status query variants; wrappers should pass
+  `request.status` to the API rather than recreating a status filter
 
 ### Minimal system index
 
