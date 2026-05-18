@@ -191,6 +191,152 @@ Recommended order for a new app:
 8. `/system/audit`
 9. `/system/media/trash` if needed
 
+## Route Skeletons
+
+### Thin detail route
+
+`src/routes/(app)/system/errors/[id]/+page.svelte`
+
+```svelte
+<script lang="ts">
+  import { page } from "$app/stores";
+  import { adminCommands } from "@api-client";
+  import { ErrorLogDetailPage } from "@decodelabs/underlay/templates";
+
+  const errorLogId = $derived.by(() => $page.params.id ?? "");
+
+  async function dataLoader(id: string, fetch: typeof globalThis.fetch, token: string) {
+    return await adminCommands.getErrorLog(id, fetch, token);
+  }
+</script>
+
+<ErrorLogDetailPage id={errorLogId} {dataLoader} />
+```
+
+This is the preferred detail posture: the route owns the param and client
+command, the shared template owns the page.
+
+### Thin list route plus app-local wrapper
+
+`src/routes/(app)/system/jobs/+page.svelte`
+
+```svelte
+<script lang="ts">
+  import { goto } from "$app/navigation";
+  import { page } from "$app/stores";
+  import {
+    buildQueryString,
+    parseQueryParams,
+    type QueryParams
+  } from "@decodelabs/underlay/client/query";
+  import { JobsList } from "$lib/lists";
+
+  const currentQuery = $derived(parseQueryParams($page.url.searchParams));
+
+  function updateUrl(nextQuery: QueryParams) {
+    const url = new URL($page.url);
+    url.search = buildQueryString(nextQuery);
+    goto(url.toString(), { replaceState: true, keepFocus: true });
+  }
+</script>
+
+<JobsList query={currentQuery} onQueryChange={updateUrl} />
+```
+
+`src/lib/lists/JobsList.svelte`
+
+```svelte
+<script lang="ts">
+  import type { QueryParams } from "@decodelabs/underlay/client/query";
+  import { SystemJobListPage, toPagedListResult } from "@decodelabs/underlay/templates";
+  import type { SystemJobListRequest } from "@decodelabs/underlay/templates";
+  import {
+    adminCommands,
+    type JobStatus,
+    type JobSummary
+  } from "@api-client";
+
+  interface Props {
+    title?: string;
+    backHref?: string;
+    backLabel?: string;
+    query: QueryParams;
+    onQueryChange: (query: QueryParams) => void;
+  }
+
+  let {
+    title = "Job Queue",
+    backHref = "/system",
+    backLabel = "Back to system",
+    query,
+    onQueryChange
+  }: Props = $props();
+
+  function getStatus(status: SystemJobListRequest["status"]): JobStatus | undefined {
+    return typeof status === "string" ? status as JobStatus : undefined;
+  }
+</script>
+
+<SystemJobListPage
+  {title}
+  {backHref}
+  {backLabel}
+  {query}
+  {onQueryChange}
+  dataLoader={async (fetch, token, request) => {
+    const response = await adminCommands.listJobs(fetch, token, {
+      status: getStatus(request.status),
+      page: request.page,
+      limit: request.limit
+    });
+    return toPagedListResult<JobSummary>(response);
+  }}
+  statsLoader={async (fetch, token) => await adminCommands.getJobStats(fetch, token)}
+  retryAction={async (job, fetch, token) => {
+    await adminCommands.retryJob(job.id, fetch, token);
+  }}
+  cancelAction={async (job, fetch, token) => {
+    await adminCommands.cancelJob(job.id, fetch, token);
+  }}
+/>
+```
+
+This is the preferred list posture when the route is a real browse surface:
+
+- route owns URL query state
+- app-local wrapper owns command mapping
+- shared template owns the page shell and repeated UI
+
+### Minimal system index
+
+`src/routes/(app)/system/+page.svelte`
+
+```svelte
+<script lang="ts">
+  import { SystemIndexPage } from "@decodelabs/underlay/templates";
+  import LayoutPanelTop from "lucide-svelte/icons/layout-panel-top";
+
+  const extraCards = [
+    {
+      href: "/system/poodle-gap-review",
+      title: "Poodle gap review",
+      description: "Assess ambiguous workflow surfaces before reclassifying them.",
+      accent: "var(--admin-color-primary, #8b5cf6)",
+      icon: gapReviewIconSnippet as never
+    }
+  ];
+</script>
+
+<SystemIndexPage {extraCards} />
+
+{#snippet gapReviewIconSnippet()}
+  <LayoutPanelTop />
+{/snippet}
+```
+
+This keeps the shared core cards and adds app-local system extras without
+forking the base index page.
+
 ## See Also
 
 - [Template System Overview](./000-template-system-overview.md)
