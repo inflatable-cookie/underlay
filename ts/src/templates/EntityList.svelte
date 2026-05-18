@@ -1124,17 +1124,19 @@
           {/snippet}
 
           {#if queryVariantItems.length > 0}
-            <div class="underlay-entity-list__query-variants">
-              <CardToggleGroup
-                items={queryVariantItems}
-                value={currentVariantId}
-                columns={queryVariantColumns}
-                allowDeactivation
-                size="sm"
-                density="compact"
-                ariaLabel={`${title ?? "List"} query variants`}
-                onValueChange={handleQueryVariantChange}
-              />
+            <div class="underlay-entity-list__query-variants-panel">
+              <div class="underlay-entity-list__query-variants">
+                <CardToggleGroup
+                  items={queryVariantItems}
+                  value={currentVariantId}
+                  columns={queryVariantColumns}
+                  allowDeactivation
+                  size="sm"
+                  density="compact"
+                  ariaLabel={`${title ?? "List"} query variants`}
+                  onValueChange={handleQueryVariantChange}
+                />
+              </div>
             </div>
           {/if}
 
@@ -1317,17 +1319,19 @@
       {/snippet}
 
       {#if queryVariantItems.length > 0}
-        <div class="underlay-entity-list__query-variants">
-          <CardToggleGroup
-            items={queryVariantItems}
-            value={currentVariantId}
-            columns={queryVariantColumns}
-            allowDeactivation
-            size="sm"
-            density="compact"
-            ariaLabel="Query variants"
-            onValueChange={handleQueryVariantChange}
-          />
+        <div class="underlay-entity-list__query-variants-panel">
+          <div class="underlay-entity-list__query-variants">
+            <CardToggleGroup
+              items={queryVariantItems}
+              value={currentVariantId}
+              columns={queryVariantColumns}
+              allowDeactivation
+              size="sm"
+              density="compact"
+              ariaLabel="Query variants"
+              onValueChange={handleQueryVariantChange}
+            />
+          </div>
         </div>
       {/if}
 
@@ -1549,8 +1553,21 @@
     color: var(--poodle-color-text-muted);
   }
 
-  .underlay-entity-list__query-variants {
+  .underlay-entity-list__query-variants-panel {
     grid-column: 1 / -1;
+    padding: 0.625rem;
+    border: 0.0625rem solid color-mix(in srgb, var(--poodle-color-border-subtle) 88%, transparent);
+    border-radius: calc(var(--poodle-radius-surface) - 0.125rem);
+    background: color-mix(in srgb, var(--poodle-color-background-panel) 92%, var(--poodle-color-background-elevated));
+    --poodle-surface: color-mix(
+      in srgb,
+      var(--poodle-color-background-panel) 92%,
+      var(--poodle-color-background-elevated)
+    );
+  }
+
+  .underlay-entity-list__query-variants {
+    display: grid;
   }
 
   .underlay-entity-list__pagination {
