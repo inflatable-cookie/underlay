@@ -1,5 +1,7 @@
 # g05.024 — Marking Hub Query Variant Proof And Rollout
 
+Status: promoted.
+
 ## Why
 
 The Marking Hub in Acowtancy is the best proof for query variants because its

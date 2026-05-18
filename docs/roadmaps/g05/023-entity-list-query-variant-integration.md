@@ -1,5 +1,7 @@
 # g05.023 — EntityList Query Variant Integration
 
+Status: complete.
+
 ## Why
 
 Once the API can understand list variants and Poodle owns the selector
@@ -103,5 +105,5 @@ Expected:
 
 ## Next Task
 
-Execute after `g05.021` and `g05.022` are far enough along to fix the final
-prop names.
+Execute `g05.024`: prove the full query-variant contract through Acowtancy
+Marking Hub.
