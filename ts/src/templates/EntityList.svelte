@@ -1124,19 +1124,17 @@
           {/snippet}
 
           {#if queryVariantItems.length > 0}
-            <div class="underlay-entity-list__query-variants-panel">
-              <div class="underlay-entity-list__query-variants">
-                <CardToggleGroup
-                  items={queryVariantItems}
-                  value={currentVariantId}
-                  columns={queryVariantColumns}
-                  allowDeactivation
-                  size="sm"
-                  density="compact"
-                  ariaLabel={`${title ?? "List"} query variants`}
-                  onValueChange={handleQueryVariantChange}
-                />
-              </div>
+            <div class="underlay-entity-list__query-variants">
+              <CardToggleGroup
+                items={queryVariantItems}
+                value={currentVariantId}
+                columns={queryVariantColumns}
+                allowDeactivation
+                size="sm"
+                density="compact"
+                ariaLabel={`${title ?? "List"} query variants`}
+                onValueChange={handleQueryVariantChange}
+              />
             </div>
           {/if}
 
@@ -1319,19 +1317,17 @@
       {/snippet}
 
       {#if queryVariantItems.length > 0}
-        <div class="underlay-entity-list__query-variants-panel">
-          <div class="underlay-entity-list__query-variants">
-            <CardToggleGroup
-              items={queryVariantItems}
-              value={currentVariantId}
-              columns={queryVariantColumns}
-              allowDeactivation
-              size="sm"
-              density="compact"
-              ariaLabel="Query variants"
-              onValueChange={handleQueryVariantChange}
-            />
-          </div>
+        <div class="underlay-entity-list__query-variants">
+          <CardToggleGroup
+            items={queryVariantItems}
+            value={currentVariantId}
+            columns={queryVariantColumns}
+            allowDeactivation
+            size="sm"
+            density="compact"
+            ariaLabel="Query variants"
+            onValueChange={handleQueryVariantChange}
+          />
         </div>
       {/if}
 
@@ -1553,21 +1549,25 @@
     color: var(--poodle-color-text-muted);
   }
 
-  .underlay-entity-list__query-variants-panel {
-    grid-column: 1 / -1;
-    padding: 0.625rem;
-    border: 0.0625rem solid color-mix(in srgb, var(--poodle-color-border-subtle) 88%, transparent);
-    border-radius: calc(var(--poodle-radius-surface) - 0.125rem);
-    background: color-mix(in srgb, var(--poodle-color-background-panel) 92%, var(--poodle-color-background-elevated));
-    --poodle-surface: color-mix(
-      in srgb,
-      var(--poodle-color-background-panel) 92%,
-      var(--poodle-color-background-elevated)
-    );
-  }
-
   .underlay-entity-list__query-variants {
     display: grid;
+    grid-column: 1 / -1;
+    margin-bottom: 0.125rem;
+  }
+
+  .underlay-entity-list__query-variants :global(.poodle-card) {
+    --poodle-treatment-surface-fill: color-mix(
+      in srgb,
+      var(--poodle-color-background-elevated) 98%,
+      var(--poodle-color-background-panel)
+    );
+    --poodle-treatment-surface-hover-fill: color-mix(
+      in srgb,
+      var(--poodle-color-background-elevated) 94%,
+      var(--poodle-color-background-panel)
+    );
+    --poodle-treatment-surface-shadow:
+      inset 0 0 0 0.0625rem color-mix(in srgb, var(--poodle-color-border-default) 16%, transparent);
   }
 
   .underlay-entity-list__pagination {
