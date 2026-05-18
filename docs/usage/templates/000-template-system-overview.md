@@ -101,6 +101,9 @@ Poodle owns the primitive layer:
 See `contextual-action-templates.md` for the contextual action bar and
 execution dialog shell.
 
+If you are bootstrapping a new app's admin `/system` section, use
+[System Section Bootstrap](./system-section-bootstrap.md).
+
 ## Quick Example
 
 ### List Page

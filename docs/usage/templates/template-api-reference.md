@@ -4,6 +4,9 @@ Status: active
 
 Complete API reference for all template components.
 
+For the shared `/system` route set in a new app, start with
+[system-section-bootstrap.md](./system-section-bootstrap.md).
+
 ## EntityListPage
 
 [See entity-list-page.md](./entity-list-page.md)
