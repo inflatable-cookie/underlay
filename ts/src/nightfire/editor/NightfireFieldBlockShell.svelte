@@ -9,9 +9,9 @@
   import type { NightfireBlockDefinition, NightfireTypeOption } from "../utils";
   import type { GroupedOptions } from "./grouped-options";
   import type { NightfireSlashCommand } from "../slash-commands";
-  import NightfireBlockEditor from "../NightfireBlockEditor.svelte";
-  import NightfireTypeSelect from "./NightfireTypeSelect.svelte";
-  import SlashCommandPalette from "../SlashCommandPalette.svelte";
+  import { default as NightfireBlockEditor } from "../NightfireBlockEditor.svelte";
+  import { default as NightfireTypeSelect } from "./NightfireTypeSelect.svelte";
+  import { default as SlashCommandPalette } from "../SlashCommandPalette.svelte";
 
   interface Props {
     schema: string;

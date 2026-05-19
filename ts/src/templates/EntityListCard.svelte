@@ -113,9 +113,7 @@
       loading="lazy"
     />
   {:else if leadingIcon}
-    <span class="underlay-entity-list-card__leading-icon">
-      <Icon icon={leadingIcon} size="xl" />
-    </span>
+    <Icon icon={leadingIcon} />
   {/if}
 {/snippet}
 
@@ -292,24 +290,6 @@
 
   :global(.poodle-list-card) {
     min-width: 0;
-  }
-
-  .underlay-entity-list-card__leading-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    height: 100%;
-  }
-
-  .underlay-entity-list-card__leading-icon :global(.poodle-icon) {
-    width: 1.75rem;
-    height: 1.75rem;
-  }
-
-  :global(.poodle-list-card[data-layout="compact"]) .underlay-entity-list-card__leading-icon :global(.poodle-icon) {
-    width: min(1.75rem, 70%);
-    height: min(1.75rem, 70%);
   }
 
   .underlay-entity-list-card__footer-text {

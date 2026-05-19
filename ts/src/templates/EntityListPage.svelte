@@ -176,6 +176,9 @@
     /** Called when query changes (parent manages URL sync) */
     onQueryChange?: EntityListSharedProps<T>["onQueryChange"];
 
+    /** Whether the list filter toolbar should start collapsed. */
+    filterToolbarCollapsed?: boolean;
+
     /** Custom reorder error handler for conflict recovery */
     onReorderError?: EntityListSharedProps<T>["onReorderError"];
   }
@@ -233,6 +236,7 @@
     beforeList,
     query,
     onQueryChange,
+    filterToolbarCollapsed = true,
     onReorderError
   }: Props = $props();
 
@@ -468,6 +472,7 @@
     {onDataChange}
     {query}
     {onQueryChange}
+    {filterToolbarCollapsed}
     {onReorderError}
     selectionMode={selectionMode}
     reorderMode={reorderMode}

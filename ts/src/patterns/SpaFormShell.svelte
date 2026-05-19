@@ -4,7 +4,7 @@
   import { Callout } from "@poodle/svelte";
   import type { BannerVariant } from "./banner";
   import type { SpaFormResult, SpaSubmitHandler, SpaNavigateFn } from "./spa-form-types";
-  import FormShell from "./FormShell.svelte";
+  import { default as FormShell } from "./FormShell.svelte";
 
   // Use permissive type for snippets to handle linked dependency type mismatches
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -93,7 +93,7 @@
    * and calls the onSubmit handler instead of posting to the server.
    */
   const spaEnhance = (node: HTMLFormElement) => {
-    const handleSubmit = async (event: SubmitEvent) => {
+    async function handleSubmit(event: SubmitEvent) {
       event.preventDefault();
 
       // Reset state
@@ -136,7 +136,7 @@
       } finally {
         loading = false;
       }
-    };
+    }
 
     node.addEventListener("submit", handleSubmit);
 

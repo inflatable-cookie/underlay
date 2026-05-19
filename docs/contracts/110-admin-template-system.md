@@ -35,6 +35,22 @@ Primary:
 - [`ts/src/templates/EntityAttributeList.svelte`](/Users/tom/Dev/projects/underlay/ts/src/templates/EntityAttributeList.svelte)
 - [`ts/src/templates/EntityFormPage.svelte`](/Users/tom/Dev/projects/underlay/ts/src/templates/EntityFormPage.svelte)
 - [`ts/src/templates/MediaUploadPage.svelte`](/Users/tom/Dev/projects/underlay/ts/src/templates/MediaUploadPage.svelte)
+- [`ts/src/templates/MediaUploadWorkflowPage.svelte`](/Users/tom/Dev/projects/underlay/ts/src/templates/MediaUploadWorkflowPage.svelte)
+- [`ts/src/templates/MediaUploadStatusPanel.svelte`](/Users/tom/Dev/projects/underlay/ts/src/templates/MediaUploadStatusPanel.svelte)
+- [`ts/src/templates/MediaReplaceFileForm.svelte`](/Users/tom/Dev/projects/underlay/ts/src/templates/MediaReplaceFileForm.svelte)
+- [`ts/src/templates/MediaBrowsePanel.svelte`](/Users/tom/Dev/projects/underlay/ts/src/templates/MediaBrowsePanel.svelte)
+- [`ts/src/templates/MediaActionsMenu.svelte`](/Users/tom/Dev/projects/underlay/ts/src/templates/MediaActionsMenu.svelte)
+- [`ts/src/templates/MediaListPage.svelte`](/Users/tom/Dev/projects/underlay/ts/src/templates/MediaListPage.svelte)
+- [`ts/src/templates/MediaListCard.svelte`](/Users/tom/Dev/projects/underlay/ts/src/templates/MediaListCard.svelte)
+- [`ts/src/templates/MediaFileDetailsCard.svelte`](/Users/tom/Dev/projects/underlay/ts/src/templates/MediaFileDetailsCard.svelte)
+- [`ts/src/templates/MediaEditDialog.svelte`](/Users/tom/Dev/projects/underlay/ts/src/templates/MediaEditDialog.svelte)
+- [`ts/src/templates/MediaPreviewTab.svelte`](/Users/tom/Dev/projects/underlay/ts/src/templates/MediaPreviewTab.svelte)
+- [`ts/src/templates/MediaRenditionsSection.svelte`](/Users/tom/Dev/projects/underlay/ts/src/templates/MediaRenditionsSection.svelte)
+- [`ts/src/templates/MediaVersionActionDialogs.svelte`](/Users/tom/Dev/projects/underlay/ts/src/templates/MediaVersionActionDialogs.svelte)
+- [`ts/src/templates/MediaVersionPreviewDialog.svelte`](/Users/tom/Dev/projects/underlay/ts/src/templates/MediaVersionPreviewDialog.svelte)
+- [`ts/src/templates/MediaVersionsList.svelte`](/Users/tom/Dev/projects/underlay/ts/src/templates/MediaVersionsList.svelte)
+- [`ts/src/templates/MediaUsageList.svelte`](/Users/tom/Dev/projects/underlay/ts/src/templates/MediaUsageList.svelte)
+- [`ts/src/templates/MediaPickerWorkflow.svelte`](/Users/tom/Dev/projects/underlay/ts/src/templates/MediaPickerWorkflow.svelte)
 - [`ts/src/templates/MediaDetailWorkflowPage.svelte`](/Users/tom/Dev/projects/underlay/ts/src/templates/MediaDetailWorkflowPage.svelte)
 - [`ts/src/templates/SystemIndexPage.svelte`](/Users/tom/Dev/projects/underlay/ts/src/templates/SystemIndexPage.svelte)
 - [`ts/src/templates/SystemAuditLogListPage.svelte`](/Users/tom/Dev/projects/underlay/ts/src/templates/SystemAuditLogListPage.svelte)
@@ -98,6 +114,8 @@ Levels:
   - `EntityFormPage`
   - `EntityTrashPage`
   - `MediaUploadPage`
+  - `MediaUploadWorkflowPage`
+  - `MediaPickerWorkflow`
   - `MediaDetailWorkflowPage`
   - `SystemIndexPage`
   - `SystemAuditLogListPage`
@@ -116,6 +134,7 @@ Levels:
   - `EntityAttributeList`
 - Level 2.5: entity composition helper
   - `EntityListCard`
+  - `MediaListCard`
 - Level 3: Poodle primitives
 
 Rules:
@@ -234,6 +253,7 @@ calling each wrapper "too complicated" forever.
 Core pieces:
 
 - `EntityListCard`
+- `MediaListCard`
 - `EntityListCardProps`
 - badge/counter/mode-display types
 
@@ -252,6 +272,8 @@ Rules:
 - right-click context menus remain available through
   `contextMenuTrigger="context"` when a consumer explicitly wants that posture
 - apps still own entity-specific card content choices and callbacks
+- media browse cards should use `MediaListCard`, not repeated app-local
+  thumbnail/action/menu card implementations
 - raw Poodle `ListCard` remains acceptable only for explicit exceptions:
   non-admin surfaces, one-off workflow cards, or subordinate embeds where the
   `EntityListCard` posture would be artificial
@@ -355,12 +377,32 @@ Rules:
 
 ### Media upload workflow seam
 
-`MediaUploadPage` is the retained outer shell for repeated admin media-upload
-routes.
+`MediaUploadWorkflowPage` is the retained shared upload and replace workflow
+for admin media-library routes. `MediaUploadPage` remains the lower-level page
+framing shell.
 
-Core piece:
+Core pieces:
 
 - `MediaUploadPage`
+- `MediaUploadWorkflowPage`
+- `MediaUploadStatusPanel`
+- `MediaReplaceFileForm`
+- `MediaBrowsePanel`
+- `MediaActionsMenu`
+- `MediaListPage`
+- `MediaFileDetailsCard`
+- `MediaEditDialog`
+- `MediaPreviewTab`
+- `MediaRenditionsSection`
+- `MediaVersionActionDialogs`
+- `MediaVersionPreviewDialog`
+- `MediaVersionsList`
+- `MediaUsageList`
+- `MediaPickerWorkflow`
+- `runtime/media` workflow helpers such as `runMediaUploadWorkflow`,
+  `createMediaUploadPipeline`, `createMediaAndUpload`, `replaceMediaUpload`,
+  `checkMediaDuplicateFile`, `loadMediaBrowsePage`, and
+  `mergeMediaBrowseItems`
 
 Rules:
 
@@ -369,8 +411,52 @@ Rules:
   - optional intro region
   - loading state
   - upload-level error callout
-- routes still own queue state, duplicate handling, progress behavior, replace
-  mode, and post-upload navigation
+- `MediaUploadWorkflowPage` owns the repeated workflow behavior:
+  - file validation messaging
+  - upload queue state
+  - duplicate handling
+  - retry and upload-anyway actions
+  - progress display
+  - replace-mode layout
+- routes provide API-client callbacks for duplicate checks, create/upload,
+  replace/upload, navigation, and toasts
+- app-local upload pipelines should only bind generated API-client calls,
+  auth/fetch inputs, and any real client-specific request difference
+- when multiple consumers share the same upload wrapper shape, app-local
+  pipelines should prefer `runtime/media` `createMediaUploadPipeline()` rather
+  than re-wrapping `createMediaAndUpload()` and `replaceMediaUpload()`
+- app-local upload routes should thin-mount `MediaUploadWorkflowPage`
+- app-local media picker components should thin-mount `MediaPickerWorkflow`
+- detail-page replace-file dialogs should use `MediaReplaceFileForm` instead
+  of carrying app-local file validation and progress UI
+- detail-page media action menus should use `MediaActionsMenu`; apps bind only
+  generated delete/restore/purge commands and replace navigation
+- media detail file-details cards should use `MediaFileDetailsCard`; apps bind
+  only media data and file-size formatting
+- media detail edit dialogs should use `MediaEditDialog`; apps bind only route
+  submit wiring, field values, and visibility options
+- media detail preview tabs should use `MediaPreviewTab`; apps bind only the
+  resolved preview URL plus media-kind predicates
+- media detail renditions blocks should use `MediaRenditionsSection`; apps bind
+  renditions data, file-size formatting, and any optional generate-renditions
+  action state
+- media detail activate/delete dialogs should use `MediaVersionActionDialogs`;
+  apps bind only open state, selected version, and confirm callbacks
+- media detail version preview dialogs should use
+  `MediaVersionPreviewDialog`; apps bind only selected version and shared
+  preview helpers
+- media-library browse routes should use `MediaListPage`; apps bind only the
+  generated list/delete/batch-delete commands and query mapping differences
+- media detail version lists should use `MediaVersionsList`; apps bind only
+  version lifecycle predicates and commands
+- media detail usage lists should use `MediaUsageList`; apps bind only data
+  loading and retry/error handling
+- routes should prefer retained `runtime/media` helpers for media-detail draft
+  state, version-dialog state, preview URL resolution, previewability checks,
+  file-size formatting, and current/activate/delete predicates before adding
+  app-local helper modules
+- app-local media upload queue/status/replace sections are temporary rollout
+  residue and should not define parallel behavior
 - this is a workflow shell, not a generic file-upload primitive
 - use it only for the repeated admin media-upload family unless another
   consumer family later proves the same retained shape honestly
@@ -383,6 +469,14 @@ media-detail routes.
 Core piece:
 
 - `MediaDetailWorkflowPage`
+- `MediaFileDetailsCard`
+- `MediaEditDialog`
+- `MediaPreviewTab`
+- `MediaRenditionsSection`
+- `MediaVersionActionDialogs`
+- `MediaVersionPreviewDialog`
+- `MediaVersionsList`
+- `MediaUsageList`
 
 Rules:
 
@@ -396,14 +490,25 @@ Rules:
   - `dataLoader` when the template should own the media fetch shell
   - `item` plus `loading` / `error` / `onRetry` when the route already owns
     media-detail orchestration
-- routes or app-local modules still own:
-  - versions rendering
-  - usage rendering
-  - preview rendering
-  - renditions rendering
+- routes still own:
   - action menus
-  - edit and version dialogs
-  - app-local media business logic
+  - app-specific media command wiring and refetch behavior
+  - app-local media business logic beyond the retained helper surface
+- the preferred lower-level retained detail surfaces under that shell are:
+  - `MediaFileDetailsCard`
+  - `MediaEditDialog`
+  - `MediaPreviewTab`
+  - `MediaRenditionsSection`
+  - `MediaVersionActionDialogs`
+  - `MediaVersionPreviewDialog`
+  - `MediaVersionsList`
+  - `MediaUsageList`
+- routes should prefer retained `runtime/media` helpers for media-detail draft
+  state, version-dialog state, preview URL resolution, previewability checks,
+  file-size formatting, and current/activate/delete predicates before adding
+  app-local helper modules
+- app-local detail routes should thin-compose those retained surfaces before
+  introducing new route-local media-detail modules
 - this is a workflow shell, not a generic media viewer
 - use it for the retained admin media-detail family unless another repeated
   consumer family later proves the same shape honestly
@@ -473,9 +578,9 @@ Rules:
 - `/system/errors/[id]` should use `ErrorLogDetailPage`; apps adapt API-specific
   error-log DTOs into `ErrorLogDetailItem`
 - `/system/audit` should use `SystemAuditLogListPage`
-- media trash pages should use `SystemMediaTrashListPage` when no app-local
-  filtering is needed; if filtering is app-local, they should still use
-  `SystemMediaTrashListCard`
+- media trash pages should use `SystemMediaTrashListPage`; it owns the retained
+  media-trash search/sort seam, while apps bind query state only when they need
+  URL-synced filters
 - app API clients stay app-local; they adapt into shared loader/action callback
   types
 - retry/cancel/trigger/toggle behavior belongs behind template callbacks, not

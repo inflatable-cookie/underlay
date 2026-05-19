@@ -114,9 +114,9 @@
     {
       id: "succeeded",
       label: "Succeeded",
-      description: "Recently completed jobs.",
+      description: "Completed jobs.",
       tone: "success",
-      count: stats?.succeededRecent
+      count: stats?.succeeded
     },
     {
       id: "cancelled",

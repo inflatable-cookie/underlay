@@ -194,7 +194,8 @@ The current runtime domains are:
   selection, list controller, batch actions, pagination helpers
 - `runtime/feedback`: toasts, clipboard, banner, optimistic helpers
 - `runtime/forms`: form helpers and validated-form exports
-- `runtime/media`: blob/media upload and media DTO helper surface
+- `runtime/media`: blob/media upload, media DTO, and retained media-detail
+  helper surface
 - `runtime/navigation`: navigation-context exports
 - `runtime/relations`: local search, drilldown search, relation-selector
   context/types
@@ -205,6 +206,31 @@ Rule:
   when their concrete logic is implemented under `patterns/*`
 - `runtime/data` is retained as a compatibility barrel today, but it is not a
   crisp single domain in the way `runtime/auth` or `runtime/navigation` are
+
+For `runtime/media`, the retained helper surface includes both upload/media
+type helpers and the shared route-side media-detail helpers consumed by the
+media admin templates:
+
+- `createMediaUploadPipeline()`
+- `formatFileSize()`
+- `createMediaEditDialogDraft()`
+- `createClosedMediaEditDialogState()`
+- `createMediaVersionDialogStateController()`
+- `isCurrentMediaVersion()`
+- `canActivateMediaVersion()`
+- `canDeleteMediaVersion()`
+- `canPreviewMediaVersion()`
+- `getMediaVersionPreviewUrl()`
+- `isImageMedia()`
+- `isPdfMedia()`
+
+These helpers are retained because they remove repeated app-local orchestration
+around the shared media upload/detail templates without dragging app-specific
+command execution into Underlay.
+
+`createMediaUploadPipeline()` is the preferred retained seam when multiple apps
+share the same upload wrapper shape and only differ in generated client
+bindings, auth/fetch context, or `includeHashInInitiate` policy.
 
 ### Client-side shared types and error helpers
 

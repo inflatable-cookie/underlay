@@ -1,5 +1,5 @@
 <script lang="ts">
-  import MarkdownEditorSurface from "./MarkdownEditorSurface.svelte";
+  import { default as MarkdownEditorSurface } from "./MarkdownEditorSurface.svelte";
   import type { MarkdownEditorContext } from "./markdown-editor-context";
 
   type MarkdownBlock = {

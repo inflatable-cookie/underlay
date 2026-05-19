@@ -1353,6 +1353,51 @@ const uploadFlow = createMediaUploadFlow({
 });
 ```
 
+### Upload Pipeline Factory
+
+When multiple apps share the same upload wrapper shape and only differ in
+generated media command bindings, use `createMediaUploadPipeline()` from
+`@decodelabs/underlay/runtime/media` instead of hand-wrapping
+`createMediaAndUpload()`, `replaceMediaUpload()`, and `checkMediaDuplicateFile()`
+in each app.
+
+```typescript
+import {
+  DEFAULT_MEDIA_UPLOAD_MAX_FILE_SIZE,
+  createMediaUploadPipeline
+} from "@decodelabs/underlay/runtime/media";
+import { detectMediaKindFromMimeType, mediaCommands } from "@my-client";
+
+export const MAX_FILE_SIZE = DEFAULT_MEDIA_UPLOAD_MAX_FILE_SIZE;
+
+const pipeline = createMediaUploadPipeline({
+  detectKind: detectMediaKindFromMimeType,
+  createMedia: (request, context: { fetchFn: typeof fetch; accessToken: string }) =>
+    mediaCommands.createMedia(request, context.fetchFn, context.accessToken),
+  initiateUpload: (mediaId, request, context: { fetchFn: typeof fetch; accessToken: string }) =>
+    mediaCommands.initiateUpload(mediaId, request, context.fetchFn, context.accessToken),
+  finaliseUpload: (
+    mediaId,
+    versionId,
+    request,
+    context: { fetchFn: typeof fetch; accessToken: string }
+  ) => mediaCommands.finaliseUpload(mediaId, versionId, request, context.fetchFn, context.accessToken),
+  checkDuplicate: (request, context: { fetchFn: typeof fetch; accessToken: string }) =>
+    mediaCommands.checkDuplicate(request, context.fetchFn, context.accessToken),
+  includeHashInInitiate: true
+});
+
+export const createAndUpload = pipeline.createAndUpload;
+export const replaceUpload = pipeline.replaceUpload;
+
+export function checkDuplicate(file: File, fetchFn: typeof fetch, accessToken: string) {
+  return pipeline.checkDuplicate(file, { fetchFn, accessToken });
+}
+```
+
+Use raw `createMediaAndUpload()` and `replaceMediaUpload()` directly only when
+the app genuinely needs a different wrapper shape.
+
 **State Machine Steps:**
 
 | Step | Description |

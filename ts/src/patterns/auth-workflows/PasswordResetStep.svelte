@@ -17,7 +17,7 @@
   import { Button, Callout, Field, FormActions, TextInput } from "@poodle/svelte";
   import type { PasswordRequirementsPolicy } from "@poodle/svelte";
 
-  import PasswordRequirements from "./PasswordRequirements.svelte";
+  import { default as PasswordRequirements } from "./PasswordRequirements.svelte";
 
   interface Props {
     /** Loading state */

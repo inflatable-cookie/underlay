@@ -112,9 +112,6 @@
   --underlay-list-grid-min: 20em;
   --underlay-list-grid-gap: 14px;
 
-  --underlay-list-card-media-size: 76px;
-  --underlay-list-card-media-size-sm: 64px;
-
   /* Switch */
   --underlay-switch-thumb-inset: 3px;
   --underlay-switch-track-width: 2.25rem;
@@ -160,7 +157,5 @@
     --underlay-space-5: 1rem;
     --underlay-space-6: 1.5rem;
 
-    /* Smaller list card media */
-    --underlay-list-card-media-size: 56px;
   }
 }

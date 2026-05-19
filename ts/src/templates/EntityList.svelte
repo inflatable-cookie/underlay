@@ -30,6 +30,7 @@
     OrderBy,
     IconButton,
     Button,
+    Pill,
     Pagination,
     PaginationSummary,
     CardToggleGroup
@@ -204,6 +205,9 @@
     /** Called when query changes (parent manages URL sync) */
     onQueryChange?: EntityListSharedProps<T>["onQueryChange"];
 
+    /** Whether the filter toolbar should start collapsed. */
+    filterToolbarCollapsed?: boolean;
+
     /** Called when reorder can genuinely be used for the current result set */
     onReorderAvailabilityChange?: (enabled: boolean) => void;
 
@@ -260,6 +264,7 @@
     onReorderModeChange,
     query: externalQuery,
     onQueryChange,
+    filterToolbarCollapsed = false,
     onReorderAvailabilityChange,
     onReorderActionStateChange,
     onReorderError
@@ -297,6 +302,13 @@
       count: variant.count
     }))
   );
+  let activeQueryVariant = $derived(
+    effectiveQueryVariants.find((variant) => variant.id === currentVariantId) ?? null
+  );
+  let activeAdHocFilterCount = $derived(
+    effectiveFilterConfigs.filter((filter) => filter.type !== "sort" && isFilterActive(filter)).length
+  );
+  let hasActiveEphemeralControls = $derived(activeAdHocFilterCount > 0 || currentSort.length > 0);
   let queryVariantColumns = $derived(Math.min(4, Math.max(1, queryVariantItems.length)) as 1 | 2 | 3 | 4);
   let currentPage = $derived(currentQuery.page ?? 1);
   let currentPageSize = $derived(currentQuery.limit ?? DEFAULT_PAGE_SIZE);
@@ -474,7 +486,12 @@
           loadedFilterOptions = nextOptions;
         }
       }
-      if (filter.loadOptions && !loadedFilterOptions[filter.id] && !filterOptionsLoading[filter.id]) {
+      if (
+        filter.loadOptions &&
+        !filter.searchable &&
+        !loadedFilterOptions[filter.id] &&
+        !filterOptionsLoading[filter.id]
+      ) {
         filterOptionsLoading = { ...filterOptionsLoading, [filter.id]: true };
         filter.loadOptions().then((options) => {
           loadedFilterOptions = { ...loadedFilterOptions, [filter.id]: options };
@@ -563,6 +580,20 @@
       ...query,
       variant: query.variant ?? (variantSelectionTouched ? selectedVariantId ?? undefined : resolvedDefaultVariantId ?? undefined)
     };
+  }
+
+  function getVariantPillTone(
+    tone: ListVariantDefinition["tone"]
+  ): "neutral" | "info" | "success" | "warning" | "danger" {
+    switch (tone) {
+      case "info":
+      case "success":
+      case "warning":
+      case "danger":
+        return tone;
+      default:
+        return "neutral";
+    }
   }
 
   function setQuery(nextQuery: QueryParams) {
@@ -720,6 +751,19 @@
 
   function clearSort() {
     handleSortChange([]);
+  }
+
+  function clearEphemeralControls() {
+    if (!hasActiveEphemeralControls) {
+      return;
+    }
+
+    setQuery({
+      ...currentQuery,
+      filters: [],
+      sort: [],
+      page: 1
+    });
   }
 
   function getSortOrderValue() {
@@ -1108,25 +1152,52 @@
 
     {#snippet filters()}
       {#if (queryVariantItems.length > 0 || effectiveFilterConfigs.length > 0) && !reorderMode}
-        <FilterToolbar ariaLabel={`${title} filters`} summaryText="Views & Filters">
+        <FilterToolbar
+          ariaLabel={`${title} filters`}
+          summaryText="Views & Filters"
+          size="sm"
+          collapsed={filterToolbarCollapsed}
+        >
           {#snippet summary()}
-            <PaginationSummary
-              currentPage={currentPage}
-              totalPages={totalPages}
-              totalItems={totalCount}
-              pageSize={currentPageSize}
-            />
+            <span class="underlay-entity-list__toolbar-summary">
+              <PaginationSummary
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalItems={totalCount}
+                pageSize={currentPageSize}
+              />
+              {#if activeQueryVariant}
+                <Pill
+                  tone={getVariantPillTone(activeQueryVariant.tone)}
+                  appearance="badge"
+                  size="xs"
+                  typography="inherit"
+                >
+                  {activeQueryVariant.label}
+                </Pill>
+              {/if}
+              {#if activeAdHocFilterCount > 0}
+                <Pill tone="neutral" appearance="badge" size="xs" typography="inherit">
+                  {activeAdHocFilterCount} filter{activeAdHocFilterCount === 1 ? "" : "s"}
+                </Pill>
+              {/if}
+              {#if currentSort.length > 0}
+                <Pill tone="neutral" appearance="badge" size="xs" typography="inherit">
+                  Sorted
+                </Pill>
+              {/if}
+            </span>
           {/snippet}
 
           {#snippet actions()}
-            {#if currentSort.length > 0}
+            {#if hasActiveEphemeralControls}
               <IconButton
                 icon="x"
                 variant="ghost"
                 size="sm"
-                ariaLabel="Clear sort"
-                tooltip="Clear sort"
-                onClick={clearSort}
+                ariaLabel="Clear filters and sort"
+                tooltip="Clear filters and sort"
+                onClick={clearEphemeralControls}
               />
             {/if}
             <IconButton
@@ -1163,23 +1234,30 @@
                 <TextInput
                   id={`filter-${filter.id}`}
                   type="search"
+                  size="sm"
                   value={getFilterValue(filter)}
                   ariaLabel={getFilterAriaLabel(filter)}
                   placeholder={getSearchPlaceholder(filter)}
                   onValueChange={(nextValue) => handleFilterChange(filter, nextValue)}
                 />
               {:else if filter.type === "select"}
-                <Select
-                  id={`filter-${filter.id}`}
-                  value={getFilterValue(filter)}
-                  options={getSelectItems(filter)}
-                  ariaLabel={getFilterAriaLabel(filter)}
-                  onValueChange={(value) => handleFilterChange(filter, value)}
-                />
+              <Select
+                id={`filter-${filter.id}`}
+                size="sm"
+                value={getFilterValue(filter)}
+                options={getSelectItems(filter)}
+                loadOptions={filter.searchable ? filter.loadOptions ?? null : null}
+                loadKey={filter.loadKey ?? null}
+                searchable={filter.searchable ?? false}
+                ariaLabel={getFilterAriaLabel(filter)}
+                placeholder={getSelectPlaceholder(filter)}
+                onValueChange={(value) => handleFilterChange(filter, value)}
+              />
               {:else if filter.type === "sort" && filter.sortFields}
                 <OrderBy
                   fields={filter.sortFields}
                   value={getSortOrderValue()}
+                  size="sm"
                   ariaLabel={getFilterAriaLabel(filter)}
                   showClearButton={false}
                   onChange={handleSortOrderChange}
@@ -1301,25 +1379,52 @@
 {:else}
   <!-- When used inside EntityListPage, don't show ListContainer shell -->
   {#if (queryVariantItems.length > 0 || effectiveFilterConfigs.length > 0) && !reorderMode}
-    <FilterToolbar ariaLabel="Filters" summaryText="Views & Filters">
+    <FilterToolbar
+      ariaLabel="Filters"
+      summaryText="Views & Filters"
+      size="sm"
+      collapsed={filterToolbarCollapsed}
+    >
       {#snippet summary()}
-        <PaginationSummary
-          currentPage={currentPage}
-          totalPages={totalPages}
-          totalItems={totalCount}
-          pageSize={currentPageSize}
-        />
+        <span class="underlay-entity-list__toolbar-summary">
+          <PaginationSummary
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalCount}
+            pageSize={currentPageSize}
+          />
+          {#if activeQueryVariant}
+            <Pill
+              tone={getVariantPillTone(activeQueryVariant.tone)}
+              appearance="badge"
+              size="xs"
+              typography="inherit"
+            >
+              {activeQueryVariant.label}
+            </Pill>
+          {/if}
+          {#if activeAdHocFilterCount > 0}
+            <Pill tone="neutral" appearance="badge" size="xs" typography="inherit">
+              {activeAdHocFilterCount} filter{activeAdHocFilterCount === 1 ? "" : "s"}
+            </Pill>
+          {/if}
+          {#if currentSort.length > 0}
+            <Pill tone="neutral" appearance="badge" size="xs" typography="inherit">
+              Sorted
+            </Pill>
+          {/if}
+        </span>
       {/snippet}
 
       {#snippet actions()}
-        {#if currentSort.length > 0}
+        {#if hasActiveEphemeralControls}
           <IconButton
             icon="x"
             variant="ghost"
             size="sm"
-            ariaLabel="Clear sort"
-            tooltip="Clear sort"
-            onClick={clearSort}
+            ariaLabel="Clear filters and sort"
+            tooltip="Clear filters and sort"
+            onClick={clearEphemeralControls}
           />
         {/if}
         <IconButton
@@ -1356,6 +1461,7 @@
             <TextInput
               id={`filter-${filter.id}`}
               type="search"
+              size="sm"
               value={getFilterValue(filter)}
               ariaLabel={getFilterAriaLabel(filter)}
               placeholder={getSearchPlaceholder(filter)}
@@ -1364,15 +1470,21 @@
           {:else if filter.type === "select"}
             <Select
               id={`filter-${filter.id}`}
+              size="sm"
               value={getFilterValue(filter)}
               options={getSelectItems(filter)}
+              loadOptions={filter.searchable ? filter.loadOptions ?? null : null}
+              loadKey={filter.loadKey ?? null}
+              searchable={filter.searchable ?? false}
               ariaLabel={getFilterAriaLabel(filter)}
+              placeholder={getSelectPlaceholder(filter)}
               onValueChange={(value) => handleFilterChange(filter, value)}
             />
           {:else if filter.type === "sort" && filter.sortFields}
             <OrderBy
               fields={filter.sortFields}
               value={getSortOrderValue()}
+              size="sm"
               ariaLabel={getFilterAriaLabel(filter)}
               showClearButton={false}
               onChange={handleSortOrderChange}
@@ -1546,6 +1658,18 @@
 {/if}
 
 <style>
+  .underlay-entity-list__toolbar-summary {
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    min-width: 0;
+  }
+
+  .underlay-entity-list__toolbar-summary :global(.poodle-pagination-summary) {
+    font-size: 0.875em;
+  }
+
   .underlay-entity-list__filter-control {
     min-width: 0;
     opacity: 0.68;

@@ -25,7 +25,7 @@
     createRequiredInitialValue,
     type NightfireFieldMode
   } from "./editor/field-lifecycle";
-  import NightfireFieldBlockShell from "./editor/NightfireFieldBlockShell.svelte";
+  import { default as NightfireFieldBlockShell } from "./editor/NightfireFieldBlockShell.svelte";
   import { normaliseForStrategy } from "./editor/strategy-normalisation";
   import {
     addBlock as addEditorBlock,

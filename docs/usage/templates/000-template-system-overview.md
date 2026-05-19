@@ -63,6 +63,21 @@ raw `ListCard` compositions.
 it when the route still owns trash workflow logic but the outer page shell is
 repeated across apps.
 
+For the retained media family, the preferred lower-level shared sections are:
+
+- `MediaEditDialog`
+- `MediaFileDetailsCard`
+- `MediaPreviewTab`
+- `MediaRenditionsSection`
+- `MediaVersionActionDialogs`
+- `MediaVersionPreviewDialog`
+- `MediaVersionsList`
+- `MediaUsageList`
+
+For the repeated route-side media-detail logic under those templates, prefer
+the retained `@decodelabs/underlay/runtime/media` helper surface rather than
+app-local state/predicate modules.
+
 For reference-grade admin apps, repeated raw `ListCard` collection cards should
 be treated as drift unless the surface is an explicit exception.
 

@@ -11,4 +11,3 @@
  * ```
  */
 export * from "./csp";
-export * from "./config-stack";

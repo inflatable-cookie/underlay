@@ -2,8 +2,8 @@
   import type { MarkdownEditorContext } from "../markup/markdown-editor-context";
   import type { NightfireBlockDefinition, NightfireTypeOption } from "../utils";
   import type { GroupedOptions } from "./grouped-options";
-  import NightfireBlockEditor from "../NightfireBlockEditor.svelte";
-  import NightfireTypeSelect from "./NightfireTypeSelect.svelte";
+  import { default as NightfireBlockEditor } from "../NightfireBlockEditor.svelte";
+  import { default as NightfireTypeSelect } from "./NightfireTypeSelect.svelte";
 
   interface Props {
     block: any;

@@ -89,13 +89,23 @@ describe("patterns/selection-history", () => {
 		expect(parseHintsParam("  ")).toEqual([]);
 		expect(parseHintsParam("id1,,id2, ")).toEqual(["id1", "id2"]);
 
-		const params = buildSuggestionParams({ suggestions: true, recentHints: ["id1", "id2"] });
-		expect(params.toString()).toBe("suggestions=true&recentHints=id1%2Cid2");
+		const params = buildSuggestionParams({
+			suggestions: true,
+			recentHints: ["id1", "id2"],
+			query: "alpha",
+			limit: 12,
+		});
+		expect(params.toString()).toBe("suggestions=true&recentHints=id1%2Cid2&query=alpha&limit=12");
 		expect(buildSuggestionParams({ suggestions: false, recentHints: [] }).toString()).toBe("");
 
 		expect(
-			appendSuggestionParams("/api/items", { suggestions: true, recentHints: ["id1"] })
-		).toBe("/api/items?suggestions=true&recentHints=id1");
+			appendSuggestionParams("/api/items", {
+				suggestions: true,
+				recentHints: ["id1"],
+				query: "beta",
+				limit: 5,
+			})
+		).toBe("/api/items?suggestions=true&recentHints=id1&query=beta&limit=5");
 		expect(
 			appendSuggestionParams("/api/items?archived=true", { suggestions: true })
 		).toBe("/api/items?archived=true&suggestions=true");

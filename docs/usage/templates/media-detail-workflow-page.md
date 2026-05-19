@@ -13,25 +13,124 @@ It owns the repeated outer structure:
 - top-level tabs
 - loading and error posture
 
-The route or app-local modules still own:
+The route still owns:
 
-- versions rendering
-- usage rendering
-- preview surfaces
-- renditions rendering
-- edit, restore, delete, activate, and preview dialogs
 - app-local media action menus
+- API command wiring, auth wiring, and route-specific refetch behavior
+
+For the repeated lower-level media-detail sections, prefer the retained shared
+pieces before building route-local modules:
+
+- `MediaFileDetailsCard`
+- `MediaEditDialog`
+- `MediaPreviewTab`
+- `MediaRenditionsSection`
+- `MediaVersionActionDialogs`
+- `MediaVersionPreviewDialog`
+- `MediaVersionsList`
+- `MediaUsageList`
+
+For repeated route-side media-detail helper logic, prefer the retained
+`@decodelabs/underlay/runtime/media` helpers before adding app-local state or
+predicate modules:
+
+- `createMediaEditDialogDraft()`
+- `createClosedMediaEditDialogState()`
+- `createMediaVersionDialogStateController()`
+- `isCurrentMediaVersion()`
+- `canActivateMediaVersion()`
+- `canDeleteMediaVersion()`
+- `canPreviewMediaVersion()`
+- `getMediaVersionPreviewUrl()`
+- `isImageMedia()`
+- `isPdfMedia()`
+- `formatFileSize()`
 
 ## Usage
 
 ```svelte
 <script lang="ts">
-  import { MediaDetailWorkflowPage } from "@decodelabs/underlay/templates";
+  import {
+    MediaDetailWorkflowPage,
+    MediaEditDialog,
+    MediaFileDetailsCard,
+    MediaPreviewTab,
+    MediaRenditionsSection,
+    MediaUsageList,
+    MediaVersionActionDialogs,
+    MediaVersionPreviewDialog,
+    MediaVersionsList
+  } from "@decodelabs/underlay/templates";
+  import {
+    canActivateMediaVersion,
+    canDeleteMediaVersion,
+    canPreviewMediaVersion,
+    createClosedMediaEditDialogState,
+    createMediaEditDialogDraft,
+    createMediaVersionDialogStateController,
+    formatFileSize,
+    getMediaVersionPreviewUrl,
+    isCurrentMediaVersion,
+    isImageMedia,
+    isPdfMedia
+  } from "@decodelabs/underlay/runtime/media";
 
   let media = $state<MediaDetail | null>(null);
   let loading = $state(true);
   let error = $state<string | null>(null);
   let activeTab = $state("details");
+  let editOpen = $state(false);
+  let editError = $state<string | null>(null);
+  let editSubmitting = $state(false);
+  let editTitle = $state("");
+  let editFilename = $state("");
+  let editVisibility = $state("public");
+  let previewOpen = $state(false);
+  let previewVersion = $state<MediaVersion | null>(null);
+  const versionDialogs = createMediaVersionDialogStateController<MediaVersion>();
+
+  function openEditDialog() {
+    if (!media) return;
+    const draft = createMediaEditDialogDraft(media);
+    editTitle = draft.title;
+    editFilename = draft.filename;
+    editVisibility = draft.visibility;
+    editError = null;
+    editOpen = true;
+  }
+
+  function closeEditDialog() {
+    const next = createClosedMediaEditDialogState();
+    editOpen = next.open;
+    editError = next.error;
+    editSubmitting = next.submitting;
+  }
+
+  function isCurrentVersion(version: MediaVersion) {
+    return isCurrentMediaVersion(media?.currentVersionId, version);
+  }
+
+  function canActivateVersion(version: MediaVersion) {
+    return canActivateMediaVersion(media?.currentVersionId, version);
+  }
+
+  function canDeleteVersion(version: MediaVersion) {
+    return canDeleteMediaVersion(media?.currentVersionId, version);
+  }
+
+  function canPreviewVersion(version: MediaVersion) {
+    return media ? canPreviewMediaVersion(media.kind, version) : false;
+  }
+
+  function openPreview(version: MediaVersion) {
+    if (!canPreviewVersion(version)) return;
+    previewVersion = version;
+    previewOpen = true;
+  }
+
+  const mediaPreviewUrl = $derived.by(() =>
+    media?.currentVersion ? getMediaVersionPreviewUrl(media.currentVersion) : null
+  );
 </script>
 
 {#snippet headerActions(loadedMedia)}
@@ -44,15 +143,33 @@ The route or app-local modules still own:
 {/snippet}
 
 {#snippet detailsTab(loadedMedia)}
-  <!-- route-owned versions, renditions, and metadata modules -->
+  <MediaFileDetailsCard media={loadedMedia} {formatFileSize} />
+  <MediaVersionsList
+    versions={versions}
+    onUploadNewVersion={openReplaceDialog}
+    {canPreviewVersion}
+    onOpenVersionPreview={openPreview}
+    {formatFileSize}
+    {isCurrentVersion}
+    {canActivateVersion}
+    {canDeleteVersion}
+    onRequestActivate={versionDialogs.requestActivate}
+    onRequestDelete={versionDialogs.requestDelete}
+  />
+  <MediaRenditionsSection renditions={loadedMedia.currentVersion?.renditions ?? []} {formatFileSize} />
 {/snippet}
 
 {#snippet previewTab(loadedMedia)}
-  <!-- route-owned preview module -->
+  <MediaPreviewTab
+    media={loadedMedia}
+    mediaUrl={mediaPreviewUrl}
+    isImage={isImageMedia}
+    isPdf={isPdfMedia}
+  />
 {/snippet}
 
 {#snippet usageTab(loadedMedia)}
-  <!-- route-owned usage module -->
+  <MediaUsageList {usages} />
 {/snippet}
 
 <MediaDetailWorkflowPage
@@ -74,6 +191,37 @@ The route or app-local modules still own:
   tabsHistoryKey="tab"
   keepMountedTabs
 />
+
+<MediaEditDialog
+  bind:open={editOpen}
+  error={editError}
+  submitting={editSubmitting}
+  bind:titleValue={editTitle}
+  bind:filenameValue={editFilename}
+  bind:visibilityValue={editVisibility}
+  visibilityOptions={visibilityOptions}
+  onCancel={closeEditDialog}
+  onSubmit={submitEdit}
+/>
+
+<MediaVersionActionDialogs
+  bind:activateDialogOpen={versionDialogs.activateDialogOpen}
+  bind:deleteDialogOpen={versionDialogs.deleteDialogOpen}
+  selectedVersion={versionDialogs.selectedVersion}
+  onConfirmActivate={confirmActivate}
+  onCancelActivate={versionDialogs.clear}
+  onConfirmDelete={confirmDelete}
+  onCancelDelete={versionDialogs.clear}
+/>
+
+<MediaVersionPreviewDialog
+  bind:open={previewOpen}
+  {previewVersion}
+  mediaKind={media?.kind ?? ""}
+  getPreviewUrl={getMediaVersionPreviewUrl}
+  isImage={isImageMedia}
+  isPdf={isPdfMedia}
+/>
 ```
 
 ## Loading modes
@@ -88,7 +236,6 @@ Use the second mode when the route already stitches:
 
 - versions and usage fetches
 - action-session wiring
-- local helper modules
 - more complex retry/refetch rules
 
 ## Props
@@ -134,13 +281,13 @@ Use the second mode when the route already stitches:
 
 ## What You Bring
 
-- media versions module
-- media usage module
-- media preview module
-- rendition module
 - media actions menu
-- edit and version dialogs
-- app-local media business logic
+- app-specific media command wiring
+- app-local media business logic that is genuinely beyond the retained helper surface
+
+Normally you should not bring fresh route-local versions, usage, preview,
+rendition, file-details, dialog-state, or preview-predicate modules unless the
+retained shared pieces are missing a real seam.
 
 ## Use It When
 

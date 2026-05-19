@@ -23,9 +23,9 @@
   import { Button, Callout, Field, FormActions, TextInput } from "@poodle/svelte";
   import type { PasswordRequirementsPolicy } from "@poodle/svelte";
 
-  import PasswordResetStep from "./PasswordResetStep.svelte";
-  import SuccessStep from "./SuccessStep.svelte";
-  import TwoFactorStep from "./TwoFactorStep.svelte";
+  import { default as PasswordResetStep } from "./PasswordResetStep.svelte";
+  import { default as SuccessStep } from "./SuccessStep.svelte";
+  import { default as TwoFactorStep } from "./TwoFactorStep.svelte";
 
   interface Props {
     /** Called to request a password reset code */

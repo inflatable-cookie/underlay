@@ -15,13 +15,13 @@
     resolvePasswordLoginOutcome
   } from "./login-page-state";
 
-  import LoginGoogleTab from "./LoginGoogleTab.svelte";
-  import LoginMethodTabs from "./LoginMethodTabs.svelte";
-  import LoginPasskeyTab from "./LoginPasskeyTab.svelte";
-  import LoginPasswordForm from "./LoginPasswordForm.svelte";
-  import LoginRegisterFooter from "./LoginRegisterFooter.svelte";
-  import LoginSetupPrompt from "./LoginSetupPrompt.svelte";
-  import TwoFactorStep from "./TwoFactorStep.svelte";
+  import { default as LoginGoogleTab } from "./LoginGoogleTab.svelte";
+  import { default as LoginMethodTabs } from "./LoginMethodTabs.svelte";
+  import { default as LoginPasskeyTab } from "./LoginPasskeyTab.svelte";
+  import { default as LoginPasswordForm } from "./LoginPasswordForm.svelte";
+  import { default as LoginRegisterFooter } from "./LoginRegisterFooter.svelte";
+  import { default as LoginSetupPrompt } from "./LoginSetupPrompt.svelte";
+  import { default as TwoFactorStep } from "./TwoFactorStep.svelte";
 
   let {
     methods = ["password"],

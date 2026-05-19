@@ -1,6 +1,8 @@
 export interface SuggestionRequestOptions {
   suggestions?: boolean;
   recentHints?: string[];
+  query?: string;
+  limit?: number;
 }
 
 export function formatHintsParam(hints: string[]): string {
@@ -27,6 +29,12 @@ export function buildSuggestionParams(
   }
   if (options?.recentHints && options.recentHints.length > 0) {
     params.set("recentHints", formatHintsParam(options.recentHints));
+  }
+  if (options?.query && options.query.trim().length > 0) {
+    params.set("query", options.query.trim());
+  }
+  if (typeof options?.limit === "number" && Number.isFinite(options.limit)) {
+    params.set("limit", String(Math.max(1, Math.trunc(options.limit))));
   }
 
   return params;

@@ -4,6 +4,9 @@ alias = "underlay"
 [package_manager]
 js = "bun"
 
+[task_defaults]
+run_in = "host"
+
 [manifest]
 minimum_effigy_version = "0.7.0"
 include = ["demos/effigy.demos.toml"]
@@ -32,24 +35,24 @@ allowlist_file = "docs/policy/vision-next-task-verbs.txt"
     "cargo fetch",
 ]
 
-check = "bun x svelte-check --tsconfig ./ts/tsconfig.json"
-"check:types" = "bun x tsc -p ./ts/tsconfig.json"
-"check:exports" = "bun ts/scripts/check-exports.ts"
-"check:component-test-hygiene" = "bun ts/scripts/check-component-test-hygiene.ts"
-"check:poodle-prop-names" = "bun ts/scripts/check-poodle-prop-names.ts"
-"check:guardrails" = "bun ts/src/tools/guardrails.ts"
-"storybook" = "storybook dev -p 6006"
-"storybook:build" = "storybook build"
-"rust:build" = "cargo build --workspace"
-"rust:check" = "cargo check --workspace --all-features"
-"rust:test" = "cargo test --workspace --all-features"
-"test:ui" = "bun x vitest --ui {args}"
-"test:components" = "bun x vitest run -c vitest.component.config.ts {args}"
+check = "cd {repo} && bun x svelte-check --tsconfig ./ts/tsconfig.json"
+"check:types" = "cd {repo} && bun x tsc -p ./ts/tsconfig.json"
+"check:exports" = "cd {repo} && bun ts/scripts/check-exports.ts"
+"check:component-test-hygiene" = "cd {repo} && bun ts/scripts/check-component-test-hygiene.ts"
+"check:poodle-prop-names" = "cd {repo} && bun ts/scripts/check-poodle-prop-names.ts"
+"check:guardrails" = "cd {repo} && bun ts/src/tools/guardrails.ts"
+"storybook" = "cd {repo} && storybook dev -p 6006"
+"storybook:build" = "cd {repo} && storybook build"
+"rust:build" = "cd {repo} && cargo build --workspace"
+"rust:check" = "cd {repo} && cargo check --workspace --all-features"
+"rust:test" = "cd {repo} && cargo test --workspace --all-features"
+"test:ui" = "cd {repo} && bun x vitest --ui {args}"
+"test:components" = "cd {repo} && bun x vitest run -c vitest.component.config.ts {args}"
 
-"qa:docs:links" = "effigy docs check links README.md docs/README.md docs/vision/README.md docs/vision/001-underlay-foundation-vision.md docs/roadmaps/README.md docs/roadmaps/g01/README.md docs/logs/README.md docs/guides/README.md"
-"qa:docs:index:vision" = "effigy docs check index --policy-index vision"
-"qa:docs:agent-defaults" = "effigy docs check forbidden AGENTS.md README.md package.json docs/README.md docs/guides/README.md --forbid '--repo .'"
-"qa:docs:vision:next-action" = "effigy docs check next-action --policy vision"
+"qa:docs:links" = "cd {repo} && effigy docs check links README.md docs/README.md docs/vision/README.md docs/vision/001-underlay-foundation-vision.md docs/roadmaps/README.md docs/roadmaps/g01/README.md docs/logs/README.md docs/guides/README.md"
+"qa:docs:index:vision" = "cd {repo} && effigy docs check index --policy-index vision"
+"qa:docs:agent-defaults" = "cd {repo} && effigy docs check forbidden AGENTS.md README.md package.json docs/README.md docs/guides/README.md --forbid '--repo .'"
+"qa:docs:vision:next-action" = "cd {repo} && effigy docs check next-action --policy vision"
 "qa:docs" = [
     { task = "qa:docs:links" },
     { task = "qa:docs:index:vision" },
@@ -57,9 +60,9 @@ check = "bun x svelte-check --tsconfig ./ts/tsconfig.json"
     { task = "qa:docs:vision:next-action" },
 ]
 
-"qa:northstar:vision" = "effigy docs check headings docs/vision/001-underlay-foundation-vision.md --require-heading '## Long-Term Outcome' --require-heading '## Core Platform Behaviors' --require-heading '## Strategic Constraints' --require-heading '## Longer-Term Focus' --require-heading '## Next Task'"
-"qa:northstar:roadmaps" = "effigy docs check headings docs/roadmaps/README.md --require-heading '## Rules' --require-heading '## Active generation' --require-heading '## Current Queue' --require-heading '## Next Task'"
-"qa:northstar:g01" = "effigy docs check headings docs/roadmaps/g01/README.md --require-heading '## Current Generation' --require-heading '## Historical Language Boundary' --require-heading '## Next Task'"
+"qa:northstar:vision" = "cd {repo} && effigy docs check headings docs/vision/001-underlay-foundation-vision.md --require-heading '## Long-Term Outcome' --require-heading '## Core Platform Behaviors' --require-heading '## Strategic Constraints' --require-heading '## Longer-Term Focus' --require-heading '## Next Task'"
+"qa:northstar:roadmaps" = "cd {repo} && effigy docs check headings docs/roadmaps/README.md --require-heading '## Rules' --require-heading '## Active generation' --require-heading '## Current Queue' --require-heading '## Next Task'"
+"qa:northstar:g01" = "cd {repo} && effigy docs check headings docs/roadmaps/g01/README.md --require-heading '## Current Generation' --require-heading '## Historical Language Boundary' --require-heading '## Next Task'"
 "qa:northstar" = [
     { task = "qa:northstar:vision" },
     { task = "qa:northstar:roadmaps" },

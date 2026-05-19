@@ -133,7 +133,6 @@ impl S3Config {
             .public_read(true)
             .path_style(true)
     }
-
 }
 
 /// AWS S3-compatible blob storage adapter.
