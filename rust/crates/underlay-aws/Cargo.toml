@@ -7,4 +7,5 @@ description = "Shared AWS SDK configuration for Underlay crates"
 
 [dependencies]
 aws-config = "1"
+aws-credential-types = "1"
 aws-types = "1"

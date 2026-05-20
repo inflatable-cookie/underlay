@@ -257,18 +257,19 @@ impl S3Adapter {
 
     /// Convert S3 SDK errors to BlobError.
     fn map_s3_error(err: aws_sdk_s3::Error, key: &str) -> BlobError {
-        let err_str = err.to_string();
+        let err_str = format!("{err}");
+        let detailed = format!("{err:?}");
 
         if err_str.contains("NoSuchKey") || err_str.contains("NotFound") {
             BlobError::NotFound(key.to_string())
         } else if err_str.contains("NoSuchBucket") {
-            BlobError::BucketNotFound(err_str)
+            BlobError::BucketNotFound(detailed)
         } else if err_str.contains("AccessDenied") || err_str.contains("Forbidden") {
-            BlobError::AccessDenied(err_str)
+            BlobError::AccessDenied(detailed)
         } else if err_str.contains("credentials") || err_str.contains("InvalidAccessKeyId") {
-            BlobError::AuthError(err_str)
+            BlobError::AuthError(detailed)
         } else {
-            BlobError::TransportError(err_str)
+            BlobError::TransportError(detailed)
         }
     }
 

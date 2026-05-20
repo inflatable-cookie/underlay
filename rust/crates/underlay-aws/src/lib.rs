@@ -20,6 +20,7 @@
 //! ```
 
 pub use aws_config::SdkConfig;
+use aws_credential_types::{provider::SharedCredentialsProvider, Credentials};
 pub use aws_types::region::Region;
 
 /// Configuration for building an AWS SDK config.
@@ -36,6 +37,16 @@ pub struct AwsConfig {
     /// Used for S3-compatible services (MinIO, R2, LocalStack) or local
     /// development with tools like localstack.
     pub endpoint_url: Option<String>,
+
+    /// Optional static credentials used instead of the ambient provider chain.
+    pub static_credentials: Option<AwsStaticCredentials>,
+}
+
+#[derive(Debug, Clone)]
+pub struct AwsStaticCredentials {
+    pub access_key_id: String,
+    pub secret_access_key: String,
+    pub session_token: Option<String>,
 }
 
 impl AwsConfig {
@@ -44,12 +55,27 @@ impl AwsConfig {
         Self {
             region: region.into(),
             endpoint_url: None,
+            static_credentials: None,
         }
     }
 
     /// Set a custom endpoint URL (for S3-compatible services or local dev).
     pub fn with_endpoint(mut self, url: impl Into<String>) -> Self {
         self.endpoint_url = Some(url.into());
+        self
+    }
+
+    /// Set explicit static credentials.
+    pub fn with_static_credentials(
+        mut self,
+        access_key_id: impl Into<String>,
+        secret_access_key: impl Into<String>,
+    ) -> Self {
+        self.static_credentials = Some(AwsStaticCredentials {
+            access_key_id: access_key_id.into(),
+            secret_access_key: secret_access_key.into(),
+            session_token: None,
+        });
         self
     }
 
@@ -63,6 +89,17 @@ impl AwsConfig {
 
         if let Some(endpoint) = &self.endpoint_url {
             builder = builder.endpoint_url(endpoint);
+        }
+
+        if let Some(credentials) = &self.static_credentials {
+            let credentials = Credentials::new(
+                credentials.access_key_id.clone(),
+                credentials.secret_access_key.clone(),
+                credentials.session_token.clone(),
+                None,
+                "underlay-static-config",
+            );
+            builder = builder.credentials_provider(SharedCredentialsProvider::new(credentials));
         }
 
         builder.load().await
