@@ -75,6 +75,7 @@ export interface EntityListCardProps {
   onClick?: ((event: MouseEvent) => void) | null;
   onSelectionChange?: ((selected: boolean) => void) | null;
   onContextAction?: ((value: string) => void) | null;
+  titleContent?: any;
   leading?: any;
   footer?: any;
 }

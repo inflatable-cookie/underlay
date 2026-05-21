@@ -43,7 +43,8 @@ is the default answer.
 {/snippet}
 
 <EntityListPage
-  title="Projects"
+  section="Projects"
+  title="All projects"
   backHref="/"
   backLabel="Back to dashboard"
   dataLoader={loadProjects}
@@ -80,6 +81,30 @@ Normal tab differences are small:
 - contextual add/back/action behavior
 
 Those are list modes, not a reason to switch to a different list template.
+
+## Header posture
+
+For top-level browse pages, prefer the standard Poodle `PageHeader` posture:
+
+- `section` = the resource family, for example `Modules`
+- `title` = the view title, for example `All modules`
+- `subtitle` = optional extra context, not the normal place for the main label
+
+For nested browse pages, use the same header shape and add `breadcrumbs` when
+the route has a real parent path. Example:
+
+- section `Areas`
+- title `All areas`
+- breadcrumbs `Pathway / Module / Section`
+
+For tab-local list surfaces, keep the header lighter:
+
+- lower `headerLevel`
+- usually no `section`
+- short local `title` such as `Tasks` or `Areas`
+- let the reusable list wrapper own that local title by default; do not repeat
+  the same tab title again in every route unless the route is intentionally
+  changing the meaning of the surface
 
 ## App wrapper policy
 
@@ -123,6 +148,8 @@ into `src/lib/cards/*` over `EntityListCard`.
 | `section` | `string` | No | Optional section label above the title |
 | `subtitle` | `string` | No | Optional subtitle below the title |
 | `eyebrow` | `string` | No | Optional eyebrow above the header |
+| `breadcrumbs` | `BreadcrumbItem[]` | No | Optional breadcrumb trail above the header title |
+| `breadcrumbsMarkLastCurrent` | `boolean` | No | Mark the final breadcrumb as the current page; defaults to `true` |
 | `headerLevel` | `1 \| 2 \| 3 \| 4 \| 5 \| 6` | No | Heading level for nested composition; defaults to `2` |
 | `backHref` | `string` | No | Back link URL |
 | `backLabel` | `string` | No | Back link label |

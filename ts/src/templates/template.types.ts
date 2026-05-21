@@ -30,6 +30,7 @@ export interface FilterConfig {
   id: string;
   type: "search" | "select" | "date" | "number" | "sort";
   label: string;
+  disabled?: boolean;
   options?: TemplateFilterOption[];
   loadOptions?: (context?: {
     query?: string;
@@ -516,7 +517,8 @@ export type SystemMediaTrashListLoader<
   TMedia extends SystemMediaTrashItem = SystemMediaTrashItem
 > = (
   fetch: FetchFn,
-  token: string
+  token: string,
+  query: QueryParams
 ) => Promise<PagedListResult<TMedia>>;
 
 export type SystemMediaTrashAction<

@@ -334,7 +334,6 @@
       bannerMessage={bannerMessage}
       bannerTone={bannerTone}
       level={headerLevel}
-      posture={section ? "entity-detail" : "default"}
     >
       {#snippet breadcrumbs()}
         {#if detailBreadcrumbs.length > 0}

@@ -135,6 +135,7 @@ export type {
   TemplateSortField,
   TemplateSurface
 } from "./template.types";
+export type { BreadcrumbItem } from "../patterns/types";
 
 export type {
   ContextActionDefinition,

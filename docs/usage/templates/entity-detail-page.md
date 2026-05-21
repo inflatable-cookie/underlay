@@ -53,8 +53,9 @@ It supports two normal body modes:
 {/snippet}
 
 <EntityDetailPage
-  title={project.name}
-  section="Project"
+  title={project.code}
+  section="Projects"
+  subtitle={project.name}
   backHref="/projects"
   dataLoader={loadProject}
   meta={[...]}
@@ -86,10 +87,11 @@ When the route already owns the main fetch and context stitching, pass
 ```svelte
 <EntityDetailPage
   item={pageData.data}
-  title={outcome.title}
-  section="Outcome"
-  subtitle={`Outcome ${outcome.label}`}
+  title={outcome.code}
+  section="Outcomes"
+  subtitle={outcome.label}
   breadcrumbs={breadcrumbs}
+  breadcrumbsMarkLastCurrent={false}
   meta={detailMeta}
   tabs={detailTabs}
   headerActions={detailHeaderActions}
@@ -148,10 +150,25 @@ truly reused across more than one caller.
 
 ## Header posture
 
-- when `section` is set, the page header now treats that as the primary title
-- `title` becomes the subtitle underneath, which keeps long entity names out of
-  the large heading style and removes the old duplicated title stack
+- `section` names the resource family, usually the same plural family used by
+  the browse page, for example `Modules`, `Documents`, `Blog articles`, or
+  `Quiz questions`
+- `title` is the main record label shown in the large heading
+- prefer a short record label for `title` when the entity has one, for example
+  `ACCA`, `Area A1`, or `Q4`
+- when the entity only has a long human title, either:
+  - use that as `title`, or
+  - use a static details title such as `Blog details` and place the longer
+    record label in `subtitle`
+- use `subtitle` for the longer descriptive title when the main heading should
+  stay short
+- use `breadcrumbs` for the parent path in nested routes
+- when the main `title` already names the current entity, omit that entity from
+  the breadcrumb trail and pass `breadcrumbsMarkLastCurrent={false}`
 - page actions render as a single ellipsis menu in the header action slot
+- do not restate the page identity inside the active details tab with another
+  nested `PageHeader`; put slug, keys, and similar secondary identifiers back
+  into the detail modules/items
 
 ## Nested browse tabs
 

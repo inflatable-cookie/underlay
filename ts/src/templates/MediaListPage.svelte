@@ -13,6 +13,7 @@
   } from "./template.types";
 
   interface Props<TMedia extends MediaListPageItem = MediaListPageItem> {
+    section?: string;
     title?: string;
     hideTitle?: boolean;
     subtitle?: string;
@@ -38,6 +39,7 @@
   }
 
   let {
+    section,
     title = "Media Library",
     hideTitle = false,
     subtitle,
@@ -196,6 +198,7 @@
 {/snippet}
 
 <EntityListPage
+  {section}
   {title}
   {hideTitle}
   {subtitle}

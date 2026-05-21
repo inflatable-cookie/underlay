@@ -1,6 +1,8 @@
 <script lang="ts">
+  import type { BreadcrumbItem } from "../patterns/types";
   import {
     PageHeader,
+    Breadcrumbs,
     IconButton
   } from "@poodle/svelte";
   import { getBackButtonInfo } from "../patterns/navigation";
@@ -50,6 +52,12 @@
 
     /** Optional eyebrow above the section/title */
     eyebrow?: string;
+
+    /** Optional breadcrumb trail above the header title */
+    breadcrumbs?: BreadcrumbItem[];
+
+    /** Mark the last breadcrumb as the current page */
+    breadcrumbsMarkLastCurrent?: boolean;
 
     /** Heading level for nested composition */
     headerLevel?: 1 | 2 | 3 | 4 | 5 | 6;
@@ -198,6 +206,8 @@
     section,
     subtitle,
     eyebrow,
+    breadcrumbs: pageBreadcrumbs = [],
+    breadcrumbsMarkLastCurrent = true,
     headerLevel = 2,
     backHref,
     backLabel,
@@ -363,6 +373,21 @@
     backLabel={resolvedBackInfo?.label ?? backLabel}
     backIsContextual={resolvedBackInfo?.contextual ?? false}
   >
+    {#snippet breadcrumbs()}
+      {#if pageBreadcrumbs.length > 0}
+        <Breadcrumbs
+          items={pageBreadcrumbs.map((crumb, index) => ({
+            value: crumb.href ?? crumb.label,
+            label: crumb.label,
+            href: crumb.href,
+            current: breadcrumbsMarkLastCurrent && index === pageBreadcrumbs.length - 1
+          }))}
+          forceLastItemCurrent={breadcrumbsMarkLastCurrent}
+          sizeRole="chrome"
+        />
+      {/if}
+    {/snippet}
+
     {#snippet actions()}
       {#if headerLeadingActions}
         {@render headerLeadingActions({
@@ -370,7 +395,8 @@
           reorderMode,
           visibleItemCount,
           selectedIds,
-          selectedCount: selectedIds.length
+          selectedCount: selectedIds.length,
+          actionSizeRole: headerActionSizeRole
         })}
       {/if}
 

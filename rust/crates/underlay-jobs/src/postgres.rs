@@ -452,6 +452,29 @@ impl JobRepository {
         Ok(rows.into_iter().map(Job::from).collect())
     }
 
+    /// Count jobs with filters.
+    #[instrument(skip(self))]
+    pub async fn count(&self, filters: JobFilters) -> Result<usize> {
+        let mut qb: QueryBuilder<sqlx::Postgres> = QueryBuilder::new(
+            r#"
+            SELECT COUNT(*)
+            FROM platform.job
+            WHERE 1=1
+            "#,
+        );
+
+        if let Some(status) = &filters.status {
+            qb.push(" AND status = ").push_bind(status.as_str());
+        }
+        if let Some(job_type) = &filters.job_type {
+            qb.push(" AND job_type ILIKE ")
+                .push_bind(format!("%{}%", job_type));
+        }
+
+        let count = qb.build_query_scalar::<i64>().fetch_one(&self.pool).await?;
+        Ok(count as usize)
+    }
+
     /// Archive completed jobs older than the specified interval.
     #[instrument(skip(self))]
     pub async fn archive_completed(&self, older_than_days: i32) -> Result<u64> {

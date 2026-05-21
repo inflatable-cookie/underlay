@@ -45,6 +45,7 @@
     onClick = null,
     onSelectionChange = null,
     onContextAction = null,
+    titleContent,
     leading: leadingContent,
     footer: footerContent
   }: EntityListCardProps = $props();
@@ -183,6 +184,7 @@
       onContextAction={handleContextAction}
       onSelectedChange={handleSelectedChange}
       onClick={handleClick}
+      {titleContent}
       leading={leadingVisual}
       badges={resolvedBadgeItems.length > 0 ? badgeContent : undefined}
       footer={footerBlock}
@@ -215,6 +217,7 @@
       onContextAction={handleContextAction}
       onSelectedChange={handleSelectedChange}
       onClick={handleClick}
+      {titleContent}
       leading={leadingVisual}
       badges={resolvedBadgeItems.length > 0 ? badgeContent : undefined}
     />
@@ -246,6 +249,7 @@
     onContextAction={handleContextAction}
     onSelectedChange={handleSelectedChange}
     onClick={handleClick}
+    {titleContent}
     badges={resolvedBadgeItems.length > 0 ? badgeContent : undefined}
     footer={footerBlock}
   />
@@ -276,6 +280,7 @@
     onContextAction={handleContextAction}
     onSelectedChange={handleSelectedChange}
     onClick={handleClick}
+    {titleContent}
     badges={resolvedBadgeItems.length > 0 ? badgeContent : undefined}
   />
 {/if}

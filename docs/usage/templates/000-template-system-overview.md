@@ -40,6 +40,21 @@ Reference posture:
 - detail and form routes may still use `EntityDetailPage` and `EntityFormPage`
   directly unless a repeated app-local wrapper is genuinely shared
 
+Header policy:
+
+- use Poodle `PageHeader` posture directly
+- list pages: `section` = resource family, `title` = browse label such as
+  `All modules`
+- detail pages: `section` = resource family, normally the same plural family
+  used by the browse page
+- detail pages: `title` = short record label when available
+- detail pages: use a static details title plus `subtitle` when the record only
+  has a long human-facing name
+- nested views: use breadcrumbs for the parent path rather than duplicating the
+  current item in the trail
+- converged detail tabs should not add another nested `PageHeader` that only
+  repeats the page identity
+
 ### Level 2 — Sections
 
 Reusable components for use inside pages, tabs, or dialogs:
@@ -146,7 +161,8 @@ If you are bootstrapping a new app's admin `/system` section, use
 {/snippet}
 
 <EntityListPage
-  title="Projects"
+  section="Projects"
+  title="All projects"
   backHref="/"
   dataLoader={loadProjects}
   presentation="cards"
@@ -207,8 +223,9 @@ If you are bootstrapping a new app's admin `/system` section, use
 {/snippet}
 
 <EntityDetailPage
-  title={data.project.name}
-  section="Project"
+  title={data.project.code}
+  section="Projects"
+  subtitle={data.project.name}
   backHref="/projects"
   dataLoader={loadProject}
   meta={[

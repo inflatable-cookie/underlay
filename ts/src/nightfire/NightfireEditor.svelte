@@ -225,18 +225,7 @@
       onSchemaMismatch?.({ actualSchema: schemaMismatch, expectedSchema: schema });
     }
 
-    const current = value as unknown as Record<string, unknown> | null | undefined;
-    const next = coerced as unknown as Record<string, unknown>;
-    const currentBlocks = Array.isArray(current?.blocks) ? (current?.blocks as unknown[]) : null;
-    const nextBlocks = Array.isArray(next.blocks) ? (next.blocks as unknown[]) : null;
-
-    const needsShapeUpdate =
-      !current ||
-      current.schema !== next.schema ||
-      (!!current.block !== !!next.block) ||
-      ((currentBlocks?.length ?? 0) !== (nextBlocks?.length ?? 0));
-
-    if (needsShapeUpdate) {
+    if (stableSnapshot(value) !== stableSnapshot(coerced)) {
       value = coerced;
     }
   });
@@ -289,6 +278,14 @@
       ? filterNightfireSlashCommands(availableSlashCommands, slashState.query)
       : []
   );
+
+  function stableSnapshot(input: unknown): string {
+    try {
+      return JSON.stringify(input ?? null);
+    } catch {
+      return "[unserializable-nightfire]";
+    }
+  }
 
   $effect(() => {
     if (!slashCommandsEnabled && slashState) {
@@ -473,11 +470,16 @@
     nameRef.current = name;
   });
 
-  // Set prepare only once - it reads current values from refs at call time
-  prepare = createPrepareWriter(
+  const stablePrepare = createPrepareWriter(
     () => valueRef.current,
     () => nameRef.current
   );
+
+  $effect(() => {
+    if (prepare !== stablePrepare) {
+      prepare = stablePrepare;
+    }
+  });
 </script>
 
 <div class="underlay-nightfire-field">

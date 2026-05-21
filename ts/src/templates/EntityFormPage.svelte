@@ -84,9 +84,15 @@
   let fieldErrors = $state<Record<string, string> | null>(untrack(() => initialFieldErrors));
 
   $effect(() => {
-    success = initialSuccess;
-    error = initialError;
-    fieldErrors = initialFieldErrors;
+    if (success !== initialSuccess) {
+      success = initialSuccess;
+    }
+    if (error !== initialError) {
+      error = initialError;
+    }
+    if (fieldErrors !== initialFieldErrors) {
+      fieldErrors = initialFieldErrors;
+    }
   });
 
   const hasFieldErrors = $derived(Boolean(fieldErrors && Object.keys(fieldErrors).length > 0));
@@ -94,26 +100,33 @@
   let resolvedBackInfo = $state<{ href: string; label: string; contextual: boolean } | null>(null);
 
   $effect(() => {
-    if (!backHref) {
-      resolvedBackInfo = null;
-      return;
-    }
+    let nextResolvedBackInfo: { href: string; label: string; contextual: boolean } | null;
 
-    if (!resolveBackContext) {
-      resolvedBackInfo = {
+    if (!backHref) {
+      nextResolvedBackInfo = null;
+    } else if (!resolveBackContext) {
+      nextResolvedBackInfo = {
         href: backHref,
         label: backLabel,
         contextual: backIsContextual
       };
-      return;
+    } else {
+      const contextualBackInfo = getBackButtonInfo(backLabel, backHref);
+      nextResolvedBackInfo = {
+        href: contextualBackInfo.href,
+        label: contextualBackInfo.label,
+        contextual: Boolean(contextualBackInfo.isContextual || backIsContextual)
+      };
     }
 
-    const contextualBackInfo = getBackButtonInfo(backLabel, backHref);
-    resolvedBackInfo = {
-      href: contextualBackInfo.href,
-      label: contextualBackInfo.label,
-      contextual: Boolean(contextualBackInfo.isContextual || backIsContextual)
-    };
+    const current = resolvedBackInfo;
+    if (
+      current?.href !== nextResolvedBackInfo?.href ||
+      current?.label !== nextResolvedBackInfo?.label ||
+      current?.contextual !== nextResolvedBackInfo?.contextual
+    ) {
+      resolvedBackInfo = nextResolvedBackInfo;
+    }
   });
 
   const defaultNavigate: SpaNavigateFn = (url: string) => {

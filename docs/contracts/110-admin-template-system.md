@@ -166,6 +166,13 @@ Rules:
 - `EntityListPage` is the page-level shell around `EntityList`
 - `EntityListPage` is the preferred shell for real browse/manage list surfaces,
   including lists shown inside detail tabs
+- top-level browse pages should follow standard Poodle `PageHeader` posture:
+  - `section` = resource family
+  - `title` = browse label such as `All modules`
+  - `subtitle` = optional extra context, not the normal place for the main
+    page label
+- nested list routes may provide a breadcrumb trail above that header when the
+  route has a real parent path
 - in app consumers, those real list surfaces should normally live in reusable
   app-local wrapper components such as `src/lib/lists/*` rather than being
   declared directly in route files
@@ -301,6 +308,23 @@ Rules:
   - `tabs` for real top-level section splits
   - `content` for single-surface detail pages that still need the shared
     header/meta/action shell
+- detail pages should follow standard Poodle `PageHeader` posture:
+  - `section` = resource family, usually plural, for example `Areas`,
+    `Documents`, or `Quiz questions`
+  - `title` = short record label when available
+  - when the entity has a compact identity, prefer that in `title`, for
+    example `Area A1`, `ACCA`, or `Q4`
+  - `subtitle` = longer descriptive title when the main heading should stay
+    short
+  - if there is no suitable short label, a static details title such as
+    `Blog details`, `Document details`, or `QA item details` is acceptable and
+    the long record name belongs in `subtitle`
+- nested detail routes should use breadcrumbs for the parent path
+- when the page title already names the current entity, the current entity does
+  not need to appear as the final breadcrumb
+- converged detail pages should not repeat the page identity again inside the
+  active details tab with another nested `PageHeader`; secondary identifiers
+  such as slug or key belong in the detail modules/items instead
 - detail routes may use `EntityDetailPage` directly; unlike list pages, they do
   not need app-local wrapper components by default unless the same detail shell
   is truly reused across more than one caller
