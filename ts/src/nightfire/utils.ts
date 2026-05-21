@@ -98,7 +98,7 @@ export function normaliseNightfireBlock(
 ): NightfireBlock {
   const allowed = typeOptions.map((o) => o.type);
   const defaultType =
-    typeOptions[0]?.type ?? definition.defaultType ?? "markdown";
+    definition.defaultType ?? typeOptions[0]?.type ?? "markdown";
   const source = block === undefined || block === null ? {} : block;
   const normalized = coerceNightfireBlock(source, defaultType)!;
   if (allowed.includes(normalized.type)) {

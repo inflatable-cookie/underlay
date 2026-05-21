@@ -1,6 +1,6 @@
 <script lang="ts">
   import { IconButton } from "@poodle/svelte";
-  import type { SemanticControlSizeRole } from "@poodle/svelte";
+  import type { ControlSize, SemanticControlSizeRole } from "@poodle/svelte";
 
   interface Props {
     active: boolean;
@@ -8,6 +8,7 @@
     dirty?: boolean;
     saving?: boolean;
     disabled?: boolean;
+    size?: ControlSize;
     sizeRole?: SemanticControlSizeRole;
     onEnter: () => void | Promise<void>;
     onSave?: () => void | Promise<void>;
@@ -20,6 +21,7 @@
     dirty = false,
     saving = false,
     disabled = false,
+    size,
     sizeRole = "control",
     onEnter,
     onSave,
@@ -32,6 +34,7 @@
     type="button"
     variant="secondary"
     tone="danger"
+    {size}
     sizeRole={sizeRole}
     icon="arrow-up-down"
     ariaLabel="Cancel reorder"
@@ -43,6 +46,7 @@
     type="button"
     variant="primary"
     tone="success"
+    {size}
     sizeRole={sizeRole}
     icon="check"
     ariaLabel="Save order"
@@ -55,6 +59,7 @@
   <IconButton
     type="button"
     variant="secondary"
+    {size}
     sizeRole={sizeRole}
     icon="arrow-up-down"
     ariaLabel="Reorder items"

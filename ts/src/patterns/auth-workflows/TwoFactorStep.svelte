@@ -135,7 +135,7 @@
       <Callout tone="info" message={emailHintPending} />
     {/if}
 
-    <FormActions align="between">
+    <FormActions align="between" showTopBorder>
       {#if onBack}
         <Button type="button" variant="ghost" onClick={onBack} disabled={loading}>
           {backLabel}
@@ -182,7 +182,7 @@
       onValueChange={(value) => { code = value; }}
     />
 
-    <FormActions align="between">
+    <FormActions align="between" showTopBorder>
       {#if onBack}
         <Button type="button" variant="ghost" onClick={onBack} disabled={loading}>
           {backLabel}

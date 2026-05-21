@@ -326,7 +326,7 @@
 
   function addBlock() {
     const defaultType =
-      editorTypeOptions[0]?.type ?? effectiveDef.defaultType ?? "markdown";
+      effectiveDef.defaultType ?? editorTypeOptions[0]?.type ?? "markdown";
     emit(asMultiBlockValue(schema, addEditorBlock(blocks, defaultType)));
   }
 

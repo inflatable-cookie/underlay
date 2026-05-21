@@ -113,7 +113,7 @@
     <Callout tone="danger" message={displayError} announceMode="assertive" />
   {/if}
 
-  <FormActions align="end">
+  <FormActions align="end" showTopBorder>
     <Button type="submit" variant="primary" loading={loading}>
       {loading ? "Resetting..." : submitLabel}
     </Button>

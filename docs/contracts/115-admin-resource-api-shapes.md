@@ -138,11 +138,15 @@ Meaning:
 Rules:
 
 - this shape applies to root list pages and child collection tabs alike
+- page-shaped consumers use `page` + `limit` with this envelope
 - `data` is flat; do not wrap it under `items`, `rows`, `results`, `list`, or
   tab-specific nesting
 - list items should already be list/card/table projections, not full detail DTOs
 - TypeScript clients may normalize `has_more` into `hasMore`, but the wire
   contract stays `has_more`
+- do not claim cursor-runtime `PaginationQuery`, `PaginatedResponseDto<T>`, or
+  `@decodelabs/underlay/runtime/data` cursor helpers are already equivalent to
+  this page-shaped contract
 
 ### Simple bounded list envelope
 

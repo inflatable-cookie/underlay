@@ -753,7 +753,8 @@ Forms should NOT contain `<form>` elements or submission logic. They render fiel
 
 Use direct Poodle `FormActions` here. It now owns the responsive danger-action
 contract, so admin forms no longer need a separate Underlay wrapper for the
-inline-danger versus collapsed-menu behavior.
+inline-danger versus collapsed-menu behavior. When the action row should read
+as a footer under stacked fields, set `showTopBorder`.
 
 <AlertDialog
   open={showDeleteConfirm}

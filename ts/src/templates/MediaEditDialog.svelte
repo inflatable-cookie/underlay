@@ -99,7 +99,7 @@
   {/snippet}
 
   {#snippet actions(submitting)}
-    <PoodleFormActions align="end">
+    <PoodleFormActions align="end" showTopBorder>
       <Button type="button" variant="ghost" onClick={onCancel} disabled={submitting}>
         {cancelLabel}
       </Button>

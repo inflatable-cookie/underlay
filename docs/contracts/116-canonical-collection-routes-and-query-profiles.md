@@ -188,6 +188,8 @@ Rules:
   - a documented legacy profile or query mode
   - thin wrappers that make the split obvious instead of pretending the
     payloads are already unified
+- `EntityListPage`-class callers are not allowed to silently depend on that
+  legacy cursor mode
 
 ### Response posture
 

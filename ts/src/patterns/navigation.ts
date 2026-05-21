@@ -21,7 +21,7 @@
  *
  * // In edit form, get contextual back button info
  * const { label, href } = getBackButtonInfo("Back", "/fallback");
- * // label = "Back to Videos", href = "/content/videos"
+ * // label = "Videos", href = "/content/videos"
  * ```
  *
  * @module
@@ -196,9 +196,9 @@ export function getReturnUrl(fallbackHref: string): string {
  *
  * @example
  * ```typescript
- * const { label, href } = getBackButtonInfo("Back to item", `/items/${itemId}`);
- * // If context exists: { label: "Back to Videos", href: "/content/videos" }
- * // If no context:     { label: "Back to item", href: "/items/123" }
+ * const { label, href } = getBackButtonInfo("Item", `/items/${itemId}`);
+ * // If context exists: { label: "Videos", href: "/content/videos" }
+ * // If no context:     { label: "Item", href: "/items/123" }
  * ```
  */
 export function getBackButtonInfo(
@@ -222,7 +222,7 @@ export function getBackButtonInfo(
  *
  * **Important**: If the context has a `targetHref` that doesn't match the current
  * URL pathname, the context is considered stale and discarded. This prevents
- * showing incorrect "Back to X" labels when users navigate to edit pages via
+ * showing incorrect contextual labels when users navigate to edit pages via
  * bookmarks, direct links, or from pages that don't push context.
  *
  * Call this once during page initialization, and use the returned values for
@@ -236,7 +236,7 @@ export function getBackButtonInfo(
  * ```typescript
  * // In edit/create page component
  * const { backInfo, returnTo } = consumeNavigationContext(
- *   "Back to videos",
+ *   "Videos",
  *   "/content/videos"
  * );
  *
@@ -297,13 +297,13 @@ export function deriveParentPath(currentPath: string): string {
  * @example
  * ```typescript
  * // In a Svelte component
- * const { backInfo } = consumeNavigationContext("Back to module", defaultBackHref);
+ * const { backInfo } = consumeNavigationContext("Module", defaultBackHref);
  *
  * // Compute final back info with data-dependent fallback
  * const computedBackInfo = $derived(
  *   computeBackInfo(backInfo, module ? {
  *     href: `/learning/modules/${module.moduleId}`,
- *     label: `Back to ${module.code}`
+ *     label: module.code
  *   } : undefined)
  * );
  * ```

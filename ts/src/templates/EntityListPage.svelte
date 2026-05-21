@@ -6,6 +6,7 @@
   import { getBackButtonInfo } from "../patterns/navigation";
   import { default as EntityList } from "./EntityList.svelte";
   import { default as EntityReorderControls } from "./EntityReorderControls.svelte";
+  import type { SortField } from "../client/query";
   import type {
     TableColumn,
     TableRow,
@@ -139,6 +140,9 @@
 
     /** Optional loader for API-published list variants and filter definitions. */
     capabilitiesLoader?: EntityListCapabilitiesLoader;
+
+    /** Effective default sort shown when the query has no explicit sort override. */
+    defaultSort?: SortField[];
     
     /** Batch action configuration */
     batchActions?: BatchActionConfig[];
@@ -224,6 +228,7 @@
     queryVariants = [],
     defaultVariantId,
     capabilitiesLoader,
+    defaultSort,
     batchActions = [],
     reorder,
     customReorderContent,
@@ -464,6 +469,7 @@
     {queryVariants}
     {defaultVariantId}
     {capabilitiesLoader}
+    {defaultSort}
     {batchActions}
     {reorder}
     {customReorderContent}

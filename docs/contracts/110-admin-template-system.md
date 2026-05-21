@@ -183,6 +183,8 @@ Rules:
   narrower utility/embed posture is genuinely needed
 - data loading is caller-provided through `dataLoader(fetch, token, query)`
 - that loader shape is governed by `115-admin-resource-api-shapes.md`
+- for real browse/manage list surfaces, that means page-shaped routes and
+  envelopes, not cursor-runtime pagination contracts
 - `query.variant` represents the active named baseline query when the list
   supports variants
 - query variants render above `FilterToolbar`; filters remain temporary

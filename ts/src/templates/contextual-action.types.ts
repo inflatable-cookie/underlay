@@ -5,7 +5,9 @@ export type ContextActionResultMode = "client_prefill" | "backend_mutation" | "s
 export type ContextActionRunState = "idle" | "validating" | "running" | "succeeded" | "failed";
 
 export interface ContextActionModelOption {
-  alias: string;
+  providerKey: string;
+  providerLabel: string;
+  modelId: string;
   label: string;
   description?: string;
   disabled?: boolean;
@@ -40,7 +42,8 @@ export interface ContextActionDefinition {
   description: string;
   routeMatcher?: string;
   resultMode: ContextActionResultMode;
-  defaultModelAlias?: string;
+  defaultModelProviderKey?: string;
+  defaultModelId?: string;
   modelOptions?: ContextActionModelOption[];
   fields?: ContextActionInputField[];
   form?: ContextActionDialogForm;
@@ -50,13 +53,15 @@ export interface ContextActionDefinition {
 export interface ContextActionSubmitDetail {
   action: ContextActionDefinition;
   values: Record<string, unknown>;
-  selectedModelAlias?: string;
+  selectedProviderKey?: string;
+  selectedModelId?: string;
 }
 
 export interface ContextActionDialogFormContext {
   action: ContextActionDefinition;
   values: Record<string, unknown>;
-  selectedModelAlias?: string;
+  selectedProviderKey?: string;
+  selectedModelId?: string;
   setValue: (fieldId: string, value: unknown) => void;
   submit: () => void;
   cancel: () => void;

@@ -165,7 +165,7 @@
         <Callout tone="danger" message={error} announceMode="assertive" />
       {/if}
 
-      <FormActions align="between">
+      <FormActions align="between" showTopBorder>
         <a href={loginHref} class="underlay-forgot-password-flow__link">Back to login</a>
         <Button type="submit" variant="primary" loading={loading}>
           {loading ? "Sending..." : "Send reset code"}

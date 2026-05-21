@@ -13,7 +13,8 @@ export interface ContextActionController {
   readonly open: boolean;
   readonly selectedAction: ContextActionDefinition | null;
   readonly values: Record<string, unknown>;
-  readonly selectedModelAlias: string;
+  readonly selectedProviderKey: string;
+  readonly selectedModelId: string;
   readonly runState: ContextActionRunState;
   readonly errorMessage: string | null;
   setActions: (actions: ContextActionDefinition[]) => void;
@@ -21,7 +22,7 @@ export interface ContextActionController {
   selectAction: (action: ContextActionDefinition) => void;
   closeAction: () => void;
   setValue: (fieldId: string, value: unknown) => void;
-  setSelectedModelAlias: (alias: string) => void;
+  setSelectedModel: (providerKey: string, modelId: string) => void;
   setRunState: (state: ContextActionRunState) => void;
   setError: (message: string | null) => void;
   buildSubmitDetail: () => ContextActionSubmitDetail | null;
@@ -34,7 +35,8 @@ export function createContextActionController(
   let open = $state(false);
   let selectedAction = $state<ContextActionDefinition | null>(null);
   let values = $state<Record<string, unknown>>({});
-  let selectedModelAlias = $state("");
+  let selectedProviderKey = $state("");
+  let selectedModelId = $state("");
   let runState = $state<ContextActionRunState>("idle");
   let errorMessage = $state<string | null>(null);
 
@@ -46,8 +48,19 @@ export function createContextActionController(
     );
   }
 
-  function initialModelAlias(action: ContextActionDefinition): string {
-    return action.defaultModelAlias ?? action.modelOptions?.find((option) => !option.disabled)?.alias ?? "";
+  function initialModel(action: ContextActionDefinition): { providerKey: string; modelId: string } {
+    if (action.defaultModelProviderKey && action.defaultModelId) {
+      return {
+        providerKey: action.defaultModelProviderKey,
+        modelId: action.defaultModelId
+      };
+    }
+
+    const fallback = action.modelOptions?.find((option) => !option.disabled);
+    return {
+      providerKey: fallback?.providerKey ?? "",
+      modelId: fallback?.modelId ?? ""
+    };
   }
 
   return {
@@ -63,8 +76,11 @@ export function createContextActionController(
     get values() {
       return values;
     },
-    get selectedModelAlias() {
-      return selectedModelAlias;
+    get selectedProviderKey() {
+      return selectedProviderKey;
+    },
+    get selectedModelId() {
+      return selectedModelId;
     },
     get runState() {
       return runState;
@@ -84,22 +100,26 @@ export function createContextActionController(
     selectAction(action) {
       selectedAction = action;
       values = initialValues(action);
-      selectedModelAlias = initialModelAlias(action);
+      const initialModelSelection = initialModel(action);
+      selectedProviderKey = initialModelSelection.providerKey;
+      selectedModelId = initialModelSelection.modelId;
       runState = "idle";
       errorMessage = null;
     },
     closeAction() {
       selectedAction = null;
       values = {};
-      selectedModelAlias = "";
+      selectedProviderKey = "";
+      selectedModelId = "";
       runState = "idle";
       errorMessage = null;
     },
     setValue(fieldId, value) {
       values = { ...values, [fieldId]: value };
     },
-    setSelectedModelAlias(alias) {
-      selectedModelAlias = alias;
+    setSelectedModel(providerKey, modelId) {
+      selectedProviderKey = providerKey;
+      selectedModelId = modelId;
     },
     setRunState(state) {
       runState = state;
@@ -113,7 +133,8 @@ export function createContextActionController(
       return {
         action: selectedAction,
         values,
-        selectedModelAlias: selectedModelAlias || undefined
+        selectedProviderKey: selectedProviderKey || undefined,
+        selectedModelId: selectedModelId || undefined
       };
     }
   };

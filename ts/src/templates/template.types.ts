@@ -237,8 +237,8 @@ export interface ErrorLogListRequest {
   variant?: string;
   statusClass?: "4xx" | "5xx";
   statusCode?: number;
+  page: number;
   limit: number;
-  offset: number;
 }
 
 export interface ErrorLogListItem {

@@ -42,7 +42,7 @@
     <Callout tone="danger" message={passkeyError} announceMode="assertive" />
   {/if}
 
-  <FormActions align="between">
+  <FormActions align="between" showTopBorder>
     <span class="underlay-login-page__microcopy">You will be prompted by your device or password manager.</span>
     <Button
       type="button"

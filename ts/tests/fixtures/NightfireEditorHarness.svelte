@@ -1,14 +1,23 @@
 <script lang="ts">
   import { untrack } from "svelte";
   import NightfireEditor from "../../src/nightfire/NightfireEditor.svelte";
-  import type { NightfireSlashCommandsConfig, NightfireValue } from "../../src/nightfire";
+  import type {
+    NightfireBlockOptionInput,
+    NightfireSlashCommandsConfig,
+    NightfireValue
+  } from "../../src/nightfire";
 
   interface Props {
+    schema?: string;
     initialValue?: NightfireValue;
+    modeOverride?: "single" | "multi" | null;
+    defaultTypeOverride?: string | null;
+    blockOptions?: NightfireBlockOptionInput[] | null;
     slashCommands?: NightfireSlashCommandsConfig | null;
   }
 
   let {
+    schema = "acow:content/markup@1",
     initialValue = {
       schema: "acow:content/markup@1",
       blocks: [
@@ -22,6 +31,9 @@
         }
       ]
     },
+    modeOverride = null,
+    defaultTypeOverride = null,
+    blockOptions = null,
     slashCommands = null
   }: Props = $props();
 
@@ -30,8 +42,11 @@
 
 <NightfireEditor
   name="body"
-  schema="acow:content/markup@1"
+  {schema}
   bind:value
+  {modeOverride}
+  {defaultTypeOverride}
+  {blockOptions}
   {slashCommands}
 />
 

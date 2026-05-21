@@ -167,6 +167,7 @@ Only mount the active panel by default. If a specific editor needs to stay mount
 - Put top-level sections in form tabs (`details`, `notes`, `marking`, etc.)
 - Keep micro-modes (e.g. `Edit` / `Preview`) as nested tabs *inside* a section
 - Keep Poodle `FormActions` outside tab panels so submit controls remain constant
+- Use `showTopBorder` when the actions row should read as a distinct footer under a stack of inputs
 - Keep section-specific completion logic app-owned if you need it
 
 ### Common mistakes

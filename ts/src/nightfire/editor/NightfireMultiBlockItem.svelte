@@ -44,8 +44,8 @@
   <div class="underlay-nightfire-field__multi-toolbar">
     <NightfireTypeSelect
       value={(block as any)?.type ??
-        editorTypeOptions[0]?.type ??
-        effectiveDef.defaultType}
+        effectiveDef.defaultType ??
+        editorTypeOptions[0]?.type}
       onChange={(value) => onTypeChange(index, value)}
       {groupedOptions}
       typeOptions={editorTypeOptions}

@@ -1,14 +1,16 @@
 /**
- * Pagination types for cursor-based and client-side pagination.
+ * Cursor-pagination types for lower-level runtime flows.
  *
- * These types mirror the Rust pagination types in underlay-db and provide
- * a unified interface for both server-side and client-side pagination.
+ * These mirror the Rust cursor pagination types in `underlay-db`.
+ * They are not the preferred contract for `EntityListPage`-class admin browse
+ * surfaces, which should use page-shaped `page + limit` routes plus
+ * `PagedListResponse<T>`.
  */
 
 /**
- * Query parameters for paginated endpoints.
+ * Query parameters for cursor-paginated endpoints.
  */
-export interface PaginationParams {
+export interface CursorPaginationParams {
   /** Number of items per page (default: 50, max: 100) */
   limit?: number;
   /** Opaque cursor string for pagination position */
@@ -20,9 +22,9 @@ export interface PaginationParams {
 }
 
 /**
- * Response format for paginated endpoints.
+ * Response format for cursor-paginated endpoints.
  */
-export interface PaginatedResponse<T> {
+export interface CursorPaginatedResponse<T> {
   /** The items for the current page */
   data: T[];
   /** Cursor to fetch the next page, or null if no more pages */
@@ -96,7 +98,9 @@ export const MAX_PAGE_SIZE = 100;
 /**
  * Build query string parameters for pagination.
  */
-export function buildPaginationQuery(params: PaginationParams): Record<string, string> {
+export function buildCursorPaginationQuery(
+  params: CursorPaginationParams
+): Record<string, string> {
   const query: Record<string, string> = {};
 
   if (params.limit !== undefined) {
@@ -118,11 +122,11 @@ export function buildPaginationQuery(params: PaginationParams): Record<string, s
 /**
  * Append pagination parameters to a URL or path.
  */
-export function appendPaginationParams(
+export function appendCursorPaginationParams(
   path: string,
-  params: PaginationParams
+  params: CursorPaginationParams
 ): string {
-  const query = buildPaginationQuery(params);
+  const query = buildCursorPaginationQuery(params);
   const entries = Object.entries(query);
 
   if (entries.length === 0) {

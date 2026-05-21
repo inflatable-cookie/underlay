@@ -2,65 +2,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/svelte";
 
-class FakeEasyMDE {
-  element: HTMLTextAreaElement;
-  listeners = new Map<string, Array<() => void>>();
-
-  codemirror = {
-    on: (event: string, handler: () => void) => {
-      const existing = this.listeners.get(event) ?? [];
-      existing.push(handler);
-      this.listeners.set(event, existing);
-    },
-    getCursor: (which: "from" | "to" = "from") => {
-      const position = which === "to"
-        ? (this.element.selectionEnd ?? this.element.value.length)
-        : (this.element.selectionStart ?? this.element.value.length);
-      return { line: 0, ch: position };
-    },
-    indexFromPos: (position: { ch: number }) => position.ch
-  };
-
-  constructor(options: { element: HTMLTextAreaElement; initialValue?: string | null }) {
-    this.element = options.element;
-    this.element.value = options.initialValue ?? "";
-    this.element.addEventListener("input", this.handleInput);
-    this.element.addEventListener("keyup", this.handleCursorActivity);
-    this.element.addEventListener("click", this.handleCursorActivity);
-    this.element.addEventListener("select", this.handleCursorActivity);
-  }
-
-  handleInput = () => {
-    this.emit("change");
-    this.emit("cursorActivity");
-  };
-
-  handleCursorActivity = () => {
-    this.emit("cursorActivity");
-  };
-
-  emit(event: string) {
-    for (const listener of this.listeners.get(event) ?? []) {
-      listener();
-    }
-  }
-
-  value() {
-    return this.element.value;
-  }
-
-  toTextArea() {
-    this.element.removeEventListener("input", this.handleInput);
-    this.element.removeEventListener("keyup", this.handleCursorActivity);
-    this.element.removeEventListener("click", this.handleCursorActivity);
-    this.element.removeEventListener("select", this.handleCursorActivity);
-  }
-}
-
-vi.mock("../../src/nightfire/markup/lazy-load-easymde", () => ({
-  lazyLoadEasyMde: vi.fn(async () => FakeEasyMDE)
-}));
-
 import NightfireEditorHarness from "../fixtures/NightfireEditorHarness.svelte";
 
 describe("nightfire/NightfireEditor slash commands", () => {

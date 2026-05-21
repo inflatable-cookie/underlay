@@ -12,7 +12,8 @@
     open?: boolean;
     action?: ContextActionDefinition | null;
     values?: Record<string, unknown>;
-    selectedModelAlias?: string;
+    selectedProviderKey?: string;
+    selectedModelId?: string;
     runState?: ContextActionRunState;
     errorMessage?: string | null;
     submitLabel?: string;
@@ -22,14 +23,15 @@
     onSubmit?: (detail: ContextActionSubmitDetail) => void;
     onCancel?: () => void;
     onValueChange?: (fieldId: string, value: unknown) => void;
-    onSelectedModelChange?: (alias: string) => void;
+    onSelectedModelChange?: (providerKey: string, modelId: string) => void;
   }
 
   let {
     open = $bindable(false),
     action = null,
     values = $bindable<Record<string, unknown>>({}),
-    selectedModelAlias = $bindable(""),
+    selectedProviderKey = $bindable(""),
+    selectedModelId = $bindable(""),
     runState = "idle",
     errorMessage = null,
     submitLabel = "Generate",
@@ -44,7 +46,40 @@
 
   const busy = $derived(runState === "validating" || runState === "running");
   const activeForm = $derived(form ?? action?.form ?? null);
-  const modelOptions = $derived(action?.modelOptions ?? []);
+  const modelOptions = $derived(
+    (action?.modelOptions ?? []).filter(
+      (option) =>
+        typeof option.providerKey === "string" &&
+        option.providerKey.length > 0 &&
+        typeof option.modelId === "string" &&
+        option.modelId.length > 0
+    )
+  );
+  const groupedModelOptions = $derived.by(() => {
+    const groups = new Map<
+      string,
+      {
+        label: string;
+        options: { value: string; label: string; disabled?: boolean }[];
+      }
+    >();
+
+    for (const option of modelOptions) {
+      const group = groups.get(option.providerKey) ?? {
+        label: option.providerLabel,
+        options: []
+      };
+
+      group.options.push({
+        value: `${option.providerKey}:${option.modelId}`,
+        label: option.label,
+        disabled: option.disabled
+      });
+      groups.set(option.providerKey, group);
+    }
+
+    return Array.from(groups.values());
+  });
   const resolvedSubmitLabel = $derived(action?.submitLabel ?? submitLabel);
 
   function setOpen(nextOpen: boolean): void {
@@ -57,9 +92,21 @@
     onValueChange?.(fieldId, value);
   }
 
-  function setSelectedModelAlias(alias: string): void {
-    selectedModelAlias = alias;
-    onSelectedModelChange?.(alias);
+  function selectedModelValue(): string {
+    if (selectedProviderKey && selectedModelId) {
+      return `${selectedProviderKey}:${selectedModelId}`;
+    }
+
+    const fallback = action?.modelOptions?.find((option) => !option.disabled);
+    return fallback ? `${fallback.providerKey}:${fallback.modelId}` : "";
+  }
+
+  function setSelectedModel(value: string): void {
+    const [providerKey, ...modelParts] = value.split(":");
+    const modelId = modelParts.join(":");
+    selectedProviderKey = providerKey ?? "";
+    selectedModelId = modelId;
+    onSelectedModelChange?.(selectedProviderKey, selectedModelId);
   }
 
   function cancel(): void {
@@ -72,7 +119,8 @@
     onSubmit?.({
       action,
       values,
-      selectedModelAlias: selectedModelAlias || undefined
+      selectedProviderKey: selectedProviderKey || undefined,
+      selectedModelId: selectedModelId || undefined
     });
   }
 
@@ -95,7 +143,7 @@
 
 <Dialog
   {open}
-  width="xl"
+  width="lg"
   title={action?.name ?? "AI action"}
   description={action?.description ?? null}
   showCloseButton={true}
@@ -110,14 +158,10 @@
         <label class="underlay-context-action-dialog__field">
           <span>Model</span>
           <Select
-            value={selectedModelAlias || action.defaultModelAlias || modelOptions[0]?.alias || ""}
-            options={modelOptions.map((option) => ({
-              value: option.alias,
-              label: option.label,
-              disabled: option.disabled
-            }))}
+            value={selectedModelValue()}
+            options={groupedModelOptions}
             disabled={busy}
-            onValueChange={setSelectedModelAlias}
+            onValueChange={setSelectedModel}
           />
         </label>
       {/if}
@@ -126,7 +170,8 @@
         {@render activeForm({
           action,
           values,
-          selectedModelAlias: selectedModelAlias || undefined,
+          selectedProviderKey: selectedProviderKey || undefined,
+          selectedModelId: selectedModelId || undefined,
           setValue,
           submit,
           cancel

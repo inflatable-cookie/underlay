@@ -14,21 +14,19 @@ describe("nightfire/markup/MarkdownEditorSurface.svelte", () => {
 
     expect(screen.getByText("Description")).toBeTruthy();
     expect(screen.getByText("Markdown supported")).toBeTruthy();
-    expect(view.container.querySelector(".underlay-preview-hidden")).toBeTruthy();
 
-    const textarea = view.container.querySelector("textarea.underlay-markdown-editor-textarea") as HTMLTextAreaElement;
+    const textarea = view.container.querySelector("textarea") as HTMLTextAreaElement;
     await fireEvent.input(textarea, { target: { value: "Updated text" } });
     expect(screen.getByTestId("markdown-value").textContent).toBe("Updated text");
   });
 
-  it("shows loading spinner state and keeps textarea in DOM", () => {
+  it("disables the editor while loading", () => {
     const view = render(MarkdownEditorHarness, {
       loading: true,
       showPreview: true
     });
 
-    expect(screen.getByText("Loading markdown editor...")).toBeTruthy();
-    expect(view.container.querySelector(".underlay-markdown-editor-spinner")).toBeTruthy();
-    expect(view.container.querySelector("textarea.underlay-markdown-editor-textarea")).toBeTruthy();
+    expect(view.container.querySelector("textarea")).toBeTruthy();
+    expect((view.container.querySelector("textarea") as HTMLTextAreaElement).disabled).toBe(true);
   });
 });

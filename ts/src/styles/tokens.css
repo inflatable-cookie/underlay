@@ -125,11 +125,6 @@
   /* Motion */
   --underlay-lift-hover: -1px;
 
-  /* Markdown editor */
-  --underlay-markdown-editor-inline-nudge: 4px;
-  --underlay-markdown-editor-min-height: 5em;
-  --underlay-markdown-editor-spinner-dot-size: 0.6em;
-
   /* Menus */
   --underlay-split-button-menu-min-width: 7rem;
 

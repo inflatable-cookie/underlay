@@ -2,11 +2,11 @@ import { describe, expect, it } from "vitest";
 import {
 	DEFAULT_PAGE_SIZE,
 	MAX_PAGE_SIZE,
-	appendPaginationParams,
-	buildPaginationQuery,
-	type PaginatedResponse,
+	appendCursorPaginationParams,
+	buildCursorPaginationQuery,
+	type CursorPaginatedResponse,
+	type CursorPaginationParams,
 	type PaginationController,
-	type PaginationParams,
 } from "../../src/patterns/pagination-types";
 
 describe("patterns/pagination-types", () => {
@@ -16,52 +16,72 @@ describe("patterns/pagination-types", () => {
 	});
 
 	it("builds query params with only explicit and non-default values", () => {
-		const full: PaginationParams = {
+		const full: CursorPaginationParams = {
 			limit: 25,
 			cursor: "abc123",
 			direction: "backward",
 			includeTotal: false,
 		};
-		expect(buildPaginationQuery(full)).toEqual({
+		expect(buildCursorPaginationQuery(full)).toEqual({
 			limit: "25",
 			cursor: "abc123",
 			direction: "backward",
 			includeTotal: "false",
 		});
 
-		const defaultsOmitted: PaginationParams = {
+		const defaultsOmitted: CursorPaginationParams = {
 			limit: undefined,
 			cursor: null,
 			direction: "forward",
 			includeTotal: true,
 		};
-		expect(buildPaginationQuery(defaultsOmitted)).toEqual({});
+		expect(buildCursorPaginationQuery(defaultsOmitted)).toEqual({});
 	});
 
 	it("appends query params correctly with and without existing query strings", () => {
-		const params: PaginationParams = {
+		const params: CursorPaginationParams = {
 			limit: 10,
 			cursor: "next+cursor",
 			direction: "backward",
 			includeTotal: false,
 		};
-		expect(appendPaginationParams("/api/items", params)).toBe(
+		expect(appendCursorPaginationParams("/api/items", params)).toBe(
 			"/api/items?limit=10&cursor=next%2Bcursor&direction=backward&includeTotal=false"
 		);
-		expect(appendPaginationParams("/api/items?sort=name", params)).toBe(
+		expect(appendCursorPaginationParams("/api/items?sort=name", params)).toBe(
 			"/api/items?sort=name&limit=10&cursor=next%2Bcursor&direction=backward&includeTotal=false"
 		);
-		expect(appendPaginationParams("/api/items", {})).toBe("/api/items");
+		expect(appendCursorPaginationParams("/api/items", {})).toBe("/api/items");
+	});
+
+	it("exposes explicit cursor aliases", () => {
+		const params: CursorPaginationParams = {
+			limit: 12,
+			cursor: "abc123",
+		};
+		expect(buildCursorPaginationQuery(params)).toEqual({
+			limit: "12",
+			cursor: "abc123",
+		});
+
+		const response: CursorPaginatedResponse<number> = {
+			data: [1],
+			nextCursor: null,
+			prevCursor: null,
+			hasMore: false,
+			total: 1,
+		};
+		expect(response.total).toBe(1);
 	});
 
 	it("merges query params without duplicating keys", () => {
 		expect(
-			appendPaginationParams("/api/items?limit=5", { limit: 10 })
+			appendCursorPaginationParams("/api/items?limit=5", { limit: 10 })
 		).toBe("/api/items?limit=10");
 	});
 
 	it("supports type-level usage for response and controller contracts", async () => {
-		const response: PaginatedResponse<number> = {
+		const response: CursorPaginatedResponse<number> = {
 			data: [1, 2, 3],
 			nextCursor: "n1",
 			prevCursor: null,

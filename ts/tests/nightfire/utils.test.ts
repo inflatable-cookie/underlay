@@ -259,6 +259,28 @@ describe("normaliseNightfireBlock", () => {
 				data: {},
 			});
 		});
+
+		it("uses schema defaultType before the first registered type option", () => {
+			const result = normaliseNightfireBlock(
+				null,
+				[
+					{ type: "content.list", label: "Content List" },
+					{ type: "markdown", label: "Markdown" },
+				],
+				{
+					schema: "acow:content/description@1",
+					mode: "single",
+					defaultType: "markdown",
+				},
+			);
+
+			expect(result).toEqual({
+				type: "markdown",
+				version: "initial",
+				hash: "",
+				data: {},
+			});
+		});
 	});
 
 	describe("partial block handling", () => {

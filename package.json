@@ -148,6 +148,10 @@
       "types": "./ts/src/client/query.ts",
       "default": "./ts/src/client/query.ts"
     },
+    "./client/page-lists": {
+      "types": "./ts/src/client/page-lists.ts",
+      "default": "./ts/src/client/page-lists.ts"
+    },
     "./client/pagination": {
       "types": "./ts/src/client/pagination.ts",
       "default": "./ts/src/client/pagination.ts"
@@ -230,7 +234,6 @@
     },
     "./styles/base.css": "./ts/src/styles/base.css",
     "./styles/forms.css": "./ts/src/styles/forms.css",
-    "./styles/markdown-editor.css": "./ts/src/styles/markdown-editor.css",
     "./styles/tokens.css": "./ts/src/styles/tokens.css",
     "./styles/optimistic.css": "./ts/src/styles/optimistic.css"
   },
@@ -250,7 +253,6 @@
   "dependencies": {
     "@poodle/bridge-underlay": "file:../poodle/packages/bridges/underlay",
     "@poodle/svelte": "file:../poodle/packages/svelte/components",
-    "easymde": "^2.20.0",
     "isomorphic-dompurify": "^3.0.0",
     "marked": "^17.0.3",
     "smol-toml": "^1.6.1",

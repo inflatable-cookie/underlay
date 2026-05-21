@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { default as MarkdownEditorSurface } from "./MarkdownEditorSurface.svelte";
+  import { MarkdownEditor as PoodleMarkdownEditor } from "@poodle/svelte";
   import type { MarkdownEditorContext } from "./markdown-editor-context";
 
   type MarkdownBlock = {
@@ -19,18 +19,9 @@
 
   let { block, onChange = () => {}, onContextChange = null }: Props = $props();
 
-  // Keep local editor text in sync with incoming block updates.
-  let text = $state("");
-
-  $effect(() => {
-    const next = block.data?.text ?? "";
-    if (next !== text) {
-      text = next;
-    }
-  });
+  const text = $derived(block.data?.text ?? "");
 
   function handleInput(next: string) {
-    text = next;
     onChange({
       type: block.type ?? "markdown",
       version: block.version ?? "initial",
@@ -40,10 +31,33 @@
       }
     });
   }
+
+  function handleTextareaEvent(event: Event) {
+    const target = event.target;
+    if (!(target instanceof HTMLTextAreaElement)) {
+      return;
+    }
+
+    onContextChange?.({
+      value: target.value ?? "",
+      selectionStart: target.selectionStart ?? target.value.length,
+      selectionEnd: target.selectionEnd ?? target.selectionStart ?? target.value.length
+    });
+  }
+
 </script>
 
-<div class="underlay-markdown-editor">
-  <MarkdownEditorSurface value={text} onChange={handleInput} {onContextChange} />
+<div
+  class="underlay-markdown-editor"
+  oninput={handleTextareaEvent}
+>
+  <PoodleMarkdownEditor
+    value={text}
+    placeholder="Write markdown..."
+    minHeight="5em"
+    mode="split"
+    onValueChange={handleInput}
+  />
 </div>
 
 <style>

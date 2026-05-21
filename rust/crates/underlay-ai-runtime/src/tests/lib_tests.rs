@@ -8,7 +8,7 @@ use std::time::Duration;
 fn route(provider: &str, model: &str, priority: u16) -> ResolvedModelRouteCandidate {
     ResolvedModelRouteCandidate {
         route: ResolvedModelRoute {
-            alias: "authoring.default".to_string(),
+            alias: "openai.gpt-5.4-mini".to_string(),
             provider_name: provider.to_string(),
             model_name: model.to_string(),
             provider_metadata: None,
@@ -135,7 +135,7 @@ fn status_code_mapping_covers_expected_classes() {
 async fn stub_client_echoes_structured_output() {
     let client = StubLlmClient;
     let route = ResolvedModelRoute {
-        alias: "authoring.default".to_string(),
+        alias: "openai.gpt-5.4-mini".to_string(),
         provider_name: "stub".to_string(),
         model_name: "stub-model".to_string(),
         provider_metadata: None,
@@ -228,7 +228,7 @@ fn sample_request() -> LlmRequest {
 
 fn sample_route(provider: &str) -> ResolvedModelRoute {
     ResolvedModelRoute {
-        alias: "authoring.default".to_string(),
+        alias: "openai.gpt-5.4-mini".to_string(),
         provider_name: provider.to_string(),
         model_name: format!("{provider}-model"),
         provider_metadata: None,

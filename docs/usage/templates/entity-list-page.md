@@ -279,6 +279,9 @@ Recommended pattern:
 - backend route uses the canonical paged wire envelope from `115`
 - TS client normalizes `has_more` to `hasMore`
 - page loader returns that shaped result directly to the template
+- use `page` + `limit` query params for these routes
+- do not wire `EntityListPage` through cursor helpers from
+  `@decodelabs/underlay/runtime/data` or `@decodelabs/underlay/client/pagination`
 
 Reference recipe:
 

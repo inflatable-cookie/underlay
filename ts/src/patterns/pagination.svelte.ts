@@ -7,9 +7,9 @@
 
 import { getAuthConfig } from "./auth";
 import type {
-  PaginatedResponse,
+  CursorPaginatedResponse,
   PaginationController,
-  PaginationParams
+  CursorPaginationParams
 } from "./pagination-types";
 import { DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE } from "./pagination-types";
 
@@ -50,7 +50,7 @@ export interface ServerPaginationOptions<T> {
   /**
    * Callback after successful fetch.
    */
-  onSuccess?: (response: PaginatedResponse<T>) => void;
+  onSuccess?: (response: CursorPaginatedResponse<T>) => void;
 
   /**
    * Callback when an error occurs.
@@ -101,8 +101,8 @@ export function createPaginationController<T>(
   fetcher: (
     fetchFn: typeof fetch,
     token: string,
-    params: PaginationParams
-  ) => Promise<PaginatedResponse<T>>,
+    params: CursorPaginationParams
+  ) => Promise<CursorPaginatedResponse<T>>,
   options: ServerPaginationOptions<T> = {}
 ): ServerPaginationResult<T> {
   // Resolve auth config
@@ -170,7 +170,7 @@ export function createPaginationController<T>(
     loading = true;
     error = null;
 
-    const params: PaginationParams = {
+    const params: CursorPaginationParams = {
       limit: pageSize,
       cursor,
       direction,

@@ -32,7 +32,7 @@ export function resolveBackButtonInfo(
 
 	if (context) {
 		return {
-			label: `Back to ${context.label}`,
+			label: context.label,
 			href: context.href,
 			isContextual: true
 		};
@@ -54,7 +54,7 @@ export function consumeBackNavigation(
 	if (context && isContextValid(context, matchesCurrentPath)) {
 		return {
 			backInfo: {
-				label: `Back to ${context.label}`,
+				label: context.label,
 				href: context.href,
 				isContextual: true
 			},

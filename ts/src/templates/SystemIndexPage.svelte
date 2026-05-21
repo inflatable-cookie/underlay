@@ -101,6 +101,7 @@
   <PageHeader
     {title}
     {subtitle}
+    sizeRole="prominent"
     backHref={resolvedBackInfo?.href ?? null}
     backLabel={resolvedBackInfo?.label ?? backLabel}
     backIsContextual={resolvedBackInfo?.contextual ?? false}

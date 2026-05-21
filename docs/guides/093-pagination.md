@@ -1,6 +1,7 @@
 # Pagination
 
-This guide covers Underlay's pagination infrastructure for both server-side (cursor-based) and client-side pagination with a unified UI layer.
+This guide covers Underlay's lower-level cursor pagination infrastructure and
+the shared controller layer that sits on top of it.
 
 This is the lower-level pagination/runtime guide.
 
@@ -17,6 +18,13 @@ Naming split:
   client-facing page-shaped admin list response
 - `PagedListResult<T>`:
   template loader result for `EntityListPage` / `EntityList`
+
+Hard rule:
+
+- `EntityListPage` and real page-shaped child collections should use the
+  page-shaped contract from `115`/`116`
+- this guide is for lower-level cursor-runtime flows and explicit compatibility
+  lanes, not for ordinary admin browse pages
 
 ## Overview
 
@@ -75,11 +83,12 @@ Underlay provides a complete pagination solution that scales from small client-s
 | Rust Core | `PaginationBuilder` | `underlay-db` | Helper for building responses |
 | Rust API | `PaginationQuery` | App-specific | Axum query extractor |
 | Rust API | `PaginatedResponseDto<T>` | App-specific | DTO with utoipa support |
-| TypeScript | `PaginationParams` | `@decodelabs/underlay/runtime/data` | Query parameter interface |
-| TypeScript | `PaginatedResponse<T>` | `@decodelabs/underlay/runtime/data` | Response interface |
+| TypeScript | `CursorPaginationParams` | `@decodelabs/underlay/runtime/data` | Cursor query parameter interface |
+| TypeScript | `CursorPaginatedResponse<T>` | `@decodelabs/underlay/runtime/data` | Cursor response interface |
 | TypeScript | `PaginationController<T>` | `@decodelabs/underlay/runtime/data` | Unified controller interface |
 | TypeScript | `createPaginationController` | `@decodelabs/underlay/runtime/data` | Server-side controller |
 | TypeScript | `createClientPagination` | `@decodelabs/underlay/runtime/data` | Client-side controller |
+| TypeScript | `PageListParams` | `@decodelabs/underlay/client/page-lists` | Page-shaped `page + limit` helper |
 | Svelte | `<Pagination>` | `@poodle/svelte` | UI component |
 
 ## API Design

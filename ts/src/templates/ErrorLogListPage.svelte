@@ -131,14 +131,13 @@
     }
 
     const limit = nextQuery.limit ?? 30;
-    const pageNumber = Math.max(1, nextQuery.page ?? 1);
-    const offset = (pageNumber - 1) * limit;
+    const page = Math.max(1, nextQuery.page ?? 1);
     const request: ErrorLogListRequest = {
       variant: nextQuery.variant,
       statusClass: getStatusClassVariant(nextQuery),
       statusCode: getStatusCodeVariant(nextQuery),
+      page,
       limit,
-      offset
     };
 
     return await loadList(fetchFn, token, request);

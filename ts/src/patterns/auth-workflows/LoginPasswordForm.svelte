@@ -53,7 +53,7 @@
     <Callout tone="danger" message={error} announceMode="assertive" />
   {/if}
 
-  <FormActions align="between">
+  <FormActions align="between" showTopBorder>
     {#if forgotPasswordHref}
       <a href={forgotPasswordHref} class="underlay-login-page__link">Forgot password?</a>
     {/if}

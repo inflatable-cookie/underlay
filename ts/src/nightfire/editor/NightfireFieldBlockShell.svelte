@@ -143,14 +143,28 @@
   }
 
   function handleBlockEditorChange(index: number, nextBlock: any): void {
+    const currentBlock = isMulti ? blocks[index] : singleBlock;
+    const nextWithStableId =
+      currentBlock &&
+      typeof currentBlock === "object" &&
+      typeof (currentBlock as { id?: unknown }).id === "string" &&
+      (typeof nextBlock !== "object" ||
+        nextBlock === null ||
+        typeof (nextBlock as { id?: unknown }).id !== "string")
+        ? {
+            ...(nextBlock && typeof nextBlock === "object" ? nextBlock : {}),
+            id: (currentBlock as { id: string }).id,
+          }
+        : nextBlock;
+
     if (isMulti) {
       const nextBlocks = blocks.slice();
-      nextBlocks[index] = nextBlock;
+      nextBlocks[index] = nextWithStableId;
       onBlocksChange(nextBlocks);
       return;
     }
 
-    onSingleBlockChange(nextBlock);
+    onSingleBlockChange(nextWithStableId);
   }
 </script>
 
@@ -174,7 +188,7 @@
   >
     {#snippet typePicker({ block, index })}
       <NightfireTypeSelect
-        value={block?.type ?? editorTypeOptions[0]?.type ?? definition.defaultType}
+        value={block?.type ?? definition.defaultType ?? editorTypeOptions[0]?.type}
         onChange={(value) => handleTypePickerChange(index, value)}
         {groupedOptions}
         typeOptions={editorTypeOptions}

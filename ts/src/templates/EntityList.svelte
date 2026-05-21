@@ -161,6 +161,9 @@
 
     /** Optional loader for API-published list variants and filter definitions. */
     capabilitiesLoader?: EntityListCapabilitiesLoader;
+
+    /** Effective default sort shown when the query has no explicit sort override. */
+    defaultSort?: SortField[];
     
     /** Batch action configuration */
     batchActions?: BatchActionConfig[];
@@ -249,6 +252,7 @@
     queryVariants = [],
     defaultVariantId,
     capabilitiesLoader,
+    defaultSort = [],
     batchActions = [],
     reorder,
     customReorderContent,
@@ -285,6 +289,7 @@
   let effectiveQueryVariants = $derived(loadedCapabilities?.variants ?? queryVariants);
   let effectiveDefaultVariantId = $derived(loadedCapabilities?.defaultVariantId ?? defaultVariantId);
   let currentSort = $derived(currentQuery.sort ?? []);
+  let effectiveSort = $derived(currentSort.length > 0 ? currentSort : defaultSort);
   let resolvedDefaultVariantId = $derived(
     effectiveDefaultVariantId ?? effectiveQueryVariants.find((variant) => variant.isDefault)?.id ?? null
   );
@@ -666,11 +671,7 @@
   }
 
   function getSelectItems(filter: FilterConfig): { value: string; label: string }[] {
-    const providedItems = loadedFilterOptions[filter.id] ?? filter.options ?? [];
-    if (providedItems.some((item) => item.value === "All")) {
-      return providedItems;
-    }
-    return [{ value: "All", label: `All ${filter.label.toLowerCase()}` }, ...providedItems];
+    return loadedFilterOptions[filter.id] ?? filter.options ?? [];
   }
 
   function getFilterAriaLabel(filter: FilterConfig): string {
@@ -679,10 +680,6 @@
 
   function getSearchPlaceholder(filter: FilterConfig): string {
     return filter.placeholder ?? `Search ${filter.label.toLowerCase()}...`;
-  }
-
-  function getSelectPlaceholder(filter: FilterConfig): string {
-    return `All ${filter.label.toLowerCase()}`;
   }
 
   function isFilterActive(filter: FilterConfig): boolean {
@@ -729,12 +726,13 @@
   }
 
   function handleSortChange(sortFields: SortField[]) {
-    if (sortFieldsEqual(currentSort, sortFields)) {
+    const normalizedSort = sortFieldsEqual(sortFields, defaultSort) ? [] : sortFields;
+    if (sortFieldsEqual(currentSort, normalizedSort)) {
       return;
     }
     setQuery({
       ...currentQuery,
-      sort: sortFields,
+      sort: normalizedSort,
       page: 1
     });
   }
@@ -767,7 +765,7 @@
   }
 
   function getSortOrderValue() {
-    return currentSort.map((field) => ({
+    return effectiveSort.map((field) => ({
       key: field.field,
       direction: field.direction
     }));
@@ -1250,7 +1248,6 @@
                 loadKey={filter.loadKey ?? null}
                 searchable={filter.searchable ?? false}
                 ariaLabel={getFilterAriaLabel(filter)}
-                placeholder={getSelectPlaceholder(filter)}
                 onValueChange={(value) => handleFilterChange(filter, value)}
               />
               {:else if filter.type === "sort" && filter.sortFields}
@@ -1477,7 +1474,6 @@
               loadKey={filter.loadKey ?? null}
               searchable={filter.searchable ?? false}
               ariaLabel={getFilterAriaLabel(filter)}
-              placeholder={getSelectPlaceholder(filter)}
               onValueChange={(value) => handleFilterChange(filter, value)}
             />
           {:else if filter.type === "sort" && filter.sortFields}
