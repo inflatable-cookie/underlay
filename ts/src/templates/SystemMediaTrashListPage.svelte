@@ -23,8 +23,8 @@
     restoreSuccessMessage?: string;
     purgeSuccessMessage?: string;
     enableFilters?: boolean;
-    query: QueryParams;
-    onQueryChange: (query: QueryParams) => void;
+    query?: QueryParams;
+    onQueryChange?: (query: QueryParams) => void;
     searchFilterId?: string;
   }
 
@@ -40,13 +40,25 @@
     restoreSuccessMessage = "Media restored",
     purgeSuccessMessage = "Media permanently deleted",
     enableFilters = false,
-    query,
-    onQueryChange,
+    query = undefined,
+    onQueryChange = undefined,
     searchFilterId = "search"
   }: Props = $props();
 
   const toastStore = useToasts();
   const authConfig = getAuthConfig();
+  let localQuery = $state<QueryParams>({ page: 1 });
+
+  const resolvedQuery = $derived(query ?? localQuery);
+
+  function handleQueryChange(nextQuery: QueryParams): void {
+    if (onQueryChange) {
+      onQueryChange(nextQuery);
+      return;
+    }
+
+    localQuery = nextQuery;
+  }
 
   const filters = $derived.by((): FilterConfig[] =>
     enableFilters
@@ -126,7 +138,7 @@
   dataLoader={loadMedia}
   presentation="cards"
   {renderItem}
-  {query}
-  {onQueryChange}
+  query={resolvedQuery}
+  onQueryChange={handleQueryChange}
   filters={filters.length > 0 ? filters : undefined}
 />
