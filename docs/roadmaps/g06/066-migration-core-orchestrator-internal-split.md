@@ -55,8 +55,12 @@ shapes, or persisted snapshot behavior must move, stop and re-enter planning.
 
 ## Current State
 
-`g06.066` is next after `g06.065`.
+`g06.066` is complete.
+
+Artifact:
+
+- [066 artifact](./066-migration-core-orchestrator-internal-split-artifact.md)
 
 ## Next Task
 
-Execute `g06.066`: migration-core orchestrator internal split.
+Execute `g06.067`: devtools migration-bundle public model modularity audit.

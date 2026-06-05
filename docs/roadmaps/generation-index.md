@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.066`: migration-core orchestrator internal split.
+Execute `g06.067`: devtools migration-bundle public model modularity audit.

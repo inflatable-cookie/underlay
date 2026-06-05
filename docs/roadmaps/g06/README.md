@@ -118,7 +118,9 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.064` is complete as the HTTP error logging internal split.
 - `g06.065` is complete as the migration-core orchestrator public model
   modularity audit.
-- `g06.066` is next as the migration-core orchestrator internal split.
+- `g06.066` is complete as the migration-core orchestrator internal split.
+- `g06.067` is next as the devtools migration-bundle public model modularity
+  audit.
 
 ## Planned Runway
 
@@ -192,6 +194,7 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.064`: HTTP error logging internal split
 - `g06.065`: migration-core orchestrator public model modularity audit
 - `g06.066`: migration-core orchestrator internal split
+- `g06.067`: devtools migration-bundle public model modularity audit
 
 ## Consumer Family
 
@@ -274,7 +277,8 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g06.063` is complete.
 - `g06.064` is complete.
 - `g06.065` is complete.
-- `g06.066` is next.
+- `g06.066` is complete.
+- `g06.067` is next.
 
 ## Batch Cards
 
@@ -283,4 +287,4 @@ If `g06` enters strict execution posture, keep its cards under
 
 ## Next Task
 
-Execute `g06.066`: migration-core orchestrator internal split.
+Execute `g06.067`: devtools migration-bundle public model modularity audit.
