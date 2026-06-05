@@ -46,8 +46,12 @@ This is a test-structure audit. Expected impact is none.
 
 ## Current State
 
-`g06.083` is next.
+`g06.083` is complete.
+
+Artifact:
+
+- [083 artifact](./083-auth-password-service-tests-modularity-audit-artifact.md)
 
 ## Next Task
 
-Execute `g06.083`: auth password service tests modularity audit.
+Execute `g06.084`: auth password service tests internal split.

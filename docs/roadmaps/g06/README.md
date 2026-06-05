@@ -140,7 +140,8 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.080` is complete as the devtools migration-bundle tests internal split.
 - `g06.081` is complete as the auth OAuth tests modularity audit.
 - `g06.082` is complete as the auth OAuth tests internal split.
-- `g06.083` is next as the auth password service tests modularity audit.
+- `g06.083` is complete as the auth password service tests modularity audit.
+- `g06.084` is next as the auth password service tests internal split.
 
 ## Planned Runway
 
@@ -231,6 +232,7 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.081`: auth OAuth tests modularity audit
 - `g06.082`: auth OAuth tests internal split
 - `g06.083`: auth password service tests modularity audit
+- `g06.084`: auth password service tests internal split
 
 ## Consumer Family
 
@@ -330,7 +332,8 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g06.080` is complete.
 - `g06.081` is complete.
 - `g06.082` is complete.
-- `g06.083` is next.
+- `g06.083` is complete.
+- `g06.084` is next.
 
 ## Batch Cards
 
@@ -339,4 +342,4 @@ If `g06` enters strict execution posture, keep its cards under
 
 ## Next Task
 
-Execute `g06.083`: auth password service tests modularity audit.
+Execute `g06.084`: auth password service tests internal split.
