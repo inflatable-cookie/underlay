@@ -48,8 +48,12 @@ audit finds public exports that must move; if so, stop and re-enter planning.
 
 ## Current State
 
-`g06.097` is ready.
+`g06.097` is complete.
+
+Artifact:
+
+- [097 artifact](./097-ai-runtime-crate-modularity-audit-artifact.md)
 
 ## Next Task
 
-Execute `g06.097`: AI runtime crate modularity audit.
+Execute `g06.098`: AI runtime crate internal split.

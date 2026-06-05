@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.097`: AI runtime crate modularity audit.
+Execute `g06.098`: AI runtime crate internal split.
