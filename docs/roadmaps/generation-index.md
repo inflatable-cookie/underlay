@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.089`: auth WebAuthn service modularity audit.
+Execute `g06.090`: auth WebAuthn service internal split.

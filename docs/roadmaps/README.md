@@ -162,7 +162,8 @@ README surfaces.
 - `g06.086` is complete as the migration-core decision-memory internal split
 - `g06.087` is complete as the AI runtime tests modularity audit
 - `g06.088` is complete as the AI runtime tests internal split
-- `g06.089` is next as the auth WebAuthn service modularity audit
+- `g06.089` is complete as the auth WebAuthn service modularity audit
+- `g06.090` is next as the auth WebAuthn service internal split
 - `g05` is closed as the shared-page, workflow-template, media capability,
   dev-flow contract, and query-variant convergence generation
 - `g05.024` is complete as the Marking Hub query variant proof and rollout

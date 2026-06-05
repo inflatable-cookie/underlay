@@ -45,8 +45,12 @@ audit finds public exports that must move; if so, stop and re-enter planning.
 
 ## Current State
 
-`g06.089` is next.
+`g06.089` is complete.
+
+Artifact:
+
+- [089 artifact](./089-auth-webauthn-service-modularity-audit-artifact.md)
 
 ## Next Task
 
-Execute `g06.089`: auth WebAuthn service modularity audit.
+Execute `g06.090`: auth WebAuthn service internal split.

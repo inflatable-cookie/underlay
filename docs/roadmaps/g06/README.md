@@ -147,7 +147,8 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.086` is complete as the migration-core decision-memory internal split.
 - `g06.087` is complete as the AI runtime tests modularity audit.
 - `g06.088` is complete as the AI runtime tests internal split.
-- `g06.089` is next as the auth WebAuthn service modularity audit.
+- `g06.089` is complete as the auth WebAuthn service modularity audit.
+- `g06.090` is next as the auth WebAuthn service internal split.
 
 ## Planned Runway
 
@@ -244,6 +245,7 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.087`: AI runtime tests modularity audit
 - `g06.088`: AI runtime tests internal split
 - `g06.089`: auth WebAuthn service modularity audit
+- `g06.090`: auth WebAuthn service internal split
 
 ## Consumer Family
 
