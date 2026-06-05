@@ -232,18 +232,18 @@ let id = parse_uuid_path_raw(&user_id, "userId")?;
 
 ## Phase 4: Database Existence Checks
 
-Replace manual `SELECT EXISTS(...)` queries with `ExistsCheck`.
+Replace manual `SELECT EXISTS(...)` queries with `TypedExistsCheck`.
 
 ### Imports
 
 ```rust
-use underlay_db::ExistsCheck;
+use underlay_db::TypedExistsCheck;
 ```
 
 ### Migration Checklist
 
 - [ ] Identify all existence check functions in `crates/db/src/*.rs`
-- [ ] Replace with `ExistsCheck::new(schema, table)`
+- [ ] Replace with `TypedExistsCheck::from_schema_table(schema, table)?`
 - [ ] Use `.value(column, value)` for string equality
 - [ ] Use `.value_i32(column, value)` for integer equality
 - [ ] Use `.scope(column, uuid)` for UUID foreign key scoping
@@ -276,7 +276,10 @@ pub async fn slug_exists(pool: &DbPool, slug: &str, exclude_id: Option<Uuid>) ->
 **After:**
 ```rust
 pub async fn slug_exists(pool: &DbPool, slug: &str, exclude_id: Option<Uuid>) -> Result<bool, sqlx::Error> {
-    let mut check = ExistsCheck::new("schema", "table").value("slug", slug);
+    let mut check = TypedExistsCheck::from_schema_table("schema", "table")
+        .map_err(|err| sqlx::Error::Protocol(format!("invalid table name: {err}")))?
+        .value("slug", slug)
+        .map_err(|err| sqlx::Error::Protocol(format!("invalid column name: {err}")))?;
     if let Some(id) = exclude_id {
         check = check.excluding(id);
     }
@@ -296,10 +299,14 @@ pub async fn module_slug_exists(
     start_year: i32,
     exclude_id: Option<Uuid>,
 ) -> Result<bool, sqlx::Error> {
-    let mut check = ExistsCheck::new("learning", "module")
+    let mut check = TypedExistsCheck::from_schema_table("learning", "module")
+        .map_err(|err| sqlx::Error::Protocol(format!("invalid table name: {err}")))?
         .value("slug", slug)
+        .map_err(|err| sqlx::Error::Protocol(format!("invalid column name: {err}")))?
         .scope("pathway_id", pathway_id)
-        .value_i32("start_year", start_year);
+        .map_err(|err| sqlx::Error::Protocol(format!("invalid column name: {err}")))?
+        .value_i32("start_year", start_year)
+        .map_err(|err| sqlx::Error::Protocol(format!("invalid column name: {err}")))?;
     if let Some(id) = exclude_id {
         check = check.excluding(id);
     }
@@ -311,8 +318,10 @@ pub async fn module_slug_exists(
 
 ```rust
 pub async fn area_slug_exists(pool: &DbPool, slug: &str) -> Result<bool, sqlx::Error> {
-    ExistsCheck::new("learning", "area")
+    TypedExistsCheck::from_schema_table("learning", "area")
+        .map_err(|err| sqlx::Error::Protocol(format!("invalid table name: {err}")))?
         .value("slug", slug)
+        .map_err(|err| sqlx::Error::Protocol(format!("invalid column name: {err}")))?
         .include_deleted()  // Skip deleted_at IS NULL filter
         .check(pool)
         .await
@@ -572,7 +581,7 @@ use underlay_http::{
 };
 
 // Database utilities
-use underlay_db::{ExistsCheck, map_db_error, map_db_error_ref};
+use underlay_db::{TypedExistsCheck, map_db_error, map_db_error_ref};
 
 // Optional: Nightfire
 use underlay_http::nightfire_validation_to_app_error;

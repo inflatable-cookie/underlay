@@ -95,9 +95,9 @@ catalogue as a second UI system:
 
 | Pattern | Description | Guide |
 |---------|-------------|-------|
-| ExistsCheck builder | Flexible existence checks | [050-database.md](../guides/050-database.md#existscheck-builder) |
-| Composite uniqueness | slug + year, slug + parent_id | [050-database.md](../guides/050-database.md#existscheck-builder) |
-| Nullable columns | `IS NOT DISTINCT FROM` for nullable | [050-database.md](../guides/050-database.md#existscheck-builder) |
+| TypedExistsCheck builder | Flexible existence checks | [050-database.md](../guides/050-database.md#typedexistscheck-builder) |
+| Composite uniqueness | slug + year, slug + parent_id | [050-database.md](../guides/050-database.md#typedexistscheck-builder) |
+| Nullable columns | `IS NOT DISTINCT FROM` for nullable | [050-database.md](../guides/050-database.md#typedexistscheck-builder) |
 | Soft-delete filtering | standard exclude/include rules | [050-database.md](../guides/050-database.md) |
 
 ### API Handler Patterns

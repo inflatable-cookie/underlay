@@ -135,8 +135,8 @@ consciously extending the contract”.
 
 `underlay-db` also owns generic low-level data helpers:
 
-- `ExistsCheck`
-- `value_exists*` helpers
+- `TypedExistsCheck`
+- `value_exists_typed` helpers
 - `MediaKind`
 - `MediaVisibility`
 - `MediaVersionState`
@@ -146,7 +146,8 @@ Rules:
 
 - existence checks are shared DB-level validation helpers, not business-rule
   engines
-- callers must provide known-good schema/table/column values
+- callers must construct typed schema/table/column identifiers before shared
+  helper SQL construction
 - media kind/visibility/version-state enums are lower-level shared vocabulary
   reused by the media system
 
@@ -372,8 +373,8 @@ Current drift worth assessing later:
 - [050-media-library-and-usage.md](/Users/tom/Dev/projects/underlay/docs/contracts/050-media-library-and-usage.md)
   is active but still labeled `Proposed shared contract`, so the lower/higher
   media authority chain is not yet expressed cleanly in file state
-- `underlay-db::ExistsCheck` assumes `deleted_at` unless callers opt out, which
-  is convenient but may over-assume soft-delete semantics for some tables
+- `underlay-db::TypedExistsCheck` assumes `deleted_at` unless callers opt out,
+  which is convenient but may over-assume soft-delete semantics for some tables
 - `underlay-media::MediaRepository` still mixes older simple usage methods
   (`track_usage`, `sync_usages`) with the newer generalized usage-edge sync
   surface, so the repository boundary should be reassessed against the richer

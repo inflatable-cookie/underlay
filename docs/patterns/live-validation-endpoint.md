@@ -216,7 +216,7 @@ $: validateSlug(slug, existingId);
 | ValidationResult | Response type | [070-api-handlers.md#live-field-validation](../guides/070-api-handlers.md#live-field-validation) |
 | parse_uuid_for_validation | UUID parsing without HTTP errors | [070-api-handlers.md#live-field-validation](../guides/070-api-handlers.md#live-field-validation) |
 | parse_optional_uuid_for_validation | Optional UUID parsing | [070-api-handlers.md#live-field-validation](../guides/070-api-handlers.md#live-field-validation) |
-| ExistsCheck | Database existence check | [050-database.md#existscheck-builder](../guides/050-database.md#existscheck-builder) |
+| TypedExistsCheck | Database existence check | [050-database.md#typedexistscheck-builder](../guides/050-database.md#typedexistscheck-builder) |
 
 ---
 
@@ -287,10 +287,17 @@ async fn validate_slug(payload: Json<ValidateSlugPayload>) -> impl IntoResponse 
         Err(result) => return Json(result),
     };
 
-    let exists = ExistsCheck::new("learning", "module")
+    let mut check = TypedExistsCheck::from_schema_table("learning", "module")
+        .unwrap()
         .value("slug", &payload.slug)
+        .unwrap()
         .scope("pathway_id", pathway_id)
-        .excluding_optional(exclude_id)
+        .unwrap();
+    if let Some(id) = exclude_id {
+        check = check.excluding(id);
+    }
+
+    let exists = check
         .check(&state.pool)
         .await
         .unwrap_or(false);

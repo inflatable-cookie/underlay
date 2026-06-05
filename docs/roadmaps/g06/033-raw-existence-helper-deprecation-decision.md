@@ -49,8 +49,14 @@ surface. Known consumer usage was migrated in `g06.032`.
 
 ## Current State
 
-`g06.033` is ready after `g06.032`.
+`g06.033` is complete.
+
+Decision: remove the raw existence helper surface now.
+
+Artifact:
+
+- [033 artifact](./033-raw-existence-helper-deprecation-decision-artifact.md)
 
 ## Next Task
 
-Execute `g06.033`: raw existence helper deprecation decision.
+Execute `g06.034`: test DB typed schema cleanup.

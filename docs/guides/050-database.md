@@ -942,44 +942,46 @@ description JSONB,        -- Nightfire: rich description with paragraphs, headin
 
 The `underlay-db` crate provides common database utilities to reduce boilerplate.
 
-### ExistsCheck Builder (Recommended)
+### TypedExistsCheck Builder
 
-The `ExistsCheck` builder provides flexible existence checks with support for composite constraints:
+The `TypedExistsCheck` builder provides flexible existence checks with support
+for composite constraints. It validates table and column identifiers before SQL
+construction and binds runtime values as query parameters.
 
 ```rust
-use underlay_db::ExistsCheck;
+use underlay_db::TypedExistsCheck;
 
 // Simple: check if slug exists
-let exists = ExistsCheck::new("content", "summary_item")
-    .value("slug", "my-slug")
+let exists = TypedExistsCheck::from_schema_table("content", "summary_item")?
+    .value("slug", "my-slug")?
     .check(&pool)
     .await?;
 
 // For updates: exclude current record
-let exists = ExistsCheck::new("content", "summary_item")
-    .value("slug", "my-slug")
+let exists = TypedExistsCheck::from_schema_table("content", "summary_item")?
+    .value("slug", "my-slug")?
     .excluding(current_id)
     .check(&pool)
     .await?;
 
 // Composite: slug + nullable year (pathway)
-let exists = ExistsCheck::new("learning", "pathway")
-    .value("slug", slug)
-    .nullable_value("year", year)  // uses IS NOT DISTINCT FROM
+let exists = TypedExistsCheck::from_schema_table("learning", "pathway")?
+    .value("slug", slug)?
+    .nullable_value("year", year)?
     .check(&pool)
     .await?;
 
 // Multi-scope: slug + pathway_id + start_year (module)
-let exists = ExistsCheck::new("learning", "module")
-    .value("slug", slug)
-    .scope("pathway_id", pathway_id)
-    .value_i32("start_year", start_year)
+let exists = TypedExistsCheck::from_schema_table("learning", "module")?
+    .value("slug", slug)?
+    .scope("pathway_id", pathway_id)?
+    .value_i32("start_year", start_year)?
     .excluding(current_id)
     .check(&pool)
     .await?;
 ```
 
-#### ExistsCheck Methods
+#### TypedExistsCheck Methods
 
 | Method | Description |
 |--------|-------------|
@@ -993,60 +995,42 @@ let exists = ExistsCheck::new("learning", "module")
 
 #### Including Deleted Records
 
-By default, `ExistsCheck` filters out soft-deleted records (`deleted_at IS NULL`). For tables without soft-delete or when you need to check all records:
+By default, `TypedExistsCheck` filters out soft-deleted records
+(`deleted_at IS NULL`). For tables without soft-delete or when you need to
+check all records:
 
 ```rust
 // Check existence including deleted records
-let exists = ExistsCheck::new("learning", "area")
-    .value("slug", slug)
+let exists = TypedExistsCheck::from_schema_table("learning", "area")?
+    .value("slug", slug)?
     .include_deleted()
     .check(&pool)
     .await?;
 ```
 
-### Legacy Helper Functions
+### Simple Typed Helpers
 
-For simple cases, convenience functions are also available:
-
-```rust
-use underlay_db::{value_exists, value_exists_excluding};
-
-// Check if slug is taken
-let exists = value_exists(&pool, "content", "summary_item", "slug", "my-slug").await?;
-
-// Excluding current record (for updates)
-let exists = value_exists_excluding(
-    &pool, "content", "summary_item", "slug", "my-slug", current_id
-).await?;
-```
-
-#### Scoped Uniqueness
-
-For values unique within a parent scope:
+For simple string checks, construct typed identifiers once and call the typed
+convenience helpers:
 
 ```rust
-use underlay_db::{value_exists_in_scope, value_exists_in_scope_excluding};
+use underlay_db::{
+    value_exists_excluding_typed, value_exists_typed, QualifiedTableName, SqlIdentifier,
+};
 
-// Check if section label exists within module
-let exists = value_exists_in_scope(
-    &pool, "learning", "section", "label", "Introduction", "module_id", module_id
-).await?;
-```
+let table = QualifiedTableName::from_schema_table("content", "summary_item")?;
+let slug = SqlIdentifier::parse("slug")?;
 
-#### Integer Column Variants
+let exists = value_exists_typed(&pool, &table, &slug, "my-slug").await?;
 
-```rust
-use underlay_db::{number_exists_in_scope, number_exists_in_scope_excluding};
-
-// Check if area number exists within section
-let exists = number_exists_in_scope(
-    &pool, "learning", "area", "number", 5, "section_id", section_id
-).await?;
+let exists =
+    value_exists_excluding_typed(&pool, &table, &slug, "my-slug", current_id).await?;
 ```
 
 ### Safety Note
 
-These helpers use format strings for table/column names. Only pass known-good values from your application code - never user input directly.
+The shared existence helpers validate and quote SQL identifiers before building
+query text. Runtime values must stay bound parameters.
 
 ## See Also
 
