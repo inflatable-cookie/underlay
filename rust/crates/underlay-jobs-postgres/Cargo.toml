@@ -1,20 +1,22 @@
 [package]
-name = "underlay-jobs"
+name = "underlay-jobs-postgres"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
+description = "PostgreSQL adapter for Underlay jobs"
 
 [dependencies]
 async-trait = { workspace = true }
 chrono = { workspace = true }
-serde = { workspace = true }
+cron = "0.16"
 serde_json = { workspace = true }
+sqlx = { workspace = true }
+thiserror = { workspace = true }
 tokio = { workspace = true, features = ["time"] }
 tracing = { workspace = true }
 underlay-core = { path = "../underlay-core" }
+underlay-jobs = { path = "../underlay-jobs" }
+uuid = { workspace = true }
 
 [dev-dependencies]
 tokio = { workspace = true, features = ["macros", "rt", "time", "test-util"] }
-
-[features]
-default = []

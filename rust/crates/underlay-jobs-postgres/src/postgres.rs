@@ -9,15 +9,13 @@ use sqlx::{PgPool, QueryBuilder};
 use thiserror::Error;
 use tracing::{debug, instrument};
 
-use crate::events::{JobEvent, JobEventHub, JobEventSink};
 use crate::postgres_dead_letters::PgDeadLetterRepository;
 use crate::postgres_rows::JobRow;
-use crate::store::JobStore;
-use crate::types::{
-    Job, JobConfig, JobErrorRecord, JobFailureOutcome, JobFilters, JobHandlerError, JobId,
-    JobProgress,
-};
 use underlay_core::Uuid;
+use underlay_jobs::{
+    Job, JobConfig, JobErrorRecord, JobEvent, JobEventHub, JobEventSink, JobFailureOutcome,
+    JobFilters, JobHandlerError, JobId, JobProgress, JobStore,
+};
 
 // Helper to convert underlay_core::Uuid to raw uuid for sqlx
 fn to_raw(id: Uuid) -> uuid::Uuid {

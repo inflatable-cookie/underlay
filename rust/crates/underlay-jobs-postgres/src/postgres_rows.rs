@@ -3,7 +3,7 @@
 use chrono::{DateTime, Utc};
 use serde_json::Value;
 
-use crate::types::{DeadLetter, Job, JobErrorRecord, JobStatus, ScheduledTask};
+use underlay_jobs::{DeadLetter, Job, JobErrorRecord, JobStatus, ScheduledTask};
 
 // Helper to convert raw uuid to underlay_core::Uuid
 fn from_raw(id: uuid::Uuid) -> underlay_core::Uuid {

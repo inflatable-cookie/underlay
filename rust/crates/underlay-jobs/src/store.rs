@@ -1,7 +1,7 @@
 //! Abstract job store trait.
 //!
-//! This trait defines the interface for job persistence. The crate provides
-//! a PostgreSQL implementation when the `postgres` feature is enabled.
+//! This trait defines the interface for job persistence. Concrete storage
+//! adapters live in backend-specific crates such as `underlay-jobs-postgres`.
 
 use async_trait::async_trait;
 
@@ -10,7 +10,7 @@ use crate::types::{Job, JobConfig, JobFailureOutcome, JobHandlerError, JobId};
 /// Abstract storage backend for jobs.
 ///
 /// Implement this trait to provide custom storage for the job queue.
-/// The crate provides `JobRepository` when the `postgres` feature is enabled.
+/// Use an adapter crate such as `underlay-jobs-postgres` for concrete storage.
 #[async_trait]
 pub trait JobStore: Send + Sync {
     type Error: std::error::Error + Send + Sync + 'static;

@@ -7,8 +7,8 @@ use tracing::debug;
 
 use crate::postgres::{RepoError, Result};
 use crate::postgres_rows::ScheduledTaskRow;
-use crate::types::{ScheduledTask, ScheduledTaskDefinition};
 use underlay_core::Uuid;
+use underlay_jobs::{ScheduledTask, ScheduledTaskDefinition};
 
 // Helper to convert underlay_core::Uuid to raw uuid for sqlx
 fn to_raw(id: Uuid) -> uuid::Uuid {
@@ -165,7 +165,7 @@ pub const JOB_NOTIFY_CHANNEL: &str = "underlay_job_notify";
 /// # Example
 ///
 /// ```ignore
-/// use underlay_jobs::PgJobNotifier;
+/// use underlay_jobs_postgres::PgJobNotifier;
 /// use std::time::Duration;
 ///
 /// let mut notifier = PgJobNotifier::connect(&pool).await?;

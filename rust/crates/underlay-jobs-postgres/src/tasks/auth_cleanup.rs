@@ -8,7 +8,7 @@ use async_trait::async_trait;
 use sqlx::PgPool;
 use tracing::{info, instrument};
 
-use crate::{Job, JobConfig, JobHandler, JobHandlerError};
+use underlay_jobs::{Job, JobConfig, JobHandler, JobHandlerError};
 
 // ============================================================================
 // Purge Expired Sessions

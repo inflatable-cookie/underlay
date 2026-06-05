@@ -8,7 +8,7 @@
 //! # Usage
 //!
 //! ```ignore
-//! use underlay_jobs::outbox::{OutboxProcessor, OutboxNotifier, OutboxConfig};
+//! use underlay_jobs_postgres::outbox::{OutboxProcessor, OutboxNotifier, OutboxConfig};
 //!
 //! // Create processor with custom config
 //! let config = OutboxConfig::default()

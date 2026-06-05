@@ -88,7 +88,9 @@ README surfaces.
 - `g06.021` is complete as the media Postgres adapter extraction proof
 - `g06.022` is complete as the Postgres runtime adapter isolation batch
 - `g06.023` is complete as the jobs Postgres adapter extraction plan
-- `g06.024` is next as the jobs Postgres adapter extraction execution batch
+- `g06.024` is complete as the jobs Postgres adapter extraction execution batch
+- `g06.025` is next as the six-consumer rollout and compatibility retirement
+  proof
 - `g05` is closed as the shared-page, workflow-template, media capability,
   dev-flow contract, and query-variant convergence generation
 - `g05.024` is complete as the Marking Hub query variant proof and rollout
@@ -204,7 +206,7 @@ README surfaces.
 
 ## Next Task
 
-Execute `g06.024`: Jobs Postgres adapter extraction execution.
+Execute `g06.025`: six-consumer rollout and compatibility retirement proof.
 - `g01.090` is complete for confirming that the remaining public `@decodelabs/underlay/patterns` surface is the true retained workflow stop point rather than unresolved migration debt
 - `g01.091` is complete for confirming the retained `client` package boundary, exposing explicit `client/*` public subpaths for the live feature families, and keeping the root barrel stable as a convenience surface
 - `g01.092` is complete for confirming the retained `nightfire` package boundary, exposing explicit `nightfire/*` public subpaths for the live extension families, and keeping the root barrel stable as a convenience surface

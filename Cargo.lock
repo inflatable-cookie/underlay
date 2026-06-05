@@ -5561,14 +5561,27 @@ version = "0.0.1"
 dependencies = [
  "async-trait",
  "chrono",
- "cron",
  "serde",
+ "serde_json",
+ "tokio",
+ "tracing",
+ "underlay-core",
+]
+
+[[package]]
+name = "underlay-jobs-postgres"
+version = "0.0.1"
+dependencies = [
+ "async-trait",
+ "chrono",
+ "cron",
  "serde_json",
  "sqlx",
  "thiserror 2.0.18",
  "tokio",
  "tracing",
  "underlay-core",
+ "underlay-jobs",
  "uuid",
 ]
 

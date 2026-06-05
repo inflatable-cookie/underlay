@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.024`: Jobs Postgres adapter extraction execution.
+Execute `g06.025`: six-consumer rollout and compatibility retirement proof.

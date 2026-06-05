@@ -54,7 +54,8 @@ Consumer-affecting changes must follow `023` and classify impact as
 | `underlay-devtools` | migration/reset helpers, sync migrations, seed bundles, migration bundles, migration reports | adapter + candidate-type | Tooling only. Bundle refs and local-store paths need typed parsing before more rollout. No app runtime crate should depend on devtools behavior. |
 | `underlay-audit` | audit row/action/filter, query helpers, append helpers, app-supplied table name | stable + candidate-type | Table-name string input is retained compatibility. New call paths should prefer typed qualified table names once `underlay-db` exposes them. |
 | `underlay-security-alerts` | alert config/types, detector, SQL helpers over app-supplied login-attempt and alert-event tables | stable + candidate-type | Table-name string inputs are retained compatibility. Move toward typed qualified table names with audit. |
-| `underlay-jobs` | job types, handler/store traits, runner/registry, event hub, dead-letter store, optional Postgres repositories, scheduler/outbox modules, migration SQL constants | stable + adapter | Traits are app-facing. Postgres repositories, scheduler runtime, outbox processor, task helpers, and migration SQL constants are selected for extraction to `underlay-jobs-postgres` in `g06.024`. Do not couple job runtime policy to app-specific queues. |
+| `underlay-jobs` | job types, handler/store traits, runner/registry, event hub, dead-letter store, scheduler config | stable | Core app-facing job contract. Concrete backend storage and notification runtime live outside the contract crate. |
+| `underlay-jobs-postgres` | `JobRepository`, `RepoError`, `PgDeadLetterRepository`, `ScheduledTaskRepository`, `PgJobNotifier`, `Scheduler`, `PostgresJobRunnerExt`, `outbox`, `tasks`, job SQL constants | adapter | Concrete Postgres job adapter extracted in `g06.024`. Apps depend on this crate for SQLx repositories, LISTEN/NOTIFY, outbox processing, scheduled task runtime, maintenance tasks, and migration SQL. |
 | `underlay-migration-core` | migration pipeline model, plugin traits, run store, manifest, OCI layout, governance, audit, drift, integrity, recovery, verification rules | stable + adapter + candidate-type | Large public model is intentionally library-facing. OCI/bundle references should align with typed devtools bundle refs. |
 
 ## Secondary Crates
@@ -181,7 +182,7 @@ Acceptance:
   migration constants
 - consumers depend on `underlay-jobs-postgres` for concrete Postgres usage
 
-Status: planned in `g06.023`; execution opened as `g06.024`.
+Status: complete in `g06.024`.
 
 Impact: breaking for consumers currently importing concrete Postgres job
 exports from `underlay-jobs`.

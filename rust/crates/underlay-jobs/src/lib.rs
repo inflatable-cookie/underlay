@@ -1,13 +1,13 @@
-//! Background job queue system with optional PostgreSQL persistence and cron scheduling.
+//! Background job queue system.
 //!
 //! This crate provides a flexible job queue system that can be used with any storage backend.
 //!
 //! # Features
 //!
-//! - **Core** (always available): Job types, handler trait, registry, and runner
-//! - **`postgres`**: PostgreSQL-backed job repository with `FOR UPDATE SKIP LOCKED` claiming
-//! - **`scheduler`**: Cron-based task scheduling (requires `postgres`)
-//! - **`full`**: All features enabled
+//! - Job types, handler trait, store trait, registry, runner, scheduler config,
+//!   dead-letter contracts, and job event hooks.
+//! - PostgreSQL repositories, outbox processing, scheduled task runtime, and
+//!   maintenance task helpers live in `underlay-jobs-postgres`.
 //!
 //! # Quick Start
 //!
@@ -35,12 +35,12 @@
 //! runner.run_forever().await?;
 //! ```
 //!
-//! # PostgreSQL Integration
+//! # PostgreSQL Adapter
 //!
-//! Enable the `postgres` feature for a complete PostgreSQL-backed implementation:
+//! Use `underlay-jobs-postgres` for the concrete PostgreSQL-backed implementation:
 //!
 //! ```ignore
-//! use underlay_jobs::postgres::{JobRepository, ScheduledTaskRepository};
+//! use underlay_jobs_postgres::{JobRepository, ScheduledTaskRepository};
 //!
 //! let job_repo = JobRepository::new(pool.clone());
 //! let task_repo = ScheduledTaskRepository::new(pool);
@@ -51,40 +51,17 @@
 //!
 //! # Database Schema
 //!
-//! The crate provides a migration file in `migrations/0001_create_job_tables.sql`.
-//! Sync this to your application's migrations folder using `underlay-devtools`.
+//! The PostgreSQL adapter crate provides migration SQL constants. Sync them to
+//! your application's migrations folder using `underlay-devtools`.
 
 mod dead_letters;
 mod events;
 mod registry;
 mod runner;
+mod scheduler;
 mod store;
 pub mod types;
 
-// PostgreSQL implementation (optional)
-#[cfg(feature = "postgres")]
-pub mod postgres;
-#[cfg(feature = "postgres")]
-mod postgres_dead_letters;
-#[cfg(feature = "postgres")]
-mod postgres_rows;
-#[cfg(feature = "postgres")]
-pub mod postgres_scheduled;
-
-// Standard maintenance tasks (optional, requires postgres)
-#[cfg(feature = "postgres")]
-pub mod tasks;
-
-// Outbox pattern for domain events (optional, requires postgres)
-#[cfg(feature = "outbox")]
-pub mod outbox;
-
-// Scheduler (optional, requires postgres)
-#[cfg(feature = "scheduler")]
-mod scheduler;
-
-// Scheduler config is always available (doesn't require postgres)
-#[cfg(feature = "scheduler")]
 pub use crate::scheduler::{SchedulerConfig, DEFAULT_SCHEDULER_TICK_INTERVAL_SECS};
 
 // Re-exports from types
@@ -101,42 +78,3 @@ pub use crate::types::{
 pub use crate::registry::JobRegistry;
 pub use crate::runner::{JobRunner, JobRunnerConfig};
 pub use crate::store::JobStore;
-
-// PostgreSQL exports
-#[cfg(feature = "postgres")]
-pub use crate::postgres::{JobRepository, RepoError};
-#[cfg(feature = "postgres")]
-pub use crate::postgres_dead_letters::PgDeadLetterRepository;
-#[cfg(feature = "postgres")]
-pub use crate::postgres_scheduled::{PgJobNotifier, ScheduledTaskRepository, JOB_NOTIFY_CHANNEL};
-
-// Scheduler exports
-#[cfg(all(feature = "scheduler", feature = "postgres"))]
-pub use crate::scheduler::Scheduler;
-
-/// SQL schema for job tables.
-///
-/// Applications should use `underlay-devtools sync-migrations` to copy this
-/// to their migrations folder, or include it directly.
-pub const JOB_TABLES_SQL: &str = include_str!("../migrations/0001_create_job_tables.sql");
-
-/// SQL for LISTEN/NOTIFY trigger.
-///
-/// This migration adds efficient job notification support. See the
-/// `PgJobNotifier` type for usage details.
-#[cfg(feature = "postgres")]
-pub const JOB_NOTIFY_SQL: &str = include_str!("../migrations/0002_add_job_notify.sql");
-
-/// SQL for domain event LISTEN/NOTIFY trigger.
-///
-/// This migration adds efficient outbox notification support. See the
-/// `outbox::OutboxNotifier` type for usage details.
-#[cfg(feature = "outbox")]
-pub const DOMAIN_EVENT_NOTIFY_SQL: &str =
-    include_str!("../migrations/0003_add_domain_event_notify.sql");
-
-/// SQL for dead-letter persistence.
-///
-/// This migration adds `platform.job_dead_letter` for failed job inspection and retry.
-#[cfg(feature = "postgres")]
-pub const JOB_DEAD_LETTERS_SQL: &str = include_str!("../migrations/0004_add_job_dead_letters.sql");

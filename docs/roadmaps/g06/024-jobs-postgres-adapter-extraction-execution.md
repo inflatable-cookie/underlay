@@ -76,8 +76,29 @@ updates during the reference-grade reset.
 
 ## Current State
 
-`g06.024` is ready.
+`g06.024` is complete.
+
+Underlay now has:
+
+- `underlay-jobs` as the core job contract crate
+- `underlay-jobs-postgres` as the concrete Postgres adapter crate
+- Postgres repositories, scheduled task runtime, outbox processing, maintenance
+  task helpers, SQL constants, and LISTEN/NOTIFY runner support in the adapter
+  crate
+
+The six known consumers were migrated to keep `underlay-jobs` for contracts and
+add `underlay-jobs-postgres` for concrete storage/runtime usage.
+
+Validation passed:
+
+- Underlay: `effigy rust:check`
+- `underlay-reference/acme-api`: `cargo check -p acme-jobs -p acme-api`
+- `contact-patch/cp-api`: `cargo check -p cp-jobs -p cp-api`
+- `compli-me/api`: `cargo check -p compli-me-jobs -p compli-me-api`
+- `songsprout/nursery`: `cargo check -p nursery-jobs -p nursery-api`
+- `acowtancy/farmyard`: `cargo check -p farmyard-jobs -p farmyard-api`
+- `loophole/composer/composer-api`: `cargo check -p composer-api`
 
 ## Next Task
 
-Execute `g06.024`: Jobs Postgres adapter extraction execution.
+Execute `g06.025`: six-consumer rollout and compatibility retirement proof.

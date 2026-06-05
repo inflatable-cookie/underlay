@@ -35,9 +35,10 @@ Primary:
 - [`rust/crates/underlay-jobs/src/scheduler.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-jobs/src/scheduler.rs)
 - [`rust/crates/underlay-jobs/src/dead_letters.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-jobs/src/dead_letters.rs)
 - [`rust/crates/underlay-jobs/src/events.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-jobs/src/events.rs)
-- [`rust/crates/underlay-jobs/src/outbox.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-jobs/src/outbox.rs)
-- [`rust/crates/underlay-jobs/src/postgres.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-jobs/src/postgres.rs)
-- [`rust/crates/underlay-jobs/src/postgres_scheduled.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-jobs/src/postgres_scheduled.rs)
+- [`rust/crates/underlay-jobs-postgres/src/lib.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-jobs-postgres/src/lib.rs)
+- [`rust/crates/underlay-jobs-postgres/src/postgres.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-jobs-postgres/src/postgres.rs)
+- [`rust/crates/underlay-jobs-postgres/src/postgres_scheduled.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-jobs-postgres/src/postgres_scheduled.rs)
+- [`rust/crates/underlay-jobs-postgres/src/outbox.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-jobs-postgres/src/outbox.rs)
 - [`rust/crates/underlay-events/src/lib.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-events/src/lib.rs)
 - [`rust/crates/underlay-audit/src/lib.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-audit/src/lib.rs)
 - [`rust/crates/underlay-audit/src/entry.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-audit/src/entry.rs)
@@ -110,9 +111,8 @@ Rules:
 ### Job persistence and Postgres implementation
 
 Underlay owns a production-oriented Postgres implementation, not just traits.
-`g06.023` selected a package-boundary migration that keeps the stable job
-contract in `underlay-jobs` and moves concrete Postgres runtime code to
-`underlay-jobs-postgres` in `g06.024`.
+The stable job contract lives in `underlay-jobs`; concrete Postgres runtime code
+lives in `underlay-jobs-postgres`.
 
 Core pieces:
 
@@ -137,9 +137,8 @@ Rules:
 ### Scheduled tasks
 
 Recurring work is a first-class extension of the shared job system.
-Pure scheduler configuration remains part of the job contract. The current
-Postgres-bound scheduler runtime is selected for adapter extraction in
-`g06.024`.
+Pure scheduler configuration remains part of the job contract. The
+Postgres-bound scheduler runtime lives in `underlay-jobs-postgres`.
 
 Core pieces:
 
@@ -220,7 +219,7 @@ Rules:
 - reliable asynchronous processing uses the outbox pattern, not in-request
   best-effort dispatch
 - the Postgres jobs adapter owns the durable claim/process/mark-processed model
-  and LISTEN/NOTIFY wake-up path after the `g06.024` extraction
+  and LISTEN/NOTIFY wake-up path
 - LISTEN/NOTIFY is a wake-up mechanism layered on top of durable outbox rows
 - outbox handlers mark events processed only after successful handling
 

@@ -3,12 +3,13 @@ use chrono::{DateTime, Utc};
 use sqlx::QueryBuilder;
 use tracing::{debug, instrument};
 
-use crate::dead_letters::DeadLetterStore;
-use crate::events::{JobEvent, JobEventHub, JobEventSink};
 use crate::postgres::{RepoError, Result};
 use crate::postgres_rows::DeadLetterRow;
-use crate::types::{DeadLetter, DeadLetterFilters, DeadLetterId, JobId};
 use underlay_core::Uuid;
+use underlay_jobs::{
+    DeadLetter, DeadLetterFilters, DeadLetterId, DeadLetterStore, Job, JobEvent, JobEventHub,
+    JobEventSink, JobId,
+};
 
 fn to_raw(id: Uuid) -> uuid::Uuid {
     id.0
@@ -173,7 +174,7 @@ impl PgDeadLetterRepository {
 
     pub(crate) async fn insert_dead_letter(
         tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
-        job: &crate::types::Job,
+        job: &Job,
         error: &str,
         error_history: &serde_json::Value,
     ) -> Result<DeadLetterId> {

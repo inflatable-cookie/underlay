@@ -9,7 +9,8 @@
 //! Register the handlers you need in your job registry:
 //!
 //! ```ignore
-//! use underlay_jobs::{JobRegistry, tasks};
+//! use underlay_jobs::JobRegistry;
+//! use underlay_jobs_postgres::tasks;
 //!
 //! let mut registry = JobRegistry::new();
 //!
