@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.093`: auth TOTP crate modularity audit.
+Execute `g06.094`: auth TOTP crate internal split.

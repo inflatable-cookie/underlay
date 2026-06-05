@@ -47,8 +47,12 @@ audit finds public exports that must move; if so, stop and re-enter planning.
 
 ## Current State
 
-`g06.093` is ready.
+`g06.093` is complete.
+
+Artifact:
+
+- [093 artifact](./093-auth-totp-crate-modularity-audit-artifact.md)
 
 ## Next Task
 
-Execute `g06.093`: auth TOTP crate modularity audit.
+Execute `g06.094`: auth TOTP crate internal split.

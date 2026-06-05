@@ -151,7 +151,8 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.090` is complete as the auth WebAuthn service internal split.
 - `g06.091` is complete as the config crate modularity audit.
 - `g06.092` is complete as the config crate internal split.
-- `g06.093` is next as the auth TOTP crate modularity audit.
+- `g06.093` is complete as the auth TOTP crate modularity audit.
+- `g06.094` is next as the auth TOTP crate internal split.
 
 ## Planned Runway
 
@@ -252,6 +253,7 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.091`: config crate modularity audit
 - `g06.092`: config crate internal split
 - `g06.093`: auth TOTP crate modularity audit
+- `g06.094`: auth TOTP crate internal split
 
 ## Consumer Family
 
