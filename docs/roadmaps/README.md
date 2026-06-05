@@ -115,7 +115,9 @@ README surfaces.
   parse-boundary rollout
 - `g06.045` is complete as the media object-key boundary closeout audit
 - `g06.046` is complete as the non-media blob object-key boundary policy
-- `g06.047` is next as the consumer non-media blob object-key adoption proof
+- `g06.047` is complete as the consumer non-media blob object-key adoption
+  proof
+- `g06.048` is next as the post-blob-key Rust quality checkpoint
 - `g05` is closed as the shared-page, workflow-template, media capability,
   dev-flow contract, and query-variant convergence generation
 - `g05.024` is complete as the Marking Hub query variant proof and rollout

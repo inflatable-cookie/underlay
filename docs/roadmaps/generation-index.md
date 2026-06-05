@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.047`: consumer non-media blob object-key adoption proof.
+Execute `g06.048`: post-blob-key Rust quality checkpoint.

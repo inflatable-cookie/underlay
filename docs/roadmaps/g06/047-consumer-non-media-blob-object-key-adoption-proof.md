@@ -53,8 +53,12 @@ The app is not in production, so this can roll directly.
 
 ## Current State
 
-`g06.047` is next after `g06.046`.
+`g06.047` is complete.
+
+Artifact:
+
+- [047 artifact](./047-consumer-non-media-blob-object-key-adoption-proof-artifact.md)
 
 ## Next Task
 
-Execute `g06.047`: consumer non-media blob object-key adoption proof.
+Execute `g06.048`: post-blob-key Rust quality checkpoint.
