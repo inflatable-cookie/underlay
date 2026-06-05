@@ -39,6 +39,8 @@ pub async fn append_audit_log(
     entry: AuditEntry,
 ) -> AuditResult<AuditLogRow> {
     crate::validate_table_name(table)?;
+    let table = underlay_db::format_qualified_table_name(table)
+        .map_err(|_| crate::error::AuditError::InvalidTableName)?;
 
     let query = format!(
         r#"

@@ -62,8 +62,8 @@ impl AuditAction {
         }
     }
 
-    /// Parse from string representation.
-    pub fn from_str(s: &str) -> Self {
+    /// Parse from string representation, preserving unknown values as custom actions.
+    pub fn parse_lossy(s: &str) -> Self {
         match s {
             "create" => AuditAction::Create,
             "update" => AuditAction::Update,
@@ -86,6 +86,14 @@ impl AuditAction {
 impl std::fmt::Display for AuditAction {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.as_str())
+    }
+}
+
+impl std::str::FromStr for AuditAction {
+    type Err = std::convert::Infallible;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Self::parse_lossy(s))
     }
 }
 
@@ -165,7 +173,7 @@ pub struct AuditLogRow {
 impl AuditLogRow {
     /// Get the action as a typed enum.
     pub fn action_type(&self) -> AuditAction {
-        AuditAction::from_str(&self.action)
+        AuditAction::parse_lossy(&self.action)
     }
 }
 

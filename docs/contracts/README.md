@@ -40,6 +40,7 @@ machine-readable policy files.
 | [118-front-and-shared-read-api-shapes.md](./118-front-and-shared-read-api-shapes.md) | M | Shared front/public/shared read envelope and helper-vs-resource shape contract for non-admin read surfaces |
 | [119-helper-search-and-lookup-route-catalogue.md](./119-helper-search-and-lookup-route-catalogue.md) | M | Shared helper-route naming and bounded envelope contract for lookup, search, suggest, detect, requirements, and status routes |
 | [120-tooling-testing-and-contract-artifacts.md](./120-tooling-testing-and-contract-artifacts.md) | M | Shared Rust/TS test harnesses, migration/schema devtools, guardrail scanners, and machine-readable contract-artifact boundary |
+| [122-rust-public-api-inventory.md](./122-rust-public-api-inventory.md) | M | Rust public API classification and first typed-boundary migration gates for the `g06` platform-contract transition |
 
 ## Index
 
@@ -53,7 +54,23 @@ machine-readable policy files.
 
 ## Current lane
 
-- the active contract-driven lane is `g05`
-- there is no promoted `g05` queue item right now
-- keep fresh contract-driven work inside `g05` unless generation rollover is
-  explicitly approved
+- the active contract-driven lane is `g06`
+- `g06.003` is complete as the auth/session contract reset lane
+- `g06.004` is complete as the HTTP safe-builder consolidation lane
+- `g06.005` is complete as the DB identifier and schema boundary normalization
+  lane
+- `g06.006` is complete as the media repository contract and adapter split
+  completion lane
+- `g06.007` is complete as the devtools bundle/store boundary isolation lane
+- `g06.008` is complete as the six-consumer compatibility proof and
+  release-note closeout lane
+- `g06.009` is complete as the Effigy doctor structural backlog triage lane
+- `g06.010` is complete as the first Rust god-file split repair batch
+- `g06.011` is complete as the second Rust structural split repair batch
+- `g06.012` is complete as the high-severity Rust structural backlog triage
+  lane
+- `g06.013` is complete as the security-adjacent Rust adapter split batch
+- `g06.014` is complete as the Rust platform transition validation and
+  release-readiness closeout
+- `g06.015` is next as the Rust platform transition release-note handoff
+- keep fresh Rust platform-contract work inside `g06`

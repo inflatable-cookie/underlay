@@ -360,13 +360,8 @@ fn map_http_status_to_error_kind(status: StatusCode) -> AiErrorKind {
 }
 
 fn safe_provider_metadata(metadata: Option<&Value>) -> Option<Value> {
-    let Some(metadata) = metadata else {
-        return None;
-    };
-
-    let Some(obj) = metadata.as_object() else {
-        return None;
-    };
+    let metadata = metadata?;
+    let obj = metadata.as_object()?;
 
     let allowed_keys = ["provider", "routing", "transforms", "order"];
     let mut out = serde_json::Map::new();

@@ -115,19 +115,14 @@ where
 {
     type Rejection = ValidatedJsonRejection;
 
-    fn from_request(
-        req: Request,
-        state: &S,
-    ) -> impl std::future::Future<Output = Result<Self, Self::Rejection>> + Send {
-        async move {
-            // First, extract and deserialize the JSON
-            let Json(value) = Json::<T>::from_request(req, state).await?;
+    async fn from_request(req: Request, state: &S) -> Result<Self, Self::Rejection> {
+        // First, extract and deserialize the JSON
+        let Json(value) = Json::<T>::from_request(req, state).await?;
 
-            // Then validate it
-            value.validate()?;
+        // Then validate it
+        value.validate()?;
 
-            Ok(ValidatedJson(value))
-        }
+        Ok(ValidatedJson(value))
     }
 }
 

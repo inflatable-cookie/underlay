@@ -73,11 +73,5 @@ pub type DbPool = sqlx::PgPool;
 /// Only allows alphanumeric characters, underscores, and dots (for schema.table).
 /// Rejects any characters that could enable SQL injection.
 pub(crate) fn validate_table_name(table: &str) -> AuditResult<()> {
-    if !table
-        .chars()
-        .all(|c| c.is_alphanumeric() || c == '_' || c == '.')
-    {
-        return Err(AuditError::InvalidTableName);
-    }
-    Ok(())
+    underlay_db::validate_qualified_table_name(table).map_err(|_| AuditError::InvalidTableName)
 }

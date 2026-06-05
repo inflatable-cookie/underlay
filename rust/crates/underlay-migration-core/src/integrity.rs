@@ -1,9 +1,10 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, Default, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
 pub enum SignatureEnforcementPhase {
+    #[default]
     Observe,
     EnforcePreprod,
     EnforceAll,
@@ -24,9 +25,10 @@ impl SignatureEnforcementPhase {
     }
 }
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, Default, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
 pub enum IntegrityRunScope {
+    #[default]
     Demo,
     PreProduction,
     Production,
@@ -207,15 +209,3 @@ pub fn build_integrity_artifact(
 #[cfg(test)]
 #[path = "tests/integrity_tests.rs"]
 mod tests;
-
-impl Default for SignatureEnforcementPhase {
-    fn default() -> Self {
-        Self::Observe
-    }
-}
-
-impl Default for IntegrityRunScope {
-    fn default() -> Self {
-        Self::Demo
-    }
-}

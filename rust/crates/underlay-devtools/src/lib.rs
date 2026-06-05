@@ -7,6 +7,7 @@ pub use migration_bundle::{
     migration_bundle_build, migration_bundle_publish, migration_bundle_pull, migration_run,
     BundleBuildOptions, BundleBuildReport, BundlePublishOptions, BundlePublishReport,
     BundlePullOptions, BundlePullReport, BundleRunOptions, BundleRunReport, MigrationBundleError,
+    MigrationBundleRef,
 };
 pub use migration_report::{
     build_audit_report, build_drift_report, build_drift_report_with_lineage,

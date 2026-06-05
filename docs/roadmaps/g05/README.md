@@ -1,13 +1,14 @@
 # g05
 
-`g05` is the shared-surface convergence generation for the current consumer
-family.
+`g05` is the closed shared-surface convergence generation for the current
+consumer family.
 
 ## Current State
 
 `g05` opened the next template-system lane after `g03` closeout, completed the
-cross-consumer entity-template convergence work, and remains the live
-generation for the next retained shared-page and workflow-template wave.
+cross-consumer entity-template convergence work, then closed after the retained
+shared-page, workflow-template, media capability, dev-flow contract, and
+query-variant lines.
 
 `g03` proved the shared form and list-page shells across Dairy and
 `underlay-reference`, but it stopped before the broader detail-page and tab-list
@@ -50,7 +51,7 @@ Another explicit `g05` lane is now reopened:
 
 ## Active Lane
 
-- no active `g05` lane is promoted right now
+- closed; the live Rust platform-contract transition moved to `g06`
 
 ## Completed Work
 
@@ -119,6 +120,4 @@ If `g05` later enters strict execution posture, keep its cards under
 
 ## Next Task
 
-Promote a follow-on query-variant batch only for a true named baseline-query
-surface. Current candidates are Composer moderation queue and the shared
-platform-system jobs lists.
+Move to `g06`. See [`../g06/README.md`](../g06/README.md).

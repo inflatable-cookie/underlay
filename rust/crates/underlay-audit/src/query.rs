@@ -93,6 +93,8 @@ pub async fn list_audit_logs(
     filters: AuditLogFilters,
 ) -> AuditResult<Vec<AuditLogRow>> {
     crate::validate_table_name(table)?;
+    let table = underlay_db::format_qualified_table_name(table)
+        .map_err(|_| crate::error::AuditError::InvalidTableName)?;
 
     // Build dynamic query with filters
     // We use a fixed parameter order for predictable binding
@@ -143,6 +145,8 @@ pub async fn get_audit_log_by_id(
     id: Uuid,
 ) -> AuditResult<Option<AuditLogRow>> {
     crate::validate_table_name(table)?;
+    let table = underlay_db::format_qualified_table_name(table)
+        .map_err(|_| crate::error::AuditError::InvalidTableName)?;
 
     let query = format!(
         r#"
@@ -176,6 +180,8 @@ pub async fn count_audit_logs(
     filters: &AuditLogFilters,
 ) -> AuditResult<i64> {
     crate::validate_table_name(table)?;
+    let table = underlay_db::format_qualified_table_name(table)
+        .map_err(|_| crate::error::AuditError::InvalidTableName)?;
 
     let query = format!(
         r#"

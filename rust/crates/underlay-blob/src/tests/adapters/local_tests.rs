@@ -34,6 +34,36 @@ async fn test_local_adapter_write_and_read() {
 }
 
 #[tokio::test]
+async fn test_local_adapter_rejects_unsafe_keys() {
+    let temp_dir = std::env::temp_dir().join("underlay-blob-key-security-test");
+    let outside_file = temp_dir
+        .parent()
+        .expect("temp dir should have parent")
+        .join("underlay-blob-outside.txt");
+    let _ = fs::remove_dir_all(&temp_dir).await;
+    let _ = fs::remove_file(&outside_file).await;
+
+    let config = LocalConfig::new(&temp_dir, "http://localhost:8080/uploads");
+    let adapter = LocalAdapter::new(config).await.unwrap();
+
+    for key in [
+        "../underlay-blob-outside.txt",
+        "/tmp/outside.txt",
+        "a/../b.txt",
+        "a\\b.txt",
+    ] {
+        let err = adapter
+            .write_file(key, b"blocked", "text/plain")
+            .await
+            .expect_err("unsafe key should be rejected");
+        assert!(matches!(err, BlobError::InvalidKey(_)));
+    }
+
+    assert!(!outside_file.exists());
+    let _ = fs::remove_dir_all(&temp_dir).await;
+}
+
+#[tokio::test]
 async fn test_local_adapter_public_url() {
     let config = LocalConfig::new("/tmp/test", "http://localhost:8080/uploads");
     let adapter = LocalAdapter::new(config).await.unwrap();

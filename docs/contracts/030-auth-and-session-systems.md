@@ -191,6 +191,24 @@ Rules:
 - roles are carried in access-token claims as transportable authorization hints,
   not as the full policy model
 
+Refresh rotation is a compare-and-swap operation:
+
+- `SessionStore::rotate_session_if_current` must check the active retained
+  session, previous refresh-token fingerprint, previous refresh-token ID, and
+  previous refresh-token version before accepting a rotation
+- that check and the new retained session write are one atomic persistence
+  operation
+- `Ok(true)` means the expected old refresh state still matched and the new
+  session state has been persisted
+- `Ok(false)` means stale or replayed refresh state and maps to
+  `RefreshReplayDetected`
+- refresh paths must not use a blind `update_session` write because that can
+  accept concurrent or replayed refresh attempts
+
+`SessionStore` remains in `underlay-auth-jwt` for this generation. Moving the
+trait behind `underlay-auth` would be another public trait migration and needs a
+separate roadmap card with consumer implementation proof.
+
 The session system is shared. The app’s session endpoints and cookie strategy
 build on it but are not defined here.
 

@@ -1,13 +1,15 @@
 use super::{
     migration_bundle_build, migration_bundle_publish, migration_bundle_pull, migration_run,
     BundleBuildOptions, BundlePublishOptions, BundlePullOptions, BundleRunOptions,
+    MigrationBundleRef,
 };
 use base64::Engine as _;
+use std::path::PathBuf;
 use std::process::Command;
 use std::thread::sleep;
 use std::time::Duration;
 
-fn temp_dir(prefix: &str) -> std::path::PathBuf {
+fn temp_dir(prefix: &str) -> PathBuf {
     let mut path = std::env::temp_dir();
     let nanos = std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
@@ -131,6 +133,46 @@ fn migration_run_requires_digest_pinned_bundle_ref() {
     .expect_err("run should require digest");
 
     assert!(err.to_string().contains("digest-pinned"));
+}
+
+#[test]
+fn migration_bundle_ref_parses_digest_pinned_ref() {
+    let bundle_ref = MigrationBundleRef::parse_digest_pinned(
+        "registry.example.com/org/bundle@sha256:0123456789abcdef",
+    )
+    .unwrap();
+
+    assert_eq!(
+        bundle_ref.as_str(),
+        "registry.example.com/org/bundle@sha256:0123456789abcdef"
+    );
+    assert_eq!(bundle_ref.digest(), "sha256:0123456789abcdef");
+}
+
+#[test]
+fn migration_bundle_ref_rejects_tag_only_ref() {
+    let err = MigrationBundleRef::parse_digest_pinned("registry.example.com/org/bundle:demo")
+        .expect_err("tag-only ref should be rejected");
+
+    assert!(err.to_string().contains("digest-pinned"));
+}
+
+#[test]
+fn bundle_run_options_accept_typed_bundle_ref() {
+    let bundle_ref = MigrationBundleRef::parse_digest_pinned(
+        "registry.example.com/org/bundle@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    )
+    .unwrap();
+
+    let options = BundleRunOptions::from_bundle_ref(
+        bundle_ref.clone(),
+        PathBuf::from("out"),
+        Some(PathBuf::from("store")),
+    );
+
+    assert_eq!(options.bundle_ref().unwrap(), bundle_ref);
+    assert_eq!(options.output_dir, PathBuf::from("out"));
+    assert_eq!(options.local_store_dir, Some(PathBuf::from("store")));
 }
 
 #[test]

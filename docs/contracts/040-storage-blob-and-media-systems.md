@@ -256,6 +256,13 @@ Rules:
 - version finalization is explicit and tied to storage metadata
 - repository interfaces stay storage-aware but backend-agnostic at the trait
   level
+- `MediaRepository` and `MediaRepositoryExt` are the app-facing repository seam
+- Postgres operation modules are adapter internals and must stay private
+- `PostgresMediaConfig` is an adapter surface; new code should prefer
+  `try_with_schema` and `try_with_tables` for early identifier validation
+- storage-key helpers are stable shared helpers, but their string-returning
+  shape remains a candidate-type surface until it can align with the blob
+  `BlobObjectKey` boundary without forcing consumer churn
 
 This layer owns CRUD and lifecycle mechanics. The richer meaning of usages,
 migration bindings, and media graph semantics is defined in `050`.

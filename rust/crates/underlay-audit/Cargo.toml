@@ -13,6 +13,7 @@ sqlx = { workspace = true }
 thiserror = { workspace = true }
 tokio = { workspace = true, features = ["rt"] }
 tracing = { workspace = true }
+underlay-db = { path = "../underlay-db" }
 uuid = { workspace = true }
 
 [dev-dependencies]

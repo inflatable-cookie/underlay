@@ -6,9 +6,9 @@
 //!
 //! # Security Note
 //!
-//! The `schema`, `table`, and column parameters are interpolated into SQL queries.
-//! They should only accept known-good values from your application code, never
-//! from user input. Consider using constants or enums for these values.
+//! The typed helpers accept `QualifiedTableName` and `SqlIdentifier` so
+//! identifier validation happens before SQL construction. Raw string helpers are
+//! retained for compatibility and quote validated identifiers before building SQL.
 //!
 //! # Examples
 //!
@@ -50,6 +50,8 @@
 
 use sqlx::PgPool;
 use uuid::Uuid;
+
+use crate::{format_schema_table, quote_sql_identifier, QualifiedTableName, SqlIdentifier};
 
 // =============================================================================
 // ExistsCheck Builder
@@ -194,6 +196,9 @@ impl<'a> ExistsCheck<'a> {
             return Ok(false);
         }
 
+        let table_name = format_schema_table(self.schema, self.table)
+            .map_err(|err| sqlx::Error::Protocol(format!("invalid table name: {err}")))?;
+
         let mut param_idx = 1u32;
         let mut where_parts = Vec::new();
 
@@ -203,11 +208,17 @@ impl<'a> ExistsCheck<'a> {
                 Condition::StringEquals { column, .. }
                 | Condition::IntEquals { column, .. }
                 | Condition::UuidEquals { column, .. } => {
+                    let column = quote_sql_identifier(column).map_err(|err| {
+                        sqlx::Error::Protocol(format!("invalid column name: {err}"))
+                    })?;
                     let clause = format!("{} = ${}", column, param_idx);
                     param_idx += 1;
                     clause
                 }
                 Condition::NullableIntEquals { column, .. } => {
+                    let column = quote_sql_identifier(column).map_err(|err| {
+                        sqlx::Error::Protocol(format!("invalid column name: {err}"))
+                    })?;
                     let clause = format!("{} IS NOT DISTINCT FROM ${}", column, param_idx);
                     param_idx += 1;
                     clause
@@ -230,8 +241,8 @@ impl<'a> ExistsCheck<'a> {
 
         let where_clause = where_parts.join(" AND ");
         let query = format!(
-            "SELECT EXISTS(SELECT 1 FROM {}.{} WHERE {})",
-            self.schema, self.table, where_clause
+            "SELECT EXISTS(SELECT 1 FROM {} WHERE {})",
+            table_name, where_clause
         );
 
         // Build and execute query with bindings
@@ -255,7 +266,59 @@ impl<'a> ExistsCheck<'a> {
 }
 
 // =============================================================================
-// Legacy Helper Functions (kept for backwards compatibility)
+// Typed Helper Functions
+// =============================================================================
+
+fn value_exists_query(
+    table: &QualifiedTableName,
+    column: &SqlIdentifier,
+    excluding: bool,
+) -> String {
+    let exclude_clause = if excluding { " AND id <> $2" } else { "" };
+    format!(
+        "SELECT EXISTS(SELECT 1 FROM {} WHERE {} = $1{} AND deleted_at IS NULL)",
+        table.quoted(),
+        column.quoted(),
+        exclude_clause
+    )
+}
+
+/// Check if a string value exists in a typed table and column.
+///
+/// New code should prefer this helper over raw schema/table/column strings when
+/// the caller can construct `QualifiedTableName` and `SqlIdentifier` once at the
+/// boundary.
+pub async fn value_exists_typed(
+    pool: &PgPool,
+    table: &QualifiedTableName,
+    column: &SqlIdentifier,
+    value: &str,
+) -> Result<bool, sqlx::Error> {
+    let query = value_exists_query(table, column, false);
+    sqlx::query_scalar::<_, bool>(&query)
+        .bind(value)
+        .fetch_one(pool)
+        .await
+}
+
+/// Check if a string value exists in a typed table and column, excluding one ID.
+pub async fn value_exists_excluding_typed(
+    pool: &PgPool,
+    table: &QualifiedTableName,
+    column: &SqlIdentifier,
+    value: &str,
+    exclude_id: Uuid,
+) -> Result<bool, sqlx::Error> {
+    let query = value_exists_query(table, column, true);
+    sqlx::query_scalar::<_, bool>(&query)
+        .bind(value)
+        .bind(exclude_id)
+        .fetch_one(pool)
+        .await
+}
+
+// =============================================================================
+// Raw String Helper Functions (kept for backwards compatibility)
 // =============================================================================
 
 /// Check if a value exists in a table column.

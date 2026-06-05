@@ -11,12 +11,6 @@ run_in = "host"
 minimum_effigy_version = "0.7.0"
 include = ["demos/effigy.demos.toml"]
 
-[isolation]
-paths = [
-  "node_modules",
-  "target",
-]
-
 [bootstrap]
 setup = ["bootstrap:deps"]
 

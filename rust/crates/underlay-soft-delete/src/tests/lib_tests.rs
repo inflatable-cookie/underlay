@@ -1,5 +1,11 @@
 use super::{new_delete_batch_id, DELETED_AT_COLUMN, DELETE_BATCH_ID_COLUMN};
 
+#[allow(dead_code)]
+mod macro_expansion_tests {
+    crate::impl_restore_single!(restore_test_row, "test.soft_deleted");
+    crate::impl_purge_single!(purge_test_row, "test.soft_deleted");
+}
+
 #[test]
 fn column_names_match_convention() {
     assert_eq!(DELETED_AT_COLUMN, "deleted_at");

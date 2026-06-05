@@ -48,6 +48,7 @@ pub struct ErrorLogRow {
 /// });
 /// ```
 #[cfg(feature = "error-logging")]
+#[allow(clippy::too_many_arguments)]
 pub async fn append_error_log(
     pool: &DbPool,
     endpoint: &str,

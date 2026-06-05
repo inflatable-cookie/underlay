@@ -1,4 +1,4 @@
-use super::{validate_schema_name, DestructiveGuard};
+use super::{parse_schema_name, validate_schema_name, DestructiveGuard};
 
 #[test]
 fn schema_validation_allows_simple_names() {
@@ -81,4 +81,16 @@ fn schema_validation_trims_leading_trailing() {
     assert!(validate_schema_name("  learning"));
     assert!(validate_schema_name("learning  "));
     assert!(validate_schema_name("  learning  "));
+}
+
+#[test]
+fn schema_parse_returns_typed_identifier() {
+    let schema = parse_schema_name(" content ").unwrap();
+    assert_eq!(schema.as_str(), "content");
+    assert_eq!(schema.quoted(), "\"content\"");
+}
+
+#[test]
+fn schema_parse_rejects_qualified_names() {
+    assert!(parse_schema_name("content.media").is_err());
 }

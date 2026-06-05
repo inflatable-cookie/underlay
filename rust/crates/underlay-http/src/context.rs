@@ -238,22 +238,17 @@ where
 {
     type Rejection = ContextError;
 
-    fn from_request_parts(
-        parts: &mut Parts,
-        state: &S,
-    ) -> impl std::future::Future<Output = Result<Self, Self::Rejection>> + Send {
-        async move {
-            let ctx = RequestContext::from_request_parts(parts, state)
-                .await
-                .map_err(|_| ContextError::MissingField("request context"))?;
+    async fn from_request_parts(parts: &mut Parts, state: &S) -> Result<Self, Self::Rejection> {
+        let ctx = RequestContext::from_request_parts(parts, state)
+            .await
+            .map_err(|_| ContextError::MissingField("request context"))?;
 
-            let user_id = ctx.user_id().ok_or(ContextError::Unauthenticated)?;
+        let user_id = ctx.user_id().ok_or(ContextError::Unauthenticated)?;
 
-            Ok(AuthenticatedContext {
-                inner: ctx,
-                user_id,
-            })
-        }
+        Ok(AuthenticatedContext {
+            inner: ctx,
+            user_id,
+        })
     }
 }
 
@@ -263,40 +258,35 @@ where
 {
     type Rejection = (StatusCode, &'static str);
 
-    fn from_request_parts(
-        parts: &mut Parts,
-        _state: &S,
-    ) -> impl std::future::Future<Output = Result<Self, Self::Rejection>> + Send {
-        async move {
-            let headers = &parts.headers;
+    async fn from_request_parts(parts: &mut Parts, _state: &S) -> Result<Self, Self::Rejection> {
+        let headers = &parts.headers;
 
-            // Extract or generate request ID
-            let request_id = extract_request_id(headers);
+        // Extract or generate request ID
+        let request_id = extract_request_id(headers);
 
-            // Extract client IP from various headers
-            let ip_address = extract_ip_address(headers);
+        // Extract client IP from various headers
+        let ip_address = extract_ip_address(headers);
 
-            // Extract user agent
-            let user_agent = headers
-                .get(header::USER_AGENT)
-                .and_then(|v| v.to_str().ok())
-                .map(|s| s.to_string());
+        // Extract user agent
+        let user_agent = headers
+            .get(header::USER_AGENT)
+            .and_then(|v| v.to_str().ok())
+            .map(|s| s.to_string());
 
-            // Extract user ID from extensions (set by auth middleware)
-            let user_id = parts.extensions.get::<AuthenticatedUser>().map(|u| u.0);
+        // Extract user ID from extensions (set by auth middleware)
+        let user_id = parts.extensions.get::<AuthenticatedUser>().map(|u| u.0);
 
+        #[cfg(feature = "opentelemetry")]
+        let trace_context = TraceContext::from_headers(headers);
+
+        Ok(RequestContext {
+            request_id,
+            ip_address,
+            user_agent,
+            user_id,
             #[cfg(feature = "opentelemetry")]
-            let trace_context = TraceContext::from_headers(headers);
-
-            Ok(RequestContext {
-                request_id,
-                ip_address,
-                user_agent,
-                user_id,
-                #[cfg(feature = "opentelemetry")]
-                trace_context,
-            })
-        }
+            trace_context,
+        })
     }
 }
 

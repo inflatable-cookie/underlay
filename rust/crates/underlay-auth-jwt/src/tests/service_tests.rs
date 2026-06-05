@@ -35,6 +35,30 @@ impl SessionStore for MemoryStore {
         Ok(())
     }
 
+    async fn rotate_session_if_current(
+        &self,
+        session: &SessionState,
+        expected_refresh_token_fingerprint: &str,
+        expected_refresh_token_id: Uuid,
+        expected_refresh_token_version: u32,
+    ) -> JwtResult<bool> {
+        let mut sessions = self.sessions.lock().await;
+        let Some(current) = sessions.get_mut(&session.id) else {
+            return Ok(false);
+        };
+
+        if !current.is_active
+            || current.refresh_token_fingerprint != expected_refresh_token_fingerprint
+            || current.refresh_token_id != expected_refresh_token_id
+            || current.refresh_token_version != expected_refresh_token_version
+        {
+            return Ok(false);
+        }
+
+        *current = session.clone();
+        Ok(true)
+    }
+
     async fn delete_session(&self, session_id: &Uuid) -> JwtResult<()> {
         self.sessions.lock().await.remove(session_id);
         Ok(())
@@ -97,6 +121,54 @@ async fn issues_verifies_refreshes_and_revokes() {
         manager.verify_access_token(&refreshed.access_token).await,
         Err(JwtError::SessionRevoked)
     ));
+}
+
+#[tokio::test]
+async fn rotate_session_if_current_rejects_stale_refresh_state() {
+    let store = MemoryStore::default();
+    let session = SessionState {
+        id: Uuid::new_v7(),
+        user_id: Uuid::new_v7(),
+        roles: vec!["user".to_string()],
+        is_active: true,
+        access_token_fingerprint: "access-1".to_string(),
+        refresh_token_fingerprint: "refresh-1".to_string(),
+        refresh_token_id: Uuid::new_v7(),
+        refresh_token_version: 1,
+    };
+    store.create_session(&session).await.unwrap();
+
+    let mut rotated = session.clone();
+    rotated.access_token_fingerprint = "access-2".to_string();
+    rotated.refresh_token_fingerprint = "refresh-2".to_string();
+    rotated.refresh_token_id = Uuid::new_v7();
+    rotated.refresh_token_version = 2;
+
+    assert!(store
+        .rotate_session_if_current(
+            &rotated,
+            &session.refresh_token_fingerprint,
+            session.refresh_token_id,
+            session.refresh_token_version,
+        )
+        .await
+        .unwrap());
+
+    let mut stale_rotation = rotated.clone();
+    stale_rotation.access_token_fingerprint = "access-3".to_string();
+    stale_rotation.refresh_token_fingerprint = "refresh-3".to_string();
+    stale_rotation.refresh_token_id = Uuid::new_v7();
+    stale_rotation.refresh_token_version = 3;
+
+    assert!(!store
+        .rotate_session_if_current(
+            &stale_rotation,
+            &session.refresh_token_fingerprint,
+            session.refresh_token_id,
+            session.refresh_token_version,
+        )
+        .await
+        .unwrap());
 }
 
 mod key_generation {

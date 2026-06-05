@@ -164,6 +164,11 @@ Rules:
   support
 - migration bundle and seed bundle formats are shared operational artifacts, not
   consumer-app private conventions
+- `MigrationBundleRef` is the public digest-pinned bundle-ref construction seam
+  for migration run operations
+- local bundle-store and remote registry modules are implementation internals;
+  callers use build, publish, pull, and run options instead of store-specific
+  helpers
 - migration reports are durable post-run evidence over
   `underlay-migration-core` artifacts, not ephemeral console-only output
 - devtools may expose CLI-friendly wrappers, but the shared contract is the

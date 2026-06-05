@@ -12,7 +12,7 @@ fn audit_action_round_trip() {
 
     for action in actions {
         let s = action.as_str();
-        let parsed = AuditAction::from_str(s);
+        let parsed = AuditAction::parse_lossy(s);
         assert_eq!(action, parsed);
     }
 }

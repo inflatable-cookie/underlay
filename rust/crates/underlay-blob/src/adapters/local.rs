@@ -14,7 +14,8 @@ use tokio::io::AsyncWriteExt;
 use crate::adapter::BlobAdapter;
 use crate::error::{BlobError, BlobResult};
 use crate::types::{
-    DownloadRequest, ObjectInfo, SignedUrl, StoredObject, UploadPlan, UploadRequest,
+    validate_blob_object_key, BlobObjectKeyError, DownloadRequest, ObjectInfo, SignedUrl,
+    StoredObject, UploadPlan, UploadRequest,
 };
 
 /// Configuration for the local filesystem adapter.
@@ -104,8 +105,9 @@ impl LocalAdapter {
     }
 
     /// Get the full filesystem path for a key.
-    pub fn path_for_key(&self, key: &str) -> PathBuf {
-        self.config.base_path.join(key)
+    pub fn path_for_key(&self, key: &str) -> BlobResult<PathBuf> {
+        validate_local_object_key(key)?;
+        Ok(self.config.base_path.join(key))
     }
 
     /// Write a file to the local filesystem.
@@ -118,7 +120,7 @@ impl LocalAdapter {
         data: &[u8],
         content_type: &str,
     ) -> BlobResult<StoredObject> {
-        let path = self.path_for_key(key);
+        let path = self.path_for_key(key)?;
 
         // Create parent directories if needed
         if let Some(parent) = path.parent() {
@@ -155,7 +157,7 @@ impl LocalAdapter {
     /// This is used by a development-only HTTP endpoint to serve files.
     /// It should NOT be exposed in production.
     pub async fn read_file(&self, key: &str) -> BlobResult<Vec<u8>> {
-        let path = self.path_for_key(key);
+        let path = self.path_for_key(key)?;
 
         fs::read(&path).await.map_err(|e| {
             if e.kind() == std::io::ErrorKind::NotFound {
@@ -294,7 +296,7 @@ impl BlobAdapter for LocalAdapter {
     }
 
     async fn delete(&self, key: &str) -> BlobResult<()> {
-        let path = self.path_for_key(key);
+        let path = self.path_for_key(key)?;
 
         match fs::remove_file(&path).await {
             Ok(()) => {
@@ -308,7 +310,7 @@ impl BlobAdapter for LocalAdapter {
     }
 
     async fn head(&self, key: &str) -> BlobResult<ObjectInfo> {
-        let path = self.path_for_key(key);
+        let path = self.path_for_key(key)?;
 
         let metadata = fs::metadata(&path).await.map_err(|e| {
             if e.kind() == std::io::ErrorKind::NotFound {
@@ -337,7 +339,7 @@ impl BlobAdapter for LocalAdapter {
     }
 
     async fn get_bytes(&self, key: &str) -> BlobResult<Vec<u8>> {
-        let path = self.path_for_key(key);
+        let path = self.path_for_key(key)?;
 
         fs::read(&path).await.map_err(|e| {
             if e.kind() == std::io::ErrorKind::NotFound {
@@ -373,6 +375,22 @@ impl BlobAdapter for LocalAdapter {
 
         Ok(())
     }
+}
+
+fn validate_local_object_key(key: &str) -> BlobResult<()> {
+    validate_blob_object_key(key).map_err(|err| {
+        BlobError::InvalidKey(match err {
+            BlobObjectKeyError::Empty => "key must not be empty".to_string(),
+            BlobObjectKeyError::Absolute => "key must be a relative object path".to_string(),
+            BlobObjectKeyError::InvalidCharacter => "key contains an invalid character".to_string(),
+            BlobObjectKeyError::TraversalComponent => {
+                "key must not contain traversal components".to_string()
+            }
+            BlobObjectKeyError::InvalidComponent => {
+                "key contains an invalid path component".to_string()
+            }
+        })
+    })
 }
 
 impl std::fmt::Debug for LocalAdapter {

@@ -2,7 +2,7 @@ use thiserror::Error;
 
 #[derive(Debug, Error)]
 pub enum SecurityAlertError {
-    #[error("invalid table name; only alphanumeric, underscore, and dot are allowed")]
+    #[error("invalid table name")]
     InvalidTableName,
 
     #[error("database error: {0}")]

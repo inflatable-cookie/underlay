@@ -199,11 +199,13 @@ where
         let analysis = self.analyzer.analyze(password);
 
         if self.is_compromised_password(password).await? {
-            return Err(PasswordAuthError::PasswordCompromised.into());
+            return Err(PasswordAuthError::PasswordCompromised);
         }
 
         if analysis.strength < crate::strength::PasswordStrength::Fair {
-            return Err(PasswordAuthError::PasswordTooWeak(analysis.feedback.join(". ")).into());
+            return Err(PasswordAuthError::PasswordTooWeak(
+                analysis.feedback.join(". "),
+            ));
         }
 
         let new_hash = self.hasher.hash_password(password.as_bytes())?;
@@ -213,7 +215,7 @@ where
                 .verifier
                 .verify_password(password.as_bytes(), &existing.secret_encrypted)?
             {
-                return Err(PasswordAuthError::PasswordSameAsCurrent.into());
+                return Err(PasswordAuthError::PasswordSameAsCurrent);
             }
 
             self.repository
@@ -268,8 +270,7 @@ where
         if rate_result.is_denied() {
             return Err(PasswordAuthError::RateLimited {
                 retry_after_seconds: rate_result.retry_after_secs(),
-            }
-            .into());
+            });
         }
 
         let user = match self
@@ -295,8 +296,7 @@ where
         {
             return Err(PasswordAuthError::AccountLocked {
                 retry_after_seconds,
-            }
-            .into());
+            });
         }
 
         let credential = match self.repository.find_password_credential(user.id).await? {
@@ -307,9 +307,9 @@ where
         let password_hash = match &credential.metadata {
             CredentialMetadata::Password { .. } => &credential.secret_encrypted,
             _ => {
-                return Err(
-                    PasswordAuthError::Internal("Invalid credential type".to_string()).into(),
-                );
+                return Err(PasswordAuthError::Internal(
+                    "Invalid credential type".to_string(),
+                ));
             }
         };
 
@@ -333,13 +333,11 @@ where
             if let Some(retry_after_seconds) = attempt.lockout_remaining_seconds {
                 Err(PasswordAuthError::AccountLocked {
                     retry_after_seconds,
-                }
-                .into())
+                })
             } else if attempt.count >= self.config.max_failed_attempts {
                 Err(PasswordAuthError::AccountLocked {
                     retry_after_seconds: self.config.lockout_duration_seconds,
-                }
-                .into())
+                })
             } else {
                 Err(PasswordAuthError::WrongPassword)
             }
@@ -356,16 +354,18 @@ where
         let analysis = self.analyzer.analyze(new_password);
 
         if self.is_compromised_password(new_password).await? {
-            return Err(PasswordAuthError::PasswordCompromised.into());
+            return Err(PasswordAuthError::PasswordCompromised);
         }
 
         if analysis.strength < crate::strength::PasswordStrength::Fair {
-            return Err(PasswordAuthError::PasswordTooWeak(analysis.feedback.join(". ")).into());
+            return Err(PasswordAuthError::PasswordTooWeak(
+                analysis.feedback.join(". "),
+            ));
         }
 
         let credential = match self.repository.find_password_credential(user_id).await? {
             Some(c) => c,
-            None => return Err(PasswordAuthError::CredentialNotFound.into()),
+            None => return Err(PasswordAuthError::CredentialNotFound),
         };
 
         let current_hash = &credential.secret_encrypted;
@@ -381,7 +381,7 @@ where
             .verifier
             .verify_password(new_password.as_bytes(), current_hash)?
         {
-            return Err(PasswordAuthError::PasswordSameAsCurrent.into());
+            return Err(PasswordAuthError::PasswordSameAsCurrent);
         }
 
         let new_hash = self.hasher.hash_password(new_password.as_bytes())?;
@@ -402,16 +402,18 @@ where
         let analysis = self.analyzer.analyze(new_password);
 
         if self.is_compromised_password(new_password).await? {
-            return Err(PasswordAuthError::PasswordCompromised.into());
+            return Err(PasswordAuthError::PasswordCompromised);
         }
 
         if analysis.strength < crate::strength::PasswordStrength::Fair {
-            return Err(PasswordAuthError::PasswordTooWeak(analysis.feedback.join(". ")).into());
+            return Err(PasswordAuthError::PasswordTooWeak(
+                analysis.feedback.join(". "),
+            ));
         }
 
         let credential = match self.repository.find_password_credential(user_id).await? {
             Some(c) => c,
-            None => return Err(PasswordAuthError::CredentialNotFound.into()),
+            None => return Err(PasswordAuthError::CredentialNotFound),
         };
 
         let new_hash = self.hasher.hash_password(new_password.as_bytes())?;

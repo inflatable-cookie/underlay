@@ -1,10 +1,123 @@
 //! Core types for blob storage operations.
 
 use std::collections::HashMap;
+use std::fmt;
+use std::path::{Component, Path};
+use std::str::FromStr;
 use std::time::Duration;
 
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+
+/// Error returned when an object key is not safe for Underlay blob storage.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum BlobObjectKeyError {
+    Empty,
+    Absolute,
+    InvalidCharacter,
+    TraversalComponent,
+    InvalidComponent,
+}
+
+impl fmt::Display for BlobObjectKeyError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Empty => write!(f, "object key must not be empty"),
+            Self::Absolute => write!(f, "object key must be a relative path"),
+            Self::InvalidCharacter => write!(f, "object key contains an invalid character"),
+            Self::TraversalComponent => {
+                write!(f, "object key must not contain traversal components")
+            }
+            Self::InvalidComponent => write!(f, "object key contains an invalid path component"),
+        }
+    }
+}
+
+impl std::error::Error for BlobObjectKeyError {}
+
+/// Validated object key for Underlay blob storage.
+///
+/// This type rejects absolute paths, traversal components, backslashes, null
+/// bytes, and control characters before an adapter sees the key.
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(try_from = "String", into = "String")]
+pub struct BlobObjectKey(String);
+
+impl BlobObjectKey {
+    pub fn parse(value: impl AsRef<str>) -> Result<Self, BlobObjectKeyError> {
+        let value = value.as_ref();
+        validate_blob_object_key(value)?;
+        Ok(Self(value.to_string()))
+    }
+
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+
+    pub fn into_string(self) -> String {
+        self.0
+    }
+}
+
+impl fmt::Display for BlobObjectKey {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+
+impl FromStr for BlobObjectKey {
+    type Err = BlobObjectKeyError;
+
+    fn from_str(value: &str) -> Result<Self, Self::Err> {
+        Self::parse(value)
+    }
+}
+
+impl TryFrom<String> for BlobObjectKey {
+    type Error = BlobObjectKeyError;
+
+    fn try_from(value: String) -> Result<Self, Self::Error> {
+        Self::parse(value)
+    }
+}
+
+impl From<BlobObjectKey> for String {
+    fn from(value: BlobObjectKey) -> Self {
+        value.into_string()
+    }
+}
+
+pub fn validate_blob_object_key(key: &str) -> Result<(), BlobObjectKeyError> {
+    if key.trim().is_empty() {
+        return Err(BlobObjectKeyError::Empty);
+    }
+    if key.starts_with('/') || key.starts_with('\\') {
+        return Err(BlobObjectKeyError::Absolute);
+    }
+    if key
+        .chars()
+        .any(|ch| ch.is_control() || matches!(ch, '\\' | '\0'))
+    {
+        return Err(BlobObjectKeyError::InvalidCharacter);
+    }
+
+    for component in Path::new(key).components() {
+        match component {
+            Component::Normal(part) if !part.is_empty() => {}
+            Component::CurDir
+            | Component::ParentDir
+            | Component::RootDir
+            | Component::Prefix(_) => {
+                return Err(BlobObjectKeyError::TraversalComponent);
+            }
+            Component::Normal(_) => {
+                return Err(BlobObjectKeyError::InvalidComponent);
+            }
+        }
+    }
+
+    Ok(())
+}
 
 /// Request to initiate an upload.
 #[derive(Debug, Clone)]
@@ -39,6 +152,15 @@ impl UploadRequest {
             expires_in: Duration::from_secs(3600), // 1 hour default
             metadata: HashMap::new(),
         }
+    }
+
+    /// Create a new upload request from a pre-validated object key.
+    pub fn from_object_key(
+        key: BlobObjectKey,
+        content_type: impl Into<String>,
+        content_length: u64,
+    ) -> Self {
+        Self::new(key.into_string(), content_type, content_length)
     }
 
     /// Set the expiration duration for the upload URL.
@@ -172,6 +294,11 @@ impl DownloadRequest {
             expires_in: Duration::from_secs(300), // 5 minutes default
             filename: None,
         }
+    }
+
+    /// Create a new download request from a pre-validated object key.
+    pub fn from_object_key(key: BlobObjectKey) -> Self {
+        Self::new(key.into_string())
     }
 
     /// Set the expiration duration.

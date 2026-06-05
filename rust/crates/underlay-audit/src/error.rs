@@ -4,7 +4,7 @@
 #[derive(Debug, thiserror::Error)]
 pub enum AuditError {
     /// Invalid table name (potential SQL injection).
-    #[error("invalid table name: must contain only alphanumeric, underscore, or dot")]
+    #[error("invalid table name")]
     InvalidTableName,
 
     /// Database error.

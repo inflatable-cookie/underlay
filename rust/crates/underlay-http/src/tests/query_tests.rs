@@ -72,8 +72,10 @@ fn test_filter_operator_parse() {
 
 #[test]
 fn test_sql_order_by() {
-    let mut params = QueryParams::default();
-    params.sort = parse_sort_string("title:asc,weight:desc");
+    let params = QueryParams {
+        sort: parse_sort_string("title:asc,weight:desc"),
+        ..Default::default()
+    };
 
     let mut field_map = HashMap::new();
     field_map.insert("title", "m.title");
@@ -85,8 +87,10 @@ fn test_sql_order_by() {
 
 #[test]
 fn test_sql_order_by_unknown_field() {
-    let mut params = QueryParams::default();
-    params.sort = parse_sort_string("title:asc,unknown:desc");
+    let params = QueryParams {
+        sort: parse_sort_string("title:asc,unknown:desc"),
+        ..Default::default()
+    };
 
     let mut field_map = HashMap::new();
     field_map.insert("title", "m.title");

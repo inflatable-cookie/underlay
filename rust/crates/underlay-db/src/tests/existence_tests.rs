@@ -47,5 +47,27 @@ fn test_exists_check_nullable_none() {
     }
 }
 
+#[test]
+fn typed_value_exists_query_quotes_identifiers() {
+    let table = QualifiedTableName::from_schema_table("content", "summary_item").unwrap();
+    let column = SqlIdentifier::parse("slug").unwrap();
+
+    assert_eq!(
+        value_exists_query(&table, &column, false),
+        "SELECT EXISTS(SELECT 1 FROM \"content\".\"summary_item\" WHERE \"slug\" = $1 AND deleted_at IS NULL)"
+    );
+}
+
+#[test]
+fn typed_value_exists_query_excludes_current_id() {
+    let table = QualifiedTableName::from_schema_table("learning", "pathway").unwrap();
+    let column = SqlIdentifier::parse("slug").unwrap();
+
+    assert_eq!(
+        value_exists_query(&table, &column, true),
+        "SELECT EXISTS(SELECT 1 FROM \"learning\".\"pathway\" WHERE \"slug\" = $1 AND id <> $2 AND deleted_at IS NULL)"
+    );
+}
+
 // Note: Integration tests with actual database connections should be
 // in the tests/ directory using testcontainers.

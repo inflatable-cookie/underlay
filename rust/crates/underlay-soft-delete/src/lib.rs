@@ -304,13 +304,13 @@ macro_rules! impl_soft_deletable {
 /// impl_restore_single!(restore_summary, "content.summary_item");
 ///
 /// // Generates:
-/// // pub async fn restore_summary(pool: &DbPool, id: Uuid) -> Result<u64, sqlx::Error>
+/// // pub async fn restore_summary(pool: &sqlx::PgPool, id: Uuid) -> Result<u64, sqlx::Error>
 /// ```
 #[macro_export]
 macro_rules! impl_restore_single {
     ($fn_name:ident, $table:literal) => {
         pub async fn $fn_name(
-            pool: &crate::DbPool,
+            pool: &sqlx::PgPool,
             id: uuid::Uuid,
         ) -> Result<u64, sqlx::Error> {
             let result = sqlx::query(concat!(
@@ -338,12 +338,12 @@ macro_rules! impl_restore_single {
 /// impl_purge_single!(purge_summary, "content.summary_item");
 ///
 /// // Generates:
-/// // pub async fn purge_summary(pool: &DbPool, id: Uuid) -> Result<u64, sqlx::Error>
+/// // pub async fn purge_summary(pool: &sqlx::PgPool, id: Uuid) -> Result<u64, sqlx::Error>
 /// ```
 #[macro_export]
 macro_rules! impl_purge_single {
     ($fn_name:ident, $table:literal) => {
-        pub async fn $fn_name(pool: &crate::DbPool, id: uuid::Uuid) -> Result<u64, sqlx::Error> {
+        pub async fn $fn_name(pool: &sqlx::PgPool, id: uuid::Uuid) -> Result<u64, sqlx::Error> {
             let result = sqlx::query(concat!(
                 "DELETE FROM ",
                 $table,

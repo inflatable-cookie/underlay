@@ -57,6 +57,7 @@ It distinguishes:
 | [119-helper-search-and-lookup-route-catalogue.md](./119-helper-search-and-lookup-route-catalogue.md) | active | helper-route naming, lookup/search/suggest/detect/status catalogue, bounded helper envelope rules | `020`, `026`, `118`, six-site helper cleanup evidence | settles the repeated non-resource helper family so lookup/search/status routes stop drifting as one-off exceptions |
 | [120-tooling-testing-and-contract-artifacts.md](./120-tooling-testing-and-contract-artifacts.md) | active | testing helpers, devtools, scanners, guardrails, machine-readable contract artifacts | `underlay-testing`, `underlay-devtools`, `ts/src/tools/**`, `ts/src/testing/**`, `contracts/**` | settles the shared support-layer boundary and records current artifact/tooling drift |
 | [121-underlay-app-review-checklist-and-audit-artifact.md](./121-underlay-app-review-checklist-and-audit-artifact.md) | active | retained app-audit checklist contract and machine-readable review artifact | `021`, `022`, `024`, `025`, `111`, `120`, app-review checklist JSON | settles how the live contract set turns into repeatable consumer-app audits instead of one-off manual review formats |
+| [122-rust-public-api-inventory.md](./122-rust-public-api-inventory.md) | active | Rust public API inventory and first platform-contract migration gates | `g06.001`, Rust crate export scan, six-consumer dependency evidence | classifies stable, adapter, internal, candidate-type, and candidate-remove surfaces before the typed-boundary migration proceeds |
 
 ## Assessment Order After Coverage
 
@@ -97,7 +98,6 @@ Do not promote a system into active implementation-assessment work until:
 
 ## Next Task
 
-The active contract wave is live inside `g05`.
+The active contract wave is live inside `g06`.
 
-Do not open a new roadmap generation for fresh contract-driven work unless the
-active generation is explicitly rolled over.
+Execute `g06.015`: Rust platform transition release-note handoff.

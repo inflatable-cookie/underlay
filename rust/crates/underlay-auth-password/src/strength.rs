@@ -248,9 +248,7 @@ impl PasswordStrengthAnalyzer {
         }
         feedback.extend(zxcvbn_feedback);
 
-        let strength = if is_common {
-            PasswordStrength::VeryWeak
-        } else if length < self.min_length {
+        let strength = if is_common || length < self.min_length {
             PasswordStrength::VeryWeak
         } else {
             match zxcvbn_score {

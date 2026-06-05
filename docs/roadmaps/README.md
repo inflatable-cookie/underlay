@@ -51,10 +51,36 @@ README surfaces.
 
 ## Active generation
 
-- `g05`
+- `g06`
 
 ## Current Queue
 
+- `g06.001` is complete as the Rust platform contract transition and public API
+  inventory gate
+- `g06.002` is complete as the typed safety primitive and construction-boundary
+  migration lane
+- `g06.003` is complete as the auth/session contract reset and refresh-rotation
+  rollout proof
+- `g06.004` is complete as the HTTP safe-builder consolidation and consumer
+  cookie cleanup lane
+- `g06.005` is complete as the DB identifier and schema boundary normalization
+  lane
+- `g06.006` is complete as the media repository contract and adapter split
+  completion lane
+- `g06.007` is complete as the devtools bundle/store boundary isolation lane
+- `g06.008` is complete as the six-consumer compatibility proof and
+  release-note closeout lane
+- `g06.009` is complete as the Effigy doctor structural backlog triage lane
+- `g06.010` is complete as the first Rust god-file split repair batch
+- `g06.011` is complete as the second Rust structural split repair batch
+- `g06.012` is complete as the high-severity Rust structural backlog triage
+  lane
+- `g06.013` is complete as the security-adjacent Rust adapter split batch
+- `g06.014` is complete as the Rust platform transition validation and
+  release-readiness closeout
+- `g06.015` is next as the Rust platform transition release-note handoff
+- `g05` is closed as the shared-page, workflow-template, media capability,
+  dev-flow contract, and query-variant convergence generation
 - `g05.024` is complete as the Marking Hub query variant proof and rollout
 - `g05.023` is complete as the EntityList query variant integration
 - `g05.022` is complete as the list query variant API contract
@@ -92,8 +118,11 @@ README surfaces.
 
 ## Historical Generations
 
-- [g05/README.md](g05/README.md) — active shared-page and workflow-template
-  and dev-flow contract generation
+- [g06/README.md](g06/README.md) — active Rust platform-contract transition
+  generation
+- [g05/README.md](g05/README.md) — shared-page, workflow-template, media
+  capability, dev-flow contract, and query-variant convergence generation
+  (complete)
 - [g02/README.md](g02/README.md) — Poodle-era consumer normalization and
   overhaul (complete)
 - [g01/README.md](g01/README.md) — Extraction, contraction, and retained-surface
@@ -165,9 +194,7 @@ README surfaces.
 
 ## Next Task
 
-Promote a follow-on query-variant batch only for a true named baseline-query
-surface. Current candidates are Composer moderation queue and the shared
-platform-system jobs lists.
+Execute `g06.015`: Rust platform transition release-note handoff.
 - `g01.090` is complete for confirming that the remaining public `@decodelabs/underlay/patterns` surface is the true retained workflow stop point rather than unresolved migration debt
 - `g01.091` is complete for confirming the retained `client` package boundary, exposing explicit `client/*` public subpaths for the live feature families, and keeping the root barrel stable as a convenience surface
 - `g01.092` is complete for confirming the retained `nightfire` package boundary, exposing explicit `nightfire/*` public subpaths for the live extension families, and keeping the root barrel stable as a convenience surface
@@ -318,13 +345,12 @@ views, and the unused `embed` package surface is no longer exported.
 
 ## Active Lane
 
-`g02.001` is now the live planning/control lane.
+`g06.015` is now the live planning/control lane.
 
-Underlay’s old Poodle-contraction queue is materially complete and `g01`
-closed by reopening the real shared-surface queue. The live work now belongs
-in a fresh generation focused on consumer normalization and overhaul delivery
-across Underlay, Poodle, and the current app family rather than as one more
-oversized contraction tail card.
+Underlay’s shared-surface convergence queue is materially complete and `g05`
+is closed. The live work now belongs in a fresh generation focused on Rust
+platform contracts, typed safety boundaries, and consumer-proofed migration
+waves.
 
 ## Complete
 
@@ -345,5 +371,4 @@ queue and proving the next honest work belonged in `g02`.
 
 Execute the live queue:
 
-- `g03.015`: execute the task-form proof milestone for the template-system
-  thread
+- `g06.008`: six-consumer compatibility proof and release-note closeout

@@ -240,6 +240,22 @@ Rules:
 - app-owned migration binaries are allowed for execution surfaces, but the
   durable schema change itself should remain visible as migration input
 
+### Dynamic identifier rule
+
+Runtime SQL values must stay bound parameters. Runtime SQL identifiers must be
+validated and quoted through the shared DB identifier boundary.
+
+Rules:
+
+- new shared DB-adjacent APIs should prefer `SqlIdentifier` and
+  `QualifiedTableName`
+- raw schema, table, and column string helpers are compatibility surface unless
+  a roadmap explicitly deprecates them
+- destructive schema helpers must parse schema names as `SqlIdentifier` and
+  quote them before SQL execution
+- dynamic table names in audit, security alert, media, existence, and dev/test
+  helpers must not be interpolated without validation and quoting
+
 ## What Good Looks Like
 
 Good outcomes:

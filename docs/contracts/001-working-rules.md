@@ -43,11 +43,11 @@ In parallel mode:
 
 Underlay is in parallel mode:
 
-- `g03` owns the template-system thread
-- `g04` owns the contract-coverage and assessment thread
+- `g06` owns the Rust platform-contract transition thread
+- `g03`, `g04`, and `g05` are closed historical generations
 - there is no active strict master spec at the repo level right now
 
 ## Next Task
 
-Keep the `g03` and `g04` front doors current independently and open a new spec
-only if one thread needs provisional planning beyond its roadmap and contracts.
+Execute `g06.015` and open a new spec only if the Rust platform-contract lane
+needs provisional planning beyond its roadmap and contracts.

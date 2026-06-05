@@ -5,6 +5,14 @@
 
 use axum::http::{header, HeaderMap, HeaderValue};
 
+mod validation;
+use std::fmt;
+use std::str::FromStr;
+pub use validation::AuthCookieError;
+use validation::{
+    validate_cookie_domain, validate_cookie_name, validate_cookie_path, validate_cookie_value,
+};
+
 /// SameSite cookie policy.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub enum SameSite {
@@ -24,6 +32,96 @@ impl SameSite {
             SameSite::Strict => "Strict",
             SameSite::None => "None",
         }
+    }
+}
+
+/// Validated cookie name.
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct CookieName(String);
+
+impl CookieName {
+    pub fn parse(value: impl AsRef<str>) -> Result<Self, AuthCookieError> {
+        let value = value.as_ref();
+        validate_cookie_name(value)?;
+        Ok(Self(value.to_string()))
+    }
+
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+}
+
+impl fmt::Display for CookieName {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+
+impl FromStr for CookieName {
+    type Err = AuthCookieError;
+
+    fn from_str(value: &str) -> Result<Self, Self::Err> {
+        Self::parse(value)
+    }
+}
+
+/// Validated cookie path.
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct CookiePath(String);
+
+impl CookiePath {
+    pub fn parse(value: impl AsRef<str>) -> Result<Self, AuthCookieError> {
+        let value = value.as_ref();
+        validate_cookie_path(value)?;
+        Ok(Self(value.to_string()))
+    }
+
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+}
+
+impl fmt::Display for CookiePath {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+
+impl FromStr for CookiePath {
+    type Err = AuthCookieError;
+
+    fn from_str(value: &str) -> Result<Self, Self::Err> {
+        Self::parse(value)
+    }
+}
+
+/// Validated cookie domain.
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct CookieDomain(String);
+
+impl CookieDomain {
+    pub fn parse(value: impl AsRef<str>) -> Result<Self, AuthCookieError> {
+        let value = value.as_ref();
+        validate_cookie_domain(value)?;
+        Ok(Self(value.to_string()))
+    }
+
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+}
+
+impl fmt::Display for CookieDomain {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+
+impl FromStr for CookieDomain {
+    type Err = AuthCookieError;
+
+    fn from_str(value: &str) -> Result<Self, Self::Err> {
+        Self::parse(value)
     }
 }
 
@@ -98,6 +196,18 @@ impl AuthCookieConfig {
         self
     }
 
+    /// Set a pre-validated cookie domain.
+    pub fn with_cookie_domain(mut self, domain: CookieDomain) -> Self {
+        self.domain = Some(domain.to_string());
+        self
+    }
+
+    /// Validate and set the cookie domain.
+    pub fn try_with_domain(mut self, domain: impl AsRef<str>) -> Result<Self, AuthCookieError> {
+        self.domain = Some(CookieDomain::parse(domain)?.to_string());
+        Ok(self)
+    }
+
     /// Set whether cookies should be secure (HTTPS only).
     pub fn with_secure(mut self, secure: bool) -> Self {
         self.secure = secure;
@@ -125,6 +235,16 @@ impl AuthCookieConfig {
         self
     }
 
+    /// Validate and set a prefix for cookie names.
+    pub fn try_with_cookie_prefix(
+        mut self,
+        prefix: impl AsRef<str>,
+    ) -> Result<Self, AuthCookieError> {
+        validation::validate_cookie_name_prefix(prefix.as_ref())?;
+        self.cookie_prefix = prefix.as_ref().to_string();
+        Ok(self)
+    }
+
     /// Set the path for the refresh token cookie.
     ///
     /// Default is "/v1/auth". Set to "/" to send refresh token with all requests.
@@ -133,14 +253,53 @@ impl AuthCookieConfig {
         self
     }
 
+    /// Set a pre-validated path for the refresh token cookie.
+    pub fn with_refresh_cookie_path(mut self, path: CookiePath) -> Self {
+        self.refresh_token_path = path.to_string();
+        self
+    }
+
+    /// Validate and set the path for the refresh token cookie.
+    pub fn try_with_refresh_token_path(
+        mut self,
+        path: impl AsRef<str>,
+    ) -> Result<Self, AuthCookieError> {
+        self.refresh_token_path = CookiePath::parse(path)?.to_string();
+        Ok(self)
+    }
+
     /// Get the full refresh token cookie name (with prefix).
     pub fn refresh_token_name(&self) -> String {
         format!("{}refresh_token", self.cookie_prefix)
     }
 
+    /// Get the validated refresh token cookie name.
+    pub fn refresh_token_cookie_name(&self) -> Result<CookieName, AuthCookieError> {
+        CookieName::parse(self.refresh_token_name())
+    }
+
     /// Get the full logged_in cookie name (with prefix).
     pub fn logged_in_name(&self) -> String {
         format!("{}logged_in", self.cookie_prefix)
+    }
+
+    /// Get the validated logged_in cookie name.
+    pub fn logged_in_cookie_name(&self) -> Result<CookieName, AuthCookieError> {
+        CookieName::parse(self.logged_in_name())
+    }
+
+    /// Get the full CSRF token cookie name (with prefix).
+    pub fn csrf_token_name(&self) -> String {
+        format!("{}csrf_token", self.cookie_prefix)
+    }
+
+    /// Get the validated CSRF token cookie name.
+    pub fn csrf_token_cookie_name(&self) -> Result<CookieName, AuthCookieError> {
+        CookieName::parse(self.csrf_token_name())
+    }
+
+    pub fn validate(&self) -> Result<(), AuthCookieError> {
+        validation::validate_config(self)
     }
 }
 
@@ -151,7 +310,12 @@ impl AuthCookieConfig {
 /// - Secure (only sent over HTTPS, unless config.secure is false)
 /// - SameSite configurable (default: Lax)
 /// - Path configurable (default: /v1/auth)
-pub fn refresh_token_cookie(token: &str, config: &AuthCookieConfig) -> String {
+pub fn refresh_token_cookie(
+    token: &str,
+    config: &AuthCookieConfig,
+) -> Result<String, AuthCookieError> {
+    config.validate()?;
+    validate_cookie_value(token)?;
     let mut cookie = format!(
         "{}={}; HttpOnly; SameSite={}; Path={}; Max-Age={}",
         config.refresh_token_name(),
@@ -169,11 +333,12 @@ pub fn refresh_token_cookie(token: &str, config: &AuthCookieConfig) -> String {
         cookie.push_str(&format!("; Domain={}", domain));
     }
 
-    cookie
+    Ok(cookie)
 }
 
 /// Build a Set-Cookie header value to clear the refresh token.
-pub fn clear_refresh_token_cookie(config: &AuthCookieConfig) -> String {
+pub fn clear_refresh_token_cookie(config: &AuthCookieConfig) -> Result<String, AuthCookieError> {
+    config.validate()?;
     let mut cookie = format!(
         "{}=; HttpOnly; SameSite={}; Path={}; Max-Age=0",
         config.refresh_token_name(),
@@ -189,7 +354,7 @@ pub fn clear_refresh_token_cookie(config: &AuthCookieConfig) -> String {
         cookie.push_str(&format!("; Domain={}", domain));
     }
 
-    cookie
+    Ok(cookie)
 }
 
 /// Build a Set-Cookie header value for the logged_in indicator.
@@ -199,7 +364,8 @@ pub fn clear_refresh_token_cookie(config: &AuthCookieConfig) -> String {
 /// - Secure (only sent over HTTPS, unless config.secure is false)
 /// - SameSite configurable (default: Lax)
 /// - Path=/ (available to all pages)
-pub fn logged_in_cookie(config: &AuthCookieConfig) -> String {
+pub fn logged_in_cookie(config: &AuthCookieConfig) -> Result<String, AuthCookieError> {
+    config.validate()?;
     let mut cookie = format!(
         "{}=1; SameSite={}; Path=/; Max-Age={}",
         config.logged_in_name(),
@@ -215,11 +381,12 @@ pub fn logged_in_cookie(config: &AuthCookieConfig) -> String {
         cookie.push_str(&format!("; Domain={}", domain));
     }
 
-    cookie
+    Ok(cookie)
 }
 
 /// Build a Set-Cookie header value to clear the logged_in indicator.
-pub fn clear_logged_in_cookie(config: &AuthCookieConfig) -> String {
+pub fn clear_logged_in_cookie(config: &AuthCookieConfig) -> Result<String, AuthCookieError> {
+    config.validate()?;
     let mut cookie = format!(
         "{}=; SameSite={}; Path=/; Max-Age=0",
         config.logged_in_name(),
@@ -234,7 +401,57 @@ pub fn clear_logged_in_cookie(config: &AuthCookieConfig) -> String {
         cookie.push_str(&format!("; Domain={}", domain));
     }
 
-    cookie
+    Ok(cookie)
+}
+
+/// Build a Set-Cookie header value for the CSRF token.
+///
+/// The CSRF token cookie is readable by JavaScript so browser clients can send
+/// it back in a request header. It uses the same domain, Secure, SameSite, and
+/// lifetime settings as the auth cookies.
+pub fn csrf_token_cookie(
+    token: &str,
+    config: &AuthCookieConfig,
+) -> Result<String, AuthCookieError> {
+    config.validate()?;
+    validate_cookie_value(token)?;
+    let mut cookie = format!(
+        "{}={}; SameSite={}; Path=/; Max-Age={}",
+        config.csrf_token_name(),
+        token,
+        config.same_site.as_str(),
+        config.refresh_token_max_age
+    );
+
+    if config.secure {
+        cookie.push_str("; Secure");
+    }
+
+    if let Some(domain) = &config.domain {
+        cookie.push_str(&format!("; Domain={}", domain));
+    }
+
+    Ok(cookie)
+}
+
+/// Build a Set-Cookie header value to clear the CSRF token.
+pub fn clear_csrf_token_cookie(config: &AuthCookieConfig) -> Result<String, AuthCookieError> {
+    config.validate()?;
+    let mut cookie = format!(
+        "{}=; SameSite={}; Path=/; Max-Age=0",
+        config.csrf_token_name(),
+        config.same_site.as_str()
+    );
+
+    if config.secure {
+        cookie.push_str("; Secure");
+    }
+
+    if let Some(domain) = &config.domain {
+        cookie.push_str(&format!("; Domain={}", domain));
+    }
+
+    Ok(cookie)
 }
 
 /// Extract the refresh token from the Cookie header using the config's cookie name.
@@ -243,6 +460,26 @@ pub fn clear_logged_in_cookie(config: &AuthCookieConfig) -> String {
 pub fn extract_refresh_token(headers: &HeaderMap, config: &AuthCookieConfig) -> Option<String> {
     let cookie_header = headers.get(header::COOKIE)?.to_str().ok()?;
     let cookie_name = config.refresh_token_name();
+    let prefix = format!("{}=", cookie_name);
+
+    for cookie in cookie_header.split(';') {
+        let cookie = cookie.trim();
+        if let Some(value) = cookie.strip_prefix(&prefix) {
+            if !value.is_empty() {
+                return Some(value.to_string());
+            }
+        }
+    }
+
+    None
+}
+
+/// Extract the CSRF token from the Cookie header using the config's cookie name.
+///
+/// Returns None if the cookie is not present or malformed.
+pub fn extract_csrf_token(headers: &HeaderMap, config: &AuthCookieConfig) -> Option<String> {
+    let cookie_header = headers.get(header::COOKIE)?.to_str().ok()?;
+    let cookie_name = config.csrf_token_name();
     let prefix = format!("{}=", cookie_name);
 
     for cookie in cookie_header.split(';') {
@@ -272,14 +509,27 @@ pub fn set_auth_cookies(
     headers: &mut HeaderMap,
     refresh_token: &str,
     config: &AuthCookieConfig,
-) -> Result<(), http::header::InvalidHeaderValue> {
+) -> Result<(), AuthCookieError> {
     headers.append(
         header::SET_COOKIE,
-        HeaderValue::from_str(&refresh_token_cookie(refresh_token, config))?,
+        HeaderValue::from_str(&refresh_token_cookie(refresh_token, config)?)?,
     );
     headers.append(
         header::SET_COOKIE,
-        HeaderValue::from_str(&logged_in_cookie(config))?,
+        HeaderValue::from_str(&logged_in_cookie(config)?)?,
+    );
+    Ok(())
+}
+
+/// Add a CSRF token cookie to a response's headers.
+pub fn set_csrf_cookie(
+    headers: &mut HeaderMap,
+    csrf_token: &str,
+    config: &AuthCookieConfig,
+) -> Result<(), AuthCookieError> {
+    headers.append(
+        header::SET_COOKIE,
+        HeaderValue::from_str(&csrf_token_cookie(csrf_token, config)?)?,
     );
     Ok(())
 }
@@ -290,14 +540,26 @@ pub fn set_auth_cookies(
 pub fn clear_auth_cookies(
     headers: &mut HeaderMap,
     config: &AuthCookieConfig,
-) -> Result<(), http::header::InvalidHeaderValue> {
+) -> Result<(), AuthCookieError> {
     headers.append(
         header::SET_COOKIE,
-        HeaderValue::from_str(&clear_refresh_token_cookie(config))?,
+        HeaderValue::from_str(&clear_refresh_token_cookie(config)?)?,
     );
     headers.append(
         header::SET_COOKIE,
-        HeaderValue::from_str(&clear_logged_in_cookie(config))?,
+        HeaderValue::from_str(&clear_logged_in_cookie(config)?)?,
+    );
+    Ok(())
+}
+
+/// Add a CSRF token clearing header to a response.
+pub fn clear_csrf_cookie(
+    headers: &mut HeaderMap,
+    config: &AuthCookieConfig,
+) -> Result<(), AuthCookieError> {
+    headers.append(
+        header::SET_COOKIE,
+        HeaderValue::from_str(&clear_csrf_token_cookie(config)?)?,
     );
     Ok(())
 }

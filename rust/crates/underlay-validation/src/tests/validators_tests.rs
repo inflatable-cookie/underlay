@@ -77,15 +77,15 @@ fn test_one_of() {
 
 #[test]
 fn test_not_empty() {
-    assert!(not_empty(&vec![1, 2, 3]).is_ok());
+    assert!(not_empty(&[1, 2, 3]).is_ok());
     assert!(not_empty(&Vec::<i32>::new()).is_err());
 }
 
 #[test]
 fn test_collection_length() {
-    assert!(collection_length(&vec![1, 2, 3], Some(1), Some(5)).is_ok());
-    assert!(collection_length(&vec![1], Some(2), None).is_err());
-    assert!(collection_length(&vec![1, 2, 3, 4, 5, 6], None, Some(5)).is_err());
+    assert!(collection_length(&[1, 2, 3], Some(1), Some(5)).is_ok());
+    assert!(collection_length(&[1], Some(2), None).is_err());
+    assert!(collection_length(&[1, 2, 3, 4, 5, 6], None, Some(5)).is_err());
 }
 
 #[test]
@@ -115,16 +115,16 @@ fn test_slug() {
 
 #[test]
 fn test_unique_items() {
-    assert!(unique_items(&vec!["a", "b", "c"]).is_ok());
-    assert!(unique_items(&vec![1, 2, 3]).is_ok());
-    assert!(unique_items(&vec!["a", "b", "a"]).is_err());
-    assert!(unique_items(&vec![1, 2, 1]).is_err());
+    assert!(unique_items(&["a", "b", "c"]).is_ok());
+    assert!(unique_items(&[1, 2, 3]).is_ok());
+    assert!(unique_items(&["a", "b", "a"]).is_err());
+    assert!(unique_items(&[1, 2, 1]).is_err());
     assert!(unique_items(&Vec::<i32>::new()).is_ok());
 }
 
 #[test]
 fn test_unique_items_detailed() {
-    assert!(unique_items_detailed(&vec!["a", "b", "c"]).is_ok());
-    let err = unique_items_detailed(&vec!["a", "b", "a", "c", "a"]).unwrap_err();
+    assert!(unique_items_detailed(&["a", "b", "c"]).is_ok());
+    let err = unique_items_detailed(&["a", "b", "a", "c", "a"]).unwrap_err();
     assert!(err.message.contains("2 duplicate"));
 }

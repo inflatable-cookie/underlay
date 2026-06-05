@@ -31,6 +31,13 @@ pub trait SessionStore: Send + Sync {
     async fn get_session(&self, session_id: &Uuid) -> JwtResult<Option<SessionState>>;
     async fn create_session(&self, session: &SessionState) -> JwtResult<()>;
     async fn update_session(&self, session: &SessionState) -> JwtResult<()>;
+    async fn rotate_session_if_current(
+        &self,
+        session: &SessionState,
+        expected_refresh_token_fingerprint: &str,
+        expected_refresh_token_id: Uuid,
+        expected_refresh_token_version: u32,
+    ) -> JwtResult<bool>;
     async fn delete_session(&self, session_id: &Uuid) -> JwtResult<()>;
     async fn revoke_all_user_sessions(&self, user_id: &Uuid) -> JwtResult<u64>;
     async fn get_user_sessions(&self, user_id: &Uuid) -> JwtResult<Vec<SessionState>>;
@@ -146,7 +153,18 @@ impl<S: SessionStore> SessionManager<S> {
         session.refresh_token_id = new_refresh_claims.common.token_id;
         session.refresh_token_version = new_refresh_claims.version;
 
-        self.store.update_session(&session).await?;
+        let rotated = self
+            .store
+            .rotate_session_if_current(
+                &session,
+                &token_fingerprint(refresh_token),
+                claims.common.token_id,
+                claims.version,
+            )
+            .await?;
+        if !rotated {
+            return Err(JwtError::RefreshReplayDetected);
+        }
 
         Ok(SessionTokens {
             access_token: new_access_token,

@@ -98,7 +98,7 @@ fn display_formatting_is_correct() {
 
 #[test]
 fn io_error_converts_to_internal() {
-    let io_err = std::io::Error::new(std::io::ErrorKind::Other, "test");
+    let io_err = std::io::Error::other("test");
     let auth_err: PasswordAuthError = io_err.into();
     assert!(matches!(auth_err, PasswordAuthError::Internal(msg) if msg.contains("test")));
 }

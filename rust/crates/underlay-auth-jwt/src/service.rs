@@ -182,9 +182,9 @@ impl JwtService {
             validation.set_required_spec_claims(&["exp", "iss", "sub"]);
         }
 
-        validation.set_issuer(&[self.config.issuer.clone()]);
+        validation.set_issuer(std::slice::from_ref(&self.config.issuer));
         if let Some(aud) = &self.config.audience {
-            validation.set_audience(&[aud.clone()]);
+            validation.set_audience(std::slice::from_ref(aud));
         }
 
         match decode::<serde_json::Value>(token, &self.decoding_key, &validation) {

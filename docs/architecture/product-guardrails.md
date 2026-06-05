@@ -11,10 +11,10 @@ Owner: repo maintainers
 - Keep Underlay-owned runtime/client/pattern boundaries separate from
   Poodle-owned visible UI surfaces.
 - Keep parallel generations genuinely independent when parallel mode is active.
-- Do not use the contract-coverage thread as a pretext to smuggle template
-  execution work out of `g03`.
+- Do not use the Rust platform-contract transition as a pretext to move
+  app-local behavior into Underlay without a stable reusable boundary.
 
 ## Next Task
 
-Execute `g03` and `g04` as separate queues and keep their front doors
-accurate.
+Execute `g06.015` and keep release-note handoff tied to the Rust
+platform-contract scope.

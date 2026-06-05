@@ -6,13 +6,8 @@ use crate::error::{SecurityAlertError, SecurityAlertResult};
 use crate::types::{LoginAttemptSignalCounts, SecurityAlertEventInput, SecurityAlertType};
 
 fn validate_table_name(table: &str) -> SecurityAlertResult<()> {
-    if !table
-        .chars()
-        .all(|c| c.is_alphanumeric() || c == '_' || c == '.')
-    {
-        return Err(SecurityAlertError::InvalidTableName);
-    }
-    Ok(())
+    underlay_db::validate_qualified_table_name(table)
+        .map_err(|_| SecurityAlertError::InvalidTableName)
 }
 
 pub async fn load_ip_signal_counts(
@@ -22,6 +17,8 @@ pub async fn load_ip_signal_counts(
     since: DateTime<Utc>,
 ) -> SecurityAlertResult<LoginAttemptSignalCounts> {
     validate_table_name(login_attempts_table)?;
+    let login_attempts_table = underlay_db::format_qualified_table_name(login_attempts_table)
+        .map_err(|_| SecurityAlertError::InvalidTableName)?;
 
     let query = format!(
         r#"
@@ -58,6 +55,8 @@ pub async fn has_recent_alert(
     now: DateTime<Utc>,
 ) -> SecurityAlertResult<bool> {
     validate_table_name(alert_events_table)?;
+    let alert_events_table = underlay_db::format_qualified_table_name(alert_events_table)
+        .map_err(|_| SecurityAlertError::InvalidTableName)?;
 
     let since = now - cooldown;
     let query = format!(
@@ -87,6 +86,8 @@ pub async fn insert_alert_event(
     input: &SecurityAlertEventInput,
 ) -> SecurityAlertResult<Uuid> {
     validate_table_name(alert_events_table)?;
+    let alert_events_table = underlay_db::format_qualified_table_name(alert_events_table)
+        .map_err(|_| SecurityAlertError::InvalidTableName)?;
 
     let query = format!(
         r#"

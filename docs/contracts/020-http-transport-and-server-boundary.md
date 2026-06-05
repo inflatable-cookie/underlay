@@ -169,6 +169,12 @@ Rules:
   config knobs
 - shared helpers set and clear the refresh-token and logged-in cookies
   together
+- auth, refresh, logged-in, and CSRF cookie emission should go through
+  `underlay-http` builders instead of route-local `Set-Cookie` string assembly
+- new config code should prefer fallible typed setters such as
+  `try_with_domain`, `try_with_cookie_prefix`, and
+  `try_with_refresh_token_path` so invalid cookie settings fail before serving
+  traffic
 
 This is a transport contract, not an auth policy contract. Token contents,
 rotation rules, MFA, and session semantics are out of scope here.

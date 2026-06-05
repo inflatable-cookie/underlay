@@ -1,7 +1,7 @@
 # Underlay Roadmap Generation Index
 
 Status: active
-Updated: 2026-05-18
+Updated: 2026-06-05
 
 ## Mode
 
@@ -9,7 +9,7 @@ Updated: 2026-05-18
 
 ## Active generations
 
-- [g05 - Shared Page, Workflow Template, And Query Variant Work](g05/README.md)
+- [g06 - Rust Platform Contract Transition](g06/README.md)
 
 ## Generation log
 
@@ -17,12 +17,15 @@ Updated: 2026-05-18
 | --- | --- | --- | --- |
 | `g01` | 2026-03-xx | Initial roadmap sequence | Extraction and contraction |
 | `g02` | 2026-04-xx | Fresh sequencing boundary after `g01.098` recovery | Closed |
-| `g03` | 2026-05-04 | Template-system generation after `g02.007` closeout | Still active |
+| `g03` | 2026-05-04 | Template-system generation after `g02.007` closeout | Closed after template-system proof line |
 | `g04` | 2026-05-08 | Independent contract-coverage thread under explicit parallel mode | Closed after contract coverage, assessment, and bounded repairs |
-| `g05` | 2026-05-xx | Shared page, workflow template, and consumer capability generation | Active |
+| `g05` | 2026-05-xx | Shared page, workflow template, and consumer capability generation | Closed after query-variant and consumer capability line |
+| `g06` | 2026-06-05 | Rust platform-contract transition after code-quality audit | Active |
 
 ## Historical generations
 
+- [g05 - Shared Page, Workflow Template, And Query Variant Work](g05/README.md) (complete)
+- [g03 - Template System](g03/README.md) (complete)
 - [g04 - Contract Coverage And Assessment](g04/README.md) (complete)
 - [g02 - Poodle-Era Consumer Normalization](g02/README.md) (complete)
 - [g01 - Extraction and Contraction](g01/README.md) (complete)
@@ -44,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Keep `g05` current. The promoted next card is `g05.023`.
+Execute `g06.015`: Rust platform transition release-note handoff.
