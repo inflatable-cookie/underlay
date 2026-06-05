@@ -140,8 +140,9 @@ README surfaces.
 - `g06.067` is complete as the devtools migration-bundle public model
   modularity audit
 - `g06.068` is complete as the devtools migration-bundle internal split
-- `g06.069` is next as the migration-core verification-rules public model
+- `g06.069` is complete as the migration-core verification-rules public model
   modularity audit
+- `g06.070` is next as the migration-core verification-rules internal split
 - `g05` is closed as the shared-page, workflow-template, media capability,
   dev-flow contract, and query-variant convergence generation
 - `g05.024` is complete as the Marking Hub query variant proof and rollout

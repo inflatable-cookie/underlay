@@ -47,5 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.069`: migration-core verification-rules public model modularity
-audit.
+Execute `g06.070`: migration-core verification-rules internal split.

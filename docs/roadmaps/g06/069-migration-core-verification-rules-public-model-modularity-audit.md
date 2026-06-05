@@ -48,9 +48,12 @@ change must be promoted into an explicit follow-up card before execution.
 
 ## Current State
 
-`g06.069` is next.
+`g06.069` is complete.
+
+Artifact:
+
+- [069 artifact](./069-migration-core-verification-rules-public-model-modularity-audit-artifact.md)
 
 ## Next Task
 
-Execute `g06.069`: migration-core verification-rules public model modularity
-audit.
+Execute `g06.070`: migration-core verification-rules internal split.

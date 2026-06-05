@@ -122,8 +122,9 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.067` is complete as the devtools migration-bundle public model
   modularity audit.
 - `g06.068` is complete as the devtools migration-bundle internal split.
-- `g06.069` is next as the migration-core verification-rules public model
+- `g06.069` is complete as the migration-core verification-rules public model
   modularity audit.
+- `g06.070` is next as the migration-core verification-rules internal split.
 
 ## Planned Runway
 
@@ -200,6 +201,7 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.067`: devtools migration-bundle public model modularity audit
 - `g06.068`: devtools migration-bundle internal split
 - `g06.069`: migration-core verification-rules public model modularity audit
+- `g06.070`: migration-core verification-rules internal split
 
 ## Consumer Family
 
@@ -285,7 +287,8 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g06.066` is complete.
 - `g06.067` is complete.
 - `g06.068` is complete.
-- `g06.069` is next.
+- `g06.069` is complete.
+- `g06.070` is next.
 
 ## Batch Cards
 
@@ -294,5 +297,4 @@ If `g06` enters strict execution posture, keep its cards under
 
 ## Next Task
 
-Execute `g06.069`: migration-core verification-rules public model modularity
-audit.
+Execute `g06.070`: migration-core verification-rules internal split.
