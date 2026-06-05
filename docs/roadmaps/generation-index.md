@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.073`: auth JWT service tests modularity audit.
+Execute `g06.074`: auth JWT service tests internal split.

@@ -46,8 +46,12 @@ This is a test-structure audit. Expected impact is none.
 
 ## Current State
 
-`g06.073` is next.
+`g06.073` is complete.
+
+Artifact:
+
+- [073 artifact](./073-auth-jwt-service-tests-modularity-audit-artifact.md)
 
 ## Next Task
 
-Execute `g06.073`: auth JWT service tests modularity audit.
+Execute `g06.074`: auth JWT service tests internal split.
