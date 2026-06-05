@@ -48,8 +48,12 @@ audit finds public exports that must move; if so, stop and re-enter planning.
 
 ## Current State
 
-`g06.099` is ready.
+`g06.099` is complete.
+
+Artifact:
+
+- [099 artifact](./099-jobs-postgres-auth-cleanup-modularity-audit-artifact.md)
 
 ## Next Task
 
-Execute `g06.099`: jobs Postgres auth cleanup modularity audit.
+Execute `g06.100`: jobs Postgres auth cleanup internal split.

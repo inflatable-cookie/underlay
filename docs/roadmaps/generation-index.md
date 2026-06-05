@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.099`: jobs Postgres auth cleanup modularity audit.
+Execute `g06.100`: jobs Postgres auth cleanup internal split.
