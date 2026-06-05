@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.114`: devtools lib tests internal split.
+Execute `g06.115`: migration-core pipeline decision tests modularity audit.

@@ -154,5 +154,5 @@ where
 }
 
 #[cfg(test)]
-#[path = "tests/lib_tests.rs"]
+#[path = "tests/lib_tests/mod.rs"]
 mod tests;

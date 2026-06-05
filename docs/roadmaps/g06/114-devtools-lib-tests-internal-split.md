@@ -55,8 +55,12 @@ re-enter planning.
 
 ## Current State
 
-`g06.114` is ready.
+`g06.114` is complete.
+
+Artifact:
+
+- [114 artifact](./114-devtools-lib-tests-internal-split-artifact.md)
 
 ## Next Task
 
-Execute `g06.114`: devtools lib tests internal split.
+Execute `g06.115`: migration-core pipeline decision tests modularity audit.

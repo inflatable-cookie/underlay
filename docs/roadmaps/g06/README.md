@@ -176,7 +176,9 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.112` is complete as the devtools migration-bundle remote registry
   internal split.
 - `g06.113` is complete as the devtools lib tests modularity audit.
-- `g06.114` is next as the devtools lib tests internal split.
+- `g06.114` is complete as the devtools lib tests internal split.
+- `g06.115` is next as the migration-core pipeline decision tests modularity
+  audit.
 
 ## Planned Runway
 
@@ -298,6 +300,7 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.112`: devtools migration-bundle remote registry internal split
 - `g06.113`: devtools lib tests modularity audit
 - `g06.114`: devtools lib tests internal split
+- `g06.115`: migration-core pipeline decision tests modularity audit
 
 ## Consumer Family
 
@@ -428,7 +431,8 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g06.111` is complete.
 - `g06.112` is complete.
 - `g06.113` is complete.
-- `g06.114` is next.
+- `g06.114` is complete.
+- `g06.115` is next.
 
 ## Batch Cards
 
@@ -437,4 +441,4 @@ If `g06` enters strict execution posture, keep its cards under
 
 ## Next Task
 
-Execute `g06.114`: devtools lib tests internal split.
+Execute `g06.115`: migration-core pipeline decision tests modularity audit.
