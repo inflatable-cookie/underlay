@@ -46,8 +46,12 @@ audit finds public exports that must move; if so, stop and re-enter planning.
 
 ## Current State
 
-`g06.091` is ready.
+`g06.091` is complete.
+
+Artifact:
+
+- [091 artifact](./091-config-crate-modularity-audit-artifact.md)
 
 ## Next Task
 
-Execute `g06.091`: config crate modularity audit.
+Execute `g06.092`: config crate internal split.

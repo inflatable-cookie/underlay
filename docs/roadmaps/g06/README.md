@@ -149,7 +149,8 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.088` is complete as the AI runtime tests internal split.
 - `g06.089` is complete as the auth WebAuthn service modularity audit.
 - `g06.090` is complete as the auth WebAuthn service internal split.
-- `g06.091` is next as the config crate modularity audit.
+- `g06.091` is complete as the config crate modularity audit.
+- `g06.092` is next as the config crate internal split.
 
 ## Planned Runway
 
@@ -248,6 +249,7 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.089`: auth WebAuthn service modularity audit
 - `g06.090`: auth WebAuthn service internal split
 - `g06.091`: config crate modularity audit
+- `g06.092`: config crate internal split
 
 ## Consumer Family
 

@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.091`: config crate modularity audit.
+Execute `g06.092`: config crate internal split.
