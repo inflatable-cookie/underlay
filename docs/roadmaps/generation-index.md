@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.095`: devtools migration report modularity audit.
+Execute `g06.096`: devtools migration report internal split.

@@ -46,8 +46,12 @@ audit finds public exports that must move; if so, stop and re-enter planning.
 
 ## Current State
 
-`g06.095` is ready.
+`g06.095` is complete.
+
+Artifact:
+
+- [095 artifact](./095-devtools-migration-report-modularity-audit-artifact.md)
 
 ## Next Task
 
-Execute `g06.095`: devtools migration report modularity audit.
+Execute `g06.096`: devtools migration report internal split.

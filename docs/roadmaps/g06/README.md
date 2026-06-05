@@ -153,7 +153,8 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.092` is complete as the config crate internal split.
 - `g06.093` is complete as the auth TOTP crate modularity audit.
 - `g06.094` is complete as the auth TOTP crate internal split.
-- `g06.095` is next as the devtools migration report modularity audit.
+- `g06.095` is complete as the devtools migration report modularity audit.
+- `g06.096` is next as the devtools migration report internal split.
 
 ## Planned Runway
 
@@ -256,6 +257,7 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.093`: auth TOTP crate modularity audit
 - `g06.094`: auth TOTP crate internal split
 - `g06.095`: devtools migration report modularity audit
+- `g06.096`: devtools migration report internal split
 
 ## Consumer Family
 
