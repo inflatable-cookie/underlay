@@ -40,8 +40,12 @@ Expected impact: none unless the audit identifies a still-public raw helper.
 
 ## Current State
 
-`g06.035` is next after `g06.034`.
+`g06.035` is complete.
+
+Artifact:
+
+- [035 artifact](./035-remaining-dynamic-identifier-closeout-audit-artifact.md)
 
 ## Next Task
 
-Execute `g06.035`: remaining dynamic identifier closeout audit.
+Execute `g06.036`: Postgres media config typed identifier cleanup.

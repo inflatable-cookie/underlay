@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.035`: remaining dynamic identifier closeout audit.
+Execute `g06.036`: Postgres media config typed identifier cleanup.
