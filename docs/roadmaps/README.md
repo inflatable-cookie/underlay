@@ -159,7 +159,8 @@ README surfaces.
 - `g06.083` is complete as the auth password service tests modularity audit
 - `g06.084` is complete as the auth password service tests internal split
 - `g06.085` is complete as the migration-core decision-memory modularity audit
-- `g06.086` is next as the migration-core decision-memory internal split
+- `g06.086` is complete as the migration-core decision-memory internal split
+- `g06.087` is next as the AI runtime tests modularity audit
 - `g05` is closed as the shared-page, workflow-template, media capability,
   dev-flow contract, and query-variant convergence generation
 - `g05.024` is complete as the Marking Hub query variant proof and rollout

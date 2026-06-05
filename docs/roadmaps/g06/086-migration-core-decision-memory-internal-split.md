@@ -50,8 +50,12 @@ must change, stop and re-enter planning.
 
 ## Current State
 
-`g06.086` is next.
+`g06.086` is complete.
+
+Artifact:
+
+- [086 artifact](./086-migration-core-decision-memory-internal-split-artifact.md)
 
 ## Next Task
 
-Execute `g06.086`: migration-core decision-memory internal split.
+Execute `g06.087`: AI runtime tests modularity audit.

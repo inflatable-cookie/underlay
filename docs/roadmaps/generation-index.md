@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.086`: migration-core decision-memory internal split.
+Execute `g06.087`: AI runtime tests modularity audit.
