@@ -149,7 +149,8 @@ README surfaces.
 - `g06.073` is complete as the auth JWT service tests modularity audit
 - `g06.074` is complete as the auth JWT service tests internal split
 - `g06.075` is complete as the media Nightfire tests modularity audit
-- `g06.076` is next as the media Nightfire tests internal split
+- `g06.076` is complete as the media Nightfire tests internal split
+- `g06.077` is next as the auth email TOTP service tests modularity audit
 - `g05` is closed as the shared-page, workflow-template, media capability,
   dev-flow contract, and query-variant convergence generation
 - `g05.024` is complete as the Marking Hub query variant proof and rollout

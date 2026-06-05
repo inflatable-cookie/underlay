@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.076`: media Nightfire tests internal split.
+Execute `g06.077`: auth email TOTP service tests modularity audit.

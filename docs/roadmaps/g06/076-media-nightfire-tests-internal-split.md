@@ -49,8 +49,12 @@ stop and re-enter planning.
 
 ## Current State
 
-`g06.076` is next.
+`g06.076` is complete.
+
+Artifact:
+
+- [076 artifact](./076-media-nightfire-tests-internal-split-artifact.md)
 
 ## Next Task
 
-Execute `g06.076`: media Nightfire tests internal split.
+Execute `g06.077`: auth email TOTP service tests modularity audit.
