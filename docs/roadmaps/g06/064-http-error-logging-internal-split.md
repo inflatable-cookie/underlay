@@ -56,8 +56,12 @@ planning.
 
 ## Current State
 
-`g06.064` is next after `g06.063`.
+`g06.064` is complete.
+
+Artifact:
+
+- [064 artifact](./064-http-error-logging-internal-split-artifact.md)
 
 ## Next Task
 
-Execute `g06.064`: HTTP error logging internal split.
+Execute `g06.065`: migration-core orchestrator public model modularity audit.

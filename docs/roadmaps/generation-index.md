@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.064`: HTTP error logging internal split.
+Execute `g06.065`: migration-core orchestrator public model modularity audit.
