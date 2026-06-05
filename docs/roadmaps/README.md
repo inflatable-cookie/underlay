@@ -182,7 +182,8 @@ README surfaces.
   audit
 - `g06.106` is complete as the migration-core pipeline basic tests internal
   split
-- `g06.107` is next as the media Nightfire modularity audit
+- `g06.107` is complete as the media Nightfire modularity audit
+- `g06.108` is next as the media Nightfire internal split
 - `g05` is closed as the shared-page, workflow-template, media capability,
   dev-flow contract, and query-variant convergence generation
 - `g05.024` is complete as the Marking Hub query variant proof and rollout
