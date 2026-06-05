@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.094`: auth TOTP crate internal split.
+Execute `g06.095`: devtools migration report modularity audit.

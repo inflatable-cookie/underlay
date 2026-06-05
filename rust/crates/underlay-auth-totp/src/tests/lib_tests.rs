@@ -1,4 +1,6 @@
 use super::*;
+use std::time::UNIX_EPOCH;
+use underlay_auth::AuthError;
 
 #[test]
 fn rfc6238_sha1_test_vectors_8_digits() {

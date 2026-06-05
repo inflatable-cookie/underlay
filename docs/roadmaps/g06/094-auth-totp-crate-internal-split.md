@@ -61,8 +61,12 @@ must change, stop and re-enter planning.
 
 ## Current State
 
-`g06.094` is ready.
+`g06.094` is complete.
+
+Artifact:
+
+- [094 artifact](./094-auth-totp-crate-internal-split-artifact.md)
 
 ## Next Task
 
-Execute `g06.094`: auth TOTP crate internal split.
+Execute `g06.095`: devtools migration report modularity audit.

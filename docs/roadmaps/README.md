@@ -167,7 +167,8 @@ README surfaces.
 - `g06.091` is complete as the config crate modularity audit
 - `g06.092` is complete as the config crate internal split
 - `g06.093` is complete as the auth TOTP crate modularity audit
-- `g06.094` is next as the auth TOTP crate internal split
+- `g06.094` is complete as the auth TOTP crate internal split
+- `g06.095` is next as the devtools migration report modularity audit
 - `g05` is closed as the shared-page, workflow-template, media capability,
   dev-flow contract, and query-variant convergence generation
 - `g05.024` is complete as the Marking Hub query variant proof and rollout
