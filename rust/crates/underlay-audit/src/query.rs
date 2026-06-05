@@ -87,6 +87,10 @@ impl AuditLogFilters {
 /// * `pool` - Database connection pool
 /// * `table` - Fully qualified table name (e.g., "platform.audit_log")
 /// * `filters` - Query filters
+#[deprecated(
+    since = "0.0.1",
+    note = "use AuditTable plus list_audit_logs_from_table"
+)]
 #[instrument(skip(pool, filters))]
 pub async fn list_audit_logs(
     pool: &DbPool,
@@ -148,6 +152,10 @@ pub async fn list_audit_logs_from_table(
 }
 
 /// Get a single audit log entry by ID.
+#[deprecated(
+    since = "0.0.1",
+    note = "use AuditTable plus get_audit_log_by_id_from_table"
+)]
 #[instrument(skip(pool))]
 pub async fn get_audit_log_by_id(
     pool: &DbPool,
@@ -192,6 +200,10 @@ pub async fn get_audit_log_by_id_from_table(
 }
 
 /// Count audit log entries matching filters.
+#[deprecated(
+    since = "0.0.1",
+    note = "use AuditTable plus count_audit_logs_from_table"
+)]
 #[instrument(skip(pool, filters))]
 pub async fn count_audit_logs(
     pool: &DbPool,

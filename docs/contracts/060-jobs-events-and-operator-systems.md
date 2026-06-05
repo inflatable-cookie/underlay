@@ -251,7 +251,7 @@ Rules:
 - audit logs use app-owned schema/table locations but share one retained
   entry/query model
 - typed table config is the preferred API boundary; raw string table-name
-  helpers remain compatibility wrappers
+  helpers are deprecated compatibility wrappers
 - the shared contract is the row shape, write helpers, filters, and query
   semantics, not a fixed shared migration-owned table
 - audit entries capture actor, action, resource identity, details, correlation
@@ -342,7 +342,7 @@ Rules:
   not a full notification product
 - consuming apps own how login attempts are recorded and how alerts are sent
 - typed table config is the preferred API boundary; raw string table-name
-  helpers remain compatibility wrappers
+  helpers are deprecated compatibility wrappers
 - cooldown and threshold logic are shared config, so alerting behavior is
   portable across apps
 
@@ -383,8 +383,9 @@ Current drift worth assessing later:
 - `underlay-events` and `underlay-jobs-postgres::outbox` both define parts of
   the domain event/outbox story, so the ownership line between the pure event
   contract and the processor/runtime path should be checked
-- audit and security-alert table locations now have typed config APIs; later
-  assessment should decide when to deprecate the retained raw-string wrappers
+- audit and security-alert raw-string table wrappers are deprecated after the
+  six-consumer typed-table rollout; later assessment should decide whether a
+  breaking batch should remove them
 - `SchedulerConfig` is exported from `underlay-jobs` while the actual scheduler
   runtime lives in `underlay-jobs-postgres`, which keeps dependencies clean but
   still deserves future config-vs-runtime assessment

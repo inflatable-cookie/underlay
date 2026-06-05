@@ -33,6 +33,10 @@ use tracing::{info, instrument};
 ///     ).with_details(serde_json::json!({ "title": title })),
 /// ).await?;
 /// ```
+#[deprecated(
+    since = "0.0.1",
+    note = "use AuditTable plus append_audit_log_to_table"
+)]
 #[instrument(skip(pool, entry), fields(action = %entry.action, resource_type = %entry.resource_type))]
 pub async fn append_audit_log(
     pool: &DbPool,
@@ -111,6 +115,10 @@ pub async fn append_audit_log_to_table(
 /// * `pool` - Database connection pool (cloned for async task)
 /// * `table` - Fully qualified table name
 /// * `entry` - The audit entry to log
+#[deprecated(
+    since = "0.0.1",
+    note = "use AuditTable plus append_audit_log_to_table_async"
+)]
 pub fn append_audit_log_async(pool: DbPool, table: &'static str, entry: AuditEntry) {
     let table = AuditTable::parse(table);
     tokio::spawn(async move {

@@ -6,6 +6,10 @@ use crate::error::SecurityAlertResult;
 use crate::tables::{LoginAttemptsTable, SecurityAlertEventsTable};
 use crate::types::{LoginAttemptSignalCounts, SecurityAlertEventInput, SecurityAlertType};
 
+#[deprecated(
+    since = "0.0.1",
+    note = "use LoginAttemptsTable plus load_ip_signal_counts_from_table"
+)]
 pub async fn load_ip_signal_counts(
     pool: &PgPool,
     login_attempts_table: &str,
@@ -50,6 +54,10 @@ pub async fn load_ip_signal_counts_from_table(
     })
 }
 
+#[deprecated(
+    since = "0.0.1",
+    note = "use SecurityAlertEventsTable plus has_recent_alert_in_table"
+)]
 pub async fn has_recent_alert(
     pool: &PgPool,
     alert_events_table: &str,
@@ -102,6 +110,10 @@ pub async fn has_recent_alert_in_table(
     Ok(row.get::<Option<i64>, _>("count").unwrap_or(0) > 0)
 }
 
+#[deprecated(
+    since = "0.0.1",
+    note = "use SecurityAlertEventsTable plus insert_alert_event_into_table"
+)]
 pub async fn insert_alert_event(
     pool: &PgPool,
     alert_events_table: &str,

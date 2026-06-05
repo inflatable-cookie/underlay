@@ -56,9 +56,12 @@ removal should happen until the six-consumer migration proof is complete.
 
 ## Current State
 
-`g06.029` is ready after `g06.028`.
+`g06.029` is complete.
+
+See
+[`029-consumer-typed-operator-table-adoption-artifact.md`](029-consumer-typed-operator-table-adoption-artifact.md).
 
 ## Next Task
 
-Execute `g06.029`: consumer typed operator table adoption and raw-wrapper
-deprecation decision.
+Execute `g06.030`: raw operator wrapper removal readiness and remaining
+dynamic-identifier audit.

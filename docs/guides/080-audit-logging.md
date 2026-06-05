@@ -132,7 +132,7 @@ let audit_table = AuditTable::parse("platform.audit_log")?;
 let logs = list_audit_logs_from_table(&pool, &audit_table, filters).await?;
 ```
 
-The older raw-string functions remain available as compatibility wrappers.
+The older raw-string functions remain as deprecated compatibility wrappers.
 New code should construct `AuditTable` once from typed app config and pass it
 through the typed helpers.
 

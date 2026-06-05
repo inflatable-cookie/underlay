@@ -47,5 +47,5 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.029`: consumer typed operator table adoption and raw-wrapper
-deprecation decision.
+Execute `g06.030`: raw operator wrapper removal readiness and remaining
+dynamic-identifier audit.

@@ -32,8 +32,8 @@ Primary API:
 - `has_recent_alert_in_table(...)` - cooldown dedupe check
 - `insert_alert_event_into_table(...)` - persist emitted alert event
 
-The older raw-string SQL helpers remain compatibility wrappers. New code should
-parse table locations once into typed app config.
+The older raw-string SQL helpers remain as deprecated compatibility wrappers.
+New code should parse table locations once into typed app config.
 
 ## Migration baseline
 

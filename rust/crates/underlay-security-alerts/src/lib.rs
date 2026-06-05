@@ -27,6 +27,7 @@ mod detector_tests;
 
 pub use crate::detector::evaluate_alerts;
 pub use crate::error::{SecurityAlertError, SecurityAlertResult};
+#[allow(deprecated)]
 pub use crate::store::{
     has_recent_alert, has_recent_alert_in_table, insert_alert_event, insert_alert_event_into_table,
     load_ip_signal_counts, load_ip_signal_counts_from_table,
