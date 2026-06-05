@@ -105,7 +105,8 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.051` is complete as the migration-core pipeline internal split.
 - `g06.052` is complete as the Rust structural backlog checkpoint.
 - `g06.053` is complete as the media domain internal split.
-- `g06.054` is next as the media renditions internal split.
+- `g06.054` is complete as the media renditions internal split.
+- `g06.055` is next as the jobs public model modularity audit.
 
 ## Planned Runway
 
@@ -167,6 +168,7 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.052`: Rust structural backlog checkpoint
 - `g06.053`: media domain internal split
 - `g06.054`: media renditions internal split
+- `g06.055`: jobs public model modularity audit
 
 ## Consumer Family
 
@@ -237,7 +239,8 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g06.051` is complete.
 - `g06.052` is complete.
 - `g06.053` is complete.
-- `g06.054` is next.
+- `g06.054` is complete.
+- `g06.055` is next.
 
 ## Batch Cards
 
@@ -246,4 +249,4 @@ If `g06` enters strict execution posture, keep its cards under
 
 ## Next Task
 
-Execute `g06.054`: media renditions internal split.
+Execute `g06.055`: jobs public model modularity audit.

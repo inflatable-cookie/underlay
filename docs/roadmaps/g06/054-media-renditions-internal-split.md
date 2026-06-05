@@ -51,8 +51,12 @@ must move, stop and re-enter planning.
 
 ## Current State
 
-`g06.054` is next after `g06.053`.
+`g06.054` is complete.
+
+Artifact:
+
+- [054 artifact](./054-media-renditions-internal-split-artifact.md)
 
 ## Next Task
 
-Execute `g06.054`: media renditions internal split.
+Execute `g06.055`: jobs public model modularity audit.
