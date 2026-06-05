@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.110`: devtools seed bundle internal split.
+Execute `g06.111`: devtools migration-bundle remote registry modularity audit.

@@ -185,7 +185,9 @@ README surfaces.
 - `g06.107` is complete as the media Nightfire modularity audit
 - `g06.108` is complete as the media Nightfire internal split
 - `g06.109` is complete as the devtools seed bundle modularity audit
-- `g06.110` is next as the devtools seed bundle internal split
+- `g06.110` is complete as the devtools seed bundle internal split
+- `g06.111` is next as the devtools migration-bundle remote registry
+  modularity audit
 - `g05` is closed as the shared-page, workflow-template, media capability,
   dev-flow contract, and query-variant convergence generation
 - `g05.024` is complete as the Marking Hub query variant proof and rollout
