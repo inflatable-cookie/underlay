@@ -131,7 +131,8 @@ README surfaces.
 - `g06.059` is complete as the HTTP query public model modularity audit
 - `g06.060` is complete as the HTTP query internal split
 - `g06.061` is complete as the HTTP cookies public model modularity audit
-- `g06.062` is next as the HTTP cookies internal split
+- `g06.062` is complete as the HTTP cookies internal split
+- `g06.063` is next as the HTTP error logging public model modularity audit
 - `g05` is closed as the shared-page, workflow-template, media capability,
   dev-flow contract, and query-variant convergence generation
 - `g05.024` is complete as the Marking Hub query variant proof and rollout
@@ -398,7 +399,7 @@ views, and the unused `embed` package surface is no longer exported.
 
 ## Active Lane
 
-`g06.062` is now the live planning/control lane.
+`g06.063` is now the live planning/control lane.
 
 Underlay’s Rust platform-contract transition is materially complete enough to
 continue into the reference-grade reset inside `g06`, with controlled breaking
@@ -423,4 +424,4 @@ queue and proving the next honest work belonged in `g02`.
 
 Execute the live queue:
 
-- `g06.062`: HTTP cookies internal split
+- `g06.063`: HTTP error logging public model modularity audit

@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.062`: HTTP cookies internal split.
+Execute `g06.063`: HTTP error logging public model modularity audit.

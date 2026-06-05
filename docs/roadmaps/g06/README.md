@@ -113,7 +113,8 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.059` is complete as the HTTP query public model modularity audit.
 - `g06.060` is complete as the HTTP query internal split.
 - `g06.061` is complete as the HTTP cookies public model modularity audit.
-- `g06.062` is next as the HTTP cookies internal split.
+- `g06.062` is complete as the HTTP cookies internal split.
+- `g06.063` is next as the HTTP error logging public model modularity audit.
 
 ## Planned Runway
 
@@ -183,6 +184,7 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.060`: HTTP query internal split
 - `g06.061`: HTTP cookies public model modularity audit
 - `g06.062`: HTTP cookies internal split
+- `g06.063`: HTTP error logging public model modularity audit
 
 ## Consumer Family
 
@@ -261,7 +263,8 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g06.059` is complete.
 - `g06.060` is complete.
 - `g06.061` is complete.
-- `g06.062` is next.
+- `g06.062` is complete.
+- `g06.063` is next.
 
 ## Batch Cards
 
@@ -270,4 +273,4 @@ If `g06` enters strict execution posture, keep its cards under
 
 ## Next Task
 
-Execute `g06.062`: HTTP cookies internal split.
+Execute `g06.063`: HTTP error logging public model modularity audit.

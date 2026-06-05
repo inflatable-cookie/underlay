@@ -56,8 +56,12 @@ planning.
 
 ## Current State
 
-`g06.062` is next after `g06.061`.
+`g06.062` is complete.
+
+Artifact:
+
+- [062 artifact](./062-http-cookies-internal-split-artifact.md)
 
 ## Next Task
 
-Execute `g06.062`: HTTP cookies internal split.
+Execute `g06.063`: HTTP error logging public model modularity audit.
