@@ -50,8 +50,12 @@ registry behavior that must change, stop and re-enter planning.
 
 ## Current State
 
-`g06.111` is ready.
+`g06.111` is complete.
+
+Artifact:
+
+- [111 artifact](./111-devtools-migration-bundle-remote-registry-modularity-audit-artifact.md)
 
 ## Next Task
 
-Execute `g06.111`: devtools migration-bundle remote registry modularity audit.
+Execute `g06.112`: devtools migration-bundle remote registry internal split.
