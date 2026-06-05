@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.071`: jobs-postgres repository public model modularity audit.
+Execute `g06.072`: jobs-postgres repository internal split.

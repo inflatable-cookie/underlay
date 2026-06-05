@@ -51,8 +51,12 @@ change must be promoted into an explicit follow-up card before execution.
 
 ## Current State
 
-`g06.071` is next.
+`g06.071` is complete.
+
+Artifact:
+
+- [071 artifact](./071-jobs-postgres-repository-public-model-modularity-audit-artifact.md)
 
 ## Next Task
 
-Execute `g06.071`: jobs-postgres repository public model modularity audit.
+Execute `g06.072`: jobs-postgres repository internal split.
