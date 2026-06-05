@@ -36,6 +36,36 @@ async fn test_noop_adapter_exists() {
     assert!(adapter.exists("any/key").await.unwrap());
 }
 
+#[tokio::test]
+async fn typed_adapter_extension_methods_delegate_to_raw_methods() {
+    let adapter = NoopAdapter::with_config("my-bucket", "https://cdn.example.com");
+    let key = BlobObjectKey::parse("media/123/photo.jpg").unwrap();
+
+    let stored = adapter.finalise_upload_object_key(&key).await.unwrap();
+    assert_eq!(stored.key, key.as_str());
+
+    assert_eq!(
+        adapter.public_object_url(&key),
+        "https://cdn.example.com/media/123/photo.jpg"
+    );
+
+    let info = adapter.head_object_key(&key).await.unwrap();
+    assert_eq!(info.key, key.as_str());
+
+    let bytes = adapter.get_object_bytes(&key).await.unwrap();
+    assert!(bytes.is_empty());
+
+    let stored = adapter
+        .put_object_bytes(&key, b"hello", "text/plain")
+        .await
+        .unwrap();
+    assert_eq!(stored.key, key.as_str());
+    assert_eq!(stored.size, 5);
+
+    assert!(adapter.exists_object_key(&key).await.unwrap());
+    adapter.delete_object_key(&key).await.unwrap();
+}
+
 #[test]
 fn blob_object_key_rejects_unsafe_values() {
     assert!(BlobObjectKey::parse("").is_err());

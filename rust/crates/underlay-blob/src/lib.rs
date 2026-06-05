@@ -56,7 +56,7 @@ mod error;
 mod types;
 
 // Re-export main types
-pub use adapter::{BlobAdapter, NoopAdapter};
+pub use adapter::{BlobAdapter, BlobAdapterObjectKeyExt, NoopAdapter};
 pub use config::MediaConfig;
 pub use error::{BlobError, BlobResult};
 pub use types::{

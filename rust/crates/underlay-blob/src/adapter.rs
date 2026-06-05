@@ -4,7 +4,7 @@ use async_trait::async_trait;
 
 use crate::error::BlobResult;
 use crate::types::{
-    DownloadRequest, ObjectInfo, SignedUrl, StoredObject, UploadPlan, UploadRequest,
+    BlobObjectKey, DownloadRequest, ObjectInfo, SignedUrl, StoredObject, UploadPlan, UploadRequest,
 };
 
 /// Trait for blob storage backends.
@@ -86,6 +86,56 @@ pub trait BlobAdapter: Send + Sync {
         Ok(())
     }
 }
+
+/// Typed convenience methods for callers that already hold a validated object key.
+///
+/// These methods preserve the raw `BlobAdapter` trait as the compatibility
+/// boundary for database-loaded and app-local string keys while giving generated
+/// key paths a typed call surface.
+#[async_trait]
+pub trait BlobAdapterObjectKeyExt: BlobAdapter {
+    /// Finalise an upload for a validated object key.
+    async fn finalise_upload_object_key(&self, key: &BlobObjectKey) -> BlobResult<StoredObject> {
+        self.finalise_upload(key.as_str()).await
+    }
+
+    /// Get the public URL for a validated object key.
+    fn public_object_url(&self, key: &BlobObjectKey) -> String {
+        self.public_url(key.as_str())
+    }
+
+    /// Delete a validated object key.
+    async fn delete_object_key(&self, key: &BlobObjectKey) -> BlobResult<()> {
+        self.delete(key.as_str()).await
+    }
+
+    /// Get metadata about a validated object key.
+    async fn head_object_key(&self, key: &BlobObjectKey) -> BlobResult<ObjectInfo> {
+        self.head(key.as_str()).await
+    }
+
+    /// Download bytes for a validated object key.
+    async fn get_object_bytes(&self, key: &BlobObjectKey) -> BlobResult<Vec<u8>> {
+        self.get_bytes(key.as_str()).await
+    }
+
+    /// Upload bytes directly to a validated object key.
+    async fn put_object_bytes(
+        &self,
+        key: &BlobObjectKey,
+        data: &[u8],
+        content_type: &str,
+    ) -> BlobResult<StoredObject> {
+        self.put_bytes(key.as_str(), data, content_type).await
+    }
+
+    /// Check if a validated object key exists.
+    async fn exists_object_key(&self, key: &BlobObjectKey) -> BlobResult<bool> {
+        self.exists(key.as_str()).await
+    }
+}
+
+impl<T> BlobAdapterObjectKeyExt for T where T: BlobAdapter + ?Sized {}
 
 /// A no-op adapter that does nothing (useful for testing).
 #[derive(Debug, Clone)]

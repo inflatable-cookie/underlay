@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.041`: typed blob adapter extension methods.
+Execute `g06.042`: stored object-key parse-boundary audit.

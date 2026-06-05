@@ -209,9 +209,11 @@ Rules:
 - `BlobObjectKey` is the shared validated key type; upload/download request
   constructors accept it, while core adapter methods still accept raw `&str`
   for compatibility with database-loaded keys and app-local generated keys
-- typed adapter convenience methods should be additive wrappers over the raw
-  trait, not a trait-signature break, until consumer-owned database key loading
-  has a typed parse boundary
+- `BlobAdapterObjectKeyExt` provides additive typed convenience methods over
+  the raw trait for callers that already hold `BlobObjectKey`
+- typed adapter convenience methods are wrappers over the raw trait, not a
+  trait-signature break, until consumer-owned database key loading has a typed
+  parse boundary
 - public URLs and signed download URLs are separate concepts
 - delete is idempotent
 - direct `put_bytes()` exists for server-side derived objects and processing

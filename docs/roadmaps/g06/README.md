@@ -90,7 +90,8 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.038` is complete as the blob object key helper alignment plan.
 - `g06.039` is complete as the typed media storage key helper batch.
 - `g06.040` is complete as the blob adapter typed method decision.
-- `g06.041` is next as the typed blob adapter extension method batch.
+- `g06.041` is complete as the typed blob adapter extension method batch.
+- `g06.042` is next as the stored object-key parse-boundary audit.
 
 ## Planned Runway
 
@@ -139,6 +140,7 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.039`: typed media storage key helpers
 - `g06.040`: blob adapter typed method decision
 - `g06.041`: typed blob adapter extension methods
+- `g06.042`: stored object-key parse-boundary audit
 
 ## Consumer Family
 
@@ -196,7 +198,8 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g06.038` is complete.
 - `g06.039` is complete.
 - `g06.040` is complete.
-- `g06.041` is next.
+- `g06.041` is complete.
+- `g06.042` is next.
 
 ## Batch Cards
 
@@ -205,4 +208,4 @@ If `g06` enters strict execution posture, keep its cards under
 
 ## Next Task
 
-Execute `g06.041`: typed blob adapter extension methods.
+Execute `g06.042`: stored object-key parse-boundary audit.

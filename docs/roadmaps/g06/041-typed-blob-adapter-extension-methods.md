@@ -50,8 +50,12 @@ remain valid.
 
 ## Current State
 
-`g06.041` is next after `g06.040`.
+`g06.041` is complete.
+
+Artifact:
+
+- [041 artifact](./041-typed-blob-adapter-extension-methods-artifact.md)
 
 ## Next Task
 
-Execute `g06.041`: typed blob adapter extension methods.
+Execute `g06.042`: stored object-key parse-boundary audit.
