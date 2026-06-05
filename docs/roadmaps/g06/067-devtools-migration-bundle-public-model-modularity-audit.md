@@ -49,8 +49,12 @@ must be promoted into an explicit follow-up card before execution.
 
 ## Current State
 
-`g06.067` is next after `g06.066`.
+`g06.067` is complete.
+
+Artifact:
+
+- [067 artifact](./067-devtools-migration-bundle-public-model-modularity-audit-artifact.md)
 
 ## Next Task
 
-Execute `g06.067`: devtools migration-bundle public model modularity audit.
+Execute `g06.068`: devtools migration-bundle internal split.
