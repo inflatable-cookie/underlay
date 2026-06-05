@@ -52,8 +52,12 @@ semantics, or SQL helper behavior must move, stop and re-enter planning.
 
 ## Current State
 
-`g06.060` is next after `g06.059`.
+`g06.060` is complete.
+
+Artifact:
+
+- [060 artifact](./060-http-query-internal-split-artifact.md)
 
 ## Next Task
 
-Execute `g06.060`: HTTP query internal split.
+Execute `g06.061`: HTTP cookies public model modularity audit.
