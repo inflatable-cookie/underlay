@@ -51,8 +51,12 @@ serialized shapes must move, stop and re-enter planning.
 
 ## Current State
 
-`g06.056` is next after `g06.055`.
+`g06.056` is complete.
+
+Artifact:
+
+- [056 artifact](./056-jobs-types-internal-split-artifact.md)
 
 ## Next Task
 
-Execute `g06.056`: jobs types internal split.
+Execute `g06.057`: DB pagination public model modularity audit.

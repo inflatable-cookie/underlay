@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.056`: jobs types internal split.
+Execute `g06.057`: DB pagination public model modularity audit.
