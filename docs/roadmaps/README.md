@@ -100,7 +100,20 @@ README surfaces.
   dynamic-identifier audit batch
 - `g06.031` is complete as the remaining typed DB helper migration plan
 - `g06.032` is complete as the typed `ExistsCheck` execution and rollout batch
-- `g06.033` is next as the raw existence helper deprecation decision
+- `g06.033` is complete as the raw existence helper deprecation decision
+- `g06.034` is complete as the test DB typed schema cleanup batch
+- `g06.035` is complete as the remaining dynamic identifier closeout audit
+- `g06.036` is complete as the Postgres media config typed identifier cleanup
+- `g06.037` is complete as the typed DB identifier lane closeout audit
+- `g06.038` is complete as the blob object key helper alignment plan
+- `g06.039` is complete as the typed media storage key helper batch
+- `g06.040` is complete as the blob adapter typed method decision
+- `g06.041` is complete as the typed blob adapter extension method batch
+- `g06.042` is complete as the stored object-key parse-boundary audit
+- `g06.043` is complete as the typed media domain object-key field rollout
+- `g06.044` is complete as the consumer app-local media object-key
+  parse-boundary rollout
+- `g06.045` is next as the media object-key boundary closeout audit
 - `g05` is closed as the shared-page, workflow-template, media capability,
   dev-flow contract, and query-variant convergence generation
 - `g05.024` is complete as the Marking Hub query variant proof and rollout

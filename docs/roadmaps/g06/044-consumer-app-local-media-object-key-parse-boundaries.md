@@ -48,8 +48,12 @@ The apps are not in production, so roll the six-app family in one batch.
 
 ## Current State
 
-`g06.044` is next after `g06.043`.
+`g06.044` is complete.
+
+Artifact:
+
+- [044 artifact](./044-consumer-app-local-media-object-key-parse-boundaries-artifact.md)
 
 ## Next Task
 
-Execute `g06.044`: consumer app-local media object-key parse boundaries.
+Execute `g06.045`: media object-key boundary closeout audit.

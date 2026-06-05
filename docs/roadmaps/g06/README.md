@@ -93,8 +93,9 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.041` is complete as the typed blob adapter extension method batch.
 - `g06.042` is complete as the stored object-key parse-boundary audit.
 - `g06.043` is complete as the typed media domain object-key field rollout.
-- `g06.044` is next as the consumer app-local media object-key parse-boundary
-  rollout.
+- `g06.044` is complete as the consumer app-local media object-key
+  parse-boundary rollout.
+- `g06.045` is next as the media object-key boundary closeout audit.
 
 ## Planned Runway
 
@@ -146,6 +147,7 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.042`: stored object-key parse-boundary audit
 - `g06.043`: typed media domain object-key fields
 - `g06.044`: consumer app-local media object-key parse boundaries
+- `g06.045`: media object-key boundary closeout audit
 
 ## Consumer Family
 
@@ -206,7 +208,8 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g06.041` is complete.
 - `g06.042` is complete.
 - `g06.043` is complete.
-- `g06.044` is next.
+- `g06.044` is complete.
+- `g06.045` is next.
 
 ## Batch Cards
 
@@ -215,4 +218,4 @@ If `g06` enters strict execution posture, keep its cards under
 
 ## Next Task
 
-Execute `g06.044`: consumer app-local media object-key parse boundaries.
+Execute `g06.045`: media object-key boundary closeout audit.

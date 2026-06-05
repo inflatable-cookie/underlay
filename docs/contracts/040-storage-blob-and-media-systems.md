@@ -284,8 +284,9 @@ Rules:
   using typed convenience methods
 - default media repository adapters parse row strings from storage-backed
   tables into Underlay media domain types during row mapping
-- consumers with app-local media row models should adopt the same parse boundary
-  rather than treating local DTO conversion as the primary validation point
+- the current six-consumer family has adopted the same app-local parse boundary
+  where apps own media row/domain models; local DTO conversion is not the
+  primary validation point
 
 This layer owns CRUD and lifecycle mechanics. The richer meaning of usages,
 migration bindings, and media graph semantics is defined in `050`.

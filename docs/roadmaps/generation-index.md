@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.044`: consumer app-local media object-key parse boundaries.
+Execute `g06.045`: media object-key boundary closeout audit.
