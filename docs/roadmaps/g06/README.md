@@ -169,7 +169,8 @@ controlled breaking changes allowed across the six known consumers.
   split.
 - `g06.107` is complete as the media Nightfire modularity audit.
 - `g06.108` is complete as the media Nightfire internal split.
-- `g06.109` is next as the devtools seed bundle modularity audit.
+- `g06.109` is complete as the devtools seed bundle modularity audit.
+- `g06.110` is next as the devtools seed bundle internal split.
 
 ## Planned Runway
 
@@ -286,6 +287,7 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.107`: media Nightfire modularity audit
 - `g06.108`: media Nightfire internal split
 - `g06.109`: devtools seed bundle modularity audit
+- `g06.110`: devtools seed bundle internal split
 
 ## Consumer Family
 
@@ -411,7 +413,8 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g06.106` is complete.
 - `g06.107` is complete.
 - `g06.108` is complete.
-- `g06.109` is next.
+- `g06.109` is complete.
+- `g06.110` is next.
 
 ## Batch Cards
 
@@ -420,4 +423,4 @@ If `g06` enters strict execution posture, keep its cards under
 
 ## Next Task
 
-Execute `g06.109`: devtools seed bundle modularity audit.
+Execute `g06.110`: devtools seed bundle internal split.

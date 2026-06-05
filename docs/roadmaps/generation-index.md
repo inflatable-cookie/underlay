@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.109`: devtools seed bundle modularity audit.
+Execute `g06.110`: devtools seed bundle internal split.
