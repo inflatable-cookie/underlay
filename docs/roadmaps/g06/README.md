@@ -108,7 +108,8 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.054` is complete as the media renditions internal split.
 - `g06.055` is complete as the jobs public model modularity audit.
 - `g06.056` is complete as the jobs types internal split.
-- `g06.057` is next as the DB pagination public model modularity audit.
+- `g06.057` is complete as the DB pagination public model modularity audit.
+- `g06.058` is next as the DB pagination internal split.
 
 ## Planned Runway
 
@@ -173,6 +174,7 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.055`: jobs public model modularity audit
 - `g06.056`: jobs types internal split
 - `g06.057`: DB pagination public model modularity audit
+- `g06.058`: DB pagination internal split
 
 ## Consumer Family
 
@@ -246,7 +248,8 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g06.054` is complete.
 - `g06.055` is complete.
 - `g06.056` is complete.
-- `g06.057` is next.
+- `g06.057` is complete.
+- `g06.058` is next.
 
 ## Batch Cards
 
@@ -255,4 +258,4 @@ If `g06` enters strict execution posture, keep its cards under
 
 ## Next Task
 
-Execute `g06.057`: DB pagination public model modularity audit.
+Execute `g06.058`: DB pagination internal split.

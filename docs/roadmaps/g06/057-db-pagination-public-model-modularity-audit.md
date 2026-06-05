@@ -46,8 +46,12 @@ change must be promoted into an explicit follow-up card before execution.
 
 ## Current State
 
-`g06.057` is next after `g06.056`.
+`g06.057` is complete.
+
+Artifact:
+
+- [057 artifact](./057-db-pagination-public-model-modularity-audit-artifact.md)
 
 ## Next Task
 
-Execute `g06.057`: DB pagination public model modularity audit.
+Execute `g06.058`: DB pagination internal split.
