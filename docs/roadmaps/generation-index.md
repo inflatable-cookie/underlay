@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.116`: migration-core pipeline decision tests internal split.
+Execute `g06.117`: blob local adapter modularity audit.
