@@ -71,8 +71,9 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.022` is complete as the Postgres runtime adapter isolation batch.
 - `g06.023` is complete as the jobs Postgres adapter extraction plan.
 - `g06.024` is complete as the jobs Postgres adapter extraction execution batch.
-- `g06.025` is next as the six-consumer rollout and compatibility retirement
-  proof.
+- `g06.025` is complete as the six-consumer rollout and compatibility
+  retirement proof.
+- `g06.026` is next as the reference-grade docs and upgrade-note closeout.
 
 ## Planned Runway
 
@@ -145,7 +146,8 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g06.022` is complete.
 - `g06.023` is complete.
 - `g06.024` is complete.
-- `g06.025` is next.
+- `g06.025` is complete.
+- `g06.026` is next.
 
 ## Batch Cards
 
@@ -154,4 +156,4 @@ If `g06` enters strict execution posture, keep its cards under
 
 ## Next Task
 
-Execute `g06.025`: six-consumer rollout and compatibility retirement proof.
+Execute `g06.026`: reference-grade docs and upgrade-note closeout.

@@ -76,6 +76,55 @@ Reusable templates:
 
 ## Current Feature Notes
 
+### Rust Adapter Crate Extraction (`2026-06-05`)
+
+- Impact class: `breaking`
+- Affected consumers:
+  - apps importing concrete Postgres job symbols from `underlay_jobs`
+  - apps using `underlay-jobs` feature flags `postgres`, `scheduler`,
+    `outbox`, or `full`
+  - apps importing concrete media Postgres symbols from `underlay_media`
+  - apps importing auth-state Postgres symbols from `underlay_auth`
+- What changed:
+  - `underlay-jobs` is now the core job contract crate
+  - `underlay-jobs-postgres` owns SQLx job repositories, Pg notifier,
+    scheduled task runtime, outbox processing, maintenance tasks, SQL
+    constants, and `PostgresJobRunnerExt`
+  - `underlay-media-postgres` owns concrete media Postgres repositories
+  - `underlay-auth-postgres` owns short-lived auth-state Postgres storage
+- Required actions:
+  1. keep contract crates such as `underlay-jobs`, `underlay-media`, and
+     `underlay-auth` for shared traits and domain types
+  2. add adapter crates where concrete storage is required
+  3. replace `underlay_jobs::JobRepository` with
+     `underlay_jobs_postgres::JobRepository`
+  4. replace `underlay_jobs::tasks::*` with
+     `underlay_jobs_postgres::tasks::*`
+  5. replace `underlay_jobs::outbox::*` with
+     `underlay_jobs_postgres::outbox::*`
+  6. import `underlay_jobs_postgres::PostgresJobRunnerExt` anywhere
+     `JobRunner::run_with_notifier` is called
+  7. remove old `underlay-jobs` adapter feature flags
+- Cutover:
+  - canonical contract date: `2026-06-05`
+  - no compatibility window remains for the named six-consumer family; all six
+    have moved
+- Validation:
+  - in `underlay`: `effigy rust:check`
+  - in `underlay`: `effigy qa:docs`
+  - in consumers: run targeted checks for the jobs wrapper and API crates
+- Current consumer proof:
+  - `underlay-reference/acme-api`: `cargo check -p acme-jobs -p acme-api`
+  - `contact-patch/cp-api`: `cargo check -p cp-jobs -p cp-api`
+  - `compli-me/api`: `cargo check -p compli-me-jobs -p compli-me-api`
+  - `songsprout/nursery`: `cargo check -p nursery-jobs -p nursery-api`
+  - `acowtancy/farmyard`: `cargo check -p farmyard-jobs -p farmyard-api`
+  - `loophole/composer/composer-api`: `cargo check -p composer-api`
+- Changed guidance:
+  - [055 Background Jobs](055-background-jobs.md)
+  - [g06.025 rollout proof](../roadmaps/g06/025-six-consumer-rollout-and-compatibility-retirement-proof.md)
+  - [122 Rust public API inventory](../contracts/122-rust-public-api-inventory.md)
+
 ### Rust Platform Contract Transition (`2026-06-05`)
 
 - Impact class: `breaking` for unknown direct `SessionStore` implementers;

@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.025`: six-consumer rollout and compatibility retirement proof.
+Execute `g06.026`: reference-grade docs and upgrade-note closeout.

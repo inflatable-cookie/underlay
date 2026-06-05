@@ -68,7 +68,8 @@ The shared crate intentionally does not send email/webhooks directly. Notificati
 
 ## Inactive Account Maintenance (3-year example)
 
-`underlay-jobs` exposes `SuspendInactiveAccountsJob` in `underlay_jobs::tasks`.
+`underlay-jobs-postgres` exposes `SuspendInactiveAccountsJob` in
+`underlay_jobs_postgres::tasks`.
 
 Example:
 

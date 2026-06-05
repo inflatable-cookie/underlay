@@ -63,8 +63,16 @@ fixed inside this card or explicitly moved to the next card with evidence.
 
 ## Current State
 
-`g06.025` is ready.
+`g06.025` is complete.
+
+The six-consumer scan found no remaining retired jobs adapter feature flags,
+no concrete jobs adapter imports from `underlay_jobs`, no concrete media
+Postgres imports from `underlay_media`, and no auth-state Postgres imports from
+`underlay_auth`.
+
+See
+[`025-six-consumer-rollout-and-compatibility-retirement-proof-artifact.md`](025-six-consumer-rollout-and-compatibility-retirement-proof-artifact.md).
 
 ## Next Task
 
-Execute `g06.025`: six-consumer rollout and compatibility retirement proof.
+Execute `g06.026`: reference-grade docs and upgrade-note closeout.

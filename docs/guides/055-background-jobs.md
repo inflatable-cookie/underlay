@@ -1,6 +1,8 @@
 # 055 - Background Jobs
 
-> **Underlay Crate**: `underlay-jobs` provides a complete background job system with optional PostgreSQL persistence and cron-based scheduling.
+> **Underlay Crates**: `underlay-jobs` provides the job contract and runner.
+> `underlay-jobs-postgres` provides PostgreSQL persistence, LISTEN/NOTIFY,
+> outbox processing, scheduled task runtime, and maintenance tasks.
 
 This guide covers setting up background job processing, including job handlers, scheduling, and database-backed job queues.
 
@@ -9,26 +11,28 @@ This guide covers setting up background job processing, including job handlers, 
 The `underlay-jobs` crate provides:
 
 - **Core job types** (always available): `Job`, `JobHandler`, `JobRegistry`, `JobRunner`
-- **PostgreSQL persistence** (`postgres` feature): Database-backed job repository with `FOR UPDATE SKIP LOCKED` claiming
-- **Cron scheduling** (`scheduler` feature): Recurring task execution via cron expressions
+- **Store contracts**: `JobStore`, dead-letter contracts, event hooks, and scheduler config
 
-## Features
+The `underlay-jobs-postgres` crate provides:
 
-The crate uses Cargo features to enable optional functionality:
+- **PostgreSQL persistence**: Database-backed job repository with `FOR UPDATE SKIP LOCKED` claiming
+- **Cron scheduling runtime**: Recurring task execution via cron expressions
+- **Outbox processing**: Durable domain event processing with LISTEN/NOTIFY
+- **Maintenance tasks**: Standard cleanup and recovery handlers
+
+## Dependencies
+
+Use the core crate for contracts and the adapter crate when the app needs
+PostgreSQL-backed storage/runtime:
 
 ```toml
 [dependencies]
-underlay-jobs = { path = "../underlay/rust/crates/underlay-jobs" }  # Core only
-underlay-jobs = { path = "../underlay/rust/crates/underlay-jobs", features = ["postgres"] }  # With DB
-underlay-jobs = { path = "../underlay/rust/crates/underlay-jobs", features = ["full"] }  # Everything
+underlay-jobs = { path = "../underlay/rust/crates/underlay-jobs" }
+underlay-jobs-postgres = { path = "../underlay/rust/crates/underlay-jobs-postgres" }
 ```
 
-| Feature | Description |
-|---------|-------------|
-| (default) | Core types, handler trait, registry, in-memory runner |
-| `postgres` | PostgreSQL job/task repositories, `FOR UPDATE SKIP LOCKED` claiming |
-| `scheduler` | Cron-based scheduled tasks (requires `postgres`) |
-| `full` | All features enabled |
+`underlay-jobs` no longer exposes `postgres`, `scheduler`, `outbox`, or `full`
+feature flags.
 
 ## Database Setup
 
@@ -41,11 +45,11 @@ The crate includes SQL schemas. Copy them to your migrations folder:
 cd your-api && underlay-devtools sync-migrations
 
 # Or manually
-cp underlay/rust/crates/underlay-jobs/migrations/0001_create_job_tables.sql \
+cp underlay/rust/crates/underlay-jobs-postgres/migrations/0001_create_job_tables.sql \
    your-api/migrations/XXXXXX_create_job_tables.sql
-cp underlay/rust/crates/underlay-jobs/migrations/0002_add_job_notify.sql \
+cp underlay/rust/crates/underlay-jobs-postgres/migrations/0002_add_job_notify.sql \
    your-api/migrations/XXXXXX_add_job_notify.sql
-cp underlay/rust/crates/underlay-jobs/migrations/0004_add_job_dead_letters.sql \
+cp underlay/rust/crates/underlay-jobs-postgres/migrations/0004_add_job_dead_letters.sql \
    your-api/migrations/XXXXXX_add_job_dead_letters.sql
 ```
 
@@ -170,14 +174,15 @@ their previous timing; use `with_retries_and_jitter()` or
 ### Setting Up the Runner
 
 ```rust
-use underlay_jobs::{JobRunner, JobRegistry, JobRepository};
+use underlay_jobs::{JobRegistry, JobRunner};
+use underlay_jobs_postgres::JobRepository;
 
 // Create registry and register handlers
 let mut registry = JobRegistry::new();
 registry.register(SendEmailJob { mailer: mailer.clone() });
 registry.register(ProcessPaymentJob { stripe: stripe.clone() });
 
-// Create repository (requires postgres feature)
+// Create repository
 let job_repo = JobRepository::new(db_pool.clone());
 
 // Create and run
@@ -220,8 +225,9 @@ By default, a job worker must poll the database periodically to check for new jo
 2. **Create a notifier** and pass it to the runner:
 
 ```rust
-use underlay_jobs::{JobRunner, JobRunnerConfig, JobRepository, PgJobNotifier};
 use std::time::Duration;
+use underlay_jobs::{JobRunner, JobRunnerConfig};
+use underlay_jobs_postgres::{JobRepository, PgJobNotifier, PostgresJobRunnerExt};
 
 // Create the runner
 let job_repo = JobRepository::new(pool.clone());
@@ -302,8 +308,9 @@ The fallback poll handles all edge cases - you get instant response in the commo
 ## Enqueueing Jobs
 
 ```rust
-use underlay_jobs::{JobRepository, JobConfig};
 use serde_json::json;
+use underlay_jobs::JobConfig;
+use underlay_jobs_postgres::JobRepository;
 
 let job_repo = JobRepository::new(pool);
 
@@ -335,7 +342,8 @@ the hot queue path.
 
 ```rust
 use chrono::{Duration as ChronoDuration, Utc};
-use underlay_jobs::{DeadLetterFilters, PgDeadLetterRepository};
+use underlay_jobs::DeadLetterFilters;
+use underlay_jobs_postgres::PgDeadLetterRepository;
 
 let dead_letters = PgDeadLetterRepository::new(pool.clone())
     .list(DeadLetterFilters::new().with_job_type("send_email"))
@@ -363,7 +371,8 @@ structured logs, tracing, or dashboards without framework lock-in.
 
 ```rust
 use std::sync::Arc;
-use underlay_jobs::{JobEvent, JobEventSink, JobRepository, JobRunner};
+use underlay_jobs::{JobEvent, JobEventSink, JobRunner};
+use underlay_jobs_postgres::JobRepository;
 
 #[derive(Debug)]
 struct MetricsSink;
@@ -398,12 +407,14 @@ Event coverage in this batch:
 
 ## Scheduled Tasks (Cron)
 
-For recurring tasks, use the scheduler (requires `scheduler` + `postgres` features):
+For recurring tasks, use the PostgreSQL scheduler runtime from
+`underlay-jobs-postgres`:
 
 ### Defining Scheduled Tasks
 
 ```rust
-use underlay_jobs::{Scheduler, ScheduledTaskDefinition, JobRepository, ScheduledTaskRepository};
+use underlay_jobs::ScheduledTaskDefinition;
+use underlay_jobs_postgres::{JobRepository, ScheduledTaskRepository, Scheduler};
 
 let job_repo = JobRepository::new(pool.clone());
 let task_repo = ScheduledTaskRepository::new(pool.clone());
@@ -605,14 +616,15 @@ If migrating from a custom job system:
 
 ## Standard Maintenance Tasks
 
-The `underlay-jobs` crate includes pre-built maintenance tasks for common platform cleanup operations. These are available when using the `postgres` feature.
+The `underlay-jobs-postgres` crate includes pre-built maintenance tasks for
+common platform cleanup operations.
 
 ### Available Tasks
 
 Import and register the tasks you need:
 
 ```rust
-use underlay_jobs::tasks::{
+use underlay_jobs_postgres::tasks::{
     // Auth cleanup
     PurgeExpiredSessionsJob,     // Remove expired sessions
     PurgeAuthStatesJob,          // Remove expired auth states
@@ -708,7 +720,9 @@ These tasks use standard Underlay table names (`auth.sessions`, `platform.job`, 
 
 ## Outbox Pattern for Domain Events
 
-The `outbox` feature provides reliable domain event processing using the outbox pattern. This ensures events are delivered even if downstream systems are temporarily unavailable.
+The `underlay-jobs-postgres` outbox module provides reliable domain event
+processing using the outbox pattern. This ensures events are delivered even if
+downstream systems are temporarily unavailable.
 
 ### How It Works
 
@@ -717,12 +731,11 @@ The `outbox` feature provides reliable domain event processing using the outbox 
 3. **Mark**: Successfully processed events are marked with `processed_at` timestamp
 4. **Retry**: Failed events remain unprocessed for automatic retry
 
-### Enabling the Feature
+### Add The Adapter
 
 ```toml
 [dependencies]
-underlay-jobs = { path = "../underlay/rust/crates/underlay-jobs", features = ["outbox"] }
-# Or use "full" for all features
+underlay-jobs-postgres = { path = "../underlay/rust/crates/underlay-jobs-postgres" }
 ```
 
 ### Database Setup
@@ -740,8 +753,8 @@ underlay-devtools sync-migrations
 ### Running the Outbox Processor
 
 ```rust
-use underlay_jobs::outbox::{OutboxProcessor, OutboxNotifier, OutboxConfig};
 use std::time::Duration;
+use underlay_jobs_postgres::outbox::{OutboxConfig, OutboxNotifier, OutboxProcessor};
 
 // Configure the processor
 let config = OutboxConfig::default()
