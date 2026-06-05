@@ -47,8 +47,12 @@ must be promoted into an explicit follow-up card before execution.
 
 ## Current State
 
-`g06.061` is next after `g06.060`.
+`g06.061` is complete.
+
+Artifact:
+
+- [061 artifact](./061-http-cookies-public-model-modularity-audit-artifact.md)
 
 ## Next Task
 
-Execute `g06.061`: HTTP cookies public model modularity audit.
+Execute `g06.062`: HTTP cookies internal split.
