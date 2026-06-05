@@ -46,8 +46,12 @@ must be promoted into an explicit follow-up card before execution.
 
 ## Current State
 
-`g06.055` is next after `g06.054`.
+`g06.055` is complete.
+
+Artifact:
+
+- [055 artifact](./055-jobs-public-model-modularity-audit-artifact.md)
 
 ## Next Task
 
-Execute `g06.055`: jobs public model modularity audit.
+Execute `g06.056`: jobs types internal split.
