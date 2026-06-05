@@ -47,8 +47,12 @@ audit finds public exports that must move; if so, stop and re-enter planning.
 
 ## Current State
 
-`g06.085` is next.
+`g06.085` is complete.
+
+Artifact:
+
+- [085 artifact](./085-migration-core-decision-memory-modularity-audit-artifact.md)
 
 ## Next Task
 
-Execute `g06.085`: migration-core decision-memory modularity audit.
+Execute `g06.086`: migration-core decision-memory internal split.

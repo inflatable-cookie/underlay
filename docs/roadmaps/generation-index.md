@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.085`: migration-core decision-memory modularity audit.
+Execute `g06.086`: migration-core decision-memory internal split.
