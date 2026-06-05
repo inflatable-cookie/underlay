@@ -165,7 +165,9 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.104` is complete as the media renditions service internal split.
 - `g06.105` is complete as the migration-core pipeline basic tests modularity
   audit.
-- `g06.106` is next as the migration-core pipeline basic tests internal split.
+- `g06.106` is complete as the migration-core pipeline basic tests internal
+  split.
+- `g06.107` is next as the media Nightfire modularity audit.
 
 ## Planned Runway
 
@@ -279,6 +281,7 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.104`: media renditions service internal split
 - `g06.105`: migration-core pipeline basic tests modularity audit
 - `g06.106`: migration-core pipeline basic tests internal split
+- `g06.107`: media Nightfire modularity audit
 
 ## Consumer Family
 
@@ -401,7 +404,8 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g06.103` is complete.
 - `g06.104` is complete.
 - `g06.105` is complete.
-- `g06.106` is next.
+- `g06.106` is complete.
+- `g06.107` is next.
 
 ## Batch Cards
 
@@ -410,4 +414,4 @@ If `g06` enters strict execution posture, keep its cards under
 
 ## Next Task
 
-Execute `g06.106`: migration-core pipeline basic tests internal split.
+Execute `g06.107`: media Nightfire modularity audit.

@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.106`: migration-core pipeline basic tests internal split.
+Execute `g06.107`: media Nightfire modularity audit.

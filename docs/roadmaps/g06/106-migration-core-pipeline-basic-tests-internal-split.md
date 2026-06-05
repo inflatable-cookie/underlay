@@ -52,8 +52,12 @@ re-enter planning.
 
 ## Current State
 
-`g06.106` is ready.
+`g06.106` is complete.
+
+Artifact:
+
+- [106 artifact](./106-migration-core-pipeline-basic-tests-internal-split-artifact.md)
 
 ## Next Task
 
-Execute `g06.106`: migration-core pipeline basic tests internal split.
+Execute `g06.107`: media Nightfire modularity audit.
