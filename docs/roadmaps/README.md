@@ -175,7 +175,8 @@ README surfaces.
 - `g06.099` is complete as the jobs Postgres auth cleanup modularity audit
 - `g06.100` is complete as the jobs Postgres auth cleanup internal split
 - `g06.101` is complete as the auth password service modularity audit
-- `g06.102` is next as the auth password service internal split
+- `g06.102` is complete as the auth password service internal split
+- `g06.103` is next as the media renditions service modularity audit
 - `g05` is closed as the shared-page, workflow-template, media capability,
   dev-flow contract, and query-variant convergence generation
 - `g05.024` is complete as the Marking Hub query variant proof and rollout

@@ -160,7 +160,8 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.099` is complete as the jobs Postgres auth cleanup modularity audit.
 - `g06.100` is complete as the jobs Postgres auth cleanup internal split.
 - `g06.101` is complete as the auth password service modularity audit.
-- `g06.102` is next as the auth password service internal split.
+- `g06.102` is complete as the auth password service internal split.
+- `g06.103` is next as the media renditions service modularity audit.
 
 ## Planned Runway
 
@@ -270,6 +271,7 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.100`: jobs Postgres auth cleanup internal split
 - `g06.101`: auth password service modularity audit
 - `g06.102`: auth password service internal split
+- `g06.103`: media renditions service modularity audit
 
 ## Consumer Family
 
