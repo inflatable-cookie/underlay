@@ -13,13 +13,10 @@ serde_json = { workspace = true }
 uuid = { workspace = true, features = ["serde"] }
 chrono = { workspace = true, features = ["serde"] }
 underlay-core = { path = "../underlay-core" }
-sqlx = { workspace = true, optional = true }
-thiserror = { version = "2", optional = true }
 argon2 = { version = "0.5.3", optional = true }
 getrandom = { version = "0.4.2", optional = true }
 
 [features]
-postgres = ["dep:sqlx", "dep:thiserror"]
 hashing = ["dep:argon2", "dep:getrandom"]
 
 [dev-dependencies]

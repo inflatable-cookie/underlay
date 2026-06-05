@@ -4,6 +4,12 @@ Underlay is split by layer, mirroring how consuming apps are structured.
 
 ## Rust Crates (31)
 
+The current crate map is the live implementation shape. The target
+reference-grade reset is documented in
+[020-reference-grade-underlay-architecture.md](./020-reference-grade-underlay-architecture.md).
+During `g06`, crate roots and adapter/tooling boundaries may change in
+controlled breaking batches with six-consumer proof.
+
 ### Core
 
 | Crate | Purpose |
@@ -35,6 +41,7 @@ Underlay is split by layer, mirroring how consuming apps are structured.
 | `underlay-soft-delete` | Soft-delete column conventions, `include_deleted()` semantics |
 | `underlay-blob` | Blob storage with pluggable backends (S3, local filesystem) |
 | `underlay-media` | Media library: file management, storage orchestration, usage tracking |
+| `underlay-media-postgres` | PostgreSQL adapter for `underlay-media` repository contracts |
 | `underlay-migration-core` | Deterministic migration contracts: pipeline stages, plugin traits, run-store and decision journal types |
 | `underlay-nightfire` | Block-based structured content protocol (JSON document format) |
 
@@ -47,6 +54,7 @@ Underlay is split by layer, mirroring how consuming apps are structured.
 | `underlay-email` | Email infrastructure with pluggable backends (SMTP, SES) and templates |
 | `underlay-ratelimit` | Rate limiting with pluggable backends |
 | `underlay-audit` | Audit logging for admin actions and security-relevant events |
+| `underlay-auth-postgres` | PostgreSQL auth-state adapter for `underlay-auth` workflow state |
 | `underlay-security-alerts` | Shared failed-login/lockout security alert thresholds, dedupe checks, and event persistence helpers |
 | `underlay-suggestions` | Server-side suggestion query building for `RelationSelector` components |
 | `underlay-ai-runtime` | Provider-agnostic AI runtime contracts, OpenAI-compatible client, routing candidate selection |
@@ -68,10 +76,12 @@ Several crates use feature flags to keep optional dependencies out of the defaul
 | `underlay-email` | `smtp`, `ses`, `templates` | Backend + template engine |
 | `underlay-http` | `tracing`, `validation`, `nightfire`, `error-logging`, `embed` | Modular HTTP features |
 | `underlay-jobs` | `postgres`, `scheduler`, `outbox`, `full` | Persistence + scheduling |
-| `underlay-media` | `postgres`, `renditions`, `full` | Storage + processing |
+| `underlay-media` | `renditions`, `nightfire`, `full` | Storage + processing |
+| `underlay-media-postgres` | none | PostgreSQL media adapter |
 | `underlay-testing` | `db`, `server`, `full` | Test infrastructure scope |
 | `underlay-validation` | `derive`, `axum` | Macro + framework integration |
 | `underlay-auth-password` | `hibp` | Have I Been Pwned breach check |
+| `underlay-auth` | `hashing` | Optional password hashing support |
 | `underlay-auth-webauthn` | `attestation` | Attested passkey verification |
 
 ## TypeScript + Svelte

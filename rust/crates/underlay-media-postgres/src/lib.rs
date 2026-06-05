@@ -7,22 +7,32 @@ use async_trait::async_trait;
 use sqlx::PgPool;
 use uuid::Uuid;
 
-use crate::domain::{
+use underlay_media::MediaResult;
+use underlay_media::{
     CreateMediaInput, CreateRenditionInput, FinalizeUploadInput, ListMediaParams, Media, MediaId,
-    MediaRendition, MediaRenditionId, MediaSummary, MediaUsage, MediaVersion, MediaVersionId,
-    UpdateMediaInput,
+    MediaRendition, MediaRenditionId, MediaRepository, MediaSummary, MediaUsage, MediaVersion,
+    MediaVersionId, UpdateMediaInput,
 };
-use crate::error::MediaResult;
-use crate::repository::MediaRepository;
 
 mod list_query;
 mod media_ops;
+mod postgres_rows;
 mod rendition_ops;
 mod tables;
 mod usage_ops;
 mod version_ops;
 
 pub use tables::PostgresMediaConfig;
+
+pub(crate) trait SqlxMediaResultExt<T> {
+    fn media_result(self) -> MediaResult<T>;
+}
+
+impl<T> SqlxMediaResultExt<T> for Result<T, sqlx::Error> {
+    fn media_result(self) -> MediaResult<T> {
+        self.map_err(|err| underlay_media::MediaError::database(err.to_string()))
+    }
+}
 
 // ============================================================================
 // Repository Implementation

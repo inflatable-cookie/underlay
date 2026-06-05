@@ -20,7 +20,7 @@ Updated: 2026-06-05
 | `g03` | 2026-05-04 | Template-system generation after `g02.007` closeout | Closed after template-system proof line |
 | `g04` | 2026-05-08 | Independent contract-coverage thread under explicit parallel mode | Closed after contract coverage, assessment, and bounded repairs |
 | `g05` | 2026-05-xx | Shared page, workflow template, and consumer capability generation | Closed after query-variant and consumer capability line |
-| `g06` | 2026-06-05 | Rust platform-contract transition after code-quality audit | Active |
+| `g06` | 2026-06-05 | Rust platform-contract transition after code-quality audit | Active; now includes the reference-grade reset after user accepted controlled breaking changes across six non-production consumers |
 
 ## Historical generations
 
@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.018`: Rust structural cleanup batch three.
+Execute `g06.023`: Jobs Postgres adapter extraction plan.

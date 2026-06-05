@@ -47,8 +47,12 @@ Out of scope:
 
 ## Current State
 
-`g06.018` is ready.
+`g06.018` is superseded by `g06.019`.
+
+The user explicitly allowed controlled breaking changes and consumer updates to
+move Underlay toward a reference-grade architecture. That is a larger
+sequencing reset than this local structural cleanup card.
 
 ## Next Task
 
-Execute `g06.018`: Rust structural cleanup batch three.
+Execute `g06.019`: Reference-grade architecture reset inventory.

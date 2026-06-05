@@ -81,7 +81,13 @@ README surfaces.
 - `g06.015` is complete as the Rust platform transition release-note handoff
 - `g06.016` is complete as the Rust platform hardening backlog batch
 - `g06.017` is complete as the Rust quality re-audit and fresh-start assessment
-- `g06.018` is next as the third Rust structural cleanup batch
+- `g06.018` is superseded by `g06.019`
+- `g06.019` is complete as the reference-grade architecture reset inventory
+- `g06.020` is complete as the public Rust surface diet and consumer import
+  matrix
+- `g06.021` is complete as the media Postgres adapter extraction proof
+- `g06.022` is complete as the Postgres runtime adapter isolation batch
+- `g06.023` is next as the jobs Postgres adapter extraction plan
 - `g05` is closed as the shared-page, workflow-template, media capability,
   dev-flow contract, and query-variant convergence generation
 - `g05.024` is complete as the Marking Hub query variant proof and rollout
@@ -122,7 +128,7 @@ README surfaces.
 ## Historical Generations
 
 - [g06/README.md](g06/README.md) — active Rust platform-contract transition
-  generation
+  generation, now continuing into the reference-grade reset
 - [g05/README.md](g05/README.md) — shared-page, workflow-template, media
   capability, dev-flow contract, and query-variant convergence generation
   (complete)
@@ -197,7 +203,7 @@ README surfaces.
 
 ## Next Task
 
-Execute `g06.018`: Rust structural cleanup batch three.
+Execute `g06.023`: Jobs Postgres adapter extraction plan.
 - `g01.090` is complete for confirming that the remaining public `@decodelabs/underlay/patterns` surface is the true retained workflow stop point rather than unresolved migration debt
 - `g01.091` is complete for confirming the retained `client` package boundary, exposing explicit `client/*` public subpaths for the live feature families, and keeping the root barrel stable as a convenience surface
 - `g01.092` is complete for confirming the retained `nightfire` package boundary, exposing explicit `nightfire/*` public subpaths for the live extension families, and keeping the root barrel stable as a convenience surface
@@ -348,12 +354,11 @@ views, and the unused `embed` package surface is no longer exported.
 
 ## Active Lane
 
-`g06.018` is now the live planning/control lane.
+`g06.023` is now the live planning/control lane.
 
-Underlay’s shared-surface convergence queue is materially complete and `g05`
-is closed. The live work now belongs in a fresh generation focused on Rust
-platform contracts, typed safety boundaries, and consumer-proofed migration
-waves.
+Underlay’s Rust platform-contract transition is materially complete enough to
+continue into the reference-grade reset inside `g06`, with controlled breaking
+changes and six-consumer rollout proof.
 
 ## Complete
 
@@ -374,4 +379,4 @@ queue and proving the next honest work belonged in `g02`.
 
 Execute the live queue:
 
-- `g06.018`: Rust structural cleanup batch three
+- `g06.023`: Jobs Postgres adapter extraction plan

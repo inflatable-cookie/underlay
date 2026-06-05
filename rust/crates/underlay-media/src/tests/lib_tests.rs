@@ -1,8 +1,14 @@
 use super::*;
+#[cfg(feature = "nightfire")]
+use crate::nightfire::NightfireBlockMediaRegistration;
+use crate::storage::{
+    mime_to_extension, rendition_key, version_filename, version_key, StorageKeyConfig,
+    StorageKeyGenerator,
+};
 use uuid::Uuid;
 
 #[test]
-fn test_re_exports() {
+fn test_root_contract_exports() {
     // Ensure core types are accessible
     let _id = MediaId::new();
     let _version_id = MediaVersionId::new();
@@ -33,7 +39,7 @@ fn test_detect_media_kind() {
 }
 
 #[test]
-fn test_storage_key_re_exports() {
+fn test_storage_key_module_exports() {
     let media_id = Uuid::nil();
     let version_id = Uuid::nil();
 
@@ -59,7 +65,7 @@ fn test_storage_key_re_exports() {
 }
 
 #[test]
-fn test_storage_key_generator_re_export() {
+fn test_storage_key_generator_module_export() {
     let config = StorageKeyConfig::with_prefix("uploads");
     let generator = StorageKeyGenerator::new(config);
     assert_eq!(generator.config().base_prefix, "uploads");

@@ -18,7 +18,9 @@ The live problem is now a structural Rust migration:
 - prove each breaking or additive shared change against the current consumer
   family
 
-This is a new sequencing baseline, so it starts in `g06`.
+This is a new sequencing baseline, so it stays in `g06`. The same generation
+now moves from platform-contract hardening into the reference-grade reset, with
+controlled breaking changes allowed across the six known consumers.
 
 ## Governing References
 
@@ -61,7 +63,13 @@ This is a new sequencing baseline, so it starts in `g06`.
 - `g06.016` is complete as the Rust platform hardening backlog batch.
 - `g06.017` is complete as the Rust quality re-audit and fresh-start
   assessment.
-- `g06.018` is next as the third Rust structural cleanup batch.
+- `g06.018` is superseded by `g06.019`.
+- `g06.019` is complete as the reference-grade architecture reset inventory.
+- `g06.020` is complete as the public Rust surface diet and consumer import
+  matrix.
+- `g06.021` is complete as the media Postgres adapter extraction proof.
+- `g06.022` is complete as the Postgres runtime adapter isolation batch.
+- `g06.023` is next as the jobs Postgres adapter extraction plan.
 
 ## Planned Runway
 
@@ -84,7 +92,14 @@ This is a new sequencing baseline, so it starts in `g06`.
 - `g06.015`: Rust platform transition release-note handoff
 - `g06.016`: Rust platform hardening backlog batch
 - `g06.017`: Rust quality re-audit and fresh-start assessment
-- `g06.018`: Rust structural cleanup batch three
+- `g06.018`: superseded by `g06.019`
+- `g06.019`: reference-grade architecture reset inventory
+- `g06.020`: public Rust surface diet and consumer import matrix
+- `g06.021`: media Postgres adapter extraction proof
+- `g06.022`: Postgres runtime adapter isolation batch
+- `g06.023`: jobs Postgres adapter extraction plan
+- `g06.024`: six-consumer rollout and compatibility retirement proof
+- `g06.025`: reference-grade docs and upgrade-note closeout
 
 ## Consumer Family
 
@@ -119,7 +134,12 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g06.015` is complete.
 - `g06.016` is complete.
 - `g06.017` is complete.
-- `g06.018` is next.
+- `g06.018` is superseded.
+- `g06.019` is complete.
+- `g06.020` is complete.
+- `g06.021` is complete.
+- `g06.022` is complete.
+- `g06.023` is next.
 
 ## Batch Cards
 
@@ -128,4 +148,4 @@ If `g06` enters strict execution posture, keep its cards under
 
 ## Next Task
 
-Execute `g06.018`: Rust structural cleanup batch three.
+Execute `g06.023`: Jobs Postgres adapter extraction plan.

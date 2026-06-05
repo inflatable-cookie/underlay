@@ -83,13 +83,6 @@ pub type MediaResult<T> = Result<T, MediaError>;
 
 // Feature-gated conversions
 
-#[cfg(feature = "postgres")]
-impl From<sqlx::Error> for MediaError {
-    fn from(err: sqlx::Error) -> Self {
-        Self::Database(err.to_string())
-    }
-}
-
 #[cfg(feature = "renditions")]
 impl From<underlay_blob::BlobError> for MediaError {
     fn from(err: underlay_blob::BlobError) -> Self {

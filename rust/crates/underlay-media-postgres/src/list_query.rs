@@ -1,5 +1,4 @@
-use crate::domain::ListMediaParams;
-use crate::error::MediaResult;
+use underlay_media::{ListMediaParams, MediaResult};
 
 use super::PostgresMediaConfig;
 
@@ -71,7 +70,7 @@ pub(super) fn build_list_media_query(
 
 #[cfg(test)]
 mod tests {
-    use crate::domain::{ListMediaParams, MediaKind, MediaVisibility};
+    use underlay_media::{ListMediaParams, MediaKind, MediaVisibility};
 
     use super::*;
 

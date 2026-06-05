@@ -5,9 +5,6 @@ mod provider;
 mod repository;
 mod types;
 
-#[cfg(feature = "postgres")]
-pub mod state;
-
 #[cfg(feature = "hashing")]
 pub mod hashing;
 
@@ -27,9 +24,6 @@ pub use crate::types::{
     AuthEvent, AuthEventBuilder, AuthEventType, BackupCode, Credential, CredentialMetadata,
     CredentialType, Session, SessionStatus, User, UserStatus,
 };
-
-#[cfg(feature = "postgres")]
-pub use crate::state::{AuthStateError, AuthStateRow, AuthStateStore};
 
 #[cfg(feature = "hashing")]
 pub use crate::hashing::{Argon2Hasher, PasswordHasherExt, PasswordVerifierExt};

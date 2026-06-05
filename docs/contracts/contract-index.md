@@ -100,4 +100,4 @@ Do not promote a system into active implementation-assessment work until:
 
 The active contract wave is live inside `g06`.
 
-Execute `g06.018`: Rust structural cleanup batch three.
+Execute `g06.020`: Public Rust surface diet and consumer import matrix.

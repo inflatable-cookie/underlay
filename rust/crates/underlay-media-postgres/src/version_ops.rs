@@ -1,8 +1,10 @@
 use uuid::Uuid;
 
-use crate::domain::{FinalizeUploadInput, Media, MediaId, MediaVersion, MediaVersionId};
-use crate::error::{MediaError, MediaResult};
 use crate::postgres_rows::{MediaRow, MediaVersionRow};
+use crate::SqlxMediaResultExt;
+use underlay_media::{
+    FinalizeUploadInput, Media, MediaError, MediaId, MediaResult, MediaVersion, MediaVersionId,
+};
 
 use super::PostgresMediaRepository;
 
@@ -28,7 +30,8 @@ impl PostgresMediaRepository {
             .bind(media_id.0)
             .bind(created_by)
             .fetch_one(&self.pool)
-            .await?;
+            .await
+            .media_result()?;
 
         Ok(row.into())
     }
@@ -50,7 +53,8 @@ impl PostgresMediaRepository {
         let row: Option<MediaVersionRow> = sqlx::query_as(&query)
             .bind(id.0)
             .fetch_optional(&self.pool)
-            .await?;
+            .await
+            .media_result()?;
 
         Ok(row.map(Into::into))
     }
@@ -109,7 +113,11 @@ impl PostgresMediaRepository {
             self.config.versions_fqn()?
         );
 
-        let result = sqlx::query(&query).bind(id.0).execute(&self.pool).await?;
+        let result = sqlx::query(&query)
+            .bind(id.0)
+            .execute(&self.pool)
+            .await
+            .media_result()?;
 
         Ok(result.rows_affected() > 0)
     }
@@ -123,7 +131,11 @@ impl PostgresMediaRepository {
             self.config.versions_fqn()?
         );
 
-        let result = sqlx::query(&query).bind(id.0).execute(&self.pool).await?;
+        let result = sqlx::query(&query)
+            .bind(id.0)
+            .execute(&self.pool)
+            .await
+            .media_result()?;
 
         Ok(result.rows_affected() > 0)
     }
@@ -143,7 +155,8 @@ impl PostgresMediaRepository {
         let rows: Vec<MediaVersionRow> = sqlx::query_as(&query)
             .bind(media_id.0)
             .fetch_all(&self.pool)
-            .await?;
+            .await
+            .media_result()?;
 
         Ok(rows.into_iter().map(Into::into).collect())
     }
@@ -165,7 +178,8 @@ impl PostgresMediaRepository {
         let row: Option<MediaRow> = sqlx::query_as(&query)
             .bind(sha256)
             .fetch_optional(&self.pool)
-            .await?;
+            .await
+            .media_result()?;
 
         Ok(row.map(Into::into))
     }
@@ -188,7 +202,8 @@ impl PostgresMediaRepository {
             .bind(media_id.0)
             .bind(version_id.0)
             .execute(&self.pool)
-            .await?;
+            .await
+            .media_result()?;
 
         Ok(())
     }

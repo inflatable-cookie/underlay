@@ -1,10 +1,11 @@
 use uuid::Uuid;
 
-use crate::domain::{
+use crate::postgres_rows::{MediaRow, MediaSummaryRow};
+use crate::SqlxMediaResultExt;
+use underlay_media::{
     CreateMediaInput, ListMediaParams, Media, MediaId, MediaSummary, UpdateMediaInput,
 };
-use crate::error::{MediaError, MediaResult};
-use crate::postgres_rows::{MediaRow, MediaSummaryRow};
+use underlay_media::{MediaError, MediaResult};
 
 use super::{list_query, PostgresMediaRepository};
 
@@ -34,7 +35,8 @@ impl PostgresMediaRepository {
             .bind(&input.alt_text)
             .bind(created_by)
             .fetch_one(&self.pool)
-            .await?;
+            .await
+            .media_result()?;
 
         Ok(row.into())
     }
@@ -53,7 +55,8 @@ impl PostgresMediaRepository {
         let row: Option<MediaRow> = sqlx::query_as(&query)
             .bind(id.0)
             .fetch_optional(&self.pool)
-            .await?;
+            .await
+            .media_result()?;
 
         Ok(row.map(Into::into))
     }
@@ -101,7 +104,11 @@ impl PostgresMediaRepository {
             self.config.media_fqn()?
         );
 
-        let result = sqlx::query(&query).bind(id.0).execute(&self.pool).await?;
+        let result = sqlx::query(&query)
+            .bind(id.0)
+            .execute(&self.pool)
+            .await
+            .media_result()?;
 
         Ok(result.rows_affected() > 0)
     }
@@ -116,7 +123,11 @@ impl PostgresMediaRepository {
             self.config.media_fqn()?
         );
 
-        let result = sqlx::query(&query).bind(id.0).execute(&self.pool).await?;
+        let result = sqlx::query(&query)
+            .bind(id.0)
+            .execute(&self.pool)
+            .await
+            .media_result()?;
 
         Ok(result.rows_affected() > 0)
     }
@@ -130,7 +141,11 @@ impl PostgresMediaRepository {
             self.config.media_fqn()?
         );
 
-        let result = sqlx::query(&query).bind(id.0).execute(&self.pool).await?;
+        let result = sqlx::query(&query)
+            .bind(id.0)
+            .execute(&self.pool)
+            .await
+            .media_result()?;
 
         Ok(result.rows_affected() > 0)
     }
@@ -156,7 +171,8 @@ impl PostgresMediaRepository {
             query_builder = query_builder.bind(search_pattern);
         }
 
-        let rows: Vec<MediaSummaryRow> = query_builder.fetch_all(&self.pool).await?;
+        let rows: Vec<MediaSummaryRow> =
+            query_builder.fetch_all(&self.pool).await.media_result()?;
 
         Ok(rows.into_iter().map(Into::into).collect())
     }
@@ -179,7 +195,10 @@ impl PostgresMediaRepository {
             self.config.renditions_fqn()?
         );
 
-        let rows: Vec<MediaSummaryRow> = sqlx::query_as(&query).fetch_all(&self.pool).await?;
+        let rows: Vec<MediaSummaryRow> = sqlx::query_as(&query)
+            .fetch_all(&self.pool)
+            .await
+            .media_result()?;
 
         Ok(rows.into_iter().map(Into::into).collect())
     }
@@ -203,7 +222,8 @@ impl PostgresMediaRepository {
         let result = sqlx::query(&query)
             .bind(&raw_ids)
             .execute(&self.pool)
-            .await?;
+            .await
+            .media_result()?;
 
         Ok(result.rows_affected() as i64)
     }
@@ -222,7 +242,10 @@ impl PostgresMediaRepository {
             self.config.usages_fqn()?
         );
 
-        let rows: Vec<MediaRow> = sqlx::query_as(&query).fetch_all(&self.pool).await?;
+        let rows: Vec<MediaRow> = sqlx::query_as(&query)
+            .fetch_all(&self.pool)
+            .await
+            .media_result()?;
 
         Ok(rows.into_iter().map(Into::into).collect())
     }

@@ -49,7 +49,7 @@ Primary:
 - [`rust/crates/underlay-media/src/repository.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-media/src/repository.rs)
 - [`rust/crates/underlay-media/src/storage.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-media/src/storage.rs)
 - [`rust/crates/underlay-media/src/sync.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-media/src/sync.rs)
-- [`rust/crates/underlay-media/src/postgres.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-media/src/postgres.rs)
+- [`rust/crates/underlay-media-postgres/src/lib.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-media-postgres/src/lib.rs)
 - [`rust/crates/underlay-media/src/error.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-media/src/error.rs)
 
 Supporting:
@@ -234,7 +234,7 @@ Rules:
 ### Media repository and lifecycle boundary
 
 `underlay-media` owns the lower-level media repository and storage lifecycle
-surface.
+surface. `underlay-media-postgres` owns the concrete PostgreSQL adapter.
 
 Core pieces:
 
@@ -244,8 +244,8 @@ Core pieces:
   `CreateRenditionInput`, `ListMediaParams`
 - `MediaRepository`
 - `MediaRepositoryExt`
-- `PostgresMediaRepository`
-- `PostgresMediaConfig`
+- `PostgresMediaRepository` in `underlay-media-postgres`
+- `PostgresMediaConfig` in `underlay-media-postgres`
 
 Rules:
 
@@ -257,7 +257,8 @@ Rules:
 - repository interfaces stay storage-aware but backend-agnostic at the trait
   level
 - `MediaRepository` and `MediaRepositoryExt` are the app-facing repository seam
-- Postgres operation modules are adapter internals and must stay private
+- Postgres operation modules are adapter internals and must stay private in
+  `underlay-media-postgres`
 - `PostgresMediaConfig` is an adapter surface; new code should prefer
   `try_with_schema` and `try_with_tables` for early identifier validation
 - storage-key helpers are stable shared helpers, but their string-returning
@@ -269,10 +270,11 @@ migration bindings, and media graph semantics is defined in `050`.
 
 Current boundary note:
 
-- the shipped `PostgresMediaRepository` still exposes the older simple usage
-  tracking surface (`track_usage`, `sync_usages`) alongside the newer
-  generalized usage-edge traits, so higher-level usage-graph behavior is only
-  partially implemented by the default backend today
+- the shipped `underlay-media-postgres` `PostgresMediaRepository` still
+  exposes the older simple usage tracking surface (`track_usage`,
+  `sync_usages`) alongside the newer generalized usage-edge traits, so
+  higher-level usage-graph behavior is only partially implemented by the
+  default backend today
 
 ### Storage key contract
 

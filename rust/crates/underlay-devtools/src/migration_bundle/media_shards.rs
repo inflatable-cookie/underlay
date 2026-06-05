@@ -1,11 +1,11 @@
 use std::path::{Path, PathBuf};
 
-use base64::{engine::general_purpose::STANDARD as BASE64, Engine as _};
+use base64::{Engine as _, engine::general_purpose::STANDARD as BASE64};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
-use underlay_media::version_key;
+use underlay_media::storage::version_key;
 
-use super::{sha256_digest, MigrationBundleError};
+use super::{MigrationBundleError, sha256_digest};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]

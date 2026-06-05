@@ -4,9 +4,9 @@ use chrono::Utc;
 use sqlx::Row;
 use uuid::Uuid;
 
-use crate::domain::{MediaId, MediaUsage};
-use crate::error::MediaResult;
 use crate::postgres_rows::MediaUsageRow;
+use crate::SqlxMediaResultExt;
+use underlay_media::{MediaId, MediaResult, MediaUsage};
 
 use super::PostgresMediaRepository;
 
@@ -28,7 +28,8 @@ impl PostgresMediaRepository {
             .bind(usage.entity_id)
             .bind(&usage.field_name)
             .execute(&self.pool)
-            .await?;
+            .await
+            .media_result()?;
 
         Ok(())
     }
@@ -54,7 +55,8 @@ impl PostgresMediaRepository {
             .bind(entity_id)
             .bind(field_name)
             .execute(&self.pool)
-            .await?;
+            .await
+            .media_result()?;
 
         Ok(result.rows_affected() > 0)
     }
@@ -73,7 +75,8 @@ impl PostgresMediaRepository {
         let rows: Vec<MediaUsageRow> = sqlx::query_as(&query)
             .bind(media_id.0)
             .fetch_all(&self.pool)
-            .await?;
+            .await
+            .media_result()?;
 
         Ok(rows.into_iter().map(Into::into).collect())
     }
@@ -89,7 +92,8 @@ impl PostgresMediaRepository {
         let row = sqlx::query(&query)
             .bind(media_id.0)
             .fetch_one(&self.pool)
-            .await?;
+            .await
+            .media_result()?;
 
         Ok(row.get::<bool, _>("used"))
     }
@@ -105,7 +109,8 @@ impl PostgresMediaRepository {
         let row = sqlx::query(&query)
             .bind(media_id.0)
             .fetch_one(&self.pool)
-            .await?;
+            .await
+            .media_result()?;
 
         Ok(row.get::<i64, _>("count"))
     }
@@ -165,6 +170,7 @@ impl PostgresMediaRepository {
             .bind(entity_id)
             .bind(field_name)
             .fetch_all(&self.pool)
-            .await?)
+            .await
+            .media_result()?)
     }
 }

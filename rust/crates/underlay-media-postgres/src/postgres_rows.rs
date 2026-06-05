@@ -6,7 +6,7 @@ use chrono::{DateTime, Utc};
 use sqlx::FromRow;
 use uuid::Uuid;
 
-use crate::domain::{
+use underlay_media::{
     Media, MediaId, MediaKind, MediaRendition, MediaRenditionId, MediaSummary, MediaUsage,
     MediaVersion, MediaVersionId, MediaVersionState, MediaVisibility, RenditionType,
 };

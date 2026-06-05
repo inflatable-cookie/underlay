@@ -1,8 +1,10 @@
 use uuid::Uuid;
 
-use crate::domain::{CreateRenditionInput, MediaRendition, MediaRenditionId, MediaVersionId};
-use crate::error::MediaResult;
 use crate::postgres_rows::MediaRenditionRow;
+use crate::SqlxMediaResultExt;
+use underlay_media::{
+    CreateRenditionInput, MediaRendition, MediaRenditionId, MediaResult, MediaVersionId,
+};
 
 use super::PostgresMediaRepository;
 
@@ -42,7 +44,8 @@ impl PostgresMediaRepository {
             .bind(&input.storage_provider)
             .bind(&input.bucket)
             .fetch_one(&self.pool)
-            .await?;
+            .await
+            .media_result()?;
 
         Ok(row.into())
     }
@@ -64,7 +67,8 @@ impl PostgresMediaRepository {
         let row: Option<MediaRenditionRow> = sqlx::query_as(&query)
             .bind(id.0)
             .fetch_optional(&self.pool)
-            .await?;
+            .await
+            .media_result()?;
 
         Ok(row.map(Into::into))
     }
@@ -87,7 +91,8 @@ impl PostgresMediaRepository {
         let rows: Vec<MediaRenditionRow> = sqlx::query_as(&query)
             .bind(version_id.0)
             .fetch_all(&self.pool)
-            .await?;
+            .await
+            .media_result()?;
 
         Ok(rows.into_iter().map(Into::into).collect())
     }
@@ -107,7 +112,8 @@ impl PostgresMediaRepository {
         let result = sqlx::query(&query)
             .bind(version_id.0)
             .execute(&self.pool)
-            .await?;
+            .await
+            .media_result()?;
 
         Ok(result.rows_affected())
     }

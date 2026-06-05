@@ -13,8 +13,11 @@ Owner: repo maintainers
 - Keep parallel generations genuinely independent when parallel mode is active.
 - Do not use the Rust platform-contract transition as a pretext to move
   app-local behavior into Underlay without a stable reusable boundary.
+- For the reference-grade reset, breaking changes are allowed only when they
+  remove ambiguous shared surface and update affected consumers in the same
+  lane.
 
 ## Next Task
 
-Execute `g06.018` and keep structural cleanup tied to the Rust
-platform-contract scope.
+Execute `g06.020` and keep the reset tied to the reference-grade architecture
+boundary.

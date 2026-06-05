@@ -4,7 +4,7 @@
 //!
 //! - **Domain types**: Media items, versions, renditions, and usage tracking
 //! - **Repository trait**: Abstract interface for media storage operations
-//! - **PostgreSQL implementation**: Production-ready database backend (with `postgres` feature)
+//! - **PostgreSQL implementation**: Production-ready database backend via `underlay-media-postgres`
 //! - **Rendition service**: Automatic thumbnail/preview generation (with `renditions` feature)
 //!
 //! # Quick Start
@@ -12,8 +12,8 @@
 //! ```rust,ignore
 //! use underlay_media::{
 //!     MediaRepository, MediaId, CreateMediaInput, MediaKind, MediaVisibility,
-//!     PostgresMediaRepository,
 //! };
+//! use underlay_media_postgres::PostgresMediaRepository;
 //!
 //! // Create a repository
 //! let repo = PostgresMediaRepository::new(pool);
@@ -36,7 +36,6 @@
 //!
 //! # Features
 //!
-//! - `postgres` - PostgreSQL repository implementation using sqlx
 //! - `renditions` - Automatic thumbnail and preview generation
 //! - `full` - All features enabled
 //!
@@ -64,11 +63,6 @@ pub mod nightfire;
 pub mod repository;
 pub mod storage;
 pub mod sync;
-
-#[cfg(feature = "postgres")]
-pub mod postgres;
-#[cfg(feature = "postgres")]
-mod postgres_rows;
 
 #[cfg(feature = "renditions")]
 pub mod renditions;
@@ -113,36 +107,7 @@ pub use domain::{
 };
 
 pub use error::{MediaError, MediaResult};
-pub use image::{
-    calculate_thumbnail_dimensions, format_from_mime, generate_square_thumbnail,
-    generate_thumbnail, is_supported_image, mime_from_format, ImageError, ThumbnailConfig,
-    ThumbnailResult,
-};
 pub use repository::{MediaRepository, MediaRepositoryExt};
-pub use storage::{
-    mime_to_extension, rendition_key, version_filename, version_key, StorageKeyConfig,
-    StorageKeyGenerator,
-};
-pub use sync::{
-    sync_media_usages_for_record, MediaUsageAuditSource, MediaUsageSyncReport,
-    MediaUsageSyncRepository, MigrationAttachmentBindingRepository,
-    StructuredContentMediaExtractor, StructuredContentWalker,
-};
-
-#[cfg(feature = "nightfire")]
-pub use nightfire::{
-    resolve_nightfire_media_usage, NightfireBlockMediaHandler, NightfireBlockMediaHandlerMap,
-    NightfireBlockMediaHandlerRegistry, NightfireBlockMediaReference,
-    NightfireBlockMediaRegistration, NightfireBlockMediaUsageExtractor, NightfireFieldNameMatcher,
-    NightfireMediaFieldRule, NightfireMediaReferenceMatch, NightfireMediaReferenceMatcher,
-    NightfireMediaUsageExtractor, NightfireMediaVisitContext, NightfireNestedValuePointer,
-};
-
-#[cfg(feature = "postgres")]
-pub use postgres::{PostgresMediaConfig, PostgresMediaRepository};
-
-#[cfg(feature = "renditions")]
-pub use renditions::{RenditionConfig, RenditionResult, RenditionService};
 
 #[cfg(test)]
 #[path = "tests/lib_tests.rs"]

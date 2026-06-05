@@ -32,7 +32,7 @@ Primary:
 - [`rust/crates/underlay-auth/src/types.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-auth/src/types.rs)
 - [`rust/crates/underlay-auth/src/errors.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-auth/src/errors.rs)
 - [`rust/crates/underlay-auth/src/repository.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-auth/src/repository.rs)
-- [`rust/crates/underlay-auth/src/state.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-auth/src/state.rs)
+- [`rust/crates/underlay-auth-postgres/src/lib.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-auth-postgres/src/lib.rs)
 - [`rust/crates/underlay-auth-jwt/src/lib.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-auth-jwt/src/lib.rs)
 - [`rust/crates/underlay-auth-jwt/src/service.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-auth-jwt/src/service.rs)
 - [`rust/crates/underlay-auth-jwt/src/session.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-auth-jwt/src/session.rs)
@@ -137,8 +137,8 @@ Rules:
 
 ### Repository and state seams
 
-Underlay owns repository interfaces and short-lived auth-state storage seams,
-not the concrete DB layer.
+Underlay owns repository interfaces. `underlay-auth-postgres` owns the concrete
+short-lived auth-state storage adapter.
 
 Core repository interfaces:
 
@@ -148,10 +148,10 @@ Core repository interfaces:
 - `AuditLogRepository`
 - `AuthRepository`
 
-Shared state storage:
+Shared Postgres state storage:
 
-- `AuthStateStore`
-- `AuthStateRow`
+- `AuthStateStore` in `underlay-auth-postgres`
+- `AuthStateRow` in `underlay-auth-postgres`
 
 Rules:
 

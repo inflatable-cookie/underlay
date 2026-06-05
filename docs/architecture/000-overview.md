@@ -14,6 +14,8 @@ Underlay is a reusable foundation for building full-stack apps with a consistent
 - Centralise cross-project primitives (IDs, envelopes, error codes, client patterns, UI patterns).
 - Preserve flexibility: apps remain free to define their own domain models and UX.
 - Provide a referenceable baseline so teams can start a new app with minimal reinvention.
+- Move toward reference-grade package boundaries where platform contracts,
+  adapters, and tooling are clearly separated.
 
 ## Non-Goals
 
@@ -39,6 +41,7 @@ See [010-package-map.md](./010-package-map.md) for the full crate inventory, des
 - [system-inventory.md](./system-inventory.md) (significant systems and
   contract-planning inventory)
 - [010-package-map.md](./010-package-map.md) (full crate inventory and feature flags)
+- [020-reference-grade-underlay-architecture.md](./020-reference-grade-underlay-architecture.md) (target reset architecture)
 - [015-error-and-envelopes.md](./015-error-and-envelopes.md) (API error and envelope contract)
 - [030-ts-api-client.md](./030-ts-api-client.md) (typed client conventions)
 - [040-svelte-ui-kit.md](./040-svelte-ui-kit.md) (UI kit scope and constraints)

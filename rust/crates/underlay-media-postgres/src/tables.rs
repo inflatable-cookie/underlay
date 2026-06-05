@@ -1,4 +1,4 @@
-use crate::error::{MediaError, MediaResult};
+use underlay_media::{MediaError, MediaResult};
 
 /// Configuration for the PostgreSQL media repository.
 #[derive(Clone, Debug)]

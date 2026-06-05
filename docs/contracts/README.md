@@ -75,5 +75,7 @@ machine-readable policy files.
 - `g06.015` is complete as the Rust platform transition release-note handoff
 - `g06.016` is complete as the Rust platform hardening backlog batch
 - `g06.017` is complete as the Rust quality re-audit and fresh-start assessment
-- `g06.018` is next as the third Rust structural cleanup batch
+- `g06.018` is superseded by `g06.019`
+- `g06.019` is complete as the reference-grade architecture reset inventory
+- `g06.020` is next as the public Rust surface diet and consumer import matrix
 - keep fresh Rust platform-contract work inside `g06`
