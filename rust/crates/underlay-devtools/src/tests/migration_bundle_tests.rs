@@ -1,13 +1,15 @@
 use super::{
     migration_bundle_build, migration_bundle_publish, migration_bundle_pull, migration_run,
-    BundleBuildOptions, BundlePublishOptions, BundlePullOptions, BundleRunOptions,
-    MigrationBundleRef,
+    sha256_digest, write_pulled_outputs, BundleBuildOptions, BundlePackage, BundlePublishOptions,
+    BundlePullOptions, BundleRunOptions, MigrationBundleRef,
 };
 use base64::Engine as _;
+use std::collections::BTreeMap;
 use std::path::PathBuf;
 use std::process::Command;
 use std::thread::sleep;
 use std::time::Duration;
+use underlay_migration_core::{OciBundleConfig, OciBundleLayout, OciLayerDescriptor, OciLayerKind};
 
 fn temp_dir(prefix: &str) -> PathBuf {
     let mut path = std::env::temp_dir();
@@ -138,15 +140,18 @@ fn migration_run_requires_digest_pinned_bundle_ref() {
 #[test]
 fn migration_bundle_ref_parses_digest_pinned_ref() {
     let bundle_ref = MigrationBundleRef::parse_digest_pinned(
-        "registry.example.com/org/bundle@sha256:0123456789abcdef",
+        "registry.example.com/org/bundle@sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
     )
     .unwrap();
 
     assert_eq!(
         bundle_ref.as_str(),
-        "registry.example.com/org/bundle@sha256:0123456789abcdef"
+        "registry.example.com/org/bundle@sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
     );
-    assert_eq!(bundle_ref.digest(), "sha256:0123456789abcdef");
+    assert_eq!(
+        bundle_ref.digest(),
+        "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+    );
 }
 
 #[test]
@@ -155,6 +160,16 @@ fn migration_bundle_ref_rejects_tag_only_ref() {
         .expect_err("tag-only ref should be rejected");
 
     assert!(err.to_string().contains("digest-pinned"));
+}
+
+#[test]
+fn migration_bundle_ref_rejects_malformed_sha256_digest() {
+    let err = MigrationBundleRef::parse_digest_pinned(
+        "registry.example.com/org/bundle@sha256:not-a-real-digest",
+    )
+    .expect_err("malformed digest should be rejected");
+
+    assert!(err.to_string().contains("64 hex"));
 }
 
 #[test]
@@ -173,6 +188,77 @@ fn bundle_run_options_accept_typed_bundle_ref() {
     assert_eq!(options.bundle_ref().unwrap(), bundle_ref);
     assert_eq!(options.output_dir, PathBuf::from("out"));
     assert_eq!(options.local_store_dir, Some(PathBuf::from("store")));
+}
+
+#[test]
+fn pulled_media_shard_output_names_are_sanitized() {
+    let dir = temp_dir("underlay_bundle_shard_output_escape");
+    let output_dir = dir.join("pull");
+    std::fs::create_dir_all(&output_dir).expect("output dir should exist");
+
+    let media_id = uuid::Uuid::parse_str("018f0000-0000-7000-8000-000000000001").unwrap();
+    let version_id = uuid::Uuid::parse_str("018f0000-0000-7000-8000-000000000002").unwrap();
+    let payload_bytes = b"abc".to_vec();
+    let payload_sha = sha256_digest(&payload_bytes);
+    let object_key = underlay_media::storage::version_object_key(media_id, version_id, "a.bin")
+        .expect("object key should be valid")
+        .into_string();
+    let shard_payload = serde_json::to_vec(&serde_json::json!({
+        "schema_version": "1",
+        "shard_id": "../../escape",
+        "assets": [{
+            "relative_path": "a.bin",
+            "filename": "a.bin",
+            "byte_size": payload_bytes.len(),
+            "sha256": payload_sha,
+            "content_base64": base64::engine::general_purpose::STANDARD.encode(&payload_bytes),
+            "mapping": {
+                "media_id": media_id.to_string(),
+                "version_id": version_id.to_string(),
+                "object_key": object_key,
+            }
+        }]
+    }))
+    .expect("shard payload should serialize");
+    let layer_digest = sha256_digest(&shard_payload);
+
+    let mut annotations = BTreeMap::new();
+    annotations.insert("underlay.shard_id".to_string(), "../../escape".to_string());
+
+    let package = BundlePackage {
+        schema_version: "1".to_string(),
+        layout: OciBundleLayout {
+            artifact_type: "application/vnd.underlay.migration.bundle.v1".to_string(),
+            media_type: "application/vnd.oci.image.manifest.v1+json".to_string(),
+            config: OciBundleConfig {
+                schema_version: "1".to_string(),
+                bundle_id: underlay_core::Uuid::new_v7().to_string(),
+                bundle_version: "v0-local".to_string(),
+                source_system: "legacy_system".to_string(),
+                target_schema_version: "schema_v1".to_string(),
+            },
+            layers: vec![OciLayerDescriptor {
+                kind: OciLayerKind::MediaShard,
+                media_type: "application/vnd.underlay.bundle.media.shard.v1+json".to_string(),
+                digest: layer_digest.clone(),
+                size_bytes: shard_payload.len() as u64,
+                annotations,
+            }],
+            sidecars: Vec::new(),
+        },
+        payloads: BTreeMap::from([(
+            layer_digest,
+            base64::engine::general_purpose::STANDARD.encode(&shard_payload),
+        )]),
+    };
+
+    write_pulled_outputs(&package, &output_dir).expect("pulled outputs should be written");
+
+    assert!(!dir.join("escape.json").exists());
+    assert!(output_dir
+        .join("media-shards")
+        .join(".._.._escape.json")
+        .exists());
 }
 
 #[test]

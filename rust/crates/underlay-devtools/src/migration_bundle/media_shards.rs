@@ -1,11 +1,11 @@
 use std::path::{Path, PathBuf};
 
-use base64::{Engine as _, engine::general_purpose::STANDARD as BASE64};
+use base64::{engine::general_purpose::STANDARD as BASE64, Engine as _};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
-use underlay_media::storage::version_key;
+use underlay_media::{storage::version_object_key, BlobObjectKey};
 
-use super::{MigrationBundleError, sha256_digest};
+use super::{sha256_digest, MigrationBundleError};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
@@ -95,8 +95,20 @@ pub(super) fn validate_media_shard_payload(bytes: &[u8]) -> Result<(), Migration
             ))
         })?;
 
-        let expected_key = version_key(media_id, version_id, &asset.filename);
-        if expected_key != asset.mapping.object_key {
+        let expected_key =
+            version_object_key(media_id, version_id, &asset.filename).map_err(|err| {
+                MigrationBundleError::Validation(format!(
+                    "invalid generated mapping object_key for {}: {err}",
+                    asset.relative_path
+                ))
+            })?;
+        let mapped_key = BlobObjectKey::parse(&asset.mapping.object_key).map_err(|err| {
+            MigrationBundleError::Validation(format!(
+                "invalid mapping object_key for {}: {err}",
+                asset.relative_path
+            ))
+        })?;
+        if expected_key != mapped_key {
             return Err(MigrationBundleError::Validation(format!(
                 "mapping object_key mismatch for {}: expected {}, found {}",
                 asset.relative_path, expected_key, asset.mapping.object_key
@@ -144,6 +156,13 @@ pub(super) fn build_media_shards(
 
         let media_uuid = deterministic_uuid_from_seed(&format!("media:{}", entry.sha256));
         let version_uuid = deterministic_uuid_from_seed(&format!("version:{}", entry.sha256));
+        let object_key =
+            version_object_key(media_uuid, version_uuid, &entry.filename).map_err(|err| {
+                MigrationBundleError::Validation(format!(
+                    "invalid generated mapping object_key for {}: {err}",
+                    entry.relative_path
+                ))
+            })?;
 
         current_assets.push(MediaAssetPayload {
             relative_path: entry.relative_path.clone(),
@@ -154,7 +173,7 @@ pub(super) fn build_media_shards(
             mapping: MediaKeyMapping {
                 media_id: media_uuid.to_string(),
                 version_id: version_uuid.to_string(),
-                object_key: version_key(media_uuid, version_uuid, &entry.filename),
+                object_key: object_key.into_string(),
             },
         });
         current_bytes += byte_size;

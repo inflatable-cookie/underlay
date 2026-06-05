@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.049`: devtools migration-bundle boundary split.
+Execute `g06.050`: migration-core public model modularity audit.

@@ -118,7 +118,8 @@ README surfaces.
 - `g06.047` is complete as the consumer non-media blob object-key adoption
   proof
 - `g06.048` is complete as the post-blob-key Rust quality checkpoint
-- `g06.049` is next as the devtools migration-bundle boundary split
+- `g06.049` is complete as the devtools migration-bundle boundary split
+- `g06.050` is next as the migration-core public model modularity audit
 - `g05` is closed as the shared-page, workflow-template, media capability,
   dev-flow contract, and query-variant convergence generation
 - `g05.024` is complete as the Marking Hub query variant proof and rollout
@@ -385,7 +386,7 @@ views, and the unused `embed` package surface is no longer exported.
 
 ## Active Lane
 
-`g06.044` is now the live planning/control lane.
+`g06.050` is now the live planning/control lane.
 
 Underlay’s Rust platform-contract transition is materially complete enough to
 continue into the reference-grade reset inside `g06`, with controlled breaking
@@ -410,4 +411,4 @@ queue and proving the next honest work belonged in `g02`.
 
 Execute the live queue:
 
-- `g06.049`: devtools migration-bundle boundary split
+- `g06.050`: migration-core public model modularity audit

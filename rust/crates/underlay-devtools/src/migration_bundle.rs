@@ -15,7 +15,7 @@ const SHA256_PREFIX: &str = "sha256:";
 const DEFAULT_MEDIA_SHARD_MAX_BYTES: u64 = 16 * 1024 * 1024;
 const OCI_MANIFEST_MEDIA_TYPE: &str = "application/vnd.oci.image.manifest.v1+json";
 
-mod local_store;
+pub(crate) mod local_store;
 mod media_shards;
 mod remote_registry;
 
@@ -118,7 +118,7 @@ impl MigrationBundleRef {
             ));
         }
 
-        let digest = local_store::extract_digest_from_ref(value).ok_or_else(|| {
+        let digest = local_store::digest_from_ref(value)?.ok_or_else(|| {
             MigrationBundleError::InvalidInput(
                 "migration run requires digest-pinned --bundle <ref@sha256:...>".to_string(),
             )
@@ -350,7 +350,7 @@ pub fn migration_bundle_publish(
     validate_bundle_package(&package)?;
 
     let digest = sha256_digest(&bytes);
-    if let Some(ref_digest) = local_store::extract_digest_from_ref(&options.oci_ref) {
+    if let Some(ref_digest) = local_store::digest_from_ref(&options.oci_ref)? {
         if ref_digest != digest {
             return Err(MigrationBundleError::Validation(format!(
                 "oci_ref digest mismatch: ref={}, actual={}",
@@ -434,7 +434,7 @@ pub(super) fn write_pulled_outputs(
             .get("underlay.shard_id")
             .cloned()
             .unwrap_or_else(|| local_store::sanitize_ref(&layer.digest));
-        let media_out = media_dir.join(format!("{shard_id}.json"));
+        let media_out = media_dir.join(format!("{}.json", local_store::sanitize_ref(&shard_id)));
         std::fs::write(media_out, payload)?;
     }
 

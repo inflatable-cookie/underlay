@@ -18,8 +18,8 @@ use sha2::{Digest, Sha256};
 use underlay_migration_core::{OciBundleConfig, OciBundleLayout, OciLayerDescriptor, OciLayerKind};
 
 use crate::migration_bundle::{
-    migration_bundle_pull, BundlePublishOptions, BundlePublishReport, BundlePullOptions,
-    MigrationBundleError,
+    local_store, migration_bundle_pull, BundlePublishOptions, BundlePublishReport,
+    BundlePullOptions, MigrationBundleError,
 };
 
 const SHA256_PREFIX: &str = "sha256:";
@@ -269,9 +269,9 @@ pub fn seed_bundle_pull(
     }
 
     // Read the original blob to get payloads (bundle.json only has the layout)
-    let store = resolve_local_store_dir(options.local_store_dir.as_ref());
-    let digest = resolve_digest(&store, &options.oci_ref)?;
-    let blob_path = blob_path_for_digest(&store, &digest);
+    let store = local_store::resolve_local_store_dir(options.local_store_dir.as_ref())?;
+    let digest = local_store::resolve_digest(&store, &options.oci_ref)?;
+    let blob_path = store.blob_path_for_digest(&digest)?;
     let blob_bytes = std::fs::read(&blob_path)?;
     let package: BundlePackage = serde_json::from_slice(&blob_bytes).map_err(|err| {
         MigrationBundleError::Validation(format!("invalid bundle package JSON: {err}"))
@@ -398,77 +398,4 @@ fn decode_payload(
             digest
         ))
     })
-}
-
-fn resolve_local_store_dir(local_store_dir: Option<&PathBuf>) -> PathBuf {
-    if let Some(dir) = local_store_dir {
-        return dir.clone();
-    }
-    if let Ok(env_dir) = std::env::var("UNDERLAY_LOCAL_OCI_DIR") {
-        return PathBuf::from(env_dir);
-    }
-    PathBuf::from(".underlay-local-oci")
-}
-
-fn resolve_digest(store: &Path, oci_ref: &str) -> Result<String, MigrationBundleError> {
-    // Check for digest-pinned ref first
-    if let Some(digest) = extract_digest_from_ref(oci_ref) {
-        return Ok(digest);
-    }
-
-    // Look up tag in refs/
-    let ref_path = store
-        .join("refs")
-        .join(format!("{}.json", sanitize_ref(oci_ref)));
-    if !ref_path.exists() {
-        return Err(MigrationBundleError::InvalidInput(format!(
-            "oci_ref not found in local store: {}",
-            oci_ref
-        )));
-    }
-
-    let bytes = std::fs::read(&ref_path)?;
-    let payload: serde_json::Value = serde_json::from_slice(&bytes).map_err(|err| {
-        MigrationBundleError::Validation(format!("invalid ref mapping JSON: {err}"))
-    })?;
-
-    payload
-        .get("digest")
-        .and_then(|v| v.as_str())
-        .map(String::from)
-        .ok_or_else(|| {
-            MigrationBundleError::Validation(format!(
-                "ref mapping missing digest field: {}",
-                ref_path.display()
-            ))
-        })
-}
-
-fn extract_digest_from_ref(oci_ref: &str) -> Option<String> {
-    let (_, digest) = oci_ref.split_once('@')?;
-    if !digest.starts_with(SHA256_PREFIX) {
-        return None;
-    }
-    Some(digest.to_string())
-}
-
-fn blob_path_for_digest(store: &Path, digest: &str) -> PathBuf {
-    let digest_hex = digest.strip_prefix(SHA256_PREFIX).unwrap_or(digest);
-    store
-        .join("blobs")
-        .join("sha256")
-        .join(format!("{digest_hex}.json"))
-}
-
-fn sanitize_ref(oci_ref: &str) -> String {
-    oci_ref
-        .chars()
-        .map(|ch| {
-            if ch.is_ascii_alphanumeric() || matches!(ch, '.' | '_' | '-') {
-                ch
-            } else {
-                '_'
-            }
-        })
-        .collect()
 }

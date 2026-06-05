@@ -2,7 +2,7 @@ use reqwest::blocking::Client;
 use reqwest::header::{ACCEPT, CONTENT_TYPE, LOCATION};
 
 use super::{
-    decode_package, sha256_digest, validate_bundle_package, write_pulled_outputs,
+    decode_package, local_store, sha256_digest, validate_bundle_package, write_pulled_outputs,
     BundlePublishOptions, BundlePublishReport, BundlePullOptions, BundlePullReport,
     MigrationBundleError, OCI_MANIFEST_MEDIA_TYPE, SHA256_PREFIX,
 };
@@ -242,6 +242,7 @@ fn parse_remote_ref(input: &str) -> Result<RemoteRegistryRef, MigrationBundleErr
                 "remote oci_ref digest form must be <repo>@sha256:...".to_string(),
             ));
         }
+        local_store::validate_sha256_digest(digest)?;
         return Ok(RemoteRegistryRef {
             registry,
             repository: repository.to_string(),

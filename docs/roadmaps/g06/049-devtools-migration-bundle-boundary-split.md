@@ -63,8 +63,12 @@ as additive, deprecation, or breaking before landing.
 
 ## Current State
 
-`g06.049` is next after `g06.048`.
+`g06.049` is complete.
+
+Artifact:
+
+- [049 artifact](./049-devtools-migration-bundle-boundary-split-artifact.md)
 
 ## Next Task
 
-Execute `g06.049`: devtools migration-bundle boundary split.
+Execute `g06.050`: migration-core public model modularity audit.
