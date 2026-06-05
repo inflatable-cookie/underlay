@@ -54,8 +54,12 @@ re-enter planning.
 
 ## Current State
 
-`g06.070` is next.
+`g06.070` is complete.
+
+Artifact:
+
+- [070 artifact](./070-migration-core-verification-rules-internal-split-artifact.md)
 
 ## Next Task
 
-Execute `g06.070`: migration-core verification-rules internal split.
+Execute `g06.071`: jobs-postgres repository public model modularity audit.
