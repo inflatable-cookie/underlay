@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.048`: post-blob-key Rust quality checkpoint.
+Execute `g06.049`: devtools migration-bundle boundary split.

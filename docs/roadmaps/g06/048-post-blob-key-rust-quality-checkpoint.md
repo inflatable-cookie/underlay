@@ -48,8 +48,12 @@ consumer-visible Rust change.
 
 ## Current State
 
-`g06.048` is next after `g06.047`.
+`g06.048` is complete.
+
+Artifact:
+
+- [048 artifact](./048-post-blob-key-rust-quality-checkpoint-artifact.md)
 
 ## Next Task
 
-Execute `g06.048`: post-blob-key Rust quality checkpoint.
+Execute `g06.049`: devtools migration-bundle boundary split.

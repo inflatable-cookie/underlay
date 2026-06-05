@@ -117,7 +117,8 @@ README surfaces.
 - `g06.046` is complete as the non-media blob object-key boundary policy
 - `g06.047` is complete as the consumer non-media blob object-key adoption
   proof
-- `g06.048` is next as the post-blob-key Rust quality checkpoint
+- `g06.048` is complete as the post-blob-key Rust quality checkpoint
+- `g06.049` is next as the devtools migration-bundle boundary split
 - `g05` is closed as the shared-page, workflow-template, media capability,
   dev-flow contract, and query-variant convergence generation
 - `g05.024` is complete as the Marking Hub query variant proof and rollout
@@ -409,4 +410,4 @@ queue and proving the next honest work belonged in `g02`.
 
 Execute the live queue:
 
-- `g06.044`: consumer app-local media object-key parse boundaries
+- `g06.049`: devtools migration-bundle boundary split

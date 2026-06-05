@@ -99,7 +99,8 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.046` is complete as the non-media blob object-key boundary policy.
 - `g06.047` is complete as the consumer non-media blob object-key adoption
   proof.
-- `g06.048` is next as the post-blob-key Rust quality checkpoint.
+- `g06.048` is complete as the post-blob-key Rust quality checkpoint.
+- `g06.049` is next as the devtools migration-bundle boundary split.
 
 ## Planned Runway
 
@@ -155,6 +156,7 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.046`: non-media blob object-key boundary policy
 - `g06.047`: consumer non-media blob object-key adoption proof
 - `g06.048`: post-blob-key Rust quality checkpoint
+- `g06.049`: devtools migration-bundle boundary split
 
 ## Consumer Family
 
@@ -219,7 +221,8 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g06.045` is complete.
 - `g06.046` is complete.
 - `g06.047` is complete.
-- `g06.048` is next.
+- `g06.048` is complete.
+- `g06.049` is next.
 
 ## Batch Cards
 
@@ -228,4 +231,4 @@ If `g06` enters strict execution posture, keep its cards under
 
 ## Next Task
 
-Execute `g06.048`: post-blob-key Rust quality checkpoint.
+Execute `g06.049`: devtools migration-bundle boundary split.
