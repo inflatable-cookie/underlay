@@ -49,8 +49,12 @@ before landing.
 
 ## Current State
 
-`g06.052` is next after `g06.051`.
+`g06.052` is complete.
+
+Artifact:
+
+- [052 artifact](./052-rust-structural-backlog-checkpoint-artifact.md)
 
 ## Next Task
 
-Execute `g06.052`: Rust structural backlog checkpoint.
+Execute `g06.053`: media domain internal split.

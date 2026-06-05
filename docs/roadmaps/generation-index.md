@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.052`: Rust structural backlog checkpoint.
+Execute `g06.053`: media domain internal split.

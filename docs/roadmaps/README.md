@@ -121,7 +121,8 @@ README surfaces.
 - `g06.049` is complete as the devtools migration-bundle boundary split
 - `g06.050` is complete as the migration-core public model modularity audit
 - `g06.051` is complete as the migration-core pipeline internal split
-- `g06.052` is next as the Rust structural backlog checkpoint
+- `g06.052` is complete as the Rust structural backlog checkpoint
+- `g06.053` is next as the media domain internal split
 - `g05` is closed as the shared-page, workflow-template, media capability,
   dev-flow contract, and query-variant convergence generation
 - `g05.024` is complete as the Marking Hub query variant proof and rollout
@@ -388,7 +389,7 @@ views, and the unused `embed` package surface is no longer exported.
 
 ## Active Lane
 
-`g06.052` is now the live planning/control lane.
+`g06.053` is now the live planning/control lane.
 
 Underlay’s Rust platform-contract transition is materially complete enough to
 continue into the reference-grade reset inside `g06`, with controlled breaking
@@ -413,4 +414,4 @@ queue and proving the next honest work belonged in `g02`.
 
 Execute the live queue:
 
-- `g06.052`: Rust structural backlog checkpoint
+- `g06.053`: media domain internal split
