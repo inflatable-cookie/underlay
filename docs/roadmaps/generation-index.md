@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.081`: auth OAuth tests modularity audit.
+Execute `g06.082`: auth OAuth tests internal split.

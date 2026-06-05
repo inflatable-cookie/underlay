@@ -154,7 +154,8 @@ README surfaces.
 - `g06.078` is complete as the auth email TOTP service tests internal split
 - `g06.079` is complete as the devtools migration-bundle tests modularity audit
 - `g06.080` is complete as the devtools migration-bundle tests internal split
-- `g06.081` is next as the auth OAuth tests modularity audit
+- `g06.081` is complete as the auth OAuth tests modularity audit
+- `g06.082` is next as the auth OAuth tests internal split
 - `g05` is closed as the shared-page, workflow-template, media capability,
   dev-flow contract, and query-variant convergence generation
 - `g05.024` is complete as the Marking Hub query variant proof and rollout

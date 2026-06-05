@@ -45,8 +45,12 @@ This is a test-structure audit. Expected impact is none.
 
 ## Current State
 
-`g06.081` is next.
+`g06.081` is complete.
+
+Artifact:
+
+- [081 artifact](./081-auth-oauth-tests-modularity-audit-artifact.md)
 
 ## Next Task
 
-Execute `g06.081`: auth OAuth tests modularity audit.
+Execute `g06.082`: auth OAuth tests internal split.
