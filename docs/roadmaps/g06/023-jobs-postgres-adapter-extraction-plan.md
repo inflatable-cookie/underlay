@@ -57,8 +57,15 @@ The follow-up execution batch is likely breaking.
 
 ## Current State
 
-`g06.023` is ready.
+`g06.023` is complete.
+
+The selected shape is one new `underlay-jobs-postgres` adapter crate. The core
+`underlay-jobs` crate keeps job contracts, runner, registry, event hub, store
+traits, dead-letter traits, and pure scheduler configuration.
+
+See
+[`023-jobs-postgres-adapter-extraction-plan-artifact.md`](023-jobs-postgres-adapter-extraction-plan-artifact.md).
 
 ## Next Task
 
-Execute `g06.023`: Jobs Postgres adapter extraction plan.
+Execute `g06.024`: Jobs Postgres adapter extraction execution.

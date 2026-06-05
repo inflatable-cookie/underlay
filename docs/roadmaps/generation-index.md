@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.023`: Jobs Postgres adapter extraction plan.
+Execute `g06.024`: Jobs Postgres adapter extraction execution.

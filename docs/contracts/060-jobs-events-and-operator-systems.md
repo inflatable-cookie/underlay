@@ -110,6 +110,9 @@ Rules:
 ### Job persistence and Postgres implementation
 
 Underlay owns a production-oriented Postgres implementation, not just traits.
+`g06.023` selected a package-boundary migration that keeps the stable job
+contract in `underlay-jobs` and moves concrete Postgres runtime code to
+`underlay-jobs-postgres` in `g06.024`.
 
 Core pieces:
 
@@ -134,6 +137,9 @@ Rules:
 ### Scheduled tasks
 
 Recurring work is a first-class extension of the shared job system.
+Pure scheduler configuration remains part of the job contract. The current
+Postgres-bound scheduler runtime is selected for adapter extraction in
+`g06.024`.
 
 Core pieces:
 
@@ -213,8 +219,8 @@ Rules:
 - apps append domain events through the shared writer boundary
 - reliable asynchronous processing uses the outbox pattern, not in-request
   best-effort dispatch
-- `underlay-jobs::outbox` owns the durable claim/process/mark-processed model
-  and LISTEN/NOTIFY wake-up path
+- the Postgres jobs adapter owns the durable claim/process/mark-processed model
+  and LISTEN/NOTIFY wake-up path after the `g06.024` extraction
 - LISTEN/NOTIFY is a wake-up mechanism layered on top of durable outbox rows
 - outbox handlers mark events processed only after successful handling
 

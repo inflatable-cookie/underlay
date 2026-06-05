@@ -69,7 +69,8 @@ controlled breaking changes allowed across the six known consumers.
   matrix.
 - `g06.021` is complete as the media Postgres adapter extraction proof.
 - `g06.022` is complete as the Postgres runtime adapter isolation batch.
-- `g06.023` is next as the jobs Postgres adapter extraction plan.
+- `g06.023` is complete as the jobs Postgres adapter extraction plan.
+- `g06.024` is next as the jobs Postgres adapter extraction execution batch.
 
 ## Planned Runway
 
@@ -98,8 +99,9 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.021`: media Postgres adapter extraction proof
 - `g06.022`: Postgres runtime adapter isolation batch
 - `g06.023`: jobs Postgres adapter extraction plan
-- `g06.024`: six-consumer rollout and compatibility retirement proof
-- `g06.025`: reference-grade docs and upgrade-note closeout
+- `g06.024`: jobs Postgres adapter extraction execution
+- `g06.025`: six-consumer rollout and compatibility retirement proof
+- `g06.026`: reference-grade docs and upgrade-note closeout
 
 ## Consumer Family
 
@@ -139,7 +141,8 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g06.020` is complete.
 - `g06.021` is complete.
 - `g06.022` is complete.
-- `g06.023` is next.
+- `g06.023` is complete.
+- `g06.024` is next.
 
 ## Batch Cards
 
@@ -148,4 +151,4 @@ If `g06` enters strict execution posture, keep its cards under
 
 ## Next Task
 
-Execute `g06.023`: Jobs Postgres adapter extraction plan.
+Execute `g06.024`: Jobs Postgres adapter extraction execution.
