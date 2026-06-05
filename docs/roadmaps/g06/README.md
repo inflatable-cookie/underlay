@@ -173,8 +173,9 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.110` is complete as the devtools seed bundle internal split.
 - `g06.111` is complete as the devtools migration-bundle remote registry
   modularity audit.
-- `g06.112` is next as the devtools migration-bundle remote registry internal
-  split.
+- `g06.112` is complete as the devtools migration-bundle remote registry
+  internal split.
+- `g06.113` is next as the devtools lib tests modularity audit.
 
 ## Planned Runway
 
@@ -294,6 +295,7 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.110`: devtools seed bundle internal split
 - `g06.111`: devtools migration-bundle remote registry modularity audit
 - `g06.112`: devtools migration-bundle remote registry internal split
+- `g06.113`: devtools lib tests modularity audit
 
 ## Consumer Family
 
@@ -422,7 +424,8 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g06.109` is complete.
 - `g06.110` is complete.
 - `g06.111` is complete.
-- `g06.112` is next.
+- `g06.112` is complete.
+- `g06.113` is next.
 
 ## Batch Cards
 
@@ -431,4 +434,4 @@ If `g06` enters strict execution posture, keep its cards under
 
 ## Next Task
 
-Execute `g06.112`: devtools migration-bundle remote registry internal split.
+Execute `g06.113`: devtools lib tests modularity audit.

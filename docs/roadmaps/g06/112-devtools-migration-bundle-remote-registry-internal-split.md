@@ -52,8 +52,12 @@ migration-bundle APIs must change, stop and re-enter planning.
 
 ## Current State
 
-`g06.112` is ready.
+`g06.112` is complete.
+
+Artifact:
+
+- [112 artifact](./112-devtools-migration-bundle-remote-registry-internal-split-artifact.md)
 
 ## Next Task
 
-Execute `g06.112`: devtools migration-bundle remote registry internal split.
+Execute `g06.113`: devtools lib tests modularity audit.

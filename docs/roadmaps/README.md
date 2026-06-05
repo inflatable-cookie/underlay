@@ -188,8 +188,9 @@ README surfaces.
 - `g06.110` is complete as the devtools seed bundle internal split
 - `g06.111` is complete as the devtools migration-bundle remote registry
   modularity audit
-- `g06.112` is next as the devtools migration-bundle remote registry internal
-  split
+- `g06.112` is complete as the devtools migration-bundle remote registry
+  internal split
+- `g06.113` is next as the devtools lib tests modularity audit
 - `g05` is closed as the shared-page, workflow-template, media capability,
   dev-flow contract, and query-variant convergence generation
 - `g05.024` is complete as the Marking Hub query variant proof and rollout
