@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.037`: typed DB identifier lane closeout audit.
+Execute `g06.038`: blob object key helper alignment plan.

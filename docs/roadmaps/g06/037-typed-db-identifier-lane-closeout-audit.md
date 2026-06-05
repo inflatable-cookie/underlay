@@ -45,8 +45,12 @@ Expected impact: none. This is an audit and closeout batch.
 
 ## Current State
 
-`g06.037` is next after `g06.036`.
+`g06.037` is complete.
+
+Artifact:
+
+- [037 artifact](./037-typed-db-identifier-lane-closeout-audit-artifact.md)
 
 ## Next Task
 
-Execute `g06.037`: typed DB identifier lane closeout audit.
+Execute `g06.038`: blob object key helper alignment plan.

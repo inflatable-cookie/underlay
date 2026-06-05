@@ -134,7 +134,7 @@ Acceptance:
 - values remain bound parameters
 - audit, security-alert, existence, media, and test schema helpers are covered
 
-Status: complete in `g06.005`.
+Status: complete through `g06.037`.
 
 Impact: additive first; deprecation for raw table-name helpers after consumer
 proof.
