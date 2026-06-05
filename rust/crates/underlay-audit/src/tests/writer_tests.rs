@@ -1,13 +1,13 @@
-use crate::validate_table_name;
+use crate::AuditTable;
 
 #[test]
 fn valid_table_names() {
-    assert!(validate_table_name("platform.audit_log").is_ok());
-    assert!(validate_table_name("audit_log").is_ok());
+    assert!(AuditTable::parse("platform.audit_log").is_ok());
+    assert!(AuditTable::parse("audit_log").is_ok());
 }
 
 #[test]
 fn invalid_table_names() {
-    assert!(validate_table_name("audit; DROP TABLE users").is_err());
-    assert!(validate_table_name("audit-log").is_err());
+    assert!(AuditTable::parse("audit; DROP TABLE users").is_err());
+    assert!(AuditTable::parse("audit-log").is_err());
 }

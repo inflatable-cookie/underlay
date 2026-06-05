@@ -47,4 +47,5 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.028`: typed operator table config.
+Execute `g06.029`: consumer typed operator table adoption and raw-wrapper
+deprecation decision.

@@ -2,6 +2,7 @@
 
 use crate::entry::{AuditEntry, AuditLogRow};
 use crate::error::AuditResult;
+use crate::tables::AuditTable;
 use crate::DbPool;
 use tracing::{info, instrument};
 
@@ -38,9 +39,18 @@ pub async fn append_audit_log(
     table: &str,
     entry: AuditEntry,
 ) -> AuditResult<AuditLogRow> {
-    crate::validate_table_name(table)?;
-    let table = underlay_db::format_qualified_table_name(table)
-        .map_err(|_| crate::error::AuditError::InvalidTableName)?;
+    let table = AuditTable::parse(table)?;
+    append_audit_log_to_table(pool, &table, entry).await
+}
+
+/// Append an audit log entry to a typed table location.
+#[instrument(skip(pool, entry), fields(action = %entry.action, resource_type = %entry.resource_type))]
+pub async fn append_audit_log_to_table(
+    pool: &DbPool,
+    table: &AuditTable,
+    entry: AuditEntry,
+) -> AuditResult<AuditLogRow> {
+    let table = table.quoted();
 
     let query = format!(
         r#"
@@ -102,8 +112,25 @@ pub async fn append_audit_log(
 /// * `table` - Fully qualified table name
 /// * `entry` - The audit entry to log
 pub fn append_audit_log_async(pool: DbPool, table: &'static str, entry: AuditEntry) {
+    let table = AuditTable::parse(table);
     tokio::spawn(async move {
-        if let Err(e) = append_audit_log(&pool, table, entry).await {
+        let result = match table {
+            Ok(table) => append_audit_log_to_table(&pool, &table, entry)
+                .await
+                .map(|_| ()),
+            Err(e) => Err(e),
+        };
+
+        if let Err(e) = result {
+            tracing::error!(error = %e, "Failed to write audit log entry");
+        };
+    });
+}
+
+/// Append an audit log entry to a typed table location without waiting.
+pub fn append_audit_log_to_table_async(pool: DbPool, table: AuditTable, entry: AuditEntry) {
+    tokio::spawn(async move {
+        if let Err(e) = append_audit_log_to_table(&pool, &table, entry).await {
             tracing::error!(error = %e, "Failed to write audit log entry");
         }
     });

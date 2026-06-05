@@ -93,7 +93,9 @@ README surfaces.
   retirement proof
 - `g06.026` is complete as the reference-grade docs and upgrade-note closeout
 - `g06.027` is complete as the post-reset Rust quality re-audit
-- `g06.028` is next as the typed operator table config batch
+- `g06.028` is complete as the typed operator table config batch
+- `g06.029` is next as the consumer typed operator table adoption and
+  raw-wrapper deprecation decision batch
 - `g05` is closed as the shared-page, workflow-template, media capability,
   dev-flow contract, and query-variant convergence generation
 - `g05.024` is complete as the Marking Hub query variant proof and rollout
@@ -209,7 +211,8 @@ README surfaces.
 
 ## Next Task
 
-Execute `g06.028`: typed operator table config.
+Execute `g06.029`: consumer typed operator table adoption and raw-wrapper
+deprecation decision.
 - `g01.090` is complete for confirming that the remaining public `@decodelabs/underlay/patterns` surface is the true retained workflow stop point rather than unresolved migration debt
 - `g01.091` is complete for confirming the retained `client` package boundary, exposing explicit `client/*` public subpaths for the live feature families, and keeping the root barrel stable as a convenience surface
 - `g01.092` is complete for confirming the retained `nightfire` package boundary, exposing explicit `nightfire/*` public subpaths for the live extension families, and keeping the root barrel stable as a convenience surface

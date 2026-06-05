@@ -54,9 +54,9 @@ controlled breaking batches with six-consumer proof.
 | `underlay-jobs-postgres` | PostgreSQL job adapter: repositories, LISTEN/NOTIFY, scheduler runtime, outbox processor, maintenance tasks, and SQL constants |
 | `underlay-email` | Email infrastructure with pluggable backends (SMTP, SES) and templates |
 | `underlay-ratelimit` | Rate limiting with pluggable backends |
-| `underlay-audit` | Audit logging for admin actions and security-relevant events |
+| `underlay-audit` | Audit logging for admin actions and security-relevant events, with typed table config over app-owned tables |
 | `underlay-auth-postgres` | PostgreSQL auth-state adapter for `underlay-auth` workflow state |
-| `underlay-security-alerts` | Shared failed-login/lockout security alert thresholds, dedupe checks, and event persistence helpers |
+| `underlay-security-alerts` | Shared failed-login/lockout security alert thresholds, typed table config, dedupe checks, and event persistence helpers |
 | `underlay-suggestions` | Server-side suggestion query building for `RelationSelector` components |
 | `underlay-ai-runtime` | Provider-agnostic AI runtime contracts, OpenAI-compatible client, routing candidate selection |
 

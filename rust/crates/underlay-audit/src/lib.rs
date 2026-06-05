@@ -58,20 +58,20 @@
 mod entry;
 mod error;
 mod query;
+mod tables;
 mod writer;
 
 pub use crate::entry::{AuditAction, AuditEntry, AuditLogRow};
 pub use crate::error::{AuditError, AuditResult};
-pub use crate::query::{count_audit_logs, get_audit_log_by_id, list_audit_logs, AuditLogFilters};
-pub use crate::writer::{append_audit_log, append_audit_log_async};
+pub use crate::query::{
+    count_audit_logs, count_audit_logs_from_table, get_audit_log_by_id,
+    get_audit_log_by_id_from_table, list_audit_logs, list_audit_logs_from_table, AuditLogFilters,
+};
+pub use crate::tables::AuditTable;
+pub use crate::writer::{
+    append_audit_log, append_audit_log_async, append_audit_log_to_table,
+    append_audit_log_to_table_async,
+};
 
 /// Convenience type alias for the database pool.
 pub type DbPool = sqlx::PgPool;
-
-/// Validate that a table name is safe for use in dynamic SQL.
-///
-/// Only allows alphanumeric characters, underscores, and dots (for schema.table).
-/// Rejects any characters that could enable SQL injection.
-pub(crate) fn validate_table_name(table: &str) -> AuditResult<()> {
-    underlay_db::validate_qualified_table_name(table).map_err(|_| AuditError::InvalidTableName)
-}

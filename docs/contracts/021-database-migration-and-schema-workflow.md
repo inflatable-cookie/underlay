@@ -255,6 +255,8 @@ Rules:
   quote them before SQL execution
 - dynamic table names in audit, security alert, media, existence, and dev/test
   helpers must not be interpolated without validation and quoting
+- audit and security-alert callers should prefer the typed table config APIs;
+  the raw-string functions are compatibility wrappers
 
 ## What Good Looks Like
 

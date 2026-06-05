@@ -75,7 +75,9 @@ controlled breaking changes allowed across the six known consumers.
   retirement proof.
 - `g06.026` is complete as the reference-grade docs and upgrade-note closeout.
 - `g06.027` is complete as the post-reset Rust quality re-audit.
-- `g06.028` is next as the typed operator table config batch.
+- `g06.028` is complete as the typed operator table config batch.
+- `g06.029` is next as the consumer typed operator table adoption and
+  raw-wrapper deprecation decision batch.
 
 ## Planned Runway
 
@@ -109,6 +111,8 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.026`: reference-grade docs and upgrade-note closeout
 - `g06.027`: post-reset Rust quality re-audit
 - `g06.028`: typed operator table config
+- `g06.029`: consumer typed operator table adoption and raw-wrapper
+  deprecation decision
 
 ## Consumer Family
 
@@ -153,7 +157,8 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g06.025` is complete.
 - `g06.026` is complete.
 - `g06.027` is complete.
-- `g06.028` is next.
+- `g06.028` is complete.
+- `g06.029` is next.
 
 ## Batch Cards
 
@@ -162,4 +167,5 @@ If `g06` enters strict execution posture, keep its cards under
 
 ## Next Task
 
-Execute `g06.028`: typed operator table config.
+Execute `g06.029`: consumer typed operator table adoption and raw-wrapper
+deprecation decision.

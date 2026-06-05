@@ -9,7 +9,8 @@ This guide covers setting up audit logging for security, compliance, and debuggi
 The `underlay-audit` crate provides:
 
 - **Types**: `AuditEntry`, `AuditAction`, `AuditLogRow`, `AuditLogFilters`
-- **Functions**: `append_audit_log`, `list_audit_logs`, `get_audit_log_by_id`, `count_audit_logs`
+- **Typed table config**: `AuditTable`
+- **Functions**: `append_audit_log_to_table`, `list_audit_logs_from_table`, `get_audit_log_by_id_from_table`, `count_audit_logs_from_table`
 
 Audit logs are essential for:
 - Security forensics (who did what, when)
@@ -45,13 +46,15 @@ CREATE INDEX idx_audit_log_action ON platform.audit_log (action);
 ### Basic Usage
 
 ```rust
-use underlay_audit::{AuditAction, AuditEntry, append_audit_log};
+use underlay_audit::{append_audit_log_to_table, AuditAction, AuditEntry, AuditTable};
 use serde_json::json;
 
+let audit_table = AuditTable::parse("platform.audit_log")?;
+
 // Log an admin action
-append_audit_log(
+append_audit_log_to_table(
     &pool,
-    "platform.audit_log",  // table name (app-configurable)
+    &audit_table,
     AuditEntry {
         user_id: Some(admin_user.id),
         action: AuditAction::Create,
@@ -88,12 +91,14 @@ The `AuditAction` enum provides standard action types:
 For non-blocking audit logging (e.g., in request handlers):
 
 ```rust
-use underlay_audit::append_audit_log_async;
+use underlay_audit::{append_audit_log_to_table_async, AuditTable};
+
+let audit_table = AuditTable::parse("platform.audit_log")?;
 
 // Fire-and-forget audit logging
-append_audit_log_async(
+append_audit_log_to_table_async(
     pool.clone(),
-    "platform.audit_log",
+    audit_table,
     AuditEntry {
         user_id: Some(user.id),
         action: AuditAction::View,
@@ -111,7 +116,7 @@ append_audit_log_async(
 ### List with Filters
 
 ```rust
-use underlay_audit::{list_audit_logs, AuditLogFilters};
+use underlay_audit::{list_audit_logs_from_table, AuditLogFilters, AuditTable};
 
 let filters = AuditLogFilters {
     user_id: Some(admin_id),
@@ -123,8 +128,13 @@ let filters = AuditLogFilters {
     offset: 0,
 };
 
-let logs = list_audit_logs(&pool, "platform.audit_log", filters).await?;
+let audit_table = AuditTable::parse("platform.audit_log")?;
+let logs = list_audit_logs_from_table(&pool, &audit_table, filters).await?;
 ```
+
+The older raw-string functions remain available as compatibility wrappers.
+New code should construct `AuditTable` once from typed app config and pass it
+through the typed helpers.
 
 ### Get Single Entry
 

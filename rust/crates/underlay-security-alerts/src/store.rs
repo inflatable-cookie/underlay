@@ -2,13 +2,9 @@ use chrono::{DateTime, Duration, Utc};
 use sqlx::{PgPool, Row};
 use uuid::Uuid;
 
-use crate::error::{SecurityAlertError, SecurityAlertResult};
+use crate::error::SecurityAlertResult;
+use crate::tables::{LoginAttemptsTable, SecurityAlertEventsTable};
 use crate::types::{LoginAttemptSignalCounts, SecurityAlertEventInput, SecurityAlertType};
-
-fn validate_table_name(table: &str) -> SecurityAlertResult<()> {
-    underlay_db::validate_qualified_table_name(table)
-        .map_err(|_| SecurityAlertError::InvalidTableName)
-}
 
 pub async fn load_ip_signal_counts(
     pool: &PgPool,
@@ -16,9 +12,17 @@ pub async fn load_ip_signal_counts(
     ip_address: &str,
     since: DateTime<Utc>,
 ) -> SecurityAlertResult<LoginAttemptSignalCounts> {
-    validate_table_name(login_attempts_table)?;
-    let login_attempts_table = underlay_db::format_qualified_table_name(login_attempts_table)
-        .map_err(|_| SecurityAlertError::InvalidTableName)?;
+    let login_attempts_table = LoginAttemptsTable::parse(login_attempts_table)?;
+    load_ip_signal_counts_from_table(pool, &login_attempts_table, ip_address, since).await
+}
+
+pub async fn load_ip_signal_counts_from_table(
+    pool: &PgPool,
+    login_attempts_table: &LoginAttemptsTable,
+    ip_address: &str,
+    since: DateTime<Utc>,
+) -> SecurityAlertResult<LoginAttemptSignalCounts> {
+    let login_attempts_table = login_attempts_table.quoted();
 
     let query = format!(
         r#"
@@ -54,9 +58,27 @@ pub async fn has_recent_alert(
     cooldown: Duration,
     now: DateTime<Utc>,
 ) -> SecurityAlertResult<bool> {
-    validate_table_name(alert_events_table)?;
-    let alert_events_table = underlay_db::format_qualified_table_name(alert_events_table)
-        .map_err(|_| SecurityAlertError::InvalidTableName)?;
+    let alert_events_table = SecurityAlertEventsTable::parse(alert_events_table)?;
+    has_recent_alert_in_table(
+        pool,
+        &alert_events_table,
+        alert_type,
+        ip_address,
+        cooldown,
+        now,
+    )
+    .await
+}
+
+pub async fn has_recent_alert_in_table(
+    pool: &PgPool,
+    alert_events_table: &SecurityAlertEventsTable,
+    alert_type: SecurityAlertType,
+    ip_address: &str,
+    cooldown: Duration,
+    now: DateTime<Utc>,
+) -> SecurityAlertResult<bool> {
+    let alert_events_table = alert_events_table.quoted();
 
     let since = now - cooldown;
     let query = format!(
@@ -85,9 +107,16 @@ pub async fn insert_alert_event(
     alert_events_table: &str,
     input: &SecurityAlertEventInput,
 ) -> SecurityAlertResult<Uuid> {
-    validate_table_name(alert_events_table)?;
-    let alert_events_table = underlay_db::format_qualified_table_name(alert_events_table)
-        .map_err(|_| SecurityAlertError::InvalidTableName)?;
+    let alert_events_table = SecurityAlertEventsTable::parse(alert_events_table)?;
+    insert_alert_event_into_table(pool, &alert_events_table, input).await
+}
+
+pub async fn insert_alert_event_into_table(
+    pool: &PgPool,
+    alert_events_table: &SecurityAlertEventsTable,
+    input: &SecurityAlertEventInput,
+) -> SecurityAlertResult<Uuid> {
+    let alert_events_table = alert_events_table.quoted();
 
     let query = format!(
         r#"

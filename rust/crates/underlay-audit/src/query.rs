@@ -2,6 +2,7 @@
 
 use crate::entry::AuditLogRow;
 use crate::error::AuditResult;
+use crate::tables::AuditTable;
 use crate::DbPool;
 use chrono::{DateTime, Utc};
 use tracing::instrument;
@@ -92,9 +93,18 @@ pub async fn list_audit_logs(
     table: &str,
     filters: AuditLogFilters,
 ) -> AuditResult<Vec<AuditLogRow>> {
-    crate::validate_table_name(table)?;
-    let table = underlay_db::format_qualified_table_name(table)
-        .map_err(|_| crate::error::AuditError::InvalidTableName)?;
+    let table = AuditTable::parse(table)?;
+    list_audit_logs_from_table(pool, &table, filters).await
+}
+
+/// List audit log entries from a typed table location.
+#[instrument(skip(pool, filters))]
+pub async fn list_audit_logs_from_table(
+    pool: &DbPool,
+    table: &AuditTable,
+    filters: AuditLogFilters,
+) -> AuditResult<Vec<AuditLogRow>> {
+    let table = table.quoted();
 
     // Build dynamic query with filters
     // We use a fixed parameter order for predictable binding
@@ -144,9 +154,18 @@ pub async fn get_audit_log_by_id(
     table: &str,
     id: Uuid,
 ) -> AuditResult<Option<AuditLogRow>> {
-    crate::validate_table_name(table)?;
-    let table = underlay_db::format_qualified_table_name(table)
-        .map_err(|_| crate::error::AuditError::InvalidTableName)?;
+    let table = AuditTable::parse(table)?;
+    get_audit_log_by_id_from_table(pool, &table, id).await
+}
+
+/// Get a single audit log entry by ID from a typed table location.
+#[instrument(skip(pool))]
+pub async fn get_audit_log_by_id_from_table(
+    pool: &DbPool,
+    table: &AuditTable,
+    id: Uuid,
+) -> AuditResult<Option<AuditLogRow>> {
+    let table = table.quoted();
 
     let query = format!(
         r#"
@@ -179,9 +198,18 @@ pub async fn count_audit_logs(
     table: &str,
     filters: &AuditLogFilters,
 ) -> AuditResult<i64> {
-    crate::validate_table_name(table)?;
-    let table = underlay_db::format_qualified_table_name(table)
-        .map_err(|_| crate::error::AuditError::InvalidTableName)?;
+    let table = AuditTable::parse(table)?;
+    count_audit_logs_from_table(pool, &table, filters).await
+}
+
+/// Count audit log entries matching filters from a typed table location.
+#[instrument(skip(pool, filters))]
+pub async fn count_audit_logs_from_table(
+    pool: &DbPool,
+    table: &AuditTable,
+    filters: &AuditLogFilters,
+) -> AuditResult<i64> {
+    let table = table.quoted();
 
     let query = format!(
         r#"

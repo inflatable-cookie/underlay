@@ -24,10 +24,16 @@ Crate: `underlay-security-alerts`
 Primary API:
 
 - `SecurityAlertConfig` - threshold/cooldown/window settings
-- `load_ip_signal_counts(...)` - query failed-attempt signals from login attempts
+- `LoginAttemptsTable` - typed login-attempt table location
+- `SecurityAlertEventsTable` - typed alert-event table location
+- `SecurityAlertTables` - grouped table config for app state
+- `load_ip_signal_counts_from_table(...)` - query failed-attempt signals from login attempts
 - `evaluate_alerts(...)` - map counts to alert types
-- `has_recent_alert(...)` - cooldown dedupe check
-- `insert_alert_event(...)` - persist emitted alert event
+- `has_recent_alert_in_table(...)` - cooldown dedupe check
+- `insert_alert_event_into_table(...)` - persist emitted alert event
+
+The older raw-string SQL helpers remain compatibility wrappers. New code should
+parse table locations once into typed app config.
 
 ## Migration baseline
 
@@ -65,6 +71,19 @@ At failed-login write time:
    - emit app-level log/audit/notification.
 
 The shared crate intentionally does not send email/webhooks directly. Notification transport remains app-specific.
+
+Example typed table setup:
+
+```rust,ignore
+use underlay_security_alerts::{
+    LoginAttemptsTable, SecurityAlertEventsTable, SecurityAlertTables,
+};
+
+let security_alert_tables = SecurityAlertTables::new(
+    LoginAttemptsTable::parse("auth.login_attempts")?,
+    SecurityAlertEventsTable::parse("auth.security_alert_events")?,
+);
+```
 
 ## Inactive Account Maintenance (3-year example)
 

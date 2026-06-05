@@ -55,15 +55,32 @@ Out of scope:
 
 ## Consumer Upgrade Impact
 
-Impact: likely additive first, potentially breaking if the raw-string API is
-retired in the same batch.
+Impact: additive.
 
-The batch must inspect the six consumers before choosing the final posture.
+The raw-string audit and security-alert functions remain source-compatible
+wrappers. New public typed APIs are available for consumer migration:
+
+- `underlay_audit::AuditTable`
+- `append_audit_log_to_table()`
+- `append_audit_log_to_table_async()`
+- `list_audit_logs_from_table()`
+- `get_audit_log_by_id_from_table()`
+- `count_audit_logs_from_table()`
+- `underlay_security_alerts::LoginAttemptsTable`
+- `underlay_security_alerts::SecurityAlertEventsTable`
+- `underlay_security_alerts::SecurityAlertTables`
+- `load_ip_signal_counts_from_table()`
+- `has_recent_alert_in_table()`
+- `insert_alert_event_into_table()`
 
 ## Current State
 
-`g06.028` is ready.
+`g06.028` is complete.
+
+See
+[`028-typed-operator-table-config-artifact.md`](028-typed-operator-table-config-artifact.md).
 
 ## Next Task
 
-Execute `g06.028`: typed operator table config.
+Execute `g06.029`: consumer typed operator table adoption and raw-wrapper
+deprecation decision.
