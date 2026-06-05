@@ -146,7 +146,8 @@ controlled breaking changes allowed across the six known consumers.
   audit.
 - `g06.086` is complete as the migration-core decision-memory internal split.
 - `g06.087` is complete as the AI runtime tests modularity audit.
-- `g06.088` is next as the AI runtime tests internal split.
+- `g06.088` is complete as the AI runtime tests internal split.
+- `g06.089` is next as the auth WebAuthn service modularity audit.
 
 ## Planned Runway
 
@@ -242,6 +243,7 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.086`: migration-core decision-memory internal split
 - `g06.087`: AI runtime tests modularity audit
 - `g06.088`: AI runtime tests internal split
+- `g06.089`: auth WebAuthn service modularity audit
 
 ## Consumer Family
 
@@ -346,7 +348,8 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g06.085` is complete.
 - `g06.086` is complete.
 - `g06.087` is complete.
-- `g06.088` is next.
+- `g06.088` is complete.
+- `g06.089` is next.
 
 ## Batch Cards
 
@@ -355,4 +358,4 @@ If `g06` enters strict execution posture, keep its cards under
 
 ## Next Task
 
-Execute `g06.088`: AI runtime tests internal split.
+Execute `g06.089`: auth WebAuthn service modularity audit.

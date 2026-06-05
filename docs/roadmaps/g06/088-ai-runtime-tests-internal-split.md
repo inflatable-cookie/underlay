@@ -51,8 +51,12 @@ stop and re-enter planning.
 
 ## Current State
 
-`g06.088` is next.
+`g06.088` is complete.
+
+Artifact:
+
+- [088 artifact](./088-ai-runtime-tests-internal-split-artifact.md)
 
 ## Next Task
 
-Execute `g06.088`: AI runtime tests internal split.
+Execute `g06.089`: auth WebAuthn service modularity audit.

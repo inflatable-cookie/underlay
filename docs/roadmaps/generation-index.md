@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.088`: AI runtime tests internal split.
+Execute `g06.089`: auth WebAuthn service modularity audit.
