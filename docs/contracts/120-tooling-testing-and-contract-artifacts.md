@@ -99,6 +99,8 @@ Rules:
 - `TestDb` is the shared DB-backed integration-test seam
 - `TestDb` owns container startup, unique schema isolation, migration/seed
   helpers, fixture-file loading, and cleanup
+- `TestDb` must route generated schema names through the shared typed SQL
+  identifier boundary before creating schemas, setting search paths, or cleanup
 - DB-backed tests are feature-gated and must fail clearly when Docker is not
   available rather than silently degrading
 - `TestServer` is the shared in-memory HTTP/router test seam over Axum

@@ -33,7 +33,9 @@ use std::sync::Arc;
 use testcontainers::runners::SyncRunner;
 use testcontainers::Container;
 use testcontainers_modules::postgres::Postgres;
-use underlay_db::{create_pool, DbConfig};
+use underlay_db::{
+    create_pool, drop_schema_identifiers, DbConfig, DestructiveGuard, SqlIdentifier,
+};
 use uuid::Uuid;
 
 /// An isolated test database backed by a Docker container.
@@ -42,7 +44,7 @@ use uuid::Uuid;
 /// Each `TestDb` instance gets its own schema for isolation.
 pub struct TestDb {
     pool: PgPool,
-    schema_name: String,
+    schema: SqlIdentifier,
     // Keep container alive for the lifetime of the test
     _container: Arc<Container<Postgres>>,
 }
@@ -81,23 +83,23 @@ impl TestDb {
             .await
             .expect("Failed to create test database pool");
 
-        // Create a unique schema for this test
-        let schema_name = format!("test_{}", Uuid::now_v7().to_string().replace('-', ""));
+        // Create a unique typed schema for this test.
+        let schema = unique_test_schema();
 
-        sqlx::query(&format!("CREATE SCHEMA {schema_name}"))
+        sqlx::query(&format!("CREATE SCHEMA {}", schema.quoted()))
             .execute(&pool)
             .await
             .expect("Failed to create test schema");
 
         // Set search path to the test schema
-        sqlx::query(&format!("SET search_path TO {schema_name}, public"))
+        sqlx::query(&format!("SET search_path TO {}, public", schema.quoted()))
             .execute(&pool)
             .await
             .expect("Failed to set search path");
 
         Self {
             pool,
-            schema_name,
+            schema,
             _container: container,
         }
     }
@@ -109,7 +111,7 @@ impl TestDb {
 
     /// Get the schema name for this test
     pub fn schema_name(&self) -> &str {
-        &self.schema_name
+        self.schema.as_str()
     }
 
     /// Load a SQL fixture file
@@ -213,13 +215,7 @@ impl TestDb {
     /// This is called automatically on drop, but can be called manually
     /// if you want to reset the database mid-test.
     pub async fn cleanup(&self) -> Result<(), sqlx::Error> {
-        sqlx::query(&format!(
-            "DROP SCHEMA IF EXISTS {} CASCADE",
-            self.schema_name
-        ))
-        .execute(&self.pool)
-        .await?;
-        Ok(())
+        drop_schema_identifiers(&self.pool, DestructiveGuard::allow(), [&self.schema]).await
     }
 }
 
@@ -230,6 +226,11 @@ impl Drop for TestDb {
         // tests should call cleanup() explicitly if needed, or the
         // container destruction will clean everything anyway.
     }
+}
+
+fn unique_test_schema() -> SqlIdentifier {
+    let schema_name = format!("test_{}", Uuid::now_v7().to_string().replace('-', ""));
+    SqlIdentifier::parse(schema_name).expect("generated test schema name should be valid")
 }
 
 /// Check for Docker availability.

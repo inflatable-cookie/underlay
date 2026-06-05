@@ -44,8 +44,12 @@ types change.
 
 ## Current State
 
-`g06.034` is next after `g06.033`.
+`g06.034` is complete.
+
+Artifact:
+
+- [034 artifact](./034-test-db-typed-schema-cleanup-artifact.md)
 
 ## Next Task
 
-Execute `g06.034`: test DB typed schema cleanup.
+Execute `g06.035`: remaining dynamic identifier closeout audit.

@@ -83,7 +83,8 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.031` is complete as the remaining typed DB helper migration plan.
 - `g06.032` is complete as the typed `ExistsCheck` execution and rollout batch.
 - `g06.033` is complete as the raw existence helper removal decision.
-- `g06.034` is next as the test DB typed schema cleanup batch.
+- `g06.034` is complete as the test DB typed schema cleanup batch.
+- `g06.035` is next as the remaining dynamic identifier closeout audit.
 
 ## Planned Runway
 
@@ -125,6 +126,7 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.032`: typed `ExistsCheck` execution and rollout
 - `g06.033`: raw existence helper deprecation decision
 - `g06.034`: test DB typed schema cleanup
+- `g06.035`: remaining dynamic identifier closeout audit
 
 ## Consumer Family
 
@@ -175,7 +177,8 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g06.031` is complete.
 - `g06.032` is complete.
 - `g06.033` is complete.
-- `g06.034` is next.
+- `g06.034` is complete.
+- `g06.035` is next.
 
 ## Batch Cards
 
@@ -184,4 +187,4 @@ If `g06` enters strict execution posture, keep its cards under
 
 ## Next Task
 
-Execute `g06.034`: test DB typed schema cleanup.
+Execute `g06.035`: remaining dynamic identifier closeout audit.

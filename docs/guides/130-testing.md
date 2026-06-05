@@ -852,7 +852,10 @@ async fn test_create_user() {
 
 ### TestDb - Database Testing
 
-`TestDb` provides isolated PostgreSQL databases for each test using Docker containers.
+`TestDb` provides isolated PostgreSQL databases for each test using Docker
+containers. Each generated schema name is validated through Underlay's typed SQL
+identifier boundary before it is used in schema creation, search-path setup, or
+cleanup.
 
 #### Requirements
 

@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.034`: test DB typed schema cleanup.
+Execute `g06.035`: remaining dynamic identifier closeout audit.

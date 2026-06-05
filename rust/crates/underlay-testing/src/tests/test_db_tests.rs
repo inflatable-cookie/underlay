@@ -60,14 +60,22 @@ async fn test_db_isolation() {
         .expect("create table in db1");
 
     // Table should not exist in db2's schema
-    let exists: (bool,) = sqlx::query_as(&format!(
+    let exists: (bool,) = sqlx::query_as(
         "SELECT EXISTS(SELECT 1 FROM information_schema.tables \
-             WHERE table_schema = '{}' AND table_name = 'isolated_table')",
-        db2.schema_name()
-    ))
+             WHERE table_schema = $1 AND table_name = 'isolated_table')",
+    )
+    .bind(db2.schema_name())
     .fetch_one(db2.pool())
     .await
     .expect("check table exists in db2");
 
     assert!(!exists.0, "Table should not exist in db2's schema");
+}
+
+#[test]
+fn unique_test_schema_is_typed_and_stable_for_public_name() {
+    let schema = unique_test_schema();
+
+    assert!(schema.as_str().starts_with("test_"));
+    assert_eq!(schema.quoted(), format!("\"{}\"", schema.as_str()));
 }
