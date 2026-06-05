@@ -56,8 +56,12 @@ semantics, or trait behavior must change, stop and re-enter planning.
 
 ## Current State
 
-`g06.072` is next.
+`g06.072` is complete.
+
+Artifact:
+
+- [072 artifact](./072-jobs-postgres-repository-internal-split-artifact.md)
 
 ## Next Task
 
-Execute `g06.072`: jobs-postgres repository internal split.
+Execute `g06.073`: auth JWT service tests modularity audit.

@@ -128,7 +128,8 @@ controlled breaking changes allowed across the six known consumers.
   split.
 - `g06.071` is complete as the jobs-postgres repository public model
   modularity audit.
-- `g06.072` is next as the jobs-postgres repository internal split.
+- `g06.072` is complete as the jobs-postgres repository internal split.
+- `g06.073` is next as the auth JWT service tests modularity audit.
 
 ## Planned Runway
 
@@ -208,6 +209,7 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.070`: migration-core verification-rules internal split
 - `g06.071`: jobs-postgres repository public model modularity audit
 - `g06.072`: jobs-postgres repository internal split
+- `g06.073`: auth JWT service tests modularity audit
 
 ## Consumer Family
 
@@ -296,7 +298,8 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g06.069` is complete.
 - `g06.070` is complete.
 - `g06.071` is complete.
-- `g06.072` is next.
+- `g06.072` is complete.
+- `g06.073` is next.
 
 ## Batch Cards
 
@@ -305,4 +308,4 @@ If `g06` enters strict execution posture, keep its cards under
 
 ## Next Task
 
-Execute `g06.072`: jobs-postgres repository internal split.
+Execute `g06.073`: auth JWT service tests modularity audit.

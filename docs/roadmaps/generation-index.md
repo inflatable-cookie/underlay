@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.072`: jobs-postgres repository internal split.
+Execute `g06.073`: auth JWT service tests modularity audit.
