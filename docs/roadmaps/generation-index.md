@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.087`: AI runtime tests modularity audit.
+Execute `g06.088`: AI runtime tests internal split.

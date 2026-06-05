@@ -43,8 +43,12 @@ This is a test-structure audit. Expected impact is none.
 
 ## Current State
 
-`g06.087` is next.
+`g06.087` is complete.
+
+Artifact:
+
+- [087 artifact](./087-ai-runtime-tests-modularity-audit-artifact.md)
 
 ## Next Task
 
-Execute `g06.087`: AI runtime tests modularity audit.
+Execute `g06.088`: AI runtime tests internal split.

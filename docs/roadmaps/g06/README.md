@@ -145,7 +145,8 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.085` is complete as the migration-core decision-memory modularity
   audit.
 - `g06.086` is complete as the migration-core decision-memory internal split.
-- `g06.087` is next as the AI runtime tests modularity audit.
+- `g06.087` is complete as the AI runtime tests modularity audit.
+- `g06.088` is next as the AI runtime tests internal split.
 
 ## Planned Runway
 
@@ -240,6 +241,7 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.085`: migration-core decision-memory modularity audit
 - `g06.086`: migration-core decision-memory internal split
 - `g06.087`: AI runtime tests modularity audit
+- `g06.088`: AI runtime tests internal split
 
 ## Consumer Family
 
@@ -343,7 +345,8 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g06.084` is complete.
 - `g06.085` is complete.
 - `g06.086` is complete.
-- `g06.087` is next.
+- `g06.087` is complete.
+- `g06.088` is next.
 
 ## Batch Cards
 
@@ -352,4 +355,4 @@ If `g06` enters strict execution posture, keep its cards under
 
 ## Next Task
 
-Execute `g06.087`: AI runtime tests modularity audit.
+Execute `g06.088`: AI runtime tests internal split.
