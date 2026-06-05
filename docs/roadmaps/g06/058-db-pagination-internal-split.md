@@ -51,8 +51,12 @@ helper behavior, or serialized shapes must move, stop and re-enter planning.
 
 ## Current State
 
-`g06.058` is next after `g06.057`.
+`g06.058` is complete.
+
+Artifact:
+
+- [058 artifact](./058-db-pagination-internal-split-artifact.md)
 
 ## Next Task
 
-Execute `g06.058`: DB pagination internal split.
+Execute `g06.059`: HTTP query public model modularity audit.

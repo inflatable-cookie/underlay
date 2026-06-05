@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.058`: DB pagination internal split.
+Execute `g06.059`: HTTP query public model modularity audit.
