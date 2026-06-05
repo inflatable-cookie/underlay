@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.079`: devtools migration-bundle tests modularity audit.
+Execute `g06.080`: devtools migration-bundle tests internal split.

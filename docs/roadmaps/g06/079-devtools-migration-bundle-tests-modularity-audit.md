@@ -46,8 +46,12 @@ This is a test-structure audit. Expected impact is none.
 
 ## Current State
 
-`g06.079` is next.
+`g06.079` is complete.
+
+Artifact:
+
+- [079 artifact](./079-devtools-migration-bundle-tests-modularity-audit-artifact.md)
 
 ## Next Task
 
-Execute `g06.079`: devtools migration-bundle tests modularity audit.
+Execute `g06.080`: devtools migration-bundle tests internal split.
