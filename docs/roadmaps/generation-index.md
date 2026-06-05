@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.063`: HTTP error logging public model modularity audit.
+Execute `g06.064`: HTTP error logging internal split.

@@ -47,8 +47,12 @@ change must be promoted into an explicit follow-up card before execution.
 
 ## Current State
 
-`g06.063` is next after `g06.062`.
+`g06.063` is complete.
+
+Artifact:
+
+- [063 artifact](./063-http-error-logging-public-model-modularity-audit-artifact.md)
 
 ## Next Task
 
-Execute `g06.063`: HTTP error logging public model modularity audit.
+Execute `g06.064`: HTTP error logging internal split.
