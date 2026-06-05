@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.039`: typed media storage key helpers.
+Execute `g06.040`: blob adapter typed method decision.

@@ -7,7 +7,8 @@ description = "Media library types and repository for Underlay applications"
 
 [features]
 default = []
-renditions = ["underlay-blob", "tracing"]
+object-keys = ["underlay-blob"]
+renditions = ["object-keys", "tracing"]
 nightfire = ["underlay-nightfire"]
 full = ["renditions", "nightfire"]
 

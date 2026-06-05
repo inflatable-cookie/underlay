@@ -12,6 +12,18 @@ fn test_default_version_key() {
         );
 }
 
+#[cfg(feature = "object-keys")]
+#[test]
+fn test_default_version_object_key_matches_string_key() {
+    let media_id = Uuid::parse_str("01234567-89ab-cdef-0123-456789abcdef").unwrap();
+    let version_id = Uuid::parse_str("fedcba98-7654-3210-fedc-ba9876543210").unwrap();
+
+    let key = version_key(media_id, version_id, "photo.jpg");
+    let object_key = version_object_key(media_id, version_id, "photo.jpg").unwrap();
+
+    assert_eq!(object_key.as_str(), key);
+}
+
 #[test]
 fn test_default_rendition_key() {
     let media_id = Uuid::parse_str("01234567-89ab-cdef-0123-456789abcdef").unwrap();
@@ -22,6 +34,28 @@ fn test_default_rendition_key() {
             key,
             "media/01234567-89ab-cdef-0123-456789abcdef/renditions/fedcba98-7654-3210-fedc-ba9876543210/thumb.jpg"
         );
+}
+
+#[cfg(feature = "object-keys")]
+#[test]
+fn test_default_rendition_object_key_matches_string_key() {
+    let media_id = Uuid::parse_str("01234567-89ab-cdef-0123-456789abcdef").unwrap();
+    let version_id = Uuid::parse_str("fedcba98-7654-3210-fedc-ba9876543210").unwrap();
+
+    let key = rendition_key(media_id, version_id, "thumb");
+    let object_key = rendition_object_key(media_id, version_id, "thumb").unwrap();
+
+    assert_eq!(object_key.as_str(), key);
+}
+
+#[cfg(feature = "object-keys")]
+#[test]
+fn test_object_key_helpers_reject_unsafe_components() {
+    let media_id = Uuid::nil();
+    let version_id = Uuid::nil();
+
+    assert!(version_object_key(media_id, version_id, "../photo.jpg").is_err());
+    assert!(rendition_object_key(media_id, version_id, "../thumb").is_err());
 }
 
 #[test]

@@ -51,8 +51,12 @@ generation paths. Existing persisted object-key values must not change.
 
 ## Current State
 
-`g06.039` is next after `g06.038`.
+`g06.039` is complete.
+
+Artifact:
+
+- [039 artifact](./039-typed-media-storage-key-helpers-artifact.md)
 
 ## Next Task
 
-Execute `g06.039`: typed media storage key helpers.
+Execute `g06.040`: blob adapter typed method decision.

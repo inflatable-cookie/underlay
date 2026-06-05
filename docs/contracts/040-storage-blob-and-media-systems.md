@@ -263,9 +263,10 @@ Rules:
 - `PostgresMediaConfig` is an adapter surface that stores typed schema/table
   identifiers internally; external config should use `try_with_schema` and
   `try_with_tables`, while `with_schema` is only for known-good literals
-- storage-key helpers are stable shared helpers; the next compatibility-safe
-  direction is additive `BlobObjectKey` generation while retaining the current
-  string helpers until consumer proof is complete
+- storage-key helpers are stable shared helpers; string helpers remain
+  available, and the `object-keys` feature adds additive `BlobObjectKey`
+  generation for callers that want typed construction before crossing back into
+  raw adapter/database seams
 
 This layer owns CRUD and lifecycle mechanics. The richer meaning of usages,
 migration bindings, and media graph semantics is defined in `050`.
@@ -288,11 +289,17 @@ Core pieces:
 - `StorageKeyGenerator`
 - `version_key*()`
 - `rendition_key*()`
+- `version_object_key*()` behind `object-keys`
+- `rendition_object_key*()` behind `object-keys`
 - prefix helpers
 
 Rules:
 
 - object-key patterns are shared, explicit, and configurable
+- typed object-key helpers must produce the same persisted key values as the
+  retained string helpers
+- typed helper failures are construction failures and should be handled before
+  upload initiation
 - media ids and version ids are part of the storage path contract
 - rendition objects are a sibling derived space, not mixed into original
   version paths

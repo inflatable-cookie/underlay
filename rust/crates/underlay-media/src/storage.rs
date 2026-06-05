@@ -171,6 +171,28 @@ impl StorageKeyGenerator {
         self.version_key(media_id.0, version_id.0, filename)
     }
 
+    /// Generate a validated blob object key for a version file.
+    #[cfg(feature = "object-keys")]
+    pub fn version_object_key(
+        &self,
+        media_id: impl Into<Uuid>,
+        version_id: impl Into<Uuid>,
+        filename: &str,
+    ) -> Result<underlay_blob::BlobObjectKey, underlay_blob::BlobObjectKeyError> {
+        underlay_blob::BlobObjectKey::parse(self.version_key(media_id, version_id, filename))
+    }
+
+    /// Generate a validated blob object key for a version file using typed IDs.
+    #[cfg(feature = "object-keys")]
+    pub fn version_object_key_typed(
+        &self,
+        media_id: MediaId,
+        version_id: MediaVersionId,
+        filename: &str,
+    ) -> Result<underlay_blob::BlobObjectKey, underlay_blob::BlobObjectKeyError> {
+        self.version_object_key(media_id.0, version_id.0, filename)
+    }
+
     /// Generate an object key for a rendition file.
     ///
     /// # Arguments
@@ -209,6 +231,32 @@ impl StorageKeyGenerator {
         self.rendition_key(media_id.0, version_id.0, rendition_name)
     }
 
+    /// Generate a validated blob object key for a rendition file.
+    #[cfg(feature = "object-keys")]
+    pub fn rendition_object_key(
+        &self,
+        media_id: impl Into<Uuid>,
+        version_id: impl Into<Uuid>,
+        rendition_name: &str,
+    ) -> Result<underlay_blob::BlobObjectKey, underlay_blob::BlobObjectKeyError> {
+        underlay_blob::BlobObjectKey::parse(self.rendition_key(
+            media_id,
+            version_id,
+            rendition_name,
+        ))
+    }
+
+    /// Generate a validated blob object key for a rendition file using typed IDs.
+    #[cfg(feature = "object-keys")]
+    pub fn rendition_object_key_typed(
+        &self,
+        media_id: MediaId,
+        version_id: MediaVersionId,
+        rendition_name: &str,
+    ) -> Result<underlay_blob::BlobObjectKey, underlay_blob::BlobObjectKeyError> {
+        self.rendition_object_key(media_id.0, version_id.0, rendition_name)
+    }
+
     /// Generate an object key for a rendition based on its type.
     ///
     /// Uses the rendition type to determine the rendition name:
@@ -227,6 +275,21 @@ impl StorageKeyGenerator {
             RenditionType::Custom(name) => name.as_str(),
         };
         self.rendition_key(media_id, version_id, name)
+    }
+
+    /// Generate a validated blob object key for a rendition based on its type.
+    #[cfg(feature = "object-keys")]
+    pub fn rendition_object_key_for_type(
+        &self,
+        media_id: impl Into<Uuid>,
+        version_id: impl Into<Uuid>,
+        rendition_type: &RenditionType,
+    ) -> Result<underlay_blob::BlobObjectKey, underlay_blob::BlobObjectKeyError> {
+        underlay_blob::BlobObjectKey::parse(self.rendition_key_for_type(
+            media_id,
+            version_id,
+            rendition_type,
+        ))
     }
 
     /// Generate the key prefix for all files of a media item.
@@ -294,6 +357,16 @@ pub fn version_key(
     StorageKeyGenerator::with_defaults().version_key(media_id, version_id, filename)
 }
 
+/// Generate a validated blob object key for a version file using default configuration.
+#[cfg(feature = "object-keys")]
+pub fn version_object_key(
+    media_id: impl Into<Uuid>,
+    version_id: impl Into<Uuid>,
+    filename: &str,
+) -> Result<underlay_blob::BlobObjectKey, underlay_blob::BlobObjectKeyError> {
+    StorageKeyGenerator::with_defaults().version_object_key(media_id, version_id, filename)
+}
+
 /// Generate an object key for a rendition file using default configuration.
 ///
 /// This is a convenience function for quick key generation without
@@ -304,6 +377,16 @@ pub fn rendition_key(
     rendition_name: &str,
 ) -> String {
     StorageKeyGenerator::with_defaults().rendition_key(media_id, version_id, rendition_name)
+}
+
+/// Generate a validated blob object key for a rendition file using default configuration.
+#[cfg(feature = "object-keys")]
+pub fn rendition_object_key(
+    media_id: impl Into<Uuid>,
+    version_id: impl Into<Uuid>,
+    rendition_name: &str,
+) -> Result<underlay_blob::BlobObjectKey, underlay_blob::BlobObjectKeyError> {
+    StorageKeyGenerator::with_defaults().rendition_object_key(media_id, version_id, rendition_name)
 }
 
 /// Generate a filename for a version based on MIME type.
