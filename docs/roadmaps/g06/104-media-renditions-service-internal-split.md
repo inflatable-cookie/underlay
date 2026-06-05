@@ -56,8 +56,12 @@ or repository semantics must change, stop and re-enter planning.
 
 ## Current State
 
-`g06.104` is ready.
+`g06.104` is complete.
+
+Artifact:
+
+- [104 artifact](./104-media-renditions-service-internal-split-artifact.md)
 
 ## Next Task
 
-Execute `g06.104`: media renditions service internal split.
+Execute `g06.105`: migration-core pipeline basic tests modularity audit.

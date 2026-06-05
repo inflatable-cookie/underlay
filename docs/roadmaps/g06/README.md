@@ -162,7 +162,9 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.101` is complete as the auth password service modularity audit.
 - `g06.102` is complete as the auth password service internal split.
 - `g06.103` is complete as the media renditions service modularity audit.
-- `g06.104` is next as the media renditions service internal split.
+- `g06.104` is complete as the media renditions service internal split.
+- `g06.105` is next as the migration-core pipeline basic tests modularity
+  audit.
 
 ## Planned Runway
 
@@ -274,6 +276,7 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.102`: auth password service internal split
 - `g06.103`: media renditions service modularity audit
 - `g06.104`: media renditions service internal split
+- `g06.105`: migration-core pipeline basic tests modularity audit
 
 ## Consumer Family
 
@@ -379,7 +382,23 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g06.086` is complete.
 - `g06.087` is complete.
 - `g06.088` is complete.
-- `g06.089` is next.
+- `g06.089` is complete.
+- `g06.090` is complete.
+- `g06.091` is complete.
+- `g06.092` is complete.
+- `g06.093` is complete.
+- `g06.094` is complete.
+- `g06.095` is complete.
+- `g06.096` is complete.
+- `g06.097` is complete.
+- `g06.098` is complete.
+- `g06.099` is complete.
+- `g06.100` is complete.
+- `g06.101` is complete.
+- `g06.102` is complete.
+- `g06.103` is complete.
+- `g06.104` is complete.
+- `g06.105` is next.
 
 ## Batch Cards
 
@@ -388,4 +407,4 @@ If `g06` enters strict execution posture, keep its cards under
 
 ## Next Task
 
-Execute `g06.089`: auth WebAuthn service modularity audit.
+Execute `g06.105`: migration-core pipeline basic tests modularity audit.

@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.104`: media renditions service internal split.
+Execute `g06.105`: migration-core pipeline basic tests modularity audit.
