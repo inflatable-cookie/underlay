@@ -192,8 +192,10 @@ README surfaces.
   internal split
 - `g06.113` is complete as the devtools lib tests modularity audit
 - `g06.114` is complete as the devtools lib tests internal split
-- `g06.115` is next as the migration-core pipeline decision tests modularity
-  audit
+- `g06.115` is complete as the migration-core pipeline decision tests
+  modularity audit
+- `g06.116` is next as the migration-core pipeline decision tests internal
+  split
 - `g05` is closed as the shared-page, workflow-template, media capability,
   dev-flow contract, and query-variant convergence generation
 - `g05.024` is complete as the Marking Hub query variant proof and rollout

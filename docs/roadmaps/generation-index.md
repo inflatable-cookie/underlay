@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.115`: migration-core pipeline decision tests modularity audit.
+Execute `g06.116`: migration-core pipeline decision tests internal split.
