@@ -134,7 +134,8 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.075` is complete as the media Nightfire tests modularity audit.
 - `g06.076` is complete as the media Nightfire tests internal split.
 - `g06.077` is complete as the auth email TOTP service tests modularity audit.
-- `g06.078` is next as the auth email TOTP service tests internal split.
+- `g06.078` is complete as the auth email TOTP service tests internal split.
+- `g06.079` is next as the devtools migration-bundle tests modularity audit.
 
 ## Planned Runway
 
@@ -220,6 +221,7 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.076`: media Nightfire tests internal split
 - `g06.077`: auth email TOTP service tests modularity audit
 - `g06.078`: auth email TOTP service tests internal split
+- `g06.079`: devtools migration-bundle tests modularity audit
 
 ## Consumer Family
 
@@ -314,7 +316,8 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g06.075` is complete.
 - `g06.076` is complete.
 - `g06.077` is complete.
-- `g06.078` is next.
+- `g06.078` is complete.
+- `g06.079` is next.
 
 ## Batch Cards
 
@@ -323,4 +326,4 @@ If `g06` enters strict execution posture, keep its cards under
 
 ## Next Task
 
-Execute `g06.078`: auth email TOTP service tests internal split.
+Execute `g06.079`: devtools migration-bundle tests modularity audit.

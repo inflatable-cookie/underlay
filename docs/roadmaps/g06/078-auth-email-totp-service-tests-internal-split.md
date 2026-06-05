@@ -52,8 +52,12 @@ stop and re-enter planning.
 
 ## Current State
 
-`g06.078` is next.
+`g06.078` is complete.
+
+Artifact:
+
+- [078 artifact](./078-auth-email-totp-service-tests-internal-split-artifact.md)
 
 ## Next Task
 
-Execute `g06.078`: auth email TOTP service tests internal split.
+Execute `g06.079`: devtools migration-bundle tests modularity audit.
