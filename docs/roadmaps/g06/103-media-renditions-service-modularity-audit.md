@@ -47,8 +47,12 @@ audit finds public exports that must move; if so, stop and re-enter planning.
 
 ## Current State
 
-`g06.103` is ready.
+`g06.103` is complete.
+
+Artifact:
+
+- [103 artifact](./103-media-renditions-service-modularity-audit-artifact.md)
 
 ## Next Task
 
-Execute `g06.103`: media renditions service modularity audit.
+Execute `g06.104`: media renditions service internal split.

@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.103`: media renditions service modularity audit.
+Execute `g06.104`: media renditions service internal split.
