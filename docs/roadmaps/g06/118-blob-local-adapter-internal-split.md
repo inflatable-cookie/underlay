@@ -52,8 +52,12 @@ change, stop and re-enter planning.
 
 ## Current State
 
-`g06.118` is ready.
+`g06.118` is complete.
+
+Artifact:
+
+- [118 artifact](./118-blob-local-adapter-internal-split-artifact.md)
 
 ## Next Task
 
-Execute `g06.118`: blob local adapter internal split.
+Execute `g06.119`: jobs runner tests modularity audit.
