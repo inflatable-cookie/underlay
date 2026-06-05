@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.065`: migration-core orchestrator public model modularity audit.
+Execute `g06.066`: migration-core orchestrator internal split.

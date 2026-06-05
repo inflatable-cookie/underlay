@@ -50,8 +50,12 @@ change must be promoted into an explicit follow-up card before execution.
 
 ## Current State
 
-`g06.065` is next after `g06.064`.
+`g06.065` is complete.
+
+Artifact:
+
+- [065 artifact](./065-migration-core-orchestrator-public-model-modularity-audit-artifact.md)
 
 ## Next Task
 
-Execute `g06.065`: migration-core orchestrator public model modularity audit.
+Execute `g06.066`: migration-core orchestrator internal split.
