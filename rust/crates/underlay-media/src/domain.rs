@@ -7,6 +7,7 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use underlay_blob::BlobObjectKey;
 use uuid::Uuid;
 
 // Re-export enums from underlay-db for convenience
@@ -279,7 +280,7 @@ pub struct MediaSummary {
     /// MIME type of current version.
     pub mime_type: Option<String>,
     /// Object key for thumbnail rendition (if available).
-    pub thumbnail_object_key: Option<String>,
+    pub thumbnail_object_key: Option<BlobObjectKey>,
 }
 
 impl MediaSummary {
@@ -302,7 +303,7 @@ pub struct MediaVersion {
     /// Current state in the upload lifecycle.
     pub state: MediaVersionState,
     /// Object key in blob storage.
-    pub object_key: Option<String>,
+    pub object_key: Option<BlobObjectKey>,
     /// MIME type of the content.
     pub mime_type: Option<String>,
     /// Size in bytes.
@@ -353,7 +354,7 @@ pub struct MediaRendition {
     /// Type of rendition (thumbnail, preview, etc.).
     pub rendition_type: RenditionType,
     /// Object key in blob storage.
-    pub object_key: String,
+    pub object_key: BlobObjectKey,
     /// MIME type of the rendition.
     pub mime_type: String,
     /// Size in bytes.
@@ -649,7 +650,7 @@ pub struct FinalizeUploadInput {
     /// Storage bucket name.
     pub bucket: String,
     /// Object key in storage.
-    pub object_key: String,
+    pub object_key: BlobObjectKey,
     /// Width in pixels (for images).
     pub width: Option<i32>,
     /// Height in pixels (for images).
@@ -662,7 +663,7 @@ pub struct CreateRenditionInput {
     /// Type of rendition.
     pub rendition_type: RenditionType,
     /// Object key in storage.
-    pub object_key: String,
+    pub object_key: BlobObjectKey,
     /// MIME type of the rendition.
     pub mime_type: String,
     /// Size in bytes.

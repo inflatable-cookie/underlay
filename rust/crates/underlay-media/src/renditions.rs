@@ -6,7 +6,7 @@
 use std::sync::Arc;
 
 use crate::image::{generate_thumbnail, ThumbnailConfig};
-use underlay_blob::BlobAdapter;
+use underlay_blob::{BlobAdapter, BlobAdapterObjectKeyExt, BlobObjectKey};
 
 use crate::domain::{CreateRenditionInput, MediaId, MediaRendition, MediaVersionId, RenditionType};
 use crate::error::{MediaError, MediaResult};
@@ -346,7 +346,11 @@ impl<B: BlobAdapter> RenditionService<B> {
         let mut deleted = 0u64;
 
         for rendition in renditions {
-            if let Err(e) = self.blob_adapter.delete(&rendition.object_key).await {
+            if let Err(e) = self
+                .blob_adapter
+                .delete_object_key(&rendition.object_key)
+                .await
+            {
                 tracing::warn!(
                     version_id = %version_id,
                     rendition_id = %rendition.id,
@@ -392,7 +396,7 @@ impl<B: BlobAdapter> RenditionService<B> {
                 Ok(result) => {
                     let input = CreateRenditionInput {
                         rendition_type: RenditionType::Thumbnail,
-                        object_key: result.object_key,
+                        object_key: parse_rendition_result_key(result.object_key)?,
                         mime_type: result.mime_type,
                         byte_size: result.byte_size,
                         width: Some(result.width),
@@ -419,7 +423,7 @@ impl<B: BlobAdapter> RenditionService<B> {
                 Ok(result) => {
                     let input = CreateRenditionInput {
                         rendition_type: RenditionType::Preview,
-                        object_key: result.object_key,
+                        object_key: parse_rendition_result_key(result.object_key)?,
                         mime_type: result.mime_type,
                         byte_size: result.byte_size,
                         width: Some(result.width),
@@ -479,7 +483,7 @@ impl<B: BlobAdapter> RenditionService<B> {
                 Ok(result) => {
                     let input = CreateRenditionInput {
                         rendition_type: RenditionType::Custom(self.config.thumbnail_name.clone()),
-                        object_key: result.object_key,
+                        object_key: parse_rendition_result_key(result.object_key)?,
                         mime_type: result.mime_type,
                         byte_size: result.byte_size,
                         width: Some(result.width),
@@ -516,7 +520,7 @@ impl<B: BlobAdapter> RenditionService<B> {
                 Ok(result) => {
                     let input = CreateRenditionInput {
                         rendition_type: RenditionType::Custom(self.config.preview_name.clone()),
-                        object_key: result.object_key,
+                        object_key: parse_rendition_result_key(result.object_key)?,
                         mime_type: result.mime_type,
                         byte_size: result.byte_size,
                         width: Some(result.width),
@@ -554,6 +558,11 @@ impl<B: BlobAdapter> Clone for RenditionService<B> {
             key_generator: self.key_generator.clone(),
         }
     }
+}
+
+fn parse_rendition_result_key(key: String) -> MediaResult<BlobObjectKey> {
+    BlobObjectKey::parse(key)
+        .map_err(|err| MediaError::storage(format!("invalid rendition object key: {err}")))
 }
 
 #[cfg(test)]

@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.043`: typed media domain object-key fields.
+Execute `g06.044`: consumer app-local media object-key parse boundaries.

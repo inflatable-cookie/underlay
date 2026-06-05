@@ -172,7 +172,6 @@ impl StorageKeyGenerator {
     }
 
     /// Generate a validated blob object key for a version file.
-    #[cfg(feature = "object-keys")]
     pub fn version_object_key(
         &self,
         media_id: impl Into<Uuid>,
@@ -183,7 +182,6 @@ impl StorageKeyGenerator {
     }
 
     /// Generate a validated blob object key for a version file using typed IDs.
-    #[cfg(feature = "object-keys")]
     pub fn version_object_key_typed(
         &self,
         media_id: MediaId,
@@ -232,7 +230,6 @@ impl StorageKeyGenerator {
     }
 
     /// Generate a validated blob object key for a rendition file.
-    #[cfg(feature = "object-keys")]
     pub fn rendition_object_key(
         &self,
         media_id: impl Into<Uuid>,
@@ -247,7 +244,6 @@ impl StorageKeyGenerator {
     }
 
     /// Generate a validated blob object key for a rendition file using typed IDs.
-    #[cfg(feature = "object-keys")]
     pub fn rendition_object_key_typed(
         &self,
         media_id: MediaId,
@@ -278,7 +274,6 @@ impl StorageKeyGenerator {
     }
 
     /// Generate a validated blob object key for a rendition based on its type.
-    #[cfg(feature = "object-keys")]
     pub fn rendition_object_key_for_type(
         &self,
         media_id: impl Into<Uuid>,
@@ -358,7 +353,6 @@ pub fn version_key(
 }
 
 /// Generate a validated blob object key for a version file using default configuration.
-#[cfg(feature = "object-keys")]
 pub fn version_object_key(
     media_id: impl Into<Uuid>,
     version_id: impl Into<Uuid>,
@@ -380,7 +374,6 @@ pub fn rendition_key(
 }
 
 /// Generate a validated blob object key for a rendition file using default configuration.
-#[cfg(feature = "object-keys")]
 pub fn rendition_object_key(
     media_id: impl Into<Uuid>,
     version_id: impl Into<Uuid>,

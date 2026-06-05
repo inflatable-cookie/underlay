@@ -7,8 +7,9 @@ use sqlx::FromRow;
 use uuid::Uuid;
 
 use underlay_media::{
-    Media, MediaId, MediaKind, MediaRendition, MediaRenditionId, MediaSummary, MediaUsage,
-    MediaVersion, MediaVersionId, MediaVersionState, MediaVisibility, RenditionType,
+    BlobObjectKey, Media, MediaError, MediaId, MediaKind, MediaRendition, MediaRenditionId,
+    MediaResult, MediaSummary, MediaUsage, MediaVersion, MediaVersionId, MediaVersionState,
+    MediaVisibility, RenditionType,
 };
 
 #[derive(Debug, FromRow)]
@@ -63,9 +64,11 @@ pub(crate) struct MediaSummaryRow {
     pub thumbnail_object_key: Option<String>,
 }
 
-impl From<MediaSummaryRow> for MediaSummary {
-    fn from(row: MediaSummaryRow) -> Self {
-        Self {
+impl TryFrom<MediaSummaryRow> for MediaSummary {
+    type Error = MediaError;
+
+    fn try_from(row: MediaSummaryRow) -> MediaResult<Self> {
+        Ok(Self {
             id: MediaId(row.id),
             kind: row.kind.parse().unwrap_or(MediaKind::Image),
             visibility: row
@@ -80,8 +83,11 @@ impl From<MediaSummaryRow> for MediaSummary {
             deleted_at: row.deleted_at,
             byte_size: row.byte_size,
             mime_type: row.mime_type,
-            thumbnail_object_key: row.thumbnail_object_key,
-        }
+            thumbnail_object_key: parse_optional_object_key(
+                row.thumbnail_object_key,
+                "media summary thumbnail_object_key",
+            )?,
+        })
     }
 }
 
@@ -102,13 +108,15 @@ pub(crate) struct MediaVersionRow {
     pub created_at: DateTime<Utc>,
 }
 
-impl From<MediaVersionRow> for MediaVersion {
-    fn from(row: MediaVersionRow) -> Self {
-        Self {
+impl TryFrom<MediaVersionRow> for MediaVersion {
+    type Error = MediaError;
+
+    fn try_from(row: MediaVersionRow) -> MediaResult<Self> {
+        Ok(Self {
             id: MediaVersionId(row.id),
             media_id: MediaId(row.media_id),
             state: row.state.parse().unwrap_or(MediaVersionState::Uploading),
-            object_key: row.object_key,
+            object_key: parse_optional_object_key(row.object_key, "media version object_key")?,
             mime_type: row.mime_type,
             byte_size: row.byte_size,
             sha256_hash: row.sha256,
@@ -118,7 +126,7 @@ impl From<MediaVersionRow> for MediaVersion {
             bucket: row.bucket,
             uploaded_by: row.created_by,
             created_at: row.created_at,
-        }
+        })
     }
 }
 
@@ -137,13 +145,15 @@ pub(crate) struct MediaRenditionRow {
     pub created_at: DateTime<Utc>,
 }
 
-impl From<MediaRenditionRow> for MediaRendition {
-    fn from(row: MediaRenditionRow) -> Self {
-        Self {
+impl TryFrom<MediaRenditionRow> for MediaRendition {
+    type Error = MediaError;
+
+    fn try_from(row: MediaRenditionRow) -> MediaResult<Self> {
+        Ok(Self {
             id: MediaRenditionId(row.id),
             version_id: MediaVersionId(row.media_version_id),
             rendition_type: RenditionType::from(row.kind),
-            object_key: row.object_key,
+            object_key: parse_object_key(row.object_key, "media rendition object_key")?,
             mime_type: row.mime_type,
             byte_size: row.byte_size,
             width: row.width,
@@ -151,8 +161,20 @@ impl From<MediaRenditionRow> for MediaRendition {
             storage_provider: row.storage_provider,
             bucket: row.bucket,
             created_at: row.created_at,
-        }
+        })
     }
+}
+
+fn parse_optional_object_key(
+    value: Option<String>,
+    field: &'static str,
+) -> MediaResult<Option<BlobObjectKey>> {
+    value.map(|key| parse_object_key(key, field)).transpose()
+}
+
+fn parse_object_key(value: String, field: &'static str) -> MediaResult<BlobObjectKey> {
+    BlobObjectKey::parse(value)
+        .map_err(|err| MediaError::database(format!("invalid {field}: {err}")))
 }
 
 #[derive(Debug, FromRow)]

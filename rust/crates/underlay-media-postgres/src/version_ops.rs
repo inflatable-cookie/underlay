@@ -33,7 +33,7 @@ impl PostgresMediaRepository {
             .await
             .media_result()?;
 
-        Ok(row.into())
+        row.try_into()
     }
 
     pub(super) async fn fetch_version(
@@ -56,7 +56,7 @@ impl PostgresMediaRepository {
             .await
             .media_result()?;
 
-        Ok(row.map(Into::into))
+        row.map(TryInto::try_into).transpose()
     }
 
     pub(super) async fn mark_version_ready(
@@ -90,7 +90,7 @@ impl PostgresMediaRepository {
             .bind(&input.sha256_hash)
             .bind(&input.storage_provider)
             .bind(&input.bucket)
-            .bind(&input.object_key)
+            .bind(input.object_key.as_str())
             .bind(input.width)
             .bind(input.height)
             .fetch_one(&self.pool)
@@ -100,7 +100,7 @@ impl PostgresMediaRepository {
                 other => MediaError::Database(other.to_string()),
             })?;
 
-        Ok(row.into())
+        row.try_into()
     }
 
     pub(super) async fn mark_version_failed(&self, id: MediaVersionId) -> MediaResult<bool> {
@@ -158,7 +158,7 @@ impl PostgresMediaRepository {
             .await
             .media_result()?;
 
-        Ok(rows.into_iter().map(Into::into).collect())
+        rows.into_iter().map(TryInto::try_into).collect()
     }
 
     pub(super) async fn fetch_media_by_hash(&self, sha256: &str) -> MediaResult<Option<Media>> {

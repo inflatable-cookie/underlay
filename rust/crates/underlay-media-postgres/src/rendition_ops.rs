@@ -36,7 +36,7 @@ impl PostgresMediaRepository {
             .bind(id)
             .bind(version_id.0)
             .bind(input.rendition_type.as_str())
-            .bind(&input.object_key)
+            .bind(input.object_key.as_str())
             .bind(&input.mime_type)
             .bind(input.byte_size)
             .bind(input.width)
@@ -47,7 +47,7 @@ impl PostgresMediaRepository {
             .await
             .media_result()?;
 
-        Ok(row.into())
+        row.try_into()
     }
 
     pub(super) async fn fetch_rendition(
@@ -70,7 +70,7 @@ impl PostgresMediaRepository {
             .await
             .media_result()?;
 
-        Ok(row.map(Into::into))
+        row.map(TryInto::try_into).transpose()
     }
 
     pub(super) async fn fetch_renditions(
@@ -94,7 +94,7 @@ impl PostgresMediaRepository {
             .await
             .media_result()?;
 
-        Ok(rows.into_iter().map(Into::into).collect())
+        rows.into_iter().map(TryInto::try_into).collect()
     }
 
     pub(super) async fn delete_rendition_rows(

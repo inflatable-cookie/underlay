@@ -216,9 +216,8 @@ Rules:
   parse boundary
 - stored media object keys should parse at the shared repository/domain
   boundary, not repeatedly at DTO or adapter call sites
-- media domain rows should carry `BlobObjectKey` once the six-consumer rollout
-  is ready; JSON DTOs and SQL binds may still convert with `as_str()` or
-  `into_string()` at the edge
+- shared media domain rows and inputs carry `BlobObjectKey`; JSON DTOs and SQL
+  binds convert with `as_str()` or `into_string()` at the edge
 - public URLs and signed download URLs are separate concepts
 - delete is idempotent
 - direct `put_bytes()` exists for server-side derived objects and processing
@@ -283,8 +282,10 @@ Rules:
 - generated object keys and database-loaded object keys are different
   construction states; callers should parse database-loaded strings before
   using typed convenience methods
-- the preferred parse boundary for default media repository adapters is row
-  mapping from storage-backed tables into Underlay media domain types
+- default media repository adapters parse row strings from storage-backed
+  tables into Underlay media domain types during row mapping
+- consumers with app-local media row models should adopt the same parse boundary
+  rather than treating local DTO conversion as the primary validation point
 
 This layer owns CRUD and lifecycle mechanics. The richer meaning of usages,
 migration bindings, and media graph semantics is defined in `050`.

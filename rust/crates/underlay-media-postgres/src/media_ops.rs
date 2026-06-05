@@ -174,7 +174,7 @@ impl PostgresMediaRepository {
         let rows: Vec<MediaSummaryRow> =
             query_builder.fetch_all(&self.pool).await.media_result()?;
 
-        Ok(rows.into_iter().map(Into::into).collect())
+        rows.into_iter().map(TryInto::try_into).collect()
     }
 
     pub(super) async fn fetch_trash(&self) -> MediaResult<Vec<MediaSummary>> {
@@ -200,7 +200,7 @@ impl PostgresMediaRepository {
             .await
             .media_result()?;
 
-        Ok(rows.into_iter().map(Into::into).collect())
+        rows.into_iter().map(TryInto::try_into).collect()
     }
 
     pub(super) async fn batch_mark_media_deleted(&self, ids: &[MediaId]) -> MediaResult<i64> {

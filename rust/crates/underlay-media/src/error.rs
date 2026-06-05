@@ -83,7 +83,6 @@ pub type MediaResult<T> = Result<T, MediaError>;
 
 // Feature-gated conversions
 
-#[cfg(feature = "renditions")]
 impl From<underlay_blob::BlobError> for MediaError {
     fn from(err: underlay_blob::BlobError) -> Self {
         Self::Storage(err.to_string())

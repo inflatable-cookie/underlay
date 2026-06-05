@@ -51,8 +51,12 @@ batch.
 
 ## Current State
 
-`g06.043` is next after `g06.042`.
+`g06.043` is complete.
+
+Artifact:
+
+- [043 artifact](./043-typed-media-domain-object-key-fields-artifact.md)
 
 ## Next Task
 
-Execute `g06.043`: typed media domain object-key fields.
+Execute `g06.044`: consumer app-local media object-key parse boundaries.

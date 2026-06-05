@@ -69,7 +69,7 @@ fn test_media_version_state_checks() {
         id: MediaVersionId::new(),
         media_id: MediaId::new(),
         state: MediaVersionState::Ready,
-        object_key: Some("test/key".to_string()),
+        object_key: Some(underlay_blob::BlobObjectKey::parse("test/key").unwrap()),
         mime_type: Some("image/jpeg".to_string()),
         byte_size: Some(1024),
         sha256_hash: None,

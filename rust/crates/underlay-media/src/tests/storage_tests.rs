@@ -12,7 +12,6 @@ fn test_default_version_key() {
         );
 }
 
-#[cfg(feature = "object-keys")]
 #[test]
 fn test_default_version_object_key_matches_string_key() {
     let media_id = Uuid::parse_str("01234567-89ab-cdef-0123-456789abcdef").unwrap();
@@ -36,7 +35,6 @@ fn test_default_rendition_key() {
         );
 }
 
-#[cfg(feature = "object-keys")]
 #[test]
 fn test_default_rendition_object_key_matches_string_key() {
     let media_id = Uuid::parse_str("01234567-89ab-cdef-0123-456789abcdef").unwrap();
@@ -48,7 +46,6 @@ fn test_default_rendition_object_key_matches_string_key() {
     assert_eq!(object_key.as_str(), key);
 }
 
-#[cfg(feature = "object-keys")]
 #[test]
 fn test_object_key_helpers_reject_unsafe_components() {
     let media_id = Uuid::nil();

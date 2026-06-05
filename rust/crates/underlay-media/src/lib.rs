@@ -67,6 +67,8 @@ pub mod sync;
 #[cfg(feature = "renditions")]
 pub mod renditions;
 
+pub use underlay_blob::{BlobObjectKey, BlobObjectKeyError};
+
 // Re-export main types for convenience
 pub use domain::{
     // Utility

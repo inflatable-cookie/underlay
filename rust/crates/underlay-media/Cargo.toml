@@ -7,8 +7,8 @@ description = "Media library types and repository for Underlay applications"
 
 [features]
 default = []
-object-keys = ["underlay-blob"]
-renditions = ["object-keys", "tracing"]
+object-keys = []
+renditions = ["tracing"]
 nightfire = ["underlay-nightfire"]
 full = ["renditions", "nightfire"]
 
@@ -25,10 +25,10 @@ image = { workspace = true }
 
 # Re-export enums from underlay-db
 underlay-db = { path = "../underlay-db" }
+underlay-blob = { path = "../underlay-blob" }
 underlay-nightfire = { path = "../underlay-nightfire", optional = true }
 
 # Rendition generation (optional)
-underlay-blob = { path = "../underlay-blob", optional = true }
 tracing = { workspace = true, optional = true }
 
 [dev-dependencies]
