@@ -48,8 +48,12 @@ stop and re-enter planning.
 
 ## Current State
 
-`g06.082` is next.
+`g06.082` is complete.
+
+Artifact:
+
+- [082 artifact](./082-auth-oauth-tests-internal-split-artifact.md)
 
 ## Next Task
 
-Execute `g06.082`: auth OAuth tests internal split.
+Execute `g06.083`: auth password service tests modularity audit.
