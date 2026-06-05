@@ -50,8 +50,12 @@ public devtools change, stop and re-enter planning.
 
 ## Current State
 
-`g06.113` is ready.
+`g06.113` is complete.
+
+Artifact:
+
+- [113 artifact](./113-devtools-lib-tests-modularity-audit-artifact.md)
 
 ## Next Task
 
-Execute `g06.113`: devtools lib tests modularity audit.
+Execute `g06.114`: devtools lib tests internal split.

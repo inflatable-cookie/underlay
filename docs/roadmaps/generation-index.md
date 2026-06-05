@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.113`: devtools lib tests modularity audit.
+Execute `g06.114`: devtools lib tests internal split.
