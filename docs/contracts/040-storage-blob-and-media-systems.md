@@ -260,8 +260,9 @@ Rules:
 - `MediaRepository` and `MediaRepositoryExt` are the app-facing repository seam
 - Postgres operation modules are adapter internals and must stay private in
   `underlay-media-postgres`
-- `PostgresMediaConfig` is an adapter surface; new code should prefer
-  `try_with_schema` and `try_with_tables` for early identifier validation
+- `PostgresMediaConfig` is an adapter surface that stores typed schema/table
+  identifiers internally; external config should use `try_with_schema` and
+  `try_with_tables`, while `with_schema` is only for known-good literals
 - storage-key helpers are stable shared helpers, but their string-returning
   shape remains a candidate-type surface until it can align with the blob
   `BlobObjectKey` boundary without forcing consumer churn

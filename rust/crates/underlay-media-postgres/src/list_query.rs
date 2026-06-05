@@ -106,12 +106,14 @@ mod tests {
     }
 
     #[test]
-    fn rejects_invalid_configured_table_names() {
-        let config = PostgresMediaConfig {
-            media_table: "media;DROP".to_string(),
-            ..PostgresMediaConfig::default()
-        };
-
-        assert!(build_list_media_query(&config, &ListMediaParams::default()).is_err());
+    fn rejects_invalid_configured_table_names_at_construction() {
+        assert!(PostgresMediaConfig::default()
+            .try_with_tables(
+                "media;DROP",
+                "media_versions",
+                "media_renditions",
+                "media_usages"
+            )
+            .is_err());
     }
 }

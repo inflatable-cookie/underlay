@@ -85,7 +85,8 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.033` is complete as the raw existence helper removal decision.
 - `g06.034` is complete as the test DB typed schema cleanup batch.
 - `g06.035` is complete as the remaining dynamic identifier closeout audit.
-- `g06.036` is next as the Postgres media config typed identifier cleanup.
+- `g06.036` is complete as the Postgres media config typed identifier cleanup.
+- `g06.037` is next as the typed DB identifier lane closeout audit.
 
 ## Planned Runway
 
@@ -129,6 +130,7 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.034`: test DB typed schema cleanup
 - `g06.035`: remaining dynamic identifier closeout audit
 - `g06.036`: Postgres media config typed identifier cleanup
+- `g06.037`: typed DB identifier lane closeout audit
 
 ## Consumer Family
 
@@ -181,7 +183,8 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g06.033` is complete.
 - `g06.034` is complete.
 - `g06.035` is complete.
-- `g06.036` is next.
+- `g06.036` is complete.
+- `g06.037` is next.
 
 ## Batch Cards
 
@@ -190,4 +193,4 @@ If `g06` enters strict execution posture, keep its cards under
 
 ## Next Task
 
-Execute `g06.036`: Postgres media config typed identifier cleanup.
+Execute `g06.037`: typed DB identifier lane closeout audit.

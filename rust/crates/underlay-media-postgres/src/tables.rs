@@ -3,93 +3,140 @@ use underlay_media::{MediaError, MediaResult};
 /// Configuration for the PostgreSQL media repository.
 #[derive(Clone, Debug)]
 pub struct PostgresMediaConfig {
-    /// Database schema name.
-    pub schema: String,
-    /// Table name for media items.
-    pub media_table: String,
-    /// Table name for media versions.
-    pub versions_table: String,
-    /// Table name for media renditions.
-    pub renditions_table: String,
-    /// Table name for media usages.
-    pub usages_table: String,
+    schema: underlay_db::SqlIdentifier,
+    media_table: underlay_db::QualifiedTableName,
+    versions_table: underlay_db::QualifiedTableName,
+    renditions_table: underlay_db::QualifiedTableName,
+    usages_table: underlay_db::QualifiedTableName,
 }
 
 impl Default for PostgresMediaConfig {
     fn default() -> Self {
-        Self {
-            schema: "media".to_string(),
-            media_table: "media".to_string(),
-            versions_table: "media_versions".to_string(),
-            renditions_table: "media_renditions".to_string(),
-            usages_table: "media_usages".to_string(),
-        }
+        Self::try_with_schema("media").expect("default media schema should be valid")
     }
 }
 
 impl PostgresMediaConfig {
     /// Create a new config with the given schema name.
-    pub fn with_schema(schema: impl Into<String>) -> Self {
-        Self {
-            schema: schema.into(),
-            ..Default::default()
-        }
+    ///
+    /// Panics if the schema is not a valid SQL identifier. Use
+    /// [`try_with_schema`](Self::try_with_schema) for fallible construction.
+    pub fn with_schema(schema: impl AsRef<str>) -> Self {
+        Self::try_with_schema(schema).expect("invalid media schema name")
     }
 
     /// Create a new config with a validated schema name.
     pub fn try_with_schema(schema: impl AsRef<str>) -> MediaResult<Self> {
-        let schema = underlay_db::SqlIdentifier::parse(schema.as_ref())
-            .map_err(|err| MediaError::validation(format!("invalid media schema name: {err}")))?;
-        Ok(Self::with_schema(schema.as_str()))
+        let schema = parse_identifier("media schema", schema)?;
+        build_config(
+            schema,
+            "media",
+            "media_versions",
+            "media_renditions",
+            "media_usages",
+        )
     }
 
     /// Set validated table names for the media repository.
     pub fn try_with_tables(
-        mut self,
+        self,
         media_table: impl AsRef<str>,
         versions_table: impl AsRef<str>,
         renditions_table: impl AsRef<str>,
         usages_table: impl AsRef<str>,
     ) -> MediaResult<Self> {
-        self.media_table = parse_table_name("media", media_table)?;
-        self.versions_table = parse_table_name("media versions", versions_table)?;
-        self.renditions_table = parse_table_name("media renditions", renditions_table)?;
-        self.usages_table = parse_table_name("media usages", usages_table)?;
-        Ok(self)
+        build_config(
+            self.schema,
+            media_table,
+            versions_table,
+            renditions_table,
+            usages_table,
+        )
+    }
+
+    /// Database schema identifier.
+    pub fn schema(&self) -> &underlay_db::SqlIdentifier {
+        &self.schema
+    }
+
+    /// Fully qualified media table identifier.
+    pub fn media_table(&self) -> &underlay_db::QualifiedTableName {
+        &self.media_table
+    }
+
+    /// Fully qualified media versions table identifier.
+    pub fn versions_table(&self) -> &underlay_db::QualifiedTableName {
+        &self.versions_table
+    }
+
+    /// Fully qualified media renditions table identifier.
+    pub fn renditions_table(&self) -> &underlay_db::QualifiedTableName {
+        &self.renditions_table
+    }
+
+    /// Fully qualified media usages table identifier.
+    pub fn usages_table(&self) -> &underlay_db::QualifiedTableName {
+        &self.usages_table
     }
 
     /// Get the fully qualified table name for media.
     pub(super) fn media_fqn(&self) -> MediaResult<String> {
-        underlay_db::format_schema_table(&self.schema, &self.media_table)
-            .map_err(|err| MediaError::validation(format!("invalid media table name: {err}")))
+        Ok(self.media_table.quoted())
     }
 
     /// Get the fully qualified table name for versions.
     pub(super) fn versions_fqn(&self) -> MediaResult<String> {
-        underlay_db::format_schema_table(&self.schema, &self.versions_table).map_err(|err| {
-            MediaError::validation(format!("invalid media versions table name: {err}"))
-        })
+        Ok(self.versions_table.quoted())
     }
 
     /// Get the fully qualified table name for renditions.
     pub(super) fn renditions_fqn(&self) -> MediaResult<String> {
-        underlay_db::format_schema_table(&self.schema, &self.renditions_table).map_err(|err| {
-            MediaError::validation(format!("invalid media renditions table name: {err}"))
-        })
+        Ok(self.renditions_table.quoted())
     }
 
     /// Get the fully qualified table name for usages.
     pub(super) fn usages_fqn(&self) -> MediaResult<String> {
-        underlay_db::format_schema_table(&self.schema, &self.usages_table).map_err(|err| {
-            MediaError::validation(format!("invalid media usages table name: {err}"))
-        })
+        Ok(self.usages_table.quoted())
     }
 }
 
-fn parse_table_name(label: &str, value: impl AsRef<str>) -> MediaResult<String> {
-    let table = underlay_db::SqlIdentifier::parse(value.as_ref())
-        .map_err(|err| MediaError::validation(format!("invalid {label} table name: {err}")))?;
-    Ok(table.as_str().to_string())
+fn build_config(
+    schema: underlay_db::SqlIdentifier,
+    media_table: impl AsRef<str>,
+    versions_table: impl AsRef<str>,
+    renditions_table: impl AsRef<str>,
+    usages_table: impl AsRef<str>,
+) -> MediaResult<PostgresMediaConfig> {
+    let media_table = parse_table_name(&schema, "media", media_table)?;
+    let versions_table = parse_table_name(&schema, "media versions", versions_table)?;
+    let renditions_table = parse_table_name(&schema, "media renditions", renditions_table)?;
+    let usages_table = parse_table_name(&schema, "media usages", usages_table)?;
+
+    Ok(PostgresMediaConfig {
+        schema,
+        media_table,
+        versions_table,
+        renditions_table,
+        usages_table,
+    })
+}
+
+fn parse_identifier(
+    label: &str,
+    value: impl AsRef<str>,
+) -> MediaResult<underlay_db::SqlIdentifier> {
+    underlay_db::SqlIdentifier::parse(value.as_ref())
+        .map_err(|err| MediaError::validation(format!("invalid {label} name: {err}")))
+}
+
+fn parse_table_name(
+    schema: &underlay_db::SqlIdentifier,
+    label: &str,
+    value: impl AsRef<str>,
+) -> MediaResult<underlay_db::QualifiedTableName> {
+    let table = parse_identifier(label, value)?;
+    underlay_db::QualifiedTableName::from_schema_table(schema.as_str(), table.as_str())
+        .map_err(|err| MediaError::validation(format!("invalid {label} table name: {err}")))
 }
 
 #[cfg(test)]
@@ -99,13 +146,19 @@ mod tests {
     #[test]
     fn try_with_schema_accepts_valid_schema() {
         let config = PostgresMediaConfig::try_with_schema("content").unwrap();
-        assert_eq!(config.schema, "content");
+        assert_eq!(config.schema().as_str(), "content");
         assert_eq!(config.media_fqn().unwrap(), "\"content\".\"media\"");
     }
 
     #[test]
     fn try_with_schema_rejects_invalid_schema() {
         assert!(PostgresMediaConfig::try_with_schema("content.media").is_err());
+    }
+
+    #[test]
+    #[should_panic(expected = "invalid media schema name")]
+    fn with_schema_rejects_invalid_schema_at_construction() {
+        let _ = PostgresMediaConfig::with_schema("content.media");
     }
 
     #[test]

@@ -53,8 +53,12 @@ batch must prove that again before changing public field shape.
 
 ## Current State
 
-`g06.036` is next after `g06.035`.
+`g06.036` is complete.
+
+Artifact:
+
+- [036 artifact](./036-postgres-media-config-typed-identifier-cleanup-artifact.md)
 
 ## Next Task
 
-Execute `g06.036`: Postgres media config typed identifier cleanup.
+Execute `g06.037`: typed DB identifier lane closeout audit.

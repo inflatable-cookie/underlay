@@ -367,7 +367,7 @@ views, and the unused `embed` package surface is no longer exported.
 
 ## Active Lane
 
-`g06.036` is now the live planning/control lane.
+`g06.037` is now the live planning/control lane.
 
 Underlay’s Rust platform-contract transition is materially complete enough to
 continue into the reference-grade reset inside `g06`, with controlled breaking
@@ -392,4 +392,4 @@ queue and proving the next honest work belonged in `g02`.
 
 Execute the live queue:
 
-- `g06.036`: Postgres media config typed identifier cleanup
+- `g06.037`: typed DB identifier lane closeout audit

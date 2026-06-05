@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.036`: Postgres media config typed identifier cleanup.
+Execute `g06.037`: typed DB identifier lane closeout audit.
