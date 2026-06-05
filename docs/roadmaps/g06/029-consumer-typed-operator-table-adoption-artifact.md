@@ -19,8 +19,9 @@ security-alert helper calls to typed operator table config.
 
 ## Underlay Posture
 
-Raw-string audit and security-alert helpers are now deprecated compatibility
-wrappers.
+At `g06.029` close, raw-string audit and security-alert helpers became
+deprecated compatibility wrappers. `g06.030` removed them after the readiness
+check.
 
 Preferred APIs:
 

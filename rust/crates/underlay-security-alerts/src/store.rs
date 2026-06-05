@@ -6,20 +6,6 @@ use crate::error::SecurityAlertResult;
 use crate::tables::{LoginAttemptsTable, SecurityAlertEventsTable};
 use crate::types::{LoginAttemptSignalCounts, SecurityAlertEventInput, SecurityAlertType};
 
-#[deprecated(
-    since = "0.0.1",
-    note = "use LoginAttemptsTable plus load_ip_signal_counts_from_table"
-)]
-pub async fn load_ip_signal_counts(
-    pool: &PgPool,
-    login_attempts_table: &str,
-    ip_address: &str,
-    since: DateTime<Utc>,
-) -> SecurityAlertResult<LoginAttemptSignalCounts> {
-    let login_attempts_table = LoginAttemptsTable::parse(login_attempts_table)?;
-    load_ip_signal_counts_from_table(pool, &login_attempts_table, ip_address, since).await
-}
-
 pub async fn load_ip_signal_counts_from_table(
     pool: &PgPool,
     login_attempts_table: &LoginAttemptsTable,
@@ -54,30 +40,6 @@ pub async fn load_ip_signal_counts_from_table(
     })
 }
 
-#[deprecated(
-    since = "0.0.1",
-    note = "use SecurityAlertEventsTable plus has_recent_alert_in_table"
-)]
-pub async fn has_recent_alert(
-    pool: &PgPool,
-    alert_events_table: &str,
-    alert_type: SecurityAlertType,
-    ip_address: &str,
-    cooldown: Duration,
-    now: DateTime<Utc>,
-) -> SecurityAlertResult<bool> {
-    let alert_events_table = SecurityAlertEventsTable::parse(alert_events_table)?;
-    has_recent_alert_in_table(
-        pool,
-        &alert_events_table,
-        alert_type,
-        ip_address,
-        cooldown,
-        now,
-    )
-    .await
-}
-
 pub async fn has_recent_alert_in_table(
     pool: &PgPool,
     alert_events_table: &SecurityAlertEventsTable,
@@ -108,19 +70,6 @@ pub async fn has_recent_alert_in_table(
         .await?;
 
     Ok(row.get::<Option<i64>, _>("count").unwrap_or(0) > 0)
-}
-
-#[deprecated(
-    since = "0.0.1",
-    note = "use SecurityAlertEventsTable plus insert_alert_event_into_table"
-)]
-pub async fn insert_alert_event(
-    pool: &PgPool,
-    alert_events_table: &str,
-    input: &SecurityAlertEventInput,
-) -> SecurityAlertResult<Uuid> {
-    let alert_events_table = SecurityAlertEventsTable::parse(alert_events_table)?;
-    insert_alert_event_into_table(pool, &alert_events_table, input).await
 }
 
 pub async fn insert_alert_event_into_table(

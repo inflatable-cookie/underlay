@@ -12,12 +12,14 @@
 //! # Usage
 //!
 //! ```rust,ignore
-//! use underlay_audit::{AuditAction, AuditEntry, append_audit_log};
+//! use underlay_audit::{append_audit_log_to_table, AuditAction, AuditEntry, AuditTable};
+//!
+//! let audit_table = AuditTable::parse("platform.audit_log")?;
 //!
 //! // Log an admin action
-//! append_audit_log(
+//! append_audit_log_to_table(
 //!     &pool,
-//!     "platform.audit_log",  // table name (app-configurable)
+//!     &audit_table,
 //!     AuditEntry {
 //!         user_id: Some(user.id),
 //!         action: AuditAction::Create,
@@ -63,17 +65,12 @@ mod writer;
 
 pub use crate::entry::{AuditAction, AuditEntry, AuditLogRow};
 pub use crate::error::{AuditError, AuditResult};
-#[allow(deprecated)]
 pub use crate::query::{
-    count_audit_logs, count_audit_logs_from_table, get_audit_log_by_id,
-    get_audit_log_by_id_from_table, list_audit_logs, list_audit_logs_from_table, AuditLogFilters,
+    count_audit_logs_from_table, get_audit_log_by_id_from_table, list_audit_logs_from_table,
+    AuditLogFilters,
 };
 pub use crate::tables::AuditTable;
-#[allow(deprecated)]
-pub use crate::writer::{
-    append_audit_log, append_audit_log_async, append_audit_log_to_table,
-    append_audit_log_to_table_async,
-};
+pub use crate::writer::{append_audit_log_to_table, append_audit_log_to_table_async};
 
 /// Convenience type alias for the database pool.
 pub type DbPool = sqlx::PgPool;

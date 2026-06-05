@@ -78,30 +78,9 @@ impl AuditLogFilters {
     }
 }
 
-/// List audit log entries with filtering and pagination.
-///
-/// Results are ordered by `occurred_at` descending (most recent first).
-///
-/// # Arguments
-///
-/// * `pool` - Database connection pool
-/// * `table` - Fully qualified table name (e.g., "platform.audit_log")
-/// * `filters` - Query filters
-#[deprecated(
-    since = "0.0.1",
-    note = "use AuditTable plus list_audit_logs_from_table"
-)]
-#[instrument(skip(pool, filters))]
-pub async fn list_audit_logs(
-    pool: &DbPool,
-    table: &str,
-    filters: AuditLogFilters,
-) -> AuditResult<Vec<AuditLogRow>> {
-    let table = AuditTable::parse(table)?;
-    list_audit_logs_from_table(pool, &table, filters).await
-}
-
 /// List audit log entries from a typed table location.
+///
+/// Results are ordered by `occurred_at` descending, newest first.
 #[instrument(skip(pool, filters))]
 pub async fn list_audit_logs_from_table(
     pool: &DbPool,
@@ -151,21 +130,6 @@ pub async fn list_audit_logs_from_table(
         .await?)
 }
 
-/// Get a single audit log entry by ID.
-#[deprecated(
-    since = "0.0.1",
-    note = "use AuditTable plus get_audit_log_by_id_from_table"
-)]
-#[instrument(skip(pool))]
-pub async fn get_audit_log_by_id(
-    pool: &DbPool,
-    table: &str,
-    id: Uuid,
-) -> AuditResult<Option<AuditLogRow>> {
-    let table = AuditTable::parse(table)?;
-    get_audit_log_by_id_from_table(pool, &table, id).await
-}
-
 /// Get a single audit log entry by ID from a typed table location.
 #[instrument(skip(pool))]
 pub async fn get_audit_log_by_id_from_table(
@@ -197,21 +161,6 @@ pub async fn get_audit_log_by_id_from_table(
         .bind(id)
         .fetch_optional(pool)
         .await?)
-}
-
-/// Count audit log entries matching filters.
-#[deprecated(
-    since = "0.0.1",
-    note = "use AuditTable plus count_audit_logs_from_table"
-)]
-#[instrument(skip(pool, filters))]
-pub async fn count_audit_logs(
-    pool: &DbPool,
-    table: &str,
-    filters: &AuditLogFilters,
-) -> AuditResult<i64> {
-    let table = AuditTable::parse(table)?;
-    count_audit_logs_from_table(pool, &table, filters).await
 }
 
 /// Count audit log entries matching filters from a typed table location.

@@ -255,8 +255,8 @@ Rules:
   quote them before SQL execution
 - dynamic table names in audit, security alert, media, existence, and dev/test
   helpers must not be interpolated without validation and quoting
-- audit and security-alert callers should use the typed table config APIs; the
-  raw-string functions are deprecated compatibility wrappers
+- audit and security-alert callers must use the typed table config APIs; the
+  raw-string operator wrappers were removed after the six-consumer proof
 
 ## What Good Looks Like
 

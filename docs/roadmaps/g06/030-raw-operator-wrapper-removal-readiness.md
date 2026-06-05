@@ -53,9 +53,11 @@ be breaking but should have low current blast radius after `g06.029`.
 
 ## Current State
 
-`g06.030` is ready after `g06.029`.
+`g06.030` is complete.
+
+See
+[`030-raw-operator-wrapper-removal-readiness-artifact.md`](030-raw-operator-wrapper-removal-readiness-artifact.md).
 
 ## Next Task
 
-Execute `g06.030`: raw operator wrapper removal readiness and remaining
-dynamic-identifier audit.
+Execute `g06.031`: remaining typed DB helper migration plan.

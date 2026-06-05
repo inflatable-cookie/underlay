@@ -47,5 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.030`: raw operator wrapper removal readiness and remaining
-dynamic-identifier audit.
+Execute `g06.031`: remaining typed DB helper migration plan.

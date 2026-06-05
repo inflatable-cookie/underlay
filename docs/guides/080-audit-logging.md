@@ -132,24 +132,25 @@ let audit_table = AuditTable::parse("platform.audit_log")?;
 let logs = list_audit_logs_from_table(&pool, &audit_table, filters).await?;
 ```
 
-The older raw-string functions remain as deprecated compatibility wrappers.
-New code should construct `AuditTable` once from typed app config and pass it
-through the typed helpers.
+Construct `AuditTable` once from typed app config and pass it through the typed
+helpers.
 
 ### Get Single Entry
 
 ```rust
-use underlay_audit::get_audit_log_by_id;
+use underlay_audit::{get_audit_log_by_id_from_table, AuditTable};
 
-let entry = get_audit_log_by_id(&pool, "platform.audit_log", log_id).await?;
+let audit_table = AuditTable::parse("platform.audit_log")?;
+let entry = get_audit_log_by_id_from_table(&pool, &audit_table, log_id).await?;
 ```
 
 ### Count Entries
 
 ```rust
-use underlay_audit::count_audit_logs;
+use underlay_audit::{count_audit_logs_from_table, AuditTable};
 
-let total = count_audit_logs(&pool, "platform.audit_log", &filters).await?;
+let audit_table = AuditTable::parse("platform.audit_log")?;
+let total = count_audit_logs_from_table(&pool, &audit_table, &filters).await?;
 ```
 
 ## App-Specific Extensions

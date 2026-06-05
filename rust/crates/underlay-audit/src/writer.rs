@@ -6,25 +6,26 @@ use crate::tables::AuditTable;
 use crate::DbPool;
 use tracing::{info, instrument};
 
-/// Append an audit log entry to the specified table.
+/// Append an audit log entry to a typed table location.
 ///
 /// The table must have the expected schema (see crate documentation).
-/// The table name should be fully qualified (e.g., "platform.audit_log").
 ///
 /// # Arguments
 ///
 /// * `pool` - Database connection pool
-/// * `table` - Fully qualified table name (e.g., "platform.audit_log")
+/// * `table` - Typed table location
 /// * `entry` - The audit entry to log
 ///
 /// # Example
 ///
 /// ```rust,ignore
-/// use underlay_audit::{AuditAction, AuditEntry, append_audit_log};
+/// use underlay_audit::{append_audit_log_to_table, AuditAction, AuditEntry, AuditTable};
 ///
-/// append_audit_log(
+/// let audit_table = AuditTable::parse("platform.audit_log")?;
+///
+/// append_audit_log_to_table(
 ///     &pool,
-///     "platform.audit_log",
+///     &audit_table,
 ///     AuditEntry::new(
 ///         Some(user_id),
 ///         AuditAction::Create,
@@ -33,21 +34,6 @@ use tracing::{info, instrument};
 ///     ).with_details(serde_json::json!({ "title": title })),
 /// ).await?;
 /// ```
-#[deprecated(
-    since = "0.0.1",
-    note = "use AuditTable plus append_audit_log_to_table"
-)]
-#[instrument(skip(pool, entry), fields(action = %entry.action, resource_type = %entry.resource_type))]
-pub async fn append_audit_log(
-    pool: &DbPool,
-    table: &str,
-    entry: AuditEntry,
-) -> AuditResult<AuditLogRow> {
-    let table = AuditTable::parse(table)?;
-    append_audit_log_to_table(pool, &table, entry).await
-}
-
-/// Append an audit log entry to a typed table location.
 #[instrument(skip(pool, entry), fields(action = %entry.action, resource_type = %entry.resource_type))]
 pub async fn append_audit_log_to_table(
     pool: &DbPool,
@@ -103,36 +89,6 @@ pub async fn append_audit_log_to_table(
     );
 
     Ok(row)
-}
-
-/// Append an audit log entry without waiting for the result.
-///
-/// This is useful for fire-and-forget audit logging where you don't want
-/// to block the main request flow. Errors are logged but not returned.
-///
-/// # Arguments
-///
-/// * `pool` - Database connection pool (cloned for async task)
-/// * `table` - Fully qualified table name
-/// * `entry` - The audit entry to log
-#[deprecated(
-    since = "0.0.1",
-    note = "use AuditTable plus append_audit_log_to_table_async"
-)]
-pub fn append_audit_log_async(pool: DbPool, table: &'static str, entry: AuditEntry) {
-    let table = AuditTable::parse(table);
-    tokio::spawn(async move {
-        let result = match table {
-            Ok(table) => append_audit_log_to_table(&pool, &table, entry)
-                .await
-                .map(|_| ()),
-            Err(e) => Err(e),
-        };
-
-        if let Err(e) = result {
-            tracing::error!(error = %e, "Failed to write audit log entry");
-        };
-    });
 }
 
 /// Append an audit log entry to a typed table location without waiting.

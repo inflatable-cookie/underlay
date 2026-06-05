@@ -939,7 +939,9 @@ CREATE INDEX IF NOT EXISTS idx_audit_log_resource
 ### Rust Usage
 
 ```rust
-use underlay_audit::{append_audit_log, AuditAction, AuditEntry};
+use underlay_audit::{append_audit_log_to_table, AuditAction, AuditEntry, AuditTable};
+
+let audit_table = AuditTable::parse("infra.audit_log")?;
 
 // In your admin handler, after a successful operation:
 let audit_entry = AuditEntry::new(
@@ -953,7 +955,7 @@ let audit_entry = AuditEntry::new(
     "title": &payload.title,
 }));
 
-if let Err(e) = append_audit_log(&pool, "infra.audit_log", audit_entry).await {
+if let Err(e) = append_audit_log_to_table(&pool, &audit_table, audit_entry).await {
     // Log error but don't fail the request - audit is non-critical
     warn!("failed to write audit log: {}", e);
 }
@@ -984,23 +986,27 @@ The `AuditAction` enum provides common actions:
 For non-blocking audit logging:
 
 ```rust
-use underlay_audit::append_audit_log_async;
+use underlay_audit::{append_audit_log_to_table_async, AuditTable};
+
+let audit_table = AuditTable::parse("infra.audit_log")?;
 
 // Fire-and-forget - doesn't block the request
-append_audit_log_async(pool.clone(), "infra.audit_log", audit_entry);
+append_audit_log_to_table_async(pool.clone(), audit_table, audit_entry);
 ```
 
 ### Query Filters
 
 ```rust
-use underlay_audit::{list_audit_logs, AuditLogFilters};
+use underlay_audit::{list_audit_logs_from_table, AuditLogFilters, AuditTable};
+
+let audit_table = AuditTable::parse("infra.audit_log")?;
 
 let filters = AuditLogFilters::new()
     .with_action("create")
     .with_resource_type("pathway")
     .with_pagination(50, 0);
 
-let entries = list_audit_logs(&pool, "infra.audit_log", filters).await?;
+let entries = list_audit_logs_from_table(&pool, &audit_table, filters).await?;
 ```
 
 ### What to Log

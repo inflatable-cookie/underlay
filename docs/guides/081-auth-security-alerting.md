@@ -32,8 +32,7 @@ Primary API:
 - `has_recent_alert_in_table(...)` - cooldown dedupe check
 - `insert_alert_event_into_table(...)` - persist emitted alert event
 
-The older raw-string SQL helpers remain as deprecated compatibility wrappers.
-New code should parse table locations once into typed app config.
+Parse table locations once into typed app config.
 
 ## Migration baseline
 
@@ -66,7 +65,7 @@ At failed-login write time:
 2. Load recent signal counts for that IP.
 3. Evaluate threshold breaches.
 4. For each alert type:
-   - skip if `has_recent_alert(...)` is true,
+   - skip if `has_recent_alert_in_table(...)` is true,
    - insert alert event with counts/details,
    - emit app-level log/audit/notification.
 

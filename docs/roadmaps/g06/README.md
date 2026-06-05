@@ -78,8 +78,9 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.028` is complete as the typed operator table config batch.
 - `g06.029` is complete as the consumer typed operator table adoption and
   raw-wrapper deprecation decision batch.
-- `g06.030` is next as the raw operator wrapper removal readiness and remaining
+- `g06.030` is complete as the raw operator wrapper removal readiness and
   dynamic-identifier audit batch.
+- `g06.031` is next as the remaining typed DB helper migration plan.
 
 ## Planned Runway
 
@@ -117,6 +118,7 @@ controlled breaking changes allowed across the six known consumers.
   deprecation decision
 - `g06.030`: raw operator wrapper removal readiness and remaining
   dynamic-identifier audit
+- `g06.031`: remaining typed DB helper migration plan
 
 ## Consumer Family
 
@@ -163,7 +165,8 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g06.027` is complete.
 - `g06.028` is complete.
 - `g06.029` is complete.
-- `g06.030` is next.
+- `g06.030` is complete.
+- `g06.031` is next.
 
 ## Batch Cards
 
@@ -172,5 +175,4 @@ If `g06` enters strict execution posture, keep its cards under
 
 ## Next Task
 
-Execute `g06.030`: raw operator wrapper removal readiness and remaining
-dynamic-identifier audit.
+Execute `g06.031`: remaining typed DB helper migration plan.
