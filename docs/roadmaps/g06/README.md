@@ -156,7 +156,8 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.095` is complete as the devtools migration report modularity audit.
 - `g06.096` is complete as the devtools migration report internal split.
 - `g06.097` is complete as the AI runtime crate modularity audit.
-- `g06.098` is next as the AI runtime crate internal split.
+- `g06.098` is complete as the AI runtime crate internal split.
+- `g06.099` is next as the jobs Postgres auth cleanup modularity audit.
 
 ## Planned Runway
 
@@ -262,6 +263,7 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.096`: devtools migration report internal split
 - `g06.097`: AI runtime crate modularity audit
 - `g06.098`: AI runtime crate internal split
+- `g06.099`: jobs Postgres auth cleanup modularity audit
 
 ## Consumer Family
 

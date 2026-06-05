@@ -60,8 +60,12 @@ semantics must change, stop and re-enter planning.
 
 ## Current State
 
-`g06.098` is ready.
+`g06.098` is complete.
+
+Artifact:
+
+- [098 artifact](./098-ai-runtime-crate-internal-split-artifact.md)
 
 ## Next Task
 
-Execute `g06.098`: AI runtime crate internal split.
+Execute `g06.099`: jobs Postgres auth cleanup modularity audit.

@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.098`: AI runtime crate internal split.
+Execute `g06.099`: jobs Postgres auth cleanup modularity audit.
