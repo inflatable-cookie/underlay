@@ -51,8 +51,11 @@ six consumers.
 
 ## Current State
 
-`g06.031` is ready after `g06.030`.
+`g06.031` is complete.
+
+See
+[`031-remaining-typed-db-helper-migration-plan-artifact.md`](031-remaining-typed-db-helper-migration-plan-artifact.md).
 
 ## Next Task
 
-Execute `g06.031`: remaining typed DB helper migration plan.
+Execute `g06.032`: typed `ExistsCheck` execution and consumer rollout.

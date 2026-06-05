@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.031`: remaining typed DB helper migration plan.
+Execute `g06.032`: typed `ExistsCheck` execution and consumer rollout.

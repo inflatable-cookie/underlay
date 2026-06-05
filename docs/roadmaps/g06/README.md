@@ -80,7 +80,8 @@ controlled breaking changes allowed across the six known consumers.
   raw-wrapper deprecation decision batch.
 - `g06.030` is complete as the raw operator wrapper removal readiness and
   dynamic-identifier audit batch.
-- `g06.031` is next as the remaining typed DB helper migration plan.
+- `g06.031` is complete as the remaining typed DB helper migration plan.
+- `g06.032` is next as the typed `ExistsCheck` execution and rollout batch.
 
 ## Planned Runway
 
@@ -119,6 +120,7 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.030`: raw operator wrapper removal readiness and remaining
   dynamic-identifier audit
 - `g06.031`: remaining typed DB helper migration plan
+- `g06.032`: typed `ExistsCheck` execution and rollout
 
 ## Consumer Family
 
@@ -166,7 +168,8 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g06.028` is complete.
 - `g06.029` is complete.
 - `g06.030` is complete.
-- `g06.031` is next.
+- `g06.031` is complete.
+- `g06.032` is next.
 
 ## Batch Cards
 
@@ -175,4 +178,4 @@ If `g06` enters strict execution posture, keep its cards under
 
 ## Next Task
 
-Execute `g06.031`: remaining typed DB helper migration plan.
+Execute `g06.032`: typed `ExistsCheck` execution and consumer rollout.
