@@ -102,7 +102,8 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.048` is complete as the post-blob-key Rust quality checkpoint.
 - `g06.049` is complete as the devtools migration-bundle boundary split.
 - `g06.050` is complete as the migration-core public model modularity audit.
-- `g06.051` is next as the migration-core pipeline internal split.
+- `g06.051` is complete as the migration-core pipeline internal split.
+- `g06.052` is next as the Rust structural backlog checkpoint.
 
 ## Planned Runway
 
@@ -161,6 +162,7 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.049`: devtools migration-bundle boundary split
 - `g06.050`: migration-core public model modularity audit
 - `g06.051`: migration-core pipeline internal split
+- `g06.052`: Rust structural backlog checkpoint
 
 ## Consumer Family
 
@@ -228,7 +230,8 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g06.048` is complete.
 - `g06.049` is complete.
 - `g06.050` is complete.
-- `g06.051` is next.
+- `g06.051` is complete.
+- `g06.052` is next.
 
 ## Batch Cards
 
@@ -237,4 +240,4 @@ If `g06` enters strict execution posture, keep its cards under
 
 ## Next Task
 
-Execute `g06.051`: migration-core pipeline internal split.
+Execute `g06.052`: Rust structural backlog checkpoint.

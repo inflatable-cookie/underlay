@@ -56,8 +56,12 @@ move, stop and re-enter planning.
 
 ## Current State
 
-`g06.051` is next after `g06.050`.
+`g06.051` is complete.
+
+Artifact:
+
+- [051 artifact](./051-migration-core-pipeline-internal-split-artifact.md)
 
 ## Next Task
 
-Execute `g06.051`: migration-core pipeline internal split.
+Execute `g06.052`: Rust structural backlog checkpoint.

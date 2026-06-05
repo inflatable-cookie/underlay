@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.051`: migration-core pipeline internal split.
+Execute `g06.052`: Rust structural backlog checkpoint.
