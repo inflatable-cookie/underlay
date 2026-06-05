@@ -47,8 +47,12 @@ stop and re-enter planning.
 
 ## Current State
 
-`g06.074` is next.
+`g06.074` is complete.
+
+Artifact:
+
+- [074 artifact](./074-auth-jwt-service-tests-internal-split-artifact.md)
 
 ## Next Task
 
-Execute `g06.074`: auth JWT service tests internal split.
+Execute `g06.075`: media Nightfire tests modularity audit.
