@@ -47,8 +47,12 @@ consumer repos if a missed app-local media path is found.
 
 ## Current State
 
-`g06.045` is next after `g06.044`.
+`g06.045` is complete.
+
+Artifact:
+
+- [045 artifact](./045-media-object-key-boundary-closeout-audit-artifact.md)
 
 ## Next Task
 
-Execute `g06.045`: media object-key boundary closeout audit.
+Execute `g06.046`: non-media blob object-key boundary policy.

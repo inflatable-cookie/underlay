@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.045`: media object-key boundary closeout audit.
+Execute `g06.046`: non-media blob object-key boundary policy.

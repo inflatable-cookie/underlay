@@ -113,7 +113,8 @@ README surfaces.
 - `g06.043` is complete as the typed media domain object-key field rollout
 - `g06.044` is complete as the consumer app-local media object-key
   parse-boundary rollout
-- `g06.045` is next as the media object-key boundary closeout audit
+- `g06.045` is complete as the media object-key boundary closeout audit
+- `g06.046` is next as the non-media blob object-key boundary policy
 - `g05` is closed as the shared-page, workflow-template, media capability,
   dev-flow contract, and query-variant convergence generation
 - `g05.024` is complete as the Marking Hub query variant proof and rollout

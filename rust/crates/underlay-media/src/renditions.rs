@@ -135,7 +135,7 @@ impl RenditionConfig {
 #[derive(Debug)]
 pub struct RenditionResult {
     /// Object key where the rendition was stored.
-    pub object_key: String,
+    pub object_key: BlobObjectKey,
     /// MIME type of the rendition.
     pub mime_type: String,
     /// Size in bytes.
@@ -224,10 +224,22 @@ impl<B: BlobAdapter> RenditionService<B> {
         source_key: &str,
         target_key: &str,
     ) -> MediaResult<RenditionResult> {
+        let source_key = parse_rendition_result_key(source_key)?;
+        let target_key = parse_rendition_result_key(target_key)?;
+        self.generate_thumbnail_object_key(&source_key, &target_key)
+            .await
+    }
+
+    /// Generate a thumbnail from typed source and target object keys.
+    pub async fn generate_thumbnail_object_key(
+        &self,
+        source_key: &BlobObjectKey,
+        target_key: &BlobObjectKey,
+    ) -> MediaResult<RenditionResult> {
         // Read source image
         let source_bytes = self
             .blob_adapter
-            .get_bytes(source_key)
+            .get_object_bytes(source_key)
             .await
             .map_err(|e| MediaError::storage(format!("Failed to read source: {}", e)))?;
 
@@ -244,12 +256,12 @@ impl<B: BlobAdapter> RenditionService<B> {
         // Store thumbnail
         let stored = self
             .blob_adapter
-            .put_bytes(target_key, &thumb.data, thumb.mime_type)
+            .put_object_bytes(target_key, &thumb.data, thumb.mime_type)
             .await
             .map_err(|e| MediaError::storage(format!("Failed to store thumbnail: {}", e)))?;
 
         Ok(RenditionResult {
-            object_key: stored.key,
+            object_key: parse_rendition_result_key(&stored.key)?,
             mime_type: thumb.mime_type.to_string(),
             byte_size: stored.size as i64,
             width: thumb.width as i32,
@@ -265,10 +277,22 @@ impl<B: BlobAdapter> RenditionService<B> {
         source_key: &str,
         target_key: &str,
     ) -> MediaResult<RenditionResult> {
+        let source_key = parse_rendition_result_key(source_key)?;
+        let target_key = parse_rendition_result_key(target_key)?;
+        self.generate_preview_object_key(&source_key, &target_key)
+            .await
+    }
+
+    /// Generate a preview from typed source and target object keys.
+    pub async fn generate_preview_object_key(
+        &self,
+        source_key: &BlobObjectKey,
+        target_key: &BlobObjectKey,
+    ) -> MediaResult<RenditionResult> {
         // Read source image
         let source_bytes = self
             .blob_adapter
-            .get_bytes(source_key)
+            .get_object_bytes(source_key)
             .await
             .map_err(|e| MediaError::storage(format!("Failed to read source: {}", e)))?;
 
@@ -285,12 +309,12 @@ impl<B: BlobAdapter> RenditionService<B> {
         // Store preview
         let stored = self
             .blob_adapter
-            .put_bytes(target_key, &preview.data, preview.mime_type)
+            .put_object_bytes(target_key, &preview.data, preview.mime_type)
             .await
             .map_err(|e| MediaError::storage(format!("Failed to store preview: {}", e)))?;
 
         Ok(RenditionResult {
-            object_key: stored.key,
+            object_key: parse_rendition_result_key(&stored.key)?,
             mime_type: preview.mime_type.to_string(),
             byte_size: stored.size as i64,
             width: preview.width as i32,
@@ -307,6 +331,18 @@ impl<B: BlobAdapter> RenditionService<B> {
         target_key: &str,
         rendition_type: &RenditionType,
     ) -> MediaResult<RenditionResult> {
+        let target_key = parse_rendition_result_key(target_key)?;
+        self.generate_from_bytes_object_key(source_bytes, &target_key, rendition_type)
+            .await
+    }
+
+    /// Generate a rendition from raw bytes into a typed target object key.
+    pub async fn generate_from_bytes_object_key(
+        &self,
+        source_bytes: &[u8],
+        target_key: &BlobObjectKey,
+        rendition_type: &RenditionType,
+    ) -> MediaResult<RenditionResult> {
         let max_dim = match rendition_type {
             RenditionType::Thumbnail => self.config.thumbnail_max_dimension,
             RenditionType::Preview => self.config.preview_max_dimension,
@@ -320,12 +356,12 @@ impl<B: BlobAdapter> RenditionService<B> {
 
         let stored = self
             .blob_adapter
-            .put_bytes(target_key, &result.data, result.mime_type)
+            .put_object_bytes(target_key, &result.data, result.mime_type)
             .await
             .map_err(|e| MediaError::storage(format!("Failed to store rendition: {}", e)))?;
 
         Ok(RenditionResult {
-            object_key: stored.key,
+            object_key: parse_rendition_result_key(&stored.key)?,
             mime_type: result.mime_type.to_string(),
             byte_size: stored.size as i64,
             width: result.width as i32,
@@ -368,8 +404,17 @@ impl<B: BlobAdapter> RenditionService<B> {
 
     /// Delete a single rendition blob.
     pub async fn delete_rendition_blob(&self, object_key: &str) -> MediaResult<()> {
+        let object_key = parse_rendition_result_key(object_key)?;
+        self.delete_rendition_blob_object_key(&object_key).await
+    }
+
+    /// Delete a single typed rendition blob.
+    pub async fn delete_rendition_blob_object_key(
+        &self,
+        object_key: &BlobObjectKey,
+    ) -> MediaResult<()> {
         self.blob_adapter
-            .delete(object_key)
+            .delete_object_key(object_key)
             .await
             .map_err(|e| MediaError::storage(format!("Failed to delete blob: {}", e)))
     }
@@ -388,15 +433,22 @@ impl<B: BlobAdapter> RenditionService<B> {
         source_key: &str,
         key_prefix: &str,
     ) -> MediaResult<Vec<MediaRendition>> {
+        let source_key = parse_rendition_result_key(source_key)?;
         let mut renditions = Vec::new();
 
         if self.config.generate_thumbnails {
-            let thumb_key = format!("{}/{}.jpg", key_prefix, self.config.thumbnail_name);
-            match self.generate_thumbnail(source_key, &thumb_key).await {
+            let thumb_key = parse_rendition_result_key(format!(
+                "{}/{}.jpg",
+                key_prefix, self.config.thumbnail_name
+            ))?;
+            match self
+                .generate_thumbnail_object_key(&source_key, &thumb_key)
+                .await
+            {
                 Ok(result) => {
                     let input = CreateRenditionInput {
                         rendition_type: RenditionType::Thumbnail,
-                        object_key: parse_rendition_result_key(result.object_key)?,
+                        object_key: result.object_key,
                         mime_type: result.mime_type,
                         byte_size: result.byte_size,
                         width: Some(result.width),
@@ -418,12 +470,18 @@ impl<B: BlobAdapter> RenditionService<B> {
         }
 
         if self.config.generate_previews {
-            let preview_key = format!("{}/{}.jpg", key_prefix, self.config.preview_name);
-            match self.generate_preview(source_key, &preview_key).await {
+            let preview_key = parse_rendition_result_key(format!(
+                "{}/{}.jpg",
+                key_prefix, self.config.preview_name
+            ))?;
+            match self
+                .generate_preview_object_key(&source_key, &preview_key)
+                .await
+            {
                 Ok(result) => {
                     let input = CreateRenditionInput {
                         rendition_type: RenditionType::Preview,
-                        object_key: parse_rendition_result_key(result.object_key)?,
+                        object_key: result.object_key,
                         mime_type: result.mime_type,
                         byte_size: result.byte_size,
                         width: Some(result.width),
@@ -470,20 +528,23 @@ impl<B: BlobAdapter> RenditionService<B> {
         version_id: MediaVersionId,
         source_key: &str,
     ) -> MediaResult<Vec<MediaRendition>> {
+        let source_key = parse_rendition_result_key(source_key)?;
         let mut renditions = Vec::new();
 
         if self.config.generate_thumbnails {
-            let thumb_key = self.key_generator.rendition_key(
-                media_id.0,
-                version_id.0,
-                &self.config.thumbnail_name,
-            );
+            let thumb_key = self
+                .key_generator
+                .rendition_object_key(media_id.0, version_id.0, &self.config.thumbnail_name)
+                .map_err(|err| MediaError::storage(format!("invalid thumbnail key: {err}")))?;
 
-            match self.generate_thumbnail(source_key, &thumb_key).await {
+            match self
+                .generate_thumbnail_object_key(&source_key, &thumb_key)
+                .await
+            {
                 Ok(result) => {
                     let input = CreateRenditionInput {
                         rendition_type: RenditionType::Custom(self.config.thumbnail_name.clone()),
-                        object_key: parse_rendition_result_key(result.object_key)?,
+                        object_key: result.object_key,
                         mime_type: result.mime_type,
                         byte_size: result.byte_size,
                         width: Some(result.width),
@@ -510,17 +571,19 @@ impl<B: BlobAdapter> RenditionService<B> {
         }
 
         if self.config.generate_previews {
-            let preview_key = self.key_generator.rendition_key(
-                media_id.0,
-                version_id.0,
-                &self.config.preview_name,
-            );
+            let preview_key = self
+                .key_generator
+                .rendition_object_key(media_id.0, version_id.0, &self.config.preview_name)
+                .map_err(|err| MediaError::storage(format!("invalid preview key: {err}")))?;
 
-            match self.generate_preview(source_key, &preview_key).await {
+            match self
+                .generate_preview_object_key(&source_key, &preview_key)
+                .await
+            {
                 Ok(result) => {
                     let input = CreateRenditionInput {
                         rendition_type: RenditionType::Custom(self.config.preview_name.clone()),
-                        object_key: parse_rendition_result_key(result.object_key)?,
+                        object_key: result.object_key,
                         mime_type: result.mime_type,
                         byte_size: result.byte_size,
                         width: Some(result.width),
@@ -560,7 +623,7 @@ impl<B: BlobAdapter> Clone for RenditionService<B> {
     }
 }
 
-fn parse_rendition_result_key(key: String) -> MediaResult<BlobObjectKey> {
+fn parse_rendition_result_key(key: impl AsRef<str>) -> MediaResult<BlobObjectKey> {
     BlobObjectKey::parse(key)
         .map_err(|err| MediaError::storage(format!("invalid rendition object key: {err}")))
 }

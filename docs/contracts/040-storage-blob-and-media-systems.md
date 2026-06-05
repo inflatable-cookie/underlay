@@ -218,6 +218,8 @@ Rules:
   boundary, not repeatedly at DTO or adapter call sites
 - shared media domain rows and inputs carry `BlobObjectKey`; JSON DTOs and SQL
   binds convert with `as_str()` or `into_string()` at the edge
+- media rendition generation returns typed object keys and validates raw-string
+  compatibility wrapper inputs before storage access
 - public URLs and signed download URLs are separate concepts
 - delete is idempotent
 - direct `put_bytes()` exists for server-side derived objects and processing
