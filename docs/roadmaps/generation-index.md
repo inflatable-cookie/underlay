@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.053`: media domain internal split.
+Execute `g06.054`: media renditions internal split.

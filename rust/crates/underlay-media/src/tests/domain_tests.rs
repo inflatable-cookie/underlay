@@ -1,4 +1,6 @@
 use super::*;
+use chrono::Utc;
+use uuid::Uuid;
 
 #[test]
 fn test_media_id_creation() {

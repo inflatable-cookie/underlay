@@ -54,8 +54,12 @@ move, stop and re-enter planning.
 
 ## Current State
 
-`g06.053` is next after `g06.052`.
+`g06.053` is complete.
+
+Artifact:
+
+- [053 artifact](./053-media-domain-internal-split-artifact.md)
 
 ## Next Task
 
-Execute `g06.053`: media domain internal split.
+Execute `g06.054`: media renditions internal split.
