@@ -55,8 +55,12 @@ stop and re-enter planning.
 
 ## Current State
 
-`g06.092` is ready.
+`g06.092` is complete.
+
+Artifact:
+
+- [092 artifact](./092-config-crate-internal-split-artifact.md)
 
 ## Next Task
 
-Execute `g06.092`: config crate internal split.
+Execute `g06.093`: auth TOTP crate modularity audit.
