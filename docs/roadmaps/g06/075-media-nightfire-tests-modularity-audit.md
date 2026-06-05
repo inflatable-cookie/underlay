@@ -44,8 +44,12 @@ This is a test-structure audit. Expected impact is none.
 
 ## Current State
 
-`g06.075` is next.
+`g06.075` is complete.
+
+Artifact:
+
+- [075 artifact](./075-media-nightfire-tests-modularity-audit-artifact.md)
 
 ## Next Task
 
-Execute `g06.075`: media Nightfire tests modularity audit.
+Execute `g06.076`: media Nightfire tests internal split.

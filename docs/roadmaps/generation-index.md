@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.075`: media Nightfire tests modularity audit.
+Execute `g06.076`: media Nightfire tests internal split.
