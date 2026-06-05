@@ -51,8 +51,12 @@ Any later source change must classify consumer impact before landing.
 
 ## Current State
 
-`g06.050` is next after `g06.049`.
+`g06.050` is complete.
+
+Artifact:
+
+- [050 artifact](./050-migration-core-public-model-modularity-audit-artifact.md)
 
 ## Next Task
 
-Execute `g06.050`: migration-core public model modularity audit.
+Execute `g06.051`: migration-core pipeline internal split.
