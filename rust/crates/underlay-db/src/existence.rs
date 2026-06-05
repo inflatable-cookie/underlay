@@ -51,7 +51,9 @@
 use sqlx::PgPool;
 use uuid::Uuid;
 
-use crate::{format_schema_table, quote_sql_identifier, QualifiedTableName, SqlIdentifier};
+use crate::{
+    format_schema_table, quote_sql_identifier, IdentifierError, QualifiedTableName, SqlIdentifier,
+};
 
 // =============================================================================
 // ExistsCheck Builder
@@ -107,6 +109,201 @@ enum Condition<'a> {
     UuidEquals { column: &'a str, value: Uuid },
     /// column IS NOT DISTINCT FROM $N (Option<i32>)
     NullableIntEquals { column: &'a str, value: Option<i32> },
+}
+
+#[derive(Debug, Clone)]
+#[allow(clippy::enum_variant_names)]
+enum TypedCondition {
+    /// column = $N (string)
+    StringEquals {
+        column: SqlIdentifier,
+        value: String,
+    },
+    /// column = $N (i32)
+    IntEquals { column: SqlIdentifier, value: i32 },
+    /// column = $N (Uuid)
+    UuidEquals { column: SqlIdentifier, value: Uuid },
+    /// column IS NOT DISTINCT FROM $N (Option<i32>)
+    NullableIntEquals {
+        column: SqlIdentifier,
+        value: Option<i32>,
+    },
+}
+
+/// Typed builder for flexible existence checks with composite constraints.
+///
+/// This is the preferred builder for new code. It validates table and column
+/// identifiers at construction time, then uses quoted identifiers and bound
+/// values when building SQL.
+#[derive(Debug, Clone)]
+pub struct TypedExistsCheck {
+    table: QualifiedTableName,
+    conditions: Vec<TypedCondition>,
+    exclude_id: Option<Uuid>,
+    include_deleted: bool,
+}
+
+impl TypedExistsCheck {
+    /// Create a new existence check for a validated table.
+    pub fn new(table: QualifiedTableName) -> Self {
+        Self {
+            table,
+            conditions: Vec::new(),
+            exclude_id: None,
+            include_deleted: false,
+        }
+    }
+
+    /// Parse schema and table names into a typed existence check.
+    pub fn from_schema_table(schema: &str, table: &str) -> Result<Self, IdentifierError> {
+        Ok(Self::new(QualifiedTableName::from_schema_table(
+            schema, table,
+        )?))
+    }
+
+    /// Parse a qualified table name into a typed existence check.
+    pub fn parse_table(table: &str) -> Result<Self, IdentifierError> {
+        Ok(Self::new(QualifiedTableName::parse(table)?))
+    }
+
+    /// Add a string equality condition.
+    pub fn value(
+        mut self,
+        column: impl AsRef<str>,
+        value: impl Into<String>,
+    ) -> Result<Self, IdentifierError> {
+        self.conditions.push(TypedCondition::StringEquals {
+            column: SqlIdentifier::parse(column)?,
+            value: value.into(),
+        });
+        Ok(self)
+    }
+
+    /// Add an integer equality condition.
+    pub fn value_i32(
+        mut self,
+        column: impl AsRef<str>,
+        value: i32,
+    ) -> Result<Self, IdentifierError> {
+        self.conditions.push(TypedCondition::IntEquals {
+            column: SqlIdentifier::parse(column)?,
+            value,
+        });
+        Ok(self)
+    }
+
+    /// Add a UUID equality condition.
+    pub fn scope(mut self, column: impl AsRef<str>, value: Uuid) -> Result<Self, IdentifierError> {
+        self.conditions.push(TypedCondition::UuidEquals {
+            column: SqlIdentifier::parse(column)?,
+            value,
+        });
+        Ok(self)
+    }
+
+    /// Add a nullable integer condition using IS NOT DISTINCT FROM.
+    pub fn nullable_value(
+        mut self,
+        column: impl AsRef<str>,
+        value: Option<i32>,
+    ) -> Result<Self, IdentifierError> {
+        self.conditions.push(TypedCondition::NullableIntEquals {
+            column: SqlIdentifier::parse(column)?,
+            value,
+        });
+        Ok(self)
+    }
+
+    /// Exclude a specific record ID from the check.
+    pub fn excluding(mut self, id: Uuid) -> Self {
+        self.exclude_id = Some(id);
+        self
+    }
+
+    /// Include soft-deleted records in the check.
+    pub fn include_deleted(mut self) -> Self {
+        self.include_deleted = true;
+        self
+    }
+
+    fn query(&self) -> String {
+        typed_exists_query(
+            &self.table,
+            &self.conditions,
+            self.exclude_id.is_some(),
+            self.include_deleted,
+        )
+    }
+
+    /// Execute the existence check.
+    ///
+    /// Returns `true` if a matching record exists.
+    pub async fn check(self, pool: &PgPool) -> Result<bool, sqlx::Error> {
+        if self.conditions.is_empty() {
+            return Ok(false);
+        }
+
+        let query = self.query();
+        let mut sqlx_query = sqlx::query_scalar::<_, bool>(&query);
+
+        for condition in &self.conditions {
+            sqlx_query = match condition {
+                TypedCondition::StringEquals { value, .. } => sqlx_query.bind(value.as_str()),
+                TypedCondition::IntEquals { value, .. } => sqlx_query.bind(*value),
+                TypedCondition::UuidEquals { value, .. } => sqlx_query.bind(*value),
+                TypedCondition::NullableIntEquals { value, .. } => sqlx_query.bind(*value),
+            };
+        }
+
+        if let Some(exclude_id) = self.exclude_id {
+            sqlx_query = sqlx_query.bind(exclude_id);
+        }
+
+        sqlx_query.fetch_one(pool).await
+    }
+}
+
+fn typed_exists_query(
+    table: &QualifiedTableName,
+    conditions: &[TypedCondition],
+    excluding: bool,
+    include_deleted: bool,
+) -> String {
+    let mut param_idx = 1u32;
+    let mut where_parts = Vec::new();
+
+    for condition in conditions {
+        let clause = match condition {
+            TypedCondition::StringEquals { column, .. }
+            | TypedCondition::IntEquals { column, .. }
+            | TypedCondition::UuidEquals { column, .. } => {
+                let clause = format!("{} = ${}", column.quoted(), param_idx);
+                param_idx += 1;
+                clause
+            }
+            TypedCondition::NullableIntEquals { column, .. } => {
+                let clause = format!("{} IS NOT DISTINCT FROM ${}", column.quoted(), param_idx);
+                param_idx += 1;
+                clause
+            }
+        };
+        where_parts.push(clause);
+    }
+
+    if excluding {
+        where_parts.push(format!("id <> ${}", param_idx));
+    }
+
+    if !include_deleted {
+        where_parts.push("deleted_at IS NULL".to_string());
+    }
+
+    let where_clause = where_parts.join(" AND ");
+    format!(
+        "SELECT EXISTS(SELECT 1 FROM {} WHERE {})",
+        table.quoted(),
+        where_clause
+    )
 }
 
 impl<'a> ExistsCheck<'a> {

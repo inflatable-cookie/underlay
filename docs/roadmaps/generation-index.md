@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.032`: typed `ExistsCheck` execution and consumer rollout.
+Execute `g06.033`: raw existence helper deprecation decision.

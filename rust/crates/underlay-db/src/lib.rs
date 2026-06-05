@@ -12,7 +12,7 @@ pub use crate::db_errors::{describe_db_error, map_db_error, map_db_error_ref};
 pub use crate::existence::{
     number_exists_in_scope, number_exists_in_scope_excluding, value_exists, value_exists_excluding,
     value_exists_excluding_typed, value_exists_in_scope, value_exists_in_scope_excluding,
-    value_exists_typed, ExistsCheck,
+    value_exists_typed, ExistsCheck, TypedExistsCheck,
 };
 pub use crate::identifiers::{
     format_qualified_table_name, format_schema_table, quote_sql_identifier,

@@ -58,8 +58,11 @@ proof.
 
 ## Current State
 
-`g06.032` is ready after `g06.031`.
+`g06.032` is complete.
+
+See
+[`032-typed-exists-check-execution-and-rollout-artifact.md`](032-typed-exists-check-execution-and-rollout-artifact.md).
 
 ## Next Task
 
-Execute `g06.032`: typed `ExistsCheck` execution and consumer rollout.
+Execute `g06.033`: raw existence helper deprecation decision.

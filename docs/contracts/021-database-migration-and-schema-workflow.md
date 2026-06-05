@@ -251,6 +251,8 @@ Rules:
   `QualifiedTableName`
 - raw schema, table, and column string helpers are compatibility surface unless
   a roadmap explicitly deprecates them
+- existence-check code should prefer `TypedExistsCheck` for composite
+  constraints and the typed value-exists helpers for simple constraints
 - destructive schema helpers must parse schema names as `SqlIdentifier` and
   quote them before SQL execution
 - dynamic table names in audit, security alert, media, existence, and dev/test
