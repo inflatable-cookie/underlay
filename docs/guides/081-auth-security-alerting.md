@@ -12,7 +12,7 @@ Use `underlay-security-alerts` to:
 - dedupe alerts with cooldown windows,
 - persist alert events for auditability.
 
-Use `underlay-jobs` auth maintenance to:
+Use `underlay-jobs-postgres` auth maintenance to:
 
 - suspend long-inactive accounts on a scheduled policy window,
 - revoke active sessions when accounts are auto-suspended.

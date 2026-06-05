@@ -405,14 +405,15 @@ Reusable templates:
 ### Background Job Reliability and Observability (`2026-03-11`)
 
 - Impact class: `additive`
-- Affected consumers: apps using `underlay-jobs` with PostgreSQL persistence
+- Affected consumers: apps using `underlay-jobs-postgres` with PostgreSQL
+  persistence
 - Required actions:
-  - copy and run `rust/crates/underlay-jobs/migrations/0004_add_job_dead_letters.sql` in the consuming app before deploying dead-letter inspection or retry flows
+  - copy and run `rust/crates/underlay-jobs-postgres/migrations/0004_add_job_dead_letters.sql` in the consuming app before deploying dead-letter inspection or retry flows
   - keep existing retry configs if you want unchanged timing, or opt into spread with `with_retries_and_jitter()` / `with_jittered_exponential_backoff()`
   - optionally attach a shared `JobEventSink` to both `JobRepository` and `JobRunner`
 - Validation:
-  - `cargo check -p underlay-jobs --all-features`
-  - `cargo test -p underlay-jobs --all-features`
+  - `cargo check -p underlay-jobs-postgres`
+  - `cargo test -p underlay-jobs-postgres`
   - app smoke tests for retry timing, permanent failure handling, and dead-letter requeue
 - Caveat:
   - dead-letter persistence is PostgreSQL-backed in this batch

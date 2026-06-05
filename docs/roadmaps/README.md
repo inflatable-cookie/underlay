@@ -91,7 +91,8 @@ README surfaces.
 - `g06.024` is complete as the jobs Postgres adapter extraction execution batch
 - `g06.025` is complete as the six-consumer rollout and compatibility
   retirement proof
-- `g06.026` is next as the reference-grade docs and upgrade-note closeout
+- `g06.026` is complete as the reference-grade docs and upgrade-note closeout
+- `g06.027` is next as the post-reset Rust quality re-audit
 - `g05` is closed as the shared-page, workflow-template, media capability,
   dev-flow contract, and query-variant convergence generation
 - `g05.024` is complete as the Marking Hub query variant proof and rollout
@@ -207,7 +208,7 @@ README surfaces.
 
 ## Next Task
 
-Execute `g06.026`: reference-grade docs and upgrade-note closeout.
+Execute `g06.027`: post-reset Rust quality re-audit.
 - `g01.090` is complete for confirming that the remaining public `@decodelabs/underlay/patterns` surface is the true retained workflow stop point rather than unresolved migration debt
 - `g01.091` is complete for confirming the retained `client` package boundary, exposing explicit `client/*` public subpaths for the live feature families, and keeping the root barrel stable as a convenience surface
 - `g01.092` is complete for confirming the retained `nightfire` package boundary, exposing explicit `nightfire/*` public subpaths for the live extension families, and keeping the root barrel stable as a convenience surface

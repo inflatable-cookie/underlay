@@ -35,7 +35,7 @@ Evidence:
 | Foundation | IDs, error model, envelopes, validation, HTTP helpers, observability, metrics | `rust/crates/underlay-core`, `underlay-http`, `underlay-validation*`, `underlay-observability`, `underlay-metrics` | foundation primitives and transport contracts |
 | Auth | auth provider boundary, JWT, password auth, TOTP, email OTP, WebAuthn, OAuth | `rust/crates/underlay-auth*`, `ts/src/client/auth.ts`, `ts/src/runtime/auth.ts`, `ts/src/patterns/auth-workflows*` | auth and session contracts |
 | Data and storage | DB bootstrap, soft delete, blob storage, AWS integration, media orchestration | `rust/crates/underlay-db`, `underlay-soft-delete`, `underlay-blob`, `underlay-aws`, `underlay-media` | storage, media, and deletion contracts |
-| Async infrastructure | jobs, scheduled tasks, events, email, audit, security alerts, rate limiting | `rust/crates/underlay-jobs`, `underlay-events`, `underlay-email`, `underlay-audit`, `underlay-security-alerts`, `underlay-ratelimit` | operator and infrastructure contracts |
+| Async infrastructure | jobs, scheduled tasks, events, email, audit, security alerts, rate limiting | `rust/crates/underlay-jobs`, `underlay-jobs-postgres`, `underlay-events`, `underlay-email`, `underlay-audit`, `underlay-security-alerts`, `underlay-ratelimit` | operator and infrastructure contracts |
 | AI and suggestion systems | provider-agnostic AI runtime, routing candidates, generic relation suggestions | `rust/crates/underlay-ai-runtime`, `underlay-suggestions`, `ts/src/client/suggestions.ts`, `ts/src/patterns/selection-history.ts`, `ts/src/runtime/ai.ts`, `ts/src/runtime/data.ts` | AI runtime and suggestion contracts |
 | Structured content | Nightfire document model, editor/runtime, markdown/media blocks, validation, migration pipeline | `rust/crates/underlay-nightfire`, `underlay-migration-core`, `ts/src/nightfire/**` | structured-content and migration contracts |
 | TS client transport | HTTP client, query building, pagination, route protection, media, soft delete, SvelteKit hooks | `ts/src/client/**` | TS transport and client-surface contracts |
@@ -70,7 +70,9 @@ The live Rust crate surface in the repo today is:
 - `underlay-http`
 - `underlay-http-client`
 - `underlay-jobs`
+- `underlay-jobs-postgres`
 - `underlay-media`
+- `underlay-media-postgres`
 - `underlay-metrics`
 - `underlay-migration-core`
 - `underlay-nightfire`

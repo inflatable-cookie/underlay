@@ -56,8 +56,28 @@ No new consumer code change is intended.
 
 ## Current State
 
-`g06.026` is ready.
+`g06.026` is complete.
+
+Active docs now teach the explicit contract-plus-adapter shape:
+
+- `underlay-jobs` plus `underlay-jobs-postgres`
+- `underlay-media` plus `underlay-media-postgres`
+- `underlay-auth` plus `underlay-auth-postgres`
+
+Updated surfaces:
+
+- package map
+- system inventory
+- Rust API foundation
+- jobs/events/operator contract
+- background jobs guide
+- auth security alerting guide
+- upgrade compatibility guide
+
+Validation passed:
+
+- `effigy qa:docs`
 
 ## Next Task
 
-Execute `g06.026`: reference-grade docs and upgrade-note closeout.
+Execute `g06.027`: post-reset Rust quality re-audit.

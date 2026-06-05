@@ -50,7 +50,8 @@ controlled breaking batches with six-consumer proof.
 | Crate | Purpose |
 |-------|---------|
 | `underlay-events` | Outbox/event record types + writer boundary |
-| `underlay-jobs` | Background job queue with optional PostgreSQL persistence and cron scheduling |
+| `underlay-jobs` | Background job contracts, runner, registry, dead-letter contracts, event hooks, and scheduler config |
+| `underlay-jobs-postgres` | PostgreSQL job adapter: repositories, LISTEN/NOTIFY, scheduler runtime, outbox processor, maintenance tasks, and SQL constants |
 | `underlay-email` | Email infrastructure with pluggable backends (SMTP, SES) and templates |
 | `underlay-ratelimit` | Rate limiting with pluggable backends |
 | `underlay-audit` | Audit logging for admin actions and security-relevant events |
@@ -75,7 +76,8 @@ Several crates use feature flags to keep optional dependencies out of the defaul
 | `underlay-blob` | `s3`, `local` | Backend selection |
 | `underlay-email` | `smtp`, `ses`, `templates` | Backend + template engine |
 | `underlay-http` | `tracing`, `validation`, `nightfire`, `error-logging`, `embed` | Modular HTTP features |
-| `underlay-jobs` | `postgres`, `scheduler`, `outbox`, `full` | Persistence + scheduling |
+| `underlay-jobs` | none | Core job contracts |
+| `underlay-jobs-postgres` | none | PostgreSQL job adapter |
 | `underlay-media` | `renditions`, `nightfire`, `full` | Storage + processing |
 | `underlay-media-postgres` | none | PostgreSQL media adapter |
 | `underlay-testing` | `db`, `server`, `full` | Test infrastructure scope |

@@ -25,4 +25,6 @@ Underlay’s Rust layer is intended to support a modular API codebase (multiple 
 - `underlay-http` provides Axum response helpers (envelopes, `error_response`, and CORS).
 - `underlay-auth` provides an auth boundary and an Axum extractor that calls an app-supplied provider.
 - `underlay-db` provides SQLx pool + migrator helpers.
-- `underlay-soft-delete`, `underlay-events`, `underlay-jobs`, and `underlay-metrics` provide common semantics for shared infrastructure.
+- `underlay-soft-delete`, `underlay-events`, `underlay-jobs`,
+  `underlay-jobs-postgres`, and `underlay-metrics` provide common semantics
+  for shared infrastructure.

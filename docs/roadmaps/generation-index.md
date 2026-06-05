@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.026`: reference-grade docs and upgrade-note closeout.
+Execute `g06.027`: post-reset Rust quality re-audit.

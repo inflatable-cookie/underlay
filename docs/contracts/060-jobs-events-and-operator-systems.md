@@ -364,14 +364,14 @@ Not allowed:
 
 Current drift worth assessing later:
 
-- `underlay-events` and `underlay-jobs::outbox` both define parts of the domain
-  event/outbox story, so the ownership line between the pure event contract and
-  the processor/runtime path should be checked
+- `underlay-events` and `underlay-jobs-postgres::outbox` both define parts of
+  the domain event/outbox story, so the ownership line between the pure event
+  contract and the processor/runtime path should be checked
 - `underlay-audit` relies on dynamic table names rather than a stronger schema
   contract, which is flexible but leaves more correctness burden on callers
-- `SchedulerConfig` is always exported while the actual scheduler runtime is
-  feature-gated, which is useful but slightly blurs config-vs-runtime surface
-  ownership
+- `SchedulerConfig` is exported from `underlay-jobs` while the actual scheduler
+  runtime lives in `underlay-jobs-postgres`, which keeps dependencies clean but
+  still deserves future config-vs-runtime assessment
 - email templating is optional and shared, but later assessment should confirm
   whether it still earns retained Underlay ownership versus app-local message
   composition
