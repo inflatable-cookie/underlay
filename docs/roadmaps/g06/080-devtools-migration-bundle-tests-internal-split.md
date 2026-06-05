@@ -49,8 +49,12 @@ stop and re-enter planning.
 
 ## Current State
 
-`g06.080` is next.
+`g06.080` is complete.
+
+Artifact:
+
+- [080 artifact](./080-devtools-migration-bundle-tests-internal-split-artifact.md)
 
 ## Next Task
 
-Execute `g06.080`: devtools migration-bundle tests internal split.
+Execute `g06.081`: auth OAuth tests modularity audit.
