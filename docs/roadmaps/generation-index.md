@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.027`: post-reset Rust quality re-audit.
+Execute `g06.028`: typed operator table config.

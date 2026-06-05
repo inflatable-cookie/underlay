@@ -58,8 +58,15 @@ No consumer code change is intended in this card.
 
 ## Current State
 
-`g06.027` is ready.
+`g06.027` is complete.
+
+The audit found no immediate high-severity security blocker. The next bounded
+reference-grade batch is typed operator table config for audit and
+security-alert helpers.
+
+See
+[`027-post-reset-rust-quality-re-audit-artifact.md`](027-post-reset-rust-quality-re-audit-artifact.md).
 
 ## Next Task
 
-Execute `g06.027`: post-reset Rust quality re-audit.
+Execute `g06.028`: typed operator table config.

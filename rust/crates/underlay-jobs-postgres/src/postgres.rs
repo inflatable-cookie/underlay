@@ -1,6 +1,4 @@
 //! PostgreSQL-backed job store implementation.
-//!
-//! Enable with the `postgres` feature flag.
 
 use async_trait::async_trait;
 use chrono::{DateTime, Utc};
