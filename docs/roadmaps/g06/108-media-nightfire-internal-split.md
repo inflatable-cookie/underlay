@@ -54,8 +54,12 @@ must change, stop and re-enter planning.
 
 ## Current State
 
-`g06.108` is ready.
+`g06.108` is complete.
+
+Artifact:
+
+- [108 artifact](./108-media-nightfire-internal-split-artifact.md)
 
 ## Next Task
 
-Execute `g06.108`: media Nightfire internal split.
+Execute `g06.109`: devtools seed bundle modularity audit.
