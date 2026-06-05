@@ -206,6 +206,12 @@ Rules:
 
 - client-side uploads begin with `initiate_upload()`
 - upload completion is explicit through `finalise_upload()`
+- `BlobObjectKey` is the shared validated key type; upload/download request
+  constructors accept it, while core adapter methods still accept raw `&str`
+  for compatibility with database-loaded keys and app-local generated keys
+- typed adapter convenience methods should be additive wrappers over the raw
+  trait, not a trait-signature break, until consumer-owned database key loading
+  has a typed parse boundary
 - public URLs and signed download URLs are separate concepts
 - delete is idempotent
 - direct `put_bytes()` exists for server-side derived objects and processing
@@ -267,6 +273,9 @@ Rules:
   available, and the `object-keys` feature adds additive `BlobObjectKey`
   generation for callers that want typed construction before crossing back into
   raw adapter/database seams
+- generated object keys and database-loaded object keys are different
+  construction states; callers should parse database-loaded strings before
+  using typed convenience methods
 
 This layer owns CRUD and lifecycle mechanics. The richer meaning of usages,
 migration bindings, and media graph semantics is defined in `050`.

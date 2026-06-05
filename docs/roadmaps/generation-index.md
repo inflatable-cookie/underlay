@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.040`: blob adapter typed method decision.
+Execute `g06.041`: typed blob adapter extension methods.

@@ -49,8 +49,12 @@ current apps use blob adapter methods directly or indirectly.
 
 ## Current State
 
-`g06.040` is next after `g06.039`.
+`g06.040` is complete.
+
+Artifact:
+
+- [040 artifact](./040-blob-adapter-typed-methods-decision-artifact.md)
 
 ## Next Task
 
-Execute `g06.040`: blob adapter typed method decision.
+Execute `g06.041`: typed blob adapter extension methods.
