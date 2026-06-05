@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.090`: auth WebAuthn service internal split.
+Execute `g06.091`: config crate modularity audit.

@@ -53,8 +53,12 @@ credential semantics must change, stop and re-enter planning.
 
 ## Current State
 
-`g06.090` is ready.
+`g06.090` is complete.
+
+Artifact:
+
+- [090 artifact](./090-auth-webauthn-service-internal-split-artifact.md)
 
 ## Next Task
 
-Execute `g06.090`: auth WebAuthn service internal split.
+Execute `g06.091`: config crate modularity audit.
