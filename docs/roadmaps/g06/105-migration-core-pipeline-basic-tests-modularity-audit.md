@@ -50,8 +50,12 @@ public migration-core change, stop and re-enter planning.
 
 ## Current State
 
-`g06.105` is ready.
+`g06.105` is complete.
+
+Artifact:
+
+- [105 artifact](./105-migration-core-pipeline-basic-tests-modularity-audit-artifact.md)
 
 ## Next Task
 
-Execute `g06.105`: migration-core pipeline basic tests modularity audit.
+Execute `g06.106`: migration-core pipeline basic tests internal split.

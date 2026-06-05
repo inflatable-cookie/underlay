@@ -178,8 +178,9 @@ README surfaces.
 - `g06.102` is complete as the auth password service internal split
 - `g06.103` is complete as the media renditions service modularity audit
 - `g06.104` is complete as the media renditions service internal split
-- `g06.105` is next as the migration-core pipeline basic tests modularity
+- `g06.105` is complete as the migration-core pipeline basic tests modularity
   audit
+- `g06.106` is next as the migration-core pipeline basic tests internal split
 - `g05` is closed as the shared-page, workflow-template, media capability,
   dev-flow contract, and query-variant convergence generation
 - `g05.024` is complete as the Marking Hub query variant proof and rollout
