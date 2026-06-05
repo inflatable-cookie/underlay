@@ -173,7 +173,8 @@ README surfaces.
 - `g06.097` is complete as the AI runtime crate modularity audit
 - `g06.098` is complete as the AI runtime crate internal split
 - `g06.099` is complete as the jobs Postgres auth cleanup modularity audit
-- `g06.100` is next as the jobs Postgres auth cleanup internal split
+- `g06.100` is complete as the jobs Postgres auth cleanup internal split
+- `g06.101` is next as the auth password service modularity audit
 - `g05` is closed as the shared-page, workflow-template, media capability,
   dev-flow contract, and query-variant convergence generation
 - `g05.024` is complete as the Marking Hub query variant proof and rollout

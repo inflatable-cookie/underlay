@@ -52,8 +52,12 @@ or builder semantics must change, stop and re-enter planning.
 
 ## Current State
 
-`g06.100` is ready.
+`g06.100` is complete.
+
+Artifact:
+
+- [100 artifact](./100-jobs-postgres-auth-cleanup-internal-split-artifact.md)
 
 ## Next Task
 
-Execute `g06.100`: jobs Postgres auth cleanup internal split.
+Execute `g06.101`: auth password service modularity audit.
