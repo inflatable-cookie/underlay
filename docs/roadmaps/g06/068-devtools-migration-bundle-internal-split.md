@@ -59,8 +59,13 @@ must change, stop and re-enter planning.
 
 ## Current State
 
-`g06.068` is next.
+`g06.068` is complete.
+
+Artifact:
+
+- [068 artifact](./068-devtools-migration-bundle-internal-split-artifact.md)
 
 ## Next Task
 
-Execute `g06.068`: devtools migration-bundle internal split.
+Execute `g06.069`: migration-core verification-rules public model modularity
+audit.
