@@ -16,5 +16,5 @@ Owner: repo maintainers
 
 ## Next Task
 
-Execute `g06.015` and keep release-note handoff tied to the Rust
+Execute `g06.018` and keep structural cleanup tied to the Rust
 platform-contract scope.

@@ -72,5 +72,8 @@ machine-readable policy files.
 - `g06.013` is complete as the security-adjacent Rust adapter split batch
 - `g06.014` is complete as the Rust platform transition validation and
   release-readiness closeout
-- `g06.015` is next as the Rust platform transition release-note handoff
+- `g06.015` is complete as the Rust platform transition release-note handoff
+- `g06.016` is complete as the Rust platform hardening backlog batch
+- `g06.017` is complete as the Rust quality re-audit and fresh-start assessment
+- `g06.018` is next as the third Rust structural cleanup batch
 - keep fresh Rust platform-contract work inside `g06`

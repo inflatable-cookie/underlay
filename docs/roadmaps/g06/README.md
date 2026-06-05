@@ -57,7 +57,11 @@ This is a new sequencing baseline, so it starts in `g06`.
 - `g06.013` is complete as the security-adjacent Rust adapter split batch.
 - `g06.014` is complete as the Rust platform transition validation and
   release-readiness closeout.
-- `g06.015` is next as the Rust platform transition release-note handoff.
+- `g06.015` is complete as the Rust platform transition release-note handoff.
+- `g06.016` is complete as the Rust platform hardening backlog batch.
+- `g06.017` is complete as the Rust quality re-audit and fresh-start
+  assessment.
+- `g06.018` is next as the third Rust structural cleanup batch.
 
 ## Planned Runway
 
@@ -78,6 +82,9 @@ This is a new sequencing baseline, so it starts in `g06`.
 - `g06.013`: security-adjacent Rust adapter split batch
 - `g06.014`: Rust platform transition validation and release-readiness closeout
 - `g06.015`: Rust platform transition release-note handoff
+- `g06.016`: Rust platform hardening backlog batch
+- `g06.017`: Rust quality re-audit and fresh-start assessment
+- `g06.018`: Rust structural cleanup batch three
 
 ## Consumer Family
 
@@ -109,7 +116,10 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g06.012` is complete.
 - `g06.013` is complete.
 - `g06.014` is complete.
-- `g06.015` is next.
+- `g06.015` is complete.
+- `g06.016` is complete.
+- `g06.017` is complete.
+- `g06.018` is next.
 
 ## Batch Cards
 
@@ -118,4 +128,4 @@ If `g06` enters strict execution posture, keep its cards under
 
 ## Next Task
 
-Execute `g06.015`: Rust platform transition release-note handoff.
+Execute `g06.018`: Rust structural cleanup batch three.

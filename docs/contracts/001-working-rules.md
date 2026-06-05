@@ -49,5 +49,5 @@ Underlay is in parallel mode:
 
 ## Next Task
 
-Execute `g06.015` and open a new spec only if the Rust platform-contract lane
+Execute `g06.018` and open a new spec only if the Rust platform-contract lane
 needs provisional planning beyond its roadmap and contracts.

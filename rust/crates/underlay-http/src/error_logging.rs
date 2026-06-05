@@ -1,6 +1,8 @@
 #[cfg(feature = "error-logging")]
 use axum::{body::Body, http::Request, middleware::Next, response::Response};
 #[cfg(feature = "error-logging")]
+use sqlx::{Postgres, QueryBuilder};
+#[cfg(feature = "error-logging")]
 use underlay_db::DbPool;
 
 /// Header name for passing error context to the logging middleware.
@@ -153,81 +155,20 @@ pub async fn list_error_logs(
     pool: &DbPool,
     filters: ErrorLogFilters,
 ) -> Result<Vec<ErrorLogRow>, sqlx::Error> {
-    let mut query_str = String::from(
+    let mut query = QueryBuilder::<Postgres>::new(
         "SELECT id, occurred_at, endpoint, method, status_code, error_code, message, correlation_id, context
          FROM platform.error_log
          WHERE 1=1"
     );
 
-    if filters.since.is_some() {
-        query_str.push_str(" AND occurred_at >= $1");
-    }
-    if filters.until.is_some() {
-        query_str.push_str(&format!(
-            " AND occurred_at <= ${}",
-            if filters.since.is_some() { 2 } else { 1 }
-        ));
-    }
-    if filters.status_code.is_some() {
-        let param_num = 1 + filters.since.is_some() as usize + filters.until.is_some() as usize;
-        query_str.push_str(&format!(" AND status_code = ${}", param_num));
-    } else if let Some(status_class) = filters.status_class {
-        match status_class {
-            ErrorLogStatusClass::Client => {
-                query_str.push_str(" AND status_code >= 400 AND status_code < 500");
-            }
-            ErrorLogStatusClass::Server => {
-                query_str.push_str(" AND status_code >= 500 AND status_code < 600");
-            }
-        }
-    }
-    if filters.error_code.is_some() {
-        let param_num = 1
-            + filters.since.is_some() as usize
-            + filters.until.is_some() as usize
-            + filters.status_code.is_some() as usize;
-        query_str.push_str(&format!(" AND error_code = ${}", param_num));
-    }
-    if filters.endpoint.is_some() {
-        let param_num = 1
-            + filters.since.is_some() as usize
-            + filters.until.is_some() as usize
-            + filters.status_code.is_some() as usize
-            + filters.error_code.is_some() as usize;
-        query_str.push_str(&format!(" AND endpoint = ${}", param_num));
-    }
+    push_error_log_filters(&mut query, &filters);
+    query
+        .push(" ORDER BY occurred_at DESC LIMIT ")
+        .push_bind(filters.limit)
+        .push(" OFFSET ")
+        .push_bind(filters.offset);
 
-    query_str.push_str(" ORDER BY occurred_at DESC");
-
-    let param_num = 1
-        + filters.since.is_some() as usize
-        + filters.until.is_some() as usize
-        + filters.status_code.is_some() as usize
-        + filters.error_code.is_some() as usize
-        + filters.endpoint.is_some() as usize;
-    query_str.push_str(&format!(" LIMIT ${} OFFSET ${}", param_num, param_num + 1));
-
-    let mut query = sqlx::query_as::<_, ErrorLogRow>(&query_str);
-
-    if let Some(since) = filters.since {
-        query = query.bind(since);
-    }
-    if let Some(until) = filters.until {
-        query = query.bind(until);
-    }
-    if let Some(status_code) = filters.status_code {
-        query = query.bind(status_code);
-    }
-    if let Some(error_code) = filters.error_code {
-        query = query.bind(error_code);
-    }
-    if let Some(endpoint) = filters.endpoint {
-        query = query.bind(endpoint);
-    }
-
-    query = query.bind(filters.limit).bind(filters.offset);
-
-    query.fetch_all(pool).await
+    query.build_query_as::<ErrorLogRow>().fetch_all(pool).await
 }
 
 /// Database implementation of the `ErrorLogSink` trait.
@@ -315,65 +256,43 @@ pub async fn count_error_logs(
     pool: &DbPool,
     filters: &ErrorLogFilters,
 ) -> Result<i64, sqlx::Error> {
-    let mut query_str = String::from("SELECT COUNT(*) FROM platform.error_log WHERE 1=1");
+    let mut query =
+        QueryBuilder::<Postgres>::new("SELECT COUNT(*) FROM platform.error_log WHERE 1=1");
 
-    if filters.since.is_some() {
-        query_str.push_str(" AND occurred_at >= $1");
+    push_error_log_filters(&mut query, filters);
+
+    query.build_query_scalar::<i64>().fetch_one(pool).await
+}
+
+#[cfg(feature = "error-logging")]
+fn push_error_log_filters<'a>(
+    query: &mut QueryBuilder<'a, Postgres>,
+    filters: &'a ErrorLogFilters,
+) {
+    if let Some(since) = filters.since {
+        query.push(" AND occurred_at >= ").push_bind(since);
     }
-    if filters.until.is_some() {
-        query_str.push_str(&format!(
-            " AND occurred_at <= ${}",
-            if filters.since.is_some() { 2 } else { 1 }
-        ));
+    if let Some(until) = filters.until {
+        query.push(" AND occurred_at <= ").push_bind(until);
     }
-    if filters.status_code.is_some() {
-        let param_num = 1 + filters.since.is_some() as usize + filters.until.is_some() as usize;
-        query_str.push_str(&format!(" AND status_code = ${}", param_num));
+    if let Some(status_code) = filters.status_code {
+        query.push(" AND status_code = ").push_bind(status_code);
     } else if let Some(status_class) = filters.status_class {
         match status_class {
             ErrorLogStatusClass::Client => {
-                query_str.push_str(" AND status_code >= 400 AND status_code < 500");
+                query.push(" AND status_code >= 400 AND status_code < 500");
             }
             ErrorLogStatusClass::Server => {
-                query_str.push_str(" AND status_code >= 500 AND status_code < 600");
+                query.push(" AND status_code >= 500 AND status_code < 600");
             }
         }
     }
-    if filters.error_code.is_some() {
-        let param_num = 1
-            + filters.since.is_some() as usize
-            + filters.until.is_some() as usize
-            + filters.status_code.is_some() as usize;
-        query_str.push_str(&format!(" AND error_code = ${}", param_num));
+    if let Some(error_code) = filters.error_code.as_deref() {
+        query.push(" AND error_code = ").push_bind(error_code);
     }
-    if filters.endpoint.is_some() {
-        let param_num = 1
-            + filters.since.is_some() as usize
-            + filters.until.is_some() as usize
-            + filters.status_code.is_some() as usize
-            + filters.error_code.is_some() as usize;
-        query_str.push_str(&format!(" AND endpoint = ${}", param_num));
+    if let Some(endpoint) = filters.endpoint.as_deref() {
+        query.push(" AND endpoint = ").push_bind(endpoint);
     }
-
-    let mut query = sqlx::query_scalar::<_, i64>(&query_str);
-
-    if let Some(since) = filters.since {
-        query = query.bind(since);
-    }
-    if let Some(until) = filters.until {
-        query = query.bind(until);
-    }
-    if let Some(status_code) = filters.status_code {
-        query = query.bind(status_code);
-    }
-    if let Some(ref error_code) = filters.error_code {
-        query = query.bind(error_code);
-    }
-    if let Some(ref endpoint) = filters.endpoint {
-        query = query.bind(endpoint);
-    }
-
-    query.fetch_one(pool).await
 }
 
 /// Configuration for the error logging middleware.

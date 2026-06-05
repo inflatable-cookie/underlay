@@ -263,24 +263,36 @@ impl InMemoryEmailStore {
 
     /// Get all captured emails.
     pub fn emails(&self) -> Vec<CapturedEmail> {
-        self.emails.lock().unwrap().clone()
+        self.emails
+            .lock()
+            .expect("email store mutex poisoned")
+            .clone()
     }
 
     /// Clear all captured emails.
     pub fn clear(&self) {
-        self.emails.lock().unwrap().clear();
+        self.emails
+            .lock()
+            .expect("email store mutex poisoned")
+            .clear();
     }
 
     /// Get the count of captured emails.
     pub fn count(&self) -> usize {
-        self.emails.lock().unwrap().len()
+        self.emails
+            .lock()
+            .expect("email store mutex poisoned")
+            .len()
     }
 }
 
 #[async_trait]
 impl EmailStore for InMemoryEmailStore {
     async fn store(&self, email: CapturedEmail) -> EmailResult<()> {
-        self.emails.lock().unwrap().push(email);
+        self.emails
+            .lock()
+            .expect("email store mutex poisoned")
+            .push(email);
         Ok(())
     }
 }

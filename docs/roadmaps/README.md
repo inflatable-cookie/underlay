@@ -78,7 +78,10 @@ README surfaces.
 - `g06.013` is complete as the security-adjacent Rust adapter split batch
 - `g06.014` is complete as the Rust platform transition validation and
   release-readiness closeout
-- `g06.015` is next as the Rust platform transition release-note handoff
+- `g06.015` is complete as the Rust platform transition release-note handoff
+- `g06.016` is complete as the Rust platform hardening backlog batch
+- `g06.017` is complete as the Rust quality re-audit and fresh-start assessment
+- `g06.018` is next as the third Rust structural cleanup batch
 - `g05` is closed as the shared-page, workflow-template, media capability,
   dev-flow contract, and query-variant convergence generation
 - `g05.024` is complete as the Marking Hub query variant proof and rollout
@@ -194,7 +197,7 @@ README surfaces.
 
 ## Next Task
 
-Execute `g06.015`: Rust platform transition release-note handoff.
+Execute `g06.018`: Rust structural cleanup batch three.
 - `g01.090` is complete for confirming that the remaining public `@decodelabs/underlay/patterns` surface is the true retained workflow stop point rather than unresolved migration debt
 - `g01.091` is complete for confirming the retained `client` package boundary, exposing explicit `client/*` public subpaths for the live feature families, and keeping the root barrel stable as a convenience surface
 - `g01.092` is complete for confirming the retained `nightfire` package boundary, exposing explicit `nightfire/*` public subpaths for the live extension families, and keeping the root barrel stable as a convenience surface
@@ -345,7 +348,7 @@ views, and the unused `embed` package surface is no longer exported.
 
 ## Active Lane
 
-`g06.015` is now the live planning/control lane.
+`g06.018` is now the live planning/control lane.
 
 Underlay’s shared-surface convergence queue is materially complete and `g05`
 is closed. The live work now belongs in a fresh generation focused on Rust
@@ -371,4 +374,4 @@ queue and proving the next honest work belonged in `g02`.
 
 Execute the live queue:
 
-- `g06.008`: six-consumer compatibility proof and release-note closeout
+- `g06.018`: Rust structural cleanup batch three

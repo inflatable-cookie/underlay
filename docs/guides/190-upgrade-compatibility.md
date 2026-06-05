@@ -76,6 +76,67 @@ Reusable templates:
 
 ## Current Feature Notes
 
+### Rust Platform Contract Transition (`2026-06-05`)
+
+- Impact class: `breaking` for unknown direct `SessionStore` implementers;
+  otherwise additive/internal for the named consumer family
+- Affected consumers:
+  - apps or external crates implementing
+    `underlay_auth_jwt::SessionStore` directly
+  - apps adopting the new typed safety helpers in `underlay-db`,
+    `underlay-blob`, `underlay-http`, `underlay-media`, or
+    `underlay-devtools`
+- What changed:
+  - `SessionStore::rotate_session_if_current` now requires atomic
+    compare-and-swap refresh rotation using the expected refresh
+    fingerprint/id/version
+  - DB identifier/schema helpers, blob object keys, cookie/CSRF builders,
+    migration-bundle references, and media repository/table helpers now have
+    narrower typed construction paths
+  - WebAuthn, S3 blob, media PostgreSQL, Nightfire media usage, devtools CLI,
+    and migration pipeline code were split into internal modules with public
+    crate-root exports preserved
+- Required actions:
+  1. If the app does not implement `SessionStore` directly, no code change is
+     required.
+  2. If the app implements `SessionStore`, update
+     `rotate_session_if_current` to compare the current retained refresh state
+     against the expected fingerprint/id/version before writing the rotated
+     state.
+  3. Keep using existing public root exports such as
+     `underlay_auth_webauthn::WebAuthnService`,
+     `underlay_blob::S3Adapter`, and `underlay_blob::S3Config`; do not import
+     from new private internal module paths.
+  4. Prefer the new typed helpers for new code instead of constructing raw SQL
+     identifiers, blob keys, cookies, or migration bundle refs by string.
+- Cutover:
+  - canonical contract date: `2026-06-05`
+  - no compatibility window is required for the named six-consumer family
+    because none owns a direct `SessionStore` implementation
+- Validation:
+  - in `underlay`: `effigy rust:check`
+  - in `underlay`: `cargo clippy --workspace --all-features -- -D warnings`
+  - in direct consumer APIs: run the repo-owned `cargo check -p <api-crate>`
+  - for direct `SessionStore` implementations: add or keep a stale refresh
+    rejection test around `rotate_session_if_current`
+- Current consumer proof:
+  - `underlay-reference/acme-api`: `cargo check -p acme-api` passed
+  - `contact-patch/cp-api`: `cargo check -p cp-api` passed
+  - `compli-me/api`: `cargo check -p compli-me-api` passed
+  - `acowtancy/farmyard`: `cargo check -p farmyard-api` passed
+  - `songsprout/nursery`: `cargo check -p nursery-api` passed
+  - `loophole/composer/composer-api`: `cargo check -p composer-api` passed
+- Caveat:
+  - remaining Effigy scanner backlog is not release-blocking for this
+    transition: god-file scan is at `critical=0`, `high=17`, `warning=44`
+  - supply-chain policy hardening and the yanked `wasm-bindgen 0.2.111`
+    lockfile warning are tracked as follow-up hardening, not consumer migration
+    work
+- Changed guidance:
+  - [g06.014 validation closeout](../roadmaps/g06/014-rust-platform-transition-validation-and-release-readiness-closeout.md)
+  - [g06.015 release-note handoff](../roadmaps/g06/015-rust-platform-transition-release-note-handoff.md)
+  - [122 Rust public API inventory](../contracts/122-rust-public-api-inventory.md)
+
 ### Root Package Barrel Removal (`2026-04-08`)
 
 - Impact class: `breaking`

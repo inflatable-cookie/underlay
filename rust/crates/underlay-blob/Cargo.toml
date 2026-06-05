@@ -21,7 +21,7 @@ tracing = { workspace = true }
 url = "2"
 
 # AWS S3 adapter (optional)
-aws-sdk-s3 = { version = "1", optional = true }
+aws-sdk-s3 = { version = "1", default-features = false, features = ["default-https-client", "rt-tokio", "sigv4a"], optional = true }
 aws-smithy-runtime-api = { version = "1", optional = true }
 underlay-aws = { workspace = true, optional = true }
 

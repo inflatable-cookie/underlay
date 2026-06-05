@@ -202,4 +202,4 @@ Stop and re-enter planning if:
 
 ## Next Task
 
-Execute `g06.015`: Rust platform transition release-note handoff.
+Execute `g06.018`: Rust structural cleanup batch three.

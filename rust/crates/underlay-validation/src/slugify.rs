@@ -25,7 +25,7 @@ pub const RESERVED_SLUGS: &[&str] = &[
 
 /// Regex pattern for valid slugs.
 static SLUG_REGEX: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"^[a-z0-9]+(?:-[a-z0-9]+)*$").unwrap());
+    LazyLock::new(|| Regex::new(r"^[a-z0-9]+(?:-[a-z0-9]+)*$").expect("slug regex should compile"));
 
 /// Convert a string to a URL-friendly slug.
 ///

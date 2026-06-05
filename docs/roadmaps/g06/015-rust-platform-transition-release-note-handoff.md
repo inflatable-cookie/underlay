@@ -48,10 +48,43 @@ Out of scope:
 - validation section cites `g06.014`
 - remaining scanner backlog is not presented as release-blocking
 
+## Release-Note Handoff
+
+The release-facing compatibility note is now in
+[`docs/guides/190-upgrade-compatibility.md`](../../guides/190-upgrade-compatibility.md)
+under `Rust Platform Contract Transition (2026-06-05)`.
+
+Summary:
+
+- Impact is breaking only for unknown direct
+  `underlay_auth_jwt::SessionStore` implementers.
+- The named six-consumer family needs no app update.
+- Additive typed boundaries are available for DB identifiers/schema helpers,
+  blob object keys, HTTP cookie/CSRF construction, media repository/table
+  helpers, and migration-bundle references.
+- Internal module splits preserve public root exports for WebAuthn, S3 blob,
+  media PostgreSQL, Nightfire media usage, devtools CLI, and migration
+  pipeline code.
+- Validation evidence is retained in `g06.014`.
+- Remaining scanner and supply-chain findings are classified as hardening
+  backlog, not consumer migration work.
+
+## Hardening Follow-Up
+
+The rerun audit after commit/push found the next bounded hardening batch:
+
+- add repo-owned `cargo-deny` policy and avoid default-policy license noise
+- add advisory scanning through the Effigy surface or documented local tooling
+- update the yanked `wasm-bindgen 0.2.111` lockfile path
+- normalize `underlay-http::error_logging` dynamic filter SQL with a typed
+  query builder
+- keep remaining high-sized Rust files on backlog without reopening broad
+  structural cleanup by default
+
 ## Current State
 
-`g06.015` is ready.
+`g06.015` is complete.
 
 ## Next Task
 
-Execute `g06.015`: Rust platform transition release-note handoff.
+Execute `g06.016`: Rust platform hardening backlog batch.
