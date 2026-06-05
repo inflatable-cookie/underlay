@@ -47,8 +47,12 @@ audit finds public exports that must move; if so, stop and re-enter planning.
 
 ## Current State
 
-`g06.101` is ready.
+`g06.101` is complete.
+
+Artifact:
+
+- [101 artifact](./101-auth-password-service-modularity-audit-artifact.md)
 
 ## Next Task
 
-Execute `g06.101`: auth password service modularity audit.
+Execute `g06.102`: auth password service internal split.

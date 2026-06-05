@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.101`: auth password service modularity audit.
+Execute `g06.102`: auth password service internal split.
