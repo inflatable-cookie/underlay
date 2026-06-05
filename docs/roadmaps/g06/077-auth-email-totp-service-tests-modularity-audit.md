@@ -45,8 +45,12 @@ This is a test-structure audit. Expected impact is none.
 
 ## Current State
 
-`g06.077` is next.
+`g06.077` is complete.
+
+Artifact:
+
+- [077 artifact](./077-auth-email-totp-service-tests-modularity-audit-artifact.md)
 
 ## Next Task
 
-Execute `g06.077`: auth email TOTP service tests modularity audit.
+Execute `g06.078`: auth email TOTP service tests internal split.

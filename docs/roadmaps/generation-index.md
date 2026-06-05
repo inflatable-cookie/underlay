@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.077`: auth email TOTP service tests modularity audit.
+Execute `g06.078`: auth email TOTP service tests internal split.
