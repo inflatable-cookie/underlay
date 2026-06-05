@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.038`: blob object key helper alignment plan.
+Execute `g06.039`: typed media storage key helpers.

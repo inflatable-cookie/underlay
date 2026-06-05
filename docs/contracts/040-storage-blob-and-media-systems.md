@@ -263,9 +263,9 @@ Rules:
 - `PostgresMediaConfig` is an adapter surface that stores typed schema/table
   identifiers internally; external config should use `try_with_schema` and
   `try_with_tables`, while `with_schema` is only for known-good literals
-- storage-key helpers are stable shared helpers, but their string-returning
-  shape remains a candidate-type surface until it can align with the blob
-  `BlobObjectKey` boundary without forcing consumer churn
+- storage-key helpers are stable shared helpers; the next compatibility-safe
+  direction is additive `BlobObjectKey` generation while retaining the current
+  string helpers until consumer proof is complete
 
 This layer owns CRUD and lifecycle mechanics. The richer meaning of usages,
 migration bindings, and media graph semantics is defined in `050`.

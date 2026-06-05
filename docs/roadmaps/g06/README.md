@@ -87,7 +87,8 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.035` is complete as the remaining dynamic identifier closeout audit.
 - `g06.036` is complete as the Postgres media config typed identifier cleanup.
 - `g06.037` is complete as the typed DB identifier lane closeout audit.
-- `g06.038` is next as the blob object key helper alignment plan.
+- `g06.038` is complete as the blob object key helper alignment plan.
+- `g06.039` is next as the typed media storage key helper batch.
 
 ## Planned Runway
 
@@ -133,6 +134,7 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.036`: Postgres media config typed identifier cleanup
 - `g06.037`: typed DB identifier lane closeout audit
 - `g06.038`: blob object key helper alignment plan
+- `g06.039`: typed media storage key helpers
 
 ## Consumer Family
 
@@ -187,7 +189,8 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g06.035` is complete.
 - `g06.036` is complete.
 - `g06.037` is complete.
-- `g06.038` is next.
+- `g06.038` is complete.
+- `g06.039` is next.
 
 ## Batch Cards
 
@@ -196,4 +199,4 @@ If `g06` enters strict execution posture, keep its cards under
 
 ## Next Task
 
-Execute `g06.038`: blob object key helper alignment plan.
+Execute `g06.039`: typed media storage key helpers.

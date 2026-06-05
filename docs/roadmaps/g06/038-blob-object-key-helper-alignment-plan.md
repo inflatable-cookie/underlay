@@ -50,8 +50,12 @@ retaining current string helpers until consumer proof is complete.
 
 ## Current State
 
-`g06.038` is next after `g06.037`.
+`g06.038` is complete.
+
+Artifact:
+
+- [038 artifact](./038-blob-object-key-helper-alignment-plan-artifact.md)
 
 ## Next Task
 
-Execute `g06.038`: blob object key helper alignment plan.
+Execute `g06.039`: typed media storage key helpers.
