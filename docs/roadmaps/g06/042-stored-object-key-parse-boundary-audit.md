@@ -50,8 +50,12 @@ for consumers and must be rolled out with the six-app family.
 
 ## Current State
 
-`g06.042` is next after `g06.041`.
+`g06.042` is complete.
+
+Artifact:
+
+- [042 artifact](./042-stored-object-key-parse-boundary-audit-artifact.md)
 
 ## Next Task
 
-Execute `g06.042`: stored object-key parse-boundary audit.
+Execute `g06.043`: typed media domain object-key fields.

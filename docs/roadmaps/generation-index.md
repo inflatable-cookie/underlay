@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.042`: stored object-key parse-boundary audit.
+Execute `g06.043`: typed media domain object-key fields.
