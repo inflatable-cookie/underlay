@@ -46,8 +46,12 @@ change must be promoted into an explicit follow-up card before execution.
 
 ## Current State
 
-`g06.059` is next after `g06.058`.
+`g06.059` is complete.
+
+Artifact:
+
+- [059 artifact](./059-http-query-public-model-modularity-audit-artifact.md)
 
 ## Next Task
 
-Execute `g06.059`: HTTP query public model modularity audit.
+Execute `g06.060`: HTTP query internal split.
