@@ -50,8 +50,12 @@ stop and re-enter planning.
 
 ## Current State
 
-`g06.084` is next.
+`g06.084` is complete.
+
+Artifact:
+
+- [084 artifact](./084-auth-password-service-tests-internal-split-artifact.md)
 
 ## Next Task
 
-Execute `g06.084`: auth password service tests internal split.
+Execute `g06.085`: migration-core decision-memory modularity audit.
