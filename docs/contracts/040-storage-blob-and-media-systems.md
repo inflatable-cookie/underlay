@@ -214,6 +214,9 @@ Rules:
 - typed adapter convenience methods are wrappers over the raw trait, not a
   trait-signature break, until consumer-owned database key loading has a typed
   parse boundary
+- live runtime paths that create or consume generic non-media blob keys should
+  parse to `BlobObjectKey` at their domain/request boundary before calling
+  storage
 - stored media object keys should parse at the shared repository/domain
   boundary, not repeatedly at DTO or adapter call sites
 - shared media domain rows and inputs carry `BlobObjectKey`; JSON DTOs and SQL
@@ -223,6 +226,9 @@ Rules:
 - public URLs and signed download URLs are separate concepts
 - delete is idempotent
 - direct `put_bytes()` exists for server-side derived objects and processing
+- raw object-key strings remain acceptable for adapter implementations,
+  metadata DTOs, JSON/SQL edges, tests/examples, and historical migration or
+  replay tooling where the raw value itself is the artifact under inspection
 - backend-specific details stay behind the adapter boundary
 
 This contract is the generic storage seam. It does not define media-graph

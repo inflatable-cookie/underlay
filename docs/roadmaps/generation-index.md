@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.046`: non-media blob object-key boundary policy.
+Execute `g06.047`: consumer non-media blob object-key adoption proof.

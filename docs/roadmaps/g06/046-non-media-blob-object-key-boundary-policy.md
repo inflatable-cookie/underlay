@@ -51,8 +51,12 @@ consumer-owned non-media blob path is migrated.
 
 ## Current State
 
-`g06.046` is next after `g06.045`.
+`g06.046` is complete.
+
+Artifact:
+
+- [046 artifact](./046-non-media-blob-object-key-boundary-policy-artifact.md)
 
 ## Next Task
 
-Execute `g06.046`: non-media blob object-key boundary policy.
+Execute `g06.047`: consumer non-media blob object-key adoption proof.

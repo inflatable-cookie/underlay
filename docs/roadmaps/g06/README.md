@@ -96,7 +96,8 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.044` is complete as the consumer app-local media object-key
   parse-boundary rollout.
 - `g06.045` is complete as the media object-key boundary closeout audit.
-- `g06.046` is next as the non-media blob object-key boundary policy.
+- `g06.046` is complete as the non-media blob object-key boundary policy.
+- `g06.047` is next as the consumer non-media blob object-key adoption proof.
 
 ## Planned Runway
 
@@ -150,6 +151,7 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.044`: consumer app-local media object-key parse boundaries
 - `g06.045`: media object-key boundary closeout audit
 - `g06.046`: non-media blob object-key boundary policy
+- `g06.047`: consumer non-media blob object-key adoption proof
 
 ## Consumer Family
 
@@ -212,7 +214,8 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g06.043` is complete.
 - `g06.044` is complete.
 - `g06.045` is complete.
-- `g06.046` is next.
+- `g06.046` is complete.
+- `g06.047` is next.
 
 ## Batch Cards
 
@@ -221,4 +224,4 @@ If `g06` enters strict execution posture, keep its cards under
 
 ## Next Task
 
-Execute `g06.046`: non-media blob object-key boundary policy.
+Execute `g06.047`: consumer non-media blob object-key adoption proof.
