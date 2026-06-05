@@ -48,8 +48,12 @@ path-safety behavior that must change, stop and re-enter planning.
 
 ## Current State
 
-`g06.117` is ready.
+`g06.117` is complete.
+
+Artifact:
+
+- [117 artifact](./117-blob-local-adapter-modularity-audit-artifact.md)
 
 ## Next Task
 
-Execute `g06.117`: blob local adapter modularity audit.
+Execute `g06.118`: blob local adapter internal split.

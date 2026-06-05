@@ -181,7 +181,8 @@ controlled breaking changes allowed across the six known consumers.
   modularity audit.
 - `g06.116` is complete as the migration-core pipeline decision tests internal
   split.
-- `g06.117` is next as the blob local adapter modularity audit.
+- `g06.117` is complete as the blob local adapter modularity audit.
+- `g06.118` is next as the blob local adapter internal split.
 
 ## Planned Runway
 
@@ -306,6 +307,7 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.115`: migration-core pipeline decision tests modularity audit
 - `g06.116`: migration-core pipeline decision tests internal split
 - `g06.117`: blob local adapter modularity audit
+- `g06.118`: blob local adapter internal split
 
 ## Consumer Family
 
@@ -439,7 +441,8 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g06.114` is complete.
 - `g06.115` is complete.
 - `g06.116` is complete.
-- `g06.117` is next.
+- `g06.117` is complete.
+- `g06.118` is next.
 
 ## Batch Cards
 
@@ -448,4 +451,4 @@ If `g06` enters strict execution posture, keep its cards under
 
 ## Next Task
 
-Execute `g06.117`: blob local adapter modularity audit.
+Execute `g06.118`: blob local adapter internal split.

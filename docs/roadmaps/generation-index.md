@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.117`: blob local adapter modularity audit.
+Execute `g06.118`: blob local adapter internal split.
