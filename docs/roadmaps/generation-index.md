@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.096`: devtools migration report internal split.
+Execute `g06.097`: AI runtime crate modularity audit.

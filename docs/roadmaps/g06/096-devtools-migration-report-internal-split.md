@@ -63,8 +63,12 @@ directories, or summary strings must change, stop and re-enter planning.
 
 ## Current State
 
-`g06.096` is ready.
+`g06.096` is complete.
+
+Artifact:
+
+- [096 artifact](./096-devtools-migration-report-internal-split-artifact.md)
 
 ## Next Task
 
-Execute `g06.096`: devtools migration report internal split.
+Execute `g06.097`: AI runtime crate modularity audit.
