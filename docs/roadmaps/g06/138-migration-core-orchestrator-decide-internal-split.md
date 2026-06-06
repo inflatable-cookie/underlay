@@ -53,8 +53,12 @@ need to change, stop and re-enter planning.
 
 ## Current State
 
-`g06.138` is ready.
+`g06.138` is complete.
+
+Artifact:
+
+- [138 artifact](./138-migration-core-orchestrator-decide-internal-split-artifact.md)
 
 ## Next Task
 
-Execute `g06.138`: migration-core orchestrator decide internal split.
+Execute `g06.139`: validation derive tests modularity audit.
