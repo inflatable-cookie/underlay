@@ -3,9 +3,9 @@ use super::*;
 #[test]
 fn test_default_config() {
     let config = HttpServerConfig::default();
-    assert_eq!(config.bind_addr, "127.0.0.1");
-    assert_eq!(config.port, 3000);
-    assert_eq!(config.public_host, "localhost");
+    assert_eq!(config.bind_addr(), "127.0.0.1");
+    assert_eq!(config.port(), 3000);
+    assert_eq!(config.public_host(), "localhost");
 }
 
 #[test]
@@ -72,10 +72,10 @@ fn test_local_defaults() {
     env::remove_var("PUBLIC_HOST");
 
     let config = HttpServerConfig::from_env(Environment::Local);
-    assert_eq!(config.bind_addr, "127.0.0.1");
-    assert_eq!(config.port, 3000);
+    assert_eq!(config.bind_addr(), "127.0.0.1");
+    assert_eq!(config.port(), 3000);
     // public_host defaults to bind_addr
-    assert_eq!(config.public_host, "127.0.0.1");
+    assert_eq!(config.public_host(), "127.0.0.1");
 }
 
 #[test]

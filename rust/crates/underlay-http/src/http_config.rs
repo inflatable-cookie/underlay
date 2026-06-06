@@ -13,8 +13,8 @@
 //! let config = HttpServerConfig::from_env(Environment::Local);
 //!
 //! // Use in server setup
-//! println!("Binding to {}:{}", config.bind_addr, config.port);
-//! println!("Public URL: http://{}:{}", config.public_host, config.port);
+//! println!("Binding to {}", config.socket_addr());
+//! println!("Public URL: {}", config.http_base_url());
 //! ```
 
 use std::env;
@@ -42,10 +42,10 @@ pub enum HttpServerConfigError {
 pub struct HttpServerConfig {
     /// Address to bind the server socket to (e.g., "127.0.0.1", "0.0.0.0").
     /// Must be a valid IP address.
-    pub bind_addr: String,
+    bind_addr: String,
 
     /// Port to listen on.
-    pub port: u16,
+    port: u16,
 
     /// Public hostname for constructing URLs (e.g., "localhost", "api.example.com").
     ///
@@ -55,7 +55,7 @@ pub struct HttpServerConfig {
     /// - Email links
     ///
     /// Defaults to "localhost" for local/dev/test environments.
-    pub public_host: String,
+    public_host: String,
 }
 
 impl HttpServerConfig {

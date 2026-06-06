@@ -303,6 +303,7 @@ README surfaces.
 - `g06.194` is complete as the HTTP operational config validation artifact
 - `g06.195` is complete as the HTTP CORS consumer migration artifact
 - `g06.196` is complete as the HTTP CORS field retirement artifact
+- `g06.197` is complete as the HTTP server config field retirement artifact
 - `g06` is closed as the Rust platform-contract transition and reference-grade
   reset generation
 - `g05` is closed as the shared-page, workflow-template, media capability,
@@ -633,3 +634,4 @@ Closed queue:
 - `g06.194`: HTTP operational config validation
 - `g06.195`: HTTP CORS consumer migration
 - `g06.196`: HTTP CORS field retirement
+- `g06.197`: HTTP server config field retirement

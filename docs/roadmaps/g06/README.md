@@ -456,6 +456,7 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.194`: HTTP operational config validation
 - `g06.195`: HTTP CORS consumer migration
 - `g06.196`: HTTP CORS field retirement
+- `g06.197`: HTTP server config field retirement
 
 ## Consumer Family
 
@@ -672,6 +673,7 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g06.194` is complete as the HTTP operational config validation artifact.
 - `g06.195` is complete as the HTTP CORS consumer migration artifact.
 - `g06.196` is complete as the HTTP CORS field retirement artifact.
+- `g06.197` is complete as the HTTP server config field retirement artifact.
 - `g06` is closed.
 
 ## Batch Cards
