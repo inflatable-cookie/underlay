@@ -29,6 +29,11 @@
       "types": "./ts/src/runtime/browser.ts",
       "default": "./ts/src/runtime/browser.ts"
     },
+    "./runtime/collections": {
+      "svelte": "./ts/src/runtime/collections.ts",
+      "types": "./ts/src/runtime/collections.ts",
+      "default": "./ts/src/runtime/collections.ts"
+    },
     "./runtime/forms": {
       "svelte": "./ts/src/runtime/forms.ts",
       "types": "./ts/src/runtime/forms.ts",
@@ -58,6 +63,16 @@
       "svelte": "./ts/src/runtime/media.ts",
       "types": "./ts/src/runtime/media.ts",
       "default": "./ts/src/runtime/media.ts"
+    },
+    "./runtime/reorder": {
+      "svelte": "./ts/src/runtime/reorder.ts",
+      "types": "./ts/src/runtime/reorder.ts",
+      "default": "./ts/src/runtime/reorder.ts"
+    },
+    "./runtime/selection": {
+      "svelte": "./ts/src/runtime/selection.ts",
+      "types": "./ts/src/runtime/selection.ts",
+      "default": "./ts/src/runtime/selection.ts"
     },
     "./runtime/ai": {
       "svelte": "./ts/src/runtime/ai.ts",

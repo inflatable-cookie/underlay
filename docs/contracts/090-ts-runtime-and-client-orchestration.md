@@ -193,22 +193,30 @@ The current runtime domains are:
 - `runtime/auth`: auth configuration, auth-state helpers, passkey/authenticated
   data re-exports
 - `runtime/browser`: DOM/storage/keyboard/timezone helpers
+- `runtime/collections`: list controllers, cursor pagination types/helpers,
+  and client/server pagination controllers
 - `runtime/data`: selection-history, reorder, synced selection, batch
-  selection, list controller, batch actions, pagination helpers
+  selection, list controller, batch actions, pagination helpers; retained as
+  the aggregate compatibility path for lower collection workflow helpers
 - `runtime/feedback`: toasts, clipboard, banner, optimistic helpers
 - `runtime/forms`: form helpers and validated-form exports
 - `runtime/media`: blob/media upload, media DTO, and retained media-detail
   helper surface
 - `runtime/navigation`: navigation-context exports
+- `runtime/reorder`: reorder controllers, reorder sessions, and conflict
+  recovery helpers
 - `runtime/relations`: local search, drilldown search, relation-selector
   context/types
+- `runtime/selection`: selection history, synced selection, batch
+  selection/actions, selection mode, and transform-selection state
 
 Rule:
 
 - this contract recognizes that these domains are public retained subpaths even
   when their concrete logic is implemented under `patterns/*`
-- `runtime/data` is retained as a compatibility barrel today, but it is not a
-  crisp single domain in the way `runtime/auth` or `runtime/navigation` are
+- `runtime/data` is retained as an aggregate compatibility barrel; new code can
+  prefer the narrower `runtime/collections`, `runtime/reorder`, and
+  `runtime/selection` paths where that improves import clarity
 
 For `runtime/media`, the retained helper surface includes both upload/media
 type helpers and the shared route-side media-detail helpers consumed by the
@@ -315,9 +323,9 @@ Apps own:
 - `runtime/ai.ts` is only a re-export of the AI routing ops controller, which
   raises the question of whether that surface truly belongs in runtime or in
   the later patterns contract
-- `runtime/data.ts` currently exports a large mixed bag of list, batch,
-  reorder, and pagination helpers, which may be too broad for one honest
-  runtime slice
+- `runtime/data.ts` remains broad for compatibility; the focused
+  `runtime/collections`, `runtime/reorder`, and `runtime/selection` subpaths
+  should be proven in consumers before any aggregate retirement is considered
 - the public runtime/client surface still reflects earlier compatibility
   decisions and may be broader than the genuinely retained orchestration layer
 
@@ -329,9 +337,11 @@ Apps own:
   some of them belong back in lower transport authority only
 - does the split between runtime and patterns still help consuming apps, or is
   it now mostly historical packaging residue
-- which controller/helper families in `runtime/data`, `runtime/relations`, and
-  `runtime/media` actually belong in the later shared-patterns contract instead
-  of staying in runtime
+- which consumer import families should move from aggregate `runtime/data` to
+  the focused collection/reorder/selection subpaths
+- which controller/helper families in `runtime/relations` and `runtime/media`
+  actually belong in the later shared-patterns contract instead of staying in
+  runtime
 
 ## Next Task
 

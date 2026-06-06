@@ -57,6 +57,7 @@ surface easier for consuming apps to understand, import, test, and extend.
 - `g07.012`: TS boundary hardening upgrade-note and closeout checkpoint
 - `g07.013`: suggestion helper compatibility export retirement
 - `g07.014`: remaining TS compatibility export audit
+- `g07.015`: runtime data subpath split
 
 ## Consumer Family
 
@@ -90,9 +91,10 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g07.013` is complete as the suggestion helper compatibility export
   retirement.
 - `g07.014` is complete as the remaining TS compatibility export audit.
+- `g07.015` is complete as the runtime data subpath split.
 - `g07` is complete.
 
 ## Next Task
 
-No active `g07` task remains. Open a bounded roadmap card before starting
-another compatibility-retirement or TS boundary lane.
+No active `g07` task remains. Open a bounded roadmap card before migrating
+consumer imports from `runtime/data` to the new focused subpaths.

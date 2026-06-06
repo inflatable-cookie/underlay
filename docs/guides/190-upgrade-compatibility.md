@@ -97,13 +97,17 @@ Reusable templates:
     `client/suggestions`
   - auth-aware fetch mechanics were consolidated internally
   - `runtime/data` and `runtime/relations` remain retained public paths
+  - focused `runtime/collections`, `runtime/reorder`, and `runtime/selection`
+    subpaths were added for new lower collection workflow imports
   - TS public-surface and guardrail support tests were added
 - Required actions:
   1. Import runtime helpers from focused `runtime/*` subpaths.
   2. Import suggestion request helpers from
      `@decodelabs/underlay/client/suggestions`.
   3. Keep selection history and lower collection workflow helpers on
-     `@decodelabs/underlay/runtime/data`.
+     `@decodelabs/underlay/runtime/data`, or use focused
+     `runtime/collections`, `runtime/reorder`, and `runtime/selection` subpaths
+     for new code.
   4. Keep `@decodelabs/underlay/patterns` for retained shared auth flows,
      `SpaFormShell`, `SpaFormResult`, and contextual actions.
   5. Remove `@decodelabs/underlay/components` from live Vite optimize
@@ -114,6 +118,8 @@ Reusable templates:
   - the six known consumer roots are already updated or confirmed compatible
   - compatibility-only suggestion helper re-exports from `runtime/data` and
     `patterns/selection-history` were retired by `g07.013`
+  - `runtime/data` remains valid as the aggregate compatibility path; the
+    focused subpaths added in `g07.015` are additive
 - Validation:
   - in `underlay`: `effigy qa:docs`
   - in `underlay`: `effigy qa:northstar`
@@ -135,6 +141,7 @@ Reusable templates:
 - Changed guidance:
   - [g07.012 closeout artifact](../roadmaps/g07/012-ts-boundary-hardening-closeout-artifact.md)
   - [g07.013 suggestion helper compatibility export retirement](../roadmaps/g07/013-suggestion-helper-compatibility-export-retirement.md)
+  - [g07.015 runtime data subpath split](../roadmaps/g07/015-runtime-data-subpath-split.md)
   - [090 TS runtime and client orchestration](../contracts/090-ts-runtime-and-client-orchestration.md)
   - [100 shared patterns and workflow shells](../contracts/100-shared-patterns-and-workflow-shells.md)
   - [120 tooling, testing, and contract artifacts](../contracts/120-tooling-testing-and-contract-artifacts.md)
