@@ -397,12 +397,15 @@ but the migration discipline itself is defined here.
   convenience registrations more loosely than the Rust side
 - `validator-registry.ts` only offers block-level transformation hooks and does
   not model the fuller strategy/cardinality validation contract from Rust
-- `050-media-library-and-usage.md` is active in the index but still labels
-  itself as proposed, so the shared authority stack around media-linked content
-  is not fully clean yet
 - some retained Nightfire helpers such as markdown/media registrations and
   slash-command shell may still deserve a later ownership challenge during the
   runtime and patterns contract passes
+
+Resolved assessment:
+
+- `g06.183` confirmed `050-media-library-and-usage.md` is now an active
+  contract, so the media-linked content authority stack no longer has a stale
+  proposed-contract label in active file state.
 
 ## Assessment Questions
 

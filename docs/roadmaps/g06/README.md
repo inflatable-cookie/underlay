@@ -640,6 +640,7 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g06.181` is complete as the validation rejection envelope normalization
   artifact.
 - `g06.182` is complete as the auth schema drift contract cleanup artifact.
+- `g06.183` is complete as the media authority status drift cleanup artifact.
 - `g06` is closed.
 
 ## Batch Cards

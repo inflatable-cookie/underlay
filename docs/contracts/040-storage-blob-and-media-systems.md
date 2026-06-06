@@ -406,9 +406,6 @@ Not allowed:
 
 Current drift worth assessing later:
 
-- [050-media-library-and-usage.md](/Users/tom/Dev/projects/underlay/docs/contracts/050-media-library-and-usage.md)
-  is active but still labeled `Proposed shared contract`, so the lower/higher
-  media authority chain is not yet expressed cleanly in file state
 - `underlay-db::TypedExistsCheck` assumes `deleted_at` unless callers opt out,
   which is convenient but may over-assume soft-delete semantics for some tables
 - `underlay-media::MediaRepository` still mixes older simple usage methods
@@ -417,6 +414,15 @@ Current drift worth assessing later:
   `050` contract
 - `underlay_blob::MediaConfig` sits in the blob crate even though it spans file
   limits and thumbnail concerns that touch media/rendition ownership
+
+Resolved assessment:
+
+- `g06.183` confirmed
+  [050-media-library-and-usage.md](/Users/tom/Dev/projects/underlay/docs/contracts/050-media-library-and-usage.md)
+  is now an active contract. The lower/higher media authority stack is explicit
+  in file state: `040` owns blob, storage, repository, and lower media
+  mechanics; `050` owns usage graph, structured-content sync, migration
+  binding, and media-linked content semantics.
 
 These are assessment hooks, not reasons to widen the contract.
 
