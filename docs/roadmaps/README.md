@@ -63,7 +63,8 @@ README surfaces.
 - `g09.006` is complete as the SvelteKit test god-file split batch
 - `g09.007` is complete as the CSP test god-file split batch
 - `g09.008` is complete as the Nightfire utils test god-file split batch
-- `g09.009` is next as the Nightfire summary-transform test warning decision
+- `g09.009` is complete as the Nightfire summary-transform test split
+- `g09.010` is next as the OAuth Rust file cleanup and doctor warning closeout
 - `g08.001` is complete as the migration-core policy field retirement batch
 - `g08.002` is complete as the devtools bundle/seed option constructor and accessor audit
 - `g08.003` is complete as the migration-core governance/OCI/manifest policy model audit
