@@ -249,7 +249,7 @@ use underlay_db::TypedExistsCheck;
 - [ ] Use `.scope(column, uuid)` for UUID foreign key scoping
 - [ ] Use `.nullable_value(column, Option<i32>)` for nullable columns
 - [ ] Use `.excluding(id)` for update operations
-- [ ] Use `.include_deleted()` for tables without soft-delete
+- [ ] Use `.active_only()` for tables with `deleted_at` soft-delete semantics
 
 **Before:**
 ```rust
@@ -279,7 +279,8 @@ pub async fn slug_exists(pool: &DbPool, slug: &str, exclude_id: Option<Uuid>) ->
     let mut check = TypedExistsCheck::from_schema_table("schema", "table")
         .map_err(|err| sqlx::Error::Protocol(format!("invalid table name: {err}")))?
         .value("slug", slug)
-        .map_err(|err| sqlx::Error::Protocol(format!("invalid column name: {err}")))?;
+        .map_err(|err| sqlx::Error::Protocol(format!("invalid column name: {err}")))?
+        .active_only();
     if let Some(id) = exclude_id {
         check = check.excluding(id);
     }
@@ -306,7 +307,8 @@ pub async fn module_slug_exists(
         .scope("pathway_id", pathway_id)
         .map_err(|err| sqlx::Error::Protocol(format!("invalid column name: {err}")))?
         .value_i32("start_year", start_year)
-        .map_err(|err| sqlx::Error::Protocol(format!("invalid column name: {err}")))?;
+        .map_err(|err| sqlx::Error::Protocol(format!("invalid column name: {err}")))?
+        .active_only();
     if let Some(id) = exclude_id {
         check = check.excluding(id);
     }
@@ -314,15 +316,15 @@ pub async fn module_slug_exists(
 }
 ```
 
-### Tables Without Soft-Delete
+### Tables With Soft-Delete
 
 ```rust
-pub async fn area_slug_exists(pool: &DbPool, slug: &str) -> Result<bool, sqlx::Error> {
-    TypedExistsCheck::from_schema_table("learning", "area")
+pub async fn module_slug_exists(pool: &DbPool, slug: &str) -> Result<bool, sqlx::Error> {
+    TypedExistsCheck::from_schema_table("learning", "module")
         .map_err(|err| sqlx::Error::Protocol(format!("invalid table name: {err}")))?
         .value("slug", slug)
         .map_err(|err| sqlx::Error::Protocol(format!("invalid column name: {err}")))?
-        .include_deleted()  // Skip deleted_at IS NULL filter
+        .active_only()
         .check(pool)
         .await
 }

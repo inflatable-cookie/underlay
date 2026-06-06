@@ -7,7 +7,7 @@ fn typed_value_exists_query_quotes_identifiers() {
 
     assert_eq!(
         value_exists_query(&table, &column, false),
-        "SELECT EXISTS(SELECT 1 FROM \"content\".\"summary_item\" WHERE \"slug\" = $1 AND deleted_at IS NULL)"
+        "SELECT EXISTS(SELECT 1 FROM \"content\".\"summary_item\" WHERE \"slug\" = $1)"
     );
 }
 
@@ -18,7 +18,7 @@ fn typed_value_exists_query_excludes_current_id() {
 
     assert_eq!(
         value_exists_query(&table, &column, true),
-        "SELECT EXISTS(SELECT 1 FROM \"learning\".\"pathway\" WHERE \"slug\" = $1 AND id <> $2 AND deleted_at IS NULL)"
+        "SELECT EXISTS(SELECT 1 FROM \"learning\".\"pathway\" WHERE \"slug\" = $1 AND id <> $2)"
     );
 }
 
@@ -33,7 +33,8 @@ fn typed_exists_check_builds_composite_query() {
         .unwrap()
         .value_i32("start_year", 2024)
         .unwrap()
-        .excluding(Uuid::nil());
+        .excluding(Uuid::nil())
+        .active_only();
 
     assert_eq!(
         check.query(),
@@ -48,7 +49,8 @@ fn typed_exists_check_builds_nullable_query() {
         .value("slug", "pathway")
         .unwrap()
         .nullable_value("year", None)
-        .unwrap();
+        .unwrap()
+        .active_only();
 
     assert_eq!(
         check.query(),
@@ -57,16 +59,29 @@ fn typed_exists_check_builds_nullable_query() {
 }
 
 #[test]
-fn typed_exists_check_can_include_deleted() {
+fn typed_exists_check_is_neutral_by_default() {
     let check = TypedExistsCheck::parse_table("content.summary_item")
         .unwrap()
         .value("slug", "summary")
-        .unwrap()
-        .include_deleted();
+        .unwrap();
 
     assert_eq!(
         check.query(),
         "SELECT EXISTS(SELECT 1 FROM \"content\".\"summary_item\" WHERE \"slug\" = $1)"
+    );
+}
+
+#[test]
+fn typed_exists_check_can_filter_active_records() {
+    let check = TypedExistsCheck::parse_table("content.summary_item")
+        .unwrap()
+        .value("slug", "summary")
+        .unwrap()
+        .active_only();
+
+    assert_eq!(
+        check.query(),
+        "SELECT EXISTS(SELECT 1 FROM \"content\".\"summary_item\" WHERE \"slug\" = $1 AND deleted_at IS NULL)"
     );
 }
 

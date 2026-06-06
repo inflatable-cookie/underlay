@@ -954,6 +954,7 @@ use underlay_db::TypedExistsCheck;
 // Simple: check if slug exists
 let exists = TypedExistsCheck::from_schema_table("content", "summary_item")?
     .value("slug", "my-slug")?
+    .active_only()
     .check(&pool)
     .await?;
 
@@ -961,6 +962,7 @@ let exists = TypedExistsCheck::from_schema_table("content", "summary_item")?
 let exists = TypedExistsCheck::from_schema_table("content", "summary_item")?
     .value("slug", "my-slug")?
     .excluding(current_id)
+    .active_only()
     .check(&pool)
     .await?;
 
@@ -968,6 +970,7 @@ let exists = TypedExistsCheck::from_schema_table("content", "summary_item")?
 let exists = TypedExistsCheck::from_schema_table("learning", "pathway")?
     .value("slug", slug)?
     .nullable_value("year", year)?
+    .active_only()
     .check(&pool)
     .await?;
 
@@ -977,6 +980,7 @@ let exists = TypedExistsCheck::from_schema_table("learning", "module")?
     .scope("pathway_id", pathway_id)?
     .value_i32("start_year", start_year)?
     .excluding(current_id)
+    .active_only()
     .check(&pool)
     .await?;
 ```
@@ -990,20 +994,19 @@ let exists = TypedExistsCheck::from_schema_table("learning", "module")?
 | `scope(column, uuid)` | Add UUID equality condition (FK scope) |
 | `nullable_value(column, Option<i32>)` | Add nullable int with `IS NOT DISTINCT FROM` |
 | `excluding(id)` | Exclude a specific record (for updates) |
-| `include_deleted()` | Skip `deleted_at IS NULL` filter (for tables without soft-delete) |
+| `active_only()` | Add `deleted_at IS NULL` for tables using Underlay's soft-delete convention |
 | `check(&pool)` | Execute and return `Result<bool, sqlx::Error>` |
 
-#### Including Deleted Records
+#### Active-Only Records
 
-By default, `TypedExistsCheck` filters out soft-deleted records
-(`deleted_at IS NULL`). For tables without soft-delete or when you need to
-check all records:
+By default, `TypedExistsCheck` is neutral and does not assume a `deleted_at`
+column. For tables using Underlay's soft-delete convention, opt into active-row
+filtering explicitly:
 
 ```rust
-// Check existence including deleted records
-let exists = TypedExistsCheck::from_schema_table("learning", "area")?
+let exists = TypedExistsCheck::from_schema_table("content", "summary_item")?
     .value("slug", slug)?
-    .include_deleted()
+    .active_only()
     .check(&pool)
     .await?;
 ```
@@ -1021,6 +1024,7 @@ use underlay_db::{
 let table = QualifiedTableName::from_schema_table("content", "summary_item")?;
 let slug = SqlIdentifier::parse("slug")?;
 
+// Neutral check: does not assume a deleted_at column.
 let exists = value_exists_typed(&pool, &table, &slug, "my-slug").await?;
 
 let exists =

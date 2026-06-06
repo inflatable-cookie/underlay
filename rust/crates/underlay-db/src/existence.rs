@@ -37,6 +37,7 @@
 //! let exists = TypedExistsCheck::from_schema_table("learning", "pathway")?
 //!     .value("slug", slug)?
 //!     .nullable_value("year", year)?
+//!     .active_only()
 //!     .check(&pool)
 //!     .await?;
 //!
@@ -46,6 +47,7 @@
 //!     .scope("pathway_id", pathway_id)?
 //!     .value_i32("start_year", start_year)?
 //!     .excluding(current_id)
+//!     .active_only()
 //!     .check(&pool)
 //!     .await?;
 //! ```
@@ -88,7 +90,7 @@ pub struct TypedExistsCheck {
     table: QualifiedTableName,
     conditions: Vec<TypedCondition>,
     exclude_id: Option<Uuid>,
-    include_deleted: bool,
+    active_only: bool,
 }
 
 impl TypedExistsCheck {
@@ -98,7 +100,7 @@ impl TypedExistsCheck {
             table,
             conditions: Vec::new(),
             exclude_id: None,
-            include_deleted: false,
+            active_only: false,
         }
     }
 
@@ -168,9 +170,10 @@ impl TypedExistsCheck {
         self
     }
 
-    /// Include soft-deleted records in the check.
-    pub fn include_deleted(mut self) -> Self {
-        self.include_deleted = true;
+    /// Restrict the check to rows that follow Underlay's `deleted_at IS NULL`
+    /// active-record convention.
+    pub fn active_only(mut self) -> Self {
+        self.active_only = true;
         self
     }
 
@@ -179,7 +182,7 @@ impl TypedExistsCheck {
             &self.table,
             &self.conditions,
             self.exclude_id.is_some(),
-            self.include_deleted,
+            self.active_only,
         )
     }
 
@@ -215,7 +218,7 @@ fn typed_exists_query(
     table: &QualifiedTableName,
     conditions: &[TypedCondition],
     excluding: bool,
-    include_deleted: bool,
+    active_only: bool,
 ) -> String {
     let mut param_idx = 1u32;
     let mut where_parts = Vec::new();
@@ -242,7 +245,7 @@ fn typed_exists_query(
         where_parts.push(format!("id <> ${}", param_idx));
     }
 
-    if !include_deleted {
+    if active_only {
         where_parts.push("deleted_at IS NULL".to_string());
     }
 
@@ -265,7 +268,7 @@ fn value_exists_query(
 ) -> String {
     let exclude_clause = if excluding { " AND id <> $2" } else { "" };
     format!(
-        "SELECT EXISTS(SELECT 1 FROM {} WHERE {} = $1{} AND deleted_at IS NULL)",
+        "SELECT EXISTS(SELECT 1 FROM {} WHERE {} = $1{})",
         table.quoted(),
         column.quoted(),
         exclude_clause

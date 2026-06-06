@@ -414,11 +414,13 @@ Not allowed:
 
 Current drift worth assessing later:
 
-- `underlay-db::TypedExistsCheck` assumes `deleted_at` unless callers opt out,
-  which is convenient but may over-assume soft-delete semantics for some tables
+- None currently named.
 
 Resolved assessment:
 
+- `g06.187` made `underlay_db::TypedExistsCheck` neutral by default. Callers
+  must opt into `deleted_at IS NULL` filtering with `.active_only()` when the
+  table uses Underlay's soft-delete convention.
 - `g06.186` split the former blob-owned `MediaConfig` into
   `underlay_blob::BlobUploadConfig` for upload-size policy and
   `underlay_media::renditions::RenditionConfig` for thumbnail/rendition policy.
