@@ -56,6 +56,7 @@ surface easier for consuming apps to understand, import, test, and extend.
 - `g07.011`: stale components config cleanup
 - `g07.012`: TS boundary hardening upgrade-note and closeout checkpoint
 - `g07.013`: suggestion helper compatibility export retirement
+- `g07.014`: remaining TS compatibility export audit
 
 ## Consumer Family
 
@@ -88,6 +89,7 @@ Each consumer-affecting milestone must classify impact as `additive`,
   checkpoint.
 - `g07.013` is complete as the suggestion helper compatibility export
   retirement.
+- `g07.014` is complete as the remaining TS compatibility export audit.
 - `g07` is complete.
 
 ## Next Task

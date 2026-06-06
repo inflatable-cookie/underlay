@@ -997,7 +997,7 @@ canonical save payload:
 
 ```svelte
 <script lang="ts">
-  import { NightfireEditor, type NightfireValue } from "@decodelabs/underlay/nightfire";
+  import { NightfireEditor, type NightfireValue } from "@decodelabs/underlay/nightfire/editor";
 
   let body = $state<NightfireValue>({ schema: "myapp:content/body@1" });
   let bodyPrepare = $state<(formData: FormData) => void>(() => {});

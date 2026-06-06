@@ -309,13 +309,14 @@ Reusable templates:
   - [g06.015 release-note handoff](../roadmaps/g06/015-rust-platform-transition-release-note-handoff.md)
   - [122 Rust public API inventory](../contracts/122-rust-public-api-inventory.md)
 
-### Root Package Barrel Removal (`2026-04-08`)
+### Root Package Teaching Retirement (`2026-04-08`)
 
 - Impact class: `breaking`
 - Affected consumers: any app, shared package, or guide snippet importing from
   the flat `@decodelabs/underlay` root path
 - What changed:
-  - the root package export `@decodelabs/underlay` is retired
+  - the root package export `@decodelabs/underlay` is an empty
+    compatibility-only stub
   - consumers must now import from explicit package surfaces only
 - Required actions:
   1. replace root-barrel imports with the real package surface
@@ -357,14 +358,14 @@ Reusable templates:
   - in consuming apps/packages: run the repo-owned Svelte check or TS check and
     scan for `@decodelabs/underlay/utils` source imports
 
-### Nightfire Root Barrel Removal (`2026-04-08`)
+### Nightfire Root Barrel Import Guidance (`2026-04-08`)
 
-- Impact class: `breaking`
+- Impact class: `deprecation`
 - Affected consumers: any app, shared package, or guide snippet importing from
   `@decodelabs/underlay/nightfire`
 - What changed:
-  - the root Nightfire barrel is retired
-  - consumers must now import from explicit Nightfire feature subpaths
+  - the root Nightfire barrel is retained for compatibility
+  - new code and docs should import from explicit Nightfire feature subpaths
 - Required actions:
   1. move editor imports to `@decodelabs/underlay/nightfire/editor`
   2. move renderer imports to `@decodelabs/underlay/nightfire/renderer`
@@ -377,14 +378,15 @@ Reusable templates:
   - in consuming apps/packages: run the repo-owned Svelte check or TS check and
     scan for `@decodelabs/underlay/nightfire` source imports
 
-### Runtime Root Barrel Removal (`2026-04-08`)
+### Runtime Root Barrel Import Guidance (`2026-04-08`)
 
-- Impact class: `breaking`
+- Impact class: `deprecation`
 - Affected consumers: any app, shared package, or guide snippet importing from
   `@decodelabs/underlay/runtime`
 - What changed:
-  - the root `runtime` barrel is retired
-  - consumers must now import from explicit runtime feature subpaths
+  - the root `runtime` barrel is retained for compatibility with a tiny
+    pagination type/helper surface
+  - new code and docs should import from explicit runtime feature subpaths
 - Required actions:
   1. move auth/data-loading helpers to `@decodelabs/underlay/runtime/auth`
   2. move toasts and clipboard helpers to `@decodelabs/underlay/runtime/feedback`
@@ -399,14 +401,15 @@ Reusable templates:
   - in consuming apps/packages: run the repo-owned Svelte check or TS check and
     scan for `@decodelabs/underlay/runtime` source imports
 
-### Client Root Barrel Removal (`2026-04-08`)
+### Client Root Barrel Import Guidance (`2026-04-08`)
 
-- Impact class: `breaking`
+- Impact class: `deprecation`
 - Affected consumers: any app, shared package, or guide snippet importing from
   `@decodelabs/underlay/client`
 - What changed:
-  - the root `client` barrel is retired
-  - consumers must now import from explicit client feature subpaths
+  - the root `client` barrel is retained for compatibility and broad client
+    convenience imports
+  - new code and docs should import from explicit client feature subpaths
 - Required actions:
   1. move navigation helpers to `@decodelabs/underlay/client/navigation`
   2. move query helpers to `@decodelabs/underlay/client/query`
