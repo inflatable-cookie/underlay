@@ -29,13 +29,13 @@ impl std::fmt::Debug for JwtService {
 impl JwtService {
     pub fn new(config: JwtConfig) -> JwtResult<Self> {
         let private_key_der = STANDARD
-            .decode(&config.private_key_b64)
+            .decode(config.private_key_b64())
             .map_err(|_| JwtError::Key("Invalid base64 private key".to_string()))?;
         let encoding_key = EncodingKey::from_ed_der(&private_key_der);
 
         let public_key_bytes = base64::engine::general_purpose::URL_SAFE_NO_PAD
-            .decode(&config.public_key_b64)
-            .or_else(|_| base64::engine::general_purpose::STANDARD.decode(&config.public_key_b64))
+            .decode(config.public_key_b64())
+            .or_else(|_| base64::engine::general_purpose::STANDARD.decode(config.public_key_b64()))
             .map_err(|e| JwtError::Key(format!("Base64 error: {}", e)))?;
         let public_key_b64url =
             base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(public_key_bytes);
@@ -83,9 +83,9 @@ impl JwtService {
 
         let claims = AccessTokenClaims {
             common: CommonClaims {
-                issuer: self.config.issuer.clone(),
+                issuer: self.config.issuer().to_string(),
                 subject: user_id,
-                audience: self.config.audience.clone(),
+                audience: self.config.audience().map(ToString::to_string),
                 issued_at: now,
                 expires_at: exp,
                 not_before: Some(now),
@@ -117,9 +117,9 @@ impl JwtService {
 
         let claims = RefreshTokenClaims {
             common: CommonClaims {
-                issuer: self.config.issuer.clone(),
+                issuer: self.config.issuer().to_string(),
                 subject: user_id,
-                audience: self.config.audience.clone(),
+                audience: self.config.audience().map(ToString::to_string),
                 issued_at: now,
                 expires_at: exp,
                 not_before: Some(now),
@@ -172,19 +172,19 @@ impl JwtService {
 
     fn decode_and_validate_value(&self, token: &str) -> JwtResult<serde_json::Value> {
         let mut validation = Validation::new(Algorithm::EdDSA);
-        validation.leeway = self.config.leeway_seconds;
+        validation.leeway = self.config.leeway_seconds();
         validation.validate_nbf = true;
 
         // Require core JWT claims we rely on.
-        if self.config.audience.is_some() {
+        if self.config.audience().is_some() {
             validation.set_required_spec_claims(&["exp", "iss", "sub", "aud"]);
         } else {
             validation.set_required_spec_claims(&["exp", "iss", "sub"]);
         }
 
-        validation.set_issuer(std::slice::from_ref(&self.config.issuer));
-        if let Some(aud) = &self.config.audience {
-            validation.set_audience(std::slice::from_ref(aud));
+        validation.set_issuer(&[self.config.issuer()]);
+        if let Some(aud) = self.config.audience() {
+            validation.set_audience(&[aud]);
         }
 
         match decode::<serde_json::Value>(token, &self.decoding_key, &validation) {

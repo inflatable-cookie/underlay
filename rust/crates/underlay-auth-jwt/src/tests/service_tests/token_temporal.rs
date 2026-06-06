@@ -5,8 +5,8 @@ use super::support::*;
 
 #[test]
 fn expired_token_returns_expired_error() {
-    let (mut config, _) = JwtConfig::generate().unwrap();
-    config.leeway_seconds = 0;
+    let (config, _) = JwtConfig::generate().unwrap();
+    let config = config.with_leeway_seconds(0);
     let jwt = JwtService::new(config).unwrap();
 
     let now = chrono::Utc::now().timestamp() as u64;
@@ -15,9 +15,9 @@ fn expired_token_returns_expired_error() {
 
     let claims = AccessTokenClaims {
         common: CommonClaims {
-            issuer: jwt.config.issuer.clone(),
+            issuer: jwt.config.issuer().to_string(),
             subject: user_id,
-            audience: jwt.config.audience.clone(),
+            audience: jwt.config.audience().map(ToString::to_string),
             issued_at: now.saturating_sub(120),
             expires_at: now.saturating_sub(60),
             not_before: Some(now.saturating_sub(120)),
@@ -39,8 +39,8 @@ fn expired_token_returns_expired_error() {
 
 #[test]
 fn token_not_yet_valid_returns_not_yet_valid_error() {
-    let (mut config, _) = JwtConfig::generate().unwrap();
-    config.leeway_seconds = 0;
+    let (config, _) = JwtConfig::generate().unwrap();
+    let config = config.with_leeway_seconds(0);
     let jwt = JwtService::new(config).unwrap();
 
     let now = chrono::Utc::now().timestamp() as u64;
@@ -49,9 +49,9 @@ fn token_not_yet_valid_returns_not_yet_valid_error() {
 
     let claims = AccessTokenClaims {
         common: CommonClaims {
-            issuer: jwt.config.issuer.clone(),
+            issuer: jwt.config.issuer().to_string(),
             subject: user_id,
-            audience: jwt.config.audience.clone(),
+            audience: jwt.config.audience().map(ToString::to_string),
             issued_at: now,
             expires_at: now + 600,
             not_before: Some(now + 300),
@@ -76,8 +76,8 @@ fn token_not_yet_valid_returns_not_yet_valid_error() {
 
 #[test]
 fn leeway_allows_slightly_expired_tokens() {
-    let (mut config, _) = JwtConfig::generate().unwrap();
-    config.leeway_seconds = 30;
+    let (config, _) = JwtConfig::generate().unwrap();
+    let config = config.with_leeway_seconds(30);
     let jwt = JwtService::new(config).unwrap();
 
     let now = chrono::Utc::now().timestamp() as u64;
@@ -86,9 +86,9 @@ fn leeway_allows_slightly_expired_tokens() {
 
     let claims = AccessTokenClaims {
         common: CommonClaims {
-            issuer: jwt.config.issuer.clone(),
+            issuer: jwt.config.issuer().to_string(),
             subject: user_id,
-            audience: jwt.config.audience.clone(),
+            audience: jwt.config.audience().map(ToString::to_string),
             issued_at: now.saturating_sub(120),
             expires_at: now.saturating_sub(10),
             not_before: Some(now.saturating_sub(120)),

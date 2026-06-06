@@ -4,17 +4,8 @@ use super::support::*;
 
 #[test]
 fn token_with_configured_audience_passes() {
-    let config_with_audience = JwtConfig {
-        audience: Some("my-app".to_string()),
-        ..JwtConfig::default()
-    };
     let (config, _) = JwtConfig::generate().unwrap();
-    let config = JwtConfig {
-        audience: Some("my-app".to_string()),
-        private_key_b64: config.private_key_b64.clone(),
-        public_key_b64: config.public_key_b64.clone(),
-        ..config_with_audience
-    };
+    let config = config.with_audience("my-app");
 
     let jwt = JwtService::new(config).unwrap();
 
@@ -31,10 +22,7 @@ fn token_without_audience_fails_with_audience_config() {
     let config_no_audience = JwtConfig::generate().unwrap().0;
     let jwt_no_aud = JwtService::new(config_no_audience.clone()).unwrap();
 
-    let config_with_aud = JwtConfig {
-        audience: Some("my-app".to_string()),
-        ..config_no_audience
-    };
+    let config_with_aud = config_no_audience.with_audience("my-app");
     let jwt_with_aud = JwtService::new(config_with_aud).unwrap();
 
     let user_id = Uuid::new_v7();

@@ -52,8 +52,8 @@ fn from_env_parses_defaults_and_overrides() {
 
     let (generated, _keys) = JwtConfig::generate().unwrap();
 
-    let prev_priv = with_env_var("AUTH_JWT_PRIVATE_KEY", Some(&generated.private_key_b64));
-    let prev_pub = with_env_var("AUTH_JWT_PUBLIC_KEY", Some(&generated.public_key_b64));
+    let prev_priv = with_env_var("AUTH_JWT_PRIVATE_KEY", Some(generated.private_key_b64()));
+    let prev_pub = with_env_var("AUTH_JWT_PUBLIC_KEY", Some(generated.public_key_b64()));
     let prev_access = with_env_var("AUTH_ACCESS_TOKEN_LIFETIME_MINUTES", Some("42"));
     let prev_refresh = with_env_var("AUTH_REFRESH_TOKEN_LIFETIME_DAYS", Some("7"));
     let prev_issuer = with_env_var("AUTH_JWT_ISSUER", Some("issuer-x"));
@@ -62,13 +62,13 @@ fn from_env_parses_defaults_and_overrides() {
 
     let config = JwtConfig::from_env().unwrap();
 
-    assert_eq!(config.private_key_b64, generated.private_key_b64);
-    assert_eq!(config.public_key_b64, generated.public_key_b64);
-    assert_eq!(config.access_token_lifetime_minutes, 42);
-    assert_eq!(config.refresh_token_lifetime_days, 7);
-    assert_eq!(config.issuer, "issuer-x");
-    assert_eq!(config.audience, Some("aud-x".to_string()));
-    assert_eq!(config.leeway_seconds, 5);
+    assert_eq!(config.private_key_b64(), generated.private_key_b64());
+    assert_eq!(config.public_key_b64(), generated.public_key_b64());
+    assert_eq!(config.access_token_lifetime_minutes(), 42);
+    assert_eq!(config.refresh_token_lifetime_days(), 7);
+    assert_eq!(config.issuer(), "issuer-x");
+    assert_eq!(config.audience(), Some("aud-x"));
+    assert_eq!(config.leeway_seconds(), 5);
 
     restore_env_var("AUTH_JWT_PRIVATE_KEY", prev_priv);
     restore_env_var("AUTH_JWT_PUBLIC_KEY", prev_pub);
@@ -85,8 +85,8 @@ fn from_env_with_defaults_uses_typed_defaults_when_env_missing() {
 
     let (generated, _keys) = JwtConfig::generate().unwrap();
 
-    let prev_priv = with_env_var("AUTH_JWT_PRIVATE_KEY", Some(&generated.private_key_b64));
-    let prev_pub = with_env_var("AUTH_JWT_PUBLIC_KEY", Some(&generated.public_key_b64));
+    let prev_priv = with_env_var("AUTH_JWT_PRIVATE_KEY", Some(generated.private_key_b64()));
+    let prev_pub = with_env_var("AUTH_JWT_PUBLIC_KEY", Some(generated.public_key_b64()));
     let prev_access = with_env_var("AUTH_ACCESS_TOKEN_LIFETIME_MINUTES", None);
     let prev_refresh = with_env_var("AUTH_REFRESH_TOKEN_LIFETIME_DAYS", None);
     let prev_issuer = with_env_var("AUTH_JWT_ISSUER", None);
@@ -102,11 +102,11 @@ fn from_env_with_defaults_uses_typed_defaults_when_env_missing() {
     };
 
     let config = JwtConfig::from_env_with_defaults(&defaults).unwrap();
-    assert_eq!(config.access_token_lifetime_minutes, 42);
-    assert_eq!(config.refresh_token_lifetime_days, 7);
-    assert_eq!(config.issuer, "typed-issuer");
-    assert_eq!(config.audience, Some("typed-aud".to_string()));
-    assert_eq!(config.leeway_seconds, 9);
+    assert_eq!(config.access_token_lifetime_minutes(), 42);
+    assert_eq!(config.refresh_token_lifetime_days(), 7);
+    assert_eq!(config.issuer(), "typed-issuer");
+    assert_eq!(config.audience(), Some("typed-aud"));
+    assert_eq!(config.leeway_seconds(), 9);
 
     restore_env_var("AUTH_JWT_PRIVATE_KEY", prev_priv);
     restore_env_var("AUTH_JWT_PUBLIC_KEY", prev_pub);
@@ -133,19 +133,19 @@ fn from_values_uses_supplied_behavior_without_env() {
         behavior.clone(),
     );
 
-    assert_eq!(config.private_key_b64, "private");
-    assert_eq!(config.public_key_b64, "public");
+    assert_eq!(config.private_key_b64(), "private");
+    assert_eq!(config.public_key_b64(), "public");
     assert_eq!(
-        config.access_token_lifetime_minutes,
+        config.access_token_lifetime_minutes(),
         behavior.access_token_lifetime_minutes
     );
     assert_eq!(
-        config.refresh_token_lifetime_days,
+        config.refresh_token_lifetime_days(),
         behavior.refresh_token_lifetime_days
     );
-    assert_eq!(config.issuer, behavior.issuer);
-    assert_eq!(config.audience, behavior.audience);
-    assert_eq!(config.leeway_seconds, behavior.leeway_seconds);
+    assert_eq!(config.issuer(), behavior.issuer);
+    assert_eq!(config.audience(), behavior.audience.as_deref());
+    assert_eq!(config.leeway_seconds(), behavior.leeway_seconds);
 }
 
 #[test]
@@ -154,8 +154,8 @@ fn from_env_rejects_invalid_numbers() {
 
     let (generated, _keys) = JwtConfig::generate().unwrap();
 
-    let prev_priv = with_env_var("AUTH_JWT_PRIVATE_KEY", Some(&generated.private_key_b64));
-    let prev_pub = with_env_var("AUTH_JWT_PUBLIC_KEY", Some(&generated.public_key_b64));
+    let prev_priv = with_env_var("AUTH_JWT_PRIVATE_KEY", Some(generated.private_key_b64()));
+    let prev_pub = with_env_var("AUTH_JWT_PUBLIC_KEY", Some(generated.public_key_b64()));
     let prev_access = with_env_var("AUTH_ACCESS_TOKEN_LIFETIME_MINUTES", Some("nope"));
 
     let result = JwtConfig::from_env();

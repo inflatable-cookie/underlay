@@ -8,25 +8,25 @@ use crate::keys::KeyPair;
 #[derive(Clone)]
 pub struct JwtConfig {
     /// Base64-encoded PKCS#8 DER private key (Ed25519).
-    pub private_key_b64: String,
+    private_key_b64: String,
 
     /// Base64-encoded raw Ed25519 public key bytes (32 bytes).
-    pub public_key_b64: String,
+    public_key_b64: String,
 
     /// Access token lifetime in minutes.
-    pub access_token_lifetime_minutes: i64,
+    access_token_lifetime_minutes: i64,
 
     /// Refresh token lifetime in days.
-    pub refresh_token_lifetime_days: i64,
+    refresh_token_lifetime_days: i64,
 
     /// Token issuer.
-    pub issuer: String,
+    issuer: String,
 
     /// Token audience (optional).
-    pub audience: Option<String>,
+    audience: Option<String>,
 
     /// Validation leeway in seconds.
-    pub leeway_seconds: u64,
+    leeway_seconds: u64,
 }
 
 /// Non-secret JWT behavior tuning that can be supplied by typed app config.
@@ -87,6 +87,64 @@ impl std::fmt::Debug for JwtConfig {
 }
 
 impl JwtConfig {
+    pub fn private_key_b64(&self) -> &str {
+        &self.private_key_b64
+    }
+
+    pub fn public_key_b64(&self) -> &str {
+        &self.public_key_b64
+    }
+
+    pub fn access_token_lifetime_minutes(&self) -> i64 {
+        self.access_token_lifetime_minutes
+    }
+
+    pub fn refresh_token_lifetime_days(&self) -> i64 {
+        self.refresh_token_lifetime_days
+    }
+
+    pub fn issuer(&self) -> &str {
+        &self.issuer
+    }
+
+    pub fn audience(&self) -> Option<&str> {
+        self.audience.as_deref()
+    }
+
+    pub fn leeway_seconds(&self) -> u64 {
+        self.leeway_seconds
+    }
+
+    pub fn with_access_token_lifetime_minutes(mut self, minutes: i64) -> Self {
+        self.access_token_lifetime_minutes = minutes;
+        self
+    }
+
+    pub fn with_refresh_token_lifetime_days(mut self, days: i64) -> Self {
+        self.refresh_token_lifetime_days = days;
+        self
+    }
+
+    pub fn with_issuer(mut self, issuer: impl Into<String>) -> Self {
+        self.issuer = issuer.into();
+        self
+    }
+
+    pub fn with_audience(mut self, audience: impl Into<String>) -> Self {
+        self.audience = Some(audience.into());
+        self
+    }
+
+    pub fn without_audience(mut self) -> Self {
+        self.audience = None;
+        self
+    }
+
+    pub fn with_leeway_seconds(mut self, seconds: u64) -> Self {
+        self.leeway_seconds = seconds;
+        self
+    }
+
     pub fn access_token_lifetime(&self) -> Duration {
         Duration::minutes(self.access_token_lifetime_minutes)
     }

@@ -80,10 +80,7 @@ fn token_with_wrong_issuer_fails() {
 
     let (token, _) = jwt.issue_access_token(user_id, session_id, vec![]).unwrap();
 
-    let config_wrong_issuer = JwtConfig {
-        issuer: "wrong-issuer".to_string(),
-        ..config
-    };
+    let config_wrong_issuer = config.with_issuer("wrong-issuer");
     let jwt_wrong = JwtService::new(config_wrong_issuer).unwrap();
 
     let result = jwt_wrong.verify_access_token(&token);

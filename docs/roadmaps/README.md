@@ -637,3 +637,4 @@ Closed queue:
 - `g06.196`: HTTP CORS field retirement
 - `g06.197`: HTTP server config field retirement
 - `g06.198`: rate-limit config field retirement
+- `g06.199`: JWT config field retirement

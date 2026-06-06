@@ -676,6 +676,7 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g06.196` is complete as the HTTP CORS field retirement artifact.
 - `g06.197` is complete as the HTTP server config field retirement artifact.
 - `g06.198` is complete as the rate-limit config field retirement artifact.
+- `g06.199` is complete as the JWT config field retirement artifact.
 - `g06` is closed.
 
 ## Batch Cards
