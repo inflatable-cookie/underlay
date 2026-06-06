@@ -693,6 +693,7 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g06.213` is complete as the email config field retirement artifact.
 - `g06.214` is complete as the HTTP error logging config field retirement artifact.
 - `g06.215` is complete as the Nightfire multi config field retirement artifact.
+- `g06.216` is complete as the DB SQL-dir options field retirement artifact.
 - `g06` is closed.
 
 ## Batch Cards

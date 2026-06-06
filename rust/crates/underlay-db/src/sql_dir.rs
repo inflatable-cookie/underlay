@@ -5,16 +5,16 @@ use crate::DbPool;
 #[derive(Debug, Clone, Copy)]
 pub struct SqlDirOptions {
     /// Only files with this extension are executed.
-    pub extension: &'static str,
+    extension: &'static str,
 
     /// If true, execute files in lexicographic filename order.
-    pub sort: bool,
+    sort: bool,
 
     /// If true, split on ';' and run each non-empty statement.
     ///
     /// This is intended for simple seed scripts and is not suitable for procedural SQL
     /// blocks that contain semicolons (e.g. `DO $$ ... $$`).
-    pub split_on_semicolon: bool,
+    split_on_semicolon: bool,
 }
 
 impl Default for SqlDirOptions {
@@ -24,6 +24,46 @@ impl Default for SqlDirOptions {
             sort: true,
             split_on_semicolon: true,
         }
+    }
+}
+
+impl SqlDirOptions {
+    /// Create default SQL directory execution options.
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// Set the file extension to execute.
+    pub fn with_extension(mut self, extension: &'static str) -> Self {
+        self.extension = extension;
+        self
+    }
+
+    /// Set whether files should be executed in lexicographic filename order.
+    pub fn with_sort(mut self, sort: bool) -> Self {
+        self.sort = sort;
+        self
+    }
+
+    /// Set whether SQL files should be split on semicolons.
+    pub fn with_split_on_semicolon(mut self, split_on_semicolon: bool) -> Self {
+        self.split_on_semicolon = split_on_semicolon;
+        self
+    }
+
+    /// Return the file extension to execute.
+    pub fn extension(&self) -> &'static str {
+        self.extension
+    }
+
+    /// Return whether files should be sorted before execution.
+    pub fn sort(&self) -> bool {
+        self.sort
+    }
+
+    /// Return whether SQL files should be split on semicolons.
+    pub fn split_on_semicolon(&self) -> bool {
+        self.split_on_semicolon
     }
 }
 
@@ -47,17 +87,20 @@ pub async fn run_sql_dir_with_options(
     let mut sql_files = entries
         .filter_map(|entry| entry.ok())
         .map(|entry| entry.path())
-        .filter(|path| path.extension().is_some_and(|ext| ext == options.extension))
+        .filter(|path| {
+            path.extension()
+                .is_some_and(|ext| ext == options.extension())
+        })
         .collect::<Vec<_>>();
 
-    if options.sort {
+    if options.sort() {
         sql_files.sort_by(|a, b| a.file_name().cmp(&b.file_name()));
     }
 
     for path in sql_files {
         let sql = std::fs::read_to_string(&path).map_err(sqlx::Error::Io)?;
 
-        if options.split_on_semicolon {
+        if options.split_on_semicolon() {
             for stmt in sql.split(';') {
                 let trimmed = stmt.trim();
                 if trimmed.is_empty() {
@@ -88,4 +131,21 @@ pub async fn run_sql_dir_with_options(
     }
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::SqlDirOptions;
+
+    #[test]
+    fn sql_dir_options_builders_expose_read_only_values() {
+        let options = SqlDirOptions::new()
+            .with_extension("seed")
+            .with_sort(false)
+            .with_split_on_semicolon(false);
+
+        assert_eq!(options.extension(), "seed");
+        assert!(!options.sort());
+        assert!(!options.split_on_semicolon());
+    }
 }

@@ -654,3 +654,4 @@ Closed queue:
 - `g06.213`: email config field retirement
 - `g06.214`: HTTP error logging config field retirement
 - `g06.215`: Nightfire multi config field retirement
+- `g06.216`: DB SQL-dir options field retirement
