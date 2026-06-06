@@ -45,8 +45,12 @@ This is test-only structural work.
 
 ## Current State
 
-`g06.153` is ready.
+`g06.153` is complete.
+
+Artifact:
+
+- [`153-optimistic-tests-internal-split-artifact.md`](153-optimistic-tests-internal-split-artifact.md)
 
 ## Next Task
 
-Execute `g06.153`: optimistic tests internal split.
+Execute `g06.154`: TypeScript structural closeout audit.

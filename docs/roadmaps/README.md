@@ -232,7 +232,8 @@ README surfaces.
 - `g06.150` is complete as the template types modularity audit
 - `g06.151` is complete as the template types internal split
 - `g06.152` is complete as the optimistic tests modularity audit
-- `g06.153` is next as the optimistic tests internal split
+- `g06.153` is complete as the optimistic tests internal split
+- `g06.154` is next as the TypeScript structural closeout audit
 - `g05` is closed as the shared-page, workflow-template, media capability,
   dev-flow contract, and query-variant convergence generation
 - `g05.024` is complete as the Marking Hub query variant proof and rollout

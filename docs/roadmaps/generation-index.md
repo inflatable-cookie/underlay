@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.153`: optimistic tests internal split.
+Execute `g06.154`: TypeScript structural closeout audit.
