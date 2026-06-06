@@ -161,6 +161,8 @@ Reusable templates:
     `runtime/media/detail`
   - `g07.020`: no consumer migration required; the focused client DTO subpaths
     are additive and the aggregate `client/types` path remains valid
+  - `g07.021`: all known consumers moved live aggregate `client/types` imports
+    to `client/envelopes` or `client/restore`
 - Changed guidance:
   - [g07.012 closeout artifact](../roadmaps/g07/012-ts-boundary-hardening-closeout-artifact.md)
   - [g07.013 suggestion helper compatibility export retirement](../roadmaps/g07/013-suggestion-helper-compatibility-export-retirement.md)
@@ -169,6 +171,7 @@ Reusable templates:
   - [g07.018 runtime media subpath split](../roadmaps/g07/018-runtime-media-subpath-split.md)
   - [g07.019 runtime media focused consumer migration](../roadmaps/g07/019-runtime-media-focused-consumer-migration.md)
   - [g07.020 client types subpath split](../roadmaps/g07/020-client-types-subpath-split.md)
+  - [g07.021 client types focused consumer migration](../roadmaps/g07/021-client-types-focused-consumer-migration.md)
   - [090 TS runtime and client orchestration](../contracts/090-ts-runtime-and-client-orchestration.md)
   - [100 shared patterns and workflow shells](../contracts/100-shared-patterns-and-workflow-shells.md)
   - [120 tooling, testing, and contract artifacts](../contracts/120-tooling-testing-and-contract-artifacts.md)

@@ -63,6 +63,7 @@ surface easier for consuming apps to understand, import, test, and extend.
 - `g07.018`: runtime media subpath split
 - `g07.019`: runtime media focused consumer migration
 - `g07.020`: client types subpath split
+- `g07.021`: client types focused consumer migration
 
 ## Consumer Family
 
@@ -102,10 +103,10 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g07.018` is complete as the runtime media subpath split.
 - `g07.019` is complete as the runtime media focused consumer migration.
 - `g07.020` is complete as the client types subpath split.
+- `g07.021` is complete as the client types focused consumer migration.
 - `g07` is complete.
 
 ## Next Task
 
-No active `g07` task remains. Open a bounded consumer migration card before
-moving live consumer imports from aggregate `client/types` to focused client
-subpaths.
+No active `g07` task remains. Keep focused client and runtime imports as the
+preferred consumer pattern for new TypeScript code.

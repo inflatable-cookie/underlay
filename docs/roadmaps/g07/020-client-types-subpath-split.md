@@ -71,5 +71,5 @@ needed before a deeper AI patterns contract audit.
 
 ## Next Task
 
-Open a bounded consumer migration card before moving live consumer imports from
-aggregate `client/types` to the focused client subpaths.
+The bounded consumer migration was completed in
+[021 client types focused consumer migration](021-client-types-focused-consumer-migration.md).
