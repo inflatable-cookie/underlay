@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.134`: migration-core drift internal split.
+Execute `g06.135`: media storage modularity audit.

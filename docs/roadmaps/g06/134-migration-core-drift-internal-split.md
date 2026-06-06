@@ -51,8 +51,12 @@ must change, stop and re-enter planning.
 
 ## Current State
 
-`g06.134` is ready.
+`g06.134` is complete.
+
+Artifact:
+
+- [134 artifact](./134-migration-core-drift-internal-split-artifact.md)
 
 ## Next Task
 
-Execute `g06.134`: migration-core drift internal split.
+Execute `g06.135`: media storage modularity audit.
