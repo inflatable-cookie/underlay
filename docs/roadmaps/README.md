@@ -224,7 +224,8 @@ README surfaces.
 - `g06.142` is complete as the Rust doctor marker cleanup
 - `g06.143` is complete as the TypeScript structural backlog triage
 - `g06.144` is complete as the HTTP client tests modularity audit
-- `g06.145` is next as the HTTP client tests internal split
+- `g06.145` is complete as the HTTP client tests internal split
+- `g06.146` is next as the media workflow modularity audit
 - `g05` is closed as the shared-page, workflow-template, media capability,
   dev-flow contract, and query-variant convergence generation
 - `g05.024` is complete as the Marking Hub query variant proof and rollout

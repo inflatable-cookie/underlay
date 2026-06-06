@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.145`: HTTP client tests internal split.
+Execute `g06.146`: media workflow modularity audit.

@@ -49,8 +49,12 @@ and re-enter planning.
 
 ## Current State
 
-`g06.145` is ready.
+`g06.145` is complete.
+
+Artifact:
+
+- [145 artifact](./145-http-client-tests-internal-split-artifact.md)
 
 ## Next Task
 
-Execute `g06.145`: HTTP client tests internal split.
+Execute `g06.146`: media workflow modularity audit.
