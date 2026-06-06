@@ -59,7 +59,8 @@ README surfaces.
 - `g09.002` is complete as the TypeScript auth test god-file split batch
 - `g09.003` is complete as the slugify test god-file split batch
 - `g09.004` is complete as the forms test god-file split batch
-- `g09.005` is next as the remaining TypeScript test god-file split batch
+- `g09.005` is complete as the i18n test god-file split batch
+- `g09.006` is next as the remaining TypeScript test god-file split batch
 - `g08.001` is complete as the migration-core policy field retirement batch
 - `g08.002` is complete as the devtools bundle/seed option constructor and accessor audit
 - `g08.003` is complete as the migration-core governance/OCI/manifest policy model audit

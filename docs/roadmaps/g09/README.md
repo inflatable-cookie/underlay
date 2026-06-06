@@ -29,8 +29,9 @@ Posture: baseline-routing.
 - [x] `g09.002`: TypeScript auth test god-file split batch.
 - [x] `g09.003`: slugify test god-file split batch.
 - [x] `g09.004`: forms test god-file split batch.
-- [ ] `g09.005`: remaining TypeScript test god-file split batch.
-- [ ] `g09.006`: OAuth Rust file cleanup and doctor warning closeout decision.
+- [x] `g09.005`: i18n test god-file split batch.
+- [ ] `g09.006`: remaining TypeScript test god-file split batch.
+- [ ] `g09.007`: OAuth Rust file cleanup and doctor warning closeout decision.
 
 ## Acceptance Criteria
 
@@ -45,8 +46,9 @@ Posture: baseline-routing.
 - `g09.002` is complete.
 - `g09.003` is complete.
 - `g09.004` is complete.
-- `g09.005` is next.
+- `g09.005` is complete.
+- `g09.006` is next.
 
 ## Next Task
 
-Execute `g09.005`.
+Execute `g09.006`.
