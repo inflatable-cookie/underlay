@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.150`: template types modularity audit.
+Execute `g06.151`: template types internal split.

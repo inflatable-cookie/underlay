@@ -48,8 +48,12 @@ and re-enter planning under the compatibility rollout contract.
 
 ## Current State
 
-`g06.150` is ready.
+`g06.150` is complete.
+
+Artifact:
+
+- [`150-template-types-modularity-audit-artifact.md`](150-template-types-modularity-audit-artifact.md)
 
 ## Next Task
 
-Execute `g06.150`: template types modularity audit.
+Execute `g06.151`: template types internal split.
