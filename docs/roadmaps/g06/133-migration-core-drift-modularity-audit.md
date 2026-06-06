@@ -49,8 +49,12 @@ that must change, stop and re-enter planning.
 
 ## Current State
 
-`g06.133` is ready.
+`g06.133` is complete.
+
+Artifact:
+
+- [133 artifact](./133-migration-core-drift-modularity-audit-artifact.md)
 
 ## Next Task
 
-Execute `g06.133`: migration-core drift modularity audit.
+Execute `g06.134`: migration-core drift internal split.

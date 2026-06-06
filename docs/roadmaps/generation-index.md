@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.133`: migration-core drift modularity audit.
+Execute `g06.134`: migration-core drift internal split.
