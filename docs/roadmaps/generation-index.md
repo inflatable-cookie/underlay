@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.165`: TypeScript structural closeout audit.
+Execute `g06.166`: consumer surface compatibility sweep.
