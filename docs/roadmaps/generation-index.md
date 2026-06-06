@@ -9,7 +9,7 @@ Updated: 2026-06-06
 
 ## Active generations
 
-- `g09`
+- None
 
 ## Generation log
 
@@ -23,11 +23,11 @@ Updated: 2026-06-06
 | `g06` | 2026-06-05 | Rust platform-contract transition after code-quality audit | Closed after the reference-grade reset, Rust hardening lane, six-consumer proof, upgrade-guidance closeout, and bounded stale-drift repairs |
 | `g07` | 2026-06-06 | TS runtime and workflow boundary hardening after `g06` closeout | Complete after `g07.023` client HTTP retry timeout audit |
 | `g08` | 2026-06-06 | Residual Rust public policy and tooling boundary hardening after `g06`/`g07` closeout | Complete after residual config/policy closeout |
-| `g09` | 2026-06-06 | Effigy doctor warning closeout after `g08` | Active |
+| `g09` | 2026-06-06 | Effigy doctor warning closeout after `g08` | Complete after doctor warning closeout |
 
 ## Historical generations
 
-- [g09 - Effigy Doctor Warning Closeout](g09/README.md) (active)
+- [g09 - Effigy Doctor Warning Closeout](g09/README.md) (complete)
 - [g08 - Residual Rust Public Policy And Tooling Boundary Hardening](g08/README.md) (complete)
 - [g07 - TS Runtime And Workflow Boundary Hardening](g07/README.md) (complete)
 - [g06 - Rust Platform Contract Transition](g06/README.md) (complete)
@@ -54,4 +54,4 @@ In parallel mode:
 
 ## Next Task
 
-Continue with `g09.010`.
+No active generation.

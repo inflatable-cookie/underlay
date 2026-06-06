@@ -6,9 +6,9 @@
 
 `g08` closed the residual Rust public policy and tooling boundary hardening
 lane. The next visible quality debt is structural, not API-contract drift:
-`effigy doctor` reports comment-ratio and god-file warnings.
+`g09` cleared the Effigy doctor comment-ratio and god-file warning backlog.
 
-Posture: baseline-routing.
+Posture: complete.
 
 ## Governing References
 
@@ -18,10 +18,10 @@ Posture: baseline-routing.
 
 ## Goals
 
-- [ ] Clear or explicitly classify current Effigy doctor warning findings.
-- [ ] Keep structural cleanups behavior-preserving.
-- [ ] Avoid moving app-local behavior into Underlay while splitting files.
-- [ ] Preserve public crate and package exports.
+- [x] Clear or explicitly classify current Effigy doctor warning findings.
+- [x] Keep structural cleanups behavior-preserving.
+- [x] Avoid moving app-local behavior into Underlay while splitting files.
+- [x] Preserve public crate and package exports.
 
 ## Execution Plan
 
@@ -34,14 +34,14 @@ Posture: baseline-routing.
 - [x] `g09.007`: CSP test god-file split batch.
 - [x] `g09.008`: Nightfire utils test god-file split batch.
 - [x] `g09.009`: Nightfire summary-transform test split.
-- [ ] `g09.010`: OAuth Rust file cleanup and doctor warning closeout decision.
+- [x] `g09.010`: OAuth Rust file cleanup and doctor warning closeout decision.
 
 ## Acceptance Criteria
 
-- [ ] `effigy doctor` warnings are reduced or explicitly retained with rationale.
-- [ ] Rust and TypeScript validation gates pass for touched surfaces.
-- [ ] Roadmap front doors agree on the active generation.
-- [ ] No public import path changes without an explicit compatibility note.
+- [x] `effigy doctor` warnings are reduced or explicitly retained with rationale.
+- [x] Rust and TypeScript validation gates pass for touched surfaces.
+- [x] Roadmap front doors agree on the active generation.
+- [x] No public import path changes without an explicit compatibility note.
 
 ## Current Queue
 
@@ -54,8 +54,9 @@ Posture: baseline-routing.
 - `g09.007` is complete.
 - `g09.008` is complete.
 - `g09.009` is complete.
-- `g09.010` is next.
+- `g09.010` is complete.
+- `g09` is complete.
 
 ## Next Task
 
-Execute `g09.010`.
+No active `g09` work remains.
