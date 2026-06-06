@@ -53,8 +53,12 @@ artifact fields must change, stop and re-enter planning.
 
 ## Current State
 
-`g06.126` is ready.
+`g06.126` is complete.
+
+Artifact:
+
+- [126 artifact](./126-migration-core-verification-internal-split-artifact.md)
 
 ## Next Task
 
-Execute `g06.126`: migration-core verification internal split.
+Execute `g06.127`: migration-core test support modularity audit.
