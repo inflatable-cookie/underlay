@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.135`: media storage modularity audit.
+Execute `g06.136`: media storage internal split.

@@ -48,8 +48,12 @@ behavior that must change, stop and re-enter planning.
 
 ## Current State
 
-`g06.135` is ready.
+`g06.135` is complete.
+
+Artifact:
+
+- [135 artifact](./135-media-storage-modularity-audit-artifact.md)
 
 ## Next Task
 
-Execute `g06.135`: media storage modularity audit.
+Execute `g06.136`: media storage internal split.
