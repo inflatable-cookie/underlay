@@ -12,7 +12,7 @@
 //! let result = generate_thumbnail(&image_bytes, &config)?;
 //! ```
 
-use image::{imageops::FilterType, GenericImageView, ImageFormat, ImageReader};
+use image::{GenericImageView, ImageFormat, ImageReader, imageops::FilterType};
 use std::io::Cursor;
 
 /// Error type for image processing operations.
@@ -53,20 +53,16 @@ pub struct ThumbnailResult {
 /// let config = ThumbnailConfig::medium();
 ///
 /// // Or create a custom config
-/// let config = ThumbnailConfig {
-///     max_width: 400,
-///     max_height: 300,
-///     quality: 90,
-/// };
+/// let config = ThumbnailConfig::new(400, 300).with_quality(90);
 /// ```
 #[derive(Debug, Clone)]
 pub struct ThumbnailConfig {
     /// Maximum width of the thumbnail.
-    pub max_width: u32,
+    max_width: u32,
     /// Maximum height of the thumbnail.
-    pub max_height: u32,
+    max_height: u32,
     /// JPEG quality (1-100). Higher values produce better quality but larger files.
-    pub quality: u8,
+    quality: u8,
 }
 
 impl Default for ThumbnailConfig {
@@ -93,6 +89,21 @@ impl ThumbnailConfig {
     pub fn with_quality(mut self, quality: u8) -> Self {
         self.quality = quality.clamp(1, 100);
         self
+    }
+
+    /// Return the maximum thumbnail width.
+    pub fn max_width(&self) -> u32 {
+        self.max_width
+    }
+
+    /// Return the maximum thumbnail height.
+    pub fn max_height(&self) -> u32 {
+        self.max_height
+    }
+
+    /// Return the JPEG quality setting.
+    pub fn quality(&self) -> u8 {
+        self.quality
     }
 
     /// Create a small thumbnail config (128x128, quality 80).
@@ -178,8 +189,8 @@ pub fn generate_thumbnail(
     let (new_width, new_height) = calculate_thumbnail_dimensions(
         orig_width,
         orig_height,
-        config.max_width,
-        config.max_height,
+        config.max_width(),
+        config.max_height(),
     );
 
     // Skip resizing if the image is already smaller than target
@@ -192,7 +203,7 @@ pub fn generate_thumbnail(
     // Encode as JPEG
     let mut output = Vec::new();
     let mut encoder =
-        image::codecs::jpeg::JpegEncoder::new_with_quality(&mut output, config.quality);
+        image::codecs::jpeg::JpegEncoder::new_with_quality(&mut output, config.quality());
     encoder
         .encode(
             thumb.to_rgb8().as_raw(),

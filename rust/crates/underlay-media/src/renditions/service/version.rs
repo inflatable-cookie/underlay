@@ -24,10 +24,11 @@ impl<B: BlobAdapter> RenditionService<B> {
         let source_key = parse_rendition_result_key(source_key)?;
         let mut renditions = Vec::new();
 
-        if self.config.generate_thumbnails {
+        if self.config.generate_thumbnails() {
             let thumb_key = parse_rendition_result_key(format!(
                 "{}/{}.jpg",
-                key_prefix, self.config.thumbnail_name
+                key_prefix,
+                self.config.thumbnail_name_ref()
             ))?;
             match self
                 .generate_thumbnail_object_key(&source_key, &thumb_key)
@@ -57,10 +58,11 @@ impl<B: BlobAdapter> RenditionService<B> {
             }
         }
 
-        if self.config.generate_previews {
+        if self.config.generate_previews() {
             let preview_key = parse_rendition_result_key(format!(
                 "{}/{}.jpg",
-                key_prefix, self.config.preview_name
+                key_prefix,
+                self.config.preview_name_ref()
             ))?;
             match self
                 .generate_preview_object_key(&source_key, &preview_key)
@@ -119,10 +121,10 @@ impl<B: BlobAdapter> RenditionService<B> {
         let source_key = parse_rendition_result_key(source_key)?;
         let mut renditions = Vec::new();
 
-        if self.config.generate_thumbnails {
+        if self.config.generate_thumbnails() {
             let thumb_key = self
                 .key_generator
-                .rendition_object_key(media_id.0, version_id.0, &self.config.thumbnail_name)
+                .rendition_object_key(media_id.0, version_id.0, self.config.thumbnail_name_ref())
                 .map_err(|err| MediaError::storage(format!("invalid thumbnail key: {err}")))?;
 
             match self
@@ -131,7 +133,9 @@ impl<B: BlobAdapter> RenditionService<B> {
             {
                 Ok(result) => {
                     let input = CreateRenditionInput {
-                        rendition_type: RenditionType::Custom(self.config.thumbnail_name.clone()),
+                        rendition_type: RenditionType::Custom(
+                            self.config.thumbnail_name_ref().to_string(),
+                        ),
                         object_key: result.object_key,
                         mime_type: result.mime_type,
                         byte_size: result.byte_size,
@@ -144,7 +148,7 @@ impl<B: BlobAdapter> RenditionService<B> {
                     renditions.push(rendition);
                     tracing::info!(
                         version_id = %version_id,
-                        rendition_type = %self.config.thumbnail_name,
+                        rendition_type = %self.config.thumbnail_name_ref(),
                         "Generated thumbnail"
                     );
                 }
@@ -158,10 +162,10 @@ impl<B: BlobAdapter> RenditionService<B> {
             }
         }
 
-        if self.config.generate_previews {
+        if self.config.generate_previews() {
             let preview_key = self
                 .key_generator
-                .rendition_object_key(media_id.0, version_id.0, &self.config.preview_name)
+                .rendition_object_key(media_id.0, version_id.0, self.config.preview_name_ref())
                 .map_err(|err| MediaError::storage(format!("invalid preview key: {err}")))?;
 
             match self
@@ -170,7 +174,9 @@ impl<B: BlobAdapter> RenditionService<B> {
             {
                 Ok(result) => {
                     let input = CreateRenditionInput {
-                        rendition_type: RenditionType::Custom(self.config.preview_name.clone()),
+                        rendition_type: RenditionType::Custom(
+                            self.config.preview_name_ref().to_string(),
+                        ),
                         object_key: result.object_key,
                         mime_type: result.mime_type,
                         byte_size: result.byte_size,
@@ -183,7 +189,7 @@ impl<B: BlobAdapter> RenditionService<B> {
                     renditions.push(rendition);
                     tracing::info!(
                         version_id = %version_id,
-                        rendition_type = %self.config.preview_name,
+                        rendition_type = %self.config.preview_name_ref(),
                         "Generated preview"
                     );
                 }

@@ -33,8 +33,8 @@ impl<B: BlobAdapter> RenditionService<B> {
             self.blob_adapter.as_ref(),
             source_key,
             target_key,
-            self.config.thumbnail_max_dimension,
-            self.config.jpeg_quality,
+            self.config.thumbnail_max_dimension(),
+            self.config.jpeg_quality(),
             "thumbnail",
         )
         .await
@@ -64,8 +64,8 @@ impl<B: BlobAdapter> RenditionService<B> {
             self.blob_adapter.as_ref(),
             source_key,
             target_key,
-            self.config.preview_max_dimension,
-            self.config.jpeg_quality,
+            self.config.preview_max_dimension(),
+            self.config.jpeg_quality(),
             "preview",
         )
         .await
@@ -93,9 +93,9 @@ impl<B: BlobAdapter> RenditionService<B> {
         rendition_type: &RenditionType,
     ) -> MediaResult<RenditionResult> {
         let max_dimension = match rendition_type {
-            RenditionType::Thumbnail => self.config.thumbnail_max_dimension,
-            RenditionType::Preview => self.config.preview_max_dimension,
-            RenditionType::Custom(_) => self.config.thumbnail_max_dimension,
+            RenditionType::Thumbnail => self.config.thumbnail_max_dimension(),
+            RenditionType::Preview => self.config.preview_max_dimension(),
+            RenditionType::Custom(_) => self.config.thumbnail_max_dimension(),
         };
 
         generate_and_store(
@@ -103,7 +103,7 @@ impl<B: BlobAdapter> RenditionService<B> {
             source_bytes,
             target_key,
             max_dimension,
-            self.config.jpeg_quality,
+            self.config.jpeg_quality(),
             "rendition",
         )
         .await

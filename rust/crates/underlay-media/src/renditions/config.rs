@@ -2,21 +2,21 @@
 #[derive(Clone, Debug)]
 pub struct RenditionConfig {
     /// Maximum dimension for thumbnail renditions.
-    pub thumbnail_max_dimension: u32,
+    thumbnail_max_dimension: u32,
     /// Maximum dimension for preview renditions.
-    pub preview_max_dimension: u32,
+    preview_max_dimension: u32,
     /// JPEG quality for rendered images (1-100).
-    pub jpeg_quality: u8,
+    jpeg_quality: u8,
     /// Whether to generate square (cropped) thumbnails.
-    pub square_thumbnails: bool,
+    square_thumbnails: bool,
     /// Whether to generate thumbnails for images.
-    pub generate_thumbnails: bool,
+    generate_thumbnails: bool,
     /// Whether to generate previews for images.
-    pub generate_previews: bool,
+    generate_previews: bool,
     /// Custom thumbnail rendition name (e.g., "thumb_128" for Farmyard compatibility).
-    pub thumbnail_name: String,
+    thumbnail_name: String,
     /// Custom preview rendition name.
-    pub preview_name: String,
+    preview_name: String,
 }
 
 impl Default for RenditionConfig {
@@ -105,5 +105,45 @@ impl RenditionConfig {
     pub fn preview_name(mut self, name: impl Into<String>) -> Self {
         self.preview_name = name.into();
         self
+    }
+
+    /// Return the maximum thumbnail rendition dimension.
+    pub fn thumbnail_max_dimension(&self) -> u32 {
+        self.thumbnail_max_dimension
+    }
+
+    /// Return the maximum preview rendition dimension.
+    pub fn preview_max_dimension(&self) -> u32 {
+        self.preview_max_dimension
+    }
+
+    /// Return the JPEG quality for generated renditions.
+    pub fn jpeg_quality(&self) -> u8 {
+        self.jpeg_quality
+    }
+
+    /// Return whether generated thumbnails should be square-cropped.
+    pub fn square_thumbnails(&self) -> bool {
+        self.square_thumbnails
+    }
+
+    /// Return whether thumbnail renditions should be generated.
+    pub fn generate_thumbnails(&self) -> bool {
+        self.generate_thumbnails
+    }
+
+    /// Return whether preview renditions should be generated.
+    pub fn generate_previews(&self) -> bool {
+        self.generate_previews
+    }
+
+    /// Return the thumbnail rendition name.
+    pub fn thumbnail_name_ref(&self) -> &str {
+        &self.thumbnail_name
+    }
+
+    /// Return the preview rendition name.
+    pub fn preview_name_ref(&self) -> &str {
+        &self.preview_name
     }
 }

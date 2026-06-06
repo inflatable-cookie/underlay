@@ -650,3 +650,4 @@ Closed queue:
 - `g06.209`: storage config field retirement
 - `g06.210`: MFA config field retirement
 - `g06.211`: AI runtime config field retirement
+- `g06.212`: media config field retirement

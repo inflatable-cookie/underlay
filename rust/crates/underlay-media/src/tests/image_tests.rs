@@ -53,37 +53,37 @@ fn test_calculate_dimensions_minimum_size() {
 #[test]
 fn test_thumbnail_config_presets() {
     let small = ThumbnailConfig::small();
-    assert_eq!(small.max_width, 128);
-    assert_eq!(small.max_height, 128);
+    assert_eq!(small.max_width(), 128);
+    assert_eq!(small.max_height(), 128);
 
     let medium = ThumbnailConfig::medium();
-    assert_eq!(medium.max_width, 256);
-    assert_eq!(medium.max_height, 256);
+    assert_eq!(medium.max_width(), 256);
+    assert_eq!(medium.max_height(), 256);
 
     let large = ThumbnailConfig::large();
-    assert_eq!(large.max_width, 512);
-    assert_eq!(large.max_height, 512);
+    assert_eq!(large.max_width(), 512);
+    assert_eq!(large.max_height(), 512);
 
     let xlarge = ThumbnailConfig::xlarge();
-    assert_eq!(xlarge.max_width, 1024);
-    assert_eq!(xlarge.max_height, 1024);
+    assert_eq!(xlarge.max_width(), 1024);
+    assert_eq!(xlarge.max_height(), 1024);
 }
 
 #[test]
 fn test_thumbnail_config_builder() {
     let config = ThumbnailConfig::new(300, 200).with_quality(90);
-    assert_eq!(config.max_width, 300);
-    assert_eq!(config.max_height, 200);
-    assert_eq!(config.quality, 90);
+    assert_eq!(config.max_width(), 300);
+    assert_eq!(config.max_height(), 200);
+    assert_eq!(config.quality(), 90);
 }
 
 #[test]
 fn test_thumbnail_config_quality_clamping() {
     let config = ThumbnailConfig::new(100, 100).with_quality(150);
-    assert_eq!(config.quality, 100);
+    assert_eq!(config.quality(), 100);
 
     let config = ThumbnailConfig::new(100, 100).with_quality(0);
-    assert_eq!(config.quality, 1);
+    assert_eq!(config.quality(), 1);
 }
 
 #[test]
