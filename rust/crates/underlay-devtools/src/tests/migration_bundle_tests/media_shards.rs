@@ -89,13 +89,11 @@ fn migration_bundle_build_splits_media_into_deterministic_shards_with_mapping() 
     std::fs::write(media_dir.join("c.bin"), b"abcde").expect("write c.bin");
 
     let bundle_file = dir.join("bundle.json");
-    let report = migration_bundle_build(&BundleBuildOptions {
-        output_file: bundle_file.clone(),
-        source_system: "legacy_system".to_string(),
-        target_schema_version: "schema_v1".to_string(),
-        media_dir: Some(media_dir),
-        media_shard_max_bytes: Some(8),
-    })
+    let report = migration_bundle_build(
+        &BundleBuildOptions::new(bundle_file.clone(), "legacy_system", "schema_v1")
+            .with_media_dir(media_dir)
+            .with_media_shard_max_bytes(8),
+    )
     .expect("bundle build with media should succeed");
 
     assert_eq!(report.media_asset_count, 3);

@@ -51,8 +51,8 @@ fn bundle_run_options_accept_typed_bundle_ref() {
     );
 
     assert_eq!(options.bundle_ref(), &bundle_ref);
-    assert_eq!(options.output_dir, PathBuf::from("out"));
-    assert_eq!(options.local_store_dir, Some(PathBuf::from("store")));
+    assert_eq!(options.output_dir(), &PathBuf::from("out"));
+    assert_eq!(options.local_store_dir(), Some(&PathBuf::from("store")));
 }
 
 #[test]

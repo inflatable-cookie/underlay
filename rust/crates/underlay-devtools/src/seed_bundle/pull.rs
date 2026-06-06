@@ -13,27 +13,26 @@ use crate::migration_bundle::{
 pub fn seed_bundle_pull(
     options: &SeedBundlePullOptions,
 ) -> Result<SeedBundlePullReport, MigrationBundleError> {
-    if options.oci_ref.trim().is_empty() {
+    if options.oci_ref().trim().is_empty() {
         return Err(MigrationBundleError::InvalidInput(
             "oci_ref must not be empty".to_string(),
         ));
     }
 
-    let pull_report = migration_bundle_pull(&BundlePullOptions {
-        oci_ref: options.oci_ref.clone(),
-        output_dir: options.output_dir.clone(),
-        local_store_dir: options.local_store_dir.clone(),
-    })?;
+    let pull_report = migration_bundle_pull(
+        &BundlePullOptions::new(options.oci_ref().to_string(), options.output_dir().clone())
+            .with_optional_local_store_dir(options.local_store_dir().cloned()),
+    )?;
 
-    let bundle_json_path = options.output_dir.join("bundle.json");
+    let bundle_json_path = options.output_dir().join("bundle.json");
     if !bundle_json_path.exists() {
         return Err(MigrationBundleError::Validation(
             "pulled bundle.json not found".to_string(),
         ));
     }
 
-    let store = local_store::resolve_local_store_dir(options.local_store_dir.as_ref())?;
-    let digest = local_store::resolve_digest(&store, &options.oci_ref)?;
+    let store = local_store::resolve_local_store_dir(options.local_store_dir())?;
+    let digest = local_store::resolve_digest(&store, options.oci_ref())?;
     let blob_path = store.blob_path_for_digest(&digest)?;
     let blob_bytes = std::fs::read(&blob_path)?;
     let package: BundlePackage = serde_json::from_slice(&blob_bytes).map_err(|err| {
@@ -43,12 +42,12 @@ pub fn seed_bundle_pull(
     extract_manifest(options, &package)?;
     let sql_file_count = extract_sql_files(options, &package)?;
 
-    let _ = std::fs::remove_file(options.output_dir.join("bundle.json"));
-    let _ = std::fs::remove_dir_all(options.output_dir.join("media-shards"));
+    let _ = std::fs::remove_file(options.output_dir().join("bundle.json"));
+    let _ = std::fs::remove_dir_all(options.output_dir().join("media-shards"));
 
     Ok(SeedBundlePullReport {
-        oci_ref: options.oci_ref.clone(),
-        output_dir: options.output_dir.clone(),
+        oci_ref: options.oci_ref().to_string(),
+        output_dir: options.output_dir().clone(),
         digest: pull_report.digest,
         sql_file_count,
         status: pull_report.status,
@@ -96,7 +95,7 @@ fn extract_manifest(
 
             let manifest_json = serde_json::to_vec_pretty(&seed_manifest)
                 .map_err(|err| MigrationBundleError::Validation(err.to_string()))?;
-            std::fs::write(options.output_dir.join("manifest.json"), manifest_json)?;
+            std::fs::write(options.output_dir().join("manifest.json"), manifest_json)?;
         }
     }
     Ok(())
@@ -116,7 +115,7 @@ fn extract_sql_files(
                 .cloned()
                 .unwrap_or_else(|| format!("chunk_{}.sql", sql_file_count));
 
-            std::fs::write(options.output_dir.join(&filename), &payload)?;
+            std::fs::write(options.output_dir().join(&filename), &payload)?;
             sql_file_count += 1;
         }
     }

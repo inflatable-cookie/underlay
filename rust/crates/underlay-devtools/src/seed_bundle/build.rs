@@ -14,18 +14,18 @@ use crate::migration_bundle::MigrationBundleError;
 pub fn seed_bundle_build(
     options: &SeedBundleBuildOptions,
 ) -> Result<SeedBundleBuildReport, MigrationBundleError> {
-    if !options.source_dir.exists() {
+    if !options.source_dir().exists() {
         return Err(MigrationBundleError::InvalidInput(format!(
             "source directory does not exist: {}",
-            options.source_dir.display()
+            options.source_dir().display()
         )));
     }
 
-    let manifest_path = options.source_dir.join("manifest.json");
+    let manifest_path = options.source_dir().join("manifest.json");
     if !manifest_path.exists() {
         return Err(MigrationBundleError::InvalidInput(format!(
             "no manifest.json in seed-bundle directory: {}",
-            options.source_dir.display()
+            options.source_dir().display()
         )));
     }
     let manifest_bytes = std::fs::read(&manifest_path)?;
@@ -33,11 +33,11 @@ pub fn seed_bundle_build(
         MigrationBundleError::Validation(format!("invalid seed manifest.json: {err}"))
     })?;
 
-    let sql_files = collect_sql_files(&options.source_dir)?;
+    let sql_files = collect_sql_files(options.source_dir())?;
     if sql_files.is_empty() {
         return Err(MigrationBundleError::InvalidInput(format!(
             "no SQL files found in seed-bundle directory: {}",
-            options.source_dir.display()
+            options.source_dir().display()
         )));
     }
 
@@ -116,15 +116,15 @@ pub fn seed_bundle_build(
         payloads,
     };
 
-    ensure_parent_dir(&options.output_file)?;
+    ensure_parent_dir(options.output_file())?;
     let encoded = serde_json::to_vec_pretty(&package)
         .map_err(|err| MigrationBundleError::Validation(err.to_string()))?;
-    std::fs::write(&options.output_file, &encoded)?;
+    std::fs::write(options.output_file(), &encoded)?;
 
     let bundle_digest = sha256_digest(&encoded);
 
     Ok(SeedBundleBuildReport {
-        output_file: options.output_file.clone(),
+        output_file: options.output_file().clone(),
         bundle_name: seed_manifest.name,
         artifact_type: SEED_ARTIFACT_TYPE.to_string(),
         layer_count: package.layout.layers.len(),

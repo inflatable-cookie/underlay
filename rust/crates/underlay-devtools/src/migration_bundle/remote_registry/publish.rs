@@ -12,7 +12,7 @@ pub(in crate::migration_bundle) fn remote_publish(
     options: &BundlePublishOptions,
     package_bytes: &[u8],
 ) -> Result<BundlePublishReport, MigrationBundleError> {
-    let remote_ref = parse_remote_ref(&options.oci_ref)?;
+    let remote_ref = parse_remote_ref(options.oci_ref())?;
     if is_digest_reference(&remote_ref.reference) {
         return Err(MigrationBundleError::InvalidInput(
             "remote publish requires a tag reference, not digest".to_string(),
@@ -92,8 +92,8 @@ pub(in crate::migration_bundle) fn remote_publish(
     };
 
     Ok(BundlePublishReport {
-        bundle_file: options.bundle_file.clone(),
-        oci_ref: options.oci_ref.clone(),
+        bundle_file: options.bundle_file().clone(),
+        oci_ref: options.oci_ref().to_string(),
         digest,
         status: "published-remote".to_string(),
     })

@@ -15,25 +15,25 @@ use super::{
 pub fn migration_bundle_build(
     options: &BundleBuildOptions,
 ) -> Result<BundleBuildReport, MigrationBundleError> {
-    if options.source_system.trim().is_empty() {
+    if options.source_system().trim().is_empty() {
         return Err(MigrationBundleError::InvalidInput(
             "source_system must not be empty".to_string(),
         ));
     }
-    if options.target_schema_version.trim().is_empty() {
+    if options.target_schema_version().trim().is_empty() {
         return Err(MigrationBundleError::InvalidInput(
             "target_schema_version must not be empty".to_string(),
         ));
     }
 
-    ensure_parent_dir(&options.output_file)?;
+    ensure_parent_dir(options.output_file())?;
 
     let config = OciBundleConfig {
         schema_version: "1".to_string(),
         bundle_id: underlay_core::Uuid::new_v7().to_string(),
         bundle_version: "v0-local".to_string(),
-        source_system: options.source_system.clone(),
-        target_schema_version: options.target_schema_version.clone(),
+        source_system: options.source_system().to_string(),
+        target_schema_version: options.target_schema_version().to_string(),
     };
 
     let manifest_payload = serde_json::to_vec(&serde_json::json!({
@@ -48,14 +48,14 @@ pub fn migration_bundle_build(
     let data_chunk_payload = serde_json::to_vec(&serde_json::json!({
         "chunk_id": "chunk-0001",
         "record_count": 0,
-        "source_system": options.source_system,
-        "target_schema_version": options.target_schema_version,
+        "source_system": options.source_system(),
+        "target_schema_version": options.target_schema_version(),
     }))
     .map_err(|err| MigrationBundleError::Validation(err.to_string()))?;
 
-    let media_entries = media_shards::collect_media_entries(options.media_dir.as_ref())?;
+    let media_entries = media_shards::collect_media_entries(options.media_dir())?;
     let shard_max_bytes = options
-        .media_shard_max_bytes
+        .media_shard_max_bytes()
         .unwrap_or(DEFAULT_MEDIA_SHARD_MAX_BYTES)
         .max(1);
     let media_shards = media_shards::build_media_shards(&media_entries, shard_max_bytes)?;
@@ -140,12 +140,12 @@ pub fn migration_bundle_build(
 
     let encoded = serde_json::to_vec_pretty(&package)
         .map_err(|err| MigrationBundleError::Validation(err.to_string()))?;
-    std::fs::write(&options.output_file, &encoded)?;
+    std::fs::write(options.output_file(), &encoded)?;
 
     let bundle_digest = sha256_digest(&encoded);
 
     Ok(BundleBuildReport {
-        output_file: options.output_file.clone(),
+        output_file: options.output_file().clone(),
         artifact_type: package.layout.artifact_type,
         layer_count: package.layout.layers.len(),
         sidecar_count: package.layout.sidecars.len(),

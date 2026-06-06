@@ -62,7 +62,7 @@ pub(super) fn publish_local_bundle(
     digest: String,
 ) -> Result<BundlePublishReport, MigrationBundleError> {
     validate_sha256_digest(&digest)?;
-    let store = resolve_local_store_dir(options.local_store_dir.as_ref())?;
+    let store = resolve_local_store_dir(options.local_store_dir())?;
     let blob_path = store.blob_path_for_digest(&digest)?;
     if let Some(parent) = blob_path.parent() {
         std::fs::create_dir_all(parent)?;
@@ -71,9 +71,9 @@ pub(super) fn publish_local_bundle(
 
     let ref_dir = store.as_path().join("refs");
     std::fs::create_dir_all(&ref_dir)?;
-    let ref_path = store.ref_path(&options.oci_ref);
+    let ref_path = store.ref_path(options.oci_ref());
     let ref_payload = serde_json::to_vec_pretty(&serde_json::json!({
-        "oci_ref": options.oci_ref,
+        "oci_ref": options.oci_ref(),
         "digest": digest,
         "blob_path": blob_path,
         "published_at": Utc::now(),
@@ -82,8 +82,8 @@ pub(super) fn publish_local_bundle(
     std::fs::write(ref_path, ref_payload)?;
 
     Ok(BundlePublishReport {
-        bundle_file: options.bundle_file.clone(),
-        oci_ref: options.oci_ref.clone(),
+        bundle_file: options.bundle_file().clone(),
+        oci_ref: options.oci_ref().to_string(),
         digest,
         status: "published-local".to_string(),
     })
@@ -92,10 +92,10 @@ pub(super) fn publish_local_bundle(
 pub(super) fn pull_local_bundle(
     options: &BundlePullOptions,
 ) -> Result<BundlePullReport, MigrationBundleError> {
-    let store = resolve_local_store_dir(options.local_store_dir.as_ref())?;
-    let digest = match digest_from_ref(&options.oci_ref)? {
+    let store = resolve_local_store_dir(options.local_store_dir())?;
+    let digest = match digest_from_ref(options.oci_ref())? {
         Some(digest) => digest,
-        None => resolve_ref_digest(&store, &options.oci_ref)?,
+        None => resolve_ref_digest(&store, options.oci_ref())?,
     };
 
     let blob_path = store.blob_path_for_digest(&digest)?;
@@ -117,10 +117,10 @@ pub(super) fn pull_local_bundle(
 
     let package = decode_package(&bytes)?;
     validate_bundle_package(&package)?;
-    let output_file = write_pulled_outputs(&package, &options.output_dir)?;
+    let output_file = write_pulled_outputs(&package, options.output_dir())?;
 
     Ok(BundlePullReport {
-        oci_ref: options.oci_ref.clone(),
+        oci_ref: options.oci_ref().to_string(),
         output_file,
         digest,
         status: "pulled-local".to_string(),

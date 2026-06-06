@@ -43,20 +43,17 @@ fn migration_bundle_remote_registry_round_trip() {
 
     wait_for_registry(port);
 
-    migration_bundle_build(&BundleBuildOptions {
-        output_file: bundle_file.clone(),
-        source_system: "legacy_system".to_string(),
-        target_schema_version: "schema_v1".to_string(),
-        media_dir: None,
-        media_shard_max_bytes: None,
-    })
+    migration_bundle_build(&BundleBuildOptions::new(
+        bundle_file.clone(),
+        "legacy_system",
+        "schema_v1",
+    ))
     .expect("bundle build should succeed");
 
-    let publish = migration_bundle_publish(&BundlePublishOptions {
+    let publish = migration_bundle_publish(&BundlePublishOptions::new(
         bundle_file,
-        oci_ref: registry_ref.clone(),
-        local_store_dir: None,
-    })
+        registry_ref.clone(),
+    ))
     .expect("remote publish should succeed");
 
     assert!(publish.status.starts_with("published-remote"));
@@ -66,14 +63,13 @@ fn migration_bundle_remote_registry_round_trip() {
         publish.digest
     );
 
-    let pull = migration_bundle_pull(&BundlePullOptions {
-        oci_ref: format!(
+    let pull = migration_bundle_pull(&BundlePullOptions::new(
+        format!(
             "http://127.0.0.1:{port}/underlay/test-bundle@{}",
             publish.digest
         ),
-        output_dir: dir.join("pull"),
-        local_store_dir: None,
-    })
+        dir.join("pull"),
+    ))
     .expect("remote pull should succeed");
 
     assert_eq!(pull.status, "pulled-remote");

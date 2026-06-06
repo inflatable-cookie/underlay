@@ -63,13 +63,10 @@ pub(crate) fn build(mut args: impl Iterator<Item = String>) {
         std::process::exit(2);
     };
 
-    match underlay_devtools::migration_bundle_build(&underlay_devtools::BundleBuildOptions {
-        output_file: output,
-        source_system,
-        target_schema_version,
-        media_dir,
-        media_shard_max_bytes: None,
-    }) {
+    match underlay_devtools::migration_bundle_build(
+        &underlay_devtools::BundleBuildOptions::new(output, source_system, target_schema_version)
+            .with_optional_media_dir(media_dir),
+    ) {
         Ok(report) => {
             println!(
                 "bundle written {} (artifact_type={}, layers={}, sidecars={})",
@@ -132,11 +129,9 @@ pub(crate) fn publish(mut args: impl Iterator<Item = String>) {
         std::process::exit(2);
     };
 
-    match underlay_devtools::migration_bundle_publish(&underlay_devtools::BundlePublishOptions {
-        bundle_file,
-        oci_ref,
-        local_store_dir: None,
-    }) {
+    match underlay_devtools::migration_bundle_publish(
+        &underlay_devtools::BundlePublishOptions::new(bundle_file, oci_ref),
+    ) {
         Ok(report) => {
             println!(
                 "publish {} -> {} ({}, digest={})",
@@ -194,11 +189,9 @@ pub(crate) fn pull(mut args: impl Iterator<Item = String>) {
         std::process::exit(2);
     };
 
-    match underlay_devtools::migration_bundle_pull(&underlay_devtools::BundlePullOptions {
-        oci_ref,
-        output_dir,
-        local_store_dir: None,
-    }) {
+    match underlay_devtools::migration_bundle_pull(&underlay_devtools::BundlePullOptions::new(
+        oci_ref, output_dir,
+    )) {
         Ok(report) => {
             println!(
                 "pull {} -> {} ({}, digest={})",

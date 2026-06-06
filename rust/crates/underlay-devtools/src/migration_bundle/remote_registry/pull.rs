@@ -10,7 +10,7 @@ use super::reference::{is_digest_reference, parse_remote_ref};
 pub(in crate::migration_bundle) fn remote_pull(
     options: &BundlePullOptions,
 ) -> Result<BundlePullReport, MigrationBundleError> {
-    let remote_ref = parse_remote_ref(&options.oci_ref)?;
+    let remote_ref = parse_remote_ref(options.oci_ref())?;
     let client = registry_client()?;
 
     ping_registry(&client, &remote_ref.registry)?;
@@ -86,7 +86,7 @@ pub(in crate::migration_bundle) fn remote_pull(
 
     let package = decode_package(&bytes)?;
     validate_bundle_package(&package)?;
-    let output_file = write_pulled_outputs(&package, &options.output_dir)?;
+    let output_file = write_pulled_outputs(&package, options.output_dir())?;
 
     let digest = if is_digest_reference(&manifest_digest) {
         manifest_digest
@@ -95,7 +95,7 @@ pub(in crate::migration_bundle) fn remote_pull(
     };
 
     Ok(BundlePullReport {
-        oci_ref: options.oci_ref.clone(),
+        oci_ref: options.oci_ref().to_string(),
         output_file,
         digest,
         status: "pulled-remote".to_string(),

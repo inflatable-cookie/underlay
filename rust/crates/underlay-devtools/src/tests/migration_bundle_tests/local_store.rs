@@ -9,13 +9,11 @@ fn migration_bundle_build_writes_layout_json_with_real_digests() {
     let dir = temp_dir("underlay_bundle_build");
     let output = dir.join("bundle.json");
 
-    let report = migration_bundle_build(&BundleBuildOptions {
-        output_file: output.clone(),
-        source_system: "legacy_system".to_string(),
-        target_schema_version: "schema_v1".to_string(),
-        media_dir: None,
-        media_shard_max_bytes: None,
-    })
+    let report = migration_bundle_build(&BundleBuildOptions::new(
+        output.clone(),
+        "legacy_system",
+        "schema_v1",
+    ))
     .expect("bundle build should succeed");
 
     assert_eq!(report.output_file, output);
@@ -33,11 +31,10 @@ fn migration_bundle_publish_requires_existing_bundle() {
     let dir = temp_dir("underlay_bundle_publish_missing");
     let bundle = dir.join("missing.json");
 
-    let err = migration_bundle_publish(&BundlePublishOptions {
-        bundle_file: bundle,
-        oci_ref: "registry.example.com/org/bundle:demo".to_string(),
-        local_store_dir: Some(dir.join("store")),
-    })
+    let err = migration_bundle_publish(
+        &BundlePublishOptions::new(bundle, "registry.example.com/org/bundle:demo")
+            .with_local_store_dir(dir.join("store")),
+    )
     .expect_err("publish should fail for missing bundle");
 
     assert!(err.to_string().contains("does not exist"));
@@ -50,30 +47,26 @@ fn migration_bundle_publish_and_pull_round_trip_from_local_store() {
     let store_dir = dir.join("store");
     let pull_dir = dir.join("pull");
 
-    let build = migration_bundle_build(&BundleBuildOptions {
-        output_file: bundle_file.clone(),
-        source_system: "legacy_system".to_string(),
-        target_schema_version: "schema_v1".to_string(),
-        media_dir: None,
-        media_shard_max_bytes: None,
-    })
+    let build = migration_bundle_build(&BundleBuildOptions::new(
+        bundle_file.clone(),
+        "legacy_system",
+        "schema_v1",
+    ))
     .expect("bundle build should succeed");
 
-    let publish = migration_bundle_publish(&BundlePublishOptions {
-        bundle_file: bundle_file.clone(),
-        oci_ref: "registry.example.com/org/bundle:demo".to_string(),
-        local_store_dir: Some(store_dir.clone()),
-    })
+    let publish = migration_bundle_publish(
+        &BundlePublishOptions::new(bundle_file.clone(), "registry.example.com/org/bundle:demo")
+            .with_local_store_dir(store_dir.clone()),
+    )
     .expect("publish should succeed");
 
     assert_eq!(publish.digest, build.bundle_digest);
     assert_eq!(publish.status, "published-local");
 
-    let pull = migration_bundle_pull(&BundlePullOptions {
-        oci_ref: "registry.example.com/org/bundle:demo".to_string(),
-        output_dir: pull_dir.clone(),
-        local_store_dir: Some(store_dir),
-    })
+    let pull = migration_bundle_pull(
+        &BundlePullOptions::new("registry.example.com/org/bundle:demo", pull_dir.clone())
+            .with_local_store_dir(store_dir),
+    )
     .expect("pull should succeed");
 
     assert_eq!(pull.digest, publish.digest);
@@ -87,20 +80,20 @@ fn migration_bundle_publish_rejects_digest_mismatch_in_ref() {
     let dir = temp_dir("underlay_bundle_publish_mismatch");
     let bundle_file = dir.join("bundle.json");
 
-    migration_bundle_build(&BundleBuildOptions {
-        output_file: bundle_file.clone(),
-        source_system: "legacy_system".to_string(),
-        target_schema_version: "schema_v1".to_string(),
-        media_dir: None,
-        media_shard_max_bytes: None,
-    })
+    migration_bundle_build(&BundleBuildOptions::new(
+        bundle_file.clone(),
+        "legacy_system",
+        "schema_v1",
+    ))
     .expect("bundle build should succeed");
 
-    let err = migration_bundle_publish(&BundlePublishOptions {
-        bundle_file,
-        oci_ref: "registry.example.com/org/bundle@sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff".to_string(),
-        local_store_dir: Some(dir.join("store")),
-    })
+    let err = migration_bundle_publish(
+        &BundlePublishOptions::new(
+            bundle_file,
+            "registry.example.com/org/bundle@sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+        )
+        .with_local_store_dir(dir.join("store")),
+    )
     .expect_err("publish should reject mismatched digest ref");
 
     assert!(err.to_string().contains("digest mismatch"));
@@ -126,20 +119,17 @@ fn migration_run_replays_digest_pinned_bundle_from_local_store() {
     let store_dir = dir.join("store");
     let run_dir = dir.join("run");
 
-    migration_bundle_build(&BundleBuildOptions {
-        output_file: bundle_file.clone(),
-        source_system: "legacy_system".to_string(),
-        target_schema_version: "schema_v1".to_string(),
-        media_dir: None,
-        media_shard_max_bytes: None,
-    })
+    migration_bundle_build(&BundleBuildOptions::new(
+        bundle_file.clone(),
+        "legacy_system",
+        "schema_v1",
+    ))
     .expect("bundle build should succeed");
 
-    let publish = migration_bundle_publish(&BundlePublishOptions {
-        bundle_file,
-        oci_ref: "registry.example.com/org/bundle:demo".to_string(),
-        local_store_dir: Some(store_dir.clone()),
-    })
+    let publish = migration_bundle_publish(
+        &BundlePublishOptions::new(bundle_file, "registry.example.com/org/bundle:demo")
+            .with_local_store_dir(store_dir.clone()),
+    )
     .expect("publish should succeed");
 
     let options = BundleRunOptions::parse_bundle_ref(
