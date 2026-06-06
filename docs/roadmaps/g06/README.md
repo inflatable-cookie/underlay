@@ -216,7 +216,8 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.149` is complete as the forms internal split.
 - `g06.150` is complete as the template types modularity audit.
 - `g06.151` is complete as the template types internal split.
-- `g06.152` is next as the optimistic tests modularity audit.
+- `g06.152` is complete as the optimistic tests modularity audit.
+- `g06.153` is next as the optimistic tests internal split.
 
 ## Planned Runway
 
@@ -376,6 +377,7 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.150`: template types modularity audit
 - `g06.151`: template types internal split
 - `g06.152`: optimistic tests modularity audit
+- `g06.153`: optimistic tests internal split
 
 ## Consumer Family
 
@@ -544,7 +546,8 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g06.149` is complete.
 - `g06.150` is complete.
 - `g06.151` is complete.
-- `g06.152` is next.
+- `g06.152` is complete.
+- `g06.153` is next.
 
 ## Batch Cards
 
@@ -553,4 +556,4 @@ If `g06` enters strict execution posture, keep its cards under
 
 ## Next Task
 
-Execute `g06.152`: optimistic tests modularity audit.
+Execute `g06.153`: optimistic tests internal split.

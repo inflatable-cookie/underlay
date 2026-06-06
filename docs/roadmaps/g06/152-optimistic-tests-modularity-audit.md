@@ -47,8 +47,12 @@ This is test-only structural work.
 
 ## Current State
 
-`g06.152` is ready.
+`g06.152` is complete.
+
+Artifact:
+
+- [`152-optimistic-tests-modularity-audit-artifact.md`](152-optimistic-tests-modularity-audit-artifact.md)
 
 ## Next Task
 
-Execute `g06.152`: optimistic tests modularity audit.
+Execute `g06.153`: optimistic tests internal split.

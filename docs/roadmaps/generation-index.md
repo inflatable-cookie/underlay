@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.152`: optimistic tests modularity audit.
+Execute `g06.153`: optimistic tests internal split.
