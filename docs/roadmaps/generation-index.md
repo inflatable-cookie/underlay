@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.179`: Rust hardening release-note and upgrade-guidance closeout.
+Execute `g06.180`: g06 closeout readiness checkpoint.

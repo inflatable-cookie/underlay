@@ -76,6 +76,66 @@ Reusable templates:
 
 ## Current Feature Notes
 
+### Rust Hardening API Tightening (`2026-06-06`)
+
+- Impact class: `breaking` for unknown consumers using retired convenience APIs;
+  already rolled out for the named six-consumer family
+- Affected consumers:
+  - apps configuring auth cookies with unchecked
+    `AuthCookieConfig` string setters
+  - apps directly reading `AuthCookieConfig` fields
+  - apps constructing media Postgres config with
+    `PostgresMediaConfig::with_schema`
+- What changed:
+  - `AuthCookieConfig` fields are no longer public
+  - `AuthCookieConfig::with_domain`,
+    `AuthCookieConfig::with_cookie_prefix`, and
+    `AuthCookieConfig::with_refresh_token_path` are retired
+  - `PostgresMediaConfig::with_schema` is retired
+  - `underlay-config` rejects path-like environment and local overlay names
+  - audited runtime helper mutex poison paths recover instead of panicking
+- Required actions:
+  1. Replace `config.domain`, `config.secure`,
+     `config.refresh_token_max_age`, `config.same_site`,
+     `config.cookie_prefix`, and `config.refresh_token_path` reads with
+     `domain()`, `secure()`, `refresh_token_max_age()`, `same_site()`,
+     `cookie_prefix()`, and `refresh_token_path()`.
+  2. Replace `with_domain(value)` with `try_with_domain(value)?` or
+     `with_cookie_domain(CookieDomain::parse(value)?)`.
+  3. Replace `with_cookie_prefix(value)` with
+     `try_with_cookie_prefix(value)?`.
+  4. Replace `with_refresh_token_path(value)` with
+     `try_with_refresh_token_path(value)?` or
+     `with_refresh_cookie_path(CookiePath::parse(value)?)`.
+  5. Replace `PostgresMediaConfig::with_schema(value)` with
+     `PostgresMediaConfig::try_with_schema(value)?`.
+  6. Ensure `UNDERLAY_ENV` and local overlay names are plain overlay names such
+     as `dev`, `uat`, `production`, or `local`; path separators, dot
+     components, control characters, and surrounding whitespace are rejected.
+- Cutover:
+  - canonical contract date: `2026-06-06`
+  - no compatibility window remains for the named six-consumer family because
+    all known consumers validate against the current surface
+- Validation:
+  - in `underlay`: `cargo test -p underlay-http`
+  - in `underlay`: `cargo test -p underlay-media-postgres`
+  - in `underlay`: `effigy rust:check`
+  - in consumers: run the repo-owned root `effigy health`
+  - scan for retired symbols:
+    `with_domain(`, `with_cookie_prefix(`, `with_refresh_token_path(`, and
+    `PostgresMediaConfig::with_schema`
+- Current consumer proof:
+  - `underlay-reference`: `effigy health` passed
+  - `contact-patch`: `effigy health` passed
+  - `compli-me`: `effigy health` passed
+  - `acowtancy`: `effigy health` passed with the known non-failing
+    `farmyard-migration` dead-code warning
+  - `songsprout`: `effigy health` passed
+  - `loophole/composer`: `effigy health` passed
+- Changed guidance:
+  - [g06.178 consumer sweep](../roadmaps/g06/178-six-consumer-rust-api-compatibility-sweep-artifact.md)
+  - [122 Rust public API inventory](../contracts/122-rust-public-api-inventory.md)
+
 ### Rust Adapter Crate Extraction (`2026-06-05`)
 
 - Impact class: `breaking`
