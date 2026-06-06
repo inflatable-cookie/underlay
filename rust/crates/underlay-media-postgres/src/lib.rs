@@ -10,8 +10,8 @@ use uuid::Uuid;
 use underlay_media::MediaResult;
 use underlay_media::{
     CreateMediaInput, CreateRenditionInput, FinalizeUploadInput, ListMediaParams, Media, MediaId,
-    MediaRendition, MediaRenditionId, MediaRepository, MediaSummary, MediaUsage, MediaVersion,
-    MediaVersionId, UpdateMediaInput,
+    MediaRendition, MediaRenditionId, MediaRepository, MediaSummary, MediaUsage,
+    MediaUsageRepository, MediaVersion, MediaVersionId, UpdateMediaInput,
 };
 
 mod list_query;
@@ -192,10 +192,21 @@ impl MediaRepository for PostgresMediaRepository {
         self.delete_rendition_rows(version_id).await
     }
 
-    // ========================================================================
-    // Usage tracking
-    // ========================================================================
+    async fn batch_soft_delete_media(
+        &self,
+        ids: &[MediaId],
+        _deleted_by: Option<Uuid>,
+    ) -> MediaResult<i64> {
+        self.batch_mark_media_deleted(ids).await
+    }
 
+    async fn list_unused_media(&self) -> MediaResult<Vec<Media>> {
+        self.fetch_unused_media().await
+    }
+}
+
+#[async_trait]
+impl MediaUsageRepository for PostgresMediaRepository {
     async fn track_usage(&self, usage: &MediaUsage) -> MediaResult<()> {
         self.insert_usage(usage).await
     }
@@ -232,17 +243,5 @@ impl MediaRepository for PostgresMediaRepository {
     ) -> MediaResult<()> {
         self.replace_usages(entity_type, entity_id, field_name, media_ids)
             .await
-    }
-
-    async fn batch_soft_delete_media(
-        &self,
-        ids: &[MediaId],
-        _deleted_by: Option<Uuid>,
-    ) -> MediaResult<i64> {
-        self.batch_mark_media_deleted(ids).await
-    }
-
-    async fn list_unused_media(&self) -> MediaResult<Vec<Media>> {
-        self.fetch_unused_media().await
     }
 }

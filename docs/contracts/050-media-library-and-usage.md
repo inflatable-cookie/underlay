@@ -30,8 +30,8 @@ Current state:
 - the richer usage-edge vocabulary, sync traits, and migration-binding types
   exist in `underlay-media`
 - the shipped `underlay-media-postgres` `PostgresMediaRepository` still
-  primarily implements the older simple usage model (`MediaUsage`,
-  `track_usage`, `sync_usages`)
+  primarily implements the older simple usage model through
+  `MediaUsageRepository` (`MediaUsage`, `track_usage`, `sync_usages`)
 - consumers should treat the generalized usage-edge and migration-binding model
   as the governing direction, but not assume every default repository/backend
   path already implements the full richer surface

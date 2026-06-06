@@ -643,6 +643,7 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g06.183` is complete as the media authority status drift cleanup artifact.
 - `g06.184` is complete as the auth runtime pattern boundary assessment
   artifact.
+- `g06.185` is complete as the media repository usage trait split artifact.
 - `g06` is closed.
 
 ## Batch Cards

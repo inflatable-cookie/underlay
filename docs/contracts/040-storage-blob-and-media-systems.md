@@ -265,6 +265,7 @@ Core pieces:
   `CreateRenditionInput`, `ListMediaParams`
 - `MediaRepository`
 - `MediaRepositoryExt`
+- `MediaUsageRepository`
 - `PostgresMediaRepository` in `underlay-media-postgres`
 - `PostgresMediaConfig` in `underlay-media-postgres`
 
@@ -277,7 +278,10 @@ Rules:
 - version finalization is explicit and tied to storage metadata
 - repository interfaces stay storage-aware but backend-agnostic at the trait
   level
-- `MediaRepository` and `MediaRepositoryExt` are the app-facing repository seam
+- `MediaRepository` and `MediaRepositoryExt` are the app-facing lifecycle
+  repository seam
+- `MediaUsageRepository` is the retained older simple usage repository seam
+  for `MediaUsage`, `track_usage`, `sync_usages`, and usage-count operations
 - Postgres operation modules are adapter internals and must stay private in
   `underlay-media-postgres`
 - `PostgresMediaConfig` is an adapter surface that stores typed schema/table
@@ -301,11 +305,12 @@ migration bindings, and media graph semantics is defined in `050`.
 
 Current boundary note:
 
-- the shipped `underlay-media-postgres` `PostgresMediaRepository` still
-  exposes the older simple usage tracking surface (`track_usage`,
-  `sync_usages`) alongside the newer generalized usage-edge traits, so
-  higher-level usage-graph behavior is only partially implemented by the
-  default backend today
+- the shipped `underlay-media-postgres` `PostgresMediaRepository` implements
+  the older simple usage model through `MediaUsageRepository`
+- the generalized usage-edge sync model remains a separate
+  `underlay_media::sync::MediaUsageSyncRepository` seam; default backend
+  support is still partial and should be assessed against `050` before apps
+  assume full usage-graph persistence
 
 ### Storage key contract
 
@@ -408,10 +413,6 @@ Current drift worth assessing later:
 
 - `underlay-db::TypedExistsCheck` assumes `deleted_at` unless callers opt out,
   which is convenient but may over-assume soft-delete semantics for some tables
-- `underlay-media::MediaRepository` still mixes older simple usage methods
-  (`track_usage`, `sync_usages`) with the newer generalized usage-edge sync
-  surface, so the repository boundary should be reassessed against the richer
-  `050` contract
 - `underlay_blob::MediaConfig` sits in the blob crate even though it spans file
   limits and thumbnail concerns that touch media/rendition ownership
 
@@ -423,6 +424,11 @@ Resolved assessment:
   in file state: `040` owns blob, storage, repository, and lower media
   mechanics; `050` owns usage graph, structured-content sync, migration
   binding, and media-linked content semantics.
+- `g06.185` split the older simple `MediaUsage` repository methods from
+  `MediaRepository` into `MediaUsageRepository`. `MediaRepository` now owns
+  media lifecycle operations, `MediaUsageRepository` owns retained simple
+  usage tracking, and `underlay_media::sync::MediaUsageSyncRepository` remains
+  the generalized usage-edge sync seam.
 
 These are assessment hooks, not reasons to widen the contract.
 

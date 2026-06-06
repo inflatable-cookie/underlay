@@ -151,9 +151,39 @@ pub trait MediaRepository: Send + Sync {
     async fn delete_renditions(&self, version_id: MediaVersionId) -> MediaResult<u64>;
 
     // ========================================================================
-    // Usage tracking
+    // Batch operations
     // ========================================================================
 
+    /// Batch soft-delete multiple media items.
+    ///
+    /// Returns the count of items actually deleted.
+    async fn batch_soft_delete_media(
+        &self,
+        ids: &[MediaId],
+        deleted_by: Option<Uuid>,
+    ) -> MediaResult<i64> {
+        let mut count = 0i64;
+        for id in ids {
+            if self.soft_delete_media(*id, deleted_by).await? {
+                count += 1;
+            }
+        }
+        Ok(count)
+    }
+
+    /// List unused media items.
+    ///
+    /// Returns media items that have no usage records.
+    async fn list_unused_media(&self) -> MediaResult<Vec<Media>>;
+}
+
+/// Repository trait for the older simple media usage model.
+///
+/// This remains stable for existing consumers and lower repository adapters.
+/// Generalized usage-edge sync lives in `underlay_media::sync` as
+/// `MediaUsageSyncRepository`.
+#[async_trait]
+pub trait MediaUsageRepository: Send + Sync {
     /// Track that a media item is used by an entity.
     async fn track_usage(&self, usage: &MediaUsage) -> MediaResult<()>;
 
@@ -186,32 +216,6 @@ pub trait MediaRepository: Send + Sync {
         field_name: &str,
         media_ids: &[MediaId],
     ) -> MediaResult<()>;
-
-    // ========================================================================
-    // Batch operations
-    // ========================================================================
-
-    /// Batch soft-delete multiple media items.
-    ///
-    /// Returns the count of items actually deleted.
-    async fn batch_soft_delete_media(
-        &self,
-        ids: &[MediaId],
-        deleted_by: Option<Uuid>,
-    ) -> MediaResult<i64> {
-        let mut count = 0i64;
-        for id in ids {
-            if self.soft_delete_media(*id, deleted_by).await? {
-                count += 1;
-            }
-        }
-        Ok(count)
-    }
-
-    /// List unused media items.
-    ///
-    /// Returns media items that have no usage records.
-    async fn list_unused_media(&self) -> MediaResult<Vec<Media>>;
 }
 
 /// Extension trait for repository operations that span multiple concerns.

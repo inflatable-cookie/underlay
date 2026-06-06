@@ -109,7 +109,7 @@ pub use domain::{
 };
 
 pub use error::{MediaError, MediaResult};
-pub use repository::{MediaRepository, MediaRepositoryExt};
+pub use repository::{MediaRepository, MediaRepositoryExt, MediaUsageRepository};
 
 #[cfg(test)]
 #[path = "tests/lib_tests.rs"]
