@@ -1,6 +1,6 @@
 # g07.007 - Relation Selector Boundary Audit
 
-Status: ready
+Status: complete
 Owner: repo maintainers
 Updated: 2026-06-06
 
@@ -15,13 +15,13 @@ client helpers sit near each other but do not all have the same owner.
 
 ## Goals
 
-- [ ] inventory relation selector, drill-down, local search, selection history,
+- [x] inventory relation selector, drill-down, local search, selection history,
   and suggestion client surfaces
-- [ ] classify each surface as runtime-owned, client-owned, template-owned,
+- [x] classify each surface as runtime-owned, client-owned, template-owned,
   app-owned, or candidate-retire
-- [ ] decide whether `runtime/relations` remains one coherent public path
-- [ ] identify stale docs or consumer import drift
-- [ ] classify consumer impact before changing exports or behavior
+- [x] decide whether `runtime/relations` remains one coherent public path
+- [x] identify stale docs or consumer import drift
+- [x] classify consumer impact before changing exports or behavior
 
 ## Non-Goals
 
@@ -32,19 +32,19 @@ client helpers sit near each other but do not all have the same owner.
 
 ## Execution Plan
 
-- [ ] inspect `runtime/relations`, relation selector implementation files,
+- [x] inspect `runtime/relations`, relation selector implementation files,
   selection history, and `client/suggestions`
-- [ ] compare with contracts `080`, `090`, `100`, and collection route
+- [x] compare with contracts `080`, `090`, `100`, and collection route
   contracts
-- [ ] scan active docs and the six-consumer family for usage
-- [ ] write a boundary classification artifact with any bounded follow-on cards
+- [x] scan active docs and the six-consumer family for usage
+- [x] write a boundary classification artifact with any bounded follow-on cards
 
 ## Acceptance Criteria
 
-- [ ] relation selector and suggestion surfaces have clear owners
-- [ ] `runtime/relations` either stays coherent or has a queued split decision
-- [ ] active docs teach the retained public paths
-- [ ] no consumer-visible change lands without same-card proof
+- [x] relation selector and suggestion surfaces have clear owners
+- [x] `runtime/relations` either stays coherent or has a queued split decision
+- [x] active docs teach the retained public paths
+- [x] no consumer-visible change lands without same-card proof
 
 ## Validation
 
@@ -56,10 +56,12 @@ client helpers sit near each other but do not all have the same owner.
 
 ## Consumer Upgrade Impact
 
-None for the audit posture.
+None.
 
-Update this section if the card makes public API, import, or behavior changes.
+No public API or runtime behavior changed. One active guide import was corrected
+from `runtime/relations` to `client/suggestions` for client-owned suggestion
+request helpers.
 
 ## Next Task
 
-Execute this relation selector boundary audit.
+Execute `g07.008`: TS testing and guardrail support gap inventory.

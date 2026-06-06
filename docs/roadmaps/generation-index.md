@@ -49,4 +49,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g07.007`: relation selector boundary audit.
+Execute `g07.008`: TS testing and guardrail support gap inventory.

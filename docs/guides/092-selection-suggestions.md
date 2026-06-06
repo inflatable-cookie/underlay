@@ -398,7 +398,7 @@ export const levelSelectionHistory = createSelectionHistory("learning.levels", {
 import {
   appendSuggestionParams,
   type SuggestionRequestOptions
-} from "@decodelabs/underlay/runtime/relations";
+} from "@decodelabs/underlay/client/suggestions";
 
 export async function getLevelsForPathway(
   pathwayId: string,

@@ -315,8 +315,9 @@ Apps own:
 ## Retained Drift To Assess Later
 
 - the pattern layer mixes true workflow shells with some helpers that may not
-  still earn pattern ownership, especially `i18n`, duplicate suggestion-param
-  helpers in `selection-history.ts`, and some low-level form helpers
+  still earn pattern ownership, especially `i18n`, compatibility-only
+  suggestion-param re-exports in `selection-history.ts`, and some low-level
+  form helpers
 - root-barrel exports are tiny while most real pattern-owned behavior is
   consumed through `runtime/*`, so public authority and implementation location
   are split and easy to misread
@@ -341,5 +342,4 @@ Apps own:
 
 ## Next Task
 
-Use [../roadmaps/g04/012-admin-template-system-contract.md](/Users/tom/Dev/projects/underlay/docs/roadmaps/g04/012-admin-template-system-contract.md)
-to write the next contract.
+Execute `g07.008`: TS testing and guardrail support gap inventory.
