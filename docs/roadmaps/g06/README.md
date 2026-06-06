@@ -452,6 +452,7 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.190`: media storage file key typing
 - `g06.191`: blob request object key typing
 - `g06.192`: media storage config validation
+- `g06.193`: blob adapter raw trait boundary closeout
 
 ## Consumer Family
 
@@ -664,6 +665,7 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g06.190` is complete as the media storage file key typing artifact.
 - `g06.191` is complete as the blob request object key typing artifact.
 - `g06.192` is complete as the media storage config validation artifact.
+- `g06.193` is complete as the blob adapter raw trait boundary closeout artifact.
 - `g06` is closed.
 
 ## Batch Cards
