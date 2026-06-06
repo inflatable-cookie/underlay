@@ -34,8 +34,8 @@ where
         };
 
         let rate_limit_config = RateLimitConfig::new(
-            self.config.rate_limit_max_attempts as u64,
-            Duration::from_secs(self.config.rate_limit_window_seconds),
+            self.config.rate_limit_max_attempts() as u64,
+            Duration::from_secs(self.config.rate_limit_window_seconds()),
         );
         let rate_result = self
             .rate_limiter
@@ -101,8 +101,8 @@ where
                 .repository
                 .record_failed_login(
                     user.id,
-                    self.config.max_failed_attempts,
-                    self.config.lockout_duration_seconds,
+                    self.config.max_failed_attempts(),
+                    self.config.lockout_duration_seconds(),
                 )
                 .await?;
 
@@ -110,9 +110,9 @@ where
                 Err(PasswordAuthError::AccountLocked {
                     retry_after_seconds,
                 })
-            } else if attempt.count >= self.config.max_failed_attempts {
+            } else if attempt.count >= self.config.max_failed_attempts() {
                 Err(PasswordAuthError::AccountLocked {
-                    retry_after_seconds: self.config.lockout_duration_seconds,
+                    retry_after_seconds: self.config.lockout_duration_seconds(),
                 })
             } else {
                 Err(PasswordAuthError::WrongPassword)

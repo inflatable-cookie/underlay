@@ -638,3 +638,4 @@ Closed queue:
 - `g06.197`: HTTP server config field retirement
 - `g06.198`: rate-limit config field retirement
 - `g06.199`: JWT config field retirement
+- `g06.200`: password config field retirement

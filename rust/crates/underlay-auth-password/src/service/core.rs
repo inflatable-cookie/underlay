@@ -40,7 +40,8 @@ where
         config: Option<PasswordConfig>,
     ) -> Self {
         let config = config.unwrap_or_default();
-        let analyzer = PasswordStrengthAnalyzer::new().with_min_length(config.min_password_length);
+        let analyzer =
+            PasswordStrengthAnalyzer::new().with_min_length(config.min_password_length());
 
         Self {
             repository,

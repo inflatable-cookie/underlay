@@ -14,11 +14,11 @@ where
     L: RateLimitBackend,
 {
     pub(super) async fn is_compromised_password(&self, password: &str) -> PasswordAuthResult<bool> {
-        if !self.config.check_compromised {
+        if !self.config.check_compromised() {
             return Ok(false);
         }
 
-        match &self.config.compromised_password_strategy {
+        match self.config.compromised_password_strategy() {
             CompromisedPasswordStrategy::LocalBlocklist => {
                 Ok(self.analyzer.is_common_password(password))
             }

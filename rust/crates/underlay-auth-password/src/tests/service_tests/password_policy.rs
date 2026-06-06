@@ -11,11 +11,11 @@ async fn compromised_password_rejected_when_enabled() {
 
     let service = service(
         repo,
-        Some(PasswordConfig {
-            check_compromised: true,
-            compromised_password_strategy: CompromisedPasswordStrategy::LocalBlocklist,
-            ..PasswordConfig::default()
-        }),
+        Some(
+            PasswordConfig::default()
+                .with_check_compromised(true)
+                .with_compromised_password_strategy(CompromisedPasswordStrategy::LocalBlocklist),
+        ),
     );
 
     let err = service

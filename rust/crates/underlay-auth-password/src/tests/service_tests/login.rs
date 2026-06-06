@@ -11,10 +11,7 @@ async fn login_success_resets_failures() {
 
     let service = service(
         repo.clone(),
-        Some(PasswordConfig {
-            max_failed_attempts: 10,
-            ..PasswordConfig::default()
-        }),
+        Some(PasswordConfig::default().with_max_failed_attempts(10)),
     );
 
     service

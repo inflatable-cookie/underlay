@@ -11,11 +11,11 @@ async fn lockout_triggers_after_n_failures() {
 
     let service = service(
         repo,
-        Some(PasswordConfig {
-            max_failed_attempts: 2,
-            lockout_duration_seconds: 900,
-            ..PasswordConfig::default()
-        }),
+        Some(
+            PasswordConfig::default()
+                .with_max_failed_attempts(2)
+                .with_lockout_duration_seconds(900),
+        ),
     );
 
     service
@@ -50,11 +50,11 @@ async fn rate_limit_blocks_login_attempts() {
 
     let service = service(
         repo,
-        Some(PasswordConfig {
-            rate_limit_max_attempts: 1,
-            rate_limit_window_seconds: 3600,
-            ..PasswordConfig::default()
-        }),
+        Some(
+            PasswordConfig::default()
+                .with_rate_limit_max_attempts(1)
+                .with_rate_limit_window_seconds(3600),
+        ),
     );
 
     service

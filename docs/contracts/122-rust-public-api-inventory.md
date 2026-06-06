@@ -65,7 +65,7 @@ These crates remain part of the Rust surface, but they are not the first
 
 | Crate family | Classification | Note |
 | --- | --- | --- |
-| `underlay-auth-*` provider crates except JWT | stable + adapter | Provider-specific credential flows. Keep app-facing shared traits in `underlay-auth`. |
+| `underlay-auth-*` provider crates except JWT | stable + adapter | Provider-specific credential flows. Keep app-facing shared traits in `underlay-auth`. `underlay-auth-password::PasswordConfig` fields are private as of `g06.200`; consumers must use defaults, builders, and accessors. |
 | `underlay-email`, `underlay-events`, `underlay-ratelimit`, `underlay-observability`, `underlay-metrics` | stable + adapter | Covered by `060`, `020`, and operational contracts. Review only when affected by a gate. `RateLimitConfig` fields are private as of `g06.198`; consumers must use constructors and accessors. |
 | `underlay-validation*`, `underlay-config`, `underlay-testing` | stable | Support-layer contracts. Keep validation/test APIs generic. `underlay-validation::validators` is the stable validator front door; implementation modules are private as of `g06.188`. |
 | `underlay-ai-runtime`, `underlay-suggestions`, `underlay-nightfire` | stable | Covered by `080` and `070`; not part of the first platform-boundary migration. |
