@@ -56,8 +56,12 @@ must change, stop and re-enter planning.
 
 ## Current State
 
-`g06.130` is ready.
+`g06.130` is complete.
+
+Artifact:
+
+- [130 artifact](./130-http-context-internal-split-artifact.md)
 
 ## Next Task
 
-Execute `g06.130`: HTTP context internal split.
+Execute `g06.131`: HTTP cookies tests modularity audit.
