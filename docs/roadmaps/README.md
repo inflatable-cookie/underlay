@@ -63,7 +63,8 @@ README surfaces.
 - `g07.006` is complete as the list, pagination, reorder, and template seam audit
 - `g07.007` is complete as the relation selector boundary audit
 - `g07.008` is complete as the TS testing and guardrail support gap inventory
-- `g07.009` is next as the TS public-surface test and guardrail reinforcement
+- `g07.009` is complete as the TS public-surface test and guardrail reinforcement
+- `g07.010` is next as the consumer import compatibility sweep
 - `g07` is active as the TS runtime and workflow boundary hardening generation
 - `g06.001` is complete as the Rust platform contract transition and public API
   inventory gate
@@ -389,7 +390,7 @@ README surfaces.
 
 ## Next Task
 
-Execute `g07.009`: TS public-surface test and guardrail reinforcement.
+Execute `g07.010`: consumer import compatibility sweep.
 - `g01.090` is complete for confirming that the remaining public `@decodelabs/underlay/patterns` surface is the true retained workflow stop point rather than unresolved migration debt
 - `g01.091` is complete for confirming the retained `client` package boundary, exposing explicit `client/*` public subpaths for the live feature families, and keeping the root barrel stable as a convenience surface
 - `g01.092` is complete for confirming the retained `nightfire` package boundary, exposing explicit `nightfire/*` public subpaths for the live extension families, and keeping the root barrel stable as a convenience surface

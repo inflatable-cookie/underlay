@@ -51,7 +51,7 @@ Underlay is in parallel mode:
 
 ## Next Task
 
-Execute `g07.009`: TS public-surface test and guardrail reinforcement.
+Execute `g07.010`: consumer import compatibility sweep.
 
 Open a new spec only if the next lane needs provisional planning beyond
 existing architecture and contracts.

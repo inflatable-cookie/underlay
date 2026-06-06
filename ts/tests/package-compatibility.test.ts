@@ -1,9 +1,15 @@
 import { describe, expect, it } from "vitest";
 import { UnderlayHttpError } from "@decodelabs/underlay/client";
+import { appendSuggestionParams } from "@decodelabs/underlay/client/suggestions";
 import {
   appendPaginationParams,
   type PaginatedResponse,
 } from "@decodelabs/underlay/runtime";
+import { createMockHttpClient } from "@decodelabs/underlay/testing";
+import { scanFiles } from "@decodelabs/underlay/tools/guardrails";
+import { loadConfig } from "@decodelabs/underlay/tools/guardrails-config";
+import { bannedPatterns } from "@decodelabs/underlay/tools/templates/banned-apis";
+import { moduleScopeChecks } from "@decodelabs/underlay/tools/templates/sveltekit-ssr";
 import { getBlockEditor } from "@decodelabs/underlay/nightfire";
 
 describe("package compatibility barrels", () => {
@@ -23,5 +29,14 @@ describe("package compatibility barrels", () => {
     );
     expect(response.data).toEqual(["item"]);
     expect(getBlockEditor("missing", "missing")).toBeNull();
+  });
+
+  it("exposes retained runtime, testing, and tools public subpaths", () => {
+    expect(typeof appendSuggestionParams).toBe("function");
+    expect(typeof createMockHttpClient).toBe("function");
+    expect(typeof scanFiles).toBe("function");
+    expect(typeof loadConfig).toBe("function");
+    expect(bannedPatterns.length).toBeGreaterThan(0);
+    expect(moduleScopeChecks.length).toBeGreaterThan(0);
   });
 });

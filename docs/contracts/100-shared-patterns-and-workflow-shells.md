@@ -342,4 +342,4 @@ Apps own:
 
 ## Next Task
 
-Execute `g07.009`: TS public-surface test and guardrail reinforcement.
+Execute `g07.010`: consumer import compatibility sweep.

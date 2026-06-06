@@ -1,6 +1,6 @@
 # g07.009 - TS Public-Surface Test And Guardrail Reinforcement
 
-Status: ready
+Status: complete
 Owner: repo maintainers
 Updated: 2026-06-06
 
@@ -15,13 +15,13 @@ sweep.
 
 ## Goals
 
-- [ ] add direct tests for `client/suggestions` through the preferred client
+- [x] add direct tests for `client/suggestions` through the preferred client
   helper path
-- [ ] strengthen package-compatibility smoke tests for retained public TS
+- [x] strengthen package-compatibility smoke tests for retained public TS
   subpaths
-- [ ] add guardrail scanner/config/template self-tests for the existing rule
+- [x] add guardrail scanner/config/template self-tests for the existing rule
   behavior
-- [ ] keep changes additive and support-only
+- [x] keep changes additive and support-only
 
 ## Non-Goals
 
@@ -33,20 +33,20 @@ sweep.
 
 ## Execution Plan
 
-- [ ] add focused tests for suggestion request helper behavior under
+- [x] add focused tests for suggestion request helper behavior under
   `ts/tests/client`
-- [ ] extend package-compatibility coverage for retained runtime, client,
+- [x] extend package-compatibility coverage for retained runtime, client,
   template, testing, and tools exports
-- [ ] add guardrail tests for module-scope detection, suppressions, Svelte
+- [x] add guardrail tests for module-scope detection, suppressions, Svelte
   script scanning, config loading, and template imports
-- [ ] validate with repo-owned TS support tasks
+- [x] validate with repo-owned TS support tasks
 
 ## Acceptance Criteria
 
-- [ ] preferred public paths have direct smoke or behavior coverage
-- [ ] guardrail support behavior is tested without adding new policy
-- [ ] compatibility-only exports remain unchanged
-- [ ] no consumer update is required
+- [x] preferred public paths have direct smoke or behavior coverage
+- [x] guardrail support behavior is tested without adding new policy
+- [x] compatibility-only exports remain unchanged
+- [x] no consumer update is required
 
 ## Validation
 
@@ -59,11 +59,10 @@ sweep.
 
 ## Consumer Upgrade Impact
 
-None expected.
+None.
 
-Update this section if the card changes public API, imports, validation, or
-runtime behavior.
+No public API, import, validation, or runtime behavior changed.
 
 ## Next Task
 
-Execute this TS public-surface test and guardrail reinforcement batch.
+Execute `g07.010`: consumer import compatibility sweep.

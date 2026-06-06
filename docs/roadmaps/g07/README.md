@@ -78,8 +78,9 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g07.006` is complete as the list, pagination, reorder, and template seam audit.
 - `g07.007` is complete as the relation selector boundary audit.
 - `g07.008` is complete as the TS testing and guardrail support gap inventory.
-- `g07.009` is next as the TS public-surface test and guardrail reinforcement.
+- `g07.009` is complete as the TS public-surface test and guardrail reinforcement.
+- `g07.010` is next as the consumer import compatibility sweep.
 
 ## Next Task
 
-Execute `g07.009`: TS public-surface test and guardrail reinforcement.
+Execute `g07.010`: consumer import compatibility sweep.
