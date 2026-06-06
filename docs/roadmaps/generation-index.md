@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.169`: Rust runtime security surface re-audit.
+Execute `g06.170`: config environment filename boundary hardening.

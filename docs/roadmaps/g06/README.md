@@ -233,7 +233,9 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.166` is complete as the consumer surface compatibility sweep.
 - `g06.167` is complete as the Acowtancy list-query consumer drift repair.
 - `g06.168` is complete as the fleet compatibility closeout audit.
-- `g06.169` is next as the Rust runtime security surface re-audit.
+- `g06.169` is complete as the Rust runtime security surface re-audit.
+- `g06.170` is next as the config environment filename boundary hardening
+  batch.
 
 ## Planned Runway
 
@@ -410,6 +412,7 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.167`: Acowtancy list-query consumer drift repair
 - `g06.168`: fleet compatibility closeout audit
 - `g06.169`: Rust runtime security surface re-audit
+- `g06.170`: config environment filename boundary hardening
 
 ## Consumer Family
 
@@ -595,7 +598,8 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g06.166` is complete.
 - `g06.167` is complete.
 - `g06.168` is complete.
-- `g06.169` is next.
+- `g06.169` is complete.
+- `g06.170` is next.
 
 ## Batch Cards
 
@@ -604,4 +608,4 @@ If `g06` enters strict execution posture, keep its cards under
 
 ## Next Task
 
-Execute `g06.169`: Rust runtime security surface re-audit.
+Execute `g06.170`: config environment filename boundary hardening.
