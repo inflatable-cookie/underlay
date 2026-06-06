@@ -644,3 +644,4 @@ Closed queue:
 - `g06.203`: observability config field retirement
 - `g06.204`: DB config field retirement
 - `g06.205`: outbox config field retirement
+- `g06.206`: security alert config field retirement

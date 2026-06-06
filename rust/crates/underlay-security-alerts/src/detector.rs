@@ -6,15 +6,15 @@ pub fn evaluate_alerts(
 ) -> Vec<SecurityAlertType> {
     let mut alerts = Vec::new();
 
-    if counts.failed_attempts >= config.failed_attempts_threshold {
+    if counts.failed_attempts >= config.failed_attempts_threshold() {
         alerts.push(SecurityAlertType::LoginFailuresFromIp);
     }
 
-    if counts.distinct_users >= config.distinct_users_threshold {
+    if counts.distinct_users >= config.distinct_users_threshold() {
         alerts.push(SecurityAlertType::MultiAccountFailuresFromIp);
     }
 
-    if counts.lockouts >= config.lockouts_threshold {
+    if counts.lockouts >= config.lockouts_threshold() {
         alerts.push(SecurityAlertType::LockoutsFromIp);
     }
 

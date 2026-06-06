@@ -3,11 +3,11 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone)]
 pub struct SecurityAlertConfig {
-    pub window: Duration,
-    pub cooldown: Duration,
-    pub failed_attempts_threshold: i64,
-    pub distinct_users_threshold: i64,
-    pub lockouts_threshold: i64,
+    window: Duration,
+    cooldown: Duration,
+    failed_attempts_threshold: i64,
+    distinct_users_threshold: i64,
+    lockouts_threshold: i64,
 }
 
 impl Default for SecurityAlertConfig {
@@ -19,6 +19,53 @@ impl Default for SecurityAlertConfig {
             distinct_users_threshold: 5,
             lockouts_threshold: 3,
         }
+    }
+}
+
+impl SecurityAlertConfig {
+    pub fn window(&self) -> Duration {
+        self.window
+    }
+
+    pub fn cooldown(&self) -> Duration {
+        self.cooldown
+    }
+
+    pub fn failed_attempts_threshold(&self) -> i64 {
+        self.failed_attempts_threshold
+    }
+
+    pub fn distinct_users_threshold(&self) -> i64 {
+        self.distinct_users_threshold
+    }
+
+    pub fn lockouts_threshold(&self) -> i64 {
+        self.lockouts_threshold
+    }
+
+    pub fn with_window(mut self, window: Duration) -> Self {
+        self.window = window;
+        self
+    }
+
+    pub fn with_cooldown(mut self, cooldown: Duration) -> Self {
+        self.cooldown = cooldown;
+        self
+    }
+
+    pub fn with_failed_attempts_threshold(mut self, threshold: i64) -> Self {
+        self.failed_attempts_threshold = threshold;
+        self
+    }
+
+    pub fn with_distinct_users_threshold(mut self, threshold: i64) -> Self {
+        self.distinct_users_threshold = threshold;
+        self
+    }
+
+    pub fn with_lockouts_threshold(mut self, threshold: i64) -> Self {
+        self.lockouts_threshold = threshold;
+        self
     }
 }
 
