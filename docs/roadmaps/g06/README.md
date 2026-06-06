@@ -227,7 +227,8 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.160` is complete as the RelationSelector source god-file split.
 - `g06.161` is complete as the HTTP client source god-file split.
 - `g06.162` is complete as the storage source god-file split.
-- `g06.163` is next as the pagination source god-file split.
+- `g06.163` is complete as the pagination source god-file split.
+- `g06.164` is next as the TypeScript test god-file closeout decision.
 
 ## Planned Runway
 
@@ -398,6 +399,7 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.161`: HTTP client source god-file split
 - `g06.162`: storage source god-file split
 - `g06.163`: pagination source god-file split
+- `g06.164`: TypeScript test god-file closeout decision
 
 ## Consumer Family
 
@@ -577,7 +579,8 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g06.160` is complete.
 - `g06.161` is complete.
 - `g06.162` is complete.
-- `g06.163` is next.
+- `g06.163` is complete.
+- `g06.164` is next.
 
 ## Batch Cards
 
@@ -586,4 +589,4 @@ If `g06` enters strict execution posture, keep its cards under
 
 ## Next Task
 
-Execute `g06.163`: pagination source god-file split.
+Execute `g06.164`: TypeScript test god-file closeout decision.
