@@ -32,11 +32,11 @@ Out of scope:
 
 ## Acceptance Criteria
 
-- `ts/src/client/http.ts` no longer reports as a source god-file, or retained
+- [x] `ts/src/client/http.ts` no longer reports as a source god-file, or retained
   size is justified by artifact evidence
-- public imports remain stable
-- focused HTTP client tests pass
-- `effigy doctor` state is recorded
+- [x] public imports remain stable
+- [x] focused HTTP client tests pass
+- [x] `effigy doctor` state is recorded
 
 ## Consumer Upgrade Impact
 
@@ -44,10 +44,18 @@ Expected impact: none.
 
 This should be an internal split with stable exports.
 
+## Evidence
+
+- `bun x vitest run ts/tests/client/http/requests.test.ts ts/tests/client/http/auth.test.ts ts/tests/client/http/retry-timeout.test.ts ts/tests/client/http/errors-metadata.test.ts ts/tests/client/http/token-store.test.ts`
+  passed: 5 files, 38 tests passed, 1 skipped.
+- `effigy doctor` passed with `ok:15`, `warn:1`, `err:0`.
+- `scan.god-files` now reports 11 warnings.
+- `ts/src/client/http.ts` no longer reports.
+
 ## Current State
 
-`g06.161` is ready.
+`g06.161` is complete.
 
 ## Next Task
 
-Execute `g06.161`: HTTP client source god-file split.
+Execute `g06.162`: storage source god-file split.

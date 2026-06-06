@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.161`: HTTP client source god-file split.
+Execute `g06.162`: storage source god-file split.
