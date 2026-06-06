@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.177`: Rust hardening lane closeout and next architecture checkpoint.
+Execute `g06.178`: six-consumer Rust API compatibility sweep.
