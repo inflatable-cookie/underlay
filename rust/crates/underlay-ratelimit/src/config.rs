@@ -6,9 +6,9 @@ use std::time::Duration;
 #[derive(Debug, Clone)]
 pub struct RateLimitConfig {
     /// Maximum number of requests allowed in the window.
-    pub max_requests: u64,
+    max_requests: u64,
     /// Time window for the rate limit.
-    pub window: Duration,
+    window: Duration,
 }
 
 impl RateLimitConfig {
@@ -38,6 +38,16 @@ impl RateLimitConfig {
     /// Get window duration in seconds.
     pub fn window_seconds(&self) -> u64 {
         self.window.as_secs()
+    }
+
+    /// Maximum number of requests allowed in the window.
+    pub fn max_requests(&self) -> u64 {
+        self.max_requests
+    }
+
+    /// Time window for the rate limit.
+    pub fn window(&self) -> Duration {
+        self.window
     }
 }
 

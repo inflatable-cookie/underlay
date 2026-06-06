@@ -149,14 +149,14 @@ impl RateLimitBackend for InMemoryBackend {
         let mut entry = self
             .entries
             .entry(key.to_string())
-            .or_insert_with(|| RateLimitEntry::new(config.window));
+            .or_insert_with(|| RateLimitEntry::new(config.window()));
 
         entry.maybe_reset();
 
-        if entry.count >= config.max_requests {
+        if entry.count >= config.max_requests() {
             Ok(RateLimitResult::denied(entry.count, entry.time_remaining()))
         } else {
-            let remaining = config.max_requests - entry.count;
+            let remaining = config.max_requests() - entry.count;
             Ok(RateLimitResult::allowed(remaining, entry.count))
         }
     }
@@ -165,7 +165,7 @@ impl RateLimitBackend for InMemoryBackend {
         let mut entry = self
             .entries
             .entry(key.to_string())
-            .or_insert_with(|| RateLimitEntry::new(config.window));
+            .or_insert_with(|| RateLimitEntry::new(config.window()));
 
         entry.maybe_reset();
         entry.count += 1;
@@ -186,16 +186,16 @@ impl RateLimitBackend for InMemoryBackend {
         let mut entry = self
             .entries
             .entry(key.to_string())
-            .or_insert_with(|| RateLimitEntry::new(config.window));
+            .or_insert_with(|| RateLimitEntry::new(config.window()));
 
         entry.maybe_reset();
 
-        if entry.count >= config.max_requests {
+        if entry.count >= config.max_requests() {
             return Ok(RateLimitResult::denied(entry.count, entry.time_remaining()));
         }
 
         entry.count += 1;
-        let remaining = config.max_requests.saturating_sub(entry.count);
+        let remaining = config.max_requests().saturating_sub(entry.count);
         Ok(RateLimitResult::allowed(remaining, entry.count))
     }
 }

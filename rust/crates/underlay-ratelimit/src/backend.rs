@@ -37,7 +37,7 @@ pub trait RateLimitBackend: Send + Sync {
         let result = self.check(key, config).await?;
         if result.is_allowed() {
             let new_count = self.increment(key, config).await?;
-            let remaining = config.max_requests.saturating_sub(new_count);
+            let remaining = config.max_requests().saturating_sub(new_count);
             Ok(RateLimitResult::allowed(remaining, new_count))
         } else {
             Ok(result)
