@@ -273,11 +273,6 @@ Not allowed:
 
 Current drift to assess later:
 
-- Rust splits sort/filter (`QueryParams`) from page/limit (`PaginationParams`),
-  while TS combines them in one `QueryParams` shape. The wire format aligns,
-  but the ownership split should be checked for clarity and caller confusion.
-- `ts/src/client/pagination.ts` is currently just a re-export from pattern
-  types rather than a transport-specific pagination contract surface.
 - `ts/src/client/http.ts` comments imply broader retry behavior than the actual
   implementation, which retries only retryable HTTP statuses and not generic
   network failures.
@@ -285,6 +280,13 @@ Current drift to assess later:
   still needs a proper transport-normalization assessment.
 
 These are assessment hooks, not reasons to widen the contract.
+
+`g07.022` re-audited the TS query and pagination surfaces. `client/query`
+remains the focused TS owner for the shared query-string vocabulary. Its
+combined sort/filter/page shape is intentional for browser route-state and API
+command callers. `client/pagination` remains a cursor-pagination compatibility
+export; page-shaped admin/resource browse surfaces should prefer
+`client/page-lists` plus `client/envelopes` `PagedListResponse<T>`.
 
 ## Assessment Questions
 

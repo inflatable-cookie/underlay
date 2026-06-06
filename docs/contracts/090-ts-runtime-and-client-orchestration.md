@@ -338,8 +338,6 @@ Apps own:
 - most `runtime/*` files are thin re-export barrels, so implementation
   ownership and public authority are split across runtime and patterns in a way
   that is easy to misread
-- parts of `client/query` and `client/pagination` were already flagged in `020`
-  as transport-owned rather than runtime-owned
 - `runtime/ai.ts` is only a re-export of the AI routing ops controller, which
   raises the question of whether that surface truly belongs in runtime or in
   the later patterns contract
@@ -376,6 +374,11 @@ runtime subpaths while the aggregate `runtime/media` path remains valid.
 `client/types` was split additively in `g07.020`. Response envelopes,
 restore-blocker helpers, and auth-facing DTOs now have focused client subpaths
 while the aggregate `client/types` path remains valid.
+
+`client/query` and `client/pagination` were re-audited in `g07.022`.
+`client/query` remains the focused TS query-string vocabulary surface.
+`client/pagination` remains a compatibility export; page-shaped browse helpers
+live in `client/page-lists`.
 
 ## Next Task
 
