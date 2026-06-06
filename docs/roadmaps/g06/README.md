@@ -684,6 +684,7 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g06.204` is complete as the DB config field retirement artifact.
 - `g06.205` is complete as the outbox config field retirement artifact.
 - `g06.206` is complete as the security alert config field retirement artifact.
+- `g06.207` is complete as the job runner config field retirement artifact.
 - `g06` is closed.
 
 ## Batch Cards

@@ -11,10 +11,7 @@
 //! use std::time::Duration;
 //!
 //! let runner = JobRunner::new(store, registry)
-//!     .with_config(JobRunnerConfig {
-//!         poll_interval: Duration::from_secs(30), // Fallback interval
-//!         ..Default::default()
-//!     });
+//!     .with_config(JobRunnerConfig::default().with_poll_interval(Duration::from_secs(30)));
 //!
 //! runner.run_forever().await?;
 //! ```
@@ -37,10 +34,10 @@ pub struct JobRunnerConfig {
     ///
     /// Default: 30 seconds (suitable for notification mode).
     /// For polling mode without notifications, consider 250ms-1s.
-    pub poll_interval: Duration,
+    poll_interval: Duration,
 
     /// How many jobs to process before sleeping (0 = unlimited).
-    pub batch_size: usize,
+    batch_size: usize,
 }
 
 impl Default for JobRunnerConfig {
@@ -51,6 +48,26 @@ impl Default for JobRunnerConfig {
             poll_interval: Duration::from_secs(30),
             batch_size: 0,
         }
+    }
+}
+
+impl JobRunnerConfig {
+    pub fn poll_interval(&self) -> Duration {
+        self.poll_interval
+    }
+
+    pub fn batch_size(&self) -> usize {
+        self.batch_size
+    }
+
+    pub fn with_poll_interval(mut self, poll_interval: Duration) -> Self {
+        self.poll_interval = poll_interval;
+        self
+    }
+
+    pub fn with_batch_size(mut self, batch_size: usize) -> Self {
+        self.batch_size = batch_size;
+        self
     }
 }
 
@@ -199,14 +216,14 @@ where
     /// that support wake-up events.
     pub async fn run_forever(&self) -> Result<(), S::Error> {
         info!(
-            poll_interval_ms = self.config.poll_interval.as_millis(),
+            poll_interval_ms = self.config.poll_interval().as_millis(),
             "Starting job runner in polling mode"
         );
 
         loop {
             let did_work = self.run_once().await?;
             if !did_work {
-                tokio::time::sleep(self.config.poll_interval).await;
+                tokio::time::sleep(self.config.poll_interval()).await;
             }
         }
     }

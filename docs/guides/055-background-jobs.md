@@ -232,11 +232,8 @@ use underlay_jobs_postgres::{JobRepository, PgJobNotifier, PostgresJobRunnerExt}
 // Create the runner
 let job_repo = JobRepository::new(pool.clone());
 let runner = JobRunner::new(job_repo, registry)
-    .with_config(JobRunnerConfig {
-        // Fallback poll interval (only used if notifications are missed)
-        poll_interval: Duration::from_secs(30),
-        ..Default::default()
-    });
+    // Fallback poll interval, only used if notifications are missed.
+    .with_config(JobRunnerConfig::default().with_poll_interval(Duration::from_secs(30)));
 
 // Create notifier (establishes a dedicated connection for LISTEN)
 let mut notifier = PgJobNotifier::connect(&pool).await?;
@@ -265,11 +262,11 @@ The fallback poll is essential because:
 ```rust
 use underlay_jobs::JobRunnerConfig;
 
-let config = JobRunnerConfig {
+let config = JobRunnerConfig::default()
     // Fallback poll interval (notification mode) or poll frequency (polling mode)
-    poll_interval: Duration::from_secs(30),
-    batch_size: 0,  // 0 = process all available jobs before waiting
-};
+    .with_poll_interval(Duration::from_secs(30))
+    // 0 = process all available jobs before waiting
+    .with_batch_size(0);
 
 let runner = JobRunner::new(job_repo, registry)
     .with_config(config);
@@ -498,10 +495,7 @@ async fn main() -> Result<()> {
     // Create runner with LISTEN/NOTIFY support
     let job_repo = JobRepository::new(pool.clone());
     let runner = JobRunner::new(job_repo, registry)
-        .with_config(JobRunnerConfig {
-            poll_interval: Duration::from_secs(30),  // Fallback interval
-            ..Default::default()
-        });
+        .with_config(JobRunnerConfig::default().with_poll_interval(Duration::from_secs(30)));
 
     // Create notifier for efficient wake-up
     let mut notifier = PgJobNotifier::connect(&pool).await?;

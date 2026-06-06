@@ -17,7 +17,7 @@ where
     S: JobStore<Error = RepoError> + Sync,
 {
     async fn run_with_notifier(&self, notifier: &mut PgJobNotifier) -> Result<(), RepoError> {
-        let poll_interval = self.config().poll_interval;
+        let poll_interval = self.config().poll_interval();
 
         info!(
             fallback_interval_secs = poll_interval.as_secs(),
