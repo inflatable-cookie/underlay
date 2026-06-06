@@ -31,6 +31,9 @@ Primary:
 - [`ts/src/runtime/feedback.ts`](/Users/tom/Dev/projects/underlay/ts/src/runtime/feedback.ts)
 - [`ts/src/runtime/forms.ts`](/Users/tom/Dev/projects/underlay/ts/src/runtime/forms.ts)
 - [`ts/src/runtime/media.ts`](/Users/tom/Dev/projects/underlay/ts/src/runtime/media.ts)
+- [`ts/src/runtime/media/detail.ts`](/Users/tom/Dev/projects/underlay/ts/src/runtime/media/detail.ts)
+- [`ts/src/runtime/media/types.ts`](/Users/tom/Dev/projects/underlay/ts/src/runtime/media/types.ts)
+- [`ts/src/runtime/media/upload.ts`](/Users/tom/Dev/projects/underlay/ts/src/runtime/media/upload.ts)
 - [`ts/src/runtime/navigation.ts`](/Users/tom/Dev/projects/underlay/ts/src/runtime/navigation.ts)
 - [`ts/src/runtime/relations.ts`](/Users/tom/Dev/projects/underlay/ts/src/runtime/relations.ts)
 - [`ts/src/client/auth.ts`](/Users/tom/Dev/projects/underlay/ts/src/client/auth.ts)
@@ -83,6 +86,9 @@ Subpaths:
 - `runtime/feedback`
 - `runtime/forms`
 - `runtime/media`
+- `runtime/media/detail`
+- `runtime/media/types`
+- `runtime/media/upload`
 - `runtime/navigation`
 - `runtime/relations`
 
@@ -201,7 +207,14 @@ The current runtime domains are:
 - `runtime/feedback`: toasts, clipboard, banner, optimistic helpers
 - `runtime/forms`: form helpers and validated-form exports
 - `runtime/media`: blob/media upload, media DTO, and retained media-detail
-  helper surface
+  helper surface; retained as the aggregate compatibility path for media
+  workflow helpers
+- `runtime/media/detail`: media-detail route state, preview, version action,
+  and dialog helpers
+- `runtime/media/types`: media DTOs, enums, request/response shapes, labels,
+  and icon helpers
+- `runtime/media/upload`: blob upload helpers, media upload workflow helpers,
+  upload flow controller, upload plans, and file validation helpers
 - `runtime/navigation`: navigation-context exports
 - `runtime/reorder`: reorder controllers, reorder sessions, and conflict
   recovery helpers
@@ -217,6 +230,9 @@ Rule:
 - `runtime/data` is retained as an aggregate compatibility barrel; new code can
   prefer the narrower `runtime/collections`, `runtime/reorder`, and
   `runtime/selection` paths where that improves import clarity
+- `runtime/media` is retained as an aggregate compatibility barrel; new code
+  can prefer `runtime/media/types`, `runtime/media/upload`, and
+  `runtime/media/detail` where that improves import clarity
 
 For `runtime/media`, the retained helper surface includes both upload/media
 type helpers and the shared route-side media-detail helpers consumed by the
@@ -326,6 +342,10 @@ Apps own:
 - `runtime/data.ts` remains broad for compatibility; the focused
   `runtime/collections`, `runtime/reorder`, and `runtime/selection` subpaths
   should be proven in consumers before any aggregate retirement is considered
+- `runtime/media.ts` remains broad for compatibility; the focused
+  `runtime/media/types`, `runtime/media/upload`, and `runtime/media/detail`
+  subpaths should be proven in consumers before any aggregate retirement is
+  considered
 - the public runtime/client surface still reflects earlier compatibility
   decisions and may be broader than the genuinely retained orchestration layer
 
@@ -337,12 +357,14 @@ Apps own:
   some of them belong back in lower transport authority only
 - does the split between runtime and patterns still help consuming apps, or is
   it now mostly historical packaging residue
-- which controller/helper families in `runtime/media` actually belong in the
-  later shared-patterns contract instead of staying in runtime
 
 `runtime/relations` was re-audited in `g07.017` and remains one coherent
 runtime path. Relation selector context, selector types, drill-down contracts,
 and local dataset adapters are one workflow contract today.
+
+`runtime/media` was split additively in `g07.018`. Media DTO/type helpers,
+upload workflow helpers, and media-detail route helpers now have focused nested
+runtime subpaths while the aggregate `runtime/media` path remains valid.
 
 ## Next Task
 

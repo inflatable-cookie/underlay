@@ -60,6 +60,7 @@ surface easier for consuming apps to understand, import, test, and extend.
 - `g07.015`: runtime data subpath split
 - `g07.016`: runtime data focused consumer migration
 - `g07.017`: runtime relations boundary audit
+- `g07.018`: runtime media subpath split
 
 ## Consumer Family
 
@@ -96,9 +97,11 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g07.015` is complete as the runtime data subpath split.
 - `g07.016` is complete as the runtime data focused consumer migration.
 - `g07.017` is complete as the runtime relations boundary audit.
+- `g07.018` is complete as the runtime media subpath split.
 - `g07` is complete.
 
 ## Next Task
 
-No active `g07` task remains. Keep `runtime/relations` whole unless a future
-consumer migration creates clear evidence for a narrower public path.
+No active `g07` task remains. Open a bounded consumer migration card before
+moving live consumer imports from aggregate `runtime/media` to the nested media
+subpaths.

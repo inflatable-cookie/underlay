@@ -31,8 +31,9 @@ pieces before building route-local modules:
 - `MediaUsageList`
 
 For repeated route-side media-detail helper logic, prefer the retained
-`@decodelabs/underlay/runtime/media` helpers before adding app-local state or
-predicate modules:
+`@decodelabs/underlay/runtime/media/detail` helpers before adding app-local
+state or predicate modules. The aggregate `runtime/media` path remains valid
+for compatibility.
 
 - `createMediaEditDialogDraft()`
 - `createClosedMediaEditDialogState()`
@@ -68,12 +69,13 @@ predicate modules:
     createClosedMediaEditDialogState,
     createMediaEditDialogDraft,
     createMediaVersionDialogStateController,
-    formatFileSize,
     getMediaVersionPreviewUrl,
     isCurrentMediaVersion,
     isImageMedia,
     isPdfMedia
-  } from "@decodelabs/underlay/runtime/media";
+  } from "@decodelabs/underlay/runtime/media/detail";
+  import type { MediaDetail, MediaVersion } from "@decodelabs/underlay/runtime/media/types";
+  import { formatFileSize } from "@decodelabs/underlay/runtime/media/upload";
 
   let media = $state<MediaDetail | null>(null);
   let loading = $state(true);

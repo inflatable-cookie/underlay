@@ -64,6 +64,21 @@
       "types": "./ts/src/runtime/media.ts",
       "default": "./ts/src/runtime/media.ts"
     },
+    "./runtime/media/types": {
+      "svelte": "./ts/src/runtime/media/types.ts",
+      "types": "./ts/src/runtime/media/types.ts",
+      "default": "./ts/src/runtime/media/types.ts"
+    },
+    "./runtime/media/upload": {
+      "svelte": "./ts/src/runtime/media/upload.ts",
+      "types": "./ts/src/runtime/media/upload.ts",
+      "default": "./ts/src/runtime/media/upload.ts"
+    },
+    "./runtime/media/detail": {
+      "svelte": "./ts/src/runtime/media/detail.ts",
+      "types": "./ts/src/runtime/media/detail.ts",
+      "default": "./ts/src/runtime/media/detail.ts"
+    },
     "./runtime/reorder": {
       "svelte": "./ts/src/runtime/reorder.ts",
       "types": "./ts/src/runtime/reorder.ts",

@@ -99,6 +99,8 @@ Reusable templates:
   - `runtime/data` and `runtime/relations` remain retained public paths
   - focused `runtime/collections`, `runtime/reorder`, and `runtime/selection`
     subpaths were added for new lower collection workflow imports
+  - focused `runtime/media/types`, `runtime/media/upload`, and
+    `runtime/media/detail` subpaths were added for new media workflow imports
   - TS public-surface and guardrail support tests were added
 - Required actions:
   1. Import runtime helpers from focused `runtime/*` subpaths.
@@ -108,11 +110,14 @@ Reusable templates:
      `@decodelabs/underlay/runtime/data`, or use focused
      `runtime/collections`, `runtime/reorder`, and `runtime/selection` subpaths
      for new code.
-  4. Keep `@decodelabs/underlay/patterns` for retained shared auth flows,
+  4. Keep media helpers on `@decodelabs/underlay/runtime/media`, or use focused
+     `runtime/media/types`, `runtime/media/upload`, and
+     `runtime/media/detail` subpaths for new code.
+  5. Keep `@decodelabs/underlay/patterns` for retained shared auth flows,
      `SpaFormShell`, `SpaFormResult`, and contextual actions.
-  5. Remove `@decodelabs/underlay/components` from live Vite optimize
+  6. Remove `@decodelabs/underlay/components` from live Vite optimize
      dependency config if present.
-  6. Do not import app UI primitives from Underlay; use Poodle or app-local UI.
+  7. Do not import app UI primitives from Underlay; use Poodle or app-local UI.
 - Cutover:
   - canonical contract date: `2026-06-06`
   - the six known consumer roots are already updated or confirmed compatible
@@ -120,6 +125,8 @@ Reusable templates:
     `patterns/selection-history` were retired by `g07.013`
   - `runtime/data` remains valid as the aggregate compatibility path; the
     focused subpaths added in `g07.015` are additive
+  - `runtime/media` remains valid as the aggregate compatibility path; the
+    focused nested media subpaths added in `g07.018` are additive
 - Validation:
   - in `underlay`: `effigy qa:docs`
   - in `underlay`: `effigy qa:northstar`
@@ -140,11 +147,14 @@ Reusable templates:
     passed after config cleanup
   - `g07.016`: all six known consumers moved live `runtime/data` source imports
     to `runtime/collections`, `runtime/reorder`, or `runtime/selection`
+  - `g07.018`: no consumer migration required; the nested media subpaths are
+    additive and the aggregate `runtime/media` path remains valid
 - Changed guidance:
   - [g07.012 closeout artifact](../roadmaps/g07/012-ts-boundary-hardening-closeout-artifact.md)
   - [g07.013 suggestion helper compatibility export retirement](../roadmaps/g07/013-suggestion-helper-compatibility-export-retirement.md)
   - [g07.015 runtime data subpath split](../roadmaps/g07/015-runtime-data-subpath-split.md)
   - [g07.016 runtime data focused consumer migration](../roadmaps/g07/016-runtime-data-focused-consumer-migration.md)
+  - [g07.018 runtime media subpath split](../roadmaps/g07/018-runtime-media-subpath-split.md)
   - [090 TS runtime and client orchestration](../contracts/090-ts-runtime-and-client-orchestration.md)
   - [100 shared patterns and workflow shells](../contracts/100-shared-patterns-and-workflow-shells.md)
   - [120 tooling, testing, and contract artifacts](../contracts/120-tooling-testing-and-contract-artifacts.md)
@@ -405,7 +415,10 @@ Reusable templates:
   5. move reorder, pagination, and selection helpers to `@decodelabs/underlay/runtime/data`
   6. move relation search helpers to `@decodelabs/underlay/runtime/relations`
   7. move browser/timezone helpers to `@decodelabs/underlay/runtime/browser`
-  8. move media/blob helpers to `@decodelabs/underlay/runtime/media`
+  8. move media/blob helpers to `@decodelabs/underlay/runtime/media`, or to
+     `@decodelabs/underlay/runtime/media/types`,
+     `@decodelabs/underlay/runtime/media/upload`, and
+     `@decodelabs/underlay/runtime/media/detail` for focused imports
 - Validation:
   - in `underlay`: `effigy check:exports && effigy qa:docs && effigy qa:northstar`
   - in consuming apps/packages: run the repo-owned Svelte check or TS check and

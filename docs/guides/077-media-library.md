@@ -53,19 +53,19 @@ Authoritative shared contract:
 
 Underlay provides shared types and components to reduce boilerplate. For new implementations:
 
-1. **Use shared types** - Import from `underlay-db` (Rust) or `@decodelabs/underlay/runtime/media` (TypeScript)
+1. **Use shared types** - Import from `underlay-db` (Rust) or `@decodelabs/underlay/runtime/media/types` (TypeScript)
 2. **Use Poodle for the UI layer** - Poodle `MediaPicker` for local item selectors, Poodle `MediaBrowsePanel` / `MediaUploadStatusPanel` for heavier browse/upload shells, app-local media actions over Poodle `Menu` / `AlertDialog`, and Poodle `MediaThumbnail` / `MediaPreview` for display posture
 3. **Use the upload flow pattern** - the `Media Upload Pipeline` recipe for lifecycle order, and `createMediaUploadFlow` where the shared state helper still earns its place
 
 | Layer | Package | Exports |
 |-------|---------|---------|
 | Rust types | `underlay-db` | `MediaKind`, `MediaVisibility`, `MediaVersionState` |
-| TypeScript types | `@decodelabs/underlay/runtime/media` | All types, enums, and utility functions |
+| TypeScript types | `@decodelabs/underlay/runtime/media/types` | Types, enums, labels, and media utility functions |
 | App-local media actions | local app UI | Compose `Menu`, `AlertDialog`, clipboard helpers, and media commands |
 | Media workflow UI/helpers | `@poodle/svelte` | `MediaPicker`, `MediaBrowsePanel`, `MediaUploadStatusPanel`, `loadMediaBrowsePage`, `mergeMediaBrowseItems`, `createResetMediaBrowseState`, `runMediaUploadWorkflow`, `uploadMediaWithKnownHash` |
 | Display composites | `@poodle/svelte` | `MediaThumbnail` |
 | Upload primitive | `@poodle/svelte` | `FileUpload` |
-| Upload pattern | `@decodelabs/underlay/runtime/media` | `createMediaUploadFlow` |
+| Upload pattern | `@decodelabs/underlay/runtime/media/upload` | `createMediaUploadFlow` |
 
 See [Shared Underlay Components](#shared-underlay-components) for detailed usage. The sections below cover implementing the backend and custom frontend if needed.
 
@@ -1188,7 +1188,9 @@ Underlay provides reusable components and patterns for media library implementat
 
 ### Shared Types
 
-All media types are exported from `@decodelabs/underlay/runtime/media`:
+All media types are exported from `@decodelabs/underlay/runtime/media/types`.
+The aggregate `@decodelabs/underlay/runtime/media` path remains valid for
+compatibility:
 
 ```typescript
 import {
@@ -1225,7 +1227,7 @@ import {
   detectMediaKindFromMimeType,
   isMediaDeleted,
   getMediaDisplayName,
-} from "@decodelabs/underlay/runtime/media";
+} from "@decodelabs/underlay/runtime/media/types";
 ```
 
 These types match the API contracts, so your TypeScript client can use them directly. Consuming apps typically re-export these from their API client package for convenience.
@@ -1315,7 +1317,7 @@ Poodle.
 For building custom upload pages, use the `createMediaUploadFlow` state machine:
 
 ```typescript
-import { createMediaUploadFlow, type MediaUploadFlowController } from "@decodelabs/underlay/runtime/media";
+import { createMediaUploadFlow, type MediaUploadFlowController } from "@decodelabs/underlay/runtime/media/upload";
 import { mediaCommands } from "@my-client";
 import { auth } from "$lib/stores/auth";
 
@@ -1357,7 +1359,7 @@ const uploadFlow = createMediaUploadFlow({
 
 When multiple apps share the same upload wrapper shape and only differ in
 generated media command bindings, use `createMediaUploadPipeline()` from
-`@decodelabs/underlay/runtime/media` instead of hand-wrapping
+`@decodelabs/underlay/runtime/media/upload` instead of hand-wrapping
 `createMediaAndUpload()`, `replaceMediaUpload()`, and `checkMediaDuplicateFile()`
 in each app.
 
@@ -1365,7 +1367,7 @@ in each app.
 import {
   DEFAULT_MEDIA_UPLOAD_MAX_FILE_SIZE,
   createMediaUploadPipeline
-} from "@decodelabs/underlay/runtime/media";
+} from "@decodelabs/underlay/runtime/media/upload";
 import { detectMediaKindFromMimeType, mediaCommands } from "@my-client";
 
 export const MAX_FILE_SIZE = DEFAULT_MEDIA_UPLOAD_MAX_FILE_SIZE;
@@ -1561,7 +1563,8 @@ assert_eq!(serde_json::to_string(&visibility).unwrap(), "\"restricted\"");
 
 ## Blob Upload Utilities
 
-Underlay provides client-side utilities for blob uploads in `@decodelabs/underlay/runtime/media`:
+Underlay provides client-side utilities for blob uploads in
+`@decodelabs/underlay/runtime/media/upload`:
 
 ### Available Functions
 
@@ -1594,7 +1597,7 @@ import {
   ALLOWED_PDF_TYPES,    // ['application/pdf']
   ALLOWED_MEDIA_TYPES,  // Combined image + PDF
   REJECTED_VIDEO_TYPES, // Video types to reject
-} from "@decodelabs/underlay/runtime/media";
+} from "@decodelabs/underlay/runtime/media/upload";
 ```
 
 ## Best Practices
