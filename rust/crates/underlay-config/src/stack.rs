@@ -110,6 +110,7 @@ impl ConfigStack {
     }
 
     fn merge_optional_file(&self, merged: &mut Value, name: &str) -> Result<(), ConfigError> {
+        validate_overlay_name(name)?;
         let path = self.config_dir.join(format!("{name}.toml"));
         if !path.exists() {
             return Ok(());
@@ -131,4 +132,29 @@ fn read_toml_file(path: &Path) -> Result<Value, ConfigError> {
         path: path.to_path_buf(),
         source,
     })
+}
+
+fn validate_overlay_name(name: &str) -> Result<(), ConfigError> {
+    let reason = if name.is_empty() {
+        Some("name cannot be empty")
+    } else if name.trim() != name {
+        Some("name cannot contain leading or trailing whitespace")
+    } else if name == "." || name == ".." {
+        Some("name cannot be a dot path component")
+    } else if name.contains('/') || name.contains('\\') {
+        Some("name cannot contain path separators")
+    } else if name.chars().any(char::is_control) {
+        Some("name cannot contain control characters")
+    } else {
+        None
+    };
+
+    if let Some(reason) = reason {
+        return Err(ConfigError::InvalidOverlayName {
+            name: name.to_owned(),
+            reason,
+        });
+    }
+
+    Ok(())
 }

@@ -234,8 +234,9 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.167` is complete as the Acowtancy list-query consumer drift repair.
 - `g06.168` is complete as the fleet compatibility closeout audit.
 - `g06.169` is complete as the Rust runtime security surface re-audit.
-- `g06.170` is next as the config environment filename boundary hardening
+- `g06.170` is complete as the config environment filename boundary hardening
   batch.
+- `g06.171` is next as the runtime mutex poison availability hardening batch.
 
 ## Planned Runway
 
@@ -413,6 +414,7 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.168`: fleet compatibility closeout audit
 - `g06.169`: Rust runtime security surface re-audit
 - `g06.170`: config environment filename boundary hardening
+- `g06.171`: runtime mutex poison availability hardening
 
 ## Consumer Family
 
@@ -599,7 +601,8 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g06.167` is complete.
 - `g06.168` is complete.
 - `g06.169` is complete.
-- `g06.170` is next.
+- `g06.170` is complete.
+- `g06.171` is next.
 
 ## Batch Cards
 
@@ -608,4 +611,4 @@ If `g06` enters strict execution posture, keep its cards under
 
 ## Next Task
 
-Execute `g06.170`: config environment filename boundary hardening.
+Execute `g06.171`: runtime mutex poison availability hardening.

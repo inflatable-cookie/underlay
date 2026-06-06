@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.170`: config environment filename boundary hardening.
+Execute `g06.171`: runtime mutex poison availability hardening.

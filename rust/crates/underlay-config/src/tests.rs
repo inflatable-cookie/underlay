@@ -6,7 +6,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use serde::Deserialize;
 use toml::Value;
 
-use crate::{discover_config_dir, ConfigStack};
+use crate::{discover_config_dir, ConfigError, ConfigStack};
 
 #[derive(Debug, Deserialize, PartialEq, Eq)]
 struct AppConfig {
@@ -138,6 +138,69 @@ issuer = "default"
 
     assert_eq!(config.server.port, 3000);
     assert_eq!(config.auth.issuer, "default");
+}
+
+#[test]
+fn rejects_path_like_environment_overlay_names() {
+    let dir = temp_config_dir("path-like-env");
+    fs::create_dir_all(&dir).expect("create config dir");
+    fs::write(
+        dir.join("default.toml"),
+        r#"
+[server]
+host = "127.0.0.1"
+port = 3000
+
+[auth]
+issuer = "default"
+"#,
+    )
+    .expect("write default");
+
+    let err = ConfigStack::new(&dir)
+        .with_environment("../secrets")
+        .load_value()
+        .expect_err("reject path-like environment");
+
+    assert!(matches!(
+        err,
+        ConfigError::InvalidOverlayName {
+            reason: "name cannot contain path separators",
+            ..
+        }
+    ));
+}
+
+#[test]
+fn rejects_dot_local_overlay_names() {
+    let dir = temp_config_dir("dot-local");
+    fs::create_dir_all(&dir).expect("create config dir");
+    fs::write(
+        dir.join("default.toml"),
+        r#"
+[server]
+host = "127.0.0.1"
+port = 3000
+
+[auth]
+issuer = "default"
+"#,
+    )
+    .expect("write default");
+
+    let err = ConfigStack::new(&dir)
+        .with_environment("")
+        .with_optional_local_overlay("..")
+        .load_value()
+        .expect_err("reject dot local overlay");
+
+    assert!(matches!(
+        err,
+        ConfigError::InvalidOverlayName {
+            reason: "name cannot be a dot path component",
+            ..
+        }
+    ));
 }
 
 #[test]
