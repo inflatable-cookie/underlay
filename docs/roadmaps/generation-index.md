@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.128`: migration-core test support internal split.
+Execute `g06.129`: HTTP context modularity audit.

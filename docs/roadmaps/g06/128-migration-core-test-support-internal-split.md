@@ -49,8 +49,12 @@ re-enter planning.
 
 ## Current State
 
-`g06.128` is ready.
+`g06.128` is complete.
+
+Artifact:
+
+- [128 artifact](./128-migration-core-test-support-internal-split-artifact.md)
 
 ## Next Task
 
-Execute `g06.128`: migration-core test support internal split.
+Execute `g06.129`: HTTP context modularity audit.
