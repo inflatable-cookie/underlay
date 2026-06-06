@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.143`: TypeScript structural backlog triage.
+Execute `g06.144`: HTTP client tests modularity audit.

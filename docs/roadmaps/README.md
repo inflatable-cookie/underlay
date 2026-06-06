@@ -222,7 +222,8 @@ README surfaces.
 - `g06.140` is complete as the validation derive tests internal split
 - `g06.141` is complete as the Rust structural closeout audit
 - `g06.142` is complete as the Rust doctor marker cleanup
-- `g06.143` is next as the TypeScript structural backlog triage
+- `g06.143` is complete as the TypeScript structural backlog triage
+- `g06.144` is next as the HTTP client tests modularity audit
 - `g05` is closed as the shared-page, workflow-template, media capability,
   dev-flow contract, and query-variant convergence generation
 - `g05.024` is complete as the Marking Hub query variant proof and rollout

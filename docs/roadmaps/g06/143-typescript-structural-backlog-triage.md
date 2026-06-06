@@ -49,8 +49,12 @@ six consumer app updates before implementation.
 
 ## Current State
 
-`g06.143` is ready.
+`g06.143` is complete.
+
+Artifact:
+
+- [143 artifact](./143-typescript-structural-backlog-triage-artifact.md)
 
 ## Next Task
 
-Execute `g06.143`: TypeScript structural backlog triage.
+Execute `g06.144`: HTTP client tests modularity audit.
