@@ -1,4 +1,4 @@
-import type { ErrorEnvelope } from "./types";
+import type { ErrorEnvelope } from "./envelopes";
 
 export class UnderlayHttpError extends Error {
   readonly status: number;

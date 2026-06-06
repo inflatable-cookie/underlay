@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { UnderlayHttpError } from "@decodelabs/underlay/client";
+import type { User } from "@decodelabs/underlay/client/auth-types";
+import type { SingleResponse } from "@decodelabs/underlay/client/envelopes";
+import { isRestoreBlockedResult } from "@decodelabs/underlay/client/restore";
 import { appendSuggestionParams } from "@decodelabs/underlay/client/suggestions";
 import * as runtimeData from "@decodelabs/underlay/runtime/data";
 import {
@@ -16,6 +19,16 @@ import { getBlockEditor } from "@decodelabs/underlay/nightfire";
 describe("package compatibility barrels", () => {
   it("exposes retained client, runtime, and nightfire compatibility subpaths", () => {
     const error = new UnderlayHttpError(500, "failed");
+    const single: SingleResponse<User> = {
+      data: {
+        id: "user-1",
+        email: "user@example.com",
+        displayName: "User",
+        status: "active",
+        createdAt: "2026-06-06T00:00:00Z",
+        updatedAt: "2026-06-06T00:00:00Z",
+      },
+    };
     const response: PaginatedResponse<string> = {
       data: ["item"],
       nextCursor: null,
@@ -25,6 +38,8 @@ describe("package compatibility barrels", () => {
     };
 
     expect(error.status).toBe(500);
+    expect(single.data.status).toBe("active");
+    expect(isRestoreBlockedResult({})).toBe(false);
     expect(appendPaginationParams("/items", { limit: 10 })).toBe(
       "/items?limit=10",
     );

@@ -1,5 +1,6 @@
 import type { HttpClient } from "./http";
-import type { SingleResponse, Session, User } from "./types";
+import type { Session, User } from "./auth-types";
+import type { SingleResponse } from "./envelopes";
 
 export interface PasswordAuthParams {
   email: string;

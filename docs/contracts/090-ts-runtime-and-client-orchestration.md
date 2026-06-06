@@ -37,8 +37,11 @@ Primary:
 - [`ts/src/runtime/navigation.ts`](/Users/tom/Dev/projects/underlay/ts/src/runtime/navigation.ts)
 - [`ts/src/runtime/relations.ts`](/Users/tom/Dev/projects/underlay/ts/src/runtime/relations.ts)
 - [`ts/src/client/auth.ts`](/Users/tom/Dev/projects/underlay/ts/src/client/auth.ts)
+- [`ts/src/client/auth-types.ts`](/Users/tom/Dev/projects/underlay/ts/src/client/auth-types.ts)
+- [`ts/src/client/envelopes.ts`](/Users/tom/Dev/projects/underlay/ts/src/client/envelopes.ts)
 - [`ts/src/client/http.ts`](/Users/tom/Dev/projects/underlay/ts/src/client/http.ts)
 - [`ts/src/client/navigation.ts`](/Users/tom/Dev/projects/underlay/ts/src/client/navigation.ts)
+- [`ts/src/client/restore.ts`](/Users/tom/Dev/projects/underlay/ts/src/client/restore.ts)
 - [`ts/src/client/route-protection.ts`](/Users/tom/Dev/projects/underlay/ts/src/client/route-protection.ts)
 - [`ts/src/client/sveltekit.ts`](/Users/tom/Dev/projects/underlay/ts/src/client/sveltekit.ts)
 - [`ts/src/client/useAuth.ts`](/Users/tom/Dev/projects/underlay/ts/src/client/useAuth.ts)
@@ -274,6 +277,7 @@ Core pieces:
 - `ListResponse`
 - `ErrorEnvelope`
 - restore-blocker result guards and related types
+- auth-facing user, credential, session, and auth-error DTOs
 
 Rules:
 
@@ -281,9 +285,12 @@ Rules:
   canonical lower contract lives elsewhere
 - helper messaging may normalize common auth/server failure cases but must not
   invent app-specific wording rules
-- `client/types.ts` currently also carries auth-facing DTOs and restore-blocker
-  result guards, so this surface is a pragmatic holding area rather than a
-  perfectly pure lower-layer type slice
+- `client/envelopes` owns response and error-envelope DTOs
+- `client/restore` owns restore-blocker DTOs and guards
+- `client/auth-types` owns auth-facing user, credential, session, and
+  auth-error DTOs
+- `client/types` remains an aggregate compatibility barrel over those focused
+  client subpaths
 
 ## Ownership Split
 
@@ -331,11 +338,8 @@ Apps own:
 - most `runtime/*` files are thin re-export barrels, so implementation
   ownership and public authority are split across runtime and patterns in a way
   that is easy to misread
-- some client-side surfaces in this family are still broad holding areas:
-  `client/types.ts` mixes lower contract shapes, auth-facing DTOs, and
-  restore-blocker guards, while parts of `client/query` and
-  `client/pagination` were already flagged in `020` as transport-owned rather
-  than runtime-owned
+- parts of `client/query` and `client/pagination` were already flagged in `020`
+  as transport-owned rather than runtime-owned
 - `runtime/ai.ts` is only a re-export of the AI routing ops controller, which
   raises the question of whether that surface truly belongs in runtime or in
   the later patterns contract
@@ -346,6 +350,9 @@ Apps own:
   `runtime/media/types`, `runtime/media/upload`, and `runtime/media/detail`
   subpaths should be proven in consumers before any aggregate retirement is
   considered
+- `client/types.ts` remains broad for compatibility; the focused
+  `client/envelopes`, `client/restore`, and `client/auth-types` subpaths should
+  be proven in consumers before any aggregate retirement is considered
 - the public runtime/client surface still reflects earlier compatibility
   decisions and may be broader than the genuinely retained orchestration layer
 
@@ -365,6 +372,10 @@ and local dataset adapters are one workflow contract today.
 `runtime/media` was split additively in `g07.018`. Media DTO/type helpers,
 upload workflow helpers, and media-detail route helpers now have focused nested
 runtime subpaths while the aggregate `runtime/media` path remains valid.
+
+`client/types` was split additively in `g07.020`. Response envelopes,
+restore-blocker helpers, and auth-facing DTOs now have focused client subpaths
+while the aggregate `client/types` path remains valid.
 
 ## Next Task
 

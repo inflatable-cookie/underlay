@@ -101,6 +101,8 @@ Reusable templates:
     subpaths were added for new lower collection workflow imports
   - focused `runtime/media/types`, `runtime/media/upload`, and
     `runtime/media/detail` subpaths were added for new media workflow imports
+  - focused `client/envelopes`, `client/restore`, and `client/auth-types`
+    subpaths were added for new client DTO imports
   - TS public-surface and guardrail support tests were added
 - Required actions:
   1. Import runtime helpers from focused `runtime/*` subpaths.
@@ -113,11 +115,14 @@ Reusable templates:
   4. Keep media helpers on `@decodelabs/underlay/runtime/media`, or use focused
      `runtime/media/types`, `runtime/media/upload`, and
      `runtime/media/detail` subpaths for new code.
-  5. Keep `@decodelabs/underlay/patterns` for retained shared auth flows,
+  5. Keep client DTOs on `@decodelabs/underlay/client/types`, or use focused
+     `client/envelopes`, `client/restore`, and `client/auth-types` subpaths for
+     new code.
+  6. Keep `@decodelabs/underlay/patterns` for retained shared auth flows,
      `SpaFormShell`, `SpaFormResult`, and contextual actions.
-  6. Remove `@decodelabs/underlay/components` from live Vite optimize
+  7. Remove `@decodelabs/underlay/components` from live Vite optimize
      dependency config if present.
-  7. Do not import app UI primitives from Underlay; use Poodle or app-local UI.
+  8. Do not import app UI primitives from Underlay; use Poodle or app-local UI.
 - Cutover:
   - canonical contract date: `2026-06-06`
   - the six known consumer roots are already updated or confirmed compatible
@@ -127,6 +132,8 @@ Reusable templates:
     focused subpaths added in `g07.015` are additive
   - `runtime/media` remains valid as the aggregate compatibility path; the
     focused nested media subpaths added in `g07.018` are additive
+  - `client/types` remains valid as the aggregate compatibility path; the
+    focused client DTO subpaths added in `g07.020` are additive
 - Validation:
   - in `underlay`: `effigy qa:docs`
   - in `underlay`: `effigy qa:northstar`
@@ -152,6 +159,8 @@ Reusable templates:
   - `g07.019`: all six known consumers moved live aggregate `runtime/media`
     imports to `runtime/media/types`, `runtime/media/upload`, or
     `runtime/media/detail`
+  - `g07.020`: no consumer migration required; the focused client DTO subpaths
+    are additive and the aggregate `client/types` path remains valid
 - Changed guidance:
   - [g07.012 closeout artifact](../roadmaps/g07/012-ts-boundary-hardening-closeout-artifact.md)
   - [g07.013 suggestion helper compatibility export retirement](../roadmaps/g07/013-suggestion-helper-compatibility-export-retirement.md)
@@ -159,6 +168,7 @@ Reusable templates:
   - [g07.016 runtime data focused consumer migration](../roadmaps/g07/016-runtime-data-focused-consumer-migration.md)
   - [g07.018 runtime media subpath split](../roadmaps/g07/018-runtime-media-subpath-split.md)
   - [g07.019 runtime media focused consumer migration](../roadmaps/g07/019-runtime-media-focused-consumer-migration.md)
+  - [g07.020 client types subpath split](../roadmaps/g07/020-client-types-subpath-split.md)
   - [090 TS runtime and client orchestration](../contracts/090-ts-runtime-and-client-orchestration.md)
   - [100 shared patterns and workflow shells](../contracts/100-shared-patterns-and-workflow-shells.md)
   - [120 tooling, testing, and contract artifacts](../contracts/120-tooling-testing-and-contract-artifacts.md)
@@ -444,7 +454,11 @@ Reusable templates:
   4. move HTTP errors to `@decodelabs/underlay/client/errors`
   5. move SvelteKit auth/cookie helpers to `@decodelabs/underlay/client/sveltekit`
   6. move route guards to `@decodelabs/underlay/client/route-protection`
-  7. move shared response and error-envelope types to `@decodelabs/underlay/client/types`
+  7. move shared response and error-envelope types to
+     `@decodelabs/underlay/client/types`, or to
+     `@decodelabs/underlay/client/envelopes`,
+     `@decodelabs/underlay/client/restore`, and
+     `@decodelabs/underlay/client/auth-types` for focused imports
   8. move formatting helpers to `@decodelabs/underlay/client/format`
 - Validation:
   - in `underlay`: `effigy check:exports && effigy qa:docs && effigy qa:northstar`

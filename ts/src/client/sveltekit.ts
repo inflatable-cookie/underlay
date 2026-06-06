@@ -4,7 +4,7 @@ import type { AuthCommands, AuthRoutes, AuthSession } from "./auth";
 import { createAuthCommands } from "./auth";
 import { UnderlayHttpError } from "./errors";
 import { createHttpClient, type HttpClient, type TokenStore } from "./http";
-import type { SingleResponse } from "./types";
+import type { SingleResponse } from "./envelopes";
 
 export interface CookieTokenStoreOptions {
   accessTokenCookie: string;

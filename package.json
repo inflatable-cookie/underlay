@@ -213,6 +213,18 @@
       "types": "./ts/src/client/route-protection.ts",
       "default": "./ts/src/client/route-protection.ts"
     },
+    "./client/auth-types": {
+      "types": "./ts/src/client/auth-types.ts",
+      "default": "./ts/src/client/auth-types.ts"
+    },
+    "./client/envelopes": {
+      "types": "./ts/src/client/envelopes.ts",
+      "default": "./ts/src/client/envelopes.ts"
+    },
+    "./client/restore": {
+      "types": "./ts/src/client/restore.ts",
+      "default": "./ts/src/client/restore.ts"
+    },
     "./client/types": {
       "types": "./ts/src/client/types.ts",
       "default": "./ts/src/client/types.ts"

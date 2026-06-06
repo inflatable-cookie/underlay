@@ -1,4 +1,4 @@
-import type { RestoreBlocker, RestoreFieldConflict, RestoreReference } from "../client/types";
+import type { RestoreBlocker, RestoreFieldConflict, RestoreReference } from "../client/restore";
 
 export type RestoreReferenceFormatter = (input: {
   blocker: RestoreBlocker;

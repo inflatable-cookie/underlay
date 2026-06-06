@@ -4,6 +4,6 @@ export type {
   RestoreFieldConflict,
   RestoreBlocker,
   RestoreBlockedResult,
-} from "./types";
+} from "./restore";
 
-export { isRestoreBlockedResult } from "./types";
+export { isRestoreBlockedResult } from "./restore";
