@@ -99,14 +99,14 @@ fn job_handler_error_display() {
 #[test]
 fn job_config_presets() {
     let maintenance = JobConfig::maintenance();
-    assert_eq!(maintenance.max_attempts, 1);
+    assert_eq!(maintenance.max_attempts(), 1);
 
     let with_retries = JobConfig::with_retries(3);
-    assert_eq!(with_retries.max_attempts, 3);
+    assert_eq!(with_retries.max_attempts(), 3);
 
     let with_jitter = JobConfig::with_retries_and_jitter(3);
     assert!(matches!(
-        with_jitter.backoff,
+        with_jitter.backoff(),
         BackoffStrategy::Exponential {
             jitter: Some(_),
             ..
@@ -114,6 +114,6 @@ fn job_config_presets() {
     ));
 
     let long_running = JobConfig::long_running();
-    assert!(long_running.tracks_progress);
-    assert_eq!(long_running.timeout_seconds, Some(3600));
+    assert!(long_running.tracks_progress());
+    assert_eq!(long_running.timeout_seconds(), Some(3600));
 }

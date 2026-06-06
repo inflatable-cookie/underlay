@@ -65,7 +65,7 @@ impl JobStore for Arc<MemStore> {
         config: &crate::types::JobConfig,
     ) -> Result<JobFailureOutcome, Self::Error> {
         self.failures.lock().unwrap().push(job.id);
-        let will_retry = !error.is_permanent && (job.attempts + 1) < config.max_attempts as i32;
+        let will_retry = !error.is_permanent && (job.attempts + 1) < config.max_attempts() as i32;
         let dead_letter_id = if will_retry {
             None
         } else {
@@ -76,12 +76,12 @@ impl JobStore for Arc<MemStore> {
         self.failure_calls.lock().unwrap().push(FailureCall {
             job_id: job.id,
             is_permanent: error.is_permanent,
-            max_attempts: config.max_attempts,
-            retry_delay_secs: config.backoff.delay_for_attempt(0).as_secs(),
+            max_attempts: config.max_attempts(),
+            retry_delay_secs: config.backoff().delay_for_attempt(0).as_secs(),
         });
         Ok(JobFailureOutcome {
             will_retry,
-            retry_delay: will_retry.then(|| config.backoff.delay_for_attempt(0)),
+            retry_delay: will_retry.then(|| config.backoff().delay_for_attempt(0)),
             dead_letter_id,
         })
     }

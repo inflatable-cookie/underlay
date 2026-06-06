@@ -5,7 +5,7 @@ use tracing::{debug, instrument};
 use crate::postgres_dead_letters::PgDeadLetterRepository;
 use underlay_jobs::{Job, JobConfig, JobErrorRecord, JobFailureOutcome};
 
-use super::{to_raw, JobRepository, RepoError, Result};
+use super::{JobRepository, RepoError, Result, to_raw};
 
 impl JobRepository {
     /// Mark a job as failed and potentially schedule for retry.
@@ -49,7 +49,7 @@ impl JobRepository {
 
         if should_retry {
             let delay = config
-                .backoff
+                .backoff()
                 .delay_for_attempt_with_seed((attempts - 1) as u32, job_id.0.as_u128() as u64);
             let retry_at = now + chrono::Duration::from_std(delay).unwrap_or_default();
 

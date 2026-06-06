@@ -12,17 +12,17 @@ use super::backoff::{BackoffJitter, BackoffStrategy};
 #[derive(Debug, Clone)]
 pub struct JobConfig {
     /// Maximum retry attempts (default: 1, meaning no retries)
-    pub max_attempts: u32,
+    max_attempts: u32,
     /// Timeout in seconds (None = no timeout)
-    pub timeout_seconds: Option<u32>,
+    timeout_seconds: Option<u32>,
     /// Allow multiple instances of this job to run simultaneously
-    pub allow_overlap: bool,
+    allow_overlap: bool,
     /// Job priority (higher = more urgent, default: 0)
-    pub priority: i32,
+    priority: i32,
     /// Whether this job reports progress
-    pub tracks_progress: bool,
+    tracks_progress: bool,
     /// Retry backoff strategy
-    pub backoff: BackoffStrategy,
+    backoff: BackoffStrategy,
 }
 
 impl Default for JobConfig {
@@ -151,6 +151,12 @@ impl JobConfig {
         self
     }
 
+    /// Set the optional timeout in seconds.
+    pub fn with_optional_timeout(mut self, seconds: Option<u32>) -> Self {
+        self.timeout_seconds = seconds;
+        self
+    }
+
     /// Set the backoff strategy.
     ///
     /// # Example
@@ -211,5 +217,41 @@ impl JobConfig {
     pub fn allow_overlap(mut self) -> Self {
         self.allow_overlap = true;
         self
+    }
+
+    /// Set whether overlapping executions are allowed.
+    pub fn with_allow_overlap(mut self, allow_overlap: bool) -> Self {
+        self.allow_overlap = allow_overlap;
+        self
+    }
+
+    /// Return the maximum retry attempts.
+    pub fn max_attempts(&self) -> u32 {
+        self.max_attempts
+    }
+
+    /// Return the optional timeout in seconds.
+    pub fn timeout_seconds(&self) -> Option<u32> {
+        self.timeout_seconds
+    }
+
+    /// Return whether overlapping executions are allowed.
+    pub fn allow_overlap_enabled(&self) -> bool {
+        self.allow_overlap
+    }
+
+    /// Return the configured priority.
+    pub fn priority(&self) -> i32 {
+        self.priority
+    }
+
+    /// Return whether this job reports progress.
+    pub fn tracks_progress(&self) -> bool {
+        self.tracks_progress
+    }
+
+    /// Return the retry backoff strategy.
+    pub fn backoff(&self) -> &BackoffStrategy {
+        &self.backoff
     }
 }

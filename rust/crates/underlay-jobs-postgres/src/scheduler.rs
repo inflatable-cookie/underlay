@@ -111,13 +111,11 @@ impl Scheduler {
             return Ok(());
         }
 
-        let config = JobConfig {
-            max_attempts: task.max_attempts as u32,
-            timeout_seconds: task.timeout_seconds.map(|seconds| seconds as u32),
-            allow_overlap: task.allow_overlap,
-            priority: task.priority,
-            ..JobConfig::default()
-        };
+        let config = JobConfig::default()
+            .with_max_attempts(task.max_attempts as u32)
+            .with_optional_timeout(task.timeout_seconds.map(|seconds| seconds as u32))
+            .with_allow_overlap(task.allow_overlap)
+            .with_priority(task.priority);
 
         let job_id = self
             .job_repo

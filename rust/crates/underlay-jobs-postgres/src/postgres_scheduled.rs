@@ -1,7 +1,7 @@
 //! Scheduled task repository and job notification listener.
 
-use sqlx::postgres::PgListener;
 use sqlx::PgPool;
+use sqlx::postgres::PgListener;
 use std::time::Duration;
 use tracing::debug;
 
@@ -52,10 +52,10 @@ impl ScheduledTaskRepository {
         .bind(task.job_type)
         .bind(task.schedule)
         .bind(&task.payload)
-        .bind(task.config.max_attempts as i32)
-        .bind(task.config.timeout_seconds.map(|s| s as i32))
-        .bind(task.config.allow_overlap)
-        .bind(task.config.priority)
+        .bind(task.config.max_attempts() as i32)
+        .bind(task.config.timeout_seconds().map(|s| s as i32))
+        .bind(task.config.allow_overlap_enabled())
+        .bind(task.config.priority())
         .fetch_one(&self.pool)
         .await?;
 

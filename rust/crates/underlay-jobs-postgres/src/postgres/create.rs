@@ -6,7 +6,7 @@ use crate::postgres_rows::JobRow;
 use underlay_core::Uuid;
 use underlay_jobs::{Job, JobConfig, JobEvent};
 
-use super::{to_raw, JobRepository, Result};
+use super::{JobRepository, Result, to_raw};
 
 impl JobRepository {
     /// Create a new job to run immediately.
@@ -35,9 +35,9 @@ impl JobRepository {
         .bind(to_raw(id))
         .bind(job_type)
         .bind(&payload)
-        .bind(config.max_attempts as i32)
+        .bind(config.max_attempts() as i32)
         .bind(scheduled_for)
-        .bind(config.priority)
+        .bind(config.priority())
         .execute(&self.pool)
         .await?;
 
