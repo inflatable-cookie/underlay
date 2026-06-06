@@ -1,36 +1,6 @@
-//! Media configuration with sensible defaults.
-//!
-//! This module provides a reusable configuration structure for media handling
-//! that consuming applications can use with default values or customize as needed.
-//!
-//! # Example
-//!
-//! ```rust
-//! use underlay_blob::MediaConfig;
-//!
-//! // Use all defaults (50 MB max, 300px thumbnails)
-//! let config = MediaConfig::default();
-//!
-//! // Override specific values using builder methods
-//! let config = MediaConfig::default()
-//!     .max_file_size_mb(100)
-//!     .thumbnail_dimension(400);
-//!
-//! // Or use struct syntax
-//! let config = MediaConfig {
-//!     max_file_size_bytes: 100 * 1024 * 1024,
-//!     thumbnail_max_dimension: 400,
-//! };
-//! ```
+//! Media upload configuration with reusable defaults.
 
-/// Configuration for media handling with sensible defaults.
-///
-/// Provides default values that work well for most applications:
-/// - 50 MB maximum file size
-/// - 300 pixel maximum thumbnail dimension
-///
-/// Applications can override any value using the builder methods or
-/// struct field assignment.
+/// Configuration for media handling.
 #[derive(Debug, Clone)]
 pub struct MediaConfig {
     /// Maximum allowed file size for media uploads in bytes.
@@ -63,15 +33,6 @@ impl MediaConfig {
     }
 
     /// Set the maximum file size for uploads in megabytes.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use underlay_blob::MediaConfig;
-    ///
-    /// let config = MediaConfig::default().max_file_size_mb(100); // 100 MB
-    /// assert_eq!(config.max_file_size_bytes, 100 * 1024 * 1024);
-    /// ```
     pub fn max_file_size_mb(mut self, mb: u64) -> Self {
         self.max_file_size_bytes = mb * 1024 * 1024;
         self
@@ -86,15 +47,6 @@ impl MediaConfig {
     }
 
     /// Set the maximum thumbnail dimension in pixels.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use underlay_blob::MediaConfig;
-    ///
-    /// let config = MediaConfig::default().thumbnail_dimension(400);
-    /// assert_eq!(config.thumbnail_max_dimension, 400);
-    /// ```
     pub fn thumbnail_dimension(mut self, pixels: u32) -> Self {
         self.thumbnail_max_dimension = pixels;
         self

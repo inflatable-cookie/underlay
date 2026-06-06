@@ -264,7 +264,7 @@ pub enum AuthEventType {
     AccountActivate,
     AccountDelete,
 
-    // Security
+    // Threat signals
     RateLimitExceeded,
     TokenTheftDetected,
 }

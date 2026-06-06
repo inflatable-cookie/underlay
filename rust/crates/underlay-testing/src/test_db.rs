@@ -221,10 +221,7 @@ impl TestDb {
 
 impl Drop for TestDb {
     fn drop(&mut self) {
-        // Note: We can't run async cleanup in Drop, but the container
-        // will be cleaned up when it's dropped. For schema cleanup,
-        // tests should call cleanup() explicitly if needed, or the
-        // container destruction will clean everything anyway.
+        // Async schema cleanup is explicit; dropping the container cleans the database.
     }
 }
 

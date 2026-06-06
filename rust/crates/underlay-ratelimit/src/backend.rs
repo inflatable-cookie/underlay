@@ -5,38 +5,10 @@ use async_trait::async_trait;
 use crate::config::{RateLimitConfig, RateLimitResult};
 use crate::error::Result;
 
-/// Trait for rate limiting backends.
+/// Storage contract for rate limit counters.
 ///
-/// Implementations provide the storage mechanism for rate limit counters.
-/// The crate provides an in-memory implementation; other backends (Redis,
-/// PostgreSQL) can be implemented by consumers.
-///
-/// # Example Implementation
-///
-/// ```rust,ignore
-/// use underlay_ratelimit::{RateLimitBackend, RateLimitConfig, RateLimitResult, Result};
-/// use async_trait::async_trait;
-///
-/// struct RedisBackend { /* ... */ }
-///
-/// #[async_trait]
-/// impl RateLimitBackend for RedisBackend {
-///     async fn check(&self, key: &str, config: &RateLimitConfig) -> Result<RateLimitResult> {
-///         // Check Redis for current count
-///         todo!()
-///     }
-///
-///     async fn increment(&self, key: &str, config: &RateLimitConfig) -> Result<u64> {
-///         // Increment counter in Redis with TTL
-///         todo!()
-///     }
-///
-///     async fn reset(&self, key: &str) -> Result<()> {
-///         // Delete key from Redis
-///         todo!()
-///     }
-/// }
-/// ```
+/// The crate ships an in-memory backend. Consumers can implement this trait for
+/// Redis, PostgreSQL, or another shared counter store.
 #[async_trait]
 pub trait RateLimitBackend: Send + Sync {
     /// Check if a request is allowed under the rate limit.
@@ -56,11 +28,7 @@ pub trait RateLimitBackend: Send + Sync {
 
     /// Check if allowed and increment in one operation.
     ///
-    /// This is the most common operation: check if under limit, and if so,
-    /// increment the counter atomically.
-    ///
-    /// Default implementation calls check then increment, but backends can
-    /// override for atomic behavior.
+    /// Backends should override this when they can make the operation atomic.
     async fn check_and_increment(
         &self,
         key: &str,

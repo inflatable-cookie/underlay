@@ -81,7 +81,7 @@ impl AuthFixtures {
         let id = Uuid::now_v7();
         let email = Fixtures::email(prefix);
         let username = Fixtures::username(prefix);
-        // Placeholder - in real tests you'd use argon2 or similar
+        // Synthetic hash marker for tests that do not verify passwords.
         let password_hash = format!("$test$hash${}", Uuid::now_v7());
         (id, email, username, password_hash)
     }

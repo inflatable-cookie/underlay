@@ -1,6 +1,6 @@
 use super::*;
 
-// Note: These tests require Docker and are ignored by default
+// Docker-backed tests are ignored by default.
 // Run with: cargo test -p underlay-testing --features db -- --ignored
 
 #[tokio::test]

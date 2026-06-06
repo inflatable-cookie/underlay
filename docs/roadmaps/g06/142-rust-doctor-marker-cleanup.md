@@ -48,8 +48,12 @@ re-enter planning.
 
 ## Current State
 
-`g06.142` is ready.
+`g06.142` is complete.
+
+Artifact:
+
+- [142 artifact](./142-rust-doctor-marker-cleanup-artifact.md)
 
 ## Next Task
 
-Execute `g06.142`: Rust doctor marker cleanup.
+Execute `g06.143`: TypeScript structural backlog triage.

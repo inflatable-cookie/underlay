@@ -1,45 +1,8 @@
 //! Email infrastructure for Underlay applications.
 //!
-//! This crate provides a flexible, adapter-based email system that supports
-//! multiple backends (SMTP, AWS SES, etc.) with a development capture mode
-//! for local testing.
-//!
-//! # Quick Start
-//!
-//! ```rust,ignore
-//! use std::sync::Arc;
-//! use underlay_email::{EmailManager, EmailAddress, NoopAdapter};
-//!
-//! // Create an email manager with a no-op adapter (for testing)
-//! let adapter = Arc::new(NoopAdapter::new());
-//! let from = EmailAddress::new("noreply@example.com").unwrap();
-//! let manager = EmailManager::new(adapter, from);
-//!
-//! // Send an email
-//! let to = EmailAddress::new("user@example.com").unwrap();
-//! let result = manager.send_email(
-//!     to,
-//!     "Welcome!",
-//!     "Thanks for signing up.",
-//!     Some("<h1>Thanks for signing up.</h1>".to_string()),
-//! ).await?;
-//! ```
-//!
-//! # Adapter Pattern
-//!
-//! The crate uses the adapter pattern to support different email backends:
-//!
-//! - `NoopAdapter` - Does nothing (for testing)
-//! - `SmtpAdapter` - Sends via SMTP (using lettre)
-//! - `SesAdapter` - Sends via AWS SES
-//! - `DevCaptureAdapter` - Captures to database (for development)
-//!
-//! All adapters implement the `EmailAdapter` trait.
-//!
-//! # Configuration
-//!
-//! Use `AdapterType` to specify which adapter to use, along with its
-//! specific configuration (e.g., `SmtpConfig`, `SesConfig`).
+//! The crate exposes an adapter-based email manager with no-op, SMTP, SES, and
+//! development-capture backends. All backends implement `EmailAdapter`; use
+//! `AdapterType` and the adapter-specific config types to select one.
 
 mod adapter;
 pub mod adapters;
@@ -49,7 +12,6 @@ mod manager;
 mod templates;
 mod types;
 
-// Re-export main types
 pub use adapter::{EmailAdapter, NoopAdapter};
 pub use adapters::{CapturedEmail, DevCaptureAdapter, EmailStore, InMemoryEmailStore};
 pub use error::{EmailError, EmailResult};
@@ -58,7 +20,6 @@ pub use manager::{
 };
 pub use types::{Email, EmailAddress, EmailBuilder, SendResult};
 
-// Re-export adapters
 #[cfg(feature = "smtp")]
 pub use adapters::SmtpAdapter;
 
@@ -68,6 +29,5 @@ pub use adapters::SesAdapter;
 #[cfg(feature = "templates")]
 pub use templates::{EmailContext, EmailTemplateEngine};
 
-// Re-export tera for consumers who need to create custom contexts or engines
 #[cfg(feature = "templates")]
 pub use tera;

@@ -78,5 +78,4 @@ fn typed_exists_check_rejects_invalid_identifiers() {
     assert!(check.value("bad-column", "summary").is_err());
 }
 
-// Note: Integration tests with actual database connections should be
-// in the tests/ directory using testcontainers.
+// Database-backed integration coverage belongs in tests/ with testcontainers.
