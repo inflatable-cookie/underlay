@@ -215,7 +215,8 @@ README surfaces.
 - `g06.133` is complete as the migration-core drift modularity audit
 - `g06.134` is complete as the migration-core drift internal split
 - `g06.135` is complete as the media storage modularity audit
-- `g06.136` is next as the media storage internal split
+- `g06.136` is complete as the media storage internal split
+- `g06.137` is next as the migration-core orchestrator decide modularity audit
 - `g05` is closed as the shared-page, workflow-template, media capability,
   dev-flow contract, and query-variant convergence generation
 - `g05.024` is complete as the Marking Hub query variant proof and rollout

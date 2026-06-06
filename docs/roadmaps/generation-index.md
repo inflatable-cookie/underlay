@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.136`: media storage internal split.
+Execute `g06.137`: migration-core orchestrator decide modularity audit.

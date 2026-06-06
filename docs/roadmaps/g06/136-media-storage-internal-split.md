@@ -53,8 +53,12 @@ storage keys need to change, stop and re-enter planning.
 
 ## Current State
 
-`g06.136` is ready.
+`g06.136` is complete.
+
+Artifact:
+
+- [136 artifact](./136-media-storage-internal-split-artifact.md)
 
 ## Next Task
 
-Execute `g06.136`: media storage internal split.
+Execute `g06.137`: migration-core orchestrator decide modularity audit.
