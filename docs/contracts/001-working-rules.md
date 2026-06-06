@@ -51,7 +51,7 @@ Underlay is in parallel mode:
 
 ## Next Task
 
-Execute `g07.010`: consumer import compatibility sweep.
+Execute `g07.011`: stale components config cleanup.
 
 Open a new spec only if the next lane needs provisional planning beyond
 existing architecture and contracts.

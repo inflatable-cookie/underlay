@@ -52,7 +52,8 @@ surface easier for consuming apps to understand, import, test, and extend.
 - `g07.008`: TS testing and guardrail support gap inventory
 - `g07.009`: TS public-surface test and guardrail reinforcement
 - `g07.010`: consumer import compatibility sweep
-- `g07.011`: TS boundary hardening upgrade-note and closeout checkpoint
+- `g07.011`: stale components config cleanup
+- `g07.012`: TS boundary hardening upgrade-note and closeout checkpoint
 
 ## Consumer Family
 
@@ -79,8 +80,9 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g07.007` is complete as the relation selector boundary audit.
 - `g07.008` is complete as the TS testing and guardrail support gap inventory.
 - `g07.009` is complete as the TS public-surface test and guardrail reinforcement.
-- `g07.010` is next as the consumer import compatibility sweep.
+- `g07.010` is complete as the consumer import compatibility sweep.
+- `g07.011` is next as the stale components config cleanup.
 
 ## Next Task
 
-Execute `g07.010`: consumer import compatibility sweep.
+Execute `g07.011`: stale components config cleanup.

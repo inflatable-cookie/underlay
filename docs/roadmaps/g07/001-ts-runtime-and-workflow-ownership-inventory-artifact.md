@@ -114,7 +114,8 @@ fixtures if consumers are expected to test them consistently.
 - `g07.008`: TS testing and guardrail support gap inventory.
 - `g07.009`: TS public-surface test and guardrail reinforcement.
 - `g07.010`: consumer import compatibility sweep.
-- `g07.011`: TS boundary hardening upgrade-note and closeout checkpoint.
+- `g07.011`: stale components config cleanup.
+- `g07.012`: TS boundary hardening upgrade-note and closeout checkpoint.
 
 ## Consumer Upgrade Impact
 

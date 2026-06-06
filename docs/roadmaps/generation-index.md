@@ -49,4 +49,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g07.010`: consumer import compatibility sweep.
+Execute `g07.011`: stale components config cleanup.

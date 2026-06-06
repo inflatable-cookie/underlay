@@ -1,6 +1,6 @@
 # g07.010 - Consumer Import Compatibility Sweep
 
-Status: ready
+Status: complete
 Owner: repo maintainers
 Updated: 2026-06-06
 
@@ -12,12 +12,12 @@ preferred import paths before any compatibility export retirement is proposed.
 
 ## Goals
 
-- [ ] scan the six-consumer family for Underlay TS imports
-- [ ] classify imports as preferred, compatibility-only, app-local, or
+- [x] scan the six-consumer family for Underlay TS imports
+- [x] classify imports as preferred, compatibility-only, app-local, or
   candidate-migration
-- [ ] identify any consumer updates needed before compatibility exports can be
+- [x] identify any consumer updates needed before compatibility exports can be
   retired
-- [ ] keep consumer changes bounded and only make them if the affected surface
+- [x] keep consumer changes bounded and only make them if the affected surface
   is proven
 
 ## Non-Goals
@@ -29,20 +29,20 @@ preferred import paths before any compatibility export retirement is proposed.
 
 ## Execution Plan
 
-- [ ] scan `underlay-reference`, `contact-patch`, `compli-me`, `acowtancy`,
+- [x] scan `underlay-reference`, `contact-patch`, `compli-me`, `acowtancy`,
   `songsprout`, and `loophole/composer`
-- [ ] compare consumer imports with g07 preferred paths for `runtime/*`,
+- [x] compare consumer imports with g07 preferred paths for `runtime/*`,
   `client/*`, `templates`, `testing`, and `tools`
-- [ ] write a compatibility matrix and classify any required consumer edits
-- [ ] update consumers only if the edits are narrow and clearly tied to retained
+- [x] write a compatibility matrix and classify any required consumer edits
+- [x] update consumers only if the edits are narrow and clearly tied to retained
   public paths
 
 ## Acceptance Criteria
 
-- [ ] all six consumer roots have import compatibility evidence
-- [ ] compatibility-only Underlay imports are identified
-- [ ] any proposed export retirement has consumer proof or is deferred
-- [ ] no breaking change lands without same-card consumer updates
+- [x] all six consumer roots have import compatibility evidence
+- [x] compatibility-only Underlay imports are identified
+- [x] any proposed export retirement has consumer proof or is deferred
+- [x] no breaking change lands without same-card consumer updates
 
 ## Validation
 
@@ -56,10 +56,12 @@ Add consumer-local validation only if this card changes consumer code.
 
 ## Consumer Upgrade Impact
 
-None for the audit posture.
+Additive consumer cleanup.
 
-Update this section if consumer imports or Underlay exports change.
+`contact-patch/cp-client` now re-exports suggestion request helpers from
+`@decodelabs/underlay/client/suggestions` instead of the compatibility-only
+`runtime/data` path. No Underlay public API changed.
 
 ## Next Task
 
-Execute this consumer import compatibility sweep.
+Execute `g07.011`: stale components config cleanup.
