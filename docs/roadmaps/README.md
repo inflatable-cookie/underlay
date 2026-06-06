@@ -639,3 +639,4 @@ Closed queue:
 - `g06.198`: rate-limit config field retirement
 - `g06.199`: JWT config field retirement
 - `g06.200`: password config field retirement
+- `g06.201`: email TOTP config field retirement

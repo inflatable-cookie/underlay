@@ -4,19 +4,19 @@
 #[derive(Debug, Clone)]
 pub struct EmailTotpConfig {
     /// Code expiry in minutes (default: 10).
-    pub code_expiry_minutes: i32,
+    code_expiry_minutes: i32,
 
     /// Maximum codes a user can request per hour (default: 5).
-    pub max_codes_per_hour: i32,
+    max_codes_per_hour: i32,
 
     /// Maximum verification attempts per code (default: 5).
-    pub max_attempts: i32,
+    max_attempts: i32,
 
     /// Verification session expiry in minutes after successful verification (default: 5).
-    pub session_expiry_minutes: i32,
+    session_expiry_minutes: i32,
 
     /// Number of digits in the code (default: 6).
-    pub code_length: usize,
+    code_length: usize,
 }
 
 impl Default for EmailTotpConfig {
@@ -35,6 +35,26 @@ impl EmailTotpConfig {
     /// Create a new configuration with default values.
     pub fn new() -> Self {
         Self::default()
+    }
+
+    pub fn code_expiry_minutes(&self) -> i32 {
+        self.code_expiry_minutes
+    }
+
+    pub fn max_codes_per_hour(&self) -> i32 {
+        self.max_codes_per_hour
+    }
+
+    pub fn max_attempts(&self) -> i32 {
+        self.max_attempts
+    }
+
+    pub fn session_expiry_minutes(&self) -> i32 {
+        self.session_expiry_minutes
+    }
+
+    pub fn code_length(&self) -> usize {
+        self.code_length
     }
 
     /// Set the code expiry time in minutes.

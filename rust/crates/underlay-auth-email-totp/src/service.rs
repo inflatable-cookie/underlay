@@ -129,7 +129,7 @@ where
         // Check rate limit
         let rate_limit = self
             .code_repository
-            .check_rate_limit(user_id, purpose, self.config.max_codes_per_hour)
+            .check_rate_limit(user_id, purpose, self.config.max_codes_per_hour())
             .await?;
 
         if rate_limit.is_limited {
@@ -143,7 +143,7 @@ where
         }
 
         // Generate code
-        let code = generate_code(self.config.code_length);
+        let code = generate_code(self.config.code_length());
 
         // Hash the code for storage
         let code_hash = self
@@ -152,7 +152,7 @@ where
             .map_err(|e| EmailTotpError::Storage(format!("failed to hash code: {}", e)))?;
 
         // Calculate expiry
-        let expires_at = Utc::now() + Duration::minutes(self.config.code_expiry_minutes as i64);
+        let expires_at = Utc::now() + Duration::minutes(self.config.code_expiry_minutes() as i64);
 
         // Store the code
         self.code_repository
@@ -162,13 +162,13 @@ where
                 &code_hash,
                 purpose,
                 expires_at,
-                self.config.max_attempts,
+                self.config.max_attempts(),
             )
             .await?;
 
         // Send the email
         self.email_sender
-            .send_code(email, &code, purpose, self.config.code_expiry_minutes)
+            .send_code(email, &code, purpose, self.config.code_expiry_minutes())
             .await?;
 
         // Increment send count after successful send
@@ -250,7 +250,7 @@ where
 
         // Create verification session
         let session_expires_at =
-            Utc::now() + Duration::minutes(self.config.session_expiry_minutes as i64);
+            Utc::now() + Duration::minutes(self.config.session_expiry_minutes() as i64);
 
         let session = self
             .session_repository

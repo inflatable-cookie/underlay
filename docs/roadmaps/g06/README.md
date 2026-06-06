@@ -678,6 +678,7 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g06.198` is complete as the rate-limit config field retirement artifact.
 - `g06.199` is complete as the JWT config field retirement artifact.
 - `g06.200` is complete as the password config field retirement artifact.
+- `g06.201` is complete as the email TOTP config field retirement artifact.
 - `g06` is closed.
 
 ## Batch Cards
