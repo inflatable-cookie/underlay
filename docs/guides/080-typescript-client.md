@@ -41,14 +41,14 @@ root `@decodelabs/underlay` barrel is retired.
 
 ### Core HTTP Client
 
-- `createHttpClient(options: HttpClientOptions): HttpClient` - Low-level fetch wrapper with automatic token management, retry logic, and timeout support
+- `createHttpClient(options: HttpClientOptions): HttpClient` - Low-level fetch wrapper with automatic token management, status retry for idempotent requests, and timeout support
 - `HttpClient` - Interface for making HTTP requests
 - `HttpClientOptions` - Configuration for the HTTP client (includes `maxRetries`, `retryStatuses`, `timeoutMs`, `debug`)
 - `HttpRequest` - Request shape for custom requests
 
 **Built-in Features** (as of v0.1.0):
-- ✅ **Retry logic** with exponential backoff (defaults: 502, 503, 504)
-- ✅ **Timeout support** via AbortController (default: 8000ms for idempotent requests)
+- ✅ **Status retry** with exponential backoff for idempotent requests (defaults: 502, 503, 504)
+- ✅ **Timeout support** via AbortController for idempotent requests (default: 8000ms)
 - ✅ **Configurable retry statuses** (e.g., add 429 for rate limiting)
 - ✅ **Debug logging** option for request tracing
 - ✅ **Token refresh** integration (401 auto-retry)
@@ -848,7 +848,7 @@ This pattern provides:
 ## Notes
 
 - Commands call `getHttpClient()` to get a configured HttpClient instance
-- The HttpClient handles base URL, headers, auth, retries, and timeouts
+- The HttpClient handles base URL, headers, auth, status retries for idempotent requests, and idempotent-request timeouts
 - On non-2xx responses, Underlay throws `UnderlayHttpError`
 - Use `isErrorEnvelope()` to safely check if an unknown value is an error envelope
 - Use `isAuthError()` to check if an error should trigger a login redirect

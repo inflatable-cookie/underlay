@@ -139,7 +139,8 @@ describe("createHttpClient retry and timeout", () => {
       vi.useRealTimers();
     });
 
-    it.skip("should not timeout POST requests", async () => {
+    it("should not timeout POST requests", async () => {
+      vi.useFakeTimers();
       fetchMock = mockFetchWithDelay({ id: "123" }, 10000);
 
       const client = createHttpClient({
@@ -155,6 +156,7 @@ describe("createHttpClient retry and timeout", () => {
 
       const result = await promise;
       expect(result).toEqual({ data: { id: "123" } });
+      vi.useRealTimers();
     });
   });
 });

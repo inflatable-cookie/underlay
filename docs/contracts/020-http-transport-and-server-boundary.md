@@ -273,9 +273,6 @@ Not allowed:
 
 Current drift to assess later:
 
-- `ts/src/client/http.ts` comments imply broader retry behavior than the actual
-  implementation, which retries only retryable HTTP statuses and not generic
-  network failures.
 - the richer validation-rejection helper identified in the foundation contract
   still needs a proper transport-normalization assessment.
 
@@ -287,6 +284,12 @@ combined sort/filter/page shape is intentional for browser route-state and API
 command callers. `client/pagination` remains a cursor-pagination compatibility
 export; page-shaped admin/resource browse surfaces should prefer
 `client/page-lists` plus `client/envelopes` `PagedListResponse<T>`.
+
+`g07.023` re-audited TS HTTP retry and timeout behavior. The implementation is
+intentional: retry applies only to idempotent methods and configured retryable
+HTTP statuses; network failures and timeout aborts are normalized to
+`UnderlayHttpError(0)` without retry. Timeout protection is also limited to
+idempotent methods.
 
 ## Assessment Questions
 
