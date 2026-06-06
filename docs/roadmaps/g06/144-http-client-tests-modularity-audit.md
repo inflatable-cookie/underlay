@@ -49,8 +49,12 @@ must change, stop and re-enter planning.
 
 ## Current State
 
-`g06.144` is ready.
+`g06.144` is complete.
+
+Artifact:
+
+- [144 artifact](./144-http-client-tests-modularity-audit-artifact.md)
 
 ## Next Task
 
-Execute `g06.144`: HTTP client tests modularity audit.
+Execute `g06.145`: HTTP client tests internal split.

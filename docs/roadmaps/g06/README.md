@@ -208,7 +208,8 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.141` is complete as the Rust structural closeout audit.
 - `g06.142` is complete as the Rust doctor marker cleanup.
 - `g06.143` is complete as the TypeScript structural backlog triage.
-- `g06.144` is next as the HTTP client tests modularity audit.
+- `g06.144` is complete as the HTTP client tests modularity audit.
+- `g06.145` is next as the HTTP client tests internal split.
 
 ## Planned Runway
 
@@ -360,6 +361,7 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.142`: Rust doctor marker cleanup
 - `g06.143`: TypeScript structural backlog triage
 - `g06.144`: HTTP client tests modularity audit
+- `g06.145`: HTTP client tests internal split
 
 ## Consumer Family
 
@@ -520,7 +522,8 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g06.141` is complete.
 - `g06.142` is complete.
 - `g06.143` is complete.
-- `g06.144` is next.
+- `g06.144` is complete.
+- `g06.145` is next.
 
 ## Batch Cards
 
@@ -529,4 +532,4 @@ If `g06` enters strict execution posture, keep its cards under
 
 ## Next Task
 
-Execute `g06.144`: HTTP client tests modularity audit.
+Execute `g06.145`: HTTP client tests internal split.

@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.144`: HTTP client tests modularity audit.
+Execute `g06.145`: HTTP client tests internal split.
