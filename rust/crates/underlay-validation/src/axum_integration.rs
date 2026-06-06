@@ -10,6 +10,7 @@ use axum::{
     Json,
 };
 use serde::de::DeserializeOwned;
+use std::collections::HashMap;
 use underlay_core::{ErrorBody, ErrorEnvelope};
 
 use crate::{Validate, ValidationError};
@@ -65,20 +66,26 @@ impl IntoResponse for ValidatedJsonRejection {
     fn into_response(self) -> Response {
         match self {
             Self::JsonRejection(rejection) => {
-                let body = serde_json::json!({
-                    "error": {
-                        "code": "json.invalid",
-                        "message": rejection.body_text(),
-                    }
-                });
-                (StatusCode::BAD_REQUEST, Json(body)).into_response()
+                let envelope = ErrorEnvelope {
+                    error: ErrorBody {
+                        code: "json.invalid".to_string(),
+                        message: rejection.body_text(),
+                        field_errors: None,
+                    },
+                };
+                (StatusCode::BAD_REQUEST, Json(envelope)).into_response()
             }
             Self::ValidationError(error) => {
-                let field_errors = error
+                let field_errors: HashMap<String, String> = error
                     .field_errors
                     .into_iter()
                     .map(|(field, err)| (field, err.message))
                     .collect();
+                let field_errors = if field_errors.is_empty() {
+                    None
+                } else {
+                    Some(field_errors)
+                };
                 let envelope = ErrorEnvelope {
                     error: ErrorBody {
                         code: error
@@ -87,7 +94,7 @@ impl IntoResponse for ValidatedJsonRejection {
                         message: error
                             .message
                             .unwrap_or_else(|| "Validation failed".to_string()),
-                        field_errors: Some(field_errors),
+                        field_errors,
                     },
                 };
                 (StatusCode::BAD_REQUEST, Json(envelope)).into_response()

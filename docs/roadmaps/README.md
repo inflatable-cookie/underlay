@@ -284,6 +284,8 @@ README surfaces.
 - `g06.178` is complete as the six-consumer Rust API compatibility sweep
 - `g06.179` is complete as the Rust hardening release-note and upgrade-guidance closeout
 - `g06.180` is complete as the g06 closeout readiness checkpoint
+- `g06.181` is complete as the validation rejection envelope normalization
+  artifact
 - `g06` is closed as the Rust platform-contract transition and reference-grade
   reset generation
 - `g05` is closed as the shared-page, workflow-template, media capability,
@@ -404,7 +406,9 @@ README surfaces.
 ## Next Task
 
 No active roadmap task remains. Open a bounded roadmap card before starting the
-next compatibility-retirement or TS boundary lane.
+next compatibility-retirement, TS boundary, or Rust hardening lane. Bounded
+post-closeout artifacts may repair stale contract drift when they do not reopen
+a generation queue.
 - `g01.090` is complete for confirming that the remaining public `@decodelabs/underlay/patterns` surface is the true retained workflow stop point rather than unresolved migration debt
 - `g01.091` is complete for confirming the retained `client` package boundary, exposing explicit `client/*` public subpaths for the live feature families, and keeping the root barrel stable as a convenience surface
 - `g01.092` is complete for confirming the retained `nightfire` package boundary, exposing explicit `nightfire/*` public subpaths for the live extension families, and keeping the root barrel stable as a convenience surface
@@ -596,3 +600,4 @@ Closed queue:
 - `g06.178`: six-consumer Rust API compatibility sweep
 - `g06.179`: Rust hardening release-note and upgrade-guidance closeout
 - `g06.180`: g06 closeout readiness checkpoint
+- `g06.181`: validation rejection envelope normalization

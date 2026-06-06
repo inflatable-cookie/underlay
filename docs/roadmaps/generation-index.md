@@ -20,7 +20,7 @@ Updated: 2026-06-06
 | `g03` | 2026-05-04 | Template-system generation after `g02.007` closeout | Closed after template-system proof line |
 | `g04` | 2026-05-08 | Independent contract-coverage thread under explicit parallel mode | Closed after contract coverage, assessment, and bounded repairs |
 | `g05` | 2026-05-xx | Shared page, workflow template, and consumer capability generation | Closed after query-variant and consumer capability line |
-| `g06` | 2026-06-05 | Rust platform-contract transition after code-quality audit | Closed after the reference-grade reset, Rust hardening lane, six-consumer proof, and upgrade-guidance closeout |
+| `g06` | 2026-06-05 | Rust platform-contract transition after code-quality audit | Closed after the reference-grade reset, Rust hardening lane, six-consumer proof, upgrade-guidance closeout, and bounded validation-rejection drift repair |
 | `g07` | 2026-06-06 | TS runtime and workflow boundary hardening after `g06` closeout | Complete after `g07.023` client HTTP retry timeout audit |
 
 ## Historical generations
@@ -51,4 +51,6 @@ In parallel mode:
 ## Next Task
 
 No active roadmap task remains. Open a bounded roadmap card before starting the
-next compatibility-retirement or TS boundary lane.
+next compatibility-retirement, TS boundary, or Rust hardening lane. Bounded
+post-closeout artifacts may repair stale contract drift when they do not reopen
+a generation queue.

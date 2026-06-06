@@ -194,12 +194,17 @@ Not allowed:
 
 Current drift worth assessing next:
 
-- [`rust/crates/underlay-validation/src/axum_integration.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-validation/src/axum_integration.rs)
-  currently emits `field_errors` and leaks the richer internal validation map
-  shape instead of fully normalizing to the canonical transport envelope.
 - `ts/src/client/envelopes.ts` is now the focused TS primitive envelope
   authority. `ts/src/client/types.ts` remains an aggregate compatibility barrel
   and should not be treated as permission to add unrelated domain types.
+
+Resolved assessment:
+
+- `g06.181` normalized `ValidatedJsonRejection` through
+  `underlay_core::ErrorEnvelope`. Validation failures collapse rich
+  `ValidationError` internals to `error.fieldErrors: Record<string, string>`,
+  invalid JSON uses the same canonical error DTO, and empty validation field
+  maps are omitted.
 
 These are implementation-assessment items, not reasons to widen this contract.
 

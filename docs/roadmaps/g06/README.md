@@ -637,6 +637,8 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g06.178` is complete.
 - `g06.179` is complete.
 - `g06.180` is complete.
+- `g06.181` is complete as the validation rejection envelope normalization
+  artifact.
 - `g06` is closed.
 
 ## Batch Cards
@@ -648,5 +650,5 @@ If `g06` enters strict execution posture, keep its cards under
 
 `g06` is closed.
 
-Re-enter planning before opening the next roadmap lane. Do not continue from
-old `g06` history by implication.
+Re-enter planning before opening the next roadmap lane. Only add further `g06`
+artifacts when they repair stale contract drift from the Rust platform reset.

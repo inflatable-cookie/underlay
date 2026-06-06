@@ -112,5 +112,5 @@ Each consumer-affecting milestone must classify impact as `additive`,
 
 ## Next Task
 
-No active `g07` task remains. Audit the remaining validation-rejection
-transport-normalization drift named in `010` and `020`.
+No active `g07` task remains. The validation-rejection transport-normalization
+drift named in `010` and `020` was resolved by `g06.181`.

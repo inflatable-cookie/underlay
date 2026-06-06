@@ -52,5 +52,5 @@ No public API or behavior changed.
 
 ## Next Task
 
-Audit the remaining validation-rejection transport-normalization drift named in
-`010` and `020`.
+No active `g07` task remains. The validation-rejection transport-normalization
+drift named in `010` and `020` was resolved by `g06.181`.

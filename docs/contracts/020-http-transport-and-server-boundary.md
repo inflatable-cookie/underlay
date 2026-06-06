@@ -271,10 +271,12 @@ Not allowed:
 
 ## Known Drift And Assessment Hooks
 
-Current drift to assess later:
+Resolved assessment:
 
-- the richer validation-rejection helper identified in the foundation contract
-  still needs a proper transport-normalization assessment.
+- `g06.181` normalized the richer validation-rejection helper identified in the
+  foundation contract. `ValidatedJsonRejection` now returns the canonical
+  `ErrorEnvelope` for malformed JSON and validation failures, with optional
+  `error.fieldErrors` only when field-scoped feedback exists.
 
 These are assessment hooks, not reasons to widen the contract.
 
