@@ -680,6 +680,7 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g06.200` is complete as the password config field retirement artifact.
 - `g06.201` is complete as the email TOTP config field retirement artifact.
 - `g06.202` is complete as the OAuth config field retirement artifact.
+- `g06.203` is complete as the observability config field retirement artifact.
 - `g06` is closed.
 
 ## Batch Cards

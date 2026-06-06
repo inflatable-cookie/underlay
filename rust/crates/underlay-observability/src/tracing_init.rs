@@ -114,18 +114,30 @@ pub enum LogFormat {
 pub struct ObservabilityConfig {
     /// Fallback log level when `RUST_LOG` is not present.
     /// Default: "info"
-    pub level: Option<String>,
+    level: Option<String>,
     /// Log output format.
     /// Default: Pretty
-    pub format: LogFormat,
+    format: LogFormat,
     /// Runtime environment (optional, for context in logs).
-    pub environment: Option<Environment>,
+    environment: Option<Environment>,
 }
 
 impl ObservabilityConfig {
     /// Create a new config with default values.
     pub fn new() -> Self {
         Self::default()
+    }
+
+    pub fn level(&self) -> Option<&str> {
+        self.level.as_deref()
+    }
+
+    pub fn format(&self) -> LogFormat {
+        self.format
+    }
+
+    pub fn environment(&self) -> Option<Environment> {
+        self.environment
     }
 
     /// Create a config with environment-appropriate defaults.
@@ -192,11 +204,11 @@ impl ObservabilityConfig {
 /// - Flattens event fields for easier querying
 pub fn init_tracing(config: ObservabilityConfig) {
     let env_filter = EnvFilter::try_from_default_env().unwrap_or_else(|_| {
-        let level = config.level.as_deref().unwrap_or("info");
+        let level = config.level().unwrap_or("info");
         EnvFilter::new(level)
     });
 
-    match config.format {
+    match config.format() {
         LogFormat::Pretty => {
             fmt()
                 .pretty()

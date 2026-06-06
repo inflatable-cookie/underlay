@@ -38,19 +38,19 @@ fn observability_config_builders_apply_overrides() {
         .with_format(LogFormat::Json)
         .with_environment(Environment::Prod);
 
-    assert_eq!(cfg.level.as_deref(), Some("debug"));
-    assert_eq!(cfg.format, LogFormat::Json);
-    assert_eq!(cfg.environment, Some(Environment::Prod));
+    assert_eq!(cfg.level(), Some("debug"));
+    assert_eq!(cfg.format(), LogFormat::Json);
+    assert_eq!(cfg.environment(), Some(Environment::Prod));
 }
 
 #[test]
 fn for_environment_uses_env_default_format() {
     let prod = ObservabilityConfig::for_environment(Environment::Prod);
-    assert_eq!(prod.format, LogFormat::Json);
-    assert_eq!(prod.environment, Some(Environment::Prod));
-    assert_eq!(prod.level, None);
+    assert_eq!(prod.format(), LogFormat::Json);
+    assert_eq!(prod.environment(), Some(Environment::Prod));
+    assert_eq!(prod.level(), None);
 
     let local = ObservabilityConfig::for_environment(Environment::Local);
-    assert_eq!(local.format, LogFormat::Pretty);
-    assert_eq!(local.environment, Some(Environment::Local));
+    assert_eq!(local.format(), LogFormat::Pretty);
+    assert_eq!(local.environment(), Some(Environment::Local));
 }
