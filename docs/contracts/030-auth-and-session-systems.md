@@ -408,18 +408,21 @@ Not allowed:
 
 Current drift worth assessing later:
 
-- [`docs/architecture/050-auth-database-schema.md`](/Users/tom/Dev/projects/underlay/docs/architecture/050-auth-database-schema.md)
-  no longer cleanly matches the live shared types:
-  - `display_name` is documented as required there but optional in the shared
-    `User` type
-  - sessions are documented with `revoked` flags while the shared type now uses
-    `SessionStatus`
 - `ts/src/runtime/auth.ts` currently re-exports pattern-layer auth helpers,
   which suggests the runtime/pattern ownership boundary still needs a later
   assessment pass
 - the exported auth workflow shell surface is intentionally small, but the
   internal workflow folder is broader; later pattern-contract work should check
   whether that internal breadth still earns retained Underlay ownership
+
+Resolved assessment:
+
+- `g06.182` confirmed
+  [`docs/architecture/050-auth-database-schema.md`](/Users/tom/Dev/projects/underlay/docs/architecture/050-auth-database-schema.md)
+  now matches the live shared auth schema and Rust type boundary:
+  `auth.users` does not store `display_name`, `User.display_name` remains an
+  optional projection field, profile data belongs in `account.user_profile`,
+  and sessions use `SessionStatus` plus revocation metadata.
 
 These are assessment hooks, not reasons to widen the contract.
 

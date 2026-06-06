@@ -20,7 +20,7 @@ Updated: 2026-06-06
 | `g03` | 2026-05-04 | Template-system generation after `g02.007` closeout | Closed after template-system proof line |
 | `g04` | 2026-05-08 | Independent contract-coverage thread under explicit parallel mode | Closed after contract coverage, assessment, and bounded repairs |
 | `g05` | 2026-05-xx | Shared page, workflow template, and consumer capability generation | Closed after query-variant and consumer capability line |
-| `g06` | 2026-06-05 | Rust platform-contract transition after code-quality audit | Closed after the reference-grade reset, Rust hardening lane, six-consumer proof, upgrade-guidance closeout, and bounded validation-rejection drift repair |
+| `g06` | 2026-06-05 | Rust platform-contract transition after code-quality audit | Closed after the reference-grade reset, Rust hardening lane, six-consumer proof, upgrade-guidance closeout, and bounded stale-drift repairs |
 | `g07` | 2026-06-06 | TS runtime and workflow boundary hardening after `g06` closeout | Complete after `g07.023` client HTTP retry timeout audit |
 
 ## Historical generations

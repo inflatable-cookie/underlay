@@ -286,6 +286,7 @@ README surfaces.
 - `g06.180` is complete as the g06 closeout readiness checkpoint
 - `g06.181` is complete as the validation rejection envelope normalization
   artifact
+- `g06.182` is complete as the auth schema drift contract cleanup artifact
 - `g06` is closed as the Rust platform-contract transition and reference-grade
   reset generation
 - `g05` is closed as the shared-page, workflow-template, media capability,
@@ -601,3 +602,4 @@ Closed queue:
 - `g06.179`: Rust hardening release-note and upgrade-guidance closeout
 - `g06.180`: g06 closeout readiness checkpoint
 - `g06.181`: validation rejection envelope normalization
+- `g06.182`: auth schema drift contract cleanup
