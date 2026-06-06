@@ -218,7 +218,8 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.151` is complete as the template types internal split.
 - `g06.152` is complete as the optimistic tests modularity audit.
 - `g06.153` is complete as the optimistic tests internal split.
-- `g06.154` is next as the TypeScript structural closeout audit.
+- `g06.154` is complete as the TypeScript structural closeout audit.
+- `g06.155` is next as the TypeScript doctor error cleanup.
 
 ## Planned Runway
 
@@ -380,6 +381,7 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.152`: optimistic tests modularity audit
 - `g06.153`: optimistic tests internal split
 - `g06.154`: TypeScript structural closeout audit
+- `g06.155`: TypeScript doctor error cleanup
 
 ## Consumer Family
 
@@ -550,7 +552,8 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g06.151` is complete.
 - `g06.152` is complete.
 - `g06.153` is complete.
-- `g06.154` is next.
+- `g06.154` is complete.
+- `g06.155` is next.
 
 ## Batch Cards
 
@@ -559,4 +562,4 @@ If `g06` enters strict execution posture, keep its cards under
 
 ## Next Task
 
-Execute `g06.154`: TypeScript structural closeout audit.
+Execute `g06.155`: TypeScript doctor error cleanup.

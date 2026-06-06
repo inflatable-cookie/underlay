@@ -50,8 +50,12 @@ This is structural audit work.
 
 ## Current State
 
-`g06.154` is ready.
+`g06.154` is complete.
+
+Artifact:
+
+- [`154-typescript-structural-closeout-audit-artifact.md`](154-typescript-structural-closeout-audit-artifact.md)
 
 ## Next Task
 
-Execute `g06.154`: TypeScript structural closeout audit.
+Execute `g06.155`: TypeScript doctor error cleanup.
