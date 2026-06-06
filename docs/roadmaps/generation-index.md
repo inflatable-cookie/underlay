@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.167`: Acowtancy list-query consumer drift repair.
+Execute `g06.168`: fleet compatibility closeout audit.

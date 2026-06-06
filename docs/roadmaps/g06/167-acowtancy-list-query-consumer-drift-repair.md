@@ -47,8 +47,29 @@ No Underlay breaking change is expected.
 
 ## Current State
 
-`g06.167` is ready.
+`g06.167` is complete.
+
+Result:
+
+- Cattle Grid removed `offset` from the learning-module list command contract.
+- `listModulesForListAdmin` remains a cursor-shaped convenience wrapper over
+  the canonical page-list route.
+- The admin-cache test now feeds the page-shaped API payload and asserts the
+  cursor-shaped convenience response.
+- Acowtancy root health passes.
+
+Commits:
+
+- `acowtancy/cattle-grid@56af4f6`: Fix learning module list query drift
+- `acowtancy/market@8cc9450`: Update Cattle Grid list query repair
+
+Validation:
+
+- `bun x vitest run tests/learning-modules-admin-cache.test.ts`: passed
+- `effigy check` from `cattle-grid`: passed
+- `bash ledger/scripts/audit-list-query-contract.sh`: passed
+- `effigy health` from Acowtancy root: passed
 
 ## Next Task
 
-Execute `g06.167`: Acowtancy list-query consumer drift repair.
+Execute `g06.168`: fleet compatibility closeout audit.
