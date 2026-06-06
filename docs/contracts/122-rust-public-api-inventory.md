@@ -223,4 +223,5 @@ Stop and re-enter planning if:
 
 ## Next Task
 
-Execute the next `g06` reference-grade architecture reset task.
+No active Rust public API retirement task remains. Re-enter planning before
+opening another compatibility-retirement lane.

@@ -22,12 +22,12 @@ Posture: baseline-routing.
 
 ## Goals
 
-- [ ] Retire direct construction for residual Rust policy/config surfaces where
+- [x] Retire direct construction for residual Rust policy/config surfaces where
   invariants matter.
-- [ ] Keep serialized DTO and report shapes stable unless a card explicitly
+- [x] Keep serialized DTO and report shapes stable unless a card explicitly
   classifies a breaking change.
-- [ ] Prove any consumer-affecting changes across the current six-app family.
-- [ ] Leave devtools-only raw CLI edges explicit when strings are the correct
+- [x] Prove any consumer-affecting changes across the current six-app family.
+- [x] Leave devtools-only raw CLI edges explicit when strings are the correct
   boundary.
 
 ## Execution Plan
@@ -35,15 +35,15 @@ Posture: baseline-routing.
 - [x] `g08.001`: migration-core pipeline and integrity policy field retirement.
 - [x] `g08.002`: devtools bundle/seed option constructor and accessor audit.
 - [x] `g08.003`: migration-core governance/OCI/manifest policy model audit.
-- [ ] `g08.004`: residual Rust public config closeout and compatibility proof.
+- [x] `g08.004`: residual Rust public config closeout and compatibility proof.
 
 ## Acceptance Criteria
 
-- [ ] Public policy/config types expose defaults, constructors, builders, and
+- [x] Public policy/config types expose defaults, constructors, builders, and
   read-only accessors for app-facing use.
-- [ ] Internal code does not rely on mutable public fields for policy behavior.
-- [ ] Current consumers compile or are listed with explicit upgrade impact.
-- [ ] `effigy rust:check`, `effigy qa:docs`, and `effigy qa:northstar` pass for
+- [x] Internal code does not rely on mutable public fields for policy behavior.
+- [x] Current consumers compile or are listed with explicit upgrade impact.
+- [x] `effigy rust:check`, `effigy qa:docs`, and `effigy qa:northstar` pass for
   completed code batches.
 
 ## Consumer Family
@@ -60,8 +60,10 @@ Posture: baseline-routing.
 - `g08.001` is complete.
 - `g08.002` is complete.
 - `g08.003` is complete.
-- `g08.004` is next.
+- `g08.004` is complete.
+- `g08` is complete.
 
 ## Next Task
 
-Continue with `g08.004`.
+No active `g08` task remains. Re-enter planning before opening another Rust
+compatibility-retirement lane.

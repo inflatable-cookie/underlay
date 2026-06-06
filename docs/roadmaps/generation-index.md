@@ -9,7 +9,7 @@ Updated: 2026-06-06
 
 ## Active generations
 
-- `g08`
+- None
 
 ## Generation log
 
@@ -22,10 +22,11 @@ Updated: 2026-06-06
 | `g05` | 2026-05-xx | Shared page, workflow template, and consumer capability generation | Closed after query-variant and consumer capability line |
 | `g06` | 2026-06-05 | Rust platform-contract transition after code-quality audit | Closed after the reference-grade reset, Rust hardening lane, six-consumer proof, upgrade-guidance closeout, and bounded stale-drift repairs |
 | `g07` | 2026-06-06 | TS runtime and workflow boundary hardening after `g06` closeout | Complete after `g07.023` client HTTP retry timeout audit |
-| `g08` | 2026-06-06 | Residual Rust public policy and tooling boundary hardening after `g06`/`g07` closeout | Active |
+| `g08` | 2026-06-06 | Residual Rust public policy and tooling boundary hardening after `g06`/`g07` closeout | Complete after residual config/policy closeout |
 
 ## Historical generations
 
+- [g08 - Residual Rust Public Policy And Tooling Boundary Hardening](g08/README.md) (complete)
 - [g07 - TS Runtime And Workflow Boundary Hardening](g07/README.md) (complete)
 - [g06 - Rust Platform Contract Transition](g06/README.md) (complete)
 - [g05 - Shared Page, Workflow Template, And Query Variant Work](g05/README.md) (complete)
@@ -51,4 +52,5 @@ In parallel mode:
 
 ## Next Task
 
-Continue with `g08.004`.
+No active roadmap task remains. Open a bounded roadmap card before starting the
+next compatibility-retirement, TS boundary, or Rust hardening lane.

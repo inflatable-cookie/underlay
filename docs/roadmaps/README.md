@@ -58,7 +58,8 @@ README surfaces.
 - `g08.001` is complete as the migration-core policy field retirement batch
 - `g08.002` is complete as the devtools bundle/seed option constructor and accessor audit
 - `g08.003` is complete as the migration-core governance/OCI/manifest policy model audit
-- `g08.004` is next as the residual Rust public config closeout and compatibility proof
+- `g08.004` is complete as the residual Rust public config closeout and compatibility proof
+- `g08` is complete as the residual Rust public policy and tooling boundary hardening generation
 - `g07.001` is complete as the TS runtime and workflow ownership inventory
 - `g07.002` is complete as the runtime subpath public surface audit
 - `g07.003` is complete as the runtime import guidance cleanup
@@ -428,7 +429,8 @@ README surfaces.
 
 ## Next Task
 
-Continue with `g08.004`.
+No active roadmap task remains. Open a bounded roadmap card before starting the
+next compatibility-retirement, TS boundary, or Rust hardening lane.
 - `g01.090` is complete for confirming that the remaining public `@decodelabs/underlay/patterns` surface is the true retained workflow stop point rather than unresolved migration debt
 - `g01.091` is complete for confirming the retained `client` package boundary, exposing explicit `client/*` public subpaths for the live feature families, and keeping the root barrel stable as a convenience surface
 - `g01.092` is complete for confirming the retained `nightfire` package boundary, exposing explicit `nightfire/*` public subpaths for the live extension families, and keeping the root barrel stable as a convenience surface
