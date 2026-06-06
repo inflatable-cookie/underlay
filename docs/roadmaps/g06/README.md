@@ -204,7 +204,8 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.137` is complete as the migration-core orchestrator decide modularity audit.
 - `g06.138` is complete as the migration-core orchestrator decide internal split.
 - `g06.139` is complete as the validation derive tests modularity audit.
-- `g06.140` is next as the validation derive tests internal split.
+- `g06.140` is complete as the validation derive tests internal split.
+- `g06.141` is next as the Rust structural closeout audit.
 
 ## Planned Runway
 
@@ -352,6 +353,7 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.138`: migration-core orchestrator decide internal split
 - `g06.139`: validation derive tests modularity audit
 - `g06.140`: validation derive tests internal split
+- `g06.141`: Rust structural closeout audit
 
 ## Consumer Family
 
@@ -508,7 +510,8 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g06.137` is complete.
 - `g06.138` is complete.
 - `g06.139` is complete.
-- `g06.140` is next.
+- `g06.140` is complete.
+- `g06.141` is next.
 
 ## Batch Cards
 
@@ -517,4 +520,4 @@ If `g06` enters strict execution posture, keep its cards under
 
 ## Next Task
 
-Execute `g06.140`: validation derive tests internal split.
+Execute `g06.141`: Rust structural closeout audit.

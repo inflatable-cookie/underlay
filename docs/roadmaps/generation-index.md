@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.140`: validation derive tests internal split.
+Execute `g06.141`: Rust structural closeout audit.

@@ -219,7 +219,8 @@ README surfaces.
 - `g06.137` is complete as the migration-core orchestrator decide modularity audit
 - `g06.138` is complete as the migration-core orchestrator decide internal split
 - `g06.139` is complete as the validation derive tests modularity audit
-- `g06.140` is next as the validation derive tests internal split
+- `g06.140` is complete as the validation derive tests internal split
+- `g06.141` is next as the Rust structural closeout audit
 - `g05` is closed as the shared-page, workflow-template, media capability,
   dev-flow contract, and query-variant convergence generation
 - `g05.024` is complete as the Marking Hub query variant proof and rollout

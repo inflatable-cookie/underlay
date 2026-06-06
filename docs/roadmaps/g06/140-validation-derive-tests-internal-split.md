@@ -53,8 +53,12 @@ and re-enter planning.
 
 ## Current State
 
-`g06.140` is ready.
+`g06.140` is complete.
+
+Artifact:
+
+- [140 artifact](./140-validation-derive-tests-internal-split-artifact.md)
 
 ## Next Task
 
-Execute `g06.140`: validation derive tests internal split.
+Execute `g06.141`: Rust structural closeout audit.
