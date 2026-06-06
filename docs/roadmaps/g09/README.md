@@ -31,8 +31,9 @@ Posture: baseline-routing.
 - [x] `g09.004`: forms test god-file split batch.
 - [x] `g09.005`: i18n test god-file split batch.
 - [x] `g09.006`: SvelteKit test god-file split batch.
-- [ ] `g09.007`: remaining TypeScript test god-file split batch.
-- [ ] `g09.008`: OAuth Rust file cleanup and doctor warning closeout decision.
+- [x] `g09.007`: CSP test god-file split batch.
+- [ ] `g09.008`: Nightfire test god-file split batch.
+- [ ] `g09.009`: OAuth Rust file cleanup and doctor warning closeout decision.
 
 ## Acceptance Criteria
 
@@ -49,8 +50,9 @@ Posture: baseline-routing.
 - `g09.004` is complete.
 - `g09.005` is complete.
 - `g09.006` is complete.
-- `g09.007` is next.
+- `g09.007` is complete.
+- `g09.008` is next.
 
 ## Next Task
 
-Execute `g09.007`.
+Execute `g09.008`.

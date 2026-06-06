@@ -61,7 +61,8 @@ README surfaces.
 - `g09.004` is complete as the forms test god-file split batch
 - `g09.005` is complete as the i18n test god-file split batch
 - `g09.006` is complete as the SvelteKit test god-file split batch
-- `g09.007` is next as the remaining TypeScript test god-file split batch
+- `g09.007` is complete as the CSP test god-file split batch
+- `g09.008` is next as the Nightfire test god-file split batch
 - `g08.001` is complete as the migration-core policy field retirement batch
 - `g08.002` is complete as the devtools bundle/seed option constructor and accessor audit
 - `g08.003` is complete as the migration-core governance/OCI/manifest policy model audit
