@@ -408,12 +408,8 @@ Not allowed:
 
 Current drift worth assessing later:
 
-- `ts/src/runtime/auth.ts` currently re-exports pattern-layer auth helpers,
-  which suggests the runtime/pattern ownership boundary still needs a later
-  assessment pass
-- the exported auth workflow shell surface is intentionally small, but the
-  internal workflow folder is broader; later pattern-contract work should check
-  whether that internal breadth still earns retained Underlay ownership
+- none currently. Future auth runtime or workflow shell changes should still be
+  assessed against `090` and `100`.
 
 Resolved assessment:
 
@@ -423,6 +419,11 @@ Resolved assessment:
   `auth.users` does not store `display_name`, `User.display_name` remains an
   optional projection field, profile data belongs in `account.user_profile`,
   and sessions use `SessionStatus` plus revocation metadata.
+- `g06.184` confirmed the TS auth runtime/pattern boundary is intentional:
+  `runtime/auth` is the preferred browser auth runtime front door for auth
+  config, passkey helpers, profile helpers, and protected data loading, while
+  `LoginPage`, `ForgotPasswordFlow`, `PasswordRequirements`, and their
+  supporting files remain retained auth workflow patterns under `100`.
 
 These are assessment hooks, not reasons to widen the contract.
 
