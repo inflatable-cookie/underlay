@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.119`: jobs runner tests modularity audit.
+Execute `g06.120`: jobs runner tests internal split.

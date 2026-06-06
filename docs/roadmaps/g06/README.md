@@ -183,7 +183,8 @@ controlled breaking changes allowed across the six known consumers.
   split.
 - `g06.117` is complete as the blob local adapter modularity audit.
 - `g06.118` is complete as the blob local adapter internal split.
-- `g06.119` is next as the jobs runner tests modularity audit.
+- `g06.119` is complete as the jobs runner tests modularity audit.
+- `g06.120` is next as the jobs runner tests internal split.
 
 ## Planned Runway
 
@@ -310,6 +311,7 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.117`: blob local adapter modularity audit
 - `g06.118`: blob local adapter internal split
 - `g06.119`: jobs runner tests modularity audit
+- `g06.120`: jobs runner tests internal split
 
 ## Consumer Family
 
@@ -445,7 +447,8 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g06.116` is complete.
 - `g06.117` is complete.
 - `g06.118` is complete.
-- `g06.119` is next.
+- `g06.119` is complete.
+- `g06.120` is next.
 
 ## Batch Cards
 
@@ -454,4 +457,4 @@ If `g06` enters strict execution posture, keep its cards under
 
 ## Next Task
 
-Execute `g06.119`: jobs runner tests modularity audit.
+Execute `g06.120`: jobs runner tests internal split.

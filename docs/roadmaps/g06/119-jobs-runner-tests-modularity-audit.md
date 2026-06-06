@@ -49,8 +49,12 @@ public jobs change, stop and re-enter planning.
 
 ## Current State
 
-`g06.119` is ready.
+`g06.119` is complete.
+
+Artifact:
+
+- [119 artifact](./119-jobs-runner-tests-modularity-audit-artifact.md)
 
 ## Next Task
 
-Execute `g06.119`: jobs runner tests modularity audit.
+Execute `g06.120`: jobs runner tests internal split.
