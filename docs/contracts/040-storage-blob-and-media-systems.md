@@ -200,12 +200,15 @@ Core pieces:
 - `ObjectInfo`
 - `StoredObject`
 - `BlobError`
-- `MediaConfig`
+- `BlobUploadConfig`
 
 Rules:
 
 - client-side uploads begin with `initiate_upload()`
 - upload completion is explicit through `finalise_upload()`
+- blob upload policy is limited to transport/storage concerns such as file-size
+  limits; rendition generation policy belongs in
+  `underlay_media::renditions::RenditionConfig`
 - `BlobObjectKey` is the shared validated key type; upload/download request
   constructors accept it, while core adapter methods still accept raw `&str`
   for compatibility with database-loaded keys and app-local generated keys
@@ -413,11 +416,12 @@ Current drift worth assessing later:
 
 - `underlay-db::TypedExistsCheck` assumes `deleted_at` unless callers opt out,
   which is convenient but may over-assume soft-delete semantics for some tables
-- `underlay_blob::MediaConfig` sits in the blob crate even though it spans file
-  limits and thumbnail concerns that touch media/rendition ownership
 
 Resolved assessment:
 
+- `g06.186` split the former blob-owned `MediaConfig` into
+  `underlay_blob::BlobUploadConfig` for upload-size policy and
+  `underlay_media::renditions::RenditionConfig` for thumbnail/rendition policy.
 - `g06.183` confirmed
   [050-media-library-and-usage.md](/Users/tom/Dev/projects/underlay/docs/contracts/050-media-library-and-usage.md)
   is now an active contract. The lower/higher media authority stack is explicit

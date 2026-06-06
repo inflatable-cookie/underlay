@@ -1,32 +1,23 @@
-//! Media upload configuration with reusable defaults.
+//! Blob upload configuration with reusable defaults.
 
-/// Configuration for media handling.
+/// Configuration for blob upload limits.
 #[derive(Debug, Clone)]
-pub struct MediaConfig {
-    /// Maximum allowed file size for media uploads in bytes.
+pub struct BlobUploadConfig {
+    /// Maximum allowed file size for blob uploads in bytes.
     ///
     /// Default: 50 MB (52,428,800 bytes)
     pub max_file_size_bytes: u64,
-
-    /// Maximum thumbnail dimension (width or height) in pixels.
-    ///
-    /// When generating thumbnails, the image is scaled to fit within
-    /// a square of this size while preserving aspect ratio.
-    ///
-    /// Default: 300 px
-    pub thumbnail_max_dimension: u32,
 }
 
-impl Default for MediaConfig {
+impl Default for BlobUploadConfig {
     fn default() -> Self {
         Self {
             max_file_size_bytes: 50 * 1024 * 1024, // 50 MB
-            thumbnail_max_dimension: 300,
         }
     }
 }
 
-impl MediaConfig {
+impl BlobUploadConfig {
     /// Create a new config with all defaults.
     pub fn new() -> Self {
         Self::default()
@@ -43,12 +34,6 @@ impl MediaConfig {
     /// Use this for precise control; otherwise prefer `max_file_size_mb`.
     pub fn max_file_size_bytes(mut self, bytes: u64) -> Self {
         self.max_file_size_bytes = bytes;
-        self
-    }
-
-    /// Set the maximum thumbnail dimension in pixels.
-    pub fn thumbnail_dimension(mut self, pixels: u32) -> Self {
-        self.thumbnail_max_dimension = pixels;
         self
     }
 

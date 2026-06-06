@@ -291,6 +291,7 @@ README surfaces.
 - `g06.184` is complete as the auth runtime pattern boundary assessment
   artifact
 - `g06.185` is complete as the media repository usage trait split artifact
+- `g06.186` is complete as the blob upload config boundary split artifact
 - `g06` is closed as the Rust platform-contract transition and reference-grade
   reset generation
 - `g05` is closed as the shared-page, workflow-template, media capability,
@@ -610,3 +611,4 @@ Closed queue:
 - `g06.183`: media authority status drift cleanup
 - `g06.184`: auth runtime pattern boundary assessment
 - `g06.185`: media repository usage trait split
+- `g06.186`: blob upload config boundary split

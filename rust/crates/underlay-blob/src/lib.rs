@@ -57,7 +57,7 @@ mod types;
 
 // Re-export main types
 pub use adapter::{BlobAdapter, BlobAdapterObjectKeyExt, NoopAdapter};
-pub use config::MediaConfig;
+pub use config::BlobUploadConfig;
 pub use error::{BlobError, BlobResult};
 pub use types::{
     validate_blob_object_key, BlobObjectKey, BlobObjectKeyError, DownloadRequest, ObjectInfo,
