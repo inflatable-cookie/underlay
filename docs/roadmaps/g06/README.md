@@ -238,7 +238,9 @@ controlled breaking changes allowed across the six known consumers.
   batch.
 - `g06.171` is complete as the runtime mutex poison availability hardening
   batch.
-- `g06.172` is next as the auth cookie construction surface tightening batch.
+- `g06.172` is complete as the auth cookie construction surface tightening
+  batch.
+- `g06.173` is next as the Rust security hardening closeout audit.
 
 ## Planned Runway
 
@@ -418,6 +420,7 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.170`: config environment filename boundary hardening
 - `g06.171`: runtime mutex poison availability hardening
 - `g06.172`: auth cookie construction surface tightening
+- `g06.173`: Rust security hardening closeout audit
 
 ## Consumer Family
 
@@ -606,7 +609,8 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g06.169` is complete.
 - `g06.170` is complete.
 - `g06.171` is complete.
-- `g06.172` is next.
+- `g06.172` is complete.
+- `g06.173` is next.
 
 ## Batch Cards
 
@@ -615,4 +619,4 @@ If `g06` enters strict execution posture, keep its cards under
 
 ## Next Task
 
-Execute `g06.172`: auth cookie construction surface tightening.
+Execute `g06.173`: Rust security hardening closeout audit.

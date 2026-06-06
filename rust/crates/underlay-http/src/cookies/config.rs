@@ -12,26 +12,27 @@ use super::{validation, AuthCookieError, CookieDomain, CookieName, CookiePath, S
 ///
 /// // Custom config with builder pattern
 /// let config = AuthCookieConfig::default()
-///     .with_domain(".example.com")
+///     .try_with_domain(".example.com")?
 ///     .with_refresh_token_max_age(14 * 24 * 60 * 60) // 14 days
-///     .with_cookie_prefix("myapp_");
+///     .try_with_cookie_prefix("myapp_")?;
+/// # Ok::<(), underlay_http::cookies::AuthCookieError>(())
 /// ```
 #[derive(Debug, Clone)]
 pub struct AuthCookieConfig {
     /// Domain for cookies (e.g., ".example.com" for cross-subdomain).
     /// If None, cookies are scoped to the current host only.
-    pub domain: Option<String>,
+    pub(crate) domain: Option<String>,
     /// Whether to set Secure flag (should be true in production).
-    pub secure: bool,
+    pub(crate) secure: bool,
     /// Refresh token lifetime in seconds (default: 7 days).
-    pub refresh_token_max_age: u64,
+    pub(crate) refresh_token_max_age: u64,
     /// SameSite policy for cookies (default: Lax).
-    pub same_site: SameSite,
+    pub(crate) same_site: SameSite,
     /// Prefix for cookie names (default: empty).
     /// E.g., "acme_" produces cookies named "acme_refresh_token" and "acme_logged_in".
-    pub cookie_prefix: String,
+    pub(crate) cookie_prefix: String,
     /// Path for the refresh token cookie (default: "/v1/auth").
-    pub refresh_token_path: String,
+    pub(crate) refresh_token_path: String,
 }
 
 impl Default for AuthCookieConfig {
@@ -175,5 +176,35 @@ impl AuthCookieConfig {
 
     pub fn validate(&self) -> Result<(), AuthCookieError> {
         validation::validate_config(self)
+    }
+
+    /// Cookie domain, if configured.
+    pub fn domain(&self) -> Option<&str> {
+        self.domain.as_deref()
+    }
+
+    /// Whether generated cookies use the Secure flag.
+    pub fn secure(&self) -> bool {
+        self.secure
+    }
+
+    /// Refresh token lifetime in seconds.
+    pub fn refresh_token_max_age(&self) -> u64 {
+        self.refresh_token_max_age
+    }
+
+    /// SameSite policy for generated cookies.
+    pub fn same_site(&self) -> SameSite {
+        self.same_site
+    }
+
+    /// Prefix used for generated auth cookie names.
+    pub fn cookie_prefix(&self) -> &str {
+        &self.cookie_prefix
+    }
+
+    /// Path used for the refresh token cookie.
+    pub fn refresh_token_path(&self) -> &str {
+        &self.refresh_token_path
     }
 }

@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.172`: auth cookie construction surface tightening.
+Execute `g06.173`: Rust security hardening closeout audit.

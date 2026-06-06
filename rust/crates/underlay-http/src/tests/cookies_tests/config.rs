@@ -60,12 +60,12 @@ fn builder_chain() {
         .with_cookie_prefix("app_")
         .with_refresh_token_path("/auth");
 
-    assert_eq!(config.domain, Some(".example.com".to_string()));
-    assert!(config.secure);
-    assert_eq!(config.refresh_token_max_age, 14 * 24 * 60 * 60);
-    assert_eq!(config.same_site, SameSite::Strict);
-    assert_eq!(config.cookie_prefix, "app_");
-    assert_eq!(config.refresh_token_path, "/auth");
+    assert_eq!(config.domain(), Some(".example.com"));
+    assert!(config.secure());
+    assert_eq!(config.refresh_token_max_age(), 14 * 24 * 60 * 60);
+    assert_eq!(config.same_site(), SameSite::Strict);
+    assert_eq!(config.cookie_prefix(), "app_");
+    assert_eq!(config.refresh_token_path(), "/auth");
     assert_eq!(config.refresh_token_name(), "app_refresh_token");
     assert_eq!(config.logged_in_name(), "app_logged_in");
     assert_eq!(config.csrf_token_name(), "app_csrf_token");
@@ -106,9 +106,9 @@ fn auth_cookie_config_try_builders_validate_early() {
         .try_with_refresh_token_path("/api/auth")
         .unwrap();
 
-    assert_eq!(config.domain.as_deref(), Some(".example.com"));
-    assert_eq!(config.cookie_prefix, "app_");
-    assert_eq!(config.refresh_token_path, "/api/auth");
+    assert_eq!(config.domain(), Some(".example.com"));
+    assert_eq!(config.cookie_prefix(), "app_");
+    assert_eq!(config.refresh_token_path(), "/api/auth");
     assert_eq!(
         config.refresh_token_cookie_name().unwrap().as_str(),
         "app_refresh_token"
