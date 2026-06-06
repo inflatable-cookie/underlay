@@ -49,8 +49,12 @@ behavior that must change, stop and re-enter planning.
 
 ## Current State
 
-`g06.125` is ready.
+`g06.125` is complete.
+
+Artifact:
+
+- [125 artifact](./125-migration-core-verification-modularity-audit-artifact.md)
 
 ## Next Task
 
-Execute `g06.125`: migration-core verification modularity audit.
+Execute `g06.126`: migration-core verification internal split.

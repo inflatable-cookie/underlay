@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.125`: migration-core verification modularity audit.
+Execute `g06.126`: migration-core verification internal split.
