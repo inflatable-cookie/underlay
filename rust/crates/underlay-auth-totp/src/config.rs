@@ -21,19 +21,19 @@ use crate::TotpAlgorithm;
 pub struct TotpConfig {
     /// The issuer name displayed in authenticator apps.
     /// Default: "Underlay"
-    pub issuer: String,
+    issuer: String,
     /// The TOTP algorithm to use.
     /// Default: SHA1 (widely supported)
-    pub algorithm: TotpAlgorithm,
+    algorithm: TotpAlgorithm,
     /// Number of digits in the TOTP code.
     /// Default: 6
-    pub digits: u32,
+    digits: u32,
     /// Time period for each code in seconds.
     /// Default: 30
-    pub period_seconds: u64,
+    period_seconds: u64,
     /// How many time steps before/after current time are accepted.
     /// Default: 1 (accepts previous, current, and next code)
-    pub skew_steps: i64,
+    skew_steps: i64,
 }
 
 impl Default for TotpConfig {
@@ -90,5 +90,25 @@ impl TotpConfig {
     pub fn with_skew_steps(mut self, steps: i64) -> Self {
         self.skew_steps = steps;
         self
+    }
+
+    pub fn issuer(&self) -> &str {
+        &self.issuer
+    }
+
+    pub fn algorithm(&self) -> TotpAlgorithm {
+        self.algorithm
+    }
+
+    pub fn digits(&self) -> u32 {
+        self.digits
+    }
+
+    pub fn period_seconds(&self) -> u64 {
+        self.period_seconds
+    }
+
+    pub fn skew_steps(&self) -> i64 {
+        self.skew_steps
     }
 }

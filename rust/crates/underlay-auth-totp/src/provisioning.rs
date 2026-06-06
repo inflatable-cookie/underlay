@@ -6,7 +6,7 @@ use crate::TotpService;
 
 impl TotpService {
     pub fn provisioning_uri(&self, account_name: &str, secret_base32: &str) -> String {
-        let issuer = url_escape(&self.config.issuer);
+        let issuer = url_escape(self.config.issuer());
         let account = url_escape(account_name);
         let label = format!("{}:{}", issuer, account);
 
@@ -15,9 +15,9 @@ impl TotpService {
             label,
             secret_base32,
             issuer,
-            self.config.algorithm.as_str(),
-            self.config.digits,
-            self.config.period_seconds
+            self.config.algorithm().as_str(),
+            self.config.digits(),
+            self.config.period_seconds()
         )
     }
 

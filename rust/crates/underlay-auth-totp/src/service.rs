@@ -22,10 +22,10 @@ impl TotpService {
 
     pub fn metadata(&self) -> CredentialMetadata {
         CredentialMetadata::Totp {
-            issuer: self.config.issuer.clone(),
-            algorithm: self.config.algorithm.as_str().to_string(),
-            digits: self.config.digits as u8,
-            period: self.config.period_seconds as u8,
+            issuer: self.config.issuer().to_string(),
+            algorithm: self.config.algorithm().as_str().to_string(),
+            digits: self.config.digits() as u8,
+            period: self.config.period_seconds() as u8,
         }
     }
 

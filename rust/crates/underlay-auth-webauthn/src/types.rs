@@ -102,7 +102,33 @@ pub struct FinishPasskeyAuthenticationResponse {
 
 #[derive(Debug, Clone)]
 pub struct WebAuthnConfig {
-    pub rp_id: String,
-    pub rp_origin: String,
-    pub rp_name: String,
+    rp_id: String,
+    rp_origin: String,
+    rp_name: String,
+}
+
+impl WebAuthnConfig {
+    pub fn new(
+        rp_id: impl Into<String>,
+        rp_origin: impl Into<String>,
+        rp_name: impl Into<String>,
+    ) -> Self {
+        Self {
+            rp_id: rp_id.into(),
+            rp_origin: rp_origin.into(),
+            rp_name: rp_name.into(),
+        }
+    }
+
+    pub fn rp_id(&self) -> &str {
+        &self.rp_id
+    }
+
+    pub fn rp_origin(&self) -> &str {
+        &self.rp_origin
+    }
+
+    pub fn rp_name(&self) -> &str {
+        &self.rp_name
+    }
 }

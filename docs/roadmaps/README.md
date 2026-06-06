@@ -648,3 +648,4 @@ Closed queue:
 - `g06.207`: job runner config field retirement
 - `g06.208`: scheduler config field retirement
 - `g06.209`: storage config field retirement
+- `g06.210`: MFA config field retirement

@@ -58,16 +58,21 @@ impl TotpService {
             .map_err(|_| TotpError::InvalidCode)?
             .as_secs();
 
-        let current_counter = now_secs / self.config.period_seconds;
+        let current_counter = now_secs / self.config.period_seconds();
 
-        for step in -self.config.skew_steps..=self.config.skew_steps {
+        for step in -self.config.skew_steps()..=self.config.skew_steps() {
             let counter = if step.is_negative() {
                 current_counter.saturating_sub(step.wrapping_abs() as u64)
             } else {
                 current_counter.saturating_add(step as u64)
             };
 
-            let expected = totp_code(secret, counter, self.config.digits, self.config.algorithm);
+            let expected = totp_code(
+                secret,
+                counter,
+                self.config.digits(),
+                self.config.algorithm(),
+            );
             if expected == code {
                 if let Some(last) = last_counter {
                     if counter <= last {

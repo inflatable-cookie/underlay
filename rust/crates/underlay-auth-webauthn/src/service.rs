@@ -16,11 +16,11 @@ pub struct WebAuthnService {
 
 impl WebAuthnService {
     pub fn new(config: WebAuthnConfig) -> AuthResult<Self> {
-        let origin = Url::parse(&config.rp_origin).map_err(|_| WebAuthnError::InvalidConfig)?;
+        let origin = Url::parse(config.rp_origin()).map_err(|_| WebAuthnError::InvalidConfig)?;
 
-        let builder = WebauthnBuilder::new(&config.rp_id, &origin)
+        let builder = WebauthnBuilder::new(config.rp_id(), &origin)
             .map_err(|_| WebAuthnError::InvalidConfig)?
-            .rp_name(&config.rp_name);
+            .rp_name(config.rp_name());
 
         let inner = builder.build().map_err(|_| WebAuthnError::InvalidConfig)?;
 

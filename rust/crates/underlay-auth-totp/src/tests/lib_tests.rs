@@ -6,13 +6,14 @@ use underlay_auth::AuthError;
 fn rfc6238_sha1_test_vectors_8_digits() {
     // Secret "12345678901234567890" (ASCII) base32-encoded.
     let secret_base32 = "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ";
-    let service = TotpService::new(Some(TotpConfig {
-        issuer: "Test".to_string(),
-        algorithm: TotpAlgorithm::Sha1,
-        digits: 8,
-        period_seconds: 30,
-        skew_steps: 0,
-    }));
+    let service = TotpService::new(Some(
+        TotpConfig::default()
+            .with_issuer("Test")
+            .with_algorithm(TotpAlgorithm::Sha1)
+            .with_digits(8)
+            .with_period_seconds(30)
+            .with_skew_steps(0),
+    ));
 
     let secret = service.decode_secret(secret_base32).unwrap();
 
@@ -34,13 +35,14 @@ fn rfc6238_sha1_test_vectors_8_digits() {
 
 #[test]
 fn verify_totp_accepts_within_skew() {
-    let service = TotpService::new(Some(TotpConfig {
-        issuer: "Test".to_string(),
-        algorithm: TotpAlgorithm::Sha1,
-        digits: 6,
-        period_seconds: 30,
-        skew_steps: 1,
-    }));
+    let service = TotpService::new(Some(
+        TotpConfig::default()
+            .with_issuer("Test")
+            .with_algorithm(TotpAlgorithm::Sha1)
+            .with_digits(6)
+            .with_period_seconds(30)
+            .with_skew_steps(1),
+    ));
 
     let secret = service.generate_secret();
 
@@ -54,13 +56,14 @@ fn verify_totp_accepts_within_skew() {
 
 #[test]
 fn verify_totp_rejects_replay() {
-    let service = TotpService::new(Some(TotpConfig {
-        issuer: "Test".to_string(),
-        algorithm: TotpAlgorithm::Sha1,
-        digits: 6,
-        period_seconds: 30,
-        skew_steps: 0,
-    }));
+    let service = TotpService::new(Some(
+        TotpConfig::default()
+            .with_issuer("Test")
+            .with_algorithm(TotpAlgorithm::Sha1)
+            .with_digits(6)
+            .with_period_seconds(30)
+            .with_skew_steps(0),
+    ));
 
     let secret = service.generate_secret();
 
@@ -78,10 +81,7 @@ fn verify_totp_rejects_replay() {
 
 #[test]
 fn provisioning_uri_contains_expected_fields() {
-    let service = TotpService::new(Some(TotpConfig {
-        issuer: "My App".to_string(),
-        ..TotpConfig::default()
-    }));
+    let service = TotpService::new(Some(TotpConfig::default().with_issuer("My App")));
 
     let secret = service.generate_secret();
     let uri = service.provisioning_uri("user@example.com", &secret.base32);

@@ -1,11 +1,11 @@
 use super::*;
 
 fn service() -> WebAuthnService {
-    WebAuthnService::new(WebAuthnConfig {
-        rp_id: "example.com".to_string(),
-        rp_origin: "https://example.com".to_string(),
-        rp_name: "Example".to_string(),
-    })
+    WebAuthnService::new(WebAuthnConfig::new(
+        "example.com",
+        "https://example.com",
+        "Example",
+    ))
     .unwrap()
 }
 
