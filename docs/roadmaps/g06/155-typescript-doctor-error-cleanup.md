@@ -43,10 +43,20 @@ Expected impact: none.
 
 This should be comment/marker cleanup only.
 
+## Evidence
+
+- `bun x vitest run ts/tests/client/navigation.test.ts ts/tests/client/route-protection.test.ts`
+  passed: 2 files, 14 tests.
+- `effigy doctor` passed with `ok:13`, `warn:3`, `err:0`.
+- Remaining doctor findings are warning-only:
+  - `scan.attention-markers`: 4 warnings, 0 errors
+  - `scan.comment-ratio`: 6 warnings, 0 errors
+  - `scan.god-files`: 14 warnings, 0 errors
+
 ## Current State
 
-`g06.155` is ready.
+`g06.155` is complete.
 
 ## Next Task
 
-Execute `g06.155`: TypeScript doctor error cleanup.
+Execute `g06.156`: TypeScript warning backlog decision.

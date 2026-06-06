@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.155`: TypeScript doctor error cleanup.
+Execute `g06.156`: TypeScript warning backlog decision.

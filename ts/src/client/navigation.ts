@@ -32,12 +32,16 @@ import {
   deriveParentPath,
   storePageState,
   consumePageState,
-  type NavigationContext
+  type NavigationContext,
 } from "../patterns/navigation";
 
 // Re-export types and state functions for convenience
 export type { NavigationContext } from "../patterns/navigation";
-export { storePageState, retrievePageState, consumePageState } from "../patterns/navigation";
+export {
+  storePageState,
+  retrievePageState,
+  consumePageState,
+} from "../patterns/navigation";
 
 /**
  * Navigate to a URL while pushing the current location as context.
@@ -71,7 +75,7 @@ export { storePageState, retrievePageState, consumePageState } from "../patterns
 export async function gotoWithContext(
   targetHref: string,
   context: NavigationContext,
-  options?: Parameters<typeof goto>[1]
+  options?: Parameters<typeof goto>[1],
 ): Promise<void> {
   // If state is provided, store it keyed by the context's href
   if (context.state) {
@@ -88,7 +92,7 @@ export async function gotoWithContext(
   // Store the target URL with the context so we can validate it when consuming
   pushNavigationContext({
     ...context,
-    targetHref
+    targetHref,
   });
   await goto(targetHref, options);
 }
@@ -120,20 +124,17 @@ export function navigateBack(fallbackHref?: string): string {
   }
 
   // Fall back to provided href or derive from current URL
-  const target = fallbackHref ?? (browser ? deriveParentPath(window.location.pathname) : "/");
+  const target =
+    fallbackHref ??
+    (browser ? deriveParentPath(window.location.pathname) : "/");
   void goto(target);
   return target;
 }
 
 /**
- * Legacy function for cancel button navigation.
+ * Legacy cancel-button navigation helper.
  *
- * Navigates to the provided href, or derives a sensible parent URL,
- * or uses browser history as a last resort.
- *
- * @deprecated Use navigateBack() for context-aware navigation.
- *
- * @param cancelHref - Optional explicit URL to navigate to
+ * Prefer `navigateBack()` for context-aware navigation in new callers.
  */
 export function navigateOnCancel(cancelHref: string | undefined): void {
   if (!browser) return;
@@ -162,22 +163,22 @@ export function navigateOnCancel(cancelHref: string | undefined): void {
 
 /**
  * Initialize page state from navigation context.
- * 
+ *
  * Call this in your component's initialization to restore any state
  * that was saved when the user navigated away from this page.
- * 
+ *
  * The state is consumed (removed) after retrieval, so it won't be
  * restored again on subsequent visits unless saved again.
- * 
+ *
  * @param defaults - Default values for state properties
  * @returns Merged state with defaults and any restored values
- * 
+ *
  * @example
  * ```typescript
  * // In a Svelte component
  * let activeTab = $state("details");
  * let currentPage = $state(1);
- * 
+ *
  * onMount(() => {
  *   const restored = initPageState({ activeTab: "details", currentPage: 1 });
  *   activeTab = restored.activeTab;
@@ -185,12 +186,14 @@ export function navigateOnCancel(cancelHref: string | undefined): void {
  * });
  * ```
  */
-export function initPageState<T extends Record<string, unknown>>(defaults: T): T {
+export function initPageState<T extends Record<string, unknown>>(
+  defaults: T,
+): T {
   if (!browser) return defaults;
-  
+
   const restored = consumePageState<Partial<T>>();
   if (!restored) return defaults;
-  
+
   // Merge restored values with defaults, only including keys that exist in defaults
   const result = { ...defaults };
   for (const key of Object.keys(defaults) as (keyof T)[]) {
@@ -198,19 +201,19 @@ export function initPageState<T extends Record<string, unknown>>(defaults: T): T
       result[key] = restored[key] as T[keyof T];
     }
   }
-  
+
   return result;
 }
 
 /**
  * Get the current page state for saving before navigation.
- * 
+ *
  * This is a helper to create a state object from multiple reactive values.
  * Use this with gotoWithContext to save state when navigating away.
- * 
+ *
  * @param stateValues - Object containing current state values
  * @returns The same object (type-safe passthrough)
- * 
+ *
  * @example
  * ```typescript
  * await gotoWithContext(`/items/${id}/edit`, {
@@ -221,6 +224,8 @@ export function initPageState<T extends Record<string, unknown>>(defaults: T): T
  * });
  * ```
  */
-export function capturePageState<T extends Record<string, unknown>>(stateValues: T): T {
+export function capturePageState<T extends Record<string, unknown>>(
+  stateValues: T,
+): T {
   return stateValues;
 }
