@@ -48,8 +48,12 @@ classify consumer app updates before implementation.
 
 ## Current State
 
-`g06.146` is ready.
+`g06.146` is complete.
+
+Artifact:
+
+- [146 artifact](./146-media-workflow-modularity-audit-artifact.md)
 
 ## Next Task
 
-Execute `g06.146`: media workflow modularity audit.
+Execute `g06.147`: media workflow internal split.

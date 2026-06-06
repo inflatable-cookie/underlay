@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.146`: media workflow modularity audit.
+Execute `g06.147`: media workflow internal split.
