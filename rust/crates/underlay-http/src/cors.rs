@@ -36,19 +36,19 @@ pub enum CorsConfigError {
 pub struct CorsConfig {
     /// If true, uses `*` (useful for internal services without credentials).
     /// Note: Cannot be true if `allow_credentials` is true.
-    pub allow_any_origin: bool,
+    allow_any_origin: bool,
     /// If true, mirrors the requesting origin in the response.
     /// This allows credentials from any origin (useful for local dev).
     /// Takes precedence over `allow_any_origin` when `allow_credentials` is true.
-    pub mirror_origin: bool,
+    mirror_origin: bool,
     /// Allowed origins when `allow_any_origin` is false.
-    pub allowed_origins: Vec<HeaderValue>,
+    allowed_origins: Vec<HeaderValue>,
     /// Additional allowed headers.
-    pub allowed_headers: Vec<HeaderName>,
+    allowed_headers: Vec<HeaderName>,
     /// If true, allows credentials (cookies, authorization headers).
-    pub allow_credentials: bool,
+    allow_credentials: bool,
     /// Max age for preflight request caching in seconds (default: 3600).
-    pub max_age_secs: u64,
+    max_age_secs: u64,
 }
 
 impl Default for CorsConfig {
