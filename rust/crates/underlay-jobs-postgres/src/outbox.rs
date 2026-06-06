@@ -50,10 +50,10 @@ pub const DOMAIN_EVENT_NOTIFY_SQL: &str =
 #[derive(Debug, Clone)]
 pub struct OutboxConfig {
     /// Maximum number of events to process per batch.
-    pub batch_size: usize,
+    batch_size: usize,
     /// Fallback poll interval when using LISTEN/NOTIFY.
     /// The processor will wake up at least this often even without notifications.
-    pub fallback_interval: Duration,
+    fallback_interval: Duration,
 }
 
 impl Default for OutboxConfig {
@@ -66,6 +66,14 @@ impl Default for OutboxConfig {
 }
 
 impl OutboxConfig {
+    pub fn batch_size(&self) -> usize {
+        self.batch_size
+    }
+
+    pub fn fallback_interval(&self) -> Duration {
+        self.fallback_interval
+    }
+
     /// Create a new config with the specified batch size.
     pub fn with_batch_size(mut self, size: usize) -> Self {
         self.batch_size = size;
@@ -170,8 +178,8 @@ impl OutboxProcessor {
         Fut: Future<Output = Result<(), Box<dyn std::error::Error + Send + Sync>>> + Send,
     {
         info!(
-            fallback_interval_secs = self.config.fallback_interval.as_secs(),
-            batch_size = self.config.batch_size,
+            fallback_interval_secs = self.config.fallback_interval().as_secs(),
+            batch_size = self.config.batch_size(),
             "Starting outbox processor with LISTEN/NOTIFY"
         );
 
@@ -185,7 +193,7 @@ impl OutboxProcessor {
             }
 
             // Wait for notification or fallback timeout
-            match notifier.wait(self.config.fallback_interval).await {
+            match notifier.wait(self.config.fallback_interval()).await {
                 Ok(Some(event_type)) => {
                     debug!(event_type = %event_type, "Woke up from domain event notification");
                 }
@@ -221,7 +229,7 @@ impl OutboxProcessor {
             }
 
             processed += 1;
-            if processed >= self.config.batch_size {
+            if processed >= self.config.batch_size() {
                 break;
             }
         }
@@ -318,8 +326,8 @@ impl OutboxProcessor {
         Fut: Future<Output = Result<(), Box<dyn std::error::Error + Send + Sync>>> + Send,
     {
         info!(
-            poll_interval_secs = self.config.fallback_interval.as_secs(),
-            batch_size = self.config.batch_size,
+            poll_interval_secs = self.config.fallback_interval().as_secs(),
+            batch_size = self.config.batch_size(),
             "Starting outbox processor in polling mode"
         );
 
@@ -333,7 +341,7 @@ impl OutboxProcessor {
             }
 
             // Wait for the poll interval
-            tokio::time::sleep(self.config.fallback_interval).await;
+            tokio::time::sleep(self.config.fallback_interval()).await;
         }
     }
 }
