@@ -230,7 +230,8 @@ README surfaces.
 - `g06.148` is complete as the forms modularity audit
 - `g06.149` is complete as the forms internal split
 - `g06.150` is complete as the template types modularity audit
-- `g06.151` is next as the template types internal split
+- `g06.151` is complete as the template types internal split
+- `g06.152` is next as the optimistic tests modularity audit
 - `g05` is closed as the shared-page, workflow-template, media capability,
   dev-flow contract, and query-variant convergence generation
 - `g05.024` is complete as the Marking Hub query variant proof and rollout

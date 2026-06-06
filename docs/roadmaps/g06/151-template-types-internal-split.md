@@ -54,8 +54,12 @@ change, stop and re-enter planning.
 
 ## Current State
 
-`g06.151` is ready.
+`g06.151` is complete.
+
+Artifact:
+
+- [`151-template-types-internal-split-artifact.md`](151-template-types-internal-split-artifact.md)
 
 ## Next Task
 
-Execute `g06.151`: template types internal split.
+Execute `g06.152`: optimistic tests modularity audit.
