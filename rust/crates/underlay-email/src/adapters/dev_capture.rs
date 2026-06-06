@@ -108,7 +108,7 @@ struct WhitelistLookup {
 impl WhitelistLookup {
     fn from_config(config: &DevCaptureConfig) -> Self {
         Self {
-            addresses: config.whitelist.iter().cloned().collect(),
+            addresses: config.whitelist().iter().cloned().collect(),
         }
     }
 
@@ -137,10 +137,9 @@ impl WhitelistLookup {
 /// let store = Arc::new(MyDatabaseStore::new(pool));
 ///
 /// // Create config with whitelist
-/// let config = DevCaptureConfig {
-///     whitelist: vec!["dev@example.com".to_string()],
-///     use_fallback: true,
-/// };
+/// let config = DevCaptureConfig::new()
+///     .with_whitelisted_address("dev@example.com")
+///     .with_fallback();
 ///
 /// // Create adapter with optional fallback for whitelisted addresses
 /// let smtp = Arc::new(SmtpAdapter::new(&smtp_config)?);
@@ -167,7 +166,7 @@ impl<S: EmailStore> DevCaptureAdapter<S> {
         Self {
             store,
             whitelist: WhitelistLookup::from_config(&config),
-            use_fallback: config.use_fallback,
+            use_fallback: config.use_fallback(),
             fallback,
         }
     }

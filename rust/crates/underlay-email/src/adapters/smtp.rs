@@ -1,7 +1,7 @@
 //! SMTP email adapter using lettre.
 
 use async_trait::async_trait;
-use lettre::message::{header::ContentType, Mailbox, MultiPart, SinglePart};
+use lettre::message::{Mailbox, MultiPart, SinglePart, header::ContentType};
 use lettre::transport::smtp::authentication::Credentials;
 use lettre::{AsyncSmtpTransport, AsyncTransport, Message, Tokio1Executor};
 
@@ -18,21 +18,23 @@ pub struct SmtpAdapter {
 impl SmtpAdapter {
     /// Create a new SMTP adapter with the given configuration.
     pub fn new(config: &SmtpConfig) -> EmailResult<Self> {
-        let builder = match config.tls_mode {
-            TlsMode::Required => AsyncSmtpTransport::<Tokio1Executor>::starttls_relay(&config.host)
-                .map_err(|e| EmailError::ConfigError(format!("SMTP relay error: {}", e)))?,
-            TlsMode::Opportunistic => {
-                AsyncSmtpTransport::<Tokio1Executor>::starttls_relay(&config.host)
+        let builder = match config.tls_mode() {
+            TlsMode::Required => {
+                AsyncSmtpTransport::<Tokio1Executor>::starttls_relay(config.host())
                     .map_err(|e| EmailError::ConfigError(format!("SMTP relay error: {}", e)))?
             }
-            TlsMode::None => AsyncSmtpTransport::<Tokio1Executor>::builder_dangerous(&config.host),
+            TlsMode::Opportunistic => {
+                AsyncSmtpTransport::<Tokio1Executor>::starttls_relay(config.host())
+                    .map_err(|e| EmailError::ConfigError(format!("SMTP relay error: {}", e)))?
+            }
+            TlsMode::None => AsyncSmtpTransport::<Tokio1Executor>::builder_dangerous(config.host()),
         };
 
-        let mut builder = builder.port(config.port);
+        let mut builder = builder.port(config.port());
 
         // Add credentials if provided
-        if let (Some(username), Some(password)) = (&config.username, &config.password) {
-            let credentials = Credentials::new(username.clone(), password.clone());
+        if let (Some(username), Some(password)) = (config.username(), config.password()) {
+            let credentials = Credentials::new(username.to_string(), password.to_string());
             builder = builder.credentials(credentials);
         }
 

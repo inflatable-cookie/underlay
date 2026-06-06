@@ -2,16 +2,15 @@ use super::*;
 
 #[test]
 fn test_smtp_config_builder() {
-    let config = SmtpConfig {
-        host: "smtp.example.com".to_string(),
-        port: 587,
-        username: Some("user".to_string()),
-        password: Some("pass".to_string()),
-        tls_mode: TlsMode::Required,
-    };
+    let config = SmtpConfig::new("smtp.example.com")
+        .with_port(587)
+        .with_credentials("user", "pass")
+        .with_tls_mode(TlsMode::Required);
 
-    assert_eq!(config.host, "smtp.example.com");
-    assert_eq!(config.port, 587);
+    assert_eq!(config.host(), "smtp.example.com");
+    assert_eq!(config.port(), 587);
+    assert_eq!(config.username(), Some("user"));
+    assert_eq!(config.password(), Some("pass"));
 }
 
 #[test]

@@ -1,8 +1,8 @@
 //! AWS SES email adapter.
 
 use async_trait::async_trait;
-use aws_sdk_sesv2::types::{Body, Content, Destination, EmailContent, Message as SesMessage};
 use aws_sdk_sesv2::Client;
+use aws_sdk_sesv2::types::{Body, Content, Destination, EmailContent, Message as SesMessage};
 
 use crate::adapter::EmailAdapter;
 use crate::error::{EmailError, EmailResult};
@@ -21,13 +21,13 @@ impl SesAdapter {
     /// This uses the default AWS credential chain (environment variables,
     /// IAM role, shared credentials file, etc.).
     pub async fn new(config: &SesConfig) -> EmailResult<Self> {
-        let aws_config = underlay_aws::AwsConfig::new(&config.region).load().await;
+        let aws_config = underlay_aws::AwsConfig::new(config.region()).load().await;
 
         let client = Client::new(&aws_config);
 
         Ok(Self {
             client,
-            configuration_set: config.configuration_set.clone(),
+            configuration_set: config.configuration_set().map(str::to_string),
         })
     }
 

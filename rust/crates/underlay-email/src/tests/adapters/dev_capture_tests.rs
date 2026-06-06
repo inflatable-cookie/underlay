@@ -13,13 +13,9 @@ fn create_test_email(to: &str) -> Email {
 
 #[test]
 fn test_whitelist_lookup() {
-    let config = DevCaptureConfig {
-        whitelist: vec![
-            "dev@example.com".to_string(),
-            "test@example.com".to_string(),
-        ],
-        use_fallback: true,
-    };
+    let config = DevCaptureConfig::new()
+        .with_whitelist(["dev@example.com", "test@example.com"])
+        .with_fallback();
     let lookup = WhitelistLookup::from_config(&config);
 
     assert!(lookup.is_whitelisted("dev@example.com"));
@@ -29,10 +25,9 @@ fn test_whitelist_lookup() {
 
 #[test]
 fn test_whitelist_any_whitelisted() {
-    let config = DevCaptureConfig {
-        whitelist: vec!["dev@example.com".to_string()],
-        use_fallback: true,
-    };
+    let config = DevCaptureConfig::new()
+        .with_whitelisted_address("dev@example.com")
+        .with_fallback();
     let lookup = WhitelistLookup::from_config(&config);
 
     assert!(lookup.any_whitelisted(["other@example.com", "dev@example.com"]));
@@ -83,10 +78,9 @@ async fn test_dev_capture_adapter_capture_only() {
 #[tokio::test]
 async fn test_dev_capture_adapter_with_whitelist_no_match() {
     let store = Arc::new(InMemoryEmailStore::new());
-    let config = DevCaptureConfig {
-        whitelist: vec!["dev@example.com".to_string()],
-        use_fallback: true,
-    };
+    let config = DevCaptureConfig::new()
+        .with_whitelisted_address("dev@example.com")
+        .with_fallback();
     let adapter = DevCaptureAdapter::new(store.clone(), config, None);
 
     let email = create_test_email("other@example.com");

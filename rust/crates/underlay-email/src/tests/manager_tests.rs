@@ -37,14 +37,14 @@ async fn test_email_manager_builder() {
 #[test]
 fn test_config_defaults() {
     let smtp = SmtpConfig::default();
-    assert_eq!(smtp.host, "localhost");
-    assert_eq!(smtp.port, 587);
-    assert_eq!(smtp.tls_mode, TlsMode::Required);
+    assert_eq!(smtp.host(), "localhost");
+    assert_eq!(smtp.port(), 587);
+    assert_eq!(smtp.tls_mode(), TlsMode::Required);
 
     let ses = SesConfig::default();
-    assert_eq!(ses.region, "us-east-1");
+    assert_eq!(ses.region(), "us-east-1");
 
     let dev = DevCaptureConfig::default();
-    assert!(dev.whitelist.is_empty());
-    assert!(!dev.use_fallback);
+    assert!(dev.whitelist().is_empty());
+    assert!(!dev.use_fallback());
 }
