@@ -33,11 +33,11 @@ Out of scope:
 
 ## Acceptance Criteria
 
-- `ts/src/patterns/storage.ts` no longer reports as a source god-file, or
+- [x] `ts/src/patterns/storage.ts` no longer reports as a source god-file, or
   retained size is justified by artifact evidence
-- public imports remain stable
-- focused storage tests pass
-- `effigy doctor` state is recorded
+- [x] public imports remain stable
+- [x] focused storage tests pass
+- [x] `effigy doctor` state is recorded
 
 ## Consumer Upgrade Impact
 
@@ -45,10 +45,18 @@ Expected impact: none.
 
 This should be an internal split with stable exports.
 
+## Evidence
+
+- `bun x vitest run ts/tests/patterns/storage.test.ts` passed: 1 file,
+  11 tests.
+- `effigy doctor` passed with `ok:15`, `warn:1`, `err:0`.
+- `scan.god-files` now reports 10 warnings.
+- `ts/src/patterns/storage.ts` no longer reports.
+
 ## Current State
 
-`g06.162` is ready.
+`g06.162` is complete.
 
 ## Next Task
 
-Execute `g06.162`: storage source god-file split.
+Execute `g06.163`: pagination source god-file split.

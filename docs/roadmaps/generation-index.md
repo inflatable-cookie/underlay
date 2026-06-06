@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.162`: storage source god-file split.
+Execute `g06.163`: pagination source god-file split.
