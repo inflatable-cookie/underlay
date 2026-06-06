@@ -3,7 +3,6 @@ use crate::registry::BlockDescriptor;
 use crate::strategy::MultiConfig;
 use crate::value::SchemaId;
 use serde_json::json;
-use std::num::NonZeroUsize;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 enum TestCategory {
@@ -153,10 +152,7 @@ fn validates_multi_block_within_range() {
     let registry = test_registry();
     let strategy = NightfireStrategy {
         id: SchemaId::from("test:multi@1"),
-        cardinality: StrategyCardinality::Multi(MultiConfig {
-            min_blocks: NonZeroUsize::new(1).unwrap(),
-            max_blocks: Some(3),
-        }),
+        cardinality: StrategyCardinality::Multi(MultiConfig::one_or_more().with_max_blocks(3)),
         allowed_types: vec![],
         allowed_categories: vec![TestCategory::Text],
         default_type: "paragraph".to_string(),
@@ -175,10 +171,7 @@ fn rejects_too_many_blocks() {
     let registry = test_registry();
     let strategy = NightfireStrategy {
         id: SchemaId::from("test:multi@1"),
-        cardinality: StrategyCardinality::Multi(MultiConfig {
-            min_blocks: NonZeroUsize::new(1).unwrap(),
-            max_blocks: Some(2),
-        }),
+        cardinality: StrategyCardinality::Multi(MultiConfig::one_or_more().with_max_blocks(2)),
         allowed_types: vec![],
         allowed_categories: vec![TestCategory::Text],
         default_type: "paragraph".to_string(),

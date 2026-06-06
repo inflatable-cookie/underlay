@@ -60,7 +60,6 @@ use underlay_nightfire::{
     BlockRegistry, StrategyRegistry, BlockDescriptor,
     validate_nightfire_value, SchemaId,
 };
-use std::num::NonZeroUsize;
 
 // Define your category enum
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
@@ -78,10 +77,7 @@ blocks.register(BlockDescriptor {
 let mut strategies = StrategyRegistry::new();
 strategies.register(NightfireStrategy {
     id: SchemaId::from("app:content/body@1"),
-    cardinality: StrategyCardinality::Multi(MultiConfig {
-        min_blocks: NonZeroUsize::new(1).unwrap(),
-        max_blocks: None,
-    }),
+    cardinality: StrategyCardinality::Multi(MultiConfig::one_or_more()),
     allowed_types: vec![],
     allowed_categories: vec![MyCategory::Text],
     default_type: "paragraph".to_string(),

@@ -20,8 +20,39 @@ pub enum StrategyCardinality {
 /// Multi-block configuration for a strategy.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct MultiConfig {
-    pub min_blocks: NonZeroUsize,
-    pub max_blocks: Option<usize>,
+    min_blocks: NonZeroUsize,
+    max_blocks: Option<usize>,
+}
+
+impl MultiConfig {
+    /// Create a multi-block config with a minimum block count and no maximum.
+    pub fn new(min_blocks: NonZeroUsize) -> Self {
+        Self {
+            min_blocks,
+            max_blocks: None,
+        }
+    }
+
+    /// Create a multi-block config that accepts one or more blocks.
+    pub fn one_or_more() -> Self {
+        Self::new(NonZeroUsize::new(1).expect("one is non-zero"))
+    }
+
+    /// Set the maximum allowed block count.
+    pub fn with_max_blocks(mut self, max_blocks: usize) -> Self {
+        self.max_blocks = Some(max_blocks);
+        self
+    }
+
+    /// Return the minimum allowed block count.
+    pub fn min_blocks(&self) -> NonZeroUsize {
+        self.min_blocks
+    }
+
+    /// Return the maximum allowed block count.
+    pub fn max_blocks(&self) -> Option<usize> {
+        self.max_blocks
+    }
 }
 
 /// Strategy describing how a Nightfire value is shaped and which

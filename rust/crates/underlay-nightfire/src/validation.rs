@@ -90,7 +90,7 @@ where
             }
         }
         StrategyCardinality::Multi(config) => {
-            let min = config.min_blocks.get();
+            let min = config.min_blocks().get();
             if block_count < min {
                 return Err(NightfireValidationError::CardinalityMismatch {
                     schema: schema_str,
@@ -99,7 +99,7 @@ where
                     is_single,
                 });
             }
-            if let Some(max) = config.max_blocks {
+            if let Some(max) = config.max_blocks() {
                 if block_count > max {
                     return Err(NightfireValidationError::CardinalityMismatch {
                         schema: schema_str,
