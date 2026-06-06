@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.174`: media Postgres config unchecked constructor retirement.
+Execute `g06.175`: post-hardening Rust quality checkpoint.

@@ -17,14 +17,6 @@ impl Default for PostgresMediaConfig {
 }
 
 impl PostgresMediaConfig {
-    /// Create a new config with the given schema name.
-    ///
-    /// Panics if the schema is not a valid SQL identifier. Use
-    /// [`try_with_schema`](Self::try_with_schema) for fallible construction.
-    pub fn with_schema(schema: impl AsRef<str>) -> Self {
-        Self::try_with_schema(schema).expect("invalid media schema name")
-    }
-
     /// Create a new config with a validated schema name.
     pub fn try_with_schema(schema: impl AsRef<str>) -> MediaResult<Self> {
         let schema = parse_identifier("media schema", schema)?;
@@ -153,12 +145,6 @@ mod tests {
     #[test]
     fn try_with_schema_rejects_invalid_schema() {
         assert!(PostgresMediaConfig::try_with_schema("content.media").is_err());
-    }
-
-    #[test]
-    #[should_panic(expected = "invalid media schema name")]
-    fn with_schema_rejects_invalid_schema_at_construction() {
-        let _ = PostgresMediaConfig::with_schema("content.media");
     }
 
     #[test]
