@@ -281,9 +281,11 @@ Other system families own:
 - `contracts/openapi/underlay.openapi.yaml` is only a thin envelope/schema
   fragment and may over-signal completeness compared with the real shared API
   surface
-- the TS testing surface is much smaller than the runtime/pattern/template
-  surface it supports, which may mean there are missing shared test doubles or
-  helper seams
+- the TS implementation test surface is broad, but some retained public import
+  paths still rely on indirect implementation tests rather than focused package
+  compatibility coverage
+- the guardrail scanner runs as part of repo health, but scanner/config/template
+  behavior still needs direct self-tests
 - some guardrail rule packs may still reflect historical migration pressure
   rather than a clearly bounded long-term shared policy set
 
@@ -294,14 +296,12 @@ Other system families own:
   helpers
 - which additional machine-readable artifacts would materially improve contract
   enforcement without recreating the whole repo in JSON or OpenAPI
-- is the current TS testing support honestly sufficient for the retained
-  runtime/pattern/template surface, or are important shared test seams still
-  missing
+- which retained TS public paths need direct package-compatibility tests beyond
+  implementation-level pattern/client coverage
 - are the UI coexistence and prop-normalization manifests still accurate enough
   to remain preserved compatibility evidence, or should they be archived or
   replaced
 
 ## Next Task
 
-Use [../roadmaps/g04/035-generation-closeout-sequencing.md](/Users/tom/Dev/projects/underlay/docs/roadmaps/g04/035-generation-closeout-sequencing.md)
-to close out the contract-coverage and assessment generation honestly.
+Execute `g07.009`: TS public-surface test and guardrail reinforcement.

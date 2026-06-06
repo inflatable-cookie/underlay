@@ -1,6 +1,6 @@
 # g07.008 - TS Testing And Guardrail Support Gap Inventory
 
-Status: ready
+Status: complete
 Owner: repo maintainers
 Updated: 2026-06-06
 
@@ -14,15 +14,15 @@ strong enough to keep those boundaries intact as consuming apps adopt them.
 
 ## Goals
 
-- [ ] inventory TS unit tests, component tests, export checks, type checks, and
+- [x] inventory TS unit tests, component tests, export checks, type checks, and
   guardrail scanners
-- [ ] map coverage to retained `runtime/*`, `client/*`, `patterns/*`,
+- [x] map coverage to retained `runtime/*`, `client/*`, `patterns/*`,
   `templates/*`, `testing/*`, and `tools/*` surfaces
-- [ ] identify missing tests or guardrails for preferred import paths and
+- [x] identify missing tests or guardrails for preferred import paths and
   compatibility-only exports
-- [ ] classify which gaps need code/test work versus documentation-only
+- [x] classify which gaps need code/test work versus documentation-only
   follow-up
-- [ ] preserve consumer compatibility while improving enforcement posture
+- [x] preserve consumer compatibility while improving enforcement posture
 
 ## Non-Goals
 
@@ -33,21 +33,21 @@ strong enough to keep those boundaries intact as consuming apps adopt them.
 
 ## Execution Plan
 
-- [ ] inspect Effigy task coverage for TS checks, component tests, export
+- [x] inspect Effigy task coverage for TS checks, component tests, export
   checks, and docs/guardrail tasks
-- [ ] inspect existing TS tests and guardrail scripts
-- [ ] compare support coverage with contracts `090`, `100`, `110`, `111`,
+- [x] inspect existing TS tests and guardrail scripts
+- [x] compare support coverage with contracts `090`, `100`, `110`, `111`,
   `115`, and `120`
-- [ ] write a gap inventory with bounded follow-on cards for any required
+- [x] write a gap inventory with bounded follow-on cards for any required
   implementation work
 
 ## Acceptance Criteria
 
-- [ ] retained TS surfaces have an explicit test or guardrail support posture
-- [ ] compatibility-only paths are identified with enforcement or retirement
+- [x] retained TS surfaces have an explicit test or guardrail support posture
+- [x] compatibility-only paths are identified with enforcement or retirement
   options
-- [ ] missing coverage is queued as bounded work, not left as prose drift
-- [ ] no test/tooling change lands without matching validation
+- [x] missing coverage is queued as bounded work, not left as prose drift
+- [x] no test/tooling change lands without matching validation
 
 ## Validation
 
@@ -60,11 +60,10 @@ strong enough to keep those boundaries intact as consuming apps adopt them.
 
 ## Consumer Upgrade Impact
 
-None for the inventory posture.
+None.
 
-Update this section if the card makes public API, import, validation, or
-behavior changes.
+No public API, import, validation, or runtime behavior changed.
 
 ## Next Task
 
-Execute this TS testing and guardrail support gap inventory.
+Execute `g07.009`: TS public-surface test and guardrail reinforcement.

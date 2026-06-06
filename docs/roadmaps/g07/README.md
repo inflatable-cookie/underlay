@@ -50,8 +50,9 @@ surface easier for consuming apps to understand, import, test, and extend.
 - `g07.006`: list, pagination, reorder, and template seam audit
 - `g07.007`: relation selector boundary audit
 - `g07.008`: TS testing and guardrail support gap inventory
-- `g07.009`: consumer import compatibility sweep
-- `g07.010`: TS boundary hardening upgrade-note and closeout checkpoint
+- `g07.009`: TS public-surface test and guardrail reinforcement
+- `g07.010`: consumer import compatibility sweep
+- `g07.011`: TS boundary hardening upgrade-note and closeout checkpoint
 
 ## Consumer Family
 
@@ -76,8 +77,9 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g07.005` is complete as the duplicated auth-aware fetch orchestration decision.
 - `g07.006` is complete as the list, pagination, reorder, and template seam audit.
 - `g07.007` is complete as the relation selector boundary audit.
-- `g07.008` is next as the TS testing and guardrail support gap inventory.
+- `g07.008` is complete as the TS testing and guardrail support gap inventory.
+- `g07.009` is next as the TS public-surface test and guardrail reinforcement.
 
 ## Next Task
 
-Execute `g07.008`: TS testing and guardrail support gap inventory.
+Execute `g07.009`: TS public-surface test and guardrail reinforcement.

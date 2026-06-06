@@ -49,4 +49,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g07.008`: TS testing and guardrail support gap inventory.
+Execute `g07.009`: TS public-surface test and guardrail reinforcement.

@@ -100,4 +100,4 @@ Do not promote a system into active implementation-assessment work until:
 
 The active contract wave is live inside `g07`.
 
-Execute `g07.008`: TS testing and guardrail support gap inventory.
+Execute `g07.009`: TS public-surface test and guardrail reinforcement.
