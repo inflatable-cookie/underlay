@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.157`: TypeScript attention marker cleanup.
+Execute `g06.158`: TypeScript comment-ratio cleanup.

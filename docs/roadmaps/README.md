@@ -236,7 +236,8 @@ README surfaces.
 - `g06.154` is complete as the TypeScript structural closeout audit
 - `g06.155` is complete as the TypeScript doctor error cleanup
 - `g06.156` is complete as the TypeScript warning backlog decision
-- `g06.157` is next as the TypeScript attention marker cleanup
+- `g06.157` is complete as the TypeScript attention marker cleanup
+- `g06.158` is next as the TypeScript comment-ratio cleanup
 - `g05` is closed as the shared-page, workflow-template, media capability,
   dev-flow contract, and query-variant convergence generation
 - `g05.024` is complete as the Marking Hub query variant proof and rollout
@@ -352,7 +353,7 @@ README surfaces.
 
 ## Next Task
 
-Execute `g06.157`: TypeScript attention marker cleanup.
+Execute `g06.158`: TypeScript comment-ratio cleanup.
 - `g01.090` is complete for confirming that the remaining public `@decodelabs/underlay/patterns` surface is the true retained workflow stop point rather than unresolved migration debt
 - `g01.091` is complete for confirming the retained `client` package boundary, exposing explicit `client/*` public subpaths for the live feature families, and keeping the root barrel stable as a convenience surface
 - `g01.092` is complete for confirming the retained `nightfire` package boundary, exposing explicit `nightfire/*` public subpaths for the live extension families, and keeping the root barrel stable as a convenience surface
@@ -528,4 +529,4 @@ queue and proving the next honest work belonged in `g02`.
 
 Execute the live queue:
 
-- `g06.157`: TypeScript attention marker cleanup
+- `g06.158`: TypeScript comment-ratio cleanup

@@ -32,10 +32,10 @@ Out of scope:
 
 ## Acceptance Criteria
 
-- `scan.attention-markers` has no TypeScript findings
-- touched tests pass
-- `effigy doctor` still exits successfully
-- artifact records remaining doctor warning state
+- [x] `scan.attention-markers` has no TypeScript findings
+- [x] touched tests pass
+- [x] `effigy doctor` still exits successfully
+- [x] artifact records remaining doctor warning state
 
 ## Consumer Upgrade Impact
 
@@ -45,8 +45,8 @@ This should be comment-only cleanup.
 
 ## Current State
 
-`g06.157` is ready.
+`g06.157` is complete.
 
 ## Next Task
 
-Execute `g06.157`: TypeScript attention marker cleanup.
+Execute `g06.158`: TypeScript comment-ratio cleanup.

@@ -28,8 +28,8 @@ describe("slugify", () => {
 		});
 
 		it("removes underscores", () => {
-			// Note: underscores are removed by the non-alphanumeric filter
-			// before the space-to-hyphen conversion can process them
+			// Underscores are removed by the non-alphanumeric filter before
+			// the space-to-hyphen conversion can process them.
 			expect(slugify("hello_world")).toBe("helloworld");
 			expect(slugify("snake_case_text")).toBe("snakecasetext");
 		});

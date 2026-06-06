@@ -221,7 +221,8 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.154` is complete as the TypeScript structural closeout audit.
 - `g06.155` is complete as the TypeScript doctor error cleanup.
 - `g06.156` is complete as the TypeScript warning backlog decision.
-- `g06.157` is next as the TypeScript attention marker cleanup.
+- `g06.157` is complete as the TypeScript attention marker cleanup.
+- `g06.158` is next as the TypeScript comment-ratio cleanup.
 
 ## Planned Runway
 
@@ -386,6 +387,7 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.155`: TypeScript doctor error cleanup
 - `g06.156`: TypeScript warning backlog decision
 - `g06.157`: TypeScript attention marker cleanup
+- `g06.158`: TypeScript comment-ratio cleanup
 
 ## Consumer Family
 
@@ -559,7 +561,8 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g06.154` is complete.
 - `g06.155` is complete.
 - `g06.156` is complete.
-- `g06.157` is next.
+- `g06.157` is complete.
+- `g06.158` is next.
 
 ## Batch Cards
 
@@ -568,4 +571,4 @@ If `g06` enters strict execution posture, keep its cards under
 
 ## Next Task
 
-Execute `g06.157`: TypeScript attention marker cleanup.
+Execute `g06.158`: TypeScript comment-ratio cleanup.

@@ -161,10 +161,8 @@ export async function computeFileHash(file: File): Promise<string> {
     return bufferToHex(hashBuffer);
   }
 
-  // For larger files, read in chunks
-  // Note: This is a streaming approach but Web Crypto doesn't support incremental
-  // hashing directly, so we still need to read the whole file. For very large files,
-  // you might want to do this server-side instead.
+  // Web Crypto does not support incremental SHA-256 hashing, so large files
+  // still need a full read. Very large files are better hashed server-side.
   const buffer = await file.arrayBuffer();
   const hashBuffer = await crypto.subtle.digest("SHA-256", buffer);
   return bufferToHex(hashBuffer);

@@ -56,7 +56,7 @@ export interface InitiateUploadResponse {
 /**
  * Upload plan returned by media API.
  *
- * Note: To use with `uploadToBlob()`, map `headers` to `requiredHeaders`.
+ * To use with `uploadToBlob()`, map `headers` to `requiredHeaders`.
  */
 export interface MediaUploadPlan {
   uploadUrl: string;

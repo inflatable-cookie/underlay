@@ -396,9 +396,8 @@ function createStorageWrapper(
 
       window.addEventListener("storage", handleStorageEvent);
 
-      // Return a store with cleanup on unsubscribe
-      // Note: Svelte stores don't have built-in cleanup, so this listener
-      // persists for the app lifetime. This is generally fine for SPAs.
+      // Svelte stores do not expose a cleanup hook here, so this listener
+      // persists for the app lifetime. This is acceptable for SPA usage.
     }
 
     return {
