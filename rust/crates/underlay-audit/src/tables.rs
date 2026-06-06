@@ -6,9 +6,8 @@ use crate::error::{AuditError, AuditResult};
 
 /// Typed audit log table location.
 ///
-/// Use this when table location comes from app config. The raw string audit
-/// APIs are retained for compatibility, but this type keeps validation at the
-/// boundary instead of every query call.
+/// Use this when table location comes from app config so validation happens at
+/// the boundary instead of every query call.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct AuditTable {
     name: QualifiedTableName,

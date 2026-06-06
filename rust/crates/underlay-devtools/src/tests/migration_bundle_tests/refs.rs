@@ -50,7 +50,19 @@ fn bundle_run_options_accept_typed_bundle_ref() {
         Some(PathBuf::from("store")),
     );
 
-    assert_eq!(options.bundle_ref().unwrap(), bundle_ref);
+    assert_eq!(options.bundle_ref(), &bundle_ref);
     assert_eq!(options.output_dir, PathBuf::from("out"));
     assert_eq!(options.local_store_dir, Some(PathBuf::from("store")));
+}
+
+#[test]
+fn bundle_run_options_parse_rejects_tag_only_ref() {
+    let err = BundleRunOptions::parse_bundle_ref(
+        "registry.example.com/org/bundle:demo",
+        PathBuf::from("out"),
+        None,
+    )
+    .expect_err("tag-only ref should be rejected");
+
+    assert!(err.to_string().contains("digest-pinned"));
 }

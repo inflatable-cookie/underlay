@@ -60,7 +60,7 @@ pub fn migration_bundle_pull(
 }
 
 pub fn migration_run(options: &BundleRunOptions) -> Result<BundleRunReport, MigrationBundleError> {
-    let bundle_ref = options.bundle_ref()?;
+    let bundle_ref = options.bundle_ref();
     let requested_digest = bundle_ref.digest().to_string();
 
     let pull = migration_bundle_pull(&BundlePullOptions {

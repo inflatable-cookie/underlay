@@ -109,12 +109,12 @@ fn migration_bundle_publish_rejects_digest_mismatch_in_ref() {
 #[test]
 fn migration_run_requires_digest_pinned_bundle_ref() {
     let dir = temp_dir("underlay_bundle_run_requires_digest");
-    let err = migration_run(&BundleRunOptions {
-        bundle_ref: "registry.example.com/org/bundle:demo".to_string(),
-        output_dir: dir.join("run"),
-        local_store_dir: Some(dir.join("store")),
-    })
-    .expect_err("run should require digest");
+    let err = BundleRunOptions::parse_bundle_ref(
+        "registry.example.com/org/bundle:demo",
+        dir.join("run"),
+        Some(dir.join("store")),
+    )
+    .expect_err("run options should require digest");
 
     assert!(err.to_string().contains("digest-pinned"));
 }
@@ -142,12 +142,14 @@ fn migration_run_replays_digest_pinned_bundle_from_local_store() {
     })
     .expect("publish should succeed");
 
-    let report = migration_run(&BundleRunOptions {
-        bundle_ref: format!("registry.example.com/org/bundle@{}", publish.digest),
-        output_dir: run_dir,
-        local_store_dir: Some(store_dir),
-    })
-    .expect("run should succeed");
+    let options = BundleRunOptions::parse_bundle_ref(
+        format!("registry.example.com/org/bundle@{}", publish.digest),
+        run_dir,
+        Some(store_dir),
+    )
+    .expect("run options should accept digest-pinned ref");
+
+    let report = migration_run(&options).expect("run should succeed");
 
     assert_eq!(report.digest, publish.digest);
     assert_eq!(report.status, "prepared");

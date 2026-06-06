@@ -43,11 +43,16 @@ pub(crate) fn run(mut args: impl Iterator<Item = String>) {
         std::process::exit(2);
     };
 
-    match underlay_devtools::migration_run(&underlay_devtools::BundleRunOptions {
-        bundle_ref,
-        output_dir,
-        local_store_dir: None,
-    }) {
+    let options =
+        match underlay_devtools::BundleRunOptions::parse_bundle_ref(bundle_ref, output_dir, None) {
+            Ok(options) => options,
+            Err(err) => {
+                eprintln!("migration run failed: {err}");
+                std::process::exit(1);
+            }
+        };
+
+    match underlay_devtools::migration_run(&options) {
         Ok(report) => {
             println!(
                 "run {} -> {} ({}, digest={}, run_id={})",

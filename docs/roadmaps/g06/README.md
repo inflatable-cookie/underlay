@@ -440,6 +440,15 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.178`: six-consumer Rust API compatibility sweep
 - `g06.179`: Rust hardening release-note and upgrade-guidance closeout
 - `g06.180`: g06 closeout readiness checkpoint
+- `g06.181`: validation rejection envelope normalization
+- `g06.182`: auth schema drift contract cleanup
+- `g06.183`: media authority status drift cleanup
+- `g06.184`: auth runtime pattern boundary assessment
+- `g06.185`: media repository usage trait split
+- `g06.186`: blob upload config boundary split
+- `g06.187`: typed existence soft-delete default
+- `g06.188`: validation validator surface internal split
+- `g06.189`: devtools run bundle ref typing
 
 ## Consumer Family
 
@@ -648,6 +657,7 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g06.187` is complete as the typed existence soft-delete default artifact.
 - `g06.188` is complete as the validation validator surface internal split
   artifact.
+- `g06.189` is complete as the devtools run bundle ref typing artifact.
 - `g06` is closed.
 
 ## Batch Cards

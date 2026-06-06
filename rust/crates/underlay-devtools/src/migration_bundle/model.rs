@@ -56,26 +56,46 @@ pub struct BundlePullReport {
 
 #[derive(Debug, Clone)]
 pub struct BundleRunOptions {
-    pub bundle_ref: String,
+    bundle_ref: MigrationBundleRef,
     pub output_dir: PathBuf,
     pub local_store_dir: Option<PathBuf>,
 }
 
 impl BundleRunOptions {
-    pub fn from_bundle_ref(
+    pub fn new(
         bundle_ref: MigrationBundleRef,
         output_dir: PathBuf,
         local_store_dir: Option<PathBuf>,
     ) -> Self {
         Self {
-            bundle_ref: bundle_ref.to_string(),
+            bundle_ref,
             output_dir,
             local_store_dir,
         }
     }
 
-    pub fn bundle_ref(&self) -> Result<MigrationBundleRef, MigrationBundleError> {
-        MigrationBundleRef::parse_digest_pinned(&self.bundle_ref)
+    pub fn from_bundle_ref(
+        bundle_ref: MigrationBundleRef,
+        output_dir: PathBuf,
+        local_store_dir: Option<PathBuf>,
+    ) -> Self {
+        Self::new(bundle_ref, output_dir, local_store_dir)
+    }
+
+    pub fn parse_bundle_ref(
+        bundle_ref: impl AsRef<str>,
+        output_dir: PathBuf,
+        local_store_dir: Option<PathBuf>,
+    ) -> Result<Self, MigrationBundleError> {
+        Ok(Self::new(
+            MigrationBundleRef::parse_digest_pinned(bundle_ref)?,
+            output_dir,
+            local_store_dir,
+        ))
+    }
+
+    pub fn bundle_ref(&self) -> &MigrationBundleRef {
+        &self.bundle_ref
     }
 }
 
