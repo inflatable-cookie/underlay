@@ -67,5 +67,5 @@ New code can prefer:
 
 ## Next Task
 
-Open a bounded consumer migration card before moving live consumer imports from
-the aggregate `runtime/media` path to the nested focused media paths.
+The bounded consumer migration was completed in
+[019 runtime media focused consumer migration](019-runtime-media-focused-consumer-migration.md).

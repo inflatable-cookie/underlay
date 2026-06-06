@@ -73,6 +73,7 @@ README surfaces.
 - `g07.016` is complete as the runtime data focused consumer migration
 - `g07.017` is complete as the runtime relations boundary audit
 - `g07.018` is complete as the runtime media subpath split
+- `g07.019` is complete as the runtime media focused consumer migration
 - `g07` is complete as the TS runtime and workflow boundary hardening generation
 - `g06.001` is complete as the Rust platform contract transition and public API
   inventory gate

@@ -147,14 +147,18 @@ Reusable templates:
     passed after config cleanup
   - `g07.016`: all six known consumers moved live `runtime/data` source imports
     to `runtime/collections`, `runtime/reorder`, or `runtime/selection`
-  - `g07.018`: no consumer migration required; the nested media subpaths are
-    additive and the aggregate `runtime/media` path remains valid
+  - `g07.018`: nested media subpaths were added; the aggregate
+    `runtime/media` path remains valid
+  - `g07.019`: all six known consumers moved live aggregate `runtime/media`
+    imports to `runtime/media/types`, `runtime/media/upload`, or
+    `runtime/media/detail`
 - Changed guidance:
   - [g07.012 closeout artifact](../roadmaps/g07/012-ts-boundary-hardening-closeout-artifact.md)
   - [g07.013 suggestion helper compatibility export retirement](../roadmaps/g07/013-suggestion-helper-compatibility-export-retirement.md)
   - [g07.015 runtime data subpath split](../roadmaps/g07/015-runtime-data-subpath-split.md)
   - [g07.016 runtime data focused consumer migration](../roadmaps/g07/016-runtime-data-focused-consumer-migration.md)
   - [g07.018 runtime media subpath split](../roadmaps/g07/018-runtime-media-subpath-split.md)
+  - [g07.019 runtime media focused consumer migration](../roadmaps/g07/019-runtime-media-focused-consumer-migration.md)
   - [090 TS runtime and client orchestration](../contracts/090-ts-runtime-and-client-orchestration.md)
   - [100 shared patterns and workflow shells](../contracts/100-shared-patterns-and-workflow-shells.md)
   - [120 tooling, testing, and contract artifacts](../contracts/120-tooling-testing-and-contract-artifacts.md)
