@@ -642,3 +642,4 @@ Closed queue:
 - `g06.201`: email TOTP config field retirement
 - `g06.202`: OAuth config field retirement
 - `g06.203`: observability config field retirement
+- `g06.204`: DB config field retirement

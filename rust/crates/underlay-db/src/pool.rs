@@ -33,22 +33,34 @@ pub const DEFAULT_IDLE_TIMEOUT_SECS: u64 = 600;
 ///     .with_acquire_timeout_secs(60)
 ///     .with_idle_timeout_secs(300);
 /// ```
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct DbConfig {
     /// Database connection URL.
-    pub database_url: String,
+    database_url: String,
     /// Maximum number of connections in the pool.
     /// Default: 10
-    pub max_connections: u32,
+    max_connections: u32,
     /// Minimum number of connections to maintain.
     /// Default: 1
-    pub min_connections: u32,
+    min_connections: u32,
     /// Timeout for acquiring a connection from the pool in seconds.
     /// Default: 30
-    pub acquire_timeout_secs: u64,
+    acquire_timeout_secs: u64,
     /// Timeout for idle connections before they are closed in seconds.
     /// Default: 600 (10 minutes)
-    pub idle_timeout_secs: u64,
+    idle_timeout_secs: u64,
+}
+
+impl std::fmt::Debug for DbConfig {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("DbConfig")
+            .field("database_url", &"[REDACTED]")
+            .field("max_connections", &self.max_connections)
+            .field("min_connections", &self.min_connections)
+            .field("acquire_timeout_secs", &self.acquire_timeout_secs)
+            .field("idle_timeout_secs", &self.idle_timeout_secs)
+            .finish()
+    }
 }
 
 impl DbConfig {
@@ -61,6 +73,26 @@ impl DbConfig {
             acquire_timeout_secs: DEFAULT_ACQUIRE_TIMEOUT_SECS,
             idle_timeout_secs: DEFAULT_IDLE_TIMEOUT_SECS,
         }
+    }
+
+    pub fn database_url(&self) -> &str {
+        &self.database_url
+    }
+
+    pub fn max_connections(&self) -> u32 {
+        self.max_connections
+    }
+
+    pub fn min_connections(&self) -> u32 {
+        self.min_connections
+    }
+
+    pub fn acquire_timeout_secs(&self) -> u64 {
+        self.acquire_timeout_secs
+    }
+
+    pub fn idle_timeout_secs(&self) -> u64 {
+        self.idle_timeout_secs
     }
 
     /// Set the maximum number of connections.
@@ -93,11 +125,11 @@ impl DbConfig {
 /// Create a connection pool with the given configuration.
 pub async fn create_pool(config: &DbConfig) -> Result<DbPool, sqlx::Error> {
     PgPoolOptions::new()
-        .max_connections(config.max_connections)
-        .min_connections(config.min_connections)
-        .acquire_timeout(Duration::from_secs(config.acquire_timeout_secs))
-        .idle_timeout(Duration::from_secs(config.idle_timeout_secs))
-        .connect(&config.database_url)
+        .max_connections(config.max_connections())
+        .min_connections(config.min_connections())
+        .acquire_timeout(Duration::from_secs(config.acquire_timeout_secs()))
+        .idle_timeout(Duration::from_secs(config.idle_timeout_secs()))
+        .connect(config.database_url())
         .await
 }
 
