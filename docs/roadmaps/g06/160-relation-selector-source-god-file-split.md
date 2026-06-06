@@ -38,10 +38,10 @@ Out of scope:
 
 ## Acceptance Criteria
 
-- RelationSelector source files are smaller and responsibility-focused
-- public imports remain stable
-- focused RelationSelector/drill-down tests pass
-- `effigy doctor` state is recorded
+- [x] RelationSelector source files are smaller and responsibility-focused
+- [x] public imports remain stable
+- [x] focused RelationSelector/drill-down tests pass
+- [x] `effigy doctor` state is recorded
 
 ## Consumer Upgrade Impact
 
@@ -49,10 +49,20 @@ Expected impact: none.
 
 This should be an internal split with stable exports.
 
+## Evidence
+
+- `bun x vitest run ts/tests/patterns/relation-selector-context.test.ts ts/tests/patterns/relation-drilldown-context.test.ts`
+  passed: 2 files, 6 tests.
+- `effigy doctor` passed with `ok:15`, `warn:1`, `err:0`.
+- `scan.god-files` now reports 12 warnings, down from 14 before this split.
+- `ts/src/patterns/RelationSelector/context.svelte.ts` no longer reports.
+- `ts/src/patterns/RelationSelector/drilldown-context.svelte.ts` no longer
+  reports.
+
 ## Current State
 
-`g06.160` is ready.
+`g06.160` is complete.
 
 ## Next Task
 
-Execute `g06.160`: RelationSelector source god-file split.
+Execute `g06.161`: HTTP client source god-file split.

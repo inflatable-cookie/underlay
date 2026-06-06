@@ -1,169 +1,76 @@
-import { getContext, setContext } from "svelte";
+import { setContext } from "svelte";
 import type {
   SelectableRelation,
   RelationSelectorProps,
-  RelationSelectorState,
-  SearchResult
+  SearchResult,
 } from "./types.js";
-import type { DrillDownItem, DrillDownBreadcrumb, DrillDownLevel } from "./drilldown-types.js";
-import { createDrillDownContext, type DrillDownActions } from "./drilldown-context.svelte.js";
+import { createDrillDownContext } from "./drilldown-context.svelte.js";
+import { RELATION_SELECTOR_CONTEXT_KEY } from "./context-key.js";
+import type { RelationSelectorContext } from "./context-types.js";
+import { createInitialRelationSelectorState } from "./context-state.js";
+import {
+  mergeResolvedItem,
+  mergeResolvedItems,
+  resolveSelectedItem,
+  resolveSelectedItems,
+  toggleSelectionValue,
+} from "./context-selection.js";
+import { createRelationSelectorUiActions } from "./context-ui-actions.js";
+import { createRelationSelectorContextValue } from "./context-value.js";
 
-const RELATION_SELECTOR_CONTEXT_KEY = Symbol("relationSelector");
-
-/**
- * Context value for RelationSelector components.
- * Provides shared state and actions.
- */
-export interface RelationSelectorContext<T extends SelectableRelation> {
-  // === Props (readonly) ===
-  props: RelationSelectorProps<T>;
-
-  // === State ===
-  state: RelationSelectorState<T>;
-
-  // === Derived values ===
-  /** Currently selected item (single-select mode) */
-  selectedItem: T | null;
-  /** Currently selected items (multi-select mode) */
-  selectedItems: T[];
-  /** Whether in multi-select mode */
-  isMultiSelect: boolean;
-
-  // === Actions ===
-  /** Open the popover for quick selection */
-  openPopover: () => void;
-  /** Close the popover */
-  closePopover: () => void;
-  /** Open the full modal (for create form) */
-  openModal: () => void;
-  /** Close the full modal */
-  closeModal: () => void;
-  /** Switch from popover to modal (e.g., when opening create form) */
-  switchToModal: () => void;
-  /** Set the search query */
-  setSearchQuery: (query: string) => void;
-  /** Clear the search query */
-  clearSearch: () => void;
-  /** Select an item (single-select: replaces, multi-select: toggles) */
-  selectItem: (item: T) => void;
-  /** Deselect an item (multi-select only) */
-  deselectItem: (itemId: string) => void;
-  /** Clear all selections */
-  clearSelection: () => void;
-  /** Toggle the create form */
-  toggleCreateForm: () => void;
-  /** Close the create form */
-  closeCreateForm: () => void;
-  /** Handle successful creation of a new item */
-  handleCreateSuccess: (item: T) => void;
-  /** Perform a search */
-  performSearch: (query: string) => Promise<void>;
-  /** Retry the last search */
-  retrySearch: () => Promise<void>;
-  /** Load suggestions */
-  loadSuggestions: () => Promise<void>;
-  /** Retry loading suggestions */
-  retrySuggestions: () => Promise<void>;
-  /** Check if an item is selected */
-  isSelected: (itemId: string) => boolean;
-  /** Set a filter value (undefined = all) */
-  setFilter: (filterKey: string, optionId: string | undefined) => void;
-
-  // === Drill-Down Navigation ===
-  /** Drill-down actions (only functional when drillDown config is provided) */
-  drillDown: DrillDownActions;
-}
+export type { RelationSelectorContext } from "./context-types.js";
+export { useRelationSelector } from "./context-use.js";
 
 /**
  * Creates a new RelationSelector context.
  * Should be called in the root RelationSelector component.
  */
 export function createRelationSelectorContext<T extends SelectableRelation>(
-  props: RelationSelectorProps<T>
+  props: RelationSelectorProps<T>,
 ): RelationSelectorContext<T> {
-  // Initialize activeFilters from filter configs' default values
-  function getInitialFilters(): Record<string, string | undefined> {
-    const filters: Record<string, string | undefined> = {};
-    if (props.filters) {
-      for (const filter of props.filters) {
-        filters[filter.key] = filter.defaultValue;
-      }
-    }
-    return filters;
-  }
-
-  // Initialize drill-down context (if configured)
   const ddCtx = createDrillDownContext(() => props.drillDown);
 
-  // Initialize state with Svelte 5 runes
-  let state = $state<RelationSelectorState<T>>({
-    popoverOpen: false,
-    modalOpen: false,
-    searchQuery: "",
-    isSearching: false,
-    searchResults: [],
-    searchTotal: 0,
-    isSuggestionsLoading: false,
-    suggestionItems: [],
-    createFormOpen: false,
-    searchError: null,
-    activeFilters: getInitialFilters(),
-    drillDown: props.drillDown ? ddCtx.state : null
-  });
+  let state = $state(
+    createInitialRelationSelectorState<T>(
+      props.filters,
+      props.drillDown ? ddCtx.state : null,
+    ),
+  );
 
-  // Track resolved items for selected values
   let resolvedItems = $state<Map<string, T>>(new Map());
 
-  // Watch for initialSelection changes and add to resolvedItems
-  // This handles the case where initialSelection is computed after data loads
   $effect(() => {
-    const initial = props.initialSelection;
-    if (initial && !resolvedItems.has(initial.id)) {
-      const newResolved = new Map(resolvedItems);
-      newResolved.set(initial.id, initial);
+    const newResolved = mergeResolvedItem(
+      resolvedItems,
+      props.initialSelection,
+    );
+    if (newResolved) {
       resolvedItems = newResolved;
     }
   });
 
-  // Watch for initialSelections changes (multi-select)
   $effect(() => {
-    const initials = props.initialSelections;
-    if (initials && initials.length > 0) {
-      let needsUpdate = false;
-      for (const item of initials) {
-        if (!resolvedItems.has(item.id)) {
-          needsUpdate = true;
-          break;
-        }
-      }
-      if (needsUpdate) {
-        const newResolved = new Map(resolvedItems);
-        for (const item of initials) {
-          newResolved.set(item.id, item);
-        }
-        resolvedItems = newResolved;
-      }
+    const newResolved = mergeResolvedItems(
+      resolvedItems,
+      props.initialSelections,
+    );
+    if (newResolved) {
+      resolvedItems = newResolved;
     }
   });
 
-  // Track last search query for retry
   let lastSearchQuery = $state<string>("");
 
-  // Derived: is multi-select mode
   const isMultiSelect = $derived(props.mode === "multi");
 
-  // Derived: selected item for single-select
   const selectedItem = $derived.by(() => {
     if (isMultiSelect || !props.value) return null;
-    return resolvedItems.get(props.value) ?? null;
+    return resolveSelectedItem(resolvedItems, props.value);
   });
 
-  // Derived: selected items for multi-select
   const selectedItems = $derived.by(() => {
     if (!isMultiSelect || !props.values) return [];
-    return props.values
-      .map((id) => resolvedItems.get(id))
-      .filter((item): item is T => item !== undefined);
+    return resolveSelectedItems(resolvedItems, props.values);
   });
 
   // When drill-down reaches the final level, load final-level suggestions
@@ -177,13 +84,17 @@ export function createRelationSelectorContext<T extends SelectableRelation>(
     const atFinalLevel = dd.depth === props.drillDown.levels.length;
     const depthChanged = dd.depth !== lastDrillDownDepth;
     lastDrillDownDepth = dd.depth;
-    if (atFinalLevel && depthChanged && state.popoverOpen && props.suggestions) {
+    if (
+      atFinalLevel &&
+      depthChanged &&
+      state.popoverOpen &&
+      props.suggestions
+    ) {
       state.suggestionItems = [];
       void loadSuggestions();
     }
   });
 
-  // Track if we've attempted to load suggestions for pre-selected value
   let hasLoadedInitialSuggestions = false;
 
   // Load suggestions on mount if there's a pre-selected value
@@ -203,89 +114,32 @@ export function createRelationSelectorContext<T extends SelectableRelation>(
     }
   });
 
-  // === Actions ===
-
-  function openPopover() {
-    state.popoverOpen = true;
-    if (ddCtx.actions.isDrillDownActive) {
-      // Load drill-down suggestions for the current level
-      void ddCtx.actions.loadDrillDownSuggestions();
-    } else if (props.suggestions && state.suggestionItems.length === 0) {
-      // Load final-level suggestions when popover opens
+  const uiActions = createRelationSelectorUiActions({
+    state,
+    drillDown: ddCtx.actions,
+    hasDrillDown: () => !!props.drillDown,
+    hasSuggestions: () => !!props.suggestions,
+    loadSuggestions: () => {
       void loadSuggestions();
-    }
-  }
-
-  function closePopover() {
-    state.popoverOpen = false;
-    state.searchQuery = "";
-    state.searchResults = [];
-    state.searchError = null;
-    // Reset drill-down to start (so next open starts from the beginning)
-    if (props.drillDown) {
-      ddCtx.actions.resetDrillDown();
-    }
-  }
-
-  function openModal() {
-    state.modalOpen = true;
-    // Load suggestions when modal opens
-    if (props.suggestions && state.suggestionItems.length === 0) {
-      void loadSuggestions();
-    }
-  }
-
-  function closeModal() {
-    state.modalOpen = false;
-    state.searchQuery = "";
-    state.searchResults = [];
-    state.searchError = null;
-    state.createFormOpen = false;
-  }
-
-  function switchToModal() {
-    // Close popover and open modal (used when switching to create form)
-    state.popoverOpen = false;
-    state.modalOpen = true;
-    state.createFormOpen = true;
-  }
-
-  function setSearchQuery(query: string) {
-    state.searchQuery = query;
-  }
-
-  function clearSearch() {
-    state.searchQuery = "";
-    state.searchResults = [];
-    state.searchError = null;
-  }
+    },
+  });
 
   function selectItem(item: T) {
-    // Store the item for future reference - reassign map to trigger reactivity
     const newResolved = new Map(resolvedItems);
     newResolved.set(item.id, item);
     resolvedItems = newResolved;
 
-    // Track selection in history (if provided)
     props.selectionHistory?.track(item.id);
 
     if (isMultiSelect) {
-      // Multi-select: toggle
       const currentValues = props.values ?? [];
-      if (currentValues.includes(item.id)) {
-        // Already selected, remove it
-        props.onchangeMulti?.(currentValues.filter((id) => id !== item.id));
-      } else {
-        // Not selected, add it
-        props.onchangeMulti?.([...currentValues, item.id]);
-      }
+      props.onchangeMulti?.(toggleSelectionValue(currentValues, item.id));
     } else {
-      // Single-select: replace and close whichever is open
       props.onchange?.(item.id);
       if (state.popoverOpen) {
-        closePopover();
+        uiActions.closePopover();
       } else {
-        closeModal();
+        uiActions.closeModal();
       }
     }
   }
@@ -304,27 +158,10 @@ export function createRelationSelectorContext<T extends SelectableRelation>(
     }
   }
 
-  function toggleCreateForm() {
-    if (state.popoverOpen) {
-      // If in popover, switch to modal with create form open
-      switchToModal();
-    } else {
-      // Already in modal, just toggle the create form
-      state.createFormOpen = !state.createFormOpen;
-    }
-  }
-
-  function closeCreateForm() {
-    state.createFormOpen = false;
-  }
-
   function handleCreateSuccess(item: T) {
-    // selectItem will store the item and trigger reactivity
     selectItem(item);
-    closeCreateForm();
-    // Notify parent
+    uiActions.closeCreateForm();
     props.onCreate?.(item);
-    // Refresh suggestions so the new item appears in the list
     if (props.suggestions) {
       void loadSuggestions();
     }
@@ -343,20 +180,18 @@ export function createRelationSelectorContext<T extends SelectableRelation>(
     state.searchError = null;
 
     try {
-      // Merge drill-down selections into filters for the final selection level
       const mergedFilters = props.drillDown
         ? { ...ddCtx.actions.getDrillDownFilters(), ...state.activeFilters }
         : state.activeFilters;
       const result: SearchResult<T> = await props.search(query, {
         limit: 20,
         offset: 0,
-        filters: mergedFilters
+        filters: mergedFilters,
       });
 
       state.searchResults = result.items;
       state.searchTotal = result.total;
 
-      // Store items for reference - reassign map to trigger reactivity
       const newResolved = new Map(resolvedItems);
       for (const item of result.items) {
         newResolved.set(item.id, item);
@@ -384,19 +219,16 @@ export function createRelationSelectorContext<T extends SelectableRelation>(
     state.isSuggestionsLoading = true;
 
     try {
-      // Get recent hints from selection history (if provided)
       const recentHints = props.selectionHistory?.getRecentIds();
-      // Merge drill-down selections into filters for the final selection level
       const mergedFilters = props.drillDown
         ? { ...ddCtx.actions.getDrillDownFilters(), ...state.activeFilters }
         : state.activeFilters;
       const items = await props.suggestions({
         recentHints,
-        filters: mergedFilters
+        filters: mergedFilters,
       });
       state.suggestionItems = items;
 
-      // Store items for reference - reassign map to trigger reactivity
       const newResolved = new Map(resolvedItems);
       for (const item of items) {
         newResolved.set(item.id, item);
@@ -424,9 +256,8 @@ export function createRelationSelectorContext<T extends SelectableRelation>(
   function setFilter(filterKey: string, optionId: string | undefined): void {
     state.activeFilters = {
       ...state.activeFilters,
-      [filterKey]: optionId
+      [filterKey]: optionId,
     };
-    // Clear current results and reload with new filters
     state.searchResults = [];
     state.suggestionItems = [];
     if (state.searchQuery.trim()) {
@@ -436,62 +267,28 @@ export function createRelationSelectorContext<T extends SelectableRelation>(
     }
   }
 
-  const context: RelationSelectorContext<T> = {
-    get props() {
-      return props;
+  const context = createRelationSelectorContextValue<T>({
+    props,
+    state,
+    getSelectedItem: () => selectedItem,
+    getSelectedItems: () => selectedItems,
+    getIsMultiSelect: () => isMultiSelect,
+    actions: {
+      ...uiActions,
+      selectItem,
+      deselectItem,
+      clearSelection,
+      handleCreateSuccess,
+      performSearch,
+      retrySearch,
+      loadSuggestions,
+      retrySuggestions,
+      isSelected,
+      setFilter,
     },
-    get state() {
-      return state;
-    },
-    get selectedItem() {
-      return selectedItem;
-    },
-    get selectedItems() {
-      return selectedItems;
-    },
-    get isMultiSelect() {
-      return isMultiSelect;
-    },
-    openPopover,
-    closePopover,
-    openModal,
-    closeModal,
-    switchToModal,
-    setSearchQuery,
-    clearSearch,
-    selectItem,
-    deselectItem,
-    clearSelection,
-    toggleCreateForm,
-    closeCreateForm,
-    handleCreateSuccess,
-    performSearch,
-    retrySearch,
-    loadSuggestions,
-    retrySuggestions,
-    isSelected,
-    setFilter,
-    drillDown: ddCtx.actions
-  };
+    drillDown: ddCtx.actions,
+  });
 
   setContext(RELATION_SELECTOR_CONTEXT_KEY, context);
-  return context;
-}
-
-/**
- * Gets the RelationSelector context.
- * Must be called from within a RelationSelector component tree.
- */
-export function useRelationSelector<
-  T extends SelectableRelation
->(): RelationSelectorContext<T> {
-  const context = getContext<RelationSelectorContext<T>>(
-    RELATION_SELECTOR_CONTEXT_KEY
-  );
-  if (!context) {
-    throw new Error(
-      "useRelationSelector must be called within a RelationSelector component"
-    );
-  }
   return context;
 }
