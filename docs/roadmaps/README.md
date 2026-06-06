@@ -640,3 +640,4 @@ Closed queue:
 - `g06.199`: JWT config field retirement
 - `g06.200`: password config field retirement
 - `g06.201`: email TOTP config field retirement
+- `g06.202`: OAuth config field retirement

@@ -37,24 +37,21 @@ pub struct GoogleOAuthService {
 impl GoogleOAuthService {
     pub fn new(config: GoogleOAuthConfig) -> AuthResult<Self> {
         let token_url_string = "https://oauth2.googleapis.com/token".to_string();
-        let redirect_uri = config.redirect_uri;
-
-        let client_id = config.client_id;
-        let client_secret = config.client_secret;
+        let (client_id, client_secret, redirect_uri, scopes) = config.into_parts();
 
         let token_url =
             Url::parse(&token_url_string).map_err(|_| OAuthServiceError::InvalidConfig)?;
         let userinfo_url = Url::parse("https://openidconnect.googleapis.com/v1/userinfo")
             .map_err(|_| OAuthServiceError::InvalidConfig)?;
 
-        let scopes = if config.scopes.is_empty() {
+        let scopes = if scopes.is_empty() {
             vec![
                 Scope::new("openid".to_string()),
                 Scope::new("email".to_string()),
                 Scope::new("profile".to_string()),
             ]
         } else {
-            config.scopes.into_iter().map(Scope::new).collect()
+            scopes.into_iter().map(Scope::new).collect()
         };
 
         Ok(Self {
@@ -76,12 +73,11 @@ impl GoogleOAuthService {
         let redirect_uri = std::env::var("AUTH_GOOGLE_REDIRECT_URI")
             .map_err(|_| OAuthServiceError::InvalidConfig)?;
 
-        Self::new(GoogleOAuthConfig {
+        Self::new(GoogleOAuthConfig::new(
             client_id,
             client_secret,
             redirect_uri,
-            scopes: vec![],
-        })
+        ))
     }
 
     fn to_tokenset(token: GoogleTokenResponse) -> TokenSet {

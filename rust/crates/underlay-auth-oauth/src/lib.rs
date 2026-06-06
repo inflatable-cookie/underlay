@@ -74,14 +74,70 @@ pub struct GoogleUserInfo {
     pub locale: Option<String>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct GoogleOAuthConfig {
-    pub client_id: String,
-    pub client_secret: String,
-    pub redirect_uri: String,
+    client_id: String,
+    client_secret: String,
+    redirect_uri: String,
 
     /// Scopes to request. If empty, uses a secure default.
-    pub scopes: Vec<String>,
+    scopes: Vec<String>,
+}
+
+impl std::fmt::Debug for GoogleOAuthConfig {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("GoogleOAuthConfig")
+            .field("client_id", &self.client_id)
+            .field("client_secret", &"[REDACTED]")
+            .field("redirect_uri", &self.redirect_uri)
+            .field("scopes", &self.scopes)
+            .finish()
+    }
+}
+
+impl GoogleOAuthConfig {
+    pub fn new(
+        client_id: impl Into<String>,
+        client_secret: impl Into<String>,
+        redirect_uri: impl Into<String>,
+    ) -> Self {
+        Self {
+            client_id: client_id.into(),
+            client_secret: client_secret.into(),
+            redirect_uri: redirect_uri.into(),
+            scopes: Vec::new(),
+        }
+    }
+
+    pub fn client_id(&self) -> &str {
+        &self.client_id
+    }
+
+    pub fn client_secret(&self) -> &str {
+        &self.client_secret
+    }
+
+    pub fn redirect_uri(&self) -> &str {
+        &self.redirect_uri
+    }
+
+    pub fn scopes(&self) -> &[String] {
+        &self.scopes
+    }
+
+    pub fn with_scopes(mut self, scopes: impl IntoIterator<Item = impl Into<String>>) -> Self {
+        self.scopes = scopes.into_iter().map(Into::into).collect();
+        self
+    }
+
+    pub(crate) fn into_parts(self) -> (String, String, String, Vec<String>) {
+        (
+            self.client_id,
+            self.client_secret,
+            self.redirect_uri,
+            self.scopes,
+        )
+    }
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -125,7 +181,7 @@ pub struct GoogleOAuthAppService<P = GoogleOAuthService> {
     provider: P,
 
     /// Require `email_verified=true` from Google.
-    pub require_verified_email: bool,
+    require_verified_email: bool,
 }
 
 impl<P> GoogleOAuthAppService<P>
@@ -137,6 +193,15 @@ where
             provider,
             require_verified_email: true,
         }
+    }
+
+    pub fn require_verified_email(&self) -> bool {
+        self.require_verified_email
+    }
+
+    pub fn with_require_verified_email(mut self, require: bool) -> Self {
+        self.require_verified_email = require;
+        self
     }
 
     pub fn initiate_google_login(&self) -> AuthResult<OAuthStart> {

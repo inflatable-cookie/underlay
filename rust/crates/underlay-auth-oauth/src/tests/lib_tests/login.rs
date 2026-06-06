@@ -1,13 +1,29 @@
 use super::super::{GoogleOAuthConfig, GoogleOAuthService, OAuthProvider};
 
 #[test]
+fn google_oauth_config_accessors_and_debug_redaction() {
+    let config = GoogleOAuthConfig::new("client", "secret-value-123", "https://example.com/cb")
+        .with_scopes(["openid", "email"]);
+
+    assert_eq!(config.client_id(), "client");
+    assert_eq!(config.client_secret(), "secret-value-123");
+    assert_eq!(config.redirect_uri(), "https://example.com/cb");
+    assert_eq!(
+        config.scopes(),
+        &["openid".to_string(), "email".to_string()]
+    );
+
+    let debug = format!("{config:?}");
+    assert!(debug.contains("[REDACTED]"));
+    assert!(!debug.contains("secret-value-123"));
+}
+
+#[test]
 fn start_login_with_builds_url_with_state_and_challenge() {
-    let svc = GoogleOAuthService::new(GoogleOAuthConfig {
-        client_id: "client".to_string(),
-        client_secret: "secret".to_string(),
-        redirect_uri: "https://example.com/cb".to_string(),
-        scopes: vec!["openid".to_string()],
-    })
+    let svc = GoogleOAuthService::new(
+        GoogleOAuthConfig::new("client", "secret", "https://example.com/cb")
+            .with_scopes(["openid"]),
+    )
     .unwrap();
 
     let url = svc
@@ -25,12 +41,11 @@ fn start_login_with_builds_url_with_state_and_challenge() {
 
 #[test]
 fn start_login_generates_state_and_pkce() {
-    let svc = GoogleOAuthService::new(GoogleOAuthConfig {
-        client_id: "client".to_string(),
-        client_secret: "secret".to_string(),
-        redirect_uri: "https://example.com/cb".to_string(),
-        scopes: vec![],
-    })
+    let svc = GoogleOAuthService::new(GoogleOAuthConfig::new(
+        "client",
+        "secret",
+        "https://example.com/cb",
+    ))
     .unwrap();
 
     let start = svc.start_login().unwrap();

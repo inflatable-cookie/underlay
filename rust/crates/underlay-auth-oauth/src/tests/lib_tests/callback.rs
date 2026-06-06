@@ -71,8 +71,7 @@ async fn handle_google_callback_requires_verified_email() {
         userinfo: unverified_userinfo(),
     };
 
-    let mut svc = GoogleOAuthAppService::new(provider);
-    svc.require_verified_email = true;
+    let svc = GoogleOAuthAppService::new(provider).with_require_verified_email(true);
 
     let err = svc
         .handle_google_callback(
