@@ -44,13 +44,14 @@ surface easier for consuming apps to understand, import, test, and extend.
 
 - `g07.001`: TS runtime and workflow ownership inventory
 - `g07.002`: runtime subpath public surface audit
-- `g07.003`: pattern helper ownership diet
-- `g07.004`: duplicated auth-aware fetch orchestration decision
-- `g07.005`: list, pagination, reorder, and template seam audit
-- `g07.006`: relation selector boundary audit
-- `g07.007`: TS testing and guardrail support gap inventory
-- `g07.008`: consumer import compatibility sweep
-- `g07.009`: TS boundary hardening upgrade-note and closeout checkpoint
+- `g07.003`: runtime import guidance cleanup
+- `g07.004`: pattern helper ownership diet
+- `g07.005`: duplicated auth-aware fetch orchestration decision
+- `g07.006`: list, pagination, reorder, and template seam audit
+- `g07.007`: relation selector boundary audit
+- `g07.008`: TS testing and guardrail support gap inventory
+- `g07.009`: consumer import compatibility sweep
+- `g07.010`: TS boundary hardening upgrade-note and closeout checkpoint
 
 ## Consumer Family
 
@@ -69,8 +70,9 @@ Each consumer-affecting milestone must classify impact as `additive`,
 ## Current Queue
 
 - `g07.001` is complete as the TS runtime and workflow ownership inventory.
-- `g07.002` is next as the runtime subpath public surface audit.
+- `g07.002` is complete as the runtime subpath public surface audit.
+- `g07.003` is next as the runtime import guidance cleanup.
 
 ## Next Task
 
-Execute `g07.002`: runtime subpath public surface audit.
+Execute `g07.003`: runtime import guidance cleanup.

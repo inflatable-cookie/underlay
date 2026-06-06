@@ -100,4 +100,4 @@ Do not promote a system into active implementation-assessment work until:
 
 The active contract wave is live inside `g07`.
 
-Execute `g07.002`: runtime subpath public surface audit.
+Execute `g07.003`: runtime import guidance cleanup.

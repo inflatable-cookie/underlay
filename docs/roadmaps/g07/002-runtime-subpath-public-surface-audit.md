@@ -1,6 +1,6 @@
 # g07.002 - Runtime Subpath Public Surface Audit
 
-Status: ready
+Status: complete
 Owner: repo maintainers
 Updated: 2026-06-06
 
@@ -15,12 +15,12 @@ classification before any import-path cleanup or consumer rollout.
 
 ## Goals
 
-- [ ] classify each runtime subpath as stable-domain, compatibility-barrel,
+- [x] classify each runtime subpath as stable-domain, compatibility-barrel,
   candidate-split, or candidate-retire
-- [ ] record the implementation owner behind each runtime subpath
-- [ ] identify active docs that teach stale runtime or pattern import paths
-- [ ] decide which runtime import paths are preferred for consumers
-- [ ] queue only bounded follow-on implementation cards
+- [x] record the implementation owner behind each runtime subpath
+- [x] identify active docs that teach stale runtime or pattern import paths
+- [x] decide which runtime import paths are preferred for consumers
+- [x] queue only bounded follow-on implementation cards
 
 ## Non-Goals
 
@@ -31,19 +31,19 @@ classification before any import-path cleanup or consumer rollout.
 
 ## Execution Plan
 
-- [ ] inspect `runtime/ai`, `runtime/auth`, `runtime/browser`, `runtime/data`,
+- [x] inspect `runtime/ai`, `runtime/auth`, `runtime/browser`, `runtime/data`,
   `runtime/feedback`, `runtime/forms`, `runtime/media`,
   `runtime/navigation`, and `runtime/relations`
-- [ ] compare each subpath to contracts `090` and `100`
-- [ ] scan active guides and source JSDoc examples for stale import advice
-- [ ] write a runtime-subpath classification artifact
+- [x] compare each subpath to contracts `090` and `100`
+- [x] scan active guides and source JSDoc examples for stale import advice
+- [x] write a runtime-subpath classification artifact
 
 ## Acceptance Criteria
 
-- [ ] every runtime subpath has a classification and retained/candidate status
-- [ ] docs drift is separated from source/API drift
-- [ ] consumer-affecting changes are deferred to rollout-proof cards
-- [ ] no public export changes are made in this audit card
+- [x] every runtime subpath has a classification and retained/candidate status
+- [x] docs drift is separated from source/API drift
+- [x] consumer-affecting changes are deferred to rollout-proof cards
+- [x] no public export changes are made in this audit card
 
 ## Validation
 
@@ -61,4 +61,4 @@ public subpath.
 
 ## Next Task
 
-Execute this runtime subpath public surface audit.
+Move to `g07.003`: runtime import guidance cleanup.

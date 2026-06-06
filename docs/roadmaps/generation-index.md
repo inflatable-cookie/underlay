@@ -49,4 +49,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g07.002`: runtime subpath public surface audit.
+Execute `g07.003`: runtime import guidance cleanup.
