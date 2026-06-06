@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.131`: HTTP cookies tests modularity audit.
+Execute `g06.132`: HTTP cookies tests internal split.

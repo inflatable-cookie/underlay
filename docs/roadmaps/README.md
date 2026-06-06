@@ -210,7 +210,8 @@ README surfaces.
 - `g06.128` is complete as the migration-core test support internal split
 - `g06.129` is complete as the HTTP context modularity audit
 - `g06.130` is complete as the HTTP context internal split
-- `g06.131` is next as the HTTP cookies tests modularity audit
+- `g06.131` is complete as the HTTP cookies tests modularity audit
+- `g06.132` is next as the HTTP cookies tests internal split
 - `g05` is closed as the shared-page, workflow-template, media capability,
   dev-flow contract, and query-variant convergence generation
 - `g05.024` is complete as the Marking Hub query variant proof and rollout

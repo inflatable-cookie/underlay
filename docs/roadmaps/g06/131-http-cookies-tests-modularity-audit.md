@@ -49,8 +49,12 @@ cookie behavior, stop and re-enter planning.
 
 ## Current State
 
-`g06.131` is ready.
+`g06.131` is complete.
+
+Artifact:
+
+- [131 artifact](./131-http-cookies-tests-modularity-audit-artifact.md)
 
 ## Next Task
 
-Execute `g06.131`: HTTP cookies tests modularity audit.
+Execute `g06.132`: HTTP cookies tests internal split.
