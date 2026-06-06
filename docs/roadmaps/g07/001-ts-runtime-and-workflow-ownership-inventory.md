@@ -1,6 +1,6 @@
 # g07.001 - TS Runtime And Workflow Ownership Inventory
 
-Status: ready
+Status: complete
 Owner: repo maintainers
 Updated: 2026-06-06
 
@@ -16,15 +16,15 @@ rollout work.
 
 ## Goals
 
-- [ ] inventory public TypeScript exports under `runtime/*`, `patterns/*`,
+- [x] inventory public TypeScript exports under `runtime/*`, `patterns/*`,
   `client/*`, `templates/*`, `testing/*`, `tools/*`, `utils/*`, and
   `nightfire/*`
-- [ ] classify each family as retained, candidate-rehome, candidate-remove,
+- [x] classify each family as retained, candidate-rehome, candidate-remove,
   candidate-consolidate, or support-only
-- [ ] identify duplicated workflow orchestration, especially auth-aware
+- [x] identify duplicated workflow orchestration, especially auth-aware
   fetch/list/pagination flows
-- [ ] identify template-vs-pattern overlap that could confuse consuming apps
-- [ ] record which findings need consumer import proof before implementation
+- [x] identify template-vs-pattern overlap that could confuse consuming apps
+- [x] record which findings need consumer import proof before implementation
 
 ## Non-Goals
 
@@ -36,21 +36,21 @@ rollout work.
 
 ## Execution Plan
 
-- [ ] inspect `package.json` exports, `ts/src/index.ts`, and subpath barrels
-- [ ] compare the implementation surface to contracts `090`, `100`, `110`, and
+- [x] inspect `package.json` exports, `ts/src/index.ts`, and subpath barrels
+- [x] compare the implementation surface to contracts `090`, `100`, `110`, and
   `120`
-- [ ] scan for stale or surprising export paths across Underlay docs and source
-- [ ] produce a `g07.001` artifact with the classification table and the next
+- [x] scan for stale or surprising export paths across Underlay docs and source
+- [x] produce a `g07.001` artifact with the classification table and the next
   bounded cards
 
 ## Acceptance Criteria
 
-- [ ] the artifact names every major TS public family and its classification
-- [ ] consumer-affecting candidates are explicitly marked as requiring rollout
+- [x] the artifact names every major TS public family and its classification
+- [x] consumer-affecting candidates are explicitly marked as requiring rollout
   proof under `023`
-- [ ] no implementation work is started from intuition before the inventory is
+- [x] no implementation work is started from intuition before the inventory is
   complete
-- [ ] the roadmap queue advances to `g07.002` only if the runtime subpath audit
+- [x] the roadmap queue advances to `g07.002` only if the runtime subpath audit
   has enough evidence to execute without fresh planning
 
 ## Validation
@@ -69,4 +69,4 @@ the classified surface and consumer proof.
 
 ## Next Task
 
-Execute this inventory and write the `g07.001` artifact.
+Move to `g07.002`: runtime subpath public surface audit.

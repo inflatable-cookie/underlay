@@ -51,7 +51,7 @@ Underlay is in parallel mode:
 
 ## Next Task
 
-Execute `g07.001`: TS runtime and workflow ownership inventory.
+Execute `g07.002`: runtime subpath public surface audit.
 
 Open a new spec only if the next lane needs provisional planning beyond
 existing architecture and contracts.

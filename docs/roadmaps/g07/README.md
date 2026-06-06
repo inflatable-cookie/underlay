@@ -24,7 +24,7 @@ surface easier for consuming apps to understand, import, test, and extend.
 
 ## Goals
 
-- [ ] classify the retained `runtime/*`, `patterns/*`, `templates/*`,
+- [x] classify the retained `runtime/*`, `patterns/*`, `templates/*`,
   `testing/*`, and `tools/*` TypeScript surfaces by real ownership
 - [ ] remove or rehome compatibility residue only after caller proof
 - [ ] reduce duplicated workflow orchestration where the same lifecycle appears
@@ -68,8 +68,9 @@ Each consumer-affecting milestone must classify impact as `additive`,
 
 ## Current Queue
 
-- `g07.001` is next as the TS runtime and workflow ownership inventory.
+- `g07.001` is complete as the TS runtime and workflow ownership inventory.
+- `g07.002` is next as the runtime subpath public surface audit.
 
 ## Next Task
 
-Execute `g07.001`: TS runtime and workflow ownership inventory.
+Execute `g07.002`: runtime subpath public surface audit.

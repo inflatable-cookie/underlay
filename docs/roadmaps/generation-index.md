@@ -49,4 +49,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g07.001`: TS runtime and workflow ownership inventory.
+Execute `g07.002`: runtime subpath public surface audit.
