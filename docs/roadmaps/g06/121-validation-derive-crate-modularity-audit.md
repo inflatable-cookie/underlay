@@ -48,8 +48,12 @@ generated behavior that must change, stop and re-enter planning.
 
 ## Current State
 
-`g06.121` is ready.
+`g06.121` is complete.
+
+Artifact:
+
+- [121 artifact](./121-validation-derive-crate-modularity-audit-artifact.md)
 
 ## Next Task
 
-Execute `g06.121`: validation derive crate modularity audit.
+Execute `g06.122`: validation derive crate internal split.

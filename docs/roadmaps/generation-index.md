@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.121`: validation derive crate modularity audit.
+Execute `g06.122`: validation derive crate internal split.

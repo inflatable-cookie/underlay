@@ -200,7 +200,8 @@ README surfaces.
 - `g06.118` is complete as the blob local adapter internal split
 - `g06.119` is complete as the jobs runner tests modularity audit
 - `g06.120` is complete as the jobs runner tests internal split
-- `g06.121` is next as the validation derive crate modularity audit
+- `g06.121` is complete as the validation derive crate modularity audit
+- `g06.122` is next as the validation derive crate internal split
 - `g05` is closed as the shared-page, workflow-template, media capability,
   dev-flow contract, and query-variant convergence generation
 - `g05.024` is complete as the Marking Hub query variant proof and rollout
