@@ -40,7 +40,7 @@ impl BlobAdapter for S3Adapter {
             .presign_client
             .put_object()
             .bucket(&self.config.bucket)
-            .key(&request.key)
+            .key(request.key.as_str())
             .content_type(&request.content_type)
             .content_length(request.content_length as i64);
 
@@ -68,7 +68,7 @@ impl BlobAdapter for S3Adapter {
             max_bytes: request.content_length,
             allowed_content_types: vec![request.content_type],
             expires_at,
-            object_key: request.key,
+            object_key: request.key.into_string(),
         })
     }
 
@@ -105,7 +105,7 @@ impl BlobAdapter for S3Adapter {
             .presign_client
             .get_object()
             .bucket(&self.config.bucket)
-            .key(&request.key);
+            .key(request.key.as_str());
 
         // Set content disposition if filename provided
         if let Some(filename) = &request.filename {

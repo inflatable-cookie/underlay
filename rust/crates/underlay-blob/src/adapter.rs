@@ -174,13 +174,13 @@ impl BlobAdapter for NoopAdapter {
         use chrono::Utc;
 
         Ok(UploadPlan {
-            upload_url: format!("{}/{}", self.base_url, request.key),
+            upload_url: format!("{}/{}", self.base_url, request.key.as_str()),
             method: "PUT".to_string(),
             required_headers: std::collections::HashMap::new(),
             max_bytes: request.content_length,
             allowed_content_types: vec![request.content_type.clone()],
             expires_at: Utc::now() + chrono::Duration::seconds(request.expires_in.as_secs() as i64),
-            object_key: request.key,
+            object_key: request.key.into_string(),
         })
     }
 
@@ -202,7 +202,7 @@ impl BlobAdapter for NoopAdapter {
         use chrono::Utc;
 
         Ok(SignedUrl {
-            url: format!("{}/{}?signed=true", self.base_url, request.key),
+            url: format!("{}/{}?signed=true", self.base_url, request.key.as_str()),
             expires_at: Utc::now() + chrono::Duration::seconds(request.expires_in.as_secs() as i64),
         })
     }

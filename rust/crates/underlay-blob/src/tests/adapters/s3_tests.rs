@@ -83,7 +83,7 @@ async fn s3_adapter_round_trip_put_head_get_delete() {
     assert_eq!(downloaded, bytes);
 
     let signed = adapter
-        .signed_download_url(DownloadRequest::new(&key))
+        .signed_download_url(DownloadRequest::parse_key(&key).unwrap())
         .await
         .expect("signed_download_url should return URL");
     assert!(!signed.url.is_empty());

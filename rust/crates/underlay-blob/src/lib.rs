@@ -8,13 +8,14 @@
 //!
 //! ```rust,ignore
 //! use std::sync::Arc;
-//! use underlay_blob::{BlobAdapter, NoopAdapter, UploadRequest};
+//! use underlay_blob::{BlobAdapter, BlobObjectKey, DownloadRequest, NoopAdapter, UploadRequest};
 //!
 //! // Create an adapter (using noop for testing)
 //! let adapter = Arc::new(NoopAdapter::new());
+//! let object_key = BlobObjectKey::parse("media/123/photo.jpg")?;
 //!
 //! // Initiate an upload
-//! let request = UploadRequest::new("media/123/photo.jpg", "image/jpeg", 1024);
+//! let request = UploadRequest::from_object_key(object_key.clone(), "image/jpeg", 1024);
 //! let plan = adapter.initiate_upload(request).await?;
 //!
 //! // Client uploads to plan.upload_url...
@@ -24,7 +25,7 @@
 //!
 //! // Get URLs
 //! let public = adapter.public_url("media/123/photo.jpg");
-//! let signed = adapter.signed_download_url(DownloadRequest::new("media/123/photo.jpg")).await?;
+//! let signed = adapter.signed_download_url(DownloadRequest::from_object_key(object_key)).await?;
 //! ```
 //!
 //! # Adapter Pattern

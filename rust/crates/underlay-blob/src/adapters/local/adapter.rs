@@ -142,7 +142,11 @@ impl BlobAdapter for LocalAdapter {
             .as_ref()
             .unwrap_or(&self.config.serve_url_base);
 
-        let upload_url = format!("{}/{}", upload_base.trim_end_matches('/'), &request.key);
+        let upload_url = format!(
+            "{}/{}",
+            upload_base.trim_end_matches('/'),
+            request.key.as_str()
+        );
 
         let expires_at = Utc::now()
             + chrono::Duration::from_std(request.expires_in)
@@ -155,7 +159,7 @@ impl BlobAdapter for LocalAdapter {
             max_bytes: request.content_length,
             allowed_content_types: vec![request.content_type],
             expires_at,
-            object_key: request.key,
+            object_key: request.key.into_string(),
         })
     }
 
@@ -181,7 +185,7 @@ impl BlobAdapter for LocalAdapter {
     }
 
     async fn signed_download_url(&self, request: DownloadRequest) -> BlobResult<SignedUrl> {
-        let url = self.public_url(&request.key);
+        let url = self.public_url(request.key.as_str());
 
         let expires_at = Utc::now()
             + chrono::Duration::from_std(request.expires_in)

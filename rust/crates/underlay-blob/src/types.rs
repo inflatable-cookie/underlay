@@ -123,7 +123,7 @@ pub fn validate_blob_object_key(key: &str) -> Result<(), BlobObjectKeyError> {
 #[derive(Debug, Clone)]
 pub struct UploadRequest {
     /// The object key (path) to upload to.
-    pub key: String,
+    pub key: BlobObjectKey,
 
     /// Expected content type (MIME type).
     pub content_type: String,
@@ -140,11 +140,7 @@ pub struct UploadRequest {
 
 impl UploadRequest {
     /// Create a new upload request.
-    pub fn new(
-        key: impl Into<String>,
-        content_type: impl Into<String>,
-        content_length: u64,
-    ) -> Self {
+    pub fn new(key: BlobObjectKey, content_type: impl Into<String>, content_length: u64) -> Self {
         Self {
             key: key.into(),
             content_type: content_type.into(),
@@ -154,13 +150,26 @@ impl UploadRequest {
         }
     }
 
+    /// Parse an object key and create a new upload request.
+    pub fn parse_key(
+        key: impl AsRef<str>,
+        content_type: impl Into<String>,
+        content_length: u64,
+    ) -> Result<Self, BlobObjectKeyError> {
+        Ok(Self::new(
+            BlobObjectKey::parse(key)?,
+            content_type,
+            content_length,
+        ))
+    }
+
     /// Create a new upload request from a pre-validated object key.
     pub fn from_object_key(
         key: BlobObjectKey,
         content_type: impl Into<String>,
         content_length: u64,
     ) -> Self {
-        Self::new(key.into_string(), content_type, content_length)
+        Self::new(key, content_type, content_length)
     }
 
     /// Set the expiration duration for the upload URL.
@@ -277,7 +286,7 @@ impl StoredObject {
 #[derive(Debug, Clone)]
 pub struct DownloadRequest {
     /// The object key to download.
-    pub key: String,
+    pub key: BlobObjectKey,
 
     /// How long the download URL should be valid.
     pub expires_in: Duration,
@@ -288,17 +297,22 @@ pub struct DownloadRequest {
 
 impl DownloadRequest {
     /// Create a new download request.
-    pub fn new(key: impl Into<String>) -> Self {
+    pub fn new(key: BlobObjectKey) -> Self {
         Self {
-            key: key.into(),
+            key,
             expires_in: Duration::from_secs(300), // 5 minutes default
             filename: None,
         }
     }
 
+    /// Parse an object key and create a new download request.
+    pub fn parse_key(key: impl AsRef<str>) -> Result<Self, BlobObjectKeyError> {
+        Ok(Self::new(BlobObjectKey::parse(key)?))
+    }
+
     /// Create a new download request from a pre-validated object key.
     pub fn from_object_key(key: BlobObjectKey) -> Self {
-        Self::new(key.into_string())
+        Self::new(key)
     }
 
     /// Set the expiration duration.

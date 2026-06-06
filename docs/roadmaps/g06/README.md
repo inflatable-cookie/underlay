@@ -450,6 +450,7 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.188`: validation validator surface internal split
 - `g06.189`: devtools run bundle ref typing
 - `g06.190`: media storage file key typing
+- `g06.191`: blob request object key typing
 
 ## Consumer Family
 
@@ -660,6 +661,7 @@ Each consumer-affecting milestone must classify impact as `additive`,
   artifact.
 - `g06.189` is complete as the devtools run bundle ref typing artifact.
 - `g06.190` is complete as the media storage file key typing artifact.
+- `g06.191` is complete as the blob request object key typing artifact.
 - `g06` is closed.
 
 ## Batch Cards

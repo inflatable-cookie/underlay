@@ -5,7 +5,7 @@ use std::time::Duration;
 #[tokio::test]
 async fn test_noop_adapter_initiate_upload() {
     let adapter = NoopAdapter::new();
-    let request = UploadRequest::new("test/file.txt", "text/plain", 1024);
+    let request = UploadRequest::parse_key("test/file.txt", "text/plain", 1024).unwrap();
 
     let plan = adapter.initiate_upload(request).await.unwrap();
     assert!(plan.upload_url.contains("test/file.txt"));
@@ -22,7 +22,9 @@ async fn test_noop_adapter_public_url() {
 #[tokio::test]
 async fn test_noop_adapter_signed_url() {
     let adapter = NoopAdapter::new();
-    let request = DownloadRequest::new("test/file.txt").expires_in(Duration::from_secs(600));
+    let request = DownloadRequest::parse_key("test/file.txt")
+        .unwrap()
+        .expires_in(Duration::from_secs(600));
 
     let signed = adapter.signed_download_url(request).await.unwrap();
     assert!(signed.url.contains("test/file.txt"));
@@ -83,6 +85,12 @@ fn blob_object_key_can_build_requests() {
     let download = DownloadRequest::from_object_key(key.clone());
 
     assert_eq!(key.as_str(), "media/123/photo.jpg");
-    assert_eq!(upload.key, "media/123/photo.jpg");
-    assert_eq!(download.key, "media/123/photo.jpg");
+    assert_eq!(upload.key.as_str(), "media/123/photo.jpg");
+    assert_eq!(download.key.as_str(), "media/123/photo.jpg");
+}
+
+#[test]
+fn request_parsing_rejects_unsafe_keys() {
+    assert!(UploadRequest::parse_key("../outside", "image/jpeg", 1024).is_err());
+    assert!(DownloadRequest::parse_key("../outside").is_err());
 }
