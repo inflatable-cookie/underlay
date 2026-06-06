@@ -197,4 +197,4 @@ Stop and re-enter planning if:
 
 ## Next Task
 
-Execute `g07.011`: stale components config cleanup.
+Execute `g07.012`: TS boundary hardening upgrade-note and closeout checkpoint.

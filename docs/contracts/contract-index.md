@@ -100,4 +100,4 @@ Do not promote a system into active implementation-assessment work until:
 
 The active contract wave is live inside `g07`.
 
-Execute `g07.011`: stale components config cleanup.
+Execute `g07.012`: TS boundary hardening upgrade-note and closeout checkpoint.

@@ -1,6 +1,6 @@
 # g07.011 - Stale Components Config Cleanup
 
-Status: ready
+Status: complete
 Owner: repo maintainers
 Updated: 2026-06-06
 
@@ -15,12 +15,12 @@ closeout.
 
 ## Goals
 
-- [ ] remove stale `@decodelabs/underlay/components` optimizeDeps excludes from
+- [x] remove stale `@decodelabs/underlay/components` optimizeDeps excludes from
   affected consumer configs
-- [ ] keep retained Underlay excludes such as `runtime`, `client`, `patterns`,
+- [x] keep retained Underlay excludes such as `runtime`, `client`, `patterns`,
   `templates`, `nightfire`, and styles unchanged where present
-- [ ] validate affected consumers with narrow config/type checks
-- [ ] avoid touching historical docs or logs
+- [x] validate affected consumers with narrow config/type checks
+- [x] avoid touching historical docs or logs
 
 ## Non-Goals
 
@@ -31,17 +31,17 @@ closeout.
 
 ## Execution Plan
 
-- [ ] update affected configs in `compli-me`, `songsprout`, and
+- [x] update affected configs in `compli-me`, `songsprout`, and
   `loophole/composer`
-- [ ] run targeted consumer checks for the edited packages
-- [ ] record the cleanup result in this card and g07 closeout artifacts
+- [x] run targeted consumer checks for the edited packages
+- [x] record the cleanup result in this card and g07 closeout artifacts
 
 ## Acceptance Criteria
 
-- [ ] no live config references `@decodelabs/underlay/components`
-- [ ] source imports remain on retained Underlay paths
-- [ ] affected consumer checks pass or any failures are documented
-- [ ] no Underlay public API change is made
+- [x] no live config references `@decodelabs/underlay/components`
+- [x] source imports remain on retained Underlay paths
+- [x] affected consumer checks pass or any failures are documented
+- [x] no Underlay public API change is made
 
 ## Validation
 
@@ -54,8 +54,9 @@ closeout.
 
 Config-only cleanup.
 
-No source import or runtime behavior change is expected.
+Removed stale Vite optimizeDeps excludes from affected consumer configs. No
+source import, Underlay public API, or runtime behavior changed.
 
 ## Next Task
 
-Execute this stale components config cleanup.
+Execute `g07.012`: TS boundary hardening upgrade-note and closeout checkpoint.

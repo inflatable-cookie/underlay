@@ -81,8 +81,9 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g07.008` is complete as the TS testing and guardrail support gap inventory.
 - `g07.009` is complete as the TS public-surface test and guardrail reinforcement.
 - `g07.010` is complete as the consumer import compatibility sweep.
-- `g07.011` is next as the stale components config cleanup.
+- `g07.011` is complete as the stale components config cleanup.
+- `g07.012` is next as the TS boundary hardening upgrade-note and closeout checkpoint.
 
 ## Next Task
 
-Execute `g07.011`: stale components config cleanup.
+Execute `g07.012`: TS boundary hardening upgrade-note and closeout checkpoint.
