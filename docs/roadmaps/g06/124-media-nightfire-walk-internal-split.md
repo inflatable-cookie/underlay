@@ -56,8 +56,12 @@ must change, stop and re-enter planning.
 
 ## Current State
 
-`g06.124` is ready.
+`g06.124` is complete.
+
+Artifact:
+
+- [124 artifact](./124-media-nightfire-walk-internal-split-artifact.md)
 
 ## Next Task
 
-Execute `g06.124`: media Nightfire walk internal split.
+Execute `g06.125`: migration-core verification modularity audit.

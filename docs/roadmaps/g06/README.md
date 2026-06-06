@@ -188,7 +188,8 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.121` is complete as the validation derive crate modularity audit.
 - `g06.122` is complete as the validation derive crate internal split.
 - `g06.123` is complete as the media Nightfire walk modularity audit.
-- `g06.124` is next as the media Nightfire walk internal split.
+- `g06.124` is complete as the media Nightfire walk internal split.
+- `g06.125` is next as the migration-core verification modularity audit.
 
 ## Planned Runway
 
@@ -320,6 +321,7 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.122`: validation derive crate internal split
 - `g06.123`: media Nightfire walk modularity audit
 - `g06.124`: media Nightfire walk internal split
+- `g06.125`: migration-core verification modularity audit
 
 ## Consumer Family
 
@@ -460,7 +462,8 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g06.121` is complete.
 - `g06.122` is complete.
 - `g06.123` is complete.
-- `g06.124` is next.
+- `g06.124` is complete.
+- `g06.125` is next.
 
 ## Batch Cards
 
@@ -469,4 +472,4 @@ If `g06` enters strict execution posture, keep its cards under
 
 ## Next Task
 
-Execute `g06.124`: media Nightfire walk internal split.
+Execute `g06.125`: migration-core verification modularity audit.

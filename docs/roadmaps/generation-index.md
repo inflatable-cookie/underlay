@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.124`: media Nightfire walk internal split.
+Execute `g06.125`: migration-core verification modularity audit.
