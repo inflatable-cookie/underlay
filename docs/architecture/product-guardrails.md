@@ -19,5 +19,5 @@ Owner: repo maintainers
 
 ## Next Task
 
-Execute `g07.003` and keep TS boundary hardening tied to the reference-grade
+Execute `g07.004` and keep TS boundary hardening tied to the reference-grade
 architecture boundary.

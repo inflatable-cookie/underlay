@@ -692,7 +692,7 @@ Here's a complete example of a Module detail page with tabbed content that prese
 <!-- /learning/modules/[moduleId]/+page.svelte -->
 <script lang="ts">
   import { onMount } from "svelte";
-  import { PageHeader } from "@decodelabs/underlay/patterns";
+  import { PageHeader } from "@poodle/svelte";
   import LocalActionsMenu from "$lib/components/LocalActionsMenu.svelte";
   import { Tabs, type TabItem } from "@poodle/svelte";
   import { gotoWithContext, initPageState } from "@decodelabs/underlay/client/navigation";
@@ -856,7 +856,7 @@ const restored = initPageState({
 <!-- /content/videos/+page.svelte -->
 <script lang="ts">
   import type { PageData } from "./$types";
-  import { PageHeader } from "@decodelabs/underlay/patterns";
+  import { PageHeader } from "@poodle/svelte";
   import { Grid } from "@poodle/svelte";
   import { VideoListCard } from "$lib/cards";
 
@@ -927,7 +927,7 @@ const restored = initPageState({
 <!-- /content/videos/[videoId]/+page.svelte -->
 <script lang="ts">
   import type { PageData } from "./$types";
-  import { PageHeader } from "@decodelabs/underlay/patterns";
+  import { PageHeader } from "@poodle/svelte";
   import LocalActionsMenu from "$lib/components/LocalActionsMenu.svelte";
   import { gotoWithContext } from "@decodelabs/underlay/client/navigation";
 

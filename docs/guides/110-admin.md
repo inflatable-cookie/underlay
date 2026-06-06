@@ -778,12 +778,9 @@ Both create and edit pages use `SpaFormShell`:
   import { goto } from "$app/navigation";
   import { entityCommands } from "@client";
   import EntityForm from "$lib/forms/learning/EntityForm.svelte";
-  import {
-    SpaFormShell,
-    consumeNavigationContext,
-    submitFormWithIntent,
-    type SpaFormResult
-  } from "@decodelabs/underlay/patterns";
+  import { SpaFormShell, type SpaFormResult } from "@decodelabs/underlay/patterns";
+  import { submitFormWithIntent } from "@decodelabs/underlay/runtime/forms";
+  import { consumeNavigationContext } from "@decodelabs/underlay/runtime/navigation";
 
   const { backInfo, returnTo } = consumeNavigationContext("Back", defaultBackHref);
 

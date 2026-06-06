@@ -448,11 +448,11 @@ interface BatchSoftDeleteResponse {
 
 ### Batch Selection UI Pattern
 
-Use `useBatchSelection` from Underlay patterns with Poodle `BulkActionBar` plus an explicit confirmation dialog:
+Use `useBatchSelection` from Underlay runtime data helpers with Poodle `BulkActionBar` plus an explicit confirmation dialog:
 
 ```svelte
 <script lang="ts">
-  import { useBatchSelection } from "@decodelabs/underlay/patterns";
+  import { useBatchSelection } from "@decodelabs/underlay/runtime/data";
   import { AlertDialog, BulkActionBar } from "@poodle/svelte";
 
   const selection = useBatchSelection<string>();

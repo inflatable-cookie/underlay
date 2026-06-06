@@ -1,6 +1,6 @@
 # g07.003 - Runtime Import Guidance Cleanup
 
-Status: ready
+Status: complete
 Owner: repo maintainers
 Updated: 2026-06-06
 
@@ -15,11 +15,11 @@ This card cleans teaching-surface drift only.
 
 ## Goals
 
-- [ ] update active usage/guides docs to teach the preferred runtime, client,
+- [x] update active usage/guides docs to teach the preferred runtime, client,
   patterns, templates, and utils import paths
-- [ ] update source JSDoc examples that teach stale `patterns` imports
-- [ ] keep true retained pattern-root examples intact
-- [ ] avoid changing package exports or implementation behavior
+- [x] update source JSDoc examples that teach stale `patterns` imports
+- [x] keep true retained pattern-root examples intact
+- [x] avoid changing package exports or implementation behavior
 
 ## Non-Goals
 
@@ -31,24 +31,24 @@ This card cleans teaching-surface drift only.
 
 ## Execution Plan
 
-- [ ] update stale `patterns` imports for form helpers, storage/browser helpers,
+- [x] update stale `patterns` imports for form helpers, storage/browser helpers,
   formatting/slug helpers, media helpers, list/data helpers, and keyboard
   helpers in active docs
-- [ ] update stale source JSDoc examples in pattern implementation files
-- [ ] preserve `patterns` imports for true retained workflow shells such as
+- [x] update stale source JSDoc examples in pattern implementation files
+- [x] preserve `patterns` imports for true retained workflow shells such as
   `LoginPage`, `ForgotPasswordFlow`, `PasswordRequirements`, `SpaFormShell`,
   and explicitly retained pattern-root helpers
-- [ ] rerun docs, Northstar, export, and targeted import scans
+- [x] rerun docs, Northstar, export, and targeted import scans
 
 ## Acceptance Criteria
 
-- [ ] active guide examples prefer `runtime/*`, `client/*`, `templates`, or
+- [x] active guide examples prefer `runtime/*`, `client/*`, `templates`, or
   `utils/*` where those are the retained paths
-- [ ] `patterns` examples remain only where the pattern root is the retained
+- [x] `patterns` examples remain only where the pattern root is the retained
   public surface
-- [ ] source JSDoc no longer contradicts current package guidance for runtime
+- [x] source JSDoc no longer contradicts current package guidance for runtime
   helpers
-- [ ] no public export or implementation behavior changes
+- [x] no public export or implementation behavior changes
 
 ## Validation
 
@@ -65,4 +65,4 @@ This is docs/JSDoc guidance cleanup only.
 
 ## Next Task
 
-Execute this runtime import guidance cleanup.
+Move to `g07.004`: pattern helper ownership diet.

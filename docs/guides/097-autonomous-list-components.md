@@ -405,13 +405,13 @@ interface BatchActionsResult<T> {
 
 ### `createListController`
 
-**Location:** `@decodelabs/underlay/patterns`
+**Location:** `@decodelabs/underlay/runtime/data`
 
 Provides unified state management for list data fetching with filters. Use this when you need coordinated data fetching with filter state.
 
 ```svelte
 <script lang="ts">
-  import { createListController } from '@decodelabs/underlay/patterns';
+  import { createListController } from '@decodelabs/underlay/runtime/data';
   import { auth, authLoading, currentUser } from '$lib/stores/auth';
 
   interface AreaFilters {
@@ -626,19 +626,17 @@ Here's a complete example of building an autonomous list component:
   import { goto } from "$app/navigation";
   import { page } from "$app/stores";
   import { browser } from "$app/environment";
-  import {
-    useBatchActions,
-    useAuthenticatedData,
-    PageHeader,
-    type NavigationContext
-  } from "@decodelabs/underlay/patterns";
+  import { useAuthenticatedData } from "@decodelabs/underlay/runtime/auth";
+  import { useBatchActions } from "@decodelabs/underlay/runtime/data";
   import { useToasts } from "@decodelabs/underlay/runtime/feedback";
+  import type { NavigationContext } from "@decodelabs/underlay/runtime/navigation";
   import { FilterToolbar } from "@poodle/svelte";
   import {
     Button,
     BulkActionBar,
     AlertDialog,
-    Callout
+    Callout,
+    PageHeader
   } from "@poodle/svelte";
   import { PageLoading } from "@poodle/svelte";
   import { Tooltip } from "@poodle/svelte";

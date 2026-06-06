@@ -321,7 +321,7 @@ Centralized keyboard shortcut registration with priority, conditional activation
 
 ```svelte
 <script lang="ts">
-  import { createKeyboardShortcuts } from "@decodelabs/underlay/patterns";
+  import { createKeyboardShortcuts } from "@decodelabs/underlay/runtime/browser";
 
   const shortcuts = createKeyboardShortcuts();
 

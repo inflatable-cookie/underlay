@@ -15,7 +15,7 @@ import { getAuthConfig } from "./auth";
  * Configure global auth handlers in your app's +layout.svelte:
  * ```svelte
  * <script>
- *   import { configureAuth } from '@decodelabs/underlay/patterns';
+ *   import { configureAuth } from '@decodelabs/underlay/runtime/auth';
  *   import { auth } from '$lib/stores/auth';
  *
  *   configureAuth({
@@ -34,7 +34,7 @@ import { getAuthConfig } from "./auth";
  *
  * ```svelte
  * <script lang="ts">
- *   import { useAuthenticatedData } from '@decodelabs/underlay/patterns';
+ *   import { useAuthenticatedData } from '@decodelabs/underlay/runtime/auth';
  *
  *   const pageData = useAuthenticatedData(
  *     async (fetch, token) => {
@@ -54,7 +54,7 @@ import { getAuthConfig } from "./auth";
  *
  * ```svelte
  * <script lang="ts">
- *   import { useAuthenticatedData } from '@decodelabs/underlay/patterns';
+ *   import { useAuthenticatedData } from '@decodelabs/underlay/runtime/auth';
  *   import { dataSearchParams } from '$lib/utils/list-query';
  *   import { page } from '$app/stores';
  *
@@ -72,7 +72,7 @@ import { getAuthConfig } from "./auth";
  *
  * ```svelte
  * <script lang="ts">
- *   import { useAuthenticatedData } from '@decodelabs/underlay/patterns';
+ *   import { useAuthenticatedData } from '@decodelabs/underlay/runtime/auth';
  *   import { authLoading, currentUser } from '$lib/stores/auth';
  *
  *   const pageData = useAuthenticatedData(

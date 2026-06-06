@@ -721,7 +721,6 @@ Use them when you want shared browser capability checks, error mapping, and JSON
 import {
   usePasskeyAuthentication,
   usePasskeyRegistration,
-} from "@decodelabs/underlay/patterns";
 } from "@decodelabs/underlay/runtime/auth";
 
 const registerPasskey = usePasskeyRegistration({

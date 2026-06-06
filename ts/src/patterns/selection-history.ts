@@ -7,7 +7,7 @@
  *
  * @example
  * ```typescript
- * import { createSelectionHistory } from '@decodelabs/underlay/patterns';
+ * import { createSelectionHistory } from '@decodelabs/underlay/runtime/data';
  *
  * // Create a history tracker for a specific entity type
  * const levelHistory = createSelectionHistory('learning.levels');

@@ -106,13 +106,14 @@ fixtures if consumers are expected to test them consistently.
 ## Follow-on Cards
 
 - `g07.002`: runtime subpath public surface audit.
-- `g07.003`: pattern helper ownership diet.
-- `g07.004`: duplicated auth-aware fetch orchestration decision.
-- `g07.005`: list, pagination, reorder, and template seam audit.
-- `g07.006`: relation selector boundary audit.
-- `g07.007`: TS testing and guardrail support gap inventory.
-- `g07.008`: consumer import compatibility sweep.
-- `g07.009`: TS boundary hardening upgrade-note and closeout checkpoint.
+- `g07.003`: runtime import guidance cleanup.
+- `g07.004`: pattern helper ownership diet.
+- `g07.005`: duplicated auth-aware fetch orchestration decision.
+- `g07.006`: list, pagination, reorder, and template seam audit.
+- `g07.007`: relation selector boundary audit.
+- `g07.008`: TS testing and guardrail support gap inventory.
+- `g07.009`: consumer import compatibility sweep.
+- `g07.010`: TS boundary hardening upgrade-note and closeout checkpoint.
 
 ## Consumer Upgrade Impact
 

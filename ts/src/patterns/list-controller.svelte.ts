@@ -14,7 +14,7 @@
  * @example
  * ```svelte
  * <script lang="ts">
- *   import { createListController } from '@decodelabs/underlay/patterns';
+ *   import { createListController } from '@decodelabs/underlay/runtime/data';
  *   import { authLoading, currentUser } from '$lib/stores/auth';
  *
  *   interface AreaFilters {

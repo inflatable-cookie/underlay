@@ -11,7 +11,7 @@
  * @example
  * ```svelte
  * <script lang="ts">
- *   import { useBatchSelection } from '@decodelabs/underlay/patterns';
+ *   import { useBatchSelection } from '@decodelabs/underlay/runtime/data';
  *   import { AlertDialog, BulkActionBar } from '@poodle/svelte';
  *
  *   const items = $derived(data.projects);

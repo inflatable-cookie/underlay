@@ -9,7 +9,7 @@
  * @example
  * ```svelte
  * <script lang="ts">
- *   import { useSyncedSelection } from '@decodelabs/underlay/patterns';
+ *   import { useSyncedSelection } from '@decodelabs/underlay/runtime/data';
  *
  *   const preselectedId = $derived(pageData.data?.areaId);
  *

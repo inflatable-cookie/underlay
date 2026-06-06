@@ -59,7 +59,7 @@ let globalAuthConfig: AuthConfig | null = null;
  * @example
  * ```svelte
  * <script>
- *   import { configureAuth } from '@decodelabs/underlay/patterns';
+ *   import { configureAuth } from '@decodelabs/underlay/runtime/auth';
  *   import { auth } from '$lib/stores/auth';
  *
  *   configureAuth({

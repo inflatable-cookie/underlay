@@ -7,7 +7,7 @@
  *
  * @example
  * ```typescript
- * import { createLocalDrillDownSearchFns } from '@decodelabs/underlay/patterns';
+ * import { createLocalDrillDownSearchFns } from '@decodelabs/underlay/runtime/relations';
  *
  * const { search, suggest } = createLocalDrillDownSearchFns(
  *   () => sections,

@@ -100,4 +100,4 @@ Do not promote a system into active implementation-assessment work until:
 
 The active contract wave is live inside `g07`.
 
-Execute `g07.003`: runtime import guidance cleanup.
+Execute `g07.004`: pattern helper ownership diet.

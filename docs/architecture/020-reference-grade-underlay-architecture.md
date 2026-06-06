@@ -197,4 +197,4 @@ Stop and re-enter planning if:
 
 ## Next Task
 
-Execute `g07.003`: runtime import guidance cleanup.
+Execute `g07.004`: pattern helper ownership diet.

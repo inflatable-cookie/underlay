@@ -926,7 +926,7 @@ The `createFormState` function provides reactive form state management with Svel
 
 ```svelte
 <script lang="ts">
-  import { createFormState } from '@decodelabs/underlay/patterns';
+  import { createFormState } from '@decodelabs/underlay/runtime/forms';
   import { Button, Callout } from '@poodle/svelte';
 
   const form = createFormState({
@@ -1071,7 +1071,7 @@ For forms that use intent-based actions (e.g., "save", "delete", "save-close"), 
 Sets a hidden intent input value and submits the form:
 
 ```typescript
-import { submitFormWithIntent } from '@decodelabs/underlay/patterns';
+import { submitFormWithIntent } from '@decodelabs/underlay/runtime/forms';
 
 // Submit with delete intent (uses first <form> element)
 function handleDelete() {
@@ -1101,7 +1101,7 @@ function handleSpecialAction() {
 
 ```svelte
 <script lang="ts">
-  import { submitFormWithIntent } from '@decodelabs/underlay/patterns';
+  import { submitFormWithIntent } from '@decodelabs/underlay/runtime/forms';
 
   function handleDelete() {
     submitFormWithIntent("delete");
@@ -1370,14 +1370,14 @@ Direct use of `localStorage` or `sessionStorage` in SvelteKit causes errors duri
 const theme = localStorage.getItem('theme');
 
 // ✅ Works everywhere
-import { storage } from '@decodelabs/underlay/patterns';
+import { storage } from '@decodelabs/underlay/runtime/browser';
 const theme = storage.local.get('theme', 'light');
 ```
 
 #### Basic Get/Set
 
 ```typescript
-import { storage } from '@decodelabs/underlay/patterns';
+import { storage } from '@decodelabs/underlay/runtime/browser';
 
 // Get with default value (SSR-safe)
 const theme = storage.local.get('theme', 'light');
@@ -1437,7 +1437,7 @@ const draft = storage.session.get('formDraft', {});
 Create Svelte stores backed by storage:
 
 ```typescript
-import { storage } from '@decodelabs/underlay/patterns';
+import { storage } from '@decodelabs/underlay/runtime/browser';
 
 // Create a persisted store
 const preferences = storage.local.store('preferences', {
@@ -1471,7 +1471,7 @@ When the draft expires, Underlay removes the stored value and updates `$draft` b
 #### Shorthand Functions
 
 ```typescript
-import { createPersistedStore, createSessionStore } from '@decodelabs/underlay/patterns';
+import { createPersistedStore, createSessionStore } from '@decodelabs/underlay/runtime/browser';
 
 // localStorage-backed store
 const theme = createPersistedStore('theme', 'light');
@@ -1518,7 +1518,7 @@ const date1 = new Date().toLocaleDateString();  // Varies by browser
 const price = `£${amount.toFixed(2)}`;           // No thousands separator
 
 // ✅ Consistent, locale-aware
-import { format } from '@decodelabs/underlay/patterns';
+import { format } from '@decodelabs/underlay/utils/i18n';
 const date1 = format.date(new Date(), 'short');  // "12 Jan 2026"
 const price = format.currency(amount, 'GBP');    // "£1,234.56"
 ```
@@ -1528,7 +1528,7 @@ const price = format.currency(amount, 'GBP');    // "£1,234.56"
 Configure default locale and timezone:
 
 ```typescript
-import { format } from '@decodelabs/underlay/patterns';
+import { format } from '@decodelabs/underlay/utils/i18n';
 
 // Set globally (usually in app initialization)
 format.configure({
@@ -1540,7 +1540,7 @@ format.configure({
 #### Date Formatting
 
 ```typescript
-import { format } from '@decodelabs/underlay/patterns';
+import { format } from '@decodelabs/underlay/utils/i18n';
 
 // Different styles
 format.date(new Date(), 'short');   // "12 Jan 2026"
@@ -1610,7 +1610,7 @@ format.pluralCount(0, {
 
 ```svelte
 <script lang="ts">
-  import { format } from '@decodelabs/underlay/patterns';
+  import { format } from '@decodelabs/underlay/utils/i18n';
   
   export let user;
 </script>
@@ -1689,7 +1689,7 @@ Optimistic updates provide instant UI feedback by updating the interface before 
 For managing lists with add/remove/update operations:
 
 ```typescript
-import { createOptimisticList } from '@decodelabs/underlay/patterns';
+import { createOptimisticList } from '@decodelabs/underlay/runtime/feedback';
 import { useToasts } from '@decodelabs/underlay/runtime/feedback';
 
 interface Todo {
@@ -1746,7 +1746,7 @@ In your component:
 
 ```svelte
 <script lang="ts">
-  import { createOptimisticList } from '@decodelabs/underlay/patterns';
+  import { createOptimisticList } from '@decodelabs/underlay/runtime/feedback';
 
   const todos = createOptimisticList<Todo>(data.todos);
 </script>
@@ -1771,7 +1771,7 @@ In your component:
 For boolean toggle operations (like/unlike, follow/unfollow):
 
 ```typescript
-import { createOptimisticToggle } from '@decodelabs/underlay/patterns';
+import { createOptimisticToggle } from '@decodelabs/underlay/runtime/feedback';
 import { useToasts } from '@decodelabs/underlay/runtime/feedback';
 
 const liked = createOptimisticToggle(false);
@@ -1805,7 +1805,7 @@ async function toggleLike() {
 For numeric counters (like counts, vote counts):
 
 ```typescript
-import { createOptimisticCounter } from '@decodelabs/underlay/patterns';
+import { createOptimisticCounter } from '@decodelabs/underlay/runtime/feedback';
 
 const likeCount = createOptimisticCounter(42);
 
@@ -1832,7 +1832,7 @@ async function like() {
 For any value type with optimistic updates:
 
 ```typescript
-import { createOptimisticValue } from '@decodelabs/underlay/patterns';
+import { createOptimisticValue } from '@decodelabs/underlay/runtime/feedback';
 import { useToasts } from '@decodelabs/underlay/runtime/feedback';
 
 type Status = 'draft' | 'published' | 'archived';

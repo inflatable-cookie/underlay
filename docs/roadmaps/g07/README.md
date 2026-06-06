@@ -71,8 +71,9 @@ Each consumer-affecting milestone must classify impact as `additive`,
 
 - `g07.001` is complete as the TS runtime and workflow ownership inventory.
 - `g07.002` is complete as the runtime subpath public surface audit.
-- `g07.003` is next as the runtime import guidance cleanup.
+- `g07.003` is complete as the runtime import guidance cleanup.
+- `g07.004` is next as the pattern helper ownership diet.
 
 ## Next Task
 
-Execute `g07.003`: runtime import guidance cleanup.
+Execute `g07.004`: pattern helper ownership diet.
