@@ -42,8 +42,43 @@ Expected impact: none beyond the already-committed Acowtancy repair.
 
 ## Current State
 
-`g06.168` is ready.
+`g06.168` is complete.
+
+Final compatibility state:
+
+- `underlay-reference`: compatible after the Underlay
+  `DrillDownBreadcrumb` import fix; `acme-admin/check` passed.
+- `contact-patch`: compatible; root health passed in the sweep.
+- `compli-me`: compatible; root health passed in the sweep.
+- `acowtancy`: compatible after the Cattle Grid list-query repair; root health
+  passed.
+- `songsprout`: compatible; root health passed in the sweep.
+- `loophole/composer`: compatible; root health passed in the sweep.
+
+Underlay state:
+
+- package exports for `.`, `./client`, `./runtime`, and `./nightfire` are now
+  explicit
+- retained bare subpaths are narrow compatibility surfaces, not broad source
+  barrels
+- TypeScript source structure is stable after the source god-file splits
+- `effigy doctor` has only the accepted 9 warning-only test-size findings
+
+Remaining risks:
+
+- Underlay test god-file warnings remain a navigation cost, not a production
+  modularity blocker.
+- Acowtancy health reports one existing non-failing Rust warning in
+  `farmyard-migration`.
+- The fleet uses local file dependencies and source aliases in places; the
+  export-map compatibility test now guards the Underlay side, but package-style
+  publish simulation is still a useful future release-readiness check.
+
+Recommendation: move next to a Rust runtime/security surface re-audit. The
+TypeScript and fleet compatibility lanes are closed enough that the next
+reference-grade pressure is server-side behavior, construction boundaries, and
+security-sensitive crate APIs.
 
 ## Next Task
 
-Execute `g06.168`: fleet compatibility closeout audit.
+Execute `g06.169`: Rust runtime security surface re-audit.

@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.168`: fleet compatibility closeout audit.
+Execute `g06.169`: Rust runtime security surface re-audit.
