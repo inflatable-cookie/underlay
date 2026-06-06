@@ -41,17 +41,14 @@ pub fn seed_bundle_build(
         )));
     }
 
-    let config = OciBundleConfig {
-        schema_version: "1".to_string(),
-        bundle_id: underlay_core::Uuid::new_v7().to_string(),
-        bundle_version: "v0-local".to_string(),
-        source_system: "syllabus_generator".to_string(),
-        target_schema_version: format!("farmyard-seed-{}", seed_manifest.name),
-    };
+    let config = OciBundleConfig::local_v1(
+        "syllabus_generator",
+        format!("farmyard-seed-{}", seed_manifest.name),
+    );
 
     let manifest_layer_payload = serde_json::to_vec(&serde_json::json!({
-        "schema_version": config.schema_version,
-        "bundle_id": config.bundle_id,
+        "schema_version": config.schema_version(),
+        "bundle_id": config.bundle_id(),
         "seed_bundle_name": seed_manifest.name,
         "seed_bundle_priority": seed_manifest.priority,
         "tables": seed_manifest.tables,

@@ -47,13 +47,7 @@ fn pulled_media_shard_output_names_are_sanitized() {
         layout: OciBundleLayout {
             artifact_type: "application/vnd.underlay.migration.bundle.v1".to_string(),
             media_type: "application/vnd.oci.image.manifest.v1+json".to_string(),
-            config: OciBundleConfig {
-                schema_version: "1".to_string(),
-                bundle_id: underlay_core::Uuid::new_v7().to_string(),
-                bundle_version: "v0-local".to_string(),
-                source_system: "legacy_system".to_string(),
-                target_schema_version: "schema_v1".to_string(),
-            },
+            config: OciBundleConfig::local_v1("legacy_system", "schema_v1"),
             layers: vec![OciLayerDescriptor {
                 kind: OciLayerKind::MediaShard,
                 media_type: "application/vnd.underlay.bundle.media.shard.v1+json".to_string(),

@@ -17,11 +17,62 @@ pub struct OciBundleLayout {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub struct OciBundleConfig {
-    pub schema_version: String,
-    pub bundle_id: String,
-    pub bundle_version: String,
-    pub source_system: String,
-    pub target_schema_version: String,
+    schema_version: String,
+    bundle_id: String,
+    bundle_version: String,
+    source_system: String,
+    target_schema_version: String,
+}
+
+impl OciBundleConfig {
+    pub fn new(
+        schema_version: impl Into<String>,
+        bundle_id: impl Into<String>,
+        bundle_version: impl Into<String>,
+        source_system: impl Into<String>,
+        target_schema_version: impl Into<String>,
+    ) -> Self {
+        Self {
+            schema_version: schema_version.into(),
+            bundle_id: bundle_id.into(),
+            bundle_version: bundle_version.into(),
+            source_system: source_system.into(),
+            target_schema_version: target_schema_version.into(),
+        }
+    }
+
+    pub fn local_v1(
+        source_system: impl Into<String>,
+        target_schema_version: impl Into<String>,
+    ) -> Self {
+        Self::new(
+            "1",
+            underlay_core::Uuid::new_v7().to_string(),
+            "v0-local",
+            source_system,
+            target_schema_version,
+        )
+    }
+
+    pub fn schema_version(&self) -> &str {
+        &self.schema_version
+    }
+
+    pub fn bundle_id(&self) -> &str {
+        &self.bundle_id
+    }
+
+    pub fn bundle_version(&self) -> &str {
+        &self.bundle_version
+    }
+
+    pub fn source_system(&self) -> &str {
+        &self.source_system
+    }
+
+    pub fn target_schema_version(&self) -> &str {
+        &self.target_schema_version
+    }
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]

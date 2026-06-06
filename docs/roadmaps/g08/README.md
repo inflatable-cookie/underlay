@@ -34,7 +34,7 @@ Posture: baseline-routing.
 
 - [x] `g08.001`: migration-core pipeline and integrity policy field retirement.
 - [x] `g08.002`: devtools bundle/seed option constructor and accessor audit.
-- [ ] `g08.003`: migration-core governance/OCI/manifest policy model audit.
+- [x] `g08.003`: migration-core governance/OCI/manifest policy model audit.
 - [ ] `g08.004`: residual Rust public config closeout and compatibility proof.
 
 ## Acceptance Criteria
@@ -59,8 +59,9 @@ Posture: baseline-routing.
 
 - `g08.001` is complete.
 - `g08.002` is complete.
-- `g08.003` is next.
+- `g08.003` is complete.
+- `g08.004` is next.
 
 ## Next Task
 
-Continue with `g08.003`.
+Continue with `g08.004`.

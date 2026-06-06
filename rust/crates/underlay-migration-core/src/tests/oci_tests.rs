@@ -9,13 +9,7 @@ fn valid_layout() -> OciBundleLayout {
     OciBundleLayout {
         artifact_type: "application/vnd.underlay.migration.bundle.v1".to_string(),
         media_type: "application/vnd.oci.image.manifest.v1+json".to_string(),
-        config: OciBundleConfig {
-            schema_version: "1".to_string(),
-            bundle_id: "0195-example".to_string(),
-            bundle_version: "v1".to_string(),
-            source_system: "legacy_demo".to_string(),
-            target_schema_version: "schema_v1".to_string(),
-        },
+        config: OciBundleConfig::new("1", "0195-example", "v1", "legacy_demo", "schema_v1"),
         layers: vec![
             OciLayerDescriptor {
                 kind: OciLayerKind::Manifest,

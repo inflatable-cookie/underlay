@@ -28,20 +28,15 @@ pub fn migration_bundle_build(
 
     ensure_parent_dir(options.output_file())?;
 
-    let config = OciBundleConfig {
-        schema_version: "1".to_string(),
-        bundle_id: underlay_core::Uuid::new_v7().to_string(),
-        bundle_version: "v0-local".to_string(),
-        source_system: options.source_system().to_string(),
-        target_schema_version: options.target_schema_version().to_string(),
-    };
+    let config =
+        OciBundleConfig::local_v1(options.source_system(), options.target_schema_version());
 
     let manifest_payload = serde_json::to_vec(&serde_json::json!({
-        "schema_version": config.schema_version,
-        "bundle_id": config.bundle_id,
-        "bundle_version": config.bundle_version,
-        "source_system": config.source_system,
-        "target_schema_version": config.target_schema_version,
+        "schema_version": config.schema_version(),
+        "bundle_id": config.bundle_id(),
+        "bundle_version": config.bundle_version(),
+        "source_system": config.source_system(),
+        "target_schema_version": config.target_schema_version(),
     }))
     .map_err(|err| MigrationBundleError::Validation(err.to_string()))?;
 
