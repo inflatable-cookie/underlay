@@ -3,10 +3,10 @@ use std::time::Duration;
 use serde_json::json;
 
 use super::super::{
-    default_retriable_error_kinds, AiErrorKind, AiRuntimeError, LlmClient, RetryConfig,
-    RetryMiddleware,
+    AiErrorKind, AiRuntimeError, LlmClient, RetryConfig, RetryMiddleware,
+    default_retriable_error_kinds,
 };
-use super::support::{err, ok_response, sample_request, sample_route, SharedScriptedLlmClient};
+use super::support::{SharedScriptedLlmClient, err, ok_response, sample_request, sample_route};
 
 #[test]
 fn ai_runtime_error_helpers_match_default_policies() {
@@ -18,12 +18,11 @@ fn ai_runtime_error_helpers_match_default_policies() {
 
 #[test]
 fn retry_config_uses_bounded_exponential_backoff() {
-    let config = RetryConfig {
-        max_attempts: 4,
-        base_delay: Duration::from_millis(100),
-        max_delay: Duration::from_millis(250),
-        retriable_kinds: default_retriable_error_kinds(),
-    };
+    let config = RetryConfig::default()
+        .with_max_attempts(4)
+        .with_base_delay(Duration::from_millis(100))
+        .with_max_delay(Duration::from_millis(250))
+        .with_retriable_kinds(default_retriable_error_kinds());
 
     assert_eq!(config.delay_for_attempt(0), Duration::ZERO);
     assert_eq!(config.delay_for_attempt(1), Duration::from_millis(100));
@@ -41,12 +40,11 @@ async fn retry_middleware_retries_transient_errors_then_succeeds() {
     ]);
     let middleware = RetryMiddleware::new(
         client.clone(),
-        RetryConfig {
-            max_attempts: 4,
-            base_delay: Duration::ZERO,
-            max_delay: Duration::ZERO,
-            retriable_kinds: default_retriable_error_kinds(),
-        },
+        RetryConfig::default()
+            .with_max_attempts(4)
+            .with_base_delay(Duration::ZERO)
+            .with_max_delay(Duration::ZERO)
+            .with_retriable_kinds(default_retriable_error_kinds()),
     );
 
     let response = middleware

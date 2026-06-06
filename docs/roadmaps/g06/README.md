@@ -688,6 +688,7 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g06.208` is complete as the scheduler config field retirement artifact.
 - `g06.209` is complete as the storage config field retirement artifact.
 - `g06.210` is complete as the MFA config field retirement artifact.
+- `g06.211` is complete as the AI runtime config field retirement artifact.
 - `g06` is closed.
 
 ## Batch Cards

@@ -9,9 +9,9 @@ use crate::{AiErrorKind, AiRuntimeError, LlmClient, LlmRequest, LlmResponse, Res
 
 #[derive(Debug, Clone)]
 pub struct CircuitBreakerConfig {
-    pub failure_threshold: u32,
-    pub window_duration: Duration,
-    pub reset_timeout: Duration,
+    failure_threshold: u32,
+    window_duration: Duration,
+    reset_timeout: Duration,
 }
 
 impl Default for CircuitBreakerConfig {
@@ -21,6 +21,35 @@ impl Default for CircuitBreakerConfig {
             window_duration: Duration::from_secs(60),
             reset_timeout: Duration::from_secs(30),
         }
+    }
+}
+
+impl CircuitBreakerConfig {
+    pub fn failure_threshold(&self) -> u32 {
+        self.failure_threshold
+    }
+
+    pub fn window_duration(&self) -> Duration {
+        self.window_duration
+    }
+
+    pub fn reset_timeout(&self) -> Duration {
+        self.reset_timeout
+    }
+
+    pub fn with_failure_threshold(mut self, failure_threshold: u32) -> Self {
+        self.failure_threshold = failure_threshold;
+        self
+    }
+
+    pub fn with_window_duration(mut self, window_duration: Duration) -> Self {
+        self.window_duration = window_duration;
+        self
+    }
+
+    pub fn with_reset_timeout(mut self, reset_timeout: Duration) -> Self {
+        self.reset_timeout = reset_timeout;
+        self
     }
 }
 
@@ -50,7 +79,7 @@ impl ProviderCircuitState {
 
     fn current_state(&self, now: Instant, config: &CircuitBreakerConfig) -> CircuitState {
         match self.opened_at {
-            Some(opened_at) if now.duration_since(opened_at) < config.reset_timeout => {
+            Some(opened_at) if now.duration_since(opened_at) < config.reset_timeout() => {
                 CircuitState::Open
             }
             Some(_) => CircuitState::HalfOpen,
@@ -59,7 +88,7 @@ impl ProviderCircuitState {
     }
 
     fn allow_request(&mut self, now: Instant, config: &CircuitBreakerConfig) -> bool {
-        self.prune_failures(now, config.window_duration);
+        self.prune_failures(now, config.window_duration());
         match self.current_state(now, config) {
             CircuitState::Closed => true,
             CircuitState::Open => false,
@@ -81,11 +110,11 @@ impl ProviderCircuitState {
     }
 
     fn record_failure(&mut self, now: Instant, config: &CircuitBreakerConfig) {
-        self.prune_failures(now, config.window_duration);
+        self.prune_failures(now, config.window_duration());
         self.recent_failures.push_back(now);
         self.half_open_in_flight = false;
         if self.opened_at.is_some()
-            || self.recent_failures.len() >= config.failure_threshold as usize
+            || self.recent_failures.len() >= config.failure_threshold() as usize
         {
             self.opened_at = Some(now);
         }

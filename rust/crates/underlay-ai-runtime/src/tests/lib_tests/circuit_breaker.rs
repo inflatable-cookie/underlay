@@ -5,7 +5,7 @@ use serde_json::json;
 use super::super::{
     AiErrorKind, CircuitBreakerConfig, CircuitBreakerMiddleware, CircuitState, LlmClient,
 };
-use super::support::{err, ok_response, sample_request, sample_route, SharedScriptedLlmClient};
+use super::support::{SharedScriptedLlmClient, err, ok_response, sample_request, sample_route};
 
 #[tokio::test]
 async fn circuit_breaker_opens_then_allows_half_open_recovery() {
@@ -16,11 +16,10 @@ async fn circuit_breaker_opens_then_allows_half_open_recovery() {
     ]);
     let middleware = CircuitBreakerMiddleware::new(
         client.clone(),
-        CircuitBreakerConfig {
-            failure_threshold: 2,
-            window_duration: Duration::from_secs(30),
-            reset_timeout: Duration::from_millis(5),
-        },
+        CircuitBreakerConfig::default()
+            .with_failure_threshold(2)
+            .with_window_duration(Duration::from_secs(30))
+            .with_reset_timeout(Duration::from_millis(5)),
     );
     let route = sample_route("openai");
     let request = sample_request();

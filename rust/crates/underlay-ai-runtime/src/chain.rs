@@ -8,12 +8,21 @@ use crate::{
 
 #[derive(Debug, Clone)]
 pub struct RouteChainConfig {
-    pub fallback_error_kinds: HashSet<AiErrorKind>,
+    fallback_error_kinds: HashSet<AiErrorKind>,
 }
 
 impl RouteChainConfig {
+    pub fn fallback_error_kinds(&self) -> &HashSet<AiErrorKind> {
+        &self.fallback_error_kinds
+    }
+
+    pub fn with_fallback_error_kinds(mut self, fallback_error_kinds: HashSet<AiErrorKind>) -> Self {
+        self.fallback_error_kinds = fallback_error_kinds;
+        self
+    }
+
     pub fn should_fallback(&self, error: &AiRuntimeError) -> bool {
-        self.fallback_error_kinds.contains(&error.kind)
+        self.fallback_error_kinds().contains(&error.kind)
     }
 }
 

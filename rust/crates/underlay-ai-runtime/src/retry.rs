@@ -7,15 +7,51 @@ use crate::{AiErrorKind, AiRuntimeError, LlmClient, LlmRequest, LlmResponse, Res
 
 #[derive(Debug, Clone)]
 pub struct RetryConfig {
-    pub max_attempts: u32,
-    pub base_delay: Duration,
-    pub max_delay: Duration,
-    pub retriable_kinds: HashSet<AiErrorKind>,
+    max_attempts: u32,
+    base_delay: Duration,
+    max_delay: Duration,
+    retriable_kinds: HashSet<AiErrorKind>,
 }
 
 impl RetryConfig {
+    pub fn max_attempts(&self) -> u32 {
+        self.max_attempts
+    }
+
+    pub fn base_delay(&self) -> Duration {
+        self.base_delay
+    }
+
+    pub fn max_delay(&self) -> Duration {
+        self.max_delay
+    }
+
+    pub fn retriable_kinds(&self) -> &HashSet<AiErrorKind> {
+        &self.retriable_kinds
+    }
+
+    pub fn with_max_attempts(mut self, max_attempts: u32) -> Self {
+        self.max_attempts = max_attempts;
+        self
+    }
+
+    pub fn with_base_delay(mut self, base_delay: Duration) -> Self {
+        self.base_delay = base_delay;
+        self
+    }
+
+    pub fn with_max_delay(mut self, max_delay: Duration) -> Self {
+        self.max_delay = max_delay;
+        self
+    }
+
+    pub fn with_retriable_kinds(mut self, retriable_kinds: HashSet<AiErrorKind>) -> Self {
+        self.retriable_kinds = retriable_kinds;
+        self
+    }
+
     pub fn should_retry(&self, error: &AiRuntimeError, attempt: u32) -> bool {
-        attempt < self.max_attempts && self.retriable_kinds.contains(&error.kind)
+        attempt < self.max_attempts() && self.retriable_kinds().contains(&error.kind)
     }
 
     pub fn delay_for_attempt(&self, attempt: u32) -> Duration {
@@ -25,8 +61,8 @@ impl RetryConfig {
 
         let exponent = attempt.saturating_sub(1).min(31);
         let multiplier = 1_u32 << exponent;
-        let delay = self.base_delay.saturating_mul(multiplier);
-        delay.min(self.max_delay)
+        let delay = self.base_delay().saturating_mul(multiplier);
+        delay.min(self.max_delay())
     }
 }
 
