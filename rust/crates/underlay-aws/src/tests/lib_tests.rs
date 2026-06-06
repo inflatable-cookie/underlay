@@ -34,7 +34,10 @@ fn with_static_credentials_sets_credentials_and_preserves_existing_fields() {
         .with_static_credentials("minioadmin", "minioadmin");
 
     assert_eq!(config.region, "eu-west-1");
-    assert_eq!(config.endpoint_url.as_deref(), Some("http://localhost:9000"));
+    assert_eq!(
+        config.endpoint_url.as_deref(),
+        Some("http://localhost:9000")
+    );
     let credentials = config.static_credentials.expect("static credentials");
     assert_eq!(credentials.access_key_id, "minioadmin");
     assert_eq!(credentials.secret_access_key, "minioadmin");
