@@ -691,6 +691,7 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g06.211` is complete as the AI runtime config field retirement artifact.
 - `g06.212` is complete as the media config field retirement artifact.
 - `g06.213` is complete as the email config field retirement artifact.
+- `g06.214` is complete as the HTTP error logging config field retirement artifact.
 - `g06` is closed.
 
 ## Batch Cards

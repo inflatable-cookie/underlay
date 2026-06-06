@@ -1,4 +1,4 @@
-use super::{append_error_log, ErrorLoggingConfig};
+use super::{ErrorLoggingConfig, append_error_log};
 use axum::{body::Body, http::Request, middleware::Next, response::Response};
 
 /// Header name for passing error context to the logging middleware.
@@ -41,8 +41,8 @@ pub async fn error_logging_middleware(
 
     let status = res.status();
 
-    let should_log = (status.is_client_error() && config.log_client_errors)
-        || (status.is_server_error() && config.log_server_errors);
+    let should_log = (status.is_client_error() && config.log_client_errors())
+        || (status.is_server_error() && config.log_server_errors());
 
     if !should_log {
         return res;
@@ -76,7 +76,7 @@ pub async fn error_logging_middleware(
         .unwrap_or_else(|| fallback_handler_context(&method, &path, status, &error_code));
 
     let context = serde_json::json!({
-        "source": config.source,
+        "source": config.source(),
         "query": query,
         "user_agent": user_agent,
         "handler_context": handler_context,
@@ -129,7 +129,7 @@ fn fallback_handler_context(
 
 #[cfg(test)]
 mod tests {
-    use super::{extract_handler_context, fallback_handler_context, ERROR_CONTEXT_HEADER};
+    use super::{ERROR_CONTEXT_HEADER, extract_handler_context, fallback_handler_context};
     use axum::response::Response;
     use http::{Method, StatusCode};
 
