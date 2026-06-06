@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.158`: TypeScript comment-ratio cleanup.
+Execute `g06.159`: TypeScript source god-file audit.
