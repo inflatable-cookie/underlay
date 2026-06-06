@@ -201,7 +201,8 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.134` is complete as the migration-core drift internal split.
 - `g06.135` is complete as the media storage modularity audit.
 - `g06.136` is complete as the media storage internal split.
-- `g06.137` is next as the migration-core orchestrator decide modularity audit.
+- `g06.137` is complete as the migration-core orchestrator decide modularity audit.
+- `g06.138` is next as the migration-core orchestrator decide internal split.
 
 ## Planned Runway
 
@@ -346,6 +347,7 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.135`: media storage modularity audit
 - `g06.136`: media storage internal split
 - `g06.137`: migration-core orchestrator decide modularity audit
+- `g06.138`: migration-core orchestrator decide internal split
 
 ## Consumer Family
 
@@ -499,7 +501,8 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g06.134` is complete.
 - `g06.135` is complete.
 - `g06.136` is complete.
-- `g06.137` is next.
+- `g06.137` is complete.
+- `g06.138` is next.
 
 ## Batch Cards
 
@@ -508,4 +511,4 @@ If `g06` enters strict execution posture, keep its cards under
 
 ## Next Task
 
-Execute `g06.137`: migration-core orchestrator decide modularity audit.
+Execute `g06.138`: migration-core orchestrator decide internal split.

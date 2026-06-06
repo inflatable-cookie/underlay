@@ -50,8 +50,12 @@ behavior that must change, stop and re-enter planning.
 
 ## Current State
 
-`g06.137` is ready.
+`g06.137` is complete.
+
+Artifact:
+
+- [137 artifact](./137-migration-core-orchestrator-decide-modularity-audit-artifact.md)
 
 ## Next Task
 
-Execute `g06.137`: migration-core orchestrator decide modularity audit.
+Execute `g06.138`: migration-core orchestrator decide internal split.

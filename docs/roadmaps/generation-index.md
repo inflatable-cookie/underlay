@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.137`: migration-core orchestrator decide modularity audit.
+Execute `g06.138`: migration-core orchestrator decide internal split.
