@@ -53,8 +53,12 @@ re-enter planning.
 
 ## Current State
 
-`g06.120` is ready.
+`g06.120` is complete.
+
+Artifact:
+
+- [120 artifact](./120-jobs-runner-tests-internal-split-artifact.md)
 
 ## Next Task
 
-Execute `g06.120`: jobs runner tests internal split.
+Execute `g06.121`: validation derive crate modularity audit.

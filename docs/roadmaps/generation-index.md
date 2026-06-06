@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.120`: jobs runner tests internal split.
+Execute `g06.121`: validation derive crate modularity audit.
