@@ -18,8 +18,21 @@
 //! ```
 
 use std::env;
+use std::net::IpAddr;
+
+use thiserror::Error;
 
 use underlay_observability::Environment;
+
+#[derive(Debug, Error)]
+pub enum HttpServerConfigError {
+    #[error("invalid bind address `{value}`: expected an IP address")]
+    InvalidBindAddr { value: String },
+    #[error("invalid port `{value}`: expected a number between 0 and 65535")]
+    InvalidPort { value: String },
+    #[error("invalid public host `{value}`: {reason}")]
+    InvalidPublicHost { value: String, reason: &'static str },
+}
 
 /// HTTP server configuration.
 ///
@@ -53,6 +66,25 @@ impl HttpServerConfig {
             port,
             public_host: public_host.into(),
         }
+    }
+
+    /// Create a new validated HTTP server config.
+    pub fn try_new(
+        bind_addr: impl Into<String>,
+        port: u16,
+        public_host: impl Into<String>,
+    ) -> Result<Self, HttpServerConfigError> {
+        let bind_addr = bind_addr.into();
+        validate_bind_addr(&bind_addr)?;
+
+        let public_host = public_host.into();
+        validate_public_host(&public_host)?;
+
+        Ok(Self {
+            bind_addr,
+            port,
+            public_host,
+        })
     }
 
     /// Load configuration from environment variables with sensible defaults.
@@ -96,6 +128,31 @@ impl HttpServerConfig {
         }
     }
 
+    /// Load and validate configuration from environment variables.
+    pub fn try_from_env(env: Environment) -> Result<Self, HttpServerConfigError> {
+        let port = match env::var("PORT") {
+            Ok(raw) => raw
+                .parse::<u16>()
+                .map_err(|_| HttpServerConfigError::InvalidPort { value: raw })?,
+            Err(_) => 3000,
+        };
+
+        let bind_addr = env::var("HOST").unwrap_or_else(|_| {
+            let should_bind_publicly =
+                !matches!(env, Environment::Local | Environment::Test) || env::var("PORT").is_ok();
+
+            if should_bind_publicly {
+                "0.0.0.0".to_string()
+            } else {
+                "127.0.0.1".to_string()
+            }
+        });
+
+        let public_host = env::var("PUBLIC_HOST").unwrap_or_else(|_| bind_addr.clone());
+
+        Self::try_new(bind_addr, port, public_host)
+    }
+
     /// Get the socket address string for binding (e.g., "127.0.0.1:3000").
     pub fn socket_addr(&self) -> String {
         format!("{}:{}", self.bind_addr, self.port)
@@ -117,6 +174,18 @@ impl HttpServerConfig {
     pub fn https_base_url(&self) -> String {
         self.base_url("https")
     }
+
+    pub fn bind_addr(&self) -> &str {
+        &self.bind_addr
+    }
+
+    pub fn port(&self) -> u16 {
+        self.port
+    }
+
+    pub fn public_host(&self) -> &str {
+        &self.public_host
+    }
 }
 
 impl Default for HttpServerConfig {
@@ -127,6 +196,43 @@ impl Default for HttpServerConfig {
             public_host: "localhost".to_string(),
         }
     }
+}
+
+fn validate_bind_addr(value: &str) -> Result<(), HttpServerConfigError> {
+    value
+        .parse::<IpAddr>()
+        .map(|_| ())
+        .map_err(|_| HttpServerConfigError::InvalidBindAddr {
+            value: value.to_string(),
+        })
+}
+
+fn validate_public_host(value: &str) -> Result<(), HttpServerConfigError> {
+    if value.is_empty() {
+        return Err(HttpServerConfigError::InvalidPublicHost {
+            value: value.to_string(),
+            reason: "host must not be empty",
+        });
+    }
+
+    if value.contains("://") {
+        return Err(HttpServerConfigError::InvalidPublicHost {
+            value: value.to_string(),
+            reason: "host must not include a URL scheme",
+        });
+    }
+
+    if value
+        .chars()
+        .any(|ch| ch.is_control() || ch.is_whitespace() || matches!(ch, '/' | '?' | '#' | '@'))
+    {
+        return Err(HttpServerConfigError::InvalidPublicHost {
+            value: value.to_string(),
+            reason: "host must not include path, query, fragment, userinfo, or whitespace",
+        });
+    }
+
+    Ok(())
 }
 
 #[cfg(test)]

@@ -107,6 +107,28 @@ mod tests {
     }
 
     #[test]
+    fn try_with_origins_rejects_invalid_values() {
+        let error = CorsConfig::new()
+            .try_with_origins(["https://valid.com", "invalid\nheader"])
+            .expect_err("invalid origin should fail");
+
+        assert!(error.to_string().contains("invalid CORS origin"));
+    }
+
+    #[test]
+    fn with_origin_values_accepts_parsed_origins() {
+        let origins = vec![
+            http::header::HeaderValue::from_static("https://a.com"),
+            http::header::HeaderValue::from_static("https://b.com"),
+        ];
+
+        let config = CorsConfig::new().with_origin_values(origins);
+
+        assert!(!config.allow_any_origin());
+        assert_eq!(config.allowed_origins().len(), 2);
+    }
+
+    #[test]
     fn with_origins_accepts_various_iterators() {
         // Vec
         let config1 = CorsConfig::new().with_origins(vec!["https://a.com", "https://b.com"]);
@@ -266,5 +288,19 @@ mod tests {
     #[test]
     fn default_max_age_constant_is_one_hour() {
         assert_eq!(DEFAULT_CORS_MAX_AGE_SECS, 3600);
+    }
+
+    #[test]
+    fn accessors_expose_config_without_field_access() {
+        let config = CorsConfig::new()
+            .with_origins(["https://example.com"])
+            .with_credentials(true);
+
+        assert!(!config.allow_any_origin());
+        assert!(!config.mirror_origin());
+        assert!(config.allow_credentials());
+        assert_eq!(config.allowed_origins().len(), 1);
+        assert_eq!(config.allowed_headers().len(), 3);
+        assert_eq!(config.max_age_secs(), DEFAULT_CORS_MAX_AGE_SECS);
     }
 }

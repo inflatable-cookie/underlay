@@ -1,12 +1,19 @@
 use http::header::{HeaderName, HeaderValue};
 use http::Method;
 use std::time::Duration;
+use thiserror::Error;
 use tower_http::cors::{AllowHeaders, AllowMethods, AllowOrigin, CorsLayer};
 
 use underlay_observability::REQUEST_ID_HEADER;
 
 /// Default max age for CORS preflight caching (1 hour).
 pub const DEFAULT_CORS_MAX_AGE_SECS: u64 = 3600;
+
+#[derive(Debug, Error)]
+pub enum CorsConfigError {
+    #[error("invalid CORS origin `{origin}`: {reason}")]
+    InvalidOrigin { origin: String, reason: String },
+}
 
 /// Configuration for CORS (Cross-Origin Resource Sharing).
 ///
@@ -100,6 +107,40 @@ impl CorsConfig {
         self
     }
 
+    /// Set specific allowed origins, returning an error instead of dropping invalid values.
+    pub fn try_with_origins<I, S>(mut self, origins: I) -> Result<Self, CorsConfigError>
+    where
+        I: IntoIterator<Item = S>,
+        S: AsRef<str>,
+    {
+        let mut parsed = Vec::new();
+        for origin in origins {
+            let origin = origin.as_ref();
+            let value =
+                HeaderValue::from_str(origin).map_err(|err| CorsConfigError::InvalidOrigin {
+                    origin: origin.to_string(),
+                    reason: err.to_string(),
+                })?;
+            parsed.push(value);
+        }
+
+        self.allowed_origins = parsed;
+        self.allow_any_origin = false;
+        self.mirror_origin = false;
+        Ok(self)
+    }
+
+    /// Set already parsed allowed origins.
+    pub fn with_origin_values<I>(mut self, origins: I) -> Self
+    where
+        I: IntoIterator<Item = HeaderValue>,
+    {
+        self.allowed_origins = origins.into_iter().collect();
+        self.allow_any_origin = false;
+        self.mirror_origin = false;
+        self
+    }
+
     /// Add an additional allowed header.
     pub fn with_header(mut self, header: HeaderName) -> Self {
         self.allowed_headers.push(header);
@@ -122,6 +163,30 @@ impl CorsConfig {
     pub fn with_max_age(mut self, seconds: u64) -> Self {
         self.max_age_secs = seconds;
         self
+    }
+
+    pub fn allow_any_origin(&self) -> bool {
+        self.allow_any_origin
+    }
+
+    pub fn mirror_origin(&self) -> bool {
+        self.mirror_origin
+    }
+
+    pub fn allowed_origins(&self) -> &[HeaderValue] {
+        &self.allowed_origins
+    }
+
+    pub fn allowed_headers(&self) -> &[HeaderName] {
+        &self.allowed_headers
+    }
+
+    pub fn allow_credentials(&self) -> bool {
+        self.allow_credentials
+    }
+
+    pub fn max_age_secs(&self) -> u64 {
+        self.max_age_secs
     }
 }
 

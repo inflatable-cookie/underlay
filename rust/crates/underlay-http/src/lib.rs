@@ -51,9 +51,9 @@ pub use crate::cookies::{
     set_csrf_cookie, AuthCookieConfig, AuthCookieError, CookieDomain, CookieName, CookiePath,
     SameSite,
 };
-pub use crate::cors::{cors_layer, CorsConfig, DEFAULT_CORS_MAX_AGE_SECS};
+pub use crate::cors::{cors_layer, CorsConfig, CorsConfigError, DEFAULT_CORS_MAX_AGE_SECS};
 pub use crate::errors::{error_response, ApiError, ApiResult, ErrorLogContext, ErrorLogSink};
-pub use crate::http_config::HttpServerConfig;
+pub use crate::http_config::{HttpServerConfig, HttpServerConfigError};
 pub use crate::pagination::{Paginated, PaginationMeta, PaginationParams};
 pub use crate::path::{parse_uuid_path, parse_uuid_path_raw};
 pub use crate::query::{
