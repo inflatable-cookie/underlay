@@ -7,19 +7,16 @@ use crate::types::DownloadRequest;
 fn minio_dev_config_uses_path_style_endpoint_and_bucket_public_base() {
     let config = S3Config::minio_dev("acme-media", "http://s3.acme.test:9000/");
 
-    assert_eq!(config.bucket, "acme-media");
-    assert_eq!(config.region, "us-east-1");
+    assert_eq!(config.bucket(), "acme-media");
+    assert_eq!(config.region(), "us-east-1");
+    assert_eq!(config.endpoint_url_ref(), Some("http://s3.acme.test:9000"));
     assert_eq!(
-        config.endpoint_url.as_deref(),
-        Some("http://s3.acme.test:9000")
-    );
-    assert_eq!(
-        config.public_url_base.as_deref(),
+        config.public_url_base_ref(),
         Some("http://s3.acme.test:9000/acme-media")
     );
-    assert!(config.path_style);
-    assert!(config.public_read);
-    assert_eq!(config.presign_url_base, None);
+    assert!(config.path_style_enabled());
+    assert!(config.public_read_enabled());
+    assert_eq!(config.presign_url_base_ref(), None);
 }
 
 fn test_s3_config() -> Option<S3Config> {

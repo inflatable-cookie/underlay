@@ -3,14 +3,14 @@ use super::*;
 #[test]
 fn test_defaults() {
     let config = BlobUploadConfig::default();
-    assert_eq!(config.max_file_size_bytes, 50 * 1024 * 1024);
+    assert_eq!(config.max_file_size_bytes_limit(), 50 * 1024 * 1024);
 }
 
 #[test]
 fn test_builder_methods() {
     let config = BlobUploadConfig::default().max_file_size_mb(100);
 
-    assert_eq!(config.max_file_size_bytes, 100 * 1024 * 1024);
+    assert_eq!(config.max_file_size_bytes_limit(), 100 * 1024 * 1024);
 }
 
 #[test]

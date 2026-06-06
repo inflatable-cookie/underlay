@@ -4,40 +4,40 @@ use std::time::Duration;
 #[derive(Debug, Clone)]
 pub struct S3Config {
     /// The S3 bucket name.
-    pub bucket: String,
+    bucket: String,
 
     /// The AWS region.
-    pub region: String,
+    region: String,
 
     /// Optional custom endpoint URL (for S3-compatible services like MinIO, R2).
-    pub endpoint_url: Option<String>,
+    endpoint_url: Option<String>,
 
     /// Optional base URL for public access (e.g., CDN URL).
     /// If not set, the standard S3 URL format is used.
-    pub public_url_base: Option<String>,
+    public_url_base: Option<String>,
 
     /// Optional base URL used when returning pre-signed browser URLs.
     ///
     /// This is useful when the AWS SDK should talk to an internal endpoint
     /// such as `http://minio:9000`, but browsers must receive an externally
     /// reachable HTTPS route such as `https://s3.acme.test`.
-    pub presign_url_base: Option<String>,
+    presign_url_base: Option<String>,
 
     /// Default expiration for upload URLs.
-    pub upload_url_expiry: Duration,
+    upload_url_expiry: Duration,
 
     /// Default expiration for download URLs.
-    pub download_url_expiry: Duration,
+    download_url_expiry: Duration,
 
     /// Whether to use path-style URLs (required for some S3-compatible services).
-    pub path_style: bool,
+    path_style: bool,
 
     /// Whether the bucket should allow anonymous object reads.
     ///
     /// This is intended for local/dev buckets that are exposed through a
     /// public URL base. Production buckets should normally manage policy
     /// outside the adapter.
-    pub public_read: bool,
+    public_read: bool,
 }
 
 impl S3Config {
@@ -96,6 +96,51 @@ impl S3Config {
     pub fn public_read(mut self, enabled: bool) -> Self {
         self.public_read = enabled;
         self
+    }
+
+    /// Return the configured bucket name.
+    pub fn bucket(&self) -> &str {
+        &self.bucket
+    }
+
+    /// Return the configured AWS region.
+    pub fn region(&self) -> &str {
+        &self.region
+    }
+
+    /// Return the optional S3-compatible endpoint URL.
+    pub fn endpoint_url_ref(&self) -> Option<&str> {
+        self.endpoint_url.as_deref()
+    }
+
+    /// Return the optional public URL base.
+    pub fn public_url_base_ref(&self) -> Option<&str> {
+        self.public_url_base.as_deref()
+    }
+
+    /// Return the optional browser-facing pre-sign URL base.
+    pub fn presign_url_base_ref(&self) -> Option<&str> {
+        self.presign_url_base.as_deref()
+    }
+
+    /// Return the default upload URL expiry duration.
+    pub fn upload_url_expiry_duration(&self) -> Duration {
+        self.upload_url_expiry
+    }
+
+    /// Return the default download URL expiry duration.
+    pub fn download_url_expiry_duration(&self) -> Duration {
+        self.download_url_expiry
+    }
+
+    /// Return whether path-style URLs are enabled.
+    pub fn path_style_enabled(&self) -> bool {
+        self.path_style
+    }
+
+    /// Return whether adapter-managed public reads are enabled.
+    pub fn public_read_enabled(&self) -> bool {
+        self.public_read
     }
 
     /// Create a development-friendly MinIO config.

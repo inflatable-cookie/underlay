@@ -6,8 +6,8 @@ mod config;
 use std::collections::HashMap;
 
 use async_trait::async_trait;
-use aws_sdk_s3::presigning::PresigningConfig;
 use aws_sdk_s3::Client;
+use aws_sdk_s3::presigning::PresigningConfig;
 use chrono::{DateTime, Utc};
 
 use crate::adapter::BlobAdapter;
@@ -39,7 +39,7 @@ impl BlobAdapter for S3Adapter {
         let mut put_request = self
             .presign_client
             .put_object()
-            .bucket(&self.config.bucket)
+            .bucket(self.config.bucket())
             .key(request.key.as_str())
             .content_type(&request.content_type)
             .content_length(request.content_length as i64);
@@ -78,7 +78,7 @@ impl BlobAdapter for S3Adapter {
 
         Ok(StoredObject {
             provider: "s3".to_string(),
-            bucket: self.config.bucket.clone(),
+            bucket: self.config.bucket().to_string(),
             key: key.to_string(),
             size: info.size,
             content_type: info.content_type,
@@ -87,7 +87,7 @@ impl BlobAdapter for S3Adapter {
     }
 
     fn public_url(&self, key: &str) -> String {
-        if let Some(base) = &self.config.public_url_base {
+        if let Some(base) = self.config.public_url_base_ref() {
             format!("{}/{}", base.trim_end_matches('/'), key)
         } else {
             self.default_public_url(key)
@@ -104,7 +104,7 @@ impl BlobAdapter for S3Adapter {
         let mut get_request = self
             .presign_client
             .get_object()
-            .bucket(&self.config.bucket)
+            .bucket(self.config.bucket())
             .key(request.key.as_str());
 
         // Set content disposition if filename provided
@@ -131,7 +131,7 @@ impl BlobAdapter for S3Adapter {
     async fn delete(&self, key: &str) -> BlobResult<()> {
         self.client
             .delete_object()
-            .bucket(&self.config.bucket)
+            .bucket(self.config.bucket())
             .key(key)
             .send()
             .await
@@ -144,7 +144,7 @@ impl BlobAdapter for S3Adapter {
         let response = self
             .client
             .head_object()
-            .bucket(&self.config.bucket)
+            .bucket(self.config.bucket())
             .key(key)
             .send()
             .await
@@ -176,7 +176,7 @@ impl BlobAdapter for S3Adapter {
         let response = self
             .client
             .get_object()
-            .bucket(&self.config.bucket)
+            .bucket(self.config.bucket())
             .key(key)
             .send()
             .await
@@ -206,7 +206,7 @@ impl BlobAdapter for S3Adapter {
         let response = self
             .client
             .put_object()
-            .bucket(&self.config.bucket)
+            .bucket(self.config.bucket())
             .key(key)
             .content_type(content_type)
             .content_length(data.len() as i64)
@@ -217,7 +217,7 @@ impl BlobAdapter for S3Adapter {
 
         Ok(StoredObject {
             provider: "s3".to_string(),
-            bucket: self.config.bucket.clone(),
+            bucket: self.config.bucket().to_string(),
             key: key.to_string(),
             size: data.len() as u64,
             content_type: content_type.to_string(),
@@ -230,14 +230,14 @@ impl BlobAdapter for S3Adapter {
     }
 
     fn bucket(&self) -> &str {
-        &self.config.bucket
+        self.config.bucket()
     }
 
     async fn health_check(&self) -> BlobResult<()> {
         // Try to list objects with max 1 to verify connectivity and permissions
         self.client
             .list_objects_v2()
-            .bucket(&self.config.bucket)
+            .bucket(self.config.bucket())
             .max_keys(1)
             .send()
             .await
@@ -250,9 +250,9 @@ impl BlobAdapter for S3Adapter {
 impl std::fmt::Debug for S3Adapter {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("S3Adapter")
-            .field("bucket", &self.config.bucket)
-            .field("region", &self.config.region)
-            .field("endpoint_url", &self.config.endpoint_url)
+            .field("bucket", &self.config.bucket())
+            .field("region", &self.config.region())
+            .field("endpoint_url", &self.config.endpoint_url_ref())
             .finish()
     }
 }

@@ -20,7 +20,7 @@
 //! ```
 
 pub use aws_config::SdkConfig;
-use aws_credential_types::{provider::SharedCredentialsProvider, Credentials};
+use aws_credential_types::{Credentials, provider::SharedCredentialsProvider};
 pub use aws_types::region::Region;
 
 /// Configuration for building an AWS SDK config.
@@ -30,16 +30,16 @@ pub use aws_types::region::Region;
 #[derive(Debug, Clone)]
 pub struct AwsConfig {
     /// AWS region (e.g., "eu-west-2", "us-east-1").
-    pub region: String,
+    region: String,
 
     /// Optional custom endpoint URL.
     ///
     /// Used for S3-compatible services (MinIO, R2, LocalStack) or local
     /// development with tools like localstack.
-    pub endpoint_url: Option<String>,
+    endpoint_url: Option<String>,
 
     /// Optional static credentials used instead of the ambient provider chain.
-    pub static_credentials: Option<AwsStaticCredentials>,
+    static_credentials: Option<AwsStaticCredentials>,
 }
 
 #[derive(Debug, Clone)]
@@ -77,6 +77,21 @@ impl AwsConfig {
             session_token: None,
         });
         self
+    }
+
+    /// Return the configured AWS region.
+    pub fn region(&self) -> &str {
+        &self.region
+    }
+
+    /// Return the optional custom endpoint URL.
+    pub fn endpoint_url(&self) -> Option<&str> {
+        self.endpoint_url.as_deref()
+    }
+
+    /// Return the optional static credentials.
+    pub fn static_credentials(&self) -> Option<&AwsStaticCredentials> {
+        self.static_credentials.as_ref()
     }
 
     /// Load the AWS SDK configuration.

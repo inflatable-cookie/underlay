@@ -6,7 +6,7 @@ pub struct BlobUploadConfig {
     /// Maximum allowed file size for blob uploads in bytes.
     ///
     /// Default: 50 MB (52,428,800 bytes)
-    pub max_file_size_bytes: u64,
+    max_file_size_bytes: u64,
 }
 
 impl Default for BlobUploadConfig {
@@ -35,6 +35,11 @@ impl BlobUploadConfig {
     pub fn max_file_size_bytes(mut self, bytes: u64) -> Self {
         self.max_file_size_bytes = bytes;
         self
+    }
+
+    /// Return the maximum allowed file size in bytes.
+    pub fn max_file_size_bytes_limit(&self) -> u64 {
+        self.max_file_size_bytes
     }
 
     /// Check if a file size is within the allowed limit.

@@ -45,11 +45,11 @@ impl LocalAdapter {
     ///
     /// This will create the base directory if it doesn't exist.
     pub async fn new(config: LocalConfig) -> BlobResult<Self> {
-        fs::create_dir_all(&config.base_path).await.map_err(|e| {
+        fs::create_dir_all(config.base_path()).await.map_err(|e| {
             BlobError::ConfigError(format!("Failed to create base directory: {}", e))
         })?;
 
-        let canonical_base = config.base_path.canonicalize().map_err(|e| {
+        let canonical_base = config.base_path().canonicalize().map_err(|e| {
             BlobError::ConfigError(format!("Failed to canonicalize base path: {}", e))
         })?;
 
@@ -62,7 +62,7 @@ impl LocalAdapter {
     /// Get the full filesystem path for a key.
     pub fn path_for_key(&self, key: &str) -> BlobResult<PathBuf> {
         validate_local_object_key(key)?;
-        Ok(self.config.base_path.join(key))
+        Ok(self.config.base_path().join(key))
     }
 
     /// Write a file to the local filesystem.
@@ -97,7 +97,7 @@ impl LocalAdapter {
 
         Ok(StoredObject {
             provider: "local".to_string(),
-            bucket: self.config.bucket.clone(),
+            bucket: self.config.bucket_name().to_string(),
             key: key.to_string(),
             size: data.len() as u64,
             content_type: content_type.to_string(),
@@ -138,9 +138,8 @@ impl BlobAdapter for LocalAdapter {
     async fn initiate_upload(&self, request: UploadRequest) -> BlobResult<UploadPlan> {
         let upload_base = self
             .config
-            .upload_url_base
-            .as_ref()
-            .unwrap_or(&self.config.serve_url_base);
+            .upload_url_base_ref()
+            .unwrap_or(self.config.serve_url_base());
 
         let upload_url = format!(
             "{}/{}",
@@ -168,7 +167,7 @@ impl BlobAdapter for LocalAdapter {
 
         Ok(StoredObject {
             provider: "local".to_string(),
-            bucket: self.config.bucket.clone(),
+            bucket: self.config.bucket_name().to_string(),
             key: key.to_string(),
             size: info.size,
             content_type: info.content_type,
@@ -179,7 +178,7 @@ impl BlobAdapter for LocalAdapter {
     fn public_url(&self, key: &str) -> String {
         format!(
             "{}/{}",
-            self.config.serve_url_base.trim_end_matches('/'),
+            self.config.serve_url_base().trim_end_matches('/'),
             key
         )
     }
@@ -257,11 +256,11 @@ impl BlobAdapter for LocalAdapter {
     }
 
     fn bucket(&self) -> &str {
-        &self.config.bucket
+        self.config.bucket_name()
     }
 
     async fn health_check(&self) -> BlobResult<()> {
-        fs::metadata(&self.config.base_path)
+        fs::metadata(self.config.base_path())
             .await
             .map_err(|e| BlobError::ConfigError(format!("Base path not accessible: {}", e)))?;
 
@@ -272,8 +271,8 @@ impl BlobAdapter for LocalAdapter {
 impl std::fmt::Debug for LocalAdapter {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("LocalAdapter")
-            .field("base_path", &self.config.base_path)
-            .field("serve_url_base", &self.config.serve_url_base)
+            .field("base_path", &self.config.base_path())
+            .field("serve_url_base", &self.config.serve_url_base())
             .finish()
     }
 }
