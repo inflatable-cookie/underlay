@@ -193,7 +193,8 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.126` is complete as the migration-core verification internal split.
 - `g06.127` is complete as the migration-core test support modularity audit.
 - `g06.128` is complete as the migration-core test support internal split.
-- `g06.129` is next as the HTTP context modularity audit.
+- `g06.129` is complete as the HTTP context modularity audit.
+- `g06.130` is next as the HTTP context internal split.
 
 ## Planned Runway
 
@@ -330,6 +331,7 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.127`: migration-core test support modularity audit
 - `g06.128`: migration-core test support internal split
 - `g06.129`: HTTP context modularity audit
+- `g06.130`: HTTP context internal split
 
 ## Consumer Family
 
@@ -475,7 +477,8 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g06.126` is complete.
 - `g06.127` is complete.
 - `g06.128` is complete.
-- `g06.129` is next.
+- `g06.129` is complete.
+- `g06.130` is next.
 
 ## Batch Cards
 
@@ -484,4 +487,4 @@ If `g06` enters strict execution posture, keep its cards under
 
 ## Next Task
 
-Execute `g06.129`: HTTP context modularity audit.
+Execute `g06.130`: HTTP context internal split.

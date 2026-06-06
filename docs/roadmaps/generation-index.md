@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.129`: HTTP context modularity audit.
+Execute `g06.130`: HTTP context internal split.

@@ -48,8 +48,12 @@ that must change, stop and re-enter planning.
 
 ## Current State
 
-`g06.129` is ready.
+`g06.129` is complete.
+
+Artifact:
+
+- [129 artifact](./129-http-context-modularity-audit-artifact.md)
 
 ## Next Task
 
-Execute `g06.129`: HTTP context modularity audit.
+Execute `g06.130`: HTTP context internal split.
