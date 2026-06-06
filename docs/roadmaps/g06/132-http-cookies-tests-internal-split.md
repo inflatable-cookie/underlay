@@ -53,8 +53,12 @@ planning.
 
 ## Current State
 
-`g06.132` is ready.
+`g06.132` is complete.
+
+Artifact:
+
+- [132 artifact](./132-http-cookies-tests-internal-split-artifact.md)
 
 ## Next Task
 
-Execute `g06.132`: HTTP cookies tests internal split.
+Execute `g06.133`: migration-core drift modularity audit.

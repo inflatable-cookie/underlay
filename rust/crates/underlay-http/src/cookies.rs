@@ -26,5 +26,5 @@ pub use typed_values::{CookieDomain, CookieName, CookiePath};
 pub use validation::AuthCookieError;
 
 #[cfg(test)]
-#[path = "tests/cookies_tests.rs"]
+#[path = "tests/cookies_tests/mod.rs"]
 mod tests;

@@ -196,7 +196,8 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.129` is complete as the HTTP context modularity audit.
 - `g06.130` is complete as the HTTP context internal split.
 - `g06.131` is complete as the HTTP cookies tests modularity audit.
-- `g06.132` is next as the HTTP cookies tests internal split.
+- `g06.132` is complete as the HTTP cookies tests internal split.
+- `g06.133` is next as the migration-core drift modularity audit.
 
 ## Planned Runway
 
@@ -336,6 +337,7 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.130`: HTTP context internal split
 - `g06.131`: HTTP cookies tests modularity audit
 - `g06.132`: HTTP cookies tests internal split
+- `g06.133`: migration-core drift modularity audit
 
 ## Consumer Family
 
@@ -484,7 +486,8 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g06.129` is complete.
 - `g06.130` is complete.
 - `g06.131` is complete.
-- `g06.132` is next.
+- `g06.132` is complete.
+- `g06.133` is next.
 
 ## Batch Cards
 
@@ -493,4 +496,4 @@ If `g06` enters strict execution posture, keep its cards under
 
 ## Next Task
 
-Execute `g06.132`: HTTP cookies tests internal split.
+Execute `g06.133`: migration-core drift modularity audit.

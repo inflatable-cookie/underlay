@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.132`: HTTP cookies tests internal split.
+Execute `g06.133`: migration-core drift modularity audit.
