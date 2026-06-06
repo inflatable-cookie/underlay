@@ -68,7 +68,7 @@ fn test_storage_key_module_exports() {
 
 #[test]
 fn test_storage_key_generator_module_export() {
-    let config = StorageKeyConfig::with_prefix("uploads");
+    let config = StorageKeyConfig::with_prefix("uploads").unwrap();
     let generator = StorageKeyGenerator::new(config);
-    assert_eq!(generator.config().base_prefix, "uploads");
+    assert_eq!(generator.config().base_prefix(), "uploads");
 }

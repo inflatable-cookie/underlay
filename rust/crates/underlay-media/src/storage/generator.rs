@@ -55,9 +55,9 @@ impl StorageKeyGenerator {
     ) -> String {
         format!(
             "{}/{}/{}/{}/{}",
-            self.config.base_prefix,
+            self.config.base_prefix(),
             media_id.into(),
-            self.config.versions_dir,
+            self.config.versions_dir_name(),
             version_id.into(),
             filename
         )
@@ -102,12 +102,12 @@ impl StorageKeyGenerator {
     ) -> String {
         format!(
             "{}/{}/{}/{}/{}.{}",
-            self.config.base_prefix,
+            self.config.base_prefix(),
             media_id.into(),
-            self.config.renditions_dir,
+            self.config.renditions_dir_name(),
             version_id.into(),
             rendition_name,
-            self.config.rendition_extension
+            self.config.rendition_extension_name()
         )
     }
 
@@ -173,16 +173,16 @@ impl StorageKeyGenerator {
     ///
     /// Useful for listing or deleting all files for a media item.
     pub fn media_prefix(&self, media_id: impl Into<Uuid>) -> String {
-        format!("{}/{}/", self.config.base_prefix, media_id.into())
+        format!("{}/{}/", self.config.base_prefix(), media_id.into())
     }
 
     /// Generate the key prefix for all versions of a media item.
     pub fn versions_prefix(&self, media_id: impl Into<Uuid>) -> String {
         format!(
             "{}/{}/{}/",
-            self.config.base_prefix,
+            self.config.base_prefix(),
             media_id.into(),
-            self.config.versions_dir
+            self.config.versions_dir_name()
         )
     }
 
@@ -190,9 +190,9 @@ impl StorageKeyGenerator {
     pub fn renditions_prefix(&self, media_id: impl Into<Uuid>) -> String {
         format!(
             "{}/{}/{}/",
-            self.config.base_prefix,
+            self.config.base_prefix(),
             media_id.into(),
-            self.config.renditions_dir
+            self.config.renditions_dir_name()
         )
     }
 
@@ -204,9 +204,9 @@ impl StorageKeyGenerator {
     ) -> String {
         format!(
             "{}/{}/{}/{}/",
-            self.config.base_prefix,
+            self.config.base_prefix(),
             media_id.into(),
-            self.config.renditions_dir,
+            self.config.renditions_dir_name(),
             version_id.into()
         )
     }

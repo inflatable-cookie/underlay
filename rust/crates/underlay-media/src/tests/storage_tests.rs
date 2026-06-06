@@ -62,9 +62,13 @@ fn test_object_key_helpers_reject_unsafe_components() {
 #[test]
 fn test_custom_config() {
     let config = StorageKeyConfig::with_prefix("uploads")
+        .unwrap()
         .versions_dir("original")
+        .unwrap()
         .renditions_dir("thumbnails")
-        .rendition_extension("webp");
+        .unwrap()
+        .rendition_extension("webp")
+        .unwrap();
 
     let generator = StorageKeyGenerator::new(config);
     let media_id = Uuid::nil();
@@ -85,6 +89,21 @@ fn test_custom_config() {
             rendition_key.as_str(),
             "uploads/00000000-0000-0000-0000-000000000000/thumbnails/00000000-0000-0000-0000-000000000000/thumb.webp"
         );
+}
+
+#[test]
+fn test_storage_key_config_rejects_unsafe_components() {
+    assert!(StorageKeyConfig::with_prefix("../media").is_err());
+    assert!(StorageKeyConfig::with_prefix("/media").is_ok());
+    assert!(StorageKeyConfig::default()
+        .versions_dir("../versions")
+        .is_err());
+    assert!(StorageKeyConfig::default()
+        .versions_dir("nested/versions")
+        .is_err());
+    assert!(StorageKeyConfig::default()
+        .rendition_extension("bad/ext")
+        .is_err());
 }
 
 #[test]

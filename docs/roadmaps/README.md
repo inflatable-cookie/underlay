@@ -298,6 +298,7 @@ README surfaces.
 - `g06.189` is complete as the devtools run bundle ref typing artifact
 - `g06.190` is complete as the media storage file key typing artifact
 - `g06.191` is complete as the blob request object key typing artifact
+- `g06.192` is complete as the media storage config validation artifact
 - `g06` is closed as the Rust platform-contract transition and reference-grade
   reset generation
 - `g05` is closed as the shared-page, workflow-template, media capability,
@@ -623,3 +624,4 @@ Closed queue:
 - `g06.189`: devtools run bundle ref typing
 - `g06.190`: media storage file key typing
 - `g06.191`: blob request object key typing
+- `g06.192`: media storage config validation
