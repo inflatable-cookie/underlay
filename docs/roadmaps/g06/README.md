@@ -251,7 +251,8 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.178` is complete as the six-consumer Rust API compatibility sweep.
 - `g06.179` is complete as the Rust hardening release-note and
   upgrade-guidance closeout.
-- `g06.180` is next as the g06 closeout readiness checkpoint.
+- `g06.180` is complete as the g06 closeout readiness checkpoint.
+- `g06` is closed.
 
 ## Planned Runway
 
@@ -635,7 +636,8 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g06.177` is complete.
 - `g06.178` is complete.
 - `g06.179` is complete.
-- `g06.180` is next.
+- `g06.180` is complete.
+- `g06` is closed.
 
 ## Batch Cards
 
@@ -644,4 +646,7 @@ If `g06` enters strict execution posture, keep its cards under
 
 ## Next Task
 
-Execute `g06.180`: g06 closeout readiness checkpoint.
+`g06` is closed.
+
+Re-enter planning before opening the next roadmap lane. Do not continue from
+old `g06` history by implication.

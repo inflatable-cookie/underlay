@@ -51,7 +51,7 @@ README surfaces.
 
 ## Active generation
 
-- `g06`
+- none
 
 ## Current Queue
 
@@ -259,7 +259,9 @@ README surfaces.
 - `g06.177` is complete as the Rust hardening lane closeout and next architecture checkpoint
 - `g06.178` is complete as the six-consumer Rust API compatibility sweep
 - `g06.179` is complete as the Rust hardening release-note and upgrade-guidance closeout
-- `g06.180` is next as the g06 closeout readiness checkpoint
+- `g06.180` is complete as the g06 closeout readiness checkpoint
+- `g06` is closed as the Rust platform-contract transition and reference-grade
+  reset generation
 - `g05` is closed as the shared-page, workflow-template, media capability,
   dev-flow contract, and query-variant convergence generation
 - `g05.024` is complete as the Marking Hub query variant proof and rollout
@@ -299,8 +301,8 @@ README surfaces.
 
 ## Historical Generations
 
-- [g06/README.md](g06/README.md) — active Rust platform-contract transition
-  generation, now continuing into the reference-grade reset
+- [g06/README.md](g06/README.md) — Rust platform-contract transition and
+  reference-grade reset generation (complete)
 - [g05/README.md](g05/README.md) — shared-page, workflow-template, media
   capability, dev-flow contract, and query-variant convergence generation
   (complete)
@@ -375,7 +377,10 @@ README surfaces.
 
 ## Next Task
 
-Execute `g06.180`: g06 closeout readiness checkpoint.
+There is no active roadmap card after `g06.180`.
+
+Re-enter planning before opening the next roadmap lane. Do not continue from
+old `g06` history by implication.
 - `g01.090` is complete for confirming that the remaining public `@decodelabs/underlay/patterns` surface is the true retained workflow stop point rather than unresolved migration debt
 - `g01.091` is complete for confirming the retained `client` package boundary, exposing explicit `client/*` public subpaths for the live feature families, and keeping the root barrel stable as a convenience surface
 - `g01.092` is complete for confirming the retained `nightfire` package boundary, exposing explicit `nightfire/*` public subpaths for the live extension families, and keeping the root barrel stable as a convenience surface
@@ -549,7 +554,7 @@ queue and proving the next honest work belonged in `g02`.
 
 ## Next Task
 
-Execute the live queue:
+Closed queue:
 
 - `g06.165`: TypeScript structural closeout audit
 - `g06.166`: consumer surface compatibility sweep

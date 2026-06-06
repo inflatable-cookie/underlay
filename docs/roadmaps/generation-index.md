@@ -9,7 +9,7 @@ Updated: 2026-06-06
 
 ## Active generations
 
-- [g06 - Rust Platform Contract Transition](g06/README.md)
+- none
 
 ## Generation log
 
@@ -20,10 +20,11 @@ Updated: 2026-06-06
 | `g03` | 2026-05-04 | Template-system generation after `g02.007` closeout | Closed after template-system proof line |
 | `g04` | 2026-05-08 | Independent contract-coverage thread under explicit parallel mode | Closed after contract coverage, assessment, and bounded repairs |
 | `g05` | 2026-05-xx | Shared page, workflow template, and consumer capability generation | Closed after query-variant and consumer capability line |
-| `g06` | 2026-06-05 | Rust platform-contract transition after code-quality audit | Active; now includes the reference-grade reset after user accepted controlled breaking changes across six non-production consumers |
+| `g06` | 2026-06-05 | Rust platform-contract transition after code-quality audit | Closed after the reference-grade reset, Rust hardening lane, six-consumer proof, and upgrade-guidance closeout |
 
 ## Historical generations
 
+- [g06 - Rust Platform Contract Transition](g06/README.md) (complete)
 - [g05 - Shared Page, Workflow Template, And Query Variant Work](g05/README.md) (complete)
 - [g03 - Template System](g03/README.md) (complete)
 - [g04 - Contract Coverage And Assessment](g04/README.md) (complete)
@@ -47,4 +48,6 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.180`: g06 closeout readiness checkpoint.
+There is no active roadmap card after `g06.180`.
+
+Re-enter planning before opening the next roadmap lane.

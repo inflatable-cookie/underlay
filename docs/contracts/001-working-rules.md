@@ -43,11 +43,15 @@ In parallel mode:
 
 Underlay is in parallel mode:
 
-- `g06` owns the Rust platform-contract transition thread
+- `g06` is closed after the Rust platform-contract transition and
+  reference-grade reset thread
 - `g03`, `g04`, and `g05` are closed historical generations
 - there is no active strict master spec at the repo level right now
 
 ## Next Task
 
-Execute `g06.020` and open a new spec only if the reference-grade reset needs
-provisional planning beyond its roadmap and contracts.
+There is no active roadmap card after `g06.180`.
+
+Re-enter planning before opening the next roadmap lane, and open a new spec
+only if the next lane needs provisional planning beyond existing architecture
+and contracts.
