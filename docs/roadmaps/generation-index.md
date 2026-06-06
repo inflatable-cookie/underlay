@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.164`: TypeScript test god-file closeout decision.
+Execute `g06.165`: TypeScript structural closeout audit.

@@ -46,8 +46,36 @@ This is a decision batch.
 
 ## Current State
 
-`g06.164` is ready.
+`g06.164` is complete.
+
+`effigy doctor` reports 9 remaining `scan.god-files` warnings, all in test
+files:
+
+- `ts/tests/nightfire/utils.test.ts`: broad Nightfire value/block/form-data
+  behavior matrix; defer until Nightfire source work changes this surface.
+- `ts/tests/client/sveltekit.test.ts`: integration-style SvelteKit adapter
+  coverage; defer until client adapter work changes this surface.
+- `ts/tests/patterns/forms.test.ts`: form state/enhance/helper behavior
+  coverage; defer until forms source work changes this surface.
+- `ts/tests/patterns/i18n.test.ts`: data-driven formatting matrix; keep as
+  one audit file unless i18n source structure changes.
+- `ts/tests/nightfire/summary-transform.test.ts`: summary transform behavior
+  matrix; defer until Nightfire editor work changes this surface.
+- `ts/tests/server/csp.test.ts`: CSP/security-header behavior matrix; keep
+  together for security audit readability.
+- `ts/tests/patterns/slugify.test.ts`: slug generation/validation/reserved-word
+  matrix; keep as one behavior file unless slug source structure changes.
+- `ts/tests/client/http/auth.test.ts`: auth refresh/concurrency matrix; keep
+  paired with the split HTTP source modules for now.
+- `ts/tests/client/useAuth.test.ts`: auth-store state-machine coverage; defer
+  until auth-store source work changes this surface.
+
+Decision: no immediate test-file split is required for reference-grade
+TypeScript source closeout. The remaining warnings are intentional
+warning-only backlog, not source modularity blockers. Split them only when the
+paired source surface changes, when a file becomes hard to extend, or if future
+doctor policy makes test-size warnings blocking.
 
 ## Next Task
 
-Execute `g06.164`: TypeScript test god-file closeout decision.
+Execute `g06.165`: TypeScript structural closeout audit.
