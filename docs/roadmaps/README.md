@@ -226,7 +226,8 @@ README surfaces.
 - `g06.144` is complete as the HTTP client tests modularity audit
 - `g06.145` is complete as the HTTP client tests internal split
 - `g06.146` is complete as the media workflow modularity audit
-- `g06.147` is next as the media workflow internal split
+- `g06.147` is complete as the media workflow internal split
+- `g06.148` is next as the forms modularity audit
 - `g05` is closed as the shared-page, workflow-template, media capability,
   dev-flow contract, and query-variant convergence generation
 - `g05.024` is complete as the Marking Hub query variant proof and rollout

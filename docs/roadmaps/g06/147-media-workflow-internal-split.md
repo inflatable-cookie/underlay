@@ -51,8 +51,12 @@ behavior need to change, stop and re-enter planning.
 
 ## Current State
 
-`g06.147` is ready.
+`g06.147` is complete.
+
+Artifact:
+
+- [`147-media-workflow-internal-split-artifact.md`](147-media-workflow-internal-split-artifact.md)
 
 ## Next Task
 
-Execute `g06.147`: media workflow internal split.
+Execute `g06.148`: forms modularity audit.
