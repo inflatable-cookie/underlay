@@ -26,8 +26,9 @@ Posture: baseline-routing.
 ## Execution Plan
 
 - [x] `g09.001`: doctor warning triage and Rust structural cleanup.
-- [ ] `g09.002`: TypeScript test god-file split batch.
-- [ ] `g09.003`: doctor warning closeout validation and retained-warning decision.
+- [x] `g09.002`: TypeScript auth test god-file split batch.
+- [ ] `g09.003`: remaining TypeScript test god-file split batch.
+- [ ] `g09.004`: OAuth Rust file cleanup and doctor warning closeout decision.
 
 ## Acceptance Criteria
 
@@ -39,8 +40,9 @@ Posture: baseline-routing.
 ## Current Queue
 
 - `g09.001` is complete.
-- `g09.002` is next.
+- `g09.002` is complete.
+- `g09.003` is next.
 
 ## Next Task
 
-Execute `g09.002`.
+Execute `g09.003`.

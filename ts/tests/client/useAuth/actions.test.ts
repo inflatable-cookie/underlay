@@ -1,151 +1,10 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { get } from "svelte/store";
-import { UnderlayHttpError } from "../../src/client/errors";
-import { createAuthStore } from "../../src/client/useAuth";
+import { UnderlayHttpError } from "../../../src/client/errors";
+import { createAuthStore } from "../../../src/client/useAuth";
+import { makeDeps, makeSession } from "./fixtures";
 
-function makeSession(id = "s1") {
-	return {
-		user: {
-			id: "u1",
-			email: "user@example.com",
-			displayName: "User",
-			status: "active" as const,
-			createdAt: "2026-01-01T00:00:00Z",
-			updatedAt: "2026-01-01T00:00:00Z",
-		},
-		session: {
-			id,
-			userId: "u1",
-			accessTokenFingerprint: "a",
-			refreshTokenFingerprint: "r",
-			accessTokenExpiresAt: "2026-01-01T01:00:00Z",
-			refreshTokenExpiresAt: "2026-01-02T01:00:00Z",
-			createdAt: "2026-01-01T00:00:00Z",
-			lastUsedAt: "2026-01-01T00:00:00Z",
-			ipAddress: null,
-			userAgent: null,
-			status: "active" as const,
-			revocationReason: null,
-			revokedAt: null,
-		},
-		accessToken: `access-${id}`,
-		refreshToken: `refresh-${id}`,
-	};
-}
-
-function makeDeps() {
-	const commands = {
-		session: vi.fn(),
-		refresh: vi.fn(),
-		register: vi.fn(),
-		loginWithPassword: vi.fn(),
-		loginWithPasskey: vi.fn(),
-		logout: vi.fn(),
-	};
-
-	const tokenStore = {
-		setAccessToken: vi.fn(async () => {}),
-		setRefreshToken: vi.fn(async () => {}),
-		clear: vi.fn(async () => {}),
-		getAccessToken: vi.fn(() => null),
-		getRefreshToken: vi.fn(() => null),
-	};
-
-	return { commands, tokenStore };
-}
-
-describe("client/useAuth", () => {
-	it("initializes as authenticated when session request succeeds", async () => {
-		const { commands, tokenStore } = makeDeps();
-		const session = makeSession("init");
-		commands.session.mockResolvedValue(session);
-		const auth = createAuthStore({ commands: commands as any, tokenStore: tokenStore as any });
-
-		await auth.init();
-
-		expect(tokenStore.setAccessToken).toHaveBeenCalledWith("access-init");
-		expect(tokenStore.setRefreshToken).toHaveBeenCalledWith("refresh-init");
-		expect(get(auth.state)).toEqual({
-			status: "authenticated",
-			session,
-			loading: false,
-			error: null,
-		});
-	});
-
-	it("refreshes on init when session is unauthorized", async () => {
-		const { commands, tokenStore } = makeDeps();
-		const unauthorized = new UnderlayHttpError(401, "Unauthorized");
-		const refreshed = makeSession("refresh");
-		commands.session.mockRejectedValue(unauthorized);
-		commands.refresh.mockResolvedValue(refreshed);
-		const auth = createAuthStore({ commands: commands as any, tokenStore: tokenStore as any });
-
-		await auth.init();
-
-		expect(commands.refresh).toHaveBeenCalledOnce();
-		expect(get(auth.state).status).toBe("authenticated");
-		expect(tokenStore.clear).not.toHaveBeenCalled();
-	});
-
-	it("becomes anonymous when refresh on init fails", async () => {
-		const { commands, tokenStore } = makeDeps();
-		const unauthorized = new UnderlayHttpError(401, "Unauthorized");
-		const refreshErr = new UnderlayHttpError(401, "Refresh failed");
-		commands.session.mockRejectedValue(unauthorized);
-		commands.refresh.mockRejectedValue(refreshErr);
-		const auth = createAuthStore({ commands: commands as any, tokenStore: tokenStore as any });
-
-		await auth.init();
-
-		expect(tokenStore.clear).toHaveBeenCalledOnce();
-		expect(get(auth.state)).toEqual({
-			status: "anonymous",
-			session: null,
-			loading: false,
-			error: refreshErr,
-		});
-	});
-
-	it("clears tokens and keeps 401 error when refreshOnUnauthorized is disabled", async () => {
-		const { commands, tokenStore } = makeDeps();
-		const unauthorized = new UnderlayHttpError(401, "Unauthorized");
-		commands.session.mockRejectedValue(unauthorized);
-		const auth = createAuthStore({
-			commands: commands as any,
-			tokenStore: tokenStore as any,
-			refreshOnUnauthorized: false,
-		});
-
-		await auth.init();
-
-		expect(commands.refresh).not.toHaveBeenCalled();
-		expect(tokenStore.clear).toHaveBeenCalledOnce();
-		expect(get(auth.state)).toEqual({
-			status: "anonymous",
-			session: null,
-			loading: false,
-			error: unauthorized,
-		});
-	});
-
-	it("sets anonymous with null error when refresh throws non-http error during init", async () => {
-		const { commands, tokenStore } = makeDeps();
-		commands.session.mockRejectedValue(new UnderlayHttpError(401, "Unauthorized"));
-		commands.refresh.mockRejectedValue(new Error("refresh exploded"));
-		const auth = createAuthStore({ commands: commands as any, tokenStore: tokenStore as any });
-
-		await auth.init();
-
-		expect(tokenStore.clear).toHaveBeenCalledOnce();
-		expect(get(auth.state)).toEqual({
-			status: "anonymous",
-			session: null,
-			loading: false,
-			error: null,
-		});
-	});
-
+describe("client/useAuth actions", () => {
 	it("register/login flows set authenticated state and preserve non-http errors", async () => {
 		const { commands, tokenStore } = makeDeps();
 		const auth = createAuthStore({ commands: commands as any, tokenStore: tokenStore as any });
@@ -273,22 +132,6 @@ describe("client/useAuth", () => {
 			session: null,
 			loading: false,
 			error: null,
-		});
-	});
-
-	it("init handles non-auth errors as anonymous with error payload", async () => {
-		const { commands, tokenStore } = makeDeps();
-		const err = new UnderlayHttpError(500, "Server Error");
-		commands.session.mockRejectedValue(err);
-		const auth = createAuthStore({ commands: commands as any, tokenStore: tokenStore as any, refreshOnUnauthorized: false });
-
-		await auth.init();
-		expect(tokenStore.clear).not.toHaveBeenCalled();
-		expect(get(auth.state)).toEqual({
-			status: "anonymous",
-			session: null,
-			loading: false,
-			error: err,
 		});
 	});
 });
