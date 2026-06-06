@@ -49,7 +49,9 @@ fn extract_csrf_token_present() {
 
 #[test]
 fn extract_refresh_token_with_prefix() {
-    let config = AuthCookieConfig::default().with_cookie_prefix("acme_");
+    let config = AuthCookieConfig::default()
+        .try_with_cookie_prefix("acme_")
+        .unwrap();
     let mut headers = HeaderMap::new();
     headers.insert(
         header::COOKIE,
@@ -62,7 +64,9 @@ fn extract_refresh_token_with_prefix() {
 
 #[test]
 fn extract_csrf_token_with_prefix() {
-    let config = AuthCookieConfig::default().with_cookie_prefix("acme_");
+    let config = AuthCookieConfig::default()
+        .try_with_cookie_prefix("acme_")
+        .unwrap();
     let mut headers = HeaderMap::new();
     headers.insert(
         header::COOKIE,

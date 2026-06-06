@@ -2,7 +2,9 @@ use super::*;
 
 #[test]
 fn custom_cookie_prefix() {
-    let config = AuthCookieConfig::default().with_cookie_prefix("acme_");
+    let config = AuthCookieConfig::default()
+        .try_with_cookie_prefix("acme_")
+        .unwrap();
     let cookie = refresh_token_cookie("test-token", &config).unwrap();
 
     assert!(cookie.contains("acme_refresh_token=test-token"));
@@ -12,53 +14,56 @@ fn custom_cookie_prefix() {
 
 #[test]
 fn rejects_invalid_cookie_prefix() {
-    let config = AuthCookieConfig::default().with_cookie_prefix("bad;");
-
     assert_eq!(
-        refresh_token_cookie("test-token", &config),
-        Err(AuthCookieError::InvalidCookiePrefix)
+        AuthCookieConfig::default()
+            .try_with_cookie_prefix("bad;")
+            .unwrap_err(),
+        AuthCookieError::InvalidCookiePrefix
     );
 }
 
 #[test]
 fn rejects_invalid_refresh_token_path() {
-    let config = AuthCookieConfig::default().with_refresh_token_path("api/auth");
-
     assert_eq!(
-        refresh_token_cookie("test-token", &config),
-        Err(AuthCookieError::InvalidPath)
+        AuthCookieConfig::default()
+            .try_with_refresh_token_path("api/auth")
+            .unwrap_err(),
+        AuthCookieError::InvalidPath
     );
 }
 
 #[test]
 fn rejects_invalid_domain() {
-    let config = AuthCookieConfig::default().with_domain("bad;domain");
-
     assert_eq!(
-        refresh_token_cookie("test-token", &config),
-        Err(AuthCookieError::InvalidDomain)
+        AuthCookieConfig::default()
+            .try_with_domain("bad;domain")
+            .unwrap_err(),
+        AuthCookieError::InvalidDomain
     );
 }
 
 #[test]
 fn rejects_invalid_domain_label() {
-    let config = AuthCookieConfig::default().with_domain("example-.com");
-
     assert_eq!(
-        refresh_token_cookie("test-token", &config),
-        Err(AuthCookieError::InvalidDomain)
+        AuthCookieConfig::default()
+            .try_with_domain("example-.com")
+            .unwrap_err(),
+        AuthCookieError::InvalidDomain
     );
 }
 
 #[test]
 fn builder_chain() {
     let config = AuthCookieConfig::new()
-        .with_domain(".example.com")
+        .try_with_domain(".example.com")
+        .unwrap()
         .with_secure(true)
         .with_refresh_token_max_age(14 * 24 * 60 * 60)
         .with_same_site(SameSite::Strict)
-        .with_cookie_prefix("app_")
-        .with_refresh_token_path("/auth");
+        .try_with_cookie_prefix("app_")
+        .unwrap()
+        .try_with_refresh_token_path("/auth")
+        .unwrap();
 
     assert_eq!(config.domain(), Some(".example.com"));
     assert!(config.secure());

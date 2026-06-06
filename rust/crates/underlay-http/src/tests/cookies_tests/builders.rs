@@ -56,7 +56,9 @@ fn same_site_strict() {
 
 #[test]
 fn custom_refresh_token_path() {
-    let config = AuthCookieConfig::default().with_refresh_token_path("/api/auth");
+    let config = AuthCookieConfig::default()
+        .try_with_refresh_token_path("/api/auth")
+        .unwrap();
     let cookie = refresh_token_cookie("test-token", &config).unwrap();
 
     assert!(cookie.contains("Path=/api/auth"));

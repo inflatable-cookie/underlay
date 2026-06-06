@@ -244,8 +244,10 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.174` is complete as the media Postgres config unchecked constructor
   retirement batch.
 - `g06.175` is complete as the post-hardening Rust quality checkpoint.
-- `g06.176` is next as the auth cookie unchecked string setter retirement
+- `g06.176` is complete as the auth cookie unchecked string setter retirement
   batch.
+- `g06.177` is next as the Rust hardening lane closeout and next architecture
+  checkpoint.
 
 ## Planned Runway
 
@@ -429,6 +431,7 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.174`: media Postgres config unchecked constructor retirement
 - `g06.175`: post-hardening Rust quality checkpoint
 - `g06.176`: auth cookie unchecked string setter retirement
+- `g06.177`: Rust hardening lane closeout and next architecture checkpoint
 
 ## Consumer Family
 
@@ -621,7 +624,8 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g06.173` is complete.
 - `g06.174` is complete.
 - `g06.175` is complete.
-- `g06.176` is next.
+- `g06.176` is complete.
+- `g06.177` is next.
 
 ## Batch Cards
 
@@ -630,4 +634,4 @@ If `g06` enters strict execution posture, keep its cards under
 
 ## Next Task
 
-Execute `g06.176`: auth cookie unchecked string setter retirement.
+Execute `g06.177`: Rust hardening lane closeout and next architecture checkpoint.

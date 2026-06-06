@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.176`: auth cookie unchecked string setter retirement.
+Execute `g06.177`: Rust hardening lane closeout and next architecture checkpoint.

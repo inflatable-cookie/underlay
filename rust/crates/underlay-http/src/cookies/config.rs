@@ -66,12 +66,6 @@ impl AuthCookieConfig {
         }
     }
 
-    /// Set the cookie domain.
-    pub fn with_domain(mut self, domain: impl Into<String>) -> Self {
-        self.domain = Some(domain.into());
-        self
-    }
-
     /// Set a pre-validated cookie domain.
     pub fn with_cookie_domain(mut self, domain: CookieDomain) -> Self {
         self.domain = Some(domain.to_string());
@@ -102,15 +96,6 @@ impl AuthCookieConfig {
         self
     }
 
-    /// Set a prefix for cookie names.
-    ///
-    /// E.g., `with_cookie_prefix("acme_")` produces cookies named
-    /// "acme_refresh_token" and "acme_logged_in".
-    pub fn with_cookie_prefix(mut self, prefix: impl Into<String>) -> Self {
-        self.cookie_prefix = prefix.into();
-        self
-    }
-
     /// Validate and set a prefix for cookie names.
     pub fn try_with_cookie_prefix(
         mut self,
@@ -119,14 +104,6 @@ impl AuthCookieConfig {
         validation::validate_cookie_name_prefix(prefix.as_ref())?;
         self.cookie_prefix = prefix.as_ref().to_string();
         Ok(self)
-    }
-
-    /// Set the path for the refresh token cookie.
-    ///
-    /// Default is "/v1/auth". Set to "/" to send refresh token with all requests.
-    pub fn with_refresh_token_path(mut self, path: impl Into<String>) -> Self {
-        self.refresh_token_path = path.into();
-        self
     }
 
     /// Set a pre-validated path for the refresh token cookie.
