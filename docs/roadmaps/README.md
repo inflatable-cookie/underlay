@@ -206,7 +206,8 @@ README surfaces.
 - `g06.124` is complete as the media Nightfire walk internal split
 - `g06.125` is complete as the migration-core verification modularity audit
 - `g06.126` is complete as the migration-core verification internal split
-- `g06.127` is next as the migration-core test support modularity audit
+- `g06.127` is complete as the migration-core test support modularity audit
+- `g06.128` is next as the migration-core test support internal split
 - `g05` is closed as the shared-page, workflow-template, media capability,
   dev-flow contract, and query-variant convergence generation
 - `g05.024` is complete as the Marking Hub query variant proof and rollout

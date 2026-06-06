@@ -50,8 +50,12 @@ production migration behavior, stop and re-enter planning.
 
 ## Current State
 
-`g06.127` is ready.
+`g06.127` is complete.
+
+Artifact:
+
+- [127 artifact](./127-migration-core-test-support-modularity-audit-artifact.md)
 
 ## Next Task
 
-Execute `g06.127`: migration-core test support modularity audit.
+Execute `g06.128`: migration-core test support internal split.
