@@ -646,3 +646,4 @@ Closed queue:
 - `g06.205`: outbox config field retirement
 - `g06.206`: security alert config field retirement
 - `g06.207`: job runner config field retirement
+- `g06.208`: scheduler config field retirement

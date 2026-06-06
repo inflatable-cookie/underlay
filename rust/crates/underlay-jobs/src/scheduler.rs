@@ -23,7 +23,7 @@ pub const DEFAULT_SCHEDULER_TICK_INTERVAL_SECS: u64 = 60;
 pub struct SchedulerConfig {
     /// Interval between scheduler ticks in seconds.
     /// Default: 60
-    pub tick_interval_secs: u64,
+    tick_interval_secs: u64,
 }
 
 impl Default for SchedulerConfig {
@@ -44,6 +44,11 @@ impl SchedulerConfig {
     pub fn with_tick_interval_secs(mut self, seconds: u64) -> Self {
         self.tick_interval_secs = seconds;
         self
+    }
+
+    /// Get the tick interval in seconds.
+    pub fn tick_interval_secs(&self) -> u64 {
+        self.tick_interval_secs
     }
 
     /// Get the tick interval as a Duration.
