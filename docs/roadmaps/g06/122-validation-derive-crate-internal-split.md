@@ -51,8 +51,12 @@ generated behavior must change, stop and re-enter planning.
 
 ## Current State
 
-`g06.122` is ready.
+`g06.122` is complete.
+
+Artifact:
+
+- [122 artifact](./122-validation-derive-crate-internal-split-artifact.md)
 
 ## Next Task
 
-Execute `g06.122`: validation derive crate internal split.
+Execute `g06.123`: media Nightfire walk modularity audit.
