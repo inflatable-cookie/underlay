@@ -230,7 +230,8 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.163` is complete as the pagination source god-file split.
 - `g06.164` is complete as the TypeScript test god-file closeout decision.
 - `g06.165` is complete as the TypeScript structural closeout audit.
-- `g06.166` is next as the consumer surface compatibility sweep.
+- `g06.166` is complete as the consumer surface compatibility sweep.
+- `g06.167` is next as the Acowtancy list-query consumer drift repair.
 
 ## Planned Runway
 
@@ -404,6 +405,7 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.164`: TypeScript test god-file closeout decision
 - `g06.165`: TypeScript structural closeout audit
 - `g06.166`: consumer surface compatibility sweep
+- `g06.167`: Acowtancy list-query consumer drift repair
 
 ## Consumer Family
 
@@ -586,7 +588,8 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g06.163` is complete.
 - `g06.164` is complete.
 - `g06.165` is complete.
-- `g06.166` is next.
+- `g06.166` is complete.
+- `g06.167` is next.
 
 ## Batch Cards
 
@@ -595,4 +598,4 @@ If `g06` enters strict execution posture, keep its cards under
 
 ## Next Task
 
-Execute `g06.166`: consumer surface compatibility sweep.
+Execute `g06.167`: Acowtancy list-query consumer drift repair.

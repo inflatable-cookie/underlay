@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.166`: consumer surface compatibility sweep.
+Execute `g06.167`: Acowtancy list-query consumer drift repair.

@@ -4,6 +4,11 @@
   "private": true,
   "type": "module",
   "exports": {
+    ".": {
+      "svelte": "./ts/src/index.ts",
+      "types": "./ts/src/index.ts",
+      "default": "./ts/src/index.ts"
+    },
     "./patterns": {
       "svelte": "./ts/src/patterns/index.ts",
       "types": "./ts/src/patterns/index.ts",
@@ -58,6 +63,16 @@
       "svelte": "./ts/src/runtime/ai.ts",
       "types": "./ts/src/runtime/ai.ts",
       "default": "./ts/src/runtime/ai.ts"
+    },
+    "./runtime": {
+      "svelte": "./ts/src/runtime/index.ts",
+      "types": "./ts/src/runtime/index.ts",
+      "default": "./ts/src/runtime/index.ts"
+    },
+    "./nightfire": {
+      "svelte": "./ts/src/nightfire/index.ts",
+      "types": "./ts/src/nightfire/index.ts",
+      "default": "./ts/src/nightfire/index.ts"
     },
     "./nightfire/editor": {
       "svelte": "./ts/src/nightfire/editor.ts",
@@ -183,6 +198,10 @@
     "./client/useAuth": {
       "types": "./ts/src/client/useAuth.ts",
       "default": "./ts/src/client/useAuth.ts"
+    },
+    "./client": {
+      "types": "./ts/src/client/index.ts",
+      "default": "./ts/src/client/index.ts"
     },
     "./testing": {
       "types": "./ts/src/testing/index.ts",

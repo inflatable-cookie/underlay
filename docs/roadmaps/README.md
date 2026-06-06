@@ -245,7 +245,8 @@ README surfaces.
 - `g06.163` is complete as the pagination source god-file split
 - `g06.164` is complete as the TypeScript test god-file closeout decision
 - `g06.165` is complete as the TypeScript structural closeout audit
-- `g06.166` is next as the consumer surface compatibility sweep
+- `g06.166` is complete as the consumer surface compatibility sweep
+- `g06.167` is next as the Acowtancy list-query consumer drift repair
 - `g05` is closed as the shared-page, workflow-template, media capability,
   dev-flow contract, and query-variant convergence generation
 - `g05.024` is complete as the Marking Hub query variant proof and rollout
@@ -361,7 +362,7 @@ README surfaces.
 
 ## Next Task
 
-Execute `g06.166`: consumer surface compatibility sweep.
+Execute `g06.167`: Acowtancy list-query consumer drift repair.
 - `g01.090` is complete for confirming that the remaining public `@decodelabs/underlay/patterns` surface is the true retained workflow stop point rather than unresolved migration debt
 - `g01.091` is complete for confirming the retained `client` package boundary, exposing explicit `client/*` public subpaths for the live feature families, and keeping the root barrel stable as a convenience surface
 - `g01.092` is complete for confirming the retained `nightfire` package boundary, exposing explicit `nightfire/*` public subpaths for the live extension families, and keeping the root barrel stable as a convenience surface
@@ -539,3 +540,4 @@ Execute the live queue:
 
 - `g06.165`: TypeScript structural closeout audit
 - `g06.166`: consumer surface compatibility sweep
+- `g06.167`: Acowtancy list-query consumer drift repair

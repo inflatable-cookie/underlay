@@ -47,8 +47,41 @@ If drift is found, follow-up cards may include consumer updates.
 
 ## Current State
 
-`g06.166` is ready.
+`g06.166` is complete.
+
+Consumer sweep result:
+
+- `underlay-reference`: root health exposed an Underlay Svelte type regression
+  in `RelationSelector/drilldown-context.svelte.ts`; fixed, and
+  `acme-admin/check` now passes.
+- `contact-patch`: root health passed.
+- `compli-me`: root health passed.
+- `acowtancy`: root health fails on existing list-query contract drift in
+  `cattle-grid/src/commands/learning/modules.ts`; focused `froyo/health` and
+  `cattle-grid/health` pass.
+- `songsprout`: root health passed.
+- `loophole/composer`: root health passed; transient Bun cache install warnings
+  were reported, but the health command completed successfully.
+
+Underlay-side fixes landed in this batch:
+
+- imported the missing `DrillDownBreadcrumb` type in the RelationSelector
+  drill-down context module
+- added explicit compatibility exports for `.`, `./client`, `./runtime`, and
+  `./nightfire`
+- kept bare `./client`, `./runtime`, and `./nightfire` narrow so Node tests do
+  not pull SvelteKit virtual modules, Svelte runes, or `.svelte` components
+  accidentally
+- added component-test aliases for SvelteKit `$app/*` virtual modules
+- added a package compatibility test for retained bare subpaths
+
+Consumer drift:
+
+- Acowtancy Cattle Grid still has page-vs-cursor payload drift in
+  `tests/learning-modules-admin-cache.test.ts`.
+- Acowtancy root health still flags offset-style list-query parameters in
+  `cattle-grid/src/commands/learning/modules.ts`.
 
 ## Next Task
 
-Execute `g06.166`: consumer surface compatibility sweep.
+Execute `g06.167`: Acowtancy list-query consumer drift repair.
