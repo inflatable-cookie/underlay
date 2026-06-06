@@ -49,8 +49,12 @@ re-enter planning under the compatibility rollout contract.
 
 ## Current State
 
-`g06.148` is ready.
+`g06.148` is complete.
+
+Artifact:
+
+- [`148-forms-modularity-audit-artifact.md`](148-forms-modularity-audit-artifact.md)
 
 ## Next Task
 
-Execute `g06.148`: forms modularity audit.
+Execute `g06.149`: forms internal split.

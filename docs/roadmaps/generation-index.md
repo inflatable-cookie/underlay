@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.148`: forms modularity audit.
+Execute `g06.149`: forms internal split.
