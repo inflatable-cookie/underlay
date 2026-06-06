@@ -49,8 +49,12 @@ consumer app updates before continuing.
 
 ## Current State
 
-`g06.141` is ready.
+`g06.141` is complete.
+
+Artifact:
+
+- [141 artifact](./141-rust-structural-closeout-audit-artifact.md)
 
 ## Next Task
 
-Execute `g06.141`: Rust structural closeout audit.
+Execute `g06.142`: Rust doctor marker cleanup.

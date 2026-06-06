@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.141`: Rust structural closeout audit.
+Execute `g06.142`: Rust doctor marker cleanup.
