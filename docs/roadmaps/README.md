@@ -51,10 +51,12 @@ README surfaces.
 
 ## Active generation
 
-- none
+- `g07`
 
 ## Current Queue
 
+- `g07.001` is next as the TS runtime and workflow ownership inventory
+- `g07` is active as the TS runtime and workflow boundary hardening generation
 - `g06.001` is complete as the Rust platform contract transition and public API
   inventory gate
 - `g06.002` is complete as the typed safety primitive and construction-boundary
@@ -301,6 +303,8 @@ README surfaces.
 
 ## Historical Generations
 
+- [g07/README.md](g07/README.md) — active TS runtime and workflow boundary
+  hardening generation
 - [g06/README.md](g06/README.md) — Rust platform-contract transition and
   reference-grade reset generation (complete)
 - [g05/README.md](g05/README.md) — shared-page, workflow-template, media
@@ -377,10 +381,7 @@ README surfaces.
 
 ## Next Task
 
-There is no active roadmap card after `g06.180`.
-
-Re-enter planning before opening the next roadmap lane. Do not continue from
-old `g06` history by implication.
+Execute `g07.001`: TS runtime and workflow ownership inventory.
 - `g01.090` is complete for confirming that the remaining public `@decodelabs/underlay/patterns` surface is the true retained workflow stop point rather than unresolved migration debt
 - `g01.091` is complete for confirming the retained `client` package boundary, exposing explicit `client/*` public subpaths for the live feature families, and keeping the root barrel stable as a convenience surface
 - `g01.092` is complete for confirming the retained `nightfire` package boundary, exposing explicit `nightfire/*` public subpaths for the live extension families, and keeping the root barrel stable as a convenience surface

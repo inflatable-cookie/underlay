@@ -19,5 +19,5 @@ Owner: repo maintainers
 
 ## Next Task
 
-Execute `g06.020` and keep the reset tied to the reference-grade architecture
-boundary.
+Execute `g07.001` and keep TS boundary hardening tied to the reference-grade
+architecture boundary.

@@ -197,4 +197,4 @@ Stop and re-enter planning if:
 
 ## Next Task
 
-Execute `g06.020`: Public Rust surface diet and consumer import matrix.
+Execute `g07.001`: TS runtime and workflow ownership inventory.

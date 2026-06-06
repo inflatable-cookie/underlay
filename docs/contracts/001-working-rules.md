@@ -43,6 +43,7 @@ In parallel mode:
 
 Underlay is in parallel mode:
 
+- `g07` owns the TS runtime and workflow boundary hardening thread
 - `g06` is closed after the Rust platform-contract transition and
   reference-grade reset thread
 - `g03`, `g04`, and `g05` are closed historical generations
@@ -50,8 +51,7 @@ Underlay is in parallel mode:
 
 ## Next Task
 
-There is no active roadmap card after `g06.180`.
+Execute `g07.001`: TS runtime and workflow ownership inventory.
 
-Re-enter planning before opening the next roadmap lane, and open a new spec
-only if the next lane needs provisional planning beyond existing architecture
-and contracts.
+Open a new spec only if the next lane needs provisional planning beyond
+existing architecture and contracts.

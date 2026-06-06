@@ -98,6 +98,6 @@ Do not promote a system into active implementation-assessment work until:
 
 ## Next Task
 
-The active contract wave is live inside `g06`.
+The active contract wave is live inside `g07`.
 
-Execute `g06.020`: Public Rust surface diet and consumer import matrix.
+Execute `g07.001`: TS runtime and workflow ownership inventory.
