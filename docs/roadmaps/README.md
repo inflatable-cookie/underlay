@@ -71,6 +71,7 @@ README surfaces.
 - `g07.014` is complete as the remaining TS compatibility export audit
 - `g07.015` is complete as the runtime data subpath split
 - `g07.016` is complete as the runtime data focused consumer migration
+- `g07.017` is complete as the runtime relations boundary audit
 - `g07` is complete as the TS runtime and workflow boundary hardening generation
 - `g06.001` is complete as the Rust platform contract transition and public API
   inventory gate

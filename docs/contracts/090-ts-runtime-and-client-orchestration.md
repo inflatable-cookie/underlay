@@ -337,11 +337,12 @@ Apps own:
   some of them belong back in lower transport authority only
 - does the split between runtime and patterns still help consuming apps, or is
   it now mostly historical packaging residue
-- which consumer import families should move from aggregate `runtime/data` to
-  the focused collection/reorder/selection subpaths
-- which controller/helper families in `runtime/relations` and `runtime/media`
-  actually belong in the later shared-patterns contract instead of staying in
-  runtime
+- which controller/helper families in `runtime/media` actually belong in the
+  later shared-patterns contract instead of staying in runtime
+
+`runtime/relations` was re-audited in `g07.017` and remains one coherent
+runtime path. Relation selector context, selector types, drill-down contracts,
+and local dataset adapters are one workflow contract today.
 
 ## Next Task
 

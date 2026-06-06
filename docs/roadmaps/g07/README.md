@@ -59,6 +59,7 @@ surface easier for consuming apps to understand, import, test, and extend.
 - `g07.014`: remaining TS compatibility export audit
 - `g07.015`: runtime data subpath split
 - `g07.016`: runtime data focused consumer migration
+- `g07.017`: runtime relations boundary audit
 
 ## Consumer Family
 
@@ -94,10 +95,10 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g07.014` is complete as the remaining TS compatibility export audit.
 - `g07.015` is complete as the runtime data subpath split.
 - `g07.016` is complete as the runtime data focused consumer migration.
+- `g07.017` is complete as the runtime relations boundary audit.
 - `g07` is complete.
 
 ## Next Task
 
-No active `g07` task remains. Keep `runtime/data` retained unless a future
-bounded card proves unknown-caller risk is acceptable and the aggregate can be
-retired deliberately.
+No active `g07` task remains. Keep `runtime/relations` whole unless a future
+consumer migration creates clear evidence for a narrower public path.
