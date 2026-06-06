@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.139`: validation derive tests modularity audit.
+Execute `g06.140`: validation derive tests internal split.

@@ -49,8 +49,12 @@ must change, stop and re-enter planning.
 
 ## Current State
 
-`g06.139` is ready.
+`g06.139` is complete.
+
+Artifact:
+
+- [139 artifact](./139-validation-derive-tests-modularity-audit-artifact.md)
 
 ## Next Task
 
-Execute `g06.139`: validation derive tests modularity audit.
+Execute `g06.140`: validation derive tests internal split.
