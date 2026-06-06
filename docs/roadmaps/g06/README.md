@@ -213,7 +213,8 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.146` is complete as the media workflow modularity audit.
 - `g06.147` is complete as the media workflow internal split.
 - `g06.148` is complete as the forms modularity audit.
-- `g06.149` is next as the forms internal split.
+- `g06.149` is complete as the forms internal split.
+- `g06.150` is next as the template types modularity audit.
 
 ## Planned Runway
 
@@ -370,6 +371,7 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.147`: media workflow internal split
 - `g06.148`: forms modularity audit
 - `g06.149`: forms internal split
+- `g06.150`: template types modularity audit
 
 ## Consumer Family
 
@@ -535,7 +537,8 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g06.146` is complete.
 - `g06.147` is complete.
 - `g06.148` is complete.
-- `g06.149` is next.
+- `g06.149` is complete.
+- `g06.150` is next.
 
 ## Batch Cards
 
@@ -544,4 +547,4 @@ If `g06` enters strict execution posture, keep its cards under
 
 ## Next Task
 
-Execute `g06.149`: forms internal split.
+Execute `g06.150`: template types modularity audit.

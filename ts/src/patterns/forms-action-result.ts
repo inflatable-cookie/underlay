@@ -1,4 +1,4 @@
-import type { FieldErrors } from "./forms";
+import type { FieldErrors } from "./forms/types";
 
 /** SvelteKit ActionResult type (simplified) */
 export interface ActionResult {
@@ -18,7 +18,7 @@ export interface ActionFailureResult {
  * Parse action failure payload into a normalized message + field error map.
  */
 export function resolveActionFailureResult(
-  data: Record<string, unknown> = {}
+  data: Record<string, unknown> = {},
 ): ActionFailureResult {
   const message =
     typeof data.error === "string"
@@ -34,7 +34,7 @@ export function resolveActionFailureResult(
     !Array.isArray(data.fieldErrors)
   ) {
     for (const [key, value] of Object.entries(
-      data.fieldErrors as Record<string, unknown>
+      data.fieldErrors as Record<string, unknown>,
     )) {
       if (typeof value === "string") {
         fieldErrors[key] = value;
@@ -44,6 +44,6 @@ export function resolveActionFailureResult(
 
   return {
     message,
-    fieldErrors
+    fieldErrors,
   };
 }

@@ -52,8 +52,12 @@ change, stop and re-enter planning.
 
 ## Current State
 
-`g06.149` is ready.
+`g06.149` is complete.
+
+Artifact:
+
+- [`149-forms-internal-split-artifact.md`](149-forms-internal-split-artifact.md)
 
 ## Next Task
 
-Execute `g06.149`: forms internal split.
+Execute `g06.150`: template types modularity audit.
