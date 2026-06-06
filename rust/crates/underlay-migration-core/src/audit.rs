@@ -98,7 +98,7 @@ pub fn build_audit_artifact(report: &PipelineRunReport) -> AuditArtifact {
                 report
                     .integrity_gate
                     .policy
-                    .require_signature_verification
+                    .require_signature_verification()
                     .to_string(),
             ),
         ]),

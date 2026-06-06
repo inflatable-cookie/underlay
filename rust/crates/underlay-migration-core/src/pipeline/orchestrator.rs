@@ -86,8 +86,10 @@ where
             )
             .await?;
 
-        let integrity_gate =
-            evaluate_integrity_gate(&ctx.policy.integrity_policy, &ctx.policy.integrity_evidence);
+        let integrity_gate = evaluate_integrity_gate(
+            ctx.policy.integrity_policy(),
+            ctx.policy.integrity_evidence(),
+        );
         if !integrity_gate.passed {
             let message = integrity_gate
                 .blockers

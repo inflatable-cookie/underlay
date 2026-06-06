@@ -19,7 +19,10 @@ pub(super) fn build_decision_candidate(
     prompt_version: &str,
 ) -> DecisionCandidate {
     let decision_type = DECISION_TYPE.to_string();
-    let threshold = ctx.policy.ai_threshold_policy.threshold_for(&decision_type);
+    let threshold = ctx
+        .policy
+        .ai_threshold_policy()
+        .threshold_for(&decision_type);
     let input = DecisionFingerprintInput {
         canonical_decision_input: record.clone(),
         decision_type: decision_type.clone(),

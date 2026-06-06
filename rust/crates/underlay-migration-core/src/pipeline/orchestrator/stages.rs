@@ -215,7 +215,7 @@ where
             transform_checksum: transform_checksum(transform_output)?,
             materialize: materialize_output.clone(),
             assets: assets_output.clone(),
-            rules: ctx.policy.verification_rules.clone(),
+            rules: ctx.policy.verification_rules().to_vec(),
         };
 
         let verification = verify_stage(&self.plugin, ctx, &verification_input).await?;

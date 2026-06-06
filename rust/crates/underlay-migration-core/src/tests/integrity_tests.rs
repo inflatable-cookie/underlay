@@ -8,13 +8,7 @@ use crate::{
 #[test]
 fn integrity_gate_blocks_when_required_evidence_missing() {
     let gate = evaluate_integrity_gate(
-        &IntegrityPolicy {
-            require_digest_verification: true,
-            require_sidecar_checksum_verification: true,
-            require_signature_verification: true,
-            signature_enforcement_phase: SignatureEnforcementPhase::Observe,
-            run_scope: IntegrityRunScope::Demo,
-        },
+        &IntegrityPolicy::default().with_signature_verification(true),
         &IntegrityEvidence {
             digest_verified: false,
             sidecar_checksums_verified: false,
@@ -32,13 +26,7 @@ fn integrity_gate_blocks_when_required_evidence_missing() {
 #[test]
 fn integrity_gate_passes_with_required_evidence() {
     let gate = evaluate_integrity_gate(
-        &IntegrityPolicy {
-            require_digest_verification: true,
-            require_sidecar_checksum_verification: true,
-            require_signature_verification: false,
-            signature_enforcement_phase: SignatureEnforcementPhase::Observe,
-            run_scope: IntegrityRunScope::Demo,
-        },
+        &IntegrityPolicy::default(),
         &IntegrityEvidence {
             digest_verified: true,
             sidecar_checksums_verified: true,
@@ -54,13 +42,9 @@ fn integrity_gate_passes_with_required_evidence() {
 #[test]
 fn integrity_gate_enforces_signatures_in_preprod_phase() {
     let gate = evaluate_integrity_gate(
-        &IntegrityPolicy {
-            require_digest_verification: true,
-            require_sidecar_checksum_verification: true,
-            require_signature_verification: false,
-            signature_enforcement_phase: SignatureEnforcementPhase::EnforcePreprod,
-            run_scope: IntegrityRunScope::PreProduction,
-        },
+        &IntegrityPolicy::default()
+            .with_signature_enforcement_phase(SignatureEnforcementPhase::EnforcePreprod)
+            .with_run_scope(IntegrityRunScope::PreProduction),
         &IntegrityEvidence {
             digest_verified: true,
             sidecar_checksums_verified: true,
@@ -80,13 +64,8 @@ fn integrity_gate_enforces_signatures_in_preprod_phase() {
 #[test]
 fn integrity_gate_enforces_signatures_for_all_scopes() {
     let gate = evaluate_integrity_gate(
-        &IntegrityPolicy {
-            require_digest_verification: true,
-            require_sidecar_checksum_verification: true,
-            require_signature_verification: false,
-            signature_enforcement_phase: SignatureEnforcementPhase::EnforceAll,
-            run_scope: IntegrityRunScope::Demo,
-        },
+        &IntegrityPolicy::default()
+            .with_signature_enforcement_phase(SignatureEnforcementPhase::EnforceAll),
         &IntegrityEvidence {
             digest_verified: true,
             sidecar_checksums_verified: true,
@@ -105,13 +84,7 @@ fn integrity_gate_enforces_signatures_for_all_scopes() {
 #[test]
 fn integrity_gate_requires_signer_evidence_when_signature_present() {
     let gate = evaluate_integrity_gate(
-        &IntegrityPolicy {
-            require_digest_verification: true,
-            require_sidecar_checksum_verification: true,
-            require_signature_verification: true,
-            signature_enforcement_phase: SignatureEnforcementPhase::Observe,
-            run_scope: IntegrityRunScope::Demo,
-        },
+        &IntegrityPolicy::default().with_signature_verification(true),
         &IntegrityEvidence {
             digest_verified: true,
             sidecar_checksums_verified: true,
@@ -130,13 +103,7 @@ fn integrity_gate_requires_signer_evidence_when_signature_present() {
 #[test]
 fn integrity_gate_passes_with_complete_signature_evidence() {
     let gate = evaluate_integrity_gate(
-        &IntegrityPolicy {
-            require_digest_verification: true,
-            require_sidecar_checksum_verification: true,
-            require_signature_verification: true,
-            signature_enforcement_phase: SignatureEnforcementPhase::Observe,
-            run_scope: IntegrityRunScope::Demo,
-        },
+        &IntegrityPolicy::default().with_signature_verification(true),
         &IntegrityEvidence {
             digest_verified: true,
             sidecar_checksums_verified: true,

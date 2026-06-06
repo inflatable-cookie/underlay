@@ -51,10 +51,12 @@ README surfaces.
 
 ## Active generation
 
-- None
+- `g08`
 
 ## Current Queue
 
+- `g08.001` is complete as the migration-core policy field retirement batch
+- `g08.002` is next as the devtools bundle/seed option constructor and accessor audit
 - `g07.001` is complete as the TS runtime and workflow ownership inventory
 - `g07.002` is complete as the runtime subpath public surface audit
 - `g07.003` is complete as the runtime import guidance cleanup
@@ -424,10 +426,7 @@ README surfaces.
 
 ## Next Task
 
-No active roadmap task remains. Open a bounded roadmap card before starting the
-next compatibility-retirement, TS boundary, or Rust hardening lane. Bounded
-post-closeout artifacts may repair stale contract drift when they do not reopen
-a generation queue.
+Continue with `g08.002`.
 - `g01.090` is complete for confirming that the remaining public `@decodelabs/underlay/patterns` surface is the true retained workflow stop point rather than unresolved migration debt
 - `g01.091` is complete for confirming the retained `client` package boundary, exposing explicit `client/*` public subpaths for the live feature families, and keeping the root barrel stable as a convenience surface
 - `g01.092` is complete for confirming the retained `nightfire` package boundary, exposing explicit `nightfire/*` public subpaths for the live extension families, and keeping the root barrel stable as a convenience surface

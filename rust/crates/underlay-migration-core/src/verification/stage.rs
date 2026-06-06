@@ -44,13 +44,14 @@ where
     }
 
     let unresolved_pass =
-        !ctx.policy.fail_on_unresolved_decisions || input.unresolved_decision_count == 0;
+        !ctx.policy.fail_on_unresolved_decisions() || input.unresolved_decision_count == 0;
     checks.push(VerificationCheckResult {
         check: "unresolved_decisions".to_string(),
         passed: unresolved_pass,
         details: format!(
             "unresolved_decision_count={}, fail_on_unresolved_decisions={}",
-            input.unresolved_decision_count, ctx.policy.fail_on_unresolved_decisions
+            input.unresolved_decision_count,
+            ctx.policy.fail_on_unresolved_decisions()
         ),
     });
     if !unresolved_pass {

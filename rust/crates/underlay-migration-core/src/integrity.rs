@@ -37,13 +37,13 @@ pub enum IntegrityRunScope {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub struct IntegrityPolicy {
-    pub require_digest_verification: bool,
-    pub require_sidecar_checksum_verification: bool,
-    pub require_signature_verification: bool,
+    require_digest_verification: bool,
+    require_sidecar_checksum_verification: bool,
+    require_signature_verification: bool,
     #[serde(default)]
-    pub signature_enforcement_phase: SignatureEnforcementPhase,
+    signature_enforcement_phase: SignatureEnforcementPhase,
     #[serde(default)]
-    pub run_scope: IntegrityRunScope,
+    run_scope: IntegrityRunScope,
 }
 
 impl Default for IntegrityPolicy {
@@ -55,6 +55,64 @@ impl Default for IntegrityPolicy {
             signature_enforcement_phase: SignatureEnforcementPhase::Observe,
             run_scope: IntegrityRunScope::Demo,
         }
+    }
+}
+
+impl IntegrityPolicy {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    pub fn with_digest_verification(mut self, required: bool) -> Self {
+        self.require_digest_verification = required;
+        self
+    }
+
+    pub fn with_sidecar_checksum_verification(mut self, required: bool) -> Self {
+        self.require_sidecar_checksum_verification = required;
+        self
+    }
+
+    pub fn with_signature_verification(mut self, required: bool) -> Self {
+        self.require_signature_verification = required;
+        self
+    }
+
+    pub fn with_signature_enforcement_phase(mut self, phase: SignatureEnforcementPhase) -> Self {
+        self.signature_enforcement_phase = phase;
+        self
+    }
+
+    pub fn with_run_scope(mut self, scope: IntegrityRunScope) -> Self {
+        self.run_scope = scope;
+        self
+    }
+
+    pub fn require_digest_verification(&self) -> bool {
+        self.require_digest_verification
+    }
+
+    pub fn require_sidecar_checksum_verification(&self) -> bool {
+        self.require_sidecar_checksum_verification
+    }
+
+    pub fn require_signature_verification(&self) -> bool {
+        self.require_signature_verification
+    }
+
+    pub fn signature_enforcement_phase(&self) -> SignatureEnforcementPhase {
+        self.signature_enforcement_phase
+    }
+
+    pub fn run_scope(&self) -> IntegrityRunScope {
+        self.run_scope
+    }
+
+    pub fn effective_requires_signature_verification(&self) -> bool {
+        self.require_signature_verification
+            || self
+                .signature_enforcement_phase
+                .requires_signature(self.run_scope)
     }
 }
 
@@ -108,10 +166,8 @@ impl Default for IntegrityGateResult {
         let policy = IntegrityPolicy::default();
         let evidence = IntegrityEvidence::default();
         Self {
-            effective_require_signature_verification: policy.require_signature_verification
-                || policy
-                    .signature_enforcement_phase
-                    .requires_signature(policy.run_scope),
+            effective_require_signature_verification: policy
+                .effective_requires_signature_verification(),
             policy,
             evidence,
             passed: true,
@@ -133,12 +189,10 @@ pub fn evaluate_integrity_gate(
     evidence: &IntegrityEvidence,
 ) -> IntegrityGateResult {
     let mut blockers = Vec::new();
-    let effective_require_signature_verification = policy.require_signature_verification
-        || policy
-            .signature_enforcement_phase
-            .requires_signature(policy.run_scope);
+    let effective_require_signature_verification =
+        policy.effective_requires_signature_verification();
 
-    if policy.require_digest_verification && !evidence.digest_verified {
+    if policy.require_digest_verification() && !evidence.digest_verified {
         blockers.push(IntegrityBlocker {
             code: "digest_verification_required".to_string(),
             message: "bundle digest was not verified".to_string(),
@@ -148,7 +202,7 @@ pub fn evaluate_integrity_gate(
         });
     }
 
-    if policy.require_sidecar_checksum_verification && !evidence.sidecar_checksums_verified {
+    if policy.require_sidecar_checksum_verification() && !evidence.sidecar_checksums_verified {
         blockers.push(IntegrityBlocker {
             code: "sidecar_checksum_verification_required".to_string(),
             message: "sidecar checksums were not verified".to_string(),

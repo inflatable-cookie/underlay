@@ -9,7 +9,7 @@ Updated: 2026-06-06
 
 ## Active generations
 
-- None
+- `g08`
 
 ## Generation log
 
@@ -22,6 +22,7 @@ Updated: 2026-06-06
 | `g05` | 2026-05-xx | Shared page, workflow template, and consumer capability generation | Closed after query-variant and consumer capability line |
 | `g06` | 2026-06-05 | Rust platform-contract transition after code-quality audit | Closed after the reference-grade reset, Rust hardening lane, six-consumer proof, upgrade-guidance closeout, and bounded stale-drift repairs |
 | `g07` | 2026-06-06 | TS runtime and workflow boundary hardening after `g06` closeout | Complete after `g07.023` client HTTP retry timeout audit |
+| `g08` | 2026-06-06 | Residual Rust public policy and tooling boundary hardening after `g06`/`g07` closeout | Active |
 
 ## Historical generations
 
@@ -50,7 +51,4 @@ In parallel mode:
 
 ## Next Task
 
-No active roadmap task remains. Open a bounded roadmap card before starting the
-next compatibility-retirement, TS boundary, or Rust hardening lane. Bounded
-post-closeout artifacts may repair stale contract drift when they do not reopen
-a generation queue.
+Continue with `g08.002`.

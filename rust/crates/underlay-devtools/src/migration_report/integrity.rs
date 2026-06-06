@@ -12,12 +12,12 @@ pub fn format_integrity_summary(artifact: &IntegrityArtifact) -> Vec<String> {
     lines.push(format!(
         "passed={} require_digest_verification={} require_sidecar_checksum_verification={} require_signature_verification={} effective_require_signature_verification={} signature_enforcement_phase={} run_scope={}",
         artifact.gate.passed,
-        artifact.gate.policy.require_digest_verification,
-        artifact.gate.policy.require_sidecar_checksum_verification,
-        artifact.gate.policy.require_signature_verification,
+        artifact.gate.policy.require_digest_verification(),
+        artifact.gate.policy.require_sidecar_checksum_verification(),
+        artifact.gate.policy.require_signature_verification(),
         artifact.gate.effective_require_signature_verification,
-        signature_enforcement_phase_label(artifact.gate.policy.signature_enforcement_phase),
-        integrity_run_scope_label(artifact.gate.policy.run_scope)
+        signature_enforcement_phase_label(artifact.gate.policy.signature_enforcement_phase()),
+        integrity_run_scope_label(artifact.gate.policy.run_scope())
     ));
     lines.push(format!(
         "signature_verified={:?} signature_verified_at={:?} signer_identity={:?} signature_key_id={:?}",

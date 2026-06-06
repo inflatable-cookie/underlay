@@ -35,28 +35,64 @@ impl RunMetadata {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub struct PipelinePolicy {
-    pub strict_determinism: bool,
-    pub fail_on_unresolved_decisions: bool,
-    pub ai_threshold_policy: AiThresholdPolicy,
+    strict_determinism: bool,
+    fail_on_unresolved_decisions: bool,
+    ai_threshold_policy: AiThresholdPolicy,
     #[serde(default)]
-    pub verification_rules: Vec<VerificationRule>,
-    pub integrity_policy: IntegrityPolicy,
-    pub integrity_evidence: IntegrityEvidence,
+    verification_rules: Vec<VerificationRule>,
+    integrity_policy: IntegrityPolicy,
+    integrity_evidence: IntegrityEvidence,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub struct AiThresholdPolicy {
-    pub default_confidence_threshold: f64,
-    pub decision_type_overrides: HashMap<String, f64>,
+    default_confidence_threshold: f64,
+    decision_type_overrides: HashMap<String, f64>,
 }
 
 impl AiThresholdPolicy {
+    pub fn new(default_confidence_threshold: f64) -> Self {
+        Self {
+            default_confidence_threshold,
+            decision_type_overrides: HashMap::new(),
+        }
+    }
+
+    pub fn with_default_confidence_threshold(mut self, threshold: f64) -> Self {
+        self.default_confidence_threshold = threshold;
+        self
+    }
+
+    pub fn with_decision_type_override(
+        mut self,
+        decision_type: impl Into<String>,
+        threshold: f64,
+    ) -> Self {
+        self.decision_type_overrides
+            .insert(decision_type.into(), threshold);
+        self
+    }
+
     pub fn threshold_for(&self, decision_type: &str) -> f64 {
         self.decision_type_overrides
             .get(decision_type)
             .copied()
             .unwrap_or(self.default_confidence_threshold)
+    }
+
+    pub fn default_confidence_threshold(&self) -> f64 {
+        self.default_confidence_threshold
+    }
+
+    pub fn decision_type_overrides(&self) -> &HashMap<String, f64> {
+        &self.decision_type_overrides
+    }
+}
+
+impl Default for AiThresholdPolicy {
+    fn default() -> Self {
+        Self::new(0.92)
     }
 }
 
@@ -65,14 +101,71 @@ impl Default for PipelinePolicy {
         Self {
             strict_determinism: true,
             fail_on_unresolved_decisions: true,
-            ai_threshold_policy: AiThresholdPolicy {
-                default_confidence_threshold: 0.92,
-                decision_type_overrides: HashMap::new(),
-            },
+            ai_threshold_policy: AiThresholdPolicy::default(),
             verification_rules: Vec::new(),
             integrity_policy: IntegrityPolicy::default(),
             integrity_evidence: IntegrityEvidence::default(),
         }
+    }
+}
+
+impl PipelinePolicy {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    pub fn with_strict_determinism(mut self, strict_determinism: bool) -> Self {
+        self.strict_determinism = strict_determinism;
+        self
+    }
+
+    pub fn with_fail_on_unresolved_decisions(mut self, fail: bool) -> Self {
+        self.fail_on_unresolved_decisions = fail;
+        self
+    }
+
+    pub fn with_ai_threshold_policy(mut self, policy: AiThresholdPolicy) -> Self {
+        self.ai_threshold_policy = policy;
+        self
+    }
+
+    pub fn with_verification_rules(mut self, rules: Vec<VerificationRule>) -> Self {
+        self.verification_rules = rules;
+        self
+    }
+
+    pub fn with_integrity_policy(mut self, policy: IntegrityPolicy) -> Self {
+        self.integrity_policy = policy;
+        self
+    }
+
+    pub fn with_integrity_evidence(mut self, evidence: IntegrityEvidence) -> Self {
+        self.integrity_evidence = evidence;
+        self
+    }
+
+    pub fn strict_determinism(&self) -> bool {
+        self.strict_determinism
+    }
+
+    pub fn fail_on_unresolved_decisions(&self) -> bool {
+        self.fail_on_unresolved_decisions
+    }
+
+    pub fn ai_threshold_policy(&self) -> &AiThresholdPolicy {
+        &self.ai_threshold_policy
+    }
+
+    pub fn verification_rules(&self) -> &[VerificationRule] {
+        &self.verification_rules
+    }
+
+    pub fn integrity_policy(&self) -> &IntegrityPolicy {
+        &self.integrity_policy
+    }
+
+    pub fn integrity_evidence(&self) -> &IntegrityEvidence {
+        &self.integrity_evidence
     }
 }
 

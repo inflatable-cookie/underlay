@@ -1,8 +1,8 @@
 use std::sync::{Arc, Mutex};
 
 use crate::{
-    DecisionReusePolicy, IntegrityRunScope, MigrationContext, MigrationError,
-    MigrationOrchestrator, PipelinePolicy, RunMetadata, SignatureEnforcementPhase,
+    DecisionReusePolicy, IntegrityEvidence, IntegrityPolicy, IntegrityRunScope, MigrationContext,
+    MigrationError, MigrationOrchestrator, PipelinePolicy, RunMetadata, SignatureEnforcementPhase,
 };
 
 use super::support::{
@@ -25,8 +25,10 @@ async fn run_fails_pre_apply_when_integrity_gate_blocked() {
     let assets = MockAssetResolver {};
     let store = InMemoryRunStore::default();
 
-    let mut policy = PipelinePolicy::default();
-    policy.integrity_evidence.digest_verified = false;
+    let policy = PipelinePolicy::default().with_integrity_evidence(IntegrityEvidence {
+        digest_verified: false,
+        ..Default::default()
+    });
 
     let orchestrator = MigrationOrchestrator::new(source, plugin, resolver, assets);
     let ctx = MigrationContext::new(RunMetadata::new("plugin-v1", "schema-v1"), policy);
@@ -67,11 +69,16 @@ async fn run_fails_pre_apply_when_signature_rollout_enforces_preprod() {
     let assets = MockAssetResolver {};
     let store = InMemoryRunStore::default();
 
-    let mut policy = PipelinePolicy::default();
-    policy.integrity_policy.require_signature_verification = false;
-    policy.integrity_policy.signature_enforcement_phase = SignatureEnforcementPhase::EnforcePreprod;
-    policy.integrity_policy.run_scope = IntegrityRunScope::PreProduction;
-    policy.integrity_evidence.signature_verified = None;
+    let policy = PipelinePolicy::default()
+        .with_integrity_policy(
+            IntegrityPolicy::default()
+                .with_signature_enforcement_phase(SignatureEnforcementPhase::EnforcePreprod)
+                .with_run_scope(IntegrityRunScope::PreProduction),
+        )
+        .with_integrity_evidence(IntegrityEvidence {
+            signature_verified: None,
+            ..Default::default()
+        });
 
     let orchestrator = MigrationOrchestrator::new(source, plugin, resolver, assets);
     let ctx = MigrationContext::new(RunMetadata::new("plugin-v1", "schema-v1"), policy);
@@ -106,12 +113,15 @@ async fn run_fails_pre_apply_when_signature_evidence_is_incomplete() {
     let assets = MockAssetResolver {};
     let store = InMemoryRunStore::default();
 
-    let mut policy = PipelinePolicy::default();
-    policy.integrity_policy.require_signature_verification = true;
-    policy.integrity_evidence.signature_verified = Some(true);
-    policy.integrity_evidence.signature_verified_at = None;
-    policy.integrity_evidence.signer_identity = Some("".to_string());
-    policy.integrity_evidence.signature_key_id = Some("".to_string());
+    let policy = PipelinePolicy::default()
+        .with_integrity_policy(IntegrityPolicy::default().with_signature_verification(true))
+        .with_integrity_evidence(IntegrityEvidence {
+            signature_verified: Some(true),
+            signature_verified_at: None,
+            signer_identity: Some("".to_string()),
+            signature_key_id: Some("".to_string()),
+            ..Default::default()
+        });
 
     let orchestrator = MigrationOrchestrator::new(source, plugin, resolver, assets);
     let ctx = MigrationContext::new(RunMetadata::new("plugin-v1", "schema-v1"), policy);
