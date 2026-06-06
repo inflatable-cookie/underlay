@@ -48,8 +48,12 @@ content behavior that must change, stop and re-enter planning.
 
 ## Current State
 
-`g06.123` is ready.
+`g06.123` is complete.
+
+Artifact:
+
+- [123 artifact](./123-media-nightfire-walk-modularity-audit-artifact.md)
 
 ## Next Task
 
-Execute `g06.123`: media Nightfire walk modularity audit.
+Execute `g06.124`: media Nightfire walk internal split.

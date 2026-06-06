@@ -202,7 +202,8 @@ README surfaces.
 - `g06.120` is complete as the jobs runner tests internal split
 - `g06.121` is complete as the validation derive crate modularity audit
 - `g06.122` is complete as the validation derive crate internal split
-- `g06.123` is next as the media Nightfire walk modularity audit
+- `g06.123` is complete as the media Nightfire walk modularity audit
+- `g06.124` is next as the media Nightfire walk internal split
 - `g05` is closed as the shared-page, workflow-template, media capability,
   dev-flow contract, and query-variant convergence generation
 - `g05.024` is complete as the Marking Hub query variant proof and rollout
