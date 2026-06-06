@@ -1,6 +1,6 @@
 # g07.004 - Pattern Helper Ownership Diet
 
-Status: ready
+Status: complete
 Owner: repo maintainers
 Updated: 2026-06-06
 
@@ -16,12 +16,12 @@ pattern root by ownership and caller risk.
 
 ## Goals
 
-- [ ] classify every `@decodelabs/underlay/patterns` root export as retained,
+- [x] classify every `@decodelabs/underlay/patterns` root export as retained,
   runtime-owned, utils-owned, template-owned, or candidate-retire
-- [ ] identify exports that are kept only for compatibility
-- [ ] identify consumer proof needed before any retirement or relocation
-- [ ] keep retained workflow shells obvious and small
-- [ ] avoid package export changes unless caller proof is complete inside this
+- [x] identify exports that are kept only for compatibility
+- [x] identify consumer proof needed before any retirement or relocation
+- [x] keep retained workflow shells obvious and small
+- [x] avoid package export changes unless caller proof is complete inside this
   card
 
 ## Non-Goals
@@ -34,18 +34,18 @@ pattern root by ownership and caller risk.
 
 ## Execution Plan
 
-- [ ] inspect `ts/src/patterns/index.ts` and the implementation files it exports
-- [ ] compare the pattern root against contracts `090` and `100`
-- [ ] scan active docs and source examples for pattern-root dependencies
-- [ ] scan the six-consumer family for exact pattern-root imports
-- [ ] write an ownership table and only queue bounded follow-on changes
+- [x] inspect `ts/src/patterns/index.ts` and the implementation files it exports
+- [x] compare the pattern root against contracts `090` and `100`
+- [x] scan active docs and source examples for pattern-root dependencies
+- [x] scan the six-consumer family for exact pattern-root imports
+- [x] write an ownership table and only queue bounded follow-on changes
 
 ## Acceptance Criteria
 
-- [ ] every pattern-root export has an ownership classification
-- [ ] retained workflow-shell exports are separated from lower helper exports
-- [ ] compatibility-only exports have caller evidence and a proposed disposition
-- [ ] no consumer-visible export change is made without same-card proof
+- [x] every pattern-root export has an ownership classification
+- [x] retained workflow-shell exports are separated from lower helper exports
+- [x] compatibility-only exports have caller evidence and a proposed disposition
+- [x] no consumer-visible export change is made without same-card proof
 
 ## Validation
 
@@ -56,11 +56,13 @@ pattern root by ownership and caller risk.
 
 ## Consumer Upgrade Impact
 
-None for the audit posture.
+Breaking for unknown callers that imported selection/reorder session helpers
+from `@decodelabs/underlay/patterns`.
 
-If this card makes an export or import-path change, update this section with
-the affected consumers and validation evidence before closing it.
+No known consumer app update is required. The six-consumer scan found no active
+code imports of those helpers from the pattern root. The helpers remain
+available from `@decodelabs/underlay/runtime/data`.
 
 ## Next Task
 
-Execute this pattern helper ownership diet.
+Move to `g07.005`: duplicated auth-aware fetch orchestration decision.

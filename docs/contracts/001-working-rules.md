@@ -51,7 +51,7 @@ Underlay is in parallel mode:
 
 ## Next Task
 
-Execute `g07.004`: pattern helper ownership diet.
+Execute `g07.005`: duplicated auth-aware fetch orchestration decision.
 
 Open a new spec only if the next lane needs provisional planning beyond
 existing architecture and contracts.

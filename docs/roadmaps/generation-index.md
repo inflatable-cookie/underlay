@@ -49,4 +49,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g07.004`: pattern helper ownership diet.
+Execute `g07.005`: duplicated auth-aware fetch orchestration decision.

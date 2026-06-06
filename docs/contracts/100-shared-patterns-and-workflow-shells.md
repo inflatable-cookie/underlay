@@ -89,6 +89,7 @@ Current root exports:
 - `PasswordRequirements`
 - `SpaFormShell`
 - SPA form result/submit/navigate types
+- contextual action controller/types
 
 Rule:
 
