@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.156`: TypeScript warning backlog decision.
+Execute `g06.157`: TypeScript attention marker cleanup.
