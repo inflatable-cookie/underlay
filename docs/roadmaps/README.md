@@ -51,7 +51,7 @@ README surfaces.
 
 ## Active generation
 
-- `g07`
+- None
 
 ## Current Queue
 
@@ -66,8 +66,8 @@ README surfaces.
 - `g07.009` is complete as the TS public-surface test and guardrail reinforcement
 - `g07.010` is complete as the consumer import compatibility sweep
 - `g07.011` is complete as the stale components config cleanup
-- `g07.012` is next as the TS boundary hardening upgrade-note and closeout checkpoint
-- `g07` is active as the TS runtime and workflow boundary hardening generation
+- `g07.012` is complete as the TS boundary hardening upgrade-note and closeout checkpoint
+- `g07` is complete as the TS runtime and workflow boundary hardening generation
 - `g06.001` is complete as the Rust platform contract transition and public API
   inventory gate
 - `g06.002` is complete as the typed safety primitive and construction-boundary
@@ -392,7 +392,8 @@ README surfaces.
 
 ## Next Task
 
-Execute `g07.012`: TS boundary hardening upgrade-note and closeout checkpoint.
+No active roadmap task remains. Open a bounded roadmap card before starting the
+next compatibility-retirement or TS boundary lane.
 - `g01.090` is complete for confirming that the remaining public `@decodelabs/underlay/patterns` surface is the true retained workflow stop point rather than unresolved migration debt
 - `g01.091` is complete for confirming the retained `client` package boundary, exposing explicit `client/*` public subpaths for the live feature families, and keeping the root barrel stable as a convenience surface
 - `g01.092` is complete for confirming the retained `nightfire` package boundary, exposing explicit `nightfire/*` public subpaths for the live extension families, and keeping the root barrel stable as a convenience surface

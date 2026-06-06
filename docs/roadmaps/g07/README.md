@@ -1,8 +1,9 @@
 # g07 - TS Runtime And Workflow Boundary Hardening
 
-Status: active
+Status: complete
 Owner: repo maintainers
 Started: 2026-06-06
+Completed: 2026-06-06
 
 ## Current Generation
 
@@ -26,11 +27,11 @@ surface easier for consuming apps to understand, import, test, and extend.
 
 - [x] classify the retained `runtime/*`, `patterns/*`, `templates/*`,
   `testing/*`, and `tools/*` TypeScript surfaces by real ownership
-- [ ] remove or rehome compatibility residue only after caller proof
-- [ ] reduce duplicated workflow orchestration where the same lifecycle appears
+- [x] remove or rehome compatibility residue only after caller proof
+- [x] reduce duplicated workflow orchestration where the same lifecycle appears
   in multiple controllers
-- [ ] keep templates as higher-order page/workflow composition, not primitive UI
-- [ ] keep consumer import changes deliberate, classified, and validated
+- [x] keep templates as higher-order page/workflow composition, not primitive UI
+- [x] keep consumer import changes deliberate, classified, and validated
 
 ## Non-Goals
 
@@ -82,8 +83,12 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g07.009` is complete as the TS public-surface test and guardrail reinforcement.
 - `g07.010` is complete as the consumer import compatibility sweep.
 - `g07.011` is complete as the stale components config cleanup.
-- `g07.012` is next as the TS boundary hardening upgrade-note and closeout checkpoint.
+- `g07.012` is complete as the TS boundary hardening upgrade-note and closeout
+  checkpoint.
+- `g07` is complete.
 
 ## Next Task
 
-Execute `g07.012`: TS boundary hardening upgrade-note and closeout checkpoint.
+No active `g07` task remains. Open a bounded roadmap card before retiring the
+deferred compatibility-only suggestion helper re-exports or starting another TS
+boundary lane.

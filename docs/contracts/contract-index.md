@@ -98,6 +98,7 @@ Do not promote a system into active implementation-assessment work until:
 
 ## Next Task
 
-The active contract wave is live inside `g07`.
+No active contract wave is live.
 
-Execute `g07.012`: TS boundary hardening upgrade-note and closeout checkpoint.
+Open a bounded roadmap card before starting the next compatibility-retirement
+or TS boundary lane.

@@ -304,4 +304,5 @@ Other system families own:
 
 ## Next Task
 
-Execute `g07.012`: TS boundary hardening upgrade-note and closeout checkpoint.
+No active `g07` task remains. Use the `g07.012` closeout artifact before
+changing TS public-surface or guardrail compatibility coverage.

@@ -197,4 +197,5 @@ Stop and re-enter planning if:
 
 ## Next Task
 
-Execute `g07.012`: TS boundary hardening upgrade-note and closeout checkpoint.
+No active roadmap task remains. Open a bounded roadmap card before retiring
+deferred compatibility exports or starting another architecture reset lane.

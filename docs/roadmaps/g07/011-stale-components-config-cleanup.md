@@ -59,4 +59,5 @@ source import, Underlay public API, or runtime behavior changed.
 
 ## Next Task
 
-Execute `g07.012`: TS boundary hardening upgrade-note and closeout checkpoint.
+`g07.012` completed the TS boundary hardening upgrade-note and closeout
+checkpoint.

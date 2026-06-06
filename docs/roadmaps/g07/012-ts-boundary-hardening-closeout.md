@@ -1,6 +1,6 @@
 # g07.012 - TS Boundary Hardening Upgrade-Note And Closeout Checkpoint
 
-Status: ready
+Status: complete
 Owner: repo maintainers
 Updated: 2026-06-06
 
@@ -15,12 +15,12 @@ and what future compatibility-export retirements are now safe to consider.
 
 ## Goals
 
-- [ ] write the g07 upgrade-note and closeout artifact
-- [ ] summarize retained preferred import paths
-- [ ] record consumer edits and validation
-- [ ] decide whether any compatibility re-export retirement should be queued
+- [x] write the g07 upgrade-note and closeout artifact
+- [x] summarize retained preferred import paths
+- [x] record consumer edits and validation
+- [x] decide whether any compatibility re-export retirement should be queued
   after g07
-- [ ] close or extend g07 deliberately
+- [x] close or extend g07 deliberately
 
 ## Non-Goals
 
@@ -31,17 +31,17 @@ and what future compatibility-export retirements are now safe to consider.
 
 ## Execution Plan
 
-- [ ] review g07 artifacts from `001` through `011`
-- [ ] write the closeout artifact and upgrade note
-- [ ] update front doors and contracts to the next honest task
-- [ ] run final docs and TS support validation
+- [x] review g07 artifacts from `001` through `011`
+- [x] write the closeout artifact and upgrade note
+- [x] update front doors and contracts to the next honest task
+- [x] run final docs and TS support validation
 
 ## Acceptance Criteria
 
-- [ ] consuming apps have clear upgrade guidance
-- [ ] retained TS public paths are summarized
-- [ ] compatibility-only exports have an explicit retirement/defer decision
-- [ ] g07 queue state is accurate
+- [x] consuming apps have clear upgrade guidance
+- [x] retained TS public paths are summarized
+- [x] compatibility-only exports have an explicit retirement/defer decision
+- [x] g07 queue state is accurate
 
 ## Validation
 
@@ -52,9 +52,11 @@ and what future compatibility-export retirements are now safe to consider.
 
 ## Consumer Upgrade Impact
 
-Documentation and upgrade guidance only unless the closeout discovers a missed
-consumer update.
+Documentation and upgrade guidance only. Consumer source/config updates were
+completed in `g07.010` and `g07.011`.
 
 ## Next Task
 
-Execute this TS boundary hardening closeout checkpoint.
+No active `g07` task remains. Open a bounded roadmap card before retiring the
+deferred compatibility-only suggestion helper re-exports or starting another TS
+boundary lane.

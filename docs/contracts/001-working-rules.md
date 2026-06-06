@@ -43,7 +43,7 @@ In parallel mode:
 
 Underlay is in parallel mode:
 
-- `g07` owns the TS runtime and workflow boundary hardening thread
+- `g07` is closed after the TS runtime and workflow boundary hardening thread
 - `g06` is closed after the Rust platform-contract transition and
   reference-grade reset thread
 - `g03`, `g04`, and `g05` are closed historical generations
@@ -51,7 +51,8 @@ Underlay is in parallel mode:
 
 ## Next Task
 
-Execute `g07.012`: TS boundary hardening upgrade-note and closeout checkpoint.
+No active roadmap task remains. Open a bounded roadmap card before starting the
+next compatibility-retirement or TS boundary lane.
 
 Open a new spec only if the next lane needs provisional planning beyond
 existing architecture and contracts.

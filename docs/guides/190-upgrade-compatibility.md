@@ -76,6 +76,67 @@ Reusable templates:
 
 ## Current Feature Notes
 
+### TS Runtime And Workflow Boundary Hardening (`2026-06-06`)
+
+- Impact class: `deprecation` for compatibility-only import paths; no remaining
+  source migration for the named six-consumer family
+- Affected consumers:
+  - apps importing lower selection or reorder helpers from
+    `@decodelabs/underlay/patterns`
+  - apps importing suggestion request helpers from
+    `@decodelabs/underlay/runtime/data`
+  - apps carrying stale `@decodelabs/underlay/components` Vite optimize
+    dependency excludes
+- What changed:
+  - retained TS runtime, client, pattern, template, testing, tools, and utility
+    paths are classified by ownership
+  - lower selection and reorder helpers are no longer exported from the root
+    `patterns` surface; use `runtime/data`
+  - suggestion request URL and query helpers are preferred through
+    `client/suggestions`
+  - auth-aware fetch mechanics were consolidated internally
+  - `runtime/data` and `runtime/relations` remain retained public paths
+  - TS public-surface and guardrail support tests were added
+- Required actions:
+  1. Import runtime helpers from focused `runtime/*` subpaths.
+  2. Import suggestion request helpers from
+     `@decodelabs/underlay/client/suggestions`.
+  3. Keep selection history and lower collection workflow helpers on
+     `@decodelabs/underlay/runtime/data`.
+  4. Keep `@decodelabs/underlay/patterns` for retained shared auth flows,
+     `SpaFormShell`, `SpaFormResult`, and contextual actions.
+  5. Remove `@decodelabs/underlay/components` from live Vite optimize
+     dependency config if present.
+  6. Do not import app UI primitives from Underlay; use Poodle or app-local UI.
+- Cutover:
+  - canonical contract date: `2026-06-06`
+  - the six known consumer roots are already updated or confirmed compatible
+  - compatibility-only suggestion helper re-exports are deferred for a future
+    explicit retirement card, not removed in `g07`
+- Validation:
+  - in `underlay`: `effigy qa:docs`
+  - in `underlay`: `effigy qa:northstar`
+  - in `underlay`: `effigy validate`
+  - in consumers: run the repo-owned Svelte or TypeScript checks for edited
+    packages
+  - scan for stale config:
+    `@decodelabs/underlay/components`
+- Current consumer proof:
+  - `underlay-reference`: no source migration needed
+  - `contact-patch`: `cp-client` suggestion imports moved to
+    `client/suggestions`
+  - `compli-me`: `admin/check` and `front/check` passed after config cleanup
+  - `acowtancy`: no source migration needed
+  - `songsprout`: `bloom/check` and `greenhouse/check` passed after config
+    cleanup
+  - `loophole/composer`: `composer-admin/check` and `composer-front/check`
+    passed after config cleanup
+- Changed guidance:
+  - [g07.012 closeout artifact](../roadmaps/g07/012-ts-boundary-hardening-closeout-artifact.md)
+  - [090 TS runtime and client orchestration](../contracts/090-ts-runtime-and-client-orchestration.md)
+  - [100 shared patterns and workflow shells](../contracts/100-shared-patterns-and-workflow-shells.md)
+  - [120 tooling, testing, and contract artifacts](../contracts/120-tooling-testing-and-contract-artifacts.md)
+
 ### Rust Hardening API Tightening (`2026-06-06`)
 
 - Impact class: `breaking` for unknown consumers using retired convenience APIs;

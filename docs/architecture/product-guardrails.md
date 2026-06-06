@@ -19,5 +19,5 @@ Owner: repo maintainers
 
 ## Next Task
 
-Execute `g07.012` and keep TS boundary hardening tied to the reference-grade
-architecture boundary.
+No active roadmap task remains. Keep any next compatibility-retirement or TS
+boundary lane tied to the reference-grade architecture boundary.
