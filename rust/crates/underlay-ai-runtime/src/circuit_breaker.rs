@@ -1,5 +1,5 @@
 use std::collections::{HashMap, VecDeque};
-use std::sync::Mutex;
+use std::sync::{Mutex, MutexGuard};
 use std::time::{Duration, Instant};
 
 use async_trait::async_trait;
@@ -114,12 +114,27 @@ impl<C> CircuitBreakerMiddleware<C> {
 
     pub fn provider_state(&self, provider_name: &str) -> CircuitState {
         let now = Instant::now();
-        self.state
-            .lock()
-            .expect("circuit breaker mutex poisoned")
+        self.lock_state()
             .get(provider_name)
             .map(|state| state.current_state(now, &self.config))
             .unwrap_or(CircuitState::Closed)
+    }
+
+    fn lock_state(&self) -> MutexGuard<'_, HashMap<String, ProviderCircuitState>> {
+        self.state
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
+    }
+
+    #[cfg(test)]
+    pub(crate) fn test_poison_state_lock(&self) {
+        let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            let _guard = self
+                .state
+                .lock()
+                .unwrap_or_else(|poisoned| poisoned.into_inner());
+            panic!("poison circuit breaker lock");
+        }));
     }
 }
 
@@ -135,7 +150,7 @@ where
     ) -> Result<LlmResponse, AiRuntimeError> {
         let now = Instant::now();
         {
-            let mut state = self.state.lock().expect("circuit breaker mutex poisoned");
+            let mut state = self.lock_state();
             let provider_state = state.entry(route.provider_name.clone()).or_default();
             if !provider_state.allow_request(now, &self.config) {
                 return Err(AiRuntimeError::new(
@@ -150,7 +165,7 @@ where
 
         match self.inner.generate_structured(route, request).await {
             Ok(response) => {
-                let mut state = self.state.lock().expect("circuit breaker mutex poisoned");
+                let mut state = self.lock_state();
                 if let Some(provider_state) = state.get_mut(&route.provider_name) {
                     provider_state.record_success();
                 }
@@ -158,7 +173,7 @@ where
             }
             Err(error) => {
                 let now = Instant::now();
-                let mut state = self.state.lock().expect("circuit breaker mutex poisoned");
+                let mut state = self.lock_state();
                 let provider_state = state.entry(route.provider_name.clone()).or_default();
                 provider_state.record_failure(now, &self.config);
                 Err(error)

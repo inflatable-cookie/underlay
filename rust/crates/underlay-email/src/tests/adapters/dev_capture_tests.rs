@@ -114,6 +114,26 @@ async fn test_in_memory_store() {
     assert_eq!(store.count(), 0);
 }
 
+#[tokio::test]
+async fn test_in_memory_store_recovers_from_poisoned_lock() {
+    let store = InMemoryEmailStore::new();
+    let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        let _guard = store
+            .emails
+            .lock()
+            .expect("email store lock should be clean");
+        panic!("poison email store lock");
+    }));
+
+    assert_eq!(store.count(), 0);
+
+    let email = create_test_email("test@example.com");
+    let captured = CapturedEmail::from_email(&email);
+    store.store(captured).await.unwrap();
+
+    assert_eq!(store.emails().len(), 1);
+}
+
 #[test]
 fn test_captured_email_mark_delivered() {
     let email = create_test_email("test@example.com");

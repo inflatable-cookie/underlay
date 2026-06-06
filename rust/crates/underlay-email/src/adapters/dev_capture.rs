@@ -5,7 +5,7 @@
 //! whitelisted addresses via a fallback adapter.
 
 use std::collections::HashSet;
-use std::sync::Arc;
+use std::sync::{Arc, MutexGuard};
 
 use async_trait::async_trait;
 use chrono::{DateTime, Utc};
@@ -263,36 +263,30 @@ impl InMemoryEmailStore {
 
     /// Get all captured emails.
     pub fn emails(&self) -> Vec<CapturedEmail> {
-        self.emails
-            .lock()
-            .expect("email store mutex poisoned")
-            .clone()
+        self.lock_emails().clone()
     }
 
     /// Clear all captured emails.
     pub fn clear(&self) {
-        self.emails
-            .lock()
-            .expect("email store mutex poisoned")
-            .clear();
+        self.lock_emails().clear();
     }
 
     /// Get the count of captured emails.
     pub fn count(&self) -> usize {
+        self.lock_emails().len()
+    }
+
+    fn lock_emails(&self) -> MutexGuard<'_, Vec<CapturedEmail>> {
         self.emails
             .lock()
-            .expect("email store mutex poisoned")
-            .len()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
     }
 }
 
 #[async_trait]
 impl EmailStore for InMemoryEmailStore {
     async fn store(&self, email: CapturedEmail) -> EmailResult<()> {
-        self.emails
-            .lock()
-            .expect("email store mutex poisoned")
-            .push(email);
+        self.lock_emails().push(email);
         Ok(())
     }
 }

@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.171`: runtime mutex poison availability hardening.
+Execute `g06.172`: auth cookie construction surface tightening.

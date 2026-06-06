@@ -60,3 +60,20 @@ async fn circuit_breaker_opens_then_allows_half_open_recovery() {
     assert_eq!(middleware.provider_state("openai"), CircuitState::Closed);
     assert_eq!(client.call_count(), 3);
 }
+
+#[tokio::test]
+async fn circuit_breaker_recovers_from_poisoned_state_lock() {
+    let client = SharedScriptedLlmClient::new(vec![Ok(ok_response("ok"))]);
+    let middleware = CircuitBreakerMiddleware::new(client, CircuitBreakerConfig::default());
+    let route = sample_route("openai");
+    let request = sample_request();
+
+    middleware.test_poison_state_lock();
+
+    assert_eq!(middleware.provider_state("openai"), CircuitState::Closed);
+    let response = middleware
+        .generate_structured(&route, &request)
+        .await
+        .expect("poisoned state lock should be recovered");
+    assert_eq!(response.structured_output, json!({ "provider": "ok" }));
+}

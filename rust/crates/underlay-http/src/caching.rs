@@ -1,7 +1,7 @@
 use std::{
     collections::HashMap,
     future::Future,
-    sync::Mutex,
+    sync::{Mutex, MutexGuard},
     time::{Duration, Instant},
 };
 
@@ -39,7 +39,7 @@ impl<V: Clone> MicroCache<V> {
 
     pub fn get(&self, key: &str) -> Option<V> {
         let now = Instant::now();
-        let mut guard = self.entries.lock().expect("microcache mutex poisoned");
+        let mut guard = self.lock_entries();
 
         match guard.get(key) {
             Some(entry) if entry.expires_at > now => Some(entry.value.clone()),
@@ -53,7 +53,7 @@ impl<V: Clone> MicroCache<V> {
 
     pub fn insert(&self, key: impl Into<String>, value: V) {
         let now = Instant::now();
-        let mut guard = self.entries.lock().expect("microcache mutex poisoned");
+        let mut guard = self.lock_entries();
 
         // Opportunistic cleanup before insertion.
         guard.retain(|_, entry| entry.expires_at > now);
@@ -75,18 +75,35 @@ impl<V: Clone> MicroCache<V> {
     }
 
     pub fn invalidate(&self, key: &str) {
-        let mut guard = self.entries.lock().expect("microcache mutex poisoned");
+        let mut guard = self.lock_entries();
         guard.remove(key);
     }
 
     pub fn invalidate_prefix(&self, prefix: &str) {
-        let mut guard = self.entries.lock().expect("microcache mutex poisoned");
+        let mut guard = self.lock_entries();
         guard.retain(|k, _| !k.starts_with(prefix));
     }
 
     pub fn clear(&self) {
-        let mut guard = self.entries.lock().expect("microcache mutex poisoned");
+        let mut guard = self.lock_entries();
         guard.clear();
+    }
+
+    fn lock_entries(&self) -> MutexGuard<'_, HashMap<String, CacheEntry<V>>> {
+        self.entries
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
+    }
+
+    #[cfg(test)]
+    pub(crate) fn test_poison_entries_lock(&self) {
+        let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            let _guard = self
+                .entries
+                .lock()
+                .unwrap_or_else(|poisoned| poisoned.into_inner());
+            panic!("poison microcache lock");
+        }));
     }
 }
 

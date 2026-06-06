@@ -82,6 +82,18 @@ fn microcache_expires_entries() {
     assert_eq!(cache.get("k"), None);
 }
 
+#[test]
+fn microcache_recovers_from_poisoned_entries_lock() {
+    let cache = MicroCache::new(Duration::from_secs(1), 10);
+    cache.test_poison_entries_lock();
+
+    cache.insert("k", 42);
+    assert_eq!(cache.get("k"), Some(42));
+
+    cache.invalidate("k");
+    assert_eq!(cache.get("k"), None);
+}
+
 #[tokio::test]
 async fn singleflight_coalesces_same_key() {
     let sf = Arc::new(SingleFlight::<usize>::new());
