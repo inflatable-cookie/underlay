@@ -67,6 +67,7 @@ README surfaces.
 - `g07.010` is complete as the consumer import compatibility sweep
 - `g07.011` is complete as the stale components config cleanup
 - `g07.012` is complete as the TS boundary hardening upgrade-note and closeout checkpoint
+- `g07.013` is complete as the suggestion helper compatibility export retirement
 - `g07` is complete as the TS runtime and workflow boundary hardening generation
 - `g06.001` is complete as the Rust platform contract transition and public API
   inventory gate

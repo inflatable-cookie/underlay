@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { UnderlayHttpError } from "@decodelabs/underlay/client";
 import { appendSuggestionParams } from "@decodelabs/underlay/client/suggestions";
+import * as runtimeData from "@decodelabs/underlay/runtime/data";
 import {
   appendPaginationParams,
   type PaginatedResponse,
@@ -38,5 +39,12 @@ describe("package compatibility barrels", () => {
     expect(typeof loadConfig).toBe("function");
     expect(bannedPatterns.length).toBeGreaterThan(0);
     expect(moduleScopeChecks.length).toBeGreaterThan(0);
+  });
+
+  it("does not expose suggestion request helpers through runtime data", () => {
+    expect("appendSuggestionParams" in runtimeData).toBe(false);
+    expect("buildSuggestionParams" in runtimeData).toBe(false);
+    expect("formatHintsParam" in runtimeData).toBe(false);
+    expect("parseHintsParam" in runtimeData).toBe(false);
   });
 });

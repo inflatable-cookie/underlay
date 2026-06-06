@@ -89,18 +89,18 @@ Reasoning:
 
 ### `patterns/selection-history.ts`
 
-Status: retained implementation with compatibility-only re-exports.
+Status: retained implementation. The compatibility-only suggestion-param
+re-exports were later retired by `g07.013`.
 
 Decision:
 
-- keep the suggestion-param re-exports for now
-- do not document them as the preferred public path
-- treat future removal as a compatibility sweep item, not as part of this audit
+- do not document suggestion-param helpers through this path
+- use `client/suggestions` for request helpers
+- use `runtime/data` for `createSelectionHistory()`
 
 Reasoning:
 
 - the implementation imports suggestion helpers from `client/suggestions`
-- the re-export is not a duplicate implementation
 - callers should prefer `client/suggestions` for request helpers and
   `runtime/data` for `createSelectionHistory()`
 

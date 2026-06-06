@@ -315,9 +315,8 @@ Apps own:
 ## Retained Drift To Assess Later
 
 - the pattern layer mixes true workflow shells with some helpers that may not
-  still earn pattern ownership, especially `i18n`, compatibility-only
-  suggestion-param re-exports in `selection-history.ts`, and some low-level
-  form helpers
+  still earn pattern ownership, especially `i18n` and some low-level form
+  helpers
 - root-barrel exports are tiny while most real pattern-owned behavior is
   consumed through `runtime/*`, so public authority and implementation location
   are split and easy to misread
@@ -342,5 +341,5 @@ Apps own:
 
 ## Next Task
 
-No active `g07` task remains. Use the `g07.012` closeout artifact before
-retiring deferred compatibility-only shared-pattern exports.
+No active `g07` task remains. Open a bounded roadmap card before changing
+shared-pattern exports again.

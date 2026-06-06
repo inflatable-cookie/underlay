@@ -304,5 +304,5 @@ Other system families own:
 
 ## Next Task
 
-No active `g07` task remains. Use the `g07.012` closeout artifact before
-changing TS public-surface or guardrail compatibility coverage.
+No active `g07` task remains. Open a bounded roadmap card before changing TS
+public-surface or guardrail compatibility coverage again.

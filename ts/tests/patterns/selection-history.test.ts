@@ -29,10 +29,10 @@ vi.mock("../../src/patterns/storage.js", () => ({
 import {
 	appendSuggestionParams,
 	buildSuggestionParams,
-	createSelectionHistory,
 	formatHintsParam,
 	parseHintsParam,
-} from "../../src/patterns/selection-history";
+} from "../../src/client/suggestions";
+import { createSelectionHistory } from "../../src/patterns/selection-history";
 
 describe("patterns/selection-history", () => {
 	beforeEach(() => {
@@ -83,7 +83,7 @@ describe("patterns/selection-history", () => {
 		expect(history.getStorageKey()).toBe("underlay:selection-history:ns:items");
 	});
 
-	it("formats/parses hints and builds/appends suggestion params", () => {
+	it("uses client/suggestions for request params", () => {
 		expect(formatHintsParam(["id1", "id2"])).toBe("id1,id2");
 		expect(parseHintsParam(null)).toEqual([]);
 		expect(parseHintsParam("  ")).toEqual([]);

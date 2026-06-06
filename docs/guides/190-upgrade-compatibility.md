@@ -78,8 +78,9 @@ Reusable templates:
 
 ### TS Runtime And Workflow Boundary Hardening (`2026-06-06`)
 
-- Impact class: `deprecation` for compatibility-only import paths; no remaining
-  source migration for the named six-consumer family
+- Impact class: `breaking` for unknown consumers using retired
+  compatibility-only suggestion helper import paths; no remaining source
+  migration for the named six-consumer family
 - Affected consumers:
   - apps importing lower selection or reorder helpers from
     `@decodelabs/underlay/patterns`
@@ -111,8 +112,8 @@ Reusable templates:
 - Cutover:
   - canonical contract date: `2026-06-06`
   - the six known consumer roots are already updated or confirmed compatible
-  - compatibility-only suggestion helper re-exports are deferred for a future
-    explicit retirement card, not removed in `g07`
+  - compatibility-only suggestion helper re-exports from `runtime/data` and
+    `patterns/selection-history` were retired by `g07.013`
 - Validation:
   - in `underlay`: `effigy qa:docs`
   - in `underlay`: `effigy qa:northstar`
@@ -133,6 +134,7 @@ Reusable templates:
     passed after config cleanup
 - Changed guidance:
   - [g07.012 closeout artifact](../roadmaps/g07/012-ts-boundary-hardening-closeout-artifact.md)
+  - [g07.013 suggestion helper compatibility export retirement](../roadmaps/g07/013-suggestion-helper-compatibility-export-retirement.md)
   - [090 TS runtime and client orchestration](../contracts/090-ts-runtime-and-client-orchestration.md)
   - [100 shared patterns and workflow shells](../contracts/100-shared-patterns-and-workflow-shells.md)
   - [120 tooling, testing, and contract artifacts](../contracts/120-tooling-testing-and-contract-artifacts.md)

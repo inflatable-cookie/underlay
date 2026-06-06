@@ -52,9 +52,8 @@ use focused subpaths.
 - The root `patterns` export was narrowed during `g07.004`. Lower selection and
   reorder helpers remain public under `runtime/data`.
 - The suggestion query-parameter compatibility re-exports in
-  `patterns/selection-history.ts` and `runtime/data` are deferred. The six known
-  consumers no longer need them, but retirement should happen only through a
-  future explicit compatibility-retirement card.
+  `patterns/selection-history.ts` and `runtime/data` were deferred at `g07.012`
+  and later retired by `g07.013`.
 - `runtime/data` stays broad for now because its lower collection workflow
   helpers form one layer below templates.
 - `runtime/relations` stays one coherent retained path.
@@ -89,6 +88,4 @@ Consumers:
 
 ## Next Task
 
-No active `g07` task remains. Open a bounded roadmap card before retiring the
-deferred compatibility-only suggestion helper re-exports or starting another TS
-boundary lane.
+`g07.013` retires the deferred compatibility-only suggestion helper re-exports.

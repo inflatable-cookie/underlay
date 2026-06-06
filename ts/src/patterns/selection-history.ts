@@ -27,13 +27,6 @@
  */
 
 import { storage } from "./storage.js";
-export {
-  appendSuggestionParams,
-  buildSuggestionParams,
-  formatHintsParam,
-  parseHintsParam,
-  type SuggestionRequestOptions
-} from "../client/suggestions";
 
 // ============================================================================
 // Types

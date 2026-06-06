@@ -55,6 +55,7 @@ surface easier for consuming apps to understand, import, test, and extend.
 - `g07.010`: consumer import compatibility sweep
 - `g07.011`: stale components config cleanup
 - `g07.012`: TS boundary hardening upgrade-note and closeout checkpoint
+- `g07.013`: suggestion helper compatibility export retirement
 
 ## Consumer Family
 
@@ -85,10 +86,11 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g07.011` is complete as the stale components config cleanup.
 - `g07.012` is complete as the TS boundary hardening upgrade-note and closeout
   checkpoint.
+- `g07.013` is complete as the suggestion helper compatibility export
+  retirement.
 - `g07` is complete.
 
 ## Next Task
 
-No active `g07` task remains. Open a bounded roadmap card before retiring the
-deferred compatibility-only suggestion helper re-exports or starting another TS
-boundary lane.
+No active `g07` task remains. Open a bounded roadmap card before starting
+another compatibility-retirement or TS boundary lane.
