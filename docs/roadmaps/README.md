@@ -51,10 +51,12 @@ README surfaces.
 
 ## Active generation
 
-- `g08`
+- `g09`
 
 ## Current Queue
 
+- `g09.001` is complete as the doctor warning triage and Rust structural cleanup batch
+- `g09.002` is next as the TypeScript test god-file split batch
 - `g08.001` is complete as the migration-core policy field retirement batch
 - `g08.002` is complete as the devtools bundle/seed option constructor and accessor audit
 - `g08.003` is complete as the migration-core governance/OCI/manifest policy model audit

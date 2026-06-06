@@ -1,46 +1,4 @@
-//! Storage key generation for media files.
-//!
-//! This module provides standardized key formats for media files and their
-//! renditions in blob storage. Using consistent key patterns across applications
-//! makes it easier to:
-//!
-//! - Navigate stored files manually
-//! - Implement cleanup logic
-//! - Debug storage issues
-//! - Migrate between storage providers
-//!
-//! # Default Key Structure
-//!
-//! ```text
-//! media/{media_id}/
-//!   versions/{version_id}/{filename}     # Original uploaded file
-//!   renditions/{version_id}/thumb.jpg    # Generated thumbnail
-//!   renditions/{version_id}/preview.jpg  # Generated preview
-//! ```
-//!
-//! # Example
-//!
-//! ```rust,no_run
-//! use underlay_media::storage::{StorageKeyGenerator, StorageKeyConfig};
-//! use uuid::Uuid;
-//!
-//! fn main() -> Result<(), Box<dyn std::error::Error>> {
-//!
-//! let generator = StorageKeyGenerator::new(StorageKeyConfig::default());
-//!
-//! let media_id = Uuid::now_v7();
-//! let version_id = Uuid::now_v7();
-//!
-//! // Generate validated object key for an uploaded file
-//! let version_key = generator.version_object_key(media_id, version_id, "photo.jpg")?;
-//! // -> "media/{media_id}/versions/{version_id}/photo.jpg"
-//!
-//! // Generate validated object key for a thumbnail
-//! let thumb_key = generator.rendition_object_key(media_id, version_id, "thumb")?;
-//! // -> "media/{media_id}/renditions/{version_id}/thumb.jpg"
-//! # Ok(())
-//! # }
-//! ```
+//! Storage key generation for media version and rendition objects.
 
 mod config;
 mod filename;

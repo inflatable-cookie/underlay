@@ -12,7 +12,7 @@
 //! let result = generate_thumbnail(&image_bytes, &config)?;
 //! ```
 
-use image::{GenericImageView, ImageFormat, ImageReader, imageops::FilterType};
+use image::{imageops::FilterType, GenericImageView, ImageFormat, ImageReader};
 use std::io::Cursor;
 
 /// Error type for image processing operations.
