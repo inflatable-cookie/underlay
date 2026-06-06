@@ -223,7 +223,8 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.156` is complete as the TypeScript warning backlog decision.
 - `g06.157` is complete as the TypeScript attention marker cleanup.
 - `g06.158` is complete as the TypeScript comment-ratio cleanup.
-- `g06.159` is next as the TypeScript source god-file audit.
+- `g06.159` is complete as the TypeScript source god-file audit.
+- `g06.160` is next as the RelationSelector source god-file split.
 
 ## Planned Runway
 
@@ -390,6 +391,7 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.157`: TypeScript attention marker cleanup
 - `g06.158`: TypeScript comment-ratio cleanup
 - `g06.159`: TypeScript source god-file audit
+- `g06.160`: RelationSelector source god-file split
 
 ## Consumer Family
 
@@ -565,7 +567,8 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g06.156` is complete.
 - `g06.157` is complete.
 - `g06.158` is complete.
-- `g06.159` is next.
+- `g06.159` is complete.
+- `g06.160` is next.
 
 ## Batch Cards
 
@@ -574,4 +577,4 @@ If `g06` enters strict execution posture, keep its cards under
 
 ## Next Task
 
-Execute `g06.159`: TypeScript source god-file audit.
+Execute `g06.160`: RelationSelector source god-file split.

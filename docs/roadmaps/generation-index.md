@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.159`: TypeScript source god-file audit.
+Execute `g06.160`: RelationSelector source god-file split.
