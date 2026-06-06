@@ -1,4 +1,8 @@
-import { getAuthConfig } from "./auth";
+import {
+  resolveAuthFetchHandlers,
+  runAuthenticatedFetch,
+  shouldSkipAuthReadyFetch,
+} from "./auth-fetch";
 import type {
   CursorPaginatedResponse,
   CursorPaginationParams,
@@ -28,15 +32,10 @@ export function createPaginationController<T>(
   ) => Promise<CursorPaginatedResponse<T>>,
   options: ServerPaginationOptions<T> = {},
 ): ServerPaginationResult<T> {
-  const globalConfig = getAuthConfig();
-  const getToken = options.getToken ?? globalConfig?.getToken;
-  const onRefresh = options.onRefresh ?? globalConfig?.onRefresh;
-
-  if (!getToken) {
-    throw new Error(
-      "createPaginationController: getToken is required. Either pass it in options or call configureAuth() at app startup.",
-    );
-  }
+  const { getToken, onRefresh } = resolveAuthFetchHandlers(
+    "createPaginationController",
+    options,
+  );
 
   const getInitialPageSize = (): number => {
     if (options.persistKey && typeof localStorage !== "undefined") {
@@ -86,13 +85,8 @@ export function createPaginationController<T>(
       return _inFlight;
     }
 
+    let attemptedFetch = false;
     const run = (async () => {
-      const token = getToken();
-      if (!token) {
-        loading = false;
-        return;
-      }
-
       loading = true;
       error = null;
 
@@ -103,74 +97,48 @@ export function createPaginationController<T>(
         includeTotal: options.includeTotal ?? true,
       };
 
-      try {
-        const response = await fetcher(fetch, token, params);
+      const attempted = await runAuthenticatedFetch({
+        getToken,
+        onRefresh,
+        fetcher: (token) => fetcher(fetch, token, params),
+        onSuccess: (response) => {
+          items = response.data;
+          nextCursor = response.nextCursor;
+          prevCursor = response.prevCursor;
+          hasMore = response.hasMore;
 
-        items = response.data;
-        nextCursor = response.nextCursor;
-        prevCursor = response.prevCursor;
-        hasMore = response.hasMore;
-
-        if (response.total !== null) {
-          total = response.total;
-        }
-
-        options.onSuccess?.(response);
-      } catch (e) {
-        const is401 =
-          e &&
-          typeof e === "object" &&
-          "status" in e &&
-          (e as { status: number }).status === 401;
-
-        if (is401 && onRefresh) {
-          const newToken = await onRefresh(fetch);
-          if (newToken) {
-            try {
-              const response = await fetcher(fetch, newToken, params);
-              items = response.data;
-              nextCursor = response.nextCursor;
-              prevCursor = response.prevCursor;
-              hasMore = response.hasMore;
-              if (response.total !== null) {
-                total = response.total;
-              }
-              options.onSuccess?.(response);
-              return;
-            } catch (retryError) {
-              const err =
-                retryError instanceof Error
-                  ? retryError
-                  : new Error("Failed to load data");
-              error = err.message;
-              options.onError?.(err);
-            }
-          } else {
-            const err = new Error("Session expired");
-            error = err.message;
-            options.onError?.(err);
+          if (response.total !== null) {
+            total = response.total;
           }
-        } else {
-          const err = e instanceof Error ? e : new Error("Failed to load data");
-          error = err.message;
-          options.onError?.(err);
-        }
-      } finally {
-        _fetched = true;
+
+          options.onSuccess?.(response);
+        },
+        onError: (fetchError) => {
+          error = fetchError.message;
+          options.onError?.(fetchError);
+        },
+      });
+
+      if (!attempted) {
         loading = false;
       }
+      attemptedFetch = attempted;
     })();
 
     _inFlight = run;
     try {
       await run;
     } finally {
+      if (attemptedFetch) {
+        _fetched = true;
+      }
+      loading = false;
       _inFlight = null;
     }
   };
 
   const tryFetch = async (authLoading: boolean, currentUser: unknown) => {
-    if (_fetched || authLoading || !currentUser) {
+    if (shouldSkipAuthReadyFetch(_fetched, authLoading, currentUser)) {
       return;
     }
     await doFetch(null, "forward");

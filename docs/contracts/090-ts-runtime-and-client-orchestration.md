@@ -97,6 +97,9 @@ Rules:
 - if a helper is only a pattern concern and gains no runtime-level value, it
   should eventually move down to `patterns/*` authority rather than expanding
   runtime by inertia
+- shared auth-token lookup, 401 detection, refresh retry, and auth-ready gating
+  belong in an internal runtime helper so `runtime/auth` and `runtime/data`
+  controllers do not fork session-refresh behavior
 
 ### Client auth command and store seam
 

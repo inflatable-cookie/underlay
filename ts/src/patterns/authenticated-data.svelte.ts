@@ -1,4 +1,9 @@
 import { getAuthConfig } from "./auth";
+import {
+  resolveAuthFetchHandlers,
+  runAuthenticatedFetch,
+  shouldSkipAuthReadyFetch,
+} from "./auth-fetch";
 
 /**
  * Hook for fetching auth-protected data in SvelteKit page components.
@@ -203,16 +208,8 @@ export function useAuthenticatedData<T>(
   fetcher: (fetchFn: typeof fetch, token: string) => Promise<T>,
   options: AuthenticatedDataOptions<T>
 ): AuthenticatedDataResult<T> {
-  // Resolve getToken and onRefresh from options or global config
   const globalConfig = getAuthConfig();
-  const getToken = options.getToken ?? globalConfig?.getToken;
-  const onRefresh = options.onRefresh ?? globalConfig?.onRefresh;
-
-  if (!getToken) {
-    throw new Error(
-      "useAuthenticatedData: getToken is required. Either pass it in options or call configureAuth() at app startup."
-    );
-  }
+  const { getToken, onRefresh } = resolveAuthFetchHandlers("useAuthenticatedData", options);
 
   let data = $state<T | undefined>(options.defaultValue);
   let loading = $state(true);
@@ -240,62 +237,46 @@ export function useAuthenticatedData<T>(
       return _inFlight;
     }
 
+    if (isRefetch) {
+      refetching = true;
+    } else {
+      loading = true;
+    }
+    error = null;
+
+    let attemptedFetch = false;
     const run = (async () => {
-      const token = getToken();
-      if (!token) {
+      const attempted = await runAuthenticatedFetch({
+        getToken,
+        onRefresh,
+        fetcher: (token) => fetcher(fetch, token),
+        onSuccess: (result) => {
+          data = result;
+          _onSuccessHook?.(result);
+        },
+        onError: (fetchError) => {
+          error = fetchError.message;
+        },
+        preserveRefreshFailureError: true,
+      });
+
+      if (!attempted) {
         loading = false;
-        return;
       }
-
-      // On initial load, show loading. On refetch, show refetching (keeps existing data visible)
-      if (isRefetch) {
-        refetching = true;
-      } else {
-        loading = true;
-      }
-      error = null;
-
-      try {
-        const result = await fetcher(fetch, token);
-        data = result;
-        _onSuccessHook?.(result);
-      } catch (e) {
-        // Check if this is a 401 error and we have a refresh handler
-        const is401 = e && typeof e === "object" && "status" in e && (e as { status: number }).status === 401;
-
-        if (is401 && onRefresh) {
-          // Attempt to refresh the token
-          const newToken = await onRefresh(fetch);
-          if (newToken) {
-            // Retry the fetch with the new token
-            try {
-              const result = await fetcher(fetch, newToken);
-              data = result;
-              _onSuccessHook?.(result);
-              return;
-            } catch (retryError) {
-              error = retryError instanceof Error ? retryError.message : "Failed to load data";
-            }
-          } else {
-            // Refresh failed - propagate original error
-            error = e instanceof Error ? e.message : "Session expired";
-          }
-        } else {
-          error = e instanceof Error ? e.message : "Failed to load data";
-        }
-      } finally {
-        // Mark as fetched even on error to prevent tryFetch from auto-retrying.
-        // Users can still explicitly call refetch() to retry.
-        _fetched = true;
-        loading = false;
-        refetching = false;
-      }
+      attemptedFetch = attempted;
     })();
 
     _inFlight = run;
     try {
       await run;
     } finally {
+      if (attemptedFetch) {
+        // Mark as fetched even on error to prevent tryFetch from auto-retrying.
+        // Users can still explicitly call refetch() to retry.
+        _fetched = true;
+      }
+      loading = false;
+      refetching = false;
       _inFlight = null;
       if (_queuedRefetch) {
         _queuedRefetch = false;
@@ -305,7 +286,7 @@ export function useAuthenticatedData<T>(
   };
 
   const tryFetch = async (authLoading: boolean, currentUser: unknown) => {
-    if (_fetched || authLoading || !currentUser) {
+    if (shouldSkipAuthReadyFetch(_fetched, authLoading, currentUser)) {
       return;
     }
     await doFetch(false);

@@ -73,8 +73,9 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g07.002` is complete as the runtime subpath public surface audit.
 - `g07.003` is complete as the runtime import guidance cleanup.
 - `g07.004` is complete as the pattern helper ownership diet.
-- `g07.005` is next as the duplicated auth-aware fetch orchestration decision.
+- `g07.005` is complete as the duplicated auth-aware fetch orchestration decision.
+- `g07.006` is next as the list, pagination, reorder, and template seam audit.
 
 ## Next Task
 
-Execute `g07.005`: duplicated auth-aware fetch orchestration decision.
+Execute `g07.006`: list, pagination, reorder, and template seam audit.

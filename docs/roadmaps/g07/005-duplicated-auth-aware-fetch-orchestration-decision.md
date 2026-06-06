@@ -1,6 +1,6 @@
 # g07.005 - Duplicated Auth-Aware Fetch Orchestration Decision
 
-Status: ready
+Status: complete
 Owner: repo maintainers
 Updated: 2026-06-06
 
@@ -16,13 +16,13 @@ stay split across those helpers or move toward one clearer runtime contract.
 
 ## Goals
 
-- [ ] inventory auth-aware fetch orchestration in `runtime/auth`,
+- [x] inventory auth-aware fetch orchestration in `runtime/auth`,
   `runtime/data`, client query helpers, and templates
-- [ ] identify duplicated lifecycle behavior, especially loading/error/retry
+- [x] identify duplicated lifecycle behavior, especially loading/error/retry
   state and auth readiness handling
-- [ ] decide whether to consolidate, document the split, or queue a bounded
+- [x] decide whether to consolidate, document the split, or queue a bounded
   implementation card
-- [ ] classify any consumer impact before changing public imports or behavior
+- [x] classify any consumer impact before changing public imports or behavior
 
 ## Non-Goals
 
@@ -34,20 +34,20 @@ stay split across those helpers or move toward one clearer runtime contract.
 
 ## Execution Plan
 
-- [ ] inspect `useAuthenticatedData`, list controllers, pagination helpers, and
+- [x] inspect `useAuthenticatedData`, list controllers, pagination helpers, and
   template data-loading seams
-- [ ] compare the observed behavior to contracts `090`, `100`, and `110`
-- [ ] scan active docs and consumers for direct usage
-- [ ] write a decision artifact with one retained posture and bounded follow-on
+- [x] compare the observed behavior to contracts `090`, `100`, and `110`
+- [x] scan active docs and consumers for direct usage
+- [x] write a decision artifact with one retained posture and bounded follow-on
   work if needed
 
 ## Acceptance Criteria
 
-- [ ] duplicated auth-aware fetch behavior is either accepted, consolidated, or
+- [x] duplicated auth-aware fetch behavior is either accepted, consolidated, or
   queued with a clear boundary
-- [ ] each affected helper keeps one explicit owner
-- [ ] consumer-visible impact is classified under contract `023`
-- [ ] no behavior change lands without targeted validation evidence
+- [x] each affected helper keeps one explicit owner
+- [x] consumer-visible impact is classified under contract `023`
+- [x] no behavior change lands without targeted validation evidence
 
 ## Validation
 
@@ -58,10 +58,12 @@ stay split across those helpers or move toward one clearer runtime contract.
 
 ## Consumer Upgrade Impact
 
-None for the decision posture.
+None.
 
-Update this section if the card makes public API, import, or behavior changes.
+The public helper names, import paths, and option shapes are unchanged.
+Auth-token lookup, 401 refresh retry, and auth-ready gating were consolidated
+behind internal code only.
 
 ## Next Task
 
-Execute this duplicated auth-aware fetch orchestration decision.
+Move to `g07.006`: list, pagination, reorder, and template seam audit.

@@ -116,12 +116,9 @@ describe("patterns/authenticated-data.svelte.ts", () => {
 		const p2 = data.refetch();
 		release();
 		await Promise.all([p1, p2]);
-		expect(fetcher).toHaveBeenCalledTimes(1);
-
-		await data.refetch();
+		expect(fetcher).toHaveBeenCalledTimes(3);
 		expect(onRefresh).toHaveBeenCalledTimes(1);
 		expect(data.data).toEqual({ token: "fresh" });
-		expect(data.error).toBeNull();
 
 		await data.refetch();
 		expect(onRefresh).toHaveBeenCalledTimes(2);

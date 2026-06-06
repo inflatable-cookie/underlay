@@ -60,7 +60,11 @@
  * @module
  */
 
-import { getAuthConfig } from "./auth";
+import {
+  resolveAuthFetchHandlers,
+  runAuthenticatedFetch,
+  shouldSkipAuthReadyFetch,
+} from "./auth-fetch";
 
 /**
  * Options for creating a list controller.
@@ -195,16 +199,7 @@ export function createListController<T, F extends Record<string, unknown> = Reco
   fetcher: (fetchFn: typeof fetch, token: string, filters: F) => Promise<T[]>,
   options: ListControllerOptions<T, F> = {}
 ): ListControllerResult<T, F> {
-  // Resolve auth config
-  const globalConfig = getAuthConfig();
-  const getToken = options.getToken ?? globalConfig?.getToken;
-  const onRefresh = options.onRefresh ?? globalConfig?.onRefresh;
-
-  if (!getToken) {
-    throw new Error(
-      "createListController: getToken is required. Either pass it in options or call configureAuth() at app startup."
-    );
-  }
+  const { getToken, onRefresh } = resolveAuthFetchHandlers("createListController", options);
 
   const autoFetchOnFilterChange = options.autoFetchOnFilterChange ?? true;
 
@@ -217,12 +212,6 @@ export function createListController<T, F extends Record<string, unknown> = Reco
   let _fetched = false;
 
   const doFetch = async (isRefetch = false) => {
-    const token = getToken();
-    if (!token) {
-      loading = false;
-      return;
-    }
-
     // On initial load, show loading. On refetch, show refetching (keeps existing data visible)
     if (isRefetch) {
       refetching = true;
@@ -232,39 +221,24 @@ export function createListController<T, F extends Record<string, unknown> = Reco
     error = null;
 
     try {
-      const result = await fetcher(fetch, token, filters);
-      items = result;
-      _fetched = true;
-      options.onSuccess?.(result);
-      options.onItemsChange?.(result);
-    } catch (e) {
-      // Check for 401 error and attempt refresh
-      const is401 = e && typeof e === 'object' && 'status' in e && (e as { status: number }).status === 401;
+      const attempted = await runAuthenticatedFetch({
+        getToken,
+        onRefresh,
+        fetcher: (token) => fetcher(fetch, token, filters),
+        onSuccess: (result) => {
+          items = result;
+          _fetched = true;
+          options.onSuccess?.(result);
+          options.onItemsChange?.(result);
+        },
+        onError: (fetchError) => {
+          error = fetchError.message;
+          options.onError?.(fetchError);
+        },
+      });
 
-      if (is401 && onRefresh) {
-        const newToken = await onRefresh(fetch);
-        if (newToken) {
-          try {
-            const result = await fetcher(fetch, newToken, filters);
-            items = result;
-            _fetched = true;
-            options.onSuccess?.(result);
-            options.onItemsChange?.(result);
-            return;
-          } catch (retryError) {
-            const err = retryError instanceof Error ? retryError : new Error("Failed to load data");
-            error = err.message;
-            options.onError?.(err);
-          }
-        } else {
-          const err = new Error("Session expired");
-          error = err.message;
-          options.onError?.(err);
-        }
-      } else {
-        const err = e instanceof Error ? e : new Error("Failed to load data");
-        error = err.message;
-        options.onError?.(err);
+      if (!attempted) {
+        loading = false;
       }
     } finally {
       loading = false;
@@ -273,7 +247,7 @@ export function createListController<T, F extends Record<string, unknown> = Reco
   };
 
   const tryFetch = async (authLoading: boolean, currentUser: unknown) => {
-    if (_fetched || authLoading || !currentUser) {
+    if (shouldSkipAuthReadyFetch(_fetched, authLoading, currentUser)) {
       return;
     }
     await doFetch(false);

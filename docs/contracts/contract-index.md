@@ -100,4 +100,4 @@ Do not promote a system into active implementation-assessment work until:
 
 The active contract wave is live inside `g07`.
 
-Execute `g07.005`: duplicated auth-aware fetch orchestration decision.
+Execute `g07.006`: list, pagination, reorder, and template seam audit.

@@ -51,7 +51,7 @@ Underlay is in parallel mode:
 
 ## Next Task
 
-Execute `g07.005`: duplicated auth-aware fetch orchestration decision.
+Execute `g07.006`: list, pagination, reorder, and template seam audit.
 
 Open a new spec only if the next lane needs provisional planning beyond
 existing architecture and contracts.
