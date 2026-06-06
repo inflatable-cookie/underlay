@@ -60,7 +60,8 @@ README surfaces.
 - `g07.003` is complete as the runtime import guidance cleanup
 - `g07.004` is complete as the pattern helper ownership diet
 - `g07.005` is complete as the duplicated auth-aware fetch orchestration decision
-- `g07.006` is next as the list, pagination, reorder, and template seam audit
+- `g07.006` is complete as the list, pagination, reorder, and template seam audit
+- `g07.007` is next as the relation selector boundary audit
 - `g07` is active as the TS runtime and workflow boundary hardening generation
 - `g06.001` is complete as the Rust platform contract transition and public API
   inventory gate
@@ -386,7 +387,7 @@ README surfaces.
 
 ## Next Task
 
-Execute `g07.006`: list, pagination, reorder, and template seam audit.
+Execute `g07.007`: relation selector boundary audit.
 - `g01.090` is complete for confirming that the remaining public `@decodelabs/underlay/patterns` surface is the true retained workflow stop point rather than unresolved migration debt
 - `g01.091` is complete for confirming the retained `client` package boundary, exposing explicit `client/*` public subpaths for the live feature families, and keeping the root barrel stable as a convenience surface
 - `g01.092` is complete for confirming the retained `nightfire` package boundary, exposing explicit `nightfire/*` public subpaths for the live extension families, and keeping the root barrel stable as a convenience surface

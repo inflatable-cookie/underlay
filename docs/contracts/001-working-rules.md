@@ -51,7 +51,7 @@ Underlay is in parallel mode:
 
 ## Next Task
 
-Execute `g07.006`: list, pagination, reorder, and template seam audit.
+Execute `g07.007`: relation selector boundary audit.
 
 Open a new spec only if the next lane needs provisional planning beyond
 existing architecture and contracts.

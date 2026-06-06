@@ -19,7 +19,7 @@ JSDoc alignment, not API movement.
 | `runtime/forms` | stable-domain | forms, action-result, validated-form, DOM submit helper | preferred for form helper imports below full template pages | Coherent form helper domain. |
 | `runtime/media` | stable-domain + candidate-audit | blob/media detail/workflow/upload helpers | preferred for media upload/detail workflow helpers and media DTO helpers | Coherent media runtime domain, but should be checked during the media/template seam audit. |
 | `runtime/navigation` | stable-domain | framework-agnostic navigation context and page-state helpers | preferred for navigation context and page-state helpers; SvelteKit wrappers stay in `client/navigation` | The contract split between runtime navigation and client navigation is clear. |
-| `runtime/relations` | stable-domain + candidate-audit | relation selector context/types plus local/drill-down search helpers | preferred for relation selector helper and type imports | Retained for now; `g07.006` should check whether the relation selector family is still one coherent contract. |
+| `runtime/relations` | stable-domain + candidate-audit | relation selector context/types plus local/drill-down search helpers | preferred for relation selector helper and type imports | Retained for now; `g07.007` should check whether the relation selector family is still one coherent contract. |
 | root `runtime` | compatibility-barrel | pagination type aliases only | do not teach as a primary import path | Root runtime exports only pagination aliases. Keep as low-value compatibility until caller proof exists. |
 
 ## Preferred Import Guidance

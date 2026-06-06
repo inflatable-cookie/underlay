@@ -49,4 +49,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g07.006`: list, pagination, reorder, and template seam audit.
+Execute `g07.007`: relation selector boundary audit.

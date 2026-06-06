@@ -74,8 +74,9 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g07.003` is complete as the runtime import guidance cleanup.
 - `g07.004` is complete as the pattern helper ownership diet.
 - `g07.005` is complete as the duplicated auth-aware fetch orchestration decision.
-- `g07.006` is next as the list, pagination, reorder, and template seam audit.
+- `g07.006` is complete as the list, pagination, reorder, and template seam audit.
+- `g07.007` is next as the relation selector boundary audit.
 
 ## Next Task
 
-Execute `g07.006`: list, pagination, reorder, and template seam audit.
+Execute `g07.007`: relation selector boundary audit.

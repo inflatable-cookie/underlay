@@ -312,7 +312,7 @@ Apps own:
 - relation selector search/suggestion contracts stay async even when backed by
   local in-memory helpers
 
-## Known Drift To Assess Later
+## Retained Drift To Assess Later
 
 - the pattern layer mixes true workflow shells with some helpers that may not
   still earn pattern ownership, especially `i18n`, duplicate suggestion-param
@@ -320,12 +320,11 @@ Apps own:
 - root-barrel exports are tiny while most real pattern-owned behavior is
   consumed through `runtime/*`, so public authority and implementation location
   are split and easy to misread
-- `useAuthenticatedData()`, `createListController()`, and
-  `createPaginationController()` each embed similar auth-refresh fetch logic,
-  which suggests duplicated workflow orchestration
-- the retained list/pagination/reorder controller family overlaps conceptually
-  with the newer template system, so the line between “shared workflow shell”
-  and “template concern” needs a later assessment
+- list, pagination, reorder, and batch helpers are retained under
+  `runtime/data`; this is broad but intentional because they form one lower
+  collection workflow layer below templates
+- templates own page/list shell composition; lower data helpers should not grow
+  visible page-shell behavior just because templates consume them
 - the auth workflow component family may be broader or narrower than what
   still earns shared ownership after the UI translation wave
 

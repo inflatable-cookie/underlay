@@ -1,6 +1,6 @@
 # g07.006 - List, Pagination, Reorder, And Template Seam Audit
 
-Status: ready
+Status: complete
 Owner: repo maintainers
 Updated: 2026-06-06
 
@@ -15,13 +15,13 @@ template-owned list shells are all retained, but their seam needs a fresh audit.
 
 ## Goals
 
-- [ ] inventory the list, pagination, reorder, batch, and template list seams
-- [ ] classify each helper as runtime-owned, template-owned, app-owned, or
+- [x] inventory the list, pagination, reorder, batch, and template list seams
+- [x] classify each helper as runtime-owned, template-owned, app-owned, or
   candidate-retire
-- [ ] identify duplicated list workflow state or mismatched docs
-- [ ] decide whether `runtime/data` should remain broad or queue a bounded
+- [x] identify duplicated list workflow state or mismatched docs
+- [x] decide whether `runtime/data` should remain broad or queue a bounded
   split
-- [ ] classify consumer impact before changing public exports or behavior
+- [x] classify consumer impact before changing public exports or behavior
 
 ## Non-Goals
 
@@ -33,18 +33,18 @@ template-owned list shells are all retained, but their seam needs a fresh audit.
 
 ## Execution Plan
 
-- [ ] inspect `runtime/data`, list/pagination/reorder implementation files, and
+- [x] inspect `runtime/data`, list/pagination/reorder implementation files, and
   template list components
-- [ ] compare with contracts `100`, `110`, `116`, and `117`
-- [ ] scan active docs and the six-consumer family for usage
-- [ ] write a seam classification artifact with any bounded follow-on cards
+- [x] compare with contracts `100`, `110`, `116`, and `117`
+- [x] scan active docs and the six-consumer family for usage
+- [x] write a seam classification artifact with any bounded follow-on cards
 
 ## Acceptance Criteria
 
-- [ ] each retained list/data helper has a clear owner and public posture
-- [ ] template-owned behavior is separated from lower controller behavior
-- [ ] duplicated or ambiguous workflow state has a disposition
-- [ ] no consumer-visible change lands without same-card proof
+- [x] each retained list/data helper has a clear owner and public posture
+- [x] template-owned behavior is separated from lower controller behavior
+- [x] duplicated or ambiguous workflow state has a disposition
+- [x] no consumer-visible change lands without same-card proof
 
 ## Validation
 
@@ -56,10 +56,10 @@ template-owned list shells are all retained, but their seam needs a fresh audit.
 
 ## Consumer Upgrade Impact
 
-None for the audit posture.
+None.
 
-Update this section if the card makes public API, import, or behavior changes.
+This card did not change public exports, imports, or runtime behavior.
 
 ## Next Task
 
-Execute this list, pagination, reorder, and template seam audit.
+Move to `g07.007`: relation selector boundary audit.
