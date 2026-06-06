@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.178`: six-consumer Rust API compatibility sweep.
+Execute `g06.179`: Rust hardening release-note and upgrade-guidance closeout.

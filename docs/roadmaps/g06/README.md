@@ -248,7 +248,9 @@ controlled breaking changes allowed across the six known consumers.
   batch.
 - `g06.177` is complete as the Rust hardening lane closeout and next
   architecture checkpoint.
-- `g06.178` is next as the six-consumer Rust API compatibility sweep.
+- `g06.178` is complete as the six-consumer Rust API compatibility sweep.
+- `g06.179` is next as the Rust hardening release-note and upgrade-guidance
+  closeout.
 
 ## Planned Runway
 
@@ -434,6 +436,7 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.176`: auth cookie unchecked string setter retirement
 - `g06.177`: Rust hardening lane closeout and next architecture checkpoint
 - `g06.178`: six-consumer Rust API compatibility sweep
+- `g06.179`: Rust hardening release-note and upgrade-guidance closeout
 
 ## Consumer Family
 
@@ -628,7 +631,8 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g06.175` is complete.
 - `g06.176` is complete.
 - `g06.177` is complete.
-- `g06.178` is next.
+- `g06.178` is complete.
+- `g06.179` is next.
 
 ## Batch Cards
 
@@ -637,4 +641,4 @@ If `g06` enters strict execution posture, keep its cards under
 
 ## Next Task
 
-Execute `g06.178`: six-consumer Rust API compatibility sweep.
+Execute `g06.179`: Rust hardening release-note and upgrade-guidance closeout.
