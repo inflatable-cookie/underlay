@@ -646,6 +646,8 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g06.185` is complete as the media repository usage trait split artifact.
 - `g06.186` is complete as the blob upload config boundary split artifact.
 - `g06.187` is complete as the typed existence soft-delete default artifact.
+- `g06.188` is complete as the validation validator surface internal split
+  artifact.
 - `g06` is closed.
 
 ## Batch Cards
