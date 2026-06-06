@@ -2,8 +2,8 @@ use super::*;
 #[cfg(feature = "nightfire")]
 use crate::nightfire::NightfireBlockMediaRegistration;
 use crate::storage::{
-    mime_to_extension, rendition_key, version_filename, version_key, StorageKeyConfig,
-    StorageKeyGenerator,
+    mime_to_extension, rendition_object_key, version_filename, version_object_key,
+    StorageKeyConfig, StorageKeyGenerator,
 };
 use uuid::Uuid;
 
@@ -43,12 +43,14 @@ fn test_storage_key_module_exports() {
     let media_id = Uuid::nil();
     let version_id = Uuid::nil();
 
-    // Test convenience functions
-    let key = version_key(media_id, version_id, "photo.jpg");
+    // Test validated convenience functions
+    let key = version_object_key(media_id, version_id, "photo.jpg").unwrap();
+    let key = key.as_str();
     assert!(key.contains("/versions/"));
     assert!(key.ends_with("/photo.jpg"));
 
-    let rend_key = rendition_key(media_id, version_id, "thumb");
+    let rend_key = rendition_object_key(media_id, version_id, "thumb").unwrap();
+    let rend_key = rend_key.as_str();
     assert!(rend_key.contains("/renditions/"));
     assert!(rend_key.ends_with("/thumb.jpg"));
 

@@ -296,6 +296,7 @@ README surfaces.
 - `g06.188` is complete as the validation validator surface internal split
   artifact
 - `g06.189` is complete as the devtools run bundle ref typing artifact
+- `g06.190` is complete as the media storage file key typing artifact
 - `g06` is closed as the Rust platform-contract transition and reference-grade
   reset generation
 - `g05` is closed as the shared-page, workflow-template, media capability,
@@ -619,3 +620,4 @@ Closed queue:
 - `g06.187`: typed existence soft-delete default
 - `g06.188`: validation validator surface internal split
 - `g06.189`: devtools run bundle ref typing
+- `g06.190`: media storage file key typing

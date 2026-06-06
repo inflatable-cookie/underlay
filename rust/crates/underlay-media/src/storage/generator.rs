@@ -47,7 +47,7 @@ impl StorageKeyGenerator {
     /// # Returns
     ///
     /// A key like `media/{media_id}/versions/{version_id}/{filename}`
-    pub fn version_key(
+    fn version_key(
         &self,
         media_id: impl Into<Uuid>,
         version_id: impl Into<Uuid>,
@@ -61,16 +61,6 @@ impl StorageKeyGenerator {
             version_id.into(),
             filename
         )
-    }
-
-    /// Generate an object key for a version file using typed IDs.
-    pub fn version_key_typed(
-        &self,
-        media_id: MediaId,
-        version_id: MediaVersionId,
-        filename: &str,
-    ) -> String {
-        self.version_key(media_id.0, version_id.0, filename)
     }
 
     /// Generate a validated blob object key for a version file.
@@ -104,7 +94,7 @@ impl StorageKeyGenerator {
     /// # Returns
     ///
     /// A key like `media/{media_id}/renditions/{version_id}/{rendition_name}.jpg`
-    pub fn rendition_key(
+    fn rendition_key(
         &self,
         media_id: impl Into<Uuid>,
         version_id: impl Into<Uuid>,
@@ -119,16 +109,6 @@ impl StorageKeyGenerator {
             rendition_name,
             self.config.rendition_extension
         )
-    }
-
-    /// Generate an object key for a rendition file using typed IDs.
-    pub fn rendition_key_typed(
-        &self,
-        media_id: MediaId,
-        version_id: MediaVersionId,
-        rendition_name: &str,
-    ) -> String {
-        self.rendition_key(media_id.0, version_id.0, rendition_name)
     }
 
     /// Generate a validated blob object key for a rendition file.
@@ -161,7 +141,7 @@ impl StorageKeyGenerator {
     /// - `Thumbnail` -> "thumb"
     /// - `Preview` -> "preview"
     /// - `Custom(name)` -> the custom name
-    pub fn rendition_key_for_type(
+    fn rendition_key_for_type(
         &self,
         media_id: impl Into<Uuid>,
         version_id: impl Into<Uuid>,

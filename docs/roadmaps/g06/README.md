@@ -449,6 +449,7 @@ controlled breaking changes allowed across the six known consumers.
 - `g06.187`: typed existence soft-delete default
 - `g06.188`: validation validator surface internal split
 - `g06.189`: devtools run bundle ref typing
+- `g06.190`: media storage file key typing
 
 ## Consumer Family
 
@@ -658,6 +659,7 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g06.188` is complete as the validation validator surface internal split
   artifact.
 - `g06.189` is complete as the devtools run bundle ref typing artifact.
+- `g06.190` is complete as the media storage file key typing artifact.
 - `g06` is closed.
 
 ## Batch Cards

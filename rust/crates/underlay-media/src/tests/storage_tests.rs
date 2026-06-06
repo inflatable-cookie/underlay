@@ -5,9 +5,9 @@ fn test_default_version_key() {
     let media_id = Uuid::parse_str("01234567-89ab-cdef-0123-456789abcdef").unwrap();
     let version_id = Uuid::parse_str("fedcba98-7654-3210-fedc-ba9876543210").unwrap();
 
-    let key = version_key(media_id, version_id, "photo.jpg");
+    let key = version_object_key(media_id, version_id, "photo.jpg").unwrap();
     assert_eq!(
-            key,
+            key.as_str(),
             "media/01234567-89ab-cdef-0123-456789abcdef/versions/fedcba98-7654-3210-fedc-ba9876543210/photo.jpg"
         );
 }
@@ -17,10 +17,12 @@ fn test_default_version_object_key_matches_string_key() {
     let media_id = Uuid::parse_str("01234567-89ab-cdef-0123-456789abcdef").unwrap();
     let version_id = Uuid::parse_str("fedcba98-7654-3210-fedc-ba9876543210").unwrap();
 
-    let key = version_key(media_id, version_id, "photo.jpg");
     let object_key = version_object_key(media_id, version_id, "photo.jpg").unwrap();
 
-    assert_eq!(object_key.as_str(), key);
+    assert_eq!(
+        object_key.as_str(),
+        "media/01234567-89ab-cdef-0123-456789abcdef/versions/fedcba98-7654-3210-fedc-ba9876543210/photo.jpg"
+    );
 }
 
 #[test]
@@ -28,9 +30,9 @@ fn test_default_rendition_key() {
     let media_id = Uuid::parse_str("01234567-89ab-cdef-0123-456789abcdef").unwrap();
     let version_id = Uuid::parse_str("fedcba98-7654-3210-fedc-ba9876543210").unwrap();
 
-    let key = rendition_key(media_id, version_id, "thumb");
+    let key = rendition_object_key(media_id, version_id, "thumb").unwrap();
     assert_eq!(
-            key,
+            key.as_str(),
             "media/01234567-89ab-cdef-0123-456789abcdef/renditions/fedcba98-7654-3210-fedc-ba9876543210/thumb.jpg"
         );
 }
@@ -40,10 +42,12 @@ fn test_default_rendition_object_key_matches_string_key() {
     let media_id = Uuid::parse_str("01234567-89ab-cdef-0123-456789abcdef").unwrap();
     let version_id = Uuid::parse_str("fedcba98-7654-3210-fedc-ba9876543210").unwrap();
 
-    let key = rendition_key(media_id, version_id, "thumb");
     let object_key = rendition_object_key(media_id, version_id, "thumb").unwrap();
 
-    assert_eq!(object_key.as_str(), key);
+    assert_eq!(
+        object_key.as_str(),
+        "media/01234567-89ab-cdef-0123-456789abcdef/renditions/fedcba98-7654-3210-fedc-ba9876543210/thumb.jpg"
+    );
 }
 
 #[test]
@@ -66,15 +70,19 @@ fn test_custom_config() {
     let media_id = Uuid::nil();
     let version_id = Uuid::nil();
 
-    let version_key = generator.version_key(media_id, version_id, "test.png");
+    let version_key = generator
+        .version_object_key(media_id, version_id, "test.png")
+        .unwrap();
     assert_eq!(
-            version_key,
+            version_key.as_str(),
             "uploads/00000000-0000-0000-0000-000000000000/original/00000000-0000-0000-0000-000000000000/test.png"
         );
 
-    let rendition_key = generator.rendition_key(media_id, version_id, "thumb");
+    let rendition_key = generator
+        .rendition_object_key(media_id, version_id, "thumb")
+        .unwrap();
     assert_eq!(
-            rendition_key,
+            rendition_key.as_str(),
             "uploads/00000000-0000-0000-0000-000000000000/thumbnails/00000000-0000-0000-0000-000000000000/thumb.webp"
         );
 }
@@ -86,17 +94,23 @@ fn test_rendition_key_for_type() {
     let version_id = Uuid::nil();
 
     assert!(generator
-        .rendition_key_for_type(media_id, version_id, &RenditionType::Thumbnail)
+        .rendition_object_key_for_type(media_id, version_id, &RenditionType::Thumbnail)
+        .unwrap()
+        .as_str()
         .ends_with("/thumb.jpg"));
     assert!(generator
-        .rendition_key_for_type(media_id, version_id, &RenditionType::Preview)
+        .rendition_object_key_for_type(media_id, version_id, &RenditionType::Preview)
+        .unwrap()
+        .as_str()
         .ends_with("/preview.jpg"));
     assert!(generator
-        .rendition_key_for_type(
+        .rendition_object_key_for_type(
             media_id,
             version_id,
             &RenditionType::Custom("hero".to_string())
         )
+        .unwrap()
+        .as_str()
         .ends_with("/hero.jpg"));
 }
 
