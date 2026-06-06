@@ -47,4 +47,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g06.173`: Rust security hardening closeout audit.
+Execute `g06.174`: media Postgres config unchecked constructor retirement.
