@@ -1,8 +1,8 @@
-# g09.010 - OAuth Rust File Cleanup
+# g07.037 - OAuth Rust File Cleanup
 
 Status: complete
 Owner: repo maintainers
-Roadmap: `g09`
+Roadmap: `g07`
 Depends on: `001`, `122`
 
 ## Scope
@@ -38,4 +38,4 @@ reported no findings.
 
 ## Next Task
 
-No active `g09` work remains.
+No active doctor-warning closeout work remains.

@@ -1,4 +1,4 @@
-# g07 - TS Runtime And Workflow Boundary Hardening
+# g07 - Runtime, Workflow, And Doctor Warning Boundary Hardening
 
 Status: complete
 Owner: repo maintainers
@@ -7,11 +7,13 @@ Completed: 2026-06-06
 
 ## Current Generation
 
-`g07` owns the TypeScript runtime, workflow pattern, template, and support-layer
-boundary hardening that follows the Rust reference-grade reset.
+`g07` owns the TypeScript runtime, workflow pattern, template, support-layer,
+residual Rust public-policy, and doctor-warning cleanup that follows the Rust
+reference-grade reset.
 
-The goal is not another broad UI rewrite. The goal is to make the retained TS
-surface easier for consuming apps to understand, import, test, and extend.
+The goal is not another broad UI rewrite. The goal is to make the retained
+shared surface easier for consuming apps to understand, import, test, and
+extend.
 
 ## Governing Authority
 
@@ -32,12 +34,16 @@ surface easier for consuming apps to understand, import, test, and extend.
   in multiple controllers
 - [x] keep templates as higher-order page/workflow composition, not primitive UI
 - [x] keep consumer import changes deliberate, classified, and validated
+- [x] retire residual direct Rust config construction where builders/accessors
+  make extension safer
+- [x] clear Effigy doctor structural warnings without changing public package or
+  crate exports
 
 ## Non-Goals
 
 - rewriting the admin template system from scratch
 - moving Poodle-owned primitives back into Underlay
-- changing Rust crate boundaries
+- changing package or crate ownership boundaries
 - adding compatibility aliases without a dated retirement plan
 - sweeping all consumer apps without a specific affected surface
 
@@ -66,6 +72,20 @@ surface easier for consuming apps to understand, import, test, and extend.
 - `g07.021`: client types focused consumer migration
 - `g07.022`: client query pagination boundary audit
 - `g07.023`: client HTTP retry timeout audit
+- `g07.024`: migration-core pipeline and integrity policy field retirement
+- `g07.025`: devtools bundle/seed option constructor and accessor audit
+- `g07.026`: migration-core governance/OCI/manifest policy model audit
+- `g07.027`: residual Rust public config closeout and compatibility proof
+- `g07.028`: doctor warning triage and Rust structural cleanup
+- `g07.029`: TypeScript auth test god-file split batch
+- `g07.030`: slugify test god-file split batch
+- `g07.031`: forms test god-file split batch
+- `g07.032`: i18n test god-file split batch
+- `g07.033`: SvelteKit test god-file split batch
+- `g07.034`: CSP test god-file split batch
+- `g07.035`: Nightfire utils test god-file split batch
+- `g07.036`: Nightfire summary-transform test split
+- `g07.037`: OAuth Rust file cleanup and doctor warning closeout
 
 ## Consumer Family
 
@@ -108,6 +128,25 @@ Each consumer-affecting milestone must classify impact as `additive`,
 - `g07.021` is complete as the client types focused consumer migration.
 - `g07.022` is complete as the client query pagination boundary audit.
 - `g07.023` is complete as the client HTTP retry timeout audit.
+- `g07.024` is complete as the migration-core policy field retirement batch.
+- `g07.025` is complete as the devtools bundle/seed option constructor and
+  accessor audit.
+- `g07.026` is complete as the migration-core governance/OCI/manifest policy
+  model audit.
+- `g07.027` is complete as the residual Rust public config closeout and
+  compatibility proof.
+- `g07.028` is complete as the doctor warning triage and Rust structural
+  cleanup batch.
+- `g07.029` is complete as the TypeScript auth test god-file split batch.
+- `g07.030` is complete as the slugify test god-file split batch.
+- `g07.031` is complete as the forms test god-file split batch.
+- `g07.032` is complete as the i18n test god-file split batch.
+- `g07.033` is complete as the SvelteKit test god-file split batch.
+- `g07.034` is complete as the CSP test god-file split batch.
+- `g07.035` is complete as the Nightfire utils test god-file split batch.
+- `g07.036` is complete as the Nightfire summary-transform test split.
+- `g07.037` is complete as the OAuth Rust file cleanup and doctor warning
+  closeout.
 - `g07` is complete.
 
 ## Next Task

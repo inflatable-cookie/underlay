@@ -1,8 +1,8 @@
-# g09.005 - I18n Test God-File Split
+# g07.032 - I18n Test God-File Split
 
 Status: complete
 Owner: repo maintainers
-Roadmap: `g09`
+Roadmap: `g07`
 Depends on: `001`
 
 ## Scope
@@ -40,4 +40,4 @@ Targeted Vitest run passed for the four split i18n test files: 58 tests.
 
 ## Next Task
 
-Continue with `g09.006`.
+Continue with `g07.033`.

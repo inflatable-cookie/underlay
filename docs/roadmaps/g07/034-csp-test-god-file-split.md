@@ -1,8 +1,8 @@
-# g09.007 - CSP Test God-File Split
+# g07.034 - CSP Test God-File Split
 
 Status: complete
 Owner: repo maintainers
-Roadmap: `g09`
+Roadmap: `g07`
 Depends on: `001`
 
 ## Scope
@@ -41,4 +41,4 @@ Targeted Vitest run passed for the five split CSP test files: 37 tests.
 
 ## Next Task
 
-Continue with `g09.008`.
+Continue with `g07.035`.

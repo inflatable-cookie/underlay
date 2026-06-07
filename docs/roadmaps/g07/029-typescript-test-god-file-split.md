@@ -1,8 +1,8 @@
-# g09.002 - TypeScript Test God-File Split
+# g07.029 - TypeScript Test God-File Split
 
 Status: complete
 Owner: repo maintainers
-Roadmap: `g09`
+Roadmap: `g07`
 Depends on: `001`
 
 ## Scope
@@ -40,4 +40,4 @@ Targeted Vitest run passed for the five split auth test files: 23 tests.
 
 ## Next Task
 
-Continue with `g09.003`.
+Continue with `g07.030`.

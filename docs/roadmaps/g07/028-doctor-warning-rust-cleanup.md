@@ -1,15 +1,15 @@
-# g09.001 - Doctor Warning Rust Cleanup
+# g07.028 - Doctor Warning Rust Cleanup
 
 Status: complete
 Owner: repo maintainers
-Roadmap: `g09`
+Roadmap: `g07`
 Depends on: `001`, `122`
 
 ## Scope
 
 First Effigy doctor warning cleanup batch:
 
-- repair roadmap front-door drift after `g08`
+- repair roadmap front-door drift after `g07.027`
 - trim the comment-ratio warning in `underlay-media` storage docs
 - split the oversized `underlay-devtools` migration-bundle model file without
   changing public exports
@@ -47,4 +47,4 @@ warning and `underlay-devtools` migration-bundle model god-file warning.
 
 ## Next Task
 
-Continue with `g09.002`.
+Continue with `g07.029`.

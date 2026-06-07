@@ -1,17 +1,17 @@
-# g08.004 - Residual Rust Config Closeout
+# g07.027 - Residual Rust Config Closeout
 
 Status: complete
 Owner: repo maintainers
-Roadmap: `g08`
+Roadmap: `g07`
 Depends on: `001`, `023`, `122`
 
 ## Scope
 
 Close out the residual Rust public config, option, and policy field sweep after:
 
-- `g08.001`: migration-core runtime policy fields
-- `g08.002`: devtools bundle/seed option fields
-- `g08.003`: migration-core governance, OCI, and manifest policy model audit
+- `g07.024`: migration-core runtime policy fields
+- `g07.025`: devtools bundle/seed option fields
+- `g07.026`: migration-core governance, OCI, and manifest policy model audit
 
 ## Findings
 
@@ -32,7 +32,8 @@ not private fields and builders.
 
 Impact: no new consumer code change in this closeout card.
 
-Prior `g08` breaking surfaces were limited to direct field construction of:
+Prior residual Rust breaking surfaces were limited to direct field construction
+of:
 
 - `PipelinePolicy`
 - `AiThresholdPolicy`
@@ -48,13 +49,13 @@ Current six-consumer scans found no direct construction of those scoped types.
   target is unclassified.
 - [x] Classify retained public-field records as DTO/report/document shapes.
 - [x] Confirm current consumers do not construct the scoped retired types.
-- [x] Close `g08` without opening a new compatibility-retirement batch by
+- [x] Close this lane without opening a new compatibility-retirement batch by
   implication.
 
 ## Acceptance Criteria
 
 - [x] Residual public config/options scan reviewed.
-- [x] Consumer literal scans for `g08` scoped types are clean.
+- [x] Consumer literal scans for scoped residual Rust types are clean.
 - [x] `effigy rust:check`
 - [x] `effigy qa:docs`
 - [x] `effigy qa:northstar`
@@ -63,10 +64,10 @@ Current six-consumer scans found no direct construction of those scoped types.
 
 - A remaining public field is a config/option/policy surface with construction
   invariants and live consumer use.
-- A consumer directly constructs one of the newly retired `g08` types.
-- Closing `g08` would leave an active queue item with no owner.
+- A consumer directly constructs one of the newly retired residual Rust types.
+- Closing this lane would leave an active queue item with no owner.
 
 ## Next Task
 
-No active `g08` task remains. Re-enter planning before opening another Rust
+No active residual Rust field-retirement task remains. Re-enter planning before opening another Rust
 compatibility-retirement lane.

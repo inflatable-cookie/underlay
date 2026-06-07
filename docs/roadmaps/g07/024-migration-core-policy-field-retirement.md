@@ -1,8 +1,8 @@
-# g08.001 - Migration-Core Policy Field Retirement
+# g07.024 - Migration-Core Policy Field Retirement
 
 Status: complete
 Owner: repo maintainers
-Roadmap: `g08`
+Roadmap: `g07`
 Depends on: `001`, `023`, `122`
 
 ## Scope
@@ -50,4 +50,4 @@ Current six-consumer scan found no named consumer direct field construction.
 
 ## Next Task
 
-After this batch, continue with `g08.002`.
+After this batch, continue with `g07.025`.

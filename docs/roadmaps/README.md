@@ -55,22 +55,6 @@ README surfaces.
 
 ## Current Queue
 
-- `g09.001` is complete as the doctor warning triage and Rust structural cleanup batch
-- `g09.002` is complete as the TypeScript auth test god-file split batch
-- `g09.003` is complete as the slugify test god-file split batch
-- `g09.004` is complete as the forms test god-file split batch
-- `g09.005` is complete as the i18n test god-file split batch
-- `g09.006` is complete as the SvelteKit test god-file split batch
-- `g09.007` is complete as the CSP test god-file split batch
-- `g09.008` is complete as the Nightfire utils test god-file split batch
-- `g09.009` is complete as the Nightfire summary-transform test split
-- `g09.010` is complete as the OAuth Rust file cleanup and doctor warning closeout
-- `g09` is complete as the Effigy doctor warning closeout generation
-- `g08.001` is complete as the migration-core policy field retirement batch
-- `g08.002` is complete as the devtools bundle/seed option constructor and accessor audit
-- `g08.003` is complete as the migration-core governance/OCI/manifest policy model audit
-- `g08.004` is complete as the residual Rust public config closeout and compatibility proof
-- `g08` is complete as the residual Rust public policy and tooling boundary hardening generation
 - `g07.001` is complete as the TS runtime and workflow ownership inventory
 - `g07.002` is complete as the runtime subpath public surface audit
 - `g07.003` is complete as the runtime import guidance cleanup
@@ -94,7 +78,27 @@ README surfaces.
 - `g07.021` is complete as the client types focused consumer migration
 - `g07.022` is complete as the client query pagination boundary audit
 - `g07.023` is complete as the client HTTP retry timeout audit
-- `g07` is complete as the TS runtime and workflow boundary hardening generation
+- `g07.024` is complete as the migration-core policy field retirement batch
+- `g07.025` is complete as the devtools bundle/seed option constructor and
+  accessor audit
+- `g07.026` is complete as the migration-core governance/OCI/manifest policy
+  model audit
+- `g07.027` is complete as the residual Rust public config closeout and
+  compatibility proof
+- `g07.028` is complete as the doctor warning triage and Rust structural cleanup
+  batch
+- `g07.029` is complete as the TypeScript auth test god-file split batch
+- `g07.030` is complete as the slugify test god-file split batch
+- `g07.031` is complete as the forms test god-file split batch
+- `g07.032` is complete as the i18n test god-file split batch
+- `g07.033` is complete as the SvelteKit test god-file split batch
+- `g07.034` is complete as the CSP test god-file split batch
+- `g07.035` is complete as the Nightfire utils test god-file split batch
+- `g07.036` is complete as the Nightfire summary-transform test split
+- `g07.037` is complete as the OAuth Rust file cleanup and doctor warning
+  closeout
+- `g07` is complete as the runtime, workflow, residual Rust policy, and doctor
+  warning hardening generation
 - `g06.001` is complete as the Rust platform contract transition and public API
   inventory gate
 - `g06.002` is complete as the typed safety primitive and construction-boundary

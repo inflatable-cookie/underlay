@@ -1,8 +1,8 @@
-# g08.002 - Devtools Option Field Retirement
+# g07.025 - Devtools Option Field Retirement
 
 Status: complete
 Owner: repo maintainers
-Roadmap: `g08`
+Roadmap: `g07`
 Depends on: `001`, `023`, `122`
 
 ## Scope
@@ -54,4 +54,4 @@ types.
 
 ## Next Task
 
-After this batch, continue with `g08.003`.
+After this batch, continue with `g07.026`.

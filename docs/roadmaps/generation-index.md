@@ -1,7 +1,7 @@
 # Underlay Roadmap Generation Index
 
 Status: active
-Updated: 2026-06-06
+Updated: 2026-06-07
 
 ## Mode
 
@@ -21,15 +21,11 @@ Updated: 2026-06-06
 | `g04` | 2026-05-08 | Independent contract-coverage thread under explicit parallel mode | Closed after contract coverage, assessment, and bounded repairs |
 | `g05` | 2026-05-xx | Shared page, workflow template, and consumer capability generation | Closed after query-variant and consumer capability line |
 | `g06` | 2026-06-05 | Rust platform-contract transition after code-quality audit | Closed after the reference-grade reset, Rust hardening lane, six-consumer proof, upgrade-guidance closeout, and bounded stale-drift repairs |
-| `g07` | 2026-06-06 | TS runtime and workflow boundary hardening after `g06` closeout | Complete after `g07.023` client HTTP retry timeout audit |
-| `g08` | 2026-06-06 | Residual Rust public policy and tooling boundary hardening after `g06`/`g07` closeout | Complete after residual config/policy closeout |
-| `g09` | 2026-06-06 | Effigy doctor warning closeout after `g08` | Complete after doctor warning closeout |
+| `g07` | 2026-06-06 | Runtime, workflow, residual Rust policy, and doctor-warning hardening after `g06` closeout | Complete after `g07.037` doctor warning closeout |
 
 ## Historical generations
 
-- [g09 - Effigy Doctor Warning Closeout](g09/README.md) (complete)
-- [g08 - Residual Rust Public Policy And Tooling Boundary Hardening](g08/README.md) (complete)
-- [g07 - TS Runtime And Workflow Boundary Hardening](g07/README.md) (complete)
+- [g07 - Runtime, Workflow, And Doctor Warning Boundary Hardening](g07/README.md) (complete)
 - [g06 - Rust Platform Contract Transition](g06/README.md) (complete)
 - [g05 - Shared Page, Workflow Template, And Query Variant Work](g05/README.md) (complete)
 - [g03 - Template System](g03/README.md) (complete)

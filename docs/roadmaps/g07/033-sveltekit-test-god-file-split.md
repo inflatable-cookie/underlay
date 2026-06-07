@@ -1,8 +1,8 @@
-# g09.006 - SvelteKit Test God-File Split
+# g07.033 - SvelteKit Test God-File Split
 
 Status: complete
 Owner: repo maintainers
-Roadmap: `g09`
+Roadmap: `g07`
 Depends on: `001`
 
 ## Scope
@@ -41,4 +41,4 @@ Targeted Vitest run passed for the four split SvelteKit test files: 9 tests.
 
 ## Next Task
 
-Continue with `g09.007`.
+Continue with `g07.034`.

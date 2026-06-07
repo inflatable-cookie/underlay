@@ -1,8 +1,8 @@
-# g09.009 - Nightfire Summary Transform Test Split
+# g07.036 - Nightfire Summary Transform Test Split
 
 Status: complete
 Owner: repo maintainers
-Roadmap: `g09`
+Roadmap: `g07`
 Depends on: `001`
 
 ## Scope
@@ -40,4 +40,4 @@ Targeted Vitest run passed for the three split summary-transform test files:
 
 ## Next Task
 
-Continue with `g09.010`.
+Continue with `g07.037`.

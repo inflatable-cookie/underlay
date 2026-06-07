@@ -1,8 +1,8 @@
-# g08.003 - Migration-Core Policy Model Audit
+# g07.026 - Migration-Core Policy Model Audit
 
 Status: complete
 Owner: repo maintainers
-Roadmap: `g08`
+Roadmap: `g07`
 Depends on: `001`, `023`, `122`
 
 ## Scope
@@ -58,4 +58,4 @@ Current six-consumer scan found no named consumer direct construction of
 
 ## Next Task
 
-After this batch, continue with `g08.004`.
+After this batch, continue with `g07.027`.

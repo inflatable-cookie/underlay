@@ -1,8 +1,8 @@
-# g09.003 - Slugify Test God-File Split
+# g07.030 - Slugify Test God-File Split
 
 Status: complete
 Owner: repo maintainers
-Roadmap: `g09`
+Roadmap: `g07`
 Depends on: `001`
 
 ## Scope
@@ -39,4 +39,4 @@ Targeted Vitest run passed for the three split slugify test files: 49 tests.
 
 ## Next Task
 
-Continue with `g09.004`.
+Continue with `g07.031`.

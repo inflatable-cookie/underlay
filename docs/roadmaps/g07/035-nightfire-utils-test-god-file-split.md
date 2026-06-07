@@ -1,8 +1,8 @@
-# g09.008 - Nightfire Utils Test God-File Split
+# g07.035 - Nightfire Utils Test God-File Split
 
 Status: complete
 Owner: repo maintainers
-Roadmap: `g09`
+Roadmap: `g07`
 Depends on: `001`
 
 ## Scope
@@ -40,4 +40,4 @@ tests. `effigy doctor` now reports 2 `scan.god-files` findings, down from 3.
 
 ## Next Task
 
-Continue with `g09.009`.
+Continue with `g07.036`.
