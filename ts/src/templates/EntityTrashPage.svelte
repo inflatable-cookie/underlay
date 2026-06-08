@@ -54,7 +54,7 @@
     emptyTitle,
     emptyMessage,
     emptyVisual = undefined,
-    minItemWidth = "26rem"
+    minItemWidth = "var(--underlay-list-grid-min, 20rem)"
   }: Props = $props();
 
   let resolvedBackInfo = $state<{ href: string; label: string; contextual: boolean } | null>(null);

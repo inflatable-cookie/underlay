@@ -1,5 +1,6 @@
 <script lang="ts">
   import { Code, Pill } from "@poodle/svelte";
+  import type { ControlDensity, ControlSize } from "@poodle/svelte";
   import {
     getMediaKindLabel,
     getMediaVisibilityLabel,
@@ -47,7 +48,9 @@
     content?: TemplateSurface;
     onTabChange?: (tabId: string) => void;
     tabsVariant?: "underline" | "card";
-    tabsSize?: "sm" | "md" | "lg";
+    tabsSize?: ControlSize | null;
+    tabsDensity?: ControlDensity | null;
+    tabsCollapseWhenOverflow?: boolean | null;
     tabsHistoryKey?: string;
     keepMountedTabs?: boolean;
     headerActions?: TemplateSurface;
@@ -79,7 +82,9 @@
     content,
     onTabChange,
     tabsVariant = "card",
-    tabsSize = "sm",
+    tabsSize = null,
+    tabsDensity = null,
+    tabsCollapseWhenOverflow = null,
     tabsHistoryKey,
     keepMountedTabs = false,
     headerActions
@@ -167,6 +172,8 @@
   {onTabChange}
   {tabsVariant}
   {tabsSize}
+  {tabsDensity}
+  {tabsCollapseWhenOverflow}
   tabsHistoryKey={tabsHistoryKey}
   {keepMountedTabs}
   {headerActions}

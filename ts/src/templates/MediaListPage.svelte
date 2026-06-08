@@ -165,12 +165,13 @@
   }
 </script>
 
-{#snippet headerLeadingActions(ctx: { selectionMode: boolean; reorderMode: boolean })}
+{#snippet headerLeadingActions(ctx: { selectionMode: boolean; reorderMode: boolean; actionSize?: "xs" | "sm" })}
   {#if onViewTrash}
     <IconButton
       type="button"
       variant="secondary"
       tone="danger"
+      size={ctx.actionSize}
       icon="trash-2"
       ariaLabel="View trash"
       tooltip="View trash"

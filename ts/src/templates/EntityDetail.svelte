@@ -62,16 +62,32 @@
   .underlay-entity-detail {
     display: grid;
     gap: var(--poodle-space-stack-lg);
+    container-type: inline-size;
   }
 
   .underlay-entity-detail__modules {
+    --underlay-entity-detail-modules-gap: var(--poodle-space-stack-lg);
+    --underlay-entity-detail-modules-min-width: 22rem;
+
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: var(--poodle-space-stack-lg);
+    grid-template-columns: repeat(
+      auto-fit,
+      minmax(
+        min(
+          100%,
+          max(
+            var(--underlay-entity-detail-modules-min-width),
+            calc((100% - var(--underlay-entity-detail-modules-gap)) / 2)
+          )
+        ),
+        1fr
+      )
+    );
+    gap: var(--underlay-entity-detail-modules-gap);
     align-items: stretch;
   }
 
-  @media (max-width: 64rem) {
+  @container (max-width: 46rem) {
     .underlay-entity-detail__modules {
       grid-template-columns: 1fr;
     }

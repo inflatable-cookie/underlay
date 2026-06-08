@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { AlertDialog, MediaThumbnail, formatFileSize } from "@poodle/svelte";
+  import { AlertDialog, MediaThumbnail, TimeAgo, formatFileSize } from "@poodle/svelte";
   import { gotoWithContext } from "../client/navigation";
   import {
     getMediaKindAccent,
@@ -73,14 +73,7 @@
       ? [{ label: getMediaVisibilityLabel(normalizedVisibility), accent: "#64748b" }]
       : [])
   ]);
-  const footerText = $derived(
-    [
-      media.byteSize ? formatFileSize(media.byteSize) : null,
-      media.updatedAt ? `Updated ${new Date(media.updatedAt).toLocaleDateString()}` : null
-    ]
-      .filter(Boolean)
-      .join(" · ")
-  );
+  const fileSizeText = $derived(media.byteSize ? formatFileSize(media.byteSize) : null);
   const menuItems = $derived([
     { value: "copy-id", label: "Copy media ID" },
     ...(onDelete
@@ -169,6 +162,20 @@
   </MediaThumbnail>
 {/snippet}
 
+{#snippet mediaFooter()}
+  {#if fileSizeText}
+    <span>{fileSizeText}</span>
+  {/if}
+
+  {#if fileSizeText && media.updatedAt}
+    <span aria-hidden="true">·</span>
+  {/if}
+
+  {#if media.updatedAt}
+    <TimeAgo datetime={media.updatedAt} typography="inherit" />
+  {/if}
+{/snippet}
+
 <EntityListCard
   title={title}
   {subtitle}
@@ -177,7 +184,7 @@
   selectionMode={selectionMode}
   {selected}
   badges={badges}
-  footerText={footerText || null}
+  footer={fileSizeText || media.updatedAt ? mediaFooter : undefined}
   leading={previewImageUrl ? mediaLeading : undefined}
   {leadingIcon}
   contextMenuItems={selectionMode || reorderMode ? [] : menuItems}

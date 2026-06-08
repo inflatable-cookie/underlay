@@ -54,8 +54,8 @@
   <PoodleMarkdownEditor
     value={text}
     placeholder="Write markdown..."
-    minHeight="5em"
-    mode="split"
+    minHeight="16rem"
+    mode="edit"
     onValueChange={handleInput}
   />
 </div>

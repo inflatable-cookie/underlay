@@ -1,10 +1,12 @@
 <script lang="ts">
+  import { onMount } from "svelte";
   import type { BreadcrumbItem } from "../patterns/types";
   import {
     PageHeader,
     Breadcrumbs,
     IconButton
   } from "@poodle/svelte";
+  import type { ControlSize } from "@poodle/svelte";
   import { getBackButtonInfo } from "../patterns/navigation";
   import { default as EntityList } from "./EntityList.svelte";
   import { default as EntityReorderControls } from "./EntityReorderControls.svelte";
@@ -265,7 +267,15 @@
   let visibleItemCount = $state(0);
   let reorderAvailable = $state(false);
   let reorderActionState = $state<ReorderActionState | null>(null);
+  let isNarrowViewport = $state(false);
   const headerActionSizeRole = $derived(headerLevel >= 3 ? "chrome" : "control");
+  const headerActionSize = $derived<ControlSize | undefined>(
+    !isNarrowViewport
+      ? undefined
+      : headerActionSizeRole === "chrome"
+        ? "xs"
+        : "sm"
+  );
 
   $effect(() => {
     if (!backHref) {
@@ -358,6 +368,20 @@
       toggleReorderMode();
     }
   }
+
+  onMount(() => {
+    const mediaQuery = window.matchMedia("(max-width: 45rem)");
+    const sync = () => {
+      isNarrowViewport = mediaQuery.matches;
+    };
+
+    sync();
+    mediaQuery.addEventListener("change", sync);
+
+    return () => {
+      mediaQuery.removeEventListener("change", sync);
+    };
+  });
 </script>
 
 <svelte:window onkeydown={handleKeydown} />
@@ -396,7 +420,8 @@
           visibleItemCount,
           selectedIds,
           selectedCount: selectedIds.length,
-          actionSizeRole: headerActionSizeRole
+          actionSizeRole: headerActionSizeRole,
+          actionSize: headerActionSize
         })}
       {/if}
 
@@ -404,6 +429,7 @@
         <IconButton
           type="button"
           variant="secondary"
+          size={headerActionSize}
           sizeRole={headerActionSizeRole}
           tone={selectionMode ? "danger" : "default"}
           icon={selectionMode ? "x" : "check-square"}
@@ -420,6 +446,7 @@
         dirty={reorderActionState?.dirty ?? false}
         saving={reorderActionState?.saving ?? false}
         disabled={selectionMode}
+        size={headerActionSize}
         sizeRole={headerActionSizeRole}
         onEnter={enterReorderMode}
         onSave={reorderActionState?.save}
@@ -436,6 +463,7 @@
         <IconButton
           type="button"
           variant="primary"
+          size={headerActionSize}
           sizeRole={headerActionSizeRole}
           icon="plus"
           ariaLabel={addLabel}
@@ -451,7 +479,8 @@
           reorderMode,
           visibleItemCount,
           selectedIds,
-          selectedCount: selectedIds.length
+          selectedCount: selectedIds.length,
+          actionSize: headerActionSize
         })}
       {/if}
     {/snippet}

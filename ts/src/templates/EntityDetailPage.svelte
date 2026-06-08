@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from "svelte";
   import type { Snippet } from "svelte";
   import type { BreadcrumbItem } from "../patterns/types";
   import { useAuthenticatedData } from "../runtime/auth";
@@ -15,6 +16,7 @@
     Callout,
     Button
   } from "@poodle/svelte";
+  import type { ControlDensity, ControlSize } from "@poodle/svelte";
   import { default as EntityMetaItem } from "./EntityMetaItem.svelte";
   import type {
     DetailActionConfig,
@@ -107,7 +109,13 @@
     tabsVariant?: "underline" | "card";
 
     /** Tabs size */
-    tabsSize?: "sm" | "md" | "lg";
+    tabsSize?: ControlSize | null;
+
+    /** Tabs density */
+    tabsDensity?: ControlDensity | null;
+
+    /** Collapse tabs into a menu when the strip no longer fits */
+    tabsCollapseWhenOverflow?: boolean | null;
 
     /** Optional tab history key passthrough for browser history persistence */
     tabsHistoryKey?: string;
@@ -154,7 +162,9 @@
     content,
     onTabChange,
     tabsVariant = "underline",
-    tabsSize = "sm",
+    tabsSize = null,
+    tabsDensity = null,
+    tabsCollapseWhenOverflow = null,
     tabsHistoryKey,
     keepMountedTabs = false,
     actions: pageActions = [],
@@ -168,6 +178,7 @@
   let mountedTabsVersion = $state(0);
   let showConfirmDialog = $state(false);
   let pendingAction: DetailActionConfig | null = $state(null);
+  let isNarrowViewport = $state(false);
   const pageActionItems = $derived(
     pageActions.map((action, index) => ({
       value: `action-${index}`,
@@ -175,6 +186,7 @@
       tone: (action.tone === "danger" ? "danger" : "default") as "default" | "danger"
     }))
   );
+  const headerActionSize = $derived<ControlSize>(isNarrowViewport ? "sm" : "md");
 
   // --- Actions ---
 
@@ -228,6 +240,18 @@
   );
   const error = $derived(providedError ?? (dataLoader ? (pageData?.error ?? null) : null));
   const allTabs = $derived<DetailTabConfig<T>[]>(tabs);
+  const resolvedTabsSize = $derived<ControlSize>(
+    tabsSize ?? (tabsVariant === "underline" ? "xs" : "sm")
+  );
+  const resolvedTabsDensity = $derived<ControlDensity | null>(
+    tabsDensity ?? (tabsVariant === "underline" ? "compact" : null)
+  );
+  const resolvedTabsCollapseWhenOverflow = $derived(
+    tabsCollapseWhenOverflow ?? (tabsVariant === "underline")
+  );
+  const resolvedTabsHistoryKey = $derived<string | null>(
+    tabsHistoryKey === undefined ? "tab" : tabsHistoryKey
+  );
   const shouldShowSubtitleWithBreadcrumbs = $derived(showSubtitleWithBreadcrumbs || detailBreadcrumbs.length === 0);
   let resolvedBackInfo = $state<{ href: string; label: string; contextual: boolean } | null>(null);
   let previousReloadKey = $state<string | number | null>(null);
@@ -260,7 +284,7 @@
     const firstTabId = allTabs[0]?.id ?? "";
     const hasActiveTab = allTabs.some((tab) => tab.id === activeTab);
     if (!hasActiveTab) {
-      activeTab = firstTabId;
+      activeTab = getUrlTabValue() ?? firstTabId;
     }
   });
 
@@ -306,6 +330,78 @@
       void pageData?.refetch();
     }
   }
+
+  function getDefaultTabId(): string | null {
+    return allTabs[0]?.id ?? null;
+  }
+
+  function getUrlTabValue(): string | null {
+    if (typeof window === "undefined" || !resolvedTabsHistoryKey) return null;
+
+    const nextValue = new URL(window.location.href).searchParams.get(resolvedTabsHistoryKey);
+    if (!nextValue) return null;
+    return allTabs.some((tab) => tab.id === nextValue) ? nextValue : null;
+  }
+
+  function replaceUrlTabValue(tabId: string): void {
+    if (typeof window === "undefined" || !resolvedTabsHistoryKey) return;
+
+    const defaultTabId = getDefaultTabId();
+    const url = new URL(window.location.href);
+    const currentValue = url.searchParams.get(resolvedTabsHistoryKey);
+    const nextValue = tabId === defaultTabId ? null : tabId;
+
+    if (currentValue === nextValue) return;
+
+    if (nextValue) {
+      url.searchParams.set(resolvedTabsHistoryKey, nextValue);
+    } else {
+      url.searchParams.delete(resolvedTabsHistoryKey);
+    }
+
+    window.history.replaceState(window.history.state, "", url);
+  }
+
+  function syncTabFromUrl(): void {
+    const nextTab = getUrlTabValue() ?? getDefaultTabId();
+    if (!nextTab) return;
+    activeTab = nextTab;
+  }
+
+  function handleTabValueChange(value: string): void {
+    activeTab = value;
+    replaceUrlTabValue(value);
+  }
+
+  onMount(() => {
+    const mediaQuery = window.matchMedia("(max-width: 45rem)");
+    const sync = () => {
+      isNarrowViewport = mediaQuery.matches;
+    };
+
+    sync();
+    mediaQuery.addEventListener("change", sync);
+
+    return () => {
+      mediaQuery.removeEventListener("change", sync);
+    };
+  });
+
+  onMount(() => {
+    if (!resolvedTabsHistoryKey) return;
+
+    syncTabFromUrl();
+
+    const handlePopState = () => {
+      syncTabFromUrl();
+    };
+
+    window.addEventListener("popstate", handlePopState);
+
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  });
 </script>
 
 {#if loading}
@@ -375,6 +471,7 @@
                 type="button"
                 icon="ellipsis"
                 variant="secondary"
+                size={headerActionSize}
                 ariaLabel={`${section ?? title} actions`}
                 tooltip="Actions"
               />
@@ -394,12 +491,11 @@
           separator: tab.id === allTabs[allTabs.length - 1]?.id ? false : tab.separator
         }))}
         variant={tabsVariant}
-        size={tabsSize}
-        historyKey={tabsHistoryKey}
+        size={resolvedTabsSize}
+        density={resolvedTabsDensity}
+        collapseWhenOverflow={resolvedTabsCollapseWhenOverflow}
         ariaLabel={`${title} sections`}
-        onValueChange={(value) => {
-          activeTab = value;
-        }}
+        onValueChange={handleTabValueChange}
       >
         {#snippet children(activeValue)}
         {#each allTabs as tab}

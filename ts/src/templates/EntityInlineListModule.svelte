@@ -488,7 +488,7 @@
         <p class="underlay-inline-list-module__empty">{emptyMessage}</p>
       {/if}
     {:else}
-      <ListGrid minItemWidth="26rem" variant={listGridVariant} gap={listGridGap}>
+      <ListGrid minItemWidth="var(--underlay-list-grid-min, 20rem)" variant={listGridVariant} gap={listGridGap}>
         {#each visibleItems as entry}
           {@render item(entry, getItemContext())}
         {/each}
@@ -592,5 +592,11 @@
     font-size: var(--poodle-typography-body-size);
     font-style: italic;
     color: var(--poodle-color-text-secondary);
+  }
+
+  @media (max-width: 45rem) {
+    .underlay-inline-list-module__header-actions {
+      gap: 0.25rem;
+    }
   }
 </style>

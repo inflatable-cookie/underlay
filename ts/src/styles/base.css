@@ -28,10 +28,20 @@
   Components inside can use .span-full to span both columns.
 */
 .underlay-details-content {
+  --underlay-details-content-gap: var(--underlay-space-6, 1.5rem);
+  --underlay-details-content-min-width: 22rem;
+
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: var(--underlay-space-6, 1.5rem);
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(
+      min(100%, max(var(--underlay-details-content-min-width), calc((100% - var(--underlay-details-content-gap)) / 2))),
+      1fr
+    )
+  );
+  gap: var(--underlay-details-content-gap);
   align-items: stretch;
+  container-type: inline-size;
 }
 
 .underlay-details-content > * {
@@ -71,7 +81,7 @@
   flex: 1;
 }
 
-@container (max-width: 850px) {
+@container (max-width: 46rem) {
   .underlay-details-content {
     grid-template-columns: 1fr;
   }

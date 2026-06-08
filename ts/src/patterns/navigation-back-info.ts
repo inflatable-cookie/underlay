@@ -20,7 +20,9 @@ function isContextValid(
 }
 
 function contextualBackLabel(label: string): string {
-  return label.toLowerCase().startsWith("back ") ? label : `Back to ${label}`;
+  const trimmed = label.trim();
+  if (!trimmed) return "Back";
+  return trimmed;
 }
 
 export function resolveBackButtonInfo(

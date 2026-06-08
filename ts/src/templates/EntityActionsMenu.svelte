@@ -1,6 +1,7 @@
 <script lang="ts">
+  import { onMount } from "svelte";
   import { AlertDialog, IconButton, Menu } from "@poodle/svelte";
-  import type { MenuItem } from "@poodle/svelte";
+  import type { ControlSize, MenuItem } from "@poodle/svelte";
   import { copyToClipboard, useToasts } from "../runtime/feedback";
   import type { ToastStore } from "../runtime/feedback";
   import type { TemplateSurface } from "./template.types";
@@ -69,6 +70,8 @@
 
   let deleteOpen = $state(false);
   let deleteBusy = $state(false);
+  let isNarrowViewport = $state(false);
+  const responsiveTriggerSize = $derived<ControlSize>(isNarrowViewport ? "sm" : "md");
 
   const menuEntries = $derived.by(() => {
     const entries: Array<
@@ -178,6 +181,20 @@
       deleteBusy = false;
     }
   }
+
+  onMount(() => {
+    const mediaQuery = window.matchMedia("(max-width: 45rem)");
+    const sync = () => {
+      isNarrowViewport = mediaQuery.matches;
+    };
+
+    sync();
+    mediaQuery.addEventListener("change", sync);
+
+    return () => {
+      mediaQuery.removeEventListener("change", sync);
+    };
+  });
 </script>
 
 {#if content}
@@ -204,6 +221,7 @@
           type="button"
           icon="ellipsis"
           variant="secondary"
+          size={responsiveTriggerSize}
           ariaLabel={triggerAriaLabel}
           tooltip={triggerTooltip}
         />

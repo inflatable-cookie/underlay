@@ -1333,7 +1333,7 @@
         {/snippet}
       </EditableList>
     {:else if presentation === "cards"}
-      <ListGrid minItemWidth="26rem" variant={listGridVariant} gap={listGridGap}>
+      <ListGrid minItemWidth="var(--underlay-list-grid-min, 20rem)" variant={listGridVariant} gap={listGridGap}>
         {#each items as item (getItemKey(item))}
           {#if renderItem}
             {@render renderItem(item, getItemContext(item))}
@@ -1438,7 +1438,7 @@
       {/snippet}
     </EditableList>
   {:else if presentation === "cards"}
-    <ListGrid minItemWidth="26rem" variant={listGridVariant} gap={listGridGap}>
+    <ListGrid minItemWidth="var(--underlay-list-grid-min, 20rem)" variant={listGridVariant} gap={listGridGap}>
       {#each items as item (getItemKey(item))}
         {#if renderItem}
           {@render renderItem(item, getItemContext(item))}
