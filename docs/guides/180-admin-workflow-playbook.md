@@ -3,6 +3,10 @@
 A practical "start here" playbook for building admin functionality with
 Underlay’s retained runtime/client surfaces plus Poodle-first UI composition.
 
+Status: legacy guide. For agent-built admin resource families, start with
+`docs/usage/templates/admin-section-agent-protocol.md`, then use this guide for
+older backend/runtime checklist context only.
+
 ## When To Use This
 
 Use this guide when the request is:
@@ -17,6 +21,7 @@ Use this guide when the request is:
 - Identify whether ordering, trash, or relation picking is required.
 - Set expected file/module boundaries up front using `docs/guides/020-project-structure.md` (anti-god-file policy).
 - Define API profiles up front (`list`, `filter`, `details`) using `docs/guides/073-api-profiles-and-query-contract.md`.
+- For agent-built admin UI sections, load `docs/usage/templates/admin-section-agent-protocol.md` before coding.
 
 2. Choose the base recipe
 - Standalone CRUD: `docs/patterns/crud-admin-interface.md`
@@ -36,17 +41,18 @@ Recipe ownership rule:
 4. Build backend -> client -> UI in order
 - DB/data functions, then API handlers/routes, then TS client commands/types, then Svelte pages/components.
 - Keep response/error shapes consistent with `docs/guides/070-api-handlers.md`.
-- For the UI implementation layer, use the Poodle guides as the canonical
-  source:
-  - `Admin Feature Delivery Recipes`
-  - `Page Shell And Admin Recipes`
-  - `List And Filter Recipes`
-  - `Dialog And Detail Recipes`
+- For normal admin resource UI, use Underlay templates as the canonical page
+  and section composition layer, then Poodle primitives inside app-owned form
+  bodies and custom snippets.
 
 Default visible mapping:
-- list pages -> `ListContainer` + `FilterToolbar`
-- detail pages -> `PageHeader` + `MetaBar` + `DetailSection` / `DetailItem`
-- create/edit pages -> Poodle fields/actions, plus `SpaFormShell` only when its retained SPA workflow still earns its place
+- list pages -> app-local wrapper over `EntityListPage`
+- list cards -> app-local card over `EntityListCard`
+- detail pages -> `EntityDetailPage` with `EntityDetail`/detail modules/items
+- child collection tabs -> the same app-local list wrapper over
+  `EntityListPage` when the tab is a real browse/manage surface
+- create/edit pages -> `EntityFormPage` shell with app-owned form body and
+  Poodle fields/actions
 - destructive flows -> `AlertDialog`
 - diagnostics/error inspection -> stats + `DataTable` with inline expansion by
   default, not a separate first-class detail page unless the app needs a

@@ -134,6 +134,11 @@ execution dialog shell.
 If you are bootstrapping a new app's admin `/system` section, use
 [System Section Bootstrap](./system-section-bootstrap.md).
 
+If you are asking an agent to build a normal admin resource family, start with
+[Admin Section Agent Protocol](./admin-section-agent-protocol.md). It is the
+short, prescriptive route for list/detail/form/action-menu work across
+Underlay-based apps.
+
 ## Quick Example
 
 ### List Page
@@ -192,7 +197,7 @@ If you are bootstrapping a new app's admin `/system` section, use
   import {
     EntityDetail,
     EntityDetailPage,
-    EntityList
+    EntityListPage
   } from "@decodelabs/underlay/templates";
   import { Code, Pill } from "@poodle/svelte";
 
@@ -214,8 +219,9 @@ If you are bootstrapping a new app's admin `/system` section, use
 {/snippet}
 
 {#snippet tasksTab(project)}
-  <EntityList
+  <EntityListPage
     title="Tasks"
+    headerLevel={3}
     presentation="cards"
     dataLoader={loadTasks}
     renderItem={taskCard}

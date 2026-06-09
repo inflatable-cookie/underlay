@@ -22,6 +22,34 @@ proceeding.
 
 ## Commands
 
+### `/underlay-build admin-section`
+
+Use when building or extending a full admin resource family: list, detail,
+create/edit, action menu, child tabs, counters, and navigation context.
+
+**Opens:** `underlay/docs/usage/templates/admin-section-agent-protocol.md`
+**Also read as needed:**
+- `underlay/docs/usage/templates/entity-list-page.md`
+- `underlay/docs/usage/templates/entity-detail-page.md`
+- `underlay/docs/usage/templates/entity-form-page.md`
+- `underlay/docs/contracts/110-admin-template-system.md`
+- `underlay/docs/contracts/115-admin-resource-api-shapes.md`
+
+**On-contract guardrails:**
+- Inspect nearby app examples before writing code
+- Build route families coherently; do not implement list/detail/form as
+  unrelated pages
+- Normal lists use app-local wrappers over `EntityListPage`
+- Normal card-mode lists use app-local cards over `EntityListCard`
+- Normal detail pages use `EntityDetailPage`
+- Detail tabs that are real child browse/manage surfaces use the same app-local
+  list wrapper over `EntityListPage`
+- Edit routes use `EntityFormPage` and the same app-local actions menu as the
+  detail route
+- Soft delete belongs in the header actions menu, not the form action row
+- Preserve navigation context back to the active parent tab
+- Validate with the repo-owned check surface before closing
+
 ### `/underlay-build admin-list`
 
 Use when building or modifying a browse/manage list page (root page or detail
@@ -227,6 +255,7 @@ using this table. Read the file before implementing.
 | AI runtime routing | `docs/guides/176-ai-runtime-routing.md` |
 | Admin workflow playbook | `docs/guides/180-admin-workflow-playbook.md` |
 | Template system overview | `docs/usage/templates/000-template-system-overview.md` |
+| Admin section agent protocol | `docs/usage/templates/admin-section-agent-protocol.md` |
 | Template consumer rollout | `docs/usage/templates/consumer-rollout.md` |
 | Template API reference | `docs/usage/templates/template-api-reference.md` |
 | Effigy tasks / health | `effigy.toml` in the target repo |

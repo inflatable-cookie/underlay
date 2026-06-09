@@ -17,10 +17,11 @@ For **frontend developers**:
 3. [Admin/Front Separation](../guides/072-admin-front-separation.md)
 
 For **template system** (admin UIs):
-1. [Template System Overview](./templates/000-template-system-overview.md)
-2. [Entity List Page](./templates/entity-list-page.md)
-3. [Entity Detail Page](./templates/entity-detail-page.md)
-4. [Entity Form Page](./templates/entity-form-page.md)
+1. [Admin Section Agent Protocol](./templates/admin-section-agent-protocol.md)
+2. [Template System Overview](./templates/000-template-system-overview.md)
+3. [Entity List Page](./templates/entity-list-page.md)
+4. [Entity Detail Page](./templates/entity-detail-page.md)
+5. [Entity Form Page](./templates/entity-form-page.md)
 
 For **migration and state operations**:
 1. [Migration State Layout And Effigy](./migration/000-state-layout-and-effigy.md)
@@ -43,7 +44,7 @@ import { EntityListPage, EntityDetailPage } from "@decodelabs/underlay/templates
 **Three-level composition:**
 
 - **Level 1 — Page Shells:** `EntityListPage`, `EntityDetailPage`, `EntityFormPage`
-- **Level 2 — Sections:** `EntityList`, `EntityDetail`, `EntityForm` (reusable in tabs, dialogs)
+- **Level 2 — Sections:** `EntityList`, `EntityDetail`, `EntityDetailModule`, `EntityInlineListModule` (reusable in tabs, dialogs)
 - **Level 3 — Primitives:** Poodle components (`PageHeader`, `DataTable`, `DetailSection`, etc.)
 
 ### Developer Skills
@@ -64,6 +65,7 @@ npx skills add inflatable-cookie/underlay --skill underlay-build
 Use `/underlay-template` to look up template documentation:
 
 ```
+/underlay-template admin    → admin-section agent protocol
 /underlay-template list      → entity-list-page docs
 /underlay-template detail    → entity-detail-page docs
 /underlay-template form      → entity-form-page docs
@@ -74,6 +76,7 @@ Use `/underlay-build` to stay on-contract when building or maintaining
 Underlay-based applications:
 
 ```
+/underlay-build admin-section → whole admin resource family protocol
 /underlay-build admin-list   → list page templates + guardrails
 /underlay-build admin-detail → detail page templates + guardrails
 /underlay-build admin-form   → form page templates + guardrails
