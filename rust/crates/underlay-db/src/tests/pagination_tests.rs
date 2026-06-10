@@ -31,6 +31,7 @@ fn test_weight_cursor() {
 #[test]
 fn test_pagination_params_defaults() {
     let params = PaginationParams::default();
+    assert_eq!(params.page, 1);
     assert_eq!(params.limit, 30);
     assert!(params.cursor.is_none());
     assert_eq!(params.direction, PaginationDirection::Forward);
@@ -44,6 +45,15 @@ fn test_pagination_params_effective_limit() {
 
     let params = PaginationParams::new().with_limit(0);
     assert_eq!(params.effective_limit(), 1); // Clamped to min
+}
+
+#[test]
+fn test_pagination_params_page_offset() {
+    let params = PaginationParams::new().with_page(3).with_limit(25);
+    let builder = PaginationBuilder::new(params);
+
+    assert_eq!(builder.page_size(), 25);
+    assert_eq!(builder.query_offset(), 50);
 }
 
 #[test]

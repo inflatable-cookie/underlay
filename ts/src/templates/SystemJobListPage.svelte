@@ -1,8 +1,9 @@
 <script lang="ts">
   import { getAuthConfig, useAuthenticatedData } from "../runtime/auth";
   import { useToasts } from "../runtime/feedback";
+  import { default as AdminPill } from "./AdminPill.svelte";
   import { default as EntityListPage } from "./EntityListPage.svelte";
-  import { Pill, TimeAgo } from "@poodle/svelte";
+  import { TimeAgo } from "@poodle/svelte";
   import type { QueryParams } from "../client/query";
   import type {
     ListVariantDefinition,
@@ -28,6 +29,9 @@
     statsLoader?: SystemJobStatsLoader;
     retryAction?: SystemJobAction;
     cancelAction?: SystemJobAction;
+    formatStatusLabel?: (status: string) => string;
+    statusAccent?: (status: string) => string | null | undefined;
+    statusTone?: (status: string) => "neutral" | "success" | "warning" | "danger" | "info";
     navigate?: (href: string) => unknown;
     query: QueryParams;
     onQueryChange: (query: QueryParams) => void;
@@ -42,6 +46,9 @@
     statsLoader,
     retryAction,
     cancelAction,
+    formatStatusLabel = getStatusLabel,
+    statusAccent = undefined,
+    statusTone = getStatusTone,
     navigate = defaultNavigate,
     query,
     onQueryChange
@@ -150,7 +157,7 @@
       .replace(/\b\w/g, (char) => char.toUpperCase());
   }
 
-  function getStatusTone(status: string) {
+  function getStatusTone(status: string): "neutral" | "success" | "warning" | "danger" | "info" {
     switch (status) {
       case "succeeded":
         return "success";
@@ -163,7 +170,7 @@
   }
 
   function getStatusLabel(status: string): string {
-    return status.charAt(0).toUpperCase() + status.slice(1);
+    return status.replaceAll("_", " ").toLowerCase();
   }
 
   function getToken() {
@@ -247,9 +254,7 @@
       {/if}
     </div>
   {:else if column.id === "status"}
-    <Pill tone={getStatusTone(job.status)} appearance="badge" size="sm">
-      {getStatusLabel(job.status)}
-    </Pill>
+    <AdminPill kind={statusTone(job.status)} label={formatStatusLabel(job.status)} accent={statusAccent?.(job.status) ?? null} typography="label" />
   {:else if column.id === "attempts"}
     {job.attempts}/{job.maxAttempts}
   {:else if column.id === "createdAt"}

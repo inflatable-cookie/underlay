@@ -393,11 +393,13 @@
     }
 
     if (previousListQueryKey !== currentKey) {
+      const nextQuery = effectiveQuery;
       previousListQueryKey = currentKey;
       if (handledListQueryKey === currentKey) {
         handledListQueryKey = null;
         return;
       }
+      pendingFetchQuery = nextQuery;
       void pageData.refetch();
     }
   });

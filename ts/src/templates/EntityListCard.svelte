@@ -47,6 +47,7 @@
     onContextAction = null,
     titleContent,
     leading: leadingContent,
+    corner: cornerContent,
     footer: footerContent
   }: EntityListCardProps = $props();
 
@@ -187,6 +188,7 @@
       {titleContent}
       leading={leadingVisual}
       badges={resolvedBadgeItems.length > 0 ? badgeContent : undefined}
+      corner={cornerContent}
       footer={footerBlock}
     />
   {:else}
@@ -220,6 +222,7 @@
       {titleContent}
       leading={leadingVisual}
       badges={resolvedBadgeItems.length > 0 ? badgeContent : undefined}
+      corner={cornerContent}
     />
   {/if}
 {:else if hasFooter}
@@ -251,6 +254,7 @@
     onClick={handleClick}
     {titleContent}
     badges={resolvedBadgeItems.length > 0 ? badgeContent : undefined}
+    corner={cornerContent}
     footer={footerBlock}
   />
 {:else}
@@ -282,6 +286,7 @@
     onClick={handleClick}
     {titleContent}
     badges={resolvedBadgeItems.length > 0 ? badgeContent : undefined}
+    corner={cornerContent}
   />
 {/if}
 

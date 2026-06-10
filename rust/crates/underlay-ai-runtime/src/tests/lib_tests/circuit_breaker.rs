@@ -5,7 +5,7 @@ use serde_json::json;
 use super::super::{
     AiErrorKind, CircuitBreakerConfig, CircuitBreakerMiddleware, CircuitState, LlmClient,
 };
-use super::support::{SharedScriptedLlmClient, err, ok_response, sample_request, sample_route};
+use super::support::{err, ok_response, sample_request, sample_route, SharedScriptedLlmClient};
 
 #[tokio::test]
 async fn circuit_breaker_opens_then_allows_half_open_recovery() {

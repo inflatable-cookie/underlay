@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { AlertDialog, MediaThumbnail, TimeAgo, formatFileSize } from "@poodle/svelte";
+  import { AlertDialog, Icon, MediaThumbnail, TimeAgo, formatFileSize } from "@poodle/svelte";
   import { gotoWithContext } from "../client/navigation";
   import {
     getMediaKindAccent,
@@ -19,7 +19,9 @@
     visibility?: string | null;
     title?: string | null;
     originalFilename?: string | null;
+    mimeType?: string | null;
     thumbnailUrl?: string | null;
+    originalUrl?: string | null;
     byteSize?: number | null;
     updatedAt?: string | null;
   }
@@ -58,7 +60,10 @@
   const normalizedKind = $derived(normalizeMediaKind(media.kind));
   const normalizedVisibility = $derived(normalizeMediaVisibility(media.visibility ?? null));
   const title = $derived(media.title ?? media.originalFilename ?? "Untitled");
-  const rawThumbnailUrl = $derived(media.thumbnailUrl?.trim() || null);
+  const isSvg = $derived(isSvgMedia(media));
+  const rawThumbnailUrl = $derived(
+    media.thumbnailUrl?.trim() || (isSvg ? media.originalUrl?.trim() : null) || null
+  );
   const previewImageUrl = $derived(
     rawThumbnailUrl && rawThumbnailUrl !== failedThumbnailUrl ? rawThumbnailUrl : null
   );
@@ -68,10 +73,7 @@
       : null
   );
   const badges = $derived<EntityListCardBadge[]>([
-    { label: getMediaKindLabel(normalizedKind), accent: getMediaKindAccent(normalizedKind) },
-    ...(normalizedVisibility !== MediaVisibility.Public
-      ? [{ label: getMediaVisibilityLabel(normalizedVisibility), accent: "#64748b" }]
-      : [])
+    { label: getMediaKindLabel(normalizedKind), accent: getMediaKindAccent(normalizedKind) }
   ]);
   const fileSizeText = $derived(media.byteSize ? formatFileSize(media.byteSize) : null);
   const menuItems = $derived([
@@ -112,6 +114,13 @@
     if (kind === MediaKind.Audio) return "music";
     if (kind === MediaKind.Video) return "video";
     return "file-text";
+  }
+
+  function isSvgMedia(item: MediaListCardItem): boolean {
+    return (
+      item.mimeType === "image/svg+xml" ||
+      item.originalFilename?.toLowerCase().endsWith(".svg") === true
+    );
   }
 
   function handleOpen(): void {
@@ -176,6 +185,12 @@
   {/if}
 {/snippet}
 
+{#snippet visibilityCorner()}
+  <span title={getMediaVisibilityLabel(normalizedVisibility)}>
+    <Icon icon="lock" ariaLabel={getMediaVisibilityLabel(normalizedVisibility)} size="sm" />
+  </span>
+{/snippet}
+
 <EntityListCard
   title={title}
   {subtitle}
@@ -184,6 +199,7 @@
   selectionMode={selectionMode}
   {selected}
   badges={badges}
+  corner={normalizedVisibility !== MediaVisibility.Public ? visibilityCorner : undefined}
   footer={fileSizeText || media.updatedAt ? mediaFooter : undefined}
   leading={previewImageUrl ? mediaLeading : undefined}
   {leadingIcon}

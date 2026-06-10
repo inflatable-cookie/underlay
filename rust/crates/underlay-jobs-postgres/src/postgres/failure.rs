@@ -5,7 +5,7 @@ use tracing::{debug, instrument};
 use crate::postgres_dead_letters::PgDeadLetterRepository;
 use underlay_jobs::{Job, JobConfig, JobErrorRecord, JobFailureOutcome};
 
-use super::{JobRepository, RepoError, Result, to_raw};
+use super::{to_raw, JobRepository, RepoError, Result};
 
 impl JobRepository {
     /// Mark a job as failed and potentially schedule for retry.

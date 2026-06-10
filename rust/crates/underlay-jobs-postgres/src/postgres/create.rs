@@ -6,7 +6,7 @@ use crate::postgres_rows::JobRow;
 use underlay_core::Uuid;
 use underlay_jobs::{Job, JobConfig, JobEvent};
 
-use super::{JobRepository, Result, to_raw};
+use super::{to_raw, JobRepository, Result};
 
 impl JobRepository {
     /// Create a new job to run immediately.

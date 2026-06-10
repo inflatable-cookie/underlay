@@ -1,6 +1,6 @@
-use aws_sdk_s3::Client;
 use aws_sdk_s3::error::ProvideErrorMetadata;
 use aws_sdk_s3::types::{BucketLocationConstraint, CreateBucketConfiguration};
+use aws_sdk_s3::Client;
 use tracing::warn;
 
 use crate::error::{BlobError, BlobResult};

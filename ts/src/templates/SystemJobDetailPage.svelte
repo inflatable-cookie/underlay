@@ -1,6 +1,8 @@
 <script lang="ts">
   import { getAuthConfig } from "../runtime/auth";
   import { useToasts } from "../runtime/feedback";
+  import { default as AdminPill } from "./AdminPill.svelte";
+  import { default as EntityActionsMenu } from "./EntityActionsMenu.svelte";
   import { default as EntityDetailPage } from "./EntityDetailPage.svelte";
   import type {
     DetailMetaItemConfig,
@@ -10,13 +12,12 @@
     TemplateSurface
   } from "./template.types";
   import {
-    Button,
     Card,
     Code,
     DetailItem,
     DetailSection,
-    IconButton,
-    Pill,
+    DetailSectionGroup,
+    TimeAgo,
     formatDisplayDateTime
   } from "@poodle/svelte";
 
@@ -30,6 +31,8 @@
     retryAction?: SystemJobAction<SystemJobDetailItem>;
     cancelAction?: SystemJobAction<SystemJobDetailItem>;
     formatTitle?: (job: SystemJobDetailItem) => string;
+    formatStatusLabel?: (status: string) => string;
+    statusAccent?: (status: string) => string | null | undefined;
     statusTone?: (status: string) => "neutral" | "success" | "warning" | "danger" | "info";
     extraDetails?: TemplateSurface;
   }
@@ -44,6 +47,8 @@
     retryAction,
     cancelAction,
     formatTitle = defaultTitle,
+    formatStatusLabel = getStatusLabel,
+    statusAccent = undefined,
     statusTone = getStatusTone,
     extraDetails = undefined
   }: Props = $props();
@@ -72,7 +77,7 @@
   }
 
   function getStatusLabel(status: string): string {
-    return status.charAt(0).toUpperCase() + status.slice(1);
+    return status.replaceAll("_", " ").toLowerCase();
   }
 
   function getStatusTone(status: string): "neutral" | "success" | "warning" | "danger" {
@@ -115,7 +120,33 @@
     job
       ? [
           { label: "ID", value: idMeta },
-          { label: "", value: statusMeta, separator: false }
+          { label: "Status", value: statusMeta, separator: false }
+        ]
+      : []
+  );
+
+  const actionItems = $derived(
+    job
+      ? [
+          ...(cancelAction && canCancel(job.status)
+            ? [{
+                label: "Cancel job",
+                destructive: true,
+                onSelect: () => runAction(cancelAction, "Job cancelled", "Failed to cancel job")
+              }]
+            : []),
+          ...(retryAction && canRetry(job.status)
+            ? [{
+                label: "Retry job",
+                onSelect: () => runAction(retryAction, "Job queued for retry", "Failed to retry job")
+              }]
+            : []),
+          {
+            label: "Refresh",
+            onSelect: () => {
+              reloadKey += 1;
+            }
+          }
         ]
       : []
   );
@@ -135,58 +166,40 @@
 
 {#snippet idMeta()}
   {#if job}
-    <Code inline inlineVariant="plain" typography="inline" source={job.id} showCopyButton />
+    <Code inline inlineVariant="plain" typography="inline" source={job.id} showCopyButton size="md" />
   {/if}
 {/snippet}
 
 {#snippet statusMeta()}
   {#if job}
-    <Pill tone={statusTone(job.status)} appearance="badge" size="sm" typography="inherit">
-      {getStatusLabel(job.status)}
-    </Pill>
+    <AdminPill
+      kind={statusTone(job.status)}
+      label={formatStatusLabel(job.status)}
+      accent={statusAccent?.(job.status) ?? null}
+      typography="inherit"
+    />
   {/if}
 {/snippet}
 
 {#snippet headerActions()}
   {#if job}
-    <div class="underlay-system-job-detail-page__actions">
-      {#if cancelAction && canCancel(job.status)}
-        <Button
-          variant="secondary"
-          onClick={() => runAction(cancelAction, "Job cancelled", "Failed to cancel job")}
-        >
-          Cancel
-        </Button>
-      {/if}
-      {#if retryAction && canRetry(job.status)}
-        <Button
-          variant="primary"
-          onClick={() => runAction(retryAction, "Job queued for retry", "Failed to retry job")}
-        >
-          Retry
-        </Button>
-      {/if}
-      <IconButton
-        variant="secondary"
-        icon="refresh-cw"
-        ariaLabel="Refresh job"
-        tooltip="Refresh"
-        onClick={() => {
-          reloadKey += 1;
-        }}
-      />
-    </div>
+    <EntityActionsMenu
+      toastStore={toastStore}
+      triggerAriaLabel="Job actions"
+      customActions={actionItems}
+      copies={[{ label: "Copy job ID", text: job.id, successMessage: "Copied job ID" }]}
+    />
   {/if}
 {/snippet}
 
 {#snippet content(loaded)}
   <div class="underlay-system-job-detail-page">
     <Card>
-      <div class="underlay-system-job-detail-page__grid">
-        <DetailSection title="Details" columns={2} separated={false}>
+      <DetailSectionGroup ariaLabel="Job details">
+        <DetailSection columns={2} separated={false}>
           <DetailItem presentation="surface" label="Type">
             {#snippet valueContent()}
-              <Code inline source={loaded.jobType} />
+              <Code inline inlineVariant="plain" typography="inline" size="md" source={loaded.jobType} />
             {/snippet}
           </DetailItem>
           <DetailItem presentation="surface" label="Attempts" value={`${loaded.attempts} / ${loaded.maxAttempts}`} />
@@ -195,8 +208,10 @@
           {/if}
         </DetailSection>
 
-        <DetailSection title="Timestamps" columns={2} separated={false}>
-          <DetailItem presentation="surface" label="Created" value={formatDisplayDateTime(loaded.createdAt) || "-"} />
+        <DetailSection columns={2} separated={false}>
+          <DetailItem presentation="surface" label="Created">
+            <TimeAgo datetime={loaded.createdAt} />
+          </DetailItem>
           {#if loaded.scheduledFor !== undefined}
             <DetailItem presentation="surface" label="Scheduled for" value={formatDisplayDateTime(loaded.scheduledFor) || "-"} />
           {/if}
@@ -213,7 +228,7 @@
             <DetailItem presentation="surface" label="Last heartbeat" value={formatDisplayDateTime(loaded.heartbeatAt) || "-"} />
           {/if}
         </DetailSection>
-      </div>
+      </DetailSectionGroup>
     </Card>
 
     {#if loaded.claimedBy}
@@ -266,17 +281,9 @@
 {/snippet}
 
 <style>
-  .underlay-system-job-detail-page,
-  .underlay-system-job-detail-page__grid {
+  .underlay-system-job-detail-page {
     display: grid;
     gap: 1rem;
-  }
-
-  .underlay-system-job-detail-page__actions {
-    display: flex;
-    gap: 0.5rem;
-    align-items: center;
-    flex-wrap: wrap;
   }
 
   .underlay-system-job-detail-page__section {

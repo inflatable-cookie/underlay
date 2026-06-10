@@ -24,6 +24,11 @@ impl PaginationBuilder {
         self.params.effective_limit() + 1
     }
 
+    /// Get the SQL OFFSET value for page-number pagination.
+    pub fn query_offset(&self) -> i64 {
+        self.params.offset()
+    }
+
     /// Get the page size (without the +1).
     pub fn page_size(&self) -> i64 {
         self.params.effective_limit()

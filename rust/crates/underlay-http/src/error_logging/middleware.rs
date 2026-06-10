@@ -1,4 +1,4 @@
-use super::{ErrorLoggingConfig, append_error_log};
+use super::{append_error_log, ErrorLoggingConfig};
 use axum::{body::Body, http::Request, middleware::Next, response::Response};
 
 /// Header name for passing error context to the logging middleware.
@@ -129,7 +129,7 @@ fn fallback_handler_context(
 
 #[cfg(test)]
 mod tests {
-    use super::{ERROR_CONTEXT_HEADER, extract_handler_context, fallback_handler_context};
+    use super::{extract_handler_context, fallback_handler_context, ERROR_CONTEXT_HEADER};
     use axum::response::Response;
     use http::{Method, StatusCode};
 

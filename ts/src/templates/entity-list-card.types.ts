@@ -77,5 +77,6 @@ export interface EntityListCardProps {
   onContextAction?: ((value: string) => void) | null;
   titleContent?: any;
   leading?: any;
+  corner?: any;
   footer?: any;
 }

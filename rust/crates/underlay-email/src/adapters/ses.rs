@@ -1,8 +1,8 @@
 //! AWS SES email adapter.
 
 use async_trait::async_trait;
-use aws_sdk_sesv2::Client;
 use aws_sdk_sesv2::types::{Body, Content, Destination, EmailContent, Message as SesMessage};
+use aws_sdk_sesv2::Client;
 
 use crate::adapter::EmailAdapter;
 use crate::error::{EmailError, EmailResult};

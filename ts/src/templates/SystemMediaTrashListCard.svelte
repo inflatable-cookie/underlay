@@ -37,7 +37,10 @@
   let failedThumbnailUrl = $state<string | null>(null);
 
   const title = $derived(media.title ?? media.originalFilename ?? "Untitled");
-  const rawThumbnailUrl = $derived(media.thumbnailUrl?.trim() || null);
+  const isSvg = $derived(isSvgMedia(media));
+  const rawThumbnailUrl = $derived(
+    media.thumbnailUrl?.trim() || (isSvg ? media.originalUrl?.trim() : null) || null
+  );
   const previewImageUrl = $derived(
     rawThumbnailUrl && rawThumbnailUrl !== failedThumbnailUrl ? rawThumbnailUrl : null
   );
@@ -48,8 +51,8 @@
       accent: getMediaKindAccent(normalizedKind)
     },
     {
-      label: "Deleted",
-      tone: "danger",
+      label: "deleted",
+      accent: "#ef4444",
       appearance: "badge",
       size: "sm"
     }
@@ -86,6 +89,13 @@
     if (kind === MediaKind.Audio) return "music";
     if (kind === MediaKind.Video) return "video";
     return "file-text";
+  }
+
+  function isSvgMedia(item: SystemMediaTrashItem): boolean {
+    return (
+      item.mimeType === "image/svg+xml" ||
+      item.originalFilename?.toLowerCase().endsWith(".svg") === true
+    );
   }
 </script>
 

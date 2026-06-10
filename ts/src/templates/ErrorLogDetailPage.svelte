@@ -1,5 +1,7 @@
 <script lang="ts">
   import { default as EntityDetailPage } from "./EntityDetailPage.svelte";
+  import { default as AdminPill } from "./AdminPill.svelte";
+  import { default as EntityActionsMenu } from "./EntityActionsMenu.svelte";
   import type {
     DetailMetaItemConfig,
     ErrorLogDetailItem,
@@ -10,8 +12,7 @@
     Code,
     DetailItem,
     DetailSection,
-    IconButton,
-    Pill,
+    DetailSectionGroup,
     formatDisplayDateTime
   } from "@poodle/svelte";
 
@@ -22,6 +23,7 @@
     backHref?: string;
     backLabel?: string;
     dataLoader: ErrorLogDetailLoader;
+    statusAccent?: (statusCode: number) => string | null | undefined;
     statusTone?: (statusCode: number) => "neutral" | "success" | "warning" | "danger" | "info";
   }
 
@@ -32,6 +34,7 @@
     backHref = "/system/errors",
     backLabel = "Back to error log",
     dataLoader,
+    statusAccent = undefined,
     statusTone = getStatusTone
   }: Props = $props();
 
@@ -59,10 +62,19 @@
     errorLog
       ? [
           { label: "ID", value: idMeta },
-          { label: "", value: statusMeta, separator: false }
+          { label: "Status", value: statusMeta, separator: false }
         ]
       : []
   );
+
+  const actionItems = $derived([
+    {
+      label: "Refresh",
+      onSelect: () => {
+        reloadKey += 1;
+      }
+    }
+  ]);
 </script>
 
 <EntityDetailPage
@@ -79,44 +91,38 @@
 
 {#snippet idMeta()}
   {#if errorLog}
-    <Code inline inlineVariant="plain" typography="inline" source={errorLog.id} showCopyButton />
+    <Code inline inlineVariant="plain" typography="inline" source={errorLog.id} showCopyButton size="md" />
   {/if}
 {/snippet}
 
 {#snippet statusMeta()}
   {#if errorLog}
-    <Pill tone={statusTone(errorLog.statusCode)} appearance="badge" size="sm" typography="inherit">
-      {errorLog.statusCode}
-    </Pill>
+    <AdminPill kind={statusTone(errorLog.statusCode)} label={errorLog.statusCode} accent={statusAccent?.(errorLog.statusCode) ?? null} typography="inherit" />
   {/if}
 {/snippet}
 
 {#snippet headerActions()}
-  <IconButton
-    variant="secondary"
-    icon="refresh-cw"
-    ariaLabel="Refresh error log"
-    tooltip="Refresh"
-    onClick={() => {
-      reloadKey += 1;
-    }}
+  <EntityActionsMenu
+    triggerAriaLabel="Error log actions"
+    customActions={actionItems}
+    copies={errorLog ? [{ label: "Copy error log ID", text: errorLog.id, successMessage: "Copied error log ID" }] : []}
   />
 {/snippet}
 
 {#snippet content(loaded)}
   <div class="underlay-error-log-detail-page">
     <Card>
-      <div class="underlay-error-log-detail-page__grid">
-        <DetailSection title="Request" columns={2} separated={false}>
+      <DetailSectionGroup ariaLabel="Error log details">
+        <DetailSection columns={2} separated={false}>
           <DetailItem presentation="surface" label="Method">
             {#snippet valueContent()}
-              <Code inline source={loaded.method} />
+              <Code inline inlineVariant="plain" typography="inline" size="md" source={loaded.method} />
             {/snippet}
           </DetailItem>
           <DetailItem presentation="surface" label="Status" value={String(loaded.statusCode)} />
           <DetailItem presentation="surface" label="Endpoint">
             {#snippet valueContent()}
-              <Code inline source={loaded.endpoint} />
+              <Code inline inlineVariant="plain" typography="inline" size="md" source={loaded.endpoint} />
             {/snippet}
           </DetailItem>
           <DetailItem
@@ -126,19 +132,19 @@
           />
         </DetailSection>
 
-        <DetailSection title="Error" columns={2} separated={false}>
+        <DetailSection columns={2} separated={false}>
           <DetailItem presentation="surface" label="Code">
             {#snippet valueContent()}
-              <Code inline source={loaded.errorCode} />
+              <Code inline inlineVariant="plain" typography="inline" size="md" source={loaded.errorCode} />
             {/snippet}
           </DetailItem>
           <DetailItem presentation="surface" label="Correlation ID">
             {#snippet valueContent()}
-              <Code inline source={loaded.correlationId} />
+              <Code inline inlineVariant="plain" typography="inline" size="md" source={loaded.correlationId} />
             {/snippet}
           </DetailItem>
         </DetailSection>
-      </div>
+      </DetailSectionGroup>
     </Card>
 
     {#if loaded.message}
@@ -161,11 +167,6 @@
 
 <style>
   .underlay-error-log-detail-page {
-    display: grid;
-    gap: 1rem;
-  }
-
-  .underlay-error-log-detail-page__grid {
     display: grid;
     gap: 1rem;
   }

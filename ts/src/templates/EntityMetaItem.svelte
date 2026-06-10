@@ -19,7 +19,7 @@
 <MetaItem label={item.label} separator={item.separator ?? true}>
   {#if typeof item.value === "string"}
     {#if shouldRenderCode}
-      <Code source={item.value} inline inlineVariant="plain" typography="inline" showCopyButton />
+      <Code source={item.value} inline inlineVariant="plain" typography="inline" showCopyButton size="md" />
     {:else}
       {item.value}
     {/if}

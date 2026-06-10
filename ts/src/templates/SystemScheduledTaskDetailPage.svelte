@@ -1,6 +1,8 @@
 <script lang="ts">
   import { getAuthConfig } from "../runtime/auth";
   import { useToasts } from "../runtime/feedback";
+  import { default as AdminPill } from "./AdminPill.svelte";
+  import { default as EntityActionsMenu } from "./EntityActionsMenu.svelte";
   import { default as EntityDetailPage } from "./EntityDetailPage.svelte";
   import type {
     DetailMetaItemConfig,
@@ -17,12 +19,8 @@
     DataTable,
     DetailItem,
     DetailSection,
-    IconButton,
-    Menu,
-    Pill,
     TimeAgo,
     formatDisplayDateTime,
-    type MenuItem,
     type TableColumn,
     type TableRow
   } from "@poodle/svelte";
@@ -154,7 +152,7 @@
   }
 
   function getStatusLabel(status: string): string {
-    return status.charAt(0).toUpperCase() + status.slice(1);
+    return status.replaceAll("_", " ").toLowerCase();
   }
 
   async function runTaskAction(
@@ -192,22 +190,39 @@
     }
   }
 
-  const menuItems = $derived<MenuItem[]>(
-    task
-      ? [
-          ...(triggerAction ? [{ value: "trigger", label: "Trigger now" }] : []),
-          ...(toggleAction ? [{ value: "toggle", label: task.enabled ? "Disable task" : "Enable task" }] : []),
-          { value: "separator", label: "", kind: "separator" as const },
-          { value: "refresh", label: "Refresh" }
-        ]
-      : []
-  );
+  const actionItems = $derived.by(() => {
+    const currentTask = task;
+    if (!currentTask) return [];
+
+    return [
+      ...(triggerAction
+        ? [{
+            label: "Trigger now",
+            onSelect: () => runTaskAction(triggerAction, "Job created", "Failed to trigger task", true)
+          }]
+        : []),
+      ...(toggleAction
+        ? [{
+            label: currentTask.enabled ? "Disable task" : "Enable task",
+            onSelect: () => runTaskAction(
+              toggleAction,
+              currentTask.enabled ? "Task disabled" : "Task enabled",
+              "Failed to toggle task"
+            )
+          }]
+        : []),
+      {
+        label: "Refresh",
+        onSelect: refresh
+      }
+    ];
+  });
 
   const meta = $derived<DetailMetaItemConfig[]>(
     task
       ? [
           { label: "ID", value: idMeta },
-          { label: "", value: enabledMeta, separator: false }
+          { label: "Status", value: enabledMeta, separator: false }
         ]
       : []
   );
@@ -239,21 +254,6 @@
     }))
   );
 
-  function handleMenuAction(value: string): void {
-    if (value === "trigger" && triggerAction) {
-      void runTaskAction(triggerAction, "Job created", "Failed to trigger task", true);
-      return;
-    }
-
-    if (value === "toggle" && toggleAction) {
-      void runTaskAction(toggleAction, task?.enabled ? "Task disabled" : "Task enabled", "Failed to toggle task");
-      return;
-    }
-
-    if (value === "refresh") {
-      refresh();
-    }
-  }
 </script>
 
 <EntityDetailPage
@@ -275,25 +275,24 @@
 
 {#snippet idMeta()}
   {#if task}
-    <Code inline inlineVariant="plain" typography="inline" source={task.id} showCopyButton />
+    <Code inline inlineVariant="plain" typography="inline" source={task.id} showCopyButton size="md" />
   {/if}
 {/snippet}
 
 {#snippet enabledMeta()}
   {#if task}
-    <Pill tone={task.enabled ? "success" : "neutral"} appearance="badge" size="sm" typography="inherit">
-      {task.enabled ? "Enabled" : "Disabled"}
-    </Pill>
+    <AdminPill kind={task.enabled ? "success" : "neutral"} label={task.enabled ? "enabled" : "disabled"} typography="inherit" />
   {/if}
 {/snippet}
 
 {#snippet headerActions()}
   {#if task}
-    <Menu items={menuItems} ariaLabel="Task actions" triggerAriaLabel="Task actions" placement="bottom-end" onAction={handleMenuAction}>
-      {#snippet trigger()}
-        <IconButton icon="ellipsis" ariaLabel="Task actions" />
-      {/snippet}
-    </Menu>
+    <EntityActionsMenu
+      toastStore={toastStore}
+      triggerAriaLabel="Task actions"
+      customActions={actionItems}
+      copies={[{ label: "Copy task ID", text: task.id, successMessage: "Copied task ID" }]}
+    />
   {/if}
 {/snippet}
 
@@ -302,12 +301,12 @@
     <div class="underlay-system-scheduled-task-detail-page__grid">
       <Card>
         <div class="underlay-system-scheduled-task-detail-page__section">
-          <DetailSection title="Configuration" columns={2} separated={false}>
+          <DetailSection columns={2} separated={false} ariaLabel="Configuration">
             <DetailItem presentation="surface" label="Name" value={formatName(loaded.name)} />
             <DetailItem presentation="surface" label="Job Type" value={formatName(loaded.jobType)} />
             <DetailItem presentation="surface" label="Schedule">
               {#snippet valueContent()}
-                <Code inline source={loaded.schedule} />
+                <Code inline inlineVariant="plain" typography="inline" size="md" source={loaded.schedule} />
               {/snippet}
             </DetailItem>
             {#if loaded.priority !== undefined && loaded.priority !== null}
@@ -328,14 +327,18 @@
 
       <Card>
         <div class="underlay-system-scheduled-task-detail-page__section">
-          <DetailSection title="Execution History" columns={2} separated={false}>
+          <DetailSection columns={2} separated={false} ariaLabel="Execution history">
             <DetailItem presentation="surface" label="Last Scheduled" value={formatDisplayDateTime(loaded.lastScheduledAt) || "Never"} />
             <DetailItem presentation="surface" label="Last Completed" value={formatDisplayDateTime(loaded.lastCompletedAt) || "Never"} />
             {#if loaded.createdAt !== undefined}
-              <DetailItem presentation="surface" label="Created" value={formatDisplayDateTime(loaded.createdAt) || "Never"} />
+              <DetailItem presentation="surface" label="Created">
+                <TimeAgo datetime={loaded.createdAt} />
+              </DetailItem>
             {/if}
             {#if loaded.updatedAt !== undefined}
-              <DetailItem presentation="surface" label="Updated" value={formatDisplayDateTime(loaded.updatedAt) || "Never"} />
+              <DetailItem presentation="surface" label="Last Updated">
+                <TimeAgo datetime={loaded.updatedAt} />
+              </DetailItem>
             {/if}
           </DetailSection>
         </div>
@@ -379,9 +382,7 @@
         {#snippet cell(column, row)}
           {@const job = rowJob(row)}
           {#if column.id === "status" && job}
-            <Pill appearance="badge" tone={getJobStatusTone(job.status)} size="sm">
-              {getStatusLabel(job.status)}
-            </Pill>
+            <AdminPill kind={getJobStatusTone(job.status)} label={getStatusLabel(job.status)} typography="label" />
           {:else if column.id === "createdAt" && job}
             <TimeAgo datetime={job.createdAt} tooltipFormat="datetime" short />
           {:else if column.id === "finishedAt" && job}

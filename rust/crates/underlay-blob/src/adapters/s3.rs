@@ -6,8 +6,8 @@ mod config;
 use std::collections::HashMap;
 
 use async_trait::async_trait;
-use aws_sdk_s3::Client;
 use aws_sdk_s3::presigning::PresigningConfig;
+use aws_sdk_s3::Client;
 use chrono::{DateTime, Utc};
 
 use crate::adapter::BlobAdapter;

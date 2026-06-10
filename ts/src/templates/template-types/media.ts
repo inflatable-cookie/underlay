@@ -6,7 +6,9 @@ export interface SystemMediaTrashItem {
   kind: string;
   title?: string | null;
   originalFilename?: string | null;
+  mimeType?: string | null;
   thumbnailUrl?: string | null;
+  originalUrl?: string | null;
   byteSize?: number | null;
   deletedAt?: string | null;
 }
@@ -24,12 +26,14 @@ export interface MediaPickerWorkflowItem {
   byteSize?: number | null;
   mimeType?: string | null;
   thumbnailUrl?: string | null;
+  originalUrl?: string | null;
 }
 
 export interface MediaPickerBrowseItem {
   id: string;
   label: string;
   thumbnailUrl?: string | null;
+  originalUrl?: string | null;
   mimeType?: string | null;
   kind?: string | null;
   meta?: string | null;
@@ -48,7 +52,9 @@ export interface MediaListPageItem {
   visibility?: string | null;
   title?: string | null;
   originalFilename?: string | null;
+  mimeType?: string | null;
   thumbnailUrl?: string | null;
+  originalUrl?: string | null;
   byteSize?: number | null;
   updatedAt?: string | null;
 }

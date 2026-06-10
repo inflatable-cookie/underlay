@@ -52,7 +52,7 @@
   {href}
   notLive={!task.enabled}
   leadingIcon="calendar"
-  badges={task.enabled ? [] : [{ label: "Disabled", tone: "neutral", appearance: "subtle", size: "sm", muted: true }]}
+  badges={task.enabled ? [] : [{ label: "disabled", accent: "#64748b", appearance: "subtle", size: "sm" }]}
   {contextMenuItems}
   contextMenuAriaLabel="Scheduled task actions"
   contextMenuTrigger="leading"

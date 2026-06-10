@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Card, Code, DetailItem, DetailSection, TimeAgo } from "@poodle/svelte";
+  import { Card, Code, DetailItem, DetailSection, DetailSectionGroup, TimeAgo } from "@poodle/svelte";
 
   interface MediaVersionSummary {
     byteSize?: number | null;
@@ -36,31 +36,33 @@
 </script>
 
 <Card>
-  <DetailSection title={fileDetailsTitle}>
-    <DetailItem label={originalFilenameLabel} value={media.originalFilename?.trim() || "—"} />
-    {#if media.currentVersion}
-      <DetailItem label={fileSizeLabel} value={formatFileSize(media.currentVersion.byteSize ?? null)} />
-      <DetailItem label={mimeTypeLabel}>
-        <Code source={media.currentVersion.mimeType ?? "—"} inline />
-      </DetailItem>
-    {/if}
-  </DetailSection>
+  <DetailSectionGroup ariaLabel="Media file details">
+    <DetailSection separated={false} ariaLabel={fileDetailsTitle}>
+      <DetailItem label={originalFilenameLabel} value={media.originalFilename?.trim() || "—"} />
+      {#if media.currentVersion}
+        <DetailItem label={fileSizeLabel} value={formatFileSize(media.currentVersion.byteSize ?? null)} />
+        <DetailItem label={mimeTypeLabel}>
+          <Code source={media.currentVersion.mimeType ?? "—"} inline inlineVariant="plain" typography="inline" size="md" />
+        </DetailItem>
+      {/if}
+    </DetailSection>
 
-  <DetailSection title={timestampsTitle}>
-    <DetailItem label="Created">
-      <TimeAgo datetime={media.createdAt} short />
-    </DetailItem>
-    <DetailItem label="Last Updated">
-      <TimeAgo datetime={media.updatedAt} short />
-    </DetailItem>
-    {#if media.deletedAt}
-      <DetailItem label="Deleted">
-        <span class="underlay-media-file-details-card__deleted-date">
-          <TimeAgo datetime={media.deletedAt} short />
-        </span>
+    <DetailSection separated={false} ariaLabel={timestampsTitle}>
+      <DetailItem label="Created">
+        <TimeAgo datetime={media.createdAt} short />
       </DetailItem>
-    {/if}
-  </DetailSection>
+      <DetailItem label="Last Updated">
+        <TimeAgo datetime={media.updatedAt} short />
+      </DetailItem>
+      {#if media.deletedAt}
+        <DetailItem label="Deleted">
+          <span class="underlay-media-file-details-card__deleted-date">
+            <TimeAgo datetime={media.deletedAt} short />
+          </span>
+        </DetailItem>
+      {/if}
+    </DetailSection>
+  </DetailSectionGroup>
 </Card>
 
 <style>

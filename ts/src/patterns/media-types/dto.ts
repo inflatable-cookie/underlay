@@ -19,6 +19,8 @@ export interface MediaSummary {
   mimeType: string | null;
   /** URL to thumbnail image (if available) */
   thumbnailUrl: string | null;
+  /** URL to original file when it can be previewed directly */
+  originalUrl?: string | null;
 }
 
 /**

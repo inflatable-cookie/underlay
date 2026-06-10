@@ -35,6 +35,14 @@
         return "document";
     }
   }
+
+  function getPreviewUrl(item: MediaPickerBrowseItem): string | null {
+    return item.thumbnailUrl?.trim() || (isSvgMedia(item) ? item.originalUrl?.trim() : null) || null;
+  }
+
+  function isSvgMedia(item: MediaPickerBrowseItem): boolean {
+    return item.mimeType === "image/svg+xml" || item.label.toLowerCase().endsWith(".svg");
+  }
 </script>
 
 <div class="underlay-media-browse-panel">
@@ -62,9 +70,10 @@
             aspectRatio="square"
             ariaLabel={item.label}
           >
-            {#if item.thumbnailUrl}
+            {@const previewUrl = getPreviewUrl(item)}
+            {#if previewUrl}
               <img
-                src={item.thumbnailUrl}
+                src={previewUrl}
                 alt={item.label}
                 class="underlay-media-browse-panel__image"
               />

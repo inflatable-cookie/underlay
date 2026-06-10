@@ -1,7 +1,7 @@
 //! Scheduled task repository and job notification listener.
 
-use sqlx::PgPool;
 use sqlx::postgres::PgListener;
+use sqlx::PgPool;
 use std::time::Duration;
 use tracing::debug;
 

@@ -30,7 +30,7 @@
           <span class="underlay-media-usage-list__label-group">
             <span class="underlay-media-usage-list__label">{usage.usedByType}</span>
             <span class="underlay-media-usage-list__sublabel">
-              <Code inline source={codeValue(usage.usedById)} />
+              <Code inline inlineVariant="plain" typography="inline" size="md" source={codeValue(usage.usedById)} />
               {#if usage.ownerField}
                 <span class="underlay-media-usage-list__field"> · {usage.ownerField}</span>
               {/if}
@@ -48,7 +48,7 @@
                   <span class="underlay-media-usage-list__field">· {usage.locatorKind}</span>
                 {/if}
                 {#if usage.locatorKey}
-                  <Code inline source={usage.locatorKey} />
+                  <Code inline inlineVariant="plain" typography="inline" size="md" source={usage.locatorKey} />
                 {/if}
               </span>
             {/if}

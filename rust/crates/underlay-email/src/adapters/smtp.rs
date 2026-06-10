@@ -1,7 +1,7 @@
 //! SMTP email adapter using lettre.
 
 use async_trait::async_trait;
-use lettre::message::{Mailbox, MultiPart, SinglePart, header::ContentType};
+use lettre::message::{header::ContentType, Mailbox, MultiPart, SinglePart};
 use lettre::transport::smtp::authentication::Credentials;
 use lettre::{AsyncSmtpTransport, AsyncTransport, Message, Tokio1Executor};
 

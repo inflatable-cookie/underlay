@@ -2,7 +2,7 @@
   import type { Snippet } from "svelte";
   import { copyToClipboard, useToasts } from "../runtime/feedback";
   import type { NavigationContext } from "../runtime/navigation";
-  import { AlertDialog, Button, Menu, type MenuItem } from "@poodle/svelte";
+  import { AlertDialog, IconButton, Menu, type MenuItem } from "@poodle/svelte";
   import type { MediaActionsMenuItem } from "./template.types";
 
   type ActionEntry =
@@ -201,7 +201,13 @@
     {#if trigger}
       {@render trigger()}
     {:else}
-      <Button variant="secondary">Actions</Button>
+      <IconButton
+        type="button"
+        icon="ellipsis"
+        variant="secondary"
+        ariaLabel="Media actions"
+        tooltip="Actions"
+      />
     {/if}
   {/snippet}
 </Menu>

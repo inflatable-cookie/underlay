@@ -49,6 +49,9 @@ export { default as MetadataDialogTrigger } from "./MetadataDialogTrigger.svelte
 export { default as ContextActionBar } from "./ContextActionBar.svelte";
 export { default as ContextActionDialog } from "./ContextActionDialog.svelte";
 export { default as ContextActionList } from "./ContextActionList.svelte";
+export { default as ContentCard } from "./ContentCard.svelte";
+export { default as AdminPill } from "./AdminPill.svelte";
+export { ADMIN_PILL_ACCENTS, type AdminPillKind } from "./admin-pill-accents";
 
 // Level 2 — Sections
 export { default as EntityList } from "./EntityList.svelte";

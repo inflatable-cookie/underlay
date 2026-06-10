@@ -92,9 +92,16 @@
   grid-column: 1 / -1;
 }
 
-/* Tab groups (description tabs) always span full width */
-.underlay-details-content > .underlay-tabs {
+/*
+  Tab groups (description/notes tabs) span the detail grid, but keep a readable
+  max width so long markdown/content blocks do not stretch across the viewport.
+*/
+.underlay-details-content > .underlay-tabs,
+.underlay-details-content > .poodle-tabs {
   grid-column: 1 / -1;
+  width: 100%;
+  max-width: var(--underlay-details-content-reading-width, 55rem);
+  justify-self: start;
 }
 
 /* Shared visual shell for embedded media preview regions */

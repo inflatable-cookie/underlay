@@ -1,6 +1,7 @@
 <script lang="ts">
-  import { Code, Pill } from "@poodle/svelte";
+  import { Code } from "@poodle/svelte";
   import type { ControlDensity, ControlSize } from "@poodle/svelte";
+  import { default as AdminPill } from "./AdminPill.svelte";
   import {
     getMediaKindLabel,
     getMediaVisibilityLabel,
@@ -99,12 +100,12 @@
         value: idSnippet
       },
       {
-        label: "",
+        label: "Kind",
         value: kindSnippet,
         separator: false
       },
       {
-        label: "",
+        label: "Visibility",
         value: visibilitySnippet,
         separator: false
       }
@@ -112,7 +113,7 @@
 
     if (item?.deletedAt) {
       meta.push({
-        label: "",
+        label: "State",
         value: deletedSnippet,
         separator: false
       });
@@ -181,28 +182,22 @@
 
 {#snippet idSnippet()}
   {#if item}
-    <Code inline inlineVariant="plain" typography="inline" source={item.id} showCopyButton />
+    <Code inline inlineVariant="plain" typography="inline" source={item.id} showCopyButton size="md" />
   {/if}
 {/snippet}
 
 {#snippet kindSnippet()}
   {#if item}
-    <Pill tone="neutral" appearance="badge" size="sm" typography="inherit">
-      {mediaKindLabel(item.kind)}
-    </Pill>
+    <AdminPill label={mediaKindLabel(item.kind)} typography="inherit" />
   {/if}
 {/snippet}
 
 {#snippet visibilitySnippet()}
   {#if item}
-    <Pill tone="neutral" appearance="badge" size="sm" typography="inherit">
-      {mediaVisibilityLabel(item.visibility)}
-    </Pill>
+    <AdminPill label={mediaVisibilityLabel(item.visibility)} typography="inherit" />
   {/if}
 {/snippet}
 
 {#snippet deletedSnippet()}
-  <Pill tone="danger" appearance="badge" size="sm" typography="inherit">
-    Deleted
-  </Pill>
+  <AdminPill kind="danger" label="deleted" typography="inherit" />
 {/snippet}

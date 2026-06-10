@@ -2,7 +2,6 @@
   import {
     Card as PoodleCard,
     Icon,
-    Pill as PoodlePill,
     TimeAgo,
     formatDisplayDateTime,
     type TableColumn,
@@ -13,6 +12,7 @@
   import { useAuthenticatedData } from "../runtime/auth";
   import { useToasts } from "../runtime/feedback";
   import type { QueryParams } from "../client/query";
+  import { default as AdminPill } from "./AdminPill.svelte";
   import { default as EntityListPage } from "./EntityListPage.svelte";
   import type {
     ErrorLogDetailItem,
@@ -246,9 +246,7 @@
   {:else if column.id === "request"}
     <div class="underlay-error-log-list-page__request">
       <div class="underlay-error-log-list-page__request-meta">
-        <PoodlePill tone={getStatusTone(log.statusCode)} appearance="badge" size="sm">
-          {log.statusCode}
-        </PoodlePill>
+        <AdminPill kind={getStatusTone(log.statusCode)} label={log.statusCode} typography="label" />
         <code class="underlay-error-log-list-page__method">{log.method}</code>
       </div>
       <code class="underlay-error-log-list-page__path">{log.endpoint}</code>

@@ -20,7 +20,7 @@
 //! ```
 
 pub use aws_config::SdkConfig;
-use aws_credential_types::{Credentials, provider::SharedCredentialsProvider};
+use aws_credential_types::{provider::SharedCredentialsProvider, Credentials};
 pub use aws_types::region::Region;
 
 /// Configuration for building an AWS SDK config.

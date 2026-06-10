@@ -1,5 +1,7 @@
 <script lang="ts" generics="TVersion extends MediaVersionListItem = MediaVersionListItem">
-  import { Code, IconButton, InlineListSection, Pill, TimeAgo } from "@poodle/svelte";
+  import { Code, IconButton, InlineListSection, TimeAgo } from "@poodle/svelte";
+  import { default as AdminPill } from "./AdminPill.svelte";
+  import { ADMIN_PILL_ACCENTS } from "./admin-pill-accents";
   import type { MediaVersionListItem } from "./template.types";
 
   interface Props {
@@ -80,7 +82,7 @@
           <span class="underlay-media-versions-list__label">{version.sha256 ?? "No hash"}</span>
           <span class="underlay-media-versions-list__sublabel">
             {formatFileSize(version.byteSize ?? null)} ·
-            <Code inline source={version.mimeType ?? "Unknown type"} />
+            <Code inline inlineVariant="plain" typography="inline" size="md" source={version.mimeType ?? "Unknown type"} />
             {#if version.createdAt}
               ·
               <TimeAgo datetime={version.createdAt} short />
@@ -98,7 +100,7 @@
           <span class="underlay-media-versions-list__label">{version.sha256 ?? "No hash"}</span>
           <span class="underlay-media-versions-list__sublabel">
             {formatFileSize(version.byteSize ?? null)} ·
-            <Code inline source={version.mimeType ?? "Unknown type"} />
+            <Code inline inlineVariant="plain" typography="inline" size="md" source={version.mimeType ?? "Unknown type"} />
             {#if version.createdAt}
               ·
               <TimeAgo datetime={version.createdAt} short />
@@ -110,12 +112,10 @@
 
     <div class="underlay-media-versions-list__trailing">
       {#if shouldShowVersionState(version.state)}
-        <Pill accent={getVersionStateAccent(version.state)}>
-          {getVersionStateLabel(version.state)}
-        </Pill>
+        <AdminPill label={getVersionStateLabel(version.state)} accent={getVersionStateAccent(version.state)} typography="label" />
       {/if}
       {#if isCurrentVersion(version)}
-        <Pill accent="#3b82f6">Current</Pill>
+        <AdminPill label="current" accent={ADMIN_PILL_ACCENTS.info} typography="label" />
       {/if}
     </div>
 

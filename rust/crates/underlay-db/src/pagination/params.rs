@@ -22,6 +22,10 @@ pub enum PaginationDirection {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub struct PaginationParams {
+    /// Page number for offset-based list consumers.
+    #[serde(default = "default_page")]
+    pub page: i64,
+
     /// Number of items per page (default: 50, max: 100).
     #[serde(default = "default_limit")]
     pub limit: i64,
@@ -39,6 +43,10 @@ pub struct PaginationParams {
     pub include_total: bool,
 }
 
+fn default_page() -> i64 {
+    1
+}
+
 fn default_limit() -> i64 {
     DEFAULT_PAGE_SIZE
 }
@@ -50,6 +58,7 @@ fn default_include_total() -> bool {
 impl Default for PaginationParams {
     fn default() -> Self {
         Self {
+            page: 1,
             limit: DEFAULT_PAGE_SIZE,
             cursor: None,
             direction: PaginationDirection::Forward,
@@ -67,6 +76,12 @@ impl PaginationParams {
     /// Set the page size limit.
     pub fn with_limit(mut self, limit: i64) -> Self {
         self.limit = limit;
+        self
+    }
+
+    /// Set the 1-indexed page number for offset-based consumers.
+    pub fn with_page(mut self, page: i64) -> Self {
+        self.page = page;
         self
     }
 
@@ -91,6 +106,16 @@ impl PaginationParams {
     /// Get the effective limit, clamped to valid range.
     pub fn effective_limit(&self) -> i64 {
         self.limit.clamp(1, MAX_PAGE_SIZE)
+    }
+
+    /// Get the effective 1-indexed page number.
+    pub fn effective_page(&self) -> i64 {
+        self.page.max(1)
+    }
+
+    /// Get the SQL OFFSET for page-based consumers.
+    pub fn offset(&self) -> i64 {
+        (self.effective_page() - 1) * self.effective_limit()
     }
 
     /// Decode the cursor if present.

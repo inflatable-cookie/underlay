@@ -118,6 +118,8 @@
       id: media.id,
       label: media.title ?? media.originalFilename ?? "Untitled media",
       thumbnailUrl: media.thumbnailUrl ?? null,
+      originalUrl: media.originalUrl ?? null,
+      mimeType: media.mimeType ?? null,
       kind: normalizeKind(media.kind),
       meta: media.originalFilename ?? null
     };
