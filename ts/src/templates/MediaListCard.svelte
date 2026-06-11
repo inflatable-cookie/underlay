@@ -23,6 +23,7 @@
     thumbnailUrl?: string | null;
     originalUrl?: string | null;
     byteSize?: number | null;
+    usageCount?: number | null;
     updatedAt?: string | null;
   }
 
@@ -76,6 +77,18 @@
     { label: getMediaKindLabel(normalizedKind), accent: getMediaKindAccent(normalizedKind) }
   ]);
   const fileSizeText = $derived(media.byteSize ? formatFileSize(media.byteSize) : null);
+  const usageCount = $derived(media.usageCount ?? 0);
+  const counters = $derived(
+    usageCount > 0
+      ? [
+          {
+            icon: "list-checks" as const,
+            count: usageCount,
+            tooltip: `${usageCount} ${usageCount === 1 ? "usage" : "usages"}`
+          }
+        ]
+      : []
+  );
   const menuItems = $derived([
     { value: "copy-id", label: "Copy media ID" },
     ...(onDelete
@@ -199,6 +212,7 @@
   selectionMode={selectionMode}
   {selected}
   badges={badges}
+  counters={counters}
   corner={normalizedVisibility !== MediaVisibility.Public ? visibilityCorner : undefined}
   footer={fileSizeText || media.updatedAt ? mediaFooter : undefined}
   leading={previewImageUrl ? mediaLeading : undefined}

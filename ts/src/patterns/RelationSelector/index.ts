@@ -1,5 +1,7 @@
 // Relation-selector helper layer retained after public UI wrapper retirement.
 
+export { default as RelationSelector } from "./RelationSelector.svelte";
+
 export {
   createRelationSelectorContext,
   useRelationSelector,

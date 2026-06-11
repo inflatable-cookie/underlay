@@ -25,6 +25,7 @@ export interface MediaPickerWorkflowItem {
   deletedAt?: string | null;
   byteSize?: number | null;
   mimeType?: string | null;
+  usageCount?: number | null;
   thumbnailUrl?: string | null;
   originalUrl?: string | null;
 }
@@ -56,6 +57,7 @@ export interface MediaListPageItem {
   thumbnailUrl?: string | null;
   originalUrl?: string | null;
   byteSize?: number | null;
+  usageCount?: number | null;
   updatedAt?: string | null;
 }
 

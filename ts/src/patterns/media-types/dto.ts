@@ -17,6 +17,8 @@ export interface MediaSummary {
   byteSize: number | null;
   /** MIME type of current version (if available) */
   mimeType: string | null;
+  /** Number of places this media is used */
+  usageCount: number;
   /** URL to thumbnail image (if available) */
   thumbnailUrl: string | null;
   /** URL to original file when it can be previewed directly */

@@ -114,3 +114,45 @@ fn test_mime_from_format() {
     assert_eq!(mime_from_format(ImageFormat::Gif), "image/gif");
     assert_eq!(mime_from_format(ImageFormat::WebP), "image/webp");
 }
+
+#[test]
+fn square_thumbnail_preserves_png_alpha() {
+    let mut source = image::RgbaImage::new(32, 32);
+    for pixel in source.pixels_mut() {
+        *pixel = image::Rgba([255, 0, 0, 0]);
+    }
+    source.put_pixel(16, 16, image::Rgba([0, 255, 0, 255]));
+
+    let mut input = std::io::Cursor::new(Vec::new());
+    image::DynamicImage::ImageRgba8(source)
+        .write_to(&mut input, ImageFormat::Png)
+        .expect("encode source png");
+
+    let result = generate_square_thumbnail_preserving_alpha(input.get_ref(), 16, 80)
+        .expect("generate alpha-preserving thumbnail");
+
+    assert_eq!(result.mime_type, "image/png");
+    assert_eq!(result.width, 16);
+    assert_eq!(result.height, 16);
+
+    let decoded = image::load_from_memory(&result.data)
+        .expect("decode generated thumbnail")
+        .to_rgba8();
+    assert_eq!(decoded.get_pixel(0, 0).0[3], 0);
+}
+
+#[test]
+fn square_thumbnail_without_alpha_still_uses_jpeg() {
+    let source = image::RgbImage::from_pixel(32, 32, image::Rgb([0, 255, 0]));
+    let mut input = std::io::Cursor::new(Vec::new());
+    image::DynamicImage::ImageRgb8(source)
+        .write_to(&mut input, ImageFormat::Png)
+        .expect("encode source png");
+
+    let result = generate_square_thumbnail_preserving_alpha(input.get_ref(), 16, 80)
+        .expect("generate opaque thumbnail");
+
+    assert_eq!(result.mime_type, "image/jpeg");
+    assert_eq!(result.width, 16);
+    assert_eq!(result.height, 16);
+}

@@ -1,7 +1,9 @@
 //! Image processing utilities.
 //!
 //! Functions for generating thumbnails and other image renditions from source
-//! images. Supports JPEG, PNG, GIF, and WebP input formats with JPEG output.
+//! images. Supports JPEG, PNG, GIF, and WebP input formats with JPEG output by
+//! default. Alpha-preserving helpers use PNG output when the decoded source has
+//! transparency.
 //!
 //! # Example
 //!
@@ -12,7 +14,9 @@
 //! let result = generate_thumbnail(&image_bytes, &config)?;
 //! ```
 
-use image::{imageops::FilterType, GenericImageView, ImageFormat, ImageReader};
+use image::{
+    imageops::FilterType, ColorType, DynamicImage, GenericImageView, ImageFormat, ImageReader,
+};
 use std::io::Cursor;
 
 /// Error type for image processing operations.
@@ -32,13 +36,13 @@ pub enum ImageError {
 /// Result of generating a thumbnail.
 #[derive(Debug)]
 pub struct ThumbnailResult {
-    /// The thumbnail image data (JPEG encoded).
+    /// The thumbnail image data.
     pub data: Vec<u8>,
     /// Width of the thumbnail in pixels.
     pub width: u32,
     /// Height of the thumbnail in pixels.
     pub height: u32,
-    /// MIME type of the output (always "image/jpeg").
+    /// MIME type of the output.
     pub mime_type: &'static str,
 }
 
@@ -304,6 +308,78 @@ pub fn generate_square_thumbnail(
         height: thumb.height(),
         mime_type: "image/jpeg",
     })
+}
+
+/// Generate a square thumbnail and preserve transparency when present.
+///
+/// Sources with an alpha channel are encoded as PNG so transparent pixels stay
+/// transparent. Other sources use the normal JPEG square-thumbnail path.
+pub fn generate_square_thumbnail_preserving_alpha(
+    data: &[u8],
+    size: u32,
+    quality: u8,
+) -> Result<ThumbnailResult, ImageError> {
+    let img = ImageReader::new(Cursor::new(data))
+        .with_guessed_format()
+        .map_err(|e| ImageError::DecodeError(e.to_string()))?
+        .decode()
+        .map_err(|e| ImageError::DecodeError(e.to_string()))?;
+
+    if !image_has_alpha(&img) {
+        return generate_square_thumbnail(data, size, quality);
+    }
+
+    let thumb = square_crop_image(img, size);
+    let mut cursor = Cursor::new(Vec::new());
+    thumb
+        .write_to(&mut cursor, ImageFormat::Png)
+        .map_err(|e| ImageError::EncodeError(e.to_string()))?;
+    let output = cursor.into_inner();
+
+    Ok(ThumbnailResult {
+        data: output,
+        width: thumb.width(),
+        height: thumb.height(),
+        mime_type: "image/png",
+    })
+}
+
+fn square_crop_image(img: DynamicImage, size: u32) -> DynamicImage {
+    let (orig_width, orig_height) = img.dimensions();
+
+    let scale = if orig_width < orig_height {
+        size as f32 / orig_width as f32
+    } else {
+        size as f32 / orig_height as f32
+    };
+
+    let scaled_width = (orig_width as f32 * scale).ceil() as u32;
+    let scaled_height = (orig_height as f32 * scale).ceil() as u32;
+
+    let resized = if scaled_width <= orig_width && scaled_height <= orig_height {
+        img.resize_exact(scaled_width, scaled_height, FilterType::Lanczos3)
+    } else if orig_width >= size && orig_height >= size {
+        img
+    } else {
+        img.resize_exact(scaled_width, scaled_height, FilterType::Lanczos3)
+    };
+
+    let x = (resized.width().saturating_sub(size)) / 2;
+    let y = (resized.height().saturating_sub(size)) / 2;
+    let crop_size = size.min(resized.width()).min(resized.height());
+
+    resized.crop_imm(x, y, crop_size, crop_size)
+}
+
+fn image_has_alpha(img: &DynamicImage) -> bool {
+    matches!(
+        img.color(),
+        ColorType::La8
+            | ColorType::La16
+            | ColorType::Rgba8
+            | ColorType::Rgba16
+            | ColorType::Rgba32F
+    )
 }
 
 /// Calculate thumbnail dimensions preserving aspect ratio.

@@ -194,8 +194,6 @@ export interface RelationSelectorProps<T extends SelectableRelation> {
   renderItem?: Snippet<[item: T, selected: boolean]>;
   /** Custom rendering for trigger button */
   renderTrigger?: Snippet<[selected: T | T[] | null, open: () => void]>;
-  /** Custom rendering for selected pills (multi-select) */
-  renderSelectedPill?: Snippet<[item: T, remove: () => void]>;
   /** Create form content */
   createForm?: Snippet<[onSuccess: (item: T) => void, onCancel: () => void]>;
 }

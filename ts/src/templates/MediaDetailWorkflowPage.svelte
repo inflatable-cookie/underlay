@@ -82,7 +82,7 @@
     tabs = [],
     content,
     onTabChange,
-    tabsVariant = "card",
+    tabsVariant = "underline",
     tabsSize = null,
     tabsDensity = null,
     tabsCollapseWhenOverflow = null,

@@ -54,6 +54,7 @@ export interface EntityListCardProps {
   reorderDisplay?: EntityListCardModeDisplay;
   selectionDisplay?: EntityListCardModeDisplay;
   selected?: boolean;
+  highlighted?: boolean;
   selectionIndicator?: "none" | "checkbox";
   showReorderHandle?: boolean;
   notLive?: boolean;

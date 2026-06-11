@@ -24,6 +24,7 @@
     reorderDisplay = undefined,
     selectionDisplay = undefined,
     selected = false,
+    highlighted = false,
     selectionIndicator = "checkbox",
     showReorderHandle = false,
     notLive = false,
@@ -170,6 +171,7 @@
       {disabled}
       selectable={selectionMode}
       {selected}
+      {highlighted}
       {selectionIndicator}
       showReorderHandle={resolvedShowReorderHandle}
       {notLive}
@@ -204,6 +206,7 @@
       {disabled}
       selectable={selectionMode}
       {selected}
+      {highlighted}
       {selectionIndicator}
       showReorderHandle={resolvedShowReorderHandle}
       {notLive}
@@ -238,6 +241,7 @@
     {disabled}
     selectable={selectionMode}
     {selected}
+    {highlighted}
     {selectionIndicator}
     showReorderHandle={resolvedShowReorderHandle}
     {notLive}
@@ -270,6 +274,7 @@
     {disabled}
     selectable={selectionMode}
     {selected}
+    {highlighted}
     {selectionIndicator}
     showReorderHandle={resolvedShowReorderHandle}
     {notLive}
