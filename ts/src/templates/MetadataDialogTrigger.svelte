@@ -57,7 +57,8 @@
       size="xs"
       ariaLabel={triggerLabel}
       tooltip={triggerLabel}
-      onClick={() => {
+      onClick={(event) => {
+        event.stopPropagation();
         open = true;
       }}
     />

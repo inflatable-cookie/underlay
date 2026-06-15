@@ -81,6 +81,7 @@ export interface SystemJobListItem {
 }
 
 export interface SystemJobDetailItem extends SystemJobListItem {
+  updatedAt?: string | null;
   scheduledFor?: string | null;
   startedAt?: string | null;
   finishedAt?: string | null;

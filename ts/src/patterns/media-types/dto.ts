@@ -39,6 +39,8 @@ export interface MediaDetail {
   updatedAt: string;
   deletedAt: string | null;
   createdBy: string | null;
+  updatedBy: string | null;
+  deletedBy: string | null;
   /** Current version details (if available) */
   currentVersion: MediaVersion | null;
   /** Number of places this media is used */

@@ -212,6 +212,9 @@
           <DetailItem presentation="surface" label="Created">
             <TimeAgo datetime={loaded.createdAt} />
           </DetailItem>
+          {#if loaded.updatedAt !== undefined}
+            <DetailItem presentation="surface" label="Last updated" value={formatDisplayDateTime(loaded.updatedAt) || "-"} />
+          {/if}
           {#if loaded.scheduledFor !== undefined}
             <DetailItem presentation="surface" label="Scheduled for" value={formatDisplayDateTime(loaded.scheduledFor) || "-"} />
           {/if}

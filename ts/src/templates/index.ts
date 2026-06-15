@@ -50,6 +50,7 @@ export { default as ContextActionBar } from "./ContextActionBar.svelte";
 export { default as ContextActionDialog } from "./ContextActionDialog.svelte";
 export { default as ContextActionList } from "./ContextActionList.svelte";
 export { default as ContentCard } from "./ContentCard.svelte";
+export { default as RelationLink } from "./RelationLink.svelte";
 export { default as AdminPill } from "./AdminPill.svelte";
 export { ADMIN_PILL_ACCENTS, type AdminPillKind } from "./admin-pill-accents";
 

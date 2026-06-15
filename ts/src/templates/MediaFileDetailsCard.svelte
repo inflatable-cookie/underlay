@@ -9,8 +9,11 @@
   interface MediaDetailSummary {
     originalFilename?: string | null;
     createdAt: string;
+    createdBy?: string | null;
     updatedAt: string;
+    updatedBy?: string | null;
     deletedAt?: string | null;
+    deletedBy?: string | null;
     currentVersion?: MediaVersionSummary | null;
   }
 
@@ -51,14 +54,29 @@
       <DetailItem label="Created">
         <TimeAgo datetime={media.createdAt} short />
       </DetailItem>
+      {#if media.createdBy}
+        <DetailItem label="Created By">
+          <Code source={media.createdBy} inline inlineVariant="plain" typography="inline" showCopyButton size="md" />
+        </DetailItem>
+      {/if}
       <DetailItem label="Last Updated">
         <TimeAgo datetime={media.updatedAt} short />
       </DetailItem>
+      {#if media.updatedBy}
+        <DetailItem label="Updated By">
+          <Code source={media.updatedBy} inline inlineVariant="plain" typography="inline" showCopyButton size="md" />
+        </DetailItem>
+      {/if}
       {#if media.deletedAt}
         <DetailItem label="Deleted">
           <span class="underlay-media-file-details-card__deleted-date">
             <TimeAgo datetime={media.deletedAt} short />
           </span>
+        </DetailItem>
+      {/if}
+      {#if media.deletedBy}
+        <DetailItem label="Deleted By">
+          <Code source={media.deletedBy} inline inlineVariant="plain" typography="inline" showCopyButton size="md" />
         </DetailItem>
       {/if}
     </DetailSection>
