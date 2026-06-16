@@ -139,7 +139,9 @@
 
   .underlay-relation-link__secondary {
     color: var(--underlay-color-text-muted, rgba(148, 163, 184, 0.75));
-    font-size: 0.875em;
+    font-size: 0.8125em;
+    font-style: italic;
+    font-weight: 400;
     line-height: 1.35;
     overflow-wrap: anywhere;
   }
