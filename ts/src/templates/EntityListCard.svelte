@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { getContext } from "svelte";
   import {
     Icon,
     ListCard,
@@ -6,6 +7,10 @@
     Pill,
   } from "@poodle/svelte";
   import type { EntityListCardModeDisplay, EntityListCardProps } from "./entity-list-card.types";
+  import {
+    UNDERLAY_ENTITY_LIST_CONTEXT_KEY,
+    type EntityListContext
+  } from "./entity-list-context";
 
   const PoodleListCard: any = ListCard;
 
@@ -19,7 +24,7 @@
     layout = "default",
     interactive = false,
     disabled = false,
-    reorderMode = false,
+    reorderMode = undefined,
     selectionMode = false,
     reorderDisplay = undefined,
     selectionDisplay = undefined,
@@ -52,6 +57,11 @@
     footer: footerContent
   }: EntityListCardProps = $props();
 
+  const listContext = getContext<EntityListContext | undefined>(
+    UNDERLAY_ENTITY_LIST_CONTEXT_KEY
+  );
+  const effectiveReorderMode = $derived(reorderMode ?? listContext?.reorderMode ?? false);
+
   const defaultReorderDisplay: EntityListCardModeDisplay = {
     layout: "compact",
     size: "xs",
@@ -63,7 +73,7 @@
   };
 
   let activeDisplay = $derived.by((): EntityListCardModeDisplay | null => {
-    if (reorderMode) return { ...defaultReorderDisplay, ...(reorderDisplay ?? {}) };
+    if (effectiveReorderMode) return { ...defaultReorderDisplay, ...(reorderDisplay ?? {}) };
     if (selectionMode && selectionDisplay) return selectionDisplay;
     return null;
   });
@@ -75,11 +85,11 @@
   let resolvedDensity = $derived(
     activeDisplay?.density ?? (resolvedLayout === "compact" ? "compact" : density)
   );
-  let resolvedHref = $derived(reorderMode ? null : href);
-  let resolvedInteractive = $derived(reorderMode ? false : (interactive || Boolean(onClick)));
-  let resolvedContextMenuItems = $derived(reorderMode || selectionMode ? [] : (contextMenuItems ?? []));
+  let resolvedHref = $derived(effectiveReorderMode ? null : href);
+  let resolvedInteractive = $derived(effectiveReorderMode ? false : (interactive || Boolean(onClick)));
+  let resolvedContextMenuItems = $derived(effectiveReorderMode || selectionMode ? [] : (contextMenuItems ?? []));
   let showLeading = $derived(Boolean(leadingImageUrl || leadingIcon || leadingContent));
-  let resolvedShowReorderHandle = $derived(reorderMode || showReorderHandle);
+  let resolvedShowReorderHandle = $derived(effectiveReorderMode || showReorderHandle);
   let resolvedSubtitle = $derived(activeDisplay?.showSubtitle === false ? null : subtitle);
   let resolvedMeta = $derived(activeDisplay?.showMeta === false ? null : meta);
   let resolvedBadgeItems = $derived(activeDisplay?.showBadges === false ? [] : badgeItems);

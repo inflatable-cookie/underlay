@@ -1,7 +1,7 @@
 <script lang="ts">
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   type T = any;
-  import { onDestroy, untrack } from "svelte";
+  import { onDestroy, setContext, untrack } from "svelte";
   import { getAuthConfig } from "../patterns/auth";
   import { useAuthenticatedData } from "../runtime/auth";
   import { useBatchActions } from "../patterns/batch-actions.svelte";
@@ -53,6 +53,10 @@
     releaseListSelectionScope
   } from "../patterns/list-selection-scope.svelte";
   import { default as EntityReorderControls } from "./EntityReorderControls.svelte";
+  import {
+    UNDERLAY_ENTITY_LIST_CONTEXT_KEY,
+    type EntityListContext
+  } from "./entity-list-context";
   import type {
     BatchActionConfig,
     CustomReorderConfig,
@@ -330,6 +334,13 @@
   // Reorder mode (internal or external)
   let internalReorderMode = $state(false);
   let reorderMode = $derived(externalReorderMode ?? internalReorderMode);
+  const entityListContext: EntityListContext = {
+    get reorderMode() {
+      return reorderMode;
+    }
+  };
+
+  setContext(UNDERLAY_ENTITY_LIST_CONTEXT_KEY, entityListContext);
   let reorderError = $state<string | null>(null);
   let lastNotifiedVisibleCount = $state<number | null>(null);
   let lastNotifiedTotalCount = $state<number | null>(null);

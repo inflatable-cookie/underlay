@@ -40,7 +40,9 @@ describe("templates", () => {
     const { container } = render(EntityDetailPageHarness);
 
     expect(await screen.findByRole("tab", { name: "Overview" })).toBeTruthy();
-    expect(container.querySelectorAll(".poodle-tabs__separator")).toHaveLength(1);
+    expect(
+      container.querySelectorAll(".poodle-tabs__list:not(.poodle-tabs__list--measure) .poodle-tabs__separator")
+    ).toHaveLength(1);
   });
 
   it("renders a clickable metadata trigger in detail meta and opens the dialog", async () => {
@@ -54,13 +56,14 @@ describe("templates", () => {
     expect(screen.getByText(/"provider": "manual"/)).toBeTruthy();
   });
 
-  it("does not render the metadata trigger when the metadata value is empty", () => {
+  it("renders a disabled metadata trigger when the metadata value is empty", () => {
     render(MetadataDialogTrigger, {
       value: {},
       title: "Empty metadata"
     });
 
-    expect(screen.queryByRole("button", { name: "Metadata" })).toBeNull();
+    const trigger = screen.getByRole("button", { name: "Metadata: none" }) as HTMLButtonElement;
+    expect(trigger.disabled).toBe(true);
   });
 
   it("uses contextual back info when navigation context exists", async () => {

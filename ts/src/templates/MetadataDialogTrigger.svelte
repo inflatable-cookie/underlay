@@ -21,6 +21,8 @@
 
   let open = $state(false);
   const source = $derived(normalizeValue(value));
+  const hasSource = $derived(Boolean(source));
+  const effectiveTriggerLabel = $derived(hasSource ? triggerLabel : `${triggerLabel}: none`);
 
   function normalizeValue(input: unknown): string | null {
     if (input === null || input === undefined) {
@@ -48,22 +50,25 @@
   }
 </script>
 
-{#if source}
-  <span class="underlay-metadata-dialog-trigger">
-    <IconButton
-      type="button"
-      icon="code"
-      variant="ghost"
-      size="xs"
-      ariaLabel={triggerLabel}
-      tooltip={triggerLabel}
-      onClick={(event) => {
-        event.stopPropagation();
+<span class="underlay-metadata-dialog-trigger" data-empty={!hasSource}>
+  <IconButton
+    type="button"
+    icon="code"
+    variant="ghost"
+    size="xs"
+    ariaLabel={effectiveTriggerLabel}
+    tooltip={effectiveTriggerLabel}
+    disabled={!hasSource}
+    onClick={(event) => {
+      event.stopPropagation();
+      if (hasSource) {
         open = true;
-      }}
-    />
-  </span>
+      }
+    }}
+  />
+</span>
 
+{#if source}
   <Dialog
     open={open}
     {title}
@@ -100,5 +105,9 @@
 
   .underlay-metadata-dialog-trigger :global(.poodle-icon-button:hover) {
     --poodle-icon-button-text: var(--poodle-color-text-primary);
+  }
+
+  .underlay-metadata-dialog-trigger[data-empty="true"] {
+    opacity: 0.45;
   }
 </style>
