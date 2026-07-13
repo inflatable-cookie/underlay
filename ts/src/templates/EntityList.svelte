@@ -1607,12 +1607,12 @@
   }
 
   .underlay-entity-list__query-variants :global(.poodle-card) {
-    --poodle-treatment-surface-fill: color-mix(
+    --poodle-recipe-card-fill: color-mix(
       in srgb,
       var(--poodle-color-background-elevated) 95%,
       var(--poodle-color-text-primary)
     );
-    --poodle-treatment-surface-hover-fill: color-mix(
+    --poodle-recipe-card-hover-fill: color-mix(
       in srgb,
       var(--poodle-color-background-elevated) 92%,
       var(--poodle-color-text-primary)
@@ -1622,14 +1622,14 @@
       var(--poodle-color-border-default) 28%,
       transparent
     );
-    --poodle-treatment-surface-shadow:
+    --poodle-recipe-card-shadow:
       0 0.375rem 0.875rem color-mix(in srgb, black 12%, transparent),
       inset 0 0 0 0.0625rem color-mix(in srgb, var(--poodle-color-border-default) 18%, transparent);
   }
 
   :global([data-theme="light"]) .underlay-entity-list__query-variants :global(.poodle-card) {
-    --poodle-treatment-surface-fill: var(--poodle-color-background-elevated);
-    --poodle-treatment-surface-hover-fill: color-mix(
+    --poodle-recipe-card-fill: var(--poodle-color-background-elevated);
+    --poodle-recipe-card-hover-fill: color-mix(
       in srgb,
       var(--poodle-color-background-elevated) 92%,
       var(--poodle-color-background-surface)
