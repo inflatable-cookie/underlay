@@ -123,8 +123,9 @@ structural and process debt sequenced behind the edge fixes.
   agreement, retired orphan `poodle-*.json` to historical), `g08.028` versioning
   and consumer-pin story (done 2026-07-18 - version `0.0.1->0.8.0`, path-dep
   default kept, optional git-tag hold-back documented in `023`, `v0.8.0` tagged),
-  `g08.029` i18n message-seam decision (planning gate), `g08.030` archival docs
-  weight reduction.
+  `g08.029` i18n message-seam decision (done 2026-07-18 - planning gate resolved
+  English-only, recorded in contract `090`; no message seam, no string
+  extraction), `g08.030` archival docs weight reduction.
 
 ## Acceptance Criteria
 

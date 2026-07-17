@@ -1,9 +1,9 @@
 # g08.029 - i18n Message-Seam Decision
 
-Status: paused
+Status: done
 Owner: repo maintainers
-Started:
-Completed:
+Started: 2026-07-18
+Completed: 2026-07-18
 
 ## Purpose
 
@@ -40,12 +40,26 @@ Do not execute this as code work until the contract decision lands.
 - [090 TS runtime and client orchestration](../../contracts/090-ts-runtime-and-client-orchestration.md)
 - [100 Shared patterns and workflow shells](../../contracts/100-shared-patterns-and-workflow-shells.md)
 
+## Decision: English-only
+
+Recorded in contract `090` (new "Internationalization posture" subsection).
+
+Rationale: all six consumers are English-language admin/product tools with no
+stated second-locale requirement, so a message-lookup seam would be speculative
+infrastructure. `patterns/i18n.ts` keeps its locale-aware `Intl` formatting
+(useful even in an English UI) but does not grow a message catalog. Hardcoded
+English pluralization at string sites is acceptable under this posture. If a
+consumer ever needs a second locale, that is a fresh contract decision (add a
+message-lookup seam, then compile an implementation card) — not an ad hoc
+per-string change.
+
+Per the stop condition, no string extraction was performed.
+
 ## Planned Changes
 
-- [ ] Record the decision (English-only vs message seam) in the governing
-  contract.
-- [ ] If a seam: define the lookup contract and compile the implementation card
-  separately.
+- [x] Recorded the English-only decision in the governing contract (`090`).
+- [x] No seam added; no implementation card compiled (English-only closes the
+  gate).
 
 ## Consumer Upgrade Impact
 
@@ -54,8 +68,8 @@ site; English-only is `none`.
 
 ## Validation
 
-- [ ] decision recorded in a contract; card either closed (English-only) or
-  superseded by an implementation card
+- [x] Decision recorded in contract `090`; card closed English-only (not
+  superseded by an implementation card).
 
 ## Stop Conditions
 

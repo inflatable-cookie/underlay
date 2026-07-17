@@ -63,7 +63,7 @@ README surfaces.
 - Lane C - Rust structural seams: `g08.015`-`g08.020` (all done except `g08.019` postgres integration tests)
 - Lane D - TypeScript surface and SSR safety: `g08.021`-`g08.024` (complete)
 - Lane E - Docs, versioning, and i18n posture: `g08.025`-`g08.030`
-  (`g08.029` paused on an i18n contract decision)
+  (`g08.029` resolved English-only; `g08.030` remaining)
 
 Closed generations `g01`-`g07` are archival; see each generation README and
 [`generation-index.md`](generation-index.md).
@@ -77,5 +77,6 @@ Lane D complete (`g08.021`-`g08.024`; `g08.022` broad subpath collapse and
 `g08.023` presentation file-split both deferred under their stop conditions).
 Lane E in progress: `g08.025` front-door doc repair, `g08.026` committed-artifact
 cleanup, `g08.027` contract-sync decision, and `g08.028` versioning/consumer-pin
-story done (underlay now `0.8.0`, `v0.8.0` tagged). Next: `g08.029` i18n
-message-seam decision (planning gate).
+story, and `g08.029` i18n message-seam decision (resolved English-only) done
+(underlay now `0.8.0`, `v0.8.0` tagged). Next: `g08.030` archival docs weight
+reduction — the last g08 card.
