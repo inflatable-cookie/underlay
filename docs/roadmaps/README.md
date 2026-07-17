@@ -76,5 +76,6 @@ scanned and fixed). Lane C done except `g08.019` (blocked on Docker/Postgres).
 Lane D complete (`g08.021`-`g08.024`; `g08.022` broad subpath collapse and
 `g08.023` presentation file-split both deferred under their stop conditions).
 Lane E in progress: `g08.025` front-door doc repair, `g08.026` committed-artifact
-cleanup, and `g08.027` contract-sync decision done. Next: `g08.028` versioning
-and consumer-pin story.
+cleanup, `g08.027` contract-sync decision, and `g08.028` versioning/consumer-pin
+story done (underlay now `0.8.0`, `v0.8.0` tagged). Next: `g08.029` i18n
+message-seam decision (planning gate).
