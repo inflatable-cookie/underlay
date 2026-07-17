@@ -125,15 +125,22 @@ impl<S: SessionStore> SessionManager<S> {
             return Err(JwtError::SessionRevoked);
         }
 
+        // A refresh token that verified cryptographically and targets this
+        // session but is no longer the session's current token - stale
+        // fingerprint, or mismatched token id/version - is reuse of an
+        // already-rotated token. The family is compromised: revoke the whole
+        // session so neither the stolen token nor the legitimate current one
+        // can be used again (RFC 6819 / OAuth 2.0 Security BCP refresh-token
+        // reuse detection).
         if session.refresh_token_fingerprint != token_fingerprint(refresh_token) {
+            let _ = self.store.delete_session(&session.id).await;
             return Err(JwtError::TokenFingerprintMismatch);
         }
 
-        if session.refresh_token_id != claims.common.token_id {
-            return Err(JwtError::RefreshReplayDetected);
-        }
-
-        if session.refresh_token_version != claims.version {
+        if session.refresh_token_id != claims.common.token_id
+            || session.refresh_token_version != claims.version
+        {
+            let _ = self.store.delete_session(&session.id).await;
             return Err(JwtError::RefreshReplayDetected);
         }
 
@@ -163,6 +170,12 @@ impl<S: SessionStore> SessionManager<S> {
             )
             .await?;
         if !rotated {
+            // Lost the atomic compare-and-swap: another request rotated this
+            // same token first. This is the legitimate concurrent-refresh
+            // race the CAS exists to resolve (e.g. a double-submitted
+            // refresh), NOT reuse of a superseded token - that is caught
+            // above by the id/version check. Do not revoke the family here;
+            // the loser simply retries with the freshly issued token.
             return Err(JwtError::RefreshReplayDetected);
         }
 

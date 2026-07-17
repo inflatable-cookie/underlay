@@ -59,7 +59,7 @@ Underlay provides shared types and components to reduce boilerplate. For new imp
 
 | Layer | Package | Exports |
 |-------|---------|---------|
-| Rust types | `underlay-db` | `MediaKind`, `MediaVisibility`, `MediaVersionState` |
+| Rust types | `underlay-media` | `MediaKind`, `MediaVisibility`, `MediaVersionState` |
 | TypeScript types | `@decodelabs/underlay/runtime/media/types` | Types, enums, labels, and media utility functions |
 | App-local media actions | local app UI | Compose `Menu`, `AlertDialog`, clipboard helpers, and media commands |
 | Media workflow UI/helpers | `@poodle/svelte` | `MediaPicker`, `MediaBrowsePanel`, `MediaUploadStatusPanel`, `loadMediaBrowsePage`, `mergeMediaBrowseItems`, `createResetMediaBrowseState`, `runMediaUploadWorkflow`, `uploadMediaWithKnownHash` |
@@ -266,8 +266,8 @@ Examples:
 Media enums are provided by `underlay-db` and should be re-exported by consuming apps:
 
 ```rust
-// Re-export from underlay-db in your domain layer
-pub use underlay_db::{MediaKind, MediaVisibility, MediaVersionState};
+// Re-export from underlay-media in your domain layer
+pub use underlay_media::{MediaKind, MediaVisibility, MediaVersionState};
 ```
 
 The enums serialize to lowercase strings (`"image"`, `"pdf"`, `"public"`, `"restricted"`, etc.) matching the TypeScript definitions.
@@ -283,7 +283,7 @@ The enums serialize to lowercase strings (`"image"`, `"pdf"`, `"public"`, `"rest
 **Utility methods on each enum:**
 
 ```rust
-use underlay_db::{MediaKind, MediaVisibility, MediaVersionState};
+use underlay_media::{MediaKind, MediaVisibility, MediaVersionState};
 
 // String conversion
 let kind = MediaKind::Image;

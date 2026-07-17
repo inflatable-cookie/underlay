@@ -112,6 +112,19 @@ Rules:
   - `jobs`
 - avoid route-shaped or UI-shaped codes
 - do not encode HTTP status into the code itself
+- a longer `<domain>.<category>.<specific>` form is allowed when a domain has
+  enough conditions to warrant a category tier (e.g. `auth.token.invalid`,
+  `ai.runtime.rate_limit`)
+
+### Rust error-type rule
+
+Every public Rust error type in the workspace must implement
+`std::error::Error` (so it composes with `?`, `anyhow`, and `Box<dyn Error>`)
+and expose its stable code through the shared
+`underlay_core::ErrorCode { fn code(&self) -> &str }` trait where the type is a
+transport/domain carrier. Prefer `thiserror` derives over hand-rolled
+`Display`/`Error` impls. A public error type that implements neither trait is a
+defect, not a style choice.
 
 ### Transport versus operator detail rule
 

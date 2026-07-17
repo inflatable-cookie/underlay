@@ -5,6 +5,8 @@ use super::super::MigrationBundleError;
 
 pub(super) fn registry_client() -> Result<Client, MigrationBundleError> {
     Client::builder()
+        .connect_timeout(std::time::Duration::from_secs(10))
+        .timeout(std::time::Duration::from_secs(30))
         .build()
         .map_err(|err| MigrationBundleError::Validation(err.to_string()))
 }

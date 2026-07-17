@@ -1,6 +1,6 @@
 import type { Readable } from "svelte/store";
 
-import type { AuthSession } from "../client/auth";
+import type { SessionInfo } from "../client/auth";
 import type { AuthState, AuthStore } from "../client/useAuth";
 
 export type {
@@ -70,6 +70,19 @@ let globalAuthConfig: AuthConfig | null = null;
  * ```
  */
 export function configureAuth(config: AuthConfig): void {
+  // Guard against SSR misuse. This is process-global module state; under
+  // SvelteKit SSR it is shared across concurrent requests, so a `getToken`
+  // that closes over per-request/user state would leak tokens between users.
+  // Auth config is inherently client-side - call this only in the browser
+  // (e.g. inside `onMount`, or guarded by `typeof window !== "undefined"`).
+  if (typeof window === "undefined") {
+    throw new Error(
+      "configureAuth() was called during SSR. It sets process-global auth " +
+        "config that is shared across concurrent server requests and can leak " +
+        "tokens between users. Call it only in the browser (onMount or a " +
+        "`typeof window !== 'undefined'` guard).",
+    );
+  }
   globalAuthConfig = config;
 }
 
@@ -83,12 +96,12 @@ export function getAuthConfig(): AuthConfig | null {
 
 export function isAuthenticated(state: AuthState): state is AuthState & {
   status: "authenticated";
-  session: AuthSession;
+  session: SessionInfo;
 } {
   return state.status === "authenticated" && state.session !== null;
 }
 
-export function requireAuth(state: AuthState): AuthSession {
+export function requireAuth(state: AuthState): SessionInfo {
   if (!isAuthenticated(state)) {
     throw new Error("Authentication required");
   }

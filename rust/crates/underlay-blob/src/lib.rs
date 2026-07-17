@@ -54,15 +54,17 @@ mod adapter;
 pub mod adapters;
 mod config;
 mod error;
+mod sniff;
 mod types;
 
 // Re-export main types
-pub use adapter::{BlobAdapter, BlobAdapterObjectKeyExt, NoopAdapter};
-pub use config::BlobUploadConfig;
+pub use adapter::{BlobAdapter, BlobAdapterObjectKeyExt, BlobAdapterUploadExt, NoopAdapter};
+pub use config::{BlobUploadConfig, DEFAULT_ALLOWED_CONTENT_TYPES};
 pub use error::{BlobError, BlobResult};
+pub use sniff::{content_matches_declared, sniff_content_type};
 pub use types::{
-    validate_blob_object_key, BlobObjectKey, BlobObjectKeyError, DownloadRequest, ObjectInfo,
-    SignedUrl, StoredObject, UploadPlan, UploadRequest,
+    content_disposition_attachment, validate_blob_object_key, BlobObjectKey, BlobObjectKeyError,
+    DownloadRequest, ObjectInfo, SignedUrl, StoredObject, UploadPlan, UploadRequest,
 };
 
 // Re-export adapters based on features

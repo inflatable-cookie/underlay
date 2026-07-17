@@ -1,14 +1,14 @@
 import { writable, type Readable } from "svelte/store";
 
 import { UnderlayHttpError } from "./errors";
-import type { AuthCommands, AuthSession, PasswordAuthParams, PassKeyAuthParams, RegisterParams } from "./auth";
+import type { AuthCommands, AuthSession, PasswordAuthParams, PassKeyAuthParams, RegisterParams, SessionInfo } from "./auth";
 import type { TokenStore } from "./http";
 
 export type AuthStatus = "unknown" | "anonymous" | "authenticated";
 
 export type AuthState = {
   status: AuthStatus;
-  session: AuthSession | null;
+  session: SessionInfo | null;
   loading: boolean;
   error: UnderlayHttpError | null;
 };
@@ -46,7 +46,7 @@ export function createAuthStore(options: CreateAuthStoreOptions): AuthStore {
     error: null,
   });
 
-  function setAuthenticated(session: AuthSession) {
+  function setAuthenticated(session: SessionInfo) {
     state.set({ status: "authenticated", session, loading: false, error: null });
   }
 
@@ -67,8 +67,9 @@ export function createAuthStore(options: CreateAuthStoreOptions): AuthStore {
     state.update((s) => ({ ...s, loading: true, error: null }));
 
     try {
+      // Session GET carries no token material; tokens only move on
+      // login/refresh. Do not write to the token store here.
       const session = await options.commands.session();
-      await setTokens(session);
       setAuthenticated(session);
     } catch (err) {
       if (err instanceof UnderlayHttpError && err.status === 401) {

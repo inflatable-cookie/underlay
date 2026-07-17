@@ -46,5 +46,6 @@ Over time, Underlay should:
 
 ## Next Task
 
-Open `g01.042` for the next active Underlay milestone so the foundation vision
-has a current execution handoff again.
+Open the current card of the active generation `g08` (audit remediation and edge
+hardening) via [`docs/roadmaps/README.md`](../roadmaps/README.md), keeping the
+foundation vision's execution handoff current.

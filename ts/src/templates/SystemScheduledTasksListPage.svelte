@@ -153,7 +153,7 @@
   }
 </script>
 
-{#snippet renderItem(task)}
+{#snippet renderItem(task: SystemScheduledTaskListItem)}
   <SystemScheduledTaskListCard
     {task}
     href={detailHref(task)}

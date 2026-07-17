@@ -1,4 +1,4 @@
-use super::{parse_sort_string, FilterField, FilterOperator, SortField};
+use underlay_query::{parse_sort_string, FilterField, FilterOperator, SortField};
 use serde::{Deserialize, Deserializer};
 use std::collections::HashMap;
 use std::str::FromStr;

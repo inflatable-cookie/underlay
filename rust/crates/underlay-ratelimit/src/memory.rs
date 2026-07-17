@@ -52,8 +52,14 @@ impl RateLimitEntry {
 
 /// In-memory rate limiting backend.
 ///
-/// Uses a concurrent hash map for storage. Suitable for single-instance
-/// deployments. For distributed systems, use a Redis or database backend.
+/// **Single-instance / non-production only.** Counters are process-local
+/// (a `DashMap` keyed on `Instant`), so in a multi-replica deployment each
+/// replica keeps its own counter - an attacker spreads attempts across
+/// replicas and a restart wipes every counter. Production deployments with
+/// more than one app instance must use [`crate::PostgresBackend`] (feature
+/// `postgres`) or another shared-counter backend. Construct this only via
+/// [`InMemoryBackend::single_instance`] in production code paths so the
+/// choice is explicit.
 ///
 /// # Features
 ///
@@ -96,6 +102,17 @@ impl InMemoryBackend {
             entries: Arc::new(DashMap::new()),
             cleanup_handle: Arc::new(RwLock::new(None)),
         }
+    }
+
+    /// Explicit single-instance constructor.
+    ///
+    /// Identical to [`InMemoryBackend::new`], but names the operational
+    /// constraint at the call site: this backend is safe only when exactly
+    /// one app instance enforces the limit. Use this in production wiring so
+    /// the single-instance assumption is a deliberate, greppable decision
+    /// rather than an accidental default.
+    pub fn single_instance() -> Self {
+        Self::new()
     }
 
     /// Create a new in-memory backend with periodic cleanup.

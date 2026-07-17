@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { get } from "svelte/store";
 
 const contextMap = vi.hoisted(() => new Map<symbol, unknown>());
@@ -22,6 +22,13 @@ describe("nightfire/strategies", () => {
 		vi.resetModules();
 		mockSetContext.mockClear();
 		mockGetContext.mockClear();
+		// configureNightfireStrategies is browser-only (throws under SSR); these
+		// tests exercise the configured path, so simulate the browser.
+		vi.stubGlobal("window", {});
+	});
+
+	afterEach(() => {
+		vi.unstubAllGlobals();
 	});
 
 	it("handles unconfigured store and context usage", async () => {

@@ -6,10 +6,10 @@
 //! # Example
 //!
 //! ```rust,ignore
-//! use underlay_db::pagination::{PaginationParams, PaginatedResponse, Cursor};
+//! use underlay_db::pagination::{CursorPaginationParams, PaginatedResponse, Cursor};
 //!
 //! // Parse pagination params from query string
-//! let params = PaginationParams::default();
+//! let params = CursorPaginationParams::default();
 //!
 //! // Build cursor for keyset pagination
 //! let cursor = Cursor::new()

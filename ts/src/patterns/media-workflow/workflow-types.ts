@@ -74,6 +74,8 @@ export type UploadMediaWithKnownHashInput<
   ) => TCreated;
   onStep?: (step: "uploading" | "finalising") => void;
   onProgress?: (percent: number) => void;
+  /** Abort the blob transfer mid-flight (e.g. from a Cancel button). */
+  signal?: AbortSignal;
 };
 
 export type RunMediaUploadWorkflowInput<

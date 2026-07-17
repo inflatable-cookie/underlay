@@ -9,12 +9,13 @@ use crate::value::NightfireValue;
 
 /// Validation error when checking a `NightfireValue` against a
 /// `NightfireStrategy`.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, thiserror::Error)]
 pub enum NightfireValidationError {
     /// The value shape is invalid before strategy validation runs.
     ///
     /// Nightfire values must encode either a single block or multiple blocks,
     /// never both and never neither.
+    #[error("invalid value shape for schema {schema} (has_block={has_block}, has_blocks={has_blocks})")]
     InvalidValueShape {
         schema: String,
         has_block: bool,
@@ -22,6 +23,7 @@ pub enum NightfireValidationError {
     },
     /// The value's shape (single vs multi and block count) does not
     /// match the strategy's cardinality.
+    #[error("cardinality mismatch for schema {schema}: expected {expected:?}, got {actual_blocks} blocks (is_single={is_single})")]
     CardinalityMismatch {
         schema: String,
         expected: StrategyCardinality,
@@ -30,11 +32,14 @@ pub enum NightfireValidationError {
     },
     /// The value references a block type that is not permitted by the
     /// strategy's `allowed_types` or `allowed_categories`.
+    #[error("disallowed block type {block_type} for schema {schema}")]
     DisallowedBlockType { schema: String, block_type: String },
     /// The value references a block type that is unknown to the
     /// block registry.
+    #[error("unknown block type {block_type} for schema {schema}")]
     UnknownBlockType { schema: String, block_type: String },
     /// No strategy is registered for the given schema identifier.
+    #[error("no strategy registered for schema {schema}")]
     UnknownStrategy { schema: String },
 }
 

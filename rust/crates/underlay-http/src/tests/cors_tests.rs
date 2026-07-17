@@ -2,17 +2,26 @@
 mod tests {
     use http::header::HeaderName;
 
-    use crate::cors::{CorsConfig, DEFAULT_CORS_MAX_AGE_SECS};
+    use underlay_observability::Environment;
+
+    use crate::cors::{try_cors_layer_for_env, CorsConfig, DEFAULT_CORS_MAX_AGE_SECS};
 
     // ========================================================================
     // Default Configuration
     // ========================================================================
 
     #[test]
-    fn default_config_allows_any_origin() {
+    fn default_config_allows_no_cross_origin() {
         let config = CorsConfig::default();
-        assert!(config.allow_any_origin());
+        assert!(!config.allow_any_origin());
         assert!(!config.mirror_origin());
+        assert!(config.allowed_origins().is_empty());
+    }
+
+    #[test]
+    fn wildcard_is_an_explicit_opt_in() {
+        let config = CorsConfig::default().with_any_origin();
+        assert!(config.allow_any_origin());
     }
 
     #[test]
@@ -262,6 +271,41 @@ mod tests {
         assert!(!config.allow_any_origin());
         assert!(config.mirror_origin());
         assert!(config.allow_credentials());
+    }
+
+    // ========================================================================
+    // Environment Gating
+    // ========================================================================
+
+    #[test]
+    fn mirror_with_credentials_builds_in_local_and_test() {
+        for env in [Environment::Local, Environment::Test] {
+            let config = CorsConfig::new().with_mirror_origin().with_credentials(true);
+            assert!(try_cors_layer_for_env(config, env).is_ok());
+        }
+    }
+
+    #[test]
+    fn mirror_with_credentials_rejected_outside_local_and_test() {
+        for env in [Environment::Dev, Environment::Staging, Environment::Prod] {
+            let config = CorsConfig::new().with_mirror_origin().with_credentials(true);
+            let error = try_cors_layer_for_env(config, env)
+                .expect_err("mirror + credentials must be rejected outside Local/Test");
+            assert!(error.to_string().contains("only"));
+        }
+    }
+
+    #[test]
+    fn mirror_without_credentials_builds_in_any_environment() {
+        let config = CorsConfig::new().with_mirror_origin();
+        assert!(try_cors_layer_for_env(config, Environment::Prod).is_ok());
+    }
+
+    #[test]
+    #[should_panic(expected = "explicit environment gate")]
+    fn cors_layer_panics_on_mirror_with_credentials() {
+        let config = CorsConfig::new().with_mirror_origin().with_credentials(true);
+        let _ = crate::cors::cors_layer(config);
     }
 
     #[test]

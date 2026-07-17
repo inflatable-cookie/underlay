@@ -89,6 +89,7 @@ impl From<underlay_blob::BlobError> for MediaError {
     }
 }
 
+#[cfg(feature = "renditions")]
 impl From<crate::image::ImageError> for MediaError {
     fn from(err: crate::image::ImageError) -> Self {
         Self::ImageProcessing(err.to_string())

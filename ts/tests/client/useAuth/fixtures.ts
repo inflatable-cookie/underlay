@@ -30,6 +30,11 @@ export function makeSession(id = "s1") {
 	};
 }
 
+export function makeSessionInfo(id = "s1") {
+	const { user, session } = makeSession(id);
+	return { user, session };
+}
+
 export function makeDeps() {
 	const commands = {
 		session: vi.fn(),

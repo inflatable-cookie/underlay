@@ -106,13 +106,19 @@ export type BlobErrorCode =
 
 /**
  * Allowed file types for media uploads.
+ *
+ * Client-side checks are a UX hint only; the server enforces its own
+ * allowlist and magic-byte verification. SVG is deliberately absent: it is
+ * scriptable content and the server default rejects it. Consumers that
+ * genuinely need SVG must opt in server-side and serve it as an attachment
+ * or from a sandboxed origin.
  */
 export const ALLOWED_IMAGE_TYPES = [
   "image/jpeg",
   "image/png",
   "image/gif",
   "image/webp",
-  "image/svg+xml",
+  "image/avif",
 ] as const;
 
 export const ALLOWED_PDF_TYPES = ["application/pdf"] as const;

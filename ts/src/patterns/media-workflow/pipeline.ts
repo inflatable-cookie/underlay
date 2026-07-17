@@ -33,6 +33,7 @@ export async function createMediaAndUpload<
     maxFileSize: input.maxFileSize,
     includeHashInInitiate: input.includeHashInInitiate,
     onProgress: input.onProgress,
+    signal: input.signal,
     initiateUpload: input.initiateUpload,
     finaliseUpload: input.finaliseUpload,
   });
@@ -55,6 +56,7 @@ export async function replaceMediaUpload(
     maxFileSize: input.maxFileSize,
     includeHashInInitiate: input.includeHashInInitiate,
     onProgress: input.onProgress,
+    signal: input.signal,
     initiateUpload: input.initiateUpload,
     finaliseUpload: input.finaliseUpload,
   });
@@ -97,7 +99,7 @@ export function createMediaUploadPipeline<
   async function createAndUpload(
     options: MediaCreateAndUploadPipelineOptions<TContext>,
   ): Promise<MediaUploadPipelineResult> {
-    const { file, onProgress, title, visibility, ...context } = options;
+    const { file, onProgress, signal, title, visibility, ...context } = options;
 
     return createMediaAndUpload({
       file,
@@ -106,6 +108,7 @@ export function createMediaUploadPipeline<
       maxFileSize,
       includeHashInInitiate,
       onProgress,
+      signal,
       detectKind: config.detectKind,
       createMedia: (request) =>
         config.createMedia(request, context as TContext),
@@ -119,7 +122,7 @@ export function createMediaUploadPipeline<
   async function replaceUpload(
     options: MediaReplaceUploadPipelineOptions<TContext>,
   ): Promise<MediaUploadPipelineResult> {
-    const { file, mediaId, onProgress, ...context } = options;
+    const { file, mediaId, onProgress, signal, ...context } = options;
 
     return replaceMediaUpload({
       file,
@@ -127,6 +130,7 @@ export function createMediaUploadPipeline<
       maxFileSize,
       includeHashInInitiate,
       onProgress,
+      signal,
       initiateUpload: (id, request) =>
         config.initiateUpload(id, request, context as TContext),
       finaliseUpload: (id, versionId, request) =>
@@ -159,6 +163,7 @@ async function uploadMediaVersion(input: {
   maxFileSize?: number;
   includeHashInInitiate?: boolean;
   onProgress?: MediaReplaceUploadOptions["onProgress"];
+  signal?: AbortSignal;
   initiateUpload: MediaReplaceUploadOptions["initiateUpload"];
   finaliseUpload: MediaReplaceUploadOptions["finaliseUpload"];
 }): Promise<void> {
@@ -176,6 +181,7 @@ async function uploadMediaVersion(input: {
     input.file,
     {
       onProgress: input.onProgress,
+      signal: input.signal,
     },
   );
 

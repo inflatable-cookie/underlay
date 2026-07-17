@@ -2,6 +2,19 @@ use std::collections::HashMap;
 
 use crate::dto::{ErrorBody, ErrorEnvelope};
 
+/// Shared accessor for an error's stable, machine-readable code.
+///
+/// Codes follow the `<domain>.<category>.<specific>` convention workspace-wide
+/// (e.g. `auth.token.invalid`, `media.upload.too_large`). The code is stable
+/// wire/API vocabulary and must not change once shipped; the human-facing
+/// message can. Every public Underlay error type should implement both
+/// `std::error::Error` (so it composes with `?`, `anyhow`, and
+/// `Box<dyn Error>`) and this trait.
+pub trait ErrorCode {
+    /// The stable error code for this error.
+    fn code(&self) -> &str;
+}
+
 /// Core application error type used across Underlay-based projects.
 ///
 /// This is intentionally minimal; domain crates are expected to define
@@ -51,6 +64,12 @@ impl std::fmt::Display for AppError {
 }
 
 impl std::error::Error for AppError {}
+
+impl ErrorCode for AppError {
+    fn code(&self) -> &str {
+        self.code
+    }
+}
 
 impl From<AppError> for ErrorBody {
     fn from(err: AppError) -> Self {

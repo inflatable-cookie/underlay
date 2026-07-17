@@ -22,9 +22,20 @@ export interface RegisterParams {
   displayName: string;
 }
 
-export interface AuthSession {
+/**
+ * Session read payload.
+ *
+ * Session GET never carries token material. Access and refresh tokens are
+ * handed out only by the login and refresh endpoints; in cookie mode the
+ * session body carries no token fields at all. This keeps an XSS from
+ * exfiltrating the long-lived refresh token via a session read.
+ */
+export interface SessionInfo {
   user: User;
   session: Session;
+}
+
+export interface AuthSession extends SessionInfo {
   accessToken: string;
   refreshToken: string;
 }
@@ -35,7 +46,7 @@ export interface AuthCommands {
   loginWithPasskey(params: PassKeyAuthParams): Promise<AuthSession>;
   logout(): Promise<void>;
   refresh(): Promise<AuthSession>;
-  session(): Promise<AuthSession>;
+  session(): Promise<SessionInfo>;
 }
 
 export interface AuthRoutes {
@@ -74,8 +85,11 @@ export function createAuthCommands(http: HttpClient, routes: AuthRoutes): AuthCo
     },
 
     async session() {
-      const res = await http.get<SingleResponse<AuthSession>>(routes.session);
-      return res.data;
+      const res = await http.get<SingleResponse<SessionInfo>>(routes.session);
+      const { user, session } = res.data;
+      // Defensive strip: even if a server still echoes token fields on
+      // session read, never propagate them to callers.
+      return { user, session };
     },
   };
 }

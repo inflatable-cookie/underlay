@@ -3,6 +3,8 @@ import {
 	createLoginRedirect,
 	createRouteProtection,
 	isPublicPath,
+	normalizePath,
+	resolveRedirectTo,
 	shouldProtectRoute,
 } from "../../src/client/route-protection";
 
@@ -53,6 +55,57 @@ describe("client/route-protection", () => {
 
 		const alreadyOnLogin = createLoginRedirect(new URL("https://example.com/login"));
 		expect(alreadyOnLogin.headers.get("location")).toBe("https://example.com/login");
+	});
+
+	it("resolveRedirectTo accepts legitimate same-origin paths", () => {
+		expect(resolveRedirectTo("/admin/users")).toBe("/admin/users");
+		expect(resolveRedirectTo("/admin/users?tab=2")).toBe("/admin/users?tab=2");
+		expect(resolveRedirectTo("/")).toBe("/");
+		expect(resolveRedirectTo("/a/b/c#frag")).toBe("/a/b/c#frag");
+	});
+
+	it("resolveRedirectTo rejects off-origin and malformed targets", () => {
+		expect(resolveRedirectTo("//evil.com")).toBe("/");
+		expect(resolveRedirectTo("//evil.com/path")).toBe("/");
+		expect(resolveRedirectTo("\\evil")).toBe("/");
+		expect(resolveRedirectTo("/\\evil.com")).toBe("/");
+		expect(resolveRedirectTo("https://evil.com")).toBe("/");
+		expect(resolveRedirectTo("javascript:alert(1)")).toBe("/");
+		expect(resolveRedirectTo("%2F%2Fevil.com")).toBe("/");
+		expect(resolveRedirectTo("/%2e%2e/admin")).toBe("/");
+		expect(resolveRedirectTo("/%252e%252e/admin")).toBe("/");
+		expect(resolveRedirectTo("/a/../b")).toBe("/");
+		expect(resolveRedirectTo("/line%0d%0abreak")).toBe("/");
+		expect(resolveRedirectTo("")).toBe("/");
+		expect(resolveRedirectTo(null)).toBe("/");
+		expect(resolveRedirectTo(undefined)).toBe("/");
+		expect(resolveRedirectTo("%zz")).toBe("/");
+	});
+
+	it("resolveRedirectTo honours a custom fallback", () => {
+		expect(resolveRedirectTo("//evil.com", "/home")).toBe("/home");
+	});
+
+	it("normalizePath decodes and collapses traversal", () => {
+		expect(normalizePath("/docs/../admin")).toBe("/admin");
+		expect(normalizePath("/docs/%2e%2e/admin")).toBe("/admin");
+		expect(normalizePath("/%70ublic/page")).toBe("/public/page");
+		expect(normalizePath("/docs/")).toBe("/docs/");
+		expect(normalizePath("/")).toBe("/");
+	});
+
+	it("isPublicPath is not bypassed by encoded traversal", () => {
+		const publicPaths = ["/docs/*"];
+
+		expect(isPublicPath("/docs/guide", publicPaths)).toBe(true);
+		expect(isPublicPath("/docs/../admin", publicPaths)).toBe(false);
+		expect(isPublicPath("/docs/%2e%2e/admin", publicPaths)).toBe(false);
+		expect(shouldProtectRoute("/docs/%2e%2e/admin", publicPaths)).toBe(true);
+	});
+
+	it("does not write protocol-relative pathnames into the redirect param", () => {
+		const redirect = createLoginRedirect(new URL("https://example.com//evil.com"));
+		expect(redirect.headers.get("location")).toBe("https://example.com/login");
 	});
 
 	it("builds a route protection function", () => {

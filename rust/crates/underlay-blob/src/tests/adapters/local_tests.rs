@@ -174,3 +174,82 @@ async fn test_cleanup_stops_at_non_empty_directory() {
     // Clean up
     let _ = fs::remove_dir_all(&temp_dir).await;
 }
+
+#[tokio::test]
+async fn test_finalise_upload_verified_rejects_mismatched_bytes() {
+    use crate::adapter::BlobAdapterUploadExt;
+    use crate::config::BlobUploadConfig;
+    use crate::error::BlobError;
+
+    let temp_dir = std::env::temp_dir().join("underlay-blob-verify-test");
+    let _ = fs::remove_dir_all(&temp_dir).await;
+
+    let config = LocalConfig::new(&temp_dir, "http://localhost:8080/uploads");
+    let adapter = LocalAdapter::new(config).await.unwrap();
+    let upload_config = BlobUploadConfig::default();
+
+    // A real PNG passes verification.
+    let png: &[u8] = &[0x89, b'P', b'N', b'G', 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x01];
+    adapter.write_file("img/ok.png", png, "image/png").await.unwrap();
+    let stored = adapter
+        .finalise_upload_verified("img/ok.png", "image/png", &upload_config)
+        .await
+        .unwrap();
+    assert_eq!(stored.content_type, "image/png");
+
+    // An HTML payload declared as PNG is rejected at finalise.
+    adapter
+        .write_file("img/evil.png", b"<html><script>alert(1)</script>", "image/png")
+        .await
+        .unwrap();
+    let err = adapter
+        .finalise_upload_verified("img/evil.png", "image/png", &upload_config)
+        .await
+        .unwrap_err();
+    assert!(matches!(err, BlobError::InvalidContentType(_)));
+
+    // A disallowed declared type is rejected even if bytes are consistent.
+    adapter
+        .write_file("page/index.html", b"<html></html>", "text/html")
+        .await
+        .unwrap();
+    let err = adapter
+        .finalise_upload_verified("page/index.html", "text/html", &upload_config)
+        .await
+        .unwrap_err();
+    assert!(matches!(err, BlobError::InvalidContentType(_)));
+
+    let _ = fs::remove_dir_all(&temp_dir).await;
+}
+
+#[tokio::test]
+async fn test_initiate_upload_validated_enforces_config() {
+    use crate::adapter::BlobAdapterUploadExt;
+    use crate::config::BlobUploadConfig;
+    use crate::error::BlobError;
+    use crate::types::UploadRequest;
+
+    let temp_dir = std::env::temp_dir().join("underlay-blob-initiate-test");
+    let _ = fs::remove_dir_all(&temp_dir).await;
+
+    let config = LocalConfig::new(&temp_dir, "http://localhost:8080/uploads");
+    let adapter = LocalAdapter::new(config).await.unwrap();
+    let upload_config = BlobUploadConfig::default().max_file_size_mb(1);
+
+    let ok = UploadRequest::parse_key("img/a.png", "image/png", 1024).unwrap();
+    assert!(adapter.initiate_upload_validated(ok, &upload_config).await.is_ok());
+
+    let oversized = UploadRequest::parse_key("img/b.png", "image/png", 5 * 1024 * 1024).unwrap();
+    assert!(matches!(
+        adapter.initiate_upload_validated(oversized, &upload_config).await,
+        Err(BlobError::TooLarge(_, _))
+    ));
+
+    let scriptable = UploadRequest::parse_key("img/c.svg", "image/svg+xml", 1024).unwrap();
+    assert!(matches!(
+        adapter.initiate_upload_validated(scriptable, &upload_config).await,
+        Err(BlobError::InvalidContentType(_))
+    ));
+
+    let _ = fs::remove_dir_all(&temp_dir).await;
+}

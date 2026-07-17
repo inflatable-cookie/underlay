@@ -296,7 +296,7 @@
   {/if}
 {/snippet}
 
-{#snippet detailsTab(loaded)}
+{#snippet detailsTab(loaded: SystemScheduledTaskDetailItem)}
   <div class="underlay-system-scheduled-task-detail-page">
     <div class="underlay-system-scheduled-task-detail-page__grid">
       <Card>
@@ -330,12 +330,12 @@
           <DetailSection columns={2} separated={false} ariaLabel="Execution history">
             <DetailItem presentation="surface" label="Last Scheduled" value={formatDisplayDateTime(loaded.lastScheduledAt) || "Never"} />
             <DetailItem presentation="surface" label="Last Completed" value={formatDisplayDateTime(loaded.lastCompletedAt) || "Never"} />
-            {#if loaded.createdAt !== undefined}
+            {#if loaded.createdAt}
               <DetailItem presentation="surface" label="Created">
                 <TimeAgo datetime={loaded.createdAt} />
               </DetailItem>
             {/if}
-            {#if loaded.updatedAt !== undefined}
+            {#if loaded.updatedAt}
               <DetailItem presentation="surface" label="Last Updated">
                 <TimeAgo datetime={loaded.updatedAt} />
               </DetailItem>
@@ -361,7 +361,7 @@
   </div>
 {/snippet}
 
-{#snippet jobRunsTab(_loaded)}
+{#snippet jobRunsTab(_loaded: SystemScheduledTaskDetailItem)}
   {#if jobsError}
     <Card>
       <div class="underlay-system-scheduled-task-detail-page__section underlay-system-scheduled-task-detail-page__section--error">

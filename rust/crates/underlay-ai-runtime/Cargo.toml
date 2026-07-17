@@ -9,7 +9,12 @@ async-trait = { workspace = true }
 reqwest = { version = "0.13", default-features = false, features = ["rustls", "json"] }
 serde = { workspace = true }
 serde_json = { workspace = true }
+thiserror = { workspace = true }
 tokio = { workspace = true, features = ["time"] }
+underlay-core = { path = "../underlay-core" }
 
 [dev-dependencies]
 tokio = { workspace = true, features = ["macros", "rt", "time"] }
+
+[lints]
+workspace = true

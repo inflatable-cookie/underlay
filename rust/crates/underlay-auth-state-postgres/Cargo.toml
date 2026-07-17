@@ -1,0 +1,17 @@
+[package]
+name = "underlay-auth-state-postgres"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Postgres-backed short-lived auth workflow state store (AuthStateStore) for Underlay"
+
+[dependencies]
+chrono = { workspace = true, features = ["serde"] }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+sqlx = { workspace = true }
+thiserror = { workspace = true }
+underlay-core = { path = "../underlay-core" }
+
+[lints]
+workspace = true

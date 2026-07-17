@@ -165,12 +165,12 @@ impl PostgresMediaRepository {
             self.config.usages_fqn()?
         );
 
-        Ok(sqlx::query_as(&query)
+        sqlx::query_as(&query)
             .bind(entity_type)
             .bind(entity_id)
             .bind(field_name)
             .fetch_all(&self.pool)
             .await
-            .media_result()?)
+            .media_result()
     }
 }

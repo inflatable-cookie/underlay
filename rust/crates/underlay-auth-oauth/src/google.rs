@@ -55,7 +55,12 @@ impl GoogleOAuthService {
         };
 
         Ok(Self {
-            http: reqwest::Client::new(),
+            // Timeouts so a stalled Google endpoint cannot hang the request.
+            http: reqwest::Client::builder()
+                .connect_timeout(std::time::Duration::from_secs(10))
+                .timeout(std::time::Duration::from_secs(30))
+                .build()
+                .unwrap_or_else(|_| reqwest::Client::new()),
             token_url,
             userinfo_url,
             client_id,

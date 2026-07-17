@@ -25,9 +25,10 @@ impl Default for StorageKeyConfig {
 impl StorageKeyConfig {
     /// Create a new configuration with the given base prefix.
     pub fn with_prefix(prefix: impl AsRef<str>) -> Result<Self, underlay_blob::BlobObjectKeyError> {
-        let mut config = Self::default();
-        config.base_prefix = validate_path_prefix(prefix.as_ref())?;
-        Ok(config)
+        Ok(Self {
+            base_prefix: validate_path_prefix(prefix.as_ref())?,
+            ..Self::default()
+        })
     }
 
     /// Set the versions directory name.

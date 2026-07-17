@@ -185,6 +185,7 @@ where
         Ok(output)
     }
 
+    #[allow(clippy::too_many_arguments)] // aggregates every prior stage's output for verification
     pub(super) async fn verify_stage_output<R>(
         &self,
         ctx: &MigrationContext,

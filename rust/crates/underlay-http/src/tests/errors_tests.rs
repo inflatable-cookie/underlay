@@ -8,7 +8,7 @@ mod tests {
 
     use underlay_core::AppError;
 
-    use crate::{error_response, ApiError};
+    use crate::{error_response, ApiError, ErrorDetail};
 
     #[test]
     fn error_response_sets_x_error_code_header() {
@@ -22,7 +22,7 @@ mod tests {
     }
 
     #[test]
-    fn api_error_sets_required_headers() {
+    fn api_error_sets_code_header_and_carries_detail_in_extensions_only() {
         let res = ApiError::internal("db.query_failed", "Query failed")
             .with_context(serde_json::json!({ "operation": "list_users" }))
             .into_response();
@@ -31,23 +31,18 @@ mod tests {
             .headers()
             .get("x-error-code")
             .expect("x-error-code should be set");
-        let message = res
-            .headers()
-            .get("x-error-message")
-            .expect("x-error-message should be set");
-        let context = res
-            .headers()
-            .get("x-error-context")
-            .expect("x-error-context should be set");
-
         assert_eq!(code.to_str().unwrap(), "db.query_failed");
-        assert_eq!(message.to_str().unwrap(), "Query failed");
 
-        let decoded =
-            urlencoding::decode(context.to_str().unwrap()).expect("context should decode");
-        let parsed: serde_json::Value =
-            serde_json::from_str(&decoded).expect("context should be valid json");
-        assert_eq!(parsed["operation"], "list_users");
+        // Internal detail must never ship as response headers.
+        assert!(res.headers().get("x-error-message").is_none());
+        assert!(res.headers().get("x-error-context").is_none());
+
+        let detail = res
+            .extensions()
+            .get::<ErrorDetail>()
+            .expect("error detail should be attached for the logging middleware");
+        assert_eq!(detail.message, "Query failed");
+        assert_eq!(detail.context["operation"], "list_users");
     }
 
     #[test]
@@ -72,22 +67,19 @@ mod tests {
     }
 
     #[test]
-    fn api_error_with_cause_adds_cause_to_context() {
+    fn api_error_with_cause_adds_cause_to_extension_context_not_headers() {
         let res = ApiError::internal("db.error", "DB operation failed")
             .with_context(serde_json::json!({ "operation": "update_user" }))
             .with_cause(&"connection timeout")
             .into_response();
 
-        let context_header = res
-            .headers()
-            .get("x-error-context")
-            .expect("x-error-context should be set");
+        assert!(res.headers().get("x-error-context").is_none());
 
-        let decoded =
-            urlencoding::decode(context_header.to_str().unwrap()).expect("context should decode");
-        let parsed: serde_json::Value =
-            serde_json::from_str(&decoded).expect("context should be valid json");
-        assert_eq!(parsed["operation"], "update_user");
-        assert_eq!(parsed["cause"], "connection timeout");
+        let detail = res
+            .extensions()
+            .get::<ErrorDetail>()
+            .expect("error detail should be attached");
+        assert_eq!(detail.context["operation"], "update_user");
+        assert_eq!(detail.context["cause"], "connection timeout");
     }
 }

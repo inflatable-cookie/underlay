@@ -15,3 +15,6 @@ process = ["prometheus/process"]
 [dev-dependencies]
 axum = { workspace = true }
 tokio = { workspace = true, features = ["macros", "rt"] }
+
+[lints]
+workspace = true

@@ -36,6 +36,6 @@ where repo-local links and normalized prose references are required instead.
 
 ## Next Task
 
-Keep the active evidence window aligned to `g02.001`, adding only the logs
-needed to reach the live next task without reconstructing the queue from the
-older contraction-era history.
+Keep the active evidence window aligned to the current generation `g08`
+(`docs/logs/2026-07/`), adding only the logs needed to reach the live next task
+without reconstructing the queue from the older contraction-era history.

@@ -94,8 +94,17 @@ Rules:
 
 - sort directions are `asc` and `desc`
 - filter operators are `eq`, `ne`, `gt`, `gte`, `lt`, `lte`, and `like`
-- Rust `QueryParams` owns sort/filter parsing
-- Rust `PaginationParams` owns page/limit parsing and clamping
+- Rust `QueryParams` (in `underlay-http`) owns the HTTP-side wire parsing of
+  `sort=`/`filter[...]` into the shared query model
+- the shared query model and SQL generation - `FilterField`, `FilterOperator`,
+  `SortField`, `SortDirection`, `WhereBuilder`, `FieldMapping`, `SqlValue` -
+  live in the `underlay-query` crate (not `underlay-http`), so database-layer
+  code builds SQL without depending on the HTTP crate. `underlay-http`
+  re-exports these at `underlay_http::query::*` for compatibility; new
+  db-layer callers should import from `underlay-query`
+- Rust page/limit parsing is `underlay_http::PagePaginationParams` (offset);
+  cursor/keyset pagination is `underlay_db::pagination::CursorPaginationParams`
+  (the two were disambiguated in g08.017)
 - TS `buildQueryString()`, `appendQueryParams()`, and
   `queryParamsToFlatRecord()` must serialize this same vocabulary
 - merging new query params must replace existing keys rather than duplicate
@@ -145,8 +154,12 @@ seam.
 Rules:
 
 - `x-request-id` is the canonical request-correlation header
-- client IP extraction may use `x-forwarded-for`, `x-real-ip`, or
-  `cf-connecting-ip`
+- client IP resolution honours a declared trusted-proxy boundary
+  (`TrustedProxyConfig` request extension). The default trusts no forwarding
+  headers and uses the socket peer address; `x-forwarded-for` (rightmost
+  untrusted hop), `x-real-ip`, or `cf-connecting-ip` are consulted only under
+  the matching declared topology. Forwarding headers are never trusted
+  implicitly - the resolved IP feeds rate limiting and security alerting
 - authenticated user identity may be attached through request extensions and
   surfaced as `AuthenticatedUser`
 - `AuthenticatedContext` is the shared extractor for routes that require a user
@@ -204,6 +217,15 @@ The Rust `underlay-http-client` contract is narrower:
 - shared `reqwest::Client` setup
 - Underlay user-agent default
 - optional custom user-agent override
+- default connect and total timeouts on every profile (no unbounded hangs)
+- two profiles: `HttpClient::new` (internal/trusted targets) and
+  `HttpClient::external` (untrusted/user-influenced targets), the latter
+  SSRF-guarded - `validate_external_url` and the redirect policy reject
+  private, loopback, link-local, and unspecified hosts (incl. the cloud
+  metadata endpoint) and constrain redirect hops
+- server-side proxies over this client that interpolate caller input into an
+  upstream URL must validate that input first (the embed proxy restricts `id`
+  to `[A-Za-z0-9_-]+`)
 
 It is a convenience seam, not a domain client framework.
 

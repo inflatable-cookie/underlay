@@ -4,7 +4,7 @@ use std::time::Duration;
 use thiserror::Error;
 use tower_http::cors::{AllowHeaders, AllowMethods, AllowOrigin, CorsLayer};
 
-use underlay_observability::REQUEST_ID_HEADER;
+use underlay_observability::{Environment, REQUEST_ID_HEADER};
 
 /// Default max age for CORS preflight caching (1 hour).
 pub const DEFAULT_CORS_MAX_AGE_SECS: u64 = 3600;
@@ -13,6 +13,11 @@ pub const DEFAULT_CORS_MAX_AGE_SECS: u64 = 3600;
 pub enum CorsConfigError {
     #[error("invalid CORS origin `{origin}`: {reason}")]
     InvalidOrigin { origin: String, reason: String },
+    #[error(
+        "mirror-origin with credentials echoes any Origin with cookies attached and is only \
+         permitted in Local/Test environments (environment: {environment:?})"
+    )]
+    MirrorWithCredentialsOutsideLocal { environment: Environment },
 }
 
 /// Configuration for CORS (Cross-Origin Resource Sharing).
@@ -23,7 +28,8 @@ pub enum CorsConfigError {
 /// use underlay_http::CorsConfig;
 /// use http::header::HeaderValue;
 ///
-/// // Default config (allow any origin, no credentials)
+/// // Default config: no cross-origin access (empty explicit origin list,
+/// // no credentials). Wildcard is an explicit opt-in via `with_any_origin`.
 /// let config = CorsConfig::default();
 ///
 /// // Production config with specific origins
@@ -54,7 +60,7 @@ pub struct CorsConfig {
 impl Default for CorsConfig {
     fn default() -> Self {
         Self {
-            allow_any_origin: true,
+            allow_any_origin: false,
             mirror_origin: false,
             allowed_origins: vec![],
             allowed_headers: vec![
@@ -85,7 +91,9 @@ impl CorsConfig {
 
     /// Mirror the requesting origin in the response.
     ///
-    /// Useful for local development with credentials.
+    /// Local development only: combined with credentials this lets any site
+    /// make credentialed requests. `cors_layer_for_env` refuses to build a
+    /// mirror + credentials layer outside `Environment::Local`/`Test`.
     pub fn with_mirror_origin(mut self) -> Self {
         self.mirror_origin = true;
         self.allow_any_origin = false;
@@ -190,7 +198,55 @@ impl CorsConfig {
     }
 }
 
+/// Build a CORS layer, validating the config against the runtime environment.
+///
+/// Errors when mirror-origin is combined with credentials outside
+/// `Environment::Local`/`Test`: that posture echoes any Origin with cookies
+/// attached and must never activate in production.
+pub fn try_cors_layer_for_env(
+    config: CorsConfig,
+    environment: Environment,
+) -> Result<CorsLayer, CorsConfigError> {
+    if config.allow_credentials
+        && config.mirror_origin
+        && !matches!(environment, Environment::Local | Environment::Test)
+    {
+        return Err(CorsConfigError::MirrorWithCredentialsOutsideLocal { environment });
+    }
+
+    Ok(build_cors_layer(config))
+}
+
+/// Build a CORS layer for the given environment.
+///
+/// # Panics
+///
+/// Panics when mirror-origin is combined with credentials outside
+/// `Environment::Local`/`Test`. Use [`try_cors_layer_for_env`] to handle the
+/// error instead.
+pub fn cors_layer_for_env(config: CorsConfig, environment: Environment) -> CorsLayer {
+    try_cors_layer_for_env(config, environment).expect("invalid CORS configuration")
+}
+
+/// Build a CORS layer without environment context.
+///
+/// # Panics
+///
+/// Panics when mirror-origin is combined with credentials: that combination
+/// requires an explicit environment gate - use
+/// [`cors_layer_for_env`]`(config, Environment::Local)` for local dev.
 pub fn cors_layer(config: CorsConfig) -> CorsLayer {
+    if config.allow_credentials && config.mirror_origin {
+        panic!(
+            "mirror-origin with credentials requires an explicit environment gate; \
+             use cors_layer_for_env(config, Environment::Local) for local development"
+        );
+    }
+
+    build_cors_layer(config)
+}
+
+fn build_cors_layer(config: CorsConfig) -> CorsLayer {
     // Determine origin handling:
     // 1. If credentials + mirror_origin: echo the requesting origin (for local dev)
     // 2. If credentials + explicit origins: use the explicit list

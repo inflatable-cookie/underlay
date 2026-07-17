@@ -1,6 +1,6 @@
 import type { Cookies, Handle, RequestEvent } from "@sveltejs/kit";
 
-import type { AuthCommands, AuthRoutes, AuthSession } from "./auth";
+import type { AuthCommands, AuthRoutes, AuthSession, SessionInfo } from "./auth";
 import { createAuthCommands } from "./auth";
 import { UnderlayHttpError } from "./errors";
 import { createHttpClient, type HttpClient, type TokenStore } from "./http";
@@ -179,7 +179,7 @@ export interface SvelteKitAuthOptions {
 export interface SvelteKitAuthLocals {
   http: HttpClient;
   commands: AuthCommands;
-  getSession: () => Promise<AuthSession | null>;
+  getSession: () => Promise<SessionInfo | null>;
   clearTokens: () => Promise<void>;
 }
 
@@ -251,7 +251,7 @@ export function createAuthHandle(options: SvelteKitAuthOptions): Handle {
 
     const commands = createAuthCommands(http, options.routes);
 
-    async function getSession(): Promise<AuthSession | null> {
+    async function getSession(): Promise<SessionInfo | null> {
       try {
         return await commands.session();
       } catch (err) {

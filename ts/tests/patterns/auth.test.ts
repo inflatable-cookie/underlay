@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { writable } from "svelte/store";
 import {
 	configureAuth,
@@ -10,7 +10,12 @@ import {
 } from "../../src/patterns/auth";
 
 describe("patterns/auth", () => {
-	it("stores and exposes global auth config", () => {
+	afterEach(() => {
+		vi.unstubAllGlobals();
+	});
+
+	it("stores and exposes global auth config in the browser", () => {
+		vi.stubGlobal("window", {});
 		const config = {
 			getToken: () => "token-1",
 			onRefresh: async () => "token-2",
@@ -21,6 +26,17 @@ describe("patterns/auth", () => {
 		configureAuth(config);
 		expect(getAuthConfig()).toBe(config);
 		expect(getAuthConfig()?.getToken()).toBe("token-1");
+	});
+
+	it("throws when configureAuth runs during SSR (no window)", () => {
+		// Default vitest env is node: `window` is undefined here, simulating SSR.
+		expect(typeof window).toBe("undefined");
+		expect(() =>
+			configureAuth({
+				getToken: () => "leaky",
+				onRefresh: async () => null,
+			}),
+		).toThrow(/SSR/);
 	});
 
 	it("validates auth state and enforces required auth", () => {

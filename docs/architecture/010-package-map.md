@@ -2,7 +2,7 @@
 
 Underlay is split by layer, mirroring how consuming apps are structured.
 
-## Rust Crates (31)
+## Rust Crates (36)
 
 The current crate map is the live implementation shape. The target
 reference-grade reset is documented in
@@ -15,7 +15,10 @@ controlled breaking batches with six-consumer proof.
 | Crate | Purpose |
 |-------|---------|
 | `underlay-core` | Cross-cutting primitives: `Uuid` (v7), `AppError`, DTO envelopes (`ListResponse`, `SingleResponse`, `ErrorEnvelope`), slug validation |
-| `underlay-http` | Axum HTTP utilities: response helpers, CORS, cookies, pagination, query builders, error logging |
+| `underlay-config` | Layered TOML configuration helpers (file stacking; apps own typed config) |
+| `underlay-http` | Axum HTTP utilities: response helpers, CORS, cookies, pagination, error logging |
+| `underlay-http-client` | Shared outbound `reqwest::Client` with SSRF guards and timeout defaults |
+| `underlay-query` | Shared query model + SQL `WHERE`/`ORDER` building: filter/sort vocabulary, `WhereBuilder`, `FieldMapping` |
 | `underlay-observability` | Tracing bootstrap, `request_id_layer()`, `trace_layer()` |
 | `underlay-metrics` | Prometheus registry wrapper + Axum `/metrics` handler |
 | `underlay-validation` | Declarative `Validate` trait + built-in validators (email, URL, length, range) |
@@ -55,10 +58,11 @@ controlled breaking batches with six-consumer proof.
 | `underlay-email` | Email infrastructure with pluggable backends (SMTP, SES) and templates |
 | `underlay-ratelimit` | Rate limiting with pluggable backends |
 | `underlay-audit` | Audit logging for admin actions and security-relevant events, with typed table config over app-owned tables |
-| `underlay-auth-postgres` | PostgreSQL auth-state adapter for `underlay-auth` workflow state |
+| `underlay-auth-state-postgres` | PostgreSQL auth-state adapter (`AuthStateStore`) for `underlay-auth` workflow state; configurable table |
 | `underlay-security-alerts` | Shared failed-login/lockout security alert thresholds, typed table config, dedupe checks, and event persistence helpers |
 | `underlay-suggestions` | Server-side suggestion query building for `RelationSelector` components |
 | `underlay-ai-runtime` | Provider-agnostic AI runtime contracts, OpenAI-compatible client, routing candidate selection |
+| `underlay-aws` | Shared AWS SDK configuration for Underlay crates (consistent region/credential setup) |
 
 ### Developer Tools
 

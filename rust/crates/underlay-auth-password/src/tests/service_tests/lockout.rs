@@ -76,3 +76,41 @@ async fn rate_limit_blocks_login_attempts() {
         .unwrap_err();
     assert!(matches!(err, PasswordAuthError::RateLimited { .. }));
 }
+
+#[tokio::test]
+async fn email_only_rate_limit_trips_under_ip_rotation() {
+    let user = make_user("d@example.com");
+    let repo = Arc::new(MemoryRepo::new(100));
+    repo.insert_user(user.clone()).await;
+
+    let service = service(
+        repo,
+        Some(
+            PasswordConfig::default()
+                .with_max_failed_attempts(100)
+                .with_rate_limit_max_attempts(100)
+                .with_rate_limit_email_max_attempts(3)
+                .with_rate_limit_window_seconds(3600),
+        ),
+    );
+
+    service
+        .set_password(user.id, "S0mething$trong!")
+        .await
+        .unwrap();
+
+    // A fresh IP per request gets a fresh `email:ip` counter, so only the
+    // email-only backstop can bound this.
+    for n in 0..3 {
+        let ip = format!("10.0.0.{}", n);
+        let _ = service
+            .verify_login_with_context(&user.email, "wrong", Some(&ip))
+            .await;
+    }
+
+    let err = service
+        .verify_login_with_context(&user.email, "S0mething$trong!", Some("10.0.0.99"))
+        .await
+        .unwrap_err();
+    assert!(matches!(err, PasswordAuthError::RateLimited { .. }));
+}

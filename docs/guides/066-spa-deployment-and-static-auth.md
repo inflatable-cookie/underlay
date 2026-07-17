@@ -265,57 +265,44 @@ Auth endpoints require `credentials: include` to send/receive cookies. With cred
 **Using underlay-http CorsConfig:**
 
 ```rust
-use underlay_http::CorsConfig;
+use underlay_http::{cors_layer_for_env, CorsConfig};
+use underlay_observability::Environment;
 
-// Check if explicit origins are configured
-let has_explicit_origins = !config.cors.allowed_origins.is_empty();
-
-let cors = CorsConfig {
-    // Don't use wildcard origin
-    allow_any_origin: false,
-
-    // For local dev: echo the requesting origin (works with credentials)
-    // For production: use explicit origins list
-    mirror_origin: !has_explicit_origins,
-
-    // Production origins (from env var)
-    allowed_origins: config.cors.allowed_origins
-        .iter()
-        .filter_map(|s| s.parse().ok())
-        .collect(),
-
-    // Headers needed for API calls
-    allowed_headers: vec![
-        HeaderName::from_static("x-request-id"),
-        HeaderName::from_static("authorization"),
-        HeaderName::from_static("content-type"),
-    ],
-
-    // Always enable credentials for auth cookies
-    allow_credentials: true,
+// Explicit origins from typed config; mirror mode only when none are set
+let cors = if config.cors.allowed_origins.is_empty() {
+    // Local dev: echo the requesting origin (works with credentials).
+    // cors_layer_for_env refuses this combination outside Local/Test.
+    CorsConfig::new().with_mirror_origin().with_credentials(true)
+} else {
+    CorsConfig::new()
+        .try_with_origins(&config.cors.allowed_origins)?
+        .with_credentials(true)
 };
 
 let app = Router::new()
     .nest("/v1", api_routes())
-    .layer(underlay_http::cors_layer(cors));
+    .layer(cors_layer_for_env(cors, environment));
 ```
 
 **How `mirror_origin` works:**
 
-When `mirror_origin: true` and `allow_credentials: true`:
+When mirror mode and credentials are combined:
 - The server echoes back the exact `Origin` header from the request
 - This allows credentials from any origin without using `*`
-- Useful for local development without configuring explicit origins
+- That posture is local-dev only: `cors_layer_for_env` errors when it is
+  combined with credentials outside `Environment::Local`/`Test`, so a prod
+  deploy with an empty origin list fails fast instead of shipping
+  wildcard-with-credentials
 
 **Production configuration:**
 
 Set `FARMYARD_CORS_ORIGINS` (or your env var) to a comma-separated list:
 
 ```bash
-# Production
+# Production - explicit origins are required
 FARMYARD_CORS_ORIGINS=https://app.example.com,https://admin.example.com
 
-# Local dev - leave unset to use mirror_origin mode
+# Local dev - leave unset to use mirror_origin mode (Local/Test only)
 # FARMYARD_CORS_ORIGINS=
 ```
 

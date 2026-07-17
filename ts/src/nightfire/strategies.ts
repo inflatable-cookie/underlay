@@ -88,6 +88,21 @@ let config: NightfireStrategiesConfig | null = null;
  * ```
  */
 export function configureNightfireStrategies(cfg: NightfireStrategiesConfig): void {
+  // Guard against SSR misuse. `cfg.fetchStrategies` typically closes over the
+  // signed-in user's token (see the example above); this is process-global
+  // module state shared across concurrent SSR requests, so setting it during
+  // SSR can leak one user's fetch/token into another's request. Call only in
+  // the browser. (The static `registerSchema`/`registerBlockEditor` registry
+  // in editor-registry.ts is app-static and safe to run at module load.)
+  if (typeof window === "undefined") {
+    throw new Error(
+      "configureNightfireStrategies() was called during SSR. Its " +
+        "fetchStrategies closure usually captures per-user auth, and this is " +
+        "process-global state shared across concurrent server requests. Call " +
+        "it only in the browser (onMount or a `typeof window !== 'undefined'` " +
+        "guard).",
+    );
+  }
   config = cfg;
 }
 

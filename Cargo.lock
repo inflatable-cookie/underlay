@@ -5261,7 +5261,9 @@ dependencies = [
  "reqwest 0.13.2",
  "serde",
  "serde_json",
+ "thiserror 2.0.18",
  "tokio",
+ "underlay-core",
 ]
 
 [[package]]
@@ -5369,7 +5371,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "underlay-auth-postgres"
+name = "underlay-auth-state-postgres"
 version = "0.0.1"
 dependencies = [
  "chrono",
@@ -5393,8 +5395,10 @@ dependencies = [
  "sha1",
  "sha2 0.10.9",
  "thiserror 2.0.18",
+ "tokio",
  "underlay-auth",
  "underlay-core",
+ "underlay-ratelimit",
 ]
 
 [[package]]
@@ -5542,6 +5546,7 @@ dependencies = [
  "underlay-db",
  "underlay-http-client",
  "underlay-observability",
+ "underlay-query",
  "underlay-testing",
  "urlencoding",
  "utoipa",
@@ -5553,6 +5558,7 @@ name = "underlay-http-client"
 version = "0.0.1"
 dependencies = [
  "reqwest 0.13.2",
+ "thiserror 2.0.18",
 ]
 
 [[package]]
@@ -5598,7 +5604,6 @@ dependencies = [
  "tokio",
  "tracing",
  "underlay-blob",
- "underlay-db",
  "underlay-nightfire",
  "uuid",
 ]
@@ -5645,6 +5650,7 @@ dependencies = [
  "blake3",
  "serde",
  "serde_json",
+ "thiserror 2.0.18",
  "uuid",
 ]
 
@@ -5664,11 +5670,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "underlay-query"
+version = "0.0.1"
+dependencies = [
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "underlay-ratelimit"
 version = "0.0.1"
 dependencies = [
  "async-trait",
  "dashmap",
+ "sqlx",
  "thiserror 2.0.18",
  "tokio",
  "tracing",

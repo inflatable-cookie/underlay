@@ -166,6 +166,13 @@ Rules:
 
 - `[<app>.runtime]` owns local bind host, bind port, and public API hostname
 - `[<app>.cors]` owns allowed origins, cookie domain, and cookie secure posture
+- safe production CORS posture: an explicit `allowed_origins` list built with
+  `CorsConfig::with_origins`/`try_with_origins`, credentials only alongside
+  that explicit list. `CorsConfig::default()` allows no cross-origin access;
+  wildcard (`with_any_origin`) is an explicit opt-in for credential-free
+  internal services only. Mirror-origin with credentials is a local-dev-only
+  posture: layers are built via `cors_layer_for_env`, which refuses that
+  combination outside `Environment::Local`/`Test`
 - `[public_api]` owns browser-visible API/front/admin base URLs
 - local WebAuthn RP values belong in typed auth config, not runtime env
 - local email app URL belongs in typed email config, not runtime env

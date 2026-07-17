@@ -34,3 +34,16 @@ underlay-aws = { path = "rust/crates/underlay-aws" }
 underlay-http-client = { path = "rust/crates/underlay-http-client" }
 uuid = { version = "1", features = ["serde", "v7"] }
 utoipa = "5.4.0"
+
+# Hashing / encoding shared deps (hoisted g08.020 to prevent version drift)
+sha1 = "0.10"
+sha2 = "0.10"
+hex = "0.4"
+url = "2"
+rand = "0.10.1"
+
+# Foundation lint baseline (g08.020). Crates opt in with `[lints] workspace = true`.
+# Kept at the clippy default posture so adoption adds no new warnings; the value
+# is a single greppable place to tighten workspace-wide later.
+[workspace.lints.clippy]
+all = { level = "warn", priority = -1 }

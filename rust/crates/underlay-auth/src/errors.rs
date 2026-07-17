@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use underlay_core::AppError;
+use underlay_core::{AppError, ErrorCode};
 
 /// Result type for auth operations.
 pub type AuthResult<T> = Result<T, AuthError>;
@@ -295,5 +295,22 @@ impl AuthError {
             AuthError::Internal(_) => None,
             _ => None,
         }
+    }
+}
+
+impl std::fmt::Display for AuthError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        // Stable code plus the user-facing message; keeps AuthError usable
+        // with `?`, `anyhow`, and `Box<dyn Error>`.
+        write!(f, "{}: {}", self.code(), self.message())
+    }
+}
+
+impl std::error::Error for AuthError {}
+
+impl ErrorCode for AuthError {
+    fn code(&self) -> &str {
+        // Delegate to the inherent code() (returns &'static str).
+        AuthError::code(self)
     }
 }

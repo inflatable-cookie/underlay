@@ -79,6 +79,18 @@ export const moduleScopeChecks: ModuleScopeCheck[] = [
 		kind: 'prefix',
 		value: 'history.',
 		message: 'No browser globals at module scope. Use onMount(), a typeof guard, or a client-only dynamic import.'
+	},
+	{
+		name: 'configureAuth(...)',
+		kind: 'call',
+		value: 'configureAuth',
+		message: 'No configureAuth() at module scope. It sets process-global auth config shared across concurrent SSR requests and can leak tokens between users. Call it in onMount() or behind a typeof window guard.'
+	},
+	{
+		name: 'configureNightfireStrategies(...)',
+		kind: 'call',
+		value: 'configureNightfireStrategies',
+		message: 'No configureNightfireStrategies() at module scope. Its fetchStrategies closure usually captures per-user auth; module-global state is shared across concurrent SSR requests. Call it in onMount() or behind a typeof window guard.'
 	}
 ];
 

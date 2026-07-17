@@ -6,8 +6,8 @@ license.workspace = true
 
 [dependencies]
 async-trait = { workspace = true }
-base64 = "0.22"
-rand = "0.10.1"
+base64 = { workspace = true }
+rand = { workspace = true }
 serde = { workspace = true }
 underlay-auth = { path = "../underlay-auth", features = ["hashing"] }
 underlay-core = { path = "../underlay-core" }
@@ -16,7 +16,7 @@ uuid = { workspace = true }
 zxcvbn = "3"
 
 underlay-http-client = { workspace = true, optional = true }
-sha1 = { version = "0.10", optional = true }
+sha1 = { workspace = true, optional = true }
 
 [features]
 hibp = ["underlay-http-client", "dep:sha1"]
@@ -24,3 +24,6 @@ hibp = ["underlay-http-client", "dep:sha1"]
 [dev-dependencies]
 chrono = { workspace = true }
 tokio = { workspace = true, features = ["macros", "rt"] }
+
+[lints]
+workspace = true

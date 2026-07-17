@@ -28,7 +28,7 @@ describe("navigation-back-info", () => {
 			() => true
 		);
 		expect(result).toEqual({
-			label: "Back to Users",
+			label: "Users",
 			href: "/users",
 			isContextual: true
 		});
@@ -52,7 +52,7 @@ describe("navigation-back-info", () => {
 		);
 		expect(result).toEqual({
 			backInfo: {
-				label: "Back to Projects",
+				label: "Projects",
 				href: "/projects",
 				isContextual: true
 			},

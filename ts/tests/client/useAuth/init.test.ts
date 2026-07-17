@@ -2,25 +2,37 @@ import { describe, expect, it } from "vitest";
 import { get } from "svelte/store";
 import { UnderlayHttpError } from "../../../src/client/errors";
 import { createAuthStore } from "../../../src/client/useAuth";
-import { makeDeps, makeSession } from "./fixtures";
+import { makeDeps, makeSession, makeSessionInfo } from "./fixtures";
 
 describe("client/useAuth init", () => {
 	it("initializes as authenticated when session request succeeds", async () => {
 		const { commands, tokenStore } = makeDeps();
-		const session = makeSession("init");
+		const session = makeSessionInfo("init");
 		commands.session.mockResolvedValue(session);
 		const auth = createAuthStore({ commands: commands as any, tokenStore: tokenStore as any });
 
 		await auth.init();
 
-		expect(tokenStore.setAccessToken).toHaveBeenCalledWith("access-init");
-		expect(tokenStore.setRefreshToken).toHaveBeenCalledWith("refresh-init");
+		expect(tokenStore.setAccessToken).not.toHaveBeenCalled();
+		expect(tokenStore.setRefreshToken).not.toHaveBeenCalled();
 		expect(get(auth.state)).toEqual({
 			status: "authenticated",
 			session,
 			loading: false,
 			error: null,
 		});
+	});
+
+	it("does not write tokens to the store even if session GET echoes them", async () => {
+		const { commands, tokenStore } = makeDeps();
+		const session = makeSession("leaky");
+		commands.session.mockResolvedValue(session);
+		const auth = createAuthStore({ commands: commands as any, tokenStore: tokenStore as any });
+
+		await auth.init();
+
+		expect(tokenStore.setAccessToken).not.toHaveBeenCalled();
+		expect(tokenStore.setRefreshToken).not.toHaveBeenCalled();
 	});
 
 	it("refreshes on init when session is unauthorized", async () => {

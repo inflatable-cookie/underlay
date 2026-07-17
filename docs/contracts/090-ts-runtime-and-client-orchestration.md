@@ -131,6 +131,15 @@ Rules:
 - token persistence flows through the `TokenStore` seam from `client/http.ts`
 - browser-side auth orchestration stays generic; app-specific auth pages and
   flows live above it
+- process-global runtime config setters are browser-only. `configureAuth()`
+  and `configureNightfireStrategies()` throw when called during SSR
+  (`typeof window === "undefined"`), because their state is module-global and
+  shared across concurrent server requests - a closure over per-user tokens
+  would leak between users. Consumers call them client-only (inside `onMount`
+  or a `typeof window` guard). The guardrails scanner flags module-scope calls
+  to them, alongside the browser-global checks. (The Nightfire
+  `registerSchema`/`registerBlockEditor` registry is app-static component
+  config and is safe to populate at module load.)
 
 ### SvelteKit auth and cookie integration
 

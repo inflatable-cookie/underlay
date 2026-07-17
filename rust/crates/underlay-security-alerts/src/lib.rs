@@ -25,12 +25,15 @@ mod types;
 #[path = "tests/detector_tests.rs"]
 mod detector_tests;
 
-pub use crate::detector::evaluate_alerts;
+pub use crate::detector::{evaluate_account_alerts, evaluate_alerts, evaluate_global_alerts};
 pub use crate::error::{SecurityAlertError, SecurityAlertResult};
 pub use crate::store::{
-    has_recent_alert_in_table, insert_alert_event_into_table, load_ip_signal_counts_from_table,
+    has_recent_alert_in_table, has_recent_scoped_alert_in_table, insert_alert_event_into_table,
+    insert_scoped_alert_event_into_table, load_account_signal_counts_from_table,
+    load_global_signal_counts_from_table, load_ip_signal_counts_from_table,
 };
 pub use crate::tables::{LoginAttemptsTable, SecurityAlertEventsTable, SecurityAlertTables};
 pub use crate::types::{
-    LoginAttemptSignalCounts, SecurityAlertConfig, SecurityAlertEventInput, SecurityAlertType,
+    AccountSignalCounts, GlobalSignalCounts, LoginAttemptSignalCounts,
+    ScopedSecurityAlertEventInput, SecurityAlertConfig, SecurityAlertEventInput, SecurityAlertType,
 };

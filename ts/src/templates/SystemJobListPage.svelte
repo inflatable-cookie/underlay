@@ -242,7 +242,7 @@
   }
 </script>
 
-{#snippet renderCell(column, row, value)}
+{#snippet renderCell(column: TableColumn, row: TableRow, value: TableCellValue)}
   {@const job = rowJob(row)}
   {#if !job}
     —

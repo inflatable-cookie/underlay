@@ -34,7 +34,7 @@ Primary:
 - [`rust/crates/underlay-db/src/migrations.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-db/src/migrations.rs)
 - [`rust/crates/underlay-db/src/schemas.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-db/src/schemas.rs)
 - [`rust/crates/underlay-db/src/existence.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-db/src/existence.rs)
-- [`rust/crates/underlay-db/src/media_types.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-db/src/media_types.rs)
+- [`rust/crates/underlay-media/src/types.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-media/src/types.rs)
 - [`rust/crates/underlay-db/src/db_errors.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-db/src/db_errors.rs)
 - [`rust/crates/underlay-soft-delete/src/lib.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-soft-delete/src/lib.rs)
 - [`rust/crates/underlay-blob/src/lib.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-blob/src/lib.rs)
@@ -137,10 +137,16 @@ consciously extending the contract”.
 
 - `TypedExistsCheck`
 - `value_exists_typed` helpers
-- `MediaKind`
-- `MediaVisibility`
-- `MediaVersionState`
-- `detect_media_kind_from_mime_type()`
+
+The media domain enums (`MediaKind`, `MediaVisibility`, `MediaVersionState`,
+`MediaTypeParseError`, `detect_media_kind_from_mime_type`) live in
+`underlay-media`, not `underlay-db`, so consumers wanting media types are not
+forced to depend on `sqlx`. `underlay-media` no longer depends on
+`underlay-db` for them; Postgres binding is handled by the
+`underlay-media-postgres` adapter through the enums' string representations.
+`MediaKind` is `#[non_exhaustive]` so adding a media kind (video/audio) for a
+future consumer is not a breaking change; external `match` sites carry a
+wildcard arm.
 
 Rules:
 
@@ -148,8 +154,8 @@ Rules:
   engines
 - callers must construct typed schema/table/column identifiers before shared
   helper SQL construction
-- media kind/visibility/version-state enums are lower-level shared vocabulary
-  reused by the media system
+- media kind/visibility/version-state enums are shared media vocabulary owned
+  by `underlay-media`; import them from there, not from `underlay-db`
 
 ### Soft-delete contract
 
@@ -206,6 +212,18 @@ Rules:
 
 - client-side uploads begin with `initiate_upload()`
 - upload completion is explicit through `finalise_upload()`
+- upload enforcement boundary: declared content type and length are
+  client-supplied and untrusted. Serving paths use
+  `BlobAdapterUploadExt::initiate_upload_validated` (size cap + MIME
+  allowlist before signing) and `finalise_upload_verified` (size, allowlist,
+  and magic-byte sniff of stored bytes). Client-side allowlists are UX hints
+  only
+- the default MIME allowlist (`DEFAULT_ALLOWED_CONTENT_TYPES`) excludes
+  active content (`image/svg+xml`, `text/html`, `application/javascript`).
+  SVG is explicit opt-in via `BlobUploadConfig::with_allowed_content_types`,
+  and opted-in scriptable types must be served as attachments
+  (`content_disposition_attachment`, RFC 6266 escaped) or from a sandboxed
+  origin, never inline same-origin
 - blob upload policy is limited to transport/storage concerns such as file-size
   limits; rendition generation policy belongs in
   `underlay_media::renditions::RenditionConfig`

@@ -19,6 +19,7 @@
   import type {
     BatchActionConfig,
     EntityListDataLoader,
+    EntityListItemContext,
     EntityListSharedProps,
     FetchFn,
     InlineListDialogConfig,
@@ -323,7 +324,7 @@
   }
 </script>
 
-{#snippet managedItem(entry, listContext)}
+{#snippet managedItem(entry: TItem, listContext: EntityListItemContext)}
   {#if itemActions || itemDelete}
     <div class="underlay-inline-list-module__managed-item">
       <div class="underlay-inline-list-module__item-body">

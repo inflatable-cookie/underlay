@@ -18,6 +18,8 @@ export type MediaUploadPipelineContextOptions<TContext extends object> =
   TContext & {
     file: File;
     onProgress?: (progress: UploadProgress) => void;
+    /** Abort the blob transfer mid-flight (e.g. from a Cancel button). */
+    signal?: AbortSignal;
   };
 
 export type MediaCreateAndUploadPipelineOptions<TContext extends object> =
@@ -88,6 +90,7 @@ export type MediaCreateUploadOptions<
   maxFileSize?: number;
   includeHashInInitiate?: boolean;
   onProgress?: (progress: UploadProgress) => void;
+  signal?: AbortSignal;
   detectKind: (mimeType: string) => TKind;
   createMedia: (request: {
     kind: TKind;
@@ -119,6 +122,7 @@ export type MediaReplaceUploadOptions = {
   maxFileSize?: number;
   includeHashInInitiate?: boolean;
   onProgress?: (progress: UploadProgress) => void;
+  signal?: AbortSignal;
   initiateUpload: (
     mediaId: string,
     request: {

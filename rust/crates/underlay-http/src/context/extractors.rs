@@ -1,9 +1,11 @@
-use axum::extract::FromRequestParts;
+use std::net::SocketAddr;
+
+use axum::extract::{ConnectInfo, FromRequestParts};
 use axum::http::{header, request::Parts, StatusCode};
 
 use super::error::ContextError;
 use super::model::{AuthenticatedContext, AuthenticatedUser, RequestContext};
-use super::parse::{extract_ip_address, extract_request_id};
+use super::parse::{extract_request_id, resolve_ip_address, TrustedProxyConfig};
 #[cfg(feature = "opentelemetry")]
 use underlay_observability::TraceContext;
 
@@ -34,7 +36,17 @@ where
         let headers = &parts.headers;
 
         let request_id = extract_request_id(headers);
-        let ip_address = extract_ip_address(headers);
+
+        let trusted_proxy = parts
+            .extensions
+            .get::<TrustedProxyConfig>()
+            .cloned()
+            .unwrap_or_default();
+        let socket_ip = parts
+            .extensions
+            .get::<ConnectInfo<SocketAddr>>()
+            .map(|info| info.0.ip());
+        let ip_address = resolve_ip_address(headers, &trusted_proxy, socket_ip);
         let user_agent = headers
             .get(header::USER_AGENT)
             .and_then(|v| v.to_str().ok())

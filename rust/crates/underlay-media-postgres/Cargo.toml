@@ -12,3 +12,6 @@ sqlx = { workspace = true }
 underlay-db = { path = "../underlay-db" }
 underlay-media = { path = "../underlay-media" }
 uuid = { workspace = true }
+
+[lints]
+workspace = true

@@ -151,3 +151,79 @@ fn setup_includes_qr_and_backup_codes() {
     assert_eq!(setup.backup_codes.len(), 8);
     assert_eq!(setup.backup_code_hashes.len(), 8);
 }
+
+#[tokio::test]
+async fn throttled_verify_caps_failed_attempts_and_resets_on_success() {
+    use std::time::Duration;
+    use underlay_ratelimit::{InMemoryBackend, RateLimitBackend, RateLimitConfig};
+
+    let service = TotpService::new(None);
+    let setup = service.setup("user@example.com", 3).unwrap();
+    let now = UNIX_EPOCH + std::time::Duration::from_secs(1_000_000);
+
+    let limiter = InMemoryBackend::new();
+    let config = RateLimitConfig::new(3, Duration::from_secs(3600));
+    let key = "2fa:user-1";
+
+    // Three wrong guesses consume the budget.
+    for _ in 0..3 {
+        let err = service
+            .verify_second_factor_throttled(
+                &limiter,
+                key,
+                &config,
+                &setup.secret.base32,
+                None,
+                TwoFactorCode::BackupCode("000000"),
+                &setup.backup_code_hashes,
+                now,
+            )
+            .await
+            .unwrap_err();
+        assert!(matches!(
+            err,
+            underlay_auth::AuthError::BackupCodeInvalid | underlay_auth::AuthError::TwoFactorInvalid
+        ));
+    }
+
+    // Fourth attempt is rate limited before verification runs.
+    let denied = service
+        .verify_second_factor_throttled(
+            &limiter,
+            key,
+            &config,
+            &setup.secret.base32,
+            None,
+            TwoFactorCode::BackupCode(&setup.backup_codes[0]),
+            &setup.backup_code_hashes,
+            now,
+        )
+        .await
+        .unwrap_err();
+    assert!(matches!(
+        denied,
+        underlay_auth::AuthError::RateLimited { .. }
+    ));
+
+    // A fresh key (new user) is unaffected, and success resets its counter.
+    let key2 = "2fa:user-2";
+    let ok = service
+        .verify_second_factor_throttled(
+            &limiter,
+            key2,
+            &config,
+            &setup.secret.base32,
+            None,
+            TwoFactorCode::BackupCode(&setup.backup_codes[1]),
+            &setup.backup_code_hashes,
+            now,
+        )
+        .await
+        .unwrap();
+    assert_eq!(ok, TwoFactorVerified::BackupCode { index: 1 });
+    assert!(limiter
+        .check(key2, &config)
+        .await
+        .unwrap()
+        .is_allowed());
+}

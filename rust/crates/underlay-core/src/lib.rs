@@ -3,7 +3,7 @@ mod error;
 mod id;
 
 pub use crate::dto::{ErrorBody, ErrorEnvelope, ListResponse, SingleResponse};
-pub use crate::error::{AppError, AppResult};
+pub use crate::error::{AppError, AppResult, ErrorCode};
 pub use crate::id::{IdGenerator, RawUuid, SystemIdGenerator, Uuid};
 
 #[cfg(test)]

@@ -54,7 +54,9 @@ describe("client/auth", () => {
 			.fn()
 			.mockResolvedValueOnce(undefined)
 			.mockResolvedValueOnce({ data: { id: "session-refresh" } });
-		const get = vi.fn().mockResolvedValueOnce({ data: { id: "session-current" } });
+		const get = vi
+			.fn()
+			.mockResolvedValueOnce({ data: { user: { id: "u1" }, session: { id: "session-current" } } });
 		const auth = createAuthCommands({ post, get } as any, routes);
 
 		await expect(auth.logout()).resolves.toBeUndefined();
@@ -63,7 +65,28 @@ describe("client/auth", () => {
 		await expect(auth.refresh()).resolves.toEqual({ id: "session-refresh" });
 		expect(post).toHaveBeenNthCalledWith(2, routes.refresh);
 
-		await expect(auth.session()).resolves.toEqual({ id: "session-current" });
+		await expect(auth.session()).resolves.toEqual({
+			user: { id: "u1" },
+			session: { id: "session-current" },
+		});
 		expect(get).toHaveBeenCalledWith(routes.session);
+	});
+
+	it("strips token fields from session GET responses", async () => {
+		const get = vi.fn().mockResolvedValueOnce({
+			data: {
+				user: { id: "u1" },
+				session: { id: "s1" },
+				accessToken: "leaked-access",
+				refreshToken: "leaked-refresh",
+			},
+		});
+		const auth = createAuthCommands({ post: vi.fn(), get } as any, routes);
+
+		const result = await auth.session();
+
+		expect(result).toEqual({ user: { id: "u1" }, session: { id: "s1" } });
+		expect(result).not.toHaveProperty("refreshToken");
+		expect(result).not.toHaveProperty("accessToken");
 	});
 });

@@ -96,34 +96,43 @@ impl YourAuthService {
 
 ### Extracting Client IP
 
-Extract the real client IP from proxy headers:
+Forwarding headers (`X-Forwarded-For`, `X-Real-IP`, `CF-Connecting-IP`) are
+client-controlled unless a trusted proxy strips or overwrites them. Never take
+the leftmost `X-Forwarded-For` entry: an attacker who rotates it gets a fresh
+rate-limit counter per request and keeps every per-IP alert counter at 1.
+
+Declare the deployment topology with `TrustedProxyConfig` and install it as a
+request extension; `RequestContext` resolves the IP through it:
 
 ```rust
-/// Extract client IP from request, checking proxy headers first.
-pub fn extract_client_ip(headers: &HeaderMap, peer_addr: Option<SocketAddr>) -> String {
-    // Check X-Forwarded-For first (may contain multiple IPs)
-    if let Some(forwarded) = headers.get("x-forwarded-for") {
-        if let Ok(value) = forwarded.to_str() {
-            // Take the first IP (original client)
-            if let Some(ip) = value.split(',').next() {
-                return ip.trim().to_string();
-            }
-        }
-    }
-    
-    // Check X-Real-IP
-    if let Some(real_ip) = headers.get("x-real-ip") {
-        if let Ok(value) = real_ip.to_str() {
-            return value.trim().to_string();
-        }
-    }
-    
-    // Fall back to peer address
-    peer_addr
-        .map(|addr| addr.ip().to_string())
-        .unwrap_or_else(|| "unknown".to_string())
-}
+use axum::Extension;
+use underlay_http::TrustedProxyConfig;
+
+// Pick ONE, matching the real topology:
+
+// No proxy in front (or headers not trustworthy): socket peer address only.
+// Requires serving with `into_make_service_with_connect_info::<SocketAddr>()`.
+let config = TrustedProxyConfig::None;
+
+// Origin reachable only via Cloudflare:
+let config = TrustedProxyConfig::CloudflareHeader;
+
+// Single fronting nginx that sets X-Real-IP after stripping client values:
+let config = TrustedProxyConfig::RealIpHeader;
+
+// N trusted proxies appending to X-Forwarded-For; client IP is the N-th
+// entry from the right — spoofed entries further left are ignored:
+let config = TrustedProxyConfig::ForwardedFor { trusted_hops: 1 };
+
+let app = router.layer(Extension(config));
 ```
+
+The default (`TrustedProxyConfig::None`) trusts no headers, so a fresh app
+never has a spoofable IP path; deployments behind a proxy must declare it to
+get real client IPs. Rate limiting also carries an email-only login limit
+(`PasswordConfig::with_rate_limit_email_max_attempts`) and per-account/global
+alert signals (`evaluate_account_alerts`, `evaluate_global_alerts`) so IP
+rotation cannot reset every counter even if the boundary is misdeclared.
 
 ---
 
@@ -723,6 +732,36 @@ pub async fn login(
 
 ---
 
+## Post-Login Redirect Validation
+
+### Overview
+
+Route protection writes the current path into a `redirectTo` query param so the
+user returns where they started after login. That param is attacker-reachable
+(anyone can craft a login link), so navigating to it blindly is an open
+redirect: `?redirectTo=//evil.com` lands on a credential-harvesting clone.
+
+### Required Pattern
+
+Always resolve the param through `resolveRedirectTo()` before navigating. It
+accepts only single-leading-slash same-origin paths and returns the fallback
+(default `/`) for protocol-relative targets, backslash variants, schemes,
+control characters, and encoded traversal.
+
+```typescript
+import { resolveRedirectTo } from "@decodelabs/underlay/client/route-protection";
+import { goto } from "$app/navigation";
+
+const target = resolveRedirectTo(url.searchParams.get("redirectTo"), "/dashboard");
+await goto(target);
+```
+
+`SpaFormShell` already routes its post-login `redirectTo` navigation through
+this helper, and `createLoginRedirect()` refuses to write protocol-relative
+pathnames into the param at the producer side. Consumer apps that hand-roll a
+login page must apply the same helper — never pass a query-param value straight
+to `goto()` or `window.location`.
+
 ## Secure Cookie Configuration
 
 ### Overview
@@ -858,23 +897,31 @@ function createCspResolveOptions(
 ### underlay-ratelimit (Rust)
 
 ```rust
-// Rate limiter
-pub struct RateLimiter<B: Backend>;
-impl<B: Backend> RateLimiter<B> {
-    pub fn new(backend: B, config: RateLimitConfig) -> Self;
-    pub async fn check(&self, key: &str) -> RateLimitResult;
-}
+use underlay_ratelimit::{RateLimitBackend, RateLimitConfig};
 
-// Backends
-pub struct InMemoryBackend;
-pub struct RedisBackend;  // For distributed deployments
+// Backends implement the RateLimitBackend trait:
+//   check / increment / reset / check_and_increment
+pub trait RateLimitBackend { /* ... */ }
 
-// Result
-pub enum RateLimitResult {
-    Allowed,
-    Limited { retry_after: u64 },
-}
+// InMemoryBackend: single-instance / non-production only (process-local
+// counters; spread across replicas and wiped on restart).
+let dev = underlay_ratelimit::InMemoryBackend::single_instance();
+
+// PostgresBackend (feature = "postgres"): the distributed production path.
+// Atomic INSERT ... ON CONFLICT counters shared across every app replica.
+// Requires the 0001__rate_limit_counters migration.
+# #[cfg(feature = "postgres")]
+let prod = underlay_ratelimit::PostgresBackend::new(pool);
+
+let config = RateLimitConfig::per_minute(10);
 ```
+
+**Backend selection.** Any deployment running more than one app instance must
+use `PostgresBackend` (or another shared-counter backend implementing
+`RateLimitBackend`). `InMemoryBackend` is process-local: attackers spread
+attempts across replicas and a restart clears every counter. There is no
+`RedisBackend` in-tree today - implement the trait against Redis
+(`INCR`+`EXPIRE`) if you prefer that store.
 
 ### underlay-auth-password (Rust)
 

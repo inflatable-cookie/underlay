@@ -32,7 +32,7 @@ Primary:
 - [`rust/crates/underlay-auth/src/types.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-auth/src/types.rs)
 - [`rust/crates/underlay-auth/src/errors.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-auth/src/errors.rs)
 - [`rust/crates/underlay-auth/src/repository.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-auth/src/repository.rs)
-- [`rust/crates/underlay-auth-postgres/src/lib.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-auth-postgres/src/lib.rs)
+- [`rust/crates/underlay-auth-state-postgres/src/lib.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-auth-state-postgres/src/lib.rs)
 - [`rust/crates/underlay-auth-jwt/src/lib.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-auth-jwt/src/lib.rs)
 - [`rust/crates/underlay-auth-jwt/src/service.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-auth-jwt/src/service.rs)
 - [`rust/crates/underlay-auth-jwt/src/session.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-auth-jwt/src/session.rs)
@@ -137,8 +137,8 @@ Rules:
 
 ### Repository and state seams
 
-Underlay owns repository interfaces. `underlay-auth-postgres` owns the concrete
-short-lived auth-state storage adapter.
+Underlay owns repository interfaces. `underlay-auth-state-postgres` owns the
+concrete short-lived auth-state storage adapter - and only that.
 
 Core repository interfaces:
 
@@ -150,12 +150,24 @@ Core repository interfaces:
 
 Shared Postgres state storage:
 
-- `AuthStateStore` in `underlay-auth-postgres`
-- `AuthStateRow` in `underlay-auth-postgres`
+- `AuthStateStore` in `underlay-auth-state-postgres`
+- `AuthStateRow` in `underlay-auth-state-postgres`
 
 Rules:
 
-- apps implement repository traits with their own persistence stack
+- apps implement the user/credential/session/audit repository traits with
+  their own persistence stack. Underlay deliberately ships **no** Postgres
+  repository adapter for them: the g08.018 survey found consumers' auth
+  schemas are genuinely divergent (e.g. `auth.users` with a `role` column vs
+  `accounts.admin_users` keyed on `artist_id`, singular `credential`/`session`
+  tables, a separate `totp_credential` table), and four of six consumers do
+  not implement these traits at all. A single centralized adapter would fit
+  none of them
+- the only shipped Postgres adapter is `AuthStateStore` (renamed from the
+  misleading `underlay-auth-postgres` to `underlay-auth-state-postgres`), and
+  its table is configurable via `AuthStateStore::with_table` for consumers
+  whose auth-state table is not in the `auth` schema (default
+  `auth.auth_state`)
 - shared auth crates depend on repository behavior, not on direct SQL shape
 - short-lived auth state exists for cross-request flows such as OAuth and
   WebAuthn start/finish handoff
@@ -204,6 +216,11 @@ Refresh rotation is a compare-and-swap operation:
   `RefreshReplayDetected`
 - refresh paths must not use a blind `update_session` write because that can
   accept concurrent or replayed refresh attempts
+- reuse of a superseded refresh token (stale fingerprint or mismatched
+  token id/version) revokes the whole session family, so a stolen token and
+  the legitimate current token both die (RFC 6819 / OAuth 2.0 Security BCP).
+  A lost atomic CAS is the legitimate concurrent-refresh race and does NOT
+  revoke - the loser retries with the freshly issued token
 
 `SessionStore` remains in `underlay-auth-jwt` for this generation. Moving the
 trait behind `underlay-auth` would be another public trait migration and needs a
@@ -231,6 +248,8 @@ Rules:
 - compromised-password checking is optional and strategy-driven
 - rate limiting is part of the shared password auth contract, not a caller
   afterthought
+- the login miss paths (unknown email, no password credential) run one KDF
+  pass so their timing matches a real verify - no account-existence oracle
 
 ### TOTP and recovery codes
 
@@ -251,6 +270,10 @@ Rules:
 - replay resistance and time-window rules are part of the shared primitive
   contract
 - second-factor verification results map into shared `AuthError` vocabulary
+- second-factor verify offers a throttled entrypoint
+  (`verify_second_factor_throttled`) that caps per-user attempts against a
+  `RateLimitBackend` before verifying and resets the counter on success;
+  the small 2FA keyspace makes an unthrottled path brute-forceable
 
 ### Email OTP
 
@@ -341,7 +364,14 @@ Rules:
 
 - `AuthCommands` define the shared browser-facing auth endpoint vocabulary:
   register, password login, passkey login, logout, refresh, session
-- `AuthSession` is the shared browser session payload shape
+- `AuthSession` is the shared browser session payload shape for token-issuing
+  endpoints (register, login, refresh); `SessionInfo` is the token-free shape
+  for session read
+- token-exposure boundary: access and refresh tokens are handed out only by
+  the login/register and refresh endpoints. Session GET must never return a
+  refresh token, and in cookie mode must carry no token fields at all. The
+  shared client strips any token fields a server still echoes on session read
+  and never writes to the `TokenStore` from a session read.
 - `createAuthStore()` owns the baseline browser auth state machine:
   `unknown`, `anonymous`, `authenticated`
 - token persistence is delegated to a `TokenStore`
@@ -379,6 +409,8 @@ Rules:
 - Auth is separate from full account/profile modeling.
 - Stable `auth.*` codes must line up across Rust services and TS callers.
 - Sessions are retained server-side state plus tokens, not pure stateless JWTs.
+- Token material moves only on login/register/refresh; session read is
+  token-free (see the token-exposure boundary rule above).
 - Second-factor, passkey, and OAuth flows must keep their start/finish state
   handoff explicit.
 - Shared auth UI shells must not absorb product-specific policy or branding by

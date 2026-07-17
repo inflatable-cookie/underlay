@@ -1,0 +1,15 @@
+[package]
+name = "underlay-query"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Shared query model and SQL WHERE/ORDER building for Underlay (filter/sort model, WhereBuilder, FieldMapping)"
+
+[dependencies]
+serde = { workspace = true, features = ["derive"] }
+
+[dev-dependencies]
+serde_json = { workspace = true }
+
+[lints]
+workspace = true

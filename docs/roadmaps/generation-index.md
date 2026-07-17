@@ -1,7 +1,7 @@
 # Underlay Roadmap Generation Index
 
 Status: active
-Updated: 2026-06-07
+Updated: 2026-07-17
 
 ## Mode
 
@@ -9,7 +9,7 @@ Updated: 2026-06-07
 
 ## Active generations
 
-- None
+- [g08 - Audit Remediation And Edge Hardening](g08/README.md) (active, opened 2026-07-17)
 
 ## Generation log
 
@@ -22,6 +22,7 @@ Updated: 2026-06-07
 | `g05` | 2026-05-xx | Shared page, workflow template, and consumer capability generation | Closed after query-variant and consumer capability line |
 | `g06` | 2026-06-05 | Rust platform-contract transition after code-quality audit | Closed after the reference-grade reset, Rust hardening lane, six-consumer proof, upgrade-guidance closeout, and bounded stale-drift repairs |
 | `g07` | 2026-06-06 | Runtime, workflow, residual Rust policy, and doctor-warning hardening after `g06` closeout | Complete after `g07.037` doctor warning closeout |
+| `g08` | 2026-07-17 | Audit remediation after July 2026 deep audit (security edge, correctness bugs, Rust/TS structure, docs/versioning/i18n posture) | Active |
 
 ## Historical generations
 
@@ -50,4 +51,5 @@ In parallel mode:
 
 ## Next Task
 
-No active generation.
+`g08` is active. Lead with Lane A security (`g08.001`-`g08.003` ready) and Lane B
+correctness (`g08.011`-`g08.014` ready).

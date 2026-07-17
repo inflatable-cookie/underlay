@@ -97,8 +97,25 @@ impl EmbedMetaResponse {
 // Provider Lookups
 // ============================================================================
 
+/// Whether an embed `id` is safe to interpolate into an upstream URL.
+///
+/// The proxy builds `https://api.audioboom.com/.../{id}`; an unvalidated id
+/// could inject path segments, query strings, or a whole different host via
+/// `../`. Restrict to `[A-Za-z0-9_-]+`.
+fn is_valid_embed_id(id: &str) -> bool {
+    !id.is_empty()
+        && id.len() <= 128
+        && id
+            .chars()
+            .all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '-')
+}
+
 /// Look up metadata for any supported provider.
 pub async fn lookup_metadata(req: &EmbedMetaRequest) -> EmbedMetaResponse {
+    if !is_valid_embed_id(&req.id) {
+        return EmbedMetaResponse::error("Invalid embed id");
+    }
+
     match req.provider.as_str() {
         "audioboom" => lookup_audioboom(&req.id, req.embed_type.as_deref()).await,
         _ => EmbedMetaResponse::error(format!("Unsupported provider: {}", req.provider)),
@@ -230,4 +247,31 @@ async fn lookup_audioboom_playlist(
 pub async fn lookup_embed_metadata(Json(req): Json<EmbedMetaRequest>) -> impl IntoResponse {
     let response = lookup_metadata(&req).await;
     (StatusCode::OK, Json(response))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::is_valid_embed_id;
+
+    #[test]
+    fn accepts_provider_style_ids() {
+        assert!(is_valid_embed_id("1234567"));
+        assert!(is_valid_embed_id("abc-DEF_123"));
+    }
+
+    #[test]
+    fn rejects_injection_and_traversal_ids() {
+        for bad in [
+            "",
+            "../../etc/passwd",
+            "123/../456",
+            "123?x=1",
+            "123#frag",
+            "http://evil.com",
+            "12 34",
+            "a".repeat(200).as_str(),
+        ] {
+            assert!(!is_valid_embed_id(bad), "expected {bad:?} rejected");
+        }
+    }
 }

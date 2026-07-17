@@ -6,17 +6,21 @@ The goal is not to force domain structure, but to provide stable primitives so a
 
 ## 1. Response Envelopes
 
-Underlay uses two success envelopes:
+Underlay uses three success envelopes:
 
 - `SingleResponse<T>`
   - JSON: `{ "data": <T> }`
 - `ListResponse<T>`
   - JSON: `{ "data": [<T>, ...] }`
+- `PagedListResponse<T>`
+  - JSON: `{ "data": [<T>, ...], "total": <n>, "hasMore": <bool> }`
 
 These are defined in:
 
-- Rust: `rust/crates/underlay-core/src/dto.rs`
-- TypeScript: `ts/src/client/types.ts`
+- Rust: `SingleResponse`/`ListResponse` in `rust/crates/underlay-core/src/dto.rs`;
+  the paged wire shape is produced by `Paginated<T>` in `underlay-http`
+  (`pagination.rs`)
+- TypeScript: `ts/src/client/envelopes.ts` (re-exported via `client/types.ts`)
 - OpenAPI: `contracts/openapi/underlay.openapi.yaml`
 
 ## 2. Error Envelope
@@ -77,5 +81,5 @@ Server code should:
 Any changes to envelope JSON shapes must be reflected in all three:
 
 - Rust DTOs (`rust/crates/underlay-core/src/dto.rs`)
-- TS types (`ts/src/client/types.ts`)
+- TS types (`ts/src/client/envelopes.ts`, re-exported via `client/types.ts`)
 - OpenAPI contract (`contracts/openapi/underlay.openapi.yaml`)

@@ -44,6 +44,44 @@ async fn issues_verifies_refreshes_and_revokes() {
 }
 
 #[tokio::test]
+async fn refresh_replay_revokes_the_whole_session_family() {
+    let (config, _keys) = JwtConfig::generate().unwrap();
+    let jwt = JwtService::new(config).unwrap();
+
+    let store = Arc::new(MemoryStore::default());
+    let manager = SessionManager::new(jwt, store.clone());
+
+    let user_id = Uuid::new_v7();
+    let tokens = manager
+        .create_session(user_id, vec!["user".to_string()])
+        .await
+        .unwrap();
+
+    // Legitimate rotation: old token -> new token.
+    let refreshed = manager
+        .refresh_session(&tokens.refresh_token)
+        .await
+        .unwrap();
+
+    // Replay the superseded token: id/version no longer match, so the family
+    // is revoked.
+    assert!(matches!(
+        manager.refresh_session(&tokens.refresh_token).await,
+        Err(JwtError::RefreshReplayDetected) | Err(JwtError::TokenFingerprintMismatch)
+    ));
+
+    // The just-issued (legitimate) refresh token must also be dead now.
+    assert!(matches!(
+        manager.refresh_session(&refreshed.refresh_token).await,
+        Err(JwtError::SessionRevoked)
+    ));
+    assert!(matches!(
+        manager.verify_access_token(&refreshed.access_token).await,
+        Err(JwtError::SessionRevoked)
+    ));
+}
+
+#[tokio::test]
 async fn rotate_session_if_current_rejects_stale_refresh_state() {
     let store = MemoryStore::default();
     let session = SessionState {

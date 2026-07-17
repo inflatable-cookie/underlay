@@ -9,3 +9,6 @@ async-trait = { workspace = true }
 sqlx = { workspace = true }
 underlay-core = { path = "../underlay-core" }
 uuid = { workspace = true }
+
+[lints]
+workspace = true

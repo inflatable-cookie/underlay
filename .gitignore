@@ -4,6 +4,8 @@ dist/
 target/
 .cache/cargo/
 tarpaulin-report.html
+ts/coverage/
+coverage/
 .DS_Store
 
 # Generated migration/runtime artifacts

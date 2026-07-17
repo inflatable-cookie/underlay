@@ -30,7 +30,7 @@ fn test_weight_cursor() {
 
 #[test]
 fn test_pagination_params_defaults() {
-    let params = PaginationParams::default();
+    let params = CursorPaginationParams::default();
     assert_eq!(params.page, 1);
     assert_eq!(params.limit, 30);
     assert!(params.cursor.is_none());
@@ -40,16 +40,16 @@ fn test_pagination_params_defaults() {
 
 #[test]
 fn test_pagination_params_effective_limit() {
-    let params = PaginationParams::new().with_limit(200);
+    let params = CursorPaginationParams::new().with_limit(200);
     assert_eq!(params.effective_limit(), 100); // Clamped to max
 
-    let params = PaginationParams::new().with_limit(0);
+    let params = CursorPaginationParams::new().with_limit(0);
     assert_eq!(params.effective_limit(), 1); // Clamped to min
 }
 
 #[test]
 fn test_pagination_params_page_offset() {
-    let params = PaginationParams::new().with_page(3).with_limit(25);
+    let params = CursorPaginationParams::new().with_page(3).with_limit(25);
     let builder = PaginationBuilder::new(params);
 
     assert_eq!(builder.page_size(), 25);
@@ -70,35 +70,35 @@ fn test_paginated_response_map() {
 
 #[test]
 fn test_keyset_operator_forward_desc() {
-    let params = PaginationParams::new();
+    let params = CursorPaginationParams::new();
     let builder = PaginationBuilder::new(params);
     assert_eq!(builder.keyset_operator(true), "<");
 }
 
 #[test]
 fn test_keyset_operator_forward_asc() {
-    let params = PaginationParams::new();
+    let params = CursorPaginationParams::new();
     let builder = PaginationBuilder::new(params);
     assert_eq!(builder.keyset_operator(false), ">");
 }
 
 #[test]
 fn test_keyset_operator_backward_desc() {
-    let params = PaginationParams::new().with_direction(PaginationDirection::Backward);
+    let params = CursorPaginationParams::new().with_direction(PaginationDirection::Backward);
     let builder = PaginationBuilder::new(params);
     assert_eq!(builder.keyset_operator(true), ">");
 }
 
 #[test]
 fn test_keyset_operator_backward_asc() {
-    let params = PaginationParams::new().with_direction(PaginationDirection::Backward);
+    let params = CursorPaginationParams::new().with_direction(PaginationDirection::Backward);
     let builder = PaginationBuilder::new(params);
     assert_eq!(builder.keyset_operator(false), "<");
 }
 
 #[test]
 fn test_keyset_condition() {
-    let params = PaginationParams::new();
+    let params = CursorPaginationParams::new();
     let builder = PaginationBuilder::new(params);
     assert_eq!(
         builder.keyset_condition("updated_at", 1, true),
@@ -112,7 +112,7 @@ fn test_keyset_condition() {
 
 #[test]
 fn test_keyset_order_by() {
-    let params = PaginationParams::new();
+    let params = CursorPaginationParams::new();
     let builder = PaginationBuilder::new(params);
     assert_eq!(
         builder.keyset_order_by("updated_at", true),
@@ -126,7 +126,7 @@ fn test_keyset_order_by() {
 
 #[test]
 fn test_keyset_order_by_backward() {
-    let params = PaginationParams::new().with_direction(PaginationDirection::Backward);
+    let params = CursorPaginationParams::new().with_direction(PaginationDirection::Backward);
     let builder = PaginationBuilder::new(params);
     // Backward pagination reverses the order
     assert_eq!(
@@ -137,11 +137,11 @@ fn test_keyset_order_by_backward() {
 
 #[test]
 fn test_has_cursor() {
-    let params = PaginationParams::new();
+    let params = CursorPaginationParams::new();
     let builder = PaginationBuilder::new(params);
     assert!(!builder.has_cursor());
 
-    let params_with_cursor = PaginationParams::new().with_cursor("abc123");
+    let params_with_cursor = CursorPaginationParams::new().with_cursor("abc123");
     let builder_with_cursor = PaginationBuilder::new(params_with_cursor);
     assert!(builder_with_cursor.has_cursor());
 }

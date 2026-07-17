@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 type BlobUploadModule = typeof import("../../src/patterns/blob-upload.js");
 
 async function loadMediaUploadModule(mocks?: {
-	validateImpl?: (file: File, max: number) => void;
+	validateImpl?: (file: File, max: number) => { valid: boolean; error?: string };
 	hashImpl?: (file: File) => Promise<string>;
 	uploadImpl?: BlobUploadModule["uploadToBlob"];
 }) {
@@ -12,7 +12,7 @@ async function loadMediaUploadModule(mocks?: {
 	(globalThis as any).$derived = <T>(value: T) => value;
 
 	vi.doMock("../../src/patterns/blob-upload.js", () => ({
-		validateFile: vi.fn(mocks?.validateImpl ?? (() => undefined)),
+		validateFile: vi.fn(mocks?.validateImpl ?? (() => ({ valid: true }))),
 		computeFileHash: vi.fn(mocks?.hashImpl ?? (async () => "hash-1")),
 		uploadToBlob: vi.fn(
 			mocks?.uploadImpl ??
@@ -172,9 +172,7 @@ describe("patterns/media-upload-flow.svelte.ts", () => {
 
 	it("handles validation/hash errors and no-op guards", async () => {
 		const { mod } = await loadMediaUploadModule({
-			validateImpl: () => {
-				throw new Error("invalid file");
-			},
+			validateImpl: () => ({ valid: false, error: "invalid file" }),
 		});
 
 		const onError = vi.fn();
@@ -217,5 +215,77 @@ describe("patterns/media-upload-flow.svelte.ts", () => {
 		expect(hashFlow.error).toBe("hash failed");
 		expect(onError).toHaveBeenCalled();
 		hashErrorSpy.mockRestore();
+	});
+
+	it("rejects oversized files via the validateFile result (no throw expected)", async () => {
+		// Use the real validateFile contract shape: a result object.
+		const { mod, blob } = await loadMediaUploadModule({
+			validateImpl: (file, max) =>
+				file.size > max
+					? { valid: false, error: "File is too large" }
+					: { valid: true },
+		});
+
+		const flow = mod.createMediaUploadFlow({
+			checkDuplicate: vi.fn(async () => ({ exists: false })),
+			createMedia: vi.fn() as any,
+			initiateUpload: vi.fn() as any,
+			finaliseUpload: vi.fn() as any,
+			maxFileSize: 1000,
+		});
+
+		flow.setFile(fakeFile({ size: 5000 }));
+		expect(flow.file).toBeNull();
+		expect(flow.fileError).toBe("File is too large");
+		expect(flow.canUpload).toBe(false);
+		expect((blob.validateFile as any).mock.calls[0][1]).toBe(1000);
+
+		flow.setFile(fakeFile({ size: 500 }));
+		expect(flow.file).not.toBeNull();
+		expect(flow.fileError).toBeNull();
+	});
+
+	it("cancels an in-progress upload back to select without an error state", async () => {
+		const { BlobUploadError } = await import("../../src/patterns/blob-types.js");
+		const { mod } = await loadMediaUploadModule({
+			uploadImpl: async (_plan, _file, options) =>
+				new Promise((_resolve, reject) => {
+					options?.signal?.addEventListener("abort", () => {
+						reject(new BlobUploadError("Upload was aborted", "UPLOAD_ABORTED"));
+					});
+				}) as any,
+		});
+
+		const onError = vi.fn();
+		const flow = mod.createMediaUploadFlow({
+			checkDuplicate: vi.fn(async () => ({ exists: false })),
+			createMedia: vi.fn(async () => ({ id: "media-1" })) as any,
+			initiateUpload: vi.fn(async () => ({
+				versionId: "v-1",
+				uploadPlan: {
+					uploadUrl: "https://upload",
+					method: "PUT",
+					headers: {},
+					expiresAt: "2099-01-01T00:00:00Z",
+				},
+			})) as any,
+			finaliseUpload: vi.fn() as any,
+			onError,
+		});
+
+		flow.setFile(fakeFile());
+		const uploadPromise = flow.startUpload();
+
+		await vi.waitFor(() => {
+			expect(flow.step).toBe("uploading");
+		});
+
+		flow.cancelUpload();
+		await uploadPromise;
+
+		expect(flow.step).toBe("select");
+		expect(flow.error).toBeNull();
+		expect(flow.file).not.toBeNull();
+		expect(onError).not.toHaveBeenCalled();
 	});
 });

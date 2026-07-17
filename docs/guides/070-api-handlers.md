@@ -1037,11 +1037,11 @@ let mapping = field_mapping! {
 ```rust
 use underlay_http::{cors_layer, CorsConfig};
 
-let cors = cors_layer(CorsConfig {
-    allowed_origins: vec!["https://example.com".to_string()],
-    allow_credentials: true,
-    ..Default::default()
-});
+let cors = cors_layer(
+    CorsConfig::new()
+        .with_origins(["https://example.com"])
+        .with_credentials(true),
+);
 
 let app = Router::new()
     .route("/api/users", get(list_users))

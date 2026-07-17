@@ -410,7 +410,7 @@
   <Callout tone="danger" title={errorTitle} message={error} announceMode="polite">
     {#if onRetry || dataLoader}
       {#snippet actions()}
-        <Button type="button" variant="ghost" size="sm" onclick={handleRetry}>
+        <Button type="button" variant="ghost" size="sm" onClick={handleRetry}>
           Retry
         </Button>
       {/snippet}

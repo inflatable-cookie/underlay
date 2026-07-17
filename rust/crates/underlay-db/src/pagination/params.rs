@@ -21,7 +21,7 @@ pub enum PaginationDirection {
 /// Pagination parameters extracted from query string.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
-pub struct PaginationParams {
+pub struct CursorPaginationParams {
     /// Page number for offset-based list consumers.
     #[serde(default = "default_page")]
     pub page: i64,
@@ -55,7 +55,7 @@ fn default_include_total() -> bool {
     true
 }
 
-impl Default for PaginationParams {
+impl Default for CursorPaginationParams {
     fn default() -> Self {
         Self {
             page: 1,
@@ -67,7 +67,7 @@ impl Default for PaginationParams {
     }
 }
 
-impl PaginationParams {
+impl CursorPaginationParams {
     /// Create new pagination params with defaults.
     pub fn new() -> Self {
         Self::default()
@@ -129,3 +129,13 @@ impl PaginationParams {
         }
     }
 }
+
+/// Deprecated alias for [`CursorPaginationParams`].
+///
+/// Renamed to remove the collision with `underlay_http`'s offset-model
+/// `PaginationParams` (g08.017). Migrate to `CursorPaginationParams`; this
+/// alias is scheduled for removal in `g09`.
+#[deprecated(
+    note = "renamed to CursorPaginationParams to resolve the underlay_http collision;             removal planned for g09"
+)]
+pub type PaginationParams = CursorPaginationParams;

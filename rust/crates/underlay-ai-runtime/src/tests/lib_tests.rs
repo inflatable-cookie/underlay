@@ -1,5 +1,7 @@
 #[path = "lib_tests/circuit_breaker.rs"]
 mod circuit_breaker;
+#[path = "lib_tests/error_trait.rs"]
+mod error_trait;
 #[path = "lib_tests/clients.rs"]
 mod clients;
 #[path = "lib_tests/mapping.rs"]

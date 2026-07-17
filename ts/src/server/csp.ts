@@ -1,5 +1,5 @@
 /// <reference types="node" />
-import { randomBytes } from "crypto";
+import { randomBytes } from "node:crypto";
 import {
   DEFAULT_SECURITY_HEADERS,
   resolveCspConfig,

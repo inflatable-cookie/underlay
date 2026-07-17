@@ -75,3 +75,68 @@ fn into_inner_exposes_reqwest_client() {
         .build()
         .expect("request should build");
 }
+
+#[test]
+fn external_client_builds() {
+    let client = super::HttpClient::external().expect("external client should build");
+    client
+        .inner()
+        .get("https://example.com")
+        .build()
+        .expect("request should build");
+}
+
+#[test]
+fn validate_external_url_rejects_private_and_metadata_targets() {
+    use super::{validate_external_url, HttpClientError};
+
+    for blocked in [
+        "http://127.0.0.1/",
+        "http://localhost/",       // resolves to loopback
+        "http://169.254.169.254/latest/meta-data/", // cloud metadata
+        "http://10.0.0.5/",
+        "http://192.168.1.1/",
+        "http://172.16.0.1/",
+        "http://[::1]/",
+        "http://0.0.0.0/",
+        "http://100.64.0.1/",      // CGNAT
+    ] {
+        let err = validate_external_url(blocked).expect_err(blocked);
+        assert!(
+            matches!(err, HttpClientError::BlockedTarget(_) | HttpClientError::InvalidUrl(_)),
+            "{blocked} -> {err:?}"
+        );
+    }
+}
+
+#[test]
+fn validate_external_url_rejects_non_http_schemes() {
+    use super::{validate_external_url, HttpClientError};
+    let err = validate_external_url("file:///etc/passwd").expect_err("file scheme");
+    assert!(matches!(err, HttpClientError::InvalidUrl(_)));
+    let err = validate_external_url("gopher://example.com/").expect_err("gopher scheme");
+    assert!(matches!(err, HttpClientError::InvalidUrl(_)));
+}
+
+#[test]
+fn is_public_ip_classifies_correctly() {
+    use super::is_public_ip;
+    use std::net::IpAddr;
+
+    // Public
+    assert!(is_public_ip("1.1.1.1".parse::<IpAddr>().unwrap()));
+    assert!(is_public_ip("8.8.8.8".parse::<IpAddr>().unwrap()));
+    assert!(is_public_ip("2606:4700:4700::1111".parse::<IpAddr>().unwrap()));
+
+    // Non-public
+    assert!(!is_public_ip("127.0.0.1".parse::<IpAddr>().unwrap()));
+    assert!(!is_public_ip("10.0.0.1".parse::<IpAddr>().unwrap()));
+    assert!(!is_public_ip("192.168.0.1".parse::<IpAddr>().unwrap()));
+    assert!(!is_public_ip("172.16.0.1".parse::<IpAddr>().unwrap()));
+    assert!(!is_public_ip("169.254.169.254".parse::<IpAddr>().unwrap()));
+    assert!(!is_public_ip("::1".parse::<IpAddr>().unwrap()));
+    assert!(!is_public_ip("fc00::1".parse::<IpAddr>().unwrap()));
+    assert!(!is_public_ip("fe80::1".parse::<IpAddr>().unwrap()));
+    // IPv4-mapped loopback must also be blocked.
+    assert!(!is_public_ip("::ffff:127.0.0.1".parse::<IpAddr>().unwrap()));
+}
