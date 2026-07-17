@@ -75,5 +75,6 @@ complete; the Lane A checkpoint is closed (no new contract; six consumer apps
 scanned and fixed). Lane C done except `g08.019` (blocked on Docker/Postgres).
 Lane D complete (`g08.021`-`g08.024`; `g08.022` broad subpath collapse and
 `g08.023` presentation file-split both deferred under their stop conditions).
-Lane E in progress: `g08.025` front-door doc repair and `g08.026`
-committed-artifact cleanup done. Next: `g08.027` contract-sync decision.
+Lane E in progress: `g08.025` front-door doc repair, `g08.026` committed-artifact
+cleanup, and `g08.027` contract-sync decision done. Next: `g08.028` versioning
+and consumer-pin story.

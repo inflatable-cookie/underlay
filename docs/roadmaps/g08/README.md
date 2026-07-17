@@ -117,8 +117,11 @@ structural and process debt sequenced behind the edge fixes.
   pointers repointed at `g08`, `015` envelope refs fixed + `PagedListResponse`),
   `g08.026` committed-artifact cleanup (done 2026-07-17 - untracked
   `tarpaulin-report.html` + `ts/coverage/`, gitignored coverage, removed the
-  spent roadmap-015-016 closure script), `g08.027` contract-sync decision,
-  `g08.028` versioning and consumer-pin story, `g08.029` i18n message-seam
+  spent roadmap-015-016 closure script), `g08.027` contract-sync decision
+  (done 2026-07-18 - kept the envelope YAML but made it honest: added
+  `PagedListResponse`, new `envelope-contract-drift` test asserting TS<->YAML
+  agreement, retired orphan `poodle-*.json` to historical), `g08.028` versioning
+  and consumer-pin story, `g08.029` i18n message-seam
   decision (planning gate), `g08.030` archival docs weight reduction.
 
 ## Acceptance Criteria
