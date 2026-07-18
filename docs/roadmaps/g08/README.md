@@ -147,20 +147,19 @@ structural and process debt sequenced behind the edge fixes.
   domain types no longer live in `underlay-db` (done); only one public
   pagination type per semantic (done); postgres adapters have integration
   coverage (`g08.019`, open - needs Postgres/CI)
-- [ ] `configureAuth` and Nightfire registries are guarded against SSR misuse;
+- [x] `configureAuth` and Nightfire registries are guarded against SSR misuse;
   each public symbol has one canonical export path; EntityList carries a real
   item generic
-- [ ] quickstart, CI badge, package-map counts, and next-action pointers are
+- [x] quickstart, CI badge, package-map counts, and next-action pointers are
   accurate; generated artifacts are untracked; the versioning and i18n
   decisions are recorded in contracts
 
 ## Planning Gaps
 
-- **i18n message seam (`g08.029`)** has no governing contract yet. It is a
-  decision gate, not a ready execution card: either declare the shared surface
-  English-only in `090`/`100`, or add a message-lookup contract before any
-  implementation card is compiled. Do not execute `g08.029` as code work until
-  the contract decision lands.
+- **i18n message seam (`g08.029`)** - **resolved 2026-07-18.** Decision gate
+  closed English-only, recorded in contract `090` ("Internationalization
+  posture"). No message-lookup seam added; `patterns/i18n.ts` stays scoped to
+  `Intl` formatting. A future second-locale need is a fresh contract decision.
 
 ## Generation Runway
 
@@ -185,6 +184,16 @@ needed `ConnectInfo` + a `TrustedProxyConfig` extension for `ip_address()`;
 (`resolveRedirectTo`). SVG upload allowlists, the in-memory rate-limit default,
 and `plain:` OAuth secrets are per-deploy advisories. Full detail:
 [`docs/logs/2026-07/17-140000-g08-lane-a-checkpoint-and-consumer-rollout.md`](../../logs/2026-07/17-140000-g08-lane-a-checkpoint-and-consumer-rollout.md).
+
+**Closeout (2026-07-18) - 31/32 cards done.** All five lanes closed. Only
+`g08.019` (postgres adapter integration tests) remains, blocked on
+Docker/Postgres availability (no CI provisioning in this environment) - the
+adapter tests cannot be run, so the card is parked rather than shipping
+unverified SQL. Version bumped to `0.8.0` with `v0.8.0` tagged at the
+six-consumer proof point. Closeout validation: `cargo check --workspace` clean,
+`effigy validate` clean, 742 unit + 33 component pass. Remaining g08 obligation
+before `g09`: provision Postgres/CI to unblock `g08.019`. Full summary:
+[`docs/logs/2026-07/18-014500-g08-closeout-checkpoint.md`](../../logs/2026-07/18-014500-g08-closeout-checkpoint.md).
 
 ## Consumer Upgrade Impact
 

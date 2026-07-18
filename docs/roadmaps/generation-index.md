@@ -1,7 +1,7 @@
 # Underlay Roadmap Generation Index
 
 Status: active
-Updated: 2026-07-17
+Updated: 2026-07-18
 
 ## Mode
 
@@ -22,7 +22,7 @@ Updated: 2026-07-17
 | `g05` | 2026-05-xx | Shared page, workflow template, and consumer capability generation | Closed after query-variant and consumer capability line |
 | `g06` | 2026-06-05 | Rust platform-contract transition after code-quality audit | Closed after the reference-grade reset, Rust hardening lane, six-consumer proof, upgrade-guidance closeout, and bounded stale-drift repairs |
 | `g07` | 2026-06-06 | Runtime, workflow, residual Rust policy, and doctor-warning hardening after `g06` closeout | Complete after `g07.037` doctor warning closeout |
-| `g08` | 2026-07-17 | Audit remediation after July 2026 deep audit (security edge, correctness bugs, Rust/TS structure, docs/versioning/i18n posture) | Active |
+| `g08` | 2026-07-17 | Audit remediation after July 2026 deep audit (security edge, correctness bugs, Rust/TS structure, docs/versioning/i18n posture) | Active - 31/32 cards done, `g08.019` blocked on Postgres/CI; `v0.8.0` tagged |
 
 ## Historical generations
 
@@ -51,5 +51,10 @@ In parallel mode:
 
 ## Next Task
 
-`g08` is active. Lead with Lane A security (`g08.001`-`g08.003` ready) and Lane B
-correctness (`g08.011`-`g08.014` ready).
+`g08` is substantially complete: all 32 cards are done except `g08.019` (postgres
+adapter integration tests), which is **blocked** on Docker/Postgres availability
+(no CI provisioning in this environment). All five lanes — security (A),
+correctness (B), Rust seams (C), TS surface (D), docs/versioning/i18n posture (E)
+— are closed; `v0.8.0` is tagged at the six-consumer proof point. The remaining
+work before `g09` is provisioning Postgres/CI to unblock `g08.019`, then `g09`
+scoping.
