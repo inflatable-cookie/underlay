@@ -5591,6 +5591,7 @@ dependencies = [
  "tracing",
  "underlay-core",
  "underlay-jobs",
+ "underlay-testing",
  "uuid",
 ]
 
