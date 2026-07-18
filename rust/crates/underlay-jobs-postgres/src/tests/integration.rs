@@ -11,6 +11,12 @@
 //! does not apply. The whole job lifecycle is exercised in a single test that
 //! rebuilds the `platform` schema from the crate's own migrations, avoiding any
 //! cross-test contention on `platform.job`.
+//!
+//! **WARNING — destructive:** this test runs `DROP SCHEMA platform CASCADE`
+//! against whatever database `UNDERLAY_TEST_DATABASE_URL` points at. Only ever
+//! point it at a **throwaway** database (the CI service container, a local
+//! scratch container) — never at a database whose `platform` schema you care
+//! about.
 
 use serde_json::json;
 use sqlx::Executor;

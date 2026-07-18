@@ -47,6 +47,13 @@ use uuid::Uuid;
 /// suite runs against a CI Postgres service, an `effigy container` Postgres, or
 /// any local instance — no Docker API required. Per-test schema isolation still
 /// keeps concurrent tests from colliding on the shared database.
+///
+/// **Use a throwaway database.** In external mode nothing tears the database
+/// down afterwards: each test leaves its `test_*` schema behind unless
+/// [`TestDb::cleanup`] is called (and some suites — e.g. `underlay-jobs-postgres`
+/// — rebuild fixed schemas like `platform` destructively). A CI service
+/// container or local scratch container is the intended target, not a
+/// long-lived shared database.
 pub const TEST_DATABASE_URL_ENV: &str = "UNDERLAY_TEST_DATABASE_URL";
 
 pub struct TestDb {

@@ -30,6 +30,10 @@ mod memory;
 #[cfg(feature = "postgres")]
 mod postgres;
 
+#[cfg(all(test, feature = "postgres"))]
+#[path = "tests/postgres_integration.rs"]
+mod postgres_integration;
+
 pub use backend::RateLimitBackend;
 pub use config::{RateLimitConfig, RateLimitResult};
 pub use error::{RateLimitError, Result};

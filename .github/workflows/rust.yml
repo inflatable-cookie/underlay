@@ -69,3 +69,11 @@ jobs:
           -p underlay-audit
           -p underlay-security-alerts
           -- --ignored
+
+      # Feature-gated separately: the distributed rate-limit window test
+      # (two backend instances sharing one Postgres).
+      - name: Test (Postgres rate-limit backend)
+        run: >-
+          cargo test --locked --lib
+          -p underlay-ratelimit --features postgres
+          -- --ignored

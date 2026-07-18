@@ -23,6 +23,7 @@ sqlx = { workspace = true, optional = true }
 
 [dev-dependencies]
 tokio = { workspace = true, features = ["rt-multi-thread", "macros", "time"] }
+underlay-testing = { path = "../underlay-testing", features = ["db"] }
 
 [lints]
 workspace = true

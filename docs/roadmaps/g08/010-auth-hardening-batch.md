@@ -30,8 +30,12 @@ unencrypted.
 
 - [x] Revoke the whole session family on refresh-replay detection (RFC 6819 /
   OAuth BCP).
-- [x] Add per-user attempt caps to TOTP and backup-code verify; rate-limit
-  password-reset initiation (wire the already-passed ratelimit bound).
+- [x] Add per-user attempt caps to TOTP and backup-code verify.
+- [ ] ~~Rate-limit password-reset initiation~~ — **deferred, not shipped** (see
+  Completion Notes: `reset_password` is admin-internal with no rate key and
+  there is no in-tree reset-initiation endpoint to wire; the throttle belongs
+  to the consumer flow that owns initiation). *(Audit note: this was previously
+  bundled into a checked box, overstating scope.)*
 - [x] Verify against a static dummy Argon2 hash on the unknown-email path to
   remove the timing oracle.
 - [x] Remove or migration-gate the `plain:` decrypt passthrough.
@@ -44,7 +48,10 @@ throttled. Requires six-consumer proof per `023`.
 ## Validation
 
 - [x] tests: replay revokes family; capped second-factor attempts; constant-time
-  login miss; no `plain:` passthrough
+  login miss (`unknown_email_miss_costs_a_kdf_pass` in
+  `tests/service_tests/login.rs` — asserts the miss path costs ~one KDF pass);
+  no `plain:` passthrough. *(Audit note: the timing test landed at generation
+  close; before that `dummy_verify` was wired but untested.)*
 - [x] `cargo test -p underlay-auth-jwt -p underlay-auth-totp -p underlay-auth-password -p underlay-auth-oauth`
 - [x] `effigy validate`
 

@@ -1,4 +1,6 @@
-use super::HttpClient;
+use std::time::Duration;
+
+use super::{HttpClient, DEFAULT_CONNECT_TIMEOUT, DEFAULT_TIMEOUT};
 
 #[test]
 fn default_client_builds_requests() {
@@ -144,4 +146,39 @@ fn is_public_ip_classifies_correctly() {
     assert!(!is_public_ip("fe80::1".parse::<IpAddr>().unwrap()));
     // IPv4-mapped loopback must also be blocked.
     assert!(!is_public_ip("::ffff:127.0.0.1".parse::<IpAddr>().unwrap()));
+}
+
+#[test]
+fn default_timeouts_are_bounded() {
+    // base_builder applies these to every client this crate constructs; guard
+    // the values so a refactor cannot silently drop or loosen them.
+    assert_eq!(DEFAULT_CONNECT_TIMEOUT, Duration::from_secs(10));
+    assert_eq!(DEFAULT_TIMEOUT, Duration::from_secs(30));
+}
+
+#[tokio::test]
+async fn timeout_fires_on_stalled_server() {
+    // A server that accepts connections but never responds. The per-request
+    // timeout is shrunk from the 30s default so the test runs fast; the
+    // mechanism exercised (reqwest total-timeout on our constructed client)
+    // is the same one the default arms.
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:0")
+        .await
+        .expect("bind");
+    let addr = listener.local_addr().expect("addr");
+    tokio::spawn(async move {
+        let mut held = Vec::new();
+        while let Ok((socket, _)) = listener.accept().await {
+            held.push(socket); // hold open, never answer
+        }
+    });
+
+    let client = HttpClient::new();
+    let err = client
+        .get(format!("http://{addr}/stall"))
+        .timeout(Duration::from_millis(300))
+        .send()
+        .await
+        .expect_err("stalled server must not succeed");
+    assert!(err.is_timeout(), "expected a timeout error, got: {err}");
 }

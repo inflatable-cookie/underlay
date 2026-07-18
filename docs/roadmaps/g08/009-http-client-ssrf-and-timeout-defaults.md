@@ -41,6 +41,10 @@ proof per `023`.
 ## Validation
 
 - [x] test: private/link-local target rejected by `external()`; timeout fires
+  (`timeout_fires_on_stalled_server` + `default_timeouts_are_bounded` in
+  `src/tests/lib_tests.rs`). *(Audit note: the timeout tests landed at
+  generation close — before that only the SSRF half was covered and this box
+  overstated in-tree coverage.)*
 - [x] `cargo test -p underlay-http-client -p underlay-http`
 - [x] `effigy validate`
 

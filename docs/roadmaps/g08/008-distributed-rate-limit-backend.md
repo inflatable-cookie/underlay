@@ -27,8 +27,11 @@ login, second-factor, and reset limits.
 
 - [x] Add a distributed atomic backend (Redis `INCR`+`EXPIRE` or Postgres) as the
   documented prod path.
-- [x] Gate `InMemoryBackend` behind an explicit single-instance config and label
-  it non-prod.
+- [x] Label `InMemoryBackend` non-prod with a `single_instance()` semantic
+  constructor. *(Scope note, g08 audit: the gate is documentation + naming, not
+  a hard config gate — `new()`/`Default` remain constructible. Hard-gating would
+  break every test/dev call site for no prod win; the prod path is the
+  documented Postgres backend.)*
 - [x] Reconcile docs so advertised backends match what ships.
 
 ## Consumer Upgrade Impact
@@ -39,7 +42,11 @@ backend. Requires six-consumer proof per `023`.
 ## Validation
 
 - [x] test: distributed backend enforces a shared window across simulated
-  instances
+  instances — `src/tests/postgres_integration.rs`
+  (`two_instances_enforce_one_shared_window`, two `PostgresBackend` instances
+  over one database; runs in CI against the `postgres:16` service). *(Audit
+  note: this test landed at generation close once `g08.019` provisioned the
+  Postgres test path; before that the box overstated in-tree coverage.)*
 - [x] `cargo test -p underlay-ratelimit`
 - [x] `effigy validate`
 
