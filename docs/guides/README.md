@@ -1,22 +1,15 @@
-# Underlay Guides (Deprecated)
+# Underlay Guides
 
-**This directory is deprecated.** Content has been migrated to `docs/usage/`.
+This is Underlay's **narrative how-to layer** — the active front door for
+building against the foundation (backend, database, auth, API handlers,
+TypeScript client, media, admin components). Contracts (`docs/contracts/`) own
+the normative guarantees; these guides explain and demonstrate them. The admin
+**template usage reference** lives in [`docs/usage/`](../usage/000-overview.md).
 
-See:
-- [docs/usage/000-overview.md](../usage/000-overview.md) — New user-facing docs front door
-- [docs/usage/backend/](../usage/backend/) — Backend guides (Rust, DB, API)
-- [docs/usage/frontend/](../usage/frontend/) — Frontend guides (SvelteKit)
-- [docs/usage/runtime/](../usage/runtime/) — Runtime and client helpers
-- [docs/usage/templates/](../usage/templates/) — Admin template system
-
-This directory will be removed in a future update. Do not add new guides here.
-
----
-
-Legacy content follows.
+## Scope
 
 Poodle is the canonical home for shared UI primitives and generic composites.
-Underlay’s guides now describe the retained package surfaces that still belong
+Underlay’s guides describe the retained package surfaces that still belong
 here:
 
 - `@decodelabs/underlay/patterns` for retained workflow/page-shell UI

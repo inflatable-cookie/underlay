@@ -88,6 +88,10 @@ Underlay-based applications:
 /underlay-build upgrade      → upgrade compatibility guidance
 ```
 
-## Deprecated
+## Relationship to guides
 
-The old `docs/guides/` directory is deprecated. Content has been migrated here.
+`docs/guides/` is the active narrative how-to layer (and this overview's reading
+order links into it). This `usage/` tree is the admin **template usage
+reference** — per-template docs under `usage/templates/` plus the migration
+state-layout note. The two are complementary, not a migration: contracts are
+normative, guides are the narrative walkthrough, and usage is template reference.

@@ -4,14 +4,19 @@ Logs capture meaningful documentation and delivery batches for Underlay.
 
 ## Current Evidence Window
 
-- `2026-03/23-153502-poodle-field-cluster-review-handoff.md`
-- `2026-03/24-084409-poodle-list-container-review-handoff.md`
-- `2026-04/09-221225-poodle-era-overhaul-recovery-and-g01-098-open.md`
-- `2026-04/09-221400-roll-to-g02-consumer-normalization-era.md`
+The active window is the current generation `g08` under `docs/logs/2026-07/`
+(one log per card across the audit-remediation lanes). Earlier month shards are
+frozen lineage; the March Poodle handoffs and the April `g01.098 -> g02`
+rollover logs remain part of the record but are historical, not the active
+control chain.
 
-The March Poodle handoffs remain part of the lineage, but the new April log is
-the active control chain for the current shared-surface normalization queue and
-its rollover into `g02`.
+## Cadence
+
+Decided (g08.030): **keep the per-batch log cadence.** One log per meaningful
+card or batch, under month shards. It served the g08 generation well as a live
+control chain and evidence trail. Gap months (e.g. 2026-05 empty, 2026-06 one
+file) reflect genuinely low-activity periods, not a reason to drop the ritual —
+an empty month is honest signal, not overhead.
 
 ## Rules
 

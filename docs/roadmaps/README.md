@@ -62,11 +62,22 @@ README surfaces.
 - Lane B - Correctness bugs and test gate: `g08.011`-`g08.014` (complete)
 - Lane C - Rust structural seams: `g08.015`-`g08.020` (all done except `g08.019` postgres integration tests)
 - Lane D - TypeScript surface and SSR safety: `g08.021`-`g08.024` (complete)
-- Lane E - Docs, versioning, and i18n posture: `g08.025`-`g08.030`
-  (`g08.029` resolved English-only; `g08.030` remaining)
+- Lane E - Docs, versioning, and i18n posture: `g08.025`-`g08.030` (complete)
 
-Closed generations `g01`-`g07` are archival; see each generation README and
-[`generation-index.md`](generation-index.md).
+## Archived generations
+
+Closed generations `g01`-`g07` (639 roadmap files; `g06` alone is 367) are
+**frozen archival record**, not active navigation. Enter them only via
+[`generation-index.md`](generation-index.md), which is the authoritative history.
+Do not open new work in a closed generation.
+
+They remain in place under `docs/roadmaps/g0N/` rather than being physically
+relocated: ~15 active contracts/guides link into them and the closed generations
+cross-link each other with relative paths, so a bulk move would break links that
+the front-door link check (nine fixed files) cannot detect. Physical relocation
+to an archive surface is deferred to a human-reviewed pass; the frozen-record
+designation and the generation-index give the same navigational benefit without
+that risk.
 
 ## Next Task
 
@@ -77,6 +88,8 @@ Lane D complete (`g08.021`-`g08.024`; `g08.022` broad subpath collapse and
 `g08.023` presentation file-split both deferred under their stop conditions).
 Lane E in progress: `g08.025` front-door doc repair, `g08.026` committed-artifact
 cleanup, `g08.027` contract-sync decision, and `g08.028` versioning/consumer-pin
-story, and `g08.029` i18n message-seam decision (resolved English-only) done
-(underlay now `0.8.0`, `v0.8.0` tagged). Next: `g08.030` archival docs weight
-reduction — the last g08 card.
+story, `g08.029` i18n message-seam decision (English-only), and `g08.030`
+archival docs weight reduction done. Lane E complete (underlay now `0.8.0`,
+`v0.8.0` tagged). All g08 cards are closed except `g08.019` (postgres
+integration tests, blocked on Docker/Postgres availability). Next: the `g08`
+closeout checkpoint, then `g09` scoping.
