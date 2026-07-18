@@ -22,6 +22,10 @@ mod tables;
 mod usage_ops;
 mod version_ops;
 
+#[cfg(test)]
+#[path = "tests/integration.rs"]
+mod integration;
+
 pub use tables::PostgresMediaConfig;
 
 pub(crate) trait SqlxMediaResultExt<T> {
