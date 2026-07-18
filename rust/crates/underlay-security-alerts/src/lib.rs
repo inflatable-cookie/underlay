@@ -25,6 +25,10 @@ mod types;
 #[path = "tests/detector_tests.rs"]
 mod detector_tests;
 
+#[cfg(test)]
+#[path = "tests/integration.rs"]
+mod integration;
+
 pub use crate::detector::{evaluate_account_alerts, evaluate_alerts, evaluate_global_alerts};
 pub use crate::error::{SecurityAlertError, SecurityAlertResult};
 pub use crate::store::{

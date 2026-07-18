@@ -15,5 +15,9 @@ tracing = { workspace = true }
 underlay-db = { path = "../underlay-db" }
 uuid = { workspace = true }
 
+[dev-dependencies]
+tokio = { workspace = true, features = ["macros", "rt", "time"] }
+underlay-testing = { path = "../underlay-testing", features = ["db"] }
+
 [lints]
 workspace = true

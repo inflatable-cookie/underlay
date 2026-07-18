@@ -63,6 +63,10 @@ mod query;
 mod tables;
 mod writer;
 
+#[cfg(test)]
+#[path = "tests/integration.rs"]
+mod integration;
+
 pub use crate::entry::{AuditAction, AuditEntry, AuditLogRow};
 pub use crate::error::{AuditError, AuditResult};
 pub use crate::query::{
