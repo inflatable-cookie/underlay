@@ -98,10 +98,13 @@ structural and process debt sequenced behind the edge fixes.
   form-feedback clobber, `g08.012` Google login dead handler, `g08.013` media
   validation bypass and upload cancellation, `g08.014` red unit suite fix and
   test gate.
-- [~] **Batch 5 (Lane C, in progress):** Rust seams - `g08.015` error taxonomy
+- [x] **Batch 5 (Lane C, complete):** Rust seams - `g08.015` error taxonomy
   (done), `g08.016` media domain-type relocation (done), `g08.017` pagination collision
   (done 2026-07-17; query-seam split to `g08.017b`, also done - new `underlay-query` crate), `g08.018` auth-postgres adapter decision (done - rename), `g08.019`
-  postgres adapter tests, `g08.020` workspace dependency and lint hygiene (done).
+  postgres adapter tests (done 2026-07-18 - `TestDb` now runs against an external
+  `UNDERLAY_TEST_DATABASE_URL`; 17 integration tests across all five `-postgres`
+  adapters, green on Postgres 16 via effigy containerd), `g08.020` workspace
+  dependency and lint hygiene (done).
 - [x] **Batch 6 (Lane D, complete 2026-07-17):** TS surface - `g08.021` SSR-global state guard (done),
   `g08.022` export-map diet (done - de-dup + root retired; broad collapse
   deferred to g07 compat retirement), `g08.023` EntityList generics and split
@@ -185,15 +188,18 @@ needed `ConnectInfo` + a `TrustedProxyConfig` extension for `ip_address()`;
 and `plain:` OAuth secrets are per-deploy advisories. Full detail:
 [`docs/logs/2026-07/17-140000-g08-lane-a-checkpoint-and-consumer-rollout.md`](../../logs/2026-07/17-140000-g08-lane-a-checkpoint-and-consumer-rollout.md).
 
-**Closeout (2026-07-18) - 31/32 cards done.** All five lanes closed. Only
-`g08.019` (postgres adapter integration tests) remains, blocked on
-Docker/Postgres availability (no CI provisioning in this environment) - the
-adapter tests cannot be run, so the card is parked rather than shipping
-unverified SQL. Version bumped to `0.8.0` with `v0.8.0` tagged at the
-six-consumer proof point. Closeout validation: `cargo check --workspace` clean,
-`effigy validate` clean, 742 unit + 33 component pass. Remaining g08 obligation
-before `g09`: provision Postgres/CI to unblock `g08.019`. Full summary:
-[`docs/logs/2026-07/18-014500-g08-closeout-checkpoint.md`](../../logs/2026-07/18-014500-g08-closeout-checkpoint.md).
+**Closeout (2026-07-18) - all 32 cards done.** All five lanes closed. `g08.019`
+was the last open card (initially blocked on Docker/Postgres); unblocked by
+making `TestDb` run against an external `UNDERLAY_TEST_DATABASE_URL` and
+provisioning Postgres 16 on the effigy containerd profile - 17 integration tests
+now cover all five `-postgres` adapters. Version bumped to `0.8.0` with `v0.8.0`
+tagged at the six-consumer proof point. Closeout validation: `cargo check
+--workspace` clean, `effigy validate` clean, 742 TS unit + 33 component pass, 17
+Rust adapter integration tests green on Postgres 16. Full summaries:
+[closeout checkpoint](../../logs/2026-07/18-014500-g08-closeout-checkpoint.md),
+[g08.019 unblock](../../logs/2026-07/18-020000-g08-019-postgres-adapter-integration-tests.md).
+Follow-up (ops, not g08): wire `UNDERLAY_TEST_DATABASE_URL` into real CI; the
+fixtures surfaced consumer-migration drift worth a reconciliation pass.
 
 ## Consumer Upgrade Impact
 

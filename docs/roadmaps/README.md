@@ -60,7 +60,7 @@ README surfaces.
 
 - Lane A - Security and edge hardening: `g08.001`-`g08.010` (complete)
 - Lane B - Correctness bugs and test gate: `g08.011`-`g08.014` (complete)
-- Lane C - Rust structural seams: `g08.015`-`g08.020` (all done except `g08.019` postgres integration tests)
+- Lane C - Rust structural seams: `g08.015`-`g08.020` (complete)
 - Lane D - TypeScript surface and SSR safety: `g08.021`-`g08.024` (complete)
 - Lane E - Docs, versioning, and i18n posture: `g08.025`-`g08.030` (complete)
 
@@ -81,15 +81,13 @@ that risk.
 
 ## Next Task
 
-Lane A (security, `g08.001`-`g08.010`) and Lane B (correctness/test gate) are
-complete; the Lane A checkpoint is closed (no new contract; six consumer apps
-scanned and fixed). Lane C done except `g08.019` (blocked on Docker/Postgres).
-Lane D complete (`g08.021`-`g08.024`; `g08.022` broad subpath collapse and
-`g08.023` presentation file-split both deferred under their stop conditions).
-Lane E in progress: `g08.025` front-door doc repair, `g08.026` committed-artifact
-cleanup, `g08.027` contract-sync decision, and `g08.028` versioning/consumer-pin
-story, `g08.029` i18n message-seam decision (English-only), and `g08.030`
-archival docs weight reduction done. Lane E complete (underlay now `0.8.0`,
-`v0.8.0` tagged). All g08 cards are closed except `g08.019` (postgres
-integration tests, blocked on Docker/Postgres availability). Next: the `g08`
-closeout checkpoint, then `g09` scoping.
+**`g08` is fully complete — all 32 cards done across all five lanes.** Lanes A
+(security) and B (correctness/test gate) closed with the six-consumer rollout;
+Lane C (Rust seams) closed including `g08.019`, unblocked by making `TestDb` run
+against an external `UNDERLAY_TEST_DATABASE_URL` (17 adapter integration tests
+green on Postgres 16 via effigy containerd); Lane D (TS surface) complete with
+the `g08.022`/`g08.023` collapses deferred under their stop conditions; Lane E
+(docs/versioning/i18n) complete. underlay is `0.8.0`, `v0.8.0` tagged at the
+six-consumer proof point. Next: `g09` scoping (maintainer direction). Ops
+follow-up (not a g08 card): wire `UNDERLAY_TEST_DATABASE_URL` into real CI, and
+reconcile the consumer-migration drift the adapter fixtures surfaced.
