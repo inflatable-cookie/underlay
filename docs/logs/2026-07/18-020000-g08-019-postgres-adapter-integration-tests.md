@@ -41,10 +41,18 @@ effigy's containerd container system:
   cross-test contention.
 
 Each fixture builds the adapter's tables from its **actual** column usage rather
-than a consumer migration, so the tests double as a schema-contract check — and
-surfaced that several consumer baseline migrations have drifted from the adapters
-(e.g. media `alt_text` missing, a richer `media_usage` schema than the adapter's
-`(media_id, used_by_type, used_by_id, field)`).
+than a consumer migration, so the tests double as a schema-contract check.
+
+Following up on the apparent drift: the four **adopted** adapters
+(`jobs-postgres` 13 consumer refs, `audit` 11, `security-alerts` 10,
+`auth-state-postgres` 8) match their consumers — verified e.g. farmyard's
+`auth.auth_state` has exactly the adapter's columns, which is why the fixtures
+and production agree. The only divergence is **`underlay-media-postgres`, which
+no consumer uses** (0 Cargo refs): consumers use the `underlay-media` domain
+crate but roll their own persistence, so its schema (with `alt_text`, a simple
+`field` usage table) differs from theirs by design. That is not a consumer bug
+and needs no migration change — documented in the crate as unadopted, with the
+integration-test fixture as the canonical shape for any future adopter.
 
 ## Validation
 
@@ -62,7 +70,8 @@ enhancement (external-URL opt-in; testcontainers still the default).
 
 ## Next
 
-`g08` fully closed — all 32 cards done. Provisioning a Postgres service in real
-CI (using `UNDERLAY_TEST_DATABASE_URL`) is the remaining ops follow-up to run
-these in the pipeline; the adapter drift the fixtures surfaced is worth a
-consumer-side reconciliation pass.
+`g08` fully closed — all 32 cards done. CI is now wired
+(`.github/workflows/rust.yml` runs these tests against a `postgres:16` service
+via `UNDERLAY_TEST_DATABASE_URL`). No consumer reconciliation is needed: the
+adopted adapters match their consumers, and the only divergent adapter
+(`media-postgres`) is unadopted.

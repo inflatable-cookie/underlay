@@ -88,6 +88,8 @@ against an external `UNDERLAY_TEST_DATABASE_URL` (17 adapter integration tests
 green on Postgres 16 via effigy containerd); Lane D (TS surface) complete with
 the `g08.022`/`g08.023` collapses deferred under their stop conditions; Lane E
 (docs/versioning/i18n) complete. underlay is `0.8.0`, `v0.8.0` tagged at the
-six-consumer proof point. Next: `g09` scoping (maintainer direction). Ops
-follow-up (not a g08 card): wire `UNDERLAY_TEST_DATABASE_URL` into real CI, and
-reconcile the consumer-migration drift the adapter fixtures surfaced.
+six-consumer proof point, and CI is wired (`.github/workflows/rust.yml` runs the
+adapter integration tests against a `postgres:16` service). Next: `g09` scoping
+(maintainer direction). No consumer reconciliation is outstanding — the adopted
+adapters match their consumers; the only divergent adapter (`media-postgres`) is
+unadopted and documented as such.

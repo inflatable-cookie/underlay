@@ -2,6 +2,17 @@
 //!
 //! This module provides a PostgreSQL-backed implementation of the media
 //! repository using sqlx. It supports configurable schema and table names.
+//!
+//! # Adoption status
+//!
+//! As of g08 this adapter is **not adopted by any of the six consumer apps** —
+//! they use the `underlay-media` domain crate but implement their own media
+//! persistence, so their media schemas have diverged from this adapter (e.g.
+//! they lack `alt_text`; their `media_usage` shape is richer than this adapter's
+//! `(media_id, used_by_type, used_by_id, field)`). That divergence is **not** a
+//! consumer bug — nothing runs this adapter against those schemas. If an app
+//! adopts this adapter, treat the integration-test fixture in
+//! `src/tests/integration.rs` as the canonical table shape it expects.
 
 use async_trait::async_trait;
 use sqlx::PgPool;

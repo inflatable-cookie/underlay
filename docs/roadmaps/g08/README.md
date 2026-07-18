@@ -198,8 +198,11 @@ tagged at the six-consumer proof point. Closeout validation: `cargo check
 Rust adapter integration tests green on Postgres 16. Full summaries:
 [closeout checkpoint](../../logs/2026-07/18-014500-g08-closeout-checkpoint.md),
 [g08.019 unblock](../../logs/2026-07/18-020000-g08-019-postgres-adapter-integration-tests.md).
-Follow-up (ops, not g08): wire `UNDERLAY_TEST_DATABASE_URL` into real CI; the
-fixtures surfaced consumer-migration drift worth a reconciliation pass.
+CI is wired: `.github/workflows/rust.yml` runs the adapter integration tests
+against a `postgres:16` service via `UNDERLAY_TEST_DATABASE_URL`. No consumer
+reconciliation is outstanding — the adopted adapters match their consumers; the
+only divergent adapter (`media-postgres`) is unadopted (0 consumer refs) and
+documented as such in the crate.
 
 ## Consumer Upgrade Impact
 
