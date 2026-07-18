@@ -5379,7 +5379,9 @@ dependencies = [
  "serde_json",
  "sqlx",
  "thiserror 2.0.18",
+ "tokio",
  "underlay-core",
+ "underlay-testing",
 ]
 
 [[package]]

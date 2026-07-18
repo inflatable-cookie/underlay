@@ -276,6 +276,10 @@ pub struct AuthStateRow {
 }
 
 #[cfg(test)]
+#[path = "tests/integration.rs"]
+mod integration;
+
+#[cfg(test)]
 mod tests {
     use super::*;
 

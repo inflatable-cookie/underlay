@@ -13,5 +13,9 @@ sqlx = { workspace = true }
 thiserror = { workspace = true }
 underlay-core = { path = "../underlay-core" }
 
+[dev-dependencies]
+tokio = { workspace = true, features = ["macros", "rt", "time"] }
+underlay-testing = { path = "../underlay-testing", features = ["db"] }
+
 [lints]
 workspace = true
