@@ -182,7 +182,8 @@ async fn throttled_verify_caps_failed_attempts_and_resets_on_success() {
             .unwrap_err();
         assert!(matches!(
             err,
-            underlay_auth::AuthError::BackupCodeInvalid | underlay_auth::AuthError::TwoFactorInvalid
+            underlay_auth::AuthError::BackupCodeInvalid
+                | underlay_auth::AuthError::TwoFactorInvalid
         ));
     }
 
@@ -221,9 +222,5 @@ async fn throttled_verify_caps_failed_attempts_and_resets_on_success() {
         .await
         .unwrap();
     assert_eq!(ok, TwoFactorVerified::BackupCode { index: 1 });
-    assert!(limiter
-        .check(key2, &config)
-        .await
-        .unwrap()
-        .is_allowed());
+    assert!(limiter.check(key2, &config).await.unwrap().is_allowed());
 }

@@ -106,13 +106,8 @@ impl TotpService {
             });
         }
 
-        match self.verify_second_factor(
-            secret_base32,
-            last_counter,
-            input,
-            backup_code_hashes,
-            now,
-        ) {
+        match self.verify_second_factor(secret_base32, last_counter, input, backup_code_hashes, now)
+        {
             Ok(verified) => {
                 let _ = limiter.reset(rate_limit_key).await;
                 Ok(verified)

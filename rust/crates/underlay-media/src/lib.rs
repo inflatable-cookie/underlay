@@ -59,12 +59,12 @@ pub mod domain;
 pub mod error;
 #[cfg(feature = "renditions")]
 pub mod image;
-pub mod types;
 #[cfg(feature = "nightfire")]
 pub mod nightfire;
 pub mod repository;
 pub mod storage;
 pub mod sync;
+pub mod types;
 
 #[cfg(feature = "renditions")]
 pub mod renditions;

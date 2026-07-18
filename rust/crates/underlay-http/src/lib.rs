@@ -62,7 +62,7 @@ pub use crate::errors::{
 pub use crate::http_config::{HttpServerConfig, HttpServerConfigError};
 #[allow(deprecated)]
 pub use crate::pagination::PaginationParams;
-pub use crate::pagination::{Paginated, PagePaginationParams, PaginationMeta};
+pub use crate::pagination::{PagePaginationParams, Paginated, PaginationMeta};
 pub use crate::path::{parse_uuid_path, parse_uuid_path_raw};
 pub use crate::query::{
     parse_sort_string, FieldMapping, FilterField, FilterOperator, QueryParams, SortDirection,
@@ -70,10 +70,10 @@ pub use crate::query::{
 };
 // Preserve `underlay_http::field_mapping!` after the model moved to
 // underlay-query.
-pub use underlay_query::field_mapping;
 pub use crate::responses::{created, list_ok, no_content, ok};
 #[cfg(feature = "opentelemetry")]
 pub use underlay_observability::{TraceContext, TRACEPARENT_HEADER, TRACESTATE_HEADER};
+pub use underlay_query::field_mapping;
 
 #[cfg(feature = "error-logging")]
 pub use crate::error_logging::{

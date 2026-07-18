@@ -75,8 +75,8 @@ async fn setup() -> Fixture {
 
     let login_attempts =
         LoginAttemptsTable::parse(format!("{schema}.login_attempts")).expect("valid table");
-    let alert_events =
-        SecurityAlertEventsTable::parse(format!("{schema}.security_alert_events")).expect("valid table");
+    let alert_events = SecurityAlertEventsTable::parse(format!("{schema}.security_alert_events"))
+        .expect("valid table");
 
     Fixture {
         db,
@@ -145,9 +145,10 @@ async fn account_and_global_counts_scope_correctly() {
 
     let since = Utc::now() - Duration::hours(1);
 
-    let account = load_account_signal_counts_from_table(fx.db.pool(), &fx.login_attempts, user, since)
-        .await
-        .expect("account counts");
+    let account =
+        load_account_signal_counts_from_table(fx.db.pool(), &fx.login_attempts, user, since)
+            .await
+            .expect("account counts");
     assert_eq!(account.failed_attempts, 2);
     assert_eq!(account.distinct_ips, 2);
 

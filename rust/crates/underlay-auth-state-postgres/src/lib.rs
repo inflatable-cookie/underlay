@@ -40,7 +40,10 @@ impl AuthStateStore {
     ///
     /// The name is validated to `[A-Za-z0-9_.]+` because it is interpolated
     /// into SQL.
-    pub fn with_table(pool: sqlx::PgPool, table: impl Into<String>) -> Result<Self, AuthStateError> {
+    pub fn with_table(
+        pool: sqlx::PgPool,
+        table: impl Into<String>,
+    ) -> Result<Self, AuthStateError> {
         let table = table.into();
         validate_table_name(&table)?;
         Ok(Self { pool, table })
@@ -287,8 +290,17 @@ mod tests {
     fn table_name_validation_accepts_safe_and_rejects_unsafe() {
         assert!(validate_table_name("auth.auth_state").is_ok());
         assert!(validate_table_name("accounts.auth_state").is_ok());
-        for bad in ["auth state", "auth_state; DROP TABLE x", "", "auth_state--", "s'"] {
-            assert!(validate_table_name(bad).is_err(), "expected {bad:?} rejected");
+        for bad in [
+            "auth state",
+            "auth_state; DROP TABLE x",
+            "",
+            "auth_state--",
+            "s'",
+        ] {
+            assert!(
+                validate_table_name(bad).is_err(),
+                "expected {bad:?} rejected"
+            );
         }
     }
 }

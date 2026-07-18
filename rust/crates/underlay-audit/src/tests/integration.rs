@@ -124,7 +124,12 @@ async fn list_and_count_apply_filters() {
         .await
         .expect("list all");
     assert_eq!(all.len(), 4);
-    assert_eq!(count_audit_logs_from_table(fx.db.pool(), &fx.table, &filters()).await.unwrap(), 4);
+    assert_eq!(
+        count_audit_logs_from_table(fx.db.pool(), &fx.table, &filters())
+            .await
+            .unwrap(),
+        4
+    );
 
     // Filter by user.
     let by_user = AuditLogFilters {
@@ -136,7 +141,12 @@ async fn list_and_count_apply_filters() {
         .expect("list by user");
     assert_eq!(alice_rows.len(), 2);
     assert!(alice_rows.iter().all(|r| r.user_id == Some(alice)));
-    assert_eq!(count_audit_logs_from_table(fx.db.pool(), &fx.table, &by_user).await.unwrap(), 2);
+    assert_eq!(
+        count_audit_logs_from_table(fx.db.pool(), &fx.table, &by_user)
+            .await
+            .unwrap(),
+        2
+    );
 
     // Filter by action.
     let by_action = AuditLogFilters {
@@ -155,7 +165,9 @@ async fn list_and_count_apply_filters() {
         ..filters()
     };
     assert_eq!(
-        count_audit_logs_from_table(fx.db.pool(), &fx.table, &by_resource).await.unwrap(),
+        count_audit_logs_from_table(fx.db.pool(), &fx.table, &by_resource)
+            .await
+            .unwrap(),
         1
     );
 }

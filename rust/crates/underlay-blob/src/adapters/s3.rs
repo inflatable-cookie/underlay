@@ -110,10 +110,9 @@ impl BlobAdapter for S3Adapter {
         // Set content disposition if filename provided. The filename is
         // untrusted input; escape per RFC 6266 to prevent header injection.
         if let Some(filename) = &request.filename {
-            get_request = get_request
-                .response_content_disposition(crate::types::content_disposition_attachment(
-                    filename,
-                ));
+            get_request = get_request.response_content_disposition(
+                crate::types::content_disposition_attachment(filename),
+            );
         }
 
         let presigned = get_request

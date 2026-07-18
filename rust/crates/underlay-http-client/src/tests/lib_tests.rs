@@ -92,18 +92,21 @@ fn validate_external_url_rejects_private_and_metadata_targets() {
 
     for blocked in [
         "http://127.0.0.1/",
-        "http://localhost/",       // resolves to loopback
+        "http://localhost/",                        // resolves to loopback
         "http://169.254.169.254/latest/meta-data/", // cloud metadata
         "http://10.0.0.5/",
         "http://192.168.1.1/",
         "http://172.16.0.1/",
         "http://[::1]/",
         "http://0.0.0.0/",
-        "http://100.64.0.1/",      // CGNAT
+        "http://100.64.0.1/", // CGNAT
     ] {
         let err = validate_external_url(blocked).expect_err(blocked);
         assert!(
-            matches!(err, HttpClientError::BlockedTarget(_) | HttpClientError::InvalidUrl(_)),
+            matches!(
+                err,
+                HttpClientError::BlockedTarget(_) | HttpClientError::InvalidUrl(_)
+            ),
             "{blocked} -> {err:?}"
         );
     }
@@ -126,7 +129,9 @@ fn is_public_ip_classifies_correctly() {
     // Public
     assert!(is_public_ip("1.1.1.1".parse::<IpAddr>().unwrap()));
     assert!(is_public_ip("8.8.8.8".parse::<IpAddr>().unwrap()));
-    assert!(is_public_ip("2606:4700:4700::1111".parse::<IpAddr>().unwrap()));
+    assert!(is_public_ip(
+        "2606:4700:4700::1111".parse::<IpAddr>().unwrap()
+    ));
 
     // Non-public
     assert!(!is_public_ip("127.0.0.1".parse::<IpAddr>().unwrap()));

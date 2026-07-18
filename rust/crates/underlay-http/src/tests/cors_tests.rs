@@ -280,7 +280,9 @@ mod tests {
     #[test]
     fn mirror_with_credentials_builds_in_local_and_test() {
         for env in [Environment::Local, Environment::Test] {
-            let config = CorsConfig::new().with_mirror_origin().with_credentials(true);
+            let config = CorsConfig::new()
+                .with_mirror_origin()
+                .with_credentials(true);
             assert!(try_cors_layer_for_env(config, env).is_ok());
         }
     }
@@ -288,7 +290,9 @@ mod tests {
     #[test]
     fn mirror_with_credentials_rejected_outside_local_and_test() {
         for env in [Environment::Dev, Environment::Staging, Environment::Prod] {
-            let config = CorsConfig::new().with_mirror_origin().with_credentials(true);
+            let config = CorsConfig::new()
+                .with_mirror_origin()
+                .with_credentials(true);
             let error = try_cors_layer_for_env(config, env)
                 .expect_err("mirror + credentials must be rejected outside Local/Test");
             assert!(error.to_string().contains("only"));
@@ -304,7 +308,9 @@ mod tests {
     #[test]
     #[should_panic(expected = "explicit environment gate")]
     fn cors_layer_panics_on_mirror_with_credentials() {
-        let config = CorsConfig::new().with_mirror_origin().with_credentials(true);
+        let config = CorsConfig::new()
+            .with_mirror_origin()
+            .with_credentials(true);
         let _ = crate::cors::cors_layer(config);
     }
 

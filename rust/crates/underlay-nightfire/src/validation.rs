@@ -15,7 +15,9 @@ pub enum NightfireValidationError {
     ///
     /// Nightfire values must encode either a single block or multiple blocks,
     /// never both and never neither.
-    #[error("invalid value shape for schema {schema} (has_block={has_block}, has_blocks={has_blocks})")]
+    #[error(
+        "invalid value shape for schema {schema} (has_block={has_block}, has_blocks={has_blocks})"
+    )]
     InvalidValueShape {
         schema: String,
         has_block: bool,

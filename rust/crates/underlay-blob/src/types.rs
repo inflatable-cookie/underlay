@@ -345,7 +345,10 @@ pub fn content_disposition_attachment(filename: &str) -> String {
         .bytes()
         .flat_map(|b| {
             let needs_escape = !(b.is_ascii_alphanumeric()
-                || matches!(b, b'-' | b'.' | b'_' | b'~' | b'!' | b'#' | b'$' | b'&' | b'+'));
+                || matches!(
+                    b,
+                    b'-' | b'.' | b'_' | b'~' | b'!' | b'#' | b'$' | b'&' | b'+'
+                ));
             if needs_escape {
                 format!("%{:02X}", b).into_bytes()
             } else {

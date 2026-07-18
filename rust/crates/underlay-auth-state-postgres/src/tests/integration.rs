@@ -56,7 +56,12 @@ async fn user_state_create_load_consume_round_trip() {
 
     let user = Uuid::new_v7();
     let id = store
-        .create_user(user, "email_verify", json!({ "code": "123456" }), Duration::minutes(10))
+        .create_user(
+            user,
+            "email_verify",
+            json!({ "code": "123456" }),
+            Duration::minutes(10),
+        )
         .await
         .expect("create_user");
 
@@ -97,11 +102,21 @@ async fn load_scopes_by_user_and_state_type() {
         .expect("create_user");
 
     // Wrong user, wrong type, and public lookup all miss.
-    assert_eq!(store.load_user(id, other, "reset").await.expect("load"), None);
-    assert_eq!(store.load_user(id, user, "other").await.expect("load"), None);
+    assert_eq!(
+        store.load_user(id, other, "reset").await.expect("load"),
+        None
+    );
+    assert_eq!(
+        store.load_user(id, user, "other").await.expect("load"),
+        None
+    );
     assert_eq!(store.load_public(id, "reset").await.expect("load"), None);
     // Right user + type hits.
-    assert!(store.load_user(id, user, "reset").await.expect("load").is_some());
+    assert!(store
+        .load_user(id, user, "reset")
+        .await
+        .expect("load")
+        .is_some());
 }
 
 #[tokio::test]
@@ -118,7 +133,14 @@ async fn public_state_update_and_typed_round_trip() {
     let store = store(&db, &table);
 
     let id = store
-        .create_public("signup", Draft { step: 1, email: "a@b.c".into() }, Duration::minutes(30))
+        .create_public(
+            "signup",
+            Draft {
+                step: 1,
+                email: "a@b.c".into(),
+            },
+            Duration::minutes(30),
+        )
         .await
         .expect("create_public");
 
@@ -131,7 +153,13 @@ async fn public_state_update_and_typed_round_trip() {
         .load_public_typed(id, "signup")
         .await
         .expect("load_public_typed");
-    assert_eq!(typed, Some(Draft { step: 2, email: "a@b.c".into() }));
+    assert_eq!(
+        typed,
+        Some(Draft {
+            step: 2,
+            email: "a@b.c".into()
+        })
+    );
 
     // Updating a non-existent public state reports invalid/expired.
     let missing = store
@@ -155,7 +183,10 @@ async fn expired_state_is_not_loaded() {
 
     assert_eq!(store.load_public(id, "otp").await.expect("load"), None);
     // Consume of an expired row also yields nothing.
-    assert_eq!(store.consume_public(id, "otp").await.expect("consume"), None);
+    assert_eq!(
+        store.consume_public(id, "otp").await.expect("consume"),
+        None
+    );
 }
 
 #[tokio::test]
@@ -169,7 +200,11 @@ async fn delete_removes_the_row() {
         .create_public("token", json!({ "v": true }), Duration::minutes(5))
         .await
         .expect("create_public");
-    assert!(store.load_public(id, "token").await.expect("load").is_some());
+    assert!(store
+        .load_public(id, "token")
+        .await
+        .expect("load")
+        .is_some());
 
     store.delete(id).await.expect("delete");
     assert_eq!(store.load_public(id, "token").await.expect("load"), None);

@@ -7,7 +7,10 @@ fn ai_runtime_error_composes_with_std_error_traits() {
     // Display nor std::error::Error, so it could not be used with `?`,
     // `anyhow`, or `Box<dyn Error>`.
     fn fallible() -> Result<(), Box<dyn std::error::Error>> {
-        Err(AiRuntimeError::new(AiErrorKind::Timeout, "upstream timed out"))?;
+        Err(AiRuntimeError::new(
+            AiErrorKind::Timeout,
+            "upstream timed out",
+        ))?;
         Ok(())
     }
 

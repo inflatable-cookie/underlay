@@ -33,10 +33,8 @@ where
         // Email-only limit first: an attacker rotating (spoofed or real) IPs
         // gets a fresh `email:ip` counter per request, so a per-email backstop
         // is what actually bounds per-account brute force.
-        let email_limit_config = RateLimitConfig::new(
-            self.config.rate_limit_email_max_attempts() as u64,
-            window,
-        );
+        let email_limit_config =
+            RateLimitConfig::new(self.config.rate_limit_email_max_attempts() as u64, window);
         let email_key = format!("login:{}", normalized_email);
         let email_result = self
             .rate_limiter
@@ -51,10 +49,8 @@ where
         }
 
         if let Some(ip) = ip {
-            let rate_limit_config = RateLimitConfig::new(
-                self.config.rate_limit_max_attempts() as u64,
-                window,
-            );
+            let rate_limit_config =
+                RateLimitConfig::new(self.config.rate_limit_max_attempts() as u64, window);
             let rate_limit_key = format!("login:{}:{}", normalized_email, ip);
             let rate_result = self
                 .rate_limiter

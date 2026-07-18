@@ -118,11 +118,7 @@ impl WhereBuilder {
     /// assert_eq!(clause, "m.weight > $1");
     /// assert_eq!(values, vec!["42"]);
     /// ```
-    pub fn add_raw_indexed(
-        &mut self,
-        value: impl Into<String>,
-        build: impl FnOnce(u32) -> String,
-    ) {
+    pub fn add_raw_indexed(&mut self, value: impl Into<String>, build: impl FnOnce(u32) -> String) {
         let condition = build(self.param_index);
         self.conditions.push(condition);
         self.values.push(value.into());

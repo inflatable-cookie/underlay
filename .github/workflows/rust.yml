@@ -1,0 +1,71 @@
+name: Rust
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  test:
+    name: build + test (with Postgres)
+    runs-on: ubuntu-latest
+
+    # Provisioned Postgres for the adapter integration tests. The suite reads
+    # UNDERLAY_TEST_DATABASE_URL and connects here instead of spinning up a
+    # testcontainer (see underlay-testing::TestDb).
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      UNDERLAY_TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/postgres
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+
+      - name: Format check
+        run: cargo fmt --all --check
+
+      - name: Clippy
+        run: cargo clippy --workspace --all-targets -- -D warnings
+
+      - name: Build
+        run: cargo build --workspace --locked
+
+      # Unit tests (no database). Adapter integration tests are #[ignore]d here.
+      - name: Test (unit)
+        run: cargo test --workspace --locked
+
+      # The #[ignore]d Postgres adapter integration tests, run explicitly against
+      # the service above.
+      - name: Test (Postgres adapters)
+        run: >-
+          cargo test --locked --lib
+          -p underlay-auth-state-postgres
+          -p underlay-jobs-postgres
+          -p underlay-media-postgres
+          -p underlay-audit
+          -p underlay-security-alerts
+          -- --ignored

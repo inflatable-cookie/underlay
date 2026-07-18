@@ -5,8 +5,8 @@ use uuid::Uuid;
 use crate::error::SecurityAlertResult;
 use crate::tables::{LoginAttemptsTable, SecurityAlertEventsTable};
 use crate::types::{
-    AccountSignalCounts, GlobalSignalCounts, LoginAttemptSignalCounts, ScopedSecurityAlertEventInput,
-    SecurityAlertEventInput, SecurityAlertType,
+    AccountSignalCounts, GlobalSignalCounts, LoginAttemptSignalCounts,
+    ScopedSecurityAlertEventInput, SecurityAlertEventInput, SecurityAlertType,
 };
 
 pub async fn load_ip_signal_counts_from_table(

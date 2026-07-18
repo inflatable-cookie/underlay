@@ -142,7 +142,12 @@ async fn media_create_get_update_round_trip() {
     assert_eq!(media.visibility, MediaVisibility::Restricted);
     assert!(media.current_version_id.is_none());
 
-    let fetched = fx.repo.get_media(media.id).await.expect("get").expect("some");
+    let fetched = fx
+        .repo
+        .get_media(media.id)
+        .await
+        .expect("get")
+        .expect("some");
     assert_eq!(fetched.id, media.id);
 
     let updated = fx
@@ -212,7 +217,12 @@ async fn version_lifecycle_and_current_version() {
         .await
         .expect("set_current_version");
 
-    let reloaded = fx.repo.get_media(media.id).await.expect("get").expect("some");
+    let reloaded = fx
+        .repo
+        .get_media(media.id)
+        .await
+        .expect("get")
+        .expect("some");
     assert_eq!(reloaded.current_version_id, Some(version.id));
 
     // Dedup lookup by hash finds the media.
@@ -223,7 +233,11 @@ async fn version_lifecycle_and_current_version() {
         .expect("find_by_hash");
     assert_eq!(by_hash.map(|m| m.id), Some(media.id));
 
-    let versions = fx.repo.list_versions(media.id).await.expect("list_versions");
+    let versions = fx
+        .repo
+        .list_versions(media.id)
+        .await
+        .expect("list_versions");
     assert_eq!(versions.len(), 1);
 }
 
@@ -244,17 +258,29 @@ async fn soft_delete_trash_and_restore() {
         .expect("soft_delete"));
 
     // Gone from the live list, present in trash.
-    let live = fx.repo.list_media(default_list_params()).await.expect("list");
+    let live = fx
+        .repo
+        .list_media(default_list_params())
+        .await
+        .expect("list");
     assert!(live.iter().all(|m| m.id != media.id));
     let trash = fx.repo.list_trash().await.expect("list_trash");
     assert!(trash.iter().any(|m| m.id == media.id));
 
     assert!(fx.repo.restore_media(media.id).await.expect("restore"));
-    let live_again = fx.repo.list_media(default_list_params()).await.expect("list");
+    let live_again = fx
+        .repo
+        .list_media(default_list_params())
+        .await
+        .expect("list");
     assert!(live_again.iter().any(|m| m.id == media.id));
 
     // Hard delete removes it entirely.
-    assert!(fx.repo.hard_delete_media(media.id).await.expect("hard_delete"));
+    assert!(fx
+        .repo
+        .hard_delete_media(media.id)
+        .await
+        .expect("hard_delete"));
     assert!(fx.repo.get_media(media.id).await.expect("get").is_none());
 }
 
@@ -282,7 +308,10 @@ async fn usage_tracking_and_counts() {
     };
     fx.repo.track_usage(&usage).await.expect("track_usage");
     // Idempotent (ON CONFLICT DO NOTHING).
-    fx.repo.track_usage(&usage).await.expect("track_usage again");
+    fx.repo
+        .track_usage(&usage)
+        .await
+        .expect("track_usage again");
 
     assert!(fx.repo.is_media_used(media.id).await.expect("is_used"));
     assert_eq!(fx.repo.get_usage_count(media.id).await.expect("count"), 1);
