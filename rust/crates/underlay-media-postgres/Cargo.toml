@@ -12,3 +12,10 @@ sqlx = { workspace = true }
 underlay-db = { path = "../underlay-db" }
 underlay-media = { path = "../underlay-media" }
 uuid = { workspace = true }
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
+underlay-testing = { path = "../underlay-testing", features = ["db"] }
+
+[lints]
+workspace = true

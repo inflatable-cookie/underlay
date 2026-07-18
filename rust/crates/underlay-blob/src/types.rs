@@ -142,7 +142,7 @@ impl UploadRequest {
     /// Create a new upload request.
     pub fn new(key: BlobObjectKey, content_type: impl Into<String>, content_length: u64) -> Self {
         Self {
-            key: key.into(),
+            key,
             content_type: content_type.into(),
             content_length,
             expires_in: Duration::from_secs(3600), // 1 hour default
@@ -326,6 +326,42 @@ impl DownloadRequest {
         self.filename = Some(name.into());
         self
     }
+}
+
+/// Build an RFC 6266 `Content-Disposition: attachment` value for an
+/// untrusted filename.
+///
+/// The quoted fallback strips quotes, backslashes, and control characters
+/// (header-injection surface); the `filename*` parameter carries the full
+/// UTF-8 name percent-encoded.
+pub fn content_disposition_attachment(filename: &str) -> String {
+    let fallback: String = filename
+        .chars()
+        .filter(|c| !c.is_control() && *c != '"' && *c != '\\')
+        .map(|c| if c.is_ascii() { c } else { '_' })
+        .collect();
+
+    let encoded: String = filename
+        .bytes()
+        .flat_map(|b| {
+            let needs_escape = !(b.is_ascii_alphanumeric()
+                || matches!(
+                    b,
+                    b'-' | b'.' | b'_' | b'~' | b'!' | b'#' | b'$' | b'&' | b'+'
+                ));
+            if needs_escape {
+                format!("%{:02X}", b).into_bytes()
+            } else {
+                vec![b]
+            }
+        })
+        .map(char::from)
+        .collect();
+
+    format!(
+        "attachment; filename=\"{}\"; filename*=UTF-8''{}",
+        fallback, encoded
+    )
 }
 
 /// A signed URL for downloading or accessing an object.

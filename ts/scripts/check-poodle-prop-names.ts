@@ -47,7 +47,24 @@ const retiredPropNames = [
 ];
 
 const poodleImportPattern =
-	/import\s*\{([\s\S]*?)\}\s*from\s*["']@poodle\/svelte-(primitives|composites)["']/g;
+	/import\s*\{([^}]*)\}\s*from\s*["']@poodle\/svelte(?:-(?:primitives|composites))?["']/g;
+
+// Poodle components take camelCase callback props (onClick, onChange, ...).
+// A lowercase native handler on a Poodle component compiles but is overridden
+// by the component's own internal handler - a silent dead handler (the
+// LoginGoogleTab "Continue with Google" bug).
+const lowercaseEventProps = [
+	"onclick",
+	"onchange",
+	"oninput",
+	"onsubmit",
+	"onblur",
+	"onfocus",
+	"onkeydown",
+	"onkeyup",
+	"onmousedown",
+	"onmouseup",
+];
 
 const optionModelTypeNames = new Set([
 	"TabItem",
@@ -145,6 +162,31 @@ function scanMarkupContext(text: string, importedComponents: string[], file: str
 	return violations;
 }
 
+function scanLowercaseEventContext(
+	text: string,
+	importedComponents: string[],
+	file: string,
+): Violation[] {
+	if (importedComponents.length === 0) return [];
+
+	const tagPattern = new RegExp(
+		`<(${importedComponents.join("|")})\\b[^>]*\\b(${lowercaseEventProps.join("|")})\\b(?=(\\s*=|\\s|>|\\/))`,
+		"g",
+	);
+
+	const violations: Violation[] = [];
+	let match: RegExpExecArray | null;
+	while ((match = tagPattern.exec(text))) {
+		violations.push({
+			file,
+			line: getLineNumber(text, match.index),
+			prop: match[2],
+		});
+	}
+
+	return violations;
+}
+
 function scanOptionModelContext(text: string, importedOptionTypes: string[], file: string): Violation[] {
 	if (importedOptionTypes.length === 0) return [];
 
@@ -187,6 +229,7 @@ function scanFile(file: string): Violation[] {
 			}
 			return [
 				...scanMarkupContext(block, imports.components, rel),
+				...scanLowercaseEventContext(block, imports.components, rel),
 				...scanOptionModelContext(block, imports.optionTypes, rel),
 			];
 		});
@@ -199,6 +242,7 @@ function scanFile(file: string): Violation[] {
 
 	return [
 		...scanMarkupContext(text, imports.components, rel),
+		...scanLowercaseEventContext(text, imports.components, rel),
 		...scanOptionModelContext(text, imports.optionTypes, rel),
 	];
 }
@@ -206,9 +250,12 @@ function scanFile(file: string): Violation[] {
 const violations = targets.flatMap((target) => listFiles(target).flatMap(scanFile));
 
 if (violations.length > 0) {
-	console.error("Retired Poodle prop names found in Underlay shared source or active guides:");
+	console.error("Poodle prop-name violations found in Underlay shared source or active guides:");
 	for (const violation of violations) {
-		console.error(`- ${violation.file}:${violation.line} uses retired prop ${violation.prop}`);
+		const kind = lowercaseEventProps.includes(violation.prop)
+			? "lowercase event handler (use camelCase, e.g. onClick)"
+			: "retired prop";
+		console.error(`- ${violation.file}:${violation.line} uses ${kind} ${violation.prop}`);
 	}
 	process.exit(1);
 }

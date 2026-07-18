@@ -10,6 +10,10 @@ pub const AUTH_OAUTH_SECRET_KEY_ENV: &str = "AUTH_OAUTH_SECRET_KEY";
 #[derive(Clone)]
 pub struct OAuthTokenCipher {
     cipher: Aes256Gcm,
+    /// When true, `plain:`-prefixed secrets are read back as-is. Off by
+    /// default so plaintext tokens are never silently accepted; enable only
+    /// for a bounded migration window that re-encrypts legacy rows.
+    allow_plain_migration: bool,
 }
 
 impl OAuthTokenCipher {
@@ -48,7 +52,19 @@ impl OAuthTokenCipher {
         let cipher = Aes256Gcm::new_from_slice(&key_bytes)
             .map_err(|_| AuthError::Internal("failed to initialize oauth cipher".into()))?;
 
-        Ok(Self { cipher })
+        Ok(Self {
+            cipher,
+            allow_plain_migration: false,
+        })
+    }
+
+    /// Opt into reading legacy `plain:`-prefixed secrets during a migration.
+    ///
+    /// Use only while re-encrypting stored plaintext tokens; leave off in
+    /// steady state so a `plain:` value is rejected rather than trusted.
+    pub fn with_plain_migration(mut self, allow: bool) -> Self {
+        self.allow_plain_migration = allow;
+        self
     }
 
     pub fn encrypt_refresh_token(&self, refresh_token: &str) -> AuthResult<String> {
@@ -65,7 +81,12 @@ impl OAuthTokenCipher {
 
     pub fn decrypt_refresh_token(&self, secret_encrypted: &str) -> AuthResult<String> {
         if let Some(raw) = secret_encrypted.strip_prefix("plain:") {
-            return Ok(raw.to_string());
+            if self.allow_plain_migration {
+                return Ok(raw.to_string());
+            }
+            return Err(AuthError::Internal(
+                "plaintext oauth secret rejected (enable plain migration explicitly)".into(),
+            ));
         }
 
         let Some(rest) = secret_encrypted.strip_prefix("enc:v1:") else {

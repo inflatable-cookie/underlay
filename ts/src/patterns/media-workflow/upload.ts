@@ -42,6 +42,7 @@ export async function uploadMediaWithKnownHash<
             input.onProgress?.(progress.percent);
           }
         : undefined,
+      signal: input.signal,
     },
   );
 

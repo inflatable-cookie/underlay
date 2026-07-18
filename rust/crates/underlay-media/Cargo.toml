@@ -8,7 +8,7 @@ description = "Media library types and repository for Underlay applications"
 [features]
 default = []
 object-keys = []
-renditions = ["tracing"]
+renditions = ["tracing", "dep:image"]
 nightfire = ["underlay-nightfire"]
 full = ["renditions", "nightfire"]
 
@@ -20,11 +20,9 @@ serde_json = { workspace = true }
 thiserror = { workspace = true }
 uuid = { workspace = true }
 
-# Image processing
-image = { workspace = true }
+# Image processing (only needed for rendition/thumbnail generation)
+image = { workspace = true, optional = true }
 
-# Re-export enums from underlay-db
-underlay-db = { path = "../underlay-db" }
 underlay-blob = { path = "../underlay-blob" }
 underlay-nightfire = { path = "../underlay-nightfire", optional = true }
 
@@ -33,3 +31,6 @@ tracing = { workspace = true, optional = true }
 
 [dev-dependencies]
 tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
+
+[lints]
+workspace = true

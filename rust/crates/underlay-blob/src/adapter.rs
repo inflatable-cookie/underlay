@@ -137,6 +137,68 @@ pub trait BlobAdapterObjectKeyExt: BlobAdapter {
 
 impl<T> BlobAdapterObjectKeyExt for T where T: BlobAdapter + ?Sized {}
 
+/// Server-side upload enforcement over any adapter.
+///
+/// Declared content type and length are client-supplied; these methods are
+/// the enforcement point that the raw `initiate_upload`/`finalise_upload`
+/// calls do not provide.
+#[async_trait]
+pub trait BlobAdapterUploadExt: BlobAdapter {
+    /// Validate an upload request against the config (size cap, MIME
+    /// allowlist) before signing. The returned plan pins the declared
+    /// content type and clamps `max_bytes` to the configured maximum.
+    async fn initiate_upload_validated(
+        &self,
+        request: UploadRequest,
+        config: &crate::config::BlobUploadConfig,
+    ) -> BlobResult<UploadPlan> {
+        config.validate_upload_request(&request)?;
+        self.initiate_upload(request).await
+    }
+
+    /// Finalise an upload with verification: the stored object must be within
+    /// the size cap, carry an allowed declared content type, and its leading
+    /// bytes must be consistent with that type (magic-byte sniff).
+    async fn finalise_upload_verified(
+        &self,
+        key: &str,
+        declared_content_type: &str,
+        config: &crate::config::BlobUploadConfig,
+    ) -> BlobResult<StoredObject> {
+        let stored = self.finalise_upload(key).await?;
+
+        if !config.is_size_allowed(stored.size) {
+            return Err(crate::error::BlobError::TooLarge(
+                stored.size,
+                config.max_file_size_bytes_limit(),
+            ));
+        }
+
+        if !config.is_content_type_allowed(declared_content_type) {
+            return Err(crate::error::BlobError::InvalidContentType(
+                declared_content_type.to_string(),
+            ));
+        }
+
+        let bytes = self.get_bytes(key).await?;
+        if !crate::sniff::content_matches_declared(&bytes, declared_content_type) {
+            return Err(crate::error::BlobError::InvalidContentType(format!(
+                "stored bytes do not match declared content type {}",
+                declared_content_type
+            )));
+        }
+
+        // Pin the declared (validated + sniff-checked) type rather than
+        // whatever the storage backend echoed back.
+        Ok(StoredObject {
+            content_type: declared_content_type.to_string(),
+            ..stored
+        })
+    }
+}
+
+impl<T> BlobAdapterUploadExt for T where T: BlobAdapter + ?Sized {}
+
 /// A no-op adapter that does nothing (useful for testing).
 #[derive(Debug, Clone)]
 pub struct NoopAdapter {

@@ -27,8 +27,12 @@ mod backend;
 mod config;
 mod error;
 mod memory;
+#[cfg(feature = "postgres")]
+mod postgres;
 
 pub use backend::RateLimitBackend;
 pub use config::{RateLimitConfig, RateLimitResult};
 pub use error::{RateLimitError, Result};
 pub use memory::InMemoryBackend;
+#[cfg(feature = "postgres")]
+pub use postgres::PostgresBackend;

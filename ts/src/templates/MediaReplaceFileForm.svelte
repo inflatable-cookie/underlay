@@ -22,6 +22,7 @@
     file: File;
     mediaId: string;
     onProgress?: (progress: UploadProgress) => void;
+    signal?: AbortSignal;
   }
 
   interface Props {
@@ -46,6 +47,7 @@
 
   let files = $state<FileUploadItem[]>([]);
   let uploading = $state(false);
+  let uploadAbort: AbortController | null = null;
   let error = $state<string | null>(null);
   let uploadStage = $state<UploadStage>("idle");
   let uploadProgress = $state(0);
@@ -67,7 +69,7 @@
     }
 
     if (!validateFileType(file, ALLOWED_MEDIA_TYPES)) {
-      error = `Unsupported file type: ${file.type}. Supported types: Images (JPEG, PNG, GIF, WebP, SVG) and PDF.`;
+      error = `Unsupported file type: ${file.type}. Supported types: Images (JPEG, PNG, GIF, WebP, AVIF) and PDF.`;
       files = [];
       return;
     }
@@ -89,6 +91,7 @@
     }
 
     uploading = true;
+    uploadAbort = new AbortController();
     error = null;
     uploadProgress = 0;
 
@@ -97,6 +100,7 @@
       await replaceUpload({
         file,
         mediaId,
+        signal: uploadAbort.signal,
         onProgress: (progress) => {
           uploadStage = "uploading";
           uploadProgress = progress.percent;
@@ -111,8 +115,17 @@
       onToast?.("error", error);
       uploadStage = "idle";
     } finally {
+      uploadAbort = null;
       uploading = false;
     }
+  }
+
+  function handleCancel(): void {
+    if (uploading && uploadAbort) {
+      uploadAbort.abort();
+      return;
+    }
+    onCancel?.();
   }
 </script>
 
@@ -155,13 +168,13 @@
         disabled={uploading}
       />
       <p class="underlay-media-replace-file-form__hint">
-        Supported formats: JPEG, PNG, GIF, WebP, SVG, PDF. Maximum size: {formatFileSize(maxFileSize)}.
+        Supported formats: JPEG, PNG, GIF, WebP, AVIF, PDF. Maximum size: {formatFileSize(maxFileSize)}.
       </p>
     </section>
   {/if}
 
   <div class="underlay-media-replace-file-form__actions">
-    <Button type="button" variant="ghost" disabled={uploading} onClick={() => onCancel?.()}>
+    <Button type="button" variant="ghost" onClick={handleCancel}>
       Cancel
     </Button>
     <Button

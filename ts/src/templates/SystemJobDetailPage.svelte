@@ -192,7 +192,7 @@
   {/if}
 {/snippet}
 
-{#snippet content(loaded)}
+{#snippet content(loaded: SystemJobDetailItem)}
   <div class="underlay-system-job-detail-page">
     <Card>
       <DetailSectionGroup ariaLabel="Job details">

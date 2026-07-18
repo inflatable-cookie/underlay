@@ -551,7 +551,7 @@ A list shell that provides consistent structure for autonomous lists with caller
   onPageChange={(page) => pagination.goToPage?.(page)}
 >
   {#snippet actions()}
-    <Button onclick={handleAdd}>Add</Button>
+    <Button onClick={handleAdd}>Add</Button>
   {/snippet}
 
   {#snippet filters()}
@@ -725,7 +725,7 @@ Here's a complete example of building an autonomous list component:
         <Button
           variant={selectionMode ? "primary" : "subtle"}
           size="icon"
-          onclick={toggleSelectionMode}
+          onClick={toggleSelectionMode}
         >
           <CheckSquare size={16} />
         </Button>

@@ -100,7 +100,7 @@ describe("patterns/navigation", () => {
 		});
 		expect(nav.getReturnUrl("/fallback")).toBe("/projects");
 		expect(nav.getBackButtonInfo("Back", "/fallback")).toEqual({
-			label: "Back to Projects",
+			label: "Projects",
 			href: "/projects",
 			isContextual: true,
 		});
@@ -139,7 +139,7 @@ describe("patterns/navigation", () => {
 		const consumed = nav.consumeNavigationContext("Back", "/fallback");
 		expect(consumed).toEqual({
 			backInfo: {
-				label: "Back to Articles",
+				label: "Articles",
 				href: "/articles",
 				isContextual: true,
 			},

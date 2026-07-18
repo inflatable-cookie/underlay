@@ -9,6 +9,10 @@ pub struct PasswordConfig {
     rate_limit_window_seconds: u64,
     /// Maximum attempts per rate limit window.
     rate_limit_max_attempts: u32,
+    /// Maximum attempts per window keyed on email alone, independent of IP.
+    /// Backstop against attackers rotating spoofed or real IPs to reset the
+    /// per-`email:ip` counter.
+    rate_limit_email_max_attempts: u32,
     /// Minimum password length.
     min_password_length: usize,
     /// Whether to check compromised passwords.
@@ -24,6 +28,7 @@ impl Default for PasswordConfig {
             lockout_duration_seconds: 900,
             rate_limit_window_seconds: 3600,
             rate_limit_max_attempts: 10,
+            rate_limit_email_max_attempts: 30,
             min_password_length: 8,
             check_compromised: false,
             compromised_password_strategy: CompromisedPasswordStrategy::LocalBlocklist,
@@ -46,6 +51,10 @@ impl PasswordConfig {
 
     pub fn rate_limit_max_attempts(&self) -> u32 {
         self.rate_limit_max_attempts
+    }
+
+    pub fn rate_limit_email_max_attempts(&self) -> u32 {
+        self.rate_limit_email_max_attempts
     }
 
     pub fn min_password_length(&self) -> usize {
@@ -77,6 +86,11 @@ impl PasswordConfig {
 
     pub fn with_rate_limit_max_attempts(mut self, attempts: u32) -> Self {
         self.rate_limit_max_attempts = attempts;
+        self
+    }
+
+    pub fn with_rate_limit_email_max_attempts(mut self, attempts: u32) -> Self {
+        self.rate_limit_email_max_attempts = attempts;
         self
     }
 

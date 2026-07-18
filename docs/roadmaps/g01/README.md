@@ -6,8 +6,9 @@
 
 `g01` is no longer the active generation.
 
-Do not open new roadmap work in `g01`. Use `g02` for active Underlay roadmap
-work.
+Do not open new roadmap work in `g01`. The active generation is tracked in
+[`docs/roadmaps/README.md`](../README.md) (currently `g08`); `g01` rolled into
+`g02` at closeout, recorded below.
 
 ## Historical Language Boundary
 

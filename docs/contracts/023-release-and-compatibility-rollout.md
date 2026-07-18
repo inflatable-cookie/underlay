@@ -202,6 +202,46 @@ Rules:
 - do not mix path, payload, auth, config, and product-flow redesign into one
   opaque batch unless the redesign is truly intentional
 
+## Versioning And Consumer Pin
+
+Underlay is unpublished (`private: true`). The six consumers ride it via sibling
+relative-path dependencies — Cargo `path = "../../underlay/..."`, npm
+`file:../../underlay`. This is the **default lockstep-development workflow** and
+stays the default: while one maintainer controls every repo, path deps give the
+tightest feedback loop (a local change is instantly testable across the fleet)
+and there is no publish step to manage. This card does **not** move consumers off
+path deps.
+
+What it adds is an **optional pin mechanism** so a consumer *can* hold back or
+bisect when needed, and so drift is visible:
+
+- **Shared version reflects the generation.** The Cargo workspace and
+  `package.json` version track the active generation (`g08` -> `0.8.0`). Bump the
+  minor per generation (or per breaking batch within a generation) so the version
+  string moves even though nothing is published. Path-dep consumers are
+  unaffected — bare `path`/`file` deps carry no version requirement.
+- **Tag each six-consumer-proof point.** After a batch passes the six-consumer
+  proof, tag underlay (`v0.8.0`, or `v0.8.0-<lane>` for intra-generation
+  checkpoints). The tag is the bisectable boundary the path-dep workflow lacks.
+
+### Holding a consumer back (path -> git tag)
+
+To pin one consumer to a proven underlay revision while others track HEAD, switch
+just that consumer's dependency from the sibling path to the git tag:
+
+```toml
+# Cargo (consumer): was  underlay-core = { path = "../../underlay/rust/crates/underlay-core" }
+underlay-core = { git = "https://github.com/inflatable-cookie/underlay.git", tag = "v0.8.0" }
+```
+
+```jsonc
+// npm (consumer): was  "@decodelabs/underlay": "file:../../underlay"
+"@decodelabs/underlay": "github:inflatable-cookie/underlay#v0.8.0"
+```
+
+Revert to the `path`/`file` form to rejoin lockstep development. Keep the switch
+scoped to the one consumer that needs the hold-back; do not convert the fleet.
+
 ## When A Broad Rollout Plan Is Not Required
 
 An explicit fleet rollout plan is usually not required when the change is:

@@ -79,8 +79,8 @@ Use Poodle `EditableList` with an app-owned submit wrapper:
   dirty={controller.isDirty}
   submitting={controller.isPending}
   errorMessage={submitError}
-  onsubmit={handleReorderSubmit}
-  oncancel={() => {
+  onSubmit={handleReorderSubmit}
+  onCancel={() => {
     submitError = null;
     controller.reset();
     exitReorderMode();

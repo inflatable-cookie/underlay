@@ -5,7 +5,8 @@
     TimeAgo,
     formatDisplayDateTime,
     type TableColumn,
-    type TableRow
+    type TableRow,
+    type TableCellValue
   } from "@poodle/svelte";
 
   import { getAuthConfig } from "../patterns/auth";
@@ -225,7 +226,7 @@
   {/if}
 {/snippet}
 
-{#snippet renderCell(column, row, value)}
+{#snippet renderCell(column: TableColumn, row: TableRow<ErrorLogListItem>, value: TableCellValue)}
   {@const log = getRowLog(row)}
   {#if !log}
     —
@@ -261,7 +262,7 @@
   {/if}
 {/snippet}
 
-{#snippet renderExpandedRow(row)}
+{#snippet renderExpandedRow(row: TableRow<ErrorLogListItem>)}
   {@const log = getRowLog(row)}
   {#if log && expandedLogId === log.id}
     {#if loadingDetail}

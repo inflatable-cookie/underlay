@@ -1,14 +1,9 @@
 {
   "name": "@decodelabs/underlay",
-  "version": "0.0.1",
+  "version": "0.8.0",
   "private": true,
   "type": "module",
   "exports": {
-    ".": {
-      "svelte": "./ts/src/index.ts",
-      "types": "./ts/src/index.ts",
-      "default": "./ts/src/index.ts"
-    },
     "./patterns": {
       "svelte": "./ts/src/patterns/index.ts",
       "types": "./ts/src/patterns/index.ts",
@@ -314,10 +309,10 @@
   "dependencies": {
     "@poodle/bridge-underlay": "file:../poodle/packages/bridges/underlay",
     "@poodle/svelte": "file:../poodle/packages/svelte/components",
+    "esm-env": "^1.2.2",
     "isomorphic-dompurify": "^3.0.0",
     "marked": "^17.0.3",
-    "smol-toml": "^1.6.1",
-    "svelte-dnd-action": "^0.9.69"
+    "smol-toml": "^1.6.1"
   },
   "devDependencies": {
     "@storybook/addon-a11y": "^10.3.3",

@@ -28,6 +28,7 @@
 
 import { uploadToBlob, computeFileHash, validateFile } from "./blob-upload.js";
 import { type UploadPlan } from "./blob-types.js";
+import { DEFAULT_MEDIA_UPLOAD_MAX_FILE_SIZE } from "./media-workflow/plan.js";
 import {
   type MediaSummary,
   type MediaDetail,
@@ -82,7 +83,7 @@ export interface MediaUploadFlowOptions {
   /** Called when an error occurs */
   onError?: (error: Error) => void;
 
-  /** Maximum file size in bytes (default 25MB) */
+  /** Maximum file size in bytes (default DEFAULT_MEDIA_UPLOAD_MAX_FILE_SIZE, 50MB) */
   maxFileSize?: number;
 
   /** Default visibility for new media (default: Public) */
@@ -119,6 +120,7 @@ export interface MediaUploadFlowController {
   clearFile: () => void;
   startUpload: (metadata?: Partial<CreateMediaRequest>) => Promise<void>;
   proceedWithUpload: (metadata?: Partial<CreateMediaRequest>) => Promise<void>;
+  cancelUpload: () => void;
   useDuplicate: () => void;
   reset: () => void;
 }
@@ -136,13 +138,14 @@ export function createMediaUploadFlow(
     finaliseUpload,
     onComplete,
     onError,
-    maxFileSize = 25 * 1024 * 1024,
+    maxFileSize = DEFAULT_MEDIA_UPLOAD_MAX_FILE_SIZE,
     defaultVisibility = MediaVisibility.Public,
     existingMediaId,
     existingVersionHashes = [],
   } = options;
 
   // State
+  let abortController: AbortController | null = null;
   let step = $state<MediaUploadStep>("select");
   let file = $state<File | null>(null);
   let fileError = $state<string | null>(null);
@@ -169,11 +172,12 @@ export function createMediaUploadFlow(
     fileError = null;
     file = null;
 
-    try {
-      validateFile(f, maxFileSize);
+    // validateFile returns a result object; it never throws.
+    const result = validateFile(f, maxFileSize);
+    if (result.valid) {
       file = f;
-    } catch (e) {
-      fileError = e instanceof Error ? e.message : "Invalid file";
+    } else {
+      fileError = result.error ?? "Invalid file";
     }
   }
 
@@ -276,11 +280,17 @@ export function createMediaUploadFlow(
         objectKey: "",
       };
 
-      await uploadToBlob(plan, file, {
-        onProgress: (p) => {
-          progress = p.percent;
-        },
-      });
+      abortController = new AbortController();
+      try {
+        await uploadToBlob(plan, file, {
+          onProgress: (p) => {
+            progress = p.percent;
+          },
+          signal: abortController.signal,
+        });
+      } finally {
+        abortController = null;
+      }
 
       // Finalise upload
       step = "finalising";
@@ -294,11 +304,22 @@ export function createMediaUploadFlow(
       step = "complete";
       onComplete?.(finaliseResponse.media);
     } catch (e) {
+      if ((e as { code?: string } | null)?.code === "UPLOAD_ABORTED") {
+        // User-initiated cancel: back to selection, keep the chosen file.
+        step = "select";
+        progress = 0;
+        return;
+      }
+
       console.error("Upload failed", e);
       error = e instanceof Error ? e.message : "Upload failed";
       step = "error";
       onError?.(e instanceof Error ? e : new Error(String(e)));
     }
+  }
+
+  function cancelUpload() {
+    abortController?.abort();
   }
 
   function useDuplicate() {
@@ -346,6 +367,7 @@ export function createMediaUploadFlow(
     clearFile,
     startUpload,
     proceedWithUpload,
+    cancelUpload,
     useDuplicate,
     reset,
   };

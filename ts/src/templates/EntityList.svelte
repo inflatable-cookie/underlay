@@ -1,6 +1,4 @@
-<script lang="ts">
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  type T = any;
+<script lang="ts" generics="T extends object = Record<string, unknown>">
   import { onDestroy, setContext, untrack } from "svelte";
   import { getAuthConfig } from "../patterns/auth";
   import { useAuthenticatedData } from "../runtime/auth";
@@ -62,6 +60,7 @@
     CustomReorderConfig,
     EntityListCapabilitiesLoader,
     EntityListDataLoader,
+    EntityListItemContext,
     EntityListSharedProps,
     FilterConfig,
     FetchFn,
@@ -75,13 +74,7 @@
     TemplateSurface
   } from "./template.types";
 
-  interface ItemContext {
-    selectionMode: boolean;
-    reorderMode: boolean;
-    selected: boolean;
-    onToggle: (selected: boolean) => void;
-    refetch: () => Promise<void>;
-  }
+  type ItemContext = EntityListItemContext;
 
   interface Props {
     /** Optional title for inline use (omitted when inside EntityListPage) */
@@ -215,6 +208,13 @@
     /** Whether the filter toolbar should start collapsed. */
     filterToolbarCollapsed?: boolean;
 
+    /**
+     * Debounce (ms) applied to free-text search filters before a refetch fires.
+     * Non-search filters (select, sort) always apply immediately. Set to 0 to
+     * disable debouncing. Defaults to 250ms.
+     */
+    searchDebounceMs?: number;
+
     /** Called when reorder can genuinely be used for the current result set */
     onReorderAvailabilityChange?: (enabled: boolean) => void;
 
@@ -273,6 +273,7 @@
     query: externalQuery,
     onQueryChange,
     filterToolbarCollapsed = false,
+    searchDebounceMs = 250,
     onReorderAvailabilityChange,
     onReorderActionStateChange,
     onReorderError
@@ -356,10 +357,11 @@
   let pendingFetchQuery = $state<QueryParams | null>(null);
   let handledListQueryKey = $state<string | null>(null);
 
-  const listQueryKey = $derived.by(() => JSON.stringify({
-    query: effectiveQuery,
-    reloadKey: reloadKey ?? null
-  }));
+  // Single source of truth for the fetch-dedup key so the derived key and the
+  // key stamped in setQuery can never drift out of the same shape.
+  const buildListQueryKey = (query: QueryParams) =>
+    JSON.stringify({ query, reloadKey: reloadKey ?? null });
+  const listQueryKey = $derived.by(() => buildListQueryKey(effectiveQuery));
   const selectedIdsKey = $derived.by(() => JSON.stringify(batch.selectedIds));
   const getCurrentQuery = () =>
     pendingFetchQuery ? resolveEffectiveQuery(pendingFetchQuery) : effectiveQuery;
@@ -443,6 +445,10 @@
   );
   const itemIds = $derived(items.map((item) => String((item as Record<string, unknown>)[idField])));
   const logEntries = $derived(toLogEntries ? toLogEntries(items) : []);
+  // A refetch is in flight but we still have prior results on screen (e.g. a
+  // debounced search). The full-page loader only shows on the first load, so
+  // surface a subtle busy affordance instead of leaving the list looking frozen.
+  const isRefetching = $derived(pageData.loading && items.length > 0);
 
   // Batch actions
   const batch = useBatchActions<string>();
@@ -452,6 +458,12 @@
   });
 
   onDestroy(unregisterSelectionScope);
+  onDestroy(() => {
+    for (const timer of searchDebounceTimers.values()) {
+      clearTimeout(timer);
+    }
+    searchDebounceTimers.clear();
+  });
 
   // Notify parent of visible and total count changes
   $effect(() => {
@@ -621,10 +633,7 @@
   function setQuery(nextQuery: QueryParams) {
     const normalizedQuery = normalizeQuery(nextQuery);
     pendingFetchQuery = normalizedQuery;
-    handledListQueryKey = JSON.stringify({
-      query: normalizedQuery,
-      reloadKey: reloadKey ?? null
-    });
+    handledListQueryKey = buildListQueryKey(normalizedQuery);
     if (onQueryChange) {
       onQueryChange(normalizedQuery);
     } else {
@@ -719,7 +728,7 @@
     return value.trim().length > 0;
   }
 
-  function handleFilterChange(filter: FilterConfig, value: string) {
+  function applyFilterChange(filter: FilterConfig, value: string) {
     if (getFilterValue(filter) === value) {
       return;
     }
@@ -728,6 +737,28 @@
       filters: buildNextFilters(filter, value),
       page: 1
     });
+  }
+
+  // Free-text search fires on every keystroke; debounce it so we issue one
+  // refetch per typing pause rather than one per character.
+  let searchDebounceTimers = new Map<string, ReturnType<typeof setTimeout>>();
+
+  function handleFilterChange(filter: FilterConfig, value: string) {
+    if (filter.type !== "search" || searchDebounceMs <= 0) {
+      applyFilterChange(filter, value);
+      return;
+    }
+    const existing = searchDebounceTimers.get(filter.id);
+    if (existing) {
+      clearTimeout(existing);
+    }
+    searchDebounceTimers.set(
+      filter.id,
+      setTimeout(() => {
+        searchDebounceTimers.delete(filter.id);
+        applyFilterChange(filter, value);
+      }, searchDebounceMs)
+    );
   }
 
   function handleQueryVariantChange(value: string | null) {
@@ -799,15 +830,19 @@
   }
 
   function handleEditableReorder(nextItems: EditableListItem[]) {
-    reorderController?.updatePending(nextItems);
+    // Poodle's EditableList is non-generic; the echoed items are our
+    // (ReorderableItem & T) rows at runtime.
+    reorderController?.updatePending(nextItems as unknown as (ReorderableItem & T)[]);
   }
 
   function getItemKey(item: T): string {
     return String((item as Record<string, unknown>)[idField]);
   }
 
-  function handleRowActionSelect(event: { row: TableRow<T>; action: TableRowAction }) {
-    onRowActionSelect?.(event.row, event.action);
+  function handleRowActionSelect(event: { row: TableRow; action: TableRowAction }) {
+    // Poodle's DataTable emits a non-generic TableRow; our row payload is
+    // TableRow<T> at runtime.
+    onRowActionSelect?.(event.row as TableRow<T>, event.action);
   }
 
   function setSelectionMode(enabled: boolean) {
@@ -1140,6 +1175,15 @@
           totalItems={totalCount}
           pageSize={currentPageSize}
         />
+        {#if isRefetching}
+          <span
+            class="underlay-entity-list__refetching"
+            role="status"
+            aria-live="polite"
+          >
+            Updating…
+          </span>
+        {/if}
         {#if activeQueryVariant}
           <Pill
             tone={getVariantPillTone(activeQueryVariant.tone)}
@@ -1246,6 +1290,103 @@
   </FilterToolbar>
 {/snippet}
 
+<!--
+  Shared list body for the titled (ListContainer) and untitled (EntityListPage)
+  render paths. Only the log empty message differs between the two, so it is
+  passed in; everything else is identical.
+-->
+{#snippet listBody(logEmptyMessage: string)}
+  {#if reorderMode && customReorderContent}
+    {@render customReorderContent({
+      items,
+      cancel: exitReorderMode,
+      refetch: () => pageData.refetch()
+    })}
+  {:else if reorderMode && reorderController}
+    <EditableList
+      items={reorderController.pending as unknown as EditableListItem[]}
+      embeddedHandle
+      dirty={reorderController.isDirty}
+      submitting={reorderController.isPending}
+      errorMessage={reorderError}
+      showWorkflowChrome={false}
+      onSubmit={handleReorderSubmit}
+      onCancel={exitReorderMode}
+      onReorder={handleEditableReorder}
+    >
+      {#snippet item(reorderEntry)}
+        {@const originalItem = getReorderOriginalItem(reorderEntry.id)}
+        {#if renderReorderItem && originalItem}
+          <div data-reorder-highlighted={isReorderItemHighlighted(reorderEntry.id)}>
+            {@render renderReorderItem(originalItem, {
+              ...getItemContext(originalItem),
+              highlighted: isReorderItemHighlighted(reorderEntry.id)
+            })}
+          </div>
+        {:else if renderItem && originalItem}
+          {@render renderItem(originalItem, getItemContext(originalItem))}
+        {:else}
+          <ListCard title={reorderEntry.id} layout="compact" showReorderHandle />
+        {/if}
+      {/snippet}
+    </EditableList>
+  {:else if presentation === "cards"}
+    <ListGrid minItemWidth="var(--underlay-list-grid-min, 20rem)" variant={listGridVariant} gap={listGridGap}>
+      {#each items as item (getItemKey(item))}
+        {#if renderItem}
+          {@render renderItem(item, getItemContext(item))}
+        {/if}
+      {/each}
+    </ListGrid>
+  {:else if presentation === "log"}
+    <LogList
+      entries={logEntries}
+      variant="audit"
+      emptyMessage={logEmptyMessage}
+      actionIcon={actionIcon}
+      entryDetails={entryDetails}
+      {getActionType}
+      {formatAction}
+      {formatResourceType}
+      {getActorHref}
+      {getResourceHref}
+    />
+  {:else if presentation === "table"}
+    <DataTable
+      columns={tableColumns}
+      rows={tableRows}
+      {expandedRowIds}
+      {showRowActions}
+      rowActions={rowActions as unknown as TableRowAction[] | ((row: TableRow) => TableRowAction[]) | undefined}
+      selectable={selectionMode}
+      selectedRowIds={batch.selectedIds}
+      emptyMessage="No items found"
+      onRowActionSelect={handleRowActionSelect}
+      onRowToggle={({ rowId, selected }) => batch.toggle(rowId, selected)}
+      onToggleAll={({ selected }) => {
+        if (selected) {
+          batch.selectAll(itemIds);
+        } else {
+          batch.clear();
+        }
+      }}
+    >
+      {#snippet cell(column, row, value)}
+        {#if renderCell}
+          {@render renderCell(column, row, value)}
+        {:else}
+          {value}
+        {/if}
+      {/snippet}
+      {#snippet expandedRow(row)}
+        {#if renderExpandedRow}
+          {@render renderExpandedRow(row)}
+        {/if}
+      {/snippet}
+    </DataTable>
+  {/if}
+{/snippet}
+
 {#if title}
   <!-- When used standalone (not inside EntityListPage), show ListContainer -->
   <ListContainer
@@ -1311,94 +1452,8 @@
           {/if}
         {/snippet}
       </EmptyState>
-    {:else if reorderMode && customReorderContent}
-      {@render customReorderContent({
-        items,
-        cancel: exitReorderMode,
-        refetch: () => pageData.refetch()
-      })}
-    {:else if reorderMode && reorderController}
-      <EditableList
-        items={reorderController.pending}
-        embeddedHandle
-        dirty={reorderController.isDirty}
-        submitting={reorderController.isPending}
-        errorMessage={reorderError}
-        showWorkflowChrome={false}
-        onSubmit={handleReorderSubmit}
-        onCancel={exitReorderMode}
-        onReorder={handleEditableReorder}
-      >
-        {#snippet item(reorderEntry)}
-          {@const originalItem = getReorderOriginalItem(reorderEntry.id)}
-          {#if renderReorderItem && originalItem}
-            <div data-reorder-highlighted={isReorderItemHighlighted(reorderEntry.id)}>
-              {@render renderReorderItem(originalItem, {
-                ...getItemContext(originalItem),
-                highlighted: isReorderItemHighlighted(reorderEntry.id)
-              })}
-            </div>
-          {:else if renderItem && originalItem}
-            {@render renderItem(originalItem, getItemContext(originalItem))}
-          {:else}
-            <ListCard title={reorderEntry.id} layout="compact" showReorderHandle />
-          {/if}
-        {/snippet}
-      </EditableList>
-    {:else if presentation === "cards"}
-      <ListGrid minItemWidth="var(--underlay-list-grid-min, 20rem)" variant={listGridVariant} gap={listGridGap}>
-        {#each items as item (getItemKey(item))}
-          {#if renderItem}
-            {@render renderItem(item, getItemContext(item))}
-          {/if}
-        {/each}
-      </ListGrid>
-    {:else if presentation === "log"}
-      <LogList
-        entries={logEntries}
-        variant="audit"
-        emptyMessage={`No ${title.toLowerCase()} found`}
-        actionIcon={actionIcon}
-        entryDetails={entryDetails}
-        {getActionType}
-        {formatAction}
-        {formatResourceType}
-        {getActorHref}
-        {getResourceHref}
-      />
-    {:else if presentation === "table"}
-      <DataTable
-        columns={tableColumns}
-        rows={tableRows}
-        {expandedRowIds}
-        {showRowActions}
-        rowActions={rowActions}
-        selectable={selectionMode}
-        selectedRowIds={batch.selectedIds}
-        emptyMessage="No items found"
-        onRowActionSelect={handleRowActionSelect}
-        onRowToggle={({ rowId, selected }) => batch.toggle(rowId, selected)}
-        onToggleAll={({ selected }) => {
-          if (selected) {
-            batch.selectAll(itemIds);
-          } else {
-            batch.clear();
-          }
-        }}
-      >
-        {#snippet cell(column, row, value)}
-          {#if renderCell}
-            {@render renderCell(column, row, value)}
-          {:else}
-            {value}
-          {/if}
-        {/snippet}
-        {#snippet expandedRow(row)}
-          {#if renderExpandedRow}
-            {@render renderExpandedRow(row)}
-          {/if}
-        {/snippet}
-      </DataTable>
+    {:else}
+      {@render listBody(`No ${title.toLowerCase()} found`)}
     {/if}
   </ListContainer>
 {:else}
@@ -1416,94 +1471,8 @@
       title="No items found"
       message="Try adjusting your filters or create a new item."
     />
-  {:else if reorderMode && customReorderContent}
-    {@render customReorderContent({
-      items,
-      cancel: exitReorderMode,
-      refetch: () => pageData.refetch()
-    })}
-  {:else if reorderMode && reorderController}
-    <EditableList
-      items={reorderController.pending}
-      embeddedHandle
-      dirty={reorderController.isDirty}
-      submitting={reorderController.isPending}
-      errorMessage={reorderError}
-      showWorkflowChrome={false}
-      onSubmit={handleReorderSubmit}
-      onCancel={exitReorderMode}
-      onReorder={handleEditableReorder}
-    >
-      {#snippet item(reorderEntry)}
-        {@const originalItem = getReorderOriginalItem(reorderEntry.id)}
-        {#if renderReorderItem && originalItem}
-          <div data-reorder-highlighted={isReorderItemHighlighted(reorderEntry.id)}>
-            {@render renderReorderItem(originalItem, {
-              ...getItemContext(originalItem),
-              highlighted: isReorderItemHighlighted(reorderEntry.id)
-            })}
-          </div>
-        {:else if renderItem && originalItem}
-          {@render renderItem(originalItem, getItemContext(originalItem))}
-        {:else}
-          <ListCard title={reorderEntry.id} layout="compact" showReorderHandle />
-        {/if}
-      {/snippet}
-    </EditableList>
-  {:else if presentation === "cards"}
-    <ListGrid minItemWidth="var(--underlay-list-grid-min, 20rem)" variant={listGridVariant} gap={listGridGap}>
-      {#each items as item (getItemKey(item))}
-        {#if renderItem}
-          {@render renderItem(item, getItemContext(item))}
-        {/if}
-      {/each}
-    </ListGrid>
-  {:else if presentation === "log"}
-    <LogList
-      entries={logEntries}
-      variant="audit"
-      emptyMessage="No items found"
-      actionIcon={actionIcon}
-      entryDetails={entryDetails}
-      {getActionType}
-      {formatAction}
-      {formatResourceType}
-      {getActorHref}
-      {getResourceHref}
-    />
-  {:else if presentation === "table"}
-    <DataTable
-      columns={tableColumns}
-      rows={tableRows}
-      {expandedRowIds}
-      {showRowActions}
-      rowActions={rowActions}
-      selectable={selectionMode}
-      selectedRowIds={batch.selectedIds}
-      emptyMessage="No items found"
-      onRowActionSelect={handleRowActionSelect}
-      onRowToggle={({ rowId, selected }) => batch.toggle(rowId, selected)}
-      onToggleAll={({ selected }) => {
-        if (selected) {
-          batch.selectAll(itemIds);
-        } else {
-          batch.clear();
-        }
-      }}
-    >
-      {#snippet cell(column, row, value)}
-        {#if renderCell}
-          {@render renderCell(column, row, value)}
-        {:else}
-          {value}
-        {/if}
-      {/snippet}
-      {#snippet expandedRow(row)}
-        {#if renderExpandedRow}
-          {@render renderExpandedRow(row)}
-        {/if}
-      {/snippet}
-    </DataTable>
+  {:else}
+    {@render listBody("No items found")}
   {/if}
 
   {#if totalPages > 1}
@@ -1579,6 +1548,12 @@
 
   .underlay-entity-list__toolbar-summary :global(.poodle-pagination-summary) {
     font-size: 0.875em;
+  }
+
+  .underlay-entity-list__refetching {
+    font-size: 0.8125em;
+    opacity: 0.7;
+    font-style: italic;
   }
 
   .underlay-entity-list__filter-control {

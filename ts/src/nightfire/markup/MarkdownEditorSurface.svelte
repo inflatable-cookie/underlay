@@ -2,6 +2,7 @@
   import { MarkdownEditor } from "@poodle/svelte";
   import type { Snippet } from "svelte";
   import type { MarkdownEditorContext } from "./markdown-editor-context";
+  import { renderSafeMarkdownPreview } from "./markdown-preview";
 
   interface Props {
     label?: string | null;
@@ -76,6 +77,7 @@
         placeholder={placeholder ?? undefined}
         mode={showPreview ? "split" : "edit"}
         minHeight="5em"
+        renderHtml={renderSafeMarkdownPreview}
         onValueChange={handleValueChange}
       />
     </label>
@@ -88,6 +90,7 @@
       placeholder={placeholder ?? undefined}
       mode={showPreview ? "split" : "edit"}
       minHeight="5em"
+      renderHtml={renderSafeMarkdownPreview}
       onValueChange={handleValueChange}
     />
   {/if}

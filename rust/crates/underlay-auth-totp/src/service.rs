@@ -1,6 +1,7 @@
 use std::time::SystemTime;
 
 use underlay_auth::{AuthError, AuthResult, CredentialMetadata};
+use underlay_ratelimit::{RateLimitBackend, RateLimitConfig};
 
 use crate::{TotpConfig, TotpSetup, TwoFactorCode, TwoFactorVerified};
 
@@ -71,6 +72,49 @@ impl TotpService {
             TwoFactorCode::BackupCode(code) => {
                 let index = self.verify_backup_code(code, backup_code_hashes)?;
                 Ok(TwoFactorVerified::BackupCode { index })
+            }
+        }
+    }
+
+    /// Verify a second factor with a per-user attempt cap.
+    ///
+    /// Second-factor codes have a tiny keyspace (6 digits / short backup
+    /// codes), so unlimited guesses are brute-forceable. This checks a rate
+    /// limit keyed on `rate_limit_key` (use something like
+    /// `"2fa:<user_id>"`) before verifying, and increments only on a failed
+    /// attempt so legitimate success is never penalized. A successful verify
+    /// resets the counter.
+    #[allow(clippy::too_many_arguments)] // limiter + key + config + the full verify inputs
+    pub async fn verify_second_factor_throttled<L: RateLimitBackend>(
+        &self,
+        limiter: &L,
+        rate_limit_key: &str,
+        rate_limit_config: &RateLimitConfig,
+        secret_base32: &str,
+        last_counter: Option<u64>,
+        input: TwoFactorCode<'_>,
+        backup_code_hashes: &[String],
+        now: SystemTime,
+    ) -> AuthResult<TwoFactorVerified> {
+        let check = limiter
+            .check(rate_limit_key, rate_limit_config)
+            .await
+            .map_err(|e| AuthError::Internal(format!("rate limit error: {e}")))?;
+        if check.is_denied() {
+            return Err(AuthError::RateLimited {
+                retry_after_seconds: check.retry_after_secs(),
+            });
+        }
+
+        match self.verify_second_factor(secret_base32, last_counter, input, backup_code_hashes, now)
+        {
+            Ok(verified) => {
+                let _ = limiter.reset(rate_limit_key).await;
+                Ok(verified)
+            }
+            Err(err) => {
+                let _ = limiter.increment(rate_limit_key, rate_limit_config).await;
+                Err(err)
             }
         }
     }

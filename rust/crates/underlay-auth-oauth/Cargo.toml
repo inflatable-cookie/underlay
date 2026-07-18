@@ -7,12 +7,12 @@ license.workspace = true
 [dependencies]
 serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }
-thiserror = "2"
-url = "2"
+thiserror = { workspace = true }
+url = { workspace = true }
 async-trait = { workspace = true }
 
 aes-gcm = "0.10"
-base64 = "0.22"
+base64 = { workspace = true }
 
 # OAuth2 protocol + PKCE helpers.
 oauth2 = { version = "5.0.0", features = ["reqwest"] }
@@ -26,3 +26,6 @@ underlay-core = { path = "../underlay-core" }
 [dev-dependencies]
 chrono = { workspace = true }
 tokio = { workspace = true, features = ["macros", "rt"] }
+
+[lints]
+workspace = true

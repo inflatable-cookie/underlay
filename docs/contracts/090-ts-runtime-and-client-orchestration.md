@@ -131,6 +131,15 @@ Rules:
 - token persistence flows through the `TokenStore` seam from `client/http.ts`
 - browser-side auth orchestration stays generic; app-specific auth pages and
   flows live above it
+- process-global runtime config setters are browser-only. `configureAuth()`
+  and `configureNightfireStrategies()` throw when called during SSR
+  (`typeof window === "undefined"`), because their state is module-global and
+  shared across concurrent server requests - a closure over per-user tokens
+  would leak between users. Consumers call them client-only (inside `onMount`
+  or a `typeof window` guard). The guardrails scanner flags module-scope calls
+  to them, alongside the browser-global checks. (The Nightfire
+  `registerSchema`/`registerBlockEditor` registry is app-static component
+  config and is safe to populate at module load.)
 
 ### SvelteKit auth and cookie integration
 
@@ -291,6 +300,29 @@ Rules:
   auth-error DTOs
 - `client/types` remains an aggregate compatibility barrel over those focused
   client subpaths
+
+### Internationalization posture
+
+The shared surface is **English-only by decision** (recorded g08.029). Rationale:
+`patterns/i18n.ts` provides locale-aware `Intl` formatting (date, number,
+currency, plural) and stays — those are useful even in an English UI — but there
+is no message catalog or translation seam, and every UI string across templates,
+auth, media, and Nightfire is hardcoded English. All six consumers are
+English-language admin/product tools; none has a stated second-locale
+requirement, so a message-lookup seam would be speculative infrastructure.
+
+Rules:
+
+- shared UI strings are authored in English directly; a message-catalog seam is
+  **not** part of the retained contract
+- hardcoded English pluralization at string sites (e.g. `count === 1 ? "" : "s"`)
+  is acceptable under this posture; prefer `format.plural` only where it already
+  reads cleanly, not as a migration driver
+- `patterns/i18n.ts` remains scoped to `Intl` formatting; do not grow it into a
+  message-lookup layer without first landing a message-seam contract
+- if a consumer ever needs a second locale, that is a new contract decision
+  (add a message-lookup seam, then compile an implementation card) — not an
+  ad hoc per-string change
 
 ## Ownership Split
 

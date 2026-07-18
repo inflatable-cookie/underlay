@@ -48,7 +48,14 @@ Primary TS support:
 Primary machine-readable artifacts:
 
 - [`contracts/openapi/underlay.openapi.yaml`](/Users/tom/Dev/projects/underlay/contracts/openapi/underlay.openapi.yaml)
+  — the shared response-envelope schema reference. Kept in sync with
+  `ts/src/client/envelopes.ts` by the `envelope-contract-drift` test (fails when
+  the two surfaces declare different envelopes or required fields).
 - [`docs/contracts/api-surface/endpoint-family-matrix.csv`](/Users/tom/Dev/projects/underlay/docs/contracts/api-surface/endpoint-family-matrix.csv)
+
+Historical audit snapshots (from the `g01` poodle-adoption wave; retained for the
+archival record, read by no live check — do not treat as authoritative):
+
 - [`contracts/ui/poodle-underlay-coexistence-contract.json`](/Users/tom/Dev/projects/underlay/contracts/ui/poodle-underlay-coexistence-contract.json)
 - [`contracts/ui/poodle-adoption-underlay-surface-groups.json`](/Users/tom/Dev/projects/underlay/contracts/ui/poodle-adoption-underlay-surface-groups.json)
 - [`contracts/ui/poodle-prop-normalization-manifest.json`](/Users/tom/Dev/projects/underlay/contracts/ui/poodle-prop-normalization-manifest.json)
@@ -211,8 +218,12 @@ alone is not enough.
 
 Core families:
 
-- `openapi/underlay.openapi.yaml`
+- `openapi/underlay.openapi.yaml` (envelope schema; drift-checked against
+  `ts/src/client/envelopes.ts`)
 - `docs/contracts/api-surface/endpoint-family-matrix.csv`
+
+Historical (g01 poodle-adoption snapshots, read by no live check):
+
 - `ui/poodle-underlay-coexistence-contract.json`
 - `ui/poodle-adoption-underlay-surface-groups.json`
 - `ui/poodle-prop-normalization-manifest.json`

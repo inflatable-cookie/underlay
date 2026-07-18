@@ -3,6 +3,7 @@
   import type { HTMLFormAttributes } from "svelte/elements";
   import { untrack } from "svelte";
   import { getBackButtonInfo } from "../patterns/navigation";
+  import { resolveRedirectTo } from "../client/route-protection";
   import {
     Card,
     Callout,
@@ -83,16 +84,13 @@
   let error = $state<string | null>(untrack(() => initialError));
   let fieldErrors = $state<Record<string, string> | null>(untrack(() => initialFieldErrors));
 
+  // Track only the props and assign unconditionally (mirrors SpaFormShell).
+  // Reading the local state in a condition would make this effect re-run on
+  // submit-handler writes and clobber the feedback back to the initial props.
   $effect(() => {
-    if (success !== initialSuccess) {
-      success = initialSuccess;
-    }
-    if (error !== initialError) {
-      error = initialError;
-    }
-    if (fieldErrors !== initialFieldErrors) {
-      fieldErrors = initialFieldErrors;
-    }
+    success = initialSuccess;
+    error = initialError;
+    fieldErrors = initialFieldErrors;
   });
 
   const hasFieldErrors = $derived(Boolean(fieldErrors && Object.keys(fieldErrors).length > 0));
@@ -147,6 +145,10 @@
     async function handleSubmit(event: SubmitEvent) {
       event.preventDefault();
 
+      if (submitting) {
+        return;
+      }
+
       submitting = true;
       error = null;
       fieldErrors = null;
@@ -164,7 +166,7 @@
         onResult?.(result);
 
         if (result.success && result.redirectTo) {
-          await (navigate ?? defaultNavigate)(result.redirectTo);
+          await (navigate ?? defaultNavigate)(resolveRedirectTo(result.redirectTo));
         }
       } catch (e) {
         error = e instanceof Error ? e.message : "An unexpected error occurred";

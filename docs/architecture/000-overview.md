@@ -29,7 +29,7 @@ Underlay is a reusable foundation for building full-stack apps with a consistent
 
 ## Rust Crates
 
-Underlay currently provides 31 Rust crates organised into five domains: Core,
+Underlay currently provides 36 Rust crates organised into five domains: Core,
 Auth, Data & Storage, Infrastructure, and Developer Tools. The auth system
 uses an umbrella + provider pattern (`underlay-auth` defines traits;
 `underlay-auth-jwt`, `underlay-auth-password`, etc. implement them).

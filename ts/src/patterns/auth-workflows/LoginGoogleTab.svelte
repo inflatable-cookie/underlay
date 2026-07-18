@@ -30,7 +30,7 @@
       <Button
         type="button"
         variant="secondary"
-        onclick={onGoogleClick}
+        onClick={onGoogleClick}
         disabled={loading}
         loading={loading}
         className="underlay-login-page__google-button"

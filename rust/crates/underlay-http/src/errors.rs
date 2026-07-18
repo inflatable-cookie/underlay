@@ -6,8 +6,16 @@ use underlay_core::{AppError, ErrorEnvelope};
 use underlay_observability::RequestId;
 
 const ERROR_CODE_HEADER: &str = "x-error-code";
-const ERROR_MESSAGE_HEADER: &str = "x-error-message";
-const ERROR_CONTEXT_HEADER: &str = "x-error-context";
+
+/// Internal error detail carried in response extensions for the error-logging
+/// middleware. Never serialized onto the wire: internal messages and context
+/// (which can include raw DB/IO cause strings) must not reach clients. The
+/// sanitized error envelope is the only client-facing error surface.
+#[derive(Debug, Clone)]
+pub struct ErrorDetail {
+    pub message: String,
+    pub context: serde_json::Value,
+}
 
 pub trait ErrorLogSink: Send + Sync {
     fn record(&self, ctx: ErrorLogContext);
@@ -96,16 +104,10 @@ impl IntoResponse for ApiError {
         let message = self.err.message.clone();
         let mut res = error_response(self.status, self.err);
 
-        if let Ok(value) = axum::http::HeaderValue::from_str(&message) {
-            res.headers_mut().insert(ERROR_MESSAGE_HEADER, value);
-        }
-
-        if let Ok(context_str) = serde_json::to_string(&self.context) {
-            let encoded = urlencoding::encode(&context_str);
-            if let Ok(value) = axum::http::HeaderValue::from_str(&encoded) {
-                res.headers_mut().insert(ERROR_CONTEXT_HEADER, value);
-            }
-        }
+        res.extensions_mut().insert(ErrorDetail {
+            message,
+            context: self.context,
+        });
 
         res
     }

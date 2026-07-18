@@ -92,6 +92,8 @@ impl std::fmt::Display for SlugValidationError {
     }
 }
 
+impl std::error::Error for SlugValidationError {}
+
 /// Validate a slug and return detailed error information.
 pub fn validate_slug(slug: &str) -> Result<(), SlugValidationError> {
     if slug.len() < 2 {

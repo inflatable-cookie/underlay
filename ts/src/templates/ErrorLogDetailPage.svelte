@@ -109,7 +109,7 @@
   />
 {/snippet}
 
-{#snippet content(loaded)}
+{#snippet content(loaded: ErrorLogDetailItem)}
   <div class="underlay-error-log-detail-page">
     <Card>
       <DetailSectionGroup ariaLabel="Error log details">

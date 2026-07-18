@@ -12,6 +12,7 @@ import EntityListCardHarness from "../fixtures/EntityListCardHarness.svelte";
 import EntityListControlledFilterHarness from "../fixtures/EntityListControlledFilterHarness.svelte";
 import EntityListQueryVariantHarness from "../fixtures/EntityListQueryVariantHarness.svelte";
 import EntityListSummaryFallbackHarness from "../fixtures/EntityListSummaryFallbackHarness.svelte";
+import EntityListLogHarness from "../fixtures/EntityListLogHarness.svelte";
 
 describe("templates", () => {
   beforeEach(() => {
@@ -146,6 +147,48 @@ describe("templates", () => {
     });
   });
 
+  it("debounces free-text search into a single refetch", async () => {
+    const onQuery = vi.fn();
+    render(EntityListControlledFilterHarness, { onQuery });
+
+    await waitFor(() => {
+      expect(onQuery).toHaveBeenCalledWith({ page: 1, limit: 30, filters: [], sort: [] });
+    });
+
+    const showFiltersButton = screen.queryByRole("button", { name: "Show filters" });
+    if (showFiltersButton) {
+      await fireEvent.click(showFiltersButton);
+    }
+
+    const input = screen.getByRole("searchbox", { name: "Search" });
+    const initialCalls = onQuery.mock.calls.length;
+
+    // Rapid keystrokes: only the final value should trigger a refetch.
+    await fireEvent.input(input, { target: { value: "m" } });
+    await fireEvent.input(input, { target: { value: "ma" } });
+    await fireEvent.input(input, { target: { value: "mar" } });
+    await fireEvent.input(input, { target: { value: "mars" } });
+
+    await waitFor(() => {
+      expect(onQuery).toHaveBeenLastCalledWith({
+        page: 1,
+        limit: 30,
+        sort: [],
+        filters: [{ field: "search", operator: "like", value: "%mars%" }]
+      });
+    });
+
+    // Intermediate values never reached the loader.
+    const searchedValues = onQuery.mock.calls
+      .flatMap((call) => call[0].filters ?? [])
+      .map((filter: { value?: string }) => filter.value);
+    expect(searchedValues).not.toContain("%m%");
+    expect(searchedValues).not.toContain("%ma%");
+    expect(searchedValues).not.toContain("%mar%");
+    // One debounced refetch beyond the baseline load.
+    expect(onQuery.mock.calls.length).toBe(initialCalls + 1);
+  });
+
   it("applies query variants as baseline query state", async () => {
     const onQuery = vi.fn();
     render(EntityListQueryVariantHarness, { onQuery });
@@ -181,6 +224,15 @@ describe("templates", () => {
 
     await waitFor(() => {
       expect(screen.getByText("Showing 1-5 of 5")).toBeTruthy();
+    });
+  });
+
+  it("renders the log presentation via the generic toLogEntries mapper", async () => {
+    render(EntityListLogHarness);
+
+    await waitFor(() => {
+      expect(screen.getByText('"Apollo"')).toBeTruthy();
+      expect(screen.getByText('"Mercury"')).toBeTruthy();
     });
   });
 

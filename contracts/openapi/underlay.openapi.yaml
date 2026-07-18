@@ -30,6 +30,17 @@ components:
         data:
           type: array
           items: {}
+    PagedListResponse:
+      type: object
+      required: [data, total, hasMore]
+      properties:
+        data:
+          type: array
+          items: {}
+        total:
+          type: integer
+        hasMore:
+          type: boolean
     SingleResponse:
       type: object
       required: [data]

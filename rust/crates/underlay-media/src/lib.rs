@@ -57,12 +57,14 @@
 
 pub mod domain;
 pub mod error;
+#[cfg(feature = "renditions")]
 pub mod image;
 #[cfg(feature = "nightfire")]
 pub mod nightfire;
 pub mod repository;
 pub mod storage;
 pub mod sync;
+pub mod types;
 
 #[cfg(feature = "renditions")]
 pub mod renditions;
@@ -83,7 +85,7 @@ pub use domain::{
     MediaContentKind,
     // Identifiers
     MediaId,
-    // Enums (from underlay-db)
+    // Enums (owned by underlay-media)
     MediaKind,
     MediaLocatorKind,
     MediaRendition,

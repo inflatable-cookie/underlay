@@ -28,25 +28,41 @@ where
         ip: Option<&str>,
     ) -> PasswordAuthResult<User> {
         let normalized_email = email.trim().to_lowercase();
-        let rate_limit_key = match ip {
-            Some(ip) => format!("login:{}:{}", normalized_email, ip),
-            None => format!("login:{}", normalized_email),
-        };
+        let window = Duration::from_secs(self.config.rate_limit_window_seconds());
 
-        let rate_limit_config = RateLimitConfig::new(
-            self.config.rate_limit_max_attempts() as u64,
-            Duration::from_secs(self.config.rate_limit_window_seconds()),
-        );
-        let rate_result = self
+        // Email-only limit first: an attacker rotating (spoofed or real) IPs
+        // gets a fresh `email:ip` counter per request, so a per-email backstop
+        // is what actually bounds per-account brute force.
+        let email_limit_config =
+            RateLimitConfig::new(self.config.rate_limit_email_max_attempts() as u64, window);
+        let email_key = format!("login:{}", normalized_email);
+        let email_result = self
             .rate_limiter
-            .check_and_increment(&rate_limit_key, &rate_limit_config)
+            .check_and_increment(&email_key, &email_limit_config)
             .await
             .map_err(|e| PasswordAuthError::Internal(format!("Rate limit error: {}", e)))?;
 
-        if rate_result.is_denied() {
+        if email_result.is_denied() {
             return Err(PasswordAuthError::RateLimited {
-                retry_after_seconds: rate_result.retry_after_secs(),
+                retry_after_seconds: email_result.retry_after_secs(),
             });
+        }
+
+        if let Some(ip) = ip {
+            let rate_limit_config =
+                RateLimitConfig::new(self.config.rate_limit_max_attempts() as u64, window);
+            let rate_limit_key = format!("login:{}:{}", normalized_email, ip);
+            let rate_result = self
+                .rate_limiter
+                .check_and_increment(&rate_limit_key, &rate_limit_config)
+                .await
+                .map_err(|e| PasswordAuthError::Internal(format!("Rate limit error: {}", e)))?;
+
+            if rate_result.is_denied() {
+                return Err(PasswordAuthError::RateLimited {
+                    retry_after_seconds: rate_result.retry_after_secs(),
+                });
+            }
         }
 
         let user = match self
@@ -55,7 +71,13 @@ where
             .await?
         {
             Some(u) => u,
-            None => return Err(PasswordAuthError::CredentialNotFound),
+            None => {
+                // Equalize timing: run one KDF pass so an unknown email costs
+                // the same as a real verify. Without this, the fast miss path
+                // is an account-existence oracle.
+                self.dummy_verify();
+                return Err(PasswordAuthError::CredentialNotFound);
+            }
         };
 
         if user.status == UserStatus::Suspended {
@@ -77,7 +99,10 @@ where
 
         let credential = match self.repository.find_password_credential(user.id).await? {
             Some(c) => c,
-            None => return Err(PasswordAuthError::CredentialNotFound),
+            None => {
+                self.dummy_verify();
+                return Err(PasswordAuthError::CredentialNotFound);
+            }
         };
 
         let password_hash = match &credential.metadata {
@@ -118,5 +143,13 @@ where
                 Err(PasswordAuthError::WrongPassword)
             }
         }
+    }
+
+    /// Burn one KDF computation to equalize the timing of account-miss paths
+    /// against a real password verify. The result is intentionally discarded.
+    fn dummy_verify(&self) {
+        let _ = self
+            .hasher
+            .hash_password(b"underlay-login-timing-equalizer");
     }
 }

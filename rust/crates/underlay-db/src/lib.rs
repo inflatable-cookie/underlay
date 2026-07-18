@@ -1,7 +1,6 @@
 mod db_errors;
 mod existence;
 mod identifiers;
-pub mod media_types;
 mod migrations;
 pub mod pagination;
 mod pool;
@@ -27,7 +26,3 @@ pub use crate::schemas::{
 pub use crate::sql_dir::{run_sql_dir, run_sql_dir_with_options, SqlDirOptions};
 
 // Media types
-pub use crate::media_types::{
-    detect_media_kind_from_mime_type, MediaKind, MediaTypeParseError, MediaVersionState,
-    MediaVisibility,
-};

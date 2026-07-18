@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 /// Query parameters for pagination
 #[derive(Debug, Clone, Deserialize)]
-pub struct PaginationParams {
+pub struct PagePaginationParams {
     /// Page number (1-indexed)
     #[serde(default = "default_page")]
     pub page: u32,
@@ -23,14 +23,14 @@ fn default_limit() -> u32 {
 /// Default maximum limit for pagination
 pub const DEFAULT_MAX_LIMIT: u32 = 100;
 
-impl PaginationParams {
+impl PagePaginationParams {
     /// Calculate the offset for database queries
     ///
     /// # Example
     /// ```
-    /// use underlay_http::pagination::PaginationParams;
+    /// use underlay_http::pagination::PagePaginationParams;
     ///
-    /// let params = PaginationParams { page: 2, limit: 20 };
+    /// let params = PagePaginationParams { page: 2, limit: 20 };
     /// assert_eq!(params.offset(), 20);
     /// ```
     pub fn offset(&self) -> u32 {
@@ -64,9 +64,9 @@ impl PaginationParams {
     ///
     /// # Example
     /// ```
-    /// use underlay_http::pagination::PaginationParams;
+    /// use underlay_http::pagination::PagePaginationParams;
     ///
-    /// let params = PaginationParams { page: 2, limit: 20 };
+    /// let params = PagePaginationParams { page: 2, limit: 20 };
     /// assert_eq!(params.sql_clause(), "LIMIT 20 OFFSET 20");
     /// ```
     pub fn sql_clause(&self) -> String {
@@ -81,9 +81,9 @@ impl PaginationParams {
     ///
     /// # Example
     /// ```
-    /// use underlay_http::pagination::PaginationParams;
+    /// use underlay_http::pagination::PagePaginationParams;
     ///
-    /// let params = PaginationParams { page: 1, limit: 20 };
+    /// let params = PagePaginationParams { page: 1, limit: 20 };
     /// assert_eq!(params.sql_clause_params(3, 4), "LIMIT $3 OFFSET $4");
     /// ```
     pub fn sql_clause_params(&self, limit_idx: u32, offset_idx: u32) -> String {
@@ -94,9 +94,9 @@ impl PaginationParams {
     ///
     /// # Example
     /// ```
-    /// use underlay_http::pagination::{PaginationParams, Paginated};
+    /// use underlay_http::pagination::{PagePaginationParams, Paginated};
     ///
-    /// let params = PaginationParams { page: 1, limit: 20 };
+    /// let params = PagePaginationParams { page: 1, limit: 20 };
     /// let data = vec![1, 2, 3];
     /// let response: Paginated<i32> = params.wrap(data, 45);
     ///
@@ -125,7 +125,7 @@ impl PaginationParams {
     }
 }
 
-impl Default for PaginationParams {
+impl Default for PagePaginationParams {
     fn default() -> Self {
         Self {
             page: default_page(),
@@ -133,6 +133,17 @@ impl Default for PaginationParams {
         }
     }
 }
+
+/// Deprecated alias for [`PagePaginationParams`].
+///
+/// Renamed to remove the collision with `underlay_db::pagination`'s
+/// cursor-model `PaginationParams` (g08.017). Migrate to
+/// `PagePaginationParams`; this alias is scheduled for removal in `g09`.
+#[deprecated(
+    note = "renamed to PagePaginationParams to resolve the underlay_db collision; \
+            removal planned for g09"
+)]
+pub type PaginationParams = PagePaginationParams;
 
 /// Paginated response wrapper
 #[derive(Debug, Clone, Serialize)]

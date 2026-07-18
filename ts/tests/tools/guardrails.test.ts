@@ -44,6 +44,35 @@ describe("tools/guardrails", () => {
 		expect(failures).toBe(1);
 	});
 
+	it("flags module-scope configureAuth/configureNightfireStrategies calls but not declarations or guarded calls", async () => {
+		const dir = await makeTempDir();
+		await writeFile(
+			path.join(dir, "sample.ts"),
+			[
+				// declaration: must NOT be flagged
+				"export function configureAuth(cfg: unknown) { return cfg; }",
+				// guarded call: must NOT be flagged
+				"if (typeof window !== \"undefined\") { configureAuth({}); }",
+				// function-local call: must NOT be flagged",
+				"function setup() { configureNightfireStrategies({}); }",
+				// unguarded module-scope calls: 2 flagged
+				"configureAuth({});",
+				"configureNightfireStrategies({});",
+			].join("\n"),
+		);
+		vi.spyOn(console, "error").mockImplementation(() => undefined);
+
+		const failures = await scanFiles({
+			srcDir: dir,
+			extensions: [".ts"],
+			bannedPatterns: [],
+			moduleScopeChecks,
+			suppressionPrefix: "guardrails-disable",
+		});
+
+		expect(failures).toBe(2);
+	});
+
 	it("honors suppressions for TypeScript and scans Svelte script blocks", async () => {
 		const dir = await makeTempDir();
 		await writeFile(

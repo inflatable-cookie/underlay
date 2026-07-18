@@ -1,8 +1,14 @@
 use super::{append_error_log, ErrorLoggingConfig};
+use crate::errors::ErrorDetail;
 use axum::{body::Body, http::Request, middleware::Next, response::Response};
 
-/// Header name for passing error context to the logging middleware.
+/// Legacy header name once used to pass error context to the logging
+/// middleware. Error detail now travels in response extensions
+/// ([`ErrorDetail`]); this header is stripped from every response so internal
+/// detail can never reach clients.
 pub const ERROR_CONTEXT_HEADER: &str = "x-error-context";
+
+const ERROR_MESSAGE_HEADER: &str = "x-error-message";
 
 /// Create an error logging middleware layer.
 ///
@@ -37,7 +43,12 @@ pub async fn error_logging_middleware(
         .and_then(|v| v.to_str().ok())
         .map(|s| s.to_string());
 
-    let res = next.run(req).await;
+    let mut res = next.run(req).await;
+
+    // Internal error detail must never ship to clients, even if an older
+    // layer or handler still writes these headers.
+    res.headers_mut().remove(ERROR_MESSAGE_HEADER);
+    res.headers_mut().remove(ERROR_CONTEXT_HEADER);
 
     let status = res.status();
 
@@ -64,15 +75,13 @@ pub async fn error_logging_middleware(
         .unwrap_or("unknown")
         .to_string();
 
-    let message = res
-        .headers()
-        .get("x-error-message")
-        .and_then(|v| v.to_str().ok())
-        .unwrap_or("")
-        .to_string();
+    let detail = res.extensions().get::<ErrorDetail>();
 
-    // Keep logs actionable when handlers do not emit x-error-context.
-    let handler_context = extract_handler_context(&res)
+    let message = detail.map(|d| d.message.clone()).unwrap_or_default();
+
+    // Keep logs actionable when handlers do not attach error detail.
+    let handler_context = detail
+        .map(|d| d.context.clone())
         .unwrap_or_else(|| fallback_handler_context(&method, &path, status, &error_code));
 
     let context = serde_json::json!({
@@ -103,14 +112,6 @@ pub async fn error_logging_middleware(
     res
 }
 
-fn extract_handler_context(res: &Response) -> Option<serde_json::Value> {
-    res.headers()
-        .get(ERROR_CONTEXT_HEADER)
-        .and_then(|v| v.to_str().ok())
-        .and_then(|encoded| urlencoding::decode(encoded).ok())
-        .and_then(|json_str| serde_json::from_str(&json_str).ok())
-}
-
 fn fallback_handler_context(
     method: &axum::http::Method,
     path: &str,
@@ -129,32 +130,8 @@ fn fallback_handler_context(
 
 #[cfg(test)]
 mod tests {
-    use super::{extract_handler_context, fallback_handler_context, ERROR_CONTEXT_HEADER};
-    use axum::response::Response;
+    use super::fallback_handler_context;
     use http::{Method, StatusCode};
-
-    #[test]
-    fn extract_handler_context_decodes_json_header() {
-        let raw = r#"{"operation":"test.decode"}"#;
-        let encoded = urlencoding::encode(raw);
-        let response = Response::builder()
-            .header(ERROR_CONTEXT_HEADER, encoded.as_ref())
-            .body(axum::body::Body::empty())
-            .expect("response should build");
-
-        let context = extract_handler_context(&response).expect("context should decode");
-        let operation = context.get("operation").and_then(|v| v.as_str());
-        assert_eq!(operation, Some("test.decode"));
-    }
-
-    #[test]
-    fn extract_handler_context_returns_none_without_header() {
-        let response = Response::builder()
-            .body(axum::body::Body::empty())
-            .expect("response should build");
-
-        assert!(extract_handler_context(&response).is_none());
-    }
 
     #[test]
     fn fallback_handler_context_is_structured_and_non_null() {

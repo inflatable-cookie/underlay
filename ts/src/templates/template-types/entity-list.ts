@@ -24,6 +24,18 @@ import type {
 } from "./list";
 import type { TemplateSurface } from "./primitives";
 
+/**
+ * Per-item render context handed to `renderItem`/`renderReorderItem` snippets.
+ * Mirrors the object EntityList builds in `getItemContext`.
+ */
+export interface EntityListItemContext {
+  selectionMode: boolean;
+  reorderMode: boolean;
+  selected: boolean;
+  onToggle: (selected: boolean) => void;
+  refetch: () => Promise<void>;
+}
+
 export type TableRowActionFactory<TItem> = (
   row: TableRow<TItem>,
 ) => { value: string; label: string }[];

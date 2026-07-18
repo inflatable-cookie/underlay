@@ -32,8 +32,9 @@ mod tracing;
 use axum::http::HeaderMap;
 pub use error::ContextError;
 pub use model::{AuthenticatedContext, AuthenticatedUser, RequestContext};
+pub use parse::TrustedProxyConfig;
 #[cfg(test)]
-use parse::{extract_ip_address, extract_request_id};
+use parse::{extract_request_id, resolve_ip_address};
 #[cfg(feature = "tracing")]
 pub use tracing::make_request_span;
 #[cfg(test)]

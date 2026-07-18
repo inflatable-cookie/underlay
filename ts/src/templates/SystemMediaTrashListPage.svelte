@@ -4,6 +4,7 @@
   import { default as EntityListPage } from "./EntityListPage.svelte";
   import type { QueryParams } from "../client/query";
   import type {
+    EntityListItemContext,
     FilterConfig,
     SystemMediaTrashAction,
     SystemMediaTrashItem,
@@ -115,7 +116,7 @@
   }
 </script>
 
-{#snippet renderItem(item, ctx)}
+{#snippet renderItem(item: SystemMediaTrashItem, ctx: EntityListItemContext)}
   <SystemMediaTrashListCard
     media={item}
     href={onMediaClick ? null : getMediaHref(item)}

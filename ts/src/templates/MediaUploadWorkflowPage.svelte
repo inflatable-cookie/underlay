@@ -47,12 +47,14 @@
     file: File;
     title?: string | null;
     onProgress?: (progress: { percent: number }) => void;
+    signal?: AbortSignal;
   }
 
   interface ReplaceHandlerInput {
     file: File;
     mediaId: string;
     onProgress?: (progress: { percent: number }) => void;
+    signal?: AbortSignal;
   }
 
   interface UploadResult {
@@ -99,6 +101,7 @@
   let files = $state<FileUploadItem[]>([]);
   let uploadQueue = $state<UploadQueueItem[]>([]);
   let uploading = $state(false);
+  let uploadAbort: AbortController | null = null;
   let error = $state<string | null>(null);
   let singleUploadStage = $state<UploadStatus>("pending");
   let singleUploadProgress = $state(0);
@@ -208,6 +211,7 @@
       const result = await createUpload({
         file: item.file,
         title: item.title.trim() || null,
+        signal: uploadAbort?.signal,
         onProgress: (progress) => {
           updateQueueItem(item.id, {
             status: "uploading",
@@ -237,14 +241,19 @@
     }
 
     uploading = true;
+    uploadAbort = new AbortController();
     error = null;
 
     for (const item of uploadQueue) {
+      if (uploadAbort.signal.aborted) {
+        break;
+      }
       if (item.status === "pending") {
         await processQueueItem(item);
       }
     }
 
+    uploadAbort = null;
     uploading = false;
 
     if (completedCount > 0 && errorCount === 0) {
@@ -294,10 +303,13 @@
     singleUploadProgress = 0;
     singleUploadStage = "hashing";
 
+    uploadAbort = new AbortController();
+
     try {
       await replaceUpload({
         file,
         mediaId: replaceMediaId,
+        signal: uploadAbort.signal,
         onProgress: (progress) => {
           singleUploadStage = "uploading";
           singleUploadProgress = progress.percent;
@@ -312,8 +324,18 @@
       onToast?.("error", error);
       singleUploadStage = "pending";
     } finally {
+      uploadAbort = null;
       uploading = false;
     }
+  }
+
+  function cancelUpload(fallbackHref: string): void {
+    if (uploading && uploadAbort) {
+      // Abort mid-flight; the workflow settles via its error/abort path.
+      uploadAbort.abort();
+      return;
+    }
+    navigate(fallbackHref);
   }
 
   function viewMedia(mediaId: string | undefined): void {
@@ -393,13 +415,13 @@
             maxFiles={1}
           />
           <p class="underlay-media-upload-workflow__hint">
-            Supported formats: JPEG, PNG, GIF, WebP, SVG, PDF. Maximum size: {formatFileSize(maxFileSize)}.
+            Supported formats: JPEG, PNG, GIF, WebP, AVIF, PDF. Maximum size: {formatFileSize(maxFileSize)}.
           </p>
         </section>
       {/if}
 
       <div class="underlay-media-upload-workflow__actions">
-        <Button type="button" variant="ghost" disabled={uploading} onClick={() => navigate(`/media/${replaceMediaId}`)}>
+        <Button type="button" variant="ghost" onClick={() => cancelUpload(`/media/${replaceMediaId}`)}>
           Cancel
         </Button>
         <Button
@@ -502,7 +524,7 @@
       {/if}
 
       <div class="underlay-media-upload-workflow__actions">
-        <Button type="button" variant="ghost" disabled={uploading} onClick={() => navigate("/media")}>
+        <Button type="button" variant="ghost" onClick={() => cancelUpload("/media")}>
           Cancel
         </Button>
         {#if allDone}

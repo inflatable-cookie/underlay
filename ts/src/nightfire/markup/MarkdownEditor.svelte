@@ -1,6 +1,7 @@
 <script lang="ts">
   import { MarkdownEditor as PoodleMarkdownEditor } from "@poodle/svelte";
   import type { MarkdownEditorContext } from "./markdown-editor-context";
+  import { renderSafeMarkdownPreview } from "./markdown-preview";
 
   type MarkdownBlock = {
     type?: string;
@@ -56,6 +57,7 @@
     placeholder="Write markdown..."
     minHeight="16rem"
     mode="edit"
+    renderHtml={renderSafeMarkdownPreview}
     onValueChange={handleInput}
   />
 </div>

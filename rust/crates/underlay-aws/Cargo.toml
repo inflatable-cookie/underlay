@@ -9,3 +9,6 @@ description = "Shared AWS SDK configuration for Underlay crates"
 aws-config = "1"
 aws-credential-types = "1"
 aws-types = "1"
+
+[lints]
+workspace = true

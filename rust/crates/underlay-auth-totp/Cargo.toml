@@ -6,15 +6,20 @@ license.workspace = true
 
 [dependencies]
 base32 = "0.5"
-hex = "0.4"
+hex = { workspace = true }
 hmac = "0.12"
 qrcode = "0.14"
-rand = "0.10.1"
-sha1 = "0.10"
-sha2 = "0.10"
-thiserror = "2"
+rand = { workspace = true }
+sha1 = { workspace = true }
+sha2 = { workspace = true }
+thiserror = { workspace = true }
 underlay-auth = { path = "../underlay-auth" }
 underlay-core = { path = "../underlay-core" }
+underlay-ratelimit = { path = "../underlay-ratelimit" }
 
 [dev-dependencies]
 chrono = { workspace = true }
+tokio = { workspace = true, features = ["rt", "macros"] }
+
+[lints]
+workspace = true

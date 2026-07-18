@@ -30,6 +30,16 @@ function hasIdentifierAt(text: string, index: number, identifier: string): boole
 function hasCallAt(text: string, index: number, identifier: string): boolean {
   if (!hasIdentifierAt(text, index, identifier)) return false;
 
+  // Skip declarations: `function foo(`, `foo(` in a `function foo(` position.
+  // Look back past whitespace for the `function` keyword so we don't flag the
+  // definition of a guarded helper as a module-scope call of it.
+  let b = index - 1;
+  while (b >= 0 && /\s/.test(text[b])) b--;
+  let wordEnd = b;
+  while (b >= 0 && isIdentChar(text[b])) b--;
+  const precedingWord = text.slice(b + 1, wordEnd + 1);
+  if (precedingWord === "function") return false;
+
   let i = index + identifier.length;
   while (i < text.length && /\s/.test(text[i])) i++;
 

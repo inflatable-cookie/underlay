@@ -21,10 +21,13 @@ pub struct NightfireMediaLocator {
     pub data_pointer: String,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, thiserror::Error)]
 pub enum NightfireMediaLocatorError {
+    #[error("locator key missing '#' separator")]
     MissingSeparator,
+    #[error("locator missing block id")]
     MissingBlockId,
+    #[error("invalid data pointer: {0}")]
     InvalidDataPointer(String),
 }
 

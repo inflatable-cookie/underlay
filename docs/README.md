@@ -9,7 +9,8 @@ effectively, and which planning surfaces are active now.
 
 - [vision/001-underlay-foundation-vision.md](./vision/001-underlay-foundation-vision.md)
 - [architecture/000-overview.md](./architecture/000-overview.md)
-- [usage/000-overview.md](./usage/000-overview.md) — User-facing docs (backend, frontend, templates, runtime)
+- [guides/README.md](./guides/README.md) — how-to narrative layer
+- [usage/000-overview.md](./usage/000-overview.md) — admin template usage reference
 - [roadmaps/README.md](./roadmaps/README.md)
 - [logs/README.md](./logs/README.md)
 
@@ -19,14 +20,19 @@ effectively, and which planning surfaces are active now.
 System architecture, design principles, and technical decisions.
 
 ### [Contracts](./contracts/)
-Interface contracts and API specifications.
+The **normative layer** — interface contracts and API specifications. When docs
+disagree, contracts win.
+
+### [Guides](./guides/)
+The **narrative layer** — how-to documentation for building against Underlay
+(Rust backend, database, API handlers, auth, TypeScript client, media, admin
+components). This is the active narrative surface.
 
 ### [Usage](./usage/)
-User-facing docs for building applications with Underlay. Organized by domain:
-- `backend/` — Rust, database, API guides
-- `frontend/` — SvelteKit, routing, integration
-- `runtime/` — Client helpers, navigation, auth
-- `templates/` — Admin template system (EntityListPage, EntityDetailPage, etc.)
+Admin **template usage reference** — per-template usage docs
+(`usage/templates/`: EntityListPage, EntityDetailPage, media/system pages) plus
+the migration/state-layout note. Reference material for the shared template
+system, not a parallel guide tree.
 
 ### [Logs](./logs/)
 Decision logs, roadmap deltas, and project history.
@@ -61,14 +67,19 @@ Project vision, goals, and strategic direction.
 - `vision/` defines the long-horizon foundation boundary and success bar.
 - `roadmaps/` turns that direction into concrete Underlay delivery milestones.
 - `logs/` records meaningful batches and roadmap-linked evidence.
-- `usage/`, `architecture/`, and `patterns/` explain how to apply Underlay in
+- `contracts/` is the normative layer; `guides/` is the narrative how-to layer;
+  `usage/`, `architecture/`, and `patterns/` explain how to apply Underlay in
   real consuming projects.
 - `research/` is where external evidence and comparison work should live before
   it becomes architecture or roadmap scope.
 
-## Deprecated
+## Layer Boundary
 
-`docs/guides/` is deprecated. Content has been migrated to `docs/usage/`.
+- **`contracts/` is normative; `guides/` is narrative.** New rules and
+  interface guarantees land in a contract; guides explain and demonstrate them.
+  Do not restate a contract's guarantees as an independent source of truth in a
+  guide — link to the contract. Where the same topic (e.g. auth) spans both,
+  the contract owns the guarantee and the guide owns the walkthrough.
 
 ## Documentation Boundary
 

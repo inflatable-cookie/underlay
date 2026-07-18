@@ -8,3 +8,6 @@ description = "Server-side suggestion query building utilities for RelationSelec
 [dependencies]
 serde = { workspace = true }
 serde_urlencoded = "0.7"
+
+[lints]
+workspace = true

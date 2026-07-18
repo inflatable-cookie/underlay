@@ -42,11 +42,19 @@ use uuid::Uuid;
 ///
 /// The database is automatically cleaned up when this struct is dropped.
 /// Each `TestDb` instance gets its own schema for isolation.
+/// Environment variable pointing at an already-provisioned Postgres. When set,
+/// `TestDb` connects to it directly instead of starting a testcontainer, so the
+/// suite runs against a CI Postgres service, an `effigy container` Postgres, or
+/// any local instance — no Docker API required. Per-test schema isolation still
+/// keeps concurrent tests from colliding on the shared database.
+pub const TEST_DATABASE_URL_ENV: &str = "UNDERLAY_TEST_DATABASE_URL";
+
 pub struct TestDb {
     pool: PgPool,
     schema: SqlIdentifier,
-    // Keep container alive for the lifetime of the test
-    _container: Arc<Container<Postgres>>,
+    // Keep the testcontainer alive for the lifetime of the test. `None` when
+    // connected to an external database via `UNDERLAY_TEST_DATABASE_URL`.
+    _container: Option<Arc<Container<Postgres>>>,
 }
 
 impl TestDb {
@@ -57,21 +65,29 @@ impl TestDb {
     ///
     /// # Panics
     ///
-    /// Panics if Docker is not available or the database cannot be created.
+    /// Panics if neither `UNDERLAY_TEST_DATABASE_URL` is set nor Docker is
+    /// available, or if the database cannot be created.
     pub async fn new() -> Self {
-        assert_docker_available();
-        let container = Arc::new(
-            Postgres::default()
-                .start()
-                .expect("failed to start postgres test container"),
-        );
-
-        let database_url = format!(
-            "postgres://postgres:postgres@127.0.0.1:{}/postgres",
-            container
-                .get_host_port_ipv4(5432)
-                .expect("postgres port 5432 should be mapped")
-        );
+        // Prefer an already-provisioned Postgres when the env var is set; only
+        // fall back to a testcontainer (which needs a Docker API) otherwise.
+        let (database_url, container) = match std::env::var(TEST_DATABASE_URL_ENV) {
+            Ok(url) if !url.trim().is_empty() => (url, None),
+            _ => {
+                assert_docker_available();
+                let container = Arc::new(
+                    Postgres::default()
+                        .start()
+                        .expect("failed to start postgres test container"),
+                );
+                let url = format!(
+                    "postgres://postgres:postgres@127.0.0.1:{}/postgres",
+                    container
+                        .get_host_port_ipv4(5432)
+                        .expect("postgres port 5432 should be mapped")
+                );
+                (url, Some(container))
+            }
+        };
 
         let config = DbConfig::new(database_url)
             .with_max_connections(5)

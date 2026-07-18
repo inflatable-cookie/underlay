@@ -4,6 +4,7 @@
   import { Callout } from "@poodle/svelte";
   import type { BannerVariant } from "./banner";
   import type { SpaFormResult, SpaSubmitHandler, SpaNavigateFn } from "./spa-form-types";
+  import { resolveRedirectTo } from "../client/route-protection";
   import { default as FormShell } from "./FormShell.svelte";
 
   // Use permissive type for snippets to handle linked dependency type mismatches
@@ -96,6 +97,10 @@
     async function handleSubmit(event: SubmitEvent) {
       event.preventDefault();
 
+      if (loading) {
+        return;
+      }
+
       // Reset state
       loading = true;
       error = null;
@@ -124,10 +129,12 @@
           onResult(result);
         }
 
-        // Handle redirect if specified
+        // Handle redirect if specified. Redirect targets can originate from
+        // an untrusted redirectTo query param, so resolve to a safe
+        // same-origin path before navigating.
         if (result.success && result.redirectTo) {
           const nav = navigate ?? defaultNavigate;
-          await nav(result.redirectTo);
+          await nav(resolveRedirectTo(result.redirectTo));
         }
       } catch (e) {
         // Handle unexpected errors

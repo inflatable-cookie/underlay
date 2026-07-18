@@ -418,6 +418,15 @@ export async function me(
 }
 ```
 
+**Token-exposure boundary.** Access and refresh tokens are handed out only by
+the register/login and refresh endpoints. Session read (`session()` /
+`/v1/auth/me`-style endpoints) is token-free: it must never return a refresh
+token, and in cookie mode the response body carries no token fields at all.
+The shared `AuthCommands.session()` returns `SessionInfo` (user + session,
+no tokens), strips any token fields a server still echoes, and the auth store
+never writes to the `TokenStore` from a session read. If a flow appears to
+need tokens from session read, use the refresh endpoint instead.
+
 ### Example: Core Commands
 
 Create `stem/src/commands/core-commands.ts`:

@@ -21,3 +21,6 @@ hashing = ["dep:argon2", "dep:getrandom"]
 
 [dev-dependencies]
 tokio = { workspace = true, features = ["macros", "rt"] }
+
+[lints]
+workspace = true

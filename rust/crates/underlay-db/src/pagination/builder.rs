@@ -1,6 +1,6 @@
 use super::cursor::Cursor;
 use super::errors::CursorError;
-use super::params::{PaginationDirection, PaginationParams};
+use super::params::{CursorPaginationParams, PaginationDirection};
 use super::response::PaginatedResponse;
 use super::typed_cursors::{TimestampCursor, WeightCursor};
 
@@ -10,12 +10,12 @@ use super::typed_cursors::{TimestampCursor, WeightCursor};
 /// (weight, id) or (created_at, id).
 #[derive(Debug, Clone)]
 pub struct PaginationBuilder {
-    params: PaginationParams,
+    params: CursorPaginationParams,
 }
 
 impl PaginationBuilder {
     /// Create a new pagination builder from params.
-    pub fn new(params: PaginationParams) -> Self {
+    pub fn new(params: CursorPaginationParams) -> Self {
         Self { params }
     }
 

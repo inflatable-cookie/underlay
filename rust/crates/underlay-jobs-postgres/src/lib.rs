@@ -14,6 +14,10 @@ mod scheduler;
 pub mod outbox;
 pub mod tasks;
 
+#[cfg(test)]
+#[path = "tests/integration.rs"]
+mod integration;
+
 pub use crate::outbox::DOMAIN_EVENT_NOTIFY_SQL;
 pub use crate::postgres::{JobRepository, RepoError};
 pub use crate::postgres_dead_letters::PgDeadLetterRepository;

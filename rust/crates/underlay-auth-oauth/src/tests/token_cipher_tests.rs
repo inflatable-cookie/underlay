@@ -30,6 +30,28 @@ fn encrypt_is_nondeterministic_and_decrypts() {
 
     let dec = cipher.decrypt_refresh_token(&enc1).unwrap();
     assert_eq!(dec, "refresh-token");
+}
+
+#[test]
+fn plain_prefix_rejected_by_default() {
+    let key = vec![42u8; 32];
+    let b64 = STANDARD.encode(&key);
+    let cipher = OAuthTokenCipher::from_key_string("TEST_KEY", &b64).unwrap();
+
+    // Steady state: a plaintext secret must be rejected, not trusted.
+    assert!(matches!(
+        cipher.decrypt_refresh_token("plain:abc"),
+        Err(AuthError::Internal(_))
+    ));
+}
+
+#[test]
+fn plain_prefix_readable_only_under_explicit_migration() {
+    let key = vec![42u8; 32];
+    let b64 = STANDARD.encode(&key);
+    let cipher = OAuthTokenCipher::from_key_string("TEST_KEY", &b64)
+        .unwrap()
+        .with_plain_migration(true);
 
     assert_eq!(cipher.decrypt_refresh_token("plain:abc").unwrap(), "abc");
 }

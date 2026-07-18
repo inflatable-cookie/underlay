@@ -28,6 +28,11 @@ Reusable templates:
 | Underlay client auth flow | `configureAuth()` + token refresh handler | Required for `useAuthenticatedData()` auto-refresh |
 | Admin navigation pattern | Navigation context helpers | Use `gotoWithContext` + `consumeNavigationContext` |
 | Form pattern | `SpaFormShell` + intent submit | Save/save-close/delete intent model; shell stays in Underlay, but status/framing UI inside it now follows Poodle surfaces |
+| CORS layer build | `cors_layer_for_env(cfg, env)` | `cors_layer(cfg)` panics on mirror-origin + credentials (local-dev pattern); default `CorsConfig` now allows no cross-origin. See g08 checkpoint log |
+| Client IP resolution | `TrustedProxyConfig` extension + `ConnectInfo` | `RequestContext::ip_address()` returns `None` without them; default trusts no forwarding headers |
+| Rate-limit backend | `PostgresBackend` for multi-instance | `InMemoryBackend` is single-instance/non-prod only |
+| OAuth secret storage | encrypted (`enc:v1:`) | `plain:` secrets rejected unless `.with_plain_migration(true)` |
+| Post-login redirect | `resolveRedirectTo()` | Bare `startsWith("/")` allows `//evil.com` open redirect |
 | Underlay change notes | Compatibility note plus linked roadmap/log context | Use this guide as the first stop for downstream upgrades |
 
 ## Required Output by Change Type
@@ -251,7 +256,7 @@ Reusable templates:
     scheduled task runtime, outbox processing, maintenance tasks, SQL
     constants, and `PostgresJobRunnerExt`
   - `underlay-media-postgres` owns concrete media Postgres repositories
-  - `underlay-auth-postgres` owns short-lived auth-state Postgres storage
+  - `underlay-auth-state-postgres` (renamed from `underlay-auth-postgres` in g08.018) owns short-lived auth-state Postgres storage
 - Required actions:
   1. keep contract crates such as `underlay-jobs`, `underlay-media`, and
      `underlay-auth` for shared traits and domain types

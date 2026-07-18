@@ -16,6 +16,7 @@ use crate::run_store::{DecisionJournalRecord, RunStore, UnresolvedDecisionRecord
 
 use super::input::DecisionCandidate;
 
+#[allow(clippy::too_many_arguments)] // internal pipeline stage; args are the full decision context
 pub(super) async fn append_decision_journal<R>(
     ctx: &MigrationContext,
     run_store: &R,

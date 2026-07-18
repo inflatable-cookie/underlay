@@ -40,10 +40,11 @@ check = "cd {repo} && bun x svelte-check --tsconfig ./ts/tsconfig.json"
 "rust:build" = "cd {repo} && cargo build --workspace"
 "rust:check" = "cd {repo} && cargo check --workspace --all-features"
 "rust:test" = "cd {repo} && cargo test --workspace --all-features"
+test = "cd {repo} && bun x vitest run {args}"
 "test:ui" = "cd {repo} && bun x vitest --ui {args}"
 "test:components" = "cd {repo} && bun x vitest run -c vitest.component.config.ts {args}"
 
-"qa:docs:links" = "cd {repo} && effigy docs check links README.md docs/README.md docs/vision/README.md docs/vision/001-underlay-foundation-vision.md docs/roadmaps/README.md docs/roadmaps/g01/README.md docs/logs/README.md docs/guides/README.md"
+"qa:docs:links" = "cd {repo} && effigy docs check links README.md docs/README.md docs/vision/README.md docs/vision/001-underlay-foundation-vision.md docs/roadmaps/README.md docs/roadmaps/g01/README.md docs/roadmaps/g08/README.md docs/logs/README.md docs/guides/README.md"
 "qa:docs:index:vision" = "cd {repo} && effigy docs check index --policy-index vision"
 "qa:docs:agent-defaults" = "cd {repo} && effigy docs check forbidden AGENTS.md README.md package.json docs/README.md docs/guides/README.md --forbid '--repo .'"
 "qa:docs:vision:next-action" = "cd {repo} && effigy docs check next-action --policy vision"
@@ -74,6 +75,7 @@ validate = [
     { task = "health" },
     { task = "check" },
     { task = "check:types" },
+    { task = "test" },
     { task = "test:components" },
 ]
 

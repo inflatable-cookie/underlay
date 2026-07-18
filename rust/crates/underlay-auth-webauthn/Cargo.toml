@@ -7,8 +7,8 @@ license.workspace = true
 [dependencies]
  serde = { workspace = true, features = ["derive"] }
  serde_json = { workspace = true }
- thiserror = "2"
- url = "2"
+ thiserror = { workspace = true }
+ url = { workspace = true }
  base64urlsafedata = "0.5.4"
  tracing = { workspace = true }
  webauthn-rs = { version = "0.5.4", features = ["conditional-ui"] }
@@ -25,3 +25,6 @@ attestation = ["webauthn-rs/attestation"]
 
 [dev-dependencies]
 tokio = { workspace = true, features = ["macros", "rt"] }
+
+[lints]
+workspace = true

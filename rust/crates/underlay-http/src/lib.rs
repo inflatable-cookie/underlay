@@ -44,6 +44,7 @@ pub use crate::caching::{
 };
 pub use crate::context::{
     headers, AuthenticatedContext, AuthenticatedUser, ContextError, RequestContext,
+    TrustedProxyConfig,
 };
 pub use crate::cookies::{
     clear_auth_cookies, clear_csrf_cookie, clear_csrf_token_cookie, csrf_token_cookie,
@@ -51,18 +52,28 @@ pub use crate::cookies::{
     set_csrf_cookie, AuthCookieConfig, AuthCookieError, CookieDomain, CookieName, CookiePath,
     SameSite,
 };
-pub use crate::cors::{cors_layer, CorsConfig, CorsConfigError, DEFAULT_CORS_MAX_AGE_SECS};
-pub use crate::errors::{error_response, ApiError, ApiResult, ErrorLogContext, ErrorLogSink};
+pub use crate::cors::{
+    cors_layer, cors_layer_for_env, try_cors_layer_for_env, CorsConfig, CorsConfigError,
+    DEFAULT_CORS_MAX_AGE_SECS,
+};
+pub use crate::errors::{
+    error_response, ApiError, ApiResult, ErrorDetail, ErrorLogContext, ErrorLogSink,
+};
 pub use crate::http_config::{HttpServerConfig, HttpServerConfigError};
-pub use crate::pagination::{Paginated, PaginationMeta, PaginationParams};
+#[allow(deprecated)]
+pub use crate::pagination::PaginationParams;
+pub use crate::pagination::{PagePaginationParams, Paginated, PaginationMeta};
 pub use crate::path::{parse_uuid_path, parse_uuid_path_raw};
 pub use crate::query::{
     parse_sort_string, FieldMapping, FilterField, FilterOperator, QueryParams, SortDirection,
-    SortField, WhereBuilder,
+    SortField, SqlValue, WhereBuilder,
 };
+// Preserve `underlay_http::field_mapping!` after the model moved to
+// underlay-query.
 pub use crate::responses::{created, list_ok, no_content, ok};
 #[cfg(feature = "opentelemetry")]
 pub use underlay_observability::{TraceContext, TRACEPARENT_HEADER, TRACESTATE_HEADER};
+pub use underlay_query::field_mapping;
 
 #[cfg(feature = "error-logging")]
 pub use crate::error_logging::{
