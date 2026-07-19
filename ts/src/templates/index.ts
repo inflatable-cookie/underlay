@@ -97,6 +97,7 @@ export type {
   EntityListSharedProps,
   FilterConfig,
   ListCapabilities,
+  EntityListItemContext,
   ListFilterDefinition,
   ListVariantDefinition,
   InlineListDialogConfig,
