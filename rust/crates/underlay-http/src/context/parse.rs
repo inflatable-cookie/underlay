@@ -48,6 +48,75 @@ pub enum TrustedProxyConfig {
     ForwardedFor { trusted_hops: usize },
 }
 
+impl TrustedProxyConfig {
+    /// Build the trusted-proxy boundary from environment variables.
+    ///
+    /// `TRUSTED_PROXY` selects the mode (case-insensitive, surrounding
+    /// whitespace ignored):
+    /// - unset / `none` / `off` — trust no forwarding headers (default; the
+    ///   client IP is the socket peer).
+    /// - `cloudflare` / `cf` — trust `CF-Connecting-IP`.
+    /// - `real-ip` / `x-real-ip` — trust `X-Real-IP`.
+    /// - `forwarded-for` / `xff` — trust `X-Forwarded-For`, honouring
+    ///   `TRUSTED_PROXY_HOPS` proxies from the right (default 1).
+    ///
+    /// An unrecognised mode falls back to [`TrustedProxyConfig::None`]
+    /// (fail-closed): a typo cannot accidentally start trusting client-supplied
+    /// headers. When the `tracing` feature is on it also logs a warning.
+    pub fn from_env() -> Self {
+        let mode = std::env::var("TRUSTED_PROXY").ok();
+        let hops = std::env::var("TRUSTED_PROXY_HOPS").ok();
+        let (config, recognized) = Self::parse_env(mode.as_deref(), hops.as_deref());
+        #[cfg(feature = "tracing")]
+        if !recognized {
+            tracing::warn!(
+                mode = mode.as_deref().unwrap_or_default(),
+                "unrecognised TRUSTED_PROXY mode; trusting no forwarding headers"
+            );
+        }
+        let _ = recognized;
+        config
+    }
+
+    /// Pure env-string parser behind [`from_env`](Self::from_env). Returns the
+    /// resolved config and whether the mode string was recognised (an
+    /// unrecognised mode fail-closes to `None`).
+    pub(in crate::context) fn parse_env(mode: Option<&str>, hops: Option<&str>) -> (Self, bool) {
+        let normalized = mode.map(|s| s.trim().to_ascii_lowercase());
+        match normalized.as_deref() {
+            None | Some("") | Some("none") | Some("off") => (Self::None, true),
+            Some("cloudflare") | Some("cf") => (Self::CloudflareHeader, true),
+            Some("real-ip") | Some("x-real-ip") | Some("realip") => (Self::RealIpHeader, true),
+            Some("forwarded-for") | Some("x-forwarded-for") | Some("xff") => {
+                let trusted_hops = hops
+                    .and_then(|s| s.trim().parse::<usize>().ok())
+                    .unwrap_or(1);
+                (Self::ForwardedFor { trusted_hops }, true)
+            }
+            Some(_) => (Self::None, false),
+        }
+    }
+}
+
+/// Resolve the client IP from the configured trusted-proxy boundary.
+///
+/// Public entry point for consumers that resolve the client IP outside the
+/// [`RequestContext`](super::RequestContext) extractor — tower middleware or
+/// custom extractors holding the raw `Request`/`Parts`. Pull
+/// `ConnectInfo<SocketAddr>` and the installed [`TrustedProxyConfig`] from the
+/// request extensions and pass them here so the result matches what the
+/// extractor would produce.
+///
+/// `socket_ip` is the connection peer address; it is the fallback whenever the
+/// configured header is absent or unparseable.
+pub fn resolve_client_ip(
+    headers: &HeaderMap,
+    config: &TrustedProxyConfig,
+    socket_ip: Option<IpAddr>,
+) -> Option<IpAddr> {
+    resolve_ip_address(headers, config, socket_ip)
+}
+
 /// Resolve the client IP from the configured trusted-proxy boundary.
 ///
 /// `socket_ip` is the connection peer address when available; it is the

@@ -43,8 +43,8 @@ pub use crate::caching::{
     SingleFlight, CACHE_CONTROL_ADMIN_REVALIDATE, CACHE_CONTROL_NO_STORE,
 };
 pub use crate::context::{
-    headers, AuthenticatedContext, AuthenticatedUser, ContextError, RequestContext,
-    TrustedProxyConfig,
+    headers, resolve_client_ip, AuthenticatedContext, AuthenticatedUser, ContextError,
+    RequestContext, TrustedProxyConfig,
 };
 pub use crate::cookies::{
     clear_auth_cookies, clear_csrf_cookie, clear_csrf_token_cookie, csrf_token_cookie,

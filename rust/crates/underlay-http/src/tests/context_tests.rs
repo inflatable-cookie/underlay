@@ -153,6 +153,72 @@ fn test_forwarded_for_falls_back_to_socket_when_underpopulated() {
 }
 
 #[test]
+fn test_public_resolve_client_ip_matches_extractor_resolution() {
+    // The public wrapper must produce the same result the extractor would.
+    let mut headers = HeaderMap::new();
+    headers.insert(
+        headers::X_FORWARDED_FOR,
+        HeaderValue::from_static("6.6.6.6, 203.0.113.195"),
+    );
+    let config = TrustedProxyConfig::ForwardedFor { trusted_hops: 1 };
+
+    assert_eq!(
+        resolve_client_ip(&headers, &config, socket("9.9.9.9")),
+        resolve_ip_address(&headers, &config, socket("9.9.9.9")),
+    );
+    // Fail-closed default ignores the spoofable header and uses the socket peer.
+    assert_eq!(
+        resolve_client_ip(&headers, &TrustedProxyConfig::None, socket("9.9.9.9")),
+        socket("9.9.9.9"),
+    );
+}
+
+#[test]
+fn test_trusted_proxy_from_env_parsing() {
+    let parse = TrustedProxyConfig::parse_env;
+
+    // Unset / off / none / blank -> fail-closed default, all recognised.
+    assert_eq!(parse(None, None), (TrustedProxyConfig::None, true));
+    assert_eq!(parse(Some(""), None), (TrustedProxyConfig::None, true));
+    assert_eq!(parse(Some("none"), None), (TrustedProxyConfig::None, true));
+    assert_eq!(parse(Some("off"), None), (TrustedProxyConfig::None, true));
+
+    // Case-insensitive, whitespace-trimmed aliases.
+    assert_eq!(
+        parse(Some("  CloudFlare "), None),
+        (TrustedProxyConfig::CloudflareHeader, true)
+    );
+    assert_eq!(
+        parse(Some("cf"), None),
+        (TrustedProxyConfig::CloudflareHeader, true)
+    );
+    assert_eq!(
+        parse(Some("X-Real-IP"), None),
+        (TrustedProxyConfig::RealIpHeader, true)
+    );
+
+    // forwarded-for: hops default 1, honour override, ignore garbage.
+    assert_eq!(
+        parse(Some("forwarded-for"), None),
+        (TrustedProxyConfig::ForwardedFor { trusted_hops: 1 }, true)
+    );
+    assert_eq!(
+        parse(Some("xff"), Some("3")),
+        (TrustedProxyConfig::ForwardedFor { trusted_hops: 3 }, true)
+    );
+    assert_eq!(
+        parse(Some("forwarded-for"), Some("notanumber")),
+        (TrustedProxyConfig::ForwardedFor { trusted_hops: 1 }, true)
+    );
+
+    // Unrecognised mode -> fail-closed None, flagged unrecognised for the warn.
+    assert_eq!(
+        parse(Some("cloudfare"), None),
+        (TrustedProxyConfig::None, false)
+    );
+}
+
+#[test]
 fn test_request_context_methods() {
     let ctx = RequestContext::new(
         "req-123".to_string(),
