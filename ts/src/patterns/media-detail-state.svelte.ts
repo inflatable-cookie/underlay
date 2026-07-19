@@ -1,13 +1,13 @@
-interface MediaEditSource {
+interface MediaEditSource<TVisibility extends string = string> {
   title?: string | null;
   originalFilename?: string | null;
-  visibility: string;
+  visibility: TVisibility;
 }
 
-export interface MediaEditDialogDraft {
+export interface MediaEditDialogDraft<TVisibility extends string = string> {
   title: string;
   filename: string;
-  visibility: string;
+  visibility: TVisibility;
 }
 
 export interface MediaEditDialogState {
@@ -16,7 +16,9 @@ export interface MediaEditDialogState {
   submitting: boolean;
 }
 
-export function createMediaEditDialogDraft(media: MediaEditSource): MediaEditDialogDraft {
+export function createMediaEditDialogDraft<TVisibility extends string = string>(
+  media: MediaEditSource<TVisibility>
+): MediaEditDialogDraft<TVisibility> {
   return {
     title: media.title || "",
     filename: media.originalFilename || "",
