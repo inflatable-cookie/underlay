@@ -1,4 +1,3 @@
-import type { Snippet } from "svelte";
 import type { TemplateSurface } from "./primitives";
 
 export interface DetailMetaItemConfig {
@@ -10,7 +9,7 @@ export interface DetailMetaItemConfig {
 
 export interface DetailItemConfig {
   label: string;
-  value: string | Snippet;
+  value: string | TemplateSurface;
   description?: string;
   emptyText?: string;
   truncateValue?: boolean;

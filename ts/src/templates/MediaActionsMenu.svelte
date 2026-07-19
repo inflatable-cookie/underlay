@@ -1,9 +1,9 @@
 <script lang="ts">
-  import type { Snippet } from "svelte";
   import { copyToClipboard, useToasts } from "../runtime/feedback";
   import type { NavigationContext } from "../runtime/navigation";
   import { AlertDialog, IconButton, Menu, type MenuItem } from "@poodle/svelte";
   import type { MediaActionsMenuItem } from "./template.types";
+  import type { TemplateSurface } from "./template-types/primitives";
 
   type ActionEntry =
     | {
@@ -17,7 +17,7 @@
   interface Props {
     media: MediaActionsMenuItem;
     sourceContext?: NavigationContext;
-    trigger?: Snippet;
+    trigger?: TemplateSurface;
     softDeleteAction?: (media: MediaActionsMenuItem) => Promise<void>;
     restoreAction?: (media: MediaActionsMenuItem) => Promise<void>;
     purgeAction?: (media: MediaActionsMenuItem) => Promise<void>;
