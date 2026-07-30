@@ -39,6 +39,7 @@
         src={mediaUrl}
         title={media.title || media.originalFilename || "PDF preview"}
         class="underlay-media-preview-tab__pdf"
+        sandbox=""
       ></iframe>
     {:else}
       <EmptyState title={emptyTitle} message={emptyMessage} size="compact" />

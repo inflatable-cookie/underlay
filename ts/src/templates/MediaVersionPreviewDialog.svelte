@@ -55,6 +55,7 @@
           class="underlay-media-version-preview-dialog__frame"
           title="Version preview"
           src={previewUrl}
+          sandbox=""
         ></iframe>
       {:else}
         <p>{unsupportedMessage}</p>
