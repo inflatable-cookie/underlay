@@ -12,6 +12,12 @@ mod responses;
 #[cfg(feature = "error-logging")]
 pub mod error_logging;
 
+#[cfg(feature = "error-logging")]
+mod db_errors;
+
+#[cfg(feature = "error-logging")]
+pub use crate::db_errors::internal_db_error;
+
 #[cfg(feature = "embed")]
 pub mod embed;
 

@@ -3,6 +3,7 @@ mod extractors;
 mod principal;
 mod provider;
 mod repository;
+mod role_hierarchy;
 mod secret_cipher;
 mod types;
 
@@ -21,6 +22,7 @@ pub use crate::repository::{
     AuditLogRepository, AuthRepository, CredentialRepository, NewSession, RepoResult,
     SessionRepository, UserRepository,
 };
+pub use crate::role_hierarchy::{RoleHierarchy, RoleHierarchyError};
 pub use crate::secret_cipher::SecretCipher;
 pub use crate::types::{
     AuthEvent, AuthEventBuilder, AuthEventType, BackupCode, Credential, CredentialMetadata,
