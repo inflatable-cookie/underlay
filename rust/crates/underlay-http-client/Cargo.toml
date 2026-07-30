@@ -8,6 +8,7 @@ description = "Shared HTTP client configuration for Underlay crates"
 [dependencies]
 reqwest = { version = "0.13", default-features = false, features = ["rustls", "json"] }
 thiserror = { workspace = true }
+tracing = { workspace = true }
 
 [dev-dependencies]
 tokio = { workspace = true, features = ["macros", "rt-multi-thread", "net", "time"] }

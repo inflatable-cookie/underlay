@@ -56,6 +56,9 @@ services:
   #   S3_SECRET_KEY=minioadmin
   #   S3_REGION=us-east-1
   minio:
+    # DEV ONLY: :latest and default credentials (minioadmin/minioadmin) are
+    # intentional for local development. Pin a digest and use real credentials
+    # before reusing any of this beyond a dev machine.
     image: minio/minio:latest
     container_name: {{PROJECT_NAME}}-minio
     command: server /data --console-address ":9001"
@@ -88,6 +91,8 @@ services:
       mc anonymous set download minio/{{PROJECT_NAME}}-media;
       echo 'Bucket {{PROJECT_NAME}}-media created and configured';
       "
+    # NOTE: `mc anonymous set download` makes the bucket publicly readable.
+    # Fine for local dev media; do not carry this into deployed environments.
     restart: "no"
 
   # ==========================================================================

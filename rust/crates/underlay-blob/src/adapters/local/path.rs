@@ -38,6 +38,37 @@ pub(super) fn path_within_base(path: &Path, canonical_base: &Path) -> Option<Pat
     }
 }
 
+/// Resolve `base.join(key)` for a key whose final components may not exist
+/// yet. Canonicalizes the deepest existing ancestor and verifies it stays
+/// inside `canonical_base`, so a symlink planted inside the base directory
+/// cannot redirect reads or writes outside it.
+pub(super) fn joined_path_within_base(
+    base: &Path,
+    canonical_base: &Path,
+    key: &str,
+) -> BlobResult<PathBuf> {
+    let candidate = base.join(key);
+
+    let mut ancestor = Some(candidate.as_path());
+    while let Some(dir) = ancestor {
+        match dir.canonicalize() {
+            Ok(canonical) => {
+                if canonical.starts_with(canonical_base) {
+                    return Ok(candidate);
+                }
+                return Err(BlobError::InvalidKey(
+                    "key path escapes the base directory".to_string(),
+                ));
+            }
+            Err(_) => ancestor = dir.parent(),
+        }
+    }
+
+    Err(BlobError::InvalidKey(
+        "key path escapes the base directory".to_string(),
+    ))
+}
+
 /// Clean up empty parent directories after file deletion.
 ///
 /// Walks up from the deleted file's parent directory, removing empty

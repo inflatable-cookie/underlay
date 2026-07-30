@@ -10,7 +10,7 @@ use super::config::LocalConfig;
 use super::mime::guess_content_type;
 #[cfg(test)]
 use super::path::path_within_base;
-use super::path::{cleanup_empty_parents, validate_local_object_key};
+use super::path::{cleanup_empty_parents, joined_path_within_base, validate_local_object_key};
 use crate::adapter::BlobAdapter;
 use crate::error::{BlobError, BlobResult};
 use crate::types::{
@@ -62,7 +62,7 @@ impl LocalAdapter {
     /// Get the full filesystem path for a key.
     pub fn path_for_key(&self, key: &str) -> BlobResult<PathBuf> {
         validate_local_object_key(key)?;
-        Ok(self.config.base_path().join(key))
+        joined_path_within_base(self.config.base_path(), &self.canonical_base, key)
     }
 
     /// Write a file to the local filesystem.

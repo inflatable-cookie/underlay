@@ -54,8 +54,11 @@ pub struct HttpClient {
 impl HttpClient {
     /// Create a new HTTP client with default settings (timeouts + user-agent).
     pub fn new() -> Self {
-        Self::try_new().unwrap_or_else(|_| Self {
-            inner: reqwest::Client::new(),
+        Self::try_new().unwrap_or_else(|err| {
+            tracing::warn!(%err, "configured HTTP client build failed; falling back to reqwest defaults (custom timeouts/user-agent lost)");
+            Self {
+                inner: reqwest::Client::new(),
+            }
         })
     }
 
@@ -68,8 +71,11 @@ impl HttpClient {
 
     /// Create a new HTTP client with a custom user-agent.
     pub fn with_user_agent(user_agent: impl Into<String>) -> Self {
-        Self::try_with_user_agent(user_agent).unwrap_or_else(|_| Self {
-            inner: reqwest::Client::new(),
+        Self::try_with_user_agent(user_agent).unwrap_or_else(|err| {
+            tracing::warn!(%err, "configured HTTP client build failed; falling back to reqwest defaults (custom timeouts/user-agent lost)");
+            Self {
+                inner: reqwest::Client::new(),
+            }
         })
     }
 

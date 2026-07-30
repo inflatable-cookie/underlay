@@ -64,6 +64,32 @@ async fn test_local_adapter_rejects_unsafe_keys() {
 }
 
 #[tokio::test]
+async fn test_local_adapter_rejects_symlink_escape() {
+    let temp_dir = std::env::temp_dir().join("underlay-blob-symlink-test");
+    let outside_dir = std::env::temp_dir().join("underlay-blob-symlink-outside");
+    let _ = fs::remove_dir_all(&temp_dir).await;
+    let _ = fs::remove_dir_all(&outside_dir).await;
+    fs::create_dir_all(&temp_dir).await.unwrap();
+    fs::create_dir_all(&outside_dir).await.unwrap();
+
+    // Plant a symlink inside the base directory pointing outside it.
+    std::os::unix::fs::symlink(&outside_dir, temp_dir.join("escape")).unwrap();
+
+    let config = LocalConfig::new(&temp_dir, "http://localhost:8080/uploads");
+    let adapter = LocalAdapter::new(config).await.unwrap();
+
+    let err = adapter
+        .write_file("escape/pwned.txt", b"blocked", "text/plain")
+        .await
+        .expect_err("symlink escape should be rejected");
+    assert!(matches!(err, BlobError::InvalidKey(_)));
+
+    assert!(!outside_dir.join("pwned.txt").exists());
+    let _ = fs::remove_dir_all(&temp_dir).await;
+    let _ = fs::remove_dir_all(&outside_dir).await;
+}
+
+#[tokio::test]
 async fn test_local_adapter_public_url() {
     let config = LocalConfig::new("/tmp/test", "http://localhost:8080/uploads");
     let adapter = LocalAdapter::new(config).await.unwrap();
