@@ -7,7 +7,7 @@ fn environment_parse_and_display_cover_known_values() {
     assert_eq!(Environment::parse("stage"), Environment::Staging);
     assert_eq!(Environment::parse("production"), Environment::Prod);
     assert_eq!(Environment::parse("test"), Environment::Test);
-    assert_eq!(Environment::parse("unknown"), Environment::Dev);
+    assert_eq!(Environment::parse("unknown"), Environment::Prod);
 
     assert_eq!(Environment::Local.to_string(), "local");
     assert_eq!(Environment::Dev.to_string(), "dev");

@@ -3,6 +3,7 @@ mod extractors;
 mod principal;
 mod provider;
 mod repository;
+mod secret_cipher;
 mod types;
 
 #[cfg(feature = "hashing")]
@@ -20,6 +21,7 @@ pub use crate::repository::{
     AuditLogRepository, AuthRepository, CredentialRepository, NewSession, RepoResult,
     SessionRepository, UserRepository,
 };
+pub use crate::secret_cipher::SecretCipher;
 pub use crate::types::{
     AuthEvent, AuthEventBuilder, AuthEventType, BackupCode, Credential, CredentialMetadata,
     CredentialType, Session, SessionStatus, User, UserStatus,

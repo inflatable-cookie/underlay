@@ -1,4 +1,7 @@
 use super::*;
+use base64::engine::general_purpose::STANDARD;
+use base64::Engine;
+use underlay_auth::AuthError;
 
 static ENV_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
 

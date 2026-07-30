@@ -30,7 +30,9 @@ impl Environment {
     /// - "prod", "production" -> Prod
     /// - "test" -> Test
     ///
-    /// Unknown values default to Dev.
+    /// Unknown values default to Prod (fail closed: never enable
+    /// development behavior such as permissive CORS, optional encryption
+    /// keys, or dev seeds because of a typo).
     pub fn parse(value: &str) -> Self {
         match value.to_ascii_lowercase().as_str() {
             "local" => Environment::Local,
@@ -38,7 +40,7 @@ impl Environment {
             "staging" | "stage" => Environment::Staging,
             "prod" | "production" => Environment::Prod,
             "test" => Environment::Test,
-            _ => Environment::Dev,
+            _ => Environment::Prod,
         }
     }
 
