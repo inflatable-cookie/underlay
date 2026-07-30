@@ -7,11 +7,21 @@ use crate::{
     AiErrorKind, AiRuntimeError, LlmClient, LlmRequest, LlmResponse, ResolvedModelRoute, TokenUsage,
 };
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct OpenAiCompatibleClient {
     http: reqwest::Client,
     base_url: String,
     api_key: String,
+}
+
+impl std::fmt::Debug for OpenAiCompatibleClient {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("OpenAiCompatibleClient")
+            .field("http", &self.http)
+            .field("base_url", &self.base_url)
+            .field("api_key", &"[REDACTED]")
+            .finish()
+    }
 }
 
 impl OpenAiCompatibleClient {
@@ -21,6 +31,12 @@ impl OpenAiCompatibleClient {
             return Err(AiRuntimeError::new(
                 AiErrorKind::Validation,
                 "base_url is required",
+            ));
+        }
+        if !base_url.starts_with("https://") && !http_host_is_local(&base_url) {
+            return Err(AiRuntimeError::new(
+                AiErrorKind::Validation,
+                "base_url must use https (http is only allowed for localhost)",
             ));
         }
 
@@ -48,6 +64,20 @@ impl OpenAiCompatibleClient {
             api_key,
         })
     }
+}
+
+fn http_host_is_local(base_url: &str) -> bool {
+    let Some(rest) = base_url.strip_prefix("http://") else {
+        return false;
+    };
+    let authority = rest.split(['/', '?', '#']).next().unwrap_or("");
+    let authority = authority.rsplit('@').next().unwrap_or("");
+    let host = if let Some(bracketed) = authority.strip_prefix('[') {
+        bracketed.split(']').next().unwrap_or("")
+    } else {
+        authority.split(':').next().unwrap_or("")
+    };
+    matches!(host, "localhost" | "127.0.0.1" | "0.0.0.0" | "::1") || host.ends_with(".localhost")
 }
 
 #[derive(Debug, Serialize)]

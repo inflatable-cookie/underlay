@@ -5,6 +5,8 @@ use uuid::Uuid;
 
 use super::errors::CursorError;
 
+const MAX_ENCODED_CURSOR_LEN: usize = 8 * 1024;
+
 /// A cursor for keyset pagination.
 ///
 /// Cursors encode the sort column values and a tiebreaker ID to enable
@@ -117,6 +119,13 @@ impl Cursor {
 
     /// Decode a cursor from a URL-safe string.
     pub fn decode(encoded: &str) -> Result<Self, CursorError> {
+        if encoded.len() > MAX_ENCODED_CURSOR_LEN {
+            return Err(CursorError::DecodeError(format!(
+                "cursor exceeds maximum size of {} bytes",
+                MAX_ENCODED_CURSOR_LEN
+            )));
+        }
+
         let bytes = URL_SAFE_NO_PAD
             .decode(encoded)
             .map_err(|e| CursorError::DecodeError(e.to_string()))?;

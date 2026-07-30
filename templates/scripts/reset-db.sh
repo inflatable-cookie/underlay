@@ -22,6 +22,17 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 
+# Database identifiers come from template substitution. Validate them before
+# they reach shell or SQL so a bad placeholder value cannot inject commands.
+DB_NAME="{{DB_NAME}}"
+DB_USER="{{DB_USER}}"
+for ident in "$DB_NAME" "$DB_USER"; do
+    if [[ ! "$ident" =~ ^[a-z_][a-z0-9_]*$ ]]; then
+        echo "[ERROR] Unsafe database identifier in template configuration: $ident" >&2
+        exit 2
+    fi
+done
+
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -58,14 +69,14 @@ drop_database() {
     info "Dropping database {{DB_NAME}}..."
 
     # Using docker exec to run psql
-    docker compose exec -T postgres psql -U {{DB_USER}} -c "DROP DATABASE IF EXISTS {{DB_NAME}};" postgres
+    docker compose exec -T postgres psql -U "$DB_USER" -c "DROP DATABASE IF EXISTS \"$DB_NAME\";" postgres
     success "Database dropped"
 }
 
 create_database() {
     info "Creating database {{DB_NAME}}..."
 
-    docker compose exec -T postgres psql -U {{DB_USER}} -c "CREATE DATABASE {{DB_NAME}};" postgres
+    docker compose exec -T postgres psql -U "$DB_USER" -c "CREATE DATABASE \"$DB_NAME\";" postgres
     success "Database created"
 }
 
@@ -98,7 +109,7 @@ run_seeds() {
         for f in "$PROJECT_ROOT/{{PROJECT_SLUG}}-api/migrations_dev"/*.sql; do
             if [ -f "$f" ]; then
                 info "Running $(basename "$f")..."
-                docker compose exec -T postgres psql -U {{DB_USER}} -d {{DB_NAME}} -f - < "$f"
+                docker compose exec -T postgres psql -U "$DB_USER" -d "$DB_NAME" -f - < "$f"
             fi
         done
         success "Seeds complete"

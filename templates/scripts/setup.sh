@@ -35,6 +35,17 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 
+# Database identifiers come from template substitution. Validate them before
+# they reach shell or SQL so a bad placeholder value cannot inject commands.
+DB_NAME="{{DB_NAME}}"
+DB_USER="{{DB_USER}}"
+for ident in "$DB_NAME" "$DB_USER"; do
+    if [[ ! "$ident" =~ ^[a-z_][a-z0-9_]*$ ]]; then
+        echo "[ERROR] Unsafe database identifier in template configuration: $ident" >&2
+        exit 2
+    fi
+done
+
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -102,7 +113,7 @@ start_docker_services() {
     # Wait for PostgreSQL to be ready
     info "Waiting for PostgreSQL..."
     for i in {1..30}; do
-        if docker compose exec -T postgres pg_isready -U {{DB_USER}} -d {{DB_NAME}} &>/dev/null; then
+        if docker compose exec -T postgres pg_isready -U "$DB_USER" -d "$DB_NAME" &>/dev/null; then
             success "PostgreSQL is ready"
             return
         fi
@@ -184,6 +195,9 @@ generate_jwt_keys() {
         echo "AUTH_JWT_PRIVATE_KEY=$PRIVATE_KEY" >> .env
         echo "AUTH_JWT_PUBLIC_KEY=$PUBLIC_KEY" >> .env
         success "JWT keys generated and added to .env"
+        if git rev-parse --is-inside-work-tree &>/dev/null && ! git check-ignore -q .env; then
+            warn ".env is NOT git-ignored — add it before committing, or move keys to Effigy vault"
+        fi
     else
         warn "Failed to generate JWT keys. Generate manually or use your auth binary."
     fi

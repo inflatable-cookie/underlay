@@ -2,6 +2,7 @@ import {
   resolveActionFailureResult,
   type ActionResult,
 } from "../forms-action-result";
+import { resolveRedirectTo } from "../../client/route-protection";
 import type { FieldErrors, FormAutoSaveOptions } from "./types";
 
 export type CreateFormEnhanceInput<T> = {
@@ -81,7 +82,7 @@ export function createFormEnhance<T>(
 
         case "redirect":
           if (result.location) {
-            window.location.href = result.location;
+            window.location.href = resolveRedirectTo(result.location);
           }
           input.setSuccess();
           break;

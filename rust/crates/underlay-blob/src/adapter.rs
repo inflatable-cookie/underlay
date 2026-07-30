@@ -7,6 +7,22 @@ use crate::types::{
     BlobObjectKey, DownloadRequest, ObjectInfo, SignedUrl, StoredObject, UploadPlan, UploadRequest,
 };
 
+pub(crate) fn join_public_url(base: &str, key: &str) -> String {
+    let fallback = || format!("{}/{}", base.trim_end_matches('/'), key);
+    let Ok(mut url) = url::Url::parse(base) else {
+        return fallback();
+    };
+    let Ok(mut segments) = url.path_segments_mut() else {
+        return fallback();
+    };
+    segments.pop_if_empty();
+    for segment in key.split('/') {
+        segments.push(segment);
+    }
+    drop(segments);
+    url.into()
+}
+
 /// Trait for blob storage backends.
 ///
 /// Implementations provide different ways to store and retrieve blobs:
@@ -236,7 +252,7 @@ impl BlobAdapter for NoopAdapter {
         use chrono::Utc;
 
         Ok(UploadPlan {
-            upload_url: format!("{}/{}", self.base_url, request.key.as_str()),
+            upload_url: join_public_url(&self.base_url, request.key.as_str()),
             method: "PUT".to_string(),
             required_headers: std::collections::HashMap::new(),
             max_bytes: request.content_length,
@@ -257,14 +273,17 @@ impl BlobAdapter for NoopAdapter {
     }
 
     fn public_url(&self, key: &str) -> String {
-        format!("{}/{}", self.base_url, key)
+        join_public_url(&self.base_url, key)
     }
 
     async fn signed_download_url(&self, request: DownloadRequest) -> BlobResult<SignedUrl> {
         use chrono::Utc;
 
         Ok(SignedUrl {
-            url: format!("{}/{}?signed=true", self.base_url, request.key.as_str()),
+            url: format!(
+                "{}?signed=true",
+                join_public_url(&self.base_url, request.key.as_str())
+            ),
             expires_at: Utc::now() + chrono::Duration::seconds(request.expires_in.as_secs() as i64),
         })
     }

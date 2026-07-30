@@ -68,6 +68,26 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
 
   let refreshInFlight: Promise<RefreshResult> | null = null;
 
+  // Tokens must only be attached to requests that resolve to the configured
+  // base origin; an absolute req.path can otherwise leak them cross-origin.
+  let baseOrigin: string | null = null;
+  try {
+    baseOrigin = new URL(options.baseUrl).origin;
+  } catch {
+    baseOrigin = null;
+  }
+
+  function isBaseOrigin(path: string): boolean {
+    if (baseOrigin === null) {
+      return false;
+    }
+    try {
+      return new URL(path, options.baseUrl).origin === baseOrigin;
+    } catch {
+      return false;
+    }
+  }
+
   async function rawRequest<T>(
     req: HttpRequest,
     opts?: { skipRetry?: boolean; acceptedStatuses?: number[] },
@@ -209,7 +229,7 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
       : ((await getAccessToken?.()) ?? null);
 
     const headers: Record<string, string> = { ...(req.headers ?? {}) };
-    if (token) {
+    if (token && isBaseOrigin(req.path)) {
       setHeaderIfMissing(headers, "Authorization", `Bearer ${token}`);
     }
 
@@ -258,7 +278,7 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
 
       const retryToken = (await getAccessToken?.()) ?? null;
       const retryHeaders: Record<string, string> = { ...(req.headers ?? {}) };
-      if (retryToken) {
+      if (retryToken && isBaseOrigin(req.path)) {
         setHeaderIfMissing(
           retryHeaders,
           "Authorization",

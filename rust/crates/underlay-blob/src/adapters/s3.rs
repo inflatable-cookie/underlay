@@ -88,7 +88,7 @@ impl BlobAdapter for S3Adapter {
 
     fn public_url(&self, key: &str) -> String {
         if let Some(base) = self.config.public_url_base_ref() {
-            format!("{}/{}", base.trim_end_matches('/'), key)
+            crate::adapter::join_public_url(base, key)
         } else {
             self.default_public_url(key)
         }

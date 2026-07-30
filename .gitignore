@@ -8,6 +8,12 @@ ts/coverage/
 coverage/
 .DS_Store
 
+# Local secrets and machine state
+.env
+.env.*
+!.env.example
+.btca/
+
 # Generated migration/runtime artifacts
 /runtime/
 .claude/settings.local.json

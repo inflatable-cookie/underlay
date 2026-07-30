@@ -52,7 +52,11 @@ describe("client/sveltekit cookies", () => {
 
 		expect(await store.getAccessToken()).toBeNull();
 		await store.setAccessToken("a1");
-		expect(cookies.set).toHaveBeenCalledWith("access", "a1", { path: "/", sameSite: "strict" });
+		expect(cookies.set).toHaveBeenCalledWith("access", "a1", {
+		path: "/",
+		httpOnly: true,
+		sameSite: "strict",
+	});
 		await store.setAccessToken(null);
 		expect(cookies.delete).toHaveBeenCalledWith("access", { path: "/" });
 

@@ -36,7 +36,7 @@ pub async fn error_logging_middleware(
 ) -> Response {
     let method = req.method().clone();
     let path = req.uri().path().to_string();
-    let query = req.uri().query().map(|q| q.to_string());
+    let query = req.uri().query().map(|q| redact_query(q));
     let user_agent = req
         .headers()
         .get("user-agent")
@@ -112,6 +112,44 @@ pub async fn error_logging_middleware(
     res
 }
 
+const SENSITIVE_QUERY_KEYS: &[&str] = &[
+    "token",
+    "access_token",
+    "refresh_token",
+    "id_token",
+    "api_key",
+    "apikey",
+    "key",
+    "secret",
+    "client_secret",
+    "password",
+    "code",
+    "session",
+    "session_id",
+    "signature",
+    "sig",
+    "auth",
+];
+
+/// Redact values of known-sensitive query parameters before the query string
+/// is persisted to the error log.
+fn redact_query(query: &str) -> String {
+    query
+        .split('&')
+        .map(|pair| {
+            let Some((key, _)) = pair.split_once('=') else {
+                return pair.to_string();
+            };
+            if SENSITIVE_QUERY_KEYS.contains(&key.trim().to_ascii_lowercase().as_str()) {
+                format!("{key}=[REDACTED]")
+            } else {
+                pair.to_string()
+            }
+        })
+        .collect::<Vec<_>>()
+        .join("&")
+}
+
 fn fallback_handler_context(
     method: &axum::http::Method,
     path: &str,
@@ -130,8 +168,23 @@ fn fallback_handler_context(
 
 #[cfg(test)]
 mod tests {
-    use super::fallback_handler_context;
+    use super::{fallback_handler_context, redact_query};
     use http::{Method, StatusCode};
+
+    #[test]
+    fn redact_query_masks_sensitive_values() {
+        assert_eq!(
+            redact_query("access_token=abc123&page=2"),
+            "access_token=[REDACTED]&page=2"
+        );
+        assert_eq!(
+            redact_query("PASSWORD=hunter2&Code=xyz"),
+            "PASSWORD=[REDACTED]&Code=[REDACTED]"
+        );
+        assert_eq!(redact_query("page=2&sort=name"), "page=2&sort=name");
+        assert_eq!(redact_query("flag"), "flag");
+        assert_eq!(redact_query(""), "");
+    }
 
     #[test]
     fn fallback_handler_context_is_structured_and_non_null() {

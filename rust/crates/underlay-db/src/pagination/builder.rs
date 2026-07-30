@@ -86,9 +86,14 @@ impl PaginationBuilder {
     /// Returns a SQL fragment like `(col, id) < ($1, $2)` suitable for keyset pagination.
     ///
     /// # Arguments
-    /// * `column` - The primary sort column name (e.g., "updated_at", "weight")
+    /// * `column` - The primary sort column name (e.g., "updated_at", "weight").
+    ///   Must be a valid [`SqlIdentifier`](crate::identifiers::SqlIdentifier);
+    ///   pass static strings only.
     /// * `param_offset` - Starting parameter number (1-indexed for PostgreSQL)
     /// * `descending` - Whether the primary sort is descending
+    ///
+    /// # Panics
+    /// Panics if `column` is not a valid SQL identifier.
     ///
     /// # Example
     /// ```rust,ignore
@@ -103,6 +108,8 @@ impl PaginationBuilder {
     /// ```
     pub fn keyset_condition(&self, column: &str, param_offset: usize, descending: bool) -> String {
         let op = self.keyset_operator(descending);
+        let column = crate::identifiers::SqlIdentifier::parse(column)
+            .expect("keyset_condition column must be a valid SQL identifier");
         format!(
             "({}, id) {} (${}, ${})",
             column,
@@ -130,8 +137,13 @@ impl PaginationBuilder {
     /// Generate the ORDER BY clause for a two-column keyset.
     ///
     /// # Arguments
-    /// * `column` - The primary sort column name
+    /// * `column` - The primary sort column name. Must be a valid
+    ///   [`SqlIdentifier`](crate::identifiers::SqlIdentifier); pass static
+    ///   strings only.
     /// * `descending` - Whether the primary sort is descending
+    ///
+    /// # Panics
+    /// Panics if `column` is not a valid SQL identifier.
     ///
     /// # Example
     /// ```rust,ignore
@@ -140,6 +152,8 @@ impl PaginationBuilder {
     /// ```
     pub fn keyset_order_by(&self, column: &str, descending: bool) -> String {
         let dir = self.order_direction(descending);
+        let column = crate::identifiers::SqlIdentifier::parse(column)
+            .expect("keyset_order_by column must be a valid SQL identifier");
         format!("{} {}, id {}", column, dir, dir)
     }
 

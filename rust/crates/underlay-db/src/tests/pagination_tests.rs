@@ -18,6 +18,13 @@ fn test_cursor_encode_decode() {
 }
 
 #[test]
+fn test_cursor_decode_rejects_oversized_input() {
+    let oversized = "A".repeat(8 * 1024 + 1);
+    let err = Cursor::decode(&oversized).expect_err("oversized cursor should fail");
+    assert!(err.to_string().contains("maximum size"));
+}
+
+#[test]
 fn test_weight_cursor() {
     let id = test_uuid();
     let cursor = WeightCursor::new(10, id);

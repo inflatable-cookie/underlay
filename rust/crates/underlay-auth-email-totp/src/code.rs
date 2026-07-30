@@ -14,6 +14,8 @@ use rand::RngExt;
 /// assert!(code.chars().all(|c| c.is_ascii_digit()));
 /// ```
 pub fn generate_code(length: usize) -> String {
+    // 10^length must fit in u64, and a zero-length code is useless.
+    let length = length.clamp(1, 19);
     let mut rng = rand::rng();
     let max = 10_u64.pow(length as u32);
     let code: u64 = rng.random_range(0..max);

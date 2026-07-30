@@ -11,6 +11,11 @@ if [[ ! -d "$TARGET_DIR" ]]; then
   exit 2
 fi
 
+if [[ ! "$WARN_LINES" =~ ^[0-9]+$ || ! "$FAIL_LINES" =~ ^[0-9]+$ ]]; then
+  echo "Thresholds must be non-negative integers" >&2
+  exit 2
+fi
+
 echo "Checking .rs file lengths in: $TARGET_DIR"
 echo "  Warn threshold: $WARN_LINES lines"
 echo "  Fail threshold: $FAIL_LINES lines"

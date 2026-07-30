@@ -2,7 +2,7 @@ use http::header::{HeaderName, HeaderValue};
 use http::Method;
 use std::time::Duration;
 use thiserror::Error;
-use tower_http::cors::{AllowHeaders, AllowMethods, AllowOrigin, CorsLayer};
+use tower_http::cors::{AllowHeaders, AllowMethods, AllowOrigin, CorsLayer, ExposeHeaders};
 
 use underlay_observability::{Environment, REQUEST_ID_HEADER};
 
@@ -51,6 +51,8 @@ pub struct CorsConfig {
     allowed_origins: Vec<HeaderValue>,
     /// Additional allowed headers.
     allowed_headers: Vec<HeaderName>,
+    /// Response headers readable by cross-origin browser clients.
+    exposed_headers: Vec<HeaderName>,
     /// If true, allows credentials (cookies, authorization headers).
     allow_credentials: bool,
     /// Max age for preflight request caching in seconds (default: 3600).
@@ -67,6 +69,11 @@ impl Default for CorsConfig {
                 HeaderName::from_static(REQUEST_ID_HEADER),
                 HeaderName::from_static("authorization"),
                 HeaderName::from_static("content-type"),
+            ],
+            exposed_headers: vec![
+                HeaderName::from_static(REQUEST_ID_HEADER),
+                HeaderName::from_static("etag"),
+                HeaderName::from_static("x-error-code"),
             ],
             allow_credentials: false,
             max_age_secs: DEFAULT_CORS_MAX_AGE_SECS,
@@ -161,6 +168,18 @@ impl CorsConfig {
         self
     }
 
+    /// Add a response header that browser clients may read cross-origin.
+    pub fn with_exposed_header(mut self, header: HeaderName) -> Self {
+        self.exposed_headers.push(header);
+        self
+    }
+
+    /// Set exposed response headers, replacing the defaults.
+    pub fn with_exposed_headers(mut self, headers: Vec<HeaderName>) -> Self {
+        self.exposed_headers = headers;
+        self
+    }
+
     /// Enable or disable credentials.
     pub fn with_credentials(mut self, allow: bool) -> Self {
         self.allow_credentials = allow;
@@ -187,6 +206,10 @@ impl CorsConfig {
 
     pub fn allowed_headers(&self) -> &[HeaderName] {
         &self.allowed_headers
+    }
+
+    pub fn exposed_headers(&self) -> &[HeaderName] {
+        &self.exposed_headers
     }
 
     pub fn allow_credentials(&self) -> bool {
@@ -265,6 +288,7 @@ fn build_cors_layer(config: CorsConfig) -> CorsLayer {
     };
 
     let allow_headers = AllowHeaders::list(config.allowed_headers);
+    let expose_headers = ExposeHeaders::list(config.exposed_headers);
 
     // When credentials are enabled, we can't use wildcard for methods either
     let allow_methods = if config.allow_credentials {
@@ -283,6 +307,7 @@ fn build_cors_layer(config: CorsConfig) -> CorsLayer {
     let layer = CorsLayer::new()
         .allow_origin(allow_origin)
         .allow_headers(allow_headers)
+        .expose_headers(expose_headers)
         .allow_methods(allow_methods)
         .max_age(Duration::from_secs(config.max_age_secs));
 

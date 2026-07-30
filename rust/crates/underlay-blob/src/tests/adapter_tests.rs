@@ -17,6 +17,12 @@ async fn test_noop_adapter_public_url() {
     let adapter = NoopAdapter::with_config("my-bucket", "https://cdn.example.com");
     let url = adapter.public_url("images/photo.jpg");
     assert_eq!(url, "https://cdn.example.com/images/photo.jpg");
+
+    let encoded = adapter.public_url("images/My photo #1.jpg");
+    assert_eq!(
+        encoded,
+        "https://cdn.example.com/images/My%20photo%20%231.jpg"
+    );
 }
 
 #[tokio::test]

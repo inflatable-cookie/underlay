@@ -12,8 +12,28 @@ pub async fn hibp_k_anonymity_check(
     api_base_url: &str,
     user_agent: &str,
 ) -> PasswordAuthResult<bool> {
-    let client = HttpHibpRangeClient::new(api_base_url, user_agent);
+    let base_url = api_base_url.trim().trim_end_matches('/');
+    if !base_url.starts_with("https://") && !http_host_is_local(base_url) {
+        return Err(PasswordAuthError::Internal(
+            "HIBP api_base_url must use https (http is only allowed for localhost)".to_string(),
+        ));
+    }
+    let client = HttpHibpRangeClient::new(base_url, user_agent);
     hibp_k_anonymity_check_with_client(password, &client).await
+}
+
+fn http_host_is_local(base_url: &str) -> bool {
+    let Some(rest) = base_url.strip_prefix("http://") else {
+        return false;
+    };
+    let authority = rest.split(['/', '?', '#']).next().unwrap_or("");
+    let authority = authority.rsplit('@').next().unwrap_or("");
+    let host = if let Some(bracketed) = authority.strip_prefix('[') {
+        bracketed.split(']').next().unwrap_or("")
+    } else {
+        authority.split(':').next().unwrap_or("")
+    };
+    matches!(host, "localhost" | "127.0.0.1" | "0.0.0.0" | "::1") || host.ends_with(".localhost")
 }
 
 /// Minimal interface for HIBP range retrieval.

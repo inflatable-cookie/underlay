@@ -26,7 +26,17 @@ export function environmentName(options: LoadConfigStackOptions = {}): string {
     DEFAULT_ENVIRONMENT;
 
   const trimmed = raw.trim();
-  return trimmed.length > 0 ? trimmed : DEFAULT_ENVIRONMENT;
+  if (trimmed.length === 0) {
+    return DEFAULT_ENVIRONMENT;
+  }
+  assertSafeConfigName(trimmed, "environment");
+  return trimmed;
+}
+
+function assertSafeConfigName(name: string, kind: string): void {
+  if (name === ".." || name.includes("/") || name.includes("\\") || name.includes("\0")) {
+    throw new Error(`Config ${kind} name contains path separators or traversal: ${name}`);
+  }
 }
 
 export function loadConfigStack(
@@ -42,6 +52,7 @@ export function loadConfigStack(
   mergeConfigFile(merged, join(configDir, `${environment}.toml`), false);
 
   if (localOverlay) {
+    assertSafeConfigName(localOverlay, "localOverlay");
     mergeConfigFile(merged, join(configDir, `${localOverlay}.toml`), false);
   }
 
@@ -89,6 +100,9 @@ function mergeConfigFile(target: ConfigTable, path: string, required: boolean): 
 
 function mergeTables(target: ConfigTable, overlay: ConfigTable): void {
   for (const [key, value] of Object.entries(overlay)) {
+    if (isUnsafeKey(key)) {
+      continue;
+    }
     const current = target[key];
     if (isTable(current) && isTable(value)) {
       mergeTables(current, value);
@@ -102,6 +116,9 @@ function setDottedValue(target: ConfigTable, dottedKey: string, value: ConfigVal
   const parts = dottedKey.split(".");
   if (parts.some((part) => part.trim().length === 0)) {
     throw new Error(`Config override key is empty: ${dottedKey}`);
+  }
+  if (parts.some(isUnsafeKey)) {
+    throw new Error(`Config override key contains a forbidden segment: ${dottedKey}`);
   }
 
   let current = target;
@@ -119,6 +136,10 @@ function setDottedValue(target: ConfigTable, dottedKey: string, value: ConfigVal
   }
 
   current[parts[parts.length - 1]!] = value;
+}
+
+function isUnsafeKey(key: string): boolean {
+  return key === "__proto__" || key === "constructor" || key === "prototype";
 }
 
 function isTable(value: unknown): value is ConfigTable {

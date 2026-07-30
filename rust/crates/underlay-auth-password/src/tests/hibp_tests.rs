@@ -74,6 +74,14 @@ async fn hibp_k_anonymity_check_with_client_propagates_client_error() {
 }
 
 #[tokio::test]
+async fn hibp_k_anonymity_check_rejects_non_local_http() {
+    let err = hibp_k_anonymity_check("password123", "http://api.example.com", "underlay-test")
+        .await
+        .expect_err("non-local http base url should fail");
+    assert!(format!("{err}").contains("https"));
+}
+
+#[tokio::test]
 async fn hibp_k_anonymity_check_can_run_against_local_server() {
     use tokio::io::{AsyncReadExt, AsyncWriteExt};
     use tokio::net::TcpListener;

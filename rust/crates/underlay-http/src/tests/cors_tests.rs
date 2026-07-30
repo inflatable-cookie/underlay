@@ -45,6 +45,20 @@ mod tests {
     }
 
     #[test]
+    fn default_config_exposes_cache_and_diagnostic_headers() {
+        let config = CorsConfig::default();
+        let header_names: Vec<&str> = config
+            .exposed_headers()
+            .iter()
+            .map(|header| header.as_str())
+            .collect();
+
+        assert!(header_names.contains(&"etag"));
+        assert!(header_names.contains(&"x-request-id"));
+        assert!(header_names.contains(&"x-error-code"));
+    }
+
+    #[test]
     fn default_config_has_one_hour_max_age() {
         let config = CorsConfig::default();
         assert_eq!(config.max_age_secs(), DEFAULT_CORS_MAX_AGE_SECS);
@@ -199,6 +213,21 @@ mod tests {
 
         assert!(header_names.contains(&"x-first"));
         assert!(header_names.contains(&"x-second"));
+    }
+
+    #[test]
+    fn exposed_headers_can_be_extended_or_replaced() {
+        let extended =
+            CorsConfig::new().with_exposed_header(HeaderName::from_static("x-custom-response"));
+        assert!(extended
+            .exposed_headers()
+            .iter()
+            .any(|header| header == "x-custom-response"));
+
+        let replaced = CorsConfig::new()
+            .with_exposed_headers(vec![HeaderName::from_static("x-only-response")]);
+        assert_eq!(replaced.exposed_headers().len(), 1);
+        assert_eq!(replaced.exposed_headers()[0], "x-only-response");
     }
 
     // ========================================================================
@@ -370,6 +399,7 @@ mod tests {
         assert!(config.allow_credentials());
         assert_eq!(config.allowed_origins().len(), 1);
         assert_eq!(config.allowed_headers().len(), 3);
+        assert_eq!(config.exposed_headers().len(), 3);
         assert_eq!(config.max_age_secs(), DEFAULT_CORS_MAX_AGE_SECS);
     }
 }

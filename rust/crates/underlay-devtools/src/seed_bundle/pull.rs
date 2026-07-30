@@ -109,15 +109,55 @@ fn extract_sql_files(
     for layer in &package.layout.layers {
         if layer.kind == OciLayerKind::DataChunk {
             let payload = decode_payload(&package.payloads, &layer.digest)?;
+            let fallback = || format!("chunk_{}.sql", sql_file_count);
             let filename = layer
                 .annotations
                 .get("underlay.seed.file_name")
                 .cloned()
-                .unwrap_or_else(|| format!("chunk_{}.sql", sql_file_count));
+                .unwrap_or_else(fallback);
+            let filename = safe_file_name(&filename).unwrap_or_else(fallback);
 
             std::fs::write(options.output_dir().join(&filename), &payload)?;
             sql_file_count += 1;
         }
     }
     Ok(sql_file_count)
+}
+
+fn safe_file_name(name: &str) -> Option<String> {
+    if name.is_empty() || name == "." || name == ".." {
+        return None;
+    }
+    let sanitized = local_store::sanitize_ref(name);
+    if sanitized != name {
+        return None;
+    }
+    Some(sanitized)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::safe_file_name;
+
+    #[test]
+    fn accepts_plain_file_names() {
+        assert_eq!(
+            safe_file_name("chunk_0.sql").as_deref(),
+            Some("chunk_0.sql")
+        );
+        assert_eq!(
+            safe_file_name("users-seed.sql").as_deref(),
+            Some("users-seed.sql")
+        );
+    }
+
+    #[test]
+    fn rejects_traversal_and_separators() {
+        assert!(safe_file_name("../../etc/passwd").is_none());
+        assert!(safe_file_name("..").is_none());
+        assert!(safe_file_name(".").is_none());
+        assert!(safe_file_name("").is_none());
+        assert!(safe_file_name("dir/file.sql").is_none());
+        assert!(safe_file_name("..\\windows\\system32").is_none());
+    }
 }

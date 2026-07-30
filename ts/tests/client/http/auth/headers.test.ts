@@ -69,4 +69,40 @@ describe("createHttpClient authentication headers", () => {
     const { headers } = getFetchCallArgs(fetchMock);
     expect(headers.Authorization).toBe("Bearer explicit-token");
   });
+
+  it("should not attach access token to absolute foreign-origin paths", async () => {
+    fetchMock = mockFetchSuccess({});
+
+    const tokenStore = new FakeTokenStore();
+    tokenStore.seedTokens("access-token-123", "refresh-token");
+
+    const client = createHttpClient({
+      baseUrl: "https://api.example.com",
+      auth: { tokenStore },
+      fetch: fetchMock,
+    });
+
+    await client.get("https://evil.example.com/collect");
+
+    const { url, headers } = getFetchCallArgs(fetchMock);
+    expect(url).toBe("https://evil.example.com/collect");
+    expect(headers.Authorization).toBeUndefined();
+  });
+
+  it("should attach access token to absolute same-origin paths", async () => {
+    fetchMock = mockFetchSuccess({});
+
+    const tokenStore = new FakeTokenStore();
+    tokenStore.seedTokens("access-token-123", "refresh-token");
+
+    const client = createHttpClient({
+      baseUrl: "https://api.example.com",
+      auth: { tokenStore },
+      fetch: fetchMock,
+    });
+
+    await client.get("https://api.example.com/protected");
+
+    expectAuthHeader(fetchMock, "access-token-123");
+  });
 });

@@ -176,11 +176,7 @@ impl BlobAdapter for LocalAdapter {
     }
 
     fn public_url(&self, key: &str) -> String {
-        format!(
-            "{}/{}",
-            self.config.serve_url_base().trim_end_matches('/'),
-            key
-        )
+        crate::adapter::join_public_url(self.config.serve_url_base(), key)
     }
 
     async fn signed_download_url(&self, request: DownloadRequest) -> BlobResult<SignedUrl> {

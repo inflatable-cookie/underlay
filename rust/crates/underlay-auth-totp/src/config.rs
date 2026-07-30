@@ -69,8 +69,10 @@ impl TotpConfig {
     /// Set the number of digits in TOTP codes.
     ///
     /// Common values: 6 (default, most compatible) or 8.
+    /// Values are clamped to 6–9: fewer is insecure, and 10 or more would
+    /// overflow the `10^digits` modulus.
     pub fn with_digits(mut self, digits: u32) -> Self {
-        self.digits = digits;
+        self.digits = digits.clamp(6, 9);
         self
     }
 

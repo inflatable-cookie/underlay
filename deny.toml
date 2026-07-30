@@ -36,7 +36,7 @@ confidence-threshold = 0.8
 ignore = false
 
 [bans]
-multiple-versions = "allow"
+multiple-versions = "warn"
 wildcards = "allow"
 workspace-default-features = "allow"
 external-default-features = "allow"

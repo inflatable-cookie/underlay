@@ -75,7 +75,7 @@ where
         R: UserRepository + CredentialRepository,
         E: FnOnce(&str) -> AuthResult<String>,
     {
-        if request.state != stored_state.csrf_state {
+        if !constant_time_eq(&request.state, &stored_state.csrf_state) {
             return Err(AuthError::BadRequest("invalid oauth state".into()));
         }
 
@@ -152,6 +152,17 @@ where
             userinfo,
         })
     }
+}
+
+fn constant_time_eq(a: &str, b: &str) -> bool {
+    let (a, b) = (a.as_bytes(), b.as_bytes());
+    if a.len() != b.len() {
+        return false;
+    }
+    a.iter()
+        .zip(b.iter())
+        .fold(0u8, |acc, (x, y)| acc | (x ^ y))
+        == 0
 }
 
 fn derive_display_name(userinfo: &GoogleUserInfo, email: &str) -> String {

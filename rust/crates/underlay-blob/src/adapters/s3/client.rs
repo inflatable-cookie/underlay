@@ -95,25 +95,28 @@ impl S3Adapter {
 
     /// Generate the standard S3 public URL for an object.
     pub(super) fn default_public_url(&self, key: &str) -> String {
-        if self.config.path_style_enabled() {
+        let base = if self.config.path_style_enabled() {
             if let Some(endpoint) = self.config.endpoint_url_ref() {
-                format!("{}/{}/{}", endpoint, self.config.bucket(), key)
+                format!(
+                    "{}/{}",
+                    endpoint.trim_end_matches('/'),
+                    self.config.bucket()
+                )
             } else {
                 format!(
-                    "https://s3.{}.amazonaws.com/{}/{}",
+                    "https://s3.{}.amazonaws.com/{}",
                     self.config.region(),
-                    self.config.bucket(),
-                    key
+                    self.config.bucket()
                 )
             }
         } else {
             format!(
-                "https://{}.s3.{}.amazonaws.com/{}",
+                "https://{}.s3.{}.amazonaws.com",
                 self.config.bucket(),
-                self.config.region(),
-                key
+                self.config.region()
             )
-        }
+        };
+        crate::adapter::join_public_url(&base, key)
     }
 
     /// Convert S3 SDK errors to BlobError.

@@ -118,6 +118,8 @@ export function createCookieTokenStore(
       }
       event.cookies.set(options.accessTokenCookie, token, {
         path: "/",
+        httpOnly: true,
+        sameSite: "lax",
         ...options.cookie,
       });
     },
@@ -130,6 +132,8 @@ export function createCookieTokenStore(
       }
       event.cookies.set(options.refreshTokenCookie, token, {
         path: "/",
+        httpOnly: true,
+        sameSite: "lax",
         ...options.cookie,
       });
     },

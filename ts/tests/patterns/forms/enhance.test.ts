@@ -74,6 +74,34 @@ describe("createFormState.enhance", () => {
 		expect(form.isSuccess).toBe(true);
 	});
 
+	it("falls back to / for unsafe redirect locations", async () => {
+		const form = createFormState();
+		const formEl = createMockForm();
+		(globalThis as any).window = { location: { href: "https://example.com/start" } };
+		(globalThis as any).fetch = vi
+			.fn()
+			.mockResolvedValueOnce({
+				json: async () => ({ type: "redirect", location: "javascript:alert(1)" })
+			})
+			.mockResolvedValueOnce({
+				json: async () => ({ type: "redirect", location: "https://evil.example/phish" })
+			})
+			.mockResolvedValueOnce({
+				json: async () => ({ type: "redirect", location: "//evil.example/phish" })
+			});
+
+		form.enhance(formEl as unknown as HTMLFormElement);
+
+		await formEl.submit();
+		expect((globalThis as any).window.location.href).toBe("/");
+
+		await formEl.submit();
+		expect((globalThis as any).window.location.href).toBe("/");
+
+		await formEl.submit();
+		expect((globalThis as any).window.location.href).toBe("/");
+	});
+
 	it("handles non-JSON responses and network exceptions", async () => {
 		const form = createFormState();
 		const formEl = createMockForm();
