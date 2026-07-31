@@ -4,3 +4,9 @@ export { RelationSelector } from "./RelationSelector";
 export { default as SpaFormShell } from "./SpaFormShell.svelte";
 export type { SpaFormResult, SpaSubmitHandler, SpaNavigateFn } from "./spa-form-types";
 export * from "./context-actions.svelte";
+export { createPageListQueryState } from "./page-list-query.svelte";
+export type {
+  PageListQueryMode,
+  PageListQueryState,
+  PageListQueryStateOptions,
+} from "./page-list-query.svelte";

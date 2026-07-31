@@ -3,6 +3,97 @@ use std::collections::HashMap;
 use std::str::FromStr;
 use underlay_query::{parse_sort_string, FilterField, FilterOperator, SortField};
 
+use crate::pagination::PagePaginationParams;
+
+/// Unified query parameters for admin list endpoints: page/limit
+/// pagination, sort, filters, named variant, and free-text search.
+///
+/// One extractor instead of merging `Query<QueryParams>` +
+/// `Query<PagePaginationParams>` per handler:
+///
+/// ```ignore
+/// async fn list_modules(Query(q): Query<ListQueryParams>) -> impl IntoResponse {
+///     let filters = q.filter_fields();
+///     let order = q.sql_order_by_or(&field_map, "m.weight ASC, m.id ASC");
+///     let (limit, offset) = (q.limit_i64(), q.offset_i64());
+///     // ...
+///     Ok(Json(q.params().wrap_page_list(items, total)))
+/// }
+/// ```
+#[derive(Debug, Clone, Default, Deserialize)]
+pub struct ListQueryParams {
+    /// Sort/filter parameters (`sort=f:asc`, `filter[field]=v`).
+    #[serde(flatten)]
+    pub query: QueryParams,
+
+    /// Page/limit pagination.
+    #[serde(flatten)]
+    pub pagination: PagePaginationParams,
+
+    /// Named baseline query variant (contract 116 `variant=`).
+    #[serde(default)]
+    pub variant: Option<String>,
+
+    /// Free-text search term.
+    #[serde(default)]
+    pub search: Option<String>,
+}
+
+impl ListQueryParams {
+    /// Access the pagination params.
+    pub fn params(&self) -> PagePaginationParams {
+        self.pagination.clone()
+    }
+
+    /// Clamp limit to the default maximum (100).
+    pub fn clamped(mut self) -> Self {
+        self.pagination = self.pagination.clamped();
+        self
+    }
+
+    /// Clamp limit to a custom maximum.
+    pub fn with_max_limit(mut self, max: u32) -> Self {
+        self.pagination = self.pagination.with_max_limit(max);
+        self
+    }
+
+    pub fn limit_i64(&self) -> i64 {
+        self.pagination.limit_i64()
+    }
+
+    pub fn offset_i64(&self) -> i64 {
+        self.pagination.offset_i64()
+    }
+
+    /// Sort fields from the embedded query params.
+    pub fn sort_fields(&self) -> &[SortField] {
+        self.query.sort_fields()
+    }
+
+    /// Filter fields from the embedded query params.
+    pub fn filter_fields(&self) -> Vec<FilterField> {
+        self.query.filter_fields()
+    }
+
+    /// SQL ORDER BY clause (no keyword) via a field allowlist.
+    pub fn sql_order_by(&self, field_map: &HashMap<&str, &str>) -> String {
+        self.query.sql_order_by(field_map)
+    }
+
+    /// SQL ORDER BY clause with a default fallback.
+    pub fn sql_order_by_or(&self, field_map: &HashMap<&str, &str>, default: &str) -> String {
+        self.query.sql_order_by_or(field_map, default)
+    }
+
+    /// Trimmed search term, if any non-empty value was supplied.
+    pub fn search_term(&self) -> Option<&str> {
+        self.search
+            .as_deref()
+            .map(str::trim)
+            .filter(|s| !s.is_empty())
+    }
+}
+
 /// Query parameters for sorting and filtering
 ///
 /// Use with Axum's `Query` extractor:

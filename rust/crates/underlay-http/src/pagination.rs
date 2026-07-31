@@ -4,12 +4,34 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, Deserialize)]
 pub struct PagePaginationParams {
     /// Page number (1-indexed)
-    #[serde(default = "default_page")]
+    #[serde(default = "default_page", deserialize_with = "de_u32_from_str_or_num")]
     pub page: u32,
 
     /// Items per page
-    #[serde(default = "default_limit")]
+    #[serde(default = "default_limit", deserialize_with = "de_u32_from_str_or_num")]
     pub limit: u32,
+}
+
+/// Accept both `"2"` (query-string form) and `2` (JSON form) so the same
+/// type works behind Axum's `Query` extractor and serde_json.
+fn de_u32_from_str_or_num<'de, D>(deserializer: D) -> Result<u32, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    #[derive(Deserialize)]
+    #[serde(untagged)]
+    enum StrOrNum {
+        Num(u32),
+        Str(String),
+    }
+
+    match StrOrNum::deserialize(deserializer)? {
+        StrOrNum::Num(value) => Ok(value),
+        StrOrNum::Str(value) => value
+            .trim()
+            .parse()
+            .map_err(|_| serde::de::Error::custom(format!("invalid u32 value: {value:?}"))),
+    }
 }
 
 fn default_page() -> u32 {

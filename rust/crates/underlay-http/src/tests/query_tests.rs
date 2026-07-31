@@ -270,3 +270,39 @@ fn test_field_mapping_macro() {
     assert_eq!(mapping.get_sort("title"), Some("m.title"));
     assert_eq!(mapping.get_filter("slug"), Some("m.slug"));
 }
+
+#[test]
+fn test_list_query_params_unified_extraction() {
+    let params: ListQueryParams = serde_urlencoded::from_str(
+        "page=2&limit=25&sort=title:asc&filter[status]=active&variant=live&search=hello%20world",
+    )
+    .unwrap();
+
+    assert_eq!(params.pagination.page, 2);
+    assert_eq!(params.pagination.limit, 25);
+    assert_eq!(params.offset_i64(), 25);
+    assert_eq!(params.variant.as_deref(), Some("live"));
+    assert_eq!(params.search_term(), Some("hello world"));
+
+    let filters = params.filter_fields();
+    assert_eq!(filters.len(), 1);
+    assert_eq!(filters[0].field, "status");
+}
+
+#[test]
+fn test_list_query_params_defaults_and_clamp() {
+    let params: ListQueryParams = serde_urlencoded::from_str("").unwrap();
+    assert_eq!(params.pagination.page, 1);
+    assert_eq!(params.pagination.limit, 20);
+    assert!(params.variant.is_none());
+    assert!(params.search_term().is_none());
+
+    let params: ListQueryParams = serde_urlencoded::from_str("limit=500").unwrap();
+    assert_eq!(params.clamped().pagination.limit, 100);
+}
+
+#[test]
+fn test_list_query_params_search_term_trims() {
+    let params: ListQueryParams = serde_urlencoded::from_str("search=%20%20").unwrap();
+    assert!(params.search_term().is_none());
+}

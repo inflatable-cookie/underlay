@@ -304,17 +304,21 @@ where
         let session = self.repo.get_session(session_id).await?;
 
         match session {
-            Some(s) if s.user_id == user_id => {
-                self.repo.revoke_session(session_id, reason).await
-            }
+            Some(s) if s.user_id == user_id => self.repo.revoke_session(session_id, reason).await,
             Some(_) => Err(AuthError::Forbidden),
             None => Err(AuthError::BadRequest("Session not found".into())),
         }
     }
 
     /// Revoke all active sessions for a user.
-    pub async fn revoke_all_sessions_for_user(&self, user_id: Uuid, reason: &str) -> AuthResult<u64> {
-        self.repo.revoke_all_sessions_for_user(user_id, reason).await
+    pub async fn revoke_all_sessions_for_user(
+        &self,
+        user_id: Uuid,
+        reason: &str,
+    ) -> AuthResult<u64> {
+        self.repo
+            .revoke_all_sessions_for_user(user_id, reason)
+            .await
     }
 
     /// Revoke a whole session family after refresh-token reuse detection.

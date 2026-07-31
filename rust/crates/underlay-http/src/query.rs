@@ -11,7 +11,7 @@
 
 mod params;
 
-pub use params::QueryParams;
+pub use params::{ListQueryParams, QueryParams};
 
 // Re-export the shared query model from underlay-query so callers importing
 // from `underlay_http::query` are unaffected by the relocation.

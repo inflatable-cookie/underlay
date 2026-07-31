@@ -114,10 +114,7 @@ impl AccountProvider for StaticAccounts {
 fn service_with(
     status: AccountStatus,
     roles: &[&str],
-) -> (
-    SessionService<InMemoryRepo, StaticAccounts>,
-    JwtService,
-) {
+) -> (SessionService<InMemoryRepo, StaticAccounts>, JwtService) {
     let (config, _) = JwtConfig::generate().unwrap();
     let jwt = JwtService::new(config).unwrap();
     let accounts = StaticAccounts {
@@ -157,7 +154,10 @@ async fn refresh_rejects_suspended_account() {
         .await
         .unwrap();
 
-    let err = service.refresh(&tokens.refresh_token, None).await.unwrap_err();
+    let err = service
+        .refresh(&tokens.refresh_token, None)
+        .await
+        .unwrap_err();
     assert!(matches!(err, AuthError::AccountSuspended));
 }
 
@@ -170,7 +170,10 @@ async fn refresh_rejects_deleted_account() {
         .await
         .unwrap();
 
-    let err = service.refresh(&tokens.refresh_token, None).await.unwrap_err();
+    let err = service
+        .refresh(&tokens.refresh_token, None)
+        .await
+        .unwrap_err();
     assert!(matches!(err, AuthError::AccountDeleted));
 }
 
@@ -187,9 +190,15 @@ async fn replayed_refresh_token_revokes_family() {
     service.refresh(&tokens.refresh_token, None).await.unwrap();
 
     // Replaying the original token is reuse: rejected and family revoked.
-    let err = service.refresh(&tokens.refresh_token, None).await.unwrap_err();
+    let err = service
+        .refresh(&tokens.refresh_token, None)
+        .await
+        .unwrap_err();
     assert!(
-        matches!(err, AuthError::TokenInvalid | AuthError::TokenFingerprintMismatch),
+        matches!(
+            err,
+            AuthError::TokenInvalid | AuthError::TokenFingerprintMismatch
+        ),
         "expected reuse detection, got {err:?}"
     );
 
@@ -215,16 +224,18 @@ async fn absolute_timeout_revokes_session() {
         .await
         .unwrap();
 
-    let err = service.refresh(&tokens.refresh_token, None).await.unwrap_err();
+    let err = service
+        .refresh(&tokens.refresh_token, None)
+        .await
+        .unwrap_err();
     assert!(matches!(err, AuthError::SessionExpired));
 }
 
 #[tokio::test]
 async fn strict_fingerprint_mode_rejects_mismatch() {
     let (mut service, _jwt) = service_with(AccountStatus::Active, &["user"]);
-    service = service.with_config(
-        crate::SessionServiceConfig::default().with_refresh_fingerprint_strict(true),
-    );
+    service = service
+        .with_config(crate::SessionServiceConfig::default().with_refresh_fingerprint_strict(true));
     let user_id = Uuid::new_v7();
     let (tokens, _) = service
         .create_session(
@@ -259,10 +270,7 @@ async fn advisory_fingerprint_mode_allows_mismatch() {
         .create_session(
             user_id,
             vec!["user".to_string()],
-            Some(SessionFingerprint::new(
-                Some("10.0.0.1".to_string()),
-                None,
-            )),
+            Some(SessionFingerprint::new(Some("10.0.0.1".to_string()), None)),
         )
         .await
         .unwrap();
@@ -270,10 +278,7 @@ async fn advisory_fingerprint_mode_allows_mismatch() {
     let outcome = service
         .refresh(
             &tokens.refresh_token,
-            Some(SessionFingerprint::new(
-                Some("10.0.0.2".to_string()),
-                None,
-            )),
+            Some(SessionFingerprint::new(Some("10.0.0.2".to_string()), None)),
         )
         .await;
     assert!(outcome.is_ok());

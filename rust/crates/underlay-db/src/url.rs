@@ -34,9 +34,7 @@ mod tests {
         assert!(is_local_database_url(
             "postgres://postgres:secret@postgres.acme.test:5432/app"
         ));
-        assert!(is_local_database_url(
-            "mysql://root:secret@[::1]:3306/app"
-        ));
+        assert!(is_local_database_url("mysql://root:secret@[::1]:3306/app"));
     }
 
     #[test]

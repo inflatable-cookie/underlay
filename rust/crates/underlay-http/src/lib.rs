@@ -4,6 +4,7 @@ pub mod cookies;
 mod cors;
 mod errors;
 mod http_config;
+mod page_list;
 pub mod pagination;
 mod path;
 pub mod query;
@@ -66,13 +67,14 @@ pub use crate::errors::{
     error_response, ApiError, ApiResult, ErrorDetail, ErrorLogContext, ErrorLogSink,
 };
 pub use crate::http_config::{HttpServerConfig, HttpServerConfigError};
+pub use crate::page_list::PageList;
 #[allow(deprecated)]
 pub use crate::pagination::PaginationParams;
 pub use crate::pagination::{PagePaginationParams, Paginated, PaginationMeta};
 pub use crate::path::{parse_uuid_path, parse_uuid_path_raw};
 pub use crate::query::{
-    parse_sort_string, FieldMapping, FilterField, FilterOperator, QueryParams, SortDirection,
-    SortField, SqlValue, WhereBuilder,
+    parse_sort_string, FieldMapping, FilterField, FilterOperator, ListQueryParams, QueryParams,
+    SortDirection, SortField, SqlValue, WhereBuilder,
 };
 // Preserve `underlay_http::field_mapping!` after the model moved to
 // underlay-query.
