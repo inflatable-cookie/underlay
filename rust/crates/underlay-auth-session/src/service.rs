@@ -21,6 +21,7 @@ pub struct RefreshOutcome {
 ///
 /// Security properties are enforced by the flow itself and cannot be
 /// skipped by callers; see the crate-level docs for the list.
+#[derive(Clone)]
 pub struct SessionService<R, A> {
     jwt: JwtService,
     repo: R,
