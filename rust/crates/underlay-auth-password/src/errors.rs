@@ -28,6 +28,10 @@ pub enum PasswordAuthError {
     },
     /// Credential not found for this user.
     CredentialNotFound,
+    /// Account is suspended.
+    AccountSuspended,
+    /// Account is deleted.
+    AccountDeleted,
     /// Internal error.
     Internal(String),
 }
@@ -39,6 +43,8 @@ underlay_auth::impl_auth_error_from!(PasswordAuthError, err, {
     PasswordAuthError::WrongPassword | PasswordAuthError::CredentialNotFound => {
         AuthError::WrongCredentials
     }
+    PasswordAuthError::AccountSuspended => AuthError::AccountSuspended,
+    PasswordAuthError::AccountDeleted => AuthError::AccountDeleted,
     PasswordAuthError::AccountLocked { retry_after_seconds }
     | PasswordAuthError::RateLimited { retry_after_seconds } => {
         AuthError::RateLimited { retry_after_seconds }
@@ -64,10 +70,8 @@ impl From<AuthError> for PasswordAuthError {
             AuthError::UserNotFound => PasswordAuthError::CredentialNotFound,
             AuthError::WrongCredentials => PasswordAuthError::WrongPassword,
             AuthError::WrongPassword => PasswordAuthError::WrongPassword,
-            AuthError::AccountSuspended => {
-                PasswordAuthError::Internal("Account suspended".to_string())
-            }
-            AuthError::AccountDeleted => PasswordAuthError::Internal("Account deleted".to_string()),
+            AuthError::AccountSuspended => PasswordAuthError::AccountSuspended,
+            AuthError::AccountDeleted => PasswordAuthError::AccountDeleted,
             AuthError::RateLimited {
                 retry_after_seconds,
             } => PasswordAuthError::RateLimited {
@@ -92,6 +96,12 @@ impl std::fmt::Display for PasswordAuthError {
             }
             PasswordAuthError::WrongPassword => {
                 write!(f, "Password is incorrect")
+            }
+            PasswordAuthError::AccountSuspended => {
+                write!(f, "Account suspended")
+            }
+            PasswordAuthError::AccountDeleted => {
+                write!(f, "Account deleted")
             }
             PasswordAuthError::AccountLocked {
                 retry_after_seconds,
