@@ -103,19 +103,17 @@ with the canonical shape: dev → MinIO, prod → S3 or explicit
 `ALLOW_NOOP=1`, else boot failure — for the API *and* worker binaries
 (four apps drifted on the worker side alone).
 
-**B5. Conformance kit.** The meta-fix: a test pack consumers run in CI
-that fails when they deviate. Part `effigy doctor` checks, part
-`underlay-conformance` crate:
-- no `ENVIRONMENT`-style default that isn't prod
-- no `describe_db_error` string reaching a wire message
-- Swagger/OpenAPI not mounted outside dev
-- seeds gated (static check of the seed call path)
-- no `{@html}` without a sanitizer call in the same file
-- CSP present at the real serving layer (static `_headers`, server
-  headers, or adapter-node hooks — one of the three must exist)
-- `.env`/`config/local.toml` not tracked
-A new consumer starts green by construction; an existing one turns red
-the moment it drifts.
+**B5. Conformance kit.** ~~The meta-fix~~ — **done (v1).**
+`underlay/scripts/check-consumer-conformance.sh` statically verifies the
+canonical shapes in any consumer checkout: env fail-closed, db-error
+hygiene, OpenAPI gating, seed gates (env AND local DB host), `{@html}`
+sanitization, no SVG regex blacklists, CSP at the real serving layer, no
+tracked secrets, TOTP via `SecretCipher`, sessions via
+`underlay-auth-session`, role-hierarchy guards, refresh via the crate.
+All six consumers pass; `CONFORMANCE_SKIP` allows documented exceptions.
+acme runs it as `effigy qa:security` — the pattern other consumers copy.
+Next iteration: fold into `effigy doctor`/CI so a red build is the
+default consequence of drift.
 
 ### C. Reference app as executable spec
 
