@@ -228,6 +228,72 @@ if ! skip "refresh-recheck"; then
 fi
 
 # --------------------------------------------------------------------------
+# check-no-per-row-reorder: no per-row write loops in reorder paths
+# --------------------------------------------------------------------------
+if ! skip "per-row-reorder"; then
+  hits=$(rg -lU "for [^\n]*enumerate\(\)[^\n]*\n(\s|\S){0,400}?\.execute\(" "$ROOT" \
+    --type rust -g '!target' 2>/dev/null \
+    | while read -r f; do
+        rg -q "pool\.begin\(\)" "$f" 2>/dev/null || echo "$f"
+      done \
+    | while read -r f; do
+        rg -q "conformance: allow" "$f" 2>/dev/null || echo "$f"
+      done | rg -v "/underlay/|/tests/" || true)
+  if [[ -z "$hits" ]]; then
+    pass "per-row-reorder"
+  else
+    fail "per-row-reorder" "iterative writes inside a loop without a transaction (use reorder_scoped or a transaction):\n$hits"
+  fi
+fi
+
+# --------------------------------------------------------------------------
+# check-no-row-enrichment-loop: no per-item fetch loops (N+1)
+# --------------------------------------------------------------------------
+if ! skip "row-enrichment-loop"; then
+  hits=$(rg -U "for \w+ in \w+ \{" "$ROOT" --type rust -g '!target' 2>/dev/null \
+    | xargs -I{} sh -c 'rg -lU "for \w+ in \w+ \{[^}]{0,400}\.await" "{}" 2>/dev/null' \
+    | rg -v "/underlay/|/tests/|_tests\.rs" || true)
+  if [[ -z "$hits" ]]; then
+    pass "row-enrichment-loop"
+  else
+    fail "row-enrichment-loop" "await inside a row loop — possible N+1 (batch with ANY(\$1) or ?include=):\n$hits"
+  fi
+fi
+
+# --------------------------------------------------------------------------
+# check-bounded-queries: no fetch_all without LIMIT on list endpoints
+# (files may document a deliberate whole-set read with a
+#  `conformance: allow` marker comment and a reason)
+# --------------------------------------------------------------------------
+if ! skip "bounded-queries"; then
+  hits=$(rg -U "SELECT[^;]*" "$ROOT" --type rust -g '!target' -g '*.rs' -l 2>/dev/null \
+    | while read -r f; do
+        if rg -q "fetch_all|fetch_optional" "$f" && ! rg -q "LIMIT|limit|take\(" "$f"; then
+          rg -l "pub async fn (list|search)_" "$f" 2>/dev/null
+        fi
+      done | while read -r f; do
+        rg -q "conformance: allow" "$f" 2>/dev/null || echo "$f"
+      done | rg -v "/underlay/|/tests/" || true)
+  if [[ -z "$hits" ]]; then
+    pass "bounded-queries"
+  else
+    fail "bounded-queries" "list/search queries without any LIMIT bound:\n$hits"
+  fi
+fi
+
+# --------------------------------------------------------------------------
+# check-no-detail-fanout: no Promise.all per-item fetch fan-outs in detail pages
+# --------------------------------------------------------------------------
+if ! skip "detail-fanout"; then
+  hits=$(rg -l "Promise\.all\([^)]*map\(async" "$ROOT" -g '*.svelte' -g '*.ts' -g '!node_modules' 2>/dev/null || true)
+  if [[ -z "$hits" ]]; then
+    pass "detail-fanout"
+  else
+    fail "detail-fanout" "Promise.all with per-item async fetches (use ?include= or a batch endpoint):\n$hits"
+  fi
+fi
+
+# --------------------------------------------------------------------------
 # Report
 # --------------------------------------------------------------------------
 echo "Conformance report for: $ROOT"
