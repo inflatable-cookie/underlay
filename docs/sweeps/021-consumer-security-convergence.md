@@ -250,15 +250,19 @@ tiers). No other consumer has webhook surfaces today.
 
 ## Remaining cross-consumer work (priority order)
 
-1. underlay: `is_local_database_url` helper → adopt in acme/cp/compli seed gates
-2. underlay: refresh session re-check + fresh-roles helper → adopt in cp/compli/farmyard/nursery (composer is the model)
-3. farmyard: `/openapi.json` gate; ENCRYPTION_KEY boot requirement
-4. nursery: ENCRYPTION_KEY provisioning + boot requirement; remaining `e.to_string()` admin handler sweep
-5. acme: `can_assign_role` on create_user
-6. compli/nursery: upload validation via `initiate_upload_validated`
-7. workers: fail-closed blob adapters (acme/cp/farmyard)
-8. underlay/templates: static-host `_headers` template + adopt in 5 SPAs; nursery CSP enforce
-9. underlay-auth-password: dedicated AccountSuspended/AccountDeleted variants
-10. underlay-ratelimit: Postgres backend standard for deployed instances
-11. composer (product work): real admin auth flow; catalog read gating decision; Dependabot ×12
-12. effigy-bundle upstream: 0.0.0.0 dev services + dbgate auth, pinned bun installer, pinned images
+Done: ~~1~~ seed host guard (`underlay_db::is_local_database_url`, adopted in
+all five seed consumers); ~~2~~ refresh re-check + fresh roles (cp/compli/
+farmyard/nursery; acme documented variant); ~~3~~ farmyard `/openapi.json`
+gate + ENCRYPTION_KEY boot requirement; ~~4~~ nursery ENCRYPTION_KEY
+requirement + admin `e.to_string()` sweep (`admin_op_error`); ~~5~~ acme
+`can_assign_role`; ~~6~~ upload validation via `BlobAdapterUploadExt`
+(compli/nursery); ~~7~~ worker blob fail-closed (acme/farmyard; cp already
+correct); ~~8~~ static-host `_headers` template in `underlay/templates/
+static-host/` adopted by 8 SPAs, uat-gateway headers for acowtancy, nursery
+CSP enforced; ~~9~~ dedicated `AccountSuspended`/`AccountDeleted` variants
+in underlay-auth-password (composer/nursery adopted).
+
+1. underlay-ratelimit: Postgres backend standard for deployed instances
+2. composer (product work): real admin auth flow; catalog read gating decision; Dependabot ×12
+3. effigy-bundle upstream: 0.0.0.0 dev services + dbgate auth, pinned bun installer, pinned images
+4. Deferred per-consumer leftovers: farmyard rate-limit "unknown" bucket; compli TOTP-disable step-up + `/totp/verify` attempt limiting; email-2FA send-failure behavior parity check (acme/cp/compli/farmyard); underlay `navigateOnCancel` href guard; `sanitizeEmbedHtml` iframe sandbox attr
