@@ -1,0 +1,22 @@
+[package]
+name = "underlay-auth-session"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Canonical session rotation state machine for Underlay apps"
+
+[dependencies]
+async-trait = { workspace = true }
+chrono = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tracing = { workspace = true }
+underlay-auth = { path = "../underlay-auth" }
+underlay-auth-jwt = { path = "../underlay-auth-jwt" }
+underlay-core = { path = "../underlay-core" }
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["macros", "rt"] }
+
+[lints]
+workspace = true
