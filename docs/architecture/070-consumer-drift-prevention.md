@@ -75,14 +75,14 @@ the mechanism is the reference app and templates, not a new crate API.
 
 ### B. Underlay-owned (proposed, in priority order)
 
-**B1. Session service.** The largest remaining reimplementation class:
-five consumers own create/refresh/rotate/revoke with subtly different
-security properties (status re-check, fresh roles, fingerprint rules).
-The boundary is stable and app-agnostic: an `underlay-auth-session` crate
-owning the rotation state machine over a repository trait, with the
-composer pattern (status re-check + fresh roles on refresh) built in and
-unskippable. Each consumer deletes its `session.rs` and keeps only
-wiring. This single crate would have prevented six findings.
+**B1. Session service.** ~~The largest remaining reimplementation
+class~~ — **done.** `underlay-auth-session` owns the canonical rotation
+state machine (RFC 6819 reuse detection + family revocation, CAS
+rotation, absolute timeout, account status re-check, fresh roles per
+rotation, fingerprint advisory/strict). All six consumers adopted it via
+thin `session_repo` adapters (`SessionRepository` + `AccountProvider`
+over their schema): acme, cp, compli, farmyard, nursery, composer. Each
+deleted 350–500 lines of local state machine.
 
 **B2. Admin user-management route kit.** `RoleHierarchy` is shared, but
 every consumer still re-implements the guarded mutation handlers
@@ -140,8 +140,9 @@ acme is the bootstrap source; its bugs cloned. Rules going forward:
 
 1. **No security decision without an owner.** If a rule lives in one
    Underlay crate or one reference-app module, there is exactly one
-   place to get it wrong. Current remaining multi-owners: session
-   rotation (→ B1), admin mutations (→ B2), env parsing (→ B3).
+   place to get it wrong. Session rotation is now single-owner
+   (`underlay-auth-session`). Remaining multi-owners: admin mutations
+   (→ B2), env parsing (→ B3).
 2. **Secure by default, insecure by explicit opt-in.** Every permissive
    path must require a named, greppable flag (`ALLOW_NOOP_BLOB`,
    `CSP_REPORT_ONLY`, `with_plain_migration(true)`).
