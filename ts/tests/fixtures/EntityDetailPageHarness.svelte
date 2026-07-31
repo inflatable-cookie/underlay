@@ -37,6 +37,10 @@
   <div data-testid="related-tab-content">Related content</div>
 {/snippet}
 
+{#snippet lazyTab(data: { label: string } | null)}
+  <div data-testid="lazy-tab-content">Loaded: {data?.label}</div>
+{/snippet}
+
 {#snippet metadataDebug()}
   <MetadataDialogTrigger value={metadata} title="Project metadata" />
 {/snippet}
@@ -67,6 +71,12 @@
       label: "Related",
       separator: true,
       content: relatedTab
+    },
+    {
+      id: "lazy",
+      label: "Lazy",
+      dataLoader: async () => ({ label: "lazy-data" }),
+      render: lazyTab
     }
   ]}
 />

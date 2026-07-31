@@ -13,6 +13,7 @@
 // Level 1 — Page Shells
 export { default as EntityListPage } from "./EntityListPage.svelte";
 export { default as EntityDetailPage } from "./EntityDetailPage.svelte";
+export { default as DetailDataTab } from "./DetailDataTab.svelte";
 export { default as EntityFormPage } from "./EntityFormPage.svelte";
 export { default as EntityTrashPage } from "./EntityTrashPage.svelte";
 export { default as MediaUploadPage } from "./MediaUploadPage.svelte";

@@ -37,13 +37,25 @@ describe("templates", () => {
     expect(screen.queryByText("Status")).toBeNull();
   });
 
+  it("lazily loads a data-driven detail tab on activation", async () => {
+    render(EntityDetailPageHarness);
+
+    expect(screen.queryByTestId("lazy-tab-content")).toBeNull();
+
+    await fireEvent.click(await screen.findByRole("tab", { name: "Lazy" }));
+
+    expect(await screen.findByTestId("lazy-tab-content")).toBeTruthy();
+    expect(screen.getByText("Loaded: lazy-data")).toBeTruthy();
+  });
+
   it("does not render a trailing separator for the last detail tab", async () => {
     const { container } = render(EntityDetailPageHarness);
 
     expect(await screen.findByRole("tab", { name: "Overview" })).toBeTruthy();
+    // Three tabs → two separators (between tabs), never one after the last.
     expect(
       container.querySelectorAll(".poodle-tabs__list:not(.poodle-tabs__list--measure) .poodle-tabs__separator")
-    ).toHaveLength(1);
+    ).toHaveLength(2);
   });
 
   it("renders a clickable metadata trigger in detail meta and opens the dialog", async () => {

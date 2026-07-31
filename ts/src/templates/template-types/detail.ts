@@ -18,11 +18,18 @@ export interface DetailItemConfig {
   span?: "full" | "half" | null;
 }
 
-export interface DetailTabConfig<TItem> {
+export interface DetailTabConfig<TItem, TData = unknown> {
   id: string;
   label: string;
   count?: number;
   content?: TemplateSurface;
+  /**
+   * Data-driven tab: fetched lazily on first activation. Pair with
+   * `render` to display the loaded data.
+   */
+  dataLoader?: (item: TItem | null) => Promise<TData>;
+  /** Render the loaded tab data. Required when `dataLoader` is set. */
+  render?: (data: TData | null, item: TItem | null) => TemplateSurface;
   separator?: boolean;
 }
 

@@ -18,6 +18,7 @@
   } from "@poodle/svelte";
   import type { ControlDensity, ControlSize } from "@poodle/svelte";
   import { default as EntityMetaItem } from "./EntityMetaItem.svelte";
+  import DetailDataTab from "./DetailDataTab.svelte";
   import type {
     DetailActionConfig,
     FetchFn,
@@ -505,6 +506,13 @@
               hidden={tab.id !== activeValue}
             >
               {@render tab.content(item)}
+            </div>
+          {:else if tab.dataLoader && tab.render && shouldRenderTab(tab.id)}
+            <div
+              class:underlay-entity-detail-page__tab-panel={tabsVariant === "underline"}
+              hidden={tab.id !== activeValue}
+            >
+              <DetailDataTab {item} loader={tab.dataLoader} render={tab.render} />
             </div>
           {/if}
         {/each}
