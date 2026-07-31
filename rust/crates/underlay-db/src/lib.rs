@@ -4,6 +4,7 @@ mod identifiers;
 mod migrations;
 pub mod pagination;
 mod pool;
+mod reorder;
 mod schemas;
 mod sql_dir;
 mod url;
@@ -20,6 +21,7 @@ pub use crate::pool::{
     create_pool, DbConfig, DbPool, DEFAULT_ACQUIRE_TIMEOUT_SECS, DEFAULT_IDLE_TIMEOUT_SECS,
     DEFAULT_MAX_CONNECTIONS, DEFAULT_MIN_CONNECTIONS,
 };
+pub use crate::reorder::{reorder_scoped, ReorderConflict, ReorderError, ReorderScope};
 pub use crate::schemas::{
     drop_schema_identifiers, drop_schemas, parse_schema_name, validate_schema_name,
     DestructiveGuard,

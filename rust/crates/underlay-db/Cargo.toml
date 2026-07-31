@@ -9,6 +9,7 @@ base64 = { workspace = true }
 chrono = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
+thiserror = { workspace = true }
 sqlx = { workspace = true }
 underlay-core = { path = "../underlay-core" }
 uuid = { workspace = true }
