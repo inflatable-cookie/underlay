@@ -6,6 +6,7 @@ pub mod pagination;
 mod pool;
 mod schemas;
 mod sql_dir;
+mod url;
 
 pub use crate::db_errors::{describe_db_error, map_db_error, map_db_error_ref};
 pub use crate::existence::{value_exists_excluding_typed, value_exists_typed, TypedExistsCheck};
@@ -24,5 +25,6 @@ pub use crate::schemas::{
     DestructiveGuard,
 };
 pub use crate::sql_dir::{run_sql_dir, run_sql_dir_with_options, SqlDirOptions};
+pub use crate::url::is_local_database_url;
 
 // Media types

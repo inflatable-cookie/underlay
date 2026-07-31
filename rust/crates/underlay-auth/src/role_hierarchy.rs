@@ -40,10 +40,16 @@ impl fmt::Display for RoleHierarchyError {
         match self {
             Self::CannotManageSelf => write!(f, "you cannot modify your own account"),
             Self::CannotManageSuperRole => {
-                write!(f, "only super-role accounts can manage other super-role accounts")
+                write!(
+                    f,
+                    "only super-role accounts can manage other super-role accounts"
+                )
             }
             Self::InsufficientPrivileges { .. } => {
-                write!(f, "you can only manage users with lower privileges than your own")
+                write!(
+                    f,
+                    "you can only manage users with lower privileges than your own"
+                )
             }
             Self::CannotPromoteToSuperRole => {
                 write!(f, "only super-role accounts can assign the super role")
@@ -146,11 +152,7 @@ impl RoleHierarchy {
     /// Can a caller with `caller_roles` assign `role` (user creation or role
     /// assignment)? Super-role callers may assign anything; others only roles
     /// strictly below their own level.
-    pub fn can_assign(
-        &self,
-        caller_roles: &[&str],
-        role: &str,
-    ) -> Result<(), RoleHierarchyError> {
+    pub fn can_assign(&self, caller_roles: &[&str], role: &str) -> Result<(), RoleHierarchyError> {
         if self.has_super_role(caller_roles) {
             return Ok(());
         }
