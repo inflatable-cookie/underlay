@@ -38,6 +38,10 @@
     usersBaseHref?: string;
     addLabel?: string;
     onAdd?: () => void;
+    searchFilterId?: string;
+    showSortFilter?: boolean;
+    extraRowActions?: (row: TableRow<T>) => TableRowAction[];
+    onCustomRowAction?: (row: TableRow<T>, action: TableRowAction) => void;
   }
 
   let {
@@ -57,7 +61,11 @@
     statusTone = getUserStatusTone,
     usersBaseHref = "/users",
     addLabel = "Add user",
-    onAdd
+    onAdd,
+    searchFilterId = "query",
+    showSortFilter = true,
+    extraRowActions,
+    onCustomRowAction
   }: Props = $props();
 
   const toastStore = useToasts();
@@ -72,7 +80,7 @@
 
   const filters = $derived([
     {
-      id: "query",
+      id: searchFilterId,
       type: "search" as const,
       label: "Search",
       placeholder: "Search by email or display name..."
@@ -89,25 +97,30 @@
       label: "Status",
       options: statusOptions
     },
-    {
-      id: "sort",
-      type: "sort" as const,
-      label: "Sort",
-      sortFields: [
-        { key: "createdAt", label: "Created", defaultDirection: "desc" as const },
-        { key: "email", label: "Email" },
-        { key: "displayName", label: "Display name" },
-        { key: "role", label: "Role" },
-        { key: "status", label: "Status" }
-      ]
-    }
+    ...(showSortFilter
+      ? [
+          {
+            id: "sort",
+            type: "sort" as const,
+            label: "Sort",
+            sortFields: [
+              { key: "createdAt", label: "Created", defaultDirection: "desc" as const },
+              { key: "email", label: "Email" },
+              { key: "displayName", label: "Display name" },
+              { key: "role", label: "Role" },
+              { key: "status", label: "Status" }
+            ]
+          }
+        ]
+      : [])
   ]);
 
-  function getRowActions(_row: TableRow<T>): TableRowAction[] {
+  function getRowActions(row: TableRow<T>): TableRowAction[] {
     return [
       { value: "edit", label: "Edit" },
       { value: "copy-id", label: "Copy ID" },
-      { value: "copy-email", label: "Copy Email" }
+      { value: "copy-email", label: "Copy Email" },
+      ...(extraRowActions?.(row) ?? [])
     ];
   }
 
@@ -128,6 +141,9 @@
         break;
       case "copy-email":
         void copyToClipboard(toastStore, user.email, "Copied user email");
+        break;
+      default:
+        onCustomRowAction?.(row, action);
         break;
     }
   }
