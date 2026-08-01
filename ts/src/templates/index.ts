@@ -62,7 +62,8 @@ export type {
   AdminNavItem,
   AdminNavChild,
   AdminNavSectionItem,
-  AdminNavLinkItem
+  AdminNavLinkItem,
+  AdminNavIcon
 } from "./admin-nav.types";
 export { default as AdminUserMenu } from "./AdminUserMenu.svelte";
 
