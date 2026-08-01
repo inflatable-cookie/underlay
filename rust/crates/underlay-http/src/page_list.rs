@@ -9,6 +9,7 @@ use super::pagination::PagePaginationParams;
 
 /// Canonical paged list response for admin browse endpoints.
 #[derive(Debug, Clone, Serialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 pub struct PageList<T> {
     /// Items in this page.
     pub data: Vec<T>,
