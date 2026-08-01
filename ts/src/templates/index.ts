@@ -57,6 +57,14 @@ export { default as ContentCard } from "./ContentCard.svelte";
 export { default as RelationLink } from "./RelationLink.svelte";
 export { default as AdminPill } from "./AdminPill.svelte";
 export { ADMIN_PILL_ACCENTS, type AdminPillKind } from "./admin-pill-accents";
+export { default as AdminNavList } from "./AdminNavList.svelte";
+export type {
+  AdminNavItem,
+  AdminNavChild,
+  AdminNavSectionItem,
+  AdminNavLinkItem
+} from "./admin-nav.types";
+export { default as AdminUserMenu } from "./AdminUserMenu.svelte";
 
 // Level 2 — Sections
 export { default as EntityList } from "./EntityList.svelte";

@@ -1,0 +1,346 @@
+<script lang="ts">
+  import ChevronDown from "lucide-svelte/icons/chevron-down";
+  import type { AdminNavChild, AdminNavItem } from "./admin-nav.types";
+
+  interface Props {
+    items: AdminNavItem[];
+    currentSection?: string | null;
+    currentPath?: string;
+    onNavigate?: () => void;
+    variant?: "desktop" | "mobile";
+  }
+
+  let {
+    items,
+    currentSection = null,
+    currentPath = "",
+    onNavigate,
+    variant = "desktop"
+  }: Props = $props();
+
+  let expandedSection = $state<string | null>(null);
+
+  $effect(() => {
+    if (currentSection) {
+      expandedSection = currentSection;
+    }
+  });
+
+  const handleChildClick = () => {
+    onNavigate?.();
+  };
+
+  const toggleSection = (section: string) => {
+    expandedSection = expandedSection === section ? null : section;
+  };
+
+  function isActive(href: string): boolean {
+    if (!currentPath) return false;
+    if (href === "/") return currentPath === "/";
+    return currentPath === href || currentPath.startsWith(href + "/");
+  }
+
+  function isChildActive(child: AdminNavChild): boolean {
+    if (!isActive(child.href)) return false;
+    return !(child.excludeHrefs ?? []).some((excluded) => isActive(excluded));
+  }
+
+  let linkClass = $derived(variant === "mobile" ? "admin-mobile-overlay__link" : "admin-nav__root");
+  let childrenClass = $derived(
+    variant === "mobile" ? "admin-mobile-overlay__children" : "admin-nav__children"
+  );
+  let sectionClass = $derived(variant === "desktop" ? "admin-nav__section" : "");
+</script>
+
+<ul class={variant === "mobile" ? "admin-mobile-overlay__list" : "admin-nav__list"}>
+  {#each items as item}
+    <li>
+      {#if item.type === "link"}
+        <a
+          href={item.href}
+          class="{linkClass} admin-nav__root"
+          class:admin-nav__link--active={isActive(item.href)}
+          onclick={handleChildClick}
+        >
+          <span
+            class="admin-nav__badge {item.badgeClass ?? ''}"
+            style={item.badgeGradient ? `background: ${item.badgeGradient}` : undefined}
+            aria-hidden="true"
+          >
+            <item.icon class="admin-nav__badge-icon" />
+          </span>
+          <span class={variant === "desktop" ? "admin-nav__label" : ""}>{item.label}</span>
+        </a>
+      {:else}
+        <button
+          type="button"
+          class="{linkClass} {sectionClass} admin-nav__section-toggle"
+          aria-expanded={expandedSection === item.id}
+          onclick={() => toggleSection(item.id)}
+        >
+          <span
+            class="admin-nav__badge {item.badgeClass ?? ''}"
+            style={item.badgeGradient ? `background: ${item.badgeGradient}` : undefined}
+            aria-hidden="true"
+          >
+            <item.icon class="admin-nav__badge-icon" />
+          </span>
+          <span class={variant === "desktop" ? "admin-nav__label" : ""}>{item.label}</span>
+          <ChevronDown class="admin-nav__chevron" />
+        </button>
+        {#if expandedSection === item.id}
+          <ul class={childrenClass}>
+            {#each item.children as child}
+              <li>
+                <a
+                  href={child.href}
+                  class={child.danger ? "admin-nav__child-link--danger" : undefined}
+                  class:admin-nav__link--active={isChildActive(child)}
+                  onclick={handleChildClick}
+                >
+                  {#if child.icon}
+                    <child.icon class="admin-nav__child-icon" />
+                  {/if}
+                  {child.label}
+                </a>
+              </li>
+            {/each}
+          </ul>
+        {/if}
+      {/if}
+    </li>
+  {/each}
+</ul>
+
+<style>
+  :global(.admin-nav__list) {
+    list-style: none;
+    padding: 0 0.9rem 0 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+  }
+
+  :global(.admin-nav__root),
+  :global(.admin-nav__section) {
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
+    padding: 0.4rem 0.7rem;
+    border-radius: 0.4rem;
+    color: inherit;
+    text-decoration: none;
+    font-size: 0.9rem;
+    border: none;
+    background: transparent;
+    width: 100%;
+    cursor: pointer;
+    text-align: left;
+  }
+
+  :global(.admin-nav__root:hover),
+  :global(.admin-nav__section-toggle:hover) {
+    background-color: rgba(148, 163, 184, 0.16);
+  }
+
+  :global(.admin-nav__section-toggle) {
+    justify-content: flex-start;
+    opacity: 0.7;
+    transition: opacity 0.15s ease;
+  }
+
+  :global(.admin-nav__section-toggle:hover),
+  :global(.admin-nav__section-toggle[aria-expanded="true"]) {
+    opacity: 1;
+  }
+
+  :global(.admin-nav__chevron) {
+    width: 1rem;
+    height: 1rem;
+    margin-left: auto;
+    opacity: 0.5;
+    transition: transform 0.15s ease;
+    flex-shrink: 0;
+  }
+
+  :global(.admin-nav__section-toggle[aria-expanded="true"] .admin-nav__chevron) {
+    transform: rotate(180deg);
+  }
+
+  :global(.admin-nav__children) {
+    list-style: none;
+    padding-left: 1.25rem;
+    margin: 0.25rem 0 0.4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+
+  :global(.admin-nav__children a) {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    padding: 0.45rem 0.75rem;
+    border-radius: 0.4rem;
+    opacity: 0.7;
+    transition: opacity 0.15s ease;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  :global(.admin-nav__children a:hover),
+  :global(.admin-nav__children a.admin-nav__link--active) {
+    opacity: 1;
+    background-color: rgba(148, 163, 184, 0.16);
+  }
+
+  :global(.admin-nav__child-icon) {
+    width: 0.9rem;
+    height: 0.9rem;
+    flex-shrink: 0;
+  }
+
+  :global(.admin-nav__children a.admin-nav__child-link--danger) {
+    color: #f87171;
+    opacity: 0.7;
+  }
+
+  :global(.admin-nav__children a.admin-nav__child-link--danger:hover),
+  :global(.admin-nav__children a.admin-nav__child-link--danger.admin-nav__link--active) {
+    color: #ef4444;
+    opacity: 1;
+    background-color: rgba(239, 68, 68, 0.12);
+  }
+
+  :global(.admin-nav__link--active) {
+    background-color: rgba(148, 163, 184, 0.12);
+    font-weight: 550;
+  }
+
+  :global(.admin-nav__badge) {
+    min-width: 1.5rem;
+    min-height: 1.5rem;
+    padding: 0.05rem;
+    border-radius: 0.45rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-right: 0.55rem;
+  }
+
+  :global(.admin-nav__badge-icon) {
+    width: 0.95rem;
+    height: 0.95rem;
+    color: #f9fafb;
+  }
+
+  :global(.admin-nav__badge--overview) {
+    background: linear-gradient(135deg, #22c55e, #14b8a6);
+  }
+
+  :global(.admin-nav__badge--users) {
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  }
+
+  :global(.admin-nav__badge--media) {
+    background: linear-gradient(135deg, #f59e0b, #f97316);
+  }
+
+  :global(.admin-nav__badge--system) {
+    background: linear-gradient(135deg, #94a3b8, #64748b);
+  }
+
+  :global(.admin-mobile-overlay__list) {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    flex: 1;
+  }
+
+  :global(.admin-mobile-overlay__link) {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.55rem;
+    padding: 0.6rem 0.75rem;
+    border-radius: 0.5rem;
+    color: inherit;
+    text-decoration: none;
+    font-size: 1rem;
+    border: none;
+    background: transparent;
+    width: 100%;
+    cursor: pointer;
+    text-align: left;
+    opacity: 0.75;
+    transition: opacity 0.15s ease;
+  }
+
+  :global(.admin-mobile-overlay__link:hover),
+  :global(.admin-mobile-overlay__link.admin-nav__link--active),
+  :global(.admin-mobile-overlay__link[aria-expanded="true"]) {
+    opacity: 1;
+  }
+
+  :global(.admin-mobile-overlay__link:hover) {
+    background: rgba(148, 163, 184, 0.16);
+  }
+
+  :global(.admin-mobile-overlay__children) {
+    list-style: none;
+    padding: 0.25rem 0 0.5rem 2.5rem;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+
+  :global(.admin-mobile-overlay__children a) {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.4rem;
+    color: inherit;
+    text-decoration: none;
+    font-size: 0.95rem;
+    opacity: 0.7;
+    transition: opacity 0.15s ease;
+  }
+
+  :global(.admin-mobile-overlay__children a:hover),
+  :global(.admin-mobile-overlay__children a.admin-nav__link--active) {
+    background: rgba(148, 163, 184, 0.16);
+    opacity: 1;
+  }
+
+  :global(.admin-mobile-overlay__children a.admin-nav__child-link--danger) {
+    color: #f87171;
+    opacity: 0.7;
+  }
+
+  :global(.admin-mobile-overlay__children a.admin-nav__child-link--danger:hover),
+  :global(.admin-mobile-overlay__children a.admin-nav__child-link--danger.admin-nav__link--active) {
+    color: #ef4444;
+    opacity: 1;
+    background: rgba(239, 68, 68, 0.12);
+  }
+
+  :global(.admin-mobile-overlay__link .admin-nav__chevron) {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  :global(.admin-nav__label) {
+    line-height: 1.2;
+  }
+</style>
