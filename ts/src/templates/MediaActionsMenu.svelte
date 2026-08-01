@@ -1,18 +1,10 @@
 <script lang="ts">
-  import { copyToClipboard, useToasts } from "../runtime/feedback";
+  import { useToasts } from "../runtime/feedback";
   import type { NavigationContext } from "../runtime/navigation";
-  import { AlertDialog, IconButton, Menu, type MenuItem } from "@poodle/svelte";
+  import { AlertDialog } from "@poodle/svelte";
+  import EntityActionsMenu from "./EntityActionsMenu.svelte";
   import type { MediaActionsMenuItem } from "./template.types";
   import type { TemplateSurface } from "./template-types/primitives";
-
-  type ActionEntry =
-    | {
-        key: string;
-        label: string;
-        tone?: "default" | "danger";
-        onSelect: () => void | Promise<void>;
-      }
-    | { separator: true; key: string };
 
   interface Props {
     media: MediaActionsMenuItem;
@@ -52,25 +44,103 @@
   });
   const replaceContext = $derived(sourceContext ?? defaultContext);
 
-  let softDeleteOpen = $state(false);
   let restoreOpen = $state(false);
-  let purgeOpen = $state(false);
 
-  async function handleCopy(text: string, successMessage: string, failureMessage: string) {
-    await copyToClipboard(toastStore, text, successMessage, failureMessage);
-  }
+  const copies = $derived(
+    media.originalFilename
+      ? [
+          {
+            label: "Copy ID",
+            text: media.id,
+            successMessage: "Copied ID",
+            failureMessage: "Failed to copy ID"
+          },
+          {
+            label: "Copy filename",
+            text: media.originalFilename,
+            successMessage: "Copied filename",
+            failureMessage: "Failed to copy filename"
+          }
+        ]
+      : [
+          {
+            label: "Copy ID",
+            text: media.id,
+            successMessage: "Copied ID",
+            failureMessage: "Failed to copy ID"
+          }
+        ]
+  );
 
-  async function confirmSoftDelete() {
-    if (!softDeleteAction) return;
+  const customActions = $derived.by(() => {
+    const actions: Array<{
+      label: string;
+      destructive?: boolean;
+      onSelect: () => void | Promise<void>;
+    }> = [];
 
-    try {
-      await softDeleteAction(media);
-      softDeleteOpen = false;
+    if (!isDeleted && onReplaceRequest) {
+      actions.push({
+        label: "Replace file",
+        onSelect: () => onReplaceRequest(media, replaceContext)
+      });
+    }
+    if (isDeleted && restoreAction) {
+      actions.push({
+        label: "Restore media",
+        onSelect: () => {
+          restoreOpen = true;
+        }
+      });
+    }
+
+    return actions;
+  });
+
+  const deleteConfig = $derived.by(() => {
+    if (!isDeleted && softDeleteAction) {
+      return {
+        entityLabel: mediaDisplayName,
+        title: "Move media to trash?",
+        description:
+          "This hides the media from the main library. You can restore it later from trash.",
+        confirmLabel: "Move to trash",
+        execute: async () => {
+          try {
+            await softDeleteAction(media);
+          } catch (error) {
+            console.error("Failed to move media to trash", error);
+            throw new Error("Failed to move media to trash");
+          }
+        }
+      };
+    }
+    if (isDeleted && purgeAction) {
+      return {
+        entityLabel: mediaDisplayName,
+        title: "Permanently delete media?",
+        description: "This removes the media and all versions permanently. This cannot be undone.",
+        confirmLabel: "Permanently delete",
+        execute: async () => {
+          try {
+            await purgeAction(media);
+          } catch (error) {
+            console.error("Failed to permanently delete media", error);
+            throw new Error("Failed to permanently delete media");
+          }
+        }
+      };
+    }
+    return undefined;
+  });
+
+  function handleDeleteSuccess() {
+    if (isDeleted) {
+      toastStore.push({ variant: "success", message: "Media permanently deleted" });
+      onPurgeSuccess?.();
+    } else {
       toastStore.push({ variant: "success", message: "Media moved to trash" });
       onSoftDeleteSuccess?.();
-    } catch (error) {
-      console.error("Failed to move media to trash", error);
-      toastStore.push({ variant: "error", message: "Failed to move media to trash" });
     }
   }
 
@@ -87,143 +157,24 @@
       toastStore.push({ variant: "error", message: "Failed to restore media" });
     }
   }
-
-  async function confirmPurge() {
-    if (!purgeAction) return;
-
-    try {
-      await purgeAction(media);
-      purgeOpen = false;
-      toastStore.push({ variant: "success", message: "Media permanently deleted" });
-      onPurgeSuccess?.();
-    } catch (error) {
-      console.error("Failed to permanently delete media", error);
-      toastStore.push({ variant: "error", message: "Failed to permanently delete media" });
-    }
-  }
-
-  const menuEntries = $derived.by<ActionEntry[]>(() => {
-    const entries: ActionEntry[] = [];
-
-    if (onEditRequest && !isDeleted) {
-      entries.push({ key: "edit", label: "Edit", onSelect: () => onEditRequest() });
-    }
-    if (!isDeleted && onReplaceRequest) {
-      entries.push({
-        key: "replace",
-        label: "Replace file",
-        onSelect: () => onReplaceRequest(media, replaceContext)
-      });
-    }
-    if (!isDeleted && softDeleteAction) {
-      entries.push({
-        key: "soft-delete",
-        label: "Move to trash",
-        tone: "danger",
-        onSelect: () => {
-          softDeleteOpen = true;
-        }
-      });
-    }
-    if (isDeleted && restoreAction) {
-      entries.push({
-        key: "restore",
-        label: "Restore media",
-        onSelect: () => {
-          restoreOpen = true;
-        }
-      });
-    }
-    if (isDeleted && purgeAction) {
-      entries.push({
-        key: "purge",
-        label: "Permanently delete",
-        tone: "danger",
-        onSelect: () => {
-          purgeOpen = true;
-        }
-      });
-    }
-
-    const copyEntries: ActionEntry[] = [
-      {
-        key: "copy-id",
-        label: "Copy ID",
-        onSelect: () => handleCopy(media.id, "Copied ID", "Failed to copy ID")
-      }
-    ];
-
-    if (media.originalFilename) {
-      copyEntries.push({
-        key: "copy-filename",
-        label: "Copy filename",
-        onSelect: () =>
-          handleCopy(media.originalFilename!, "Copied filename", "Failed to copy filename")
-      });
-    }
-
-    if (entries.length && copyEntries.length) {
-      entries.push({ separator: true, key: "separator-copy" });
-    }
-
-    entries.push(...copyEntries);
-    return entries;
-  });
-
-  const menuItems = $derived<MenuItem[]>(
-    menuEntries.map((entry) =>
-      "separator" in entry
-        ? { value: entry.key, label: "", kind: "separator" }
-        : {
-            value: entry.key,
-            label: entry.label,
-            tone: entry.tone
-          }
-    )
-  );
-
-  async function handleAction(value: string) {
-    const entry = menuEntries.find((item) => !("separator" in item) && item.key === value);
-    if (entry && !("separator" in entry)) {
-      await entry.onSelect();
-    }
-  }
 </script>
 
-<Menu
-  items={menuItems}
-  placement="bottom-end"
-  ariaLabel="Media actions"
+<EntityActionsMenu
+  {copies}
+  onEdit={!isDeleted ? onEditRequest : undefined}
+  editLabel="Edit"
+  {customActions}
+  {deleteConfig}
+  onDeleteSuccess={handleDeleteSuccess}
   triggerAriaLabel="Media actions"
-  onAction={(value) => void handleAction(value)}
+  triggerTooltip="Actions"
 >
-  {#snippet trigger()}
-    {#if trigger}
+  {#if trigger}
+    {#snippet trigger()}
       {@render trigger()}
-    {:else}
-      <IconButton
-        type="button"
-        icon="ellipsis"
-        variant="secondary"
-        ariaLabel="Media actions"
-        tooltip="Actions"
-      />
-    {/if}
-  {/snippet}
-</Menu>
-
-<AlertDialog
-  bind:open={softDeleteOpen}
-  title="Move media to trash?"
-  description="This hides the media from the main library. You can restore it later from trash."
-  confirmLabel="Move to trash"
-  cancelLabel="Cancel"
-  onConfirm={confirmSoftDelete}
-  onCancel={() => (softDeleteOpen = false)}
-  tone="danger"
->
-  <p>Media: <strong>{mediaDisplayName}</strong></p>
-</AlertDialog>
+    {/snippet}
+  {/if}
+</EntityActionsMenu>
 
 <AlertDialog
   bind:open={restoreOpen}
@@ -234,19 +185,6 @@
   onConfirm={confirmRestore}
   onCancel={() => (restoreOpen = false)}
   tone="warning"
->
-  <p>Media: <strong>{mediaDisplayName}</strong></p>
-</AlertDialog>
-
-<AlertDialog
-  bind:open={purgeOpen}
-  title="Permanently delete media?"
-  description="This removes the media and all versions permanently. This cannot be undone."
-  confirmLabel="Delete permanently"
-  cancelLabel="Cancel"
-  onConfirm={confirmPurge}
-  onCancel={() => (purgeOpen = false)}
-  tone="danger"
 >
   <p>Media: <strong>{mediaDisplayName}</strong></p>
 </AlertDialog>
