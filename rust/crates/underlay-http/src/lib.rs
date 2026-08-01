@@ -1,4 +1,5 @@
 pub mod caching;
+mod cached_list;
 pub mod context;
 pub mod cookies;
 mod cors;
@@ -67,6 +68,7 @@ pub use crate::errors::{
     error_response, ApiError, ApiResult, ErrorDetail, ErrorLogContext, ErrorLogSink,
 };
 pub use crate::http_config::{HttpServerConfig, HttpServerConfigError};
+pub use crate::cached_list::{CachedListEndpoint, CachedListResponse};
 pub use crate::page_list::PageList;
 #[allow(deprecated)]
 pub use crate::pagination::PaginationParams;
