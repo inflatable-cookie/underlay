@@ -2,6 +2,7 @@
   import type { Snippet } from "svelte";
   import type { HTMLFormAttributes } from "svelte/elements";
   import { untrack } from "svelte";
+  import { setFormFieldErrors } from "./form-field-errors";
   import { getBackButtonInfo } from "../patterns/navigation";
   import { resolveRedirectTo } from "../client/route-protection";
   import {
@@ -91,6 +92,7 @@
     success = initialSuccess;
     error = initialError;
     fieldErrors = initialFieldErrors;
+    setFormFieldErrors(fieldErrors);
   });
 
   const hasFieldErrors = $derived(Boolean(fieldErrors && Object.keys(fieldErrors).length > 0));
