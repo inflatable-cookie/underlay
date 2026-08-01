@@ -31,6 +31,7 @@
     query: QueryParams;
     onQueryChange: (query: QueryParams) => void;
     dataLoader: UsersListLoader<T>;
+    reloadKey?: string | number;
     roleOptions?: { value: string; label: string }[];
     statusOptions?: { value: string; label: string }[];
     roleTone?: (role: string) => PillTone;
@@ -55,6 +56,7 @@
     query,
     onQueryChange,
     dataLoader,
+    reloadKey,
     roleOptions = DEFAULT_USER_ROLE_OPTIONS,
     statusOptions = DEFAULT_USER_STATUS_OPTIONS,
     roleTone = getUserRoleTone,
@@ -185,6 +187,7 @@
   {backHref}
   {backLabel}
   {dataLoader}
+  {reloadKey}
   presentation="table"
   {columns}
   {filters}
