@@ -17,6 +17,7 @@ export { default as DetailDataTab } from "./DetailDataTab.svelte";
 export { default as EntityFormPage } from "./EntityFormPage.svelte";
 export { default as EntityFormActions } from "./EntityFormActions.svelte";
 export { default as EntityRelationField } from "./EntityRelationField.svelte";
+export { default as EntityMediaField } from "./EntityMediaField.svelte";
 export { useFormFieldErrors, setFormFieldErrors } from "./form-field-errors";
 export { default as EntityTrashPage } from "./EntityTrashPage.svelte";
 export { default as MediaUploadPage } from "./MediaUploadPage.svelte";
