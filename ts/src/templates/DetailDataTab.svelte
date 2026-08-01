@@ -1,10 +1,10 @@
 <script lang="ts" generics="TItem, TData">
-  import type { TemplateSurface } from "../template-types/primitives";
+  import type { Snippet } from "svelte";
 
   interface Props {
     item: TItem | null;
     loader: (item: TItem | null) => Promise<TData>;
-    render: (data: TData | null, item: TItem | null) => TemplateSurface;
+    render: Snippet<[TData | null, TItem | null]>;
     loadingMessage?: string;
     errorMessage?: string;
   }

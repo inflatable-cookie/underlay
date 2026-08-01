@@ -1,3 +1,4 @@
+import type { Snippet } from "svelte";
 import type { TemplateSurface } from "./primitives";
 
 export interface DetailMetaItemConfig {
@@ -29,7 +30,7 @@ export interface DetailTabConfig<TItem, TData = unknown> {
    */
   dataLoader?: (item: TItem | null) => Promise<TData>;
   /** Render the loaded tab data. Required when `dataLoader` is set. */
-  render?: (data: TData | null, item: TItem | null) => TemplateSurface;
+  render?: Snippet<[TData | null, TItem | null]>;
   separator?: boolean;
 }
 
