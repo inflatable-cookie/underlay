@@ -83,23 +83,33 @@ session convergence recorded in sweep 021 and the 2026-07 logs
   template modules transform in vite. Client-side behavior (nav expansion,
   dialogs) not verifiable without a browser.
 - songsprout spot-check found four genuine defects (unrelated to the
-  template conversion except where noted):
-  1. `nursery/migrations/202605131430__baseline_media.sql` references
-     nonexistent `auth.users` — fresh dev DBs cannot migrate.
+  template conversion except where noted) — all four fixed 2026-08-02:
+  1. `nursery/migrations/202605131430__baseline_media.sql` referenced
+     nonexistent `auth.users` — fresh dev DBs could not migrate. Fixed by
+     pointing the media audit-column FKs at `artists.artist(id)` (the values
+     written there are artist ids). Note: sqlx checksum-validates applied
+     migrations, so any dev DB that already applied the old file needs a
+     `db:reset` (the migration was never applicable to a real environment —
+     it could not have run anywhere without a manual workaround).
   2. `handlers/admin/billing.rs` used `a.name` (should be
      `a.display_name`) — `/v1/admin/billing/subscriptions` 500'd; the
-     converted billing table could not load data. **Fixed 2026-08-02.**
-  3. **SSR contract break (needs a decision):** `EntityList` and friends
-     call `useAuthenticatedData` during SSR, which requires a global
-     `getToken`; greenhouse deliberately calls `configureAuth` client-side
-     only (process-global config would leak tokens across SSR requests), so
-     every EntityListPage-backed route 500s on hard load. Client-side
-     navigation may still work (unverified). Either the templates need an
-     SSR-safe fetch guard or the SSR `configureAuth` contract needs
-     rethinking — underlay-side design call.
-  4. `RateLimitStore` defaults to `auth.rate_limit_counters` but nursery's
+     converted billing table could not load data. Fixed; verified live (all
+     sort/search variants 200).
+  3. **SSR contract break:** `useAuthenticatedData` resolved auth handlers
+     at setup, which throws without a global `getToken`; greenhouse
+     deliberately calls `configureAuth` client-side only (process-global
+     config would leak tokens across SSR requests), so every
+     EntityListPage-backed route 500'd on hard load. Fixed underlay-side:
+     handlers now resolve lazily on the fetch path; SSR renders the loading
+     shell, hydration fetches, and a missing `getToken` surfaces as the
+     hook's error state. Latent same-pattern risk remains in
+     `createListController` and `createServerPagination` (setup-time
+     resolution) — no converted page uses them; fix if an SSR consumer
+     adopts them.
+  4. `RateLimitStore` defaulted to `auth.rate_limit_counters` but nursery's
      migration created `accounts.rate_limit_counters` — HTTP rate limiting
-     silently fail-open (warn-logged).
+     silently fail-open. Fixed with `with_table("accounts.rate_limit_counters")`,
+     matching the auth crate's limiter.
   Also: nursery has no dev seeds and no first-admin bootstrap path
   (`/v1/admin/staff/register` requires an existing super_admin) — the
   spot-check admin had to be manufactured by SQL.
