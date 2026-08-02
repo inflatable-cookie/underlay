@@ -28,6 +28,7 @@ Full page components that include header, actions, and content:
 - `MediaDetailWorkflowPage` — Media detail workflow shell with header, metadata, tabs, and load/error framing
 - `SystemIndexPage` — System/operator index shell with header and nav-card grid
 - `AdminDashboardPage` — Admin dashboard shell with header and stacked dashboard sections
+- `UsersListPage` — Admin user-management browse shell with search/filter/sort, row actions, and extension hooks (`extraRowActions`, `onCustomRowAction`, `searchFilterId`, `showSortFilter`, `reloadKey`) so app-specific columns and actions stay app-owned
 - `ErrorLogListPage` — Retained error-log browse shell with status filter, compact table, stats cards, and expandable detail rows
 - `ContextActionBar` and `ContextActionDialog` — Route-aware contextual action shell for app-owned AI actions
 
@@ -62,6 +63,13 @@ Reusable components for use inside pages, tabs, or dialogs:
 - `EntityList` — Self-contained list with filters, pagination, batch, reorder
 - `EntityDetail` — Metadata and detail sections
 - `EntityInlineListModule` — Compact managed child-collection module for detail grids
+- `DetailDataTab` — Data-driven detail tab (loader + typed snippet content)
+- `EntityActionsMenu` — Shared record/row actions-menu recipe (edit, restore/purge, copy actions); `MediaActionsMenu` is the media re-skin over it
+
+Admin chrome:
+
+- `AdminNavList` — Shared admin nav list (active state, expansion, badges)
+- `AdminUserMenu` — Shared admin user menu (identity, role accent, sign-out)
 
 Sections are public exports. Use them directly when you need a narrower inline
 surface that is not really a full browse/manage list tab.
@@ -102,6 +110,16 @@ Poodle primitives (`Field`, `TextInput`, `Select`, etc.) directly. Use
 `EntityFormPage` as a page shell wrapper that handles the header, loading, and
 error states, and one optional sidecar content region when the page still has
 one clear primary form.
+
+The repeated form *chrome* is shared, though — use it instead of re-skinning
+Poodle primitives per app:
+
+- `EntityFormActions` — submit/cancel action bar with busy/disabled states
+- `EntityRelationField` — relation picker field (search + select entity)
+- `EntityMediaField` — media picker form-field chrome
+- `useFormFieldErrors` / `setFormFieldErrors` — field-error context so
+  server field errors surface on the right inputs without prop drilling;
+  `UserForm` is the shared user create/edit form built on this layer
 
 ### Level 3 — Primitives
 

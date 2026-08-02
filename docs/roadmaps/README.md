@@ -90,6 +90,11 @@ the `g08.022`/`g08.023` collapses deferred under their stop conditions; Lane E
 (docs/versioning/i18n) complete. underlay is `0.8.0`, `v0.8.0` tagged at the
 six-consumer proof point, and CI is wired (`.github/workflows/rust.yml` runs the
 adapter integration tests against a `postgres:16` service). Next: `g09` scoping
-(maintainer direction). No consumer reconciliation is outstanding — the adopted
+(maintainer direction). Since the g08 closeout, a post-g08 consumer-convergence
+phase also completed outside the generation queue: session-crate adoption plus
+the admin data-layer (`PageList` envelope, `createPageListQueryState`) and the
+nine-item admin UI template rollout across all six consumers — recorded in
+`docs/logs/2026-08/02-012300-consumer-ui-template-convergence.md`, conformance
+green fleet-wide. No consumer reconciliation is outstanding — the adopted
 adapters match their consumers; the only divergent adapter (`media-postgres`) is
 unadopted and documented as such.

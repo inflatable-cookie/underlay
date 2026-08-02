@@ -75,6 +75,12 @@ Use Poodle `EmptyState` directly for page-level and inline empty views.
 
 ## Entity Action Menus
 
+> **Superseded 2026-08:** the shared actions-menu recipe is back in template
+> form as `EntityActionsMenu` in `@decodelabs/underlay/templates` (with
+> `MediaActionsMenu` re-skinned onto it), adopted across all six consumers.
+> New work uses that recipe; the app-local composition below is the historical
+> record of the retirement wave.
+
 `EntityActionsMenu` and `CopyActionsMenu` are retired. The stable boundary is now app-local action-menu composition over Poodle `Menu`, caller-owned `AlertDialog`, and local clipboard/toast wiring.
 
 ```svelte
