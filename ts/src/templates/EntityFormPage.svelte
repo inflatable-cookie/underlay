@@ -92,6 +92,9 @@
     success = initialSuccess;
     error = initialError;
     fieldErrors = initialFieldErrors;
+  });
+
+  $effect(() => {
     setFormFieldErrors(fieldErrors);
   });
 
