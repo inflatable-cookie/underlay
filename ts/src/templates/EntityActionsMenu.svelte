@@ -177,6 +177,9 @@
     } catch (error) {
       const message = error instanceof Error ? error.message : "Delete failed";
       resolvedToastStore.push({ variant: "error", message });
+      // Rethrow so AlertDialog keeps the dialog open for retry (its confirm
+      // handler only closes on success).
+      throw error;
     } finally {
       deleteBusy = false;
     }
