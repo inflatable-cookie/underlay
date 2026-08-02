@@ -38,14 +38,17 @@ async function flush(): Promise<void> {
 }
 
 describe("patterns/authenticated-data.svelte.ts", () => {
-	it("requires getToken via options or global auth config", async () => {
+	it("defers missing getToken to the fetch path so setup stays SSR-safe", async () => {
 		const { mod } = await loadAuthDataModule();
-		expect(() =>
-			mod.useAuthenticatedData(
-				async () => ({ ok: true }),
-				{}
-			)
-		).toThrow(/getToken is required/);
+		const data = mod.useAuthenticatedData(
+			async () => ({ ok: true }),
+			{}
+		);
+		expect(data.error).toBeNull();
+
+		await data.tryFetch(false, { id: "u1" });
+		expect(data.error).toMatch(/getToken is required/);
+		expect(data.loading).toBe(false);
 	});
 
 	it("gates fetch by auth readiness and supports refetch lifecycle", async () => {

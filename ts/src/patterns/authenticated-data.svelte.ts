@@ -1,8 +1,10 @@
 import { getAuthConfig } from "./auth";
 import {
+  errorFromUnknown,
   resolveAuthFetchHandlers,
   runAuthenticatedFetch,
   shouldSkipAuthReadyFetch,
+  type AuthFetchHandlers,
 } from "./auth-fetch";
 
 /**
@@ -14,6 +16,12 @@ import {
  *
  * Instead of fetching in +page.ts (which races with auth init), use this hook
  * in the component. It waits for auth to be ready, then fetches data.
+ *
+ * SSR note: auth handlers are resolved lazily on the fetch path, not at
+ * setup, so SSR (where configureAuth must not run — a process-global token
+ * getter would leak across requests) renders the loading state and the first
+ * fetch happens after hydration. A missing getToken then surfaces as the
+ * hook's error state instead of a setup-time throw.
  *
  * ## Setup (once per app)
  *
@@ -209,7 +217,6 @@ export function useAuthenticatedData<T>(
   options: AuthenticatedDataOptions<T>
 ): AuthenticatedDataResult<T> {
   const globalConfig = getAuthConfig();
-  const { getToken, onRefresh } = resolveAuthFetchHandlers("useAuthenticatedData", options);
 
   let data = $state<T | undefined>(options.defaultValue);
   let loading = $state(true);
@@ -236,6 +243,21 @@ export function useAuthenticatedData<T>(
       }
       return _inFlight;
     }
+
+    // Resolve auth handlers lazily: setup can run during SSR (no global
+    // configureAuth there — a process-global token getter would leak across
+    // requests), while doFetch only ever runs client-side. A resolution
+    // failure surfaces as the hook's error state instead of crashing setup.
+    let handlers: AuthFetchHandlers;
+    try {
+      handlers = resolveAuthFetchHandlers("useAuthenticatedData", options);
+    } catch (resolutionError) {
+      error = errorFromUnknown(resolutionError, "Auth is not configured").message;
+      loading = false;
+      refetching = false;
+      return;
+    }
+    const { getToken, onRefresh } = handlers;
 
     if (isRefetch) {
       refetching = true;
