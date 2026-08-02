@@ -1,6 +1,12 @@
 [catalog]
 alias = "underlay"
 
+# Mounted into consumer workspace containers; keep install/build state
+# container-owned so host tooling (svelte-check, vitest) and container
+# installs stop clobbering each other's node_modules (effigy guide 069).
+[isolation]
+paths = ["node_modules", "target"]
+
 [package_manager]
 js = "bun"
 
