@@ -61,9 +61,9 @@
  */
 
 import {
-  resolveAuthFetchHandlers,
   runAuthenticatedFetch,
   shouldSkipAuthReadyFetch,
+  tryResolveAuthFetchHandlers,
 } from "./auth-fetch";
 
 /**
@@ -199,8 +199,6 @@ export function createListController<T, F extends Record<string, unknown> = Reco
   fetcher: (fetchFn: typeof fetch, token: string, filters: F) => Promise<T[]>,
   options: ListControllerOptions<T, F> = {}
 ): ListControllerResult<T, F> {
-  const { getToken, onRefresh } = resolveAuthFetchHandlers("createListController", options);
-
   const autoFetchOnFilterChange = options.autoFetchOnFilterChange ?? true;
 
   // State
@@ -212,6 +210,17 @@ export function createListController<T, F extends Record<string, unknown> = Reco
   let _fetched = false;
 
   const doFetch = async (isRefetch = false) => {
+    // Resolve auth lazily (fetch path only) so setup stays SSR-safe; a
+    // misconfiguration surfaces as the controller's error state.
+    const resolved = tryResolveAuthFetchHandlers("createListController", options);
+    if (!resolved.handlers) {
+      error = resolved.error;
+      loading = false;
+      refetching = false;
+      return;
+    }
+    const { getToken, onRefresh } = resolved.handlers;
+
     // On initial load, show loading. On refetch, show refetching (keeps existing data visible)
     if (isRefetch) {
       refetching = true;

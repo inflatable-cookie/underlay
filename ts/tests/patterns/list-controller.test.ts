@@ -20,14 +20,17 @@ async function flush(): Promise<void> {
 }
 
 describe("patterns/list-controller.svelte.ts", () => {
-	it("requires getToken via options or global auth config", async () => {
+	it("defers missing getToken to the fetch path so setup stays SSR-safe", async () => {
 		const { createListController } = await loadListControllerModule({ mockAuthNull: true });
-		expect(() =>
-			createListController(
-				async () => [],
-				{}
-			)
-		).toThrow(/getToken is required/);
+		const controller = createListController(
+			async () => [],
+			{}
+		);
+		expect(controller.error).toBeNull();
+
+		await controller.tryFetch(false, { id: "u1" });
+		expect(controller.error).toMatch(/getToken is required/);
+		expect(controller.loading).toBe(false);
 	});
 
 	it("gates fetch by auth readiness and token presence", async () => {

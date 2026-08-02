@@ -27,6 +27,23 @@ export function resolveAuthFetchHandlers(
   return { getToken, onRefresh };
 }
 
+/**
+ * Non-throwing variant of resolveAuthFetchHandlers for lazy (fetch-path)
+ * resolution. Setup of patterns/controllers can run during SSR, where no
+ * global configureAuth exists; resolving at fetch time keeps setup SSR-safe
+ * and surfaces the misconfiguration as an error string instead of a throw.
+ */
+export function tryResolveAuthFetchHandlers(
+  caller: string,
+  options: AuthFetchHandlerOptions,
+): { handlers: AuthFetchHandlers; error: null } | { handlers: null; error: string } {
+  try {
+    return { handlers: resolveAuthFetchHandlers(caller, options), error: null };
+  } catch (err) {
+    return { handlers: null, error: errorFromUnknown(err, "Auth is not configured").message };
+  }
+}
+
 export function shouldSkipAuthReadyFetch(
   fetched: boolean,
   authLoading: boolean,

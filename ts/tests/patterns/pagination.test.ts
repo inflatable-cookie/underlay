@@ -20,21 +20,26 @@ async function loadPaginationModule(options?: {
 }
 
 describe("patterns/pagination.svelte.ts", () => {
-	it("requires getToken for server pagination and supports fetch/refresh/setPageSize", async () => {
+	it("defers missing getToken to the fetch path so setup stays SSR-safe", async () => {
 		const modWithoutAuth = await loadPaginationModule();
-		expect(() =>
-			modWithoutAuth.createPaginationController(
-				async () => ({
-					data: [],
-					nextCursor: null,
-					prevCursor: null,
-					hasMore: false,
-					total: 0,
-				}),
-				{}
-			)
-		).toThrow(/getToken is required/);
+		const controller = modWithoutAuth.createPaginationController(
+			async () => ({
+				data: [],
+				nextCursor: null,
+				prevCursor: null,
+				hasMore: false,
+				total: 0,
+			}),
+			{}
+		);
+		expect(controller.error).toBeNull();
 
+		await controller.tryFetch(false, { id: "u1" });
+		expect(controller.error).toMatch(/getToken is required/);
+		expect(controller.loading).toBe(false);
+	});
+
+	it("supports server pagination fetch/refresh/setPageSize", async () => {
 		const storage = {
 			data: new Map<string, string>([["pagination:test", "11"]]),
 			getItem: vi.fn((k: string) => storage.data.get(k) ?? null),

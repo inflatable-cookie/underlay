@@ -1,10 +1,8 @@
 import { getAuthConfig } from "./auth";
 import {
-  errorFromUnknown,
-  resolveAuthFetchHandlers,
   runAuthenticatedFetch,
   shouldSkipAuthReadyFetch,
-  type AuthFetchHandlers,
+  tryResolveAuthFetchHandlers,
 } from "./auth-fetch";
 
 /**
@@ -248,16 +246,14 @@ export function useAuthenticatedData<T>(
     // configureAuth there — a process-global token getter would leak across
     // requests), while doFetch only ever runs client-side. A resolution
     // failure surfaces as the hook's error state instead of crashing setup.
-    let handlers: AuthFetchHandlers;
-    try {
-      handlers = resolveAuthFetchHandlers("useAuthenticatedData", options);
-    } catch (resolutionError) {
-      error = errorFromUnknown(resolutionError, "Auth is not configured").message;
+    const resolved = tryResolveAuthFetchHandlers("useAuthenticatedData", options);
+    if (!resolved.handlers) {
+      error = resolved.error;
       loading = false;
       refetching = false;
       return;
     }
-    const { getToken, onRefresh } = handlers;
+    const { getToken, onRefresh } = resolved.handlers;
 
     if (isRefetch) {
       refetching = true;

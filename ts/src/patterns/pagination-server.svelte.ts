@@ -1,7 +1,7 @@
 import {
-  resolveAuthFetchHandlers,
   runAuthenticatedFetch,
   shouldSkipAuthReadyFetch,
+  tryResolveAuthFetchHandlers,
 } from "./auth-fetch";
 import type {
   CursorPaginatedResponse,
@@ -32,11 +32,6 @@ export function createPaginationController<T>(
   ) => Promise<CursorPaginatedResponse<T>>,
   options: ServerPaginationOptions<T> = {},
 ): ServerPaginationResult<T> {
-  const { getToken, onRefresh } = resolveAuthFetchHandlers(
-    "createPaginationController",
-    options,
-  );
-
   const getInitialPageSize = (): number => {
     if (options.persistKey && typeof localStorage !== "undefined") {
       const stored = localStorage.getItem(options.persistKey);
@@ -84,6 +79,16 @@ export function createPaginationController<T>(
     if (_inFlight) {
       return _inFlight;
     }
+
+    // Resolve auth lazily (fetch path only) so setup stays SSR-safe; a
+    // misconfiguration surfaces as the controller's error state.
+    const resolved = tryResolveAuthFetchHandlers("createPaginationController", options);
+    if (!resolved.handlers) {
+      error = resolved.error;
+      loading = false;
+      return;
+    }
+    const { getToken, onRefresh } = resolved.handlers;
 
     let attemptedFetch = false;
     const run = (async () => {
