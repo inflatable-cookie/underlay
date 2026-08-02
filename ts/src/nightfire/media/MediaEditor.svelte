@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { MediaThumbnail } from "@poodle/svelte";
+  import { Button, MediaThumbnail } from "@poodle/svelte";
   import { Select, TextInput } from "@poodle/svelte";
   import type { MarkdownEditorContext } from "../markup/markdown-editor-context";
   import { type MediaKind } from "../../patterns/media-types/enums";
@@ -123,25 +123,25 @@
           <span class="underlay-media-editor__preview-id">{mediaId}</span>
           <div class="underlay-media-editor__preview-actions">
             {#if mediaContext}
-              <button type="button" class="underlay-media-editor__btn" onclick={handlePickMedia} disabled={picking}>
+              <Button type="button" variant="secondary" size="sm" onClick={handlePickMedia} disabled={picking}>
                 Change
-              </button>
+              </Button>
             {/if}
-            <button type="button" class="underlay-media-editor__btn underlay-media-editor__btn--danger" onclick={handleRemove}>
+            <Button type="button" variant="ghost" tone="danger" size="sm" onClick={handleRemove}>
               Remove
-            </button>
+            </Button>
           </div>
         </div>
       </div>
     {:else if mediaContext}
-      <button
+      <Button
         type="button"
-        class="underlay-media-editor__pick-btn"
-        onclick={handlePickMedia}
-        disabled={picking}
+        variant="secondary"
+        onClick={handlePickMedia}
+        loading={picking}
       >
         {picking ? "Opening picker…" : "Select media"}
-      </button>
+      </Button>
     {:else}
       <!-- Fallback: plain text input when no media context is configured -->
       <TextInput
@@ -239,46 +239,6 @@
     display: flex;
     gap: var(--underlay-space-2, 0.5rem);
     margin-top: var(--underlay-space-1, 0.25rem);
-  }
-
-  .underlay-media-editor__btn {
-    font-size: calc(1em * var(--underlay-font-scale-xs, 0.75));
-    padding: var(--underlay-space-1, 0.25rem) var(--underlay-space-2, 0.5rem);
-    border-radius: var(--underlay-radius-sm, 0.25rem);
-    border: 1px solid var(--underlay-color-border-strong, rgba(148, 163, 184, 0.5));
-    background: transparent;
-    color: inherit;
-    cursor: pointer;
-  }
-
-  .underlay-media-editor__btn:hover {
-    background: var(--underlay-color-surface-hover, rgba(255, 255, 255, 0.06));
-  }
-
-  .underlay-media-editor__btn--danger:hover {
-    color: var(--underlay-color-danger, #ef4444);
-    border-color: var(--underlay-color-danger, #ef4444);
-  }
-
-  .underlay-media-editor__pick-btn {
-    padding: var(--underlay-space-3, 0.75rem) var(--underlay-space-4, 1rem);
-    border-radius: var(--underlay-radius-md, 0.375rem);
-    border: 2px dashed var(--underlay-color-border-strong, rgba(148, 163, 184, 0.5));
-    background: transparent;
-    color: var(--underlay-color-text-muted, rgba(148, 163, 184, 0.7));
-    cursor: pointer;
-    font-size: calc(1em * var(--underlay-font-scale-sm, 0.875));
-    transition: border-color 0.15s, color 0.15s;
-  }
-
-  .underlay-media-editor__pick-btn:hover:not(:disabled) {
-    border-color: var(--underlay-color-primary, #3b82f6);
-    color: var(--underlay-color-primary, #3b82f6);
-  }
-
-  .underlay-media-editor__pick-btn:disabled {
-    opacity: 0.6;
-    cursor: wait;
   }
 
   .underlay-media-editor__fields {
