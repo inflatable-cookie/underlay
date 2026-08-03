@@ -57,11 +57,20 @@ impl Environment {
     /// Unset (or unknown) resolves to `Prod`: development behavior is never
     /// enabled by omission. This is the single env-resolution point — apps
     /// should call it instead of parsing env vars themselves.
+    ///
+    /// When the value comes from the legacy var, a deprecation warning is
+    /// printed to stderr once per process (resolve can run before tracing
+    /// is initialised).
     pub fn resolve(primary_var: &str, legacy_var: Option<&str>) -> Self {
         match std::env::var(primary_var) {
             Ok(value) => Self::parse(&value),
             Err(_) => match legacy_var.and_then(|var| std::env::var(var).ok()) {
-                Some(value) => Self::parse(&value),
+                Some(value) => {
+                    if let Some(legacy) = legacy_var {
+                        warn_legacy_env_var_once(primary_var, legacy);
+                    }
+                    Self::parse(&value)
+                }
                 None => Environment::Prod,
             },
         }
@@ -111,6 +120,20 @@ impl std::str::FromStr for Environment {
 
     fn from_str(value: &str) -> Result<Self, Self::Err> {
         Ok(Self::parse(value))
+    }
+}
+
+pub(crate) fn legacy_env_var_warning(primary_var: &str, legacy_var: &str) -> String {
+    format!(
+        "warning: environment resolved from deprecated {legacy_var}; set {primary_var} instead"
+    )
+}
+
+fn warn_legacy_env_var_once(primary_var: &str, legacy_var: &str) {
+    use std::sync::atomic::{AtomicBool, Ordering};
+    static WARNED: AtomicBool = AtomicBool::new(false);
+    if !WARNED.swap(true, Ordering::Relaxed) {
+        eprintln!("{}", legacy_env_var_warning(primary_var, legacy_var));
     }
 }
 

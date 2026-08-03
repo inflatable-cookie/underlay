@@ -72,6 +72,13 @@ fn environment_resolve_name_keeps_raw_overlay_names() {
 }
 
 #[test]
+fn legacy_env_var_warning_names_both_vars() {
+    let warning = legacy_env_var_warning("ENVIRONMENT", "CP_ENV");
+    assert!(warning.contains("deprecated CP_ENV"));
+    assert!(warning.contains("set ENVIRONMENT instead"));
+}
+
+#[test]
 fn environment_helpers_select_expected_formats() {
     assert!(Environment::Local.is_development());
     assert!(Environment::Effigy.is_development());

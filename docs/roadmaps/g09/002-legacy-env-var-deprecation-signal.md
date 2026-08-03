@@ -1,6 +1,7 @@
 # g09.002 - Legacy Env-Var Deprecation Signal
 
-Status: ready
+Status: complete
+Completed: 2026-08-03
 Owner: repo maintainers
 
 ## Purpose
@@ -19,12 +20,12 @@ signal; it shipped without one.
 
 ## Planned Changes
 
-- [ ] When the resolved value comes from the legacy var, emit a deprecation
+- [x] When the resolved value comes from the legacy var, emit a deprecation
   warning naming both vars (stderr/`eprintln!` — `resolve` can run before
   tracing init in some apps).
-- [ ] Rate-limit to once per process (static `AtomicBool`) to avoid log
+- [x] Rate-limit to once per process (static `AtomicBool`) to avoid log
   spam across repeated resolves.
-- [ ] Unit tests: legacy path warns once; primary path and unset path do
+- [x] Unit tests: legacy path warns once; primary path and unset path do
   not.
 
 ## Consumer Upgrade Impact
@@ -34,12 +35,16 @@ warning; no behavior change.
 
 ## Validation
 
-- [ ] `cargo test -p underlay-observability`
-- [ ] `effigy validate`
+- [x] `cargo test -p underlay-observability`
+- [x] `effigy validate`
 
 ## Stop Conditions
 
 None expected.
+
+## Completion Notes
+
+Completed 2026-08-03. `Environment::resolve` now prints a one-per-process stderr deprecation warning when the value comes from the legacy var (`legacy_env_var_warning` + AtomicBool guard). Tests: warning names both vars; existing resolve/resolve_name tests green.
 
 ## Next Task
 

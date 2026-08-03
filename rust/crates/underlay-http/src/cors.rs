@@ -248,6 +248,24 @@ pub fn cors_layer_for_env(config: CorsConfig, environment: Environment) -> CorsL
     try_cors_layer_for_env(config, environment).expect("invalid CORS configuration")
 }
 
+/// Returns the boot-time warning to emit when an admin API runs outside
+/// local dev with no explicit CORS origins (all cross-origin browser
+/// requests will be denied — fail-closed but easily a misconfiguration).
+/// `None` in local dev (mirror-origin covers it) and when origins exist.
+pub(crate) fn admin_cors_empty_origins_warning(
+    environment: &Environment,
+    explicit_origins: &[String],
+) -> Option<&'static str> {
+    if environment.is_local_dev() || !explicit_origins.is_empty() {
+        return None;
+    }
+    Some(
+        "admin CORS has no explicit origins outside local dev — all cross-origin \
+         browser requests will be denied; set explicit origins (e.g. CORS_ORIGINS) \
+         if this API serves browsers",
+    )
+}
+
 /// The canonical CORS config for Underlay admin APIs — the single construction
 /// point so consumers do not clone per-app builder functions.
 ///
@@ -264,6 +282,10 @@ pub fn cors_layer_for_env(config: CorsConfig, environment: Environment) -> CorsL
 ///
 /// Panics on an invalid origin value.
 pub fn admin_cors_config(environment: Environment, explicit_origins: Vec<String>) -> CorsConfig {
+    if let Some(warning) = admin_cors_empty_origins_warning(&environment, &explicit_origins) {
+        eprintln!("warning: {warning}");
+    }
+
     let mut config = CorsConfig::default()
         .with_header(HeaderName::from_static("x-api-version"))
         .with_header(HeaderName::from_static("x-csrf-token"))

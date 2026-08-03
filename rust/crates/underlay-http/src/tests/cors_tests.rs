@@ -399,6 +399,20 @@ mod tests {
     }
 
     #[test]
+    fn admin_cors_empty_origins_warning_only_fires_outside_local_dev() {
+        use crate::cors::admin_cors_empty_origins_warning as warning;
+
+        assert!(warning(&Environment::Prod, &[]).is_some());
+        assert!(warning(&Environment::Staging, &[]).is_some());
+        assert!(warning(&Environment::Local, &[]).is_none());
+        assert!(warning(&Environment::Effigy, &[]).is_none());
+        assert!(warning(&Environment::Test, &[]).is_none());
+        assert!(
+            warning(&Environment::Prod, &["https://admin.example.test".to_string()]).is_none()
+        );
+    }
+
+    #[test]
     fn internal_service_config() {
         let config = CorsConfig::new().with_any_origin().with_credentials(false);
 
