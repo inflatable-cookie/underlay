@@ -73,12 +73,26 @@ between operators' untracked `local.toml` files.
 
 ## Variants and follow-ups
 
-- **farmyard** keeps its TOML-overlay env model and `"dev"` as its local
-  identifier (gates accept `Effigy` too); aligning it to the fleet
-  identifier means renaming its env value + `dev.toml` and is parked.
-- **farmyard dev credentials** come from the legacy-dump seed-bundle
+- **farmyard** is fully aligned as of `48ef5590`: `config/dev.toml` renamed
+  to `config/effigy.toml` (`environment = "effigy"`), overlay selected from
+  the raw `ENVIRONMENT` value via `Environment::resolve_name`
+  (`ENVIRONMENT_NAME` legacy fallback). uat/production overlays unchanged.
+  Farmyard dev credentials still come from the legacy-dump seed-bundle
   harness — shared-credential alignment needs a designed hook, not a
-  drive-by. Accepted variant for now.
+  drive-by.
+- **Overlay-name normalization bug (caught and fixed during rollout):**
+  feeding `Environment::resolve(...).to_string()` into
+  `ConfigStack::with_environment` broke non-enum overlay names (`uat` →
+  `prod`). New `Environment::resolve_name` returns the raw value with the
+  same var precedence; all five ConfigStack consumers use it for the
+  overlay, `resolve` for behavior.
+- **Catalog discovery collision (same day):** `config/effigy.toml` matched
+  effigy's manifest filename and broke catalog discovery; fixed bundle-side
+  with `[catalog.discovery] ignore = ["config"]` in the bundle export
+  (covers all consumer root manifests, verified fleet-wide).
+- **Personal overlays:** acme/cp/compli `local.toml` files were stripped to
+  personal-override stubs (untracked, local-only); the committed
+  `effigy.toml` now owns shared dev config.
 - **songsprout** has no overlay seam (dev constants live in committed
   `config/default.toml`; its two hand-rolled loaders hardcode a vestigial
   `dev.toml` layer). Works today; a real env-named overlay + moving dev
