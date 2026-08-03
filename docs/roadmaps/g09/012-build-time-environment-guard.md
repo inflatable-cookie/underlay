@@ -1,6 +1,7 @@
 # g09.012 - Conformance Guard: No ENVIRONMENT At Build Time
 
-Status: ready
+Status: complete
+Completed: 2026-08-03
 Owner: repo maintainers
 
 ## Purpose
@@ -17,11 +18,11 @@ from the config stack), but nothing prevents a future build from baking
 
 ## Planned Changes
 
-- [ ] `underlay/scripts/check-consumer-conformance.sh`: new
+- [x] `underlay/scripts/check-consumer-conformance.sh`: new
   `build-env-read` check — grep consumer front/admin build configs and
   build scripts (vite config, build tasks, Dockerfiles) for `ENVIRONMENT`
   reads; flag any outside an explicit allowlist.
-- [ ] Run green across all six consumers; document the allowlist mechanism.
+- [x] Run green across all six consumers; document the allowlist mechanism.
 
 ## Consumer Upgrade Impact
 
@@ -31,11 +32,15 @@ real finding).
 
 ## Validation
 
-- [ ] `effigy qa:security` green in all six repos (18 checks)
+- [x] `effigy qa:security` green in all six repos (18 checks)
 
 ## Stop Conditions
 
 None expected.
+
+## Completion Notes
+
+Completed 2026-08-03. New `build-env-read` conformance check: greps `vite.config.*`, `svelte.config.*`, `*generate-public-config*` for `ENVIRONMENT` reads (`conformance: allow` marker for exceptions). Green in all six consumers — 18 checks each.
 
 ## Next Task
 

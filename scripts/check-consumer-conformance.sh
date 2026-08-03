@@ -310,6 +310,22 @@ if ! skip "cors-canonical"; then
 fi
 
 # --------------------------------------------------------------------------
+# check-build-env-read: frontend build config must not read ENVIRONMENT
+# (the bundle env schema applies to builds too — a build that bakes the dev
+# identifier would ship it to prod; public config comes from the config stack)
+# --------------------------------------------------------------------------
+if ! skip "build-env-read"; then
+  hits=$(rg -n "ENVIRONMENT" "$ROOT" \
+    -g 'vite.config.*' -g 'svelte.config.*' -g '*generate-public-config*' \
+    -g '!node_modules' 2>/dev/null | rg -v "conformance: allow" || true)
+  if [[ -z "$hits" ]]; then
+    pass "build-env-read"
+  else
+    fail "build-env-read" "ENVIRONMENT read in frontend build config (public config must come from the config stack):\n$hits"
+  fi
+fi
+
+# --------------------------------------------------------------------------
 # Report
 # --------------------------------------------------------------------------
 echo "Conformance report for: $ROOT"
