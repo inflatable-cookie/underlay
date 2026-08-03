@@ -1,6 +1,7 @@
 # g09.007 - Farmyard Dev Gate Decision
 
-Status: ready
+Status: complete
+Completed: 2026-08-03
 Owner: repo maintainers
 
 ## Purpose
@@ -18,11 +19,11 @@ either (a) needed for a deployed environment literally named `dev`, or
 
 ## Planned Changes
 
-- [ ] Determine whether any deployed farmyard environment is named `dev`
+- [x] Determine whether any deployed farmyard environment is named `dev`
   (check deploy configs, ledger docs, uat/staging inventories).
-- [ ] If none: trim gates to `is_local_dev()` (or `is_local_dev() || Dev`
+- [x] If none: trim gates to `is_local_dev()` (or `is_local_dev() || Dev`
   only where a deployed dev exists), with a comment recording the decision.
-- [ ] If a deployed dev exists: document it at the gate sites and close the
+- [x] If a deployed dev exists: document it at the gate sites and close the
   card as accepted.
 
 ## Consumer Upgrade Impact
@@ -32,13 +33,17 @@ deployed dev env is later discovered — the investigation prevents that).
 
 ## Validation
 
-- [ ] `cargo check --workspace --all-features --all-targets` (farmyard)
-- [ ] `cargo test -p farmyard-infra`
-- [ ] acowtancy parent bump committed
+- [x] `cargo check --workspace --all-features --all-targets` (farmyard)
+- [x] `cargo test -p farmyard-infra`
+- [x] acowtancy parent bump committed
 
 ## Stop Conditions
 
 None expected.
+
+## Completion Notes
+
+Completed 2026-08-03. Investigation: no deployed farmyard environment is named `dev` (infra/render has uat only; production overlay separate; `dev` was only ever the local stack, now `effigy`). All 12 gate sites (config.rs ×7, api/main.rs ×4, jobs/main.rs ×1) trimmed from `Local|Effigy|Dev|Test` to `is_local_dev()`; now-unused Environment import dropped. cargo check 0 warnings, farmyard-infra 11/11.
 
 ## Next Task
 
