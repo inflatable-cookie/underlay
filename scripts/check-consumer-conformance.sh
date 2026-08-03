@@ -294,6 +294,22 @@ if ! skip "detail-fanout"; then
 fi
 
 # --------------------------------------------------------------------------
+# check-cors-canonical: CORS built via underlay admin_cors_layer, no clones
+# --------------------------------------------------------------------------
+if ! skip "cors-canonical"; then
+  clones=$(rg -n "fn (underlay_env|build_cors_layer|cors_config_from_app)" "$ROOT" --type rust -g '!target' 2>/dev/null \
+    | rg -v "/underlay/" || true)
+  missing=$(rg -l "admin_cors_layer" "$ROOT" --type rust -g '!target' 2>/dev/null | head -1)
+  if [[ -z "$clones" && -n "$missing" ]]; then
+    pass "cors-canonical"
+  elif [[ -n "$clones" ]]; then
+    fail "cors-canonical" "app-local CORS/env clone functions (use underlay admin_cors_layer):\n$clones"
+  else
+    fail "cors-canonical" "no admin_cors_layer usage found — CORS must be built via the underlay helper"
+  fi
+fi
+
+# --------------------------------------------------------------------------
 # Report
 # --------------------------------------------------------------------------
 echo "Conformance report for: $ROOT"
