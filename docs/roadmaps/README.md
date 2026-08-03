@@ -51,18 +51,19 @@ README surfaces.
 
 ## Active generation
 
-- `g08` - Audit Remediation And Edge Hardening ([front door](g08/README.md))
+- `g09` - Config Convergence Follow-Through ([front door](g09/README.md))
 
 ## Current Queue
 
-`g08` runs five lanes; Lane A (security) leads. Full card detail lives in
-[`g08/README.md`](g08/README.md).
+`g08` (complete) acted on the July 2026 deep audit. `g09` carries the
+follow-through from the 2026-08-03 config-convergence self-audit. Card
+detail lives in [`g09/README.md`](g09/README.md).
 
-- Lane A - Security and edge hardening: `g08.001`-`g08.010` (complete)
-- Lane B - Correctness bugs and test gate: `g08.011`-`g08.014` (complete)
-- Lane C - Rust structural seams: `g08.015`-`g08.020` (complete)
-- Lane D - TypeScript surface and SSR safety: `g08.021`-`g08.024` (complete)
-- Lane E - Docs, versioning, and i18n posture: `g08.025`-`g08.030` (complete)
+- `g09.001`-`g09.003` — small real gaps (silent prod CORS, legacy env-var
+  signal, operator `local.toml` note)
+- `g09.004`-`g09.007` — dead code and remaining duplication
+- `g09.008` — config model front-door guide
+- `g09.009`-`g09.012` — variants to converge or deliberately park
 
 ## Archived generations
 
@@ -81,20 +82,8 @@ that risk.
 
 ## Next Task
 
-**`g08` is fully complete — all 32 cards done across all five lanes.** Lanes A
-(security) and B (correctness/test gate) closed with the six-consumer rollout;
-Lane C (Rust seams) closed including `g08.019`, unblocked by making `TestDb` run
-against an external `UNDERLAY_TEST_DATABASE_URL` (17 adapter integration tests
-green on Postgres 16 via effigy containerd); Lane D (TS surface) complete with
-the `g08.022`/`g08.023` collapses deferred under their stop conditions; Lane E
-(docs/versioning/i18n) complete. underlay is `0.8.0`, `v0.8.0` tagged at the
-six-consumer proof point, and CI is wired (`.github/workflows/rust.yml` runs the
-adapter integration tests against a `postgres:16` service). Next: `g09` scoping
-(maintainer direction). Since the g08 closeout, a post-g08 consumer-convergence
-phase also completed outside the generation queue: session-crate adoption plus
-the admin data-layer (`PageList` envelope, `createPageListQueryState`) and the
-nine-item admin UI template rollout across all six consumers — recorded in
-`docs/logs/2026-08/02-012300-consumer-ui-template-convergence.md`, conformance
-green fleet-wide. No consumer reconciliation is outstanding — the adopted
-adapters match their consumers; the only divergent adapter (`media-postgres`) is
-unadopted and documented as such.
+**`g09.001`** — prod-empty-origins boot warning. `g08` is fully complete
+(all 32 cards done across all five lanes); the config convergence (2026-08)
+landed and is recorded in `docs/logs/2026-08/03-104132-config-convergence.md`.
+`g09` scopes the self-audit follow-through; see its
+[front door](g09/README.md) for the queue.
