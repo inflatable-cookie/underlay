@@ -92,11 +92,19 @@ the kit supplies hierarchy-enforced handlers, ETag/freshness plumbing,
 and the `cannot_manage_self` semantics. acme/cp/compli collapse to
 configuration.
 
-**B3. Environment + seed guard helpers.** `resolve_environment()` (one
+**B3. Environment + seed guard helpers.** ~~`resolve_environment()` (one
 fail-closed read with app-specific legacy var fallback) and
 `seed_guard(env, db_url)` (env set AND local host) so no consumer parses
 env vars or writes its own host check again. Also kill the per-app
-`underlay_env()` CORS mapper: `cors_layer_from_env(config)`.
+`underlay_env()` CORS mapper: `cors_layer_from_env(config)`.~~ — **done
+(2026-08-03, env/CORS half).** `Environment::resolve` (fail closed,
+`ENVIRONMENT` primary, legacy var deprecated fallback) and
+`admin_cors_layer` are the single owners; per-app `underlay_env()` /
+`build_cors_layer` clones are deleted in all six consumers and blocked by
+the `cors-canonical` conformance check. The dev identifier is `effigy`
+(injected by the bundle env schema); committed `config/effigy.toml` holds
+shared dev-stack config with the overlay named from the same resolution.
+The `seed_guard` half already landed as `is_local_database_url` (item 1).
 
 **B4. Shared blob adapter factory.** `create_blob_adapter(env, config)`
 with the canonical shape: dev → MinIO, prod → S3 or explicit

@@ -25,16 +25,19 @@ single source consumed by CORS, seeds, cookies, blob, docs gating.
 
 | App | Var(s) | Unset default | Status |
 |---|---|---|---|
-| acme | `ENVIRONMENT` (+`ACME_ENV`) | prod (fixed in 3 places) | ok |
-| cp | `ENVIRONMENT` (+`CP_ENV`) | prod | ok |
-| compli | `ENVIRONMENT` (+`COMPLI_ENV`) | prod | ok |
-| farmyard | `ENVIRONMENT_NAME` selects TOML overlay; value from TOML | prod when no config at all | var — two-layer model; document it |
+| acme | `ENVIRONMENT` (+`ACME_ENV` legacy) | prod (fixed in 3 places) | ok |
+| cp | `ENVIRONMENT` (+`CP_ENV` legacy) | prod | ok |
+| compli | `ENVIRONMENT` (+`COMPLI_ENV` legacy) | prod | ok |
+| farmyard | `ENVIRONMENT_NAME` selects TOML overlay; value from TOML | prod when no config at all | var — two-layer model; documented variant |
 | nursery | `ENVIRONMENT_NAME`, `ENVIRONMENT` | prod | ok |
-| composer | `COMPOSER_ENV` | prod | ok |
+| composer | `ENVIRONMENT` (+`COMPOSER_ENV` legacy) | prod | ok |
 
-Drift: three env-var naming schemes and per-app CORS mapper functions still
-duplicated in each `routes/mod.rs`. Candidate: one underlay helper
-(`resolve_env` + `cors_layer_from_env`) so the mapper exists once.
+Drift: resolved 2026-08-03. `ENVIRONMENT` is the single identifier
+fleet-wide (app-specific vars are deprecated fallbacks via
+`underlay_observability::Environment::resolve`); the effigy dev stack
+injects `ENVIRONMENT=effigy` from the bundle's env schema; CORS is built
+only via `underlay_http::admin_cors_layer` (conformance check
+`cors-canonical`). See `docs/logs/2026-08/03-104132-config-convergence.md`.
 
 ## 2. Dev seeds
 
