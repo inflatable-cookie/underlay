@@ -85,7 +85,7 @@ let cors = underlay_http::admin_cors_layer(env, origins_from_config);
   (`underlay_db::is_local_database_url`).
 - Shared dev credentials in all `migrations_dev` seeds:
   `admin@example.com` / `UnderlayDev2026!` / TOTP secret
-  `UNDERLAYDEVTOTPSECRET2345678ABCD` — one authenticator entry for the
+  `UNDERLAYDEVTOTPSECRET234567ABCDE` — one authenticator entry for the
   whole fleet. (farmyard's legacy-dump seed harness is the tracked
   exception — `g09.010`.)
 - Seeds upsert by `id` so existing dev DBs migrate the old admin row.

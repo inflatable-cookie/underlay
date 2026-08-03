@@ -31,7 +31,7 @@ between operators' untracked `local.toml` files.
   loaders name the overlay from the same `Environment::resolve` call that
   gates behavior. `local.toml` stays as the personal gitignored overlay.
 - **One dev credential set** — `admin@example.com` / `UnderlayDev2026!` /
-  TOTP secret `UNDERLAYDEVTOTPSECRET2345678ABCD` in all dev seeds (one
+  TOTP secret `UNDERLAYDEVTOTPSECRET234567ABCDE` in all dev seeds (one
   authenticator entry for the fleet).
 
 ## What shipped
