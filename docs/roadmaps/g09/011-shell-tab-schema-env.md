@@ -1,6 +1,7 @@
 # g09.011 - Effigy Shell-Tab Schema Env Propagation
 
-Status: ready
+Status: complete
+Completed: 2026-08-03
 Owner: repo maintainers
 
 ## Purpose
@@ -20,11 +21,11 @@ mirror) — the same break the convergence fixed for task runs.
 
 ## Planned Changes (effigy repo)
 
-- [ ] Fold the resolved catalog env schema (with ancestor fallback) into
+- [x] Fold the resolved catalog env schema (with ancestor fallback) into
   the shell/lifecycle role process environment the same way it reaches
   task children.
-- [ ] Regression test mirroring the env-schema ancestor-fallback tests.
-- [ ] CHANGELOG entry; `cargo test`, fmt, clippy green.
+- [x] Regression test mirroring the env-schema ancestor-fallback tests.
+- [x] CHANGELOG entry; `cargo test`, fmt, clippy green.
 
 ## Consumer Upgrade Impact
 
@@ -33,12 +34,16 @@ shell commands inherit `ENVIRONMENT=effigy`.
 
 ## Validation
 
-- [ ] In a dev session shell tab: `echo $ENVIRONMENT` → `effigy`
-- [ ] manual `cargo run -p cp-api` in the shell tab boots with CORS mirror
+- [x] In a dev session shell tab: `echo $ENVIRONMENT` → `effigy`
+- [x] manual `cargo run -p cp-api` in the shell tab boots with CORS mirror
 
 ## Stop Conditions
 
 None expected.
+
+## Completion Notes
+
+Completed 2026-08-03 (effigy 8e0e3a7). `managed_role_schema_env` + `apply_schema_env_to_managed_role_processes` in `run_managed_task`: shell/lifecycle role runs gain the schema env via the same env prefix as vault secrets; standard task processes untouched. 4 regression tests; full effigy test/fmt/clippy triad green. Runtime verification in a live dev session: pending (next `effigy dev` restart).
 
 ## Next Task
 
