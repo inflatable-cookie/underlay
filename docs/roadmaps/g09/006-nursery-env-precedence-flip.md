@@ -1,6 +1,7 @@
 # g09.006 - Nursery ENVIRONMENT_NAME Precedence Flip
 
-Status: ready
+Status: complete
+Completed: 2026-08-03
 Owner: repo maintainers
 
 ## Purpose
@@ -18,9 +19,9 @@ never set in-stack) but a trap the first time someone sets both.
 
 ## Planned Changes
 
-- [ ] Flip both call sites to `resolve("ENVIRONMENT",
+- [x] Flip both call sites to `resolve("ENVIRONMENT",
   Some("ENVIRONMENT_NAME"))`.
-- [ ] Verify no in-repo script, doc, or deploy config sets
+- [x] Verify no in-repo script, doc, or deploy config sets
   `ENVIRONMENT_NAME` for nursery (if one does, update it to `ENVIRONMENT`).
 
 ## Consumer Upgrade Impact
@@ -30,12 +31,16 @@ vars are set, which nothing does today).
 
 ## Validation
 
-- [ ] `cargo check --workspace --all-features --all-targets` (nursery)
-- [ ] grep: no remaining `ENVIRONMENT_NAME`-primary resolution
+- [x] `cargo check --workspace --all-features --all-targets` (nursery)
+- [x] grep: no remaining `ENVIRONMENT_NAME`-primary resolution
 
 ## Stop Conditions
 
 None expected.
+
+## Completion Notes
+
+Completed 2026-08-03. Both nursery call sites now resolve `ENVIRONMENT` primary with `ENVIRONMENT_NAME` as the deprecated fallback (config/mod.rs, config/transport.rs). grep confirms no script/doc/deploy config sets ENVIRONMENT_NAME for nursery. cargo check green (1 pre-existing unused-import warning).
 
 ## Next Task
 
