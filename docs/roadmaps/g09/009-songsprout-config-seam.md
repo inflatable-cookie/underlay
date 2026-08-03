@@ -1,6 +1,7 @@
 # g09.009 - Songsprout Config Seam Alignment
 
-Status: ready
+Status: complete
+Completed: 2026-08-03
 Owner: repo maintainers
 
 ## Purpose
@@ -21,13 +22,13 @@ loaders (`config/mod.rs`, `config/behavior.rs`) hardcode a vestigial
 
 ## Planned Changes
 
-- [ ] Thread the resolved environment name into both loaders and replace
+- [x] Thread the resolved environment name into both loaders and replace
   the hardcoded `dev.toml` entries with `config/<env>.toml` (same
   `resolve_name` pattern as the other consumers).
-- [ ] Move dev-stack constants from `config/default.toml` into committed
+- [x] Move dev-stack constants from `config/default.toml` into committed
   `config/effigy.toml`; reset `default.toml` to safe cross-env defaults.
-- [ ] Fix the README's `local.toml` claim (or add the real layer).
-- [ ] Verify boot in-stack: `env: Effigy`, overlay loaded.
+- [x] Fix the README's `local.toml` claim (or add the real layer).
+- [x] Verify boot in-stack: `env: Effigy`, overlay loaded.
 
 ## Consumer Upgrade Impact
 
@@ -37,13 +38,17 @@ first — confirm nothing deployed reads those values as defaults.
 
 ## Validation
 
-- [ ] `cargo check --workspace --all-features --all-targets` (nursery)
-- [ ] stack boot + `/v1/health` with env Effigy (spot-check harness)
+- [x] `cargo check --workspace --all-features --all-targets` (nursery)
+- [x] stack boot + `/v1/health` with env Effigy (spot-check harness)
 
 ## Stop Conditions
 
 If a deployed environment is found to depend on the dev constants in
 `default.toml`, split the card: loaders first, constants second.
+
+## Completion Notes
+
+Completed 2026-08-03. Loaders layer default -> config/<env> (Environment::resolve_name, ENVIRONMENT primary) -> config/local.toml; dev constants moved from default.toml into committed config/effigy.toml; default.toml is cross-env safe (no [server] environment — bare runs fail closed). No deployment configs exist, so the stop condition did not trigger. Runtime verification (stack, ENVIRONMENT=effigy): boot log shows env Effigy, db configured, cors_origins=2 from the overlay; seeds upsert clean; login with shared fleet creds + corrected TOTP secret works end-to-end; /health and /v1/admin/billing/subscriptions 200. One finding fixed in flight: overlay's email adapter is now noop — smtp is not wired in the current build (pre-existing: the old default.toml was equally unbootable without EMAIL_ADAPTER=noop).
 
 ## Next Task
 
