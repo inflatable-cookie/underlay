@@ -369,6 +369,7 @@ mod tests {
         assert!(header_names.contains(&"x-csrf-token"));
         assert!(header_names.contains(&"x-auth-token-mode"));
         assert!(header_names.contains(&"if-match"));
+        assert!(header_names.contains(&"if-none-match"));
     }
 
     #[test]

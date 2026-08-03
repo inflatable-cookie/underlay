@@ -269,6 +269,7 @@ pub fn admin_cors_config(environment: Environment, explicit_origins: Vec<String>
         .with_header(HeaderName::from_static("x-csrf-token"))
         .with_header(HeaderName::from_static("x-auth-token-mode"))
         .with_header(HeaderName::from_static("if-match"))
+        .with_header(HeaderName::from_static("if-none-match"))
         .with_credentials(true);
 
     if explicit_origins.is_empty() && environment.is_local_dev() {
