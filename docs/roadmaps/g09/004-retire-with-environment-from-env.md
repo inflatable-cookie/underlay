@@ -1,6 +1,7 @@
 # g09.004 - Retire with_environment_from_env
 
-Status: ready
+Status: complete
+Completed: 2026-08-03
 Owner: repo maintainers
 
 ## Purpose
@@ -19,12 +20,12 @@ fallback) actively contradict the new model (`ENVIRONMENT` primary via
 
 ## Planned Changes
 
-- [ ] Mark `with_environment_from_env` `#[deprecated]` with a note pointing
+- [x] Mark `with_environment_from_env` `#[deprecated]` with a note pointing
   at `Environment::resolve_name`, or remove it outright if no external
   users exist (verify against all consumers).
-- [ ] If removed, also retire `DEFAULT_ENV_VAR`/`DEFAULT_ENVIRONMENT` if
+- [x] If removed, also retire `DEFAULT_ENV_VAR`/`DEFAULT_ENVIRONMENT` if
   they have no other callers.
-- [ ] Update any doc references to the old pattern.
+- [x] Update any doc references to the old pattern.
 
 ## Consumer Upgrade Impact
 
@@ -34,13 +35,17 @@ a deprecation first if any doubt remains.
 
 ## Validation
 
-- [ ] `cargo test -p underlay-config`
-- [ ] `effigy validate`
-- [ ] grep confirms zero callers in underlay + all six consumers
+- [x] `cargo test -p underlay-config`
+- [x] `effigy validate`
+- [x] grep confirms zero callers in underlay + all six consumers
 
 ## Stop Conditions
 
 None expected.
+
+## Completion Notes
+
+Completed 2026-08-03. `with_environment_from_env` marked `#[deprecated]` with a pointer to `Environment::resolve_name` (kept the method body so any unseen external caller keeps compiling; the `DEFAULT_*` constants stay for `ConfigStack::new`). Zero callers in underlay + all six consumers confirmed before and after. `cargo test -p underlay-config` green.
 
 ## Next Task
 

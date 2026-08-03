@@ -40,6 +40,18 @@ impl ConfigStack {
         self
     }
 
+    /// Select the environment overlay from process env (`ENVIRONMENT_NAME`,
+    /// falling back to `dev`).
+    ///
+    /// Deprecated: name the overlay from the resolved environment instead —
+    /// `Environment::resolve_name("ENVIRONMENT", Some("<APP>_ENV"))` from
+    /// `underlay-observability`, passed to [`ConfigStack::with_environment`].
+    /// That keeps the overlay name and the behavior env on one resolution
+    /// path; this method reads a different variable (`ENVIRONMENT_NAME`)
+    /// than the fleet's behavior resolution (`ENVIRONMENT`).
+    #[deprecated(
+        note = "use Environment::resolve_name + with_environment instead (single resolution path)"
+    )]
     pub fn with_environment_from_env(mut self) -> Self {
         self.environment = Some(
             env::var(DEFAULT_ENV_VAR)
