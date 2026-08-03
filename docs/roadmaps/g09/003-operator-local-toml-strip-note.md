@@ -1,6 +1,7 @@
 # g09.003 - Operator local.toml Strip Note
 
-Status: ready
+Status: complete
+Completed: 2026-08-03
 Owner: repo maintainers
 
 ## Purpose
@@ -18,11 +19,11 @@ every other operator machine still carries a fat pre-convergence
 
 ## Planned Changes
 
-- [ ] Add a short "After pulling the config convergence" note to each
+- [x] Add a short "After pulling the config convergence" note to each
   affected consumer's README (or onboarding doc): strip `config/local.toml`
   to personal overrides only; shared dev config now lives in the committed
   `config/effigy.toml`.
-- [ ] Repos: underlay-reference, contact-patch, compli-me (songsprout and
+- [x] Repos: underlay-reference, contact-patch, compli-me (songsprout and
   composer have no tracked `local.toml` history; add the note only if their
   READMEs mention `local.toml`).
 
@@ -32,12 +33,16 @@ Impact class: `documentation`. Consumer READMEs updated in place.
 
 ## Validation
 
-- [ ] Notes present and accurate in each affected repo
-- [ ] `effigy qa:docs` in underlay
+- [x] Notes present and accurate in each affected repo
+- [x] `effigy qa:docs` in underlay
 
 ## Stop Conditions
 
 None expected.
+
+## Completion Notes
+
+Completed 2026-08-03. Strip notes added to the Config And Secrets Policy section of acme/cp/compli READMEs (layers-last warning + pointer to committed effigy.toml). Also fixed acme README's stale Environment Variables section (old acme-api/config paths + removed .env contract claim).
 
 ## Next Task
 
