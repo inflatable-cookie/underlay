@@ -3,6 +3,7 @@
 Status: active
 Owner: repo maintainers
 Related: `docs/sweeps/021-consumer-security-convergence.md` (what drifted),
+`docs/guides/192-config-model.md` (the canonical config model),
 `product-guardrails.md` (what may move into Underlay)
 
 ## Why the consumers drifted

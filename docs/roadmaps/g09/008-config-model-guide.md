@@ -1,6 +1,7 @@
 # g09.008 - Config Model Front-Door Guide
 
-Status: ready
+Status: complete
+Completed: 2026-08-03
 Owner: repo maintainers
 
 ## Purpose
@@ -19,14 +20,14 @@ consumers and agents should have one guide to follow.
 
 ## Planned Changes
 
-- [ ] New guide `docs/guides/19N-config-model.md` covering: the `effigy`
+- [x] New guide `docs/guides/19N-config-model.md` covering: the `effigy`
   identifier and where it comes from (bundle env schema, ancestor
   fallback); `ENVIRONMENT` primary + legacy fallbacks via
   `Environment::resolve`/`resolve_name`; overlay layering
   (`default → <env> → local`) and what belongs in each; CORS via
   `admin_cors_layer`; dev seeds and the shared credential set; how to
   bootstrap a new consumer onto the model.
-- [ ] Link it from the guide index, 191 admin checklist, and 070.
+- [x] Link it from the guide index, 191 admin checklist, and 070.
 
 ## Consumer Upgrade Impact
 
@@ -34,11 +35,15 @@ Impact class: `documentation`.
 
 ## Validation
 
-- [ ] `effigy qa:docs` (front-door link checks)
+- [x] `effigy qa:docs` (front-door link checks)
 
 ## Stop Conditions
 
 None expected.
+
+## Completion Notes
+
+Completed 2026-08-03. `docs/guides/192-config-model.md` — the front door for the converged config model (effigy identifier, resolve/resolve_name, overlay layering, canonical CORS, dev seeds/credentials, new-consumer bootstrap). Linked from 191 and 070. `effigy qa:docs` green.
 
 ## Next Task
 

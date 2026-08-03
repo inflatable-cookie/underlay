@@ -7,7 +7,8 @@ is wrong — fix the resource, not the checklist.
 
 Related: `docs/contracts/115-admin-resource-api-shapes.md`,
 `docs/contracts/116-canonical-collection-routes-and-query-profiles.md`,
-`docs/architecture/070-consumer-drift-prevention.md`.
+`docs/architecture/070-consumer-drift-prevention.md`,
+`docs/guides/192-config-model.md`.
 
 ## 1. List contract
 
