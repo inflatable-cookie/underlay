@@ -1,12 +1,13 @@
 # g09 - Config Convergence Follow-Through
 
-Status: active
+Status: complete
 Owner: repo maintainers
 Started: 2026-08-03
+Completed: 2026-08-03
 
 ## Current Generation
 
-`g09` acts on the 2026-08-03 self-audit of the config convergence (the
+`g09` acted on the 2026-08-03 self-audit of the config convergence (the
 `effigy` dev environment, canonical env/CORS helpers, config overlays,
 shared dev credentials). The convergence landed and is verified; the audit
 found the follow-through work: small real gaps, dead code, remaining
@@ -18,38 +19,47 @@ thread closeout review.
 
 ## Goals
 
-- close the small real gaps (silent prod CORS, invisible legacy env vars,
+- [x] close the small real gaps (silent prod CORS, invisible legacy env vars,
   operator machines overriding shared config)
-- remove dead and vestigial machinery (`with_environment_from_env`,
+- [x] remove dead and vestigial machinery (`with_environment_from_env`,
   cloned `CORS_ORIGINS` parses, inverted/legacy gates)
-- write the config model's front-door guide
-- converge or deliberately park the documented variants (songsprout seam,
+- [x] write the config model's front-door guide
+- [x] converge or deliberately park the documented variants (songsprout seam,
   farmyard seed credentials, shell-tab env)
 
 ## Queue
 
-1. [`g09.001`](001-prod-empty-origins-warning.md) — warn at boot when prod/staging CORS has no explicit origins
-2. [`g09.002`](002-legacy-env-var-deprecation-signal.md) — deprecation signal for legacy env vars in `Environment::resolve`
-3. [`g09.003`](003-operator-local-toml-strip-note.md) — operator note: strip stale `local.toml` overrides
-4. [`g09.004`](004-retire-with-environment-from-env.md) — retire `with_environment_from_env`
-5. [`g09.005`](005-admin-cors-layer-from-env.md) — `admin_cors_layer_from_env` + collapse `CORS_ORIGINS` clones
-6. [`g09.006`](006-nursery-env-precedence-flip.md) — nursery `ENVIRONMENT_NAME` precedence flip
-7. [`g09.007`](007-farmyard-dev-gate-decision.md) — farmyard `Dev` gate decision
-8. [`g09.008`](008-config-model-guide.md) — config model front-door guide
-9. [`g09.009`](009-songsprout-config-seam.md) — songsprout config seam alignment
-10. [`g09.010`](010-farmyard-seed-bundle-credentials.md) — farmyard seed-bundle shared dev credentials
-11. [`g09.011`](011-shell-tab-schema-env.md) — effigy shell-tab schema env propagation
-12. [`g09.012`](012-build-time-environment-guard.md) — conformance guard: no `ENVIRONMENT` at build time
+1. [x] [`g09.001`](001-prod-empty-origins-warning.md) — warn at boot when prod/staging CORS has no explicit origins
+2. [x] [`g09.002`](002-legacy-env-var-deprecation-signal.md) — deprecation signal for legacy env vars in `Environment::resolve`
+3. [x] [`g09.003`](003-operator-local-toml-strip-note.md) — operator note: strip stale `local.toml` overrides
+4. [x] [`g09.004`](004-retire-with-environment-from-env.md) — retire `with_environment_from_env`
+5. [x] [`g09.005`](005-admin-cors-layer-from-env.md) — `admin_cors_layer_from_env` + collapse `CORS_ORIGINS` clones
+6. [x] [`g09.006`](006-nursery-env-precedence-flip.md) — nursery `ENVIRONMENT_NAME` precedence flip
+7. [x] [`g09.007`](007-farmyard-dev-gate-decision.md) — farmyard `Dev` gate decision
+8. [x] [`g09.008`](008-config-model-guide.md) — config model front-door guide
+9. [x] [`g09.009`](009-songsprout-config-seam.md) — songsprout config seam alignment
+10. [x] [`g09.010`](010-farmyard-seed-bundle-credentials.md) — farmyard seed-bundle shared dev credentials
+11. [x] [`g09.011`](011-shell-tab-schema-env.md) — effigy shell-tab schema env propagation
+12. [x] [`g09.012`](012-build-time-environment-guard.md) — conformance guard: no `ENVIRONMENT` at build time
 
-## Rules
+## Out-of-band findings fixed in flight
 
-- One card at a time; keep diffs minimal and pattern-consistent.
-- Cards that change consumer-visible behavior include a `Consumer Upgrade
-  Impact` section.
-- Validation per card; underlay changes run `effigy validate`; consumer
-  changes run `cargo check --workspace --all-features --all-targets` and
-  `effigy qa:security` where applicable.
+- Fleet TOTP secret corrected to valid base32
+  (`UNDERLAYDEVTOTPSECRET234567ABCDE`) across all seeds + guide 192 — the
+  original contained `8` and was 33 chars.
+- songsprout overlay email adapter set to `noop` (smtp not wired in the
+  current build; pre-existing boot failure made visible).
+- farmyard migration `config.rs` deprecated loader call site (g09.004
+  follow-up).
+
+## Open follow-ups (not carded)
+
+- farmyard runtime seed-replay + login verification for the new credential
+  hook (code reviewed, gate tested; replay pending).
+- dan@decode.co.uk (farmyard seeded superadmin) has no dev credentials —
+  scope decision for maintainers.
+- nursery email smtp wiring (product work; noop until then).
 
 ## Next Task
 
-`g09.001` — prod-empty-origins boot warning.
+Generation closeout or `g10` scoping (maintainer direction).

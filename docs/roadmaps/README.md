@@ -51,19 +51,14 @@ README surfaces.
 
 ## Active generation
 
-- `g09` - Config Convergence Follow-Through ([front door](g09/README.md))
+- None — `g09` completed 2026-08-03 ([front door](g09/README.md)). Next:
+  `g10` scoping (maintainer direction).
 
 ## Current Queue
 
-`g08` (complete) acted on the July 2026 deep audit. `g09` carries the
-follow-through from the 2026-08-03 config-convergence self-audit. Card
-detail lives in [`g09/README.md`](g09/README.md).
-
-- `g09.001`-`g09.003` — small real gaps (silent prod CORS, legacy env-var
-  signal, operator `local.toml` note)
-- `g09.004`-`g09.007` — dead code and remaining duplication
-- `g09.008` — config model front-door guide
-- `g09.009`-`g09.012` — variants to converge or deliberately park
+`g09` carried the follow-through from the 2026-08-03 config-convergence
+self-audit and is complete: all 12 cards done
+([`g09/README.md`](g09/README.md)).
 
 ## Archived generations
 
@@ -82,8 +77,6 @@ that risk.
 
 ## Next Task
 
-**`g09.001`** — prod-empty-origins boot warning. `g08` is fully complete
-(all 32 cards done across all five lanes); the config convergence (2026-08)
-landed and is recorded in `docs/logs/2026-08/03-104132-config-convergence.md`.
-`g09` scopes the self-audit follow-through; see its
-[front door](g09/README.md) for the queue.
+**`g10` scoping (maintainer direction).** `g09` is fully complete — all 12
+cards done in one day. `g08` is complete; the config convergence and its
+follow-through are recorded in `docs/logs/2026-08/`.
