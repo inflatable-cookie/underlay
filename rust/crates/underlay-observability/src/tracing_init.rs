@@ -7,9 +7,14 @@ use tracing_subscriber::{fmt, EnvFilter};
 /// - Staging/Prod/Test: JSON format for log aggregation
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum Environment {
-    /// Local development environment.
+    /// Local development environment (legacy alias; prefer `Effigy` for the
+    /// shared container dev stack).
     #[default]
     Local,
+    /// The shared effigy container dev stack — the single canonical dev
+    /// environment across Underlay consumers. Behaves like `Local` at every
+    /// dev gate, but is unambiguous in logs and config.
+    Effigy,
     /// Development/integration environment.
     Dev,
     /// Staging/pre-production environment.
@@ -25,6 +30,7 @@ impl Environment {
     ///
     /// Recognized values:
     /// - "local" -> Local
+    /// - "effigy" -> Effigy (the shared container dev stack)
     /// - "dev", "development" -> Dev
     /// - "staging", "stage" -> Staging
     /// - "prod", "production" -> Prod
@@ -36,6 +42,7 @@ impl Environment {
     pub fn parse(value: &str) -> Self {
         match value.to_ascii_lowercase().as_str() {
             "local" => Environment::Local,
+            "effigy" => Environment::Effigy,
             "dev" | "development" => Environment::Dev,
             "staging" | "stage" => Environment::Staging,
             "prod" | "production" => Environment::Prod,
@@ -44,15 +51,38 @@ impl Environment {
         }
     }
 
+    /// Resolve the runtime environment from process env vars (fail closed).
+    ///
+    /// Reads `primary_var` first, then the deprecated `legacy_var` if given.
+    /// Unset (or unknown) resolves to `Prod`: development behavior is never
+    /// enabled by omission. This is the single env-resolution point — apps
+    /// should call it instead of parsing env vars themselves.
+    pub fn resolve(primary_var: &str, legacy_var: Option<&str>) -> Self {
+        match std::env::var(primary_var) {
+            Ok(value) => Self::parse(&value),
+            Err(_) => match legacy_var.and_then(|var| std::env::var(var).ok()) {
+                Some(value) => Self::parse(&value),
+                None => Environment::Prod,
+            },
+        }
+    }
+
     /// Returns true if this is a local or dev environment.
     pub fn is_development(&self) -> bool {
-        matches!(self, Environment::Local | Environment::Dev)
+        matches!(self, Environment::Local | Environment::Effigy | Environment::Dev)
+    }
+
+    /// Returns true for environments where local-development behavior is
+    /// allowed (dev seeds, CORS origin mirroring with credentials, loopback
+    /// bind defaults): the local/effigy dev stacks and test runs.
+    pub fn is_local_dev(&self) -> bool {
+        matches!(self, Environment::Local | Environment::Effigy | Environment::Test)
     }
 
     /// Returns the recommended log format for this environment.
     pub fn default_log_format(&self) -> LogFormat {
         match self {
-            Environment::Local | Environment::Dev => LogFormat::Pretty,
+            Environment::Local | Environment::Effigy | Environment::Dev => LogFormat::Pretty,
             Environment::Staging | Environment::Prod | Environment::Test => LogFormat::Json,
         }
     }
@@ -70,6 +100,7 @@ impl std::fmt::Display for Environment {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Environment::Local => write!(f, "local"),
+            Environment::Effigy => write!(f, "effigy"),
             Environment::Dev => write!(f, "dev"),
             Environment::Staging => write!(f, "staging"),
             Environment::Prod => write!(f, "prod"),

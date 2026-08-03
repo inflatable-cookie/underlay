@@ -105,10 +105,9 @@ impl HttpServerConfig {
             .unwrap_or(3000);
 
         let bind_addr = env::var("HOST").unwrap_or_else(|_| {
-            // In local/test without explicit PORT, bind only to localhost
+            // In local dev/test without explicit PORT, bind only to localhost
             // Otherwise bind publicly (needed for containers, proxies, etc.)
-            let should_bind_publicly =
-                !matches!(env, Environment::Local | Environment::Test) || env::var("PORT").is_ok();
+            let should_bind_publicly = !env.is_local_dev() || env::var("PORT").is_ok();
 
             if should_bind_publicly {
                 "0.0.0.0".to_string()
@@ -138,8 +137,7 @@ impl HttpServerConfig {
         };
 
         let bind_addr = env::var("HOST").unwrap_or_else(|_| {
-            let should_bind_publicly =
-                !matches!(env, Environment::Local | Environment::Test) || env::var("PORT").is_ok();
+            let should_bind_publicly = !env.is_local_dev() || env::var("PORT").is_ok();
 
             if should_bind_publicly {
                 "0.0.0.0".to_string()

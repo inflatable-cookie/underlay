@@ -61,8 +61,8 @@ pub use crate::cookies::{
     SameSite,
 };
 pub use crate::cors::{
-    cors_layer, cors_layer_for_env, try_cors_layer_for_env, CorsConfig, CorsConfigError,
-    DEFAULT_CORS_MAX_AGE_SECS,
+    admin_cors_config, admin_cors_layer, cors_layer, cors_layer_for_env, try_cors_layer_for_env,
+    CorsConfig, CorsConfigError, DEFAULT_CORS_MAX_AGE_SECS,
 };
 pub use crate::errors::{
     error_response, ApiError, ApiResult, ErrorDetail, ErrorLogContext, ErrorLogSink,

@@ -308,7 +308,7 @@ mod tests {
 
     #[test]
     fn mirror_with_credentials_builds_in_local_and_test() {
-        for env in [Environment::Local, Environment::Test] {
+        for env in [Environment::Local, Environment::Effigy, Environment::Test] {
             let config = CorsConfig::new()
                 .with_mirror_origin()
                 .with_credentials(true);
@@ -341,6 +341,59 @@ mod tests {
             .with_mirror_origin()
             .with_credentials(true);
         let _ = crate::cors::cors_layer(config);
+    }
+
+    // ========================================================================
+    // Canonical admin CORS config
+    // ========================================================================
+
+    #[test]
+    fn admin_cors_config_mirrors_origin_in_local_dev() {
+        for env in [Environment::Local, Environment::Effigy, Environment::Test] {
+            let config = crate::cors::admin_cors_config(env, vec![]);
+            assert!(config.mirror_origin());
+            assert!(config.allow_credentials());
+        }
+    }
+
+    #[test]
+    fn admin_cors_config_adds_preflight_trigger_headers() {
+        let config = crate::cors::admin_cors_config(Environment::Effigy, vec![]);
+        let header_names: Vec<&str> = config
+            .allowed_headers()
+            .iter()
+            .map(|h| h.as_str())
+            .collect();
+
+        assert!(header_names.contains(&"x-api-version"));
+        assert!(header_names.contains(&"x-csrf-token"));
+        assert!(header_names.contains(&"if-match"));
+    }
+
+    #[test]
+    fn admin_cors_config_uses_explicit_origins_when_present() {
+        let config = crate::cors::admin_cors_config(
+            Environment::Effigy,
+            vec!["https://admin.example.test".to_string()],
+        );
+        assert!(!config.mirror_origin());
+        assert_eq!(config.allowed_origins().len(), 1);
+    }
+
+    #[test]
+    fn admin_cors_config_without_origins_does_not_mirror_outside_local_dev() {
+        let config = crate::cors::admin_cors_config(Environment::Prod, vec![]);
+        assert!(!config.mirror_origin());
+        assert!(config.allowed_origins().is_empty());
+    }
+
+    #[test]
+    #[should_panic(expected = "invalid CORS origin")]
+    fn admin_cors_config_panics_on_invalid_origin() {
+        let _ = crate::cors::admin_cors_config(
+            Environment::Prod,
+            vec!["not a valid origin value\n".to_string()],
+        );
     }
 
     #[test]

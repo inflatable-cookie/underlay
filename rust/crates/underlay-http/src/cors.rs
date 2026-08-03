@@ -230,10 +230,7 @@ pub fn try_cors_layer_for_env(
     config: CorsConfig,
     environment: Environment,
 ) -> Result<CorsLayer, CorsConfigError> {
-    if config.allow_credentials
-        && config.mirror_origin
-        && !matches!(environment, Environment::Local | Environment::Test)
-    {
+    if config.allow_credentials && config.mirror_origin && !environment.is_local_dev() {
         return Err(CorsConfigError::MirrorWithCredentialsOutsideLocal { environment });
     }
 
@@ -249,6 +246,50 @@ pub fn try_cors_layer_for_env(
 /// error instead.
 pub fn cors_layer_for_env(config: CorsConfig, environment: Environment) -> CorsLayer {
     try_cors_layer_for_env(config, environment).expect("invalid CORS configuration")
+}
+
+/// The canonical CORS config for Underlay admin APIs — the single construction
+/// point so consumers do not clone per-app builder functions.
+///
+/// Shape:
+/// - credentials allowed (cookie/token auth);
+/// - `x-api-version`, `x-csrf-token`, `if-match` added to the default allowed
+///   headers (they trigger browser preflight);
+/// - when `explicit_origins` is empty and `environment.is_local_dev()`, the
+///   request origin is mirrored (dev ergonomics — one stack, any port/host);
+/// - otherwise the explicit list is used (invalid origins are a boot-time
+///   panic, not a silent drop).
+///
+/// # Panics
+///
+/// Panics on an invalid origin value.
+pub fn admin_cors_config(environment: Environment, explicit_origins: Vec<String>) -> CorsConfig {
+    let mut config = CorsConfig::default()
+        .with_header(HeaderName::from_static("x-api-version"))
+        .with_header(HeaderName::from_static("x-csrf-token"))
+        .with_header(HeaderName::from_static("if-match"))
+        .with_credentials(true);
+
+    if explicit_origins.is_empty() && environment.is_local_dev() {
+        config = config.with_mirror_origin();
+    } else if !explicit_origins.is_empty() {
+        config = config
+            .try_with_origins(&explicit_origins)
+            .expect("invalid CORS origin in admin_cors_config");
+    }
+
+    config
+}
+
+/// The canonical CORS layer for Underlay admin APIs, built from
+/// [`admin_cors_config`] and gated through [`cors_layer_for_env`].
+///
+/// # Panics
+///
+/// Panics on an invalid origin value, and on mirror-origin + credentials
+/// outside local dev (via [`cors_layer_for_env`]).
+pub fn admin_cors_layer(environment: Environment, explicit_origins: Vec<String>) -> CorsLayer {
+    cors_layer_for_env(admin_cors_config(environment, explicit_origins), environment)
 }
 
 /// Build a CORS layer without environment context.
