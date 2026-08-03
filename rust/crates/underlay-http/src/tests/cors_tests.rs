@@ -413,6 +413,25 @@ mod tests {
     }
 
     #[test]
+    fn cors_origins_from_env_parses_comma_list() {
+        const VAR: &str = "UNDERLAY_TEST_CORS_ORIGINS_PARSE";
+
+        std::env::remove_var(VAR);
+        assert!(crate::cors::cors_origins_from_env(VAR).is_empty());
+
+        std::env::set_var(VAR, " https://a.example.test ,, https://b.example.test, ");
+        assert_eq!(
+            crate::cors::cors_origins_from_env(VAR),
+            vec![
+                "https://a.example.test".to_string(),
+                "https://b.example.test".to_string()
+            ]
+        );
+
+        std::env::remove_var(VAR);
+    }
+
+    #[test]
     fn internal_service_config() {
         let config = CorsConfig::new().with_any_origin().with_credentials(false);
 

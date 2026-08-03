@@ -316,6 +316,30 @@ pub fn admin_cors_layer(environment: Environment, explicit_origins: Vec<String>)
     cors_layer_for_env(admin_cors_config(environment, explicit_origins), environment)
 }
 
+/// Parse an explicit CORS origin list from an environment variable:
+/// comma-separated, trimmed, empties dropped. The shared source for
+/// [`admin_cors_layer_from_env`] so consumers do not clone the parse.
+pub fn cors_origins_from_env(var: &str) -> Vec<String> {
+    std::env::var(var)
+        .unwrap_or_default()
+        .split(',')
+        .map(str::trim)
+        .filter(|s| !s.is_empty())
+        .map(ToString::to_string)
+        .collect()
+}
+
+/// The canonical admin CORS layer with explicit origins read from the
+/// `CORS_ORIGINS` environment variable (empty → mirror-origin in local dev).
+///
+/// # Panics
+///
+/// Panics on an invalid origin value, and on mirror-origin + credentials
+/// outside local dev (via [`cors_layer_for_env`]).
+pub fn admin_cors_layer_from_env(environment: Environment) -> CorsLayer {
+    admin_cors_layer(environment, cors_origins_from_env("CORS_ORIGINS"))
+}
+
 /// Build a CORS layer without environment context.
 ///
 /// # Panics

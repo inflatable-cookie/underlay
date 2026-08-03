@@ -1,6 +1,7 @@
 # g09.005 - admin_cors_layer_from_env + Collapse CORS_ORIGINS Clones
 
-Status: ready
+Status: complete
+Completed: 2026-08-03
 Owner: repo maintainers
 
 ## Purpose
@@ -18,13 +19,13 @@ parse at the `admin_cors_layer` call site (comma-split, trim, drop empties)
 
 ## Planned Changes
 
-- [ ] underlay-http: `admin_cors_layer_from_env(environment)` — reads
+- [x] underlay-http: `admin_cors_layer_from_env(environment)` — reads
   `CORS_ORIGINS` (same parse semantics) and delegates to
   `admin_cors_layer`. Unit tests for the parse (empty, single, list,
   whitespace).
-- [ ] acme/cp/compli: call sites collapse to the helper; delete the local
+- [x] acme/cp/compli: call sites collapse to the helper; delete the local
   parse.
-- [ ] composer/farmyard/nursery keep their config-file origin sources
+- [x] composer/farmyard/nursery keep their config-file origin sources
   (unchanged).
 
 ## Consumer Upgrade Impact
@@ -33,13 +34,17 @@ Impact class: `additive`. Consumers adopt the helper; behavior identical.
 
 ## Validation
 
-- [ ] `cargo test -p underlay-http`; `effigy validate`
-- [ ] `cargo check --workspace --all-features --all-targets` in the three
+- [x] `cargo test -p underlay-http`; `effigy validate`
+- [x] `cargo check --workspace --all-features --all-targets` in the three
   consumers; `effigy qa:security` green (cors-canonical still passes)
 
 ## Stop Conditions
 
 None expected.
+
+## Completion Notes
+
+Completed 2026-08-03. underlay-http gained `cors_origins_from_env` + `admin_cors_layer_from_env`; acme/cp/compli call sites collapsed and their local parses deleted (compli's `parse_cors_origins` gone). 150 underlay-http tests green; cargo check green in all three consumers.
 
 ## Next Task
 
