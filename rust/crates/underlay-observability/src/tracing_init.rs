@@ -67,6 +67,24 @@ impl Environment {
         }
     }
 
+    /// Raw environment name from process env, for config overlay selection
+    /// (`config/<name>.toml`).
+    ///
+    /// Reads `primary_var` first, then the deprecated `legacy_var`, and
+    /// returns the first non-empty trimmed value, or `None`. Unlike
+    /// [`Environment::resolve`] this does NOT normalize through the enum:
+    /// overlay names are arbitrary strings (`uat`, `production`, …) that do
+    /// not map 1:1 to variants. Pair the two — both read the same vars in
+    /// the same order, so the overlay name and the behavior env cannot
+    /// diverge.
+    pub fn resolve_name(primary_var: &str, legacy_var: Option<&str>) -> Option<String> {
+        std::env::var(primary_var)
+            .ok()
+            .or_else(|| legacy_var.and_then(|var| std::env::var(var).ok()))
+            .map(|value| value.trim().to_owned())
+            .filter(|value| !value.is_empty())
+    }
+
     /// Returns true if this is a local or dev environment.
     pub fn is_development(&self) -> bool {
         matches!(self, Environment::Local | Environment::Effigy | Environment::Dev)

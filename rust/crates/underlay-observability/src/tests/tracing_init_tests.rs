@@ -45,6 +45,33 @@ fn environment_resolve_prefers_primary_var_and_fails_closed() {
 }
 
 #[test]
+fn environment_resolve_name_keeps_raw_overlay_names() {
+    const PRIMARY: &str = "UNDERLAY_TEST_RESOLVE_NAME_PRIMARY";
+    const LEGACY: &str = "UNDERLAY_TEST_RESOLVE_NAME_LEGACY";
+
+    std::env::remove_var(PRIMARY);
+    std::env::remove_var(LEGACY);
+    assert_eq!(Environment::resolve_name(PRIMARY, Some(LEGACY)), None);
+
+    // Arbitrary overlay names pass through un-normalized (uat is not an
+    // Environment variant and must not become "prod").
+    std::env::set_var(LEGACY, "uat");
+    assert_eq!(
+        Environment::resolve_name(PRIMARY, Some(LEGACY)),
+        Some("uat".to_string())
+    );
+
+    std::env::set_var(PRIMARY, " effigy ");
+    assert_eq!(
+        Environment::resolve_name(PRIMARY, Some(LEGACY)),
+        Some("effigy".to_string())
+    );
+
+    std::env::remove_var(PRIMARY);
+    std::env::remove_var(LEGACY);
+}
+
+#[test]
 fn environment_helpers_select_expected_formats() {
     assert!(Environment::Local.is_development());
     assert!(Environment::Effigy.is_development());
