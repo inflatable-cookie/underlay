@@ -9,7 +9,7 @@ Updated: 2026-08-03
 
 ## Active generations
 
-- [g09 - Config Convergence Follow-Through](g09/README.md) (active; extended with dependency-upgrade cards)
+- None. Next: `g10` scoping (maintainer direction).
 
 ## Generation log
 
@@ -23,10 +23,11 @@ Updated: 2026-08-03
 | `g06` | 2026-06-05 | Rust platform-contract transition after code-quality audit | Closed after the reference-grade reset, Rust hardening lane, six-consumer proof, upgrade-guidance closeout, and bounded stale-drift repairs |
 | `g07` | 2026-06-06 | Runtime, workflow, residual Rust policy, and doctor-warning hardening after `g06` closeout | Complete after `g07.037` doctor warning closeout |
 | `g08` | 2026-07-17 | Audit remediation after July 2026 deep audit (security edge, correctness bugs, Rust/TS structure, docs/versioning/i18n posture) | Complete - all 32 cards done; `v0.8.0` tagged |
-| `g09` | 2026-08-03 | Config-convergence follow-through after the 2026-08-03 self-audit (env/CORS helpers, overlays, dev credentials) | Active — original 12 cards complete; extended with dependency-upgrade cards g09.013-g09.016 |
+| `g09` | 2026-08-03 | Config-convergence follow-through after the 2026-08-03 self-audit (env/CORS helpers, overlays, dev credentials); extended same-day with dependency-upgrade cards | Complete - all 16 cards done |
 
 ## Historical generations
 
+- [g09 - Config Convergence Follow-Through](g09/README.md) (complete)
 - [g08 - Audit Remediation And Edge Hardening](g08/README.md) (complete)
 - [g07 - Runtime, Workflow, And Doctor Warning Boundary Hardening](g07/README.md) (complete)
 - [g06 - Rust Platform Contract Transition](g06/README.md) (complete)

@@ -51,8 +51,8 @@ README surfaces.
 
 ## Active generation
 
-- `g09` - Config Convergence Follow-Through ([front door](g09/README.md)) —
-  extended 2026-08-03 with the dependency-upgrade cards `g09.013`-`g09.016`.
+- None — `g09` completed 2026-08-03 ([front door](g09/README.md)). Next:
+  `g10` scoping (maintainer direction).
 
 ## Current Queue
 
@@ -77,8 +77,5 @@ that risk.
 
 ## Next Task
 
-**`g09.013`** — JS vitest security floor + composer-admin lockfile repair.
-The original 12 cards are complete; the dependency-upgrade extension
-(`g09.013`-`g09.016`) follows the 2026-08-03 family survey
-(Rust: last broad refresh 2026-04-22, majors clustering in underlay's
-auth-crypto cluster; JS: 11 packages below the vitest security floor).
+**`g10` scoping (maintainer direction).** `g09` is fully complete — all 16
+cards done (12 config follow-through + 4 dependency-upgrade).
