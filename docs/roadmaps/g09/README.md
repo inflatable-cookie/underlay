@@ -1,9 +1,8 @@
 # g09 - Config Convergence Follow-Through
 
-Status: complete
+Status: active
 Owner: repo maintainers
 Started: 2026-08-03
-Completed: 2026-08-03
 
 ## Current Generation
 
@@ -49,8 +48,15 @@ thread closeout review.
 15. [x] [`g09.015`](015-consumer-rust-follow-on.md) — consumer Rust follow-on (cp redis 1.x leads)
 16. [x] [`g09.016`](016-js-baseline-catchup.md) — JS baseline catch-up (kit/svelte/svelte-check)
 
-Deferred (elective majors, not carded): vite 8, typescript 7, lucide-svelte 1.0,
-zod 4, jsdom 30, @sveltejs/vite-plugin-svelte 7.
+## Elective-majors extension (added 2026-08-03, maintainer direction)
+
+17. [ ] [`g09.017`](017-vite-8-and-plugin-svelte-7.md) — vite 8 + @sveltejs/vite-plugin-svelte 7 (paired)
+18. [ ] [`g09.018`](018-lucide-svelte-1.md) — lucide-svelte 1.0
+19. [ ] [`g09.019`](019-jsdom-30.md) — jsdom 30
+20. [ ] [`g09.020`](020-zod-4.md) — zod 4 (underlay root only)
+
+Deferred to backlog with a promotion trigger (typescript 7.1 or concrete
+need): [`backlog/ts-7-adoption.md`](../backlog/ts-7-adoption.md).
 
 ## Out-of-band findings fixed in flight
 
@@ -72,4 +78,4 @@ zod 4, jsdom 30, @sveltejs/vite-plugin-svelte 7.
 
 ## Next Task
 
-Generation closeout or `g10` scoping (maintainer direction).
+`g09.017` — vite 8 + @sveltejs/vite-plugin-svelte 7.

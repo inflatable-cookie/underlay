@@ -51,8 +51,9 @@ README surfaces.
 
 ## Active generation
 
-- None — `g09` completed 2026-08-03 ([front door](g09/README.md)). Next:
-  `g10` scoping (maintainer direction).
+- `g09` - Config Convergence Follow-Through ([front door](g09/README.md)) —
+  extended with elective-major cards `g09.017`-`g09.020` (vite 8, lucide 1,
+  jsdom 30, zod 4).
 
 ## Current Queue
 
@@ -77,5 +78,6 @@ that risk.
 
 ## Next Task
 
-**`g10` scoping (maintainer direction).** `g09` is fully complete — all 16
-cards done (12 config follow-through + 4 dependency-upgrade).
+**`g09.017`** — vite 8 + @sveltejs/vite-plugin-svelte 7 (paired major).
+The 16 completed cards stand; typescript 7 sits in the backlog with a
+7.1 promotion trigger.
