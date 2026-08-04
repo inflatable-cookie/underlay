@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export type ValidatedFormErrors = Record<string, string>;
 
-export interface ValidatedFormOptions<TSchema extends z.AnyZodObject> {
+export interface ValidatedFormOptions<TSchema extends z.ZodObject> {
   schema: TSchema;
   initialValues: z.input<TSchema>;
   onSubmit: (values: z.output<TSchema>) => Promise<void> | void;
@@ -10,7 +10,7 @@ export interface ValidatedFormOptions<TSchema extends z.AnyZodObject> {
   validateOnChange?: boolean;
 }
 
-export interface ValidatedFormResult<TSchema extends z.AnyZodObject> {
+export interface ValidatedFormResult<TSchema extends z.ZodObject> {
   readonly values: z.input<TSchema>;
   readonly errors: ValidatedFormErrors;
   readonly isValid: boolean;
@@ -37,7 +37,7 @@ function toFieldErrors(error: z.ZodError): ValidatedFormErrors {
   return next;
 }
 
-export function useValidatedForm<TSchema extends z.AnyZodObject>(
+export function useValidatedForm<TSchema extends z.ZodObject>(
   options: ValidatedFormOptions<TSchema>,
 ): ValidatedFormResult<TSchema> {
   const initialValues = structuredClone(options.initialValues);
@@ -46,7 +46,7 @@ export function useValidatedForm<TSchema extends z.AnyZodObject>(
   let isSubmitting = $state(false);
   let submitError = $state<string | null>(null);
 
-  function runValidation(): z.SafeParseReturnType<z.input<TSchema>, z.output<TSchema>> {
+  function runValidation(): z.ZodSafeParseResult<z.output<TSchema>> {
     const result = options.schema.safeParse(values);
     errors = result.success ? {} : toFieldErrors(result.error);
     return result;
