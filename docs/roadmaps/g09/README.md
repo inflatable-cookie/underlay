@@ -1,9 +1,8 @@
 # g09 - Config Convergence Follow-Through
 
-Status: complete
+Status: active
 Owner: repo maintainers
 Started: 2026-08-03
-Completed: 2026-08-03
 
 ## Current Generation
 
@@ -42,6 +41,16 @@ thread closeout review.
 11. [x] [`g09.011`](011-shell-tab-schema-env.md) — effigy shell-tab schema env propagation
 12. [x] [`g09.012`](012-build-time-environment-guard.md) — conformance guard: no `ENVIRONMENT` at build time
 
+## Dependency-upgrade extension (added 2026-08-03 after the family survey)
+
+13. [ ] [`g09.013`](013-js-vitest-security-floor.md) — vitest security floor (11 packages) + composer-admin lockfile repair
+14. [ ] [`g09.014`](014-underlay-rust-majors.md) — underlay Rust majors (auth-crypto cluster + sqlx 0.9)
+15. [ ] [`g09.015`](015-consumer-rust-follow-on.md) — consumer Rust follow-on (cp redis 1.x leads)
+16. [ ] [`g09.016`](016-js-baseline-catchup.md) — JS baseline catch-up (kit/svelte/svelte-check)
+
+Deferred (elective majors, not carded): vite 8, typescript 7, lucide-svelte 1.0,
+zod 4, jsdom 30, @sveltejs/vite-plugin-svelte 7.
+
 ## Out-of-band findings fixed in flight
 
 - Fleet TOTP secret corrected to valid base32
@@ -62,4 +71,4 @@ thread closeout review.
 
 ## Next Task
 
-Generation closeout or `g10` scoping (maintainer direction).
+`g09.013` — JS vitest security floor + composer-admin lockfile repair.
