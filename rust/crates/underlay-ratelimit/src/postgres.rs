@@ -88,7 +88,7 @@ impl RateLimitBackend for PostgresBackend {
             self.table
         );
 
-        let row = sqlx::query(&query)
+        let row = sqlx::query(sqlx::AssertSqlSafe(query))
             .bind(key)
             .bind(config.window().as_secs_f64())
             .fetch_optional(&self.pool)
@@ -135,7 +135,7 @@ impl RateLimitBackend for PostgresBackend {
             table = self.table
         );
 
-        let row = sqlx::query(&query)
+        let row = sqlx::query(sqlx::AssertSqlSafe(query))
             .bind(key)
             .bind(config.window().as_secs_f64())
             .fetch_one(&self.pool)
@@ -147,7 +147,7 @@ impl RateLimitBackend for PostgresBackend {
 
     async fn reset(&self, key: &str) -> Result<()> {
         let query = format!("DELETE FROM {} WHERE key = $1", self.table);
-        sqlx::query(&query)
+        sqlx::query(sqlx::AssertSqlSafe(query))
             .bind(key)
             .execute(&self.pool)
             .await
@@ -182,7 +182,7 @@ impl RateLimitBackend for PostgresBackend {
             table = self.table
         );
 
-        let row = sqlx::query(&query)
+        let row = sqlx::query(sqlx::AssertSqlSafe(query))
             .bind(key)
             .bind(config.window().as_secs_f64())
             .fetch_one(&self.pool)

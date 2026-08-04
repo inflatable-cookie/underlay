@@ -132,9 +132,9 @@ pub async fn reorder_scoped(
     let mut tx = pool.begin().await?;
 
     // Lock the current set so concurrent writers serialize on the diff.
-    let current: Vec<Uuid> = sqlx::query_scalar(&format!(
+    let current: Vec<Uuid> = sqlx::query_scalar(sqlx::AssertSqlSafe(format!(
         "SELECT {id_q} FROM {table_q} {where_sql} ORDER BY {weight_q} ASC, {id_q} ASC FOR UPDATE"
-    ))
+    )))
     .bind(scope.parent_column.map(|(_, v)| v))
     .fetch_all(&mut *tx)
     .await?;
@@ -156,22 +156,22 @@ pub async fn reorder_scoped(
     } else {
         let result = if let Some((_, parent_value)) = scope.parent_column {
             // Scoped: $1 = parent value, $2 = ordered ids.
-            sqlx::query(&format!(
+            sqlx::query(sqlx::AssertSqlSafe(format!(
                 "UPDATE {table_q} SET {weight_q} = u.ord \
                  FROM (SELECT * FROM unnest($2::uuid[]) WITH ORDINALITY) AS u(id, ord) \
                  WHERE {table_q}.{id_q} = u.id AND {scope_sql}"
-            ))
+            )))
             .bind(parent_value)
             .bind(ordered_ids)
             .execute(&mut *tx)
             .await?
         } else {
             // Unscoped: $1 = ordered ids.
-            sqlx::query(&format!(
+            sqlx::query(sqlx::AssertSqlSafe(format!(
                 "UPDATE {table_q} SET {weight_q} = u.ord \
                  FROM (SELECT * FROM unnest($1::uuid[]) WITH ORDINALITY) AS u(id, ord) \
                  WHERE {table_q}.{id_q} = u.id {and_scope_sql}"
-            ))
+            )))
             .bind(ordered_ids)
             .execute(&mut *tx)
             .await?

@@ -19,7 +19,7 @@ axum = { workspace = true, optional = true }
 http = { workspace = true, optional = true }
 
 # Optional validator crate compatibility
-validator = { version = "0.20", optional = true }
+validator = { version = "0.21", optional = true }
 underlay-core = { path = "../underlay-core", optional = true }
 uuid = { workspace = true, optional = true }
 

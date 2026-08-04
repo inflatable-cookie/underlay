@@ -26,7 +26,7 @@ pub(super) fn encode_payload(payload: &[u8]) -> String {
 
 pub(super) fn sha256_digest(bytes: &[u8]) -> String {
     let digest = Sha256::digest(bytes);
-    format!("{SHA256_PREFIX}{:x}", digest)
+    format!("{SHA256_PREFIX}{}", hex::encode(digest))
 }
 
 pub(super) fn layer_descriptor(

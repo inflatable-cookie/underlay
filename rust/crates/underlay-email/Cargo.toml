@@ -27,7 +27,7 @@ aws-sdk-sesv2 = { version = "1", default-features = false, features = ["default-
 underlay-aws = { workspace = true, optional = true }
 
 # Email templates (optional)
-tera = { version = "1", optional = true }
+tera = { version = "2", features = ["glob_fs"], optional = true }
 
 [dev-dependencies]
 tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }

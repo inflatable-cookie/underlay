@@ -20,7 +20,7 @@ pub fn decision_fingerprint(input: &DecisionFingerprintInput) -> MigrationResult
     hasher.update(input.prompt_version.as_bytes());
     hasher.update(b"\ntarget_schema_version=");
     hasher.update(input.target_schema_version.as_bytes());
-    Ok(format!("{SHA256_PREFIX}{:x}", hasher.finalize()))
+    Ok(format!("{SHA256_PREFIX}{}", hex::encode(hasher.finalize())))
 }
 
 pub fn record_fingerprint(input: &RecordFingerprintInput) -> MigrationResult<String> {
@@ -37,7 +37,7 @@ pub fn record_fingerprint(input: &RecordFingerprintInput) -> MigrationResult<Str
     hasher.update(input.source_identity.as_bytes());
     hasher.update(b"\nsemantic_dependencies=");
     hasher.update(semantic_dependencies.as_bytes());
-    Ok(format!("{SHA256_PREFIX}{:x}", hasher.finalize()))
+    Ok(format!("{SHA256_PREFIX}{}", hex::encode(hasher.finalize())))
 }
 
 fn canonical_json_string(value: &Value) -> MigrationResult<String> {

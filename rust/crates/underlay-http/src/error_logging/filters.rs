@@ -34,10 +34,7 @@ impl Default for ErrorLogFilters {
     }
 }
 
-pub(crate) fn push_error_log_filters<'a>(
-    query: &mut QueryBuilder<'a, Postgres>,
-    filters: &'a ErrorLogFilters,
-) {
+pub(crate) fn push_error_log_filters(query: &mut QueryBuilder<Postgres>, filters: &ErrorLogFilters) {
     if let Some(since) = filters.since {
         query.push(" AND occurred_at >= ").push_bind(since);
     }

@@ -107,7 +107,7 @@ pub async fn run_sql_dir_with_options(
                     continue;
                 }
 
-                if let Err(err) = sqlx::query(trimmed).execute(pool).await {
+                if let Err(err) = sqlx::query(sqlx::AssertSqlSafe(trimmed)).execute(pool).await {
                     let file_name = path
                         .file_name()
                         .and_then(|n| n.to_str())
@@ -118,7 +118,7 @@ pub async fn run_sql_dir_with_options(
                     ))));
                 }
             }
-        } else if let Err(err) = sqlx::query(&sql).execute(pool).await {
+        } else if let Err(err) = sqlx::query(sqlx::AssertSqlSafe(sql)).execute(pool).await {
             let file_name = path
                 .file_name()
                 .and_then(|n| n.to_str())

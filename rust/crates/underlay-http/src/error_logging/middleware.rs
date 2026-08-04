@@ -36,7 +36,7 @@ pub async fn error_logging_middleware(
 ) -> Response {
     let method = req.method().clone();
     let path = req.uri().path().to_string();
-    let query = req.uri().query().map(|q| redact_query(q));
+    let query = req.uri().query().map(redact_query);
     let user_agent = req
         .headers()
         .get("user-agent")

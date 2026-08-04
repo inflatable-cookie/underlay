@@ -117,7 +117,7 @@ pub async fn list_audit_logs_from_table(
         table
     );
 
-    Ok(sqlx::query_as::<_, AuditLogRow>(&query)
+    Ok(sqlx::query_as::<_, AuditLogRow>(sqlx::AssertSqlSafe(query))
         .bind(filters.user_id)
         .bind(filters.action)
         .bind(filters.resource_type)
@@ -157,7 +157,7 @@ pub async fn get_audit_log_by_id_from_table(
         table
     );
 
-    Ok(sqlx::query_as::<_, AuditLogRow>(&query)
+    Ok(sqlx::query_as::<_, AuditLogRow>(sqlx::AssertSqlSafe(query))
         .bind(id)
         .fetch_optional(pool)
         .await?)
@@ -187,7 +187,7 @@ pub async fn count_audit_logs_from_table(
         table
     );
 
-    let row: (i64,) = sqlx::query_as(&query)
+    let row: (i64,) = sqlx::query_as(sqlx::AssertSqlSafe(query))
         .bind(filters.user_id)
         .bind(&filters.action)
         .bind(&filters.resource_type)

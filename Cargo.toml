@@ -4,7 +4,7 @@ resolver = "2"
 
 [workspace.package]
 version = "0.8.0"
-rust-version = "1.90"
+rust-version = "1.94"
 edition = "2021"
 license = "MIT"
 
@@ -16,10 +16,10 @@ chrono = { version = "0.4", features = ["serde", "clock"] }
 regex = "1"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-sqlx = { version = "0.8.6", features = ["runtime-tokio-rustls", "postgres", "uuid", "migrate", "chrono", "json"] }
+sqlx = { version = "0.9", features = ["runtime-tokio", "tls-rustls", "postgres", "uuid", "migrate", "chrono", "json"] }
 thiserror = "2"
 tokio = "1"
-toml = "0.8"
+toml = "1.1"
 
 # Image processing
 image = { version = "0.25", default-features = false, features = ["jpeg", "png", "gif", "webp"] }
@@ -34,11 +34,11 @@ http = "1"
 underlay-aws = { path = "rust/crates/underlay-aws" }
 underlay-http-client = { path = "rust/crates/underlay-http-client" }
 uuid = { version = "1", features = ["serde", "v7"] }
-utoipa = "5.4.0"
+utoipa = "5.5.0"
 
 # Hashing / encoding shared deps (hoisted g08.020 to prevent version drift)
-sha1 = "0.10"
-sha2 = "0.10"
+sha1 = "0.11"
+sha2 = "0.11"
 hex = "0.4"
 url = "2"
 rand = "0.10.1"

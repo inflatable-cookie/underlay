@@ -83,7 +83,7 @@ async fn drop_schemas_requires_guard() {
     let schema = format!("test_{schema_id}");
     assert!(validate_schema_name(&schema));
 
-    sqlx::query(&format!("CREATE SCHEMA {schema}"))
+    sqlx::query(sqlx::AssertSqlSafe(format!("CREATE SCHEMA {schema}")))
         .execute(&pool)
         .await
         .expect("create schema");
@@ -113,12 +113,12 @@ async fn drop_schemas_drops_schema() {
     assert!(validate_schema_name(&schema));
 
     // Create schema + a table to ensure CASCADE behavior.
-    sqlx::query(&format!("CREATE SCHEMA {schema}"))
+    sqlx::query(sqlx::AssertSqlSafe(format!("CREATE SCHEMA {schema}")))
         .execute(&pool)
         .await
         .expect("create schema");
 
-    sqlx::query(&format!("CREATE TABLE {schema}.items(id INT PRIMARY KEY)"))
+    sqlx::query(sqlx::AssertSqlSafe(format!("CREATE TABLE {schema}.items(id INT PRIMARY KEY)")))
         .execute(&pool)
         .await
         .expect("create table");

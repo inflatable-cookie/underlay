@@ -63,13 +63,13 @@ impl AuthStateStore {
         let now = Utc::now();
         let expires_at = now + ttl;
 
-        sqlx::query(&format!(
+        sqlx::query(sqlx::AssertSqlSafe(format!(
             r#"
             INSERT INTO {} (id, user_id, state_type, state, created_at, expires_at)
             VALUES ($1, $2, $3, $4, $5, $6)
             "#,
             self.table
-        ))
+        )))
         .bind(id.into_inner())
         .bind(user_id.map(|u| u.into_inner()))
         .bind(state_type)
@@ -112,14 +112,14 @@ impl AuthStateStore {
     ) -> Result<Option<serde_json::Value>, AuthStateError> {
         let now = Utc::now();
 
-        let row = sqlx::query(&format!(
+        let row = sqlx::query(sqlx::AssertSqlSafe(format!(
             r#"
             SELECT state
             FROM {}
             WHERE id = $1 AND user_id IS NOT DISTINCT FROM $2 AND state_type = $3 AND expires_at > $4
             "#,
             self.table
-        ))
+        )))
         .bind(state_id.into_inner())
         .bind(user_id.map(|u| u.into_inner()))
         .bind(state_type)
@@ -156,14 +156,14 @@ impl AuthStateStore {
     ) -> Result<(), AuthStateError> {
         let now = Utc::now();
 
-        let result = sqlx::query(&format!(
+        let result = sqlx::query(sqlx::AssertSqlSafe(format!(
             r#"
             UPDATE {}
             SET state = $3
             WHERE id = $1 AND user_id IS NULL AND state_type = $2 AND expires_at > $4
             "#,
             self.table
-        ))
+        )))
         .bind(state_id.into_inner())
         .bind(state_type)
         .bind(state)
@@ -180,13 +180,13 @@ impl AuthStateStore {
     }
 
     pub async fn delete(&self, state_id: Uuid) -> Result<(), AuthStateError> {
-        sqlx::query(&format!(
+        sqlx::query(sqlx::AssertSqlSafe(format!(
             r#"
             DELETE FROM {}
             WHERE id = $1
             "#,
             self.table
-        ))
+        )))
         .bind(state_id.into_inner())
         .execute(&self.pool)
         .await

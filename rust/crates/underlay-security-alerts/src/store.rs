@@ -30,7 +30,7 @@ pub async fn load_ip_signal_counts_from_table(
         login_attempts_table
     );
 
-    let row = sqlx::query(&query)
+    let row = sqlx::query(sqlx::AssertSqlSafe(query))
         .bind(ip_address)
         .bind(since)
         .fetch_one(pool)
@@ -64,7 +64,7 @@ pub async fn load_account_signal_counts_from_table(
         login_attempts_table
     );
 
-    let row = sqlx::query(&query)
+    let row = sqlx::query(sqlx::AssertSqlSafe(query))
         .bind(user_id)
         .bind(since)
         .fetch_one(pool)
@@ -95,7 +95,7 @@ pub async fn load_global_signal_counts_from_table(
         login_attempts_table
     );
 
-    let row = sqlx::query(&query).bind(since).fetch_one(pool).await?;
+    let row = sqlx::query(sqlx::AssertSqlSafe(query)).bind(since).fetch_one(pool).await?;
 
     Ok(GlobalSignalCounts {
         failed_attempts: row.get::<Option<i64>, _>("failed_attempts").unwrap_or(0),
@@ -125,7 +125,7 @@ pub async fn has_recent_alert_in_table(
         alert_events_table
     );
 
-    let row = sqlx::query(&query)
+    let row = sqlx::query(sqlx::AssertSqlSafe(query))
         .bind(alert_type.as_str())
         .bind(ip_address)
         .bind(since)
@@ -159,7 +159,7 @@ pub async fn has_recent_scoped_alert_in_table(
         alert_events_table
     );
 
-    let row = sqlx::query(&query)
+    let row = sqlx::query(sqlx::AssertSqlSafe(query))
         .bind(alert_type.as_str())
         .bind(scope_key)
         .bind(since)
@@ -195,7 +195,7 @@ pub async fn insert_scoped_alert_event_into_table(
         alert_events_table
     );
 
-    let row = sqlx::query(&query)
+    let row = sqlx::query(sqlx::AssertSqlSafe(query))
         .bind(input.alert_type.as_str())
         .bind(&input.scope_key)
         .bind(input.ip_address.as_deref())
@@ -234,7 +234,7 @@ pub async fn insert_alert_event_into_table(
         alert_events_table
     );
 
-    let row = sqlx::query(&query)
+    let row = sqlx::query(sqlx::AssertSqlSafe(query))
         .bind(input.alert_type.as_str())
         .bind(input.ip_address.as_str())
         .bind(input.window_started_at)

@@ -109,13 +109,16 @@ impl TestDb {
         // Create a unique typed schema for this test.
         let schema = unique_test_schema();
 
-        sqlx::query(&format!("CREATE SCHEMA {}", schema.quoted()))
+        sqlx::query(sqlx::AssertSqlSafe(format!("CREATE SCHEMA {}", schema.quoted())))
             .execute(&pool)
             .await
             .expect("Failed to create test schema");
 
         // Set search path to the test schema
-        sqlx::query(&format!("SET search_path TO {}, public", schema.quoted()))
+        sqlx::query(sqlx::AssertSqlSafe(format!(
+            "SET search_path TO {}, public",
+            schema.quoted()
+        )))
             .execute(&pool)
             .await
             .expect("Failed to set search path");
@@ -142,7 +145,7 @@ impl TestDb {
     /// The fixture content should be valid SQL that will be executed
     /// in the test schema.
     pub async fn load_fixture(&self, sql: &str) -> Result<(), sqlx::Error> {
-        sqlx::query(sql).execute(&self.pool).await?;
+        sqlx::query(sqlx::AssertSqlSafe(sql)).execute(&self.pool).await?;
         Ok(())
     }
 
@@ -202,7 +205,7 @@ impl TestDb {
 
         for entry in entries {
             let sql = fs::read_to_string(entry.path())?;
-            sqlx::query(&sql)
+            sqlx::query(sqlx::AssertSqlSafe(sql))
                 .execute(&self.pool)
                 .await
                 .map_err(|e| format!("Migration {:?} failed: {}", entry.file_name(), e))?;

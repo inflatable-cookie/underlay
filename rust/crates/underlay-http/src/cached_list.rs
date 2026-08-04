@@ -58,6 +58,7 @@ impl CachedListEndpoint {
     /// - `render_json(cached)`: full JSON response for a cached body.
     /// - `render_not_modified(etag)`: 304 response for a matching ETag.
     /// - `render_error(err)`: response when `build` fails.
+    #[allow(clippy::too_many_arguments)]
     pub async fn serve<E, F, B, H, J, N, X>(
         &self,
         key: &str,

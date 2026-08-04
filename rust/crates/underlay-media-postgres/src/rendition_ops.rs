@@ -32,7 +32,7 @@ impl PostgresMediaRepository {
             self.config.renditions_fqn()?
         );
 
-        let row: MediaRenditionRow = sqlx::query_as(&query)
+        let row: MediaRenditionRow = sqlx::query_as(sqlx::AssertSqlSafe(query))
             .bind(id)
             .bind(version_id.0)
             .bind(input.rendition_type.as_str())
@@ -64,7 +64,7 @@ impl PostgresMediaRepository {
             self.config.renditions_fqn()?
         );
 
-        let row: Option<MediaRenditionRow> = sqlx::query_as(&query)
+        let row: Option<MediaRenditionRow> = sqlx::query_as(sqlx::AssertSqlSafe(query))
             .bind(id.0)
             .fetch_optional(&self.pool)
             .await
@@ -88,7 +88,7 @@ impl PostgresMediaRepository {
             self.config.renditions_fqn()?
         );
 
-        let rows: Vec<MediaRenditionRow> = sqlx::query_as(&query)
+        let rows: Vec<MediaRenditionRow> = sqlx::query_as(sqlx::AssertSqlSafe(query))
             .bind(version_id.0)
             .fetch_all(&self.pool)
             .await
@@ -109,7 +109,7 @@ impl PostgresMediaRepository {
             self.config.renditions_fqn()?
         );
 
-        let result = sqlx::query(&query)
+        let result = sqlx::query(sqlx::AssertSqlSafe(query))
             .bind(version_id.0)
             .execute(&self.pool)
             .await

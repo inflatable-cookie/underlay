@@ -58,7 +58,7 @@ where
 
 async fn drop_schema_identifier(pool: &DbPool, schema: &SqlIdentifier) -> Result<(), sqlx::Error> {
     let sql = format!("DROP SCHEMA IF EXISTS {} CASCADE", schema.quoted());
-    sqlx::query(&sql).execute(pool).await?;
+    sqlx::query(sqlx::AssertSqlSafe(sql)).execute(pool).await?;
     Ok(())
 }
 

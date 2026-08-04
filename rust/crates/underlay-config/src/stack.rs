@@ -140,7 +140,7 @@ fn read_toml_file(path: &Path) -> Result<Value, ConfigError> {
         source,
     })?;
 
-    raw.parse::<Value>().map_err(|source| ConfigError::Parse {
+    toml::from_str::<Value>(&raw).map_err(|source| ConfigError::Parse {
         path: path.to_path_buf(),
         source,
     })

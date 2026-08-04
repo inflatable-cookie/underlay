@@ -195,7 +195,7 @@ impl TypedExistsCheck {
         }
 
         let query = self.query();
-        let mut sqlx_query = sqlx::query_scalar::<_, bool>(&query);
+        let mut sqlx_query = sqlx::query_scalar::<_, bool>(sqlx::AssertSqlSafe(query));
 
         for condition in &self.conditions {
             sqlx_query = match condition {
@@ -283,7 +283,7 @@ pub async fn value_exists_typed(
     value: &str,
 ) -> Result<bool, sqlx::Error> {
     let query = value_exists_query(table, column, false);
-    sqlx::query_scalar::<_, bool>(&query)
+    sqlx::query_scalar::<_, bool>(sqlx::AssertSqlSafe(query))
         .bind(value)
         .fetch_one(pool)
         .await
@@ -298,7 +298,7 @@ pub async fn value_exists_excluding_typed(
     exclude_id: Uuid,
 ) -> Result<bool, sqlx::Error> {
     let query = value_exists_query(table, column, true);
-    sqlx::query_scalar::<_, bool>(&query)
+    sqlx::query_scalar::<_, bool>(sqlx::AssertSqlSafe(query))
         .bind(value)
         .bind(exclude_id)
         .fetch_one(pool)

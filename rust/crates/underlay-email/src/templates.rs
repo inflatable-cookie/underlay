@@ -52,7 +52,8 @@ impl EmailTemplateEngine {
     pub fn new(template_dir: &Path) -> EmailResult<Self> {
         let glob_pattern = format!("{}/**/*.html", template_dir.display());
 
-        let tera = tera::Tera::new(&glob_pattern).map_err(|e| {
+        let mut tera = tera::Tera::new();
+        tera.load_from_glob(&glob_pattern).map_err(|e| {
             EmailError::TemplateError(format!(
                 "Failed to load templates from {}: {}",
                 template_dir.display(),
@@ -136,7 +137,7 @@ impl EmailContext {
 
     /// Set a variable in the context.
     pub fn set<T: serde::Serialize>(&mut self, key: &str, value: T) {
-        self.inner.insert(key, &value);
+        self.inner.insert(key.to_string(), &value);
     }
 
     /// Get the inner Tera context for advanced use cases.

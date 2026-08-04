@@ -25,7 +25,7 @@ impl PostgresMediaRepository {
             self.config.versions_fqn()?
         );
 
-        let row: MediaVersionRow = sqlx::query_as(&query)
+        let row: MediaVersionRow = sqlx::query_as(sqlx::AssertSqlSafe(query))
             .bind(id)
             .bind(media_id.0)
             .bind(created_by)
@@ -50,7 +50,7 @@ impl PostgresMediaRepository {
             self.config.versions_fqn()?
         );
 
-        let row: Option<MediaVersionRow> = sqlx::query_as(&query)
+        let row: Option<MediaVersionRow> = sqlx::query_as(sqlx::AssertSqlSafe(query))
             .bind(id.0)
             .fetch_optional(&self.pool)
             .await
@@ -83,7 +83,7 @@ impl PostgresMediaRepository {
             self.config.versions_fqn()?
         );
 
-        let row: MediaVersionRow = sqlx::query_as(&query)
+        let row: MediaVersionRow = sqlx::query_as(sqlx::AssertSqlSafe(query))
             .bind(id.0)
             .bind(input.byte_size)
             .bind(&input.mime_type)
@@ -113,7 +113,7 @@ impl PostgresMediaRepository {
             self.config.versions_fqn()?
         );
 
-        let result = sqlx::query(&query)
+        let result = sqlx::query(sqlx::AssertSqlSafe(query))
             .bind(id.0)
             .execute(&self.pool)
             .await
@@ -131,7 +131,7 @@ impl PostgresMediaRepository {
             self.config.versions_fqn()?
         );
 
-        let result = sqlx::query(&query)
+        let result = sqlx::query(sqlx::AssertSqlSafe(query))
             .bind(id.0)
             .execute(&self.pool)
             .await
@@ -152,7 +152,7 @@ impl PostgresMediaRepository {
             self.config.versions_fqn()?
         );
 
-        let rows: Vec<MediaVersionRow> = sqlx::query_as(&query)
+        let rows: Vec<MediaVersionRow> = sqlx::query_as(sqlx::AssertSqlSafe(query))
             .bind(media_id.0)
             .fetch_all(&self.pool)
             .await
@@ -175,7 +175,7 @@ impl PostgresMediaRepository {
             self.config.versions_fqn()?
         );
 
-        let row: Option<MediaRow> = sqlx::query_as(&query)
+        let row: Option<MediaRow> = sqlx::query_as(sqlx::AssertSqlSafe(query))
             .bind(sha256)
             .fetch_optional(&self.pool)
             .await
@@ -198,7 +198,7 @@ impl PostgresMediaRepository {
             self.config.media_fqn()?
         );
 
-        sqlx::query(&query)
+        sqlx::query(sqlx::AssertSqlSafe(query))
             .bind(media_id.0)
             .bind(version_id.0)
             .execute(&self.pool)

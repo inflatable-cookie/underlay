@@ -10,5 +10,5 @@ pub(in crate::tests) fn decision_fingerprint_for(input: &DecisionFingerprintInpu
         input.decision_type, input.resolver_version, input.prompt_version, input.target_schema_version
     );
     let digest = Sha256::digest(raw.as_bytes());
-    format!("sha256:{digest:x}")
+    format!("sha256:{}", hex::encode(digest))
 }

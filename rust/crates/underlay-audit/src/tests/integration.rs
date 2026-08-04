@@ -31,7 +31,7 @@ async fn setup() -> Fixture {
     let db = TestDb::new().await;
     let schema = db.schema_name().to_string();
 
-    sqlx::query(&format!(
+    sqlx::query(sqlx::AssertSqlSafe(format!(
         r#"
         CREATE TABLE {schema}.audit_log (
             id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -45,7 +45,7 @@ async fn setup() -> Fixture {
             ip_address TEXT
         )
         "#
-    ))
+    )))
     .execute(db.pool())
     .await
     .expect("create audit_log");

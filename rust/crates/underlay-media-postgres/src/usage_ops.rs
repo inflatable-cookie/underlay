@@ -21,7 +21,7 @@ impl PostgresMediaRepository {
             self.config.usages_fqn()?
         );
 
-        sqlx::query(&query)
+        sqlx::query(sqlx::AssertSqlSafe(query))
             .bind(usage.id)
             .bind(usage.media_id.0)
             .bind(&usage.entity_type)
@@ -49,7 +49,7 @@ impl PostgresMediaRepository {
             self.config.usages_fqn()?
         );
 
-        let result = sqlx::query(&query)
+        let result = sqlx::query(sqlx::AssertSqlSafe(query))
             .bind(media_id.0)
             .bind(entity_type)
             .bind(entity_id)
@@ -72,7 +72,7 @@ impl PostgresMediaRepository {
             self.config.usages_fqn()?
         );
 
-        let rows: Vec<MediaUsageRow> = sqlx::query_as(&query)
+        let rows: Vec<MediaUsageRow> = sqlx::query_as(sqlx::AssertSqlSafe(query))
             .bind(media_id.0)
             .fetch_all(&self.pool)
             .await
@@ -89,7 +89,7 @@ impl PostgresMediaRepository {
             self.config.usages_fqn()?
         );
 
-        let row = sqlx::query(&query)
+        let row = sqlx::query(sqlx::AssertSqlSafe(query))
             .bind(media_id.0)
             .fetch_one(&self.pool)
             .await
@@ -106,7 +106,7 @@ impl PostgresMediaRepository {
             self.config.usages_fqn()?
         );
 
-        let row = sqlx::query(&query)
+        let row = sqlx::query(sqlx::AssertSqlSafe(query))
             .bind(media_id.0)
             .fetch_one(&self.pool)
             .await
@@ -165,7 +165,7 @@ impl PostgresMediaRepository {
             self.config.usages_fqn()?
         );
 
-        sqlx::query_as(&query)
+        sqlx::query_as(sqlx::AssertSqlSafe(query))
             .bind(entity_type)
             .bind(entity_id)
             .bind(field_name)

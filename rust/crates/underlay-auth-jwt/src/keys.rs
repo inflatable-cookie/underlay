@@ -4,9 +4,8 @@ pub use base64::{
     engine::general_purpose::{STANDARD, URL_SAFE_NO_PAD},
     Engine as _,
 };
+use ed25519_dalek::pkcs8::EncodePrivateKey;
 use ed25519_dalek::SigningKey;
-use pkcs8::EncodePrivateKey;
-use rand_core::OsRng;
 
 use crate::error::{JwtError, JwtResult};
 
@@ -32,7 +31,7 @@ impl std::fmt::Debug for KeyPair {
 impl KeyPair {
     /// Generate a new Ed25519 key pair.
     pub fn generate() -> JwtResult<Self> {
-        let signing_key = SigningKey::generate(&mut OsRng);
+        let signing_key = SigningKey::generate(&mut rand::rng());
         let verifying_key = signing_key.verifying_key();
 
         let private_der = signing_key

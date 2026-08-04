@@ -93,7 +93,7 @@ async fn setup() -> Fixture {
         if stmt.is_empty() {
             continue;
         }
-        sqlx::query(stmt)
+        sqlx::query(sqlx::AssertSqlSafe(stmt))
             .execute(db.pool())
             .await
             .expect("create media schema");

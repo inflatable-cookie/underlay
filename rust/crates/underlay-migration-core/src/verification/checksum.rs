@@ -7,5 +7,5 @@ pub fn transform_checksum(transform: &TransformStageOutput) -> MigrationResult<S
     let payload = serde_json::to_vec(transform)
         .map_err(|err| MigrationError::Serialization(err.to_string()))?;
     let digest = Sha256::digest(payload);
-    Ok(format!("{:x}", digest))
+    Ok(hex::encode(digest))
 }

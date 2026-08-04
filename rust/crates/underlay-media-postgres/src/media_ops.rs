@@ -26,7 +26,7 @@ impl PostgresMediaRepository {
             self.config.media_fqn()?
         );
 
-        let row: MediaRow = sqlx::query_as(&query)
+        let row: MediaRow = sqlx::query_as(sqlx::AssertSqlSafe(query))
             .bind(id)
             .bind(input.kind.as_str())
             .bind(input.visibility.as_str())
@@ -52,7 +52,7 @@ impl PostgresMediaRepository {
             self.config.media_fqn()?
         );
 
-        let row: Option<MediaRow> = sqlx::query_as(&query)
+        let row: Option<MediaRow> = sqlx::query_as(sqlx::AssertSqlSafe(query))
             .bind(id.0)
             .fetch_optional(&self.pool)
             .await
@@ -78,7 +78,7 @@ impl PostgresMediaRepository {
             self.config.media_fqn()?
         );
 
-        let row: MediaRow = sqlx::query_as(&query)
+        let row: MediaRow = sqlx::query_as(sqlx::AssertSqlSafe(query))
             .bind(id.0)
             .bind(&input.title)
             .bind(&input.original_filename)
@@ -104,7 +104,7 @@ impl PostgresMediaRepository {
             self.config.media_fqn()?
         );
 
-        let result = sqlx::query(&query)
+        let result = sqlx::query(sqlx::AssertSqlSafe(query))
             .bind(id.0)
             .execute(&self.pool)
             .await
@@ -123,7 +123,7 @@ impl PostgresMediaRepository {
             self.config.media_fqn()?
         );
 
-        let result = sqlx::query(&query)
+        let result = sqlx::query(sqlx::AssertSqlSafe(query))
             .bind(id.0)
             .execute(&self.pool)
             .await
@@ -141,7 +141,7 @@ impl PostgresMediaRepository {
             self.config.media_fqn()?
         );
 
-        let result = sqlx::query(&query)
+        let result = sqlx::query(sqlx::AssertSqlSafe(query))
             .bind(id.0)
             .execute(&self.pool)
             .await
@@ -156,7 +156,7 @@ impl PostgresMediaRepository {
     ) -> MediaResult<Vec<MediaSummary>> {
         let query = list_query::build_list_media_query(&self.config, &params)?;
 
-        let mut query_builder = sqlx::query_as::<_, MediaSummaryRow>(&query);
+        let mut query_builder = sqlx::query_as::<_, MediaSummaryRow>(sqlx::AssertSqlSafe(query));
 
         if let Some(kind) = &params.kind {
             query_builder = query_builder.bind(kind.as_str());
@@ -195,7 +195,7 @@ impl PostgresMediaRepository {
             self.config.renditions_fqn()?
         );
 
-        let rows: Vec<MediaSummaryRow> = sqlx::query_as(&query)
+        let rows: Vec<MediaSummaryRow> = sqlx::query_as(sqlx::AssertSqlSafe(query))
             .fetch_all(&self.pool)
             .await
             .media_result()?;
@@ -219,7 +219,7 @@ impl PostgresMediaRepository {
             self.config.media_fqn()?
         );
 
-        let result = sqlx::query(&query)
+        let result = sqlx::query(sqlx::AssertSqlSafe(query))
             .bind(&raw_ids)
             .execute(&self.pool)
             .await
@@ -242,7 +242,7 @@ impl PostgresMediaRepository {
             self.config.usages_fqn()?
         );
 
-        let rows: Vec<MediaRow> = sqlx::query_as(&query)
+        let rows: Vec<MediaRow> = sqlx::query_as(sqlx::AssertSqlSafe(query))
             .fetch_all(&self.pool)
             .await
             .media_result()?;

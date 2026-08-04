@@ -36,7 +36,7 @@ async fn setup() -> Fixture {
     let db = TestDb::new().await;
     let schema = db.schema_name().to_string();
 
-    sqlx::query(&format!(
+    sqlx::query(sqlx::AssertSqlSafe(format!(
         r#"
         CREATE TABLE {schema}.login_attempts (
             id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -47,12 +47,12 @@ async fn setup() -> Fixture {
             attempted_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
         )
         "#
-    ))
+    )))
     .execute(db.pool())
     .await
     .expect("create login_attempts");
 
-    sqlx::query(&format!(
+    sqlx::query(sqlx::AssertSqlSafe(format!(
         r#"
         CREATE TABLE {schema}.security_alert_events (
             id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -68,7 +68,7 @@ async fn setup() -> Fixture {
             details JSONB NOT NULL DEFAULT '{{}}'::jsonb
         )
         "#
-    ))
+    )))
     .execute(db.pool())
     .await
     .expect("create security_alert_events");
@@ -92,11 +92,11 @@ async fn record_attempt(
     success: bool,
     failure_reason: Option<&str>,
 ) {
-    sqlx::query(&format!(
+    sqlx::query(sqlx::AssertSqlSafe(format!(
         "INSERT INTO {}.login_attempts (user_id, ip_address, success, failure_reason) \
          VALUES ($1, $2::inet, $3, $4)",
         fx.db.schema_name()
-    ))
+    )))
     .bind(user_id)
     .bind(ip)
     .bind(success)

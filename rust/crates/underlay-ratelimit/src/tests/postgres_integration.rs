@@ -22,7 +22,7 @@ async fn setup() -> (TestDb, String) {
     let table = format!("{}.rate_limit_counters", db.schema_name());
     // Same shape as migrations/0001__rate_limit_counters.sql, in the isolated
     // test schema.
-    sqlx::query(&format!(
+    sqlx::query(sqlx::AssertSqlSafe(format!(
         r#"
         CREATE TABLE {table} (
             key TEXT PRIMARY KEY,
@@ -30,7 +30,7 @@ async fn setup() -> (TestDb, String) {
             count BIGINT NOT NULL DEFAULT 0
         )
         "#
-    ))
+    )))
     .execute(db.pool())
     .await
     .expect("create rate_limit_counters");

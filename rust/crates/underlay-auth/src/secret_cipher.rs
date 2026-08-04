@@ -6,8 +6,8 @@
 //! `plain:`-prefixed legacy values are rejected unless the caller explicitly
 //! opts into a bounded migration window.
 
-use aes_gcm::aead::{Aead, AeadCore, KeyInit, OsRng};
-use aes_gcm::{Aes256Gcm, Nonce};
+use aes_gcm::aead::{Aead, Generate, KeyInit};
+use aes_gcm::{Aes256Gcm, Key, Nonce};
 use base64::engine::general_purpose::{STANDARD, URL_SAFE_NO_PAD};
 use base64::Engine;
 
@@ -67,7 +67,7 @@ impl SecretCipher {
     /// Generate a fresh base64url-encoded 32-byte key suitable for
     /// [`Self::from_key_string`].
     pub fn generate_key() -> String {
-        let key = Aes256Gcm::generate_key(&mut OsRng);
+        let key = Key::<Aes256Gcm>::generate_from_rng(&mut rand::rng());
         URL_SAFE_NO_PAD.encode(key)
     }
 
@@ -86,7 +86,7 @@ impl SecretCipher {
     }
 
     pub fn encrypt(&self, secret: &str) -> AuthResult<String> {
-        let nonce = Aes256Gcm::generate_nonce(&mut OsRng);
+        let nonce = aes_gcm::aead::Nonce::<Aes256Gcm>::generate_from_rng(&mut rand::rng());
         let ciphertext = self
             .cipher
             .encrypt(&nonce, secret.as_bytes())

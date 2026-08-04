@@ -68,7 +68,7 @@ pub async fn append_audit_log_to_table(
         table
     );
 
-    let row = sqlx::query_as::<_, AuditLogRow>(&query)
+    let row = sqlx::query_as::<_, AuditLogRow>(sqlx::AssertSqlSafe(query))
         .bind(entry.user_id)
         .bind(entry.action.as_str())
         .bind(&entry.resource_type)

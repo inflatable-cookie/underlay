@@ -46,7 +46,7 @@ async fn setup() -> JobRepository {
         .await
         .expect("drop platform schema");
     for migration in MIGRATIONS {
-        pool.execute(sqlx::raw_sql(migration))
+        pool.execute(sqlx::raw_sql(*migration))
             .await
             .expect("run job migration");
     }

@@ -25,7 +25,7 @@ use crate::{AuthStateError, AuthStateStore};
 /// pool.
 async fn setup_table(db: &TestDb) -> String {
     let table = format!("{}.auth_state", db.schema_name());
-    sqlx::query(&format!(
+    sqlx::query(sqlx::AssertSqlSafe(format!(
         r#"
         CREATE TABLE {table} (
             id UUID PRIMARY KEY,
@@ -36,7 +36,7 @@ async fn setup_table(db: &TestDb) -> String {
             expires_at TIMESTAMPTZ NOT NULL
         )
         "#
-    ))
+    )))
     .execute(db.pool())
     .await
     .expect("create auth_state table");

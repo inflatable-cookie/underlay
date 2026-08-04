@@ -97,5 +97,5 @@ pub(super) fn layer_descriptor_with_annotations(
 
 pub(crate) fn sha256_digest(bytes: &[u8]) -> String {
     let digest = Sha256::digest(bytes);
-    format!("{SHA256_PREFIX}{:x}", digest)
+    format!("{SHA256_PREFIX}{}", hex::encode(digest))
 }

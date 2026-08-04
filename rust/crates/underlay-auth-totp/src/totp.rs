@@ -104,7 +104,7 @@ fn normalize_numeric_code(code: &str) -> Result<u32, TotpError> {
 pub(crate) fn totp_code(secret: &[u8], counter: u64, digits: u32, algorithm: TotpAlgorithm) -> u32 {
     let mac = match algorithm {
         TotpAlgorithm::Sha1 => {
-            use hmac::Mac;
+            use hmac::{KeyInit, Mac};
             type HmacSha1 = hmac::Hmac<sha1::Sha1>;
 
             let mut mac = HmacSha1::new_from_slice(secret).expect("HMAC accepts any key size");

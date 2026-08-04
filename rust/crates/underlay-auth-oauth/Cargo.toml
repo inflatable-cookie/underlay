@@ -11,7 +11,7 @@ thiserror = { workspace = true }
 url = { workspace = true }
 async-trait = { workspace = true }
 
-aes-gcm = "0.10"
+aes-gcm = "0.11"
 base64 = { workspace = true }
 
 # OAuth2 protocol + PKCE helpers.
