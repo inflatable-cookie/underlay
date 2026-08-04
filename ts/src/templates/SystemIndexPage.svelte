@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Grid, NavCard, PageHeader } from "@poodle/svelte";
-  import AlertTriangle from "lucide-svelte/icons/alert-triangle";
+  import AlertTriangle from "lucide-svelte/icons/triangle-alert";
   import Calendar from "lucide-svelte/icons/calendar";
   import ClipboardList from "lucide-svelte/icons/clipboard-list";
   import Layers from "lucide-svelte/icons/layers";

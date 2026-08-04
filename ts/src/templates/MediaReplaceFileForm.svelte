@@ -13,7 +13,7 @@
     formatFileSize
   } from "@poodle/svelte";
   import type { FileUploadItem } from "@poodle/svelte";
-  import CheckCircle from "lucide-svelte/icons/check-circle";
+  import CheckCircle from "lucide-svelte/icons/circle-check";
   import Upload from "lucide-svelte/icons/upload";
 
   type UploadStage = "idle" | "hashing" | "uploading" | "finalising" | "done";
