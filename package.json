@@ -334,7 +334,8 @@
     "typescript": "^5.9.3",
     "vite": "^8.2.0",
     "vitest": "^4.1.0",
-    "zod": "^4.4.3"
+    "zod": "^4.4.3",
+    "jsdom": "^30.0.1"
   },
   "guardrails": {
     "srcDir": "./ts/src",
