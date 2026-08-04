@@ -4,7 +4,7 @@ import { join } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { loadConfigStack } from "../../src/server/config-stack";
+import { environmentName, loadConfigStack } from "../../src/server/config-stack";
 
 describe("loadConfigStack", () => {
 	let configDir: string;
@@ -46,5 +46,37 @@ describe("loadConfigStack", () => {
 			})
 		).toThrow(/forbidden segment/);
 		expect(({} as Record<string, unknown>).polluted).toBeUndefined();
+	});
+});
+
+describe("environmentName", () => {
+	const PRIMARY = "UNDERLAY_TEST_ENV_NAME_PRIMARY";
+	const LEGACY = "ENVIRONMENT_NAME";
+
+	afterEach(() => {
+		delete process.env[PRIMARY];
+		delete process.env[LEGACY];
+	});
+
+	it("reads the requested var first; legacy fallback only applies without an override", () => {
+		delete process.env[PRIMARY];
+		delete process.env[LEGACY];
+		expect(environmentName({ environmentVar: PRIMARY })).toBe("dev");
+
+		// Explicit environmentVar override: legacy ENVIRONMENT_NAME is skipped.
+		process.env[LEGACY] = "uat";
+		expect(environmentName({ environmentVar: PRIMARY })).toBe("dev");
+
+		process.env[PRIMARY] = "effigy";
+		expect(environmentName({ environmentVar: PRIMARY })).toBe("effigy");
+	});
+
+	it("defaults to ENVIRONMENT with ENVIRONMENT_NAME as legacy fallback", () => {
+		delete process.env.ENVIRONMENT;
+		process.env[LEGACY] = "staging";
+		expect(environmentName()).toBe("staging");
+
+		process.env.ENVIRONMENT = "effigy";
+		expect(environmentName()).toBe("effigy");
 	});
 });

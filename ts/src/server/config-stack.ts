@@ -5,7 +5,8 @@ import { parse, type TomlTable, type TomlValue } from "smol-toml";
 
 export const DEFAULT_CONFIG_DIR = "config";
 export const DEFAULT_ENVIRONMENT = "dev";
-export const DEFAULT_ENV_VAR = "ENVIRONMENT_NAME";
+export const DEFAULT_ENV_VAR = "ENVIRONMENT";
+export const LEGACY_ENV_VAR = "ENVIRONMENT_NAME";
 
 export type ConfigValue = TomlValue;
 export type ConfigTable = TomlTable;
@@ -23,6 +24,10 @@ export function environmentName(options: LoadConfigStackOptions = {}): string {
   const raw =
     options.environment ??
     process.env[options.environmentVar ?? DEFAULT_ENV_VAR] ??
+    // Legacy fallback (deprecated): only consulted when no explicit
+    // environmentVar override was requested. ENVIRONMENT is the fleet-wide
+    // primary; ENVIRONMENT_NAME is the old name kept for compatibility.
+    (options.environmentVar === undefined ? process.env[LEGACY_ENV_VAR] : undefined) ??
     DEFAULT_ENVIRONMENT;
 
   const trimmed = raw.trim();
