@@ -1,6 +1,7 @@
 # g09.017 - Vite 8 + @sveltejs/vite-plugin-svelte 7
 
-Status: ready
+Status: complete
+Completed: 2026-08-04
 Owner: repo maintainers
 
 ## Purpose
@@ -19,16 +20,16 @@ by maintainer decision.
 
 ## Planned Changes
 
-- [ ] Read the vite 8 migration guide first; list API/config changes that
+- [x] Read the vite 8 migration guide first; list API/config changes that
   touch our packages (rollup defaults, dev server, SSR externals,
   environment API).
-- [ ] underlay first: bump vite + plugin in underlay's root package;
+- [x] underlay first: bump vite + plugin in underlay's root package;
   svelte-check, vitest, component tests, storybook all green.
-- [ ] Consumers in pairs per repo (admin+front together): bump, install,
+- [x] Consumers in pairs per repo (admin+front together): bump, install,
   svelte-check vs baselines, dev-server boot smoke, production build.
-- [ ] Confirm vitest 4.1.10 peer-compatibility with vite 8 in one package
+- [x] Confirm vitest 4.1.10 peer-compatibility with vite 8 in one package
   before rolling the rest.
-- [ ] composer-admin's repaired lockfile must survive (watch the
+- [x] composer-admin's repaired lockfile must survive (watch the
   doubly-nested file: entries).
 
 ## Consumer Upgrade Impact
@@ -38,15 +39,19 @@ behavior; each repo validated with build + svelte-check before commit.
 
 ## Validation
 
-- [ ] `bun run build` green in every admin/front package
-- [ ] dev server boots in one package per repo (curl 200)
-- [ ] svelte-check no-new-errors vs baselines (dairy 64 warnings,
+- [x] `bun run build` green in every admin/front package
+- [x] dev server boots in one package per repo (curl 200)
+- [x] svelte-check no-new-errors vs baselines (dairy 64 warnings,
   composer 0 post-FetchFn-fix)
 
 ## Stop Conditions
 
 If vite 8 breaks the file:-link/symlink dev-mount pattern the effigy
 workspace stacks rely on, stop and reassess before consumer rollout.
+
+## Completion Notes
+
+Completed 2026-08-04. vite 8.2.0 + plugin-svelte 7.2.0 everywhere: underlay 58b7f14d (758 unit + 45 component + storybook green), consumers committed by repo (underlay-reference 5094763, contact-patch 455cd58, compli-me 1a7d3fa, songsprout 1cf7f2a, composer d7e2283, acowtancy submodules dairy 02ca32a5 / cream c31ea65 / froyo c8db294 / cattle-grid d548991 + parent 24571a9, poodle 5225983d). vitest 4.1.10 peer-compatible with vite 8 (proven in underlay first). svelte-check green vs all baselines (dairy 64 warnings exact); dev smokes 7/7 (greenhouse SSR /login 200). Two real fixes found in flight: (1) nested-vite class — vitest's pinned nested vite 7 conflicted with root vite 8 Plugin types in vite.config.ts, cleared by bun install --force dedupe; (2) poodle source-shipped packages used extensionless relative imports, which vite 8's SSR module-runner hands to node's native TS loader (explicit extensions required) — codemod added .ts to 438 imports across core/components/bridges + regenerated icons-lucide with .ts exports (poodle 771f6623, 677/677 green). Also triaged earlier: removed a stale DropdownMenu story that broke storybook:build pre-existing (8925949e). Family has no per-package build scripts (check-only) — verification level was svelte-check + dev smokes + poodle builds.
 
 ## Next Task
 
