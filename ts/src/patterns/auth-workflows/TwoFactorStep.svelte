@@ -1,7 +1,7 @@
 <script lang="ts">
   import { untrack } from "svelte";
-  import { Button, Callout, Field, FormActions, Tabs, TextInput, CodeInput } from "@poodle/svelte";
-  import type { TabItem } from "@poodle/svelte";
+  import { Button, Callout, Field, FormActions, Tabs, TextInput, CodeInput } from "@inflatable-cookie/poodle-svelte";
+  import type { TabItem } from "@inflatable-cookie/poodle-svelte";
 
   type Method = "totp" | "backup" | "email";
 

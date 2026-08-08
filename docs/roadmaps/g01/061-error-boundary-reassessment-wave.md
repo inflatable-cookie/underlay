@@ -31,7 +31,7 @@ and Poodle `EmptyState`/`Button`.
   - `underlay-reference/acme-admin/src/routes/(app)/+layout.svelte`
   - `contact-patch/cp-admin/src/routes/(app)/+layout.svelte`
 - adjacent UI:
-  - `@poodle/svelte-primitives/Callout`
+  - `@inflatable-cookie/poodle-svelte-primitives/Callout`
 
 ## Decision Summary
 

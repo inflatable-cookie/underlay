@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Button, Field as PoodleField, FormActions as PoodleFormActions, FormDialog, Select, TextInput } from "@poodle/svelte";
+  import { Button, Field as PoodleField, FormActions as PoodleFormActions, FormDialog, Select, TextInput } from "@inflatable-cookie/poodle-svelte";
 
   interface VisibilityOption {
     value: string;

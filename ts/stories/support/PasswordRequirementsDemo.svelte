@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { TextInput } from "@poodle/svelte";
+  import { TextInput } from "@inflatable-cookie/poodle-svelte";
   import PasswordRequirements from "../../src/patterns/auth-workflows/PasswordRequirements.svelte";
 
   let password = $state("");

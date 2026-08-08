@@ -1,5 +1,5 @@
 <script lang="ts" generics="TVersion extends MediaVersionListItem = MediaVersionListItem">
-  import { Code, IconButton, InlineListSection, TimeAgo } from "@poodle/svelte";
+  import { Code, IconButton, InlineListSection, TimeAgo } from "@inflatable-cookie/poodle-svelte";
   import { default as AdminPill } from "./AdminPill.svelte";
   import { ADMIN_PILL_ACCENTS } from "./admin-pill-accents";
   import type { MediaVersionListItem } from "./template.types";

@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { Code } from "@poodle/svelte";
-  import type { ControlDensity, ControlSize } from "@poodle/svelte";
+  import { Code } from "@inflatable-cookie/poodle-svelte";
+  import type { ControlDensity, ControlSize } from "@inflatable-cookie/poodle-svelte";
   import { default as AdminPill } from "./AdminPill.svelte";
   import {
     getMediaKindLabel,

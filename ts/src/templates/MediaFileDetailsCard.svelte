@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Card, Code, DetailItem, DetailSection, DetailSectionGroup, TimeAgo } from "@poodle/svelte";
+  import { Card, Code, DetailItem, DetailSection, DetailSectionGroup, TimeAgo } from "@inflatable-cookie/poodle-svelte";
 
   interface MediaVersionSummary {
     byteSize?: number | null;

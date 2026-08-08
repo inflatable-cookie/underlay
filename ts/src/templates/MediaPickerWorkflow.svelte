@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { Dialog, FileUpload, Tabs } from "@poodle/svelte";
-  import type { FileUploadItem, TabItem } from "@poodle/svelte";
+  import { Dialog, FileUpload, Tabs } from "@inflatable-cookie/poodle-svelte";
+  import type { FileUploadItem, TabItem } from "@inflatable-cookie/poodle-svelte";
   import {
     createResetMediaBrowseState,
     loadMediaBrowsePage,

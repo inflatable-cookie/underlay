@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { MarkdownEditor } from "@poodle/svelte";
+  import { MarkdownEditor } from "@inflatable-cookie/poodle-svelte";
   import type { Snippet } from "svelte";
   import type { MarkdownEditorContext } from "./markdown-editor-context";
   import { renderSafeMarkdownPreview } from "./markdown-preview";

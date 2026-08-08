@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onDestroy } from "svelte";
-  import { IconButton, TextLink } from "@poodle/svelte";
+  import { IconButton, TextLink } from "@inflatable-cookie/poodle-svelte";
 
   import { copyTextToClipboard, copyToClipboard, useToasts } from "../runtime/feedback";
   import type { ToastStore } from "../patterns/toasts";

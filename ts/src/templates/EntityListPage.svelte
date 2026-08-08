@@ -5,8 +5,8 @@
     PageHeader,
     Breadcrumbs,
     IconButton
-  } from "@poodle/svelte";
-  import type { ControlSize } from "@poodle/svelte";
+  } from "@inflatable-cookie/poodle-svelte";
+  import type { ControlSize } from "@inflatable-cookie/poodle-svelte";
   import { getBackButtonInfo } from "../patterns/navigation";
   import { default as EntityList } from "./EntityList.svelte";
   import { default as EntityReorderControls } from "./EntityReorderControls.svelte";
@@ -18,7 +18,7 @@
     LogEntry,
     LogActionType,
     LogActor
-  } from "@poodle/svelte";
+  } from "@inflatable-cookie/poodle-svelte";
   import type {
     BatchActionConfig,
     EntityListCapabilitiesLoader,

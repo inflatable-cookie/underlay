@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Button as PoodleButton, Field as PoodleField, Stack, TextInput } from "@poodle/svelte";
+  import { Button as PoodleButton, Field as PoodleField, Stack, TextInput } from "@inflatable-cookie/poodle-svelte";
 
   interface Props {
     id: string;

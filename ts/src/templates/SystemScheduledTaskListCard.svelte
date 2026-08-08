@@ -1,7 +1,7 @@
 <script lang="ts">
   import { default as EntityListCard } from "./EntityListCard.svelte";
   import type { SystemScheduledTaskListItem } from "./template.types";
-  import type { MenuItem } from "@poodle/svelte";
+  import type { MenuItem } from "@inflatable-cookie/poodle-svelte";
 
   interface Props {
     task: SystemScheduledTaskListItem;

@@ -12,7 +12,7 @@
  * ```svelte
  * <script lang="ts">
  *   import { useBatchSelection } from '@decodelabs/underlay/runtime/data';
- *   import { AlertDialog, BulkActionBar } from '@poodle/svelte';
+ *   import { AlertDialog, BulkActionBar } from '@inflatable-cookie/poodle-svelte';
  *
  *   const items = $derived(data.projects);
  *   const selection = useBatchSelection<string>();

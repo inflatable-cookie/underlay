@@ -190,6 +190,6 @@ this runway.
 ## Next Task
 
 Execute `g02.007` as the new narrow package-consolidation lane for the
-`@poodle/svelte` migration, keeping the scope bounded to live import, manifest,
+`@inflatable-cookie/poodle-svelte` migration, keeping the scope bounded to live import, manifest,
 and active-guide fallout instead of reopening the old broad consumer-family
 normalization line.

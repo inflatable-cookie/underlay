@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { PasswordRequirements } from "@poodle/svelte";
-  import type { PasswordRequirementsPolicy } from "@poodle/svelte";
+  import { PasswordRequirements } from "@inflatable-cookie/poodle-svelte";
+  import type { PasswordRequirementsPolicy } from "@inflatable-cookie/poodle-svelte";
 
   /**
    * Password requirements display with real-time validation feedback.

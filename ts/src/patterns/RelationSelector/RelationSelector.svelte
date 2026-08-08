@@ -6,13 +6,13 @@
     IconButton,
     Popover,
     RelationPicker,
-  } from "@poodle/svelte";
+  } from "@inflatable-cookie/poodle-svelte";
   import type {
     BrowseState,
     DrillDownConfig as PoodleDrillDownConfig,
     PickerFilterConfig,
     PickerItem,
-  } from "@poodle/svelte";
+  } from "@inflatable-cookie/poodle-svelte";
 
   import { createRelationSelectorContext } from "./context.svelte.js";
   import type { DrillDownContext } from "./drilldown-types.js";

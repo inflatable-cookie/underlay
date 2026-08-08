@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Button } from "@poodle/svelte";
+  import { Button } from "@inflatable-cookie/poodle-svelte";
 
   interface MediaRenditionItem {
     kind: string;

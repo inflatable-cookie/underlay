@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Code, Dialog, IconButton } from "@poodle/svelte";
+  import { Code, Dialog, IconButton } from "@inflatable-cookie/poodle-svelte";
 
   interface Props {
     value?: unknown | null;

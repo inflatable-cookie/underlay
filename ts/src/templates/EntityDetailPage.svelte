@@ -15,8 +15,8 @@
     PageLoading,
     Callout,
     Button
-  } from "@poodle/svelte";
-  import type { ControlDensity, ControlSize } from "@poodle/svelte";
+  } from "@inflatable-cookie/poodle-svelte";
+  import type { ControlDensity, ControlSize } from "@inflatable-cookie/poodle-svelte";
   import { default as EntityMetaItem } from "./EntityMetaItem.svelte";
   import DetailDataTab from "./DetailDataTab.svelte";
   import type {

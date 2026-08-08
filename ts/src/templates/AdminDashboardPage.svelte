@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { PageHeader } from "@poodle/svelte";
+  import { PageHeader } from "@inflatable-cookie/poodle-svelte";
   import { getBackButtonInfo } from "../patterns/navigation";
   import type { AdminDashboardSectionConfig, TemplateSurface } from "./template.types";
 

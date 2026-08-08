@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { BlockEditor } from "@poodle/svelte";
+  import { BlockEditor } from "@inflatable-cookie/poodle-svelte";
   import {
     buildNightfireBlockEditorBridge,
     toPoodleEditorBlocks,
-  } from "@poodle/bridge-underlay/nightfire-block-editor";
+  } from "@inflatable-cookie/poodle-bridge-underlay/nightfire-block-editor";
 
   import type { MarkdownEditorContext } from "../markup/markdown-editor-context";
   import type { NightfireBlockDefinition, NightfireTypeOption } from "../utils";

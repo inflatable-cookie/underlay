@@ -32,8 +32,8 @@ narrowed, or can retire entirely.
   - `acowtancy/dairy/src/lib/menus/MediaActionsMenu.svelte`
   - representative media detail routes in each app
 - adjacent Poodle surfaces:
-  - `@poodle/svelte-primitives/Menu`
-  - `@poodle/svelte-primitives/AlertDialog`
+  - `@inflatable-cookie/poodle-svelte-primitives/Menu`
+  - `@inflatable-cookie/poodle-svelte-primitives/AlertDialog`
 
 ## Decision Summary
 

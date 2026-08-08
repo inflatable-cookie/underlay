@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Button, Callout, MediaThumbnail } from "@poodle/svelte";
+  import { Button, Callout, MediaThumbnail } from "@inflatable-cookie/poodle-svelte";
   import type { MediaPickerBrowseItem } from "./template.types";
 
   interface Props {

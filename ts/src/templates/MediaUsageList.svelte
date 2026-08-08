@@ -1,5 +1,5 @@
 <script lang="ts" generics="TUsage extends MediaUsageListItem = MediaUsageListItem">
-  import { Code, EmptyState, InlineListSection } from "@poodle/svelte";
+  import { Code, EmptyState, InlineListSection } from "@inflatable-cookie/poodle-svelte";
   import type { MediaUsageListItem } from "./template.types";
 
   interface Props {

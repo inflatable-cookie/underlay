@@ -9,7 +9,7 @@
     SystemScheduledTaskListItem,
     SystemScheduledTaskListLoader
   } from "./template.types";
-  import type { MenuItem } from "@poodle/svelte";
+  import type { MenuItem } from "@inflatable-cookie/poodle-svelte";
 
   interface Props {
     title?: string;

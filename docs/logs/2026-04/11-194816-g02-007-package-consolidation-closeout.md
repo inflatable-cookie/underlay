@@ -5,7 +5,7 @@
 What landed:
 
 - Underlay migrated its package dependency and active guide surface from the
-  split Poodle package names to `@poodle/svelte`.
+  split Poodle package names to `@inflatable-cookie/poodle-svelte`.
 - The affected consumer families were migrated and validated:
   - `underlay-reference`
   - `contact-patch`

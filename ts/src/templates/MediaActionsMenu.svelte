@@ -1,7 +1,7 @@
 <script lang="ts">
   import { useToasts } from "../runtime/feedback";
   import type { NavigationContext } from "../runtime/navigation";
-  import { AlertDialog } from "@poodle/svelte";
+  import { AlertDialog } from "@inflatable-cookie/poodle-svelte";
   import EntityActionsMenu from "./EntityActionsMenu.svelte";
   import type { MediaActionsMenuItem } from "./template.types";
   import type { TemplateSurface } from "./template-types/primitives";

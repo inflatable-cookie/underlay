@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Card } from "@poodle/svelte";
+  import { Card } from "@inflatable-cookie/poodle-svelte";
 
   import { NightfireRenderer } from "../nightfire/renderer";
   import { isEmptyNightfire, normaliseNightfireValue } from "../nightfire/utils";

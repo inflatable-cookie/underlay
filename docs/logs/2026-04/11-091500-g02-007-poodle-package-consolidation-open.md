@@ -7,12 +7,12 @@ consumer-normalization line closed.
 
 The old split package names:
 
-- `@poodle/svelte-primitives`
-- `@poodle/svelte-composites`
+- `@inflatable-cookie/poodle-svelte-primitives`
+- `@inflatable-cookie/poodle-svelte-composites`
 
 were consolidated behind:
 
-- `@poodle/svelte`
+- `@inflatable-cookie/poodle-svelte`
 
 ## Decision
 

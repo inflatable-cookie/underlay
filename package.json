@@ -307,8 +307,8 @@
     }
   },
   "dependencies": {
-    "@poodle/bridge-underlay": "file:../poodle/packages/bridges/underlay",
-    "@poodle/svelte": "file:../poodle/packages/svelte/components",
+    "@inflatable-cookie/poodle-bridge-underlay": "file:../poodle/packages/bridges/underlay",
+    "@inflatable-cookie/poodle-svelte": "file:../poodle/packages/svelte/components",
     "esm-env": "^1.2.2",
     "isomorphic-dompurify": "^3.0.0",
     "marked": "^17.0.3",

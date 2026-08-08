@@ -329,7 +329,7 @@ The `TextInput` component supports optional async validation with visual feedbac
 
 ```svelte
 <script lang="ts">
-  import { TextInput, type ValidationResult } from "@poodle/svelte";
+  import { TextInput, type ValidationResult } from "@inflatable-cookie/poodle-svelte";
 
   async function validateEmail(email: string): Promise<ValidationResult> {
     // Call backend to check if email exists
@@ -430,7 +430,7 @@ shared slug helpers only where they are still useful.
     TextInput,
     type InputValidationStatus,
     type ValidationResult
-  } from "@poodle/svelte";
+  } from "@inflatable-cookie/poodle-svelte";
   import { slugify, isReservedSlug, isValidSlugFormat } from "@decodelabs/underlay/utils/slug";
 
   let titleValue = $state("");
@@ -743,7 +743,7 @@ export async function validateField(
 
 ```svelte
 <script lang="ts">
-  import { TextInput, type ValidationResult } from "@poodle/svelte";
+  import { TextInput, type ValidationResult } from "@inflatable-cookie/poodle-svelte";
   import { api } from "$lib/api-client";
 
   export let data;  // { authToken }
@@ -778,7 +778,7 @@ export async function validateField(
 
 ```svelte
 <script lang="ts">
-  import { TextInput } from "@poodle/svelte";
+  import { TextInput } from "@inflatable-cookie/poodle-svelte";
   import { api } from "$lib/api-client";
 
   export let data;  // { user, authToken }
@@ -814,7 +814,7 @@ export async function validateField(
 
 ```svelte
 <script lang="ts">
-  import { TextInput } from "@poodle/svelte";
+  import { TextInput } from "@inflatable-cookie/poodle-svelte";
   import { api } from "$lib/api-client";
 
   export let data;  // { authToken }
@@ -870,7 +870,7 @@ Use `$derived` to create reactive validation contexts:
 
 ```svelte
 <script lang="ts">
-  import { Field, TextInput, type InputValidationStatus } from "@poodle/svelte";
+  import { Field, TextInput, type InputValidationStatus } from "@inflatable-cookie/poodle-svelte";
   import { slugify } from "@decodelabs/underlay/utils/slug";
   import { api } from "$lib/api-client";
 
@@ -1146,8 +1146,8 @@ plus field-level validation status callbacks.
 
 ```svelte
 <script lang="ts">
-  import { FormLayout } from "@poodle/svelte";
-  import { Button, Field, FieldSet, TextInput } from "@poodle/svelte";
+  import { FormLayout } from "@inflatable-cookie/poodle-svelte";
+  import { Button, Field, FieldSet, TextInput } from "@inflatable-cookie/poodle-svelte";
   import { slugify } from "@decodelabs/underlay/utils/slug";
 
   let titleValue = $state("");

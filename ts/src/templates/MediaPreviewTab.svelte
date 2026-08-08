@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { EmptyState } from "@poodle/svelte";
+  import { EmptyState } from "@inflatable-cookie/poodle-svelte";
 
   interface MediaPreviewModel {
     kind: string;

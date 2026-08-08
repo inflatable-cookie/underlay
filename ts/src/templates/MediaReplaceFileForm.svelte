@@ -11,8 +11,8 @@
     FileUpload,
     Progress,
     formatFileSize
-  } from "@poodle/svelte";
-  import type { FileUploadItem } from "@poodle/svelte";
+  } from "@inflatable-cookie/poodle-svelte";
+  import type { FileUploadItem } from "@inflatable-cookie/poodle-svelte";
   import CheckCircle from "lucide-svelte/icons/circle-check";
   import Upload from "lucide-svelte/icons/upload";
 

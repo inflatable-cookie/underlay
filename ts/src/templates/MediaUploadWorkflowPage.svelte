@@ -4,8 +4,8 @@
     REJECTED_VIDEO_TYPES,
     validateFileType
   } from "../runtime/media";
-  import { Button, FileUpload, Icon, IconButton, Progress, formatFileSize } from "@poodle/svelte";
-  import type { FileUploadItem } from "@poodle/svelte";
+  import { Button, FileUpload, Icon, IconButton, Progress, formatFileSize } from "@inflatable-cookie/poodle-svelte";
+  import type { FileUploadItem } from "@inflatable-cookie/poodle-svelte";
   import { default as MediaUploadPage } from "./MediaUploadPage.svelte";
 
   type UploadStatus =

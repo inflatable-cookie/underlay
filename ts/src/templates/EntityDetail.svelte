@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
-  import { MetaBar, PageHeader } from "@poodle/svelte";
+  import { MetaBar, PageHeader } from "@inflatable-cookie/poodle-svelte";
   import { default as EntityMetaItem } from "./EntityMetaItem.svelte";
   import type { DetailMetaItemConfig } from "./template.types";
 

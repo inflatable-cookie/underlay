@@ -5,7 +5,7 @@
     ListGrid,
     PageHeader,
     PageLoading
-  } from "@poodle/svelte";
+  } from "@inflatable-cookie/poodle-svelte";
   import { getBackButtonInfo } from "../patterns/navigation";
   import type { TemplateSurface } from "./template.types";
 

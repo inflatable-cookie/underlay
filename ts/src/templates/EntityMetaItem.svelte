@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Code, MetaItem } from "@poodle/svelte";
+  import { Code, MetaItem } from "@inflatable-cookie/poodle-svelte";
   import type { DetailMetaItemConfig } from "./template.types";
 
   interface Props {

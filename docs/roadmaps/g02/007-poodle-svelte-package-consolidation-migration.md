@@ -9,12 +9,12 @@ Updated: 2026-04-11
 Poodle’s Svelte surface was refactored again after the broad consumer-family
 rollout line closed. The old split package names:
 
-- `@poodle/svelte-primitives`
-- `@poodle/svelte-composites`
+- `@inflatable-cookie/poodle-svelte-primitives`
+- `@inflatable-cookie/poodle-svelte-composites`
 
 have been consolidated behind the new package:
 
-- `@poodle/svelte`
+- `@inflatable-cookie/poodle-svelte`
 
 The current fallout is not another pattern-normalization program. It is a
 bounded package-consolidation migration across Underlay and the consumer
@@ -23,7 +23,7 @@ families that still import the split names directly.
 ## Goals
 
 - re-anchor Underlay and the live consumer families on the new
-  `@poodle/svelte` package surface
+  `@inflatable-cookie/poodle-svelte` package surface
 - update source imports, package manifests, and local alias wiring where the
   split package names still exist
 - validate the touched repos cleanly and leave the untouched consumer families
@@ -60,7 +60,7 @@ families that still import the split names directly.
 ### Batch 7.1 - Live Import And Manifest Migration
 
 - [x] replace live source imports from the split package names with
-      `@poodle/svelte`
+      `@inflatable-cookie/poodle-svelte`
 - [x] update package manifests and local alias wiring to the consolidated
       package
 - [x] confirm which consumer families are actually touched versus already clean
@@ -68,7 +68,7 @@ families that still import the split names directly.
 ### Batch 7.2 - Active Guide And Contract Alignment
 
 - [x] update active Underlay guides and active contract surfaces to teach
-      `@poodle/svelte`
+      `@inflatable-cookie/poodle-svelte`
 - [x] leave archival docs, logs, and closed roadmap evidence intact
 
 ### Batch 7.3 - Validation And Residue Freeze
@@ -99,22 +99,22 @@ Poodle package names:
 Impact class: `consumer-visible`
 
 This lane changed the shared import posture from the split Poodle package names
-to the consolidated `@poodle/svelte` package across Underlay and affected
+to the consolidated `@inflatable-cookie/poodle-svelte` package across Underlay and affected
 consumers. Existing callers were migrated onto the surviving unified package
 surface, including replacing temporary `SearchField`, `TextArea`, and
 `ReorderableList` compatibility usage in live consumer code before closure.
 
 ## Exit Criteria
 
-- no live source imports remain to `@poodle/svelte-primitives` or
-  `@poodle/svelte-composites` in Underlay or the affected consumer families
-- touched package manifests and local alias wiring point at `@poodle/svelte`
+- no live source imports remain to `@inflatable-cookie/poodle-svelte-primitives` or
+  `@inflatable-cookie/poodle-svelte-composites` in Underlay or the affected consumer families
+- touched package manifests and local alias wiring point at `@inflatable-cookie/poodle-svelte`
 - active Underlay guides teach the consolidated package surface
 - residue scan explicitly confirms which consumer families were already clean
 
 ## Result
 
 Complete. Underlay, `underlay-reference`, `contact-patch`, `acowtancy`, and
-`loophole/composer` are migrated to `@poodle/svelte`; `compli-me` and
+`loophole/composer` are migrated to `@inflatable-cookie/poodle-svelte`; `compli-me` and
 `songsprout` remain explicitly clean for this package-boundary change; and the
 active Underlay guide layer now teaches the consolidated import surface.

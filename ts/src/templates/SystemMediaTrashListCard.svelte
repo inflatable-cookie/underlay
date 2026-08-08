@@ -4,7 +4,7 @@
     Button,
     MediaThumbnail,
     formatFileSize
-  } from "@poodle/svelte";
+  } from "@inflatable-cookie/poodle-svelte";
   import RotateCcw from "lucide-svelte/icons/rotate-ccw";
   import Trash2 from "lucide-svelte/icons/trash-2";
   import {

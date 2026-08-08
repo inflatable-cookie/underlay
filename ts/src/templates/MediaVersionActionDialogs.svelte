@@ -1,5 +1,5 @@
 <script lang="ts" generics="TVersion extends { id: string; sha256?: string | null }">
-  import { AlertDialog } from "@poodle/svelte";
+  import { AlertDialog } from "@inflatable-cookie/poodle-svelte";
 
   interface Props {
     activateDialogOpen: boolean;

@@ -6,7 +6,7 @@ Spec: `docs/specs/archive/001-g02-package-consolidation-strict-lane.md`
 
 ## Goal
 
-Keep the live `@poodle/svelte` migration seam bounded to the repos and files
+Keep the live `@inflatable-cookie/poodle-svelte` migration seam bounded to the repos and files
 that actually belong in `g02.007`.
 
 ## Batch

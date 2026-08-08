@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Grid, NavCard, PageHeader } from "@poodle/svelte";
+  import { Grid, NavCard, PageHeader } from "@inflatable-cookie/poodle-svelte";
   import AlertTriangle from "lucide-svelte/icons/triangle-alert";
   import Calendar from "lucide-svelte/icons/calendar";
   import ClipboardList from "lucide-svelte/icons/clipboard-list";

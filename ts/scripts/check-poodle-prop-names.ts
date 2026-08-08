@@ -47,7 +47,7 @@ const retiredPropNames = [
 ];
 
 const poodleImportPattern =
-	/import\s*\{([^}]*)\}\s*from\s*["']@poodle\/svelte(?:-(?:primitives|composites))?["']/g;
+	/import\s*\{([^}]*)\}\s*from\s*["']@inflatable-cookie\/poodle-svelte(?:-(?:primitives|composites))?["']/g;
 
 // Poodle components take camelCase callback props (onClick, onChange, ...).
 // A lowercase native handler on a Poodle component compiles but is overridden

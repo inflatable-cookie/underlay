@@ -20,8 +20,8 @@
    * ```
    */
 
-  import { Button, Callout, Field, FormActions, TextInput } from "@poodle/svelte";
-  import type { PasswordRequirementsPolicy } from "@poodle/svelte";
+  import { Button, Callout, Field, FormActions, TextInput } from "@inflatable-cookie/poodle-svelte";
+  import type { PasswordRequirementsPolicy } from "@inflatable-cookie/poodle-svelte";
 
   import { default as PasswordResetStep } from "./PasswordResetStep.svelte";
   import { default as SuccessStep } from "./SuccessStep.svelte";

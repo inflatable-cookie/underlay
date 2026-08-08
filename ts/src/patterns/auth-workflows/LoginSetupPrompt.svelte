@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Button, Callout } from "@poodle/svelte";
+  import { Button, Callout } from "@inflatable-cookie/poodle-svelte";
 
   interface Props {
     hadTotpConfigured: boolean;

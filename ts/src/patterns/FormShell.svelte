@@ -1,8 +1,8 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
   import type { HTMLFormAttributes } from "svelte/elements";
-  import { Card, Callout } from "@poodle/svelte";
-  import { PageHeader } from "@poodle/svelte";
+  import { Card, Callout } from "@inflatable-cookie/poodle-svelte";
+  import { PageHeader } from "@inflatable-cookie/poodle-svelte";
   import { getBackButtonInfo } from "./navigation";
   import type { BannerVariant } from "./banner";
 

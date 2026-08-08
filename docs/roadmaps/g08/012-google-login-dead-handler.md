@@ -45,8 +45,8 @@ None.
 
 Completed 2026-07-17. `LoginGoogleTab` renamed to `onClick`. Guardrail gap
 was real and double: `check:poodle-prop-names` matched only
-`@poodle/svelte-primitives|composites` imports (missing plain
-`@poodle/svelte`) and had no event-handler casing rule. Both fixed (plus an
+`@inflatable-cookie/poodle-svelte-primitives|composites` imports (missing plain
+`@inflatable-cookie/poodle-svelte`) and had no event-handler casing rule. Both fixed (plus an
 overreaching import regex that spanned statements). The extended check found
 and fixed three more dead handlers: `EntityDetailPage` Retry button, guide
 `097` Button examples, guide `186` EditableList `onsubmit`/`oncancel`.

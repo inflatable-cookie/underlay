@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { ListCard } from "@poodle/svelte";
+  import { ListCard } from "@inflatable-cookie/poodle-svelte";
   import type { ContextActionDefinition } from "./contextual-action.types";
 
   interface Props {

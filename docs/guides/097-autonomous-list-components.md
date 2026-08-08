@@ -131,7 +131,7 @@ UI note:
 ```svelte
 <script lang="ts">
   import { useBatchSelection } from '@decodelabs/underlay/runtime/data';
-  import { AlertDialog, BulkActionBar } from '@poodle/svelte';
+  import { AlertDialog, BulkActionBar } from '@inflatable-cookie/poodle-svelte';
 
   const items = $derived(data.projects);
   const selection = useBatchSelection<string>();
@@ -220,7 +220,7 @@ Extends `useBatchSelection` with action registration and execution. This is the 
 ```svelte
 <script lang="ts">
   import { useBatchActions } from '@decodelabs/underlay/runtime/data';
-  import { AlertDialog, BulkActionBar } from '@poodle/svelte';
+  import { AlertDialog, BulkActionBar } from '@inflatable-cookie/poodle-svelte';
 
   const batch = useBatchActions<string>();
 
@@ -527,13 +527,13 @@ interface ListControllerResult<T, F> {
 
 Underlay `ListContainer` is retired. Use Poodle `ListContainer` for the page-level list shell, then compose batch controls, filter content, card or grid content, and pagination around it.
 
-**Location:** `@poodle/svelte`
+**Location:** `@inflatable-cookie/poodle-svelte`
 
 A list shell that provides consistent structure for autonomous lists with caller-owned filters, batch actions, content, and pagination.
 
 ```svelte
 <script lang="ts">
-  import { ListContainer } from '@poodle/svelte';
+  import { ListContainer } from '@inflatable-cookie/poodle-svelte';
 </script>
 
 <ListContainer
@@ -578,7 +578,7 @@ A list shell that provides consistent structure for autonomous lists with caller
 
 `BulkActionBar` is now the shared batch-selection surface. Keep destructive confirmation and status-update flows explicit in the surrounding route or list controller instead of hiding them inside a wrapper.
 
-**Location:** `@poodle/svelte`
+**Location:** `@inflatable-cookie/poodle-svelte`
 
 A fixed toolbar that appears at the bottom of the screen when items are selected.
 
@@ -630,16 +630,16 @@ Here's a complete example of building an autonomous list component:
   import { useBatchActions } from "@decodelabs/underlay/runtime/data";
   import { useToasts } from "@decodelabs/underlay/runtime/feedback";
   import type { NavigationContext } from "@decodelabs/underlay/runtime/navigation";
-  import { FilterToolbar } from "@poodle/svelte";
+  import { FilterToolbar } from "@inflatable-cookie/poodle-svelte";
   import {
     Button,
     BulkActionBar,
     AlertDialog,
     Callout,
     PageHeader
-  } from "@poodle/svelte";
-  import { PageLoading } from "@poodle/svelte";
-  import { Tooltip } from "@poodle/svelte";
+  } from "@inflatable-cookie/poodle-svelte";
+  import { PageLoading } from "@inflatable-cookie/poodle-svelte";
+  import { Tooltip } from "@inflatable-cookie/poodle-svelte";
   import { gotoWithContext } from "@decodelabs/underlay/client/navigation";
   import { learningCommands } from "@cattle-grid";
   import { auth } from "$lib/stores/auth";

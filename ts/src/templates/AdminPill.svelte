@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Pill } from "@poodle/svelte";
+  import { Pill } from "@inflatable-cookie/poodle-svelte";
   import Eye from "lucide-svelte/icons/eye";
   import EyeOff from "lucide-svelte/icons/eye-off";
   import Lock from "lucide-svelte/icons/lock";

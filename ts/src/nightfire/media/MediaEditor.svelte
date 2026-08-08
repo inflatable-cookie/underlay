@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { Button, MediaThumbnail } from "@poodle/svelte";
-  import { Select, TextInput } from "@poodle/svelte";
+  import { Button, MediaThumbnail } from "@inflatable-cookie/poodle-svelte";
+  import { Select, TextInput } from "@inflatable-cookie/poodle-svelte";
   import type { MarkdownEditorContext } from "../markup/markdown-editor-context";
   import { type MediaKind } from "../../patterns/media-types/enums";
   import { useNightfireMedia, type NightfireMediaPickResult } from "./context";

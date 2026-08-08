@@ -500,7 +500,7 @@ Reusable templates:
     scan for the retired `@decodelabs/underlay/runtime/*` alias imports
 
 - Impact class: `breaking`
-- Affected consumers: any app, shared component, or guide snippet using `@poodle/svelte` or `@poodle/svelte`
+- Affected consumers: any app, shared component, or guide snippet using `@inflatable-cookie/poodle-svelte` or `@inflatable-cookie/poodle-svelte`
 - What changed:
   - Poodle public boolean props now use plain state names consistently across primitives and composites
   - examples: `disabled`, `loading`, `readOnly`, `required`, `collapsed`, `visible`, `sticky`, `sortable`, `hideable`, `current`, `expandable`

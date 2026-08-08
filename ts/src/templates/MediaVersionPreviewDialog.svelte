@@ -1,5 +1,5 @@
 <script lang="ts" generics="TVersion extends { url?: string | null }">
-  import { Dialog as PoodleDialog } from "@poodle/svelte";
+  import { Dialog as PoodleDialog } from "@inflatable-cookie/poodle-svelte";
 
   interface Props {
     open: boolean;

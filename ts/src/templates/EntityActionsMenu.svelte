@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { AlertDialog, IconButton, Menu } from "@poodle/svelte";
-  import type { ControlSize, MenuItem } from "@poodle/svelte";
+  import { AlertDialog, IconButton, Menu } from "@inflatable-cookie/poodle-svelte";
+  import type { ControlSize, MenuItem } from "@inflatable-cookie/poodle-svelte";
   import { copyToClipboard, useToasts } from "../runtime/feedback";
   import type { ToastStore } from "../runtime/feedback";
   import type { TemplateSurface } from "./template.types";

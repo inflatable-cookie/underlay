@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Button, Checkbox, Dialog, NumberInput, Select, TextInput } from "@poodle/svelte";
+  import { Button, Checkbox, Dialog, NumberInput, Select, TextInput } from "@inflatable-cookie/poodle-svelte";
   import type {
     ContextActionDefinition,
     ContextActionDialogForm,

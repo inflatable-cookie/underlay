@@ -5,9 +5,9 @@
   "objective": "Define how Underlay and Poodle coexist inside a consuming app during migration so theme ownership, component ownership, and migration behavior stay explicit.",
   "app_contract": {
     "allowed_dependency_shape": [
-      "@poodle/svelte-tokens",
-      "@poodle/svelte-primitives",
-      "@poodle/svelte-composites",
+      "@inflatable-cookie/poodle-svelte-tokens",
+      "@inflatable-cookie/poodle-svelte-primitives",
+      "@inflatable-cookie/poodle-svelte-composites",
       "@decodelabs/underlay"
     ],
     "rule": "Apps may depend on both Poodle and Underlay during migration, but new or touched foundational UI should move to Poodle instead of widening Underlay primitive usage."
@@ -37,7 +37,7 @@
   },
   "import_guardrails": {
     "allow": [
-      "Direct app imports from @poodle/svelte-primitives and @poodle/svelte-composites for primitives and generic composites.",
+      "Direct app imports from @inflatable-cookie/poodle-svelte-primitives and @inflatable-cookie/poodle-svelte-composites for primitives and generic composites.",
       "Direct app imports from retained Underlay surfaces that are explicitly classified keep_in_underlay."
     ],
     "forbid": [

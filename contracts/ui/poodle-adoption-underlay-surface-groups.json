@@ -590,7 +590,7 @@
   "replace_with_poodle_direct": {
     "same_name_primitive_replacements": [
       {
-        "successor_package": "@poodle/svelte-primitives",
+        "successor_package": "@inflatable-cookie/poodle-svelte-primitives",
         "exports": [
           "Breadcrumbs",
           "Button",
@@ -612,7 +612,7 @@
     ],
     "same_name_composite_replacements": [
       {
-        "successor_package": "@poodle/svelte-composites",
+        "successor_package": "@inflatable-cookie/poodle-svelte-composites",
         "exports": [
           "DataTable",
           "ReorderableList"
@@ -623,28 +623,28 @@
       {
         "export": "DateInput",
         "entrypoint": "@decodelabs/underlay/components",
-        "successor_package": "@poodle/svelte-primitives",
+        "successor_package": "@inflatable-cookie/poodle-svelte-primitives",
         "successor_export": "DatePicker",
         "notes": "Retired in g01.045. Use Poodle `FilterToolbar` directly for filter layout and collapse behavior; Underlay no longer needs a second filter-shell wrapper."
       },
       {
         "export": "DateTimeInput",
         "entrypoint": "@decodelabs/underlay/components",
-        "successor_package": "@poodle/svelte-primitives",
+        "successor_package": "@inflatable-cookie/poodle-svelte-primitives",
         "successor_export": "DateTimePicker",
         "notes": "Poodle replacement exists but migration will need import and API translation."
       },
       {
         "export": "NumberInput",
         "entrypoint": "@decodelabs/underlay/components",
-        "successor_package": "@poodle/svelte-primitives",
+        "successor_package": "@inflatable-cookie/poodle-svelte-primitives",
         "successor_export": "NumberInput",
         "notes": "Poodle replacement exists but migration will need import and API translation."
       },
       {
         "export": "FilterBar",
         "entrypoint": "@decodelabs/underlay/patterns",
-        "successor_package": "@poodle/svelte-composites",
+        "successor_package": "@inflatable-cookie/poodle-svelte-composites",
         "successor_export": "FilterToolbar",
         "notes": "Retired in g01.045. Use Poodle `FilterToolbar` directly for filter layout and collapse behavior; Underlay no longer needs a second filter-shell wrapper."
       }
@@ -798,182 +798,182 @@
       {
         "export": "Badge",
         "entrypoint": "@decodelabs/underlay/components",
-        "successor_package": "@poodle/svelte-primitives",
+        "successor_package": "@inflatable-cookie/poodle-svelte-primitives",
         "successor_export": "Pill",
         "notes": "Use `Pill` with the badge-style appearance. No new Poodle component is required."
       },
       {
         "export": "TextButton",
         "entrypoint": "@decodelabs/underlay/components",
-        "successor_package": "@poodle/svelte-primitives",
+        "successor_package": "@inflatable-cookie/poodle-svelte-primitives",
         "successor_export": "Button",
         "notes": "Use the standard Poodle `Button` with `variant=\"ghost\"`. No separate text-button contract is needed."
       },
       {
         "export": "SaveSplitButton",
         "entrypoint": "@decodelabs/underlay/components",
-        "successor_package": "@poodle/svelte-primitives",
+        "successor_package": "@inflatable-cookie/poodle-svelte-primitives",
         "successor_export": "SplitButton",
         "notes": "Remove the Underlay surface entirely. Treat save semantics as caller-owned labels, hidden intent fields, and actions over standard Poodle `Button` and `SplitButton` primitives."
       },
       {
         "export": "CheckboxChip",
         "entrypoint": "@decodelabs/underlay/components",
-        "successor_package": "@poodle/svelte-primitives",
+        "successor_package": "@inflatable-cookie/poodle-svelte-primitives",
         "successor_export": "Checkbox",
         "notes": "Retired in g01.045. No live callers remained; use direct checkbox composition if this interaction resurfaces."
       },
       {
         "export": "FieldSetGrid",
         "entrypoint": "@decodelabs/underlay/components",
-        "successor_package": "@poodle/svelte-composites",
+        "successor_package": "@inflatable-cookie/poodle-svelte-composites",
         "successor_export": "FormLayout",
         "notes": "Use Poodle `FormLayout` as the default field layout surface, with `FieldSet` only for semantic grouping. Raw `Grid` is reserved for genuinely custom, non-form arrangements."
       },
       {
         "export": "DetailsCard",
         "entrypoint": "@decodelabs/underlay/components",
-        "successor_package": "@poodle/svelte-primitives",
+        "successor_package": "@inflatable-cookie/poodle-svelte-primitives",
         "successor_export": "Card",
         "notes": "Treat as card-plus-layout composition over existing Poodle surfaces."
       },
       {
         "export": "DetailItem",
         "entrypoint": "@decodelabs/underlay/components",
-        "successor_package": "@poodle/svelte-primitives",
+        "successor_package": "@inflatable-cookie/poodle-svelte-primitives",
         "successor_export": "DetailRow",
         "notes": "Use the existing detail-row contract or simple composition instead of adding a second detail item surface."
       },
       {
         "export": "DetailsSection",
         "entrypoint": "@decodelabs/underlay/components",
-        "successor_package": "@poodle/svelte-composites",
+        "successor_package": "@inflatable-cookie/poodle-svelte-composites",
         "successor_export": "DetailSection",
         "notes": "Use the existing detail-section contract with composition for the internal layout rather than minting a second section type."
       },
       {
         "export": "DetailList",
         "entrypoint": "@decodelabs/underlay/components",
-        "successor_package": "@poodle/svelte-primitives",
+        "successor_package": "@inflatable-cookie/poodle-svelte-primitives",
         "successor_export": "DetailRow",
         "notes": "Use layout primitives plus repeated detail rows instead of a dedicated detail-list contract."
       },
       {
         "export": "DetailItem",
         "entrypoint": "@decodelabs/underlay/components",
-        "successor_package": "@poodle/svelte-primitives",
+        "successor_package": "@inflatable-cookie/poodle-svelte-primitives",
         "successor_export": "DetailRow",
         "notes": "The existing detail-row surface appears sufficient for the generic label-value use case."
       },
       {
         "export": "InlineListCard",
         "entrypoint": "@decodelabs/underlay/components",
-        "successor_package": "@poodle/svelte-primitives",
+        "successor_package": "@inflatable-cookie/poodle-svelte-primitives",
         "successor_export": null,
         "notes": "Under active reassessment in g01.046. The first broad Dairy family already collapsed onto direct Poodle `Card` composition with local rows (`AliasInlineList`, `NoticesInlineList`, `PreSeenReleasesInlineList`, `VariantsInlineList`, `BundleModulesInlineList`, `MediaUsageTab`, `MediaVersionsList`). The remaining tail is now narrow: reorder hybrids and the relation-driven `QuestionOutcomesInlineList` surface."
       },
       {
         "export": "InlineListItem",
         "entrypoint": "@decodelabs/underlay/components",
-        "successor_package": "@poodle/svelte-primitives",
+        "successor_package": "@inflatable-cookie/poodle-svelte-primitives",
         "successor_export": null,
         "notes": "Under active reassessment in g01.046. The simpler row family no longer needs the old shared wrapper contract and now uses caller-owned rows over direct Poodle `Card` shells. The unresolved tail is limited to reorder-aware inline rows and the relation-driven `QuestionOutcomesInlineList` case, which will determine whether any smaller row/item capability belongs in Poodle."
       },
       {
         "export": "InlineActionGroup",
         "entrypoint": "@decodelabs/underlay/components",
-        "successor_package": "@poodle/svelte-primitives",
+        "successor_package": "@inflatable-cookie/poodle-svelte-primitives",
         "successor_export": "Toolbar",
         "notes": "Use existing inline layout or toolbar-style composition rather than adding a dedicated action-group contract."
       },
       {
         "export": "ConfirmAction",
         "entrypoint": "@decodelabs/underlay/components",
-        "successor_package": "@poodle/svelte-primitives",
+        "successor_package": "@inflatable-cookie/poodle-svelte-primitives",
         "successor_export": "AlertDialog",
         "notes": "Compose the destructive trigger button and `AlertDialog` at the caller instead of routing through a dedicated Underlay wrapper."
       },
       {
         "export": "BatchConfirmDialog",
         "entrypoint": "@decodelabs/underlay/components",
-        "successor_package": "@poodle/svelte-primitives",
+        "successor_package": "@inflatable-cookie/poodle-svelte-primitives",
         "successor_export": "AlertDialog",
         "notes": "Treat batch confirmation as a caller-owned `AlertDialog` configuration, not a separate Poodle component."
       },
       {
         "export": "Dialog",
         "entrypoint": "@decodelabs/underlay/components",
-        "successor_package": "@poodle/svelte-primitives",
+        "successor_package": "@inflatable-cookie/poodle-svelte-primitives",
         "successor_export": "Dialog",
         "notes": "Direct replacement. Poodle `Dialog` now carries the generic surface-class and close-button affordances that were previously keeping the Underlay wrapper alive."
       },
       {
         "export": "AlertDialog",
         "entrypoint": "@decodelabs/underlay/components",
-        "successor_package": "@poodle/svelte-primitives",
+        "successor_package": "@inflatable-cookie/poodle-svelte-primitives",
         "successor_export": "AlertDialog",
         "notes": "Direct replacement. Poodle `AlertDialog` now supports async `onConfirm` workflows and controlled close behavior, so the Underlay wrapper no longer owns unique generic behavior."
       },
       {
         "export": "ActionArea",
         "entrypoint": "@decodelabs/underlay/components",
-        "successor_package": "@poodle/svelte-primitives",
+        "successor_package": "@inflatable-cookie/poodle-svelte-primitives",
         "successor_export": "Toolbar",
         "notes": "Use `Toolbar`, `Stack`, and `Spacer` composition for aligned action rows instead of retaining a separate Underlay wrapper."
       },
       {
         "export": "ContainerGrid",
         "entrypoint": "@decodelabs/underlay/components",
-        "successor_package": "@poodle/svelte-primitives",
+        "successor_package": "@inflatable-cookie/poodle-svelte-primitives",
         "successor_export": "Grid",
         "notes": "Use Poodle grid layout primitives directly for two-column responsive container layouts."
       },
       {
         "export": "ListGrid",
         "entrypoint": "@decodelabs/underlay/components",
-        "successor_package": "@poodle/svelte-primitives",
+        "successor_package": "@inflatable-cookie/poodle-svelte-primitives",
         "successor_export": "Grid",
         "notes": "Retired in g01.045. Use Poodle `Grid` with card/list composition rather than retaining a second list-grid implementation."
       },
       {
         "export": "CardActions",
         "entrypoint": "@decodelabs/underlay/patterns",
-        "successor_package": "@poodle/svelte-primitives",
+        "successor_package": "@inflatable-cookie/poodle-svelte-primitives",
         "successor_export": "Toolbar",
         "notes": "Use Poodle action-row composition instead of a dedicated Underlay card-actions wrapper."
       },
       {
         "export": "OpsCard",
         "entrypoint": "@decodelabs/underlay/patterns",
-        "successor_package": "@poodle/svelte-primitives",
+        "successor_package": "@inflatable-cookie/poodle-svelte-primitives",
         "successor_export": "Card",
         "notes": "Use Poodle card treatment directly for operational summary cards instead of preserving a separate Underlay card primitive."
       },
       {
         "export": "OpsCardGrid",
         "entrypoint": "@decodelabs/underlay/patterns",
-        "successor_package": "@poodle/svelte-primitives",
+        "successor_package": "@inflatable-cookie/poodle-svelte-primitives",
         "successor_export": "Grid",
         "notes": "Use Poodle grid layout primitives for operations-card layout instead of keeping a second grid wrapper."
       },
       {
         "export": "SubmitButton",
         "entrypoint": "@decodelabs/underlay/patterns",
-        "successor_package": "@poodle/svelte-primitives",
+        "successor_package": "@inflatable-cookie/poodle-svelte-primitives",
         "successor_export": "Button",
         "notes": "Retired. Use Poodle `Button` with `type=\"submit\"`, `loading`, and caller-owned label logic instead of a named Underlay wrapper."
       },
       {
         "export": "DiagnosticsToolbar",
         "entrypoint": "@decodelabs/underlay/components",
-        "successor_package": "@poodle/svelte-primitives",
+        "successor_package": "@inflatable-cookie/poodle-svelte-primitives",
         "successor_export": "Toolbar",
         "notes": "Retired. Express the pattern through local `Toolbar`, `Card` or `Surface` composition instead of preserving a dedicated diagnostics wrapper."
       },
       {
         "export": "PaginatedList",
         "entrypoint": "@decodelabs/underlay/components",
-        "successor_package": "@poodle/svelte-composites",
+        "successor_package": "@inflatable-cookie/poodle-svelte-composites",
         "successor_export": "ListContainer",
         "notes": "Retired. Fold paginated list experiences into Poodle `ListContainer` plus caller-owned pagination controllers instead of preserving a separate Underlay list shell."
       }
@@ -983,21 +983,21 @@
       {
         "export": "FieldHint",
         "entrypoint": "@decodelabs/underlay/components",
-        "successor_package": "@poodle/svelte-primitives",
+        "successor_package": "@inflatable-cookie/poodle-svelte-primitives",
         "successor_export": "Field",
         "notes": "Folded into Poodle Field as the `hint` prop. Progressive-disclosure help text shown via tooltip on the info icon next to the label."
       },
       {
         "export": "FormError",
         "entrypoint": "@decodelabs/underlay/components",
-        "successor_package": "@poodle/svelte-primitives",
+        "successor_package": "@inflatable-cookie/poodle-svelte-primitives",
         "successor_export": "Callout",
         "notes": "Form-level error display maps to Callout with tone=\"danger\" or FormLayout's error prop. No new Poodle surface needed."
       },
       {
         "export": "FieldSet",
         "entrypoint": "@decodelabs/underlay/components",
-        "successor_package": "@poodle/svelte-primitives",
+        "successor_package": "@inflatable-cookie/poodle-svelte-primitives",
         "successor_export": "FieldSet",
         "notes": "Direct replacement. Poodle FieldSet provides semantic <fieldset> + <legend> with grid layout. Props: legend, columns, gap, span."
       }

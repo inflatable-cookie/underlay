@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
-  import { DetailItem, DetailSection } from "@poodle/svelte";
+  import { DetailItem, DetailSection } from "@inflatable-cookie/poodle-svelte";
   import { default as EntityDetailModule } from "./EntityDetailModule.svelte";
   import type { DetailItemConfig } from "./template.types";
 

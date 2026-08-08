@@ -51,7 +51,7 @@ successor is a smaller generic Poodle surface.
   - `DetailMetaId`
   - `DetailMetaStatus`
   - `DetailMetaSeparator`
-- use `MetaBar` and `MetaItem` from `@poodle/svelte-primitives`
+- use `MetaBar` and `MetaItem` from `@inflatable-cookie/poodle-svelte-primitives`
 - compose copyable IDs with `Code inline source={...} showCopyButton`
 - compose state and classification badges directly with `Pill`
 

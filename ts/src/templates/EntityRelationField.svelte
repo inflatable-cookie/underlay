@@ -1,5 +1,5 @@
 <script lang="ts" generics="TItem, TSelectable extends SelectableRelation">
-  import { Field as PoodleField } from "@poodle/svelte";
+  import { Field as PoodleField } from "@inflatable-cookie/poodle-svelte";
   import { RelationSelector } from "../patterns";
   import { createLocalSearchFns } from "../patterns/local-search";
   import type {

@@ -17,8 +17,8 @@
     type TableColumn,
     type TableRow,
     type TableRowAction
-  } from "@poodle/svelte";
-  import type { PillTone } from "@poodle/svelte";
+  } from "@inflatable-cookie/poodle-svelte";
+  import type { PillTone } from "@inflatable-cookie/poodle-svelte";
 
   interface Props {
     title?: string;

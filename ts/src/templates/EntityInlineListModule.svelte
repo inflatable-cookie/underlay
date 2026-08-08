@@ -6,7 +6,7 @@
     ListGrid,
     PageLoading,
     Pagination
-  } from "@poodle/svelte";
+  } from "@inflatable-cookie/poodle-svelte";
 
   import { DEFAULT_PAGE_SIZE } from "../patterns/pagination-types";
   import { useAuthenticatedData } from "../runtime/auth";

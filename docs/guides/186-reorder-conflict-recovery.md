@@ -50,7 +50,7 @@ Use Poodle `EditableList` with an app-owned submit wrapper:
 
 ```svelte
 <script lang="ts">
-  import { EditableList } from "@poodle/svelte";
+  import { EditableList } from "@inflatable-cookie/poodle-svelte";
 
   let submitError = $state<string | null>(null);
 

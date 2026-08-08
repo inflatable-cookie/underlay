@@ -14,7 +14,7 @@
     DetailSection,
     DetailSectionGroup,
     formatDisplayDateTime
-  } from "@poodle/svelte";
+  } from "@inflatable-cookie/poodle-svelte";
 
   interface Props {
     id: string;

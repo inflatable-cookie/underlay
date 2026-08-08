@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { IconButton } from "@poodle/svelte";
-  import type { ControlSize, SemanticControlSizeRole } from "@poodle/svelte";
+  import { IconButton } from "@inflatable-cookie/poodle-svelte";
+  import type { ControlSize, SemanticControlSizeRole } from "@inflatable-cookie/poodle-svelte";
 
   interface Props {
     active: boolean;

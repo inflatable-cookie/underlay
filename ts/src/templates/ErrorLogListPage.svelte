@@ -7,7 +7,7 @@
     type TableColumn,
     type TableRow,
     type TableCellValue
-  } from "@poodle/svelte";
+  } from "@inflatable-cookie/poodle-svelte";
 
   import { getAuthConfig } from "../patterns/auth";
   import { useAuthenticatedData } from "../runtime/auth";

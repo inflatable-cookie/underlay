@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Button, Field, TextInput } from "@poodle/svelte";
+  import { Button, Field, TextInput } from "@inflatable-cookie/poodle-svelte";
   import SpaFormShell from "../../src/patterns/SpaFormShell.svelte";
 
   let titleValue = $state("Release checklist");

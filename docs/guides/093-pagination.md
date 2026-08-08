@@ -89,7 +89,7 @@ Underlay provides a complete pagination solution that scales from small client-s
 | TypeScript | `createPaginationController` | `@decodelabs/underlay/runtime/data` | Server-side controller |
 | TypeScript | `createClientPagination` | `@decodelabs/underlay/runtime/data` | Client-side controller |
 | TypeScript | `PageListParams` | `@decodelabs/underlay/client/page-lists` | Page-shaped `page + limit` helper |
-| Svelte | `<Pagination>` | `@poodle/svelte` | UI component |
+| Svelte | `<Pagination>` | `@inflatable-cookie/poodle-svelte` | UI component |
 
 ## API Design
 
@@ -588,7 +588,7 @@ interface ServerPaginationOptions<T> {
     createPaginationController,
     type PaginationParams
   } from "@decodelabs/underlay/runtime/data";
-  import { Pagination } from "@poodle/svelte";
+  import { Pagination } from "@inflatable-cookie/poodle-svelte";
   import { getBundleActivitiesPaginated } from "@cattle-grid";
   import { authLoading, currentUser } from "$lib/stores/auth";
 
@@ -649,7 +649,7 @@ interface ClientPaginationOptions {
 ```svelte
 <script lang="ts">
   import { createClientPagination } from "@decodelabs/underlay/runtime/data";
-  import { Pagination } from "@poodle/svelte";
+  import { Pagination } from "@inflatable-cookie/poodle-svelte";
 
   interface Props {
     activities: Activity[];
@@ -713,7 +713,7 @@ interface ClientPaginationOptions {
 
 ```svelte
 <script>
-  import { Pagination } from "@poodle/svelte";
+  import { Pagination } from "@inflatable-cookie/poodle-svelte";
 </script>
 ```
 
@@ -847,13 +847,13 @@ is feeding `EntityListPage` or another page-shaped admin list, prefer the
     createClientPagination,
     PageHeader
   } from "@decodelabs/underlay/runtime/data";
-  import { FilterToolbar } from "@poodle/svelte";
+  import { FilterToolbar } from "@inflatable-cookie/poodle-svelte";
   import {
     Field,
     Pagination,
     Select,
     TextInput
-  } from "@poodle/svelte";
+  } from "@inflatable-cookie/poodle-svelte";
   import { page } from "$app/stores";
   import { authLoading, currentUser } from "$lib/stores/auth";
   import { getItemsPaginated } from "@cattle-grid";

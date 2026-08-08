@@ -34,7 +34,7 @@ When navigating to an edit page, use `gotoWithContext()` to record where the use
 ```svelte
 <script lang="ts">
   import { gotoWithContext } from "@decodelabs/underlay/client/navigation";
-  import { Menu } from "@poodle/svelte";
+  import { Menu } from "@inflatable-cookie/poodle-svelte";
 
   export let data;
 </script>
@@ -63,7 +63,7 @@ In the edit or create page, use `consumeNavigationContext()` to **pop** the cont
 ```svelte
 <script lang="ts">
   import { consumeNavigationContext } from "@decodelabs/underlay/runtime/navigation";
-  import { PageHeader } from "@poodle/svelte";
+  import { PageHeader } from "@inflatable-cookie/poodle-svelte";
 
   export let data;
 
@@ -692,9 +692,9 @@ Here's a complete example of a Module detail page with tabbed content that prese
 <!-- /learning/modules/[moduleId]/+page.svelte -->
 <script lang="ts">
   import { onMount } from "svelte";
-  import { PageHeader } from "@poodle/svelte";
+  import { PageHeader } from "@inflatable-cookie/poodle-svelte";
   import LocalActionsMenu from "$lib/components/LocalActionsMenu.svelte";
-  import { Tabs, type TabItem } from "@poodle/svelte";
+  import { Tabs, type TabItem } from "@inflatable-cookie/poodle-svelte";
   import { gotoWithContext, initPageState } from "@decodelabs/underlay/client/navigation";
 
   let { data } = $props();
@@ -856,8 +856,8 @@ const restored = initPageState({
 <!-- /content/videos/+page.svelte -->
 <script lang="ts">
   import type { PageData } from "./$types";
-  import { PageHeader } from "@poodle/svelte";
-  import { Grid } from "@poodle/svelte";
+  import { PageHeader } from "@inflatable-cookie/poodle-svelte";
+  import { Grid } from "@inflatable-cookie/poodle-svelte";
   import { VideoListCard } from "$lib/cards";
 
   export let data: PageData;
@@ -878,7 +878,7 @@ const restored = initPageState({
 <!-- $lib/cards/VideoListCard.svelte -->
 <script lang="ts">
   import LocalActionsMenu from "$lib/components/LocalActionsMenu.svelte";
-  import { ListCard } from "@poodle/svelte";
+  import { ListCard } from "@inflatable-cookie/poodle-svelte";
   import { gotoWithContext } from "@decodelabs/underlay/client/navigation";
   import Video from "lucide-svelte/icons/video";
 
@@ -927,7 +927,7 @@ const restored = initPageState({
 <!-- /content/videos/[videoId]/+page.svelte -->
 <script lang="ts">
   import type { PageData } from "./$types";
-  import { PageHeader } from "@poodle/svelte";
+  import { PageHeader } from "@inflatable-cookie/poodle-svelte";
   import LocalActionsMenu from "$lib/components/LocalActionsMenu.svelte";
   import { gotoWithContext } from "@decodelabs/underlay/client/navigation";
 
@@ -998,8 +998,8 @@ const restored = initPageState({
 ```svelte
 <!-- $lib/forms/VideoForm.svelte -->
 <script lang="ts">
-  import { Field, TextInput, FormActions } from "@poodle/svelte";
-  import { Button, SplitButton } from "@poodle/svelte";
+  import { Field, TextInput, FormActions } from "@inflatable-cookie/poodle-svelte";
+  import { Button, SplitButton } from "@inflatable-cookie/poodle-svelte";
   import { navigateOnCancel } from "@decodelabs/underlay/client/navigation";
 
   interface Props {
@@ -1255,8 +1255,8 @@ For pages where the form is defined inline (not in a separate component), includ
   import { getBackButtonInfo, getReturnUrl } from "@decodelabs/underlay/runtime/navigation";
   import { navigateOnCancel } from "@decodelabs/underlay/client/navigation";
   import CrudFormShell from "$lib/forms/CrudFormShell.svelte";
-  import { Field, TextInput, FormActions } from "@poodle/svelte";
-  import { Button, SplitButton } from "@poodle/svelte";
+  import { Field, TextInput, FormActions } from "@inflatable-cookie/poodle-svelte";
+  import { Button, SplitButton } from "@inflatable-cookie/poodle-svelte";
 
   export let form: ActionData | null = null;
 

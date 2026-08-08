@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Button, Callout, Progress } from "@poodle/svelte";
+  import { Button, Callout, Progress } from "@inflatable-cookie/poodle-svelte";
   import type { MediaUploadDisplayStep } from "../patterns/media-workflow";
 
   interface Props {

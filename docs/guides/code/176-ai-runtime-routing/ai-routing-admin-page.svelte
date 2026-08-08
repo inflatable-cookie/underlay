@@ -9,7 +9,7 @@ import {
   authLoading,
   currentUser } from "$lib/stores/auth";
   import { platformCommands } from "@your-org/client";
-  import { PageHeader } from "@poodle/svelte";
+  import { PageHeader } from "@inflatable-cookie/poodle-svelte";
   // @ts-nocheck
     import AiRoutingOpsPanel from "./AiRoutingOpsPanel.svelte";
 

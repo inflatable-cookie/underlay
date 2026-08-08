@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
-  import { Callout, PageHeader, PageLoading } from "@poodle/svelte";
+  import { Callout, PageHeader, PageLoading } from "@inflatable-cookie/poodle-svelte";
   import { getBackButtonInfo } from "../patterns/navigation";
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -10,7 +10,7 @@
     Callout,
     PageHeader,
     PageLoading
-  } from "@poodle/svelte";
+  } from "@inflatable-cookie/poodle-svelte";
   import type {
     SpaFormResult,
     SpaSubmitHandler,

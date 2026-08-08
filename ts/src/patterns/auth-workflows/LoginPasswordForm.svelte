@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Button, Callout, Field, FormActions, TextInput } from "@poodle/svelte";
+  import { Button, Callout, Field, FormActions, TextInput } from "@inflatable-cookie/poodle-svelte";
 
   interface Props {
     email?: string;

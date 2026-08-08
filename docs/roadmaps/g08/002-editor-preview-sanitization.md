@@ -16,7 +16,7 @@ path is the gap.
 
 ## Evidence
 
-- `node_modules/@poodle/svelte/src/MarkdownEditor.svelte:147-149,232`
+- `node_modules/@inflatable-cookie/poodle-svelte/src/MarkdownEditor.svelte:147-149,232`
   (first-party `file:../poodle` dep)
 - wrapper `ts/src/nightfire/markup/MarkdownEditorSurface.svelte:71-90`
 - safe comparison path `MarkdownRenderer.svelte:17-24`

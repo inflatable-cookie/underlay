@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { AlertDialog, Icon, MediaThumbnail, TimeAgo, formatFileSize } from "@poodle/svelte";
+  import { AlertDialog, Icon, MediaThumbnail, TimeAgo, formatFileSize } from "@inflatable-cookie/poodle-svelte";
   import { gotoWithContext } from "../client/navigation";
   import {
     getMediaKindAccent,

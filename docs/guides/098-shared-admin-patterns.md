@@ -29,11 +29,11 @@ Underlay no longer exports a public `AiRoutingAdmin` shell.
 
 | Pattern | Location | Purpose |
 |---------|----------|---------|
-| EmptyState | `@poodle/svelte` | Rich empty state with message, optional actions, and optional custom visual slot |
+| EmptyState | `@inflatable-cookie/poodle-svelte` | Rich empty state with message, optional actions, and optional custom visual slot |
 | Local actions menu + AlertDialog | app-local wrapper or direct Poodle `Menu` + Poodle `AlertDialog` | Copy-to-clipboard actions with caller-owned destructive confirmation |
 | Poodle `PageHeader` + `Tabs` + `MetaBar` | direct composition | Standard entity detail page framing without a shared shell wrapper |
 | `SpaFormShell` | `@decodelabs/underlay/patterns` | Retained SPA create/edit workflow shell with submit/result/navigation orchestration |
-| EditableLabel | `@poodle/svelte` | Click-to-edit text field |
+| EditableLabel | `@inflatable-cookie/poodle-svelte` | Click-to-edit text field |
 | KeyboardShortcuts | `patterns/keyboard-shortcuts.svelte.ts` | Centralized shortcut registration |
 
 ## Ownership Boundary
@@ -53,7 +53,7 @@ Use Poodle `EmptyState` directly for page-level and inline empty views.
 
 ```svelte
 <script lang="ts">
-  import { EmptyState } from "@poodle/svelte";
+  import { EmptyState } from "@inflatable-cookie/poodle-svelte";
   import InboxIcon from "lucide-svelte/icons/inbox";
 </script>
 
@@ -88,7 +88,7 @@ Use Poodle `EmptyState` directly for page-level and inline empty views.
   import { copyToClipboard } from "@decodelabs/underlay/runtime/feedback";
   import { useToasts } from "@decodelabs/underlay/runtime/feedback";
   import { gotoWithContext } from "@decodelabs/underlay/client/navigation";
-  import { AlertDialog, Menu } from "@poodle/svelte";
+  import { AlertDialog, Menu } from "@inflatable-cookie/poodle-svelte";
 
   const toastStore = useToasts();
   let showDeleteConfirm = $state(false);
@@ -168,8 +168,8 @@ The stable boundary is now direct composition:
 
 ```svelte
 <script lang="ts">
-  import { PageHeader } from "@poodle/svelte";
-  import { Breadcrumbs, Code, MetaBar, MetaItem, Pill, Tabs } from "@poodle/svelte";
+  import { PageHeader } from "@inflatable-cookie/poodle-svelte";
+  import { Breadcrumbs, Code, MetaBar, MetaItem, Pill, Tabs } from "@inflatable-cookie/poodle-svelte";
 </script>
 
 <section class="detail-page">
@@ -274,7 +274,7 @@ Click-to-edit field that displays as text and becomes an input on activation.
 
 ```svelte
 <script lang="ts">
-  import { EditableLabel } from "@poodle/svelte";
+  import { EditableLabel } from "@inflatable-cookie/poodle-svelte";
 </script>
 
 <EditableLabel

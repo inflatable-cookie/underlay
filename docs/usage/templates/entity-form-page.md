@@ -25,7 +25,7 @@ etc.) directly for the form itself.
 <script>
   import { EntityFormPage } from "@decodelabs/underlay/templates";
   import type { SpaFormResult } from "@decodelabs/underlay/patterns";
-  import { Field, TextInput, Select, Button } from "@poodle/svelte";
+  import { Field, TextInput, Select, Button } from "@inflatable-cookie/poodle-svelte";
   import { ProjectCategorySelector } from "$lib/forms";
 
   let { data } = $props();

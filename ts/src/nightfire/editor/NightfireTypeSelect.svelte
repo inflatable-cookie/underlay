@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { Select } from "@poodle/svelte";
-  import type { SelectItems, SelectOptionGroup } from "@poodle/svelte/types";
+  import { Select } from "@inflatable-cookie/poodle-svelte";
+  import type { SelectItems, SelectOptionGroup } from "@inflatable-cookie/poodle-svelte/types";
   import type { GroupedOptions, NightfireBlockOptionInput } from "./grouped-options";
 
   type TypeOption = Pick<NightfireBlockOptionInput, "type" | "label">;

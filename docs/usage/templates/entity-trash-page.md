@@ -77,7 +77,7 @@ the wrapper and pass them through `beforeItems` instead of falling back to
 ```svelte
 <script lang="ts">
   import { EntityTrashPage } from "@decodelabs/underlay/templates";
-  import { FilterToolbar, OrderBy, TextInput } from "@poodle/svelte";
+  import { FilterToolbar, OrderBy, TextInput } from "@inflatable-cookie/poodle-svelte";
 </script>
 
 {#snippet trashControls()}

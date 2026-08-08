@@ -9,12 +9,12 @@ The Underlay library at `.` has 8 new shared admin patterns (roadmap 021). Full 
 
 Read both files thoroughly before starting. The patterns are:
 
-1. **EmptyState** (`@poodle/svelte`) — Rich empty state replacing plain `<p>` text
-2. **CopyActionsMenu + AlertDialog** (`@decodelabs/underlay/patterns`, `@poodle/svelte`) — Dropdown with copy actions plus caller-owned destructive confirmation
-3. **Poodle Drawer** (`@poodle/svelte`) — Slide-out side panel
+1. **EmptyState** (`@inflatable-cookie/poodle-svelte`) — Rich empty state replacing plain `<p>` text
+2. **CopyActionsMenu + AlertDialog** (`@decodelabs/underlay/patterns`, `@inflatable-cookie/poodle-svelte`) — Dropdown with copy actions plus caller-owned destructive confirmation
+3. **Poodle Drawer** (`@inflatable-cookie/poodle-svelte`) — Slide-out side panel
 4. **DetailPageShell** (`@decodelabs/underlay/patterns`) — Composable entity detail page with tabs
 5. **AutonomousList** (`@decodelabs/underlay/patterns`) — Self-contained list with filters, batch, reorder
-6. **EditableLabel** (`@poodle/svelte`) — Click-to-edit text field
+6. **EditableLabel** (`@inflatable-cookie/poodle-svelte`) — Click-to-edit text field
 7. **KeyboardShortcuts** (`@decodelabs/underlay/patterns`) — Centralized shortcut registration
 8. **Error handling** (`svelte:boundary` + local recovery UI) — Render error catch with app-owned recovery UI
 

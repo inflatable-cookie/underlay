@@ -1,4 +1,4 @@
-import type { PillTone } from "@poodle/svelte";
+import type { PillTone } from "@inflatable-cookie/poodle-svelte";
 import type { QueryParams } from "../client/query";
 
 export interface UsersListUser {

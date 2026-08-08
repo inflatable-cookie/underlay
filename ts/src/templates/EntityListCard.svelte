@@ -5,7 +5,7 @@
     ListCard,
     ListCardCounter,
     Pill,
-  } from "@poodle/svelte";
+  } from "@inflatable-cookie/poodle-svelte";
   import type { EntityListCardModeDisplay, EntityListCardProps } from "./entity-list-card.types";
   import {
     UNDERLAY_ENTITY_LIST_CONTEXT_KEY,

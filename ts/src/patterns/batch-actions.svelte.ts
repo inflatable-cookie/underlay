@@ -71,7 +71,7 @@
  */
 
 import type { Component } from "svelte";
-import type { IconProp } from "@poodle/svelte";
+import type { IconProp } from "@inflatable-cookie/poodle-svelte";
 
 export type BatchActionIcon = IconProp | Component;
 

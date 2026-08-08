@@ -5,7 +5,7 @@ import type {
   TableColumn,
   TableRow,
   TableRowAction,
-} from "@poodle/svelte";
+} from "@inflatable-cookie/poodle-svelte";
 import type { QueryParams } from "../../client/query";
 import type {
   ReorderController,

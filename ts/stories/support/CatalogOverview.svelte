@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Card } from "@poodle/svelte";
+  import { Card } from "@inflatable-cookie/poodle-svelte";
 </script>
 
 <div class="catalog-overview">

@@ -3,7 +3,7 @@
   import { useToasts } from "../runtime/feedback";
   import { default as AdminPill } from "./AdminPill.svelte";
   import { default as EntityListPage } from "./EntityListPage.svelte";
-  import { TimeAgo } from "@poodle/svelte";
+  import { TimeAgo } from "@inflatable-cookie/poodle-svelte";
   import type { QueryParams } from "../client/query";
   import type {
     ListVariantDefinition,
@@ -18,7 +18,7 @@
     TableColumn,
     TableRow,
     TableRowAction
-  } from "@poodle/svelte";
+  } from "@inflatable-cookie/poodle-svelte";
 
   interface Props {
     title?: string;

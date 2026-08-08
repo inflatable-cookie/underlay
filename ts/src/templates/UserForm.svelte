@@ -8,7 +8,7 @@
     Select,
     Switch,
     TextInput
-  } from "@poodle/svelte";
+  } from "@inflatable-cookie/poodle-svelte";
   import { navigateOnCancel } from "../client/navigation";
   import { untrack } from "svelte";
   import {

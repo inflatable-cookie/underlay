@@ -20,7 +20,7 @@ the July audit plus the red unit suite and missing test gate.
 
 - `LoginGoogleTab` `onclick` -> `onClick`.
 - `check:poodle-prop-names` had a double coverage gap: it only matched
-  `@poodle/svelte-primitives|composites` imports (plain `@poodle/svelte`
+  `@inflatable-cookie/poodle-svelte-primitives|composites` imports (plain `@inflatable-cookie/poodle-svelte`
   invisible) and had no event-handler casing rule. Both fixed, plus an
   import-regex overreach that spanned statements.
 - Extended check surfaced three more dead handlers, all fixed:

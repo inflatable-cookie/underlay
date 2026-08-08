@@ -6,7 +6,7 @@
     SystemAuditLogEntry,
     SystemAuditLogListLoader
   } from "./template.types";
-  import type { LogActor, LogEntry } from "@poodle/svelte";
+  import type { LogActor, LogEntry } from "@inflatable-cookie/poodle-svelte";
   import type { LogActorHrefResolver } from "./template.types";
 
   interface Props {

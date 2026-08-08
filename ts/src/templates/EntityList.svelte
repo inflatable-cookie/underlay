@@ -32,7 +32,7 @@
     Pagination,
     PaginationSummary,
     CardToggleGroup
-  } from "@poodle/svelte";
+  } from "@inflatable-cookie/poodle-svelte";
   import type {
     TableColumn,
     TableRow,
@@ -41,7 +41,7 @@
     EditableListItem,
     LogActor,
     CardToggleItem
-  } from "@poodle/svelte";
+  } from "@inflatable-cookie/poodle-svelte";
   import type { FilterField, QueryParams, SortField } from "../client/query";
   import { DEFAULT_PAGE_SIZE } from "../patterns/pagination-types";
   import {

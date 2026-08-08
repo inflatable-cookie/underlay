@@ -460,7 +460,7 @@ bun add -D @testing-library/svelte @testing-library/jest-dom
 
 import { describe, it, expect } from "vitest";
 import { render, fireEvent } from "@testing-library/svelte";
-import { TextInput } from "@poodle/svelte";
+import { TextInput } from "@inflatable-cookie/poodle-svelte";
 
 describe("TextInput", () => {
   it("renders with placeholder text", () => {

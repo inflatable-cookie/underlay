@@ -3,7 +3,7 @@
     Button as PoodleButton,
     FormActions as PoodleFormActions,
     SplitButton as PoodleSplitButton,
-  } from "@poodle/svelte";
+  } from "@inflatable-cookie/poodle-svelte";
   import { navigateOnCancel } from "../client/navigation";
 
   type SaveIntent = "save" | "save-close";

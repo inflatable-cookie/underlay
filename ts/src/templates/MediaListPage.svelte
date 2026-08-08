@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { IconButton } from "@poodle/svelte";
+  import { IconButton } from "@inflatable-cookie/poodle-svelte";
   import type { QueryParams } from "../client/query";
   import { copyToClipboard, useToasts } from "../runtime/feedback";
   import { MediaKind, MediaVisibility } from "../runtime/media";

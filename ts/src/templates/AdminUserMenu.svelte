@@ -4,7 +4,7 @@
   import {
     AlertDialog as PoodleAlertDialog,
     Popover as PoodlePopover
-  } from "@poodle/svelte";
+  } from "@inflatable-cookie/poodle-svelte";
 
   interface Props {
     displayName?: string | null;

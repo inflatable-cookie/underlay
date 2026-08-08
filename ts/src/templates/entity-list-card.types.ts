@@ -6,7 +6,7 @@ import type {
   PillAppearance,
   PillSize,
   PillTone
-} from "@poodle/svelte";
+} from "@inflatable-cookie/poodle-svelte";
 
 export interface EntityListCardBadge {
   label: string;

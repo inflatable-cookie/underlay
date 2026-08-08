@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
-  import { Card } from "@poodle/svelte";
+  import { Card } from "@inflatable-cookie/poodle-svelte";
 
   interface Props {
     span?: "half" | "full";

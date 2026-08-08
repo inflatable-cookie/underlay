@@ -217,7 +217,7 @@ Underlay-based apps.
     EntityDetailPage,
     EntityListPage
   } from "@decodelabs/underlay/templates";
-  import { Code, Pill } from "@poodle/svelte";
+  import { Code, Pill } from "@inflatable-cookie/poodle-svelte";
 
   let { data } = $props();
 

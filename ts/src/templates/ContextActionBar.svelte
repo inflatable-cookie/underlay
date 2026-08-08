@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Button, Drawer } from "@poodle/svelte";
+  import { Button, Drawer } from "@inflatable-cookie/poodle-svelte";
   import { default as ContextActionList } from "./ContextActionList.svelte";
   import type { ContextActionDefinition } from "./contextual-action.types";
 

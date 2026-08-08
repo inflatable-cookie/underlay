@@ -23,7 +23,7 @@
     formatDisplayDateTime,
     type TableColumn,
     type TableRow
-  } from "@poodle/svelte";
+  } from "@inflatable-cookie/poodle-svelte";
 
   interface Props {
     id: string;
