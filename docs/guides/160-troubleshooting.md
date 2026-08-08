@@ -57,7 +57,7 @@ export default defineConfig({
       // Resolve underlay directly from source to avoid path issues
       // with virtual CSS modules. Uses regex to match all subpaths.
       {
-        find: /^@decodelabs\/underlay(\/.*)?$/,
+        find: /^@inflatable-cookie\/underlay(\/.*)?$/,
         replacement: `${underlayPath}$1`
       }
     ],
