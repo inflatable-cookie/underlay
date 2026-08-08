@@ -5,7 +5,7 @@
   "objective": "Define how Underlay and Poodle coexist inside a consuming app during migration so theme ownership, component ownership, and migration behavior stay explicit.",
   "app_contract": {
     "allowed_dependency_shape": [
-      "@inflatable-cookie/poodle-svelte-tokens",
+      "@inflatable-cookie/poodle-core/tokens",
       "@inflatable-cookie/poodle-svelte-primitives",
       "@inflatable-cookie/poodle-svelte-composites",
       "@inflatable-cookie/underlay"

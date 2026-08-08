@@ -346,5 +346,8 @@
     "bannedPatterns": [],
     "moduleScopeChecks": "@inflatable-cookie/underlay/tools/templates/sveltekit-ssr",
     "suppressionPrefix": "guardrails-disable"
+  },
+  "overrides": {
+    "@inflatable-cookie/poodle-core": "file:../poodle/packages/core"
   }
 }
