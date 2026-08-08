@@ -44,7 +44,7 @@ let online_users = channel.presence.list().await;
 ### Client-Side Design
 
 ```typescript
-import { createSocket } from '@decodelabs/underlay/realtime';
+import { createSocket } from '@inflatable-cookie/underlay/realtime';
 
 const socket = createSocket({ url: '/ws', token: authToken });
 

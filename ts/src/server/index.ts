@@ -7,7 +7,7 @@
  * @example
  * ```typescript
  * // In hooks.server.ts
- * import { generateNonce, createCspConfig, applyCspHeaders } from "@decodelabs/underlay/server";
+ * import { generateNonce, createCspConfig, applyCspHeaders } from "@inflatable-cookie/underlay/server";
  * ```
  */
 export * from "./csp";

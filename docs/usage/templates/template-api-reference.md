@@ -60,7 +60,7 @@ For agent-built admin resource families, start with
 
 ## Types
 
-These types are exported from `@decodelabs/underlay/templates`.
+These types are exported from `@inflatable-cookie/underlay/templates`.
 
 ### FilterConfig
 

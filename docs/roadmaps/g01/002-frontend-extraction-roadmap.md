@@ -6,7 +6,7 @@ This roadmap covers the **TypeScript + Svelte** side of the shared architecture.
 It complements `docs/roadmaps/g01/001-extraction-roadmap.md` (Rust/backend/infra).
 
 Scope includes:
-- Shared UI primitives (`@decodelabs/underlay`)
+- Shared UI primitives (`@inflatable-cookie/underlay`)
 - Acowtancy-specific UI extensions (`@acowtancy/froyo` Nightfire blocks)
 - Songsprout-specific UI extensions (`@songsprout/petal`)
 - Admin app integration patterns (Dairy → Froyo + Underlay)
@@ -23,13 +23,13 @@ Non-goals (for this doc):
 
 ### 1) Froyo (`../acowtancy/froyo`)
 - Lightweight package for **Acowtancy-specific** Nightfire blocks (render/editor/validation registrations).
-- Depends on `@decodelabs/underlay` for shared primitives and Nightfire engine.
+- Depends on `@inflatable-cookie/underlay` for shared primitives and Nightfire engine.
 - Does not aim to be a general shared UI kit.
 
 ### 2) Dairy (`../acowtancy/dairy`)
 - SvelteKit admin app.
 - Consumes Froyo for Acowtancy Nightfire blocks (registrations via `@acowtancy/froyo/editor|render|validation`).
-- Consumes Underlay primitives directly (`@decodelabs/underlay/components`, `@decodelabs/underlay/nightfire`).
+- Consumes Underlay primitives directly (`@inflatable-cookie/underlay/components`, `@inflatable-cookie/underlay/nightfire`).
 - Avoids source-level aliasing; prefers `file:` deps for local development.
 
 ### 3) Petal (`../songsprout/petal`)
@@ -164,7 +164,7 @@ Use this template for any new shared primitive in Underlay (and any adapter in F
 - Prefer semantic tokens (bg/surface/text/border) over hard-coded colors.
 
 **7) Packaging rules**
-- Export from a stable barrel (`@decodelabs/underlay` and/or `@decodelabs/underlay/components`).
+- Export from a stable barrel (`@inflatable-cookie/underlay` and/or `@inflatable-cookie/underlay/components`).
 - Avoid deep imports unless they are explicitly supported by `package.json` `exports`.
 
 **8) Test/verification**
@@ -222,12 +222,12 @@ Acceptance criteria:
 
 - [x] Acowtancy: move Acowtancy-specific Nightfire block implementations out of Underlay and into Froyo.
 - [x] Acowtancy: audit Dairy for UI-only components that are truly generic and move them into Underlay (not Froyo).
-  - [x] Extract `FilterBar` into Underlay patterns (`@decodelabs/underlay/patterns`).
+  - [x] Extract `FilterBar` into Underlay patterns (`@inflatable-cookie/underlay/patterns`).
   - [x] Extract `FormShell` into Underlay patterns (keep SvelteKit `enhance` in a Dairy wrapper).
-  - [x] Extract `FormError` into Underlay components (`@decodelabs/underlay/components`).
-  - [x] Extract confirmation dialog usage into `ConfirmAction` (`@decodelabs/underlay/components`).
-  - [x] Extract list-page header/back-link into `PageHeader` (`@decodelabs/underlay/patterns`).
-  - [x] Extract repeated “copy slug/id + actions” dropdown into `CopyActionsMenu` (`@decodelabs/underlay/patterns`).
+  - [x] Extract `FormError` into Underlay components (`@inflatable-cookie/underlay/components`).
+  - [x] Extract confirmation dialog usage into `ConfirmAction` (`@inflatable-cookie/underlay/components`).
+  - [x] Extract list-page header/back-link into `PageHeader` (`@inflatable-cookie/underlay/patterns`).
+  - [x] Extract repeated “copy slug/id + actions” dropdown into `CopyActionsMenu` (`@inflatable-cookie/underlay/patterns`).
   - [x] Add a first-class `actions` slot to `ListCard` so per-card menus can live inside the card without adding extra grid height.
   - [x] Extract small shared helpers into Underlay patterns (e.g. `copyToClipboard()`, `requestSubmitById()`).
 - [x] Songsprout: only add Petal exports when there is a concrete cross-app Songsprout extension; avoid using Petal as a general primitives kit.

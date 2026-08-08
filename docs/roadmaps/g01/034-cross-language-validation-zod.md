@@ -7,7 +7,7 @@ Depends on: 031
 
 ## Overview
 
-Add an opt-in `@decodelabs/underlay/validation` surface for reusable Zod schemas and Svelte form helpers so apps can share common client-side validation patterns without waiting for server responses.
+Add an opt-in `@inflatable-cookie/underlay/validation` surface for reusable Zod schemas and Svelte form helpers so apps can share common client-side validation patterns without waiting for server responses.
 
 ## Research Basis
 

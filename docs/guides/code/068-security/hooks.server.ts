@@ -6,14 +6,14 @@
  */
 
 import type { Handle } from "@sveltejs/kit";
-import { createLoginRedirect, isPublicPath } from "@decodelabs/underlay/client/route-protection";
-import { createCookieTokenStore } from "@decodelabs/underlay/client/sveltekit";
+import { createLoginRedirect, isPublicPath } from "@inflatable-cookie/underlay/client/route-protection";
+import { createCookieTokenStore } from "@inflatable-cookie/underlay/client/sveltekit";
 import {
   createCspConfig,
   generateNonce,
   applyCspHeaders,
   createCspResolveOptions
-} from "@decodelabs/underlay/server";
+} from "@inflatable-cookie/underlay/server";
 import { env } from "$env/dynamic/public";
 
 // =============================================================================

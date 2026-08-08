@@ -320,7 +320,7 @@ path
 ## When This Skill Does Not Apply
 
 - **Pure Poodle UI work:** Use the Poodle docs/guides, not Underlay templates
-- **Non-Underlay projects:** This skill assumes `@decodelabs/underlay` is a
+- **Non-Underlay projects:** This skill assumes `@inflatable-cookie/underlay` is a
 dependency
 - **Internal Underlay development:** Use `underlay/docs/contracts/` and
 `underlay/docs/roadmaps/` directly; this skill is for consumer apps

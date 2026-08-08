@@ -24,7 +24,7 @@ The route still owns:
 
 ```svelte
 <script lang="ts">
-  import { MediaUploadPage } from "@decodelabs/underlay/templates";
+  import { MediaUploadPage } from "@inflatable-cookie/underlay/templates";
 
   let replaceMediaId = $state<string | null>(null);
   let error = $state<string | null>(null);

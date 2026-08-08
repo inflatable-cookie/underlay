@@ -143,7 +143,7 @@ cat > .guardrailsrc.json <<EOF
       "message": "Use toast component instead of window.alert"
     }
   ],
-  "moduleScopeChecks": "@decodelabs/underlay/tools/templates/sveltekit-ssr"
+  "moduleScopeChecks": "@inflatable-cookie/underlay/tools/templates/sveltekit-ssr"
 }
 EOF
 
@@ -243,7 +243,7 @@ cd ../acowtancy/cattle-grid
 
 # 1. Update imports
 # Find: import { HttpClient } from './utils/http-client'
-# Replace: import { createHttpClient } from '@decodelabs/underlay/client'
+# Replace: import { createHttpClient } from '@inflatable-cookie/underlay/client'
 
 # 2. Configure client with retry/timeout
 const client = createHttpClient({

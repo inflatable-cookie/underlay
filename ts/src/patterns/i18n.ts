@@ -6,7 +6,7 @@
  *
  * @example
  * ```typescript
- * import { format } from '@decodelabs/underlay/utils/i18n';
+ * import { format } from '@inflatable-cookie/underlay/utils/i18n';
  *
  * format.date(new Date(), 'short');      // "12 Jan 2026"
  * format.relative(yesterday);            // "yesterday"
@@ -119,7 +119,7 @@ export function formatDateTime(
  *
  * @example
  * ```typescript
- * import { format } from '@decodelabs/underlay/utils/i18n';
+ * import { format } from '@inflatable-cookie/underlay/utils/i18n';
  *
  * format.date(new Date(), 'short');
  * format.relative(yesterday);

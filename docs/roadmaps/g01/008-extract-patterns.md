@@ -157,7 +157,7 @@ SvelteKit auth hooks were ALREADY IMPLEMENTED in Underlay before Phase 8 was cre
 ### Example Usage (from existing code)
 
 ```typescript
-import { createAuthHandle } from '@decodelabs/underlay/client';
+import { createAuthHandle } from '@inflatable-cookie/underlay/client';
 
 export const handle = createAuthHandle({
   baseUrl: 'https://api.example.com',
@@ -406,7 +406,7 @@ Extracted Dairy's guardrails system to Underlay as a reusable CLI tool for enfor
 
 **Configuration**:
 - `.guardrailsrc.json` or `package.json` "guardrails" field
-- Template references: `"@decodelabs/underlay/tools/templates/sveltekit-ssr"`
+- Template references: `"@inflatable-cookie/underlay/tools/templates/sveltekit-ssr"`
 - Inline rule definitions
 
 ### Acceptance Criteria
@@ -440,7 +440,7 @@ bun ../underlay/ts/src/tools/guardrails.ts
       "message": "Use a toast or dialog component instead."
     }
   ],
-  "moduleScopeChecks": "@decodelabs/underlay/tools/templates/sveltekit-ssr"
+  "moduleScopeChecks": "@inflatable-cookie/underlay/tools/templates/sveltekit-ssr"
 }
 ```
 

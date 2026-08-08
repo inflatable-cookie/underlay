@@ -1,5 +1,5 @@
-import type { PagedListResponse } from "@decodelabs/underlay/client/types";
-import { toPagedListResult, type EntityListDataLoader } from "@decodelabs/underlay/templates";
+import type { PagedListResponse } from "@inflatable-cookie/underlay/client/types";
+import { toPagedListResult, type EntityListDataLoader } from "@inflatable-cookie/underlay/templates";
 
 interface TaskListItem {
   id: string;

@@ -8,7 +8,7 @@
       "@inflatable-cookie/poodle-svelte-tokens",
       "@inflatable-cookie/poodle-svelte-primitives",
       "@inflatable-cookie/poodle-svelte-composites",
-      "@decodelabs/underlay"
+      "@inflatable-cookie/underlay"
     ],
     "rule": "Apps may depend on both Poodle and Underlay during migration, but new or touched foundational UI should move to Poodle instead of widening Underlay primitive usage."
   },

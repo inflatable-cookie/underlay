@@ -55,7 +55,7 @@ session convergence recorded in sweep 021 and the 2026-07 logs
 
 ## Rollout gotchas (for the next wave)
 
-- Consumer `node_modules/@decodelabs/underlay` can be stale → `bun install`
+- Consumer `node_modules/@inflatable-cookie/underlay` can be stale → `bun install`
   before judging type errors.
 - acowtancy uses git submodules: commit inside dairy, then bump the parent.
 - Baselines, not regressions: composer svelte-check has 19 pre-existing
@@ -120,7 +120,7 @@ session convergence recorded in sweep 021 and the 2026-07 logs
   deletions were of duplicated local code)
 - Affected consumers: all six admin apps
 - Required actions:
-  - `bun install` to pick up current `@decodelabs/underlay`
+  - `bun install` to pick up current `@inflatable-cookie/underlay`
   - new admin resources follow `docs/guides/191-admin-resource-checklist.md`
     and the template overview; no action needed for already-migrated pages
 - Validation:

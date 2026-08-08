@@ -2,7 +2,7 @@
 import {
   UNDERLAY_TOASTS_CONTEXT_KEY,
   createToastStore
-} from "@decodelabs/underlay/runtime/feedback";
+} from "@inflatable-cookie/underlay/runtime/feedback";
 import {
   setContext } from "svelte";
   import { page } from "$app/stores";

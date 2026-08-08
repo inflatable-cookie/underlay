@@ -1,4 +1,4 @@
-import type { ReorderController } from "@decodelabs/underlay/runtime/reorder";
+import type { ReorderController } from "@inflatable-cookie/underlay/runtime/reorder";
 import { describe, expect, it } from "vitest";
 import { recoverReorderConflict } from "../../src/patterns/reorder-conflict";
 

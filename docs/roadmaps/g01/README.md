@@ -102,28 +102,28 @@ was package-boundary and helper-runtime review rather than another hidden
 Poodle UI migration line. `g01.076` is now complete too: the dead `embed`
 surface is retired, `patterns` now keeps only retained workflow/page shells,
 and the shared helper/controller exports live on a dedicated public
-`@decodelabs/underlay/runtime` namespace. `g01.077` is now complete too: the
+`@inflatable-cookie/underlay/runtime` namespace. `g01.077` is now complete too: the
 retained `runtime` helper surface is organized into explicit domain sub-barrels
 so the namespace no longer behaves like a flat `patterns` compatibility dump.
 `g01.078` is now complete too: the retained toast/context helper family is
 explicitly confirmed as Underlay runtime orchestration under
-`@decodelabs/underlay/runtime/feedback`, while Poodle remains responsible for
+`@inflatable-cookie/underlay/runtime/feedback`, while Poodle remains responsible for
 the rendered `ToastHost`. `g01.079` is now complete too: the auth/browser seam
 review removed duplicated client auth-store exports from `runtime/auth` and
 confirmed the narrower retained auth-runtime boundary. `g01.080` is now
 complete too: the retained browser/runtime boundary is explicit, with
-storage/timezone/keyboard helpers on `@decodelabs/underlay/runtime/browser`
+storage/timezone/keyboard helpers on `@inflatable-cookie/underlay/runtime/browser`
 and clipboard-plus-toast workflow on
-`@decodelabs/underlay/runtime/feedback`. `g01.081` is now complete too: the
+`@inflatable-cookie/underlay/runtime/feedback`. `g01.081` is now complete too: the
 retained `data`, `media`, and `relations` runtime families are explicit, and
 `runtime/relations` no longer behaves like a hidden compatibility barrel.
-`g01.082` is now complete too: the root `@decodelabs/underlay/runtime` barrel
+`g01.082` is now complete too: the root `@inflatable-cookie/underlay/runtime` barrel
 is explicitly retained as a stable convenience surface, while the narrower
 subpaths remain the preferred teaching surface for new focused contracts.
 `g01.083` is now complete too: the `client` / `runtime` seam is explicitly
 retained, with SvelteKit navigation and transport helpers on
-`@decodelabs/underlay/client` and framework-agnostic navigation context/state
-on `@decodelabs/underlay/runtime`. `g01.084` is now complete too: the retained
+`@inflatable-cookie/underlay/client` and framework-agnostic navigation context/state
+on `@inflatable-cookie/underlay/runtime`. `g01.084` is now complete too: the retained
 `nightfire` package surface is confirmed as a coherent public package boundary,
 and the only worthwhile cleanup in this pass was removing duplicated tiny
 editor wrappers where direct Poodle or local Nightfire markup already covered
@@ -144,7 +144,7 @@ active-source surface. `g01.089` is now complete too: the old `DetailMeta*`
 helper family proved to be a tiny generic metadata-ribbon contract, so Poodle
 now owns the smaller `MetaBar` / `MetaItem` successor surface and the public
 Underlay wrappers are retired. `g01.090` is now complete too: the remaining
-public `@decodelabs/underlay/patterns` surface has been rechecked as a final
+public `@inflatable-cookie/underlay/patterns` surface has been rechecked as a final
 retained stop point, and the only remaining public pattern exports are now
 explicit as intentional workflow shells rather than unresolved migration debt.
 `g01.091` is now complete too: the retained `client` package is confirmed as a
@@ -154,7 +154,7 @@ feature families, and the root barrel remains stable as a convenience surface.
 an extraction-ready boundary, additive `nightfire/*` public subpaths now match
 the real extension families, and the root barrel remains stable for the broad
 editor/renderer caller set. `g01.093` is now complete too: the root
-`@decodelabs/underlay` barrel is confirmed as compatibility-only, and active
+`@inflatable-cookie/underlay` barrel is confirmed as compatibility-only, and active
 docs now teach the narrower package surfaces instead of the old flat barrel.
 `g01.094` is now complete too: generic visible UI implementation guidance is
 now Poodle-owned and anchored to ACME reference implementations instead of
@@ -167,12 +167,12 @@ logs, roadmap bodies, research notes, and sweep runbooks.
 
 The remaining public Underlay surface is intentionally:
 
-- `@decodelabs/underlay/patterns`
+- `@inflatable-cookie/underlay/patterns`
   - `LoginPage`
   - `ForgotPasswordFlow`
   - `PasswordRequirements`
   - `SpaFormShell`
-- `@decodelabs/underlay/runtime`
+- `@inflatable-cookie/underlay/runtime`
   - `auth`
   - `browser`
   - `forms`
@@ -184,7 +184,7 @@ The remaining public Underlay surface is intentionally:
   - `media`
   - `ai`
   - plus the stable root barrel
-- `@decodelabs/underlay/nightfire`
+- `@inflatable-cookie/underlay/nightfire`
   - retained editor/runtime package surface
 
 ## Generation Closeout

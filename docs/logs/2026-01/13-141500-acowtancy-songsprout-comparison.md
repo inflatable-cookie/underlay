@@ -297,7 +297,7 @@ No strong preference - document conventions.
 ## 8. Action Items
 
 ### Immediate (Underlay):
-- [ ] Add cookie utility functions to `@decodelabs/underlay/client`
+- [ ] Add cookie utility functions to `@inflatable-cookie/underlay/client`
 - [ ] Add `toUserMessage()` to Underlay's error utilities
 - [ ] Document standard `Locals` interface pattern
 - [ ] Document route protection hook pattern

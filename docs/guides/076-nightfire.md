@@ -17,7 +17,7 @@ For the full consumer assembly pattern across Rust and TS, use:
 
 - [`docs/guides/code/076-nightfire/nightfire-block-module-pattern.md`](/Users/tom/Dev/projects/underlay/docs/guides/code/076-nightfire/nightfire-block-module-pattern.md)
 
-Use `@decodelabs/underlay/nightfire/block-registration` as the primary public
+Use `@inflatable-cookie/underlay/nightfire/block-registration` as the primary public
 home for TS block registration helpers. `nightfire/editor` still re-exports
 them for compatibility, but new consumer code should prefer the explicit
 block-registration subpath.
@@ -799,29 +799,29 @@ Underlay provides TypeScript components for editing and rendering Nightfire cont
 Import Nightfire components from explicit Nightfire subpaths:
 
 ```typescript
-import { NightfireEditor, type NightfireValue } from "@decodelabs/underlay/nightfire/editor";
-import { NightfireRenderer } from "@decodelabs/underlay/nightfire/renderer";
+import { NightfireEditor, type NightfireValue } from "@inflatable-cookie/underlay/nightfire/editor";
+import { NightfireRenderer } from "@inflatable-cookie/underlay/nightfire/renderer";
 import {
   configureNightfireStrategies,
   createNightfireStrategiesContext,
   useNightfireStrategies
-} from "@decodelabs/underlay/nightfire/strategies";
+} from "@inflatable-cookie/underlay/nightfire/strategies";
 ```
 
 The public Nightfire subpaths are:
 
-- `@decodelabs/underlay/nightfire/editor`
-- `@decodelabs/underlay/nightfire/renderer`
-- `@decodelabs/underlay/nightfire/block-editor`
-- `@decodelabs/underlay/nightfire/block-registration`
-- `@decodelabs/underlay/nightfire/markdown`
-- `@decodelabs/underlay/nightfire/editor-registry`
-- `@decodelabs/underlay/nightfire/render-registry`
-- `@decodelabs/underlay/nightfire/validator-registry`
-- `@decodelabs/underlay/nightfire/strategies`
-- `@decodelabs/underlay/nightfire/media`
-- `@decodelabs/underlay/nightfire/utils`
-- `@decodelabs/underlay/nightfire/validation`
+- `@inflatable-cookie/underlay/nightfire/editor`
+- `@inflatable-cookie/underlay/nightfire/renderer`
+- `@inflatable-cookie/underlay/nightfire/block-editor`
+- `@inflatable-cookie/underlay/nightfire/block-registration`
+- `@inflatable-cookie/underlay/nightfire/markdown`
+- `@inflatable-cookie/underlay/nightfire/editor-registry`
+- `@inflatable-cookie/underlay/nightfire/render-registry`
+- `@inflatable-cookie/underlay/nightfire/validator-registry`
+- `@inflatable-cookie/underlay/nightfire/strategies`
+- `@inflatable-cookie/underlay/nightfire/media`
+- `@inflatable-cookie/underlay/nightfire/utils`
+- `@inflatable-cookie/underlay/nightfire/validation`
 
 ---
 
@@ -844,7 +844,7 @@ Configure the strategies fetcher once in your app's root layout:
   import {
     configureNightfireStrategies,
     createNightfireStrategiesContext
-  } from "@decodelabs/underlay/nightfire/strategies";
+  } from "@inflatable-cookie/underlay/nightfire/strategies";
   import { nightfireCommands } from "@my-app/api";
   import { auth } from "$lib/stores/auth";
 
@@ -909,7 +909,7 @@ The `NightfireEditor` component provides a block-based editor for Nightfire cont
 
 ```svelte
 <script lang="ts">
-  import { NightfireEditor, type NightfireValue } from "@decodelabs/underlay/nightfire/editor";
+  import { NightfireEditor, type NightfireValue } from "@inflatable-cookie/underlay/nightfire/editor";
 
   let description = $state<NightfireValue>({ schema: "myapp:content/description@1" });
   let prepare = $state<(formData: FormData) => void>(() => {});
@@ -956,7 +956,7 @@ When enabled:
     NightfireEditor,
     type NightfireSlashCommandsConfig,
     type NightfireValue
-  } from "@decodelabs/underlay/nightfire/editor";
+  } from "@inflatable-cookie/underlay/nightfire/editor";
 
   let body = $state<NightfireValue>({ schema: "myapp:content/body@1" });
 
@@ -997,7 +997,7 @@ canonical save payload:
 
 ```svelte
 <script lang="ts">
-  import { NightfireEditor, type NightfireValue } from "@decodelabs/underlay/nightfire/editor";
+  import { NightfireEditor, type NightfireValue } from "@inflatable-cookie/underlay/nightfire/editor";
 
   let body = $state<NightfireValue>({ schema: "myapp:content/body@1" });
   let bodyPrepare = $state<(formData: FormData) => void>(() => {});
@@ -1079,7 +1079,7 @@ When editing existing content, the stored schema may differ from the expected sc
 
 ```svelte
 <script lang="ts">
-  import { NightfireEditor, type NightfireValue, type SchemaMismatchInfo } from "@decodelabs/underlay/nightfire/editor";
+  import { NightfireEditor, type NightfireValue, type SchemaMismatchInfo } from "@inflatable-cookie/underlay/nightfire/editor";
 
   let description = $state<NightfireValue>({ schema: "myapp:content/markup@1" });
   let schemaMismatch = $state<SchemaMismatchInfo | null>(null);
@@ -1124,7 +1124,7 @@ For advanced use cases, you can access the strategies store directly:
 
 ```svelte
 <script lang="ts">
-  import { useNightfireStrategies } from "@decodelabs/underlay/nightfire/strategies";
+  import { useNightfireStrategies } from "@inflatable-cookie/underlay/nightfire/strategies";
   import { onMount } from "svelte";
 
   const strategiesStore = useNightfireStrategies();
@@ -1181,7 +1181,7 @@ For read-only display of Nightfire content:
 
 ```svelte
 <script lang="ts">
-  import { NightfireRenderer, type NightfireValue } from "@decodelabs/underlay/nightfire/renderer";
+  import { NightfireRenderer, type NightfireValue } from "@inflatable-cookie/underlay/nightfire/renderer";
 
   interface Props {
     content: NightfireValue;
@@ -1200,7 +1200,7 @@ For read-only display of Nightfire content:
 ### Checking for Empty Content
 
 ```typescript
-import { isEmptyNightfire, type NightfireValue } from "@decodelabs/underlay/nightfire/utils";
+import { isEmptyNightfire, type NightfireValue } from "@inflatable-cookie/underlay/nightfire/utils";
 
 const value: NightfireValue = { schema: "myapp:content/body@1" };
 
@@ -1212,7 +1212,7 @@ if (isEmptyNightfire(value)) {
 ### Normalising Values
 
 ```typescript
-import { normaliseNightfireValue, type NightfireValue } from "@decodelabs/underlay/nightfire/utils";
+import { normaliseNightfireValue, type NightfireValue } from "@inflatable-cookie/underlay/nightfire/utils";
 
 // Normalise to a specific schema, coercing cardinality as needed
 const normalised = normaliseNightfireValue(
@@ -1229,7 +1229,7 @@ import {
   prepareNightfireForSave,
   writePreparedNightfireToFormData,
   type NightfireValue
-} from "@decodelabs/underlay/nightfire/validation";
+} from "@inflatable-cookie/underlay/nightfire/validation";
 
 // Strips transient properties, recomputes hashes
 const prepared = prepareNightfireForSave(value);
@@ -1241,7 +1241,7 @@ writePreparedNightfireToFormData(formData, "body", value);
 ### Writing to FormData
 
 ```typescript
-import { writeNightfireToFormData, type NightfireValue } from "@decodelabs/underlay/nightfire/utils";
+import { writeNightfireToFormData, type NightfireValue } from "@inflatable-cookie/underlay/nightfire/utils";
 
 const formData = new FormData();
 writeNightfireToFormData(formData, "body", value);
@@ -1269,7 +1269,7 @@ Here's a complete example of a form with Nightfire content:
 <!-- ArticleForm.svelte -->
 <script lang="ts">
   import { Field } from "@inflatable-cookie/poodle-svelte";
-  import { NightfireEditor, type NightfireValue } from "@decodelabs/underlay/nightfire/editor";
+  import { NightfireEditor, type NightfireValue } from "@inflatable-cookie/underlay/nightfire/editor";
 
   interface Props {
     values: { title: string; body: NightfireValue };

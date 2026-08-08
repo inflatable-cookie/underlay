@@ -1,19 +1,19 @@
 import { describe, expect, it } from "vitest";
-import { createAiRoutingOpsController } from "@decodelabs/underlay/runtime/ai";
-import { configureAuth } from "@decodelabs/underlay/runtime/auth";
-import { createKeyboardShortcuts } from "@decodelabs/underlay/runtime/browser";
-import { createClientPagination } from "@decodelabs/underlay/runtime/collections";
-import { createSelectionHistory } from "@decodelabs/underlay/runtime/data";
-import { createToastStore } from "@decodelabs/underlay/runtime/feedback";
-import { createFormState } from "@decodelabs/underlay/runtime/forms";
-import { formatFileSize } from "@decodelabs/underlay/runtime/media";
-import { canPreviewMedia } from "@decodelabs/underlay/runtime/media/detail";
-import { MediaKind } from "@decodelabs/underlay/runtime/media/types";
-import { validateFileSize } from "@decodelabs/underlay/runtime/media/upload";
-import { configureNavigationContext } from "@decodelabs/underlay/runtime/navigation";
-import { createLocalSearchFns } from "@decodelabs/underlay/runtime/relations";
-import { createReorderController } from "@decodelabs/underlay/runtime/reorder";
-import { useBatchSelection } from "@decodelabs/underlay/runtime/selection";
+import { createAiRoutingOpsController } from "@inflatable-cookie/underlay/runtime/ai";
+import { configureAuth } from "@inflatable-cookie/underlay/runtime/auth";
+import { createKeyboardShortcuts } from "@inflatable-cookie/underlay/runtime/browser";
+import { createClientPagination } from "@inflatable-cookie/underlay/runtime/collections";
+import { createSelectionHistory } from "@inflatable-cookie/underlay/runtime/data";
+import { createToastStore } from "@inflatable-cookie/underlay/runtime/feedback";
+import { createFormState } from "@inflatable-cookie/underlay/runtime/forms";
+import { formatFileSize } from "@inflatable-cookie/underlay/runtime/media";
+import { canPreviewMedia } from "@inflatable-cookie/underlay/runtime/media/detail";
+import { MediaKind } from "@inflatable-cookie/underlay/runtime/media/types";
+import { validateFileSize } from "@inflatable-cookie/underlay/runtime/media/upload";
+import { configureNavigationContext } from "@inflatable-cookie/underlay/runtime/navigation";
+import { createLocalSearchFns } from "@inflatable-cookie/underlay/runtime/relations";
+import { createReorderController } from "@inflatable-cookie/underlay/runtime/reorder";
+import { useBatchSelection } from "@inflatable-cookie/underlay/runtime/selection";
 
 describe("runtime package compatibility", () => {
 	it("exposes retained runtime subpaths in a Svelte-aware test environment", () => {

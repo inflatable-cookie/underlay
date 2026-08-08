@@ -32,7 +32,7 @@ Underlay no longer exports a public `AiRoutingAdmin` shell.
 | EmptyState | `@inflatable-cookie/poodle-svelte` | Rich empty state with message, optional actions, and optional custom visual slot |
 | Local actions menu + AlertDialog | app-local wrapper or direct Poodle `Menu` + Poodle `AlertDialog` | Copy-to-clipboard actions with caller-owned destructive confirmation |
 | Poodle `PageHeader` + `Tabs` + `MetaBar` | direct composition | Standard entity detail page framing without a shared shell wrapper |
-| `SpaFormShell` | `@decodelabs/underlay/patterns` | Retained SPA create/edit workflow shell with submit/result/navigation orchestration |
+| `SpaFormShell` | `@inflatable-cookie/underlay/patterns` | Retained SPA create/edit workflow shell with submit/result/navigation orchestration |
 | EditableLabel | `@inflatable-cookie/poodle-svelte` | Click-to-edit text field |
 | KeyboardShortcuts | `patterns/keyboard-shortcuts.svelte.ts` | Centralized shortcut registration |
 
@@ -76,7 +76,7 @@ Use Poodle `EmptyState` directly for page-level and inline empty views.
 ## Entity Action Menus
 
 > **Superseded 2026-08:** the shared actions-menu recipe is back in template
-> form as `EntityActionsMenu` in `@decodelabs/underlay/templates` (with
+> form as `EntityActionsMenu` in `@inflatable-cookie/underlay/templates` (with
 > `MediaActionsMenu` re-skinned onto it), adopted across all six consumers.
 > New work uses that recipe; the app-local composition below is the historical
 > record of the retirement wave.
@@ -85,9 +85,9 @@ Use Poodle `EmptyState` directly for page-level and inline empty views.
 
 ```svelte
 <script lang="ts">
-  import { copyToClipboard } from "@decodelabs/underlay/runtime/feedback";
-  import { useToasts } from "@decodelabs/underlay/runtime/feedback";
-  import { gotoWithContext } from "@decodelabs/underlay/client/navigation";
+  import { copyToClipboard } from "@inflatable-cookie/underlay/runtime/feedback";
+  import { useToasts } from "@inflatable-cookie/underlay/runtime/feedback";
+  import { gotoWithContext } from "@inflatable-cookie/underlay/client/navigation";
   import { AlertDialog, Menu } from "@inflatable-cookie/poodle-svelte";
 
   const toastStore = useToasts();
@@ -230,10 +230,10 @@ For new list pages, compose directly over those Poodle surfaces plus
 Underlay’s lower-level state helpers such as `createListController`,
 `createPaginationController`, `useBatchSelection`, `useBatchActions`, and
 `createReorderController` now sit most naturally under
-`@decodelabs/underlay/runtime/data`.
+`@inflatable-cookie/underlay/runtime/data`.
 
 For hybrid wrappers that still need extra workflow state above those basics,
-prefer the retained lower helper set from `@decodelabs/underlay/runtime/data`:
+prefer the retained lower helper set from `@inflatable-cookie/underlay/runtime/data`:
 
 - `createSelectionModeController(...)`
 - `buildSelectionTransformState(...)`
@@ -327,7 +327,7 @@ Centralized keyboard shortcut registration with priority, conditional activation
 
 ```svelte
 <script lang="ts">
-  import { createKeyboardShortcuts } from "@decodelabs/underlay/runtime/browser";
+  import { createKeyboardShortcuts } from "@inflatable-cookie/underlay/runtime/browser";
 
   const shortcuts = createKeyboardShortcuts();
 
@@ -427,9 +427,9 @@ import {
   LoginPage,
   PasswordRequirements,
   SpaFormShell
-} from "@decodelabs/underlay/patterns";
+} from "@inflatable-cookie/underlay/patterns";
 
-import { createKeyboardShortcuts } from "@decodelabs/underlay/runtime/browser";
+import { createKeyboardShortcuts } from "@inflatable-cookie/underlay/runtime/browser";
 ```
 
 ---

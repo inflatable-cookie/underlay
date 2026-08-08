@@ -1,7 +1,7 @@
 //! Media Library domain types for Underlay.
 //!
 //! Generic types for media items that can be shared across consuming applications.
-//! These types match the TypeScript definitions in `@decodelabs/underlay/patterns`.
+//! These types match the TypeScript definitions in `@inflatable-cookie/underlay/patterns`.
 //!
 //! These enums live in `underlay-media` (not `underlay-db`) so that consumers
 //! wanting media types are not forced to pull in `sqlx`. Postgres binding is

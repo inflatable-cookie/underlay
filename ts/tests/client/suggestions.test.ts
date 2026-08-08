@@ -4,7 +4,7 @@ import {
 	buildSuggestionParams,
 	formatHintsParam,
 	parseHintsParam,
-} from "@decodelabs/underlay/client/suggestions";
+} from "@inflatable-cookie/underlay/client/suggestions";
 
 describe("client/suggestions", () => {
 	it("formats and parses recent hint params", () => {

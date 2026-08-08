@@ -20,7 +20,7 @@ collapse is deferred to the g07 retirement dates.
 ## Changes
 
 - **Retired the empty `.` root export** and deleted `ts/src/index.ts`. Verified
-  transparent for all six consumers: the bare `@decodelabs/underlay` specifier
+  transparent for all six consumers: the bare `@inflatable-cookie/underlay` specifier
   appears only in non-resolving `dedupe` / `optimizeDeps.exclude` and in
   `resolve.alias` (which bypasses package exports). No consumer imports the
   bare package root.

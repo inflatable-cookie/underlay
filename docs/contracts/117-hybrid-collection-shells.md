@@ -70,7 +70,7 @@ shared answer for a recurring hybrid capability set.
 
 Current retained shared lower-helper surface:
 
-- `@decodelabs/underlay/runtime/data`
+- `@inflatable-cookie/underlay/runtime/data`
 - `createSelectionModeController(...)`
 - `buildSelectionTransformState(...)`
 - `createLocalReorderSession(...)`

@@ -33,7 +33,7 @@ orchestration. That is the right split.
 ## Decision
 
 Keep the feedback helper family in Underlay, but treat it explicitly as
-retained runtime surface under `@decodelabs/underlay/runtime/feedback`.
+retained runtime surface under `@inflatable-cookie/underlay/runtime/feedback`.
 
 Do not move it into Poodle now because:
 
@@ -45,7 +45,7 @@ Do not move it into Poodle now because:
 
 - recorded the retained decision here
 - updated active guide examples to import feedback helpers from
-  `@decodelabs/underlay/runtime/feedback`
+  `@inflatable-cookie/underlay/runtime/feedback`
 - removed stale guide language that implied a nonexistent `showToast()` API or
   suggested `patterns` still owned toast helpers
 
@@ -53,8 +53,8 @@ Do not move it into Poodle now because:
 
 - toast rendering stays on Poodle `ToastHost`
 - toast store/context helpers stay on
-  `@decodelabs/underlay/runtime/feedback`
-- root `@decodelabs/underlay/runtime` imports continue to work, but feedback
+  `@inflatable-cookie/underlay/runtime/feedback`
+- root `@inflatable-cookie/underlay/runtime` imports continue to work, but feedback
   examples should prefer the narrower feedback subpath
 
 ## Next Task

@@ -34,11 +34,11 @@ keeping `runtime/data` as the stable aggregate.
 
 | Path | Preferred for |
 | --- | --- |
-| `@decodelabs/underlay/runtime/collections` | list controllers, cursor pagination types, cursor pagination helpers, and client/server pagination controllers |
-| `@decodelabs/underlay/runtime/reorder` | reorder controllers, reorder sessions, reorder conflict parsing, and reorder recovery helpers |
-| `@decodelabs/underlay/runtime/selection` | selection history, synced selection, batch selection/actions, selection mode, and transform-selection state |
+| `@inflatable-cookie/underlay/runtime/collections` | list controllers, cursor pagination types, cursor pagination helpers, and client/server pagination controllers |
+| `@inflatable-cookie/underlay/runtime/reorder` | reorder controllers, reorder sessions, reorder conflict parsing, and reorder recovery helpers |
+| `@inflatable-cookie/underlay/runtime/selection` | selection history, synced selection, batch selection/actions, selection mode, and transform-selection state |
 
-`@decodelabs/underlay/runtime/data` remains the aggregate compatibility path for
+`@inflatable-cookie/underlay/runtime/data` remains the aggregate compatibility path for
 the same lower collection workflow layer.
 
 ## Consumer Upgrade Impact

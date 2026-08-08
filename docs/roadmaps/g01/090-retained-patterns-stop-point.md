@@ -3,7 +3,7 @@
 `g01.089` retired the old `DetailMeta*` helper family after moving the compact
 metadata-ribbon contract into Poodle `MetaBar` / `MetaItem`.
 
-That leaves a very small public `@decodelabs/underlay/patterns` surface:
+That leaves a very small public `@inflatable-cookie/underlay/patterns` surface:
 
 - `LoginPage`
 - `ForgotPasswordFlow`
@@ -29,7 +29,7 @@ honest retained stop point.
 ## Goals
 
 - Confirm the strict live caller boundary for the remaining public
-  `@decodelabs/underlay/patterns` workflow surface.
+  `@inflatable-cookie/underlay/patterns` workflow surface.
 - Decide whether any of the remaining four exports are still generic migration
   debt or whether they now form the true retained Underlay stop point.
 - Align the roadmap front doors and durable inventory to that explicit stop
@@ -121,7 +121,7 @@ This is a stop-point clarification wave only:
 ## Status
 
 - [x] Sweep the live caller family for the remaining public
-      `@decodelabs/underlay/patterns` workflow surface.
+      `@inflatable-cookie/underlay/patterns` workflow surface.
 - [x] Confirm whether any of the remaining four exports are still generic
       migration debt.
 - [x] Align the roadmap front doors and durable inventory to the explicit stop
@@ -129,7 +129,7 @@ This is a stop-point clarification wave only:
 
 ## Complete
 
-`g01.090` is complete. The remaining public `@decodelabs/underlay/patterns`
+`g01.090` is complete. The remaining public `@inflatable-cookie/underlay/patterns`
 surface is now explicit as the true retained workflow stop point:
 
 - `LoginPage`

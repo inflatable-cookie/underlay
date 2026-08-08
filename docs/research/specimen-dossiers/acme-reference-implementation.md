@@ -29,13 +29,13 @@ The Acme reference implementation is the canonical example of building with Unde
 - `StoredPasskey` - Serializable storage format
 - `encode/decode_registration_state()` - State serialization
 
-**TypeScript (`@decodelabs/underlay/utils`)**:
+**TypeScript (`@inflatable-cookie/underlay/utils`)**:
 - `toPublicKeyCreationOptions()` - Server options → browser format
 - `toPublicKeyRequestOptions()` - Server options → browser format
 - `credentialCreationToJson()` - Credential → server format
 - `assertionToJson()` - Assertion → server format
 
-**Svelte (`@decodelabs/underlay/components`)**:
+**Svelte (`@inflatable-cookie/underlay/components`)**:
 - `PassKeyButton` - Presentational button
 - `LoginPasskeyTab` - Tab content for login page
 - `LoginPage` - Orchestrates multiple login methods

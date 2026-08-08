@@ -54,7 +54,7 @@ is clean.
 ## Consumer Upgrade Impact
 
 - Consumer apps should expect a staged migration from
-  `@decodelabs/underlay/components` `DataTable` to Poodle `DataTable`.
+  `@inflatable-cookie/underlay/components` `DataTable` to Poodle `DataTable`.
 - The migration shape should be:
   - expand the Poodle contract first
   - migrate grouped caller families

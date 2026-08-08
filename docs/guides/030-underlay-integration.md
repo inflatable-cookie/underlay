@@ -102,14 +102,14 @@ underlay-metrics = { path = "../../libs/underlay/rust/crates/underlay-metrics" }
 
 ## Path Configuration (TypeScript)
 
-Underlay’s TS package name is `@decodelabs/underlay`, but source imports
+Underlay’s TS package name is `@inflatable-cookie/underlay`, but source imports
 should target explicit subpaths such as:
 
-- `@decodelabs/underlay/client/*`
-- `@decodelabs/underlay/runtime/*`
-- `@decodelabs/underlay/patterns`
-- `@decodelabs/underlay/nightfire/*`
-- `@decodelabs/underlay/utils/*`
+- `@inflatable-cookie/underlay/client/*`
+- `@inflatable-cookie/underlay/runtime/*`
+- `@inflatable-cookie/underlay/patterns`
+- `@inflatable-cookie/underlay/nightfire/*`
+- `@inflatable-cookie/underlay/utils/*`
 
 ### Multi-repo workspace (default)
 
@@ -118,7 +118,7 @@ In `myapp-client/package.json` (and/or frontends), depend on the sibling repo:
 ```json
 {
   "dependencies": {
-    "@decodelabs/underlay": "file:../underlay"
+    "@inflatable-cookie/underlay": "file:../underlay"
   }
 }
 ```
@@ -128,7 +128,7 @@ In `myapp-client/package.json` (and/or frontends), depend on the sibling repo:
 ```json
 {
   "dependencies": {
-    "@decodelabs/underlay": "file:../../libs/underlay"
+    "@inflatable-cookie/underlay": "file:../../libs/underlay"
   }
 }
 ```
@@ -167,7 +167,7 @@ mod tests {
 Underlay’s error envelope shape is:
 
 ```ts
-import type { ErrorEnvelope } from "@decodelabs/underlay/client/types";
+import type { ErrorEnvelope } from "@inflatable-cookie/underlay/client/types";
 
 const example: ErrorEnvelope = {
   error: {
@@ -183,18 +183,18 @@ const example: ErrorEnvelope = {
 
 Cause: wrong path dependencies in Cargo workspace.
 
-### Issue: "Package path . is not exported from @decodelabs/underlay"
+### Issue: "Package path . is not exported from @inflatable-cookie/underlay"
 
-Cause: source code is importing the retired root barrel `@decodelabs/underlay`
+Cause: source code is importing the retired root barrel `@inflatable-cookie/underlay`
 instead of an explicit package subpath.
 
 Fix: move the import onto the real package surface:
 
-- `@decodelabs/underlay/client/*`
-- `@decodelabs/underlay/runtime/*`
-- `@decodelabs/underlay/patterns`
-- `@decodelabs/underlay/nightfire/*`
-- `@decodelabs/underlay/utils/*`
+- `@inflatable-cookie/underlay/client/*`
+- `@inflatable-cookie/underlay/runtime/*`
+- `@inflatable-cookie/underlay/patterns`
+- `@inflatable-cookie/underlay/nightfire/*`
+- `@inflatable-cookie/underlay/utils/*`
 
 ## Next Steps
 

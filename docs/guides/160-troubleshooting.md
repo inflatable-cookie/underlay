@@ -35,7 +35,7 @@ This document covers common issues and their solutions.
 **Symptom**: When running `bun dev`, you see errors like:
 ```
 [vite-plugin-svelte:load] failed to load virtual css module
-/path/to/node_modules/@decodelabs/underlay/ts/src/patterns/FormShell.svelte?svelte&type=style&lang.css
+/path/to/node_modules/@inflatable-cookie/underlay/ts/src/patterns/FormShell.svelte?svelte&type=style&lang.css
 ```
 
 The app may load but styles from underlay components are broken.
@@ -61,16 +61,16 @@ export default defineConfig({
         replacement: `${underlayPath}$1`
       }
     ],
-    dedupe: ["@decodelabs/underlay"]
+    dedupe: ["@inflatable-cookie/underlay"]
   },
   optimizeDeps: {
-    exclude: ["@decodelabs/underlay"]
+    exclude: ["@inflatable-cookie/underlay"]
   },
   // ... rest of config
 });
 ```
 
-This resolves `@decodelabs/underlay` and all subpaths (e.g., `/components`,
+This resolves `@inflatable-cookie/underlay` and all subpaths (e.g., `/components`,
 `/patterns`) directly to the source directory via the project's underlay
 symlink.
 

@@ -10,18 +10,18 @@ drift lane.
 
 Live source usage is concentrated on the retained public surfaces:
 
-- `@decodelabs/underlay/templates`
-- `@decodelabs/underlay/patterns`
-- `@decodelabs/underlay/client/*`
-- `@decodelabs/underlay/runtime/*`
-- `@decodelabs/underlay/nightfire/*`
-- `@decodelabs/underlay/styles/*`
-- `@decodelabs/underlay/server`
+- `@inflatable-cookie/underlay/templates`
+- `@inflatable-cookie/underlay/patterns`
+- `@inflatable-cookie/underlay/client/*`
+- `@inflatable-cookie/underlay/runtime/*`
+- `@inflatable-cookie/underlay/nightfire/*`
+- `@inflatable-cookie/underlay/styles/*`
+- `@inflatable-cookie/underlay/server`
 
 Two legacy bare-subpath uses still exist in Acowtancy tests:
 
-- `@decodelabs/underlay/nightfire`
-- `@decodelabs/underlay/runtime`
+- `@inflatable-cookie/underlay/nightfire`
+- `@inflatable-cookie/underlay/runtime`
 
 Underlay now publishes narrow compatibility exports for those retained
 bare-subpaths instead of relying on consumer source aliases.

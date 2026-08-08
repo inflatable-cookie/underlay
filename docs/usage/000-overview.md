@@ -38,7 +38,7 @@ For **runtime helpers**:
 The template system provides higher-order Svelte components for common admin page shapes:
 
 ```svelte
-import { EntityListPage, EntityDetailPage } from "@decodelabs/underlay/templates";
+import { EntityListPage, EntityDetailPage } from "@inflatable-cookie/underlay/templates";
 ```
 
 **Three-level composition:**

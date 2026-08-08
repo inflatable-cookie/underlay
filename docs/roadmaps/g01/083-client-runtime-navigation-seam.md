@@ -17,7 +17,7 @@ orchestration and transport helpers sit close together.
 
 The current navigation split is correct and should stay as-is.
 
-- `@decodelabs/underlay/client`
+- `@inflatable-cookie/underlay/client`
   - SvelteKit-specific navigation and transport integration
   - `gotoWithContext`
   - `navigateBack`
@@ -25,7 +25,7 @@ The current navigation split is correct and should stay as-is.
   - `initPageState`
   - `capturePageState`
   - query parsing and HTTP/client helpers
-- `@decodelabs/underlay/runtime`
+- `@inflatable-cookie/underlay/runtime`
   - framework-agnostic navigation context/state
   - `pushNavigationContext`
   - `consumeNavigationContext`
@@ -39,9 +39,9 @@ There is no worthwhile extraction batch here.
 
 The live caller surface is already using the right split:
 
-- route-level SvelteKit navigation uses `@decodelabs/underlay/client`
+- route-level SvelteKit navigation uses `@inflatable-cookie/underlay/client`
 - retained context/state orchestration and back-button computation use
-  `@decodelabs/underlay/runtime`
+  `@inflatable-cookie/underlay/runtime`
 
 Moving the runtime navigation helpers into `client` would make the framework
 boundary worse, not better, because the retained navigation context/state layer

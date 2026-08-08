@@ -4,7 +4,7 @@ import {
 	EntityList,
 	EntityListPage,
 	toPagedListResult,
-} from "@decodelabs/underlay/templates";
+} from "@inflatable-cookie/underlay/templates";
 
 describe("template package compatibility", () => {
 	it("exposes retained template components and helpers", () => {

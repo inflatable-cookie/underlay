@@ -74,7 +74,7 @@ Examples:
 - `docs/guides/100-frontend-web.md` still contains many old `patterns`
   examples for form, storage, formatting, and optimistic helpers.
 - source JSDoc in several pattern implementation files still shows
-  `@decodelabs/underlay/patterns` for helpers now taught through runtime
+  `@inflatable-cookie/underlay/patterns` for helpers now taught through runtime
   subpaths.
 
 These are teaching-surface problems. They do not require export changes.

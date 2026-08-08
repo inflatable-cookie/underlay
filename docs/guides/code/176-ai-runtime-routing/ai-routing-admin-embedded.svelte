@@ -2,7 +2,7 @@
 import {
   type AiRoutingAdminMessages,
   type AiRoutingOpsSource
-} from "@decodelabs/underlay/runtime/ai";
+} from "@inflatable-cookie/underlay/runtime/ai";
 import {
   auth,
   authLoading,

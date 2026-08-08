@@ -33,7 +33,7 @@ Rules:
 
 ## Underlay Helpers
 
-From `@decodelabs/underlay/runtime/data`:
+From `@inflatable-cookie/underlay/runtime/data`:
 
 - `extractReorderConflict(error)`
 - `applyReorderConflict(controller, conflict, latestItems)`

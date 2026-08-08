@@ -431,7 +431,7 @@ shared slug helpers only where they are still useful.
     type InputValidationStatus,
     type ValidationResult
   } from "@inflatable-cookie/poodle-svelte";
-  import { slugify, isReservedSlug, isValidSlugFormat } from "@decodelabs/underlay/utils/slug";
+  import { slugify, isReservedSlug, isValidSlugFormat } from "@inflatable-cookie/underlay/utils/slug";
 
   let titleValue = $state("");
   let slugValue = $state("");
@@ -871,7 +871,7 @@ Use `$derived` to create reactive validation contexts:
 ```svelte
 <script lang="ts">
   import { Field, TextInput, type InputValidationStatus } from "@inflatable-cookie/poodle-svelte";
-  import { slugify } from "@decodelabs/underlay/utils/slug";
+  import { slugify } from "@inflatable-cookie/underlay/utils/slug";
   import { api } from "$lib/api-client";
 
   export let data;  // { module, authToken }
@@ -1148,7 +1148,7 @@ plus field-level validation status callbacks.
 <script lang="ts">
   import { FormLayout } from "@inflatable-cookie/poodle-svelte";
   import { Button, Field, FieldSet, TextInput } from "@inflatable-cookie/poodle-svelte";
-  import { slugify } from "@decodelabs/underlay/utils/slug";
+  import { slugify } from "@inflatable-cookie/underlay/utils/slug";
 
   let titleValue = $state("");
   let slugValue = $state("");
@@ -1239,7 +1239,7 @@ Use progressive enhancement with server-side validation as the source of truth.
 
 ### Client-Side Zod Validation
 
-Underlay keeps `useValidatedForm()` in `@decodelabs/underlay/runtime/forms` for
+Underlay keeps `useValidatedForm()` in `@inflatable-cookie/underlay/runtime/forms` for
 lightweight client-side orchestration, but consuming apps should own their
 actual Zod schemas.
 
@@ -1250,7 +1250,7 @@ bun add zod
 ```
 
 ```ts
-import { useValidatedForm } from "@decodelabs/underlay/runtime/forms";
+import { useValidatedForm } from "@inflatable-cookie/underlay/runtime/forms";
 import { z } from "zod";
 
 const registerRequestSchema = z.object({

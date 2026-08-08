@@ -145,7 +145,7 @@ Rules:
 - TypeScript clients may normalize `has_more` into `hasMore`, but the wire
   contract stays `has_more`
 - do not claim cursor-runtime `PaginationQuery`, `PaginatedResponseDto<T>`, or
-  `@decodelabs/underlay/runtime/data` cursor helpers are already equivalent to
+  `@inflatable-cookie/underlay/runtime/data` cursor helpers are already equivalent to
   this page-shaped contract
 
 ### Simple bounded list envelope
@@ -383,7 +383,7 @@ Use these files as the copy target when normalizing a consumer app:
 That set proves the same bridge across cards, tables, business CRUD surfaces,
 and platform/system surfaces.
 - template callers may use `toPagedListResult(...)` from
-  `@decodelabs/underlay/templates` as the canonical bridge from client
+  `@inflatable-cookie/underlay/templates` as the canonical bridge from client
   `PagedListResponse<T>` to template `PagedListResult<T>`
 - client command wrappers may unwrap the outer `data` for detail endpoints, but
   the underlying route still uses the canonical detail envelope

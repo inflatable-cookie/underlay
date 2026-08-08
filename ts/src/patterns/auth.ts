@@ -59,7 +59,7 @@ let globalAuthConfig: AuthConfig | null = null;
  * @example
  * ```svelte
  * <script>
- *   import { configureAuth } from '@decodelabs/underlay/runtime/auth';
+ *   import { configureAuth } from '@inflatable-cookie/underlay/runtime/auth';
  *   import { auth } from '$lib/stores/auth';
  *
  *   configureAuth({

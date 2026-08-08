@@ -12,9 +12,9 @@ The TS client layer is the bridge between the Rust API and SvelteKit apps.
 
 ## Underlay exports
 
-- `@decodelabs/underlay/client/types` provides DTO envelope types like
+- `@inflatable-cookie/underlay/client/types` provides DTO envelope types like
   `ListResponse`, `SingleResponse`, and `ErrorEnvelope`.
-- `@decodelabs/underlay/client/http` provides the small `HttpClient`
+- `@inflatable-cookie/underlay/client/http` provides the small `HttpClient`
   abstraction used to build command modules.
 
 ## Command Pattern

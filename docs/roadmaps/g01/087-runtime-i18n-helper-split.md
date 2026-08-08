@@ -15,7 +15,7 @@ standalone utility surface.
 
 ## Outcome
 
-The pure helper families now have clearer homes on `@decodelabs/underlay/utils`
+The pure helper families now have clearer homes on `@inflatable-cookie/underlay/utils`
 while `runtime/i18n` stays in place as a compatibility barrel.
 
 The important split is:
@@ -55,8 +55,8 @@ immediately, so the right move is:
   - `ts/src/utils/i18n.ts`
   - `ts/src/utils/slug.ts`
 - added public package subpaths:
-  - `@decodelabs/underlay/utils/i18n`
-  - `@decodelabs/underlay/utils/slug`
+  - `@inflatable-cookie/underlay/utils/i18n`
+  - `@inflatable-cookie/underlay/utils/slug`
 - updated `runtime/i18n` to re-export from the new utility homes
 - migrated the small live caller tail in `acme-admin` and `dairy`
 - updated guides to teach the utility subpaths instead of the runtime/patterns

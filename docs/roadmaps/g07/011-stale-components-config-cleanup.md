@@ -7,7 +7,7 @@ Updated: 2026-06-06
 ## Context
 
 `g07.010` found no source imports from the retired
-`@decodelabs/underlay/components` path, but several consumer Vite configs still
+`@inflatable-cookie/underlay/components` path, but several consumer Vite configs still
 list it in `optimizeDeps.exclude`.
 
 The cleanup is config-only and should happen before the TS boundary hardening
@@ -15,7 +15,7 @@ closeout.
 
 ## Goals
 
-- [x] remove stale `@decodelabs/underlay/components` optimizeDeps excludes from
+- [x] remove stale `@inflatable-cookie/underlay/components` optimizeDeps excludes from
   affected consumer configs
 - [x] keep retained Underlay excludes such as `runtime`, `client`, `patterns`,
   `templates`, `nightfire`, and styles unchanged where present
@@ -38,14 +38,14 @@ closeout.
 
 ## Acceptance Criteria
 
-- [x] no live config references `@decodelabs/underlay/components`
+- [x] no live config references `@inflatable-cookie/underlay/components`
 - [x] source imports remain on retained Underlay paths
 - [x] affected consumer checks pass or any failures are documented
 - [x] no Underlay public API change is made
 
 ## Validation
 
-- targeted `rg` for `@decodelabs/underlay/components`
+- targeted `rg` for `@inflatable-cookie/underlay/components`
 - affected consumer Effigy checks
 - `effigy qa:docs`
 - `effigy qa:northstar`

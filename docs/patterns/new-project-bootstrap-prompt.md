@@ -75,7 +75,7 @@ After I answer, do the following:
      - Implement a minimal health route and start command.
 
    5b) TypeScript client (if missing or empty)
-     - Add @decodelabs/underlay as a file: dependency pointing at the symlinked underlay directory.
+     - Add @inflatable-cookie/underlay as a file: dependency pointing at the symlinked underlay directory.
      - Add a minimal http client wrapper that matches Underlay's error envelope conventions.
      - Add a tiny typecheck script.
 

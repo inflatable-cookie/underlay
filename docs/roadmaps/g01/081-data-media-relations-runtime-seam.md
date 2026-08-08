@@ -17,14 +17,14 @@ dump instead of a deliberate helper API.
 
 The retained runtime boundary is explicit:
 
-- `@decodelabs/underlay/runtime/data`
+- `@inflatable-cookie/underlay/runtime/data`
   - selection history
   - pagination controllers/types
   - list, reorder, batch-selection, and batch-action controllers
-- `@decodelabs/underlay/runtime/media`
+- `@inflatable-cookie/underlay/runtime/media`
   - browser upload helpers and media-upload flow/controller state
   - shared blob/media types
-- `@decodelabs/underlay/runtime/relations`
+- `@inflatable-cookie/underlay/runtime/relations`
   - relation search/suggestion helper contracts
   - drilldown search helpers
   - retained relation-selector context/types only
@@ -61,6 +61,6 @@ layer explicitly:
 
 ## Next Task
 
-Take the next retained-runtime audit on the root `@decodelabs/underlay/runtime`
+Take the next retained-runtime audit on the root `@inflatable-cookie/underlay/runtime`
 barrel itself, and decide whether the root convenience barrel should stay broad
 or be trimmed now that the stable subpaths are explicit and documented.

@@ -53,7 +53,7 @@ None.
 
 No code change is required. Consumers should continue importing relation
 selector contracts and local adapters from
-`@decodelabs/underlay/runtime/relations`.
+`@inflatable-cookie/underlay/runtime/relations`.
 
 ## Validation
 

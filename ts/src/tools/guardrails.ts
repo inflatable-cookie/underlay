@@ -231,7 +231,7 @@ Configuration:
         "message": "Use a toast instead"
       }
     ],
-    "moduleScopeChecks": "@decodelabs/underlay/tools/templates/sveltekit-ssr"
+    "moduleScopeChecks": "@inflatable-cookie/underlay/tools/templates/sveltekit-ssr"
   }
 
 Suppression:

@@ -262,7 +262,7 @@ For TypeScript components (frontend-web, admin-web, api-client, ui-kit), create 
     "test": "vitest"
   },
   "dependencies": {
-    "@decodelabs/underlay": "file:../underlay"
+    "@inflatable-cookie/underlay": "file:../underlay"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

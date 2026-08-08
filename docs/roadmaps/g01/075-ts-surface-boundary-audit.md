@@ -55,13 +55,13 @@ Underlay:
 
 Consumer repo import signal:
 
-- `@decodelabs/underlay/patterns`: heavy live usage
-- `@decodelabs/underlay/client`: meaningful live usage
-- `@decodelabs/underlay/nightfire`: real but concentrated usage
-- `@decodelabs/underlay/server`: light but real usage
-- `@decodelabs/underlay/utils`: small usage
-- `@decodelabs/underlay/embed`: no current consumer usage found
-- `@decodelabs/underlay/validation`: no current consumer usage found at audit time
+- `@inflatable-cookie/underlay/patterns`: heavy live usage
+- `@inflatable-cookie/underlay/client`: meaningful live usage
+- `@inflatable-cookie/underlay/nightfire`: real but concentrated usage
+- `@inflatable-cookie/underlay/server`: light but real usage
+- `@inflatable-cookie/underlay/utils`: small usage
+- `@inflatable-cookie/underlay/embed`: no current consumer usage found
+- `@inflatable-cookie/underlay/validation`: no current consumer usage found at audit time
 
 ## Findings
 

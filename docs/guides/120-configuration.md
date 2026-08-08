@@ -130,7 +130,7 @@ the server-only TypeScript stack:
 import {
   loadConfigStack,
   readDottedValue,
-} from "@decodelabs/underlay/server/config-stack";
+} from "@inflatable-cookie/underlay/server/config-stack";
 
 const config = loadConfigStack({ projectRoot: "." });
 const apiBaseUrl = readDottedValue<string>(config, "public_api.base_url");

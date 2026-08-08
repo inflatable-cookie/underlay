@@ -7,7 +7,7 @@
  * @example
  * ```svelte
  * <script lang="ts">
- *   import { initTimezone, timezoneStore } from "@decodelabs/underlay/runtime/browser";
+ *   import { initTimezone, timezoneStore } from "@inflatable-cookie/underlay/runtime/browser";
  *
  *   initTimezone({
  *     profileTimezone: userProfile?.time_zone ?? null,
@@ -83,7 +83,7 @@ let state = $state<TimezoneState>({
  * @example
  * ```svelte
  * <script lang="ts">
- *   import { timezoneStore } from "@decodelabs/underlay/runtime/browser";
+ *   import { timezoneStore } from "@inflatable-cookie/underlay/runtime/browser";
  *
  *   // Reactive access
  *   const tz = $derived($timezoneStore.effective);

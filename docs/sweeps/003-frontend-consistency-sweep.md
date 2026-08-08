@@ -100,7 +100,7 @@ Review for:
 
 ```bash
 rg -n "from ['\"]\.\./\.\./\.\./" "$ADMIN_REPO/src" "$WEB_REPO/src"
-rg -n "from ['\"]\$lib|from ['\"]@cattle-grid|from ['\"]@decodelabs/underlay" "$ADMIN_REPO/src" "$WEB_REPO/src"
+rg -n "from ['\"]\$lib|from ['\"]@cattle-grid|from ['\"]@inflatable-cookie/underlay" "$ADMIN_REPO/src" "$WEB_REPO/src"
 ```
 
 Pass criteria:
@@ -194,7 +194,7 @@ Pass criteria:
 ### 7.1 Ensure Underlay base styles are used
 
 ```bash
-rg -n "@decodelabs/underlay/styles" "$ADMIN_REPO/src" "$WEB_REPO/src"
+rg -n "@inflatable-cookie/underlay/styles" "$ADMIN_REPO/src" "$WEB_REPO/src"
 ```
 
 ### 7.2 Detect hardcoded style drift hotspots

@@ -56,10 +56,10 @@ The reference `package.json` files use paths relative to being inside underlay. 
 **In `api-client/package.json`, `admin/package.json`, `front/package.json`:**
 ```json
 // Change from:
-"@decodelabs/underlay": "file:../.."
+"@inflatable-cookie/underlay": "file:../.."
 
 // To:
-"@decodelabs/underlay": "file:../underlay"
+"@inflatable-cookie/underlay": "file:../underlay"
 ```
 
 ## Step 4: Rename Project

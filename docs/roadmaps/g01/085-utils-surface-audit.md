@@ -9,7 +9,7 @@ updated: 2026-03-30
 
 ## Goal
 
-Audit the retained `@decodelabs/underlay/utils` surface, remove any obviously
+Audit the retained `@inflatable-cookie/underlay/utils` surface, remove any obviously
 overexposed residue, and decide whether the package should stay as a small
 standalone helper surface or be broken up further.
 
@@ -32,7 +32,7 @@ The useful cleanup in this batch was boundary tightening, not extraction:
 
 ## Judgment
 
-`@decodelabs/underlay/utils` is already close to a standalone helper package
+`@inflatable-cookie/underlay/utils` is already close to a standalone helper package
 shape. It is small, coherent, and no longer mixed with UI migration residue.
 
 The strongest retained utility contracts are:
@@ -53,12 +53,12 @@ top-level utility contract.
 ## Changes
 
 - added public utility subpaths in `package.json`
-- removed raw Base64URL helpers from the root `@decodelabs/underlay/utils`
+- removed raw Base64URL helpers from the root `@inflatable-cookie/underlay/utils`
   barrel
 - updated docs to prefer:
-  - `@decodelabs/underlay/utils/webauthn`
-  - `@decodelabs/underlay/utils/html`
-  - `@decodelabs/underlay/utils/sequence`
+  - `@inflatable-cookie/underlay/utils/webauthn`
+  - `@inflatable-cookie/underlay/utils/html`
+  - `@inflatable-cookie/underlay/utils/sequence`
 
 ## Next Task
 

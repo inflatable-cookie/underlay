@@ -16,9 +16,9 @@ The TS audit showed two immediate cleanup truths:
 
 This batch closes both problems in one cut:
 
-- retire public `@decodelabs/underlay/embed`
-- introduce public `@decodelabs/underlay/runtime`
-- narrow `@decodelabs/underlay/patterns` to retained workflow/page shells
+- retire public `@inflatable-cookie/underlay/embed`
+- introduce public `@inflatable-cookie/underlay/runtime`
+- narrow `@inflatable-cookie/underlay/patterns` to retained workflow/page shells
 - migrate the live sibling-repo callers onto the honest namespace split
 
 ## Delivery
@@ -30,7 +30,7 @@ This batch closes both problems in one cut:
 - updated `ts/src/index.ts` so the root barrel re-exports `runtime`
 - moved live helper/controller callers in `acme-admin`, `cp-admin`,
   `acme-front`, `cp-front`, `acme-client`, and `cp-client` onto
-  `@decodelabs/underlay/runtime`
+  `@inflatable-cookie/underlay/runtime`
 - updated active guide and architecture references so the namespace boundary is
   explicit
 
@@ -38,29 +38,29 @@ This batch closes both problems in one cut:
 
 Public Underlay TS namespace is now:
 
-- `@decodelabs/underlay/patterns`
+- `@inflatable-cookie/underlay/patterns`
   - retained workflow/page shells only
-- `@decodelabs/underlay/runtime`
+- `@inflatable-cookie/underlay/runtime`
   - shared app/runtime helpers, controllers, and browser utilities
-- `@decodelabs/underlay/nightfire`
+- `@inflatable-cookie/underlay/nightfire`
   - retained editor/runtime package surface
-- `@decodelabs/underlay/client`
+- `@inflatable-cookie/underlay/client`
   - retained client package surface
-- `@decodelabs/underlay/server`
+- `@inflatable-cookie/underlay/server`
   - retained server helpers
-- `@decodelabs/underlay/utils`
+- `@inflatable-cookie/underlay/utils`
   - retained small utility surface
 
 ## Consumer Upgrade Impact
 
 - helper/controller imports that previously came from
-  `@decodelabs/underlay/patterns` should now come from
-  `@decodelabs/underlay/runtime`
-- retained workflow/page shells stay on `@decodelabs/underlay/patterns`
-- `@decodelabs/underlay/embed` is retired
+  `@inflatable-cookie/underlay/patterns` should now come from
+  `@inflatable-cookie/underlay/runtime`
+- retained workflow/page shells stay on `@inflatable-cookie/underlay/patterns`
+- `@inflatable-cookie/underlay/embed` is retired
 
 ## Next Task
 
 The strongest next cleanup is a focused retained-runtime review inside
-`@decodelabs/underlay/runtime`, starting with the toast helper boundary and the
+`@inflatable-cookie/underlay/runtime`, starting with the toast helper boundary and the
 remaining root-barrel question.

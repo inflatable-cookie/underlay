@@ -9,7 +9,7 @@ updated: 2026-03-30
 
 ## Goal
 
-Audit the retained `@decodelabs/underlay/nightfire` package surface and decide
+Audit the retained `@inflatable-cookie/underlay/nightfire` package surface and decide
 whether any useful reorganization can be done now for a future standalone
 extraction without changing the current public package boundary.
 

@@ -188,7 +188,7 @@ See [`RESEARCH_TOPICS.md`](./RESEARCH_TOPICS.md) for a catalog of strategic rese
 
 **Comparison**: Zod is industry standard, Valibot offers tree-shaking, ts-rs doesn't handle validation.
 
-**Recommendation**: Add `@decodelabs/underlay/validation` export with Zod schemas.
+**Recommendation**: Add `@inflatable-cookie/underlay/validation` export with Zod schemas.
 
 **IDR**: `idr-validation-zod-integration.md` ready for execution (5-8 days)
 
@@ -249,7 +249,7 @@ See [`RESEARCH_TOPICS.md`](./RESEARCH_TOPICS.md) for a catalog of strategic rese
 
 ### IDR-003: Validation Zod Integration (Medium Priority, 5-8 days)
 - **Artifact**: `implementation-decision-records/idr-validation-zod-integration.md`
-- **Scope**: `@decodelabs/underlay/validation` export, `useValidatedForm` hook
+- **Scope**: `@inflatable-cookie/underlay/validation` export, `useValidatedForm` hook
 - **Validation**: Test in Acme reference forms, measure bundle impact
 
 ### IDR-004: Background Job Improvements (Medium Priority, 6 days)

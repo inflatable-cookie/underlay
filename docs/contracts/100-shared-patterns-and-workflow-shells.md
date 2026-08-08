@@ -80,7 +80,7 @@ The goal is reusable workflow mechanics, not generic app UI.
 
 ### Public pattern surface
 
-The root `@decodelabs/underlay/patterns` barrel is intentionally small.
+The root `@inflatable-cookie/underlay/patterns` barrel is intentionally small.
 
 Current root exports:
 
@@ -183,7 +183,7 @@ Rules:
   local constrained reorder sessions, loaded fetch-all reorder sessions,
   selection-mode transitions, and selection-derived transform-launch state
 - the preferred public import path for this lower helper set is
-  `@decodelabs/underlay/runtime/data`
+  `@inflatable-cookie/underlay/runtime/data`
 - use `createLocalReorderSession()` when the visible constrained list already
   contains the full reorder set
 - use `createLoadedReorderSession()` when normal browsing is paged or

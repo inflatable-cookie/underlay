@@ -10,7 +10,7 @@ method facade construction.
 ## Goal
 
 Split the HTTP client internals into smaller modules while preserving the public
-`@decodelabs/underlay/client/http` API.
+`@inflatable-cookie/underlay/client/http` API.
 
 ## Scope
 

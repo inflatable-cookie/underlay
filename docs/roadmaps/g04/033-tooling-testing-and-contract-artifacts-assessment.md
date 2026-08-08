@@ -55,7 +55,7 @@ Severity: high
 `120` says the guardrail scanner and rule-pack templates are a retained shared
 surface reusable by consumer repos. The live implementation still behaves like
 repo-local source tooling instead. The package exports expose
-`@decodelabs/underlay/testing`, but nothing under `./tools` or
+`@inflatable-cookie/underlay/testing`, but nothing under `./tools` or
 `./tools/templates`. The config loader also resolves template references by
 string-rewriting to `process.cwd()/ts/src/tools/templates`, which only works
 against an Underlay source checkout layout rather than an installed package.

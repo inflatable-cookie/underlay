@@ -19,9 +19,9 @@ is the default answer.
 
 ```svelte
 <script lang="ts">
-  import { EntityListPage } from "@decodelabs/underlay/templates";
-  import { toPagedListResult } from "@decodelabs/underlay/templates";
-  import type { PagedListResponse } from "@decodelabs/underlay/client/types";
+  import { EntityListPage } from "@inflatable-cookie/underlay/templates";
+  import { toPagedListResult } from "@inflatable-cookie/underlay/templates";
+  import type { PagedListResponse } from "@inflatable-cookie/underlay/client/types";
   import ProjectCard from "$lib/cards/ProjectCard.svelte";
   import { adminCommands } from "$lib/client";
 
@@ -279,7 +279,7 @@ The `handler` receives `(ids, values)` where `values` is the object passed to `o
 ## Public types
 
 The shared list-template config types are exported from
-`@decodelabs/underlay/templates`:
+`@inflatable-cookie/underlay/templates`:
 
 - `FilterConfig`
 - `BatchActionConfig`
@@ -308,7 +308,7 @@ Recommended pattern:
 - page loader returns that shaped result directly to the template
 - use `page` + `limit` query params for these routes
 - do not wire `EntityListPage` through cursor helpers from
-  `@decodelabs/underlay/runtime/data` or `@decodelabs/underlay/client/pagination`
+  `@inflatable-cookie/underlay/runtime/data` or `@inflatable-cookie/underlay/client/pagination`
 
 Reference recipe:
 

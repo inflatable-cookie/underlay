@@ -41,7 +41,7 @@ Dairy's guardrails system is a ~520-line Node.js script that enforces architectu
 **Banned Patterns**:
 - `window.alert` → "Use toast or dialog"
 - `window.confirm` → "Use AlertDialog/ConfirmAction"
-- `navigator.clipboard` → "Use @decodelabs/underlay/patterns copyToClipboard()"
+- `navigator.clipboard` → "Use @inflatable-cookie/underlay/patterns copyToClipboard()"
 
 **Module-Scope Browser APIs**:
 - `window.*`, `document.*`, `navigator.*`, `location.*`, `history.*`
@@ -75,7 +75,7 @@ Dairy's guardrails system is a ~520-line Node.js script that enforces architectu
 Extract as a standalone CLI tool in Underlay's TypeScript package.
 
 **Location**: `underlay/ts/src/tools/guardrails.ts`  
-**Package**: Part of `@decodelabs/underlay` (no new package needed)  
+**Package**: Part of `@inflatable-cookie/underlay` (no new package needed)  
 **Invocation**: `node --import tsx underlay/ts/src/tools/guardrails.ts [options]`
 
 **Pros**:
@@ -166,7 +166,7 @@ interface ModuleScopeCheck {
 **Usage**:
 ```typescript
 // In consumer project
-import { ssrSafetyRules } from '@decodelabs/underlay/tools/guardrails-templates/sveltekit-ssr';
+import { ssrSafetyRules } from '@inflatable-cookie/underlay/tools/guardrails-templates/sveltekit-ssr';
 
 export default {
   srcDir: './src',
@@ -272,10 +272,10 @@ node --import tsx underlay/ts/src/tools/guardrails.ts --src ./app
     {
       "name": "navigator.clipboard",
       "regex": "\\bnavigator\\.clipboard\\b",
-      "message": "Use @decodelabs/underlay/patterns copyToClipboard() instead of navigator.clipboard."
+      "message": "Use @inflatable-cookie/underlay/patterns copyToClipboard() instead of navigator.clipboard."
     }
   ],
-  "moduleScopeChecks": "@decodelabs/underlay/tools/guardrails-templates/sveltekit-ssr"
+  "moduleScopeChecks": "@inflatable-cookie/underlay/tools/guardrails-templates/sveltekit-ssr"
 }
 ```
 

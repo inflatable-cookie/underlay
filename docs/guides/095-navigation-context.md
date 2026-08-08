@@ -33,7 +33,7 @@ When navigating to an edit page, use `gotoWithContext()` to record where the use
 
 ```svelte
 <script lang="ts">
-  import { gotoWithContext } from "@decodelabs/underlay/client/navigation";
+  import { gotoWithContext } from "@inflatable-cookie/underlay/client/navigation";
   import { Menu } from "@inflatable-cookie/poodle-svelte";
 
   export let data;
@@ -62,7 +62,7 @@ In the edit or create page, use `consumeNavigationContext()` to **pop** the cont
 
 ```svelte
 <script lang="ts">
-  import { consumeNavigationContext } from "@decodelabs/underlay/runtime/navigation";
+  import { consumeNavigationContext } from "@inflatable-cookie/underlay/runtime/navigation";
   import { PageHeader } from "@inflatable-cookie/poodle-svelte";
 
   export let data;
@@ -85,8 +85,8 @@ In the edit or create page, use `consumeNavigationContext()` to **pop** the cont
 > **Important:** Use `consumeNavigationContext()` for edit/create pages. This function **pops** the context from the stack, ensuring it's only used once and doesn't persist across multiple navigations.
 
 Navigation seam:
-- use `@decodelabs/underlay/client/navigation` for SvelteKit navigation wrappers like `gotoWithContext()`, `navigateBack()`, and `navigateOnCancel()`
-- use `@decodelabs/underlay/runtime/navigation` for framework-agnostic navigation context and page-state helpers like `consumeNavigationContext()`, `getBackButtonInfo()`, and `storePageState()`
+- use `@inflatable-cookie/underlay/client/navigation` for SvelteKit navigation wrappers like `gotoWithContext()`, `navigateBack()`, and `navigateOnCancel()`
+- use `@inflatable-cookie/underlay/runtime/navigation` for framework-agnostic navigation context and page-state helpers like `consumeNavigationContext()`, `getBackButtonInfo()`, and `storePageState()`
 
 ### 3. Handle Server Redirect
 
@@ -178,7 +178,7 @@ interface BackButtonInfo {
 }
 ```
 
-### Framework-Agnostic Functions (`@decodelabs/underlay/runtime/navigation`)
+### Framework-Agnostic Functions (`@inflatable-cookie/underlay/runtime/navigation`)
 
 These functions work in any JavaScript environment with sessionStorage.
 
@@ -187,7 +187,7 @@ These functions work in any JavaScript environment with sessionStorage.
 Push a navigation context onto the stack.
 
 ```typescript
-import { pushNavigationContext } from "@decodelabs/underlay/runtime/navigation";
+import { pushNavigationContext } from "@inflatable-cookie/underlay/runtime/navigation";
 
 pushNavigationContext({
   label: "Videos",
@@ -206,7 +206,7 @@ pushNavigationContext({
 Remove and return the most recent context from the stack.
 
 ```typescript
-import { popNavigationContext } from "@decodelabs/underlay/runtime/navigation";
+import { popNavigationContext } from "@inflatable-cookie/underlay/runtime/navigation";
 
 const context = popNavigationContext();
 if (context) {
@@ -222,7 +222,7 @@ if (context) {
 Read the most recent context without removing it.
 
 ```typescript
-import { peekNavigationContext } from "@decodelabs/underlay/runtime/navigation";
+import { peekNavigationContext } from "@inflatable-cookie/underlay/runtime/navigation";
 
 const context = peekNavigationContext();
 console.log(`User came from: ${context?.label ?? "unknown"}`);
@@ -235,7 +235,7 @@ console.log(`User came from: ${context?.label ?? "unknown"}`);
 Get the full navigation context stack (for debugging or breadcrumbs).
 
 ```typescript
-import { getNavigationContextStack } from "@decodelabs/underlay/runtime/navigation";
+import { getNavigationContextStack } from "@inflatable-cookie/underlay/runtime/navigation";
 
 const stack = getNavigationContextStack();
 // [
@@ -252,7 +252,7 @@ const stack = getNavigationContextStack();
 Clear all navigation context.
 
 ```typescript
-import { clearNavigationContext } from "@decodelabs/underlay/runtime/navigation";
+import { clearNavigationContext } from "@inflatable-cookie/underlay/runtime/navigation";
 
 clearNavigationContext();
 ```
@@ -266,7 +266,7 @@ If the stored context includes a `targetHref` and it doesn't match the current U
 > **Note:** For edit/create pages, prefer `consumeNavigationContext()` which pops the context.
 
 ```typescript
-import { getReturnUrl } from "@decodelabs/underlay/runtime/navigation";
+import { getReturnUrl } from "@inflatable-cookie/underlay/runtime/navigation";
 
 const returnTo = getReturnUrl(`/items/${itemId}`);
 // If context exists: "/content/videos"
@@ -287,7 +287,7 @@ If the stored context includes a `targetHref` and it doesn't match the current U
 > **Note:** For edit/create pages, prefer `consumeNavigationContext()` which pops the context. Use `getBackButtonInfo()` for detail pages that display a back button but don't have forms.
 
 ```typescript
-import { getBackButtonInfo } from "@decodelabs/underlay/runtime/navigation";
+import { getBackButtonInfo } from "@inflatable-cookie/underlay/runtime/navigation";
 
 const { label, href } = getBackButtonInfo("Back to item", `/items/${itemId}`);
 // If context exists: { label: "Back to Videos", href: "/content/videos" }
@@ -307,7 +307,7 @@ const { label, href } = getBackButtonInfo("Back to item", `/items/${itemId}`);
 **Stale context detection:** If the context has a `targetHref` that doesn't match the current URL pathname, the context is considered stale and discarded. This prevents showing incorrect "Back to X" labels when users navigate to edit pages via bookmarks, direct links, or from pages that don't push context.
 
 ```typescript
-import { consumeNavigationContext } from "@decodelabs/underlay/runtime/navigation";
+import { consumeNavigationContext } from "@inflatable-cookie/underlay/runtime/navigation";
 
 const { backInfo, returnTo } = consumeNavigationContext("Back to videos", "/content/videos");
 // backInfo: { label: "Back to Module: FA1", href: "/learning/modules/abc" }
@@ -333,7 +333,7 @@ Compute back button info with a data-dependent fallback, while always respecting
 **Use this when:** Your fallback depends on data that loads asynchronously (e.g., the entity being edited).
 
 ```typescript
-import { computeBackInfo, consumeNavigationContext } from "@decodelabs/underlay/runtime/navigation";
+import { computeBackInfo, consumeNavigationContext } from "@inflatable-cookie/underlay/runtime/navigation";
 
 // In page initialization
 const { backInfo, returnTo } = consumeNavigationContext("Back to module", defaultBackHref);
@@ -390,7 +390,7 @@ The helper ensures:
 Derive a sensible parent URL from a path.
 
 ```typescript
-import { deriveParentPath } from "@decodelabs/underlay/runtime/navigation";
+import { deriveParentPath } from "@inflatable-cookie/underlay/runtime/navigation";
 
 deriveParentPath("/content/videos/123/edit");  // "/content/videos/123"
 deriveParentPath("/content/videos/123");       // "/content/videos"
@@ -408,7 +408,7 @@ deriveParentPath("/");                         // "/"
 Configure the navigation context system. Call early in app initialization if needed.
 
 ```typescript
-import { configureNavigationContext } from "@decodelabs/underlay/runtime/navigation";
+import { configureNavigationContext } from "@inflatable-cookie/underlay/runtime/navigation";
 
 configureNavigationContext({
   storageKey: "myapp:nav-context",
@@ -422,7 +422,7 @@ configureNavigationContext({
 
 ---
 
-### SvelteKit Functions (`@decodelabs/underlay/client/navigation`)
+### SvelteKit Functions (`@inflatable-cookie/underlay/client/navigation`)
 
 These functions integrate with SvelteKit's navigation.
 
@@ -435,7 +435,7 @@ The `targetHref` is automatically stored with the context, allowing `consumeNavi
 If the context includes a `state` object, it will be stored in sessionStorage keyed by the context's `href` pathname. This state can be restored using `initPageState()` when the user navigates back.
 
 ```typescript
-import { gotoWithContext } from "@decodelabs/underlay/client/navigation";
+import { gotoWithContext } from "@inflatable-cookie/underlay/client/navigation";
 
 // From a list page
 await gotoWithContext(`/items/${id}/edit`, {
@@ -465,7 +465,7 @@ await gotoWithContext(`/items/${id}/edit`, {
 Navigate back using the context stack.
 
 ```typescript
-import { navigateBack } from "@decodelabs/underlay/client/navigation";
+import { navigateBack } from "@inflatable-cookie/underlay/client/navigation";
 
 // Uses context if available, otherwise derives parent URL
 navigateBack();
@@ -484,7 +484,7 @@ navigateBack(`/items/${itemId}`);
 Legacy cancel button navigation. Navigates to the provided href, derives a parent URL, or uses browser history.
 
 ```typescript
-import { navigateOnCancel } from "@decodelabs/underlay/client/navigation";
+import { navigateOnCancel } from "@inflatable-cookie/underlay/client/navigation";
 
 function handleCancel() {
   navigateOnCancel(); // Derives parent from current URL
@@ -520,7 +520,7 @@ The navigation context system supports **page state restoration** to enable this
 #### 1. Save State When Navigating Away
 
 ```typescript
-import { gotoWithContext } from "@decodelabs/underlay/client/navigation";
+import { gotoWithContext } from "@inflatable-cookie/underlay/client/navigation";
 
 // Current page state
 let activeTab = $state("details");
@@ -539,7 +539,7 @@ void gotoWithContext(`/items/${id}/edit`, {
 
 ```typescript
 import { onMount } from "svelte";
-import { initPageState } from "@decodelabs/underlay/client/navigation";
+import { initPageState } from "@inflatable-cookie/underlay/client/navigation";
 
 let activeTab = $state("details");
 let currentPage = $state(1);
@@ -558,14 +558,14 @@ onMount(() => {
 
 ### API Reference
 
-#### State Storage Functions (`@decodelabs/underlay/runtime/navigation`)
+#### State Storage Functions (`@inflatable-cookie/underlay/runtime/navigation`)
 
 ##### `storePageState(pathname, state)`
 
 Store state for a specific pathname. Called automatically by `gotoWithContext()` when state is provided, but can be called manually.
 
 ```typescript
-import { storePageState } from "@decodelabs/underlay/runtime/navigation";
+import { storePageState } from "@inflatable-cookie/underlay/runtime/navigation";
 
 storePageState("/learning/modules/123", {
   activeTab: "syllabus",
@@ -582,7 +582,7 @@ storePageState("/learning/modules/123", {
 Retrieve stored state for a pathname without consuming it.
 
 ```typescript
-import { retrievePageState } from "@decodelabs/underlay/runtime/navigation";
+import { retrievePageState } from "@inflatable-cookie/underlay/runtime/navigation";
 
 const state = retrievePageState<{ activeTab: string }>("/learning/modules/123");
 if (state) {
@@ -600,7 +600,7 @@ if (state) {
 Retrieve and **remove** stored state. The state is deleted from storage after retrieval.
 
 ```typescript
-import { consumePageState } from "@decodelabs/underlay/runtime/navigation";
+import { consumePageState } from "@inflatable-cookie/underlay/runtime/navigation";
 
 // Uses current pathname by default
 const state = consumePageState<{ activeTab: string }>();
@@ -616,19 +616,19 @@ const state = consumePageState<{ activeTab: string }>();
 Clear all stored page states.
 
 ```typescript
-import { clearPageStates } from "@decodelabs/underlay/runtime/navigation";
+import { clearPageStates } from "@inflatable-cookie/underlay/runtime/navigation";
 
 clearPageStates();
 ```
 
-#### SvelteKit Helper Functions (`@decodelabs/underlay/client/navigation`)
+#### SvelteKit Helper Functions (`@inflatable-cookie/underlay/client/navigation`)
 
 ##### `initPageState<T>(defaults)`
 
 Initialize page state from storage, merged with defaults. This is the primary way to restore state in Svelte components.
 
 ```typescript
-import { initPageState } from "@decodelabs/underlay/client/navigation";
+import { initPageState } from "@inflatable-cookie/underlay/client/navigation";
 
 onMount(() => {
   const restored = initPageState({
@@ -659,7 +659,7 @@ onMount(() => {
 Type-safe helper to create state objects. Simply returns the input (passthrough function for type safety).
 
 ```typescript
-import { capturePageState } from "@decodelabs/underlay/client/navigation";
+import { capturePageState } from "@inflatable-cookie/underlay/client/navigation";
 
 void gotoWithContext(`/items/${id}/edit`, {
   label: "Items",
@@ -695,7 +695,7 @@ Here's a complete example of a Module detail page with tabbed content that prese
   import { PageHeader } from "@inflatable-cookie/poodle-svelte";
   import LocalActionsMenu from "$lib/components/LocalActionsMenu.svelte";
   import { Tabs, type TabItem } from "@inflatable-cookie/poodle-svelte";
-  import { gotoWithContext, initPageState } from "@decodelabs/underlay/client/navigation";
+  import { gotoWithContext, initPageState } from "@inflatable-cookie/underlay/client/navigation";
 
   let { data } = $props();
   
@@ -810,7 +810,7 @@ Good candidates for state restoration:
 
 **Debug:**
 ```typescript
-import { retrievePageState } from "@decodelabs/underlay/runtime/navigation";
+import { retrievePageState } from "@inflatable-cookie/underlay/runtime/navigation";
 
 // Check if state exists (without consuming)
 console.log("Stored state:", retrievePageState(window.location.pathname));
@@ -824,7 +824,7 @@ console.log("Stored state:", retrievePageState(window.location.pathname));
 
 **Solution:**
 ```typescript
-import { clearPageStates } from "@decodelabs/underlay/runtime/navigation";
+import { clearPageStates } from "@inflatable-cookie/underlay/runtime/navigation";
 
 // Clear all states (e.g., on logout)
 clearPageStates();
@@ -879,7 +879,7 @@ const restored = initPageState({
 <script lang="ts">
   import LocalActionsMenu from "$lib/components/LocalActionsMenu.svelte";
   import { ListCard } from "@inflatable-cookie/poodle-svelte";
-  import { gotoWithContext } from "@decodelabs/underlay/client/navigation";
+  import { gotoWithContext } from "@inflatable-cookie/underlay/client/navigation";
   import Video from "lucide-svelte/icons/video";
 
   interface Props {
@@ -929,7 +929,7 @@ const restored = initPageState({
   import type { PageData } from "./$types";
   import { PageHeader } from "@inflatable-cookie/poodle-svelte";
   import LocalActionsMenu from "$lib/components/LocalActionsMenu.svelte";
-  import { gotoWithContext } from "@decodelabs/underlay/client/navigation";
+  import { gotoWithContext } from "@inflatable-cookie/underlay/client/navigation";
 
   export let data: PageData;
 </script>
@@ -964,7 +964,7 @@ const restored = initPageState({
 <!-- /content/videos/[videoId]/edit/+page.svelte -->
 <script lang="ts">
   import type { PageData, ActionData } from "./$types";
-  import { getBackButtonInfo, getReturnUrl } from "@decodelabs/underlay/runtime/navigation";
+  import { getBackButtonInfo, getReturnUrl } from "@inflatable-cookie/underlay/runtime/navigation";
   import CrudFormShell from "$lib/forms/CrudFormShell.svelte";
   import VideoForm from "$lib/forms/VideoForm.svelte";
 
@@ -1000,7 +1000,7 @@ const restored = initPageState({
 <script lang="ts">
   import { Field, TextInput, FormActions } from "@inflatable-cookie/poodle-svelte";
   import { Button, SplitButton } from "@inflatable-cookie/poodle-svelte";
-  import { navigateOnCancel } from "@decodelabs/underlay/client/navigation";
+  import { navigateOnCancel } from "@inflatable-cookie/underlay/client/navigation";
 
   interface Props {
     mode?: "create" | "edit";
@@ -1144,7 +1144,7 @@ Create pages follow a similar pattern to edit pages, but with a key difference: 
 <!-- /content/videos/new/+page.svelte -->
 <script lang="ts">
   import type { ActionData } from "./$types";
-  import { getBackButtonInfo, getReturnUrl } from "@decodelabs/underlay/runtime/navigation";
+  import { getBackButtonInfo, getReturnUrl } from "@inflatable-cookie/underlay/runtime/navigation";
   import CrudFormShell from "$lib/forms/CrudFormShell.svelte";
   import VideoForm from "$lib/forms/VideoForm.svelte";
 
@@ -1252,8 +1252,8 @@ For pages where the form is defined inline (not in a separate component), includ
 <!-- /assessment/questions/new/+page.svelte -->
 <script lang="ts">
   import type { ActionData } from "./$types";
-  import { getBackButtonInfo, getReturnUrl } from "@decodelabs/underlay/runtime/navigation";
-  import { navigateOnCancel } from "@decodelabs/underlay/client/navigation";
+  import { getBackButtonInfo, getReturnUrl } from "@inflatable-cookie/underlay/runtime/navigation";
+  import { navigateOnCancel } from "@inflatable-cookie/underlay/client/navigation";
   import CrudFormShell from "$lib/forms/CrudFormShell.svelte";
   import { Field, TextInput, FormActions } from "@inflatable-cookie/poodle-svelte";
   import { Button, SplitButton } from "@inflatable-cookie/poodle-svelte";
@@ -1327,7 +1327,7 @@ When adding navigation context support to an existing page, follow this checklis
 ### For Pages with Separate Form Components
 
 **1. Update the page component (`+page.svelte`):**
-- [ ] Import `consumeNavigationContext` (and `computeBackInfo` if using async data) from `@decodelabs/underlay/runtime/navigation`
+- [ ] Import `consumeNavigationContext` (and `computeBackInfo` if using async data) from `@inflatable-cookie/underlay/runtime/navigation`
 - [ ] Define `defaultBackHref` constant with the fallback destination
 - [ ] Call `const { backInfo, returnTo } = consumeNavigationContext(label, defaultBackHref)`
 - [ ] If fallback depends on async data (e.g., entity name), use `computeBackInfo()`:
@@ -1345,7 +1345,7 @@ When adding navigation context support to an existing page, follow this checklis
 **2. Update the form component:**
 - [ ] Add `returnTo?: string` prop
 - [ ] Add `cancelHref?: string` prop (if not already present)
-- [ ] Import `navigateOnCancel` from `@decodelabs/underlay/client/navigation`
+- [ ] Import `navigateOnCancel` from `@inflatable-cookie/underlay/client/navigation`
 - [ ] Update `handleCancel()` to use `navigateOnCancel(cancelHref)`
 - [ ] Add hidden input: `{#if returnTo}<input type="hidden" name="returnTo" value={returnTo} />{/if}`
 
@@ -1356,8 +1356,8 @@ When adding navigation context support to an existing page, follow this checklis
 ### For Pages with Inline Forms
 
 **1. Update the page component:**
-- [ ] Import `consumeNavigationContext` from `@decodelabs/underlay/runtime/navigation`
-- [ ] Import `navigateOnCancel` from `@decodelabs/underlay/client/navigation`
+- [ ] Import `consumeNavigationContext` from `@inflatable-cookie/underlay/runtime/navigation`
+- [ ] Import `navigateOnCancel` from `@inflatable-cookie/underlay/client/navigation`
 - [ ] Define `defaultBackHref` and call `const { backInfo, returnTo } = consumeNavigationContext(...)`
 - [ ] Add hidden `returnTo` input directly in the form
 - [ ] Update cancel handler to use `navigateOnCancel(backInfo.href)`
@@ -1368,7 +1368,7 @@ When adding navigation context support to an existing page, follow this checklis
 ### For Source Pages (List/Detail)
 
 **Update list cards or action menus:**
-- [ ] Import `gotoWithContext` from `@decodelabs/underlay/client/navigation`
+- [ ] Import `gotoWithContext` from `@inflatable-cookie/underlay/client/navigation`
 - [ ] Replace `goto(editHref)` with `gotoWithContext(editHref, { label, href, type })`
 - [ ] Use `type: "list"` for list pages, `type: "detail"` for detail pages
 
@@ -1474,7 +1474,7 @@ const redirectTarget = returnTo && returnTo.startsWith("/")
 **Debug:**
 ```svelte
 <script>
-  import { getNavigationContextStack } from "@decodelabs/underlay/runtime/navigation";
+  import { getNavigationContextStack } from "@inflatable-cookie/underlay/runtime/navigation";
   console.log("Nav context:", getNavigationContextStack());
 </script>
 ```
@@ -1491,7 +1491,7 @@ const redirectTarget = returnTo && returnTo.startsWith("/")
 **Debug:**
 ```svelte
 <script>
-  import { getNavigationContextStack } from "@decodelabs/underlay/runtime/navigation";
+  import { getNavigationContextStack } from "@inflatable-cookie/underlay/runtime/navigation";
   const stack = getNavigationContextStack();
   if (stack.length > 0) {
     console.log("Top context targetHref:", stack[stack.length - 1].targetHref);
@@ -1518,7 +1518,7 @@ console.log("returnTo value:", formData.get("returnTo"));
 This shouldn't happen due to built-in sanity rules, but if it does:
 
 ```typescript
-import { clearNavigationContext } from "@decodelabs/underlay/runtime/navigation";
+import { clearNavigationContext } from "@inflatable-cookie/underlay/runtime/navigation";
 
 // Reset on logout or major navigation events
 clearNavigationContext();

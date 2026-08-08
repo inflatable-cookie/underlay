@@ -51,7 +51,7 @@ Underlay `OrderBy` once residue is clean.
 ## Consumer Upgrade Impact
 
 - Consumer apps should expect a staged migration from
-  `@decodelabs/underlay/components` `OrderBy` to Poodle `OrderBy`.
+  `@inflatable-cookie/underlay/components` `OrderBy` to Poodle `OrderBy`.
 - The migration shape should be:
   - expand the Poodle contract first
   - migrate the active admin caller family in grouped batches

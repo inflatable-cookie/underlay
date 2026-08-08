@@ -13,7 +13,7 @@ The next repair is bounded:
 
 - `createReorderController()` does not rebase its baseline after successful
   submit
-- several guides still teach a broader root `@decodelabs/underlay/patterns`
+- several guides still teach a broader root `@inflatable-cookie/underlay/patterns`
   surface than the contract now allows
 
 ## Goals
@@ -70,7 +70,7 @@ The shared-pattern repair is now honest and bounded:
 - reorder controllers become clean after a successful commit
 - the focused test proves the repaired baseline lifecycle directly
 - the sharpest guide drift no longer teaches a broader root
-  `@decodelabs/underlay/patterns` surface than the contract allows
+  `@inflatable-cookie/underlay/patterns` surface than the contract allows
 
 ## Next Task
 

@@ -7,11 +7,11 @@ Updated: 2026-06-06
 ## Scope
 
 This artifact records the consumer config cleanup after `g07.010` found stale
-`@decodelabs/underlay/components` references in Vite optimizeDeps excludes.
+`@inflatable-cookie/underlay/components` references in Vite optimizeDeps excludes.
 
 ## Files Updated
 
-Removed `@decodelabs/underlay/components` from:
+Removed `@inflatable-cookie/underlay/components` from:
 
 - `compli-me/front/vite.config.ts`
 - `compli-me/admin/vite.config.ts`
@@ -35,7 +35,7 @@ Consumer checks:
 
 Scan:
 
-- targeted `rg` found no remaining `@decodelabs/underlay/components` entries in
+- targeted `rg` found no remaining `@inflatable-cookie/underlay/components` entries in
   the six edited live Vite config files
 
 ## Consumer Impact

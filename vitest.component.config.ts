@@ -26,9 +26,9 @@ export default defineConfig({
 				__dirname,
 				"./ts/tests/setup/sveltekit-state.mock.ts",
 			),
-			"@decodelabs/underlay": resolve(__dirname, "./ts/src"),
-			"@decodelabs/underlay/client": resolve(__dirname, "./ts/src/client"),
-			"@decodelabs/underlay/patterns": resolve(__dirname, "./ts/src/patterns"),
+			"@inflatable-cookie/underlay": resolve(__dirname, "./ts/src"),
+			"@inflatable-cookie/underlay/client": resolve(__dirname, "./ts/src/client"),
+			"@inflatable-cookie/underlay/patterns": resolve(__dirname, "./ts/src/patterns"),
 		},
 	},
 });

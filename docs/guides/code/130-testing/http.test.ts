@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { createHttpClient } from "@decodelabs/underlay/client/http";
-import { UnderlayHttpError } from "@decodelabs/underlay/client/errors";
+import { createHttpClient } from "@inflatable-cookie/underlay/client/http";
+import { UnderlayHttpError } from "@inflatable-cookie/underlay/client/errors";
 
 describe("underlay createHttpClient", () => {
   let fetchMock: ReturnType<typeof vi.fn>;

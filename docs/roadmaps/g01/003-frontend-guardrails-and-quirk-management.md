@@ -60,7 +60,7 @@ Goal: eliminate “mystery state” in dev caused by linked packages and prebund
 - [x] Underlay: enforce a stable public API surface.
   - Keep `package.json` `exports` accurate and intentional.
   - Enforce export targets exist via `bun -C libraries/underlay check:exports`.
-  - Prefer shallow imports from `@decodelabs/underlay` / `@decodelabs/underlay/components` rather than arbitrary deep file paths.
+  - Prefer shallow imports from `@inflatable-cookie/underlay` / `@inflatable-cookie/underlay/components` rather than arbitrary deep file paths.
 
 - [x] Underlay/Froyo: decide and implement one of these approaches:
   - (Current decision) Source import is allowed for local `file:` deps.
@@ -70,7 +70,7 @@ Goal: eliminate “mystery state” in dev caused by linked packages and prebund
 
 - [x] Dairy: keep a minimal, explainable Vite config for linked packages.
   - `optimizeDeps.exclude`:
-    - Excludes `@decodelabs/underlay/*` entrypoints because Underlay is a local `file:` dep and Vite prebundling can cache stale exports.
+    - Excludes `@inflatable-cookie/underlay/*` entrypoints because Underlay is a local `file:` dep and Vite prebundling can cache stale exports.
   - `ssr.noExternal`:
     - Includes `bits-ui`, `svelte-toolbelt`, `runed` to keep SSR stable.
     - Includes `lucide-svelte` and `easymde` since they’re used by shared components.

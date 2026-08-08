@@ -7,8 +7,8 @@ Completed: 2026-06-06
 
 ## Purpose
 
-Audit `@decodelabs/underlay/client/query` and
-`@decodelabs/underlay/client/pagination` after the focused client DTO split.
+Audit `@inflatable-cookie/underlay/client/query` and
+`@inflatable-cookie/underlay/client/pagination` after the focused client DTO split.
 
 ## Governing References
 
@@ -48,7 +48,7 @@ page-shaped admin/resource browse surfaces.
 - Six-consumer usage is broad and coherent. Admin list pages, API command
   helpers, media commands, moderation pages, and local list wrappers all use
   `client/query` for the same route-state and API-command vocabulary.
-- No live six-consumer source imports `@decodelabs/underlay/client/pagination`.
+- No live six-consumer source imports `@inflatable-cookie/underlay/client/pagination`.
 
 ## Consumer Upgrade Impact
 

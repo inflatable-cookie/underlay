@@ -15,24 +15,24 @@ consumer roots. No generation rollover is needed.
 
 | Path | Ownership |
 | --- | --- |
-| `@decodelabs/underlay/runtime/auth` | auth runtime config, passkey helpers, and authenticated data helpers |
-| `@decodelabs/underlay/runtime/browser` | browser storage, DOM, keyboard, timezone, and environment helpers |
-| `@decodelabs/underlay/runtime/data` | collection workflow helpers: list state, pagination, reorder, selection, batch, and selection history |
-| `@decodelabs/underlay/runtime/feedback` | toast, clipboard, banner, and optimistic feedback orchestration |
-| `@decodelabs/underlay/runtime/forms` | form state, validated form state, and intent submit helpers |
-| `@decodelabs/underlay/runtime/media` | media upload, blob upload, and media detail helpers |
-| `@decodelabs/underlay/runtime/navigation` | framework-agnostic navigation context and page state helpers |
-| `@decodelabs/underlay/runtime/relations` | relation selector context, types, local state, and drilldown search helpers |
-| `@decodelabs/underlay/client/suggestions` | suggestion request URL and query parameter helpers |
-| `@decodelabs/underlay/client/*` | browser client, auth, query, navigation, HTTP, and event helpers |
-| `@decodelabs/underlay/patterns` | retained shared auth flows, `SpaFormShell`, `SpaFormResult`, and contextual actions |
-| `@decodelabs/underlay/templates` | entity, system, and media page/list/detail/form shells |
-| `@decodelabs/underlay/testing` | shared test helpers such as `createMockHttpClient` |
-| `@decodelabs/underlay/tools/*` | guardrail scanner, guardrail config, and template support tooling |
-| `@decodelabs/underlay/utils/*` | pure utility helpers including HTML, slug, i18n, sequence, and WebAuthn helpers |
+| `@inflatable-cookie/underlay/runtime/auth` | auth runtime config, passkey helpers, and authenticated data helpers |
+| `@inflatable-cookie/underlay/runtime/browser` | browser storage, DOM, keyboard, timezone, and environment helpers |
+| `@inflatable-cookie/underlay/runtime/data` | collection workflow helpers: list state, pagination, reorder, selection, batch, and selection history |
+| `@inflatable-cookie/underlay/runtime/feedback` | toast, clipboard, banner, and optimistic feedback orchestration |
+| `@inflatable-cookie/underlay/runtime/forms` | form state, validated form state, and intent submit helpers |
+| `@inflatable-cookie/underlay/runtime/media` | media upload, blob upload, and media detail helpers |
+| `@inflatable-cookie/underlay/runtime/navigation` | framework-agnostic navigation context and page state helpers |
+| `@inflatable-cookie/underlay/runtime/relations` | relation selector context, types, local state, and drilldown search helpers |
+| `@inflatable-cookie/underlay/client/suggestions` | suggestion request URL and query parameter helpers |
+| `@inflatable-cookie/underlay/client/*` | browser client, auth, query, navigation, HTTP, and event helpers |
+| `@inflatable-cookie/underlay/patterns` | retained shared auth flows, `SpaFormShell`, `SpaFormResult`, and contextual actions |
+| `@inflatable-cookie/underlay/templates` | entity, system, and media page/list/detail/form shells |
+| `@inflatable-cookie/underlay/testing` | shared test helpers such as `createMockHttpClient` |
+| `@inflatable-cookie/underlay/tools/*` | guardrail scanner, guardrail config, and template support tooling |
+| `@inflatable-cookie/underlay/utils/*` | pure utility helpers including HTML, slug, i18n, sequence, and WebAuthn helpers |
 
-The root `@decodelabs/underlay` package and root
-`@decodelabs/underlay/runtime` path remain compatibility-only. New code should
+The root `@inflatable-cookie/underlay` package and root
+`@inflatable-cookie/underlay/runtime` path remain compatibility-only. New code should
 use focused subpaths.
 
 ## Consumer Changes
@@ -40,7 +40,7 @@ use focused subpaths.
 - `contact-patch/cp-client` moved suggestion request helpers from
   `runtime/data` to `client/suggestions`.
 - `compli-me/front` and `compli-me/admin` removed stale
-  `@decodelabs/underlay/components` Vite optimize dependency excludes.
+  `@inflatable-cookie/underlay/components` Vite optimize dependency excludes.
 - `songsprout/bloom` and `songsprout/greenhouse` removed the same stale config
   excludes.
 - `loophole/composer/composer-front` and
@@ -57,7 +57,7 @@ use focused subpaths.
 - `runtime/data` stays broad for now because its lower collection workflow
   helpers form one layer below templates.
 - `runtime/relations` stays one coherent retained path.
-- `@decodelabs/underlay/components` is not retained; live consumer Vite config
+- `@inflatable-cookie/underlay/components` is not retained; live consumer Vite config
   references were removed.
 
 ## Test And Guardrail Coverage

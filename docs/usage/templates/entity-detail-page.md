@@ -26,7 +26,7 @@ It supports two normal body modes:
     EntityDetail,
     EntityDetailPage,
     EntityListPage
-  } from "@decodelabs/underlay/templates";
+  } from "@inflatable-cookie/underlay/templates";
 
   async function loadProject(fetchFn: typeof fetch, token: string | null) {
     return await adminCommands.getProject(id, fetchFn, token);
@@ -260,7 +260,7 @@ Reference recipe:
 ## Public types
 
 The shared detail-template config types are exported from
-`@decodelabs/underlay/templates`:
+`@inflatable-cookie/underlay/templates`:
 
 - `DetailMetaItemConfig`
 - `DetailTabConfig`

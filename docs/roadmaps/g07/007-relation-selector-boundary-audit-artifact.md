@@ -56,7 +56,7 @@ Retained surfaces:
 
 Decision:
 
-- keep URL/query-param construction under `@decodelabs/underlay/client/suggestions`
+- keep URL/query-param construction under `@inflatable-cookie/underlay/client/suggestions`
 - do not teach these helpers through `runtime/relations`
 
 Reasoning:
@@ -78,7 +78,7 @@ Retained surface:
 
 Decision:
 
-- keep selection history under `@decodelabs/underlay/runtime/data`
+- keep selection history under `@inflatable-cookie/underlay/runtime/data`
 - do not move it into `runtime/relations` during this generation
 
 Reasoning:

@@ -57,7 +57,7 @@ export interface AuthCookieHelpers {
  * @example
  * ```ts
  * // src/lib/auth.ts
- * import { createAuthCookieHelpers } from "@decodelabs/underlay/client/sveltekit";
+ * import { createAuthCookieHelpers } from "@inflatable-cookie/underlay/client/sveltekit";
  *
  * export const authCookies = createAuthCookieHelpers({
  *   accessTokenName: "bloom_access_token",

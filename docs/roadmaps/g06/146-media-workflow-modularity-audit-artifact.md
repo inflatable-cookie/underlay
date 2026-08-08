@@ -27,7 +27,7 @@ The current file groups:
 
 Public path:
 
-- `@decodelabs/underlay/runtime/media` re-exports
+- `@inflatable-cookie/underlay/runtime/media` re-exports
   `../patterns/media-workflow`
 
 In-repo consumers:

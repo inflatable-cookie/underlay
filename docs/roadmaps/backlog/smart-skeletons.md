@@ -73,7 +73,7 @@ Create a `DataSkeleton` component that automatically generates appropriate skele
 Allow apps to register custom patterns:
 
 ```typescript
-import { registerSkeletonPattern } from '@decodelabs/underlay/components';
+import { registerSkeletonPattern } from '@inflatable-cookie/underlay/components';
 
 registerSkeletonPattern('user-card', () => `
   <div class="user-card-skeleton">

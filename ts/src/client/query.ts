@@ -66,7 +66,7 @@ export interface QueryParams {
  *
  * @example
  * ```ts
- * import { orderByToSortFields } from "@decodelabs/underlay/client/query";
+ * import { orderByToSortFields } from "@inflatable-cookie/underlay/client/query";
  * import type { OrderByValue } from "@inflatable-cookie/poodle-svelte";
  *
  * const orderBy: OrderByValue = [

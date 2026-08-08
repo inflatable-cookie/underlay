@@ -119,7 +119,7 @@ If a narrower filter is set, ignore broader filters in the query call to avoid a
 
 ### `useBatchSelection`
 
-**Location:** `@decodelabs/underlay/runtime/data`
+**Location:** `@inflatable-cookie/underlay/runtime/data`
 
 Basic selection state management for multi-select list operations. Use this when you only need selection without registered batch actions.
 
@@ -130,7 +130,7 @@ UI note:
 
 ```svelte
 <script lang="ts">
-  import { useBatchSelection } from '@decodelabs/underlay/runtime/data';
+  import { useBatchSelection } from '@inflatable-cookie/underlay/runtime/data';
   import { AlertDialog, BulkActionBar } from '@inflatable-cookie/poodle-svelte';
 
   const items = $derived(data.projects);
@@ -213,13 +213,13 @@ interface BatchSelectionResult<T> {
 
 ### `useBatchActions`
 
-**Location:** `@decodelabs/underlay/runtime/data`
+**Location:** `@inflatable-cookie/underlay/runtime/data`
 
 Extends `useBatchSelection` with action registration and execution. This is the recommended hook for autonomous list components.
 
 ```svelte
 <script lang="ts">
-  import { useBatchActions } from '@decodelabs/underlay/runtime/data';
+  import { useBatchActions } from '@inflatable-cookie/underlay/runtime/data';
   import { AlertDialog, BulkActionBar } from '@inflatable-cookie/poodle-svelte';
 
   const batch = useBatchActions<string>();
@@ -405,13 +405,13 @@ interface BatchActionsResult<T> {
 
 ### `createListController`
 
-**Location:** `@decodelabs/underlay/runtime/data`
+**Location:** `@inflatable-cookie/underlay/runtime/data`
 
 Provides unified state management for list data fetching with filters. Use this when you need coordinated data fetching with filter state.
 
 ```svelte
 <script lang="ts">
-  import { createListController } from '@decodelabs/underlay/runtime/data';
+  import { createListController } from '@inflatable-cookie/underlay/runtime/data';
   import { auth, authLoading, currentUser } from '$lib/stores/auth';
 
   interface AreaFilters {
@@ -626,10 +626,10 @@ Here's a complete example of building an autonomous list component:
   import { goto } from "$app/navigation";
   import { page } from "$app/stores";
   import { browser } from "$app/environment";
-  import { useAuthenticatedData } from "@decodelabs/underlay/runtime/auth";
-  import { useBatchActions } from "@decodelabs/underlay/runtime/data";
-  import { useToasts } from "@decodelabs/underlay/runtime/feedback";
-  import type { NavigationContext } from "@decodelabs/underlay/runtime/navigation";
+  import { useAuthenticatedData } from "@inflatable-cookie/underlay/runtime/auth";
+  import { useBatchActions } from "@inflatable-cookie/underlay/runtime/data";
+  import { useToasts } from "@inflatable-cookie/underlay/runtime/feedback";
+  import type { NavigationContext } from "@inflatable-cookie/underlay/runtime/navigation";
   import { FilterToolbar } from "@inflatable-cookie/poodle-svelte";
   import {
     Button,
@@ -640,7 +640,7 @@ Here's a complete example of building an autonomous list component:
   } from "@inflatable-cookie/poodle-svelte";
   import { PageLoading } from "@inflatable-cookie/poodle-svelte";
   import { Tooltip } from "@inflatable-cookie/poodle-svelte";
-  import { gotoWithContext } from "@decodelabs/underlay/client/navigation";
+  import { gotoWithContext } from "@inflatable-cookie/underlay/client/navigation";
   import { learningCommands } from "@cattle-grid";
   import { auth } from "$lib/stores/auth";
   import { AreaListCard } from "$lib/cards";

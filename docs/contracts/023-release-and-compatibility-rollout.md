@@ -235,8 +235,8 @@ underlay-core = { git = "https://github.com/inflatable-cookie/underlay.git", tag
 ```
 
 ```jsonc
-// npm (consumer): was  "@decodelabs/underlay": "file:../../underlay"
-"@decodelabs/underlay": "github:inflatable-cookie/underlay#v0.8.0"
+// npm (consumer): was  "@inflatable-cookie/underlay": "file:../../underlay"
+"@inflatable-cookie/underlay": "github:inflatable-cookie/underlay#v0.8.0"
 ```
 
 Revert to the `path`/`file` form to rejoin lockstep development. Keep the switch

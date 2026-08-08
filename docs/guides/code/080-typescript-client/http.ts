@@ -1,9 +1,9 @@
 import {
   createHttpClient,
   type HttpClient,
-} from "@decodelabs/underlay/client/http";
-import { UnderlayHttpError, isErrorEnvelope } from "@decodelabs/underlay/client/errors";
-import type { ErrorEnvelope } from "@decodelabs/underlay/client/types";
+} from "@inflatable-cookie/underlay/client/http";
+import { UnderlayHttpError, isErrorEnvelope } from "@inflatable-cookie/underlay/client/errors";
+import type { ErrorEnvelope } from "@inflatable-cookie/underlay/client/types";
 
 export interface StemHttpConfig {
   baseUrl: string;

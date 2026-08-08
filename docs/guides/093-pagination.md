@@ -83,12 +83,12 @@ Underlay provides a complete pagination solution that scales from small client-s
 | Rust Core | `PaginationBuilder` | `underlay-db` | Helper for building responses |
 | Rust API | `PaginationQuery` | App-specific | Axum query extractor |
 | Rust API | `PaginatedResponseDto<T>` | App-specific | DTO with utoipa support |
-| TypeScript | `CursorPaginationParams` | `@decodelabs/underlay/runtime/data` | Cursor query parameter interface |
-| TypeScript | `CursorPaginatedResponse<T>` | `@decodelabs/underlay/runtime/data` | Cursor response interface |
-| TypeScript | `PaginationController<T>` | `@decodelabs/underlay/runtime/data` | Unified controller interface |
-| TypeScript | `createPaginationController` | `@decodelabs/underlay/runtime/data` | Server-side controller |
-| TypeScript | `createClientPagination` | `@decodelabs/underlay/runtime/data` | Client-side controller |
-| TypeScript | `PageListParams` | `@decodelabs/underlay/client/page-lists` | Page-shaped `page + limit` helper |
+| TypeScript | `CursorPaginationParams` | `@inflatable-cookie/underlay/runtime/data` | Cursor query parameter interface |
+| TypeScript | `CursorPaginatedResponse<T>` | `@inflatable-cookie/underlay/runtime/data` | Cursor response interface |
+| TypeScript | `PaginationController<T>` | `@inflatable-cookie/underlay/runtime/data` | Unified controller interface |
+| TypeScript | `createPaginationController` | `@inflatable-cookie/underlay/runtime/data` | Server-side controller |
+| TypeScript | `createClientPagination` | `@inflatable-cookie/underlay/runtime/data` | Client-side controller |
+| TypeScript | `PageListParams` | `@inflatable-cookie/underlay/client/page-lists` | Page-shaped `page + limit` helper |
 | Svelte | `<Pagination>` | `@inflatable-cookie/poodle-svelte` | UI component |
 
 ## API Design
@@ -477,14 +477,14 @@ import {
   // Helpers
   buildPaginationQuery,
   appendPaginationParams,
-} from "@decodelabs/underlay/runtime/data";
+} from "@inflatable-cookie/underlay/runtime/data";
 ```
 
 For the higher-level admin page-list surface, import the public client type
-from `@decodelabs/underlay/client/types` instead:
+from `@inflatable-cookie/underlay/client/types` instead:
 
 ```ts
-import type { PagedListResponse } from "@decodelabs/underlay/client/types";
+import type { PagedListResponse } from "@inflatable-cookie/underlay/client/types";
 ```
 
 ### PaginationParams
@@ -564,7 +564,7 @@ Use this for large datasets where you want cursor-based navigation:
 import {
   createPaginationController,
   type ServerPaginationOptions
-} from "@decodelabs/underlay/runtime/data";
+} from "@inflatable-cookie/underlay/runtime/data";
 ```
 
 #### Options
@@ -587,7 +587,7 @@ interface ServerPaginationOptions<T> {
   import {
     createPaginationController,
     type PaginationParams
-  } from "@decodelabs/underlay/runtime/data";
+  } from "@inflatable-cookie/underlay/runtime/data";
   import { Pagination } from "@inflatable-cookie/poodle-svelte";
   import { getBundleActivitiesPaginated } from "@cattle-grid";
   import { authLoading, currentUser } from "$lib/stores/auth";
@@ -632,7 +632,7 @@ interface ServerPaginationOptions<T> {
 Use this for pre-loaded data where you want instant page switching:
 
 ```typescript
-import { createClientPagination } from "@decodelabs/underlay/runtime/data";
+import { createClientPagination } from "@inflatable-cookie/underlay/runtime/data";
 ```
 
 #### Options
@@ -648,7 +648,7 @@ interface ClientPaginationOptions {
 
 ```svelte
 <script lang="ts">
-  import { createClientPagination } from "@decodelabs/underlay/runtime/data";
+  import { createClientPagination } from "@inflatable-cookie/underlay/runtime/data";
   import { Pagination } from "@inflatable-cookie/poodle-svelte";
 
   interface Props {
@@ -817,7 +817,7 @@ import {
   appendPaginationParams,
   type PaginatedResponse,
   type PaginationParams
-} from "@decodelabs/underlay/runtime/data";
+} from "@inflatable-cookie/underlay/runtime/data";
 
 export async function getItemsPaginated(
   fetchFn: typeof fetch,
@@ -846,7 +846,7 @@ is feeding `EntityListPage` or another page-shaped admin list, prefer the
     createPaginationController,
     createClientPagination,
     PageHeader
-  } from "@decodelabs/underlay/runtime/data";
+  } from "@inflatable-cookie/underlay/runtime/data";
   import { FilterToolbar } from "@inflatable-cookie/poodle-svelte";
   import {
     Field,

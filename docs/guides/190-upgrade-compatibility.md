@@ -88,10 +88,10 @@ Reusable templates:
   migration for the named six-consumer family
 - Affected consumers:
   - apps importing lower selection or reorder helpers from
-    `@decodelabs/underlay/patterns`
+    `@inflatable-cookie/underlay/patterns`
   - apps importing suggestion request helpers from
-    `@decodelabs/underlay/runtime/data`
-  - apps carrying stale `@decodelabs/underlay/components` Vite optimize
+    `@inflatable-cookie/underlay/runtime/data`
+  - apps carrying stale `@inflatable-cookie/underlay/components` Vite optimize
     dependency excludes
 - What changed:
   - retained TS runtime, client, pattern, template, testing, tools, and utility
@@ -112,20 +112,20 @@ Reusable templates:
 - Required actions:
   1. Import runtime helpers from focused `runtime/*` subpaths.
   2. Import suggestion request helpers from
-     `@decodelabs/underlay/client/suggestions`.
+     `@inflatable-cookie/underlay/client/suggestions`.
   3. Keep selection history and lower collection workflow helpers on
-     `@decodelabs/underlay/runtime/data`, or use focused
+     `@inflatable-cookie/underlay/runtime/data`, or use focused
      `runtime/collections`, `runtime/reorder`, and `runtime/selection` subpaths
      for new code.
-  4. Keep media helpers on `@decodelabs/underlay/runtime/media`, or use focused
+  4. Keep media helpers on `@inflatable-cookie/underlay/runtime/media`, or use focused
      `runtime/media/types`, `runtime/media/upload`, and
      `runtime/media/detail` subpaths for new code.
-  5. Keep client DTOs on `@decodelabs/underlay/client/types`, or use focused
+  5. Keep client DTOs on `@inflatable-cookie/underlay/client/types`, or use focused
      `client/envelopes`, `client/restore`, and `client/auth-types` subpaths for
      new code.
-  6. Keep `@decodelabs/underlay/patterns` for retained shared auth flows,
+  6. Keep `@inflatable-cookie/underlay/patterns` for retained shared auth flows,
      `SpaFormShell`, `SpaFormResult`, and contextual actions.
-  7. Remove `@decodelabs/underlay/components` from live Vite optimize
+  7. Remove `@inflatable-cookie/underlay/components` from live Vite optimize
      dependency config if present.
   8. Do not import app UI primitives from Underlay; use Poodle or app-local UI.
 - Cutover:
@@ -146,7 +146,7 @@ Reusable templates:
   - in consumers: run the repo-owned Svelte or TypeScript checks for edited
     packages
   - scan for stale config:
-    `@decodelabs/underlay/components`
+    `@inflatable-cookie/underlay/components`
 - Current consumer proof:
   - `underlay-reference`: no source migration needed
   - `contact-patch`: `cp-client` suggestion imports moved to
@@ -355,9 +355,9 @@ Reusable templates:
 
 - Impact class: `breaking`
 - Affected consumers: any app, shared package, or guide snippet importing from
-  the flat `@decodelabs/underlay` root path
+  the flat `@inflatable-cookie/underlay` root path
 - What changed:
-  - the root package export `@decodelabs/underlay` is an empty
+  - the root package export `@inflatable-cookie/underlay` is an empty
     compatibility-only stub
   - consumers must now import from explicit package surfaces only
 - Required actions:
@@ -365,17 +365,17 @@ Reusable templates:
   2. keep the package dependency itself unchanged
   3. do not recreate app-local alias barrels that flatten these subpaths again
 - Common replacements:
-  - `@decodelabs/underlay/client/*`
-  - `@decodelabs/underlay/runtime/*`
-  - `@decodelabs/underlay/patterns`
-  - `@decodelabs/underlay/nightfire/*`
-  - `@decodelabs/underlay/utils/*`
+  - `@inflatable-cookie/underlay/client/*`
+  - `@inflatable-cookie/underlay/runtime/*`
+  - `@inflatable-cookie/underlay/patterns`
+  - `@inflatable-cookie/underlay/nightfire/*`
+  - `@inflatable-cookie/underlay/utils/*`
 - Validation:
   - in `underlay`: `effigy check:exports && effigy qa:docs && effigy qa:northstar`
   - in consuming apps/packages: run the repo-owned Svelte check or TS check and
-    scan for `@decodelabs/underlay` source imports
+    scan for `@inflatable-cookie/underlay` source imports
 - Caveat:
-  - dependency entries like `"@decodelabs/underlay": "file:../underlay"` stay
+  - dependency entries like `"@inflatable-cookie/underlay": "file:../underlay"` stay
     valid; this break is about source import paths, not package installation
     syntax
 
@@ -385,119 +385,119 @@ Reusable templates:
 
 - Impact class: `breaking`
 - Affected consumers: any app, shared package, or guide snippet importing from
-  `@decodelabs/underlay/utils`
+  `@inflatable-cookie/underlay/utils`
 - What changed:
   - the root `utils` barrel is retired
   - consumers must now import from focused utility subpaths
 - Required actions:
-  1. replace WebAuthn imports with `@decodelabs/underlay/utils/webauthn`
-  2. replace slug imports with `@decodelabs/underlay/utils/slug`
-  3. replace formatting imports with `@decodelabs/underlay/utils/i18n`
-  4. replace sequence imports with `@decodelabs/underlay/utils/sequence`
-  5. replace sanitization imports with `@decodelabs/underlay/utils/html`
+  1. replace WebAuthn imports with `@inflatable-cookie/underlay/utils/webauthn`
+  2. replace slug imports with `@inflatable-cookie/underlay/utils/slug`
+  3. replace formatting imports with `@inflatable-cookie/underlay/utils/i18n`
+  4. replace sequence imports with `@inflatable-cookie/underlay/utils/sequence`
+  5. replace sanitization imports with `@inflatable-cookie/underlay/utils/html`
 - Validation:
   - in `underlay`: `effigy check:exports && effigy qa:docs && effigy qa:northstar`
   - in consuming apps/packages: run the repo-owned Svelte check or TS check and
-    scan for `@decodelabs/underlay/utils` source imports
+    scan for `@inflatable-cookie/underlay/utils` source imports
 
 ### Nightfire Root Barrel Import Guidance (`2026-04-08`)
 
 - Impact class: `deprecation`
 - Affected consumers: any app, shared package, or guide snippet importing from
-  `@decodelabs/underlay/nightfire`
+  `@inflatable-cookie/underlay/nightfire`
 - What changed:
   - the root Nightfire barrel is retained for compatibility
   - new code and docs should import from explicit Nightfire feature subpaths
 - Required actions:
-  1. move editor imports to `@decodelabs/underlay/nightfire/editor`
-  2. move renderer imports to `@decodelabs/underlay/nightfire/renderer`
-  3. move block registration helpers to `@decodelabs/underlay/nightfire/block-registration`
+  1. move editor imports to `@inflatable-cookie/underlay/nightfire/editor`
+  2. move renderer imports to `@inflatable-cookie/underlay/nightfire/renderer`
+  3. move block registration helpers to `@inflatable-cookie/underlay/nightfire/block-registration`
   4. move low-level registry imports to `editor-registry`, `render-registry`, or `validator-registry`
-  5. move strategy imports to `@decodelabs/underlay/nightfire/strategies`
-  6. move utility imports to `@decodelabs/underlay/nightfire/utils` or `validation`
+  5. move strategy imports to `@inflatable-cookie/underlay/nightfire/strategies`
+  6. move utility imports to `@inflatable-cookie/underlay/nightfire/utils` or `validation`
 - Validation:
   - in `underlay`: `effigy check:exports && effigy qa:docs && effigy qa:northstar`
   - in consuming apps/packages: run the repo-owned Svelte check or TS check and
-    scan for `@decodelabs/underlay/nightfire` source imports
+    scan for `@inflatable-cookie/underlay/nightfire` source imports
 
 ### Runtime Root Barrel Import Guidance (`2026-04-08`)
 
 - Impact class: `deprecation`
 - Affected consumers: any app, shared package, or guide snippet importing from
-  `@decodelabs/underlay/runtime`
+  `@inflatable-cookie/underlay/runtime`
 - What changed:
   - the root `runtime` barrel is retained for compatibility with a tiny
     pagination type/helper surface
   - new code and docs should import from explicit runtime feature subpaths
 - Required actions:
-  1. move auth/data-loading helpers to `@decodelabs/underlay/runtime/auth`
-  2. move toasts and clipboard helpers to `@decodelabs/underlay/runtime/feedback`
-  3. move navigation context helpers to `@decodelabs/underlay/runtime/navigation`
-  4. move form helpers to `@decodelabs/underlay/runtime/forms`
-  5. move reorder, pagination, and selection helpers to `@decodelabs/underlay/runtime/data`
-  6. move relation search helpers to `@decodelabs/underlay/runtime/relations`
-  7. move browser/timezone helpers to `@decodelabs/underlay/runtime/browser`
-  8. move media/blob helpers to `@decodelabs/underlay/runtime/media`, or to
-     `@decodelabs/underlay/runtime/media/types`,
-     `@decodelabs/underlay/runtime/media/upload`, and
-     `@decodelabs/underlay/runtime/media/detail` for focused imports
+  1. move auth/data-loading helpers to `@inflatable-cookie/underlay/runtime/auth`
+  2. move toasts and clipboard helpers to `@inflatable-cookie/underlay/runtime/feedback`
+  3. move navigation context helpers to `@inflatable-cookie/underlay/runtime/navigation`
+  4. move form helpers to `@inflatable-cookie/underlay/runtime/forms`
+  5. move reorder, pagination, and selection helpers to `@inflatable-cookie/underlay/runtime/data`
+  6. move relation search helpers to `@inflatable-cookie/underlay/runtime/relations`
+  7. move browser/timezone helpers to `@inflatable-cookie/underlay/runtime/browser`
+  8. move media/blob helpers to `@inflatable-cookie/underlay/runtime/media`, or to
+     `@inflatable-cookie/underlay/runtime/media/types`,
+     `@inflatable-cookie/underlay/runtime/media/upload`, and
+     `@inflatable-cookie/underlay/runtime/media/detail` for focused imports
 - Validation:
   - in `underlay`: `effigy check:exports && effigy qa:docs && effigy qa:northstar`
   - in consuming apps/packages: run the repo-owned Svelte check or TS check and
-    scan for `@decodelabs/underlay/runtime` source imports
+    scan for `@inflatable-cookie/underlay/runtime` source imports
 
 ### Client Root Barrel Import Guidance (`2026-04-08`)
 
 - Impact class: `deprecation`
 - Affected consumers: any app, shared package, or guide snippet importing from
-  `@decodelabs/underlay/client`
+  `@inflatable-cookie/underlay/client`
 - What changed:
   - the root `client` barrel is retained for compatibility and broad client
     convenience imports
   - new code and docs should import from explicit client feature subpaths
 - Required actions:
-  1. move navigation helpers to `@decodelabs/underlay/client/navigation`
-  2. move query helpers to `@decodelabs/underlay/client/query`
-  3. move HTTP client primitives to `@decodelabs/underlay/client/http`
-  4. move HTTP errors to `@decodelabs/underlay/client/errors`
-  5. move SvelteKit auth/cookie helpers to `@decodelabs/underlay/client/sveltekit`
-  6. move route guards to `@decodelabs/underlay/client/route-protection`
+  1. move navigation helpers to `@inflatable-cookie/underlay/client/navigation`
+  2. move query helpers to `@inflatable-cookie/underlay/client/query`
+  3. move HTTP client primitives to `@inflatable-cookie/underlay/client/http`
+  4. move HTTP errors to `@inflatable-cookie/underlay/client/errors`
+  5. move SvelteKit auth/cookie helpers to `@inflatable-cookie/underlay/client/sveltekit`
+  6. move route guards to `@inflatable-cookie/underlay/client/route-protection`
   7. move shared response and error-envelope types to
-     `@decodelabs/underlay/client/types`, or to
-     `@decodelabs/underlay/client/envelopes`,
-     `@decodelabs/underlay/client/restore`, and
-     `@decodelabs/underlay/client/auth-types` for focused imports
-  8. move formatting helpers to `@decodelabs/underlay/client/format`
+     `@inflatable-cookie/underlay/client/types`, or to
+     `@inflatable-cookie/underlay/client/envelopes`,
+     `@inflatable-cookie/underlay/client/restore`, and
+     `@inflatable-cookie/underlay/client/auth-types` for focused imports
+  8. move formatting helpers to `@inflatable-cookie/underlay/client/format`
 - Validation:
   - in `underlay`: `effigy check:exports && effigy qa:docs && effigy qa:northstar`
   - in consuming apps/packages: run the repo-owned Svelte check or TS check and
-    scan for `@decodelabs/underlay/client` source imports
+    scan for `@inflatable-cookie/underlay/client` source imports
 
 ### Runtime Legacy Compatibility Subpath Removal (`2026-04-08`)
 
 - Impact class: `breaking`
 - Affected consumers: any app, shared package, or guide snippet importing from:
-  - `@decodelabs/underlay/runtime/useToasts`
-  - `@decodelabs/underlay/runtime/authenticated-data`
-  - `@decodelabs/underlay/runtime/selection-history`
-  - `@decodelabs/underlay/runtime/pagination-types`
-  - `@decodelabs/underlay/runtime/media-types`
-  - `@decodelabs/underlay/runtime/i18n`
+  - `@inflatable-cookie/underlay/runtime/useToasts`
+  - `@inflatable-cookie/underlay/runtime/authenticated-data`
+  - `@inflatable-cookie/underlay/runtime/selection-history`
+  - `@inflatable-cookie/underlay/runtime/pagination-types`
+  - `@inflatable-cookie/underlay/runtime/media-types`
+  - `@inflatable-cookie/underlay/runtime/i18n`
 - What changed:
   - these legacy compatibility aliases are retired
   - consumers must now use the real retained runtime feature slices instead
 - Required actions:
-  1. move `useToasts` imports to `@decodelabs/underlay/runtime/feedback`
-  2. move `useAuthenticatedData` imports to `@decodelabs/underlay/runtime/auth`
-  3. move selection-history imports to `@decodelabs/underlay/runtime/data`
-  4. move pagination type imports to `@decodelabs/underlay/runtime/data`
-  5. move media type imports to `@decodelabs/underlay/runtime/media`
-  6. move formatting imports to `@decodelabs/underlay/utils/i18n`
-  7. move slug helpers to `@decodelabs/underlay/utils/slug`
+  1. move `useToasts` imports to `@inflatable-cookie/underlay/runtime/feedback`
+  2. move `useAuthenticatedData` imports to `@inflatable-cookie/underlay/runtime/auth`
+  3. move selection-history imports to `@inflatable-cookie/underlay/runtime/data`
+  4. move pagination type imports to `@inflatable-cookie/underlay/runtime/data`
+  5. move media type imports to `@inflatable-cookie/underlay/runtime/media`
+  6. move formatting imports to `@inflatable-cookie/underlay/utils/i18n`
+  7. move slug helpers to `@inflatable-cookie/underlay/utils/slug`
 - Validation:
   - in `underlay`: `effigy check:exports && effigy qa:docs && effigy qa:northstar`
   - in consuming apps/packages: run the repo-owned Svelte check or TS check and
-    scan for the retired `@decodelabs/underlay/runtime/*` alias imports
+    scan for the retired `@inflatable-cookie/underlay/runtime/*` alias imports
 
 - Impact class: `breaking`
 - Affected consumers: any app, shared component, or guide snippet using `@inflatable-cookie/poodle-svelte` or `@inflatable-cookie/poodle-svelte`
@@ -533,7 +533,7 @@ Reusable templates:
 - Impact class: `additive`
 - Affected consumers: apps with custom WebAuthn ceremony code or passkey settings UIs
 - Required actions:
-  - import `usePasskeyRegistration()` / `usePasskeyAuthentication()` from `@decodelabs/underlay/runtime/auth`
+  - import `usePasskeyRegistration()` / `usePasskeyAuthentication()` from `@inflatable-cookie/underlay/runtime/auth`
   - build passkey settings screens directly in the app over shared auth hooks
     and Poodle primitives; `PasskeyManager` is no longer part of the public
     Underlay component surface
@@ -552,7 +552,7 @@ Reusable templates:
 - Required actions:
   - install `zod` in the consuming app: `bun add zod`
   - move any imported schemas into app-local code
-  - keep using `useValidatedForm()` from `@decodelabs/underlay/runtime/forms` if the orchestration hook is still useful
+  - keep using `useValidatedForm()` from `@inflatable-cookie/underlay/runtime/forms` if the orchestration hook is still useful
 - Validation:
   - `effigy validate`
   - consumer form smoke tests for client-side validation plus server-side submit handling

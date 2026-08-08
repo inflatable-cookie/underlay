@@ -52,7 +52,7 @@ workflow family should migrate out of Underlay.
 ## Consumer Upgrade Impact
 
 - Consumer apps should stop importing `LoginPage` and `ForgotPasswordFlow` from
-  `@decodelabs/underlay/components` and use `@decodelabs/underlay/patterns`
+  `@inflatable-cookie/underlay/components` and use `@inflatable-cookie/underlay/patterns`
   instead.
 - `PasswordRequirements` remains public in Underlay for now, but its UI is no
   longer the canonical owner; the canonical agnostic checklist moves to
@@ -73,8 +73,8 @@ workflow family should migrate out of Underlay.
 
 The public auth workflow shells now live on the correct Underlay layer:
 
-- `LoginPage` is exported from `@decodelabs/underlay/patterns`
-- `ForgotPasswordFlow` is exported from `@decodelabs/underlay/patterns`
+- `LoginPage` is exported from `@inflatable-cookie/underlay/patterns`
+- `ForgotPasswordFlow` is exported from `@inflatable-cookie/underlay/patterns`
 - the public `components` barrel no longer owns those workflow pages
 
 The grouped live auth caller family in `acme-admin`, `cp-admin`, and `dairy`

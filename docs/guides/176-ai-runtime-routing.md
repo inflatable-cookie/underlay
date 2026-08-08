@@ -200,7 +200,7 @@ Reference file: `docs/guides/code/176-ai-runtime-routing/ai-routing-admin-page.s
     type AiRoutingOpsSource,
     type AiRoutingOpsOptions,
     type AiRoutingAdminMessages
-  } from "@decodelabs/underlay/runtime/ai";
+  } from "@inflatable-cookie/underlay/runtime/ai";
   import AiRoutingOpsPanel from "./AiRoutingOpsPanel.svelte";
 
   const getToken = auth.getTokenProvider();

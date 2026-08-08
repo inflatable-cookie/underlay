@@ -812,7 +812,7 @@ Instead of implementing hooks manually, use Underlay's `createAuthHandle`:
 
 ```typescript
 // apps/pasture/src/hooks.server.ts
-import { createAuthHandle } from '@decodelabs/underlay/client/sveltekit';
+import { createAuthHandle } from '@inflatable-cookie/underlay/client/sveltekit';
 
 export const handle = createAuthHandle({
   baseUrl: 'https://api.example.com',
@@ -930,7 +930,7 @@ See your project for a complete working example:
 
 ## Route Protection Utilities
 
-Underlay provides route protection utilities in `@decodelabs/underlay/client/route-protection` for centralized authentication checks in SvelteKit hooks.
+Underlay provides route protection utilities in `@inflatable-cookie/underlay/client/route-protection` for centralized authentication checks in SvelteKit hooks.
 
 ### Available Functions
 
@@ -939,7 +939,7 @@ import {
   isPublicPath,
   createLoginRedirect,
   createRouteProtection,
-} from '@decodelabs/underlay/client/route-protection';
+} from '@inflatable-cookie/underlay/client/route-protection';
 ```
 
 ### `isPublicPath(pathname, publicPaths)`
@@ -1002,7 +1002,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 ```typescript
 // src/hooks.server.ts
 import type { Handle } from '@sveltejs/kit';
-import { isPublicPath, createLoginRedirect } from '@decodelabs/underlay/client/route-protection';
+import { isPublicPath, createLoginRedirect } from '@inflatable-cookie/underlay/client/route-protection';
 import { authCommands } from 'my-api-client';
 
 const PUBLIC_PATHS = ['/login', '/register', '/auth/*', '/health'];
@@ -1156,7 +1156,7 @@ Underlay provides `createAuthCookieHelpers()` to generate app-specific cookie ut
 Factory function that returns cookie read/write/clear helpers.
 
 ```typescript
-import { createAuthCookieHelpers } from '@decodelabs/underlay/client/sveltekit';
+import { createAuthCookieHelpers } from '@inflatable-cookie/underlay/client/sveltekit';
 
 // Create helpers with app-specific configuration
 const {
@@ -1210,7 +1210,7 @@ interface AuthCookieHelpers {
 
 ```typescript
 // src/lib/utils/auth-tokens.ts
-import { createAuthCookieHelpers } from '@decodelabs/underlay/client/sveltekit';
+import { createAuthCookieHelpers } from '@inflatable-cookie/underlay/client/sveltekit';
 
 export const {
   readAccessToken,
@@ -1377,7 +1377,7 @@ In your app's authenticated layout, configure the global auth handlers:
 ```svelte
 <!-- src/routes/(app)/+layout.svelte -->
 <script lang="ts">
-  import { configureAuth } from '@decodelabs/underlay/runtime/auth';
+  import { configureAuth } from '@inflatable-cookie/underlay/runtime/auth';
   import { auth, authLoading, currentUser } from '$lib/stores/auth';
 
   // Configure global auth handlers for useAuthenticatedData
@@ -1471,7 +1471,7 @@ Once configured, `useAuthenticatedData` automatically uses the global handlers. 
 
 ```svelte
 <script lang="ts">
-  import { useAuthenticatedData } from '@decodelabs/underlay/runtime/auth';
+  import { useAuthenticatedData } from '@inflatable-cookie/underlay/runtime/auth';
   import { myApiCommands } from 'my-api-client';
 
   // Auto-fetches when auth is ready — no $effect needed
@@ -1498,7 +1498,7 @@ For list components that refetch when URL search params change (sorting, filteri
 
 ```svelte
 <script lang="ts">
-  import { useAuthenticatedData } from '@decodelabs/underlay/runtime/auth';
+  import { useAuthenticatedData } from '@inflatable-cookie/underlay/runtime/auth';
   import { dataSearchParams } from '$lib/utils/list-query';
   import { page } from '$app/stores';
 
@@ -1523,7 +1523,7 @@ If `getAuthLoading`/`getCurrentUser` are not in the global config, you can wire 
 
 ```svelte
 <script lang="ts">
-  import { useAuthenticatedData } from '@decodelabs/underlay/runtime/auth';
+  import { useAuthenticatedData } from '@inflatable-cookie/underlay/runtime/auth';
   import { authLoading, currentUser } from '$lib/stores/auth';
 
   const pageData = useAuthenticatedData(

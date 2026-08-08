@@ -47,7 +47,7 @@ retire public Underlay `ReorderableList` once residue is clean.
 ## Consumer Upgrade Impact
 
 - Consumer apps should expect a staged migration from
-  `@decodelabs/underlay/patterns` `ReorderableList` to a Poodle reorder
+  `@inflatable-cookie/underlay/patterns` `ReorderableList` to a Poodle reorder
   workflow surface layered over Poodle `ReorderableList`.
 - The migration shape should be:
   - expand the Poodle workflow contract first

@@ -178,8 +178,8 @@ z.object({...}).refine(
 
 **Implementation**:
 ```typescript
-// @decodelabs/underlay/validation (new export)
-import { registerSchema } from "@decodelabs/underlay/validation";
+// @inflatable-cookie/underlay/validation (new export)
+import { registerSchema } from "@inflatable-cookie/underlay/validation";
 
 const form = useForm({ schema: registerSchema });
 ```
@@ -225,7 +225,7 @@ pub struct RegisterRequest {
 
 **Phase 1: Provide Zod schemas for common types** (low effort, high value)
 
-Create `@decodelabs/underlay/validation` with pre-built Zod schemas:
+Create `@inflatable-cookie/underlay/validation` with pre-built Zod schemas:
 - `emailSchema`
 - `passwordSchema`
 - `slugSchema`
@@ -234,8 +234,8 @@ Create `@decodelabs/underlay/validation` with pre-built Zod schemas:
 **Phase 2: Form hooks with validation integration** (medium effort)
 
 ```typescript
-import { useValidatedForm } from "@decodelabs/underlay/patterns";
-import { registerSchema } from "@decodelabs/underlay/validation";
+import { useValidatedForm } from "@inflatable-cookie/underlay/patterns";
+import { registerSchema } from "@inflatable-cookie/underlay/validation";
 
 const form = useValidatedForm({
   schema: registerSchema,
@@ -277,7 +277,7 @@ Prototype proc-macro approach if Phase 1/2 show strong adoption.
 ## Next Task
 
 Create translation memo recommending:
-1. New `@decodelabs/underlay/validation` export
+1. New `@inflatable-cookie/underlay/validation` export
 2. Pre-built Zod schemas for common Underlay types
 3. `useValidatedForm` hook for integration
 4. Prototype plan for Acme reference

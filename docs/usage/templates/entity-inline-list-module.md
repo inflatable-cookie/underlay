@@ -27,7 +27,7 @@ screen. Those should still reuse an app-local wrapper over `EntityListPage`.
     type InlineListDialogContext,
     type InlineListItemActionConfig,
     toPagedListResult
-  } from "@decodelabs/underlay/templates";
+  } from "@inflatable-cookie/underlay/templates";
   import { adminCommands } from "$lib/client";
 
   async function loadLevels(fetchFn: typeof fetch, token: string | null, query) {

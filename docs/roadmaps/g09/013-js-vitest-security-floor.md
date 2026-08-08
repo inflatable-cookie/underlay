@@ -9,7 +9,7 @@ Owner: repo maintainers
 11 consumer packages are pinned at vitest 4.0.18 (installed), below the
 `^4.1.0` advisory floor underlay set on 2026-08-01 (GHSA-5xrq critical).
 Also: composer-admin's `bun.lock` is corrupt (parse error at line 727,
-broken `@decodelabs/underlay` file-link entry) — `bun outdated` fails and
+broken `@inflatable-cookie/underlay` file-link entry) — `bun outdated` fails and
 `bun install` is at risk.
 
 ## Evidence

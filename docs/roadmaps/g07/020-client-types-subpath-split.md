@@ -7,7 +7,7 @@ Completed: 2026-06-06
 
 ## Purpose
 
-Split the broad `@decodelabs/underlay/client/types` holding area into focused
+Split the broad `@inflatable-cookie/underlay/client/types` holding area into focused
 client subpaths while keeping the aggregate path valid.
 
 ## Governing References
@@ -31,14 +31,14 @@ guards.
 
 ## Changes
 
-- [x] Add `@decodelabs/underlay/client/envelopes` for `Uuid`,
+- [x] Add `@inflatable-cookie/underlay/client/envelopes` for `Uuid`,
   `SingleResponse`, `ListResponse`, `PagedListResponse`, `ErrorBody`, and
   `ErrorEnvelope`.
-- [x] Add `@decodelabs/underlay/client/restore` for restore-blocker DTOs,
+- [x] Add `@inflatable-cookie/underlay/client/restore` for restore-blocker DTOs,
   formatter types, and `isRestoreBlockedResult()`.
-- [x] Add `@decodelabs/underlay/client/auth-types` for auth-facing user,
+- [x] Add `@inflatable-cookie/underlay/client/auth-types` for auth-facing user,
   credential, session, and auth-error DTOs.
-- [x] Keep `@decodelabs/underlay/client/types` as the aggregate compatibility
+- [x] Keep `@inflatable-cookie/underlay/client/types` as the aggregate compatibility
   path.
 - [x] Move Underlay internal imports to the focused files.
 - [x] Extend package compatibility coverage for the new client subpaths.
@@ -47,12 +47,12 @@ guards.
 
 Impact class: `additive`.
 
-Existing `@decodelabs/underlay/client/types` imports remain valid. New code can
+Existing `@inflatable-cookie/underlay/client/types` imports remain valid. New code can
 prefer:
 
-- `@decodelabs/underlay/client/envelopes`
-- `@decodelabs/underlay/client/restore`
-- `@decodelabs/underlay/client/auth-types`
+- `@inflatable-cookie/underlay/client/envelopes`
+- `@inflatable-cookie/underlay/client/restore`
+- `@inflatable-cookie/underlay/client/auth-types`
 
 ## Runtime AI Decision
 

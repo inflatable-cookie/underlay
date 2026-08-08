@@ -13,7 +13,7 @@
  * @example
  * ```svelte
  * <script lang="ts">
- *   import { useBatchActions, type BatchAction } from '@decodelabs/underlay/runtime/data';
+ *   import { useBatchActions, type BatchAction } from '@inflatable-cookie/underlay/runtime/data';
  *   import Trash2 from 'lucide-svelte/icons/trash-2';
  *
  *   const batch = useBatchActions<string>();

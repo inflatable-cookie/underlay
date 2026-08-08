@@ -19,7 +19,7 @@ without breaking existing consumers.
 
 ## Evidence
 
-The six-consumer scan showed `@decodelabs/underlay/runtime/media` serving three
+The six-consumer scan showed `@inflatable-cookie/underlay/runtime/media` serving three
 separate use cases:
 
 - generated/shared media DTO and enum types in client packages
@@ -31,14 +31,14 @@ intent harder to read.
 
 ## Changes
 
-- [x] Add `@decodelabs/underlay/runtime/media/types` for media DTOs, enums,
+- [x] Add `@inflatable-cookie/underlay/runtime/media/types` for media DTOs, enums,
   request/response shapes, labels, and icon helpers.
-- [x] Add `@decodelabs/underlay/runtime/media/upload` for blob upload helpers,
+- [x] Add `@inflatable-cookie/underlay/runtime/media/upload` for blob upload helpers,
   upload plans, file validation, upload workflow helpers, and upload flow
   controller exports.
-- [x] Add `@decodelabs/underlay/runtime/media/detail` for media-detail route
+- [x] Add `@inflatable-cookie/underlay/runtime/media/detail` for media-detail route
   state, preview, version action, and dialog helpers.
-- [x] Keep `@decodelabs/underlay/runtime/media` as the aggregate compatibility
+- [x] Keep `@inflatable-cookie/underlay/runtime/media` as the aggregate compatibility
   path.
 - [x] Extend package-runtime compatibility coverage for the focused nested
   media paths.
@@ -49,13 +49,13 @@ intent harder to read.
 Impact class: `additive`.
 
 No consumer app is required to change immediately. Existing imports from
-`@decodelabs/underlay/runtime/media` remain valid.
+`@inflatable-cookie/underlay/runtime/media` remain valid.
 
 New code can prefer:
 
-- `@decodelabs/underlay/runtime/media/types`
-- `@decodelabs/underlay/runtime/media/upload`
-- `@decodelabs/underlay/runtime/media/detail`
+- `@inflatable-cookie/underlay/runtime/media/types`
+- `@inflatable-cookie/underlay/runtime/media/upload`
+- `@inflatable-cookie/underlay/runtime/media/detail`
 
 ## Validation
 

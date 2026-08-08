@@ -25,7 +25,7 @@ Add optional TTL (time-to-live) support to the storage API:
 ### 1. TTL on Set
 
 ```typescript
-import { storage } from '@decodelabs/underlay/patterns';
+import { storage } from '@inflatable-cookie/underlay/patterns';
 
 // Store with 1 hour TTL
 storage.local.set('api-cache', data, { ttl: 3600 });

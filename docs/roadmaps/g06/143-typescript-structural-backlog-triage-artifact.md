@@ -93,5 +93,5 @@ Passed:
 Expected impact: none.
 
 The next target is test-only. If follow-up work requires changing
-`@decodelabs/underlay/client/http`, stop and classify consumer app updates
+`@inflatable-cookie/underlay/client/http`, stop and classify consumer app updates
 before implementation.

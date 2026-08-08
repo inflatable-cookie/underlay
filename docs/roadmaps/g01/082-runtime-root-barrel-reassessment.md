@@ -9,7 +9,7 @@ updated: 2026-03-30
 
 ## Goal
 
-Decide whether the root `@decodelabs/underlay/runtime` barrel should stay broad
+Decide whether the root `@inflatable-cookie/underlay/runtime` barrel should stay broad
 or be trimmed now that the narrower runtime subpaths are explicit and
 documented.
 

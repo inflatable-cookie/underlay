@@ -23,16 +23,16 @@ were safe to retire immediately.
 
 ## Findings
 
-- `@decodelabs/underlay` remains an empty compatibility-only root stub. It is
+- `@inflatable-cookie/underlay` remains an empty compatibility-only root stub. It is
   not taught as a source import path.
-- `@decodelabs/underlay/utils` has no package export. Focused `utils/*` paths
+- `@inflatable-cookie/underlay/utils` has no package export. Focused `utils/*` paths
   remain the only public utility imports.
-- `@decodelabs/underlay/client` is still exported as a retained compatibility
+- `@inflatable-cookie/underlay/client` is still exported as a retained compatibility
   and convenience barrel. Focused `client/*` subpaths remain preferred.
-- `@decodelabs/underlay/runtime` is still exported as a tiny compatibility
+- `@inflatable-cookie/underlay/runtime` is still exported as a tiny compatibility
   surface for pagination aliases. Focused `runtime/*` subpaths remain
   preferred.
-- `@decodelabs/underlay/nightfire` is still exported as a retained compatibility
+- `@inflatable-cookie/underlay/nightfire` is still exported as a retained compatibility
   barrel for low-level Nightfire setup helpers. Feature subpaths remain
   preferred for editor, renderer, utilities, and validation imports.
 - No remaining helper-level compatibility re-export matched the

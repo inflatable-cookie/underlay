@@ -145,7 +145,7 @@ import {
   generateNonce,
   applyCspHeaders,
   createCspResolveOptions
-} from "@decodelabs/underlay/server";
+} from "@inflatable-cookie/underlay/server";
 import { env } from "$env/dynamic/public";
 
 const cspConfig = createCspConfig({
@@ -168,18 +168,18 @@ export const handle: Handle = async ({ event, resolve }) => {
 ```ts
 export default defineConfig({
   resolve: {
-    dedupe: ["@decodelabs/underlay"]
+    dedupe: ["@inflatable-cookie/underlay"]
   },
   optimizeDeps: {
     exclude: [
-      "@decodelabs/underlay",
-      "@decodelabs/underlay/nightfire",
-      "@decodelabs/underlay/patterns",
-      "@decodelabs/underlay/styles",
-      "@decodelabs/underlay/client/http",
-      "@decodelabs/underlay/client/navigation",
-      "@decodelabs/underlay/client/query",
-      "@decodelabs/underlay/client/sveltekit"
+      "@inflatable-cookie/underlay",
+      "@inflatable-cookie/underlay/nightfire",
+      "@inflatable-cookie/underlay/patterns",
+      "@inflatable-cookie/underlay/styles",
+      "@inflatable-cookie/underlay/client/http",
+      "@inflatable-cookie/underlay/client/navigation",
+      "@inflatable-cookie/underlay/client/query",
+      "@inflatable-cookie/underlay/client/sveltekit"
     ]
   }
 });
@@ -926,7 +926,7 @@ The `createFormState` function provides reactive form state management with Svel
 
 ```svelte
 <script lang="ts">
-  import { createFormState } from '@decodelabs/underlay/runtime/forms';
+  import { createFormState } from '@inflatable-cookie/underlay/runtime/forms';
   import { Button, Callout } from '@inflatable-cookie/poodle-svelte';
 
   const form = createFormState({
@@ -1071,7 +1071,7 @@ For forms that use intent-based actions (e.g., "save", "delete", "save-close"), 
 Sets a hidden intent input value and submits the form:
 
 ```typescript
-import { submitFormWithIntent } from '@decodelabs/underlay/runtime/forms';
+import { submitFormWithIntent } from '@inflatable-cookie/underlay/runtime/forms';
 
 // Submit with delete intent (uses first <form> element)
 function handleDelete() {
@@ -1101,7 +1101,7 @@ function handleSpecialAction() {
 
 ```svelte
 <script lang="ts">
-  import { submitFormWithIntent } from '@decodelabs/underlay/runtime/forms';
+  import { submitFormWithIntent } from '@inflatable-cookie/underlay/runtime/forms';
 
   function handleDelete() {
     submitFormWithIntent("delete");
@@ -1164,7 +1164,7 @@ When `configureAuth()` includes `getAuthLoading` and `getCurrentUser` (recommend
 
 ```svelte
 <script lang="ts">
-  import { useAuthenticatedData } from '@decodelabs/underlay/runtime/auth';
+  import { useAuthenticatedData } from '@inflatable-cookie/underlay/runtime/auth';
   import { PageLoading } from '@inflatable-cookie/poodle-svelte';
   import { Callout } from '@inflatable-cookie/poodle-svelte';
   import { myApiCommand } from '@myorg/client';
@@ -1370,14 +1370,14 @@ Direct use of `localStorage` or `sessionStorage` in SvelteKit causes errors duri
 const theme = localStorage.getItem('theme');
 
 // ✅ Works everywhere
-import { storage } from '@decodelabs/underlay/runtime/browser';
+import { storage } from '@inflatable-cookie/underlay/runtime/browser';
 const theme = storage.local.get('theme', 'light');
 ```
 
 #### Basic Get/Set
 
 ```typescript
-import { storage } from '@decodelabs/underlay/runtime/browser';
+import { storage } from '@inflatable-cookie/underlay/runtime/browser';
 
 // Get with default value (SSR-safe)
 const theme = storage.local.get('theme', 'light');
@@ -1437,7 +1437,7 @@ const draft = storage.session.get('formDraft', {});
 Create Svelte stores backed by storage:
 
 ```typescript
-import { storage } from '@decodelabs/underlay/runtime/browser';
+import { storage } from '@inflatable-cookie/underlay/runtime/browser';
 
 // Create a persisted store
 const preferences = storage.local.store('preferences', {
@@ -1471,7 +1471,7 @@ When the draft expires, Underlay removes the stored value and updates `$draft` b
 #### Shorthand Functions
 
 ```typescript
-import { createPersistedStore, createSessionStore } from '@decodelabs/underlay/runtime/browser';
+import { createPersistedStore, createSessionStore } from '@inflatable-cookie/underlay/runtime/browser';
 
 // localStorage-backed store
 const theme = createPersistedStore('theme', 'light');
@@ -1518,7 +1518,7 @@ const date1 = new Date().toLocaleDateString();  // Varies by browser
 const price = `£${amount.toFixed(2)}`;           // No thousands separator
 
 // ✅ Consistent, locale-aware
-import { format } from '@decodelabs/underlay/utils/i18n';
+import { format } from '@inflatable-cookie/underlay/utils/i18n';
 const date1 = format.date(new Date(), 'short');  // "12 Jan 2026"
 const price = format.currency(amount, 'GBP');    // "£1,234.56"
 ```
@@ -1528,7 +1528,7 @@ const price = format.currency(amount, 'GBP');    // "£1,234.56"
 Configure default locale and timezone:
 
 ```typescript
-import { format } from '@decodelabs/underlay/utils/i18n';
+import { format } from '@inflatable-cookie/underlay/utils/i18n';
 
 // Set globally (usually in app initialization)
 format.configure({
@@ -1540,7 +1540,7 @@ format.configure({
 #### Date Formatting
 
 ```typescript
-import { format } from '@decodelabs/underlay/utils/i18n';
+import { format } from '@inflatable-cookie/underlay/utils/i18n';
 
 // Different styles
 format.date(new Date(), 'short');   // "12 Jan 2026"
@@ -1610,7 +1610,7 @@ format.pluralCount(0, {
 
 ```svelte
 <script lang="ts">
-  import { format } from '@decodelabs/underlay/utils/i18n';
+  import { format } from '@inflatable-cookie/underlay/utils/i18n';
   
   export let user;
 </script>
@@ -1689,8 +1689,8 @@ Optimistic updates provide instant UI feedback by updating the interface before 
 For managing lists with add/remove/update operations:
 
 ```typescript
-import { createOptimisticList } from '@decodelabs/underlay/runtime/feedback';
-import { useToasts } from '@decodelabs/underlay/runtime/feedback';
+import { createOptimisticList } from '@inflatable-cookie/underlay/runtime/feedback';
+import { useToasts } from '@inflatable-cookie/underlay/runtime/feedback';
 
 interface Todo {
   id: string;
@@ -1746,7 +1746,7 @@ In your component:
 
 ```svelte
 <script lang="ts">
-  import { createOptimisticList } from '@decodelabs/underlay/runtime/feedback';
+  import { createOptimisticList } from '@inflatable-cookie/underlay/runtime/feedback';
 
   const todos = createOptimisticList<Todo>(data.todos);
 </script>
@@ -1771,8 +1771,8 @@ In your component:
 For boolean toggle operations (like/unlike, follow/unfollow):
 
 ```typescript
-import { createOptimisticToggle } from '@decodelabs/underlay/runtime/feedback';
-import { useToasts } from '@decodelabs/underlay/runtime/feedback';
+import { createOptimisticToggle } from '@inflatable-cookie/underlay/runtime/feedback';
+import { useToasts } from '@inflatable-cookie/underlay/runtime/feedback';
 
 const liked = createOptimisticToggle(false);
 const toastStore = useToasts();
@@ -1805,7 +1805,7 @@ async function toggleLike() {
 For numeric counters (like counts, vote counts):
 
 ```typescript
-import { createOptimisticCounter } from '@decodelabs/underlay/runtime/feedback';
+import { createOptimisticCounter } from '@inflatable-cookie/underlay/runtime/feedback';
 
 const likeCount = createOptimisticCounter(42);
 
@@ -1832,8 +1832,8 @@ async function like() {
 For any value type with optimistic updates:
 
 ```typescript
-import { createOptimisticValue } from '@decodelabs/underlay/runtime/feedback';
-import { useToasts } from '@decodelabs/underlay/runtime/feedback';
+import { createOptimisticValue } from '@inflatable-cookie/underlay/runtime/feedback';
+import { useToasts } from '@inflatable-cookie/underlay/runtime/feedback';
 
 type Status = 'draft' | 'published' | 'archived';
 const status = createOptimisticValue<Status>('draft');
@@ -1857,7 +1857,7 @@ async function publish() {
 Import the optimistic CSS for visual feedback:
 
 ```typescript
-import '@decodelabs/underlay/styles/optimistic.css';
+import '@inflatable-cookie/underlay/styles/optimistic.css';
 ```
 
 Apply `data-pending` attribute to elements:

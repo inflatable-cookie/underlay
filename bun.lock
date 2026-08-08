@@ -3,7 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "@decodelabs/underlay",
+      "name": "@inflatable-cookie/underlay",
       "dependencies": {
         "@inflatable-cookie/poodle-bridge-underlay": "file:../poodle/packages/bridges/underlay",
         "@inflatable-cookie/poodle-svelte": "file:../poodle/packages/svelte/components",

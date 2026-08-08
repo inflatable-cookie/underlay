@@ -7,7 +7,7 @@ Depends on: 076
 
 ## Overview
 
-`g01.076` introduced `@decodelabs/underlay/runtime`, but the new namespace was
+`g01.076` introduced `@inflatable-cookie/underlay/runtime`, but the new namespace was
 still just a flat compatibility barrel over `patterns/*`. That was enough to
 separate workflow shells from helpers, but not enough to make the retained
 runtime surface legible.
@@ -43,26 +43,26 @@ This batch turns `runtime` into a deliberately organized helper package:
 
 Public Underlay runtime surface now has an intentional shape:
 
-- `@decodelabs/underlay/runtime/auth`
-- `@decodelabs/underlay/runtime/browser`
-- `@decodelabs/underlay/runtime/forms`
-- `@decodelabs/underlay/runtime/navigation`
-- `@decodelabs/underlay/runtime/feedback`
-- `@decodelabs/underlay/runtime/i18n`
-- `@decodelabs/underlay/runtime/data`
-- `@decodelabs/underlay/runtime/relations`
-- `@decodelabs/underlay/runtime/media`
-- `@decodelabs/underlay/runtime/ai`
+- `@inflatable-cookie/underlay/runtime/auth`
+- `@inflatable-cookie/underlay/runtime/browser`
+- `@inflatable-cookie/underlay/runtime/forms`
+- `@inflatable-cookie/underlay/runtime/navigation`
+- `@inflatable-cookie/underlay/runtime/feedback`
+- `@inflatable-cookie/underlay/runtime/i18n`
+- `@inflatable-cookie/underlay/runtime/data`
+- `@inflatable-cookie/underlay/runtime/relations`
+- `@inflatable-cookie/underlay/runtime/media`
+- `@inflatable-cookie/underlay/runtime/ai`
 
-The root `@decodelabs/underlay/runtime` barrel remains stable for convenience,
+The root `@inflatable-cookie/underlay/runtime` barrel remains stable for convenience,
 but the supported retained helper surface is no longer one flat namespace.
 
 ## Consumer Upgrade Impact
 
-- existing `@decodelabs/underlay/runtime` root imports continue to work
+- existing `@inflatable-cookie/underlay/runtime` root imports continue to work
 - consumers can now adopt narrower runtime subpaths where that improves local
   clarity
-- workflow/page shells still belong on `@decodelabs/underlay/patterns`
+- workflow/page shells still belong on `@inflatable-cookie/underlay/patterns`
 
 ## Next Task
 

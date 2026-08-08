@@ -1,20 +1,20 @@
 import { describe, expect, it } from "vitest";
-import { UnderlayHttpError } from "@decodelabs/underlay/client";
-import type { User } from "@decodelabs/underlay/client/auth-types";
-import type { SingleResponse } from "@decodelabs/underlay/client/envelopes";
-import { isRestoreBlockedResult } from "@decodelabs/underlay/client/restore";
-import { appendSuggestionParams } from "@decodelabs/underlay/client/suggestions";
-import * as runtimeData from "@decodelabs/underlay/runtime/data";
+import { UnderlayHttpError } from "@inflatable-cookie/underlay/client";
+import type { User } from "@inflatable-cookie/underlay/client/auth-types";
+import type { SingleResponse } from "@inflatable-cookie/underlay/client/envelopes";
+import { isRestoreBlockedResult } from "@inflatable-cookie/underlay/client/restore";
+import { appendSuggestionParams } from "@inflatable-cookie/underlay/client/suggestions";
+import * as runtimeData from "@inflatable-cookie/underlay/runtime/data";
 import {
   appendPaginationParams,
   type PaginatedResponse,
-} from "@decodelabs/underlay/runtime";
-import { createMockHttpClient } from "@decodelabs/underlay/testing";
-import { scanFiles } from "@decodelabs/underlay/tools/guardrails";
-import { loadConfig } from "@decodelabs/underlay/tools/guardrails-config";
-import { bannedPatterns } from "@decodelabs/underlay/tools/templates/banned-apis";
-import { moduleScopeChecks } from "@decodelabs/underlay/tools/templates/sveltekit-ssr";
-import { getBlockEditor } from "@decodelabs/underlay/nightfire";
+} from "@inflatable-cookie/underlay/runtime";
+import { createMockHttpClient } from "@inflatable-cookie/underlay/testing";
+import { scanFiles } from "@inflatable-cookie/underlay/tools/guardrails";
+import { loadConfig } from "@inflatable-cookie/underlay/tools/guardrails-config";
+import { bannedPatterns } from "@inflatable-cookie/underlay/tools/templates/banned-apis";
+import { moduleScopeChecks } from "@inflatable-cookie/underlay/tools/templates/sveltekit-ssr";
+import { getBlockEditor } from "@inflatable-cookie/underlay/nightfire";
 
 describe("package compatibility barrels", () => {
   it("exposes retained client, runtime, and nightfire compatibility subpaths", () => {

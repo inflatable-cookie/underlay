@@ -115,8 +115,8 @@ catalogue as a second UI system:
 |------|------|
 | visible page/list/detail/dialog/media composition | Poodle guides |
 | route/runtime/client orchestration | Underlay guides and runtime/client packages |
-| auth workflow shells | `@decodelabs/underlay/patterns` |
-| contextual action controller | `@decodelabs/underlay/patterns` |
+| auth workflow shells | `@inflatable-cookie/underlay/patterns` |
+| contextual action controller | `@inflatable-cookie/underlay/patterns` |
 | Nightfire editor/render/runtime integration | Underlay Nightfire guides and packages |
 
 ## Project Sync

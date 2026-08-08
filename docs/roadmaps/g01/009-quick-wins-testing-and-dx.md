@@ -229,7 +229,7 @@ async fn list_users(
 
 **Example Usage**:
 ```typescript
-import { useFormState } from '@decodelabs/underlay/patterns';
+import { useFormState } from '@inflatable-cookie/underlay/patterns';
 
 function UserForm() {
   const form = useFormState({
@@ -294,7 +294,7 @@ function UserForm() {
 
 **Example Usage**:
 ```typescript
-import { storage } from '@decodelabs/underlay/patterns';
+import { storage } from '@inflatable-cookie/underlay/patterns';
 
 // Works in SSR and browser
 const theme = storage.local.get('theme', 'light');

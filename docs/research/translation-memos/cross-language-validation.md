@@ -43,7 +43,7 @@ Acme reference uses approach #1 with HTML5 for basic constraints, but this provi
 
 ### Phase 1: Zod Schemas for Common Types
 
-Create new export `@decodelabs/underlay/validation` with pre-built Zod schemas:
+Create new export `@inflatable-cookie/underlay/validation` with pre-built Zod schemas:
 
 ```typescript
 // ts/src/validation/index.ts
@@ -135,7 +135,7 @@ Document the correspondence between Rust and TypeScript validation:
 
 **Prototype P-VAL-001**: Zod Integration
 
-1. Create `@decodelabs/underlay/validation` export
+1. Create `@inflatable-cookie/underlay/validation` export
 2. Implement schemas for Acme's auth types
 3. Create `useValidatedForm` hook
 4. Test in Acme's Register/Login forms

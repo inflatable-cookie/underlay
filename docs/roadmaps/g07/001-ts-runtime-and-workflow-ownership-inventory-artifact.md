@@ -13,7 +13,7 @@ No implementation changes were made in this inventory batch.
 
 | Family | Export posture | Classification | Notes |
 | --- | --- | --- | --- |
-| root `@decodelabs/underlay` | explicit but empty implementation root | retained compatibility-only | `ts/src/index.ts` exports nothing. Keep as a non-teaching compatibility root unless a later card retires it with proof. |
+| root `@inflatable-cookie/underlay` | explicit but empty implementation root | retained compatibility-only | `ts/src/index.ts` exports nothing. Keep as a non-teaching compatibility root unless a later card retires it with proof. |
 | `patterns` | small root barrel | retained + candidate-diet | Root exports auth workflows, `SpaFormShell`, selection/reorder helpers, and context actions. It does not expose the full pattern implementation tree. |
 | `runtime/*` | broad curated subpaths over pattern implementations | retained + candidate-consolidate | This is the clearest consumer-facing path for many workflow helpers, but ownership is split because most modules re-export from `patterns/*`. |
 | `client/*` | explicit transport, auth, query, navigation, SvelteKit, and type subpaths | retained | The `client` root remains a convenience barrel over explicit subpaths. |
@@ -48,7 +48,7 @@ runtime subpaths are stable domains and which are compatibility barrels.
 ### Pattern root is intentionally narrow, but docs still over-teach it
 
 The retained `patterns` root is small. Active guides still include examples
-that import helpers from `@decodelabs/underlay/patterns` even when the current
+that import helpers from `@inflatable-cookie/underlay/patterns` even when the current
 preferred path is `runtime/*` or `utils/*`.
 
 Examples found during the targeted scan:
@@ -60,7 +60,7 @@ Examples found during the targeted scan:
   frontend guide sections, while current package guidance prefers
   `runtime/browser`, `runtime/feedback`, `utils/i18n`, or `utils/slug` as
   appropriate.
-- several source JSDoc examples still show `@decodelabs/underlay/patterns` for
+- several source JSDoc examples still show `@inflatable-cookie/underlay/patterns` for
   helpers now publicly consumed through `runtime/*`.
 
 This is docs/import-guidance drift, not proof that those exports should return

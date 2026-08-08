@@ -39,7 +39,7 @@ Guiding rule: Underlay ships *primitives and patterns*, not app domains.
 ## Section 1 — Core Contract + Primitive Alignment (low risk)
 
 - [x] Underlay: confirm `underlay-core` is the canonical home for `AppError`, `ErrorEnvelope`, `SingleResponse<T>`, `ListResponse<T>`, UUIDv7 (`Uuid`, `IdGenerator`).
-- [x] Underlay: ensure TS envelope exports in `@decodelabs/underlay/client` match Rust envelope JSON shape.
+- [x] Underlay: ensure TS envelope exports in `@inflatable-cookie/underlay/client` match Rust envelope JSON shape.
 - [x] Underlay: document envelope + error code conventions under `docs/architecture/`.
 
 - [x] Acowtancy: update API boundary helpers to return Underlay envelopes (`ErrorEnvelope`, `SingleResponse<T>`, `ListResponse<T>`).

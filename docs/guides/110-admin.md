@@ -113,7 +113,7 @@ Convert Underlay HTTP errors into SvelteKit error metadata:
 
 ```ts
 import { type HandleServerError } from "@sveltejs/kit";
-import { UnderlayHttpError } from "@decodelabs/underlay/client/errors";
+import { UnderlayHttpError } from "@inflatable-cookie/underlay/client/errors";
 
 export const handleError: HandleServerError = async ({ error: err }) => {
   if (err instanceof UnderlayHttpError) {
@@ -138,8 +138,8 @@ section is only about the retained runtime services that belong in the layout.
 
 ```svelte
 <script lang="ts">
-  import { configureAuth } from "@decodelabs/underlay/runtime/auth";
-  import { configureNightfireStrategies } from "@decodelabs/underlay/nightfire/strategies";
+  import { configureAuth } from "@inflatable-cookie/underlay/runtime/auth";
+  import { configureNightfireStrategies } from "@inflatable-cookie/underlay/nightfire/strategies";
   import { nightfireCommands } from "@cattle-grid";
   import { auth } from "$lib/stores/auth";
 
@@ -214,8 +214,8 @@ The root `+layout.svelte` contains only shared CSS variables and global body sty
 <script lang="ts">
   import favicon from "$lib/assets/favicon.svg";
   // Import Underlay CSS FIRST so :root overrides take precedence
-  import "@decodelabs/underlay/styles/tokens.css";
-  import "@decodelabs/underlay/styles/forms.css";
+  import "@inflatable-cookie/underlay/styles/tokens.css";
+  import "@inflatable-cookie/underlay/styles/forms.css";
 
   let { children } = $props();
 </script>
@@ -283,7 +283,7 @@ how retained runtime services fit into that shell.
   import { setContext } from "svelte";
   import { page } from "$app/stores";
   import { ToastHost } from "@inflatable-cookie/poodle-svelte";
-  import { UNDERLAY_TOASTS_CONTEXT_KEY, createToastStore } from "@decodelabs/underlay/runtime/feedback";
+  import { UNDERLAY_TOASTS_CONTEXT_KEY, createToastStore } from "@inflatable-cookie/underlay/runtime/feedback";
   import AdminNavList from "$lib/ui/AdminNavList.svelte";
   import AdminUserMenu from "$lib/ui/AdminUserMenu.svelte";
 
@@ -644,7 +644,7 @@ Forms should NOT contain `<form>` elements or submission logic. They render fiel
     Switch,
     TextInput
   } from "@inflatable-cookie/poodle-svelte";
-  import { navigateOnCancel } from "@decodelabs/underlay/client/navigation";
+  import { navigateOnCancel } from "@inflatable-cookie/underlay/client/navigation";
 
   interface Props {
     mode?: "create" | "edit";
@@ -778,9 +778,9 @@ Both create and edit pages use `SpaFormShell`:
   import { goto } from "$app/navigation";
   import { entityCommands } from "@client";
   import EntityForm from "$lib/forms/learning/EntityForm.svelte";
-  import { SpaFormShell, type SpaFormResult } from "@decodelabs/underlay/patterns";
-  import { submitFormWithIntent } from "@decodelabs/underlay/runtime/forms";
-  import { consumeNavigationContext } from "@decodelabs/underlay/runtime/navigation";
+  import { SpaFormShell, type SpaFormResult } from "@inflatable-cookie/underlay/patterns";
+  import { submitFormWithIntent } from "@inflatable-cookie/underlay/runtime/forms";
+  import { consumeNavigationContext } from "@inflatable-cookie/underlay/runtime/navigation";
 
   const { backInfo, returnTo } = consumeNavigationContext("Back", defaultBackHref);
 

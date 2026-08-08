@@ -12,11 +12,11 @@ Poodle is the canonical home for shared UI primitives and generic composites.
 Underlay’s guides describe the retained package surfaces that still belong
 here:
 
-- `@decodelabs/underlay/patterns` for retained workflow/page-shell UI
-- `@decodelabs/underlay/runtime/*` for shared app/runtime helpers and controllers
-- `@decodelabs/underlay/utils/*` for small standalone helpers
-- `@decodelabs/underlay/client/*` for transport and SvelteKit-facing client helpers
-- `@decodelabs/underlay/nightfire/*` for structured content editor/runtime
+- `@inflatable-cookie/underlay/patterns` for retained workflow/page-shell UI
+- `@inflatable-cookie/underlay/runtime/*` for shared app/runtime helpers and controllers
+- `@inflatable-cookie/underlay/utils/*` for small standalone helpers
+- `@inflatable-cookie/underlay/client/*` for transport and SvelteKit-facing client helpers
+- `@inflatable-cookie/underlay/nightfire/*` for structured content editor/runtime
 
 UI guide translation status:
 

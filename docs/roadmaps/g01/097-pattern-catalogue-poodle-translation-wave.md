@@ -42,7 +42,7 @@ the old catalogue keep drifting.
 
 ## Non-Goals
 
-- Do not reopen the settled retained public `@decodelabs/underlay/patterns`
+- Do not reopen the settled retained public `@inflatable-cookie/underlay/patterns`
   stop point from `g01.090`.
 - Do not move Nightfire or auth workflow ownership into Poodle just because
   their docs mention visible UI.
@@ -54,7 +54,7 @@ the old catalogue keep drifting.
 
 ### Retained Public Underlay Workflow Surface
 
-The public `@decodelabs/underlay/patterns` package is already intentionally
+The public `@inflatable-cookie/underlay/patterns` package is already intentionally
 small and is not the primary problem in this wave:
 
 - `LoginPage`

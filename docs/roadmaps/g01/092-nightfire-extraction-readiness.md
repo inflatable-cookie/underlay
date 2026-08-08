@@ -1,8 +1,8 @@
 # 092 - Nightfire Extraction Readiness
 
-`g01.091` confirmed that `@decodelabs/underlay/client` is a retained package
+`g01.091` confirmed that `@inflatable-cookie/underlay/client` is a retained package
 surface with a now-explicit public shape. The next honest retained-package
-challenge is `@decodelabs/underlay/nightfire`.
+challenge is `@inflatable-cookie/underlay/nightfire`.
 
 This is not another “should Nightfire still exist?” pass. The live caller
 surface shows that it clearly does:
@@ -19,14 +19,14 @@ exercise, not a source archaeology exercise.
 
 - `ts/src/nightfire/`
 - `package.json` `./nightfire*` exports
-- guide and architecture references to `@decodelabs/underlay/nightfire`
+- guide and architecture references to `@inflatable-cookie/underlay/nightfire`
 
 ## Goals
 
 - Confirm the strict live caller boundary for the retained Nightfire package.
 - Expose additive public subpaths for the real extension families:
   registries, strategies, media context, validation, and value utilities.
-- Keep the root `@decodelabs/underlay/nightfire` barrel stable for existing
+- Keep the root `@inflatable-cookie/underlay/nightfire` barrel stable for existing
   callers and docs.
 
 ## Non-Goals
@@ -68,12 +68,12 @@ Live usage in Froyo and Acme UI:
 
 ## Judgment
 
-`@decodelabs/underlay/nightfire` still earns retained Underlay ownership for
+`@inflatable-cookie/underlay/nightfire` still earns retained Underlay ownership for
 now, but it now has a clearer extraction-ready public shape.
 
 The useful cleanup here is additive public structure:
 
-- keep the root `@decodelabs/underlay/nightfire` barrel stable for existing
+- keep the root `@inflatable-cookie/underlay/nightfire` barrel stable for existing
   broad consumers
 - expose focused `nightfire/*` subpaths for extension-oriented contracts
 - align docs so future extraction planning starts from real package seams
@@ -90,13 +90,13 @@ The new `nightfire/*` subpaths are additive:
 
 ## Status
 
-- [x] Sweep the live caller family for `@decodelabs/underlay/nightfire`.
+- [x] Sweep the live caller family for `@inflatable-cookie/underlay/nightfire`.
 - [x] Confirm that the package still earns retained ownership.
 - [x] Expose the real Nightfire feature-family subpaths and align the docs.
 
 ## Complete
 
-`g01.092` is complete. `@decodelabs/underlay/nightfire` remains a retained
+`g01.092` is complete. `@inflatable-cookie/underlay/nightfire` remains a retained
 package surface, but the future extraction seam is now clearer via additive
 public subpaths:
 
@@ -108,7 +108,7 @@ public subpaths:
 - `nightfire/utils`
 - `nightfire/validation`
 
-The root `@decodelabs/underlay/nightfire` barrel remains the stable convenience
+The root `@inflatable-cookie/underlay/nightfire` barrel remains the stable convenience
 surface for existing consumers.
 
 ## Next Task

@@ -23,7 +23,7 @@ workflow exception or not an admin collection at all.
 
 ```svelte
 <script lang="ts">
-  import { EntityListCard } from "@decodelabs/underlay/templates";
+  import { EntityListCard } from "@inflatable-cookie/underlay/templates";
 
   let { project, selectionMode, reorderMode, selected = false } = $props();
 

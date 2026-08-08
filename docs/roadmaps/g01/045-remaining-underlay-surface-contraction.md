@@ -10,8 +10,8 @@ Depends on: 042, 044
 `g01.042` successfully moved the big primitive and generic composite wave into
 Poodle, but the live Underlay public export list is still broader than the
 settled retained boundary. A meaningful tail of generic card, detail, layout,
-status, and list helpers still ships from `@decodelabs/underlay/components` and
-`@decodelabs/underlay/patterns` even though they now have clear Poodle
+status, and list helpers still ships from `@inflatable-cookie/underlay/components` and
+`@inflatable-cookie/underlay/patterns` even though they now have clear Poodle
 successors or should be reduced to local composition.
 
 This roadmap finishes that contraction wave. The goal is not to reopen the big

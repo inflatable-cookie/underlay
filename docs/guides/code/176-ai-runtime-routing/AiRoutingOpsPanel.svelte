@@ -10,7 +10,7 @@ import {
   type AiRoutingOpsOptions,
   type AiRoutingOpsSource,
   type AiRoutingParity
-} from "@decodelabs/underlay/runtime/ai";
+} from "@inflatable-cookie/underlay/runtime/ai";
 import {
   untrack } from "svelte";
   import { Button,

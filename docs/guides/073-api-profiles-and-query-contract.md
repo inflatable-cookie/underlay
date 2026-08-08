@@ -197,7 +197,7 @@ Reference loader handshake:
 
 - [code/073-api-profiles-and-query-contract/entity-list-page-paged-loader.ts](./code/073-api-profiles-and-query-contract/entity-list-page-paged-loader.ts)
 - [code/073-api-profiles-and-query-contract/entity-detail-tab-paged-list.ts](./code/073-api-profiles-and-query-contract/entity-detail-tab-paged-list.ts)
-- use `toPagedListResult(...)` from `@decodelabs/underlay/templates` as the
+- use `toPagedListResult(...)` from `@inflatable-cookie/underlay/templates` as the
   canonical client-to-template bridge
 
 ## Migration Sequence

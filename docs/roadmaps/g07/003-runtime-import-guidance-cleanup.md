@@ -8,7 +8,7 @@ Updated: 2026-06-06
 
 `g07.002` kept the current `runtime/*` subpaths and found no source API drift.
 It did find active docs and source JSDoc examples that still teach
-`@decodelabs/underlay/patterns` for helpers whose preferred public path is now
+`@inflatable-cookie/underlay/patterns` for helpers whose preferred public path is now
 `runtime/*` or `utils/*`.
 
 This card cleans teaching-surface drift only.
@@ -55,7 +55,7 @@ This card cleans teaching-surface drift only.
 - `effigy qa:docs`
 - `effigy qa:northstar`
 - `effigy check:exports`
-- targeted `rg` scans for stale `@decodelabs/underlay/patterns` guidance
+- targeted `rg` scans for stale `@inflatable-cookie/underlay/patterns` guidance
 
 ## Consumer Upgrade Impact
 

@@ -86,7 +86,7 @@ It is used inside `EntityListPage` (as the main content) AND inside detail tabs
 ### Batch 4.5 - URL Sync
 
 - [x] integrate URL query parameter sync for filters and sort
-- [x] support `parseQueryParams` from `@decodelabs/underlay/client/query`
+- [x] support `parseQueryParams` from `@inflatable-cookie/underlay/client/query`
 
 ## Exit Criteria
 

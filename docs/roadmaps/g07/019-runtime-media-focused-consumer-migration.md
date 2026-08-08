@@ -8,7 +8,7 @@ Completed: 2026-06-06
 ## Purpose
 
 Move the six known consumer apps from aggregate
-`@decodelabs/underlay/runtime/media` imports to the focused nested media runtime
+`@inflatable-cookie/underlay/runtime/media` imports to the focused nested media runtime
 subpaths added in `g07.018`.
 
 ## Governing References
@@ -21,14 +21,14 @@ subpaths added in `g07.018`.
 ## Changes
 
 - [x] Move generated/client media DTO and label exports to
-  `@decodelabs/underlay/runtime/media/types`.
+  `@inflatable-cookie/underlay/runtime/media/types`.
 - [x] Move upload-pipeline wrappers to
-  `@decodelabs/underlay/runtime/media/upload`.
+  `@inflatable-cookie/underlay/runtime/media/upload`.
 - [x] Move media-detail route predicates, preview helpers, version-action
   helpers, and dialog state helpers to
-  `@decodelabs/underlay/runtime/media/detail`.
+  `@inflatable-cookie/underlay/runtime/media/detail`.
 - [x] Keep file-size formatting imports on
-  `@decodelabs/underlay/runtime/media/upload`.
+  `@inflatable-cookie/underlay/runtime/media/upload`.
 - [x] Refresh affected Bun file-dependency installs so the newly-created
   `runtime/media/` directory is materialized in consumer `node_modules`.
 
@@ -56,7 +56,7 @@ paths in live source.
   wrapper imports moved.
 
 Final source scan found no remaining live aggregate
-`@decodelabs/underlay/runtime/media` imports in the six-consumer family.
+`@inflatable-cookie/underlay/runtime/media` imports in the six-consumer family.
 
 ## Validation
 

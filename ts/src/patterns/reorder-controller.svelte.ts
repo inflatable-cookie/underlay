@@ -7,7 +7,7 @@
  * @example
  * ```svelte
  * <script lang="ts">
- *   import { createReorderController } from '@decodelabs/underlay/runtime/data';
+ *   import { createReorderController } from '@inflatable-cookie/underlay/runtime/data';
  *
  *   const controller = createReorderController(items, async (orderedIds) => {
  *     await api.reorder(orderedIds);

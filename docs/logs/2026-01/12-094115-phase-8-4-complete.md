@@ -49,7 +49,7 @@ Successfully extracted Dairy's guardrails system to Underlay as a reusable CLI t
 #### 4. Configuration System
 - `.guardrailsrc.json` support
 - `package.json` "guardrails" field
-- Template loading (`@decodelabs/underlay/tools/templates/sveltekit-ssr`)
+- Template loading (`@inflatable-cookie/underlay/tools/templates/sveltekit-ssr`)
 - CLI overrides (`--config`, `--src`)
 
 #### 5. CLI Interface
@@ -126,7 +126,7 @@ underlay/
       "message": "Use a toast or dialog instead."
     }
   ],
-  "moduleScopeChecks": "@decodelabs/underlay/tools/templates/sveltekit-ssr"
+  "moduleScopeChecks": "@inflatable-cookie/underlay/tools/templates/sveltekit-ssr"
 }
 ```
 

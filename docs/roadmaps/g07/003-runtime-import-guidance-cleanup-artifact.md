@@ -39,7 +39,7 @@ No package exports or implementation behavior changed.
 
 ## Remaining Pattern Imports
 
-The remaining exact `@decodelabs/underlay/patterns` imports in active docs are
+The remaining exact `@inflatable-cookie/underlay/patterns` imports in active docs are
 intentional:
 
 - `LoginPage`, `ForgotPasswordFlow`, and `PasswordRequirements`
@@ -57,7 +57,7 @@ This was a docs/JSDoc cleanup only. Consuming apps do not need code changes.
 
 ## Validation Inputs
 
-- targeted import scans for exact `@decodelabs/underlay/patterns` examples
+- targeted import scans for exact `@inflatable-cookie/underlay/patterns` examples
 - `effigy qa:docs`
 - `effigy qa:northstar`
 - `effigy check:exports`

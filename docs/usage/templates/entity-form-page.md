@@ -23,8 +23,8 @@ etc.) directly for the form itself.
 
 ```svelte
 <script>
-  import { EntityFormPage } from "@decodelabs/underlay/templates";
-  import type { SpaFormResult } from "@decodelabs/underlay/patterns";
+  import { EntityFormPage } from "@inflatable-cookie/underlay/templates";
+  import type { SpaFormResult } from "@inflatable-cookie/underlay/patterns";
   import { Field, TextInput, Select, Button } from "@inflatable-cookie/poodle-svelte";
   import { ProjectCategorySelector } from "$lib/forms";
 

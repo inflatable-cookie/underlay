@@ -2,18 +2,18 @@
 
 `g01.092` confirmed that the retained `nightfire` package now has explicit
 future extraction seams. The next honest boundary challenge is the root
-`@decodelabs/underlay` barrel.
+`@inflatable-cookie/underlay` barrel.
 
 The live consumer scan shows no active app or sibling-repo source files still
-import directly from `@decodelabs/underlay`. Real usage has already collapsed
+import directly from `@inflatable-cookie/underlay`. Real usage has already collapsed
 onto the explicit package surfaces:
 
-- `@decodelabs/underlay/patterns`
-- `@decodelabs/underlay/runtime`
-- `@decodelabs/underlay/utils`
-- `@decodelabs/underlay/client`
-- `@decodelabs/underlay/nightfire`
-- `@decodelabs/underlay/styles/*`
+- `@inflatable-cookie/underlay/patterns`
+- `@inflatable-cookie/underlay/runtime`
+- `@inflatable-cookie/underlay/utils`
+- `@inflatable-cookie/underlay/client`
+- `@inflatable-cookie/underlay/nightfire`
+- `@inflatable-cookie/underlay/styles/*`
 
 So the root barrel is no longer a first-class teaching surface. It remains only
 as a compatibility barrel.
@@ -21,7 +21,7 @@ as a compatibility barrel.
 ## Scope
 
 - `ts/src/index.ts`
-- current docs that still teach `@decodelabs/underlay` root imports
+- current docs that still teach `@inflatable-cookie/underlay` root imports
 - roadmap front doors and durable inventory
 
 ## Goals
@@ -40,7 +40,7 @@ as a compatibility barrel.
 
 ## Judgment
 
-The root `@decodelabs/underlay` barrel should remain exported for compatibility,
+The root `@inflatable-cookie/underlay` barrel should remain exported for compatibility,
 but it should no longer be taught as a preferred import surface.
 
 That means:
@@ -67,7 +67,7 @@ The compatibility barrel remains exported. The change is guidance-only:
 
 ## Complete
 
-`g01.093` is complete. The root `@decodelabs/underlay` barrel is now explicit
+`g01.093` is complete. The root `@inflatable-cookie/underlay` barrel is now explicit
 as a compatibility surface only, and active docs teach the narrower package
 surfaces instead of the old flat barrel.
 

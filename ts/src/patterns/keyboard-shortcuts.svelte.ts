@@ -7,7 +7,7 @@
  * @example
  * ```svelte
  * <script>
- *   import { createKeyboardShortcuts } from '@decodelabs/underlay/runtime/browser';
+ *   import { createKeyboardShortcuts } from '@inflatable-cookie/underlay/runtime/browser';
  *
  *   const shortcuts = createKeyboardShortcuts();
  *   shortcuts.register("Escape", () => closePanel());

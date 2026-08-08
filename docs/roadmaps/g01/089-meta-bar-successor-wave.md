@@ -45,7 +45,7 @@ successor is a smaller generic Poodle surface.
 
 ## Consumer Upgrade Impact
 
-- `@decodelabs/underlay/patterns` no longer exports:
+- `@inflatable-cookie/underlay/patterns` no longer exports:
   - `DetailMeta`
   - `DetailMetaItem`
   - `DetailMetaId`

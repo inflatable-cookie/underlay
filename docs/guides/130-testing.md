@@ -329,7 +329,7 @@ This check is part of `bun validate` and should remain green before merge.
 
 ### Unit Tests for API Commands
 
-Test API client commands using `@decodelabs/underlay/testing` mock HTTP clients:
+Test API client commands using `@inflatable-cookie/underlay/testing` mock HTTP clients:
 
 ```typescript
 // libs/client/tests/learning-commands.test.ts
@@ -338,7 +338,7 @@ import { describe, expect, it } from "vitest";
 import type { LearningModule } from "../src/types/learning-types";
 import type { ListResponse, SingleResponse } from "../src/types/common-types";
 import { createLearningCommands } from "../src/commands/learning-commands";
-import { createMockHttpClient } from "@decodelabs/underlay/testing";
+import { createMockHttpClient } from "@inflatable-cookie/underlay/testing";
 
 describe("learning commands", () => {
   it("getModules calls the correct path and returns the data", async () => {

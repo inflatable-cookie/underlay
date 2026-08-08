@@ -65,7 +65,7 @@ Focus on these canonical items for this sweep:
 ## Step 2 - Measure current Underlay adoption
 
 ```bash
-rg -n "@decodelabs/underlay/(components|patterns)" "$ADMIN_REPO/src" "$WEB_REPO/src"
+rg -n "@inflatable-cookie/underlay/(components|patterns)" "$ADMIN_REPO/src" "$WEB_REPO/src"
 ```
 
 Record:
@@ -283,7 +283,7 @@ Use allowlists where legitimate exceptions exist.
 ### [AREA] [SEVERITY] Reinvention finding title
 
 - **Location:** `src/...`
-- **Existing shared alternative:** `@decodelabs/underlay/components|patterns` item
+- **Existing shared alternative:** `@inflatable-cookie/underlay/components|patterns` item
 - **Why this is duplicate:**
 - **Classification:** Must migrate / Extend then migrate / Allowed exception
 - **Remediation plan:**

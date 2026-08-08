@@ -29,8 +29,8 @@ Target: reusable API boundary primitives and infrastructure patterns.
 Target: shared patterns for a typed API client.
 
 - **HTTP client core**
-  - Underlay now provides `createHttpClient()` under `@decodelabs/underlay/client/http`
-    and `UnderlayHttpError` under `@decodelabs/underlay/client/errors`.
+  - Underlay now provides `createHttpClient()` under `@inflatable-cookie/underlay/client/http`
+    and `UnderlayHttpError` under `@inflatable-cookie/underlay/client/errors`.
 
 - **Command module pattern**
   - Next extraction: a lightweight convention for defining command modules (grouped by domain, returning typed envelopes).

@@ -9,7 +9,7 @@ Status: `proposed`
 
 ## Summary
 
-Add `@decodelabs/underlay/validation` export with pre-built Zod schemas that mirror Rust validation rules, enabling client-side validation with type inference.
+Add `@inflatable-cookie/underlay/validation` export with pre-built Zod schemas that mirror Rust validation rules, enabling client-side validation with type inference.
 
 ## Research Discovery
 
@@ -40,7 +40,7 @@ Add `@decodelabs/underlay/validation` export with pre-built Zod schemas that mir
 
 ### Decision 1: Add Zod as Optional Peer Dependency
 
-**Decision:** Add `zod` as an optional peer dependency, create `@decodelabs/underlay/validation` export.
+**Decision:** Add `zod` as an optional peer dependency, create `@inflatable-cookie/underlay/validation` export.
 
 **Research basis:**
 - Zod is the industry standard for TypeScript validation
@@ -66,7 +66,7 @@ Add `@decodelabs/underlay/validation` export with pre-built Zod schemas that mir
 **Proposed API**
 
 ```typescript
-// New export: @decodelabs/underlay/validation
+// New export: @inflatable-cookie/underlay/validation
 import { z } from "zod";
 
 // Primitive schemas
@@ -122,8 +122,8 @@ export type RegisterRequest = z.infer<typeof registerRequestSchema>;
 **Proposed API**
 
 ```typescript
-import { useValidatedForm } from "@decodelabs/underlay/patterns";
-import { registerRequestSchema } from "@decodelabs/underlay/validation";
+import { useValidatedForm } from "@inflatable-cookie/underlay/patterns";
+import { registerRequestSchema } from "@inflatable-cookie/underlay/validation";
 
 const form = useValidatedForm({
   schema: registerRequestSchema,

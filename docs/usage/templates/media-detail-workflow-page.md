@@ -31,7 +31,7 @@ pieces before building route-local modules:
 - `MediaUsageList`
 
 For repeated route-side media-detail helper logic, prefer the retained
-`@decodelabs/underlay/runtime/media/detail` helpers before adding app-local
+`@inflatable-cookie/underlay/runtime/media/detail` helpers before adding app-local
 state or predicate modules. The aggregate `runtime/media` path remains valid
 for compatibility.
 
@@ -61,7 +61,7 @@ for compatibility.
     MediaVersionActionDialogs,
     MediaVersionPreviewDialog,
     MediaVersionsList
-  } from "@decodelabs/underlay/templates";
+  } from "@inflatable-cookie/underlay/templates";
   import {
     canActivateMediaVersion,
     canDeleteMediaVersion,
@@ -73,9 +73,9 @@ for compatibility.
     isCurrentMediaVersion,
     isImageMedia,
     isPdfMedia
-  } from "@decodelabs/underlay/runtime/media/detail";
-  import type { MediaDetail, MediaVersion } from "@decodelabs/underlay/runtime/media/types";
-  import { formatFileSize } from "@decodelabs/underlay/runtime/media/upload";
+  } from "@inflatable-cookie/underlay/runtime/media/detail";
+  import type { MediaDetail, MediaVersion } from "@inflatable-cookie/underlay/runtime/media/types";
+  import { formatFileSize } from "@inflatable-cookie/underlay/runtime/media/upload";
 
   let media = $state<MediaDetail | null>(null);
   let loading = $state(true);

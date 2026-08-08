@@ -2,10 +2,10 @@ import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { scanFiles } from "@decodelabs/underlay/tools/guardrails";
-import { loadConfig } from "@decodelabs/underlay/tools/guardrails-config";
-import { moduleScopeChecks } from "@decodelabs/underlay/tools/templates/sveltekit-ssr";
-import { bannedPatterns } from "@decodelabs/underlay/tools/templates/banned-apis";
+import { scanFiles } from "@inflatable-cookie/underlay/tools/guardrails";
+import { loadConfig } from "@inflatable-cookie/underlay/tools/guardrails-config";
+import { moduleScopeChecks } from "@inflatable-cookie/underlay/tools/templates/sveltekit-ssr";
+import { bannedPatterns } from "@inflatable-cookie/underlay/tools/templates/banned-apis";
 
 const tempDirs: string[] = [];
 
@@ -107,8 +107,8 @@ describe("tools/guardrails", () => {
 			JSON.stringify({
 				srcDir: dir,
 				extensions: [".ts", ".svelte"],
-				bannedPatterns: "@decodelabs/underlay/tools/templates/banned-apis",
-				moduleScopeChecks: "@decodelabs/underlay/tools/templates/sveltekit-ssr",
+				bannedPatterns: "@inflatable-cookie/underlay/tools/templates/banned-apis",
+				moduleScopeChecks: "@inflatable-cookie/underlay/tools/templates/sveltekit-ssr",
 			}),
 		);
 

@@ -141,7 +141,7 @@ async fn list_users(
 // Problem: Form loading/error states duplicated
 // Solution: Composable form state hook
 
-import { useFormState } from '@decodelabs/underlay/patterns';
+import { useFormState } from '@inflatable-cookie/underlay/patterns';
 
 function MyForm() {
   const form = useFormState({
@@ -204,7 +204,7 @@ function MyForm() {
 // Problem: localStorage/sessionStorage break SSR
 // Solution: SSR-safe wrappers
 
-import { storage } from '@decodelabs/underlay/patterns';
+import { storage } from '@inflatable-cookie/underlay/patterns';
 
 // Works in SSR and browser
 const theme = storage.local.get('theme', 'light');
@@ -296,7 +296,7 @@ async fn get_user(id: Uuid) -> Result<User> {
 // Problem: CRUD operations feel slow
 // Solution: Optimistic update helpers
 
-import { optimistic } from '@decodelabs/underlay/client';
+import { optimistic } from '@inflatable-cookie/underlay/client';
 
 const deleteUser = optimistic({
   mutate: (id) => api.users.delete(id),
@@ -333,7 +333,7 @@ const deleteUser = optimistic({
 **7. Internationalization Helpers** (`patterns/i18n.ts`)
 ```typescript
 // Date, number, currency formatting
-import { format } from '@decodelabs/underlay/patterns';
+import { format } from '@inflatable-cookie/underlay/patterns';
 
 format.date(date, 'short');  // "12 Jan 2026"
 format.currency(1234.56, 'GBP');  // "£1,234.56"

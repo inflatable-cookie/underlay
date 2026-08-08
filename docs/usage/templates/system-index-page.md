@@ -23,7 +23,7 @@ The route still owns:
 
 ```svelte
 <script lang="ts">
-  import { SystemIndexPage } from "@decodelabs/underlay/templates";
+  import { SystemIndexPage } from "@inflatable-cookie/underlay/templates";
   import AlertTriangle from "lucide-svelte/icons/alert-triangle";
   import Layers from "lucide-svelte/icons/layers";
 

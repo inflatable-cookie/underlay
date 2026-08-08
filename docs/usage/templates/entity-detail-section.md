@@ -14,7 +14,7 @@ detail sections with `DetailItem`.
 ## Public types
 
 Use the shared exported detail-template types from
-`@decodelabs/underlay/templates` when you need explicit config typing:
+`@inflatable-cookie/underlay/templates` when you need explicit config typing:
 
 - `DetailMetaItemConfig`
 - `DetailItemConfig`

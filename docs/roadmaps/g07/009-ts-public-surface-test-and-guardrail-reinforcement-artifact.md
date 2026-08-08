@@ -13,7 +13,7 @@ This artifact records the additive support tests added by `g07.009`.
 Preferred client path:
 
 - `ts/tests/client/suggestions.test.ts`
-  - imports from `@decodelabs/underlay/client/suggestions`
+  - imports from `@inflatable-cookie/underlay/client/suggestions`
   - covers hint formatting/parsing
   - covers bounded query-param construction
   - covers append/merge behavior without duplicate keys

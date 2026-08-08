@@ -43,14 +43,14 @@ banner error.
 
 | Helper | Import | Purpose |
 |--------|--------|---------|
-| `submitFormWithIntent()` | `@decodelabs/underlay/runtime/forms` | Submit form with intent |
-| `useSyncedSelection()` | `@decodelabs/underlay/runtime/data` | Manage selection state |
-| `createLocalSearchFns()` | `@decodelabs/underlay/runtime/relations` | Search/suggest for app-local selector shells |
-| `slugify` / `validateSlug` | `@decodelabs/underlay/utils/slug` | Pure slug helpers for app-owned slug fields |
-| `useValidatedForm()` | `@decodelabs/underlay/runtime/forms` | Lightweight Zod-backed client-side form orchestration |
+| `submitFormWithIntent()` | `@inflatable-cookie/underlay/runtime/forms` | Submit form with intent |
+| `useSyncedSelection()` | `@inflatable-cookie/underlay/runtime/data` | Manage selection state |
+| `createLocalSearchFns()` | `@inflatable-cookie/underlay/runtime/relations` | Search/suggest for app-local selector shells |
+| `slugify` / `validateSlug` | `@inflatable-cookie/underlay/utils/slug` | Pure slug helpers for app-owned slug fields |
+| `useValidatedForm()` | `@inflatable-cookie/underlay/runtime/forms` | Lightweight Zod-backed client-side form orchestration |
 | `Tabs` | `@inflatable-cookie/poodle-svelte` | Multi-section form tabs |
-| `getNextLetter()` | `@decodelabs/underlay/utils/sequence` | Next letter in sequence |
-| `getNextNumber()` | `@decodelabs/underlay/utils/sequence` | Next number in sequence |
+| `getNextLetter()` | `@inflatable-cookie/underlay/utils/sequence` | Next letter in sequence |
+| `getNextNumber()` | `@inflatable-cookie/underlay/utils/sequence` | Next number in sequence |
 
 ---
 
@@ -59,7 +59,7 @@ banner error.
 Use `useValidatedForm()` when the form benefits from immediate client-side schema checks but you do not want to replace Underlay's existing field or submit primitives.
 
 ```ts
-import { useValidatedForm } from "@decodelabs/underlay/runtime/forms";
+import { useValidatedForm } from "@inflatable-cookie/underlay/runtime/forms";
 import { z } from "zod";
 
 const registerRequestSchema = z.object({
@@ -184,7 +184,7 @@ Only mount the active panel by default. If a specific editor needs to stay mount
 Submit a form with a specific intent value. Useful for delete buttons that need to submit the main form with `intent="delete"`.
 
 ```typescript
-import { submitFormWithIntent } from "@decodelabs/underlay/runtime/forms";
+import { submitFormWithIntent } from "@inflatable-cookie/underlay/runtime/forms";
 
 function handleDelete() {
   submitFormWithIntent("delete");
@@ -207,7 +207,7 @@ submitFormWithIntent("archive", "#settings-form", "action");
 
 ```svelte
 <script lang="ts">
-  import { submitFormWithIntent } from "@decodelabs/underlay/runtime/forms";
+  import { submitFormWithIntent } from "@inflatable-cookie/underlay/runtime/forms";
 
   function handleDelete() {
     // This sets the hidden "intent" input to "delete" and submits
@@ -240,7 +240,7 @@ Manage selection state that needs to sync from multiple sources:
 **File:** Uses Svelte 5 runes (requires `.svelte.ts` extension or Svelte component)
 
 ```typescript
-import { useSyncedSelection } from "@decodelabs/underlay/runtime/data";
+import { useSyncedSelection } from "@inflatable-cookie/underlay/runtime/data";
 
 // Create selection state
 const selection = useSyncedSelection<string>();
@@ -283,7 +283,7 @@ interface SyncedSelectionResult<T> {
 
 ```svelte
 <script lang="ts">
-  import { useSyncedSelection } from "@decodelabs/underlay/runtime/data";
+  import { useSyncedSelection } from "@inflatable-cookie/underlay/runtime/data";
   import AreaSelector from "$lib/components/AreaSelector.svelte";
 
   let { data } = $props();
@@ -330,7 +330,7 @@ Create search and suggest functions for app-local selector shells when filtering
 client-side data.
 
 ```typescript
-import { createLocalSearchFns } from "@decodelabs/underlay/runtime/relations";
+import { createLocalSearchFns } from "@inflatable-cookie/underlay/runtime/relations";
 
 const { search, suggest } = createLocalSearchFns(
   () => sections,  // Getter for current items
@@ -390,7 +390,7 @@ const { search, suggest } = createLocalSearchFns(
 
 ```svelte
 <script lang="ts">
-  import { createLocalSearchFns } from "@decodelabs/underlay/runtime/relations";
+  import { createLocalSearchFns } from "@inflatable-cookie/underlay/runtime/relations";
   import SectionSelector from "$lib/components/SectionSelector.svelte";
 
   interface Props {
@@ -450,7 +450,7 @@ Underlay slug helpers only where you want to share pure formatting rules.
 ```svelte
 <script lang="ts">
   import { Field, TextInput, type InputValidationStatus } from "@inflatable-cookie/poodle-svelte";
-  import { slugify, isReservedSlug, isValidSlugFormat } from "@decodelabs/underlay/utils/slug";
+  import { slugify, isReservedSlug, isValidSlugFormat } from "@inflatable-cookie/underlay/utils/slug";
 
   let title = $state("");
   let slug = $state("");
@@ -538,7 +538,7 @@ For the reusable cross-app recipe, see Poodle
 Get the next available letter not in the existing set.
 
 ```typescript
-import { getNextLetter } from "@decodelabs/underlay/utils/sequence";
+import { getNextLetter } from "@inflatable-cookie/underlay/utils/sequence";
 
 getNextLetter(["A", "B", "C"]);        // "D"
 getNextLetter(["A", "C", "D"]);        // "B" (fills gap)
@@ -561,7 +561,7 @@ getNextLetter(["A", "B"], { lowercase: true }); // "c"
 Get the next available positive integer.
 
 ```typescript
-import { getNextNumber } from "@decodelabs/underlay/utils/sequence";
+import { getNextNumber } from "@inflatable-cookie/underlay/utils/sequence";
 
 getNextNumber([1, 2, 3]);   // 4
 getNextNumber([1, 5, 3]);   // 6 (max + 1, doesn't fill gaps)
@@ -580,7 +580,7 @@ getNextNumber([]);          // 1
 
 ```svelte
 <script lang="ts">
-  import { getNextLetter, getNextNumber } from "@decodelabs/underlay/utils/sequence";
+  import { getNextLetter, getNextNumber } from "@inflatable-cookie/underlay/utils/sequence";
 
   interface Props {
     sections: Array<{ label: string }>;
@@ -614,12 +614,12 @@ Here's a complete example combining multiple helpers in a form page:
 <!-- /learning/areas/new/+page.svelte -->
 <script lang="ts">
   import type { PageData } from "./$types";
-  import { useSyncedSelection } from "@decodelabs/underlay/runtime/data";
-  import { createLocalSearchFns } from "@decodelabs/underlay/runtime/relations";
-  import { submitFormWithIntent } from "@decodelabs/underlay/runtime/forms";
-  import { slugify } from "@decodelabs/underlay/utils/slug";
+  import { useSyncedSelection } from "@inflatable-cookie/underlay/runtime/data";
+  import { createLocalSearchFns } from "@inflatable-cookie/underlay/runtime/relations";
+  import { submitFormWithIntent } from "@inflatable-cookie/underlay/runtime/forms";
+  import { slugify } from "@inflatable-cookie/underlay/utils/slug";
   import { Field, TextInput } from "@inflatable-cookie/poodle-svelte";
-  import { getNextNumber } from "@decodelabs/underlay/utils/sequence";
+  import { getNextNumber } from "@inflatable-cookie/underlay/utils/sequence";
   import SectionSelector from "$lib/components/SectionSelector.svelte";
 
   interface Props {

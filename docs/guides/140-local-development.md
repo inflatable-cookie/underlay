@@ -22,14 +22,14 @@ export default defineConfig({
     // Local file: dependencies change frequently - exclude to avoid stale cache.
     // List each subpath export you import from.
     exclude: [
-      "@decodelabs/underlay",
-      "@decodelabs/underlay/nightfire",
-      "@decodelabs/underlay/runtime",
-      "@decodelabs/underlay/styles",
-      "@decodelabs/underlay/client/http",
-      "@decodelabs/underlay/client/navigation",
-      "@decodelabs/underlay/client/query",
-      "@decodelabs/underlay/client/sveltekit"
+      "@inflatable-cookie/underlay",
+      "@inflatable-cookie/underlay/nightfire",
+      "@inflatable-cookie/underlay/runtime",
+      "@inflatable-cookie/underlay/styles",
+      "@inflatable-cookie/underlay/client/http",
+      "@inflatable-cookie/underlay/client/navigation",
+      "@inflatable-cookie/underlay/client/query",
+      "@inflatable-cookie/underlay/client/sveltekit"
     ]
   },
   ssr: {
@@ -42,7 +42,7 @@ export default defineConfig({
       // Watch changes in symlinked local dependencies.
       // The `!` prefix means "don't ignore" (inverts the pattern).
       ignored: [
-        "!**/node_modules/@decodelabs/underlay/**",
+        "!**/node_modules/@inflatable-cookie/underlay/**",
         "!**/node_modules/@myapp/shared/**"  // Add your other local deps
       ]
     }
@@ -183,7 +183,7 @@ Create `.guardrailsrc.json` in your project root:
       "message": "Use a toast or dialog component instead of window.alert()."
     }
   ],
-  "moduleScopeChecks": "@decodelabs/underlay/tools/templates/sveltekit-ssr"
+  "moduleScopeChecks": "@inflatable-cookie/underlay/tools/templates/sveltekit-ssr"
 }
 ```
 
@@ -221,8 +221,8 @@ Instead of defining rules inline, use pre-built templates:
 
 ```json
 {
-  "moduleScopeChecks": "@decodelabs/underlay/tools/templates/sveltekit-ssr",
-  "bannedPatterns": "@decodelabs/underlay/tools/templates/banned-apis"
+  "moduleScopeChecks": "@inflatable-cookie/underlay/tools/templates/sveltekit-ssr",
+  "bannedPatterns": "@inflatable-cookie/underlay/tools/templates/banned-apis"
 }
 ```
 
@@ -384,7 +384,7 @@ window.alert("Saved!");
 
 ```typescript
 // ✅ GOOD: Use the app's configured toast store
-import { useToasts } from '@decodelabs/underlay/runtime/feedback';
+import { useToasts } from '@inflatable-cookie/underlay/runtime/feedback';
 
 const toastStore = useToasts();
 toastStore.push({ variant: "success", message: "Saved!" });
@@ -462,7 +462,7 @@ Use the reference in config:
 
 ```json
 {
-  "moduleScopeChecks": "@decodelabs/underlay/tools/templates/sveltekit-ssr"
+  "moduleScopeChecks": "@inflatable-cookie/underlay/tools/templates/sveltekit-ssr"
 }
 ```
 

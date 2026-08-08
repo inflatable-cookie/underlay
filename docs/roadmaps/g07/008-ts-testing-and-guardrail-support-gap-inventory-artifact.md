@@ -71,8 +71,8 @@ Current compatibility-only concern:
 
 Preferred public paths:
 
-- `@decodelabs/underlay/client/suggestions` for suggestion request helpers
-- `@decodelabs/underlay/runtime/data` for `createSelectionHistory()`
+- `@inflatable-cookie/underlay/client/suggestions` for suggestion request helpers
+- `@inflatable-cookie/underlay/runtime/data` for `createSelectionHistory()`
 
 Decision:
 

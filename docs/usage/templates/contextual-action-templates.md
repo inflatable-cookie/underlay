@@ -69,8 +69,8 @@ const generateQuestionAction = {
     ContextActionBar,
     ContextActionDialog,
     type ContextActionSubmitDetail
-  } from "@decodelabs/underlay/templates";
-  import { createContextActionController } from "@decodelabs/underlay/patterns";
+  } from "@inflatable-cookie/underlay/templates";
+  import { createContextActionController } from "@inflatable-cookie/underlay/patterns";
 
   const contextActions = createContextActionController({ actions });
 

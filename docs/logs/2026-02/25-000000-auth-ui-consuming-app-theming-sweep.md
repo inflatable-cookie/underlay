@@ -19,8 +19,8 @@ Observed before fix:
 Fix applied:
 - Added `~/Dev/projects/songsprout/bloom/src/routes/(auth)/+layout.svelte`.
 - Layout now imports:
-  - `@decodelabs/underlay/styles/tokens.css`
-  - `@decodelabs/underlay/styles/forms.css`
+  - `@inflatable-cookie/underlay/styles/tokens.css`
+  - `@inflatable-cookie/underlay/styles/forms.css`
 - Layout now defines the same Underlay token overrides used by Songsprout app layout for consistent theming.
 
 Validation status:

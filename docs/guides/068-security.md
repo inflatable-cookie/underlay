@@ -436,10 +436,10 @@ import {
   generateNonce,
   applyCspHeaders,
   createCspResolveOptions
-} from "@decodelabs/underlay/server";
+} from "@inflatable-cookie/underlay/server";
 ```
 
-> **Important**: Import from `@decodelabs/underlay/server`, NOT `/client`. The client path is for browser-compatible utilities only.
+> **Important**: Import from `@inflatable-cookie/underlay/server`, NOT `/client`. The client path is for browser-compatible utilities only.
 
 ### Basic Setup
 
@@ -450,7 +450,7 @@ import {
   generateNonce,
   applyCspHeaders,
   createCspResolveOptions
-} from "@decodelabs/underlay/server";
+} from "@inflatable-cookie/underlay/server";
 import { env } from "$env/dynamic/public";
 
 // Configure CSP once at module load
@@ -628,7 +628,7 @@ The `applyCspHeaders()` function also sets these headers by default:
 Customize with `SecurityHeadersConfig`:
 
 ```typescript
-import { applyCspHeaders, createSecurityHeadersConfig } from "@decodelabs/underlay/server";
+import { applyCspHeaders, createSecurityHeadersConfig } from "@inflatable-cookie/underlay/server";
 
 const securityHeaders = createSecurityHeadersConfig({
   frameOptions: "SAMEORIGIN",  // Allow same-origin framing
@@ -749,7 +749,7 @@ accepts only single-leading-slash same-origin paths and returns the fallback
 control characters, and encoded traversal.
 
 ```typescript
-import { resolveRedirectTo } from "@decodelabs/underlay/client/route-protection";
+import { resolveRedirectTo } from "@inflatable-cookie/underlay/client/route-protection";
 import { goto } from "$app/navigation";
 
 const target = resolveRedirectTo(url.searchParams.get("redirectTo"), "/dashboard");
@@ -808,7 +808,7 @@ event.cookies.set("refresh_token", tokens.refreshToken, {
 Underlay provides `createCookieTokenStore` for consistent cookie management:
 
 ```typescript
-import { createCookieTokenStore } from "@decodelabs/underlay/client/sveltekit";
+import { createCookieTokenStore } from "@inflatable-cookie/underlay/client/sveltekit";
 import { env } from "$env/dynamic/public";
 
 const isSecure = env.PUBLIC_API_BASE_URL?.startsWith("https://") ?? false;
@@ -865,7 +865,7 @@ tokenStore.clearTokens();
 
 ## API Reference
 
-### @decodelabs/underlay/server
+### @inflatable-cookie/underlay/server
 
 ```typescript
 // Nonce generation
@@ -1087,7 +1087,7 @@ let entries = list_audit_logs_from_table(&pool, &audit_table, filters).await?;
 
 Svelte `{@html ...}` bypasses auto-escaping, so all HTML sinks must sanitize before render.
 
-Use focused Underlay helpers from `@decodelabs/underlay/utils/html`:
+Use focused Underlay helpers from `@inflatable-cookie/underlay/utils/html`:
 
 - `sanitizeHtml(...)` for general rich text/markdown output
 - `sanitizeEmbedHtml(...)` for media embed HTML (`iframe`/`audio`/`video`)
@@ -1096,7 +1096,7 @@ Use focused Underlay helpers from `@decodelabs/underlay/utils/html`:
 Example:
 
 ```ts
-import { sanitizeEmbedHtml } from "@decodelabs/underlay/utils/html";
+import { sanitizeEmbedHtml } from "@inflatable-cookie/underlay/utils/html";
 
 const safeEmbedHtml = $derived(embedHtml ? sanitizeEmbedHtml(embedHtml) : "");
 ```

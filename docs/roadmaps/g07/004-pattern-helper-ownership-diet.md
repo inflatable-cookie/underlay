@@ -16,7 +16,7 @@ pattern root by ownership and caller risk.
 
 ## Goals
 
-- [x] classify every `@decodelabs/underlay/patterns` root export as retained,
+- [x] classify every `@inflatable-cookie/underlay/patterns` root export as retained,
   runtime-owned, utils-owned, template-owned, or candidate-retire
 - [x] identify exports that are kept only for compatibility
 - [x] identify consumer proof needed before any retirement or relocation
@@ -57,11 +57,11 @@ pattern root by ownership and caller risk.
 ## Consumer Upgrade Impact
 
 Breaking for unknown callers that imported selection/reorder session helpers
-from `@decodelabs/underlay/patterns`.
+from `@inflatable-cookie/underlay/patterns`.
 
 No known consumer app update is required. The six-consumer scan found no active
 code imports of those helpers from the pattern root. The helpers remain
-available from `@decodelabs/underlay/runtime/data`.
+available from `@inflatable-cookie/underlay/runtime/data`.
 
 ## Next Task
 

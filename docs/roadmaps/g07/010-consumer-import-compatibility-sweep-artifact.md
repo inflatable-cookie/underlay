@@ -24,10 +24,10 @@ Consumer roots:
 | --- | --- | --- |
 | `underlay-reference` | preferred | Uses `client/suggestions` in `acme-client`; uses `runtime/data` for selection history; no compatibility-only Underlay import found. |
 | `contact-patch` | fixed | `cp-client` re-exported suggestion helpers from `runtime/data`; changed to `client/suggestions` while keeping selection history on `runtime/data`. |
-| `compli-me` | preferred source imports | Source imports use retained paths. `front` and `admin` still have config-only `@decodelabs/underlay/components` optimizeDeps excludes. |
+| `compli-me` | preferred source imports | Source imports use retained paths. `front` and `admin` still have config-only `@inflatable-cookie/underlay/components` optimizeDeps excludes. |
 | `acowtancy` | preferred source imports | Heavy `runtime/relations`, `runtime/data`, `runtime/auth`, `templates`, `client`, `nightfire`, and one `testing` import are retained. `cattle-grid` keeps app-local suggestion query helpers for app-specific query shape. |
-| `songsprout` | preferred source imports | Source imports use retained paths. `bloom` and `greenhouse` still have config-only `@decodelabs/underlay/components` optimizeDeps excludes. |
-| `loophole/composer` | preferred source imports | Source imports use retained paths. `composer-front` and `composer-admin` still have config-only `@decodelabs/underlay/components` optimizeDeps excludes. |
+| `songsprout` | preferred source imports | Source imports use retained paths. `bloom` and `greenhouse` still have config-only `@inflatable-cookie/underlay/components` optimizeDeps excludes. |
+| `loophole/composer` | preferred source imports | Source imports use retained paths. `composer-front` and `composer-admin` still have config-only `@inflatable-cookie/underlay/components` optimizeDeps excludes. |
 
 ## Consumer Edit
 
@@ -35,10 +35,10 @@ Applied in `contact-patch`:
 
 - `cp-client/src/index.ts`
   - `createSelectionHistory` and selection history types stay on
-    `@decodelabs/underlay/runtime/data`
+    `@inflatable-cookie/underlay/runtime/data`
   - `formatHintsParam`, `parseHintsParam`, `buildSuggestionParams`,
     `appendSuggestionParams`, and `SuggestionRequestOptions` now come from
-    `@decodelabs/underlay/client/suggestions`
+    `@inflatable-cookie/underlay/client/suggestions`
 
 Validation:
 
@@ -55,7 +55,7 @@ and closeout note so the retirement decision is explicit.
 ## Config-Only Drift
 
 Several consumer Vite configs still exclude
-`@decodelabs/underlay/components` from dependency optimization even though that
+`@inflatable-cookie/underlay/components` from dependency optimization even though that
 is no longer a retained Underlay package subpath.
 
 Affected files:

@@ -23,7 +23,7 @@ Use raw `EntityList` when the surface is truly narrower:
 
 ```svelte
 <script lang="ts">
-  import { EntityList, toPagedListResult } from "@decodelabs/underlay/templates";
+  import { EntityList, toPagedListResult } from "@inflatable-cookie/underlay/templates";
   import TaskCard from "$lib/cards/TaskCard.svelte";
 
   async function loadTasks(fetchFn: typeof fetch, token: string | null, query) {
@@ -64,7 +64,7 @@ capabilities for the list surface.
 Same as `EntityListPage` minus the page-shell props (`title`, `backHref`, etc.).
 
 Use the shared exported list-template types from
-`@decodelabs/underlay/templates` when you need explicit config typing.
+`@inflatable-cookie/underlay/templates` when you need explicit config typing.
 
 ## See Also
 

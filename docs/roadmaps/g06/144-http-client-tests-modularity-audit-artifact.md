@@ -4,7 +4,7 @@
 
 `ts/tests/client/http-refactored.test.ts` is the largest high-severity
 TypeScript god-file. It is test-only and protects the public
-`@decodelabs/underlay/client/http` surface.
+`@inflatable-cookie/underlay/client/http` surface.
 
 The current file groups:
 

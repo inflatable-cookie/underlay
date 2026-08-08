@@ -1,8 +1,8 @@
 <script lang="ts">
   // Import Underlay CSS FIRST so our :root overrides take precedence.
-  import "@decodelabs/underlay/styles/base.css";
-  import "@decodelabs/underlay/styles/tokens.css";
-  import "@decodelabs/underlay/styles/forms.css";
+  import "@inflatable-cookie/underlay/styles/base.css";
+  import "@inflatable-cookie/underlay/styles/tokens.css";
+  import "@inflatable-cookie/underlay/styles/forms.css";
 
   let { children } = $props();
 </script>

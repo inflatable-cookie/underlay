@@ -158,7 +158,7 @@ A surface should stay in Underlay when one or more of the following dominate:
   and single-purpose auth components such as `LoginForm`, `RegisterForm`,
   `TotpSetup`, `PassKeyButton`, `GoogleSignInButton`, `AccountRecovery`,
   `TwoFactorStep`, `SuccessStep`, and `PasswordResetStep` are no longer part of
-  the public `@decodelabs/underlay/components` surface.
+  the public `@inflatable-cookie/underlay/components` surface.
 - The live auth shell family is now at its final retained Underlay boundary.
   `AuthLayout`, `LoginPage`, and `ForgotPasswordFlow` keep the real auth-flow
   orchestration, while the remaining visual chrome inside them resolves through

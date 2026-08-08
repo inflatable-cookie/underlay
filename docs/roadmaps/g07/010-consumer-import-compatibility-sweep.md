@@ -59,7 +59,7 @@ Add consumer-local validation only if this card changes consumer code.
 Additive consumer cleanup.
 
 `contact-patch/cp-client` now re-exports suggestion request helpers from
-`@decodelabs/underlay/client/suggestions` instead of the compatibility-only
+`@inflatable-cookie/underlay/client/suggestions` instead of the compatibility-only
 `runtime/data` path. No Underlay public API changed.
 
 ## Next Task

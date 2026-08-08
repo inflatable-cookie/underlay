@@ -2,7 +2,7 @@
 
 `g01.090` confirmed that the remaining public `patterns` surface is a true
 retained stop point. The next honest retained-package challenge is
-`@decodelabs/underlay/client`.
+`@inflatable-cookie/underlay/client`.
 
 `client` is still coherent, but its public shape is flatter than the live
 boundary. The active apps mostly use SvelteKit/browser-facing navigation and
@@ -16,14 +16,14 @@ existing broad root barrel.
 
 - `ts/src/client/`
 - `package.json` `./client*` exports
-- guide and architecture references to `@decodelabs/underlay/client`
+- guide and architecture references to `@inflatable-cookie/underlay/client`
 
 ## Goals
 
 - Confirm the strict live caller boundary for the retained `client` package.
 - Expose the real client subpaths explicitly so new imports do not have to rely
   on one flat root barrel.
-- Keep the root `@decodelabs/underlay/client` barrel stable as a convenience
+- Keep the root `@inflatable-cookie/underlay/client` barrel stable as a convenience
   surface for existing callers.
 
 ## Non-Goals
@@ -31,7 +31,7 @@ existing broad root barrel.
 - Do not force a client-package extraction.
 - Do not migrate existing callers just to prefer narrower imports.
 - Do not move framework-agnostic navigation state back out of
-  `@decodelabs/underlay/runtime`.
+  `@inflatable-cookie/underlay/runtime`.
 
 ## Caller Matrix
 
@@ -59,12 +59,12 @@ Broad live usage in `acme-client`, `cp-client`, and `cattle-grid`:
 
 ## Judgment
 
-`@decodelabs/underlay/client` still earns retained Underlay ownership for now.
+`@inflatable-cookie/underlay/client` still earns retained Underlay ownership for now.
 
 There is no honest extraction batch here today. The useful cleanup is boundary
 clarity:
 
-- keep the root `@decodelabs/underlay/client` barrel stable for existing broad
+- keep the root `@inflatable-cookie/underlay/client` barrel stable for existing broad
   callers
 - expose explicit `client/*` subpaths for the real feature families
 - teach narrower imports in docs for new focused contracts
@@ -81,13 +81,13 @@ The new `client/*` subpaths are additive:
 
 ## Status
 
-- [x] Sweep the live caller family for `@decodelabs/underlay/client`.
+- [x] Sweep the live caller family for `@inflatable-cookie/underlay/client`.
 - [x] Confirm whether the package needs extraction or only boundary tightening.
 - [x] Expose the real `client/*` subpaths and align the front-door docs.
 
 ## Complete
 
-`g01.091` is complete. `@decodelabs/underlay/client` remains a retained package
+`g01.091` is complete. `@inflatable-cookie/underlay/client` remains a retained package
 surface, but its public subpaths are now explicit:
 
 - `client/auth`
@@ -102,7 +102,7 @@ surface, but its public subpaths are now explicit:
 - `client/types`
 - `client/useAuth`
 
-The root `@decodelabs/underlay/client` barrel remains a stable convenience
+The root `@inflatable-cookie/underlay/client` barrel remains a stable convenience
 surface for existing consumers.
 
 ## Next Task

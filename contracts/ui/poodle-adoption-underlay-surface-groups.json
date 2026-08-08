@@ -136,12 +136,12 @@
     "lead_target": "sibling_repo_live_surface",
     "notes": [
       "The broad manual Dairy recovery is now complete and `dairy` validates cleanly again after repairing the bad import rewrite without losing the open app work.",
-      "The active sibling repo surface no longer contains live imports of `@decodelabs/underlay/components`, `@decodelabs/underlay/embed`, or legacy deep `@decodelabs/underlay/patterns/...` paths.",
+      "The active sibling repo surface no longer contains live imports of `@inflatable-cookie/underlay/components`, `@inflatable-cookie/underlay/embed`, or legacy deep `@inflatable-cookie/underlay/patterns/...` paths.",
       "The remaining references to those retired entrypoints are historical roadmap/docs/accounting records and scratch notes only, not active supported source usage."
     ]
   },
   "wave_090_retained_patterns_stop_point": {
-    "purpose": "Final stop-point clarification for the remaining public `@decodelabs/underlay/patterns` workflow surface after the `DetailMeta*` successor wave.",
+    "purpose": "Final stop-point clarification for the remaining public `@inflatable-cookie/underlay/patterns` workflow surface after the `DetailMeta*` successor wave.",
     "active_capability_wave": [],
     "lead_target": null,
     "notes": [
@@ -153,33 +153,33 @@
     ]
   },
   "wave_091_client_surface_organization": {
-    "purpose": "Clarify the retained `@decodelabs/underlay/client` package boundary after the Svelte contraction line by making its real feature-family subpaths explicit.",
+    "purpose": "Clarify the retained `@inflatable-cookie/underlay/client` package boundary after the Svelte contraction line by making its real feature-family subpaths explicit.",
     "active_capability_wave": [],
     "lead_target": null,
     "notes": [
       "The retained `client` surface splits cleanly into SvelteKit/browser-facing app helpers and transport/error/type helpers used by generated client packages.",
-      "The root `@decodelabs/underlay/client` barrel remains stable as a convenience surface because live consumer usage is still broad.",
+      "The root `@inflatable-cookie/underlay/client` barrel remains stable as a convenience surface because live consumer usage is still broad.",
       "Explicit public `client/*` subpaths now exist for the real feature families, so new focused contracts do not need to depend on the flat root barrel by default.",
       "This is boundary clarification, not an extraction wave. There is no worthwhile standalone `client` package split to force right now."
     ]
   },
   "wave_092_nightfire_extraction_readiness": {
-    "purpose": "Clarify the retained `@decodelabs/underlay/nightfire` package boundary by exposing additive public subpaths for the real extension families without forcing extraction yet.",
+    "purpose": "Clarify the retained `@inflatable-cookie/underlay/nightfire` package boundary by exposing additive public subpaths for the real extension families without forcing extraction yet.",
     "active_capability_wave": [],
     "lead_target": null,
     "notes": [
       "The retained Nightfire surface still has real editor and renderer usage in Dairy, plus registry-extension usage in Froyo and Acme UI.",
-      "The root `@decodelabs/underlay/nightfire` barrel remains stable as a convenience surface because broad live usage still centers on editor and renderer imports.",
+      "The root `@inflatable-cookie/underlay/nightfire` barrel remains stable as a convenience surface because broad live usage still centers on editor and renderer imports.",
       "Explicit public `nightfire/*` subpaths now exist for registry, strategy, media-context, validation, and utility families so a future extraction starts from real package seams instead of one flat barrel.",
       "This is extraction-readiness work, not an extraction wave. There is no honest consumer migration or package split to force right now."
     ]
   },
   "wave_093_root_package_barrel_reassessment": {
-    "purpose": "Clarify the root `@decodelabs/underlay` package barrel as a compatibility-only surface after the retained package seams became explicit.",
+    "purpose": "Clarify the root `@inflatable-cookie/underlay` package barrel as a compatibility-only surface after the retained package seams became explicit.",
     "active_capability_wave": [],
     "lead_target": null,
     "notes": [
-      "The live active-source surface no longer imports directly from the root `@decodelabs/underlay` barrel.",
+      "The live active-source surface no longer imports directly from the root `@inflatable-cookie/underlay` barrel.",
       "The real public package seams are now `patterns`, `runtime`, `utils`, `client`, `nightfire`, and `styles`.",
       "The root barrel remains exported for compatibility, but active docs should no longer teach it as the preferred import surface.",
       "This is a guidance and boundary-clarity wave, not a breaking removal wave."
@@ -279,10 +279,10 @@
     "active_capability_wave": [],
     "lead_target": null,
     "notes": [
-      "The package-boundary cleanup is complete. There are no live `@decodelabs/underlay/components/*.svelte` deep imports left in the active app/docs surface, and the wildcard `components/*` export is removed from `package.json`.",
+      "The package-boundary cleanup is complete. There are no live `@inflatable-cookie/underlay/components/*.svelte` deep imports left in the active app/docs surface, and the wildcard `components/*` export is removed from `package.json`.",
       "There is no remaining public `components` surface. `PasswordRequirements` and the retained auth shared types now live under `patterns/`, and the date-range formatter lives under `patterns/i18n`.",
       "The remaining public `patterns` surface is intentionally split between retained workflow/shell UI (`LoginPage`, `ForgotPasswordFlow`, `SpaFormShell`, `DetailMeta*`) and retained helper/controller exports.",
-      "The repo's own app/docs surface no longer uses `@decodelabs/underlay/patterns/...` subpath imports; the explicit helper subpath exports may remain for external consumers, but they no longer indicate hidden migration residue.",
+      "The repo's own app/docs surface no longer uses `@inflatable-cookie/underlay/patterns/...` subpath imports; the explicit helper subpath exports may remain for external consumers, but they no longer indicate hidden migration residue.",
       "`nightfire` is a retained editor/runtime package surface, not leftover generic UI contraction debt. Future changes there should start as editor-specific package work rather than continue the Poodle-adoption line by inertia."
     ]
   },
@@ -622,28 +622,28 @@
     "api_translation_replacements": [
       {
         "export": "DateInput",
-        "entrypoint": "@decodelabs/underlay/components",
+        "entrypoint": "@inflatable-cookie/underlay/components",
         "successor_package": "@inflatable-cookie/poodle-svelte-primitives",
         "successor_export": "DatePicker",
         "notes": "Retired in g01.045. Use Poodle `FilterToolbar` directly for filter layout and collapse behavior; Underlay no longer needs a second filter-shell wrapper."
       },
       {
         "export": "DateTimeInput",
-        "entrypoint": "@decodelabs/underlay/components",
+        "entrypoint": "@inflatable-cookie/underlay/components",
         "successor_package": "@inflatable-cookie/poodle-svelte-primitives",
         "successor_export": "DateTimePicker",
         "notes": "Poodle replacement exists but migration will need import and API translation."
       },
       {
         "export": "NumberInput",
-        "entrypoint": "@decodelabs/underlay/components",
+        "entrypoint": "@inflatable-cookie/underlay/components",
         "successor_package": "@inflatable-cookie/poodle-svelte-primitives",
         "successor_export": "NumberInput",
         "notes": "Poodle replacement exists but migration will need import and API translation."
       },
       {
         "export": "FilterBar",
-        "entrypoint": "@decodelabs/underlay/patterns",
+        "entrypoint": "@inflatable-cookie/underlay/patterns",
         "successor_package": "@inflatable-cookie/poodle-svelte-composites",
         "successor_export": "FilterToolbar",
         "notes": "Retired in g01.045. Use Poodle `FilterToolbar` directly for filter layout and collapse behavior; Underlay no longer needs a second filter-shell wrapper."
@@ -652,28 +652,28 @@
   },
   "keep_in_underlay": [
     {
-      "entrypoint": "@decodelabs/underlay/components",
+      "entrypoint": "@inflatable-cookie/underlay/components",
       "exports": [
         "Select"
       ],
       "notes": "Internalize rather than keep public. There are no live consumer-app callers left, but retained internals such as Nightfire editor helpers still depend on the local richer select contract."
     },
     {
-      "entrypoint": "@decodelabs/underlay/patterns",
+      "entrypoint": "@inflatable-cookie/underlay/patterns",
       "exports": [
         "SpaFormShell"
       ],
       "notes": "Retain as Underlay-owned structural shells, helper families, operational flows, or app-facing product composites. `PageHeader` and `Banner` are no longer part of this retained public surface. `RelationSelector` is now at its retained Underlay boundary: Poodle owns its dialog, search, status, button, and badge chrome, while Underlay keeps the actual relation filters, option list behavior, drilldown navigation, and selection workflow. `SpaFormShell` was rechecked in g01.067 and still earns retained ownership because it bundles SPA submit/result/navigation workflow across a broad create/edit caller family rather than just stale framing."
     },
     {
-      "entrypoint": "@decodelabs/underlay/components",
+      "entrypoint": "@inflatable-cookie/underlay/components",
       "exports": [
         "PasswordRequirements"
       ],
       "notes": "Retain as the Underlay auth-policy adapter layer. Poodle now owns the agnostic `PasswordRequirements` checklist UI, while Underlay still owns policy fetch, fallback defaults, and shared password-reset/change adapter behavior."
     },
     {
-      "entrypoint": "@decodelabs/underlay/patterns",
+      "entrypoint": "@inflatable-cookie/underlay/patterns",
       "exports": [
         "LoginPage",
         "ForgotPasswordFlow"
@@ -681,7 +681,7 @@
       "notes": "Retain as shared auth workflow patterns. `LoginPage` still owns multi-method auth state, 2FA transitions, and setup-prompt/email-fallback handoff; `ForgotPasswordFlow` still owns the reset request/verify/reset/success sequence."
     },
     {
-      "entrypoint": "@decodelabs/underlay/nightfire",
+      "entrypoint": "@inflatable-cookie/underlay/nightfire",
       "exports": [
         "NightfireRenderer",
         "NightfireBlockEditor",
@@ -693,7 +693,7 @@
   ],
   "delete": [
     {
-      "entrypoint": "@decodelabs/underlay/components",
+      "entrypoint": "@inflatable-cookie/underlay/components",
       "exports": [
         "CompactGroupedBar",
         "CompactGroupedBarGroup",
@@ -704,7 +704,7 @@
       "notes": "Retire entirely. The structural bar family had no live shared-source or consuming-app callers beyond its own harness/test, so preserving it as a retained Underlay vocabulary would only keep dead surface area alive."
     },
     {
-      "entrypoint": "@decodelabs/underlay/patterns",
+      "entrypoint": "@inflatable-cookie/underlay/patterns",
       "exports": [
         "RelationPickerDialog",
         "PickableItem",
@@ -713,7 +713,7 @@
       "replacement": "Internalized into RelationSelectorModal over Poodle Dialog/SearchField/Button/Callout; not a retained public pattern."
     },
     {
-      "entrypoint": "@decodelabs/underlay/patterns",
+      "entrypoint": "@inflatable-cookie/underlay/patterns",
       "exports": [
         "RestoreBlockedPanel",
         "RestoreResolutionDialog",
@@ -724,7 +724,7 @@
       "notes": "Retire entirely. The restore-resolution workflow family had no live shared-source or consuming-app callers beyond its own tests, so it did not earn a retained Underlay workflow boundary."
     },
     {
-      "entrypoint": "@decodelabs/underlay/patterns",
+      "entrypoint": "@inflatable-cookie/underlay/patterns",
       "exports": [
         "OpsCard",
         "OpsCardGrid"
@@ -732,7 +732,7 @@
       "notes": "Retire entirely. These were thin local framing wrappers around card and grid layout with no meaningful external workflow contract. `AiRoutingAdmin` and the review surface now compose directly over Poodle `Card` and local layout."
     },
     {
-      "entrypoint": "@decodelabs/underlay/components",
+      "entrypoint": "@inflatable-cookie/underlay/components",
       "exports": [
         "PasskeyManager",
         "SecuritySettings",
@@ -741,14 +741,14 @@
       "notes": "Retire entirely. The account-settings trio had no live consuming-app callers and no shared-source consumers beyond its own dedicated passkey-manager test, so it did not earn a retained public auth-settings contract."
     },
     {
-      "entrypoint": "@decodelabs/underlay/patterns",
+      "entrypoint": "@inflatable-cookie/underlay/patterns",
       "exports": [
         "OpsSection"
       ],
       "notes": "Retire entirely. The section shell had only two live callers and no independent workflow contract; both callers now compose directly over local heading/layout markup and Poodle primitives."
     },
     {
-      "entrypoint": "@decodelabs/underlay/patterns",
+      "entrypoint": "@inflatable-cookie/underlay/patterns",
       "exports": [
         "PageHeaderMeta",
         "PageHeaderMetaRow",
@@ -759,14 +759,14 @@
       "notes": "Retire entirely. The header-metadata wrapper family had only four edit-page callers and no independent workflow contract; those callers now compose directly over the existing `DetailMeta*` helpers plus `Code`."
     },
     {
-      "entrypoint": "@decodelabs/underlay/patterns",
+      "entrypoint": "@inflatable-cookie/underlay/patterns",
       "exports": [
         "FormShell"
       ],
       "notes": "Retire as a public export. `FormShell` no longer has direct consuming-app callers and remains only as an internal implementation detail behind `SpaFormShell`."
     },
     {
-      "entrypoint": "@decodelabs/underlay/components",
+      "entrypoint": "@inflatable-cookie/underlay/components",
       "exports": [
         "Dialog",
         "AlertDialog"
@@ -774,7 +774,7 @@
       "notes": "Retire entirely. Poodle now owns the generic modal and confirmation surface, including close-button support, surface-class hooks, and async confirm handling."
     },
     {
-      "entrypoint": "@decodelabs/underlay/components",
+      "entrypoint": "@inflatable-cookie/underlay/components",
       "exports": [
         "Tooltip",
         "Popover"
@@ -782,7 +782,7 @@
       "notes": "Retire entirely. Poodle now owns the generic tooltip and popover surface; the remaining live tooltip usage moved directly to Poodle or to existing Poodle `IconButton` tooltip support."
     },
     {
-      "entrypoint": "@decodelabs/underlay/components",
+      "entrypoint": "@inflatable-cookie/underlay/components",
       "exports": [
         "TabsRoot",
         "TabsList",
@@ -797,182 +797,182 @@
     "resolve_via_existing_poodle_surface": [
       {
         "export": "Badge",
-        "entrypoint": "@decodelabs/underlay/components",
+        "entrypoint": "@inflatable-cookie/underlay/components",
         "successor_package": "@inflatable-cookie/poodle-svelte-primitives",
         "successor_export": "Pill",
         "notes": "Use `Pill` with the badge-style appearance. No new Poodle component is required."
       },
       {
         "export": "TextButton",
-        "entrypoint": "@decodelabs/underlay/components",
+        "entrypoint": "@inflatable-cookie/underlay/components",
         "successor_package": "@inflatable-cookie/poodle-svelte-primitives",
         "successor_export": "Button",
         "notes": "Use the standard Poodle `Button` with `variant=\"ghost\"`. No separate text-button contract is needed."
       },
       {
         "export": "SaveSplitButton",
-        "entrypoint": "@decodelabs/underlay/components",
+        "entrypoint": "@inflatable-cookie/underlay/components",
         "successor_package": "@inflatable-cookie/poodle-svelte-primitives",
         "successor_export": "SplitButton",
         "notes": "Remove the Underlay surface entirely. Treat save semantics as caller-owned labels, hidden intent fields, and actions over standard Poodle `Button` and `SplitButton` primitives."
       },
       {
         "export": "CheckboxChip",
-        "entrypoint": "@decodelabs/underlay/components",
+        "entrypoint": "@inflatable-cookie/underlay/components",
         "successor_package": "@inflatable-cookie/poodle-svelte-primitives",
         "successor_export": "Checkbox",
         "notes": "Retired in g01.045. No live callers remained; use direct checkbox composition if this interaction resurfaces."
       },
       {
         "export": "FieldSetGrid",
-        "entrypoint": "@decodelabs/underlay/components",
+        "entrypoint": "@inflatable-cookie/underlay/components",
         "successor_package": "@inflatable-cookie/poodle-svelte-composites",
         "successor_export": "FormLayout",
         "notes": "Use Poodle `FormLayout` as the default field layout surface, with `FieldSet` only for semantic grouping. Raw `Grid` is reserved for genuinely custom, non-form arrangements."
       },
       {
         "export": "DetailsCard",
-        "entrypoint": "@decodelabs/underlay/components",
+        "entrypoint": "@inflatable-cookie/underlay/components",
         "successor_package": "@inflatable-cookie/poodle-svelte-primitives",
         "successor_export": "Card",
         "notes": "Treat as card-plus-layout composition over existing Poodle surfaces."
       },
       {
         "export": "DetailItem",
-        "entrypoint": "@decodelabs/underlay/components",
+        "entrypoint": "@inflatable-cookie/underlay/components",
         "successor_package": "@inflatable-cookie/poodle-svelte-primitives",
         "successor_export": "DetailRow",
         "notes": "Use the existing detail-row contract or simple composition instead of adding a second detail item surface."
       },
       {
         "export": "DetailsSection",
-        "entrypoint": "@decodelabs/underlay/components",
+        "entrypoint": "@inflatable-cookie/underlay/components",
         "successor_package": "@inflatable-cookie/poodle-svelte-composites",
         "successor_export": "DetailSection",
         "notes": "Use the existing detail-section contract with composition for the internal layout rather than minting a second section type."
       },
       {
         "export": "DetailList",
-        "entrypoint": "@decodelabs/underlay/components",
+        "entrypoint": "@inflatable-cookie/underlay/components",
         "successor_package": "@inflatable-cookie/poodle-svelte-primitives",
         "successor_export": "DetailRow",
         "notes": "Use layout primitives plus repeated detail rows instead of a dedicated detail-list contract."
       },
       {
         "export": "DetailItem",
-        "entrypoint": "@decodelabs/underlay/components",
+        "entrypoint": "@inflatable-cookie/underlay/components",
         "successor_package": "@inflatable-cookie/poodle-svelte-primitives",
         "successor_export": "DetailRow",
         "notes": "The existing detail-row surface appears sufficient for the generic label-value use case."
       },
       {
         "export": "InlineListCard",
-        "entrypoint": "@decodelabs/underlay/components",
+        "entrypoint": "@inflatable-cookie/underlay/components",
         "successor_package": "@inflatable-cookie/poodle-svelte-primitives",
         "successor_export": null,
         "notes": "Under active reassessment in g01.046. The first broad Dairy family already collapsed onto direct Poodle `Card` composition with local rows (`AliasInlineList`, `NoticesInlineList`, `PreSeenReleasesInlineList`, `VariantsInlineList`, `BundleModulesInlineList`, `MediaUsageTab`, `MediaVersionsList`). The remaining tail is now narrow: reorder hybrids and the relation-driven `QuestionOutcomesInlineList` surface."
       },
       {
         "export": "InlineListItem",
-        "entrypoint": "@decodelabs/underlay/components",
+        "entrypoint": "@inflatable-cookie/underlay/components",
         "successor_package": "@inflatable-cookie/poodle-svelte-primitives",
         "successor_export": null,
         "notes": "Under active reassessment in g01.046. The simpler row family no longer needs the old shared wrapper contract and now uses caller-owned rows over direct Poodle `Card` shells. The unresolved tail is limited to reorder-aware inline rows and the relation-driven `QuestionOutcomesInlineList` case, which will determine whether any smaller row/item capability belongs in Poodle."
       },
       {
         "export": "InlineActionGroup",
-        "entrypoint": "@decodelabs/underlay/components",
+        "entrypoint": "@inflatable-cookie/underlay/components",
         "successor_package": "@inflatable-cookie/poodle-svelte-primitives",
         "successor_export": "Toolbar",
         "notes": "Use existing inline layout or toolbar-style composition rather than adding a dedicated action-group contract."
       },
       {
         "export": "ConfirmAction",
-        "entrypoint": "@decodelabs/underlay/components",
+        "entrypoint": "@inflatable-cookie/underlay/components",
         "successor_package": "@inflatable-cookie/poodle-svelte-primitives",
         "successor_export": "AlertDialog",
         "notes": "Compose the destructive trigger button and `AlertDialog` at the caller instead of routing through a dedicated Underlay wrapper."
       },
       {
         "export": "BatchConfirmDialog",
-        "entrypoint": "@decodelabs/underlay/components",
+        "entrypoint": "@inflatable-cookie/underlay/components",
         "successor_package": "@inflatable-cookie/poodle-svelte-primitives",
         "successor_export": "AlertDialog",
         "notes": "Treat batch confirmation as a caller-owned `AlertDialog` configuration, not a separate Poodle component."
       },
       {
         "export": "Dialog",
-        "entrypoint": "@decodelabs/underlay/components",
+        "entrypoint": "@inflatable-cookie/underlay/components",
         "successor_package": "@inflatable-cookie/poodle-svelte-primitives",
         "successor_export": "Dialog",
         "notes": "Direct replacement. Poodle `Dialog` now carries the generic surface-class and close-button affordances that were previously keeping the Underlay wrapper alive."
       },
       {
         "export": "AlertDialog",
-        "entrypoint": "@decodelabs/underlay/components",
+        "entrypoint": "@inflatable-cookie/underlay/components",
         "successor_package": "@inflatable-cookie/poodle-svelte-primitives",
         "successor_export": "AlertDialog",
         "notes": "Direct replacement. Poodle `AlertDialog` now supports async `onConfirm` workflows and controlled close behavior, so the Underlay wrapper no longer owns unique generic behavior."
       },
       {
         "export": "ActionArea",
-        "entrypoint": "@decodelabs/underlay/components",
+        "entrypoint": "@inflatable-cookie/underlay/components",
         "successor_package": "@inflatable-cookie/poodle-svelte-primitives",
         "successor_export": "Toolbar",
         "notes": "Use `Toolbar`, `Stack`, and `Spacer` composition for aligned action rows instead of retaining a separate Underlay wrapper."
       },
       {
         "export": "ContainerGrid",
-        "entrypoint": "@decodelabs/underlay/components",
+        "entrypoint": "@inflatable-cookie/underlay/components",
         "successor_package": "@inflatable-cookie/poodle-svelte-primitives",
         "successor_export": "Grid",
         "notes": "Use Poodle grid layout primitives directly for two-column responsive container layouts."
       },
       {
         "export": "ListGrid",
-        "entrypoint": "@decodelabs/underlay/components",
+        "entrypoint": "@inflatable-cookie/underlay/components",
         "successor_package": "@inflatable-cookie/poodle-svelte-primitives",
         "successor_export": "Grid",
         "notes": "Retired in g01.045. Use Poodle `Grid` with card/list composition rather than retaining a second list-grid implementation."
       },
       {
         "export": "CardActions",
-        "entrypoint": "@decodelabs/underlay/patterns",
+        "entrypoint": "@inflatable-cookie/underlay/patterns",
         "successor_package": "@inflatable-cookie/poodle-svelte-primitives",
         "successor_export": "Toolbar",
         "notes": "Use Poodle action-row composition instead of a dedicated Underlay card-actions wrapper."
       },
       {
         "export": "OpsCard",
-        "entrypoint": "@decodelabs/underlay/patterns",
+        "entrypoint": "@inflatable-cookie/underlay/patterns",
         "successor_package": "@inflatable-cookie/poodle-svelte-primitives",
         "successor_export": "Card",
         "notes": "Use Poodle card treatment directly for operational summary cards instead of preserving a separate Underlay card primitive."
       },
       {
         "export": "OpsCardGrid",
-        "entrypoint": "@decodelabs/underlay/patterns",
+        "entrypoint": "@inflatable-cookie/underlay/patterns",
         "successor_package": "@inflatable-cookie/poodle-svelte-primitives",
         "successor_export": "Grid",
         "notes": "Use Poodle grid layout primitives for operations-card layout instead of keeping a second grid wrapper."
       },
       {
         "export": "SubmitButton",
-        "entrypoint": "@decodelabs/underlay/patterns",
+        "entrypoint": "@inflatable-cookie/underlay/patterns",
         "successor_package": "@inflatable-cookie/poodle-svelte-primitives",
         "successor_export": "Button",
         "notes": "Retired. Use Poodle `Button` with `type=\"submit\"`, `loading`, and caller-owned label logic instead of a named Underlay wrapper."
       },
       {
         "export": "DiagnosticsToolbar",
-        "entrypoint": "@decodelabs/underlay/components",
+        "entrypoint": "@inflatable-cookie/underlay/components",
         "successor_package": "@inflatable-cookie/poodle-svelte-primitives",
         "successor_export": "Toolbar",
         "notes": "Retired. Express the pattern through local `Toolbar`, `Card` or `Surface` composition instead of preserving a dedicated diagnostics wrapper."
       },
       {
         "export": "PaginatedList",
-        "entrypoint": "@decodelabs/underlay/components",
+        "entrypoint": "@inflatable-cookie/underlay/components",
         "successor_package": "@inflatable-cookie/poodle-svelte-composites",
         "successor_export": "ListContainer",
         "notes": "Retired. Fold paginated list experiences into Poodle `ListContainer` plus caller-owned pagination controllers instead of preserving a separate Underlay list shell."
@@ -982,21 +982,21 @@
     "resolved_from_poodle_review": [
       {
         "export": "FieldHint",
-        "entrypoint": "@decodelabs/underlay/components",
+        "entrypoint": "@inflatable-cookie/underlay/components",
         "successor_package": "@inflatable-cookie/poodle-svelte-primitives",
         "successor_export": "Field",
         "notes": "Folded into Poodle Field as the `hint` prop. Progressive-disclosure help text shown via tooltip on the info icon next to the label."
       },
       {
         "export": "FormError",
-        "entrypoint": "@decodelabs/underlay/components",
+        "entrypoint": "@inflatable-cookie/underlay/components",
         "successor_package": "@inflatable-cookie/poodle-svelte-primitives",
         "successor_export": "Callout",
         "notes": "Form-level error display maps to Callout with tone=\"danger\" or FormLayout's error prop. No new Poodle surface needed."
       },
       {
         "export": "FieldSet",
-        "entrypoint": "@decodelabs/underlay/components",
+        "entrypoint": "@inflatable-cookie/underlay/components",
         "successor_package": "@inflatable-cookie/poodle-svelte-primitives",
         "successor_export": "FieldSet",
         "notes": "Direct replacement. Poodle FieldSet provides semantic <fieldset> + <legend> with grid layout. Props: legend, columns, gap, span."
@@ -1004,14 +1004,14 @@
     ],
     "keep_in_underlay_after_assessment": [
       {
-        "entrypoint": "@decodelabs/underlay/patterns",
+        "entrypoint": "@inflatable-cookie/underlay/patterns",
         "exports": [
           "PasswordRequirements"
         ],
         "notes": "This is now the settled retained Underlay auth adapter surface. Poodle owns the agnostic `PasswordRequirements` checklist UI, while Underlay keeps auth-policy fetch, fallback defaults, and shared reset/change adapter behavior. The adapter now lives on the retained `patterns` namespace alongside the other auth workflow shells."
       },
       {
-        "entrypoint": "@decodelabs/underlay/patterns",
+        "entrypoint": "@inflatable-cookie/underlay/patterns",
         "exports": [
           "ForgotPasswordFlow",
           "LoginPage"
@@ -1025,12 +1025,12 @@
   "delete": [
     {
       "export": "ContentCard",
-      "entrypoint": "@decodelabs/underlay/components",
+      "entrypoint": "@inflatable-cookie/underlay/components",
       "notes": "Retired. The shared rich-content card had no live callers beyond docs. Use caller-owned composition over Poodle `Card` plus `NightfireRenderer` or sanitized HTML/markdown rendering instead of preserving a dedicated wrapper."
     },
     {
       "export": "Form",
-      "entrypoint": "@decodelabs/underlay/components",
+      "entrypoint": "@inflatable-cookie/underlay/components",
       "notes": "Internalized. The lightweight enhance/prepare form wrapper is still used inside Underlay shells and deprecated auth internals, but it no longer needs a public app-facing export."
     }
   ],

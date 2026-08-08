@@ -5,7 +5,7 @@
  * 
  * @example
  * ```typescript
- * import { mockFetchSuccess, FakeTokenStore, expectAuthHeader } from '@decodelabs/underlay/testing';
+ * import { mockFetchSuccess, FakeTokenStore, expectAuthHeader } from '@inflatable-cookie/underlay/testing';
  * 
  * // Create a mock fetch with success response
  * const fetchMock = mockFetchSuccess({ id: '123' });

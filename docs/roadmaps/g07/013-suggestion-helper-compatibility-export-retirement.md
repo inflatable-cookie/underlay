@@ -11,7 +11,7 @@ Updated: 2026-06-06
 bounded compatibility card existed.
 
 The six-consumer proof from `g07.010` and the follow-up scan for this card show
-that known consumers already use `@decodelabs/underlay/client/suggestions` or
+that known consumers already use `@inflatable-cookie/underlay/client/suggestions` or
 app-local helpers for suggestion request params.
 
 ## Goals
@@ -42,7 +42,7 @@ app-local helpers for suggestion request params.
 
 - [x] `appendSuggestionParams`, `buildSuggestionParams`, `formatHintsParam`,
   `parseHintsParam`, and `SuggestionRequestOptions` are only taught through
-  `@decodelabs/underlay/client/suggestions`
+  `@inflatable-cookie/underlay/client/suggestions`
 - [x] runtime data still exposes `createSelectionHistory()`
 - [x] known consumers do not require the retired re-export paths
 - [x] validation passes
@@ -50,7 +50,7 @@ app-local helpers for suggestion request params.
 ## Consumer Upgrade Impact
 
 Impact class: `breaking` for unknown consumers importing suggestion request
-helpers from `@decodelabs/underlay/runtime/data` or internal
+helpers from `@inflatable-cookie/underlay/runtime/data` or internal
 `patterns/selection-history` paths.
 
 Named six-consumer impact: none pending. The known consumer family already uses
@@ -60,9 +60,9 @@ Required action for unknown consumers:
 
 1. Replace suggestion request helper imports from `runtime/data` or
    `patterns/selection-history` with
-   `@decodelabs/underlay/client/suggestions`.
+   `@inflatable-cookie/underlay/client/suggestions`.
 2. Keep `createSelectionHistory()` imports on
-   `@decodelabs/underlay/runtime/data`.
+   `@inflatable-cookie/underlay/runtime/data`.
 
 ## Validation
 

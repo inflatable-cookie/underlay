@@ -202,7 +202,7 @@ Rules:
 - the scanner exists to enforce shared architectural constraints across TS and
   Svelte source, not only to lint Underlay itself
 - rule packs must stay declarative and reusable by consumer repos through the
-  exported `@decodelabs/underlay/tools/templates/*` package surface rather
+  exported `@inflatable-cookie/underlay/tools/templates/*` package surface rather
   than only by source-checkout-relative paths
 - SSR guardrails focus on module-scope browser API misuse and similar runtime
   boundary mistakes

@@ -23,9 +23,9 @@ The important results are:
 
 - Dairy validates cleanly again after the broad manual import recovery
 - there are no live active-source imports of:
-  - `@decodelabs/underlay/components`
-  - `@decodelabs/underlay/embed`
-  - legacy/deep `@decodelabs/underlay/patterns/...` paths
+  - `@inflatable-cookie/underlay/components`
+  - `@inflatable-cookie/underlay/embed`
+  - legacy/deep `@inflatable-cookie/underlay/patterns/...` paths
 - the only remaining references are historical docs, roadmap/accounting
   records, and scratch notes outside the supported live source surface
 
@@ -47,9 +47,9 @@ finished until:
 - repaired the broad Dairy import fallout manually in grouped batches instead
   of using compatibility shims or destructive rollback
 - restored the correct package boundaries across the active sibling repos:
-  - retained UI shells on `@decodelabs/underlay/patterns`
-  - helper/controller/runtime imports on `@decodelabs/underlay/runtime`
-  - retained editor/runtime imports on `@decodelabs/underlay/nightfire`
+  - retained UI shells on `@inflatable-cookie/underlay/patterns`
+  - helper/controller/runtime imports on `@inflatable-cookie/underlay/runtime`
+  - retained editor/runtime imports on `@inflatable-cookie/underlay/nightfire`
   - direct Poodle imports where the old Underlay wrapper boundary was gone
 - revalidated the live sibling repo surface after recovery
 
@@ -60,9 +60,9 @@ finished until:
 - `effigy qa:docs`
 - `effigy qa:northstar`
 - live residue scan across the active sibling repo surface for:
-  - `@decodelabs/underlay/components`
-  - `@decodelabs/underlay/embed`
-  - `@decodelabs/underlay/patterns/...`
+  - `@inflatable-cookie/underlay/components`
+  - `@inflatable-cookie/underlay/embed`
+  - `@inflatable-cookie/underlay/patterns/...`
 
 ## Next Task
 

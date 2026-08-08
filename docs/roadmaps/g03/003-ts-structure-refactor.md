@@ -70,7 +70,7 @@ ts/src/
 - `ts/src/templates/` exists with `index.ts`
 - `package.json` exports `"./templates"`
 - `ts/src/patterns/` is audited and cleaned
-- import path `@decodelabs/underlay/templates` resolves
+- import path `@inflatable-cookie/underlay/templates` resolves
 
 ## Next Task
 

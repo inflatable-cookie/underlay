@@ -3,7 +3,7 @@ import type { ToastStore } from "./toasts";
 /**
  * Low-level clipboard write helper.
  *
- * Import from `@decodelabs/underlay/runtime/feedback` rather than the old
+ * Import from `@inflatable-cookie/underlay/runtime/feedback` rather than the old
  * `patterns` namespace.
  */
 export async function copyTextToClipboard(text: string): Promise<void> {

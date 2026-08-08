@@ -2,7 +2,7 @@
 
 ## Result
 
-The root `@decodelabs/underlay/patterns` barrel is smaller and now matches the
+The root `@inflatable-cookie/underlay/patterns` barrel is smaller and now matches the
 retained workflow-shell posture more closely.
 
 Removed from the pattern root:
@@ -11,7 +11,7 @@ Removed from the pattern root:
 - `selection-transform-state`
 - `reorder-session.svelte`
 
-These helpers remain public through `@decodelabs/underlay/runtime/data`.
+These helpers remain public through `@inflatable-cookie/underlay/runtime/data`.
 
 ## Retained Pattern Root
 
@@ -50,16 +50,16 @@ Findings:
 - No active code imports the removed selection/reorder helper families from the
   pattern root.
 - Some historical docs, guardrail messages, and Vite optimize-deps entries still
-  mention `@decodelabs/underlay/patterns`; these are not source imports of the
+  mention `@inflatable-cookie/underlay/patterns`; these are not source imports of the
   removed helpers.
 
 ## Consumer Upgrade Impact
 
 Breaking for unknown callers that imported the removed helpers from
-`@decodelabs/underlay/patterns`.
+`@inflatable-cookie/underlay/patterns`.
 
 No known consumer app update is required. The retained public path for those
-helpers is `@decodelabs/underlay/runtime/data`.
+helpers is `@inflatable-cookie/underlay/runtime/data`.
 
 ## Follow-on
 

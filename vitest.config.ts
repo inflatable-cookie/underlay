@@ -26,9 +26,9 @@ export default defineConfig({
 		},
 	resolve: {
 		alias: {
-			'@decodelabs/underlay': resolve(__dirname, './ts/src'),
-			'@decodelabs/underlay/client': resolve(__dirname, './ts/src/client'),
-			'@decodelabs/underlay/patterns': resolve(__dirname, './ts/src/patterns'),
+			'@inflatable-cookie/underlay': resolve(__dirname, './ts/src'),
+			'@inflatable-cookie/underlay/client': resolve(__dirname, './ts/src/client'),
+			'@inflatable-cookie/underlay/patterns': resolve(__dirname, './ts/src/patterns'),
 			'$app/navigation': resolve(__dirname, './ts/tests/setup/sveltekit-navigation.mock.ts'),
 			'$app/state': resolve(__dirname, './ts/tests/setup/sveltekit-state.mock.ts'),
 			'$app/environment': resolve(__dirname, './ts/tests/setup/sveltekit-environment.mock.ts')

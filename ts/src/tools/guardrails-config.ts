@@ -45,7 +45,7 @@ async function importTemplateModule(templateRef: string): Promise<unknown> {
 		return await import(templateRef);
 	} catch {
 		const localTemplatePath = templateRef.replace(
-			'@decodelabs/underlay/tools/templates/',
+			'@inflatable-cookie/underlay/tools/templates/',
 			resolve(process.cwd(), 'ts/src/tools/templates/') + '/'
 		);
 		return await import(localTemplatePath);

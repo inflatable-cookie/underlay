@@ -23,8 +23,8 @@ stats data.
 <script lang="ts">
   import { goto } from "$app/navigation";
   import { page } from "$app/stores";
-  import { buildQueryString, parseQueryParams } from "@decodelabs/underlay/client/query";
-  import { ErrorLogListPage, toPagedListResult } from "@decodelabs/underlay/templates";
+  import { buildQueryString, parseQueryParams } from "@inflatable-cookie/underlay/client/query";
+  import { ErrorLogListPage, toPagedListResult } from "@inflatable-cookie/underlay/templates";
   import { adminCommands } from "@api-client";
 
   const currentQuery = $derived(parseQueryParams($page.url.searchParams));

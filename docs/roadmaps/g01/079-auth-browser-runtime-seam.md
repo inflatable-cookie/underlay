@@ -22,9 +22,9 @@ The strongest real duplication was in `patterns/auth.ts`:
 - `AuthState`
 - `AuthStore`
 
-Those already belong to `@decodelabs/underlay/client` via `client/useAuth`.
+Those already belong to `@inflatable-cookie/underlay/client` via `client/useAuth`.
 They are not runtime helpers and had no live consumer usage through
-`@decodelabs/underlay/runtime`.
+`@inflatable-cookie/underlay/runtime`.
 
 By contrast, these still earn retained `runtime/auth` ownership:
 
@@ -40,16 +40,16 @@ By contrast, these still earn retained `runtime/auth` ownership:
 - kept `runtime/auth` focused on retained auth runtime helpers rather than
   duplicating `client/useAuth`
 - updated active guides to import auth runtime helpers from the narrower
-  `@decodelabs/underlay/runtime/auth` subpath
+  `@inflatable-cookie/underlay/runtime/auth` subpath
 - updated the roadmap/front-door layer so the auth/browser seam decision is
   explicit
 
 ## Boundary Result
 
-Auth store construction and transport stay on `@decodelabs/underlay/client`.
+Auth store construction and transport stay on `@inflatable-cookie/underlay/client`.
 
 Retained auth runtime orchestration stays on
-`@decodelabs/underlay/runtime/auth`.
+`@inflatable-cookie/underlay/runtime/auth`.
 
 This is the right split because it keeps app/runtime auth fetch/config hooks in
 Underlay runtime without turning `runtime/auth` into a second client package.
@@ -57,11 +57,11 @@ Underlay runtime without turning `runtime/auth` into a second client package.
 ## Consumer Upgrade Impact
 
 - `createAuthStore`, `AuthState`, and `AuthStore` should be imported from
-  `@decodelabs/underlay/client` when needed
+  `@inflatable-cookie/underlay/client` when needed
 - `configureAuth`, `useAuthenticatedData`, passkey hooks, and account helper
   types/functions should be imported from
-  `@decodelabs/underlay/runtime/auth`
-- root `@decodelabs/underlay/runtime` imports continue to work where already
+  `@inflatable-cookie/underlay/runtime/auth`
+- root `@inflatable-cookie/underlay/runtime` imports continue to work where already
   used
 
 ## Next Task

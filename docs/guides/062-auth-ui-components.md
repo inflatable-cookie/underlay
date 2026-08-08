@@ -42,7 +42,7 @@ Run `effigy storybook` from the repo root to inspect the retained auth surface i
 
 ### Internal and Retired Auth Pieces
 
-- `TwoFactorStep`, `SuccessStep`, and `PasswordResetStep` remain internal implementation detail inside the shared auth flows. They are not part of the public `@decodelabs/underlay/patterns` surface.
+- `TwoFactorStep`, `SuccessStep`, and `PasswordResetStep` remain internal implementation detail inside the shared auth flows. They are not part of the public `@inflatable-cookie/underlay/patterns` surface.
 - `LoginForm`, `RegisterForm`, `TotpSetup`, `PassKeyButton`, `GoogleSignInButton`, and `AccountRecovery` are retired from the public component surface and removed from the live shared implementation set. The passkey and Google button treatments now live directly inside the shared login tabs instead of as separate wrapper components.
 - The old account-settings surfaces (`PasskeyManager`, `SecuritySettings`, `SessionList`) are retired. Build account security pages directly in the app over shared auth hooks, Poodle `CodeInput`, Underlay `PasswordRequirements`, and other Poodle primitives.
 
@@ -83,9 +83,9 @@ For signed-in account security pages:
 
 The auth reassessment line is now at an explicit retained boundary:
 
-- keep `LoginPage` as the shared multi-method auth workflow shell under `@decodelabs/underlay/patterns`
-- keep `ForgotPasswordFlow` as the shared reset workflow shell under `@decodelabs/underlay/patterns`
-- keep `PasswordRequirements` as the shared auth-policy adapter under `@decodelabs/underlay/patterns`
+- keep `LoginPage` as the shared multi-method auth workflow shell under `@inflatable-cookie/underlay/patterns`
+- keep `ForgotPasswordFlow` as the shared reset workflow shell under `@inflatable-cookie/underlay/patterns`
+- keep `PasswordRequirements` as the shared auth-policy adapter under `@inflatable-cookie/underlay/patterns`
 - use Poodle `CodeInput` directly for one-time-code entry
 - use Poodle `PasswordRequirements` directly when password-policy loading is already caller-owned
 
@@ -99,7 +99,7 @@ There is no smaller honest follow-on migration wave for this family right now.
 <script lang="ts">
   import { goto } from "$app/navigation";
   import { Card } from "@inflatable-cookie/poodle-svelte";
-  import { LoginPage } from "@decodelabs/underlay/patterns";
+  import { LoginPage } from "@inflatable-cookie/underlay/patterns";
   import { auth } from "$lib/stores/auth";
 
   async function handlePasswordLogin(email: string, password: string) {
@@ -146,7 +146,7 @@ There is no smaller honest follow-on migration wave for this family right now.
 <script lang="ts">
   import { authCommands } from "@cattle-grid";
   import { Card } from "@inflatable-cookie/poodle-svelte";
-  import { ForgotPasswordFlow } from "@decodelabs/underlay/patterns";
+  import { ForgotPasswordFlow } from "@inflatable-cookie/underlay/patterns";
 
   async function handleRequestCode(email: string) {
     await authCommands.requestPasswordReset({ email }, fetch);
@@ -185,7 +185,7 @@ There is no smaller honest follow-on migration wave for this family right now.
 
 `AuthLayout` is retired. Compose auth pages directly with a small app-local
 route shell over Poodle `Card`. The retained Underlay auth workflow surface now
-starts in `@decodelabs/underlay/patterns` (`LoginPage`,
+starts in `@inflatable-cookie/underlay/patterns` (`LoginPage`,
 `ForgotPasswordFlow`, `PasswordRequirements`). Use Poodle `CodeInput`
 directly for one-time-code entry and Poodle `PasswordRequirements` directly
 when the caller already owns password-policy loading.
@@ -278,7 +278,7 @@ The auth components are designed to work with cattle-grid API commands. Here's a
   import { goto } from "$app/navigation";
   import { authCommands } from "@cattle-grid";
   import { Card } from "@inflatable-cookie/poodle-svelte";
-  import { LoginPage } from "@decodelabs/underlay/patterns";
+  import { LoginPage } from "@inflatable-cookie/underlay/patterns";
   import { auth } from "$lib/stores/auth";
 
   // Password login with 2FA support

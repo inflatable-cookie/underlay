@@ -173,7 +173,7 @@ import HeroEditor from "./HeroEditor.svelte";
 import HeroRenderer from "./HeroRenderer.svelte";
 import {
   type NightfireBlockRegistration,
-} from "@decodelabs/underlay/nightfire/block-registration";
+} from "@inflatable-cookie/underlay/nightfire/block-registration";
 
 export function heroBlockRegistration(schema: string): NightfireBlockRegistration {
   return {
@@ -199,7 +199,7 @@ export function heroBlockRegistration(schema: string): NightfireBlockRegistratio
 ```ts
 // admin/src/lib/nightfire/editor-registrations.ts
 
-import { registerNightfireBlocks } from "@decodelabs/underlay/nightfire/block-registration";
+import { registerNightfireBlocks } from "@inflatable-cookie/underlay/nightfire/block-registration";
 import { galleryBlockRegistration } from "./blocks/gallery.registration";
 import { heroBlockRegistration } from "./blocks/hero.registration";
 
@@ -220,7 +220,7 @@ import {
   registerNightfireEditors,
   registerNightfireRenderers,
   registerNightfireValidators,
-} from "@decodelabs/underlay/nightfire/block-registration";
+} from "@inflatable-cookie/underlay/nightfire/block-registration";
 
 const registrations = [
   heroBlockRegistration(BODY_SCHEMA),

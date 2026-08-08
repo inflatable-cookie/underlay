@@ -17,14 +17,14 @@ browser bucket.
 
 The retained browser/runtime boundary is now explicit:
 
-- `@decodelabs/underlay/runtime/browser` keeps browser-pure helpers:
+- `@inflatable-cookie/underlay/runtime/browser` keeps browser-pure helpers:
   - storage
   - DOM helpers
   - keyboard shortcuts
   - timezone detection/state
 - toast-coupled clipboard workflow no longer lives under `runtime/browser`
 - `copyToClipboard()` and `copyTextToClipboard()` now belong to
-  `@decodelabs/underlay/runtime/feedback`
+  `@inflatable-cookie/underlay/runtime/feedback`
 
 ## Judgment
 
@@ -56,7 +56,7 @@ in Underlay rather than moving to `client`.
 - removed clipboard exports from `runtime/browser`
 - added clipboard exports to `runtime/feedback`
 - updated live shared callers and guides to use
-  `@decodelabs/underlay/runtime/feedback` for clipboard helpers
+  `@inflatable-cookie/underlay/runtime/feedback` for clipboard helpers
 - updated docs/front doors so the runtime seam is recorded explicitly
 
 ## Next Task

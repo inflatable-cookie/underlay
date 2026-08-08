@@ -68,15 +68,15 @@ Impact:
 - current template callers mask this by exiting reorder mode immediately after
   submit, but the reusable controller itself is still wrong
 
-### 2. The supporting docs still over-teach `@decodelabs/underlay/patterns` as a broad public entrypoint
+### 2. The supporting docs still over-teach `@inflatable-cookie/underlay/patterns` as a broad public entrypoint
 
 Severity: medium
 
 The code matches the contract’s “small root barrel, broader runtime subpaths”
 story, but several guides still teach imports that do not match the real
 retained surface. The sharpest examples are the selection-history guide still
-teaching suggestion helpers from `@decodelabs/underlay/patterns`, and the
-navigation guide still showing `PageHeader` from `@decodelabs/underlay/patterns`
+teaching suggestion helpers from `@inflatable-cookie/underlay/patterns`, and the
+navigation guide still showing `PageHeader` from `@inflatable-cookie/underlay/patterns`
 even though visible page-shell composition now belongs in Poodle.
 
 Evidence:

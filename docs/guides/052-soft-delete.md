@@ -452,7 +452,7 @@ Use `useBatchSelection` from Underlay runtime data helpers with Poodle `BulkActi
 
 ```svelte
 <script lang="ts">
-  import { useBatchSelection } from "@decodelabs/underlay/runtime/data";
+  import { useBatchSelection } from "@inflatable-cookie/underlay/runtime/data";
   import { AlertDialog, BulkActionBar } from "@inflatable-cookie/poodle-svelte";
 
   const selection = useBatchSelection<string>();

@@ -98,7 +98,7 @@ For the retained media family, the preferred lower-level shared sections are:
 - `MediaUsageList`
 
 For the repeated route-side media-detail logic under those templates, prefer
-the retained `@decodelabs/underlay/runtime/media` helper surface rather than
+the retained `@inflatable-cookie/underlay/runtime/media` helper surface rather than
 app-local state/predicate modules.
 
 For reference-grade admin apps, repeated raw `ListCard` collection cards should
@@ -142,7 +142,7 @@ Poodle owns the primitive layer:
     EntityList,
     EntityListPage,
     EntityTrashPage
-  } from "@decodelabs/underlay/templates";
+  } from "@inflatable-cookie/underlay/templates";
 </script>
 ```
 
@@ -163,7 +163,7 @@ Underlay-based apps.
 
 ```svelte
 <script lang="ts">
-  import { EntityListPage } from "@decodelabs/underlay/templates";
+  import { EntityListPage } from "@inflatable-cookie/underlay/templates";
   import ProjectCard from "$lib/cards/ProjectCard.svelte";
 
   let { data } = $props();
@@ -216,7 +216,7 @@ Underlay-based apps.
     EntityDetail,
     EntityDetailPage,
     EntityListPage
-  } from "@decodelabs/underlay/templates";
+  } from "@inflatable-cookie/underlay/templates";
   import { Code, Pill } from "@inflatable-cookie/poodle-svelte";
 
   let { data } = $props();

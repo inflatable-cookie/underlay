@@ -19,7 +19,7 @@ from `EntityListPage`.
 
 ```svelte
 <script lang="ts">
-  import { EntityTrashPage, EntityListCard } from "@decodelabs/underlay/templates";
+  import { EntityTrashPage, EntityListCard } from "@inflatable-cookie/underlay/templates";
   import Trash2 from "lucide-svelte/icons/trash-2";
 
   let loading = false;
@@ -76,7 +76,7 @@ the wrapper and pass them through `beforeItems` instead of falling back to
 
 ```svelte
 <script lang="ts">
-  import { EntityTrashPage } from "@decodelabs/underlay/templates";
+  import { EntityTrashPage } from "@inflatable-cookie/underlay/templates";
   import { FilterToolbar, OrderBy, TextInput } from "@inflatable-cookie/poodle-svelte";
 </script>
 

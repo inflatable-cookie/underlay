@@ -191,7 +191,7 @@ async fn create_user(
 **Example Usage**:
 ```svelte
 <script>
-  import { DataTable } from '@decodelabs/underlay/components';
+  import { DataTable } from '@inflatable-cookie/underlay/components';
   
   const columns = [
     { key: 'name', label: 'Name', sortable: true, filterable: true },
@@ -281,7 +281,7 @@ async fn create_user(
 
 **Example Usage**:
 ```typescript
-import { optimistic } from '@decodelabs/underlay/client';
+import { optimistic } from '@inflatable-cookie/underlay/client';
 import { users } from './stores';
 
 // Optimistic delete
@@ -361,7 +361,7 @@ const createUser = optimistic({
 **Example Usage**:
 ```svelte
 <script>
-  import { FileUpload } from '@decodelabs/underlay/components';
+  import { FileUpload } from '@inflatable-cookie/underlay/components';
   
   async function handleUpload(files) {
     const formData = new FormData();
@@ -430,7 +430,7 @@ const createUser = optimistic({
 
 **Example Usage**:
 ```typescript
-import { format } from '@decodelabs/underlay/patterns';
+import { format } from '@inflatable-cookie/underlay/patterns';
 
 // Date formatting
 format.date(new Date(), 'short');     // "12 Jan 2026"

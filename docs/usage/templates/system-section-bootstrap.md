@@ -201,7 +201,7 @@ Recommended order for a new app:
 <script lang="ts">
   import { page } from "$app/stores";
   import { adminCommands } from "@api-client";
-  import { ErrorLogDetailPage } from "@decodelabs/underlay/templates";
+  import { ErrorLogDetailPage } from "@inflatable-cookie/underlay/templates";
 
   const errorLogId = $derived.by(() => $page.params.id ?? "");
 
@@ -228,7 +228,7 @@ command, the shared template owns the page.
     buildQueryString,
     parseQueryParams,
     type QueryParams
-  } from "@decodelabs/underlay/client/query";
+  } from "@inflatable-cookie/underlay/client/query";
   import { JobsList } from "$lib/lists";
 
   const currentQuery = $derived(parseQueryParams($page.url.searchParams));
@@ -247,9 +247,9 @@ command, the shared template owns the page.
 
 ```svelte
 <script lang="ts">
-  import type { QueryParams } from "@decodelabs/underlay/client/query";
-  import { SystemJobListPage, toPagedListResult } from "@decodelabs/underlay/templates";
-  import type { SystemJobListRequest } from "@decodelabs/underlay/templates";
+  import type { QueryParams } from "@inflatable-cookie/underlay/client/query";
+  import { SystemJobListPage, toPagedListResult } from "@inflatable-cookie/underlay/templates";
+  import type { SystemJobListRequest } from "@inflatable-cookie/underlay/templates";
   import {
     adminCommands,
     type JobStatus,
@@ -315,7 +315,7 @@ This is the preferred list posture when the route is a real browse surface:
 
 ```svelte
 <script lang="ts">
-  import { SystemIndexPage } from "@decodelabs/underlay/templates";
+  import { SystemIndexPage } from "@inflatable-cookie/underlay/templates";
   import LayoutPanelTop from "lucide-svelte/icons/layout-panel-top";
 
   const extraCards = [

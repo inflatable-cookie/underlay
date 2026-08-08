@@ -33,15 +33,15 @@ editor/runtime behavior.
 
 Use:
 
-- `@decodelabs/underlay/patterns` for retained workflow/page shells only
-- `@decodelabs/underlay/runtime/*` for shared app/runtime helpers and controllers
-- `@decodelabs/underlay/utils/*` for small standalone helpers
-- keep broader app-formatting helpers on `@decodelabs/underlay/utils/i18n`
+- `@inflatable-cookie/underlay/patterns` for retained workflow/page shells only
+- `@inflatable-cookie/underlay/runtime/*` for shared app/runtime helpers and controllers
+- `@inflatable-cookie/underlay/utils/*` for small standalone helpers
+- keep broader app-formatting helpers on `@inflatable-cookie/underlay/utils/i18n`
   until they earn a true shared UI contract
 - treat only direct presentation helpers as Poodle candidates: things like
   file-size and simple display-date labels, not broader app formatting policy
-- `@decodelabs/underlay/client/*` for transport and framework-facing helpers
-- `@decodelabs/underlay/nightfire/*` for structured content editor/runtime
+- `@inflatable-cookie/underlay/client/*` for transport and framework-facing helpers
+- `@inflatable-cookie/underlay/nightfire/*` for structured content editor/runtime
 
 ## Import Rules
 

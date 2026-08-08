@@ -22,7 +22,7 @@ The route still owns:
 
 ```svelte
 <script lang="ts">
-  import { AdminDashboardPage } from "@decodelabs/underlay/templates";
+  import { AdminDashboardPage } from "@inflatable-cookie/underlay/templates";
 </script>
 
 <AdminDashboardPage

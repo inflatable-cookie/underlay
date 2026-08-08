@@ -20,7 +20,7 @@ All builds + `svelte-check` green after fixes.
 
 `EntityListItemContext` (added in g08.024) was in the `.types` barrel but omitted
 from `templates/index.ts`'s named re-export, so consumers couldn't import it from
-`@decodelabs/underlay/templates`. Surfaced when typing a consumer's implicit-any
+`@inflatable-cookie/underlay/templates`. Surfaced when typing a consumer's implicit-any
 `renderItem` ctx. Fixed + pushed to underlay (`a0aa5f21`).
 
 ## Deferred → one follow-up card per app

@@ -97,7 +97,7 @@ Acme reference uses server-only with HTML5, providing poor UX for complex valida
 - **ts-rs**: Generates types only, not validation rules
 
 ### Deliverables
-1. New export `@decodelabs/underlay/validation` with Zod schemas:
+1. New export `@inflatable-cookie/underlay/validation` with Zod schemas:
    - `emailSchema`, `passwordSchema`, `slugSchema`
    - Composed schemas: `registerRequestSchema`, etc.
 2. `useValidatedForm()` hook for Svelte integration

@@ -8,7 +8,7 @@ Completed: 2026-06-06
 ## Purpose
 
 Move the known consumer imports from aggregate
-`@decodelabs/underlay/client/types` to the focused client subpaths added in
+`@inflatable-cookie/underlay/client/types` to the focused client subpaths added in
 `g07.020`.
 
 ## Governing References
@@ -21,9 +21,9 @@ Move the known consumer imports from aggregate
 ## Changes
 
 - [x] Move `SingleResponse` imports in health clients to
-  `@decodelabs/underlay/client/envelopes`.
+  `@inflatable-cookie/underlay/client/envelopes`.
 - [x] Move restore-blocker DTO and guard imports to
-  `@decodelabs/underlay/client/restore`.
+  `@inflatable-cookie/underlay/client/restore`.
 - [x] Refresh affected Bun file-dependency installs so newly-created client
   files are materialized in consumer `node_modules`.
 - [x] Fix `contact-patch/cp-client` `ignoreDeprecations` from `6.0` to `5.0`
@@ -48,7 +48,7 @@ in live source.
 - `loophole/composer`: no live `client/types` imports found.
 
 Final source scan found no remaining live aggregate
-`@decodelabs/underlay/client/types` imports in the six-consumer family.
+`@inflatable-cookie/underlay/client/types` imports in the six-consumer family.
 
 ## Validation
 

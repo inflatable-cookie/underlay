@@ -46,9 +46,9 @@ When users work with relation selectors (e.g., selecting a Level for a Module), 
 
 | Layer | Component | Package | Purpose |
 |-------|-----------|---------|---------|
-| Client Storage | `createSelectionHistory()` | `@decodelabs/underlay/runtime/data` | Track selections in localStorage |
+| Client Storage | `createSelectionHistory()` | `@inflatable-cookie/underlay/runtime/data` | Track selections in localStorage |
 | UI Integration | `selectionHistory` prop | App-local selector shell | Auto-track and provide hints |
-| Request Building | `appendSuggestionParams()` | `@decodelabs/underlay/client/suggestions` | Build API URLs with hints |
+| Request Building | `appendSuggestionParams()` | `@inflatable-cookie/underlay/client/suggestions` | Build API URLs with hints |
 | Server Parsing | `SuggestionParams` | `underlay-suggestions` (Rust) | Parse query parameters |
 | Query Building | `SuggestionQuery` | `underlay-suggestions` (Rust) | Build prioritized SQL |
 
@@ -60,7 +60,7 @@ Create a history tracker for each entity type you want to track:
 
 ```typescript
 // src/lib/stores/selection-history.ts
-import { createSelectionHistory } from "@decodelabs/underlay/runtime/data";
+import { createSelectionHistory } from "@inflatable-cookie/underlay/runtime/data";
 
 // Track recently selected levels
 export const levelSelectionHistory = createSelectionHistory("learning.levels", {
@@ -147,7 +147,7 @@ automatic tracking:
 ```svelte
 <script lang="ts">
   import CategorySelector from "$lib/components/CategorySelector.svelte";
-  import type { SuggestionOptions } from "@decodelabs/underlay/runtime/relations";
+  import type { SuggestionOptions } from "@inflatable-cookie/underlay/runtime/relations";
   import { levelSelectionHistory } from "$lib/stores/selection-history";
   import { api } from "$lib/api";
 
@@ -196,7 +196,7 @@ Build API URLs with suggestion parameters:
 import {
   appendSuggestionParams,
   type SuggestionRequestOptions
-} from "@decodelabs/underlay/client/suggestions";
+} from "@inflatable-cookie/underlay/client/suggestions";
 
 async function getLevelsForPathway(
   pathwayId: string,
@@ -229,7 +229,7 @@ interface SuggestionRequestOptions {
 For more control, use `buildSuggestionParams` to get URLSearchParams:
 
 ```typescript
-import { buildSuggestionParams } from "@decodelabs/underlay/client/suggestions";
+import { buildSuggestionParams } from "@inflatable-cookie/underlay/client/suggestions";
 
 const params = buildSuggestionParams({
   suggestions: true,
@@ -247,7 +247,7 @@ const url = `/api/items?${params.toString()}`;
 If you need to parse hints on a TypeScript server:
 
 ```typescript
-import { parseHintsParam } from "@decodelabs/underlay/client/suggestions";
+import { parseHintsParam } from "@inflatable-cookie/underlay/client/suggestions";
 
 // In a SvelteKit server load function
 export async function load({ url }) {
@@ -383,7 +383,7 @@ LIMIT 15
 
 ```typescript
 // dairy/src/lib/stores/selection-history.ts
-import { createSelectionHistory } from "@decodelabs/underlay/runtime/data";
+import { createSelectionHistory } from "@inflatable-cookie/underlay/runtime/data";
 
 export const levelSelectionHistory = createSelectionHistory("learning.levels", {
   maxItems: 20,
@@ -398,7 +398,7 @@ export const levelSelectionHistory = createSelectionHistory("learning.levels", {
 import {
   appendSuggestionParams,
   type SuggestionRequestOptions
-} from "@decodelabs/underlay/client/suggestions";
+} from "@inflatable-cookie/underlay/client/suggestions";
 
 export async function getLevelsForPathway(
   pathwayId: string,
@@ -425,7 +425,7 @@ export async function getLevelsForPathway(
   import type {
     SelectableRelation,
     SuggestionOptions
-  } from "@decodelabs/underlay/runtime/relations";
+  } from "@inflatable-cookie/underlay/runtime/relations";
   import { levelSelectionHistory } from "$lib/stores/selection-history";
   import { learningCommands } from "@cattle-grid";
 
@@ -636,10 +636,10 @@ Ensure you're importing from the correct packages:
 
 ```typescript
 // For component integration
-import { type SuggestionOptions } from "@decodelabs/underlay/runtime/relations";
+import { type SuggestionOptions } from "@inflatable-cookie/underlay/runtime/relations";
 
 // For API request building
-import { type SuggestionRequestOptions } from "@decodelabs/underlay/client/suggestions";
+import { type SuggestionRequestOptions } from "@inflatable-cookie/underlay/client/suggestions";
 ```
 
 ## Related Documentation
