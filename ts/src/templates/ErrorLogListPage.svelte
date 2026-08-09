@@ -8,6 +8,7 @@
     type TableRow,
     type TableCellValue
   } from "@inflatable-cookie/poodle-svelte";
+  import { circleAlert } from "../icons.generated";
 
   import { getAuthConfig } from "../patterns/auth";
   import { useAuthenticatedData } from "../runtime/auth";
@@ -214,7 +215,7 @@
       <PoodleCard>
         <div class="underlay-error-log-list-page__stat">
           <span class="underlay-error-log-list-page__stat-icon underlay-error-log-list-page__stat-icon--warning">
-            <Icon icon="alert-circle" size="lg" />
+            <Icon icon={circleAlert} size="lg" />
           </span>
           <div class="underlay-error-log-list-page__stat-content">
             <span class="underlay-error-log-list-page__stat-value">{stats.clientErrorsLast24h}</span>

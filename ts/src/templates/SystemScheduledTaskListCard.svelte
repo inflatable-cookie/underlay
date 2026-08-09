@@ -2,6 +2,7 @@
   import { default as EntityListCard } from "./EntityListCard.svelte";
   import type { SystemScheduledTaskListItem } from "./template.types";
   import type { MenuItem } from "@inflatable-cookie/poodle-svelte";
+  import { calendar } from "../icons.generated";
 
   interface Props {
     task: SystemScheduledTaskListItem;
@@ -51,7 +52,7 @@
   meta={formatLastRun(task.lastCompletedAt)}
   {href}
   notLive={!task.enabled}
-  leadingIcon="calendar"
+  leadingIcon={calendar}
   badges={task.enabled ? [] : [{ label: "disabled", accent: "#64748b", appearance: "subtle", size: "sm" }]}
   {contextMenuItems}
   contextMenuAriaLabel="Scheduled task actions"

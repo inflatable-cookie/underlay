@@ -12,6 +12,7 @@
   } from "../runtime/media";
   import { default as EntityListCard } from "./EntityListCard.svelte";
   import type { EntityListCardBadge } from "./entity-list-card.types";
+  import { listChecks, lock } from "../icons.generated";
 
   interface MediaListCardItem {
     id: string;
@@ -82,7 +83,7 @@
     usageCount > 0
       ? [
           {
-            icon: "list-checks" as const,
+            icon: listChecks,
             count: usageCount,
             tooltip: `${usageCount} ${usageCount === 1 ? "usage" : "usages"}`
           }
@@ -200,7 +201,7 @@
 
 {#snippet visibilityCorner()}
   <span title={getMediaVisibilityLabel(normalizedVisibility)}>
-    <Icon icon="lock" ariaLabel={getMediaVisibilityLabel(normalizedVisibility)} size="sm" />
+    <Icon icon={lock} ariaLabel={getMediaVisibilityLabel(normalizedVisibility)} size="sm" />
   </span>
 {/snippet}
 
