@@ -15,20 +15,20 @@ export default defineConfig({
 		conditions: ["browser", "module", "import", "default"],
 		alias: {
 			"$app/environment": resolve(
-				__dirname,
+				import.meta.dirname,
 				"./ts/tests/setup/sveltekit-environment.mock.ts",
 			),
 			"$app/navigation": resolve(
-				__dirname,
+				import.meta.dirname,
 				"./ts/tests/setup/sveltekit-navigation.mock.ts",
 			),
 			"$app/state": resolve(
-				__dirname,
+				import.meta.dirname,
 				"./ts/tests/setup/sveltekit-state.mock.ts",
 			),
-			"@inflatable-cookie/underlay": resolve(__dirname, "./ts/src"),
-			"@inflatable-cookie/underlay/client": resolve(__dirname, "./ts/src/client"),
-			"@inflatable-cookie/underlay/patterns": resolve(__dirname, "./ts/src/patterns"),
+			"@inflatable-cookie/underlay": resolve(import.meta.dirname, "./ts/src"),
+			"@inflatable-cookie/underlay/client": resolve(import.meta.dirname, "./ts/src/client"),
+			"@inflatable-cookie/underlay/patterns": resolve(import.meta.dirname, "./ts/src/patterns"),
 		},
 	},
 });

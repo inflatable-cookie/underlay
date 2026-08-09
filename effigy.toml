@@ -46,7 +46,7 @@ check = "cd {repo} && bun x svelte-check --tsconfig ./ts/tsconfig.json"
 "rust:build" = "cd {repo} && cargo build --workspace"
 "rust:check" = "cd {repo} && cargo check --workspace --all-features"
 "rust:test" = "cd {repo} && cargo test --workspace --all-features"
-test = "cd {repo} && bun x vitest run {args}"
+"test:unit" = "cd {repo} && bun x vitest run {args}"
 "test:ui" = "cd {repo} && bun x vitest --ui {args}"
 "test:components" = "cd {repo} && bun x vitest run -c vitest.component.config.ts {args}"
 
@@ -81,7 +81,7 @@ validate = [
     { task = "health" },
     { task = "check" },
     { task = "check:types" },
-    { task = "test" },
+    { task = "test:unit" },
     { task = "test:components" },
 ]
 

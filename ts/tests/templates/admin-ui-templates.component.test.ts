@@ -59,7 +59,9 @@ describe("templates/AdminNavList", () => {
     const onNavigate = vi.fn();
     render(AdminNavListHarness, { currentSection: "content", onNavigate });
 
-    await fireEvent.click(await screen.findByRole("link", { name: "Pages" }));
+    const pagesLink = await screen.findByRole("link", { name: "Pages" });
+    pagesLink.addEventListener("click", (event) => event.preventDefault(), { once: true });
+    await fireEvent.click(pagesLink);
     expect(onNavigate).toHaveBeenCalledTimes(1);
   });
 });

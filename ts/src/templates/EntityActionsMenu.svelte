@@ -172,7 +172,6 @@
     deleteBusy = true;
     try {
       await deleteConfig.execute();
-      deleteOpen = false;
       await onDeleteSuccess?.();
     } catch (error) {
       const message = error instanceof Error ? error.message : "Delete failed";
