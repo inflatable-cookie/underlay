@@ -326,7 +326,7 @@
     "@vitest/coverage-v8": "^4.1.0",
     "@vitest/ui": "^4.1.0",
     "bits-ui": "^2.16.2",
-    "lucide-static": "^0.577.0",
+    "lucide-static": "^1.30.0",
     "lucide-svelte": "^1.0.1",
     "storybook": "^10.3.3",
     "svelte": "^5.53.3",

@@ -6,29 +6,29 @@ export const icons: Record<string, IconNodes> = {
     [
       "path",
       {
-        "d": "M8 2v4"
+        "d": "M8 2v3"
       }
     ],
     [
       "path",
       {
-        "d": "M16 2v4"
+        "d": "M16 2v3"
       }
     ],
     [
       "rect",
       {
+        "x": "3",
+        "y": "3",
         "width": "18",
         "height": "18",
-        "x": "3",
-        "y": "4",
         "rx": "2"
       }
     ],
     [
       "path",
       {
-        "d": "M3 10h18"
+        "d": "M3 9h18"
       }
     ]
   ],
