@@ -49,10 +49,7 @@ export async function uploadToBlob(
   }
 
   // Validate content type
-  if (
-    plan.allowedContentTypes.length > 0 &&
-    !plan.allowedContentTypes.includes(file.type)
-  ) {
+  if (plan.allowedContentTypes.length > 0 && !matchesAllowedMimeType(file.type, plan.allowedContentTypes)) {
     throw new BlobUploadError(
       `Content type ${file.type} not in allowed types: ${plan.allowedContentTypes.join(", ")}`,
       "INVALID_CONTENT_TYPE"
@@ -196,7 +193,12 @@ export function validateFileType(
   file: File,
   allowedTypes: readonly string[] = ALLOWED_MEDIA_TYPES
 ): boolean {
-  return allowedTypes.includes(file.type);
+  return matchesAllowedMimeType(file.type, allowedTypes);
+}
+
+function matchesAllowedMimeType(mimeType: string, allowedTypes: readonly string[]): boolean {
+  const baseType = mimeType.split(";", 1)[0]?.trim().toLowerCase();
+  return allowedTypes.some((allowedType) => allowedType.toLowerCase() === baseType);
 }
 
 /**

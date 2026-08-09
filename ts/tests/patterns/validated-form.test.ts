@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod";
 import { describe, expect, it, vi } from "vitest";
 
 type ValidatedFormModule = typeof import("../../src/patterns/validated-form.svelte.ts");

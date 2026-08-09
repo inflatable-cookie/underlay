@@ -26,12 +26,12 @@ export default defineConfig({
 		},
 	resolve: {
 		alias: {
-			'@inflatable-cookie/underlay': resolve(__dirname, './ts/src'),
-			'@inflatable-cookie/underlay/client': resolve(__dirname, './ts/src/client'),
-			'@inflatable-cookie/underlay/patterns': resolve(__dirname, './ts/src/patterns'),
-			'$app/navigation': resolve(__dirname, './ts/tests/setup/sveltekit-navigation.mock.ts'),
-			'$app/state': resolve(__dirname, './ts/tests/setup/sveltekit-state.mock.ts'),
-			'$app/environment': resolve(__dirname, './ts/tests/setup/sveltekit-environment.mock.ts')
+			'@inflatable-cookie/underlay': resolve(import.meta.dirname, './ts/src'),
+			'@inflatable-cookie/underlay/client': resolve(import.meta.dirname, './ts/src/client'),
+			'@inflatable-cookie/underlay/patterns': resolve(import.meta.dirname, './ts/src/patterns'),
+			'$app/navigation': resolve(import.meta.dirname, './ts/tests/setup/sveltekit-navigation.mock.ts'),
+			'$app/state': resolve(import.meta.dirname, './ts/tests/setup/sveltekit-state.mock.ts'),
+			'$app/environment': resolve(import.meta.dirname, './ts/tests/setup/sveltekit-environment.mock.ts')
 		}
 	}
 });

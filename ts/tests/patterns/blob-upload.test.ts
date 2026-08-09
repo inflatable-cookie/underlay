@@ -99,7 +99,7 @@ describe("patterns/blob-upload", () => {
 		await expect(uploadToBlob(plan as any, file, { onProgress })).resolves.toEqual({
 			objectKey: "obj-1",
 			size: file.size,
-			contentType: "text/plain",
+			contentType: file.type,
 		});
 		expect(onProgress).toHaveBeenCalledWith({ loaded: 5, total: 10, percent: 50 });
 	});
@@ -121,7 +121,7 @@ describe("patterns/blob-upload", () => {
 		await expect(uploadToBlob(plan as any, file, { onProgress })).resolves.toEqual({
 			objectKey: "obj-1",
 			size: file.size,
-			contentType: "text/plain",
+			contentType: file.type,
 		});
 		expect(onProgress).not.toHaveBeenCalled();
 	});
@@ -170,6 +170,7 @@ describe("patterns/blob-upload", () => {
 		const unknown = new File(["x"], "a.bin", { type: "application/octet-stream" });
 
 		expect(validateFileType(image)).toBe(true);
+		expect(validateFileType({ type: "text/plain;charset=utf-8" } as File, ["text/plain"])).toBe(true);
 		expect(validateFileType(unknown)).toBe(false);
 		expect(isVideoFile(video)).toBe(true);
 		expect(isVideoFile(image)).toBe(false);
