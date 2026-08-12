@@ -483,6 +483,12 @@
     </PageHeader>
 
     {#if allTabs.length > 0}
+      <!-- `tabsVariant` stays underlay's own vocabulary: it also drives size,
+           density, collapse and the panel class below, and callers pass it.
+           Poodle consolidated its union to card|pill|block, where "card" is the
+           former "text"/"underline" look and the former "card" is reproduced by
+           pill + activeEdge="outline". Mapped here so the two vocabularies stay
+           decoupled and both looks survive. -->
       <Tabs
         value={activeTab}
         items={allTabs.map((tab) => ({
@@ -491,7 +497,9 @@
           count: tab.count,
           separator: tab.id === allTabs[allTabs.length - 1]?.id ? false : tab.separator
         }))}
-        variant={tabsVariant}
+        variant={tabsVariant === "underline" ? "card" : "pill"}
+        bordered={tabsVariant === "underline"}
+        activeEdge={tabsVariant === "card" ? "outline" : "none"}
         size={resolvedTabsSize}
         density={resolvedTabsDensity}
         collapseWhenOverflow={resolvedTabsCollapseWhenOverflow}
