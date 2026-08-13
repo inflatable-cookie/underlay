@@ -97,6 +97,8 @@ Normal retained family:
 - `MediaDetailWorkflowPage`
 - `SystemIndexPage`
 - `AdminDashboardPage`
+- `UsersListPage` + `UserSessionsList` / `UserActivityList` user-detail tab
+  sections
 
 Rules:
 

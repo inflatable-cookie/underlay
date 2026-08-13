@@ -339,6 +339,76 @@ This is the preferred list posture when the route is a real browse surface:
 This keeps the shared core cards and adds app-local system extras without
 forking the base index page.
 
+## User Detail Tabs
+
+Admin user detail pages share two Level-2 tab sections:
+
+- `UserSessionsList` — sessions table with revoke confirmation and copy-ID
+  row actions
+- `UserActivityList` — activity table with copy-ID row actions and an
+  optional server-paginated mode
+
+Both load lazily: pass the tab's active state through `active` and the
+section fetches only after first activation. Use `onCountChange` to drive tab
+badge counts.
+
+Use thin app-local wrappers over the shared sections.
+
+Bring:
+
+- the app client command used to list the user's sessions or activity
+- the revoke-session command if your app exposes it
+- app-owned tone mapping (`getStatusTone`, `getActionTone`)
+
+Keep these app-local:
+
+- command/client wiring
+- tone mapping decisions
+- tab chrome and badge rendering
+
+`src/lib/users/UserSessionsTab.svelte`
+
+```svelte
+<script lang="ts">
+  import { UserSessionsList } from "@inflatable-cookie/underlay/templates";
+  import type { PillTone } from "@inflatable-cookie/poodle-svelte";
+  import { adminCommands } from "@api-client";
+
+  interface Props {
+    userId: string;
+    active?: boolean;
+    onCountChange?: (count: number) => void;
+  }
+
+  let { userId, active = false, onCountChange }: Props = $props();
+
+  function getStatusTone(status: string): PillTone {
+    return status === "active" ? "success" : "neutral";
+  }
+</script>
+
+<UserSessionsList
+  {userId}
+  {active}
+  {onCountChange}
+  {getStatusTone}
+  dataLoader={async (id, fetch, token, request) => {
+    return await adminCommands.listUserSessions(id, fetch, token, request);
+  }}
+  revokeAction={async (session, fetch, token) => {
+    await adminCommands.revokeUserSession(session.id, fetch, token);
+  }}
+/>
+```
+
+`UserActivityList` mounts the same way. It defaults to a fixed recent slice
+(limit 10, no pagination). Pass `paginated` when the app wants real server
+pagination at 20 per page:
+
+```svelte
+<UserActivityList {userId} {active} paginated dataLoader={...} />
+```
+
 ## See Also
 
 - [Template System Overview](./000-template-system-overview.md)

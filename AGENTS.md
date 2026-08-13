@@ -10,9 +10,9 @@
 - Do not move app-specific behavior from consumer repos into Underlay without a clear reusable boundary.
 - Preserve the separation between `rust/`, `ts/`, `contracts/`, and `docs/`.
 - Prefer extracting stable patterns over adding one-off compatibility shims.
-- Treat `docs/roadmaps/README.md` and `docs/roadmaps/g02/README.md` as the
-  live queue authority when active shared-surface or consumer-normalization
-  work is in flight.
+- Treat `docs/roadmaps/README.md` and `docs/roadmaps/generation-index.md` as
+  the live queue authority when active shared-surface or consumer-normalization
+  work is in flight. (g02 is closed; earlier revisions of this file named it.)
 - Treat `docs/architecture/product-guardrails.md`,
   `docs/contracts/001-working-rules.md`, and `docs/specs/` as the strict
   control pack for the active lane.

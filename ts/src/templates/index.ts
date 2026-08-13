@@ -86,6 +86,12 @@ export { default as EntityDetail } from "./EntityDetail.svelte";
 export { default as EntityDetailModule } from "./EntityDetailModule.svelte";
 export { default as EntityAttributeList } from "./EntityAttributeList.svelte";
 export { default as EntityInlineListModule } from "./EntityInlineListModule.svelte";
+export { default as UserSessionsList } from "./UserSessionsList.svelte";
+export { default as UserActivityList } from "./UserActivityList.svelte";
+export {
+  getUserActivityActionTone,
+  getUserSessionStatusTone
+} from "./template-types/user-tabs";
 
 // Level 2.5 — Entity Compositions
 export { default as EntityListCard } from "./EntityListCard.svelte";
@@ -164,7 +170,14 @@ export type {
   SystemIndexCardConfig,
   TemplateFilterOption,
   TemplateSortField,
-  TemplateSurface
+  TemplateSurface,
+  UserActivityActor,
+  UserActivityItem,
+  UserActivityListLoader,
+  UserSessionItem,
+  UserSessionListLoader,
+  UserSessionRevokeAction,
+  UserTabListRequest
 } from "./template.types";
 export type { BreadcrumbItem } from "../patterns/types";
 

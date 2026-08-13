@@ -203,6 +203,10 @@ Rules:
 - filter, batch, and reorder behavior is declarative where it fits
 - the parent may own URL query state, while the template owns list interaction
   behavior
+- wrapper query-state plumbing (query state, source context, filter-value
+  extraction, reload keys, back-link mode) should use the retained
+  `createEntityListState` helper from `@inflatable-cookie/underlay/patterns`
+  rather than per-wrapper reimplementation
 
 ### Child-tab migration acceptance
 
@@ -632,6 +636,33 @@ Known app-local `/system` extras:
 - `underlay-reference`: `/system/poodle-gap-review`
 - `acowtancy`: `/system/ai-routing`, `/system/ai-suggestions`,
   `/system/learning-transforms`
+
+### User management seam
+
+User-management surfaces are retained shared templates when the same platform
+surface appears across normal Underlay apps.
+
+Core pieces:
+
+- `UsersListPage`
+- `UserForm`
+- `UserSessionsList`
+- `UserActivityList`
+
+Rules:
+
+- `/users` should use `UsersListPage`; app-specific columns and row actions go
+  through its extension hooks, not a route-local table
+- user create/edit routes should use `EntityFormPage` with the retained
+  `UserForm` body
+- user-detail sessions/activity tabs should use `UserSessionsList` and
+  `UserActivityList`; these are Level-2 tab sections with lazy activation
+  (`active`), typed loader seams (`UserSessionListLoader`,
+  `UserActivityListLoader`), and template-owned revoke/copy actions
+- app wrappers adapt client commands into the loader seam; session/activity
+  tone mapping stays app-owned via `getStatusTone`/`getActionTone`
+- tab badge counts come from detail DTO count fields or `onCountChange`,
+  never from count-only endpoints
 
 ### Admin dashboard seam
 

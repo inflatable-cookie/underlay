@@ -74,6 +74,9 @@ Normal browse/manage lists use:
 - `EntityListPage` in the wrapper
 - `EntityListCard` in the card
 - `toPagedListResult(...)` for page-shaped API responses
+- `createEntityListState` from `@inflatable-cookie/underlay/patterns` for
+  wrapper plumbing (query state, source context, filter values, reload key,
+  back-link mode) instead of per-wrapper query-state code
 
 Root routes should thin-mount the app-local list wrapper.
 
@@ -81,6 +84,15 @@ Detail tabs that are real child collections should usually reuse the same
 wrapper with parent scope props and lower `headerLevel`.
 
 Use `EntityList` only for genuinely narrower inline/embed utility lists.
+
+New wrappers are named `<Resource>List.svelte`. Legacy `<Resource>ListPage.svelte`
+names in existing apps are grandfathered; do not copy them into new sections.
+
+Scoped resources: when the API offers no global list endpoint for the resource
+(for example labels under a project), place the section as nested routes under
+the parent plus a tab on the parent detail page, reusing the same wrapper with
+parent scope props and `queryMode="local"`. Do not invent a sidebar entry for a
+resource the API cannot list globally.
 
 ## Detail Rules
 
