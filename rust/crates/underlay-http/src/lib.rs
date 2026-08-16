@@ -1,5 +1,5 @@
-pub mod caching;
 mod cached_list;
+pub mod caching;
 pub mod context;
 pub mod cookies;
 mod cors;
@@ -46,6 +46,7 @@ mod error_logging_tests;
 #[path = "tests/responses_tests.rs"]
 mod responses_tests;
 
+pub use crate::cached_list::{CachedListEndpoint, CachedListResponse};
 pub use crate::caching::{
     etag_header_value, if_match_matches, if_none_match_matches, weak_etag_for_bytes, MicroCache,
     SingleFlight, CACHE_CONTROL_ADMIN_REVALIDATE, CACHE_CONTROL_NO_STORE,
@@ -61,15 +62,14 @@ pub use crate::cookies::{
     SameSite,
 };
 pub use crate::cors::{
-    admin_cors_config, admin_cors_layer, admin_cors_layer_from_env, cors_layer,
-    cors_layer_for_env, cors_origins_from_env, try_cors_layer_for_env, CorsConfig,
-    CorsConfigError, DEFAULT_CORS_MAX_AGE_SECS,
+    admin_cors_config, admin_cors_layer, admin_cors_layer_from_env, cors_layer, cors_layer_for_env,
+    cors_origins_from_env, try_cors_layer_for_env, CorsConfig, CorsConfigError,
+    DEFAULT_CORS_MAX_AGE_SECS,
 };
 pub use crate::errors::{
     error_response, ApiError, ApiResult, ErrorDetail, ErrorLogContext, ErrorLogSink,
 };
 pub use crate::http_config::{HttpServerConfig, HttpServerConfigError};
-pub use crate::cached_list::{CachedListEndpoint, CachedListResponse};
 pub use crate::page_list::PageList;
 #[allow(deprecated)]
 pub use crate::pagination::PaginationParams;

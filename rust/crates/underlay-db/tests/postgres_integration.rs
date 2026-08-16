@@ -118,10 +118,12 @@ async fn drop_schemas_drops_schema() {
         .await
         .expect("create schema");
 
-    sqlx::query(sqlx::AssertSqlSafe(format!("CREATE TABLE {schema}.items(id INT PRIMARY KEY)")))
-        .execute(&pool)
-        .await
-        .expect("create table");
+    sqlx::query(sqlx::AssertSqlSafe(format!(
+        "CREATE TABLE {schema}.items(id INT PRIMARY KEY)"
+    )))
+    .execute(&pool)
+    .await
+    .expect("create table");
 
     drop_schemas(&pool, DestructiveGuard::allow(), [&schema])
         .await

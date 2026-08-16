@@ -28,17 +28,29 @@ fn environment_resolve_prefers_primary_var_and_fails_closed() {
     // Unset everywhere fails closed to Prod.
     std::env::remove_var(PRIMARY);
     std::env::remove_var(LEGACY);
-    assert_eq!(Environment::resolve(PRIMARY, Some(LEGACY)), Environment::Prod);
+    assert_eq!(
+        Environment::resolve(PRIMARY, Some(LEGACY)),
+        Environment::Prod
+    );
 
     // Legacy var is honored when primary is unset.
     std::env::set_var(LEGACY, "effigy");
-    assert_eq!(Environment::resolve(PRIMARY, Some(LEGACY)), Environment::Effigy);
+    assert_eq!(
+        Environment::resolve(PRIMARY, Some(LEGACY)),
+        Environment::Effigy
+    );
 
     // Primary wins over legacy; unknown values fail closed.
     std::env::set_var(PRIMARY, "staging");
-    assert_eq!(Environment::resolve(PRIMARY, Some(LEGACY)), Environment::Staging);
+    assert_eq!(
+        Environment::resolve(PRIMARY, Some(LEGACY)),
+        Environment::Staging
+    );
     std::env::set_var(PRIMARY, "bogus");
-    assert_eq!(Environment::resolve(PRIMARY, Some(LEGACY)), Environment::Prod);
+    assert_eq!(
+        Environment::resolve(PRIMARY, Some(LEGACY)),
+        Environment::Prod
+    );
 
     std::env::remove_var(PRIMARY);
     std::env::remove_var(LEGACY);

@@ -96,14 +96,20 @@ impl Environment {
 
     /// Returns true if this is a local or dev environment.
     pub fn is_development(&self) -> bool {
-        matches!(self, Environment::Local | Environment::Effigy | Environment::Dev)
+        matches!(
+            self,
+            Environment::Local | Environment::Effigy | Environment::Dev
+        )
     }
 
     /// Returns true for environments where local-development behavior is
     /// allowed (dev seeds, CORS origin mirroring with credentials, loopback
     /// bind defaults): the local/effigy dev stacks and test runs.
     pub fn is_local_dev(&self) -> bool {
-        matches!(self, Environment::Local | Environment::Effigy | Environment::Test)
+        matches!(
+            self,
+            Environment::Local | Environment::Effigy | Environment::Test
+        )
     }
 
     /// Returns the recommended log format for this environment.
@@ -124,9 +130,7 @@ impl std::str::FromStr for Environment {
 }
 
 pub(crate) fn legacy_env_var_warning(primary_var: &str, legacy_var: &str) -> String {
-    format!(
-        "warning: environment resolved from deprecated {legacy_var}; set {primary_var} instead"
-    )
+    format!("warning: environment resolved from deprecated {legacy_var}; set {primary_var} instead")
 }
 
 fn warn_legacy_env_var_once(primary_var: &str, legacy_var: &str) {

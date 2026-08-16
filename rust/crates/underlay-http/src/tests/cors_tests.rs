@@ -407,9 +407,11 @@ mod tests {
         assert!(warning(&Environment::Local, &[]).is_none());
         assert!(warning(&Environment::Effigy, &[]).is_none());
         assert!(warning(&Environment::Test, &[]).is_none());
-        assert!(
-            warning(&Environment::Prod, &["https://admin.example.test".to_string()]).is_none()
-        );
+        assert!(warning(
+            &Environment::Prod,
+            &["https://admin.example.test".to_string()]
+        )
+        .is_none());
     }
 
     #[test]

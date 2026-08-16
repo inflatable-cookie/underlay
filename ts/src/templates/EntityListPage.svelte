@@ -386,6 +386,19 @@
 
 <svelte:window onkeydown={handleKeydown} />
 
+{#snippet listPageBreadcrumbs()}
+  <Breadcrumbs
+    items={pageBreadcrumbs.map((crumb, index) => ({
+      value: crumb.href ?? crumb.label,
+      label: crumb.label,
+      href: crumb.href,
+      current: breadcrumbsMarkLastCurrent && index === pageBreadcrumbs.length - 1
+    }))}
+    forceLastItemCurrent={breadcrumbsMarkLastCurrent}
+    sizeRole="chrome"
+  />
+{/snippet}
+
 <div class="underlay-entity-list-page">
   <PageHeader
     title={hideTitle ? null : title}
@@ -396,22 +409,8 @@
     backHref={resolvedBackInfo?.href ?? null}
     backLabel={resolvedBackInfo?.label ?? backLabel}
     backIsContextual={resolvedBackInfo?.contextual ?? false}
+    breadcrumbs={pageBreadcrumbs.length > 0 ? listPageBreadcrumbs : undefined}
   >
-    {#snippet breadcrumbs()}
-      {#if pageBreadcrumbs.length > 0}
-        <Breadcrumbs
-          items={pageBreadcrumbs.map((crumb, index) => ({
-            value: crumb.href ?? crumb.label,
-            label: crumb.label,
-            href: crumb.href,
-            current: breadcrumbsMarkLastCurrent && index === pageBreadcrumbs.length - 1
-          }))}
-          forceLastItemCurrent={breadcrumbsMarkLastCurrent}
-          sizeRole="chrome"
-        />
-      {/if}
-    {/snippet}
-
     {#snippet actions()}
       {#if headerLeadingActions}
         {@render headerLeadingActions({

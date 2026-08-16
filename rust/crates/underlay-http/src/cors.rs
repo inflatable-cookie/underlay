@@ -313,7 +313,10 @@ pub fn admin_cors_config(environment: Environment, explicit_origins: Vec<String>
 /// Panics on an invalid origin value, and on mirror-origin + credentials
 /// outside local dev (via [`cors_layer_for_env`]).
 pub fn admin_cors_layer(environment: Environment, explicit_origins: Vec<String>) -> CorsLayer {
-    cors_layer_for_env(admin_cors_config(environment, explicit_origins), environment)
+    cors_layer_for_env(
+        admin_cors_config(environment, explicit_origins),
+        environment,
+    )
 }
 
 /// Parse an explicit CORS origin list from an environment variable:

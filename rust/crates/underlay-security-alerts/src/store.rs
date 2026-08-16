@@ -95,7 +95,10 @@ pub async fn load_global_signal_counts_from_table(
         login_attempts_table
     );
 
-    let row = sqlx::query(sqlx::AssertSqlSafe(query)).bind(since).fetch_one(pool).await?;
+    let row = sqlx::query(sqlx::AssertSqlSafe(query))
+        .bind(since)
+        .fetch_one(pool)
+        .await?;
 
     Ok(GlobalSignalCounts {
         failed_attempts: row.get::<Option<i64>, _>("failed_attempts").unwrap_or(0),

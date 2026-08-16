@@ -109,19 +109,22 @@ impl TestDb {
         // Create a unique typed schema for this test.
         let schema = unique_test_schema();
 
-        sqlx::query(sqlx::AssertSqlSafe(format!("CREATE SCHEMA {}", schema.quoted())))
-            .execute(&pool)
-            .await
-            .expect("Failed to create test schema");
+        sqlx::query(sqlx::AssertSqlSafe(format!(
+            "CREATE SCHEMA {}",
+            schema.quoted()
+        )))
+        .execute(&pool)
+        .await
+        .expect("Failed to create test schema");
 
         // Set search path to the test schema
         sqlx::query(sqlx::AssertSqlSafe(format!(
             "SET search_path TO {}, public",
             schema.quoted()
         )))
-            .execute(&pool)
-            .await
-            .expect("Failed to set search path");
+        .execute(&pool)
+        .await
+        .expect("Failed to set search path");
 
         Self {
             pool,
@@ -145,7 +148,9 @@ impl TestDb {
     /// The fixture content should be valid SQL that will be executed
     /// in the test schema.
     pub async fn load_fixture(&self, sql: &str) -> Result<(), sqlx::Error> {
-        sqlx::query(sqlx::AssertSqlSafe(sql)).execute(&self.pool).await?;
+        sqlx::query(sqlx::AssertSqlSafe(sql))
+            .execute(&self.pool)
+            .await?;
         Ok(())
     }
 
