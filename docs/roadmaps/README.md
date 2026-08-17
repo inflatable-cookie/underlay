@@ -51,20 +51,21 @@ README surfaces.
 
 ## Active generation
 
-- `g09` - Config Convergence Follow-Through ([front door](g09/README.md)) —
-  extended with elective-major cards `g09.017`-`g09.020` (vite 8, lucide 1,
-  jsdom 30, zod 4).
+- `g10` - Contract Fidelity And Fleet Convergence ([front door](g10/README.md))
 
 ## Current Queue
 
-`g09` carried the follow-through from the 2026-08-03 config-convergence
-self-audit and is complete: all 12 cards done
-([`g09/README.md`](g09/README.md)).
+`g09` is complete: all 20 cards done
+([`g09/README.md`](g09/README.md)). Config convergence, dependency upgrades,
+and elective majors landed 2026-08-04.
+
+`g10` is open for scoping. See [`g10/README.md`](g10/README.md) for the
+atlas runway and candidate lanes.
 
 ## Archived generations
 
-Closed generations `g01`-`g07` (639 roadmap files; `g06` alone is 367) are
-**frozen archival record**, not active navigation. Enter them only via
+Closed generations `g01`-`g09` are **frozen archival record**, not active
+navigation. Enter them only via
 [`generation-index.md`](generation-index.md), which is the authoritative history.
 Do not open new work in a closed generation.
 
@@ -78,6 +79,5 @@ that risk.
 
 ## Next Task
 
-**`g09.017`** — vite 8 + @sveltejs/vite-plugin-svelte 7 (paired major).
-The 16 completed cards stand; typescript 7 sits in the backlog with a
-7.1 promotion trigger.
+**`g10.001`** — open the first bounded card after maintainer scoping review.
+See [`g10/README.md`](g10/README.md).

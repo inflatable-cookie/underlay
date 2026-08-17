@@ -12,7 +12,7 @@
 - Prefer extracting stable patterns over adding one-off compatibility shims.
 - Treat `docs/roadmaps/README.md` and `docs/roadmaps/generation-index.md` as
   the live queue authority when active shared-surface or consumer-normalization
-  work is in flight. (g02 is closed; earlier revisions of this file named it.)
+  work is in flight.
 - Treat `docs/architecture/product-guardrails.md`,
   `docs/contracts/001-working-rules.md`, and `docs/specs/` as the strict
   control pack for the active lane.
@@ -56,7 +56,8 @@ effigy test --plan
 - `./docs/architecture/product-guardrails.md`
 - `./docs/contracts/001-working-rules.md`
 - `./docs/roadmaps/README.md`
-- `./docs/roadmaps/g02/README.md`
+- `./docs/roadmaps/generation-index.md`
+- `./docs/roadmaps/g10/README.md`
 - `./docs/guides/README.md`
 - `./docs/guides/000-overview.md`
 - `./docs/guides/172-agents-files.md`

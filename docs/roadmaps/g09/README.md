@@ -1,8 +1,9 @@
 # g09 - Config Convergence Follow-Through
 
-Status: active
+Status: complete
 Owner: repo maintainers
 Started: 2026-08-03
+Completed: 2026-08-04
 
 ## Current Generation
 
@@ -50,10 +51,10 @@ thread closeout review.
 
 ## Elective-majors extension (added 2026-08-03, maintainer direction)
 
-17. [ ] [`g09.017`](017-vite-8-and-plugin-svelte-7.md) — vite 8 + @sveltejs/vite-plugin-svelte 7 (paired)
-18. [ ] [`g09.018`](018-lucide-svelte-1.md) — lucide-svelte 1.0
-19. [ ] [`g09.019`](019-jsdom-30.md) — jsdom 30
-20. [ ] [`g09.020`](020-zod-4.md) — zod 4 (underlay root only)
+17. [x] [`g09.017`](017-vite-8-and-plugin-svelte-7.md) — vite 8 + @sveltejs/vite-plugin-svelte 7 (paired)
+18. [x] [`g09.018`](018-lucide-svelte-1.md) — lucide-svelte 1.0
+19. [x] [`g09.019`](019-jsdom-30.md) — jsdom 30
+20. [x] [`g09.020`](020-zod-4.md) — zod 4 (underlay root only)
 
 Deferred to backlog with a promotion trigger (typescript 7.1 or concrete
 need): [`backlog/ts-7-adoption.md`](../backlog/ts-7-adoption.md).
@@ -78,4 +79,5 @@ need): [`backlog/ts-7-adoption.md`](../backlog/ts-7-adoption.md).
 
 ## Next Task
 
-`g09.017` — vite 8 + @sveltejs/vite-plugin-svelte 7.
+Generation closed. Active execution continues in `g10`. See
+[`docs/roadmaps/g10/README.md`](../g10/README.md).

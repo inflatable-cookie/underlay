@@ -1,6 +1,6 @@
 # g08 - Audit Remediation And Edge Hardening
 
-Status: active
+Status: complete
 Owner: repo maintainers
 Started: 2026-07-17
 

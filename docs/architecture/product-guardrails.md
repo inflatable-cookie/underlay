@@ -19,5 +19,5 @@ Owner: repo maintainers
 
 ## Next Task
 
-No active roadmap task remains. Keep any next compatibility-retirement or TS
-boundary lane tied to the reference-grade architecture boundary.
+Open the active generation `g10` via [`docs/roadmaps/g10/README.md`](../roadmaps/g10/README.md)
+before starting another compatibility-retirement or TS boundary lane.

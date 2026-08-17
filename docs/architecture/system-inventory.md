@@ -14,19 +14,22 @@ coverage, interface review, and later implementation assessment.
 
 ## Repo Posture
 
-Underlay is currently `drifted`.
+Underlay is currently `coherent` in parallel mode.
 
 Evidence:
 
-- the active roadmap generation is `g03`, so opening `g04` now would violate
-  the rollover rule in [roadmaps/README.md](../roadmaps/README.md)
-- [contracts/001-working-rules.md](../contracts/001-working-rules.md) and
-  [product-guardrails.md](./product-guardrails.md) still point at `g02.007`
-- [g03/README.md](../roadmaps/g03/README.md) contains contradictory active-lane
-  state
-- [010-package-map.md](./010-package-map.md) still describes crates and TS
-  surfaces that no longer match the filesystem exactly
-- there is no canonical contract index for the full shared system surface
+- active generation is `g10` (scoping) after `g09` closeout on 2026-08-04
+- roadmap front doors, vision, and generation index were refreshed 2026-08-17
+- the contract index exists and names the full planned contract set
+- reference-grade architecture phases 2–5 remain the longer-horizon shape target
+
+Remaining pressure:
+
+- implementation-vs-contract assessment has not run fleet-wide yet
+- collection route and hybrid-shell convergence (`116`, `117`, sweeps `029`/`030`)
+  is still open
+- consumer drift prevention items in `070` still have proposed follow-through
+- `010-package-map.md` may lag the live crate surface between major batches
 
 ## Significant Systems
 
@@ -124,6 +127,5 @@ Every system should pass through the same loop:
 
 ## Next Task
 
-Use [contracts/contract-index.md](../contracts/contract-index.md) as the next
-planning surface and compile the bounded contract-writing program from this
-inventory.
+Compile the first bounded `g10` contract-assessment or collection-convergence
+card from this inventory. See [`docs/roadmaps/g10/README.md`](../roadmaps/g10/README.md).

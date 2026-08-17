@@ -98,7 +98,5 @@ Do not promote a system into active implementation-assessment work until:
 
 ## Next Task
 
-No active contract wave is live.
-
-Open a bounded roadmap card before starting the next compatibility-retirement
-or TS boundary lane.
+Compile the first bounded `g10` implementation-assessment card from this index.
+See [`docs/roadmaps/g10/README.md`](../roadmaps/g10/README.md).

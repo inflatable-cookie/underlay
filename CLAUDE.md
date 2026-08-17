@@ -1,3 +1,5 @@
+@AGENTS.md
+
 # Underlay Claude Notes
 
 ## Source of truth

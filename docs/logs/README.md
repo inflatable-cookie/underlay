@@ -4,11 +4,9 @@ Logs capture meaningful documentation and delivery batches for Underlay.
 
 ## Current Evidence Window
 
-The active window is the current generation `g08` under `docs/logs/2026-07/`
-(one log per card across the audit-remediation lanes). Earlier month shards are
-frozen lineage; the March Poodle handoffs and the April `g01.098 -> g02`
-rollover logs remain part of the record but are historical, not the active
-control chain.
+The active window is the current generation `g10` under `docs/logs/2026-08/`.
+The `g09` config-convergence and dependency-upgrade closeout lives in the same
+month shard. Earlier month shards are frozen lineage.
 
 ## Cadence
 
@@ -41,6 +39,6 @@ where repo-local links and normalized prose references are required instead.
 
 ## Next Task
 
-Keep the active evidence window aligned to the current generation `g08`
-(`docs/logs/2026-07/`), adding only the logs needed to reach the live next task
-without reconstructing the queue from the older contraction-era history.
+Keep the active evidence window aligned to the current generation `g10`
+(`docs/logs/2026-08/`), adding only the logs needed to reach the live next task
+without reconstructing the queue from older generation history.

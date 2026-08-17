@@ -43,16 +43,15 @@ In parallel mode:
 
 Underlay is in parallel mode:
 
-- `g07` is closed after the TS runtime and workflow boundary hardening thread
-- `g06` is closed after the Rust platform-contract transition and
-  reference-grade reset thread
+- `g07`–`g09` are closed
+- `g10` is the active generation (scoping as of 2026-08-17)
 - `g03`, `g04`, and `g05` are closed historical generations
 - there is no active strict master spec at the repo level right now
 
 ## Next Task
 
-No active roadmap task remains. Open a bounded roadmap card before starting the
-next compatibility-retirement or TS boundary lane.
+Open the active generation `g10` via [`docs/roadmaps/g10/README.md`](../roadmaps/g10/README.md)
+before starting the next compatibility-retirement or TS boundary lane.
 
 Open a new spec only if the next lane needs provisional planning beyond
 existing architecture and contracts.

@@ -197,5 +197,6 @@ Stop and re-enter planning if:
 
 ## Next Task
 
-No active roadmap task remains. Open a bounded roadmap card before retiring
-deferred compatibility exports or starting another architecture reset lane.
+Open a bounded `g10` roadmap card before retiring deferred compatibility
+exports or starting another architecture reset lane. See
+[`docs/roadmaps/g10/README.md`](../roadmaps/g10/README.md).

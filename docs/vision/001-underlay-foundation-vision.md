@@ -46,6 +46,6 @@ Over time, Underlay should:
 
 ## Next Task
 
-Open the current card of the active generation `g08` (audit remediation and edge
-hardening) via [`docs/roadmaps/README.md`](../roadmaps/README.md), keeping the
-foundation vision's execution handoff current.
+Open the current card of the active generation `g10` (contract fidelity and
+fleet convergence) via [`docs/roadmaps/README.md`](../roadmaps/README.md), keeping
+the foundation vision's execution handoff current.

@@ -1,7 +1,7 @@
 # Underlay Roadmap Generation Index
 
 Status: active
-Updated: 2026-08-03
+Updated: 2026-08-17
 
 ## Mode
 
@@ -9,7 +9,7 @@ Updated: 2026-08-03
 
 ## Active generations
 
-- [g09 - Config Convergence Follow-Through](g09/README.md) (active; elective-majors extension g09.017-g09.020)
+- [g10 - Contract Fidelity And Fleet Convergence](g10/README.md) (active; scoping)
 
 ## Generation log
 
@@ -23,10 +23,12 @@ Updated: 2026-08-03
 | `g06` | 2026-06-05 | Rust platform-contract transition after code-quality audit | Closed after the reference-grade reset, Rust hardening lane, six-consumer proof, upgrade-guidance closeout, and bounded stale-drift repairs |
 | `g07` | 2026-06-06 | Runtime, workflow, residual Rust policy, and doctor-warning hardening after `g06` closeout | Complete after `g07.037` doctor warning closeout |
 | `g08` | 2026-07-17 | Audit remediation after July 2026 deep audit (security edge, correctness bugs, Rust/TS structure, docs/versioning/i18n posture) | Complete - all 32 cards done; `v0.8.0` tagged |
-| `g09` | 2026-08-03 | Config-convergence follow-through after the 2026-08-03 self-audit (env/CORS helpers, overlays, dev credentials); extended same-day with dependency-upgrade and elective-majors cards | Active — 16 cards complete, 4 elective-major cards ready |
+| `g09` | 2026-08-03 | Config-convergence follow-through after the 2026-08-03 self-audit; extended with dependency-upgrade and elective-majors cards | Complete - all 20 cards done |
+| `g10` | 2026-08-17 | Contract fidelity, collection convergence, and fleet drift prevention after `g09` closeout | Active - scoping |
 
 ## Historical generations
 
+- [g09 - Config Convergence Follow-Through](g09/README.md) (complete)
 - [g08 - Audit Remediation And Edge Hardening](g08/README.md) (complete)
 - [g07 - Runtime, Workflow, And Doctor Warning Boundary Hardening](g07/README.md) (complete)
 - [g06 - Rust Platform Contract Transition](g06/README.md) (complete)
@@ -53,10 +55,6 @@ In parallel mode:
 
 ## Next Task
 
-`g08` is complete: all 32 cards done across all five lanes — security (A),
-correctness (B), Rust seams (C), TS surface (D), docs/versioning/i18n posture
-(E). `g08.019` (postgres adapter integration tests) was the last open card,
-unblocked by making `TestDb` run against an external `UNDERLAY_TEST_DATABASE_URL`
-(17 tests green on Postgres 16 via effigy containerd). `v0.8.0` tagged at the
-six-consumer proof point. Next: `g09` scoping. Ops follow-up (not a card): wire
-`UNDERLAY_TEST_DATABASE_URL` into real CI.
+`g09` is complete: all 20 cards done. `g10` is open for scoping after the
+2026-08-17 Northstar refresh and atlas pass. See [`g10/README.md`](g10/README.md)
+for the candidate lanes and first-card selection.
