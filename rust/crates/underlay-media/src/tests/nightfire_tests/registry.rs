@@ -33,7 +33,7 @@ fn registry_backed_extractor_walks_block_handlers_and_declared_nested_values() {
             r#type: "media".to_string(),
             version: "initial".to_string(),
             data: json!({
-                "mediaId": "019473c4-4a6d-7000-8000-000000000214"
+                "media_id": "019473c4-4a6d-7000-8000-000000000214"
             }),
         },
     );
@@ -74,7 +74,7 @@ fn registry_backed_extractor_walks_block_handlers_and_declared_nested_values() {
 
     assert_eq!(
         locator_keys,
-        vec!["hero_01#/imageId", "popup_media_01#/mediaId"]
+        vec!["hero_01#/imageId", "popup_media_01#/media_id"]
     );
 }
 
@@ -100,7 +100,7 @@ fn registry_backed_extractor_falls_back_to_outer_anchor_for_nested_child_without
             r#type: "media".to_string(),
             version: "initial".to_string(),
             data: json!({
-                "mediaId": "019473c4-4a6d-7000-8000-000000000215"
+                "media_id": "019473c4-4a6d-7000-8000-000000000215"
             }),
         },
     );
@@ -125,7 +125,7 @@ fn registry_backed_extractor_falls_back_to_outer_anchor_for_nested_child_without
     assert_eq!(usages[0].locator_kind, MediaLocatorKind::BlockId);
     assert_eq!(
         usages[0].locator_key,
-        "popup_01#/content/blocks/0/data/mediaId"
+        "popup_01#/content/blocks/0/data/media_id"
     );
 }
 

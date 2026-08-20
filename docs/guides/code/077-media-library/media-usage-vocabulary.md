@@ -45,7 +45,7 @@ Recommended values:
 - `path`
   - deterministic JSON Pointer path when stable block ids do not exist yet
   - examples:
-    - `/blocks/2/data/mediaId`
+    - `/blocks/2/data/media_id`
     - `/blocks/4/data/pages/1/imageId`
 - `external_ref`
   - stable external/manual locator outside normal record ownership

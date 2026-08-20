@@ -163,6 +163,6 @@ If a block embeds a child Nightfire document and that child content does not
 yet have its own block ids, the walker falls back to the nearest stable outer
 anchor instead of inventing a fake root:
 
-- outer anchor example: `popup_01#/content/block/data/mediaId`
+- outer anchor example: `popup_01#/content/blocks/0/data/media_id`
 - rooted path fallback when no stable outer id exists:
-  `/blocks/0/data/content/block/data/mediaId`
+  `/blocks/0/data/content/blocks/0/data/media_id`

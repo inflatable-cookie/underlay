@@ -9,7 +9,7 @@
     type: string;
     version?: string;
     data?: {
-      mediaId?: string;
+      media_id?: string;
       caption?: string;
       alt?: string;
       display?: string;
@@ -33,7 +33,7 @@
   let picking = $state(false);
 
   // Derive current data from block
-  const mediaId = $derived(block?.data?.mediaId ?? "");
+  const mediaId = $derived(block?.data?.media_id ?? "");
   const caption = $derived(block?.data?.caption ?? "");
   const alt = $derived(block?.data?.alt ?? "");
   const display = $derived(block?.data?.display ?? "inline");
@@ -50,7 +50,7 @@
       type: block?.type ?? "media",
       version: block?.version ?? "initial",
       data: {
-        mediaId: block?.data?.mediaId ?? "",
+        media_id: block?.data?.media_id ?? "",
         caption: block?.data?.caption ?? "",
         alt: block?.data?.alt ?? "",
         display: block?.data?.display ?? "inline",
@@ -77,14 +77,14 @@
     selectedTitle = result.title;
     selectedThumbnailUrl = result.thumbnailUrl;
     selectedKind = result.kind;
-    emit({ mediaId: result.id });
+    emit({ media_id: result.id });
   }
 
   function handleRemove() {
     selectedTitle = null;
     selectedThumbnailUrl = null;
     selectedKind = null;
-    emit({ mediaId: "" });
+    emit({ media_id: "" });
   }
 
   function toPoodleMediaKind(kind: MediaKind | null): "image" | "audio" | "video" | "document" | "embed" {
@@ -146,7 +146,7 @@
         id="nightfire-media-id"
         placeholder="Media ID"
         value={mediaId}
-        onValueChange={(nextValue) => emit({ mediaId: nextValue })}
+        onValueChange={(nextValue) => emit({ media_id: nextValue })}
       />
     {/if}
   </div>

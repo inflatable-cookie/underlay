@@ -10,6 +10,6 @@ import {
 registerBlockEditor("acow:content/markup@1", "media", "Media", MediaEditor);
 
 registerBlockEmptyChecker("media", (block) => {
-  const mediaId = block?.data?.mediaId;
+  const mediaId = block?.data?.media_id;
   return !mediaId || typeof mediaId !== "string" || mediaId.trim().length === 0;
 });

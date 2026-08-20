@@ -87,7 +87,7 @@ impl NightfireBlockMediaHandler for MediaBlockHandler {
         &self,
         context: &NightfireMediaVisitContext<'_>,
     ) -> MediaResult<Vec<NightfireBlockMediaReference>> {
-        let Some(raw) = context.resolve_relative_pointer("/mediaId") else {
+        let Some(raw) = context.resolve_relative_pointer("/media_id") else {
             return Ok(Vec::new());
         };
         let Some(media_id) = raw
@@ -101,7 +101,7 @@ impl NightfireBlockMediaHandler for MediaBlockHandler {
         Ok(vec![NightfireBlockMediaReference::new(
             media_id,
             MediaUsageRole::Embedded,
-            "/mediaId",
+            "/media_id",
         )])
     }
 }

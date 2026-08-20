@@ -140,7 +140,7 @@ fn common_field_matcher_covers_default_media_reference_names() {
         .collect::<Vec<_>>();
 
     assert!(rules.contains(&("imageId", "embedded")));
-    assert!(rules.contains(&("mediaId", "embedded")));
+    assert!(rules.contains(&("media_id", "embedded")));
     assert!(rules.contains(&("iconMediaId", "primary")));
     assert!(rules.contains(&("fileId", "attachment")));
     assert!(rules.contains(&("attachmentId", "attachment")));
