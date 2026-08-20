@@ -28,7 +28,7 @@ describe("nightfire/editor/summary-transform malformed input", () => {
 
 		const fromSlider = transformSummaryBlockOnLayoutChange(
 			{
-				type: "summary.imageSlider",
+				type: "summary.image_slider",
 				data: {
 					description: "",
 					image1Id: "   ",
@@ -65,11 +65,11 @@ describe("nightfire/editor/summary-transform malformed input", () => {
 				type: "summary.book",
 				data: { pages: [{ body: 0 as any }], subTitle: 42 as any },
 			},
-			"summary.imageSlider",
+			"summary.image_slider",
 			label
 		);
 		expect(toSliderWithNonStringBody.block).toMatchObject({
-			type: "summary.imageSlider",
+			type: "summary.image_slider",
 			data: {
 				subTitle: null,
 				description: null,
@@ -83,7 +83,7 @@ describe("nightfire/editor/summary-transform malformed input", () => {
 
 		const fromSliderSecondImageOnly = transformSummaryBlockOnLayoutChange(
 			{
-				type: "summary.imageSlider",
+				type: "summary.image_slider",
 				data: {
 					description: "Body",
 					image1Id: "",
@@ -119,11 +119,11 @@ describe("nightfire/editor/summary-transform malformed input", () => {
 				type: "summary.book",
 				data: { pages: "not-array" as any, subTitle: "kept" },
 			},
-			"summary.imageSlider",
+			"summary.image_slider",
 			label
 		);
 		expect(toSliderWithMissingPages.block).toMatchObject({
-			type: "summary.imageSlider",
+			type: "summary.image_slider",
 			data: {
 				subTitle: "kept",
 				description: null,

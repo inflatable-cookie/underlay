@@ -16,15 +16,15 @@ describe("nightfire/editor/grouped-options", () => {
 
 	it("infers and sorts interactive question subcategories by priority then label", () => {
 		const result = buildGroupedOptions([
-			{ type: "acow.question.timeline@1", label: "Timeline", category: "InteractiveQuestion" },
-			{ type: "acow.question.numeric@1", label: "Numeric", category: "InteractiveQuestion" },
-			{ type: "acow.question.dnd.cards@1", label: "Drag", category: "InteractiveQuestion" },
-			{ type: "acow.question.mcTrueFalse@1", label: "MC Alt", category: "InteractiveQuestion" },
-			{ type: "acow.question.multipleChoice@1", label: "MC", category: "InteractiveQuestion" },
-			{ type: "acow.question.unknown@1", label: "Unknown", category: "InteractiveQuestion" },
-			{ type: "acow.question.placeholder@1", label: "Placeholder", category: "InteractiveQuestion" },
-			{ type: "acow.question.hitpoint@1", label: "Hitpoint", category: "InteractiveQuestion" },
-			{ type: "acow.question.tfMulti@1", label: "TF Multi", category: "InteractiveQuestion" },
+			{ type: "acow.question.timeline", label: "Timeline", category: "InteractiveQuestion" },
+			{ type: "acow.question.numeric", label: "Numeric", category: "InteractiveQuestion" },
+			{ type: "acow.question.dnd.cards", label: "Drag", category: "InteractiveQuestion" },
+			{ type: "acow.question.mc_true_false", label: "MC Alt", category: "InteractiveQuestion" },
+			{ type: "acow.question.multiple_choice", label: "MC", category: "InteractiveQuestion" },
+			{ type: "acow.question.unknown", label: "Unknown", category: "InteractiveQuestion" },
+			{ type: "acow.question.placeholder", label: "Placeholder", category: "InteractiveQuestion" },
+			{ type: "acow.question.hitpoint", label: "Hitpoint", category: "InteractiveQuestion" },
+			{ type: "acow.question.tf_multi", label: "TF Multi", category: "InteractiveQuestion" },
 		]);
 
 		const interactive = result.find((g) => g.category === "InteractiveQuestion");

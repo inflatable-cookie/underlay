@@ -162,7 +162,7 @@
    *   image IDs, additional pages when moving to the image
    *   slider layout).
    */
-  const FALLBACK_MARKUP_SCHEMA_ID = "acow:content/markup@1";
+  const FALLBACK_MARKUP_SCHEMA_ID = "acow:content/markup";
 
   let typeChangeWarning: string | null = $state(null);
   let hasInitialisedRequired = $state(false);
@@ -215,7 +215,7 @@
 
   // Keep stored value shape aligned with the effective editor mode.
   // This is important for schemas that don't have a local registry entry
-  // (e.g. acow:content/qa@1), where we may fall back to markup editors but
+  // (e.g. an unregistered consumer schema), where we may fall back to markup editors but
   // still receive single-block payloads from the API.
   $effect(() => {
     const { coerced, schemaMismatch } = normaliseForStrategy(value, schema, effectiveDef.mode);

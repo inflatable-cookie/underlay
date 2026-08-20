@@ -7,7 +7,7 @@ import {
 } from "../editor-registry";
 
 const markupSchema: SchemaDefinition = {
-  schema: "acow:content/markup@1",
+  schema: "acow:content/markup",
   mode: "multi",
   defaultType: "markdown"
 };

@@ -126,7 +126,7 @@ function inferSubcategory(option: NightfireBlockOptionInput): string | undefined
 		return undefined;
 	}
 
-	if (option.type === "acow.question.multipleChoice@1") {
+	if (option.type === "acow.question.multiple_choice") {
 		return "MultipleChoice";
 	}
 
@@ -138,23 +138,23 @@ function inferSubcategory(option: NightfireBlockOptionInput): string | undefined
 		return "DragAndDrop";
 	}
 
-	if (option.type === "acow.question.numeric@1" || option.type === "acow.question.freeform@1") {
+	if (option.type === "acow.question.numeric" || option.type === "acow.question.freeform") {
 		return "Input";
 	}
 
-	if (option.type === "acow.question.placeholder@1" || option.type === "acow.question.mcPlaceholder@1") {
+	if (option.type === "acow.question.placeholder") {
 		return "Input";
 	}
 
-	if (option.type === "acow.question.tfMulti@1") {
+	if (option.type === "acow.question.tf_multi") {
 		return "MultipleChoice";
 	}
 
-	if (option.type === "acow.question.timeline@1") {
+	if (option.type === "acow.question.timeline") {
 		return "Interactive";
 	}
 
-	if (option.type === "acow.question.hitpoint@1" || option.type === "acow.question.spreadsheet@1") {
+	if (option.type === "acow.question.hitpoint" || option.type === "acow.question.spreadsheet") {
 		return "Interactive";
 	}
 
