@@ -9,7 +9,7 @@
 //!
 //! Example:
 //!
-//! `hero_01#/pages/1/imageId`
+//! `hero_01#/pages/1/image_id`
 
 use serde_json::Value;
 

@@ -45,7 +45,7 @@ fn registry_backed_extractor_walks_block_handlers_and_declared_nested_values() {
             r#type: "hero".to_string(),
             version: "initial".to_string(),
             data: json!({
-                "imageId": "019473c4-4a6d-7000-8000-000000000213",
+                "image_id": "019473c4-4a6d-7000-8000-000000000213",
                 "children": [
                     {
                         "id": "popup_01",
@@ -74,7 +74,7 @@ fn registry_backed_extractor_walks_block_handlers_and_declared_nested_values() {
 
     assert_eq!(
         locator_keys,
-        vec!["hero_01#/imageId", "popup_media_01#/media_id"]
+        vec!["hero_01#/image_id", "popup_media_01#/media_id"]
     );
 }
 

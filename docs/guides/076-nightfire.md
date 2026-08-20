@@ -1039,7 +1039,7 @@ Boundary rule for all of these form patterns:
 
 - map outer DTO field names to API `snake_case` if needed
 - do not remap keys inside the Nightfire JSON itself
-- fields like `imageId` and `attachmentId` must reach the API unchanged or
+- fields like `image_id` and `attachment_id` must reach the API unchanged or
   shared media extractors will stop matching them
 
 ---
@@ -1232,9 +1232,9 @@ Important boundary rule:
 
 - outer DTO field names may still be mapped to API `snake_case`
 - inner Nightfire JSON must stay verbatim
-- do not rename keys inside block `data` objects like `imageId` to `image_id`
-  on the way to the API, or shared media extractors and locators will stop
-  matching the stored JSON
+- do not rename keys inside block `data` objects on the way to the API.
+  Payloads are snake_case (`image_id`); extractors and locators match the
+  stored JSON exactly
 
 ---
 

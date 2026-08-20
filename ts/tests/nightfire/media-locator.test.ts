@@ -11,13 +11,13 @@ describe("nightfire/media-locator", () => {
   it("formats and parses canonical block-id locators", () => {
     const locatorKey = formatNightfireMediaLocator({
       blockId: "hero_01",
-      dataPointer: "/pages/1/imageId"
+      dataPointer: "/pages/1/image_id"
     });
 
-    expect(locatorKey).toBe("hero_01#/pages/1/imageId");
+    expect(locatorKey).toBe("hero_01#/pages/1/image_id");
     expect(parseNightfireMediaLocator(locatorKey)).toEqual({
       blockId: "hero_01",
-      dataPointer: "/pages/1/imageId"
+      dataPointer: "/pages/1/image_id"
     });
   });
 
@@ -34,13 +34,13 @@ describe("nightfire/media-locator", () => {
           id: "gallery_02",
           type: "gallery",
           data: {
-            pages: [{ imageId: "media-1" }, { imageId: "media-2" }]
+            pages: [{ image_id: "media-1" }, { image_id: "media-2" }]
           }
         }
       ]
     };
 
-    const locator = parseNightfireMediaLocator("gallery_02#/pages/1/imageId");
+    const locator = parseNightfireMediaLocator("gallery_02#/pages/1/image_id");
 
     expect(findNightfireBlockById(value, "gallery_02")).toEqual(value.blocks[1]);
     expect(resolveNightfireMediaLocator(value, locator)).toBe("media-2");
@@ -53,16 +53,16 @@ describe("nightfire/media-locator", () => {
         {
           id: "hero_01",
           type: "image",
-          data: { imageId: "media-1" }
+          data: { image_id: "media-1" }
         }
       ]
     };
 
     expect(
-      resolveNightfireMediaLocator(value, parseNightfireMediaLocator("hero_01#/pages/0/imageId"))
+      resolveNightfireMediaLocator(value, parseNightfireMediaLocator("hero_01#/pages/0/image_id"))
     ).toBeUndefined();
     expect(
-      resolveNightfireMediaLocator(value, parseNightfireMediaLocator("gallery_02#/imageId"))
+      resolveNightfireMediaLocator(value, parseNightfireMediaLocator("gallery_02#/image_id"))
     ).toBeUndefined();
   });
 

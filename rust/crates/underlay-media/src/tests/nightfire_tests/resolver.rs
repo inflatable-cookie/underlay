@@ -12,7 +12,7 @@ fn resolve_nightfire_media_usage_reads_block_id_locator_values() {
         block(
             Some("hero_01"),
             json!({
-                "imageId": "019473c4-4a6d-7000-8000-000000000210",
+                "image_id": "019473c4-4a6d-7000-8000-000000000210",
                 "children": [
                     {
                         "id": "gallery_02",
@@ -20,7 +20,7 @@ fn resolve_nightfire_media_usage_reads_block_id_locator_values() {
                         "version": "initial",
 
                         "data": {
-                            "pages": [{ "imageId": "019473c4-4a6d-7000-8000-000000000211" }]
+                            "pages": [{ "image_id": "019473c4-4a6d-7000-8000-000000000211" }]
                         }
                     }
                 ]
@@ -29,11 +29,11 @@ fn resolve_nightfire_media_usage_reads_block_id_locator_values() {
     );
 
     let top_level =
-        resolve_nightfire_media_usage(&value, &MediaLocatorKind::BlockId, "hero_01#/imageId");
+        resolve_nightfire_media_usage(&value, &MediaLocatorKind::BlockId, "hero_01#/image_id");
     let nested = resolve_nightfire_media_usage(
         &value,
         &MediaLocatorKind::BlockId,
-        "gallery_02#/pages/0/imageId",
+        "gallery_02#/pages/0/image_id",
     );
 
     assert_eq!(
@@ -50,7 +50,7 @@ fn resolve_nightfire_media_usage_reads_path_fallback_values() {
         vec![block(
             None,
             json!({
-                "pages": [{ "imageId": "019473c4-4a6d-7000-8000-000000000212" }]
+                "pages": [{ "image_id": "019473c4-4a6d-7000-8000-000000000212" }]
             }),
         )],
     );
@@ -58,7 +58,7 @@ fn resolve_nightfire_media_usage_reads_path_fallback_values() {
     let resolved = resolve_nightfire_media_usage(
         &value,
         &MediaLocatorKind::Path,
-        "/blocks/0/data/pages/0/imageId",
+        "/blocks/0/data/pages/0/image_id",
     );
 
     assert_eq!(

@@ -13,17 +13,17 @@ fn block(id: &str, data: serde_json::Value) -> BlockData {
 #[test]
 fn parses_and_formats_locator_key() {
     let locator =
-        NightfireMediaLocator::parse("hero_01#/pages/1/imageId").expect("locator should parse");
+        NightfireMediaLocator::parse("hero_01#/pages/1/image_id").expect("locator should parse");
 
     assert_eq!(locator.block_id, "hero_01");
-    assert_eq!(locator.data_pointer, "/pages/1/imageId");
-    assert_eq!(locator.to_locator_key(), "hero_01#/pages/1/imageId");
+    assert_eq!(locator.data_pointer, "/pages/1/image_id");
+    assert_eq!(locator.to_locator_key(), "hero_01#/pages/1/image_id");
 }
 
 #[test]
 fn rejects_locator_without_separator() {
     let error =
-        NightfireMediaLocator::parse("hero_01:/pages/1/imageId").expect_err("locator should fail");
+        NightfireMediaLocator::parse("hero_01:/pages/1/image_id").expect_err("locator should fail");
 
     assert!(matches!(
         error,
@@ -34,7 +34,7 @@ fn rejects_locator_without_separator() {
 #[test]
 fn rejects_locator_with_invalid_pointer() {
     let error =
-        NightfireMediaLocator::new("hero_01", "pages/1/imageId").expect_err("locator should fail");
+        NightfireMediaLocator::new("hero_01", "pages/1/image_id").expect_err("locator should fail");
 
     assert!(matches!(
         error,
@@ -48,11 +48,11 @@ fn resolves_pointer_inside_single_block_value() {
         "test:schema",
         block(
             "hero_01",
-            json!({ "imageId": "media-1", "caption": "Hero" }),
+            json!({ "image_id": "media-1", "caption": "Hero" }),
         ),
     );
 
-    let locator = NightfireMediaLocator::parse("hero_01#/imageId").unwrap();
+    let locator = NightfireMediaLocator::parse("hero_01#/image_id").unwrap();
     let resolved = locator
         .resolve_in_value(&value)
         .expect("reference should resolve");
@@ -68,12 +68,12 @@ fn resolves_pointer_inside_multi_block_value() {
             block("intro_01", json!({ "text": "Hello" })),
             block(
                 "gallery_02",
-                json!({ "pages": [{ "imageId": "media-1" }, { "imageId": "media-2" }] }),
+                json!({ "pages": [{ "image_id": "media-1" }, { "image_id": "media-2" }] }),
             ),
         ],
     );
 
-    let locator = NightfireMediaLocator::parse("gallery_02#/pages/1/imageId").unwrap();
+    let locator = NightfireMediaLocator::parse("gallery_02#/pages/1/image_id").unwrap();
     let resolved = locator
         .resolve_in_value(&value)
         .expect("reference should resolve");
@@ -94,7 +94,7 @@ fn resolves_pointer_inside_nested_block_id() {
                         "type": "gallery",
                         "version": "initial",
                         "data": {
-                            "pages": [{ "imageId": "media-1" }, { "imageId": "media-2" }]
+                            "pages": [{ "image_id": "media-1" }, { "image_id": "media-2" }]
                         }
                     }
                 ]
@@ -102,7 +102,7 @@ fn resolves_pointer_inside_nested_block_id() {
         ),
     );
 
-    let locator = NightfireMediaLocator::parse("gallery_02#/pages/1/imageId").unwrap();
+    let locator = NightfireMediaLocator::parse("gallery_02#/pages/1/image_id").unwrap();
     let resolved = locator
         .resolve_in_value(&value)
         .expect("reference should resolve");
@@ -114,11 +114,11 @@ fn resolves_pointer_inside_nested_block_id() {
 fn returns_none_when_block_or_path_does_not_exist() {
     let value = NightfireValue::single(
         "test:schema",
-        block("hero_01", json!({ "imageId": "media-1" })),
+        block("hero_01", json!({ "image_id": "media-1" })),
     );
 
-    let missing_block = NightfireMediaLocator::parse("gallery_02#/imageId").unwrap();
-    let missing_path = NightfireMediaLocator::parse("hero_01#/pages/1/imageId").unwrap();
+    let missing_block = NightfireMediaLocator::parse("gallery_02#/image_id").unwrap();
+    let missing_path = NightfireMediaLocator::parse("hero_01#/pages/1/image_id").unwrap();
 
     assert!(missing_block.resolve_in_value(&value).is_none());
     assert!(missing_path.resolve_in_value(&value).is_none());

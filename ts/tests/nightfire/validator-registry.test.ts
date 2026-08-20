@@ -90,7 +90,7 @@ describe("nightfire/validator-registry", () => {
 				{
 					type: "markdown",
 					data: {
-						imageId: "media-1",
+						image_id: "media-1",
 					},
 				},
 			],
@@ -106,7 +106,7 @@ describe("nightfire/validator-registry", () => {
 				{
 					type: "markdown",
 					data: {
-						imageId: "media-1",
+						image_id: "media-1",
 					},
 				},
 			],

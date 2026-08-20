@@ -23,7 +23,7 @@ fn extracts_block_id_locators_for_top_level_and_nested_block_ids() {
         block(
             Some("hero_01"),
             json!({
-                "imageId": "019473c4-4a6d-7000-8000-000000000010",
+                "image_id": "019473c4-4a6d-7000-8000-000000000010",
                 "children": [
                     {
                         "id": "gallery_02",
@@ -31,7 +31,7 @@ fn extracts_block_id_locators_for_top_level_and_nested_block_ids() {
                         "version": "initial",
 
                         "data": {
-                            "pages": [{ "imageId": "019473c4-4a6d-7000-8000-000000000011" }]
+                            "pages": [{ "image_id": "019473c4-4a6d-7000-8000-000000000011" }]
                         }
                     }
                 ]
@@ -56,7 +56,7 @@ fn extracts_block_id_locators_for_top_level_and_nested_block_ids() {
 
     assert_eq!(
         locator_keys,
-        vec!["gallery_02#/pages/0/imageId", "hero_01#/imageId"]
+        vec!["gallery_02#/pages/0/image_id", "hero_01#/image_id"]
     );
 }
 
@@ -81,7 +81,7 @@ fn falls_back_to_ancestor_block_pointer_when_nested_block_has_no_id() {
                         "version": "initial",
 
                         "data": {
-                            "pages": [{ "imageId": "019473c4-4a6d-7000-8000-000000000012" }]
+                            "pages": [{ "image_id": "019473c4-4a6d-7000-8000-000000000012" }]
                         }
                     }
                 ]
@@ -97,7 +97,7 @@ fn falls_back_to_ancestor_block_pointer_when_nested_block_has_no_id() {
     assert_eq!(usages[0].locator_kind, MediaLocatorKind::BlockId);
     assert_eq!(
         usages[0].locator_key,
-        "hero_01#/children/0/data/pages/0/imageId"
+        "hero_01#/children/0/data/pages/0/image_id"
     );
 }
 
@@ -116,7 +116,7 @@ fn falls_back_to_rooted_path_when_top_level_block_has_no_id() {
         vec![block(
             None,
             json!({
-                "pages": [{ "imageId": "019473c4-4a6d-7000-8000-000000000013" }]
+                "pages": [{ "image_id": "019473c4-4a6d-7000-8000-000000000013" }]
             }),
         )],
     );
@@ -127,7 +127,7 @@ fn falls_back_to_rooted_path_when_top_level_block_has_no_id() {
 
     assert_eq!(usages.len(), 1);
     assert_eq!(usages[0].locator_kind, MediaLocatorKind::Path);
-    assert_eq!(usages[0].locator_key, "/blocks/0/data/pages/0/imageId");
+    assert_eq!(usages[0].locator_key, "/blocks/0/data/pages/0/image_id");
 }
 
 #[test]
@@ -139,7 +139,7 @@ fn common_field_matcher_covers_default_media_reference_names() {
         .map(|rule| (rule.field_name.as_str(), rule.usage_role.as_str()))
         .collect::<Vec<_>>();
 
-    assert!(rules.contains(&("imageId", "embedded")));
+    assert!(rules.contains(&("image_id", "embedded")));
     assert!(rules.contains(&("media_id", "embedded")));
     assert!(rules.contains(&("iconMediaId", "primary")));
     assert!(rules.contains(&("fileId", "attachment")));

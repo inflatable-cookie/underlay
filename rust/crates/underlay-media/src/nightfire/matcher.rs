@@ -59,7 +59,7 @@ impl NightfireFieldNameMatcher {
 
     pub fn with_common_media_fields() -> Self {
         Self::empty()
-            .with_field("imageId", MediaUsageRole::Embedded)
+            .with_field("image_id", MediaUsageRole::Embedded)
             .with_field("media_id", MediaUsageRole::Embedded)
             .with_field("iconMediaId", MediaUsageRole::Primary)
             .with_field("fileId", MediaUsageRole::Attachment)

@@ -257,9 +257,9 @@ Canonical Nightfire locator format:
 
 Examples:
 
-- `hero_01#/imageId`
-- `gallery_02#/pages/1/imageId`
-- fallback path: `/blocks/4/data/pages/1/imageId`
+- `hero_01#/image_id`
+- `gallery_02#/pages/1/image_id`
+- fallback path: `/blocks/4/data/pages/1/image_id`
 
 ### Enums
 
@@ -354,7 +354,7 @@ impl NightfireBlockMediaHandler for HeroBlockHandler {
         context: &NightfireMediaVisitContext<'_>,
     ) -> underlay_media::MediaResult<Vec<NightfireBlockMediaReference>> {
         let Some(media_id) = context
-            .resolve_relative_pointer("/imageId")
+            .resolve_relative_pointer("/image_id")
             .and_then(|value| value.as_str())
             .and_then(|value| uuid::Uuid::parse_str(value).ok())
             .map(MediaId::from_uuid)
@@ -365,7 +365,7 @@ impl NightfireBlockMediaHandler for HeroBlockHandler {
         Ok(vec![NightfireBlockMediaReference::new(
             media_id,
             MediaUsageRole::Embedded,
-            "/imageId",
+            "/image_id",
         )])
     }
 }
@@ -423,7 +423,7 @@ use underlay_media::{resolve_nightfire_media_usage, MediaLocatorKind};
 let current_value = resolve_nightfire_media_usage(
     &nightfire_value,
     &MediaLocatorKind::BlockId,
-    "gallery_02#/pages/1/imageId",
+    "gallery_02#/pages/1/image_id",
 );
 ```
 

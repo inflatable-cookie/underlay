@@ -27,7 +27,7 @@ pub(crate) fn block(id: Option<&str>, data: serde_json::Value) -> BlockData {
 pub(crate) fn matcher() -> NightfireFieldNameMatcher {
     NightfireFieldNameMatcher::empty()
         .with_rule(NightfireMediaFieldRule::new(
-            "imageId",
+            "image_id",
             MediaUsageRole::Embedded,
         ))
         .with_rule(NightfireMediaFieldRule::new(
@@ -43,7 +43,7 @@ impl NightfireBlockMediaHandler for HeroBlockHandler {
         &self,
         context: &NightfireMediaVisitContext<'_>,
     ) -> MediaResult<Vec<NightfireBlockMediaReference>> {
-        let Some(raw) = context.resolve_relative_pointer("/imageId") else {
+        let Some(raw) = context.resolve_relative_pointer("/image_id") else {
             return Ok(Vec::new());
         };
         let Some(media_id) = raw
@@ -57,7 +57,7 @@ impl NightfireBlockMediaHandler for HeroBlockHandler {
         Ok(vec![NightfireBlockMediaReference::new(
             media_id,
             MediaUsageRole::Embedded,
-            "/imageId",
+            "/image_id",
         )])
     }
 }

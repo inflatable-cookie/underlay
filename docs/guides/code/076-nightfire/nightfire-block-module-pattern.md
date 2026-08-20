@@ -58,7 +58,6 @@ use underlay_nightfire::Block;
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct HeroBlock {
     pub title: String,
-    #[serde(rename = "imageId")]
     pub image_id: Option<String>,
 }
 
@@ -89,7 +88,7 @@ impl NightfireBlockMediaHandler for HeroBlockMediaHandler {
         context: &NightfireMediaVisitContext<'_>,
     ) -> underlay_media::MediaResult<Vec<NightfireBlockMediaReference>> {
         let Some(media_id) = context
-            .resolve_relative_pointer("/imageId")
+            .resolve_relative_pointer("/image_id")
             .and_then(|value| value.as_str())
             .and_then(|value| Uuid::parse_str(value).ok())
             .map(MediaId::from_uuid)
@@ -100,7 +99,7 @@ impl NightfireBlockMediaHandler for HeroBlockMediaHandler {
         Ok(vec![NightfireBlockMediaReference::new(
             media_id,
             MediaUsageRole::Embedded,
-            "/imageId",
+            "/image_id",
         )])
     }
 }

@@ -26,7 +26,7 @@ async fn extract_and_sync_composes_shared_nightfire_extractor_with_usage_sync() 
             owner_field: Some("body_blocks".to_string()),
             content_kind: MediaContentKind::StructuredContent,
             locator_kind: MediaLocatorKind::BlockId,
-            locator_key: "hero_01#/imageId".to_string(),
+            locator_key: "hero_01#/image_id".to_string(),
             usage_role: MediaUsageRole::Embedded,
             provenance_kind: MediaUsageProvenanceKind::ContentSync,
             created_at: Utc::now(),
@@ -47,7 +47,7 @@ async fn extract_and_sync_composes_shared_nightfire_extractor_with_usage_sync() 
         block(
             Some("hero_01"),
             json!({
-                "imageId": "019473c4-4a6d-7000-8000-000000000122"
+                "image_id": "019473c4-4a6d-7000-8000-000000000122"
             }),
         ),
     );
@@ -60,11 +60,11 @@ async fn extract_and_sync_composes_shared_nightfire_extractor_with_usage_sync() 
 
     let upserts = repo.upserts.lock().unwrap();
     assert_eq!(upserts.len(), 1);
-    assert_eq!(upserts[0].locator_key, "hero_01#/imageId");
+    assert_eq!(upserts[0].locator_key, "hero_01#/image_id");
     assert_eq!(upserts[0].usage_role, MediaUsageRole::Embedded);
     assert_eq!(
         repo.removals.lock().unwrap().as_slice(),
-        ["hero_01#/imageId"]
+        ["hero_01#/image_id"]
     );
 }
 
@@ -84,7 +84,7 @@ async fn extract_and_sync_requires_persisted_owner_id() {
         block(
             Some("hero_01"),
             json!({
-                "imageId": "019473c4-4a6d-7000-8000-000000000123"
+                "image_id": "019473c4-4a6d-7000-8000-000000000123"
             }),
         ),
     );

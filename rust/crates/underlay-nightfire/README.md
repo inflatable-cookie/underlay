@@ -111,8 +111,8 @@ Canonical Nightfire media locator format:
 
 Examples:
 
-- `hero_01#/imageId`
-- `gallery_02#/pages/1/imageId`
+- `hero_01#/image_id`
+- `gallery_02#/pages/1/image_id`
 
 Use `ensure_block_ids()` on the Rust side and `prepareNightfireForSave()` on
 the TS side so stored values have stable top-level block ids before media usage

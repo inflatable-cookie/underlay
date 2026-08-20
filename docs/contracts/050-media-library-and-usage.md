@@ -141,8 +141,8 @@ Meaning:
 - `locator_kind`: address type such as `field`, `block_id`, `path`,
   `external_ref`
 - `locator_key`: stable in-field address such as `cover_media_id`,
-  `hero_01#/imageId`, `gallery_02#/pages/1/imageId`,
-  `/blocks/4/data/pages/1/imageId`
+  `hero_01#/image_id`, `gallery_02#/pages/1/image_id`,
+  `/blocks/4/data/pages/1/image_id`
 - `usage_role`: semantic role such as `primary`, `attachment`, `embedded`,
   `external`, `derived`
 - `provenance_kind`: who manages the edge, such as `content_sync`,
@@ -320,9 +320,9 @@ Locator rule:
 
 Nightfire examples:
 
-- `hero_01#/imageId`
-- `gallery_02#/pages/1/imageId`
-- fallback path: `/blocks/4/data/pages/1/imageId`
+- `hero_01#/image_id`
+- `gallery_02#/pages/1/image_id`
+- fallback path: `/blocks/4/data/pages/1/image_id`
 
 Resolution rule:
 
