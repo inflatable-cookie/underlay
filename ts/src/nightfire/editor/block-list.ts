@@ -6,7 +6,6 @@ export function createDefaultBlock(defaultType: string): NightfireBlock {
 		id: generateNightfireBlockId(),
 		type: defaultType,
 		version: "initial",
-		hash: "",
 		data: {}
 	};
 }

@@ -12,13 +12,13 @@ describe("normaliseNightfireBlock", () => {
 	];
 
 	const definition: NightfireBlockDefinition = {
-		schema: "test:schema@1",
+		schema: "test:schema",
 		mode: "single",
 		defaultType: "markdown",
 	};
 
 	describe("valid block normalization", () => {
-		it("preserves valid block with allowed type", () => {
+		it("preserves valid block with allowed type and drops hash", () => {
 			const block = {
 				type: "markdown",
 				version: "v1",
@@ -26,14 +26,18 @@ describe("normaliseNightfireBlock", () => {
 				data: { text: "Hello" },
 			};
 			const result = normaliseNightfireBlock(block, typeOptions, definition);
-			expect(result).toEqual(block);
+			expect(result).toEqual({
+				type: "markdown",
+				version: "v1",
+				data: { text: "Hello" },
+			});
+			expect((result as { hash?: string }).hash).toBeUndefined();
 		});
 
 		it("preserves custom block type if in options", () => {
 			const block = {
 				type: "custom",
 				version: "v2",
-				hash: "def456",
 				data: { foo: "bar" },
 			};
 			const result = normaliseNightfireBlock(block, typeOptions, definition);
@@ -46,7 +50,6 @@ describe("normaliseNightfireBlock", () => {
 			const block = {
 				type: "unknown",
 				version: "v1",
-				hash: "",
 				data: {},
 			};
 			const result = normaliseNightfireBlock(block, typeOptions, definition);
@@ -64,7 +67,7 @@ describe("normaliseNightfireBlock", () => {
 			const block = { type: "unknown" };
 			const emptyOptions: NightfireTypeOption[] = [];
 			const noDefaultDefinition = {
-				schema: "test:schema@1",
+				schema: "test:schema",
 				mode: "single",
 				defaultType: undefined,
 			} as any;
@@ -83,7 +86,6 @@ describe("normaliseNightfireBlock", () => {
 			expect(result).toEqual({
 				type: "markdown",
 				version: "initial",
-				hash: "",
 				data: {},
 			});
 		});
@@ -93,7 +95,6 @@ describe("normaliseNightfireBlock", () => {
 			expect(result).toEqual({
 				type: "markdown",
 				version: "initial",
-				hash: "",
 				data: {},
 			});
 		});
@@ -106,7 +107,7 @@ describe("normaliseNightfireBlock", () => {
 					{ type: "markdown", label: "Markdown" },
 				],
 				{
-					schema: "acow:content/description@1",
+					schema: "acow:content/description",
 					mode: "single",
 					defaultType: "markdown",
 				},
@@ -115,7 +116,6 @@ describe("normaliseNightfireBlock", () => {
 			expect(result).toEqual({
 				type: "markdown",
 				version: "initial",
-				hash: "",
 				data: {},
 			});
 		});
@@ -123,25 +123,19 @@ describe("normaliseNightfireBlock", () => {
 
 	describe("partial block handling", () => {
 		it("fills missing version", () => {
-			const block = { type: "markdown", hash: "abc", data: { text: "Hi" } };
+			const block = { type: "markdown", data: { text: "Hi" } };
 			const result = normaliseNightfireBlock(block, typeOptions, definition);
 			expect(result.version).toBe("initial");
 		});
 
-		it("fills missing hash", () => {
-			const block = { type: "markdown", version: "v1", data: { text: "Hi" } };
-			const result = normaliseNightfireBlock(block, typeOptions, definition);
-			expect(result.hash).toBe("");
-		});
-
 		it("fills missing data", () => {
-			const block = { type: "markdown", version: "v1", hash: "abc" };
+			const block = { type: "markdown", version: "v1" };
 			const result = normaliseNightfireBlock(block, typeOptions, definition);
 			expect(result.data).toEqual({});
 		});
 
 		it("replaces null data with empty object", () => {
-			const block = { type: "markdown", version: "v1", hash: "", data: null };
+			const block = { type: "markdown", version: "v1", data: null };
 			const result = normaliseNightfireBlock(block, typeOptions, definition);
 			expect(result.data).toEqual({});
 		});

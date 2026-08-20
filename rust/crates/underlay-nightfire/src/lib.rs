@@ -8,21 +8,17 @@
 //!
 //! Nightfire values always use the shape:
 //!
-//! **Single-block:**
 //! ```json
 //! {
 //!   "schema": "<schema-id>",
-//!   "block": { "type": "...", ... }
+//!   "blocks": [ { "id": "nf_...", "type": "...", "version": "...", "data": {} } ]
 //! }
 //! ```
 //!
-//! **Multi-block:**
-//! ```json
-//! {
-//!   "schema": "<schema-id>",
-//!   "blocks": [ { "type": "...", ... }, ... ]
-//! }
-//! ```
+//! Cardinality is a strategy rule (`len == 1` for singles), not a field
+//! shape. Schema IDs are unversioned. Version lives on each block; the
+//! registry declares supported versions and the coercion path to the
+//! current implementation.
 //!
 //! ## Generic Design
 //!
@@ -59,10 +55,14 @@ mod validation;
 mod value;
 
 // Re-export all public types at the crate root.
-pub use block::{Block, BlockData};
+pub use block::{generate_block_id, Block, BlockData, BlockVersions};
 pub use hash::compute_block_hash;
 pub use media_locator::{NightfireMediaLocator, NightfireMediaLocatorError};
 pub use registry::{BlockDescriptor, BlockRegistration, BlockRegistry, StrategyRegistry};
 pub use strategy::{MultiConfig, NightfireStrategy, StrategyCardinality};
-pub use validation::{validate_nightfire_value, NightfireValidationError};
+pub use validation::{
+    coerce_block_versions, resolve_block_implementation, resolve_nightfire_value,
+    resolve_nightfire_value_by_schema, validate_nightfire_value, NightfireValidationError,
+    ResolvedBlock, ResolvedNightfireValue,
+};
 pub use value::{ensure_block_ids, NightfireValue, SchemaId};

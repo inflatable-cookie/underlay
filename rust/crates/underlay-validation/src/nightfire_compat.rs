@@ -44,16 +44,6 @@ pub fn nightfire_validation_to_app_error(
     let mut field_errors = HashMap::new();
 
     let detail = match &validation_err {
-        NightfireValidationError::InvalidValueShape {
-            has_block,
-            has_blocks,
-            ..
-        } => {
-            format!(
-                "Invalid Nightfire value shape: has_block={}, has_blocks={}.",
-                has_block, has_blocks
-            )
-        }
         NightfireValidationError::CardinalityMismatch {
             expected,
             actual_blocks,
@@ -68,6 +58,18 @@ pub fn nightfire_validation_to_app_error(
         }
         NightfireValidationError::UnknownBlockType { block_type, .. } => {
             let msg = format!("Unknown block type \"{}\".", block_type);
+            field_errors.insert(field_name.to_string(), msg.clone());
+            msg
+        }
+        NightfireValidationError::UnknownBlockVersion {
+            block_type,
+            version,
+            ..
+        } => {
+            let msg = format!(
+                "Unknown version \"{}\" for block type \"{}\".",
+                version, block_type
+            );
             field_errors.insert(field_name.to_string(), msg.clone());
             msg
         }

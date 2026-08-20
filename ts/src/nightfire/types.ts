@@ -1,33 +1,13 @@
-export interface NightfireBlock extends Record<string, unknown> {
+export interface NightfireBlock {
   id?: string;
   type: string;
-  version?: string;
-  hash?: string;
-  data?: Record<string, unknown>;
-}
-
-export interface NightfireSingleValue {
-  schema: string;
-  block: NightfireBlock;
-  blocks?: undefined;
-}
-
-export interface NightfireMultiValue {
-  schema: string;
-  blocks: NightfireBlock[];
-  block?: undefined;
-}
-
-export interface NightfireEmptyValue {
-  schema: string;
-  block?: undefined;
-  blocks?: undefined;
+  version: string;
+  data: Record<string, unknown>;
 }
 
 export interface NightfireValue {
   schema: string;
-  block?: NightfireBlock;
-  blocks?: NightfireBlock[];
+  blocks: NightfireBlock[];
 }
 
 export type NightfireDraftValue = NightfireValue;
@@ -37,8 +17,7 @@ export function coerceNightfireBlock(
   fallbackType: string | null = null
 ): NightfireBlock | null {
   // Absent block must stay absent. Otherwise `coerceNightfireBlock(undefined, "markdown")`
-  // fabricates a block, and `normaliseNightfireValue` prefers that synthetic "single"
-  // over a real `blocks` array — multi-block values collapse to one empty editor.
+  // fabricates a block, and `normaliseNightfireValue` fills an empty editor.
   if (value === undefined || value === null) {
     return null;
   }
@@ -67,10 +46,6 @@ export function coerceNightfireBlock(
       typeof record?.version === "string"
         ? record.version
         : "initial",
-    hash:
-      typeof record?.hash === "string"
-        ? record.hash
-        : "",
     data:
       record?.data !== null &&
       typeof record?.data === "object" &&

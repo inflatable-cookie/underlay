@@ -14,22 +14,20 @@ describe("nightfire/validation", () => {
 
 		const value = {
 			schema: "schema-v",
-			block: { type: "markdown", data: {} },
+			blocks: [{ type: "markdown", data: {} }],
 		} as any;
 
 		expect(validateNightfireValue(value)).toEqual({
 			schema: "schema-v",
-			block: { id: undefined, type: "markdown", version: "initial", hash: "", data: {} },
-			blocks: undefined,
+			blocks: [{ id: undefined, type: "markdown", version: "initial", data: {} }],
 		});
 		const prepared = prepareNightfireForSave(value);
 		expect(prepared?.schema).toBe("schema-v");
-		expect(prepared?.block).toMatchObject({
+		expect(prepared?.blocks[0]).toMatchObject({
 			type: "markdown",
 			version: "initial",
-			hash: "",
 			data: {},
 		});
-		expect(prepared?.block?.id).toMatch(/^nf_/);
+		expect(prepared?.blocks[0]?.id).toMatch(/^nf_/);
 	});
 });

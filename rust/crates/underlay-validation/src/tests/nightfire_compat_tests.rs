@@ -2,34 +2,11 @@ use super::*;
 use underlay_nightfire::StrategyCardinality;
 
 #[test]
-fn converts_invalid_value_shape() {
-    let err = NightfireValidationError::InvalidValueShape {
-        schema: "test:schema@1".to_string(),
-        has_block: true,
-        has_blocks: true,
-    };
-
-    let app_err = nightfire_validation_to_app_error(
-        err,
-        "content.invalid",
-        "body",
-        "Content validation failed.",
-    );
-
-    let field_errors = app_err.field_errors.unwrap();
-    assert!(field_errors
-        .get("body")
-        .unwrap()
-        .contains("has_block=true, has_blocks=true"));
-}
-
-#[test]
 fn converts_cardinality_mismatch() {
     let err = NightfireValidationError::CardinalityMismatch {
-        schema: "test:schema@1".to_string(),
+        schema: "test:schema".to_string(),
         expected: StrategyCardinality::Single,
         actual_blocks: 3,
-        is_single: false,
     };
 
     let app_err = nightfire_validation_to_app_error(
@@ -49,7 +26,7 @@ fn converts_cardinality_mismatch() {
 #[test]
 fn converts_disallowed_block_type() {
     let err = NightfireValidationError::DisallowedBlockType {
-        schema: "test:schema@1".to_string(),
+        schema: "test:schema".to_string(),
         block_type: "forbidden.block".to_string(),
     };
 
@@ -70,7 +47,7 @@ fn converts_disallowed_block_type() {
 #[test]
 fn converts_unknown_block_type() {
     let err = NightfireValidationError::UnknownBlockType {
-        schema: "test:schema@1".to_string(),
+        schema: "test:schema".to_string(),
         block_type: "mystery.block".to_string(),
     };
 
@@ -86,9 +63,11 @@ fn converts_unknown_block_type() {
 }
 
 #[test]
-fn converts_unknown_strategy() {
-    let err = NightfireValidationError::UnknownStrategy {
-        schema: "unknown:schema@1".to_string(),
+fn converts_unknown_block_version() {
+    let err = NightfireValidationError::UnknownBlockVersion {
+        schema: "test:schema".to_string(),
+        block_type: "callout".to_string(),
+        version: "9".to_string(),
     };
 
     let app_err = nightfire_validation_to_app_error(
@@ -99,8 +78,24 @@ fn converts_unknown_strategy() {
     );
 
     let field_errors = app_err.field_errors.unwrap();
-    assert!(field_errors
-        .get("body")
-        .unwrap()
-        .contains("unknown:schema@1"));
+    let detail = field_errors.get("body").unwrap();
+    assert!(detail.contains("callout"));
+    assert!(detail.contains("9"));
+}
+
+#[test]
+fn converts_unknown_strategy() {
+    let err = NightfireValidationError::UnknownStrategy {
+        schema: "unknown:schema".to_string(),
+    };
+
+    let app_err = nightfire_validation_to_app_error(
+        err,
+        "content.invalid",
+        "body",
+        "Content validation failed.",
+    );
+
+    let field_errors = app_err.field_errors.unwrap();
+    assert!(field_errors.get("body").unwrap().contains("unknown:schema"));
 }

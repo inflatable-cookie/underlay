@@ -6,7 +6,6 @@
   type MarkdownBlock = {
     type?: string;
     version?: string;
-    hash?: string;
     data?: {
       text?: string;
     };
@@ -26,7 +25,6 @@
     onChange({
       type: block.type ?? "markdown",
       version: block.version ?? "initial",
-      hash: block.hash ?? "",
       data: {
         text: next
       }

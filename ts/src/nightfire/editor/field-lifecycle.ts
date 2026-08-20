@@ -6,20 +6,12 @@ export type NightfireFieldMode = "single" | "multi";
 
 export function createRequiredInitialValue(
   schema: string,
-  mode: NightfireFieldMode,
+  _mode: NightfireFieldMode,
   defaultType: string
 ): NightfireValue {
-  const defaultBlock = createDefaultBlock(defaultType);
-  if (mode === "multi") {
-    return {
-      schema,
-      blocks: [defaultBlock]
-    };
-  }
-
   return {
     schema,
-    block: defaultBlock
+    blocks: [createDefaultBlock(defaultType)]
   };
 }
 

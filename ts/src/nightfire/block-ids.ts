@@ -21,21 +21,9 @@ export function ensureNightfireBlockId(block: NightfireBlock): NightfireBlock {
 }
 
 export function ensureNightfireBlockIds<T extends NightfireDraftValue | NightfireValue>(value: T): T {
-  if (value.block) {
-    return {
-      ...value,
-      block: ensureNightfireBlockId(value.block),
-      blocks: undefined
-    } as T;
-  }
-
-  if (Array.isArray(value.blocks)) {
-    return {
-      ...value,
-      block: undefined,
-      blocks: value.blocks.map((block) => ensureNightfireBlockId(block))
-    } as T;
-  }
-
-  return value;
+  const blocks = Array.isArray(value.blocks) ? value.blocks : [];
+  return {
+    ...value,
+    blocks: blocks.map((block) => ensureNightfireBlockId(block))
+  } as T;
 }

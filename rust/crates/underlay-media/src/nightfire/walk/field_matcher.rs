@@ -58,15 +58,11 @@ where
             Value::Object(map) => {
                 if let Some(nested_block) = as_nested_block(value) {
                     let nested_data_pointer = push_pointer_segment(data_pointer, "data");
-                    let nested_anchor = nested_block
-                        .id
-                        .as_deref()
-                        .map(str::trim)
-                        .filter(|value| !value.is_empty())
-                        .map(|_| {
-                            BlockAnchor::from_block(&nested_block, nested_data_pointer.clone())
-                        })
-                        .unwrap_or_else(|| anchor.clone());
+                    let nested_anchor = if nested_block.has_id() {
+                        BlockAnchor::from_block(&nested_block, nested_data_pointer.clone())
+                    } else {
+                        anchor.clone()
+                    };
 
                     self.walk_block(
                         &nested_block,

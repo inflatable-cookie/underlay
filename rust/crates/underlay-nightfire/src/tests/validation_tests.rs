@@ -1,4 +1,5 @@
 use super::*;
+use crate::block::BlockVersions;
 use crate::registry::BlockDescriptor;
 use crate::strategy::MultiConfig;
 use crate::value::SchemaId;
@@ -12,112 +13,72 @@ enum TestCategory {
 
 fn make_block(type_name: &str) -> BlockData {
     BlockData {
-        id: None,
+        id: "block_1".to_string(),
         r#type: type_name.to_string(),
         version: "initial".to_string(),
-        hash: "abc123".to_string(),
         data: json!({}),
     }
 }
 
 fn test_registry() -> BlockRegistry<TestCategory> {
     let mut registry = BlockRegistry::new();
-    registry.register(BlockDescriptor {
-        type_name: "paragraph",
-        label: "Paragraph",
-        category: TestCategory::Text,
-    });
-    registry.register(BlockDescriptor {
-        type_name: "image",
-        label: "Image",
-        category: TestCategory::Media,
-    });
+    registry.register(BlockDescriptor::new(
+        "paragraph",
+        "Paragraph",
+        TestCategory::Text,
+    ));
+    registry.register(BlockDescriptor::new("image", "Image", TestCategory::Media));
+    registry.register(
+        BlockDescriptor::new("callout", "Callout", TestCategory::Text).with_versions(
+            BlockVersions {
+                current: "2",
+                supported: &["1", "2"],
+            },
+        ),
+    );
     registry
 }
 
-#[test]
-fn rejects_value_with_both_block_and_blocks() {
-    let registry = test_registry();
-    let strategy = NightfireStrategy {
-        id: SchemaId::from("test:single@1"),
+fn single_strategy() -> NightfireStrategy<TestCategory> {
+    NightfireStrategy {
+        id: SchemaId::from("test:single"),
         cardinality: StrategyCardinality::Single,
         allowed_types: vec![],
         allowed_categories: vec![TestCategory::Text],
         default_type: "paragraph".to_string(),
-    };
-
-    let value = NightfireValue {
-        schema: SchemaId::from("test:single@1"),
-        block: Some(make_block("paragraph")),
-        blocks: Some(vec![make_block("paragraph")]),
-    };
-    let result = validate_nightfire_value(&value, &strategy, &registry);
-    assert!(matches!(
-        result,
-        Err(NightfireValidationError::InvalidValueShape {
-            has_block: true,
-            has_blocks: true,
-            ..
-        })
-    ));
+    }
 }
 
 #[test]
-fn rejects_value_with_neither_block_nor_blocks() {
+fn validates_single_block_in_blocks_array() {
     let registry = test_registry();
-    let strategy = NightfireStrategy {
-        id: SchemaId::from("test:single@1"),
-        cardinality: StrategyCardinality::Single,
-        allowed_types: vec![],
-        allowed_categories: vec![TestCategory::Text],
-        default_type: "paragraph".to_string(),
-    };
-
-    let value = NightfireValue {
-        schema: SchemaId::from("test:single@1"),
-        block: None,
-        blocks: None,
-    };
-    let result = validate_nightfire_value(&value, &strategy, &registry);
-    assert!(matches!(
-        result,
-        Err(NightfireValidationError::InvalidValueShape {
-            has_block: false,
-            has_blocks: false,
-            ..
-        })
-    ));
-}
-
-#[test]
-fn validates_single_block() {
-    let registry = test_registry();
-    let strategy = NightfireStrategy {
-        id: SchemaId::from("test:single@1"),
-        cardinality: StrategyCardinality::Single,
-        allowed_types: vec![],
-        allowed_categories: vec![TestCategory::Text],
-        default_type: "paragraph".to_string(),
-    };
-
-    let value = NightfireValue::single("test:single@1", make_block("paragraph"));
+    let strategy = single_strategy();
+    let value = NightfireValue::single("test:single", make_block("paragraph"));
     let result = validate_nightfire_value(&value, &strategy, &registry);
     assert!(result.is_ok());
 }
 
 #[test]
-fn rejects_multi_for_single_strategy() {
+fn rejects_zero_blocks_for_single_strategy() {
     let registry = test_registry();
-    let strategy = NightfireStrategy {
-        id: SchemaId::from("test:single@1"),
-        cardinality: StrategyCardinality::Single,
-        allowed_types: vec![],
-        allowed_categories: vec![TestCategory::Text],
-        default_type: "paragraph".to_string(),
-    };
+    let strategy = single_strategy();
+    let value = NightfireValue::new("test:single", vec![]);
+    let result = validate_nightfire_value(&value, &strategy, &registry);
+    assert!(matches!(
+        result,
+        Err(NightfireValidationError::CardinalityMismatch {
+            actual_blocks: 0,
+            ..
+        })
+    ));
+}
 
+#[test]
+fn rejects_two_blocks_for_single_strategy() {
+    let registry = test_registry();
+    let strategy = single_strategy();
     let value = NightfireValue::multi(
-        "test:single@1",
+        "test:single",
         vec![make_block("paragraph"), make_block("paragraph")],
     );
     let result = validate_nightfire_value(&value, &strategy, &registry);
@@ -130,16 +91,8 @@ fn rejects_multi_for_single_strategy() {
 #[test]
 fn rejects_disallowed_category() {
     let registry = test_registry();
-    let strategy = NightfireStrategy {
-        id: SchemaId::from("test:text@1"),
-        cardinality: StrategyCardinality::Single,
-        allowed_types: vec![],
-        allowed_categories: vec![TestCategory::Text],
-        default_type: "paragraph".to_string(),
-    };
-
-    // Image is Media category, not Text
-    let value = NightfireValue::single("test:text@1", make_block("image"));
+    let strategy = single_strategy();
+    let value = NightfireValue::single("test:single", make_block("image"));
     let result = validate_nightfire_value(&value, &strategy, &registry);
     assert!(matches!(
         result,
@@ -151,7 +104,7 @@ fn rejects_disallowed_category() {
 fn validates_multi_block_within_range() {
     let registry = test_registry();
     let strategy = NightfireStrategy {
-        id: SchemaId::from("test:multi@1"),
+        id: SchemaId::from("test:multi"),
         cardinality: StrategyCardinality::Multi(MultiConfig::one_or_more().with_max_blocks(3)),
         allowed_types: vec![],
         allowed_categories: vec![TestCategory::Text],
@@ -159,7 +112,7 @@ fn validates_multi_block_within_range() {
     };
 
     let value = NightfireValue::multi(
-        "test:multi@1",
+        "test:multi",
         vec![make_block("paragraph"), make_block("paragraph")],
     );
     let result = validate_nightfire_value(&value, &strategy, &registry);
@@ -170,7 +123,7 @@ fn validates_multi_block_within_range() {
 fn rejects_too_many_blocks() {
     let registry = test_registry();
     let strategy = NightfireStrategy {
-        id: SchemaId::from("test:multi@1"),
+        id: SchemaId::from("test:multi"),
         cardinality: StrategyCardinality::Multi(MultiConfig::one_or_more().with_max_blocks(2)),
         allowed_types: vec![],
         allowed_categories: vec![TestCategory::Text],
@@ -178,7 +131,7 @@ fn rejects_too_many_blocks() {
     };
 
     let value = NightfireValue::multi(
-        "test:multi@1",
+        "test:multi",
         vec![
             make_block("paragraph"),
             make_block("paragraph"),
@@ -189,5 +142,55 @@ fn rejects_too_many_blocks() {
     assert!(matches!(
         result,
         Err(NightfireValidationError::CardinalityMismatch { .. })
+    ));
+}
+
+#[test]
+fn older_supported_version_resolves_to_current_implementation() {
+    let registry = test_registry();
+    let strategy = single_strategy();
+    let value = NightfireValue::single("test:single", make_block("callout").with_version("1"));
+
+    let resolved = resolve_nightfire_value(&value, &strategy, &registry).unwrap();
+    assert_eq!(resolved.blocks.len(), 1);
+    assert_eq!(resolved.blocks[0].current_version, "2");
+    assert_eq!(resolved.blocks[0].descriptor.type_name, "callout");
+    assert_eq!(value.blocks[0].version, "1");
+
+    let mut coerced = value.clone();
+    coerce_block_versions(&mut coerced, &registry).unwrap();
+    assert_eq!(coerced.blocks[0].version, "2");
+}
+
+#[test]
+fn unknown_version_fails_closed() {
+    let registry = test_registry();
+    let strategy = single_strategy();
+    let value = NightfireValue::single("test:single", make_block("callout").with_version("9"));
+    let result = validate_nightfire_value(&value, &strategy, &registry);
+    assert!(matches!(
+        result,
+        Err(NightfireValidationError::UnknownBlockVersion {
+            version,
+            ..
+        }) if version == "9"
+    ));
+}
+
+#[test]
+fn unknown_block_type_fails_closed() {
+    let registry = test_registry();
+    let strategy = NightfireStrategy {
+        id: SchemaId::from("test:open"),
+        cardinality: StrategyCardinality::Single,
+        allowed_types: vec![],
+        allowed_categories: vec![],
+        default_type: "paragraph".to_string(),
+    };
+    let value = NightfireValue::single("test:open", make_block("mystery"));
+    let result = validate_nightfire_value(&value, &strategy, &registry);
+    assert!(matches!(
+        result,
+        Err(NightfireValidationError::UnknownBlockType { .. })
     ));
 }

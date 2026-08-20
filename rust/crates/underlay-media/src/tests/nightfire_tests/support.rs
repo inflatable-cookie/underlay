@@ -17,10 +17,9 @@ use crate::{
 
 pub(crate) fn block(id: Option<&str>, data: serde_json::Value) -> BlockData {
     BlockData {
-        id: id.map(ToOwned::to_owned),
+        id: id.map(ToOwned::to_owned).unwrap_or_default(),
         r#type: "test".to_string(),
         version: "initial".to_string(),
-        hash: "abc123".to_string(),
         data,
     }
 }
@@ -28,7 +27,7 @@ pub(crate) fn block(id: Option<&str>, data: serde_json::Value) -> BlockData {
 pub(crate) fn matcher() -> NightfireFieldNameMatcher {
     NightfireFieldNameMatcher::empty()
         .with_rule(NightfireMediaFieldRule::new(
-            "imageId",
+            "image_id",
             MediaUsageRole::Embedded,
         ))
         .with_rule(NightfireMediaFieldRule::new(
@@ -44,7 +43,7 @@ impl NightfireBlockMediaHandler for HeroBlockHandler {
         &self,
         context: &NightfireMediaVisitContext<'_>,
     ) -> MediaResult<Vec<NightfireBlockMediaReference>> {
-        let Some(raw) = context.resolve_relative_pointer("/imageId") else {
+        let Some(raw) = context.resolve_relative_pointer("/image_id") else {
             return Ok(Vec::new());
         };
         let Some(media_id) = raw
@@ -58,7 +57,7 @@ impl NightfireBlockMediaHandler for HeroBlockHandler {
         Ok(vec![NightfireBlockMediaReference::new(
             media_id,
             MediaUsageRole::Embedded,
-            "/imageId",
+            "/image_id",
         )])
     }
 }
@@ -88,7 +87,7 @@ impl NightfireBlockMediaHandler for MediaBlockHandler {
         &self,
         context: &NightfireMediaVisitContext<'_>,
     ) -> MediaResult<Vec<NightfireBlockMediaReference>> {
-        let Some(raw) = context.resolve_relative_pointer("/mediaId") else {
+        let Some(raw) = context.resolve_relative_pointer("/media_id") else {
             return Ok(Vec::new());
         };
         let Some(media_id) = raw
@@ -102,7 +101,7 @@ impl NightfireBlockMediaHandler for MediaBlockHandler {
         Ok(vec![NightfireBlockMediaReference::new(
             media_id,
             MediaUsageRole::Embedded,
-            "/mediaId",
+            "/media_id",
         )])
     }
 }

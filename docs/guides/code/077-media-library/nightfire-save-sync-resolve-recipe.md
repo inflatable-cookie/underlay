@@ -44,7 +44,7 @@ impl NightfireBlockMediaHandler for HeroBlockHandler {
         context: &NightfireMediaVisitContext<'_>,
     ) -> underlay_media::MediaResult<Vec<NightfireBlockMediaReference>> {
         let Some(media_id) = context
-            .resolve_relative_pointer("/imageId")
+            .resolve_relative_pointer("/image_id")
             .and_then(|value| value.as_str())
             .and_then(|value| Uuid::parse_str(value).ok())
             .map(MediaId::from_uuid)
@@ -55,7 +55,7 @@ impl NightfireBlockMediaHandler for HeroBlockHandler {
         Ok(vec![NightfireBlockMediaReference::new(
             media_id,
             MediaUsageRole::Embedded,
-            "/imageId",
+            "/image_id",
         )])
     }
 }
@@ -98,7 +98,7 @@ where
     let current_value = resolve_nightfire_media_usage(
         &body_blocks,
         &MediaLocatorKind::BlockId,
-        "gallery_02#/pages/1/imageId",
+        "gallery_02#/pages/1/image_id",
     );
 
     assert!(current_value.is_some());
@@ -116,10 +116,10 @@ Use:
   - example: `cover_media_id`
 - `block_id`
   - structured content has a stable block id
-  - example: `gallery_02#/pages/1/imageId`
+  - example: `gallery_02#/pages/1/image_id`
 - `path`
   - structured content does not yet have a stable block id
-  - example: `/blocks/4/data/pages/1/imageId`
+  - example: `/blocks/4/data/pages/1/image_id`
 
 Do not:
 
@@ -133,9 +133,9 @@ Do not:
 If nested content later gets a stable child block id:
 
 - old honest fallback:
-  - `hero_01#/children/0/data/pages/0/imageId`
+  - `hero_01#/children/0/data/pages/0/image_id`
 - better later anchor:
-  - `gallery_02#/pages/0/imageId`
+  - `gallery_02#/pages/0/image_id`
 
 That is an extractor-output improvement, not a schema change.
 

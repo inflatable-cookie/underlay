@@ -16,12 +16,12 @@ vi.mock("../../src/nightfire/validation", () => ({
 import { createPrepareWriter, createRequiredInitialValue } from "../../src/nightfire/editor/field-lifecycle";
 
 describe("nightfire/editor/field-lifecycle", () => {
-	it("creates required initial values for single and multi modes", () => {
+	it("creates required initial values as a blocks array for both modes", () => {
 		mocks.createDefaultBlock.mockReturnValue({ type: "markdown", data: {} });
 
 		expect(createRequiredInitialValue("schema-1", "single", "markdown")).toEqual({
 			schema: "schema-1",
-			block: { type: "markdown", data: {} },
+			blocks: [{ type: "markdown", data: {} }],
 		});
 
 		expect(createRequiredInitialValue("schema-2", "multi", "markdown")).toEqual({
@@ -31,7 +31,7 @@ describe("nightfire/editor/field-lifecycle", () => {
 	});
 
 	it("creates prepare writer closure that writes to FormData", () => {
-		const getValue = vi.fn(() => ({ schema: "s", block: { type: "markdown", data: {} } }));
+		const getValue = vi.fn(() => ({ schema: "s", blocks: [{ type: "markdown", data: {} }] }));
 		const getName = vi.fn(() => "content");
 		const formData = new FormData();
 
@@ -41,7 +41,7 @@ describe("nightfire/editor/field-lifecycle", () => {
 		expect(mocks.writePreparedNightfireToFormData).toHaveBeenCalledWith(
 			formData,
 			"content",
-			{ schema: "s", block: { type: "markdown", data: {} } }
+			{ schema: "s", blocks: [{ type: "markdown", data: {} }] }
 		);
 	});
 });

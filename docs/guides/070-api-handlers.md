@@ -312,7 +312,7 @@ Important boundary rule:
 
 - API DTO field names may still be `snake_case`
 - inner Nightfire block `data` keys must already be in their final form
-- do not rename keys like `imageId` during server-side mapping before
+- do not rename keys like `image_id` during server-side mapping before
   extraction, or shared locator and media-field matching will drift from the
   stored JSON
 

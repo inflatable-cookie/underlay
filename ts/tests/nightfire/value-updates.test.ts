@@ -12,28 +12,28 @@ import {
 } from "../../src/nightfire/editor/value-updates";
 
 describe("nightfire value-updates", () => {
-	it("builds single-block values", () => {
+	it("builds single-block values as a one-item blocks array", () => {
 		const block = { type: "markdown", data: { text: "Hello" } };
-		expect(asSingleBlockValue("schema@1", block)).toMatchObject({
-			schema: "schema@1",
-			block: {
-				type: "markdown",
-				data: { text: "Hello" },
-				version: "initial",
-				hash: ""
-			},
-			blocks: undefined
+		expect(asSingleBlockValue("schema", block)).toMatchObject({
+			schema: "schema",
+			blocks: [
+				{
+					type: "markdown",
+					data: { text: "Hello" },
+					version: "initial"
+				}
+			]
 		});
+		expect(asSingleBlockValue("schema", block).block).toBeUndefined();
 	});
 
 	it("builds multi-block values", () => {
 		const blocks = [{ type: "markdown" }, { type: "image" }];
-		expect(asMultiBlockValue("schema@1", blocks)).toMatchObject({
-			schema: "schema@1",
-			block: undefined,
+		expect(asMultiBlockValue("schema", blocks)).toMatchObject({
+			schema: "schema",
 			blocks: [
-				{ type: "markdown", data: {}, version: "initial", hash: "" },
-				{ type: "image", data: {}, version: "initial", hash: "" }
+				{ type: "markdown", data: {}, version: "initial" },
+				{ type: "image", data: {}, version: "initial" }
 			]
 		});
 	});
@@ -41,13 +41,13 @@ describe("nightfire value-updates", () => {
 	it("replaces a block by index without mutating source", () => {
 		const original = [{ type: "a" }, { type: "b" }];
 		const next = replaceBlockAtIndex(original, 1, { type: "c" });
-		expect(next).toMatchObject([{ type: "a" }, { type: "c", data: {}, version: "initial", hash: "" }]);
+		expect(next).toMatchObject([{ type: "a" }, { type: "c", data: {}, version: "initial" }]);
 		expect(next).not.toBe(original);
 		expect(original).toEqual([{ type: "a" }, { type: "b" }]);
 	});
 
 	it("changes single-block type for non-summary schema", () => {
-		const result = changeSingleBlockType("acow:content/article@1", null, "custom", (type) => type);
+		const result = changeSingleBlockType("acow:content/article", null, "custom", (type) => type);
 		expect(result.warning).toBeNull();
 		expect(result.block).toEqual({ type: "custom" });
 	});
@@ -76,14 +76,12 @@ describe("nightfire value-updates", () => {
 		expect(changeBlockType({ foo: "bar" }, "new.type")).toMatchObject({
 			type: "new.type",
 			data: {},
-			version: "initial",
-			hash: ""
+			version: "initial"
 		});
 		expect(changeBlockType("not-an-object", "markdown")).toMatchObject({
 			type: "markdown",
 			data: {},
-			version: "initial",
-			hash: ""
+			version: "initial"
 		});
 	});
 
@@ -93,10 +91,10 @@ describe("nightfire value-updates", () => {
 		expect(added[0]).toMatchObject({
 			type: "markdown",
 			version: "initial",
-			hash: "",
 			data: {}
 		});
 		expect((added[0] as { id?: string }).id).toMatch(/^nf_/);
+		expect((added[0] as { hash?: string }).hash).toBeUndefined();
 
 		const inserted = insertBlockAfter([{ type: "a" }, { type: "b" }], 0, "markdown");
 		expect(inserted).toHaveLength(3);
@@ -104,7 +102,6 @@ describe("nightfire value-updates", () => {
 		expect(inserted[1]).toMatchObject({
 			type: "markdown",
 			version: "initial",
-			hash: "",
 			data: {}
 		});
 		expect((inserted[1] as { id?: string }).id).toMatch(/^nf_/);

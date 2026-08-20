@@ -16,15 +16,15 @@ describe("writeNightfireToFormData", () => {
 
 	it("writes empty string for empty NightfireValue", () => {
 		const formData = new FormData();
-		writeNightfireToFormData(formData, "body", { schema: "test@1" });
+		writeNightfireToFormData(formData, "body", { schema: "test", blocks: [] });
 		expect(formData.get("body")).toBe("");
 	});
 
 	it("writes JSON string for non-empty value", () => {
 		const formData = new FormData();
 		const value = {
-			schema: "test@1",
-			block: { type: "markdown", version: "initial", hash: "", data: { text: "Hello" } },
+			schema: "test",
+			blocks: [{ type: "markdown", version: "initial", data: { text: "Hello" } }],
 		};
 		writeNightfireToFormData(formData, "body", value);
 
@@ -37,8 +37,8 @@ describe("writeNightfireToFormData", () => {
 		formData.set("body", "old value");
 
 		const value = {
-			schema: "test@1",
-			block: { type: "markdown", version: "initial", hash: "", data: {} },
+			schema: "test",
+			blocks: [{ type: "markdown", version: "initial", data: {} }],
 		};
 		writeNightfireToFormData(formData, "body", value);
 
@@ -48,8 +48,8 @@ describe("writeNightfireToFormData", () => {
 	it("uses provided field name", () => {
 		const formData = new FormData();
 		const value = {
-			schema: "test@1",
-			block: { type: "markdown", version: "initial", hash: "", data: {} },
+			schema: "test",
+			blocks: [{ type: "markdown", version: "initial", data: {} }],
 		};
 		writeNightfireToFormData(formData, "customField", value);
 

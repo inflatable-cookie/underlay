@@ -22,33 +22,17 @@ where
         fallback_anchor: Option<&BlockAnchor>,
         edges: &mut Vec<MediaUsageEdgeInput>,
     ) -> MediaResult<()> {
-        if let Some(block) = value.block.as_ref() {
-            let rooted_pointer = join_rooted_pointer(root_pointer, "/block/data");
-            let anchor = block
-                .id
-                .as_deref()
-                .map(str::trim)
-                .filter(|value| !value.is_empty())
-                .map(|_| BlockAnchor::from_block(block, rooted_pointer.clone()))
-                .or_else(|| fallback_anchor.cloned())
-                .unwrap_or_else(|| BlockAnchor::from_block(block, rooted_pointer.clone()));
+        for (index, block) in value.blocks.iter().enumerate() {
+            let rooted_pointer =
+                join_rooted_pointer(root_pointer, &format!("/blocks/{index}/data"));
+            let anchor = if block.has_id() {
+                BlockAnchor::from_block(block, rooted_pointer.clone())
+            } else {
+                fallback_anchor
+                    .cloned()
+                    .unwrap_or_else(|| BlockAnchor::from_block(block, rooted_pointer.clone()))
+            };
             self.walk_block(block, anchor, &rooted_pointer, edges)?;
-        }
-
-        if let Some(blocks) = value.blocks.as_ref() {
-            for (index, block) in blocks.iter().enumerate() {
-                let rooted_pointer =
-                    join_rooted_pointer(root_pointer, &format!("/blocks/{index}/data"));
-                let anchor = block
-                    .id
-                    .as_deref()
-                    .map(str::trim)
-                    .filter(|value| !value.is_empty())
-                    .map(|_| BlockAnchor::from_block(block, rooted_pointer.clone()))
-                    .or_else(|| fallback_anchor.cloned())
-                    .unwrap_or_else(|| BlockAnchor::from_block(block, rooted_pointer.clone()));
-                self.walk_block(block, anchor, &rooted_pointer, edges)?;
-            }
         }
 
         Ok(())
@@ -111,13 +95,11 @@ where
         for (nested_pointer, nested_block) in collect_nested_blocks(&block.data, "")? {
             let rooted_data_pointer =
                 join_rooted_pointer(&anchor.rooted_data_pointer, &nested_pointer);
-            let nested_anchor = nested_block
-                .id
-                .as_deref()
-                .map(str::trim)
-                .filter(|value| !value.is_empty())
-                .map(|_| BlockAnchor::from_block(&nested_block, rooted_data_pointer.clone()))
-                .unwrap_or_else(|| anchor.clone());
+            let nested_anchor = if nested_block.has_id() {
+                BlockAnchor::from_block(&nested_block, rooted_data_pointer.clone())
+            } else {
+                anchor.clone()
+            };
 
             self.walk_block(&nested_block, nested_anchor, &rooted_data_pointer, edges)?;
         }

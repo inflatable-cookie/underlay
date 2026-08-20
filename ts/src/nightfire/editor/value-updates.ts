@@ -20,15 +20,13 @@ function asBlockObject(value: unknown): NightfireBlock {
 export function asSingleBlockValue(schema: string, block: unknown): NightfireValue {
   return {
     schema,
-    block: asBlockObject(block),
-    blocks: undefined
+    blocks: [asBlockObject(block)]
   };
 }
 
 export function asMultiBlockValue(schema: string, blocks: unknown[]): NightfireValue {
   return {
     schema,
-    block: undefined,
     blocks: blocks.map((block) => asBlockObject(block))
   };
 }

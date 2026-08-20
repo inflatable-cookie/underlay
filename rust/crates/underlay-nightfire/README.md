@@ -19,11 +19,9 @@ The top-level content structure persisted in JSONB columns:
 ```rust
 use underlay_nightfire::{NightfireValue, BlockData, SchemaId};
 
-// Single-block value
-let value = NightfireValue::single("app:content/title@1", block);
-
-// Multi-block value  
-let value = NightfireValue::multi("app:content/body@1", vec![block1, block2]);
+// Always `{ schema, blocks }`. Cardinality is a strategy rule.
+let value = NightfireValue::single("app:content/title", block);
+let value = NightfireValue::multi("app:content/body", vec![block1, block2]);
 ```
 
 ### Block Trait
@@ -67,16 +65,16 @@ enum MyCategory { Text, Media }
 
 // Build block registry
 let mut blocks = BlockRegistry::new();
-blocks.register(BlockDescriptor {
-    type_name: "paragraph",
-    label: "Paragraph",
-    category: MyCategory::Text,
-});
+blocks.register(BlockDescriptor::new(
+    "paragraph",
+    "Paragraph",
+    MyCategory::Text,
+));
 
 // Build strategy registry
 let mut strategies = StrategyRegistry::new();
 strategies.register(NightfireStrategy {
-    id: SchemaId::from("app:content/body@1"),
+    id: SchemaId::from("app:content/body"),
     cardinality: StrategyCardinality::Multi(MultiConfig::one_or_more()),
     allowed_types: vec![],
     allowed_categories: vec![MyCategory::Text],
@@ -89,28 +87,22 @@ let result = validate_nightfire_value(&value, &strategy, &blocks);
 
 ## JSON Wire Format
 
-Single-block:
 ```json
 {
-  "schema": "app:content/title@1",
-  "block": { "type": "heading", "version": "initial", "hash": "...", "data": {...} }
-}
-```
-
-Multi-block:
-```json
-{
-  "schema": "app:content/body@1",
+  "schema": "app:content/body",
   "blocks": [
-    { "type": "paragraph", "version": "initial", "hash": "...", "data": {...} },
-    { "type": "image", "version": "initial", "hash": "...", "data": {...} }
+    { "id": "nf_...", "type": "paragraph", "version": "initial", "data": {} },
+    { "id": "nf_...", "type": "image", "version": "initial", "data": {} }
   ]
 }
 ```
 
+Single-block strategies still use `blocks` with `len == 1`. Schema IDs are
+unversioned. Version lives on each block. There is no envelope `hash`.
+
 ## Stable block ids and media locators
 
-Nightfire blocks may carry a stable `id`. Underlay uses those ids as the
+Nightfire blocks carry a stable `id`. Underlay uses those ids as the
 preferred anchor for media-usage references inside structured content.
 
 Canonical Nightfire media locator format:
@@ -119,8 +111,8 @@ Canonical Nightfire media locator format:
 
 Examples:
 
-- `hero_01#/imageId`
-- `gallery_02#/pages/1/imageId`
+- `hero_01#/image_id`
+- `gallery_02#/pages/1/image_id`
 
 Use `ensure_block_ids()` on the Rust side and `prepareNightfireForSave()` on
 the TS side so stored values have stable top-level block ids before media usage

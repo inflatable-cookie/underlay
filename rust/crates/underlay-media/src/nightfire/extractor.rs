@@ -176,17 +176,10 @@ where
     ) -> MediaResult<Vec<MediaUsageEdgeInput>> {
         let mut edges = Vec::new();
 
-        if let Some(block) = value.block.as_ref() {
-            let anchor = BlockAnchor::from_block(block, "/block/data".to_string());
-            self.walk_block(block, anchor, "/block/data", &block.data, &mut edges)?;
-        }
-
-        if let Some(blocks) = value.blocks.as_ref() {
-            for (index, block) in blocks.iter().enumerate() {
-                let rooted_pointer = format!("/blocks/{index}/data");
-                let anchor = BlockAnchor::from_block(block, rooted_pointer.clone());
-                self.walk_block(block, anchor, &rooted_pointer, &block.data, &mut edges)?;
-            }
+        for (index, block) in value.blocks.iter().enumerate() {
+            let rooted_pointer = format!("/blocks/{index}/data");
+            let anchor = BlockAnchor::from_block(block, rooted_pointer.clone());
+            self.walk_block(block, anchor, &rooted_pointer, &block.data, &mut edges)?;
         }
 
         Ok(edges)

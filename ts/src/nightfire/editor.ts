@@ -15,7 +15,8 @@ export {
   registerNightfireRenderer,
   registerNightfireRenderers,
   registerNightfireValidator,
-  registerNightfireValidators
+  registerNightfireValidators,
+  registerNightfireVersions
 } from "./block-registration";
 export {
   findNightfireBlockById,

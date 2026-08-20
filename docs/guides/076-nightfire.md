@@ -10,7 +10,7 @@ Nightfire solves the problem of storing and validating structured content in dat
 
 - **Typed blocks** with versioned schemas
 - **Validation strategies** that define what blocks are allowed
-- **Content hashing** for change detection
+- **Block-level versioning** with registry-declared coercion
 - **Generic design** so applications define their own block types
 
 For the full consumer assembly pattern across Rust and TS, use:
@@ -40,7 +40,7 @@ See **[050-database.md](./050-database.md#rich-text-field-conventions)** for det
 | Concept | Description |
 |---------|-------------|
 | **Block** | A typed content unit (e.g., paragraph, heading, image) |
-| **BlockData** | The serialized form of a block with type, version, hash, and data |
+| **BlockData** | The serialized form of a block with id, type, version, and data |
 | **NightfireValue** | A collection of blocks with a schema identifier |
 | **Strategy** | Rules defining what blocks are allowed and how many |
 | **Registry** | Collections of known blocks and strategies |
@@ -94,9 +94,9 @@ use underlay_nightfire::BlockData;
 
 // BlockData is what gets stored in JSONB columns
 let block = BlockData {
+    id: "nf_...".to_string(),              // Stable block id
     r#type: "paragraph".to_string(),      // Block type identifier
-    version: "initial".to_string(),        // Schema version
-    hash: "abc123...".to_string(),         // Content hash
+    version: "initial".to_string(),        // Block implementation version
     data: serde_json::json!({              // Opaque JSON payload
         "text": "Hello world"
     }),
@@ -105,22 +105,24 @@ let block = BlockData {
 
 ### SchemaId
 
-A schema identifier following the convention `<namespace>:<context>/<field>@<version>`:
+A schema identifier following the convention `<namespace>:<context>/<field>`:
 
 ```rust
 use underlay_nightfire::SchemaId;
 
 // Create from string
-let id = SchemaId::from("acow:content/summary@1");
+let id = SchemaId::from("acow:content/summary");
 
 // Access the string
-assert_eq!(id.as_str(), "acow:content/summary@1");
+assert_eq!(id.as_str(), "acow:content/summary");
 ```
 
 Schema ID examples:
-- `acow:content/summary@1` - Summary content for Acowtancy
-- `myapp:article/body@1` - Article body content
-- `cms:page/description@2` - Page description (version 2)
+- `acow:content/summary` - Summary content for Acowtancy
+- `myapp:article/body` - Article body content
+- `cms:page/description` - Page description
+
+Schema IDs are unversioned. Version lives on each block.
 
 ### NightfireValue
 
@@ -129,13 +131,12 @@ The top-level structure persisted in JSONB columns:
 ```rust
 use underlay_nightfire::{NightfireValue, BlockData};
 
-// Single-block value
-let value = NightfireValue::single("app:content/title@1", block);
-assert!(value.is_single());
+// Always `{ schema, blocks }`. Cardinality is a strategy rule.
+let value = NightfireValue::single("app:content/title", block);
+assert_eq!(value.blocks.len(), 1);
 
-// Multi-block value
-let value = NightfireValue::multi("app:content/body@1", vec![block1, block2]);
-assert!(value.is_multi());
+let value = NightfireValue::multi("app:content/body", vec![block1, block2]);
+assert_eq!(value.blocks.len(), 2);
 ```
 
 ---
@@ -177,12 +178,12 @@ let block = ParagraphBlock {
     text: "Hello world".to_string(),
 };
 
-// Export generates BlockData with computed hash
+// Export generates BlockData with a stable id
 let data: BlockData = block.export();
 
 assert_eq!(data.r#type, "paragraph");
 assert_eq!(data.version, "initial");
-assert!(!data.hash.is_empty());  // Hash computed from data
+assert!(data.id.starts_with("nf_"));
 ```
 
 ### Block Versioning
@@ -199,8 +200,10 @@ impl Block for ParagraphBlock {
     }
 }
 
-// Active version is the first in the list
+// Current implementation is the first in the list; older entries stay readable
 assert_eq!(ParagraphBlock::active_version(), "v2");
+assert_eq!(ParagraphBlock::versions().coerce("initial"), Some("v2"));
+assert_eq!(ParagraphBlock::versions().coerce("9"), None);
 ```
 
 ### Block Module Rule
@@ -247,23 +250,23 @@ use underlay_nightfire::{BlockRegistry, BlockDescriptor};
 pub static BLOCK_REGISTRY: Lazy<BlockRegistry<BlockCategory>> = Lazy::new(|| {
     let mut registry = BlockRegistry::new();
     
-    registry.register(BlockDescriptor {
-        type_name: "paragraph",
-        label: "Paragraph",
-        category: BlockCategory::Text,
-    });
+    registry.register(BlockDescriptor::new(
+        "paragraph",
+        "Paragraph",
+        BlockCategory::Text,
+    ));
     
-    registry.register(BlockDescriptor {
-        type_name: "heading",
-        label: "Heading",
-        category: BlockCategory::Text,
-    });
+    registry.register(BlockDescriptor::new(
+        "heading",
+        "Heading",
+        BlockCategory::Text,
+    ));
     
-    registry.register(BlockDescriptor {
-        type_name: "image",
-        label: "Image",
-        category: BlockCategory::Media,
-    });
+    registry.register(BlockDescriptor::new(
+        "image",
+        "Image",
+        BlockCategory::Media,
+    ));
     
     registry
 });
@@ -409,7 +412,9 @@ pub fn validate_nightfire_value_by_schema(
 
 ## Content Hashing
 
-Nightfire computes content hashes for change detection:
+Hash is not part of the Nightfire envelope. `compute_block_hash` remains as a
+utility for app-specific change detection (for example exam-question pairing)
+when a payload contract needs it.
 
 ```rust
 use underlay_nightfire::compute_block_hash;
@@ -418,61 +423,32 @@ use serde_json::json;
 let data = json!({"text": "Hello world"});
 let hash = compute_block_hash(&data);
 
-// Hash is deterministic
 let hash2 = compute_block_hash(&data);
 assert_eq!(hash, hash2);
-
-// Different content produces different hash
-let different = json!({"text": "Goodbye"});
-let hash3 = compute_block_hash(&different);
-assert_ne!(hash, hash3);
 ```
-
-Use cases for content hashing:
-- Detecting when content has changed during a user session
-- Cache invalidation
-- Audit trails and versioning
-- Optimistic concurrency control
 
 ---
 
 ## JSON Wire Format
 
-### Single-Block Format
+Every Nightfire value uses one envelope. Cardinality is a strategy rule.
 
 ```json
 {
-  "schema": "myapp:content/title@1",
-  "block": {
-    "type": "heading",
-    "version": "initial",
-    "hash": "3b8a7d2f...",
-    "data": {
-      "text": "My Article Title",
-      "level": 1
-    }
-  }
-}
-```
-
-### Multi-Block Format
-
-```json
-{
-  "schema": "myapp:content/body@1",
+  "schema": "myapp:content/body",
   "blocks": [
     {
+      "id": "nf_...",
       "type": "paragraph",
       "version": "initial",
-      "hash": "a1b2c3d4...",
       "data": {
         "text": "First paragraph..."
       }
     },
     {
+      "id": "nf_...",
       "type": "image",
       "version": "initial",
-      "hash": "e5f6g7h8...",
       "data": {
         "src": "https://example.com/image.jpg",
         "alt": "An example image"
@@ -481,6 +457,9 @@ Use cases for content hashing:
   ]
 }
 ```
+
+A single-block strategy still uses `blocks` with `len == 1`. The v1 `{ block }`
+field and envelope `hash` are rejected.
 
 ---
 
@@ -676,12 +655,11 @@ registry.register(...);
 
 This allows multiple applications to use Nightfire with different content models.
 
-### 4. Content Hashing for Change Detection
+### 4. Block Version Coercion
 
-Each block includes a hash computed from its data, enabling:
-- Detecting content changes during user sessions
-- Optimistic concurrency control
-- Cache invalidation without deep comparison
+The registry declares supported versions per block type. Readers resolve any
+supported stored version to the current implementation. Unknown versions fail
+closed.
 
 ---
 
@@ -736,16 +714,16 @@ impl Block for ImageBlock {
 // 3. Create registries
 pub static BLOCK_REGISTRY: Lazy<BlockRegistry<BlockCategory>> = Lazy::new(|| {
     let mut r = BlockRegistry::new();
-    r.register(BlockDescriptor {
-        type_name: "paragraph",
-        label: "Paragraph",
-        category: BlockCategory::Text,
-    });
-    r.register(BlockDescriptor {
-        type_name: "image",
-        label: "Image",
-        category: BlockCategory::Media,
-    });
+    r.register(BlockDescriptor::new(
+        "paragraph",
+        "Paragraph",
+        BlockCategory::Text,
+    ));
+    r.register(BlockDescriptor::new(
+        "image",
+        "Image",
+        BlockCategory::Media,
+    ));
     r
 });
 
@@ -1061,7 +1039,7 @@ Boundary rule for all of these form patterns:
 
 - map outer DTO field names to API `snake_case` if needed
 - do not remap keys inside the Nightfire JSON itself
-- fields like `imageId` and `attachmentId` must reach the API unchanged or
+- fields like `image_id` and `attachment_id` must reach the API unchanged or
   shared media extractors will stop matching them
 
 ---
@@ -1202,7 +1180,7 @@ For read-only display of Nightfire content:
 ```typescript
 import { isEmptyNightfire, type NightfireValue } from "@inflatable-cookie/underlay/nightfire/utils";
 
-const value: NightfireValue = { schema: "myapp:content/body@1" };
+const value: NightfireValue = { schema: "myapp:content/body", blocks: [] };
 
 if (isEmptyNightfire(value)) {
   console.log("No content");
@@ -1214,11 +1192,10 @@ if (isEmptyNightfire(value)) {
 ```typescript
 import { normaliseNightfireValue, type NightfireValue } from "@inflatable-cookie/underlay/nightfire/utils";
 
-// Normalise to a specific schema, coercing cardinality as needed
+// Normalise a stored or raw value onto `{ schema, blocks }`
 const normalised = normaliseNightfireValue(
   existingValue,
-  "myapp:content/body@1",
-  "multi"  // Target cardinality
+  "myapp:content/body"
 );
 ```
 
@@ -1231,7 +1208,7 @@ import {
   type NightfireValue
 } from "@inflatable-cookie/underlay/nightfire/validation";
 
-// Strips transient properties, recomputes hashes
+// Validates blocks, coerces supported versions, assigns missing ids
 const prepared = prepareNightfireForSave(value);
 
 const formData = new FormData();
@@ -1255,9 +1232,9 @@ Important boundary rule:
 
 - outer DTO field names may still be mapped to API `snake_case`
 - inner Nightfire JSON must stay verbatim
-- do not rename keys inside block `data` objects like `imageId` to `image_id`
-  on the way to the API, or shared media extractors and locators will stop
-  matching the stored JSON
+- do not rename keys inside block `data` objects on the way to the API.
+  Payloads are snake_case (`image_id`); extractors and locators match the
+  stored JSON exactly
 
 ---
 

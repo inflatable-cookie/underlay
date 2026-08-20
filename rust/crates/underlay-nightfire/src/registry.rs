@@ -3,8 +3,9 @@
 use std::collections::HashMap;
 use std::hash::Hash;
 
+use crate::block::BlockVersions;
 use crate::strategy::NightfireStrategy;
-use crate::validation::{validate_nightfire_value, NightfireValidationError};
+use crate::validation::{resolve_nightfire_value_by_schema, NightfireValidationError};
 use crate::value::{NightfireValue, SchemaId};
 
 /// Descriptor for a concrete block type.
@@ -21,6 +22,27 @@ pub struct BlockDescriptor<C> {
 
     /// Category this block belongs to.
     pub category: C,
+
+    /// Supported versions and the current implementation this type coerces to.
+    pub versions: BlockVersions,
+}
+
+impl<C> BlockDescriptor<C> {
+    /// Construct a descriptor with the initial version set.
+    pub fn new(type_name: &'static str, label: &'static str, category: C) -> Self {
+        Self {
+            type_name,
+            label,
+            category,
+            versions: BlockVersions::INITIAL,
+        }
+    }
+
+    /// Override the version set for this block type.
+    pub fn with_versions(mut self, versions: BlockVersions) -> Self {
+        self.versions = versions;
+        self
+    }
 }
 
 /// One consumer-owned block registration bundle.
@@ -184,14 +206,7 @@ where
         value: &NightfireValue,
         block_registry: &BlockRegistry<C>,
     ) -> Result<(), NightfireValidationError> {
-        let schema_str = value.schema.as_str();
-        let strategy = self.get_by_str(schema_str).ok_or_else(|| {
-            NightfireValidationError::UnknownStrategy {
-                schema: schema_str.to_owned(),
-            }
-        })?;
-
-        validate_nightfire_value(value, strategy, block_registry)
+        resolve_nightfire_value_by_schema(value, self, block_registry).map(|_| ())
     }
 }
 

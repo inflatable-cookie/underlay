@@ -42,7 +42,7 @@ impl NightfireBlockMediaHandler for HeroBlockHandler {
         context: &NightfireMediaVisitContext<'_>,
     ) -> underlay_media::MediaResult<Vec<NightfireBlockMediaReference>> {
         let Some(media_id) = context
-            .resolve_relative_pointer("/imageId")
+            .resolve_relative_pointer("/image_id")
             .and_then(|value| value.as_str())
             .and_then(|value| Uuid::parse_str(value).ok())
             .map(MediaId::from_uuid)
@@ -53,7 +53,7 @@ impl NightfireBlockMediaHandler for HeroBlockHandler {
         Ok(vec![NightfireBlockMediaReference::new(
             media_id,
             MediaUsageRole::Embedded,
-            "/imageId",
+            "/image_id",
         )])
     }
 }
@@ -128,7 +128,7 @@ Good:
 
 Bad:
 
-- route-level helper that pattern-matches `"imageId"` across unrelated block
+- route-level helper that pattern-matches `"image_id"` across unrelated block
   types
 - one giant content extractor file that understands every block payload in the
   app
@@ -150,7 +150,7 @@ paths.
 
 Examples:
 
-- `/imageId`
+- `/image_id`
 - `/pages/1/mediaId`
 - `/attachments/0/fileId`
 
@@ -163,6 +163,6 @@ If a block embeds a child Nightfire document and that child content does not
 yet have its own block ids, the walker falls back to the nearest stable outer
 anchor instead of inventing a fake root:
 
-- outer anchor example: `popup_01#/content/block/data/mediaId`
+- outer anchor example: `popup_01#/content/blocks/0/data/media_id`
 - rooted path fallback when no stable outer id exists:
-  `/blocks/0/data/content/block/data/mediaId`
+  `/blocks/0/data/content/blocks/0/data/media_id`
