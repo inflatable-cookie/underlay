@@ -85,16 +85,15 @@ Core pieces:
 
 Rules:
 
-- every stored Nightfire value carries a `schema`
-- values are either single-block or multi-block, never both semantically even
-  if a weak caller type allows that shape
-- single values use `{ schema, block }`
-- multi values use `{ schema, blocks }`
-- each block export carries `type`, `version`, `hash`, and `data`
-- block hash is derived from exported content and is part of the durable shared
-  protocol
-- schema ids follow the shared convention
-  `<namespace>:<context>/<field>@<version>`
+- every stored Nightfire value carries a `schema` and a `blocks` array
+- the durable envelope is `{ schema, blocks: [ { id, type, version, data } ] }`
+- cardinality is a strategy rule (`len == 1` for singles), not a field shape
+- there is no sibling `block` field and no envelope `hash`
+- block ids are auto-assigned `nf_<uuid7>`
+- schema ids are unversioned: `<namespace>:<context>/<field>`
+- readers resolve stored values with exactly two lookups: strategy →
+  cardinality + allowed types; block type+version → current implementation
+- unknown block types and unknown versions fail closed
 
 ### Nightfire block and version seam
 
@@ -103,7 +102,9 @@ Block implementations are app-extensible but must fit one shared export model.
 Rules:
 
 - block types are stable string ids, not Rust type names
-- block version support is explicit through `VERSIONS`
+- block version support is explicit through `VERSIONS` / `BlockVersions`
+- the first `VERSIONS` entry is the current implementation; remaining entries
+  stay readable via registry-declared coercion
 - export shape must stay serializable and portable across Rust and TS callers
 - Underlay owns the generic `BlockData` envelope, not the application block
   payload schema inside `data`
@@ -141,8 +142,9 @@ Core pieces:
 Rules:
 
 - validation checks unknown strategy, cardinality, allowed categories, allowed
-  types, and block registration presence
+  types, block registration presence, and supported block versions
 - validation is structural and strategy-bound
+- v1 envelopes (`block`, `hash`, `document: []`) are rejected, not converted
 - app-specific semantic rules inside block payloads belong in block-local
   validators, not in the shared Nightfire core
 

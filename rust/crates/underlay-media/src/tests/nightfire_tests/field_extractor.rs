@@ -29,7 +29,7 @@ fn extracts_block_id_locators_for_top_level_and_nested_block_ids() {
                         "id": "gallery_02",
                         "type": "gallery",
                         "version": "initial",
-                        "hash": "def456",
+
                         "data": {
                             "pages": [{ "imageId": "019473c4-4a6d-7000-8000-000000000011" }]
                         }
@@ -79,7 +79,7 @@ fn falls_back_to_ancestor_block_pointer_when_nested_block_has_no_id() {
                     {
                         "type": "gallery",
                         "version": "initial",
-                        "hash": "def456",
+
                         "data": {
                             "pages": [{ "imageId": "019473c4-4a6d-7000-8000-000000000012" }]
                         }

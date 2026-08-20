@@ -68,7 +68,7 @@
       {@const EditorComponent = BlockEditor}
       <EditorComponent
         block={normalisedBlock}
-        value={{ schema, block: normalisedBlock }}
+        value={{ schema, blocks: [normalisedBlock] }}
         onChange={handleBlockEditorChange}
         {onContextChange}
       />

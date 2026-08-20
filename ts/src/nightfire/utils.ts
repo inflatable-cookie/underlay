@@ -16,20 +16,26 @@ export interface NightfireTypeOption {
   label: string;
 }
 
+function readBlocks(record: Record<string, unknown>, defaultType: string): NightfireBlock[] {
+  // v1 `{ block }` is not accepted. Dual-shape conversion is gone.
+  if ("block" in record && record.block != null) {
+    return [];
+  }
+
+  if (!Array.isArray(record.blocks)) {
+    return [];
+  }
+
+  return record.blocks
+    .map((block) => coerceNightfireBlock(block, defaultType))
+    .filter((block): block is NightfireBlock => block !== null);
+}
+
 /**
  * Normalises a value that may be a raw string (legacy data) into Nightfire
- * draft state with a durable block envelope when content exists.
+ * draft state with a durable `{ schema, blocks }` envelope when content exists.
  *
- * This handles cases where:
- * - The database stored a plain string instead of a NightfireValue object
- * - The value is already a valid NightfireValue (passed through unchanged)
- * - The value is null/undefined (returns an editor-local empty draft value)
- *
- * @param value - The raw value from the database (may be string, object, or null)
- * @param schema - The schema identifier to use for the Nightfire draft value
- * @param allowedBlockTypes - Optional list of allowed block types; if provided and
- *                            "markdown" is not in the list, raw strings won't be converted
- * @returns A normalized draft value suitable for editor state
+ * v1 `{ schema, block }` values are rejected, not converted.
  */
 export function normaliseNightfireValue(
   value: unknown,
@@ -42,53 +48,33 @@ export function normaliseNightfireValue(
     const record = value as Record<string, unknown>;
     const nextSchema =
       typeof record.schema === "string" ? record.schema : schema;
-    const single = coerceNightfireBlock(record.block, defaultType);
-    const multi = Array.isArray(record.blocks)
-      ? record.blocks
-          .map((block) => coerceNightfireBlock(block, defaultType))
-          .filter((block): block is NightfireBlock => block !== null)
-      : [];
-
-    if (single) {
-      return {
-        schema: nextSchema,
-        block: single
-      };
-    }
-
-    if (multi.length > 0) {
-      return {
-        schema: nextSchema,
-        blocks: multi
-      };
-    }
-
-    return { schema: nextSchema };
+    return {
+      schema: nextSchema,
+      blocks: readBlocks(record, defaultType)
+    };
   }
 
   // Raw string - convert to markdown block if markdown is allowed
   if (typeof value === "string" && value.length > 0) {
-    // If allowedBlockTypes is provided, check if markdown is allowed
     if (allowedBlockTypes && !allowedBlockTypes.includes("markdown")) {
-      // Can't convert to markdown, return empty value with schema
       return {
         schema,
-        block: coerceNightfireBlock({}, defaultType)!
+        blocks: [coerceNightfireBlock({}, defaultType)!]
       };
     }
 
-    // Convert raw string to markdown block
     return {
       schema,
-      block: coerceNightfireBlock(
-        { type: "markdown", data: { text: value } },
-        "markdown"
-      )!
+      blocks: [
+        coerceNightfireBlock(
+          { type: "markdown", data: { text: value } },
+          "markdown"
+        )!
+      ]
     };
   }
 
-  // Null, undefined, or empty - return editor-local empty draft state
-  return { schema };
+  return { schema, blocks: [] };
 }
 
 export function normaliseNightfireBlock(
@@ -121,7 +107,7 @@ export function normaliseNightfireBlock(
  * block type the block is assumed non-empty (conservative default).
  *
  * When `contentLevel` is false only structural presence is checked
- * (i.e. does a block/blocks array exist at all).
+ * (i.e. does a blocks array contain any items).
  */
 export function isEmptyNightfire(
   value: NightfireDraftValue | null | undefined,
@@ -129,19 +115,10 @@ export function isEmptyNightfire(
 ): boolean {
   if (!value || typeof value !== "object") return true;
 
-  const block = (value as any).block;
-  if (block && block !== null) {
-    if (!contentLevel) return false;
-    return isBlockContentEmpty(block);
-  }
-
-  const blocks = (value as any).blocks as unknown[] | undefined;
-  if (Array.isArray(blocks) && blocks.length > 0) {
-    if (!contentLevel) return false;
-    return blocks.every((b) => isBlockContentEmpty(b));
-  }
-
-  return true;
+  const blocks = Array.isArray(value.blocks) ? value.blocks : [];
+  if (blocks.length === 0) return true;
+  if (!contentLevel) return false;
+  return blocks.every((b) => isBlockContentEmpty(b));
 }
 
 export function writeNightfireToFormData(

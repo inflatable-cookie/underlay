@@ -151,6 +151,10 @@
       "types": "./ts/src/nightfire/block-ids.ts",
       "default": "./ts/src/nightfire/block-ids.ts"
     },
+    "./nightfire/block-versions": {
+      "types": "./ts/src/nightfire/block-versions.ts",
+      "default": "./ts/src/nightfire/block-versions.ts"
+    },
     "./nightfire/utils": {
       "types": "./ts/src/nightfire/utils.ts",
       "default": "./ts/src/nightfire/utils.ts"

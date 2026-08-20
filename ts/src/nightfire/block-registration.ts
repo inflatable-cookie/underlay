@@ -14,6 +14,10 @@ import {
   registerBlockValidator,
   type BlockValidator
 } from "./validator-registry";
+import {
+  registerBlockVersions,
+  type BlockVersionSpec
+} from "./block-versions";
 
 export interface NightfireBlockRegistration {
   schema: SchemaDefinition;
@@ -24,6 +28,7 @@ export interface NightfireBlockRegistration {
   rendererSchema?: string | null;
   validator?: BlockValidator | null;
   emptyChecker?: BlockEmptyChecker | null;
+  versions?: BlockVersionSpec | null;
 }
 
 export function registerNightfireEditor(
@@ -108,6 +113,16 @@ export function registerNightfireEmptyCheckers(
   }
 }
 
+export function registerNightfireVersions(
+  registration: NightfireBlockRegistration
+): void {
+  if (!registration.versions) {
+    return;
+  }
+
+  registerBlockVersions(registration.type, registration.versions);
+}
+
 export function registerNightfireBlock(
   registration: NightfireBlockRegistration
 ): void {
@@ -115,6 +130,7 @@ export function registerNightfireBlock(
   registerNightfireRenderer(registration);
   registerNightfireValidator(registration);
   registerNightfireEmptyChecker(registration);
+  registerNightfireVersions(registration);
 }
 
 export function registerNightfireBlocks(

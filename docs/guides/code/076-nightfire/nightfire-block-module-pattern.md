@@ -114,11 +114,11 @@ pub fn hero_block_registration() -> underlay_nightfire::BlockRegistration<
     NightfireBlockMediaRegistration,
 > {
     underlay_nightfire::BlockRegistration::new(
-        underlay_nightfire::BlockDescriptor {
-            type_name: "hero",
-            label: "Hero",
-            category: crate::nightfire::block_registry::BlockCategory::Content,
-        },
+        underlay_nightfire::BlockDescriptor::new(
+            "hero",
+            "Hero",
+            crate::nightfire::block_registry::BlockCategory::Content,
+        ),
         hero_media_registration(),
     )
 }

@@ -56,10 +56,11 @@ describe("nightfire/block-registration", () => {
     expect(
       validateNightfireValue({
         schema: "test:block-module@1",
-        block: { type: "hero", data: { title: "" } }
+        blocks: [{ type: "hero", data: { title: "" } }]
       } as any)
     ).toEqual({
-      schema: "test:block-module@1"
+      schema: "test:block-module@1",
+      blocks: []
     });
   });
 
@@ -133,10 +134,11 @@ describe("nightfire/block-registration", () => {
     expect(
       validateNightfireValue({
         schema: "test:block-module-split@1",
-        block: { type: "hero", data: { title: "" } }
+        blocks: [{ type: "hero", data: { title: "" } }]
       } as any)
     ).toMatchObject({
-      schema: "test:block-module-split@1"
+      schema: "test:block-module-split@1",
+      blocks: []
     });
   });
 });

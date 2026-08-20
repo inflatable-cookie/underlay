@@ -15,7 +15,12 @@ impl<'a> NightfireMediaVisitContext<'a> {
     }
 
     pub fn block_id(&self) -> Option<&str> {
-        self.block.id.as_deref()
+        let id = self.block.id.trim();
+        if id.is_empty() {
+            None
+        } else {
+            Some(id)
+        }
     }
 
     pub fn block_data(&self) -> &Value {

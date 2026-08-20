@@ -18,7 +18,7 @@ fn resolve_nightfire_media_usage_reads_block_id_locator_values() {
                         "id": "gallery_02",
                         "type": "gallery",
                         "version": "initial",
-                        "hash": "def456",
+
                         "data": {
                             "pages": [{ "imageId": "019473c4-4a6d-7000-8000-000000000211" }]
                         }

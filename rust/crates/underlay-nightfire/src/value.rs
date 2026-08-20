@@ -1,14 +1,14 @@
 //! Nightfire value and schema identifier types.
 
 use serde::{Deserialize, Serialize};
-use uuid::Uuid;
 
-use crate::block::BlockData;
+use crate::block::{generate_block_id, BlockData};
 
 /// Schema identifier for a Nightfire value.
 ///
-/// Convention: `<namespace>:<context>/<field>@<version>`
-/// e.g. `acow:learning/activity.material@1`.
+/// Convention: `<namespace>:<context>/<field>`
+/// e.g. `acow:content/rich_text`. Schema IDs are unversioned; version
+/// lives on each block.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct SchemaId(pub String);
 
@@ -32,49 +32,38 @@ impl From<&str> for SchemaId {
 
 /// A field-level Nightfire value.
 ///
-/// This is the shape persisted in JSONB columns and sent over the wire.
-/// It may represent either a single block or multiple blocks.
+/// This is the shape persisted in JSONB columns and sent over the wire:
+/// `{ schema, blocks: [ { id, type, version, data } ] }`.
+/// Cardinality is a strategy rule, not a field shape.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct NightfireValue {
     /// Strategy / schema identifier.
     pub schema: SchemaId,
 
-    /// Single-block content, when present.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub block: Option<BlockData>,
-
-    /// Multi-block content, when present.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub blocks: Option<Vec<BlockData>>,
+    /// Ordered blocks. Always an array; never a sibling `block` field.
+    pub blocks: Vec<BlockData>,
 }
 
 impl NightfireValue {
-    /// Construct a single-block Nightfire value.
+    /// Construct a Nightfire value with the given blocks.
+    pub fn new<S: Into<SchemaId>>(schema: S, blocks: Vec<BlockData>) -> Self {
+        Self {
+            schema: schema.into(),
+            blocks,
+        }
+    }
+
+    /// Construct a value with exactly one block.
+    ///
+    /// Convenience only; the wire shape is still `{ schema, blocks }`.
     pub fn single<S: Into<SchemaId>>(schema: S, block: BlockData) -> Self {
-        Self {
-            schema: schema.into(),
-            block: Some(block),
-            blocks: None,
-        }
+        Self::new(schema, vec![block])
     }
 
-    /// Construct a multi-block Nightfire value.
+    /// Construct a value with many blocks.
     pub fn multi<S: Into<SchemaId>>(schema: S, blocks: Vec<BlockData>) -> Self {
-        Self {
-            schema: schema.into(),
-            block: None,
-            blocks: Some(blocks),
-        }
-    }
-
-    /// Returns true if this value encodes a single block.
-    pub fn is_single(&self) -> bool {
-        self.block.is_some()
-    }
-
-    /// Returns true if this value encodes multiple blocks.
-    pub fn is_multi(&self) -> bool {
-        self.blocks.is_some()
+        Self::new(schema, blocks)
     }
 }
 
@@ -82,38 +71,16 @@ impl NightfireValue {
 ///
 /// Returns the number of block IDs that were assigned.
 pub fn ensure_block_ids(value: &mut NightfireValue) -> usize {
-    let mut assigned = 0usize;
-
-    if let Some(block) = value.block.as_mut() {
-        assigned += ensure_block_id(block);
-    }
-
-    if let Some(blocks) = value.blocks.as_mut() {
-        for block in blocks {
-            assigned += ensure_block_id(block);
-        }
-    }
-
-    assigned
+    value.blocks.iter_mut().map(ensure_block_id).sum()
 }
 
 fn ensure_block_id(block: &mut BlockData) -> usize {
-    if block
-        .id
-        .as_deref()
-        .map(str::trim)
-        .filter(|value| !value.is_empty())
-        .is_some()
-    {
+    if block.has_id() {
         return 0;
     }
 
-    block.id = Some(generate_block_id());
+    block.id = generate_block_id();
     1
-}
-
-fn generate_block_id() -> String {
-    format!("nf_{}", Uuid::now_v7().simple())
 }
 
 #[cfg(test)]

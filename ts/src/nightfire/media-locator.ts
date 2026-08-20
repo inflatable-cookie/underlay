@@ -73,15 +73,11 @@ export function findNightfireBlockById(
   value: NightfireValue,
   blockId: string
 ): NightfireBlock | null {
-  if (value.block?.id === blockId) {
-    return value.block;
+  if (!Array.isArray(value.blocks)) {
+    return null;
   }
 
-  if (Array.isArray(value.blocks)) {
-    return value.blocks.find((block) => block.id === blockId) ?? null;
-  }
-
-  return null;
+  return value.blocks.find((block) => block.id === blockId) ?? null;
 }
 
 export function resolveNightfireMediaLocator(

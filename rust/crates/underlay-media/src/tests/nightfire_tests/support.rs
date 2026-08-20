@@ -17,10 +17,9 @@ use crate::{
 
 pub(crate) fn block(id: Option<&str>, data: serde_json::Value) -> BlockData {
     BlockData {
-        id: id.map(ToOwned::to_owned),
+        id: id.map(ToOwned::to_owned).unwrap_or_default(),
         r#type: "test".to_string(),
         version: "initial".to_string(),
-        hash: "abc123".to_string(),
         data,
     }
 }

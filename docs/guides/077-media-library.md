@@ -376,11 +376,11 @@ fn hero_media_registration() -> NightfireBlockMediaRegistration {
 
 fn hero_block_registration() -> BlockRegistration<MyBlockCategory, NightfireBlockMediaRegistration> {
     BlockRegistration::new(
-        BlockDescriptor {
-            type_name: "hero",
-            label: "Hero",
-            category: MyBlockCategory::Content,
-        },
+        BlockDescriptor::new(
+            "hero",
+            "Hero",
+            MyBlockCategory::Content,
+        ),
         hero_media_registration(),
     )
 }

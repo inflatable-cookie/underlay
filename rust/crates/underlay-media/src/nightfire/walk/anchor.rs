@@ -12,12 +12,14 @@ pub(in crate::nightfire) struct BlockAnchor {
 impl BlockAnchor {
     pub(in crate::nightfire) fn from_block(block: &BlockData, rooted_data_pointer: String) -> Self {
         Self {
-            block_id: block
-                .id
-                .as_deref()
-                .map(str::trim)
-                .filter(|value| !value.is_empty())
-                .map(ToOwned::to_owned),
+            block_id: {
+                let id = block.id.trim();
+                if id.is_empty() {
+                    None
+                } else {
+                    Some(id.to_owned())
+                }
+            },
             rooted_data_pointer,
         }
     }

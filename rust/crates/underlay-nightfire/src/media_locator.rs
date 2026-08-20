@@ -66,17 +66,7 @@ impl NightfireMediaLocator {
     }
 
     pub fn find_block<'a>(&self, value: &'a NightfireValue) -> Option<&'a BlockData> {
-        if let Some(block) = value.block.as_ref() {
-            if block.id.as_deref() == Some(self.block_id.as_str()) {
-                return Some(block);
-            }
-        }
-
-        value
-            .blocks
-            .as_ref()?
-            .iter()
-            .find(|block| block.id.as_deref() == Some(self.block_id.as_str()))
+        value.blocks.iter().find(|block| block.id == self.block_id)
     }
 
     pub fn resolve_in_value<'a>(&self, value: &'a NightfireValue) -> Option<&'a Value> {
@@ -91,21 +81,14 @@ impl NightfireMediaLocator {
 }
 
 fn find_block_data_in_value<'a>(value: &'a NightfireValue, block_id: &str) -> Option<&'a Value> {
-    if let Some(block) = value.block.as_ref() {
-        if let Some(found) = find_block_data_in_block(block, block_id) {
-            return Some(found);
-        }
-    }
-
     value
         .blocks
-        .as_ref()?
         .iter()
         .find_map(|block| find_block_data_in_block(block, block_id))
 }
 
 fn find_block_data_in_block<'a>(block: &'a BlockData, block_id: &str) -> Option<&'a Value> {
-    if block.id.as_deref() == Some(block_id) {
+    if block.id == block_id {
         return Some(&block.data);
     }
 

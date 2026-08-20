@@ -23,7 +23,7 @@ describe("nightfire/media-locator", () => {
 
   it("resolves a media reference relative to block.data", () => {
     const value = {
-      schema: "test:schema@1",
+      schema: "test:schema",
       blocks: [
         {
           id: "intro_01",
@@ -48,12 +48,14 @@ describe("nightfire/media-locator", () => {
 
   it("returns undefined when the block or nested path does not exist", () => {
     const value = {
-      schema: "test:schema@1",
-      block: {
-        id: "hero_01",
-        type: "image",
-        data: { imageId: "media-1" }
-      }
+      schema: "test:schema",
+      blocks: [
+        {
+          id: "hero_01",
+          type: "image",
+          data: { imageId: "media-1" }
+        }
+      ]
     };
 
     expect(
@@ -66,17 +68,19 @@ describe("nightfire/media-locator", () => {
 
   it("ensures stable top-level block ids before save", () => {
     const single = ensureNightfireBlockIds({
-      schema: "test:schema@1",
-      block: {
-        type: "markdown",
-        data: { text: "Hello" }
-      }
+      schema: "test:schema",
+      blocks: [
+        {
+          type: "markdown",
+          data: { text: "Hello" }
+        }
+      ]
     });
 
-    expect(single.block?.id).toMatch(/^nf_/);
+    expect(single.blocks[0]?.id).toMatch(/^nf_/);
 
     const multi = ensureNightfireBlockIds({
-      schema: "test:schema@1",
+      schema: "test:schema",
       blocks: [
         {
           id: "existing_block",
@@ -90,7 +94,7 @@ describe("nightfire/media-locator", () => {
       ]
     });
 
-    expect(multi.blocks?.[0]?.id).toBe("existing_block");
-    expect(multi.blocks?.[1]?.id).toMatch(/^nf_/);
+    expect(multi.blocks[0]?.id).toBe("existing_block");
+    expect(multi.blocks[1]?.id).toMatch(/^nf_/);
   });
 });

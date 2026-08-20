@@ -5,6 +5,7 @@ import {
   type NightfireValue
 } from "./types";
 import { ensureNightfireBlockIds } from "./block-ids";
+import { coerceBlockVersion } from "./block-versions";
 
 type ValidatorKey = string;
 
@@ -28,6 +29,12 @@ function validateBlock(schema: string | null, block: unknown): NightfireBlock | 
   if (!typedBlock) {
     return null;
   }
+  const currentVersion = coerceBlockVersion(typedBlock.type, typedBlock.version);
+  if (!currentVersion) {
+    return null;
+  }
+  typedBlock.version = currentVersion;
+
   const key = makeKey(schema, typedBlock.type);
 
   const fn =
@@ -44,56 +51,29 @@ export function validateNightfireValue(
 ): NightfireDraftValue {
   if (!value || typeof value !== "object") return value;
 
-  const schema = value.schema ?? null;
+  const schema = value.schema ?? "";
+  const source = Array.isArray(value.blocks) ? value.blocks : [];
+  const nextBlocks = source
+    .map((block) => validateBlock(schema, block))
+    .filter((block): block is NightfireBlock => block !== null);
 
-  if (value.block) {
-    const nextBlock = validateBlock(schema, value.block);
-    if (!nextBlock) {
-      return { schema: schema ?? "" };
-    }
-    return {
-      ...value,
-      block: nextBlock,
-      blocks: undefined
-    };
-  }
-
-  if (Array.isArray(value.blocks)) {
-    const nextBlocks = value.blocks.map(
-      (block) => validateBlock(schema, block)
-    ).filter(
-      (block): block is NightfireBlock => block !== null
-    );
-    if (nextBlocks.length === 0) {
-      return { schema: schema ?? "" };
-    }
-    return {
-      ...value,
-      block: undefined,
-      blocks: nextBlocks
-    };
-  }
-
-  return value;
+  return {
+    schema,
+    blocks: nextBlocks
+  };
 }
 
 export function prepareNightfireForSave(
   value: NightfireDraftValue
 ): NightfireValue | null {
   const validated = validateNightfireValue(value);
-  if (validated.block) {
-    return ensureNightfireBlockIds({
-      schema: validated.schema,
-      block: validated.block
-    });
+  if (!Array.isArray(validated.blocks) || validated.blocks.length === 0) {
+    return null;
   }
-  if (Array.isArray(validated.blocks) && validated.blocks.length > 0) {
-    return ensureNightfireBlockIds({
-      schema: validated.schema,
-      blocks: validated.blocks
-    });
-  }
-  return null;
+  return ensureNightfireBlockIds({
+    schema: validated.schema,
+    blocks: validated.blocks
+  });
 }
 
 /**

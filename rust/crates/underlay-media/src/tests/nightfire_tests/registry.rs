@@ -27,12 +27,11 @@ fn registry_backed_extractor_walks_block_handlers_and_declared_nested_values() {
     );
 
     let nested_content = NightfireValue::single(
-        "test:nested@1",
+        "test:nested",
         BlockData {
-            id: Some("popup_media_01".to_string()),
+            id: "popup_media_01".to_string(),
             r#type: "media".to_string(),
             version: "initial".to_string(),
-            hash: "media123".to_string(),
             data: json!({
                 "mediaId": "019473c4-4a6d-7000-8000-000000000214"
             }),
@@ -40,12 +39,11 @@ fn registry_backed_extractor_walks_block_handlers_and_declared_nested_values() {
     );
 
     let value = NightfireValue::single(
-        "test:schema@1",
+        "test:schema",
         BlockData {
-            id: Some("hero_01".to_string()),
+            id: "hero_01".to_string(),
             r#type: "hero".to_string(),
             version: "initial".to_string(),
-            hash: "hero123".to_string(),
             data: json!({
                 "imageId": "019473c4-4a6d-7000-8000-000000000213",
                 "children": [
@@ -53,7 +51,6 @@ fn registry_backed_extractor_walks_block_handlers_and_declared_nested_values() {
                         "id": "popup_01",
                         "type": "popup",
                         "version": "initial",
-                        "hash": "popup123",
                         "data": {
                             "content": serde_json::to_value(&nested_content).unwrap()
                         }
@@ -97,12 +94,11 @@ fn registry_backed_extractor_falls_back_to_outer_anchor_for_nested_child_without
     );
 
     let nested_content = NightfireValue::single(
-        "test:nested@1",
+        "test:nested",
         BlockData {
-            id: None,
+            id: String::new(),
             r#type: "media".to_string(),
             version: "initial".to_string(),
-            hash: "media123".to_string(),
             data: json!({
                 "mediaId": "019473c4-4a6d-7000-8000-000000000215"
             }),
@@ -110,12 +106,11 @@ fn registry_backed_extractor_falls_back_to_outer_anchor_for_nested_child_without
     );
 
     let value = NightfireValue::single(
-        "test:schema@1",
+        "test:schema",
         BlockData {
-            id: Some("popup_01".to_string()),
+            id: "popup_01".to_string(),
             r#type: "popup".to_string(),
             version: "initial".to_string(),
-            hash: "popup123".to_string(),
             data: json!({
                 "content": serde_json::to_value(&nested_content).unwrap()
             }),
@@ -130,7 +125,7 @@ fn registry_backed_extractor_falls_back_to_outer_anchor_for_nested_child_without
     assert_eq!(usages[0].locator_kind, MediaLocatorKind::BlockId);
     assert_eq!(
         usages[0].locator_key,
-        "popup_01#/content/block/data/mediaId"
+        "popup_01#/content/blocks/0/data/mediaId"
     );
 }
 
@@ -155,11 +150,7 @@ fn handler_map_accepts_generic_block_registrations() {
 
     let registry = NightfireBlockMediaHandlerMap::from_block_registrations([
         underlay_nightfire::BlockRegistration::new(
-            underlay_nightfire::BlockDescriptor {
-                type_name: "hero",
-                label: "Hero",
-                category: TestCategory::Content,
-            },
+            underlay_nightfire::BlockDescriptor::new("hero", "Hero", TestCategory::Content),
             NightfireBlockMediaRegistration::new("hero", HeroBlockHandler),
         ),
     ]);

@@ -79,7 +79,6 @@
         singleBlock ?? {
           type: definition.defaultType,
           version: "initial",
-          hash: "",
           data: {},
         },
       ],

@@ -19,9 +19,6 @@
     if (Array.isArray(v.blocks) && v.blocks.length > 0) {
       return v.blocks as BlockLike[];
     }
-    if (v.block) {
-      return [v.block as BlockLike];
-    }
     return [];
   }
 

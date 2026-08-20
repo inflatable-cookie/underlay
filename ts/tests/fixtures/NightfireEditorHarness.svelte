@@ -24,7 +24,6 @@
         {
           type: "markdown",
           version: "initial",
-          hash: "",
           data: {
             text: ""
           }

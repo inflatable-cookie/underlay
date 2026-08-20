@@ -249,7 +249,7 @@
       : null
   );
 
-  const isMulti = $derived(effectiveDef.mode === "multi" || Array.isArray(value?.blocks));
+  const isMulti = $derived(effectiveDef.mode === "multi");
   const slashCommandsEnabled = $derived(Boolean(slashCommands?.enabled) && isMulti);
   const availableSlashCommands = $derived(
     slashCommandsEnabled
@@ -257,16 +257,14 @@
       : []
   );
 
-  // Single-block view - derives from value reactively
-  // This ensures child editors always receive the latest data
-  const singleBlock = $derived(isMulti ? null : ((value?.block as any) ?? null));
-  // Multi-block state view - use $derived.by to ensure stable reference
+  // Blocks array is the only stored shape. Single-mode editors use blocks[0].
   const blocks = $derived.by(() => {
-    if (isMulti && Array.isArray(value?.blocks)) {
+    if (Array.isArray(value?.blocks)) {
       return value.blocks as any[];
     }
     return [];
   });
+  const singleBlock = $derived(isMulti ? null : (blocks[0] ?? null));
   let slashState = $state<{
     blockIndex: number;
     start: number;
@@ -419,14 +417,12 @@
     const currentBlock = blocks[slashState.blockIndex] as {
       type?: string;
       version?: string;
-      hash?: string;
       data?: { text?: string };
     } | undefined;
     const currentText = currentBlock?.data?.text ?? "";
     const nextCurrentBlock = {
       type: currentBlock?.type ?? "markdown",
       version: currentBlock?.version ?? "initial",
-      hash: currentBlock?.hash ?? "",
       data: {
         ...(currentBlock?.data ?? {}),
         text: removeNightfireSlashText(currentText, slashState)

@@ -3,10 +3,9 @@ use serde_json::json;
 
 fn block(id: &str, data: serde_json::Value) -> BlockData {
     BlockData {
-        id: Some(id.to_string()),
+        id: id.to_string(),
         r#type: "test".to_string(),
         version: "initial".to_string(),
-        hash: "abc123".to_string(),
         data,
     }
 }
@@ -46,7 +45,7 @@ fn rejects_locator_with_invalid_pointer() {
 #[test]
 fn resolves_pointer_inside_single_block_value() {
     let value = NightfireValue::single(
-        "test:schema@1",
+        "test:schema",
         block(
             "hero_01",
             json!({ "imageId": "media-1", "caption": "Hero" }),
@@ -64,7 +63,7 @@ fn resolves_pointer_inside_single_block_value() {
 #[test]
 fn resolves_pointer_inside_multi_block_value() {
     let value = NightfireValue::multi(
-        "test:schema@1",
+        "test:schema",
         vec![
             block("intro_01", json!({ "text": "Hello" })),
             block(
@@ -85,7 +84,7 @@ fn resolves_pointer_inside_multi_block_value() {
 #[test]
 fn resolves_pointer_inside_nested_block_id() {
     let value = NightfireValue::single(
-        "test:schema@1",
+        "test:schema",
         block(
             "hero_01",
             json!({
@@ -94,7 +93,6 @@ fn resolves_pointer_inside_nested_block_id() {
                         "id": "gallery_02",
                         "type": "gallery",
                         "version": "initial",
-                        "hash": "def456",
                         "data": {
                             "pages": [{ "imageId": "media-1" }, { "imageId": "media-2" }]
                         }
@@ -115,7 +113,7 @@ fn resolves_pointer_inside_nested_block_id() {
 #[test]
 fn returns_none_when_block_or_path_does_not_exist() {
     let value = NightfireValue::single(
-        "test:schema@1",
+        "test:schema",
         block("hero_01", json!({ "imageId": "media-1" })),
     );
 

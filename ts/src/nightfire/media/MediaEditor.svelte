@@ -8,7 +8,6 @@
   type MediaBlock = {
     type: string;
     version?: string;
-    hash?: string;
     data?: {
       mediaId?: string;
       caption?: string;
@@ -50,7 +49,6 @@
     onChange({
       type: block?.type ?? "media",
       version: block?.version ?? "initial",
-      hash: block?.hash ?? "",
       data: {
         mediaId: block?.data?.mediaId ?? "",
         caption: block?.data?.caption ?? "",
