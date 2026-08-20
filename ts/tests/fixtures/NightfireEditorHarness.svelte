@@ -17,9 +17,9 @@
   }
 
   let {
-    schema = "acow:content/markup@1",
+    schema = "acow:content/markup",
     initialValue = {
-      schema: "acow:content/markup@1",
+      schema: "acow:content/markup",
       blocks: [
         {
           type: "markdown",

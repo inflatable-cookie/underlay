@@ -15,9 +15,9 @@ describe("nightfire/editor/summary-transform slider transitions", () => {
 			},
 		};
 
-		const result = transformSummaryBlockOnLayoutChange(current, "summary.imageSlider", label);
+		const result = transformSummaryBlockOnLayoutChange(current, "summary.image_slider", label);
 		expect(result.block).toMatchObject({
-			type: "summary.imageSlider",
+			type: "summary.image_slider",
 			data: {
 				subTitle: "Sub",
 				description: "desc",
@@ -33,7 +33,7 @@ describe("nightfire/editor/summary-transform slider transitions", () => {
 
 	it("maps slider to page layouts and warns when slider had images", () => {
 		const current = {
-			type: "summary.imageSlider",
+			type: "summary.image_slider",
 			data: {
 				description: "Slide body",
 				image1Id: "img-1",
@@ -52,14 +52,14 @@ describe("nightfire/editor/summary-transform slider transitions", () => {
 	it("handles non-dropping slider and slider-to-text conversions", () => {
 		const toSlider = transformSummaryBlockOnLayoutChange(
 			{ type: "summary.book", data: { pages: [{ title: "A", body: "desc" }] } },
-			"summary.imageSlider",
+			"summary.image_slider",
 			label
 		);
 		expect(toSlider.warning).toContain("keeps the first page's text as the slider description.");
 		expect(toSlider.warning).not.toContain("discards other pages");
 
 		const fromSliderNoImages = transformSummaryBlockOnLayoutChange(
-			{ type: "summary.imageSlider", data: { description: "Only text" } },
+			{ type: "summary.image_slider", data: { description: "Only text" } },
 			"summary.steps",
 			label
 		);

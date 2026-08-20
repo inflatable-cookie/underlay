@@ -63,12 +63,12 @@ describe("nightfire value-updates", () => {
 			}
 		};
 		const result = changeSingleBlockType(
-			"acow:content/summary@1",
+			"acow:content/summary",
 			current,
-			"summary.imageSlider",
+			"summary.image_slider",
 			(type) => type
 		);
-		expect((result.block as { type: string }).type).toBe("summary.imageSlider");
+		expect((result.block as { type: string }).type).toBe("summary.image_slider");
 		expect(result.warning).toContain("Changing layout");
 	});
 

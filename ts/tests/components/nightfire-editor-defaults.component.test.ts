@@ -7,9 +7,9 @@ import NightfireEditorHarness from "../fixtures/NightfireEditorHarness.svelte";
 describe("nightfire/NightfireEditor defaults", () => {
   it("prefers schema default type over the first block option in the type picker", async () => {
     const view = render(NightfireEditorHarness, {
-      schema: "acow:content/description@1",
+      schema: "acow:content/description",
       initialValue: {
-        schema: "acow:content/description@1",
+        schema: "acow:content/description",
       },
       modeOverride: "single",
       defaultTypeOverride: "markdown",
@@ -21,6 +21,6 @@ describe("nightfire/NightfireEditor defaults", () => {
 
     const typeSelect = await screen.findByLabelText("Block type");
     expect((typeSelect as HTMLSelectElement).value).toBe("markdown");
-    expect(view.getByTestId("nightfire-value").textContent).toContain("\"schema\": \"acow:content/description@1\"");
+    expect(view.getByTestId("nightfire-value").textContent).toContain("\"schema\": \"acow:content/description\"");
   });
 });

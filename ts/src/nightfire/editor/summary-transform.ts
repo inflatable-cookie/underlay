@@ -1,6 +1,6 @@
 import { coerceNightfireBlock, type NightfireBlock } from "../types";
 
-export const SUMMARY_SCHEMA_ID = "acow:content/summary@1";
+export const SUMMARY_SCHEMA_ID = "acow:content/summary";
 
 const SUMMARY_TEXT_PAGE_TYPES = new Set([
 	"summary.book",
@@ -12,7 +12,7 @@ const SUMMARY_IMAGE_PAGE_TYPES = new Set([
 	"summary.diagram",
 	"summary.slideshow"
 ]);
-const SUMMARY_IMAGE_SLIDER_TYPE = "summary.imageSlider";
+const SUMMARY_IMAGE_SLIDER_TYPE = "summary.image_slider";
 
 function clonePagesWithTitleBody(source: unknown): Record<string, unknown>[] {
 	const record = source as Record<string, unknown> | null;
