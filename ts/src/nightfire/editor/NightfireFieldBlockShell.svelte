@@ -129,7 +129,26 @@
       return;
     }
 
-    onSingleBlockChange(normalisedBlocks[0] ?? null);
+    const incoming = normalisedBlocks[0] ?? null;
+    const current = singleBlock;
+    const currentType =
+      current && typeof current === "object" && typeof (current as { type?: unknown }).type === "string"
+        ? (current as { type: string }).type
+        : null;
+    // Poodle BlockEditor owns markdown `content`. Question blocks store payload in
+    // `data`; shell onChange snapshots omit it and wipe inner editor updates
+    // (Add option, body, etc.). Inner NightfireBlockEditor is the source of truth.
+    if (currentType && currentType !== "markdown") {
+      const incomingType =
+        incoming && typeof incoming === "object" && typeof (incoming as { type?: unknown }).type === "string"
+          ? (incoming as { type: string }).type
+          : null;
+      if (incomingType === currentType) {
+        return;
+      }
+    }
+
+    onSingleBlockChange(incoming);
   }
 
   function handleTypePickerChange(index: number, nextType: string): void {
