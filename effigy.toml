@@ -10,6 +10,22 @@ paths = ["node_modules", "target"]
 [package_manager]
 js = "bun"
 
+[release]
+version-file = "Cargo.toml"
+# Underlay's root manifest is a virtual workspace, so the version lives under
+# `[workspace.package]` rather than `[package]`. Effigy only auto-detects the
+# latter, hence the explicit path.
+version-path = "workspace.package.version"
+changelog = "CHANGELOG.md"
+tag-format = "v{version}"
+# 0.x: breaking changes take the minor, not the major.
+pre-1-0 = true
+sync-files = ["Cargo.lock"]
+
+[release.gates]
+validate = "effigy validate"
+rust = "effigy rust:check"
+
 [task_defaults]
 run_in = "host"
 
