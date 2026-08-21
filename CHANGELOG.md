@@ -7,21 +7,20 @@ While Underlay is `0.x`, breaking changes raise the minor version.
 
 ## [Unreleased]
 
-### Removed
-
-- The `@inflatable-cookie/poodle-bridge-underlay` dependency. Nightfire's block
-  editor now consumes Poodle's `BlockEditor` API directly.
+## [0.9.1] - 2026-08-21
 
 ### Changed
-
 - Nightfire block/type adaptation moved into
   `ts/src/nightfire/editor/poodle-block-editor.ts` and typed against Poodle's
   exported `BlockTypeDefinition` and `BlockTypeGroup` rather than hand-copied
   structural mirrors. The unused type-picker mode calculation is dropped.
-
   The bridge package imported nothing - it was pure shape translation living in
   the wrong repository, and it was marked `publicIntent: false`, so depending on
   it made Underlay itself unpublishable and unusable as a Git dependency.
+
+### Removed
+- The `@inflatable-cookie/poodle-bridge-underlay` dependency. Nightfire's block
+  editor now consumes Poodle's `BlockEditor` API directly.
 
 ## [0.9.0] - 2026-08-21
 
