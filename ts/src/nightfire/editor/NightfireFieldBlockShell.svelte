@@ -1,9 +1,6 @@
 <script lang="ts">
   import { BlockEditor } from "@inflatable-cookie/poodle-svelte";
-  import {
-    buildNightfireBlockEditorBridge,
-    toPoodleEditorBlocks,
-  } from "@inflatable-cookie/poodle-bridge-underlay/nightfire-block-editor";
+  import { toBlockTypeGroups, toBlockTypes, toEditorBlocks } from "./poodle-block-editor";
 
   import type { MarkdownEditorContext } from "../markup/markdown-editor-context";
   import type { NightfireBlockDefinition, NightfireTypeOption } from "../utils";
@@ -60,21 +57,19 @@
     onAddFirstBlock,
   }: Props = $props();
 
-  const bridge = $derived(
-    buildNightfireBlockEditorBridge({
-      typeOptions: editorTypeOptions,
-      groupedOptions,
-    }),
+  const blockTypes = $derived(toBlockTypes(editorTypeOptions));
+  const blockTypeItems = $derived(
+    groupedOptions?.length ? toBlockTypeGroups(groupedOptions) : null,
   );
 
   const shellBlocks = $derived.by(() => {
     if (isMulti) {
-      return toPoodleEditorBlocks(blocks as any[], {
+      return toEditorBlocks(blocks as any[], {
         fallbackType: definition.defaultType,
       });
     }
 
-    return toPoodleEditorBlocks(
+    return toEditorBlocks(
       [
         singleBlock ?? {
           type: definition.defaultType,
@@ -199,8 +194,8 @@
 {:else}
   <BlockEditor
     blocks={shellBlocks}
-    blockTypes={bridge.blockTypes}
-    blockTypeItems={bridge.blockTypeItems}
+    blockTypes={blockTypes}
+    blockTypeItems={blockTypeItems}
     mode={isMulti ? "multi" : "single"}
     onChange={handleShellChange}
   >

@@ -1,6 +1,6 @@
 {
   "name": "@inflatable-cookie/underlay",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "private": true,
   "type": "module",
   "files": [
@@ -314,7 +314,6 @@
     }
   },
   "dependencies": {
-    "@inflatable-cookie/poodle-bridge-underlay": "file:../poodle/packages/bridges/underlay",
     "@inflatable-cookie/poodle-svelte": "^0.1.0",
     "esm-env": "^1.2.2",
     "isomorphic-dompurify": "^3.0.0",
@@ -356,7 +355,6 @@
     "suppressionPrefix": "guardrails-disable"
   },
   "overrides": {
-    "@inflatable-cookie/poodle-bridge-underlay": "file:../poodle/packages/bridges/underlay",
     "@inflatable-cookie/poodle-core": "file:../poodle/packages/core",
     "@inflatable-cookie/poodle-svelte": "file:../poodle/packages/svelte/components"
   }

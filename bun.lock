@@ -5,7 +5,6 @@
     "": {
       "name": "@inflatable-cookie/underlay",
       "dependencies": {
-        "@inflatable-cookie/poodle-bridge-underlay": "file:../poodle/packages/bridges/underlay",
         "@inflatable-cookie/poodle-svelte": "^0.1.0",
         "esm-env": "^1.2.2",
         "isomorphic-dompurify": "^3.0.0",
@@ -50,7 +49,6 @@
     },
   },
   "overrides": {
-    "@inflatable-cookie/poodle-bridge-underlay": "file:../poodle/packages/bridges/underlay",
     "@inflatable-cookie/poodle-core": "file:../poodle/packages/core",
     "@inflatable-cookie/poodle-svelte": "file:../poodle/packages/svelte/components",
   },
@@ -154,8 +152,6 @@
     "@floating-ui/dom": ["@floating-ui/dom@1.8.0", "", { "dependencies": { "@floating-ui/core": "^1.8.0", "@floating-ui/utils": "^0.2.12" } }, "sha512-yXSrzeHZBTZadLOlfyhCkJHNeLJnHRnRInwdZ40L7ZiaAtrBwoYlsDrX3v5zB1Utk7CLfzcOVnVVWoXEky7Ceg=="],
 
     "@floating-ui/utils": ["@floating-ui/utils@0.2.12", "", {}, "sha512-HpCo8tmWzLVad5s2d19EhAz5zqrrQ6s69qd6moPMQvkOuSwDT1YgRfWSVuc4ennqrgv3OHppiOGMQ7oC13yIww=="],
-
-    "@inflatable-cookie/poodle-bridge-underlay": ["@inflatable-cookie/poodle-bridge-underlay@file:../poodle/packages/bridges/underlay", {}],
 
     "@inflatable-cookie/poodle-svelte": ["@inflatable-cookie/poodle-svelte@file:../poodle/packages/svelte/components", { "dependencies": { "@inflatable-cookie/poodle-core": "0.1.0", "marked": "^18.0.9" }, "peerDependencies": { "svelte": ">=5.38.6 <6" } }],
 
