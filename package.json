@@ -314,7 +314,7 @@
     }
   },
   "dependencies": {
-    "@inflatable-cookie/poodle-svelte": "^0.1.0",
+    "@inflatable-cookie/poodle-svelte": "0.2.1",
     "esm-env": "^1.2.2",
     "isomorphic-dompurify": "^3.0.0",
     "marked": "^17.0.3",
@@ -353,9 +353,5 @@
     "bannedPatterns": [],
     "moduleScopeChecks": "@inflatable-cookie/underlay/tools/templates/sveltekit-ssr",
     "suppressionPrefix": "guardrails-disable"
-  },
-  "overrides": {
-    "@inflatable-cookie/poodle-core": "file:../poodle/packages/core",
-    "@inflatable-cookie/poodle-svelte": "file:../poodle/packages/svelte/components"
   }
 }
