@@ -314,7 +314,7 @@
     }
   },
   "dependencies": {
-    "@inflatable-cookie/poodle-svelte": "0.2.1",
+    "@inflatable-cookie/poodle-svelte": "0.2.2",
     "esm-env": "^1.2.2",
     "isomorphic-dompurify": "^3.0.0",
     "marked": "^17.0.3",

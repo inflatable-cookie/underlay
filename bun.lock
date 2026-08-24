@@ -5,7 +5,7 @@
     "": {
       "name": "@inflatable-cookie/underlay",
       "dependencies": {
-        "@inflatable-cookie/poodle-svelte": "0.2.1",
+        "@inflatable-cookie/poodle-svelte": "0.2.2",
         "esm-env": "^1.2.2",
         "isomorphic-dompurify": "^3.0.0",
         "marked": "^17.0.3",
@@ -149,9 +149,9 @@
 
     "@floating-ui/utils": ["@floating-ui/utils@0.2.12", "", {}, "sha512-HpCo8tmWzLVad5s2d19EhAz5zqrrQ6s69qd6moPMQvkOuSwDT1YgRfWSVuc4ennqrgv3OHppiOGMQ7oC13yIww=="],
 
-    "@inflatable-cookie/poodle-core": ["@inflatable-cookie/poodle-core@0.2.1", "", { "bin": { "poodle-icons": "src/icons/build.mjs" } }, "sha512-qhyZIWqIUACp+uxxaNCbd/Ma5o34v6/0U26B3awfiBp46Xk6TZ5lJQpGiUGAZKz4xP1+6W8iiabYEQvKvKeuQg=="],
+    "@inflatable-cookie/poodle-core": ["@inflatable-cookie/poodle-core@0.2.2", "", { "bin": { "poodle-icons": "src/icons/build.mjs" } }, "sha512-8B6iCQhRDxmXibBXAQc4Qp8sIfSYih/u1uhtRE6UnKzcX4YcqV4ornXiF7fiF2faogdnt4nWiNrNBeBSXDaBPg=="],
 
-    "@inflatable-cookie/poodle-svelte": ["@inflatable-cookie/poodle-svelte@0.2.1", "", { "dependencies": { "@inflatable-cookie/poodle-core": "0.2.1", "marked": "^18.0.9" }, "peerDependencies": { "svelte": ">=5.38.6 <6" } }, "sha512-Rsm70eIz/7s3y8sKzcFsHA+1qSAZZzetz0do3t9AZD3KQpwH1sioirHRrS6HIMhqRyMH3Y1T/V7cg0dpSXrCvw=="],
+    "@inflatable-cookie/poodle-svelte": ["@inflatable-cookie/poodle-svelte@0.2.2", "", { "dependencies": { "@inflatable-cookie/poodle-core": "0.2.2", "marked": "^18.0.9" }, "peerDependencies": { "svelte": ">=5.38.6 <6" } }, "sha512-BZIKZuqZ3DdoqvyGstuOgaOX23t4+kpXgu7U0BEY7zEsUbYvOrxte1iu+S2/AsIpqaND0BYL3Wu/N5z1ekzc2A=="],
 
     "@internationalized/date": ["@internationalized/date@3.12.3", "", { "dependencies": { "@swc/helpers": "^0.5.0" } }, "sha512-fuLX+3ZKLsxI73y8b01EG/WjHb6gE6weCqlfawPO27kBWGMh9G1yH6Csv1uU7/cac9H2GHmOMt6CjmuQ1aia4Q=="],
 
