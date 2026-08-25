@@ -1,6 +1,6 @@
 # g10.002 - Migration Contract And Active Guide Normalization
 
-Status: ready
+Status: in review
 Owner: repo maintainers
 Spec: `docs/specs/monorepo-consumer-workspace-rollout.md`
 
@@ -42,9 +42,24 @@ bootstrap, development, testing, CI, upgrade, and checklist guidance.
 - Acowtancy's live operator proof uses root `effigy state plan` /
   `effigy state apply local --yes` for state and package-owned `migration:*`
   selectors for schema work.
-- Guide `175` is already marked not-current by the guide overview until this
-  card removes its flat paths, committed `file:` dependencies, and per-package
-  install loop.
+- Guide `175` was marked not-current by the guide overview; this batch removes
+  its flat paths, committed `file:` dependencies, and per-package install loop
+  and restores it to the active reading path.
+
+## Implementation Evidence
+
+- Contract `021` now routes local state through root `effigy state plan` /
+  `effigy state apply local --yes` and schema work through package-owned
+  `migration:*` tasks.
+- Guides `040`, `050`, `080`, `130`, `140`, `150`, `160`, `170`, `172`, `175`,
+  `190`, and `200` now use the single `apps/*` / `packages/*` workspace, one
+  root install/lockfile, released dependencies, and root Effigy routing.
+- The LLM bootstrap pattern and guide indexes now point at the current
+  single-workspace path. Historical consumer proof and closed records were not
+  rewritten.
+- Targeted retired-shape search leaves only explicit prohibitions or retained
+  historical evidence; canonical state, migration, workspace, lockfile, and
+  package-edge terms are present in active guidance.
 
 ## Validation
 
@@ -54,6 +69,10 @@ bootstrap, development, testing, CI, upgrade, and checklist guidance.
 - targeted active-doc `rg` proof
 - `git diff --check`
 
+All listed checks pass. `effigy doctor` still reports the pre-existing
+unsupported `isolation` key plus attention-marker, comment-ratio, and god-file
+scan debt; no doctor findings were changed in this card.
+
 ## Stop Conditions
 
 Stop if a match is historical evidence, migration semantics would change beyond
@@ -62,4 +81,5 @@ contract not owned by this card.
 
 ## Next Task
 
-After merge, promote `g10.003` to ready.
+After review and operator-authorized merge, promote `g10.003` to ready. It
+remains blocked until then.

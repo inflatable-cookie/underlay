@@ -1,6 +1,7 @@
 # 200 - Project Sync Guide
 
-This guide provides a reproducible checklist for bringing a project up to current Underlay patterns. Use it when:
+This guide provides a reproducible checklist for bringing a project up to
+current Underlay patterns. Use it when:
 
 - Setting up a new project using Underlay
 - Updating an existing project to use new Underlay features
@@ -8,7 +9,9 @@ This guide provides a reproducible checklist for bringing a project up to curren
 
 ## Prerequisites
 
-- Underlay repository available (usually symlinked as `underlay/`)
+- One Git workspace with `apps/*`, `packages/*`, root `docs/`, and one root Bun
+  manifest/lockfile
+- Underlay and Poodle declared as released dependencies
 - Rust backend using Axum
 - SvelteKit frontend(s)
 - TypeScript API client
@@ -32,36 +35,48 @@ Before taking a new Underlay feature or behavior change into an app:
 ```toml
 [dependencies]
 # Core Underlay crates
-underlay-core = { path = "../underlay/rust/crates/underlay-core" }
-underlay-db = { path = "../underlay/rust/crates/underlay-db" }
-underlay-http = { path = "../underlay/rust/crates/underlay-http", features = ["validation", "nightfire"] }
-underlay-auth = { path = "../underlay/rust/crates/underlay-auth" }
-underlay-observability = { path = "../underlay/rust/crates/underlay-observability" }
+underlay-core = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.4" }
+underlay-db = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.4" }
+underlay-http = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.4", features = ["validation", "nightfire"] }
+underlay-auth = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.4" }
+underlay-observability = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.4" }
 
 # Optional crates based on features used
-underlay-email = { path = "../underlay/rust/crates/underlay-email", features = ["templates"] }
-underlay-nightfire = { path = "../underlay/rust/crates/underlay-nightfire" }
-underlay-suggestions = { path = "../underlay/rust/crates/underlay-suggestions" }
-underlay-ai-runtime = { path = "../underlay/rust/crates/underlay-ai-runtime" }
-underlay-metrics = { path = "../underlay/rust/crates/underlay-metrics" }
-underlay-openapi = { path = "../underlay/rust/crates/underlay-openapi" }
+underlay-email = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.4", features = ["templates"] }
+underlay-nightfire = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.4" }
+underlay-suggestions = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.4" }
+underlay-ai-runtime = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.4" }
+underlay-metrics = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.4" }
+underlay-openapi = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.4" }
 ```
 
-### TypeScript Client (`package.json`)
+### TypeScript Client (`packages/client/package.json`)
 
 ```json
 {
   "dependencies": {
-    "@anthropic/underlay": "link:../underlay/ts"
+    "@inflatable-cookie/underlay": "git+ssh://git@github.com/inflatable-cookie/underlay.git#v0.9.4"
   }
 }
+```
+
+Run the JavaScript install once from the workspace root and keep the generated
+lockfile there:
+
+```bash
+effigy workspace:js:prepare
 ```
 
 ### Sync Migrations
 
 ```bash
-cargo run --bin underlay-devtools -- sync-migrations --target ./crates/db/migrations
+cargo run --bin underlay-devtools -- sync-migrations --target ./apps/api/migrations
 ```
+
+Use the API package's routed `migration:*` task for normal schema work. Keep
+durable migrations under `apps/api/migrations/` and dev overlays under
+`apps/api/migrations_dev/`; do not create a child install or lockfile for this
+operation.
 
 **Checklist:**
 - [ ] Add underlay-core dependency
@@ -458,7 +473,7 @@ Refactor budget requirement:
 - Reserve at least 15% of implementation effort for structure cleanup/splitting.
 - If a temporary exception is needed, add a tracked follow-up task before merge.
 
-### Cross-Repo Contract Checklist
+### Cross-Workspace Contract Checklist
 
 When changing backend behavior, do not merge until all impacted layers are aligned:
 
@@ -521,7 +536,7 @@ After completing the sync:
 - [ ] API endpoints return correct response shapes
 - [ ] Error responses include proper `error.code` and `error.message`
 - [ ] Validation errors include `error.fieldErrors`
-- [ ] Cross-repo contract checklist (Phase 6.5) completed for any backend/client/UI change
+- [ ] Cross-workspace contract checklist (Phase 6.5) completed for any backend/client/UI change
 - [ ] No changed file exceeds hard limits in `020-project-structure.md`
 
 ---
@@ -553,7 +568,7 @@ Use this section as the required closeout checklist after implementing or updati
 
 - [ ] All referenced file paths in docs exist.
 - [ ] All internal guide links resolve.
-- [ ] Sample commands run as written in at least one consuming app.
+- [ ] Sample commands run as written from one consuming workspace root.
 
 ---
 

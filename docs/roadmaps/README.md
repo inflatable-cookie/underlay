@@ -60,7 +60,8 @@ README surfaces.
 and elective majors landed 2026-08-04.
 
 `g10` is executing the strict monorepo consumer-workspace rollout. `g10.001` is
-complete and `g10.002` is the only ready card. See
+complete, `g10.002` is in review, and `g10.003` remains blocked pending review
+and merge. See
 [`g10/README.md`](g10/README.md).
 
 ## Archived generations
@@ -80,5 +81,5 @@ that risk.
 
 ## Next Task
 
-**`g10.002`** — migration contract and active guide normalization. Execute it
-through the orchestrator-dispatched worker handoff. No other card is ready.
+**`g10.002`** — migration contract and active guide normalization is in review.
+After operator-authorized merge, promote `g10.003`; no other card is ready.

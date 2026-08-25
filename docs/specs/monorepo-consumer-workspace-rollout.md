@@ -159,6 +159,5 @@ Pause the active worker and return to the orchestrator if:
 
 ## Next Task
 
-Execute `g10.002` from its orchestrator-dispatched worker handoff. Repair
-contract `021`'s retired `db:*` selector authority before normalizing the
-remaining active guides. No other card is ready.
+Review `g10.002` after its implementation worker completes. After
+operator-authorized merge, promote `g10.003`; no other card is ready.

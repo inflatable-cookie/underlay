@@ -5,9 +5,14 @@ Use this checklist to verify your project is properly set up.
 ## Project Structure
 
 - [ ] Root `AGENTS.md` created
-- [ ] `apps/` directory with `web/`, `admin/`, `api/`
-- [ ] `libs/` directory with `ui/`, `client/`
-- [ ] `trellis/` or `docs/` directory for documentation
+- [ ] `apps/` directory with `front/`, `admin/`, and `api/`
+- [ ] `packages/` directory with `ui/` and `client/`
+- [ ] Root `docs/` directory owns documentation
+- [ ] No nested Git repositories, submodules, or source-checkout dependencies
+- [ ] Root `package.json` is private and pins `packageManager` to the chosen Bun version
+- [ ] Root `package.json` declares explicit workspaces for every JS package
+- [ ] One root `bun.lock` is committed; no child lockfiles exist
+- [ ] Internal JS dependencies use `workspace:*`
 
 ## Backend (API)
 
@@ -47,8 +52,10 @@ Use this checklist to verify your project is properly set up.
 
 ## Configuration
 
-- [ ] `.env` files created for all apps
-- [ ] Environment variables documented
+- [ ] `config/env-manifest.txt` documents runtime environment keys
+- [ ] `config/required-secrets.txt` documents startup-critical secrets
+- [ ] No committed `.env` files are required by runtime packages
+- [ ] Environment variables and config precedence are documented
 - [ ] Configuration validation at startup
 
 ## Testing
@@ -81,7 +88,7 @@ Use this checklist to verify your project is properly set up.
 
 ## Contract and Quality Gates
 
-- [ ] Cross-repo contract checklist completed for backend/client/frontend changes
+- [ ] Cross-workspace contract checklist completed for backend/client/frontend changes
 - [ ] Naming conventions by layer are consistent (`200-project-sync.md`)
 - [ ] State management follows local vs URL vs store rules (`200-project-sync.md`)
 - [ ] Error handling follows taxonomy and UI behavior map (`185-recipe-map-and-testing-matrix.md`)
@@ -99,15 +106,12 @@ Use this checklist to verify your project is properly set up.
 ## Final Verification
 
 ```bash
-# Run all checks (multi-repo)
-cd myapp-api && cargo test
-cd myapp-client && bun test
-cd myapp-web && bun test
-
-# Run all checks (monorepo)
-cd apps/api && cargo test
-cd libs/client && bun test
-cd apps/web && bun test
+effigy tasks
+effigy health
+effigy test --plan
+effigy validate
+effigy state plan
+effigy state apply local --yes
 ```
 
 If all checks pass, your project is ready for development!

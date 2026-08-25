@@ -1,404 +1,258 @@
 # LLM Bootstrap Guide: From Zero to Working App
 
-This guide provides step-by-step instructions for bootstrapping a new Underlay-based application using the reference implementation.
+This is the current guided bootstrap path for a new Underlay consumer. Contract
+[024](../contracts/024-new-app-bootstrap-and-bring-up.md) owns the guarantees;
+[020](./020-project-structure.md) owns the detailed workspace layout and root
+manifest.
 
 ## Prerequisites
 
-Before starting, ensure you have:
-- Rust toolchain installed (`rustup`)
-- Bun package manager (`bun`)
-- PostgreSQL database running
-- Underlay repository cloned as a sibling directory (or symlinked)
+- Git
+- Effigy
+- Bun `1.3.14`
+- Rust and Cargo
+- access to the workspace's declared secrets and local container services
 
-## Overview
+An Underlay source checkout is not required. Underlay and Poodle enter the
+workspace as released dependencies. Sibling checkouts may be mounted for QA
+tooling, but they are not committed application dependencies.
 
-You will:
-1. Copy the `acme-*` reference projects
-2. Rename everything to your project name
-3. Set up the database
-4. Configure environment variables
-5. Run and verify
+## Workspace Shape
 
----
+Create one Git repository with this role map:
 
-## Step 1: Create Project Directory
-
-```bash
-mkdir your-project
-cd your-project
+```text
+my-project/
+├── apps/
+│   ├── api/          # Rust backend and app-local Cargo workspace
+│   ├── admin/        # Admin SvelteKit app
+│   └── front/        # Product-facing SvelteKit app, when needed
+├── packages/
+│   ├── client/       # Shared TypeScript API client
+│   └── ui/           # Shared UI package, when needed
+├── config/
+├── docs/
+├── package.json
+├── bun.lock
+└── effigy.toml
 ```
 
-## Step 2: Copy Reference Implementation
+Do not copy the pre-convergence physical layout of `underlay-reference`.
+Use it for component and domain examples only; the workspace contract and the
+strict rollout spec define the topology.
 
-Copy all sub-projects from the `underlay-reference` repository:
+## Step 1: Create or Bootstrap the Repository
 
-```bash
-# Clone or copy from underlay-reference repo
-cp -r /path/to/underlay-reference/acme-api ./api
-cp -r /path/to/underlay-reference/acme-client ./api-client
-cp -r /path/to/underlay-reference/acme-admin ./admin
-cp -r /path/to/underlay-reference/acme-front ./front
-cp -r /path/to/underlay-reference/acme-ui ./ui  # optional shared UI
-```
-
-## Step 3: Link Underlay
-
-Create a symlink to the Underlay repository:
+For an existing starter repository, bootstrap the single root:
 
 ```bash
-ln -s /path/to/underlay ./underlay
+effigy bootstrap git@github.com:your-org/your-project.git
 ```
 
-## Step 3.5: Fix Package Paths
+For a new repository:
 
-The reference `package.json` files use paths relative to being inside underlay. Update them for your project structure:
+```bash
+mkdir my-project && cd my-project
+git init
+mkdir -p apps packages config docs
+```
 
-**In `api-client/package.json`, `admin/package.json`, `front/package.json`:**
+There is one Git root. Do not initialize repositories inside `apps/` or
+`packages/`.
+
+## Step 2: Create the Root JavaScript Manifest
+
+Create `package.json` at the repository root. List only JavaScript packages
+that own a manifest; the Rust-only `apps/api` directory is not a Bun workspace
+member.
+
 ```json
-// Change from:
-"@inflatable-cookie/underlay": "file:../.."
-
-// To:
-"@inflatable-cookie/underlay": "file:../underlay"
+{
+  "name": "@myorg/my-project",
+  "private": true,
+  "packageManager": "bun@1.3.14",
+  "workspaces": [
+    "apps/admin",
+    "apps/front",
+    "packages/client",
+    "packages/ui"
+  ]
+}
 ```
 
-## Step 4: Rename Project
-
-Systematically replace `acme` with your project name. For this example, we use `myapp`.
-
-### 4.1 Rust Crate Names
-
-**Files to modify:**
-- `api/Cargo.toml` - workspace member names
-- `api/crates/*/Cargo.toml` - package names and dependencies
-
-**Substitutions:**
-```
-acme-api → myapp-api
-acme-core → myapp-core
-acme-infra → myapp-infra
-acme-db → myapp-db
-acme-auth → myapp-auth
-acme-domain → myapp-domain
-acme-jobs → myapp-jobs
-
-acme_api → myapp_api
-acme_core → myapp_core
-acme_infra → myapp_infra
-acme_db → myapp_db
-acme_auth → myapp_auth
-acme_domain → myapp_domain
-acme_jobs → myapp_jobs
-```
-
-### 4.2 TypeScript Package Names
-
-**Files to modify:**
-- `api-client/package.json` - package name
-- `admin/package.json` - package name and dependencies
-- `front/package.json` - package name and dependencies
-
-**Substitutions:**
-```
-@acme/client → @myapp/client
-acme-admin → myapp-admin
-acme-front → myapp-front
-```
-
-### 4.3 Service and Type Names
-
-**Files to modify:**
-- `api/crates/auth/src/lib.rs`
-- `api/crates/auth/src/local.rs`
-- `api-client/src/utils/client-factory.ts`
-- `api-client/src/index.ts`
-
-**Substitutions:**
-```
-AcmeLocalAuthService → MyAppLocalAuthService
-AcmeLocalAuthProvider → MyAppLocalAuthProvider
-configureAcmeClient → configureMyAppClient
-AcmeClientConfig → MyAppClientConfig
-```
-
-### 4.4 Cookie and Token Names
-
-**Files to modify:**
-- `admin/src/lib/utils/auth-tokens.ts`
-- Any files referencing token names
-
-**Substitutions:**
-```
-acme_access_token → myapp_access_token
-acme_refresh_token → myapp_refresh_token
-```
-
-### 4.5 Database Schema Names
-
-**Files to modify:**
-- `api/migrations/*` - SQL files
-- `api/crates/db/src/lib.rs` - DEV_RESET_SCHEMAS
-
-**Substitutions:**
-```sql
--- In migrations
-CREATE SCHEMA acme → CREATE SCHEMA myapp
-acme.table_name → myapp.table_name
-```
-
-### 4.6 Env Surface And Config Files
-
-**Files to modify:**
-- `api/config/env-manifest.txt`
-- `api/config/default.toml`
-- Any code referencing ACME_* variables
-
-**Substitutions:**
-```
-ACME_* → MYAPP_*
-```
-
-### 4.7 App Display Names
-
-**Files to modify:**
-- `api/crates/infra/src/config.rs`
-- `api/crates/auth/src/local.rs`
-- `admin/src/routes/` - page titles
-- `front/src/routes/` - page titles
-
-**Substitutions:**
-```
-"Acme" → "My App"
-acme.example.com → myapp.com
-```
-
-### Automated Renaming Script
+Keep one root `bun.lock`. Generate and verify it with the root Effigy install
+task:
 
 ```bash
-#!/bin/bash
-# rename-project.sh - Run from project root
-
-OLD_NAME="acme"
-NEW_NAME="myapp"
-OLD_DISPLAY="Acme"
-NEW_DISPLAY="MyApp"
-
-# Rust files
-find api -type f \( -name "*.rs" -o -name "*.toml" -o -name "*.sql" \) \
-  -exec sed -i '' \
-    -e "s/${OLD_NAME}-/${NEW_NAME}-/g" \
-    -e "s/${OLD_NAME}_/${NEW_NAME}_/g" \
-    -e "s/${OLD_DISPLAY}LocalAuthService/${NEW_DISPLAY}LocalAuthService/g" \
-    -e "s/${OLD_DISPLAY}LocalAuthProvider/${NEW_DISPLAY}LocalAuthProvider/g" \
-    -e "s/\"${OLD_DISPLAY}\"/\"${NEW_DISPLAY}\"/g" \
-    -e "s/${OLD_NAME}\.example\.com/${NEW_NAME}.example.com/g" \
-    {} \;
-
-# TypeScript files
-find api-client admin front -type f \( -name "*.ts" -o -name "*.svelte" -o -name "*.json" \) \
-  -exec sed -i '' \
-    -e "s/@${OLD_NAME}/@${NEW_NAME}/g" \
-    -e "s/${OLD_NAME}-/${NEW_NAME}-/g" \
-    -e "s/${OLD_NAME}_/${NEW_NAME}_/g" \
-    -e "s/configure${OLD_DISPLAY}Client/configure${NEW_DISPLAY}Client/g" \
-    -e "s/${OLD_DISPLAY}ClientConfig/${NEW_DISPLAY}ClientConfig/g" \
-    -e "s/${OLD_DISPLAY}/${NEW_DISPLAY}/g" \
-    {} \;
+effigy workspace:js:prepare
 ```
 
-## Step 5: Set Up Database
+Do not create child lockfiles or run package-by-package installs.
 
-### 5.1 Create Database
+## Step 3: Declare Released Dependencies
 
-```bash
-createdb myapp
+In `apps/api/Cargo.toml`, pin Underlay crates to one release tag:
+
+```toml
+[workspace.dependencies]
+underlay-core = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.4" }
+underlay-http = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.4" }
+underlay-auth = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.4" }
 ```
 
-### 5.2 Configure Connection
+In each consuming app package such as `apps/admin` or `apps/front`, use the
+same released tag and point at internal packages through `workspace:*`:
 
-```bash
-mkdir -p api/config
+```json
+{
+  "dependencies": {
+    "@inflatable-cookie/underlay": "git+ssh://git@github.com/inflatable-cookie/underlay.git#v0.9.4",
+    "@myorg/client": "workspace:*"
+  }
+}
 ```
 
-Set the local secret through Effigy and keep non-secrets in `config/*.toml`:
+Use released Poodle package versions. Internal JavaScript edges use
+`workspace:*`. Do not commit source paths, sibling dependency references, or
+other local replacements.
+
+## Step 4: Rename the Project
+
+Replace the placeholder name in the root and package manifests, Rust crate
+names, TypeScript package names, schema names, cookie/token identifiers, and
+display text. Keep the role paths stable:
+
+- API routes and Rust crates: `apps/api/`
+- TypeScript commands and types: `packages/client/`
+- Admin routes: `apps/admin/`
+- Product-facing routes: `apps/front/`
+
+Search before editing. Review every replacement; do not rename generated files,
+migration history, or unrelated prose mechanically.
+
+## Step 5: Configure Secrets and Runtime Inputs
+
+Create the root config and secret manifests required by the app:
+
+- `config/env-manifest.txt` for runtime environment keys
+- `config/required-secrets.txt` for startup-critical secrets
+- committed config defaults and an ignored local override where supported
+
+Initialize local secret storage through Effigy:
+
 ```bash
 effigy secrets init
-effigy secrets set database_url
 ```
 
-### 5.3 Run Migrations
+Runtime packages must not depend on committed `.env` files. Environment
+injection is the highest-precedence override over committed defaults and local
+config.
+
+## Step 6: Apply Local State and Schema
+
+Use the root state stack for database and seed state:
 
 ```bash
-cd api
-cargo run -p myapp-db --bin migrate_dev_db
+effigy state plan
+effigy state apply local --yes
 ```
 
-**Expected output:**
-```
-Dev database migrations + seeds complete.
-```
-
-## Step 6: Generate Auth Keys
+Schema execution stays API-owned. Run the routed API-package `migration:*`
+front door when schema work is needed; for a package that declares it, the
+normal local reset/replay example is:
 
 ```bash
-cd api
-cargo run -p myapp-auth --bin generate-jwt-env >> .env
+effigy migration:reset
 ```
 
-This appends `AUTH_JWT_PRIVATE_KEY` and `AUTH_JWT_PUBLIC_KEY` to your `.env` file.
+Do not add root or package `db:migrate`, `db:reset`, or `db:drop` aliases.
 
-## Step 7: Install TypeScript Dependencies
+## Step 7: Install and Verify the Workspace
+
+Install once from the repository root, then run the repo-owned baseline:
 
 ```bash
-cd api-client && bun install
-cd ../admin && bun install
-cd ../front && bun install
+effigy workspace:js:prepare
+effigy tasks
+effigy health
+effigy test --plan
+effigy validate
 ```
 
-## Step 8: Verify Builds
-
-### 8.1 Rust API
+For the app-local Rust workspace, run the narrow check from its owning
+directory:
 
 ```bash
-cd api
-cargo build
+cd apps/api
+cargo check --workspace
+cargo test --workspace
 ```
 
-**Expected:** Compiles without errors.
+Return to the repository root before running root Effigy selectors.
 
-### 8.2 TypeScript Client
+## Step 8: Start the Application
+
+Start the whole workspace through the root catalog:
 
 ```bash
-cd api-client
-bun run build
+cd /path/to/my-project
+effigy dev
 ```
 
-**Expected:** Builds to `dist/` without errors.
-
-### 8.3 Admin Frontend
+To start one surface, use its catalog-qualified package task:
 
 ```bash
-cd admin
-bun check
+effigy <admin-package>/dev
+effigy <front-package>/dev
 ```
 
-**Expected:** No type errors.
-
-### 8.4 Public Frontend
-
-```bash
-cd front
-bun check
-```
-
-**Expected:** No type errors.
-
-## Step 9: Run the Application
-
-### Terminal 1: API Server
-
-```bash
-cd api
-cargo run
-```
-
-**Expected output:**
-```
-listening on 127.0.0.1:3000
-```
-
-### Terminal 2: Admin Frontend
-
-```bash
-cd admin
-bun dev
-```
-
-**Expected output:**
-```
-  VITE v5.x.x  ready in xxx ms
-  ➜  Local:   http://localhost:4174/
-```
-
-### Terminal 3: Public Frontend
-
-```bash
-cd front
-bun dev
-```
-
-**Expected output:**
-```
-  VITE v5.x.x  ready in xxx ms
-  ➜  Local:   http://localhost:4173/
-```
-
-## Step 10: Verify Everything Works
-
-1. **Health check:** `curl http://localhost:3000/api/health`
-   - Expected: `{"status":"ok"}`
-
-2. **Admin login page:** Open `http://localhost:4174/login`
-   - Expected: Login form renders
-
-3. **Front landing page:** Open `http://localhost:4173/`
-   - Expected: Landing page renders
-
----
+The root README should document local URLs, gateway hosts, and any container
+notes that are specific to the workspace.
 
 ## Customization Checklist
 
-After bootstrapping, customize your project:
-
-- [ ] Update `api/.env` with production values
-- [ ] Replace email templates in `api/templates/`
-- [ ] Add your domain entities in `api/crates/domain/`
-- [ ] Add database tables in `api/migrations/`
-- [ ] Add API routes in `api/crates/api/src/routes/`
-- [ ] Add client commands in `api-client/src/commands/`
-- [ ] Build admin UI in `admin/src/routes/`
-- [ ] Build public UI in `front/src/routes/`
-- [ ] Update branding (logos, colors, titles)
-- [ ] Configure CORS origins in `.env`
-- [ ] Set up CI/CD pipeline
-
----
+- [ ] Root `package.json` is private and pins the Bun package manager.
+- [ ] Root workspaces list every JavaScript package explicitly.
+- [ ] `apps/api` owns the Cargo workspace; no root Cargo workspace is needed.
+- [ ] `apps/admin`, `apps/front`, `packages/client`, and `packages/ui`
+      have roles documented in the root README.
+- [ ] One root `bun.lock` exists and no child lockfiles exist.
+- [ ] Internal JavaScript dependencies use `workspace:*`.
+- [ ] Underlay and Poodle use released dependencies.
+- [ ] `config/env-manifest.txt` and `config/required-secrets.txt` exist
+      where runtime packages read environment or secret values.
+- [ ] Root state and API-package migration tasks are documented separately.
+- [ ] `effigy health`, `effigy test --plan`, and `effigy validate` pass.
 
 ## Troubleshooting
 
-### Cargo build fails with "can't find crate"
+### Cargo cannot find an Underlay crate
 
-Ensure the Underlay symlink is correct:
-```bash
-ls -la underlay/rust/crates/
-```
+Check that every Underlay crate uses the intended released Git tag and that
+`apps/api/Cargo.lock` was regenerated. Do not repair this with a source path.
 
-### "relation does not exist" errors
+### Schema or relation errors appear during bring-up
 
-Run migrations:
-```bash
-cd api
-cargo run -p myapp-db --bin migrate_dev_db
-```
+Run `effigy state plan`, apply the local state stack, then use the API
+package's routed `migration:*` task. Confirm that durable migrations live
+under `apps/api/migrations/` and dev overlays are separate.
 
-### "invalid signature" JWT errors
+### Secret or JWT errors appear at startup
 
-Regenerate keys:
-```bash
-cd api
-cargo run -p myapp-auth --bin generate-jwt-env >> .env
-```
+Confirm the required keys are listed in `config/required-secrets.txt` and
+that the local Effigy secret store is initialized. Keep generated values out of
+Git.
 
-### TypeScript import errors
+### TypeScript imports fail after an Underlay upgrade
 
-Rebuild the client:
-```bash
-cd api-client
-bun run build
-```
+Run `effigy workspace:js:prepare` from the root and use explicit exports such
+as `@inflatable-cookie/underlay/client/*`,
+`@inflatable-cookie/underlay/runtime/*`, or
+`@inflatable-cookie/underlay/patterns`.
 
-Then reinstall in admin/front:
-```bash
-cd admin && bun install
-cd front && bun install
-```
+## Full Reference
+
+For the detailed layout, read [020-project-structure](./020-project-structure.md)
+and [030-underlay-integration](./030-underlay-integration.md). For the
+normative bootstrap and bring-up rules, read
+[contract 024](../contracts/024-new-app-bootstrap-and-bring-up.md).

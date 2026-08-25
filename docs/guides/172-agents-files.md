@@ -27,6 +27,10 @@ Keep each AGENTS file to roughly 30-60 lines.
 - Non-negotiable conventions (e.g. JSON naming, migration constraints)
 - Explicit do/don't constraints
 
+For Underlay consumers, the root `AGENTS.md` belongs at the single workspace
+root. Package-level files under `apps/*` or `packages/*` refine that scope and
+link back to the root docs; they do not create child-repository instructions.
+
 ### 3) Validation
 
 - Minimal commands for touched areas only
@@ -120,7 +124,7 @@ Rules:
 2. Keep `docs/roadmaps/README.md` status column aligned with each file's `Status:` value.
 3. Update aggregate totals in `docs/roadmaps/README.md` whenever status counts change.
 4. Prefer canonical status values: `Complete`, `In progress`, `Not started`.
-5. Run `bun validate` after roadmap status/index updates to ensure no unrelated regressions.
+5. Run `effigy validate` after roadmap status/index updates to ensure no unrelated regressions.
 
 ## Upgrade Documentation Protocol
 

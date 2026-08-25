@@ -152,7 +152,7 @@ packages — they arrive as released dependencies.
 
 ### For LLMs
 
-1. Read documents **in order** (000 → 170)
+1. Read documents **in order** (000 → 175)
 2. Copy code examples from the `code/` subdirectories
 3. Follow the checklist in `170-checklist.md`
 4. Treat the docs as scaffolding; fill in app-specific domain details as you build
@@ -191,6 +191,7 @@ packages — they arrive as released dependencies.
 | 150 | CI/CD | GitHub Actions template |
 | 160 | Troubleshooting | Common issues and solutions |
 | 170 | Checklist | Completion verification |
+| 175 | LLM Bootstrap Guide | Guided single-workspace bootstrap |
 
 ## Reference Implementation
 
@@ -209,9 +210,9 @@ For bootstrapping a new project, follow
 [020-project-structure](./020-project-structure.md) and
 [030-underlay-integration](./030-underlay-integration.md).
 
-> `175-llm-bootstrap-guide.md` is **not** current. It still teaches flat
-> component paths, committed `file:` dependencies, and per-package installs.
-> `g10.002` normalizes it; do not follow it until then.
+Use [`175-llm-bootstrap-guide.md`](./175-llm-bootstrap-guide.md) for the
+guided single-workspace bootstrap after reading contract `024` and guides
+`020` and `030`.
 
 ## Next Steps
 

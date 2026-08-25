@@ -77,6 +77,7 @@ visible UI.
 
 ## Prompts
 
+- "Bootstrap a new Underlay project" → [LLM Project Bootstrap](./llm-project-bootstrap.md) and [175 - LLM Bootstrap Guide](../guides/175-llm-bootstrap-guide.md)
 - "Build admin pages for X" → start with [CRUD Admin Interface](./crud-admin-interface.md) plus Poodle `Admin Feature Delivery Recipes`
 - "Build nested CRUD under a parent detail route" → [Nested Entity Management](./nested-entity-management.md)
 - "Build a paginated/filterable admin list" → [Autonomous Admin List](./autonomous-admin-list.md)
