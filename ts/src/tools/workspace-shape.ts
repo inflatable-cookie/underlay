@@ -30,6 +30,8 @@ export const WORKSPACE_SHAPE_RULE_IDS = {
 	WORKSPACES_MISSING: 'workspaces-missing',
 	WORKSPACES_INVALID: 'workspaces-invalid',
 	WORKSPACE_PATH_MISSING: 'workspace-path-missing',
+	WORKSPACE_PATH_OUTSIDE_ROOT: 'workspace-path-outside-root',
+	WORKSPACE_MEMBER_UNDECLARED: 'workspace-member-undeclared',
 	ROOT_LOCK_MISSING: 'root-lock-missing',
 	CHILD_LOCKFILE: 'child-lockfile',
 	INTERNAL_FILE_DEPENDENCY: 'internal-file-dependency',
@@ -80,6 +82,8 @@ const DEPENDENCY_FIELDS = [
 	'optionalDependencies',
 ] as const;
 
+const WORKSPACE_DISCOVERY_PREFIXES = ['apps', 'packages'];
+
 // =============================================================================
 // Helpers
 // =============================================================================
@@ -114,6 +118,16 @@ async function readPackageJson(manifestPath: string): Promise<PackageJson | unde
 
 function hasGlobPattern(workspacePath: string): boolean {
 	return /[*?{}]/.test(workspacePath);
+}
+
+function isPathInsideRoot(root: string, targetPath: string): boolean {
+	const normalizedRoot = path.resolve(root);
+	const resolved = path.resolve(normalizedRoot, targetPath);
+	return resolved === normalizedRoot || resolved.startsWith(`${normalizedRoot}${path.sep}`);
+}
+
+function normalizeWorkspacePath(workspacePath: string): string {
+	return workspacePath.replace(/\\/g, '/').replace(/\/+$/, '');
 }
 
 function sortViolations(violations: WorkspaceShapeViolation[]): WorkspaceShapeViolation[] {
@@ -201,6 +215,35 @@ function isInternalFileDependency(
 	}
 
 	return false;
+}
+
+async function discoverWorkspacePackagePaths(root: string): Promise<string[]> {
+	const discovered: string[] = [];
+
+	for (const prefix of WORKSPACE_DISCOVERY_PREFIXES) {
+		const prefixPath = path.join(root, prefix);
+		if (!(await pathExists(prefixPath))) continue;
+		await collectWorkspacePackagePaths(root, prefix, discovered);
+	}
+
+	return [...new Set(discovered)].sort();
+}
+
+async function collectWorkspacePackagePaths(
+	root: string,
+	relativeDir: string,
+	discovered: string[],
+): Promise<void> {
+	const dirPath = path.join(root, relativeDir);
+	if (await pathExists(path.join(dirPath, 'package.json'))) {
+		discovered.push(normalizeWorkspacePath(relativeDir));
+	}
+
+	const entries = await readdir(dirPath, { withFileTypes: true });
+	for (const entry of entries) {
+		if (entry.name === '.git' || SKIP_DIR_NAMES.has(entry.name) || !entry.isDirectory()) continue;
+		await collectWorkspacePackagePaths(root, path.join(relativeDir, entry.name), discovered);
+	}
 }
 
 // =============================================================================
@@ -317,13 +360,44 @@ async function checkWorkspacePaths(
 	violations: WorkspaceShapeViolation[],
 ): Promise<void> {
 	for (const workspacePath of workspacePaths) {
-		const manifestPath = path.join(workspacePath, 'package.json');
+		const normalizedPath = normalizeWorkspacePath(workspacePath);
+		if (!isPathInsideRoot(root, normalizedPath)) {
+			pushViolation(
+				violations,
+				WORKSPACE_SHAPE_RULE_IDS.WORKSPACE_PATH_OUTSIDE_ROOT,
+				'package.json',
+				`workspace path ${workspacePath} resolves outside the Git root`,
+			);
+			continue;
+		}
+
+		const manifestPath = path.join(normalizedPath, 'package.json');
 		if (!(await pathExists(path.join(root, manifestPath)))) {
 			pushViolation(
 				violations,
 				WORKSPACE_SHAPE_RULE_IDS.WORKSPACE_PATH_MISSING,
 				manifestPath,
 				`workspace path ${workspacePath} does not resolve to a package manifest`,
+			);
+		}
+	}
+}
+
+async function checkWorkspaceMembership(
+	root: string,
+	workspacePaths: string[],
+	violations: WorkspaceShapeViolation[],
+): Promise<void> {
+	const discoveredPaths = await discoverWorkspacePackagePaths(root);
+	const declaredPaths = new Set(workspacePaths.map((entry) => normalizeWorkspacePath(entry)));
+
+	for (const discoveredPath of discoveredPaths) {
+		if (!declaredPaths.has(discoveredPath)) {
+			pushViolation(
+				violations,
+				WORKSPACE_SHAPE_RULE_IDS.WORKSPACE_MEMBER_UNDECLARED,
+				path.join(discoveredPath, 'package.json'),
+				`JavaScript package manifest is not declared in root workspaces (${discoveredPath})`,
 			);
 		}
 	}
@@ -417,6 +491,11 @@ export async function checkWorkspaceShape(rootPath: string): Promise<WorkspaceSh
 
 	const rootManifest = await readPackageJson(path.join(root, 'package.json'));
 	const workspacePaths = checkRootManifestFields(rootManifest, violations);
+	const hasWorkspacesArray = Array.isArray(rootManifest?.workspaces);
+
+	if (hasWorkspacesArray) {
+		await checkWorkspaceMembership(root, workspacePaths, violations);
+	}
 
 	if (workspacePaths.length > 0) {
 		await checkWorkspacePaths(root, workspacePaths, violations);
@@ -452,12 +531,12 @@ export function formatWorkspaceShapeReport(
 }
 
 // =============================================================================
-// CLI Entry Point
+// CLI
 // =============================================================================
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+export function runWorkspaceShapeCli(argv: string[] = process.argv): void {
 	(async () => {
-		const args = process.argv.slice(2);
+		const args = argv.slice(2);
 		let rootArg: string | undefined;
 
 		for (let i = 0; i < args.length; i++) {
@@ -466,7 +545,8 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 Workspace shape - Consumer Bun workspace topology conformance
 
 Usage:
-  bun underlay/ts/src/tools/workspace-shape.ts [path]
+  underlay-workspace-shape [path]
+  bun underlay/ts/bin/underlay-workspace-shape.ts [path]
 
 Options:
   --help, -h        Show this help message
@@ -489,4 +569,8 @@ The path defaults to the current working directory.
 			process.exit(1);
 		}
 	})();
+}
+
+if (import.meta.url === `file://${process.argv[1]}`) {
+	runWorkspaceShapeCli();
 }

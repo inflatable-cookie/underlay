@@ -14,6 +14,10 @@ import { scanFiles } from "@inflatable-cookie/underlay/tools/guardrails";
 import { loadConfig } from "@inflatable-cookie/underlay/tools/guardrails-config";
 import { bannedPatterns } from "@inflatable-cookie/underlay/tools/templates/banned-apis";
 import { moduleScopeChecks } from "@inflatable-cookie/underlay/tools/templates/sveltekit-ssr";
+import {
+  checkWorkspaceShape,
+  runWorkspaceShapeCli,
+} from "@inflatable-cookie/underlay/tools/workspace-shape";
 import { getBlockEditor } from "@inflatable-cookie/underlay/nightfire";
 
 describe("package compatibility barrels", () => {
@@ -52,6 +56,8 @@ describe("package compatibility barrels", () => {
     expect(typeof createMockHttpClient).toBe("function");
     expect(typeof scanFiles).toBe("function");
     expect(typeof loadConfig).toBe("function");
+    expect(typeof checkWorkspaceShape).toBe("function");
+    expect(typeof runWorkspaceShapeCli).toBe("function");
     expect(bannedPatterns.length).toBeGreaterThan(0);
     expect(moduleScopeChecks.length).toBeGreaterThan(0);
   });

@@ -25,13 +25,24 @@ alignment, and consumer integration guidance.
 | `docs/contracts/app-review/underlay-app-review-checklist.json` | `workspace-shape` mechanical check on bootstrap domain |
 | `docs/guides/030-underlay-integration.md` | Consumer `qa:workspace-shape` Effigy task pattern |
 
-## Proof
+## Review follow-up (2026-08-25)
+
+Addressed orchestrator changes requested on PR #8:
+
+1. Removed workstation-local Acowtancy path from `health` tests; fixture-only
+   self-tests remain in `check:workspace-shape`.
+2. Added workspace membership and outside-root enforcement with new fixtures.
+3. Published `underlay-workspace-shape` bin entry and documented consumer
+   invocation through `bunx underlay-workspace-shape .`.
+
 
 - Fixture suite: compliant workspace passes; nested Git, manifest drift,
   wildcard/unresolved workspaces, child locks, internal `file:`, and non-
   `workspace:*` internal edges fail with stable rule ids.
-- Live proof: `bun ts/src/tools/workspace-shape.ts /Users/tom/Dev/projects/acowtancy`
-  passes with zero violations.
+- Live proof (review evidence, not CI): orchestrator re-review recorded
+  `bun ts/bin/underlay-workspace-shape.ts /Users/tom/Dev/projects/acowtancy`
+  with zero violations on 2026-08-25. Underlay `health`/`validate` stay fixture-
+  only via `check:workspace-shape`.
 - Underlay does not run the consumer topology check against its own foundation
   root; `check:workspace-shape` runs fixture self-tests only.
 

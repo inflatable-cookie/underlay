@@ -1,19 +1,22 @@
 import { cp, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { execFile } from "node:child_process";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { promisify } from "node:util";
 import { afterEach, describe, expect, it } from "vitest";
 import {
 	checkWorkspaceShape,
 	WORKSPACE_SHAPE_RULE_IDS,
 } from "@inflatable-cookie/underlay/tools/workspace-shape";
 
+const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 const fixturesRoot = path.join(
 	path.dirname(fileURLToPath(import.meta.url)),
 	"../fixtures/workspace-shape",
 );
-
-const acowtancyRoot = "/Users/tom/Dev/projects/acowtancy";
+const publishedBin = path.join(repoRoot, "ts/bin/underlay-workspace-shape.ts");
+const execFileAsync = promisify(execFile);
 
 const tempDirs: string[] = [];
 
@@ -35,6 +38,17 @@ async function loadFixture(name: string): Promise<string> {
 	return dir;
 }
 
+async function loadOutsideRootFixture(): Promise<string> {
+	const parent = await makeTempDir();
+	const repoDir = path.join(parent, "repo");
+	await cp(path.join(fixturesRoot, "workspace-outside-root"), repoDir, { recursive: true });
+	await cp(path.join(fixturesRoot, "_outside-repo"), path.join(parent, "outside"), {
+		recursive: true,
+	});
+	await writeFile(path.join(repoDir, ".git"), "gitdir: fixture\n");
+	return repoDir;
+}
+
 afterEach(async () => {
 	await Promise.all(tempDirs.splice(0).map((dir) => rm(dir, { recursive: true, force: true })));
 });
@@ -45,14 +59,28 @@ describe("tools/workspace-shape", () => {
 		expect(violations).toEqual([]);
 	});
 
-	it("accepts Acowtancy's live workspace shape", async () => {
-		const violations = await checkWorkspaceShape(acowtancyRoot);
+	it("accepts empty workspaces when no JavaScript package manifests exist", async () => {
+		const violations = await checkWorkspaceShape(await loadFixture("empty-workspaces-valid"));
 		expect(violations).toEqual([]);
 	});
 
 	it("flags nested Git metadata", async () => {
 		const violations = await checkWorkspaceShape(await loadFixture("nested-git"));
 		expect(violations.map((v) => v.ruleId)).toContain(WORKSPACE_SHAPE_RULE_IDS.NESTED_GIT_REPO);
+	});
+
+	it("flags undeclared workspace members under apps/* and packages/*", async () => {
+		const violations = await checkWorkspaceShape(await loadFixture("undeclared-workspace-member"));
+		expect(violations.map((v) => v.ruleId)).toContain(
+			WORKSPACE_SHAPE_RULE_IDS.WORKSPACE_MEMBER_UNDECLARED,
+		);
+	});
+
+	it("flags workspace paths that resolve outside the Git root", async () => {
+		const violations = await checkWorkspaceShape(await loadOutsideRootFixture());
+		expect(violations.map((v) => v.ruleId)).toContain(
+			WORKSPACE_SHAPE_RULE_IDS.WORKSPACE_PATH_OUTSIDE_ROOT,
+		);
 	});
 
 	it("flags root manifest drift cases", async () => {
@@ -103,5 +131,14 @@ describe("tools/workspace-shape", () => {
 			return a.detail.localeCompare(b.detail);
 		});
 		expect(violations).toEqual(sorted);
+	});
+
+	it("runs through the published underlay-workspace-shape bin entry", async () => {
+		const fixtureDir = await loadFixture("compliant");
+		const { stdout } = await execFileAsync("bun", [publishedBin, fixtureDir], {
+			cwd: repoRoot,
+		});
+
+		expect(stdout).toContain("All workspace shape checks passed.");
 	});
 });

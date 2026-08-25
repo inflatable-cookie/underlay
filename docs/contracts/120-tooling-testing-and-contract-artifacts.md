@@ -229,9 +229,9 @@ Rules:
   separate from security conformance in
   `scripts/check-consumer-conformance.sh`
 - consumers invoke the distributed export
-  `@inflatable-cookie/underlay/tools/workspace-shape` from an Effigy-owned task
-  such as `qa:workspace-shape`, then compose that task into `health` or
-  `validate`
+  `@inflatable-cookie/underlay/tools/workspace-shape` through the published
+  `underlay-workspace-shape` bin entry from an Effigy-owned task such as
+  `qa:workspace-shape`, then compose that task into `health` or `validate`
 - Underlay wires fixture self-tests through `check:workspace-shape` and does not
   run the consumer topology check against its own foundation root
 - diagnostics must identify a stable rule id, repo-relative path, and offending

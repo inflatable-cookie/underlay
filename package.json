@@ -6,6 +6,9 @@
   "files": [
     "ts"
   ],
+  "bin": {
+    "underlay-workspace-shape": "./ts/bin/underlay-workspace-shape.ts"
+  },
   "exports": {
     "./patterns": {
       "svelte": "./ts/src/patterns/index.ts",
