@@ -50,9 +50,11 @@ Underlay is in parallel mode:
 - `g10.001` is complete
 - `g10.002` is complete
 - `g10.003` is complete
-- `g10.004` is the only ready card
+- `g10.004` is complete
+- `g10.005` is the only ready card
 
 ## Next Task
 
-Execute `g10.004` — Acowtancy evidence repair — through an
-orchestrator-dispatched Acowtancy worker handoff. No other card is ready.
+Execute `g10.005` — Underlay Reference normalization — through an
+orchestrator-dispatched Underlay Reference worker handoff. No other card is
+ready.

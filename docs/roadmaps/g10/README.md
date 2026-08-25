@@ -119,8 +119,8 @@ lane.
 1. [x] [`g10.001`](batch-cards/001-monorepo-contract-authority.md) — monorepo contract authority (`complete`)
 2. [x] [`g10.002`](batch-cards/002-active-guide-normalization.md) — migration contract and active guide normalization (`complete`)
 3. [x] [`g10.003`](batch-cards/003-workspace-shape-conformance.md) — workspace-shape conformance (`complete`)
-4. [ ] [`g10.004`](batch-cards/004-acowtancy-evidence-repair.md) — Acowtancy evidence repair (`ready`)
-5. [ ] [`g10.005`](batch-cards/005-underlay-reference-normalization.md) — Underlay Reference normalization
+4. [x] [`g10.004`](batch-cards/004-acowtancy-evidence-repair.md) — Acowtancy evidence repair (`complete`)
+5. [ ] [`g10.005`](batch-cards/005-underlay-reference-normalization.md) — Underlay Reference normalization (`ready`)
 6. [ ] [`g10.006`](batch-cards/006-contact-patch-normalization.md) — Contact Patch normalization
 7. [ ] [`g10.007`](batch-cards/007-compli-me-normalization.md) — Compli Me normalization
 8. [ ] [`g10.008`](batch-cards/008-songsprout-normalization.md) — Songsprout normalization
@@ -129,7 +129,7 @@ lane.
 
 ## Next Task
 
-Execute `g10.004` — Acowtancy evidence repair — through an
-orchestrator-dispatched Acowtancy worker handoff. `g10.003` evidence:
-[`docs/logs/2026-08/25-203725-g10-003-workspace-shape-conformance.md`](../../logs/2026-08/25-203725-g10-003-workspace-shape-conformance.md).
+Execute `g10.005` — Underlay Reference normalization — through an
+orchestrator-dispatched Underlay Reference worker handoff. `g10.004` evidence:
+[`docs/logs/2026-08/25-232150-g10-004-acowtancy-evidence-repair.md`](../../logs/2026-08/25-232150-g10-004-acowtancy-evidence-repair.md).
 No other card is ready.

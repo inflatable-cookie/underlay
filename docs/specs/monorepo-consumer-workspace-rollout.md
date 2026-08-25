@@ -77,8 +77,8 @@ Acowtancy is the current live proof:
 - one `bun install --frozen-lockfile` Effigy setup task;
 - released Underlay and Poodle application dependencies.
 
-Its README still contains an obsolete sibling-`file:` explanation. `g10.004`
-repairs that evidence after the Underlay authority batches.
+`g10.004` corrected its active README and AGENTS evidence without changing
+manifests, locks, or application dependencies.
 
 Underlay Reference remains the bootstrap fixture. `g10.005` makes its physical
 shape match the contract before the remaining consumers migrate.
@@ -159,5 +159,5 @@ Pause the active worker and return to the orchestrator if:
 
 ## Next Task
 
-Execute `g10.004` through an orchestrator-dispatched Acowtancy worker handoff.
-No other card is ready.
+Execute `g10.005` through an orchestrator-dispatched Underlay Reference worker
+handoff. No other card is ready.

@@ -21,6 +21,6 @@ Specs hold active Underlay planning and strict execution-control surfaces.
 
 ## Next Task
 
-Execute `g10.004` from the active spec through an orchestrator-dispatched
-Acowtancy worker handoff. Do not open a second strict lane that shares consumer
-workspace, bootstrap, package, or conformance surfaces.
+Execute `g10.005` from the active spec through an orchestrator-dispatched
+Underlay Reference worker handoff. Do not open a second strict lane that shares
+consumer workspace, bootstrap, package, or conformance surfaces.

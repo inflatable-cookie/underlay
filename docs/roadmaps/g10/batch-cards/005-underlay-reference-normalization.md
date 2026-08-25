@@ -1,7 +1,6 @@
 # g10.005 - Underlay Reference Normalization
 
-Status: planned
-Blocked by: `g10.004`
+Status: ready
 Owner: Underlay Reference maintainers
 Spec: `docs/specs/monorepo-consumer-workspace-rollout.md`
 
@@ -14,12 +13,12 @@ Make the bootstrap fixture physically match the monorepo contract.
 - Move `acme-api`, `acme-admin`, and `acme-front` into `apps/`.
 - Move `acme-client` and `acme-ui` into `packages/`.
 - Move `acme-docs` to root `docs/`.
-- Replace four child locks with one root lock and eight `file:` edges with
-  workspace or released dependencies as appropriate.
+- Replace four child locks with one root lock and four internal `file:` edges
+  with `workspace:*`.
 - Update Effigy catalogs, bundle dirs, aliases, tests, docs, Rhai paths, and
   instruction surfaces.
-- Retire committed Underlay source dependencies; keep local co-development
-  machine-local.
+- Preserve the released Underlay `v0.9.4` and Poodle `0.2.2` application
+  dependency boundary; keep local co-development machine-local.
 
 ## Acceptance
 
@@ -38,6 +37,25 @@ Make the bootstrap fixture physically match the monorepo contract.
 
 Stop if released Underlay cannot compile the fixture or a package role is
 ambiguous.
+
+## Readiness Evidence
+
+Underlay Reference `main` at
+`3354803ebc484d4d611878a8e60e356ab92e206e` has no open PR. Its recent
+tagged-dependency adoption already removed committed sibling Underlay source
+dependencies and passed the four JavaScript package validations, API build,
+docs QA, and fresh frozen package installs.
+
+The remaining topology baseline is exact: the root manifest is private but has
+no pinned `packageManager` or workspaces; four child Bun locks remain; Admin
+and Front carry four total internal `file:` edges; and the five owned package
+roots plus `acme-docs` still use the retired top-level layout. The conformance
+checker reports seven expected violations: four child locks and missing root
+package-manager, root-lock, and workspaces fields.
+
+The target's own `g01.007` strict lane remains planning authority for retained
+surface semantics. This card may update its paths and front-door references as
+part of the docs move, but must not execute or redefine that lane.
 
 ## Next Task
 

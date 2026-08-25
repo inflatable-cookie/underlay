@@ -60,7 +60,7 @@ README surfaces.
 and elective majors landed 2026-08-04.
 
 `g10` is executing the strict monorepo consumer-workspace rollout. `g10.001`–
-`g10.003` are complete, and `g10.004` is the only ready card. See
+`g10.004` are complete, and `g10.005` is the only ready card. See
 [`g10/README.md`](g10/README.md).
 
 ## Archived generations
@@ -80,5 +80,6 @@ that risk.
 
 ## Next Task
 
-**`g10.004`** — Acowtancy evidence repair. Execute it through an
-orchestrator-dispatched Acowtancy worker handoff. No other card is ready.
+**`g10.005`** — Underlay Reference normalization. Execute it through an
+orchestrator-dispatched Underlay Reference worker handoff. No other card is
+ready.

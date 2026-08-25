@@ -1,6 +1,7 @@
 # g10.004 - Acowtancy Evidence Repair
 
-Status: ready
+Status: complete
+Completed: 2026-08-25
 Owner: Acowtancy maintainers
 Spec: `docs/specs/monorepo-consumer-workspace-rollout.md`
 
@@ -35,6 +36,27 @@ Make the proven Acowtancy workspace describe its real dependency model.
 Stop if a sibling path is still required for runtime compilation rather than
 QA/tooling.
 
+## Review And Merge Evidence
+
+The worker corrected only root `README.md`, root `AGENTS.md`, and
+`packages/cattle-grid/README.md`. The final prose distinguishes Effigy
+QA/tooling and optional local co-development mounts from released application
+dependencies, preserves the frozen root install and `workspace:*` contract,
+and removes the stale Cattle Grid polyrepo link.
+
+PR [#57](https://github.com/acowtancy/market/pull/57) merged to Acowtancy
+`main` as `b995fad517783ee09b00e384f903988dccbb2b79` on 2026-08-25. The
+implementation commit was `dec01128d87ae6e6d7384bf1f95d59a15e933054`.
+The canonical review record is the
+[Acowtancy-side orchestrator comment](https://github.com/acowtancy/market/pull/57#issuecomment-5417592324).
+
+The PR changed no manifests, locks, task wiring, runtime code, workflows, or
+historical evidence. Acowtancy docs QA, full `effigy health`, the live
+workspace-shape check, and `git diff --check` passed. Health retained the known
+29 Dairy Svelte warnings and no errors.
+
 ## Next Task
 
-After merge, prepare `g10.005` in Underlay Reference.
+Closed after review, operator-authorized merge, and independent merged-state
+verification. Execute `g10.005` through a fresh Underlay Reference worker
+handoff. No other card is ready.

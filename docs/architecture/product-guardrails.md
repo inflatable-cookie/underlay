@@ -19,6 +19,7 @@ Owner: repo maintainers
 
 ## Next Task
 
-Execute `g10.004` in Acowtancy from the active monorepo consumer-workspace
-spec. Keep the evidence repair bounded to workspace, dependency, and tooling
-truth; do not widen it into shared runtime or template extraction.
+Execute `g10.005` in Underlay Reference from the active monorepo
+consumer-workspace spec. Keep the physical migration bounded to workspace,
+dependency, docs, and tooling paths; do not widen it into shared runtime or
+template extraction.
