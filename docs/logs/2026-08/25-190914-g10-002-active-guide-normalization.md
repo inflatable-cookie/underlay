@@ -40,6 +40,16 @@ The LLM bootstrap pattern, guide indexes, and currentness pointers were aligned
 with the same shape. Historical consumer proof, closed roadmaps, and frozen
 records were left unchanged.
 
+The review correction pass also:
+
+- moved the remaining active currentness front doors to `g10.002` in review and
+  kept `g10.003` blocked pending operator-authorized merge;
+- made guide `175` start from a complete scaffold with package manifests,
+  Effigy/state/secrets surfaces, and an initial lock before any frozen task;
+- provisioned the pinned Effigy action in the guide CI examples and routed the
+  guide `160` migration troubleshooting through the API package;
+- removed machine-local links from contract `021`.
+
 ## Live Proof Used
 
 Acowtancy was read-only evidence. Its root README and task/config surfaces
@@ -71,5 +81,5 @@ doctor findings were changed in this card.
 
 ## Next Task
 
-Open the implementation PR for orchestrator review. After review and
-operator-authorized merge, promote `g10.003` to ready.
+Return the implementation PR to orchestrator review. Do not promote `g10.003`
+until review and operator-authorized merge are complete.

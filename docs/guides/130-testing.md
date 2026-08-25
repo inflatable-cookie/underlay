@@ -661,6 +661,9 @@ jobs:
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: 1.3.14
+      - uses: inflatable-cookie/setup-effigy@987fd556617ea2c3e0ab5cef6b47b250817f50c8 # v1.0.0
+        with:
+          version: "0.11.0"
       - name: Install workspace dependencies
         run: effigy workspace:js:prepare
       - name: Run repository validation
@@ -675,6 +678,9 @@ jobs:
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: 1.3.14
+      - uses: inflatable-cookie/setup-effigy@987fd556617ea2c3e0ab5cef6b47b250817f50c8 # v1.0.0
+        with:
+          version: "0.11.0"
       - name: Install workspace dependencies
         run: effigy workspace:js:prepare
       - name: Install Playwright browsers

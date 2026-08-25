@@ -41,30 +41,59 @@ Do not copy the pre-convergence physical layout of `underlay-reference`.
 Use it for component and domain examples only; the workspace contract and the
 strict rollout spec define the topology.
 
-## Step 1: Create or Bootstrap the Repository
+## Step 1: Bootstrap a Complete Repository
 
-For an existing starter repository, bootstrap the single root:
+Start from a real project scaffold, not an empty Git repository. The scaffold
+must already own the surfaces that the later commands invoke:
+
+- one Git root with `apps/api`, `apps/admin`, `apps/front`, `packages/client`,
+  and `packages/ui` directories for this guide's full role map;
+- `apps/admin/package.json`, `apps/front/package.json`,
+  `packages/client/package.json`, and `packages/ui/package.json`;
+- the root `package.json`, `effigy.toml`, and initial `bun.lock`;
+- a root Effigy catalog (including `workspace:js:prepare`, `dev`, `health`,
+  `test --plan`, `validate`, and the local state stack), plus an API-package
+  catalog exposing the routed `migration:*` tasks;
+- `config/env-manifest.txt`, `config/required-secrets.txt`, and the committed
+  state/config files required by the local stack.
+
+Use the canonical bootstrap command against that scaffold:
 
 ```bash
-effigy bootstrap git@github.com:your-org/your-project.git
+effigy bootstrap git@github.com:your-org/my-project.git
+cd my-project
 ```
 
-For a new repository:
+`effigy bootstrap` performs the initial frozen install, so the scaffold must
+already contain a matching root lockfile and `workspace:js:prepare` task. Verify
+the complete shape before changing manifests or running state commands:
 
 ```bash
-mkdir my-project && cd my-project
-git init
-mkdir -p apps packages config docs
+test -f package.json
+test -f bun.lock
+test -f effigy.toml
+test -f apps/api/effigy.toml
+test -f apps/admin/package.json
+test -f apps/front/package.json
+test -f packages/client/package.json
+test -f packages/ui/package.json
+test -f config/env-manifest.txt
+test -f config/required-secrets.txt
+rg -n 'workspace:js:prepare' effigy.toml infra state
+rg -n 'migration:' apps/api/effigy.toml
 ```
 
-There is one Git root. Do not initialize repositories inside `apps/` or
+If any check fails, return to the scaffold/bootstrap step. Do not replace it
+with `mkdir` plus a partial root manifest: an empty repository does not yet
+have an executable Effigy catalog, state stack, package graph, or lockfile.
+There is one Git root; never initialize repositories inside `apps/` or
 `packages/`.
 
-## Step 2: Create the Root JavaScript Manifest
+## Step 2: Verify and Customize the Root JavaScript Manifest
 
-Create `package.json` at the repository root. List only JavaScript packages
-that own a manifest; the Rust-only `apps/api` directory is not a Bun workspace
-member.
+The scaffold already contains `package.json` at the repository root. Keep its
+workspace declaration in this shape: list only JavaScript packages that own a
+manifest; the Rust-only `apps/api` directory is not a Bun workspace member.
 
 ```json
 {
@@ -80,14 +109,10 @@ member.
 }
 ```
 
-Keep one root `bun.lock`. Generate and verify it with the root Effigy install
-task:
-
-```bash
-effigy workspace:js:prepare
-```
-
-Do not create child lockfiles or run package-by-package installs.
+The four workspace entries above must resolve to the package manifests checked
+in Step 1. If an optional role is omitted, remove its workspace entry and all
+references to it before regenerating the lockfile. Do not install yet; first
+declare the released and internal dependencies below.
 
 ## Step 3: Declare Released Dependencies
 
@@ -116,6 +141,8 @@ Use released Poodle package versions. Internal JavaScript edges use
 `workspace:*`. Do not commit source paths, sibling dependency references, or
 other local replacements.
 
+Do not create child lockfiles or run package-by-package installs.
+
 ## Step 4: Rename the Project
 
 Replace the placeholder name in the root and package manifests, Rust crate
@@ -130,9 +157,24 @@ display text. Keep the role paths stable:
 Search before editing. Review every replacement; do not rename generated files,
 migration history, or unrelated prose mechanically.
 
-## Step 5: Configure Secrets and Runtime Inputs
+## Step 5: Generate and Verify the Root Lockfile
 
-Create the root config and secret manifests required by the app:
+After the manifests, dependencies, and project names are correct, generate the
+single root lockfile once, then prove that the frozen Effigy task can reproduce
+it:
+
+```bash
+bun install
+test -f bun.lock
+effigy workspace:js:prepare
+```
+
+Run both commands from the repository root. The first command is the only
+non-frozen lockfile generation step; all later installs use the Effigy selector.
+
+## Step 6: Configure Secrets and Runtime Inputs
+
+Complete the scaffold's root config and secret manifests for the app:
 
 - `config/env-manifest.txt` for runtime environment keys
 - `config/required-secrets.txt` for startup-critical secrets
@@ -148,7 +190,7 @@ Runtime packages must not depend on committed `.env` files. Environment
 injection is the highest-precedence override over committed defaults and local
 config.
 
-## Step 6: Apply Local State and Schema
+## Step 7: Apply Local State and Schema
 
 Use the root state stack for database and seed state:
 
@@ -167,12 +209,12 @@ effigy migration:reset
 
 Do not add root or package `db:migrate`, `db:reset`, or `db:drop` aliases.
 
-## Step 7: Install and Verify the Workspace
+## Step 8: Verify the Workspace
 
-Install once from the repository root, then run the repo-owned baseline:
+The root install and frozen-lockfile proof are complete. Run the repo-owned
+baseline:
 
 ```bash
-effigy workspace:js:prepare
 effigy tasks
 effigy health
 effigy test --plan
@@ -190,7 +232,7 @@ cargo test --workspace
 
 Return to the repository root before running root Effigy selectors.
 
-## Step 8: Start the Application
+## Step 9: Start the Application
 
 Start the whole workspace through the root catalog:
 

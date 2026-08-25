@@ -8,7 +8,7 @@ This document covers common issues and their solutions.
 
 | Issue | Cause | Solution |
 |-------|-------|----------|
-| "cannot find `sqlx`" | Migration not run | Run `sqlx migrate run` |
+| "cannot find `sqlx`" | Migration not run | Run the routed API-package `migration:*` task that applies structural migrations, such as `effigy migration:run` when declared |
 | "connection refused" | DB not running | Start PostgreSQL |
 | "uuid parse error" | Invalid UUID format | Use valid UUID v7 |
 
@@ -47,7 +47,7 @@ released Underlay update or after a workspace install has been interrupted.
 explicit Underlay package subpaths; do not resolve them through a sibling
 source checkout:
 
-```typescript
+```bash
 effigy workspace:js:prepare
 rm -rf .svelte-kit node_modules/.vite
 effigy <front-package>/dev

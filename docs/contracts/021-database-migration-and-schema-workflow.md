@@ -25,28 +25,24 @@ It does not define product-specific transform semantics or legacy import logic.
 
 Reference consumer evidence:
 
-- [`underlay-reference/acme-api/effigy.toml`](/Users/tom/Dev/projects/underlay-reference/acme-api/effigy.toml)
-- [`underlay-reference/acme-api/migrations/`](/Users/tom/Dev/projects/underlay-reference/acme-api/migrations)
-- [`underlay-reference/acme-api/migrations_dev/`](/Users/tom/Dev/projects/underlay-reference/acme-api/migrations_dev)
-- [`compli-me/api/effigy.toml`](/Users/tom/Dev/projects/compli-me/api/effigy.toml)
-- [`compli-me/api/migrations/`](/Users/tom/Dev/projects/compli-me/api/migrations)
-- [`compli-me/api/migrations_dev/`](/Users/tom/Dev/projects/compli-me/api/migrations_dev)
-- [`contact-patch/cp-api/effigy.toml`](/Users/tom/Dev/projects/contact-patch/cp-api/effigy.toml)
-- [`contact-patch/cp-api/migrations/`](/Users/tom/Dev/projects/contact-patch/cp-api/migrations)
-- [`contact-patch/cp-api/migrations_dev/`](/Users/tom/Dev/projects/contact-patch/cp-api/migrations_dev)
-- [`songsprout/nursery/effigy.toml`](/Users/tom/Dev/projects/songsprout/nursery/effigy.toml)
-- [`songsprout/nursery/migrations/`](/Users/tom/Dev/projects/songsprout/nursery/migrations)
-- [`loophole/composer/composer-api/effigy.toml`](/Users/tom/Dev/projects/loophole/composer/composer-api/effigy.toml)
-- [`loophole/composer/composer-api/migrations/`](/Users/tom/Dev/projects/loophole/composer/composer-api/migrations)
-- [`acowtancy/farmyard/effigy.toml`](/Users/tom/Dev/projects/acowtancy/farmyard/effigy.toml)
-- [`docs/usage/migration/000-state-layout-and-effigy.md`](/Users/tom/Dev/projects/underlay/docs/usage/migration/000-state-layout-and-effigy.md)
+- `underlay-reference` — `acme-api/effigy.toml`, `acme-api/migrations/`, and
+  `acme-api/migrations_dev/`
+- `compli-me` — `api/effigy.toml`, `api/migrations/`, and
+  `api/migrations_dev/`
+- `contact-patch` — `cp-api/effigy.toml`, `cp-api/migrations/`, and
+  `cp-api/migrations_dev/`
+- `songsprout` — `nursery/effigy.toml` and `nursery/migrations/`
+- `loophole/composer` — `composer-api/effigy.toml` and
+  `composer-api/migrations/`
+- `acowtancy` — `farmyard/effigy.toml`
 
 Supporting shared contracts:
 
-- [`docs/contracts/024-new-app-bootstrap-and-bring-up.md`](/Users/tom/Dev/projects/underlay/docs/contracts/024-new-app-bootstrap-and-bring-up.md)
-- [`docs/contracts/025-rust-app-runtime-assembly-and-router-topology.md`](/Users/tom/Dev/projects/underlay/docs/contracts/025-rust-app-runtime-assembly-and-router-topology.md)
-- [`docs/contracts/070-nightfire-and-migration-systems.md`](/Users/tom/Dev/projects/underlay/docs/contracts/070-nightfire-and-migration-systems.md)
-- [`docs/contracts/120-tooling-testing-and-contract-artifacts.md`](/Users/tom/Dev/projects/underlay/docs/contracts/120-tooling-testing-and-contract-artifacts.md)
+- [`024-new-app-bootstrap-and-bring-up.md`](./024-new-app-bootstrap-and-bring-up.md)
+- [`025-rust-app-runtime-assembly-and-router-topology.md`](./025-rust-app-runtime-assembly-and-router-topology.md)
+- [`070-nightfire-and-migration-systems.md`](./070-nightfire-and-migration-systems.md)
+- [`120-tooling-testing-and-contract-artifacts.md`](./120-tooling-testing-and-contract-artifacts.md)
+- [`Migration State Layout And Effigy`](../usage/migration/000-state-layout-and-effigy.md)
 
 If these diverge, the contract plus the clearest modern posture
 (`underlay-reference`, `compli-me`, `contact-patch`) win. `farmyard` remains
