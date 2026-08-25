@@ -116,7 +116,7 @@ lane.
 
 ## Queue
 
-1. [ ] [`g10.001`](batch-cards/001-monorepo-contract-authority.md) — monorepo contract authority (`ready`)
+1. [ ] [`g10.001`](batch-cards/001-monorepo-contract-authority.md) — monorepo contract authority (`in review`)
 2. [ ] [`g10.002`](batch-cards/002-active-guide-normalization.md) — active guide normalization
 3. [ ] [`g10.003`](batch-cards/003-workspace-shape-conformance.md) — workspace-shape conformance
 4. [ ] [`g10.004`](batch-cards/004-acowtancy-evidence-repair.md) — Acowtancy evidence repair
@@ -129,5 +129,6 @@ lane.
 
 ## Next Task
 
-Execute `g10.001` through its orchestrator-dispatched worker handoff. Review and
-merge that PR before promoting `g10.002`.
+`g10.001` is implemented and awaiting orchestrator review. Evidence:
+[`docs/logs/2026-08/25-181500-g10-001-monorepo-contract-authority.md`](../../logs/2026-08/25-181500-g10-001-monorepo-contract-authority.md).
+Review and merge that PR before promoting `g10.002`. No other card is ready.
