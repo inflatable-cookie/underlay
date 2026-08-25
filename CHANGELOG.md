@@ -7,6 +7,10 @@ While Underlay is `0.x`, breaking changes raise the minor version.
 
 ## [Unreleased]
 
+### Fixed
+- Release guidance now routes Underlay tags through a real consumer smoke and
+  rejects Effigy's binary-only `release verify-install` closer.
+
 ## [0.9.2] - 2026-08-25
 
 ### Fixed
@@ -62,7 +66,8 @@ While Underlay is `0.x`, breaking changes raise the minor version.
 - First tagged release. Changelog tracking starts with this file; see the Git
   history for detail before this point.
 
-[Unreleased]: https://github.com/inflatable-cookie/underlay/compare/v0.9.1...HEAD
+[Unreleased]: https://github.com/inflatable-cookie/underlay/compare/v0.9.2...HEAD
+[0.9.2]: https://github.com/inflatable-cookie/underlay/releases/tag/v0.9.2
 [0.9.1]: https://github.com/inflatable-cookie/underlay/releases/tag/v0.9.1
 [0.9.0]: https://github.com/inflatable-cookie/underlay/releases/tag/v0.9.0
 [0.8.0]: https://github.com/inflatable-cookie/underlay/releases/tag/v0.8.0

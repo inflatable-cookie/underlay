@@ -32,7 +32,7 @@ Never run these unprompted:
 |---------|-------------|
 | `effigy release prepare --yes` | Writes prepare artifacts |
 | `effigy release execute --yes` | Pushes tag, creates GitHub release |
-| `effigy release verify-install --tag vX.Y.Z` | Network-side verification |
+| `effigy release verify-install --tag vX.Y.Z` | Effigy binary network-side verification; never use for Underlay |
 
 ## Canonical sequence
 
@@ -44,11 +44,16 @@ When a human explicitly asks for a release:
 4. `effigy release prepare --yes --check-gates`
 5. `effigy release execute --plan`
 6. `effigy release execute --yes`
-7. `effigy release verify-install --tag vX.Y.Z`
+7. Run Underlay's tagged consumer smoke. Do not run Effigy's fixed binary
+   verifier.
 8. `effigy changelog extract CHANGELOG.md --version X.Y.Z`
 
 If any step fails, **stop**. Surface the failure to the human. Do not retry
 with bypass flags.
+
+`release verify-install` installs the `effigy` Cargo package and runs Effigy
+CLI checks. Invoking it from Underlay is a routing error, not evidence that an
+Underlay tag is broken.
 
 ## Failed release recovery
 

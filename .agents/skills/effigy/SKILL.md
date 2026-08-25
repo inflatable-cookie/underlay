@@ -31,6 +31,8 @@ overrides it. Prefer `effigy <selector>` over raw `cargo` / `npm` /
 - **Never bypass release gates.** Fix the underlying issue.
 - **Never re-tag a failed release.** Fix lands in next PATCH.
 - **Never run release mutations** (`release prepare/execute`) without explicit human ask.
+- **Never use `release verify-install` for Underlay.** It is Effigy's fixed
+  self-hosting binary verifier; verify Underlay through a tagged consumer smoke.
 - **Don't add `package.json` scripts** that re-export Effigy tasks.
 - **Don't add `--repo .`** when already inside the target repo.
 
