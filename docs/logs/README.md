@@ -39,6 +39,5 @@ where repo-local links and normalized prose references are required instead.
 
 ## Next Task
 
-Keep the active evidence window aligned to the current generation `g10`
-(`docs/logs/2026-08/`), adding only the logs needed to reach the live next task
-without reconstructing the queue from older generation history.
+Execute `g10.001` through its orchestrator-dispatched worker handoff. Keep the
+active evidence window aligned to `g10` without reconstructing closed history.

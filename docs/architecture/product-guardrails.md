@@ -19,5 +19,5 @@ Owner: repo maintainers
 
 ## Next Task
 
-Open the active generation `g10` via [`docs/roadmaps/g10/README.md`](../roadmaps/g10/README.md)
-before starting another compatibility-retirement or TS boundary lane.
+Execute `g10.001` from the active monorepo consumer-workspace spec. Keep app
+layout migration separate from shared runtime or template extraction.

@@ -16,9 +16,10 @@ Specs hold active Underlay planning and strict execution-control surfaces.
 
 ## Active Spec Set
 
-There is no active strict master spec at the moment.
+- [`monorepo-consumer-workspace-rollout.md`](./monorepo-consumer-workspace-rollout.md)
+  controls the `g10.001`–`g10.010` consumer workspace normalization lane.
 
 ## Next Task
 
-Open a new spec only when a live lane needs provisional planning beyond the
-roadmap and contract surfaces.
+Execute `g10.001` from the active spec. Do not open a second strict lane that
+shares consumer workspace, bootstrap, package, or conformance surfaces.

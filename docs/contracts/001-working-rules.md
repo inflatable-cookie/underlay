@@ -44,14 +44,12 @@ In parallel mode:
 Underlay is in parallel mode:
 
 - `g07`–`g09` are closed
-- `g10` is the active generation (scoping as of 2026-08-17)
+- `g10` is the active generation
 - `g03`, `g04`, and `g05` are closed historical generations
-- there is no active strict master spec at the repo level right now
+- `docs/specs/monorepo-consumer-workspace-rollout.md` is the active strict spec
+- `g10.001` is the only ready card
 
 ## Next Task
 
-Open the active generation `g10` via [`docs/roadmaps/g10/README.md`](../roadmaps/g10/README.md)
-before starting the next compatibility-retirement or TS boundary lane.
-
-Open a new spec only if the next lane needs provisional planning beyond
-existing architecture and contracts.
+Execute `g10.001` through its orchestrator-dispatched worker handoff. Do not
+promote `g10.002` until the first PR is reviewed and merged.

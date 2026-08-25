@@ -1,6 +1,6 @@
 # g10 - Contract Fidelity And Fleet Convergence
 
-Status: active (scoping)
+Status: active
 Owner: repo maintainers
 Started: 2026-08-17
 
@@ -13,6 +13,10 @@ convergence gaps that still let consumer apps drift.
 
 Source: 2026-08-17 Northstar refresh and atlas pass
 (`docs/logs/2026-08/17-160000-northstar-refresh-atlas-g10-scoping.md`).
+
+The first execution lane was selected on 2026-08-25 after Acowtancy proved the
+single-repo `apps/*` / `packages/*` workspace shape. See
+`docs/logs/2026-08/25-174056-monorepo-rollout-compiled.md`.
 
 ## Strategic Direction
 
@@ -27,8 +31,8 @@ This generation is about **fidelity and convergence**, not new product features.
 ### Phase 1 — Authority repair and first cards (now)
 
 - close `g09` on all front doors (done in the refresh pass)
-- choose the first bounded execution lane from the candidate set below
-- compile `g10.001` with explicit acceptance, validation, and stop conditions
+- retire polyrepo support in the bootstrap authority
+- normalize the six-consumer workspace family through `g10.001`–`g10.010`
 
 ### Phase 2 — Contract implementation assessment
 
@@ -88,7 +92,14 @@ lane.
 
 ## Dependencies And Sequencing
 
-- Lane A (assessment) can start immediately and should inform B–E
+- The active monorepo rollout is governed by
+  `docs/specs/monorepo-consumer-workspace-rollout.md`.
+- `g10.001`–`g10.005` are serial: authority, narrative, conformance,
+  Acowtancy evidence, then Underlay Reference.
+- `g10.006`–`g10.009` may run in parallel only after the reference fixture
+  merges; they own separate consumer repositories.
+- `g10.010` waits for every consumer PR.
+- Lane A (assessment) resumes after the active strict lane closes.
 - Lane B and C should not run as parallel unbounded refactors; pick one consumer
   proof anchor first (`underlay-reference` unless another app is clearer)
 - Lane D must respect `product-guardrails.md` — no app-local behavior smuggled
@@ -105,15 +116,18 @@ lane.
 
 ## Queue
 
-Cards are not compiled yet. The maintainer should pick the first lane and open
-`g10.001` as a bounded card with:
-
-- explicit scope and non-goals
-- named consumer proof targets when fleet-visible
-- validation commands (`effigy validate`, targeted consumer checks)
-- stop conditions and promotion route for any contract updates
+1. [ ] [`g10.001`](batch-cards/001-monorepo-contract-authority.md) — monorepo contract authority (`ready`)
+2. [ ] [`g10.002`](batch-cards/002-active-guide-normalization.md) — active guide normalization
+3. [ ] [`g10.003`](batch-cards/003-workspace-shape-conformance.md) — workspace-shape conformance
+4. [ ] [`g10.004`](batch-cards/004-acowtancy-evidence-repair.md) — Acowtancy evidence repair
+5. [ ] [`g10.005`](batch-cards/005-underlay-reference-normalization.md) — Underlay Reference normalization
+6. [ ] [`g10.006`](batch-cards/006-contact-patch-normalization.md) — Contact Patch normalization
+7. [ ] [`g10.007`](batch-cards/007-compli-me-normalization.md) — Compli Me normalization
+8. [ ] [`g10.008`](batch-cards/008-songsprout-normalization.md) — Songsprout normalization
+9. [ ] [`g10.009`](batch-cards/009-composer-normalization.md) — Composer normalization
+10. [ ] [`g10.010`](batch-cards/010-fleet-proof-and-closeout.md) — fleet proof and closeout
 
 ## Next Task
 
-Select the first lane and compile `g10.001`. Recommended default: **Lane A —
-foundation + transport contract assessment** starting with `010` and `020`.
+Execute `g10.001` through its orchestrator-dispatched worker handoff. Review and
+merge that PR before promoting `g10.002`.

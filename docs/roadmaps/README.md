@@ -59,8 +59,8 @@ README surfaces.
 ([`g09/README.md`](g09/README.md)). Config convergence, dependency upgrades,
 and elective majors landed 2026-08-04.
 
-`g10` is open for scoping. See [`g10/README.md`](g10/README.md) for the
-atlas runway and candidate lanes.
+`g10` is executing the strict monorepo consumer-workspace rollout. `g10.001` is
+the only ready card. See [`g10/README.md`](g10/README.md).
 
 ## Archived generations
 
@@ -79,5 +79,5 @@ that risk.
 
 ## Next Task
 
-**`g10.001`** — open the first bounded card after maintainer scoping review.
-See [`g10/README.md`](g10/README.md).
+**`g10.001`** — monorepo contract authority. Execute it through the pushed
+orchestrator handoff, then review its PR before promoting `g10.002`.
