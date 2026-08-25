@@ -35,6 +35,12 @@ Addressed orchestrator changes requested on PR #8:
 3. Published `underlay-workspace-shape` bin entry and documented consumer
    invocation through `bunx underlay-workspace-shape .`.
 
+### Re-review follow-up (2026-08-25)
+
+4. Workspace containment now uses filesystem `realpath` so in-root symlink
+   targets outside the Git root emit `workspace-path-outside-root`; fixture
+   `workspace-symlink-outside-root` covers the bypass.
+
 
 - Fixture suite: compliant workspace passes; nested Git, manifest drift,
   wildcard/unresolved workspaces, child locks, internal `file:`, and non-

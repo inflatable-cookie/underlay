@@ -1,4 +1,4 @@
-import { cp, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { cp, mkdtemp, mkdir, rm, symlink, writeFile } from "node:fs/promises";
 import { execFile } from "node:child_process";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -49,6 +49,20 @@ async function loadOutsideRootFixture(): Promise<string> {
 	return repoDir;
 }
 
+async function loadSymlinkOutsideFixture(): Promise<string> {
+	const parent = await makeTempDir();
+	const repoDir = path.join(parent, "repo");
+	const outsideDir = path.join(parent, "outside");
+	await cp(path.join(fixturesRoot, "workspace-symlink-outside-root"), repoDir, {
+		recursive: true,
+	});
+	await cp(path.join(fixturesRoot, "_outside-repo"), outsideDir, { recursive: true });
+	await mkdir(path.join(repoDir, "packages"), { recursive: true });
+	await symlink(outsideDir, path.join(repoDir, "packages/lib"));
+	await writeFile(path.join(repoDir, ".git"), "gitdir: fixture\n");
+	return repoDir;
+}
+
 afterEach(async () => {
 	await Promise.all(tempDirs.splice(0).map((dir) => rm(dir, { recursive: true, force: true })));
 });
@@ -78,6 +92,13 @@ describe("tools/workspace-shape", () => {
 
 	it("flags workspace paths that resolve outside the Git root", async () => {
 		const violations = await checkWorkspaceShape(await loadOutsideRootFixture());
+		expect(violations.map((v) => v.ruleId)).toContain(
+			WORKSPACE_SHAPE_RULE_IDS.WORKSPACE_PATH_OUTSIDE_ROOT,
+		);
+	});
+
+	it("flags symlinked workspace paths that escape the Git root", async () => {
+		const violations = await checkWorkspaceShape(await loadSymlinkOutsideFixture());
 		expect(violations.map((v) => v.ruleId)).toContain(
 			WORKSPACE_SHAPE_RULE_IDS.WORKSPACE_PATH_OUTSIDE_ROOT,
 		);

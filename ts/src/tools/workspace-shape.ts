@@ -13,7 +13,7 @@
  * ```
  */
 
-import { readdir, readFile, stat } from 'node:fs/promises';
+import { readdir, readFile, realpath, stat } from 'node:fs/promises';
 import path from 'node:path';
 
 // =============================================================================
@@ -128,6 +128,41 @@ function isPathInsideRoot(root: string, targetPath: string): boolean {
 
 function normalizeWorkspacePath(workspacePath: string): string {
 	return workspacePath.replace(/\\/g, '/').replace(/\/+$/, '');
+}
+
+async function isRealPathInsideRoot(root: string, relativePath: string): Promise<boolean> {
+	const normalizedPath = normalizeWorkspacePath(relativePath);
+	const absoluteTarget = path.join(root, normalizedPath);
+
+	try {
+		const rootReal = await realpath(root);
+		const targetReal = await realpath(absoluteTarget);
+		return targetReal === rootReal || targetReal.startsWith(`${rootReal}${path.sep}`);
+	} catch {
+		return false;
+	}
+}
+
+async function workspacePathContainedByRoot(
+	root: string,
+	workspacePath: string,
+): Promise<'inside' | 'missing' | 'outside'> {
+	const normalizedPath = normalizeWorkspacePath(workspacePath);
+
+	if (!isPathInsideRoot(root, normalizedPath)) {
+		return 'outside';
+	}
+
+	const absoluteTarget = path.join(root, normalizedPath);
+	if (!(await pathExists(absoluteTarget))) {
+		return 'missing';
+	}
+
+	if (!(await isRealPathInsideRoot(root, normalizedPath))) {
+		return 'outside';
+	}
+
+	return 'inside';
 }
 
 function sortViolations(violations: WorkspaceShapeViolation[]): WorkspaceShapeViolation[] {
@@ -361,7 +396,9 @@ async function checkWorkspacePaths(
 ): Promise<void> {
 	for (const workspacePath of workspacePaths) {
 		const normalizedPath = normalizeWorkspacePath(workspacePath);
-		if (!isPathInsideRoot(root, normalizedPath)) {
+		const containment = await workspacePathContainedByRoot(root, workspacePath);
+
+		if (containment === 'outside') {
 			pushViolation(
 				violations,
 				WORKSPACE_SHAPE_RULE_IDS.WORKSPACE_PATH_OUTSIDE_ROOT,
@@ -392,6 +429,16 @@ async function checkWorkspaceMembership(
 	const declaredPaths = new Set(workspacePaths.map((entry) => normalizeWorkspacePath(entry)));
 
 	for (const discoveredPath of discoveredPaths) {
+		if (!(await isRealPathInsideRoot(root, discoveredPath))) {
+			pushViolation(
+				violations,
+				WORKSPACE_SHAPE_RULE_IDS.WORKSPACE_PATH_OUTSIDE_ROOT,
+				path.join(discoveredPath, 'package.json'),
+				`discovered workspace manifest resolves outside the Git root (${discoveredPath})`,
+			);
+			continue;
+		}
+
 		if (!declaredPaths.has(discoveredPath)) {
 			pushViolation(
 				violations,
