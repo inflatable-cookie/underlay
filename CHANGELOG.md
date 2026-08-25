@@ -7,6 +7,8 @@ While Underlay is `0.x`, breaking changes raise the minor version.
 
 ## [Unreleased]
 
+## [0.9.2] - 2026-08-25
+
 ### Fixed
 - Registry-backed installs now resolve `@inflatable-cookie/poodle-svelte` at
   exact version `0.2.2`. The stale `^0.1.0` range and local sibling overrides
