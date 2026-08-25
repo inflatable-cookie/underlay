@@ -1,6 +1,6 @@
 # g10.001 - Monorepo Contract Authority
 
-Status: ready
+Status: in review
 Owner: repo maintainers
 Spec: `docs/specs/monorepo-consumer-workspace-rollout.md`
 
@@ -47,6 +47,58 @@ Acowtancy monorepo contract.
 - targeted `rg` proof over the scoped active files
 - `git diff --check`
 
+## Evidence
+
+Changed surfaces:
+
+- `docs/contracts/024-new-app-bootstrap-and-bring-up.md` — rewritten
+- `docs/guides/README.md` — guide front door
+- `docs/guides/000-overview.md` — guide architecture overview
+- `docs/guides/020-project-structure.md` — project-structure guide
+- `docs/guides/030-underlay-integration.md` — integration guide
+- `docs/architecture/060-new-project-quickstart.md` — new-project quickstart
+- `docs/patterns/new-project-bootstrap-prompt.md` — bootstrap prompt
+- `docs/contracts/README.md`, `docs/contracts/contract-index.md` — index
+  currentness for `024`
+
+Acowtancy evidence used (read-only):
+
+- root `package.json` — `@acowtancy/market`, `private`, `packageManager`
+  `bun@1.3.14`, explicit `workspaces`
+- `apps/cream`, `apps/dairy`, `apps/farmyard`, `packages/cattle-grid`,
+  `packages/froyo`, root `docs/`
+- one root `bun.lock`, no child locks
+- internal `workspace:*` edges; Underlay via
+  `git+ssh://…/underlay.git#v0.9.4`; Poodle via released `0.2.2`
+- `apps/farmyard/Cargo.toml` — Underlay crates pinned to `tag = "v0.9.4"`,
+  app-local Cargo workspace
+- `infra/tasks.toml` — `workspace:js:prepare` = `bun install --frozen-lockfile`
+- `effigy.toml` — sibling `../underlay/scripts/*` used only by QA tasks
+
+Validation run:
+
+- `effigy qa:docs` — pass (links, vision index, forbidden, next-action)
+- `effigy qa:northstar` — pass (three heading checks)
+- `effigy health` — pass (exports, component-test hygiene, Poodle prop names,
+  release-version sync at `0.9.4`, guardrails)
+- targeted `rg` over the seven scoped files — remaining `libs/`, `symlink`,
+  `submodule`, `--repo .`, and `multi-repo` hits are prohibitions or the
+  quickstart's historical supersession note only
+- `git diff --check` — clean
+
+Pre-existing debt not touched: `effigy doctor` still reports the unsupported
+`isolation` key in `effigy.toml` and the attention-marker/god-file scan
+findings. Both predate this card.
+
+Review round 1 (orchestrator, PR #6) requested three corrections — retired
+`db:*` aliases in contract `024`, a contradictory child-lockfile deletion
+instruction in the bootstrap prompt, and stale routing on three changed front
+doors. All three applied; see the execution log.
+
+Out-of-scope adjacency: contract `021` still teaches `effigy db:migrate` /
+`effigy db:reset`. Same retired-alias problem, different contract. Left for the
+orchestrator to card.
+
 ## Stop Conditions
 
 Stop if the current Acowtancy manifest no longer matches the strict spec, a
@@ -59,4 +111,5 @@ Return the PR for orchestrator review. Do not start `g10.002` in the same worker
 
 ## Next Task
 
-Open the orchestrator-dispatched worker handoff for this card.
+Await orchestrator review of the `g10.001` PR. Do not promote `g10.002` before
+review and operator-authorised merge.

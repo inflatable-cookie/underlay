@@ -17,67 +17,25 @@ Underlay is a reusable foundation that provides:
 | `underlay-metrics` | Prometheus registry helpers (optional) |
 | `underlay-events` | Outbox/event patterns (optional) |
 
-## Integration Options
+## How Underlay Enters the Workspace
 
-### Option A: Sibling Directory (Recommended for Active Development)
+Underlay is a **released dependency**, not a directory inside your repository.
+Both language surfaces resolve the same way: a **pinned release tag** on the
+Underlay Git repository.
 
-Use this when you're actively developing both Underlay and your project.
+Do not symlink Underlay into the workspace, add it as a Git submodule, vendor
+its source, or point a `file:` dependency at a sibling checkout.
+[Contract 024](../contracts/024-new-app-bootstrap-and-bring-up.md) owns this
+rule.
 
-```bash
-cd my-project
-ln -s ../legacy/libraries/underlay libs/underlay
-```
+A sibling `../underlay` checkout is still useful for QA scripts and dev mounts —
+`acowtancy` runs its conformance checks that way. That is a tooling convenience
+and must never become the committed dependency shape.
 
-### Option B: Git Submodule (Recommended for Stable Dependencies)
+## Rust Integration
 
-```bash
-cd my-project
-git submodule add https://github.com/your-org/underlay.git libs/underlay
-git submodule update --init --recursive
-```
-
-### Option C: Cargo / npm Dependencies (For Published Versions)
-
-When Underlay is published:
-
-```toml
-# apps/api/Cargo.toml
-[workspace.dependencies]
-underlay-core = "0.1"
-underlay-http = "0.1"
-underlay-auth = "0.1"
-```
-
-## Path Configuration (Rust)
-
-### Multi-repo workspace (default)
-
-If `underlay/` and `myapp-api/` are sibling repos:
-
-```toml
-# myapp-api/Cargo.toml
-
-[workspace]
-members = [
-  "crates/core",
-  "crates/api",
-  "crates/auth",
-  "crates/db",
-  "crates/infra",
-]
-
-[workspace.dependencies]
-underlay-core = { path = "../underlay/rust/crates/underlay-core" }
-underlay-http = { path = "../underlay/rust/crates/underlay-http" }
-underlay-auth = { path = "../underlay/rust/crates/underlay-auth" }
-underlay-auth-jwt = { path = "../underlay/rust/crates/underlay-auth-jwt" }
-underlay-observability = { path = "../underlay/rust/crates/underlay-observability" }
-underlay-metrics = { path = "../underlay/rust/crates/underlay-metrics" }
-```
-
-### Monorepo
-
-If Underlay lives at `libs/underlay/` and the API at `apps/api/`:
+Declare the crates once in the app-local Cargo workspace at
+`apps/api/Cargo.toml`, pinned to a release tag:
 
 ```toml
 # apps/api/Cargo.toml
@@ -92,17 +50,26 @@ members = [
 ]
 
 [workspace.dependencies]
-underlay-core = { path = "../../libs/underlay/rust/crates/underlay-core" }
-underlay-http = { path = "../../libs/underlay/rust/crates/underlay-http" }
-underlay-auth = { path = "../../libs/underlay/rust/crates/underlay-auth" }
-underlay-auth-jwt = { path = "../../libs/underlay/rust/crates/underlay-auth-jwt" }
-underlay-observability = { path = "../../libs/underlay/rust/crates/underlay-observability" }
-underlay-metrics = { path = "../../libs/underlay/rust/crates/underlay-metrics" }
+underlay-core = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.4" }
+underlay-http = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.4", features = ["openapi"] }
+underlay-auth = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.4" }
+underlay-auth-jwt = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.4" }
+underlay-observability = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.4" }
+underlay-metrics = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.4" }
 ```
 
-## Path Configuration (TypeScript)
+The tag makes the workspace build without a sibling checkout. Keep the Cargo
+workspace inside `apps/api`; do not hoist it to the repository root and do not
+add `path` dependencies that reach outside the repository.
 
-Underlay’s TS package name is `@inflatable-cookie/underlay`, but source imports
+For live Underlay co-development, run `effigy deps link cargo ../underlay`,
+which writes a machine-local `[patch]` into an untracked `.cargo/config.toml`.
+Never commit that file — the link is a local tooling affordance, not the
+committed dependency shape.
+
+## TypeScript Integration
+
+Underlay's TS package name is `@inflatable-cookie/underlay`, but source imports
 should target explicit subpaths such as:
 
 - `@inflatable-cookie/underlay/client/*`
@@ -111,27 +78,42 @@ should target explicit subpaths such as:
 - `@inflatable-cookie/underlay/nightfire/*`
 - `@inflatable-cookie/underlay/utils/*`
 
-### Multi-repo workspace (default)
-
-In `myapp-client/package.json` (and/or frontends), depend on the sibling repo:
+Depend on a released tag from each consuming package's manifest:
 
 ```json
 {
   "dependencies": {
-    "@inflatable-cookie/underlay": "file:../underlay"
+    "@inflatable-cookie/underlay": "git+ssh://git@github.com/inflatable-cookie/underlay.git#v0.9.4"
   }
 }
 ```
 
-### Monorepo
+Pin the tag so the root `bun.lock` stays reproducible. Resolve the dependency
+with one frozen install from the repository root:
+
+```bash
+bun install --frozen-lockfile
+```
+
+Internal packages in the same workspace use `workspace:*` instead:
 
 ```json
 {
   "dependencies": {
-    "@inflatable-cookie/underlay": "file:../../libs/underlay"
+    "@myorg/client": "workspace:*",
+    "@myorg/ui": "workspace:*"
   }
 }
 ```
+
+### Upgrading Underlay
+
+1. bump the pinned tag in every manifest that declares it;
+2. run `bun install` from the repository root;
+3. bump the Cargo `tag` values in `apps/api/Cargo.toml`;
+4. commit the single updated `bun.lock` and `Cargo.lock`;
+5. check [190-upgrade-compatibility](./190-upgrade-compatibility.md) for
+   breakage expectations.
 
 ## Verifying Integration
 
@@ -181,7 +163,15 @@ const example: ErrorEnvelope = {
 
 ### Issue: "cannot find underlay-core"
 
-Cause: wrong path dependencies in Cargo workspace.
+Cause: the crate is missing from `[workspace.dependencies]` in
+`apps/api/Cargo.toml`, or the member crate did not opt in with
+`underlay-core.workspace = true`.
+
+### Issue: a package resolves a different Underlay version than its siblings
+
+Cause: manifests pin different Underlay tags, or a stale child lockfile is
+shadowing the root `bun.lock`. Align the tags, delete any child lockfile, and
+reinstall from the repository root.
 
 ### Issue: "Package path . is not exported from @inflatable-cookie/underlay"
 

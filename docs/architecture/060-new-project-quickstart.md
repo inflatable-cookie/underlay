@@ -1,19 +1,28 @@
 # New Project Quickstart
 
 > **Superseded.** The step-by-step quickstart that once lived here described a
-> pre-`g06` monorepo layout (`apps/bloom`, `libs/petal`, a `legacy/libraries`
-> symlink) that no current consumer uses, and pinned stale toolchain versions
+> pre-`g06` layout (`apps/bloom`, `libs/petal`, a `legacy/libraries` symlink)
+> that no current consumer uses, and pinned stale toolchain versions
 > (`axum 0.7`, `bun 9+`). It has been retired to prevent new apps bootstrapping
 > against a layout the reference apps abandoned.
 
-For bringing up a new consumer app against Underlay, use the current sources:
+A new Underlay consumer is **one Git repository** with `apps/*`, `packages/*`,
+and a root `docs/`. Polyrepo layouts are unsupported.
+
+For bringing up a new consumer app, use the current sources:
 
 - **[Contract 024 - New app bootstrap and bring-up](../contracts/024-new-app-bootstrap-and-bring-up.md)** —
-  the authoritative bootstrap contract (dependency wiring, auth provider setup,
-  the six-consumer conventions).
+  the authoritative bootstrap contract: workspace topology, the normative root
+  `package.json` shape, dependency rules, and the bring-up flow.
 - **[Guide 020 - Project structure](../guides/020-project-structure.md)** —
-  the current directory and package layout.
+  the step-by-step build of that layout.
+- **[Guide 030 - Underlay integration](../guides/030-underlay-integration.md)** —
+  how Underlay and Poodle enter the dependency graph.
+- **[Monorepo consumer workspace rollout](../specs/monorepo-consumer-workspace-rollout.md)** —
+  the strict spec governing the fleet migration.
 
-The live consumer apps (acowtancy, songsprout, contact-patch, compli-me,
-loophole, underlay-reference) are the working reference implementations; mirror
-the closest one to your app's shape.
+`acowtancy` is the live proof of the contract; mirror it. `underlay-reference`
+is the bootstrap fixture and converges on the contract in `g10.005`. The
+remaining consumers (`contact-patch`, `compli-me`, `songsprout`,
+`loophole/composer`) still carry pre-contract layouts — read them for
+component-level patterns, not for workspace topology.

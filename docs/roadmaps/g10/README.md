@@ -75,7 +75,7 @@ lane.
 
 | Lane | Outcome | Primary authority | Notes |
 | --- | --- | --- | --- |
-| A | First contract-assessment wave (foundation + transport) | `contract-index.md`, `system-inventory.md` | Likely first `g10.001` candidate |
+| A | First contract-assessment wave (foundation + transport) | `contract-index.md`, `system-inventory.md` | Resumes after the monorepo rollout lane closes |
 | B | Collection route convergence pilot | `116`, `117`, sweep `029` | Needs one consumer as proof anchor |
 | C | Hybrid shell extraction for one real tab | `117`, sweep `030`, Dairy `ModulesList` evidence | Bounded to one shell, not a framework rewrite |
 | D | Consumer drift B-items with stable boundaries | `070`, `021` sweep family | Only items with a clear Underlay-owned seam |
@@ -109,14 +109,14 @@ lane.
 
 ## Accepted Uncertainty
 
-- exact card count and ordering within `g10` — maintainer choice after `g10.001`
+- card count and ordering beyond the compiled `g10.001`–`g10.010` runway — maintainer choice once the monorepo rollout lane closes
 - whether collection convergence or drift follow-through yields the better first
   proof slice
 - how many compatibility exports can retire in one batch without violating `023`
 
 ## Queue
 
-1. [ ] [`g10.001`](batch-cards/001-monorepo-contract-authority.md) — monorepo contract authority (`ready`)
+1. [ ] [`g10.001`](batch-cards/001-monorepo-contract-authority.md) — monorepo contract authority (`in review`)
 2. [ ] [`g10.002`](batch-cards/002-active-guide-normalization.md) — active guide normalization
 3. [ ] [`g10.003`](batch-cards/003-workspace-shape-conformance.md) — workspace-shape conformance
 4. [ ] [`g10.004`](batch-cards/004-acowtancy-evidence-repair.md) — Acowtancy evidence repair
@@ -129,5 +129,6 @@ lane.
 
 ## Next Task
 
-Execute `g10.001` through its orchestrator-dispatched worker handoff. Review and
-merge that PR before promoting `g10.002`.
+`g10.001` is implemented and awaiting orchestrator review. Evidence:
+[`docs/logs/2026-08/25-181500-g10-001-monorepo-contract-authority.md`](../../logs/2026-08/25-181500-g10-001-monorepo-contract-authority.md).
+Review and merge that PR before promoting `g10.002`. No other card is ready.

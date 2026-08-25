@@ -60,7 +60,8 @@ README surfaces.
 and elective majors landed 2026-08-04.
 
 `g10` is executing the strict monorepo consumer-workspace rollout. `g10.001` is
-the only ready card. See [`g10/README.md`](g10/README.md).
+implemented and awaiting orchestrator review; no further card is ready until it
+merges. See [`g10/README.md`](g10/README.md).
 
 ## Archived generations
 
@@ -79,5 +80,6 @@ that risk.
 
 ## Next Task
 
-**`g10.001`** — monorepo contract authority. Execute it through the pushed
-orchestrator handoff, then review its PR before promoting `g10.002`.
+**`g10.001`** — monorepo contract authority. Implemented and awaiting
+orchestrator review. Review that PR and let the operator authorise the merge
+before promoting `g10.002`.
