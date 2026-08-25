@@ -20,9 +20,10 @@ changelog = "CHANGELOG.md"
 tag-format = "v{version}"
 # 0.x: breaking changes take the minor, not the major.
 pre-1-0 = true
-sync-files = ["Cargo.lock"]
+sync-files = ["Cargo.lock", "package.json"]
 
 [release.gates]
+version-sync = "effigy check:release-version-sync"
 validate = "effigy validate"
 rust = "effigy rust:check"
 
@@ -56,6 +57,7 @@ check = "cd {repo} && bun x svelte-check --tsconfig ./ts/tsconfig.json"
 "check:exports" = "cd {repo} && bun ts/scripts/check-exports.ts"
 "check:component-test-hygiene" = "cd {repo} && bun ts/scripts/check-component-test-hygiene.ts"
 "check:poodle-prop-names" = "cd {repo} && bun ts/scripts/check-poodle-prop-names.ts"
+"check:release-version-sync" = "cd {repo} && bun ts/scripts/check-release-version-sync.ts"
 "check:guardrails" = "cd {repo} && bun ts/src/tools/guardrails.ts"
 "storybook" = "cd {repo} && storybook dev -p 6006"
 "storybook:build" = "cd {repo} && storybook build"
@@ -90,6 +92,7 @@ health = [
     { task = "check:exports" },
     { task = "check:component-test-hygiene" },
     { task = "check:poodle-prop-names" },
+    { task = "check:release-version-sync" },
     { task = "check:guardrails" },
 ]
 

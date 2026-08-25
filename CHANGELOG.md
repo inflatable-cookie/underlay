@@ -10,6 +10,8 @@ While Underlay is `0.x`, breaking changes raise the minor version.
 ### Fixed
 - Release guidance now routes Underlay tags through a real consumer smoke and
   rejects Effigy's binary-only `release verify-install` closer.
+- Release preparation now keeps Cargo and root package versions synchronized,
+  and health plus release gates reject drift before another tag can be cut.
 
 ## [0.9.2] - 2026-08-25
 

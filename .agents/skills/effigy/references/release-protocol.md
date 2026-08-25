@@ -39,6 +39,8 @@ Never run these unprompted:
 When a human explicitly asks for a release:
 
 1. `effigy release simulate`
+   - confirm the mutation plan updates both `Cargo.toml` and `package.json` to
+     the selected version
 2. `effigy release status --check-gates`
 3. `effigy release prepare --plan`
 4. `effigy release prepare --yes --check-gates`
