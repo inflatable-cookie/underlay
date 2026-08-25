@@ -1,0 +1,7 @@
+{
+  "name": "@fixture/app",
+  "private": true,
+  "dependencies": {
+    "@fixture/lib": "1.0.0"
+  }
+}

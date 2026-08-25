@@ -267,6 +267,10 @@
       "types": "./ts/src/tools/templates/banned-apis.ts",
       "default": "./ts/src/tools/templates/banned-apis.ts"
     },
+    "./tools/workspace-shape": {
+      "types": "./ts/src/tools/workspace-shape.ts",
+      "default": "./ts/src/tools/workspace-shape.ts"
+    },
     "./server": {
       "types": "./ts/src/server/index.ts",
       "default": "./ts/src/server/index.ts"

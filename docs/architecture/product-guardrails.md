@@ -19,6 +19,6 @@ Owner: repo maintainers
 
 ## Next Task
 
-Execute `g10.003` from the active monorepo consumer-workspace spec. Keep the
-workspace-shape conformance check separate from security policy, consumer edits,
-and shared runtime or template extraction.
+Review `g10.003` and merge when authorized. Keep the workspace-shape
+conformance check separate from security policy, consumer edits, and shared
+runtime or template extraction. `g10.004` remains blocked until merge.

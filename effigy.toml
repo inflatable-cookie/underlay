@@ -60,6 +60,7 @@ check = "cd {repo} && bun x svelte-check --tsconfig ./ts/tsconfig.json"
 "check:poodle-prop-names" = "cd {repo} && bun ts/scripts/check-poodle-prop-names.ts"
 "check:release-version-sync" = "cd {repo} && bun ts/scripts/check-release-version-sync.ts"
 "check:guardrails" = "cd {repo} && bun ts/src/tools/guardrails.ts"
+"check:workspace-shape" = "cd {repo} && bun x vitest run ts/tests/tools/workspace-shape.test.ts"
 "storybook" = "cd {repo} && storybook dev -p 6006"
 "storybook:build" = "cd {repo} && storybook build"
 "rust:build" = "cd {repo} && cargo build --workspace"
@@ -96,6 +97,7 @@ health = [
     { task = "check:poodle-prop-names" },
     { task = "check:release-version-sync" },
     { task = "check:guardrails" },
+    { task = "check:workspace-shape" },
 ]
 
 validate = [

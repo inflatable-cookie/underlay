@@ -101,6 +101,9 @@ Rules:
 - the checklist should stay contract-shaped, not repo-shaped
 - do not add app-specific product review lanes to the shared artifact
 - domains may be skipped only when the app genuinely does not own that surface
+- workspace bootstrap drift should be checked mechanically with
+  `@inflatable-cookie/underlay/tools/workspace-shape` before narrative audit
+  notes are recorded
 
 ### Finding-classification rule
 
