@@ -90,6 +90,15 @@ Pre-existing debt not touched: `effigy doctor` still reports the unsupported
 `isolation` key in `effigy.toml` and the attention-marker/god-file scan
 findings. Both predate this card.
 
+Review round 1 (orchestrator, PR #6) requested three corrections — retired
+`db:*` aliases in contract `024`, a contradictory child-lockfile deletion
+instruction in the bootstrap prompt, and stale routing on three changed front
+doors. All three applied; see the execution log.
+
+Out-of-scope adjacency: contract `021` still teaches `effigy db:migrate` /
+`effigy db:reset`. Same retired-alias problem, different contract. Left for the
+orchestrator to card.
+
 ## Stop Conditions
 
 Stop if the current Acowtancy manifest no longer matches the strict spec, a

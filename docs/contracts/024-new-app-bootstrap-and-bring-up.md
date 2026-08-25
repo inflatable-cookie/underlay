@@ -217,8 +217,8 @@ Expected common root commands:
 - `effigy dev`
 - `effigy validate`
 - `effigy qa`
-- `effigy db:migrate`
-- `effigy db:reset`
+- `effigy state plan`
+- `effigy state apply local --yes`
 
 Rules:
 
@@ -227,8 +227,14 @@ Rules:
   scripts;
 - the frozen root install is an Effigy task, for example a
   `workspace:js:prepare` task running `bun install --frozen-lockfile`;
-- DB tasks may resolve through catalog routing instead of being reimplemented at
-  the root.
+- local database and seed state is applied through the Effigy state stack
+  (`effigy state plan`, `effigy state apply local --yes`), not through
+  root-owned DB aliases;
+- the API package owns the migration runner and exposes a `migration:*` front
+  door; call it from the workspace root through child-catalog routing;
+- do not reintroduce root `db:migrate` / `db:reset` aliases. They were retired
+  from the live proof's task surface, and a root alias that shadows
+  package-owned `migration:*` routing is drift.
 
 ### Package-scoped Effigy posture
 
@@ -303,10 +309,13 @@ Rules:
 A new workspace has one boring bring-up path:
 
 1. bootstrap the workspace
-2. run `effigy health`
-3. run `effigy test --plan`
-4. run `effigy dev` or `effigy dev <surface>`
-5. use `db:migrate` or `db:reset` from the root when DB ownership is routed
+2. apply local state with `effigy state plan` then
+   `effigy state apply local --yes`
+3. run `effigy health`
+4. run `effigy test --plan`
+5. run `effigy dev` or `effigy dev <surface>`
+6. use the API package's `migration:*` front door through catalog routing when
+   schema work is needed
 
 Rules:
 

@@ -64,7 +64,8 @@ Do not ask me a layout question. There is one supported layout. Start at step 1.
 
 4) Generate one lockfile
    - Run `bun install` once from the repository root and commit the resulting bun.lock.
-   - Delete any child lockfile you find. Never run a per-package install.
+   - Never run a per-package install.
+   - If a child lockfile appears at any point, STOP and report it as in step 1. Do not delete it and do not convert the layout yourself; that is a migration, and a migration is an operator decision.
 
 5) Create/repair the root AGENTS.md
    - Map the apps/* and packages/* directories to their roles.

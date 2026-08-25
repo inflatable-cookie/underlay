@@ -204,7 +204,14 @@ shared UI package). Its physical layout has not converged on this contract yet;
 `g10.005` normalizes it. Read it for component-level patterns, not for workspace
 topology.
 
-See [175-llm-bootstrap-guide.md](./175-llm-bootstrap-guide.md) for step-by-step instructions on bootstrapping a new project from the reference.
+For bootstrapping a new project, follow
+[contract 024](../contracts/024-new-app-bootstrap-and-bring-up.md), then
+[020-project-structure](./020-project-structure.md) and
+[030-underlay-integration](./030-underlay-integration.md).
+
+> `175-llm-bootstrap-guide.md` is **not** current. It still teaches flat
+> component paths, committed `file:` dependencies, and per-package installs.
+> `g10.002` normalizes it; do not follow it until then.
 
 ## Next Steps
 

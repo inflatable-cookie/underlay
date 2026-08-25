@@ -75,7 +75,7 @@ lane.
 
 | Lane | Outcome | Primary authority | Notes |
 | --- | --- | --- | --- |
-| A | First contract-assessment wave (foundation + transport) | `contract-index.md`, `system-inventory.md` | Likely first `g10.001` candidate |
+| A | First contract-assessment wave (foundation + transport) | `contract-index.md`, `system-inventory.md` | Resumes after the monorepo rollout lane closes |
 | B | Collection route convergence pilot | `116`, `117`, sweep `029` | Needs one consumer as proof anchor |
 | C | Hybrid shell extraction for one real tab | `117`, sweep `030`, Dairy `ModulesList` evidence | Bounded to one shell, not a framework rewrite |
 | D | Consumer drift B-items with stable boundaries | `070`, `021` sweep family | Only items with a clear Underlay-owned seam |
@@ -109,7 +109,7 @@ lane.
 
 ## Accepted Uncertainty
 
-- exact card count and ordering within `g10` — maintainer choice after `g10.001`
+- card count and ordering beyond the compiled `g10.001`–`g10.010` runway — maintainer choice once the monorepo rollout lane closes
 - whether collection convergence or drift follow-through yields the better first
   proof slice
 - how many compatibility exports can retire in one batch without violating `023`

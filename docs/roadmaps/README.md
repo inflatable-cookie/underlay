@@ -80,5 +80,6 @@ that risk.
 
 ## Next Task
 
-**`g10.001`** — monorepo contract authority. Execute it through the pushed
-orchestrator handoff, then review its PR before promoting `g10.002`.
+**`g10.001`** — monorepo contract authority. Implemented and awaiting
+orchestrator review. Review that PR and let the operator authorise the merge
+before promoting `g10.002`.

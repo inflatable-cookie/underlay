@@ -82,7 +82,46 @@ planning base and were deliberately left alone.
 - Acowtancy's obsolete README `file:` prose was left in place; it is `g10.004`.
 - No release mutation and no `.github/workflows/` edit.
 
+## Review Round 1
+
+Orchestrator requested changes on PR #6. Three blocking findings, all corrected:
+
+1. **Contract `024` taught retired DB aliases.** The Effigy root-posture and
+   bring-up sections advertised `effigy db:migrate` / `effigy db:reset`. The
+   live proof lists both as **removed selectors**
+   (`docs/planning/migration-execution/migration-operator-command-ladder.md`)
+   and its README says plainly: "Farmyard owns the migration runner. Use the
+   `migration:*` front doors from the workspace root through child-catalog
+   routing; do not call old `db:*` aliases." The contract now teaches
+   `effigy state plan` / `effigy state apply local --yes` for local state and
+   package-owned `migration:*` routing for schema work, and explicitly forbids
+   reintroducing root `db:*` aliases. Bring-up gained the state step.
+2. **The bootstrap prompt contradicted its own stop boundary.** Step 1 told the
+   worker to STOP on a child `bun.lock`; step 4 told it to delete one. The
+   deletion instruction is gone — a child lockfile now routes to the same
+   STOP-and-report path, because converting an existing layout is a migration
+   and an operator decision.
+3. **Stale routing on changed front doors.** `docs/roadmaps/README.md` still
+   said to execute the handoff; `docs/roadmaps/g10/README.md` still called Lane
+   A the likely `g10.001` candidate and treated the card count as open despite
+   the compiled ten-card runway; `docs/guides/000-overview.md` still routed new
+   users to guide `175`, which teaches flat paths, committed `file:`
+   dependencies, and per-package installs. All three corrected; the `175`
+   pointer is replaced with the contract/020/030 path plus an explicit
+   not-current warning until `g10.002` normalizes that guide.
+
+Validation re-run after the corrections: `effigy qa:docs`, `effigy qa:northstar`,
+`effigy health` all pass; `git diff --check` clean.
+
+### Out-of-scope adjacency found during review
+
+Contract `021-database-migration-and-schema-workflow.md` still teaches
+`effigy db:migrate` and `effigy db:reset` as the canonical loop (lines 65,
+153-154, 170-171, 177-178, 187-188). That is the same retired-alias problem in
+an unrelated contract, outside `g10.001`'s scope. Left untouched and flagged for
+the orchestrator to card.
+
 ## Next Task
 
-Orchestrator review of the `g10.001` PR. `g10.002` stays blocked until that
+Orchestrator re-review of the `g10.001` PR. `g10.002` stays blocked until that
 review lands and the operator authorises the merge.
