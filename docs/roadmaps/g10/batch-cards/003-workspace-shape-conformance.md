@@ -1,6 +1,7 @@
 # g10.003 - Workspace Shape Conformance
 
-Status: in review
+Status: complete
+Completed: 2026-08-25
 Owner: repo maintainers
 Spec: `docs/specs/monorepo-consumer-workspace-rollout.md`
 
@@ -41,7 +42,22 @@ sweep.
 Stop if implementation requires app-specific package names or a new Effigy
 schema surface.
 
+## Review And Merge Evidence
+
+The first orchestrator review requested portable fixture-only health, complete
+and root-contained workspace membership, and a real published consumer bin.
+Those corrections landed in `25499ef2226648dd130a981b0474fd3dfd0190fa`.
+
+The second review found one realpath escape through an in-root symlink. The
+final correction landed in `d1baca3d0d715bd235e8dbd6fd01b5887a3a639d`,
+and final re-review approved that head. PR
+[#8](https://github.com/inflatable-cookie/underlay/pull/8) merged to `main` as
+`dc5d26668b554d00520a404dd6d17137f3663f74` on 2026-08-25. The canonical
+approval record is the
+[orchestrator review comment](https://github.com/inflatable-cookie/underlay/pull/8#issuecomment-5416874040).
+
 ## Next Task
 
-Execute this card through an orchestrator-dispatched worker handoff. After its
-review and operator-authorized merge, prepare `g10.004` in Acowtancy.
+Closed after orchestrator review, operator-authorized merge, and planning
+currentness repair. Execute `g10.004` through a fresh Acowtancy worker handoff.
+No other card is ready.

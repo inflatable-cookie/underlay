@@ -1,7 +1,6 @@
 # g10.004 - Acowtancy Evidence Repair
 
-Status: planned
-Blocked by: `g10.003`
+Status: ready
 Owner: Acowtancy maintainers
 Spec: `docs/specs/monorepo-consumer-workspace-rollout.md`
 

@@ -49,9 +49,10 @@ Underlay is in parallel mode:
 - `docs/specs/monorepo-consumer-workspace-rollout.md` is the active strict spec
 - `g10.001` is complete
 - `g10.002` is complete
-- `g10.003` is in review
+- `g10.003` is complete
+- `g10.004` is the only ready card
 
 ## Next Task
 
-Review `g10.003` and merge when authorized. `g10.004` remains blocked until
-merge.
+Execute `g10.004` — Acowtancy evidence repair — through an
+orchestrator-dispatched Acowtancy worker handoff. No other card is ready.

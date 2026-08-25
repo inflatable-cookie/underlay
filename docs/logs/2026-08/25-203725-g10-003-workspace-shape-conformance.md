@@ -19,7 +19,7 @@ alignment, and consumer integration guidance.
 | `package.json` | Export `@inflatable-cookie/underlay/tools/workspace-shape` |
 | `effigy.toml` | `check:workspace-shape` fixture self-test in `health` |
 | `ts/tests/fixtures/workspace-shape/*` | Compliant and failing workspace fixtures |
-| `ts/tests/tools/workspace-shape.test.ts` | Focused checker/fixture tests + Acowtancy proof |
+| `ts/tests/tools/workspace-shape.test.ts` | Focused checker, fixture, and published-bin tests |
 | `docs/contracts/120-tooling-testing-and-contract-artifacts.md` | Workspace-shape checker ownership |
 | `docs/contracts/121-underlay-app-review-checklist-and-audit-artifact.md` | Mechanical bootstrap check rule |
 | `docs/contracts/app-review/underlay-app-review-checklist.json` | `workspace-shape` mechanical check on bootstrap domain |
@@ -40,6 +40,16 @@ Addressed orchestrator changes requested on PR #8:
 4. Workspace containment now uses filesystem `realpath` so in-root symlink
    targets outside the Git root emit `workspace-path-outside-root`; fixture
    `workspace-symlink-outside-root` covers the bypass.
+
+## Review And Merge Evidence
+
+Final orchestrator re-review approved
+`d1baca3d0d715bd235e8dbd6fd01b5887a3a639d` after the symlink-escape fixture,
+ordinary `effigy validate`, packed-package bin smoke, and Acowtancy live proof
+all passed. PR [#8](https://github.com/inflatable-cookie/underlay/pull/8)
+merged to `main` as `dc5d26668b554d00520a404dd6d17137f3663f74`
+on 2026-08-25. The canonical approval record is the
+[final review comment](https://github.com/inflatable-cookie/underlay/pull/8#issuecomment-5416874040).
 
 
 - Fixture suite: compliant workspace passes; nested Git, manifest drift,
@@ -68,9 +78,9 @@ git diff --check                      pass
 - No consumer-repository edits
 - No Effigy schema changes
 - No `.github/workflows/` edits
-- `g10.004` remains blocked pending review and merge
+- `g10.004` is ready after review and merge
 
 ## Next task
 
-Orchestrator review of this PR. After operator-authorized merge, dispatch
-`g10.004` — Acowtancy evidence repair.
+Execute `g10.004` — Acowtancy evidence repair — through a fresh
+orchestrator-dispatched Acowtancy worker handoff. No other card is ready.
