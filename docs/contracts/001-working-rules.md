@@ -47,10 +47,10 @@ Underlay is in parallel mode:
 - `g10` is the active generation
 - `g03`, `g04`, and `g05` are closed historical generations
 - `docs/specs/monorepo-consumer-workspace-rollout.md` is the active strict spec
-- `g10.001` is implemented and awaiting orchestrator review; no other card is
-  ready
+- `g10.001` is complete
+- `g10.002` is the only ready card
 
 ## Next Task
 
-Review the `g10.001` PR. Do not promote `g10.002` until that PR is reviewed and
-the operator authorises the merge.
+Execute `g10.002` — migration contract and active guide normalization — through
+its orchestrator-dispatched worker handoff. No other card is ready.

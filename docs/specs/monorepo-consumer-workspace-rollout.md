@@ -100,7 +100,7 @@ one lockfile, and internal workspace edges.
 ## Runway
 
 1. `g10.001` — normative contract and front-door authority.
-2. `g10.002` — active guide and bootstrap narrative normalization.
+2. `g10.002` — migration contract and active guide normalization.
 3. `g10.003` — consumer workspace-shape conformance check.
 4. `g10.004` — Acowtancy evidence correction.
 5. `g10.005` — Underlay Reference normalization.
@@ -159,4 +159,6 @@ Pause the active worker and return to the orchestrator if:
 
 ## Next Task
 
-Execute `g10.001` from its orchestrator-dispatched worker handoff.
+Execute `g10.002` from its orchestrator-dispatched worker handoff. Repair
+contract `021`'s retired `db:*` selector authority before normalizing the
+remaining active guides. No other card is ready.

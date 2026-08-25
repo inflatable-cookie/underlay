@@ -39,6 +39,7 @@ where repo-local links and normalized prose references are required instead.
 
 ## Next Task
 
-`g10.001` is implemented and awaiting orchestrator review
-(`2026-08/25-181500-g10-001-monorepo-contract-authority.md`). Keep the active
-evidence window aligned to `g10` without reconstructing closed history.
+`g10.001` is complete and merged
+(`2026-08/25-181500-g10-001-monorepo-contract-authority.md`). Execute `g10.002`
+through its orchestrator-dispatched worker handoff and keep the active evidence
+window aligned to `g10` without reconstructing closed history.

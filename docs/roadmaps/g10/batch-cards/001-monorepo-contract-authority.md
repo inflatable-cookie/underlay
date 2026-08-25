@@ -1,6 +1,7 @@
 # g10.001 - Monorepo Contract Authority
 
-Status: in review
+Status: complete
+Completed: 2026-08-25
 Owner: repo maintainers
 Spec: `docs/specs/monorepo-consumer-workspace-rollout.md`
 
@@ -95,9 +96,17 @@ Review round 1 (orchestrator, PR #6) requested three corrections — retired
 instruction in the bootstrap prompt, and stale routing on three changed front
 doors. All three applied; see the execution log.
 
+Review round 2 approved the corrected head
+`f79d699c03f830e803df193abe12e5bfa938f024` for operator-authorised merge. PR
+[#6](https://github.com/inflatable-cookie/underlay/pull/6) merged to `main` as
+`ec21e51cc918284fd9b306144c8d44a2ce1cae96` on 2026-08-25. The canonical
+approval record is the
+[orchestrator review comment](https://github.com/inflatable-cookie/underlay/pull/6#issuecomment-5414069218).
+
 Out-of-scope adjacency: contract `021` still teaches `effigy db:migrate` /
 `effigy db:reset`. Same retired-alias problem, different contract. Left for the
-orchestrator to card.
+orchestrator to card. It is now the first bounded repair in `g10.002`, before
+the active guide sweep.
 
 ## Stop Conditions
 
@@ -107,9 +116,10 @@ rewrite frozen historical evidence.
 
 ## Continuation
 
-Return the PR for orchestrator review. Do not start `g10.002` in the same worker.
+Closed after orchestrator review, operator-authorised merge, and planning
+currentness repair. Continue through a fresh `g10.002` worker handoff.
 
 ## Next Task
 
-Await orchestrator review of the `g10.001` PR. Do not promote `g10.002` before
-review and operator-authorised merge.
+Execute `g10.002` — migration contract and active guide normalization. No other
+card is ready.

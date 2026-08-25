@@ -4,7 +4,7 @@ Date: 2026-08-25
 Card: `docs/roadmaps/g10/batch-cards/001-monorepo-contract-authority.md`
 Spec: `docs/specs/monorepo-consumer-workspace-rollout.md`
 Milestone: `docs/roadmaps/g10/README.md`
-Status: implemented, awaiting orchestrator review
+Status: complete, merged
 
 ## What Changed
 
@@ -121,7 +121,24 @@ Contract `021-database-migration-and-schema-workflow.md` still teaches
 an unrelated contract, outside `g10.001`'s scope. Left untouched and flagged for
 the orchestrator to card.
 
+## Review And Merge Closeout
+
+The corrected head `f79d699c03f830e803df193abe12e5bfa938f024` passed fresh
+orchestrator review, both GitHub `build + test (with Postgres)` checks,
+`effigy qa:docs`, `effigy qa:northstar`, `effigy health`, focused regression
+searches, and `git diff --check`.
+
+The operator authorised merge. PR
+[#6](https://github.com/inflatable-cookie/underlay/pull/6) merged to `main` as
+`ec21e51cc918284fd9b306144c8d44a2ce1cae96` on 2026-08-25. The
+[orchestrator approval comment](https://github.com/inflatable-cookie/underlay/pull/6#issuecomment-5414069218)
+is the canonical review record.
+
+The contract `021` adjacency is promoted into `g10.002` as a bounded
+prerequisite to the active-guide sweep. No `docs/triage/` notes existed for this
+run.
+
 ## Next Task
 
-Orchestrator re-review of the `g10.001` PR. `g10.002` stays blocked until that
-review lands and the operator authorises the merge.
+Execute `g10.002` — migration contract and active guide normalization — through
+its orchestrator-dispatched worker handoff. No other card is ready.

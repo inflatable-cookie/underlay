@@ -19,5 +19,6 @@ Owner: repo maintainers
 
 ## Next Task
 
-Execute `g10.001` from the active monorepo consumer-workspace spec. Keep app
-layout migration separate from shared runtime or template extraction.
+Execute `g10.002` from the active monorepo consumer-workspace spec. Keep the
+contract-and-guide normalization separate from conformance code, consumer edits,
+and shared runtime or template extraction.
