@@ -25,7 +25,7 @@ impl BlockVersions {
 
     /// True when `version` is in the supported set.
     pub fn supports(self, version: &str) -> bool {
-        self.supported.iter().any(|candidate| *candidate == version)
+        self.supported.contains(&version)
     }
 
     /// Resolve a stored version to the current implementation.

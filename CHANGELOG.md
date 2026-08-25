@@ -7,6 +7,12 @@ While Underlay is `0.x`, breaking changes raise the minor version.
 
 ## [Unreleased]
 
+### Fixed
+- Registry-backed installs now resolve `@inflatable-cookie/poodle-svelte` at
+  exact version `0.2.2`. The stale `^0.1.0` range and local sibling overrides
+  are gone, so consumers can adopt Poodle `0.2.2` without a local Poodle
+  checkout.
+
 ## [0.9.1] - 2026-08-21
 
 ### Changed
@@ -54,5 +60,7 @@ While Underlay is `0.x`, breaking changes raise the minor version.
 - First tagged release. Changelog tracking starts with this file; see the Git
   history for detail before this point.
 
-[Unreleased]: https://github.com/inflatable-cookie/underlay/compare/v0.8.0...HEAD
+[Unreleased]: https://github.com/inflatable-cookie/underlay/compare/v0.9.1...HEAD
+[0.9.1]: https://github.com/inflatable-cookie/underlay/releases/tag/v0.9.1
+[0.9.0]: https://github.com/inflatable-cookie/underlay/releases/tag/v0.9.0
 [0.8.0]: https://github.com/inflatable-cookie/underlay/releases/tag/v0.8.0
