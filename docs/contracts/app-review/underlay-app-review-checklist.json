@@ -20,6 +20,14 @@
       "required": true,
       "contracts": [
         "024"
+      ],
+      "mechanical_checks": [
+        {
+          "id": "workspace-shape",
+          "contract": "024",
+          "tool": "@inflatable-cookie/underlay/tools/workspace-shape",
+          "bin": "underlay-workspace-shape"
+        }
       ]
     },
     {

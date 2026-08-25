@@ -106,6 +106,41 @@ Internal packages in the same workspace use `workspace:*` instead:
 }
 ```
 
+### Workspace-shape conformance
+
+Keep workspace topology drift separate from security conformance. Add a
+consumer-owned Effigy task that invokes the published bin entry, then compose
+it into `health` or `validate`:
+
+```toml
+[tasks."qa:workspace-shape"]
+run = "underlay-workspace-shape ."
+```
+
+When Underlay is installed as a released dependency, Bun resolves the bin from
+the installed package:
+
+```toml
+[tasks."qa:workspace-shape"]
+run = "bunx underlay-workspace-shape ."
+```
+
+A sibling `../underlay` checkout can use the same bin through Bun's local
+install during co-development:
+
+```toml
+[tasks."qa:workspace-shape"]
+run = "bun ../underlay/ts/bin/underlay-workspace-shape.ts ."
+```
+
+The checker enforces one Git root, root `private: true`, a pinned
+`packageManager`, explicit workspace paths contained by the Git root, complete
+`apps/*` / `packages/*` workspace membership, one root `bun.lock`, no child
+lockfiles, no internal `file:` edges, and `workspace:*` for internal JavaScript
+dependencies. Security policy remains in
+`underlay/scripts/check-consumer-conformance.sh` via a separate task such as
+`qa:security`.
+
 ### Upgrading Underlay
 
 1. bump the pinned tag in every manifest that declares it;

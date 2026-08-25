@@ -25,7 +25,7 @@ Updated: 2026-08-25
 | `g07` | 2026-06-06 | Runtime, workflow, residual Rust policy, and doctor-warning hardening after `g06` closeout | Complete after `g07.037` doctor warning closeout |
 | `g08` | 2026-07-17 | Audit remediation after July 2026 deep audit (security edge, correctness bugs, Rust/TS structure, docs/versioning/i18n posture) | Complete - all 32 cards done; `v0.8.0` tagged |
 | `g09` | 2026-08-03 | Config-convergence follow-through after the 2026-08-03 self-audit; extended with dependency-upgrade and elective-majors cards | Complete - all 20 cards done |
-| `g10` | 2026-08-17 | Contract fidelity, collection convergence, and fleet drift prevention after `g09` closeout | Active - `g10.001` and `g10.002` complete; `g10.003` ready in the monorepo consumer-workspace rollout |
+| `g10` | 2026-08-17 | Contract fidelity, collection convergence, and fleet drift prevention after `g09` closeout | Active - `g10.001` and `g10.002` complete; `g10.003` in review in the monorepo consumer-workspace rollout |
 
 ## Historical generations
 
@@ -56,6 +56,5 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g10.003` through its orchestrator-dispatched worker handoff. See
-[`g10/README.md`](g10/README.md) and the active strict spec. No other card is
-ready.
+Review `g10.003` and merge when authorized. See [`g10/README.md`](g10/README.md)
+and the active strict spec. `g10.004` remains blocked until merge.

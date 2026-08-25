@@ -49,9 +49,9 @@ Underlay is in parallel mode:
 - `docs/specs/monorepo-consumer-workspace-rollout.md` is the active strict spec
 - `g10.001` is complete
 - `g10.002` is complete
-- `g10.003` is the only ready card
+- `g10.003` is in review
 
 ## Next Task
 
-Execute `g10.003` — workspace-shape conformance — through its
-orchestrator-dispatched worker handoff. No other card is ready.
+Review `g10.003` and merge when authorized. `g10.004` remains blocked until
+merge.

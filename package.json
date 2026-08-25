@@ -6,6 +6,9 @@
   "files": [
     "ts"
   ],
+  "bin": {
+    "underlay-workspace-shape": "./ts/bin/underlay-workspace-shape.ts"
+  },
   "exports": {
     "./patterns": {
       "svelte": "./ts/src/patterns/index.ts",
@@ -266,6 +269,10 @@
     "./tools/templates/banned-apis": {
       "types": "./ts/src/tools/templates/banned-apis.ts",
       "default": "./ts/src/tools/templates/banned-apis.ts"
+    },
+    "./tools/workspace-shape": {
+      "types": "./ts/src/tools/workspace-shape.ts",
+      "default": "./ts/src/tools/workspace-shape.ts"
     },
     "./server": {
       "types": "./ts/src/server/index.ts",

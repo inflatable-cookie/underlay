@@ -1,0 +1,6 @@
+{
+  "name": "@fixture/root-not-private",
+  "private": false,
+  "packageManager": "bun@1.3.14",
+  "workspaces": ["apps/app"]
+}

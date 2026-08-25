@@ -1,6 +1,6 @@
 # g10.003 - Workspace Shape Conformance
 
-Status: ready
+Status: in review
 Owner: repo maintainers
 Spec: `docs/specs/monorepo-consumer-workspace-rollout.md`
 

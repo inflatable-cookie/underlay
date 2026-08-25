@@ -41,6 +41,8 @@ where repo-local links and normalized prose references are required instead.
 
 `g10.002` is complete and merged
 ([execution log](./2026-08/25-190914-g10-002-active-guide-normalization.md)).
-Execute `g10.003` through its orchestrator-dispatched worker handoff and keep
-the active evidence window aligned to `g10` without reconstructing closed
-history.
+`g10.003` is in review
+([execution log](./2026-08/25-203725-g10-003-workspace-shape-conformance.md)).
+`g10.004` remains blocked until orchestrator review and operator-authorized
+merge. Keep the active evidence window aligned to `g10` without reconstructing
+closed history.

@@ -1,0 +1,6 @@
+{
+  "name": "@fixture/child-lockfile",
+  "private": true,
+  "packageManager": "bun@1.3.14",
+  "workspaces": ["apps/app"]
+}

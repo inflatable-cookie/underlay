@@ -60,7 +60,7 @@ README surfaces.
 and elective majors landed 2026-08-04.
 
 `g10` is executing the strict monorepo consumer-workspace rollout. `g10.001`
-and `g10.002` are complete, and `g10.003` is the only ready card. See
+and `g10.002` are complete, and `g10.003` is in review. See
 [`g10/README.md`](g10/README.md).
 
 ## Archived generations
@@ -80,5 +80,5 @@ that risk.
 
 ## Next Task
 
-**`g10.003`** — workspace-shape conformance. Execute it through the
-orchestrator-dispatched worker handoff. No other card is ready.
+**`g10.003`** — workspace-shape conformance — is in review. `g10.004` remains
+blocked pending orchestrator review and operator-authorized merge.

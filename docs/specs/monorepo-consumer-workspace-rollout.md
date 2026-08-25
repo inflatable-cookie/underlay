@@ -159,5 +159,5 @@ Pause the active worker and return to the orchestrator if:
 
 ## Next Task
 
-Execute `g10.003` through its orchestrator-dispatched worker handoff. No other
-card is ready.
+Review `g10.003` and merge when authorized. `g10.004` remains blocked until
+merge.

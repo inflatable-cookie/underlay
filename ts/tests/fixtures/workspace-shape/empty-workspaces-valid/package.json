@@ -1,0 +1,6 @@
+{
+  "name": "@fixture/empty-workspaces",
+  "private": true,
+  "packageManager": "bun@1.3.14",
+  "workspaces": []
+}
