@@ -183,22 +183,26 @@ Before committing any schema change:
 
 ## Database Crate Structure
 
-Keep migrations in a standard `migrations/` folder at the crate root (this matches `sqlx migrate` conventions):
+Keep durable migrations in the API package's `migrations/` folder. The Rust
+workspace stays under `apps/api`, but the migration input is a single API-level
+directory shared by the package's migration tasks:
 
 ```
-apps/api/crates/db/
-├── Cargo.toml
+apps/api/
 ├── migrations/
 │   └── 20250101000000_init.sql
-└── src/
-    └── lib.rs
+└── crates/db/
+    ├── Cargo.toml
+    └── src/
+        └── lib.rs
 ```
 
 ## Farmyard-Style Migrations + Seeds (Recommended)
 
-Acowtancy's Farmyard uses a pattern that works well in multi-repo workspaces:
+Acowtancy's Farmyard uses a pattern that works well in the single-repository
+workspace:
 
-- Keep `migrations/` and `migrations_dev/` at the Rust repo root
+- Keep `migrations/` and `migrations_dev/` at the API package root
 - Embed schema migrations at compile time with `sqlx::migrate!` from the DB crate
 - Load dev seeds from disk at runtime via `underlay_db::run_sql_dir`
 - Provide two small DB binaries:
@@ -208,7 +212,7 @@ Acowtancy's Farmyard uses a pattern that works well in multi-repo workspaces:
 ### Layout
 
 ```text
-api/
+apps/api/
 ├── migrations/
 ├── migrations_dev/
 └── crates/
@@ -272,33 +276,29 @@ let pool = underlay_devtools::migrate_from_env_with("DATABASE_URL", |pool| {
 run_dev_seeds(&pool).await?;
 ```
 
-## Farmyard-Style bun Scripts (Recommended)
+## Farmyard-Style Effigy Tasks (Recommended)
 
-Farmyard uses a tiny `package.json` in the Rust repo root to standardize common developer commands.
+Keep the implementation in the API package, but expose operator workflows from
+its Effigy catalog under `migration:*`. The workspace root routes those tasks;
+it does not mirror them as root `db:*` aliases.
 
-Example `api/package.json`:
+The exact task names are app-owned. A normal package commonly provides a
+schema-apply task and a reset/replay task, for example:
 
-```json
-{
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "build": "cargo build",
-    "test": "cargo test",
-    "dev": "cargo run -p myapp-api",
-    "dev:watch": "cargo watch -x 'run -p myapp-api'",
-    "jobs": "cargo run -p myapp-jobs",
-    "db:drop": "cargo run -p myapp-db --bin reset_dev_db",
-    "db:migrate": "cargo run -p myapp-db --bin migrate_dev_db",
-    "db:reset": "bun db:drop && bun db:migrate"
-  }
-}
+```text
+effigy migration:reset       # routed API-package reset and replay
+effigy migration:debug       # targeted low-level diagnostics, when declared
 ```
 
-Notes:
+Use the root state stack for local database and seed state:
 
-- `dev:watch` requires `cargo-watch` installed (`cargo install cargo-watch`).
-- Prefer the standard `DATABASE_URL` name. If migrating an older app-prefixed variable, accept it as a fallback in code.
+```bash
+effigy state plan
+effigy state apply local --yes
+```
+
+Prefer the standard `DATABASE_URL` name. If migrating an older app-prefixed
+variable, accept it as a fallback in code.
 
 ## Step 1: Create Database Crate
 
@@ -334,7 +334,7 @@ pub async fn create_pool(database_url: &str) -> Result<PgPool, sqlx::Error> {
 ///
 /// This uses SQLx's compile-time migration embedding.
 pub async fn run_migrations(pool: &PgPool) -> Result<(), sqlx::migrate::MigrateError> {
-    sqlx::migrate!("./migrations").run(pool).await
+    sqlx::migrate!("../../migrations").run(pool).await
 }
 
 /// Runtime migration runner (optional).
@@ -352,7 +352,7 @@ pub async fn run_migrations_from_path(
 
 ## Step 2: Create Initial Migration
 
-From `apps/api/crates/db`:
+From the `apps/api` package directory:
 
 ```bash
 mkdir -p migrations
@@ -464,7 +464,8 @@ async fn main() -> Result<(), anyhow::Error> {
 
 ## Step 4: Environment
 
-In `apps/api/.env`:
+Provide `DATABASE_URL` through the workspace config and secret/env surfaces.
+Do not commit an `apps/api/.env` file:
 
 ```bash
 DATABASE_URL=postgres://myapp_user:password@localhost:5432/myapp_db
@@ -472,20 +473,15 @@ DATABASE_URL=postgres://myapp_user:password@localhost:5432/myapp_db
 
 ## Migration Commands
 
-From `apps/api/crates/db`:
+Run the root state stack and the routed API-package migration task from the
+workspace root. Raw `sqlx` commands remain implementation/debugging tools, not
+the shared operator contract:
 
 ```bash
-# Create DB
-sqlx database create
-
-# Run migrations
-sqlx migrate run
-
-# Check status
-sqlx migrate info
-
-# Revert last migration
-sqlx migrate revert
+effigy state plan
+effigy state apply local --yes
+effigy migration:reset
+effigy health
 ```
 
 ## Development Seeds
@@ -494,16 +490,18 @@ For local development, you may want test data separate from production migration
 
 ### Pattern: Separate Dev Migrations
 
-Create a separate directory for development-only seeds:
+Create a separate API-level directory for development-only seeds:
 
 ```
-apps/api/crates/db/
-├── migrations/           # Production migrations
+apps/api/
+├── migrations/           # Durable production migrations
 │   ├── 001_create_users.sql
 │   └── 002_create_articles.sql
-└── migrations_dev/       # Development seeds (never run in prod)
-    ├── 001_seed_users.sql
-    └── 002_seed_articles.sql
+├── migrations_dev/       # Development seeds (never run in prod)
+│   ├── 001_seed_users.sql
+│   └── 002_seed_articles.sql
+└── crates/db/
+    └── src/lib.rs
 ```
 
 ### Seed Files
@@ -542,8 +540,8 @@ pub async fn run_dev_seeds(pool: &PgPool) -> Result<(), sqlx::Error> {
 
     // Run each seed file
     let seed_files = [
-        include_str!("../migrations_dev/001_seed_users.sql"),
-        include_str!("../migrations_dev/002_seed_articles.sql"),
+        include_str!("../../../migrations_dev/001_seed_users.sql"),
+        include_str!("../../../migrations_dev/002_seed_articles.sql"),
     ];
 
     for (idx, sql) in seed_files.iter().enumerate() {
@@ -621,10 +619,11 @@ name = "reset_dev_db"
 path = "src/bin/reset_dev_db.rs"
 ```
 
-**Run it:**
+The binary is an implementation detail behind the package-owned migration
+task. Run the routed task from the workspace root:
 
 ```bash
-cargo run --bin reset_dev_db
+effigy migration:reset
 ```
 
 ### Benefits
@@ -637,8 +636,8 @@ cargo run --bin reset_dev_db
 ### Example Pattern
 
 Your project might use this exact pattern:
-- `apps/api/crates/db/migrations/` - Production migrations
-- `apps/api/crates/db/migrations_dev/` - Development seeds
+- `apps/api/migrations/` - Durable production migrations
+- `apps/api/migrations_dev/` - Development seeds
 - `apps/api/crates/db/src/lib.rs` - `run_dev_seeds()` function
 - `apps/api/crates/db/src/bin/reset_dev_db.rs` - Reset script
 

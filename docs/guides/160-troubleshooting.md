@@ -8,7 +8,7 @@ This document covers common issues and their solutions.
 
 | Issue | Cause | Solution |
 |-------|-------|----------|
-| "cannot find `sqlx`" | Migration not run | Run `sqlx migrate run` |
+| "cannot find `sqlx`" | Migration not run | Run the routed API-package `migration:*` task that applies structural migrations, such as `effigy migration:run` when declared |
 | "connection refused" | DB not running | Start PostgreSQL |
 | "uuid parse error" | Invalid UUID format | Use valid UUID v7 |
 
@@ -16,7 +16,7 @@ This document covers common issues and their solutions.
 
 | Issue | Cause | Solution |
 |-------|-------|----------|
-| "Module not found" | bun install not run | Run `bun install` |
+| "Module not found" | Root workspace install is missing or stale | Run `effigy workspace:js:prepare` from the repository root |
 | "Type error" | TypeScript config | Run `bun check` |
 | "Import error" | Wrong path | Check exports |
 
@@ -35,44 +35,28 @@ This document covers common issues and their solutions.
 **Symptom**: When running `bun dev`, you see errors like:
 ```
 [vite-plugin-svelte:load] failed to load virtual css module
-/path/to/node_modules/@inflatable-cookie/underlay/ts/src/patterns/FormShell.svelte?svelte&type=style&lang.css
+/path/to/node_modules/@inflatable-cookie/underlay/patterns/FormShell.svelte?svelte&type=style&lang.css
 ```
 
 The app may load but styles from underlay components are broken.
 
-**Cause**: vite-plugin-svelte creates virtual CSS modules for Svelte component styles. When underlay is installed via `file:` protocol, the plugin may fail to resolve these virtual modules correctly.
+**Cause**: vite-plugin-svelte's cache can retain transformed modules after a
+released Underlay update or after a workspace install has been interrupted.
 
-**Solution**: Add a resolve alias in `vite.config.ts` to resolve underlay directly from source:
+**Solution**: Refresh the root install and Vite cache. Keep imports on the
+explicit Underlay package subpaths; do not resolve them through a sibling
+source checkout:
 
-```typescript
-import { fileURLToPath } from "node:url";
-import path from "node:path";
-
-const __dirname = fileURLToPath(new URL(".", import.meta.url));
-const underlayPath = path.resolve(__dirname, "../underlay/ts/src");
-
-export default defineConfig({
-  resolve: {
-    alias: [
-      // Resolve underlay directly from source to avoid path issues
-      // with virtual CSS modules. Uses regex to match all subpaths.
-      {
-        find: /^@inflatable-cookie\/underlay(\/.*)?$/,
-        replacement: `${underlayPath}$1`
-      }
-    ],
-    dedupe: ["@inflatable-cookie/underlay"]
-  },
-  optimizeDeps: {
-    exclude: ["@inflatable-cookie/underlay"]
-  },
-  // ... rest of config
-});
+```bash
+effigy workspace:js:prepare
+rm -rf .svelte-kit node_modules/.vite
+effigy <front-package>/dev
 ```
 
-This resolves `@inflatable-cookie/underlay` and all subpaths (e.g., `/components`,
-`/patterns`) directly to the source directory via the project's underlay
-symlink.
+If the error remains, verify that the package manifest pins the intended
+Underlay release tag and that imports use explicit exports such as
+`@inflatable-cookie/underlay/client/*` or
+`@inflatable-cookie/underlay/runtime/*`.
 
 See `docs/guides/code/160-troubleshooting/common-commands.txt` for a quick command checklist.
 

@@ -23,7 +23,7 @@ Reusable templates:
 
 | Area | Current expectation | Notes |
 |---|---|---|
-| Package manager | Bun | Use `bun`, not `pnpm`/`npm`, in app repos |
+| Package manager | Bun | Use `bun` through the root workspace, not `pnpm`/`npm` |
 | SvelteKit admin deployment | SPA with adapter-static fallback | See `docs/guides/110-admin.md` |
 | Underlay client auth flow | `configureAuth()` + token refresh handler | Required for `useAuthenticatedData()` auto-refresh |
 | Admin navigation pattern | Navigation context helpers | Use `gotoWithContext` + `consumeNavigationContext` |
@@ -52,11 +52,14 @@ Reusable templates:
 ## Upgrade Checklist
 
 1. Runtime/tooling
-- Confirm Bun commands and lockfile integrity.
+- Confirm the root Bun workspace and single-lockfile integrity.
 - Confirm SvelteKit adapter/static settings for admin SPA.
 
 2. Underlay package updates
-- Re-run `bun install` in consuming app repos.
+- Update the released Underlay tag in the consuming workspace manifests.
+- Run `bun install` once from the workspace root, then commit the root
+  `bun.lock` and verify there are no child lockfiles.
+- Use `effigy workspace:js:prepare` for the frozen-install check.
 - Verify no import drift for moved/renamed exports.
 
 3. Pattern compatibility
@@ -375,9 +378,9 @@ Reusable templates:
   - in consuming apps/packages: run the repo-owned Svelte check or TS check and
     scan for `@inflatable-cookie/underlay` source imports
 - Caveat:
-  - dependency entries like `"@inflatable-cookie/underlay": "file:../underlay"` stay
-    valid; this break is about source import paths, not package installation
-    syntax
+  - the dependency entry must use the released Underlay Git tag; local
+    `file:` replacements are not a supported application shape. This break is
+    about source import paths as well as the workspace dependency boundary.
 
 ### Poodle Public Prop Normalization (`2026-03-25`)
 
@@ -506,9 +509,10 @@ Reusable templates:
   - examples: `disabled`, `loading`, `readOnly`, `required`, `collapsed`, `visible`, `sticky`, `sortable`, `hideable`, `current`, `expandable`
   - retired forms like `isDisabled`, `isVisible`, `isSticky`, `isSortable`, `isHideable`, and `hasChildren` are removed API, not long-lived compatibility aliases
 - Required actions:
-  1. re-run `bun install` in consumer repos that use local `file:` Poodle packages
-  2. replace retired `is*` / `has*` Poodle prop names with the normalized names at every call site
-  3. update option-object shapes as well as direct component props
+  1. update released Poodle package versions in the workspace root manifests
+  2. run one root `bun install` and commit the root `bun.lock`
+  3. replace retired `is*` / `has*` Poodle prop names with the normalized names at every call site
+  4. update option-object shapes as well as direct component props
      - `TabItem.disabled`
      - `MenuItem.disabled` / `MenuItem.checked`
      - `TableColumn.sortable` / `TableColumn.hideable`
@@ -550,7 +554,8 @@ Reusable templates:
 - Impact class: `retired`
 - Affected consumers: apps that previously depended on the short-lived shared validation export
 - Required actions:
-  - install `zod` in the consuming app: `bun add zod`
+  - add `zod` to the consuming workspace manifest, then run the root
+    `effigy workspace:js:prepare` task
   - move any imported schemas into app-local code
   - keep using `useValidatedForm()` from `@inflatable-cookie/underlay/runtime/forms` if the orchestration hook is still useful
 - Validation:

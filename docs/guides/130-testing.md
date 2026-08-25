@@ -166,18 +166,13 @@ async fn soft_delete_module_cascades() {
 **Test database configuration:**
 
 ```bash
-# .env.test
+# Provide this through the workspace test config or local secret surface.
 MYAPP_DATABASE_URL=postgres://user:pass@localhost/myapp_test
 ```
 
 **Run tests with test database:**
 
 ```bash
-# Multi-repo
-cd myapp-api
-cargo test -- --test-threads=1
-
-# Monorepo
 cd apps/api
 cargo test -- --test-threads=1
 ```
@@ -275,19 +270,15 @@ async fn test_soft_delete_and_restore() {
 Install dependencies:
 
 ```bash
-# Multi-repo
-cd myapp-client
-bun add -D vitest @vitest/ui
-
-# Monorepo
-cd libs/client
-bun add -D vitest @vitest/ui
+# Declare Vitest in the owning workspace package manifest, then install once
+# from the repository root.
+effigy workspace:js:prepare
 ```
 
 Create `vitest.config.ts`:
 
 ```typescript
-// libs/client/vitest.config.ts
+// packages/client/vitest.config.ts
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
@@ -322,17 +313,18 @@ Underlay component tests use a shared lifecycle setup to prevent jsdom teardown 
 **Guardrail check:**
 
 ```bash
-bun run check:component-test-hygiene
+effigy check:component-test-hygiene
 ```
 
-This check is part of `bun validate` and should remain green before merge.
+This check is part of the repository's `effigy validate` surface and should
+remain green before merge.
 
 ### Unit Tests for API Commands
 
 Test API client commands using `@inflatable-cookie/underlay/testing` mock HTTP clients:
 
 ```typescript
-// libs/client/tests/learning-commands.test.ts
+// packages/client/tests/learning-commands.test.ts
 
 import { describe, expect, it } from "vitest";
 import type { LearningModule } from "../src/types/learning-types";
@@ -404,7 +396,7 @@ describe("learning commands", () => {
 For integration tests, use a real HTTP client against a test server:
 
 ```typescript
-// libs/client/tests/integration-learning.test.ts
+// packages/client/tests/integration-learning.test.ts
 
 import { describe, expect, it, beforeAll, afterAll } from "vitest";
 import { createClient } from "../src/client";
@@ -452,11 +444,13 @@ describe("learning integration", () => {
 Test Svelte components using `@testing-library/svelte`:
 
 ```bash
-bun add -D @testing-library/svelte @testing-library/jest-dom
+# Add these dev dependencies to the owning workspace package manifest, then
+# install once from the repository root.
+effigy workspace:js:prepare
 ```
 
 ```typescript
-// apps/web/tests/TextInput.test.ts
+// apps/front/tests/TextInput.test.ts
 
 import { describe, it, expect } from "vitest";
 import { render, fireEvent } from "@testing-library/svelte";
@@ -497,7 +491,7 @@ describe("TextInput", () => {
 Test SvelteKit load functions:
 
 ```typescript
-// apps/web/tests/load-functions.test.ts
+// apps/front/tests/load-functions.test.ts
 
 import { describe, it, expect } from "vitest";
 import { load } from "../src/routes/modules/+page.server";
@@ -537,19 +531,14 @@ describe("modules load function", () => {
 Install Playwright:
 
 ```bash
-# Multi-repo
-cd myapp-web
-bun create playwright
-
-# Monorepo
-cd apps/web
+cd apps/front
 bun create playwright
 ```
 
 ### E2E Test Example
 
 ```typescript
-// apps/web/tests/e2e/login.spec.ts
+// apps/front/tests/e2e/login.spec.ts
 
 import { test, expect } from "@playwright/test";
 
@@ -594,7 +583,7 @@ bun playwright test --debug  # Debug mode
 ### Directory Structure
 
 ```
-apps/web/
+apps/front/
 ├── src/
 │   ├── routes/
 │   │   ├── +page.svelte
@@ -671,17 +660,14 @@ jobs:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
-      - name: Install dependencies
-        run: bun install
-      - name: Run unit tests
-        run: |
-          cd libs/client
-          bun test:unit
-      - name: Run integration tests
-        run: |
-          cd libs/client
-          bun test:integration
+          bun-version: 1.3.14
+      - uses: inflatable-cookie/setup-effigy@987fd556617ea2c3e0ab5cef6b47b250817f50c8 # v1.0.0
+        with:
+          version: "0.11.0"
+      - name: Install workspace dependencies
+        run: effigy workspace:js:prepare
+      - name: Run repository validation
+        run: effigy validate
         env:
           API_URL: http://localhost:3000
 
@@ -691,15 +677,16 @@ jobs:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
-      - name: Install dependencies
-        run: bun install
+          bun-version: 1.3.14
+      - uses: inflatable-cookie/setup-effigy@987fd556617ea2c3e0ab5cef6b47b250817f50c8 # v1.0.0
+        with:
+          version: "0.11.0"
+      - name: Install workspace dependencies
+        run: effigy workspace:js:prepare
       - name: Install Playwright browsers
         run: bun playwright install --with-deps
       - name: Run E2E tests
-        run: |
-          cd apps/web
-          bun playwright test
+        run: bun playwright test apps/front/tests/e2e
 ```
 
 ---
@@ -718,8 +705,7 @@ cargo tarpaulin --out Html --output-dir coverage
 ### TypeScript Coverage with Vitest
 
 ```bash
-cd libs/client
-bun vitest run --coverage
+bun vitest run packages/client --coverage
 ```
 
 **View coverage reports:**
@@ -810,7 +796,7 @@ Add the crate to your `Cargo.toml` as a dev dependency:
 
 ```toml
 [dev-dependencies]
-underlay-testing = { path = "../underlay/rust/crates/underlay-testing", features = ["full"] }
+underlay-testing = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.4", features = ["full"] }
 ```
 
 #### Features

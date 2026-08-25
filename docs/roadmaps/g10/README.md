@@ -117,8 +117,8 @@ lane.
 ## Queue
 
 1. [x] [`g10.001`](batch-cards/001-monorepo-contract-authority.md) — monorepo contract authority (`complete`)
-2. [ ] [`g10.002`](batch-cards/002-active-guide-normalization.md) — migration contract and active guide normalization (`ready`)
-3. [ ] [`g10.003`](batch-cards/003-workspace-shape-conformance.md) — workspace-shape conformance
+2. [ ] [`g10.002`](batch-cards/002-active-guide-normalization.md) — migration contract and active guide normalization (`in review`)
+3. [ ] [`g10.003`](batch-cards/003-workspace-shape-conformance.md) — workspace-shape conformance (`blocked pending g10.002 review and merge`)
 4. [ ] [`g10.004`](batch-cards/004-acowtancy-evidence-repair.md) — Acowtancy evidence repair
 5. [ ] [`g10.005`](batch-cards/005-underlay-reference-normalization.md) — Underlay Reference normalization
 6. [ ] [`g10.006`](batch-cards/006-contact-patch-normalization.md) — Contact Patch normalization
@@ -129,7 +129,7 @@ lane.
 
 ## Next Task
 
-Execute `g10.002` — migration contract and active guide normalization — through
-its orchestrator-dispatched worker handoff. `g10.001` evidence:
+Review `g10.002` — migration contract and active guide normalization — then,
+after operator-authorized merge, promote `g10.003`. `g10.001` evidence:
 [`docs/logs/2026-08/25-181500-g10-001-monorepo-contract-authority.md`](../../logs/2026-08/25-181500-g10-001-monorepo-contract-authority.md).
 No other card is ready.
