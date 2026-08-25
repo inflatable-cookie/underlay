@@ -159,5 +159,5 @@ Pause the active worker and return to the orchestrator if:
 
 ## Next Task
 
-Review `g10.002` after its implementation worker completes. After
-operator-authorized merge, promote `g10.003`; no other card is ready.
+Execute `g10.003` through its orchestrator-dispatched worker handoff. No other
+card is ready.

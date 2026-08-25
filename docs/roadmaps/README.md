@@ -59,9 +59,8 @@ README surfaces.
 ([`g09/README.md`](g09/README.md)). Config convergence, dependency upgrades,
 and elective majors landed 2026-08-04.
 
-`g10` is executing the strict monorepo consumer-workspace rollout. `g10.001` is
-complete, `g10.002` is in review, and `g10.003` remains blocked pending review
-and merge. See
+`g10` is executing the strict monorepo consumer-workspace rollout. `g10.001`
+and `g10.002` are complete, and `g10.003` is the only ready card. See
 [`g10/README.md`](g10/README.md).
 
 ## Archived generations
@@ -81,5 +80,5 @@ that risk.
 
 ## Next Task
 
-**`g10.002`** — migration contract and active guide normalization is in review.
-After operator-authorized merge, promote `g10.003`; no other card is ready.
+**`g10.003`** — workspace-shape conformance. Execute it through the
+orchestrator-dispatched worker handoff. No other card is ready.

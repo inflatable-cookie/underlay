@@ -4,7 +4,7 @@ Date: 2026-08-25
 Card: `docs/roadmaps/g10/batch-cards/002-active-guide-normalization.md`
 Spec: `docs/specs/monorepo-consumer-workspace-rollout.md`
 Milestone: `docs/roadmaps/g10/README.md`
-Status: in review
+Status: complete
 
 ## Worker
 
@@ -70,16 +70,30 @@ removed selectors.
 attention-marker findings, comment-ratio warning, and god-file warnings. No
 doctor findings were changed in this card.
 
+## Review And Merge
+
+Review round 1 requested four corrections: align all currentness front doors,
+make guide `175` executable from a complete scaffold, provision Effigy in the CI
+examples and route migration troubleshooting correctly, and remove
+workstation-absolute links from active contract `021`. The worker applied all
+four in `51ba9118db99e31fb204a049b3fa8ba86d69bca3`.
+
+Review round 2 approved that head for operator-authorized merge. PR
+[#7](https://github.com/inflatable-cookie/underlay/pull/7) merged to `main` as
+`db61051197efab8cd814df6302ff577091559f20` on 2026-08-25. The canonical
+approval record is the
+[orchestrator review comment](https://github.com/inflatable-cookie/underlay/pull/7#issuecomment-5415241912).
+
 ## Boundaries Held
 
 - No consumer repository was edited.
 - No conformance code was added.
 - No release mutation or workflow edit was made.
 - No historical log, closed roadmap, or frozen migration record was rewritten.
-- `g10.003` remains blocked pending orchestrator review and
-  operator-authorized merge.
+- `g10.003` remained blocked until orchestrator review and operator-authorized
+  merge completed.
 
 ## Next Task
 
-Return the implementation PR to orchestrator review. Do not promote `g10.003`
-until review and operator-authorized merge are complete.
+Execute `g10.003` — workspace-shape conformance — through a fresh
+orchestrator-dispatched worker handoff. No other card is ready.

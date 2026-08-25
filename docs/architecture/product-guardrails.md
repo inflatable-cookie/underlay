@@ -19,7 +19,6 @@ Owner: repo maintainers
 
 ## Next Task
 
-Review `g10.002` from the active monorepo consumer-workspace spec. Keep
-`g10.003` blocked until review and operator-authorized merge. Keep the
-contract-and-guide normalization separate from conformance code, consumer edits,
+Execute `g10.003` from the active monorepo consumer-workspace spec. Keep the
+workspace-shape conformance check separate from security policy, consumer edits,
 and shared runtime or template extraction.

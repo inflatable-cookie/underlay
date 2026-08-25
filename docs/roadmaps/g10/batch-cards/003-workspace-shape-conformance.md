@@ -1,7 +1,6 @@
 # g10.003 - Workspace Shape Conformance
 
-Status: planned
-Blocked by: `g10.002`
+Status: ready
 Owner: repo maintainers
 Spec: `docs/specs/monorepo-consumer-workspace-rollout.md`
 
@@ -44,4 +43,5 @@ schema surface.
 
 ## Next Task
 
-After merge, prepare `g10.004` in Acowtancy.
+Execute this card through an orchestrator-dispatched worker handoff. After its
+review and operator-authorized merge, prepare `g10.004` in Acowtancy.

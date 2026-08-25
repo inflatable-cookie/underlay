@@ -1,6 +1,7 @@
 # g10.002 - Migration Contract And Active Guide Normalization
 
-Status: in review
+Status: complete
+Completed: 2026-08-25
 Owner: repo maintainers
 Spec: `docs/specs/monorepo-consumer-workspace-rollout.md`
 
@@ -61,6 +62,19 @@ bootstrap, development, testing, CI, upgrade, and checklist guidance.
   historical evidence; canonical state, migration, workspace, lockfile, and
   package-edge terms are present in active guidance.
 
+## Review And Merge Evidence
+
+Review round 1 requested four corrections: currentness alignment, executable
+scaffold ordering in guide `175`, pinned Effigy setup and migration routing in
+the CI/troubleshooting guides, and removal of machine-local links from contract
+`021`. All four landed in `51ba9118db99e31fb204a049b3fa8ba86d69bca3`.
+
+Review round 2 approved that head for operator-authorized merge. PR
+[#7](https://github.com/inflatable-cookie/underlay/pull/7) merged to `main` as
+`db61051197efab8cd814df6302ff577091559f20` on 2026-08-25. The canonical
+approval record is the
+[orchestrator review comment](https://github.com/inflatable-cookie/underlay/pull/7#issuecomment-5415241912).
+
 ## Validation
 
 - `effigy qa:docs`
@@ -81,5 +95,6 @@ contract not owned by this card.
 
 ## Next Task
 
-After review and operator-authorized merge, promote `g10.003` to ready. It
-remains blocked until then.
+Closed after orchestrator review, operator-authorized merge, and planning
+currentness repair. Execute `g10.003` through a fresh worker handoff. No other
+card is ready.

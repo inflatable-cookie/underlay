@@ -39,9 +39,8 @@ where repo-local links and normalized prose references are required instead.
 
 ## Next Task
 
-`g10.001` is complete and merged
-(`2026-08/25-181500-g10-001-monorepo-contract-authority.md`). Review the
-[`g10.002` log](./2026-08/25-190914-g10-002-active-guide-normalization.md), which
-is in review. Keep `g10.003` blocked until review and operator-authorized merge;
-keep the active evidence window aligned to `g10` without reconstructing closed
+`g10.002` is complete and merged
+([execution log](./2026-08/25-190914-g10-002-active-guide-normalization.md)).
+Execute `g10.003` through its orchestrator-dispatched worker handoff and keep
+the active evidence window aligned to `g10` without reconstructing closed
 history.
