@@ -7,6 +7,8 @@ While Underlay is `0.x`, breaking changes raise the minor version.
 
 ## [Unreleased]
 
+## [0.9.3] - 2026-08-25
+
 ### Fixed
 - Release guidance now routes Underlay tags through a real consumer smoke and
   rejects Effigy's binary-only `release verify-install` closer.
