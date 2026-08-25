@@ -1,4 +1,3 @@
-use base64::Engine as _;
 use underlay_core::Uuid;
 
 use crate::fingerprint::token_fingerprint;

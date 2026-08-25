@@ -25,6 +25,7 @@ sync-files = ["Cargo.lock", "package.json"]
 [release.gates]
 version-sync = "effigy check:release-version-sync"
 validate = "effigy validate"
+clippy = "effigy rust:clippy"
 rust = "effigy rust:check"
 
 [task_defaults]
@@ -63,6 +64,7 @@ check = "cd {repo} && bun x svelte-check --tsconfig ./ts/tsconfig.json"
 "storybook:build" = "cd {repo} && storybook build"
 "rust:build" = "cd {repo} && cargo build --workspace"
 "rust:check" = "cd {repo} && cargo check --workspace --all-features"
+"rust:clippy" = "cd {repo} && cargo clippy --workspace --all-targets -- -D warnings"
 "rust:test" = "cd {repo} && cargo test --workspace --all-features"
 "test:unit" = "cd {repo} && bun x vitest run {args}"
 "test:ui" = "cd {repo} && bun x vitest --ui {args}"

@@ -7,6 +7,10 @@ While Underlay is `0.x`, breaking changes raise the minor version.
 
 ## [Unreleased]
 
+### Fixed
+- Release gates now mirror hosted Clippy, including all targets, and the JWT
+  test suite no longer carries imports rejected by that lane.
+
 ## [0.9.3] - 2026-08-25
 
 ### Fixed

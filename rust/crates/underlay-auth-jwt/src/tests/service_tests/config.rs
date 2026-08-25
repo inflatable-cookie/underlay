@@ -1,5 +1,3 @@
-use base64::Engine as _;
-
 use crate::keys::URL_SAFE_NO_PAD;
 
 use super::support::*;
