@@ -4,11 +4,15 @@
 
 This document covers running and debugging the application locally.
 
-Paths below use monorepo-style logical paths (e.g. `apps/api/...`). In multi-repo mode, run the same commands from the relevant repo root.
+Paths use the supported single-workspace shape: `apps/*`, `packages/*`, and a
+root `docs/`. Underlay is a released dependency; sibling checkouts may be
+mounted for QA tooling but are not part of the committed application graph.
 
-## Vite Configuration for Local Dependencies
+## Vite Configuration
 
-When using Underlay as a local `file:` dependency (symlinked), Vite's dependency caching can cause stale module errors and hydration mismatches. Configure Vite to handle this properly.
+Use the released Underlay package through its explicit exports. Keep Vite
+configuration focused on the app's SSR boundary; do not add aliases to a
+sibling Underlay checkout.
 
 ### vite.config.ts
 
@@ -18,34 +22,8 @@ import { defineConfig } from "vite";
 
 export default defineConfig({
   plugins: [sveltekit()],
-  optimizeDeps: {
-    // Local file: dependencies change frequently - exclude to avoid stale cache.
-    // List each subpath export you import from.
-    exclude: [
-      "@inflatable-cookie/underlay",
-      "@inflatable-cookie/underlay/nightfire",
-      "@inflatable-cookie/underlay/runtime",
-      "@inflatable-cookie/underlay/styles",
-      "@inflatable-cookie/underlay/client/http",
-      "@inflatable-cookie/underlay/client/navigation",
-      "@inflatable-cookie/underlay/client/query",
-      "@inflatable-cookie/underlay/client/sveltekit"
-    ]
-  },
   ssr: {
-    // Force these packages through Vite's transform pipeline for SSR
     noExternal: ["bits-ui", "runed", "svelte-toolbelt", "lucide-svelte"]
-  },
-  server: {
-    port: 5173,
-    watch: {
-      // Watch changes in symlinked local dependencies.
-      // The `!` prefix means "don't ignore" (inverts the pattern).
-      ignored: [
-        "!**/node_modules/@inflatable-cookie/underlay/**",
-        "!**/node_modules/@myapp/shared/**"  // Add your other local deps
-      ]
-    }
   }
 });
 ```
@@ -76,7 +54,8 @@ Add helper scripts for cache management:
 
 **Hydration Mismatch After Updating Underlay**
 
-Vite caches prebundled dependencies in `node_modules/.vite`. When you change Underlay, this cache becomes stale.
+Vite caches prebundled dependencies in `node_modules/.vite`. After bumping the
+Underlay release tag, this cache may become stale.
 
 ```bash
 # Quick fix
@@ -96,52 +75,42 @@ This usually means the server-rendered HTML doesn't match the client hydration. 
 
 ## Development Workflow
 
-### 1. Start Database
+### 1. Prepare the workspace and local state
 
 ```bash
-# Using Docker
-docker run -d \
-  --name myapp-db \
-  -e POSTGRES_USER=user \
-  -e POSTGRES_PASSWORD=pass \
-  -e POSTGRES_DB=myapp \
-  -p 5432:5432 \
-  postgres:15
+effigy container up
+effigy state plan
+effigy state apply local --yes
+effigy health
 ```
 
-### 2. Run Migrations
+### 2. Run schema tasks when needed
 
 ```bash
-cd apps/api/crates/db
-sqlx database create
-sqlx migrate run
+effigy migration:reset
 ```
 
-### 3. Start Backend
+The API package owns the `migration:*` implementation. Use its routed task
+from the workspace root; do not add root or package `db:*` aliases.
+
+### 3. Start the workspace
 
 ```bash
-cd apps/api
-cargo run -p myapp-api
+effigy dev
 ```
 
-### 4. Start Frontends
+For one surface, use a catalog-qualified root task such as
+`effigy <front-package>/dev` or `effigy <admin-package>/dev`.
 
-```bash
-# Terminal 1: Web frontend
-cd apps/web
-bun dev
-
-# Terminal 2: Admin frontend
-cd apps/admin
-bun dev
-```
+The root catalog owns cross-package startup; package-level commands remain
+implementation details.
 
 ## Access Points
 
 | Service | URL | Purpose |
 |---------|-----|---------|
 | API | http://localhost:3000 | Backend API |
-| Web | http://localhost:5173 | User UI |
+| Front | http://localhost:5173 | User UI |
 | Admin | http://localhost:5174 | Admin UI |
 | Health | http://localhost:3000/health | Health check |
 
@@ -187,20 +156,10 @@ Create `.guardrailsrc.json` in your project root:
 }
 ```
 
-#### 2. Add to package.json
-
-```json
-{
-  "scripts": {
-    "lint:guardrails": "bun ../underlay/ts/src/tools/guardrails.ts"
-  }
-}
-```
-
-#### 3. Run
+#### 2. Run
 
 ```bash
-bun lint:guardrails
+effigy check:guardrails
 ```
 
 ### Configuration Options
@@ -324,17 +283,8 @@ someProblematicCode();
 ### CLI Usage
 
 ```bash
-# Use default config (.guardrailsrc.json)
-bun underlay/ts/src/tools/guardrails.ts
-
-# Custom config file
-bun underlay/ts/src/tools/guardrails.ts --config custom-config.json
-
-# Custom source directory
-bun underlay/ts/src/tools/guardrails.ts --src ./app
-
-# Show help
-bun underlay/ts/src/tools/guardrails.ts --help
+# Use the repo-owned guardrail task and its checked-in configuration.
+effigy check:guardrails
 ```
 
 ### Common Patterns
@@ -432,7 +382,7 @@ const z = typeof window !== "undefined" ? window.innerWidth : 0;
 
 ```yaml
 - name: Run Guardrails
-  run: bun lint:guardrails
+  run: effigy check:guardrails
 ```
 
 #### Pre-commit Hook
@@ -441,7 +391,7 @@ const z = typeof window !== "undefined" ? window.innerWidth : 0;
 {
   "husky": {
     "hooks": {
-      "pre-commit": "bun lint:guardrails"
+      "pre-commit": "effigy check:guardrails"
     }
   }
 }
@@ -451,11 +401,11 @@ const z = typeof window !== "undefined" ? window.innerWidth : 0;
 
 #### "Module not found" when using templates
 
-Make sure the template path is correct. Templates are located at:
+Make sure the exported template name is correct. Templates are consumed from:
 
 ```
-underlay/ts/src/tools/templates/sveltekit-ssr.ts
-underlay/ts/src/tools/templates/banned-apis.ts
+@inflatable-cookie/underlay/tools/templates/sveltekit-ssr
+@inflatable-cookie/underlay/tools/templates/banned-apis
 ```
 
 Use the reference in config:

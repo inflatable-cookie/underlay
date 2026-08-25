@@ -1,6 +1,8 @@
 # 040 - Rust Backend (API Pattern)
 
-> **Reference Implementation**: See `acme-api/` in the `underlay-reference` repository for a complete, working example of the Rust backend patterns described here.
+> **Reference Implementation**: See the API workspace in the `underlay-reference`
+> fixture for a complete example of the Rust backend patterns described here.
+> Copy the role boundaries, not the fixture's pre-convergence physical layout.
 
 This document covers setting up the Rust API backend following the API pattern. The backend uses a **workspace structure** with specialized crates for different concerns.
 
@@ -98,18 +100,21 @@ tracing-subscriber = { version = "0.3", features = ["fmt", "env-filter", "json"]
 # === Configuration ===
 dotenvy = "0.15"
 
-# === Underlay (local dev via relative paths) ===
-# Monorepo: this file is `apps/api/Cargo.toml`, so `../../libs/underlay/...`.
-# Multi-repo: see `030-underlay-integration.md` and use `../underlay/...` in `myapp-api/Cargo.toml`.
-underlay-core = { path = "../../libs/underlay/rust/crates/underlay-core" }
-underlay-http = { path = "../../libs/underlay/rust/crates/underlay-http" }
-underlay-auth = { path = "../../libs/underlay/rust/crates/underlay-auth" }
-underlay-auth-jwt = { path = "../../libs/underlay/rust/crates/underlay-auth-jwt" }
-underlay-db = { path = "../../libs/underlay/rust/crates/underlay-db" }
-underlay-observability = { path = "../../libs/underlay/rust/crates/underlay-observability" }
-underlay-metrics = { path = "../../libs/underlay/rust/crates/underlay-metrics" }
-underlay-soft-delete = { path = "../../libs/underlay/rust/crates/underlay-soft-delete" }
+# === Underlay (released dependency) ===
+# Pin the same release tag across every Underlay crate used by the app.
+underlay-core = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.4" }
+underlay-http = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.4" }
+underlay-auth = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.4" }
+underlay-auth-jwt = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.4" }
+underlay-db = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.4" }
+underlay-observability = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.4" }
+underlay-metrics = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.4" }
+underlay-soft-delete = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.4" }
 ```
+
+For live Underlay co-development, use the machine-local Cargo patch flow from
+[`030-underlay-integration`](./030-underlay-integration.md). Do not commit a
+source checkout or path dependency as the app's dependency shape.
 
 ## Step 2: Create Core Crate
 

@@ -62,7 +62,7 @@ A normal app should not have to rediscover:
 - where structural migrations live
 - where dev-only seed overlays live
 - how to reset and replay a local database
-- when to use plain `db:migrate` versus richer state tooling
+- when to use package-owned `migration:*` tasks versus richer state tooling
 - what proof is expected before merging a schema change
 
 The goal is one boring schema workflow for normal apps, with richer migration
@@ -146,47 +146,51 @@ Rules:
 - baseline migrations are allowed for new apps and explicit reset points, but
   they should remain intentional and named as such
 
-### Root task rule
+### Root state and migration routing rule
 
-The root workspace may expose:
+The root workspace owns local state-stack orchestration:
 
-- `effigy db:migrate`
-- `effigy db:reset`
+- `effigy state plan`
+- `effigy state apply local --yes`
 
-But DB ownership still belongs to the API package.
+Schema migration execution still belongs to the API package. The API package
+exposes its operations through `migration:*` tasks, and the workspace root
+routes those tasks through the package catalog. The root must not grow a second
+schema workflow around them.
 
 Rules:
 
-- root DB tasks should resolve through child-catalog routing
-- the API package owns the actual reset/migrate implementation
+- use the root state stack for local database and seed state
+- use the routed API-package `migration:*` front door for schema work
+- do not reintroduce root or package `db:migrate`, `db:reset`, or `db:drop`
+  aliases
 - root orchestration must not fork the schema workflow from the API package
 
 ### API package task rule
 
-The API package must expose the boring local schema loop.
-
-Expected tasks:
-
-- `db:migrate`
-- `db:reset`
-- optional `db:drop`
-- optional test DB variants when the app has managed DB-backed tests
+The API package must expose the boring local schema loop under a
+`migration:*` namespace. Concrete task names remain package-owned; a package
+may provide reset, generate, debug, or test-database variants as its workflow
+requires.
 
 Rules:
 
-- `db:migrate` should apply structural migrations
-- `db:reset` should reset local dev state to the declared baseline plus any
-  local dev overlay the app intentionally includes
+- the package-owned migration task applies structural migrations
+- its reset/replay task returns local dev state to the declared baseline plus
+  any local dev overlay the app intentionally includes
 - test DB reset flows may exist separately from dev DB reset flows
+- package task names must not recreate the retired `db:*` aliases
 
 ### Local workflow rule
 
 Normal local schema work should follow this loop:
 
 1. author a new migration file
-2. run `effigy db:migrate`
-3. run `effigy db:reset` when a clean replay is needed
-4. run `effigy health` or package validation after the schema change
+2. run the routed API-package `migration:*` task that applies it
+3. run the package-owned reset/replay task when a clean replay is needed
+4. use `effigy state plan` and `effigy state apply local --yes` when the
+   workspace state stack is part of the local baseline
+5. run `effigy health` or package validation after the schema change
 
 Rules:
 
@@ -266,7 +270,7 @@ Good outcomes:
 
 - one obvious `migrations/` root in the API package
 - dev-only seed overlays are separate
-- `db:migrate` and `db:reset` exist everywhere
+- the API package owns a clear `migration:*` front door
 - schema work is replay-tested, not only incrementally applied
 - advanced replay and bundle systems stay explicit instead of leaking into the
   normal baseline

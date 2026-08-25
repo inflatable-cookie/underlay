@@ -1,12 +1,16 @@
 # 080 - TypeScript Client
 
-> **Reference Implementation**: See `acme-client/` in the `underlay-reference` repository for a complete, working example of the TypeScript client patterns described here.
+> **Reference Implementation**: See the client workspace package in the
+> `underlay-reference` fixture for a complete example of the TypeScript client
+> patterns described here. Copy the package role, not the fixture's old path.
 >
 > **Additional Examples**: This guide includes patterns from production TypeScript API clients (cattle-grid for Acowtancy, stem for Songsprout) built with Underlay.
 
 This document covers creating a typed API client for the Rust backend.
 
-In a flat monorepo, the client lives at a top-level folder (e.g., `stem/`, `cattle-grid/`). In nested monorepo it lives at `libs/client/`. In multi-repo, it's its own repo.
+The client is a workspace package at `packages/client`. The root
+`package.json` owns the explicit workspace list, and all JavaScript packages
+install once from the workspace root.
 
 This guide aligns with Underlay's TypeScript client primitives and error envelope shape.
 
@@ -15,14 +19,14 @@ This guide aligns with Underlay's TypeScript client primitives and error envelop
 A minimal but scalable layout (using Songsprout's naming):
 
 ```
-stem/
+packages/client/
 ├── package.json
 ├── tsconfig.json
 └── src/
     ├── index.ts              # Exports commands, types, utilities
     ├── utils/
     │   ├── http-client.ts    # HttpClient wrapper around Underlay
-    │   └── client-factory.ts # configureStem + getHttpClient
+    │   └── client-factory.ts # configureClient + getHttpClient
     ├── types/
     │   ├── common-types.ts   # Domain DTOs
     │   └── auth-types.ts     # Auth DTOs
@@ -93,7 +97,7 @@ consumers should not require separate path variants just to get a narrower DTO.
 
 ## Step 1: Package Setup
 
-Create `libs/client/package.json`:
+Create `packages/client/package.json`:
 
 ```json
 {
@@ -109,8 +113,7 @@ Create `libs/client/package.json`:
     "test": "vitest"
   },
   "dependencies": {
-    "@inflatable-cookie/underlay": "file:../../libs/underlay" // monorepo
-    // multi-repo: "file:../underlay"
+    "@inflatable-cookie/underlay": "git+ssh://git@github.com/inflatable-cookie/underlay.git#v0.9.4"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
@@ -122,36 +125,25 @@ Create `libs/client/package.json`:
 
 ## Step 2: HTTP Client Wrapper
 
-## Dev-Time Import Alias (Recommended)
+## Workspace Imports
 
-When consuming the client from SvelteKit apps in a multi-repo workspace, prefer importing from a short alias that points at the client repo’s `src/` directory (rather than importing from the package name and relying on prebuilt `dist/`).
+Frontend apps consume the client through the workspace package name. Declare
+the internal edge as `workspace:*` and import the package normally; do not add
+source aliases that reach across package directories.
 
-This matches the Acowtancy reference implementation (`@cattle-grid` → `../cattle-grid/src`) and avoids stale build artifacts during local development.
-
-Example (SvelteKit `svelte.config.js`):
-
-```js
-kit: {
-  alias: {
-    "@cattle-grid": "../cattle-grid/src"
+```json
+{
+  "dependencies": {
+    "@myorg/client": "workspace:*"
   }
 }
 ```
 
-Example (Vite `vite.config.ts`, optional):
+Run the frozen install from the repository root through the workspace's Effigy
+task:
 
-```ts
-import { fileURLToPath } from "node:url";
-
-const cattleGridSrc = fileURLToPath(new URL("../cattle-grid/src", import.meta.url));
-
-export default defineConfig({
-  resolve: {
-    alias: {
-      "@cattle-grid": cattleGridSrc
-    }
-  }
-});
+```bash
+effigy workspace:js:prepare
 ```
 
 ## API Version Header (Generic)
@@ -169,7 +161,7 @@ Ensure:
 `@inflatable-cookie/underlay/client/http`, `client/errors`, `client/types`, and related subpaths, then wrap them with your app-specific
 configuration.
 
-Create `stem/src/utils/http-client.ts`:
+Create `packages/client/src/utils/http-client.ts`:
 
 ```ts
 /**
@@ -184,7 +176,7 @@ import {
 } from '@inflatable-cookie/underlay/client/http';
 import { UnderlayHttpError } from '@inflatable-cookie/underlay/client/errors';
 
-export interface StemClientConfig {
+export interface ClientConfig {
   baseUrl: string;
   apiVersion: string;
   getToken?: () => Promise<string | null> | string | null;
@@ -223,7 +215,7 @@ function convertError(error: unknown): never {
 export class HttpClient {
   private underlayClient: UnderlayHttpClient;
 
-  constructor(config: StemClientConfig) {
+  constructor(config: ClientConfig) {
     const underlayOptions: HttpClientOptions = {
       baseUrl: config.baseUrl.replace(/\/+$/, ''),
       defaultHeaders: {
@@ -295,15 +287,15 @@ const nextEtag = response.headers.etag;
 
 ## Step 3: Client Factory
 
-Create `stem/src/utils/client-factory.ts`:
+Create `packages/client/src/utils/client-factory.ts`:
 
 ```ts
 /**
  * Client factory - provides configured HttpClient instances for commands
  */
-import { HttpClient, type StemClientConfig } from "./http-client.js";
+import { HttpClient } from "./http-client.js";
 
-export interface StemConfig {
+export interface ClientFactoryConfig {
   baseUrl: string;
   apiVersion: string;
 }
@@ -313,30 +305,30 @@ export interface HttpClientOptions {
   accessToken?: string | null;
 }
 
-let stemConfig: StemConfig | null = null;
+let clientConfig: ClientFactoryConfig | null = null;
 
 /**
  * Configure the client factory with base URL and API version.
  * Must be called once at app startup (e.g., in hooks.server.ts).
  */
-export function configureStem(config: StemConfig): void {
-  stemConfig = config;
+export function configureClient(config: ClientFactoryConfig): void {
+  clientConfig = config;
 }
 
 /**
  * Get an HttpClient instance configured with the app's base URL.
- * @throws Error if configureStem() has not been called
+ * @throws Error if configureClient() has not been called
  */
 export function getHttpClient(options?: HttpClientOptions): HttpClient {
-  if (!stemConfig) {
+  if (!clientConfig) {
     throw new Error(
-      "Client not configured. Call configureStem() at app startup."
+      "Client not configured. Call configureClient() at app startup."
     );
   }
 
   return new HttpClient({
-    baseUrl: stemConfig.baseUrl,
-    apiVersion: stemConfig.apiVersion,
+    baseUrl: clientConfig.baseUrl,
+    apiVersion: clientConfig.apiVersion,
     fetchFn: options?.fetchFn,
     getToken: options?.accessToken ? () => options.accessToken! : undefined,
   });
@@ -356,7 +348,7 @@ export function getHttpClient(options?: HttpClientOptions): HttpClient {
 
 ### Example: Auth Commands
 
-Create `stem/src/commands/auth-commands.ts`:
+Create `packages/client/src/commands/auth-commands.ts`:
 
 ```ts
 /**
@@ -429,7 +421,7 @@ need tokens from session read, use the refresh endpoint instead.
 
 ### Example: Core Commands
 
-Create `stem/src/commands/core-commands.ts`:
+Create `packages/client/src/commands/core-commands.ts`:
 
 ```ts
 /**
@@ -478,7 +470,7 @@ export async function listReleases(
 
 ### Example: Security Commands
 
-Create `stem/src/commands/security-commands.ts`:
+Create `packages/client/src/commands/security-commands.ts`:
 
 ```ts
 /**
@@ -567,20 +559,20 @@ export async function googleOauthStart(
 
 ## Step 5: Index Exports
 
-Create `stem/src/index.ts`:
+Create `packages/client/src/index.ts`:
 
 ```ts
 // Types
 export * from "./types/common-types.js";
 export * from "./types/auth-types.js";
-export type { ApiError, StemClientConfig } from "./utils/http-client.js";
+export type { ApiError, ClientConfig } from "./utils/http-client.js";
 
 // Utilities
 export { toUserMessage } from "./utils/api-error.js";
 
 // Client factory (for apps to configure)
-export { configureStem, getHttpClient } from "./utils/client-factory.js";
-export type { StemConfig, HttpClientOptions } from "./utils/client-factory.js";
+export { configureClient, getHttpClient } from "./utils/client-factory.js";
+export type { ClientFactoryConfig, HttpClientOptions } from "./utils/client-factory.js";
 
 // Command namespaces (THE public API for apps)
 export * as authCommands from "./commands/auth-commands.js";
@@ -608,15 +600,15 @@ The client library needs to be configured on **both server and client** to suppo
 Configure the client at module load and set up response header filtering for universal load functions:
 
 ```ts
-// web/src/hooks.server.ts
+// apps/front/src/hooks.server.ts
 
 import type { Handle } from "@sveltejs/kit";
 import { createCookieTokenStore } from "@inflatable-cookie/underlay/client/sveltekit";
-import { configureStem, authCommands } from "@stem";
+import { configureClient, authCommands } from "@myorg/client";
 import { env } from "$env/dynamic/public";
 
 // Configure client once at module load
-configureStem({
+configureClient({
   baseUrl:
     env.PUBLIC_API_BASE_URL ??
     env.PUBLIC_API_URL ??
@@ -663,14 +655,14 @@ export const handle: Handle = async ({ event, resolve }) => {
 **Required for universal load functions** (`+page.ts`) - these run in the browser too:
 
 ```ts
-// web/src/hooks.client.ts
+// apps/front/src/hooks.client.ts
 
-import { configureStem } from "@stem";
+import { configureClient } from "@myorg/client";
 import { env } from "$env/dynamic/public";
 
 // Configure client on the client side
 // This is needed for universal load functions (+page.ts) that run in the browser
-configureStem({
+configureClient({
   baseUrl:
     env.PUBLIC_API_BASE_URL ??
     env.PUBLIC_API_URL ??
@@ -692,10 +684,10 @@ configureStem({
 Server-only load functions have access to cookies directly:
 
 ```ts
-// web/src/routes/dashboard/+page.server.ts
+// apps/front/src/routes/dashboard/+page.server.ts
 
 import type { PageServerLoad } from "./$types";
-import { coreCommands } from "@stem";
+import { coreCommands } from "@myorg/client";
 
 export const load: PageServerLoad = async ({ fetch, locals, cookies }) => {
   const accessToken = cookies.get("access_token") ?? null;
@@ -716,10 +708,10 @@ export const load: PageServerLoad = async ({ fetch, locals, cookies }) => {
 Universal load functions run on both server and client. Get the auth token from parent data:
 
 ```ts
-// web/src/routes/dashboard/+page.ts
+// apps/front/src/routes/dashboard/+page.ts
 
 import type { PageLoad } from "./$types";
-import { coreCommands } from "@stem";
+import { coreCommands } from "@myorg/client";
 
 export const load: PageLoad = async ({ fetch, parent }) => {
   const parentData = await parent();
@@ -736,11 +728,11 @@ export const load: PageLoad = async ({ fetch, parent }) => {
 ### Use in Form Actions
 
 ```ts
-// web/src/routes/login/+page.server.ts
+// apps/front/src/routes/login/+page.server.ts
 
 import type { Actions } from "./$types";
 import { fail, redirect } from "@sveltejs/kit";
-import { authCommands } from "@stem";
+import { authCommands } from "@myorg/client";
 import { createCookieTokenStore } from "@inflatable-cookie/underlay/client/sveltekit";
 
 export const actions: Actions = {
