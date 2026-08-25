@@ -2,151 +2,172 @@
 
 This document covers the initial project setup, including directory layout, root configuration files, and the essential `AGENTS.md` that guides LLM interactions.
 
-## Modes
+## Workspace Shape
 
-This quickstart supports two layouts:
+Underlay consumers use one layout: a **single Git repository** with `apps/*`,
+`packages/*`, and a root `docs/`. Polyrepo workspaces are unsupported — no
+nested Git repositories, no submodules, no symlinked Underlay checkout, and no
+committed `file:` source dependencies.
 
-- **Multi-repo workspace (recommended):** separate git repos for each component, browsed from a common parent directory.
-- **Monorepo:** a single git repo with `apps/*` and `libs/*` subdirectories.
-
-### Multi-repo workspace layout (recommended)
-
-A local folder containing multiple independent git repositories:
-
-```
-my-workspace/
-├── underlay/            # Framework (git repo, often symlinked)
-├── api-backend/         # Rust API backend (git repo)
-├── api-client/          # TypeScript API client (git repo)
-├── frontend-web/        # SvelteKit user frontend (git repo)
-├── admin-web/           # SvelteKit admin frontend (git repo)
-├── ui-kit/              # Shared UI kit (git repo, optional)
-└── documentation/       # System documentation (git repo)
-```
-
-**Key characteristics:**
-- Each folder is an independent git repository
-- Repos are browsed together from a common parent directory for convenience
-- No "root repo" or workspace package.json is required
-- Each repo has its own `AGENTS.md`, CI, and dependencies
-- Underlay is typically symlinked into the workspace
-
-**Naming convention:** Choose thematic names that reflect your project's domain. For example:
-- A music platform might use: `bloom/`, `greenhouse/`, `nursery/`, `stem/`, `trellis/`
-- An education platform might use: `cream/`, `dairy/`, `farmyard/`, `cattle-grid/`, `ledger/`
-
-### Monorepo layout
-
-A single repository containing all apps and libs:
+[Contract 024](../contracts/024-new-app-bootstrap-and-bring-up.md) owns the
+normative topology, the exact root `package.json` shape, and the dependency
+rules. This guide shows how to build it.
 
 ```
 my-project/
 ├── .github/
 ├── AGENTS.md
+├── README.md
 ├── apps/
-│   ├── web/
-│   ├── admin/
-│   └── api/
-├── libs/
-│   ├── ui/
-│   ├── client/
-│   └── underlay/
-└── docs/
+│   ├── api/          # Rust backend
+│   ├── admin/        # Admin SvelteKit app
+│   └── front/        # Product-facing SvelteKit app (optional)
+├── packages/
+│   ├── client/       # Shared TypeScript API client
+│   └── ui/           # Shared UI package (optional)
+├── config/
+├── docs/
+├── package.json
+├── bun.lock
+└── effigy.toml
 ```
 
-This layout is suitable when you prefer a single git history or have many small apps/libs.
+**Key characteristics:**
+
+- one Git repository, one history, one CI surface
+- one root `package.json` declaring explicit workspaces
+- one root `bun.lock`; no child lockfiles and no per-package installs
+- internal dependencies use `workspace:*`
+- Underlay and Poodle arrive as released dependencies, never as in-tree source
+- docs authority is the root `docs/` directory
+
+**Naming convention:** directory names may be product-specific, but roles must
+stay recognizable and the root README must say which directory plays which role.
+`acowtancy` uses `apps/farmyard` (api), `apps/cream` (front), `apps/dairy`
+(admin), `packages/cattle-grid` (client), and `packages/froyo` (ui).
 
 ### Path mapping convention
 
-To keep examples readable, docs use generic component names. Map these to your project's folder structure:
+Guides use generic role names. Map these onto your project's directories:
 
-#### Quick Reference Table
+| Generic name | Purpose | Location |
+|--------------|---------|----------|
+| `api` | Rust API backend | `apps/api/` |
+| `front` | User-facing SvelteKit frontend | `apps/front/` |
+| `admin` | Admin SvelteKit frontend | `apps/admin/` |
+| `client` | TypeScript API client | `packages/client/` |
+| `ui` | Shared Svelte UI components | `packages/ui/` |
+| `docs` | System documentation | `docs/` |
 
-| Generic Name | Purpose | Multi-repo Example |
-|--------------|---------|-------------------|
-| `frontend-web` | User-facing SvelteKit frontend | `bloom/`, `cream/`, `myapp-web/` |
-| `admin-web` | Admin SvelteKit frontend | `greenhouse/`, `dairy/`, `myapp-admin/` |
-| `api-backend` | Rust API backend | `nursery/`, `farmyard/`, `myapp-api/` |
-| `api-client` | TypeScript API client | `stem/`, `cattle-grid/`, `myapp-client/` |
-| `ui-kit` | Shared Svelte UI components | `petal/`, `myapp-ui/` |
-| `documentation` | System documentation | `trellis/`, `ledger/`, `docs/` |
-
-**Example**: If a guide mentions "the api-backend's main.rs":
-- Multi-repo: Open `<your-api-backend-folder>/crates/api/src/main.rs`
-- Monorepo: Open `apps/api/src/main.rs`
-
-**Key principle**: Use your project's naming convention. The generic component names in docs map to whatever folder names make sense for your domain.
+**Example**: if a guide mentions "the api's main.rs", open
+`apps/api/crates/api/src/main.rs`.
 
 ---
 
-## Step-by-Step Setup (Multi-repo Workspace)
+## Step-by-Step Setup
 
-This section shows setup for a multi-repo workspace. Replace generic names with your project's chosen names.
+Replace generic names with your project's chosen names.
 
-### 1. Create Workspace Directory
-
-```bash
-# Create workspace directory
-mkdir -p my-workspace
-cd my-workspace
-
-# Clone or create each component repo
-# (Each folder below is its own git repository)
-```
-
-### 2. Create Component Repositories
-
-For each component, create a separate git repository:
+### 1. Create the repository
 
 ```bash
-# Create api-backend repo
-mkdir api-backend && cd api-backend && git init
-echo "# API Backend" > README.md
-git add . && git commit -m "Initial commit"
-cd ..
-
-# Create frontend-web repo
-mkdir frontend-web && cd frontend-web && git init
-echo "# Frontend Web" > README.md
-git add . && git commit -m "Initial commit"
-cd ..
-
-# Repeat for other components...
+mkdir -p my-project && cd my-project
+git init
+mkdir -p apps packages docs config
 ```
 
-### 3. Symlink Underlay
+There is exactly one `git init` in this procedure. If you find yourself running
+a second one inside `apps/` or `packages/`, stop — that is the retired layout.
 
-Link Underlay into your workspace (assuming Underlay is at a known location):
+### 2. Create the root manifest
+
+`package.json` at the repository root is the only JavaScript workspace
+declaration:
+
+```json
+{
+  "name": "@myorg/my-project",
+  "private": true,
+  "packageManager": "bun@1.3.14",
+  "workspaces": [
+    "apps/admin",
+    "apps/front",
+    "packages/client",
+    "packages/ui"
+  ]
+}
+```
+
+List only JavaScript packages that own a manifest. `apps/api` is Rust-only, so
+it is not a workspace member. Use explicit paths rather than globs.
+
+### 3. Declare dependencies
+
+Internal packages use `workspace:*`. Underlay comes from a released Git tag and
+Poodle from released package versions:
+
+```json
+{
+  "name": "@myorg/admin",
+  "dependencies": {
+    "@myorg/client": "workspace:*",
+    "@myorg/ui": "workspace:*",
+    "@inflatable-cookie/underlay": "git+ssh://git@github.com/inflatable-cookie/underlay.git#v0.9.4",
+    "@inflatable-cookie/poodle-core": "0.2.2",
+    "@inflatable-cookie/poodle-svelte": "0.2.2"
+  }
+}
+```
+
+Do not use `file:` for Underlay, Poodle, or internal packages. A sibling
+Underlay checkout is a QA and tooling convenience only — it never becomes the
+committed dependency shape.
+
+### 4. Generate the single lockfile
 
 ```bash
-ln -s /path/to/underlay ./underlay
+bun install
 ```
 
-### 4. Create AGENTS.md in Each Repo
+Commit the resulting root `bun.lock`. Every later install runs frozen from the
+root, normally through an Effigy task:
 
-**This file is critical** for LLM interactions. Create `AGENTS.md` in each component's root.
+```bash
+effigy workspace:js:prepare   # bun install --frozen-lockfile
+```
 
-Below is a template. Replace generic names with your project's equivalents:
+### 5. Create the root AGENTS.md
+
+**This file is critical** for LLM interactions. Create one `AGENTS.md` at the
+repository root. Package-level `AGENTS.md` files are optional refinements, not
+a replacement.
 
 ```markdown
 # Repository Guidelines
 
-This repository contains the [component description].
+This repository is the [product description] workspace.
 
-## Related Repositories
+## Workspace Map
 
-This component is part of a multi-repo workspace:
+- `apps/api/` – Rust API backend.
+- `apps/front/` – user-facing SvelteKit frontend.
+- `apps/admin/` – admin SvelteKit frontend.
+- `packages/client/` – shared TypeScript API client.
+- `packages/ui/` – shared Svelte UI kit (optional).
+- `docs/` – system, domain, and process documentation authority.
 
-- `frontend-web/` – user-facing SvelteKit frontend.
-- `admin-web/` – admin SvelteKit frontend.
-- `api-backend/` – Rust API backend.
-- `api-client/` – shared TypeScript API client.
-- `ui-kit/` – shared Svelte UI kit (optional).
-- `documentation/` – system, domain, and process documentation.
+Underlay and Poodle are released dependencies, not directories in this repo.
 
 ## Build, Test, and Development Commands
 
-[Add component-specific commands here]
+Prefer the repo's Effigy surface:
+
+- `effigy tasks`
+- `effigy health`
+- `effigy test --plan`
+
+Install once from the root: `bun install --frozen-lockfile`. Never run a
+per-package install and never commit a child lockfile.
 
 When changing Rust code, prefer running:
 
@@ -181,7 +202,8 @@ Run the narrowest relevant commands before opening a PR.
 
 - Write clear, imperative commit messages.
 - For non-trivial changes, add documentation.
-- Keep secrets and credentials out of the repo; use `.env` files.
+- Keep secrets and credentials out of the repo; use the declared config and
+  secret surfaces rather than committed `.env` files.
 
 ## Assistant Interaction Preferences
 
@@ -195,9 +217,11 @@ most recently proposed "next step".
 This protocol applies across sessions for this repository.
 ```
 
-### 5. Create .gitignore in Each Repo
+Keep it lean — see [172-agents-files](./172-agents-files.md).
 
-Create `.gitignore` with content appropriate for the component:
+### 6. Create the root .gitignore
+
+One `.gitignore` at the repository root:
 
 ```gitignore
 # === OS ===
@@ -206,7 +230,6 @@ Thumbs.db
 
 # === Rust ===
 target/
-Cargo.lock
 
 # === Node.js ===
 node_modules/
@@ -247,34 +270,12 @@ coverage/
 secrets/
 ```
 
-### 6. Package Setup (TypeScript Components)
-
-For TypeScript components (frontend-web, admin-web, api-client, ui-kit), create `package.json`:
-
-```json
-{
-  "name": "@myorg/api-client",
-  "version": "0.0.1",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "check": "tsc -p tsconfig.json --noEmit",
-    "test": "vitest"
-  },
-  "dependencies": {
-    "@inflatable-cookie/underlay": "file:../underlay"
-  },
-  "devDependencies": {
-    "@types/node": "^22.0.0",
-    "typescript": "^5.0.0",
-    "vitest": "^2.0.0"
-  }
-}
-```
+Commit the root `bun.lock` and the API's `Cargo.lock`; both are part of the
+reproducible workspace.
 
 ### 7. CI Configuration
 
-Create `.github/workflows/ci.yml` in each repo:
+Create one `.github/workflows/ci.yml` for the workspace:
 
 ```yaml
 name: CI
@@ -289,20 +290,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      # Add component-specific steps...
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      # Add workspace-specific steps...
 ```
 
 ---
 
 ## Directory Structure Templates
 
-### api-backend (Rust)
+### `apps/api` (Rust)
 
 ```
-api-backend/
-├── AGENTS.md
-├── Cargo.toml
-├── .gitignore
+apps/api/
+├── Cargo.toml            # App-local Cargo workspace
+├── Cargo.lock
 └── crates/
     ├── api/src/          # HTTP handlers, router
     ├── core/src/         # Domain types, IDs
@@ -313,14 +315,15 @@ api-backend/
     └── infra/src/        # Config, logging
 ```
 
-### api-client (TypeScript)
+The Cargo workspace stays app-local. Do not hoist it to the repository root to
+mirror the Bun workspace.
+
+### `packages/client` (TypeScript)
 
 ```
-api-client/
-├── AGENTS.md
-├── package.json
+packages/client/
+├── package.json          # workspace member; no lockfile
 ├── tsconfig.json
-├── .gitignore
 └── src/
     ├── index.ts
     ├── utils/
@@ -334,16 +337,14 @@ api-client/
         └── auth-commands.ts
 ```
 
-### frontend-web / admin-web (SvelteKit)
+### `apps/front` / `apps/admin` (SvelteKit)
 
 ```
-frontend-web/
-├── AGENTS.md
-├── package.json
+apps/front/
+├── package.json          # workspace member; no lockfile
 ├── svelte.config.js
 ├── vite.config.ts
 ├── tsconfig.json
-├── .gitignore
 └── src/
     ├── app.html
     ├── app.d.ts
@@ -356,14 +357,14 @@ frontend-web/
         └── utils/
 ```
 
-**Note:** Frontends import `getClient()` directly from the shared api-client library. Do not create local `$lib/api/client.ts` wrappers that duplicate the shared library's functionality.
+**Note:** Frontends import `getClient()` directly from `packages/client` via its
+`workspace:*` dependency. Do not create local `$lib/api/client.ts` wrappers that
+duplicate the shared package's functionality.
 
-### documentation
+### `docs/`
 
 ```
-documentation/
-├── AGENTS.md
-├── .gitignore
+docs/
 ├── vision/
 ├── architecture/
 ├── guides/
@@ -373,6 +374,9 @@ documentation/
 ├── roadmaps/
 └── logs/
 ```
+
+This is the workspace's single docs authority. It is a directory, not a package
+and not a separate repository.
 
 ## Code Organization and Anti-God-File Policy
 
@@ -389,7 +393,7 @@ Use this policy from day one. Do not wait for files to become painful to navigat
 
 If a file is under the hard limit but difficult to read, still split it. Cohesion matters more than line count.
 
-### Organization Rules (All Repos)
+### Organization Rules (All Packages)
 
 1. One file should have one primary job.
 2. Group by feature/domain first, then by technical layer.
@@ -400,7 +404,7 @@ If a file is under the hard limit but difficult to read, still split it. Cohesio
 
 ### Recommended Structure by Layer
 
-#### Rust API (`api-backend`)
+#### Rust API (`apps/api`)
 
 Prefer this split for each domain:
 
@@ -419,7 +423,7 @@ crates/api/src/routes/admin/<domain>/
 
 Query and mutation logic belongs in `crates/db/src/<domain>/...`, not in route files.
 
-#### TypeScript Client (`api-client`)
+#### TypeScript Client (`packages/client`)
 
 Split commands by feature domain:
 
@@ -439,7 +443,7 @@ src/
 
 Avoid monolithic `*-commands.ts` files that accumulate unrelated domains.
 
-#### SvelteKit Admin/Web
+#### SvelteKit Apps (`apps/admin`, `apps/front`)
 
 For each feature route, split page shell from feature implementation:
 

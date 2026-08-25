@@ -1,8 +1,9 @@
 # 000 - Architecture Overview
 
 This guide provides step-by-step instructions for initializing a new project
-that follows an Underlay-based multi-repo (default) or monorepo architecture.
-This architecture is designed for full-stack applications requiring:
+that follows the Underlay workspace architecture: one Git repository containing
+`apps/*` and `packages/*`. This architecture is designed for full-stack
+applications requiring:
 
 - **Rust API backend** with domain-driven design
 - **TypeScript API client** with typed commands
@@ -23,19 +24,16 @@ Use this guide when creating a **new product** that:
 
 ## Architecture Diagram
 
-This architecture works in both:
-
-- **Multi-repo workspace (default):** separate repos checked out side-by-side.
-- **Monorepo:** one repo with `apps/*` and `libs/*`.
-
-The diagram uses monorepo-style paths as logical names.
+One Git repository owns the whole product workspace.
+[Contract 024](../contracts/024-new-app-bootstrap-and-bring-up.md) is the
+normative source for this topology.
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                    Project Workspace (multi-repo default)                 │
+│                    Project Workspace (one git repository)                │
 ├─────────────────────────────────────────────────────────────────────────┤
 │  ┌─────────────────────┐  ┌─────────────────────┐  ┌──────────────────┐ │
-│  │   apps/web/         │  │  apps/admin/        │  │  apps/api/       │ │
+│  │   apps/front/       │  │  apps/admin/        │  │  apps/api/       │ │
 │  │   (Web UI)          │  │   (Admin UI)        │  │   (Rust API)     │ │
 │  │   SvelteKit         │  │   SvelteKit         │  │   Axum + Domain  │ │
 │  └──────────┬──────────┘  └──────────┬──────────┘  └────────┬─────────┘ │
@@ -43,14 +41,15 @@ The diagram uses monorepo-style paths as logical names.
 │             └────────────────────────┼───────────────────────┘          │
 │                                      │                                  │
 │  ┌───────────────────────────────────┼──────────────────────────────┐  │
-│  │  libs/ui/                         │  libs/client/                 │  │
+│  │  packages/ui/                     │  packages/client/             │  │
 │  │  Shared UI kit                    │  Shared TypeScript API client │  │
 │  │  Components, patterns, tokens     │  HTTP, commands, types        │  │
+│  │  (internal `workspace:*` edges)   │  (internal `workspace:*` edges)│ │
 │  └───────────────────────────────────┴──────────────────────────────┘  │
 │                                      │                                  │
 │  ┌───────────────────────────────────┴──────────────────────────────┐  │
-│  │  libs/underlay/ (external or sibling)                             │  │
-│  │  Cross-cutting primitives: IDs, errors, envelopes, auth, observability │  │
+│  │  Underlay + Poodle (released dependencies, not in-tree)           │  │
+│  │  Cross-cutting primitives: IDs, errors, envelopes, auth, observability │
 │  └───────────────────────────────────────────────────────────────────┘  │
 │                                      │                                  │
 │  ┌───────────────────────────────────┴──────────────────────────────┐  │
@@ -127,23 +126,27 @@ Following naming and structure patterns from reference apps ensures:
 | Directory | Responsibility |
 |-----------|---------------|
 | `apps/api/` | Rust API implementation, domain models, HTTP handlers |
-| `apps/web/` | SvelteKit frontend (main UI) |
+| `apps/front/` | SvelteKit frontend (main UI) |
 | `apps/admin/` | Admin/author SvelteKit frontend |
 
-### Libraries Layer (`libs/`)
+Only JavaScript apps that own a manifest are root workspace members. A
+Rust-only app directory is not.
+
+### Packages Layer (`packages/`)
 
 | Directory | Responsibility |
 |-----------|---------------|
-| `libs/client/` | TypeScript API client, HTTP abstraction, typed commands |
-| `libs/ui/` | Shared UI components, design tokens, UI patterns |
-| `libs/underlay/` | Cross-cutting primitives (external or sibling) |
+| `packages/client/` | TypeScript API client, HTTP abstraction, typed commands |
+| `packages/ui/` | Shared UI components, design tokens, UI patterns |
 
-### Documentation Layer (`trellis/` / `docs/`)
+Apps depend on these with `workspace:*`. Underlay and Poodle are **not** in-tree
+packages — they arrive as released dependencies.
+
+### Documentation Layer (`docs/`)
 
 | Directory | Responsibility |
 |-----------|---------------|
-| `trellis/` | Vision, architecture, domain docs, roadmaps, and logs for product repos |
-| `docs/` | Vision, architecture, guides, roadmaps, logs, and patterns for library repos like Underlay |
+| `docs/` | Vision, architecture, domain docs, roadmaps, and logs — one root authority per workspace |
 
 ## How to Use This Guide
 
@@ -191,15 +194,15 @@ Following naming and structure patterns from reference apps ensures:
 
 ## Reference Implementation
 
-For a complete, working example of all these patterns, see the **Acme reference implementation** in the separate `underlay-reference` repository:
+`acowtancy` is the live proof of this architecture: one Git root, `apps/*`,
+`packages/*`, root `docs/`, one root Bun manifest and lockfile, internal
+`workspace:*` edges, and released Underlay/Poodle dependencies.
 
-- `acme-api/` - Complete Rust backend with auth, database, background jobs
-- `acme-client/` - TypeScript API client with commands and types
-- `acme-admin/` - SvelteKit admin frontend with auth flows
-- `acme-front/` - SvelteKit public frontend
-- `acme-ui/` - Shared UI components
-
-The reference repo uses a symlink to the underlay library for development.
+`underlay-reference` remains the bootstrap fixture and carries the Acme example
+stack (Rust backend, TypeScript client, admin and public SvelteKit frontends,
+shared UI package). Its physical layout has not converged on this contract yet;
+`g10.005` normalizes it. Read it for component-level patterns, not for workspace
+topology.
 
 See [175-llm-bootstrap-guide.md](./175-llm-bootstrap-guide.md) for step-by-step instructions on bootstrapping a new project from the reference.
 

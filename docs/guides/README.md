@@ -26,24 +26,24 @@ UI guide translation status:
 - new generic UI implementation recipes should be added in Poodle, organised on
   a per-implementation basis
 
-## Modes (Multi-repo vs Monorepo)
+## Workspace Shape
 
-This guide supports two layouts:
+Underlay consumers use one workspace shape: a **single Git repository** with
+`apps/*`, `packages/*`, and a root `docs/`. Polyrepo layouts are unsupported.
 
-- **Multi-repo workspace (default):** multiple git repositories checked out side-by-side in a local folder.
-- **Monorepo:** a single git repository containing `apps/*` and `libs/*`.
+[Contract 024](../contracts/024-new-app-bootstrap-and-bring-up.md) owns the
+normative topology, the root `package.json` shape, and the dependency rules.
+These guides explain and demonstrate it; they do not restate the guarantees.
 
-### Path Mapping Convention
+Path convention used throughout the guides:
 
-To keep examples readable, many docs use **monorepo-style logical paths** like `apps/api/...` and `libs/client/...`.
+- `apps/api/...` — Rust backend
+- `apps/front/...` — product-facing SvelteKit app
+- `apps/admin/...` — admin SvelteKit app
+- `packages/client/...` — shared TypeScript API client
+- `packages/ui/...` — shared UI package
 
-- In **multi-repo mode**, interpret these as paths *within the corresponding repo*:
-  - `apps/api/...` → `<api-repo>/...`
-  - `apps/web/...` → `<web-repo>/...`
-  - `apps/admin/...` → `<admin-repo>/...`
-  - `libs/client/...` → `<client-repo>/...`
-  - `libs/ui/...` → `<ui-repo>/...`
-  - `libs/underlay/...` → `<underlay-repo>/...`
+Directory names may be product-specific. Roles may not become implicit.
 
 ## Reading Order
 
@@ -163,72 +163,44 @@ effigy test --plan
 effigy validate
 ```
 
-**Multi-repo raw fallback:** run direct tool commands only when the repo has not represented that path in Effigy yet.
+**Raw fallback:** run direct tool commands from the workspace root only when the repo has not represented that path in Effigy yet.
 
 ```bash
-# API (backend)
-cd myapp-api && cargo test
-cd myapp-api/crates/db && sqlx migrate run
-cd myapp-api && cargo run -p myapp-api
+# One frozen install for the whole workspace
+bun install --frozen-lockfile
 
-# Web (frontend)
-cd myapp-web && bun install
-cd myapp-web && bun dev
-
-# Admin (frontend)
-cd myapp-admin && bun install
-cd myapp-admin && bun dev
-
-# Client (TypeScript)
-cd myapp-client && bun install
-cd myapp-client && bun check
-
-# UI kit (optional)
-cd myapp-ui && bun install
-cd myapp-ui && bun check
-```
-
-**Monorepo raw fallback:** run workspace scripts from repo root when the repo does not expose an Effigy surface.
-
-```bash
-bun install:all
-bun check:all
-bun test:all
-
+# Rust backend
 cd apps/api && cargo test
 cd apps/api/crates/db && sqlx migrate run
-cd apps/api && cargo run -p myapp-api
+
+# SvelteKit apps and shared packages
+cd apps/front && bun dev
+cd apps/admin && bun dev
+cd packages/client && bun check
+cd packages/ui && bun check
 ```
 
+Never run per-package installs and never create a child lockfile.
 
 ### Directory Structure
-
-**Multi-repo workspace (default):**
-
-```
-myapp-workspace/
-├── underlay/            # Foundation (git repo)
-├── myapp-api/           # Rust API (git repo)
-├── myapp-client/        # TypeScript client (git repo)
-├── myapp-ui/            # UI kit (git repo, optional)
-├── myapp-web/           # Frontend (git repo)
-└── myapp-admin/         # Admin frontend (git repo)
-```
-
-**Monorepo:**
 
 ```
 my-project/
 ├── apps/
-│   ├── web/
+│   ├── api/
 │   ├── admin/
-│   └── api/
-├── libs/
-│   ├── ui/
+│   └── front/
+├── packages/
 │   ├── client/
-│   └── underlay/
-└── trellis/
+│   └── ui/
+├── docs/
+├── package.json
+├── bun.lock
+└── effigy.toml
 ```
+
+`acowtancy` is the live proof of this shape. `underlay-reference` is the
+bootstrap fixture and converges on it in `g10.005`.
 
 ## Research
 
@@ -241,4 +213,4 @@ When making architecture or implementation decisions that depend on external com
 ## Getting Help
 
 - Check [160-troubleshooting](./160-troubleshooting.md) for common issues
-- Review Underlay documentation in the Underlay repo (`underlay/docs/`), or `libs/underlay/docs/` in monorepo mode
+- Review Underlay documentation in the Underlay repo (`underlay/docs/`)

@@ -176,16 +176,21 @@ Underlay and Poodle are consumed as released dependencies.
 
 Rules:
 
-- depend on Underlay through a released Git tag, for example
-  `"@inflatable-cookie/underlay": "git+ssh://git@github.com/inflatable-cookie/underlay.git#vX.Y.Z"`;
+- depend on Underlay through a pinned release tag on both language surfaces —
+  `"@inflatable-cookie/underlay": "git+ssh://git@github.com/inflatable-cookie/underlay.git#vX.Y.Z"`
+  for JavaScript, and `{ git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "vX.Y.Z" }`
+  for Cargo;
 - depend on Poodle through released package versions;
 - use `workspace:*` for internal JavaScript dependencies between `apps/*` and
   `packages/*`;
 - do not use `file:` dependencies for Underlay, Poodle, or internal packages;
 - sibling Underlay/Poodle checkouts are a QA and tooling convenience only —
-  they may back conformance scripts and dev mounts, but they must never be the
-  committed application dependency shape;
-- pin the Underlay tag in the manifest so the lockfile is reproducible.
+  they may back conformance scripts, dev mounts, and machine-local Cargo
+  `[patch]` links written by `effigy deps link`, but they must never be the
+  committed application dependency shape, and the generated `.cargo/config.toml`
+  must stay untracked;
+- pin the release tag everywhere it is declared so `bun.lock` and `Cargo.lock`
+  stay reproducible.
 
 ### Docs authority rule
 
