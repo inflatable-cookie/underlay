@@ -159,5 +159,5 @@ Pause the active worker and return to the orchestrator if:
 
 ## Next Task
 
-Publish independent worker handoffs for ready cards `g10.006`–`g10.009`. Keep
-each consumer in its own worktree, branch, handoff, and PR.
+Launch the published handoffs for ready cards `g10.006`–`g10.009`. Keep each
+consumer in its own worktree, branch, handoff, and PR; relay each PR for review.

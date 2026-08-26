@@ -67,6 +67,14 @@ The worker must preserve or separately evidence these failures, not repair
 application behavior. No nested Git repository, submodule, or committed
 compatibility symlink was found.
 
+## Dispatch
+
+Worker handoff
+`docs/handoffs/20260826-112215-g10-009-composer-normalization.md` is published
+on Composer `main` at `230297ee6638e100365eba37e6499613c0dda954`.
+The operator owns worker launch; the worker must return a PR and must not merge
+it.
+
 ## Next Task
 
 Return a reviewable PR to the orchestrator; do not merge.

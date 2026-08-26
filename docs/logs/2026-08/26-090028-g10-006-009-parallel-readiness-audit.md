@@ -2,7 +2,7 @@
 
 Date: 2026-08-26
 Roadmap: `g10`
-Status: preparation complete; ready for parallel dispatch
+Status: handoffs published; awaiting worker PRs
 
 ## Trigger
 
@@ -94,10 +94,20 @@ Effigy cannot express that sibling-source contract.
 
 Underlay Reference PR
 [#3](https://github.com/inflatable-cookie/underlay-reference/pull/3) merged as
-`40924bc93fc9bf29a0a5d686cd1870f728ca48ce`. Cards `g10.006`–`g10.009` now
-carry exact readiness evidence and are `ready`. No downstream handoff has been
-prepared or dispatched.
+`40924bc93fc9bf29a0a5d686cd1870f728ca48ce`. Cards `g10.006`–`g10.009` carry
+exact readiness evidence and remain `ready` until their workers begin.
+
+Each target `main` now contains one handoff commit directly above the audited
+baseline. Existing local checkouts and dirty files were not changed.
+
+| Card | Consumer handoff | Published `main` |
+| --- | --- | --- |
+| `g10.006` | `docs/handoffs/20260826-112215-g10-006-contact-patch-normalization.md` | `ddffc8587b73c8c23ec95108dace3e8b1bf59050` |
+| `g10.007` | `docs/handoffs/20260826-112215-g10-007-compli-me-normalization.md` | `a5ccf0b92df64d8687e8255051219ccffbabe126` |
+| `g10.008` | `docs/handoffs/20260826-112215-g10-008-songsprout-normalization.md` | `71ae0235df32322cef781eb5aca3f14f288c2740` |
+| `g10.009` | `docs/handoffs/20260826-112215-g10-009-composer-normalization.md` | `230297ee6638e100365eba37e6499613c0dda954` |
 
 ## Next Task
 
-Publish the four independent consumer handoffs in one batch.
+Launch the four independent workers with only their repository-relative handoff
+paths. Relay meaningful reports and PR URLs to the orchestrator.

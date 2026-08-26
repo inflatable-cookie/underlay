@@ -47,5 +47,7 @@ where repo-local links and normalized prose references are required instead.
 ([execution log](./2026-08/25-232150-g10-004-acowtancy-evidence-repair.md)).
 `g10.005` is complete and merged
 ([execution log](./2026-08/26-110905-g10-005-underlay-reference-normalization.md)).
-Publish independent worker handoffs for `g10.006`–`g10.009`. Keep the active
-evidence window aligned to `g10` without reconstructing closed history.
+The four `g10.006`–`g10.009` handoffs are published
+([dispatch log](./2026-08/26-090028-g10-006-009-parallel-readiness-audit.md)).
+Launch the workers and relay their PRs. Keep the active evidence window aligned
+to `g10` without reconstructing closed history.

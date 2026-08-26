@@ -56,5 +56,5 @@ In parallel mode:
 
 ## Next Task
 
-Publish independent worker handoffs for `g10.006`–`g10.009`. See
-[`g10/README.md`](g10/README.md) and the active strict spec.
+Launch the four published `g10.006`–`g10.009` worker handoffs and relay their
+PRs for orchestrator review. See [`g10/README.md`](g10/README.md).

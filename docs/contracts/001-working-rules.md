@@ -56,5 +56,5 @@ Underlay is in parallel mode:
 
 ## Next Task
 
-Publish independent worker handoffs for `g10.006`–`g10.009`. Do not combine
-consumer scopes or share worker branches.
+Launch the published worker handoffs for `g10.006`–`g10.009`. Do not combine
+consumer scopes or share worker branches; relay each PR for review.

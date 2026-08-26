@@ -82,6 +82,14 @@ schema debt, god files, a stale graph, heavy sibling health, and one generated
 source file. Six existing papercuts, including the Admin subject-test and stale
 nested-lock behavior, remain outside this topology card.
 
+## Dispatch
+
+Worker handoff
+`docs/handoffs/20260826-112215-g10-006-contact-patch-normalization.md` is
+published on Contact Patch `main` at
+`ddffc8587b73c8c23ec95108dace3e8b1bf59050`. The operator owns worker launch;
+the worker must return a PR and must not merge it.
+
 ## Next Task
 
 Return a reviewable PR to the orchestrator; do not merge.

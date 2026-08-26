@@ -129,6 +129,6 @@ lane.
 
 ## Next Task
 
-Publish four independent worker handoffs for ready cards `g10.006`–`g10.009`.
-`g10.005` evidence:
-[`docs/logs/2026-08/26-110905-g10-005-underlay-reference-normalization.md`](../../logs/2026-08/26-110905-g10-005-underlay-reference-normalization.md).
+Launch the four published `g10.006`–`g10.009` worker handoffs in parallel.
+Each worker returns one consumer PR; none may merge. Dispatch evidence:
+[`docs/logs/2026-08/26-090028-g10-006-009-parallel-readiness-audit.md`](../../logs/2026-08/26-090028-g10-006-009-parallel-readiness-audit.md).

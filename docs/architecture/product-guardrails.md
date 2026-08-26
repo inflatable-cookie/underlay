@@ -19,7 +19,6 @@ Owner: repo maintainers
 
 ## Next Task
 
-Publish independent `g10.006`–`g10.009` consumer handoffs from the active
-monorepo workspace spec. Keep each migration bounded to workspace, dependency,
-docs, and tooling paths; do not widen it into shared runtime or template
-extraction.
+Launch the published `g10.006`–`g10.009` consumer handoffs. Keep each migration
+bounded to workspace, dependency, docs, and tooling paths; do not widen it into
+shared runtime or template extraction.

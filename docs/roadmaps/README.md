@@ -80,5 +80,5 @@ that risk.
 
 ## Next Task
 
-Publish independent worker handoffs for **`g10.006`–`g10.009`**: Contact Patch,
-Compli Me, Songsprout, and Composer normalization.
+Launch the published **`g10.006`–`g10.009`** handoffs for Contact Patch, Compli
+Me, Songsprout, and Composer. Relay each PR for orchestrator review.

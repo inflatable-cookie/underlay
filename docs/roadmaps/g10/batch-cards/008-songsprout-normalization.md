@@ -72,6 +72,14 @@ handoff must name both explicitly. Doctor already reports shared Underlay
 manifest debt, god files, and heavy sibling health. Full health was not run
 from the stale dirty checkout.
 
+## Dispatch
+
+Worker handoff
+`docs/handoffs/20260826-112215-g10-008-songsprout-normalization.md` is published
+on Songsprout `main` at `71ae0235df32322cef781eb5aca3f14f288c2740`.
+The operator owns worker launch; the worker must return a PR and must not merge
+it.
+
 ## Next Task
 
 Return a reviewable PR to the orchestrator; do not merge.

@@ -77,6 +77,14 @@ validations, frozen installs, and docs QA. Root validation still has unrelated
 reorder-conflict debt; update its physical path only. Closed roadmaps and logs
 retain historical wording.
 
+## Dispatch
+
+Worker handoff
+`docs/handoffs/20260826-112215-g10-007-compli-me-normalization.md` is published
+on Compli Me `main` at `a5ccf0b92df64d8687e8255051219ccffbabe126`.
+The operator owns worker launch; the worker must return a PR and must not merge
+it.
+
 ## Next Task
 
 Return a reviewable PR to the orchestrator; do not merge.
