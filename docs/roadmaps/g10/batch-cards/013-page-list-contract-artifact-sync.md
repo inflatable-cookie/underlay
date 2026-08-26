@@ -1,6 +1,6 @@
 # g10.013 - Page List Contract Artifact Sync
 
-Status: planned
+Status: ready
 Owner: repo maintainers
 Contracts: `020-http-transport-and-server-boundary.md`, `115-admin-resource-api-shapes.md`, `032-openapi-quality-and-declaration.md`
 Found by: `g10.011`
@@ -53,5 +53,4 @@ That would require a consumer cutover card, not an artifact-only repair.
 
 ## Next Task
 
-Promote after `g10.012`; repair declarations and drift tests without changing
-runtime serialization.
+Repair declarations and drift tests without changing runtime serialization.

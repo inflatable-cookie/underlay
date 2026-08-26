@@ -1,5 +1,68 @@
 use super::*;
-use axum::http::HeaderValue;
+use axum::{
+    body::to_bytes,
+    extract::FromRequestParts,
+    http::{header, HeaderValue, Request, StatusCode},
+    response::{IntoResponse, Response},
+};
+use serde_json::{json, Value};
+
+async fn assert_context_error_response(
+    response: Response,
+    expected_status: StatusCode,
+    expected_code: &str,
+    expected_message: &str,
+) {
+    assert_eq!(response.status(), expected_status);
+    assert_eq!(
+        response.headers().get(header::CONTENT_TYPE).unwrap(),
+        "application/json"
+    );
+    assert_eq!(
+        response.headers().get("x-error-code").unwrap(),
+        expected_code
+    );
+
+    let body = to_bytes(response.into_body(), usize::MAX).await.unwrap();
+    let envelope: Value = serde_json::from_slice(&body).unwrap();
+    assert_eq!(
+        envelope,
+        json!({
+            "error": {
+                "code": expected_code,
+                "message": expected_message
+            }
+        })
+    );
+}
+
+#[tokio::test]
+async fn unauthenticated_context_extractor_returns_canonical_error_envelope() {
+    let request = Request::new(());
+    let (mut parts, _) = request.into_parts();
+    let error = AuthenticatedContext::from_request_parts(&mut parts, &())
+        .await
+        .expect_err("request without a user ID should be rejected");
+
+    assert_context_error_response(
+        error.into_response(),
+        StatusCode::UNAUTHORIZED,
+        "auth.unauthorized",
+        "Authentication required",
+    )
+    .await;
+}
+
+#[tokio::test]
+async fn missing_context_error_returns_canonical_error_envelope() {
+    assert_context_error_response(
+        ContextError::MissingField("request context").into_response(),
+        StatusCode::BAD_REQUEST,
+        "request.context_missing",
+        "Missing required context",
+    )
+    .await;
+}
 
 #[test]
 fn test_extract_request_id_from_header() {

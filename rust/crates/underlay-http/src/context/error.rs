@@ -1,5 +1,8 @@
 use axum::http::StatusCode;
-use axum::response::IntoResponse;
+use axum::response::{IntoResponse, Response};
+use underlay_core::AppError;
+
+use crate::error_response;
 
 /// Error type for context extraction failures
 #[derive(Debug, Clone)]
@@ -22,11 +25,18 @@ impl std::fmt::Display for ContextError {
 impl std::error::Error for ContextError {}
 
 impl IntoResponse for ContextError {
-    fn into_response(self) -> axum::response::Response {
-        let (status, message) = match self {
-            ContextError::Unauthenticated => (StatusCode::UNAUTHORIZED, "Authentication required"),
-            ContextError::MissingField(_) => (StatusCode::BAD_REQUEST, "Missing required context"),
+    fn into_response(self) -> Response {
+        let (status, error) = match self {
+            ContextError::Unauthenticated => (
+                StatusCode::UNAUTHORIZED,
+                AppError::new("auth.unauthorized", "Authentication required"),
+            ),
+            ContextError::MissingField(_) => (
+                StatusCode::BAD_REQUEST,
+                AppError::new("request.context_missing", "Missing required context"),
+            ),
         };
-        (status, message).into_response()
+
+        error_response(status, error)
     }
 }

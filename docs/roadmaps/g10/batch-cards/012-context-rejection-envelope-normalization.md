@@ -1,6 +1,7 @@
 # g10.012 - Context Rejection Envelope Normalization
 
-Status: ready
+Status: complete
+Completed: 2026-08-26
 Owner: repo maintainers
 Contracts: `010-foundation-primitives-and-envelopes.md`, `020-http-transport-and-server-boundary.md`
 Found by: `g10.011`
@@ -48,6 +49,17 @@ extractor boundary.
 - Required action: none for canonical `ErrorEnvelope` clients; callers relying
   on plain-text bodies must use the stable error code instead
 
+## Completion Evidence
+
+`ContextError` now delegates to the canonical `error_response` serializer.
+Unauthenticated failures return `401` with `auth.unauthorized`; missing-context
+failures return `400` with `request.context_missing`. `RequestContext` now uses
+`ContextError` as its rejection type instead of the tuple seam.
+
+Focused `underlay-http` tests assert the status, JSON content type,
+`x-error-code`, and exact `ErrorEnvelope` body for both variants. The full Rust
+workspace test task passed. No auth middleware or session behavior changed.
+
 ## Next Task
 
-Normalize the two context rejection paths and prove their wire bodies.
+Execute `g10.013`, the page-list contract artifact sync.

@@ -1,7 +1,7 @@
 use std::net::SocketAddr;
 
 use axum::extract::{ConnectInfo, FromRequestParts};
-use axum::http::{header, request::Parts, StatusCode};
+use axum::http::{header, request::Parts};
 
 use super::error::ContextError;
 use super::model::{AuthenticatedContext, AuthenticatedUser, RequestContext};
@@ -16,9 +16,7 @@ where
     type Rejection = ContextError;
 
     async fn from_request_parts(parts: &mut Parts, state: &S) -> Result<Self, Self::Rejection> {
-        let ctx = RequestContext::from_request_parts(parts, state)
-            .await
-            .map_err(|_| ContextError::MissingField("request context"))?;
+        let ctx = RequestContext::from_request_parts(parts, state).await?;
 
         let user_id = ctx.user_id().ok_or(ContextError::Unauthenticated)?;
 
@@ -30,7 +28,7 @@ impl<S> FromRequestParts<S> for RequestContext
 where
     S: Send + Sync,
 {
-    type Rejection = (StatusCode, &'static str);
+    type Rejection = ContextError;
 
     async fn from_request_parts(parts: &mut Parts, _state: &S) -> Result<Self, Self::Rejection> {
         let headers = &parts.headers;

@@ -75,7 +75,7 @@ lane.
 
 | Lane | Outcome | Primary authority | Notes |
 | --- | --- | --- | --- |
-| A | First contract-assessment wave (foundation + transport) | `contract-index.md`, `system-inventory.md` | Assessment complete; bounded repairs `g10.012`–`g10.014` open |
+| A | First contract-assessment wave (foundation + transport) | `contract-index.md`, `system-inventory.md` | Assessment and `g10.012` complete; `g10.013` ready |
 | B | Collection route convergence pilot | `116`, `117`, sweep `029` | Needs one consumer as proof anchor |
 | C | Hybrid shell extraction for one real tab | `117`, sweep `030`, Dairy `ModulesList` evidence | Bounded to one shell, not a framework rewrite |
 | D | Consumer drift B-items with stable boundaries | `070`, `021` sweep family | Only items with a clear Underlay-owned seam |
@@ -124,11 +124,11 @@ lane.
 9. [x] [`g10.009`](batch-cards/009-composer-normalization.md) — Composer normalization (`complete`)
 10. [x] [`g10.010`](batch-cards/010-fleet-proof-and-closeout.md) — fleet proof and closeout (`complete`)
 11. [x] [`g10.011`](batch-cards/011-foundation-and-transport-contract-assessment.md) — foundation and transport contract assessment (`complete`)
-12. [ ] [`g10.012`](batch-cards/012-context-rejection-envelope-normalization.md) — context rejection envelope normalization (`ready`)
-13. [ ] [`g10.013`](batch-cards/013-page-list-contract-artifact-sync.md) — page-list contract artifact sync (`planned`)
+12. [x] [`g10.012`](batch-cards/012-context-rejection-envelope-normalization.md) — context rejection envelope normalization (`complete`)
+13. [ ] [`g10.013`](batch-cards/013-page-list-contract-artifact-sync.md) — page-list contract artifact sync (`ready`)
 14. [ ] [`g10.014`](batch-cards/014-http-client-bounded-constructor-fallback.md) — bounded HTTP-client constructor fallback (`planned`)
 
 ## Next Task
 
-Execute `g10.012`. Normalize shared context rejection bodies without widening
-auth or session policy.
+Execute `g10.013`. Synchronize the page-list declarations and drift tests
+without changing runtime serialization.
