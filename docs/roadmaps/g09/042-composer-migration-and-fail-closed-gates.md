@@ -1,6 +1,6 @@
 # g09.042 - Composer Migration And Fail-Closed Gates
 
-Status: changes-requested
+Status: complete
 Owner: Composer maintainers
 Contracts: `021-database-migration-and-schema-workflow.md`,
 `022-testing-posture-and-shared-harnesses.md`
@@ -26,12 +26,12 @@ before the first mutation.
 
 ## Review Gate
 
-Final re-review on 2026-08-26 left one authorization-provenance gate in the
-[Composer PR4 follow-up](https://github.com/inflatable-cookie/loophole-composer/pull/4#issuecomment-5431104387)
-at exact head `6e191c1eb1d2b14c12bf385711b1cd117f018097`. Code and provider evidence are
-clean, but the worker-authored log cannot self-authorize the six-file checksum
-rebaseline. Record the operator's explicit database-history confirmation before
-the merge verdict.
+The operator explicitly authorized the six-file local rebaseline. Final review
+recorded a
+[ready-to-merge verdict](https://github.com/inflatable-cookie/loophole-composer/pull/4#issuecomment-5431143659)
+at exact head `6e191c1eb1d2b14c12bf385711b1cd117f018097`. Operator-authorized squash
+merge [PR4](https://github.com/inflatable-cookie/loophole-composer/pull/4)
+landed on 2026-08-26 as `b7cafd9cb281f46ec4ade802eb49b01e1f9b58d8`.
 
 ## Scope
 
@@ -86,5 +86,4 @@ production availability policy.
 
 ## Next Task
 
-Close this lane independently; `g09.039`–`g09.041` and `g09.043` may run in
-parallel.
+Contribute the merged proof to `g09.044`.

@@ -66,10 +66,9 @@ bounded HTTP-client fallback repair. `g09.035` and `g09.036` completed the
 migration/testing assessments with `drifting` verdicts. `g09.037` completed the
 shared repair and `g09.038` completed the Underlay Reference proof. `g09.039`
 completed the Contact Patch rollout and `g09.043` completed the Acowtancy
-repair. `g09.040` and `g09.042` are changes-requested; `g09.041` is
-awaiting merge. `g09.044` remains planned behind those three merged proofs,
-and `g09.045` remains planned behind the repair closeout. See
-[`g09/README.md`](g09/README.md).
+repair. `g09.040`–`g09.043` are complete and all five consumer proofs are
+merged. `g09.044` is ready for fleet closeout; `g09.045` remains planned
+behind that closeout. See [`g09/README.md`](g09/README.md).
 
 ## Archived generations
 
@@ -88,6 +87,4 @@ that risk.
 
 ## Next Task
 
-Correct `g09.040` provider evidence, obtain `g09.042` operator authorization,
-and merge ready `g09.041` when authorized. Keep `g09.044` blocked until all
-three proofs merge.
+Execute `g09.044`; keep `g09.045` planned until the repair wave closes.

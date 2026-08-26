@@ -67,14 +67,12 @@ Underlay is in sequential mode:
 - `g09.037` is complete
 - `g09.038` is complete
 - `g09.039` is complete
-- `g09.040` and `g09.042` are changes-requested
-- `g09.041` is awaiting merge
-- `g09.043` remains independently owned by the Acowtancy thread
-- `g09.044` is planned behind all five merged consumer proofs
+- `g09.040`–`g09.043` are complete
+- `g09.044` is ready
 - `g09.045` is the planned post-repair assessment; it is not ready
 
 ## Next Task
 
-Correct `g09.040` provider evidence, obtain `g09.042` operator authorization,
-and merge ready `g09.041` when authorized. Do not promote `g09.044` before
-all three remaining consumer proofs merge.
+Execute `g09.044` and return the whole-app DB harness boundary to the operator
+decision recorded there. Do not promote `g09.045` before the repair wave
+closes.

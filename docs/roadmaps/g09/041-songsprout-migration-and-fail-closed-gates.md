@@ -1,6 +1,6 @@
 # g09.041 - Songsprout Migration And Fail-Closed Gates
 
-Status: awaiting-merge
+Status: complete
 Owner: Songsprout maintainers
 Contracts: `021-database-migration-and-schema-workflow.md`,
 `022-testing-posture-and-shared-harnesses.md`
@@ -29,7 +29,9 @@ mutation because the allocated loopback port may change after stack recreation.
 Final re-review on 2026-08-26 recorded a
 [ready-to-merge verdict](https://github.com/inflatable-cookie/songsprout/pull/4#issuecomment-5431104497)
 at exact head `713ac411baae6fa1095caa6594dffa7f26e86438`. The implementation, execution
-log, and PR description agree. Merge remains operator-authorized.
+log, and PR description agree. Operator-authorized squash merge
+[PR4](https://github.com/inflatable-cookie/songsprout/pull/4) landed on
+2026-08-26 as `e1fd46ef1230492dc2be0b5787768350823da5c4`.
 
 ## Scope
 
@@ -83,5 +85,4 @@ lane. Do not pull DB integration setup into health.
 
 ## Next Task
 
-Close this lane independently; `g09.039`, `g09.040`, `g09.042`, and `g09.043`
-may run in parallel.
+Contribute the merged proof to `g09.044`.

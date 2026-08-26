@@ -1,6 +1,6 @@
 # g09.040 - Compli Me Migration And Workflow Gate
 
-Status: changes-requested
+Status: complete
 Owner: Compli Me maintainers
 Contracts: `021-database-migration-and-schema-workflow.md`,
 `022-testing-posture-and-shared-harnesses.md`
@@ -26,12 +26,12 @@ mutation.
 
 ## Review Gate
 
-Final re-review on 2026-08-26 found the implementation clean in the
-[Compli Me PR6 follow-up](https://github.com/double-dip/compli-me/pull/6#issuecomment-5431104416)
-at exact head `150b03ca151ab0390217de9fa4188fd4753faa53`. The PR description still
-records the superseded baseline rewrite and nine-migration proof. Correct it to
-the predecessor migration, unchanged published checksum, no runtime DDL, and
-ten-migration outcome before the merge verdict.
+Final re-review recorded a
+[ready-to-merge verdict](https://github.com/double-dip/compli-me/pull/6#issuecomment-5431143705)
+at exact head `150b03ca151ab0390217de9fa4188fd4753faa53` after the PR description was
+corrected. Operator-authorized squash merge
+[PR6](https://github.com/double-dip/compli-me/pull/6) landed on 2026-08-26 as
+`12fa0d17cc8abe3c6a15cd7b3e2df352bb7e7f29`.
 
 ## Scope
 
@@ -84,5 +84,4 @@ are explicit.
 
 ## Next Task
 
-Close this lane independently; `g09.039` and `g09.041`–`g09.043` may run in
-parallel.
+Contribute the merged proof to `g09.044`.

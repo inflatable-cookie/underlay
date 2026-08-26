@@ -1,6 +1,6 @@
 # g09.044 - Migration And Testing Fleet Closeout
 
-Status: planned
+Status: ready
 Owner: repo maintainers
 Contracts: `021-database-migration-and-schema-workflow.md`,
 `022-testing-posture-and-shared-harnesses.md`,
@@ -16,9 +16,9 @@ operator decision.
 
 ## Promotion Gate
 
-- `g09.037`–`g09.043` are complete and merged
-- every consumer proof names its verified `main` revision
-- no consumer PR or destructive-state validation remains in flight
+- [x] `g09.037`–`g09.043` are complete and merged
+- [x] every consumer proof names its verified `main` revision
+- [x] no consumer PR or destructive-state validation remains in flight
 
 ## Scope
 
