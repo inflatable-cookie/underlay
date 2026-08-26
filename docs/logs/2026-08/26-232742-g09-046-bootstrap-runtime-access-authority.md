@@ -69,6 +69,17 @@ git diff --check                      pass
 Doctor remains pre-existing attention-marker / god-file debt from `PAPERCUTS.md`.
 Not attributed to this batch.
 
+## Review follow-up
+
+Addressed orchestrator changes requested on PR #9:
+
+1. Authority-file diagnostics no longer echo invalid-line values. Details use
+   line number plus key token. Fixture regressions prove `super-secret-value`
+   is absent from both files' details and the formatted report.
+2. Env-reader detection ignores comments, test paths/files, and fixtures.
+3. `docs/contracts/README.md` and `docs/roadmaps/generation-index.md` now say
+   `g09.046` is in review.
+
 ## Stop boundaries respected
 
 - No consumer edits

@@ -48,6 +48,10 @@ const SKIP_DIR_NAMES = new Set([
 	'.svelte-kit',
 	'.effigy',
 	'.cache',
+	'tests',
+	'test',
+	'__tests__',
+	'fixtures',
 ]);
 
 const ENV_READER_PATTERNS = [
@@ -100,8 +104,24 @@ function isSourceFile(fileName: string): boolean {
 	return SOURCE_EXTENSIONS.has(path.extname(fileName));
 }
 
+function isTestOrFixtureFile(fileName: string): boolean {
+	return (
+		/\.(test|spec)\.[cm]?[jt]sx?$/.test(fileName) ||
+		/_test\.rs$/.test(fileName) ||
+		/\.test\.rs$/.test(fileName)
+	);
+}
+
+function codeWithoutComments(content: string): string {
+	return content
+		.replace(/\/\*[\s\S]*?\*\//g, ' ')
+		.replace(/<!--[\s\S]*?-->/g, ' ')
+		.replace(/(^|[^:])\/\/.*$/gm, '$1');
+}
+
 function looksLikeEnvReader(content: string): boolean {
-	return ENV_READER_PATTERNS.some((pattern) => pattern.test(content));
+	const code = codeWithoutComments(content);
+	return ENV_READER_PATTERNS.some((pattern) => pattern.test(code));
 }
 
 async function findEnvReaderPaths(root: string): Promise<string[]> {
@@ -125,7 +145,9 @@ async function findEnvReaderPaths(root: string): Promise<string[]> {
 				continue;
 			}
 
-			if (!entry.isFile() || !isSourceFile(entry.name)) continue;
+			if (!entry.isFile() || !isSourceFile(entry.name) || isTestOrFixtureFile(entry.name)) {
+				continue;
+			}
 
 			const content = await readTextFile(path.join(root, entryRelative));
 			if (content && looksLikeEnvReader(content)) {
@@ -138,30 +160,55 @@ async function findEnvReaderPaths(root: string): Promise<string[]> {
 	return found.sort((a, b) => a.localeCompare(b));
 }
 
+interface InvalidAuthorityLine {
+	lineNumber: number;
+	kind: 'assignment' | 'token';
+	key?: string;
+}
+
 interface ParsedKeyFile {
 	keys: string[];
 	duplicates: string[];
-	invalidLines: string[];
+	invalidLines: InvalidAuthorityLine[];
+}
+
+function describeInvalidAuthorityLine(entry: InvalidAuthorityLine): string {
+	if (entry.kind === 'assignment') {
+		return entry.key
+			? `line ${entry.lineNumber}: ${entry.key} has a value; authority files are key lists`
+			: `line ${entry.lineNumber} has a value; authority files are key lists`;
+	}
+
+	return `line ${entry.lineNumber} is not a KEY token`;
 }
 
 function parseKeyFile(content: string): ParsedKeyFile {
 	const keys: string[] = [];
 	const seen = new Set<string>();
 	const duplicates: string[] = [];
-	const invalidLines: string[] = [];
+	const invalidLines: InvalidAuthorityLine[] = [];
 
-	for (const rawLine of content.split(/\r?\n/)) {
+	const rawLines = content.split(/\r?\n/);
+	for (let index = 0; index < rawLines.length; index++) {
+		const rawLine = rawLines[index];
+		if (rawLine === undefined) continue;
+		const lineNumber = index + 1;
 		const withoutComment = rawLine.replace(/#.*$/, '');
 		const line = withoutComment.trim();
 		if (line.length === 0) continue;
 
 		if (line.includes('=')) {
-			invalidLines.push(line);
+			const key = line.slice(0, line.indexOf('=')).trim();
+			invalidLines.push({
+				lineNumber,
+				kind: 'assignment',
+				key: KEY_PATTERN.test(key) ? key : undefined,
+			});
 			continue;
 		}
 
 		if (!KEY_PATTERN.test(line)) {
-			invalidLines.push(line);
+			invalidLines.push({ lineNumber, kind: 'token' });
 			continue;
 		}
 
@@ -183,13 +230,9 @@ function recordParseViolations(
 	parsed: ParsedKeyFile,
 	invalidRule: EnvAuthorityRuleId,
 ): void {
-	for (const line of parsed.invalidLines.sort((a, b) => a.localeCompare(b))) {
-		pushViolation(
-			violations,
-			invalidRule,
-			relativePath,
-			`line must be a KEY token without a value (found ${JSON.stringify(line)})`,
-		);
+	const invalidLines = [...parsed.invalidLines].sort((a, b) => a.lineNumber - b.lineNumber);
+	for (const entry of invalidLines) {
+		pushViolation(violations, invalidRule, relativePath, describeInvalidAuthorityLine(entry));
 	}
 
 	for (const key of parsed.duplicates.sort((a, b) => a.localeCompare(b))) {

@@ -53,6 +53,21 @@ describe("tools/env-authority", () => {
 		expect(violations).toEqual([]);
 	});
 
+	it("ignores env-reader mentions that live only in comments", async () => {
+		const violations = await checkEnvAuthority(await loadFixture("comment-only-reader"));
+		expect(violations).toEqual([]);
+	});
+
+	it("ignores env reads that live only in tests", async () => {
+		const violations = await checkEnvAuthority(await loadFixture("test-only-reader"));
+		expect(violations).toEqual([]);
+	});
+
+	it("ignores env reads that live only in fixtures", async () => {
+		const violations = await checkEnvAuthority(await loadFixture("fixture-only-reader"));
+		expect(violations).toEqual([]);
+	});
+
 	it("flags a runtime env reader with no env-manifest", async () => {
 		const violations = await checkEnvAuthority(await loadFixture("missing-manifest"));
 		expect(violations.map((v) => v.ruleId)).toContain(ENV_AUTHORITY_RULE_IDS.ENV_MANIFEST_MISSING);
@@ -75,10 +90,19 @@ describe("tools/env-authority", () => {
 		]);
 	});
 
-	it("flags manifest syntax that includes values", async () => {
-		const violations = await checkEnvAuthority(await loadFixture("invalid-manifest"));
-		expect(violations.map((v) => v.ruleId)).toContain(ENV_AUTHORITY_RULE_IDS.ENV_MANIFEST_INVALID);
-		expect(violations.some((v) => v.detail.includes("super-secret-value"))).toBe(true);
+	it("flags value assignments in both authority files without echoing secrets", async () => {
+		const dir = await loadFixture("invalid-manifest");
+		const violations = await checkEnvAuthority(dir);
+		const ruleIds = violations.map((v) => v.ruleId);
+		expect(ruleIds).toContain(ENV_AUTHORITY_RULE_IDS.ENV_MANIFEST_INVALID);
+		expect(ruleIds).toContain(ENV_AUTHORITY_RULE_IDS.REQUIRED_SECRETS_INVALID);
+
+		const report = formatEnvAuthorityReport(dir, violations);
+		const details = violations.map((v) => v.detail).join("\n");
+		expect(details).toContain("line 1: DATABASE_URL has a value");
+		expect(details).toContain("line 1: AUTH_JWT_PRIVATE_KEY has a value");
+		expect(details).not.toContain("super-secret-value");
+		expect(report).not.toContain("super-secret-value");
 	});
 
 	it("flags required secrets that are not declared in the manifest", async () => {

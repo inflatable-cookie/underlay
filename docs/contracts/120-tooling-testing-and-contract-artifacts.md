@@ -268,8 +268,9 @@ Rules:
   run the consumer env check against its own foundation root
 - live value presence remains `scripts/check-env-manifest.sh` and must not
   become a CI requirement for material secrets
-- diagnostics must identify a stable rule id, repo-relative path, and offending
-  value with deterministic sort order and a non-zero exit on drift
+- diagnostics must identify a stable rule id, repo-relative path, and a redacted
+  reason (line number or key token, never a secret value) with deterministic
+  sort order and a non-zero exit on drift
 
 ### Machine-readable contract artifacts
 
