@@ -62,7 +62,8 @@ and elective majors landed 2026-08-04.
 `g10.001`–`g10.010` completed the strict monorepo consumer-workspace rollout
 across the six-consumer family. `g10.011` completed the foundation and transport
 assessment. `g10.012` normalized request-context rejection envelopes, and
-`g10.013` synchronized the page-list contract artifacts. `g10.014` is ready. See
+`g10.013` synchronized the page-list contract artifacts. `g10.014` completed the
+bounded HTTP-client fallback repair. No card is ready. See
 [`g10/README.md`](g10/README.md).
 
 ## Archived generations
@@ -82,4 +83,4 @@ that risk.
 
 ## Next Task
 
-Execute `g10.014`, the bounded HTTP-client constructor fallback repair.
+Re-enter planning for the next contract-assessment batch (`021`, `022`).

@@ -56,8 +56,10 @@ Underlay is in parallel mode:
 - the monorepo consumer-workspace strict lane is archived
 - `g10.011` is complete
 - `g10.012` and `g10.013` are complete
-- `g10.014` is the ready bounded repair from the assessment
+- `g10.014` is complete
+- no card is ready
 
 ## Next Task
 
-Execute `g10.014`, the bounded HTTP-client constructor fallback repair.
+Re-enter planning and compile the next contract-assessment batch. The declared
+assessment order points to migration and testing posture (`021`, `022`).

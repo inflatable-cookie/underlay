@@ -75,7 +75,7 @@ lane.
 
 | Lane | Outcome | Primary authority | Notes |
 | --- | --- | --- | --- |
-| A | First contract-assessment wave (foundation + transport) | `contract-index.md`, `system-inventory.md` | Assessment and `g10.012`–`g10.013` complete; `g10.014` ready |
+| A | First contract-assessment wave (foundation + transport) | `contract-index.md`, `system-inventory.md` | Assessment and bounded repairs `g10.012`–`g10.014` complete |
 | B | Collection route convergence pilot | `116`, `117`, sweep `029` | Needs one consumer as proof anchor |
 | C | Hybrid shell extraction for one real tab | `117`, sweep `030`, Dairy `ModulesList` evidence | Bounded to one shell, not a framework rewrite |
 | D | Consumer drift B-items with stable boundaries | `070`, `021` sweep family | Only items with a clear Underlay-owned seam |
@@ -96,8 +96,7 @@ lane.
 - `g10.001`–`g10.005` are serial: authority, narrative, conformance,
   Acowtancy evidence, then Underlay Reference.
 - `g10.006`–`g10.010` are complete.
-- Lane A assessment is complete. Run bounded repairs `g10.012`–`g10.014` in
-  sequence.
+- Lane A assessment and bounded repairs `g10.012`–`g10.014` are complete.
 - Lane B and C should not run as parallel unbounded refactors; pick one consumer
   proof anchor first (`underlay-reference` unless another app is clearer)
 - Lane D must respect `product-guardrails.md` — no app-local behavior smuggled
@@ -126,9 +125,10 @@ lane.
 11. [x] [`g10.011`](batch-cards/011-foundation-and-transport-contract-assessment.md) — foundation and transport contract assessment (`complete`)
 12. [x] [`g10.012`](batch-cards/012-context-rejection-envelope-normalization.md) — context rejection envelope normalization (`complete`)
 13. [x] [`g10.013`](batch-cards/013-page-list-contract-artifact-sync.md) — page-list contract artifact sync (`complete`)
-14. [ ] [`g10.014`](batch-cards/014-http-client-bounded-constructor-fallback.md) — bounded HTTP-client constructor fallback (`ready`)
+14. [x] [`g10.014`](batch-cards/014-http-client-bounded-constructor-fallback.md) — bounded HTTP-client constructor fallback (`complete`)
 
 ## Next Task
 
-Execute `g10.014`. Preserve Underlay's timeout bounds across infallible
-HTTP-client constructor fallbacks.
+Re-enter planning and compile the next contract-assessment batch. Follow the
+declared order with migration and testing posture (`021`, `022`); no card is
+currently ready.

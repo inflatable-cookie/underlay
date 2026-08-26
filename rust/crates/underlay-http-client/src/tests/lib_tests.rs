@@ -43,6 +43,13 @@ fn try_with_user_agent_builds_requests() {
 }
 
 #[test]
+fn try_with_user_agent_rejects_invalid_header_value() {
+    let error = HttpClient::try_with_user_agent("invalid\nuser-agent")
+        .expect_err("invalid user-agent should fail the fallible constructor");
+    assert!(error.is_builder(), "expected a builder error, got: {error}");
+}
+
+#[test]
 fn default_matches_new() {
     HttpClient::default()
         .inner()
@@ -150,10 +157,39 @@ fn is_public_ip_classifies_correctly() {
 
 #[test]
 fn default_timeouts_are_bounded() {
-    // base_builder applies these to every client this crate constructs; guard
+    // bounded_builder applies these to configured and fallback clients; guard
     // the values so a refactor cannot silently drop or loosen them.
     assert_eq!(DEFAULT_CONNECT_TIMEOUT, Duration::from_secs(10));
     assert_eq!(DEFAULT_TIMEOUT, Duration::from_secs(30));
+}
+
+async fn stalled_server() -> std::net::SocketAddr {
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:0")
+        .await
+        .expect("bind");
+    let addr = listener.local_addr().expect("addr");
+    tokio::spawn(async move {
+        let mut held = Vec::new();
+        while let Ok((socket, _)) = listener.accept().await {
+            held.push(socket);
+        }
+    });
+    addr
+}
+
+#[tokio::test(start_paused = true)]
+async fn invalid_user_agent_fallback_retains_default_timeout() {
+    let addr = stalled_server().await;
+    let client = HttpClient::with_user_agent("invalid\nuser-agent");
+    let started = tokio::time::Instant::now();
+    let err = client
+        .get(format!("http://{addr}/stall"))
+        .send()
+        .await
+        .expect_err("bounded fallback must time out on a stalled server");
+
+    assert!(err.is_timeout(), "expected a timeout error, got: {err}");
+    assert!(started.elapsed() >= DEFAULT_TIMEOUT);
 }
 
 #[tokio::test]
@@ -162,16 +198,7 @@ async fn timeout_fires_on_stalled_server() {
     // timeout is shrunk from the 30s default so the test runs fast; the
     // mechanism exercised (reqwest total-timeout on our constructed client)
     // is the same one the default arms.
-    let listener = tokio::net::TcpListener::bind("127.0.0.1:0")
-        .await
-        .expect("bind");
-    let addr = listener.local_addr().expect("addr");
-    tokio::spawn(async move {
-        let mut held = Vec::new();
-        while let Ok((socket, _)) = listener.accept().await {
-            held.push(socket); // hold open, never answer
-        }
-    });
+    let addr = stalled_server().await;
 
     let client = HttpClient::new();
     let err = client

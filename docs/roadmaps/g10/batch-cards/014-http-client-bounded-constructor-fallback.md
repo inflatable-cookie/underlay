@@ -1,6 +1,7 @@
 # g10.014 - HTTP Client Bounded Constructor Fallback
 
-Status: ready
+Status: complete
+Completed: 2026-08-26
 Owner: repo maintainers
 Contract: `020-http-transport-and-server-boundary.md`
 Found by: `g10.011`
@@ -45,6 +46,20 @@ Compile consumer impact before changing the public API.
 - Required action: none unless they depended on invalid user-agent strings being
   accepted through the raw fallback
 
+## Completion Evidence
+
+Both infallible constructors now route build failures through one
+timeout-bounded fallback. The fallback deliberately omits the rejected
+user-agent but retains the 10-second connect timeout and 30-second total
+timeout. If reqwest cannot build even that safe baseline, construction stops
+with an explicit panic instead of returning an unbounded client.
+
+Focused tests prove invalid user-agent input still fails through
+`try_with_user_agent()` and that `with_user_agent()` reaches the default total
+timeout on a stalled server. No direct constructor callers were found in the
+six-consumer family. The external profile, redirect cap, and SSRF validation
+paths did not change.
+
 ## Next Task
 
-Preserve bounded timeouts in every infallible-constructor fallback.
+Re-enter planning for the next contract-assessment batch. No card is ready.

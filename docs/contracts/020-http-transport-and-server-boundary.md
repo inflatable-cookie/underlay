@@ -314,6 +314,9 @@ Resolved assessment:
 - `g10.013` aligned OpenAPI with raw `PageList<T>.has_more`, preserved
   `PagedListResponse<T>.hasMore` as the TypeScript client boundary, and fixed
   the architecture attribution of the flat paged shape.
+- `g10.014` replaced unbounded infallible-constructor fallbacks with a
+  timeout-bounded Rust HTTP client fallback while preserving the fallible
+  constructor family and external SSRF profile.
 
 These are assessment hooks, not reasons to widen the contract.
 
@@ -334,10 +337,7 @@ idempotent methods.
 defaults, UUID path parsing, trusted-proxy resolution, cookies, browser HTTP
 behavior, CORS, in-process cache helpers, server config, and CSP helpers.
 
-Confirmed repair hooks:
-
-- `g10.014`: infallible Rust HTTP-client fallback paths can discard Underlay's
-  configured connect and total timeouts
+No confirmed foundation or transport repair hooks remain from `g10.011`.
 
 Material ambiguity remains for invalid filter operators. Rust accepts symbolic
 aliases and falls back unknown operators to equality; TypeScript casts

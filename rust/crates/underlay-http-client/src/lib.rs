@@ -53,13 +53,13 @@ pub struct HttpClient {
 
 impl HttpClient {
     /// Create a new HTTP client with default settings (timeouts + user-agent).
+    ///
+    /// # Panics
+    ///
+    /// Panics if reqwest cannot build even the timeout-only fallback client.
+    /// Returning an unbounded client is not permitted.
     pub fn new() -> Self {
-        Self::try_new().unwrap_or_else(|err| {
-            tracing::warn!(%err, "configured HTTP client build failed; falling back to reqwest defaults (custom timeouts/user-agent lost)");
-            Self {
-                inner: reqwest::Client::new(),
-            }
-        })
+        Self::try_new().unwrap_or_else(bounded_fallback)
     }
 
     /// Try to create a new HTTP client with default settings.
@@ -70,13 +70,13 @@ impl HttpClient {
     }
 
     /// Create a new HTTP client with a custom user-agent.
+    ///
+    /// # Panics
+    ///
+    /// Panics if reqwest cannot build even the timeout-only fallback client.
+    /// Returning an unbounded client is not permitted.
     pub fn with_user_agent(user_agent: impl Into<String>) -> Self {
-        Self::try_with_user_agent(user_agent).unwrap_or_else(|err| {
-            tracing::warn!(%err, "configured HTTP client build failed; falling back to reqwest defaults (custom timeouts/user-agent lost)");
-            Self {
-                inner: reqwest::Client::new(),
-            }
-        })
+        Self::try_with_user_agent(user_agent).unwrap_or_else(bounded_fallback)
     }
 
     /// Try to create a new HTTP client with a custom user-agent.
@@ -129,10 +129,28 @@ impl std::ops::Deref for HttpClient {
 }
 
 fn base_builder(user_agent: String) -> reqwest::ClientBuilder {
+    bounded_builder().user_agent(user_agent)
+}
+
+fn bounded_builder() -> reqwest::ClientBuilder {
     reqwest::Client::builder()
-        .user_agent(user_agent)
         .connect_timeout(DEFAULT_CONNECT_TIMEOUT)
         .timeout(DEFAULT_TIMEOUT)
+}
+
+fn bounded_fallback(build_error: reqwest::Error) -> HttpClient {
+    tracing::warn!(
+        %build_error,
+        "configured HTTP client build failed; using timeout-bounded fallback without a user-agent"
+    );
+
+    let inner = bounded_builder().build().unwrap_or_else(|fallback_error| {
+        panic!(
+            "bounded HTTP client fallback failed after configured build error ({build_error}): {fallback_error}"
+        )
+    });
+
+    HttpClient { inner }
 }
 
 fn external_redirect_policy() -> reqwest::redirect::Policy {
