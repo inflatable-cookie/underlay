@@ -24,5 +24,5 @@ Specs hold active Underlay planning and strict execution-control surfaces.
 
 ## Next Task
 
-Execute `g09.037`. Add a strict spec only if the `g09.044` DB-harness decision
-selects a new durable shared boundary.
+Clear the `g09.038` disposable-database promotion gate. Add a strict spec only
+if the `g09.044` DB-harness decision selects a new durable shared boundary.

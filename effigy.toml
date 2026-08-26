@@ -93,7 +93,6 @@ health = [
     { task = "check:poodle-prop-names" },
     { task = "check:release-version-sync" },
     { task = "check:guardrails" },
-    { task = "check:workspace-shape" },
 ]
 
 validate = [

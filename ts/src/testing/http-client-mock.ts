@@ -1,4 +1,5 @@
 import type {
+  HttpClient,
   HttpMethod,
   HttpRequest,
   HttpRequestOptions,
@@ -22,7 +23,7 @@ export interface CreateMockHttpClientOptions {
   responses?: Record<string, MockResponder>;
 }
 
-export interface MockHttpClient {
+export interface MockHttpClient extends HttpClient {
   calls: MockHttpCall[];
   nextResponse: unknown;
   responses: Map<string, MockResponder>;

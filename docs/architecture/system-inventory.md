@@ -130,5 +130,6 @@ Every system should pass through the same loop:
 
 ## Next Task
 
-Execute `g09.037`, the Underlay test-gate and mock-contract repair. See
+Clear the `g09.038` disposable-database promotion gate, then run the Underlay
+Reference migration/testing proof. See
 [`docs/roadmaps/g09/README.md`](../roadmaps/g09/README.md).

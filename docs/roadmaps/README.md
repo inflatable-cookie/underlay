@@ -63,8 +63,9 @@ across the six-consumer family. `g09.031` completed the foundation and transport
 assessment. `g09.032` normalized request-context rejection envelopes, and
 `g09.033` synchronized the page-list contract artifacts. `g09.034` completed the
 bounded HTTP-client fallback repair. `g09.035` and `g09.036` completed the
-migration/testing assessments with `drifting` verdicts. Their bounded repair
-wave is planned as `g09.037`–`g09.044`; only `g09.037` is ready. `g09.045`
+migration/testing assessments with `drifting` verdicts. `g09.037` completed the
+first bounded repair. `g09.038`–`g09.044` remain planned; no roadmap is ready
+until the Underlay Reference disposable-database gate is proven. `g09.045`
 records the next bootstrap/runtime assessment and remains planned. See
 [`g09/README.md`](g09/README.md).
 
@@ -85,4 +86,5 @@ that risk.
 
 ## Next Task
 
-Execute `g09.037`, the Underlay test-gate and mock-contract roadmap.
+Positively identify the disposable Underlay Reference PostgreSQL target, then
+promote `g09.038`.

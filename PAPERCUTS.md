@@ -5,6 +5,14 @@ they hit a solvable hurdle; they do not stop the current task to fix one.
 
 ## Open
 
+### [ ] Effigy task arguments silently widen when preceded by `--` — 2026-08-26
+- Friction: `effigy test:unit -- <paths>` discarded the requested Vitest
+  paths, while `effigy test:unit <paths>` forwarded them correctly
+- Impact: a focused validation request silently ran the full unit suite instead
+- Possible fix: preserve post-separator arguments for task selectors or reject
+  the unsupported form with a clear error
+- Surface: Effigy task argument forwarding / focused test execution
+
 ### [ ] Auth architecture links target retired crate paths — 2026-08-26
 - Friction: the broad docs link check finds `docs/architecture/050-auth-database-schema.md` links to removed `underlay-auth` migration and `types.rs` paths
 - Impact: full-tree link validation fails before it can isolate planning-authority changes

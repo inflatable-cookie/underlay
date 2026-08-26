@@ -19,5 +19,6 @@ Owner: repo maintainers
 
 ## Next Task
 
-Execute `g09.037`. Keep shared DB-harness design behind the `g09.044` operator
-decision and keep minimum-posture packages out of speculative test rewrites.
+Clear the `g09.038` disposable-database promotion gate. Keep shared DB-harness
+design behind the `g09.044` operator decision and keep minimum-posture packages
+out of speculative test rewrites.

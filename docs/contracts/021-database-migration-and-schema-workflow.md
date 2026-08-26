@@ -322,6 +322,6 @@ Bad outcomes:
 
 ## Next Task
 
-Execute `g09.037`, then prove this contract's baseline migration shape in
-Underlay Reference through `g09.038`. Keep DB-harness design behind the
-`g09.044` operator decision.
+Clear the disposable-database gate, then prove this contract's baseline
+migration shape in Underlay Reference through `g09.038`. Keep DB-harness design
+behind the `g09.044` operator decision.

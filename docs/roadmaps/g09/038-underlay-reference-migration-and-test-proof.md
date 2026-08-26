@@ -15,10 +15,14 @@ API health minimum, and shared in-memory server harness.
 
 ## Promotion Gate
 
-- `g09.037` is complete
-- the target branch is current with Underlay Reference `main`
-- a disposable local PostgreSQL target is available and positively identified
-- no shared, UAT, staging, or production database can be reached by the proof
+- [x] `g09.037` is complete
+- [x] the target branch is current with Underlay Reference `main`
+- [ ] a disposable local PostgreSQL target is available and positively identified
+- [ ] no shared, UAT, staging, or production database can be reached by the proof
+
+Readiness checked 2026-08-26: the target checkout is clean and exactly aligned
+with `origin/main`. `effigy system status --system dev` reports no running task,
+so no database target has been identified and this roadmap remains planned.
 
 ## Scope
 

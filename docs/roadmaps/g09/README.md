@@ -61,7 +61,8 @@ assessments. Both later assessments found bounded drift.
 
 ### Phase 5 — Migration/testing repair (`g09.037`–`g09.044`, active)
 
-1. repair Underlay's health gate and TypeScript mock contract (`g09.037`)
+1. repair Underlay's health gate and TypeScript mock contract (`g09.037`,
+   complete)
 2. prove the baseline migration and `TestServer` posture in Underlay Reference
    (`g09.038`)
 3. run the five repository-owned consumer repairs independently after the
@@ -69,7 +70,8 @@ assessments. Both later assessments found bounded drift.
 4. close fleet evidence and settle the whole-app `TestDb` ownership decision
    (`g09.044`)
 
-Only `g09.037` is ready.
+No roadmap is ready. `g09.038` has cleared its dependency and branch gates but
+still needs a positively identified disposable PostgreSQL target.
 
 ### Phase 6 — Bootstrap/runtime assessment (`g09.045`, planned)
 
@@ -114,8 +116,8 @@ family. Repair roadmaps are not pre-numbered; they must come from the evidence.
 34. [x] [`g09.034`](034-http-client-bounded-constructor-fallback.md) — bounded HTTP-client fallback (`complete`)
 35. [x] [`g09.035`](035-database-migration-contract-assessment.md) — database migration assessment (`complete`; `drifting`)
 36. [x] [`g09.036`](036-testing-posture-contract-assessment.md) — testing-posture assessment (`complete`; `drifting`)
-37. [ ] [`g09.037`](037-underlay-test-gate-and-mock-contract.md) — Underlay test gate and mock contract (`ready`)
-38. [ ] [`g09.038`](038-underlay-reference-migration-and-test-proof.md) — Underlay Reference migration and test proof (`planned`; after `g09.037`)
+37. [x] [`g09.037`](037-underlay-test-gate-and-mock-contract.md) — Underlay test gate and mock contract (`complete`)
+38. [ ] [`g09.038`](038-underlay-reference-migration-and-test-proof.md) — Underlay Reference migration and test proof (`planned`; disposable database not yet proven)
 39. [ ] [`g09.039`](039-contact-patch-migration-rollout.md) — Contact Patch migration rollout (`planned`; after `g09.038`)
 40. [ ] [`g09.040`](040-compli-me-migration-and-workflow-gate.md) — Compli Me migration and workflow gate (`planned`; after `g09.038`)
 41. [ ] [`g09.041`](041-songsprout-migration-and-fail-closed-gates.md) — Songsprout migration and fail-closed gates (`planned`; after `g09.038`)
@@ -135,7 +137,8 @@ Deferred with a promotion trigger (TypeScript 7.1 or concrete need):
   confirmed findings.
 - `g09.035` and `g09.036` were serial because migration ownership informed the
   testing verdict.
-- `g09.037` must close before `g09.038` is promoted.
+- `g09.037` is complete. `g09.038` stays planned until its disposable database
+  boundary is positively identified.
 - `g09.039`–`g09.043` may run in parallel only after the Underlay Reference
   proof in `g09.038` merges.
 - `g09.044` waits for all five consumer roadmaps.
@@ -154,7 +157,7 @@ Deferred with a promotion trigger (TypeScript 7.1 or concrete need):
 
 ## Consumer Upgrade Impact
 
-`g09.037` is compatible Underlay test-contract hardening. `g09.038`–`g09.042`
+`g09.037` completed compatible Underlay test-contract hardening. `g09.038`–`g09.042`
 cut the five baseline consumers from retired package `db:*` selectors to root
 state plan/apply plus routed `migration:*` tasks with no compatibility window.
 Songsprout and Composer also correct fail-open local dev overlays. `g09.043`
@@ -162,5 +165,6 @@ repairs Acowtancy local state application and merge-gate reachability.
 
 ## Next Task
 
-Execute `g09.037`, the Underlay test-gate and mock-contract roadmap. Do not
-start consumer mutations before `g09.038` is promoted and completed.
+Establish and positively identify the disposable local PostgreSQL target for
+Underlay Reference, then promote `g09.038`. Do not start database or consumer
+mutations before that gate is explicit.

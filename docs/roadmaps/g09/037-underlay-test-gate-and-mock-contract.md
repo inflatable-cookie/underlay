@@ -1,11 +1,12 @@
 # g09.037 - Underlay Test Gate And Mock Contract
 
-Status: ready
+Status: complete
 Owner: repo maintainers
 Contracts: `022-testing-posture-and-shared-harnesses.md`,
 `120-tooling-testing-and-contract-artifacts.md`
 Found by: `g09.036`
 Depends on: `g09.036`
+Completed: 2026-08-26
 
 ## Purpose
 
@@ -55,6 +56,23 @@ the mismatch and return to planning instead.
 - Required action: none unless a consumer carries a compatibility cast; that
   cleanup is owned by `g09.043`
 
+## Completion Evidence
+
+- `health` no longer reaches the Vitest-backed workspace-shape check
+- `validate` retains workspace-shape proof through the full `test:unit` gate
+- `MockHttpClient` now extends the exported `HttpClient` interface directly,
+  so client signature drift fails TypeScript checking
+- focused mock, package-compatibility, and workspace-shape proof passed: 3 files,
+  17 tests
+- full validation passed: 126 unit files / 782 tests and 12 component files /
+  49 tests
+- no runtime HTTP behavior or consumer-visible method changed
+
+See the
+[`g09.037` execution log](../../logs/2026-08/26-173931-g09-037-underlay-test-gate-mock-contract.md).
+
 ## Next Task
 
-Complete this roadmap, then promote `g09.038` for the Underlay Reference proof.
+Re-enter planning at the `g09.038` promotion gate. Underlay Reference `main` is
+current, but the disposable PostgreSQL target must be positively identified
+before that roadmap becomes ready.

@@ -62,5 +62,7 @@ where repo-local links and normalized prose references are required instead.
 `g09.037`–`g09.044` are compiled
 ([planning log](./2026-08/26-165722-g09-037-044-migration-testing-repairs-compiled.md));
 the invalid generation/card hierarchy was then repaired
-([recovery log](./2026-08/26-171952-g09-roadmap-authority-recovery.md)). Execute
-`g09.037` without reconstructing closed history.
+([recovery log](./2026-08/26-171952-g09-roadmap-authority-recovery.md)).
+`g09.037` then completed
+([execution log](./2026-08/26-173931-g09-037-underlay-test-gate-mock-contract.md)).
+Clear the disposable-database gate before promoting `g09.038`.

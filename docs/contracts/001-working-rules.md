@@ -64,12 +64,12 @@ Underlay is in sequential mode:
 - `g09.034` is complete
 - `g09.035` is complete
 - `g09.036` is complete
-- `g09.037` is ready
+- `g09.037` is complete
 - `g09.038`–`g09.044` are planned behind explicit shared, reference, consumer,
   and closeout gates
 - `g09.045` is the planned post-repair assessment; it is not ready
 
 ## Next Task
 
-Execute `g09.037`. Keep the batch inside Underlay and promote `g09.038` only
-after the shared health/mock proof closes.
+Positively identify the disposable Underlay Reference PostgreSQL target, then
+promote `g09.038`. Do not widen execution while no roadmap is ready.

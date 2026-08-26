@@ -314,9 +314,9 @@ Other system families own:
   generic multi-schema or database-per-test boundary
 - `TestServer` is directly tested but has no consumer adoption even though
   direct Axum `Router::oneshot` mechanics recur in three consumer APIs
-- `createMockHttpClient()` has one live consumer, but Cattle Grid narrows it
-  through an `as unknown` compatibility cast instead of a proved structural
-  assignment
+- Cattle Grid still carries a compatibility cast around
+  `createMockHttpClient()` even though `g09.037` now proves the shared mock's
+  structural `HttpClient` assignment; consumer cleanup belongs to `g09.043`
 - `underlay-devtools` mixes genuinely generic DB/env helpers with machinery that
   is tightly coupled to Underlay's migration/media stack, so its internal
   ownership split may still be too broad
@@ -349,6 +349,6 @@ Other system families own:
 
 ## Next Task
 
-Use the `g09.036` evidence when compiling the combined migration/testing repair
-wave. Do not change the Rust DB harness boundary without the recorded decision
-prototype.
+Clear the `g09.038` disposable-database promotion gate, then run the reference
+migration/testing proof. Do not change the Rust DB harness boundary without the
+recorded decision prototype.

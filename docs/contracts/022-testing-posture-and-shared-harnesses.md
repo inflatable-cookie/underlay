@@ -263,13 +263,15 @@ Shared harness findings:
   database-per-test design is selected
 - `TestServer` fits repeated direct Axum route-test mechanics but has no
   consumer proof
-- `createMockHttpClient()` has one live consumer; that consumer currently uses
-  a compatibility cast that needs type-level proof
+- `createMockHttpClient()` now proves structural compatibility by extending the
+  exported `HttpClient`; the remaining consumer cast cleanup belongs to
+  `g09.043`
 
 See
 [`g09.036 - Testing Posture Contract Assessment`](../logs/2026-08/26-164407-g09-036-testing-posture-assessment.md).
 
 ## Next Task
 
-Execute `g09.037`. Keep whole-app DB-harness design behind the `g09.044`
-operator decision; no fixed-schema consumer rewrite is implied.
+Clear the `g09.038` disposable-database promotion gate, then run the Underlay
+Reference proof. Keep whole-app DB-harness design behind the `g09.044` operator
+decision; no fixed-schema consumer rewrite is implied.
