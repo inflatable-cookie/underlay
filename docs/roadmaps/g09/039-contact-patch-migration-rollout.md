@@ -1,6 +1,6 @@
 # g09.039 - Contact Patch Migration Rollout
 
-Status: planned
+Status: ready
 Owner: Contact Patch maintainers
 Contracts: `021-database-migration-and-schema-workflow.md`,
 `022-testing-posture-and-shared-harnesses.md`
@@ -14,9 +14,15 @@ disturbing its already-strong API and front test posture.
 
 ## Promotion Gate
 
-- `g09.038` is complete and its baseline state/task shape is recorded
-- Contact Patch `main` is current
-- a disposable local PostgreSQL target is available and positively identified
+- [x] `g09.038` is complete and its baseline state/task shape is recorded
+- [x] Contact Patch `main` is current at `3c85a5e57ce29af448c338f7fd29ad9e45d72ac8`
+- [x] a disposable local PostgreSQL target is available and positively identified
+
+Readiness checked 2026-08-26: system `contact-patch-dev`, container
+`contact-patch-dev-postgres-1`, database `contact_patch`, user `postgres`, host
+binding `127.0.0.1:24532`, volume `contact-patch-dev-postgres-data`, no shared
+services, and the database accepts connections. Re-prove every fact before the
+first mutation.
 
 ## Scope
 

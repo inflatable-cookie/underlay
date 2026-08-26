@@ -261,8 +261,8 @@ Shared harness findings:
   schema cannot isolate the fixed named schema sets used by all six apps
 - app-local DB fixtures are justified until a generic multi-schema or
   database-per-test design is selected
-- `TestServer` fits repeated direct Axum route-test mechanics but has no
-  consumer proof
+- `TestServer` now has one bounded Underlay Reference health-route proof; no
+  fleet-wide rewrite is implied
 - `createMockHttpClient()` now proves structural compatibility by extending the
   exported `HttpClient`; the remaining consumer cast cleanup belongs to
   `g09.043`
@@ -272,6 +272,6 @@ See
 
 ## Next Task
 
-Execute the ready `g09.038` Underlay Reference proof. Keep whole-app DB-harness
+Dispatch ready consumer roadmaps `g09.039`–`g09.043`. Keep whole-app DB-harness
 design behind the `g09.044` operator decision; no fixed-schema consumer rewrite
 is implied.

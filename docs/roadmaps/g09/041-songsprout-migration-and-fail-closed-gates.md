@@ -1,6 +1,6 @@
 # g09.041 - Songsprout Migration And Fail-Closed Gates
 
-Status: planned
+Status: ready
 Owner: Songsprout maintainers
 Contracts: `021-database-migration-and-schema-workflow.md`,
 `022-testing-posture-and-shared-harnesses.md`
@@ -14,9 +14,15 @@ and connect the existing Greenhouse and Bloom workflow suites to merge proof.
 
 ## Promotion Gate
 
-- `g09.038` is complete
-- Songsprout `main` is current
-- a disposable local PostgreSQL target is available and positively identified
+- [x] `g09.038` is complete
+- [x] Songsprout `main` is current at `618a5323571fcb2db8f4fac82a42a0b469274d4e`
+- [x] a disposable local PostgreSQL target is available and positively identified
+
+Readiness checked 2026-08-26: system `songsprout-dev`, container
+`songsprout-dev-postgres-1`, database `songsprout`, user `postgres`, host binding
+`127.0.0.1:52732`, volume `songsprout-dev-postgres-data`, no shared services,
+and the database accepts connections. Re-prove every fact before the first
+mutation because the allocated loopback port may change after stack recreation.
 
 ## Scope
 

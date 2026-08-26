@@ -19,6 +19,7 @@ Owner: repo maintainers
 
 ## Next Task
 
-Execute `g09.038` against its identified local-only database. Keep shared
-DB-harness design behind the `g09.044` operator decision and keep
-minimum-posture packages out of speculative test rewrites.
+Execute ready consumer roadmaps `g09.039`–`g09.043` in isolated parallel lanes
+against only their identified local state boundaries. Keep shared DB-harness
+design behind the `g09.044` operator decision and keep minimum-posture packages
+out of speculative test rewrites.

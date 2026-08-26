@@ -1,12 +1,13 @@
 # g09.038 - Underlay Reference Migration And Test Proof
 
-Status: ready
+Status: complete
 Owner: Underlay Reference maintainers
 Contracts: `021-database-migration-and-schema-workflow.md`,
 `022-testing-posture-and-shared-harnesses.md`,
 `023-release-and-compatibility-rollout.md`
 Found by: `g09.035`, `g09.036`
 Depends on: `g09.037`
+Completed: 2026-08-26
 
 ## Purpose
 
@@ -32,18 +33,18 @@ volume.
 
 ## Goals
 
-- [ ] establish the baseline root-state and package migration interface
-- [ ] prove from-empty application, replay, and fail-closed dev overlays
-- [ ] restore the API health minimum and prove one shared `TestServer` slice
+- [x] establish the baseline root-state and package migration interface
+- [x] prove from-empty application, replay, and fail-closed dev overlays
+- [x] restore the API health minimum and prove one shared `TestServer` slice
 
 ## Execution Plan
 
-- [ ] cut root state orchestration and package migration selectors over as one
+- [x] cut root state orchestration and package migration selectors over as one
   task-interface batch
-- [ ] run the from-empty state apply and package replay proof against the
+- [x] run the from-empty state apply and package replay proof against the
   positively identified local database
-- [ ] add the API health baseline and one bounded `TestServer` route-test proof
-- [ ] update workflow docs, run the full reference gates, and record closeout
+- [x] add the API health baseline and one bounded `TestServer` route-test proof
+- [x] update workflow docs, run the full reference gates, and record closeout
 
 ## Scope
 
@@ -63,13 +64,13 @@ volume.
 
 ## Acceptance Criteria
 
-- [ ] root state plan names the schema and dev-overlay work in application order
-- [ ] local state apply from empty reaches the same declared baseline as the
+- [x] root state plan names the schema and dev-overlay work in application order
+- [x] local state apply from empty reaches the same declared baseline as the
   package reset/replay task
-- [ ] dev-overlay failure makes reset/state apply fail
-- [ ] no active task or guide advertises `db:migrate`, `db:reset`, or `db:drop`
-- [ ] API health includes a cheap Cargo build/check baseline
-- [ ] one representative route test uses `TestServer`; no app-local state/auth
+- [x] dev-overlay failure makes reset/state apply fail
+- [x] no active task or guide advertises `db:migrate`, `db:reset`, or `db:drop`
+- [x] API health includes a cheap Cargo build/check baseline
+- [x] one representative route test uses `TestServer`; no app-local state/auth
   fixture moves into Underlay
 
 ## Validation
@@ -99,7 +100,24 @@ or fixed-schema isolation.
   selectors; remove any local automation that calls `db:*`
 - Compatibility window: none; retired aliases must not survive the cutover
 
+## Completion Evidence
+
+- Underlay Reference PR
+  [#4](https://github.com/inflatable-cookie/underlay-reference/pull/4)
+  merged as `854e5ad2f9d4a7c62277447b6686bacb166516e7` from reviewed head
+  `fc83785244b1635a2d620f3ed0344bea37869079`.
+- Exact clean-shell `effigy state apply local --yes` completed the ordered
+  `reset -> structure -> dev-overlay` lineage in the PR worktree.
+- From-empty, replay, and forced-overlay-failure proof stayed inside database
+  `acme` on the loopback-only `underlay-reference-dev` system.
+- `effigy test --plan` selected the three real test targets after the empty
+  Acme Front Vitest suite became non-default.
+- Independent `effigy validate`, `effigy qa`, API Rust tests, admin/client
+  Vitest suites, Svelte checks/builds, docs checks, retired-selector search,
+  and `git diff --check` passed.
+- The merged target execution log is
+  `underlay-reference/docs/logs/2026-08/26-184058-g09-038-migration-and-test-proof.md`.
+
 ## Next Task
 
-After this proof merges, promote `g09.039`–`g09.043` as independent consumer
-lanes.
+Dispatch ready roadmaps `g09.039`–`g09.043` as five independent consumer lanes.

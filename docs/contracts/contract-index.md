@@ -98,5 +98,5 @@ Do not promote a system into active implementation-assessment work until:
 
 ## Next Task
 
-Execute `g09.038`, the Underlay Reference proof. See
-[`docs/roadmaps/g09/README.md`](../roadmaps/g09/README.md).
+Dispatch ready consumer roadmaps `g09.039`–`g09.043` as isolated parallel
+lanes. See [`docs/roadmaps/g09/README.md`](../roadmaps/g09/README.md).

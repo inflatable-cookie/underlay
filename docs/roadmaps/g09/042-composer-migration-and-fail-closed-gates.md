@@ -1,6 +1,6 @@
 # g09.042 - Composer Migration And Fail-Closed Gates
 
-Status: planned
+Status: ready
 Owner: Composer maintainers
 Contracts: `021-database-migration-and-schema-workflow.md`,
 `022-testing-posture-and-shared-harnesses.md`
@@ -14,9 +14,15 @@ overlay in replay, and connect its current API/admin proof to the merge gate.
 
 ## Promotion Gate
 
-- `g09.038` is complete
-- Composer `main` is current
-- a disposable local PostgreSQL target is available and positively identified
+- [x] `g09.038` is complete
+- [x] Composer `main` is current at `153b47afa68b61aaaf7e64daa6d79ac0be566343`
+- [x] a disposable local PostgreSQL target is available and positively identified
+
+Readiness checked 2026-08-26: system `loophole-composer-dev`, container
+`loophole-composer-dev-postgres-1`, database `composer`, user `postgres`, host
+binding `127.0.0.1:58832`, volume `loophole-composer-dev-postgres-data`, no
+shared services, and the database accepts connections. Re-prove every fact
+before the first mutation.
 
 ## Scope
 

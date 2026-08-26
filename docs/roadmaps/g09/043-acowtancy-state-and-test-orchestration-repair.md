@@ -1,6 +1,6 @@
 # g09.043 - Acowtancy State And Test Orchestration Repair
 
-Status: planned
+Status: ready
 Owner: Acowtancy maintainers
 Contracts: `021-database-migration-and-schema-workflow.md`,
 `022-testing-posture-and-shared-harnesses.md`
@@ -14,11 +14,19 @@ API proof baseline, and remove the live shared-mock compatibility cast.
 
 ## Promotion Gate
 
-- `g09.037` and `g09.038` are complete
-- Acowtancy `main` is current
-- a disposable local PostgreSQL target and disposable artifact workspace are
+- [x] `g09.037` and `g09.038` are complete
+- [x] Acowtancy `main` is current at `3cdd5efe4f8e58e52618935bb73b419656faa481`
+- [x] a disposable local PostgreSQL target and disposable artifact workspace are
   available and positively identified
-- the canonical local seed bundle is available through the declared state path
+- [x] the canonical local seed bundle is available through the declared state path
+
+Readiness checked 2026-08-26: system `acowtancy-dev`, container
+`acowtancy-dev-postgres-1`, database `acowtancy`, user `postgres`, host binding
+`127.0.0.1:22432`, volume `acowtancy-dev-postgres-data`, and no shared services;
+the database accepts connections. `effigy state plan local` resolves the pinned
+canonical spine digest `sha256:79d0165f4477...`, and an independent registry
+manifest fetch succeeds. Re-prove database, artifact workspace, and exact digest
+before the first mutation.
 
 ## Scope
 

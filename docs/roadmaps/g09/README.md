@@ -64,14 +64,15 @@ assessments. Both later assessments found bounded drift.
 1. repair Underlay's health gate and TypeScript mock contract (`g09.037`,
    complete)
 2. prove the baseline migration and `TestServer` posture in Underlay Reference
-   (`g09.038`)
+   (`g09.038`, complete)
 3. run the five repository-owned consumer repairs independently after the
-   reference proof (`g09.039`–`g09.043`)
+   reference proof (`g09.039`–`g09.043`, ready in parallel)
 4. close fleet evidence and settle the whole-app `TestDb` ownership decision
    (`g09.044`)
 
-Only `g09.038` is ready. Its target branch and local-only disposable PostgreSQL
-boundary are positively identified.
+`g09.038` merged in Underlay Reference PR4. `g09.039`–`g09.043` are now ready
+as five independent lanes with clean current target roots and positively
+identified repo-owned local state boundaries.
 
 ### Phase 6 — Bootstrap/runtime assessment (`g09.045`, planned)
 
@@ -117,12 +118,12 @@ family. Repair roadmaps are not pre-numbered; they must come from the evidence.
 35. [x] [`g09.035`](035-database-migration-contract-assessment.md) — database migration assessment (`complete`; `drifting`)
 36. [x] [`g09.036`](036-testing-posture-contract-assessment.md) — testing-posture assessment (`complete`; `drifting`)
 37. [x] [`g09.037`](037-underlay-test-gate-and-mock-contract.md) — Underlay test gate and mock contract (`complete`)
-38. [ ] [`g09.038`](038-underlay-reference-migration-and-test-proof.md) — Underlay Reference migration and test proof (`ready`)
-39. [ ] [`g09.039`](039-contact-patch-migration-rollout.md) — Contact Patch migration rollout (`planned`; after `g09.038`)
-40. [ ] [`g09.040`](040-compli-me-migration-and-workflow-gate.md) — Compli Me migration and workflow gate (`planned`; after `g09.038`)
-41. [ ] [`g09.041`](041-songsprout-migration-and-fail-closed-gates.md) — Songsprout migration and fail-closed gates (`planned`; after `g09.038`)
-42. [ ] [`g09.042`](042-composer-migration-and-fail-closed-gates.md) — Composer migration and fail-closed gates (`planned`; after `g09.038`)
-43. [ ] [`g09.043`](043-acowtancy-state-and-test-orchestration-repair.md) — Acowtancy state and test orchestration repair (`planned`; after `g09.038`)
+38. [x] [`g09.038`](038-underlay-reference-migration-and-test-proof.md) — Underlay Reference migration and test proof (`complete`)
+39. [ ] [`g09.039`](039-contact-patch-migration-rollout.md) — Contact Patch migration rollout (`ready`; parallel lane)
+40. [ ] [`g09.040`](040-compli-me-migration-and-workflow-gate.md) — Compli Me migration and workflow gate (`ready`; parallel lane)
+41. [ ] [`g09.041`](041-songsprout-migration-and-fail-closed-gates.md) — Songsprout migration and fail-closed gates (`ready`; parallel lane)
+42. [ ] [`g09.042`](042-composer-migration-and-fail-closed-gates.md) — Composer migration and fail-closed gates (`ready`; parallel lane)
+43. [ ] [`g09.043`](043-acowtancy-state-and-test-orchestration-repair.md) — Acowtancy state and test orchestration repair (`ready`; parallel lane)
 44. [ ] [`g09.044`](044-migration-testing-fleet-closeout.md) — migration/testing fleet closeout (`planned`; after `g09.039`–`g09.043`)
 45. [ ] [`g09.045`](045-bootstrap-and-runtime-contract-assessment.md) — bootstrap and runtime contract assessment (`planned`; after `g09.044`)
 
@@ -137,10 +138,9 @@ Deferred with a promotion trigger (TypeScript 7.1 or concrete need):
   confirmed findings.
 - `g09.035` and `g09.036` were serial because migration ownership informed the
   testing verdict.
-- `g09.037` is complete. `g09.038` is ready against its positively identified
-  local-only database boundary.
-- `g09.039`–`g09.043` may run in parallel only after the Underlay Reference
-  proof in `g09.038` merges.
+- `g09.037` and `g09.038` are complete.
+- `g09.039`–`g09.043` are ready and may run in parallel. Their repository,
+  state, and destructive-mutation boundaries do not overlap.
 - `g09.044` waits for all five consumer roadmaps.
 - `g09.045` waits for repair-wave closeout and remains assessment-only.
 - No shared whole-app DB harness roadmap may be added until the operator chooses
@@ -157,13 +157,14 @@ Deferred with a promotion trigger (TypeScript 7.1 or concrete need):
 
 ## Consumer Upgrade Impact
 
-`g09.037` completed compatible Underlay test-contract hardening. `g09.038`–`g09.042`
-cut the five baseline consumers from retired package `db:*` selectors to root
-state plan/apply plus routed `migration:*` tasks with no compatibility window.
-Songsprout and Composer also correct fail-open local dev overlays. `g09.043`
-repairs Acowtancy local state application and merge-gate reachability.
+`g09.037` completed compatible Underlay test-contract hardening. `g09.038`
+completed the reference proof. `g09.039`–`g09.042` cut the remaining baseline
+consumers from retired package `db:*` selectors to root state plan/apply plus
+routed `migration:*` tasks with no compatibility window. Songsprout and Composer
+also correct fail-open local dev overlays. `g09.043` repairs Acowtancy local
+state application and merge-gate reachability.
 
 ## Next Task
 
-Execute `g09.038` in Underlay Reference. Do not start `g09.039`–`g09.043`
-before the reference proof merges.
+Dispatch `g09.039`–`g09.043` as five isolated parallel worker/PR lanes. Keep
+`g09.044` blocked until every consumer PR is reviewed and merged.

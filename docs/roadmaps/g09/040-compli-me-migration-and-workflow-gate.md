@@ -1,6 +1,6 @@
 # g09.040 - Compli Me Migration And Workflow Gate
 
-Status: planned
+Status: ready
 Owner: Compli Me maintainers
 Contracts: `021-database-migration-and-schema-workflow.md`,
 `022-testing-posture-and-shared-harnesses.md`
@@ -14,9 +14,15 @@ workflow proof to the normal merge gate.
 
 ## Promotion Gate
 
-- `g09.038` is complete
-- Compli Me `main` is current
-- a disposable local PostgreSQL target is available and positively identified
+- [x] `g09.038` is complete
+- [x] Compli Me `main` is current at `240dce062ef5f0817b34caffaf7743542337d45a`
+- [x] a disposable local PostgreSQL target is available and positively identified
+
+Readiness checked 2026-08-26: system `compli-me-dev`, container
+`compli-me-dev-postgres-1`, database `compli_me`, user `postgres`, host binding
+`127.0.0.1:22132`, volume `compli-me-dev-postgres-data`, no shared services,
+and the database accepts connections. Re-prove every fact before the first
+mutation.
 
 ## Scope
 

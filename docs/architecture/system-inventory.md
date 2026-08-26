@@ -130,5 +130,5 @@ Every system should pass through the same loop:
 
 ## Next Task
 
-Execute `g09.038`, the Underlay Reference migration/testing proof. See
-[`docs/roadmaps/g09/README.md`](../roadmaps/g09/README.md).
+Dispatch ready consumer roadmaps `g09.039`–`g09.043` as isolated parallel
+lanes. See [`docs/roadmaps/g09/README.md`](../roadmaps/g09/README.md).

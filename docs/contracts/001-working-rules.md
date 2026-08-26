@@ -65,12 +65,13 @@ Underlay is in sequential mode:
 - `g09.035` is complete
 - `g09.036` is complete
 - `g09.037` is complete
-- `g09.038` is ready against a positively identified local-only database
-- `g09.039`–`g09.044` are planned behind explicit reference, consumer, and
-  closeout gates
+- `g09.038` is complete
+- `g09.039`–`g09.043` are ready as independent consumer lanes with positively
+  identified local-only state boundaries
+- `g09.044` is planned behind all five merged consumer proofs
 - `g09.045` is the planned post-repair assessment; it is not ready
 
 ## Next Task
 
-Execute `g09.038`. Do not promote the five consumer lanes before the reference
-proof merges.
+Dispatch `g09.039`–`g09.043` as isolated parallel worker/PR lanes. Do not
+promote `g09.044` before all five consumer proofs merge.

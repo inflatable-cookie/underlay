@@ -349,5 +349,5 @@ Other system families own:
 
 ## Next Task
 
-Execute the ready `g09.038` reference migration/testing proof. Do not change the
-Rust DB harness boundary without the recorded decision prototype.
+Dispatch ready consumer roadmaps `g09.039`–`g09.043`. Do not change the Rust DB
+harness boundary without the `g09.044` operator decision.
