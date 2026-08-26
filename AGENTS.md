@@ -13,6 +13,8 @@
 - Treat `docs/roadmaps/README.md` and `docs/roadmaps/generation-index.md` as
   the live queue authority when active shared-surface or consumer-normalization
   work is in flight.
+- Treat numbered files directly under the active generation as the roadmap
+  queue. Strict batch cards may refine a roadmap but never replace that queue.
 - Treat `docs/architecture/product-guardrails.md`,
   `docs/contracts/001-working-rules.md`, and `docs/specs/` as the strict
   control pack for the active lane.
@@ -57,7 +59,7 @@ effigy test --plan
 - `./docs/contracts/001-working-rules.md`
 - `./docs/roadmaps/README.md`
 - `./docs/roadmaps/generation-index.md`
-- `./docs/roadmaps/g10/README.md`
+- `./docs/roadmaps/g09/README.md`
 - `./docs/guides/README.md`
 - `./docs/guides/000-overview.md`
 - `./docs/guides/172-agents-files.md`

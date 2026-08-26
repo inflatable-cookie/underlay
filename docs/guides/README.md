@@ -201,7 +201,7 @@ my-project/
 ```
 
 `acowtancy` is the live proof of this shape. `underlay-reference` is the
-bootstrap fixture and converges on it in `g10.005`.
+bootstrap fixture and converges on it in `g09.025`.
 
 ## Research
 

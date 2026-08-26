@@ -113,12 +113,12 @@ Reusable templates:
   - Acowtancy is the live reference workspace
   - Underlay Reference is the bootstrap fixture
   - Contact Patch, Compli Me, Songsprout, and Composer completed the same
-    migration in `g10.006`–`g10.010`
+    migration in `g09.026`–`g09.030`
 - Changed guidance:
   - [contract 024](../contracts/024-new-app-bootstrap-and-bring-up.md)
   - [project structure](./020-project-structure.md)
   - [Underlay integration](./030-underlay-integration.md)
-  - [fleet closeout](../logs/2026-08/26-151525-g10-006-010-fleet-closeout.md)
+  - [fleet closeout](../logs/2026-08/26-151525-g09-026-030-fleet-closeout.md)
 
 ### TS Runtime And Workflow Boundary Hardening (`2026-06-06`)
 
@@ -711,7 +711,7 @@ Reusable templates:
 - Affected consumers: older apps that previously adopted Underlay `DataSkeleton`
 - Required actions:
   - replace Underlay `DataSkeleton` usage with direct Poodle `Skeleton` composition
-  - use the built-in Poodle presets (`table-row`, `card`, `list-item`, `detail-section`, `avatar-line`) where they fit
+  - use the built-in Poodle presets (`table-row`, `roadmap`, `list-item`, `detail-section`, `avatar-line`) where they fit
   - keep app-specific loading markup local instead of depending on a shared Underlay preset registry
 - Validation:
   - `effigy validate`

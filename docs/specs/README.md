@@ -12,7 +12,9 @@ Specs hold active Underlay planning and strict execution-control surfaces.
 - archive or remove stale specs once the durable outcome is carried elsewhere
 - before roadmap generation rollover in sequential mode, purge stale
   generation-specific specs from the active tree
-- batch cards now live under `docs/roadmaps/gNN/batch-cards/`
+- roadmap files live directly under `docs/roadmaps/gNN/`
+- optional strict batch cards may refine a roadmap under `gNN/batch-cards/`,
+  but they do not replace the roadmap queue
 
 ## Active Spec Set
 
@@ -22,5 +24,5 @@ Specs hold active Underlay planning and strict execution-control surfaces.
 
 ## Next Task
 
-Execute `g10.017`. Add a strict spec only if the `g10.024` DB-harness decision
+Execute `g09.037`. Add a strict spec only if the `g09.044` DB-harness decision
 selects a new durable shared boundary.

@@ -205,10 +205,10 @@ Assessment state:
   `ValidationError` internals to `error.fieldErrors: Record<string, string>`,
   invalid JSON uses the same canonical error DTO, and empty validation field
   maps are omitted.
-- `g10.011` confirmed UUIDs, base success/error envelopes, TypeScript types,
+- `g09.031` confirmed UUIDs, base success/error envelopes, TypeScript types,
   OpenAPI primitive schemas, and validation normalization match this contract.
-- `g10.012` normalized shared request-context rejections through
-  `ErrorEnvelope`. No confirmed foundation repair remains from `g10.011`.
+- `g09.032` normalized shared request-context rejections through
+  `ErrorEnvelope`. No confirmed foundation repair remains from `g09.031`.
 
 The repair does not widen the primitive model.
 
@@ -226,4 +226,4 @@ Use this contract to judge later implementation work:
 ## Next Task
 
 Foundation assessment and bounded repair are complete. Continue through the
-active `g10` queue at [`g10/README.md`](../roadmaps/g10/README.md).
+active `g09` queue at [`g09/README.md`](../roadmaps/g09/README.md).

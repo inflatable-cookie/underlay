@@ -202,7 +202,7 @@ packages — they arrive as released dependencies.
 `underlay-reference` remains the bootstrap fixture and carries the Acme example
 stack (Rust backend, TypeScript client, admin and public SvelteKit frontends,
 shared UI package). Its physical layout has not converged on this contract yet;
-`g10.005` normalizes it. Read it for component-level patterns, not for workspace
+`g09.025` normalizes it. Read it for component-level patterns, not for workspace
 topology.
 
 For bootstrapping a new project, follow

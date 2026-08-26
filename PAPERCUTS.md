@@ -5,6 +5,12 @@ they hit a solvable hurdle; they do not stop the current task to fix one.
 
 ## Open
 
+### [ ] Auth architecture links target retired crate paths — 2026-08-26
+- Friction: the broad docs link check finds `docs/architecture/050-auth-database-schema.md` links to removed `underlay-auth` migration and `types.rs` paths
+- Impact: full-tree link validation fails before it can isolate planning-authority changes
+- Possible fix: repoint the schema/type references to the current auth crate owners or convert them to historical prose
+- Surface: auth architecture docs / docs link QA
+
 ### [ ] Northstar compile-roadmaps references a missing batch-card template — 2026-08-26
 - Friction: compile-roadmaps requires the installed `docs/specs/templates/batch-card-template.md`, but the Northstar assets package only lists that path in its README and does not contain the file
 - Impact: roadmap compilation must infer the readiness fields from existing project cards instead of the declared canonical template

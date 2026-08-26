@@ -309,12 +309,12 @@ Resolved assessment:
   foundation contract. `ValidatedJsonRejection` now returns the canonical
   `ErrorEnvelope` for malformed JSON and validation failures, with optional
   `error.fieldErrors` only when field-scoped feedback exists.
-- `g10.012` normalized request-context extractor rejections through the
+- `g09.032` normalized request-context extractor rejections through the
   canonical error envelope.
-- `g10.013` aligned OpenAPI with raw `PageList<T>.has_more`, preserved
+- `g09.033` aligned OpenAPI with raw `PageList<T>.has_more`, preserved
   `PagedListResponse<T>.hasMore` as the TypeScript client boundary, and fixed
   the architecture attribution of the flat paged shape.
-- `g10.014` replaced unbounded infallible-constructor fallbacks with a
+- `g09.034` replaced unbounded infallible-constructor fallbacks with a
   timeout-bounded Rust HTTP client fallback while preserving the fallible
   constructor family and external SSRF profile.
 
@@ -333,11 +333,11 @@ HTTP statuses; network failures and timeout aborts are normalized to
 `UnderlayHttpError(0)` without retry. Timeout protection is also limited to
 idempotent methods.
 
-`g10.011` confirmed the declared query vocabulary for valid inputs, pagination
+`g09.031` confirmed the declared query vocabulary for valid inputs, pagination
 defaults, UUID path parsing, trusted-proxy resolution, cookies, browser HTTP
 behavior, CORS, in-process cache helpers, server config, and CSP helpers.
 
-No confirmed foundation or transport repair hooks remain from `g10.011`.
+No confirmed foundation or transport repair hooks remain from `g09.031`.
 
 Material ambiguity remains for invalid filter operators. Rust accepts symbolic
 aliases and falls back unknown operators to equality; TypeScript casts
@@ -358,4 +358,4 @@ Use this contract to judge later implementation work:
 ## Next Task
 
 Transport assessment and bounded repairs are complete. Continue through the
-active `g10` queue at [`g10/README.md`](../roadmaps/g10/README.md).
+active `g09` queue at [`g09/README.md`](../roadmaps/g09/README.md).

@@ -37,4 +37,4 @@ Completed 2026-08-03. Baseline bumped in all packages: kit 2.70.2, svelte 5.56.8
 
 ## Next Task
 
-Generation closeout or `g10` scoping (maintainer direction).
+Continue with `g09.017`; the generation remains active.

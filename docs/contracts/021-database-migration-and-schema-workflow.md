@@ -264,9 +264,9 @@ Rules:
 
 ## Assessment State
 
-`g10.015` assessed the current Underlay implementation and all six consumer
+`g09.035` assessed the current Underlay implementation and all six consumer
 workspaces on 2026-08-26. Full evidence is in
-[`g10.015 - Database Migration Contract Assessment`](../logs/2026-08/26-162845-g10-015-database-migration-assessment.md).
+[`g09.035 - Database Migration Contract Assessment`](../logs/2026-08/26-162845-g09-035-database-migration-assessment.md).
 
 Verdict: `drifting`.
 
@@ -289,7 +289,7 @@ Confirmed drift:
 - Songsprout and Composer can continue after dev-overlay failure; Composer's
   reset omits its committed dev overlay
 
-These are implementation gaps, not a contract-policy split. Repair cards remain
+These are implementation gaps, not a contract-policy split. Repair roadmaps remain
 deferred until the testing assessment closes so the two evidence sets can
 compile into one bounded wave.
 
@@ -322,6 +322,6 @@ Bad outcomes:
 
 ## Next Task
 
-Execute `g10.017`, then prove this contract's baseline migration shape in
-Underlay Reference through `g10.018`. Keep DB-harness design behind the
-`g10.024` operator decision.
+Execute `g09.037`, then prove this contract's baseline migration shape in
+Underlay Reference through `g09.038`. Keep DB-harness design behind the
+`g09.044` operator decision.

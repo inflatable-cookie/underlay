@@ -30,9 +30,9 @@ Live workspace evidence:
   `apps/cream`, `apps/dairy`, `apps/farmyard`, `packages/cattle-grid`,
   `packages/froyo`, root `docs/`, one root Bun manifest and lockfile, internal
   `workspace:*` edges, and released Underlay/Poodle dependencies.
-- `underlay-reference` — the conformant bootstrap fixture after `g10.005`.
+- `underlay-reference` — the conformant bootstrap fixture after `g09.025`.
 - `contact-patch`, `compli-me`, `songsprout`, `loophole/composer` — consumers
-  normalized and independently checked through `g10.006`–`g10.010`.
+  normalized and independently checked through `g09.026`–`g09.030`.
 
 Supporting shared contracts:
 

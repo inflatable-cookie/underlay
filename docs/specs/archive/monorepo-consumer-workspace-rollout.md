@@ -2,7 +2,7 @@
 
 Status: complete
 Owner: repo maintainers
-Roadmap: `g10`
+Roadmap: `g09`
 Authority mode: strict
 
 ## Outcome
@@ -78,10 +78,10 @@ Acowtancy is the current live proof:
 - one `bun install --frozen-lockfile` Effigy setup task;
 - released Underlay and Poodle application dependencies.
 
-`g10.004` corrected its active README and AGENTS evidence without changing
+`g09.024` corrected its active README and AGENTS evidence without changing
 manifests, locks, or application dependencies.
 
-Underlay Reference remains the bootstrap fixture. `g10.005` makes its physical
+Underlay Reference remains the bootstrap fixture. `g09.025` makes its physical
 shape match the contract before the remaining consumers migrate.
 
 ## Starting Fleet Baseline
@@ -100,22 +100,22 @@ one lockfile, and internal workspace edges.
 
 ## Runway
 
-1. `g10.001` — normative contract and front-door authority.
-2. `g10.002` — migration contract and active guide normalization.
-3. `g10.003` — consumer workspace-shape conformance check.
-4. `g10.004` — Acowtancy evidence correction.
-5. `g10.005` — Underlay Reference normalization.
-6. `g10.006` — Contact Patch normalization.
-7. `g10.007` — Compli Me normalization.
-8. `g10.008` — Songsprout normalization.
-9. `g10.009` — Composer normalization.
-10. `g10.010` — six-consumer proof and distribution closeout.
+1. `g09.021` — normative contract and front-door authority.
+2. `g09.022` — migration contract and active guide normalization.
+3. `g09.023` — consumer workspace-shape conformance check.
+4. `g09.024` — Acowtancy evidence correction.
+5. `g09.025` — Underlay Reference normalization.
+6. `g09.026` — Contact Patch normalization.
+7. `g09.027` — Compli Me normalization.
+8. `g09.028` — Songsprout normalization.
+9. `g09.029` — Composer normalization.
+10. `g09.030` — six-consumer proof and distribution closeout.
 
-`g10.001`–`g10.005` are serial. After `g10.005`, `g10.006`–`g10.009` may run
+`g09.021`–`g09.025` are serial. After `g09.025`, `g09.026`–`g09.029` may run
 in parallel because they own separate repositories and have no shared mutable
-files. `g10.010` waits for all consumer PRs.
+files. `g09.030` waits for all consumer PRs.
 
-All ten cards are complete. This sequencing is retained as delivery history.
+All ten roadmaps are complete. This sequencing is retained as delivery history.
 
 ## Migration Rules
 
@@ -158,15 +158,15 @@ Pause the active worker and return to the orchestrator if:
 - Bun cannot resolve the workspace with one frozen root lock;
 - committed source dependencies are required for runtime correctness;
 - an Effigy catalog cannot represent the new paths without a contract change;
-- validation exposes unrelated application behavior that would widen the card.
+- validation exposes unrelated application behavior that would widen the roadmap.
 
 ## Closeout Evidence
 
-`g10.010` checked the published workspace-shape tool against current `main` for
+`g09.030` checked the published workspace-shape tool against current `main` for
 Acowtancy, Underlay Reference, Contact Patch, Compli Me, Songsprout, and
 Composer. All six passed. The exact SHAs and consumer PRs are recorded in
-`docs/logs/2026-08/26-151525-g10-006-010-fleet-closeout.md`.
+`docs/logs/2026-08/26-151525-g09-026-030-fleet-closeout.md`.
 
 ## Next Task
 
-Execute `g10.011`, the foundation and transport contract assessment.
+Execute `g09.031`, the foundation and transport contract assessment.

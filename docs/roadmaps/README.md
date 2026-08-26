@@ -31,9 +31,10 @@ Roadmaps are executable delivery plans for Underlay library work.
 
 ## Layout
 
-- `gNN/` generation milestones
-- `gNN/batch-cards/` generation-local execution cards when that generation uses
-  strict posture
+- `gNN/README.md` generation front door
+- `gNN/NNN-<slug>.md` executable roadmap files
+- `gNN/batch-cards/` optional strict-spec decomposition; batch cards may refine
+  a roadmap but never replace the generation roadmap queue
 - `generation-index.md` active generation mode and history
 - `backlog/` deferred items with promotion criteria
 
@@ -47,30 +48,29 @@ README surfaces.
 
 ## Mode
 
-- `parallel`
+- `sequential`
 
 ## Active generation
 
-- `g10` - Contract Fidelity And Fleet Convergence ([front door](g10/README.md))
+- `g09` - Config Convergence And Contract Fidelity ([front door](g09/README.md))
 
 ## Current Queue
 
-`g09` is complete: all 20 cards done
-([`g09/README.md`](g09/README.md)). Config convergence, dependency upgrades,
-and elective majors landed 2026-08-04.
-
-`g10.001`–`g10.010` completed the strict monorepo consumer-workspace rollout
-across the six-consumer family. `g10.011` completed the foundation and transport
-assessment. `g10.012` normalized request-context rejection envelopes, and
-`g10.013` synchronized the page-list contract artifacts. `g10.014` completed the
-bounded HTTP-client fallback repair. `g10.015` and `g10.016` completed the
+`g09.001`–`g09.020` completed config convergence, dependency upgrades, and
+elective majors. `g09.021`–`g09.030` completed the strict monorepo
+consumer-workspace rollout
+across the six-consumer family. `g09.031` completed the foundation and transport
+assessment. `g09.032` normalized request-context rejection envelopes, and
+`g09.033` synchronized the page-list contract artifacts. `g09.034` completed the
+bounded HTTP-client fallback repair. `g09.035` and `g09.036` completed the
 migration/testing assessments with `drifting` verdicts. Their bounded repair
-wave is compiled as `g10.017`–`g10.024`; only `g10.017` is ready. See
-[`g10/README.md`](g10/README.md).
+wave is planned as `g09.037`–`g09.044`; only `g09.037` is ready. `g09.045`
+records the next bootstrap/runtime assessment and remains planned. See
+[`g09/README.md`](g09/README.md).
 
 ## Archived generations
 
-Closed generations `g01`-`g09` are **frozen archival record**, not active
+Closed generations `g01`-`g08` are **frozen archival record**, not active
 navigation. Enter them only via
 [`generation-index.md`](generation-index.md), which is the authoritative history.
 Do not open new work in a closed generation.
@@ -85,4 +85,4 @@ that risk.
 
 ## Next Task
 
-Execute `g10.017`, the Underlay test-gate and mock-contract repair.
+Execute `g09.037`, the Underlay test-gate and mock-contract roadmap.

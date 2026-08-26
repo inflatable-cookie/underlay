@@ -65,7 +65,7 @@ check = "cd {repo} && bun x svelte-check --tsconfig ./ts/tsconfig.json"
 "test:ui" = "cd {repo} && bun x vitest --ui {args}"
 "test:components" = "cd {repo} && bun x vitest run -c vitest.component.config.ts {args}"
 
-"qa:docs:links" = "cd {repo} && effigy docs check links README.md docs/README.md docs/vision/README.md docs/vision/001-underlay-foundation-vision.md docs/roadmaps/README.md docs/roadmaps/g01/README.md docs/roadmaps/g08/README.md docs/logs/README.md docs/guides/README.md"
+"qa:docs:links" = "cd {repo} && effigy docs check links README.md docs/README.md docs/vision/README.md docs/vision/001-underlay-foundation-vision.md docs/roadmaps/README.md docs/roadmaps/g01/README.md docs/roadmaps/g08/README.md docs/roadmaps/g09/README.md docs/logs/README.md docs/guides/README.md"
 "qa:docs:index:vision" = "cd {repo} && effigy docs check index --policy-index vision"
 "qa:docs:agent-defaults" = "cd {repo} && effigy docs check forbidden AGENTS.md README.md package.json docs/README.md docs/guides/README.md --forbid '--repo .'"
 "qa:docs:vision:next-action" = "cd {repo} && effigy docs check next-action --policy vision"
@@ -79,10 +79,12 @@ check = "cd {repo} && bun x svelte-check --tsconfig ./ts/tsconfig.json"
 "qa:northstar:vision" = "cd {repo} && effigy docs check headings docs/vision/001-underlay-foundation-vision.md --require-heading '## Long-Term Outcome' --require-heading '## Core Platform Behaviors' --require-heading '## Strategic Constraints' --require-heading '## Longer-Term Focus' --require-heading '## Next Task'"
 "qa:northstar:roadmaps" = "cd {repo} && effigy docs check headings docs/roadmaps/README.md --require-heading '## Rules' --require-heading '## Active generation' --require-heading '## Current Queue' --require-heading '## Next Task'"
 "qa:northstar:g01" = "cd {repo} && effigy docs check headings docs/roadmaps/g01/README.md --require-heading '## Current Generation' --require-heading '## Historical Language Boundary' --require-heading '## Next Task'"
+"qa:northstar:g09" = "cd {repo} && effigy docs check headings docs/roadmaps/g09/README.md --require-heading '## Current Generation' --require-heading '## Roadmap Sequence' --require-heading '## Queue' --require-heading '## Dependencies And Parallelism' --require-heading '## Next Task'"
 "qa:northstar" = [
     { task = "qa:northstar:vision" },
     { task = "qa:northstar:roadmaps" },
     { task = "qa:northstar:g01" },
+    { task = "qa:northstar:g09" },
 ]
 
 health = [

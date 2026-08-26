@@ -5,12 +5,12 @@ Updated: 2026-08-26
 
 ## Mode
 
-- `parallel`
+- `sequential`
 
 ## Active generations
 
-- [g10 - Contract Fidelity And Fleet Convergence](g10/README.md) (active;
-  contract fidelity and bounded repairs)
+- [g09 - Config Convergence And Contract Fidelity](g09/README.md) (active;
+  migration/testing repair and the planned contract-convergence runway)
 
 ## Generation log
 
@@ -23,13 +23,14 @@ Updated: 2026-08-26
 | `g05` | 2026-05-xx | Shared page, workflow template, and consumer capability generation | Closed after query-variant and consumer capability line |
 | `g06` | 2026-06-05 | Rust platform-contract transition after code-quality audit | Closed after the reference-grade reset, Rust hardening lane, six-consumer proof, upgrade-guidance closeout, and bounded stale-drift repairs |
 | `g07` | 2026-06-06 | Runtime, workflow, residual Rust policy, and doctor-warning hardening after `g06` closeout | Complete after `g07.037` doctor warning closeout |
-| `g08` | 2026-07-17 | Audit remediation after July 2026 deep audit (security edge, correctness bugs, Rust/TS structure, docs/versioning/i18n posture) | Complete - all 32 cards done; `v0.8.0` tagged |
-| `g09` | 2026-08-03 | Config-convergence follow-through after the 2026-08-03 self-audit; extended with dependency-upgrade and elective-majors cards | Complete - all 20 cards done |
-| `g10` | 2026-08-17 | Contract fidelity, collection convergence, and fleet drift prevention after `g09` closeout | Active - `g10.001`–`g10.016` complete; `g10.017` ready; `g10.018`–`g10.024` planned |
+| `g08` | 2026-07-17 | Audit remediation after July 2026 deep audit (security edge, correctness bugs, Rust/TS structure, docs/versioning/i18n posture) | Complete - all 32 roadmaps done; `v0.8.0` tagged |
+| `g09` | 2026-08-03 | Config-convergence follow-through; extended with dependency upgrades, consumer workspace convergence, and contract fidelity | Active - `g09.001`–`g09.036` complete; `g09.037` ready; `g09.038`–`g09.045` planned |
+
+The invalid `g10` rollover is not retained as a generation. Its completed and
+remaining work was recovered into `g09.021`–`g09.045` on 2026-08-26.
 
 ## Historical generations
 
-- [g09 - Config Convergence Follow-Through](g09/README.md) (complete)
 - [g08 - Audit Remediation And Edge Hardening](g08/README.md) (complete)
 - [g07 - Runtime, Workflow, And Doctor Warning Boundary Hardening](g07/README.md) (complete)
 - [g06 - Rust Platform Contract Transition](g06/README.md) (complete)
@@ -56,5 +57,5 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g10.017`, the Underlay test-gate and mock-contract repair. See
-[`g10/README.md`](g10/README.md).
+Execute `g09.037`, the Underlay test-gate and mock-contract roadmap. See
+[`g09/README.md`](g09/README.md).

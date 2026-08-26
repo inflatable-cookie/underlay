@@ -1,7 +1,7 @@
 # Monorepo Consumer Rollout Compiled
 
 Date: 2026-08-25
-Roadmap: `g10.001`–`g10.010`
+Roadmap: `g09.021`–`g09.030`
 
 ## Trigger
 
@@ -39,11 +39,11 @@ retired polyrepo support.
 ## Planning Outcome
 
 - Opened strict spec `docs/specs/monorepo-consumer-workspace-rollout.md`.
-- Compiled ten bounded cards under `docs/roadmaps/g10/batch-cards/`.
-- Marked only `g10.001` ready.
+- Compiled ten bounded roadmaps under `docs/roadmaps/g09/`.
+- Marked only `g09.021` ready.
 - Kept the authority, reference-fixture, and consumer dependency chain serial.
 - Allowed the four downstream consumer roots to run in parallel only after
-  `g10.005` merges.
+  `g09.025` merges.
 
 ## Consumer Upgrade Notes
 
@@ -54,5 +54,5 @@ surfaces atomically.
 
 ## Next Task
 
-Dispatch `g10.001` from the pushed orchestrator handoff and review its PR before
-promoting `g10.002`.
+Dispatch `g09.021` from the pushed orchestrator handoff and review its PR before
+promoting `g09.022`.

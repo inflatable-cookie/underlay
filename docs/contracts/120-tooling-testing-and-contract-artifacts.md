@@ -349,6 +349,6 @@ Other system families own:
 
 ## Next Task
 
-Use the `g10.016` evidence when compiling the combined migration/testing repair
+Use the `g09.036` evidence when compiling the combined migration/testing repair
 wave. Do not change the Rust DB harness boundary without the recorded decision
 prototype.

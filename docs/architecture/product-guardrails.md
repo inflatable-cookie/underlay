@@ -19,5 +19,5 @@ Owner: repo maintainers
 
 ## Next Task
 
-Execute `g10.017`. Keep shared DB-harness design behind the `g10.024` operator
+Execute `g09.037`. Keep shared DB-harness design behind the `g09.044` operator
 decision and keep minimum-posture packages out of speculative test rewrites.

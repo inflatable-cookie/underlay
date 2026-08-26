@@ -247,7 +247,7 @@ Bad outcomes:
 
 ## Assessment State
 
-Assessed 2026-08-26 by `g10.016`; verdict: `drifting`.
+Assessed 2026-08-26 by `g09.036`; verdict: `drifting`.
 
 The minimum-versus-strong distinction holds. Fourteen runtime packages meet the
 minimum, both Contact Patch API and front are strong, and Underlay Reference
@@ -267,9 +267,9 @@ Shared harness findings:
   a compatibility cast that needs type-level proof
 
 See
-[`g10.016 - Testing Posture Contract Assessment`](../logs/2026-08/26-164407-g10-016-testing-posture-assessment.md).
+[`g09.036 - Testing Posture Contract Assessment`](../logs/2026-08/26-164407-g09-036-testing-posture-assessment.md).
 
 ## Next Task
 
-Execute `g10.017`. Keep whole-app DB-harness design behind the `g10.024`
+Execute `g09.037`. Keep whole-app DB-harness design behind the `g09.044`
 operator decision; no fixed-schema consumer rewrite is implied.

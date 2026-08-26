@@ -8,12 +8,16 @@ Depends on: `docs/architecture/product-guardrails.md`
 
 - Treat `docs/roadmaps/`, `docs/specs/`, and `docs/logs/` as the execution
   authority chain for active Underlay work.
+- Every generation work item must exist as a numbered roadmap file directly
+  under `docs/roadmaps/gNN/`.
 - Use the strict spec lane when a consumer-facing shared-surface wave needs a
   tighter boundary than the roadmap alone.
+- Strict batch cards may decompose one roadmap; they must not substitute for the
+  roadmap queue or advance generation numbering independently.
 - In the strict lane, a bare `continue` should resolve through the previous
-  closeout's `Next Task`, normally into the current ready card.
-- Completed cards must not remain advertised as ready.
-- If there is no ready card, re-enter planning instead of widening the package
+  closeout's `Next Task`, normally into the current ready roadmap.
+- Completed roadmaps must not remain advertised as ready.
+- If there is no ready roadmap, re-enter planning instead of widening the package
   migration by implication.
 
 ## Generation Rule
@@ -36,34 +40,36 @@ In parallel mode:
 - multiple active generations may coexist when the work streams are genuinely
   independent
 - each generation operates as its own queue
-- batch cards stay with their generation under `docs/roadmaps/gNN/batch-cards/`
+- roadmap files stay directly under `docs/roadmaps/gNN/`; optional batch cards
+  stay under `docs/roadmaps/gNN/batch-cards/`
 - each generation README remains the authoritative front door for its thread
 
 ## Current Posture
 
-Underlay is in parallel mode:
+Underlay is in sequential mode:
 
-- `g07`–`g09` are closed
-- `g10` is the active generation
+- `g07` and `g08` are closed
+- `g09` is the active generation
 - `g03`, `g04`, and `g05` are closed historical generations
 - no strict spec is active; the completed monorepo rollout spec is archived
-- `g10.001` is complete
-- `g10.002` is complete
-- `g10.003` is complete
-- `g10.004` is complete
-- `g10.005` is complete
-- `g10.006`–`g10.010` are complete
+- `g09.021` is complete
+- `g09.022` is complete
+- `g09.023` is complete
+- `g09.024` is complete
+- `g09.025` is complete
+- `g09.026`–`g09.030` are complete
 - the monorepo consumer-workspace strict lane is archived
-- `g10.011` is complete
-- `g10.012` and `g10.013` are complete
-- `g10.014` is complete
-- `g10.015` is complete
-- `g10.016` is complete
-- `g10.017` is ready
-- `g10.018`–`g10.024` are planned behind explicit shared, reference, consumer,
+- `g09.031` is complete
+- `g09.032` and `g09.033` are complete
+- `g09.034` is complete
+- `g09.035` is complete
+- `g09.036` is complete
+- `g09.037` is ready
+- `g09.038`–`g09.044` are planned behind explicit shared, reference, consumer,
   and closeout gates
+- `g09.045` is the planned post-repair assessment; it is not ready
 
 ## Next Task
 
-Execute `g10.017`. Keep the batch inside Underlay and promote `g10.018` only
+Execute `g09.037`. Keep the batch inside Underlay and promote `g09.038` only
 after the shared health/mock proof closes.

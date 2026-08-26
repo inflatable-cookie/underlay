@@ -4,14 +4,14 @@ Logs capture meaningful documentation and delivery batches for Underlay.
 
 ## Current Evidence Window
 
-The active window is the current generation `g10` under `docs/logs/2026-08/`.
+The active window is the current generation `g09` under `docs/logs/2026-08/`.
 The `g09` config-convergence and dependency-upgrade closeout lives in the same
 month shard. Earlier month shards are frozen lineage.
 
 ## Cadence
 
 Decided (g08.030): **keep the per-batch log cadence.** One log per meaningful
-card or batch, under month shards. It served the g08 generation well as a live
+roadmap or batch, under month shards. It served the g08 generation well as a live
 control chain and evidence trail. Gap months (e.g. 2026-05 empty, 2026-06 one
 file) reflect genuinely low-activity periods, not a reason to drop the ritual —
 an empty month is honest signal, not overhead.
@@ -39,24 +39,28 @@ where repo-local links and normalized prose references are required instead.
 
 ## Next Task
 
-`g10.002` is complete and merged
-([execution log](./2026-08/25-190914-g10-002-active-guide-normalization.md)).
-`g10.003` is complete and merged
-([execution log](./2026-08/25-203725-g10-003-workspace-shape-conformance.md)).
-`g10.004` is complete and merged
-([execution log](./2026-08/25-232150-g10-004-acowtancy-evidence-repair.md)).
-`g10.005` is complete and merged
-([execution log](./2026-08/26-110905-g10-005-underlay-reference-normalization.md)).
-`g10.006`–`g10.010` are complete
-([fleet closeout](./2026-08/26-151525-g10-006-010-fleet-closeout.md)).
-`g10.011` is complete
-([assessment](./2026-08/26-153051-g10-011-foundation-transport-assessment.md)).
-`g10.012`–`g10.014` are complete. `g10.015`–`g10.016` are compiled
-([planning log](./2026-08/26-161417-g10-015-016-migration-testing-assessment-compiled.md)).
-`g10.015` is complete
-([assessment](./2026-08/26-162845-g10-015-database-migration-assessment.md)).
-`g10.016` is complete
-([assessment](./2026-08/26-164407-g10-016-testing-posture-assessment.md)).
-`g10.017`–`g10.024` are compiled
-([planning log](./2026-08/26-165722-g10-017-024-migration-testing-repairs-compiled.md));
-execute `g10.017` without reconstructing closed history.
+`g09.021` is complete and merged
+([execution log](./2026-08/25-181500-g09-021-monorepo-contract-authority.md)).
+`g09.022` is complete and merged
+([execution log](./2026-08/25-190914-g09-022-active-guide-normalization.md)).
+`g09.023` is complete and merged
+([execution log](./2026-08/25-203725-g09-023-workspace-shape-conformance.md)).
+`g09.024` is complete and merged
+([execution log](./2026-08/25-232150-g09-024-acowtancy-evidence-repair.md)).
+`g09.025` is complete and merged
+([execution log](./2026-08/26-110905-g09-025-underlay-reference-normalization.md)).
+`g09.026`–`g09.030` are complete
+([fleet closeout](./2026-08/26-151525-g09-026-030-fleet-closeout.md)).
+`g09.031` is complete
+([assessment](./2026-08/26-153051-g09-031-foundation-transport-assessment.md)).
+`g09.032`–`g09.034` are complete. `g09.035`–`g09.036` are compiled
+([planning log](./2026-08/26-161417-g09-035-036-migration-testing-assessment-compiled.md)).
+`g09.035` is complete
+([assessment](./2026-08/26-162845-g09-035-database-migration-assessment.md)).
+`g09.036` is complete
+([assessment](./2026-08/26-164407-g09-036-testing-posture-assessment.md)).
+`g09.037`–`g09.044` are compiled
+([planning log](./2026-08/26-165722-g09-037-044-migration-testing-repairs-compiled.md));
+the invalid generation/card hierarchy was then repaired
+([recovery log](./2026-08/26-171952-g09-roadmap-authority-recovery.md)). Execute
+`g09.037` without reconstructing closed history.

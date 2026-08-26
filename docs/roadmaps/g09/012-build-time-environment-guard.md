@@ -44,4 +44,4 @@ Completed 2026-08-03. New `build-env-read` conformance check: greps `vite.config
 
 ## Next Task
 
-Generation closeout or `g10` scoping (maintainer direction).
+Continue with `g09.013`; the generation remains active.

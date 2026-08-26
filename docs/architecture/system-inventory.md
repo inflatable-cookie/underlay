@@ -14,12 +14,12 @@ coverage, interface review, and later implementation assessment.
 
 ## Repo Posture
 
-Underlay is currently `strict-ready` in parallel mode.
+Underlay is currently `strict-ready` in sequential mode.
 
 Evidence:
 
-- active generation is `g10`; `g10.001`–`g10.016` are complete, `g10.017` is
-  ready, and `g10.018`–`g10.024` are planned
+- active generation is `g09`; `g09.021`–`g09.036` are complete, `g09.037` is
+  ready, and `g09.038`–`g09.045` are planned
 - roadmap front doors, vision, and generation index were refreshed 2026-08-17
 - the contract index exists and names the full planned contract set
 - reference-grade architecture phases 2–5 remain the longer-horizon shape target
@@ -130,5 +130,5 @@ Every system should pass through the same loop:
 
 ## Next Task
 
-Execute `g10.017`, the Underlay test-gate and mock-contract repair. See
-[`docs/roadmaps/g10/README.md`](../roadmaps/g10/README.md).
+Execute `g09.037`, the Underlay test-gate and mock-contract repair. See
+[`docs/roadmaps/g09/README.md`](../roadmaps/g09/README.md).
