@@ -98,5 +98,5 @@ Do not promote a system into active implementation-assessment work until:
 
 ## Next Task
 
-Clear the `g09.038` disposable-database promotion gate, then run the Underlay
-Reference proof. See [`docs/roadmaps/g09/README.md`](../roadmaps/g09/README.md).
+Execute `g09.038`, the Underlay Reference proof. See
+[`docs/roadmaps/g09/README.md`](../roadmaps/g09/README.md).

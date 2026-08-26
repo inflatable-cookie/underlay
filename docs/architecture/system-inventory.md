@@ -14,13 +14,13 @@ coverage, interface review, and later implementation assessment.
 
 ## Repo Posture
 
-Underlay is currently `strict-ready` in sequential mode.
+Underlay is currently `migration` in sequential mode.
 
 Evidence:
 
-- active generation is `g09`; `g09.021`–`g09.036` are complete, `g09.037` is
-  ready, and `g09.038`–`g09.045` are planned
-- roadmap front doors, vision, and generation index were refreshed 2026-08-17
+- active generation is `g09`; `g09.021`–`g09.037` are complete, `g09.038` is
+  ready, and `g09.039`–`g09.045` are planned
+- roadmap front doors and the generation index were refreshed 2026-08-26
 - the contract index exists and names the full planned contract set
 - reference-grade architecture phases 2–5 remain the longer-horizon shape target
 
@@ -130,6 +130,5 @@ Every system should pass through the same loop:
 
 ## Next Task
 
-Clear the `g09.038` disposable-database promotion gate, then run the Underlay
-Reference migration/testing proof. See
+Execute `g09.038`, the Underlay Reference migration/testing proof. See
 [`docs/roadmaps/g09/README.md`](../roadmaps/g09/README.md).

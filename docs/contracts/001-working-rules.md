@@ -65,11 +65,12 @@ Underlay is in sequential mode:
 - `g09.035` is complete
 - `g09.036` is complete
 - `g09.037` is complete
-- `g09.038`–`g09.044` are planned behind explicit shared, reference, consumer,
-  and closeout gates
+- `g09.038` is ready against a positively identified local-only database
+- `g09.039`–`g09.044` are planned behind explicit reference, consumer, and
+  closeout gates
 - `g09.045` is the planned post-repair assessment; it is not ready
 
 ## Next Task
 
-Positively identify the disposable Underlay Reference PostgreSQL target, then
-promote `g09.038`. Do not widen execution while no roadmap is ready.
+Execute `g09.038`. Do not promote the five consumer lanes before the reference
+proof merges.

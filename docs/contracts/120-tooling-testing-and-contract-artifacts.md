@@ -349,6 +349,5 @@ Other system families own:
 
 ## Next Task
 
-Clear the `g09.038` disposable-database promotion gate, then run the reference
-migration/testing proof. Do not change the Rust DB harness boundary without the
-recorded decision prototype.
+Execute the ready `g09.038` reference migration/testing proof. Do not change the
+Rust DB harness boundary without the recorded decision prototype.

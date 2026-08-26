@@ -70,8 +70,8 @@ assessments. Both later assessments found bounded drift.
 4. close fleet evidence and settle the whole-app `TestDb` ownership decision
    (`g09.044`)
 
-No roadmap is ready. `g09.038` has cleared its dependency and branch gates but
-still needs a positively identified disposable PostgreSQL target.
+Only `g09.038` is ready. Its target branch and local-only disposable PostgreSQL
+boundary are positively identified.
 
 ### Phase 6 — Bootstrap/runtime assessment (`g09.045`, planned)
 
@@ -117,7 +117,7 @@ family. Repair roadmaps are not pre-numbered; they must come from the evidence.
 35. [x] [`g09.035`](035-database-migration-contract-assessment.md) — database migration assessment (`complete`; `drifting`)
 36. [x] [`g09.036`](036-testing-posture-contract-assessment.md) — testing-posture assessment (`complete`; `drifting`)
 37. [x] [`g09.037`](037-underlay-test-gate-and-mock-contract.md) — Underlay test gate and mock contract (`complete`)
-38. [ ] [`g09.038`](038-underlay-reference-migration-and-test-proof.md) — Underlay Reference migration and test proof (`planned`; disposable database not yet proven)
+38. [ ] [`g09.038`](038-underlay-reference-migration-and-test-proof.md) — Underlay Reference migration and test proof (`ready`)
 39. [ ] [`g09.039`](039-contact-patch-migration-rollout.md) — Contact Patch migration rollout (`planned`; after `g09.038`)
 40. [ ] [`g09.040`](040-compli-me-migration-and-workflow-gate.md) — Compli Me migration and workflow gate (`planned`; after `g09.038`)
 41. [ ] [`g09.041`](041-songsprout-migration-and-fail-closed-gates.md) — Songsprout migration and fail-closed gates (`planned`; after `g09.038`)
@@ -137,8 +137,8 @@ Deferred with a promotion trigger (TypeScript 7.1 or concrete need):
   confirmed findings.
 - `g09.035` and `g09.036` were serial because migration ownership informed the
   testing verdict.
-- `g09.037` is complete. `g09.038` stays planned until its disposable database
-  boundary is positively identified.
+- `g09.037` is complete. `g09.038` is ready against its positively identified
+  local-only database boundary.
 - `g09.039`–`g09.043` may run in parallel only after the Underlay Reference
   proof in `g09.038` merges.
 - `g09.044` waits for all five consumer roadmaps.
@@ -165,6 +165,5 @@ repairs Acowtancy local state application and merge-gate reachability.
 
 ## Next Task
 
-Establish and positively identify the disposable local PostgreSQL target for
-Underlay Reference, then promote `g09.038`. Do not start database or consumer
-mutations before that gate is explicit.
+Execute `g09.038` in Underlay Reference. Do not start `g09.039`–`g09.043`
+before the reference proof merges.

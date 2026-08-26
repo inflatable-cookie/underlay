@@ -272,6 +272,6 @@ See
 
 ## Next Task
 
-Clear the `g09.038` disposable-database promotion gate, then run the Underlay
-Reference proof. Keep whole-app DB-harness design behind the `g09.044` operator
-decision; no fixed-schema consumer rewrite is implied.
+Execute the ready `g09.038` Underlay Reference proof. Keep whole-app DB-harness
+design behind the `g09.044` operator decision; no fixed-schema consumer rewrite
+is implied.

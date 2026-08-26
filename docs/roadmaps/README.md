@@ -64,10 +64,10 @@ assessment. `g09.032` normalized request-context rejection envelopes, and
 `g09.033` synchronized the page-list contract artifacts. `g09.034` completed the
 bounded HTTP-client fallback repair. `g09.035` and `g09.036` completed the
 migration/testing assessments with `drifting` verdicts. `g09.037` completed the
-first bounded repair. `g09.038`–`g09.044` remain planned; no roadmap is ready
-until the Underlay Reference disposable-database gate is proven. `g09.045`
-records the next bootstrap/runtime assessment and remains planned. See
-[`g09/README.md`](g09/README.md).
+first bounded repair. `g09.038` is ready against its positively identified
+local-only database; `g09.039`–`g09.044` remain planned behind the reference
+proof. `g09.045` records the next bootstrap/runtime assessment and remains
+planned. See [`g09/README.md`](g09/README.md).
 
 ## Archived generations
 
@@ -86,5 +86,4 @@ that risk.
 
 ## Next Task
 
-Positively identify the disposable Underlay Reference PostgreSQL target, then
-promote `g09.038`.
+Execute `g09.038`, the Underlay Reference migration and test proof.

@@ -5,6 +5,16 @@ they hit a solvable hurdle; they do not stop the current task to fix one.
 
 ## Open
 
+### [ ] Reference runtime docs misstate database storage shape — 2026-08-26
+- Friction: Underlay Reference says PostgreSQL persists under repo-local
+  `.effigy/runtime/data/postgres`, while Effigy reports the live store as the
+  named `underlay-reference-dev-postgres-data` volume
+- Impact: agents can misidentify the destructive boundary when preparing local
+  state or reset proof
+- Possible fix: align the reference runtime docs with the generated volume
+  contract, or restore the documented bind-mounted path intentionally
+- Surface: Underlay Reference runtime docs / Effigy bundle container storage
+
 ### [ ] Effigy task arguments silently widen when preceded by `--` — 2026-08-26
 - Friction: `effigy test:unit -- <paths>` discarded the requested Vitest
   paths, while `effigy test:unit <paths>` forwarded them correctly
