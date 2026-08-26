@@ -1,11 +1,12 @@
 # g09.045 - Bootstrap And Runtime Contract Assessment
 
-Status: ready
+Status: complete
 Owner: repo maintainers
 Contracts: `024-new-app-bootstrap-and-bring-up.md`,
 `025-rust-app-runtime-assembly-and-router-topology.md`,
 `026-route-families-and-access-model.md`
 Depends on: `g09.044`
+Completed: 2026-08-26
 
 ## Purpose
 
@@ -61,8 +62,20 @@ cannot be owned generically by Underlay.
 - Affected consumers: six-consumer family
 - Required action: none until a finding becomes a later roadmap
 
+## Completion Evidence
+
+- all six consumer roots were clean and exactly aligned with `origin/main`
+- the published workspace-shape checker passed all six roots
+- every contract `024`-`026` clause received an Underlay and fleet verdict
+- the supported monorepo shape held across the whole family
+- confirmed drift was separated into bootstrap/env authority, runtime assembly,
+  route/access security, app-owned policy decisions, and docs repairs
+- `g09.046`-`g09.053` were compiled as numbered roadmaps; only the shared
+  authority repair is ready
+- the full evidence matrix is recorded in
+  [`g09.045 - Bootstrap, Runtime, And Access Assessment`](../../logs/2026-08/26-225903-g09-045-bootstrap-runtime-access-assessment.md)
+
 ## Next Task
 
-After completion, compile only confirmed `024`–`026` repairs. Then choose the
-next contract group from the remaining assessment order; do not promote the
-collection or drift-prevention horizons by implication.
+Execute `g09.046`. Do not promote `g09.047` or dispatch consumer work until the
+shared authority and conformance boundary is complete.

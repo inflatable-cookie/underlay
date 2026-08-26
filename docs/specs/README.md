@@ -24,5 +24,6 @@ Specs hold active Underlay planning and strict execution-control surfaces.
 
 ## Next Task
 
-Execute the read-only `g09.045` assessment. No strict spec follows from the
-app-owned fixed-schema DB-harness decision.
+Execute `g09.046`. The compiled bootstrap/runtime/access wave is governed by
+numbered roadmaps `g09.046`–`g09.053`; no batch card or strict spec replaces
+that queue.

@@ -19,6 +19,6 @@ Owner: repo maintainers
 
 ## Next Task
 
-Execute the read-only `g09.045` assessment. Keep fixed-schema whole-app suites
-app-owned, `TestDb` on its shared single-schema boundary, and minimum-posture
-packages out of speculative test rewrites.
+Execute `g09.046`. Keep secret requiredness, deployment proxy topology,
+rate-limit failure policy, and route compatibility app-owned. Shared authority
+may define the seam and proof; it must not invent those product facts.

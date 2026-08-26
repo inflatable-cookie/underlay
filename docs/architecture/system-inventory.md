@@ -18,8 +18,8 @@ Underlay is currently `migration` in sequential mode.
 
 Evidence:
 
-- active generation is `g09`; `g09.021`–`g09.044` are complete and `g09.045`
-  is ready
+- active generation is `g09`; `g09.021`–`g09.045` are complete, `g09.046` is
+  ready, and `g09.047`–`g09.053` are planned
 - roadmap front doors and the generation index were refreshed 2026-08-26
 - the contract index exists and names the full planned contract set
 - reference-grade architecture phases 2–5 remain the longer-horizon shape target
@@ -27,8 +27,10 @@ Evidence:
 Remaining pressure:
 
 - migration and testing drift is repaired across the six-consumer family;
-  fixed-schema whole-app suites remain app-owned and the next read-only
-  assessment covers bootstrap, runtime assembly, and access models
+  fixed-schema whole-app suites remain app-owned
+- the bootstrap/runtime/access assessment found env/secret authority,
+  route-family, middleware/test-seam, CSRF, proxy, and declared-version drift;
+  the serial authority/reference proof precedes five parallel consumer lanes
 - collection route and hybrid-shell convergence (`116`, `117`, sweeps `029`/`030`)
   is still open
 - consumer drift prevention items in `070` still have proposed follow-through
@@ -130,5 +132,5 @@ Every system should pass through the same loop:
 
 ## Next Task
 
-Execute `g09.045`, the read-only assessment of contracts `024`–`026`. See
+Execute `g09.046`, the shared bootstrap/runtime/access authority repair. See
 [`docs/roadmaps/g09/README.md`](../roadmaps/g09/README.md).

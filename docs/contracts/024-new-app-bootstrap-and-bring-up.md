@@ -344,8 +344,28 @@ Bad outcomes:
 - How do Underlay and Poodle enter the dependency graph?
 - What is the canonical first-run bring-up flow?
 
+## Assessment State
+
+Assessed across Underlay and all six consumer roots by `g09.045` on 2026-08-26.
+
+Verdict: `drifting` at the env/secret authority boundary; conforming at the
+supported monorepo boundary.
+
+- all six roots conform to one Git root, `apps/*` / `packages/*`, explicit root
+  workspaces, one root lock, released dependencies, root docs authority, and
+  Effigy-first state/migration ownership
+- every root lacks the required complete `config/env-manifest.txt` and
+  `config/required-secrets.txt` authority
+- the mechanical workspace checker needs bounded coverage for unsupported
+  workspace prefixes and committed external `file:` Underlay/Poodle edges
+- external read-only inputs and sibling tooling mounts need wording that cannot
+  be mistaken for workspace children or polyrepo support
+
+Repair authority is `g09.046`; reference and fleet adoption are `g09.047`-
+`g09.053`. See the
+[`g09.045` assessment](../logs/2026-08/26-225903-g09-045-bootstrap-runtime-access-assessment.md).
+
 ## Next Task
 
-Use this contract as the base for new-app scaffolding, checklist artifacts, and
-future workspace-shape conformance checks. Treat fleet divergence as drift, not
-as an alternate supported topology.
+Execute `g09.046`, then prove the repaired bootstrap boundary in Underlay
+Reference before consumer rollout.

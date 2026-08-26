@@ -427,19 +427,31 @@ Not allowed:
 - reimplementing auth/role gate semantics ad hoc in handlers instead of through
   route-family and extractor posture
 
-## Current Drift To Repair Later
+## Assessment State
 
-The current apps still diverge in some surface naming:
+Assessed across Underlay and all six consumer APIs by `g09.045` on 2026-08-26.
 
-- `/v1/admin/jobs` vs `/v1/admin/platform/jobs`
-- `/v1/admin/error-logs` vs `/v1/admin/error-log`
-- passkey mutation verbs as path suffixes vs REST-style item routes
+Verdict: `drifting`, including security-priority consumer findings.
 
-This contract does not force those specific path repairs by itself. It fixes
-the route-family and access-model grammar first so later normalization can be
-done without rearguing the basics.
+- Reference and Contact exempt authenticated passkey registration from CSRF;
+  Compli Me and Farmyard accept cookie-backed refresh/logout mutations without
+  a proved CSRF seam
+- Reference, Contact, and Composer use non-central or non-peer-aware client-IP
+  paths for abuse/auth policy input
+- Contact Patch and Acowtancy advertise a version header from clients/config but
+  do not give it a server posture
+- Composer retains admin-gated restore/purge actions outside `/v1/admin/*`
+- Compli Me and Songsprout retain handler-local elevated-role policy
+- Songsprout's rate-limit backend failure posture needs an explicit security
+  decision
+- version-header and runtime-family wording is inconsistent inside the shared
+  docs and must be settled before rollout
+
+Repair authority is `g09.046`; reference and fleet adoption are `g09.047`-
+`g09.053`. See the
+[`g09.045` assessment](../logs/2026-08/26-225903-g09-045-bootstrap-runtime-access-assessment.md).
 
 ## Next Task
 
-Write `118`: the front and shared read API shape contract that sits on top of
-this route-family model.
+Execute `g09.046`, then prove the repaired access-model boundary in Underlay
+Reference before consumer rollout.

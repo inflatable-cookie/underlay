@@ -37,6 +37,8 @@ features.
 - [x] repair the confirmed migration/testing drift with bounded ownership and
   disposable-state proof
 - [x] close the repair wave before starting the next contract assessment group
+- [x] assess bootstrap, runtime assembly, and access posture across all six roots
+- [ ] repair and prove the confirmed bootstrap/runtime/access drift
 
 ## Roadmap Sequence
 
@@ -76,10 +78,18 @@ Songsprout PR4, Composer PR4, and Acowtancy PR59 then merged and closed
 boundary. `g09.044` closed the fleet proof and kept `TestDb` on its
 shared-crate/single-schema seam.
 
-### Phase 6 — Bootstrap/runtime assessment (`g09.045`, ready)
+### Phase 6 — Bootstrap/runtime assessment (`g09.045`, complete)
 
-After the repair wave, assess contracts `024`–`026` across the six-consumer
-family. Repair roadmaps are not pre-numbered; they must come from the evidence.
+The six-root read-only assessment found the workspace rollout intact and
+confirmed env/secret, runtime-topology, test-seam, and access/security drift.
+
+### Phase 7 — Bootstrap/runtime/access repair (`g09.046`–`g09.053`, active)
+
+1. repair Underlay authority and conformance (`g09.046`, ready)
+2. prove the repaired boundary in Underlay Reference (`g09.047`, planned)
+3. run Contact Patch, Compli Me, Songsprout, Composer, and Acowtancy as
+   independent repo-owned lanes (`g09.048`–`g09.052`, planned)
+4. close exact-head six-root proof (`g09.053`, planned)
 
 ## Queue
 
@@ -127,7 +137,15 @@ family. Repair roadmaps are not pre-numbered; they must come from the evidence.
 42. [x] [`g09.042`](042-composer-migration-and-fail-closed-gates.md) — Composer migration and fail-closed gates (`complete`)
 43. [x] [`g09.043`](043-acowtancy-state-and-test-orchestration-repair.md) — Acowtancy state and test orchestration repair (`complete`)
 44. [x] [`g09.044`](044-migration-testing-fleet-closeout.md) — migration/testing fleet closeout (`complete`)
-45. [ ] [`g09.045`](045-bootstrap-and-runtime-contract-assessment.md) — bootstrap and runtime contract assessment (`ready`)
+45. [x] [`g09.045`](045-bootstrap-and-runtime-contract-assessment.md) — bootstrap and runtime contract assessment (`complete`; `drifting`)
+46. [ ] [`g09.046`](046-bootstrap-runtime-access-authority.md) — bootstrap/runtime/access authority (`ready`)
+47. [ ] [`g09.047`](047-underlay-reference-runtime-access-proof.md) — Underlay Reference runtime/access proof (`planned`)
+48. [ ] [`g09.048`](048-contact-patch-runtime-access-rollout.md) — Contact Patch runtime/access rollout (`planned`)
+49. [ ] [`g09.049`](049-compli-me-runtime-access-rollout.md) — Compli Me runtime/access rollout (`planned`)
+50. [ ] [`g09.050`](050-songsprout-runtime-access-rollout.md) — Songsprout runtime/access rollout (`planned`)
+51. [ ] [`g09.051`](051-composer-runtime-access-rollout.md) — Composer runtime/access rollout (`planned`)
+52. [ ] [`g09.052`](052-acowtancy-runtime-access-rollout.md) — Acowtancy runtime/access rollout (`planned`)
+53. [ ] [`g09.053`](053-bootstrap-runtime-access-fleet-closeout.md) — bootstrap/runtime/access fleet closeout (`planned`)
 
 Deferred with a promotion trigger (TypeScript 7.1 or concrete need):
 [`backlog/ts-7-adoption.md`](../backlog/ts-7-adoption.md).
@@ -143,7 +161,12 @@ Deferred with a promotion trigger (TypeScript 7.1 or concrete need):
 - `g09.037` and `g09.038` are complete.
 - `g09.039`–`g09.043` are complete.
 - `g09.044` is complete after all five merged consumer roadmaps.
-- `g09.045` is ready and remains assessment-only.
+- `g09.045` is complete.
+- `g09.046` is ready and serially repairs shared authority.
+- `g09.047` is planned behind `g09.046` as the reference proof.
+- `g09.048`–`g09.052` may run in parallel only after `g09.047` and each named
+  product/security decision gate.
+- `g09.053` closes the fleet after all five independent rollout lanes merge.
 - Whole-app fixed-schema suites stay app-owned. `TestDb` remains the
   shared-crate/single-schema seam.
 
@@ -167,7 +190,11 @@ reachability.
 `g09.044` published the fleet upgrade note and final matrix. Retired consumer
 `db:*` selectors and fail-open local overlays have no compatibility window.
 
+`g09.045` found no regression in the supported monorepo shape. Later consumer
+impact is bounded by `g09.047`–`g09.052`; security and path compatibility
+changes cannot begin before their roadmap decisions are explicit.
+
 ## Next Task
 
-Execute `g09.045` as the read-only assessment of bootstrap, runtime assembly,
-and access-model contracts `024`–`026`.
+Execute `g09.046`, the shared bootstrap/runtime/access authority and conformance
+repair.

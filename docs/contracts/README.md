@@ -60,5 +60,7 @@ machine-readable policy files.
   six-consumer family
 - whole-app fixed-schema DB suites remain app-owned; `TestDb` stays the shared
   single-schema seam
-- `g09.045` is ready to assess bootstrap, runtime assembly, and access-model
-  contracts `024`–`026`
+- `g09.045` assessed bootstrap, runtime assembly, and access-model contracts
+  `024`–`026` with a `drifting` verdict
+- `g09.046` is ready to repair shared authority before the reference and fleet
+  rollout in `g09.047`–`g09.053`

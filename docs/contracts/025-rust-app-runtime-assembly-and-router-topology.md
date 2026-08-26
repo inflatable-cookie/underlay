@@ -438,20 +438,31 @@ Not allowed:
 - hiding route-family assembly inside opaque registration cascades when a
   clearer merged-router structure is available
 
-## Current Drift To Repair Later
+## Assessment State
 
-The audit shows one shared family plus some remaining runtime drift:
+Assessed across Underlay and all six consumer APIs by `g09.045` on 2026-08-26.
 
-- `underlay-reference` and `farmyard` are the clearest modern references
-- `compli-me` and `contact-patch` are close, but lighter
-- `songsprout/nursery` still uses older route-registration posture
-- `composer-api` remains the flattest outlier and the least obviously split
-  into `shared` / `admin` / front-family builders
+Verdict: `drifting`.
 
-That drift should be repaired after `026` and `118` exist, not by treating the
-current diversity as equally canonical.
+- crate roles, `AppState`, one root builder, observability, and shutdown are
+  sound across the fleet; lean and rich profiles are both valid
+- route-family source topology remains flat or misplaced in Underlay Reference,
+  Contact Patch, Compli Me, and Composer
+- middleware context order drifts in Songsprout, Composer, and Acowtancy
+- direct-router test support is absent or unproved in Compli Me, Songsprout, and
+  Composer
+- Farmyard's binary retains a separable large OpenAPI registry
+- guide `070`, source links, runtime-family wording, and this contract's former
+  fleet summary are stale shared authority
+
+Visible cleanup and shutdown helpers are normal binary responsibilities. The
+assessment does not use line count alone as a thin-entrypoint rule.
+
+Repair authority is `g09.046`; reference and fleet adoption are `g09.047`-
+`g09.053`. See the
+[`g09.045` assessment](../logs/2026-08/26-225903-g09-045-bootstrap-runtime-access-assessment.md).
 
 ## Next Task
 
-Write `026`: the route-family and access-model contract that sits on top of
-this runtime assembly layer.
+Execute `g09.046`, then prove the repaired runtime assembly boundary in
+Underlay Reference before consumer rollout.
