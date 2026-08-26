@@ -92,6 +92,5 @@ bounded planning pass.
 
 ## Next Task
 
-Re-enter planning and compile the combined migration/testing repair wave from
-`g10.015` and `g10.016`. Do not mark a card ready until ownership, environment
-requirements, and validation bounds are explicit.
+Execute `g10.017`, the first card in the compiled migration/testing repair wave.
+The remaining cards stay dependency-gated through `g10.024`.

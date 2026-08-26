@@ -34,7 +34,7 @@ This generation is about **fidelity and convergence**, not new product features.
 - retire polyrepo support in the bootstrap authority
 - normalize the six-consumer workspace family through `g10.001`–`g10.010`
 
-### Phase 2 — Contract implementation assessment (now)
+### Phase 2 — Contract implementation assessment and repair (now)
 
 Run the assessment loop from `docs/architecture/system-inventory.md` against
 the contract index order:
@@ -77,8 +77,10 @@ lane.
   transport assessment/repair (`g10.001`–`g10.014`)
 - completed assessments: database migration workflow and testing posture
   (`g10.015`–`g10.016`, both `drifting`)
-- immediate planning task: compile bounded migration/testing repairs only from
-  the two evidence matrices
+- current repair wave: Underlay/shared proof, Underlay Reference baseline,
+  independent consumer rollouts, then fleet closeout (`g10.017`–`g10.024`)
+- immediate card: Underlay test-gate and mock-contract repair (`g10.017`,
+  `ready`)
 - next planning checkpoint: after that repair wave, confirm the `024`–`026`
   bootstrap/runtime assessment group remains the right transition
 - longer runway: collection/hybrid-shell convergence, consumer drift
@@ -102,8 +104,11 @@ lane.
   (`g10.011`–`g10.014`).
 - [x] Batch 3 — database migration and testing posture assessments
   (`g10.015`–`g10.016`).
-- [ ] Batch 4 — findings-driven migration/testing repairs; compile cards only
-  after both evidence matrices settle ownership and scope.
+- [ ] Batch 4A — shared and reference migration/testing proof
+  (`g10.017`–`g10.018`).
+- [ ] Batch 4B — independent consumer rollout lanes
+  (`g10.019`–`g10.023`).
+- [ ] Batch 4C — fleet proof and DB-harness decision checkpoint (`g10.024`).
 - [ ] Batch 5 — planning checkpoint, then compile the next coherent assessment
   group from contracts `024`–`026`.
 
@@ -147,8 +152,13 @@ lane.
 - Lane A assessment and bounded repairs `g10.012`–`g10.014` are complete.
 - `g10.015` and `g10.016` are serial because migration/reset proof ownership
   informs the API testing verdict.
-- Migration/testing repair cards must come from the assessment evidence; do not
-  reserve speculative card numbers.
+- `g10.017` repairs Underlay before `g10.018` proves the reference-consumer
+  baseline.
+- `g10.019`–`g10.023` may run in parallel only after `g10.018` completes.
+- `g10.024` waits for all five consumer repairs and returns the whole-app
+  `TestDb` boundary to an explicit operator decision.
+- Do not compile a shared DB-harness design card until the operator selects
+  multi-schema/database-per-test ownership instead of explicit app ownership.
 - Lane B and C should not run as parallel unbounded refactors; pick one consumer
   proof anchor first (`underlay-reference` unless another app is clearer)
 - Lane D must respect `product-guardrails.md` — no app-local behavior smuggled
@@ -158,6 +168,9 @@ lane.
 
 ## Accepted Uncertainty
 
+- whether whole-app fixed-schema DB suites should remain app-owned or receive a
+  new multi-schema/database-per-test `TestDb` lifecycle; `g10.024` is the
+  operator decision checkpoint
 - whether collection convergence or drift follow-through yields the better first
   proof slice
 - how many compatibility exports can retire in one batch without violating `023`
@@ -180,14 +193,24 @@ lane.
 14. [x] [`g10.014`](batch-cards/014-http-client-bounded-constructor-fallback.md) — bounded HTTP-client constructor fallback (`complete`)
 15. [x] [`g10.015`](batch-cards/015-database-migration-contract-assessment.md) — database migration contract assessment (`complete`; verdict `drifting`)
 16. [x] [`g10.016`](batch-cards/016-testing-posture-contract-assessment.md) — testing posture contract assessment (`complete`; verdict `drifting`)
+17. [ ] [`g10.017`](batch-cards/017-underlay-test-gate-and-mock-contract.md) — Underlay test gate and mock contract (`ready`)
+18. [ ] [`g10.018`](batch-cards/018-underlay-reference-migration-and-test-proof.md) — Underlay Reference migration and test proof (`planned`; gated by `g10.017`)
+19. [ ] [`g10.019`](batch-cards/019-contact-patch-migration-rollout.md) — Contact Patch migration rollout (`planned`; gated by `g10.018`)
+20. [ ] [`g10.020`](batch-cards/020-compli-me-migration-and-workflow-gate.md) — Compli Me migration and workflow gate (`planned`; gated by `g10.018`)
+21. [ ] [`g10.021`](batch-cards/021-songsprout-migration-and-fail-closed-gates.md) — Songsprout migration and fail-closed gates (`planned`; gated by `g10.018`)
+22. [ ] [`g10.022`](batch-cards/022-composer-migration-and-fail-closed-gates.md) — Composer migration and fail-closed gates (`planned`; gated by `g10.018`)
+23. [ ] [`g10.023`](batch-cards/023-acowtancy-state-and-test-orchestration-repair.md) — Acowtancy state and test orchestration repair (`planned`; gated by `g10.018`)
+24. [ ] [`g10.024`](batch-cards/024-migration-testing-fleet-closeout.md) — migration/testing fleet closeout (`planned`; gated by `g10.019`–`g10.023`)
 
 ## Consumer Upgrade Impact
 
-`g10.015` and `g10.016` were assessment-only and changed no consumer
-repository. Required upgrades must now be compiled as later findings-driven
-cards.
+`g10.017` is compatible Underlay test-contract hardening. `g10.018`–`g10.022`
+cut the five baseline consumers from retired package `db:*` selectors to root
+state plan/apply plus routed `migration:*` tasks with no compatibility window.
+Songsprout and Composer also correct fail-open local dev overlays. `g10.023`
+repairs Acowtancy local state application and merge-gate reachability.
 
 ## Next Task
 
-Re-enter planning and compile the combined migration/testing repair wave from
-the `g10.015` and `g10.016` evidence matrices. No card is ready yet.
+Execute `g10.017`. Keep the work inside Underlay; consumer mutations start only
+after the shared repair and `g10.018` reference proof are promoted in order.

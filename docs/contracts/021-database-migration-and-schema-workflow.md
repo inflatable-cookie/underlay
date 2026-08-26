@@ -322,5 +322,6 @@ Bad outcomes:
 
 ## Next Task
 
-Migration and testing assessments are complete. Re-enter planning and compile
-their combined findings-driven repair wave.
+Execute `g10.017`, then prove this contract's baseline migration shape in
+Underlay Reference through `g10.018`. Keep DB-harness design behind the
+`g10.024` operator decision.

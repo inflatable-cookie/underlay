@@ -59,11 +59,11 @@ Underlay is in parallel mode:
 - `g10.014` is complete
 - `g10.015` is complete
 - `g10.016` is complete
-- no repair card is ready; the combined migration/testing repair wave needs a
-  findings-driven planning pass
+- `g10.017` is ready
+- `g10.018`–`g10.024` are planned behind explicit shared, reference, consumer,
+  and closeout gates
 
 ## Next Task
 
-Re-enter planning and compile the combined migration/testing repair wave from
-the completed `g10.015` and `g10.016` evidence. Do not widen scope or mark a
-card ready before its ownership and validation boundary are explicit.
+Execute `g10.017`. Keep the batch inside Underlay and promote `g10.018` only
+after the shared health/mock proof closes.

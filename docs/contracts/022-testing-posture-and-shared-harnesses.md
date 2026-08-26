@@ -271,5 +271,5 @@ See
 
 ## Next Task
 
-Compile the combined `g10.015`/`g10.016` repair wave. Keep DB-harness design as
-a decision prototype until the operator selects the durable isolation boundary.
+Execute `g10.017`. Keep whole-app DB-harness design behind the `g10.024`
+operator decision; no fixed-schema consumer rewrite is implied.

@@ -5,6 +5,12 @@ they hit a solvable hurdle; they do not stop the current task to fix one.
 
 ## Open
 
+### [ ] Northstar compile-roadmaps references a missing batch-card template — 2026-08-26
+- Friction: compile-roadmaps requires the installed `docs/specs/templates/batch-card-template.md`, but the Northstar assets package only lists that path in its README and does not contain the file
+- Impact: roadmap compilation must infer the readiness fields from existing project cards instead of the declared canonical template
+- Possible fix: restore the template asset or update compile-roadmaps to point at the actual packaged card template
+- Surface: Northstar skill assets / compile-roadmaps mode
+
 ### [ ] Effigy task-inventory JSON example uses a stale payload path — 2026-08-26
 - Friction: the installed Effigy skill queries `.result.payload.tasks[]`, but Effigy `0.12.1` returns task inventory at `.result.catalog_tasks[]`
 - Impact: the documented machine-readable inventory command fails before agents can filter task ownership

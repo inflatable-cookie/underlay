@@ -19,6 +19,5 @@ Owner: repo maintainers
 
 ## Next Task
 
-Compile the combined migration/testing repair wave from the completed
-assessments. Keep shared DB-harness design behind an explicit decision
-prototype and keep minimum-posture packages out of speculative test rewrites.
+Execute `g10.017`. Keep shared DB-harness design behind the `g10.024` operator
+decision and keep minimum-posture packages out of speculative test rewrites.

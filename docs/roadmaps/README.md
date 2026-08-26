@@ -63,10 +63,9 @@ and elective majors landed 2026-08-04.
 across the six-consumer family. `g10.011` completed the foundation and transport
 assessment. `g10.012` normalized request-context rejection envelopes, and
 `g10.013` synchronized the page-list contract artifacts. `g10.014` completed the
-bounded HTTP-client fallback repair. `g10.015` completed the database migration
-assessment with a `drifting` verdict. `g10.016` completed the testing-posture
-assessment with the same verdict. No repair card is ready; the combined
-findings need compilation. See
+bounded HTTP-client fallback repair. `g10.015` and `g10.016` completed the
+migration/testing assessments with `drifting` verdicts. Their bounded repair
+wave is compiled as `g10.017`–`g10.024`; only `g10.017` is ready. See
 [`g10/README.md`](g10/README.md).
 
 ## Archived generations
@@ -86,5 +85,4 @@ that risk.
 
 ## Next Task
 
-Re-enter planning and compile the combined migration/testing repair wave. Keep
-the card set findings-driven and bounded.
+Execute `g10.017`, the Underlay test-gate and mock-contract repair.

@@ -18,8 +18,8 @@ Underlay is currently `strict-ready` in parallel mode.
 
 Evidence:
 
-- active generation is `g10`; `g10.001`–`g10.016` are complete and no repair
-  card is ready
+- active generation is `g10`; `g10.001`–`g10.016` are complete, `g10.017` is
+  ready, and `g10.018`–`g10.024` are planned
 - roadmap front doors, vision, and generation index were refreshed 2026-08-17
 - the contract index exists and names the full planned contract set
 - reference-grade architecture phases 2–5 remain the longer-horizon shape target
@@ -27,7 +27,8 @@ Evidence:
 Remaining pressure:
 
 - migration and testing assessments both found bounded drift; their combined
-  repair wave still needs a findings-driven planning pass
+  repair wave is compiled behind shared, reference, consumer, and closeout
+  gates
 - collection route and hybrid-shell convergence (`116`, `117`, sweeps `029`/`030`)
   is still open
 - consumer drift prevention items in `070` still have proposed follow-through
@@ -129,5 +130,5 @@ Every system should pass through the same loop:
 
 ## Next Task
 
-Re-enter planning and compile the combined migration/testing repair wave. See
+Execute `g10.017`, the Underlay test-gate and mock-contract repair. See
 [`docs/roadmaps/g10/README.md`](../roadmaps/g10/README.md).

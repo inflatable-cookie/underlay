@@ -22,6 +22,5 @@ Specs hold active Underlay planning and strict execution-control surfaces.
 
 ## Next Task
 
-Re-enter planning and compile the combined migration/testing repair wave. Add a
-strict spec only if the DB-harness decision prototype selects a new durable
-shared boundary.
+Execute `g10.017`. Add a strict spec only if the `g10.024` DB-harness decision
+selects a new durable shared boundary.
