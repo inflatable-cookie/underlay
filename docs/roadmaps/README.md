@@ -60,8 +60,9 @@ README surfaces.
 and elective majors landed 2026-08-04.
 
 `g10.001`–`g10.010` completed the strict monorepo consumer-workspace rollout
-across the six-consumer family. `g10.011`, the foundation and transport
-contract assessment, is ready. See [`g10/README.md`](g10/README.md).
+across the six-consumer family. `g10.011` completed the foundation and transport
+assessment. `g10.012` is the first ready bounded repair. See
+[`g10/README.md`](g10/README.md).
 
 ## Archived generations
 
@@ -80,5 +81,4 @@ that risk.
 
 ## Next Task
 
-Execute `g10.011`. Produce the foundation and transport evidence matrix before
-opening implementation repair cards.
+Execute `g10.012`, the context rejection envelope normalization.

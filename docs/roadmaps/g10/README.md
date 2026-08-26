@@ -75,7 +75,7 @@ lane.
 
 | Lane | Outcome | Primary authority | Notes |
 | --- | --- | --- | --- |
-| A | First contract-assessment wave (foundation + transport) | `contract-index.md`, `system-inventory.md` | Active as `g10.011` |
+| A | First contract-assessment wave (foundation + transport) | `contract-index.md`, `system-inventory.md` | Assessment complete; bounded repairs `g10.012`–`g10.014` open |
 | B | Collection route convergence pilot | `116`, `117`, sweep `029` | Needs one consumer as proof anchor |
 | C | Hybrid shell extraction for one real tab | `117`, sweep `030`, Dairy `ModulesList` evidence | Bounded to one shell, not a framework rewrite |
 | D | Consumer drift B-items with stable boundaries | `070`, `021` sweep family | Only items with a clear Underlay-owned seam |
@@ -96,7 +96,8 @@ lane.
 - `g10.001`–`g10.005` are serial: authority, narrative, conformance,
   Acowtancy evidence, then Underlay Reference.
 - `g10.006`–`g10.010` are complete.
-- Lane A is active as `g10.011`.
+- Lane A assessment is complete. Run bounded repairs `g10.012`–`g10.014` in
+  sequence.
 - Lane B and C should not run as parallel unbounded refactors; pick one consumer
   proof anchor first (`underlay-reference` unless another app is clearer)
 - Lane D must respect `product-guardrails.md` — no app-local behavior smuggled
@@ -122,9 +123,12 @@ lane.
 8. [x] [`g10.008`](batch-cards/008-songsprout-normalization.md) — Songsprout normalization (`complete`)
 9. [x] [`g10.009`](batch-cards/009-composer-normalization.md) — Composer normalization (`complete`)
 10. [x] [`g10.010`](batch-cards/010-fleet-proof-and-closeout.md) — fleet proof and closeout (`complete`)
-11. [ ] [`g10.011`](batch-cards/011-foundation-and-transport-contract-assessment.md) — foundation and transport contract assessment (`ready`)
+11. [x] [`g10.011`](batch-cards/011-foundation-and-transport-contract-assessment.md) — foundation and transport contract assessment (`complete`)
+12. [ ] [`g10.012`](batch-cards/012-context-rejection-envelope-normalization.md) — context rejection envelope normalization (`ready`)
+13. [ ] [`g10.013`](batch-cards/013-page-list-contract-artifact-sync.md) — page-list contract artifact sync (`planned`)
+14. [ ] [`g10.014`](batch-cards/014-http-client-bounded-constructor-fallback.md) — bounded HTTP-client constructor fallback (`planned`)
 
 ## Next Task
 
-Execute `g10.011`. Produce the clause-to-implementation evidence matrix before
-opening any production repair card.
+Execute `g10.012`. Normalize shared context rejection bodies without widening
+auth or session policy.

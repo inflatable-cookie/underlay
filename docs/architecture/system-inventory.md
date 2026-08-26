@@ -127,5 +127,5 @@ Every system should pass through the same loop:
 
 ## Next Task
 
-Compile the first bounded `g10` contract-assessment or collection-convergence
-card from this inventory. See [`docs/roadmaps/g10/README.md`](../roadmaps/g10/README.md).
+Execute `g10.012`, the first bounded repair from the foundation and transport
+assessment. See [`docs/roadmaps/g10/README.md`](../roadmaps/g10/README.md).

@@ -54,9 +54,11 @@ Underlay is in parallel mode:
 - `g10.005` is complete
 - `g10.006`–`g10.010` are complete
 - the monorepo consumer-workspace strict lane is archived
-- `g10.011` is ready
+- `g10.011` is complete
+- `g10.012` is ready
+- `g10.013` and `g10.014` are planned bounded repairs from the assessment
 
 ## Next Task
 
-Execute `g10.011`, the foundation and transport contract assessment. Record
-matches, drift, and contract ambiguity before opening implementation repairs.
+Execute `g10.012`, the context rejection envelope normalization. Keep the
+repair inside the shared extractor boundary.

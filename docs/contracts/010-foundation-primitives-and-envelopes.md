@@ -192,21 +192,26 @@ Not allowed:
 
 ## Known Drift And Assessment Hooks
 
-Current drift worth assessing next:
+Focused TypeScript authority:
 
 - `ts/src/client/envelopes.ts` is now the focused TS primitive envelope
   authority. `ts/src/client/types.ts` remains an aggregate compatibility barrel
   and should not be treated as permission to add unrelated domain types.
 
-Resolved assessment:
+Assessment state:
 
 - `g06.181` normalized `ValidatedJsonRejection` through
   `underlay_core::ErrorEnvelope`. Validation failures collapse rich
   `ValidationError` internals to `error.fieldErrors: Record<string, string>`,
   invalid JSON uses the same canonical error DTO, and empty validation field
   maps are omitted.
+- `g10.011` confirmed UUIDs, base success/error envelopes, TypeScript types,
+  OpenAPI primitive schemas, and validation normalization match this contract.
+- Shared request-context rejections are the remaining confirmed envelope drift:
+  `ContextError` emits plain text instead of `ErrorEnvelope`. Repair is bounded
+  by `g10.012`.
 
-These are implementation-assessment items, not reasons to widen this contract.
+The repair does not widen the primitive model.
 
 ## Assessment Questions
 
@@ -221,5 +226,5 @@ Use this contract to judge later implementation work:
 
 ## Next Task
 
-Execute `g10.011`: assess the live foundation implementation against this
-contract and record bounded repair cards for confirmed drift.
+Execute `g10.012`: normalize shared context extractor failures through the
+canonical error envelope.

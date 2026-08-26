@@ -49,5 +49,7 @@ where repo-local links and normalized prose references are required instead.
 ([execution log](./2026-08/26-110905-g10-005-underlay-reference-normalization.md)).
 `g10.006`–`g10.010` are complete
 ([fleet closeout](./2026-08/26-151525-g10-006-010-fleet-closeout.md)).
-Execute `g10.011`; keep the active evidence window aligned to `g10` without
+`g10.011` is complete
+([assessment](./2026-08/26-153051-g10-011-foundation-transport-assessment.md)).
+Execute `g10.012`; keep the active evidence window aligned to `g10` without
 reconstructing closed history.

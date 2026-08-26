@@ -25,8 +25,8 @@ It distinguishes:
 
 | Proposed ID | Status | System family | Primary sources | Core questions |
 |---|---|---|---|---|
-| [010-foundation-primitives-and-envelopes.md](./010-foundation-primitives-and-envelopes.md) | active | IDs, `AppError`, envelopes, validation primitives | `underlay-core`, `underlay-validation*`, `underlay-http` | settles the shared primitive model and records current transport-normalization drift |
-| [020-http-transport-and-server-boundary.md](./020-http-transport-and-server-boundary.md) | active | HTTP helpers, cookies, query/pagination, CSP/server TS helpers | `underlay-http`, `underlay-http-client`, `ts/src/client/**`, `ts/src/server/**` | settles the shared transport contract and records current caller-shape drift |
+| [010-foundation-primitives-and-envelopes.md](./010-foundation-primitives-and-envelopes.md) | active | IDs, `AppError`, envelopes, validation primitives | `underlay-core`, `underlay-validation*`, `underlay-http` | assessed by `g10.011`; context rejection envelope repair is `g10.012` |
+| [020-http-transport-and-server-boundary.md](./020-http-transport-and-server-boundary.md) | active | HTTP helpers, cookies, query/pagination, CSP/server TS helpers | `underlay-http`, `underlay-http-client`, `ts/src/client/**`, `ts/src/server/**` | assessed by `g10.011`; bounded repairs are `g10.012`–`g10.014` |
 | [021-database-migration-and-schema-workflow.md](./021-database-migration-and-schema-workflow.md) | active | durable schema migration layout, dev overlay separation, reset/replay loop, migration proof posture | six API packages, `070`, `120`, migration usage policy | settles the boring baseline for schema work so new apps do not improvise migration workflow from one consumer repo |
 | [022-testing-posture-and-shared-harnesses.md](./022-testing-posture-and-shared-harnesses.md) | active | minimum and strong proof posture for API/admin/front packages plus shared harness usage | six app families, `120`, shared harness code | settles the default app-level test bar so health/validate/qa and harness use stop drifting between consumer repos |
 | [023-release-and-compatibility-rollout.md](./023-release-and-compatibility-rollout.md) | active | fleet rollout order, compatibility windows, upgrade notes, and retirement proof for shared changes | `001`, `027`, `111`, `190`, `g01.031`, six-consumer rollout evidence | settles how Underlay changes move through the consumer fleet without ad hoc rollout policy |
@@ -98,5 +98,5 @@ Do not promote a system into active implementation-assessment work until:
 
 ## Next Task
 
-Compile the first bounded `g10` implementation-assessment card from this index.
-See [`docs/roadmaps/g10/README.md`](../roadmaps/g10/README.md).
+Execute `g10.012`, the first bounded repair from the foundation and transport
+assessment. See [`docs/roadmaps/g10/README.md`](../roadmaps/g10/README.md).

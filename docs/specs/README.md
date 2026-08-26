@@ -22,5 +22,5 @@ Specs hold active Underlay planning and strict execution-control surfaces.
 
 ## Next Task
 
-Execute `g10.011`. Open a new strict spec only if the assessment proves a repair
-lane needs tighter execution grammar than its roadmap card.
+Execute `g10.012`. Its roadmap card is sufficient; no strict spec is needed for
+the bounded context rejection repair.

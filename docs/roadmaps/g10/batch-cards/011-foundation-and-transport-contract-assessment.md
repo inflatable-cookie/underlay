@@ -1,6 +1,7 @@
 # g10.011 - Foundation And Transport Contract Assessment
 
-Status: ready
+Status: complete
+Completed: 2026-08-26
 Owner: repo maintainers
 Contracts: `010-foundation-primitives-and-envelopes.md`, `020-http-transport-and-server-boundary.md`
 
@@ -44,6 +45,20 @@ Stop and return to planning if the contract and implementation express
 different product boundaries. Do not resolve that ambiguity through incidental
 code edits.
 
+## Completion Evidence
+
+The assessment matrix is recorded in
+`docs/logs/2026-08/26-153051-g10-011-foundation-transport-assessment.md`.
+
+Verdict: `strained`. Most clauses match. Three bounded repairs were opened:
+
+- `g10.012` — canonical context rejection envelopes (`ready`)
+- `g10.013` — page-list contract artifact sync (`planned`)
+- `g10.014` — bounded Rust HTTP-client constructor fallback (`planned`)
+
+Invalid query-operator handling remains an operator decision. The assessment
+did not change production behavior.
+
 ## Next Task
 
-Run the assessment and return the evidence matrix plus any ready repair cards.
+Execute `g10.012`, the context rejection envelope normalization.

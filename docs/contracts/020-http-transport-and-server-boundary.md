@@ -115,20 +115,26 @@ each resource allows for sorting or filtering.
 
 ### Pagination boundary
 
-Underlay owns two distinct list-response shapes:
+Underlay owns three distinct list-response shapes:
 
 - primitive list envelope: `ListResponse<T>` for simple lists
-- paginated list envelope: `Paginated<T>` with:
+- legacy offset envelope: `Paginated<T>` with:
   - `data`
   - `pagination.page`
   - `pagination.limit`
   - `pagination.total`
   - `pagination.total_pages`
+- canonical page-shaped resource envelope: `PageList<T>` with raw wire fields
+  `data`, `total`, and `has_more`, as defined by contract `115`; TypeScript may
+  normalize this to `PagedListResponse<T>` with `hasMore` at its public client
+  boundary
 
 Rules:
 
 - `Paginated<T>` is an opt-in higher transport shape, not a replacement for the
   primitive list envelope
+- `PageList<T>` is the normal page-shaped resource response once a route owns
+  total-count meaning; it is not the same shape as legacy `Paginated<T>`
 - page numbering is 1-indexed
 - default limit is `20`
 - shared default max limit is `100` unless a caller clamps lower
@@ -315,6 +321,25 @@ HTTP statuses; network failures and timeout aborts are normalized to
 `UnderlayHttpError(0)` without retry. Timeout protection is also limited to
 idempotent methods.
 
+`g10.011` confirmed the declared query vocabulary for valid inputs, pagination
+defaults, UUID path parsing, trusted-proxy resolution, cookies, browser HTTP
+behavior, CORS, in-process cache helpers, server config, and CSP helpers.
+
+Confirmed repair hooks:
+
+- `g10.012`: `ContextError` and the request-context rejection seam still emit
+  plain text instead of the canonical error envelope
+- `g10.013`: Rust and contract `115` declare raw `PageList<T>.has_more`, while
+  OpenAPI declares `hasMore` and architecture prose attributes the flat shape
+  to the wrong Rust type
+- `g10.014`: infallible Rust HTTP-client fallback paths can discard Underlay's
+  configured connect and total timeouts
+
+Material ambiguity remains for invalid filter operators. Rust accepts symbolic
+aliases and falls back unknown operators to equality; TypeScript casts
+word-like operators into the closed type. Set reject/ignore/normalize policy
+before changing either parser.
+
 ## Assessment Questions
 
 Use this contract to judge later implementation work:
@@ -328,5 +353,5 @@ Use this contract to judge later implementation work:
 
 ## Next Task
 
-Execute `g10.011`: assess the live Rust and TypeScript transport surfaces
-against this contract and record bounded repair cards for confirmed drift.
+Execute `g10.012`: normalize shared context extractor failures through the
+canonical error envelope.

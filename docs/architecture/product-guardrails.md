@@ -19,6 +19,5 @@ Owner: repo maintainers
 
 ## Next Task
 
-Execute `g10.011`, the bounded foundation and transport contract assessment.
-Classify implementation drift before opening repair work; do not turn the
-assessment into an unbounded shared-runtime rewrite.
+Execute `g10.012`, the bounded context rejection envelope repair. Do not widen
+the change into auth middleware or session policy.
