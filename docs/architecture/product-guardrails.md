@@ -19,5 +19,5 @@ Owner: repo maintainers
 
 ## Next Task
 
-Execute `g10.012`, the bounded context rejection envelope repair. Do not widen
-the change into auth middleware or session policy.
+Execute `g10.015`, the database migration contract assessment. Do not mutate
+consumer schema/state or turn assessment findings into incidental repairs.

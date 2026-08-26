@@ -57,9 +57,10 @@ Underlay is in parallel mode:
 - `g10.011` is complete
 - `g10.012` and `g10.013` are complete
 - `g10.014` is complete
-- no card is ready
+- `g10.015` is ready
+- `g10.016` is planned behind `g10.015`
 
 ## Next Task
 
-Re-enter planning and compile the next contract-assessment batch. The declared
-assessment order points to migration and testing posture (`021`, `022`).
+Execute `g10.015`, the database migration contract assessment. Keep consumer
+inspection read-only.

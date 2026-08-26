@@ -14,18 +14,20 @@ coverage, interface review, and later implementation assessment.
 
 ## Repo Posture
 
-Underlay is currently `coherent` in parallel mode.
+Underlay is currently `strict-ready` in parallel mode.
 
 Evidence:
 
-- active generation is `g10` (scoping) after `g09` closeout on 2026-08-04
+- active generation is `g10`; `g10.001`–`g10.014` are complete and `g10.015`
+  is ready
 - roadmap front doors, vision, and generation index were refreshed 2026-08-17
 - the contract index exists and names the full planned contract set
 - reference-grade architecture phases 2–5 remain the longer-horizon shape target
 
 Remaining pressure:
 
-- implementation-vs-contract assessment has not run fleet-wide yet
+- migration/testing and later implementation-vs-contract assessment groups
+  remain open
 - collection route and hybrid-shell convergence (`116`, `117`, sweeps `029`/`030`)
   is still open
 - consumer drift prevention items in `070` still have proposed follow-through
@@ -127,5 +129,5 @@ Every system should pass through the same loop:
 
 ## Next Task
 
-Execute `g10.012`, the first bounded repair from the foundation and transport
-assessment. See [`docs/roadmaps/g10/README.md`](../roadmaps/g10/README.md).
+Execute `g10.015`, the database migration contract assessment. See
+[`docs/roadmaps/g10/README.md`](../roadmaps/g10/README.md).

@@ -22,5 +22,5 @@ Specs hold active Underlay planning and strict execution-control surfaces.
 
 ## Next Task
 
-Execute `g10.012`. Its roadmap card is sufficient; no strict spec is needed for
-the bounded context rejection repair.
+Execute `g10.015`. Its roadmap card and contract `021` are sufficient; no
+strict spec is needed for the read-only assessment.

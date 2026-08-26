@@ -27,14 +27,16 @@ Reference consumer evidence:
 
 - `underlay-reference` — `apps/acme-api/effigy.toml`,
   `apps/acme-api/migrations/`, and `apps/acme-api/migrations_dev/`
-- `compli-me` — `api/effigy.toml`, `api/migrations/`, and
-  `api/migrations_dev/`
-- `contact-patch` — `cp-api/effigy.toml`, `cp-api/migrations/`, and
-  `cp-api/migrations_dev/`
-- `songsprout` — `nursery/effigy.toml` and `nursery/migrations/`
-- `loophole/composer` — `composer-api/effigy.toml` and
-  `composer-api/migrations/`
-- `acowtancy` — `farmyard/effigy.toml`
+- `compli-me` — `apps/api/effigy.toml`, `apps/api/migrations/`, and
+  `apps/api/migrations_dev/`
+- `contact-patch` — `apps/cp-api/effigy.toml`, `apps/cp-api/migrations/`, and
+  `apps/cp-api/migrations_dev/`
+- `songsprout` — `apps/nursery/effigy.toml`, `apps/nursery/migrations/`, and
+  `apps/nursery/migrations_dev/`
+- `loophole/composer` — `apps/composer-api/effigy.toml`,
+  `apps/composer-api/migrations/`, and `apps/composer-api/migrations_dev/`
+- `acowtancy` — `apps/farmyard/effigy.toml` and its advanced state/replay
+  surfaces
 
 Supporting shared contracts:
 
@@ -289,5 +291,5 @@ Bad outcomes:
 
 ## Next Task
 
-Use this contract as the baseline for new app schema work, then layer richer
-state or legacy-import systems only when the app genuinely needs them.
+Execute `g10.015`, the six-consumer database migration and schema workflow
+assessment. Do not change schema or apply state during the assessment.

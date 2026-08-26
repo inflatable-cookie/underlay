@@ -71,11 +71,59 @@ crate APIs when the boundary is not yet stable.
 cards here only when they do not collide with an active assessment or convergence
 lane.
 
+## Generation Runway
+
+- completed proof: consumer workspace normalization plus foundation and
+  transport assessment/repair (`g10.001`–`g10.014`)
+- immediate card: database migration assessment (`g10.015`, `ready`)
+- gated next card: testing posture assessment (`g10.016`, `planned`)
+- next batch: bounded migration/testing repairs compiled only from confirmed
+  findings
+- next planning checkpoint: after that repair wave, confirm the `024`–`026`
+  bootstrap/runtime assessment group remains the right transition
+- longer runway: collection/hybrid-shell convergence, consumer drift
+  follow-through, then the reference-grade surface diet
+
+## Goals
+
+- [x] Normalize the six-consumer workspace family onto one supported shape.
+- [x] Assess and repair the foundation and transport contract boundary.
+- [ ] Assess migration and testing posture across every consumer root and
+  affected child package.
+- [ ] Repair only confirmed contract drift with bounded ownership and proof.
+- [ ] Continue the contract-index assessment order without losing the
+  collection and drift-prevention horizons.
+
+## Execution Plan
+
+- [x] Batch 1 — authority repair and six-consumer workspace normalization
+  (`g10.001`–`g10.010`).
+- [x] Batch 2 — foundation/transport assessment and bounded repairs
+  (`g10.011`–`g10.014`).
+- [ ] Batch 3 — database migration and testing posture assessments
+  (`g10.015`–`g10.016`).
+- [ ] Batch 4 — findings-driven migration/testing repairs; compile cards only
+  after both evidence matrices settle ownership and scope.
+- [ ] Batch 5 — planning checkpoint, then compile the next coherent assessment
+  group from contracts `024`–`026`.
+
+## Acceptance Criteria
+
+- [x] Completed cards are removed from ready state on every queue authority.
+- [x] Consumer workspaces use the supported `apps/*` / `packages/*` evidence
+  shape.
+- [ ] Every `021` and `022` clause receives a fleet evidence verdict.
+- [ ] Every confirmed finding is matched, repaired through a bounded card, or
+  returned to an explicit operator decision.
+- [ ] Assessment cards remain read-only across consumer repositories.
+- [ ] The migration/testing repair wave closes before the next contract group
+  becomes ready.
+
 ## Candidate Lanes
 
 | Lane | Outcome | Primary authority | Notes |
 | --- | --- | --- | --- |
-| A | First contract-assessment wave (foundation + transport) | `contract-index.md`, `system-inventory.md` | Assessment and bounded repairs `g10.012`–`g10.014` complete |
+| A | Contract-assessment sequence | `contract-index.md`, `system-inventory.md` | Foundation/transport complete; migration/testing is the current batch |
 | B | Collection route convergence pilot | `116`, `117`, sweep `029` | Needs one consumer as proof anchor |
 | C | Hybrid shell extraction for one real tab | `117`, sweep `030`, Dairy `ModulesList` evidence | Bounded to one shell, not a framework rewrite |
 | D | Consumer drift B-items with stable boundaries | `070`, `021` sweep family | Only items with a clear Underlay-owned seam |
@@ -97,6 +145,10 @@ lane.
   Acowtancy evidence, then Underlay Reference.
 - `g10.006`–`g10.010` are complete.
 - Lane A assessment and bounded repairs `g10.012`–`g10.014` are complete.
+- `g10.015` and `g10.016` are serial because migration/reset proof ownership
+  informs the API testing verdict.
+- Migration/testing repair cards must come from the assessment evidence; do not
+  reserve speculative card numbers.
 - Lane B and C should not run as parallel unbounded refactors; pick one consumer
   proof anchor first (`underlay-reference` unless another app is clearer)
 - Lane D must respect `product-guardrails.md` — no app-local behavior smuggled
@@ -126,9 +178,16 @@ lane.
 12. [x] [`g10.012`](batch-cards/012-context-rejection-envelope-normalization.md) — context rejection envelope normalization (`complete`)
 13. [x] [`g10.013`](batch-cards/013-page-list-contract-artifact-sync.md) — page-list contract artifact sync (`complete`)
 14. [x] [`g10.014`](batch-cards/014-http-client-bounded-constructor-fallback.md) — bounded HTTP-client constructor fallback (`complete`)
+15. [ ] [`g10.015`](batch-cards/015-database-migration-contract-assessment.md) — database migration contract assessment (`ready`)
+16. [ ] [`g10.016`](batch-cards/016-testing-posture-contract-assessment.md) — testing posture contract assessment (`planned`; gated by `g10.015`)
+
+## Consumer Upgrade Impact
+
+`g10.015` and `g10.016` are assessment-only. They inspect current consumer
+state without changing consumer repositories. Any required upgrade must be
+compiled as a later findings-driven card.
 
 ## Next Task
 
-Re-enter planning and compile the next contract-assessment batch. Follow the
-declared order with migration and testing posture (`021`, `022`); no card is
-currently ready.
+Execute `g10.015`. Keep the assessment read-only: do not apply state, reset a
+database, or edit consumer repositories.

@@ -207,9 +207,8 @@ Assessment state:
   maps are omitted.
 - `g10.011` confirmed UUIDs, base success/error envelopes, TypeScript types,
   OpenAPI primitive schemas, and validation normalization match this contract.
-- Shared request-context rejections are the remaining confirmed envelope drift:
-  `ContextError` emits plain text instead of `ErrorEnvelope`. Repair is bounded
-  by `g10.012`.
+- `g10.012` normalized shared request-context rejections through
+  `ErrorEnvelope`. No confirmed foundation repair remains from `g10.011`.
 
 The repair does not widen the primitive model.
 
@@ -226,5 +225,5 @@ Use this contract to judge later implementation work:
 
 ## Next Task
 
-Execute `g10.012`: normalize shared context extractor failures through the
-canonical error envelope.
+Foundation assessment and bounded repair are complete. Continue through the
+active `g10` queue at [`g10/README.md`](../roadmaps/g10/README.md).

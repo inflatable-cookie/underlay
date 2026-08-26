@@ -357,5 +357,5 @@ Use this contract to judge later implementation work:
 
 ## Next Task
 
-Execute `g10.012`: normalize shared context extractor failures through the
-canonical error envelope.
+Transport assessment and bounded repairs are complete. Continue through the
+active `g10` queue at [`g10/README.md`](../roadmaps/g10/README.md).

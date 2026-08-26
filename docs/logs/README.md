@@ -51,5 +51,7 @@ where repo-local links and normalized prose references are required instead.
 ([fleet closeout](./2026-08/26-151525-g10-006-010-fleet-closeout.md)).
 `g10.011` is complete
 ([assessment](./2026-08/26-153051-g10-011-foundation-transport-assessment.md)).
-Execute `g10.012`; keep the active evidence window aligned to `g10` without
+`g10.012`–`g10.014` are complete. `g10.015`–`g10.016` are compiled
+([planning log](./2026-08/26-161417-g10-015-016-migration-testing-assessment-compiled.md)).
+Execute `g10.015`; keep the active evidence window aligned to `g10` without
 reconstructing closed history.

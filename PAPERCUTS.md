@@ -5,6 +5,12 @@ they hit a solvable hurdle; they do not stop the current task to fix one.
 
 ## Open
 
+### [ ] Active contracts retain machine-local evidence links — 2026-08-26
+- Friction: most active contract files still link through `/Users/tom/Dev/projects/...` paths even though the docs boundary requires repo-local Underlay links and prose-only sibling evidence
+- Impact: contract navigation is checkout-specific and active docs normalize a forbidden link style
+- Possible fix: sweep active contracts, convert Underlay targets to relative links, convert sibling-repo targets to prose refs, then add a docs QA check for absolute local paths
+- Surface: `docs/contracts/` / docs boundary QA
+
 ### [ ] Context extractor tests crossed the god-file warning threshold — 2026-08-26
 - Friction: the canonical rejection-envelope coverage pushed `rust/crates/underlay-http/src/tests/context_tests.rs` to 300 code lines
 - Impact: `effigy doctor` now reports one additional structural warning even though the focused test boundary is coherent

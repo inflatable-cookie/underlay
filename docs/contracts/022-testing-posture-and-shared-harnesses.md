@@ -23,24 +23,22 @@ It does not redefine the lower shared testing tools themselves. Those stay with
 
 Shared testing support:
 
-- [`docs/contracts/120-tooling-testing-and-contract-artifacts.md`](/Users/tom/Dev/projects/underlay/docs/contracts/120-tooling-testing-and-contract-artifacts.md)
-- [`rust/crates/underlay-testing/src/lib.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-testing/src/lib.rs)
-- [`ts/src/testing/index.ts`](/Users/tom/Dev/projects/underlay/ts/src/testing/index.ts)
+- [`120-tooling-testing-and-contract-artifacts.md`](./120-tooling-testing-and-contract-artifacts.md)
+- [`underlay-testing`](../../rust/crates/underlay-testing/src/lib.rs)
+- [TypeScript testing exports](../../ts/src/testing/index.ts)
 
 Reference consumer evidence:
 
-- [`underlay-reference/apps/acme-api/effigy.toml`](/Users/tom/Dev/projects/underlay-reference/apps/acme-api/effigy.toml)
-- [`underlay-reference/apps/acme-admin/effigy.toml`](/Users/tom/Dev/projects/underlay-reference/apps/acme-admin/effigy.toml)
-- [`acowtancy/farmyard/effigy.toml`](/Users/tom/Dev/projects/acowtancy/farmyard/effigy.toml)
-- [`acowtancy/dairy/effigy.toml`](/Users/tom/Dev/projects/acowtancy/dairy/effigy.toml)
-- [`compli-me/api/effigy.toml`](/Users/tom/Dev/projects/compli-me/api/effigy.toml)
-- [`compli-me/admin/effigy.toml`](/Users/tom/Dev/projects/compli-me/admin/effigy.toml)
-- [`contact-patch/cp-api/effigy.toml`](/Users/tom/Dev/projects/contact-patch/cp-api/effigy.toml)
-- [`contact-patch/cp-admin/effigy.toml`](/Users/tom/Dev/projects/contact-patch/cp-admin/effigy.toml)
-- [`songsprout/nursery/effigy.toml`](/Users/tom/Dev/projects/songsprout/nursery/effigy.toml)
-- [`songsprout/greenhouse/effigy.toml`](/Users/tom/Dev/projects/songsprout/greenhouse/effigy.toml)
-- [`loophole/composer/composer-api/effigy.toml`](/Users/tom/Dev/projects/loophole/composer/composer-api/effigy.toml)
-- [`loophole/composer/composer-admin/effigy.toml`](/Users/tom/Dev/projects/loophole/composer/composer-admin/effigy.toml)
+- `underlay-reference` — root tasks plus `apps/acme-api`, `apps/acme-admin`,
+  and `apps/acme-front`
+- `acowtancy` — root tasks plus `apps/farmyard`, `apps/dairy`, and `apps/cream`
+- `compli-me` — root tasks plus `apps/api`, `apps/admin`, and `apps/front`
+- `contact-patch` — root tasks plus `apps/cp-api`, `apps/cp-admin`, and
+  `apps/cp-front`
+- `songsprout` — root tasks plus `apps/nursery`, `apps/greenhouse`, and
+  `apps/bloom`
+- `loophole/composer` — root tasks plus `apps/composer-api`,
+  `apps/composer-admin`, and `apps/composer-front`
 
 Observed test roots:
 
@@ -249,5 +247,5 @@ Bad outcomes:
 
 ## Next Task
 
-Use this contract when assessing consumer test posture or when tightening the
-review bar for shared API, runtime, template, or workflow changes.
+After `g10.015` closes without a migration-policy gap, promote `g10.016` and
+assess the six-consumer testing posture and shared harness use.
