@@ -65,10 +65,10 @@ assessment. `g09.032` normalized request-context rejection envelopes, and
 bounded HTTP-client fallback repair. `g09.035` and `g09.036` completed the
 migration/testing assessments with `drifting` verdicts. `g09.037` completed the
 shared repair and `g09.038` completed the Underlay Reference proof. `g09.039`
-completed the Contact Patch rollout. `g09.040`–`g09.042` are
-changes-requested, while `g09.043` remains independently owned. `g09.044`
-remains planned behind all four merged proofs, and `g09.045` remains planned
-behind the repair closeout. See [`g09/README.md`](g09/README.md).
+completed the Contact Patch rollout and `g09.043` completed the Acowtancy
+repair. `g09.040`–`g09.042` are changes-requested. `g09.044` remains planned
+behind those three merged proofs, and `g09.045` remains planned behind the
+repair closeout. See [`g09/README.md`](g09/README.md).
 
 ## Archived generations
 
@@ -87,5 +87,5 @@ that risk.
 
 ## Next Task
 
-Revise and re-review `g09.040`–`g09.042`, accept `g09.043` evidence from its
-separate thread, and keep `g09.044` blocked until all four proofs merge.
+Revise and re-review `g09.040`–`g09.042`; keep `g09.044` blocked until all
+three proofs merge.

@@ -66,15 +66,15 @@ assessments. Both later assessments found bounded drift.
 2. prove the baseline migration and `TestServer` posture in Underlay Reference
    (`g09.038`, complete)
 3. run the five repository-owned consumer repairs independently after the
-   reference proof (`g09.039` complete; `g09.040`–`g09.042`
-   changes-requested; `g09.043` remains independently owned)
+   reference proof (`g09.039` and `g09.043` complete; `g09.040`–`g09.042`
+   changes-requested)
 4. close fleet evidence and settle the whole-app `TestDb` ownership decision
    (`g09.044`)
 
 `g09.038` merged in Underlay Reference PR4. Contact Patch PR4 then merged and
-closed `g09.039`. First review requested changes on `g09.040`–`g09.042`;
-`g09.043` remains owned by the separate Acowtancy thread. Every lane retains an
-independent repo-owned local state boundary.
+closed `g09.039`; Acowtancy PR59 merged and closed `g09.043`. First review
+requested changes on `g09.040`–`g09.042`. Every lane retains an independent
+repo-owned local state boundary.
 
 ### Phase 6 — Bootstrap/runtime assessment (`g09.045`, planned)
 
@@ -125,7 +125,7 @@ family. Repair roadmaps are not pre-numbered; they must come from the evidence.
 40. [ ] [`g09.040`](040-compli-me-migration-and-workflow-gate.md) — Compli Me migration and workflow gate (`changes-requested`)
 41. [ ] [`g09.041`](041-songsprout-migration-and-fail-closed-gates.md) — Songsprout migration and fail-closed gates (`changes-requested`)
 42. [ ] [`g09.042`](042-composer-migration-and-fail-closed-gates.md) — Composer migration and fail-closed gates (`changes-requested`)
-43. [ ] [`g09.043`](043-acowtancy-state-and-test-orchestration-repair.md) — Acowtancy state and test orchestration repair (`ready`; parallel lane)
+43. [x] [`g09.043`](043-acowtancy-state-and-test-orchestration-repair.md) — Acowtancy state and test orchestration repair (`complete`)
 44. [ ] [`g09.044`](044-migration-testing-fleet-closeout.md) — migration/testing fleet closeout (`planned`; after `g09.039`–`g09.043`)
 45. [ ] [`g09.045`](045-bootstrap-and-runtime-contract-assessment.md) — bootstrap and runtime contract assessment (`planned`; after `g09.044`)
 
@@ -141,9 +141,9 @@ Deferred with a promotion trigger (TypeScript 7.1 or concrete need):
 - `g09.035` and `g09.036` were serial because migration ownership informed the
   testing verdict.
 - `g09.037` and `g09.038` are complete.
-- `g09.039` is complete. `g09.040`–`g09.042` are changes-requested and may be
-  revised in parallel; `g09.043` remains independently owned. Their repository,
-  state, and destructive-mutation boundaries do not overlap.
+- `g09.039` and `g09.043` are complete. `g09.040`–`g09.042` are
+  changes-requested and may be revised in parallel. Their repository, state,
+  and destructive-mutation boundaries do not overlap.
 - `g09.044` waits for all five consumer roadmaps.
 - `g09.045` waits for repair-wave closeout and remains assessment-only.
 - No shared whole-app DB harness roadmap may be added until the operator chooses
@@ -165,11 +165,10 @@ completed the reference proof. `g09.039` cut Contact Patch from retired package
 `db:*` selectors to root state plan/apply plus routed `migration:*` tasks with
 no compatibility window. Revised `g09.040`–`g09.042` must finish the same
 cutover while preserving migration history and correcting the declared
-fail-open local dev overlays. `g09.043` repairs Acowtancy local state
+fail-open local dev overlays. `g09.043` repaired Acowtancy local state
 application and merge-gate reachability.
 
 ## Next Task
 
-Revise and re-review `g09.040`–`g09.042`; accept `g09.043` evidence from the
-separate Acowtancy thread. Keep `g09.044` blocked until all four remaining
-consumer PRs are reviewed and merged.
+Revise and re-review `g09.040`–`g09.042`. Keep `g09.044` blocked until all
+three remaining consumer PRs are reviewed and merged.

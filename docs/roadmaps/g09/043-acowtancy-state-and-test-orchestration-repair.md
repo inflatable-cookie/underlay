@@ -1,6 +1,6 @@
 # g09.043 - Acowtancy State And Test Orchestration Repair
 
-Status: ready
+Status: complete
 Owner: Acowtancy maintainers
 Contracts: `021-database-migration-and-schema-workflow.md`,
 `022-testing-posture-and-shared-harnesses.md`
@@ -84,7 +84,20 @@ removing the mock cast exposes a real shared-interface mismatch.
   suite
 - Compatibility window: none for incomplete state application
 
+## Completion Evidence
+
+Completed 2026-08-26 through
+[Acowtancy PR59](https://github.com/acowtancy/market/pull/59). The reviewed
+worker head was `a91343ae13ade02df8e25c6303f0f9d429305a08`; the merge commit is
+`a7e813701d6f8d934162a2945a4c3dd9aea4984b`.
+
+The target execution log records the positively identified disposable state
+boundary, from-empty and repeated apply, canonical bundle invariants, forced
+overlay failure, managed-suite teardown, and inherited red baselines. Post-merge
+verification on Acowtancy `main` confirmed the five-layer state plan with no
+warnings, Farmyard health, Cattle Grid typecheck, and a clean merge diff.
+
 ## Next Task
 
-Close this lane independently. `g09.044` waits for all five consumer repair
-roadmaps.
+This lane is closed. Revise and re-review `g09.040`–`g09.042`; keep `g09.044`
+blocked until those three consumer proofs merge.

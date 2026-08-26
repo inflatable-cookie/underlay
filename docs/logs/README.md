@@ -68,6 +68,7 @@ the invalid generation/card hierarchy was then repaired
 `g09.038` is complete and the five consumer lanes were promoted
 ([promotion/closeout log](./2026-08/26-200019-g09-038-closeout-and-consumer-promotion.md)).
 `g09.039` is complete
-([closeout](./2026-08/26-213154-g09-039-contact-patch-closeout.md)). Revise and
-re-review `g09.040`–`g09.042`, accept `g09.043` evidence from its separate
-thread, and keep `g09.044` blocked.
+([closeout](./2026-08/26-213154-g09-039-contact-patch-closeout.md)). `g09.043`
+is complete
+([closeout](./2026-08/26-214500-g09-043-acowtancy-closeout.md)). Revise and
+re-review `g09.040`–`g09.042`; keep `g09.044` blocked.
