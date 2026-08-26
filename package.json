@@ -7,7 +7,8 @@
     "ts"
   ],
   "bin": {
-    "underlay-workspace-shape": "./ts/bin/underlay-workspace-shape.ts"
+    "underlay-workspace-shape": "./ts/bin/underlay-workspace-shape.ts",
+    "underlay-env-authority": "./ts/bin/underlay-env-authority.ts"
   },
   "exports": {
     "./patterns": {
@@ -273,6 +274,10 @@
     "./tools/workspace-shape": {
       "types": "./ts/src/tools/workspace-shape.ts",
       "default": "./ts/src/tools/workspace-shape.ts"
+    },
+    "./tools/env-authority": {
+      "types": "./ts/src/tools/env-authority.ts",
+      "default": "./ts/src/tools/env-authority.ts"
     },
     "./server": {
       "types": "./ts/src/server/index.ts",

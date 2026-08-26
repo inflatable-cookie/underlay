@@ -58,5 +58,5 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g09.046`, the shared bootstrap/runtime/access authority repair. See
+Await review and merge of `g09.046`. Do not promote `g09.047` yet. See
 [`g09/README.md`](g09/README.md).

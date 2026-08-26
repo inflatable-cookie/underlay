@@ -1,0 +1,8 @@
+{
+  "name": "@fixture/app",
+  "private": true,
+  "dependencies": {
+    "@fixture/lib": "workspace:*",
+    "@inflatable-cookie/underlay": "file:../../vendor/underlay"
+  }
+}

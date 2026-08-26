@@ -23,47 +23,49 @@ or audited.
 
 Primary Rust support:
 
-- [`rust/crates/underlay-testing/src/lib.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-testing/src/lib.rs)
-- [`rust/crates/underlay-testing/src/fixtures.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-testing/src/fixtures.rs)
-- [`rust/crates/underlay-testing/src/test_db.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-testing/src/test_db.rs)
-- [`rust/crates/underlay-testing/src/test_server.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-testing/src/test_server.rs)
-- [`rust/crates/underlay-devtools/src/lib.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-devtools/src/lib.rs)
-- [`rust/crates/underlay-devtools/src/sync_migrations.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-devtools/src/sync_migrations.rs)
-- [`rust/crates/underlay-devtools/src/migration_bundle.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-devtools/src/migration_bundle.rs)
-- [`rust/crates/underlay-devtools/src/seed_bundle.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-devtools/src/seed_bundle.rs)
-- [`rust/crates/underlay-devtools/src/migration_report.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-devtools/src/migration_report.rs)
+- [`../../rust/crates/underlay-testing/src/lib.rs`](../../rust/crates/underlay-testing/src/lib.rs)
+- [`../../rust/crates/underlay-testing/src/fixtures.rs`](../../rust/crates/underlay-testing/src/fixtures.rs)
+- [`../../rust/crates/underlay-testing/src/test_db.rs`](../../rust/crates/underlay-testing/src/test_db.rs)
+- [`../../rust/crates/underlay-testing/src/test_server.rs`](../../rust/crates/underlay-testing/src/test_server.rs)
+- [`../../rust/crates/underlay-devtools/src/lib.rs`](../../rust/crates/underlay-devtools/src/lib.rs)
+- [`../../rust/crates/underlay-devtools/src/sync_migrations.rs`](../../rust/crates/underlay-devtools/src/sync_migrations.rs)
+- [`../../rust/crates/underlay-devtools/src/migration_bundle.rs`](../../rust/crates/underlay-devtools/src/migration_bundle.rs)
+- [`../../rust/crates/underlay-devtools/src/seed_bundle.rs`](../../rust/crates/underlay-devtools/src/seed_bundle.rs)
+- [`../../rust/crates/underlay-devtools/src/migration_report.rs`](../../rust/crates/underlay-devtools/src/migration_report.rs)
 
 Primary TS support:
 
-- [`ts/src/tools/guardrails.ts`](/Users/tom/Dev/projects/underlay/ts/src/tools/guardrails.ts)
-- [`ts/src/tools/guardrails-config.ts`](/Users/tom/Dev/projects/underlay/ts/src/tools/guardrails-config.ts)
-- [`ts/src/tools/guardrails/scanner.ts`](/Users/tom/Dev/projects/underlay/ts/src/tools/guardrails/scanner.ts)
-- [`ts/src/tools/guardrails/line-utils.ts`](/Users/tom/Dev/projects/underlay/ts/src/tools/guardrails/line-utils.ts)
-- [`ts/src/tools/guardrails/suppressions.ts`](/Users/tom/Dev/projects/underlay/ts/src/tools/guardrails/suppressions.ts)
-- [`ts/src/tools/templates/sveltekit-ssr.ts`](/Users/tom/Dev/projects/underlay/ts/src/tools/templates/sveltekit-ssr.ts)
-- [`ts/src/tools/templates/banned-apis.ts`](/Users/tom/Dev/projects/underlay/ts/src/tools/templates/banned-apis.ts)
-- [`ts/src/testing/index.ts`](/Users/tom/Dev/projects/underlay/ts/src/testing/index.ts)
-- [`ts/src/testing/http-client-mock.ts`](/Users/tom/Dev/projects/underlay/ts/src/testing/http-client-mock.ts)
+- [`../../ts/src/tools/guardrails.ts`](../../ts/src/tools/guardrails.ts)
+- [`../../ts/src/tools/guardrails-config.ts`](../../ts/src/tools/guardrails-config.ts)
+- [`../../ts/src/tools/guardrails/scanner.ts`](../../ts/src/tools/guardrails/scanner.ts)
+- [`../../ts/src/tools/guardrails/line-utils.ts`](../../ts/src/tools/guardrails/line-utils.ts)
+- [`../../ts/src/tools/guardrails/suppressions.ts`](../../ts/src/tools/guardrails/suppressions.ts)
+- [`../../ts/src/tools/templates/sveltekit-ssr.ts`](../../ts/src/tools/templates/sveltekit-ssr.ts)
+- [`../../ts/src/tools/templates/banned-apis.ts`](../../ts/src/tools/templates/banned-apis.ts)
+- [`../../ts/src/tools/workspace-shape.ts`](../../ts/src/tools/workspace-shape.ts)
+- [`../../ts/src/tools/env-authority.ts`](../../ts/src/tools/env-authority.ts)
+- [`../../ts/src/testing/index.ts`](../../ts/src/testing/index.ts)
+- [`../../ts/src/testing/http-client-mock.ts`](../../ts/src/testing/http-client-mock.ts)
 
 Primary machine-readable artifacts:
 
-- [`contracts/openapi/underlay.openapi.yaml`](/Users/tom/Dev/projects/underlay/contracts/openapi/underlay.openapi.yaml)
+- [`../../contracts/openapi/underlay.openapi.yaml`](../../contracts/openapi/underlay.openapi.yaml)
   — the shared response-envelope schema reference. Kept in sync with
   `ts/src/client/envelopes.ts` by the `envelope-contract-drift` test (fails when
   the two surfaces declare different envelopes or required fields).
-- [`docs/contracts/api-surface/endpoint-family-matrix.csv`](/Users/tom/Dev/projects/underlay/docs/contracts/api-surface/endpoint-family-matrix.csv)
+- [`api-surface/endpoint-family-matrix.csv`](./api-surface/endpoint-family-matrix.csv)
 
 Historical audit snapshots (from the `g01` poodle-adoption wave; retained for the
 archival record, read by no live check — do not treat as authoritative):
 
-- [`contracts/ui/poodle-underlay-coexistence-contract.json`](/Users/tom/Dev/projects/underlay/contracts/ui/poodle-underlay-coexistence-contract.json)
-- [`contracts/ui/poodle-adoption-underlay-surface-groups.json`](/Users/tom/Dev/projects/underlay/contracts/ui/poodle-adoption-underlay-surface-groups.json)
-- [`contracts/ui/poodle-prop-normalization-manifest.json`](/Users/tom/Dev/projects/underlay/contracts/ui/poodle-prop-normalization-manifest.json)
+- [`../../contracts/ui/poodle-underlay-coexistence-contract.json`](../../contracts/ui/poodle-underlay-coexistence-contract.json)
+- [`../../contracts/ui/poodle-adoption-underlay-surface-groups.json`](../../contracts/ui/poodle-adoption-underlay-surface-groups.json)
+- [`../../contracts/ui/poodle-prop-normalization-manifest.json`](../../contracts/ui/poodle-prop-normalization-manifest.json)
 
 Supporting:
 
-- [`docs/contracts/contract-index.md`](/Users/tom/Dev/projects/underlay/docs/contracts/contract-index.md)
-- [`docs/architecture/system-inventory.md`](/Users/tom/Dev/projects/underlay/docs/architecture/system-inventory.md)
+- [`contract-index.md`](./contract-index.md)
+- [`../architecture/system-inventory.md`](../architecture/system-inventory.md)
 
 If these diverge, the code and machine-readable artifacts win over planning
 docs.
@@ -221,7 +223,9 @@ Core pieces:
 - `checkWorkspaceShape()`
 - `formatWorkspaceShapeReport()`
 - stable rule ids for Git root posture, root manifest fields, explicit workspace
-  paths, root/child lockfiles, and internal JavaScript dependency edges
+  paths, supported `apps/*` / `packages/*` prefixes, root/child lockfiles,
+  internal JavaScript dependency edges, and committed `file:` Underlay/Poodle
+  dependencies
 
 Rules:
 
@@ -234,6 +238,36 @@ Rules:
   `qa:workspace-shape`, then compose that task into `health` or `validate`
 - Underlay wires fixture self-tests through `check:workspace-shape` and does not
   run the consumer topology check against its own foundation root
+- diagnostics must identify a stable rule id, repo-relative path, and offending
+  value with deterministic sort order and a non-zero exit on drift
+
+### Consumer env-authority checker
+
+`ts/src/tools/env-authority.ts` owns the retained static env/secret-inventory
+check.
+
+Core pieces:
+
+- `checkEnvAuthority()`
+- `formatEnvAuthorityReport()`
+- stable rule ids for missing authority files, invalid key-file syntax, and
+  required keys that are not declared in the env manifest
+
+Rules:
+
+- the checker validates contract `024` env/secret authority files mechanically
+  and stays separate from workspace-shape and from
+  `scripts/check-env-manifest.sh`
+- it must not read `.env` files or secret values, and it must not invent which
+  product keys are mandatory
+- consumers invoke the distributed export
+  `@inflatable-cookie/underlay/tools/env-authority` through the published
+  `underlay-env-authority` bin entry from an Effigy-owned task such as
+  `qa:env-authority`
+- Underlay wires fixture self-tests through `check:env-authority` and does not
+  run the consumer env check against its own foundation root
+- live value presence remains `scripts/check-env-manifest.sh` and must not
+  become a CI requirement for material secrets
 - diagnostics must identify a stable rule id, repo-relative path, and offending
   value with deterministic sort order and a non-zero exit on drift
 
@@ -346,5 +380,5 @@ Other system families own:
 
 ## Next Task
 
-Use `g09.045` to assess bootstrap, runtime assembly, and access-model contracts.
-Keep the Rust DB harness on its recorded single-schema boundary.
+`g09.046` is in review. After merge, keep workspace-shape and env-authority as
+separate mechanical checks. Do not fold env/secret proof into workspace-shape.

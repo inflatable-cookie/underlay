@@ -25,31 +25,31 @@ later read-shape contracts.
 
 Primary shared sources:
 
-- [`docs/contracts/020-http-transport-and-server-boundary.md`](/Users/tom/Dev/projects/underlay/docs/contracts/020-http-transport-and-server-boundary.md)
-- [`docs/contracts/025-rust-app-runtime-assembly-and-router-topology.md`](/Users/tom/Dev/projects/underlay/docs/contracts/025-rust-app-runtime-assembly-and-router-topology.md)
-- [`docs/contracts/030-auth-and-session-systems.md`](/Users/tom/Dev/projects/underlay/docs/contracts/030-auth-and-session-systems.md)
+- [`020-http-transport-and-server-boundary.md`](./020-http-transport-and-server-boundary.md)
+- [`025-rust-app-runtime-assembly-and-router-topology.md`](./025-rust-app-runtime-assembly-and-router-topology.md)
+- [`030-auth-and-session-systems.md`](./030-auth-and-session-systems.md)
 
-Reference consumer evidence:
+Reference consumer evidence, repo-relative from each consumer root:
 
-- [`underlay-reference/apps/acme-api/crates/api/src/routes/mod.rs`](/Users/tom/Dev/projects/underlay-reference/apps/acme-api/crates/api/src/routes/mod.rs)
-- [`underlay-reference/apps/acme-api/crates/api/src/state.rs`](/Users/tom/Dev/projects/underlay-reference/apps/acme-api/crates/api/src/state.rs)
-- [`acowtancy/farmyard/crates/api/src/routes/shared/router.rs`](/Users/tom/Dev/projects/acowtancy/farmyard/crates/api/src/routes/shared/router.rs)
-- [`acowtancy/farmyard/crates/api/src/routes/front/router.rs`](/Users/tom/Dev/projects/acowtancy/farmyard/crates/api/src/routes/front/router.rs)
-- [`acowtancy/farmyard/crates/api/src/routes/admin/router/misc_routes.rs`](/Users/tom/Dev/projects/acowtancy/farmyard/crates/api/src/routes/admin/router/misc_routes.rs)
-- [`acowtancy/farmyard/crates/api/src/state.rs`](/Users/tom/Dev/projects/acowtancy/farmyard/crates/api/src/state.rs)
+- `underlay-reference`: `apps/acme-api/crates/api/src/routes/mod.rs`,
+  `apps/acme-api/crates/api/src/state.rs`
+- `acowtancy`: `apps/farmyard/crates/api/src/routes/shared/router.rs`,
+  `apps/farmyard/crates/api/src/routes/front/router.rs`,
+  `apps/farmyard/crates/api/src/routes/admin/router/misc_routes.rs`,
+  `apps/farmyard/crates/api/src/state.rs`
 
-Additional consumer evidence:
+Additional consumer evidence, repo-relative from each consumer root:
 
-- [`compli-me/api/crates/api/src/routes/mod.rs`](/Users/tom/Dev/projects/compli-me/api/crates/api/src/routes/mod.rs)
-- [`contact-patch/cp-api/crates/api/src/routes/mod.rs`](/Users/tom/Dev/projects/contact-patch/cp-api/crates/api/src/routes/mod.rs)
-- [`songsprout/nursery/crates/api/src/routes/mod.rs`](/Users/tom/Dev/projects/songsprout/nursery/crates/api/src/routes/mod.rs)
-- [`songsprout/nursery/crates/api/src/routes/auth.rs`](/Users/tom/Dev/projects/songsprout/nursery/crates/api/src/routes/auth.rs)
-- [`songsprout/nursery/crates/api/src/routes/admin.rs`](/Users/tom/Dev/projects/songsprout/nursery/crates/api/src/routes/admin.rs)
-- [`loophole/composer/composer-api/crates/api/src/routes/mod.rs`](/Users/tom/Dev/projects/loophole/composer/composer-api/crates/api/src/routes/mod.rs)
-- [`loophole/composer/composer-api/crates/api/src/extractors.rs`](/Users/tom/Dev/projects/loophole/composer/composer-api/crates/api/src/extractors.rs)
+- `compli-me`: `apps/api/crates/api/src/routes/mod.rs`
+- `contact-patch`: `apps/cp-api/crates/api/src/routes/mod.rs`
+- `songsprout`: `apps/nursery/crates/api/src/routes/mod.rs`,
+  `apps/nursery/crates/api/src/routes/auth.rs`,
+  `apps/nursery/crates/api/src/routes/admin.rs`
+- `loophole/composer`: `apps/composer-api/crates/api/src/routes/mod.rs`,
+  `apps/composer-api/crates/api/src/extractors.rs`
 
 If these diverge, the contract plus the clearest modern reference posture
-(`underlay-reference`, `farmyard`) win.
+(`underlay-reference`, `acowtancy` Farmyard) win.
 
 ## Contract Goal
 
@@ -174,7 +174,7 @@ Default posture:
 - auth: none
 - role gate: none
 - CSRF: none
-- version header: not required
+- version header: never; runtime endpoints are exempt from API-version headers
 - rate limiting: optional, usually not needed
 
 Notes:
@@ -223,7 +223,7 @@ Posture:
 - auth: `AuthenticatedUser`
 - role gate: none
 - CSRF: required for browser-session mutations
-- version header: expected on normal `/v1/*` client traffic
+- version header: follow the versioning rule below; never required until declared
 
 ### Shared account endpoints
 
@@ -236,7 +236,7 @@ Posture:
 - auth: `AuthenticatedUser`
 - role gate: none
 - CSRF: required for browser-session mutations
-- version header: expected
+- version header: follow the versioning rule below; never required until declared
 
 ### Front/public product endpoints
 
@@ -271,7 +271,7 @@ Posture:
 - auth: `AuthenticatedUser`
 - role gate: product-user role or equivalent app-local check when needed
 - CSRF: none for pure reads
-- version header: expected
+- version header: follow the versioning rule below; never required until declared
 
 #### Authenticated product-user mutations
 
@@ -297,7 +297,7 @@ Posture:
 - auth: `AdminUser`
 - role gate: admin baseline
 - CSRF: required for browser-session mutations
-- version header: expected
+- version header: follow the versioning rule below; never required until declared
 - trusted proxy/IP posture: relevant for audit, logging, and rate-limited admin
   actions
 
@@ -361,16 +361,19 @@ Rules:
 
 ### Versioning
 
-Business endpoints are versioned API surfaces. Runtime endpoints are not.
+Path versioning is the baseline. Header versioning is optional until declared.
 
 Rules:
 
-- `/v1/*` routes may participate in API-version header policy
-- `/health`, `/metrics`, and OpenAPI routes do not require business-client
-  version headers
-- if an app logs or validates an API-version header, it should apply that
-  policy consistently across `/v1/*` business families rather than only to one
-  domain pocket
+- business endpoints live under `/v1/*`
+- runtime endpoints are not a versioned business surface and never require an
+  API-version header
+- an API-version header is optional until the app advertises, sends, logs, or
+  validates one
+- once declared, the server applies that header consistently across shared,
+  front/public, and admin families
+- do not apply a declared header to one business pocket and ignore it on the
+  others
 
 ### Rate limiting
 
@@ -444,14 +447,15 @@ Verdict: `drifting`, including security-priority consumer findings.
 - Compli Me and Songsprout retain handler-local elevated-role policy
 - Songsprout's rate-limit backend failure posture needs an explicit security
   decision
-- version-header and runtime-family wording is inconsistent inside the shared
-  docs and must be settled before rollout
 
-Repair authority is `g09.046`; reference and fleet adoption are `g09.047`-
-`g09.053`. See the
+Version-header and runtime-family wording were settled in `g09.046`. Path
+versioning is baseline; a header is optional until declared; declared headers
+apply to business families and exclude runtime.
+
+Reference and fleet adoption remain `g09.047`-`g09.053`. See the
 [`g09.045` assessment](../logs/2026-08/26-225903-g09-045-bootstrap-runtime-access-assessment.md).
 
 ## Next Task
 
-Execute `g09.046`, then prove the repaired access-model boundary in Underlay
-Reference before consumer rollout.
+`g09.046` is in review. After merge, prove the repaired access-model boundary
+in Underlay Reference (`g09.047`). Keep consumer lanes planned.

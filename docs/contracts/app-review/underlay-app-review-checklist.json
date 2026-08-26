@@ -71,6 +71,14 @@
       "required": true,
       "contracts": [
         "031"
+      ],
+      "mechanical_checks": [
+        {
+          "id": "env-authority",
+          "contract": "024",
+          "tool": "@inflatable-cookie/underlay/tools/env-authority",
+          "bin": "underlay-env-authority"
+        }
       ]
     },
     {

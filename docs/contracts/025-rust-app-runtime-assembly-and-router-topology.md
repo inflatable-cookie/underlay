@@ -25,35 +25,36 @@ behavior. Those build on top of this layer.
 
 Primary shared sources:
 
-- [`docs/contracts/020-http-transport-and-server-boundary.md`](/Users/tom/Dev/projects/underlay/docs/contracts/020-http-transport-and-server-boundary.md)
-- [`docs/contracts/030-auth-and-session-systems.md`](/Users/tom/Dev/projects/underlay/docs/contracts/030-auth-and-session-systems.md)
-- [`docs/contracts/060-jobs-events-and-operator-systems.md`](/Users/tom/Dev/projects/underlay/docs/contracts/060-jobs-events-and-operator-systems.md)
-- [`docs/architecture/020-rust-api-foundation.md`](/Users/tom/Dev/projects/underlay/docs/architecture/020-rust-api-foundation.md)
+- [`020-http-transport-and-server-boundary.md`](./020-http-transport-and-server-boundary.md)
+- [`030-auth-and-session-systems.md`](./030-auth-and-session-systems.md)
+- [`060-jobs-events-and-operator-systems.md`](./060-jobs-events-and-operator-systems.md)
+- [`../architecture/020-rust-api-foundation.md`](../architecture/020-rust-api-foundation.md)
+- [`026-route-families-and-access-model.md`](./026-route-families-and-access-model.md)
 
-Reference consumer evidence:
+Reference consumer evidence, repo-relative from each consumer root:
 
-- [`underlay-reference/apps/acme-api/crates/api/src/main.rs`](/Users/tom/Dev/projects/underlay-reference/apps/acme-api/crates/api/src/main.rs)
-- [`underlay-reference/apps/acme-api/crates/api/src/routes/mod.rs`](/Users/tom/Dev/projects/underlay-reference/apps/acme-api/crates/api/src/routes/mod.rs)
-- [`underlay-reference/apps/acme-api/crates/api/src/state.rs`](/Users/tom/Dev/projects/underlay-reference/apps/acme-api/crates/api/src/state.rs)
-- [`acowtancy/farmyard/crates/api/src/main.rs`](/Users/tom/Dev/projects/acowtancy/farmyard/crates/api/src/main.rs)
-- [`acowtancy/farmyard/crates/api/src/routes/router.rs`](/Users/tom/Dev/projects/acowtancy/farmyard/crates/api/src/routes/router.rs)
-- [`acowtancy/farmyard/crates/api/src/routes/shared/router.rs`](/Users/tom/Dev/projects/acowtancy/farmyard/crates/api/src/routes/shared/router.rs)
-- [`acowtancy/farmyard/crates/api/src/state.rs`](/Users/tom/Dev/projects/acowtancy/farmyard/crates/api/src/state.rs)
+- `underlay-reference`: `apps/acme-api/crates/api/src/main.rs`,
+  `apps/acme-api/crates/api/src/routes/mod.rs`,
+  `apps/acme-api/crates/api/src/state.rs`
+- `acowtancy`: `apps/farmyard/crates/api/src/main.rs`,
+  `apps/farmyard/crates/api/src/routes/router.rs`,
+  `apps/farmyard/crates/api/src/routes/shared/router.rs`,
+  `apps/farmyard/crates/api/src/state.rs`
 
-Additional consumer evidence:
+Additional consumer evidence, repo-relative from each consumer root:
 
-- [`compli-me/api/crates/api/src/main.rs`](/Users/tom/Dev/projects/compli-me/api/crates/api/src/main.rs)
-- [`compli-me/api/crates/api/src/routes/mod.rs`](/Users/tom/Dev/projects/compli-me/api/crates/api/src/routes/mod.rs)
-- [`contact-patch/cp-api/crates/api/src/main.rs`](/Users/tom/Dev/projects/contact-patch/cp-api/crates/api/src/main.rs)
-- [`contact-patch/cp-api/crates/api/src/routes/mod.rs`](/Users/tom/Dev/projects/contact-patch/cp-api/crates/api/src/routes/mod.rs)
-- [`songsprout/nursery/crates/api/src/main.rs`](/Users/tom/Dev/projects/songsprout/nursery/crates/api/src/main.rs)
-- [`songsprout/nursery/crates/api/src/routes/mod.rs`](/Users/tom/Dev/projects/songsprout/nursery/crates/api/src/routes/mod.rs)
-- [`loophole/composer/composer-api/crates/api/src/main.rs`](/Users/tom/Dev/projects/loophole/composer/composer-api/crates/api/src/main.rs)
-- [`loophole/composer/composer-api/crates/api/src/routes/mod.rs`](/Users/tom/Dev/projects/loophole/composer/composer-api/crates/api/src/routes/mod.rs)
+- `compli-me`: `apps/api/crates/api/src/main.rs`,
+  `apps/api/crates/api/src/routes/mod.rs`
+- `contact-patch`: `apps/cp-api/crates/api/src/main.rs`,
+  `apps/cp-api/crates/api/src/routes/mod.rs`
+- `songsprout`: `apps/nursery/crates/api/src/main.rs`,
+  `apps/nursery/crates/api/src/routes/mod.rs`
+- `loophole/composer`: `apps/composer-api/crates/api/src/main.rs`,
+  `apps/composer-api/crates/api/src/routes/mod.rs`
 
 If these diverge, the contract plus the clearest modern reference posture
-(`underlay-reference`, `farmyard`) win. Older or flatter assemblies must catch
-up.
+(`underlay-reference`, `acowtancy` Farmyard) win. Older or flatter assemblies
+must catch up.
 
 ## Contract Goal
 
@@ -226,6 +227,7 @@ Allowed patterns:
 
 - one `routes::build_router(...)`
 - or one top-level builder that merges sub-routers such as:
+  - `runtime`
   - `shared`
   - `admin`
   - `front` or public/user-facing
@@ -242,20 +244,24 @@ Rules:
 Preferred modern posture:
 
 - top-level router builder
-- explicit `shared`, `admin`, and optional `front`/public family builders
+- explicit `runtime`, `shared`, `admin`, and optional `front`/public family
+  builders
 
-Older flat route files are tolerated as migration evidence, not as the desired
-reference posture.
+Do not create an empty product family, empty crate, or placeholder module just
+to match the list. Older flat route files are tolerated as migration evidence,
+not as the desired reference posture.
 
 ### Route-family topology
 
-This contract does not fully define route-family semantics; `026` will do that.
-But it does define the expected assembly topology.
+[`026-route-families-and-access-model.md`](./026-route-families-and-access-model.md)
+owns route-family semantics. This contract defines the expected assembly
+topology.
 
 Normal route families:
 
+- runtime
+  - health, metrics, OpenAPI, and other operational surfaces
 - shared
-  - health
   - auth
   - account
   - globally shared utility reads such as public media download
@@ -266,9 +272,12 @@ Normal route families:
 
 Rules:
 
-- a normal app should expose those families explicitly in the router tree, even
-  if one family is small
+- runtime is a distinct operational family, not a shared business family
+- auth and account remain shared business routes
+- a normal app should expose the families it actually owns in the router tree
 - apps without a true front/public API may omit the front family
+- lean and rich health, metrics, and OpenAPI profiles are both allowed; keep
+  them inside the runtime family
 - route families should be evident from source layout, not only from path
   strings
 
@@ -452,17 +461,16 @@ Verdict: `drifting`.
 - direct-router test support is absent or unproved in Compli Me, Songsprout, and
   Composer
 - Farmyard's binary retains a separable large OpenAPI registry
-- guide `070`, source links, runtime-family wording, and this contract's former
-  fleet summary are stale shared authority
 
-Visible cleanup and shutdown helpers are normal binary responsibilities. The
-assessment does not use line count alone as a thin-entrypoint rule.
+Shared source links, runtime-family wording, and guide `070` were repaired in
+`g09.046`. Visible cleanup and shutdown helpers are normal binary
+responsibilities. The assessment does not use line count alone as a
+thin-entrypoint rule.
 
-Repair authority is `g09.046`; reference and fleet adoption are `g09.047`-
-`g09.053`. See the
+Reference and fleet adoption remain `g09.047`-`g09.053`. See the
 [`g09.045` assessment](../logs/2026-08/26-225903-g09-045-bootstrap-runtime-access-assessment.md).
 
 ## Next Task
 
-Execute `g09.046`, then prove the repaired runtime assembly boundary in
-Underlay Reference before consumer rollout.
+`g09.046` is in review. After merge, prove the repaired runtime assembly
+boundary in Underlay Reference (`g09.047`). Keep consumer lanes planned.

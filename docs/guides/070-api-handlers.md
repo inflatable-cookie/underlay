@@ -33,27 +33,24 @@ See [073-api-profiles-and-query-contract.md](./073-api-profiles-and-query-contra
 
 ## Handler Structure
 
-For small-to-medium services, keep things inline in `main.rs`:
+Keep `main.rs` thin. Put `AppState` in `state.rs` and register routes through
+one obvious builder outside the binary.
 
 ```
 apps/api/crates/api/src/
-├── main.rs        # Router + handlers + DTOs
-└── state.rs       # AppState (optional)
+├── main.rs          # config, pool, AppState, bind, shutdown
+├── state.rs         # AppState
+└── routes/
+    ├── mod.rs       # build_router
+    ├── runtime.rs   # health, metrics, OpenAPI
+    ├── shared.rs    # auth, account, other shared business routes
+    ├── admin.rs     # /v1/admin/*
+    └── front.rs     # omit when the app has no product family
 ```
 
-As the API grows, split by domain:
-
-```
-apps/api/crates/api/src/
-├── main.rs
-├── state.rs
-├── error.rs
-└── handlers/
-    ├── mod.rs
-    ├── users.rs
-    ├── artists.rs
-    └── admin.rs
-```
+Do not create an empty `front` module, empty crate, or placeholder family just
+to match this tree. Split further by domain inside a family when a file gets
+large. Route definitions do not live in `main.rs`.
 
 ## Response Envelopes
 
@@ -216,6 +213,8 @@ use underlay_http::{ApiError, ApiResult, list_ok, ok, parse_uuid_path_raw};
 
 use crate::state::AppState;
 
+// routes/shared.rs — business handlers live in a family module, not main.rs.
+
 #[derive(serde::Serialize)]
 struct UserDto {
     user_id: String,
@@ -286,11 +285,22 @@ async fn get_user(State(state): State<AppState>, Path(user_id): Path<String>) ->
     Ok(ok(dto))
 }
 
-pub fn create_router(state: AppState) -> Router {
+pub fn router() -> Router<AppState> {
     Router::new()
-        .route("/health", get(|| async { "ok" }))
         .route("/v1/users", get(list_users))
         .route("/v1/users/:id", get(get_user))
+}
+
+// routes/runtime.rs
+pub fn router() -> Router<AppState> {
+    Router::new().route("/health", get(|| async { "ok" }))
+}
+
+// routes/mod.rs
+pub fn build_router(state: AppState) -> Router {
+    Router::new()
+        .merge(runtime::router())
+        .merge(shared::router())
         .with_state(state)
 }
 ```
@@ -306,7 +316,7 @@ server-side order explicit:
 
 Copyable example:
 
-- [`docs/guides/code/070-api-handlers/nightfire-persist-and-media-sync.rs`](/Users/tom/Dev/projects/underlay/docs/guides/code/070-api-handlers/nightfire-persist-and-media-sync.rs)
+- [`code/070-api-handlers/nightfire-persist-and-media-sync.rs`](./code/070-api-handlers/nightfire-persist-and-media-sync.rs)
 
 Important boundary rule:
 
@@ -473,13 +483,18 @@ Add to `Cargo.toml`:
 tower-governor = "0.1"
 ```
 
-## API Version Header (Optional)
+## API Versioning
 
-If you use date-based versioning (myapp-style), send a header like:
+Path versioning is the baseline. Keep business routes under `/v1/...`.
+
+An API-version header is optional until the app advertises, sends, logs, or
+validates one. Once declared, apply it consistently across shared, front, and
+admin families. Runtime endpoints such as `/health`, `/metrics`, and OpenAPI
+are exempt.
+
+Example declared header:
 
 - `X-Api-Version: 2025-01-01`
-
-Keep the URL stable (`/v1/...`). This makes it easier to evolve behavior without changing clients' base URLs.
 
 ## See Also
 

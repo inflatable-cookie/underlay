@@ -39,36 +39,8 @@ where repo-local links and normalized prose references are required instead.
 
 ## Next Task
 
-`g09.021` is complete and merged
-([execution log](./2026-08/25-181500-g09-021-monorepo-contract-authority.md)).
-`g09.022` is complete and merged
-([execution log](./2026-08/25-190914-g09-022-active-guide-normalization.md)).
-`g09.023` is complete and merged
-([execution log](./2026-08/25-203725-g09-023-workspace-shape-conformance.md)).
-`g09.024` is complete and merged
-([execution log](./2026-08/25-232150-g09-024-acowtancy-evidence-repair.md)).
-`g09.025` is complete and merged
-([execution log](./2026-08/26-110905-g09-025-underlay-reference-normalization.md)).
-`g09.026`–`g09.030` are complete
-([fleet closeout](./2026-08/26-151525-g09-026-030-fleet-closeout.md)).
-`g09.031` is complete
-([assessment](./2026-08/26-153051-g09-031-foundation-transport-assessment.md)).
-`g09.032`–`g09.034` are complete. `g09.035`–`g09.036` are compiled
-([planning log](./2026-08/26-161417-g09-035-036-migration-testing-assessment-compiled.md)).
-`g09.035` is complete
-([assessment](./2026-08/26-162845-g09-035-database-migration-assessment.md)).
-`g09.036` is complete
-([assessment](./2026-08/26-164407-g09-036-testing-posture-assessment.md)).
-`g09.037`–`g09.044` are compiled
-([planning log](./2026-08/26-165722-g09-037-044-migration-testing-repairs-compiled.md));
-the invalid generation/card hierarchy was then repaired
-([recovery log](./2026-08/26-171952-g09-roadmap-authority-recovery.md)).
-`g09.037` then completed
-([execution log](./2026-08/26-173931-g09-037-underlay-test-gate-mock-contract.md)).
-`g09.038` is complete and the five consumer lanes were promoted
-([promotion/closeout log](./2026-08/26-200019-g09-038-closeout-and-consumer-promotion.md)).
-`g09.039` is complete
-([closeout](./2026-08/26-213154-g09-039-contact-patch-closeout.md)). `g09.043`
-is complete
-([closeout](./2026-08/26-214500-g09-043-acowtancy-closeout.md)). Revise and
-re-review `g09.040`–`g09.042`; keep `g09.044` blocked.
+`g09.045` completed the bootstrap/runtime/access assessment
+([assessment](./2026-08/26-225903-g09-045-bootstrap-runtime-access-assessment.md)).
+`g09.046` is in review
+([execution log](./2026-08/26-232742-g09-046-bootstrap-runtime-access-authority.md)).
+Keep `g09.047` planned until that merge lands.

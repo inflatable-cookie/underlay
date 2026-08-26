@@ -1,5 +1,6 @@
 # Declared env surface for startup and local validation.
 # Keep only true secrets and real runtime-env keys here.
+# Static authority (`underlay-env-authority`) reads this key list only.
 DATABASE_URL
 ENVIRONMENT_NAME
 HOST

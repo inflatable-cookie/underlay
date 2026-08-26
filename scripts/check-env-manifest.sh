@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# Live env-manifest check: unknown keys in a populated env file, and required
+# keys present in that env or the process environment.
+# Static file/syntax/relationship proof is `underlay-env-authority`.
 set -euo pipefail
 
 if [[ $# -lt 1 || $# -gt 4 ]]; then

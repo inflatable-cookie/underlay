@@ -132,5 +132,5 @@ Every system should pass through the same loop:
 
 ## Next Task
 
-Execute `g09.046`, the shared bootstrap/runtime/access authority repair. See
+Await review and merge of `g09.046`. Do not promote `g09.047` yet. See
 [`docs/roadmaps/g09/README.md`](../roadmaps/g09/README.md).

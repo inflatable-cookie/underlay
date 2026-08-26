@@ -144,6 +144,30 @@ describe("tools/workspace-shape", () => {
 		);
 	});
 
+	it("flags declared JavaScript workspaces outside apps/* and packages/*", async () => {
+		const violations = await checkWorkspaceShape(await loadFixture("workspace-prefix-unsupported"));
+		expect(violations.map((v) => v.ruleId)).toContain(
+			WORKSPACE_SHAPE_RULE_IDS.WORKSPACE_PREFIX_UNSUPPORTED,
+		);
+	});
+
+	it("flags committed file: Underlay and Poodle dependencies", async () => {
+		const named = await checkWorkspaceShape(await loadFixture("shared-file-dependency"));
+		expect(named.map((v) => v.ruleId)).toContain(WORKSPACE_SHAPE_RULE_IDS.SHARED_FILE_DEPENDENCY);
+
+		const byTarget = await checkWorkspaceShape(
+			await loadFixture("shared-file-dependency-by-target"),
+		);
+		expect(byTarget.map((v) => v.ruleId)).toContain(WORKSPACE_SHAPE_RULE_IDS.SHARED_FILE_DEPENDENCY);
+	});
+
+	it("allows unrelated external file: development dependencies", async () => {
+		const violations = await checkWorkspaceShape(
+			await loadFixture("external-file-dependency-allowed"),
+		);
+		expect(violations).toEqual([]);
+	});
+
 	it("returns deterministic sorted diagnostics", async () => {
 		const violations = await checkWorkspaceShape(await loadFixture("nested-git"));
 		const sorted = [...violations].sort((a, b) => {
