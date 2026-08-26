@@ -26,13 +26,13 @@ before the first mutation.
 
 ## Review Gate
 
-Review on 2026-08-26 requested changes in the
-[Composer PR4 review](https://github.com/inflatable-cookie/loophole-composer/pull/4#issuecomment-5430715131)
-at exact head `62160f94b455224696e8e256777261a0b4a37d2a`. Rework three boundaries before
-re-review: keep durable prerequisites and migration history on the explicit
-forward-only contract, preserve Composer's canonical container runtime instead
-of forcing every child task onto the host, and route API/Admin validation to
-explicit package-owned tests rather than the workspace-wide built-in board.
+Re-review on 2026-08-26 confirmed the runtime and test repairs in the
+[Composer PR4 follow-up](https://github.com/inflatable-cookie/loophole-composer/pull/4#issuecomment-5430983684)
+at exact head `cd796f65399d4ead1265cc33d86b53ff7c34058e`. Six committed migrations now
+change checksum. Provide explicit operator confirmation that no shared, UAT, or
+production database applied the old history and authorize the rebaseline, or
+preserve those checksums with a forward-only repair. Correct the stale PR
+description in the same update.
 
 ## Scope
 

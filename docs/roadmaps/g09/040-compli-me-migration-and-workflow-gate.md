@@ -26,13 +26,12 @@ mutation.
 
 ## Review Gate
 
-Review on 2026-08-26 requested changes in the
-[Compli Me PR6 review](https://github.com/double-dip/compli-me/pull/6#issuecomment-5430715156)
-at exact head `4015e1d5458c8aa877f7ee7d656ce72da1c673ab`. The PR rewrites the existing
-`202605131900__baseline_media.sql` checksum. Restore that migration byte for
-byte, move the prerequisite schema creation into a separate ordered migration,
-and re-prove both from-empty replay and an already-applied history before
-re-review.
+Re-review on 2026-08-26 requested changes in the
+[Compli Me PR6 follow-up](https://github.com/double-dip/compli-me/pull/6#issuecomment-5430970599)
+at exact head `2040df643501fc03c056c88098c667357c0e4c40`. The published media migration
+is restored, but `run_migrations` now creates the durable `media` schema before
+SQLx. Move that idempotent repair into a predecessor migration, remove the
+runtime DDL, and re-prove empty plus already-applied histories.
 
 ## Scope
 

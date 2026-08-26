@@ -26,12 +26,11 @@ mutation because the allocated loopback port may change after stack recreation.
 
 ## Review Gate
 
-Review on 2026-08-26 requested changes in the
-[Songsprout PR4 review](https://github.com/inflatable-cookie/songsprout/pull/4#issuecomment-5430715120)
-at exact head `d37ffd651f5cb37b2b75c17ac897945411c0af32`. Nursery local-dev API startup
-still logs a dev-overlay error and continues. Return that already-local error,
-then keep the target-filter papercut open or narrow its closeout to the sibling
-catalog exclusion actually delivered before re-review.
+Re-review on 2026-08-26 found the implementation clean in the
+[Songsprout PR4 follow-up](https://github.com/inflatable-cookie/songsprout/pull/4#issuecomment-5430970590)
+at exact head `713ac411baae6fa1095caa6594dffa7f26e86438`. The PR description still claims
+the repaired local-dev fail-open behavior is unresolved. Correct that provider
+evidence before the merge verdict.
 
 ## Scope
 
