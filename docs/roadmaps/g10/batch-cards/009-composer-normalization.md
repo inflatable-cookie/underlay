@@ -1,7 +1,6 @@
 # g10.009 - Composer Normalization
 
-Status: planned
-Blocked by: `g10.005`
+Status: ready
 Owner: Composer maintainers
 Spec: `docs/specs/monorepo-consumer-workspace-rollout.md`
 

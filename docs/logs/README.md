@@ -45,6 +45,7 @@ where repo-local links and normalized prose references are required instead.
 ([execution log](./2026-08/25-203725-g10-003-workspace-shape-conformance.md)).
 `g10.004` is complete and merged
 ([execution log](./2026-08/25-232150-g10-004-acowtancy-evidence-repair.md)).
-Execute `g10.005` through an orchestrator-dispatched Underlay Reference worker
-handoff. Keep the active evidence window aligned to `g10` without
-reconstructing closed history.
+`g10.005` is complete and merged
+([execution log](./2026-08/26-110905-g10-005-underlay-reference-normalization.md)).
+Publish independent worker handoffs for `g10.006`–`g10.009`. Keep the active
+evidence window aligned to `g10` without reconstructing closed history.

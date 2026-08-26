@@ -1,6 +1,7 @@
 # g10.005 - Underlay Reference Normalization
 
-Status: ready
+Status: complete
+Completed: 2026-08-26
 Owner: Underlay Reference maintainers
 Spec: `docs/specs/monorepo-consumer-workspace-rollout.md`
 
@@ -57,6 +58,26 @@ The target's own `g01.007` strict lane remains planning authority for retained
 surface semantics. This card may update its paths and front-door references as
 part of the docs move, but must not execute or redefine that lane.
 
+## Review And Merge Evidence
+
+PR [#3](https://github.com/inflatable-cookie/underlay-reference/pull/3)
+merged to Underlay Reference `main` as
+`40924bc93fc9bf29a0a5d686cd1870f728ca48ce` on 2026-08-26. The reviewed
+implementation head was `e337bd9e626076e9f8238aede3c49de11c7786d7`.
+
+The fixture now uses the canonical `apps/*`, `packages/*`, and root `docs/`
+shape, one root Bun manifest and lock, and internal `workspace:*` edges. Shared
+bundle PR
+[`underlay-effigy-bundle#1`](https://github.com/inflatable-cookie/underlay-effigy-bundle/pull/1)
+merged first as `e680157eebbdb4a14e98b53bd3f9ec38b9a936b7`; the fixture consumes its
+catalog-alias and root-workspace inputs with no local lifecycle override.
+
+Frozen root install, health, docs QA, package checks, API build, retained
+rollout checks, template/security conformance, workspace-shape conformance,
+and diff hygiene passed. Full `effigy validate` retained only the recorded
+Front Vitest path-routing baseline; Underlay and the other test targets passed.
+
 ## Next Task
 
-After merge, prepare independent handoffs for `g10.006`–`g10.009`.
+Closed after review, operator-authorized merge, and merged-state verification.
+Publish independent handoffs for ready cards `g10.006`–`g10.009`.

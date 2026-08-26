@@ -1,7 +1,6 @@
 # g10.007 - Compli Me Normalization
 
-Status: planned
-Blocked by: `g10.005`
+Status: ready
 Owner: Compli Me maintainers
 Spec: `docs/specs/monorepo-consumer-workspace-rollout.md`
 

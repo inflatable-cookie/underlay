@@ -1,7 +1,6 @@
 # g10.006 - Contact Patch Normalization
 
-Status: planned
-Blocked by: `g10.005`
+Status: ready
 Owner: Contact Patch maintainers
 Spec: `docs/specs/monorepo-consumer-workspace-rollout.md`
 

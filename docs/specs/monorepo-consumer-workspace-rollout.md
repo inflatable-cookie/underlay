@@ -159,5 +159,5 @@ Pause the active worker and return to the orchestrator if:
 
 ## Next Task
 
-Execute `g10.005` through an orchestrator-dispatched Underlay Reference worker
-handoff. No other card is ready.
+Publish independent worker handoffs for ready cards `g10.006`–`g10.009`. Keep
+each consumer in its own worktree, branch, handoff, and PR.

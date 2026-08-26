@@ -1,7 +1,7 @@
 # Underlay Roadmap Generation Index
 
 Status: active
-Updated: 2026-08-25
+Updated: 2026-08-26
 
 ## Mode
 
@@ -25,7 +25,7 @@ Updated: 2026-08-25
 | `g07` | 2026-06-06 | Runtime, workflow, residual Rust policy, and doctor-warning hardening after `g06` closeout | Complete after `g07.037` doctor warning closeout |
 | `g08` | 2026-07-17 | Audit remediation after July 2026 deep audit (security edge, correctness bugs, Rust/TS structure, docs/versioning/i18n posture) | Complete - all 32 cards done; `v0.8.0` tagged |
 | `g09` | 2026-08-03 | Config-convergence follow-through after the 2026-08-03 self-audit; extended with dependency-upgrade and elective-majors cards | Complete - all 20 cards done |
-| `g10` | 2026-08-17 | Contract fidelity, collection convergence, and fleet drift prevention after `g09` closeout | Active - `g10.001`–`g10.004` complete; `g10.005` ready in the monorepo consumer-workspace rollout |
+| `g10` | 2026-08-17 | Contract fidelity, collection convergence, and fleet drift prevention after `g09` closeout | Active - `g10.001`–`g10.005` complete; `g10.006`–`g10.009` ready for parallel consumer rollout |
 
 ## Historical generations
 
@@ -56,6 +56,5 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g10.005` through an orchestrator-dispatched Underlay Reference worker
-handoff. See [`g10/README.md`](g10/README.md) and the active strict spec. No
-other card is ready.
+Publish independent worker handoffs for `g10.006`–`g10.009`. See
+[`g10/README.md`](g10/README.md) and the active strict spec.

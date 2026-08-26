@@ -120,16 +120,15 @@ lane.
 2. [x] [`g10.002`](batch-cards/002-active-guide-normalization.md) — migration contract and active guide normalization (`complete`)
 3. [x] [`g10.003`](batch-cards/003-workspace-shape-conformance.md) — workspace-shape conformance (`complete`)
 4. [x] [`g10.004`](batch-cards/004-acowtancy-evidence-repair.md) — Acowtancy evidence repair (`complete`)
-5. [ ] [`g10.005`](batch-cards/005-underlay-reference-normalization.md) — Underlay Reference normalization (`ready`)
-6. [ ] [`g10.006`](batch-cards/006-contact-patch-normalization.md) — Contact Patch normalization
-7. [ ] [`g10.007`](batch-cards/007-compli-me-normalization.md) — Compli Me normalization
-8. [ ] [`g10.008`](batch-cards/008-songsprout-normalization.md) — Songsprout normalization
-9. [ ] [`g10.009`](batch-cards/009-composer-normalization.md) — Composer normalization
+5. [x] [`g10.005`](batch-cards/005-underlay-reference-normalization.md) — Underlay Reference normalization (`complete`)
+6. [ ] [`g10.006`](batch-cards/006-contact-patch-normalization.md) — Contact Patch normalization (`ready`)
+7. [ ] [`g10.007`](batch-cards/007-compli-me-normalization.md) — Compli Me normalization (`ready`)
+8. [ ] [`g10.008`](batch-cards/008-songsprout-normalization.md) — Songsprout normalization (`ready`)
+9. [ ] [`g10.009`](batch-cards/009-composer-normalization.md) — Composer normalization (`ready`)
 10. [ ] [`g10.010`](batch-cards/010-fleet-proof-and-closeout.md) — fleet proof and closeout
 
 ## Next Task
 
-Execute `g10.005` — Underlay Reference normalization — through an
-orchestrator-dispatched Underlay Reference worker handoff. `g10.004` evidence:
-[`docs/logs/2026-08/25-232150-g10-004-acowtancy-evidence-repair.md`](../../logs/2026-08/25-232150-g10-004-acowtancy-evidence-repair.md).
-No other card is ready.
+Publish four independent worker handoffs for ready cards `g10.006`–`g10.009`.
+`g10.005` evidence:
+[`docs/logs/2026-08/26-110905-g10-005-underlay-reference-normalization.md`](../../logs/2026-08/26-110905-g10-005-underlay-reference-normalization.md).

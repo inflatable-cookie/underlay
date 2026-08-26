@@ -2,7 +2,7 @@
 
 Date: 2026-08-26
 Roadmap: `g10`
-Status: preparation complete; implementation blocked by `g10.005`
+Status: preparation complete; ready for parallel dispatch
 
 ## Trigger
 
@@ -92,11 +92,12 @@ Effigy cannot express that sibling-source contract.
 
 ## Current State
 
-Cards `g10.006`-`g10.009` now carry exact readiness evidence. Their status
-remains `planned`; `Blocked by: g10.005` remains authoritative. No downstream
-handoff has been prepared or dispatched.
+Underlay Reference PR
+[#3](https://github.com/inflatable-cookie/underlay-reference/pull/3) merged as
+`40924bc93fc9bf29a0a5d686cd1870f728ca48ce`. Cards `g10.006`–`g10.009` now
+carry exact readiness evidence and are `ready`. No downstream handoff has been
+prepared or dispatched.
 
 ## Next Task
 
-Review and merge `g10.005`. Then publish the four independent consumer handoffs
-in one batch.
+Publish the four independent consumer handoffs in one batch.

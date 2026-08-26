@@ -1,7 +1,6 @@
 # g10.008 - Songsprout Normalization
 
-Status: planned
-Blocked by: `g10.005`
+Status: ready
 Owner: Songsprout maintainers
 Spec: `docs/specs/monorepo-consumer-workspace-rollout.md`
 

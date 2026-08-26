@@ -51,10 +51,10 @@ Underlay is in parallel mode:
 - `g10.002` is complete
 - `g10.003` is complete
 - `g10.004` is complete
-- `g10.005` is the only ready card
+- `g10.005` is complete
+- `g10.006`–`g10.009` are ready for independent parallel workers
 
 ## Next Task
 
-Execute `g10.005` — Underlay Reference normalization — through an
-orchestrator-dispatched Underlay Reference worker handoff. No other card is
-ready.
+Publish independent worker handoffs for `g10.006`–`g10.009`. Do not combine
+consumer scopes or share worker branches.

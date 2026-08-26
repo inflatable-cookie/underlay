@@ -60,8 +60,8 @@ README surfaces.
 and elective majors landed 2026-08-04.
 
 `g10` is executing the strict monorepo consumer-workspace rollout. `g10.001`–
-`g10.004` are complete, and `g10.005` is the only ready card. See
-[`g10/README.md`](g10/README.md).
+`g10.005` are complete; `g10.006`–`g10.009` are ready for independent parallel
+workers. See [`g10/README.md`](g10/README.md).
 
 ## Archived generations
 
@@ -80,6 +80,5 @@ that risk.
 
 ## Next Task
 
-**`g10.005`** — Underlay Reference normalization. Execute it through an
-orchestrator-dispatched Underlay Reference worker handoff. No other card is
-ready.
+Publish independent worker handoffs for **`g10.006`–`g10.009`**: Contact Patch,
+Compli Me, Songsprout, and Composer normalization.

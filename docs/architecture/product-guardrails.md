@@ -19,7 +19,7 @@ Owner: repo maintainers
 
 ## Next Task
 
-Execute `g10.005` in Underlay Reference from the active monorepo
-consumer-workspace spec. Keep the physical migration bounded to workspace,
-dependency, docs, and tooling paths; do not widen it into shared runtime or
-template extraction.
+Publish independent `g10.006`–`g10.009` consumer handoffs from the active
+monorepo workspace spec. Keep each migration bounded to workspace, dependency,
+docs, and tooling paths; do not widen it into shared runtime or template
+extraction.
