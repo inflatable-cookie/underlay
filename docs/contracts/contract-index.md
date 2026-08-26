@@ -98,5 +98,6 @@ Do not promote a system into active implementation-assessment work until:
 
 ## Next Task
 
-Dispatch ready consumer roadmaps `g09.039`–`g09.043` as isolated parallel
-lanes. See [`docs/roadmaps/g09/README.md`](../roadmaps/g09/README.md).
+Close revised consumer roadmaps `g09.040`–`g09.042` and accept `g09.043`
+evidence from its separate thread. Keep `g09.044` blocked. See
+[`docs/roadmaps/g09/README.md`](../roadmaps/g09/README.md).

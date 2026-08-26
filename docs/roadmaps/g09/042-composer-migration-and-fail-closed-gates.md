@@ -1,6 +1,6 @@
 # g09.042 - Composer Migration And Fail-Closed Gates
 
-Status: ready
+Status: changes-requested
 Owner: Composer maintainers
 Contracts: `021-database-migration-and-schema-workflow.md`,
 `022-testing-posture-and-shared-harnesses.md`
@@ -23,6 +23,16 @@ Readiness checked 2026-08-26: system `loophole-composer-dev`, container
 binding `127.0.0.1:58832`, volume `loophole-composer-dev-postgres-data`, no
 shared services, and the database accepts connections. Re-prove every fact
 before the first mutation.
+
+## Review Gate
+
+Review on 2026-08-26 requested changes in the
+[Composer PR4 review](https://github.com/inflatable-cookie/loophole-composer/pull/4#issuecomment-5430715131)
+at exact head `62160f94b455224696e8e256777261a0b4a37d2a`. Rework three boundaries before
+re-review: keep durable prerequisites and migration history on the explicit
+forward-only contract, preserve Composer's canonical container runtime instead
+of forcing every child task onto the host, and route API/Admin validation to
+explicit package-owned tests rather than the workspace-wide built-in board.
 
 ## Scope
 

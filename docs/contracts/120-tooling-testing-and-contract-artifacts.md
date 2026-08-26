@@ -349,5 +349,6 @@ Other system families own:
 
 ## Next Task
 
-Dispatch ready consumer roadmaps `g09.039`–`g09.043`. Do not change the Rust DB
-harness boundary without the `g09.044` operator decision.
+Close revised consumer roadmaps `g09.040`–`g09.042` and the independently owned
+`g09.043`. Do not change the Rust DB harness boundary without the `g09.044`
+operator decision.

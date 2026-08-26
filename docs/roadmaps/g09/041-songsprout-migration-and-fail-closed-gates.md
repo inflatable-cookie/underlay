@@ -1,6 +1,6 @@
 # g09.041 - Songsprout Migration And Fail-Closed Gates
 
-Status: ready
+Status: changes-requested
 Owner: Songsprout maintainers
 Contracts: `021-database-migration-and-schema-workflow.md`,
 `022-testing-posture-and-shared-harnesses.md`
@@ -23,6 +23,15 @@ Readiness checked 2026-08-26: system `songsprout-dev`, container
 `127.0.0.1:52732`, volume `songsprout-dev-postgres-data`, no shared services,
 and the database accepts connections. Re-prove every fact before the first
 mutation because the allocated loopback port may change after stack recreation.
+
+## Review Gate
+
+Review on 2026-08-26 requested changes in the
+[Songsprout PR4 review](https://github.com/inflatable-cookie/songsprout/pull/4#issuecomment-5430715120)
+at exact head `d37ffd651f5cb37b2b75c17ac897945411c0af32`. Nursery local-dev API startup
+still logs a dev-overlay error and continues. Return that already-local error,
+then keep the target-filter papercut open or narrow its closeout to the sibling
+catalog exclusion actually delivered before re-review.
 
 ## Scope
 

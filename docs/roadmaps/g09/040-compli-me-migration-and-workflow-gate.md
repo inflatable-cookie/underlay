@@ -1,6 +1,6 @@
 # g09.040 - Compli Me Migration And Workflow Gate
 
-Status: ready
+Status: changes-requested
 Owner: Compli Me maintainers
 Contracts: `021-database-migration-and-schema-workflow.md`,
 `022-testing-posture-and-shared-harnesses.md`
@@ -23,6 +23,16 @@ Readiness checked 2026-08-26: system `compli-me-dev`, container
 `127.0.0.1:22132`, volume `compli-me-dev-postgres-data`, no shared services,
 and the database accepts connections. Re-prove every fact before the first
 mutation.
+
+## Review Gate
+
+Review on 2026-08-26 requested changes in the
+[Compli Me PR6 review](https://github.com/double-dip/compli-me/pull/6#issuecomment-5430715156)
+at exact head `4015e1d5458c8aa877f7ee7d656ce72da1c673ab`. The PR rewrites the existing
+`202605131900__baseline_media.sql` checksum. Restore that migration byte for
+byte, move the prerequisite schema creation into a separate ordered migration,
+and re-prove both from-empty replay and an already-applied history before
+re-review.
 
 ## Scope
 

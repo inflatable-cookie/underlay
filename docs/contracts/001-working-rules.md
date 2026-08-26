@@ -66,12 +66,14 @@ Underlay is in sequential mode:
 - `g09.036` is complete
 - `g09.037` is complete
 - `g09.038` is complete
-- `g09.039`–`g09.043` are ready as independent consumer lanes with positively
-  identified local-only state boundaries
+- `g09.039` is complete
+- `g09.040`–`g09.042` are changes-requested
+- `g09.043` remains independently owned by the Acowtancy thread
 - `g09.044` is planned behind all five merged consumer proofs
 - `g09.045` is the planned post-repair assessment; it is not ready
 
 ## Next Task
 
-Dispatch `g09.039`–`g09.043` as isolated parallel worker/PR lanes. Do not
-promote `g09.044` before all five consumer proofs merge.
+Revise and re-review `g09.040`–`g09.042`; accept `g09.043` evidence from its
+separate thread. Do not promote `g09.044` before all four remaining consumer
+proofs merge.

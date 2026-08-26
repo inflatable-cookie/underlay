@@ -1,6 +1,6 @@
 # g09.039 - Contact Patch Migration Rollout
 
-Status: ready
+Status: complete
 Owner: Contact Patch maintainers
 Contracts: `021-database-migration-and-schema-workflow.md`,
 `022-testing-posture-and-shared-harnesses.md`
@@ -35,11 +35,11 @@ first mutation.
 
 ## Acceptance
 
-- root state plan/apply routes through the API-owned migration lifecycle
-- from-empty reset/replay applies structural migrations and the dev overlay
-- overlay failure fails the owning task and root state apply
-- no active task or guide advertises a retired `db:*` selector
-- existing Contact Patch API and front strong gates retain their current
+- [x] root state plan/apply routes through the API-owned migration lifecycle
+- [x] from-empty reset/replay applies structural migrations and the dev overlay
+- [x] overlay failure fails the owning task and root state apply
+- [x] no active task or guide advertises a retired `db:*` selector
+- [x] existing Contact Patch API and front strong gates retain their current
   teardown and failure semantics
 
 ## Validation
@@ -69,6 +69,22 @@ workflow.
   selectors and use root state plan/apply
 - Compatibility window: none
 
+## Completion Evidence
+
+Completed 2026-08-26 through
+[Contact Patch PR4](https://github.com/contact-patch/contact-patch/pull/4).
+The reviewed worker head was
+`557c4dc2bc728711ca8d49a3a75b410ec34dfb99`; the squash merge commit is
+`8d5b6f4c463eb4bcdef4e2c60fb16d4cc878c8df`.
+
+Post-merge verification on current Contact Patch `main` confirmed the four
+package-owned `migration:*` selectors, the reset -> structure -> dev-overlay
+state plan, API health, docs QA, Northstar QA, and a clean diff. Destructive
+from-empty, replay, and forced-overlay-failure evidence remains in the target
+execution log at
+`docs/logs/2026-08/26-210145-g09-039-contact-patch-migration-rollout.md`.
+
 ## Next Task
 
-Close this lane independently; `g09.040`–`g09.043` may run in parallel.
+This lane is closed. `g09.040`–`g09.043` continue independently; keep
+`g09.044` blocked until all four remaining proofs merge.

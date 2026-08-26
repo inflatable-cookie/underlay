@@ -18,8 +18,9 @@ Underlay is currently `migration` in sequential mode.
 
 Evidence:
 
-- active generation is `g09`; `g09.021`–`g09.037` are complete, `g09.038` is
-  ready, and `g09.039`–`g09.045` are planned
+- active generation is `g09`; `g09.021`–`g09.039` are complete,
+  `g09.040`–`g09.042` are changes-requested, `g09.043` remains independently
+  owned, and `g09.044`–`g09.045` are planned
 - roadmap front doors and the generation index were refreshed 2026-08-26
 - the contract index exists and names the full planned contract set
 - reference-grade architecture phases 2–5 remain the longer-horizon shape target
@@ -130,5 +131,6 @@ Every system should pass through the same loop:
 
 ## Next Task
 
-Dispatch ready consumer roadmaps `g09.039`–`g09.043` as isolated parallel
-lanes. See [`docs/roadmaps/g09/README.md`](../roadmaps/g09/README.md).
+Revise and re-review `g09.040`–`g09.042`, accept `g09.043` evidence from its
+separate thread, and keep `g09.044` blocked. See
+[`docs/roadmaps/g09/README.md`](../roadmaps/g09/README.md).

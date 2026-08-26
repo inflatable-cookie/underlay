@@ -65,6 +65,9 @@ the invalid generation/card hierarchy was then repaired
 ([recovery log](./2026-08/26-171952-g09-roadmap-authority-recovery.md)).
 `g09.037` then completed
 ([execution log](./2026-08/26-173931-g09-037-underlay-test-gate-mock-contract.md)).
-`g09.038` is now ready
-([promotion log](./2026-08/26-174804-g09-038-underlay-reference-promotion.md)).
-Execute the reference proof before promoting the five consumer lanes.
+`g09.038` is complete and the five consumer lanes were promoted
+([promotion/closeout log](./2026-08/26-200019-g09-038-closeout-and-consumer-promotion.md)).
+`g09.039` is complete
+([closeout](./2026-08/26-213154-g09-039-contact-patch-closeout.md)). Revise and
+re-review `g09.040`–`g09.042`, accept `g09.043` evidence from its separate
+thread, and keep `g09.044` blocked.

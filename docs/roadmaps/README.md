@@ -64,10 +64,11 @@ assessment. `g09.032` normalized request-context rejection envelopes, and
 `g09.033` synchronized the page-list contract artifacts. `g09.034` completed the
 bounded HTTP-client fallback repair. `g09.035` and `g09.036` completed the
 migration/testing assessments with `drifting` verdicts. `g09.037` completed the
-shared repair and `g09.038` completed the Underlay Reference proof. `g09.039`–
-`g09.043` are ready as five isolated parallel consumer lanes. `g09.044` remains
-planned behind their merged evidence, and `g09.045` remains planned behind the
-repair closeout. See [`g09/README.md`](g09/README.md).
+shared repair and `g09.038` completed the Underlay Reference proof. `g09.039`
+completed the Contact Patch rollout. `g09.040`–`g09.042` are
+changes-requested, while `g09.043` remains independently owned. `g09.044`
+remains planned behind all four merged proofs, and `g09.045` remains planned
+behind the repair closeout. See [`g09/README.md`](g09/README.md).
 
 ## Archived generations
 
@@ -86,4 +87,5 @@ that risk.
 
 ## Next Task
 
-Dispatch ready roadmaps `g09.039`–`g09.043` as isolated parallel consumer lanes.
+Revise and re-review `g09.040`–`g09.042`, accept `g09.043` evidence from its
+separate thread, and keep `g09.044` blocked until all four proofs merge.

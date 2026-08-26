@@ -272,6 +272,6 @@ See
 
 ## Next Task
 
-Dispatch ready consumer roadmaps `g09.039`–`g09.043`. Keep whole-app DB-harness
-design behind the `g09.044` operator decision; no fixed-schema consumer rewrite
-is implied.
+Close revised consumer roadmaps `g09.040`–`g09.042` and the independently owned
+`g09.043`. Keep whole-app DB-harness design behind the `g09.044` operator
+decision; no fixed-schema consumer rewrite is implied.
