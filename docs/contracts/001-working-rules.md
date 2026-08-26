@@ -55,10 +55,9 @@ Underlay is in parallel mode:
 - `g10.006`–`g10.010` are complete
 - the monorepo consumer-workspace strict lane is archived
 - `g10.011` is complete
-- `g10.012` is ready
-- `g10.013` and `g10.014` are planned bounded repairs from the assessment
+- `g10.012` and `g10.013` are complete
+- `g10.014` is the ready bounded repair from the assessment
 
 ## Next Task
 
-Execute `g10.012`, the context rejection envelope normalization. Keep the
-repair inside the shared extractor boundary.
+Execute `g10.014`, the bounded HTTP-client constructor fallback repair.

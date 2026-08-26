@@ -32,14 +32,14 @@ components:
           items: {}
     PagedListResponse:
       type: object
-      required: [data, total, hasMore]
+      required: [data, total, has_more]
       properties:
         data:
           type: array
           items: {}
         total:
           type: integer
-        hasMore:
+        has_more:
           type: boolean
     SingleResponse:
       type: object

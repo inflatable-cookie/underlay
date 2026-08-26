@@ -1,6 +1,6 @@
 # g10.014 - HTTP Client Bounded Constructor Fallback
 
-Status: planned
+Status: ready
 Owner: repo maintainers
 Contract: `020-http-transport-and-server-boundary.md`
 Found by: `g10.011`
@@ -47,4 +47,4 @@ Compile consumer impact before changing the public API.
 
 ## Next Task
 
-Promote after the envelope and page-list repairs.
+Preserve bounded timeouts in every infallible-constructor fallback.

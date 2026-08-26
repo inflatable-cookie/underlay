@@ -12,16 +12,21 @@ Underlay uses three success envelopes:
   - JSON: `{ "data": <T> }`
 - `ListResponse<T>`
   - JSON: `{ "data": [<T>, ...] }`
-- `PagedListResponse<T>`
-  - JSON: `{ "data": [<T>, ...], "total": <n>, "hasMore": <bool> }`
+- canonical paged list
+  - Rust/OpenAPI wire: `PageList<T>` semantics with
+    `{ "data": [<T>, ...], "total": <n>, "has_more": <bool> }`
+  - TypeScript client: `PagedListResponse<T>` normalizes the final field to
+    `hasMore`
 
 These are defined in:
 
 - Rust: `SingleResponse`/`ListResponse` in `rust/crates/underlay-core/src/dto.rs`;
-  the paged wire shape is produced by `Paginated<T>` in `underlay-http`
-  (`pagination.rs`)
+  the canonical flat paged wire shape is produced by `PageList<T>` in
+  `rust/crates/underlay-http/src/page_list.rs`; legacy `Paginated<T>` in
+  `pagination.rs` is a distinct nested compatibility shape
 - TypeScript: `ts/src/client/envelopes.ts` (re-exported via `client/types.ts`)
-- OpenAPI: `contracts/openapi/underlay.openapi.yaml`
+- OpenAPI: `contracts/openapi/underlay.openapi.yaml` declares the raw wire
+  field `has_more`
 
 ## 2. Error Envelope
 
@@ -80,6 +85,7 @@ Server code should:
 
 Any changes to envelope JSON shapes must be reflected in all three:
 
-- Rust DTOs (`rust/crates/underlay-core/src/dto.rs`)
+- Rust DTOs (`rust/crates/underlay-core/src/dto.rs` and
+  `rust/crates/underlay-http/src/page_list.rs`)
 - TS types (`ts/src/client/envelopes.ts`, re-exported via `client/types.ts`)
 - OpenAPI contract (`contracts/openapi/underlay.openapi.yaml`)

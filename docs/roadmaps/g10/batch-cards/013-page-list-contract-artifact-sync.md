@@ -1,6 +1,7 @@
 # g10.013 - Page List Contract Artifact Sync
 
-Status: ready
+Status: complete
+Completed: 2026-08-26
 Owner: repo maintainers
 Contracts: `020-http-transport-and-server-boundary.md`, `115-admin-resource-api-shapes.md`, `032-openapi-quality-and-declaration.md`
 Found by: `g10.011`
@@ -51,6 +52,19 @@ That would require a consumer cutover card, not an artifact-only repair.
 - Required action: confirm generated raw transport types retain `has_more` or
   normalize it explicitly at the client boundary
 
+## Completion Evidence
+
+OpenAPI now declares `PagedListResponse` with raw `has_more`. The contract drift
+test reads Rust, OpenAPI, and TypeScript sources and asserts the intentional
+`PageList<T>.has_more` / OpenAPI `has_more` / TypeScript `hasMore` boundary.
+
+Architecture and transport docs now attribute the flat wire shape to
+`PageList<T>` and keep legacy nested `Paginated<T>` distinct. A six-consumer
+search found no generated or OpenAPI client surface expecting raw `hasMore`;
+Acowtancy's committed generated OpenAPI types already use `has_more`.
+
+No Rust or TypeScript runtime serialization changed.
+
 ## Next Task
 
-Repair declarations and drift tests without changing runtime serialization.
+Execute `g10.014`, the bounded HTTP-client constructor fallback repair.

@@ -129,6 +129,10 @@ Underlay owns three distinct list-response shapes:
   normalize this to `PagedListResponse<T>` with `hasMore` at its public client
   boundary
 
+Contract `020` owns the generic transport vocabulary and keeps all three shapes
+distinct. Contract `115` selects `PageList<T>` as the canonical shape for admin
+root collections and detail-tab child collections.
+
 Rules:
 
 - `Paginated<T>` is an opt-in higher transport shape, not a replacement for the
@@ -278,7 +282,7 @@ Rules:
 - Query serialization must be idempotent with respect to existing URLs: adding
   a new `limit` replaces the old one rather than duplicating it.
 - Pagination metadata is only authoritative when a route explicitly returns
-  `Paginated<T>`.
+  `Paginated<T>` or `PageList<T>`.
 
 ## Extension Points
 
@@ -305,6 +309,11 @@ Resolved assessment:
   foundation contract. `ValidatedJsonRejection` now returns the canonical
   `ErrorEnvelope` for malformed JSON and validation failures, with optional
   `error.fieldErrors` only when field-scoped feedback exists.
+- `g10.012` normalized request-context extractor rejections through the
+  canonical error envelope.
+- `g10.013` aligned OpenAPI with raw `PageList<T>.has_more`, preserved
+  `PagedListResponse<T>.hasMore` as the TypeScript client boundary, and fixed
+  the architecture attribution of the flat paged shape.
 
 These are assessment hooks, not reasons to widen the contract.
 
@@ -327,11 +336,6 @@ behavior, CORS, in-process cache helpers, server config, and CSP helpers.
 
 Confirmed repair hooks:
 
-- `g10.012`: `ContextError` and the request-context rejection seam still emit
-  plain text instead of the canonical error envelope
-- `g10.013`: Rust and contract `115` declare raw `PageList<T>.has_more`, while
-  OpenAPI declares `hasMore` and architecture prose attributes the flat shape
-  to the wrong Rust type
 - `g10.014`: infallible Rust HTTP-client fallback paths can discard Underlay's
   configured connect and total timeouts
 

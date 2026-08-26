@@ -7,15 +7,13 @@ import { describe, expect, it } from "vitest";
 const repoRoot = path.resolve(fileURLToPath(new URL(".", import.meta.url)), "../../..");
 const yamlPath = path.join(repoRoot, "contracts/openapi/underlay.openapi.yaml");
 const tsPath = path.join(repoRoot, "ts/src/client/envelopes.ts");
+const rustPath = path.join(repoRoot, "rust/crates/underlay-http/src/page_list.rs");
 
 /**
- * Contract-sync drift guard. The response-envelope shapes are declared in three
- * places (Rust `dto.rs`, TS `envelopes.ts`, the OpenAPI YAML). There is no
- * codegen, so this test asserts the two machine-readable surfaces we can load
- * here — the TS interfaces and the OpenAPI schemas — declare the same set of
- * envelopes with the same required fields. It fails loudly the moment an
- * envelope is added or renamed on one surface but not the other (the exact
- * drift that let `PagedListResponse` land in TS but not the YAML).
+ * Contract-sync drift guard. Response envelopes are declared across Rust, TS,
+ * and OpenAPI without a shared code generator. The schema names stay aligned,
+ * while the page-list field guard preserves the intentional raw `has_more` to
+ * public-client `hasMore` normalization.
  */
 
 // Envelope interfaces are the request/response wrappers — not the `Uuid` alias
@@ -44,6 +42,7 @@ function yamlSchemaNames(source: string): Set<string> {
 describe("envelope contract drift", () => {
   const tsSource = readFileSync(tsPath, "utf8");
   const yamlSource = readFileSync(yamlPath, "utf8");
+  const rustSource = readFileSync(rustPath, "utf8");
 
   it("declares the same envelope set in TS and the OpenAPI YAML", () => {
     const ts = tsEnvelopeNames(tsSource);
@@ -54,6 +53,24 @@ describe("envelope contract drift", () => {
   it("includes PagedListResponse on both surfaces", () => {
     expect(tsSource).toContain("interface PagedListResponse");
     expect(yamlSource).toContain("PagedListResponse:");
+  });
+
+  it("keeps raw page-list casing separate from the TS client boundary", () => {
+    const rustPageList = rustSource.match(/pub struct PageList<T> \{[\s\S]*?\n\}/)?.[0];
+    const yamlPageList = yamlSource
+      .split(/^    PagedListResponse:\s*$/m)[1]
+      ?.split(/^    \w+:\s*$/m)[0];
+    const tsPageList = tsSource.match(
+      /export interface PagedListResponse<T> \{[\s\S]*?\n\}/
+    )?.[0];
+
+    expect(rustPageList).toContain("pub has_more: bool");
+    expect(rustPageList).not.toContain("hasMore");
+    expect(yamlPageList).toContain("required: [data, total, has_more]");
+    expect(yamlPageList).toContain("has_more:");
+    expect(yamlPageList).not.toContain("hasMore");
+    expect(tsPageList).toContain("hasMore: boolean");
+    expect(tsPageList).not.toContain("has_more");
   });
 
   it("keeps ErrorBody required fields aligned", () => {
