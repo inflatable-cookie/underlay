@@ -58,9 +58,12 @@ Underlay is in parallel mode:
 - `g10.012` and `g10.013` are complete
 - `g10.014` is complete
 - `g10.015` is complete
-- `g10.016` is ready
+- `g10.016` is complete
+- no repair card is ready; the combined migration/testing repair wave needs a
+  findings-driven planning pass
 
 ## Next Task
 
-Execute `g10.016`, the testing posture contract assessment. Keep consumer
-inspection read-only.
+Re-enter planning and compile the combined migration/testing repair wave from
+the completed `g10.015` and `g10.016` evidence. Do not widen scope or mark a
+card ready before its ownership and validation boundary are explicit.

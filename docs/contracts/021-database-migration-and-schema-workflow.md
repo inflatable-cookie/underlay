@@ -322,5 +322,5 @@ Bad outcomes:
 
 ## Next Task
 
-Migration assessment is complete. Execute `g10.016`, then compile the combined
-migration/testing repair wave.
+Migration and testing assessments are complete. Re-enter planning and compile
+their combined findings-driven repair wave.

@@ -75,10 +75,10 @@ lane.
 
 - completed proof: consumer workspace normalization plus foundation and
   transport assessment/repair (`g10.001`–`g10.014`)
-- completed assessment: database migration workflow (`g10.015`, `drifting`)
-- immediate card: testing posture assessment (`g10.016`, `ready`)
-- next batch: bounded migration/testing repairs compiled only from confirmed
-  findings
+- completed assessments: database migration workflow and testing posture
+  (`g10.015`–`g10.016`, both `drifting`)
+- immediate planning task: compile bounded migration/testing repairs only from
+  the two evidence matrices
 - next planning checkpoint: after that repair wave, confirm the `024`–`026`
   bootstrap/runtime assessment group remains the right transition
 - longer runway: collection/hybrid-shell convergence, consumer drift
@@ -88,7 +88,7 @@ lane.
 
 - [x] Normalize the six-consumer workspace family onto one supported shape.
 - [x] Assess and repair the foundation and transport contract boundary.
-- [ ] Assess migration and testing posture across every consumer root and
+- [x] Assess migration and testing posture across every consumer root and
   affected child package.
 - [ ] Repair only confirmed contract drift with bounded ownership and proof.
 - [ ] Continue the contract-index assessment order without losing the
@@ -100,7 +100,7 @@ lane.
   (`g10.001`–`g10.010`).
 - [x] Batch 2 — foundation/transport assessment and bounded repairs
   (`g10.011`–`g10.014`).
-- [ ] Batch 3 — database migration and testing posture assessments
+- [x] Batch 3 — database migration and testing posture assessments
   (`g10.015`–`g10.016`).
 - [ ] Batch 4 — findings-driven migration/testing repairs; compile cards only
   after both evidence matrices settle ownership and scope.
@@ -112,10 +112,10 @@ lane.
 - [x] Completed cards are removed from ready state on every queue authority.
 - [x] Consumer workspaces use the supported `apps/*` / `packages/*` evidence
   shape.
-- [ ] Every `021` and `022` clause receives a fleet evidence verdict.
+- [x] Every `021` and `022` clause receives a fleet evidence verdict.
 - [ ] Every confirmed finding is matched, repaired through a bounded card, or
   returned to an explicit operator decision.
-- [ ] Assessment cards remain read-only across consumer repositories.
+- [x] Assessment cards remain read-only across consumer repositories.
 - [ ] The migration/testing repair wave closes before the next contract group
   becomes ready.
 
@@ -179,15 +179,15 @@ lane.
 13. [x] [`g10.013`](batch-cards/013-page-list-contract-artifact-sync.md) — page-list contract artifact sync (`complete`)
 14. [x] [`g10.014`](batch-cards/014-http-client-bounded-constructor-fallback.md) — bounded HTTP-client constructor fallback (`complete`)
 15. [x] [`g10.015`](batch-cards/015-database-migration-contract-assessment.md) — database migration contract assessment (`complete`; verdict `drifting`)
-16. [ ] [`g10.016`](batch-cards/016-testing-posture-contract-assessment.md) — testing posture contract assessment (`ready`)
+16. [x] [`g10.016`](batch-cards/016-testing-posture-contract-assessment.md) — testing posture contract assessment (`complete`; verdict `drifting`)
 
 ## Consumer Upgrade Impact
 
-`g10.015` and `g10.016` are assessment-only. They inspect current consumer
-state without changing consumer repositories. Any required upgrade must be
-compiled as a later findings-driven card.
+`g10.015` and `g10.016` were assessment-only and changed no consumer
+repository. Required upgrades must now be compiled as later findings-driven
+cards.
 
 ## Next Task
 
-Execute `g10.016`. Keep the assessment read-only: do not run broad consumer test
-suites or edit consumer repositories.
+Re-enter planning and compile the combined migration/testing repair wave from
+the `g10.015` and `g10.016` evidence matrices. No card is ready yet.

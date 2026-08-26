@@ -245,7 +245,31 @@ Bad outcomes:
 - When should shared DB, HTTP, and client harnesses be used?
 - How should audits describe minimum versus strong test posture?
 
+## Assessment State
+
+Assessed 2026-08-26 by `g10.016`; verdict: `drifting`.
+
+The minimum-versus-strong distinction holds. Fourteen runtime packages meet the
+minimum, both Contact Patch API and front are strong, and Underlay Reference
+API plus Farmyard drift because their health routes omit an API build/check
+baseline.
+Farmyard's managed suite is sound at package QA but root QA does not reach it.
+
+Shared harness findings:
+
+- `TestDb` remains sound for single-schema shared-crate tests, but its generated
+  schema cannot isolate the fixed named schema sets used by all six apps
+- app-local DB fixtures are justified until a generic multi-schema or
+  database-per-test design is selected
+- `TestServer` fits repeated direct Axum route-test mechanics but has no
+  consumer proof
+- `createMockHttpClient()` has one live consumer; that consumer currently uses
+  a compatibility cast that needs type-level proof
+
+See
+[`g10.016 - Testing Posture Contract Assessment`](../logs/2026-08/26-164407-g10-016-testing-posture-assessment.md).
+
 ## Next Task
 
-Execute `g10.016` and assess the six-consumer testing posture and shared harness
-use. Keep consumer inspection read-only.
+Compile the combined `g10.015`/`g10.016` repair wave. Keep DB-harness design as
+a decision prototype until the operator selects the durable isolation boundary.

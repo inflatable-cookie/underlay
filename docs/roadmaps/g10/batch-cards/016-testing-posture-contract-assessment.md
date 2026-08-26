@@ -1,6 +1,6 @@
 # g10.016 - Testing Posture Contract Assessment
 
-Status: ready
+Status: complete
 Owner: repo maintainers
 Contract: `022-testing-posture-and-shared-harnesses.md`
 Depends on: `g10.015`
@@ -72,7 +72,26 @@ behavior into Underlay. Do not turn the assessment into a fleet test rewrite.
 - Affected consumers: six-consumer family
 - Required action: none until a finding is promoted into a repair card
 
+## Completion Evidence
+
+The assessment matrix is recorded in
+[`g10.016 - Testing Posture Contract Assessment`](../../../logs/2026-08/26-164407-g10-016-testing-posture-assessment.md).
+
+Verdict: `drifting`. Fourteen runtime packages meet the declared minimum, two
+are strong, and two API packages drift because `health` does not contain a
+build/check baseline. Confirmed candidates are:
+
+- restore trustworthy root/package test gates without making health expensive
+- prove a fleet-capable Rust harness boundary before pushing `TestDb` into
+  fixed multi-schema apps, and prove `TestServer` in one reference route slice
+- remove the TS mock compatibility cast with a structural type proof
+
+No consumer tests ran and no consumer repository changed. No repair card is
+ready yet; the migration and testing findings now have enough evidence for one
+bounded planning pass.
+
 ## Next Task
 
-After completion, compile a findings-driven repair wave. Do not reserve or mark
-repair cards ready before the assessment evidence exists.
+Re-enter planning and compile the combined migration/testing repair wave from
+`g10.015` and `g10.016`. Do not mark a card ready until ownership, environment
+requirements, and validation bounds are explicit.

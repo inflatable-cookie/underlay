@@ -100,4 +100,5 @@ is clear. Repair cards stay deferred until `g10.016` closes.
 
 ## Next Task
 
-Execute `g10.016`, the testing posture contract assessment.
+`g10.016` is complete. Re-enter planning and compile the combined
+migration/testing repair wave from both assessment records.

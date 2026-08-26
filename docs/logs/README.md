@@ -55,5 +55,8 @@ where repo-local links and normalized prose references are required instead.
 ([planning log](./2026-08/26-161417-g10-015-016-migration-testing-assessment-compiled.md)).
 `g10.015` is complete
 ([assessment](./2026-08/26-162845-g10-015-database-migration-assessment.md)).
-Execute `g10.016`; keep the active evidence window aligned to `g10` without
-reconstructing closed history.
+`g10.016` is complete
+([assessment](./2026-08/26-164407-g10-016-testing-posture-assessment.md)).
+Re-enter planning and compile the combined migration/testing repair wave; keep
+the active evidence window aligned to `g10` without reconstructing closed
+history.

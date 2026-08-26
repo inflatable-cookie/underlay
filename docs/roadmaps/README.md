@@ -64,8 +64,9 @@ across the six-consumer family. `g10.011` completed the foundation and transport
 assessment. `g10.012` normalized request-context rejection envelopes, and
 `g10.013` synchronized the page-list contract artifacts. `g10.014` completed the
 bounded HTTP-client fallback repair. `g10.015` completed the database migration
-assessment with a `drifting` verdict; `g10.016` is ready for testing-posture
-assessment. See
+assessment with a `drifting` verdict. `g10.016` completed the testing-posture
+assessment with the same verdict. No repair card is ready; the combined
+findings need compilation. See
 [`g10/README.md`](g10/README.md).
 
 ## Archived generations
@@ -85,4 +86,5 @@ that risk.
 
 ## Next Task
 
-Execute `g10.016`. Keep consumer assessment read-only.
+Re-enter planning and compile the combined migration/testing repair wave. Keep
+the card set findings-driven and bounded.

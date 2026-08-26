@@ -19,5 +19,6 @@ Owner: repo maintainers
 
 ## Next Task
 
-Execute `g10.016`, the testing posture contract assessment. Do not turn the
-recorded migration findings into incidental repairs during that assessment.
+Compile the combined migration/testing repair wave from the completed
+assessments. Keep shared DB-harness design behind an explicit decision
+prototype and keep minimum-posture packages out of speculative test rewrites.

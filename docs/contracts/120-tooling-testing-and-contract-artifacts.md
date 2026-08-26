@@ -309,6 +309,14 @@ Other system families own:
 
 ## Known Drift To Assess Later
 
+- `TestDb` isolates one generated schema, while whole-app consumer migrations
+  create fixed named schema sets; no consumer can adopt it safely without a
+  generic multi-schema or database-per-test boundary
+- `TestServer` is directly tested but has no consumer adoption even though
+  direct Axum `Router::oneshot` mechanics recur in three consumer APIs
+- `createMockHttpClient()` has one live consumer, but Cattle Grid narrows it
+  through an `as unknown` compatibility cast instead of a proved structural
+  assignment
 - `underlay-devtools` mixes genuinely generic DB/env helpers with machinery that
   is tightly coupled to Underlay's migration/media stack, so its internal
   ownership split may still be too broad
@@ -341,5 +349,6 @@ Other system families own:
 
 ## Next Task
 
-No active `g07` task remains. Open a bounded roadmap card before changing TS
-public-surface or guardrail compatibility coverage again.
+Use the `g10.016` evidence when compiling the combined migration/testing repair
+wave. Do not change the Rust DB harness boundary without the recorded decision
+prototype.
