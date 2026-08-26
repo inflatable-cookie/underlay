@@ -1,8 +1,8 @@
 # g10.007 - Compli Me Normalization
 
-Status: ready
+Status: complete
 Owner: Compli Me maintainers
-Spec: `docs/specs/monorepo-consumer-workspace-rollout.md`
+Spec: `docs/specs/archive/monorepo-consumer-workspace-rollout.md`
 
 ## Scope
 
@@ -85,6 +85,16 @@ on Compli Me `main` at `a5ccf0b92df64d8687e8255051219ccffbabe126`.
 The operator owns worker launch; the worker must return a PR and must not merge
 it.
 
+## Delivery Evidence
+
+- normalization merged in Compli Me
+  [PR #4](https://github.com/double-dip/compli-me/pull/4) as
+  `3b4fd5de4f4bddd325544516e56463bc54fe9552`
+- reorder-conflict cleanup merged in
+  [PR #5](https://github.com/double-dip/compli-me/pull/5) as
+  `240dce062ef5f0817b34caffaf7743542337d45a`
+- current `main` passes the published Underlay workspace-shape checker
+
 ## Next Task
 
-Return a reviewable PR to the orchestrator; do not merge.
+Complete `g10.010` fleet proof and closeout.

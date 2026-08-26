@@ -18,11 +18,9 @@ For bringing up a new consumer app, use the current sources:
   the step-by-step build of that layout.
 - **[Guide 030 - Underlay integration](../guides/030-underlay-integration.md)** —
   how Underlay and Poodle enter the dependency graph.
-- **[Monorepo consumer workspace rollout](../specs/monorepo-consumer-workspace-rollout.md)** —
-  the strict spec governing the fleet migration.
+- **[Monorepo rollout closeout](../logs/2026-08/26-151525-g10-006-010-fleet-closeout.md)** —
+  the six-consumer proof and migration evidence.
 
 `acowtancy` is the live proof of the contract; mirror it. `underlay-reference`
-is the bootstrap fixture and converges on the contract in `g10.005`. The
-remaining consumers (`contact-patch`, `compli-me`, `songsprout`,
-`loophole/composer`) still carry pre-contract layouts — read them for
-component-level patterns, not for workspace topology.
+is the bootstrap fixture. Contact Patch, Compli Me, Songsprout, and Composer
+also conform after the `g10.006`–`g10.010` rollout.

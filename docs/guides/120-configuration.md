@@ -165,7 +165,7 @@ For each consuming app:
 
 ### Reference Migration Feedback (2026-02-25)
 
-Applied from `underlay-reference/acme-api` migration:
+Applied from `underlay-reference/apps/acme-api` migration:
 
 1. Remove migrated behavior keys from `config/env-manifest.txt` as soon as typed defaults exist in `config/default.toml`.
 2. Keep JWT key material in env, but source JWT behavior from typed config using `JwtConfig::from_values(...)`.

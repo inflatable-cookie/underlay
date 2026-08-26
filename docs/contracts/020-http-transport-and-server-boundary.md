@@ -328,4 +328,5 @@ Use this contract to judge later implementation work:
 
 ## Next Task
 
-Execute `g04.005`: write `030-auth-and-session-systems.md`.
+Execute `g10.011`: assess the live Rust and TypeScript transport surfaces
+against this contract and record bounded repair cards for confirmed drift.

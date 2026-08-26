@@ -11,7 +11,14 @@ the active `docs/specs/` tree.
 
 ## Layout
 
-- `NNN-<slug>.md` for archived strict-lane specs
+- `NNN-<slug>.md` for numbered strict-lane specs
+- `<slug>.md` when the archived spec is already identified by its roadmap
+  generation and cards
+
+## Archived Specs
+
+- [`monorepo-consumer-workspace-rollout.md`](./monorepo-consumer-workspace-rollout.md) —
+  completed `g10.001`–`g10.010` workspace normalization lane
 
 ## Next Task
 

@@ -1,8 +1,8 @@
 # g10.006 - Contact Patch Normalization
 
-Status: ready
+Status: complete
 Owner: Contact Patch maintainers
-Spec: `docs/specs/monorepo-consumer-workspace-rollout.md`
+Spec: `docs/specs/archive/monorepo-consumer-workspace-rollout.md`
 
 ## Scope
 
@@ -90,6 +90,17 @@ published on Contact Patch `main` at
 `ddffc8587b73c8c23ec95108dace3e8b1bf59050`. The operator owns worker launch;
 the worker must return a PR and must not merge it.
 
+## Delivery Evidence
+
+- normalization merged in Contact Patch
+  [PR #2](https://github.com/contact-patch/contact-patch/pull/2) as
+  `f33d7ad5d26f0f42e9091433b865f807e727dfc7`
+- post-normalization validation cleanup merged in
+  [PR #3](https://github.com/contact-patch/contact-patch/pull/3) as
+  `3c85a5e57ce29af448c338f7fd29ad9e45d72ac8`
+- current `main` passes the published Underlay workspace-shape checker
+- the external Book checkout remains outside the product workspace
+
 ## Next Task
 
-Return a reviewable PR to the orchestrator; do not merge.
+Complete `g10.010` fleet proof and closeout.

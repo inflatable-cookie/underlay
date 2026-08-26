@@ -126,13 +126,13 @@ default consequence of drift.
 
 ### C. Reference app as executable spec
 
-acme is the bootstrap source; its bugs cloned. Rules going forward:
+Underlay Reference is the bootstrap source; its bugs cloned. Rules going forward:
 
-1. **Fixes land in Underlay or in acme first**, then roll out — never in
+1. **Fixes land in Underlay or Underlay Reference first**, then roll out — never in
    a downstream consumer alone (that creates a new canonical variant).
-2. New app bootstrap copies acme-* or uses `underlay/templates`; it does
-   not fork another consumer.
-3. acme keeps the *migration* pattern when one is needed (e.g. legacy
+2. New app bootstrap follows contract `024` and the Underlay Reference
+   `apps/*` / `packages/*` fixture; it does not fork another consumer.
+3. Underlay Reference keeps the *migration* pattern when one is needed (e.g. legacy
    TOTP reader → `SecretCipher`) so followers copy a good pattern, not a
    bad one.
 

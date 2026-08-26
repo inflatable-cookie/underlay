@@ -24,22 +24,15 @@ Those build on top of this layer.
 
 ## Sources of Truth
 
-Normative rollout spec:
-
-- [`docs/specs/monorepo-consumer-workspace-rollout.md`](../specs/monorepo-consumer-workspace-rollout.md)
-
 Live workspace evidence:
 
 - `acowtancy` — the proven implementation of this contract: one Git root,
   `apps/cream`, `apps/dairy`, `apps/farmyard`, `packages/cattle-grid`,
   `packages/froyo`, root `docs/`, one root Bun manifest and lockfile, internal
   `workspace:*` edges, and released Underlay/Poodle dependencies.
-- `underlay-reference` — the bootstrap fixture. It has not converged on this
-  contract yet; `g10.005` normalizes it. Do not copy its current physical
-  layout.
+- `underlay-reference` — the conformant bootstrap fixture after `g10.005`.
 - `contact-patch`, `compli-me`, `songsprout`, `loophole/composer` — consumers
-  scheduled for normalization in `g10.006`–`g10.009`. Their present layouts are
-  pre-contract evidence, not templates.
+  normalized and independently checked through `g10.006`–`g10.010`.
 
 Supporting shared contracts:
 
@@ -47,8 +40,8 @@ Supporting shared contracts:
 - [`110-admin-template-system.md`](./110-admin-template-system.md)
 - [`120-tooling-testing-and-contract-artifacts.md`](./120-tooling-testing-and-contract-artifacts.md)
 
-If a consumer workspace diverges from this contract, the contract and the strict
-spec win. A consumer that has not migrated yet is drift, not an alternative.
+If a consumer workspace diverges from this contract, this contract wins. The
+completed rollout spec is retained as historical evidence under `docs/specs/archive/`.
 
 ## Contract Goal
 
@@ -354,6 +347,5 @@ Bad outcomes:
 ## Next Task
 
 Use this contract as the base for new-app scaffolding, checklist artifacts, and
-the `g10` consumer normalization cards. Consumers that still use a pre-contract
-layout are tracked in
-[`docs/specs/monorepo-consumer-workspace-rollout.md`](../specs/monorepo-consumer-workspace-rollout.md).
+future workspace-shape conformance checks. Treat fleet divergence as drift, not
+as an alternate supported topology.

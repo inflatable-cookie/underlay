@@ -221,4 +221,5 @@ Use this contract to judge later implementation work:
 
 ## Next Task
 
-Execute `g04.004`: write `020-http-transport-and-server-boundary.md`.
+Execute `g10.011`: assess the live foundation implementation against this
+contract and record bounded repair cards for confirmed drift.

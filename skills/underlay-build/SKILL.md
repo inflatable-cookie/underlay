@@ -118,20 +118,30 @@ for admin templates.
 
 Use when starting a brand new Underlay-based project from scratch.
 
-**Opens:** `underlay/docs/patterns/new-project-bootstrap-prompt.md`
-**Also read:** `underlay/docs/architecture/060-new-project-quickstart.md`
+**Opens:** `underlay/docs/contracts/024-new-app-bootstrap-and-bring-up.md`
+**Also read:**
+- `underlay/docs/patterns/new-project-bootstrap-prompt.md`
+- `underlay/docs/architecture/060-new-project-quickstart.md`
 **Follow in order:**
 1. `underlay/docs/guides/010-prerequisites.md`
 2. `underlay/docs/guides/020-project-structure.md`
 3. `underlay/docs/guides/030-underlay-integration.md`
 
 **On-contract guardrails:**
-- Create root `AGENTS.md` per `underlay/docs/guides/172-agents-files.md`
-- Symlink Underlay into workspace root. In monorepo, gitignore `./underlay/`
-- Create per-repo `AGENTS.md` for each component
+- Create one Git repository with runtime apps under `apps/*`, reusable internal
+  libraries under `packages/*`, and documentation at root `docs/`
+- Use the exact root `package.json` shape from contract `024`: private root,
+  pinned Bun `packageManager`, and explicit JavaScript workspace paths
+- Keep one root `bun.lock`, one frozen root install, and `workspace:*` for
+  internal JavaScript dependencies
+- Consume Underlay and Poodle through released versions; sibling source
+  checkouts are QA/tooling inputs only and are never committed workspace members
+- Create root and package `AGENTS.md` files per
+  `underlay/docs/guides/172-agents-files.md`
 - Do NOT build domain features during bootstrap. Goal is a working "hello world"
 skeleton that compiles and typechecks
-- Use the `acme-*` reference implementations as copy targets, then rename
+- Use `underlay-reference` as the bootstrap fixture and Acowtancy as live
+  workspace-shape evidence
 - Follow the rename script in `underlay/docs/guides/175-llm-bootstrap-guide.md`
 
 ### `/underlay-build contract`

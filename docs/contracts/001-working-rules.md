@@ -46,15 +46,17 @@ Underlay is in parallel mode:
 - `g07`–`g09` are closed
 - `g10` is the active generation
 - `g03`, `g04`, and `g05` are closed historical generations
-- `docs/specs/monorepo-consumer-workspace-rollout.md` is the active strict spec
+- no strict spec is active; the completed monorepo rollout spec is archived
 - `g10.001` is complete
 - `g10.002` is complete
 - `g10.003` is complete
 - `g10.004` is complete
 - `g10.005` is complete
-- `g10.006`–`g10.009` are ready for independent parallel workers
+- `g10.006`–`g10.010` are complete
+- the monorepo consumer-workspace strict lane is archived
+- `g10.011` is ready
 
 ## Next Task
 
-Launch the published worker handoffs for `g10.006`–`g10.009`. Do not combine
-consumer scopes or share worker branches; relay each PR for review.
+Execute `g10.011`, the foundation and transport contract assessment. Record
+matches, drift, and contract ambiguity before opening implementation repairs.

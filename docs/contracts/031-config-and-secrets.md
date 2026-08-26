@@ -32,7 +32,7 @@ Primary guidance and rollout evidence:
 
 Reference consumer evidence:
 
-- `underlay-reference/acme-api`
+- `underlay-reference/apps/acme-api`
 - `acowtancy/farmyard`
 - `compli-me/api`
 - `contact-patch/cp-api`

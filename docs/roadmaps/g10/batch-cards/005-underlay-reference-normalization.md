@@ -3,7 +3,7 @@
 Status: complete
 Completed: 2026-08-26
 Owner: Underlay Reference maintainers
-Spec: `docs/specs/monorepo-consumer-workspace-rollout.md`
+Spec: `docs/specs/archive/monorepo-consumer-workspace-rollout.md`
 
 ## Purpose
 

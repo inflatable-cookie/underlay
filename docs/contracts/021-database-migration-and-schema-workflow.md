@@ -25,8 +25,8 @@ It does not define product-specific transform semantics or legacy import logic.
 
 Reference consumer evidence:
 
-- `underlay-reference` — `acme-api/effigy.toml`, `acme-api/migrations/`, and
-  `acme-api/migrations_dev/`
+- `underlay-reference` — `apps/acme-api/effigy.toml`,
+  `apps/acme-api/migrations/`, and `apps/acme-api/migrations_dev/`
 - `compli-me` — `api/effigy.toml`, `api/migrations/`, and
   `api/migrations_dev/`
 - `contact-patch` — `cp-api/effigy.toml`, `cp-api/migrations/`, and

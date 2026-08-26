@@ -1,8 +1,8 @@
 # g10.009 - Composer Normalization
 
-Status: ready
+Status: complete
 Owner: Composer maintainers
-Spec: `docs/specs/monorepo-consumer-workspace-rollout.md`
+Spec: `docs/specs/archive/monorepo-consumer-workspace-rollout.md`
 
 ## Scope
 
@@ -75,6 +75,17 @@ on Composer `main` at `230297ee6638e100365eba37e6499613c0dda954`.
 The operator owns worker launch; the worker must return a PR and must not merge
 it.
 
+## Delivery Evidence
+
+- normalization merged in Composer
+  [PR #2](https://github.com/inflatable-cookie/loophole-composer/pull/2) as
+  `724b013bb7cea7b6e9eea88e89f96e9775712f6a`
+- Admin freshness cleanup merged in
+  [PR #3](https://github.com/inflatable-cookie/loophole-composer/pull/3) as
+  `153b47afa68b61aaaf7e64daa6d79ac0be566343`
+- current `main` passes the published Underlay workspace-shape checker
+- the Effigy Cargo registry-volume repair remains a separate shared-tool lane
+
 ## Next Task
 
-Return a reviewable PR to the orchestrator; do not merge.
+Complete `g10.010` fleet proof and closeout.

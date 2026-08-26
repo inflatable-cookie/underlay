@@ -72,7 +72,7 @@ The current six-app admin fleet is expected to own the full admin media family.
 
 Affected apps:
 
-- `underlay-reference/acme-admin`
+- `underlay-reference/apps/acme-admin`
 - `acowtancy/dairy`
 - `compli-me/admin`
 - `contact-patch/cp-admin`

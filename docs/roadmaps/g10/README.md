@@ -28,13 +28,13 @@ This generation is about **fidelity and convergence**, not new product features.
 
 ## Horizon Model
 
-### Phase 1 — Authority repair and first cards (now)
+### Phase 1 — Authority repair and fleet normalization (complete)
 
 - close `g09` on all front doors (done in the refresh pass)
 - retire polyrepo support in the bootstrap authority
 - normalize the six-consumer workspace family through `g10.001`–`g10.010`
 
-### Phase 2 — Contract implementation assessment
+### Phase 2 — Contract implementation assessment (now)
 
 Run the assessment loop from `docs/architecture/system-inventory.md` against
 the contract index order:
@@ -71,11 +71,11 @@ crate APIs when the boundary is not yet stable.
 cards here only when they do not collide with an active assessment or convergence
 lane.
 
-## Candidate Lanes (not yet carded)
+## Candidate Lanes
 
 | Lane | Outcome | Primary authority | Notes |
 | --- | --- | --- | --- |
-| A | First contract-assessment wave (foundation + transport) | `contract-index.md`, `system-inventory.md` | Resumes after the monorepo rollout lane closes |
+| A | First contract-assessment wave (foundation + transport) | `contract-index.md`, `system-inventory.md` | Active as `g10.011` |
 | B | Collection route convergence pilot | `116`, `117`, sweep `029` | Needs one consumer as proof anchor |
 | C | Hybrid shell extraction for one real tab | `117`, sweep `030`, Dairy `ModulesList` evidence | Bounded to one shell, not a framework rewrite |
 | D | Consumer drift B-items with stable boundaries | `070`, `021` sweep family | Only items with a clear Underlay-owned seam |
@@ -92,14 +92,11 @@ lane.
 
 ## Dependencies And Sequencing
 
-- The active monorepo rollout is governed by
-  `docs/specs/monorepo-consumer-workspace-rollout.md`.
+- The completed monorepo rollout is preserved under `docs/specs/archive/`.
 - `g10.001`–`g10.005` are serial: authority, narrative, conformance,
   Acowtancy evidence, then Underlay Reference.
-- `g10.006`–`g10.009` may run in parallel only after the reference fixture
-  merges; they own separate consumer repositories.
-- `g10.010` waits for every consumer PR.
-- Lane A (assessment) resumes after the active strict lane closes.
+- `g10.006`–`g10.010` are complete.
+- Lane A is active as `g10.011`.
 - Lane B and C should not run as parallel unbounded refactors; pick one consumer
   proof anchor first (`underlay-reference` unless another app is clearer)
 - Lane D must respect `product-guardrails.md` — no app-local behavior smuggled
@@ -109,7 +106,6 @@ lane.
 
 ## Accepted Uncertainty
 
-- card count and ordering beyond the compiled `g10.001`–`g10.010` runway — maintainer choice once the monorepo rollout lane closes
 - whether collection convergence or drift follow-through yields the better first
   proof slice
 - how many compatibility exports can retire in one batch without violating `023`
@@ -121,14 +117,14 @@ lane.
 3. [x] [`g10.003`](batch-cards/003-workspace-shape-conformance.md) — workspace-shape conformance (`complete`)
 4. [x] [`g10.004`](batch-cards/004-acowtancy-evidence-repair.md) — Acowtancy evidence repair (`complete`)
 5. [x] [`g10.005`](batch-cards/005-underlay-reference-normalization.md) — Underlay Reference normalization (`complete`)
-6. [ ] [`g10.006`](batch-cards/006-contact-patch-normalization.md) — Contact Patch normalization (`ready`)
-7. [ ] [`g10.007`](batch-cards/007-compli-me-normalization.md) — Compli Me normalization (`ready`)
-8. [ ] [`g10.008`](batch-cards/008-songsprout-normalization.md) — Songsprout normalization (`ready`)
-9. [ ] [`g10.009`](batch-cards/009-composer-normalization.md) — Composer normalization (`ready`)
-10. [ ] [`g10.010`](batch-cards/010-fleet-proof-and-closeout.md) — fleet proof and closeout
+6. [x] [`g10.006`](batch-cards/006-contact-patch-normalization.md) — Contact Patch normalization (`complete`)
+7. [x] [`g10.007`](batch-cards/007-compli-me-normalization.md) — Compli Me normalization (`complete`)
+8. [x] [`g10.008`](batch-cards/008-songsprout-normalization.md) — Songsprout normalization (`complete`)
+9. [x] [`g10.009`](batch-cards/009-composer-normalization.md) — Composer normalization (`complete`)
+10. [x] [`g10.010`](batch-cards/010-fleet-proof-and-closeout.md) — fleet proof and closeout (`complete`)
+11. [ ] [`g10.011`](batch-cards/011-foundation-and-transport-contract-assessment.md) — foundation and transport contract assessment (`ready`)
 
 ## Next Task
 
-Launch the four published `g10.006`–`g10.009` worker handoffs in parallel.
-Each worker returns one consumer PR; none may merge. Dispatch evidence:
-[`docs/logs/2026-08/26-090028-g10-006-009-parallel-readiness-audit.md`](../../logs/2026-08/26-090028-g10-006-009-parallel-readiness-audit.md).
+Execute `g10.011`. Produce the clause-to-implementation evidence matrix before
+opening any production repair card.

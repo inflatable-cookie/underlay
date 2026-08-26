@@ -25,7 +25,7 @@ Updated: 2026-08-26
 | `g07` | 2026-06-06 | Runtime, workflow, residual Rust policy, and doctor-warning hardening after `g06` closeout | Complete after `g07.037` doctor warning closeout |
 | `g08` | 2026-07-17 | Audit remediation after July 2026 deep audit (security edge, correctness bugs, Rust/TS structure, docs/versioning/i18n posture) | Complete - all 32 cards done; `v0.8.0` tagged |
 | `g09` | 2026-08-03 | Config-convergence follow-through after the 2026-08-03 self-audit; extended with dependency-upgrade and elective-majors cards | Complete - all 20 cards done |
-| `g10` | 2026-08-17 | Contract fidelity, collection convergence, and fleet drift prevention after `g09` closeout | Active - `g10.001`–`g10.005` complete; `g10.006`–`g10.009` ready for parallel consumer rollout |
+| `g10` | 2026-08-17 | Contract fidelity, collection convergence, and fleet drift prevention after `g09` closeout | Active - `g10.001`–`g10.010` complete; `g10.011` ready |
 
 ## Historical generations
 
@@ -56,5 +56,5 @@ In parallel mode:
 
 ## Next Task
 
-Launch the four published `g10.006`–`g10.009` worker handoffs and relay their
-PRs for orchestrator review. See [`g10/README.md`](g10/README.md).
+Execute `g10.011`, the foundation and transport contract assessment. See
+[`g10/README.md`](g10/README.md).

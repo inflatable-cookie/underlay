@@ -1,6 +1,6 @@
 # Monorepo Consumer Workspace Rollout
 
-Status: active
+Status: complete
 Owner: repo maintainers
 Roadmap: `g10`
 Authority mode: strict
@@ -10,8 +10,9 @@ Authority mode: strict
 Make the Acowtancy workspace shape the default and only supported topology for
 normal Underlay consumers. Polyrepo layouts are retired.
 
-The rollout is complete when Underlay's active contract and guide surfaces teach
-one shape, the shape is mechanically checkable, and all six consumers conform.
+The rollout completed on 2026-08-26. Underlay's active contract and guide
+surfaces teach one shape, the shape is mechanically checkable, and all six
+consumers conform.
 
 ## Canonical Shape
 
@@ -83,7 +84,7 @@ manifests, locks, or application dependencies.
 Underlay Reference remains the bootstrap fixture. `g10.005` makes its physical
 shape match the contract before the remaining consumers migrate.
 
-## Fleet Baseline
+## Starting Fleet Baseline
 
 All five non-Acowtancy consumers are already one Git repository. None needs a
 history merge. Each needs directory normalization, a real root Bun workspace,
@@ -113,6 +114,8 @@ one lockfile, and internal workspace edges.
 `g10.001`–`g10.005` are serial. After `g10.005`, `g10.006`–`g10.009` may run
 in parallel because they own separate repositories and have no shared mutable
 files. `g10.010` waits for all consumer PRs.
+
+All ten cards are complete. This sequencing is retained as delivery history.
 
 ## Migration Rules
 
@@ -157,7 +160,13 @@ Pause the active worker and return to the orchestrator if:
 - an Effigy catalog cannot represent the new paths without a contract change;
 - validation exposes unrelated application behavior that would widen the card.
 
+## Closeout Evidence
+
+`g10.010` checked the published workspace-shape tool against current `main` for
+Acowtancy, Underlay Reference, Contact Patch, Compli Me, Songsprout, and
+Composer. All six passed. The exact SHAs and consumer PRs are recorded in
+`docs/logs/2026-08/26-151525-g10-006-010-fleet-closeout.md`.
+
 ## Next Task
 
-Launch the published handoffs for ready cards `g10.006`–`g10.009`. Keep each
-consumer in its own worktree, branch, handoff, and PR; relay each PR for review.
+Execute `g10.011`, the foundation and transport contract assessment.

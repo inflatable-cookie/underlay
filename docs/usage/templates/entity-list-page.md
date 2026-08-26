@@ -188,7 +188,7 @@ When `capabilitiesLoader` is provided, loaded `variants`, `filters`, and
 
 Example:
 
-- `underlay-reference/acme-admin/src/lib/lists/TasksListPage.svelte` declares
+- `underlay-reference/apps/acme-admin/src/lib/lists/TasksListPage.svelte` declares
   `open`, `completed`, and `all` variants for project tasks.
 - `open` is the default baseline and maps to pending plus in-progress tasks on
   the API side.
@@ -331,11 +331,11 @@ Prefer `EntityListPage` unless the surface is genuinely narrower, for example:
 Reference implementation examples in `underlay-reference`:
 
 - shared list wrappers:
-  `underlay-reference/acme-admin/src/lib/lists/ProjectsListPage.svelte`
+  `underlay-reference/apps/acme-admin/src/lib/lists/ProjectsListPage.svelte`
   and
-  `underlay-reference/acme-admin/src/lib/lists/TasksListPage.svelte`
+  `underlay-reference/apps/acme-admin/src/lib/lists/TasksListPage.svelte`
 - query variants:
-  `underlay-reference/acme-admin/src/lib/lists/TasksListPage.svelte`
+  `underlay-reference/apps/acme-admin/src/lib/lists/TasksListPage.svelte`
 
 If a reference app still carries route-local list pages, treat those as
 remaining convergence work rather than as co-equal examples.

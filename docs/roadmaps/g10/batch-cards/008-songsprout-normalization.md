@@ -1,8 +1,8 @@
 # g10.008 - Songsprout Normalization
 
-Status: ready
+Status: complete
 Owner: Songsprout maintainers
-Spec: `docs/specs/monorepo-consumer-workspace-rollout.md`
+Spec: `docs/specs/archive/monorepo-consumer-workspace-rollout.md`
 
 ## Scope
 
@@ -80,6 +80,16 @@ on Songsprout `main` at `71ae0235df32322cef781eb5aca3f14f288c2740`.
 The operator owns worker launch; the worker must return a PR and must not merge
 it.
 
+## Delivery Evidence
+
+- normalization merged in Songsprout
+  [PR #2](https://github.com/inflatable-cookie/songsprout/pull/2) as
+  `b6703f4acf82e533b2372735ae81429d90ca77f9`
+- post-normalization cleanup merged in
+  [PR #3](https://github.com/inflatable-cookie/songsprout/pull/3) as
+  `618a5323571fcb2db8f4fac82a42a0b469274d4e`
+- current `main` passes the published Underlay workspace-shape checker
+
 ## Next Task
 
-Return a reviewable PR to the orchestrator; do not merge.
+Complete `g10.010` fleet proof and closeout.

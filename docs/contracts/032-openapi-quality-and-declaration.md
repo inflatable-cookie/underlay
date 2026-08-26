@@ -36,7 +36,7 @@ Supporting contracts:
 
 Reference consumer evidence:
 
-- `underlay-reference/acme-api`
+- `underlay-reference/apps/acme-api`
 - `compli-me/api`
 - `contact-patch/cp-api`
 - `songsprout/nursery`

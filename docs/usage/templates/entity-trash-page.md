@@ -211,7 +211,7 @@ shape exists elsewhere in the app or across reference apps.
 
 Current live admin coverage includes:
 
-- `underlay-reference/acme-admin`
+- `underlay-reference/apps/acme-admin`
   - media trash
 - `acowtancy/dairy`
   - content trash

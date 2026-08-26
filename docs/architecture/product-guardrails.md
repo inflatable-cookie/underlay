@@ -19,6 +19,6 @@ Owner: repo maintainers
 
 ## Next Task
 
-Launch the published `g10.006`–`g10.009` consumer handoffs. Keep each migration
-bounded to workspace, dependency, docs, and tooling paths; do not widen it into
-shared runtime or template extraction.
+Execute `g10.011`, the bounded foundation and transport contract assessment.
+Classify implementation drift before opening repair work; do not turn the
+assessment into an unbounded shared-runtime rewrite.

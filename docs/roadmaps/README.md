@@ -59,9 +59,9 @@ README surfaces.
 ([`g09/README.md`](g09/README.md)). Config convergence, dependency upgrades,
 and elective majors landed 2026-08-04.
 
-`g10` is executing the strict monorepo consumer-workspace rollout. `g10.001`–
-`g10.005` are complete; `g10.006`–`g10.009` are ready for independent parallel
-workers. See [`g10/README.md`](g10/README.md).
+`g10.001`–`g10.010` completed the strict monorepo consumer-workspace rollout
+across the six-consumer family. `g10.011`, the foundation and transport
+contract assessment, is ready. See [`g10/README.md`](g10/README.md).
 
 ## Archived generations
 
@@ -80,5 +80,5 @@ that risk.
 
 ## Next Task
 
-Launch the published **`g10.006`–`g10.009`** handoffs for Contact Patch, Compli
-Me, Songsprout, and Composer. Relay each PR for orchestrator review.
+Execute `g10.011`. Produce the foundation and transport evidence matrix before
+opening implementation repair cards.

@@ -54,8 +54,8 @@ Use:
 
 For real visible implementations, use the ACME reference apps:
 
-- `acme-admin`
-- `acme-front`
+- `underlay-reference/apps/acme-admin`
+- `underlay-reference/apps/acme-front`
 
 These live in the separate `underlay-reference` repository.
 

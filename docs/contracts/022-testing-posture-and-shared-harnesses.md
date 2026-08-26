@@ -29,8 +29,8 @@ Shared testing support:
 
 Reference consumer evidence:
 
-- [`underlay-reference/acme-api/effigy.toml`](/Users/tom/Dev/projects/underlay-reference/acme-api/effigy.toml)
-- [`underlay-reference/acme-admin/effigy.toml`](/Users/tom/Dev/projects/underlay-reference/acme-admin/effigy.toml)
+- [`underlay-reference/apps/acme-api/effigy.toml`](/Users/tom/Dev/projects/underlay-reference/apps/acme-api/effigy.toml)
+- [`underlay-reference/apps/acme-admin/effigy.toml`](/Users/tom/Dev/projects/underlay-reference/apps/acme-admin/effigy.toml)
 - [`acowtancy/farmyard/effigy.toml`](/Users/tom/Dev/projects/acowtancy/farmyard/effigy.toml)
 - [`acowtancy/dairy/effigy.toml`](/Users/tom/Dev/projects/acowtancy/dairy/effigy.toml)
 - [`compli-me/api/effigy.toml`](/Users/tom/Dev/projects/compli-me/api/effigy.toml)

@@ -84,6 +84,42 @@ Reusable templates:
 
 ## Current Feature Notes
 
+### Single-Repository Consumer Workspace (`2026-08-26`)
+
+- Impact class: `breaking` for consumers using separate package repositories,
+  top-level package folders, child Bun locks, or internal `file:` dependencies
+- Affected consumers: every Underlay product workspace
+- Required actions:
+  1. Keep one Git root for the product.
+  2. Move runtime applications under `apps/*`, reusable JavaScript packages
+     under `packages/*`, and documentation authority to root `docs/`.
+  3. Add the exact root manifest fields defined by contract `024`: `private`, a
+     pinned Bun `packageManager`, and explicit JavaScript `workspaces` paths.
+  4. Keep one root `bun.lock`; remove child locks and per-package installs.
+  5. Replace internal `file:` edges with `workspace:*`.
+  6. Consume released Underlay and Poodle versions. Keep sibling source
+     checkouts outside the product workspace and use them only for QA/tooling.
+  7. Update Effigy catalogs, bundle directories, aliases, generated-config
+     roots, docs, and instruction paths in the same migration.
+- Cutover:
+  - polyrepo and flat top-level package layouts are unsupported from
+    `2026-08-26`
+  - all six known consumer roots conform; no compatibility window remains
+- Validation:
+  - run the repo-owned workspace-shape selector
+  - run one frozen root install
+  - run `effigy health`, planned targeted tests/checks, and `git diff --check`
+- Current consumer proof:
+  - Acowtancy is the live reference workspace
+  - Underlay Reference is the bootstrap fixture
+  - Contact Patch, Compli Me, Songsprout, and Composer completed the same
+    migration in `g10.006`–`g10.010`
+- Changed guidance:
+  - [contract 024](../contracts/024-new-app-bootstrap-and-bring-up.md)
+  - [project structure](./020-project-structure.md)
+  - [Underlay integration](./030-underlay-integration.md)
+  - [fleet closeout](../logs/2026-08/26-151525-g10-006-010-fleet-closeout.md)
+
 ### TS Runtime And Workflow Boundary Hardening (`2026-06-06`)
 
 - Impact class: `breaking` for unknown consumers using retired
@@ -282,7 +318,7 @@ Reusable templates:
   - in `underlay`: `effigy qa:docs`
   - in consumers: run targeted checks for the jobs wrapper and API crates
 - Current consumer proof:
-  - `underlay-reference/acme-api`: `cargo check -p acme-jobs -p acme-api`
+  - `underlay-reference/apps/acme-api`: `cargo check -p acme-jobs -p acme-api`
   - `contact-patch/cp-api`: `cargo check -p cp-jobs -p cp-api`
   - `compli-me/api`: `cargo check -p compli-me-jobs -p compli-me-api`
   - `songsprout/nursery`: `cargo check -p nursery-jobs -p nursery-api`
@@ -337,7 +373,7 @@ Reusable templates:
   - for direct `SessionStore` implementations: add or keep a stale refresh
     rejection test around `rotate_session_if_current`
 - Current consumer proof:
-  - `underlay-reference/acme-api`: `cargo check -p acme-api` passed
+  - `underlay-reference/apps/acme-api`: `cargo check -p acme-api` passed
   - `contact-patch/cp-api`: `cargo check -p cp-api` passed
   - `compli-me/api`: `cargo check -p compli-me-api` passed
   - `acowtancy/farmyard`: `cargo check -p farmyard-api` passed
