@@ -247,5 +247,5 @@ Bad outcomes:
 
 ## Next Task
 
-After `g10.015` closes without a migration-policy gap, promote `g10.016` and
-assess the six-consumer testing posture and shared harness use.
+Execute `g10.016` and assess the six-consumer testing posture and shared harness
+use. Keep consumer inspection read-only.

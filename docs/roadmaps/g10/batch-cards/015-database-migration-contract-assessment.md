@@ -1,6 +1,7 @@
 # g10.015 - Database Migration Contract Assessment
 
-Status: ready
+Status: complete
+Completed: 2026-08-26
 Owner: repo maintainers
 Contract: `021-database-migration-and-schema-workflow.md`
 Depends on: `g10.014`
@@ -79,7 +80,24 @@ through incidental code or config changes.
 - Affected consumers: six-consumer family
 - Required action: none until a finding is promoted into a repair card
 
+## Completion Evidence
+
+The assessment matrix is recorded in
+[`g10.015 - Database Migration Contract Assessment`](../../../logs/2026-08/26-162845-g10-015-database-migration-assessment.md).
+
+Verdict: `drifting`. Shared SQL layout, naming, explicit migration inputs, and
+typed identifier boundaries match. Confirmed repair candidates are:
+
+- roll the contracted root state stack and `migration:*` task surface through
+  the five baseline consumers, starting with Underlay Reference
+- make Acowtancy's local state artifact layer apply the installed bundle and dev
+  overlay to the DB
+- make Songsprout and Composer dev-overlay reset/application fail closed
+
+No database, state stack, consumer file, or production source changed. The
+findings do not expose a migration-policy split, so the testing assessment gate
+is clear. Repair cards stay deferred until `g10.016` closes.
+
 ## Next Task
 
-Execute this assessment. If it closes without a migration-policy gap, promote
-`g10.016` to `ready`; otherwise return to planning with the unresolved boundary.
+Execute `g10.016`, the testing posture contract assessment.

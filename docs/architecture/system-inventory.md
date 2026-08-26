@@ -18,7 +18,7 @@ Underlay is currently `strict-ready` in parallel mode.
 
 Evidence:
 
-- active generation is `g10`; `g10.001`–`g10.014` are complete and `g10.015`
+- active generation is `g10`; `g10.001`–`g10.015` are complete and `g10.016`
   is ready
 - roadmap front doors, vision, and generation index were refreshed 2026-08-17
 - the contract index exists and names the full planned contract set
@@ -26,8 +26,8 @@ Evidence:
 
 Remaining pressure:
 
-- migration/testing and later implementation-vs-contract assessment groups
-  remain open
+- testing and later implementation-vs-contract assessment groups remain open;
+  migration assessment found a bounded repair wave to compile after `g10.016`
 - collection route and hybrid-shell convergence (`116`, `117`, sweeps `029`/`030`)
   is still open
 - consumer drift prevention items in `070` still have proposed follow-through
@@ -129,5 +129,5 @@ Every system should pass through the same loop:
 
 ## Next Task
 
-Execute `g10.015`, the database migration contract assessment. See
+Execute `g10.016`, the testing posture contract assessment. See
 [`docs/roadmaps/g10/README.md`](../roadmaps/g10/README.md).

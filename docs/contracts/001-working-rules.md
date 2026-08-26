@@ -57,10 +57,10 @@ Underlay is in parallel mode:
 - `g10.011` is complete
 - `g10.012` and `g10.013` are complete
 - `g10.014` is complete
-- `g10.015` is ready
-- `g10.016` is planned behind `g10.015`
+- `g10.015` is complete
+- `g10.016` is ready
 
 ## Next Task
 
-Execute `g10.015`, the database migration contract assessment. Keep consumer
+Execute `g10.016`, the testing posture contract assessment. Keep consumer
 inspection read-only.

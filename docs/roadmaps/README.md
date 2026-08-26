@@ -63,8 +63,9 @@ and elective majors landed 2026-08-04.
 across the six-consumer family. `g10.011` completed the foundation and transport
 assessment. `g10.012` normalized request-context rejection envelopes, and
 `g10.013` synchronized the page-list contract artifacts. `g10.014` completed the
-bounded HTTP-client fallback repair. `g10.015` is ready for database migration
-contract assessment; `g10.016` is the gated testing-posture assessment. See
+bounded HTTP-client fallback repair. `g10.015` completed the database migration
+assessment with a `drifting` verdict; `g10.016` is ready for testing-posture
+assessment. See
 [`g10/README.md`](g10/README.md).
 
 ## Archived generations
@@ -84,4 +85,4 @@ that risk.
 
 ## Next Task
 
-Execute `g10.015`. Keep consumer assessment read-only.
+Execute `g10.016`. Keep consumer assessment read-only.

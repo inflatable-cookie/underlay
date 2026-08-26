@@ -75,8 +75,8 @@ lane.
 
 - completed proof: consumer workspace normalization plus foundation and
   transport assessment/repair (`g10.001`–`g10.014`)
-- immediate card: database migration assessment (`g10.015`, `ready`)
-- gated next card: testing posture assessment (`g10.016`, `planned`)
+- completed assessment: database migration workflow (`g10.015`, `drifting`)
+- immediate card: testing posture assessment (`g10.016`, `ready`)
 - next batch: bounded migration/testing repairs compiled only from confirmed
   findings
 - next planning checkpoint: after that repair wave, confirm the `024`–`026`
@@ -178,8 +178,8 @@ lane.
 12. [x] [`g10.012`](batch-cards/012-context-rejection-envelope-normalization.md) — context rejection envelope normalization (`complete`)
 13. [x] [`g10.013`](batch-cards/013-page-list-contract-artifact-sync.md) — page-list contract artifact sync (`complete`)
 14. [x] [`g10.014`](batch-cards/014-http-client-bounded-constructor-fallback.md) — bounded HTTP-client constructor fallback (`complete`)
-15. [ ] [`g10.015`](batch-cards/015-database-migration-contract-assessment.md) — database migration contract assessment (`ready`)
-16. [ ] [`g10.016`](batch-cards/016-testing-posture-contract-assessment.md) — testing posture contract assessment (`planned`; gated by `g10.015`)
+15. [x] [`g10.015`](batch-cards/015-database-migration-contract-assessment.md) — database migration contract assessment (`complete`; verdict `drifting`)
+16. [ ] [`g10.016`](batch-cards/016-testing-posture-contract-assessment.md) — testing posture contract assessment (`ready`)
 
 ## Consumer Upgrade Impact
 
@@ -189,5 +189,5 @@ compiled as a later findings-driven card.
 
 ## Next Task
 
-Execute `g10.015`. Keep the assessment read-only: do not apply state, reset a
-database, or edit consumer repositories.
+Execute `g10.016`. Keep the assessment read-only: do not run broad consumer test
+suites or edit consumer repositories.

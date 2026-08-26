@@ -1,6 +1,6 @@
 # g10.016 - Testing Posture Contract Assessment
 
-Status: planned
+Status: ready
 Owner: repo maintainers
 Contract: `022-testing-posture-and-shared-harnesses.md`
 Depends on: `g10.015`
@@ -12,9 +12,9 @@ contract `022` after migration proof ownership is settled.
 
 ## Promotion Gate
 
-- `g10.015` is complete
-- no unresolved migration-policy decision changes the expected API proof bar
-- the live consumer roots and `apps/*` child paths have been rechecked
+- [x] `g10.015` is complete
+- [x] no unresolved migration-policy decision changes the expected API proof bar
+- [x] the live consumer roots and `apps/*` child paths have been rechecked
 
 ## Scope
 

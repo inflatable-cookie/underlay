@@ -27,8 +27,8 @@ It distinguishes:
 |---|---|---|---|---|
 | [010-foundation-primitives-and-envelopes.md](./010-foundation-primitives-and-envelopes.md) | active | IDs, `AppError`, envelopes, validation primitives | `underlay-core`, `underlay-validation*`, `underlay-http` | assessed by `g10.011`; `g10.012` repair complete |
 | [020-http-transport-and-server-boundary.md](./020-http-transport-and-server-boundary.md) | active | HTTP helpers, cookies, query/pagination, CSP/server TS helpers | `underlay-http`, `underlay-http-client`, `ts/src/client/**`, `ts/src/server/**` | assessed by `g10.011`; bounded repairs `g10.012`–`g10.014` complete |
-| [021-database-migration-and-schema-workflow.md](./021-database-migration-and-schema-workflow.md) | active | durable schema migration layout, dev overlay separation, reset/replay loop, migration proof posture | six API packages, `070`, `120`, migration usage policy | assessment card `g10.015` is ready |
-| [022-testing-posture-and-shared-harnesses.md](./022-testing-posture-and-shared-harnesses.md) | active | minimum and strong proof posture for API/admin/front packages plus shared harness usage | six app families, `120`, shared harness code | assessment card `g10.016` is planned behind `g10.015` |
+| [021-database-migration-and-schema-workflow.md](./021-database-migration-and-schema-workflow.md) | active | durable schema migration layout, dev overlay separation, reset/replay loop, migration proof posture | six API packages, `070`, `120`, migration usage policy | assessed by `g10.015`; verdict `drifting`; repair wave deferred until `g10.016` closes |
+| [022-testing-posture-and-shared-harnesses.md](./022-testing-posture-and-shared-harnesses.md) | active | minimum and strong proof posture for API/admin/front packages plus shared harness usage | six app families, `120`, shared harness code | assessment card `g10.016` is ready |
 | [023-release-and-compatibility-rollout.md](./023-release-and-compatibility-rollout.md) | active | fleet rollout order, compatibility windows, upgrade notes, and retirement proof for shared changes | `001`, `027`, `111`, `190`, `g01.031`, six-consumer rollout evidence | settles how Underlay changes move through the consumer fleet without ad hoc rollout policy |
 | [024-new-app-bootstrap-and-bring-up.md](./024-new-app-bootstrap-and-bring-up.md) | active | single-repository `apps/*`/`packages/*` topology, normative root Bun manifest, released-dependency rule, docs authority, Effigy-first bootstrap and bring-up posture | six-consumer `g10.010` proof, acowtancy, `025`, `110`, `120` | settles that a normal Underlay product is one Git repository, what it contains on day one, and how it should start cleanly |
 | [025-rust-app-runtime-assembly-and-router-topology.md](./025-rust-app-runtime-assembly-and-router-topology.md) | active | API workspace/runtime assembly, `AppState`, router builder, middleware order, health/OpenAPI/metrics posture | current consumer `*/api` crates, `020`, `030`, `060` | settles what a normal Underlay Rust API app looks like so new apps can assemble one by declared pattern |
@@ -98,5 +98,5 @@ Do not promote a system into active implementation-assessment work until:
 
 ## Next Task
 
-Execute `g10.015`, the database migration contract assessment. See
+Execute `g10.016`, the testing posture contract assessment. See
 [`docs/roadmaps/g10/README.md`](../roadmaps/g10/README.md).

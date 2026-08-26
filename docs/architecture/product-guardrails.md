@@ -19,5 +19,5 @@ Owner: repo maintainers
 
 ## Next Task
 
-Execute `g10.015`, the database migration contract assessment. Do not mutate
-consumer schema/state or turn assessment findings into incidental repairs.
+Execute `g10.016`, the testing posture contract assessment. Do not turn the
+recorded migration findings into incidental repairs during that assessment.

@@ -262,6 +262,37 @@ Rules:
 - audit and security-alert callers must use the typed table config APIs; the
   raw-string operator wrappers were removed after the six-consumer proof
 
+## Assessment State
+
+`g10.015` assessed the current Underlay implementation and all six consumer
+workspaces on 2026-08-26. Full evidence is in
+[`g10.015 - Database Migration Contract Assessment`](../logs/2026-08/26-162845-g10-015-database-migration-assessment.md).
+
+Verdict: `drifting`.
+
+Confirmed matches:
+
+- all structural and dev-overlay SQL roots are separate and explicitly named
+- all 96 inspected SQL filenames are ordered and semantic
+- normal schema changes remain visible SQL inputs
+- Underlay's destructive, existence, audit, security-alert, media, reorder, and
+  test helpers retain typed dynamic identifier boundaries
+- Acowtancy remains a justified advanced profile rather than the normal baseline
+
+Confirmed drift:
+
+- the five baseline consumers lack the declared root local state stack and
+  retain the retired package-owned `db:*` task namespace
+- active consumer docs still teach the retired task loop
+- Acowtancy's local state artifact hook installs the canonical bundle without
+  invoking its DB apply/dev-seed path
+- Songsprout and Composer can continue after dev-overlay failure; Composer's
+  reset omits its committed dev overlay
+
+These are implementation gaps, not a contract-policy split. Repair cards remain
+deferred until the testing assessment closes so the two evidence sets can
+compile into one bounded wave.
+
 ## What Good Looks Like
 
 Good outcomes:
@@ -291,5 +322,5 @@ Bad outcomes:
 
 ## Next Task
 
-Execute `g10.015`, the six-consumer database migration and schema workflow
-assessment. Do not change schema or apply state during the assessment.
+Migration assessment is complete. Execute `g10.016`, then compile the combined
+migration/testing repair wave.

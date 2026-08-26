@@ -5,6 +5,12 @@ they hit a solvable hurdle; they do not stop the current task to fix one.
 
 ## Open
 
+### [ ] Effigy task-inventory JSON example uses a stale payload path — 2026-08-26
+- Friction: the installed Effigy skill queries `.result.payload.tasks[]`, but Effigy `0.12.1` returns task inventory at `.result.catalog_tasks[]`
+- Impact: the documented machine-readable inventory command fails before agents can filter task ownership
+- Possible fix: update the Effigy skill JSON example and versioned envelope reference to the live `tasks` schema
+- Surface: Effigy skill / JSON task inventory docs
+
 ### [ ] Active contracts retain machine-local evidence links — 2026-08-26
 - Friction: most active contract files still link through `/Users/tom/Dev/projects/...` paths even though the docs boundary requires repo-local Underlay links and prose-only sibling evidence
 - Impact: contract navigation is checkout-specific and active docs normalize a forbidden link style
