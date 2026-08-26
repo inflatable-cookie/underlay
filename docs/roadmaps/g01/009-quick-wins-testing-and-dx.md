@@ -332,7 +332,8 @@ $: theme = $preferences.darkMode ? 'dark' : 'light';
   - [x] `variant="avatar"` - Avatar skeleton (circular)
   - [x] `variant="card"` - Card skeleton (container)
 
-- [x] Smart skeletons (deferred to [backlog](../backlog/smart-skeletons.md))
+- [x] Smart skeletons (later delivered by [g01.040](./040-smart-skeletons.md),
+  then retired by [g01.045](./045-remaining-underlay-surface-contraction.md))
   - [x] `<DataSkeleton type="list" count={5} />`
   - [x] `<DataSkeleton type="grid" count={12} />`
   - [x] Auto-detects layout

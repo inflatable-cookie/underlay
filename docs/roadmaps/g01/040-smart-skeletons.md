@@ -11,7 +11,8 @@ Add a higher-level `DataSkeleton` component so consuming apps can render consist
 
 ## Research Basis
 
-- `docs/roadmaps/backlog/smart-skeletons.md`
+- original smart-skeleton backlog brief, removed after the implemented surface
+  was retired by [g01.045](./045-remaining-underlay-surface-contraction.md)
 - `docs/guides/100-frontend-web.md`
 - `ts/src/components/Skeleton.svelte`
 

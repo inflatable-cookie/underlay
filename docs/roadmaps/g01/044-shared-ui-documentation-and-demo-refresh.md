@@ -1,6 +1,6 @@
 # 044 - Shared UI Documentation and Demo Refresh
 
-Status: In Progress
+Status: Complete
 Owner: Platform
 Created: 2026-03-26
 Depends on: 031, 042, 043
@@ -17,7 +17,7 @@ apps still use directly.
 
 ## Research Basis
 
-- `docs/roadmaps/backlog/storybook-component-docs.md`
+- superseded Storybook backlog brief, removed after this roadmap completed
 - `docs/guides/090-ui-kit.md`
 - `docs/guides/062-auth-ui-components.md`
 - `docs/guides/077-media-library.md`
