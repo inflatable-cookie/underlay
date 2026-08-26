@@ -1,6 +1,6 @@
 # g09.044 - Migration And Testing Fleet Closeout
 
-Status: ready
+Status: complete
 Owner: repo maintainers
 Contracts: `021-database-migration-and-schema-workflow.md`,
 `022-testing-posture-and-shared-harnesses.md`,
@@ -49,14 +49,26 @@ operator decision.
 
 ## DB Harness Decision
 
-Operator selection required before a design roadmap or strict spec can open:
+The operator selected app-owned whole-app fixed-schema suites on 2026-08-26.
+`TestDb` remains the preferred shared-crate and single-schema seam. Contract
+`022` now records that boundary. No multi-schema or database-per-test design is
+open by implication.
 
-1. extend `TestDb` with a generic multi-schema or database-per-test lifecycle;
-2. amend contract `022` so whole-app fixed-schema suites remain explicitly
-   app-owned while `TestDb` stays a shared-crate/single-schema seam.
+## Closeout Evidence
 
-The closeout may record either selection. If option 1 is selected, stop and
-compile a separate decision-prototype roadmap before claiming the wave closed.
+- all six consumer roots resolve the expected state, migration, and test plans
+- all five baseline consumers expose routed API `migration:*` selectors with no
+  retired consumer `db:*` task
+- Underlay Reference proves `TestServer`; no forced fleet rewrite followed
+- Compli Me, Songsprout, Composer, and Acowtancy expose their named risk suites
+  through the repaired merge gates
+- merged disposable-state evidence proves from-empty, repeat, and fail-closed
+  behavior without repeating destructive operations during this closeout
+- remaining minimum-posture packages stay minimum because no unowned product
+  risk justifies speculative suites
+
+Full revisions, finding disposition, residuals, and validation are in
+[`g09.044 - Migration And Testing Fleet Closeout`](../../logs/2026-08/26-222718-g09-044-migration-testing-fleet-closeout.md).
 
 ## Validation
 
@@ -88,5 +100,5 @@ that has not been separately designed and bounded.
 
 ## Next Task
 
-After closeout, re-enter planning and confirm contracts `024`–`026` remain the
-next coherent assessment group.
+Execute `g09.045`, the read-only bootstrap, runtime assembly, and access-model
+assessment for contracts `024`–`026`.

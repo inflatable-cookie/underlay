@@ -1,6 +1,6 @@
 # g09.045 - Bootstrap And Runtime Contract Assessment
 
-Status: planned
+Status: ready
 Owner: repo maintainers
 Contracts: `024-new-app-bootstrap-and-bring-up.md`,
 `025-rust-app-runtime-assembly-and-router-topology.md`,
@@ -14,10 +14,10 @@ and route/access contracts after the migration/testing repair wave closes.
 
 ## Promotion Gate
 
-- `g09.037`–`g09.044` are complete
-- the `g09.044` whole-app DB-harness decision is recorded
-- all six consumer roots are current and their package roles remain explicit
-- no open migration/testing repair changes the expected runtime baseline
+- [x] `g09.037`–`g09.044` are complete
+- [x] the `g09.044` whole-app DB-harness decision is recorded
+- [x] all six consumer roots are current and their package roles remain explicit
+- [x] no open migration/testing repair changes the expected runtime baseline
 
 ## Scope
 

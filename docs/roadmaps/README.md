@@ -65,10 +65,10 @@ assessment. `g09.032` normalized request-context rejection envelopes, and
 bounded HTTP-client fallback repair. `g09.035` and `g09.036` completed the
 migration/testing assessments with `drifting` verdicts. `g09.037` completed the
 shared repair and `g09.038` completed the Underlay Reference proof. `g09.039`
-completed the Contact Patch rollout and `g09.043` completed the Acowtancy
-repair. `g09.040`–`g09.043` are complete and all five consumer proofs are
-merged. `g09.044` is ready for fleet closeout; `g09.045` remains planned
-behind that closeout. See [`g09/README.md`](g09/README.md).
+completed the Contact Patch rollout and `g09.040`–`g09.043` completed the
+remaining consumer repairs. `g09.044` closed the six-root proof and retained
+fixed-schema whole-app suites as app-owned. `g09.045` is ready for the next
+read-only contract assessment. See [`g09/README.md`](g09/README.md).
 
 ## Archived generations
 
@@ -87,4 +87,4 @@ that risk.
 
 ## Next Task
 
-Execute `g09.044`; keep `g09.045` planned until the repair wave closes.
+Execute `g09.045` as the read-only assessment of contracts `024`–`026`.

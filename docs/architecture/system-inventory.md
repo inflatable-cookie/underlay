@@ -18,18 +18,17 @@ Underlay is currently `migration` in sequential mode.
 
 Evidence:
 
-- active generation is `g09`; `g09.021`–`g09.039` are complete,
-  `g09.040`–`g09.042` are changes-requested, `g09.043` remains independently
-  owned, and `g09.044`–`g09.045` are planned
+- active generation is `g09`; `g09.021`–`g09.044` are complete and `g09.045`
+  is ready
 - roadmap front doors and the generation index were refreshed 2026-08-26
 - the contract index exists and names the full planned contract set
 - reference-grade architecture phases 2–5 remain the longer-horizon shape target
 
 Remaining pressure:
 
-- migration and testing assessments both found bounded drift; their combined
-  repair wave is compiled behind shared, reference, consumer, and closeout
-  gates
+- migration and testing drift is repaired across the six-consumer family;
+  fixed-schema whole-app suites remain app-owned and the next read-only
+  assessment covers bootstrap, runtime assembly, and access models
 - collection route and hybrid-shell convergence (`116`, `117`, sweeps `029`/`030`)
   is still open
 - consumer drift prevention items in `070` still have proposed follow-through
@@ -131,6 +130,5 @@ Every system should pass through the same loop:
 
 ## Next Task
 
-Revise and re-review `g09.040`–`g09.042`, accept `g09.043` evidence from its
-separate thread, and keep `g09.044` blocked. See
+Execute `g09.045`, the read-only assessment of contracts `024`–`026`. See
 [`docs/roadmaps/g09/README.md`](../roadmaps/g09/README.md).

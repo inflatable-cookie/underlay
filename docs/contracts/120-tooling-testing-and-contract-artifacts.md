@@ -309,14 +309,11 @@ Other system families own:
 
 ## Known Drift To Assess Later
 
-- `TestDb` isolates one generated schema, while whole-app consumer migrations
-  create fixed named schema sets; no consumer can adopt it safely without a
-  generic multi-schema or database-per-test boundary
-- `TestServer` is directly tested but has no consumer adoption even though
-  direct Axum `Router::oneshot` mechanics recur in three consumer APIs
-- Cattle Grid still carries a compatibility cast around
-  `createMockHttpClient()` even though `g09.037` now proves the shared mock's
-  structural `HttpClient` assignment; consumer cleanup belongs to `g09.043`
+- `TestDb` isolates one generated schema. The `g09.044` operator decision keeps
+  fixed named multi-schema whole-app suites app-owned unless later evidence
+  justifies a separately designed shared lifecycle.
+- `TestServer` has one bounded Underlay Reference health-route proof; broader
+  adoption remains demand-led rather than a fleet rewrite.
 - `underlay-devtools` mixes genuinely generic DB/env helpers with machinery that
   is tightly coupled to Underlay's migration/media stack, so its internal
   ownership split may still be too broad
@@ -349,6 +346,5 @@ Other system families own:
 
 ## Next Task
 
-Close revised consumer roadmaps `g09.040`–`g09.042` and the independently owned
-`g09.043`. Do not change the Rust DB harness boundary without the `g09.044`
-operator decision.
+Use `g09.045` to assess bootstrap, runtime assembly, and access-model contracts.
+Keep the Rust DB harness on its recorded single-schema boundary.

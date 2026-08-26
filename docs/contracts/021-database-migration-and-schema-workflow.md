@@ -268,7 +268,7 @@ Rules:
 workspaces on 2026-08-26. Full evidence is in
 [`g09.035 - Database Migration Contract Assessment`](../logs/2026-08/26-162845-g09-035-database-migration-assessment.md).
 
-Verdict: `drifting`.
+Initial verdict: `drifting`.
 
 Confirmed matches:
 
@@ -289,9 +289,13 @@ Confirmed drift:
 - Songsprout and Composer can continue after dev-overlay failure; Composer's
   reset omits its committed dev overlay
 
-These are implementation gaps, not a contract-policy split. Repair roadmaps remain
-deferred until the testing assessment closes so the two evidence sets can
-compile into one bounded wave.
+These were implementation gaps, not a contract-policy split. `g09.037`–`g09.044`
+repaired the five baseline roots, Acowtancy's advanced state path, fail-closed
+overlays, active guidance, and merge-gate reachability.
+
+Repair state: `conforming`. The final six-root matrix and retained residuals are
+in
+[`g09.044 - Migration And Testing Fleet Closeout`](../logs/2026-08/26-222718-g09-044-migration-testing-fleet-closeout.md).
 
 ## What Good Looks Like
 
@@ -322,6 +326,5 @@ Bad outcomes:
 
 ## Next Task
 
-Close the remaining consumer repairs through revised `g09.040`–`g09.042` and
-the independently owned `g09.043`. Keep DB-harness design behind the `g09.044`
-operator decision.
+Assess bootstrap, runtime assembly, and access-model contracts through
+`g09.045`.

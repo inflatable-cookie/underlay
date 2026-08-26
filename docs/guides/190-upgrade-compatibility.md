@@ -84,6 +84,48 @@ Reusable templates:
 
 ## Current Feature Notes
 
+### Migration And Testing Task Cutover (`2026-08-26`)
+
+- Impact class: `breaking` for consumers using package `db:*` selectors,
+  rootless local state flows, or fail-open local dev overlays; proof hardening is
+  otherwise compatible
+- Affected consumers: the six-consumer family
+- Required actions:
+  1. Plan local state from the product root with `effigy state plan`.
+  2. Apply it with `effigy state apply local --yes` only after identifying the
+     disposable local database boundary.
+  3. Route schema work through the owning API package's `migration:*` tasks.
+  4. Keep durable structural migrations separate from dev-only overlays.
+  5. Make reset and local overlay paths fail closed.
+  6. Keep `health` cheap; place selected risk-bearing suites in `validate` or
+     `qa` without forcing speculative suites into minimum-posture packages.
+- Cutover:
+  - package and root `db:migrate`, `db:reset`, and `db:drop` aliases are retired
+    from `2026-08-26`
+  - no compatibility window remains for fail-open local overlays
+  - whole-app fixed-schema suites remain app-owned; `TestDb` stays the shared
+    single-schema seam
+- Validation:
+  - `effigy tasks`
+  - `effigy state plan`
+  - `effigy test --plan`
+  - repo-owned `effigy health`, `effigy validate`, and `effigy qa` gates
+  - run destructive reset/replay proof only against a positively identified
+    disposable local target
+- Current consumer proof:
+  - Underlay Reference `854e5ad2f9d4a7c62277447b6686bacb166516e7`
+  - Contact Patch `8d5b6f4c463eb4bcdef4e2c60fb16d4cc878c8df`
+  - Compli Me `12fa0d17cc8abe3c6a15cd7b3e2df352bb7e7f29`
+  - Songsprout `e1fd46ef1230492dc2be0b5787768350823da5c4`
+  - Composer `b7cafd9cb281f46ec4ade802eb49b01e1f9b58d8`
+  - Acowtancy `df06ddef24e0e3d5cf8d69094be897ee9af39f29`
+    (repair merge `a7e813701d6f8d934162a2945a4c3dd9aea4984b`)
+- Changed guidance:
+  - [migration workflow contract](../contracts/021-database-migration-and-schema-workflow.md)
+  - [testing posture contract](../contracts/022-testing-posture-and-shared-harnesses.md)
+  - [migration state and Effigy](../usage/migration/000-state-layout-and-effigy.md)
+  - [fleet closeout](../logs/2026-08/26-222718-g09-044-migration-testing-fleet-closeout.md)
+
 ### Single-Repository Consumer Workspace (`2026-08-26`)
 
 - Impact class: `breaking` for consumers using separate package repositories,

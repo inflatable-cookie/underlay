@@ -68,11 +68,9 @@ Underlay is in sequential mode:
 - `g09.038` is complete
 - `g09.039` is complete
 - `g09.040`–`g09.043` are complete
-- `g09.044` is ready
-- `g09.045` is the planned post-repair assessment; it is not ready
+- `g09.044` is complete
+- `g09.045` is the ready post-repair assessment
 
 ## Next Task
 
-Execute `g09.044` and return the whole-app DB harness boundary to the operator
-decision recorded there. Do not promote `g09.045` before the repair wave
-closes.
+Execute `g09.045` as the read-only assessment of contracts `024`–`026`.

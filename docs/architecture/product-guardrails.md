@@ -19,7 +19,6 @@ Owner: repo maintainers
 
 ## Next Task
 
-Revise and re-review `g09.040`–`g09.042` only inside their identified local
-state boundaries; accept `g09.043` evidence from its separate thread. Keep
-shared DB-harness design behind the `g09.044` operator decision and keep
-minimum-posture packages out of speculative test rewrites.
+Execute the read-only `g09.045` assessment. Keep fixed-schema whole-app suites
+app-owned, `TestDb` on its shared single-schema boundary, and minimum-posture
+packages out of speculative test rewrites.

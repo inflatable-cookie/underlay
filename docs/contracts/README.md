@@ -54,28 +54,11 @@ machine-readable policy files.
 
 ## Current lane
 
-- the active contract-driven lane is `g06`
-- `g06.003` is complete as the auth/session contract reset lane
-- `g06.004` is complete as the HTTP safe-builder consolidation lane
-- `g06.005` is complete as the DB identifier and schema boundary normalization
-  lane
-- `g06.006` is complete as the media repository contract and adapter split
-  completion lane
-- `g06.007` is complete as the devtools bundle/store boundary isolation lane
-- `g06.008` is complete as the six-consumer compatibility proof and
-  release-note closeout lane
-- `g06.009` is complete as the Effigy doctor structural backlog triage lane
-- `g06.010` is complete as the first Rust god-file split repair batch
-- `g06.011` is complete as the second Rust structural split repair batch
-- `g06.012` is complete as the high-severity Rust structural backlog triage
-  lane
-- `g06.013` is complete as the security-adjacent Rust adapter split batch
-- `g06.014` is complete as the Rust platform transition validation and
-  release-readiness closeout
-- `g06.015` is complete as the Rust platform transition release-note handoff
-- `g06.016` is complete as the Rust platform hardening backlog batch
-- `g06.017` is complete as the Rust quality re-audit and fresh-start assessment
-- `g06.018` is superseded by `g06.019`
-- `g06.019` is complete as the reference-grade architecture reset inventory
-- `g06.020` is next as the public Rust surface diet and consumer import matrix
-- keep fresh Rust platform-contract work inside `g06`
+- the active contract-driven lane is `g09`
+- `g09.031`–`g09.034` assessed and repaired foundation/transport drift
+- `g09.035`–`g09.044` assessed and repaired migration/testing drift across the
+  six-consumer family
+- whole-app fixed-schema DB suites remain app-owned; `TestDb` stays the shared
+  single-schema seam
+- `g09.045` is ready to assess bootstrap, runtime assembly, and access-model
+  contracts `024`–`026`

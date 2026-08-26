@@ -12,7 +12,7 @@ then continued into consumer workspace normalization and contract fidelity.
 
 An invalid rollover created `g10` with no roadmap files and used batch cards as
 the queue. The 2026-08-26 recovery removed that generation and rehomed its
-completed and remaining work as `g09.021`–`g09.044`. Git history and delivery
+completed and remaining work as `g09.021`–`g09.045`. Git history and delivery
 logs preserve the work; this front door is the corrected execution authority.
 The operator explicitly chose continuation beyond the normal generation-size
 default; no later generation opens without another explicit rollover decision.
@@ -34,9 +34,9 @@ features.
   `packages/*` workspace shape
 - [x] assess and repair the foundation and transport contracts
 - [x] assess database migration and testing posture across the fleet
-- [ ] repair the confirmed migration/testing drift with bounded ownership and
+- [x] repair the confirmed migration/testing drift with bounded ownership and
   disposable-state proof
-- [ ] close the repair wave before starting the next contract assessment group
+- [x] close the repair wave before starting the next contract assessment group
 
 ## Roadmap Sequence
 
@@ -59,7 +59,7 @@ four consumer rollouts, and six-consumer closeout.
 Foundation/transport assessment and repairs, followed by migration and testing
 assessments. Both later assessments found bounded drift.
 
-### Phase 5 — Migration/testing repair (`g09.037`–`g09.044`, active)
+### Phase 5 — Migration/testing repair (`g09.037`–`g09.044`, complete)
 
 1. repair Underlay's health gate and TypeScript mock contract (`g09.037`,
    complete)
@@ -67,15 +67,16 @@ assessments. Both later assessments found bounded drift.
    (`g09.038`, complete)
 3. run the five repository-owned consumer repairs independently after the
    reference proof (`g09.039`–`g09.043` complete)
-4. close fleet evidence and settle the whole-app `TestDb` ownership decision
-   (`g09.044`)
+4. close fleet evidence and retain fixed-schema whole-app suites as app-owned
+   (`g09.044`, complete)
 
 `g09.038` merged in Underlay Reference PR4. Contact Patch PR4, Compli Me PR6,
 Songsprout PR4, Composer PR4, and Acowtancy PR59 then merged and closed
-`g09.039`–`g09.043`. Every lane retains an independent repo-owned local
-state boundary. The fleet closeout is now ready.
+`g09.039`–`g09.043`. Every lane retains an independent repo-owned local state
+boundary. `g09.044` closed the fleet proof and kept `TestDb` on its
+shared-crate/single-schema seam.
 
-### Phase 6 — Bootstrap/runtime assessment (`g09.045`, planned)
+### Phase 6 — Bootstrap/runtime assessment (`g09.045`, ready)
 
 After the repair wave, assess contracts `024`–`026` across the six-consumer
 family. Repair roadmaps are not pre-numbered; they must come from the evidence.
@@ -125,8 +126,8 @@ family. Repair roadmaps are not pre-numbered; they must come from the evidence.
 41. [x] [`g09.041`](041-songsprout-migration-and-fail-closed-gates.md) — Songsprout migration and fail-closed gates (`complete`)
 42. [x] [`g09.042`](042-composer-migration-and-fail-closed-gates.md) — Composer migration and fail-closed gates (`complete`)
 43. [x] [`g09.043`](043-acowtancy-state-and-test-orchestration-repair.md) — Acowtancy state and test orchestration repair (`complete`)
-44. [ ] [`g09.044`](044-migration-testing-fleet-closeout.md) — migration/testing fleet closeout (`ready`)
-45. [ ] [`g09.045`](045-bootstrap-and-runtime-contract-assessment.md) — bootstrap and runtime contract assessment (`planned`; after `g09.044`)
+44. [x] [`g09.044`](044-migration-testing-fleet-closeout.md) — migration/testing fleet closeout (`complete`)
+45. [ ] [`g09.045`](045-bootstrap-and-runtime-contract-assessment.md) — bootstrap and runtime contract assessment (`ready`)
 
 Deferred with a promotion trigger (TypeScript 7.1 or concrete need):
 [`backlog/ts-7-adoption.md`](../backlog/ts-7-adoption.md).
@@ -141,17 +142,15 @@ Deferred with a promotion trigger (TypeScript 7.1 or concrete need):
   testing verdict.
 - `g09.037` and `g09.038` are complete.
 - `g09.039`–`g09.043` are complete.
-- `g09.044` is ready after all five merged consumer roadmaps.
-- `g09.045` waits for repair-wave closeout and remains assessment-only.
-- No shared whole-app DB harness roadmap may be added until the operator chooses
-  multi-schema/database-per-test ownership or explicit app-owned fixtures.
+- `g09.044` is complete after all five merged consumer roadmaps.
+- `g09.045` is ready and remains assessment-only.
+- Whole-app fixed-schema suites stay app-owned. `TestDb` remains the
+  shared-crate/single-schema seam.
 
 ## Accepted Uncertainty
 
-- whole-app fixed-schema DB ownership remains an operator decision at
-  `g09.044`
-- the next assessment group (`024`–`026`) must be reconfirmed after this repair
-  wave before `g09.045` is promoted
+- a shared multi-schema or database-per-test lifecycle remains uncompiled and
+  needs new evidence plus a separate design roadmap
 - collection convergence and drift-prevention follow-through remain later
   uncompiled horizons, not implied work in the active repair wave
 
@@ -165,7 +164,10 @@ preserving migration history and correcting the declared fail-open local dev
 overlays. `g09.043` repaired Acowtancy local state application and merge-gate
 reachability.
 
+`g09.044` published the fleet upgrade note and final matrix. Retired consumer
+`db:*` selectors and fail-open local overlays have no compatibility window.
+
 ## Next Task
 
-Execute `g09.044`; return its whole-app DB harness boundary to the operator
-decision before closing the repair wave.
+Execute `g09.045` as the read-only assessment of bootstrap, runtime assembly,
+and access-model contracts `024`–`026`.

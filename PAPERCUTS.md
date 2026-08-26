@@ -5,6 +5,17 @@ they hit a solvable hurdle; they do not stop the current task to fix one.
 
 ## Open
 
+### [ ] `TestDb` docs promise automatic drop cleanup that does not run — 2026-08-26
+- Friction: `TestDb` says the test schema is automatically cleaned up on drop,
+  but `Drop` performs no async cleanup and external databases retain the schema
+  unless callers invoke `cleanup()`
+- Impact: test authors can leak `test_*` schemas or assume isolation teardown
+  happened when only a container lifetime ended
+- Possible fix: make the docs consistently require explicit cleanup for
+  external databases, or introduce an owned async lifecycle that can prove
+  teardown
+- Surface: `underlay-testing::TestDb` lifecycle documentation
+
 ### [ ] Reference runtime docs misstate database storage shape — 2026-08-26
 - Friction: Underlay Reference says PostgreSQL persists under repo-local
   `.effigy/runtime/data/postgres`, while Effigy reports the live store as the

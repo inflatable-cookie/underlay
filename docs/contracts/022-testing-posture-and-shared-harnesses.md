@@ -128,8 +128,8 @@ The stronger target for mature APIs is:
 
 Shared harness rule:
 
-- use `underlay-testing::TestDb` for DB-backed integration tests where the
-  app can fit the shared harness
+- use `underlay-testing::TestDb` for single-schema DB-backed integration tests
+  where the shared harness owns the schema lifecycle
 - use `underlay-testing::TestServer` for in-memory HTTP/router tests where the
   route surface is being exercised
 
@@ -139,6 +139,10 @@ Rules:
   harness fits
 - app-local fixtures are allowed, but the base DB and server mechanics should
   prefer the shared seam
+- whole-app suites that replay fixed named multi-schema migrations remain
+  app-owned; `TestDb` does not own their lifecycle
+- do not force those suites through `TestDb` unless a separately designed
+  shared lifecycle can create, isolate, and tear down their full schema set
 
 ### Rich-state API rule
 
@@ -247,7 +251,7 @@ Bad outcomes:
 
 ## Assessment State
 
-Assessed 2026-08-26 by `g09.036`; verdict: `drifting`.
+Assessed 2026-08-26 by `g09.036`; initial verdict: `drifting`.
 
 The minimum-versus-strong distinction holds. Fourteen runtime packages meet the
 minimum, both Contact Patch API and front are strong, and Underlay Reference
@@ -259,19 +263,22 @@ Shared harness findings:
 
 - `TestDb` remains sound for single-schema shared-crate tests, but its generated
   schema cannot isolate the fixed named schema sets used by all six apps
-- app-local DB fixtures are justified until a generic multi-schema or
-  database-per-test design is selected
+- the operator selected app-owned whole-app fixed-schema suites at `g09.044`;
+  no generic multi-schema or database-per-test design is implied
 - `TestServer` now has one bounded Underlay Reference health-route proof; no
   fleet-wide rewrite is implied
 - `createMockHttpClient()` now proves structural compatibility by extending the
-  exported `HttpClient`; the remaining consumer cast cleanup belongs to
-  `g09.043`
+  exported `HttpClient`; the Acowtancy compatibility cast is removed
 
 See
 [`g09.036 - Testing Posture Contract Assessment`](../logs/2026-08/26-164407-g09-036-testing-posture-assessment.md).
 
+Repair state: `conforming` after `g09.037`–`g09.044`. The six-root proof,
+minimum-versus-strong classifications, and operator-owned DB boundary are in
+[`g09.044 - Migration And Testing Fleet Closeout`](../logs/2026-08/26-222718-g09-044-migration-testing-fleet-closeout.md).
+
 ## Next Task
 
-Close revised consumer roadmaps `g09.040`–`g09.042` and the independently owned
-`g09.043`. Keep whole-app DB-harness design behind the `g09.044` operator
-decision; no fixed-schema consumer rewrite is implied.
+Assess bootstrap, runtime assembly, and access-model contracts through
+`g09.045`. Keep fixed-schema whole-app suites app-owned unless later evidence
+justifies a separate shared-lifecycle design.

@@ -24,5 +24,5 @@ Specs hold active Underlay planning and strict execution-control surfaces.
 
 ## Next Task
 
-Execute `g09.038` from its roadmap. Add a strict spec only if the `g09.044`
-DB-harness decision selects a new durable shared boundary.
+Execute the read-only `g09.045` assessment. No strict spec follows from the
+app-owned fixed-schema DB-harness decision.
