@@ -66,15 +66,16 @@ assessments. Both later assessments found bounded drift.
 2. prove the baseline migration and `TestServer` posture in Underlay Reference
    (`g09.038`, complete)
 3. run the five repository-owned consumer repairs independently after the
-   reference proof (`g09.039` and `g09.043` complete; `g09.040`–`g09.042`
-   changes-requested)
+   reference proof (`g09.039` and `g09.043` complete; `g09.041` awaiting
+   merge; `g09.040` and `g09.042` changes-requested)
 4. close fleet evidence and settle the whole-app `TestDb` ownership decision
    (`g09.044`)
 
 `g09.038` merged in Underlay Reference PR4. Contact Patch PR4 then merged and
-closed `g09.039`; Acowtancy PR59 merged and closed `g09.043`. First review
-requested changes on `g09.040`–`g09.042`. Every lane retains an independent
-repo-owned local state boundary.
+closed `g09.039`; Acowtancy PR59 merged and closed `g09.043`. Songsprout
+PR4 is ready to merge. Compli Me PR6 needs provider-evidence correction;
+Composer PR4 needs explicit operator authorization. Every lane retains an
+independent repo-owned local state boundary.
 
 ### Phase 6 — Bootstrap/runtime assessment (`g09.045`, planned)
 
@@ -123,7 +124,7 @@ family. Repair roadmaps are not pre-numbered; they must come from the evidence.
 38. [x] [`g09.038`](038-underlay-reference-migration-and-test-proof.md) — Underlay Reference migration and test proof (`complete`)
 39. [x] [`g09.039`](039-contact-patch-migration-rollout.md) — Contact Patch migration rollout (`complete`)
 40. [ ] [`g09.040`](040-compli-me-migration-and-workflow-gate.md) — Compli Me migration and workflow gate (`changes-requested`)
-41. [ ] [`g09.041`](041-songsprout-migration-and-fail-closed-gates.md) — Songsprout migration and fail-closed gates (`changes-requested`)
+41. [ ] [`g09.041`](041-songsprout-migration-and-fail-closed-gates.md) — Songsprout migration and fail-closed gates (`awaiting-merge`)
 42. [ ] [`g09.042`](042-composer-migration-and-fail-closed-gates.md) — Composer migration and fail-closed gates (`changes-requested`)
 43. [x] [`g09.043`](043-acowtancy-state-and-test-orchestration-repair.md) — Acowtancy state and test orchestration repair (`complete`)
 44. [ ] [`g09.044`](044-migration-testing-fleet-closeout.md) — migration/testing fleet closeout (`planned`; after `g09.039`–`g09.043`)
@@ -141,9 +142,9 @@ Deferred with a promotion trigger (TypeScript 7.1 or concrete need):
 - `g09.035` and `g09.036` were serial because migration ownership informed the
   testing verdict.
 - `g09.037` and `g09.038` are complete.
-- `g09.039` and `g09.043` are complete. `g09.040`–`g09.042` are
-  changes-requested and may be revised in parallel. Their repository, state,
-  and destructive-mutation boundaries do not overlap.
+- `g09.039` and `g09.043` are complete. `g09.041` is awaiting merge;
+  `g09.040` and `g09.042` retain bounded evidence/authorization gates. Their
+  repository, state, and destructive-mutation boundaries do not overlap.
 - `g09.044` waits for all five consumer roadmaps.
 - `g09.045` waits for repair-wave closeout and remains assessment-only.
 - No shared whole-app DB harness roadmap may be added until the operator chooses
@@ -170,5 +171,6 @@ application and merge-gate reachability.
 
 ## Next Task
 
-Revise and re-review `g09.040`–`g09.042`. Keep `g09.044` blocked until all
-three remaining consumer PRs are reviewed and merged.
+Correct `g09.040` provider evidence, obtain `g09.042` operator authorization,
+and merge ready `g09.041` when authorized. Keep `g09.044` blocked until all
+three remaining consumer PRs merge.

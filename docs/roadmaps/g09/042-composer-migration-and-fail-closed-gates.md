@@ -26,13 +26,12 @@ before the first mutation.
 
 ## Review Gate
 
-Re-review on 2026-08-26 confirmed the runtime and test repairs in the
-[Composer PR4 follow-up](https://github.com/inflatable-cookie/loophole-composer/pull/4#issuecomment-5430983684)
-at exact head `cd796f65399d4ead1265cc33d86b53ff7c34058e`. Six committed migrations now
-change checksum. Provide explicit operator confirmation that no shared, UAT, or
-production database applied the old history and authorize the rebaseline, or
-preserve those checksums with a forward-only repair. Correct the stale PR
-description in the same update.
+Final re-review on 2026-08-26 left one authorization-provenance gate in the
+[Composer PR4 follow-up](https://github.com/inflatable-cookie/loophole-composer/pull/4#issuecomment-5431104387)
+at exact head `6e191c1eb1d2b14c12bf385711b1cd117f018097`. Code and provider evidence are
+clean, but the worker-authored log cannot self-authorize the six-file checksum
+rebaseline. Record the operator's explicit database-history confirmation before
+the merge verdict.
 
 ## Scope
 

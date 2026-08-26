@@ -1,6 +1,6 @@
 # g09.041 - Songsprout Migration And Fail-Closed Gates
 
-Status: changes-requested
+Status: awaiting-merge
 Owner: Songsprout maintainers
 Contracts: `021-database-migration-and-schema-workflow.md`,
 `022-testing-posture-and-shared-harnesses.md`
@@ -26,11 +26,10 @@ mutation because the allocated loopback port may change after stack recreation.
 
 ## Review Gate
 
-Re-review on 2026-08-26 found the implementation clean in the
-[Songsprout PR4 follow-up](https://github.com/inflatable-cookie/songsprout/pull/4#issuecomment-5430970590)
-at exact head `713ac411baae6fa1095caa6594dffa7f26e86438`. The PR description still claims
-the repaired local-dev fail-open behavior is unresolved. Correct that provider
-evidence before the merge verdict.
+Final re-review on 2026-08-26 recorded a
+[ready-to-merge verdict](https://github.com/inflatable-cookie/songsprout/pull/4#issuecomment-5431104497)
+at exact head `713ac411baae6fa1095caa6594dffa7f26e86438`. The implementation, execution
+log, and PR description agree. Merge remains operator-authorized.
 
 ## Scope
 

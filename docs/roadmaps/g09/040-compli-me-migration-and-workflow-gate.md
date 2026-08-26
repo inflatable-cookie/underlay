@@ -26,12 +26,12 @@ mutation.
 
 ## Review Gate
 
-Re-review on 2026-08-26 requested changes in the
-[Compli Me PR6 follow-up](https://github.com/double-dip/compli-me/pull/6#issuecomment-5430970599)
-at exact head `2040df643501fc03c056c88098c667357c0e4c40`. The published media migration
-is restored, but `run_migrations` now creates the durable `media` schema before
-SQLx. Move that idempotent repair into a predecessor migration, remove the
-runtime DDL, and re-prove empty plus already-applied histories.
+Final re-review on 2026-08-26 found the implementation clean in the
+[Compli Me PR6 follow-up](https://github.com/double-dip/compli-me/pull/6#issuecomment-5431104416)
+at exact head `150b03ca151ab0390217de9fa4188fd4753faa53`. The PR description still
+records the superseded baseline rewrite and nine-migration proof. Correct it to
+the predecessor migration, unchanged published checksum, no runtime DDL, and
+ten-migration outcome before the merge verdict.
 
 ## Scope
 
