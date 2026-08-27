@@ -41,6 +41,7 @@ where repo-local links and normalized prose references are required instead.
 
 `g09.045` completed the bootstrap/runtime/access assessment
 ([assessment](./2026-08/26-225903-g09-045-bootstrap-runtime-access-assessment.md)).
-`g09.046` is in review
+`g09.046` is complete and merged in PR9
 ([execution log](./2026-08/26-232742-g09-046-bootstrap-runtime-access-authority.md)).
-Keep `g09.047` planned until that merge lands.
+Keep `g09.047` planned until its release and app-owner decision gates are
+satisfied.

@@ -398,5 +398,5 @@ of the env/secret files remains `g09.047`-`g09.053`. See the
 
 ## Next Task
 
-`g09.046` is in review. After merge, prove the repaired bootstrap boundary in
-Underlay Reference (`g09.047`). Keep consumer lanes planned.
+`g09.046` is complete. Keep the Underlay Reference proof (`g09.047`) planned
+until its release and app-owner decision gates are satisfied.

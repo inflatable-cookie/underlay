@@ -70,10 +70,10 @@ Underlay is in sequential mode:
 - `g09.040`–`g09.043` are complete
 - `g09.044` is complete
 - `g09.045` is complete with a `drifting` verdict
-- `g09.046` is in review
+- `g09.046` is complete
 - `g09.047`–`g09.053` remain planned behind explicit promotion gates
 
 ## Next Task
 
-Await review and merge of `g09.046`. Do not dispatch `g09.047`–`g09.052` before
-that merge and the named product/security decision gates are complete.
+Resolve the release and named product/security decision gates for `g09.047`.
+Do not dispatch `g09.047`–`g09.052` before the applicable gates are complete.

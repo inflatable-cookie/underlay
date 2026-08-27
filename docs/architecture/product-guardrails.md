@@ -19,5 +19,6 @@ Owner: repo maintainers
 
 ## Next Task
 
-Await review and merge of `g09.046`. Keep secret requiredness, deployment proxy
-topology, rate-limit failure policy, and route compatibility app-owned.
+`g09.046` is complete. Keep `g09.047` planned until the merged tooling is
+released and the Underlay Reference owner settles secret requiredness, deployed
+failure policy, and the allowed CSRF-disable environments.

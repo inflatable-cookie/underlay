@@ -98,5 +98,6 @@ Do not promote a system into active implementation-assessment work until:
 
 ## Next Task
 
-Await review and merge of `g09.046`. Do not promote `g09.047` yet. See
+Resolve the release and app-owner decision gates for `g09.047`; do not promote
+it early. See
 [`docs/roadmaps/g09/README.md`](../roadmaps/g09/README.md).

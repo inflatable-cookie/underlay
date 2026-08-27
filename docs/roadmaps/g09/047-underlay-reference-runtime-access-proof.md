@@ -13,7 +13,8 @@ route families, cookie-backed mutation CSRF, and peer-aware client-IP policy.
 
 ## Promotion Gate
 
-- [ ] `g09.046` is complete and released/published as required by its tools
+- [x] `g09.046` is complete (PR9, merge commit `7d8c0bae`)
+- [ ] an Underlay release containing the new env-authority tool is published
 - [ ] target checkout is clean and exactly aligned with `origin/main`
 - [ ] mandatory secret classes are named by the app owner per environment
 - [ ] allowed CSRF-disable environments are explicit and fail closed elsewhere

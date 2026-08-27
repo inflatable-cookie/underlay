@@ -68,7 +68,7 @@ shared repair and `g09.038` completed the Underlay Reference proof. `g09.039`
 completed the Contact Patch rollout and `g09.040`–`g09.043` completed the
 remaining consumer repairs. `g09.044` closed the migration/testing proof.
 `g09.045` completed the bootstrap/runtime/access assessment with a `drifting`
-verdict. `g09.046` is in review; `g09.047`–`g09.053` stay planned. See
+verdict. `g09.046` is complete; `g09.047`–`g09.053` stay planned. See
 [`g09/README.md`](g09/README.md).
 
 ## Archived generations
@@ -88,4 +88,5 @@ that risk.
 
 ## Next Task
 
-Await review and merge of `g09.046`. Do not promote `g09.047` yet.
+Resolve the release and app-owner decision gates for `g09.047`; do not promote
+it early.

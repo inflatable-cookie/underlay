@@ -4,6 +4,7 @@ Date: 2026-08-26
 Roadmap: `docs/roadmaps/g09/046-bootstrap-runtime-access-authority.md`
 Branch: `t3code/bootstrap-runtime-access-authority`
 Worktree: `/Users/tom/.t3/worktrees/underlay/t3code-6a944533`
+Merged: PR9, merge commit `7d8c0bae` (2026-08-27)
 
 ## Summary
 
@@ -95,5 +96,6 @@ The test-only-reader regression remains. `effigy validate` on this head is
 
 ## Next task
 
-Orchestrator review of this PR. Merge stays operator-authorized. Do not promote
-`g09.047` from this worker.
+`g09.046` is complete. Keep `g09.047` planned until the merged tooling is
+released and the Underlay Reference owner settles the remaining promotion
+decisions.

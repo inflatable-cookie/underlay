@@ -381,5 +381,5 @@ Other system families own:
 
 ## Next Task
 
-`g09.046` is in review. After merge, keep workspace-shape and env-authority as
-separate mechanical checks. Do not fold env/secret proof into workspace-shape.
+`g09.046` is complete. Keep workspace-shape and env-authority as separate
+mechanical checks. Do not fold env/secret proof into workspace-shape.

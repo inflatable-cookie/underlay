@@ -1,6 +1,6 @@
 # g09.046 - Bootstrap, Runtime, And Access Authority
 
-Status: in review
+Status: complete
 Owner: repo maintainers
 Contracts: `024-new-app-bootstrap-and-bring-up.md`,
 `025-rust-app-runtime-assembly-and-router-topology.md`,
@@ -91,12 +91,12 @@ those decisions in the owning consumer roadmap.
 - live Underlay Reference: workspace-shape pass; env-authority fails on missing
   `config/env-manifest.txt` and `config/required-secrets.txt` without reading
   secrets
+- merged in PR9 as merge commit `7d8c0bae`
 
 See
 [`docs/logs/2026-08/26-232742-g09-046-bootstrap-runtime-access-authority.md`](../../logs/2026-08/26-232742-g09-046-bootstrap-runtime-access-authority.md).
 
 ## Next Task
 
-Await orchestrator review and operator-authorized merge. Do not promote
-`g09.047` until that merge lands, Underlay Reference is current, and its
-security decisions are explicit.
+Keep `g09.047` planned until the merged tooling is released, Underlay Reference
+is current, and its app-owner security decisions are explicit.
