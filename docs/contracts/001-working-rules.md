@@ -72,11 +72,11 @@ Underlay is in sequential mode:
 - `g09.045` is complete with a `drifting` verdict
 - `g09.046` is complete
 - `g09.047`–`g09.052` are complete
-- `g09.053` is the ready Underlay Reference cross-tab CSRF repair
-- `g09.054` is planned behind the reviewed `g09.053` merge and exact-root proof
+- `g09.053` is complete in Underlay Reference PR6, merge commit `f89e3616`
+- `g09.054` is the ready bootstrap/runtime/access fleet closeout
 
 ## Next Task
 
-Run the published target-owned `g09.053` Underlay Reference worker handoff.
-Keep the target's independent `g01.007` lane serial and keep `g09.054` planned
-until the reviewed repair merges.
+Execute ready roadmap `g09.054`: recheck all six merged consumer roots, publish
+the exact-head fleet matrix and upgrade note, then choose one next contract
+assessment group without implied scope.

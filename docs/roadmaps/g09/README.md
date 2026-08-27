@@ -89,8 +89,8 @@ confirmed env/secret, runtime-topology, test-seam, and access/security drift.
 2. prove the repaired boundary in Underlay Reference (`g09.047`, complete)
 3. run Contact Patch, Compli Me, Songsprout, Composer, and Acowtancy as
    independent repo-owned lanes (`g09.048`–`g09.052`, complete)
-4. repair Underlay Reference's cross-tab CSRF token issuance (`g09.053`, ready)
-5. close exact-head six-root proof (`g09.054`, planned)
+4. repair Underlay Reference's cross-tab CSRF token issuance (`g09.053`, complete)
+5. close exact-head six-root proof (`g09.054`, ready)
 
 ## Queue
 
@@ -146,8 +146,8 @@ confirmed env/secret, runtime-topology, test-seam, and access/security drift.
 50. [x] [`g09.050`](050-songsprout-runtime-access-rollout.md) — Songsprout runtime/access rollout (`complete`)
 51. [x] [`g09.051`](051-composer-runtime-access-rollout.md) — Composer runtime/access rollout (`complete`)
 52. [x] [`g09.052`](052-acowtancy-runtime-access-rollout.md) — Acowtancy runtime/access rollout (`complete`)
-53. [ ] [`g09.053`](053-underlay-reference-cross-tab-csrf-stability.md) — Underlay Reference cross-tab CSRF stability (`ready`; dispatched)
-54. [ ] [`g09.054`](054-bootstrap-runtime-access-fleet-closeout.md) — bootstrap/runtime/access fleet closeout (`planned`)
+53. [x] [`g09.053`](053-underlay-reference-cross-tab-csrf-stability.md) — Underlay Reference cross-tab CSRF stability (`complete`)
+54. [ ] [`g09.054`](054-bootstrap-runtime-access-fleet-closeout.md) — bootstrap/runtime/access fleet closeout (`ready`)
 
 Deferred with a promotion trigger (TypeScript 7.1 or concrete need):
 [`backlog/ts-7-adoption.md`](../backlog/ts-7-adoption.md).
@@ -169,9 +169,8 @@ Deferred with a promotion trigger (TypeScript 7.1 or concrete need):
 - `g09.048`–`g09.051` are complete in Contact Patch PR5, Compli Me PR7,
   Songsprout PR5, and Composer PR5.
 - `g09.052` is complete in Acowtancy PR62, merge commit `85c868e1`.
-- `g09.053` is the ready Underlay Reference cross-tab CSRF repair.
-- `g09.054` remains planned until `g09.053` is reviewed and merged and the exact
-  merged roots are rechecked.
+- `g09.053` is complete in Underlay Reference PR6, merge commit `f89e3616`.
+- `g09.054` is ready for exact-head proof across the six merged consumer roots.
 - Whole-app fixed-schema suites stay app-owned. `TestDb` remains the
   shared-crate/single-schema seam.
 
@@ -199,10 +198,11 @@ reachability.
 completed the reference env/runtime/access proof without changing any of its 95
 public route paths. `g09.048`–`g09.052` completed the five consumer-owned
 env/secret, runtime-topology, access, and CSRF rollouts under their recorded
-compatibility decisions.
+compatibility decisions. `g09.053` completed the compatible Reference
+cross-tab CSRF stability repair without changing the route or response shape.
 
 ## Next Task
 
-Run the published target-owned `g09.053` Underlay Reference handoff and return
-its PR for exact-head review. Keep `g09.054` planned until the reviewed repair
-merges and the exact consumer roots are rechecked.
+Execute ready roadmap `g09.054`: recheck all six merged consumer roots, publish
+the fleet matrix and upgrade note, and choose exactly one next contract
+assessment group.

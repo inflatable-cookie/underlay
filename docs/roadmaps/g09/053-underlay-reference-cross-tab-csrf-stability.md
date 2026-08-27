@@ -1,6 +1,6 @@
 # g09.053 - Underlay Reference Cross-Tab CSRF Stability
 
-Status: ready
+Status: complete
 Owner: Underlay Reference maintainers
 Contracts: `025`, `026`, `030`
 Found by: `g09.052` exact-head review
@@ -93,7 +93,23 @@ independent `g01.007` lane. Return that scope change to the orchestrator.
   token shape
 - Compatibility window: none; the route and envelope remain unchanged
 
+## Completion Evidence
+
+- Underlay Reference PR
+  [#6](https://github.com/inflatable-cookie/underlay-reference/pull/6)
+  merged on 2026-08-27 as
+  `f89e3616a0906c044f14f3ddbeb20332a4dd480d`.
+- Exact reviewed head:
+  `fc58861236c4c2f0b7695cd109367df4d016426a`.
+- The canonical review recorded no blocking findings and passed the focused
+  CSRF proof, API health and clippy, test plan, full validate and QA, docs QA,
+  Northstar QA, and `git diff --check`.
+- Four focused issuance/two-tab tests drive the production token handler; the
+  two-tab case then proves the first tab's original cookie/header pair through
+  the real CSRF middleware.
+- Underlay Reference `main` was clean and exactly aligned with `origin/main` at
+  the merge commit after closeout.
+
 ## Next Task
 
-Run the target-owned worker handoff and return its PR for exact-head review.
-After an operator-authorised merge, promote `g09.054` fleet closeout.
+Execute ready roadmap `g09.054` and close the exact-head six-root proof.

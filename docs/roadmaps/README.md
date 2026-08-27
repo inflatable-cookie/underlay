@@ -74,9 +74,9 @@ shared reference dependency for `g09.048`–`g09.052`. Exact-main evidence and
 the remaining product/security policy were settled on 2026-08-27, so all five
 independent consumer lanes were dispatched through target-owned handoffs.
 Contact Patch PR5, Compli Me PR7, Songsprout PR5, Composer PR5, and Acowtancy
-PR62 have merged, completing `g09.048`–`g09.052`. `g09.053` is the ready
-Underlay Reference cross-tab CSRF repair. `g09.054` remains planned behind its
-reviewed merge and exact merged-root proof.
+PR62 have merged, completing `g09.048`–`g09.052`. Underlay Reference PR6 merged
+as `f89e3616`, completing `g09.053`. `g09.054` is the ready exact-head fleet
+closeout.
 See
 [`g09/README.md`](g09/README.md).
 
@@ -97,6 +97,6 @@ that risk.
 
 ## Next Task
 
-Run the published target-owned `g09.053` Underlay Reference handoff and return
-its PR for exact-head review. Keep `g09.054` planned until the reviewed repair
-merges and the exact consumer roots are rechecked.
+Execute ready roadmap `g09.054`: recheck all six merged consumer roots, publish
+the fleet matrix and upgrade note, and choose exactly one next contract
+assessment group.

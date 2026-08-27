@@ -1,6 +1,6 @@
 # g09.054 - Bootstrap, Runtime, And Access Fleet Closeout
 
-Status: planned
+Status: ready
 Owner: repo maintainers
 Contracts: `023`, `024`, `025`, `026`, `121`
 Found by: `g09.045`
@@ -15,7 +15,7 @@ the assessment wave, and choose the next contract group without implied scope.
 
 - [x] `g09.046` and `g09.047` are complete
 - [x] `g09.048`-`g09.052` are reviewed and merged
-- [ ] `g09.053` proves Underlay Reference CSRF token reads reuse a live cookie
+- [x] `g09.053` proves Underlay Reference CSRF token reads reuse a live cookie
   across tabs and is reviewed and merged
 - [ ] every consumer target is clean and exactly aligned with its merged
   `origin/main`

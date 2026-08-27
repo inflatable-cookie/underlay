@@ -48,4 +48,6 @@ consumer lanes then merged
 repair promoted the Reference CSRF fix as `g09.053` and renumbered fleet
 closeout to `g09.054`
 ([log](./2026-08/27-145100-g09-053-054-planning-repair.md)). The target handoff
-is published; run it and return the worker PR for review.
+produced Underlay Reference PR6, which merged as `f89e3616`
+([closeout](./2026-08/27-155724-g09-053-reference-csrf-closeout.md)). Execute
+ready fleet closeout `g09.054`.
