@@ -1,4 +1,5 @@
 use super::*;
+#[cfg(feature = "opentelemetry")]
 use axum::http::HeaderValue;
 
 #[test]
