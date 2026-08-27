@@ -36,6 +36,13 @@ compatibility decisions.
   environments. Local/effigy/test may retain bounded warnings where the local
   posture permits startup.
 
+## Dispatch Evidence
+
+- Target-owned handoff:
+  `/Users/tom/Dev/projects/composer/docs/handoffs/20260827-124253-g09-051-runtime-access-rollout.md`
+- Pushed Composer `main`: `d24aee5143ced20e279369c6c966bbbc1977c69c`
+- Target docs/Northstar QA passed; no worker PR was open at dispatch.
+
 ## Scope
 
 - add complete env and required-secret authority

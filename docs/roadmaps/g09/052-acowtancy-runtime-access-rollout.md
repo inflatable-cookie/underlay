@@ -38,6 +38,14 @@ its valid rich runtime profile.
   proof; SameSite alone is not the API security boundary. Body-token/native and
   bearer-only flows remain outside CSRF.
 
+## Dispatch Evidence
+
+- Target-owned handoff:
+  `/Users/tom/Dev/projects/acowtancy/docs/handoffs/20260827-124253-g09-052-runtime-access-rollout.md`
+- Pushed Acowtancy `main`: `d63e13d74036c2bc091a1887aa42e7fcbef6c282`
+- Target docs/Northstar QA passed; no worker PR was open at dispatch. Execution
+  remains owned by the separate Acowtancy thread.
+
 ## Scope
 
 - add complete env and required-secret authorities; reconcile them with

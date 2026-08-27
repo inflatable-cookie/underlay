@@ -36,6 +36,13 @@ Contact Patch while preserving its product-specific Book input and front family.
   edge/abuse controls own its rate-limit posture; authenticated and mutation
   families retain their app-owned policy.
 
+## Dispatch Evidence
+
+- Target-owned handoff:
+  `/Users/tom/Dev/projects/contact-patch/docs/handoffs/20260827-124253-g09-048-runtime-access-rollout.md`
+- Pushed Contact Patch `main`: `3d7228c1444cc48ba9c419a7c4f76e9e644dcc29`
+- Target docs/Northstar QA passed; no worker PR was open at dispatch.
+
 ## Scope
 
 - add complete env and required-secret authority

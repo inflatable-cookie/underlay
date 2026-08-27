@@ -72,8 +72,9 @@ verdict. `g09.046` is complete. `g09.047` completed the Underlay Reference
 runtime/access proof in PR5, merge commit `6af27837`. Its merge clears the
 shared reference dependency for `g09.048`–`g09.052`. Exact-main evidence and
 the remaining product/security policy were settled on 2026-08-27, so all five
-independent consumer lanes are ready for dispatch. `g09.053` remains planned.
-See
+independent consumer lanes are ready and have target-owned handoffs committed
+to their pushed `main` branches. Worker PRs are pending. `g09.053` remains
+planned. See
 [`g09/README.md`](g09/README.md).
 
 ## Archived generations
@@ -93,5 +94,5 @@ that risk.
 
 ## Next Task
 
-Prepare and dispatch one repo-owned handoff for each ready independent lane
-`g09.048`–`g09.052`.
+Review each `g09.048`–`g09.052` worker PR as it arrives. Keep `g09.053` blocked
+until all five reviewed consumer lanes merge.

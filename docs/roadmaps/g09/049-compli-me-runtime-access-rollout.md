@@ -36,6 +36,13 @@ cookie mutation protection, and direct-router proof.
   are required only when their corresponding implementation is selected.
 - Cookie-backed refresh/logout adopts the reference CSRF posture.
 
+## Dispatch Evidence
+
+- Target-owned handoff:
+  `/Users/tom/Dev/projects/compli-me/docs/handoffs/20260827-124253-g09-049-runtime-access-rollout.md`
+- Pushed Compli Me `main`: `3b1ec8ca6e47bf54e43b71fecd5a8859f488c567`
+- Target docs/Northstar QA passed; no worker PR was open at dispatch.
+
 ## Scope
 
 - add env and required-secret authorities and remove references to a nonexistent

@@ -36,6 +36,13 @@ generic front naming.
   deployed config/cookie failure policy and classify startup secrets from real
   runtime and selected-adapter requirements.
 
+## Dispatch Evidence
+
+- Target-owned handoff:
+  `/Users/tom/Dev/projects/songsprout/docs/handoffs/20260827-124253-g09-050-runtime-access-rollout.md`
+- Pushed Songsprout `main`: `87cb72df98e1ae28f3298b85f296283086137c8e`
+- Target docs/Northstar QA passed; no worker PR was open at dispatch.
+
 ## Scope
 
 - add env and required-secret authorities and remove nonexistent
