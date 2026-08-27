@@ -73,8 +73,10 @@ runtime/access proof in PR5, merge commit `6af27837`. Its merge clears the
 shared reference dependency for `g09.048`–`g09.052`. Exact-main evidence and
 the remaining product/security policy were settled on 2026-08-27, so all five
 independent consumer lanes are ready and have target-owned handoffs committed
-to their pushed `main` branches. Worker PRs are pending. `g09.053` remains
-planned. See
+to their pushed `main` branches. Acowtancy PR62 has merged and completed
+`g09.052`; worker PRs for `g09.048`–`g09.051` remain open. `g09.053` remains
+planned behind those merges and the Underlay Reference cross-tab CSRF repair.
+See
 [`g09/README.md`](g09/README.md).
 
 ## Archived generations
@@ -94,5 +96,6 @@ that risk.
 
 ## Next Task
 
-Review each `g09.048`–`g09.052` worker PR as it arrives. Keep `g09.053` blocked
-until all five reviewed consumer lanes merge.
+Review `g09.048`–`g09.051`. Keep `g09.053` blocked until those four reviewed
+consumer lanes merge and the Underlay Reference cross-tab CSRF rotation is
+repaired in its owning lane.

@@ -88,7 +88,8 @@ confirmed env/secret, runtime-topology, test-seam, and access/security drift.
 1. repair Underlay authority and conformance (`g09.046`, complete)
 2. prove the repaired boundary in Underlay Reference (`g09.047`, complete)
 3. run Contact Patch, Compli Me, Songsprout, Composer, and Acowtancy as
-   independent repo-owned lanes (`g09.048`–`g09.052`, dispatched)
+   independent repo-owned lanes (`g09.048`–`g09.051`, open; `g09.052`,
+   complete)
 4. close exact-head six-root proof (`g09.053`, planned)
 
 ## Queue
@@ -144,7 +145,7 @@ confirmed env/secret, runtime-topology, test-seam, and access/security drift.
 49. [ ] [`g09.049`](049-compli-me-runtime-access-rollout.md) — Compli Me runtime/access rollout (`ready`; dispatched)
 50. [ ] [`g09.050`](050-songsprout-runtime-access-rollout.md) — Songsprout runtime/access rollout (`ready`; dispatched)
 51. [ ] [`g09.051`](051-composer-runtime-access-rollout.md) — Composer runtime/access rollout (`ready`; dispatched)
-52. [ ] [`g09.052`](052-acowtancy-runtime-access-rollout.md) — Acowtancy runtime/access rollout (`ready`; dispatched)
+52. [x] [`g09.052`](052-acowtancy-runtime-access-rollout.md) — Acowtancy runtime/access rollout (`complete`)
 53. [ ] [`g09.053`](053-bootstrap-runtime-access-fleet-closeout.md) — bootstrap/runtime/access fleet closeout (`planned`)
 
 Deferred with a promotion trigger (TypeScript 7.1 or concrete need):
@@ -165,9 +166,10 @@ Deferred with a promotion trigger (TypeScript 7.1 or concrete need):
 - `g09.046` is complete and merged in PR9.
 - `g09.047` is complete in Underlay Reference PR5, merge commit `6af27837`.
 - The shared reference-proof, exact-main, and named product/security gates are
-  clear for `g09.048`–`g09.052`. Target-owned handoffs are pushed for all five;
-  the independent lanes may run in parallel.
-- `g09.053` closes the fleet after all five independent rollout lanes merge.
+  clear for `g09.048`–`g09.051`. Their worker PRs remain open.
+- `g09.052` is complete in Acowtancy PR62, merge commit `85c868e1`.
+- `g09.053` closes the fleet after the four remaining rollout lanes merge and
+  the Underlay Reference cross-tab CSRF rotation is repaired in its owning lane.
 - Whole-app fixed-schema suites stay app-owned. `TestDb` remains the
   shared-crate/single-schema seam.
 
@@ -193,11 +195,13 @@ reachability.
 
 `g09.045` found no regression in the supported monorepo shape. `g09.047`
 completed the reference env/runtime/access proof without changing any of its 95
-public route paths. Remaining consumer impact is bounded by `g09.048`–`g09.052`;
-security and path compatibility changes cannot begin before each roadmap's
-decisions are explicit.
+public route paths. `g09.052` completed Acowtancy's env/secret, middleware,
+declared-version, and cross-tab-safe CSRF rollout. Remaining consumer impact is
+bounded by `g09.048`–`g09.051`; security and path compatibility changes cannot
+begin before each roadmap's decisions are explicit.
 
 ## Next Task
 
-Review each `g09.048`–`g09.052` worker PR as it arrives. Keep `g09.053` blocked
-until all five reviewed consumer lanes merge.
+Review `g09.048`–`g09.051`. Keep `g09.053` blocked until those four reviewed
+consumer lanes merge and the Underlay Reference cross-tab CSRF rotation is
+repaired in its owning lane.

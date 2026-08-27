@@ -1,6 +1,6 @@
 # g09.052 - Acowtancy Runtime And Access Rollout
 
-Status: ready
+Status: complete
 Owner: Acowtancy maintainers
 Contracts: `024`, `025`, `026`, `030`, `031`
 Found by: `g09.045`
@@ -95,6 +95,26 @@ posture.
   surfaces
 - Compatibility window: preserve existing business paths
 
+## Completion Evidence
+
+- Acowtancy PR
+  [#62](https://github.com/acowtancy/market/pull/62) merged on 2026-08-27
+  as `85c868e132407f86df0525086af90d5abf0fb7fc`.
+- Reviewed worker head: `cf154ceefd6960163ab9ff3e942d06b80a64c091`.
+- Canonical review:
+  [PR comment](https://github.com/acowtancy/market/pull/62#issuecomment-5439636883).
+- Exact-head review passed env/secret authority, Farmyard config, middleware,
+  CSRF, version, OpenAPI, router, workspace checks, Cattle Grid type/tests,
+  docs QA, Northstar QA, and `git diff --check`.
+- The focused two-tab regression proves a second CSRF-token fetch does not
+  invalidate the first tab. Existing public paths remain unchanged; the only
+  added path is `GET /v1/auth/csrf-token`.
+- Container-owned full health/QA could not prove the worktree because Docker
+  Hub DNS failed and the running container mounted `main`. The narrower
+  exact-head checks are recorded in the target execution log.
+- Acowtancy `main` and `origin/main` both resolve to the merge commit.
+
 ## Next Task
 
-Record reviewed merge evidence for `g09.053`.
+Review and merge `g09.048`-`g09.051`. Keep `g09.053` blocked until those four
+lanes and the Underlay Reference cross-tab CSRF follow-up are complete.

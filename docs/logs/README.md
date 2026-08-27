@@ -39,9 +39,9 @@ where repo-local links and normalized prose references are required instead.
 
 ## Next Task
 
-`g09.045` completed the bootstrap/runtime/access assessment
-([assessment](./2026-08/26-225903-g09-045-bootstrap-runtime-access-assessment.md)).
-`g09.046` is complete and merged in PR9
-([execution log](./2026-08/26-232742-g09-046-bootstrap-runtime-access-authority.md)).
-Keep `g09.047` planned until its release and app-owner decision gates are
-satisfied.
+`g09.047` completed the Underlay Reference proof
+([closeout](./2026-08/27-122210-g09-047-reference-proof-closeout.md)).
+`g09.052` completed in Acowtancy PR62
+([closeout](./2026-08/27-143321-g09-052-acowtancy-closeout.md)). Review the
+open `g09.048`–`g09.051` worker PRs. Keep `g09.053` blocked until those four
+lanes merge and the Underlay Reference cross-tab CSRF rotation is repaired.

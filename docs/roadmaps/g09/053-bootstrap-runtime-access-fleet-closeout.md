@@ -15,6 +15,9 @@ the assessment wave, and choose the next contract group without implied scope.
 
 - [ ] `g09.046` and `g09.047` are complete
 - [ ] `g09.048`-`g09.052` are reviewed and merged
+- [ ] Underlay Reference CSRF token issuance reuses a live cookie across tabs;
+  its current endpoint rotates the token on every GET and must be repaired in
+  the owning lane
 - [ ] every consumer target is clean and exactly aligned with its merged
   `origin/main`
 - [ ] every product/security decision named by the rollout roadmaps is recorded
@@ -28,6 +31,9 @@ the assessment wave, and choose the next contract group without implied scope.
 - verify baseline middleware context order and direct-router test seam
 - verify cookie-backed mutation CSRF, declared API-version, rate-limit failure,
   and trusted-proxy decisions against the recorded app posture
+- verify CSRF-token reads do not invalidate another live browser tab; treat the
+  Underlay Reference rotation finding as an owning-lane prerequisite, not a
+  closeout implementation change
 - verify operator actions have canonical family ownership and any path aliases
   have explicit retirement state
 - publish one exact-head fleet matrix and consumer upgrade note
@@ -39,6 +45,7 @@ the assessment wave, and choose the next contract group without implied scope.
 - every contract `024`-`026` finding is closed, accepted as an explicit allowed
   profile, or retained as a named app-local decision with no false conformance
 - no cookie-backed mutation is left unprotected by accident
+- no CSRF-token read invalidates another tab's still-live proof
 - no policy-bearing client IP uses untrusted handler-local forwarding logic
 - every advertised API-version header has a server posture
 - every API router can be instantiated without invoking `main()`
@@ -59,7 +66,8 @@ the assessment wave, and choose the next contract group without implied scope.
 
 Stop if a consumer is not at its reviewed merge head, a security decision is
 missing, or closeout would need a new implementation change. Reopen the owning
-roadmap instead of declaring the fleet conforming.
+roadmap instead of declaring the fleet conforming. The open Underlay Reference
+cross-tab rotation finding currently triggers this stop condition.
 
 ## Consumer Upgrade Impact
 
