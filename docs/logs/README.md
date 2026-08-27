@@ -77,3 +77,6 @@ was serialized behind that closeout before dispatch
 Underlay PR12 merged its reviewed head as `9e26ba9a`, closing papercuts wave 3
 and promoting `g09.060` to ready
 ([closeout](./2026-08/27-214114-papercuts-wave3-closeout-and-g09-060-promotion.md)).
+The serial `g09.060` worker was then published from exact planning base
+`ec67dfbf`
+([dispatch](./2026-08/27-214255-g09-060-dispatch.md)).

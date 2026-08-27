@@ -113,7 +113,7 @@ The two batch-grammar lanes completed in Underlay Reference PR9 and Compli Me
 PR8. Songsprout PR7, Composer PR7, and Acowtancy PR67 completed the three auth
 lanes. All five remote `main` tips match the recorded merge commits.
 
-### Phase 10 — Released dependency contract normalization (`g09.060`, ready)
+### Phase 10 — Released dependency contract normalization (`g09.060`, dispatched)
 
 Contract `023` still describes committed sibling path/file dependencies as the
 default even though Contract `024`, active guides, the checker, and all six
@@ -183,7 +183,7 @@ reviewed head `d2cb5cd9`, merge commit `9e26ba9a`; the dispatch gate is clear.
 57. [x] [`g09.057`](057-canonical-path-runtime-surface-workflow-assessment.md) — canonical path, runtime surface, and workflow action assessment (`complete`; `drifting`)
 58. [x] [`g09.058`](058-auth-mutation-compatibility-retirement.md) — auth mutation compatibility retirement (`complete`)
 59. [x] [`g09.059`](059-batch-delete-action-grammar-convergence.md) — batch-delete action grammar convergence (`complete`)
-60. [ ] [`g09.060`](060-released-dependency-rollout-contract-normalization.md) — released dependency rollout contract normalization (`ready`)
+60. [ ] [`g09.060`](060-released-dependency-rollout-contract-normalization.md) — released dependency rollout contract normalization (`ready - dispatched`)
 
 Deferred with a promotion trigger (TypeScript 7.1 or concrete need):
 [`backlog/ts-7-adoption.md`](../backlog/ts-7-adoption.md).
@@ -262,5 +262,5 @@ tags and locks remain valid; no consumer action is introduced.
 
 ## Next Task
 
-Dispatch the single `g09.060` Underlay worker. Review its PR at exact head and
-merge only with explicit operator authorisation.
+Launch the single `g09.060` worker from its published handoff. Review its PR at
+exact head and merge only with explicit operator authorisation.

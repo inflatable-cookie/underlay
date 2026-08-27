@@ -44,5 +44,5 @@ Contract `023` links.
 
 ## Next Task
 
-Gate cleared in Underlay PR12, merge commit `9e26ba9a`. Publish one Underlay
-worker handoff for `g09.060` from the new exact base.
+Gate cleared in Underlay PR12, merge commit `9e26ba9a`. The `g09.060` handoff is
+published; launch it and await the worker PR.

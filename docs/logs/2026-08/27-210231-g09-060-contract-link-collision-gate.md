@@ -37,4 +37,4 @@ would leave the docs QA result dependent on merge order.
 ## Next Task
 
 Gate cleared. Underlay PR12 merged reviewed head `d2cb5cd9` as `9e26ba9a` with
-green CI. Promote and dispatch `g09.060` from the new exact `main` base.
+green CI. The `g09.060` handoff is published; launch it and await the worker PR.

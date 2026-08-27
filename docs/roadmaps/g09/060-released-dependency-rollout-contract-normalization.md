@@ -1,6 +1,6 @@
 # g09.060 - Released Dependency Rollout Contract Normalization
 
-Status: ready
+Status: ready - dispatched
 Owner: Underlay maintainers
 Contract: `023`
 Depends on: `g09.059` and papercuts wave 3 contract-link closeout (`complete`)
@@ -91,6 +91,15 @@ head `d2cb5cd9`, merge commit `9e26ba9a`. The dispatch gate is clear.
 - Underlay PR12 exact-head review, green CI, and merge commit `9e26ba9a`
 - one execution log under `docs/logs/2026-08/`
 
+## Dispatch Evidence
+
+- planning base: `ec67dfbfb2add489e4309f801fdac6fbc953aeb0`
+- handoff:
+  `docs/handoffs/20260827-214255-g09-060-released-dependency-contract-normalization.md`
+- dispatch topology: one serial Underlay docs-only worker
+- planning-base validation: `effigy health`, `effigy qa:docs`,
+  `effigy qa:northstar`, and `git diff --check` passed
+
 ## Stop Conditions
 
 Stop if the correction requires a new registry-publishing policy, a release
@@ -111,5 +120,5 @@ there.
 
 ## Next Task
 
-Dispatch one Underlay worker for this roadmap. Review its PR at exact head and
+Launch the worker from the published handoff. Review its PR at exact head and
 merge only with explicit operator authorisation.

@@ -84,8 +84,8 @@ merged SSR regression was not portable; `g09.056` repaired that in PR65.
 own the authorised route-retirement work. Both roadmaps are complete across all
 five affected targets. Underlay PR12 completed the papercuts wave 3 contract-
 link lane as merge commit `9e26ba9a`. The operator chose to continue `g09`;
-`g09.060` is ready to normalize stale released-dependency teaching in Contract
-`023`.
+`g09.060` is ready and dispatched to normalize stale released-dependency
+teaching in Contract `023`.
 See
 [`g09/README.md`](g09/README.md).
 
@@ -106,5 +106,5 @@ that risk.
 
 ## Next Task
 
-Dispatch the single `g09.060` Underlay worker. Review its PR at exact head and
-merge only with explicit operator authorisation.
+Launch the single `g09.060` worker from its published handoff. Review its PR at
+exact head and merge only with explicit operator authorisation.

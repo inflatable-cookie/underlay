@@ -40,5 +40,5 @@ closed. One serial Underlay docs-only worker may proceed.
 
 ## Next Task
 
-Publish one `g09.060` worker handoff from pushed `main`. The worker opens a PR
-and does not merge.
+The `g09.060` handoff is published from exact planning base `ec67dfbf`. Launch
+it and await the worker PR; the worker does not merge.
