@@ -22,20 +22,20 @@ It does not define DTO envelopes. That stays with `010`, `115`, and `118`.
 
 Primary shared sources:
 
-- [`docs/contracts/020-http-transport-and-server-boundary.md`](/Users/tom/Dev/projects/underlay/docs/contracts/020-http-transport-and-server-boundary.md)
-- [`docs/contracts/025-rust-app-runtime-assembly-and-router-topology.md`](/Users/tom/Dev/projects/underlay/docs/contracts/025-rust-app-runtime-assembly-and-router-topology.md)
-- [`docs/contracts/026-route-families-and-access-model.md`](/Users/tom/Dev/projects/underlay/docs/contracts/026-route-families-and-access-model.md)
-- [`docs/contracts/027-api-canonical-path-cutovers-and-compatibility-retirement.md`](/Users/tom/Dev/projects/underlay/docs/contracts/027-api-canonical-path-cutovers-and-compatibility-retirement.md)
-- [`docs/contracts/api-surface/endpoint-family-matrix.csv`](/Users/tom/Dev/projects/underlay/docs/contracts/api-surface/endpoint-family-matrix.csv)
+- [`020-http-transport-and-server-boundary.md`](./020-http-transport-and-server-boundary.md)
+- [`025-rust-app-runtime-assembly-and-router-topology.md`](./025-rust-app-runtime-assembly-and-router-topology.md)
+- [`026-route-families-and-access-model.md`](./026-route-families-and-access-model.md)
+- [`027-api-canonical-path-cutovers-and-compatibility-retirement.md`](./027-api-canonical-path-cutovers-and-compatibility-retirement.md)
+- [`docs/contracts/api-surface/endpoint-family-matrix.csv`](./api-surface/endpoint-family-matrix.csv)
 
 Reference consumer evidence:
 
-- [`underlay-reference/apps/acme-api/crates/api/src/main.rs`](/Users/tom/Dev/projects/underlay-reference/apps/acme-api/crates/api/src/main.rs)
-- [`contact-patch/cp-api/crates/api/src/main.rs`](/Users/tom/Dev/projects/contact-patch/cp-api/crates/api/src/main.rs)
-- [`compli-me/api/crates/api/src/main.rs`](/Users/tom/Dev/projects/compli-me/api/crates/api/src/main.rs)
-- [`acowtancy/farmyard/crates/api/src/main.rs`](/Users/tom/Dev/projects/acowtancy/farmyard/crates/api/src/main.rs)
-- [`songsprout/nursery/crates/api/src/main.rs`](/Users/tom/Dev/projects/songsprout/nursery/crates/api/src/main.rs)
-- [`loophole/composer/composer-api/crates/api/src/main.rs`](/Users/tom/Dev/projects/loophole/composer/composer-api/crates/api/src/main.rs)
+- `underlay-reference/apps/acme-api/crates/api/src/main.rs`
+- `contact-patch/apps/cp-api/crates/api/src/main.rs`
+- `compli-me/apps/api/crates/api/src/main.rs`
+- `acowtancy/apps/farmyard/crates/api/src/main.rs`
+- `songsprout/apps/nursery/crates/api/src/main.rs`
+- `loophole/composer/apps/composer-api/crates/api/src/main.rs`
 
 If these diverge, the contract plus the clearest current maturity proofs win.
 

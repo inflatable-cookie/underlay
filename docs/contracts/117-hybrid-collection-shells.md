@@ -29,24 +29,20 @@ function.
 
 Primary shared sources:
 
-- [`docs/contracts/100-shared-patterns-and-workflow-shells.md`](/Users/tom/Dev/projects/underlay/docs/contracts/100-shared-patterns-and-workflow-shells.md)
-- [`docs/contracts/110-admin-template-system.md`](/Users/tom/Dev/projects/underlay/docs/contracts/110-admin-template-system.md)
-- [`docs/contracts/115-admin-resource-api-shapes.md`](/Users/tom/Dev/projects/underlay/docs/contracts/115-admin-resource-api-shapes.md)
-- [`docs/contracts/116-canonical-collection-routes-and-query-profiles.md`](/Users/tom/Dev/projects/underlay/docs/contracts/116-canonical-collection-routes-and-query-profiles.md)
-- [`docs/sweeps/030-child-collection-capability-convergence-sweep.md`](/Users/tom/Dev/projects/underlay/docs/sweeps/030-child-collection-capability-convergence-sweep.md)
+- [`100-shared-patterns-and-workflow-shells.md`](./100-shared-patterns-and-workflow-shells.md)
+- [`110-admin-template-system.md`](./110-admin-template-system.md)
+- [`115-admin-resource-api-shapes.md`](./115-admin-resource-api-shapes.md)
+- [`116-canonical-collection-routes-and-query-profiles.md`](./116-canonical-collection-routes-and-query-profiles.md)
+- [`docs/sweeps/030-child-collection-capability-convergence-sweep.md`](../sweeps/030-child-collection-capability-convergence-sweep.md)
 
 Reference consumer evidence:
 
-- [`dairy/src/lib/lists/ModulesList.svelte`](/Users/tom/Dev/projects/acowtancy/dairy/src/lib/lists/ModulesList.svelte)
-- [`dairy/src/lib/lists/modules-list/ModulesFilterBar.svelte`](/Users/tom/Dev/projects/acowtancy/dairy/src/lib/lists/modules-list/ModulesFilterBar.svelte)
-- [`dairy/src/lib/lists/modules-list/ModulesHeaderActions.svelte`](/Users/tom/Dev/projects/acowtancy/dairy/src/lib/lists/modules-list/ModulesHeaderActions.svelte)
-- [`dairy/src/lib/lists/modules-list/ModulesListContent.svelte`](/Users/tom/Dev/projects/acowtancy/dairy/src/lib/lists/modules-list/ModulesListContent.svelte)
-- [`dairy/src/lib/lists/modules-list/ModulesBatchActionDialog.svelte`](/Users/tom/Dev/projects/acowtancy/dairy/src/lib/lists/modules-list/ModulesBatchActionDialog.svelte)
-- [`dairy/src/lib/lists/ActivitiesList.svelte`](/Users/tom/Dev/projects/acowtancy/dairy/src/lib/lists/ActivitiesList.svelte)
-- [`dairy/src/lib/lists/activities-list/domain-fetch.ts`](/Users/tom/Dev/projects/acowtancy/dairy/src/lib/lists/activities-list/domain-fetch.ts)
-- [`dairy/src/lib/lists/activities-list/reorder-controller.ts`](/Users/tom/Dev/projects/acowtancy/dairy/src/lib/lists/activities-list/reorder-controller.ts)
-- [`dairy/src/lib/lists/activities-list/selection-controller.svelte.ts`](/Users/tom/Dev/projects/acowtancy/dairy/src/lib/lists/activities-list/selection-controller.svelte.ts)
-- [`cattle-grid/src/commands/learning/modules.ts`](/Users/tom/Dev/projects/acowtancy/cattle-grid/src/commands/learning/modules.ts)
+- `acowtancy/apps/dairy/src/lib/lists/ModulesListPage.svelte`
+- `acowtancy/apps/dairy/src/lib/lists/modules-list/workflow.ts`
+- `acowtancy/apps/dairy/src/lib/lists/ActivitiesList.svelte`
+- `acowtancy/apps/dairy/src/lib/lists/activities-list/domain-fetch.ts`
+- `acowtancy/apps/dairy/src/lib/lists/activities-list/reorder-controller.ts`
+- `acowtancy/packages/cattle-grid/src/commands/learning/modules.ts`
 
 If these diverge, the shared contract wins. Consumer wrappers are evidence, not
 authority.
@@ -78,8 +74,8 @@ Current retained shared lower-helper surface:
 
 Copyable usage reference:
 
-- [`docs/guides/097-autonomous-list-components.md`](/Users/tom/Dev/projects/underlay/docs/guides/097-autonomous-list-components.md)
-- [`docs/guides/code/097-autonomous-list-components/list-workflow-helpers.ts`](/Users/tom/Dev/projects/underlay/docs/guides/code/097-autonomous-list-components/list-workflow-helpers.ts)
+- [`docs/guides/097-autonomous-list-components.md`](../guides/097-autonomous-list-components.md)
+- [`docs/guides/code/097-autonomous-list-components/list-workflow-helpers.ts`](../guides/code/097-autonomous-list-components/list-workflow-helpers.ts)
 
 ## Scope Boundary
 

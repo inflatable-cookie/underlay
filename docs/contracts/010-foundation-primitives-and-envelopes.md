@@ -21,19 +21,19 @@ contracts from silently redefining the lowest shared layer.
 
 Primary:
 
-- [`rust/crates/underlay-core/src/id.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-core/src/id.rs)
-- [`rust/crates/underlay-core/src/dto.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-core/src/dto.rs)
-- [`rust/crates/underlay-core/src/error.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-core/src/error.rs)
-- [`rust/crates/underlay-http/src/responses.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-http/src/responses.rs)
-- [`rust/crates/underlay-http/src/errors.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-http/src/errors.rs)
-- [`ts/src/client/types.ts`](/Users/tom/Dev/projects/underlay/ts/src/client/types.ts)
-- [`contracts/openapi/underlay.openapi.yaml`](/Users/tom/Dev/projects/underlay/contracts/openapi/underlay.openapi.yaml)
+- [`rust/crates/underlay-core/src/id.rs`](../../rust/crates/underlay-core/src/id.rs)
+- [`rust/crates/underlay-core/src/dto.rs`](../../rust/crates/underlay-core/src/dto.rs)
+- [`rust/crates/underlay-core/src/error.rs`](../../rust/crates/underlay-core/src/error.rs)
+- [`rust/crates/underlay-http/src/responses.rs`](../../rust/crates/underlay-http/src/responses.rs)
+- [`rust/crates/underlay-http/src/errors.rs`](../../rust/crates/underlay-http/src/errors.rs)
+- [`ts/src/client/types.ts`](../../ts/src/client/types.ts)
+- [`contracts/openapi/underlay.openapi.yaml`](../../contracts/openapi/underlay.openapi.yaml)
 
 Supporting:
 
-- [`docs/architecture/015-error-and-envelopes.md`](/Users/tom/Dev/projects/underlay/docs/architecture/015-error-and-envelopes.md)
-- [`rust/crates/underlay-validation/src/error.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-validation/src/error.rs)
-- [`rust/crates/underlay-validation/src/axum_integration.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-validation/src/axum_integration.rs)
+- [`docs/architecture/015-error-and-envelopes.md`](../architecture/015-error-and-envelopes.md)
+- [`rust/crates/underlay-validation/src/error.rs`](../../rust/crates/underlay-validation/src/error.rs)
+- [`rust/crates/underlay-validation/src/axum_integration.rs`](../../rust/crates/underlay-validation/src/axum_integration.rs)
 
 If these diverge, `underlay-core` plus the transport helpers and OpenAPI shape
 win. Architecture docs and helper integrations must be repaired to match.

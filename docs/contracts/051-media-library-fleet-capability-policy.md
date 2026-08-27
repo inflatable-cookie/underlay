@@ -24,15 +24,15 @@ fleet.
 
 Shared media contracts:
 
-- [`docs/contracts/040-storage-blob-and-media-systems.md`](/Users/tom/Dev/projects/underlay/docs/contracts/040-storage-blob-and-media-systems.md)
-- [`docs/contracts/050-media-library-and-usage.md`](/Users/tom/Dev/projects/underlay/docs/contracts/050-media-library-and-usage.md)
-- [`docs/contracts/110-admin-template-system.md`](/Users/tom/Dev/projects/underlay/docs/contracts/110-admin-template-system.md)
-- [`docs/contracts/111-consumer-template-adoption-and-exception-policy.md`](/Users/tom/Dev/projects/underlay/docs/contracts/111-consumer-template-adoption-and-exception-policy.md)
+- [`040-storage-blob-and-media-systems.md`](./040-storage-blob-and-media-systems.md)
+- [`050-media-library-and-usage.md`](./050-media-library-and-usage.md)
+- [`110-admin-template-system.md`](./110-admin-template-system.md)
+- [`111-consumer-template-adoption-and-exception-policy.md`](./111-consumer-template-adoption-and-exception-policy.md)
 
 Convergence evidence:
 
-- [`docs/roadmaps/g05/004-cross-app-media-library-template-consolidation.md`](/Users/tom/Dev/projects/underlay/docs/roadmaps/g05/004-cross-app-media-library-template-consolidation.md)
-- [`docs/contracts/media-capability/fleet-media-capability-matrix.csv`](/Users/tom/Dev/projects/underlay/docs/contracts/media-capability/fleet-media-capability-matrix.csv)
+- [`docs/roadmaps/g05/004-cross-app-media-library-template-consolidation.md`](../roadmaps/g05/004-cross-app-media-library-template-consolidation.md)
+- [`docs/contracts/media-capability/fleet-media-capability-matrix.csv`](./media-capability/fleet-media-capability-matrix.csv)
 
 If these diverge, the contract plus the capability matrix win.
 
@@ -73,11 +73,11 @@ The current six-app admin fleet is expected to own the full admin media family.
 Affected apps:
 
 - `underlay-reference/apps/acme-admin`
-- `acowtancy/dairy`
-- `compli-me/admin`
-- `contact-patch/cp-admin`
-- `songsprout/greenhouse`
-- `loophole/composer/composer-admin`
+- `acowtancy/apps/dairy`
+- `compli-me/apps/admin`
+- `contact-patch/apps/cp-admin`
+- `songsprout/apps/greenhouse`
+- `loophole/composer/apps/composer-admin`
 
 Rules:
 

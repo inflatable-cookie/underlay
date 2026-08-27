@@ -24,19 +24,19 @@ It does not define helper reads. Those stay with `119`.
 
 Primary shared sources:
 
-- [`docs/contracts/020-http-transport-and-server-boundary.md`](/Users/tom/Dev/projects/underlay/docs/contracts/020-http-transport-and-server-boundary.md)
-- [`docs/contracts/026-route-families-and-access-model.md`](/Users/tom/Dev/projects/underlay/docs/contracts/026-route-families-and-access-model.md)
-- [`docs/contracts/027-api-canonical-path-cutovers-and-compatibility-retirement.md`](/Users/tom/Dev/projects/underlay/docs/contracts/027-api-canonical-path-cutovers-and-compatibility-retirement.md)
-- [`docs/contracts/119-helper-search-and-lookup-route-catalogue.md`](/Users/tom/Dev/projects/underlay/docs/contracts/119-helper-search-and-lookup-route-catalogue.md)
+- [`020-http-transport-and-server-boundary.md`](./020-http-transport-and-server-boundary.md)
+- [`026-route-families-and-access-model.md`](./026-route-families-and-access-model.md)
+- [`027-api-canonical-path-cutovers-and-compatibility-retirement.md`](./027-api-canonical-path-cutovers-and-compatibility-retirement.md)
+- [`119-helper-search-and-lookup-route-catalogue.md`](./119-helper-search-and-lookup-route-catalogue.md)
 
 Reference consumer evidence:
 
-- [`underlay-reference/apps/acme-api/crates/api/src/routes/mod.rs`](/Users/tom/Dev/projects/underlay-reference/apps/acme-api/crates/api/src/routes/mod.rs)
-- [`songsprout/nursery/crates/api/src/routes/artist_task_actions.rs`](/Users/tom/Dev/projects/songsprout/nursery/crates/api/src/routes/artist_task_actions.rs)
-- [`acowtancy/farmyard/crates/api/src/routes/admin/learning/variants/reorder/variant.rs`](/Users/tom/Dev/projects/acowtancy/farmyard/crates/api/src/routes/admin/learning/variants/reorder/variant.rs)
-- [`acowtancy/farmyard/crates/api/src/routes/admin/learning/variants/reorder/preseen.rs`](/Users/tom/Dev/projects/acowtancy/farmyard/crates/api/src/routes/admin/learning/variants/reorder/preseen.rs)
-- [`acowtancy/farmyard/crates/api/src/routes/admin/learning/levels/deletion.rs`](/Users/tom/Dev/projects/acowtancy/farmyard/crates/api/src/routes/admin/learning/levels/deletion.rs)
-- [`acowtancy/farmyard/crates/api/src/routes/admin/marking.rs`](/Users/tom/Dev/projects/acowtancy/farmyard/crates/api/src/routes/admin/marking.rs)
+- `underlay-reference/apps/acme-api/crates/api/src/routes/mod.rs`
+- `songsprout/apps/nursery/crates/api/src/routes/artist_task_actions.rs`
+- `acowtancy/apps/farmyard/crates/api/src/routes/admin/learning/variants/reorder/variant.rs`
+- `acowtancy/apps/farmyard/crates/api/src/routes/admin/learning/variants/reorder/preseen.rs`
+- `acowtancy/apps/farmyard/crates/api/src/routes/admin/learning/levels/deletion.rs`
+- `acowtancy/apps/farmyard/crates/api/src/routes/admin/marking/mod.rs`
 
 If these diverge, the contract plus the cleanest current action proofs win.
 

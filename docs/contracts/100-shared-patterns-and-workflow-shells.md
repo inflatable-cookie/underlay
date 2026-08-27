@@ -28,38 +28,38 @@ pattern-owned tab-list shell.
 
 Primary:
 
-- [`ts/src/patterns/index.ts`](/Users/tom/Dev/projects/underlay/ts/src/patterns/index.ts)
-- [`ts/src/patterns/SpaFormShell.svelte`](/Users/tom/Dev/projects/underlay/ts/src/patterns/SpaFormShell.svelte)
-- [`ts/src/patterns/FormShell.svelte`](/Users/tom/Dev/projects/underlay/ts/src/patterns/FormShell.svelte)
-- [`ts/src/patterns/auth.ts`](/Users/tom/Dev/projects/underlay/ts/src/patterns/auth.ts)
-- [`ts/src/patterns/authenticated-data.svelte.ts`](/Users/tom/Dev/projects/underlay/ts/src/patterns/authenticated-data.svelte.ts)
-- [`ts/src/patterns/auth-workflows.ts`](/Users/tom/Dev/projects/underlay/ts/src/patterns/auth-workflows.ts)
-- [`ts/src/patterns/list-controller.svelte.ts`](/Users/tom/Dev/projects/underlay/ts/src/patterns/list-controller.svelte.ts)
-- [`ts/src/patterns/pagination.svelte.ts`](/Users/tom/Dev/projects/underlay/ts/src/patterns/pagination.svelte.ts)
-- [`ts/src/patterns/reorder-controller.svelte.ts`](/Users/tom/Dev/projects/underlay/ts/src/patterns/reorder-controller.svelte.ts)
-- [`ts/src/patterns/reorder-conflict.ts`](/Users/tom/Dev/projects/underlay/ts/src/patterns/reorder-conflict.ts)
-- [`ts/src/patterns/reorder-session.svelte.ts`](/Users/tom/Dev/projects/underlay/ts/src/patterns/reorder-session.svelte.ts)
-- [`ts/src/patterns/batch-selection.svelte.ts`](/Users/tom/Dev/projects/underlay/ts/src/patterns/batch-selection.svelte.ts)
-- [`ts/src/patterns/batch-actions.svelte.ts`](/Users/tom/Dev/projects/underlay/ts/src/patterns/batch-actions.svelte.ts)
-- [`ts/src/patterns/selection-mode-controller.svelte.ts`](/Users/tom/Dev/projects/underlay/ts/src/patterns/selection-mode-controller.svelte.ts)
-- [`ts/src/patterns/selection-transform-state.ts`](/Users/tom/Dev/projects/underlay/ts/src/patterns/selection-transform-state.ts)
-- [`ts/src/patterns/selection-history.ts`](/Users/tom/Dev/projects/underlay/ts/src/patterns/selection-history.ts)
-- [`ts/src/patterns/RelationSelector/types.ts`](/Users/tom/Dev/projects/underlay/ts/src/patterns/RelationSelector/types.ts)
-- [`ts/src/patterns/RelationSelector/context.svelte.ts`](/Users/tom/Dev/projects/underlay/ts/src/patterns/RelationSelector/context.svelte.ts)
-- [`ts/src/patterns/RelationSelector/drilldown-context.svelte.ts`](/Users/tom/Dev/projects/underlay/ts/src/patterns/RelationSelector/drilldown-context.svelte.ts)
-- [`ts/src/patterns/local-search.ts`](/Users/tom/Dev/projects/underlay/ts/src/patterns/local-search.ts)
-- [`ts/src/patterns/drilldown-search.ts`](/Users/tom/Dev/projects/underlay/ts/src/patterns/drilldown-search.ts)
-- [`ts/src/patterns/media-upload-flow.svelte.ts`](/Users/tom/Dev/projects/underlay/ts/src/patterns/media-upload-flow.svelte.ts)
-- [`ts/src/patterns/optimistic.ts`](/Users/tom/Dev/projects/underlay/ts/src/patterns/optimistic.ts)
-- [`ts/src/patterns/navigation.ts`](/Users/tom/Dev/projects/underlay/ts/src/patterns/navigation.ts)
-- [`ts/src/patterns/forms.ts`](/Users/tom/Dev/projects/underlay/ts/src/patterns/forms.ts)
+- [`ts/src/patterns/index.ts`](../../ts/src/patterns/index.ts)
+- [`ts/src/patterns/SpaFormShell.svelte`](../../ts/src/patterns/SpaFormShell.svelte)
+- [`ts/src/patterns/FormShell.svelte`](../../ts/src/patterns/FormShell.svelte)
+- [`ts/src/patterns/auth.ts`](../../ts/src/patterns/auth.ts)
+- [`ts/src/patterns/authenticated-data.svelte.ts`](../../ts/src/patterns/authenticated-data.svelte.ts)
+- [`ts/src/patterns/auth-workflows.ts`](../../ts/src/patterns/auth-workflows.ts)
+- [`ts/src/patterns/list-controller.svelte.ts`](../../ts/src/patterns/list-controller.svelte.ts)
+- [`ts/src/patterns/pagination.svelte.ts`](../../ts/src/patterns/pagination.svelte.ts)
+- [`ts/src/patterns/reorder-controller.svelte.ts`](../../ts/src/patterns/reorder-controller.svelte.ts)
+- [`ts/src/patterns/reorder-conflict.ts`](../../ts/src/patterns/reorder-conflict.ts)
+- [`ts/src/patterns/reorder-session.svelte.ts`](../../ts/src/patterns/reorder-session.svelte.ts)
+- [`ts/src/patterns/batch-selection.svelte.ts`](../../ts/src/patterns/batch-selection.svelte.ts)
+- [`ts/src/patterns/batch-actions.svelte.ts`](../../ts/src/patterns/batch-actions.svelte.ts)
+- [`ts/src/patterns/selection-mode-controller.svelte.ts`](../../ts/src/patterns/selection-mode-controller.svelte.ts)
+- [`ts/src/patterns/selection-transform-state.ts`](../../ts/src/patterns/selection-transform-state.ts)
+- [`ts/src/patterns/selection-history.ts`](../../ts/src/patterns/selection-history.ts)
+- [`ts/src/patterns/RelationSelector/types.ts`](../../ts/src/patterns/RelationSelector/types.ts)
+- [`ts/src/patterns/RelationSelector/context.svelte.ts`](../../ts/src/patterns/RelationSelector/context.svelte.ts)
+- [`ts/src/patterns/RelationSelector/drilldown-context.svelte.ts`](../../ts/src/patterns/RelationSelector/drilldown-context.svelte.ts)
+- [`ts/src/patterns/local-search.ts`](../../ts/src/patterns/local-search.ts)
+- [`ts/src/patterns/drilldown-search.ts`](../../ts/src/patterns/drilldown-search.ts)
+- [`ts/src/patterns/media-upload-flow.svelte.ts`](../../ts/src/patterns/media-upload-flow.svelte.ts)
+- [`ts/src/patterns/optimistic.ts`](../../ts/src/patterns/optimistic.ts)
+- [`ts/src/patterns/navigation.ts`](../../ts/src/patterns/navigation.ts)
+- [`ts/src/patterns/forms.ts`](../../ts/src/patterns/forms.ts)
 
 Supporting:
 
-- [`docs/guides/096-form-helpers.md`](/Users/tom/Dev/projects/underlay/docs/guides/096-form-helpers.md)
-- [`docs/guides/098-shared-admin-patterns.md`](/Users/tom/Dev/projects/underlay/docs/guides/098-shared-admin-patterns.md)
-- [`docs/guides/095-navigation-context.md`](/Users/tom/Dev/projects/underlay/docs/guides/095-navigation-context.md)
-- [`docs/guides/092-selection-suggestions.md`](/Users/tom/Dev/projects/underlay/docs/guides/092-selection-suggestions.md)
+- [`docs/guides/096-form-helpers.md`](../guides/096-form-helpers.md)
+- [`docs/guides/098-shared-admin-patterns.md`](../guides/098-shared-admin-patterns.md)
+- [`docs/guides/095-navigation-context.md`](../guides/095-navigation-context.md)
+- [`docs/guides/092-selection-suggestions.md`](../guides/092-selection-suggestions.md)
 
 If these diverge, the shared code wins.
 
@@ -191,8 +191,8 @@ Rules:
 
 Reference guide:
 
-- [`docs/guides/097-autonomous-list-components.md`](/Users/tom/Dev/projects/underlay/docs/guides/097-autonomous-list-components.md)
-- [`docs/guides/code/097-autonomous-list-components/list-workflow-helpers.ts`](/Users/tom/Dev/projects/underlay/docs/guides/code/097-autonomous-list-components/list-workflow-helpers.ts)
+- [`docs/guides/097-autonomous-list-components.md`](../guides/097-autonomous-list-components.md)
+- [`docs/guides/code/097-autonomous-list-components/list-workflow-helpers.ts`](../guides/code/097-autonomous-list-components/list-workflow-helpers.ts)
 
 ### Relation selector workflow family
 

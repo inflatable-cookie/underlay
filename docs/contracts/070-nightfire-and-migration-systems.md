@@ -23,34 +23,34 @@ top of this shared protocol and are owned by consuming apps.
 
 Primary:
 
-- [`rust/crates/underlay-nightfire/src/lib.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-nightfire/src/lib.rs)
-- [`rust/crates/underlay-nightfire/src/value.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-nightfire/src/value.rs)
-- [`rust/crates/underlay-nightfire/src/block.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-nightfire/src/block.rs)
-- [`rust/crates/underlay-nightfire/src/registry.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-nightfire/src/registry.rs)
-- [`rust/crates/underlay-nightfire/src/validation.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-nightfire/src/validation.rs)
-- [`rust/crates/underlay-nightfire/src/strategy.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-nightfire/src/strategy.rs)
-- [`rust/crates/underlay-migration-core/src/lib.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-migration-core/src/lib.rs)
-- [`rust/crates/underlay-migration-core/src/pipeline.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-migration-core/src/pipeline.rs)
-- [`rust/crates/underlay-migration-core/src/plugin.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-migration-core/src/plugin.rs)
-- [`rust/crates/underlay-migration-core/src/context.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-migration-core/src/context.rs)
-- [`rust/crates/underlay-migration-core/src/manifest.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-migration-core/src/manifest.rs)
-- [`ts/src/nightfire/types.ts`](/Users/tom/Dev/projects/underlay/ts/src/nightfire/types.ts)
-- [`ts/src/nightfire/editor.ts`](/Users/tom/Dev/projects/underlay/ts/src/nightfire/editor.ts)
-- [`ts/src/nightfire/editor-registry.ts`](/Users/tom/Dev/projects/underlay/ts/src/nightfire/editor-registry.ts)
-- [`ts/src/nightfire/renderer.ts`](/Users/tom/Dev/projects/underlay/ts/src/nightfire/renderer.ts)
-- [`ts/src/nightfire/render-registry.ts`](/Users/tom/Dev/projects/underlay/ts/src/nightfire/render-registry.ts)
-- [`ts/src/nightfire/strategies.ts`](/Users/tom/Dev/projects/underlay/ts/src/nightfire/strategies.ts)
-- [`ts/src/nightfire/validation.ts`](/Users/tom/Dev/projects/underlay/ts/src/nightfire/validation.ts)
-- [`ts/src/nightfire/validator-registry.ts`](/Users/tom/Dev/projects/underlay/ts/src/nightfire/validator-registry.ts)
-- [`ts/src/nightfire/markdown.ts`](/Users/tom/Dev/projects/underlay/ts/src/nightfire/markdown.ts)
-- [`ts/src/nightfire/media/editor.ts`](/Users/tom/Dev/projects/underlay/ts/src/nightfire/media/editor.ts)
+- [`rust/crates/underlay-nightfire/src/lib.rs`](../../rust/crates/underlay-nightfire/src/lib.rs)
+- [`rust/crates/underlay-nightfire/src/value.rs`](../../rust/crates/underlay-nightfire/src/value.rs)
+- [`rust/crates/underlay-nightfire/src/block.rs`](../../rust/crates/underlay-nightfire/src/block.rs)
+- [`rust/crates/underlay-nightfire/src/registry.rs`](../../rust/crates/underlay-nightfire/src/registry.rs)
+- [`rust/crates/underlay-nightfire/src/validation.rs`](../../rust/crates/underlay-nightfire/src/validation.rs)
+- [`rust/crates/underlay-nightfire/src/strategy.rs`](../../rust/crates/underlay-nightfire/src/strategy.rs)
+- [`rust/crates/underlay-migration-core/src/lib.rs`](../../rust/crates/underlay-migration-core/src/lib.rs)
+- [`rust/crates/underlay-migration-core/src/pipeline.rs`](../../rust/crates/underlay-migration-core/src/pipeline.rs)
+- [`rust/crates/underlay-migration-core/src/plugin.rs`](../../rust/crates/underlay-migration-core/src/plugin.rs)
+- [`rust/crates/underlay-migration-core/src/context.rs`](../../rust/crates/underlay-migration-core/src/context.rs)
+- [`rust/crates/underlay-migration-core/src/manifest.rs`](../../rust/crates/underlay-migration-core/src/manifest.rs)
+- [`ts/src/nightfire/types.ts`](../../ts/src/nightfire/types.ts)
+- [`ts/src/nightfire/editor.ts`](../../ts/src/nightfire/editor.ts)
+- [`ts/src/nightfire/editor-registry.ts`](../../ts/src/nightfire/editor-registry.ts)
+- [`ts/src/nightfire/renderer.ts`](../../ts/src/nightfire/renderer.ts)
+- [`ts/src/nightfire/render-registry.ts`](../../ts/src/nightfire/render-registry.ts)
+- [`ts/src/nightfire/strategies.ts`](../../ts/src/nightfire/strategies.ts)
+- [`ts/src/nightfire/validation.ts`](../../ts/src/nightfire/validation.ts)
+- [`ts/src/nightfire/validator-registry.ts`](../../ts/src/nightfire/validator-registry.ts)
+- [`ts/src/nightfire/markdown.ts`](../../ts/src/nightfire/markdown.ts)
+- [`ts/src/nightfire/media/editor.ts`](../../ts/src/nightfire/media/editor.ts)
 
 Supporting:
 
-- [`docs/usage/migration/000-state-layout-and-effigy.md`](/Users/tom/Dev/projects/underlay/docs/usage/migration/000-state-layout-and-effigy.md)
-- [`docs/contracts/040-storage-blob-and-media-systems.md`](/Users/tom/Dev/projects/underlay/docs/contracts/040-storage-blob-and-media-systems.md)
-- [`docs/contracts/050-media-library-and-usage.md`](/Users/tom/Dev/projects/underlay/docs/contracts/050-media-library-and-usage.md)
-- [`docs/architecture/010-package-map.md`](/Users/tom/Dev/projects/underlay/docs/architecture/010-package-map.md)
+- [`docs/usage/migration/000-state-layout-and-effigy.md`](../usage/migration/000-state-layout-and-effigy.md)
+- [`040-storage-blob-and-media-systems.md`](./040-storage-blob-and-media-systems.md)
+- [`050-media-library-and-usage.md`](./050-media-library-and-usage.md)
+- [`docs/architecture/010-package-map.md`](../architecture/010-package-map.md)
 
 If these diverge, the shared code wins.
 
@@ -341,7 +341,7 @@ against that policy.
 
 Canonical usage policy:
 
-- [`docs/usage/migration/000-state-layout-and-effigy.md`](/Users/tom/Dev/projects/underlay/docs/usage/migration/000-state-layout-and-effigy.md)
+- [`docs/usage/migration/000-state-layout-and-effigy.md`](../usage/migration/000-state-layout-and-effigy.md)
 
 Rules:
 
@@ -422,5 +422,5 @@ Resolved assessment:
 
 ## Next Task
 
-Use [../roadmaps/g04/009-ai-runtime-and-suggestions-contract.md](/Users/tom/Dev/projects/underlay/docs/roadmaps/g04/009-ai-runtime-and-suggestions-contract.md)
+Use [../roadmaps/g04/009-ai-runtime-and-suggestions-contract.md](../roadmaps/g04/009-ai-runtime-and-suggestions-contract.md)
 to write the next contract.

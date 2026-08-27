@@ -23,24 +23,24 @@ It does not define whether an app exposes OpenAPI at all. That stays with
 
 Shared schema and response support:
 
-- [`contracts/openapi/underlay.openapi.yaml`](/Users/tom/Dev/projects/underlay/contracts/openapi/underlay.openapi.yaml)
-- [`rust/crates/underlay-http/src/openapi.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-http/src/openapi.rs)
-- [`rust/crates/underlay-core/src/dto.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-core/src/dto.rs)
+- [`contracts/openapi/underlay.openapi.yaml`](../../contracts/openapi/underlay.openapi.yaml)
+- [`rust/crates/underlay-http/src/openapi.rs`](../../rust/crates/underlay-http/src/openapi.rs)
+- [`rust/crates/underlay-core/src/dto.rs`](../../rust/crates/underlay-core/src/dto.rs)
 
 Supporting contracts:
 
-- [`docs/contracts/028-runtime-surface-and-openapi-maturity-levels.md`](/Users/tom/Dev/projects/underlay/docs/contracts/028-runtime-surface-and-openapi-maturity-levels.md)
-- [`docs/contracts/115-admin-resource-api-shapes.md`](/Users/tom/Dev/projects/underlay/docs/contracts/115-admin-resource-api-shapes.md)
-- [`docs/contracts/118-front-and-shared-read-api-shapes.md`](/Users/tom/Dev/projects/underlay/docs/contracts/118-front-and-shared-read-api-shapes.md)
-- [`docs/contracts/119-helper-search-and-lookup-route-catalogue.md`](/Users/tom/Dev/projects/underlay/docs/contracts/119-helper-search-and-lookup-route-catalogue.md)
+- [`028-runtime-surface-and-openapi-maturity-levels.md`](./028-runtime-surface-and-openapi-maturity-levels.md)
+- [`115-admin-resource-api-shapes.md`](./115-admin-resource-api-shapes.md)
+- [`118-front-and-shared-read-api-shapes.md`](./118-front-and-shared-read-api-shapes.md)
+- [`119-helper-search-and-lookup-route-catalogue.md`](./119-helper-search-and-lookup-route-catalogue.md)
 
 Reference consumer evidence:
 
 - `underlay-reference/apps/acme-api`
-- `compli-me/api`
-- `contact-patch/cp-api`
-- `songsprout/nursery`
-- `loophole/composer/composer-api`
+- `compli-me/apps/api`
+- `contact-patch/apps/cp-api`
+- `songsprout/apps/nursery`
+- `loophole/composer/apps/composer-api`
 
 If these diverge, the contract plus the clearest typed route posture win.
 

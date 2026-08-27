@@ -24,26 +24,26 @@ settings should live and how they should be loaded.
 
 Primary guidance and rollout evidence:
 
-- [`docs/guides/120-configuration.md`](/Users/tom/Dev/projects/underlay/docs/guides/120-configuration.md)
-- [`docs/guides/121-consumer-config-rollout-kit.md`](/Users/tom/Dev/projects/underlay/docs/guides/121-consumer-config-rollout-kit.md)
-- [`docs/guides/140-local-development.md`](/Users/tom/Dev/projects/underlay/docs/guides/140-local-development.md)
-- [`docs/contracts/024-new-app-bootstrap-and-bring-up.md`](/Users/tom/Dev/projects/underlay/docs/contracts/024-new-app-bootstrap-and-bring-up.md)
-- [`docs/contracts/030-auth-and-session-systems.md`](/Users/tom/Dev/projects/underlay/docs/contracts/030-auth-and-session-systems.md)
+- [`docs/guides/120-configuration.md`](../guides/120-configuration.md)
+- [`docs/guides/121-consumer-config-rollout-kit.md`](../guides/121-consumer-config-rollout-kit.md)
+- [`docs/guides/140-local-development.md`](../guides/140-local-development.md)
+- [`024-new-app-bootstrap-and-bring-up.md`](./024-new-app-bootstrap-and-bring-up.md)
+- [`030-auth-and-session-systems.md`](./030-auth-and-session-systems.md)
 
 Reference consumer evidence:
 
 - `underlay-reference/apps/acme-api`
-- `acowtancy/farmyard`
-- `compli-me/api`
-- `contact-patch/cp-api`
-- `songsprout/nursery`
-- `loophole/composer/composer-api`
+- `acowtancy/apps/farmyard`
+- `compli-me/apps/api`
+- `contact-patch/apps/cp-api`
+- `songsprout/apps/nursery`
+- `loophole/composer/apps/composer-api`
 
 If these diverge, the contract plus the clearest modern posture win.
 
 Promoted implementation reference:
 
-- `acowtancy/farmyard`
+- `acowtancy/apps/farmyard`
 
 For runtime assembly and local bring-up, Acowtancy is the promoted
 implementation. Other consumers should converge on its config posture unless a

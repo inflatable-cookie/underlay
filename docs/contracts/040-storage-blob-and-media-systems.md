@@ -21,7 +21,7 @@ This contract covers:
   seams
 
 It does not replace the higher-level
-[050-media-library-and-usage.md](/Users/tom/Dev/projects/underlay/docs/contracts/050-media-library-and-usage.md).
+[050-media-library-and-usage.md](./050-media-library-and-usage.md).
 `050` sits on top of this contract and defines the richer media graph, usage
 sync, and migration semantics.
 
@@ -29,33 +29,33 @@ sync, and migration semantics.
 
 Primary:
 
-- [`rust/crates/underlay-db/src/lib.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-db/src/lib.rs)
-- [`rust/crates/underlay-db/src/pool.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-db/src/pool.rs)
-- [`rust/crates/underlay-db/src/migrations.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-db/src/migrations.rs)
-- [`rust/crates/underlay-db/src/schemas.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-db/src/schemas.rs)
-- [`rust/crates/underlay-db/src/existence.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-db/src/existence.rs)
-- [`rust/crates/underlay-media/src/types.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-media/src/types.rs)
-- [`rust/crates/underlay-db/src/db_errors.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-db/src/db_errors.rs)
-- [`rust/crates/underlay-soft-delete/src/lib.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-soft-delete/src/lib.rs)
-- [`rust/crates/underlay-blob/src/lib.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-blob/src/lib.rs)
-- [`rust/crates/underlay-blob/src/adapter.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-blob/src/adapter.rs)
-- [`rust/crates/underlay-blob/src/types.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-blob/src/types.rs)
-- [`rust/crates/underlay-blob/src/config.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-blob/src/config.rs)
-- [`rust/crates/underlay-blob/src/adapters/s3.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-blob/src/adapters/s3.rs)
-- [`rust/crates/underlay-blob/src/adapters/local.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-blob/src/adapters/local.rs)
-- [`rust/crates/underlay-aws/src/lib.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-aws/src/lib.rs)
-- [`rust/crates/underlay-media/src/lib.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-media/src/lib.rs)
-- [`rust/crates/underlay-media/src/domain.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-media/src/domain.rs)
-- [`rust/crates/underlay-media/src/repository.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-media/src/repository.rs)
-- [`rust/crates/underlay-media/src/storage.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-media/src/storage.rs)
-- [`rust/crates/underlay-media/src/sync.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-media/src/sync.rs)
-- [`rust/crates/underlay-media-postgres/src/lib.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-media-postgres/src/lib.rs)
-- [`rust/crates/underlay-media/src/error.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-media/src/error.rs)
+- [`rust/crates/underlay-db/src/lib.rs`](../../rust/crates/underlay-db/src/lib.rs)
+- [`rust/crates/underlay-db/src/pool.rs`](../../rust/crates/underlay-db/src/pool.rs)
+- [`rust/crates/underlay-db/src/migrations.rs`](../../rust/crates/underlay-db/src/migrations.rs)
+- [`rust/crates/underlay-db/src/schemas.rs`](../../rust/crates/underlay-db/src/schemas.rs)
+- [`rust/crates/underlay-db/src/existence.rs`](../../rust/crates/underlay-db/src/existence.rs)
+- [`rust/crates/underlay-media/src/types.rs`](../../rust/crates/underlay-media/src/types.rs)
+- [`rust/crates/underlay-db/src/db_errors.rs`](../../rust/crates/underlay-db/src/db_errors.rs)
+- [`rust/crates/underlay-soft-delete/src/lib.rs`](../../rust/crates/underlay-soft-delete/src/lib.rs)
+- [`rust/crates/underlay-blob/src/lib.rs`](../../rust/crates/underlay-blob/src/lib.rs)
+- [`rust/crates/underlay-blob/src/adapter.rs`](../../rust/crates/underlay-blob/src/adapter.rs)
+- [`rust/crates/underlay-blob/src/types.rs`](../../rust/crates/underlay-blob/src/types.rs)
+- [`rust/crates/underlay-blob/src/config.rs`](../../rust/crates/underlay-blob/src/config.rs)
+- [`rust/crates/underlay-blob/src/adapters/s3.rs`](../../rust/crates/underlay-blob/src/adapters/s3.rs)
+- [`rust/crates/underlay-blob/src/adapters/local.rs`](../../rust/crates/underlay-blob/src/adapters/local.rs)
+- [`rust/crates/underlay-aws/src/lib.rs`](../../rust/crates/underlay-aws/src/lib.rs)
+- [`rust/crates/underlay-media/src/lib.rs`](../../rust/crates/underlay-media/src/lib.rs)
+- [`rust/crates/underlay-media/src/domain.rs`](../../rust/crates/underlay-media/src/domain.rs)
+- [`rust/crates/underlay-media/src/repository.rs`](../../rust/crates/underlay-media/src/repository.rs)
+- [`rust/crates/underlay-media/src/storage/mod.rs`](../../rust/crates/underlay-media/src/storage/mod.rs)
+- [`rust/crates/underlay-media/src/sync.rs`](../../rust/crates/underlay-media/src/sync.rs)
+- [`rust/crates/underlay-media-postgres/src/lib.rs`](../../rust/crates/underlay-media-postgres/src/lib.rs)
+- [`rust/crates/underlay-media/src/error.rs`](../../rust/crates/underlay-media/src/error.rs)
 
 Supporting:
 
-- [`docs/contracts/050-media-library-and-usage.md`](/Users/tom/Dev/projects/underlay/docs/contracts/050-media-library-and-usage.md)
-- [`docs/architecture/010-package-map.md`](/Users/tom/Dev/projects/underlay/docs/architecture/010-package-map.md)
+- [`050-media-library-and-usage.md`](./050-media-library-and-usage.md)
+- [`docs/architecture/010-package-map.md`](../architecture/010-package-map.md)
 
 If these diverge, the shared code wins. The older media contract remains a
 higher-level authority for the media graph, not for the lower storage seams.
@@ -387,7 +387,7 @@ Rules:
 
 This contract owns the lower storage/media mechanics.
 
-[050-media-library-and-usage.md](/Users/tom/Dev/projects/underlay/docs/contracts/050-media-library-and-usage.md)
+[050-media-library-and-usage.md](./050-media-library-and-usage.md)
 owns the higher-level media system semantics:
 
 - usage graph meaning
@@ -443,7 +443,7 @@ Resolved assessment:
   `underlay_blob::BlobUploadConfig` for upload-size policy and
   `underlay_media::renditions::RenditionConfig` for thumbnail/rendition policy.
 - `g06.183` confirmed
-  [050-media-library-and-usage.md](/Users/tom/Dev/projects/underlay/docs/contracts/050-media-library-and-usage.md)
+  [050-media-library-and-usage.md](./050-media-library-and-usage.md)
   is now an active contract. The lower/higher media authority stack is explicit
   in file state: `040` owns blob, storage, repository, and lower media
   mechanics; `050` owns usage graph, structured-content sync, migration

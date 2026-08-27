@@ -22,17 +22,17 @@ It does not redefine API path cutover mechanics. That stays in `027`.
 
 Shared release and upgrade guidance:
 
-- [`docs/guides/190-upgrade-compatibility.md`](/Users/tom/Dev/projects/underlay/docs/guides/190-upgrade-compatibility.md)
-- [`docs/guides/200-project-sync.md`](/Users/tom/Dev/projects/underlay/docs/guides/200-project-sync.md)
-- [`docs/guides/code/190-upgrade-compatibility/feature-upgrade-note-template.md`](/Users/tom/Dev/projects/underlay/docs/guides/code/190-upgrade-compatibility/feature-upgrade-note-template.md)
-- [`docs/guides/code/190-upgrade-compatibility/release-log-upgrade-block-template.md`](/Users/tom/Dev/projects/underlay/docs/guides/code/190-upgrade-compatibility/release-log-upgrade-block-template.md)
+- [`docs/guides/190-upgrade-compatibility.md`](../guides/190-upgrade-compatibility.md)
+- [`docs/guides/200-project-sync.md`](../guides/200-project-sync.md)
+- [`docs/guides/code/190-upgrade-compatibility/feature-upgrade-note-template.md`](../guides/code/190-upgrade-compatibility/feature-upgrade-note-template.md)
+- [`docs/guides/code/190-upgrade-compatibility/release-log-upgrade-block-template.md`](../guides/code/190-upgrade-compatibility/release-log-upgrade-block-template.md)
 
 Prior rollout and retirement evidence:
 
-- [`docs/roadmaps/g01/031-consumer-upgrade-and-change-communication.md`](/Users/tom/Dev/projects/underlay/docs/roadmaps/g01/031-consumer-upgrade-and-change-communication.md)
-- [`docs/roadmaps/g05/009-rust-runtime-contract-audit-and-next-contract-set.md`](/Users/tom/Dev/projects/underlay/docs/roadmaps/g05/009-rust-runtime-contract-audit-and-next-contract-set.md)
-- [`docs/contracts/027-api-canonical-path-cutovers-and-compatibility-retirement.md`](/Users/tom/Dev/projects/underlay/docs/contracts/027-api-canonical-path-cutovers-and-compatibility-retirement.md)
-- [`docs/contracts/111-consumer-template-adoption-and-exception-policy.md`](/Users/tom/Dev/projects/underlay/docs/contracts/111-consumer-template-adoption-and-exception-policy.md)
+- [`docs/roadmaps/g01/031-consumer-upgrade-and-change-communication.md`](../roadmaps/g01/031-consumer-upgrade-and-change-communication.md)
+- [`docs/roadmaps/g05/009-rust-runtime-contract-audit-and-next-contract-set.md`](../roadmaps/g05/009-rust-runtime-contract-audit-and-next-contract-set.md)
+- [`027-api-canonical-path-cutovers-and-compatibility-retirement.md`](./027-api-canonical-path-cutovers-and-compatibility-retirement.md)
+- [`111-consumer-template-adoption-and-exception-policy.md`](./111-consumer-template-adoption-and-exception-policy.md)
 
 Consumer fleet evidence:
 

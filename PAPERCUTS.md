@@ -46,12 +46,6 @@ they hit a solvable hurdle; they do not stop the current task to fix one.
 - Possible fix: update the Effigy skill JSON example and versioned envelope reference to the live `tasks` schema
 - Surface: Effigy skill / JSON task inventory docs
 
-### [ ] Active contracts retain machine-local evidence links — 2026-08-26
-- Friction: most active contract files still link through `/Users/tom/Dev/projects/...` paths even though the docs boundary requires repo-local Underlay links and prose-only sibling evidence
-- Impact: contract navigation is checkout-specific and active docs normalize a forbidden link style
-- Possible fix: sweep active contracts, convert Underlay targets to relative links, convert sibling-repo targets to prose refs, then add a docs QA check for absolute local paths
-- Surface: `docs/contracts/` / docs boundary QA
-
 ### [ ] Workspace-shape fast-forwards leave retired local package trees behind — 2026-08-26
 - Friction: moving tracked packages into `apps/` and `packages/` leaves ignored build/cache files at the retired top-level paths in existing checkouts
 - Impact: local roots still look polyrepo-shaped after the migration merges and can retain nested-repo conformance failures
@@ -65,6 +59,14 @@ they hit a solvable hurdle; they do not stop the current task to fix one.
 - Surface: docs QA / northstar refresh
 
 ## Closed
+
+### [x] Active contracts retain machine-local evidence links — 2026-08-26
+- Resolution: converted Underlay absolute links in active contracts to
+  repo-relative targets and sibling-repo evidence to prose paths; added
+  `qa:docs:contracts:local-paths` forbidding `/Users/` and `/home/` in
+  `docs/contracts/*.md`.
+- Closed: 2026-08-27
+- Surface: `docs/contracts/` / docs boundary QA
 
 ### [x] Emitted Svelte CSS leaves `:global(...)` for Lightning CSS — 2026-08-27
 - Resolution: `ts/src/styles/base.css` is plain CSS consumed directly by

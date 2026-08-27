@@ -66,11 +66,13 @@ check = "cd {repo} && bun x svelte-check --tsconfig ./ts/tsconfig.json"
 "qa:docs:links" = "cd {repo} && effigy docs check links README.md docs/README.md docs/vision/README.md docs/vision/001-underlay-foundation-vision.md docs/roadmaps/README.md docs/roadmaps/g01/README.md docs/roadmaps/g08/README.md docs/roadmaps/g09/README.md docs/logs/README.md docs/guides/README.md"
 "qa:docs:index:vision" = "cd {repo} && effigy docs check index --policy-index vision"
 "qa:docs:agent-defaults" = "cd {repo} && effigy docs check forbidden AGENTS.md README.md package.json docs/README.md docs/guides/README.md --forbid '--repo .'"
+"qa:docs:contracts:local-paths" = "cd {repo} && effigy docs check forbidden docs/contracts/*.md --forbid '/Users/' --forbid '/home/'"
 "qa:docs:vision:next-action" = "cd {repo} && effigy docs check next-action --policy vision"
 "qa:docs" = [
     { task = "qa:docs:links" },
     { task = "qa:docs:index:vision" },
     { task = "qa:docs:agent-defaults" },
+    { task = "qa:docs:contracts:local-paths" },
     { task = "qa:docs:vision:next-action" },
 ]
 

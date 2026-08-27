@@ -24,39 +24,39 @@ from `020`, and it does not define the higher workflow/pattern behavior from
 
 Primary:
 
-- [`ts/src/runtime/ai.ts`](/Users/tom/Dev/projects/underlay/ts/src/runtime/ai.ts)
-- [`ts/src/runtime/auth.ts`](/Users/tom/Dev/projects/underlay/ts/src/runtime/auth.ts)
-- [`ts/src/runtime/browser.ts`](/Users/tom/Dev/projects/underlay/ts/src/runtime/browser.ts)
-- [`ts/src/runtime/data.ts`](/Users/tom/Dev/projects/underlay/ts/src/runtime/data.ts)
-- [`ts/src/runtime/feedback.ts`](/Users/tom/Dev/projects/underlay/ts/src/runtime/feedback.ts)
-- [`ts/src/runtime/forms.ts`](/Users/tom/Dev/projects/underlay/ts/src/runtime/forms.ts)
-- [`ts/src/runtime/media.ts`](/Users/tom/Dev/projects/underlay/ts/src/runtime/media.ts)
-- [`ts/src/runtime/media/detail.ts`](/Users/tom/Dev/projects/underlay/ts/src/runtime/media/detail.ts)
-- [`ts/src/runtime/media/types.ts`](/Users/tom/Dev/projects/underlay/ts/src/runtime/media/types.ts)
-- [`ts/src/runtime/media/upload.ts`](/Users/tom/Dev/projects/underlay/ts/src/runtime/media/upload.ts)
-- [`ts/src/runtime/navigation.ts`](/Users/tom/Dev/projects/underlay/ts/src/runtime/navigation.ts)
-- [`ts/src/runtime/relations.ts`](/Users/tom/Dev/projects/underlay/ts/src/runtime/relations.ts)
-- [`ts/src/client/auth.ts`](/Users/tom/Dev/projects/underlay/ts/src/client/auth.ts)
-- [`ts/src/client/auth-types.ts`](/Users/tom/Dev/projects/underlay/ts/src/client/auth-types.ts)
-- [`ts/src/client/envelopes.ts`](/Users/tom/Dev/projects/underlay/ts/src/client/envelopes.ts)
-- [`ts/src/client/http.ts`](/Users/tom/Dev/projects/underlay/ts/src/client/http.ts)
-- [`ts/src/client/navigation.ts`](/Users/tom/Dev/projects/underlay/ts/src/client/navigation.ts)
-- [`ts/src/client/restore.ts`](/Users/tom/Dev/projects/underlay/ts/src/client/restore.ts)
-- [`ts/src/client/route-protection.ts`](/Users/tom/Dev/projects/underlay/ts/src/client/route-protection.ts)
-- [`ts/src/client/sveltekit.ts`](/Users/tom/Dev/projects/underlay/ts/src/client/sveltekit.ts)
-- [`ts/src/client/useAuth.ts`](/Users/tom/Dev/projects/underlay/ts/src/client/useAuth.ts)
-- [`ts/src/client/errors.ts`](/Users/tom/Dev/projects/underlay/ts/src/client/errors.ts)
-- [`ts/src/client/types.ts`](/Users/tom/Dev/projects/underlay/ts/src/client/types.ts)
-- [`ts/src/patterns/ai-routing-ops.svelte.ts`](/Users/tom/Dev/projects/underlay/ts/src/patterns/ai-routing-ops.svelte.ts)
-- [`ts/src/patterns/auth.ts`](/Users/tom/Dev/projects/underlay/ts/src/patterns/auth.ts)
-- [`ts/src/patterns/navigation.ts`](/Users/tom/Dev/projects/underlay/ts/src/patterns/navigation.ts)
-- [`ts/src/patterns/media-upload-flow.svelte.ts`](/Users/tom/Dev/projects/underlay/ts/src/patterns/media-upload-flow.svelte.ts)
+- [`ts/src/runtime/ai.ts`](../../ts/src/runtime/ai.ts)
+- [`ts/src/runtime/auth.ts`](../../ts/src/runtime/auth.ts)
+- [`ts/src/runtime/browser.ts`](../../ts/src/runtime/browser.ts)
+- [`ts/src/runtime/data.ts`](../../ts/src/runtime/data.ts)
+- [`ts/src/runtime/feedback.ts`](../../ts/src/runtime/feedback.ts)
+- [`ts/src/runtime/forms.ts`](../../ts/src/runtime/forms.ts)
+- [`ts/src/runtime/media.ts`](../../ts/src/runtime/media.ts)
+- [`ts/src/runtime/media/detail.ts`](../../ts/src/runtime/media/detail.ts)
+- [`ts/src/runtime/media/types.ts`](../../ts/src/runtime/media/types.ts)
+- [`ts/src/runtime/media/upload.ts`](../../ts/src/runtime/media/upload.ts)
+- [`ts/src/runtime/navigation.ts`](../../ts/src/runtime/navigation.ts)
+- [`ts/src/runtime/relations.ts`](../../ts/src/runtime/relations.ts)
+- [`ts/src/client/auth.ts`](../../ts/src/client/auth.ts)
+- [`ts/src/client/auth-types.ts`](../../ts/src/client/auth-types.ts)
+- [`ts/src/client/envelopes.ts`](../../ts/src/client/envelopes.ts)
+- [`ts/src/client/http.ts`](../../ts/src/client/http.ts)
+- [`ts/src/client/navigation.ts`](../../ts/src/client/navigation.ts)
+- [`ts/src/client/restore.ts`](../../ts/src/client/restore.ts)
+- [`ts/src/client/route-protection.ts`](../../ts/src/client/route-protection.ts)
+- [`ts/src/client/sveltekit.ts`](../../ts/src/client/sveltekit.ts)
+- [`ts/src/client/useAuth.ts`](../../ts/src/client/useAuth.ts)
+- [`ts/src/client/errors.ts`](../../ts/src/client/errors.ts)
+- [`ts/src/client/types.ts`](../../ts/src/client/types.ts)
+- [`ts/src/patterns/ai-routing-ops.svelte.ts`](../../ts/src/patterns/ai-routing-ops.svelte.ts)
+- [`ts/src/patterns/auth.ts`](../../ts/src/patterns/auth.ts)
+- [`ts/src/patterns/navigation.ts`](../../ts/src/patterns/navigation.ts)
+- [`ts/src/patterns/media-upload-flow.svelte.ts`](../../ts/src/patterns/media-upload-flow.svelte.ts)
 
 Supporting:
 
-- [`docs/guides/176-ai-runtime-routing.md`](/Users/tom/Dev/projects/underlay/docs/guides/176-ai-runtime-routing.md)
-- [`docs/guides/190-upgrade-compatibility.md`](/Users/tom/Dev/projects/underlay/docs/guides/190-upgrade-compatibility.md)
-- [`docs/architecture/010-package-map.md`](/Users/tom/Dev/projects/underlay/docs/architecture/010-package-map.md)
+- [`docs/guides/176-ai-runtime-routing.md`](../guides/176-ai-runtime-routing.md)
+- [`docs/guides/190-upgrade-compatibility.md`](../guides/190-upgrade-compatibility.md)
+- [`docs/architecture/010-package-map.md`](../architecture/010-package-map.md)
 
 If these diverge, the shared code wins.
 
@@ -414,5 +414,5 @@ live in `client/page-lists`.
 
 ## Next Task
 
-Use [../roadmaps/g04/028-route-protection-and-runtime-client-authority-repair.md](/Users/tom/Dev/projects/underlay/docs/roadmaps/g04/028-route-protection-and-runtime-client-authority-repair.md)
+Use [../roadmaps/g04/028-route-protection-and-runtime-client-authority-repair.md](../roadmaps/g04/028-route-protection-and-runtime-client-authority-repair.md)
 to execute the current repair lane.

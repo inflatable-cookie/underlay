@@ -23,21 +23,21 @@ not redefine jobs or audit primitives themselves. That stays in `060`.
 
 Shared error and audit surfaces:
 
-- [`docs/contracts/010-foundation-primitives-and-envelopes.md`](/Users/tom/Dev/projects/underlay/docs/contracts/010-foundation-primitives-and-envelopes.md)
-- [`docs/contracts/029-non-resource-workflow-action-route-grammar.md`](/Users/tom/Dev/projects/underlay/docs/contracts/029-non-resource-workflow-action-route-grammar.md)
-- [`docs/contracts/030-auth-and-session-systems.md`](/Users/tom/Dev/projects/underlay/docs/contracts/030-auth-and-session-systems.md)
-- [`docs/contracts/060-jobs-events-and-operator-systems.md`](/Users/tom/Dev/projects/underlay/docs/contracts/060-jobs-events-and-operator-systems.md)
+- [`010-foundation-primitives-and-envelopes.md`](./010-foundation-primitives-and-envelopes.md)
+- [`029-non-resource-workflow-action-route-grammar.md`](./029-non-resource-workflow-action-route-grammar.md)
+- [`030-auth-and-session-systems.md`](./030-auth-and-session-systems.md)
+- [`060-jobs-events-and-operator-systems.md`](./060-jobs-events-and-operator-systems.md)
 
 Supporting guidance and evidence:
 
-- [`docs/guides/078-error-logging.md`](/Users/tom/Dev/projects/underlay/docs/guides/078-error-logging.md)
-- [`docs/guides/080-audit-logging.md`](/Users/tom/Dev/projects/underlay/docs/guides/080-audit-logging.md)
-- [`docs/guides/081-auth-security-alerting.md`](/Users/tom/Dev/projects/underlay/docs/guides/081-auth-security-alerting.md)
-- [`rust/crates/underlay-http/src/errors.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-http/src/errors.rs)
-- [`rust/crates/underlay-http/src/error_logging.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-http/src/error_logging.rs)
-- [`rust/crates/underlay-audit/src/entry.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-audit/src/entry.rs)
-- [`rust/crates/underlay-jobs/src/events.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-jobs/src/events.rs)
-- [`rust/crates/underlay-security-alerts/src/lib.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-security-alerts/src/lib.rs)
+- [`docs/guides/078-error-logging.md`](../guides/078-error-logging.md)
+- [`docs/guides/080-audit-logging.md`](../guides/080-audit-logging.md)
+- [`docs/guides/081-auth-security-alerting.md`](../guides/081-auth-security-alerting.md)
+- [`rust/crates/underlay-http/src/errors.rs`](../../rust/crates/underlay-http/src/errors.rs)
+- [`rust/crates/underlay-http/src/error_logging.rs`](../../rust/crates/underlay-http/src/error_logging.rs)
+- [`rust/crates/underlay-audit/src/entry.rs`](../../rust/crates/underlay-audit/src/entry.rs)
+- [`rust/crates/underlay-jobs/src/events.rs`](../../rust/crates/underlay-jobs/src/events.rs)
+- [`rust/crates/underlay-security-alerts/src/lib.rs`](../../rust/crates/underlay-security-alerts/src/lib.rs)
 
 If these diverge, the contract plus the retained shared crate posture win.
 

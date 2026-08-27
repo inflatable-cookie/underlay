@@ -23,18 +23,18 @@ It does not define page-shaped resource reads. That stays with `118`.
 
 Primary shared sources:
 
-- [`docs/contracts/020-http-transport-and-server-boundary.md`](/Users/tom/Dev/projects/underlay/docs/contracts/020-http-transport-and-server-boundary.md)
-- [`docs/contracts/026-route-families-and-access-model.md`](/Users/tom/Dev/projects/underlay/docs/contracts/026-route-families-and-access-model.md)
-- [`docs/contracts/118-front-and-shared-read-api-shapes.md`](/Users/tom/Dev/projects/underlay/docs/contracts/118-front-and-shared-read-api-shapes.md)
-- [`docs/contracts/api-surface/endpoint-family-matrix.csv`](/Users/tom/Dev/projects/underlay/docs/contracts/api-surface/endpoint-family-matrix.csv)
+- [`020-http-transport-and-server-boundary.md`](./020-http-transport-and-server-boundary.md)
+- [`026-route-families-and-access-model.md`](./026-route-families-and-access-model.md)
+- [`118-front-and-shared-read-api-shapes.md`](./118-front-and-shared-read-api-shapes.md)
+- [`docs/contracts/api-surface/endpoint-family-matrix.csv`](./api-surface/endpoint-family-matrix.csv)
 
 Reference consumer evidence:
 
-- [`compli-me/api/crates/api/src/routes/shared/lookup.rs`](/Users/tom/Dev/projects/compli-me/api/crates/api/src/routes/shared/lookup.rs)
-- [`loophole/composer/composer-api/crates/api/src/routes/lookup.rs`](/Users/tom/Dev/projects/loophole/composer/composer-api/crates/api/src/routes/lookup.rs)
-- [`contact-patch/cp-api/crates/api/src/routes/shared/auth/totp.rs`](/Users/tom/Dev/projects/contact-patch/cp-api/crates/api/src/routes/shared/auth/totp.rs)
-- [`contact-patch/cp-api/crates/api/src/routes/shared/auth/password.rs`](/Users/tom/Dev/projects/contact-patch/cp-api/crates/api/src/routes/shared/auth/password.rs)
-- [`songsprout/nursery/crates/api/src/handlers/auth.rs`](/Users/tom/Dev/projects/songsprout/nursery/crates/api/src/handlers/auth.rs)
+- `compli-me/apps/api/crates/api/src/routes/shared/lookup.rs`
+- `loophole/composer/apps/composer-api/crates/api/src/routes/lookup.rs`
+- `contact-patch/apps/cp-api/crates/api/src/routes/shared/auth/totp.rs`
+- `contact-patch/apps/cp-api/crates/api/src/routes/shared/auth/password_reset.rs`
+- `songsprout/apps/nursery/crates/api/src/handlers/auth/mod.rs`
 
 If these diverge, the contract plus the clearest modern helper posture win.
 

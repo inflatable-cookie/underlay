@@ -208,7 +208,7 @@ Observed proof points:
 - no named consumer directly references `SessionStore` today
 - `contact-patch` and `underlay-reference` now use Underlay CSRF helpers
 - `AuthCookieConfig` is present across the current API family
-- `acowtancy/farmyard` owns additional migration-bundle reference parsing that
+- `acowtancy/apps/farmyard` owns additional migration-bundle reference parsing that
   should be considered during `MigrationBundleRef` work
 
 ## Stop Conditions

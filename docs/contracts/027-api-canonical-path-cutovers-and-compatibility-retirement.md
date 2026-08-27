@@ -24,21 +24,21 @@ It does not define read envelopes. That stays with `118`.
 
 Primary shared sources:
 
-- [`docs/contracts/020-http-transport-and-server-boundary.md`](/Users/tom/Dev/projects/underlay/docs/contracts/020-http-transport-and-server-boundary.md)
-- [`docs/contracts/025-rust-app-runtime-assembly-and-router-topology.md`](/Users/tom/Dev/projects/underlay/docs/contracts/025-rust-app-runtime-assembly-and-router-topology.md)
-- [`docs/contracts/026-route-families-and-access-model.md`](/Users/tom/Dev/projects/underlay/docs/contracts/026-route-families-and-access-model.md)
-- [`docs/contracts/118-front-and-shared-read-api-shapes.md`](/Users/tom/Dev/projects/underlay/docs/contracts/118-front-and-shared-read-api-shapes.md)
+- [`020-http-transport-and-server-boundary.md`](./020-http-transport-and-server-boundary.md)
+- [`025-rust-app-runtime-assembly-and-router-topology.md`](./025-rust-app-runtime-assembly-and-router-topology.md)
+- [`026-route-families-and-access-model.md`](./026-route-families-and-access-model.md)
+- [`118-front-and-shared-read-api-shapes.md`](./118-front-and-shared-read-api-shapes.md)
 
 Reference migration evidence:
 
-- [`docs/roadmaps/g05/009-rust-runtime-contract-audit-and-next-contract-set.md`](/Users/tom/Dev/projects/underlay/docs/roadmaps/g05/009-rust-runtime-contract-audit-and-next-contract-set.md)
-- [`loophole/composer/composer-api/crates/api/src/routes/admin.rs`](/Users/tom/Dev/projects/loophole/composer/composer-api/crates/api/src/routes/admin.rs)
-- [`loophole/composer/composer-api/crates/api/src/routes/shared.rs`](/Users/tom/Dev/projects/loophole/composer/composer-api/crates/api/src/routes/shared.rs)
-- [`loophole/composer/composer-api-client/src/commands/vendor-commands.ts`](/Users/tom/Dev/projects/loophole/composer/composer-api-client/src/commands/vendor-commands.ts)
-- [`loophole/composer/composer-api-client/src/commands/product-commands.ts`](/Users/tom/Dev/projects/loophole/composer/composer-api-client/src/commands/product-commands.ts)
-- [`loophole/composer/composer-api-client/src/commands/parameter-commands.ts`](/Users/tom/Dev/projects/loophole/composer/composer-api-client/src/commands/parameter-commands.ts)
-- [`loophole/composer/composer-api-client/src/commands/mapping-commands.ts`](/Users/tom/Dev/projects/loophole/composer/composer-api-client/src/commands/mapping-commands.ts)
-- [`loophole/composer/composer-api-client/src/commands/hardware-commands.ts`](/Users/tom/Dev/projects/loophole/composer/composer-api-client/src/commands/hardware-commands.ts)
+- [`docs/roadmaps/g05/009-rust-runtime-contract-audit-and-next-contract-set.md`](../roadmaps/g05/009-rust-runtime-contract-audit-and-next-contract-set.md)
+- `loophole/composer/apps/composer-api/crates/api/src/routes/admin.rs`
+- `loophole/composer/apps/composer-api/crates/api/src/routes/shared.rs`
+- `loophole/composer/packages/composer-api-client/src/commands/vendor-commands.ts`
+- `loophole/composer/packages/composer-api-client/src/commands/product-commands.ts`
+- `loophole/composer/packages/composer-api-client/src/commands/parameter-commands.ts`
+- `loophole/composer/packages/composer-api-client/src/commands/mapping-commands.ts`
+- `loophole/composer/packages/composer-api-client/src/commands/hardware-commands.ts`
 
 If these diverge, the contract plus the cleanest current cutover proof win.
 
