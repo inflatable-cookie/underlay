@@ -5,6 +5,17 @@ they hit a solvable hurdle; they do not stop the current task to fix one.
 
 ## Open
 
+### [ ] Attention-marker CLI overrides are ignored — 2026-08-27
+- Friction: `effigy scan attention-markers --warning-marker ...
+  --high-marker ... --critical-marker ...` accepted the flags but still used
+  the stock marker lists; the local Effigy implementation only applies common
+  scan overrides in the attention-marker execution path
+- Impact: agents cannot safely trial a narrower marker policy before committing
+  manifest changes, despite the help surface promising per-run overrides
+- Possible fix: apply marker request overrides in the attention-marker path and
+  retain a CLI contract test proving the rendered pattern lists changed
+- Surface: Effigy attention-marker scanner / CLI override contract
+
 ### [ ] `gh pr merge --delete-branch` reports failure after a successful merge — 2026-08-27
 - Friction: PR13 merged successfully, but `gh pr merge --delete-branch`
   returned exit 1 because the local head branch still belonged to a registered
