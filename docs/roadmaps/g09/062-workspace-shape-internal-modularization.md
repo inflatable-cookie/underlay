@@ -1,6 +1,6 @@
 # g09.062 - Workspace-Shape Internal Modularization
 
-Status: in review
+Status: complete
 Owner: Underlay maintainers
 Contract: `024`, `120`
 Depends on: `g09.060` (`complete`)
@@ -114,6 +114,15 @@ are the other warnings. This lane did not hide those findings.
 Lane log:
 `docs/logs/2026-08/27-225500-g09-062-workspace-shape-internal-modularization.md`
 
+## Merge Evidence
+
+- PR: `https://github.com/inflatable-cookie/underlay/pull/15`
+- reviewed head: `056c379e11ebee13bd14376f1cc6a8e7ca8fea35`
+- merge commit: `c55a6fe6a7786853186e966fead012fd396e61ec`
+- both required GitHub checks passed
+- exact-head full validation passed: 800 unit and 49 component tests
+- combined post-merge doctor: `ok:18 warn:2 err:0`
+
 ## Stop Conditions
 
 Stop if the split changes a stable rule, output, CLI, export, package boundary,
@@ -138,5 +147,5 @@ warning-level refactors outside the checker family.
 
 ## Next Task
 
-Stop for orchestrator review of the implementation PR. Do not merge and do not
-edit shared front doors.
+No further work in this roadmap. Re-enter generation planning before promoting
+another lane.

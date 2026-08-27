@@ -85,10 +85,11 @@ own the authorised route-retirement work. Both roadmaps are complete across all
 five affected targets. Underlay PR12 completed the papercuts wave 3 contract-
 link lane as merge commit `9e26ba9a`. Underlay PR13 then completed `g09.060`
 at reviewed head `1bfe15c2`, merge commit `a65797f0`, rewriting Contract `023`
-onto the released-tag dependency rule. The operator then promoted the two
-independent doctor-error repairs as ready `g09.061` and `g09.062`; advisory
-warnings stay visible and out of scope. Both parallel worker handoffs are
-published.
+onto the released-tag dependency rule. Underlay PR14 completed `g09.061` as
+merge commit `5129356b`; PR15 completed `g09.062` as `c55a6fe6`. Exact `main`
+doctor is green at `ok:18 warn:2 err:0`; the agreed advisory inventories stay
+visible. `g09.001`–`g09.062` are complete and the generation is strict-paused
+with no ready roadmap.
 See
 [`g09/README.md`](g09/README.md).
 
@@ -109,5 +110,5 @@ that risk.
 
 ## Next Task
 
-Launch the two published doctor-lane handoffs in parallel. Merge neither without
-exact-head review and explicit operator authorisation.
+At the next planning checkpoint, decide whether to promote one bounded roadmap
+inside `g09` or close the generation. Do not roll generations automatically.

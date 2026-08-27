@@ -1,6 +1,6 @@
 # Underlay Doctor Scan Backlog
 
-Status: promoted
+Status: resolved
 Captured: 2026-08-27
 
 ## Observation
@@ -73,3 +73,13 @@ error repairs into parallel roadmaps:
 
 The warning inventory stays advisory. Deprecated API retirement remains a
 separate compatibility planning candidate and is not execution authority.
+
+## Closeout
+
+- `g09.061` merged in Underlay PR14 as `5129356b`
+- `g09.062` merged in Underlay PR15 as `c55a6fe6`
+- refreshed exact-`main` doctor: `ok:18 warn:2 err:0`
+- remaining findings: fourteen advisory god files and one advisory
+  comment-ratio finding
+- public deprecations remain intact; their retirement still needs caller,
+  compatibility, and release planning

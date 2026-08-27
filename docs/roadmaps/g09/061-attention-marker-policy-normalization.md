@@ -1,6 +1,6 @@
 # g09.061 - Attention-Marker Policy Normalization
 
-Status: in review
+Status: complete
 Owner: Underlay maintainers
 Depends on: `g09.060` (`complete`)
 
@@ -123,7 +123,15 @@ evade substring matching.
 - lane log:
   `docs/logs/2026-08/27-224908-g09-061-attention-marker-policy-normalization.md`
 
+## Merge Evidence
+
+- PR: `https://github.com/inflatable-cookie/underlay/pull/14`
+- reviewed head: `f1666f2e4ae1267860f994d7b57fe4ff22084d20`
+- merge commit: `5129356b8a3f22a135bcc958a516d64657f0ee4b`
+- both required GitHub checks passed
+- combined post-`g09.062` doctor: `ok:18 warn:2 err:0`
+
 ## Next Task
 
-Stop for orchestrator review of the open PR. Do not merge or update shared
-front doors.
+No further work in this roadmap. Re-enter generation planning before promoting
+another lane.

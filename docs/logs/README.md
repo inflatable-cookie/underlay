@@ -92,3 +92,7 @@ families into parallel `g09.061` and `g09.062` roadmaps
 Both independent worker handoffs were then published from exact planning base
 `049fae4d`
 ([dispatch](./2026-08/27-224244-g09-061-062-doctor-error-dispatch.md)).
+The workers completed the attention-marker policy and workspace-shape split in
+Underlay PR14 and PR15. Both reviewed heads merged, exact `main` doctor is green,
+and `g09.061`/`g09.062` are complete
+([closeout](./2026-08/27-232400-g09-061-062-doctor-error-closeout.md)).
