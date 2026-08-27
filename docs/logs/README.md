@@ -58,5 +58,7 @@ now complete
 ([closeout](./2026-08/27-174415-g09-054-bootstrap-runtime-access-fleet-closeout.md)).
 `g09.057` then assessed contracts `027`–`029`
 ([assessment](./2026-08/27-175930-g09-057-canonical-path-runtime-workflow-assessment.md)).
-Runtime maturity conforms. Resolve decision-gated `g09.058` and `g09.059`
-before dispatching route changes.
+Runtime maturity conforms. The operator authorised closed-world retirement with
+no compatibility windows and canonical `:batch-delete`
+([promotion](./2026-08/27-181454-g09-058-059-route-retirement-promotion.md));
+dispatch ready `g09.058` and `g09.059` through target-owned handoffs.

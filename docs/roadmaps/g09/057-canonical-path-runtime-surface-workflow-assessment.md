@@ -90,5 +90,5 @@ Verdict: `drifting` with conforming runtime profiles.
 
 ## Next Task
 
-Resolve the decision gates in `g09.058` and `g09.059`. Neither roadmap is ready
-for execution yet.
+Execute ready `g09.058` and `g09.059` under the operator's closed-world,
+no-window decision and canonical `:batch-delete` grammar.

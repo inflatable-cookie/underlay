@@ -77,9 +77,10 @@ Underlay is in sequential mode:
 - `g09.055` is complete in Acowtancy PR63, merge commit `ad74d23e`
 - `g09.056` is complete in Acowtancy PR65, merge commit `22219f59`
 - `g09.057` is complete with a `drifting` verdict
-- `g09.058` and `g09.059` are planned but decision gated; neither is ready
+- `g09.058` and `g09.059` are ready; the operator chose a closed-world caller
+  set, no compatibility windows, and canonical `:batch-delete`
 
 ## Next Task
 
-Resolve the compatibility and canonical-suffix decisions in `g09.058` and
-`g09.059` before dispatch.
+Dispatch the five target-owned `g09.058` and `g09.059` worker lanes. Review each
+PR at exact head and merge only with explicit operator authorisation.

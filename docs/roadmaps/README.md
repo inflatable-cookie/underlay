@@ -81,7 +81,8 @@ risk. `g09.055` repaired it in Acowtancy PR63. The resumed pass then found the
 merged SSR regression was not portable; `g09.056` repaired that in PR65.
 `g09.054` is complete. `g09.057` assessed contracts `027`–`029` with a
 `drifting` verdict: runtime profiles conform, while `g09.058` and `g09.059`
-preserve route-retirement decisions. Neither is ready yet.
+own the authorised route-retirement work. Both are ready and their five target
+lanes may run independently.
 See
 [`g09/README.md`](g09/README.md).
 
@@ -102,5 +103,5 @@ that risk.
 
 ## Next Task
 
-Resolve the decision gates in `g09.058` and `g09.059`. Do not dispatch route
-changes before their compatibility decisions close.
+Dispatch the five target-owned `g09.058` and `g09.059` worker lanes. Review
+each PR at exact head and merge only with explicit operator authorisation.

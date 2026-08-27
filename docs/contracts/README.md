@@ -65,5 +65,5 @@ machine-readable policy files.
 - `g09.046`–`g09.056` repaired and proved that group; `g09.054` closes it as
   conforming across the six exact roots
 - `g09.057` assessed contracts `027`–`029`; runtime profiles conform, while
-  auth aliases and mixed batch-delete grammar remain decision-gated in
-  `g09.058` and `g09.059`
+  `g09.058` and `g09.059` now own the authorised closed-world retirement of
+  auth aliases and slash-form batch-delete routes

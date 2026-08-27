@@ -274,11 +274,12 @@ Verdict: `drifting` in two collection-action families; otherwise conforming.
 - Acowtancy's consistent `batch-soft-delete` vocabulary preserves a narrower
   app-owned lifecycle meaning and is not treated as synonym drift.
 
-No path change is authorised until the canonical suffix and compatibility
-window decisions in `g09.059` close. See the
+The operator chose `:batch-delete` as the canonical suffix, declared the
+supported fleet caller set closed-world, and chose no compatibility window.
+`g09.059` is ready for atomic caller and route updates. See the
 [`g09.057` assessment](../logs/2026-08/27-175930-g09-057-canonical-path-runtime-workflow-assessment.md).
 
 ## Next Task
 
-Resolve the per-target suffix and compatibility decisions in `g09.059` before
-promoting batch grammar work.
+Execute the two target-owned `g09.059` lanes. Require caller and old-route
+absence proof before each PR is accepted.

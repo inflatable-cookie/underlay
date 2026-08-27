@@ -1,6 +1,6 @@
 # g09.059 - Batch Delete Action Grammar Convergence
 
-Status: planned - decision gated
+Status: ready - dispatch authorised
 Owner: repo maintainers
 Contract: `029`
 Depends on: `g09.057`
@@ -10,39 +10,34 @@ Depends on: `g09.057`
 Give Underlay Reference and Compli Me one canonical batch-delete grammar per
 API without changing batch-delete behavior.
 
-## Decision Gate
+## Decision
 
-Before this roadmap becomes ready, settle the canonical suffix and
-compatibility window for each target:
+The operator settled the grammar and compatibility posture on 2026-08-27:
 
-- Underlay Reference currently uses `:batch-delete` for categories, projects,
-  and media, but `/batch-delete` for nested project tasks. The implementation
-  comment already names the colon form as canonical.
-- Compli Me currently uses `/batch-delete` for businesses, people, and
-  compliments, but `:batch-delete` for media. Choose one app-wide grammar;
-  contract `029` prefers the established explicit colon suffix.
+- `:batch-delete` is canonical in both target APIs;
+- treat the supported fleet caller set as closed-world;
+- provide no external compatibility window;
+- move every in-repo caller and retire slash-suffix routes atomically;
+- require negative route proof after retirement.
 
-For each target, decide whether in-repo caller proof permits an atomic cutover
-or whether a temporary same-handler alias is required. Do not infer an external
-compatibility window from source search.
+A worker must still stop if current source disproves the assessment or exposes a
+caller outside the declared fleet.
 
 ## Planned Lanes
 
 ### Underlay Reference
 
-- make nested task batch-delete match the chosen app grammar
-- move Acme Client and active route tests first or atomically only with proved
-  local callers
+- make nested task batch-delete use `:batch-delete`
+- move Acme Client and active route tests atomically
 - update OpenAPI/comments/inventory and add old-path absence proof
 
 ### Compli Me
 
-- move business, people, and compliment batch-delete paths or media according
-  to the chosen app-wide grammar
-- move API Client and active route inventory first
+- move business, people, and compliment batch-delete paths to `:batch-delete`
+- move API Client and active route inventory atomically
 - update OpenAPI/docs and add old-path absence proof
 
-The two target lanes may run independently after their own decision closes.
+The two target lanes may run independently.
 
 ## Acceptance
 
@@ -55,17 +50,18 @@ The two target lanes may run independently after their own decision closes.
 
 ## Stop Conditions
 
-Stop if the chosen suffix would change action semantics or if an external
-caller window remains unowned.
+Stop if the suffix change would alter action semantics or current source
+disproves the closed-world caller inventory.
 
 ## Consumer Upgrade Impact
 
 - Impact class: compatibility retirement
 - Affected consumers: Underlay Reference, Compli Me
-- Required action: decision dependent
-- Compatibility window: unresolved per target
+- Required action: move in-repo callers to `:batch-delete` and retire slash
+  routes atomically
+- Compatibility window: none; the supported caller set is closed-world
 
 ## Next Task
 
-Settle the two canonical suffix/window decisions, then promote only the cleared
-target lanes.
+Dispatch the two target-owned worker handoffs. Review each PR at exact head;
+merge only with explicit operator authorisation.
