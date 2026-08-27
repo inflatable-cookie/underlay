@@ -87,7 +87,8 @@ link lane as merge commit `9e26ba9a`. Underlay PR13 then completed `g09.060`
 at reviewed head `1bfe15c2`, merge commit `a65797f0`, rewriting Contract `023`
 onto the released-tag dependency rule. The operator then promoted the two
 independent doctor-error repairs as ready `g09.061` and `g09.062`; advisory
-warnings stay visible and out of scope.
+warnings stay visible and out of scope. Both parallel worker handoffs are
+published.
 See
 [`g09/README.md`](g09/README.md).
 
@@ -108,6 +109,5 @@ that risk.
 
 ## Next Task
 
-Publish one worker handoff per doctor lane and dispatch `g09.061` and
-`g09.062` in parallel. Merge neither without exact-head review and explicit
-operator authorisation.
+Launch the two published doctor-lane handoffs in parallel. Merge neither without
+exact-head review and explicit operator authorisation.

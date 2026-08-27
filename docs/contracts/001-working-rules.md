@@ -80,10 +80,10 @@ Underlay is in sequential mode:
 - `g09.058` and `g09.059` are complete across all five affected targets
 - papercuts wave 3 is complete in Underlay PR12, merge commit `9e26ba9a`
 - `g09.060` is complete in Underlay PR13, merge commit `a65797f0`
-- `g09.061` and `g09.062` are ready as independent Underlay doctor-error lanes
+- `g09.061` and `g09.062` are ready and dispatched as independent Underlay
+  doctor-error lanes
 
 ## Next Task
 
-Publish one worker handoff per doctor lane and dispatch `g09.061` and
-`g09.062` in parallel. Merge neither without exact-head review and explicit
-operator authorisation.
+Launch the two published doctor-lane handoffs in parallel. Merge neither without
+exact-head review and explicit operator authorisation.

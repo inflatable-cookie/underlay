@@ -1,6 +1,6 @@
 # g09.061 - Attention-Marker Policy Normalization
 
-Status: ready
+Status: ready - dispatched
 Owner: Underlay maintainers
 Depends on: `g09.060` (`complete`)
 
@@ -89,7 +89,16 @@ evade substring matching.
 - Required action: none
 - Compatibility window: none; public deprecations remain intact
 
+## Dispatch Evidence
+
+- planning base: `049fae4dd5f326bfbb08bc97b5e6ef7bfcd6c8b5`
+- handoff:
+  `docs/handoffs/20260827-224034-g09-061-attention-marker-policy-normalization.md`
+- topology: parallel with `g09.062`; no shared implementation or lane-evidence
+  files
+- shared front doors remain orchestrator-owned after both reviewed merges
+
 ## Next Task
 
-Run this lane in parallel with `g09.062`. Open one Underlay PR and stop for
-orchestrator review; do not merge or update shared front doors.
+Launch the published handoff. Open one Underlay PR and stop for orchestrator
+review; do not merge or update shared front doors.

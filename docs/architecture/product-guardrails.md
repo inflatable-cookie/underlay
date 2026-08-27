@@ -19,6 +19,6 @@ Owner: repo maintainers
 
 ## Next Task
 
-Run ready `g09.061` and `g09.062` as independent doctor-error lanes. Keep
-advisory scan warnings visible; do not turn threshold compliance into unrelated
-product or consumer refactors.
+Launch dispatched `g09.061` and `g09.062` as independent doctor-error lanes.
+Keep advisory scan warnings visible; do not turn threshold compliance into
+unrelated product or consumer refactors.

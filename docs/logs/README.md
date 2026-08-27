@@ -89,3 +89,6 @@ Underlay PR13 merged at its reviewed head, completing `g09.060` and leaving
 The operator then chose a green-doctor finish line and promoted the two error
 families into parallel `g09.061` and `g09.062` roadmaps
 ([promotion](./2026-08/27-223823-g09-061-062-doctor-error-promotion.md)).
+Both independent worker handoffs were then published from exact planning base
+`049fae4d`
+([dispatch](./2026-08/27-224244-g09-061-062-doctor-error-dispatch.md)).

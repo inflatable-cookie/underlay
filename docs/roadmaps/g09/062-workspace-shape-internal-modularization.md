@@ -1,6 +1,6 @@
 # g09.062 - Workspace-Shape Internal Modularization
 
-Status: ready
+Status: ready - dispatched
 Owner: Underlay maintainers
 Contract: `024`, `120`
 Depends on: `g09.060` (`complete`)
@@ -98,7 +98,16 @@ warning-level refactors outside the checker family.
 - Required action: none
 - Compatibility window: none; public behavior and exports stay unchanged
 
+## Dispatch Evidence
+
+- planning base: `049fae4dd5f326bfbb08bc97b5e6ef7bfcd6c8b5`
+- handoff:
+  `docs/handoffs/20260827-224035-g09-062-workspace-shape-internal-modularization.md`
+- topology: parallel with `g09.061`; no shared implementation or lane-evidence
+  files
+- shared front doors remain orchestrator-owned after both reviewed merges
+
 ## Next Task
 
-Run this lane in parallel with `g09.061`. Open one Underlay PR and stop for
-orchestrator review; do not merge or update shared front doors.
+Launch the published handoff. Open one Underlay PR and stop for orchestrator
+review; do not merge or update shared front doors.

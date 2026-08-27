@@ -10,7 +10,7 @@ Updated: 2026-08-27
 ## Active generations
 
 - [g09 - Config Convergence And Contract Fidelity](g09/README.md) (active;
-  `g09.061` and `g09.062` ready in parallel)
+  `g09.061` and `g09.062` ready and dispatched in parallel)
 
 ## Generation log
 
@@ -24,7 +24,7 @@ Updated: 2026-08-27
 | `g06` | 2026-06-05 | Rust platform-contract transition after code-quality audit | Closed after the reference-grade reset, Rust hardening lane, six-consumer proof, upgrade-guidance closeout, and bounded stale-drift repairs |
 | `g07` | 2026-06-06 | Runtime, workflow, residual Rust policy, and doctor-warning hardening after `g06` closeout | Complete after `g07.037` doctor warning closeout |
 | `g08` | 2026-07-17 | Audit remediation after July 2026 deep audit (security edge, correctness bugs, Rust/TS structure, docs/versioning/i18n posture) | Complete - all 32 roadmaps done; `v0.8.0` tagged |
-| `g09` | 2026-08-03 | Config-convergence follow-through; extended with dependency upgrades, consumer workspace convergence, and contract fidelity | Active - `g09.001`–`g09.060` complete; `g09.061` and `g09.062` ready in parallel |
+| `g09` | 2026-08-03 | Config-convergence follow-through; extended with dependency upgrades, consumer workspace convergence, and contract fidelity | Active - `g09.001`–`g09.060` complete; `g09.061` and `g09.062` ready and dispatched in parallel |
 
 The invalid `g10` rollover is not retained as a generation. Its completed and
 remaining work was recovered into `g09.021`–`g09.045` on 2026-08-26. The
@@ -60,5 +60,5 @@ In parallel mode:
 
 ## Next Task
 
-Publish the two doctor-lane handoffs and dispatch `g09.061` and `g09.062` in
-parallel. See [`g09/README.md`](g09/README.md).
+Launch the two published doctor-lane handoffs in parallel. See
+[`g09/README.md`](g09/README.md).
