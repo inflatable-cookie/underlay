@@ -71,11 +71,13 @@ Underlay is in sequential mode:
 - `g09.044` is complete
 - `g09.045` is complete with a `drifting` verdict
 - `g09.046` is complete
-- `g09.047` is ready after its release, clean-target, and app-owner policy gates
+- `g09.047` is ready and its worker handoff is published on Underlay Reference
+  `main` at `e4235876`
 - `g09.048`–`g09.053` remain planned behind explicit promotion gates
 
 ## Next Task
 
-Publish the g09.047 Underlay Reference worker handoff from pushed `main`. Keep
-`g09.048`–`g09.052` planned until the reference proof merges and their own
-promotion gates are complete.
+Run the published g09.047 Underlay Reference worker handoff in a fresh worker
+thread. Keep the target's g01.007 lane serial, and keep `g09.048`–`g09.052`
+planned until the reference proof merges and their own promotion gates are
+complete.

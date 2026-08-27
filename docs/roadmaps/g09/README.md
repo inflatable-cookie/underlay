@@ -198,4 +198,6 @@ changes cannot begin before their roadmap decisions are explicit.
 
 ## Next Task
 
-Publish the g09.047 Underlay Reference worker handoff from pushed `main`.
+Run g09.047 through
+`docs/handoffs/20260827-102002-g09-047-runtime-access-proof.md` in a fresh
+Underlay Reference worker thread. Keep the target's g01.007 lane serial.

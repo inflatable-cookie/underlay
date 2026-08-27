@@ -58,5 +58,6 @@ In parallel mode:
 
 ## Next Task
 
-Publish the g09.047 Underlay Reference worker handoff from pushed `main`. See
+Run g09.047 through the worker handoff published on Underlay Reference `main`
+at `e4235876`. See
 [`g09/README.md`](g09/README.md).

@@ -71,7 +71,8 @@ remaining consumer repairs. `g09.044` closed the migration/testing proof.
 verdict. `g09.046` is complete. Underlay `v0.9.5`, the exact clean Underlay
 Reference checkout, and the three explicit app-owner security decisions clear
 all g09.047 promotion gates. `g09.047` is ready; `g09.048`–`g09.053` stay
-planned. See
+planned. Its worker handoff is published on Underlay Reference `main` at
+`e4235876`. See
 [`g09/README.md`](g09/README.md).
 
 ## Archived generations
@@ -91,4 +92,5 @@ that risk.
 
 ## Next Task
 
-Publish the g09.047 Underlay Reference worker handoff from pushed `main`.
+Run g09.047 through the published Underlay Reference worker handoff. Do not run
+the target's independent g01.007 lane concurrently.

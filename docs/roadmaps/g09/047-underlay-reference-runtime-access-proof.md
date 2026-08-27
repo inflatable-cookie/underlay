@@ -99,6 +99,6 @@ Underlay Reference owner.
 
 ## Next Task
 
-Prepare and push the g09.047 worker handoff. After reviewed merge and exact-main
-verification, promote independent roadmaps `g09.048`-`g09.052` whose decision
-gates are satisfied.
+Run the worker handoff published on Underlay Reference `main` at `e4235876`.
+After reviewed merge and exact-main verification, promote independent roadmaps
+`g09.048`-`g09.052` whose decision gates are satisfied.
