@@ -4,7 +4,7 @@ Status: paused
 Owner: repo maintainers
 Contracts: `023`, `024`, `025`, `026`, `121`
 Found by: `g09.045`
-Depends on: `g09.048`, `g09.049`, `g09.050`, `g09.051`, `g09.052`, `g09.053`, `g09.055`
+Depends on: `g09.048`, `g09.049`, `g09.050`, `g09.051`, `g09.052`, `g09.053`, `g09.055`, `g09.056`
 
 ## Purpose
 
@@ -97,8 +97,18 @@ The first exact-root pass stopped on 2026-08-27 before fleet closeout:
 The last item requires implementation. Roadmap `g09.055` owns the repair;
 closeout cannot resume from this partial evidence alone.
 
+The second exact-root pass on 2026-08-27 verified PR63 merged as `ad74d23e` and
+that all six current consumer roots were clean and exactly aligned with
+`origin/main`. Workspace and env authority passed across the fleet; security
+conformance passed in five roots and passed Acowtancy with its two directly
+proved generic false-positive skips. The merged FAQ product repair remains
+correct, but its focused 19-test suite passed 18 and failed the SSR render case:
+the test writes compiled ESM under the OS temp directory, where the bare
+`svelte/internal/server` import cannot resolve the workspace package. Roadmap
+`g09.056` owns this test-only repair. Closeout remains paused.
+
 ## Next Task
 
-Execute `g09.055`, review and merge its Acowtancy PR, then resume this exact-root
+Execute `g09.056`, review and merge its Acowtancy PR, then resume this exact-root
 proof. After completion, return to the contract index and promote exactly one
 next assessment group.

@@ -83,7 +83,7 @@ shared-crate/single-schema seam.
 The six-root read-only assessment found the workspace rollout intact and
 confirmed env/secret, runtime-topology, test-seam, and access/security drift.
 
-### Phase 7 — Bootstrap/runtime/access repair (`g09.046`–`g09.054`, active)
+### Phase 7 — Bootstrap/runtime/access repair (`g09.046`–`g09.056`, active)
 
 1. repair Underlay authority and conformance (`g09.046`, complete)
 2. prove the repaired boundary in Underlay Reference (`g09.047`, complete)
@@ -91,8 +91,9 @@ confirmed env/secret, runtime-topology, test-seam, and access/security drift.
    independent repo-owned lanes (`g09.048`–`g09.052`, complete)
 4. repair Underlay Reference's cross-tab CSRF token issuance (`g09.053`, complete)
 5. close exact-head six-root proof (`g09.054`, paused after finding a real
-   Acowtancy JSON-LD script-breakout risk)
-6. repair Acowtancy FAQ JSON-LD serialization (`g09.055`, ready), then resume
+   Acowtancy JSON-LD script-breakout risk and then a non-portable regression)
+6. repair Acowtancy FAQ JSON-LD serialization (`g09.055`, complete)
+7. make the merged SSR regression portable (`g09.056`, ready), then resume
    `g09.054`
 
 ## Queue
@@ -151,7 +152,8 @@ confirmed env/secret, runtime-topology, test-seam, and access/security drift.
 52. [x] [`g09.052`](052-acowtancy-runtime-access-rollout.md) — Acowtancy runtime/access rollout (`complete`)
 53. [x] [`g09.053`](053-underlay-reference-cross-tab-csrf-stability.md) — Underlay Reference cross-tab CSRF stability (`complete`)
 54. [ ] [`g09.054`](054-bootstrap-runtime-access-fleet-closeout.md) — bootstrap/runtime/access fleet closeout (`paused`)
-55. [ ] [`g09.055`](055-acowtancy-faq-json-ld-hardening.md) — Acowtancy FAQ JSON-LD hardening (`ready`; dispatched)
+55. [x] [`g09.055`](055-acowtancy-faq-json-ld-hardening.md) — Acowtancy FAQ JSON-LD hardening (`complete`)
+56. [ ] [`g09.056`](056-acowtancy-faq-json-ld-regression-portability.md) — Acowtancy FAQ JSON-LD regression portability (`ready`)
 
 Deferred with a promotion trigger (TypeScript 7.1 or concrete need):
 [`backlog/ts-7-adoption.md`](../backlog/ts-7-adoption.md).
@@ -176,8 +178,9 @@ Deferred with a promotion trigger (TypeScript 7.1 or concrete need):
 - `g09.053` is complete in Underlay Reference PR6, merge commit `f89e3616`.
 - `g09.054` is paused after its first exact-root pass found the Acowtancy FAQ
   JSON-LD script-breakout risk.
-- `g09.055` is the ready owning repair with its target handoff published;
-  `g09.054` resumes after its reviewed merge.
+- `g09.055` is complete in Acowtancy PR63, merge commit `ad74d23e`.
+- `g09.056` is the ready test-only portability repair; `g09.054` resumes after
+  its reviewed merge.
 - Whole-app fixed-schema suites stay app-owned. `TestDb` remains the
   shared-crate/single-schema seam.
 
@@ -210,5 +213,5 @@ cross-tab CSRF stability repair without changing the route or response shape.
 
 ## Next Task
 
-Run the published target-owned `g09.055` Acowtancy handoff and return its PR for
-exact-head review. Resume `g09.054` only after the reviewed repair merges.
+Publish and run the target-owned `g09.056` Acowtancy handoff. Resume `g09.054`
+only after the reviewed test-portability repair merges.

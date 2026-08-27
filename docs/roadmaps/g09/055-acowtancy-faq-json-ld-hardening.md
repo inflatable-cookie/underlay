@@ -1,6 +1,6 @@
 # g09.055 - Acowtancy FAQ JSON-LD Hardening
 
-Status: ready
+Status: complete
 Owner: Acowtancy maintainers
 Contracts: `026`
 Found by: `g09.054` exact-root fleet proof
@@ -87,8 +87,22 @@ orchestrator.
 - Required action: none; the same FAQ data and JSON-LD semantics remain
 - Compatibility window: none
 
+## Completion Evidence
+
+- Acowtancy PR
+  [#63](https://github.com/acowtancy/market/pull/63) merged on 2026-08-27 as
+  `ad74d23ef69542f492b78f684575502dc995adb5`.
+- Exact reviewed head:
+  `1b2c9370f185da6d11c65d1a44d46d183897df4a`.
+- The first review caught a literal Svelte script body that emitted
+  `{jsonLd}` instead of the serialized document. The updated head binds through
+  `svelte:element`; exact client/server compilation proved interpolated text.
+- The merged serializer escapes literal `<` as `\u003c`, preserves JSON values,
+  removes raw `{@html}`, and leaves the FAQ API and content model unchanged.
+- The resumed fleet proof found the SSR regression harness depends on where
+  `TMPDIR` points. `g09.056` owns that test-only portability repair; it does not
+  reopen the production security fix.
+
 ## Next Task
 
-Run the published target-owned Acowtancy worker handoff, return its PR for
-exact-head review, then resume `g09.054` only after an operator-authorised
-merge.
+Execute `g09.056`, then resume `g09.054` after its reviewed merge.

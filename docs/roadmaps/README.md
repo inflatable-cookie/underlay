@@ -77,8 +77,9 @@ Contact Patch PR5, Compli Me PR7, Songsprout PR5, Composer PR5, and Acowtancy
 PR62 have merged, completing `g09.048`–`g09.052`. Underlay Reference PR6 merged
 as `f89e3616`, completing `g09.053`. The first `g09.054` exact-root pass proved
 workspace/env authority but found an Acowtancy FAQ JSON-LD script-breakout
-risk. `g09.054` is paused and the target-owned `g09.055` repair handoff is
-published.
+risk. `g09.055` repaired it in Acowtancy PR63. The resumed pass then found the
+merged SSR regression was not portable. `g09.054` is paused and `g09.056` is
+ready.
 See
 [`g09/README.md`](g09/README.md).
 
@@ -99,5 +100,5 @@ that risk.
 
 ## Next Task
 
-Run the published target-owned `g09.055` Acowtancy handoff and return its PR for
-exact-head review. Resume `g09.054` only after the reviewed repair merges.
+Publish and run the target-owned `g09.056` Acowtancy handoff. Resume `g09.054`
+only after the reviewed test-portability repair merges.
