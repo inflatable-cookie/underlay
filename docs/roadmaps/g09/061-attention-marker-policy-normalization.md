@@ -1,6 +1,6 @@
 # g09.061 - Attention-Marker Policy Normalization
 
-Status: ready - dispatched
+Status: in review
 Owner: Underlay maintainers
 Depends on: `g09.060` (`complete`)
 
@@ -98,7 +98,32 @@ evade substring matching.
   files
 - shared front doors remain orchestrator-owned after both reviewed merges
 
+## Execution Evidence
+
+- worker root: `/Users/tom/.t3/worktrees/underlay/t3code-ddc27e76`
+- worker branch: `t3code/normalize-attention-marker-policy`
+- base: `origin/main` at `493aa4cbd8bb0981d56ba2d575eae5bf22205dbf`
+- committed `[scan.attention_markers]` in `effigy.toml` with
+  `doctor = true`, `fail_on_findings = false`, `respect_gitignore = true`
+- effective lists: warning `TODO`, `REVIEW`, `placeholder`; high `FIXME`,
+  `HACK`, `workaround`, `tech debt`; critical `BUG:`, `SECURITY:`,
+  `remove before release`
+- pre-change scan on this HEAD: five errors and one warning (consumer-conformance
+  “security shapes” prose, four Rust `#[deprecated]` attributes, one Postgres
+  test `Note`)
+- post-change `effigy scan attention-markers --json`: `finding_count` 0 and the
+  committed pattern lists
+- uncommitted probe, then deleted: `TODO`, `FIXME`, `HACK`, `BUG:`, and
+  `SECURITY:` still matched
+- `effigy doctor --verbose` remaining error: `ts/src/tools/workspace-shape.ts`
+  at 559 code lines; that is `g09.062`, not this lane
+- public deprecation attributes unchanged
+- `effigy health`, `effigy qa:docs`, `effigy qa:northstar`, and
+  `git diff --check` passed
+- lane log:
+  `docs/logs/2026-08/27-224908-g09-061-attention-marker-policy-normalization.md`
+
 ## Next Task
 
-Launch the published handoff. Open one Underlay PR and stop for orchestrator
-review; do not merge or update shared front doors.
+Stop for orchestrator review of the open PR. Do not merge or update shared
+front doors.
