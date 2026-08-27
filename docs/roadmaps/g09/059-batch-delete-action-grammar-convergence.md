@@ -83,5 +83,5 @@ disproves the closed-world caller inventory.
 
 ## Next Task
 
-No further `g09.059` work remains. Finish the Acowtancy lane in `g09.058`, then
-close the route-retirement phase.
+No further `g09.059` work remains. `g09.058` is also complete; re-enter planning
+before opening another roadmap.

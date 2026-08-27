@@ -213,8 +213,7 @@ Bad outcomes:
 
 Assessed across all six consumer APIs by `g09.057` on 2026-08-27.
 
-Verdict: `partially repaired`; Songsprout and Composer conform, while
-Acowtancy remains open.
+Verdict: `conforming` after the three bounded `g09.058` repairs.
 
 - `g09.057` found Songsprout and Acowtancy passkey connect aliases over
   canonical register handlers.
@@ -230,12 +229,11 @@ remain an intentional shared-read/admin-write split, not compatibility debt.
 See the
 [`g09.057` assessment](../logs/2026-08/27-175930-g09-057-canonical-path-runtime-workflow-assessment.md).
 The operator declared the supported fleet caller set closed-world and chose no
-compatibility window. Songsprout PR7 and Composer PR7 have merged their atomic
-alias retirements as `1778d108` and `4fce7baa`. Acowtancy PR67 remains open and
-mergeable at reviewed-candidate head `bb3741ac`; it is the only outstanding
-`g09.058` lane.
+compatibility window. Songsprout PR7, Composer PR7, and Acowtancy PR67 merged
+their atomic alias retirements as `1778d108`, `4fce7baa`, and `030b5295`.
+`g09.058` is complete and no assessed mutation alias remains.
 
 ## Next Task
 
-Finish Acowtancy PR67 in its separate thread. Require caller and old-route
-absence proof before accepting the exact head, then close `g09.058`.
+No further `g09.058` work remains. Preserve client-first movement, explicit
+compatibility decisions, and retired-route absence proof in future cutovers.

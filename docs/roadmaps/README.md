@@ -81,9 +81,8 @@ risk. `g09.055` repaired it in Acowtancy PR63. The resumed pass then found the
 merged SSR regression was not portable; `g09.056` repaired that in PR65.
 `g09.054` is complete. `g09.057` assessed contracts `027`–`029` with a
 `drifting` verdict: runtime profiles conform, while `g09.058` and `g09.059`
-own the authorised route-retirement work. `g09.059` is complete. Songsprout
-and Composer have completed two of the three `g09.058` lanes; Acowtancy PR67
-is the only remaining lane.
+own the authorised route-retirement work. Both roadmaps are complete across all
+five affected targets. The active generation has no ready roadmap.
 See
 [`g09/README.md`](g09/README.md).
 
@@ -104,5 +103,6 @@ that risk.
 
 ## Next Task
 
-Wait for the Acowtancy thread to finish PR67, then record the exact merged tip
-and close `g09.058` and the active route-retirement phase.
+Re-enter planning. Decide whether to continue `g09` with the bounded Contract
+`023` released-dependency normalization or close the generation. Do not infer a
+new generation from the exhausted queue.

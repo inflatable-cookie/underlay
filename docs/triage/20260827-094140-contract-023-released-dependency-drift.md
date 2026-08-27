@@ -18,6 +18,7 @@ shape.
 
 ## Disposition
 
-Keep open. Route to a bounded contract-023 normalization after the current
-g09.047 release/promotion gate is settled; do not mix it into the release
-mutation or Underlay Reference security decisions.
+Promotion candidate. The release/promotion and route-retirement gates are now
+settled. At the next planning checkpoint, decide whether to compile a bounded
+Contract `023` normalization inside `g09` or close the generation. This note is
+not execution authority until a roadmap is ready.

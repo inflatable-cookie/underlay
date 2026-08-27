@@ -33,7 +33,7 @@ It distinguishes:
 | [024-new-app-bootstrap-and-bring-up.md](./024-new-app-bootstrap-and-bring-up.md) | active | single-repository `apps/*`/`packages/*` topology, normative root Bun manifest, released-dependency rule, docs authority, Effigy-first bootstrap and bring-up posture | six-consumer `g09.030` proof, acowtancy, `025`, `110`, `120` | assessed by `g09.045`; conforming after `g09.046`–`g09.056` and exact fleet closeout `g09.054` |
 | [025-rust-app-runtime-assembly-and-router-topology.md](./025-rust-app-runtime-assembly-and-router-topology.md) | active | API workspace/runtime assembly, `AppState`, router builder, middleware order, health/OpenAPI/metrics posture | current consumer `apps/*-api` crates, `020`, `030`, `060` | assessed by `g09.045`; conforming after `g09.046`–`g09.056` and exact fleet closeout `g09.054` |
 | [026-route-families-and-access-model.md](./026-route-families-and-access-model.md) | active | shared/front/admin/operator route families, auth gates, role gates, CSRF/version/rate-limit posture | current consumer routers, `020`, `030`, `115` | assessed by `g09.045`; conforming with named app profiles after `g09.046`–`g09.056` and exact fleet closeout `g09.054` |
-| [027-api-canonical-path-cutovers-and-compatibility-retirement.md](./027-api-canonical-path-cutovers-and-compatibility-retirement.md) | active | canonical-path migration, compatibility aliases, client/server cutover order, retirement policy | `026`, `118`, `g05.009`, `composer-api` normalization evidence | assessed by `g09.057`; Songsprout and Composer repaired in `g09.058`, Acowtancy PR67 remains |
+| [027-api-canonical-path-cutovers-and-compatibility-retirement.md](./027-api-canonical-path-cutovers-and-compatibility-retirement.md) | active | canonical-path migration, compatibility aliases, client/server cutover order, retirement policy | `026`, `118`, `g05.009`, `composer-api` normalization evidence | assessed by `g09.057`; conforming after all three `g09.058` repairs |
 | [028-runtime-surface-and-openapi-maturity-levels.md](./028-runtime-surface-and-openapi-maturity-levels.md) | active | runtime maturity ladder for health, metrics, OpenAPI JSON, and Swagger exposure | `025`, `026`, endpoint-family matrix, six-site runtime evidence | assessed by `g09.057`; conforming at declared level A, B, and C profiles |
 | [029-non-resource-workflow-action-route-grammar.md](./029-non-resource-workflow-action-route-grammar.md) | active | workflow-action naming and placement for restore/purge/reorder/complete/skip/claim/release-style routes | `026`, `027`, `119`, six-site workflow-route evidence | assessed by `g09.057`; conforming after `g09.059` completed `:batch-delete` convergence with no compatibility window |
 | [030-auth-and-session-systems.md](./030-auth-and-session-systems.md) | active | auth boundary, sessions, MFA, WebAuthn, OAuth, browser auth runtime | `underlay-auth*`, `ts/src/client/auth.ts`, `ts/src/runtime/auth.ts`, `ts/src/patterns/auth-workflows/**` | settles the shared auth/session boundary and records resolved schema/runtime assessments |
@@ -98,6 +98,6 @@ Do not promote a system into active implementation-assessment work until:
 
 ## Next Task
 
-Finish Acowtancy PR67 in its separate thread, then close `g09.058` and the
-route-retirement phase. See
+Re-enter planning. Decide whether to continue `g09` with the bounded Contract
+`023` normalization or close the generation. See
 [`docs/roadmaps/g09/README.md`](../roadmaps/g09/README.md).

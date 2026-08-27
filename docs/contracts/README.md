@@ -67,5 +67,6 @@ machine-readable policy files.
 - `g09.057` assessed contracts `027`–`029`; runtime profiles conform
 - `g09.059` completed the authorised closed-world retirement of slash-form
   batch-delete routes
-- Songsprout and Composer completed two of three `g09.058` auth-alias lanes;
-  Acowtancy PR67 is the only remaining repair
+- `g09.058` completed the authorised auth-alias retirement in Songsprout,
+  Composer, and Acowtancy
+- all assessed drift in contracts `027`–`029` is repaired; no roadmap is ready

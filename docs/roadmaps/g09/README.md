@@ -41,6 +41,8 @@ features.
 - [x] repair and prove the confirmed bootstrap/runtime/access drift
 - [x] assess canonical-path retirement, runtime maturity, and workflow action
   grammar across all six roots
+- [x] retire the authorised auth aliases and slash-form batch-delete routes
+  across all five affected targets
 
 ## Roadmap Sequence
 
@@ -103,14 +105,13 @@ Contracts `027`–`029` were assessed across the six exact roots. Runtime
 maturity conforms. Three auth alias families and two mixed batch-delete
 families remain bounded drift.
 
-### Phase 9 — Route retirement (`g09.058`–`g09.059`, in progress)
+### Phase 9 — Route retirement (`g09.058`–`g09.059`, complete)
 
 The operator declared the supported fleet caller set closed-world, chose no
 compatibility windows, and standardised batch deletion on `:batch-delete`.
-The two batch-grammar lanes are complete in Underlay Reference PR9 and Compli
-Me PR8. Songsprout PR7 and Composer PR7 completed two of the three auth lanes.
-Acowtancy PR67 is the only remaining lane and stays owned by the separate
-Acowtancy thread.
+The two batch-grammar lanes completed in Underlay Reference PR9 and Compli Me
+PR8. Songsprout PR7, Composer PR7, and Acowtancy PR67 completed the three auth
+lanes. All five remote `main` tips match the recorded merge commits.
 
 ## Queue
 
@@ -171,7 +172,7 @@ Acowtancy thread.
 55. [x] [`g09.055`](055-acowtancy-faq-json-ld-hardening.md) — Acowtancy FAQ JSON-LD hardening (`complete`)
 56. [x] [`g09.056`](056-acowtancy-faq-json-ld-regression-portability.md) — Acowtancy FAQ JSON-LD regression portability (`complete`)
 57. [x] [`g09.057`](057-canonical-path-runtime-surface-workflow-assessment.md) — canonical path, runtime surface, and workflow action assessment (`complete`; `drifting`)
-58. [ ] [`g09.058`](058-auth-mutation-compatibility-retirement.md) — auth mutation compatibility retirement (`in progress`; two of three lanes merged)
+58. [x] [`g09.058`](058-auth-mutation-compatibility-retirement.md) — auth mutation compatibility retirement (`complete`)
 59. [x] [`g09.059`](059-batch-delete-action-grammar-convergence.md) — batch-delete action grammar convergence (`complete`)
 
 Deferred with a promotion trigger (TypeScript 7.1 or concrete need):
@@ -201,8 +202,8 @@ Deferred with a promotion trigger (TypeScript 7.1 or concrete need):
 - `g09.057` is complete with a `drifting` verdict.
 - `g09.059` is complete in Underlay Reference PR9, merge commit `0109b906`, and
   Compli Me PR8, merge commit `a290d2a7`.
-- `g09.058` is complete in Songsprout PR7, merge commit `1778d108`, and Composer
-  PR7, merge commit `4fce7baa`. Acowtancy PR67 is the only remaining lane.
+- `g09.058` is complete in Songsprout PR7, merge commit `1778d108`; Composer
+  PR7, merge commit `4fce7baa`; and Acowtancy PR67, merge commit `030b5295`.
 - Whole-app fixed-schema suites stay app-owned. `TestDb` remains the
   shared-crate/single-schema seam.
 
@@ -240,12 +241,12 @@ authorised atomic closed-world retirement with no compatibility windows and
 canonical `:batch-delete`.
 
 `g09.059` completed the no-window cutover in Underlay Reference and Compli Me.
-Songsprout and Composer completed their `g09.058` alias retirements. Acowtancy
-remains the only consumer action: move its supported passkey callers to
-register and retire connect aliases atomically in PR67.
+Songsprout, Composer, and Acowtancy completed their `g09.058` alias retirements.
+No supported caller action remains.
 
 ## Next Task
 
-Wait for the separate Acowtancy thread to review PR67 at exact head. After its
-operator-authorised merge, record the exact remote tip and close `g09.058` and
-Phase 9.
+The queue is exhausted and no roadmap is ready. At the next planning checkpoint,
+decide whether to continue `g09` with the bounded Contract `023` released-
+dependency normalization or close the generation. Do not open a later
+generation without explicit operator direction.

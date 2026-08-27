@@ -1,6 +1,6 @@
 # g09.058 - Auth Mutation Compatibility Retirement
 
-Status: in progress - two lanes merged
+Status: complete
 Owner: repo maintainers
 Contract: `027`
 Depends on: `g09.057`
@@ -89,12 +89,13 @@ this with auth redesign.
 - Composer PR7 merged reviewed head
   `40c50c9c97baa5597f193201e3c224e77b72f064` as
   `4fce7baa9ac1959b9e9a9622c7d29f30688a8512`
-- Acowtancy PR67 remains open and mergeable at
-  `bb3741acfa0d5270eca5bb5321ec35b1c4190a50`; its separate Acowtancy thread
-  owns review and merge
+- Acowtancy PR67 merged reviewed head
+  `bb3741acfa0d5270eca5bb5321ec35b1c4190a50` as
+  `030b5295a097904386543d41fc8bf0f44df3c89a`
+- all three remote `main` tips matched their recorded merge commits during
+  fleet closeout
 
 ## Next Task
 
-The Acowtancy thread reviews PR67 at exact head and merges only with explicit
-operator authorisation. Record its exact merged tip, then close `g09.058` and
-the route-retirement phase.
+No further `g09.058` work remains. Re-enter planning before opening another
+roadmap; the active queue has no ready card.

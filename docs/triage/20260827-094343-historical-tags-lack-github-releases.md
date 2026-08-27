@@ -16,10 +16,9 @@ links do not have the provider surface the current process promises.
 
 ## Disposition
 
-Keep open. Do not rewrite or re-tag historical releases. Require the next patch
-release to prove both remote tag and GitHub Release creation, then decide
-separately whether historical GitHub Releases should be backfilled from their
-existing immutable tags.
+Keep open for an operator decision on historical GitHub Release backfill. The
+next patch release proved the current publication path. Do not rewrite or
+re-tag historical releases; any backfill must use the existing immutable tags.
 
 ## Current Evidence
 

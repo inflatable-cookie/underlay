@@ -90,5 +90,5 @@ Verdict: `drifting` with conforming runtime profiles.
 
 ## Next Task
 
-`g09.059` is complete. Finish Acowtancy PR67, the sole remaining `g09.058`
-lane, under the operator's closed-world and no-window decision.
+The downstream `g09.058` and `g09.059` repairs are complete. Re-enter planning;
+the active queue has no ready roadmap.

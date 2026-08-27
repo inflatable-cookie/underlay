@@ -403,5 +403,5 @@ The final exact-head matrix is in the
 
 ## Next Task
 
-`g09.057` is complete. Review the dispatched target-owned `g09.058` and
-`g09.059` route-retirement lanes.
+The downstream `g09.058` and `g09.059` route-retirement lanes are complete. No
+current repair remains for this contract; re-enter planning before widening it.
