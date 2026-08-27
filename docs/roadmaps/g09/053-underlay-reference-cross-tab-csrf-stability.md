@@ -64,8 +64,8 @@ browser-wide cookie out from under another tab's still-live header proof.
 - `effigy test --plan`
 - `effigy validate`
 - `effigy qa`
-- `effigy qa:docs`
-- `effigy qa:northstar`
+- `effigy acme-docs/qa:docs`
+- `effigy acme-docs/qa:northstar`
 - `git diff --check`
 
 ## Stop Conditions
