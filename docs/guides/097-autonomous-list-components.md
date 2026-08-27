@@ -53,12 +53,6 @@ That usually means the narrowing happened too late.
 
 The Autonomous List Component pattern solves the "god file" problem where parent pages accumulate excessive business logic from managing multiple entity types across tabs.
 
-Storybook coverage:
-- Poodle `LogList`
-- Poodle `BulkActionBar`
-
-Run `effigy storybook` from the repo root to inspect the retained batch/list helper surface interactively.
-
 **Traditional approach problems:**
 - Parent pages fetch ALL data for ALL tabs upfront
 - Parent pages define individual CRUD handlers for each entity type

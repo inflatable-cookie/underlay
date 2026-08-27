@@ -59,13 +59,9 @@ For real visible implementations, use the ACME reference apps:
 
 These live in the separate `underlay-reference` repository.
 
-For retained shared-surface examples in this repo, use the local Storybook
-catalog:
-
-```bash
-effigy storybook
-effigy storybook:build
-```
+For retained shared-surface examples in this repo, inspect the pattern
+sources under `ts/src/patterns`. Use Poodle's own preview/docs for
+primitives and generic composites.
 
 ## Decision
 
