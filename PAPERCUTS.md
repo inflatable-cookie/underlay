@@ -5,15 +5,6 @@ they hit a solvable hurdle; they do not stop the current task to fix one.
 
 ## Open
 
-### [ ] Emitted Svelte CSS leaves `:global(...)` for Lightning CSS — 2026-08-27
-- Friction: consumer production builds repeatedly warn that `global` is not a
-  valid pseudo-class in selectors emitted from Underlay detail-card styles
-- Impact: full QA produces a large warning wall that can hide new build
-  diagnostics even though the build exits successfully
-- Possible fix: ensure Svelte consumes the global selector before CSS reaches
-  Lightning CSS, or emit a standards-valid selector from the shared component
-- Surface: Underlay detail-card Svelte styles / consumer Vite production builds
-
 ### [ ] Effigy release execute omits the promised GitHub Release — 2026-08-27
 - Friction: `effigy release execute --yes` reported a complete Underlay release
   after pushing the release commit and annotated tag, but no GitHub Release
@@ -61,12 +52,6 @@ they hit a solvable hurdle; they do not stop the current task to fix one.
 - Possible fix: sweep active contracts, convert Underlay targets to relative links, convert sibling-repo targets to prose refs, then add a docs QA check for absolute local paths
 - Surface: `docs/contracts/` / docs boundary QA
 
-### [ ] Context extractor tests crossed the god-file warning threshold — 2026-08-26
-- Friction: the canonical rejection-envelope coverage pushed `rust/crates/underlay-http/src/tests/context_tests.rs` to 300 code lines
-- Impact: `effigy doctor` now reports one additional structural warning even though the focused test boundary is coherent
-- Possible fix: split context tests into extractor, proxy-resolution, and model modules without changing coverage
-- Surface: `underlay-http` test organization / doctor scan
-
 ### [ ] Workspace-shape fast-forwards leave retired local package trees behind — 2026-08-26
 - Friction: moving tracked packages into `apps/` and `packages/` leaves ignored build/cache files at the retired top-level paths in existing checkouts
 - Impact: local roots still look polyrepo-shaped after the migration merges and can retain nested-repo conformance failures
@@ -80,6 +65,19 @@ they hit a solvable hurdle; they do not stop the current task to fix one.
 - Surface: docs QA / northstar refresh
 
 ## Closed
+
+### [x] Emitted Svelte CSS leaves `:global(...)` for Lightning CSS — 2026-08-27
+- Resolution: `ts/src/styles/base.css` is plain CSS consumed directly by
+  consumers, not Svelte-scoped output. Removed Svelte-only `:global(...)`
+  wrappers from detail-grid card selectors so Lightning CSS receives valid
+  selectors.
+- Closed: 2026-08-27
+- Surface: Underlay detail-card styles / consumer Vite production builds
+
+### [x] Context extractor tests crossed the god-file warning threshold — 2026-08-26
+- Resolution: split `context_tests.rs` into `context_tests/{mod,extractor,proxy_resolution,model}.rs` following the existing `cookies_tests` layout. Coverage unchanged; doctor no longer warns on the monolith file.
+- Closed: 2026-08-27
+- Surface: `underlay-http` test organization / doctor scan
 
 ### [x] Effigy still advertises retired Storybook tasks — 2026-08-27
 - Resolution: removed `storybook` / `storybook:build` selectors, Storybook
