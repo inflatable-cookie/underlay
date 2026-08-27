@@ -49,35 +49,35 @@
 }
 
 /* Common detail-tab cards should fill their grid cell width by default */
-.underlay-details-content > :global(.underlay-inline-list-card),
-.underlay-details-content > :global(.underlay-content-card),
-.underlay-details-content > :global(.underlay-details-card),
-.underlay-details-content > :global(.underlay-card) {
+.underlay-details-content > .underlay-inline-list-card,
+.underlay-details-content > .underlay-content-card,
+.underlay-details-content > .underlay-details-card,
+.underlay-details-content > .underlay-card {
   width: 100%;
   max-width: none;
   margin: 0;
 }
 
 /* Same default behavior when cards are wrapped in a span-full row container */
-.underlay-details-content > .span-full > :global(.underlay-inline-list-card),
-.underlay-details-content > .span-full > :global(.underlay-content-card),
-.underlay-details-content > .span-full > :global(.underlay-details-card),
-.underlay-details-content > .span-full > :global(.underlay-card) {
+.underlay-details-content > .span-full > .underlay-inline-list-card,
+.underlay-details-content > .span-full > .underlay-content-card,
+.underlay-details-content > .span-full > .underlay-details-card,
+.underlay-details-content > .span-full > .underlay-card {
   width: 100%;
   max-width: none;
   margin: 0;
 }
 
 /* Inline/content cards are commonly paired in side-by-side rows and should stretch */
-.underlay-details-content > :global(.underlay-inline-list-card),
-.underlay-details-content > :global(.underlay-content-card) {
+.underlay-details-content > .underlay-inline-list-card,
+.underlay-details-content > .underlay-content-card {
   height: 100%;
   display: flex;
   flex-direction: column;
 }
 
-.underlay-details-content > :global(.underlay-inline-list-card .underlay-inline-list-card__body),
-.underlay-details-content > :global(.underlay-content-card .underlay-content-card__body) {
+.underlay-details-content > .underlay-inline-list-card .underlay-inline-list-card__body,
+.underlay-details-content > .underlay-content-card .underlay-content-card__body {
   flex: 1;
 }
 
