@@ -41,5 +41,5 @@ pub use tracing::make_request_span;
 use uuid::Uuid;
 
 #[cfg(test)]
-#[path = "../tests/context_tests.rs"]
+#[path = "../tests/context_tests/mod.rs"]
 mod tests;
