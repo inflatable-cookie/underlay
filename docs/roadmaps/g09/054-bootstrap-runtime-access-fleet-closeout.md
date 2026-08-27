@@ -1,10 +1,10 @@
 # g09.054 - Bootstrap, Runtime, And Access Fleet Closeout
 
-Status: ready
+Status: paused
 Owner: repo maintainers
 Contracts: `023`, `024`, `025`, `026`, `121`
 Found by: `g09.045`
-Depends on: `g09.048`, `g09.049`, `g09.050`, `g09.051`, `g09.052`, `g09.053`
+Depends on: `g09.048`, `g09.049`, `g09.050`, `g09.051`, `g09.052`, `g09.053`, `g09.055`
 
 ## Purpose
 
@@ -73,8 +73,32 @@ roadmap instead of declaring the fleet conforming.
 - Compatibility window: record any still-live path alias with owner and removal
   trigger; do not leave indefinite compatibility by omission
 
+## Partial Execution Evidence
+
+The first exact-root pass stopped on 2026-08-27 before fleet closeout:
+
+- Underlay Reference, Contact Patch, Compli Me, Songsprout, and Composer were
+  clean and exactly aligned with their recorded rollout merge commits
+- Acowtancy PR62 was inspected in a clean detached worktree because its main
+  checkout contains independent planning edits and `origin/main` has advanced
+  with docs-only work; the rollout merge remains an ancestor
+- all six workspace-shape and env-authority checks passed
+- all six Effigy task inventories and test plans resolved
+- generic security conformance passed in five roots
+- Acowtancy's OpenAPI finding is a static-check false positive: the exempt
+  runtime path is named in `middleware.rs`, while the actual mount is guarded by
+  `config.env.is_local_dev()` in `main.rs`
+- Acowtancy's two bounded-query findings are deliberate whole-set migration
+  inventory and an explicit `WHERE id = ANY($1::uuid[])` ID-set read
+- Acowtancy's FAQ JSON-LD finding is real: API-derived question and answer text
+  enters a raw `{@html}` script wrapper, and `JSON.stringify` does not escape a
+  `</script>` payload
+
+The last item requires implementation. Roadmap `g09.055` owns the repair;
+closeout cannot resume from this partial evidence alone.
+
 ## Next Task
 
-After completion, return to the contract index and promote exactly one next
-assessment group. Do not roll generation or open collection/drift-prevention
-work by implication.
+Execute `g09.055`, review and merge its Acowtancy PR, then resume this exact-root
+proof. After completion, return to the contract index and promote exactly one
+next assessment group.

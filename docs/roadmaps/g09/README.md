@@ -90,7 +90,10 @@ confirmed env/secret, runtime-topology, test-seam, and access/security drift.
 3. run Contact Patch, Compli Me, Songsprout, Composer, and Acowtancy as
    independent repo-owned lanes (`g09.048`–`g09.052`, complete)
 4. repair Underlay Reference's cross-tab CSRF token issuance (`g09.053`, complete)
-5. close exact-head six-root proof (`g09.054`, ready)
+5. close exact-head six-root proof (`g09.054`, paused after finding a real
+   Acowtancy JSON-LD script-breakout risk)
+6. repair Acowtancy FAQ JSON-LD serialization (`g09.055`, ready), then resume
+   `g09.054`
 
 ## Queue
 
@@ -147,7 +150,8 @@ confirmed env/secret, runtime-topology, test-seam, and access/security drift.
 51. [x] [`g09.051`](051-composer-runtime-access-rollout.md) — Composer runtime/access rollout (`complete`)
 52. [x] [`g09.052`](052-acowtancy-runtime-access-rollout.md) — Acowtancy runtime/access rollout (`complete`)
 53. [x] [`g09.053`](053-underlay-reference-cross-tab-csrf-stability.md) — Underlay Reference cross-tab CSRF stability (`complete`)
-54. [ ] [`g09.054`](054-bootstrap-runtime-access-fleet-closeout.md) — bootstrap/runtime/access fleet closeout (`ready`)
+54. [ ] [`g09.054`](054-bootstrap-runtime-access-fleet-closeout.md) — bootstrap/runtime/access fleet closeout (`paused`)
+55. [ ] [`g09.055`](055-acowtancy-faq-json-ld-hardening.md) — Acowtancy FAQ JSON-LD hardening (`ready`)
 
 Deferred with a promotion trigger (TypeScript 7.1 or concrete need):
 [`backlog/ts-7-adoption.md`](../backlog/ts-7-adoption.md).
@@ -170,7 +174,10 @@ Deferred with a promotion trigger (TypeScript 7.1 or concrete need):
   Songsprout PR5, and Composer PR5.
 - `g09.052` is complete in Acowtancy PR62, merge commit `85c868e1`.
 - `g09.053` is complete in Underlay Reference PR6, merge commit `f89e3616`.
-- `g09.054` is ready for exact-head proof across the six merged consumer roots.
+- `g09.054` is paused after its first exact-root pass found the Acowtancy FAQ
+  JSON-LD script-breakout risk.
+- `g09.055` is the ready owning repair; `g09.054` resumes after its reviewed
+  merge.
 - Whole-app fixed-schema suites stay app-owned. `TestDb` remains the
   shared-crate/single-schema seam.
 
@@ -203,6 +210,5 @@ cross-tab CSRF stability repair without changing the route or response shape.
 
 ## Next Task
 
-Execute ready roadmap `g09.054`: recheck all six merged consumer roots, publish
-the fleet matrix and upgrade note, and choose exactly one next contract
-assessment group.
+Execute ready roadmap `g09.055` in Acowtancy. Resume `g09.054` only after the
+reviewed repair merges.

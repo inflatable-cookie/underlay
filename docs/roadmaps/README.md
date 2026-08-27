@@ -75,8 +75,9 @@ the remaining product/security policy were settled on 2026-08-27, so all five
 independent consumer lanes were dispatched through target-owned handoffs.
 Contact Patch PR5, Compli Me PR7, Songsprout PR5, Composer PR5, and Acowtancy
 PR62 have merged, completing `g09.048`–`g09.052`. Underlay Reference PR6 merged
-as `f89e3616`, completing `g09.053`. `g09.054` is the ready exact-head fleet
-closeout.
+as `f89e3616`, completing `g09.053`. The first `g09.054` exact-root pass proved
+workspace/env authority but found an Acowtancy FAQ JSON-LD script-breakout
+risk. `g09.054` is paused and `g09.055` is the ready owning repair.
 See
 [`g09/README.md`](g09/README.md).
 
@@ -97,6 +98,5 @@ that risk.
 
 ## Next Task
 
-Execute ready roadmap `g09.054`: recheck all six merged consumer roots, publish
-the fleet matrix and upgrade note, and choose exactly one next contract
-assessment group.
+Execute ready roadmap `g09.055` in Acowtancy. Resume `g09.054` only after the
+reviewed repair merges.

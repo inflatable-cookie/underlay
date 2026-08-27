@@ -73,10 +73,11 @@ Underlay is in sequential mode:
 - `g09.046` is complete
 - `g09.047`–`g09.052` are complete
 - `g09.053` is complete in Underlay Reference PR6, merge commit `f89e3616`
-- `g09.054` is the ready bootstrap/runtime/access fleet closeout
+- `g09.054` is paused after its exact-root proof found an Acowtancy FAQ JSON-LD
+  script-breakout risk
+- `g09.055` is the ready Acowtancy JSON-LD hardening repair
 
 ## Next Task
 
-Execute ready roadmap `g09.054`: recheck all six merged consumer roots, publish
-the exact-head fleet matrix and upgrade note, then choose one next contract
-assessment group without implied scope.
+Execute ready roadmap `g09.055` in Acowtancy. Resume `g09.054` only after the
+reviewed repair merges; do not declare the fleet conforming from partial proof.

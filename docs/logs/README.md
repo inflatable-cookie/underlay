@@ -49,5 +49,8 @@ repair promoted the Reference CSRF fix as `g09.053` and renumbered fleet
 closeout to `g09.054`
 ([log](./2026-08/27-145100-g09-053-054-planning-repair.md)). The target handoff
 produced Underlay Reference PR6, which merged as `f89e3616`
-([closeout](./2026-08/27-155724-g09-053-reference-csrf-closeout.md)). Execute
-ready fleet closeout `g09.054`.
+([closeout](./2026-08/27-155724-g09-053-reference-csrf-closeout.md)). The first
+fleet-closeout pass then found a real Acowtancy FAQ JSON-LD script-breakout
+risk and paused `g09.054`
+([log](./2026-08/27-160408-g09-054-partial-fleet-proof.md)). Execute ready
+owning repair `g09.055`.
