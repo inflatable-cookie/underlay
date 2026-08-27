@@ -381,5 +381,6 @@ Other system families own:
 
 ## Next Task
 
-`g09.046` is complete. Keep workspace-shape and env-authority as separate
-mechanical checks. Do not fold env/secret proof into workspace-shape.
+Run `g09.062` as an internal workspace-shape modularization. Preserve the
+checker facade, stable diagnostics, and separation from env-authority and
+security conformance.

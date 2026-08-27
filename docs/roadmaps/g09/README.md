@@ -9,7 +9,7 @@ Started: 2026-08-03
 `g09` remains the active delivery generation. Its original config-convergence,
 dependency, and elective-major work completed on 2026-08-04. The generation
 then continued into consumer workspace normalization and contract fidelity.
-It is paused after `g09.060`; no roadmap is ready.
+`g09.061` and `g09.062` are ready as parallel doctor-error repairs.
 
 An invalid rollover created `g10` with no roadmap files and used batch cards as
 the queue. The 2026-08-26 recovery removed that generation and rehomed its
@@ -45,6 +45,7 @@ features.
 - [x] retire the authorised auth aliases and slash-form batch-delete routes
   across all five affected targets
 - [x] normalize Contract `023` onto the released Git-tag dependency rule
+- [ ] clear the two Underlay doctor error families without hiding advisory debt
 
 ## Roadmap Sequence
 
@@ -125,6 +126,14 @@ papercuts wave 3 contract-link lane at reviewed head `d2cb5cd9`, merge commit
 `9e26ba9a`. Underlay PR13 then merged the normalization at reviewed head
 `1bfe15c2`, merge commit `a65797f0`.
 
+### Phase 11 — Doctor error normalization (`g09.061`–`g09.062`, ready)
+
+The operator chose an honest green-doctor finish line rather than a zero-warning
+threshold sweep. `g09.061` makes attention markers action-bearing without
+deleting compatibility metadata. `g09.062` splits the only high-severity god
+file behind its stable public facade. The lanes are independent and may run in
+parallel.
+
 ## Queue
 
 1. [x] [`g09.001`](001-prod-empty-origins-warning.md) — production empty-origins warning (`complete`)
@@ -187,6 +196,8 @@ papercuts wave 3 contract-link lane at reviewed head `d2cb5cd9`, merge commit
 58. [x] [`g09.058`](058-auth-mutation-compatibility-retirement.md) — auth mutation compatibility retirement (`complete`)
 59. [x] [`g09.059`](059-batch-delete-action-grammar-convergence.md) — batch-delete action grammar convergence (`complete`)
 60. [x] [`g09.060`](060-released-dependency-rollout-contract-normalization.md) — released dependency rollout contract normalization (`complete`)
+61. [ ] [`g09.061`](061-attention-marker-policy-normalization.md) — attention-marker policy normalization (`ready`)
+62. [ ] [`g09.062`](062-workspace-shape-internal-modularization.md) — workspace-shape internal modularization (`ready`)
 
 Deferred with a promotion trigger (TypeScript 7.1 or concrete need):
 [`backlog/ts-7-adoption.md`](../backlog/ts-7-adoption.md).
@@ -219,7 +230,9 @@ Deferred with a promotion trigger (TypeScript 7.1 or concrete need):
   PR7, merge commit `4fce7baa`; and Acowtancy PR67, merge commit `030b5295`.
 - papercuts wave 3 is complete in Underlay PR12, merge commit `9e26ba9a`
 - `g09.060` is complete in Underlay PR13, merge commit `a65797f0`.
-- no roadmap is ready; `g09` is paused at a planning checkpoint.
+- `g09.061` and `g09.062` have disjoint implementation and lane-evidence files
+  and may run in parallel. Workers do not edit shared front doors.
+- full doctor closeout waits for both reviewed merges.
 - Whole-app fixed-schema suites stay app-owned. `TestDb` remains the
   shared-crate/single-schema seam.
 
@@ -229,6 +242,10 @@ Deferred with a promotion trigger (TypeScript 7.1 or concrete need):
   needs new evidence plus a separate design roadmap
 - collection convergence and drift-prevention follow-through remain later
   uncompiled horizons, not implied work in the active repair wave
+- fourteen god-file warnings and one comment-ratio warning remain advisory;
+  promote only evidence-backed maintainability work, not threshold churn
+- deprecated API retirement needs consumer caller migration and a later release
+  plan; it is not part of doctor-error normalization
 
 ## Consumer Upgrade Impact
 
@@ -263,8 +280,12 @@ No supported caller action remains.
 `g09.060` corrects stale release/dependency teaching only. Existing consumer
 tags and locks remain valid; no consumer action is introduced.
 
+`g09.061` changes Underlay's local scan policy only. `g09.062` is an internal
+checker refactor with stable exports, diagnostics, and CLI behavior. Neither
+lane introduces consumer action.
+
 ## Next Task
 
-Re-enter Northstar planning inside `g09`. Review the open triage and backlog
-surfaces, then compile or promote one bounded next roadmap. Do not open a later
-generation without explicit operator direction.
+Publish one worker handoff per doctor lane and dispatch `g09.061` and
+`g09.062` in parallel. Merge neither without exact-head review and explicit
+operator authorisation.

@@ -19,6 +19,6 @@ Owner: repo maintainers
 
 ## Next Task
 
-`g09.046` is complete. Keep `g09.047` planned until the merged tooling is
-released and the Underlay Reference owner settles secret requiredness, deployed
-failure policy, and the allowed CSRF-disable environments.
+Run ready `g09.061` and `g09.062` as independent doctor-error lanes. Keep
+advisory scan warnings visible; do not turn threshold compliance into unrelated
+product or consumer refactors.

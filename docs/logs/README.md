@@ -86,3 +86,6 @@ roadmap in review
 Underlay PR13 merged at its reviewed head, completing `g09.060` and leaving
 `g09` paused with no ready roadmap
 ([closeout](./2026-08/27-222835-g09-060-released-dependency-contract-closeout.md)).
+The operator then chose a green-doctor finish line and promoted the two error
+families into parallel `g09.061` and `g09.062` roadmaps
+([promotion](./2026-08/27-223823-g09-061-062-doctor-error-promotion.md)).

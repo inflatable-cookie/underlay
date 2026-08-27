@@ -295,6 +295,6 @@ Bad outcomes:
 
 ## Next Task
 
-Review the `g09.060` PR. After merge, use this contract whenever a shared
-Underlay change affects more than one consumer repo or introduces a
-compatibility window, upgrade obligation, or retirement plan.
+Keep deprecated API retirement outside the doctor-error repair. Use this
+contract when caller proof is ready and the consumer migration, release, and
+sunset sequence can be planned together.

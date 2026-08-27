@@ -1,6 +1,6 @@
 # Underlay Doctor Scan Backlog
 
-Status: open
+Status: promoted
 Captured: 2026-08-27
 
 ## Observation
@@ -63,8 +63,13 @@ source applies only common overrides in the attention-marker execution path.
 That upstream tool defect is recorded separately in `PAPERCUTS.md`; Underlay can
 still own its committed manifest policy.
 
-## Decision Needed
+## Disposition
 
-Choose whether this wave ends when `effigy doctor` exits successfully with
-advisory warnings, or expands into a zero-finding refactor across all fifteen
-size findings plus the comment-ratio finding.
+The operator chose the green-doctor finish line. Promoted the two independent
+error repairs into parallel roadmaps:
+
+- [`g09.061`](../roadmaps/g09/061-attention-marker-policy-normalization.md)
+- [`g09.062`](../roadmaps/g09/062-workspace-shape-internal-modularization.md)
+
+The warning inventory stays advisory. Deprecated API retirement remains a
+separate compatibility planning candidate and is not execution authority.

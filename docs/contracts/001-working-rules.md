@@ -80,10 +80,10 @@ Underlay is in sequential mode:
 - `g09.058` and `g09.059` are complete across all five affected targets
 - papercuts wave 3 is complete in Underlay PR12, merge commit `9e26ba9a`
 - `g09.060` is complete in Underlay PR13, merge commit `a65797f0`
-- no roadmap is ready; `g09` is paused at a planning checkpoint
+- `g09.061` and `g09.062` are ready as independent Underlay doctor-error lanes
 
 ## Next Task
 
-Re-enter Northstar planning inside `g09`. Review the open triage and backlog
-surfaces, then compile or promote one bounded next roadmap. Do not open a later
-generation without explicit operator direction.
+Publish one worker handoff per doctor lane and dispatch `g09.061` and
+`g09.062` in parallel. Merge neither without exact-head review and explicit
+operator authorisation.
