@@ -1,6 +1,6 @@
 # Contract 023 Released-Dependency Drift
 
-Status: promoted
+Status: in review
 Captured: 2026-08-27
 
 ## Observation
@@ -19,6 +19,6 @@ shape.
 ## Disposition
 
 Promoted to
-[`g09.060`](../roadmaps/g09/060-released-dependency-rollout-contract-normalization.md).
-The roadmap is the execution authority; this note remains only as the discovery
-record.
+[`g09.060`](../roadmaps/g09/060-released-dependency-rollout-contract-normalization.md)
+and now in review after the Contract `023` rewrite. This note remains only as
+the discovery record.

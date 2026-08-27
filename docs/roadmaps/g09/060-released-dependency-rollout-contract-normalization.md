@@ -1,6 +1,6 @@
 # g09.060 - Released Dependency Rollout Contract Normalization
 
-Status: ready - dispatched
+Status: in review
 Owner: Underlay maintainers
 Contract: `023`
 Depends on: `g09.059` and papercuts wave 3 contract-link closeout (`complete`)
@@ -17,8 +17,8 @@ The operator chose to continue `g09` for this bounded normalization. Underlay
 PR12 completed the overlapping papercuts wave 3 contract-link lane at reviewed
 head `d2cb5cd9`, merge commit `9e26ba9a`. The dispatch gate is clear.
 
-- Underlay remains private from a package-registry perspective but is released
-  through immutable Git tags.
+- the root JavaScript package is npm-private (`private: true`). Both language
+  surfaces are released to consumers through immutable Git tags.
 - committed consumer JavaScript dependencies use the tagged Git URL; committed
   Cargo dependencies use the same release tag.
 - holding a consumer back means retaining its previous proven tag.
@@ -118,7 +118,27 @@ there.
 - Required action: none
 - Compatibility window: none; committed path/file edges are already unsupported
 
+## Execution Evidence
+
+- Contract `023` now distinguishes the npm-private root package from Git-tag
+  release of both language surfaces. Committed consumer pins are the tagged
+  SSH Git forms on JavaScript and Cargo.
+- hold-back and rollback retain or return to a known released tag. Upgrade
+  moves every declared tag in the consumer root, regenerates root locks, and
+  validates from that root.
+- committed Cargo `path` and JavaScript `file:` edges remain unsupported.
+  Sibling checkouts stay untracked QA/tooling inputs.
+- versions follow the release process and semantic versioning, not roadmap
+  generation numbers.
+- guides `030`, `040`, `190`, and `200` already taught this shape; no live
+  contradiction required an edit.
+- read-only fleet check: all six roots use tagged Git dependencies. Underlay
+  Reference pins `v0.9.5`; Contact Patch, Compli Me, Acowtancy, Songsprout, and
+  Composer retain `v0.9.4`. No committed path/file edges.
+- execution log:
+  `docs/logs/2026-08/27-215648-g09-060-released-dependency-contract-normalization.md`
+
 ## Next Task
 
-Launch the worker from the published handoff. Review its PR at exact head and
-merge only with explicit operator authorisation.
+Review the worker PR at exact head and merge only with explicit operator
+authorisation. Do not open a later generation from this closeout.

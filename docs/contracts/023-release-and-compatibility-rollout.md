@@ -2,7 +2,7 @@
 
 Status: active
 Owner: repo maintainers
-Depends on: `001-working-rules.md`, `022-testing-posture-and-shared-harnesses.md`, `027-api-canonical-path-cutovers-and-compatibility-retirement.md`, `111-consumer-template-adoption-and-exception-policy.md`
+Depends on: `001-working-rules.md`, `022-testing-posture-and-shared-harnesses.md`, `024-new-app-bootstrap-and-bring-up.md`, `027-api-canonical-path-cutovers-and-compatibility-retirement.md`, `111-consumer-template-adoption-and-exception-policy.md`
 
 ## Purpose
 
@@ -13,15 +13,20 @@ This contract covers:
 - when a shared change needs an explicit rollout plan
 - compatibility alias and deprecation-window posture at the fleet level
 - cross-repo rollout order
+- released Git-tag consumer pins, hold-back, upgrade, and rollback
 - release-note and upgrade-note expectations
 - proof required before a compatibility surface can be retired
 
 It does not redefine API path cutover mechanics. That stays in `027`.
+It does not redefine workspace topology or bootstrap. That stays in `024`.
 
 ## Sources of Truth
 
 Shared release and upgrade guidance:
 
+- [`024-new-app-bootstrap-and-bring-up.md`](./024-new-app-bootstrap-and-bring-up.md)
+- [`docs/guides/030-underlay-integration.md`](../guides/030-underlay-integration.md)
+- [`docs/guides/040-rust-backend.md`](../guides/040-rust-backend.md)
 - [`docs/guides/190-upgrade-compatibility.md`](../guides/190-upgrade-compatibility.md)
 - [`docs/guides/200-project-sync.md`](../guides/200-project-sync.md)
 - [`docs/guides/code/190-upgrade-compatibility/feature-upgrade-note-template.md`](../guides/code/190-upgrade-compatibility/feature-upgrade-note-template.md)
@@ -67,6 +72,7 @@ In scope:
 - shared TS, Svelte, Rust, config, migration, and docs changes that affect
   consumer apps
 - compatibility windows
+- released Git-tag consumer pins, hold-back, upgrade, and rollback
 - release and upgrade-note expectations
 - rollout order across Underlay and the six consumer repos
 - retirement proof for deprecated shared surfaces
@@ -74,9 +80,10 @@ In scope:
 Out of scope:
 
 - app-internal release process
-- package publishing mechanics
+- registry-publishing mechanics
 - CI implementation details
 - one-off emergency fixes that do not change consumer obligations
+- workspace topology and bootstrap; those stay in `024`
 
 ## Shared Boundary
 
@@ -137,10 +144,11 @@ Default rollout order:
 
 1. land the shared Underlay change
 2. add compatibility posture if needed
-3. repoint the clearest reference consumer first
-4. repoint the remaining affected consumers
-5. update docs and inventories to treat the new surface as primary
-6. retire the old surface once consumer proof exists
+3. cut and validate an Underlay release tag
+4. repoint the clearest reference consumer to that tag
+5. repoint the remaining affected consumers
+6. update docs and inventories to treat the new surface as primary
+7. retire the old surface once consumer proof exists
 
 Rules:
 
@@ -149,6 +157,9 @@ Rules:
 - use the most directly affected live app first when the proof is not a good
   fit for `underlay-reference`
 - do not retire a surface before the live callers have already moved
+- do not bump a consumer pin until the Underlay release tag exists and has
+  been validated
+- a consumer cannot pin an unreleased shared commit, branch, or local checkout
 
 ### Release-note rule
 
@@ -202,45 +213,48 @@ Rules:
 - do not mix path, payload, auth, config, and product-flow redesign into one
   opaque batch unless the redesign is truly intentional
 
-## Versioning And Consumer Pin
+## Release Posture And Consumer Pin
 
-Underlay is unpublished (`private: true`). The six consumers ride it via sibling
-relative-path dependencies — Cargo `path = "../../underlay/..."`, npm
-`file:../../underlay`. This is the **default lockstep-development workflow** and
-stays the default: while one maintainer controls every repo, path deps give the
-tightest feedback loop (a local change is instantly testable across the fleet)
-and there is no publish step to manage. This card does **not** move consumers off
-path deps.
+The root JavaScript package is npm-private (`package.json` has
+`private: true`). Underlay distributes both language surfaces to consumers
+through immutable Git tags. Registry-publishing mechanics beyond that npm
+guard are outside this contract.
 
-What it adds is an **optional pin mechanism** so a consumer *can* hold back or
-bisect when needed, and so drift is visible:
+The synchronized Rust workspace and JavaScript package versions follow the
+release process and semantic versioning. Roadmap generation numbers never
+determine package versions.
 
-- **Shared version reflects the generation.** The Cargo workspace and
-  `package.json` version track the active generation (`g08` -> `0.8.0`). Bump the
-  minor per generation (or per breaking batch within a generation) so the version
-  string moves even though nothing is published. Path-dep consumers are
-  unaffected — bare `path`/`file` deps carry no version requirement.
-- **Tag each six-consumer-proof point.** After a batch passes the six-consumer
-  proof, tag underlay (`v0.8.0`, or `v0.8.0-<lane>` for intra-generation
-  checkpoints). The tag is the bisectable boundary the path-dep workflow lacks.
+Consumers depend on Underlay as a released Git tag on both language surfaces.
+The only committed JavaScript form is:
 
-### Holding a consumer back (path -> git tag)
+```json
+"@inflatable-cookie/underlay": "git+ssh://git@github.com/inflatable-cookie/underlay.git#vX.Y.Z"
+```
 
-To pin one consumer to a proven underlay revision while others track HEAD, switch
-just that consumer's dependency from the sibling path to the git tag:
+The only committed Cargo form is:
 
 ```toml
-# Cargo (consumer): was  underlay-core = { path = "../../underlay/rust/crates/underlay-core" }
-underlay-core = { git = "https://github.com/inflatable-cookie/underlay.git", tag = "v0.8.0" }
+underlay-core = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "vX.Y.Z" }
 ```
 
-```jsonc
-// npm (consumer): was  "@inflatable-cookie/underlay": "file:../../underlay"
-"@inflatable-cookie/underlay": "github:inflatable-cookie/underlay#v0.8.0"
-```
+Rules:
 
-Revert to the `path`/`file` form to rejoin lockstep development. Keep the switch
-scoped to the one consumer that needs the hold-back; do not convert the fleet.
+- pin the same released tag on every JavaScript and Cargo declaration in that
+  consumer
+- a consumer cannot pin an unreleased shared commit, branch, or local checkout
+- holding a consumer back means retaining its previous proven tag
+- upgrading means changing every declared Underlay tag in the consumer root,
+  regenerating the root locks, and validating from that root
+- rollback means retaining or returning to a known-good released tag
+- committed Cargo `path` and JavaScript `file:` edges to Underlay are
+  unsupported
+- sibling Underlay checkouts remain read-only QA or tooling inputs, or
+  untracked local Cargo `[patch]` links. They must never become the committed
+  dependency shape
+
+Contract `024` owns the workspace and bootstrap rule that this pin posture
+implements. Do not treat a local sibling checkout as a supported application
+dependency.
 
 ## When A Broad Rollout Plan Is Not Required
 
@@ -264,11 +278,16 @@ Good outcomes:
 - roadmap batches name the impact class and rollout posture clearly
 - compatibility aliases are time-boxed and documented
 - shared changes move through a visible repo order instead of surprise breakage
+- consumers pin the same released Git tag on both language surfaces
+- hold-back and rollback stay on known released tags
 - retirements happen only after caller proof exists
 - release logs and upgrade notes tell consumers exactly what to do
 
 Bad outcomes:
 
+- treating npm `private: true` as unreleased
+- committed Cargo `path` or JavaScript `file:` Underlay edges
+- consumers pinning unreleased commits, branches, or local checkouts
 - shared breakage lands with no upgrade note
 - aliases stay live with no sunset or inventory
 - retirements happen before consumer callers are moved
@@ -276,6 +295,6 @@ Bad outcomes:
 
 ## Next Task
 
-Use this contract whenever a shared Underlay change affects more than one
-consumer repo or introduces a compatibility window, upgrade obligation, or
-retirement plan.
+Review the `g09.060` PR. After merge, use this contract whenever a shared
+Underlay change affects more than one consumer repo or introduces a
+compatibility window, upgrade obligation, or retirement plan.

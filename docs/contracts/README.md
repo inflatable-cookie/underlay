@@ -71,5 +71,5 @@ machine-readable policy files.
   Composer, and Acowtancy
 - all assessed drift in contracts `027`–`029` is repaired
 - papercuts wave 3 is complete in Underlay PR12, merge commit `9e26ba9a`
-- `g09.060` is ready and dispatched to align Contract `023` with the released-
+- `g09.060` is in review after aligning Contract `023` with the released-
   dependency rule already proved by Contract `024` and the consumer fleet

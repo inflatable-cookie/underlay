@@ -80,3 +80,7 @@ and promoting `g09.060` to ready
 The serial `g09.060` worker was then published from exact planning base
 `ec67dfbf`
 ([dispatch](./2026-08/27-214255-g09-060-dispatch.md)).
+The worker rewrote Contract `023` onto released Git-tag pins and set the
+roadmap in review
+([execution](./2026-08/27-215648-g09-060-released-dependency-contract-normalization.md)).
+Review that PR at exact head; do not merge without operator authorisation.

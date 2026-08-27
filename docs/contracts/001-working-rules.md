@@ -79,10 +79,10 @@ Underlay is in sequential mode:
 - `g09.057` is complete with a `drifting` verdict
 - `g09.058` and `g09.059` are complete across all five affected targets
 - papercuts wave 3 is complete in Underlay PR12, merge commit `9e26ba9a`
-- `g09.060` is ready and dispatched for the bounded Contract `023`
-  released-dependency normalization
+- `g09.060` is in review for the bounded Contract `023` released-dependency
+  normalization
 
 ## Next Task
 
-Launch the published `g09.060` worker handoff. Review its PR at exact head and
-merge only with explicit operator authorisation.
+Review the `g09.060` PR at exact head and merge only with explicit operator
+authorisation.
