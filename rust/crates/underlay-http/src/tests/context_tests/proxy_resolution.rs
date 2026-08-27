@@ -1,6 +1,6 @@
 use super::*;
-use axum::http::HeaderValue;
 use crate::context::TrustedProxyConfig;
+use axum::http::HeaderValue;
 use std::net::IpAddr;
 
 fn socket(ip: &str) -> Option<IpAddr> {
