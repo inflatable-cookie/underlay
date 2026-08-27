@@ -1,7 +1,8 @@
 //! Test database utilities using testcontainers
 //!
-//! Provides an isolated PostgreSQL database for each test, with automatic
-//! cleanup when the test completes.
+//! Provides an isolated PostgreSQL schema for each test. Schema teardown is
+//! not automatic: call [`TestDb::cleanup`] for external databases. Dropping a
+//! container-backed instance only destroys that container.
 //!
 //! # Requirements
 //!
@@ -38,10 +39,12 @@ use underlay_db::{
 };
 use uuid::Uuid;
 
-/// An isolated test database backed by a Docker container.
+/// An isolated test database backed by a Docker container or an external URL.
 ///
-/// The database is automatically cleaned up when this struct is dropped.
-/// Each `TestDb` instance gets its own schema for isolation.
+/// Each `TestDb` instance gets its own schema for isolation. `Drop` does not
+/// drop that schema. Call [`TestDb::cleanup`] when using an external database
+/// (`UNDERLAY_TEST_DATABASE_URL`); otherwise the `test_*` schema remains.
+/// Container-backed instances are destroyed with the container.
 /// Environment variable pointing at an already-provisioned Postgres. When set,
 /// `TestDb` connects to it directly instead of starting a testcontainer, so the
 /// suite runs against a CI Postgres service, an `effigy container` Postgres, or
@@ -241,10 +244,12 @@ impl TestDb {
         migrator.run(&self.pool).await
     }
 
-    /// Clean up the test schema
+    /// Drop the test schema.
     ///
-    /// This is called automatically on drop, but can be called manually
-    /// if you want to reset the database mid-test.
+    /// Required for external databases (`UNDERLAY_TEST_DATABASE_URL`).
+    /// `Drop` does not run this. Container-backed tests may skip it because
+    /// destroying the container removes the database. Call it mid-test when
+    /// you need to reset the schema before the instance is dropped.
     pub async fn cleanup(&self) -> Result<(), sqlx::Error> {
         drop_schema_identifiers(&self.pool, DestructiveGuard::allow(), [&self.schema]).await
     }

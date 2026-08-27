@@ -838,15 +838,28 @@ async fn test_create_user() {
 
 ### TestDb - Database Testing
 
-`TestDb` provides isolated PostgreSQL databases for each test using Docker
-containers. Each generated schema name is validated through Underlay's typed SQL
-identifier boundary before it is used in schema creation, search-path setup, or
-cleanup.
+`TestDb` provides isolated PostgreSQL schemas for each test. By default it
+starts a Docker container. When `UNDERLAY_TEST_DATABASE_URL` is set, it
+connects to that database instead. Each generated schema name is validated
+through Underlay's typed SQL identifier boundary before it is used in schema
+creation, search-path setup, or cleanup.
+
+`Drop` does not drop the test schema. Async teardown has to be explicit.
+
+- Container mode (default): dropping `TestDb` stops the container, which
+  destroys the database. Call `cleanup()` only if you need to reset the
+  schema mid-test.
+- External mode (`UNDERLAY_TEST_DATABASE_URL`): call `db.cleanup().await`
+  before the test ends, or the `test_*` schema remains on the shared
+  database.
 
 #### Requirements
 
-- Docker or a Docker-compatible runtime (Colima, OrbStack, Docker Desktop)
-- Start Docker before running tests: `colima start` or equivalent
+- Docker or a Docker-compatible runtime (Colima, OrbStack, Docker Desktop),
+  unless `UNDERLAY_TEST_DATABASE_URL` points at an already-provisioned
+  throwaway Postgres
+- Start Docker before running container-backed tests: `colima start` or
+  equivalent
 
 #### Basic Usage
 
@@ -865,6 +878,9 @@ async fn test_with_database() {
         .execute(db.pool())
         .await
         .unwrap();
+
+    // Required when UNDERLAY_TEST_DATABASE_URL is set.
+    db.cleanup().await.unwrap();
 }
 ```
 
