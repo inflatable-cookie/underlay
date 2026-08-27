@@ -52,6 +52,8 @@ produced Underlay Reference PR6, which merged as `f89e3616`
 ([closeout](./2026-08/27-155724-g09-053-reference-csrf-closeout.md)). The first
 fleet-closeout pass then found a real Acowtancy FAQ JSON-LD script-breakout
 risk and paused `g09.054`
-([log](./2026-08/27-160408-g09-054-partial-fleet-proof.md)). Execute ready
-owning repair `g09.055` through its published target handoff
-([dispatch](./2026-08/27-160826-g09-055-dispatch.md)).
+([log](./2026-08/27-160408-g09-054-partial-fleet-proof.md)). Acowtancy PR63 and
+PR65 closed the product and regression defects. The exact-head fleet proof is
+now complete
+([closeout](./2026-08/27-174415-g09-054-bootstrap-runtime-access-fleet-closeout.md)).
+Execute ready read-only assessment `g09.057` for contracts `027`–`029`.

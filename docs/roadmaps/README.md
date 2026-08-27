@@ -78,8 +78,8 @@ PR62 have merged, completing `g09.048`–`g09.052`. Underlay Reference PR6 merge
 as `f89e3616`, completing `g09.053`. The first `g09.054` exact-root pass proved
 workspace/env authority but found an Acowtancy FAQ JSON-LD script-breakout
 risk. `g09.055` repaired it in Acowtancy PR63. The resumed pass then found the
-merged SSR regression was not portable. `g09.054` is paused and `g09.056` is
-ready.
+merged SSR regression was not portable; `g09.056` repaired that in PR65.
+`g09.054` is complete and `g09.057` is the ready next assessment.
 See
 [`g09/README.md`](g09/README.md).
 
@@ -100,5 +100,4 @@ that risk.
 
 ## Next Task
 
-Run the published target-owned `g09.056` Acowtancy handoff. Resume `g09.054`
-only after the reviewed test-portability repair merges.
+Execute ready read-only assessment `g09.057` for contracts `027`–`029`.

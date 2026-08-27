@@ -451,26 +451,30 @@ Not allowed:
 
 Assessed across Underlay and all six consumer APIs by `g09.045` on 2026-08-26.
 
-Verdict: `drifting`.
+Verdict: `conforming` after the `g09.046`–`g09.056` repair wave and exact fleet
+closeout `g09.054`.
 
-- crate roles, `AppState`, one root builder, observability, and shutdown are
+Original `g09.045` findings, now closed:
+
+- crate roles, `AppState`, one root builder, observability, and shutdown were
   sound across the fleet; lean and rich profiles are both valid
-- route-family source topology remains flat or misplaced in Underlay Reference,
+- route-family source topology was flat or misplaced in Underlay Reference,
   Contact Patch, Compli Me, and Composer
-- middleware context order drifts in Songsprout, Composer, and Acowtancy
-- direct-router test support is absent or unproved in Compli Me, Songsprout, and
+- middleware context order drifted in Songsprout, Composer, and Acowtancy
+- direct-router test support was absent or unproved in Compli Me, Songsprout, and
   Composer
-- Farmyard's binary retains a separable large OpenAPI registry
+- Farmyard's binary retained a separable large OpenAPI registry
 
 Shared source links, runtime-family wording, and guide `070` were repaired in
 `g09.046`. Visible cleanup and shutdown helpers are normal binary
 responsibilities. The assessment does not use line count alone as a
 thin-entrypoint rule.
 
-Reference and fleet adoption remain `g09.047`-`g09.054`. See the
+Reference and fleet adoption completed through `g09.054`. See the
 [`g09.045` assessment](../logs/2026-08/26-225903-g09-045-bootstrap-runtime-access-assessment.md).
+The final exact-head matrix is in the
+[`g09.054` closeout](../logs/2026-08/27-174415-g09-054-bootstrap-runtime-access-fleet-closeout.md).
 
 ## Next Task
 
-`g09.046` is complete. Keep the Underlay Reference proof (`g09.047`) planned
-until its release and app-owner decision gates are satisfied.
+Execute ready assessment `g09.057` for contracts `027`–`029`.

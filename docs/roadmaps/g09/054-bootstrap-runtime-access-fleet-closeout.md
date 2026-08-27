@@ -1,6 +1,6 @@
 # g09.054 - Bootstrap, Runtime, And Access Fleet Closeout
 
-Status: paused
+Status: complete
 Owner: repo maintainers
 Contracts: `023`, `024`, `025`, `026`, `121`
 Found by: `g09.045`
@@ -17,7 +17,7 @@ the assessment wave, and choose the next contract group without implied scope.
 - [x] `g09.048`-`g09.052` are reviewed and merged
 - [x] `g09.053` proves Underlay Reference CSRF token reads reuse a live cookie
   across tabs and is reviewed and merged
-- [ ] every consumer target is clean and exactly aligned with its merged
+- [x] every consumer target is clean and exactly aligned with its merged
   `origin/main`
 - [x] every product/security decision named by the rollout roadmaps is recorded
 
@@ -107,8 +107,19 @@ the test writes compiled ESM under the OS temp directory, where the bare
 `svelte/internal/server` import cannot resolve the workspace package. Roadmap
 `g09.056` owns this test-only repair. Closeout remains paused.
 
+## Completion Evidence
+
+- Acowtancy PR65 merged as `22219f59`; the final exact-main FAQ run passed
+  19/19 and left no generated residue.
+- All six roots were clean and matched `origin/main`; every owning rollout
+  merge remained an ancestor.
+- Workspace shape, env authority, security conformance, task inventory, and
+  test-plan discovery passed across the fleet.
+- Contracts `024`–`026` are conforming with the named app profiles and scanner
+  dispositions recorded in the closeout matrix.
+- Exact heads, proof notes, and consumer upgrade notes are published in
+  [`g09.054 Bootstrap, Runtime, And Access Fleet Closeout`](../../logs/2026-08/27-174415-g09-054-bootstrap-runtime-access-fleet-closeout.md).
+
 ## Next Task
 
-Execute `g09.056`, review and merge its Acowtancy PR, then resume this exact-root
-proof. After completion, return to the contract index and promote exactly one
-next assessment group.
+Execute ready read-only assessment `g09.057` for contracts `027`–`029`.

@@ -378,13 +378,15 @@ Bad outcomes:
 
 Assessed across Underlay and all six consumer roots by `g09.045` on 2026-08-26.
 
-Verdict: `drifting` at the env/secret authority boundary; conforming at the
-supported monorepo boundary.
+Verdict: `conforming` after the `g09.046`–`g09.056` repair wave and exact fleet
+closeout `g09.054`.
+
+Current closeout state:
 
 - all six roots conform to one Git root, `apps/*` / `packages/*`, explicit root
   workspaces, one root lock, released dependencies, root docs authority, and
   Effigy-first state/migration ownership
-- every root lacks the required complete `config/env-manifest.txt` and
+- every root carries complete `config/env-manifest.txt` and
   `config/required-secrets.txt` authority
 - workspace-shape now rejects unsupported workspace prefixes and committed
   `file:` Underlay/Poodle edges; env/secret authority is a separate static
@@ -393,10 +395,12 @@ supported monorepo boundary.
   non-workspace inputs
 
 Shared wording and checker coverage were repaired in `g09.046`. Fleet adoption
-of the env/secret files remains `g09.047`-`g09.054`. See the
+and proof completed through `g09.054`; all six exact roots pass workspace and
+env authority. See the
 [`g09.045` assessment](../logs/2026-08/26-225903-g09-045-bootstrap-runtime-access-assessment.md).
+The final exact-head matrix is in the
+[`g09.054` closeout](../logs/2026-08/27-174415-g09-054-bootstrap-runtime-access-fleet-closeout.md).
 
 ## Next Task
 
-`g09.046` is complete. Keep the Underlay Reference proof (`g09.047`) planned
-until its release and app-owner decision gates are satisfied.
+Execute ready assessment `g09.057` for contracts `027`–`029`.

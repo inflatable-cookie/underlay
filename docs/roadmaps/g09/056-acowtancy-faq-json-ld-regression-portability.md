@@ -1,6 +1,6 @@
 # g09.056 - Acowtancy FAQ JSON-LD Regression Portability
 
-Status: ready
+Status: complete
 Owner: Acowtancy maintainers
 Contracts: `026`
 Found by: `g09.054` resumed exact-root proof
@@ -89,7 +89,19 @@ independent planning lanes.
 - Required action: none
 - Compatibility window: none
 
+## Completion Evidence
+
+- Acowtancy PR
+  [#65](https://github.com/acowtancy/market/pull/65) merged on 2026-08-27 as
+  `22219f5972c2815d5f774145902a2e6ddd1a13ce`.
+- Exact reviewed head:
+  `cf859f68a863b577bcb7ab1b0857391d9a678b05`.
+- The first review found a shared `.tmp` parent that survived cleanup. The
+  corrected head creates one unique package-local `.faq-jsonld-*` directory and
+  removes that exact directory in `finally`.
+- Final exact-main proof passed all 19 FAQ tests, Bun-runtime Svelte check,
+  workspace/env/security conformance, and residue checks.
+
 ## Next Task
 
-Run the published target-owned worker handoff, review and merge its Acowtancy
-PR, then resume `g09.054` at the six exact remote tips.
+Contribute the reviewed merge to complete `g09.054`.

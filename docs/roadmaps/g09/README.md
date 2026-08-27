@@ -38,7 +38,7 @@ features.
   disposable-state proof
 - [x] close the repair wave before starting the next contract assessment group
 - [x] assess bootstrap, runtime assembly, and access posture across all six roots
-- [ ] repair and prove the confirmed bootstrap/runtime/access drift
+- [x] repair and prove the confirmed bootstrap/runtime/access drift
 
 ## Roadmap Sequence
 
@@ -83,18 +83,22 @@ shared-crate/single-schema seam.
 The six-root read-only assessment found the workspace rollout intact and
 confirmed env/secret, runtime-topology, test-seam, and access/security drift.
 
-### Phase 7 — Bootstrap/runtime/access repair (`g09.046`–`g09.056`, active)
+### Phase 7 — Bootstrap/runtime/access repair (`g09.046`–`g09.056`, complete)
 
 1. repair Underlay authority and conformance (`g09.046`, complete)
 2. prove the repaired boundary in Underlay Reference (`g09.047`, complete)
 3. run Contact Patch, Compli Me, Songsprout, Composer, and Acowtancy as
    independent repo-owned lanes (`g09.048`–`g09.052`, complete)
 4. repair Underlay Reference's cross-tab CSRF token issuance (`g09.053`, complete)
-5. close exact-head six-root proof (`g09.054`, paused after finding a real
-   Acowtancy JSON-LD script-breakout risk and then a non-portable regression)
+5. close exact-head six-root proof (`g09.054`, complete after two honest repair
+   pauses)
 6. repair Acowtancy FAQ JSON-LD serialization (`g09.055`, complete)
-7. make the merged SSR regression portable (`g09.056`, ready), then resume
-   `g09.054`
+7. make the merged SSR regression portable (`g09.056`, complete)
+
+### Phase 8 — Canonical route and runtime assessment (`g09.057`, ready)
+
+Assess contracts `027`–`029` across the six exact roots before compiling any
+new repair wave.
 
 ## Queue
 
@@ -151,9 +155,10 @@ confirmed env/secret, runtime-topology, test-seam, and access/security drift.
 51. [x] [`g09.051`](051-composer-runtime-access-rollout.md) — Composer runtime/access rollout (`complete`)
 52. [x] [`g09.052`](052-acowtancy-runtime-access-rollout.md) — Acowtancy runtime/access rollout (`complete`)
 53. [x] [`g09.053`](053-underlay-reference-cross-tab-csrf-stability.md) — Underlay Reference cross-tab CSRF stability (`complete`)
-54. [ ] [`g09.054`](054-bootstrap-runtime-access-fleet-closeout.md) — bootstrap/runtime/access fleet closeout (`paused`)
+54. [x] [`g09.054`](054-bootstrap-runtime-access-fleet-closeout.md) — bootstrap/runtime/access fleet closeout (`complete`)
 55. [x] [`g09.055`](055-acowtancy-faq-json-ld-hardening.md) — Acowtancy FAQ JSON-LD hardening (`complete`)
-56. [ ] [`g09.056`](056-acowtancy-faq-json-ld-regression-portability.md) — Acowtancy FAQ JSON-LD regression portability (`ready`)
+56. [x] [`g09.056`](056-acowtancy-faq-json-ld-regression-portability.md) — Acowtancy FAQ JSON-LD regression portability (`complete`)
+57. [ ] [`g09.057`](057-canonical-path-runtime-surface-workflow-assessment.md) — canonical path, runtime surface, and workflow action assessment (`ready`)
 
 Deferred with a promotion trigger (TypeScript 7.1 or concrete need):
 [`backlog/ts-7-adoption.md`](../backlog/ts-7-adoption.md).
@@ -176,11 +181,10 @@ Deferred with a promotion trigger (TypeScript 7.1 or concrete need):
   Songsprout PR5, and Composer PR5.
 - `g09.052` is complete in Acowtancy PR62, merge commit `85c868e1`.
 - `g09.053` is complete in Underlay Reference PR6, merge commit `f89e3616`.
-- `g09.054` is paused after its first exact-root pass found the Acowtancy FAQ
-  JSON-LD script-breakout risk.
+- `g09.054` is complete with an exact-head six-root matrix.
 - `g09.055` is complete in Acowtancy PR63, merge commit `ad74d23e`.
-- `g09.056` is the ready test-only portability repair; `g09.054` resumes after
-  its reviewed merge.
+- `g09.056` is complete in Acowtancy PR65, merge commit `22219f59`.
+- `g09.057` is the single ready read-only assessment group.
 - Whole-app fixed-schema suites stay app-owned. `TestDb` remains the
   shared-crate/single-schema seam.
 
@@ -210,8 +214,10 @@ public route paths. `g09.048`–`g09.052` completed the five consumer-owned
 env/secret, runtime-topology, access, and CSRF rollouts under their recorded
 compatibility decisions. `g09.053` completed the compatible Reference
 cross-tab CSRF stability repair without changing the route or response shape.
+`g09.054` closes the fleet as conforming. PR63 hardened Acowtancy FAQ JSON-LD;
+PR65 made its security regression portable. No further consumer action is
+introduced by closeout.
 
 ## Next Task
 
-Run the published target-owned `g09.056` Acowtancy handoff. Resume `g09.054`
-only after the reviewed test-portability repair merges.
+Execute ready read-only assessment `g09.057` for contracts `027`–`029`.

@@ -73,12 +73,11 @@ Underlay is in sequential mode:
 - `g09.046` is complete
 - `g09.047`–`g09.052` are complete
 - `g09.053` is complete in Underlay Reference PR6, merge commit `f89e3616`
-- `g09.054` is paused after its exact-root proof found an Acowtancy FAQ JSON-LD
-  script-breakout risk
-- `g09.055` is the ready Acowtancy JSON-LD hardening repair
+- `g09.054` is complete with an exact-head six-root conforming verdict
+- `g09.055` is complete in Acowtancy PR63, merge commit `ad74d23e`
+- `g09.056` is complete in Acowtancy PR65, merge commit `22219f59`
+- `g09.057` is the single ready read-only assessment group
 
 ## Next Task
 
-Run the published target-owned `g09.055` Acowtancy handoff. Resume `g09.054`
-only after the reviewed repair merges; do not declare the fleet conforming from
-partial proof.
+Execute ready read-only assessment `g09.057` for contracts `027`–`029`.

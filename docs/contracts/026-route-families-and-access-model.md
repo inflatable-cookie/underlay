@@ -434,28 +434,32 @@ Not allowed:
 
 Assessed across Underlay and all six consumer APIs by `g09.045` on 2026-08-26.
 
-Verdict: `drifting`, including security-priority consumer findings.
+Verdict: `conforming` with named app profiles after the `g09.046`–`g09.056`
+repair wave and exact fleet closeout `g09.054`.
 
-- Reference and Contact exempt authenticated passkey registration from CSRF;
-  Compli Me and Farmyard accept cookie-backed refresh/logout mutations without
+Original `g09.045` findings, now closed:
+
+- Reference and Contact exempted authenticated passkey registration from CSRF;
+  Compli Me and Farmyard accepted cookie-backed refresh/logout mutations without
   a proved CSRF seam
-- Reference, Contact, and Composer use non-central or non-peer-aware client-IP
+- Reference, Contact, and Composer used non-central or non-peer-aware client-IP
   paths for abuse/auth policy input
-- Contact Patch and Acowtancy advertise a version header from clients/config but
-  do not give it a server posture
-- Composer retains admin-gated restore/purge actions outside `/v1/admin/*`
-- Compli Me and Songsprout retain handler-local elevated-role policy
-- Songsprout's rate-limit backend failure posture needs an explicit security
+- Contact Patch and Acowtancy advertised a version header from clients/config but
+  did not give it a server posture
+- Composer retained admin-gated restore/purge actions outside `/v1/admin/*`
+- Compli Me and Songsprout retained handler-local elevated-role policy
+- Songsprout's rate-limit backend failure posture needed an explicit security
   decision
 
 Version-header and runtime-family wording were settled in `g09.046`. Path
 versioning is baseline; a header is optional until declared; declared headers
 apply to business families and exclude runtime.
 
-Reference and fleet adoption remain `g09.047`-`g09.054`. See the
+Reference and fleet adoption completed through `g09.054`. See the
 [`g09.045` assessment](../logs/2026-08/26-225903-g09-045-bootstrap-runtime-access-assessment.md).
+The final exact-head matrix is in the
+[`g09.054` closeout](../logs/2026-08/27-174415-g09-054-bootstrap-runtime-access-fleet-closeout.md).
 
 ## Next Task
 
-`g09.046` is complete. Keep the Underlay Reference proof (`g09.047`) planned
-until its release and app-owner decision gates are satisfied.
+Execute ready assessment `g09.057` for contracts `027`–`029`.
