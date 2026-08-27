@@ -27,6 +27,9 @@
 //!     let response = server.get("/v1/users").send().await;
 //!     
 //!     assert_eq!(response.status(), 200);
+//!
+//!     // Required when UNDERLAY_TEST_DATABASE_URL is set.
+//!     db.cleanup().await.unwrap();
 //! }
 //! ```
 

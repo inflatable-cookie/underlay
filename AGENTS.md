@@ -37,6 +37,8 @@
 - Prefer local Effigy tasks such as `effigy qa:docs`, `effigy qa:northstar`, `effigy validate`, `effigy rust:check`, `effigy rust:test`, and `effigy test:components`.
 - Use `effigy doctor` when you want broader repo scans; it currently includes structural scan findings beyond the task surface itself.
 - Fall back to raw `cargo`, `bun`, or `vitest` only when the needed operation is not represented in `effigy.toml`.
+- Northstar AGENTS reviews use `effigy qa:docs:agent-defaults` here. This repo
+  does not ship `check:agent-instructions`.
 
 For first-time local bring-up from outside this repo:
 - use `effigy bootstrap git@github.com:inflatable-cookie/underlay.git`

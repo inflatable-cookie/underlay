@@ -112,16 +112,10 @@ Use raw `cargo`, `bun`, or framework CLIs directly only when the repo has not re
 
 ## Shared UI Catalog
 
-Underlay now ships a local Storybook catalog for the retained shared UI surface.
-Use it when you need to understand shared workflow shells and helpers quickly:
-
-```bash
-effigy storybook
-effigy storybook:build
-```
-
-Use Poodle's own preview/docs for primitives and generic composites that were
-migrated out of Underlay during the Poodle adoption wave.
+Use the ACME reference apps in `underlay-reference` for retained Underlay
+workflow shells and helpers. Use Poodle's own preview/docs for primitives and
+generic composites that were migrated out of Underlay during the Poodle
+adoption wave.
 
 ## Code Examples
 

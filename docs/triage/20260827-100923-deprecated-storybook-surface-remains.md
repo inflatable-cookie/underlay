@@ -1,7 +1,8 @@
 # Deprecated Storybook Surface Remains
 
-Status: open
+Status: closed
 Captured: 2026-08-27
+Closed: 2026-08-27
 
 ## Observation
 
@@ -16,6 +17,6 @@ discovery surface after the cleanup decision.
 
 ## Disposition
 
-Keep open. Route removal of the task selectors, dependencies/configuration,
-stories, and active-guide references through one bounded cleanup handoff. Do
-not mix it into the g09.047 runtime/access promotion.
+Closed by the papercuts wave 1 Storybook/docs worker. Task selectors,
+dependencies, `.storybook/`, `ts/stories/`, the demos include, and live
+guide commands are gone. Historical roadmap mentions stay as evidence.

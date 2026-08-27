@@ -27,7 +27,6 @@ run_in = "host"
 
 [manifest]
 minimum_effigy_version = "0.7.0"
-include = ["demos/effigy.demos.toml"]
 
 [bootstrap]
 setup = ["bootstrap:deps"]
@@ -56,8 +55,6 @@ check = "cd {repo} && bun x svelte-check --tsconfig ./ts/tsconfig.json"
 "check:guardrails" = "cd {repo} && bun ts/src/tools/guardrails.ts"
 "check:workspace-shape" = "cd {repo} && bun x vitest run ts/tests/tools/workspace-shape.test.ts"
 "check:env-authority" = "cd {repo} && bun x vitest run ts/tests/tools/env-authority.test.ts"
-"storybook" = "cd {repo} && storybook dev -p 6006"
-"storybook:build" = "cd {repo} && storybook build"
 "rust:build" = "cd {repo} && cargo build --workspace"
 "rust:check" = "cd {repo} && cargo check --workspace --all-features"
 "rust:clippy" = "cd {repo} && cargo clippy --workspace --all-targets -- -D warnings"

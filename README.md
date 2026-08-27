@@ -71,17 +71,16 @@ effigy qa:docs
 effigy qa:northstar
 effigy validate
 effigy qa
-effigy storybook
-effigy storybook:build
 effigy rust:build
 effigy rust:check
 effigy rust:test
 effigy test:components
 ```
 
-For shared UI discovery, use the local Storybook catalog for retained Underlay
-workflow shells and helpers. Use Poodle's own preview/docs for primitives and
-generic composites that no longer belong to Underlay.
+For shared UI discovery, use the ACME reference apps in `underlay-reference`
+for retained Underlay workflow shells and helpers. Use Poodle's own
+preview/docs for primitives and generic composites that no longer belong to
+Underlay.
 
 Package scripts remain convenience wrappers, but direct `effigy ...` is canonical when you are already in this repo.
 

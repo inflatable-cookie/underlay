@@ -18,12 +18,8 @@ The current auth boundary has two layers:
 2. **Retained Underlay auth workflows/helpers** - shared orchestration that is
    still not just generic design-system UI
 
-Storybook coverage:
-- `Auth/LoginPage`
-- `Auth/ForgotPasswordFlow`
-- `Auth/PasswordRequirements`
-
-Run `effigy storybook` from the repo root to inspect the retained auth surface interactively.
+Inspect the retained auth patterns under `ts/src/patterns` or the ACME
+reference apps in `underlay-reference`.
 
 ### Workflow Shells
 
