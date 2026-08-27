@@ -31,11 +31,11 @@ Primary shared sources:
 Reference consumer evidence:
 
 - `underlay-reference/apps/acme-api/crates/api/src/main.rs`
-- `contact-patch/cp-api/crates/api/src/main.rs`
-- `compli-me/api/crates/api/src/main.rs`
-- `acowtancy/farmyard/crates/api/src/main.rs`
-- `songsprout/nursery/crates/api/src/main.rs`
-- `loophole/composer/composer-api/crates/api/src/main.rs`
+- `contact-patch/apps/cp-api/crates/api/src/main.rs`
+- `compli-me/apps/api/crates/api/src/main.rs`
+- `acowtancy/apps/farmyard/crates/api/src/main.rs`
+- `songsprout/apps/nursery/crates/api/src/main.rs`
+- `loophole/composer/apps/composer-api/crates/api/src/main.rs`
 
 If these diverge, the contract plus the clearest current maturity proofs win.
 

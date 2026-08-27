@@ -32,11 +32,11 @@ Primary shared sources:
 Reference consumer evidence:
 
 - `underlay-reference/apps/acme-api/crates/api/src/routes/mod.rs`
-- `songsprout/nursery/crates/api/src/routes/artist_task_actions.rs`
-- `acowtancy/farmyard/crates/api/src/routes/admin/learning/variants/reorder/variant.rs`
-- `acowtancy/farmyard/crates/api/src/routes/admin/learning/variants/reorder/preseen.rs`
-- `acowtancy/farmyard/crates/api/src/routes/admin/learning/levels/deletion.rs`
-- `acowtancy/farmyard/crates/api/src/routes/admin/marking.rs`
+- `songsprout/apps/nursery/crates/api/src/routes/artist_task_actions.rs`
+- `acowtancy/apps/farmyard/crates/api/src/routes/admin/learning/variants/reorder/variant.rs`
+- `acowtancy/apps/farmyard/crates/api/src/routes/admin/learning/variants/reorder/preseen.rs`
+- `acowtancy/apps/farmyard/crates/api/src/routes/admin/learning/levels/deletion.rs`
+- `acowtancy/apps/farmyard/crates/api/src/routes/admin/marking/mod.rs`
 
 If these diverge, the contract plus the cleanest current action proofs win.
 

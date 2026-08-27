@@ -32,13 +32,13 @@ Primary shared sources:
 
 Reference consumer evidence:
 
-- `acowtancy/farmyard/crates/api/src/routes/front/router.rs`
-- `acowtancy/farmyard/crates/api/src/routes/shared/router.rs`
-- `compli-me/api/crates/api/src/routes/shared/compli.rs`
-- `underlay-reference/apps/acme-api/crates/api/src/routes/tasks.rs`
+- `acowtancy/apps/farmyard/crates/api/src/routes/front/router.rs`
+- `acowtancy/apps/farmyard/crates/api/src/routes/shared/router.rs`
+- `compli-me/apps/api/crates/api/src/routes/shared/compli.rs`
+- `underlay-reference/apps/acme-api/crates/api/src/routes/front/tasks.rs`
 - `underlay-reference/apps/acme-api/crates/api/src/routes/shared/account.rs`
-- `songsprout/nursery/crates/api/src/routes/artist.rs`
-- `loophole/composer/composer-api/crates/api/src/routes/lookup.rs`
+- `songsprout/apps/nursery/crates/api/src/routes/artist.rs`
+- `loophole/composer/apps/composer-api/crates/api/src/routes/lookup.rs`
 
 If these diverge, the contract plus the clearest modern resource-read posture
 win. Helper endpoints remain allowed, but they should stop drifting silently.

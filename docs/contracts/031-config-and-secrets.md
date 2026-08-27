@@ -33,17 +33,17 @@ Primary guidance and rollout evidence:
 Reference consumer evidence:
 
 - `underlay-reference/apps/acme-api`
-- `acowtancy/farmyard`
-- `compli-me/api`
-- `contact-patch/cp-api`
-- `songsprout/nursery`
-- `loophole/composer/composer-api`
+- `acowtancy/apps/farmyard`
+- `compli-me/apps/api`
+- `contact-patch/apps/cp-api`
+- `songsprout/apps/nursery`
+- `loophole/composer/apps/composer-api`
 
 If these diverge, the contract plus the clearest modern posture win.
 
 Promoted implementation reference:
 
-- `acowtancy/farmyard`
+- `acowtancy/apps/farmyard`
 
 For runtime assembly and local bring-up, Acowtancy is the promoted
 implementation. Other consumers should converge on its config posture unless a

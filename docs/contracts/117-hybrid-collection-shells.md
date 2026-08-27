@@ -37,16 +37,12 @@ Primary shared sources:
 
 Reference consumer evidence:
 
-- `acowtancy/dairy/src/lib/lists/ModulesList.svelte`
-- `acowtancy/dairy/src/lib/lists/modules-list/ModulesFilterBar.svelte`
-- `acowtancy/dairy/src/lib/lists/modules-list/ModulesHeaderActions.svelte`
-- `acowtancy/dairy/src/lib/lists/modules-list/ModulesListContent.svelte`
-- `acowtancy/dairy/src/lib/lists/modules-list/ModulesBatchActionDialog.svelte`
-- `acowtancy/dairy/src/lib/lists/ActivitiesList.svelte`
-- `acowtancy/dairy/src/lib/lists/activities-list/domain-fetch.ts`
-- `acowtancy/dairy/src/lib/lists/activities-list/reorder-controller.ts`
-- `acowtancy/dairy/src/lib/lists/activities-list/selection-controller.svelte.ts`
-- `acowtancy/cattle-grid/src/commands/learning/modules.ts`
+- `acowtancy/apps/dairy/src/lib/lists/ModulesListPage.svelte`
+- `acowtancy/apps/dairy/src/lib/lists/modules-list/workflow.ts`
+- `acowtancy/apps/dairy/src/lib/lists/ActivitiesList.svelte`
+- `acowtancy/apps/dairy/src/lib/lists/activities-list/domain-fetch.ts`
+- `acowtancy/apps/dairy/src/lib/lists/activities-list/reorder-controller.ts`
+- `acowtancy/packages/cattle-grid/src/commands/learning/modules.ts`
 
 If these diverge, the shared contract wins. Consumer wrappers are evidence, not
 authority.

@@ -47,7 +47,7 @@ Primary:
 - [`rust/crates/underlay-media/src/lib.rs`](../../rust/crates/underlay-media/src/lib.rs)
 - [`rust/crates/underlay-media/src/domain.rs`](../../rust/crates/underlay-media/src/domain.rs)
 - [`rust/crates/underlay-media/src/repository.rs`](../../rust/crates/underlay-media/src/repository.rs)
-- [`rust/crates/underlay-media/src/storage.rs`](../../rust/crates/underlay-media/src/storage.rs)
+- [`rust/crates/underlay-media/src/storage/mod.rs`](../../rust/crates/underlay-media/src/storage/mod.rs)
 - [`rust/crates/underlay-media/src/sync.rs`](../../rust/crates/underlay-media/src/sync.rs)
 - [`rust/crates/underlay-media-postgres/src/lib.rs`](../../rust/crates/underlay-media-postgres/src/lib.rs)
 - [`rust/crates/underlay-media/src/error.rs`](../../rust/crates/underlay-media/src/error.rs)

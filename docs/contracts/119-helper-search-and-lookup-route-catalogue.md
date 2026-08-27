@@ -30,11 +30,11 @@ Primary shared sources:
 
 Reference consumer evidence:
 
-- `compli-me/api/crates/api/src/routes/shared/lookup.rs`
-- `loophole/composer/composer-api/crates/api/src/routes/lookup.rs`
-- `contact-patch/cp-api/crates/api/src/routes/shared/auth/totp.rs`
-- `contact-patch/cp-api/crates/api/src/routes/shared/auth/password.rs`
-- `songsprout/nursery/crates/api/src/handlers/auth.rs`
+- `compli-me/apps/api/crates/api/src/routes/shared/lookup.rs`
+- `loophole/composer/apps/composer-api/crates/api/src/routes/lookup.rs`
+- `contact-patch/apps/cp-api/crates/api/src/routes/shared/auth/totp.rs`
+- `contact-patch/apps/cp-api/crates/api/src/routes/shared/auth/password_reset.rs`
+- `songsprout/apps/nursery/crates/api/src/handlers/auth/mod.rs`
 
 If these diverge, the contract plus the clearest modern helper posture win.
 

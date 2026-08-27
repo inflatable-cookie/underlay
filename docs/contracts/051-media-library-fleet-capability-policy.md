@@ -73,11 +73,11 @@ The current six-app admin fleet is expected to own the full admin media family.
 Affected apps:
 
 - `underlay-reference/apps/acme-admin`
-- `acowtancy/dairy`
-- `compli-me/admin`
-- `contact-patch/cp-admin`
-- `songsprout/greenhouse`
-- `loophole/composer/composer-admin`
+- `acowtancy/apps/dairy`
+- `compli-me/apps/admin`
+- `contact-patch/apps/cp-admin`
+- `songsprout/apps/greenhouse`
+- `loophole/composer/apps/composer-admin`
 
 Rules:
 
