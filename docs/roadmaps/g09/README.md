@@ -39,6 +39,8 @@ features.
 - [x] close the repair wave before starting the next contract assessment group
 - [x] assess bootstrap, runtime assembly, and access posture across all six roots
 - [x] repair and prove the confirmed bootstrap/runtime/access drift
+- [x] assess canonical-path retirement, runtime maturity, and workflow action
+  grammar across all six roots
 
 ## Roadmap Sequence
 
@@ -95,10 +97,17 @@ confirmed env/secret, runtime-topology, test-seam, and access/security drift.
 6. repair Acowtancy FAQ JSON-LD serialization (`g09.055`, complete)
 7. make the merged SSR regression portable (`g09.056`, complete)
 
-### Phase 8 — Canonical route and runtime assessment (`g09.057`, ready)
+### Phase 8 — Canonical route and runtime assessment (`g09.057`, complete)
 
-Assess contracts `027`–`029` across the six exact roots before compiling any
-new repair wave.
+Contracts `027`–`029` were assessed across the six exact roots. Runtime
+maturity conforms. Three auth alias families and two mixed batch-delete
+families remain bounded drift.
+
+### Phase 9 — Route retirement decisions (`g09.058`–`g09.059`, planned)
+
+Resolve compatibility windows for the auth aliases and canonical suffix/window
+decisions for the mixed batch-delete families before promoting implementation.
+Neither roadmap is ready while those decisions remain open.
 
 ## Queue
 
@@ -158,7 +167,9 @@ new repair wave.
 54. [x] [`g09.054`](054-bootstrap-runtime-access-fleet-closeout.md) — bootstrap/runtime/access fleet closeout (`complete`)
 55. [x] [`g09.055`](055-acowtancy-faq-json-ld-hardening.md) — Acowtancy FAQ JSON-LD hardening (`complete`)
 56. [x] [`g09.056`](056-acowtancy-faq-json-ld-regression-portability.md) — Acowtancy FAQ JSON-LD regression portability (`complete`)
-57. [ ] [`g09.057`](057-canonical-path-runtime-surface-workflow-assessment.md) — canonical path, runtime surface, and workflow action assessment (`ready`)
+57. [x] [`g09.057`](057-canonical-path-runtime-surface-workflow-assessment.md) — canonical path, runtime surface, and workflow action assessment (`complete`; `drifting`)
+58. [ ] [`g09.058`](058-auth-mutation-compatibility-retirement.md) — auth mutation compatibility retirement (`planned`; decision gated)
+59. [ ] [`g09.059`](059-batch-delete-action-grammar-convergence.md) — batch-delete action grammar convergence (`planned`; decision gated)
 
 Deferred with a promotion trigger (TypeScript 7.1 or concrete need):
 [`backlog/ts-7-adoption.md`](../backlog/ts-7-adoption.md).
@@ -184,7 +195,9 @@ Deferred with a promotion trigger (TypeScript 7.1 or concrete need):
 - `g09.054` is complete with an exact-head six-root matrix.
 - `g09.055` is complete in Acowtancy PR63, merge commit `ad74d23e`.
 - `g09.056` is complete in Acowtancy PR65, merge commit `22219f59`.
-- `g09.057` is the single ready read-only assessment group.
+- `g09.057` is complete with a `drifting` verdict.
+- `g09.058` and `g09.059` are independent after their per-target decisions
+  close; neither is ready before then.
 - Whole-app fixed-schema suites stay app-owned. `TestDb` remains the
   shared-crate/single-schema seam.
 
@@ -216,8 +229,11 @@ compatibility decisions. `g09.053` completed the compatible Reference
 cross-tab CSRF stability repair without changing the route or response shape.
 `g09.054` closes the fleet as conforming. PR63 hardened Acowtancy FAQ JSON-LD;
 PR65 made its security regression portable. No further consumer action is
-introduced by closeout.
+introduced by closeout. `g09.057` then found no runtime repair but recorded
+three auth alias families and two mixed batch-delete families. No path change is
+authorised until `g09.058` and `g09.059` close their decision gates.
 
 ## Next Task
 
-Execute ready read-only assessment `g09.057` for contracts `027`–`029`.
+Resolve the compatibility and canonical-suffix decisions in `g09.058` and
+`g09.059`. Do not dispatch either roadmap before its gate closes.

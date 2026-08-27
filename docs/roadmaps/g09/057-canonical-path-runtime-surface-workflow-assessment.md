@@ -1,6 +1,7 @@
 # g09.057 - Canonical Path, Runtime Surface, And Workflow Action Assessment
 
-Status: ready
+Status: complete
+Completed: 2026-08-27
 Owner: repo maintainers
 Contracts: `027`, `028`, `029`
 Depends on: `g09.054`
@@ -72,7 +73,22 @@ source layout or compile implementation work from an ambiguous finding.
 - Required action: none until a confirmed finding becomes a later roadmap
 - Compatibility window: no path removal is authorised by this assessment
 
+## Completion Evidence
+
+The assessment matrix is recorded in
+[`g09.057 - Canonical Path, Runtime Surface, And Workflow Assessment`](../../logs/2026-08/27-175930-g09-057-canonical-path-runtime-workflow-assessment.md).
+
+Verdict: `drifting` with conforming runtime profiles.
+
+- contracts `027` and `029` retain bounded compatibility/action drift
+- contract `028` conforms across declared level A, B, and C profiles
+- `g09.058` preserves three auth alias families behind explicit compatibility
+  decisions
+- `g09.059` preserves two mixed batch-delete grammar families behind explicit
+  suffix and compatibility decisions
+- no consumer source, public path, or runtime exposure changed
+
 ## Next Task
 
-Execute the read-only assessment and publish its evidence matrix. Promote only
-settled bounded repairs.
+Resolve the decision gates in `g09.058` and `g09.059`. Neither roadmap is ready
+for execution yet.

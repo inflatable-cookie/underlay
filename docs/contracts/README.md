@@ -64,4 +64,6 @@ machine-readable policy files.
   `024`–`026` with a `drifting` verdict
 - `g09.046`–`g09.056` repaired and proved that group; `g09.054` closes it as
   conforming across the six exact roots
-- `g09.057` is the ready read-only assessment for contracts `027`–`029`
+- `g09.057` assessed contracts `027`–`029`; runtime profiles conform, while
+  auth aliases and mixed batch-delete grammar remain decision-gated in
+  `g09.058` and `g09.059`

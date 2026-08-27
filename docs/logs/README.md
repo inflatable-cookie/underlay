@@ -56,4 +56,7 @@ risk and paused `g09.054`
 PR65 closed the product and regression defects. The exact-head fleet proof is
 now complete
 ([closeout](./2026-08/27-174415-g09-054-bootstrap-runtime-access-fleet-closeout.md)).
-Execute ready read-only assessment `g09.057` for contracts `027`–`029`.
+`g09.057` then assessed contracts `027`–`029`
+([assessment](./2026-08/27-175930-g09-057-canonical-path-runtime-workflow-assessment.md)).
+Runtime maturity conforms. Resolve decision-gated `g09.058` and `g09.059`
+before dispatching route changes.

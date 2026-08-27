@@ -208,7 +208,26 @@ Bad outcomes:
 - What should a new app expose by default if it wants the normal modern
   Underlay posture?
 
+## Assessment State
+
+Assessed across all six consumer APIs by `g09.057` on 2026-08-27.
+
+Verdict: `conforming` with declared maturity profiles.
+
+- Underlay Reference, Contact Patch, and Compli Me are level B with health,
+  OpenAPI JSON, and Swagger UI.
+- Songsprout is an operator-extended level C profile with health, metrics, and
+  OpenAPI JSON.
+- Acowtancy is level C operator-rich with health, live, ready, info, email
+  health, metrics, and OpenAPI JSON.
+- Composer is level A lean plus metrics. Its absent OpenAPI surface remains
+  explicitly classified as lighter maturity, not route-family drift.
+
+Every runtime family is assembled outside product routers. No implementation
+repair is warranted. See the
+[`g09.057` assessment](../logs/2026-08/27-175930-g09-057-canonical-path-runtime-workflow-assessment.md).
+
 ## Next Task
 
-Use this contract when classifying runtime maturity in cross-app audits or when
-bringing an older API up to the modern baseline runtime posture.
+Retain these maturity classifications in future app audits. No runtime repair
+is queued by `g09.057`.

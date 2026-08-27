@@ -79,7 +79,9 @@ as `f89e3616`, completing `g09.053`. The first `g09.054` exact-root pass proved
 workspace/env authority but found an Acowtancy FAQ JSON-LD script-breakout
 risk. `g09.055` repaired it in Acowtancy PR63. The resumed pass then found the
 merged SSR regression was not portable; `g09.056` repaired that in PR65.
-`g09.054` is complete and `g09.057` is the ready next assessment.
+`g09.054` is complete. `g09.057` assessed contracts `027`–`029` with a
+`drifting` verdict: runtime profiles conform, while `g09.058` and `g09.059`
+preserve route-retirement decisions. Neither is ready yet.
 See
 [`g09/README.md`](g09/README.md).
 
@@ -100,4 +102,5 @@ that risk.
 
 ## Next Task
 
-Execute ready read-only assessment `g09.057` for contracts `027`–`029`.
+Resolve the decision gates in `g09.058` and `g09.059`. Do not dispatch route
+changes before their compatibility decisions close.

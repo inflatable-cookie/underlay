@@ -76,8 +76,10 @@ Underlay is in sequential mode:
 - `g09.054` is complete with an exact-head six-root conforming verdict
 - `g09.055` is complete in Acowtancy PR63, merge commit `ad74d23e`
 - `g09.056` is complete in Acowtancy PR65, merge commit `22219f59`
-- `g09.057` is the single ready read-only assessment group
+- `g09.057` is complete with a `drifting` verdict
+- `g09.058` and `g09.059` are planned but decision gated; neither is ready
 
 ## Next Task
 
-Execute ready read-only assessment `g09.057` for contracts `027`–`029`.
+Resolve the compatibility and canonical-suffix decisions in `g09.058` and
+`g09.059` before dispatch.

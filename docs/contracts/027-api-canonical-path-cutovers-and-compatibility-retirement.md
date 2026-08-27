@@ -209,7 +209,28 @@ Bad outcomes:
 - Which path retirements are safe to do by family rather than one route at a
   time?
 
+## Assessment State
+
+Assessed across all six consumer APIs by `g09.057` on 2026-08-27.
+
+Verdict: `drifting` in three explicit mutation-alias families.
+
+- Songsprout and Acowtancy retain passkey connect aliases over canonical
+  register handlers.
+- Composer retains `/v1/auth/local/{login,refresh,logout}` aliases over the
+  canonical shared auth paths.
+- Composer and Songsprout in-repo callers are canonical; Acowtancy still needs
+  a client-first move.
+- none of the three families records an authorised external compatibility
+  window or removal trigger.
+
+No other same-handler mutation alias was found. Mixed Composer catalog reads
+remain an intentional shared-read/admin-write split, not compatibility debt.
+See the
+[`g09.057` assessment](../logs/2026-08/27-175930-g09-057-canonical-path-runtime-workflow-assessment.md).
+Decision-gated follow-through is preserved in `g09.058`.
+
 ## Next Task
 
-Use this contract when the next API family needs a canonical-path cutover or
-compatibility retirement decision.
+Resolve the per-target compatibility windows in `g09.058` before promoting any
+alias retirement.

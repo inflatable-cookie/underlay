@@ -403,4 +403,5 @@ The final exact-head matrix is in the
 
 ## Next Task
 
-Execute ready assessment `g09.057` for contracts `027`–`029`.
+`g09.057` is complete. Resolve decision-gated `g09.058` and `g09.059` before
+route-retirement dispatch.

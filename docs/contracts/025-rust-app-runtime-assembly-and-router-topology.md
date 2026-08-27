@@ -477,4 +477,4 @@ The final exact-head matrix is in the
 
 ## Next Task
 
-Execute ready assessment `g09.057` for contracts `027`–`029`.
+`g09.057` is complete. Runtime maturity conforms; no `025` repair is queued.

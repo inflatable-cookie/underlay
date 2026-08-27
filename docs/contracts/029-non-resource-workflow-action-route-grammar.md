@@ -259,7 +259,26 @@ Bad outcomes:
 - When is `POST` right versus `PUT` or `DELETE` for action routes?
 - How should batch and reorder actions be named?
 
+## Assessment State
+
+Assessed across all six consumer APIs by `g09.057` on 2026-08-27.
+
+Verdict: `drifting` in two collection-action families; otherwise conforming.
+
+- Underlay Reference mixes `:batch-delete` with nested
+  `/tasks/batch-delete`.
+- Compli Me mixes `/batch-delete` for its domain resources with
+  `:batch-delete` for media.
+- resource lifecycle, reorder, dedicated workflow, claim/release, and explicit
+  transition routes conform across the fleet.
+- Acowtancy's consistent `batch-soft-delete` vocabulary preserves a narrower
+  app-owned lifecycle meaning and is not treated as synonym drift.
+
+No path change is authorised until the canonical suffix and compatibility
+window decisions in `g09.059` close. See the
+[`g09.057` assessment](../logs/2026-08/27-175930-g09-057-canonical-path-runtime-workflow-assessment.md).
+
 ## Next Task
 
-Use this contract when the next API workflow route needs naming or placement
-decisions beyond plain CRUD.
+Resolve the per-target suffix and compatibility decisions in `g09.059` before
+promoting batch grammar work.
