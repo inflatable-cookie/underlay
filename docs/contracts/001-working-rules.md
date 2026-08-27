@@ -77,6 +77,6 @@ Underlay is in sequential mode:
 
 ## Next Task
 
-Publish and dispatch the target-owned `g09.053` Underlay Reference worker
-handoff. Keep the target's independent `g01.007` lane serial and keep `g09.054`
-planned until the reviewed repair merges.
+Run the published target-owned `g09.053` Underlay Reference worker handoff.
+Keep the target's independent `g01.007` lane serial and keep `g09.054` planned
+until the reviewed repair merges.

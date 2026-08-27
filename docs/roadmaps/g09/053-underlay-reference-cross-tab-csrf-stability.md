@@ -32,6 +32,17 @@ browser-wide cookie out from under another tab's still-live header proof.
   persistence, session coupling, or a rotation protocol.
 - Preserve the route, response envelope, cookie attributes, and client API.
 
+## Dispatch Evidence
+
+- Target-owned handoff:
+  `/Users/tom/Dev/projects/underlay-reference/docs/handoffs/20260827-145501-g09-053-cross-tab-csrf-stability.md`
+- Pushed Underlay Reference `main`:
+  `2cc2578be3b83c52aa2dcaff6843e96f800beb41`
+- Target planning base: `6af2783768e04c8def9b6bb1de5c90cbb69a7892`
+- Underlay roadmap authority:
+  `e90493c51304a02f8a93a0bcee7347e7df768d74`
+- Target docs and Northstar QA passed; no worker PR was open at dispatch.
+
 ## Scope
 
 - make the token handler inspect request cookies before choosing the token
@@ -84,5 +95,5 @@ independent `g01.007` lane. Return that scope change to the orchestrator.
 
 ## Next Task
 
-Dispatch the target-owned worker handoff. After exact-head review and an
-operator-authorised merge, promote `g09.054` fleet closeout.
+Run the target-owned worker handoff and return its PR for exact-head review.
+After an operator-authorised merge, promote `g09.054` fleet closeout.

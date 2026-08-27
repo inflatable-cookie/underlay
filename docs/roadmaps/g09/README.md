@@ -146,7 +146,7 @@ confirmed env/secret, runtime-topology, test-seam, and access/security drift.
 50. [x] [`g09.050`](050-songsprout-runtime-access-rollout.md) — Songsprout runtime/access rollout (`complete`)
 51. [x] [`g09.051`](051-composer-runtime-access-rollout.md) — Composer runtime/access rollout (`complete`)
 52. [x] [`g09.052`](052-acowtancy-runtime-access-rollout.md) — Acowtancy runtime/access rollout (`complete`)
-53. [ ] [`g09.053`](053-underlay-reference-cross-tab-csrf-stability.md) — Underlay Reference cross-tab CSRF stability (`ready`)
+53. [ ] [`g09.053`](053-underlay-reference-cross-tab-csrf-stability.md) — Underlay Reference cross-tab CSRF stability (`ready`; dispatched)
 54. [ ] [`g09.054`](054-bootstrap-runtime-access-fleet-closeout.md) — bootstrap/runtime/access fleet closeout (`planned`)
 
 Deferred with a promotion trigger (TypeScript 7.1 or concrete need):
@@ -203,6 +203,6 @@ compatibility decisions.
 
 ## Next Task
 
-Publish and dispatch the target-owned `g09.053` Underlay Reference handoff.
-Keep `g09.054` planned until that reviewed repair merges and the exact consumer
-roots are rechecked.
+Run the published target-owned `g09.053` Underlay Reference handoff and return
+its PR for exact-head review. Keep `g09.054` planned until the reviewed repair
+merges and the exact consumer roots are rechecked.

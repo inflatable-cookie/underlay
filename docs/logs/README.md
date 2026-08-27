@@ -47,5 +47,5 @@ consumer lanes then merged
 ([closeout](./2026-08/27-143842-g09-048-051-consumer-closeout.md)). The planning
 repair promoted the Reference CSRF fix as `g09.053` and renumbered fleet
 closeout to `g09.054`
-([log](./2026-08/27-145100-g09-053-054-planning-repair.md)). Publish and dispatch
-the target-owned `g09.053` handoff.
+([log](./2026-08/27-145100-g09-053-054-planning-repair.md)). The target handoff
+is published; run it and return the worker PR for review.

@@ -60,7 +60,7 @@ In parallel mode:
 
 ## Next Task
 
-Publish and dispatch the target-owned `g09.053` Underlay Reference handoff.
-Keep `g09.054` planned until that reviewed repair merges and the exact consumer
-roots are rechecked. See
+Run the published target-owned `g09.053` Underlay Reference handoff and return
+its PR for exact-head review. Keep `g09.054` planned until the reviewed repair
+merges and the exact consumer roots are rechecked. See
 [`g09/README.md`](g09/README.md).
