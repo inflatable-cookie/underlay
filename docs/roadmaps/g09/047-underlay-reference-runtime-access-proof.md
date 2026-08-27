@@ -1,6 +1,6 @@
 # g09.047 - Underlay Reference Runtime And Access Proof
 
-Status: planned
+Status: ready
 Owner: Underlay Reference maintainers
 Contracts: `024`, `025`, `026`, `030`, `031`
 Found by: `g09.045`
@@ -18,10 +18,31 @@ route families, cookie-backed mutation CSRF, and peer-aware client-IP policy.
   `8ffafb92`; GitHub Release published 2026-08-27)
 - [x] target checkout is clean and exactly aligned with `origin/main`
   (`854e5ad2`, verified 2026-08-27)
-- [ ] mandatory secret classes are named by the app owner per environment
-- [ ] allowed CSRF-disable environments are explicit and fail closed elsewhere
-- [ ] malformed deployed config and insecure deployed-cookie behavior have an
-  explicit fatal/warn policy
+- [x] app owner chose environment-aware startup authority: `DATABASE_URL` and
+  the JWT keypair are required; `ENCRYPTION_KEY` is additionally mandatory
+  outside local/effigy/test; selected adapter/backend credentials are
+  conditional
+- [x] app owner allows CSRF disablement only in local/effigy/test; dev,
+  staging, production, and unknown names fail closed
+- [x] app owner requires fatal startup outside local/effigy/test for malformed
+  config or `COOKIE_SECURE=false`; the non-deployed set may warn
+
+## Settled Owner Policy
+
+- Environment classes: local/effigy/test are the bounded non-deployed set;
+  dev/staging/production are deployed, and unknown names retain Underlay's
+  fail-closed production behavior.
+- Required startup authority: `DATABASE_URL`, `AUTH_JWT_PRIVATE_KEY`, and
+  `AUTH_JWT_PUBLIC_KEY` are required for the API. `ENCRYPTION_KEY` is required
+  in deployed environments and may be absent with an explicit warning only in
+  local/effigy/test. Redis, SMTP, SES/AWS, and storage credentials become
+  required only when the corresponding backend or adapter is selected.
+- CSRF: cookie-backed browser mutation protection may be disabled only in
+  local/effigy/test. Every deployed or unknown environment rejects an attempted
+  disablement.
+- Startup failures: malformed layered config and insecure auth-cookie posture
+  are fatal outside local/effigy/test. Local/effigy/test may warn where the
+  bounded developer posture still permits startup.
 
 ## Scope
 
@@ -78,7 +99,6 @@ Underlay Reference owner.
 
 ## Next Task
 
-Settle the three remaining app-owner security decisions, then prepare and push
-the g09.047 worker handoff. After reviewed merge and exact-main verification,
-promote independent roadmaps `g09.048`-`g09.052` whose decision gates are
-satisfied.
+Prepare and push the g09.047 worker handoff. After reviewed merge and exact-main
+verification, promote independent roadmaps `g09.048`-`g09.052` whose decision
+gates are satisfied.

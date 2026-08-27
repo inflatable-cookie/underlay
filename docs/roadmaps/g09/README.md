@@ -86,7 +86,7 @@ confirmed env/secret, runtime-topology, test-seam, and access/security drift.
 ### Phase 7 — Bootstrap/runtime/access repair (`g09.046`–`g09.053`, active)
 
 1. repair Underlay authority and conformance (`g09.046`, complete)
-2. prove the repaired boundary in Underlay Reference (`g09.047`, planned)
+2. prove the repaired boundary in Underlay Reference (`g09.047`, ready)
 3. run Contact Patch, Compli Me, Songsprout, Composer, and Acowtancy as
    independent repo-owned lanes (`g09.048`–`g09.052`, planned)
 4. close exact-head six-root proof (`g09.053`, planned)
@@ -139,7 +139,7 @@ confirmed env/secret, runtime-topology, test-seam, and access/security drift.
 44. [x] [`g09.044`](044-migration-testing-fleet-closeout.md) — migration/testing fleet closeout (`complete`)
 45. [x] [`g09.045`](045-bootstrap-and-runtime-contract-assessment.md) — bootstrap and runtime contract assessment (`complete`; `drifting`)
 46. [x] [`g09.046`](046-bootstrap-runtime-access-authority.md) — bootstrap/runtime/access authority (`complete`)
-47. [ ] [`g09.047`](047-underlay-reference-runtime-access-proof.md) — Underlay Reference runtime/access proof (`planned`)
+47. [ ] [`g09.047`](047-underlay-reference-runtime-access-proof.md) — Underlay Reference runtime/access proof (`ready`)
 48. [ ] [`g09.048`](048-contact-patch-runtime-access-rollout.md) — Contact Patch runtime/access rollout (`planned`)
 49. [ ] [`g09.049`](049-compli-me-runtime-access-rollout.md) — Compli Me runtime/access rollout (`planned`)
 50. [ ] [`g09.050`](050-songsprout-runtime-access-rollout.md) — Songsprout runtime/access rollout (`planned`)
@@ -163,9 +163,9 @@ Deferred with a promotion trigger (TypeScript 7.1 or concrete need):
 - `g09.044` is complete after all five merged consumer roadmaps.
 - `g09.045` is complete.
 - `g09.046` is complete and merged in PR9.
-- Underlay `v0.9.5` and exact clean Underlay Reference main clear the release
-  and target-checkout gates for `g09.047`; three app-owner security decisions
-  still block the reference proof.
+- Underlay `v0.9.5`, exact clean Underlay Reference main, and explicit
+  environment-aware secrets, local/effigy/test-only CSRF disablement, and
+  fatal deployed config/cookie policy clear every g09.047 promotion gate.
 - `g09.048`–`g09.052` may run in parallel only after `g09.047` and each named
   product/security decision gate.
 - `g09.053` closes the fleet after all five independent rollout lanes merge.
@@ -198,6 +198,4 @@ changes cannot begin before their roadmap decisions are explicit.
 
 ## Next Task
 
-Resolve the mandatory-secret, CSRF-disable, and deployed-failure policy gates
-for `g09.047`. Do not promote it until those app-owner security decisions are
-explicit.
+Publish the g09.047 Underlay Reference worker handoff from pushed `main`.

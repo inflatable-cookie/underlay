@@ -71,10 +71,11 @@ Underlay is in sequential mode:
 - `g09.044` is complete
 - `g09.045` is complete with a `drifting` verdict
 - `g09.046` is complete
-- `g09.047`–`g09.053` remain planned behind explicit promotion gates
+- `g09.047` is ready after its release, clean-target, and app-owner policy gates
+- `g09.048`–`g09.053` remain planned behind explicit promotion gates
 
 ## Next Task
 
-Resolve the mandatory-secret, CSRF-disable, and deployed-failure policy gates
-for `g09.047`. Do not dispatch `g09.047`–`g09.052` before the applicable gates
-are complete.
+Publish the g09.047 Underlay Reference worker handoff from pushed `main`. Keep
+`g09.048`–`g09.052` planned until the reference proof merges and their own
+promotion gates are complete.
