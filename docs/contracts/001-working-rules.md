@@ -79,5 +79,6 @@ Underlay is in sequential mode:
 
 ## Next Task
 
-Execute ready roadmap `g09.055` in Acowtancy. Resume `g09.054` only after the
-reviewed repair merges; do not declare the fleet conforming from partial proof.
+Run the published target-owned `g09.055` Acowtancy handoff. Resume `g09.054`
+only after the reviewed repair merges; do not declare the fleet conforming from
+partial proof.

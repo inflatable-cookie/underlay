@@ -60,5 +60,6 @@ In parallel mode:
 
 ## Next Task
 
-Execute ready roadmap `g09.055` in Acowtancy. Resume `g09.054` only after the
-reviewed repair merges. See [`g09/README.md`](g09/README.md).
+Run the published target-owned `g09.055` Acowtancy handoff and return its PR for
+exact-head review. Resume `g09.054` only after the reviewed repair merges. See
+[`g09/README.md`](g09/README.md).

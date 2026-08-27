@@ -151,7 +151,7 @@ confirmed env/secret, runtime-topology, test-seam, and access/security drift.
 52. [x] [`g09.052`](052-acowtancy-runtime-access-rollout.md) — Acowtancy runtime/access rollout (`complete`)
 53. [x] [`g09.053`](053-underlay-reference-cross-tab-csrf-stability.md) — Underlay Reference cross-tab CSRF stability (`complete`)
 54. [ ] [`g09.054`](054-bootstrap-runtime-access-fleet-closeout.md) — bootstrap/runtime/access fleet closeout (`paused`)
-55. [ ] [`g09.055`](055-acowtancy-faq-json-ld-hardening.md) — Acowtancy FAQ JSON-LD hardening (`ready`)
+55. [ ] [`g09.055`](055-acowtancy-faq-json-ld-hardening.md) — Acowtancy FAQ JSON-LD hardening (`ready`; dispatched)
 
 Deferred with a promotion trigger (TypeScript 7.1 or concrete need):
 [`backlog/ts-7-adoption.md`](../backlog/ts-7-adoption.md).
@@ -176,8 +176,8 @@ Deferred with a promotion trigger (TypeScript 7.1 or concrete need):
 - `g09.053` is complete in Underlay Reference PR6, merge commit `f89e3616`.
 - `g09.054` is paused after its first exact-root pass found the Acowtancy FAQ
   JSON-LD script-breakout risk.
-- `g09.055` is the ready owning repair; `g09.054` resumes after its reviewed
-  merge.
+- `g09.055` is the ready owning repair with its target handoff published;
+  `g09.054` resumes after its reviewed merge.
 - Whole-app fixed-schema suites stay app-owned. `TestDb` remains the
   shared-crate/single-schema seam.
 
@@ -210,5 +210,5 @@ cross-tab CSRF stability repair without changing the route or response shape.
 
 ## Next Task
 
-Execute ready roadmap `g09.055` in Acowtancy. Resume `g09.054` only after the
-reviewed repair merges.
+Run the published target-owned `g09.055` Acowtancy handoff and return its PR for
+exact-head review. Resume `g09.054` only after the reviewed repair merges.

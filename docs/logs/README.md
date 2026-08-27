@@ -53,4 +53,5 @@ produced Underlay Reference PR6, which merged as `f89e3616`
 fleet-closeout pass then found a real Acowtancy FAQ JSON-LD script-breakout
 risk and paused `g09.054`
 ([log](./2026-08/27-160408-g09-054-partial-fleet-proof.md)). Execute ready
-owning repair `g09.055`.
+owning repair `g09.055` through its published target handoff
+([dispatch](./2026-08/27-160826-g09-055-dispatch.md)).

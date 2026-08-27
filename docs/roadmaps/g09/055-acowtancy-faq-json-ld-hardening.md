@@ -34,6 +34,20 @@ data, changing the FAQ API, or widening into unrelated Acowtancy content work.
 - record target execution evidence and any active security wording affected by
   the repair
 
+## Dispatch Evidence
+
+- Target-owned handoff:
+  `/Users/tom/Dev/projects/acowtancy/docs/handoffs/20260827-160658-g09-055-faq-json-ld-hardening.md`
+- Pushed Acowtancy `main`:
+  `c9aaff7c801b64bf4a86deab9a8adb1e4b440cc4`
+- Target planning base:
+  `f1ac23014eae1372264e32d85cfd1e553be5ed61`
+- Underlay roadmap authority:
+  `430071591bf4be0b5160b6677f5ba3b404567bae`
+- Target docs and Northstar QA passed; no worker PR was open at dispatch.
+- The unrelated untracked Farmyard papercut handoff remained untouched and was
+  excluded from the dispatch commit.
+
 ## Acceptance
 
 - a FAQ question or answer containing `</script><script>alert(1)</script>`
@@ -75,5 +89,6 @@ orchestrator.
 
 ## Next Task
 
-Publish a target-owned Acowtancy worker handoff, return its PR for exact-head
-review, then resume `g09.054` only after an operator-authorised merge.
+Run the published target-owned Acowtancy worker handoff, return its PR for
+exact-head review, then resume `g09.054` only after an operator-authorised
+merge.

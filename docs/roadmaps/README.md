@@ -77,7 +77,8 @@ Contact Patch PR5, Compli Me PR7, Songsprout PR5, Composer PR5, and Acowtancy
 PR62 have merged, completing `g09.048`–`g09.052`. Underlay Reference PR6 merged
 as `f89e3616`, completing `g09.053`. The first `g09.054` exact-root pass proved
 workspace/env authority but found an Acowtancy FAQ JSON-LD script-breakout
-risk. `g09.054` is paused and `g09.055` is the ready owning repair.
+risk. `g09.054` is paused and the target-owned `g09.055` repair handoff is
+published.
 See
 [`g09/README.md`](g09/README.md).
 
@@ -98,5 +99,5 @@ that risk.
 
 ## Next Task
 
-Execute ready roadmap `g09.055` in Acowtancy. Resume `g09.054` only after the
-reviewed repair merges.
+Run the published target-owned `g09.055` Acowtancy handoff and return its PR for
+exact-head review. Resume `g09.054` only after the reviewed repair merges.
