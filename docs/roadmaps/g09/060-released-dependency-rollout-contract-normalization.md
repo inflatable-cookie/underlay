@@ -1,6 +1,6 @@
 # g09.060 - Released Dependency Rollout Contract Normalization
 
-Status: in review
+Status: complete
 Owner: Underlay maintainers
 Contract: `023`
 Depends on: `g09.059` and papercuts wave 3 contract-link closeout (`complete`)
@@ -138,7 +138,21 @@ there.
 - execution log:
   `docs/logs/2026-08/27-215648-g09-060-released-dependency-contract-normalization.md`
 
+## Review And Merge Evidence
+
+- PR: `https://github.com/inflatable-cookie/underlay/pull/13`
+- reviewed head: `1bfe15c2e2ea7d0ae99b9351f534507b31b57e82`
+- review correction: narrowed `private: true` to its npm-only meaning without
+  introducing a Cargo publication policy
+- exact-head validation: `effigy health`, `effigy qa:docs`,
+  `effigy qa:northstar`, and `git diff --check` passed
+- both GitHub `build + test (with Postgres)` checks passed
+- merge commit: `a65797f0aca1f1ed6bbd9d30ca3155329b06c678`
+- closeout log:
+  `docs/logs/2026-08/27-222835-g09-060-released-dependency-contract-closeout.md`
+
 ## Next Task
 
-Review the worker PR at exact head and merge only with explicit operator
-authorisation. Do not open a later generation from this closeout.
+Re-enter Northstar planning inside `g09`. Review the open triage and backlog
+surfaces, then compile or promote one bounded next roadmap. Do not open a later
+generation without explicit operator direction.

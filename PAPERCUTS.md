@@ -5,6 +5,16 @@ they hit a solvable hurdle; they do not stop the current task to fix one.
 
 ## Open
 
+### [ ] `gh pr merge --delete-branch` reports failure after a successful merge — 2026-08-27
+- Friction: PR13 merged successfully, but `gh pr merge --delete-branch`
+  returned exit 1 because the local head branch still belonged to a registered
+  worker worktree
+- Impact: automation can mistake local branch-cleanup failure for provider
+  merge failure and retry or report the merge incorrectly
+- Possible fix: report provider merge and local cleanup as separate outcomes,
+  or skip local branch deletion when the branch belongs to a worktree
+- Surface: GitHub CLI PR merge / Northstar worker-worktree closeout
+
 ### [ ] Effigy release execute omits the promised GitHub Release — 2026-08-27
 - Friction: `effigy release execute --yes` reported a complete Underlay release
   after pushing the release commit and annotated tag, but no GitHub Release

@@ -79,10 +79,11 @@ Underlay is in sequential mode:
 - `g09.057` is complete with a `drifting` verdict
 - `g09.058` and `g09.059` are complete across all five affected targets
 - papercuts wave 3 is complete in Underlay PR12, merge commit `9e26ba9a`
-- `g09.060` is in review for the bounded Contract `023` released-dependency
-  normalization
+- `g09.060` is complete in Underlay PR13, merge commit `a65797f0`
+- no roadmap is ready; `g09` is paused at a planning checkpoint
 
 ## Next Task
 
-Review the `g09.060` PR at exact head and merge only with explicit operator
-authorisation.
+Re-enter Northstar planning inside `g09`. Review the open triage and backlog
+surfaces, then compile or promote one bounded next roadmap. Do not open a later
+generation without explicit operator direction.

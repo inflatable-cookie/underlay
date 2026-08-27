@@ -9,6 +9,7 @@ Started: 2026-08-03
 `g09` remains the active delivery generation. Its original config-convergence,
 dependency, and elective-major work completed on 2026-08-04. The generation
 then continued into consumer workspace normalization and contract fidelity.
+It is paused after `g09.060`; no roadmap is ready.
 
 An invalid rollover created `g10` with no roadmap files and used batch cards as
 the queue. The 2026-08-26 recovery removed that generation and rehomed its
@@ -43,6 +44,7 @@ features.
   grammar across all six roots
 - [x] retire the authorised auth aliases and slash-form batch-delete routes
   across all five affected targets
+- [x] normalize Contract `023` onto the released Git-tag dependency rule
 
 ## Roadmap Sequence
 
@@ -113,14 +115,15 @@ The two batch-grammar lanes completed in Underlay Reference PR9 and Compli Me
 PR8. Songsprout PR7, Composer PR7, and Acowtancy PR67 completed the three auth
 lanes. All five remote `main` tips match the recorded merge commits.
 
-### Phase 10 — Released dependency contract normalization (`g09.060`, in review)
+### Phase 10 — Released dependency contract normalization (`g09.060`, complete)
 
 Contract `023` now matches the released-tag dependency rule already required by
 Contract `024`, active guides, the checker, and all six consumer roots.
 `g09.060` is one serial docs-only correction. It does not change consumers,
 versions, releases, or tooling. Underlay PR12 completed the overlapping
 papercuts wave 3 contract-link lane at reviewed head `d2cb5cd9`, merge commit
-`9e26ba9a`.
+`9e26ba9a`. Underlay PR13 then merged the normalization at reviewed head
+`1bfe15c2`, merge commit `a65797f0`.
 
 ## Queue
 
@@ -183,7 +186,7 @@ papercuts wave 3 contract-link lane at reviewed head `d2cb5cd9`, merge commit
 57. [x] [`g09.057`](057-canonical-path-runtime-surface-workflow-assessment.md) — canonical path, runtime surface, and workflow action assessment (`complete`; `drifting`)
 58. [x] [`g09.058`](058-auth-mutation-compatibility-retirement.md) — auth mutation compatibility retirement (`complete`)
 59. [x] [`g09.059`](059-batch-delete-action-grammar-convergence.md) — batch-delete action grammar convergence (`complete`)
-60. [ ] [`g09.060`](060-released-dependency-rollout-contract-normalization.md) — released dependency rollout contract normalization (`in review`)
+60. [x] [`g09.060`](060-released-dependency-rollout-contract-normalization.md) — released dependency rollout contract normalization (`complete`)
 
 Deferred with a promotion trigger (TypeScript 7.1 or concrete need):
 [`backlog/ts-7-adoption.md`](../backlog/ts-7-adoption.md).
@@ -215,8 +218,8 @@ Deferred with a promotion trigger (TypeScript 7.1 or concrete need):
 - `g09.058` is complete in Songsprout PR7, merge commit `1778d108`; Composer
   PR7, merge commit `4fce7baa`; and Acowtancy PR67, merge commit `030b5295`.
 - papercuts wave 3 is complete in Underlay PR12, merge commit `9e26ba9a`
-- `g09.060` is a serial Underlay docs-only lane in review. No consumer or
-  release lane may run inside it.
+- `g09.060` is complete in Underlay PR13, merge commit `a65797f0`.
+- no roadmap is ready; `g09` is paused at a planning checkpoint.
 - Whole-app fixed-schema suites stay app-owned. `TestDb` remains the
   shared-crate/single-schema seam.
 
@@ -262,5 +265,6 @@ tags and locks remain valid; no consumer action is introduced.
 
 ## Next Task
 
-Review the `g09.060` PR at exact head and merge only with explicit operator
-authorisation. Do not open a later generation from this closeout.
+Re-enter Northstar planning inside `g09`. Review the open triage and backlog
+surfaces, then compile or promote one bounded next roadmap. Do not open a later
+generation without explicit operator direction.

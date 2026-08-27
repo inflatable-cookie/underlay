@@ -83,9 +83,9 @@ merged SSR regression was not portable; `g09.056` repaired that in PR65.
 `drifting` verdict: runtime profiles conform, while `g09.058` and `g09.059`
 own the authorised route-retirement work. Both roadmaps are complete across all
 five affected targets. Underlay PR12 completed the papercuts wave 3 contract-
-link lane as merge commit `9e26ba9a`. The operator chose to continue `g09`;
-`g09.060` is in review after rewriting Contract `023` onto the released-tag
-dependency rule.
+link lane as merge commit `9e26ba9a`. Underlay PR13 then completed `g09.060`
+at reviewed head `1bfe15c2`, merge commit `a65797f0`, rewriting Contract `023`
+onto the released-tag dependency rule. No roadmap is ready.
 See
 [`g09/README.md`](g09/README.md).
 
@@ -106,5 +106,6 @@ that risk.
 
 ## Next Task
 
-Review the `g09.060` PR at exact head and merge only with explicit operator
-authorisation.
+Re-enter Northstar planning inside `g09`. Review the open triage and backlog
+surfaces, then compile or promote one bounded next roadmap. Do not open a later
+generation without explicit operator direction.

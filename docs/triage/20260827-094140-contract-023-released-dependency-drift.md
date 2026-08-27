@@ -1,6 +1,6 @@
 # Contract 023 Released-Dependency Drift
 
-Status: in review
+Status: closed
 Captured: 2026-08-27
 
 ## Observation
@@ -20,5 +20,5 @@ shape.
 
 Promoted to
 [`g09.060`](../roadmaps/g09/060-released-dependency-rollout-contract-normalization.md)
-and now in review after the Contract `023` rewrite. This note remains only as
-the discovery record.
+and resolved in Underlay PR13 at reviewed head `1bfe15c2`, merge commit
+`a65797f0`. This note remains only as the closed discovery record.

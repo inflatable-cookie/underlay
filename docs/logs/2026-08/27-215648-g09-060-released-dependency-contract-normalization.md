@@ -3,7 +3,8 @@
 ## Outcome
 
 Rewrote Contract `023` so release and consumer-pin teaching matches Contract
-`024`, the live guides, and the six consumer roots. The roadmap is in review.
+`024`, the live guides, and the six consumer roots. Underlay PR13 later merged
+the reviewed exact head; see the closeout log linked below.
 
 ## Worktree
 
@@ -77,5 +78,7 @@ added.
 
 ## Next Task
 
-Review the `g09.060` PR at the new exact head and merge only with explicit
-operator authorisation. Do not open a later generation from this worker.
+See
+`docs/logs/2026-08/27-222835-g09-060-released-dependency-contract-closeout.md`
+for the exact-head review and merge evidence. Re-enter planning inside `g09`;
+do not open a later generation without explicit operator direction.

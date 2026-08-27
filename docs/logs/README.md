@@ -83,4 +83,6 @@ The serial `g09.060` worker was then published from exact planning base
 The worker rewrote Contract `023` onto released Git-tag pins and set the
 roadmap in review
 ([execution](./2026-08/27-215648-g09-060-released-dependency-contract-normalization.md)).
-Review that PR at exact head; do not merge without operator authorisation.
+Underlay PR13 merged at its reviewed head, completing `g09.060` and leaving
+`g09` paused with no ready roadmap
+([closeout](./2026-08/27-222835-g09-060-released-dependency-contract-closeout.md)).
