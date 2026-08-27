@@ -108,3 +108,14 @@ qa = [
     { task = "qa:docs" },
     { task = "qa:northstar" },
 ]
+
+# Action-bearing deferred-work labels only. Compatibility deprecations stay on
+# Contract 023 and compiler tooling; ordinary words such as "security" or
+# "note" are not doctor errors.
+[scan.attention_markers]
+warning = ["TODO", "REVIEW", "placeholder"]
+high = ["FIXME", "HACK", "workaround", "tech debt"]
+critical = ["BUG:", "SECURITY:", "remove before release"]
+doctor = true
+fail_on_findings = false
+respect_gitignore = true
