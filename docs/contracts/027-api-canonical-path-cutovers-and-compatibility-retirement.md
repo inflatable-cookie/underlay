@@ -213,26 +213,29 @@ Bad outcomes:
 
 Assessed across all six consumer APIs by `g09.057` on 2026-08-27.
 
-Verdict: `drifting` in three explicit mutation-alias families.
+Verdict: `partially repaired`; Songsprout and Composer conform, while
+Acowtancy remains open.
 
-- Songsprout and Acowtancy retain passkey connect aliases over canonical
-  register handlers.
-- Composer retains `/v1/auth/local/{login,refresh,logout}` aliases over the
-  canonical shared auth paths.
-- Composer and Songsprout in-repo callers are canonical; Acowtancy still needs
-  a client-first move.
-- none of the three families records an authorised external compatibility
-  window or removal trigger.
+- `g09.057` found Songsprout and Acowtancy passkey connect aliases over
+  canonical register handlers.
+- `g09.057` found Composer `/v1/auth/local/{login,refresh,logout}` aliases over
+  the canonical shared auth paths.
+- Composer and Songsprout callers were already canonical; Acowtancy still
+  required a client-first move.
+- the operator then declared the supported caller set closed-world and chose no
+  compatibility window.
 
 No other same-handler mutation alias was found. Mixed Composer catalog reads
 remain an intentional shared-read/admin-write split, not compatibility debt.
 See the
 [`g09.057` assessment](../logs/2026-08/27-175930-g09-057-canonical-path-runtime-workflow-assessment.md).
 The operator declared the supported fleet caller set closed-world and chose no
-compatibility window. `g09.058` is dispatched for atomic caller migration and
-alias retirement in Songsprout, Acowtancy, and Composer.
+compatibility window. Songsprout PR7 and Composer PR7 have merged their atomic
+alias retirements as `1778d108` and `4fce7baa`. Acowtancy PR67 remains open and
+mergeable at reviewed-candidate head `bb3741ac`; it is the only outstanding
+`g09.058` lane.
 
 ## Next Task
 
-Review the three dispatched target-owned `g09.058` lanes. Require caller and
-old-route absence proof before each PR is accepted.
+Finish Acowtancy PR67 in its separate thread. Require caller and old-route
+absence proof before accepting the exact head, then close `g09.058`.

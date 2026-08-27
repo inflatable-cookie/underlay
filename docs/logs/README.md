@@ -61,5 +61,9 @@ now complete
 Runtime maturity conforms. The operator authorised closed-world retirement with
 no compatibility windows and canonical `:batch-delete`
 ([promotion](./2026-08/27-181454-g09-058-059-route-retirement-promotion.md));
-all five target-owned workers are now
+all five target-owned workers were
 [dispatched](./2026-08/27-182502-g09-058-059-route-retirement-dispatch.md).
+Four lanes have merged: `g09.059` is complete, and Songsprout plus Composer have
+completed two of three `g09.058` lanes
+([partial closeout](./2026-08/27-201331-g09-058-partial-059-closeout.md)).
+Acowtancy PR67 is the only remaining lane and stays with its separate thread.

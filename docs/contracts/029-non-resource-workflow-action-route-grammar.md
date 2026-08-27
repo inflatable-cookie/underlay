@@ -263,12 +263,12 @@ Bad outcomes:
 
 Assessed across all six consumer APIs by `g09.057` on 2026-08-27.
 
-Verdict: `drifting` in two collection-action families; otherwise conforming.
+Verdict: `conforming` after the two bounded `g09.059` repairs.
 
-- Underlay Reference mixes `:batch-delete` with nested
+- `g09.057` found Underlay Reference mixing `:batch-delete` with nested
   `/tasks/batch-delete`.
-- Compli Me mixes `/batch-delete` for its domain resources with
-  `:batch-delete` for media.
+- `g09.057` found Compli Me mixing `/batch-delete` for its domain resources
+  with `:batch-delete` for media.
 - resource lifecycle, reorder, dedicated workflow, claim/release, and explicit
   transition routes conform across the fleet.
 - Acowtancy's consistent `batch-soft-delete` vocabulary preserves a narrower
@@ -276,10 +276,12 @@ Verdict: `drifting` in two collection-action families; otherwise conforming.
 
 The operator chose `:batch-delete` as the canonical suffix, declared the
 supported fleet caller set closed-world, and chose no compatibility window.
-`g09.059` is dispatched for atomic caller and route updates. See the
+Underlay Reference PR9 and Compli Me PR8 completed the atomic caller and route
+updates as merge commits `0109b906` and `a290d2a7`. `g09.059` is complete and
+the assessed collection-action drift is repaired. See the
 [`g09.057` assessment](../logs/2026-08/27-175930-g09-057-canonical-path-runtime-workflow-assessment.md).
 
 ## Next Task
 
-Review the two dispatched target-owned `g09.059` lanes. Require caller and
-old-route absence proof before each PR is accepted.
+No further `g09.059` work remains. Preserve `:batch-delete` as the canonical
+collection-action suffix in future assessments.

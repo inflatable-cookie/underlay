@@ -1,6 +1,6 @@
 # g09.058 - Auth Mutation Compatibility Retirement
 
-Status: ready - dispatched
+Status: in progress - two lanes merged
 Owner: repo maintainers
 Contract: `027`
 Depends on: `g09.057`
@@ -81,7 +81,20 @@ this with auth redesign.
   in target commit `fe94c1bb6370bec5a05aca412adde9311cceddd2`
 - all three target docs and Northstar QA gates passed before push
 
+## Merge Evidence
+
+- Songsprout PR7 merged reviewed head
+  `40c9bb1169fe3f0eb7abde19a4a20995e76a6107` as
+  `1778d108025c1b42a6a6b844dcef63395d102a8c`
+- Composer PR7 merged reviewed head
+  `40c50c9c97baa5597f193201e3c224e77b72f064` as
+  `4fce7baa9ac1959b9e9a9622c7d29f30688a8512`
+- Acowtancy PR67 remains open and mergeable at
+  `bb3741acfa0d5270eca5bb5321ec35b1c4190a50`; its separate Acowtancy thread
+  owns review and merge
+
 ## Next Task
 
-Launch the three workers. Review each PR at exact head; merge only with explicit
-operator authorisation.
+The Acowtancy thread reviews PR67 at exact head and merges only with explicit
+operator authorisation. Record its exact merged tip, then close `g09.058` and
+the route-retirement phase.

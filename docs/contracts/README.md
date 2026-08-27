@@ -64,6 +64,8 @@ machine-readable policy files.
   `024`–`026` with a `drifting` verdict
 - `g09.046`–`g09.056` repaired and proved that group; `g09.054` closes it as
   conforming across the six exact roots
-- `g09.057` assessed contracts `027`–`029`; runtime profiles conform, while
-  `g09.058` and `g09.059` now own the authorised closed-world retirement of
-  auth aliases and slash-form batch-delete routes
+- `g09.057` assessed contracts `027`–`029`; runtime profiles conform
+- `g09.059` completed the authorised closed-world retirement of slash-form
+  batch-delete routes
+- Songsprout and Composer completed two of three `g09.058` auth-alias lanes;
+  Acowtancy PR67 is the only remaining repair

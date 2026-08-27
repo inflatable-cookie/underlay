@@ -1,6 +1,6 @@
 # g09.059 - Batch Delete Action Grammar Convergence
 
-Status: ready - dispatched
+Status: complete
 Owner: repo maintainers
 Contract: `029`
 Depends on: `g09.057`
@@ -71,7 +71,17 @@ disproves the closed-world caller inventory.
   commit `8c6d6d9c22d339f26ad454bba3da36a746136d4f`
 - both target docs and Northstar QA gates passed before push
 
+## Merge Evidence
+
+- Underlay Reference PR9 merged reviewed head
+  `dc866aa4762e5e142299fdc23a452e9af1f844c4` as
+  `0109b906272c7ea39e5e84bb4034ff08d0043f48`
+- Compli Me PR8 merged reviewed head
+  `d7b46b8287f65b33b39dc773460a3fd569b3d80d` as
+  `a290d2a783bdfbe1deac52c96a1fd5264e46d624`
+- both remote `main` tips matched those merge commits during closeout
+
 ## Next Task
 
-Launch the two workers. Review each PR at exact head; merge only with explicit
-operator authorisation.
+No further `g09.059` work remains. Finish the Acowtancy lane in `g09.058`, then
+close the route-retirement phase.
