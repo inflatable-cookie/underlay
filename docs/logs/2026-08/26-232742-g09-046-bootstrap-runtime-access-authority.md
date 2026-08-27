@@ -55,12 +55,12 @@ depend on local secrets.
 ```text
 effigy test --plan                    recorded
 effigy check:workspace-shape          pass (14)
-effigy check:env-authority            pass (11)
+effigy check:env-authority            pass (14)
 effigy health                         pass
 effigy qa:docs                        pass
 effigy qa:northstar                   pass
 effigy validate                       pass
-                                      127 unit files / 796 tests
+                                      127 unit files / 799 tests
                                       12 component files / 49 tests
                                       svelte-check 0 errors 0 warnings
 git diff --check                      pass
@@ -79,6 +79,11 @@ Addressed orchestrator changes requested on PR #9:
 2. Env-reader detection ignores comments, test paths/files, and fixtures.
 3. `docs/contracts/README.md` and `docs/roadmaps/generation-index.md` now say
    `g09.046` is in review.
+
+Second re-review: `hooks.server.test.ts` under env-authority fixtures was being
+collected by Vitest. Both Vitest configs now exclude `ts/tests/fixtures/**`.
+The test-only-reader regression remains. `effigy validate` on this head is
+127 unit files / 799 tests and 12 component files / 49 tests.
 
 ## Stop boundaries respected
 
