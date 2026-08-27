@@ -5,15 +5,6 @@ they hit a solvable hurdle; they do not stop the current task to fix one.
 
 ## Open
 
-### [ ] Effigy still advertises retired Storybook tasks — 2026-08-27
-- Friction: `effigy tasks` lists `storybook` and `storybook:build` after the
-  repository's Storybook surface was deprecated and removed.
-- Impact: agents can route into unsupported UI tooling during normal task
-  discovery.
-- Possible fix: remove the stale task selectors and any remaining Storybook
-  configuration or dependency residue in one bounded cleanup.
-- Surface: `effigy.toml` / retired Storybook tooling
-
 ### [ ] Emitted Svelte CSS leaves `:global(...)` for Lightning CSS — 2026-08-27
 - Friction: consumer production builds repeatedly warn that `global` is not a
   valid pseudo-class in selectors emitted from Underlay detail-card styles
@@ -34,17 +25,6 @@ they hit a solvable hurdle; they do not stop the current task to fix one.
   declare the separate provider-publication step explicitly
 - Surface: Effigy release execution / Underlay release protocol
 
-### [ ] `TestDb` docs promise automatic drop cleanup that does not run — 2026-08-26
-- Friction: `TestDb` says the test schema is automatically cleaned up on drop,
-  but `Drop` performs no async cleanup and external databases retain the schema
-  unless callers invoke `cleanup()`
-- Impact: test authors can leak `test_*` schemas or assume isolation teardown
-  happened when only a container lifetime ended
-- Possible fix: make the docs consistently require explicit cleanup for
-  external databases, or introduce an owned async lifecycle that can prove
-  teardown
-- Surface: `underlay-testing::TestDb` lifecycle documentation
-
 ### [ ] Reference runtime docs misstate database storage shape — 2026-08-26
 - Friction: Underlay Reference says PostgreSQL persists under repo-local
   `.effigy/runtime/data/postgres`, while Effigy reports the live store as the
@@ -62,12 +42,6 @@ they hit a solvable hurdle; they do not stop the current task to fix one.
 - Possible fix: preserve post-separator arguments for task selectors or reject
   the unsupported form with a clear error
 - Surface: Effigy task argument forwarding / focused test execution
-
-### [ ] Auth architecture links target retired crate paths — 2026-08-26
-- Friction: the broad docs link check finds `docs/architecture/050-auth-database-schema.md` links to removed `underlay-auth` migration and `types.rs` paths
-- Impact: full-tree link validation fails before it can isolate planning-authority changes
-- Possible fix: repoint the schema/type references to the current auth crate owners or convert them to historical prose
-- Surface: auth architecture docs / docs link QA
 
 ### [ ] Northstar compile-roadmaps references a missing batch-card template — 2026-08-26
 - Friction: compile-roadmaps requires the installed `docs/specs/templates/batch-card-template.md`, but the Northstar assets package only lists that path in its README and does not contain the file
@@ -105,13 +79,36 @@ they hit a solvable hurdle; they do not stop the current task to fix one.
 - Possible fix: add a cheap `effigy qa:northstar` check that generation README checkbox state matches card Status frontmatter for the active generation
 - Surface: docs QA / northstar refresh
 
-### [ ] No `check:agent-instructions` task in underlay effigy.toml — 2026-08-17
-- Friction: Northstar agent-instruction review expects `effigy check:agent-instructions`; underlay only has `qa:docs:agent-defaults`
-- Impact: instruction-surface audits fall back to manual review
-- Possible fix: add the Northstar bundled audit task to effigy.toml or document the consumer-safe fallback command
-- Surface: effigy.toml / AGENTS review
-
 ## Closed
+
+### [x] Effigy still advertises retired Storybook tasks — 2026-08-27
+- Resolution: removed `storybook` / `storybook:build` selectors, Storybook
+  deps, `.storybook/`, `ts/stories/`, the demos include, and live guide
+  commands. Discovery now points at ACME reference apps and Poodle docs.
+- Closed: 2026-08-27
+- Surface: `effigy.toml` / retired Storybook tooling
+
+### [x] `TestDb` docs promise automatic drop cleanup that does not run — 2026-08-26
+- Resolution: rustdoc and `docs/guides/130-testing.md` now require explicit
+  `cleanup()` for external databases. `Drop` is documented as a no-op for
+  schema teardown; container drop still destroys container-backed DBs.
+- Closed: 2026-08-27
+- Surface: `underlay-testing::TestDb` lifecycle documentation
+
+### [x] Auth architecture links target retired crate paths — 2026-08-26
+- Resolution: `docs/architecture/050-auth-database-schema.md` now uses
+  repo-relative links to the live `underlay-auth` migration and `types.rs`.
+  The crate still owns those files; the broken links were absolute
+  checkout paths with `:1` suffixes, not a missing crate.
+- Closed: 2026-08-27
+- Surface: auth architecture docs / docs link QA
+
+### [x] No `check:agent-instructions` task in underlay effigy.toml — 2026-08-17
+- Resolution: Northstar's bundled audit is not a local Underlay catalog
+  task. `AGENTS.md` now names `effigy qa:docs:agent-defaults` as the
+  consumer-safe fallback. No second audit was added.
+- Closed: 2026-08-27
+- Surface: effigy.toml / AGENTS review
 
 ### [x] Effigy doctor rejects Underlay's `isolation` manifest table — 2026-08-25
 - Resolution: removed the unsupported `[isolation]` table; current Effigy has no replacement schema surface
