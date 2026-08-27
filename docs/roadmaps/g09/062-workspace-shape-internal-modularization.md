@@ -1,6 +1,6 @@
 # g09.062 - Workspace-Shape Internal Modularization
 
-Status: ready - dispatched
+Status: in review
 Owner: Underlay maintainers
 Contract: `024`, `120`
 Depends on: `g09.060` (`complete`)
@@ -85,6 +85,35 @@ below the 250-code-line advisory threshold where the natural seams allow it.
 - current workspace-shape fixture and package-compatibility coverage
 - fresh Effigy graph identifying `workspace-shape.ts` as the primary owner
 
+## Execution Evidence
+
+Worker branch `t3code/workspace-shape-modularization` in
+`/Users/tom/.t3/worktrees/underlay/t3code-0036d3d4`. Public facade remains
+`ts/src/tools/workspace-shape.ts`. Internal modules:
+
+- `workspace-shape/model.ts` — rule IDs, types, constants
+- `workspace-shape/fs.ts` — filesystem and manifest discovery
+- `workspace-shape/topology.ts` — Git, manifest, membership, lock checks
+- `workspace-shape/dependencies.ts` — internal edges and shared `file:` checks
+- `workspace-shape/check.ts` — `checkWorkspaceShape()` orchestration
+- `workspace-shape/report.ts` — `formatWorkspaceShapeReport()`
+- `workspace-shape/cli.ts` — `runWorkspaceShapeCli()`
+
+Package export and `underlay-workspace-shape` bin are unchanged. Existing
+fixtures still pass. One report-copy assertion was added for the extracted
+formatter seam.
+
+`effigy scan god-files --json` after the split: `high=0`, `critical=0`,
+`warning=14`. No workspace-shape file remains in the finding list.
+
+`effigy doctor --verbose` on this branch: `ok:16 warn:3 err:1`. The remaining
+error is `scan.attention-markers` (five errors, one warning), owned by
+`g09.061`. God-files is warning-only. Comment-ratio and a stale graph index
+are the other warnings. This lane did not hide those findings.
+
+Lane log:
+`docs/logs/2026-08/27-225500-g09-062-workspace-shape-internal-modularization.md`
+
 ## Stop Conditions
 
 Stop if the split changes a stable rule, output, CLI, export, package boundary,
@@ -109,5 +138,5 @@ warning-level refactors outside the checker family.
 
 ## Next Task
 
-Launch the published handoff. Open one Underlay PR and stop for orchestrator
-review; do not merge or update shared front doors.
+Stop for orchestrator review of the implementation PR. Do not merge and do not
+edit shared front doors.
