@@ -5,6 +5,15 @@ they hit a solvable hurdle; they do not stop the current task to fix one.
 
 ## Open
 
+### [ ] Emitted Svelte CSS leaves `:global(...)` for Lightning CSS — 2026-08-27
+- Friction: consumer production builds repeatedly warn that `global` is not a
+  valid pseudo-class in selectors emitted from Underlay detail-card styles
+- Impact: full QA produces a large warning wall that can hide new build
+  diagnostics even though the build exits successfully
+- Possible fix: ensure Svelte consumes the global selector before CSS reaches
+  Lightning CSS, or emit a standards-valid selector from the shared component
+- Surface: Underlay detail-card Svelte styles / consumer Vite production builds
+
 ### [ ] Effigy release execute omits the promised GitHub Release — 2026-08-27
 - Friction: `effigy release execute --yes` reported a complete Underlay release
   after pushing the release commit and annotated tag, but no GitHub Release
