@@ -7,10 +7,10 @@ This document describes the live shared auth persistence model.
 
 The canonical source of truth is the migration:
 
-- [rust/crates/underlay-auth/migrations/0001_create_auth_tables.sql](/Users/tom/Dev/projects/underlay/rust/crates/underlay-auth/migrations/0001_create_auth_tables.sql:1)
+- [rust/crates/underlay-auth/migrations/0001_create_auth_tables.sql](../../rust/crates/underlay-auth/migrations/0001_create_auth_tables.sql)
 
 The shared Rust type surface in
-[rust/crates/underlay-auth/src/types.rs](/Users/tom/Dev/projects/underlay/rust/crates/underlay-auth/src/types.rs:1)
+[rust/crates/underlay-auth/src/types.rs](../../rust/crates/underlay-auth/src/types.rs)
 is the matching application model.
 
 If this doc drifts from either of those, the migration and shared types win.
