@@ -1,6 +1,6 @@
 # g09.047 - Underlay Reference Runtime And Access Proof
 
-Status: ready
+Status: complete
 Owner: Underlay Reference maintainers
 Contracts: `024`, `025`, `026`, `030`, `031`
 Found by: `g09.045`
@@ -97,8 +97,24 @@ Underlay Reference owner.
   affected by the final policy
 - Compatibility window: no URL cutover is authorized by this roadmap
 
+## Completion Evidence
+
+- Underlay Reference PR
+  [#5](https://github.com/inflatable-cookie/underlay-reference/pull/5)
+  merged on 2026-08-27 as `6af2783768e04c8def9b6bb1de5c90cbb69a7892`.
+- Reviewed worker head: `9953d817cd5f45d21915a4190a5c0f8b67f85532`.
+- The reference app now carries executable Effigy secret declarations, tracked
+  env/required-secret authority, bootstrap-only typed behavior policy, explicit
+  route families, deployed fail-closed CSRF/config/cookie posture, and
+  peer-aware client-IP extraction without public URL changes.
+- Independent exact-head review passed released workspace/env conformance,
+  API health, the three-target Effigy test plan, 133 Rust tests, runnable JS
+  targets, full root QA, docs QA, and `git diff --check`.
+- All 95 public route paths remained unchanged. The target's independent
+  `g01.007` planning state was not modified.
+
 ## Next Task
 
-Run the worker handoff published on Underlay Reference `main` at `e4235876`.
-After reviewed merge and exact-main verification, promote independent roadmaps
-`g09.048`-`g09.052` whose decision gates are satisfied.
+Run the promotion-gate review for independent roadmaps `g09.048`-`g09.052`.
+Their reference-proof dependency is clear; keep each lane planned until its
+remaining product/security decisions and exact-main gate are satisfied.

@@ -13,7 +13,8 @@ Contact Patch while preserving its product-specific Book input and front family.
 
 ## Promotion Gate
 
-- [ ] `g09.047` is merged and its exact reference proof is recorded
+- [x] `g09.047` is merged and its exact reference proof is recorded
+  (Underlay Reference PR5, merge commit `6af27837`)
 - [ ] Contact Patch is clean and exactly aligned with `origin/main`
 - [ ] Book is classified as an external read-only content input or removed from
   bootstrap; it is not workspace ownership

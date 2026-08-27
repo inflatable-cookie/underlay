@@ -13,7 +13,8 @@ cookie mutation protection, and direct-router proof.
 
 ## Promotion Gate
 
-- [ ] `g09.047` is merged and its exact reference proof is recorded
+- [x] `g09.047` is merged and its exact reference proof is recorded
+  (Underlay Reference PR5, merge commit `6af27837`)
 - [ ] Compli Me is clean and exactly aligned with `origin/main`
 - [ ] `/v1/compli/*` is classified as shared multi-client or product/front
 - [ ] metrics exposure is explicitly enabled with a route or removed as unused

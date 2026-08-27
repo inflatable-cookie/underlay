@@ -68,11 +68,10 @@ shared repair and `g09.038` completed the Underlay Reference proof. `g09.039`
 completed the Contact Patch rollout and `g09.040`–`g09.043` completed the
 remaining consumer repairs. `g09.044` closed the migration/testing proof.
 `g09.045` completed the bootstrap/runtime/access assessment with a `drifting`
-verdict. `g09.046` is complete. Underlay `v0.9.5`, the exact clean Underlay
-Reference checkout, and the three explicit app-owner security decisions clear
-all g09.047 promotion gates. `g09.047` is ready; `g09.048`–`g09.053` stay
-planned. Its worker handoff is published on Underlay Reference `main` at
-`e4235876`. See
+verdict. `g09.046` is complete. `g09.047` completed the Underlay Reference
+runtime/access proof in PR5, merge commit `6af27837`. Its merge clears the
+shared reference dependency for `g09.048`–`g09.052`; those consumer lanes and
+`g09.053` remain planned while their lane-specific gates are resolved. See
 [`g09/README.md`](g09/README.md).
 
 ## Archived generations
@@ -92,5 +91,5 @@ that risk.
 
 ## Next Task
 
-Run g09.047 through the published Underlay Reference worker handoff. Do not run
-the target's independent g01.007 lane concurrently.
+Review the remaining promotion gates for `g09.048`–`g09.052`, collect the named
+product/security decisions, and dispatch only the lanes that become ready.

@@ -14,7 +14,8 @@ generic front naming.
 
 ## Promotion Gate
 
-- [ ] `g09.047` is merged and its exact reference proof is recorded
+- [x] `g09.047` is merged and its exact reference proof is recorded
+  (Underlay Reference PR5, merge commit `6af27837`)
 - [ ] Songsprout is clean and exactly aligned with `origin/main`
 - [ ] rate-limit backend failure is explicitly chosen as fail-open or fail-closed
 - [ ] Bloom/Greenhouse browser-cookie and framework CSRF posture is confirmed

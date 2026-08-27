@@ -14,7 +14,8 @@ compatibility decisions.
 
 ## Promotion Gate
 
-- [ ] `g09.047` is merged and its exact reference proof is recorded
+- [x] `g09.047` is merged and its exact reference proof is recorded
+  (Underlay Reference PR5, merge commit `6af27837`)
 - [ ] Composer is clean and exactly aligned with `origin/main`
 - [ ] deployment proxy topology and authoritative client-IP source are named
 - [ ] delete-batch restore/purge wire compatibility is decided

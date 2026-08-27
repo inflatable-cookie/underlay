@@ -86,7 +86,7 @@ confirmed env/secret, runtime-topology, test-seam, and access/security drift.
 ### Phase 7 — Bootstrap/runtime/access repair (`g09.046`–`g09.053`, active)
 
 1. repair Underlay authority and conformance (`g09.046`, complete)
-2. prove the repaired boundary in Underlay Reference (`g09.047`, ready)
+2. prove the repaired boundary in Underlay Reference (`g09.047`, complete)
 3. run Contact Patch, Compli Me, Songsprout, Composer, and Acowtancy as
    independent repo-owned lanes (`g09.048`–`g09.052`, planned)
 4. close exact-head six-root proof (`g09.053`, planned)
@@ -139,7 +139,7 @@ confirmed env/secret, runtime-topology, test-seam, and access/security drift.
 44. [x] [`g09.044`](044-migration-testing-fleet-closeout.md) — migration/testing fleet closeout (`complete`)
 45. [x] [`g09.045`](045-bootstrap-and-runtime-contract-assessment.md) — bootstrap and runtime contract assessment (`complete`; `drifting`)
 46. [x] [`g09.046`](046-bootstrap-runtime-access-authority.md) — bootstrap/runtime/access authority (`complete`)
-47. [ ] [`g09.047`](047-underlay-reference-runtime-access-proof.md) — Underlay Reference runtime/access proof (`ready`)
+47. [x] [`g09.047`](047-underlay-reference-runtime-access-proof.md) — Underlay Reference runtime/access proof (`complete`)
 48. [ ] [`g09.048`](048-contact-patch-runtime-access-rollout.md) — Contact Patch runtime/access rollout (`planned`)
 49. [ ] [`g09.049`](049-compli-me-runtime-access-rollout.md) — Compli Me runtime/access rollout (`planned`)
 50. [ ] [`g09.050`](050-songsprout-runtime-access-rollout.md) — Songsprout runtime/access rollout (`planned`)
@@ -163,11 +163,10 @@ Deferred with a promotion trigger (TypeScript 7.1 or concrete need):
 - `g09.044` is complete after all five merged consumer roadmaps.
 - `g09.045` is complete.
 - `g09.046` is complete and merged in PR9.
-- Underlay `v0.9.5`, exact clean Underlay Reference main, and explicit
-  environment-aware secrets, local/effigy/test-only CSRF disablement, and
-  fatal deployed config/cookie policy clear every g09.047 promotion gate.
-- `g09.048`–`g09.052` may run in parallel only after `g09.047` and each named
-  product/security decision gate.
+- `g09.047` is complete in Underlay Reference PR5, merge commit `6af27837`.
+- The shared reference-proof gate is clear for `g09.048`–`g09.052`. They may
+  run in parallel only after each lane's remaining exact-main and named
+  product/security decision gates are satisfied.
 - `g09.053` closes the fleet after all five independent rollout lanes merge.
 - Whole-app fixed-schema suites stay app-owned. `TestDb` remains the
   shared-crate/single-schema seam.
@@ -192,12 +191,13 @@ reachability.
 `g09.044` published the fleet upgrade note and final matrix. Retired consumer
 `db:*` selectors and fail-open local overlays have no compatibility window.
 
-`g09.045` found no regression in the supported monorepo shape. Later consumer
-impact is bounded by `g09.047`–`g09.052`; security and path compatibility
-changes cannot begin before their roadmap decisions are explicit.
+`g09.045` found no regression in the supported monorepo shape. `g09.047`
+completed the reference env/runtime/access proof without changing any of its 95
+public route paths. Remaining consumer impact is bounded by `g09.048`–`g09.052`;
+security and path compatibility changes cannot begin before each roadmap's
+decisions are explicit.
 
 ## Next Task
 
-Run g09.047 through
-`docs/handoffs/20260827-102002-g09-047-runtime-access-proof.md` in a fresh
-Underlay Reference worker thread. Keep the target's g01.007 lane serial.
+Review the remaining promotion gates for `g09.048`–`g09.052`, collect the named
+product/security decisions, and dispatch only the lanes that become ready.
