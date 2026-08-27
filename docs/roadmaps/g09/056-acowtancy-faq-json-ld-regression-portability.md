@@ -38,6 +38,19 @@ layout.
   contains no literal `<`, and restores the original closing-script payload
 - record target execution evidence
 
+## Dispatch Evidence
+
+- Target-owned handoff:
+  `/Users/tom/Dev/projects/acowtancy/docs/handoffs/20260827-165721-g09-056-faq-json-ld-regression-portability.md`
+- Pushed Acowtancy `main`:
+  `645296936dbe7c20b628785fe148d309a944c38d`
+- Target planning base:
+  `7ba8e064bd5dc3a615256b6134dc7841be7e3b56`
+- Underlay roadmap authority:
+  `fc11ba4a5d826749253d2a28bdc76892c7b5e996`
+- Target docs and Northstar QA passed. PR64 had merged before dispatch; no open
+  PR overlapped the FAQ test.
+
 ## Acceptance
 
 - `bun test apps/cream/tests/faq.test.ts` passes all 19 tests from the clean
@@ -78,5 +91,5 @@ independent planning lanes.
 
 ## Next Task
 
-Publish the target-owned worker handoff, review and merge its Acowtancy PR,
-then resume `g09.054` at the six exact remote tips.
+Run the published target-owned worker handoff, review and merge its Acowtancy
+PR, then resume `g09.054` at the six exact remote tips.

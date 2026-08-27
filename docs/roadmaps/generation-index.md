@@ -60,6 +60,6 @@ In parallel mode:
 
 ## Next Task
 
-Publish and run the target-owned `g09.056` Acowtancy handoff. Resume `g09.054`
+Run the published target-owned `g09.056` Acowtancy handoff. Resume `g09.054`
 only after the reviewed test-portability repair merges. See
 [`g09/README.md`](g09/README.md).
