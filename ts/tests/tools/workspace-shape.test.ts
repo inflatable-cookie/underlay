@@ -7,6 +7,7 @@ import { promisify } from "node:util";
 import { afterEach, describe, expect, it } from "vitest";
 import {
 	checkWorkspaceShape,
+	formatWorkspaceShapeReport,
 	WORKSPACE_SHAPE_RULE_IDS,
 } from "@inflatable-cookie/underlay/tools/workspace-shape";
 
@@ -166,6 +167,24 @@ describe("tools/workspace-shape", () => {
 			await loadFixture("external-file-dependency-allowed"),
 		);
 		expect(violations).toEqual([]);
+	});
+
+	it("formats empty and failing reports with stable copy", () => {
+		expect(formatWorkspaceShapeReport("/repo", [])).toBe(
+			"Workspace shape report for: /repo\n\nAll workspace shape checks passed.",
+		);
+
+		expect(
+			formatWorkspaceShapeReport("/repo", [
+				{
+					ruleId: WORKSPACE_SHAPE_RULE_IDS.ROOT_LOCK_MISSING,
+					path: "bun.lock",
+					detail: "root bun.lock is missing",
+				},
+			]),
+		).toBe(
+			"Workspace shape report for: /repo\n\n  FAIL  root-lock-missing: bun.lock — root bun.lock is missing\n\n1 workspace shape violation(s) found.",
+		);
 	});
 
 	it("returns deterministic sorted diagnostics", async () => {
