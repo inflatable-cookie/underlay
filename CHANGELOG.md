@@ -7,6 +7,8 @@ While Underlay is `0.x`, breaking changes raise the minor version.
 
 ## [Unreleased]
 
+## [0.9.5] - 2026-08-27
+
 ### Added
 - Distributable `underlay-workspace-shape` and `underlay-env-authority`
   conformance tools now validate consumer workspace topology, package edges,
