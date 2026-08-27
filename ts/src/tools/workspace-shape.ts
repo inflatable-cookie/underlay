@@ -36,6 +36,8 @@ export const WORKSPACE_SHAPE_RULE_IDS = {
 	CHILD_LOCKFILE: 'child-lockfile',
 	INTERNAL_FILE_DEPENDENCY: 'internal-file-dependency',
 	INTERNAL_EDGE_NOT_WORKSPACE: 'internal-edge-not-workspace',
+	WORKSPACE_PREFIX_UNSUPPORTED: 'workspace-prefix-unsupported',
+	SHARED_FILE_DEPENDENCY: 'shared-file-dependency',
 } as const;
 
 export type WorkspaceShapeRuleId = (typeof WORKSPACE_SHAPE_RULE_IDS)[keyof typeof WORKSPACE_SHAPE_RULE_IDS];
@@ -84,6 +86,13 @@ const DEPENDENCY_FIELDS = [
 
 const WORKSPACE_DISCOVERY_PREFIXES = ['apps', 'packages'];
 
+const RELEASED_SHARED_PACKAGE_NAMES = new Set([
+	'@inflatable-cookie/underlay',
+	'@inflatable-cookie/poodle',
+	'@inflatable-cookie/poodle-core',
+	'@inflatable-cookie/poodle-svelte',
+]);
+
 // =============================================================================
 // Helpers
 // =============================================================================
@@ -127,7 +136,16 @@ function isPathInsideRoot(root: string, targetPath: string): boolean {
 }
 
 function normalizeWorkspacePath(workspacePath: string): string {
-	return workspacePath.replace(/\\/g, '/').replace(/\/+$/, '');
+	return workspacePath.replace(/\\/g, '/').replace(/^\.\//, '').replace(/\/+$/, '');
+}
+
+function hasSupportedWorkspacePrefix(workspacePath: string): boolean {
+	const normalized = normalizeWorkspacePath(workspacePath);
+	return normalized.startsWith('apps/') || normalized.startsWith('packages/');
+}
+
+function isReleasedSharedPackageName(name: string): boolean {
+	return RELEASED_SHARED_PACKAGE_NAMES.has(name) || name.startsWith('@inflatable-cookie/poodle-');
 }
 
 async function isRealPathInsideRoot(root: string, relativePath: string): Promise<boolean> {
@@ -250,6 +268,19 @@ function isInternalFileDependency(
 	}
 
 	return false;
+}
+
+async function sharedFileTargetPackageName(
+	root: string,
+	manifestRelativeDir: string,
+	depValue: string,
+): Promise<string | undefined> {
+	if (!depValue.startsWith('file:')) return undefined;
+
+	const targetPath = depValue.slice('file:'.length);
+	const resolved = path.resolve(path.join(root, manifestRelativeDir), targetPath);
+	const pkg = await readPackageJson(path.join(resolved, 'package.json'));
+	return typeof pkg?.name === 'string' ? pkg.name : undefined;
 }
 
 async function discoverWorkspacePackagePaths(root: string): Promise<string[]> {
@@ -396,6 +427,16 @@ async function checkWorkspacePaths(
 ): Promise<void> {
 	for (const workspacePath of workspacePaths) {
 		const normalizedPath = normalizeWorkspacePath(workspacePath);
+
+		if (!hasSupportedWorkspacePrefix(workspacePath)) {
+			pushViolation(
+				violations,
+				WORKSPACE_SHAPE_RULE_IDS.WORKSPACE_PREFIX_UNSUPPORTED,
+				'package.json',
+				`workspace path ${workspacePath} must live under apps/* or packages/*`,
+			);
+		}
+
 		const containment = await workspacePathContainedByRoot(root, workspacePath);
 
 		if (containment === 'outside') {
@@ -525,6 +566,41 @@ async function checkInternalEdges(
 	}
 }
 
+async function checkSharedFileDependencies(
+	root: string,
+	workspacePaths: string[],
+	violations: WorkspaceShapeViolation[],
+): Promise<void> {
+	const manifests = [
+		'package.json',
+		...workspacePaths.map((workspacePath) => path.join(workspacePath, 'package.json')),
+	];
+
+	for (const manifestRelative of manifests) {
+		const pkg = await readPackageJson(path.join(root, manifestRelative));
+		if (!pkg) continue;
+
+		const manifestDir =
+			path.dirname(manifestRelative) === '.' ? '' : path.dirname(manifestRelative);
+
+		for (const { field, name, value } of dependencyEntries(pkg)) {
+			if (!value.startsWith('file:')) continue;
+
+			const targetName = await sharedFileTargetPackageName(root, manifestDir, value);
+			if (!isReleasedSharedPackageName(name) && !isReleasedSharedPackageName(targetName ?? '')) {
+				continue;
+			}
+
+			pushViolation(
+				violations,
+				WORKSPACE_SHAPE_RULE_IDS.SHARED_FILE_DEPENDENCY,
+				manifestRelative,
+				`${field}.${name} uses file:${value.slice('file:'.length)} for a released Underlay/Poodle dependency`,
+			);
+		}
+	}
+}
+
 // =============================================================================
 // Public API
 // =============================================================================
@@ -554,6 +630,8 @@ export async function checkWorkspaceShape(rootPath: string): Promise<WorkspaceSh
 		const internalNames = await collectInternalPackageNames(root, workspacePaths);
 		await checkInternalEdges(root, workspacePaths, internalNames, violations);
 	}
+
+	await checkSharedFileDependencies(root, workspacePaths, violations);
 
 	return sortViolations(violations);
 }

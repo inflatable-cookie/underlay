@@ -79,18 +79,34 @@ Recommended app-level file:
 
 - `config/env-usage-allowlist.txt` (copy from `templates/config/env-usage-allowlist.example.txt`)
 
-### B. Env manifest integrity (unknown keys + required secrets)
+### B. Static env/secret authority (CI-safe, no secret values)
+
+Published bin: `underlay-env-authority`
+
+```bash
+underlay-env-authority ../your-app
+bunx underlay-env-authority ../your-app
+bun ../underlay/ts/bin/underlay-env-authority.ts ../your-app
+```
+
+This check proves the authority files exist, parse, and relate. It does not
+read `.env` files and does not invent which product keys are mandatory.
+
+Recommended app-level files:
+
+- `config/env-manifest.txt` (copy from `templates/config/env-manifest.example.txt`)
+- `config/required-secrets.txt` (copy from `templates/config/required-secrets.example.txt`)
+
+### C. Live env manifest values (local/runtime only)
 
 Script: `scripts/check-env-manifest.sh`
 
 ```bash
-./scripts/check-env-manifest.sh ../your-app ../your-app/config/env-manifest.txt ./templates/config/required-secrets.example.txt
+./scripts/check-env-manifest.sh ../your-app ../your-app/config/env-manifest.txt ../your-app/config/required-secrets.txt
 ```
 
-Recommended app-level file:
-
-- `config/env-manifest.txt` (copy from `templates/config/env-manifest.example.txt`)
-- `config/required-secrets.txt` (copy from `templates/config/required-secrets.example.txt`)
+Use this when the process environment or a local `.env` is already populated.
+Do not make CI require material secret values.
 
 ## 5. Example CI Job Snippet
 
@@ -98,8 +114,8 @@ Recommended app-level file:
 - name: Enforce env usage boundary
   run: ./scripts/check-env-usage-boundary.sh ../your-app ../your-app/config/env-usage-allowlist.txt
 
-- name: Validate env manifest + required keys
-  run: ./scripts/check-env-manifest.sh ../your-app ../your-app/config/env-manifest.txt ../your-app/config/required-secrets.txt
+- name: Validate env/secret authority files
+  run: bunx underlay-env-authority .
 ```
 
 ## 6. Current Consumer Queue

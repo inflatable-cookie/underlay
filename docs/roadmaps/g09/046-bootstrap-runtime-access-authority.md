@@ -1,6 +1,6 @@
 # g09.046 - Bootstrap, Runtime, And Access Authority
 
-Status: ready
+Status: in review
 Owner: repo maintainers
 Contracts: `024-new-app-bootstrap-and-bring-up.md`,
 `025-rust-app-runtime-assembly-and-router-topology.md`,
@@ -76,7 +76,27 @@ those decisions in the owning consumer roadmap.
 - Compatibility window: the existing workspace topology stays supported; new
   conformance failures identify contract drift, not a new topology
 
+## Evidence
+
+- contracts `024`-`026` use repo-local Underlay links and current
+  repo-relative consumer paths; runtime is a distinct family; path versioning
+  is baseline and header policy is optional until declared
+- guide `070` shows a thin `main.rs`, `state.rs`, and
+  `routes/{runtime,shared,admin,front?}` ownership
+- workspace-shape adds `workspace-prefix-unsupported` and
+  `shared-file-dependency`; existing six-root pass is preserved
+- `underlay-env-authority` is a published static check; live values stay in
+  `scripts/check-env-manifest.sh`
+- contract `121` and the JSON artifact add the env-authority mechanical check
+- live Underlay Reference: workspace-shape pass; env-authority fails on missing
+  `config/env-manifest.txt` and `config/required-secrets.txt` without reading
+  secrets
+
+See
+[`docs/logs/2026-08/26-232742-g09-046-bootstrap-runtime-access-authority.md`](../../logs/2026-08/26-232742-g09-046-bootstrap-runtime-access-authority.md).
+
 ## Next Task
 
-When this roadmap is complete, promote `g09.047` only after Underlay Reference
-is current and its security decisions are explicit.
+Await orchestrator review and operator-authorized merge. Do not promote
+`g09.047` until that merge lands, Underlay Reference is current, and its
+security decisions are explicit.

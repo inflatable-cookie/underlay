@@ -62,5 +62,5 @@ machine-readable policy files.
   single-schema seam
 - `g09.045` assessed bootstrap, runtime assembly, and access-model contracts
   `024`–`026` with a `drifting` verdict
-- `g09.046` is ready to repair shared authority before the reference and fleet
-  rollout in `g09.047`–`g09.053`
+- `g09.046` is in review; the reference and fleet rollout stay in
+  `g09.047`–`g09.053`

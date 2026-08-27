@@ -23,28 +23,28 @@ review tool.
 
 Primary supporting contracts:
 
-- [`docs/contracts/021-database-migration-and-schema-workflow.md`](/Users/tom/Dev/projects/underlay/docs/contracts/021-database-migration-and-schema-workflow.md)
-- [`docs/contracts/022-testing-posture-and-shared-harnesses.md`](/Users/tom/Dev/projects/underlay/docs/contracts/022-testing-posture-and-shared-harnesses.md)
-- [`docs/contracts/023-release-and-compatibility-rollout.md`](/Users/tom/Dev/projects/underlay/docs/contracts/023-release-and-compatibility-rollout.md)
-- [`docs/contracts/024-new-app-bootstrap-and-bring-up.md`](/Users/tom/Dev/projects/underlay/docs/contracts/024-new-app-bootstrap-and-bring-up.md)
-- [`docs/contracts/025-rust-app-runtime-assembly-and-router-topology.md`](/Users/tom/Dev/projects/underlay/docs/contracts/025-rust-app-runtime-assembly-and-router-topology.md)
-- [`docs/contracts/026-route-families-and-access-model.md`](/Users/tom/Dev/projects/underlay/docs/contracts/026-route-families-and-access-model.md)
-- [`docs/contracts/028-runtime-surface-and-openapi-maturity-levels.md`](/Users/tom/Dev/projects/underlay/docs/contracts/028-runtime-surface-and-openapi-maturity-levels.md)
-- [`docs/contracts/031-config-and-secrets.md`](/Users/tom/Dev/projects/underlay/docs/contracts/031-config-and-secrets.md)
-- [`docs/contracts/032-openapi-quality-and-declaration.md`](/Users/tom/Dev/projects/underlay/docs/contracts/032-openapi-quality-and-declaration.md)
-- [`docs/contracts/033-error-codes-and-operator-audit.md`](/Users/tom/Dev/projects/underlay/docs/contracts/033-error-codes-and-operator-audit.md)
-- [`docs/contracts/110-admin-template-system.md`](/Users/tom/Dev/projects/underlay/docs/contracts/110-admin-template-system.md)
-- [`docs/contracts/111-consumer-template-adoption-and-exception-policy.md`](/Users/tom/Dev/projects/underlay/docs/contracts/111-consumer-template-adoption-and-exception-policy.md)
-- [`docs/contracts/120-tooling-testing-and-contract-artifacts.md`](/Users/tom/Dev/projects/underlay/docs/contracts/120-tooling-testing-and-contract-artifacts.md)
+- [`021-database-migration-and-schema-workflow.md`](./021-database-migration-and-schema-workflow.md)
+- [`022-testing-posture-and-shared-harnesses.md`](./022-testing-posture-and-shared-harnesses.md)
+- [`023-release-and-compatibility-rollout.md`](./023-release-and-compatibility-rollout.md)
+- [`024-new-app-bootstrap-and-bring-up.md`](./024-new-app-bootstrap-and-bring-up.md)
+- [`025-rust-app-runtime-assembly-and-router-topology.md`](./025-rust-app-runtime-assembly-and-router-topology.md)
+- [`026-route-families-and-access-model.md`](./026-route-families-and-access-model.md)
+- [`028-runtime-surface-and-openapi-maturity-levels.md`](./028-runtime-surface-and-openapi-maturity-levels.md)
+- [`031-config-and-secrets.md`](./031-config-and-secrets.md)
+- [`032-openapi-quality-and-declaration.md`](./032-openapi-quality-and-declaration.md)
+- [`033-error-codes-and-operator-audit.md`](./033-error-codes-and-operator-audit.md)
+- [`110-admin-template-system.md`](./110-admin-template-system.md)
+- [`111-consumer-template-adoption-and-exception-policy.md`](./111-consumer-template-adoption-and-exception-policy.md)
+- [`120-tooling-testing-and-contract-artifacts.md`](./120-tooling-testing-and-contract-artifacts.md)
 
 Machine-readable artifact:
 
-- [`docs/contracts/app-review/underlay-app-review-checklist.json`](/Users/tom/Dev/projects/underlay/docs/contracts/app-review/underlay-app-review-checklist.json)
+- [`app-review/underlay-app-review-checklist.json`](./app-review/underlay-app-review-checklist.json)
 
 Supporting workflow guidance:
 
-- [`docs/guides/200-project-sync.md`](/Users/tom/Dev/projects/underlay/docs/guides/200-project-sync.md)
-- [`docs/guides/172-agents-files.md`](/Users/tom/Dev/projects/underlay/docs/guides/172-agents-files.md)
+- [`../guides/200-project-sync.md`](../guides/200-project-sync.md)
+- [`../guides/172-agents-files.md`](../guides/172-agents-files.md)
 
 If these diverge, the contract plus the machine-readable checklist win.
 
@@ -104,6 +104,9 @@ Rules:
 - workspace bootstrap drift should be checked mechanically with
   `@inflatable-cookie/underlay/tools/workspace-shape` before narrative audit
   notes are recorded
+- env/secret inventory should be checked mechanically with
+  `@inflatable-cookie/underlay/tools/env-authority`; that check is not part of
+  workspace-shape and must not read secret values or invent mandatory keys
 
 ### Finding-classification rule
 

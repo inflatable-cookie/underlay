@@ -1,0 +1,8 @@
+{
+  "name": "@fixture/app",
+  "private": true,
+  "dependencies": {
+    "@fixture/lib": "workspace:*",
+    "mystery-wrapper": "file:../../vendor/poodle"
+  }
+}

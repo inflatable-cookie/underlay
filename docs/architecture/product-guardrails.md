@@ -19,6 +19,5 @@ Owner: repo maintainers
 
 ## Next Task
 
-Execute `g09.046`. Keep secret requiredness, deployment proxy topology,
-rate-limit failure policy, and route compatibility app-owned. Shared authority
-may define the seam and proof; it must not invent those product facts.
+Await review and merge of `g09.046`. Keep secret requiredness, deployment proxy
+topology, rate-limit failure policy, and route compatibility app-owned.

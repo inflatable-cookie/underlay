@@ -85,7 +85,7 @@ confirmed env/secret, runtime-topology, test-seam, and access/security drift.
 
 ### Phase 7 — Bootstrap/runtime/access repair (`g09.046`–`g09.053`, active)
 
-1. repair Underlay authority and conformance (`g09.046`, ready)
+1. repair Underlay authority and conformance (`g09.046`, in review)
 2. prove the repaired boundary in Underlay Reference (`g09.047`, planned)
 3. run Contact Patch, Compli Me, Songsprout, Composer, and Acowtancy as
    independent repo-owned lanes (`g09.048`–`g09.052`, planned)
@@ -138,7 +138,7 @@ confirmed env/secret, runtime-topology, test-seam, and access/security drift.
 43. [x] [`g09.043`](043-acowtancy-state-and-test-orchestration-repair.md) — Acowtancy state and test orchestration repair (`complete`)
 44. [x] [`g09.044`](044-migration-testing-fleet-closeout.md) — migration/testing fleet closeout (`complete`)
 45. [x] [`g09.045`](045-bootstrap-and-runtime-contract-assessment.md) — bootstrap and runtime contract assessment (`complete`; `drifting`)
-46. [ ] [`g09.046`](046-bootstrap-runtime-access-authority.md) — bootstrap/runtime/access authority (`ready`)
+46. [ ] [`g09.046`](046-bootstrap-runtime-access-authority.md) — bootstrap/runtime/access authority (`in review`)
 47. [ ] [`g09.047`](047-underlay-reference-runtime-access-proof.md) — Underlay Reference runtime/access proof (`planned`)
 48. [ ] [`g09.048`](048-contact-patch-runtime-access-rollout.md) — Contact Patch runtime/access rollout (`planned`)
 49. [ ] [`g09.049`](049-compli-me-runtime-access-rollout.md) — Compli Me runtime/access rollout (`planned`)
@@ -162,7 +162,7 @@ Deferred with a promotion trigger (TypeScript 7.1 or concrete need):
 - `g09.039`–`g09.043` are complete.
 - `g09.044` is complete after all five merged consumer roadmaps.
 - `g09.045` is complete.
-- `g09.046` is ready and serially repairs shared authority.
+- `g09.046` is in review and serially repairs shared authority.
 - `g09.047` is planned behind `g09.046` as the reference proof.
 - `g09.048`–`g09.052` may run in parallel only after `g09.047` and each named
   product/security decision gate.
@@ -196,5 +196,5 @@ changes cannot begin before their roadmap decisions are explicit.
 
 ## Next Task
 
-Execute `g09.046`, the shared bootstrap/runtime/access authority and conformance
-repair.
+Await review and merge of `g09.046`. Do not promote `g09.047` until that merge
+lands and Underlay Reference is current with explicit security decisions.

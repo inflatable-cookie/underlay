@@ -1,0 +1,8 @@
+{
+  "name": "@fixture/app",
+  "private": true,
+  "dependencies": {
+    "@fixture/lib": "workspace:*",
+    "local-helper": "file:../../vendor/helper"
+  }
+}

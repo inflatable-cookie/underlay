@@ -135,11 +135,44 @@ run = "bun ../underlay/ts/bin/underlay-workspace-shape.ts ."
 
 The checker enforces one Git root, root `private: true`, a pinned
 `packageManager`, explicit workspace paths contained by the Git root, complete
-`apps/*` / `packages/*` workspace membership, one root `bun.lock`, no child
-lockfiles, no internal `file:` edges, and `workspace:*` for internal JavaScript
-dependencies. Security policy remains in
+`apps/*` / `packages/*` workspace membership, no declared workspaces outside
+those prefixes, one root `bun.lock`, no child lockfiles, no internal `file:`
+edges, no committed `file:` Underlay/Poodle dependencies, and `workspace:*` for
+internal JavaScript dependencies. Security policy remains in
 `underlay/scripts/check-consumer-conformance.sh` via a separate task such as
 `qa:security`.
+
+### Env-authority conformance
+
+Keep env/secret inventory separate from workspace topology. Add a consumer-owned
+Effigy task that invokes the published bin entry, then compose it into `health`
+or `validate`:
+
+```toml
+[tasks."qa:env-authority"]
+run = "underlay-env-authority ."
+```
+
+When Underlay is installed as a released dependency:
+
+```toml
+[tasks."qa:env-authority"]
+run = "bunx underlay-env-authority ."
+```
+
+A sibling `../underlay` checkout can use:
+
+```toml
+[tasks."qa:env-authority"]
+run = "bun ../underlay/ts/bin/underlay-env-authority.ts ."
+```
+
+The checker proves `config/env-manifest.txt` and `config/required-secrets.txt`
+exist when the workspace has a runtime env reader, that both files parse as key
+lists, and that required keys are declared in the manifest. It does not read
+`.env` files or guess which product secrets are mandatory. Live value presence
+stays with `underlay/scripts/check-env-manifest.sh` and is not a CI secret
+requirement.
 
 ### Upgrading Underlay
 

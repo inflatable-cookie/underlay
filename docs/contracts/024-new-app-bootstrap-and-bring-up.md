@@ -257,10 +257,34 @@ Rules:
 
 - `bundle.dirs` maps the real docs/api/client/ui/front/admin ownership split onto
   `apps/*`, `packages/*`, and `docs/` paths;
-- there are no child repos to declare — a workspace that needs a child bootstrap
-  entry has not converged on this contract;
+- there are no child product repositories to declare — a workspace that needs a
+  child bootstrap entry for an application or library has not converged on this
+  contract;
 - declared dev mounts for Underlay/Poodle are tooling mounts and do not change
   the committed dependency shape.
+
+### External inputs and tooling mounts
+
+Sibling checkouts and explicit read-only content inputs are not workspace
+children.
+
+Allowed non-workspace inputs:
+
+- a sibling Underlay or Poodle checkout used for QA, conformance scripts, dev
+  mounts, or untracked Cargo `[patch]` links written by `effigy deps link`
+- an explicit read-only content or data input, such as a sibling corpus mounted
+  for import, generation, or review
+
+Rules:
+
+- these inputs must not become JavaScript workspace members;
+- they must not introduce nested Git metadata inside the product workspace;
+- they must not be committed `file:` dependencies on Underlay or Poodle;
+- they must not replace the released Underlay/Poodle dependency shape;
+- they are not polyrepo support, nested product repos, or a second docs
+  authority;
+- name them in bootstrap docs or Effigy mounts when operators need them;
+- do not list them in root `workspaces`.
 
 ### Bootstrap rule
 
@@ -295,7 +319,11 @@ Rules:
 - runtime packages must not rely on undocumented env keys;
 - runtime packages must not depend on committed `.env` files;
 - admin/front packages document the minimum public env surface;
-- API packages document config precedence when they support layered config.
+- API packages document config precedence when they support layered config;
+- the static env-authority checker proves those two files exist, parse, and
+  relate; it does not read secret values or invent which keys are mandatory;
+- live value presence stays with `scripts/check-env-manifest.sh` and must not
+  become a CI requirement for material secrets.
 
 ### Bring-up rule
 
@@ -331,8 +359,10 @@ Bad outcomes:
 
 - nested Git repositories, submodules, or symlinked source dependencies;
 - child `bun.lock` files or per-package installs;
-- internal packages wired with `file:` paths;
+- internal packages or Underlay/Poodle wired with committed `file:` paths;
+- a declared JavaScript workspace outside `apps/*` or `packages/*`;
 - a `libs/*` directory standing in for `packages/*`;
+- treating a tooling mount or read-only content input as a workspace child;
 - docs authority spread across repositories or left implied;
 - `config/env-manifest.txt` missing for runtime apps that still read env.
 
@@ -356,16 +386,17 @@ supported monorepo boundary.
   Effigy-first state/migration ownership
 - every root lacks the required complete `config/env-manifest.txt` and
   `config/required-secrets.txt` authority
-- the mechanical workspace checker needs bounded coverage for unsupported
-  workspace prefixes and committed external `file:` Underlay/Poodle edges
-- external read-only inputs and sibling tooling mounts need wording that cannot
-  be mistaken for workspace children or polyrepo support
+- workspace-shape now rejects unsupported workspace prefixes and committed
+  `file:` Underlay/Poodle edges; env/secret authority is a separate static
+  check
+- external read-only inputs and sibling tooling mounts are classified as
+  non-workspace inputs
 
-Repair authority is `g09.046`; reference and fleet adoption are `g09.047`-
-`g09.053`. See the
+Shared wording and checker coverage were repaired in `g09.046`. Fleet adoption
+of the env/secret files remains `g09.047`-`g09.053`. See the
 [`g09.045` assessment](../logs/2026-08/26-225903-g09-045-bootstrap-runtime-access-assessment.md).
 
 ## Next Task
 
-Execute `g09.046`, then prove the repaired bootstrap boundary in Underlay
-Reference before consumer rollout.
+`g09.046` is in review. After merge, prove the repaired bootstrap boundary in
+Underlay Reference (`g09.047`). Keep consumer lanes planned.
