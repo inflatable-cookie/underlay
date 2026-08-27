@@ -1,6 +1,6 @@
 # Contract 023 Released-Dependency Drift
 
-Status: open
+Status: promoted
 Captured: 2026-08-27
 
 ## Observation
@@ -18,7 +18,7 @@ shape.
 
 ## Disposition
 
-Promotion candidate. The release/promotion and route-retirement gates are now
-settled. At the next planning checkpoint, decide whether to compile a bounded
-Contract `023` normalization inside `g09` or close the generation. This note is
-not execution authority until a roadmap is ready.
+Promoted to
+[`g09.060`](../roadmaps/g09/060-released-dependency-rollout-contract-normalization.md).
+The roadmap is the execution authority; this note remains only as the discovery
+record.

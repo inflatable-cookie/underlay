@@ -68,3 +68,6 @@ The first four merges were recorded in the
 Acowtancy PR67 then merged, completing both roadmaps and the route-retirement
 phase
 ([fleet closeout](./2026-08/27-203800-g09-058-059-route-retirement-closeout.md)).
+The operator then chose to continue `g09`, promoting the Contract `023`
+released-dependency drift as ready `g09.060`
+([promotion](./2026-08/27-205758-g09-060-released-dependency-promotion.md)).

@@ -82,7 +82,8 @@ merged SSR regression was not portable; `g09.056` repaired that in PR65.
 `g09.054` is complete. `g09.057` assessed contracts `027`–`029` with a
 `drifting` verdict: runtime profiles conform, while `g09.058` and `g09.059`
 own the authorised route-retirement work. Both roadmaps are complete across all
-five affected targets. The active generation has no ready roadmap.
+five affected targets. The operator chose to continue `g09`; `g09.060` is ready
+to normalize stale released-dependency teaching in Contract `023`.
 See
 [`g09/README.md`](g09/README.md).
 
@@ -103,6 +104,5 @@ that risk.
 
 ## Next Task
 
-Re-enter planning. Decide whether to continue `g09` with the bounded Contract
-`023` released-dependency normalization or close the generation. Do not infer a
-new generation from the exhausted queue.
+Dispatch the single `g09.060` Underlay worker. Review its PR at exact head and
+merge only with explicit operator authorisation.

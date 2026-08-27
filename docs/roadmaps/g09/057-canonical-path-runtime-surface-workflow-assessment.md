@@ -90,5 +90,5 @@ Verdict: `drifting` with conforming runtime profiles.
 
 ## Next Task
 
-The downstream `g09.058` and `g09.059` repairs are complete. Re-enter planning;
-the active queue has no ready roadmap.
+The downstream `g09.058` and `g09.059` repairs are complete. `g09.060` is ready
+for the separate Contract `023` normalization.

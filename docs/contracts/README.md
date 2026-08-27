@@ -69,4 +69,6 @@ machine-readable policy files.
   batch-delete routes
 - `g09.058` completed the authorised auth-alias retirement in Songsprout,
   Composer, and Acowtancy
-- all assessed drift in contracts `027`–`029` is repaired; no roadmap is ready
+- all assessed drift in contracts `027`–`029` is repaired
+- `g09.060` is ready to align Contract `023` with the released-dependency rule
+  already proved by Contract `024` and the consumer fleet
