@@ -276,10 +276,10 @@ Verdict: `drifting` in two collection-action families; otherwise conforming.
 
 The operator chose `:batch-delete` as the canonical suffix, declared the
 supported fleet caller set closed-world, and chose no compatibility window.
-`g09.059` is ready for atomic caller and route updates. See the
+`g09.059` is dispatched for atomic caller and route updates. See the
 [`g09.057` assessment](../logs/2026-08/27-175930-g09-057-canonical-path-runtime-workflow-assessment.md).
 
 ## Next Task
 
-Execute the two target-owned `g09.059` lanes. Require caller and old-route
-absence proof before each PR is accepted.
+Review the two dispatched target-owned `g09.059` lanes. Require caller and
+old-route absence proof before each PR is accepted.

@@ -61,4 +61,5 @@ now complete
 Runtime maturity conforms. The operator authorised closed-world retirement with
 no compatibility windows and canonical `:batch-delete`
 ([promotion](./2026-08/27-181454-g09-058-059-route-retirement-promotion.md));
-dispatch ready `g09.058` and `g09.059` through target-owned handoffs.
+all five target-owned workers are now
+[dispatched](./2026-08/27-182502-g09-058-059-route-retirement-dispatch.md).

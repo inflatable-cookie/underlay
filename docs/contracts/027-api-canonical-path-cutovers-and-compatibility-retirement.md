@@ -229,10 +229,10 @@ remain an intentional shared-read/admin-write split, not compatibility debt.
 See the
 [`g09.057` assessment](../logs/2026-08/27-175930-g09-057-canonical-path-runtime-workflow-assessment.md).
 The operator declared the supported fleet caller set closed-world and chose no
-compatibility window. `g09.058` is ready for atomic caller migration and alias
-retirement in Songsprout, Acowtancy, and Composer.
+compatibility window. `g09.058` is dispatched for atomic caller migration and
+alias retirement in Songsprout, Acowtancy, and Composer.
 
 ## Next Task
 
-Execute the three target-owned `g09.058` lanes. Require caller and old-route
-absence proof before each PR is accepted.
+Review the three dispatched target-owned `g09.058` lanes. Require caller and
+old-route absence proof before each PR is accepted.

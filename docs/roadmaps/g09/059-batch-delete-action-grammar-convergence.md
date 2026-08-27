@@ -1,6 +1,6 @@
 # g09.059 - Batch Delete Action Grammar Convergence
 
-Status: ready - dispatch authorised
+Status: ready - dispatched
 Owner: repo maintainers
 Contract: `029`
 Depends on: `g09.057`
@@ -61,7 +61,17 @@ disproves the closed-world caller inventory.
   routes atomically
 - Compatibility window: none; the supported caller set is closed-world
 
+## Dispatch Evidence
+
+- Underlay Reference handoff
+  `docs/handoffs/20260827-181956-g09-059-task-batch-delete-colon.md` pushed in
+  target commit `ff5f14389ce8ba71cf148da56336d8eabb1ac427`
+- Compli Me handoff
+  `docs/handoffs/20260827-181956-g09-059-batch-delete-colon.md` pushed in target
+  commit `8c6d6d9c22d339f26ad454bba3da36a746136d4f`
+- both target docs and Northstar QA gates passed before push
+
 ## Next Task
 
-Dispatch the two target-owned worker handoffs. Review each PR at exact head;
-merge only with explicit operator authorisation.
+Launch the two workers. Review each PR at exact head; merge only with explicit
+operator authorisation.

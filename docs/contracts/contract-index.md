@@ -98,5 +98,5 @@ Do not promote a system into active implementation-assessment work until:
 
 ## Next Task
 
-Execute ready roadmaps `g09.058` and `g09.059`. See
+Review dispatched roadmaps `g09.058` and `g09.059`. See
 [`docs/roadmaps/g09/README.md`](../roadmaps/g09/README.md).

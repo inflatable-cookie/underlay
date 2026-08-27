@@ -1,6 +1,6 @@
 # g09.058 - Auth Mutation Compatibility Retirement
 
-Status: ready - dispatch authorised
+Status: ready - dispatched
 Owner: repo maintainers
 Contract: `027`
 Depends on: `g09.057`
@@ -68,7 +68,20 @@ this with auth redesign.
 - Required action: move in-repo callers and retire aliases atomically
 - Compatibility window: none; the supported caller set is closed-world
 
+## Dispatch Evidence
+
+- Songsprout handoff
+  `docs/handoffs/20260827-181956-g09-058-passkey-connect-retirement.md` pushed
+  in target commit `c8c405ab199f99056cdca55c626cfd7a8509b374`
+- Composer handoff
+  `docs/handoffs/20260827-181956-g09-058-auth-local-retirement.md` pushed in
+  target commit `df43eb575639e16041168fc4bafedb1378ed80ee`
+- Acowtancy handoff
+  `docs/handoffs/20260827-181956-g09-058-passkey-connect-retirement.md` pushed
+  in target commit `fe94c1bb6370bec5a05aca412adde9311cceddd2`
+- all three target docs and Northstar QA gates passed before push
+
 ## Next Task
 
-Dispatch the three target-owned worker handoffs. Review each PR at exact head;
-merge only with explicit operator authorisation.
+Launch the three workers. Review each PR at exact head; merge only with explicit
+operator authorisation.

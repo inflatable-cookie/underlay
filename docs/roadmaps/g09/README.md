@@ -103,12 +103,12 @@ Contracts `027`–`029` were assessed across the six exact roots. Runtime
 maturity conforms. Three auth alias families and two mixed batch-delete
 families remain bounded drift.
 
-### Phase 9 — Route retirement (`g09.058`–`g09.059`, ready)
+### Phase 9 — Route retirement (`g09.058`–`g09.059`, ready and dispatched)
 
 The operator declared the supported fleet caller set closed-world, chose no
 compatibility windows, and standardised batch deletion on `:batch-delete`.
 Three auth-retirement lanes and two batch-grammar lanes are ready and may run
-independently.
+independently. Target-owned handoffs are pushed for all five lanes.
 
 ## Queue
 
@@ -169,8 +169,8 @@ independently.
 55. [x] [`g09.055`](055-acowtancy-faq-json-ld-hardening.md) — Acowtancy FAQ JSON-LD hardening (`complete`)
 56. [x] [`g09.056`](056-acowtancy-faq-json-ld-regression-portability.md) — Acowtancy FAQ JSON-LD regression portability (`complete`)
 57. [x] [`g09.057`](057-canonical-path-runtime-surface-workflow-assessment.md) — canonical path, runtime surface, and workflow action assessment (`complete`; `drifting`)
-58. [ ] [`g09.058`](058-auth-mutation-compatibility-retirement.md) — auth mutation compatibility retirement (`ready`; dispatch authorised)
-59. [ ] [`g09.059`](059-batch-delete-action-grammar-convergence.md) — batch-delete action grammar convergence (`ready`; dispatch authorised)
+58. [ ] [`g09.058`](058-auth-mutation-compatibility-retirement.md) — auth mutation compatibility retirement (`ready`; dispatched)
+59. [ ] [`g09.059`](059-batch-delete-action-grammar-convergence.md) — batch-delete action grammar convergence (`ready`; dispatched)
 
 Deferred with a promotion trigger (TypeScript 7.1 or concrete need):
 [`backlog/ts-7-adoption.md`](../backlog/ts-7-adoption.md).
@@ -197,8 +197,8 @@ Deferred with a promotion trigger (TypeScript 7.1 or concrete need):
 - `g09.055` is complete in Acowtancy PR63, merge commit `ad74d23e`.
 - `g09.056` is complete in Acowtancy PR65, merge commit `22219f59`.
 - `g09.057` is complete with a `drifting` verdict.
-- `g09.058` and `g09.059` are ready. Their five target-owned lanes are
-  independent and may run in parallel.
+- `g09.058` and `g09.059` are ready and dispatched. Their five target-owned
+  lanes are independent and may run in parallel.
 - Whole-app fixed-schema suites stay app-owned. `TestDb` remains the
   shared-crate/single-schema seam.
 
@@ -237,5 +237,5 @@ canonical `:batch-delete`.
 
 ## Next Task
 
-Dispatch the five target-owned `g09.058` and `g09.059` worker lanes. Review
-each PR at exact head and merge only with explicit operator authorisation.
+Launch the five target-owned workers. Review each PR at exact head and merge
+only with explicit operator authorisation.
