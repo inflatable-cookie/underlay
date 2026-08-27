@@ -36,5 +36,5 @@ would leave the docs QA result dependent on merge order.
 
 ## Next Task
 
-Launch the papercuts wave 3 worker with only:
-`Read and follow docs/handoffs/20260827-210040-papercuts-wave3-contract-links.md`.
+Gate cleared. Underlay PR12 merged reviewed head `d2cb5cd9` as `9e26ba9a` with
+green CI. Promote and dispatch `g09.060` from the new exact `main` base.

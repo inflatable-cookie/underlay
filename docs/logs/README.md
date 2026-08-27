@@ -74,3 +74,6 @@ released-dependency drift as ready `g09.060`
 The concurrent papercuts wave 3 handoff overlaps Contract `023`, so `g09.060`
 was serialized behind that closeout before dispatch
 ([collision gate](./2026-08/27-210231-g09-060-contract-link-collision-gate.md)).
+Underlay PR12 merged its reviewed head as `9e26ba9a`, closing papercuts wave 3
+and promoting `g09.060` to ready
+([closeout](./2026-08/27-214114-papercuts-wave3-closeout-and-g09-060-promotion.md)).

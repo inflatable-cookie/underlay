@@ -44,6 +44,5 @@ Contract `023` links.
 
 ## Next Task
 
-Launch the existing papercuts wave 3 contract-link worker. After its PR is
-merged and verified on `main`, publish one Underlay worker handoff for
-`g09.060` from the new exact base.
+Gate cleared in Underlay PR12, merge commit `9e26ba9a`. Publish one Underlay
+worker handoff for `g09.060` from the new exact base.

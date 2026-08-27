@@ -1,9 +1,9 @@
 # g09.060 - Released Dependency Rollout Contract Normalization
 
-Status: planned - waiting on papercuts wave 3 contract-link closeout
+Status: ready
 Owner: Underlay maintainers
 Contract: `023`
-Depends on: `g09.059` and papercuts wave 3 contract-link closeout
+Depends on: `g09.059` and papercuts wave 3 contract-link closeout (`complete`)
 
 ## Purpose
 
@@ -13,9 +13,9 @@ and all six consumer roots.
 
 ## Decision
 
-The operator chose to continue `g09` for this bounded normalization. Dispatch
-waits for the already-published papercuts wave 3 contract-link worker because
-both lanes otherwise edit Contract `023`.
+The operator chose to continue `g09` for this bounded normalization. Underlay
+PR12 completed the overlapping papercuts wave 3 contract-link lane at reviewed
+head `d2cb5cd9`, merge commit `9e26ba9a`. The dispatch gate is clear.
 
 - Underlay remains private from a package-registry perspective but is released
   through immutable Git tags.
@@ -88,6 +88,7 @@ both lanes otherwise edit Contract `023`.
 - active guides `030`, `040`, `190`, and `200`
 - all six current consumer roots using tagged Underlay Git dependencies
 - Underlay `v0.9.5` release/tag and synchronized Rust/JavaScript version surface
+- Underlay PR12 exact-head review, green CI, and merge commit `9e26ba9a`
 - one execution log under `docs/logs/2026-08/`
 
 ## Stop Conditions
@@ -97,9 +98,9 @@ mutation, an Effigy behavior change, a consumer manifest change, or a choice
 between multiple supported dependency shapes. Do not preserve path/file
 compatibility: Contract `024` has already made that unsupported.
 
-Do not dispatch before the papercuts wave 3 contract-link PR is merged and its
-exact `main` result is verified. Rebase the implementation handoff on that
-result.
+Base the implementation handoff on pushed `main` after merge commit `9e26ba9a`.
+Preserve the repo-relative links and current monorepo evidence paths delivered
+there.
 
 ## Consumer Upgrade Impact
 
@@ -110,7 +111,5 @@ result.
 
 ## Next Task
 
-Launch the existing papercuts wave 3 contract-link worker from
-`docs/handoffs/20260827-210040-papercuts-wave3-contract-links.md`. After its PR
-is reviewed, authorised, merged, and verified on `main`, promote and dispatch
-this roadmap from the new exact base.
+Dispatch one Underlay worker for this roadmap. Review its PR at exact head and
+merge only with explicit operator authorisation.
