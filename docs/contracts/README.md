@@ -62,5 +62,5 @@ machine-readable policy files.
   single-schema seam
 - `g09.045` assessed bootstrap, runtime assembly, and access-model contracts
   `024`–`026` with a `drifting` verdict
-- `g09.046` is complete; the reference and fleet rollout stay planned in
-  `g09.047`–`g09.053`
+- `g09.047`–`g09.052` are complete; `g09.053` is the ready Reference CSRF
+  repair and `g09.054` is the planned fleet closeout

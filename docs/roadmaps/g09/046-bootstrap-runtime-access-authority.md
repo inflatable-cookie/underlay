@@ -72,7 +72,7 @@ those decisions in the owning consumer roadmap.
 - Impact class: additive conformance and documentation hardening
 - Affected consumers: all six roots
 - Required action: adopt the env/secret authority files and satisfy any new
-  workspace rule before `g09.053`
+  workspace rule before `g09.054`
 - Compatibility window: the existing workspace topology stays supported; new
   conformance failures identify contract drift, not a new topology
 

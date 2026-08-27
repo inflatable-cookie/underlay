@@ -116,5 +116,5 @@ posture.
 
 ## Next Task
 
-Review and merge `g09.048`-`g09.051`. Keep `g09.053` blocked until those four
-lanes and the Underlay Reference cross-tab CSRF follow-up are complete.
+Run ready Underlay Reference repair `g09.053`. Keep `g09.054` planned until its
+reviewed merge and the exact-root fleet proof.

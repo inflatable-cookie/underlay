@@ -42,6 +42,10 @@ where repo-local links and normalized prose references are required instead.
 `g09.047` completed the Underlay Reference proof
 ([closeout](./2026-08/27-122210-g09-047-reference-proof-closeout.md)).
 `g09.052` completed in Acowtancy PR62
-([closeout](./2026-08/27-143321-g09-052-acowtancy-closeout.md)). Review the
-open `g09.048`–`g09.051` worker PRs. Keep `g09.053` blocked until those four
-lanes merge and the Underlay Reference cross-tab CSRF rotation is repaired.
+([closeout](./2026-08/27-143321-g09-052-acowtancy-closeout.md)); the other four
+consumer lanes then merged
+([closeout](./2026-08/27-143842-g09-048-051-consumer-closeout.md)). The planning
+repair promoted the Reference CSRF fix as `g09.053` and renumbered fleet
+closeout to `g09.054`
+([log](./2026-08/27-145100-g09-053-054-planning-repair.md)). Publish and dispatch
+the target-owned `g09.053` handoff.

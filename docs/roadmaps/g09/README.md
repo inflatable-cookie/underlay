@@ -83,14 +83,14 @@ shared-crate/single-schema seam.
 The six-root read-only assessment found the workspace rollout intact and
 confirmed env/secret, runtime-topology, test-seam, and access/security drift.
 
-### Phase 7 — Bootstrap/runtime/access repair (`g09.046`–`g09.053`, active)
+### Phase 7 — Bootstrap/runtime/access repair (`g09.046`–`g09.054`, active)
 
 1. repair Underlay authority and conformance (`g09.046`, complete)
 2. prove the repaired boundary in Underlay Reference (`g09.047`, complete)
 3. run Contact Patch, Compli Me, Songsprout, Composer, and Acowtancy as
    independent repo-owned lanes (`g09.048`–`g09.052`, complete)
-4. repair Underlay Reference's cross-tab CSRF token issuance in a numbered
-   owning lane, then close exact-head six-root proof (`g09.053`, planned)
+4. repair Underlay Reference's cross-tab CSRF token issuance (`g09.053`, ready)
+5. close exact-head six-root proof (`g09.054`, planned)
 
 ## Queue
 
@@ -146,7 +146,8 @@ confirmed env/secret, runtime-topology, test-seam, and access/security drift.
 50. [x] [`g09.050`](050-songsprout-runtime-access-rollout.md) — Songsprout runtime/access rollout (`complete`)
 51. [x] [`g09.051`](051-composer-runtime-access-rollout.md) — Composer runtime/access rollout (`complete`)
 52. [x] [`g09.052`](052-acowtancy-runtime-access-rollout.md) — Acowtancy runtime/access rollout (`complete`)
-53. [ ] [`g09.053`](053-bootstrap-runtime-access-fleet-closeout.md) — bootstrap/runtime/access fleet closeout (`planned`)
+53. [ ] [`g09.053`](053-underlay-reference-cross-tab-csrf-stability.md) — Underlay Reference cross-tab CSRF stability (`ready`)
+54. [ ] [`g09.054`](054-bootstrap-runtime-access-fleet-closeout.md) — bootstrap/runtime/access fleet closeout (`planned`)
 
 Deferred with a promotion trigger (TypeScript 7.1 or concrete need):
 [`backlog/ts-7-adoption.md`](../backlog/ts-7-adoption.md).
@@ -168,9 +169,9 @@ Deferred with a promotion trigger (TypeScript 7.1 or concrete need):
 - `g09.048`–`g09.051` are complete in Contact Patch PR5, Compli Me PR7,
   Songsprout PR5, and Composer PR5.
 - `g09.052` is complete in Acowtancy PR62, merge commit `85c868e1`.
-- `g09.053` remains planned until the Underlay Reference cross-tab CSRF
-  rotation is repaired in a numbered owning lane and the exact merged roots are
-  rechecked.
+- `g09.053` is the ready Underlay Reference cross-tab CSRF repair.
+- `g09.054` remains planned until `g09.053` is reviewed and merged and the exact
+  merged roots are rechecked.
 - Whole-app fixed-schema suites stay app-owned. `TestDb` remains the
   shared-crate/single-schema seam.
 
@@ -202,6 +203,6 @@ compatibility decisions.
 
 ## Next Task
 
-Compile and promote the Underlay Reference cross-tab CSRF repair as a numbered
-owning lane. Keep `g09.053` planned until that reviewed repair merges and the
-exact consumer roots are rechecked.
+Publish and dispatch the target-owned `g09.053` Underlay Reference handoff.
+Keep `g09.054` planned until that reviewed repair merges and the exact consumer
+roots are rechecked.

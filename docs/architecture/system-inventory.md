@@ -18,8 +18,8 @@ Underlay is currently `migration` in sequential mode.
 
 Evidence:
 
-- active generation is `g09`; `g09.021`–`g09.046` are complete and
-  `g09.047`–`g09.053` are planned
+- active generation is `g09`; `g09.021`–`g09.052` are complete, `g09.053` is
+  ready, and `g09.054` is planned
 - roadmap front doors and the generation index were refreshed 2026-08-27
 - the contract index exists and names the full planned contract set
 - reference-grade architecture phases 2–5 remain the longer-horizon shape target

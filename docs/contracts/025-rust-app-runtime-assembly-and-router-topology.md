@@ -467,7 +467,7 @@ Shared source links, runtime-family wording, and guide `070` were repaired in
 responsibilities. The assessment does not use line count alone as a
 thin-entrypoint rule.
 
-Reference and fleet adoption remain `g09.047`-`g09.053`. See the
+Reference and fleet adoption remain `g09.047`-`g09.054`. See the
 [`g09.045` assessment](../logs/2026-08/26-225903-g09-045-bootstrap-runtime-access-assessment.md).
 
 ## Next Task

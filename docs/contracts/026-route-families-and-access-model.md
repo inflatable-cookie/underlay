@@ -452,7 +452,7 @@ Version-header and runtime-family wording were settled in `g09.046`. Path
 versioning is baseline; a header is optional until declared; declared headers
 apply to business families and exclude runtime.
 
-Reference and fleet adoption remain `g09.047`-`g09.053`. See the
+Reference and fleet adoption remain `g09.047`-`g09.054`. See the
 [`g09.045` assessment](../logs/2026-08/26-225903-g09-045-bootstrap-runtime-access-assessment.md).
 
 ## Next Task

@@ -393,7 +393,7 @@ supported monorepo boundary.
   non-workspace inputs
 
 Shared wording and checker coverage were repaired in `g09.046`. Fleet adoption
-of the env/secret files remains `g09.047`-`g09.053`. See the
+of the env/secret files remains `g09.047`-`g09.054`. See the
 [`g09.045` assessment](../logs/2026-08/26-225903-g09-045-bootstrap-runtime-access-assessment.md).
 
 ## Next Task

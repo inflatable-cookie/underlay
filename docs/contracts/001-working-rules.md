@@ -71,13 +71,12 @@ Underlay is in sequential mode:
 - `g09.044` is complete
 - `g09.045` is complete with a `drifting` verdict
 - `g09.046` is complete
-- `g09.047` is ready and its worker handoff is published on Underlay Reference
-  `main` at `e4235876`
-- `g09.048`–`g09.053` remain planned behind explicit promotion gates
+- `g09.047`–`g09.052` are complete
+- `g09.053` is the ready Underlay Reference cross-tab CSRF repair
+- `g09.054` is planned behind the reviewed `g09.053` merge and exact-root proof
 
 ## Next Task
 
-Run the published g09.047 Underlay Reference worker handoff in a fresh worker
-thread. Keep the target's g01.007 lane serial, and keep `g09.048`–`g09.052`
-planned until the reference proof merges and their own promotion gates are
-complete.
+Publish and dispatch the target-owned `g09.053` Underlay Reference worker
+handoff. Keep the target's independent `g01.007` lane serial and keep `g09.054`
+planned until the reviewed repair merges.

@@ -24,6 +24,6 @@ Specs hold active Underlay planning and strict execution-control surfaces.
 
 ## Next Task
 
-`g09.046` is complete. Resolve the promotion gates for `g09.047`; the remaining
-bootstrap/runtime/access wave is governed by numbered roadmaps
-`g09.047`–`g09.053`, not a batch card or strict spec.
+The bootstrap/runtime/access wave is governed by numbered roadmaps
+`g09.047`–`g09.054`, not a batch card or strict spec. `g09.053` is ready;
+`g09.054` remains planned behind it.

@@ -1,10 +1,10 @@
-# g09.053 - Bootstrap, Runtime, And Access Fleet Closeout
+# g09.054 - Bootstrap, Runtime, And Access Fleet Closeout
 
 Status: planned
 Owner: repo maintainers
 Contracts: `023`, `024`, `025`, `026`, `121`
 Found by: `g09.045`
-Depends on: `g09.048`, `g09.049`, `g09.050`, `g09.051`, `g09.052`
+Depends on: `g09.048`, `g09.049`, `g09.050`, `g09.051`, `g09.052`, `g09.053`
 
 ## Purpose
 
@@ -15,9 +15,8 @@ the assessment wave, and choose the next contract group without implied scope.
 
 - [x] `g09.046` and `g09.047` are complete
 - [x] `g09.048`-`g09.052` are reviewed and merged
-- [ ] Underlay Reference CSRF token issuance reuses a live cookie across tabs;
-  its current endpoint rotates the token on every GET and must be repaired in
-  the owning lane
+- [ ] `g09.053` proves Underlay Reference CSRF token reads reuse a live cookie
+  across tabs and is reviewed and merged
 - [ ] every consumer target is clean and exactly aligned with its merged
   `origin/main`
 - [x] every product/security decision named by the rollout roadmaps is recorded
@@ -31,9 +30,7 @@ the assessment wave, and choose the next contract group without implied scope.
 - verify baseline middleware context order and direct-router test seam
 - verify cookie-backed mutation CSRF, declared API-version, rate-limit failure,
   and trusted-proxy decisions against the recorded app posture
-- verify CSRF-token reads do not invalidate another live browser tab; treat the
-  Underlay Reference rotation finding as an owning-lane prerequisite, not a
-  closeout implementation change
+- verify CSRF-token reads do not invalidate another live browser tab
 - verify operator actions have canonical family ownership and any path aliases
   have explicit retirement state
 - publish one exact-head fleet matrix and consumer upgrade note
@@ -66,8 +63,7 @@ the assessment wave, and choose the next contract group without implied scope.
 
 Stop if a consumer is not at its reviewed merge head, a security decision is
 missing, or closeout would need a new implementation change. Reopen the owning
-roadmap instead of declaring the fleet conforming. The open Underlay Reference
-cross-tab rotation finding currently triggers this stop condition.
+roadmap instead of declaring the fleet conforming.
 
 ## Consumer Upgrade Impact
 
