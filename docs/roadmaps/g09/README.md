@@ -88,7 +88,7 @@ confirmed env/secret, runtime-topology, test-seam, and access/security drift.
 1. repair Underlay authority and conformance (`g09.046`, complete)
 2. prove the repaired boundary in Underlay Reference (`g09.047`, complete)
 3. run Contact Patch, Compli Me, Songsprout, Composer, and Acowtancy as
-   independent repo-owned lanes (`g09.048`–`g09.052`, planned)
+   independent repo-owned lanes (`g09.048`–`g09.052`, ready)
 4. close exact-head six-root proof (`g09.053`, planned)
 
 ## Queue
@@ -140,11 +140,11 @@ confirmed env/secret, runtime-topology, test-seam, and access/security drift.
 45. [x] [`g09.045`](045-bootstrap-and-runtime-contract-assessment.md) — bootstrap and runtime contract assessment (`complete`; `drifting`)
 46. [x] [`g09.046`](046-bootstrap-runtime-access-authority.md) — bootstrap/runtime/access authority (`complete`)
 47. [x] [`g09.047`](047-underlay-reference-runtime-access-proof.md) — Underlay Reference runtime/access proof (`complete`)
-48. [ ] [`g09.048`](048-contact-patch-runtime-access-rollout.md) — Contact Patch runtime/access rollout (`planned`)
-49. [ ] [`g09.049`](049-compli-me-runtime-access-rollout.md) — Compli Me runtime/access rollout (`planned`)
-50. [ ] [`g09.050`](050-songsprout-runtime-access-rollout.md) — Songsprout runtime/access rollout (`planned`)
-51. [ ] [`g09.051`](051-composer-runtime-access-rollout.md) — Composer runtime/access rollout (`planned`)
-52. [ ] [`g09.052`](052-acowtancy-runtime-access-rollout.md) — Acowtancy runtime/access rollout (`planned`)
+48. [ ] [`g09.048`](048-contact-patch-runtime-access-rollout.md) — Contact Patch runtime/access rollout (`ready`)
+49. [ ] [`g09.049`](049-compli-me-runtime-access-rollout.md) — Compli Me runtime/access rollout (`ready`)
+50. [ ] [`g09.050`](050-songsprout-runtime-access-rollout.md) — Songsprout runtime/access rollout (`ready`)
+51. [ ] [`g09.051`](051-composer-runtime-access-rollout.md) — Composer runtime/access rollout (`ready`)
+52. [ ] [`g09.052`](052-acowtancy-runtime-access-rollout.md) — Acowtancy runtime/access rollout (`ready`)
 53. [ ] [`g09.053`](053-bootstrap-runtime-access-fleet-closeout.md) — bootstrap/runtime/access fleet closeout (`planned`)
 
 Deferred with a promotion trigger (TypeScript 7.1 or concrete need):
@@ -164,9 +164,9 @@ Deferred with a promotion trigger (TypeScript 7.1 or concrete need):
 - `g09.045` is complete.
 - `g09.046` is complete and merged in PR9.
 - `g09.047` is complete in Underlay Reference PR5, merge commit `6af27837`.
-- The shared reference-proof gate is clear for `g09.048`–`g09.052`. They may
-  run in parallel only after each lane's remaining exact-main and named
-  product/security decision gates are satisfied.
+- The shared reference-proof, exact-main, and named product/security gates are
+  clear for `g09.048`–`g09.052`. The five independent repo-owned lanes may run
+  in parallel.
 - `g09.053` closes the fleet after all five independent rollout lanes merge.
 - Whole-app fixed-schema suites stay app-owned. `TestDb` remains the
   shared-crate/single-schema seam.
@@ -199,5 +199,5 @@ decisions are explicit.
 
 ## Next Task
 
-Review the remaining promotion gates for `g09.048`–`g09.052`, collect the named
-product/security decisions, and dispatch only the lanes that become ready.
+Prepare and dispatch one repo-owned handoff for each ready independent lane
+`g09.048`–`g09.052`.

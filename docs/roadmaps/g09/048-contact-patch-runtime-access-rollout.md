@@ -1,6 +1,6 @@
 # g09.048 - Contact Patch Runtime And Access Rollout
 
-Status: planned
+Status: ready
 Owner: Contact Patch maintainers
 Contracts: `024`, `025`, `026`, `030`, `031`
 Found by: `g09.045`
@@ -15,11 +15,26 @@ Contact Patch while preserving its product-specific Book input and front family.
 
 - [x] `g09.047` is merged and its exact reference proof is recorded
   (Underlay Reference PR5, merge commit `6af27837`)
-- [ ] Contact Patch is clean and exactly aligned with `origin/main`
-- [ ] Book is classified as an external read-only content input or removed from
+- [x] Contact Patch is clean and exactly aligned with `origin/main`
+  (`8d5b6f4c`, verified 2026-08-27)
+- [x] Book is classified as an external read-only content input or removed from
   bootstrap; it is not workspace ownership
-- [ ] fatal deployed config/cookie behavior is decided
-- [ ] public Book rate-limit posture is explicitly accepted
+- [x] fatal deployed config/cookie behavior is decided
+- [x] public Book rate-limit posture is explicitly accepted
+
+## Settled Owner Policy
+
+- Book remains the declared external sibling, read-only input, and is not a Bun
+  workspace or package-catalog member.
+- Local/effigy/test are the bounded non-deployed set. Malformed config and
+  insecure cookies fail startup in dev, staging, production, and unknown
+  environments, matching the reference policy.
+- `DATABASE_URL` and the JWT keypair are startup-required. `ENCRYPTION_KEY` is
+  additionally required in deployed environments; selected adapter/backend
+  credentials remain conditional.
+- The cacheable public Book GET family has no app-local throttle. Deployment
+  edge/abuse controls own its rate-limit posture; authenticated and mutation
+  families retain their app-owned policy.
 
 ## Scope
 

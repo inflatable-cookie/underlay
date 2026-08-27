@@ -1,6 +1,6 @@
 # g09.050 - Songsprout Runtime And Access Rollout
 
-Status: planned
+Status: ready
 Owner: Songsprout maintainers
 Contracts: `024`, `025`, `026`, `030`, `031`
 Found by: `g09.045`
@@ -16,10 +16,25 @@ generic front naming.
 
 - [x] `g09.047` is merged and its exact reference proof is recorded
   (Underlay Reference PR5, merge commit `6af27837`)
-- [ ] Songsprout is clean and exactly aligned with `origin/main`
-- [ ] rate-limit backend failure is explicitly chosen as fail-open or fail-closed
-- [ ] Bloom/Greenhouse browser-cookie and framework CSRF posture is confirmed
-- [ ] advertised readiness is either implemented and consumed or removed
+- [x] Songsprout is clean and exactly aligned with `origin/main`
+  (`e1fd46ef`, verified 2026-08-27)
+- [x] rate-limit backend failure is explicitly chosen as fail-open or fail-closed
+- [x] Bloom/Greenhouse browser-cookie and framework CSRF posture is confirmed
+- [x] advertised readiness is either implemented and consumed or removed
+
+## Settled Owner Policy
+
+- Rate-limit backend failure is fail-closed for protected abuse/auth flows.
+  Backend failure must not silently grant the request.
+- Bloom and Greenhouse retain SvelteKit's origin protection for their server
+  actions. Nursery cookie-backed browser refresh/logout also gains the explicit
+  reference CSRF seam; SameSite cookies and framework protection are not used
+  as substitutes for the API boundary.
+- Remove advertised readiness claims because Nursery mounts only `/health` and
+  `/metrics` and no deployment consumer uses a readiness endpoint.
+- Local/effigy/test are the bounded non-deployed set. Apply the reference
+  deployed config/cookie failure policy and classify startup secrets from real
+  runtime and selected-adapter requirements.
 
 ## Scope
 

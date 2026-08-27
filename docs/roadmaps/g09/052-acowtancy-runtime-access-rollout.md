@@ -1,6 +1,6 @@
 # g09.052 - Acowtancy Runtime And Access Rollout
 
-Status: planned
+Status: ready
 Owner: Acowtancy maintainers
 Contracts: `024`, `025`, `026`, `030`, `031`
 Found by: `g09.045`
@@ -16,10 +16,27 @@ its valid rich runtime profile.
 
 - [x] `g09.047` is merged and its exact reference proof is recorded
   (Underlay Reference PR5, merge commit `6af27837`)
-- [ ] Acowtancy is clean and exactly aligned with `origin/main`
-- [ ] environment-specific mandatory secrets are reconciled with
+- [x] Acowtancy is clean and exactly aligned with `origin/main`
+  (`7c592aab`, verified 2026-08-27)
+- [x] environment-specific mandatory secrets are reconciled with
   `infra/secrets.toml` and container injection
-- [ ] Cream/Dairy cookie refresh/logout CSRF rollout is understood
+- [x] Cream/Dairy cookie refresh/logout CSRF rollout is understood
+
+## Settled Owner Policy
+
+- `DATABASE_URL`, `AUTH_JWT_PRIVATE_KEY`, and `AUTH_JWT_PUBLIC_KEY` are required
+  for Farmyard API startup. `ENCRYPTION_KEY` is additionally required outside
+  local/effigy/test.
+- OAuth, Google, SMTP, AI, blob, Vimeo, PDF, Stripe, and other integration
+  credentials are conditional on the corresponding configured provider or
+  runtime. `infra/secrets.toml` targets describe injection reach; they do not
+  make every optional integration mandatory for every process.
+- Keep the existing fail-closed database, deployed-cookie, CORS, encryption,
+  email-adapter, AI-provider, and blob guards.
+- Cream and Dairy call Farmyard directly through Cattle Grid. When refresh or
+  logout falls back to the browser cookie, Farmyard requires the reference CSRF
+  proof; SameSite alone is not the API security boundary. Body-token/native and
+  bearer-only flows remain outside CSRF.
 
 ## Scope
 

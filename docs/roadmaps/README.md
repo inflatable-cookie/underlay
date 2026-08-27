@@ -70,8 +70,10 @@ remaining consumer repairs. `g09.044` closed the migration/testing proof.
 `g09.045` completed the bootstrap/runtime/access assessment with a `drifting`
 verdict. `g09.046` is complete. `g09.047` completed the Underlay Reference
 runtime/access proof in PR5, merge commit `6af27837`. Its merge clears the
-shared reference dependency for `g09.048`–`g09.052`; those consumer lanes and
-`g09.053` remain planned while their lane-specific gates are resolved. See
+shared reference dependency for `g09.048`–`g09.052`. Exact-main evidence and
+the remaining product/security policy were settled on 2026-08-27, so all five
+independent consumer lanes are ready for dispatch. `g09.053` remains planned.
+See
 [`g09/README.md`](g09/README.md).
 
 ## Archived generations
@@ -91,5 +93,5 @@ that risk.
 
 ## Next Task
 
-Review the remaining promotion gates for `g09.048`–`g09.052`, collect the named
-product/security decisions, and dispatch only the lanes that become ready.
+Prepare and dispatch one repo-owned handoff for each ready independent lane
+`g09.048`–`g09.052`.

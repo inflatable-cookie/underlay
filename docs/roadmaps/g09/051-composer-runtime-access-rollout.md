@@ -1,6 +1,6 @@
 # g09.051 - Composer Runtime And Access Rollout
 
-Status: planned
+Status: ready
 Owner: Composer maintainers
 Contracts: `024`, `025`, `026`, `031`
 Found by: `g09.045`
@@ -16,10 +16,25 @@ compatibility decisions.
 
 - [x] `g09.047` is merged and its exact reference proof is recorded
   (Underlay Reference PR5, merge commit `6af27837`)
-- [ ] Composer is clean and exactly aligned with `origin/main`
-- [ ] deployment proxy topology and authoritative client-IP source are named
-- [ ] delete-batch restore/purge wire compatibility is decided
-- [ ] environment-specific mandatory secrets and malformed-config policy are named
+- [x] Composer is clean and exactly aligned with `origin/main`
+  (`b7cafd9c`, verified 2026-08-27)
+- [x] deployment proxy topology and authoritative client-IP source are named
+- [x] delete-batch restore/purge wire compatibility is decided
+- [x] environment-specific mandatory secrets and malformed-config policy are named
+
+## Settled Owner Policy
+
+- Socket peer remains the authoritative client-IP source. No forwarding header
+  is trusted until Composer declares a concrete proxy topology and hop policy.
+- Move restore and purge atomically to
+  `/v1/admin/delete-batches/{id}/restore` and
+  `/v1/admin/delete-batches/{id}`. No in-repo client calls the legacy paths, so
+  no dual-path compatibility alias is retained.
+- `COMPOSER_DATABASE_URL` and the JWT keypair are startup-required in deployed
+  environments. Selected blob/backend credentials remain conditional.
+- Malformed layered config is fatal in dev, staging, production, and unknown
+  environments. Local/effigy/test may retain bounded warnings where the local
+  posture permits startup.
 
 ## Scope
 

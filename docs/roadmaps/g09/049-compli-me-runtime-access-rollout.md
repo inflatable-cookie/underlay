@@ -1,6 +1,6 @@
 # g09.049 - Compli Me Runtime And Access Rollout
 
-Status: planned
+Status: ready
 Owner: Compli Me maintainers
 Contracts: `024`, `025`, `026`, `030`, `031`
 Found by: `g09.045`
@@ -15,10 +15,26 @@ cookie mutation protection, and direct-router proof.
 
 - [x] `g09.047` is merged and its exact reference proof is recorded
   (Underlay Reference PR5, merge commit `6af27837`)
-- [ ] Compli Me is clean and exactly aligned with `origin/main`
-- [ ] `/v1/compli/*` is classified as shared multi-client or product/front
-- [ ] metrics exposure is explicitly enabled with a route or removed as unused
-- [ ] environment-specific mandatory secrets are named
+- [x] Compli Me is clean and exactly aligned with `origin/main`
+  (`12fa0d17`, verified 2026-08-27)
+- [x] `/v1/compli/*` is classified as shared multi-client or product/front
+- [x] metrics exposure is explicitly enabled with a route or removed as unused
+- [x] environment-specific mandatory secrets are named
+
+## Settled Owner Policy
+
+- `/v1/compli/*` remains the shared authenticated claim/verification family,
+  matching the canonical endpoint-family matrix. Its product vocabulary does
+  not require a front-family path cutover.
+- Remove the unexposed metrics registry/state wiring. Do not invent a runtime
+  `/metrics` surface without an operator consumer.
+- Local/effigy/test are the bounded non-deployed set. Malformed config and
+  insecure cookies fail startup in dev, staging, production, and unknown
+  environments.
+- `DATABASE_URL` and the JWT keypair are startup-required. `ENCRYPTION_KEY` is
+  required in deployed environments; email, blob, and other adapter credentials
+  are required only when their corresponding implementation is selected.
+- Cookie-backed refresh/logout adopts the reference CSRF posture.
 
 ## Scope
 
