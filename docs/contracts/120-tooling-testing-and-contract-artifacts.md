@@ -381,6 +381,6 @@ Other system families own:
 
 ## Next Task
 
-Launch dispatched `g09.062` as an internal workspace-shape modularization.
-Preserve the checker facade, stable diagnostics, and separation from
-env-authority and security conformance.
+Keep the completed workspace-shape modularization stable. A later change must
+preserve the checker facade, diagnostics, and separation from env-authority and
+security conformance through a new numbered roadmap.

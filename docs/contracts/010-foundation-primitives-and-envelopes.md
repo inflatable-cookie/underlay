@@ -225,5 +225,5 @@ Use this contract to judge later implementation work:
 
 ## Next Task
 
-Foundation assessment and bounded repair are complete. Continue through the
-active `g09` queue at [`g09/README.md`](../roadmaps/g09/README.md).
+Foundation assessment and bounded repair are complete. Keep this contract
+stable until a later numbered roadmap names new evidence; `g09` is closed.

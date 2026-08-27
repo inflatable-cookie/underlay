@@ -357,5 +357,5 @@ Use this contract to judge later implementation work:
 
 ## Next Task
 
-Transport assessment and bounded repairs are complete. Continue through the
-active `g09` queue at [`g09/README.md`](../roadmaps/g09/README.md).
+Transport assessment and bounded repairs are complete. Keep this contract
+stable until a later numbered roadmap names new evidence; `g09` is closed.

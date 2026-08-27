@@ -1,16 +1,16 @@
 # g09 - Config Convergence And Contract Fidelity
 
-Status: active - strict-paused
+Status: complete
 Owner: repo maintainers
 Started: 2026-08-03
+Closed: 2026-08-27
 
 ## Current Generation
 
-`g09` remains the active delivery generation. Its original config-convergence,
-dependency, and elective-major work completed on 2026-08-04. The generation
-then continued into consumer workspace normalization and contract fidelity.
-`g09.001`–`g09.062` are complete. The generation is strict-paused with no ready
-roadmap.
+`g09` is a closed historical delivery generation. Its original
+config-convergence, dependency, and elective-major work completed on
+2026-08-04. The generation then continued into consumer workspace normalization
+and contract fidelity. `g09.001`–`g09.062` are complete. No active queue remains.
 
 An invalid rollover created `g10` with no roadmap files and used batch cards as
 the queue. The 2026-08-26 recovery removed that generation and rehomed its
@@ -288,6 +288,5 @@ lane introduces consumer action.
 
 ## Next Task
 
-At the next planning checkpoint, decide whether to promote one bounded roadmap
-inside `g09` or close the generation. Do not open a later generation without
-explicit operator direction.
+No active `g09` task remains. Use the top-level roadmap front door for any
+explicit next-generation planning; do not add work to this closed queue.

@@ -46,6 +46,5 @@ Over time, Underlay should:
 
 ## Next Task
 
-Open the current roadmap of the active generation `g09` (contract fidelity and
-fleet convergence) via [`docs/roadmaps/README.md`](../roadmaps/README.md), keeping
-the foundation vision's execution handoff current.
+Open a later roadmap generation only after an explicit planning checkpoint via
+[`docs/roadmaps/README.md`](../roadmaps/README.md). No generation is active.

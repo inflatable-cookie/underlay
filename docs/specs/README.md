@@ -24,6 +24,6 @@ Specs hold active Underlay planning and strict execution-control surfaces.
 
 ## Next Task
 
-The bootstrap/runtime/access wave is governed by numbered roadmaps
-`g09.047`–`g09.054`, not a batch card or strict spec. `g09.053` is ready;
-`g09.054` remains planned behind it.
+No strict spec is active. Open a new strict execution-control surface only when
+a later numbered roadmap needs tighter grammar; keep the completed monorepo
+rollout spec archived.

@@ -18,8 +18,9 @@ Underlay is currently `migration` in sequential mode.
 
 Evidence:
 
-- active generation is `g09`; `g09.021`–`g09.052` are complete, `g09.053` is
-  ready, and `g09.054` is planned
+- `g09.001`–`g09.062` are complete and the generation is closed
+- no roadmap generation is active
+- exact-main doctor is green with advisory scan inventory retained
 - roadmap front doors and the generation index were refreshed 2026-08-27
 - the contract index exists and names the full planned contract set
 - reference-grade architecture phases 2–5 remain the longer-horizon shape target
@@ -28,9 +29,8 @@ Remaining pressure:
 
 - migration and testing drift is repaired across the six-consumer family;
   fixed-schema whole-app suites remain app-owned
-- the bootstrap/runtime/access assessment found env/secret authority,
-  route-family, middleware/test-seam, CSRF, proxy, and declared-version drift;
-  the serial authority/reference proof precedes five parallel consumer lanes
+- bootstrap/runtime/access drift was repaired and proved across the six exact
+  roots
 - collection route and hybrid-shell convergence (`116`, `117`, sweeps `029`/`030`)
   is still open
 - consumer drift prevention items in `070` still have proposed follow-through

@@ -19,6 +19,6 @@ Owner: repo maintainers
 
 ## Next Task
 
-Launch dispatched `g09.061` and `g09.062` as independent doctor-error lanes.
-Keep advisory scan warnings visible; do not turn threshold compliance into
-unrelated product or consumer refactors.
+Keep `g09` closed. Open a later generation only through an explicit planning
+checkpoint with numbered roadmaps. Keep advisory scan warnings visible; do not
+turn threshold compliance into unrelated product or consumer refactors.

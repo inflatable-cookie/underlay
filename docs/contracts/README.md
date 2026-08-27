@@ -54,22 +54,10 @@ machine-readable policy files.
 
 ## Current lane
 
-- the active contract-driven lane is `g09`
-- `g09.031`–`g09.034` assessed and repaired foundation/transport drift
-- `g09.035`–`g09.044` assessed and repaired migration/testing drift across the
-  six-consumer family
+- no contract-driven roadmap generation is active
+- closed `g09` assessed and repaired foundation/transport, migration/testing,
+  bootstrap/runtime/access, canonical-route, and released-dependency drift
+- all `g09.001`–`g09.062` roadmaps are complete
 - whole-app fixed-schema DB suites remain app-owned; `TestDb` stays the shared
   single-schema seam
-- `g09.045` assessed bootstrap, runtime assembly, and access-model contracts
-  `024`–`026` with a `drifting` verdict
-- `g09.046`–`g09.056` repaired and proved that group; `g09.054` closes it as
-  conforming across the six exact roots
-- `g09.057` assessed contracts `027`–`029`; runtime profiles conform
-- `g09.059` completed the authorised closed-world retirement of slash-form
-  batch-delete routes
-- `g09.058` completed the authorised auth-alias retirement in Songsprout,
-  Composer, and Acowtancy
-- all assessed drift in contracts `027`–`029` is repaired
-- papercuts wave 3 is complete in Underlay PR12, merge commit `9e26ba9a`
-- `g09.060` is in review after aligning Contract `023` with the released-
-  dependency rule already proved by Contract `024` and the consumer fleet
+- open triage and backlog surfaces remain unpromoted evidence

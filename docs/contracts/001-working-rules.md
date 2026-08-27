@@ -48,42 +48,16 @@ In parallel mode:
 
 Underlay is in sequential mode:
 
-- `g07` and `g08` are closed
-- `g09` is the active generation
-- `g03`, `g04`, and `g05` are closed historical generations
+- `g01`–`g09` are closed historical generations
+- `g09.001`–`g09.062` are complete
+- no generation is active
 - no strict spec is active; the completed monorepo rollout spec is archived
-- `g09.021` is complete
-- `g09.022` is complete
-- `g09.023` is complete
-- `g09.024` is complete
-- `g09.025` is complete
-- `g09.026`–`g09.030` are complete
-- the monorepo consumer-workspace strict lane is archived
-- `g09.031` is complete
-- `g09.032` and `g09.033` are complete
-- `g09.034` is complete
-- `g09.035` is complete
-- `g09.036` is complete
-- `g09.037` is complete
-- `g09.038` is complete
-- `g09.039` is complete
-- `g09.040`–`g09.043` are complete
-- `g09.044` is complete
-- `g09.045` is complete with a `drifting` verdict
-- `g09.046` is complete
-- `g09.047`–`g09.052` are complete
-- `g09.053` is complete in Underlay Reference PR6, merge commit `f89e3616`
-- `g09.054` is complete with an exact-head six-root conforming verdict
-- `g09.055` is complete in Acowtancy PR63, merge commit `ad74d23e`
-- `g09.056` is complete in Acowtancy PR65, merge commit `22219f59`
-- `g09.057` is complete with a `drifting` verdict
-- `g09.058` and `g09.059` are complete across all five affected targets
-- papercuts wave 3 is complete in Underlay PR12, merge commit `9e26ba9a`
-- `g09.060` is complete in Underlay PR13, merge commit `a65797f0`
-- `g09.061` and `g09.062` are ready and dispatched as independent Underlay
-  doctor-error lanes
+- open triage and backlog files are retained evidence, not execution authority
+- a later generation requires explicit planning and numbered roadmaps before
+  dispatch
 
 ## Next Task
 
-Launch the two published doctor-lane handoffs in parallel. Merge neither without
-exact-head review and explicit operator authorisation.
+Open a later generation only after explicit operator direction and a planning
+checkpoint. Do not reopen `g09` or substitute batch cards for numbered
+roadmaps.

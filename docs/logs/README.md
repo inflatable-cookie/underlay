@@ -4,9 +4,9 @@ Logs capture meaningful documentation and delivery batches for Underlay.
 
 ## Current Evidence Window
 
-The active window is the current generation `g09` under `docs/logs/2026-08/`.
-The `g09` config-convergence and dependency-upgrade closeout lives in the same
-month shard. Earlier month shards are frozen lineage.
+The latest evidence window is the closed `g09` generation under
+`docs/logs/2026-08/`. No generation is active. Earlier month shards are frozen
+lineage.
 
 ## Cadence
 
@@ -96,3 +96,7 @@ The workers completed the attention-marker policy and workspace-shape split in
 Underlay PR14 and PR15. Both reviewed heads merged, exact `main` doctor is green,
 and `g09.061`/`g09.062` are complete
 ([closeout](./2026-08/27-232400-g09-061-062-doctor-error-closeout.md)).
+The closure audit then confirmed all 62 numbered roadmaps complete, no active
+strict spec, and no batch-card queue. `g09` is now frozen with no successor
+generation opened
+([generation closeout](./2026-08/27-233954-g09-generation-closeout.md)).

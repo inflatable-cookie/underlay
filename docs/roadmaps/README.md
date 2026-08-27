@@ -5,7 +5,8 @@ Roadmaps are executable delivery plans for Underlay library work.
 ## Rules
 
 - Keep one active queue per generation and use backlog for deferred scope.
-- In sequential mode, maintain one active generation.
+- In sequential mode, maintain at most one active generation. A deliberate
+  between-generation pause may have none.
 - In parallel mode, keep every active generation front door accurate for its
   thread.
 - Keep durable inventories, CSVs, and machine-readable reference artifacts in
@@ -52,50 +53,18 @@ README surfaces.
 
 ## Active generation
 
-- `g09` - Config Convergence And Contract Fidelity ([front door](g09/README.md))
+- None. `g09` closed on 2026-08-27 and no later generation is open.
 
 ## Current Queue
 
-`g09.001`–`g09.020` completed config convergence, dependency upgrades, and
-elective majors. `g09.021`–`g09.030` completed the strict monorepo
-consumer-workspace rollout
-across the six-consumer family. `g09.031` completed the foundation and transport
-assessment. `g09.032` normalized request-context rejection envelopes, and
-`g09.033` synchronized the page-list contract artifacts. `g09.034` completed the
-bounded HTTP-client fallback repair. `g09.035` and `g09.036` completed the
-migration/testing assessments with `drifting` verdicts. `g09.037` completed the
-shared repair and `g09.038` completed the Underlay Reference proof. `g09.039`
-completed the Contact Patch rollout and `g09.040`–`g09.043` completed the
-remaining consumer repairs. `g09.044` closed the migration/testing proof.
-`g09.045` completed the bootstrap/runtime/access assessment with a `drifting`
-verdict. `g09.046` is complete. `g09.047` completed the Underlay Reference
-runtime/access proof in PR5, merge commit `6af27837`. Its merge clears the
-shared reference dependency for `g09.048`–`g09.052`. Exact-main evidence and
-the remaining product/security policy were settled on 2026-08-27, so all five
-independent consumer lanes were dispatched through target-owned handoffs.
-Contact Patch PR5, Compli Me PR7, Songsprout PR5, Composer PR5, and Acowtancy
-PR62 have merged, completing `g09.048`–`g09.052`. Underlay Reference PR6 merged
-as `f89e3616`, completing `g09.053`. The first `g09.054` exact-root pass proved
-workspace/env authority but found an Acowtancy FAQ JSON-LD script-breakout
-risk. `g09.055` repaired it in Acowtancy PR63. The resumed pass then found the
-merged SSR regression was not portable; `g09.056` repaired that in PR65.
-`g09.054` is complete. `g09.057` assessed contracts `027`–`029` with a
-`drifting` verdict: runtime profiles conform, while `g09.058` and `g09.059`
-own the authorised route-retirement work. Both roadmaps are complete across all
-five affected targets. Underlay PR12 completed the papercuts wave 3 contract-
-link lane as merge commit `9e26ba9a`. Underlay PR13 then completed `g09.060`
-at reviewed head `1bfe15c2`, merge commit `a65797f0`, rewriting Contract `023`
-onto the released-tag dependency rule. Underlay PR14 completed `g09.061` as
-merge commit `5129356b`; PR15 completed `g09.062` as `c55a6fe6`. Exact `main`
-doctor is green at `ok:18 warn:2 err:0`; the agreed advisory inventories stay
-visible. `g09.001`–`g09.062` are complete and the generation is strict-paused
-with no ready roadmap.
-See
-[`g09/README.md`](g09/README.md).
+No roadmap is ready. `g09.001`–`g09.062` are complete and the generation is
+closed. Its config, dependency, monorepo, contract-fidelity, fleet-repair, and
+doctor-normalization evidence remains in the frozen
+[`g09` front door](g09/README.md).
 
 ## Archived generations
 
-Closed generations `g01`-`g08` are **frozen archival record**, not active
+Closed generations `g01`-`g09` are **frozen archival record**, not active
 navigation. Enter them only via
 [`generation-index.md`](generation-index.md), which is the authoritative history.
 Do not open new work in a closed generation.
@@ -110,5 +79,6 @@ that risk.
 
 ## Next Task
 
-At the next planning checkpoint, decide whether to promote one bounded roadmap
-inside `g09` or close the generation. Do not roll generations automatically.
+Open a later generation only through an explicit planning checkpoint. Compile
+numbered roadmaps before dispatch; do not reuse closed `g09` or create a queue
+from batch cards alone.
