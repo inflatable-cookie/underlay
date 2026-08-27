@@ -833,6 +833,9 @@ async fn test_create_user() {
         .await;
 
     response.assert_created();
+
+    // Required when UNDERLAY_TEST_DATABASE_URL is set.
+    db.cleanup().await.unwrap();
 }
 ```
 
@@ -1104,6 +1107,9 @@ async fn test_user_workflow() {
     // Verify user was created
     let user: serde_json::Value = response.json();
     assert_eq!(user["email"], new_user_email);
+
+    // Required when UNDERLAY_TEST_DATABASE_URL is set.
+    db.cleanup().await.unwrap();
 }
 ```
 
@@ -1134,8 +1140,11 @@ async fn test_endpoint() {
 async fn test_endpoint() {
     let db = TestDb::new().await;
     db.run_migrations("./migrations").await.unwrap();
-    
+
     // Ready to test!
+
+    // Required when UNDERLAY_TEST_DATABASE_URL is set.
+    db.cleanup().await.unwrap();
 }
 ```
 
@@ -1156,7 +1165,9 @@ cargo test --features server
 
 1. **One assertion per test** - Keep tests focused
 2. **Use descriptive fixture prefixes** - `Fixtures::email("admin")` vs `Fixtures::email("x")`
-3. **Clean up is automatic** - No need to manually drop schemas
+3. **Call `cleanup()` for external databases** - `Drop` does not drop the
+   schema. Required when `UNDERLAY_TEST_DATABASE_URL` is set; container-backed
+   tests can skip it because the container dies with `TestDb`
 4. **Parallel tests are isolated** - Each test gets its own schema
 5. **Use auth helpers consistently** - Configure middleware to read test headers
 

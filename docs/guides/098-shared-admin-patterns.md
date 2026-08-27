@@ -16,10 +16,9 @@ The recipe layer that sits above this page now follows a split model:
 - use [097-autonomous-list-components.md](./097-autonomous-list-components.md) when the missing piece is lower list workflow mechanics such as selection-mode state, transform-launch state, or local-vs-loaded reorder sessions
 - use the Poodle guides for the visible page/list/detail/dialog composition inside those recipes
 
-Storybook coverage:
-- Poodle `PageHeader`
-- Underlay `SpaFormShell`
-- Poodle `Menu`
+Inspect retained shells under `ts/src/patterns` or the ACME reference apps in
+`underlay-reference`. Use Poodle's own preview/docs for `PageHeader` and
+`Menu`.
 
 AI routing ops pages now compose directly over `createAiRoutingOpsController`
 plus Poodle `PageHeader`, `Card`, `Callout`, `PageLoading`, and `DataTable`.

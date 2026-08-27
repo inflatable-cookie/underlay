@@ -26,6 +26,9 @@
 //!         .execute(db.pool())
 //!         .await
 //!         .unwrap();
+//!
+//!     // Required when UNDERLAY_TEST_DATABASE_URL is set.
+//!     db.cleanup().await.unwrap();
 //! }
 //! ```
 
@@ -185,6 +188,7 @@ impl TestDb {
     /// ```ignore
     /// let db = TestDb::new().await;
     /// db.run_migrations("./migrations").await.unwrap();
+    /// db.cleanup().await.unwrap(); // required for UNDERLAY_TEST_DATABASE_URL
     /// ```
     pub async fn run_migrations(
         &self,
@@ -236,6 +240,7 @@ impl TestDb {
     ///
     /// let db = TestDb::new().await;
     /// db.run_migrator(&MIGRATOR).await.unwrap();
+    /// db.cleanup().await.unwrap(); // required for UNDERLAY_TEST_DATABASE_URL
     /// ```
     pub async fn run_migrator(
         &self,
