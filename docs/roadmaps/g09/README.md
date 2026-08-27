@@ -113,12 +113,14 @@ The two batch-grammar lanes completed in Underlay Reference PR9 and Compli Me
 PR8. Songsprout PR7, Composer PR7, and Acowtancy PR67 completed the three auth
 lanes. All five remote `main` tips match the recorded merge commits.
 
-### Phase 10 — Released dependency contract normalization (`g09.060`, ready)
+### Phase 10 — Released dependency contract normalization (`g09.060`, planned)
 
 Contract `023` still describes committed sibling path/file dependencies as the
 default even though Contract `024`, active guides, the checker, and all six
 consumer roots require immutable released tags. `g09.060` is one serial docs-
 only correction. It does not change consumers, versions, releases, or tooling.
+Dispatch waits for the already-published papercuts wave 3 contract-link lane,
+which also edits Contract `023`.
 
 ## Queue
 
@@ -181,7 +183,7 @@ only correction. It does not change consumers, versions, releases, or tooling.
 57. [x] [`g09.057`](057-canonical-path-runtime-surface-workflow-assessment.md) — canonical path, runtime surface, and workflow action assessment (`complete`; `drifting`)
 58. [x] [`g09.058`](058-auth-mutation-compatibility-retirement.md) — auth mutation compatibility retirement (`complete`)
 59. [x] [`g09.059`](059-batch-delete-action-grammar-convergence.md) — batch-delete action grammar convergence (`complete`)
-60. [ ] [`g09.060`](060-released-dependency-rollout-contract-normalization.md) — released dependency rollout contract normalization (`ready`)
+60. [ ] [`g09.060`](060-released-dependency-rollout-contract-normalization.md) — released dependency rollout contract normalization (`planned`; waits for papercuts wave 3)
 
 Deferred with a promotion trigger (TypeScript 7.1 or concrete need):
 [`backlog/ts-7-adoption.md`](../backlog/ts-7-adoption.md).
@@ -212,8 +214,9 @@ Deferred with a promotion trigger (TypeScript 7.1 or concrete need):
   Compli Me PR8, merge commit `a290d2a7`.
 - `g09.058` is complete in Songsprout PR7, merge commit `1778d108`; Composer
   PR7, merge commit `4fce7baa`; and Acowtancy PR67, merge commit `030b5295`.
-- `g09.060` is a serial Underlay docs-only lane. No consumer or release lane may
-  run inside it.
+- `g09.060` is a serial Underlay docs-only lane. It waits for papercuts wave 3
+  to finish its overlapping Contract `023` link correction. No consumer or
+  release lane may run inside it.
 - Whole-app fixed-schema suites stay app-owned. `TestDb` remains the
   shared-crate/single-schema seam.
 
@@ -259,5 +262,7 @@ tags and locks remain valid; no consumer action is introduced.
 
 ## Next Task
 
-Dispatch the single `g09.060` Underlay worker. Review its PR at exact head and
-merge only with explicit operator authorisation.
+Launch the existing papercuts wave 3 contract-link worker from
+`docs/handoffs/20260827-210040-papercuts-wave3-contract-links.md`. After its PR
+is reviewed, authorised, merged, and verified on `main`, promote and dispatch
+`g09.060` from the new exact base.

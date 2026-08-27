@@ -70,5 +70,6 @@ machine-readable policy files.
 - `g09.058` completed the authorised auth-alias retirement in Songsprout,
   Composer, and Acowtancy
 - all assessed drift in contracts `027`–`029` is repaired
-- `g09.060` is ready to align Contract `023` with the released-dependency rule
-  already proved by Contract `024` and the consumer fleet
+- `g09.060` is planned to align Contract `023` with the released-dependency rule
+  already proved by Contract `024` and the consumer fleet; dispatch waits for
+  papercuts wave 3 to close its overlapping Contract `023` link work

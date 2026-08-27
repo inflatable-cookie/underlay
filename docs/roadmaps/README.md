@@ -82,8 +82,9 @@ merged SSR regression was not portable; `g09.056` repaired that in PR65.
 `g09.054` is complete. `g09.057` assessed contracts `027`–`029` with a
 `drifting` verdict: runtime profiles conform, while `g09.058` and `g09.059`
 own the authorised route-retirement work. Both roadmaps are complete across all
-five affected targets. The operator chose to continue `g09`; `g09.060` is ready
-to normalize stale released-dependency teaching in Contract `023`.
+five affected targets. The operator chose to continue `g09`; `g09.060` is
+planned to normalize stale released-dependency teaching in Contract `023` after
+the overlapping papercuts wave 3 contract-link lane closes.
 See
 [`g09/README.md`](g09/README.md).
 
@@ -104,5 +105,6 @@ that risk.
 
 ## Next Task
 
-Dispatch the single `g09.060` Underlay worker. Review its PR at exact head and
-merge only with explicit operator authorisation.
+Launch the existing papercuts wave 3 contract-link worker from
+`docs/handoffs/20260827-210040-papercuts-wave3-contract-links.md`. Promote
+`g09.060` only after that PR is merged and verified on `main`.

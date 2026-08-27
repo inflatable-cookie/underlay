@@ -90,5 +90,5 @@ Verdict: `drifting` with conforming runtime profiles.
 
 ## Next Task
 
-The downstream `g09.058` and `g09.059` repairs are complete. `g09.060` is ready
-for the separate Contract `023` normalization.
+The downstream `g09.058` and `g09.059` repairs are complete. `g09.060` is
+planned for the separate Contract `023` normalization after papercuts wave 3.

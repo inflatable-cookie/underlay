@@ -30,9 +30,10 @@ Promoted the known Contract `023` drift into one ready docs-only roadmap,
 
 ## Posture
 
-`strict-ready`. The governing contracts and live evidence agree; the drift is
-isolated to Contract `023` plus currentness surfaces. No unresolved product or
-release-mechanics decision can change the roadmap.
+`strict-planned`. The governing contracts and live evidence agree; the drift is
+isolated to Contract `023` plus currentness surfaces. Dispatch waits only for
+the independently authorised papercuts wave 3 lane because it also edits
+Contract `023` links.
 
 ## Consumer Upgrade Notes
 
@@ -43,5 +44,6 @@ release-mechanics decision can change the roadmap.
 
 ## Next Task
 
-Publish one Underlay worker handoff for `g09.060`. The worker stops at a pushed
-reviewable PR and does not merge.
+Launch the existing papercuts wave 3 contract-link worker. After its PR is
+merged and verified on `main`, publish one Underlay worker handoff for
+`g09.060` from the new exact base.

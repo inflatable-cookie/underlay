@@ -71,3 +71,6 @@ phase
 The operator then chose to continue `g09`, promoting the Contract `023`
 released-dependency drift as ready `g09.060`
 ([promotion](./2026-08/27-205758-g09-060-released-dependency-promotion.md)).
+The concurrent papercuts wave 3 handoff overlaps Contract `023`, so `g09.060`
+was serialized behind that closeout before dispatch
+([collision gate](./2026-08/27-210231-g09-060-contract-link-collision-gate.md)).

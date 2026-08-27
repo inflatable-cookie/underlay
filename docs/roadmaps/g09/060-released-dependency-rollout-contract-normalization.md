@@ -1,9 +1,9 @@
 # g09.060 - Released Dependency Rollout Contract Normalization
 
-Status: ready
+Status: planned - waiting on papercuts wave 3 contract-link closeout
 Owner: Underlay maintainers
 Contract: `023`
-Depends on: `g09.059`
+Depends on: `g09.059` and papercuts wave 3 contract-link closeout
 
 ## Purpose
 
@@ -13,7 +13,9 @@ and all six consumer roots.
 
 ## Decision
 
-The operator chose to continue `g09` for this bounded normalization.
+The operator chose to continue `g09` for this bounded normalization. Dispatch
+waits for the already-published papercuts wave 3 contract-link worker because
+both lanes otherwise edit Contract `023`.
 
 - Underlay remains private from a package-registry perspective but is released
   through immutable Git tags.
@@ -38,7 +40,8 @@ The operator chose to continue `g09` for this bounded normalization.
   shared commit
 - preserve impact classification, compatibility-window, upgrade-note, caller-
   proof, and narrow-retirement rules
-- normalize touched active links to repo-relative form
+- preserve the repo-relative Contract `023` links delivered by papercuts wave 3;
+  do not reopen its broader link sweep
 
 ### Currentness
 
@@ -94,6 +97,10 @@ mutation, an Effigy behavior change, a consumer manifest change, or a choice
 between multiple supported dependency shapes. Do not preserve path/file
 compatibility: Contract `024` has already made that unsupported.
 
+Do not dispatch before the papercuts wave 3 contract-link PR is merged and its
+exact `main` result is verified. Rebase the implementation handoff on that
+result.
+
 ## Consumer Upgrade Impact
 
 - Impact class: documentation correction
@@ -103,5 +110,7 @@ compatibility: Contract `024` has already made that unsupported.
 
 ## Next Task
 
-Dispatch one Underlay worker for this roadmap. Review its PR at exact head and
-merge only with explicit operator authorisation.
+Launch the existing papercuts wave 3 contract-link worker from
+`docs/handoffs/20260827-210040-papercuts-wave3-contract-links.md`. After its PR
+is reviewed, authorised, merged, and verified on `main`, promote and dispatch
+this roadmap from the new exact base.
