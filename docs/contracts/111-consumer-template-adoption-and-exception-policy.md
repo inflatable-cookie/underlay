@@ -23,26 +23,26 @@ It does not redefine template APIs. That stays in `110`.
 
 Primary shared contract and usage surfaces:
 
-- [`docs/contracts/110-admin-template-system.md`](/Users/tom/Dev/projects/underlay/docs/contracts/110-admin-template-system.md)
-- [`docs/usage/templates/000-template-system-overview.md`](/Users/tom/Dev/projects/underlay/docs/usage/templates/000-template-system-overview.md)
-- [`docs/usage/templates/entity-list-page.md`](/Users/tom/Dev/projects/underlay/docs/usage/templates/entity-list-page.md)
-- [`docs/usage/templates/entity-detail-page.md`](/Users/tom/Dev/projects/underlay/docs/usage/templates/entity-detail-page.md)
-- [`docs/usage/templates/entity-form-page.md`](/Users/tom/Dev/projects/underlay/docs/usage/templates/entity-form-page.md)
-- [`docs/usage/templates/entity-trash-page.md`](/Users/tom/Dev/projects/underlay/docs/usage/templates/entity-trash-page.md)
-- [`docs/usage/templates/entity-list-card.md`](/Users/tom/Dev/projects/underlay/docs/usage/templates/entity-list-card.md)
-- [`docs/usage/templates/media-upload-page.md`](/Users/tom/Dev/projects/underlay/docs/usage/templates/media-upload-page.md)
-- [`docs/usage/templates/media-detail-workflow-page.md`](/Users/tom/Dev/projects/underlay/docs/usage/templates/media-detail-workflow-page.md)
-- [`docs/usage/templates/system-index-page.md`](/Users/tom/Dev/projects/underlay/docs/usage/templates/system-index-page.md)
-- [`docs/usage/templates/admin-dashboard-page.md`](/Users/tom/Dev/projects/underlay/docs/usage/templates/admin-dashboard-page.md)
+- [`110-admin-template-system.md`](./110-admin-template-system.md)
+- [`docs/usage/templates/000-template-system-overview.md`](../usage/templates/000-template-system-overview.md)
+- [`docs/usage/templates/entity-list-page.md`](../usage/templates/entity-list-page.md)
+- [`docs/usage/templates/entity-detail-page.md`](../usage/templates/entity-detail-page.md)
+- [`docs/usage/templates/entity-form-page.md`](../usage/templates/entity-form-page.md)
+- [`docs/usage/templates/entity-trash-page.md`](../usage/templates/entity-trash-page.md)
+- [`docs/usage/templates/entity-list-card.md`](../usage/templates/entity-list-card.md)
+- [`docs/usage/templates/media-upload-page.md`](../usage/templates/media-upload-page.md)
+- [`docs/usage/templates/media-detail-workflow-page.md`](../usage/templates/media-detail-workflow-page.md)
+- [`docs/usage/templates/system-index-page.md`](../usage/templates/system-index-page.md)
+- [`docs/usage/templates/admin-dashboard-page.md`](../usage/templates/admin-dashboard-page.md)
 
 Cross-app convergence evidence:
 
-- [`docs/roadmaps/g05/001-dairy-detail-and-tab-template-convergence-sweep.md`](/Users/tom/Dev/projects/underlay/docs/roadmaps/g05/001-dairy-detail-and-tab-template-convergence-sweep.md)
-- [`docs/roadmaps/g05/002-compli-me-and-contact-patch-detail-page-convergence-sweep.md`](/Users/tom/Dev/projects/underlay/docs/roadmaps/g05/002-compli-me-and-contact-patch-detail-page-convergence-sweep.md)
-- [`docs/roadmaps/g05/003-underlay-reference-template-completion-and-contract-hardening-sweep.md`](/Users/tom/Dev/projects/underlay/docs/roadmaps/g05/003-underlay-reference-template-completion-and-contract-hardening-sweep.md)
-- [`docs/roadmaps/g05/004-cross-app-media-library-template-consolidation.md`](/Users/tom/Dev/projects/underlay/docs/roadmaps/g05/004-cross-app-media-library-template-consolidation.md)
-- [`docs/roadmaps/g05/005-system-index-page-template-proof.md`](/Users/tom/Dev/projects/underlay/docs/roadmaps/g05/005-system-index-page-template-proof.md)
-- [`docs/roadmaps/g05/006-admin-dashboard-page-template-proof.md`](/Users/tom/Dev/projects/underlay/docs/roadmaps/g05/006-admin-dashboard-page-template-proof.md)
+- [`docs/roadmaps/g05/001-dairy-detail-and-tab-template-convergence-sweep.md`](../roadmaps/g05/001-dairy-detail-and-tab-template-convergence-sweep.md)
+- [`docs/roadmaps/g05/002-compli-me-and-contact-patch-detail-page-convergence-sweep.md`](../roadmaps/g05/002-compli-me-and-contact-patch-detail-page-convergence-sweep.md)
+- [`docs/roadmaps/g05/003-underlay-reference-template-completion-and-contract-hardening-sweep.md`](../roadmaps/g05/003-underlay-reference-template-completion-and-contract-hardening-sweep.md)
+- [`docs/roadmaps/g05/004-cross-app-media-library-template-consolidation.md`](../roadmaps/g05/004-cross-app-media-library-template-consolidation.md)
+- [`docs/roadmaps/g05/005-system-index-page-template-proof.md`](../roadmaps/g05/005-system-index-page-template-proof.md)
+- [`docs/roadmaps/g05/006-admin-dashboard-page-template-proof.md`](../roadmaps/g05/006-admin-dashboard-page-template-proof.md)
 
 If these diverge, the contract plus the clearest retained reference posture
 (`underlay-reference`, then the grouped `g05` proofs) win.

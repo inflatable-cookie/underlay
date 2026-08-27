@@ -29,13 +29,13 @@ consumers of the same underlying resource collection.
 
 Primary:
 
-- [`docs/contracts/020-http-transport-and-server-boundary.md`](/Users/tom/Dev/projects/underlay/docs/contracts/020-http-transport-and-server-boundary.md)
-- [`docs/contracts/100-shared-patterns-and-workflow-shells.md`](/Users/tom/Dev/projects/underlay/docs/contracts/100-shared-patterns-and-workflow-shells.md)
-- [`docs/contracts/115-admin-resource-api-shapes.md`](/Users/tom/Dev/projects/underlay/docs/contracts/115-admin-resource-api-shapes.md)
-- [`docs/guides/073-api-profiles-and-query-contract.md`](/Users/tom/Dev/projects/underlay/docs/guides/073-api-profiles-and-query-contract.md)
-- [`docs/guides/080-typescript-client.md`](/Users/tom/Dev/projects/underlay/docs/guides/080-typescript-client.md)
-- [`docs/guides/100-frontend-web.md`](/Users/tom/Dev/projects/underlay/docs/guides/100-frontend-web.md)
-- [`ts/src/client/types.ts`](/Users/tom/Dev/projects/underlay/ts/src/client/types.ts)
+- [`020-http-transport-and-server-boundary.md`](./020-http-transport-and-server-boundary.md)
+- [`100-shared-patterns-and-workflow-shells.md`](./100-shared-patterns-and-workflow-shells.md)
+- [`115-admin-resource-api-shapes.md`](./115-admin-resource-api-shapes.md)
+- [`docs/guides/073-api-profiles-and-query-contract.md`](../guides/073-api-profiles-and-query-contract.md)
+- [`docs/guides/080-typescript-client.md`](../guides/080-typescript-client.md)
+- [`docs/guides/100-frontend-web.md`](../guides/100-frontend-web.md)
+- [`ts/src/client/types.ts`](../../ts/src/client/types.ts)
 
 Reference consumer evidence:
 

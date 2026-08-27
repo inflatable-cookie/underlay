@@ -25,35 +25,35 @@ or product-specific account UX. Those depend on this layer and belong elsewhere.
 
 Primary:
 
-- [`rust/crates/underlay-auth/src/lib.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-auth/src/lib.rs)
-- [`rust/crates/underlay-auth/src/provider.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-auth/src/provider.rs)
-- [`rust/crates/underlay-auth/src/extractors.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-auth/src/extractors.rs)
-- [`rust/crates/underlay-auth/src/principal.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-auth/src/principal.rs)
-- [`rust/crates/underlay-auth/src/types.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-auth/src/types.rs)
-- [`rust/crates/underlay-auth/src/errors.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-auth/src/errors.rs)
-- [`rust/crates/underlay-auth/src/repository.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-auth/src/repository.rs)
-- [`rust/crates/underlay-auth-state-postgres/src/lib.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-auth-state-postgres/src/lib.rs)
-- [`rust/crates/underlay-auth-jwt/src/lib.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-auth-jwt/src/lib.rs)
-- [`rust/crates/underlay-auth-jwt/src/service.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-auth-jwt/src/service.rs)
-- [`rust/crates/underlay-auth-jwt/src/session.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-auth-jwt/src/session.rs)
-- [`rust/crates/underlay-auth-jwt/src/claims.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-auth-jwt/src/claims.rs)
-- [`rust/crates/underlay-auth-password/src/service.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-auth-password/src/service.rs)
-- [`rust/crates/underlay-auth-totp/src/lib.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-auth-totp/src/lib.rs)
-- [`rust/crates/underlay-auth-email-totp/src/lib.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-auth-email-totp/src/lib.rs)
-- [`rust/crates/underlay-auth-webauthn/src/lib.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-auth-webauthn/src/lib.rs)
-- [`rust/crates/underlay-auth-oauth/src/lib.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-auth-oauth/src/lib.rs)
-- [`ts/src/client/auth.ts`](/Users/tom/Dev/projects/underlay/ts/src/client/auth.ts)
-- [`ts/src/client/useAuth.ts`](/Users/tom/Dev/projects/underlay/ts/src/client/useAuth.ts)
-- [`ts/src/runtime/auth.ts`](/Users/tom/Dev/projects/underlay/ts/src/runtime/auth.ts)
-- [`ts/src/patterns/auth.ts`](/Users/tom/Dev/projects/underlay/ts/src/patterns/auth.ts)
-- [`ts/src/patterns/auth-workflows.ts`](/Users/tom/Dev/projects/underlay/ts/src/patterns/auth-workflows.ts)
-- [`ts/src/patterns/passkey.svelte.ts`](/Users/tom/Dev/projects/underlay/ts/src/patterns/passkey.svelte.ts)
-- [`ts/src/utils/webauthn.ts`](/Users/tom/Dev/projects/underlay/ts/src/utils/webauthn.ts)
+- [`rust/crates/underlay-auth/src/lib.rs`](../../rust/crates/underlay-auth/src/lib.rs)
+- [`rust/crates/underlay-auth/src/provider.rs`](../../rust/crates/underlay-auth/src/provider.rs)
+- [`rust/crates/underlay-auth/src/extractors.rs`](../../rust/crates/underlay-auth/src/extractors.rs)
+- [`rust/crates/underlay-auth/src/principal.rs`](../../rust/crates/underlay-auth/src/principal.rs)
+- [`rust/crates/underlay-auth/src/types.rs`](../../rust/crates/underlay-auth/src/types.rs)
+- [`rust/crates/underlay-auth/src/errors.rs`](../../rust/crates/underlay-auth/src/errors.rs)
+- [`rust/crates/underlay-auth/src/repository.rs`](../../rust/crates/underlay-auth/src/repository.rs)
+- [`rust/crates/underlay-auth-state-postgres/src/lib.rs`](../../rust/crates/underlay-auth-state-postgres/src/lib.rs)
+- [`rust/crates/underlay-auth-jwt/src/lib.rs`](../../rust/crates/underlay-auth-jwt/src/lib.rs)
+- [`rust/crates/underlay-auth-jwt/src/service.rs`](../../rust/crates/underlay-auth-jwt/src/service.rs)
+- [`rust/crates/underlay-auth-jwt/src/session.rs`](../../rust/crates/underlay-auth-jwt/src/session.rs)
+- [`rust/crates/underlay-auth-jwt/src/claims.rs`](../../rust/crates/underlay-auth-jwt/src/claims.rs)
+- [`rust/crates/underlay-auth-password/src/service.rs`](../../rust/crates/underlay-auth-password/src/service.rs)
+- [`rust/crates/underlay-auth-totp/src/lib.rs`](../../rust/crates/underlay-auth-totp/src/lib.rs)
+- [`rust/crates/underlay-auth-email-totp/src/lib.rs`](../../rust/crates/underlay-auth-email-totp/src/lib.rs)
+- [`rust/crates/underlay-auth-webauthn/src/lib.rs`](../../rust/crates/underlay-auth-webauthn/src/lib.rs)
+- [`rust/crates/underlay-auth-oauth/src/lib.rs`](../../rust/crates/underlay-auth-oauth/src/lib.rs)
+- [`ts/src/client/auth.ts`](../../ts/src/client/auth.ts)
+- [`ts/src/client/useAuth.ts`](../../ts/src/client/useAuth.ts)
+- [`ts/src/runtime/auth.ts`](../../ts/src/runtime/auth.ts)
+- [`ts/src/patterns/auth.ts`](../../ts/src/patterns/auth.ts)
+- [`ts/src/patterns/auth-workflows.ts`](../../ts/src/patterns/auth-workflows.ts)
+- [`ts/src/patterns/passkey.svelte.ts`](../../ts/src/patterns/passkey.svelte.ts)
+- [`ts/src/utils/webauthn.ts`](../../ts/src/utils/webauthn.ts)
 
 Supporting:
 
-- [`docs/architecture/050-auth-database-schema.md`](/Users/tom/Dev/projects/underlay/docs/architecture/050-auth-database-schema.md)
-- [`docs/architecture/055-account-database-schema.md`](/Users/tom/Dev/projects/underlay/docs/architecture/055-account-database-schema.md)
+- [`docs/architecture/050-auth-database-schema.md`](../architecture/050-auth-database-schema.md)
+- [`docs/architecture/055-account-database-schema.md`](../architecture/055-account-database-schema.md)
 
 If these diverge, the shared code wins. The schema docs are evidence, not
 current authority.
@@ -446,7 +446,7 @@ Current drift worth assessing later:
 Resolved assessment:
 
 - `g06.182` confirmed
-  [`docs/architecture/050-auth-database-schema.md`](/Users/tom/Dev/projects/underlay/docs/architecture/050-auth-database-schema.md)
+  [`docs/architecture/050-auth-database-schema.md`](../architecture/050-auth-database-schema.md)
   now matches the live shared auth schema and Rust type boundary:
   `auth.users` does not store `display_name`, `User.display_name` remains an
   optional projection field, profile data belongs in `account.user_profile`,

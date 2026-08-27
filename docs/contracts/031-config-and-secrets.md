@@ -24,11 +24,11 @@ settings should live and how they should be loaded.
 
 Primary guidance and rollout evidence:
 
-- [`docs/guides/120-configuration.md`](/Users/tom/Dev/projects/underlay/docs/guides/120-configuration.md)
-- [`docs/guides/121-consumer-config-rollout-kit.md`](/Users/tom/Dev/projects/underlay/docs/guides/121-consumer-config-rollout-kit.md)
-- [`docs/guides/140-local-development.md`](/Users/tom/Dev/projects/underlay/docs/guides/140-local-development.md)
-- [`docs/contracts/024-new-app-bootstrap-and-bring-up.md`](/Users/tom/Dev/projects/underlay/docs/contracts/024-new-app-bootstrap-and-bring-up.md)
-- [`docs/contracts/030-auth-and-session-systems.md`](/Users/tom/Dev/projects/underlay/docs/contracts/030-auth-and-session-systems.md)
+- [`docs/guides/120-configuration.md`](../guides/120-configuration.md)
+- [`docs/guides/121-consumer-config-rollout-kit.md`](../guides/121-consumer-config-rollout-kit.md)
+- [`docs/guides/140-local-development.md`](../guides/140-local-development.md)
+- [`024-new-app-bootstrap-and-bring-up.md`](./024-new-app-bootstrap-and-bring-up.md)
+- [`030-auth-and-session-systems.md`](./030-auth-and-session-systems.md)
 
 Reference consumer evidence:
 

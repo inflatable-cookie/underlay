@@ -24,32 +24,32 @@ expect across consuming apps.
 
 Primary shared sources:
 
-- [`docs/contracts/020-http-transport-and-server-boundary.md`](/Users/tom/Dev/projects/underlay/docs/contracts/020-http-transport-and-server-boundary.md)
-- [`docs/contracts/110-admin-template-system.md`](/Users/tom/Dev/projects/underlay/docs/contracts/110-admin-template-system.md)
-- [`ts/src/templates/template.types.ts`](/Users/tom/Dev/projects/underlay/ts/src/templates/template.types.ts)
-- [`ts/src/client/types.ts`](/Users/tom/Dev/projects/underlay/ts/src/client/types.ts)
-- [`ts/src/templates/EntityList.svelte`](/Users/tom/Dev/projects/underlay/ts/src/templates/EntityList.svelte)
-- [`ts/src/templates/EntityListPage.svelte`](/Users/tom/Dev/projects/underlay/ts/src/templates/EntityListPage.svelte)
-- [`ts/src/templates/EntityDetailPage.svelte`](/Users/tom/Dev/projects/underlay/ts/src/templates/EntityDetailPage.svelte)
-- [`docs/guides/073-api-profiles-and-query-contract.md`](/Users/tom/Dev/projects/underlay/docs/guides/073-api-profiles-and-query-contract.md)
+- [`020-http-transport-and-server-boundary.md`](./020-http-transport-and-server-boundary.md)
+- [`110-admin-template-system.md`](./110-admin-template-system.md)
+- [`ts/src/templates/template.types.ts`](../../ts/src/templates/template.types.ts)
+- [`ts/src/client/types.ts`](../../ts/src/client/types.ts)
+- [`ts/src/templates/EntityList.svelte`](../../ts/src/templates/EntityList.svelte)
+- [`ts/src/templates/EntityListPage.svelte`](../../ts/src/templates/EntityListPage.svelte)
+- [`ts/src/templates/EntityDetailPage.svelte`](../../ts/src/templates/EntityDetailPage.svelte)
+- [`docs/guides/073-api-profiles-and-query-contract.md`](../guides/073-api-profiles-and-query-contract.md)
 
 Reference consumer evidence:
 
-- [`underlay-reference/packages/acme-client/src/types/common-types.ts`](/Users/tom/Dev/projects/underlay-reference/packages/acme-client/src/types/common-types.ts)
-- [`underlay-reference/packages/acme-client/src/commands/admin/project-commands.ts`](/Users/tom/Dev/projects/underlay-reference/packages/acme-client/src/commands/admin/project-commands.ts)
-- [`underlay-reference/packages/acme-client/src/commands/admin/task-commands.ts`](/Users/tom/Dev/projects/underlay-reference/packages/acme-client/src/commands/admin/task-commands.ts)
-- [`underlay-reference/packages/acme-client/src/commands/media-commands.ts`](/Users/tom/Dev/projects/underlay-reference/packages/acme-client/src/commands/media-commands.ts)
-- [`underlay-reference/apps/acme-admin/src/lib/lists/ProjectsListPage.svelte`](/Users/tom/Dev/projects/underlay-reference/apps/acme-admin/src/lib/lists/ProjectsListPage.svelte)
-- [`underlay-reference/apps/acme-admin/src/lib/lists/TasksListPage.svelte`](/Users/tom/Dev/projects/underlay-reference/apps/acme-admin/src/lib/lists/TasksListPage.svelte)
-- [`underlay-reference/apps/acme-admin/src/routes/(app)/media/+page.svelte`](</Users/tom/Dev/projects/underlay-reference/apps/acme-admin/src/routes/(app)/media/+page.svelte>)
-- [`underlay-reference/apps/acme-admin/src/routes/(app)/categories/+page.svelte`](</Users/tom/Dev/projects/underlay-reference/apps/acme-admin/src/routes/(app)/categories/+page.svelte>)
-- [`underlay-reference/apps/acme-admin/src/routes/(app)/users/+page.svelte`](</Users/tom/Dev/projects/underlay-reference/apps/acme-admin/src/routes/(app)/users/+page.svelte>)
-- [`underlay-reference/apps/acme-admin/src/routes/(app)/system/jobs/+page.svelte`](</Users/tom/Dev/projects/underlay-reference/apps/acme-admin/src/routes/(app)/system/jobs/+page.svelte>)
-- [`underlay-reference/apps/acme-admin/src/routes/(app)/system/scheduled-tasks/+page.svelte`](</Users/tom/Dev/projects/underlay-reference/apps/acme-admin/src/routes/(app)/system/scheduled-tasks/+page.svelte>)
-- [`underlay-reference/apps/acme-admin/src/routes/(app)/system/errors/+page.svelte`](</Users/tom/Dev/projects/underlay-reference/apps/acme-admin/src/routes/(app)/system/errors/+page.svelte>)
-- [`underlay-reference/apps/acme-admin/src/routes/(app)/system/audit/+page.svelte`](</Users/tom/Dev/projects/underlay-reference/apps/acme-admin/src/routes/(app)/system/audit/+page.svelte>)
-- [`underlay-reference/apps/acme-admin/src/routes/(app)/projects/[projectId]/+page.svelte`](</Users/tom/Dev/projects/underlay-reference/apps/acme-admin/src/routes/(app)/projects/[projectId]/+page.svelte>)
-- [`underlay-reference/apps/acme-admin/src/routes/(app)/projects/[projectId]/tasks/[taskId]/+page.svelte`](</Users/tom/Dev/projects/underlay-reference/apps/acme-admin/src/routes/(app)/projects/[projectId]/tasks/[taskId]/+page.svelte>)
+- `underlay-reference/packages/acme-client/src/types/common-types.ts`
+- `underlay-reference/packages/acme-client/src/commands/admin/project-commands.ts`
+- `underlay-reference/packages/acme-client/src/commands/admin/task-commands.ts`
+- `underlay-reference/packages/acme-client/src/commands/media-commands.ts`
+- `underlay-reference/apps/acme-admin/src/lib/lists/ProjectsListPage.svelte`
+- `underlay-reference/apps/acme-admin/src/lib/lists/TasksListPage.svelte`
+- `underlay-reference/apps/acme-admin/src/routes/(app)/media/+page.svelte`
+- `underlay-reference/apps/acme-admin/src/routes/(app)/categories/+page.svelte`
+- `underlay-reference/apps/acme-admin/src/routes/(app)/users/+page.svelte`
+- `underlay-reference/apps/acme-admin/src/routes/(app)/system/jobs/+page.svelte`
+- `underlay-reference/apps/acme-admin/src/routes/(app)/system/scheduled-tasks/+page.svelte`
+- `underlay-reference/apps/acme-admin/src/routes/(app)/system/errors/+page.svelte`
+- `underlay-reference/apps/acme-admin/src/routes/(app)/system/audit/+page.svelte`
+- `underlay-reference/apps/acme-admin/src/routes/(app)/projects/[projectId]/+page.svelte`
+- `underlay-reference/apps/acme-admin/src/routes/(app)/projects/[projectId]/tasks/[taskId]/+page.svelte`
 
 If these diverge, the shared template contract plus the reference consumer shape
 win. Older guides must catch up.
@@ -367,18 +367,18 @@ Rules:
 Use these files as the copy target when normalizing a consumer app:
 
 - shared business list wrappers:
-  [ProjectsListPage.svelte](</Users/tom/Dev/projects/underlay-reference/apps/acme-admin/src/lib/lists/ProjectsListPage.svelte>)
+  `underlay-reference/apps/acme-admin/src/lib/lists/ProjectsListPage.svelte`
   and
-  [TasksListPage.svelte](</Users/tom/Dev/projects/underlay-reference/apps/acme-admin/src/lib/lists/TasksListPage.svelte>)
+  `underlay-reference/apps/acme-admin/src/lib/lists/TasksListPage.svelte`
 - route-local CRUD pages:
-  [media/+page.svelte](</Users/tom/Dev/projects/underlay-reference/apps/acme-admin/src/routes/(app)/media/+page.svelte>),
-  [categories/+page.svelte](</Users/tom/Dev/projects/underlay-reference/apps/acme-admin/src/routes/(app)/categories/+page.svelte>),
-  [users/+page.svelte](</Users/tom/Dev/projects/underlay-reference/apps/acme-admin/src/routes/(app)/users/+page.svelte>)
+  `underlay-reference/apps/acme-admin/src/routes/(app)/media/+page.svelte`,
+  `underlay-reference/apps/acme-admin/src/routes/(app)/categories/+page.svelte`,
+  `underlay-reference/apps/acme-admin/src/routes/(app)/users/+page.svelte`
 - route-local system pages:
-  [system/jobs/+page.svelte](</Users/tom/Dev/projects/underlay-reference/apps/acme-admin/src/routes/(app)/system/jobs/+page.svelte>),
-  [system/scheduled-tasks/+page.svelte](</Users/tom/Dev/projects/underlay-reference/apps/acme-admin/src/routes/(app)/system/scheduled-tasks/+page.svelte>),
-  [system/errors/+page.svelte](</Users/tom/Dev/projects/underlay-reference/apps/acme-admin/src/routes/(app)/system/errors/+page.svelte>),
-  [system/audit/+page.svelte](</Users/tom/Dev/projects/underlay-reference/apps/acme-admin/src/routes/(app)/system/audit/+page.svelte>)
+  `underlay-reference/apps/acme-admin/src/routes/(app)/system/jobs/+page.svelte`,
+  `underlay-reference/apps/acme-admin/src/routes/(app)/system/scheduled-tasks/+page.svelte`,
+  `underlay-reference/apps/acme-admin/src/routes/(app)/system/errors/+page.svelte`,
+  `underlay-reference/apps/acme-admin/src/routes/(app)/system/audit/+page.svelte`
 
 That set proves the same bridge across cards, tables, business CRUD surfaces,
 and platform/system surfaces.

@@ -22,23 +22,23 @@ behavior. Those remain app-owned.
 
 Primary:
 
-- [`rust/crates/underlay-ai-runtime/src/lib.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-ai-runtime/src/lib.rs)
-- [`rust/crates/underlay-ai-runtime/src/chain.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-ai-runtime/src/chain.rs)
-- [`rust/crates/underlay-ai-runtime/src/retry.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-ai-runtime/src/retry.rs)
-- [`rust/crates/underlay-ai-runtime/src/circuit_breaker.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-ai-runtime/src/circuit_breaker.rs)
-- [`rust/crates/underlay-suggestions/src/lib.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-suggestions/src/lib.rs)
-- [`rust/crates/underlay-suggestions/src/params.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-suggestions/src/params.rs)
-- [`rust/crates/underlay-suggestions/src/query.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-suggestions/src/query.rs)
-- [`ts/src/client/suggestions.ts`](/Users/tom/Dev/projects/underlay/ts/src/client/suggestions.ts)
-- [`ts/src/patterns/selection-history.ts`](/Users/tom/Dev/projects/underlay/ts/src/patterns/selection-history.ts)
-- [`ts/src/runtime/ai.ts`](/Users/tom/Dev/projects/underlay/ts/src/runtime/ai.ts)
-- [`ts/src/runtime/data.ts`](/Users/tom/Dev/projects/underlay/ts/src/runtime/data.ts)
+- [`rust/crates/underlay-ai-runtime/src/lib.rs`](../../rust/crates/underlay-ai-runtime/src/lib.rs)
+- [`rust/crates/underlay-ai-runtime/src/chain.rs`](../../rust/crates/underlay-ai-runtime/src/chain.rs)
+- [`rust/crates/underlay-ai-runtime/src/retry.rs`](../../rust/crates/underlay-ai-runtime/src/retry.rs)
+- [`rust/crates/underlay-ai-runtime/src/circuit_breaker.rs`](../../rust/crates/underlay-ai-runtime/src/circuit_breaker.rs)
+- [`rust/crates/underlay-suggestions/src/lib.rs`](../../rust/crates/underlay-suggestions/src/lib.rs)
+- [`rust/crates/underlay-suggestions/src/params.rs`](../../rust/crates/underlay-suggestions/src/params.rs)
+- [`rust/crates/underlay-suggestions/src/query.rs`](../../rust/crates/underlay-suggestions/src/query.rs)
+- [`ts/src/client/suggestions.ts`](../../ts/src/client/suggestions.ts)
+- [`ts/src/patterns/selection-history.ts`](../../ts/src/patterns/selection-history.ts)
+- [`ts/src/runtime/ai.ts`](../../ts/src/runtime/ai.ts)
+- [`ts/src/runtime/data.ts`](../../ts/src/runtime/data.ts)
 
 Supporting:
 
-- [`docs/guides/176-ai-runtime-routing.md`](/Users/tom/Dev/projects/underlay/docs/guides/176-ai-runtime-routing.md)
-- [`docs/guides/092-selection-suggestions.md`](/Users/tom/Dev/projects/underlay/docs/guides/092-selection-suggestions.md)
-- [`docs/architecture/system-inventory.md`](/Users/tom/Dev/projects/underlay/docs/architecture/system-inventory.md)
+- [`docs/guides/176-ai-runtime-routing.md`](../guides/176-ai-runtime-routing.md)
+- [`docs/guides/092-selection-suggestions.md`](../guides/092-selection-suggestions.md)
+- [`docs/architecture/system-inventory.md`](../architecture/system-inventory.md)
 
 If these diverge, the shared code wins.
 
@@ -247,5 +247,5 @@ Apps own:
 
 ## Next Task
 
-Use [../roadmaps/g04/026-ts-ai-and-suggestion-authority-repair.md](/Users/tom/Dev/projects/underlay/docs/roadmaps/g04/026-ts-ai-and-suggestion-authority-repair.md)
+Use [../roadmaps/g04/026-ts-ai-and-suggestion-authority-repair.md](../roadmaps/g04/026-ts-ai-and-suggestion-authority-repair.md)
 to execute the current repair lane.

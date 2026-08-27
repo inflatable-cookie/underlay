@@ -23,22 +23,22 @@ It does not define auth/account workflow endpoints or admin CRUD page shapes.
 
 Primary shared sources:
 
-- [`docs/contracts/020-http-transport-and-server-boundary.md`](/Users/tom/Dev/projects/underlay/docs/contracts/020-http-transport-and-server-boundary.md)
-- [`docs/contracts/025-rust-app-runtime-assembly-and-router-topology.md`](/Users/tom/Dev/projects/underlay/docs/contracts/025-rust-app-runtime-assembly-and-router-topology.md)
-- [`docs/contracts/026-route-families-and-access-model.md`](/Users/tom/Dev/projects/underlay/docs/contracts/026-route-families-and-access-model.md)
-- [`docs/contracts/115-admin-resource-api-shapes.md`](/Users/tom/Dev/projects/underlay/docs/contracts/115-admin-resource-api-shapes.md)
-- [`docs/contracts/116-canonical-collection-routes-and-query-profiles.md`](/Users/tom/Dev/projects/underlay/docs/contracts/116-canonical-collection-routes-and-query-profiles.md)
-- [`rust/crates/underlay-core/src/dto.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-core/src/dto.rs)
+- [`020-http-transport-and-server-boundary.md`](./020-http-transport-and-server-boundary.md)
+- [`025-rust-app-runtime-assembly-and-router-topology.md`](./025-rust-app-runtime-assembly-and-router-topology.md)
+- [`026-route-families-and-access-model.md`](./026-route-families-and-access-model.md)
+- [`115-admin-resource-api-shapes.md`](./115-admin-resource-api-shapes.md)
+- [`116-canonical-collection-routes-and-query-profiles.md`](./116-canonical-collection-routes-and-query-profiles.md)
+- [`rust/crates/underlay-core/src/dto.rs`](../../rust/crates/underlay-core/src/dto.rs)
 
 Reference consumer evidence:
 
-- [`acowtancy/farmyard/crates/api/src/routes/front/router.rs`](/Users/tom/Dev/projects/acowtancy/farmyard/crates/api/src/routes/front/router.rs)
-- [`acowtancy/farmyard/crates/api/src/routes/shared/router.rs`](/Users/tom/Dev/projects/acowtancy/farmyard/crates/api/src/routes/shared/router.rs)
-- [`compli-me/api/crates/api/src/routes/shared/compli.rs`](/Users/tom/Dev/projects/compli-me/api/crates/api/src/routes/shared/compli.rs)
-- [`underlay-reference/apps/acme-api/crates/api/src/routes/tasks.rs`](/Users/tom/Dev/projects/underlay-reference/apps/acme-api/crates/api/src/routes/tasks.rs)
-- [`underlay-reference/apps/acme-api/crates/api/src/routes/shared/account.rs`](/Users/tom/Dev/projects/underlay-reference/apps/acme-api/crates/api/src/routes/shared/account.rs)
-- [`songsprout/nursery/crates/api/src/routes/artist.rs`](/Users/tom/Dev/projects/songsprout/nursery/crates/api/src/routes/artist.rs)
-- [`loophole/composer/composer-api/crates/api/src/routes/lookup.rs`](/Users/tom/Dev/projects/loophole/composer/composer-api/crates/api/src/routes/lookup.rs)
+- `acowtancy/farmyard/crates/api/src/routes/front/router.rs`
+- `acowtancy/farmyard/crates/api/src/routes/shared/router.rs`
+- `compli-me/api/crates/api/src/routes/shared/compli.rs`
+- `underlay-reference/apps/acme-api/crates/api/src/routes/tasks.rs`
+- `underlay-reference/apps/acme-api/crates/api/src/routes/shared/account.rs`
+- `songsprout/nursery/crates/api/src/routes/artist.rs`
+- `loophole/composer/composer-api/crates/api/src/routes/lookup.rs`
 
 If these diverge, the contract plus the clearest modern resource-read posture
 win. Helper endpoints remain allowed, but they should stop drifting silently.

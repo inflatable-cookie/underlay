@@ -24,30 +24,30 @@ server setup. Those depend on this layer and belong in later contracts.
 
 Primary:
 
-- [`rust/crates/underlay-http/src/lib.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-http/src/lib.rs)
-- [`rust/crates/underlay-http/src/errors.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-http/src/errors.rs)
-- [`rust/crates/underlay-http/src/responses.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-http/src/responses.rs)
-- [`rust/crates/underlay-http/src/query.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-http/src/query.rs)
-- [`rust/crates/underlay-http/src/pagination.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-http/src/pagination.rs)
-- [`rust/crates/underlay-http/src/path.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-http/src/path.rs)
-- [`rust/crates/underlay-http/src/cookies.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-http/src/cookies.rs)
-- [`rust/crates/underlay-http/src/context.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-http/src/context.rs)
-- [`rust/crates/underlay-http/src/cors.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-http/src/cors.rs)
-- [`rust/crates/underlay-http/src/caching.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-http/src/caching.rs)
-- [`rust/crates/underlay-http/src/http_config.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-http/src/http_config.rs)
-- [`rust/crates/underlay-http-client/src/lib.rs`](/Users/tom/Dev/projects/underlay/rust/crates/underlay-http-client/src/lib.rs)
-- [`ts/src/client/http.ts`](/Users/tom/Dev/projects/underlay/ts/src/client/http.ts)
-- [`ts/src/client/errors.ts`](/Users/tom/Dev/projects/underlay/ts/src/client/errors.ts)
-- [`ts/src/client/query.ts`](/Users/tom/Dev/projects/underlay/ts/src/client/query.ts)
-- [`ts/src/server/csp.ts`](/Users/tom/Dev/projects/underlay/ts/src/server/csp.ts)
-- [`ts/src/server/csp-config.ts`](/Users/tom/Dev/projects/underlay/ts/src/server/csp-config.ts)
-- [`ts/src/server/csp-types.ts`](/Users/tom/Dev/projects/underlay/ts/src/server/csp-types.ts)
+- [`rust/crates/underlay-http/src/lib.rs`](../../rust/crates/underlay-http/src/lib.rs)
+- [`rust/crates/underlay-http/src/errors.rs`](../../rust/crates/underlay-http/src/errors.rs)
+- [`rust/crates/underlay-http/src/responses.rs`](../../rust/crates/underlay-http/src/responses.rs)
+- [`rust/crates/underlay-http/src/query.rs`](../../rust/crates/underlay-http/src/query.rs)
+- [`rust/crates/underlay-http/src/pagination.rs`](../../rust/crates/underlay-http/src/pagination.rs)
+- [`rust/crates/underlay-http/src/path.rs`](../../rust/crates/underlay-http/src/path.rs)
+- [`rust/crates/underlay-http/src/cookies.rs`](../../rust/crates/underlay-http/src/cookies.rs)
+- [`rust/crates/underlay-http/src/context.rs`](../../rust/crates/underlay-http/src/context.rs)
+- [`rust/crates/underlay-http/src/cors.rs`](../../rust/crates/underlay-http/src/cors.rs)
+- [`rust/crates/underlay-http/src/caching.rs`](../../rust/crates/underlay-http/src/caching.rs)
+- [`rust/crates/underlay-http/src/http_config.rs`](../../rust/crates/underlay-http/src/http_config.rs)
+- [`rust/crates/underlay-http-client/src/lib.rs`](../../rust/crates/underlay-http-client/src/lib.rs)
+- [`ts/src/client/http.ts`](../../ts/src/client/http.ts)
+- [`ts/src/client/errors.ts`](../../ts/src/client/errors.ts)
+- [`ts/src/client/query.ts`](../../ts/src/client/query.ts)
+- [`ts/src/server/csp.ts`](../../ts/src/server/csp.ts)
+- [`ts/src/server/csp-config.ts`](../../ts/src/server/csp-config.ts)
+- [`ts/src/server/csp-types.ts`](../../ts/src/server/csp-types.ts)
 
 Supporting:
 
-- [`docs/contracts/010-foundation-primitives-and-envelopes.md`](/Users/tom/Dev/projects/underlay/docs/contracts/010-foundation-primitives-and-envelopes.md)
-- [`docs/architecture/015-error-and-envelopes.md`](/Users/tom/Dev/projects/underlay/docs/architecture/015-error-and-envelopes.md)
-- [`docs/architecture/030-ts-api-client.md`](/Users/tom/Dev/projects/underlay/docs/architecture/030-ts-api-client.md)
+- [`010-foundation-primitives-and-envelopes.md`](./010-foundation-primitives-and-envelopes.md)
+- [`docs/architecture/015-error-and-envelopes.md`](../architecture/015-error-and-envelopes.md)
+- [`docs/architecture/030-ts-api-client.md`](../architecture/030-ts-api-client.md)
 
 If these diverge, the shared code wins. Architecture docs must catch up.
 
@@ -69,7 +69,7 @@ The point is consistency, not a heavyweight framework.
 ### Success and error responses
 
 The base success/error envelope rules come from
-[`010-foundation-primitives-and-envelopes.md`](/Users/tom/Dev/projects/underlay/docs/contracts/010-foundation-primitives-and-envelopes.md).
+[`010-foundation-primitives-and-envelopes.md`](./010-foundation-primitives-and-envelopes.md).
 
 Transport helper rules:
 

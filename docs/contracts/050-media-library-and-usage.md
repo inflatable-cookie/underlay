@@ -392,12 +392,12 @@ recommended template shape Underlay should document and keep stable.
 
 Copyable artifact:
 
-- [`docs/guides/code/077-media-library/media-usage-template.sql`](/Users/tom/Dev/projects/underlay/docs/guides/code/077-media-library/media-usage-template.sql)
-- [`docs/guides/code/077-media-library/migrated-attachment-binding-template.sql`](/Users/tom/Dev/projects/underlay/docs/guides/code/077-media-library/migrated-attachment-binding-template.sql)
-- [`docs/guides/code/077-media-library/locator-aware-rollout-recipe.md`](/Users/tom/Dev/projects/underlay/docs/guides/code/077-media-library/locator-aware-rollout-recipe.md)
-- [`docs/guides/code/077-media-library/media-usage-vocabulary.md`](/Users/tom/Dev/projects/underlay/docs/guides/code/077-media-library/media-usage-vocabulary.md)
-- [`docs/guides/code/077-media-library/nightfire-save-sync-resolve-recipe.md`](/Users/tom/Dev/projects/underlay/docs/guides/code/077-media-library/nightfire-save-sync-resolve-recipe.md)
-- [`docs/guides/code/077-media-library/media-usage-vocabulary.md`](/Users/tom/Dev/projects/underlay/docs/guides/code/077-media-library/media-usage-vocabulary.md)
+- [`docs/guides/code/077-media-library/media-usage-template.sql`](../guides/code/077-media-library/media-usage-template.sql)
+- [`docs/guides/code/077-media-library/migrated-attachment-binding-template.sql`](../guides/code/077-media-library/migrated-attachment-binding-template.sql)
+- [`docs/guides/code/077-media-library/locator-aware-rollout-recipe.md`](../guides/code/077-media-library/locator-aware-rollout-recipe.md)
+- [`docs/guides/code/077-media-library/media-usage-vocabulary.md`](../guides/code/077-media-library/media-usage-vocabulary.md)
+- [`docs/guides/code/077-media-library/nightfire-save-sync-resolve-recipe.md`](../guides/code/077-media-library/nightfire-save-sync-resolve-recipe.md)
+- [`docs/guides/code/077-media-library/media-usage-vocabulary.md`](../guides/code/077-media-library/media-usage-vocabulary.md)
 
 ## Migration replay contract
 
