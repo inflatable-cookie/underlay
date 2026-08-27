@@ -215,13 +215,14 @@ Rules:
 
 ## Release Posture And Consumer Pin
 
-Underlay is registry-private (`private: true`). That flag prevents npm or
-crates.io publication. It does not mean the project is unreleased.
+The root JavaScript package is npm-private (`package.json` has
+`private: true`). Underlay distributes both language surfaces to consumers
+through immutable Git tags. Registry-publishing mechanics beyond that npm
+guard are outside this contract.
 
-Underlay is released through immutable Git tags. The synchronized Rust
-workspace and JavaScript package versions follow the release process and
-semantic versioning. Roadmap generation numbers never determine package
-versions.
+The synchronized Rust workspace and JavaScript package versions follow the
+release process and semantic versioning. Roadmap generation numbers never
+determine package versions.
 
 Consumers depend on Underlay as a released Git tag on both language surfaces.
 The only committed JavaScript form is:
@@ -284,7 +285,7 @@ Good outcomes:
 
 Bad outcomes:
 
-- treating `private: true` as unreleased
+- treating npm `private: true` as unreleased
 - committed Cargo `path` or JavaScript `file:` Underlay edges
 - consumers pinning unreleased commits, branches, or local checkouts
 - shared breakage lands with no upgrade note

@@ -13,8 +13,8 @@ Rewrote Contract `023` so release and consumer-pin teaching matches Contract
 
 ## What Changed
 
-- Contract `023` now treats `private: true` as registry-private, not
-  unreleased. Release happens through immutable Git tags.
+- Contract `023` now treats `package.json` `private: true` as npm-private, not
+  unreleased. Both language surfaces are released through immutable Git tags.
 - the only committed JavaScript example is
   `git+ssh://git@github.com/inflatable-cookie/underlay.git#vX.Y.Z`
 - the only committed Cargo example is
@@ -49,8 +49,10 @@ an edit.
 | `songsprout` | `v0.9.4` | `v0.9.4` | none |
 | `loophole/composer` | `v0.9.4` | `v0.9.4` | none |
 
-Underlay itself is `private: true` at synchronized version `0.9.5`, with
-immutable tag `v0.9.5`. Holding `v0.9.4` is the live hold-back shape.
+The root JavaScript package is npm-private (`private: true`) at synchronized
+version `0.9.5`, with immutable tag `v0.9.5`. Holding `v0.9.4` is the live
+hold-back shape. Registry-publishing mechanics beyond that npm guard stay
+outside this correction.
 
 ## Currentness
 
@@ -66,7 +68,14 @@ evidence.
 - Required actions: none
 - Compatibility window: none; committed path/file edges remain unsupported
 
+## Review Follow-Up
+
+PR13 requested a wording correction at `ed73e322`: `private: true` is an npm
+guard only. The contract, `g09.060` Decision/Execution Evidence, and this log
+now say that. No Cargo `publish = false` metadata and no crates.io policy were
+added.
+
 ## Next Task
 
-Review the `g09.060` PR at exact head and merge only with explicit operator
-authorisation. Do not open a later generation from this worker.
+Review the `g09.060` PR at the new exact head and merge only with explicit
+operator authorisation. Do not open a later generation from this worker.

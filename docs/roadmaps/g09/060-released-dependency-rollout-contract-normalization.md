@@ -17,8 +17,8 @@ The operator chose to continue `g09` for this bounded normalization. Underlay
 PR12 completed the overlapping papercuts wave 3 contract-link lane at reviewed
 head `d2cb5cd9`, merge commit `9e26ba9a`. The dispatch gate is clear.
 
-- Underlay remains private from a package-registry perspective but is released
-  through immutable Git tags.
+- the root JavaScript package is npm-private (`private: true`). Both language
+  surfaces are released to consumers through immutable Git tags.
 - committed consumer JavaScript dependencies use the tagged Git URL; committed
   Cargo dependencies use the same release tag.
 - holding a consumer back means retaining its previous proven tag.
@@ -120,9 +120,9 @@ there.
 
 ## Execution Evidence
 
-- Contract `023` now distinguishes registry-private posture from Git-tag
-  release. Committed consumer pins are the tagged SSH Git forms on both
-  language surfaces.
+- Contract `023` now distinguishes the npm-private root package from Git-tag
+  release of both language surfaces. Committed consumer pins are the tagged
+  SSH Git forms on JavaScript and Cargo.
 - hold-back and rollback retain or return to a known released tag. Upgrade
   moves every declared tag in the consumer root, regenerates root locks, and
   validates from that root.
