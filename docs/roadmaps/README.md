@@ -68,7 +68,10 @@ shared repair and `g09.038` completed the Underlay Reference proof. `g09.039`
 completed the Contact Patch rollout and `g09.040`–`g09.043` completed the
 remaining consumer repairs. `g09.044` closed the migration/testing proof.
 `g09.045` completed the bootstrap/runtime/access assessment with a `drifting`
-verdict. `g09.046` is complete; `g09.047`–`g09.053` stay planned. See
+verdict. `g09.046` is complete. Underlay `v0.9.5` and the exact clean
+Underlay Reference checkout clear the first two g09.047 promotion gates;
+three app-owner security decisions remain before `g09.047` can become ready.
+`g09.047`–`g09.053` stay planned. See
 [`g09/README.md`](g09/README.md).
 
 ## Archived generations
@@ -88,5 +91,5 @@ that risk.
 
 ## Next Task
 
-Resolve the release and app-owner decision gates for `g09.047`; do not promote
-it early.
+Resolve the mandatory-secret, CSRF-disable, and deployed-failure policy gates
+for `g09.047`; do not promote it early.

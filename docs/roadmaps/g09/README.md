@@ -163,8 +163,9 @@ Deferred with a promotion trigger (TypeScript 7.1 or concrete need):
 - `g09.044` is complete after all five merged consumer roadmaps.
 - `g09.045` is complete.
 - `g09.046` is complete and merged in PR9.
-- `g09.047` is planned behind its release and app-owner decision gates as the
-  reference proof.
+- Underlay `v0.9.5` and exact clean Underlay Reference main clear the release
+  and target-checkout gates for `g09.047`; three app-owner security decisions
+  still block the reference proof.
 - `g09.048`–`g09.052` may run in parallel only after `g09.047` and each named
   product/security decision gate.
 - `g09.053` closes the fleet after all five independent rollout lanes merge.
@@ -197,5 +198,6 @@ changes cannot begin before their roadmap decisions are explicit.
 
 ## Next Task
 
-Resolve the release and app-owner decision gates for `g09.047`. Do not promote
-it until Underlay Reference is current with explicit security decisions.
+Resolve the mandatory-secret, CSRF-disable, and deployed-failure policy gates
+for `g09.047`. Do not promote it until those app-owner security decisions are
+explicit.

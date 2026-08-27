@@ -20,3 +20,11 @@ Keep open. Do not rewrite or re-tag historical releases. Require the next patch
 release to prove both remote tag and GitHub Release creation, then decide
 separately whether historical GitHub Releases should be backfilled from their
 existing immutable tags.
+
+## Current Evidence
+
+Underlay `v0.9.5` proved the current path on 2026-08-27: annotated tag and
+GitHub Release both exist at release commit `8ffafb92`, exact-source and
+release-commit CI passed, and Rust plus TypeScript tagged-consumer smokes
+resolved the immutable tag. Historical backfill remains a separate operator
+decision.

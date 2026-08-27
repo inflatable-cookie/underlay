@@ -102,14 +102,14 @@ dotenvy = "0.15"
 
 # === Underlay (released dependency) ===
 # Pin the same release tag across every Underlay crate used by the app.
-underlay-core = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.4" }
-underlay-http = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.4" }
-underlay-auth = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.4" }
-underlay-auth-jwt = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.4" }
-underlay-db = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.4" }
-underlay-observability = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.4" }
-underlay-metrics = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.4" }
-underlay-soft-delete = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.4" }
+underlay-core = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.5" }
+underlay-http = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.5" }
+underlay-auth = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.5" }
+underlay-auth-jwt = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.5" }
+underlay-db = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.5" }
+underlay-observability = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.5" }
+underlay-metrics = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.5" }
+underlay-soft-delete = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.5" }
 ```
 
 For live Underlay co-development, use the machine-local Cargo patch flow from

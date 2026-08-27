@@ -112,7 +112,7 @@ Poodle from released package versions:
   "dependencies": {
     "@myorg/client": "workspace:*",
     "@myorg/ui": "workspace:*",
-    "@inflatable-cookie/underlay": "git+ssh://git@github.com/inflatable-cookie/underlay.git#v0.9.4",
+    "@inflatable-cookie/underlay": "git+ssh://git@github.com/inflatable-cookie/underlay.git#v0.9.5",
     "@inflatable-cookie/poodle-core": "0.2.2",
     "@inflatable-cookie/poodle-svelte": "0.2.2"
   }

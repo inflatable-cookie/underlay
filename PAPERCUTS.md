@@ -5,6 +5,17 @@ they hit a solvable hurdle; they do not stop the current task to fix one.
 
 ## Open
 
+### [ ] Effigy release execute omits the promised GitHub Release — 2026-08-27
+- Friction: `effigy release execute --yes` reported a complete Underlay release
+  after pushing the release commit and annotated tag, but no GitHub Release
+  existed until the operator flow created it separately with `gh release create`
+- Impact: a successful execute can leave the public provider release surface
+  incomplete while the local release protocol says execute creates it
+- Possible fix: make execute create and verify the GitHub Release when the
+  provider is configured, or make the protocol and post-release checklist
+  declare the separate provider-publication step explicitly
+- Surface: Effigy release execution / Underlay release protocol
+
 ### [ ] `TestDb` docs promise automatic drop cleanup that does not run — 2026-08-26
 - Friction: `TestDb` says the test schema is automatically cleaned up on drop,
   but `Drop` performs no async cleanup and external databases retain the schema

@@ -50,12 +50,12 @@ members = [
 ]
 
 [workspace.dependencies]
-underlay-core = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.4" }
-underlay-http = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.4", features = ["openapi"] }
-underlay-auth = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.4" }
-underlay-auth-jwt = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.4" }
-underlay-observability = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.4" }
-underlay-metrics = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.4" }
+underlay-core = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.5" }
+underlay-http = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.5", features = ["openapi"] }
+underlay-auth = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.5" }
+underlay-auth-jwt = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.5" }
+underlay-observability = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.5" }
+underlay-metrics = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.5" }
 ```
 
 The tag makes the workspace build without a sibling checkout. Keep the Cargo
@@ -83,7 +83,7 @@ Depend on a released tag from each consuming package's manifest:
 ```json
 {
   "dependencies": {
-    "@inflatable-cookie/underlay": "git+ssh://git@github.com/inflatable-cookie/underlay.git#v0.9.4"
+    "@inflatable-cookie/underlay": "git+ssh://git@github.com/inflatable-cookie/underlay.git#v0.9.5"
   }
 }
 ```

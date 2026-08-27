@@ -75,5 +75,6 @@ Underlay is in sequential mode:
 
 ## Next Task
 
-Resolve the release and named product/security decision gates for `g09.047`.
-Do not dispatch `g09.047`–`g09.052` before the applicable gates are complete.
+Resolve the mandatory-secret, CSRF-disable, and deployed-failure policy gates
+for `g09.047`. Do not dispatch `g09.047`–`g09.052` before the applicable gates
+are complete.

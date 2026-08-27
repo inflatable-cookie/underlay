@@ -14,8 +14,10 @@ route families, cookie-backed mutation CSRF, and peer-aware client-IP policy.
 ## Promotion Gate
 
 - [x] `g09.046` is complete (PR9, merge commit `7d8c0bae`)
-- [ ] an Underlay release containing the new env-authority tool is published
-- [ ] target checkout is clean and exactly aligned with `origin/main`
+- [x] Underlay `v0.9.5` publishes the env-authority tool (release commit
+  `8ffafb92`; GitHub Release published 2026-08-27)
+- [x] target checkout is clean and exactly aligned with `origin/main`
+  (`854e5ad2`, verified 2026-08-27)
 - [ ] mandatory secret classes are named by the app owner per environment
 - [ ] allowed CSRF-disable environments are explicit and fail closed elsewhere
 - [ ] malformed deployed config and insecure deployed-cookie behavior have an
@@ -76,5 +78,7 @@ Underlay Reference owner.
 
 ## Next Task
 
-After reviewed merge and exact-main verification, promote independent roadmaps
-`g09.048`-`g09.052` whose decision gates are satisfied.
+Settle the three remaining app-owner security decisions, then prepare and push
+the g09.047 worker handoff. After reviewed merge and exact-main verification,
+promote independent roadmaps `g09.048`-`g09.052` whose decision gates are
+satisfied.

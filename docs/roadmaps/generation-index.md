@@ -58,6 +58,6 @@ In parallel mode:
 
 ## Next Task
 
-Resolve the release and app-owner decision gates for `g09.047`; do not promote
-it early. See
+Resolve the mandatory-secret, CSRF-disable, and deployed-failure policy gates
+for `g09.047`; do not promote it early. See
 [`g09/README.md`](g09/README.md).

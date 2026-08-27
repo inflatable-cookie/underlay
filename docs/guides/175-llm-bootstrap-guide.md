@@ -120,9 +120,9 @@ In `apps/api/Cargo.toml`, pin Underlay crates to one release tag:
 
 ```toml
 [workspace.dependencies]
-underlay-core = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.4" }
-underlay-http = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.4" }
-underlay-auth = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.4" }
+underlay-core = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.5" }
+underlay-http = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.5" }
+underlay-auth = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.5" }
 ```
 
 In each consuming app package such as `apps/admin` or `apps/front`, use the
@@ -131,7 +131,7 @@ same released tag and point at internal packages through `workspace:*`:
 ```json
 {
   "dependencies": {
-    "@inflatable-cookie/underlay": "git+ssh://git@github.com/inflatable-cookie/underlay.git#v0.9.4",
+    "@inflatable-cookie/underlay": "git+ssh://git@github.com/inflatable-cookie/underlay.git#v0.9.5",
     "@myorg/client": "workspace:*"
   }
 }

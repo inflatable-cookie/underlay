@@ -35,19 +35,19 @@ Before taking a new Underlay feature or behavior change into an app:
 ```toml
 [dependencies]
 # Core Underlay crates
-underlay-core = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.4" }
-underlay-db = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.4" }
-underlay-http = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.4", features = ["validation", "nightfire"] }
-underlay-auth = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.4" }
-underlay-observability = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.4" }
+underlay-core = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.5" }
+underlay-db = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.5" }
+underlay-http = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.5", features = ["validation", "nightfire"] }
+underlay-auth = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.5" }
+underlay-observability = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.5" }
 
 # Optional crates based on features used
-underlay-email = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.4", features = ["templates"] }
-underlay-nightfire = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.4" }
-underlay-suggestions = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.4" }
-underlay-ai-runtime = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.4" }
-underlay-metrics = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.4" }
-underlay-openapi = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.4" }
+underlay-email = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.5", features = ["templates"] }
+underlay-nightfire = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.5" }
+underlay-suggestions = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.5" }
+underlay-ai-runtime = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.5" }
+underlay-metrics = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.5" }
+underlay-openapi = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.5" }
 ```
 
 ### TypeScript Client (`packages/client/package.json`)
@@ -55,7 +55,7 @@ underlay-openapi = { git = "ssh://git@github.com/inflatable-cookie/underlay.git"
 ```json
 {
   "dependencies": {
-    "@inflatable-cookie/underlay": "git+ssh://git@github.com/inflatable-cookie/underlay.git#v0.9.4"
+    "@inflatable-cookie/underlay": "git+ssh://git@github.com/inflatable-cookie/underlay.git#v0.9.5"
   }
 }
 ```

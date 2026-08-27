@@ -113,7 +113,7 @@ Create `packages/client/package.json`:
     "test": "vitest"
   },
   "dependencies": {
-    "@inflatable-cookie/underlay": "git+ssh://git@github.com/inflatable-cookie/underlay.git#v0.9.4"
+    "@inflatable-cookie/underlay": "git+ssh://git@github.com/inflatable-cookie/underlay.git#v0.9.5"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

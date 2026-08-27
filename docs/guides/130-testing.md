@@ -796,7 +796,7 @@ Add the crate to your `Cargo.toml` as a dev dependency:
 
 ```toml
 [dev-dependencies]
-underlay-testing = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.4", features = ["full"] }
+underlay-testing = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "v0.9.5", features = ["full"] }
 ```
 
 #### Features
