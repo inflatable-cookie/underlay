@@ -7,6 +7,27 @@ While Underlay is `0.x`, breaking changes raise the minor version.
 
 ## [Unreleased]
 
+### Added
+- Distributable `underlay-workspace-shape` and `underlay-env-authority`
+  conformance tools now validate consumer workspace topology, package edges,
+  environment reads, manifests, required-secret declarations, and deployed
+  fail-closed policy.
+
+### Changed
+- Consumer guidance now treats one repository-root workspace with a private
+  root `package.json`, `apps/*`, `packages/*`, one root lockfile, and released
+  Underlay dependencies as the supported application shape.
+- Bootstrap, runtime assembly, router topology, access policy, database
+  migration, and testing contracts now carry explicit fleet-ready authority
+  and review gates.
+
+### Fixed
+- Request-context rejections now use the canonical error envelope, page-list
+  OpenAPI fields match their wire casing, and HTTP-client constructor fallback
+  remains bounded to the supported compatibility path.
+- Shared test-server and HTTP-client mock behavior now match the hosted Rust
+  and component-test gates used by consumers.
+
 ## [0.9.4] - 2026-08-25
 
 ### Fixed
@@ -76,7 +97,9 @@ While Underlay is `0.x`, breaking changes raise the minor version.
 - First tagged release. Changelog tracking starts with this file; see the Git
   history for detail before this point.
 
-[Unreleased]: https://github.com/inflatable-cookie/underlay/compare/v0.9.2...HEAD
+[Unreleased]: https://github.com/inflatable-cookie/underlay/compare/v0.9.4...HEAD
+[0.9.4]: https://github.com/inflatable-cookie/underlay/releases/tag/v0.9.4
+[0.9.3]: https://github.com/inflatable-cookie/underlay/releases/tag/v0.9.3
 [0.9.2]: https://github.com/inflatable-cookie/underlay/releases/tag/v0.9.2
 [0.9.1]: https://github.com/inflatable-cookie/underlay/releases/tag/v0.9.1
 [0.9.0]: https://github.com/inflatable-cookie/underlay/releases/tag/v0.9.0
