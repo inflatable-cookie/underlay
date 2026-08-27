@@ -5,7 +5,7 @@ handoff_mode: worker-pr-loop
 worker_mode: implementation
 dispatch_authority: orchestrator
 handoff: single-file-path-only
-status: ready-to-launch
+status: complete
 owner: Tom / papercuts orchestrator
 created: 2026-08-27
 updated: 2026-08-27
@@ -46,7 +46,7 @@ Northstar AGENTS review has no mechanical selector here.
 - **Worker mode:** implementation worker dispatched by the orchestrator; this
   handoff activates the worker-only worktree preflight.
 - **Planning artifacts included at the base:** `PAPERCUTS.md`; this handoff.
-- **Worker branch:** `worker/papercuts-wave1-storybook-docs`
+- **Worker branch:** `t3code/storybook-docs-papercuts`
 - **Worker worktree:** use the clean dedicated non-`main` worktree supplied
   by the launcher. This handoff does not select a manual fallback path.
 - **Manual fallback command:** only after the operator supplies an absolute
@@ -61,7 +61,7 @@ Northstar AGENTS review has no mechanical selector here.
   3. Auth architecture links target retired crate paths
   4. No `check:agent-instructions` task in underlay `effigy.toml`
 - **Allowed runway:** those four items only, one PR.
-- **Remaining card budget:** four papercuts.
+- **Remaining card budget:** zero; all four papercuts are closed.
 - **Dispatch topology:** serial inside this repo; parallel with the other
   wave-1 repos.
 - **Parallel safety check:** no shared files with other wave-1 workers.
@@ -77,10 +77,13 @@ Northstar AGENTS review has no mechanical selector here.
   docs QA for the touched TestDb and auth files; prove the new or
   documented agent-instructions selector. Prefer `effigy qa:docs` over a
   full board unless you changed Rust.
-- **PR base/head:** current pushed `main` / selected worker branch
-- **PR URL:** pending
-- **Review state:** awaiting orchestrator review after worker completion
-- **Merge authorisation:** absent; do not merge
+- **PR base/head:** `790a05f9a90d48ffb7c898e78275b9554a1997e4` /
+  `07d9166d0c1e0252ae7619401b18d37da2705715`
+- **PR URL:** https://github.com/inflatable-cookie/underlay/pull/10
+- **Review state:** approved at the exact worker head after one update round;
+  both Rust/Postgres checks and the local Effigy gate passed.
+- **Merge authorisation:** exercised by the operator on 2026-08-27.
+- **Merge commit:** `c8a5e486d92c767fa198d235d838a137ed9cbc5a`
 
 ## Boundaries
 
@@ -120,14 +123,7 @@ Northstar AGENTS review has no mechanical selector here.
 
 ## Suggested Next Move
 
-Read this file from the top. Run the worktree-safety preflight before
-broad reads. Use the launcher worktree if it is clean, dedicated, and
-not `main`.
-
-Then read `AGENTS.md`, `PAPERCUTS.md`, root `effigy.toml` around the
-Storybook tasks, `docs/guides/130-testing.md` for `TestDb`, and
-`docs/architecture/050-auth-database-schema.md`. Start with the Storybook
-selectors so `effigy tasks` stops lying.
+None for this worker lane. PR 10 is merged and all four papercuts are closed.
 
 ## Completion Protocol
 
@@ -166,8 +162,8 @@ selectors so `effigy tasks` stops lying.
 
 ### Review and merge path
 
-Awaiting orchestrator review after the PR exists. Merge is
-operator-authorised only.
+Completed. The orchestrator approved exact head `07d9166d`, the operator
+authorised merge, and PR 10 merged as `c8a5e486`.
 
 - **Closeout refs:** `PAPERCUTS.md`; this handoff; the PR.
 
