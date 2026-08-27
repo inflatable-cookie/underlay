@@ -97,7 +97,8 @@ While Underlay is `0.x`, breaking changes raise the minor version.
 - First tagged release. Changelog tracking starts with this file; see the Git
   history for detail before this point.
 
-[Unreleased]: https://github.com/inflatable-cookie/underlay/compare/v0.9.4...HEAD
+[Unreleased]: https://github.com/inflatable-cookie/underlay/compare/v0.9.5...HEAD
+[0.9.5]: https://github.com/inflatable-cookie/underlay/releases/tag/v0.9.5
 [0.9.4]: https://github.com/inflatable-cookie/underlay/releases/tag/v0.9.4
 [0.9.3]: https://github.com/inflatable-cookie/underlay/releases/tag/v0.9.3
 [0.9.2]: https://github.com/inflatable-cookie/underlay/releases/tag/v0.9.2
