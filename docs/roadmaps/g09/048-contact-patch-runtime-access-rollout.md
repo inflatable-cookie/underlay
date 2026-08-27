@@ -1,6 +1,6 @@
 # g09.048 - Contact Patch Runtime And Access Rollout
 
-Status: ready
+Status: complete
 Owner: Contact Patch maintainers
 Contracts: `024`, `025`, `026`, `030`, `031`
 Found by: `g09.045`
@@ -90,6 +90,20 @@ classification, or public-route compatibility.
 - Required action: preserve the declared version header and CSRF/browser flow
 - Compatibility window: no route removal is authorized
 
+## Completion Evidence
+
+- Contact Patch PR
+  [#5](https://github.com/contact-patch/contact-patch/pull/5) merged on
+  2026-08-27 as `bc26676d6f5ab973c65dce4fc79046c66c210284`.
+- Reviewed worker head: `4b37b2b735ac133fbee3d1031ee47a16d25060cd`.
+- Canonical review:
+  [PR comment](https://github.com/contact-patch/contact-patch/pull/5#issuecomment-5439333144).
+- Exact-head review passed env/workspace authority, API and client checks, 50
+  client/admin/front tests, test-plan inspection, and `git diff --check`.
+- GitHub exposed no hosted checks. The recorded Docker Hub DNS failure was
+  environmental; equivalent host checks passed.
+
 ## Next Task
 
-Record reviewed merge evidence for `g09.053`.
+Repair the Underlay Reference cross-tab CSRF prerequisite, then contribute this
+reviewed merge evidence to `g09.053`.

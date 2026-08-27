@@ -13,14 +13,14 @@ the assessment wave, and choose the next contract group without implied scope.
 
 ## Promotion Gate
 
-- [ ] `g09.046` and `g09.047` are complete
-- [ ] `g09.048`-`g09.052` are reviewed and merged
+- [x] `g09.046` and `g09.047` are complete
+- [x] `g09.048`-`g09.052` are reviewed and merged
 - [ ] Underlay Reference CSRF token issuance reuses a live cookie across tabs;
   its current endpoint rotates the token on every GET and must be repaired in
   the owning lane
 - [ ] every consumer target is clean and exactly aligned with its merged
   `origin/main`
-- [ ] every product/security decision named by the rollout roadmaps is recorded
+- [x] every product/security decision named by the rollout roadmaps is recorded
 
 ## Scope
 

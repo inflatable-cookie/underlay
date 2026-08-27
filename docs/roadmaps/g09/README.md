@@ -88,9 +88,9 @@ confirmed env/secret, runtime-topology, test-seam, and access/security drift.
 1. repair Underlay authority and conformance (`g09.046`, complete)
 2. prove the repaired boundary in Underlay Reference (`g09.047`, complete)
 3. run Contact Patch, Compli Me, Songsprout, Composer, and Acowtancy as
-   independent repo-owned lanes (`g09.048`–`g09.051`, open; `g09.052`,
-   complete)
-4. close exact-head six-root proof (`g09.053`, planned)
+   independent repo-owned lanes (`g09.048`–`g09.052`, complete)
+4. repair Underlay Reference's cross-tab CSRF token issuance in a numbered
+   owning lane, then close exact-head six-root proof (`g09.053`, planned)
 
 ## Queue
 
@@ -141,10 +141,10 @@ confirmed env/secret, runtime-topology, test-seam, and access/security drift.
 45. [x] [`g09.045`](045-bootstrap-and-runtime-contract-assessment.md) — bootstrap and runtime contract assessment (`complete`; `drifting`)
 46. [x] [`g09.046`](046-bootstrap-runtime-access-authority.md) — bootstrap/runtime/access authority (`complete`)
 47. [x] [`g09.047`](047-underlay-reference-runtime-access-proof.md) — Underlay Reference runtime/access proof (`complete`)
-48. [ ] [`g09.048`](048-contact-patch-runtime-access-rollout.md) — Contact Patch runtime/access rollout (`ready`; dispatched)
-49. [ ] [`g09.049`](049-compli-me-runtime-access-rollout.md) — Compli Me runtime/access rollout (`ready`; dispatched)
-50. [ ] [`g09.050`](050-songsprout-runtime-access-rollout.md) — Songsprout runtime/access rollout (`ready`; dispatched)
-51. [ ] [`g09.051`](051-composer-runtime-access-rollout.md) — Composer runtime/access rollout (`ready`; dispatched)
+48. [x] [`g09.048`](048-contact-patch-runtime-access-rollout.md) — Contact Patch runtime/access rollout (`complete`)
+49. [x] [`g09.049`](049-compli-me-runtime-access-rollout.md) — Compli Me runtime/access rollout (`complete`)
+50. [x] [`g09.050`](050-songsprout-runtime-access-rollout.md) — Songsprout runtime/access rollout (`complete`)
+51. [x] [`g09.051`](051-composer-runtime-access-rollout.md) — Composer runtime/access rollout (`complete`)
 52. [x] [`g09.052`](052-acowtancy-runtime-access-rollout.md) — Acowtancy runtime/access rollout (`complete`)
 53. [ ] [`g09.053`](053-bootstrap-runtime-access-fleet-closeout.md) — bootstrap/runtime/access fleet closeout (`planned`)
 
@@ -165,11 +165,12 @@ Deferred with a promotion trigger (TypeScript 7.1 or concrete need):
 - `g09.045` is complete.
 - `g09.046` is complete and merged in PR9.
 - `g09.047` is complete in Underlay Reference PR5, merge commit `6af27837`.
-- The shared reference-proof, exact-main, and named product/security gates are
-  clear for `g09.048`–`g09.051`. Their worker PRs remain open.
+- `g09.048`–`g09.051` are complete in Contact Patch PR5, Compli Me PR7,
+  Songsprout PR5, and Composer PR5.
 - `g09.052` is complete in Acowtancy PR62, merge commit `85c868e1`.
-- `g09.053` closes the fleet after the four remaining rollout lanes merge and
-  the Underlay Reference cross-tab CSRF rotation is repaired in its owning lane.
+- `g09.053` remains planned until the Underlay Reference cross-tab CSRF
+  rotation is repaired in a numbered owning lane and the exact merged roots are
+  rechecked.
 - Whole-app fixed-schema suites stay app-owned. `TestDb` remains the
   shared-crate/single-schema seam.
 
@@ -195,13 +196,12 @@ reachability.
 
 `g09.045` found no regression in the supported monorepo shape. `g09.047`
 completed the reference env/runtime/access proof without changing any of its 95
-public route paths. `g09.052` completed Acowtancy's env/secret, middleware,
-declared-version, and cross-tab-safe CSRF rollout. Remaining consumer impact is
-bounded by `g09.048`–`g09.051`; security and path compatibility changes cannot
-begin before each roadmap's decisions are explicit.
+public route paths. `g09.048`–`g09.052` completed the five consumer-owned
+env/secret, runtime-topology, access, and CSRF rollouts under their recorded
+compatibility decisions.
 
 ## Next Task
 
-Review `g09.048`–`g09.051`. Keep `g09.053` blocked until those four reviewed
-consumer lanes merge and the Underlay Reference cross-tab CSRF rotation is
-repaired in its owning lane.
+Compile and promote the Underlay Reference cross-tab CSRF repair as a numbered
+owning lane. Keep `g09.053` planned until that reviewed repair merges and the
+exact consumer roots are rechecked.

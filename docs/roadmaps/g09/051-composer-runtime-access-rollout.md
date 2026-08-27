@@ -1,6 +1,6 @@
 # g09.051 - Composer Runtime And Access Rollout
 
-Status: ready
+Status: complete
 Owner: Composer maintainers
 Contracts: `024`, `025`, `026`, `031`
 Found by: `g09.045`
@@ -87,6 +87,20 @@ compatibility. Do not move a public path from source classification alone.
 - Required action: follow the approved dual-path or atomic cutover plan
 - Compatibility window: must be chosen before implementation
 
+## Completion Evidence
+
+- Composer PR
+  [#5](https://github.com/inflatable-cookie/loophole-composer/pull/5) merged on
+  2026-08-27 as `4ec74ecd5f20ccbf5bae8e32b4c39810a1da904a`.
+- Reviewed worker head: `35739d024dc6fc880c6b15df8aee199cc7c454e8`.
+- Canonical review:
+  [PR comment](https://github.com/inflatable-cookie/loophole-composer/pull/5#issuecomment-5439333774).
+- Exact-head review passed env, conformance, and security QA, 99 API tests, 35
+  API-client tests, test-plan inspection, and `git diff --check`.
+- GitHub exposed no hosted checks. The recorded Docker Hub DNS failure was
+  environmental; equivalent exact-head host checks passed.
+
 ## Next Task
 
-Record reviewed merge evidence for `g09.053`.
+Repair the Underlay Reference cross-tab CSRF prerequisite, then contribute this
+reviewed merge evidence to `g09.053`.

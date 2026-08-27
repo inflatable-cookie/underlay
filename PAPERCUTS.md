@@ -5,6 +5,15 @@ they hit a solvable hurdle; they do not stop the current task to fix one.
 
 ## Open
 
+### [ ] Effigy still advertises retired Storybook tasks — 2026-08-27
+- Friction: `effigy tasks` lists `storybook` and `storybook:build` after the
+  repository's Storybook surface was deprecated and removed.
+- Impact: agents can route into unsupported UI tooling during normal task
+  discovery.
+- Possible fix: remove the stale task selectors and any remaining Storybook
+  configuration or dependency residue in one bounded cleanup.
+- Surface: `effigy.toml` / retired Storybook tooling
+
 ### [ ] Emitted Svelte CSS leaves `:global(...)` for Lightning CSS — 2026-08-27
 - Friction: consumer production builds repeatedly warn that `global` is not a
   valid pseudo-class in selectors emitted from Underlay detail-card styles

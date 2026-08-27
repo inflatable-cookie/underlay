@@ -1,6 +1,6 @@
 # g09.050 - Songsprout Runtime And Access Rollout
 
-Status: ready
+Status: complete
 Owner: Songsprout maintainers
 Contracts: `024`, `025`, `026`, `030`, `031`
 Found by: `g09.045`
@@ -90,6 +90,20 @@ requiredness remains undecided. Do not silently choose a weaker security posture
   recorded decisions
 - Compatibility window: no route cutover is authorized
 
+## Completion Evidence
+
+- Songsprout PR [#5](https://github.com/inflatable-cookie/songsprout/pull/5)
+  merged on 2026-08-27 as
+  `e05ad04f986054647697f55c696850fda5fa694b`.
+- Reviewed worker head: `4f348533ddb1e6505b8891dda01256580f701ac9`.
+- Canonical review:
+  [PR comment](https://github.com/inflatable-cookie/songsprout/pull/5#issuecomment-5439872643).
+- Exact-head review passed the test plan, Nursery check, 11 API tests,
+  touched-file rustfmt, and `git diff --check`.
+- GitHub exposed no hosted checks. The only compiler warning was a pre-existing
+  unused import outside the review correction.
+
 ## Next Task
 
-Record reviewed merge evidence for `g09.053`.
+Repair the Underlay Reference cross-tab CSRF prerequisite, then contribute this
+reviewed merge evidence to `g09.053`.

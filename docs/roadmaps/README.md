@@ -72,10 +72,11 @@ verdict. `g09.046` is complete. `g09.047` completed the Underlay Reference
 runtime/access proof in PR5, merge commit `6af27837`. Its merge clears the
 shared reference dependency for `g09.048`–`g09.052`. Exact-main evidence and
 the remaining product/security policy were settled on 2026-08-27, so all five
-independent consumer lanes are ready and have target-owned handoffs committed
-to their pushed `main` branches. Acowtancy PR62 has merged and completed
-`g09.052`; worker PRs for `g09.048`–`g09.051` remain open. `g09.053` remains
-planned behind those merges and the Underlay Reference cross-tab CSRF repair.
+independent consumer lanes were dispatched through target-owned handoffs.
+Contact Patch PR5, Compli Me PR7, Songsprout PR5, Composer PR5, and Acowtancy
+PR62 have merged, completing `g09.048`–`g09.052`. `g09.053` remains planned
+behind a numbered Underlay Reference cross-tab CSRF repair and exact merged-root
+proof.
 See
 [`g09/README.md`](g09/README.md).
 
@@ -96,6 +97,6 @@ that risk.
 
 ## Next Task
 
-Review `g09.048`–`g09.051`. Keep `g09.053` blocked until those four reviewed
-consumer lanes merge and the Underlay Reference cross-tab CSRF rotation is
-repaired in its owning lane.
+Compile and promote the Underlay Reference cross-tab CSRF repair as a numbered
+owning lane. Keep `g09.053` planned until that reviewed repair merges and the
+exact consumer roots are rechecked.

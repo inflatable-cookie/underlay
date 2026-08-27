@@ -1,6 +1,6 @@
 # g09.049 - Compli Me Runtime And Access Rollout
 
-Status: ready
+Status: complete
 Owner: Compli Me maintainers
 Contracts: `024`, `025`, `026`, `030`, `031`
 Found by: `g09.045`
@@ -91,6 +91,21 @@ surface from source layout alone.
 - Required action: supply CSRF proof for cookie refresh/logout
 - Compatibility window: no public path cutover is authorized
 
+## Completion Evidence
+
+- Compli Me PR [#7](https://github.com/double-dip/compli-me/pull/7)
+  merged on 2026-08-27 as
+  `ef85d71f6c8e2bc229b8f46b41d5b2062d696f35`.
+- Reviewed worker head: `44d0153be1376e05cf23ad1e55cfa74300764eb0`.
+- Canonical review:
+  [PR comment](https://github.com/double-dip/compli-me/pull/7#issuecomment-5439559272).
+- Exact-head review passed the test plan, API check, 34 API tests, API-client
+  QA, and `git diff --check`.
+- GitHub exposed no hosted checks. The repository's wider formatting drift was
+  retained; one wrapping-only difference in the bounded test constructor was
+  explicitly treated as non-blocking.
+
 ## Next Task
 
-Record reviewed merge evidence for `g09.053`.
+Repair the Underlay Reference cross-tab CSRF prerequisite, then contribute this
+reviewed merge evidence to `g09.053`.
