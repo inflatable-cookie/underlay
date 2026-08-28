@@ -62,7 +62,7 @@ or into a docs hunt that README already answered.
 - **Canonical refs:** `PAPERCUTS.md`; sibling Effigy
   `02100eefdde17db64652b2b26317bb284c504d8e` (PR 48); sibling Northstar
   `35a706d91bcb` (PR 6); Underlay Reference README runtime notes.
-- **PR URL:** pending
+- **PR URL:** https://github.com/inflatable-cookie/underlay/pull/17
 - **Merge authorisation:** absent; do not merge
 
 ## Boundaries
