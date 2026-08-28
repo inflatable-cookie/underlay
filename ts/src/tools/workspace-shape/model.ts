@@ -16,6 +16,7 @@ export const WORKSPACE_SHAPE_RULE_IDS = {
 	INTERNAL_EDGE_NOT_WORKSPACE: 'internal-edge-not-workspace',
 	WORKSPACE_PREFIX_UNSUPPORTED: 'workspace-prefix-unsupported',
 	SHARED_FILE_DEPENDENCY: 'shared-file-dependency',
+	RETIRED_TOP_LEVEL_PACKAGE: 'retired-top-level-package',
 } as const;
 
 export type WorkspaceShapeRuleId = (typeof WORKSPACE_SHAPE_RULE_IDS)[keyof typeof WORKSPACE_SHAPE_RULE_IDS];

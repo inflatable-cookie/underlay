@@ -149,6 +149,8 @@ Reusable templates:
   - all six known consumer roots conform; no compatibility window remains
 - Validation:
   - run the repo-owned workspace-shape selector
+  - after a fast-forward, clear any leftover top-level package trees the
+    checker inventories (safe cleanup commands only; it does not delete)
   - run one frozen root install
   - run `effigy health`, planned targeted tests/checks, and `git diff --check`
 - Current consumer proof:

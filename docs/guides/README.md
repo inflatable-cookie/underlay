@@ -86,14 +86,15 @@ Read these documents in order for a complete understanding:
 34. **[160 - Troubleshooting](./160-troubleshooting.md)** - Common issues and solutions
 35. **[170 - Checklist](./170-checklist.md)** - Completion verification
 36. **[172 - Lean AGENTS.md Files](./172-agents-files.md)** - Keep agent instructions concise and operational
-37. **[175 - LLM Bootstrap Guide](./175-llm-bootstrap-guide.md)** - Guided single-workspace bootstrap for LLMs
-38. **[176 - AI Runtime Routing](./176-ai-runtime-routing.md)** - Provider-agnostic backend LLM runtime boundary
-39. **[180 - Admin Workflow Playbook](./180-admin-workflow-playbook.md)** - Start-here implementation flow for admin features
-40. **[181 - Temporary API Profile Migration Playbook](./181-temporary-api-profile-migration-playbook.md)** - Cross-app migration checklist (temporary)
-41. **[185 - Recipe Map and Testing Matrix](./185-recipe-map-and-testing-matrix.md)** - Recipe-to-code references + minimum tests
-42. **[190 - Upgrade Compatibility Matrix](./190-upgrade-compatibility.md)** - Upgrade expectations and breakage checks
-43. **[200 - Project Sync](./200-project-sync.md)** - Migration/sync checklist for existing projects
-44. **[205 - Legacy Migration Framework (End-to-End)](./205-legacy-migration-framework.md)** - Historical detailed migration-core reference; use the state-layout/Effigy migration policy for active operator posture
+37. **[173 - Worker PR Merge Closeout](./173-worker-pr-merge-closeout.md)** - Merge without mistaking worktree branch cleanup for provider failure
+38. **[175 - LLM Bootstrap Guide](./175-llm-bootstrap-guide.md)** - Guided single-workspace bootstrap for LLMs
+39. **[176 - AI Runtime Routing](./176-ai-runtime-routing.md)** - Provider-agnostic backend LLM runtime boundary
+40. **[180 - Admin Workflow Playbook](./180-admin-workflow-playbook.md)** - Start-here implementation flow for admin features
+41. **[181 - Temporary API Profile Migration Playbook](./181-temporary-api-profile-migration-playbook.md)** - Cross-app migration checklist (temporary)
+42. **[185 - Recipe Map and Testing Matrix](./185-recipe-map-and-testing-matrix.md)** - Recipe-to-code references + minimum tests
+43. **[190 - Upgrade Compatibility Matrix](./190-upgrade-compatibility.md)** - Upgrade expectations and breakage checks
+44. **[200 - Project Sync](./200-project-sync.md)** - Migration/sync checklist for existing projects
+45. **[205 - Legacy Migration Framework (End-to-End)](./205-legacy-migration-framework.md)** - Historical detailed migration-core reference; use the state-layout/Effigy migration policy for active operator posture
 
 ## Effigy-First Repo Loop
 

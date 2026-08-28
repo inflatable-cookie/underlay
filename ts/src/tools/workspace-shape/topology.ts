@@ -1,3 +1,4 @@
+import { stat } from 'node:fs/promises';
 import path from 'node:path';
 import {
 	discoverWorkspacePackagePaths,
@@ -212,5 +213,45 @@ export async function checkLockfiles(root: string, violations: WorkspaceShapeVio
 				'child bun.lock files are not allowed',
 			);
 		}
+	}
+}
+
+/**
+ * After apps/* / packages/* migrations, ignored build/cache trees often remain
+ * at the old top-level package names. Inventory only — never delete.
+ */
+export async function checkRetiredTopLevelPackages(
+	root: string,
+	workspacePaths: string[],
+	violations: WorkspaceShapeViolation[],
+): Promise<void> {
+	const seen = new Set<string>();
+
+	for (const workspacePath of workspacePaths) {
+		const normalized = normalizeWorkspacePath(workspacePath);
+		if (!hasSupportedWorkspacePrefix(normalized)) continue;
+
+		const basename = path.posix.basename(normalized);
+		if (!basename || basename === '.' || basename === '..') continue;
+		if (seen.has(basename)) continue;
+		seen.add(basename);
+
+		const retiredAbs = path.join(root, basename);
+		if (!(await pathExists(retiredAbs))) continue;
+
+		let isDirectory = false;
+		try {
+			isDirectory = (await stat(retiredAbs)).isDirectory();
+		} catch {
+			continue;
+		}
+		if (!isDirectory) continue;
+
+		pushViolation(
+			violations,
+			WORKSPACE_SHAPE_RULE_IDS.RETIRED_TOP_LEVEL_PACKAGE,
+			basename,
+			`leftover top-level path while live package is ${normalized}; inventory only — safe cleanup: rm -rf ${JSON.stringify(basename)}`,
+		);
 	}
 }

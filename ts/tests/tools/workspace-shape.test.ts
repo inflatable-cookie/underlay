@@ -169,6 +169,19 @@ describe("tools/workspace-shape", () => {
 		expect(violations).toEqual([]);
 	});
 
+	it("flags leftover top-level package trees after apps/packages migration", async () => {
+		const violations = await checkWorkspaceShape(
+			await loadFixture("retired-top-level-package"),
+		);
+		const retired = violations.filter(
+			(v) => v.ruleId === WORKSPACE_SHAPE_RULE_IDS.RETIRED_TOP_LEVEL_PACKAGE,
+		);
+		expect(retired).toHaveLength(1);
+		expect(retired[0]?.path).toBe("app");
+		expect(retired[0]?.detail).toContain("apps/app");
+		expect(retired[0]?.detail).toContain("rm -rf");
+	});
+
 	it("formats empty and failing reports with stable copy", () => {
 		expect(formatWorkspaceShapeReport("/repo", [])).toBe(
 			"Workspace shape report for: /repo\n\nAll workspace shape checks passed.",
