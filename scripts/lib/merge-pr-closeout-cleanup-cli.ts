@@ -1,7 +1,9 @@
 #!/usr/bin/env bun
 
 import {
+	assertPreMergeReviewedHead,
 	formatMergeLocalCleanupPlan,
+	formatPreMergeReviewedHeadFailure,
 	formatReviewedMergeFailure,
 	planMergeLocalCleanup,
 	verifyReviewedMergeHead,
@@ -14,6 +16,10 @@ function usage(): never {
     --provider-oid <sha> \\
     --local-tip <sha|""> \\
     [--worktree <path>]...
+
+  bun scripts/lib/merge-pr-closeout-cleanup-cli.ts assert-pre-merge \\
+    --reviewed-oid <sha> \\
+    --provider-oid <sha>
 
   bun scripts/lib/merge-pr-closeout-cleanup-cli.ts verify-reviewed-head \\
     --reviewed-oid <sha> \\
@@ -59,6 +65,22 @@ if (mode === 'cleanup') {
 		holdingWorktrees: readAllArgs(rest, '--worktree'),
 	});
 	console.log(formatMergeLocalCleanupPlan(plan));
+	process.exit(0);
+}
+
+if (mode === 'assert-pre-merge') {
+	const reviewedOid = readArg(rest, '--reviewed-oid');
+	const providerOid = readArg(rest, '--provider-oid');
+	if (!reviewedOid || !providerOid) usage();
+
+	const result = assertPreMergeReviewedHead({
+		reviewedHeadOid: reviewedOid,
+		providerHeadOid: providerOid,
+	});
+	if (!result.ok) {
+		console.error(formatPreMergeReviewedHeadFailure(result));
+		process.exit(1);
+	}
 	process.exit(0);
 }
 

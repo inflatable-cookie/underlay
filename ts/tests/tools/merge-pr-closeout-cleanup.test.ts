@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
+	assertPreMergeReviewedHead,
+	formatPreMergeReviewedHeadFailure,
 	formatReviewedMergeFailure,
 	planMergeLocalCleanup,
 	verifyReviewedMergeHead,
@@ -65,6 +67,29 @@ describe('planMergeLocalCleanup', () => {
 		expect(text).not.toContain('git branch -D');
 		expect(text).not.toContain('git worktree remove');
 		expect(text).toContain('/tmp/worker-a');
+	});
+});
+
+describe('assertPreMergeReviewedHead', () => {
+	it('allows merge only when the live provider head equals the caller-reviewed OID', () => {
+		const result = assertPreMergeReviewedHead({
+			reviewedHeadOid: OID_A,
+			providerHeadOid: OID_A,
+		});
+		expect(result).toEqual({ ok: true, reviewedHeadOid: OID_A });
+	});
+
+	it('refuses when the head changed after review but before wrapper invocation', () => {
+		const result = assertPreMergeReviewedHead({
+			reviewedHeadOid: OID_A,
+			providerHeadOid: OID_B,
+		});
+		expect(result.ok).toBe(false);
+		if (result.ok) return;
+		expect(result.kind).toBe('head-changed-before-merge');
+		expect(formatPreMergeReviewedHeadFailure(result)).toContain(
+			'provider head differs from the caller-supplied reviewed OID',
+		);
 	});
 });
 

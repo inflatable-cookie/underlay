@@ -61,10 +61,10 @@ they hit a solvable hurdle; they do not stop the current task to fix one.
 
 ### [x] `gh pr merge --delete-branch` reports failure after a successful merge — 2026-08-27
 - Resolution: added `scripts/merge-pr-closeout.sh` and
-  `docs/guides/173-worker-pr-merge-closeout.md`. Merge closeout always uses
-  `gh pr merge ... --delete-branch -R OWNER/REPO` so local worktree branch
-  deletion cannot mask a successful provider merge. Destructive local cleanup
-  is suggested only when the local tip matches the provider `headRefOid`.
+  `docs/guides/173-worker-pr-merge-closeout.md`. Callers supply the reviewed
+  head OID; the wrapper compares the live provider head to that OID, merges
+  with `--match-head-commit` and `-R`, and suggests destructive local cleanup
+  only when the local tip matches the same reviewed OID.
 - Closed: 2026-08-28
 - Surface: GitHub CLI PR merge / worker-worktree closeout
 

@@ -27,9 +27,59 @@ export type ReviewedMergeVerification =
 			reason: string;
 	  };
 
+export type PreMergeReviewedHeadInput = {
+	reviewedHeadOid: string;
+	providerHeadOid: string;
+};
+
+export type PreMergeReviewedHeadCheck =
+	| { ok: true; reviewedHeadOid: string }
+	| {
+			ok: false;
+			kind: 'head-changed-before-merge';
+			reviewedHeadOid: string;
+			providerHeadOid: string;
+			reason: string;
+	  };
+
+/**
+ * Before merging, require the live provider head to equal the caller-supplied
+ * reviewed OID. This closes the review-to-merge gap that `--match-head-commit`
+ * alone cannot cover when the wrapper invents the "reviewed" OID at start time.
+ */
+export function assertPreMergeReviewedHead(
+	input: PreMergeReviewedHeadInput,
+): PreMergeReviewedHeadCheck {
+	const reviewedHeadOid = input.reviewedHeadOid.trim().toLowerCase();
+	const providerHeadOid = input.providerHeadOid.trim().toLowerCase();
+
+	if (!reviewedHeadOid) {
+		return {
+			ok: false,
+			kind: 'head-changed-before-merge',
+			reviewedHeadOid: input.reviewedHeadOid,
+			providerHeadOid: input.providerHeadOid,
+			reason: 'reviewed head OID is required from the caller',
+		};
+	}
+
+	if (providerHeadOid !== reviewedHeadOid) {
+		return {
+			ok: false,
+			kind: 'head-changed-before-merge',
+			reviewedHeadOid: input.reviewedHeadOid,
+			providerHeadOid: input.providerHeadOid,
+			reason:
+				'provider head differs from the caller-supplied reviewed OID; refuse merge',
+		};
+	}
+
+	return { ok: true, reviewedHeadOid: input.reviewedHeadOid };
+}
+
 /**
  * After a merge attempt (or when checking an already-merged PR), require the
- * provider head OID to still equal the reviewed OID captured before merge.
+ * provider head OID to still equal the reviewed OID supplied by the caller.
  */
 export function verifyReviewedMergeHead(
 	input: ReviewedMergeVerificationInput,
@@ -141,5 +191,15 @@ export function formatReviewedMergeFailure(result: Extract<ReviewedMergeVerifica
 		`  reviewedHeadOid: ${result.reviewedHeadOid}`,
 		`  observedHeadOid: ${result.observedHeadOid}`,
 		`  state: ${result.state}`,
+	].join('\n');
+}
+
+export function formatPreMergeReviewedHeadFailure(
+	result: Extract<PreMergeReviewedHeadCheck, { ok: false }>,
+): string {
+	return [
+		`error: ${result.reason}`,
+		`  reviewedHeadOid: ${result.reviewedHeadOid}`,
+		`  providerHeadOid: ${result.providerHeadOid}`,
 	].join('\n');
 }

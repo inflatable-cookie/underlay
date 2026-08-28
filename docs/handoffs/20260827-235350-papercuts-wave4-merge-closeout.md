@@ -61,9 +61,13 @@ merges.
 ## Suggested Next Move
 
 Orchestrator re-review of PR16. After an approve-for-merge verdict and
-explicit operator merge authorisation, merge with
-`./scripts/merge-pr-closeout.sh <n> --squash` (or equivalent
-`--match-head-commit` + `-R` flags), then close this handoff.
+explicit operator merge authorisation, merge with the exact reviewed head:
+
+```bash
+./scripts/merge-pr-closeout.sh 16 --reviewed-head <reviewed-sha> --squash
+```
+
+Then close this handoff.
 
 ## Completion Protocol
 

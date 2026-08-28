@@ -10,12 +10,13 @@ Closed three Underlay papercuts on the worker runway:
 
 ## Changes
 
-- `scripts/merge-pr-closeout.sh` — capture reviewed `headRefOid`, merge with
-  `--match-head-commit` and `-R`, verify that exact OID after merge, then plan
-  local cleanup only when the local tip matches
-- `scripts/lib/merge-pr-closeout-cleanup.ts` — non-mutating cleanup and
-  reviewed-head verification planners with fixture tests, including the
-  changed-head refusal path
+- `scripts/merge-pr-closeout.sh` — require caller `--reviewed-head`, compare
+  live provider head before merge, merge with `--match-head-commit` and `-R`,
+  verify that exact OID after merge, then plan local cleanup only when the
+  local tip matches
+- `scripts/lib/merge-pr-closeout-cleanup.ts` — non-mutating pre-merge assert,
+  post-merge verify, and cleanup planners with fixture tests, including
+  review-to-merge head change before wrapper invocation
 - `docs/guides/173-worker-pr-merge-closeout.md` — operator/orchestrator merge
   closeout contract
 - workspace-shape `retired-top-level-package` rule — inventory leftover

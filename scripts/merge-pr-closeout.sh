@@ -8,22 +8,22 @@
 # worktree, that local delete fails and gh exits 1 even though the provider
 # merge already succeeded.
 #
-# This wrapper:
-# 1. Captures the reviewed head OID before merge
+# This wrapper requires the caller to supply the actual reviewed head OID:
+# 1. Compares the live provider head to that caller-supplied OID before merge
 # 2. Merges with `--match-head-commit` and `-R` (skip local branch delete)
 # 3. Verifies the merged PR still records that exact reviewed OID
 # 4. Suggests destructive local cleanup only when the local tip matches that OID
 #
 # Usage:
-#   ./scripts/merge-pr-closeout.sh <pr-number> [--squash|--merge|--rebase]
+#   ./scripts/merge-pr-closeout.sh <pr-number> --reviewed-head <sha> [--squash|--merge|--rebase]
 #
 # Equivalent raw flags (from any checkout of the repo):
-#   REVIEWED=$(gh pr view <n> -R OWNER/REPO --json headRefOid --jq .headRefOid)
 #   gh pr merge <n> --squash --delete-branch --match-head-commit "$REVIEWED" -R OWNER/REPO
 #
 # Exit 0 when the reviewed head merged successfully. Exit 1 when the provider
-# merge did not land on that exact head. Remaining local worktree cleanup is
-# reported separately and does not fail the command once merge is verified.
+# head differs from the reviewed OID or the merge did not land on that exact
+# head. Remaining local worktree cleanup is reported separately and does not
+# fail the command once merge is verified.
 
 set -euo pipefail
 
@@ -33,11 +33,12 @@ CLEANUP_CLI="$REPO_ROOT/scripts/lib/merge-pr-closeout-cleanup-cli.ts"
 
 if [[ $# -lt 1 || "$1" == "-h" || "$1" == "--help" ]]; then
   cat <<'EOF'
-Usage: merge-pr-closeout.sh <pr-number> [--squash|--merge|--rebase]
+Usage: merge-pr-closeout.sh <pr-number> --reviewed-head <sha> [--squash|--merge|--rebase]
 
-Captures the reviewed head OID, merges with --match-head-commit and -R, verifies
-the merged PR still records that OID, then prints local cleanup only when the
-local tip matches. Does not remove worktrees.
+Requires the caller-supplied reviewed head OID. Compares the live provider head
+to that OID before merge, merges with --match-head-commit and -R, verifies the
+merged PR still records that OID, then prints local cleanup only when the local
+tip matches. Does not remove worktrees.
 EOF
   exit 0
 fi
@@ -46,22 +47,32 @@ PR="$1"
 shift
 
 METHOD="--squash"
-if [[ $# -gt 0 ]]; then
+REVIEWED_OID=""
+
+while [[ $# -gt 0 ]]; do
   case "$1" in
+    --reviewed-head)
+      if [[ $# -lt 2 || -z "${2:-}" ]]; then
+        echo "error: --reviewed-head requires a commit SHA" >&2
+        exit 2
+      fi
+      REVIEWED_OID="$2"
+      shift 2
+      ;;
     --squash|--merge|--rebase)
       METHOD="$1"
       shift
       ;;
     *)
       echo "error: unknown argument: $1" >&2
-      echo "expected --squash, --merge, or --rebase" >&2
+      echo "expected --reviewed-head <sha> and optional --squash|--merge|--rebase" >&2
       exit 2
       ;;
   esac
-fi
+done
 
-if [[ $# -gt 0 ]]; then
-  echo "error: unexpected arguments: $*" >&2
+if [[ -z "$REVIEWED_OID" ]]; then
+  echo "error: --reviewed-head <sha> is required" >&2
   exit 2
 fi
 
@@ -82,11 +93,18 @@ fi
 
 REPO="$(gh repo view --json nameWithOwner --jq .nameWithOwner)"
 HEAD_REF="$(gh pr view "$PR" -R "$REPO" --json headRefName --jq .headRefName)"
-REVIEWED_OID="$(gh pr view "$PR" -R "$REPO" --json headRefOid --jq .headRefOid)"
+PROVIDER_OID="$(gh pr view "$PR" -R "$REPO" --json headRefOid --jq .headRefOid)"
 STATE="$(gh pr view "$PR" -R "$REPO" --json state --jq .state)"
 
-if [[ -z "$HEAD_REF" || -z "$REVIEWED_OID" ]]; then
+if [[ -z "$HEAD_REF" || -z "$PROVIDER_OID" ]]; then
   echo "error: could not resolve PR headRefName/headRefOid for #$PR" >&2
+  exit 1
+fi
+
+if ! bun "$CLEANUP_CLI" assert-pre-merge \
+  --reviewed-oid "$REVIEWED_OID" \
+  --provider-oid "$PROVIDER_OID"
+then
   exit 1
 fi
 
@@ -115,7 +133,7 @@ if [[ "$STATE" != "MERGED" ]]; then
     echo "note: gh exited $merge_status after verified provider merge; treating local cleanup separately"
   fi
 else
-  OBSERVED_OID="$(gh pr view "$PR" -R "$REPO" --json headRefOid --jq .headRefOid)"
+  OBSERVED_OID="$PROVIDER_OID"
   if ! bun "$CLEANUP_CLI" verify-reviewed-head \
     --reviewed-oid "$REVIEWED_OID" \
     --observed-oid "$OBSERVED_OID" \

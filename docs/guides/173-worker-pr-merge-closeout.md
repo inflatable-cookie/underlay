@@ -12,33 +12,35 @@ wrong outcome.
 
 ## Required closeout command
 
-Prefer the repo wrapper:
+Prefer the repo wrapper. Pass the exact head OID that was reviewed — do not
+let the wrapper invent “reviewed” from the live PR head at merge time:
 
 ```bash
-./scripts/merge-pr-closeout.sh <pr-number> --squash
+./scripts/merge-pr-closeout.sh <pr-number> \
+  --reviewed-head <reviewed-sha> \
+  --squash
 ```
 
-The wrapper captures the reviewed `headRefOid`, merges with
-`--match-head-commit` and `-R`, verifies the merged PR still records that exact
-OID, then plans local cleanup against that reviewed OID.
+The wrapper compares the live provider head to that caller-supplied OID before
+merge, merges with `--match-head-commit` and `-R`, verifies the merged PR still
+records that exact OID, then plans local cleanup against it.
 
 Equivalent raw GitHub CLI flags:
 
 ```bash
-REVIEWED=$(gh pr view <pr-number> -R OWNER/REPO --json headRefOid --jq .headRefOid)
 gh pr merge <pr-number> --squash --delete-branch \
-  --match-head-commit "$REVIEWED" -R OWNER/REPO
+  --match-head-commit <reviewed-sha> -R OWNER/REPO
 gh pr view <pr-number> -R OWNER/REPO --json state,headRefOid
 ```
 
-A `MERGED` state with the same `headRefOid` is the merge outcome. Local
-worktree/branch cleanup is a separate step.
+A `MERGED` state with the same `headRefOid` as `<reviewed-sha>` is the merge
+outcome. Local worktree/branch cleanup is a separate step.
 
 ## Local cleanup after merge
 
 Destructive cleanup is safe only when the local branch tip equals the reviewed
-provider `headRefOid`. If the tips diverge, inspect manually — the local branch
-may hold commits added after the merged head.
+provider head OID. If the tips diverge, inspect manually — the local branch may
+hold commits added after the merged head.
 
 When tips match and a worktree still holds the branch:
 
