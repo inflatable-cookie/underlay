@@ -26,16 +26,14 @@ they hit a solvable hurdle; they do not stop the current task to fix one.
   but `~/.claude/skills/northstar` still lacks that file. Keep open until the
   installed skill is refreshed.
 
-### [ ] Effigy task-inventory JSON example uses a stale payload path — 2026-08-26
-- Friction: the installed Effigy skill queries `.result.payload.tasks[]`, but Effigy `0.12.1` returns task inventory at `.result.catalog_tasks[]`
-- Impact: the documented machine-readable inventory command fails before agents can filter task ownership
-- Possible fix: update the Effigy skill JSON example and versioned envelope reference to the live `tasks` schema
-- Surface: Effigy skill / JSON task inventory docs
-- Wave 5 proof (2026-08-28): live `effigy --json tasks` returns
-  `.result.catalog_tasks[]`; installed skill copies still document
-  `.result.payload.tasks[]`. Keep open; do not edit Effigy from Underlay.
-
 ## Closed
+
+### [x] Effigy task-inventory JSON example uses a stale payload path — 2026-08-26
+- Resolution: retargeted vendored Effigy skill jq examples to
+  `.result.catalog_tasks[].task`, matching Effigy `552ef1b93283` (PR 49)
+  and live `effigy --json tasks` on PATH.
+- Closed: 2026-08-28
+- Surface: Effigy skill / JSON task inventory docs
 
 ### [x] Attention-marker CLI overrides are ignored — 2026-08-27
 - Resolution: proved on PATH `effigy v0.12.1+local.9b9a3ba` (includes
