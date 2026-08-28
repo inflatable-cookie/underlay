@@ -5,17 +5,6 @@ they hit a solvable hurdle; they do not stop the current task to fix one.
 
 ## Open
 
-### [ ] Effigy release execute omits the promised GitHub Release — 2026-08-27
-- Friction: `effigy release execute --yes` reported a complete Underlay release
-  after pushing the release commit and annotated tag, but no GitHub Release
-  existed until the operator flow created it separately with `gh release create`
-- Impact: a successful execute can leave the public provider release surface
-  incomplete while the local release protocol says execute creates it
-- Possible fix: make execute create and verify the GitHub Release when the
-  provider is configured, or make the protocol and post-release checklist
-  declare the separate provider-publication step explicitly
-- Surface: Effigy release execution / Underlay release protocol
-
 ### [ ] Northstar compile-roadmaps references a missing batch-card template — 2026-08-26
 - Friction: compile-roadmaps requires the installed `docs/specs/templates/batch-card-template.md`, but the Northstar assets package only lists that path in its README and does not contain the file
 - Impact: roadmap compilation must infer the readiness fields from existing project cards instead of the declared canonical template
@@ -27,6 +16,23 @@ they hit a solvable hurdle; they do not stop the current task to fix one.
   installed skill is refreshed.
 
 ## Closed
+
+### [x] Effigy release execute omits the promised GitHub Release — 2026-08-27
+- Friction: `effigy release execute --yes` reported a complete Underlay release
+  after pushing the release commit and annotated tag, but no GitHub Release
+  existed until the operator flow created it separately with `gh release create`
+- Impact: a successful execute can leave the public provider release surface
+  incomplete while the local release protocol says execute creates it
+- Possible fix: make execute create and verify the GitHub Release when the
+  provider is configured, or make the protocol and post-release checklist
+  declare the separate provider-publication step explicitly
+- Resolution: Underlay's vendored release protocol and footguns now state that
+  `effigy release execute --yes` only commits and pushes the annotated tag;
+  the operator publishes the GitHub Release separately (`gh release create` or
+  equivalent) before tagged consumer smoke. Teaching execute to create GitHub
+  Releases stayed out of scope.
+- Closed: 2026-08-28
+- Surface: Effigy release execution / Underlay release protocol
 
 ### [x] Effigy task-inventory JSON example uses a stale payload path — 2026-08-26
 - Resolution: retargeted vendored Effigy skill jq examples to

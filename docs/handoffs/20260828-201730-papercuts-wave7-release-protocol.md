@@ -5,7 +5,7 @@ handoff_mode: worker-pr-loop
 worker_mode: implementation
 dispatch_authority: orchestrator
 handoff: single-file-path-only
-status: ready-to-launch
+status: awaiting-review
 owner: Tom / papercuts orchestrator
 created: 2026-08-28
 updated: 2026-08-28
@@ -20,10 +20,10 @@ Wave 6 retargeted the vendored Effigy skill. One remaining Underlay
 copy: `effigy release execute --yes` reported a complete release without
 a GitHub Release, until the operator ran `gh release create`.
 
-You are the Underlay implementation worker. Align this repo's release
-protocol and post-release checklist with that split: execute does not
-create the GitHub Release; the operator publishes it separately. Do not
-teach Effigy to create GitHub Releases. Do not run release mutations.
+Worker aligned Underlay's release protocol and post-release checklist
+with that split: execute does not create the GitHub Release; the
+operator publishes it separately. Did not teach Effigy to create GitHub
+Releases. Did not run release mutations.
 
 ## Why It Matters
 
@@ -39,25 +39,26 @@ only the git tag landed.
   to that SHA before this handoff was created.
 - **Planning checkout:** clean before this handoff file was created.
 - **Worker mode:** implementation worker dispatched by the orchestrator.
-- **Worker branch:** `worker/papercuts-wave7-release-protocol`
-- **Worker worktree:** launcher worktree first. `.agents.local.env` was
-  absent; ask before creating a manual fallback. Never use `/tmp`.
-- **Ready work items, in order:**
-  1. Effigy release execute omits the promised GitHub Release — update
-     Underlay release protocol / post-release checklist so they declare
-     `gh release create` (or equivalent) as a separate operator step
-     after execute. Close this copy if the local protocol no longer
-     claims execute publishes the GitHub Release. If Effigy's own
-     protocol still promises that create, keep a pointer at Effigy but
-     still fix Underlay's wording
-- **Out of scope:** making `effigy release execute` create GitHub
-  Releases; editing Effigy; running `release prepare/execute`; the
-  installed-Northstar batch-card template gap (`~/.claude/skills`).
-- **Canonical refs:** `PAPERCUTS.md`; release protocol / post-release
-  checklist (find the live files; do not invent a second protocol).
-- **Required validation:** the live Underlay protocol no longer says
-  execute creates the GitHub Release. No release mutation ran.
-- **PR URL:** pending
+- **Worker branch:** `t3code/papercuts-wave7-release-protocol` (accepted;
+  differs from placeholder `worker/papercuts-wave7-release-protocol`)
+- **Worker worktree:** `/Users/tom/.t3/worktrees/underlay/t3code-0f634722`
+  (launcher worktree). `.agents.local.env` absent; no fallback created.
+- **Work items:**
+  1. Effigy release execute omits the promised GitHub Release — **closed**.
+     Vendored `release-protocol.md` / `footguns.md` now treat execute as
+     tag-only and require operator `gh release create` (or equivalent)
+     before tagged consumer smoke. Historical-tag triage no longer cites
+     the old execute-creates-release claim.
+- **Out of scope kept open:** installed-Northstar batch-card template gap
+  (`~/.claude/skills`).
+- **Canonical refs:** `PAPERCUTS.md`;
+  `.agents/skills/effigy/references/release-protocol.md`;
+  `.agents/skills/effigy/references/footguns.md`.
+- **Validation:** live Underlay protocol no longer says execute creates
+  the GitHub Release; `effigy --json papercuts --all` reports non-empty
+  friction/impact/possible_fix/resolution for the closed item; no
+  release mutation ran.
+- **PR URL:** https://github.com/inflatable-cookie/underlay/pull/19
 - **Merge authorisation:** absent; do not merge
 
 ## Boundaries
@@ -67,14 +68,14 @@ only the git tag landed.
 
 ## Important Context
 
-- The other possible fix (execute creates the GitHub Release) is
-  explicitly out of scope. This wave picks the checklist split.
+- The other possible fix (execute creates the GitHub Release) stayed out
+  of scope. This wave picked the checklist split.
 - **Report to:** the operator.
 
 ## Suggested Next Move
 
-Read this file, run the worktree preflight, then find the live release
-protocol and make the provider-publication step explicit.
+Orchestrator: re-review PR 19. Leave the installed-Northstar batch-card
+template gap open.
 
 ## Completion Protocol
 
@@ -101,4 +102,5 @@ Awaiting orchestrator review. Merge is operator-authorised only.
 
 ### Handoff closeout
 
-Leave the installed-Northstar batch-card template gap open.
+Runway complete. Protocol split landed on PR 19. Leave the
+installed-Northstar batch-card template gap open.

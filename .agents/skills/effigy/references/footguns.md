@@ -42,13 +42,16 @@ for the next version.
 ## 4. Never run release commands without explicit human ask
 
 Release commands cause public side effects: tags, GitHub releases, Homebrew
-bottle uploads, distribution manifest updates.
+bottle uploads, distribution manifest updates. `release execute` pushes the
+annotated tag; publishing the GitHub Release is a separate operator step
+(`gh release create` or equivalent).
 
 Commands that require explicit human instruction:
 
 - `effigy release prepare --yes`
 - `effigy release execute --yes`
 - `effigy release verify-install`
+- `gh release create` (or any provider publication for an existing tag)
 - Anything that pushes tags, creates GitHub releases, or uploads artifacts.
 
 Read-only release commands (safe to run unprompted for inspection):

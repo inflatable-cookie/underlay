@@ -31,8 +31,12 @@ Never run these unprompted:
 | Command | Side effect |
 |---------|-------------|
 | `effigy release prepare --yes` | Writes prepare artifacts |
-| `effigy release execute --yes` | Pushes tag, creates GitHub release |
+| `effigy release execute --yes` | Commits prepared files and pushes the annotated tag |
+| `gh release create vX.Y.Z …` | Publishes the GitHub Release for an existing tag |
 | `effigy release verify-install --tag vX.Y.Z` | Effigy binary network-side verification; never use for Underlay |
+
+`release execute` does **not** create the GitHub Release. Underlay publishes
+that provider surface as a separate operator step after the tag exists.
 
 ## Canonical sequence
 
@@ -46,9 +50,12 @@ When a human explicitly asks for a release:
 4. `effigy release prepare --yes --check-gates`
 5. `effigy release execute --plan`
 6. `effigy release execute --yes`
-7. Run Underlay's tagged consumer smoke. Do not run Effigy's fixed binary
+7. Publish the GitHub Release for the new tag (operator-owned), for example
+   `gh release create vX.Y.Z --generate-notes` or an equivalent provider
+   command. Do not treat execute success as proof the public release exists.
+8. Run Underlay's tagged consumer smoke. Do not run Effigy's fixed binary
    verifier.
-8. `effigy changelog extract CHANGELOG.md --version X.Y.Z`
+9. `effigy changelog extract CHANGELOG.md --version X.Y.Z`
 
 If any step fails, **stop**. Surface the failure to the human. Do not retry
 with bypass flags.
