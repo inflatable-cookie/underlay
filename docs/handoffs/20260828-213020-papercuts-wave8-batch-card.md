@@ -60,7 +60,7 @@ landed in the source package.
   `skills/northstar/assets/templates/docs/specs/templates/batch-card-template.md`.
 - **Validation:** quoted skill-shipped path present on Northstar
   `origin/main` (`82f493713efd`); Underlay Open section empty after close.
-- **PR URL:** pending
+- **PR URL:** https://github.com/inflatable-cookie/underlay/pull/20
 - **Merge authorisation:** absent; do not merge
 
 ## Boundaries
@@ -76,7 +76,7 @@ landed in the source package.
 
 ## Suggested Next Move
 
-Orchestrator: review the PR. Operator: refresh `~/.claude/skills/northstar`
+Orchestrator: review PR 20. Operator: refresh `~/.claude/skills/northstar`
 when ready so the installed skill matches the source package.
 
 ## Completion Protocol
@@ -105,3 +105,4 @@ Awaiting orchestrator review. Merge is operator-authorised only.
 ### Handoff closeout
 
 Runway complete. Underlay has no remaining open papercuts after this close.
+PR: https://github.com/inflatable-cookie/underlay/pull/20
