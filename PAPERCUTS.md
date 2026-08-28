@@ -5,21 +5,6 @@ they hit a solvable hurdle; they do not stop the current task to fix one.
 
 ## Open
 
-### [ ] Attention-marker CLI overrides are ignored — 2026-08-27
-- Friction: `effigy scan attention-markers --warning-marker ...
-  --high-marker ... --critical-marker ...` accepted the flags but still used
-  the stock marker lists; the local Effigy implementation only applies common
-  scan overrides in the attention-marker execution path
-- Impact: agents cannot safely trial a narrower marker policy before committing
-  manifest changes, despite the help surface promising per-run overrides
-- Possible fix: apply marker request overrides in the attention-marker path and
-  retain a CLI contract test proving the rendered pattern lists changed
-- Surface: Effigy attention-marker scanner / CLI override contract
-- Wave 5 proof (2026-08-28): PATH `effigy v0.12.1+local.834a4bd` is older
-  than Effigy PR 48 (`02100eefd`). `--warning-marker CUSTOMONLY` still leaves
-  stock warning patterns (`TODO`/`REVIEW`/`placeholder`). Keep open until PATH
-  Effigy includes PR 48; do not vendor a local shim from Underlay.
-
 ### [ ] Effigy release execute omits the promised GitHub Release — 2026-08-27
 - Friction: `effigy release execute --yes` reported a complete Underlay release
   after pushing the release commit and annotated tag, but no GitHub Release
@@ -52,14 +37,20 @@ they hit a solvable hurdle; they do not stop the current task to fix one.
 
 ## Closed
 
+### [x] Attention-marker CLI overrides are ignored — 2026-08-27
+- Resolution: proved on PATH `effigy v0.12.1+local.9b9a3ba` (includes
+  Effigy PR 48 / `02100eefd`) that
+  `effigy --json scan attention-markers --warning-marker CUSTOMONLY`
+  returns `patterns.warning == ["CUSTOMONLY"]`; stock warning markers are
+  gone.
+- Closed: 2026-08-28
+- Surface: Effigy attention-marker scanner / CLI override contract
+
 ### [x] Effigy task arguments silently widen when preceded by `--` — 2026-08-26
-- Resolution: proved on PATH `effigy v0.12.1+local.834a4bd` that
-  `effigy test:unit -- <path>` renders
-  `bun x vitest run '--' '<path>'` (path forwarded, not dropped). Without
-  `--`, the path alone is forwarded. Close criterion met: paths are
-  forwarded rather than silently widening to the full suite. PATH is still
-  older than Effigy PR 48 (`02100eefd`), which additionally strips the
-  leading `--` for `{args}`; that polish is not required to close this copy.
+- Resolution: proved on PATH Effigy that `effigy test:unit -- <path>`
+  forwards the path rather than silently widening to the full suite. On
+  `v0.12.1+local.9b9a3ba` (PR 48) the leading `--` is stripped for
+  `{args}` (`bun x vitest run '<path>'`).
 - Closed: 2026-08-28
 - Surface: Effigy task argument forwarding / focused test execution
 

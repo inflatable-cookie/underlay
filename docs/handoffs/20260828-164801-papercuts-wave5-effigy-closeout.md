@@ -42,15 +42,14 @@ or into a docs hunt that README already answered.
   differs from placeholder `worker/papercuts-wave5-effigy-closeout`)
 - **Worker worktree:** `/Users/tom/.t3/worktrees/underlay/t3code-7be03fd0`
   (launcher worktree). `.agents.local.env` absent; no fallback created.
-- **Proof binary / pins:** PATH `effigy v0.12.1+local.834a4bd` (older than
-  PR 48). Effigy source HEAD includes `02100eefd` but is not on PATH.
-  Northstar package HEAD `35a706d91bcb` (PR 6); `~/.claude/skills/northstar`
-  not refreshed.
+- **Proof binary / pins:** PATH `effigy v0.12.1+local.9b9a3ba` (includes
+  Effigy PR 48 / `02100eefd`). Northstar package HEAD `35a706d91bcb` (PR 6);
+  `~/.claude/skills/northstar` not refreshed.
 - **Work items:**
-  1. Attention-marker CLI overrides — **open**. PATH ignores
-     `--warning-marker CUSTOMONLY` (stock patterns unchanged).
+  1. Attention-marker CLI overrides — **closed**. PATH
+     `--warning-marker CUSTOMONLY` returns `patterns.warning == ["CUSTOMONLY"]`.
   2. Task-arg `--` widening — **closed**. PATH forwards the path after
-     `--` (`bun x vitest run '--' '<path>'`).
+     `--` and strips the leading delimiter for `{args}`.
   3. Northstar batch-card template — **open**. Package ships the file;
      installed `~/.claude/skills/northstar` does not.
   4. Effigy skill JSON path — **open**. Live schema is
@@ -79,8 +78,9 @@ or into a docs hunt that README already answered.
 
 ## Suggested Next Move
 
-Orchestrator: review the PR, then refresh PATH Effigy past PR 48 and
-reinstall the Northstar skill so the remaining open copies can close.
+Orchestrator: re-review the PR. Remaining opens need a Northstar skill
+reinstall and an Effigy skill JSON path fix; GitHub Release stays an
+Effigy decision.
 
 ## Completion Protocol
 
@@ -108,5 +108,5 @@ Awaiting orchestrator review. Merge is operator-authorised only.
 
 ### Handoff closeout
 
-If PATH `effigy` is older than PR 48, keep the copies open and report
-the version. Do not vendor a local shim.
+PATH `effigy v0.12.1+local.9b9a3ba` includes PR 48. Attention-marker and
+`--` copies closed against that binary. Do not vendor a local shim.
