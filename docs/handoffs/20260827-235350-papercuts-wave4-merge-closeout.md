@@ -5,10 +5,10 @@ handoff_mode: worker-pr-loop
 worker_mode: implementation
 dispatch_authority: orchestrator
 handoff: single-file-path-only
-status: ready-to-launch
+status: in-review
 owner: Tom / papercuts orchestrator
 created: 2026-08-27
-updated: 2026-08-27
+updated: 2026-08-28
 handoff_path: /Users/tom/Dev/projects/underlay/docs/handoffs/20260827-235350-papercuts-wave4-merge-closeout.md
 base_required: pushed-main
 tags: [coordination, handoff, worker, pr, papercuts]
@@ -62,7 +62,7 @@ merges.
   delete failure as merge failure (script or documented `gh` flags);
   a check inventories retired top-level package paths and prints safe
   cleanup; optional cheap currentness check if it stays small.
-- **PR URL:** pending
+- **PR URL:** https://github.com/inflatable-cookie/underlay/pull/16
 - **Merge authorisation:** absent; do not merge
 
 ## Boundaries
