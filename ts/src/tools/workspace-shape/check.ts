@@ -10,6 +10,7 @@ import {
 	checkGitRoot,
 	checkLockfiles,
 	checkNestedGitRepos,
+	checkRetiredTopLevelPackages,
 	checkRootManifestFields,
 	checkWorkspaceMembership,
 	checkWorkspacePaths,
@@ -32,6 +33,7 @@ export async function checkWorkspaceShape(rootPath: string): Promise<WorkspaceSh
 
 	if (workspacePaths.length > 0) {
 		await checkWorkspacePaths(root, workspacePaths, violations);
+		await checkRetiredTopLevelPackages(root, workspacePaths, violations);
 	}
 
 	await checkLockfiles(root, violations);

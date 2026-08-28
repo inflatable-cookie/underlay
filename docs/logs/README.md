@@ -100,3 +100,5 @@ The closure audit then confirmed all 62 numbered roadmaps complete, no active
 strict spec, and no batch-card queue. `g09` is now frozen with no successor
 generation opened
 ([generation closeout](./2026-08/27-233954-g09-generation-closeout.md)).
+Papercuts wave 4 then landed merge closeout and retired-path inventory tooling
+([log](./2026-08/28-085000-papercuts-wave4-merge-closeout.md)).

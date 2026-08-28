@@ -16,6 +16,7 @@ export const WORKSPACE_SHAPE_RULE_IDS = {
 	INTERNAL_EDGE_NOT_WORKSPACE: 'internal-edge-not-workspace',
 	WORKSPACE_PREFIX_UNSUPPORTED: 'workspace-prefix-unsupported',
 	SHARED_FILE_DEPENDENCY: 'shared-file-dependency',
+	RETIRED_TOP_LEVEL_PACKAGE: 'retired-top-level-package',
 } as const;
 
 export type WorkspaceShapeRuleId = (typeof WORKSPACE_SHAPE_RULE_IDS)[keyof typeof WORKSPACE_SHAPE_RULE_IDS];
@@ -50,6 +51,22 @@ export const SKIP_DIR_NAMES = new Set([
 	'.effigy',
 	'.cache',
 ]);
+
+/** Immediate children that may remain after a package move into apps/packages. */
+export const DISPOSABLE_RETIRED_TOP_LEVEL_NAMES = new Set([
+	...SKIP_DIR_NAMES,
+	'.DS_Store',
+]);
+
+/** POSIX single-quote a path for safe paste into a shell command. */
+export function posixShellSingleQuote(value: string): string {
+	return `'${value.replace(/'/g, `'\\''`)}'`;
+}
+
+/** Inventory-only disposable leftover cleanup command with option terminator. */
+export function formatRetiredDisposableCleanupCommand(basename: string): string {
+	return `rm -rf -- ${posixShellSingleQuote(basename)}`;
+}
 
 export const DEPENDENCY_FIELDS = [
 	'dependencies',

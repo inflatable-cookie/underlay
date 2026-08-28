@@ -1,3 +1,4 @@
+import { readdir, stat } from 'node:fs/promises';
 import path from 'node:path';
 import {
 	discoverWorkspacePackagePaths,
@@ -11,8 +12,10 @@ import {
 	workspacePathContainedByRoot,
 } from './fs.js';
 import {
+	DISPOSABLE_RETIRED_TOP_LEVEL_NAMES,
 	PACKAGE_MANAGER_PATTERN,
 	WORKSPACE_SHAPE_RULE_IDS,
+	formatRetiredDisposableCleanupCommand,
 	pushViolation,
 	type PackageJson,
 	type WorkspaceShapeViolation,
@@ -213,4 +216,70 @@ export async function checkLockfiles(root: string, violations: WorkspaceShapeVio
 			);
 		}
 	}
+}
+
+/**
+ * After apps/* / packages/* migrations, ignored build/cache trees often remain
+ * at the old top-level package names. Inventory only — never delete.
+ *
+ * Recursive deletion is suggested only when every immediate child is a known
+ * disposable leftover name. Anything else is reported for explicit inspection
+ * without a deletion command.
+ */
+export async function checkRetiredTopLevelPackages(
+	root: string,
+	workspacePaths: string[],
+	violations: WorkspaceShapeViolation[],
+): Promise<void> {
+	const seen = new Set<string>();
+
+	for (const workspacePath of workspacePaths) {
+		const normalized = normalizeWorkspacePath(workspacePath);
+		if (!hasSupportedWorkspacePrefix(normalized)) continue;
+
+		const basename = path.posix.basename(normalized);
+		if (!basename || basename === '.' || basename === '..') continue;
+		if (seen.has(basename)) continue;
+		seen.add(basename);
+
+		const retiredAbs = path.join(root, basename);
+		if (!(await pathExists(retiredAbs))) continue;
+
+		let isDirectory = false;
+		try {
+			isDirectory = (await stat(retiredAbs)).isDirectory();
+		} catch {
+			continue;
+		}
+		if (!isDirectory) continue;
+
+		const disposableOnly = await isDisposableRetiredTopLevel(retiredAbs);
+		if (disposableOnly) {
+			pushViolation(
+				violations,
+				WORKSPACE_SHAPE_RULE_IDS.RETIRED_TOP_LEVEL_PACKAGE,
+				basename,
+				`disposable leftover at top-level path while live package is ${normalized}; inventory only — safe cleanup: ${formatRetiredDisposableCleanupCommand(basename)}`,
+			);
+			continue;
+		}
+
+		pushViolation(
+			violations,
+			WORKSPACE_SHAPE_RULE_IDS.RETIRED_TOP_LEVEL_PACKAGE,
+			basename,
+			`top-level path shares a name with live package ${normalized}; inspect or relocate explicitly — do not delete from basename evidence alone`,
+		);
+	}
+}
+
+async function isDisposableRetiredTopLevel(absolutePath: string): Promise<boolean> {
+	let entries: string[];
+	try {
+		entries = await readdir(absolutePath);
+	} catch {
+		return false;
+	}
+
+	return entries.every((entry) => DISPOSABLE_RETIRED_TOP_LEVEL_NAMES.has(entry));
 }

@@ -16,16 +16,6 @@ they hit a solvable hurdle; they do not stop the current task to fix one.
   retain a CLI contract test proving the rendered pattern lists changed
 - Surface: Effigy attention-marker scanner / CLI override contract
 
-### [ ] `gh pr merge --delete-branch` reports failure after a successful merge — 2026-08-27
-- Friction: PR13 merged successfully, but `gh pr merge --delete-branch`
-  returned exit 1 because the local head branch still belonged to a registered
-  worker worktree
-- Impact: automation can mistake local branch-cleanup failure for provider
-  merge failure and retry or report the merge incorrectly
-- Possible fix: report provider merge and local cleanup as separate outcomes,
-  or skip local branch deletion when the branch belongs to a worktree
-- Surface: GitHub CLI PR merge / Northstar worker-worktree closeout
-
 ### [ ] Effigy release execute omits the promised GitHub Release — 2026-08-27
 - Friction: `effigy release execute --yes` reported a complete Underlay release
   after pushing the release commit and annotated tag, but no GitHub Release
@@ -67,19 +57,33 @@ they hit a solvable hurdle; they do not stop the current task to fix one.
 - Possible fix: update the Effigy skill JSON example and versioned envelope reference to the live `tasks` schema
 - Surface: Effigy skill / JSON task inventory docs
 
-### [ ] Workspace-shape fast-forwards leave retired local package trees behind — 2026-08-26
-- Friction: moving tracked packages into `apps/` and `packages/` leaves ignored build/cache files at the retired top-level paths in existing checkouts
-- Impact: local roots still look polyrepo-shaped after the migration merges and can retain nested-repo conformance failures
-- Possible fix: add a migration closeout check that inventories retired paths and gives explicit safe cleanup or relocation commands
+## Closed
+
+### [x] `gh pr merge --delete-branch` reports failure after a successful merge — 2026-08-27
+- Resolution: added `scripts/merge-pr-closeout.sh` and
+  `docs/guides/173-worker-pr-merge-closeout.md`. Callers supply the reviewed
+  head OID; the wrapper compares the live provider head to that OID, merges
+  with `--match-head-commit` and `-R`, and suggests destructive local cleanup
+  only when the local tip matches the same reviewed OID.
+- Closed: 2026-08-28
+- Surface: GitHub CLI PR merge / worker-worktree closeout
+
+### [x] Workspace-shape fast-forwards leave retired local package trees behind — 2026-08-26
+- Resolution: workspace-shape now flags `retired-top-level-package` when a
+  top-level directory shares a name with a live `apps/*` or `packages/*`
+  member. `rm -rf` is suggested only for disposable leftover children
+  (`node_modules`, `target`, `.svelte-kit`, etc.); otherwise the path is
+  reported for explicit inspection without a deletion command.
+- Closed: 2026-08-28
 - Surface: consumer workspace normalization / local checkout closeout
 
-### [ ] Northstar refresh found multi-week front-door drift after g09 closeout — 2026-08-17
-- Friction: individual roadmap cards marked complete while generation README, vision, generation-index, and architecture posture still advertised g08/g09 as active
-- Impact: agents and operators route to stale cards; planning authority contradicts itself across surfaces
-- Possible fix: add a cheap `effigy qa:northstar` check that generation README checkbox state matches card Status frontmatter for the active generation
+### [x] Northstar refresh found multi-week front-door drift after g09 closeout — 2026-08-17
+- Resolution: verified currentness on 2026-08-28 — `g09` README Status is
+  `complete`, all 62 queue checkboxes are `[x]`, all 62 card Status values are
+  `complete`, and roadmap/generation-index/product-guardrails already advertise
+  no active generation. No new checker added.
+- Closed: 2026-08-28
 - Surface: docs QA / northstar refresh
-
-## Closed
 
 ### [x] Active contracts retain machine-local evidence links — 2026-08-26
 - Resolution: converted Underlay absolute links in active contracts to
