@@ -5,7 +5,7 @@ handoff_mode: worker-pr-loop
 worker_mode: implementation
 dispatch_authority: orchestrator
 handoff: single-file-path-only
-status: ready-to-launch
+status: awaiting-review
 owner: Tom / papercuts orchestrator
 created: 2026-08-28
 updated: 2026-08-28
@@ -22,10 +22,11 @@ the missing batch-card template. Northstar PR 6 already ships
 Wave 5 left this open because `~/.claude/skills/northstar` still lacked
 the file.
 
-You are the Underlay implementation worker. Close this copy if compile-roadmaps
-in this checkout can use the skill-shipped path, and record that refreshing
-the installed skill is an operator machine step. Do not edit
-`~/.claude/skills`. Do not edit Northstar.
+Worker closed the Underlay copy with evidence that sibling Northstar
+`origin/main` still ships the skill-asset path and compile-roadmaps can
+use it. Recorded installed-skill refresh as an operator machine step.
+Did not edit `~/.claude/skills`. Did not edit Northstar. Did not vendor
+a local template.
 
 ## Why It Matters
 
@@ -41,24 +42,25 @@ landed in the source package.
   to that SHA before this handoff was created.
 - **Planning checkout:** clean before this handoff file was created.
 - **Worker mode:** implementation worker dispatched by the orchestrator.
-- **Worker branch:** `worker/papercuts-wave8-batch-card`
-- **Worker worktree:** launcher worktree first. `.agents.local.env` was
-  absent; ask before creating a manual fallback. Never use `/tmp`.
-- **Ready work items, in order:**
+- **Worker branch:** `t3code/papercuts-wave8` (accepted; differs from
+  placeholder `worker/papercuts-wave8-batch-card`)
+- **Worker worktree:** `/Users/tom/.t3/worktrees/underlay/t3code-2233ec1d`
+  (launcher worktree). `.agents.local.env` absent; no fallback created.
+- **Work items:**
   1. Northstar compile-roadmaps references a missing batch-card template
-     — close if sibling Northstar still ships the skill-asset file
-     (PR 6 / later). Note the installed-skill refresh as operator
-     follow-up, not a repo defect
+     — **closed**. Northstar `origin/main` has
+     `skills/northstar/assets/templates/docs/specs/templates/batch-card-template.md`
+     (`35a706d` / PR 6). compile-roadmaps accepts that skill-shipped path
+     when the consumer destination is absent. No Underlay
+     `docs/specs/templates/` vendoring. Installed-skill refresh
+     (`~/.claude/skills/northstar`) is operator follow-up.
 - **Out of scope:** editing Northstar; writing into `~/.claude/skills`;
   GitHub Release execute (already closed).
 - **Canonical refs:** `PAPERCUTS.md`; sibling Northstar
   `skills/northstar/assets/templates/docs/specs/templates/batch-card-template.md`.
-- **Required validation:** quote the skill-shipped path on current
-  Northstar `origin/main`. If compile-roadmaps in this repo still
-  requires the consumer-destination path and that file is absent here,
-  keep the copy open with that evidence instead of inventing a local
-  template.
-- **PR URL:** pending
+- **Validation:** quoted skill-shipped path present on Northstar
+  `origin/main` (`82f493713efd`); Underlay Open section empty after close.
+- **PR URL:** https://github.com/inflatable-cookie/underlay/pull/20
 - **Merge authorisation:** absent; do not merge
 
 ## Boundaries
@@ -68,14 +70,14 @@ landed in the source package.
 
 ## Important Context
 
-- Wave 5 already proved the source package. This lane is the remaining
+- Wave 5 already proved the source package. This lane was the remaining
   consumer copy.
 - **Report to:** the operator.
 
 ## Suggested Next Move
 
-Read this file, run the worktree preflight, then confirm the skill-shipped
-template still exists and close or keep the copy honestly.
+Orchestrator: review PR 20. Operator: refresh `~/.claude/skills/northstar`
+when ready so the installed skill matches the source package.
 
 ## Completion Protocol
 
@@ -102,4 +104,5 @@ Awaiting orchestrator review. Merge is operator-authorised only.
 
 ### Handoff closeout
 
-If this repo has no more open papercuts after the close, say so.
+Runway complete. Underlay has no remaining open papercuts after this close.
+PR: https://github.com/inflatable-cookie/underlay/pull/20

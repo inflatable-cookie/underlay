@@ -5,17 +5,23 @@ they hit a solvable hurdle; they do not stop the current task to fix one.
 
 ## Open
 
-### [ ] Northstar compile-roadmaps references a missing batch-card template — 2026-08-26
+<!-- No open papercuts. -->
+
+## Closed
+
+### [x] Northstar compile-roadmaps references a missing batch-card template — 2026-08-26
 - Friction: compile-roadmaps requires the installed `docs/specs/templates/batch-card-template.md`, but the Northstar assets package only lists that path in its README and does not contain the file
 - Impact: roadmap compilation must infer the readiness fields from existing project cards instead of the declared canonical template
 - Possible fix: restore the template asset or update compile-roadmaps to point at the actual packaged card template
+- Resolution: Northstar `origin/main` (`82f493713efd`, skill asset from
+  `35a706d` / PR 6) ships
+  `skills/northstar/assets/templates/docs/specs/templates/batch-card-template.md`.
+  Sibling compile-roadmaps accepts that skill-shipped path when the consumer
+  destination is absent. Underlay has no `docs/specs/templates/` copy and did
+  not vendor a second template. Refreshing `~/.claude/skills/northstar` remains
+  an operator machine step, not a repo defect.
+- Closed: 2026-08-28
 - Surface: Northstar skill assets / compile-roadmaps mode
-- Wave 5 proof (2026-08-28): Northstar `35a706d91bcb` (PR 6) ships
-  `skills/northstar/assets/templates/docs/specs/templates/batch-card-template.md`,
-  but `~/.claude/skills/northstar` still lacks that file. Keep open until the
-  installed skill is refreshed.
-
-## Closed
 
 ### [x] Effigy release execute omits the promised GitHub Release — 2026-08-27
 - Friction: `effigy release execute --yes` reported a complete Underlay release
