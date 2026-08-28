@@ -15,6 +15,10 @@ they hit a solvable hurdle; they do not stop the current task to fix one.
 - Possible fix: apply marker request overrides in the attention-marker path and
   retain a CLI contract test proving the rendered pattern lists changed
 - Surface: Effigy attention-marker scanner / CLI override contract
+- Wave 5 proof (2026-08-28): PATH `effigy v0.12.1+local.834a4bd` is older
+  than Effigy PR 48 (`02100eefd`). `--warning-marker CUSTOMONLY` still leaves
+  stock warning patterns (`TODO`/`REVIEW`/`placeholder`). Keep open until PATH
+  Effigy includes PR 48; do not vendor a local shim from Underlay.
 
 ### [ ] Effigy release execute omits the promised GitHub Release — 2026-08-27
 - Friction: `effigy release execute --yes` reported a complete Underlay release
@@ -27,37 +31,45 @@ they hit a solvable hurdle; they do not stop the current task to fix one.
   declare the separate provider-publication step explicitly
 - Surface: Effigy release execution / Underlay release protocol
 
-### [ ] Reference runtime docs misstate database storage shape — 2026-08-26
-- Friction: Underlay Reference says PostgreSQL persists under repo-local
-  `.effigy/runtime/data/postgres`, while Effigy reports the live store as the
-  named `underlay-reference-dev-postgres-data` volume
-- Impact: agents can misidentify the destructive boundary when preparing local
-  state or reset proof
-- Possible fix: align the reference runtime docs with the generated volume
-  contract, or restore the documented bind-mounted path intentionally
-- Surface: Underlay Reference runtime docs / Effigy bundle container storage
-
-### [ ] Effigy task arguments silently widen when preceded by `--` — 2026-08-26
-- Friction: `effigy test:unit -- <paths>` discarded the requested Vitest
-  paths, while `effigy test:unit <paths>` forwarded them correctly
-- Impact: a focused validation request silently ran the full unit suite instead
-- Possible fix: preserve post-separator arguments for task selectors or reject
-  the unsupported form with a clear error
-- Surface: Effigy task argument forwarding / focused test execution
-
 ### [ ] Northstar compile-roadmaps references a missing batch-card template — 2026-08-26
 - Friction: compile-roadmaps requires the installed `docs/specs/templates/batch-card-template.md`, but the Northstar assets package only lists that path in its README and does not contain the file
 - Impact: roadmap compilation must infer the readiness fields from existing project cards instead of the declared canonical template
 - Possible fix: restore the template asset or update compile-roadmaps to point at the actual packaged card template
 - Surface: Northstar skill assets / compile-roadmaps mode
+- Wave 5 proof (2026-08-28): Northstar `35a706d91bcb` (PR 6) ships
+  `skills/northstar/assets/templates/docs/specs/templates/batch-card-template.md`,
+  but `~/.claude/skills/northstar` still lacks that file. Keep open until the
+  installed skill is refreshed.
 
 ### [ ] Effigy task-inventory JSON example uses a stale payload path — 2026-08-26
 - Friction: the installed Effigy skill queries `.result.payload.tasks[]`, but Effigy `0.12.1` returns task inventory at `.result.catalog_tasks[]`
 - Impact: the documented machine-readable inventory command fails before agents can filter task ownership
 - Possible fix: update the Effigy skill JSON example and versioned envelope reference to the live `tasks` schema
 - Surface: Effigy skill / JSON task inventory docs
+- Wave 5 proof (2026-08-28): live `effigy --json tasks` returns
+  `.result.catalog_tasks[]`; installed skill copies still document
+  `.result.payload.tasks[]`. Keep open; do not edit Effigy from Underlay.
 
 ## Closed
+
+### [x] Effigy task arguments silently widen when preceded by `--` — 2026-08-26
+- Resolution: proved on PATH `effigy v0.12.1+local.834a4bd` that
+  `effigy test:unit -- <path>` renders
+  `bun x vitest run '--' '<path>'` (path forwarded, not dropped). Without
+  `--`, the path alone is forwarded. Close criterion met: paths are
+  forwarded rather than silently widening to the full suite. PATH is still
+  older than Effigy PR 48 (`02100eefd`), which additionally strips the
+  leading `--` for `{args}`; that polish is not required to close this copy.
+- Closed: 2026-08-28
+- Surface: Effigy task argument forwarding / focused test execution
+
+### [x] Reference runtime docs misstate database storage shape — 2026-08-26
+- Resolution: Underlay Reference README already names the live store as
+  `underlay-reference-dev-postgres-data` and notes older
+  `.effigy/runtime/data/` bind mounts are not auto-migrated. No Underlay
+  Reference edit from this repo.
+- Closed: 2026-08-28
+- Surface: Underlay Reference runtime docs / Effigy bundle container storage
 
 ### [x] `gh pr merge --delete-branch` reports failure after a successful merge — 2026-08-27
 - Resolution: added `scripts/merge-pr-closeout.sh` and
