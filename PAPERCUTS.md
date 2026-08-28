@@ -18,6 +18,14 @@ they hit a solvable hurdle; they do not stop the current task to fix one.
 ## Closed
 
 ### [x] Effigy release execute omits the promised GitHub Release — 2026-08-27
+- Friction: `effigy release execute --yes` reported a complete Underlay release
+  after pushing the release commit and annotated tag, but no GitHub Release
+  existed until the operator flow created it separately with `gh release create`
+- Impact: a successful execute can leave the public provider release surface
+  incomplete while the local release protocol says execute creates it
+- Possible fix: make execute create and verify the GitHub Release when the
+  provider is configured, or make the protocol and post-release checklist
+  declare the separate provider-publication step explicitly
 - Resolution: Underlay's vendored release protocol and footguns now state that
   `effigy release execute --yes` only commits and pushes the annotated tag;
   the operator publishes the GitHub Release separately (`gh release create` or
