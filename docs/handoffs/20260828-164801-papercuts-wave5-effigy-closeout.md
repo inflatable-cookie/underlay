@@ -5,7 +5,7 @@ handoff_mode: worker-pr-loop
 worker_mode: implementation
 dispatch_authority: orchestrator
 handoff: single-file-path-only
-status: ready-to-launch
+status: awaiting-review
 owner: Tom / papercuts orchestrator
 created: 2026-08-28
 updated: 2026-08-28
@@ -21,9 +21,8 @@ the consumer copies: attention-marker CLI overrides, task-arg `--`
 widening, a stale skill JSON path, a missing batch-card template, GitHub
 Release on execute, and Underlay Reference postgres volume docs.
 
-You are the Underlay implementation worker. Prove those upstream fixes
-against the current pin and close the copies that now match. Do not
-re-implement Effigy or Northstar here.
+Worker proved those copies against PATH Effigy / installed Northstar and
+closed what matched. Did not re-implement Effigy or Northstar here.
 
 ## Why It Matters
 
@@ -39,39 +38,30 @@ or into a docs hunt that README already answered.
   to that SHA before this handoff was created.
 - **Planning checkout:** clean before this handoff file was created.
 - **Worker mode:** implementation worker dispatched by the orchestrator.
-- **Worker branch:** `worker/papercuts-wave5-effigy-closeout`
-- **Worker worktree:** launcher worktree first. `.agents.local.env` was
-  absent; ask before creating a manual fallback. Never use `/tmp`.
-- **Ready work items, in order:**
-  1. Attention-marker CLI overrides are ignored — close if current Effigy
-     applies `--warning-marker` / `--high-marker` / `--critical-marker`
-     and a CLI contract test (or equivalent) shows the rendered pattern
-     lists change
-  2. Effigy task arguments silently widen when preceded by `--` — close
-     if `effigy test:unit -- <paths>` forwards the paths or rejects the
-     form instead of running the full suite
-  3. Northstar compile-roadmaps references a missing batch-card template
-     — close if the installed Northstar skill assets now ship
-     `docs/specs/templates/batch-card-template.md` (Northstar PR 6)
-  4. Effigy task-inventory JSON example uses a stale payload path —
-     close only if the *installed* skill already queries
-     `.result.catalog_tasks[]`. If `skills/effigy` still says
-     `.result.payload.tasks[]`, keep this copy open and pointed at
-     Effigy. Do not edit Effigy from this repo
-  5. Reference runtime docs misstate database storage shape — close if
-     Underlay Reference README already names
-     `underlay-reference-dev-postgres-data` as the live store. Do not
-     edit Underlay Reference from this repo
-- **Out of scope:** Effigy release execute omitting the GitHub Release
-  (keep open; protocol vs create is an Effigy decision); merge-closeout
-  and leftover-tree work already on this SHA; editing Effigy or
-  Northstar.
+- **Worker branch:** `t3code/complete-papercuts-wave5-effigy` (accepted;
+  differs from placeholder `worker/papercuts-wave5-effigy-closeout`)
+- **Worker worktree:** `/Users/tom/.t3/worktrees/underlay/t3code-7be03fd0`
+  (launcher worktree). `.agents.local.env` absent; no fallback created.
+- **Proof binary / pins:** PATH `effigy v0.12.1+local.9b9a3ba` (includes
+  Effigy PR 48 / `02100eefd`). Northstar package HEAD `35a706d91bcb` (PR 6);
+  `~/.claude/skills/northstar` not refreshed.
+- **Work items:**
+  1. Attention-marker CLI overrides — **closed**. PATH
+     `--warning-marker CUSTOMONLY` returns `patterns.warning == ["CUSTOMONLY"]`.
+  2. Task-arg `--` widening — **closed**. PATH forwards the path after
+     `--` and strips the leading delimiter for `{args}`.
+  3. Northstar batch-card template — **open**. Package ships the file;
+     installed `~/.claude/skills/northstar` does not.
+  4. Effigy skill JSON path — **open**. Live schema is
+     `.result.catalog_tasks[]`; skill still documents `.result.payload.tasks[]`.
+  5. Reference postgres volume docs — **closed**. README names
+     `underlay-reference-dev-postgres-data`.
+- **Out of scope kept open:** Effigy release execute omitting the GitHub
+  Release.
 - **Canonical refs:** `PAPERCUTS.md`; sibling Effigy
   `02100eefdde17db64652b2b26317bb284c504d8e` (PR 48); sibling Northstar
   `35a706d91bcb` (PR 6); Underlay Reference README runtime notes.
-- **Required validation:** cite the Effigy/Northstar SHA or version you
-  actually ran. Close only with that proof. Keep GitHub Release open.
-- **PR URL:** pending
+- **PR URL:** https://github.com/inflatable-cookie/underlay/pull/17
 - **Merge authorisation:** absent; do not merge
 
 ## Boundaries
@@ -88,9 +78,9 @@ or into a docs hunt that README already answered.
 
 ## Suggested Next Move
 
-Read this file, run the worktree preflight, then prove each copy against
-current Effigy and Northstar. Close what matches. Leave GitHub Release
-open.
+Orchestrator: re-review the PR. Remaining opens need a Northstar skill
+reinstall and an Effigy skill JSON path fix; GitHub Release stays an
+Effigy decision.
 
 ## Completion Protocol
 
@@ -118,5 +108,5 @@ Awaiting orchestrator review. Merge is operator-authorised only.
 
 ### Handoff closeout
 
-If PATH `effigy` is older than PR 48, keep the copies open and report
-the version. Do not vendor a local shim.
+PATH `effigy v0.12.1+local.9b9a3ba` includes PR 48. Attention-marker and
+`--` copies closed against that binary. Do not vendor a local shim.
