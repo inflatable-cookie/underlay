@@ -16,15 +16,10 @@ tags: [coordination, handoff, worker, pr, papercuts]
 
 ## What This Thread Was Doing
 
-Wave 3 banned machine-local contract paths. Remaining Underlay papercuts
-include `gh pr merge --delete-branch` failing after a successful merge
-because the local branch still belongs to a worktree, leftover
-`apps/`/`packages/` trees after workspace-shape fast-forwards, and g09
-front-door currentness. Attention-marker CLI and `--` test args belong to
-Effigy wave 4.
-
-You are the Underlay implementation worker. Do not start an Effigy worker
-from this repo.
+Wave 4 closed three Underlay papercuts: merge closeout that does not treat
+worktree branch deletion as provider merge failure, retired top-level package
+inventory in workspace-shape, and g09 front-door currentness (verified
+aligned). Attention-marker CLI and `--` test args remain Effigy wave 4.
 
 ## Why It Matters
 
@@ -35,65 +30,52 @@ merges.
 ## Current State
 
 - **Repository:** `/Users/tom/Dev/projects/underlay`
-- **Planning branch:** `main`
-- **Planning base commit:** `350da4c27fcbbe1acdb2ac3d8ea5ec3dc5504812`
-- **Pushed main verification:** local `HEAD` and `origin/main` both resolved
-  to that SHA before this handoff was created.
-- **Planning checkout:** clean before this handoff file was created.
-- **Worker mode:** implementation worker dispatched by the orchestrator.
-- **Worker branch:** `worker/papercuts-wave4-merge-closeout`
-- **Worker worktree:** launcher first. `.agents.local.env` was absent;
-  ask before creating a manual fallback. Never use `/tmp`.
-- **Ready work items, in order:**
-  1. `gh pr merge --delete-branch` reports failure after a successful
-     merge
-  2. Workspace-shape fast-forwards leave retired local package trees
-     behind
-  3. Northstar refresh found multi-week front-door drift after g09
-     closeout — only a cheap `qa:northstar` checkbox/Status check, not a
-     historical rewrite
+- **Worker branch:** `t3code/papercuts-wave4-merge-closeout`
+- **Worker worktree:** `/Users/tom/.t3/worktrees/underlay/t3code-32efad7a`
+- **Implementation status:** runway complete; worker PR opened and under
+  orchestrator review. Do not start a second implementation worker.
+- **Ready work items:** none remaining on this handoff. The three assigned
+  papercuts are closed in `PAPERCUTS.md`.
 - **Out of scope:** attention-marker CLI (Effigy wave 4); `--` test:unit
   (Effigy); skill JSON (Northstar wave 4); batch-card template (Northstar);
   GitHub Release on execute (Effigy protocol); reference postgres volume
   docs (Underlay Reference).
-- **Canonical refs:** `PAPERCUTS.md`; worker merge/closeout docs;
-  workspace-shape checker; generation README vs card Status.
-- **Required validation:** merge closeout does not treat worktree branch
-  delete failure as merge failure (script or documented `gh` flags);
-  a check inventories retired top-level package paths and prints safe
-  cleanup; optional cheap currentness check if it stays small.
+- **Canonical refs:** `PAPERCUTS.md`; `docs/guides/173-worker-pr-merge-closeout.md`;
+  workspace-shape checker; PR16.
 - **PR URL:** https://github.com/inflatable-cookie/underlay/pull/16
-- **Merge authorisation:** absent; do not merge
+- **Merge authorisation:** absent; do not merge until the operator authorises
 
 ## Boundaries
 
 - Do not delete operator files from existing checkouts. Inventory and
   commands only.
-- Do not merge.
+- Do not merge without explicit operator authorisation.
+- Do not re-dispatch implementation for this handoff while status is
+  `in-review`.
 
 ## Important Context
 
-- PR13 merge already hit this worktree-delete failure.
+- PR13 merge already hit the worktree-delete failure.
 - **Report to:** the operator.
 
 ## Suggested Next Move
 
-Read this file, run the worktree preflight, then find the merge closeout
-command this repo documents.
+Orchestrator re-review of PR16. After an approve-for-merge verdict and
+explicit operator merge authorisation, merge with
+`./scripts/merge-pr-closeout.sh <n> --squash` (or equivalent
+`--match-head-commit` + `-R` flags), then close this handoff.
 
 ## Completion Protocol
 
 ### Before you start
 
-1. Read this handoff. Run the four git identity commands.
-2. Accept a clean dedicated non-`main` registered worktree.
-3. Confirm `HEAD == origin/main` and ancestor
-   `350da4c27fcbbe1acdb2ac3d8ea5ec3dc5504812`.
-4. Confirm this handoff exists in `HEAD`.
+Implementation preflight is complete for this handoff. New agents must not
+re-run the worker runway. If asked to continue this file, treat it as
+review/merge coordination only.
 
 ### When the assigned runway is complete
 
-1. Close finished papercuts. Push a PR. Do not merge.
+1. Closed finished papercuts. Pushed PR16. Do not merge.
 
 ### Review and merge path
 
@@ -103,5 +85,5 @@ Awaiting orchestrator review. Merge is operator-authorised only.
 
 ### Handoff closeout
 
-If g09 currentness is already aligned, close that entry with evidence
-and skip the checker.
+g09 currentness was already aligned; that entry was closed with evidence and
+no checker was added.

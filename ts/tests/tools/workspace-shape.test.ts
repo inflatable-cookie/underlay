@@ -10,6 +10,10 @@ import {
 	formatWorkspaceShapeReport,
 	WORKSPACE_SHAPE_RULE_IDS,
 } from "@inflatable-cookie/underlay/tools/workspace-shape";
+import {
+	formatRetiredDisposableCleanupCommand,
+	posixShellSingleQuote,
+} from "../../src/tools/workspace-shape/model.js";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 const fixturesRoot = path.join(
@@ -180,7 +184,8 @@ describe("tools/workspace-shape", () => {
 		expect(retired[0]?.path).toBe("app");
 		expect(retired[0]?.detail).toContain("apps/app");
 		expect(retired[0]?.detail).toContain("disposable leftover");
-		expect(retired[0]?.detail).toContain("rm -rf");
+		expect(retired[0]?.detail).toContain(formatRetiredDisposableCleanupCommand("app"));
+		expect(retired[0]?.detail).toContain("rm -rf -- ");
 	});
 
 	it("flags ambiguous same-basename top-level paths for inspection without deletion", async () => {
@@ -195,6 +200,49 @@ describe("tools/workspace-shape", () => {
 		expect(retired[0]?.detail).toContain("packages/config");
 		expect(retired[0]?.detail).toContain("inspect or relocate");
 		expect(retired[0]?.detail).not.toContain("rm -rf");
+	});
+
+	it("POSIX-quotes disposable cleanup paths for quote, expansion, and leading-dash names", () => {
+		expect(posixShellSingleQuote("o'pkg")).toBe(`'o'\\''pkg'`);
+		expect(posixShellSingleQuote("$(reboot)")).toBe(`'$(reboot)'`);
+		expect(posixShellSingleQuote("-dash")).toBe(`'-dash'`);
+
+		expect(formatRetiredDisposableCleanupCommand("o'pkg")).toBe(`rm -rf -- 'o'\\''pkg'`);
+		expect(formatRetiredDisposableCleanupCommand("$(reboot)")).toBe(`rm -rf -- '$(reboot)'`);
+		expect(formatRetiredDisposableCleanupCommand("-dash")).toBe(`rm -rf -- '-dash'`);
+	});
+
+	it("emits POSIX-quoted cleanup for disposable leftovers with hostile basenames", async () => {
+		for (const name of ["o'pkg", "$(reboot)", "-dash"] as const) {
+			const root = await makeTempDir();
+			await writeFile(
+				path.join(root, "package.json"),
+				JSON.stringify({
+					name: "@fixture/hostile",
+					private: true,
+					packageManager: "bun@1.3.14",
+					workspaces: [`apps/${name}`],
+				}),
+			);
+			await writeFile(path.join(root, "bun.lock"), "# fixture\n");
+			await writeFile(path.join(root, ".git"), "gitdir: fixture\n");
+			await mkdir(path.join(root, "apps", name), { recursive: true });
+			await writeFile(
+				path.join(root, "apps", name, "package.json"),
+				JSON.stringify({ name: `@fixture/${name}` }),
+			);
+			await mkdir(path.join(root, name, "node_modules"), { recursive: true });
+
+			const violations = await checkWorkspaceShape(root);
+			const retired = violations.filter(
+				(v) => v.ruleId === WORKSPACE_SHAPE_RULE_IDS.RETIRED_TOP_LEVEL_PACKAGE,
+			);
+			expect(retired).toHaveLength(1);
+			expect(retired[0]?.path).toBe(name);
+			expect(retired[0]?.detail).toContain(formatRetiredDisposableCleanupCommand(name));
+			expect(retired[0]?.detail).toContain("rm -rf -- ");
+			expect(retired[0]?.detail).not.toContain(JSON.stringify(name));
+		}
 	});
 
 	it("formats empty and failing reports with stable copy", () => {

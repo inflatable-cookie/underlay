@@ -10,6 +10,60 @@ export type MergeLocalCleanupPlan = {
 	lines: string[];
 };
 
+export type ReviewedMergeVerificationInput = {
+	reviewedHeadOid: string;
+	observedHeadOid: string;
+	state: string;
+};
+
+export type ReviewedMergeVerification =
+	| { ok: true; reviewedHeadOid: string }
+	| {
+			ok: false;
+			kind: 'not-merged' | 'head-changed';
+			reviewedHeadOid: string;
+			observedHeadOid: string;
+			state: string;
+			reason: string;
+	  };
+
+/**
+ * After a merge attempt (or when checking an already-merged PR), require the
+ * provider head OID to still equal the reviewed OID captured before merge.
+ */
+export function verifyReviewedMergeHead(
+	input: ReviewedMergeVerificationInput,
+): ReviewedMergeVerification {
+	const reviewedHeadOid = input.reviewedHeadOid.trim().toLowerCase();
+	const observedHeadOid = input.observedHeadOid.trim().toLowerCase();
+	const state = input.state.trim().toUpperCase();
+
+	if (state !== 'MERGED') {
+		return {
+			ok: false,
+			kind: 'not-merged',
+			reviewedHeadOid: input.reviewedHeadOid,
+			observedHeadOid: input.observedHeadOid,
+			state: input.state,
+			reason: `provider merge did not complete (state=${input.state})`,
+		};
+	}
+
+	if (!reviewedHeadOid || observedHeadOid !== reviewedHeadOid) {
+		return {
+			ok: false,
+			kind: 'head-changed',
+			reviewedHeadOid: input.reviewedHeadOid,
+			observedHeadOid: input.observedHeadOid,
+			state: input.state,
+			reason:
+				'merged head OID differs from the reviewed OID; refuse success and cleanup',
+		};
+	}
+
+	return { ok: true, reviewedHeadOid: input.reviewedHeadOid };
+}
+
 /**
  * Decide local branch/worktree cleanup messaging after a provider MERGED state.
  * Destructive cleanup is suggested only when the local tip matches the reviewed
@@ -79,4 +133,13 @@ function shellQuote(value: string): string {
 
 export function formatMergeLocalCleanupPlan(plan: MergeLocalCleanupPlan): string {
 	return plan.lines.join('\n');
+}
+
+export function formatReviewedMergeFailure(result: Extract<ReviewedMergeVerification, { ok: false }>): string {
+	return [
+		`error: ${result.reason}`,
+		`  reviewedHeadOid: ${result.reviewedHeadOid}`,
+		`  observedHeadOid: ${result.observedHeadOid}`,
+		`  state: ${result.state}`,
+	].join('\n');
 }

@@ -18,21 +18,21 @@ Prefer the repo wrapper:
 ./scripts/merge-pr-closeout.sh <pr-number> --squash
 ```
 
-Equivalent raw GitHub CLI flags — always pass `-R` so local branch deletion is
-skipped while remote deletion still runs:
+The wrapper captures the reviewed `headRefOid`, merges with
+`--match-head-commit` and `-R`, verifies the merged PR still records that exact
+OID, then plans local cleanup against that reviewed OID.
+
+Equivalent raw GitHub CLI flags:
 
 ```bash
-gh pr merge <pr-number> --squash --delete-branch -R OWNER/REPO
+REVIEWED=$(gh pr view <pr-number> -R OWNER/REPO --json headRefOid --jq .headRefOid)
+gh pr merge <pr-number> --squash --delete-branch \
+  --match-head-commit "$REVIEWED" -R OWNER/REPO
+gh pr view <pr-number> -R OWNER/REPO --json state,headRefOid
 ```
 
-Then confirm provider state separately if needed:
-
-```bash
-gh pr view <pr-number> -R OWNER/REPO --json state,mergedAt,headRefOid
-```
-
-A `MERGED` state is the merge outcome. Local worktree/branch cleanup is a
-separate step.
+A `MERGED` state with the same `headRefOid` is the merge outcome. Local
+worktree/branch cleanup is a separate step.
 
 ## Local cleanup after merge
 

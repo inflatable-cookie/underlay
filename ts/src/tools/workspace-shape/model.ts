@@ -58,6 +58,16 @@ export const DISPOSABLE_RETIRED_TOP_LEVEL_NAMES = new Set([
 	'.DS_Store',
 ]);
 
+/** POSIX single-quote a path for safe paste into a shell command. */
+export function posixShellSingleQuote(value: string): string {
+	return `'${value.replace(/'/g, `'\\''`)}'`;
+}
+
+/** Inventory-only disposable leftover cleanup command with option terminator. */
+export function formatRetiredDisposableCleanupCommand(basename: string): string {
+	return `rm -rf -- ${posixShellSingleQuote(basename)}`;
+}
+
 export const DEPENDENCY_FIELDS = [
 	'dependencies',
 	'devDependencies',

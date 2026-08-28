@@ -10,17 +10,18 @@ Closed three Underlay papercuts on the worker runway:
 
 ## Changes
 
-- `scripts/merge-pr-closeout.sh` — merge via
-  `gh pr merge ... --delete-branch -R OWNER/REPO`, verify `MERGED`, compare
-  local tip to provider `headRefOid`, and print destructive cleanup only on
-  match
-- `scripts/lib/merge-pr-closeout-cleanup.ts` — non-mutating cleanup planner
-  with fixture tests for absent / match / diverge paths
+- `scripts/merge-pr-closeout.sh` — capture reviewed `headRefOid`, merge with
+  `--match-head-commit` and `-R`, verify that exact OID after merge, then plan
+  local cleanup only when the local tip matches
+- `scripts/lib/merge-pr-closeout-cleanup.ts` — non-mutating cleanup and
+  reviewed-head verification planners with fixture tests, including the
+  changed-head refusal path
 - `docs/guides/173-worker-pr-merge-closeout.md` — operator/orchestrator merge
   closeout contract
 - workspace-shape `retired-top-level-package` rule — inventory leftover
   top-level dirs that mirror live `apps/*` or `packages/*` members; suggest
-  `rm -rf` only for disposable leftover children, otherwise inspect/relocate
+  POSIX-quoted `rm -rf --` only for disposable leftover children, otherwise
+  inspect/relocate
 
 ## g09 Currentness Evidence
 

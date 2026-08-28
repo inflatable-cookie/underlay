@@ -15,6 +15,7 @@ import {
 	DISPOSABLE_RETIRED_TOP_LEVEL_NAMES,
 	PACKAGE_MANAGER_PATTERN,
 	WORKSPACE_SHAPE_RULE_IDS,
+	formatRetiredDisposableCleanupCommand,
 	pushViolation,
 	type PackageJson,
 	type WorkspaceShapeViolation,
@@ -258,7 +259,7 @@ export async function checkRetiredTopLevelPackages(
 				violations,
 				WORKSPACE_SHAPE_RULE_IDS.RETIRED_TOP_LEVEL_PACKAGE,
 				basename,
-				`disposable leftover at top-level path while live package is ${normalized}; inventory only — safe cleanup: rm -rf ${JSON.stringify(basename)}`,
+				`disposable leftover at top-level path while live package is ${normalized}; inventory only — safe cleanup: ${formatRetiredDisposableCleanupCommand(basename)}`,
 			);
 			continue;
 		}

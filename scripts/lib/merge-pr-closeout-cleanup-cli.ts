@@ -2,16 +2,23 @@
 
 import {
 	formatMergeLocalCleanupPlan,
+	formatReviewedMergeFailure,
 	planMergeLocalCleanup,
+	verifyReviewedMergeHead,
 } from './merge-pr-closeout-cleanup.ts';
 
 function usage(): never {
 	console.error(`Usage:
-  bun scripts/lib/merge-pr-closeout-cleanup-cli.ts \\
+  bun scripts/lib/merge-pr-closeout-cleanup-cli.ts cleanup \\
     --head-ref <branch> \\
     --provider-oid <sha> \\
     --local-tip <sha|""> \\
     [--worktree <path>]...
+
+  bun scripts/lib/merge-pr-closeout-cleanup-cli.ts verify-reviewed-head \\
+    --reviewed-oid <sha> \\
+    --observed-oid <sha> \\
+    --state <OPEN|MERGED|...>
 `);
 	process.exit(2);
 }
@@ -34,20 +41,43 @@ function readAllArgs(argv: string[], flag: string): string[] {
 }
 
 const argv = process.argv.slice(2);
-if (argv.includes('-h') || argv.includes('--help')) usage();
+if (argv.length === 0 || argv.includes('-h') || argv.includes('--help')) usage();
 
-const headRef = readArg(argv, '--head-ref');
-const providerOid = readArg(argv, '--provider-oid');
-const localTipRaw = readArg(argv, '--local-tip');
+const mode = argv[0];
+const rest = argv.slice(1);
 
-if (!headRef || !providerOid || localTipRaw === undefined) usage();
+if (mode === 'cleanup') {
+	const headRef = readArg(rest, '--head-ref');
+	const providerOid = readArg(rest, '--provider-oid');
+	const localTipRaw = readArg(rest, '--local-tip');
+	if (!headRef || !providerOid || localTipRaw === undefined) usage();
 
-const plan = planMergeLocalCleanup({
-	headRef,
-	providerHeadOid: providerOid,
-	localBranchTip: localTipRaw.length > 0 ? localTipRaw : null,
-	holdingWorktrees: readAllArgs(argv, '--worktree'),
-});
+	const plan = planMergeLocalCleanup({
+		headRef,
+		providerHeadOid: providerOid,
+		localBranchTip: localTipRaw.length > 0 ? localTipRaw : null,
+		holdingWorktrees: readAllArgs(rest, '--worktree'),
+	});
+	console.log(formatMergeLocalCleanupPlan(plan));
+	process.exit(0);
+}
 
-console.log(formatMergeLocalCleanupPlan(plan));
-process.exit(0);
+if (mode === 'verify-reviewed-head') {
+	const reviewedOid = readArg(rest, '--reviewed-oid');
+	const observedOid = readArg(rest, '--observed-oid');
+	const state = readArg(rest, '--state');
+	if (!reviewedOid || !observedOid || !state) usage();
+
+	const result = verifyReviewedMergeHead({
+		reviewedHeadOid: reviewedOid,
+		observedHeadOid: observedOid,
+		state,
+	});
+	if (!result.ok) {
+		console.error(formatReviewedMergeFailure(result));
+		process.exit(1);
+	}
+	process.exit(0);
+}
+
+usage();

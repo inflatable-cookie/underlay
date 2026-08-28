@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
+	formatReviewedMergeFailure,
 	planMergeLocalCleanup,
+	verifyReviewedMergeHead,
 	type MergeLocalCleanupPlan,
 } from '../../../scripts/lib/merge-pr-closeout-cleanup.ts';
 
@@ -63,5 +65,40 @@ describe('planMergeLocalCleanup', () => {
 		expect(text).not.toContain('git branch -D');
 		expect(text).not.toContain('git worktree remove');
 		expect(text).toContain('/tmp/worker-a');
+	});
+});
+
+describe('verifyReviewedMergeHead', () => {
+	it('accepts a MERGED PR that still records the reviewed head OID', () => {
+		const result = verifyReviewedMergeHead({
+			reviewedHeadOid: OID_A,
+			observedHeadOid: OID_A,
+			state: 'MERGED',
+		});
+		expect(result).toEqual({ ok: true, reviewedHeadOid: OID_A });
+	});
+
+	it('refuses when the provider state is not MERGED', () => {
+		const result = verifyReviewedMergeHead({
+			reviewedHeadOid: OID_A,
+			observedHeadOid: OID_A,
+			state: 'OPEN',
+		});
+		expect(result.ok).toBe(false);
+		if (result.ok) return;
+		expect(result.kind).toBe('not-merged');
+		expect(formatReviewedMergeFailure(result)).toContain('did not complete');
+	});
+
+	it('refuses the changed-head path when observed OID differs after merge', () => {
+		const result = verifyReviewedMergeHead({
+			reviewedHeadOid: OID_A,
+			observedHeadOid: OID_B,
+			state: 'MERGED',
+		});
+		expect(result.ok).toBe(false);
+		if (result.ok) return;
+		expect(result.kind).toBe('head-changed');
+		expect(formatReviewedMergeFailure(result)).toContain('differs from the reviewed OID');
 	});
 });
