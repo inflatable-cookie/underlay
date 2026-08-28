@@ -6,8 +6,10 @@ Captured: 2026-08-27
 ## Observation
 
 Remote tags `v0.9.0` through `v0.9.4` exist, but `gh release view v0.9.4` and
-`gh release list` show no corresponding GitHub Release. The current Effigy
-release protocol says execute creates both the immutable tag and GitHub Release.
+`gh release list` show no corresponding GitHub Release. Underlay's release
+protocol now treats GitHub Release publication as a separate operator step
+after `effigy release execute` (tag only); historical tags may still lack
+that provider surface.
 
 ## Impact
 
