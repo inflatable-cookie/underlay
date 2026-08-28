@@ -41,7 +41,7 @@ they hit a solvable hurdle; they do not stop the current task to fix one.
 - Friction: `effigy test:unit -- <paths>` discarded the requested Vitest
   paths, while `effigy test:unit <paths>` forwarded them correctly
 - Impact: a focused validation request silently ran the full unit suite instead
-  Possible fix: preserve post-separator arguments for task selectors or reject
+- Possible fix: preserve post-separator arguments for task selectors or reject
   the unsupported form with a clear error
 - Surface: Effigy task argument forwarding / focused test execution
 
@@ -63,16 +63,17 @@ they hit a solvable hurdle; they do not stop the current task to fix one.
 - Resolution: added `scripts/merge-pr-closeout.sh` and
   `docs/guides/173-worker-pr-merge-closeout.md`. Merge closeout always uses
   `gh pr merge ... --delete-branch -R OWNER/REPO` so local worktree branch
-  deletion cannot mask a successful provider merge; leftover worktrees are
-  inventoried with safe cleanup commands only.
+  deletion cannot mask a successful provider merge. Destructive local cleanup
+  is suggested only when the local tip matches the provider `headRefOid`.
 - Closed: 2026-08-28
 - Surface: GitHub CLI PR merge / worker-worktree closeout
 
 ### [x] Workspace-shape fast-forwards leave retired local package trees behind — 2026-08-26
 - Resolution: workspace-shape now flags `retired-top-level-package` when a
   top-level directory shares a name with a live `apps/*` or `packages/*`
-  member and prints an inventory-only `rm -rf` cleanup command. It does not
-  delete operator files.
+  member. `rm -rf` is suggested only for disposable leftover children
+  (`node_modules`, `target`, `.svelte-kit`, etc.); otherwise the path is
+  reported for explicit inspection without a deletion command.
 - Closed: 2026-08-28
 - Surface: consumer workspace normalization / local checkout closeout
 

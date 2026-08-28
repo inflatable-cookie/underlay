@@ -169,7 +169,7 @@ describe("tools/workspace-shape", () => {
 		expect(violations).toEqual([]);
 	});
 
-	it("flags leftover top-level package trees after apps/packages migration", async () => {
+	it("flags disposable leftover top-level package trees after apps/packages migration", async () => {
 		const violations = await checkWorkspaceShape(
 			await loadFixture("retired-top-level-package"),
 		);
@@ -179,7 +179,22 @@ describe("tools/workspace-shape", () => {
 		expect(retired).toHaveLength(1);
 		expect(retired[0]?.path).toBe("app");
 		expect(retired[0]?.detail).toContain("apps/app");
+		expect(retired[0]?.detail).toContain("disposable leftover");
 		expect(retired[0]?.detail).toContain("rm -rf");
+	});
+
+	it("flags ambiguous same-basename top-level paths for inspection without deletion", async () => {
+		const violations = await checkWorkspaceShape(
+			await loadFixture("retired-top-level-ambiguous"),
+		);
+		const retired = violations.filter(
+			(v) => v.ruleId === WORKSPACE_SHAPE_RULE_IDS.RETIRED_TOP_LEVEL_PACKAGE,
+		);
+		expect(retired).toHaveLength(1);
+		expect(retired[0]?.path).toBe("config");
+		expect(retired[0]?.detail).toContain("packages/config");
+		expect(retired[0]?.detail).toContain("inspect or relocate");
+		expect(retired[0]?.detail).not.toContain("rm -rf");
 	});
 
 	it("formats empty and failing reports with stable copy", () => {

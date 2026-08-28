@@ -10,8 +10,9 @@
 #
 # This wrapper always passes `-R owner/repo` so gh skips local branch deletion
 # while still deleting the remote branch. After a successful provider merge it
-# inventories any worktrees still holding the head branch and prints safe
-# cleanup commands. It never deletes worktrees or operator files.
+# compares the reviewed provider head OID to the local branch tip and only then
+# prints destructive cleanup commands. Divergent tips require manual inspection.
+# It never deletes worktrees or operator files.
 #
 # Usage:
 #   ./scripts/merge-pr-closeout.sh <pr-number> [--squash|--merge|--rebase]
@@ -25,13 +26,18 @@
 
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+CLEANUP_CLI="$REPO_ROOT/scripts/lib/merge-pr-closeout-cleanup-cli.ts"
+
 if [[ $# -lt 1 || "$1" == "-h" || "$1" == "--help" ]]; then
   cat <<'EOF'
 Usage: merge-pr-closeout.sh <pr-number> [--squash|--merge|--rebase]
 
 Merges the PR with --delete-branch via -R so local worktree branch deletion
 cannot mask a successful provider merge. Prints leftover worktree cleanup
-commands when needed. Does not remove worktrees.
+commands only when the local tip matches the provider head OID. Does not
+remove worktrees.
 EOF
   exit 0
 fi
@@ -69,9 +75,20 @@ if ! command -v git >/dev/null 2>&1; then
   exit 2
 fi
 
+if ! command -v bun >/dev/null 2>&1; then
+  echo "error: bun is required for local cleanup planning" >&2
+  exit 2
+fi
+
 REPO="$(gh repo view --json nameWithOwner --jq .nameWithOwner)"
 HEAD_REF="$(gh pr view "$PR" -R "$REPO" --json headRefName --jq .headRefName)"
+PROVIDER_OID="$(gh pr view "$PR" -R "$REPO" --json headRefOid --jq .headRefOid)"
 STATE="$(gh pr view "$PR" -R "$REPO" --json state --jq .state)"
+
+if [[ -z "$HEAD_REF" || -z "$PROVIDER_OID" ]]; then
+  echo "error: could not resolve PR headRefName/headRefOid for #$PR" >&2
+  exit 1
+fi
 
 if [[ "$STATE" != "MERGED" ]]; then
   set +e
@@ -79,7 +96,10 @@ if [[ "$STATE" != "MERGED" ]]; then
   merge_status=$?
   set -e
 
+  HEAD_REF="$(gh pr view "$PR" -R "$REPO" --json headRefName --jq .headRefName)"
+  PROVIDER_OID="$(gh pr view "$PR" -R "$REPO" --json headRefOid --jq .headRefOid)"
   STATE="$(gh pr view "$PR" -R "$REPO" --json state --jq .state)"
+
   if [[ "$STATE" != "MERGED" ]]; then
     echo "error: provider merge did not complete for PR #$PR (state=$STATE, gh_exit=$merge_status)" >&2
     exit 1
@@ -92,9 +112,8 @@ else
   echo "PR #$PR is already MERGED"
 fi
 
-echo "provider merge: MERGED (PR #$PR, head=$HEAD_REF, repo=$REPO)"
+echo "provider merge: MERGED (PR #$PR, head=$HEAD_REF, headOid=$PROVIDER_OID, repo=$REPO)"
 
-# Inventory worktrees still holding the head branch. Do not remove them.
 holding=()
 while IFS= read -r line; do
   holding+=("$line")
@@ -106,23 +125,19 @@ done < <(
   '
 )
 
-if [[ ${#holding[@]} -eq 0 ]]; then
-  echo "local cleanup: no registered worktree holds $HEAD_REF"
-  if git show-ref --verify --quiet "refs/heads/$HEAD_REF"; then
-    echo "local cleanup: branch still exists; from the primary checkout run:"
-    echo "  git branch -D $(printf %q "$HEAD_REF")"
-  else
-    echo "local cleanup: local branch already absent"
-  fi
-  exit 0
+LOCAL_TIP=""
+if git show-ref --verify --quiet "refs/heads/$HEAD_REF"; then
+  LOCAL_TIP="$(git rev-parse "refs/heads/$HEAD_REF")"
 fi
 
-echo "local cleanup: head branch still belongs to registered worktree(s)"
-for wt in "${holding[@]}"; do
-  echo "  worktree: $wt"
-  echo "  safe cleanup:"
-  echo "    git worktree remove $(printf %q "$wt")"
-  echo "    git branch -D $(printf %q "$HEAD_REF")"
+cleanup_args=(
+  --head-ref "$HEAD_REF"
+  --provider-oid "$PROVIDER_OID"
+  --local-tip "$LOCAL_TIP"
+)
+for wt in "${holding[@]+"${holding[@]}"}"; do
+  cleanup_args+=(--worktree "$wt")
 done
 
+bun "$CLEANUP_CLI" "${cleanup_args[@]}"
 exit 0

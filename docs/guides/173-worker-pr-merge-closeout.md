@@ -28,7 +28,7 @@ gh pr merge <pr-number> --squash --delete-branch -R OWNER/REPO
 Then confirm provider state separately if needed:
 
 ```bash
-gh pr view <pr-number> -R OWNER/REPO --json state,mergedAt
+gh pr view <pr-number> -R OWNER/REPO --json state,mergedAt,headRefOid
 ```
 
 A `MERGED` state is the merge outcome. Local worktree/branch cleanup is a
@@ -36,15 +36,18 @@ separate step.
 
 ## Local cleanup after merge
 
-Do not force-delete a branch that still belongs to a worktree. Remove the
-worktree first, then the local branch from the primary checkout:
+Destructive cleanup is safe only when the local branch tip equals the reviewed
+provider `headRefOid`. If the tips diverge, inspect manually — the local branch
+may hold commits added after the merged head.
+
+When tips match and a worktree still holds the branch:
 
 ```bash
-git worktree remove /path/to/worker-worktree
+git worktree remove /path/to-worker-worktree
 git branch -D <head-branch>
 ```
 
-The wrapper inventories holding worktrees and prints those commands. It does
+The wrapper compares OIDs and prints those commands only on a match. It does
 not delete operator files or worktrees.
 
 ## Boundaries

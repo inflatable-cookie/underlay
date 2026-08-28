@@ -52,6 +52,12 @@ export const SKIP_DIR_NAMES = new Set([
 	'.cache',
 ]);
 
+/** Immediate children that may remain after a package move into apps/packages. */
+export const DISPOSABLE_RETIRED_TOP_LEVEL_NAMES = new Set([
+	...SKIP_DIR_NAMES,
+	'.DS_Store',
+]);
+
 export const DEPENDENCY_FIELDS = [
 	'dependencies',
 	'devDependencies',

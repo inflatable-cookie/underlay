@@ -1,4 +1,4 @@
-import { stat } from 'node:fs/promises';
+import { readdir, stat } from 'node:fs/promises';
 import path from 'node:path';
 import {
 	discoverWorkspacePackagePaths,
@@ -12,6 +12,7 @@ import {
 	workspacePathContainedByRoot,
 } from './fs.js';
 import {
+	DISPOSABLE_RETIRED_TOP_LEVEL_NAMES,
 	PACKAGE_MANAGER_PATTERN,
 	WORKSPACE_SHAPE_RULE_IDS,
 	pushViolation,
@@ -219,6 +220,10 @@ export async function checkLockfiles(root: string, violations: WorkspaceShapeVio
 /**
  * After apps/* / packages/* migrations, ignored build/cache trees often remain
  * at the old top-level package names. Inventory only — never delete.
+ *
+ * Recursive deletion is suggested only when every immediate child is a known
+ * disposable leftover name. Anything else is reported for explicit inspection
+ * without a deletion command.
  */
 export async function checkRetiredTopLevelPackages(
 	root: string,
@@ -247,11 +252,33 @@ export async function checkRetiredTopLevelPackages(
 		}
 		if (!isDirectory) continue;
 
+		const disposableOnly = await isDisposableRetiredTopLevel(retiredAbs);
+		if (disposableOnly) {
+			pushViolation(
+				violations,
+				WORKSPACE_SHAPE_RULE_IDS.RETIRED_TOP_LEVEL_PACKAGE,
+				basename,
+				`disposable leftover at top-level path while live package is ${normalized}; inventory only — safe cleanup: rm -rf ${JSON.stringify(basename)}`,
+			);
+			continue;
+		}
+
 		pushViolation(
 			violations,
 			WORKSPACE_SHAPE_RULE_IDS.RETIRED_TOP_LEVEL_PACKAGE,
 			basename,
-			`leftover top-level path while live package is ${normalized}; inventory only — safe cleanup: rm -rf ${JSON.stringify(basename)}`,
+			`top-level path shares a name with live package ${normalized}; inspect or relocate explicitly — do not delete from basename evidence alone`,
 		);
 	}
+}
+
+async function isDisposableRetiredTopLevel(absolutePath: string): Promise<boolean> {
+	let entries: string[];
+	try {
+		entries = await readdir(absolutePath);
+	} catch {
+		return false;
+	}
+
+	return entries.every((entry) => DISPOSABLE_RETIRED_TOP_LEVEL_NAMES.has(entry));
 }

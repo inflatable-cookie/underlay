@@ -11,13 +11,16 @@ Closed three Underlay papercuts on the worker runway:
 ## Changes
 
 - `scripts/merge-pr-closeout.sh` — merge via
-  `gh pr merge ... --delete-branch -R OWNER/REPO`, verify `MERGED`, inventory
-  holding worktrees with safe cleanup commands only
+  `gh pr merge ... --delete-branch -R OWNER/REPO`, verify `MERGED`, compare
+  local tip to provider `headRefOid`, and print destructive cleanup only on
+  match
+- `scripts/lib/merge-pr-closeout-cleanup.ts` — non-mutating cleanup planner
+  with fixture tests for absent / match / diverge paths
 - `docs/guides/173-worker-pr-merge-closeout.md` — operator/orchestrator merge
   closeout contract
 - workspace-shape `retired-top-level-package` rule — inventory leftover
-  top-level dirs that mirror live `apps/*` or `packages/*` members; print
-  `rm -rf` cleanup; never delete
+  top-level dirs that mirror live `apps/*` or `packages/*` members; suggest
+  `rm -rf` only for disposable leftover children, otherwise inspect/relocate
 
 ## g09 Currentness Evidence
 
