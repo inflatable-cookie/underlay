@@ -33,8 +33,6 @@ Reference consumer evidence:
   `apps/cp-api/migrations_dev/`
 - `songsprout` — `apps/nursery/effigy.toml`, `apps/nursery/migrations/`, and
   `apps/nursery/migrations_dev/`
-- `loophole/composer` — `apps/composer-api/effigy.toml`,
-  `apps/composer-api/migrations/`, and `apps/composer-api/migrations_dev/`
 - `acowtancy` — `apps/farmyard/effigy.toml` and its advanced state/replay
   surfaces
 

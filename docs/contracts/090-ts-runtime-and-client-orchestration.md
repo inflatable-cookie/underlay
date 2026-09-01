@@ -307,7 +307,7 @@ The shared surface is **English-only by decision** (recorded g08.029). Rationale
 `patterns/i18n.ts` provides locale-aware `Intl` formatting (date, number,
 currency, plural) and stays — those are useful even in an English UI — but there
 is no message catalog or translation seam, and every UI string across templates,
-auth, media, and Nightfire is hardcoded English. All six consumers are
+auth, media, and Nightfire is hardcoded English. All five consumers are
 English-language admin/product tools; none has a stated second-locale
 requirement, so a message-lookup seam would be speculative infrastructure.
 

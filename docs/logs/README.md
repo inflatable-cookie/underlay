@@ -4,8 +4,9 @@ Logs capture meaningful documentation and delivery batches for Underlay.
 
 ## Current Evidence Window
 
-The latest evidence window is the closed `g09` generation under
-`docs/logs/2026-08/`. No generation is active. Earlier month shards are frozen
+The latest evidence window is `g10` under `docs/logs/2026-09/`, holding the
+`g10.001` instruction and language-quality audit closeout. The closed `g09`
+generation under `docs/logs/2026-08/` and earlier month shards are frozen
 lineage.
 
 ## Cadence

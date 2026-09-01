@@ -93,7 +93,7 @@ pub enum AdapterType {
 }
 
 /// SMTP adapter configuration.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Clone, PartialEq, Eq)]
 pub struct SmtpConfig {
     /// SMTP server hostname.
     host: String,
@@ -180,6 +180,20 @@ impl EmailManagerConfig {
     /// Return the configured adapter type.
     pub fn adapter_type(&self) -> &AdapterType {
         &self.adapter_type
+    }
+}
+
+impl std::fmt::Debug for SmtpConfig {
+    /// Redacts the SMTP password. Host, port, username, and TLS mode stay
+    /// visible so a misconfigured relay is still diagnosable.
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("SmtpConfig")
+            .field("host", &self.host)
+            .field("port", &self.port)
+            .field("username", &self.username)
+            .field("password", &self.password.as_ref().map(|_| "[REDACTED]"))
+            .field("tls_mode", &self.tls_mode)
+            .finish()
     }
 }
 
@@ -309,3 +323,42 @@ impl DevCaptureConfig {
 #[cfg(test)]
 #[path = "tests/manager_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+mod debug_redaction_tests {
+    use super::{AdapterType, SmtpConfig, TlsMode};
+
+    fn config() -> SmtpConfig {
+        SmtpConfig::new("smtp.example.com")
+            .with_port(587)
+            .with_credentials("mailer@example.com", "super-secret-smtp-password")
+            .with_tls_mode(TlsMode::Required)
+    }
+
+    #[test]
+    fn debug_redacts_the_smtp_password() {
+        let rendered = format!("{:?}", config());
+
+        assert!(!rendered.contains("super-secret-smtp-password"));
+        assert!(rendered.contains("[REDACTED]"));
+        assert!(rendered.contains("smtp.example.com"));
+        assert!(rendered.contains("mailer@example.com"));
+        assert!(rendered.contains("587"));
+    }
+
+    #[test]
+    fn debug_omits_a_password_that_is_not_set() {
+        let rendered = format!("{:?}", SmtpConfig::new("smtp.example.com"));
+
+        assert!(rendered.contains("password: None"));
+        assert!(!rendered.contains("[REDACTED]"));
+    }
+
+    #[test]
+    fn adapter_type_debug_does_not_leak_the_password() {
+        let rendered = format!("{:?}", AdapterType::Smtp(config()));
+
+        assert!(!rendered.contains("super-secret-smtp-password"));
+        assert!(rendered.contains("[REDACTED]"));
+    }
+}

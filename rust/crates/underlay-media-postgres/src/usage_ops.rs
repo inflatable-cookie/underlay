@@ -138,13 +138,14 @@ impl PostgresMediaRepository {
                 field_name: field_name.to_string(),
                 created_at: Utc::now(),
             };
-            let _ = self.insert_usage(&usage).await;
+            self.insert_usage(&usage).await?;
         }
 
         for media_uuid in current_ids.difference(&new_ids) {
-            let _ = self
-                .delete_usage(MediaId(*media_uuid), entity_type, entity_id, field_name)
-                .await;
+            // The bool result only reports whether a row matched, which is a
+            // normal outcome; the error is not.
+            self.delete_usage(MediaId(*media_uuid), entity_type, entity_id, field_name)
+                .await?;
         }
 
         Ok(())

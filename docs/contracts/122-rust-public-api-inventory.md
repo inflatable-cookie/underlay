@@ -33,7 +33,6 @@ The proof family for this inventory is:
 - `compli-me`
 - `acowtancy`
 - `songsprout`
-- `loophole/composer`
 
 Consumer-affecting changes must follow `023` and classify impact as
 `additive`, `deprecation`, or `breaking`.

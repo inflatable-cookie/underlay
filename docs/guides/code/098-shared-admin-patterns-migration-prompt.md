@@ -118,5 +118,3 @@ Paste the prompt above into each agent session, run from the project root.
 | 2       | `../compli-me`          | High     | 3 action menus, 8+ detail pages, 9+ lists                    |
 | 3       | `../underlay-reference` | Medium   | Reference app, good for showcasing patterns                  |
 | 4       | `../songsprout`         | Low      | Minimal underlay integration currently                       |
-
-Skip Loophole Composer — it's marked "out of date" and has zero underlay integration.

@@ -31,7 +31,6 @@ Primary shared sources:
 Reference consumer evidence:
 
 - `compli-me/apps/api/crates/api/src/routes/shared/lookup.rs`
-- `loophole/composer/apps/composer-api/crates/api/src/routes/lookup.rs`
 - `contact-patch/apps/cp-api/crates/api/src/routes/shared/auth/totp.rs`
 - `contact-patch/apps/cp-api/crates/api/src/routes/shared/auth/password_reset.rs`
 - `songsprout/apps/nursery/crates/api/src/handlers/auth/mod.rs`

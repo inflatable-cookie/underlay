@@ -11,7 +11,14 @@ export function requestSubmitById(elementId: string): void {
   if (!doc) return;
 
   const element = doc.getElementById(elementId);
-  const requestSubmit = (element as any)?.requestSubmit;
+  if (!element) return;
+
+  // requestSubmit is only declared on HTMLFormElement, but callers legitimately
+  // pass any element that implements it. Narrow through the `in` operator so
+  // the element keeps its type instead of being erased to `any`.
+  if (!("requestSubmit" in element)) return;
+
+  const { requestSubmit } = element;
 
   if (typeof requestSubmit === "function") {
     requestSubmit.call(element);

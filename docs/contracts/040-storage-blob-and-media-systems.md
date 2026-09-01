@@ -317,7 +317,7 @@ Rules:
   using typed convenience methods
 - default media repository adapters parse row strings from storage-backed
   tables into Underlay media domain types during row mapping
-- the current six-consumer family has adopted the same app-local parse boundary
+- the current five-consumer family has adopted the same app-local parse boundary
   where apps own media row/domain models; local DTO conversion is not the
   primary validation point
 

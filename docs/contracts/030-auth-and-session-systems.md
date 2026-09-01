@@ -160,9 +160,9 @@ Rules:
   repository adapter for them: the g08.018 survey found consumers' auth
   schemas are genuinely divergent (e.g. `auth.users` with a `role` column vs
   `accounts.admin_users` keyed on `artist_id`, singular `credential`/`session`
-  tables, a separate `totp_credential` table), and four of six consumers do
-  not implement these traits at all. A single centralized adapter would fit
-  none of them
+  tables, a separate `totp_credential` table), and four of the six consumers
+  surveyed then did not implement these traits at all. A single centralized
+  adapter would fit none of them
 - the only shipped Postgres adapter is `AuthStateStore` (renamed from the
   misleading `underlay-auth-postgres` to `underlay-auth-state-postgres`), and
   its table is configurable via `AuthStateStore::with_table` for consumers

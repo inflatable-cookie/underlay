@@ -54,12 +54,13 @@ README surfaces.
 ## Active generation
 
 - [`g10`](g10/README.md) — bounded Northstar instruction and language-quality
-  audit; `g10.001` and card 001 are ready.
+  audit; `g10.001` and card 001 are delivered and with the orchestrator for
+  exact-head PR review.
 
 ## Current Queue
 
-`g10.001` is the sole ready roadmap. `g09.001`–`g09.062` remain complete and
-frozen in the [`g09` front door](g09/README.md).
+Empty. `g10.001` was the sole roadmap and is complete; `g09.001`–`g09.062`
+remain complete and frozen in the [`g09` front door](g09/README.md).
 
 ## Archived generations
 
@@ -78,5 +79,5 @@ that risk.
 
 ## Next Task
 
-Execute `g10.001` from its ready card and stop at the worker PR for orchestrator
-review. Do not reuse closed `g09` or infer another roadmap.
+Orchestrator reviews and merges the `g10.001` worker PR. A later generation needs
+an explicit rollover decision and numbered roadmaps before dispatch.

@@ -37,8 +37,6 @@ Reference consumer evidence:
   `apps/cp-front`
 - `songsprout` — root tasks plus `apps/nursery`, `apps/greenhouse`, and
   `apps/bloom`
-- `loophole/composer` — root tasks plus `apps/composer-api`,
-  `apps/composer-admin`, and `apps/composer-front`
 
 Observed test roots:
 
@@ -262,7 +260,7 @@ Farmyard's managed suite is sound at package QA but root QA does not reach it.
 Shared harness findings:
 
 - `TestDb` remains sound for single-schema shared-crate tests, but its generated
-  schema cannot isolate the fixed named schema sets used by all six apps
+  schema cannot isolate the fixed named schema sets used by all five apps
 - the operator selected app-owned whole-app fixed-schema suites at `g09.044`;
   no generic multi-schema or database-per-test design is implied
 - `TestServer` now has one bounded Underlay Reference health-route proof; no

@@ -45,8 +45,6 @@ Additional consumer evidence, repo-relative from each consumer root:
 - `songsprout`: `apps/nursery/crates/api/src/routes/mod.rs`,
   `apps/nursery/crates/api/src/routes/auth.rs`,
   `apps/nursery/crates/api/src/routes/admin.rs`
-- `loophole/composer`: `apps/composer-api/crates/api/src/routes/mod.rs`,
-  `apps/composer-api/crates/api/src/extractors.rs`
 
 If these diverge, the contract plus the clearest modern reference posture
 (`underlay-reference`, `acowtancy` Farmyard) win.

@@ -38,7 +38,6 @@ Reference consumer evidence:
 - `underlay-reference/apps/acme-api/crates/api/src/routes/front/tasks.rs`
 - `underlay-reference/apps/acme-api/crates/api/src/routes/shared/account.rs`
 - `songsprout/apps/nursery/crates/api/src/routes/artist.rs`
-- `loophole/composer/apps/composer-api/crates/api/src/routes/lookup.rs`
 
 If these diverge, the contract plus the clearest modern resource-read posture
 win. Helper endpoints remain allowed, but they should stop drifting silently.

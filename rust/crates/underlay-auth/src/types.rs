@@ -130,7 +130,7 @@ pub enum CredentialMetadata {
 /// A credential used for authentication.
 ///
 /// Users can have multiple credentials (e.g., password + TOTP + PassKey).
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub struct Credential {
     /// Unique credential identifier.
@@ -151,6 +151,30 @@ pub struct Credential {
     pub updated_at: chrono::DateTime<chrono::Utc>,
     /// When the credential was last used.
     pub last_used_at: Option<chrono::DateTime<chrono::Utc>>,
+}
+
+impl std::fmt::Debug for Credential {
+    /// `secret_encrypted` is the stored credential material. It is ciphertext
+    /// rather than a plaintext secret, but it is still the protected artefact
+    /// this row exists to hold, so diagnostics render its presence and length
+    /// instead of its value. Every other field is identifying or temporal and
+    /// stays visible.
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Credential")
+            .field("id", &self.id)
+            .field("user_id", &self.user_id)
+            .field("credential_type", &self.credential_type)
+            .field(
+                "secret_encrypted",
+                &format_args!("[REDACTED; {} bytes]", self.secret_encrypted.len()),
+            )
+            .field("metadata", &self.metadata)
+            .field("verified", &self.verified)
+            .field("created_at", &self.created_at)
+            .field("updated_at", &self.updated_at)
+            .field("last_used_at", &self.last_used_at)
+            .finish()
+    }
 }
 
 /// Session status.
@@ -294,12 +318,24 @@ pub struct AuthEvent {
 }
 
 /// Backup code for account recovery.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Clone, PartialEq, Eq)]
 pub struct BackupCode {
     /// The code (plain text, to be hashed before storage).
     pub code: String,
     /// Whether the code has been used.
     pub used: bool,
+}
+
+impl std::fmt::Debug for BackupCode {
+    /// `code` is a plaintext single-use recovery credential, so it is never
+    /// rendered. `used` stays visible because whether a code is spent is the
+    /// diagnostic callers need.
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("BackupCode")
+            .field("code", &"[REDACTED]")
+            .field("used", &self.used)
+            .finish()
+    }
 }
 
 /// Builder for creating auth events.
@@ -392,5 +428,25 @@ impl AuthEventBuilder {
     /// Build the event.
     pub fn build(self) -> Result<AuthEvent, AuthError> {
         self.try_build()
+    }
+}
+
+#[cfg(test)]
+mod backup_code_debug_tests {
+    use super::BackupCode;
+
+    #[test]
+    fn debug_redacts_the_plaintext_recovery_code() {
+        let rendered = format!(
+            "{:?}",
+            BackupCode {
+                code: "recovery-code-value".to_string(),
+                used: false,
+            }
+        );
+
+        assert!(!rendered.contains("recovery-code-value"));
+        assert!(rendered.contains("[REDACTED]"));
+        assert!(rendered.contains("used: false"));
     }
 }
