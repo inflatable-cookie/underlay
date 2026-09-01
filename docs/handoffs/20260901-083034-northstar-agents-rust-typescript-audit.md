@@ -49,6 +49,11 @@ Run the complete card, not a sample:
 4. Record findings before mutation and apply only recorder-authorized repairs.
 5. Reconcile recorders, card, roadmap, spec, front doors, log, limitations, and
    PR body at closeout.
+6. Remove the deleted Loophole Composer repository from live Underlay fleet
+   authority. Classify all matches first: live AGENTS/contracts/manifests/
+   guides/matrices/usage/sweeps are in scope; closed roadmaps, logs, old
+   handoffs, and unrelated symbols are preserved. Reconcile live fleet counts
+   and matrix claims. Do not edit Loophole or design a replacement service.
 
 Use the repository-local Effigy skill for routing. Record the exact Northstar
 source hash and do not mix audit tool versions.
@@ -66,7 +71,8 @@ source hash and do not mix audit tool versions.
 
 1. Read this tracked handoff, root and Rust `AGENTS.md`, `g10.001`, card 001,
    and the strict spec.
-2. Confirm `HEAD == origin/main`, planning base `09f2641b` is an ancestor, the
+2. Fetch and merge current `origin/main` before continuing, then confirm
+   planning base `09f2641b` and this handoff revision are ancestors, the
    worktree is clean, and branch/worktree match this lane.
 3. Load the Northstar router and explicit AGENTS, Rust, and TypeScript/Svelte
    audit modes from the source above. Inventory repository tasks with Effigy

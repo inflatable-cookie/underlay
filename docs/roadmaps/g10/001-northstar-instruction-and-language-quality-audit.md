@@ -27,6 +27,8 @@ pretext for a consumer rollout or a new compatibility window.
 - record findings before mutation and apply only recorder-authorized repairs;
 - preserve generated, fixture, vendored, historical, consumer-owned, release,
   and workflow boundaries;
+- remove the deleted Loophole Composer repository from live Underlay fleet
+  authority while preserving frozen evidence and unrelated homonyms;
 - finish with one reviewable PR and honest retained findings.
 
 ## Non-Goals
@@ -36,6 +38,8 @@ pretext for a consumer rollout or a new compatibility window.
 - no threshold-led file splitting, blanket lint fixing, or audit-driven
   generation expansion;
 - no mutation of Underlay Reference, Poodle, or any other consumer.
+- no design, naming, API, migration, or rollout work for a replacement online
+  service.
 
 ## Acceptance Criteria
 
@@ -49,6 +53,10 @@ pretext for a consumer rollout or a new compatibility window.
 - every changed source file maps to a prior finding and authorized plan;
 - finalized recorders, changed-file attribution, limitations, roadmap, card,
   log, and front doors agree;
+- live AGENTS, contracts, manifests, guides, matrices, usage docs, and active
+  sweeps no longer count or instruct the deleted repository as a consumer;
+- surviving `loophole-composer` or equivalent matches are classified as frozen
+  history or unrelated symbols rather than removed for a zero-grep result;
 - repository validation records actual warnings, unavailable surfaces, and
   failures rather than promoting them to clean evidence.
 
@@ -61,6 +69,7 @@ pretext for a consumer rollout or a new compatibility window.
 | Shared contracts survive. | A public Rust/TS export, wire name, auth/error contract, or realtime path changes under cleanup authority. | Stop for planning. | API/export diff and focused tests. |
 | Protected data stays protected. | `Debug`, diagnostics, or UI output renders credentials, tokens, or consumer content. | Finding remains blocking. | Adversarial tests and call-path review. |
 | Consumer ownership survives. | The worker edits Underlay Reference, Poodle, or another consumer. | Stop. | Changed-repository inventory. |
+| Live fleet authority is current. | A live contract, manifest, guide, matrix, or instruction still counts or directs the deleted Loophole Composer repository. | Review blocks; remove the stale row or instruction and reconcile dependent counts. | Classified match inventory plus live fleet/matrix consistency check. |
 | Evidence is honest. | A warning, unavailable external service, fixture exclusion, or untested target is called clean. | Result remains degraded or limited. | Raw evidence and limitations. |
 
 ## Stop Conditions
