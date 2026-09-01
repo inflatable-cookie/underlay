@@ -19,10 +19,22 @@ pub struct OAuthStart {
     pub pkce_verifier: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct OAuthCallbackRequest {
     pub code: String,
     pub state: String,
+}
+
+impl std::fmt::Debug for OAuthCallbackRequest {
+    /// `code` is the single-use OAuth authorization code and is exchangeable
+    /// for tokens until it is redeemed, so it is never rendered. `state` is a
+    /// CSRF correlator and stays visible for callback debugging.
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("OAuthCallbackRequest")
+            .field("code", &redacted(&self.code))
+            .field("state", &self.state)
+            .finish()
+    }
 }
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -155,6 +167,72 @@ mod debug_redaction_tests {
         assert!(!rendered.contains("pkce-verifier-secret"));
         assert!(rendered.contains("[REDACTED]"));
         assert!(rendered.contains("csrf-state-value"));
+    }
+
+    #[test]
+    fn callback_request_debug_redacts_the_authorization_code() {
+        let request = super::OAuthCallbackRequest {
+            code: "4/0AX4XfWh-authorization-code".to_string(),
+            state: "csrf-state-value".to_string(),
+        };
+
+        let rendered = format!("{request:?}");
+
+        assert!(!rendered.contains("4/0AX4XfWh-authorization-code"));
+        assert!(rendered.contains("[REDACTED]"));
+        assert!(rendered.contains("csrf-state-value"));
+    }
+
+    #[test]
+    fn login_result_debug_redacts_the_nested_credential_and_tokens() {
+        use crate::{Credential, User};
+        use underlay_auth::{CredentialMetadata, CredentialType, UserStatus};
+        use underlay_core::Uuid;
+
+        let now = chrono::Utc::now();
+        let result = super::OAuthLoginResult {
+            user: User {
+                id: Uuid::new_v7(),
+                email: "person@example.com".to_string(),
+                display_name: None,
+                status: UserStatus::Active,
+                created_at: now,
+                updated_at: now,
+            },
+            is_new_user: false,
+            credential: Credential {
+                id: Uuid::new_v7(),
+                user_id: Uuid::new_v7(),
+                credential_type: CredentialType::OAuthGoogle,
+                secret_encrypted: "enc:v1:stored-ciphertext".to_string(),
+                metadata: CredentialMetadata::OAuthGoogle {
+                    google_user_id: "sub-123".to_string(),
+                    scopes: Vec::new(),
+                },
+                verified: true,
+                created_at: now,
+                updated_at: now,
+                last_used_at: None,
+            },
+            token_set: token_set(),
+            userinfo: super::GoogleUserInfo {
+                sub: "sub-123".to_string(),
+                email: None,
+                email_verified: None,
+                name: None,
+                given_name: None,
+                family_name: None,
+                picture: None,
+                locale: None,
+            },
+        };
+
+        let rendered = format!("{result:?}");
+
+        assert!(!rendered.contains("enc:v1:stored-ciphertext"));
+        assert!(!rendered.contains("access-secret"));
+        assert!(!rendered.contains("refresh-secret"));
+        assert!(rendered.contains("person@example.com"));
     }
 
     #[test]

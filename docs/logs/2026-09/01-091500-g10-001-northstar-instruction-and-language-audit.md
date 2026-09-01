@@ -323,9 +323,82 @@ Recorder changed-file unions reconcile exactly with Git:
   recorders' owned scope and are attributed to the instruction pass and the
   card's ordered step 5.
 
+## Orchestrator Review Wave (2026-09-01, after `8403d70a`)
+
+The orchestrator returned changes required on PR #22. Both recorders were
+already finalized and refuse a second finalization, so this wave is **not**
+recorder-authorized and is deliberately recorded here instead. Its authority is
+the posted review, its scope is exactly the posted findings, and the sealed
+`g10-001-rust-final` and `g10-001-typescript` results still describe the audit as
+finalized — they are not edited, and their `changed_files` no longer enumerate
+the whole branch diff. Read them together with this section.
+
+Rust misses I got wrong the first time, all confirmed in source before repair:
+
+| Type | Crate | Was still printing |
+| --- | --- | --- |
+| `TwoFactorCode` | `underlay-auth-totp` | the submitted TOTP or backup code in both variants |
+| `OAuthCallbackRequest` | `underlay-auth-oauth` | `code`, the single-use OAuth authorization code |
+| `Credential` | `underlay-auth` | `secret_encrypted`, and through it `OAuthLoginResult` |
+| `TotpSetup` | `underlay-auth-totp` | `backup_code_hashes` |
+
+Two of these are my own misjudgements, not oversights. I classified
+`Credential.secret_encrypted` as lower risk because it is ciphertext and left it
+alone; it is still the protected artefact the row exists to hold, and it reaches
+diagnostics nested inside `OAuthLoginResult`. I explicitly kept
+`backup_code_hashes` visible as "stored digests"; they are the stored verifiers,
+so publishing them hands an attacker an offline target.
+
+Worse, my test `setup_debug_keeps_stored_backup_code_hashes_visible` asserted
+that the hashes *were* rendered — a test that pinned the leak in place. It is
+replaced by `setup_debug_redacts_stored_backup_code_hashes`, which asserts the
+opposite. New focused tests also cover `TwoFactorCode`, the callback code, and
+the nested `OAuthLoginResult` path.
+
+Variant names, field names, `Serialize`/`Deserialize`, `Clone`, `Copy`,
+`PartialEq`, and `Eq` are unchanged; every type still implements `Debug`.
+
+Two further types were repaired in the same wave. They were **not** posted by the
+review; I found them by re-running the secret-bearing `Debug` sweep after the
+review showed my first pass had missed four. Each is the same class as a posted
+finding, so shipping the posted fixes without them would leave a knowingly
+inconsistent result. Flagged separately so the orchestrator can reject them:
+
+| Type | Crate | Same class as | Was printing |
+| --- | --- | --- | --- |
+| `BackupCode` | `underlay-auth` | `TwoFactorCode` — plaintext one-time credential | `code`, documented in-tree as "plain text, to be hashed before storage" |
+| `StoredCode` | `underlay-auth-email-totp` | `TotpSetup.backup_code_hashes` — stored verifier | `code_hash`, the Argon2 verifier for a live verification code |
+
+The rest of the sweep's 53 hits were checked and are noise: error codes, config
+knobs, enum discriminants, doc-comment text, and fingerprint-only fields.
+
+Cleanup misses, reconciled to five live consumers:
+
+- `contracts/ui/poodle-prop-normalization-manifest.json` — the live migration
+  obligation over "all six app groups"
+- `docs/architecture/020-reference-grade-underlay-architecture.md` (active) —
+  three present-tense claims about "the six known consumers"
+- `docs/architecture/070-consumer-drift-prevention.md` (active) — the live
+  conformance assertion "All six consumers pass"
+- `docs/contracts/030-auth-and-session-systems.md` — "four of six consumers do
+  not implement these traits" now reads "four of the six consumers surveyed
+  then", so the dated `g08.018` count survives without asserting a current
+  six-consumer fleet
+
+Frozen dated evidence in those same files was preserved and re-checked: the
+manifest's `2026-03-25` audit-status note, the `070` B1 adoption record and the
+`2026-08-03` CORS completion record, and the `g08.018` survey attribution in
+`030`. I did not invent a new denominator for the `030` count, because nothing in
+the repository says whether the deleted consumer was one of the four
+non-implementers.
+
+The successor-planning distinction is unchanged: no generic or shared
+online-services or knowledge-service successor plan exists in Underlay, and none
+was removed, de-planned, or renamed.
+
 ## Next Task
 
-The orchestrator reviews the PR at its exact head and merges. Follow-ups worth a
+The orchestrator re-reviews the PR at its new exact head and merges. Follow-ups worth a
 later card: the MSRV declaration decision, the `workspace-shape` fixture
 hermeticity fix, the two retained public-contract TypeScript findings, and the
 test-double assertion density.

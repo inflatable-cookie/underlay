@@ -9,7 +9,7 @@ use chrono::{DateTime, Utc};
 use crate::error::EmailTotpResult;
 
 /// A stored verification code ready for verification.
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct StoredCode {
     /// Unique identifier for the code.
     pub id: String,
@@ -21,6 +21,24 @@ pub struct StoredCode {
     pub attempts: i32,
     /// Maximum allowed attempts.
     pub max_attempts: i32,
+}
+
+impl std::fmt::Debug for StoredCode {
+    /// `code_hash` is the stored Argon2 verifier for a live verification code.
+    /// Publishing it hands an attacker an offline target, so only its presence
+    /// and length are rendered.
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("StoredCode")
+            .field("id", &self.id)
+            .field(
+                "code_hash",
+                &format_args!("[REDACTED; {} bytes]", self.code_hash.len()),
+            )
+            .field("expires_at", &self.expires_at)
+            .field("attempts", &self.attempts)
+            .field("max_attempts", &self.max_attempts)
+            .finish()
+    }
 }
 
 /// Result of checking rate limits.
@@ -160,3 +178,27 @@ pub trait EmailTotpRepository: EmailTotpCodeRepository + VerificationSessionRepo
 
 // Blanket implementation
 impl<T> EmailTotpRepository for T where T: EmailTotpCodeRepository + VerificationSessionRepository {}
+
+#[cfg(test)]
+mod stored_code_debug_tests {
+    use super::StoredCode;
+    use chrono::Utc;
+
+    #[test]
+    fn debug_redacts_the_stored_code_verifier() {
+        let rendered = format!(
+            "{:?}",
+            StoredCode {
+                id: "code-1".to_string(),
+                code_hash: "$argon2id$v=19$m=19456,t=2,p=1$c2FsdA$aGFzaA".to_string(),
+                expires_at: Utc::now(),
+                attempts: 1,
+                max_attempts: 5,
+            }
+        );
+
+        assert!(!rendered.contains("$argon2id$"));
+        assert!(rendered.contains("[REDACTED;"));
+        assert!(rendered.contains("code-1"));
+    }
+}

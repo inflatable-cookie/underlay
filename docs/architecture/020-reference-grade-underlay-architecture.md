@@ -18,7 +18,7 @@ stricter:
 - devtools and migration tooling kept out of runtime application surface
 - consumer compatibility proved deliberately, not inferred
 
-The six known consumers are not in production, so breaking changes are allowed
+The five known consumers are not in production, so breaking changes are allowed
 when they buy durable clarity. They still need rollout proof under contract
 `023`.
 
@@ -110,7 +110,7 @@ surface with a documented replacement and retirement path.
 
 ## Breaking-Change Posture
 
-Because the six known consumers are not in production:
+Because the five known consumers are not in production:
 
 - breaking changes are allowed when they remove ambiguous public surface
 - compatibility shims are optional, not default
@@ -165,7 +165,7 @@ Preferred work:
 
 ### Phase 4: Consumer Cutover
 
-Update the six consumer apps as part of the generation.
+Update the five consumer apps as part of the generation.
 
 Preferred order:
 

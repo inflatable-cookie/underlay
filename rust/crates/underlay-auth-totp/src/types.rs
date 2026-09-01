@@ -26,10 +26,22 @@ pub struct VerifiedTotp {
     pub counter: u64,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub enum TwoFactorCode<'a> {
     Totp(&'a str),
     BackupCode(&'a str),
+}
+
+impl std::fmt::Debug for TwoFactorCode<'_> {
+    /// Both variants carry a live one-time code submitted by a user, so the
+    /// value is never rendered. The variant name is kept because which factor
+    /// was presented is the diagnostic that matters.
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Totp(_) => f.debug_tuple("Totp").field(&"[REDACTED]").finish(),
+            Self::BackupCode(_) => f.debug_tuple("BackupCode").field(&"[REDACTED]").finish(),
+        }
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -53,9 +65,10 @@ impl std::fmt::Debug for TotpSecret {
 }
 
 impl std::fmt::Debug for TotpSetup {
-    /// `otpauth_uri` and `qr_svg` both embed the shared secret, and
-    /// `backup_codes` are single-use credentials, so all three are redacted.
-    /// `backup_code_hashes` are stored digests and stay visible.
+    /// `otpauth_uri` and `qr_svg` both embed the shared secret, and both
+    /// `backup_codes` and `backup_code_hashes` are credential material: the
+    /// hashes are the stored verifiers, so publishing them hands an attacker
+    /// an offline target. All four are redacted; only their counts remain.
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("TotpSetup")
             .field("secret", &self.secret)
@@ -65,7 +78,10 @@ impl std::fmt::Debug for TotpSetup {
                 "backup_codes",
                 &format_args!("[REDACTED; {} codes]", self.backup_codes.len()),
             )
-            .field("backup_code_hashes", &self.backup_code_hashes)
+            .field(
+                "backup_code_hashes",
+                &format_args!("[REDACTED; {} hashes]", self.backup_code_hashes.len()),
+            )
             .field("metadata", &self.metadata)
             .finish()
     }
@@ -73,7 +89,7 @@ impl std::fmt::Debug for TotpSetup {
 
 #[cfg(test)]
 mod debug_redaction_tests {
-    use super::{TotpSecret, TotpSetup};
+    use super::{TotpSecret, TotpSetup, TwoFactorCode};
     use underlay_auth::CredentialMetadata;
 
     fn setup() -> TotpSetup {
@@ -115,10 +131,22 @@ mod debug_redaction_tests {
     }
 
     #[test]
-    fn setup_debug_keeps_stored_backup_code_hashes_visible() {
+    fn setup_debug_redacts_stored_backup_code_hashes() {
         let rendered = format!("{:?}", setup());
 
-        assert!(rendered.contains("hash-one"));
-        assert!(rendered.contains("hash-two"));
+        assert!(!rendered.contains("hash-one"));
+        assert!(!rendered.contains("hash-two"));
+        assert!(rendered.contains("[REDACTED; 2 hashes]"));
+    }
+
+    #[test]
+    fn two_factor_code_debug_redacts_the_submitted_code() {
+        let totp = format!("{:?}", TwoFactorCode::Totp("123456"));
+        let backup = format!("{:?}", TwoFactorCode::BackupCode("backup-code-value"));
+
+        assert!(!totp.contains("123456"));
+        assert!(!backup.contains("backup-code-value"));
+        assert!(totp.starts_with("Totp("));
+        assert!(backup.starts_with("BackupCode("));
     }
 }

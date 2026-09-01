@@ -119,7 +119,7 @@ hygiene, OpenAPI gating, seed gates (env AND local DB host), `{@html}`
 sanitization, no SVG regex blacklists, CSP at the real serving layer, no
 tracked secrets, TOTP via `SecretCipher`, sessions via
 `underlay-auth-session`, role-hierarchy guards, refresh via the crate.
-All six consumers pass; `CONFORMANCE_SKIP` allows documented exceptions.
+All five consumers pass; `CONFORMANCE_SKIP` allows documented exceptions.
 acme runs it as `effigy qa:security` — the pattern other consumers copy.
 Next iteration: fold into `effigy doctor`/CI so a red build is the
 default consequence of drift.

@@ -29,7 +29,7 @@
     ],
     "notes": [
       "The sweep must update Poodle implementation, contracts, docs, and preview specimens together.",
-      "Underlay and all six app groups must migrate their Poodle call sites in coordinated batches.",
+      "Underlay and all five app groups must migrate their Poodle call sites in coordinated batches.",
       "Underlay roadmap 042 remains the broad UI-boundary migration umbrella; this manifest tracks the specific prop-language normalization dependency that now blocks clean migration work."
     ]
   },
