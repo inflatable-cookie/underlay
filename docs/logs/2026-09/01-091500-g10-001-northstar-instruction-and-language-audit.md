@@ -255,7 +255,7 @@ No consumer repository was edited. No replacement service was designed or named.
 | `cargo clippy --workspace --all-targets --all-features -- -D warnings` | exit 0, 0 warnings |
 | `cargo check --workspace --all-features` with `-W missing_debug_implementations` | exit 0, 0 lint hits |
 | `cargo +1.95.0 check --workspace --all-features` (MSRV, separate from current toolchain) | exit 0, 0 warnings |
-| `cargo test --workspace --all-features` | exit 0, 0 failures |
+| `cargo test --workspace --all-features` | **flaky** — see below |
 | `effigy check:types` (`tsc`) | exit 0 |
 | `effigy check` (`svelte-check`) | 1085 files, 0 errors, 0 warnings |
 | `effigy check:exports`, `check:component-test-hygiene`, `check:poodle-prop-names`, `check:guardrails`, `check:release-version-sync` | passed |
@@ -286,6 +286,28 @@ It was left alone deliberately. No rule in the strict TypeScript projection owns
 test-fixture hermeticity, so there is no authorized finding, and `g10.001`
 rejects any source edit without one. It is recorded here as a follow-up rather
 than promoted to clean evidence.
+
+### Second pre-existing failure: a flaky Rust timing test
+
+`underlay_http_client::tests::invalid_user_agent_fallback_retains_default_timeout`
+fails intermittently on
+`assert!(started.elapsed() >= DEFAULT_TIMEOUT)` at
+`rust/crates/underlay-http-client/src/tests/lib_tests.rs:192`. The test runs
+under `#[tokio::test(start_paused = true)]` and measures with
+`tokio::time::Instant`, but the timeout it is asserting about is enforced by
+reqwest, so the paused clock and the real timeout race.
+
+It is pre-existing and unrelated to this branch:
+`git diff --name-only c2bd9686..HEAD -- rust/crates/underlay-http-client/` is
+empty, and repeated sampling on the clean planning checkout at `ca654570`
+reproduced it 6 times out of 6, against 4 out of 6 in this worktree. The earlier
+full-workspace run in this lane and the recorder's `test-http_transport`
+evidence both caught the passing side of the flake; neither should be read as
+proof that the test is stable.
+
+Not repaired for the same reason as the fixture failure: there is no recorded
+finding that owns it, and `underlay-http-client` carries no authorized repair
+plan in the finalized recorder.
 
 ## Changed-File Attribution
 

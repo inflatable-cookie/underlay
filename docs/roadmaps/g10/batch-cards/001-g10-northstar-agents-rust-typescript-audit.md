@@ -60,8 +60,9 @@ product work are out of scope.
 - [x] `effigy qa`, docs/Northstar QA, Rust validation, TS/Svelte validation,
       focused tests, and `git diff --check` record actual results — including
       the pre-existing `ts/tests/tools/workspace-shape.test.ts` failure that
-      makes `effigy qa` red, which is reproduced on clean `main` and recorded
-      rather than repaired;
+      makes `effigy qa` red and the pre-existing flaky
+      `underlay-http-client` timeout test, both reproduced on clean `main` and
+      recorded rather than repaired;
 - [x] one PR targets `main`; the worker does not merge.
 
 ## Review Oracle
