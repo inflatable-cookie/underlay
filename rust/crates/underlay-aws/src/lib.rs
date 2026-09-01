@@ -27,7 +27,7 @@ pub use aws_types::region::Region;
 ///
 /// Wraps `aws-config` to provide a consistent interface across all Underlay
 /// crates that use AWS services.
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct AwsConfig {
     /// AWS region (e.g., "eu-west-2", "us-east-1").
     region: String,
@@ -42,11 +42,37 @@ pub struct AwsConfig {
     static_credentials: Option<AwsStaticCredentials>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct AwsStaticCredentials {
     pub access_key_id: String,
     pub secret_access_key: String,
     pub session_token: Option<String>,
+}
+
+impl std::fmt::Debug for AwsStaticCredentials {
+    /// Redacts the secret access key and session token. The access key id is a
+    /// public identifier and stays visible so credential sources remain
+    /// diagnosable.
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("AwsStaticCredentials")
+            .field("access_key_id", &self.access_key_id)
+            .field("secret_access_key", &"[REDACTED]")
+            .field(
+                "session_token",
+                &self.session_token.as_ref().map(|_| "[REDACTED]"),
+            )
+            .finish()
+    }
+}
+
+impl std::fmt::Debug for AwsConfig {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("AwsConfig")
+            .field("region", &self.region)
+            .field("endpoint_url", &self.endpoint_url)
+            .field("static_credentials", &self.static_credentials)
+            .finish()
+    }
 }
 
 impl AwsConfig {
@@ -124,3 +150,50 @@ impl AwsConfig {
 #[cfg(test)]
 #[path = "tests/lib_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+mod debug_redaction_tests {
+    use super::{AwsConfig, AwsStaticCredentials};
+
+    fn credentials() -> AwsStaticCredentials {
+        AwsStaticCredentials {
+            access_key_id: "AKIAEXAMPLEID".to_string(),
+            secret_access_key: "super-secret-access-key".to_string(),
+            session_token: Some("super-secret-session-token".to_string()),
+        }
+    }
+
+    #[test]
+    fn debug_redacts_secret_access_key_and_session_token() {
+        let rendered = format!("{:?}", credentials());
+
+        assert!(!rendered.contains("super-secret-access-key"));
+        assert!(!rendered.contains("super-secret-session-token"));
+        assert!(rendered.contains("AKIAEXAMPLEID"));
+        assert_eq!(rendered.matches("[REDACTED]").count(), 2);
+    }
+
+    #[test]
+    fn debug_omits_a_session_token_that_is_not_set() {
+        let mut credentials = credentials();
+        credentials.session_token = None;
+
+        let rendered = format!("{credentials:?}");
+
+        assert!(rendered.contains("session_token: None"));
+        assert_eq!(rendered.matches("[REDACTED]").count(), 1);
+    }
+
+    #[test]
+    fn config_debug_does_not_leak_embedded_credentials() {
+        let config = AwsConfig::new("eu-west-2")
+            .with_endpoint("http://localhost:4566")
+            .with_static_credentials("AKIAEXAMPLEID", "super-secret-access-key");
+
+        let rendered = format!("{config:?}");
+
+        assert!(!rendered.contains("super-secret-access-key"));
+        assert!(rendered.contains("eu-west-2"));
+        assert!(rendered.contains("http://localhost:4566"));
+    }
+}

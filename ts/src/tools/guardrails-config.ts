@@ -64,7 +64,7 @@ export async function loadConfig(configPath?: string, srcDirOverride?: string): 
 			const content = await readFile(configPath, 'utf8');
 			config = JSON.parse(content);
 		} catch (error) {
-			console.error(`Warning: Could not load config from ${configPath}`);
+			console.error(`Warning: Could not load config from ${configPath}`, error);
 		}
 	} else {
 		// Try .guardrailsrc.json
@@ -92,8 +92,8 @@ export async function loadConfig(configPath?: string, srcDirOverride?: string): 
 			const template = await importTemplateModule(config.bannedPatterns);
 			const resolved = (template as { bannedPatterns?: BannedPattern[]; default?: BannedPattern[] });
 			bannedPatterns = resolved.bannedPatterns ?? resolved.default ?? [];
-		} catch {
-			console.error(`Warning: Could not load template ${config.bannedPatterns}`);
+		} catch (error) {
+			console.error(`Warning: Could not load template ${config.bannedPatterns}`, error);
 		}
 	} else {
 		bannedPatterns = parsePatternConfigs(config.bannedPatterns ?? []);
@@ -109,8 +109,8 @@ export async function loadConfig(configPath?: string, srcDirOverride?: string): 
 				default?: ModuleScopeCheck[];
 			});
 			moduleScopeChecks = resolved.moduleScopeChecks ?? resolved.default ?? [];
-		} catch {
-			console.error(`Warning: Could not load template ${config.moduleScopeChecks}`);
+		} catch (error) {
+			console.error(`Warning: Could not load template ${config.moduleScopeChecks}`, error);
 		}
 	} else if (Array.isArray(config.moduleScopeChecks)) {
 		moduleScopeChecks = config.moduleScopeChecks;

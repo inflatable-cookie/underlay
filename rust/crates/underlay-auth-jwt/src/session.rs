@@ -43,10 +43,30 @@ pub trait SessionStore: Send + Sync {
     async fn get_user_sessions(&self, user_id: &Uuid) -> JwtResult<Vec<SessionState>>;
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct SessionTokens {
     pub access_token: String,
     pub refresh_token: String,
+}
+
+impl std::fmt::Debug for SessionTokens {
+    /// Both fields are live signed bearer tokens, so neither is rendered.
+    /// Presence is still visible so an empty pair remains diagnosable.
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("SessionTokens")
+            .field("access_token", &redacted(&self.access_token))
+            .field("refresh_token", &redacted(&self.refresh_token))
+            .finish()
+    }
+}
+
+/// Renders a secret as a fixed marker that reports presence but not value.
+fn redacted(value: &str) -> &'static str {
+    if value.is_empty() {
+        "[EMPTY]"
+    } else {
+        "[REDACTED]"
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -195,5 +215,37 @@ impl<S: SessionStore> SessionManager<S> {
 
     pub async fn get_user_sessions(&self, user_id: &Uuid) -> JwtResult<Vec<SessionState>> {
         self.store.get_user_sessions(user_id).await
+    }
+}
+
+#[cfg(test)]
+mod debug_redaction_tests {
+    use super::SessionTokens;
+
+    #[test]
+    fn debug_redacts_both_bearer_tokens() {
+        let tokens = SessionTokens {
+            access_token: "header.access-payload.signature".to_string(),
+            refresh_token: "header.refresh-payload.signature".to_string(),
+        };
+
+        let rendered = format!("{tokens:?}");
+
+        assert!(!rendered.contains("access-payload"));
+        assert!(!rendered.contains("refresh-payload"));
+        assert_eq!(rendered.matches("[REDACTED]").count(), 2);
+    }
+
+    #[test]
+    fn debug_distinguishes_an_empty_token_from_a_redacted_one() {
+        let tokens = SessionTokens {
+            access_token: String::new(),
+            refresh_token: "header.refresh-payload.signature".to_string(),
+        };
+
+        let rendered = format!("{tokens:?}");
+
+        assert!(rendered.contains("[EMPTY]"));
+        assert_eq!(rendered.matches("[REDACTED]").count(), 1);
     }
 }

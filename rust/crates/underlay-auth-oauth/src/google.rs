@@ -13,7 +13,7 @@ use crate::{
     GoogleOAuthConfig, GoogleUserInfo, OAuthProvider, OAuthServiceError, OAuthStart, TokenSet,
 };
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 struct GoogleTokenResponse {
     access_token: String,
     expires_in: Option<u64>,
@@ -23,7 +23,7 @@ struct GoogleTokenResponse {
     id_token: Option<String>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct GoogleOAuthService {
     http: reqwest::Client,
     token_url: Url,
@@ -228,5 +228,38 @@ impl OAuthProvider for GoogleOAuthService {
         resp.json::<GoogleUserInfo>()
             .await
             .map_err(|_| OAuthServiceError::UserInfoFailed.into())
+    }
+}
+
+impl std::fmt::Debug for GoogleTokenResponse {
+    /// Holds the raw provider token response; no token field is rendered.
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("GoogleTokenResponse")
+            .field("access_token", &"[REDACTED]")
+            .field("expires_in", &self.expires_in)
+            .field(
+                "refresh_token",
+                &self.refresh_token.as_ref().map(|_| "[REDACTED]"),
+            )
+            .field("scope", &self.scope)
+            .field("token_type", &self.token_type)
+            .field("id_token", &self.id_token.as_ref().map(|_| "[REDACTED]"))
+            .finish()
+    }
+}
+
+impl std::fmt::Debug for GoogleOAuthService {
+    /// Mirrors the redaction `GoogleOAuthConfig` already applies to
+    /// `client_secret`, so the secret does not reappear on the service built
+    /// from that config.
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("GoogleOAuthService")
+            .field("token_url", &self.token_url)
+            .field("userinfo_url", &self.userinfo_url)
+            .field("client_id", &self.client_id)
+            .field("client_secret", &"[REDACTED]")
+            .field("redirect_uri", &self.redirect_uri)
+            .field("scopes", &self.scopes)
+            .finish()
     }
 }

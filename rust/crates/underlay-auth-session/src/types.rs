@@ -2,10 +2,30 @@ use chrono::{DateTime, Utc};
 use underlay_core::Uuid;
 
 /// A token pair issued together.
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct Tokens {
     pub access_token: String,
     pub refresh_token: String,
+}
+
+impl std::fmt::Debug for Tokens {
+    /// Both fields are live bearer tokens, so neither is rendered. Presence is
+    /// still visible so an empty pair remains diagnosable.
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Tokens")
+            .field("access_token", &redacted(&self.access_token))
+            .field("refresh_token", &redacted(&self.refresh_token))
+            .finish()
+    }
+}
+
+/// Renders a secret as a fixed marker that reports presence but not value.
+fn redacted(value: &str) -> &'static str {
+    if value.is_empty() {
+        "[EMPTY]"
+    } else {
+        "[REDACTED]"
+    }
 }
 
 /// Client fingerprint bound to a session (advisory by default).
@@ -76,5 +96,37 @@ impl SessionRecord {
             ip_address: self.ip_address.clone(),
             user_agent: self.user_agent.clone(),
         }
+    }
+}
+
+#[cfg(test)]
+mod debug_redaction_tests {
+    use super::Tokens;
+
+    #[test]
+    fn debug_redacts_both_bearer_tokens() {
+        let tokens = Tokens {
+            access_token: "header.access-payload.signature".to_string(),
+            refresh_token: "header.refresh-payload.signature".to_string(),
+        };
+
+        let rendered = format!("{tokens:?}");
+
+        assert!(!rendered.contains("access-payload"));
+        assert!(!rendered.contains("refresh-payload"));
+        assert_eq!(rendered.matches("[REDACTED]").count(), 2);
+    }
+
+    #[test]
+    fn debug_distinguishes_an_empty_token_from_a_redacted_one() {
+        let tokens = Tokens {
+            access_token: String::new(),
+            refresh_token: "header.refresh-payload.signature".to_string(),
+        };
+
+        let rendered = format!("{tokens:?}");
+
+        assert!(rendered.contains("[EMPTY]"));
+        assert_eq!(rendered.matches("[REDACTED]").count(), 1);
     }
 }
