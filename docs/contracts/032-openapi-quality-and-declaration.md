@@ -40,7 +40,6 @@ Reference consumer evidence:
 - `compli-me/apps/api`
 - `contact-patch/apps/cp-api`
 - `songsprout/apps/nursery`
-- `loophole/composer/apps/composer-api`
 
 If these diverge, the contract plus the clearest typed route posture win.
 

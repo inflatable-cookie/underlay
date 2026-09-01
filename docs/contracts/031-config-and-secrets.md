@@ -37,7 +37,6 @@ Reference consumer evidence:
 - `compli-me/apps/api`
 - `contact-patch/apps/cp-api`
 - `songsprout/apps/nursery`
-- `loophole/composer/apps/composer-api`
 
 If these diverge, the contract plus the clearest modern posture win.
 
@@ -395,6 +394,6 @@ Bad outcomes:
 
 Use this contract when bootstrapping new apps, migrating behavior out of env,
 or auditing secret posture across the consumer fleet. The current rollout after
-`acowtancy` is `underlay-reference`, `contact-patch`, `compli-me`,
-`songsprout`, and `loophole/composer`, with each root treated as a workspace
+`acowtancy` is `underlay-reference`, `contact-patch`, `compli-me`, and
+`songsprout`, with each root treated as a workspace
 boundary that includes all affected child packages.

@@ -33,7 +33,6 @@ apps, and design for the general case rather than the caller in front of you.
   - `compli-me`
   - `acowtancy`
   - `songsprout`
-  - `loophole/composer`
   - Treat each root as the rollout boundary. When config, secrets, shared admin
     surfaces, or retained template behavior change, inspect the root and all
     affected child packages inside that consumer workspace.

@@ -46,7 +46,6 @@ Consumer fleet evidence:
 - `compli-me`
 - `contact-patch`
 - `songsprout`
-- `loophole/composer`
 
 If these diverge, the contract plus the clearest modern rollout posture win.
 
@@ -74,7 +73,7 @@ In scope:
 - compatibility windows
 - released Git-tag consumer pins, hold-back, upgrade, and rollback
 - release and upgrade-note expectations
-- rollout order across Underlay and the six consumer repos
+- rollout order across Underlay and the five consumer repos
 - retirement proof for deprecated shared surfaces
 
 Out of scope:

@@ -22,5 +22,5 @@ For bringing up a new consumer app, use the current sources:
   the six-consumer proof and migration evidence.
 
 `acowtancy` is the live proof of the contract; mirror it. `underlay-reference`
-is the bootstrap fixture. Contact Patch, Compli Me, Songsprout, and Composer
-also conform after the `g09.026`–`g09.030` rollout.
+is the bootstrap fixture. Contact Patch, Compli Me, and Songsprout also
+conform after the `g09.026`–`g09.030` rollout.

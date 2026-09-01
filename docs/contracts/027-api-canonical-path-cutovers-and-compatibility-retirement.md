@@ -32,13 +32,6 @@ Primary shared sources:
 Reference migration evidence:
 
 - [`docs/roadmaps/g05/009-rust-runtime-contract-audit-and-next-contract-set.md`](../roadmaps/g05/009-rust-runtime-contract-audit-and-next-contract-set.md)
-- `loophole/composer/apps/composer-api/crates/api/src/routes/admin.rs`
-- `loophole/composer/apps/composer-api/crates/api/src/routes/shared.rs`
-- `loophole/composer/packages/composer-api-client/src/commands/vendor-commands.ts`
-- `loophole/composer/packages/composer-api-client/src/commands/product-commands.ts`
-- `loophole/composer/packages/composer-api-client/src/commands/parameter-commands.ts`
-- `loophole/composer/packages/composer-api-client/src/commands/mapping-commands.ts`
-- `loophole/composer/packages/composer-api-client/src/commands/hardware-commands.ts`
 
 If these diverge, the contract plus the cleanest current cutover proof win.
 

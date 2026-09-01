@@ -11,7 +11,7 @@ Underlay consumer app family.
 
 This contract covers:
 
-- which admin media capabilities are required across the six consumer apps
+- which admin media capabilities are required across the five consumer apps
 - how apps are classified as full, partial, or absent
 - what counts as fleet drift versus an explicit exception
 - the route and shell posture expected when an app owns the media family
@@ -53,7 +53,7 @@ The goal is a fleet capability rule, not another local media-proof exercise.
 
 In scope:
 
-- admin media capability across the six consumer apps
+- admin media capability across the five consumer apps
 - API support required for that admin family
 - full versus partial versus absent classification
 - shared route/shell posture for required media capability
@@ -68,7 +68,7 @@ Out of scope:
 
 ### Fleet requirement rule
 
-The current six-app admin fleet is expected to own the full admin media family.
+The current five-app admin fleet is expected to own the full admin media family.
 
 Affected apps:
 
@@ -77,7 +77,6 @@ Affected apps:
 - `compli-me/apps/admin`
 - `contact-patch/apps/cp-admin`
 - `songsprout/apps/greenhouse`
-- `loophole/composer/apps/composer-admin`
 
 Rules:
 
@@ -171,11 +170,10 @@ Current full apps:
 - `underlay-reference`
 - `acowtancy`
 - `contact-patch`
-- `loophole/composer`
 
 Current fleet status:
 
-- all six consumer admin apps are now `full`
+- all five consumer admin apps are now `full`
 - `songsprout` and `compli-me` reached full status in `g05.020`
 
 ## What Good Looks Like

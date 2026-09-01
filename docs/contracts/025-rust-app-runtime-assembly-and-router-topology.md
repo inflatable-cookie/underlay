@@ -49,8 +49,6 @@ Additional consumer evidence, repo-relative from each consumer root:
   `apps/cp-api/crates/api/src/routes/mod.rs`
 - `songsprout`: `apps/nursery/crates/api/src/main.rs`,
   `apps/nursery/crates/api/src/routes/mod.rs`
-- `loophole/composer`: `apps/composer-api/crates/api/src/main.rs`,
-  `apps/composer-api/crates/api/src/routes/mod.rs`
 
 If these diverge, the contract plus the clearest modern reference posture
 (`underlay-reference`, `acowtancy` Farmyard) win. Older or flatter assemblies
@@ -70,7 +68,7 @@ A normal app should be able to follow one declared runtime shape for:
 - how metrics, health, OpenAPI, and shutdown are exposed
 
 The goal is not a macro framework. The goal is one stable assembly posture that
-all six apps can converge on and future apps can copy.
+all five apps can converge on and future apps can copy.
 
 ## Scope Boundary
 

@@ -1,6 +1,6 @@
 # 001 - G10 Northstar AGENTS, Rust, And TypeScript Audit
 
-Status: ready
+Status: complete
 Owner: repo maintainers
 Created: 2026-09-01
 Roadmap: `g10.001`
@@ -48,18 +48,21 @@ product work are out of scope.
 
 ## Acceptance Criteria
 
-- [ ] every instruction section, crate/target/feature, and hand-written
+- [x] every instruction section, crate/target/feature, and hand-written
       TS/Svelte unit is owned or explicitly excluded;
-- [ ] every normative rule and required assessment pass has a verdict per unit;
-- [ ] source edits map only to pre-recorded authorized findings;
-- [ ] fixtures, generated/vendor material, consumers, and protected
+- [x] every normative rule and required assessment pass has a verdict per unit;
+- [x] source edits map only to pre-recorded authorized findings;
+- [x] fixtures, generated/vendor material, consumers, and protected
       instruction blocks are preserved;
-- [ ] the deleted repository is absent from live fleet authority; every
+- [x] the deleted repository is absent from live fleet authority; every
       surviving match is frozen evidence or an unrelated homonym;
-- [ ] MSRV, warnings, unavailable surfaces, and retained findings remain honest;
-- [ ] `effigy qa`, docs/Northstar QA, Rust validation, TS/Svelte validation,
-      focused tests, and `git diff --check` record actual results;
-- [ ] one PR targets `main`; the worker does not merge.
+- [x] MSRV, warnings, unavailable surfaces, and retained findings remain honest;
+- [x] `effigy qa`, docs/Northstar QA, Rust validation, TS/Svelte validation,
+      focused tests, and `git diff --check` record actual results — including
+      the pre-existing `ts/tests/tools/workspace-shape.test.ts` failure that
+      makes `effigy qa` red, which is reproduced on clean `main` and recorded
+      rather than repaired;
+- [x] one PR targets `main`; the worker does not merge.
 
 ## Review Oracle
 
@@ -86,5 +89,5 @@ public-contract decision cannot be resolved from existing authority.
 
 ## Next Task
 
-Run this card in the dispatched worker and open a PR. Do not merge or create a
-second card.
+The worker opened its PR. The orchestrator reviews it at the exact head and
+merges. Do not create a second card.

@@ -1,8 +1,9 @@
 # g10 - Northstar Instruction And Language Quality Audit
 
-Status: active
+Status: complete
 Owner: repo maintainers
 Started: 2026-09-01
+Closed: 2026-09-01
 
 ## Current Generation
 
@@ -13,12 +14,13 @@ consumer rollout, release, or product programme.
 
 ## Roadmap Sequence
 
-1. [ ] [`g10.001`](001-northstar-instruction-and-language-quality-audit.md) —
-   finding-first instruction and language-quality audit (`ready`)
+1. [x] [`g10.001`](001-northstar-instruction-and-language-quality-audit.md) —
+   finding-first instruction and language-quality audit (`complete`)
 
 ## Queue
 
-Card 001 is the sole ready execution card under `g10.001`.
+Empty. Card 001 was the sole execution card under `g10.001` and is delivered;
+its PR is with the orchestrator for exact-head review.
 
 ## Dependencies And Parallelism
 
@@ -29,5 +31,5 @@ other repository.
 
 ## Next Task
 
-Execute ready card 001 under `g10.001` and stop at its PR for orchestrator
-exact-head review.
+Orchestrator reviews and merges the `g10.001` worker PR. No further roadmap is
+ready in this generation.

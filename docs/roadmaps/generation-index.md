@@ -63,5 +63,5 @@ In parallel mode:
 
 ## Next Task
 
-Execute ready `g10.001` and stop at its PR for orchestrator review. No later
-generation or second roadmap is implied.
+Orchestrator reviews and merges the `g10.001` worker PR. No later generation or
+second roadmap is implied.

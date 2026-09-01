@@ -128,7 +128,6 @@ Replicate the same model next in:
 2. `contact-patch`
 3. `compli-me`
 4. `songsprout`
-5. `loophole/composer`
 
 Treat each root as the rollout boundary. Update every affected child package
 inside that workspace, not just the admin surface.

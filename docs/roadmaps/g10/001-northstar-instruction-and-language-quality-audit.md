@@ -1,14 +1,15 @@
 # g10.001 - Northstar Instruction And Language Quality Audit
 
-Status: active
+Status: complete
 Owner: repo maintainers
 Created: 2026-09-01
+Closed: 2026-09-01
 Depends on: `g09` closed
 Governing refs: `AGENTS.md`, `rust/AGENTS.md`,
 `docs/contracts/001-working-rules.md`,
 `docs/contracts/rust-quality-profile.json`,
 `docs/contracts/rust-quality-deviations.json`, installed Northstar
-Planning state: card 001 ready
+Planning state: card 001 delivered; awaiting orchestrator exact-head review
 
 ## Problem
 
@@ -85,7 +86,15 @@ pretext for a consumer rollout or a new compatibility window.
 None is authorized. Any finding that needs consumer migration or changes a
 published contract stops for a later planned lane.
 
+## Delivery
+
+Card 001 ran in one isolated worker. Both recorders are finalized, the deleted
+Loophole Composer repository is out of live fleet authority, and the retained
+findings, the pre-existing `workspace-shape` suite failure, and the tooling
+provenance are recorded in
+[`docs/logs/2026-09/01-091500-g10-001-northstar-instruction-and-language-audit.md`](../../logs/2026-09/01-091500-g10-001-northstar-instruction-and-language-audit.md).
+
 ## Next Task
 
-Execute ready card 001 in one isolated Underlay worker and stop at its PR for
-orchestrator exact-head review.
+Orchestrator reviews the worker PR at its exact head and merges. Do not open a
+second card or widen this generation without an explicit rollover decision.

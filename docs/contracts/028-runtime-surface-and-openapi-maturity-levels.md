@@ -35,7 +35,6 @@ Reference consumer evidence:
 - `compli-me/apps/api/crates/api/src/main.rs`
 - `acowtancy/apps/farmyard/crates/api/src/main.rs`
 - `songsprout/apps/nursery/crates/api/src/main.rs`
-- `loophole/composer/apps/composer-api/crates/api/src/main.rs`
 
 If these diverge, the contract plus the clearest current maturity proofs win.
 
@@ -181,9 +180,6 @@ Examples:
   - compatible runtime posture with lighter maturity
 - `farmyard`
   - advanced runtime profile
-- `composer-api`
-  - compatible runtime family with leaner maturity because OpenAPI posture is
-    still absent
 
 ## What Good Looks Like
 

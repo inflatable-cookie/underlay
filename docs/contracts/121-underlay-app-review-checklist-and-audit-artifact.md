@@ -213,8 +213,7 @@ Optional stronger output:
 Good outcomes:
 
 - audits across `underlay-reference`, `acowtancy`, `compli-me`,
-  `contact-patch`, `songsprout`, and `loophole/composer` use the same domain
-  vocabulary
+  `contact-patch`, and `songsprout` use the same domain vocabulary
 - drift is separated cleanly from explicit exceptions
 - follow-on work can be opened as bounded cards instead of broad rediscovery
 
