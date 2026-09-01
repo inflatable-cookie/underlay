@@ -102,3 +102,8 @@ generation opened
 ([generation closeout](./2026-08/27-233954-g09-generation-closeout.md)).
 Papercuts wave 4 then landed merge closeout and retired-path inventory tooling
 ([log](./2026-08/28-085000-papercuts-wave4-merge-closeout.md)).
+
+## Next Task
+
+Record `g10.001` audit closeout under `docs/logs/2026-09/`, then stop at its PR
+for orchestrator review.

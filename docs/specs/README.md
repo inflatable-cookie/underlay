@@ -18,12 +18,12 @@ Specs hold active Underlay planning and strict execution-control surfaces.
 
 ## Active Spec Set
 
-- No strict spec is active.
-- The completed monorepo rollout spec is archived at
+- [`northstar-instruction-and-language-quality-audit.md`](./northstar-instruction-and-language-quality-audit.md)
+  wraps `g10.001` and card 001.
+- The completed monorepo rollout spec remains archived at
   [`archive/monorepo-consumer-workspace-rollout.md`](./archive/monorepo-consumer-workspace-rollout.md).
 
 ## Next Task
 
-No strict spec is active. Open a new strict execution-control surface only when
-a later numbered roadmap needs tighter grammar; keep the completed monorepo
-rollout spec archived.
+Execute `g10` card 001 and stop at its PR for orchestrator review. Keep the
+completed monorepo rollout spec archived.

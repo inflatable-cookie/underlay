@@ -53,14 +53,13 @@ README surfaces.
 
 ## Active generation
 
-- None. `g09` closed on 2026-08-27 and no later generation is open.
+- [`g10`](g10/README.md) — bounded Northstar instruction and language-quality
+  audit; `g10.001` and card 001 are ready.
 
 ## Current Queue
 
-No roadmap is ready. `g09.001`–`g09.062` are complete and the generation is
-closed. Its config, dependency, monorepo, contract-fidelity, fleet-repair, and
-doctor-normalization evidence remains in the frozen
-[`g09` front door](g09/README.md).
+`g10.001` is the sole ready roadmap. `g09.001`–`g09.062` remain complete and
+frozen in the [`g09` front door](g09/README.md).
 
 ## Archived generations
 
@@ -79,6 +78,5 @@ that risk.
 
 ## Next Task
 
-Open a later generation only through an explicit planning checkpoint. Compile
-numbered roadmaps before dispatch; do not reuse closed `g09` or create a queue
-from batch cards alone.
+Execute `g10.001` from its ready card and stop at the worker PR for orchestrator
+review. Do not reuse closed `g09` or infer another roadmap.

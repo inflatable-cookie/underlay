@@ -93,3 +93,8 @@ Historical evidence surfaces such as archived logs, roadmap bodies, and
 research notes may retain raw local paths or sibling-repo file references when
 they are part of the frozen record. Do not copy that style back into active
 guides, architecture docs, contracts, or front-door READMEs.
+
+## Next Task
+
+Execute `g10.001`, the bounded Northstar instruction and language-quality
+audit, from ready card 001. Stop at its PR for orchestrator review.

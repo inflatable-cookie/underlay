@@ -9,7 +9,7 @@ Updated: 2026-08-27
 
 ## Active generations
 
-- None.
+- `g10` — Northstar instruction and language-quality audit.
 
 ## Generation log
 
@@ -24,9 +24,12 @@ Updated: 2026-08-27
 | `g07` | 2026-06-06 | Runtime, workflow, residual Rust policy, and doctor-warning hardening after `g06` closeout | Complete after `g07.037` doctor warning closeout |
 | `g08` | 2026-07-17 | Audit remediation after July 2026 deep audit (security edge, correctness bugs, Rust/TS structure, docs/versioning/i18n posture) | Complete - all 32 roadmaps done; `v0.8.0` tagged |
 | `g09` | 2026-08-03 | Config-convergence follow-through; extended with dependency upgrades, consumer workspace convergence, and contract fidelity | Closed 2026-08-27 - all 62 roadmaps complete; exact-main doctor green |
+| `g10` | 2026-09-01 | Explicit operator-directed repository instruction and language-quality audit | Active; `g10.001` ready |
 
-The invalid `g10` rollover is not retained as a generation. Its completed and
-remaining work was recovered into `g09.021`–`g09.045` on 2026-08-26. The
+An earlier invalid `g10` rollover was removed rather than retained. Its
+completed and remaining work was recovered into `g09.021`–`g09.045` on
+2026-08-26. The current `g10` is a newly compiled operator-directed generation,
+not a continuation of that discarded queue. The
 `g09.045` evidence compiled the original `g09.046`–`g09.053` repair wave. The
 2026-08-27 cross-tab finding inserted `g09.053` as an owning repair and
 renumbered the unstarted fleet closeout to `g09.054`.
@@ -60,5 +63,5 @@ In parallel mode:
 
 ## Next Task
 
-Open a later generation only after an explicit planning checkpoint compiles its
-numbered roadmap queue. No generation is active now.
+Execute ready `g10.001` and stop at its PR for orchestrator review. No later
+generation or second roadmap is implied.

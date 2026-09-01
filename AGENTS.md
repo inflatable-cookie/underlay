@@ -61,7 +61,7 @@ effigy test --plan
 - `./docs/contracts/001-working-rules.md`
 - `./docs/roadmaps/README.md`
 - `./docs/roadmaps/generation-index.md`
-- `./docs/roadmaps/g09/README.md`
+- `./docs/roadmaps/g10/README.md`
 - `./docs/guides/README.md`
 - `./docs/guides/000-overview.md`
 - `./docs/guides/172-agents-files.md`

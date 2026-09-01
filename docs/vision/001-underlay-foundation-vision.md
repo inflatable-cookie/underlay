@@ -46,5 +46,5 @@ Over time, Underlay should:
 
 ## Next Task
 
-Open a later roadmap generation only after an explicit planning checkpoint via
-[`docs/roadmaps/README.md`](../roadmaps/README.md). No generation is active.
+Complete `g10.001`, the bounded Northstar instruction and language-quality
+audit. It does not change Underlay's product or consumer direction.

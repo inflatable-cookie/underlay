@@ -49,15 +49,15 @@ In parallel mode:
 Underlay is in sequential mode:
 
 - `g01`–`g09` are closed historical generations
-- `g09.001`–`g09.062` are complete
-- no generation is active
-- no strict spec is active; the completed monorepo rollout spec is archived
+- `g10` is a bounded maintenance generation for the explicit Northstar
+  instruction and language-quality audit
+- `g10.001` and its strict card 001 are the sole ready lane
+- the completed monorepo rollout spec remains archived
 - open triage and backlog files are retained evidence, not execution authority
 - a later generation requires explicit planning and numbered roadmaps before
   dispatch
 
 ## Next Task
 
-Open a later generation only after explicit operator direction and a planning
-checkpoint. Do not reopen `g09` or substitute batch cards for numbered
-roadmaps.
+Execute `g10.001` from card 001 and stop at its PR for orchestrator review. Do
+not reopen `g09` or widen the audit into consumer work.
