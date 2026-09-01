@@ -57,10 +57,23 @@ sync, so the finding is reported, not repaired.
 
 ## Rust Audit
 
-Scope `repository`, audit id `g10-001-rust`. 12 assessed units covering all 37
-workspace packages, all 40 targets, and every declared feature, with each crate
-manifest owned as `owning_manifest` context. The checked `plan` operation
+Scope `repository`, audit id `g10-001-rust-final`. 12 assessed units covering all
+37 workspace packages, all 40 targets, and every declared feature, with each
+crate manifest owned as `owning_manifest` context. The checked `plan` operation
 verified the coverage claim against Cargo discovery exactly.
+
+The first attempt, audit id `g10-001-rust`, was invalidated by the auditor and
+is retained unfinalized in Git metadata. It initialized before the TypeScript
+setup ran, so it froze `docs/contracts/typescript-quality-profile.json` as an
+excluded dirty file; populating that profile's generated/fixture exclusions
+afterwards mutated a file the Rust recorder had snapshotted, and `complete`
+correctly refused every unit with
+`lifecycle.read-only_file_changed`. The audit was re-run end to end: the eight
+repaired source files were restored to their pre-repair content, the identical
+12 unit assessments were recorded against that clean baseline, the repairs were
+re-applied byte-for-byte, and evidence, completion, and finalization followed.
+Nothing was recorded after mutation that had not already been recorded before
+it.
 
 Confirmed protected-data findings, all repaired under `RUST-API-001` using the
 redaction convention `DbConfig`, `JwtConfig`, `KeyPair`, `SecretCipher`, and
@@ -108,6 +121,18 @@ Retained Rust findings:
 - `RUST-READ-001` is `degraded` in all 12 units. The review was rule-directed
   across 64,165 lines rather than line-by-line, and the limitation records that
   instead of claiming a clean design pass.
+
+Finalized Rust result: `status: operator_action_required`, 8 changed files,
+43 structured limitations — 13 retained findings (12 MSRV, 1 unsafe), 12
+`assessment_depth` limitations for `RUST-READ-001`, 12 `evidence_unrun` records
+for the deliberately unrun rustdoc class, and 6 `evidence_warning` records. Four
+of those warnings are the SLOP039 forwarder candidates below. The other two,
+`test-http_transport` and `test-observability`, are adapter false positives: both
+`cargo test` runs exited 0 with every test passing, and the adapter matched the
+literal word "warning" inside two test *names*
+(`admin_cors_empty_origins_warning_only_fires_outside_local_dev` and
+`legacy_env_var_warning_names_both_vars`). They are left classified as warnings
+rather than hand-promoted to `passed`.
 
 `RUST-SLOP-001` candidate ledger, evaluation-only with no repair authority:
 stopslop SLOP039 returned 14 exact-forwarder candidates and all 14 are
@@ -210,6 +235,17 @@ Preserved as frozen evidence, with the reason:
 - `COMPOSER_ENV` in `docs/guides/192-config-model.md` — a deprecated env-var
   alias, an unrelated symbol rather than fleet authority
 
+Successor planning was explicitly checked and left alone. Underlay contains no
+generic or shared online-services or knowledge-service successor plan, so none
+was removed, de-planned, or renamed. The only `successor` matches in the
+repository are the Poodle UI-component adoption waves in
+`contracts/ui/poodle-adoption-underlay-surface-groups.json` and one sentence in
+`docs/guides/062-auth-ui-components.md`; both concern component ownership, not a
+service, and neither file is touched by this change. `docs/research/specimen-dossiers/notion.md`
+mentions a "knowledge base" only while describing Notion. If a generic
+online-services or knowledge-service successor lane is opened later, this
+cleanup does not constrain it.
+
 No consumer repository was edited. No replacement service was designed or named.
 
 ## Validation
@@ -255,8 +291,9 @@ than promoted to clean evidence.
 
 Recorder changed-file unions reconcile exactly with Git:
 
-- Rust recorder: eight source files across six crates, each attributed to one of
-  five pre-recorded repair plans.
+- Rust recorder: `changed_files` is exactly the eight source files across six
+  crates that `git diff --name-only c2bd9686..HEAD -- rust/crates/` reports, each
+  attributed to one of five pre-recorded repair plans.
 - TypeScript recorder: `ts/src/patterns/dom.ts` and
   `ts/src/tools/guardrails-config.ts`, with `preservation.verified: true` and all
   three excluded dirty files byte-identical at finalize.
