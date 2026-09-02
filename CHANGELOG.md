@@ -7,6 +7,8 @@ While Underlay is `0.x`, breaking changes raise the minor version.
 
 ## [Unreleased]
 
+## [0.9.7] - 2026-09-02
+
 ### Added
 - `underlay-blob`: additive owned verified promotion recovery.
   `OwnershipToken`, `OwnedDestinationAuthority`, and
