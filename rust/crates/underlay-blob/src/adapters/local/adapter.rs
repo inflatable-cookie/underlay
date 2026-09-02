@@ -14,6 +14,7 @@ use super::path::path_within_base;
 use super::path::{cleanup_empty_parents, joined_path_within_base, validate_local_object_key};
 use crate::adapter::BlobAdapter;
 use crate::error::{BlobError, BlobResult};
+use crate::owned::OwnedPublicationFacts;
 use crate::types::{
     DownloadRequest, ObjectInfo, SignedUrl, StoredObject, UploadPlan, UploadRequest,
 };
@@ -139,6 +140,33 @@ impl LocalAdapter {
     async fn cleanup_empty_parents(&self, deleted_path: &Path) {
         cleanup_empty_parents(deleted_path, &self.canonical_base).await
     }
+
+    async fn create_only_destination(
+        &self,
+        key: &str,
+        data: &[u8],
+        content_type: &str,
+        owned: Option<OwnedPublicationFacts>,
+    ) -> BlobResult<StoredObject> {
+        validate_local_object_key(key)?;
+        #[cfg(unix)]
+        {
+            create_only(&self.base_dir, key, data, owned).await?;
+        }
+        #[cfg(not(unix))]
+        {
+            create_only(key, data, owned).await?;
+        }
+
+        Ok(StoredObject {
+            provider: "local".to_string(),
+            bucket: self.config.bucket_name().to_string(),
+            key: key.to_string(),
+            size: data.len() as u64,
+            content_type: content_type.to_string(),
+            etag: None,
+        })
+    }
 }
 
 #[cfg(test)]
@@ -230,6 +258,16 @@ impl BlobAdapter for LocalAdapter {
 
         let last_modified = metadata.modified().ok().map(DateTime::<Utc>::from);
         let content_type = guess_content_type(key);
+        let object_metadata = {
+            #[cfg(unix)]
+            {
+                super::xattr::read_owned_metadata(&path)
+            }
+            #[cfg(not(unix))]
+            {
+                HashMap::new()
+            }
+        };
 
         Ok(ObjectInfo {
             key: key.to_string(),
@@ -237,7 +275,7 @@ impl BlobAdapter for LocalAdapter {
             content_type,
             etag: None,
             last_modified,
-            metadata: HashMap::new(),
+            metadata: object_metadata,
         })
     }
 
@@ -280,24 +318,19 @@ impl BlobAdapter for LocalAdapter {
         data: &[u8],
         content_type: &str,
     ) -> BlobResult<StoredObject> {
-        validate_local_object_key(key)?;
-        #[cfg(unix)]
-        {
-            create_only(&self.base_dir, key, data).await?;
-        }
-        #[cfg(not(unix))]
-        {
-            create_only(key, data).await?;
-        }
+        self.create_only_destination(key, data, content_type, None)
+            .await
+    }
 
-        Ok(StoredObject {
-            provider: "local".to_string(),
-            bucket: self.config.bucket_name().to_string(),
-            key: key.to_string(),
-            size: data.len() as u64,
-            content_type: content_type.to_string(),
-            etag: None,
-        })
+    async fn put_bytes_create_only_owned(
+        &self,
+        key: &str,
+        data: &[u8],
+        content_type: &str,
+        facts: &OwnedPublicationFacts,
+    ) -> BlobResult<StoredObject> {
+        self.create_only_destination(key, data, content_type, Some(facts.clone()))
+            .await
     }
 
     fn name(&self) -> &'static str {

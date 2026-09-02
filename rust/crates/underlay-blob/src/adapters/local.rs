@@ -8,6 +8,8 @@ mod bounded;
 mod config;
 mod mime;
 mod path;
+#[cfg(unix)]
+mod xattr;
 
 pub use adapter::LocalAdapter;
 pub use config::LocalConfig;
@@ -38,3 +40,7 @@ mod base_pin_tests;
 #[cfg(test)]
 #[path = "../tests/adapters/local_atomic_publish_tests.rs"]
 mod atomic_publish_tests;
+
+#[cfg(test)]
+#[path = "../tests/adapters/local_owned_tests.rs"]
+mod owned_tests;

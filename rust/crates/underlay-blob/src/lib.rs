@@ -43,6 +43,10 @@
 //! [`BlobAdapterPromotionExt::promote_verified`] binds one server-side byte
 //! capture to a distinct, exclusively-created destination for immutable
 //! media publication; see its doc comment for the full contract.
+//! [`BlobAdapterPromotionExt::promote_verified_owned`] adds token-bound
+//! destination ownership, and
+//! [`BlobAdapterPromotionExt::recover_owned_publication`] recovers those
+//! facts from destination head after process loss.
 //!
 //! # Features
 //!
@@ -60,6 +64,7 @@ mod adapter;
 pub mod adapters;
 mod config;
 mod error;
+mod owned;
 mod promotion;
 mod sniff;
 mod types;
@@ -68,6 +73,7 @@ mod types;
 pub use adapter::{BlobAdapter, BlobAdapterObjectKeyExt, BlobAdapterUploadExt, NoopAdapter};
 pub use config::{BlobUploadConfig, DEFAULT_ALLOWED_CONTENT_TYPES};
 pub use error::{BlobError, BlobResult};
+pub use owned::{OwnedDestinationAuthority, OwnedPublicationFacts, OwnershipToken};
 pub use promotion::{BlobAdapterPromotionExt, VerifiedPromotionResult};
 pub use sniff::{content_matches_declared, sniff_content_type};
 pub use types::{

@@ -23,7 +23,10 @@
 //! create-if-absent namespace operation, exactly like the old direct
 //! `O_CREAT | O_EXCL` open but performed on an inode that is already
 //! complete and durable), then `fsync`s the parent directory so the new
-//! name itself is durable, not only the bytes behind it. A concurrent
+//! name itself is durable, not only the bytes behind it. Owned exclusive
+//! create attaches reserved metadata to that unpublished temp inode before
+//! the `fsync` and `linkat`, so a reader of the final name either sees the
+//! complete object plus ownership facts or neither. A concurrent
 //! reader can only ever see "not found" or "fully published"; a write
 //! failure or a destination collision before `linkat` leaves only the
 //! caller-owned temporary name to remove, never a poisoned final name, so a
@@ -39,6 +42,7 @@
 //! check-then-act resolution while still claiming no-follow behavior.
 
 use crate::error::BlobResult;
+use crate::owned::OwnedPublicationFacts;
 
 /// Read at most `max_bytes + 1` bytes from `key`, resolved relative to a
 /// duplicate of the adapter's pinned base-directory descriptor.
@@ -102,18 +106,23 @@ pub(super) async fn create_only(
     base_dir: &std::fs::File,
     key: &str,
     data: &[u8],
+    owned: Option<OwnedPublicationFacts>,
 ) -> BlobResult<()> {
     let base_dir = base_dir
         .try_clone()
         .map_err(|e| crate::error::BlobError::IoError(e.to_string()))?;
     let key = key.to_string();
     let data = data.to_vec();
-    run_blocking(move || imp::create_only_sync(base_dir, &key, &data)).await
+    run_blocking(move || imp::create_only_sync(base_dir, &key, &data, owned.as_ref())).await
 }
 
 #[cfg(not(unix))]
-pub(super) async fn create_only(key: &str, data: &[u8]) -> BlobResult<()> {
-    let _ = (key, data);
+pub(super) async fn create_only(
+    key: &str,
+    data: &[u8],
+    owned: Option<OwnedPublicationFacts>,
+) -> BlobResult<()> {
+    let _ = (key, data, owned);
     Err(crate::error::BlobError::Unsupported(
         "local exclusive create requires no-follow open support unavailable on this platform"
             .to_string(),
@@ -402,7 +411,12 @@ mod imp {
         to_cstring(OsStr::new(&candidate))
     }
 
-    pub(super) fn create_only_sync(base_dir: File, key: &str, data: &[u8]) -> BlobResult<()> {
+    pub(super) fn create_only_sync(
+        base_dir: File,
+        key: &str,
+        data: &[u8],
+        owned: Option<&crate::owned::OwnedPublicationFacts>,
+    ) -> BlobResult<()> {
         let (parent, final_name) = descend_to_parent(base_dir, key, true)?;
         let parent_fd = parent.as_raw_fd();
 
@@ -423,6 +437,15 @@ mod imp {
         if let Err(e) = temp_file.write_all(data) {
             cleanup_temp(parent_fd, &temp_name);
             return Err(BlobError::IoError(format!("failed to write file: {e}")));
+        }
+        if let Some(facts) = owned {
+            if let Err(err) = super::super::xattr::set_owned_facts(temp_file.as_raw_fd(), facts) {
+                super::super::xattr::log_xattr_failure(&err);
+                cleanup_temp(parent_fd, &temp_name);
+                return Err(BlobError::Unsupported(
+                    "local filesystem cannot attach owned publication metadata".to_string(),
+                ));
+            }
         }
         if let Err(e) = temp_file.sync_all() {
             cleanup_temp(parent_fd, &temp_name);

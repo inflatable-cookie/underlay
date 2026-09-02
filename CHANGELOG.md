@@ -7,6 +7,26 @@ While Underlay is `0.x`, breaking changes raise the minor version.
 
 ## [Unreleased]
 
+### Added
+- `underlay-blob`: additive owned verified promotion recovery.
+  `OwnershipToken`, `OwnedDestinationAuthority`, and
+  `OwnedPublicationFacts` plus fail-closed
+  `BlobAdapter::put_bytes_create_only_owned`,
+  `BlobAdapterPromotionExt::promote_verified_owned`, and
+  `BlobAdapterPromotionExt::recover_owned_publication`. Exclusive create
+  stores only a one-way token verifier plus server-derived SHA-256, size,
+  and MIME as reserved metadata in the same backend commit as the bytes
+  (S3: one conditional PutObject; local: xattrs on the unpublished temp
+  inode before `linkat`). The v0.9.7 reserved-metadata verifier is SHA-256
+  over a domain-separated, length-prefixed encoding of provider, bucket,
+  key, and token, so copied metadata cannot recover under a new
+  destination. Recovery uses durable token, destination authority, and
+  `head` only — never staging — and every unproven incumbent stays
+  `BlobError::DestinationExists`. Oversized local reserved xattrs are
+  unproven facts, not `head`/`exists` I/O errors. Existing v0.9.6 methods
+  and third-party adapters remain source-compatible. See
+  `docs/contracts/040-storage-blob-and-media-systems.md`.
+
 ## [0.9.6] - 2026-09-02
 
 ### Added
