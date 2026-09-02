@@ -40,6 +40,10 @@ async function loadFixture(name: string): Promise<string> {
 		await writeFile(path.join(dir, "apps/app/.git"), "gitdir: fixture\n");
 	}
 
+	if (name === "retired-top-level-package") {
+		await mkdir(path.join(dir, "app", "node_modules"), { recursive: true });
+	}
+
 	return dir;
 }
 

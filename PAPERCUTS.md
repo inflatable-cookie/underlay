@@ -5,7 +5,9 @@ they hit a solvable hurdle; they do not stop the current task to fix one.
 
 ## Open
 
-### [ ] workspace-shape test fixture is missing its retired top-level directory — 2026-09-02
+## Closed
+
+### [x] workspace-shape test fixture is missing its retired top-level directory — 2026-09-02
 - Friction: `ts/tests/tools/workspace-shape.test.ts` > "flags disposable leftover
   top-level package trees after apps/packages migration" expects the
   `retired-top-level-package` fixture to contain a top-level `app/` directory
@@ -20,8 +22,13 @@ they hit a solvable hurdle; they do not stop the current task to fix one.
 - Possible fix: commit a placeholder file under a tracked top-level `app/`
   path in the fixture (e.g. `app/node_modules/.gitkeep` or similar disposable
   marker) so the retired-tree scenario actually exists on checkout
-
-## Closed
+- Resolution: `loadFixture("retired-top-level-package")` now synthesizes
+  `app/node_modules/` after copy, matching the `nested-git` helper. Disposable
+  leftover names are gitignored, so the tree cannot be a committed fixture.
+  Historical `app/package.json` is inspect/relocate, not disposable, and was
+  not restored.
+- Closed: 2026-09-02
+- Surface: workspace-shape unit fixtures / release validate gate
 
 ### [x] Northstar compile-roadmaps references a missing batch-card template — 2026-08-26
 - Friction: compile-roadmaps requires the installed `docs/specs/templates/batch-card-template.md`, but the Northstar assets package only lists that path in its README and does not contain the file

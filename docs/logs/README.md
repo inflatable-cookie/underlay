@@ -5,8 +5,11 @@ Logs capture meaningful documentation and delivery batches for Underlay.
 ## Current Evidence Window
 
 The latest evidence window is `g11` under `docs/logs/2026-09/`, beginning with
-the immutable verified media-publication promotion. Closed `g10`, `g09`, and
-earlier generation shards are frozen lineage.
+the immutable verified media-publication promotion. Card 002 remains stopped
+pending explicit authorization; the workspace-shape fixture hermeticity repair
+is recorded in
+`2026-09/02-191522-workspace-shape-retired-fixture-hermeticity.md`. Closed
+`g10`, `g09`, and earlier generation shards are frozen lineage.
 
 ## Cadence
 
