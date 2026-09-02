@@ -67,7 +67,7 @@ Neither stop condition triggered.
 | Two writers and ordinary retries | Local: eight concurrent owned creates, exactly one winner with complete metadata, seven `DestinationExists`. Fake: second `promote_verified_owned` is `DestinationExists`; matching token then recovers |
 | S3 one conditional PUT with reserved facts | Replay fixture: one PUT, `If-None-Match: *`, four reserved metadata headers, no prior HEAD |
 | Local metadata before final-link visibility | xattr unit test: facts readable on the unpublished inode while the final name does not exist; after hard-link, same facts. Adapter test: `head` and bounded read both succeed after owned create |
-| Existing adapters compile and refuse; v0.9.6 stays green | `NoopAdapter` owned create is `Unsupported`. Full `underlay-blob --all-features` suite: 94 passed, including every pre-existing promotion/S3/local test |
+| Existing adapters compile and refuse; v0.9.6 stays green | `NoopAdapter` owned create is `Unsupported`. Full `underlay-blob --all-features` suite: 102 passed, including every pre-existing promotion/S3/local test |
 
 ## Public API Shape
 
@@ -97,7 +97,7 @@ variants. Existing public items unchanged.
 ## Validation
 
 - `cargo fmt --all --check` and `git diff --check` passed
-- focused `underlay-blob --all-features` tests: 94 passed (v0.9.6 suite still green)
+- focused `underlay-blob --all-features` tests: 102 passed (v0.9.6 suite still green)
 - `effigy rust:check` and `effigy rust:clippy` (`-D warnings`) passed
 - `effigy rust:test` stopped on the inherited `underlay-http-client` timeout flake;
   `cargo test --workspace --all-features -- --skip invalid_user_agent_fallback_retains_default_timeout` passed
