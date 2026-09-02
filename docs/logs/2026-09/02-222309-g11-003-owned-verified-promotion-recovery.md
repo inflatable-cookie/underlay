@@ -4,6 +4,8 @@ Date: 2026-09-02
 Roadmap: `g11.001`, card 003
 Handoff: `docs/handoffs/20260902-205715-owned-verified-promotion-worker.md`
 Branch: `worker/owned-verified-promotion-v097`
+PR: https://github.com/inflatable-cookie/underlay/pull/25
+Implementation: `3c20cd5c1ed0bfcebba3696195187acf0c8371cc`
 
 ## What Shipped
 
@@ -120,5 +122,5 @@ variants. Existing public items unchanged.
 
 ## Next Task
 
-Open one PR against current `main` for exact-head review. Card 004 stays
-serial until that PR merges. Do not cut `v0.9.7` from this lane.
+Exact-head review of PR #25. Card 004 stays serial until that PR merges.
+Do not cut `v0.9.7` from this lane.
