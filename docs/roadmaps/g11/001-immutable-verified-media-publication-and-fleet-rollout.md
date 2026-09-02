@@ -106,6 +106,5 @@ unless a target repo proves that unavoidable and stops for planning.
 
 ## Next Task
 
-Execute Card 003 for owned promotion recovery. Card 004 is serial behind its
-reviewed merge and publishes `v0.9.7`; affected consumers remain paused until
-that tag exists.
+Execute the explicitly approved Card 004 release for `v0.9.7`. Affected
+consumers remain paused until that validated tag exists.

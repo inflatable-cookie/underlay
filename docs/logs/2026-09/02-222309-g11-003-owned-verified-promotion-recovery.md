@@ -143,5 +143,8 @@ Three findings from the posted review, all repaired on this branch:
 
 ## Next Task
 
-Re-review of PR #25. Card 004 stays serial until that PR merges.
-Do not cut `v0.9.7` from this lane.
+Exact head `eb344a23d7fc79f0079aa292070cf263a75b7336` remained under the
+accepted review after its evidence-only correction and merged as PR #25 at
+`c8378e6bd9372a8319fdc2f114a84e504cce8537`. Card 004 is now the explicitly
+authorized serial release lane. Do not cut `v0.9.7` from this implementation
+lane.

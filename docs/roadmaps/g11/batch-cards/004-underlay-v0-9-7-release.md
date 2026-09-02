@@ -1,6 +1,6 @@
 # 004 - Underlay v0.9.7 Release
 
-Status: blocked on Card 003 reviewed merge
+Status: ready — explicitly authorized; Card 003 merged at `c8378e6b`
 Owner: repo maintainers
 Created: 2026-09-02
 Roadmap: `g11.001`
@@ -42,5 +42,5 @@ Do not edit consumers or bypass, retry around, or weaken a release gate.
 
 ## Next Task
 
-After Card 003 merges, recompile this card against the exact pushed candidate
-and run the explicitly approved release sequence.
+Run the explicitly approved release sequence against the exact pushed
+post-closeout candidate. Stop on any gate or identity mismatch.

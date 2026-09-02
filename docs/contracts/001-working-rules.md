@@ -52,7 +52,8 @@ Underlay is in sequential mode:
 - `g10` is closed after the Northstar instruction and language-quality audit
 - `g11` is active for immutable verified media publication and five-consumer
   rollout
-- `v0.9.6` is released; Card 003 owns the positive-ownership gap
+- `v0.9.6` is released; Card 003's positive-ownership repair merged as PR #25
+- Card 004 is ready and explicitly authorized to publish `v0.9.7`
 - the completed monorepo rollout spec remains archived
 - open triage and backlog files are retained evidence, not execution authority
 - a later generation requires explicit planning and numbered roadmaps before
@@ -60,4 +61,4 @@ Underlay is in sequential mode:
 
 ## Next Task
 
-Execute `g11.001` Card 003 and stop at its PR for exact-head review.
+Execute `g11.001` Card 004 against the exact pushed release candidate.

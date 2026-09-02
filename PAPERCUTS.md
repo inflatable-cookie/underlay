@@ -5,6 +5,15 @@ they hit a solvable hurdle; they do not stop the current task to fix one.
 
 ## Open
 
+### [ ] Docs QA invokes deprecated direct Effigy docs command — 2026-09-02
+- Friction: `effigy qa:docs` and `effigy qa:northstar` pass but repeatedly warn
+  that direct command `docs` is deprecated in favor of `effigy repo docs`.
+- Impact: successful documentation gates are noisy and may break when the
+  compatibility route is removed.
+- Possible fix: update the repository's docs task definitions to call the
+  current `repo docs` surface without changing validation coverage.
+- Surface: `effigy.toml` / docs QA routing
+
 ## Closed
 
 ### [x] workspace-shape test fixture is missing its retired top-level directory — 2026-09-02

@@ -65,5 +65,4 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g11.001` Card 003 for token-bound owned promotion recovery. Card 004
-releases the accepted surface as `v0.9.7`.
+Execute the explicitly approved `g11.001` Card 004 release for `v0.9.7`.

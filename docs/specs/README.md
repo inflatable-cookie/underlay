@@ -27,5 +27,4 @@ Specs hold active Underlay planning and strict execution-control surfaces.
 
 ## Next Task
 
-Execute `g11.001` Card 003 for token-bound owned promotion recovery. Card 004
-releases the accepted surface as `v0.9.7` after Card 003 merges.
+Execute the explicitly approved `g11.001` Card 004 release for `v0.9.7`.

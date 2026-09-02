@@ -4,13 +4,13 @@ Logs capture meaningful documentation and delivery batches for Underlay.
 
 ## Current Evidence Window
 
-The latest evidence window is `g11` under `docs/logs/2026-09/`, beginning with
-the immutable verified media-publication promotion. Card 002 is executed:
-`v0.9.6` is published, with release evidence in
-`2026-09/02-194057-g11-002-underlay-v0-9-6-release.md` and the preceding
-workspace-shape fixture hermeticity repair in
-`2026-09/02-191522-workspace-shape-retired-fixture-hermeticity.md`. Closed
-`g10`, `g09`, and earlier generation shards are frozen lineage.
+The latest evidence window is `g11` under `docs/logs/2026-09/`. Card 003's
+owned-promotion recovery merged as PR #25, with closeout in
+`2026-09/02-230000-g11-003-owned-promotion-closeout.md`. Card 002 published
+`v0.9.6`, with release evidence in
+`2026-09/02-194057-g11-002-underlay-v0-9-6-release.md`. Card 004 is the ready,
+explicitly authorized `v0.9.7` release. Closed `g10`, `g09`, and earlier
+generation shards are frozen lineage.
 
 ## Cadence
 
@@ -109,5 +109,5 @@ Papercuts wave 4 then landed merge closeout and retired-path inventory tooling
 
 ## Next Task
 
-Execute `g11.001` Card 003 for owned promotion recovery. Card 004 releases the
-accepted surface as `v0.9.7`.
+Card 003 merged as PR #25. Execute the explicitly approved Card 004 release for
+`v0.9.7` against the exact pushed candidate.

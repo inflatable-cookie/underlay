@@ -22,8 +22,8 @@ to Underlay Reference, Contact Patch, Compli Me, Acowtancy, and Songsprout.
 
 - Complete: `g11.001` Card 001, merged in PR #23 at `27bde7b4`.
 - Complete: Card 002, `v0.9.6` released at `4f6d7552`.
-- Ready: Card 003, token-bound owned promotion recovery.
-- Serial behind Card 003: Card 004, the approved `v0.9.7` release.
+- Complete: Card 003, token-bound owned promotion recovery, merged as PR #25.
+- Ready: Card 004, the approved `v0.9.7` release.
 - Paused: affected consumer adoption until the validated `v0.9.7` tag exists.
 - Blocked: fleet closeout until all applicable consumer lanes merge.
 
@@ -37,4 +37,5 @@ agent/workspace rather than creating a duplicate lane.
 
 ## Next Task
 
-Execute Card 003 and stop at its PR for exact-head review.
+Execute Card 004 and publish `v0.9.7` only after exact-SHA CI and every
+configured release gate pass.

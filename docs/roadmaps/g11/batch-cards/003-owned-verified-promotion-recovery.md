@@ -1,6 +1,6 @@
 # 003 - Owned Verified Promotion Recovery
 
-Status: complete — PR #25
+Status: complete — PR #25 merged at `c8378e6b` (2026-09-02)
 Owner: blob worker
 Created: 2026-09-02
 Roadmap: `g11.001`
@@ -69,6 +69,5 @@ tokens in diagnostics, or change existing method behavior.
 
 ## Next Task
 
-Re-review of PR #25 after the exact-head blockers. Card 004 stays serial until
-that PR merges.
+Complete. Card 004 is ready for the explicitly approved `v0.9.7` release.
 Delivery log: `docs/logs/2026-09/02-222309-g11-003-owned-verified-promotion-recovery.md`.

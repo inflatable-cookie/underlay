@@ -54,14 +54,14 @@ README surfaces.
 ## Active generation
 
 - [`g11`](g11/README.md) — immutable verified media publication and
-  five-consumer rollout; `v0.9.6` is released and token-bound recovery is the
-  active repair.
+  five-consumer rollout; token-bound recovery is merged and `v0.9.7` release
+  is ready.
 
 ## Current Queue
 
-`g11.001` Cards 001–002 are complete. Card 003 owns positive destination
-ownership proof; Card 004 releases it as `v0.9.7`. Affected consumer lanes are
-paused on that serial edge.
+`g11.001` Cards 001–003 are complete. Card 004 is ready to release the accepted
+owned-promotion surface as `v0.9.7`. Affected consumer lanes are paused on that
+serial edge.
 
 ## Archived generations
 
@@ -80,4 +80,5 @@ that risk.
 
 ## Next Task
 
-Execute `g11.001` Card 003 and stop at its PR for exact-head review.
+Execute the explicitly approved `g11.001` Card 004 release against the exact
+pushed candidate.
