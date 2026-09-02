@@ -66,10 +66,21 @@ Model upload as a pipeline, not a single API call:
 ### Phase 4: Finalize Endpoint
 
 - [ ] verify version/media relation
-- [ ] verify blob object exists
-- [ ] finalize version metadata
+- [ ] promote the staging object to its published destination with
+      `underlay_blob::BlobAdapterPromotionExt::promote_verified` (available
+      from the next released Underlay tag after `g11.001`); persist the
+      returned destination key and server-derived SHA-256/size/MIME, not the
+      staging key or any client-supplied digest
+- [ ] finalize version metadata from that result
 - [ ] return updated media/version
 - [ ] optionally enqueue post-processing
+
+`promote_verified` reads staging once under a size bound, validates it, and
+publishes to a distinct key through exclusive create — the staging key never
+becomes the published identity, and a same-key mutable overwrite between
+inspection and use cannot forge a ready/current transition. Do not persist
+the presigned upload key as the published object; do not trust a
+client-supplied digest.
 
 ### Phase 5: Admin Upload UI
 

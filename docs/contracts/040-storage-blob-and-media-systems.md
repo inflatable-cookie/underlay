@@ -207,6 +207,7 @@ Core pieces:
 - `StoredObject`
 - `BlobError`
 - `BlobUploadConfig`
+- `BlobAdapterPromotionExt`, `VerifiedPromotionResult` (`g11.001`)
 
 Rules:
 
@@ -251,6 +252,48 @@ Rules:
   metadata DTOs, JSON/SQL edges, tests/examples, and historical migration or
   replay tooling where the raw value itself is the artifact under inspection
 - backend-specific details stay behind the adapter boundary
+
+### Immutable verified promotion (`g11.001`)
+
+`BlobAdapter` carries two additive, fail-closed-by-default methods:
+`get_bytes_bounded()` (reads at most `max_bytes + 1` bytes, never a full
+unbounded buffer of an oversized source) and `put_bytes_create_only()`
+(creates a destination only if absent, typed `BlobError::DestinationExists`
+on collision, never an unconditional overwrite fallback). Existing
+implementors keep compiling unchanged; an adapter that does not override
+these refuses via `BlobError::Unsupported` rather than silently degrading to
+mutable read/write.
+
+`BlobAdapterPromotionExt::promote_verified()` composes those two primitives:
+it captures a staging object once under a `BlobUploadConfig` size bound,
+validates the captured bytes' size, MIME allowlist membership, and magic
+bytes, derives their lowercase SHA-256 server-side, and publishes that exact
+vector to a distinct destination key through exclusive create. It returns a
+`VerifiedPromotionResult` (destination `StoredObject` plus the derived
+SHA-256). Staging is preserved; the caller owns cleanup/recovery policy. No
+client-supplied digest enters this path.
+
+Rules:
+
+- this is the immutable-publication seam: it binds bytes actually inspected
+  by the server to the object identity an application later marks
+  ready/current, closing the same-key mutable-overwrite gap that
+  `finalise_upload_verified` does not close
+- `finalise_upload_verified` remains available and unchanged; it validates a
+  mutable object in place (same key can still be silently replaced between
+  inspection and use) and does not establish immutable publication.
+  Consumers with a live upload-finalisation path should move to
+  `promote_verified` rather than treat the two as interchangeable
+- built-in S3 and local adapters implement both primitives; S3 uses one
+  conditional `PutObject` (`If-None-Match: *`) and maps every
+  precondition/conflict response to the typed collision; local uses
+  containment-safe, no-follow, `O_CREAT | O_EXCL` exclusive create and
+  refuses symlink/non-regular sources without blocking
+- a destination collision is never retried as an unconditional write; a
+  convergent retry path must prove exact destination byte equality before
+  accepting, not metadata or ETag alone
+- the backend ETag is supplemental metadata only; the SHA-256 in
+  `VerifiedPromotionResult` is the cross-adapter byte identity
 
 This contract is the generic storage seam. It does not define media-graph
 meaning by itself.

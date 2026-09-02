@@ -38,6 +38,12 @@
 //!
 //! All adapters implement the `BlobAdapter` trait.
 //!
+//! # Verified Promotion
+//!
+//! [`BlobAdapterPromotionExt::promote_verified`] binds one server-side byte
+//! capture to a distinct, exclusively-created destination for immutable
+//! media publication; see its doc comment for the full contract.
+//!
 //! # Features
 //!
 //! - `s3` - Enable the AWS S3 adapter (adds `aws-sdk-s3` dependency)
@@ -54,6 +60,7 @@ mod adapter;
 pub mod adapters;
 mod config;
 mod error;
+mod promotion;
 mod sniff;
 mod types;
 
@@ -61,6 +68,7 @@ mod types;
 pub use adapter::{BlobAdapter, BlobAdapterObjectKeyExt, BlobAdapterUploadExt, NoopAdapter};
 pub use config::{BlobUploadConfig, DEFAULT_ALLOWED_CONTENT_TYPES};
 pub use error::{BlobError, BlobResult};
+pub use promotion::{BlobAdapterPromotionExt, VerifiedPromotionResult};
 pub use sniff::{content_matches_declared, sniff_content_type};
 pub use types::{
     content_disposition_attachment, validate_blob_object_key, BlobObjectKey, BlobObjectKeyError,

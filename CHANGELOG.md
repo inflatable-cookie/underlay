@@ -7,6 +7,22 @@ While Underlay is `0.x`, breaking changes raise the minor version.
 
 ## [Unreleased]
 
+### Added
+- `underlay-blob`: additive, fail-closed-by-default `BlobAdapter::get_bytes_bounded`
+  and `BlobAdapter::put_bytes_create_only`, plus
+  `BlobAdapterPromotionExt::promote_verified`, for immutable verified
+  staging-to-published blob promotion. Captures a staging object once under a
+  size bound, validates size/MIME/magic bytes, derives a server-side SHA-256,
+  and publishes to a distinct destination key through exclusive create;
+  staging is preserved and no client-supplied digest enters the path.
+  Built-in S3 (one conditional `PutObject`) and local (containment-safe,
+  no-follow `O_CREAT | O_EXCL`) adapters implement both new primitives;
+  other `BlobAdapter` implementations keep compiling and refuse via
+  `BlobError::Unsupported` until they do. Existing mutable upload/read/
+  finalise APIs, including `finalise_upload_verified`, are unchanged and do
+  not establish immutable publication. See
+  `docs/contracts/040-storage-blob-and-media-systems.md`.
+
 ## [0.9.5] - 2026-08-27
 
 ### Added

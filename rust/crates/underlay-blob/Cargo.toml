@@ -14,7 +14,9 @@ local = ["tokio/fs", "tokio/io-util"]
 async-trait = { workspace = true }
 base64 = { workspace = true }
 chrono = { workspace = true }
+hex = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
+sha2 = { workspace = true }
 thiserror = { workspace = true }
 tokio = { workspace = true }
 tracing = { workspace = true }
@@ -25,8 +27,20 @@ aws-sdk-s3 = { version = "1", default-features = false, features = ["default-htt
 aws-smithy-runtime-api = { version = "1", optional = true }
 underlay-aws = { workspace = true, optional = true }
 
+[target.'cfg(unix)'.dependencies]
+libc = { workspace = true }
+
 [dev-dependencies]
 tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
+
+# S3 request/response fixture proof (g11.001): builds a test SdkConfig with a
+# StaticReplayClient so conditional-PUT and bounded-read behavior can be
+# proved without live storage.
+aws-credential-types = { workspace = true }
+aws-smithy-runtime = { workspace = true, features = ["test-util"] }
+aws-smithy-types = { workspace = true }
+aws-types = { workspace = true }
+http = { workspace = true }
 
 [lints]
 workspace = true

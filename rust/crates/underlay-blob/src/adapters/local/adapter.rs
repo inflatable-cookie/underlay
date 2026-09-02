@@ -6,6 +6,7 @@ use chrono::{DateTime, Utc};
 use tokio::fs;
 use tokio::io::AsyncWriteExt;
 
+use super::bounded::{create_only, read_bounded};
 use super::config::LocalConfig;
 use super::mime::guess_content_type;
 #[cfg(test)]
@@ -245,6 +246,30 @@ impl BlobAdapter for LocalAdapter {
         content_type: &str,
     ) -> BlobResult<StoredObject> {
         self.write_file(key, data, content_type).await
+    }
+
+    async fn get_bytes_bounded(&self, key: &str, max_bytes: u64) -> BlobResult<Vec<u8>> {
+        let path = self.path_for_key(key)?;
+        read_bounded(&path, key, max_bytes).await
+    }
+
+    async fn put_bytes_create_only(
+        &self,
+        key: &str,
+        data: &[u8],
+        content_type: &str,
+    ) -> BlobResult<StoredObject> {
+        let path = self.path_for_key(key)?;
+        create_only(&path, key, data).await?;
+
+        Ok(StoredObject {
+            provider: "local".to_string(),
+            bucket: self.config.bucket_name().to_string(),
+            key: key.to_string(),
+            size: data.len() as u64,
+            content_type: content_type.to_string(),
+            etag: None,
+        })
     }
 
     fn name(&self) -> &'static str {

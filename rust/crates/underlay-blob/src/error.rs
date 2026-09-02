@@ -61,6 +61,23 @@ pub enum BlobError {
     #[error("adapter not available: {0}")]
     AdapterUnavailable(String),
 
+    /// A create-only write refused because the destination already exists.
+    ///
+    /// This is a collision, not a transport/internal failure: the caller
+    /// must not retry as an unconditional overwrite. The message carries the
+    /// object key only, never backend request/response detail.
+    #[error("destination already exists: {0}")]
+    DestinationExists(String),
+
+    /// The adapter or the source does not support this operation.
+    ///
+    /// Covers the fail-closed default for adapters that have not implemented
+    /// bounded capture or exclusive create, and local sources this crate
+    /// refuses to read as bytes (symlinks, directories, and other
+    /// non-regular files).
+    #[error("unsupported: {0}")]
+    Unsupported(String),
+
     /// Generic internal error.
     #[error("internal error: {0}")]
     Internal(String),

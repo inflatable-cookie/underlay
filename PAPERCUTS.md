@@ -5,7 +5,21 @@ they hit a solvable hurdle; they do not stop the current task to fix one.
 
 ## Open
 
-<!-- No open papercuts. -->
+### [ ] workspace-shape test fixture is missing its retired top-level directory — 2026-09-02
+- Friction: `ts/tests/tools/workspace-shape.test.ts` > "flags disposable leftover
+  top-level package trees after apps/packages migration" expects the
+  `retired-top-level-package` fixture to contain a top-level `app/` directory
+  (sibling to `apps/app/`) holding only disposable content, but `git ls-files`
+  shows no `app/*` path is tracked in that fixture at all — git does not
+  preserve empty directories, so a fresh checkout never has one, and the
+  assertion (`expect(retired).toHaveLength(1)`) fails on `[]` instead
+- Impact: `effigy qa` and `bun x vitest run` fail this one test on any clean
+  checkout/worktree; confirmed pre-existing and unrelated to `g11.001`
+  (`underlay-blob` only touches Rust files; `git status --short` shows no `ts/`
+  changes)
+- Possible fix: commit a placeholder file under a tracked top-level `app/`
+  path in the fixture (e.g. `app/node_modules/.gitkeep` or similar disposable
+  marker) so the retired-tree scenario actually exists on checkout
 
 ## Closed
 
