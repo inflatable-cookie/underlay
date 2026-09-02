@@ -21,8 +21,10 @@ to Underlay Reference, Contact Patch, Compli Me, Acowtancy, and Songsprout.
 ## Queue
 
 - Complete: `g11.001` Card 001, merged in PR #23 at `27bde7b4`.
-- Ready with explicit approval: Card 002, the `v0.9.6` release.
-- Blocked: all consumer adoption until the validated tag exists.
+- Complete: Card 002, `v0.9.6` released at `4f6d7552`.
+- Ready: Card 003, token-bound owned promotion recovery.
+- Serial behind Card 003: Card 004, the approved `v0.9.7` release.
+- Paused: affected consumer adoption until the validated `v0.9.7` tag exists.
 - Blocked: fleet closeout until all applicable consumer lanes merge.
 
 ## Dependencies And Parallelism
@@ -35,5 +37,4 @@ agent/workspace rather than creating a duplicate lane.
 
 ## Next Task
 
-Obtain explicit operator authorization, then execute and validate Card 002 to
-publish `v0.9.6`.
+Execute Card 003 and stop at its PR for exact-head review.

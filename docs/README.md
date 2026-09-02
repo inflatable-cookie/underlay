@@ -96,6 +96,5 @@ guides, architecture docs, contracts, or front-door READMEs.
 
 ## Next Task
 
-Obtain explicit operator authorization, then execute and validate the
-`g11.001` Card 002 `v0.9.6` release. Consumer adoption starts only from that
-tag.
+Execute `g11.001` Card 003 for token-bound owned promotion recovery. Card 004
+releases the accepted surface as `v0.9.7` before affected consumers resume.

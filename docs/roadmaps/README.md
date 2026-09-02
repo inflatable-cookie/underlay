@@ -54,13 +54,14 @@ README surfaces.
 ## Active generation
 
 - [`g11`](g11/README.md) — immutable verified media publication and
-  five-consumer rollout; Card 001 is merged and the `v0.9.6` release is ready
-  with explicit approval.
+  five-consumer rollout; `v0.9.6` is released and token-bound recovery is the
+  active repair.
 
 ## Current Queue
 
-`g11.001` Card 001 is merged. The `v0.9.6` release is ready with explicit
-approval; five consumer adoptions and fleet closeout remain blocked on the tag.
+`g11.001` Cards 001–002 are complete. Card 003 owns positive destination
+ownership proof; Card 004 releases it as `v0.9.7`. Affected consumer lanes are
+paused on that serial edge.
 
 ## Archived generations
 
@@ -79,5 +80,4 @@ that risk.
 
 ## Next Task
 
-Obtain explicit operator authorization, then execute and validate `v0.9.6`.
-Do not advance consumer pins before the shared release tag exists.
+Execute `g11.001` Card 003 and stop at its PR for exact-head review.

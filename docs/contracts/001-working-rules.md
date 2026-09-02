@@ -49,10 +49,10 @@ In parallel mode:
 Underlay is in sequential mode:
 
 - `g01`–`g09` are closed historical generations
-- `g10` is a bounded maintenance generation for the explicit Northstar
-  instruction and language-quality audit
-- `g10.001` and its strict card 001 are complete; the worker PR is with the
-  orchestrator for exact-head review
+- `g10` is closed after the Northstar instruction and language-quality audit
+- `g11` is active for immutable verified media publication and five-consumer
+  rollout
+- `v0.9.6` is released; Card 003 owns the positive-ownership gap
 - the completed monorepo rollout spec remains archived
 - open triage and backlog files are retained evidence, not execution authority
 - a later generation requires explicit planning and numbered roadmaps before
@@ -60,5 +60,4 @@ Underlay is in sequential mode:
 
 ## Next Task
 
-Orchestrator reviews and merges the `g10.001` worker PR. Do not reopen `g09` or
-widen the closed audit into consumer work.
+Execute `g11.001` Card 003 and stop at its PR for exact-head review.

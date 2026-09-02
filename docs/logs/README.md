@@ -109,5 +109,5 @@ Papercuts wave 4 then landed merge closeout and retired-path inventory tooling
 
 ## Next Task
 
-Record `g10.001` audit closeout under `docs/logs/2026-09/`, then stop at its PR
-for orchestrator review.
+Execute `g11.001` Card 003 for owned promotion recovery. Card 004 releases the
+accepted surface as `v0.9.7`.

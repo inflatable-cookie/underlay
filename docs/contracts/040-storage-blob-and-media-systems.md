@@ -325,14 +325,47 @@ Rules:
   identity: it verifies the returned key and size match what was requested
   and captured before returning success, refusing with a typed internal
   error otherwise
-- a destination collision is never retried as an unconditional write; a
-  convergent retry path must prove exact destination byte equality before
-  accepting, not metadata or ETag alone
+- a destination collision is never retried as an unconditional write;
+  ordinary promotion always refuses it, including when destination bytes
+  match. Only the owned-recovery surface below may accept an incumbent, and
+  only through positive token-bound ownership proof
 - the backend ETag is supplemental metadata only; the SHA-256 in
   `VerifiedPromotionResult` is the cross-adapter byte identity
 
 This contract is the generic storage seam. It does not define media-graph
 meaning by itself.
+
+### Owned promotion recovery (`g11.001`, v0.9.7 follow-up)
+
+Byte equality, destination-key secrecy, publication intent, ETag, and ordinary
+object metadata do not prove which application version created an incumbent.
+An application may recover a destination after process loss only when the
+exclusive create atomically attached positive ownership evidence that matches a
+token persisted by that version before publication.
+
+The additive owned-promotion surface must:
+
+- accept an opaque, high-entropy caller token without rendering it in Debug,
+  Display, public errors, logs, URLs, or returned DTOs;
+- write a one-way token verifier plus the server-derived SHA-256, size, and
+  validated MIME as reserved object metadata in the same backend commit that
+  exclusively creates the destination;
+- let S3 attach that metadata to the conditional PutObject and let local
+  storage attach equivalent metadata to the unpublished temp inode before its
+  atomic link publishes the final name;
+- let recovery use only the durable token, destination, provider/bucket
+  authority, and object head metadata, never staging or mutable media fields;
+- compare the token verifier without timing-dependent early exit and refuse
+  absent, malformed, incomplete, or mismatched metadata;
+- keep every ordinary or unproven collision as
+  `BlobError::DestinationExists`, preserving the incumbent unchanged;
+- keep existing promotion and mutable methods plus third-party adapter
+  implementations source-compatible. Unsupported adapters fail closed.
+
+Persisting intent before create does not authorize adoption by itself. A
+pre-create crash followed by a foreign incumbent must refuse. Consumer delete
+and purge retain database recovery identity until required blob cleanup
+succeeds.
 
 ### Backend implementations
 

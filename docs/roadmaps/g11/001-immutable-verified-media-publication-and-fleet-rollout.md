@@ -16,6 +16,12 @@ changing bytes between inspection and publication. An optional ETag does not
 close this for every adapter, and local storage has none. Applications can then
 persist a client-supplied digest or publish bytes other than those inspected.
 
+The v0.9.6 consumer proof exposed a second boundary: after exclusive create but
+before an application database commit, intent, destination identity, and byte
+equality cannot distinguish the application's object from a foreign incumbent.
+Safe restart recovery needs positive ownership evidence attached atomically to
+the destination.
+
 ## Invariant
 
 A media version may become ready/current only from bytes captured once and
@@ -33,13 +39,17 @@ identity only and never becomes the published object identity.
    built-in S3 and local adapters. Preserve existing mutable APIs.
 2. Review and merge the exact implementation head.
 3. Cut and validate the next Underlay Git tag with upgrade notes.
-4. Resume Contact Patch Card 015 on its retained worker. Adopt the released
+4. Add positive, token-bound destination ownership proof and recovery after the
+   v0.9.6 consumer counterexample; review and merge it without weakening
+   ordinary collision refusal.
+5. Cut and validate `v0.9.7` before any consumer relies on owned recovery.
+6. Resume Contact Patch Card 015 on its retained worker. Adopt the released
    helper, derive the digest server-side, and make ready/current one database
    transition.
-5. Apply the same boundary to Underlay Reference, Compli Me, Acowtancy, and
+7. Apply the same boundary to Underlay Reference, Compli Me, Acowtancy, and
    Songsprout wherever their live upload-finalisation paths can publish mutable
    or client-described bytes.
-6. Prove all five consumers are on the released tag and the invariant, then
+8. Prove all five consumers are on the released tag and the invariant, then
    close this roadmap. No consumer may pin an unreleased commit or local path.
 
 ## Review Oracle
@@ -50,7 +60,9 @@ identity only and never becomes the published object identity.
 | Capture is bounded before allocation completes. | Replace staging with an object larger than the configured maximum. | Read at most max plus a sentinel and refuse before retaining the body. | S3/local bounded-read tests. |
 | Destination creation is exclusive. | Two writers target the same new destination. | Exactly one creates it; no overwrite or unconditional fallback. | Concurrent local test plus S3 request/fixture proof. |
 | Collision cannot forge success. | Seed the destination with different bytes or metadata. | Promotion refuses and preserves the existing object. | Built-in adapter tests. |
-| Retry is explicit. | Crash after destination creation but before the app DB commit. | The documented retry path either proves byte identity and converges or returns a typed conflict; it never overwrites. | Promotion retry test and consumer composition test. |
+| Intent is not ownership. | Persist intent, crash before create, then plant a foreign identical incumbent. | Recovery refuses; intent, key, and byte equality cannot authorize adoption. | S3/local metadata fixtures plus consumer-shaped recovery test. |
+| Owned restart is staging-independent. | Crash after exclusive create but before the app DB facts commit; remove or mutate staging. | Matching durable token recovers server-derived facts from destination head without staging access. | Owned-promotion restart test. |
+| Retry is explicit. | Crash after destination creation but before the app DB commit. | The documented retry path either proves token-bound ownership and converges or returns a typed conflict; it never overwrites. | Promotion retry test and consumer composition test. |
 | Derived metadata is authoritative. | Client submits a valid-shape but wrong digest, wrong MIME, or wrong length. | Persist only server-derived digest/size and validated MIME, or refuse. | Consumer handler/DB oracle. |
 | Publication and selection are atomic in the app DB. | Ready update wins but current selection fails. | Neither state commits. | Consumer DB transaction test. |
 
@@ -94,5 +106,6 @@ unless a target repo proves that unavoidable and stops for planning.
 
 ## Next Task
 
-Obtain explicit operator authorization, then execute and validate Card 002 to
-publish `v0.9.6`. Do not dispatch consumer mutations before the tag exists.
+Execute Card 003 for owned promotion recovery. Card 004 is serial behind its
+reviewed merge and publishes `v0.9.7`; affected consumers remain paused until
+that tag exists.
