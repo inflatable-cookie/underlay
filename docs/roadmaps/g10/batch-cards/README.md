@@ -3,10 +3,10 @@
 Batch cards refine the active numbered roadmap. They do not replace the `g10`
 queue.
 
-## Active
+## Complete
 
 - [001-g10-northstar-agents-rust-typescript-audit.md](./001-g10-northstar-agents-rust-typescript-audit.md)
 
 ## Next Task
 
-Execute card 001 under `g10.001` and stop at its PR for orchestrator review.
+Preserve card 001 as closed evidence. Active work continues in `g11`.

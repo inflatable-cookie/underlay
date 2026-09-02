@@ -19,6 +19,8 @@ the active `docs/specs/` tree.
 
 - [`monorepo-consumer-workspace-rollout.md`](./monorepo-consumer-workspace-rollout.md) —
   completed `g09.021`–`g09.030` workspace normalization lane
+- [`northstar-instruction-and-language-quality-audit.md`](./northstar-instruction-and-language-quality-audit.md) —
+  completed `g10.001` repository instruction and language-quality audit
 
 ## Next Task
 

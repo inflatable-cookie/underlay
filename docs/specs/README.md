@@ -18,12 +18,13 @@ Specs hold active Underlay planning and strict execution-control surfaces.
 
 ## Active Spec Set
 
-- [`northstar-instruction-and-language-quality-audit.md`](./northstar-instruction-and-language-quality-audit.md)
-  wraps `g10.001` and card 001.
+- [`immutable-verified-blob-promotion.md`](./immutable-verified-blob-promotion.md)
+  governs `g11.001` and its shared primitive, release, and fleet rollout.
 - The completed monorepo rollout spec remains archived at
   [`archive/monorepo-consumer-workspace-rollout.md`](./archive/monorepo-consumer-workspace-rollout.md).
+- The completed g10 audit spec remains archived at
+  [`archive/northstar-instruction-and-language-quality-audit.md`](./archive/northstar-instruction-and-language-quality-audit.md).
 
 ## Next Task
 
-Execute `g10` card 001 and stop at its PR for orchestrator review. Keep the
-completed monorepo rollout spec archived.
+Execute `g11.001` card 001 and stop at its PR for exact-head review.

@@ -12,18 +12,17 @@ Apply the current Northstar instruction, Rust, and TypeScript/Svelte audit
 contracts across the whole reusable foundation without widening maintenance
 findings into consumer or published-contract work.
 
-## Ready Chain
+## Delivered Chain
 
-- `g10/batch-cards/001-g10-northstar-agents-rust-typescript-audit.md` — complete
+- `g10/batch-cards/001-g10-northstar-agents-rust-typescript-audit.md`
+- PR 22 merged as `453c44d3`
 
 ## Authority Boundary
 
-The recorders authorize only finding-first repairs inside Underlay. Consumer
+The recorders authorized only finding-first repairs inside Underlay. Consumer
 changes, dependency/MSRV changes, release work, migrations, and public contract
-decisions return to planning.
+decisions returned to planning.
 
 ## Next Task
 
-Orchestrator reviews and merges the `g10` card 001 worker PR. Repairs that were
-held for a public-contract, MSRV, or compatibility decision return to planning
-rather than reopening this spec.
+None. Preserve this spec as closed evidence.

@@ -90,5 +90,4 @@ public-contract decision cannot be resolved from existing authority.
 
 ## Next Task
 
-The worker opened its PR. The orchestrator reviews it at the exact head and
-merges. Do not create a second card.
+Complete. PR 22 merged as `453c44d3`. Do not create another `g10` card.

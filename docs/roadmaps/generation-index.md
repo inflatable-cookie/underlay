@@ -1,7 +1,7 @@
 # Underlay Roadmap Generation Index
 
 Status: active
-Updated: 2026-08-27
+Updated: 2026-09-02
 
 ## Mode
 
@@ -9,7 +9,7 @@ Updated: 2026-08-27
 
 ## Active generations
 
-- `g10` — Northstar instruction and language-quality audit.
+- `g11` — immutable verified media publication and five-consumer rollout.
 
 ## Generation log
 
@@ -24,7 +24,8 @@ Updated: 2026-08-27
 | `g07` | 2026-06-06 | Runtime, workflow, residual Rust policy, and doctor-warning hardening after `g06` closeout | Complete after `g07.037` doctor warning closeout |
 | `g08` | 2026-07-17 | Audit remediation after July 2026 deep audit (security edge, correctness bugs, Rust/TS structure, docs/versioning/i18n posture) | Complete - all 32 roadmaps done; `v0.8.0` tagged |
 | `g09` | 2026-08-03 | Config-convergence follow-through; extended with dependency upgrades, consumer workspace convergence, and contract fidelity | Closed 2026-08-27 - all 62 roadmaps complete; exact-main doctor green |
-| `g10` | 2026-09-01 | Explicit operator-directed repository instruction and language-quality audit | Active; `g10.001` ready |
+| `g10` | 2026-09-01 | Explicit operator-directed repository instruction and language-quality audit | Closed 2026-09-01 after PR 22 merged |
+| `g11` | 2026-09-02 | Contact Patch Bughunt exposed a shared mutable-upload publication gap; operator extended the repair to all five Underlay sites | Active; `g11.001` ready |
 
 An earlier invalid `g10` rollover was removed rather than retained. Its
 completed and remaining work was recovered into `g09.021`–`g09.045` on
@@ -36,6 +37,7 @@ renumbered the unstarted fleet closeout to `g09.054`.
 
 ## Historical generations
 
+- [g10 - Northstar Instruction And Language Quality Audit](g10/README.md) (complete)
 - [g09 - Config Convergence And Contract Fidelity](g09/README.md) (complete)
 - [g08 - Audit Remediation And Edge Hardening](g08/README.md) (complete)
 - [g07 - Runtime, Workflow, And Doctor Warning Boundary Hardening](g07/README.md) (complete)
@@ -63,5 +65,5 @@ In parallel mode:
 
 ## Next Task
 
-Orchestrator reviews and merges the `g10.001` worker PR. No later generation or
-second roadmap is implied.
+Execute `g11.001` card 001. Release and consumer rollout stay blocked until the
+shared primitive merges and a validated Underlay tag exists.

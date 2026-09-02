@@ -96,5 +96,5 @@ guides, architecture docs, contracts, or front-door READMEs.
 
 ## Next Task
 
-Execute `g10.001`, the bounded Northstar instruction and language-quality
-audit, from ready card 001. Stop at its PR for orchestrator review.
+Execute `g11.001` card 001: add the fail-closed immutable verified-promotion
+primitive to `underlay-blob`, then stop at its PR for exact-head review.

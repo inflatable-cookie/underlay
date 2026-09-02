@@ -9,7 +9,7 @@ Governing refs: `AGENTS.md`, `rust/AGENTS.md`,
 `docs/contracts/001-working-rules.md`,
 `docs/contracts/rust-quality-profile.json`,
 `docs/contracts/rust-quality-deviations.json`, installed Northstar
-Planning state: card 001 delivered; awaiting orchestrator exact-head review
+Planning state: card 001 merged in PR 22
 
 ## Problem
 
@@ -96,5 +96,4 @@ provenance are recorded in
 
 ## Next Task
 
-Orchestrator reviews the worker PR at its exact head and merges. Do not open a
-second card or widen this generation without an explicit rollover decision.
+Complete. PR 22 merged as `453c44d3`; preserve this roadmap as closed history.

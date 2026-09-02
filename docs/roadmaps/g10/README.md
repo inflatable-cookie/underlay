@@ -19,8 +19,8 @@ consumer rollout, release, or product programme.
 
 ## Queue
 
-Empty. Card 001 was the sole execution card under `g10.001` and is delivered;
-its PR is with the orchestrator for exact-head review.
+Empty. Card 001 was the sole execution card under `g10.001`; PR 22 merged as
+`453c44d3` and the generation is closed.
 
 ## Dependencies And Parallelism
 
@@ -31,5 +31,4 @@ other repository.
 
 ## Next Task
 
-Orchestrator reviews and merges the `g10.001` worker PR. No further roadmap is
-ready in this generation.
+Preserve this generation as closed history. Active work continues in `g11`.

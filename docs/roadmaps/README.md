@@ -53,18 +53,17 @@ README surfaces.
 
 ## Active generation
 
-- [`g10`](g10/README.md) — bounded Northstar instruction and language-quality
-  audit; `g10.001` and card 001 are delivered and with the orchestrator for
-  exact-head PR review.
+- [`g11`](g11/README.md) — immutable verified media publication and
+  five-consumer rollout; `g11.001` card 001 is ready.
 
 ## Current Queue
 
-Empty. `g10.001` was the sole roadmap and is complete; `g09.001`–`g09.062`
-remain complete and frozen in the [`g09` front door](g09/README.md).
+`g11.001` card 001 is ready. Release, five consumer adoptions, and fleet
+closeout are dependency-blocked behind the shared primitive.
 
 ## Archived generations
 
-Closed generations `g01`-`g09` are **frozen archival record**, not active
+Closed generations `g01`-`g10` are **frozen archival record**, not active
 navigation. Enter them only via
 [`generation-index.md`](generation-index.md), which is the authoritative history.
 Do not open new work in a closed generation.
@@ -79,5 +78,5 @@ that risk.
 
 ## Next Task
 
-Orchestrator reviews and merges the `g10.001` worker PR. A later generation needs
-an explicit rollover decision and numbered roadmaps before dispatch.
+Publish the `g11.001` card 001 handoff and dispatch one Underlay worker. Do not
+advance consumer pins before the shared release tag exists.
