@@ -287,21 +287,35 @@ Rules:
 - built-in S3 and local adapters implement both primitives; S3 uses one
   conditional `PutObject` (`If-None-Match: *`) and maps every
   precondition/conflict response to the typed collision; local pins one
-  owned descriptor to the base directory at adapter construction (immune to
-  the base directory being renamed and its old pathname replaced with a
-  symlink afterward) and descends from a duplicate of it with
-  descriptor-relative `openat(..., O_NOFOLLOW)` traversal (never a
-  check-then-act resolution of a lexical path), so containment holds for
-  every path component, not only the leaf and not only the base; it refuses
-  symlink/non-regular sources without blocking (`O_NONBLOCK` plus a
-  post-open regular-file check); non-Unix platforms fail closed rather than
-  fall back to a weaker resolution
+  owned descriptor to the base directory at adapter construction by walking
+  its canonical absolute path one component at a time from an owned root
+  descriptor with `openat(O_DIRECTORY | O_NOFOLLOW)` (never a single `open`
+  call on the canonicalized path string, which would let a component
+  replaced with a symlink between `canonicalize()` and the pinning open be
+  silently followed) and descends from a duplicate of that pinned
+  descriptor with the same descriptor-relative `openat(..., O_NOFOLLOW)`
+  traversal for every key, so containment holds for every path component at
+  every stage — construction and per-call alike — never a check-then-act
+  resolution of a lexical path; it refuses symlink/non-regular sources
+  without blocking (`O_NONBLOCK` plus a post-open regular-file check);
+  non-Unix platforms fail closed rather than fall back to a weaker
+  resolution
 - local exclusive create publishes atomically: bytes are written and
   `fsync`ed to an owned, unguessable same-directory temp file first, then
-  published to the final name with `linkat`, so a concurrent reader never
-  observes partial content and a write failure or crash before publish
-  leaves only the caller-owned temp behind, never a poisoned final name
-  that would block every retry
+  published to the final name with `linkat`, then the parent directory is
+  `fsync`ed so the new name itself is durable, not only the bytes behind
+  it. A concurrent reader never observes partial content, and a write
+  failure or a destination collision before `linkat` leaves only the
+  caller-owned temp behind, never a poisoned final name that would block
+  every retry. Once `linkat` reports success the call cannot fail: the
+  parent `fsync` and the temp-file removal that follow are both
+  best-effort — their outcome is logged, never returned — so a caller can
+  never see an error for a destination that may already be committed, and
+  a leftover temp file from either failing never affects destination
+  correctness, collision detection, or future retries (both are keyed on
+  the final name only). This is a narrow local-filesystem dev/utility seam:
+  the parent-directory `fsync` is a best-effort local-filesystem durability
+  improvement, not a cross-filesystem (network/overlay) crash guarantee
 - S3 non-collision transport failures are redacted before crossing the
   public boundary: full provider detail is logged for operators, but the
   returned error carries only a stable operation label and, when available,

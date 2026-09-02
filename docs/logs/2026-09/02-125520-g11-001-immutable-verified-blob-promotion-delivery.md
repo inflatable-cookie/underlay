@@ -308,6 +308,88 @@ pinned descriptor is already open, using a real `fs::rename` plus
   (`git status --short` shows no `underlay-http`/`underlay-http-client`
   changes on this branch at any point in this PR).
 
+## Third Review Repair (re-review on exact head `7e85740b21c0dab9824eb35f38752ebef48e1c91`)
+
+Three coupled correctness claims remained open
+([review](https://github.com/inflatable-cookie/underlay/pull/23#issuecomment-5510251518)).
+Accepted work (S3, and the descriptor-relative per-key traversal added in
+the previous repair) was preserved unchanged; additive trait/default shape
+and existing mutable APIs unchanged throughout.
+
+1. **Construction still pinned through a mutable lexical path.**
+   `LocalAdapter::new` canonicalized the base path, then
+   `open_pinned_base_dir` called a single `open(canonical_base, ...)` with
+   no `O_NOFOLLOW` — any canonical-path component replaced with a symlink
+   in the window between those two steps would be silently followed,
+   pinning the attacker's directory instead of the real one. This was a
+   real gap in the previous repair's own claim ("containment guarantee is
+   each step's own syscall, not a check performed before it") — the
+   *construction* step was still exactly that check-then-act pattern.
+   Fixed by making `open_pinned_base_dir` walk the canonical absolute path
+   one component at a time from an owned root (`/`) descriptor with
+   `openat(O_DIRECTORY | O_NOFOLLOW)`, reusing the same
+   `open_dir_component` helper the per-key traversal already used. New
+   proof: `test_open_pinned_base_dir_refuses_a_component_swapped_between_canonicalize_and_open`
+   reproduces the exact two-step sequence `LocalAdapter::new` performs
+   (`canonicalize()`, then the pinning open) with a real symlink swap
+   directly in between, and asserts the swapped call refuses rather than
+   silently pinning the attacker's directory — a genuine construction-time
+   interleaving, not a static fixture.
+2. **The final `linkat` was atomic but not durably committed.** `sync_all`
+   covered the temp file's bytes, but `linkat` only mutates the parent
+   directory's metadata and was never itself `fsync`ed, so a crash right
+   after a successful publish could still lose the new directory entry.
+   Added an `fsync` of the parent directory after a successful `linkat`.
+   Its failure is logged via `tracing::warn!`, never returned: the publish
+   already succeeded and is visible the moment `linkat` returns 0 (POSIX
+   local-filesystem `link()`/`linkat()` success/failure is authoritative —
+   a nonzero return means no link was created), so treating a downstream
+   `fsync` failure as a call failure would risk exactly the poisoned-retry
+   hazard this design exists to avoid. This is now stated explicitly as a
+   best-effort local-filesystem durability improvement, not a
+   cross-filesystem (network/overlay) crash guarantee — genuine
+   crash-survival cannot be proven by an in-process unit test, so the claim
+   is scoped to what is actually verifiable rather than overstated.
+3. **Temp cleanup was silently best-effort while the docs/log implied
+   guaranteed no-residue.** `cleanup_temp` discarded every `unlinkat`
+   result, but the module docs and the previous delivery log said the temp
+   was "removed on every path" / left "no residue" without qualification.
+   Corrected every claim (module doc, function docs, this log) to state
+   plainly that cleanup is best-effort, and that a leftover temp file
+   changes nothing about destination correctness, collision detection, or
+   future retries, because both are keyed on the final name only, never a
+   temp name. `cleanup_temp` now logs non-`ENOENT` failures via
+   `tracing::warn!` for operator visibility. Confirmed by code inspection
+   that a cleanup or `fsync` failure can never cause `create_only_sync` to
+   report an error once `linkat` has already succeeded — both follow-up
+   steps are called as bare statements after the point where the function
+   commits to returning `Ok(())`, so their outcome cannot propagate into
+   the returned `BlobResult` by construction. The existing
+   `test_put_bytes_create_only_ignores_and_never_touches_a_stale_foreign_temp_file`
+   (from the previous repair) remains the deterministic proof that a
+   residue temp file never poisons a later retry.
+
+### Re-Validation At This Repaired Head
+
+- `cargo test -p underlay-blob --all-features`: 73 passed, 0 failed (was
+  72; +1 construction-swap oracle).
+- `cargo fmt --all -- --check`: clean.
+- `cargo check --workspace --all-features`: clean.
+- `cargo clippy --workspace --all-features --all-targets -- -D warnings`: clean.
+- `RUSTDOCFLAGS="-D warnings" cargo doc -p underlay-blob --all-features --no-deps`:
+  clean.
+- `effigy qa:docs`, `effigy qa:northstar`: clean.
+- `effigy doctor`: unchanged — same single pre-existing `scan.comment-ratio`
+  finding on `lib.rs`; `scan.god-files` gained `bounded.rs` as a new
+  warning-tier (not error-tier) entry from this repair's growth, still
+  warning-only overall.
+- `git diff --check`: clean.
+- `cargo test --workspace --all-features --no-fail-fast`: fully green this
+  run (`exit 0`), including the previously-documented
+  `underlay-http-client` timing flake, which is inherently intermittent —
+  its earlier failure and this run's pass are both consistent with the
+  same known pre-existing flakiness, not a change caused by this branch.
+
 ## Next Task
 
 Push the repaired branch and report the new exact head to the orchestrator

@@ -5,6 +5,7 @@
 //!
 //! Split out to keep files under the doctor god-files threshold.
 
+use super::bounded;
 use super::*;
 
 /// After construction, rename the base directory away and put a symlink at
@@ -90,5 +91,49 @@ async fn test_put_bytes_create_only_publishes_through_the_pinned_descriptor_afte
 
     let _ = fs::remove_dir_all(&moved_dir).await;
     let _ = fs::remove_file(&original_dir).await;
+    let _ = fs::remove_dir_all(&outside_dir).await;
+}
+
+/// The construction-time equivalent of the two tests above: reproduce the
+/// exact window between `canonicalize()` and the pinning `open` by doing
+/// those two steps ourselves — the same two steps `LocalAdapter::new` takes
+/// — with a symlink swap directly in between. `open_pinned_base_dir` must
+/// refuse rather than silently pin the attacker's directory, because it
+/// walks the canonical path component-by-component with its own
+/// `openat(O_NOFOLLOW)` calls instead of handing the canonicalized path
+/// string to a single `open()`.
+#[tokio::test]
+async fn test_open_pinned_base_dir_refuses_a_component_swapped_between_canonicalize_and_open() {
+    let real_dir = std::env::temp_dir().join("underlay-blob-base-pin-construction-real");
+    let outside_dir = std::env::temp_dir().join("underlay-blob-base-pin-construction-outside");
+    let _ = fs::remove_dir_all(&real_dir).await;
+    let _ = fs::remove_dir_all(&outside_dir).await;
+
+    fs::create_dir_all(&real_dir).await.unwrap();
+    fs::create_dir_all(&outside_dir).await.unwrap();
+    fs::write(outside_dir.join("marker.bin"), b"outside secret bytes")
+        .await
+        .unwrap();
+
+    // Step 1 of `LocalAdapter::new`: canonicalize while `real_dir` is still
+    // the real thing.
+    let canonical_base = real_dir.canonicalize().unwrap();
+
+    // The attack window: swap the last canonical-path component for a
+    // symlink to the attacker's directory before step 2 (the pinning open)
+    // runs.
+    fs::remove_dir(&real_dir).await.unwrap();
+    std::os::unix::fs::symlink(&outside_dir, &real_dir).unwrap();
+
+    // Step 2: the exact call `LocalAdapter::new` makes with the
+    // now-stale canonical path.
+    let result = bounded::open_pinned_base_dir(&canonical_base);
+    assert!(
+        result.is_err(),
+        "must refuse a base path component swapped to a symlink after canonicalize(), not pin \
+         the attacker's directory"
+    );
+
+    let _ = fs::remove_file(&real_dir).await;
     let _ = fs::remove_dir_all(&outside_dir).await;
 }

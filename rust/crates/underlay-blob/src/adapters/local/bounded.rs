@@ -1,28 +1,38 @@
 //! Bounded, containment-safe local I/O backing verified promotion.
 //!
 //! Every containment guarantee here comes from the syscall that performs
-//! the operation, never from a check performed before it, starting from the
-//! base directory itself: [`LocalAdapter`](super::adapter::LocalAdapter)
-//! pins one owned descriptor to the base directory at construction, and
-//! every call here descends from a duplicate of that descriptor rather than
-//! re-opening the base by its (renameable, replaceable) pathname. From
-//! there, each path component is opened relative to the previous directory
-//! descriptor with `openat(..., O_NOFOLLOW)`: a concurrent replacement of a
-//! not-yet-opened component with a symlink cannot redirect traversal
-//! outside the base, because the same syscall that would follow it is the
-//! one that refuses it. There is no lexical path resolved ahead of time to
-//! race against, at any level from the base down.
+//! the operation, never from a check performed before it — starting from
+//! the base directory itself. [`LocalAdapter`](super::adapter::LocalAdapter)
+//! pins one owned descriptor to the base directory at construction by
+//! walking its canonical absolute path one component at a time with
+//! `openat(O_DIRECTORY | O_NOFOLLOW)` from an owned root descriptor, never
+//! by handing a lexical path string to a single `open()` call. Every later
+//! bounded/exclusive operation descends from a duplicate of that pinned
+//! descriptor rather than re-opening the base by pathname, and from there
+//! each key component is opened relative to the previous directory
+//! descriptor the same `openat(..., O_NOFOLLOW)` way: a concurrent
+//! replacement of a not-yet-opened component with a symlink cannot
+//! redirect traversal outside the base, because the same syscall that
+//! would follow it is the one that refuses it. There is no lexical path
+//! resolved ahead of time to race against, at any level from construction
+//! down.
 //!
 //! Publication is also never visible partially: `create_only` writes and
 //! `fsync`s an owned, unguessable same-directory temporary file first, then
 //! publishes it under the final name with `linkat` (an atomic,
 //! create-if-absent namespace operation, exactly like the old direct
 //! `O_CREAT | O_EXCL` open but performed on an inode that is already
-//! complete and durable). A concurrent reader can only ever see "not found"
-//! or "fully published"; a write failure, a destination collision, or a
-//! process crash before `linkat` leaves only the caller-owned temporary
-//! name behind, never a poisoned final name, so a retry after failure is
-//! not permanently blocked.
+//! complete and durable), then `fsync`s the parent directory so the new
+//! name itself is durable, not only the bytes behind it. A concurrent
+//! reader can only ever see "not found" or "fully published"; a write
+//! failure or a destination collision before `linkat` leaves only the
+//! caller-owned temporary name to remove, never a poisoned final name, so a
+//! retry after failure is not permanently blocked. Once `linkat` reports
+//! success the publish is never re-reported as a failure: the temp-file
+//! cleanup and the parent-directory `fsync` that follow it are both
+//! best-effort and their outcome is logged, not returned, so a caller can
+//! never observe an error for a destination that may already be
+//! committed — see [`imp::create_only_sync`] for the exact boundary.
 //!
 //! On platforms without these primitives, both operations fail closed with
 //! [`BlobError::Unsupported`] rather than falling back to a weaker
@@ -61,21 +71,32 @@ pub(super) async fn read_bounded(key: &str, max_bytes: u64) -> BlobResult<Vec<u8
     ))
 }
 
-/// Create `key` if and only if it does not already exist, then durably
-/// publish `data` to it. `key` is resolved relative to a duplicate of the
+/// Create `key` if and only if it does not already exist, then publish
+/// `data` to it. `key` is resolved relative to a duplicate of the
 /// adapter's pinned base-directory descriptor.
 ///
 /// The destination is never visible with partial content: `data` is
 /// written and `fsync`ed to an owned, unguessable same-directory temporary
 /// file, then published under the final name with an atomic, exclusive
-/// `linkat`. An existing file, symlink (dangling or not), or directory at
-/// the destination makes the publish step fail atomically with the
-/// incumbent untouched. The temporary file is removed on every path (a
-/// successful publish leaves only the final name; a collision or write
-/// failure removes just the caller's own temp, nothing else in the
-/// directory). Missing parent directories are created the same
-/// descriptor-relative, no-follow way. `key` is used for error messages
-/// only.
+/// `linkat`, then the parent directory is `fsync`ed so the new name itself
+/// is durable. An existing file, symlink (dangling or not), or directory
+/// at the destination makes the publish step fail atomically with the
+/// incumbent untouched. Once `linkat` reports success this call cannot
+/// fail: the temp-file removal and the parent `fsync` that follow are
+/// best-effort (their outcome is logged, never returned), so a caller
+/// never sees an error for a destination that may already be committed. A
+/// leftover temp file from a best-effort cleanup failure never blocks a
+/// later `create_only` call, for this key or any other — collision
+/// detection is keyed on the final name only. Missing parent directories
+/// are created the same descriptor-relative, no-follow way. `key` is used
+/// for error messages only.
+///
+/// This adapter is a narrow local-filesystem dev/utility seam, not a
+/// production durability guarantee: the parent-directory `fsync` gives the
+/// new name the same crash-durability POSIX local filesystems normally
+/// provide for an `fsync`ed directory, but that is a best-effort
+/// improvement over the pre-existing behavior, not a cross-filesystem
+/// (e.g. network/overlay) guarantee.
 #[cfg(unix)]
 pub(super) async fn create_only(
     base_dir: &std::fs::File,
@@ -113,32 +134,20 @@ where
 }
 
 /// Open one owned descriptor to `canonical_base`, pinned once at adapter
-/// construction. All later traversal descends from a duplicate of this
-/// descriptor rather than re-opening the base by pathname, so a rename of
-/// the base directory (with its old pathname replaced by a symlink)
-/// afterward cannot redirect any operation outside it.
+/// construction, by walking its canonical absolute path one component at a
+/// time from an owned root descriptor with `openat(O_DIRECTORY |
+/// O_NOFOLLOW)`. This is deliberately *not* a single `open()` call on the
+/// path string: `canonicalize()` and this call are necessarily two
+/// separate steps, and a plain `open()` here would let any component
+/// replaced with a symlink in between be silently followed. Walking with
+/// `O_NOFOLLOW` at every step means that window closes the same way the
+/// per-key traversal below does — the containment guarantee is each step's
+/// own syscall, not a check performed before it.
 #[cfg(unix)]
 pub(super) fn open_pinned_base_dir(
     canonical_base: &std::path::Path,
 ) -> crate::error::BlobResult<std::fs::File> {
-    use std::os::unix::ffi::OsStrExt;
-
-    let c_path = std::ffi::CString::new(canonical_base.as_os_str().as_bytes()).map_err(|_| {
-        crate::error::BlobError::ConfigError("base path contains a NUL byte".to_string())
-    })?;
-    let fd = unsafe {
-        libc::open(
-            c_path.as_ptr(),
-            libc::O_DIRECTORY | libc::O_RDONLY | libc::O_CLOEXEC,
-        )
-    };
-    if fd < 0 {
-        return Err(crate::error::BlobError::ConfigError(format!(
-            "Failed to open base directory: {}",
-            std::io::Error::last_os_error()
-        )));
-    }
-    Ok(unsafe { <std::fs::File as std::os::unix::io::FromRawFd>::from_raw_fd(fd) })
+    imp::open_pinned_base_dir_sync(canonical_base)
 }
 
 #[cfg(unix)]
@@ -149,6 +158,8 @@ mod imp {
     use std::os::unix::ffi::OsStrExt;
     use std::os::unix::io::{AsRawFd, FromRawFd, RawFd};
     use std::path::Component;
+
+    use tracing::warn;
 
     use crate::error::{BlobError, BlobResult};
 
@@ -205,6 +216,67 @@ mod imp {
         } else {
             Err(io::Error::last_os_error())
         }
+    }
+
+    /// Open an owned descriptor to the filesystem root (`/`). The
+    /// component-wise traversal below starts here rather than trusting any
+    /// lexical prefix of the configured base path.
+    fn open_root() -> BlobResult<File> {
+        let root = CString::new("/").expect("static path literal has no NUL byte");
+        let fd = unsafe {
+            libc::open(
+                root.as_ptr(),
+                libc::O_DIRECTORY | libc::O_RDONLY | libc::O_CLOEXEC,
+            )
+        };
+        if fd < 0 {
+            return Err(BlobError::ConfigError(format!(
+                "Failed to open filesystem root: {}",
+                io::Error::last_os_error()
+            )));
+        }
+        Ok(unsafe { File::from_raw_fd(fd) })
+    }
+
+    /// Walk `canonical_base` (an absolute path) from an owned root
+    /// descriptor, one component at a time, with `openat(O_DIRECTORY |
+    /// O_NOFOLLOW)`. `canonicalize()` (which necessarily inspects the
+    /// filesystem as a separate, prior step) can never make this call
+    /// trust a symlink planted afterward: each component here is either a
+    /// real directory this call opens itself, or the call fails.
+    pub(super) fn open_pinned_base_dir_sync(canonical_base: &std::path::Path) -> BlobResult<File> {
+        if !canonical_base.is_absolute() {
+            return Err(BlobError::ConfigError(
+                "base path must canonicalize to an absolute path".to_string(),
+            ));
+        }
+
+        let mut current = open_root()?;
+
+        for component in canonical_base.components() {
+            match component {
+                Component::RootDir | Component::Prefix(_) => continue,
+                Component::CurDir | Component::ParentDir => {
+                    return Err(BlobError::ConfigError(
+                        "canonicalized base path must not contain '.' or '..' components"
+                            .to_string(),
+                    ));
+                }
+                Component::Normal(part) => {
+                    let name = to_cstring(part).map_err(|_| {
+                        BlobError::ConfigError("base path contains a NUL byte".to_string())
+                    })?;
+                    current =
+                        open_dir_component(current.as_raw_fd(), &name, false).map_err(|err| {
+                            BlobError::ConfigError(format!(
+                                "Failed to open base directory component: {err}"
+                            ))
+                        })?;
+                }
+            }
+        }
+
+        Ok(current)
     }
 
     /// Split `key` into validated normal components, then walk from
@@ -295,14 +367,29 @@ mod imp {
         Ok(buf)
     }
 
-    /// Best-effort removal of the caller's own temporary name. Never
-    /// touches anything else in the directory; a failure here (the temp
-    /// was already gone, or some other transient error) is not itself
-    /// treated as fatal since the caller has an unrelated error or success
-    /// to report already.
+    /// Best-effort removal of the caller's own temporary name.
+    ///
+    /// This never affects whether `create_only_sync` reports success or
+    /// failure: by the time it is called, that outcome is already decided
+    /// by whether `linkat` published the final name. It touches only the
+    /// exact temp name this call generated for itself — never a scan or
+    /// glob of the directory — so it can never remove anything another
+    /// call or a prior crashed attempt left behind. A failure here (most
+    /// commonly `ENOENT`, which is not logged) leaves an orphaned temp
+    /// file; that file plays no further role, since collision detection
+    /// and publication are both keyed on the final name only, never on a
+    /// temp name.
     fn cleanup_temp(parent_fd: RawFd, temp_name: &CString) {
-        unsafe {
-            libc::unlinkat(parent_fd, temp_name.as_ptr(), 0);
+        if unsafe { libc::unlinkat(parent_fd, temp_name.as_ptr(), 0) } != 0 {
+            let err = io::Error::last_os_error();
+            if err.raw_os_error() != Some(libc::ENOENT) {
+                warn!(
+                    error = %err,
+                    "failed to remove local blob temp file after publish; it is orphaned \
+                     but does not affect destination correctness, collision detection, or \
+                     future retries"
+                );
+            }
         }
     }
 
@@ -349,7 +436,10 @@ mod imp {
         // guarantee `O_CREAT | O_EXCL` gave directly before, but now
         // nothing under `final_name` is ever partially written, and a
         // collision or failure here leaves only the caller-owned temp
-        // name to clean up, never a poisoned final name.
+        // name to clean up, never a poisoned final name. `linkat`'s
+        // success/failure return is authoritative on the local POSIX
+        // filesystems this dev/utility adapter targets: a nonzero return
+        // means no new link was created.
         let link_ret = unsafe {
             libc::linkat(
                 parent_fd,
@@ -371,8 +461,30 @@ mod imp {
             });
         }
 
+        // The publish is committed from here on: `final_name` already
+        // owns a link to the complete inode, so this call must not report
+        // failure past this point — a caller that saw an error and
+        // retried against a destination that actually exists would hit an
+        // unexplained `DestinationExists` on a "failed" write, exactly
+        // the poisoned-retry hazard this design exists to avoid.
+        //
+        // `fsync` the parent directory so the new directory entry itself
+        // — not just the bytes behind it — survives a crash. This is a
+        // best-effort durability improvement, not a new success
+        // condition: a failure here is logged, never returned.
+        if unsafe { libc::fsync(parent_fd) } != 0 {
+            warn!(
+                error = %io::Error::last_os_error(),
+                "failed to fsync parent directory after publishing a local blob destination; \
+                 the publish itself succeeded and is visible, but the new directory entry's \
+                 crash-durability is not guaranteed until a later successful fsync of this \
+                 directory"
+            );
+        }
+
         // `final_name` now owns a link to the inode; drop the temp name
         // (a second link to the same inode, not the caller's bytes).
+        // Best-effort, as documented on `cleanup_temp`.
         cleanup_temp(parent_fd, &temp_name);
 
         Ok(())
