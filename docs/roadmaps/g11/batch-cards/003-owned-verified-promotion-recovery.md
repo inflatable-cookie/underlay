@@ -1,6 +1,6 @@
 # 003 - Owned Verified Promotion Recovery
 
-Status: ready
+Status: complete — implementation landed, PR pending review
 Owner: blob worker
 Created: 2026-09-02
 Roadmap: `g11.001`
@@ -65,3 +65,4 @@ tokens in diagnostics, or change existing method behavior.
 ## Next Task
 
 Open one PR for exact-head review. Card 004 stays serial until that PR merges.
+Delivery log: `docs/logs/2026-09/02-222309-g11-003-owned-verified-promotion-recovery.md`.

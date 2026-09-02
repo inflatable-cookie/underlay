@@ -66,21 +66,28 @@ Model upload as a pipeline, not a single API call:
 ### Phase 4: Finalize Endpoint
 
 - [ ] verify version/media relation
-- [ ] promote the staging object to its published destination with
-      `underlay_blob::BlobAdapterPromotionExt::promote_verified` (available
-      from the next released Underlay tag after `g11.001`); persist the
+- [ ] persist an opaque high-entropy ownership token and immutable
+      destination authority before create, then promote with
+      `underlay_blob::BlobAdapterPromotionExt::promote_verified_owned`
+      (available from the `v0.9.7` tag after Card 003). Persist the
       returned destination key and server-derived SHA-256/size/MIME, not the
-      staging key or any client-supplied digest
+      staging key or any client-supplied digest. On process loss after
+      exclusive create, recover with
+      `recover_owned_publication` using only the durable token and
+      destination authority — never staging, and never treat identical
+      bytes as ownership. `promote_verified` remains available but does not
+      establish restart ownership.
 - [ ] finalize version metadata from that result
 - [ ] return updated media/version
 - [ ] optionally enqueue post-processing
 
-`promote_verified` reads staging once under a size bound, validates it, and
-publishes to a distinct key through exclusive create — the staging key never
-becomes the published identity, and a same-key mutable overwrite between
-inspection and use cannot forge a ready/current transition. Do not persist
-the presigned upload key as the published object; do not trust a
-client-supplied digest.
+`promote_verified_owned` reads staging once under a size bound, validates it,
+and publishes to a distinct key through exclusive create with token-bound
+ownership metadata. The staging key never becomes the published identity.
+A same-key mutable overwrite cannot forge a ready/current transition, and
+identical destination bytes without a matching verifier cannot be adopted
+after a crash. Do not persist the presigned upload key as the published
+object; do not trust a client-supplied digest.
 
 ### Phase 5: Admin Upload UI
 

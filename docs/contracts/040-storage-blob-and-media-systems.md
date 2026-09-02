@@ -343,7 +343,16 @@ An application may recover a destination after process loss only when the
 exclusive create atomically attached positive ownership evidence that matches a
 token persisted by that version before publication.
 
-The additive owned-promotion surface must:
+The additive owned-promotion surface is:
+
+- `OwnershipToken` (opaque, redacted Debug, never Displayed)
+- `OwnedDestinationAuthority`
+- `OwnedPublicationFacts`
+- `BlobAdapter::put_bytes_create_only_owned` (fail-closed default)
+- `BlobAdapterPromotionExt::promote_verified_owned`
+- `BlobAdapterPromotionExt::recover_owned_publication`
+
+It must:
 
 - accept an opaque, high-entropy caller token without rendering it in Debug,
   Display, public errors, logs, URLs, or returned DTOs;

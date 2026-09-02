@@ -94,6 +94,18 @@ async fn default_bounded_capture_and_create_only_refuse_as_unsupported() {
         .await
         .unwrap_err();
     assert!(matches!(err, BlobError::Unsupported(_)));
+
+    let token = crate::OwnershipToken::from_bytes(vec![0x11; 32]).unwrap();
+    let facts = crate::OwnedPublicationFacts::from_token_and_bytes(
+        &token,
+        b"data",
+        "application/octet-stream",
+    );
+    let err = adapter
+        .put_bytes_create_only_owned("any/key", b"data", "application/octet-stream", &facts)
+        .await
+        .unwrap_err();
+    assert!(matches!(err, BlobError::Unsupported(_)));
 }
 
 #[test]

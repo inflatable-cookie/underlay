@@ -3,6 +3,7 @@
 use async_trait::async_trait;
 
 use crate::error::{BlobError, BlobResult};
+use crate::owned::OwnedPublicationFacts;
 use crate::types::{
     BlobObjectKey, DownloadRequest, ObjectInfo, SignedUrl, StoredObject, UploadPlan, UploadRequest,
 };
@@ -125,6 +126,28 @@ pub trait BlobAdapter: Send + Sync {
         let _ = (key, data, content_type);
         Err(BlobError::Unsupported(format!(
             "{} adapter does not implement exclusive create",
+            self.name()
+        )))
+    }
+
+    /// Create-only byte write that also attaches reserved ownership facts
+    /// in the same exclusive backend commit as the bytes.
+    ///
+    /// `facts` must already be derived from the caller token and these
+    /// exact `data` bytes; implementations store only the one-way verifier
+    /// and server-derived SHA-256, size, and MIME. The default
+    /// implementation refuses with [`BlobError::Unsupported`] so existing
+    /// adapters keep compiling and fail closed.
+    async fn put_bytes_create_only_owned(
+        &self,
+        key: &str,
+        data: &[u8],
+        content_type: &str,
+        facts: &OwnedPublicationFacts,
+    ) -> BlobResult<StoredObject> {
+        let _ = (key, data, content_type, facts);
+        Err(BlobError::Unsupported(format!(
+            "{} adapter does not implement owned exclusive create",
             self.name()
         )))
     }
