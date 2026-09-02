@@ -1,6 +1,6 @@
 # 002 - Underlay v0.9.6 Release
 
-Status: ready — explicit operator authorization required
+Status: done — released 2026-09-02 at `4f6d7552`, tag `v0.9.6`
 Owner: repo maintainers
 Created: 2026-09-02
 Roadmap: `g11.001`
@@ -55,4 +55,5 @@ Do not edit a consumer repository in this card.
 
 ## Next Task
 
-Obtain explicit operator authorization, then execute and validate `v0.9.6`.
+Repoint `underlay-reference` to `v0.9.6` as the first consumer proof. Release
+evidence: `docs/logs/2026-09/02-194057-g11-002-underlay-v0-9-6-release.md`.
