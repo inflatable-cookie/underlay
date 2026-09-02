@@ -4,6 +4,7 @@
 //! The associated file-serving endpoint must be completely removed from production builds.
 
 mod adapter;
+mod bounded;
 mod config;
 mod mime;
 mod path;
@@ -21,3 +22,19 @@ use tokio::fs;
 #[cfg(test)]
 #[path = "../tests/adapters/local_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "../tests/adapters/local_bounded_promotion_tests.rs"]
+mod bounded_promotion_tests;
+
+#[cfg(test)]
+#[path = "../tests/adapters/local_containment_race_tests.rs"]
+mod containment_race_tests;
+
+#[cfg(test)]
+#[path = "../tests/adapters/local_base_pin_tests.rs"]
+mod base_pin_tests;
+
+#[cfg(test)]
+#[path = "../tests/adapters/local_atomic_publish_tests.rs"]
+mod atomic_publish_tests;

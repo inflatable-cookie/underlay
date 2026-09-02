@@ -24,21 +24,23 @@ Do not edit a consumer repository, cut a release, or change an app DTO/schema.
 
 ## Acceptance Criteria
 
-- [ ] existing `BlobAdapter` implementors remain source-compatible;
-- [ ] built-in S3 and local adapters stop the source read at the configured
+- [x] existing `BlobAdapter` implementors remain source-compatible;
+- [x] built-in S3 and local adapters stop the source read at the configured
       limit plus one sentinel byte; oversized input is never fully buffered;
-- [ ] built-in S3 and local adapters create the destination only if absent;
-- [ ] the helper validates actual captured bytes, derives lowercase SHA-256,
+- [x] built-in S3 and local adapters create the destination only if absent;
+- [x] the helper validates actual captured bytes, derives lowercase SHA-256,
       and returns destination identity plus derived metadata;
-- [ ] source mutation after capture cannot change destination bytes;
-- [ ] same-destination races yield one creator and no overwrite;
-- [ ] different-byte and hostile-metadata collisions fail closed;
-- [ ] retry behavior is typed, deterministic, and never uses unconditional
-      overwrite as fallback;
-- [ ] old mutable methods behave unchanged;
-- [ ] focused tests, Rust checks, docs/Northstar QA, doctor, and diff check pass
+- [x] source mutation after capture cannot change destination bytes;
+- [x] same-destination races yield one creator and no overwrite;
+- [x] different-byte and hostile-metadata collisions fail closed;
+- [x] retry behavior is typed, deterministic, and never uses unconditional
+      overwrite as fallback — no convergent retry was added; a collision
+      always returns the typed `BlobError::DestinationExists` and the caller
+      decides;
+- [x] old mutable methods behave unchanged;
+- [x] focused tests, Rust checks, docs/Northstar QA, doctor, and diff check pass
       or record exact inherited failures;
-- [ ] one PR targets `main`; the worker does not merge.
+- [x] one PR targets `main`; the worker does not merge.
 
 ## Review Oracle
 

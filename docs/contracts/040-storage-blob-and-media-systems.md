@@ -207,6 +207,7 @@ Core pieces:
 - `StoredObject`
 - `BlobError`
 - `BlobUploadConfig`
+- `BlobAdapterPromotionExt`, `VerifiedPromotionResult` (`g11.001`)
 
 Rules:
 
@@ -251,6 +252,84 @@ Rules:
   metadata DTOs, JSON/SQL edges, tests/examples, and historical migration or
   replay tooling where the raw value itself is the artifact under inspection
 - backend-specific details stay behind the adapter boundary
+
+### Immutable verified promotion (`g11.001`)
+
+`BlobAdapter` carries two additive, fail-closed-by-default methods:
+`get_bytes_bounded()` (reads at most `max_bytes + 1` bytes, never a full
+unbounded buffer of an oversized source) and `put_bytes_create_only()`
+(creates a destination only if absent, typed `BlobError::DestinationExists`
+on collision, never an unconditional overwrite fallback). Existing
+implementors keep compiling unchanged; an adapter that does not override
+these refuses via `BlobError::Unsupported` rather than silently degrading to
+mutable read/write.
+
+`BlobAdapterPromotionExt::promote_verified()` composes those two primitives:
+it captures a staging object once under a `BlobUploadConfig` size bound,
+validates the captured bytes' size, MIME allowlist membership, and magic
+bytes, derives their lowercase SHA-256 server-side, and publishes that exact
+vector to a distinct destination key through exclusive create. It returns a
+`VerifiedPromotionResult` (destination `StoredObject` plus the derived
+SHA-256). Staging is preserved; the caller owns cleanup/recovery policy. No
+client-supplied digest enters this path.
+
+Rules:
+
+- this is the immutable-publication seam: it binds bytes actually inspected
+  by the server to the object identity an application later marks
+  ready/current, closing the same-key mutable-overwrite gap that
+  `finalise_upload_verified` does not close
+- `finalise_upload_verified` remains available and unchanged; it validates a
+  mutable object in place (same key can still be silently replaced between
+  inspection and use) and does not establish immutable publication.
+  Consumers with a live upload-finalisation path should move to
+  `promote_verified` rather than treat the two as interchangeable
+- built-in S3 and local adapters implement both primitives; S3 uses one
+  conditional `PutObject` (`If-None-Match: *`) and maps every
+  precondition/conflict response to the typed collision; local pins one
+  owned descriptor to the base directory at adapter construction by walking
+  its canonical absolute path one component at a time from an owned root
+  descriptor with `openat(O_DIRECTORY | O_NOFOLLOW)` (never a single `open`
+  call on the canonicalized path string, which would let a component
+  replaced with a symlink between `canonicalize()` and the pinning open be
+  silently followed) and descends from a duplicate of that pinned
+  descriptor with the same descriptor-relative `openat(..., O_NOFOLLOW)`
+  traversal for every key, so containment holds for every path component at
+  every stage — construction and per-call alike — never a check-then-act
+  resolution of a lexical path; it refuses symlink/non-regular sources
+  without blocking (`O_NONBLOCK` plus a post-open regular-file check);
+  non-Unix platforms fail closed rather than fall back to a weaker
+  resolution
+- local exclusive create publishes atomically: bytes are written and
+  `fsync`ed to an owned, unguessable same-directory temp file first, then
+  published to the final name with `linkat`, then the parent directory is
+  `fsync`ed so the new name itself is durable, not only the bytes behind
+  it. A concurrent reader never observes partial content, and a write
+  failure or a destination collision before `linkat` leaves only the
+  caller-owned temp behind, never a poisoned final name that would block
+  every retry. Once `linkat` reports success the call cannot fail: the
+  parent `fsync` and the temp-file removal that follow are both
+  best-effort — their outcome is logged, never returned — so a caller can
+  never see an error for a destination that may already be committed, and
+  a leftover temp file from either failing never affects destination
+  correctness, collision detection, or future retries (both are keyed on
+  the final name only). This is a narrow local-filesystem dev/utility seam:
+  the parent-directory `fsync` is a best-effort local-filesystem durability
+  improvement, not a cross-filesystem (network/overlay) crash guarantee
+- S3 non-collision transport failures are redacted before crossing the
+  public boundary: full provider detail is logged for operators, but the
+  returned error carries only a stable operation label and, when available,
+  the HTTP status code — no raw backend error or credential-shaped provider
+  text reaches the caller
+- `promote_verified` does not trust an adapter's returned destination
+  identity: it verifies the returned key and size match what was requested
+  and captured before returning success, refusing with a typed internal
+  error otherwise
+- a destination collision is never retried as an unconditional write; a
+  convergent retry path must prove exact destination byte equality before
+  accepting, not metadata or ETag alone
+- the backend ETag is supplemental metadata only; the SHA-256 in
+  `VerifiedPromotionResult` is the cross-adapter byte identity
 
 This contract is the generic storage seam. It does not define media-graph
 meaning by itself.

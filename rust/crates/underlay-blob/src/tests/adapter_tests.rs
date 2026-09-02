@@ -74,6 +74,28 @@ async fn typed_adapter_extension_methods_delegate_to_raw_methods() {
     adapter.delete_object_key(&key).await.unwrap();
 }
 
+#[tokio::test]
+async fn default_bounded_capture_and_create_only_refuse_as_unsupported() {
+    use crate::error::BlobError;
+
+    // NoopAdapter does not override the new methods; the trait's
+    // fail-closed defaults must apply so it keeps compiling as a valid
+    // `BlobAdapter` without silently gaining bounded/exclusive behavior.
+    let adapter = NoopAdapter::new();
+
+    let err = adapter
+        .get_bytes_bounded("any/key", 1024)
+        .await
+        .unwrap_err();
+    assert!(matches!(err, BlobError::Unsupported(_)));
+
+    let err = adapter
+        .put_bytes_create_only("any/key", b"data", "application/octet-stream")
+        .await
+        .unwrap_err();
+    assert!(matches!(err, BlobError::Unsupported(_)));
+}
+
 #[test]
 fn blob_object_key_rejects_unsafe_values() {
     assert!(BlobObjectKey::parse("").is_err());

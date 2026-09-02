@@ -9,6 +9,7 @@ use async_trait::async_trait;
 use aws_sdk_s3::presigning::PresigningConfig;
 use aws_sdk_s3::Client;
 use chrono::{DateTime, Utc};
+use tracing::warn;
 
 use crate::adapter::BlobAdapter;
 use crate::error::{BlobError, BlobResult};
@@ -227,6 +228,94 @@ impl BlobAdapter for S3Adapter {
         })
     }
 
+    async fn get_bytes_bounded(&self, key: &str, max_bytes: u64) -> BlobResult<Vec<u8>> {
+        let mut response = self
+            .client
+            .get_object()
+            .bucket(self.config.bucket())
+            .key(key)
+            .send()
+            .await
+            .map_err(|e| Self::redacted_transport_error(&e, key, "get_object"))?;
+
+        // Retain at most `max_bytes + 1` bytes regardless of what the
+        // provider's headers claim, so a hostile or misbehaving backend
+        // cannot force an unbounded buffer by lying about content length.
+        let cap = max_bytes.saturating_add(1) as usize;
+        let mut buf: Vec<u8> = Vec::with_capacity(cap.min(8 * 1024 * 1024));
+
+        while buf.len() < cap {
+            let chunk = response.body.try_next().await.map_err(|e| {
+                // The byte-stream error type carries no `raw_response`;
+                // log the detail and return a fixed public message so a
+                // hostile/misbehaving body-read failure can't smuggle
+                // provider text through here either.
+                warn!(operation = "get_object.body", error = %e, "S3 response body read failed");
+                BlobError::DownloadFailed("failed to read object body".to_string())
+            })?;
+            let Some(chunk) = chunk else { break };
+            let remaining = cap - buf.len();
+            let take = remaining.min(chunk.len());
+            buf.extend_from_slice(&chunk[..take]);
+        }
+
+        if buf.len() as u64 > max_bytes {
+            return Err(BlobError::TooLarge(buf.len() as u64, max_bytes));
+        }
+
+        Ok(buf)
+    }
+
+    async fn put_bytes_create_only(
+        &self,
+        key: &str,
+        data: &[u8],
+        content_type: &str,
+    ) -> BlobResult<StoredObject> {
+        // Deliberately skip `ensure_bucket_exists`: this path sends exactly
+        // one conditional PUT to the destination, never a HEAD or
+        // create-bucket call first. Verified promotion only ever targets a
+        // bucket that already received the staging upload.
+        let body = aws_sdk_s3::primitives::ByteStream::from(data.to_vec());
+
+        let result = self
+            .client
+            .put_object()
+            .bucket(self.config.bucket())
+            .key(key)
+            // One conditional PUT: create only if the destination is
+            // absent. Never HEAD-then-PUT and never retry without this
+            // condition on collision.
+            .if_none_match("*")
+            .content_type(content_type)
+            .content_length(data.len() as i64)
+            .body(body)
+            .send()
+            .await;
+
+        match result {
+            Ok(response) => Ok(StoredObject {
+                provider: "s3".to_string(),
+                bucket: self.config.bucket().to_string(),
+                key: key.to_string(),
+                size: data.len() as u64,
+                content_type: content_type.to_string(),
+                etag: response.e_tag().map(|s| s.trim_matches('"').to_string()),
+            }),
+            Err(err) => {
+                // S3 reports a precondition-failed create as 412, and a
+                // conflicting concurrent write as 409; treat both as the
+                // same typed collision rather than a transport failure.
+                let status = err.raw_response().map(|r| r.status().as_u16());
+                if matches!(status, Some(409) | Some(412)) {
+                    Err(BlobError::DestinationExists(key.to_string()))
+                } else {
+                    Err(Self::redacted_transport_error(&err, key, "put_object"))
+                }
+            }
+        }
+    }
+
     fn name(&self) -> &'static str {
         "s3"
     }
@@ -262,3 +351,7 @@ impl std::fmt::Debug for S3Adapter {
 #[cfg(test)]
 #[path = "../tests/adapters/s3_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "../tests/adapters/s3_redaction_tests.rs"]
+mod redaction_tests;

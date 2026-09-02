@@ -2,7 +2,7 @@
 
 use async_trait::async_trait;
 
-use crate::error::BlobResult;
+use crate::error::{BlobError, BlobResult};
 use crate::types::{
     BlobObjectKey, DownloadRequest, ObjectInfo, SignedUrl, StoredObject, UploadPlan, UploadRequest,
 };
@@ -78,6 +78,56 @@ pub trait BlobAdapter: Send + Sync {
         data: &[u8],
         content_type: &str,
     ) -> BlobResult<StoredObject>;
+
+    /// Bounded capture: read at most `max_bytes + 1` bytes from `key` into an
+    /// owned vector and return exactly that many bytes at most.
+    ///
+    /// Implementations must stop consuming the source once the cap is
+    /// reached rather than buffering an oversized object in full; a source
+    /// larger than `max_bytes` returns [`BlobError::TooLarge`]. This is the
+    /// only capture path [`crate::promotion::BlobAdapterPromotionExt::promote_verified`]
+    /// uses; it never calls the unbounded [`Self::get_bytes`].
+    ///
+    /// The default implementation refuses with [`BlobError::Unsupported`].
+    /// Adapters that back verified promotion must override this with a real
+    /// bounded read; a fail-closed default is required so third-party
+    /// `BlobAdapter` implementations keep compiling without silently gaining
+    /// unbounded-read behavior under this method.
+    async fn get_bytes_bounded(&self, key: &str, max_bytes: u64) -> BlobResult<Vec<u8>> {
+        let _ = (key, max_bytes);
+        Err(BlobError::Unsupported(format!(
+            "{} adapter does not implement bounded capture",
+            self.name()
+        )))
+    }
+
+    /// Create-only byte write: create `key` if and only if it does not
+    /// already exist.
+    ///
+    /// Implementations must never overwrite, truncate, or follow an existing
+    /// destination. A collision (the destination already exists, by any
+    /// name — file, symlink, or directory) returns
+    /// [`BlobError::DestinationExists`], distinguishable from transport or
+    /// internal failure so callers never fall back to an unconditional
+    /// write.
+    ///
+    /// The default implementation refuses with [`BlobError::Unsupported`].
+    /// Adapters that back verified promotion must override this with a real
+    /// exclusive create; a fail-closed default is required so third-party
+    /// `BlobAdapter` implementations keep compiling without silently gaining
+    /// overwrite behavior under this method.
+    async fn put_bytes_create_only(
+        &self,
+        key: &str,
+        data: &[u8],
+        content_type: &str,
+    ) -> BlobResult<StoredObject> {
+        let _ = (key, data, content_type);
+        Err(BlobError::Unsupported(format!(
+            "{} adapter does not implement exclusive create",
+            self.name()
+        )))
+    }
 
     /// Check if an object exists.
     async fn exists(&self, key: &str) -> BlobResult<bool> {
