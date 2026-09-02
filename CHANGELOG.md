@@ -7,6 +7,8 @@ While Underlay is `0.x`, breaking changes raise the minor version.
 
 ## [Unreleased]
 
+## [0.9.6] - 2026-09-02
+
 ### Added
 - `underlay-blob`: additive, fail-closed-by-default `BlobAdapter::get_bytes_bounded`
   and `BlobAdapter::put_bytes_create_only`, plus
