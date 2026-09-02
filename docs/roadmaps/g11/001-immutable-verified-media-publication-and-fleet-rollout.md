@@ -94,5 +94,5 @@ unless a target repo proves that unavoidable and stops for planning.
 
 ## Next Task
 
-Execute card 001. Do not dispatch release or consumer mutations before its PR
-merges.
+Obtain explicit operator authorization, then execute and validate Card 002 to
+publish `v0.9.6`. Do not dispatch consumer mutations before the tag exists.

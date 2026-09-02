@@ -20,8 +20,9 @@ to Underlay Reference, Contact Patch, Compli Me, Acowtancy, and Songsprout.
 
 ## Queue
 
-- Ready: `g11.001` card 001, the additive `underlay-blob` primitive.
-- Blocked: release and all consumer adoption until card 001 merges.
+- Complete: `g11.001` Card 001, merged in PR #23 at `27bde7b4`.
+- Ready with explicit approval: Card 002, the `v0.9.6` release.
+- Blocked: all consumer adoption until the validated tag exists.
 - Blocked: fleet closeout until all applicable consumer lanes merge.
 
 ## Dependencies And Parallelism
@@ -34,4 +35,5 @@ agent/workspace rather than creating a duplicate lane.
 
 ## Next Task
 
-Execute `g11.001` card 001 and stop at its PR for exact-head review.
+Obtain explicit operator authorization, then execute and validate Card 002 to
+publish `v0.9.6`.

@@ -96,5 +96,6 @@ guides, architecture docs, contracts, or front-door READMEs.
 
 ## Next Task
 
-Execute `g11.001` card 001: add the fail-closed immutable verified-promotion
-primitive to `underlay-blob`, then stop at its PR for exact-head review.
+Obtain explicit operator authorization, then execute and validate the
+`g11.001` Card 002 `v0.9.6` release. Consumer adoption starts only from that
+tag.

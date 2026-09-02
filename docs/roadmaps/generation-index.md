@@ -25,7 +25,7 @@ Updated: 2026-09-02
 | `g08` | 2026-07-17 | Audit remediation after July 2026 deep audit (security edge, correctness bugs, Rust/TS structure, docs/versioning/i18n posture) | Complete - all 32 roadmaps done; `v0.8.0` tagged |
 | `g09` | 2026-08-03 | Config-convergence follow-through; extended with dependency upgrades, consumer workspace convergence, and contract fidelity | Closed 2026-08-27 - all 62 roadmaps complete; exact-main doctor green |
 | `g10` | 2026-09-01 | Explicit operator-directed repository instruction and language-quality audit | Closed 2026-09-01 after PR 22 merged |
-| `g11` | 2026-09-02 | Contact Patch Bughunt exposed a shared mutable-upload publication gap; operator extended the repair to all five Underlay sites | Active; `g11.001` ready |
+| `g11` | 2026-09-02 | Contact Patch Bughunt exposed a shared mutable-upload publication gap; operator extended the repair to all five Underlay sites | Active; Card 001 merged, `v0.9.6` release ready with approval |
 
 An earlier invalid `g10` rollover was removed rather than retained. Its
 completed and remaining work was recovered into `g09.021`–`g09.045` on
@@ -65,5 +65,5 @@ In parallel mode:
 
 ## Next Task
 
-Execute `g11.001` card 001. Release and consumer rollout stay blocked until the
-shared primitive merges and a validated Underlay tag exists.
+Obtain explicit operator authorization, then execute and validate the `v0.9.6`
+release. Consumer rollout stays blocked until the tag exists.

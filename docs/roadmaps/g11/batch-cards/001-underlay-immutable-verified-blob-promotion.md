@@ -1,6 +1,6 @@
 # 001 - Underlay Immutable Verified Blob Promotion
 
-Status: ready
+Status: complete — merged in PR #23 at `27bde7b4`
 Owner: repo maintainers
 Created: 2026-09-02
 Roadmap: `g11.001`
@@ -59,4 +59,5 @@ containment-safe with current dependencies.
 
 ## Next Task
 
-Worker opens one PR. Orchestrator reviews its exact head; release stays blocked.
+PR #23 merged the accepted exact head `7f8a0a81` at `27bde7b4`. Execute Card
+002; consumer adoption remains blocked until the validated tag exists.

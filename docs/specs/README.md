@@ -27,4 +27,5 @@ Specs hold active Underlay planning and strict execution-control surfaces.
 
 ## Next Task
 
-Execute `g11.001` card 001 and stop at its PR for exact-head review.
+Obtain explicit operator authorization, then execute and validate the
+`g11.001` Card 002 `v0.9.6` release.

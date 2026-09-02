@@ -35,9 +35,12 @@ The worker may improve exact names, but not weaken this behavior.
   SDK's equivalent). Treat every documented precondition/conflict status as a
   typed collision. Never HEAD then PUT, retry without the condition, or render
   provider diagnostics containing secrets.
-- Local: open the final destination with exclusive create and no-follow
-  semantics after containment-safe parent handling. Never truncate an existing
-  file or follow a symlink.
+- Local: capture and traverse through pinned descriptors with no-follow
+  semantics, write and sync an owned same-directory temporary file, then
+  publish it atomically with create-only `linkat`. Never expose a partial final
+  name, truncate an existing file, or follow a symlink. Post-commit directory
+  sync and temp cleanup remain best-effort and may not turn a successful
+  exclusive publish into a reported failure.
 - Default/no-op/custom adapters: refuse as unsupported unless they implement
   genuine bounded capture and exclusive create.
 
@@ -95,4 +98,4 @@ their target-owned cards and real finalisation oracles.
 
 ## Next Task
 
-Execute `g11.001` card 001 only.
+Execute `g11.001` card 002: prepare, validate, and publish Underlay `v0.9.6`.

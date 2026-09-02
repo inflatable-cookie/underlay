@@ -54,12 +54,13 @@ README surfaces.
 ## Active generation
 
 - [`g11`](g11/README.md) — immutable verified media publication and
-  five-consumer rollout; `g11.001` card 001 is ready.
+  five-consumer rollout; Card 001 is merged and the `v0.9.6` release is ready
+  with explicit approval.
 
 ## Current Queue
 
-`g11.001` card 001 is ready. Release, five consumer adoptions, and fleet
-closeout are dependency-blocked behind the shared primitive.
+`g11.001` Card 001 is merged. The `v0.9.6` release is ready with explicit
+approval; five consumer adoptions and fleet closeout remain blocked on the tag.
 
 ## Archived generations
 
@@ -78,5 +79,5 @@ that risk.
 
 ## Next Task
 
-Publish the `g11.001` card 001 handoff and dispatch one Underlay worker. Do not
-advance consumer pins before the shared release tag exists.
+Obtain explicit operator authorization, then execute and validate `v0.9.6`.
+Do not advance consumer pins before the shared release tag exists.

@@ -15,8 +15,9 @@ While Underlay is `0.x`, breaking changes raise the minor version.
   size bound, validates size/MIME/magic bytes, derives a server-side SHA-256,
   and publishes to a distinct destination key through exclusive create;
   staging is preserved and no client-supplied digest enters the path.
-  Built-in S3 (one conditional `PutObject`) and local (containment-safe,
-  no-follow `O_CREAT | O_EXCL`) adapters implement both new primitives;
+  Built-in S3 (one conditional `PutObject`) and local (descriptor-relative,
+  no-follow bounded capture plus temp-file/`linkat` exclusive publication)
+  adapters implement both new primitives;
   other `BlobAdapter` implementations keep compiling and refuse via
   `BlobError::Unsupported` until they do. Existing mutable upload/read/
   finalise APIs, including `finalise_upload_verified`, are unchanged and do
