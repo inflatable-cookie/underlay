@@ -36,7 +36,7 @@ async fn promote_verified_owned_publishes_facts_and_preserves_staging() {
         &adapter.stored_metadata("media/a.png").unwrap()
     )
     .unwrap()
-    .matches_token(&token));
+    .matches_token(&token, &authority()));
 }
 
 #[tokio::test]

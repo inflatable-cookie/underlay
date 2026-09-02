@@ -66,8 +66,9 @@ Model upload as a pipeline, not a single API call:
 ### Phase 4: Finalize Endpoint
 
 - [ ] verify version/media relation
-- [ ] persist an opaque high-entropy ownership token and immutable
-      destination authority before create, then promote with
+- [ ] persist a fresh opaque high-entropy ownership token (at least 32
+      bytes, one per publication) and immutable destination authority
+      before create, then promote with
       `underlay_blob::BlobAdapterPromotionExt::promote_verified_owned`
       (available from the `v0.9.7` tag after Card 003). Persist the
       returned destination key and server-derived SHA-256/size/MIME, not the
@@ -75,8 +76,10 @@ Model upload as a pipeline, not a single API call:
       exclusive create, recover with
       `recover_owned_publication` using only the durable token and
       destination authority — never staging, and never treat identical
-      bytes as ownership. `promote_verified` remains available but does not
-      establish restart ownership.
+      bytes as ownership. The verifier is bound to provider, bucket, and
+      key, so a copied object cannot be adopted under a new destination.
+      `promote_verified` remains available but does not establish restart
+      ownership.
 - [ ] finalize version metadata from that result
 - [ ] return updated media/version
 - [ ] optionally enqueue post-processing

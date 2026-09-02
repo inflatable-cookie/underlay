@@ -160,3 +160,44 @@ async fn missing_malformed_and_inconsistent_metadata_refuse() {
     assert!(matches!(err, BlobError::DestinationExists(_)));
     assert_eq!(adapter.stored_bytes("media/a.png"), Some(PNG.to_vec()));
 }
+
+#[tokio::test]
+async fn copied_metadata_on_another_key_is_unproven() {
+    let adapter = FakeOwnedAdapter::default();
+    adapter.seed("staging/a.png", PNG, "image/png");
+    let (staging, destination) = keys();
+    let token = token(TOKEN_A);
+    adapter
+        .promote_verified_owned(
+            &staging,
+            &destination,
+            "image/png",
+            &BlobUploadConfig::default(),
+            &token,
+        )
+        .await
+        .unwrap();
+
+    let copied = adapter.stored_metadata("media/a.png").unwrap();
+    adapter.seed("media/hostile.png", PNG, "image/png");
+    adapter.plant_metadata("media/hostile.png", copied);
+
+    let err = adapter
+        .recover_owned_publication(
+            &token,
+            &OwnedDestinationAuthority::new(
+                "fake",
+                "fake-bucket",
+                BlobObjectKey::parse("media/hostile.png").unwrap(),
+            )
+            .unwrap(),
+        )
+        .await
+        .unwrap_err();
+    assert!(matches!(err, BlobError::DestinationExists(_)));
+    assert_no_token_disclosure(&err, TOKEN_A);
+    adapter
+        .recover_owned_publication(&token, &authority())
+        .await
+        .unwrap();
+}

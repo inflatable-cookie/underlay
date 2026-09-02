@@ -261,9 +261,7 @@ impl BlobAdapter for LocalAdapter {
         let object_metadata = {
             #[cfg(unix)]
             {
-                super::xattr::read_owned_metadata(&path).map_err(|e| {
-                    BlobError::IoError(format!("failed to read owned publication metadata: {e}"))
-                })?
+                super::xattr::read_owned_metadata(&path)
             }
             #[cfg(not(unix))]
             {

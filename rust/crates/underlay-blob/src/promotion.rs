@@ -107,11 +107,13 @@ pub trait BlobAdapterPromotionExt: BlobAdapter {
     /// Like [`Self::promote_verified`], but exclusively creates the
     /// destination with reserved ownership metadata derived from `token`.
     ///
-    /// The raw token is never written, logged, or returned. A destination
-    /// collision still returns [`BlobError::DestinationExists`]; recovery
-    /// of an owned incumbent is a separate [`Self::recover_owned_publication`]
-    /// call. Adapters that have not implemented owned exclusive create
-    /// refuse with [`BlobError::Unsupported`].
+    /// The raw token is never written, logged, or returned. The stored
+    /// verifier binds this adapter's provider, bucket, and `destination_key`
+    /// together with the token. A destination collision still returns
+    /// [`BlobError::DestinationExists`]; recovery of an owned incumbent is a
+    /// separate [`Self::recover_owned_publication`] call. Adapters that have
+    /// not implemented owned exclusive create refuse with
+    /// [`BlobError::Unsupported`].
     async fn promote_verified_owned(
         &self,
         staging_key: &BlobObjectKey,
@@ -128,8 +130,14 @@ pub trait BlobAdapterPromotionExt: BlobAdapter {
             config,
         )
         .await?;
-        let facts =
-            OwnedPublicationFacts::from_token_and_bytes(token, &bytes, declared_content_type);
+        let authority =
+            OwnedDestinationAuthority::new(self.name(), self.bucket(), destination_key.clone())?;
+        let facts = OwnedPublicationFacts::from_token_and_bytes(
+            token,
+            &authority,
+            &bytes,
+            declared_content_type,
+        );
         debug_assert_eq!(facts.sha256(), sha256);
 
         let stored = self
@@ -175,7 +183,7 @@ pub trait BlobAdapterPromotionExt: BlobAdapter {
         let Some(facts) = OwnedPublicationFacts::from_object_metadata(&info.metadata) else {
             return Err(unproven_destination(authority.key().as_str()));
         };
-        if !facts.matches_token(token) || facts.size() != info.size {
+        if !facts.matches_token(token, authority) || facts.size() != info.size {
             return Err(unproven_destination(authority.key().as_str()));
         }
 

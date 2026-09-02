@@ -356,16 +356,27 @@ It must:
 
 - accept an opaque, high-entropy caller token without rendering it in Debug,
   Display, public errors, logs, URLs, or returned DTOs;
-- write a one-way token verifier plus the server-derived SHA-256, size, and
+- require each publication to use a token of at least 32 bytes; consumers
+  should generate a fresh token per publication as operational hygiene
+  (lost-token blast radius). Uniqueness is not the ownership proof;
+- write a one-way verifier plus the server-derived SHA-256, size, and
   validated MIME as reserved object metadata in the same backend commit that
   exclusively creates the destination;
+- bind that verifier to the complete immutable destination authority
+  (provider, bucket/namespace, and key) together with the token, using the
+  v0.9.7 length-prefixed encoding documented on `OwnershipToken` and
+  `OwnedPublicationFacts`;
+- refuse recovery when reserved metadata is copied onto another
+  provider, bucket, or key, even if the token is reused;
 - let S3 attach that metadata to the conditional PutObject and let local
   storage attach equivalent metadata to the unpublished temp inode before its
   atomic link publishes the final name;
 - let recovery use only the durable token, destination, provider/bucket
   authority, and object head metadata, never staging or mutable media fields;
 - compare the token verifier without timing-dependent early exit and refuse
-  absent, malformed, incomplete, or mismatched metadata;
+  absent, malformed, incomplete, oversized, or mismatched metadata as
+  unproven (`BlobError::DestinationExists`) without turning ordinary
+  `head`/`exists` into an I/O error;
 - keep every ordinary or unproven collision as
   `BlobError::DestinationExists`, preserving the incumbent unchanged;
 - keep existing promotion and mutable methods plus third-party adapter

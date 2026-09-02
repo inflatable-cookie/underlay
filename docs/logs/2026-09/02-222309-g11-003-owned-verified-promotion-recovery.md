@@ -120,7 +120,28 @@ variants. Existing public items unchanged.
    with `started.elapsed() >= DEFAULT_TIMEOUT` in ~0s. Documented in the
    g11.001 delivery log; this branch does not touch that crate.
 
+## Review Repair (PR #25 exact-head `9ec8e2ee`)
+
+Three findings from the posted review, all repaired on this branch:
+
+1. **Verifier now binds destination authority.** SHA-256 over
+   `domain || u32be(len)||provider || u32be(len)||bucket || u32be(len)||key || u32be(len)||token`.
+   Copied metadata cannot recover under a new key/provider/bucket. Same token
+   on two destinations produces distinct verifiers. Concatenation ambiguity
+   (`("ab","c")` vs `("a","bc")`) is refused. Per-publication fresh tokens of
+   at least 32 bytes are stated as operational hygiene; uniqueness is not the
+   proof.
+2. **Local xattr reads are bounded.** `getxattr` `ERANGE` is treated as
+   unproven, never as a size. Oversized reserved xattrs omit that key so
+   `head`/`exists` keep v0.9.6 success and recovery/owned-create stay
+   `DestinationExists`.
+3. **Unix cfg fallback compiles as a complete function** on
+   `not(macos/ios/linux/android)` and returns `Unsupported`. The fallback
+   bodies are type-checked in
+   `unsupported_unix_cfg_arm_typechecks_and_fails_closed`. This is not a
+   FreeBSD/illumos kernel execution claim.
+
 ## Next Task
 
-Exact-head review of PR #25. Card 004 stays serial until that PR merges.
+Re-review of PR #25. Card 004 stays serial until that PR merges.
 Do not cut `v0.9.7` from this lane.

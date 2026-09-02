@@ -64,11 +64,14 @@ size, key, or ETag equality alone is not proof.
 The consumer rollout tightened this rule after v0.9.6: identical bytes are
 still not ownership. `v0.9.7` adds a separate owned-promotion recovery path
 (`promote_verified_owned` / `recover_owned_publication`). The caller persists
-an opaque `OwnershipToken` and `OwnedDestinationAuthority` before publication;
-exclusive create atomically attaches a one-way token verifier and the derived
+an opaque `OwnershipToken` (at least 32 bytes; generate a fresh one per
+publication) and `OwnedDestinationAuthority` before publication; exclusive
+create atomically attaches a one-way verifier bound to that authority
+(provider, bucket/namespace, key) plus the token, together with the derived
 publication facts. Restart recovery accepts only a matching verifier and
 complete facts from the destination head. It never rereads staging or treats
 intent, key knowledge, byte equality, MIME, size, or ETag alone as ownership.
+Copied reserved metadata cannot recover under a different destination.
 
 S3 writes the reserved metadata on the same conditional PutObject. Local
 storage attaches equivalent metadata to its owned temp inode before the atomic

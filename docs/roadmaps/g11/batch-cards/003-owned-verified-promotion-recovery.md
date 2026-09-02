@@ -36,6 +36,11 @@ tokens in diagnostics, or change existing method behavior.
   unreadable, a matching durable token recovers facts from destination head.
 - Wrong token, provider, bucket, key, missing metadata, malformed digest or
   size, and inconsistent MIME: typed refusal, no staging read, no disclosure.
+- Copied reserved metadata or object at another key/provider/bucket: recovery
+  under the new authority refuses. The same token used on two destinations
+  produces distinct verifiers and recovers only at each bound key.
+- Oversized or unreadable local reserved xattr: `head`/`exists` keep v0.9.6
+  success; owned recovery and owned create collision stay `DestinationExists`.
 - Two writers and ordinary retries: one creator; every unproven collision stays
   `DestinationExists`.
 - S3: one conditional PUT carries reserved verifier and derived facts; no
@@ -64,5 +69,6 @@ tokens in diagnostics, or change existing method behavior.
 
 ## Next Task
 
-Exact-head review of PR #25. Card 004 stays serial until that PR merges.
+Re-review of PR #25 after the exact-head blockers. Card 004 stays serial until
+that PR merges.
 Delivery log: `docs/logs/2026-09/02-222309-g11-003-owned-verified-promotion-recovery.md`.

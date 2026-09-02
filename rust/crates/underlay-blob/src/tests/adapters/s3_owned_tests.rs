@@ -33,8 +33,17 @@ fn token() -> OwnershipToken {
     OwnershipToken::from_bytes(TOKEN.to_vec()).unwrap()
 }
 
+fn dest_authority() -> OwnedDestinationAuthority {
+    OwnedDestinationAuthority::new(
+        "s3",
+        "fixture-bucket",
+        BlobObjectKey::parse("media/a.png").unwrap(),
+    )
+    .unwrap()
+}
+
 fn facts() -> OwnedPublicationFacts {
-    OwnedPublicationFacts::from_token_and_bytes(&token(), PNG, "image/png")
+    OwnedPublicationFacts::from_token_and_bytes(&token(), &dest_authority(), PNG, "image/png")
 }
 
 fn verifier_hex(facts: &OwnedPublicationFacts) -> String {

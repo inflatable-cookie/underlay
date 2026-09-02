@@ -6,6 +6,34 @@
 //! the same backend commit as the bytes. Restart recovery accepts a matching
 //! verifier and complete facts from `head`; it never rereads staging and
 //! never treats byte equality as ownership.
+//!
+//! # v0.9.7 reserved metadata wire format
+//!
+//! Exclusive owned create writes these object-metadata keys (S3 user
+//! metadata / local `user.underlay.owned.v1.*` xattrs mapped to the same
+//! names):
+//!
+//! - `underlay-owned-v1-verifier`: 64-char lowercase hex SHA-256
+//! - `underlay-owned-v1-sha256`: 64-char lowercase hex of the published bytes
+//! - `underlay-owned-v1-size`: decimal byte length
+//! - `underlay-owned-v1-mime`: validated declared MIME
+//!
+//! The verifier is SHA-256 over the domain-separated, length-prefixed
+//! encoding:
+//!
+//! ```text
+//! b"underlay.blob.owned-publication.v1\0"
+//! || u32be(len(provider)) || provider_utf8
+//! || u32be(len(bucket))   || bucket_utf8
+//! || u32be(len(key))      || key_utf8
+//! || u32be(len(token))    || token_bytes
+//! ```
+//!
+//! Lengths are big-endian `u32` byte counts of the following field. This
+//! encoding is unambiguous under concatenation: `("ab","c")` and `("a","bc")`
+//! cannot produce the same verifier. The raw token is never stored. Copying
+//! an object plus its reserved metadata to another provider, bucket, or key
+//! cannot recover under that new authority.
 
 use std::collections::HashMap;
 use std::fmt;
@@ -15,7 +43,7 @@ use sha2::{Digest, Sha256};
 use crate::error::{BlobError, BlobResult};
 use crate::types::BlobObjectKey;
 
-/// Domain-separated one-way verifier input. The raw token is never stored.
+/// Domain-separated one-way verifier prefix. The raw token is never stored.
 const VERIFIER_DOMAIN: &[u8] = b"underlay.blob.owned-publication.v1\0";
 
 /// Reserved object-metadata key for the token verifier (lowercase hex SHA-256).
@@ -29,6 +57,12 @@ pub const OWNED_META_MIME: &str = "underlay-owned-v1-mime";
 
 /// Opaque high-entropy ownership token.
 ///
+/// Generate a distinct token for each publication. The stored verifier also
+/// binds provider, bucket/namespace, and destination key, so reusing a token
+/// cannot authorize a different destination. Per-publication uniqueness is
+/// an operational requirement (lost-token blast radius), not the ownership
+/// proof itself — uniqueness alone is not sufficient.
+///
 /// The raw bytes never appear in `Debug`, public errors, logs, URLs, object
 /// metadata, or returned DTOs. Compare only through the one-way verifier
 /// attached at exclusive create.
@@ -38,7 +72,8 @@ pub struct OwnershipToken {
 
 impl OwnershipToken {
     /// Minimum accepted token length. Shorter values are not high-entropy
-    /// enough for this proof.
+    /// enough for this proof. Each publication should use a freshly generated
+    /// token at least this long.
     pub const MIN_LEN: usize = 32;
 
     /// Construct from caller-held secret bytes.
@@ -53,13 +88,6 @@ impl OwnershipToken {
             ));
         }
         Ok(Self { bytes })
-    }
-
-    pub(crate) fn verifier_digest(&self) -> [u8; 32] {
-        let mut hasher = Sha256::new();
-        hasher.update(VERIFIER_DOMAIN);
-        hasher.update(&self.bytes);
-        hasher.finalize().into()
     }
 }
 
@@ -116,8 +144,8 @@ impl OwnedDestinationAuthority {
 
 /// Reserved publication facts written atomically with exclusive create.
 ///
-/// Construct only from a caller token plus the captured bytes and validated
-/// MIME. The raw token is not retained.
+/// Construct only from a caller token, the destination authority, the
+/// captured bytes, and the validated MIME. The raw token is not retained.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct OwnedPublicationFacts {
     verifier_hex: String,
@@ -127,11 +155,20 @@ pub struct OwnedPublicationFacts {
 }
 
 impl OwnedPublicationFacts {
-    /// Derive reserved facts from the token and the exact bytes that will
-    /// be published.
-    pub fn from_token_and_bytes(token: &OwnershipToken, data: &[u8], content_type: &str) -> Self {
+    /// Derive reserved facts from the token, destination authority, and the
+    /// exact bytes that will be published.
+    ///
+    /// The verifier binds `authority` (provider, bucket/namespace, key) and
+    /// the token. Copied metadata cannot recover under a different
+    /// destination.
+    pub fn from_token_and_bytes(
+        token: &OwnershipToken,
+        authority: &OwnedDestinationAuthority,
+        data: &[u8],
+        content_type: &str,
+    ) -> Self {
         Self {
-            verifier_hex: hex::encode(token.verifier_digest()),
+            verifier_hex: hex::encode(owned_verifier(token, authority)),
             sha256: hex::encode(Sha256::digest(data)),
             size: data.len() as u64,
             mime: content_type.to_string(),
@@ -176,10 +213,14 @@ impl OwnedPublicationFacts {
         &self.mime
     }
 
-    /// Compare the stored verifier to `token` without a data-dependent
-    /// early exit on the digest bytes.
-    pub fn matches_token(&self, token: &OwnershipToken) -> bool {
-        let computed = token.verifier_digest();
+    /// Compare the stored verifier to `token` bound to `authority` without a
+    /// data-dependent early exit on the digest bytes.
+    pub fn matches_token(
+        &self,
+        token: &OwnershipToken,
+        authority: &OwnedDestinationAuthority,
+    ) -> bool {
+        let computed = owned_verifier(token, authority);
         match decode_sha256_bytes(&self.verifier_hex) {
             Some(stored) => constant_time_eq(&computed, &stored),
             None => false,
@@ -200,6 +241,21 @@ impl OwnedPublicationFacts {
 
 pub(crate) fn unproven_destination(key: &str) -> BlobError {
     BlobError::DestinationExists(key.to_string())
+}
+
+fn owned_verifier(token: &OwnershipToken, authority: &OwnedDestinationAuthority) -> [u8; 32] {
+    let mut hasher = Sha256::new();
+    hasher.update(VERIFIER_DOMAIN);
+    append_len_prefixed(&mut hasher, authority.provider().as_bytes());
+    append_len_prefixed(&mut hasher, authority.bucket().as_bytes());
+    append_len_prefixed(&mut hasher, authority.key().as_str().as_bytes());
+    append_len_prefixed(&mut hasher, &token.bytes);
+    hasher.finalize().into()
+}
+
+fn append_len_prefixed(hasher: &mut Sha256, bytes: &[u8]) {
+    hasher.update((bytes.len() as u32).to_be_bytes());
+    hasher.update(bytes);
 }
 
 fn is_lowercase_hex_sha256(value: &str) -> bool {
