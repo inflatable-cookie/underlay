@@ -43,7 +43,11 @@ impl FakeAdapter {
     }
 
     fn stored(&self, key: &str) -> Option<Vec<u8>> {
-        self.objects.lock().unwrap().get(key).map(|(b, _)| b.clone())
+        self.objects
+            .lock()
+            .unwrap()
+            .get(key)
+            .map(|(b, _)| b.clone())
     }
 }
 
@@ -110,10 +114,10 @@ impl BlobAdapter for FakeAdapter {
         let swap = self.swap_after_read.lock().unwrap().take();
         if let Some((swap_key, swap_bytes)) = swap {
             if swap_key == key {
-                self.objects
-                    .lock()
-                    .unwrap()
-                    .insert(swap_key, (swap_bytes, "application/octet-stream".to_string()));
+                self.objects.lock().unwrap().insert(
+                    swap_key,
+                    (swap_bytes, "application/octet-stream".to_string()),
+                );
             }
         }
 
@@ -223,7 +227,10 @@ async fn promote_verified_refuses_a_destination_collision_and_preserves_it() {
         .unwrap_err();
 
     assert!(matches!(err, BlobError::DestinationExists(_)));
-    assert_eq!(adapter.stored("media/a.png"), Some(b"already here".to_vec()));
+    assert_eq!(
+        adapter.stored("media/a.png"),
+        Some(b"already here".to_vec())
+    );
 }
 
 #[tokio::test]
@@ -251,7 +258,11 @@ async fn promote_verified_rejects_a_declared_mime_not_matching_magic_bytes() {
 #[tokio::test]
 async fn promote_verified_rejects_a_disallowed_declared_content_type() {
     let adapter = FakeAdapter::default();
-    adapter.seed("staging/page.html", b"<html></html>".as_slice(), "text/html");
+    adapter.seed(
+        "staging/page.html",
+        b"<html></html>".as_slice(),
+        "text/html",
+    );
 
     let staging = BlobObjectKey::parse("staging/page.html").unwrap();
     let destination = BlobObjectKey::parse("media/page.html").unwrap();
@@ -299,4 +310,142 @@ async fn promote_verified_refuses_on_an_adapter_without_bounded_capture_or_exclu
         .unwrap_err();
 
     assert!(matches!(err, BlobError::Unsupported(_)));
+}
+
+/// An adapter that genuinely, exclusively writes the requested destination
+/// bytes but reports a different key or size back. `promote_verified` must
+/// not trust that echoed identity — otherwise `VerifiedPromotionResult`
+/// could describe an object the caller never actually asked to publish.
+#[derive(Default)]
+struct LyingAdapter {
+    objects: Mutex<HashMap<String, Vec<u8>>>,
+    lie_about_key: Option<&'static str>,
+    lie_about_size: Option<u64>,
+}
+
+#[async_trait]
+impl BlobAdapter for LyingAdapter {
+    async fn initiate_upload(&self, _request: UploadRequest) -> BlobResult<UploadPlan> {
+        unimplemented!("not used by promotion tests")
+    }
+    async fn finalise_upload(&self, _key: &str) -> BlobResult<StoredObject> {
+        unimplemented!("not used by promotion tests")
+    }
+    fn public_url(&self, key: &str) -> String {
+        key.to_string()
+    }
+    async fn signed_download_url(&self, _request: DownloadRequest) -> BlobResult<SignedUrl> {
+        unimplemented!("not used by promotion tests")
+    }
+    async fn delete(&self, _key: &str) -> BlobResult<()> {
+        Ok(())
+    }
+    async fn head(&self, _key: &str) -> BlobResult<ObjectInfo> {
+        unimplemented!("not used by promotion tests")
+    }
+    async fn get_bytes(&self, _key: &str) -> BlobResult<Vec<u8>> {
+        unimplemented!("not used by promotion tests")
+    }
+    async fn put_bytes(
+        &self,
+        _key: &str,
+        _data: &[u8],
+        _content_type: &str,
+    ) -> BlobResult<StoredObject> {
+        unimplemented!("not used by promotion tests")
+    }
+    fn name(&self) -> &'static str {
+        "lying"
+    }
+    fn bucket(&self) -> &str {
+        "lying-bucket"
+    }
+
+    async fn get_bytes_bounded(&self, key: &str, max_bytes: u64) -> BlobResult<Vec<u8>> {
+        let bytes = self
+            .objects
+            .lock()
+            .unwrap()
+            .get(key)
+            .cloned()
+            .ok_or_else(|| BlobError::NotFound(key.to_string()))?;
+        if bytes.len() as u64 > max_bytes {
+            return Err(BlobError::TooLarge(bytes.len() as u64, max_bytes));
+        }
+        Ok(bytes)
+    }
+
+    async fn put_bytes_create_only(
+        &self,
+        key: &str,
+        data: &[u8],
+        content_type: &str,
+    ) -> BlobResult<StoredObject> {
+        // Genuinely, exclusively write the real bytes at the real key...
+        let mut objects = self.objects.lock().unwrap();
+        if objects.contains_key(key) {
+            return Err(BlobError::DestinationExists(key.to_string()));
+        }
+        objects.insert(key.to_string(), data.to_vec());
+        drop(objects);
+
+        // ...but report a different identity for it.
+        let reported_key = self.lie_about_key.unwrap_or(key);
+        let reported_size = self.lie_about_size.unwrap_or(data.len() as u64);
+        Ok(StoredObject::new(
+            "lying",
+            "lying-bucket",
+            reported_key,
+            reported_size,
+            content_type,
+        ))
+    }
+}
+
+#[tokio::test]
+async fn promote_verified_rejects_an_adapter_that_reports_a_different_destination_key() {
+    let adapter = LyingAdapter {
+        lie_about_key: Some("media/somewhere-else.png"),
+        ..Default::default()
+    };
+    adapter
+        .objects
+        .lock()
+        .unwrap()
+        .insert("staging/a.png".to_string(), PNG.to_vec());
+
+    let staging = BlobObjectKey::parse("staging/a.png").unwrap();
+    let destination = BlobObjectKey::parse("media/a.png").unwrap();
+    let config = BlobUploadConfig::default();
+
+    let err = adapter
+        .promote_verified(&staging, &destination, "image/png", &config)
+        .await
+        .unwrap_err();
+
+    assert!(matches!(err, BlobError::Internal(_)));
+}
+
+#[tokio::test]
+async fn promote_verified_rejects_an_adapter_that_reports_a_different_size() {
+    let adapter = LyingAdapter {
+        lie_about_size: Some(999),
+        ..Default::default()
+    };
+    adapter
+        .objects
+        .lock()
+        .unwrap()
+        .insert("staging/a.png".to_string(), PNG.to_vec());
+
+    let staging = BlobObjectKey::parse("staging/a.png").unwrap();
+    let destination = BlobObjectKey::parse("media/a.png").unwrap();
+    let config = BlobUploadConfig::default();
+
+    let err = adapter
+        .promote_verified(&staging, &destination, "image/png", &config)
+        .await
+        .unwrap_err();
+
+    assert!(matches!(err, BlobError::Internal(_)));
 }

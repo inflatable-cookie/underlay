@@ -83,7 +83,10 @@ async fn default_bounded_capture_and_create_only_refuse_as_unsupported() {
     // `BlobAdapter` without silently gaining bounded/exclusive behavior.
     let adapter = NoopAdapter::new();
 
-    let err = adapter.get_bytes_bounded("any/key", 1024).await.unwrap_err();
+    let err = adapter
+        .get_bytes_bounded("any/key", 1024)
+        .await
+        .unwrap_err();
     assert!(matches!(err, BlobError::Unsupported(_)));
 
     let err = adapter

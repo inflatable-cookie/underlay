@@ -152,7 +152,10 @@ async fn get_bytes_bounded_stops_at_max_plus_one_even_when_the_body_is_larger() 
     match err {
         BlobError::TooLarge(observed, max) => {
             assert_eq!(max, 16);
-            assert_eq!(observed, 17, "must stop at max_bytes + 1, not the full body");
+            assert_eq!(
+                observed, 17,
+                "must stop at max_bytes + 1, not the full body"
+            );
         }
         other => panic!("expected TooLarge, got {other:?}"),
     }

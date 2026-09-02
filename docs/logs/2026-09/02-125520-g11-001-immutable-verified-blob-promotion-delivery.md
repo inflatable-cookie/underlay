@@ -96,6 +96,12 @@ overwrite behavior.
 - `git diff --check`: clean (fixed a trailing-blank-line artifact from an
   editing pass).
 
+**Correction (see Review Repair below):** this original pass did not run
+`cargo fmt --all --check`. Both hosted CI gates on this PR's exact head
+failed that check. That gap — an omission, not a false "clean" claim about a
+check that was actually run — is fixed in the repair below and `cargo fmt`
+is now part of the validation list every time.
+
 ### Inherited / Pre-Existing Failures (Not This Branch)
 
 1. **`underlay-http-client` flaky timeout test.** Already documented in
@@ -140,7 +146,91 @@ key or a client-supplied digest. `finalise_upload_verified` remains available
 unchanged and does not establish immutable publication — this is a distinct
 addition, not a replacement.
 
+## Review Repair (orchestrator review on exact head `4d10534bd79c4f95c51adf1611c5f981edda140b`)
+
+The orchestrator requested changes on PR #23
+([review](https://github.com/inflatable-cookie/underlay/pull/23#issuecomment-5509885605)).
+All five findings were in-bounds for this branch; the additive trait/default
+shape and existing mutable APIs were preserved unchanged throughout.
+
+1. **Local containment was still check-then-traverse.** `path_for_key()` +
+   `create_dir_all(parent)` resolved a lexical path once, then acted on it
+   later; a concurrent replacement of a not-yet-opened parent component with
+   a symlink could redirect traversal outside `canonical_base`, and
+   `O_NOFOLLOW` only ever protected the final component. Rewrote
+   `get_bytes_bounded`/`put_bytes_create_only`'s local implementation to
+   walk `canonical_base` to the key one component at a time using
+   `openat(..., O_NOFOLLOW)` relative to the previous directory descriptor
+   (`mkdirat` for missing intermediate directories on the create path). Each
+   step's containment guarantee is that step's own syscall, not a check
+   performed before it, so there is no window between "checked" and "used"
+   for a concurrent swap to land in. On non-Unix platforms both methods fail
+   closed with `BlobError::Unsupported` rather than falling back to the old,
+   weaker resolution while still claiming no-follow behavior. New proof:
+   `local_containment_race_tests.rs` — a parent component that is a symlink
+   out of the base refuses before ever touching the real target it points
+   to, for both read and create, including a two-level case where the old
+   code would have `mkdir`ed inside the outside directory.
+2. **Bounded local capture could still block on a raced FIFO.** The
+   read path now opens with `O_NOFOLLOW | O_NONBLOCK` (open on a FIFO with
+   `O_NONBLOCK` never blocks, even without a writer) and keeps the post-open
+   `fstat` regular-file check before any `read`. The separate pre-open
+   `lstat` check is gone — it was itself a check-then-act step; the
+   open+fstat sequence is now the entire, atomic guard. New proof:
+   `test_get_bytes_bounded_refuses_a_fifo_source_without_blocking` creates a
+   real FIFO and asserts the call both refuses and completes inside a 5s
+   timeout.
+3. **The S3 create-only error path leaked raw backend detail.** Every
+   non-409/412 response was rendered through `sdk_error_details` (provider
+   code, message, and full `Debug` output) into the public error. Added
+   `S3Adapter::redacted_transport_error`: full detail is now logged via
+   `tracing::warn!` for operators, but the public `BlobError` carries only a
+   fixed operation label and, when available, the HTTP status code.
+   Applied to `put_bytes_create_only`'s non-collision path, `get_bytes_bounded`'s
+   initial request, and its body-read streaming errors. New proof:
+   `s3_redaction_tests.rs` — hostile 409/412/500/403 fixtures whose bodies
+   contain `AWSAccessKeyId`/`StringToSign`/signature-shaped text, asserting
+   the returned error's `Display`/`Debug` contain none of those markers.
+4. **`promote_verified` trusted adapter-returned identity/size.** It only
+   overwrote `content_type` on the returned `StoredObject`. Added a check
+   after `put_bytes_create_only` returns: if `stored.key != destination_key`
+   or `stored.size != bytes.len()`, return `BlobError::Internal` instead of
+   a result that no longer actually binds the destination to the captured
+   vector. New proof: a `LyingAdapter` test double that genuinely,
+   exclusively writes the real bytes at the real key but reports a
+   different key or size back; both cases are asserted as `Internal`
+   errors, not silent success.
+5. **Both required CI runs failed `cargo fmt --all --check`.** Ran
+   `cargo fmt --all`; verified `--check` passes at the repaired head.
+
+### Re-Validation At The Repaired Head
+
+- `cargo test -p underlay-blob --all-features`: 66 passed, 0 failed (was 56;
+  +10 from the four new test files above).
+- `cargo fmt --all -- --check`: clean (was failing).
+- `cargo check --workspace --all-features`: clean.
+- `cargo clippy --workspace --all-features --all-targets -- -D warnings`: clean.
+- `effigy qa:docs`, `effigy qa:northstar`: clean.
+- `effigy doctor`: unchanged from the first pass — same one pre-existing
+  `scan.comment-ratio` finding on `lib.rs` (still `ratio=2.95`, this repair
+  touched no doc comments in that file); `scan.god-files` stayed
+  warning-tier only (the new test files stayed under the error threshold).
+- `git diff --check`: clean.
+- `cargo test --workspace --all-features --no-fail-fast`: two pre-existing,
+  unrelated flakes observed, neither touched by this branch (confirmed via
+  `git status --short`):
+  - `underlay-http-client::tests::invalid_user_agent_fallback_retains_default_timeout`
+    (already documented, see above).
+  - **New observation:** `underlay-http::http_config::tests::test_local_defaults`
+    failed once in the full parallel workspace run, then passed both in
+    isolation (`cargo test -p underlay-http --lib
+    http_config::tests::test_local_defaults`) and as part of `underlay-http`'s
+    own full local suite. Consistent with process-env-var test interference
+    under parallel execution, not a regression from this branch. Not
+    independently re-documented as a papercut; flagged here for the
+    orchestrator's awareness only.
+
 ## Next Task
 
-Open one PR to `main` from this branch. Orchestrator reviews the exact head;
-release and consumer adoption stay blocked per `g11.001`.
+Push the repaired branch and report the new exact head to the orchestrator
+for re-review. Release and consumer adoption stay blocked per `g11.001`.

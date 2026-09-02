@@ -32,6 +32,51 @@ impl S3Adapter {
         format!("code={code}, message={message}, debug={err:?}")
     }
 
+    /// Map a non-collision S3 `SdkError` to a redacted, stable public
+    /// error.
+    ///
+    /// Full provider detail (code, message, and the SDK's `Debug` output —
+    /// which can include request/response text a scanner would flag as
+    /// credential-shaped, e.g. a `SignatureDoesNotMatch` canonical-request
+    /// echo) is logged via `tracing` for operator diagnosis, but never
+    /// returned to the caller. Only an HTTP status code, when available,
+    /// and a fixed operation label cross the public boundary.
+    /// `NoSuchKey`/`NotFound` still map to the typed `BlobError::NotFound`;
+    /// that is a stable classification, not raw provider text.
+    pub(super) fn redacted_transport_error<E>(
+        err: &aws_smithy_runtime_api::client::result::SdkError<
+            E,
+            aws_smithy_runtime_api::client::orchestrator::HttpResponse,
+        >,
+        key: &str,
+        operation: &'static str,
+    ) -> BlobError
+    where
+        E: ProvideErrorMetadata + std::fmt::Debug + std::fmt::Display,
+    {
+        let status = err.raw_response().map(|r| r.status().as_u16());
+        let code = err.as_service_error().and_then(ProvideErrorMetadata::code);
+
+        warn!(
+            operation,
+            status = ?status,
+            code = code.unwrap_or("<none>"),
+            detail = %Self::sdk_error_details(err),
+            "S3 request failed"
+        );
+
+        if matches!(code, Some("NoSuchKey") | Some("NotFound")) {
+            return BlobError::NotFound(key.to_string());
+        }
+
+        match status {
+            Some(status) => {
+                BlobError::TransportError(format!("s3 {operation} failed (status {status})"))
+            }
+            None => BlobError::TransportError(format!("s3 {operation} failed (no response)")),
+        }
+    }
+
     fn build_client(
         aws_config: &underlay_aws::SdkConfig,
         config: &S3Config,

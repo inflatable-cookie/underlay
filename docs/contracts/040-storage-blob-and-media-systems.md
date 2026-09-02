@@ -287,8 +287,21 @@ Rules:
 - built-in S3 and local adapters implement both primitives; S3 uses one
   conditional `PutObject` (`If-None-Match: *`) and maps every
   precondition/conflict response to the typed collision; local uses
-  containment-safe, no-follow, `O_CREAT | O_EXCL` exclusive create and
-  refuses symlink/non-regular sources without blocking
+  descriptor-relative `openat(..., O_NOFOLLOW)` traversal (never a
+  check-then-act resolution of a lexical path) so containment holds for
+  every path component, not only the leaf, and refuses symlink/non-regular
+  sources without blocking (`O_NONBLOCK` plus a post-open regular-file
+  check); non-Unix platforms fail closed rather than fall back to a weaker
+  resolution
+- S3 non-collision transport failures are redacted before crossing the
+  public boundary: full provider detail is logged for operators, but the
+  returned error carries only a stable operation label and, when available,
+  the HTTP status code — no raw backend error or credential-shaped provider
+  text reaches the caller
+- `promote_verified` does not trust an adapter's returned destination
+  identity: it verifies the returned key and size match what was requested
+  and captured before returning success, refusing with a typed internal
+  error otherwise
 - a destination collision is never retried as an unconditional write; a
   convergent retry path must prove exact destination byte equality before
   accepting, not metadata or ETag alone

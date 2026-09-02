@@ -26,3 +26,7 @@ mod tests;
 #[cfg(test)]
 #[path = "../tests/adapters/local_bounded_promotion_tests.rs"]
 mod bounded_promotion_tests;
+
+#[cfg(test)]
+#[path = "../tests/adapters/local_containment_race_tests.rs"]
+mod containment_race_tests;

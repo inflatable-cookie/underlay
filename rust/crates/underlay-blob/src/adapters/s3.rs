@@ -9,6 +9,7 @@ use async_trait::async_trait;
 use aws_sdk_s3::presigning::PresigningConfig;
 use aws_sdk_s3::Client;
 use chrono::{DateTime, Utc};
+use tracing::warn;
 
 use crate::adapter::BlobAdapter;
 use crate::error::{BlobError, BlobResult};
@@ -235,7 +236,7 @@ impl BlobAdapter for S3Adapter {
             .key(key)
             .send()
             .await
-            .map_err(|e| Self::map_s3_error(e.into(), key))?;
+            .map_err(|e| Self::redacted_transport_error(&e, key, "get_object"))?;
 
         // Retain at most `max_bytes + 1` bytes regardless of what the
         // provider's headers claim, so a hostile or misbehaving backend
@@ -245,7 +246,12 @@ impl BlobAdapter for S3Adapter {
 
         while buf.len() < cap {
             let chunk = response.body.try_next().await.map_err(|e| {
-                BlobError::DownloadFailed(format!("failed to read object body: {e}"))
+                // The byte-stream error type carries no `raw_response`;
+                // log the detail and return a fixed public message so a
+                // hostile/misbehaving body-read failure can't smuggle
+                // provider text through here either.
+                warn!(operation = "get_object.body", error = %e, "S3 response body read failed");
+                BlobError::DownloadFailed("failed to read object body".to_string())
             })?;
             let Some(chunk) = chunk else { break };
             let remaining = cap - buf.len();
@@ -304,7 +310,7 @@ impl BlobAdapter for S3Adapter {
                 if matches!(status, Some(409) | Some(412)) {
                     Err(BlobError::DestinationExists(key.to_string()))
                 } else {
-                    Err(BlobError::UploadFailed(Self::sdk_error_details(&err)))
+                    Err(Self::redacted_transport_error(&err, key, "put_object"))
                 }
             }
         }
@@ -345,3 +351,7 @@ impl std::fmt::Debug for S3Adapter {
 #[cfg(test)]
 #[path = "../tests/adapters/s3_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "../tests/adapters/s3_redaction_tests.rs"]
+mod redaction_tests;

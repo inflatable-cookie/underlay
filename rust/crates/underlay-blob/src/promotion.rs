@@ -66,7 +66,12 @@ pub trait BlobAdapterPromotionExt: BlobAdapter {
     /// - [`BlobError::DestinationExists`] if `destination_key` already holds
     ///   an object (a collision, never overwritten);
     /// - [`BlobError::Unsupported`] if the adapter has not implemented real
-    ///   bounded capture or exclusive create.
+    ///   bounded capture or exclusive create;
+    /// - [`BlobError::Internal`] if the adapter's `put_bytes_create_only`
+    ///   reports a different key or size than what was actually written —
+    ///   an adapter-contract violation, not a caller error. This keeps the
+    ///   returned `VerifiedPromotionResult` bound to the captured vector
+    ///   even against a non-conforming custom adapter.
     async fn promote_verified(
         &self,
         staging_key: &BlobObjectKey,
@@ -106,6 +111,28 @@ pub trait BlobAdapterPromotionExt: BlobAdapter {
         let stored = self
             .put_bytes_create_only(destination_key.as_str(), &bytes, declared_content_type)
             .await?;
+
+        // The adapter is trusted to have exclusively written exactly
+        // `bytes` to `destination_key`, but not trusted to *report* that
+        // accurately: bind the public result to what was actually
+        // requested/captured rather than whatever identity the adapter
+        // echoes back, so a non-conforming adapter cannot desynchronize
+        // `VerifiedPromotionResult` from the captured vector.
+        if stored.key != destination_key.as_str() {
+            return Err(BlobError::Internal(format!(
+                "adapter returned destination key {:?}, expected {:?}",
+                stored.key,
+                destination_key.as_str()
+            )));
+        }
+        if stored.size != bytes.len() as u64 {
+            return Err(BlobError::Internal(format!(
+                "adapter reported size {} for destination {:?}, but {} bytes were captured and published",
+                stored.size,
+                destination_key.as_str(),
+                bytes.len()
+            )));
+        }
 
         Ok(VerifiedPromotionResult {
             object: StoredObject {

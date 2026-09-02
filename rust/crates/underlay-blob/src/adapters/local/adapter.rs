@@ -249,8 +249,8 @@ impl BlobAdapter for LocalAdapter {
     }
 
     async fn get_bytes_bounded(&self, key: &str, max_bytes: u64) -> BlobResult<Vec<u8>> {
-        let path = self.path_for_key(key)?;
-        read_bounded(&path, key, max_bytes).await
+        validate_local_object_key(key)?;
+        read_bounded(&self.canonical_base, key, max_bytes).await
     }
 
     async fn put_bytes_create_only(
@@ -259,8 +259,8 @@ impl BlobAdapter for LocalAdapter {
         data: &[u8],
         content_type: &str,
     ) -> BlobResult<StoredObject> {
-        let path = self.path_for_key(key)?;
-        create_only(&path, key, data).await?;
+        validate_local_object_key(key)?;
+        create_only(&self.canonical_base, key, data).await?;
 
         Ok(StoredObject {
             provider: "local".to_string(),

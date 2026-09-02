@@ -14,7 +14,10 @@ async fn test_get_bytes_bounded_accepts_a_source_within_the_cap() {
 
     let config = LocalConfig::new(&temp_dir, "http://localhost:8080/uploads");
     let adapter = LocalAdapter::new(config).await.unwrap();
-    adapter.write_file("a.bin", &[1, 2, 3], "application/octet-stream").await.unwrap();
+    adapter
+        .write_file("a.bin", &[1, 2, 3], "application/octet-stream")
+        .await
+        .unwrap();
 
     let bytes = adapter.get_bytes_bounded("a.bin", 3).await.unwrap();
     assert_eq!(bytes, vec![1, 2, 3]);
@@ -30,7 +33,10 @@ async fn test_get_bytes_bounded_refuses_an_over_limit_source_without_full_buffer
     let config = LocalConfig::new(&temp_dir, "http://localhost:8080/uploads");
     let adapter = LocalAdapter::new(config).await.unwrap();
     let data = vec![7u8; 10];
-    adapter.write_file("big.bin", &data, "application/octet-stream").await.unwrap();
+    adapter
+        .write_file("big.bin", &data, "application/octet-stream")
+        .await
+        .unwrap();
 
     // Cap at 3: the read must stop at 4 bytes (max + 1 sentinel), never
     // retain all 10.
@@ -38,7 +44,10 @@ async fn test_get_bytes_bounded_refuses_an_over_limit_source_without_full_buffer
     match err {
         BlobError::TooLarge(observed, max) => {
             assert_eq!(max, 3);
-            assert_eq!(observed, 4, "must stop at max_bytes + 1, not read the full source");
+            assert_eq!(
+                observed, 4,
+                "must stop at max_bytes + 1, not read the full source"
+            );
         }
         other => panic!("expected TooLarge, got {other:?}"),
     }
@@ -54,7 +63,10 @@ async fn test_get_bytes_bounded_refuses_a_missing_source() {
     let config = LocalConfig::new(&temp_dir, "http://localhost:8080/uploads");
     let adapter = LocalAdapter::new(config).await.unwrap();
 
-    let err = adapter.get_bytes_bounded("missing.bin", 10).await.unwrap_err();
+    let err = adapter
+        .get_bytes_bounded("missing.bin", 10)
+        .await
+        .unwrap_err();
     assert!(matches!(err, BlobError::NotFound(_)));
 
     let _ = fs::remove_dir_all(&temp_dir).await;
@@ -94,7 +106,10 @@ async fn test_get_bytes_bounded_refuses_a_symlink_source_without_following_it() 
     let config = LocalConfig::new(&temp_dir, "http://localhost:8080/uploads");
     let adapter = LocalAdapter::new(config).await.unwrap();
 
-    let err = adapter.get_bytes_bounded("link.bin", 1024).await.unwrap_err();
+    let err = adapter
+        .get_bytes_bounded("link.bin", 1024)
+        .await
+        .unwrap_err();
     assert!(matches!(err, BlobError::Unsupported(_)));
 
     let _ = fs::remove_dir_all(&temp_dir).await;
@@ -204,15 +219,19 @@ async fn test_put_bytes_create_only_yields_exactly_one_winner_under_concurrent_w
 
     let a = {
         let adapter = adapter.clone();
-        tokio::spawn(
-            async move { adapter.put_bytes_create_only("media/race.bin", b"writer-a", "application/octet-stream").await },
-        )
+        tokio::spawn(async move {
+            adapter
+                .put_bytes_create_only("media/race.bin", b"writer-a", "application/octet-stream")
+                .await
+        })
     };
     let b = {
         let adapter = adapter.clone();
-        tokio::spawn(
-            async move { adapter.put_bytes_create_only("media/race.bin", b"writer-b", "application/octet-stream").await },
-        )
+        tokio::spawn(async move {
+            adapter
+                .put_bytes_create_only("media/race.bin", b"writer-b", "application/octet-stream")
+                .await
+        })
     };
 
     let (a, b) = (a.await.unwrap(), b.await.unwrap());
@@ -223,7 +242,10 @@ async fn test_put_bytes_create_only_yields_exactly_one_winner_under_concurrent_w
         "exactly one writer must create the destination"
     );
     let loser = if a.is_ok() { b } else { a };
-    assert!(matches!(loser.unwrap_err(), BlobError::DestinationExists(_)));
+    assert!(matches!(
+        loser.unwrap_err(),
+        BlobError::DestinationExists(_)
+    ));
 
     // The winner's exact bytes persist, uncorrupted by the loser.
     let stored = adapter.read_file("media/race.bin").await.unwrap();
@@ -247,7 +269,10 @@ async fn test_promote_verified_round_trip_preserves_staging_and_derives_sha256()
     let upload_config = BlobUploadConfig::default();
 
     let png: &[u8] = &[0x89, b'P', b'N', b'G', 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x01];
-    adapter.write_file("staging/upload-1.png", png, "image/png").await.unwrap();
+    adapter
+        .write_file("staging/upload-1.png", png, "image/png")
+        .await
+        .unwrap();
 
     let staging = BlobObjectKey::parse("staging/upload-1.png").unwrap();
     let destination = BlobObjectKey::parse("media/versions/1.png").unwrap();
