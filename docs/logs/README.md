@@ -8,8 +8,9 @@ The latest evidence window is `g11` under `docs/logs/2026-09/`. Card 003's
 owned-promotion recovery merged as PR #25, with closeout in
 `2026-09/02-230000-g11-003-owned-promotion-closeout.md`. Card 002 published
 `v0.9.6`, with release evidence in
-`2026-09/02-194057-g11-002-underlay-v0-9-6-release.md`. Card 004 is the ready,
-explicitly authorized `v0.9.7` release. Closed `g10`, `g09`, and earlier
+`2026-09/02-194057-g11-002-underlay-v0-9-6-release.md`. Card 004 published
+`v0.9.7`, with release evidence in
+`2026-09/02-232800-g11-004-underlay-v0-9-7-release.md`. Closed `g10`, `g09`, and earlier
 generation shards are frozen lineage.
 
 ## Cadence
@@ -109,5 +110,6 @@ Papercuts wave 4 then landed merge closeout and retired-path inventory tooling
 
 ## Next Task
 
-Card 003 merged as PR #25. Execute the explicitly approved Card 004 release for
-`v0.9.7` against the exact pushed candidate.
+`v0.9.7` is released at `8a7ce84b`
+([release log](./2026-09/02-232800-g11-004-underlay-v0-9-7-release.md)).
+Resume Underlay Reference on `v0.9.7`, then the other consumer lanes.

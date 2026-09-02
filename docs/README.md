@@ -96,5 +96,5 @@ guides, architecture docs, contracts, or front-door READMEs.
 
 ## Next Task
 
-Execute the explicitly approved `g11.001` Card 004 release for `v0.9.7` before
-affected consumers resume.
+`v0.9.7` is released at `8a7ce84b`. Resume Underlay Reference on that tag,
+then route the other `g11.001` consumer lanes independently.

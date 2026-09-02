@@ -54,14 +54,13 @@ README surfaces.
 ## Active generation
 
 - [`g11`](g11/README.md) — immutable verified media publication and
-  five-consumer rollout; token-bound recovery is merged and `v0.9.7` release
-  is ready.
+  five-consumer rollout; `v0.9.7` is released and consumer lanes are
+  unblocked.
 
 ## Current Queue
 
-`g11.001` Cards 001–003 are complete. Card 004 is ready to release the accepted
-owned-promotion surface as `v0.9.7`. Affected consumer lanes are paused on that
-serial edge.
+`g11.001` Cards 001–004 are complete and `v0.9.7` is released at `8a7ce84b`.
+Affected consumer lanes are unblocked and run as independent repository lanes.
 
 ## Archived generations
 
@@ -80,5 +79,5 @@ that risk.
 
 ## Next Task
 
-Execute the explicitly approved `g11.001` Card 004 release against the exact
-pushed candidate.
+Resume Underlay Reference on `v0.9.7`, then route the other consumer ownership
+upgrades as independent repository lanes.

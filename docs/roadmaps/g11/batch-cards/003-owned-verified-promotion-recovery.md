@@ -69,5 +69,5 @@ tokens in diagnostics, or change existing method behavior.
 
 ## Next Task
 
-Complete. Card 004 is ready for the explicitly approved `v0.9.7` release.
+Complete. Card 004 released `v0.9.7` at `8a7ce84b`.
 Delivery log: `docs/logs/2026-09/02-222309-g11-003-owned-verified-promotion-recovery.md`.

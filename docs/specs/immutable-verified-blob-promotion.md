@@ -1,6 +1,6 @@
 # Immutable Verified Blob Promotion
 
-Status: active — v0.9.7 ownership follow-up ready
+Status: active — v0.9.7 ownership follow-up released at `8a7ce84b`
 Owner: repo maintainers
 Created: 2026-09-02
 Roadmap: `g11.001`

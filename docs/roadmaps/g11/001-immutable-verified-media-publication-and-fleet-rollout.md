@@ -106,5 +106,5 @@ unless a target repo proves that unavoidable and stops for planning.
 
 ## Next Task
 
-Execute the explicitly approved Card 004 release for `v0.9.7`. Affected
-consumers remain paused until that validated tag exists.
+`v0.9.7` is released at `8a7ce84b`. Resume Contact Patch Card 015 and the
+other consumer lanes from that tag, Underlay Reference first.
