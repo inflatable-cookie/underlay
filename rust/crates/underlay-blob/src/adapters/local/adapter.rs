@@ -39,6 +39,15 @@ pub struct LocalAdapter {
     config: LocalConfig,
     /// Canonicalized base path for secure path comparisons.
     canonical_base: PathBuf,
+    /// Owned descriptor pinned to the base directory at construction.
+    ///
+    /// Bounded/exclusive-create operations descend from a duplicate of
+    /// this descriptor rather than re-opening the base directory by its
+    /// pathname on every call, so renaming the base directory after
+    /// construction and replacing its old pathname with a symlink cannot
+    /// redirect a later operation outside it.
+    #[cfg(unix)]
+    base_dir: std::fs::File,
 }
 
 impl LocalAdapter {
@@ -54,9 +63,14 @@ impl LocalAdapter {
             BlobError::ConfigError(format!("Failed to canonicalize base path: {}", e))
         })?;
 
+        #[cfg(unix)]
+        let base_dir = super::bounded::open_pinned_base_dir(&canonical_base)?;
+
         Ok(Self {
             config,
             canonical_base,
+            #[cfg(unix)]
+            base_dir,
         })
     }
 
@@ -250,7 +264,14 @@ impl BlobAdapter for LocalAdapter {
 
     async fn get_bytes_bounded(&self, key: &str, max_bytes: u64) -> BlobResult<Vec<u8>> {
         validate_local_object_key(key)?;
-        read_bounded(&self.canonical_base, key, max_bytes).await
+        #[cfg(unix)]
+        {
+            read_bounded(&self.base_dir, key, max_bytes).await
+        }
+        #[cfg(not(unix))]
+        {
+            read_bounded(key, max_bytes).await
+        }
     }
 
     async fn put_bytes_create_only(
@@ -260,7 +281,14 @@ impl BlobAdapter for LocalAdapter {
         content_type: &str,
     ) -> BlobResult<StoredObject> {
         validate_local_object_key(key)?;
-        create_only(&self.canonical_base, key, data).await?;
+        #[cfg(unix)]
+        {
+            create_only(&self.base_dir, key, data).await?;
+        }
+        #[cfg(not(unix))]
+        {
+            create_only(key, data).await?;
+        }
 
         Ok(StoredObject {
             provider: "local".to_string(),

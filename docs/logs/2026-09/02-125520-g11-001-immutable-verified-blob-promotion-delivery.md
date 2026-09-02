@@ -230,6 +230,84 @@ shape and existing mutable APIs were preserved unchanged throughout.
     independently re-documented as a papercut; flagged here for the
     orchestrator's awareness only.
 
+## Second Review Repair (re-review on exact head `1165ceee4ee4e1aecf18413c1ebf0a9f8a4fc439`)
+
+The five first-round findings were confirmed materially repaired. Two
+composed local-adapter cases remained blocking
+([review](https://github.com/inflatable-cookie/underlay/pull/23#issuecomment-5510102046)),
+both in-bounds. Additive trait/default shape and existing mutable APIs
+preserved unchanged throughout.
+
+1. **The base directory itself was still reopened through a mutable
+   pathname.** `LocalAdapter` stored only `canonical_base: PathBuf`; every
+   bounded read/create re-opened it by that pathname on every call
+   (`libc::open(canonical_base, ...)`, no `O_NOFOLLOW`). Renaming the base
+   directory after construction and replacing its old pathname with a
+   symlink would make that reopen follow the replacement, silently
+   redirecting every subsequent `openat(O_NOFOLLOW)` step to the wrong root.
+   Fixed by pinning one owned base-directory descriptor
+   (`LocalAdapter::base_dir: std::fs::File`, opened once in `new()`) and
+   changing `get_bytes_bounded`/`put_bytes_create_only` to descend from a
+   `try_clone()` duplicate of that descriptor instead of ever re-opening the
+   base by path. A file descriptor keeps referring to the same directory
+   inode across a rename (or even an unlink) of its pathname — this is
+   guaranteed POSIX behavior, not a best-effort mitigation. New proof:
+   `local_base_pin_tests.rs` — construct the adapter, rename the real base
+   directory away, plant a symlink to an attacker directory at the old
+   pathname, then prove both read and create still resolve inside the real
+   (moved) directory and the attacker directory stays empty.
+2. **Local create exposed and could strand a partial published object.**
+   `openat(O_CREAT | O_EXCL)` created the final destination name before
+   `write_all`/`sync_all`, so a concurrent reader could observe zero/partial
+   bytes, and a write failure or crash between create and write left a
+   destination name that every retry would only ever see as
+   `DestinationExists`. Rewrote `create_only` to write and `fsync` an owned,
+   unguessable same-directory temp file first
+   (`.underlay-tmp.<pid>.<random-u64>`, `O_EXCL | O_NOFOLLOW`), then publish
+   it to the final name with `linkat` (atomic, create-if-absent, same
+   collision semantics as the old direct `O_CREAT | O_EXCL`), then unlink
+   the temp name — on every path, including collision and write-failure, so
+   only the caller's own temp is ever removed. New proof:
+   `local_atomic_publish_tests.rs` — the destination is unreadable before
+   the call and immediately fully readable after with no temp residue; a
+   collision preserves the incumbent and leaves no temp residue; a
+   pre-seeded stale temp file (simulating a hypothetical crashed prior
+   attempt) is never touched and does not block a fresh publish, proving a
+   retry after failure is not permanently poisoned; a concurrent 8-writer
+   race still yields exactly one publisher with no temp residue on either
+   path.
+
+The reviewer noted the first round's static pre-existing-parent-symlink
+tests were useful but not the actual swap-after-construction interleaving
+requested. The new base-pin tests are the real thing: the symlink
+replacement happens strictly after the adapter is constructed and the
+pinned descriptor is already open, using a real `fs::rename` plus
+`symlink`, not a pre-seeded static fixture.
+
+### Re-Validation At This Repaired Head
+
+- `cargo test -p underlay-blob --all-features`: 72 passed, 0 failed (was
+  66; +6 from the two new test files above).
+- `cargo fmt --all -- --check`: clean.
+- `cargo check --workspace --all-features`: clean.
+- `cargo clippy --workspace --all-features --all-targets -- -D warnings`: clean.
+- `RUSTDOCFLAGS="-D warnings" cargo doc -p underlay-blob --all-features --no-deps`:
+  clean.
+- `effigy qa:docs`, `effigy qa:northstar`: clean.
+- `effigy doctor`: unchanged — same single pre-existing `scan.comment-ratio`
+  finding on `lib.rs` (this repair touched no doc comments there);
+  `scan.god-files` stayed warning-tier only.
+- `git diff --check`: clean.
+- `cargo test --workspace --all-features --no-fail-fast`: exactly one
+  failure, the already-documented pre-existing
+  `underlay-http-client::tests::invalid_user_agent_fallback_retains_default_timeout`
+  flake. The `underlay-http::http_config::tests::test_local_defaults` flake
+  noted in the first repair's re-validation did not reproduce this run,
+  consistent with it being intermittent parallel-execution interference
+  rather than a deterministic failure; still not caused by this branch
+  (`git status --short` shows no `underlay-http`/`underlay-http-client`
+  changes on this branch at any point in this PR).
+
 ## Next Task
 
 Push the repaired branch and report the new exact head to the orchestrator

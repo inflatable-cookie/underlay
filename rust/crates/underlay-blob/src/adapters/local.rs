@@ -30,3 +30,11 @@ mod bounded_promotion_tests;
 #[cfg(test)]
 #[path = "../tests/adapters/local_containment_race_tests.rs"]
 mod containment_race_tests;
+
+#[cfg(test)]
+#[path = "../tests/adapters/local_base_pin_tests.rs"]
+mod base_pin_tests;
+
+#[cfg(test)]
+#[path = "../tests/adapters/local_atomic_publish_tests.rs"]
+mod atomic_publish_tests;

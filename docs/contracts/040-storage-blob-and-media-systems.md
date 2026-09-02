@@ -286,13 +286,22 @@ Rules:
   `promote_verified` rather than treat the two as interchangeable
 - built-in S3 and local adapters implement both primitives; S3 uses one
   conditional `PutObject` (`If-None-Match: *`) and maps every
-  precondition/conflict response to the typed collision; local uses
+  precondition/conflict response to the typed collision; local pins one
+  owned descriptor to the base directory at adapter construction (immune to
+  the base directory being renamed and its old pathname replaced with a
+  symlink afterward) and descends from a duplicate of it with
   descriptor-relative `openat(..., O_NOFOLLOW)` traversal (never a
-  check-then-act resolution of a lexical path) so containment holds for
-  every path component, not only the leaf, and refuses symlink/non-regular
-  sources without blocking (`O_NONBLOCK` plus a post-open regular-file
-  check); non-Unix platforms fail closed rather than fall back to a weaker
-  resolution
+  check-then-act resolution of a lexical path), so containment holds for
+  every path component, not only the leaf and not only the base; it refuses
+  symlink/non-regular sources without blocking (`O_NONBLOCK` plus a
+  post-open regular-file check); non-Unix platforms fail closed rather than
+  fall back to a weaker resolution
+- local exclusive create publishes atomically: bytes are written and
+  `fsync`ed to an owned, unguessable same-directory temp file first, then
+  published to the final name with `linkat`, so a concurrent reader never
+  observes partial content and a write failure or crash before publish
+  leaves only the caller-owned temp behind, never a poisoned final name
+  that would block every retry
 - S3 non-collision transport failures are redacted before crossing the
   public boundary: full provider detail is logged for operators, but the
   returned error carries only a stable operation label and, when available,
