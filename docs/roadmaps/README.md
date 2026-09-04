@@ -49,18 +49,24 @@ README surfaces.
 
 ## Mode
 
-- `sequential`
+- `parallel`
 
 ## Active generation
 
 - [`g11`](g11/README.md) — immutable verified media publication and
   five-consumer rollout; `v0.9.7` is released and consumer lanes are
   unblocked.
+- [`g12`](g12/README.md) — standalone TypeScript/Svelte Nightfire extraction
+  and direct Froyo/Desktop adoption.
 
 ## Current Queue
 
 `g11.001` Cards 001–004 are complete and `v0.9.7` is released at `8a7ce84b`.
 Affected consumer lanes are unblocked and run as independent repository lanes.
+
+`g12.001` is operator-confirmed. Acowtancy Market Card 272 is the first ready
+lane. The release and consumer lanes remain serial behind its accepted
+extraction proof.
 
 ## Archived generations
 
@@ -79,5 +85,4 @@ that risk.
 
 ## Next Task
 
-Resume Underlay Reference on `v0.9.7`, then route the other consumer ownership
-upgrades as independent repository lanes.
+Run Market Card 272 while the independent `g11` consumer rollouts continue.

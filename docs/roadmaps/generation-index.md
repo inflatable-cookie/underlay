@@ -1,15 +1,17 @@
 # Underlay Roadmap Generation Index
 
 Status: active
-Updated: 2026-09-02
+Updated: 2026-09-04
 
 ## Mode
 
-- `sequential`
+- `parallel`
 
 ## Active generations
 
 - `g11` — immutable verified media publication and five-consumer rollout.
+- `g12` — standalone TypeScript/Svelte Nightfire extraction and direct
+  consumer adoption.
 
 ## Generation log
 
@@ -26,6 +28,7 @@ Updated: 2026-09-02
 | `g09` | 2026-08-03 | Config-convergence follow-through; extended with dependency upgrades, consumer workspace convergence, and contract fidelity | Closed 2026-08-27 - all 62 roadmaps complete; exact-main doctor green |
 | `g10` | 2026-09-01 | Explicit operator-directed repository instruction and language-quality audit | Closed 2026-09-01 after PR 22 merged |
 | `g11` | 2026-09-02 | Contact Patch Bughunt exposed a shared mutable-upload publication gap; operator extended the repair to all five Underlay sites | Active; `v0.9.7` released, consumer lanes unblocked |
+| `g12` | 2026-09-04 | Froyo needs Nightfire without inheriting the full Underlay web-framework package | Active; extraction card ready, release and adoption lanes gated |
 
 An earlier invalid `g10` rollover was removed rather than retained. Its
 completed and remaining work was recovered into `g09.021`–`g09.045` on
@@ -65,4 +68,5 @@ In parallel mode:
 
 ## Next Task
 
-Resume Underlay Reference on `v0.9.7`, then the other `g11.001` consumer lanes.
+Run the independent `g11` consumer lanes and Acowtancy Market Card 272 in
+parallel.

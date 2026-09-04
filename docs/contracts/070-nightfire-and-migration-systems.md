@@ -34,16 +34,10 @@ Primary:
 - [`rust/crates/underlay-migration-core/src/plugin.rs`](../../rust/crates/underlay-migration-core/src/plugin.rs)
 - [`rust/crates/underlay-migration-core/src/context.rs`](../../rust/crates/underlay-migration-core/src/context.rs)
 - [`rust/crates/underlay-migration-core/src/manifest.rs`](../../rust/crates/underlay-migration-core/src/manifest.rs)
-- [`ts/src/nightfire/types.ts`](../../ts/src/nightfire/types.ts)
-- [`ts/src/nightfire/editor.ts`](../../ts/src/nightfire/editor.ts)
-- [`ts/src/nightfire/editor-registry.ts`](../../ts/src/nightfire/editor-registry.ts)
-- [`ts/src/nightfire/renderer.ts`](../../ts/src/nightfire/renderer.ts)
-- [`ts/src/nightfire/render-registry.ts`](../../ts/src/nightfire/render-registry.ts)
-- [`ts/src/nightfire/strategies.ts`](../../ts/src/nightfire/strategies.ts)
-- [`ts/src/nightfire/validation.ts`](../../ts/src/nightfire/validation.ts)
-- [`ts/src/nightfire/validator-registry.ts`](../../ts/src/nightfire/validator-registry.ts)
-- [`ts/src/nightfire/markdown.ts`](../../ts/src/nightfire/markdown.ts)
-- [`ts/src/nightfire/media/editor.ts`](../../ts/src/nightfire/media/editor.ts)
+- standalone repository `github.com/inflatable-cookie/nightfire`, root package
+  `@inflatable-cookie/nightfire` (after `g12` extraction)
+- the current [`ts/src/nightfire/`](../../ts/src/nightfire/) tree only until
+  that extraction is accepted and replaced by compatibility re-exports
 
 Supporting:
 
@@ -52,7 +46,10 @@ Supporting:
 - [`050-media-library-and-usage.md`](./050-media-library-and-usage.md)
 - [`docs/architecture/010-package-map.md`](../architecture/010-package-map.md)
 
-If these diverge, the shared code wins.
+If these diverge, the Rust crate owns the Rust wire model and the standalone
+Nightfire package owns the TypeScript/Svelte implementation. Their shared
+conformance fixtures must agree. Underlay compatibility exports never become
+a third authority.
 
 ## Contract Goal
 
@@ -171,9 +168,11 @@ Rules:
 - older field-name matcher extraction may exist as a compatibility seam, but it
   is not the preferred steady-state extension model
 
-### Retained TS Nightfire runtime shell
+### Standalone TS Nightfire runtime shell
 
-Underlay retains a generic TS surface over the durable protocol.
+The standalone Nightfire package owns the generic TS surface over the durable
+protocol. During migration, Underlay re-exports it from the historical
+subpaths without changing behavior.
 
 Core pieces:
 
@@ -193,6 +192,17 @@ Core pieces:
 Rules:
 
 - TS editor and renderer runtime is registry-driven by `schema` and `type`
+- the root package is distributed from its own repository by immutable Git tag
+- focused subpaths separate core, renderer, editor, markdown, registries,
+  strategies, validation, and media helpers without creating multiple sibling
+  packages that the Git dependency model cannot install independently
+- `core` and pure validation subpaths are framework-free; registry modules may
+  use erased Svelte component types, while strategy context, renderer, and
+  editor subpaths may use Svelte. Renderer imports cannot pull editor code or
+  registration side effects
+- the package has no dependency or peer dependency on Underlay, SvelteKit,
+  Vite, bits-ui, lucide-svelte, zod, or `smol-toml` unless extraction evidence
+  proves a direct generic need and planning is reopened
 - apps own actual block editors, renderers, and validator functions
 - strategy loading is an app-supplied fetch seam with shared caching/context
   behavior
@@ -204,6 +214,24 @@ Rules:
   not replace server-side structural validation
 - markdown and media helpers are retained convenience registrations over the
   same registry model, not a separate content protocol
+- browser, SSR, and Tauri sanitization must remain safe and equivalent; the
+  extraction may change sanitizer packaging only after explicit malicious-HTML
+  and dependency-graph proof
+
+### Extraction and compatibility rules
+
+- move the implementation; do not maintain long-lived copies in both repos
+- a bounded overlap is allowed only between the first standalone release and
+  the Underlay compatibility adoption, with no semantic changes during that
+  window
+- Underlay then depends on the released Nightfire tag, deletes its internal TS
+  implementation, and re-exports the old paths
+- new consumers import `@inflatable-cookie/nightfire/*` directly
+- Froyo must prove its installed and bundled dependency graph contains no
+  `@inflatable-cookie/underlay` edge before Bovine Desktop removes Underlay
+  from its frozen private candidate
+- `underlay-nightfire` remains in Underlay; moving the Rust crate is outside
+  this extraction
 
 ### Ownership split for content features
 

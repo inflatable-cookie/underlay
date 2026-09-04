@@ -216,8 +216,10 @@ Rules:
 
 The root JavaScript package is npm-private (`package.json` has
 `private: true`). Underlay distributes both language surfaces to consumers
-through immutable Git tags. Registry-publishing mechanics beyond that npm
-guard are outside this contract.
+through immutable Git tags. The independently versioned
+`@inflatable-cookie/nightfire` package follows the same private Git-tag model
+from `github.com/inflatable-cookie/nightfire`; it is not an Underlay workspace
+package and does not require registry publication.
 
 The synchronized Rust workspace and JavaScript package versions follow the
 release process and semantic versioning. Roadmap generation numbers never
@@ -228,6 +230,12 @@ The only committed JavaScript form is:
 
 ```json
 "@inflatable-cookie/underlay": "git+ssh://git@github.com/inflatable-cookie/underlay.git#vX.Y.Z"
+```
+
+The only committed standalone Nightfire form is:
+
+```json
+"@inflatable-cookie/nightfire": "git+ssh://git@github.com/inflatable-cookie/nightfire.git#vX.Y.Z"
 ```
 
 The only committed Cargo form is:
@@ -250,6 +258,13 @@ Rules:
 - sibling Underlay checkouts remain read-only QA or tooling inputs, or
   untracked local Cargo `[patch]` links. They must never become the committed
   dependency shape
+- standalone Nightfire consumers pin a validated Nightfire tag directly;
+  they do not depend on Underlay merely to reach Nightfire
+- the historical `@inflatable-cookie/underlay/nightfire/*` exports are a
+  deprecation facade during `g12`; they resolve to the same released
+  Nightfire implementation and cannot become a fork
+- retirement of that facade requires a caller inventory and consumer proof;
+  no removal date is guessed before the inventory exists
 
 Contract `024` owns the workspace and bootstrap rule that this pin posture
 implements. Do not treat a local sibling checkout as a supported application

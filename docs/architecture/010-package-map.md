@@ -104,6 +104,25 @@ Several crates use feature flags to keep optional dependencies out of the defaul
 - `tools/`: repo guardrails and template-surface tooling
 - `utils/`: focused standalone helpers
 
+### Nightfire extraction boundary
+
+The retained `nightfire/` tree is a temporary source location, not its final
+package boundary. Generation `g12` moves the generic TypeScript/Svelte
+structured-content runtime to the standalone
+`@inflatable-cookie/nightfire` package in
+`github.com/inflatable-cookie/nightfire`.
+
+The standalone package owns its own focused subpaths for protocol types,
+registries, validation, rendering, editing, markdown, strategies, and media
+helpers. It must not depend on Underlay, SvelteKit, Vite, Underlay templates,
+or Underlay client/runtime surfaces. Underlay may depend on a released
+Nightfire Git tag and temporarily re-export the historical
+`@inflatable-cookie/underlay/nightfire/*` paths.
+
+The Rust `underlay-nightfire` crate stays in this repository. Cross-language
+fixture parity, not repository co-location, keeps the Rust and TypeScript wire
+models aligned.
+
 Public package guidance is documented in the repo root [README.md](../../README.md)
 and the architecture overview rather than repeated here as an old namespace map.
 

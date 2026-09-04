@@ -32,11 +32,22 @@ workflow shells, app/runtime orchestration, or retained specialized systems.
 - `@inflatable-cookie/underlay/client/*`
   - transport, SvelteKit integration, query parsing, and client-only
     navigation helpers via explicit feature subpaths
+- `@inflatable-cookie/nightfire/*`
+  - standalone structured-content protocol/editor/runtime package via focused
+    subpaths
 - `@inflatable-cookie/underlay/nightfire/*`
-  - retained structured-content editor/runtime package via explicit subpaths
+  - temporary compatibility facade over a released Nightfire tag during the
+    `g12` consumer migration
 - `@inflatable-cookie/underlay/styles/base.css`
   - minimal CSS variables
 
 ## Nightfire namespace
 
-- `@inflatable-cookie/underlay/nightfire` is reserved for structured content renderers extracted from a reference implementation.
+- `@inflatable-cookie/nightfire` is the primary TypeScript/Svelte structured
+  content package.
+- Underlay does not own Nightfire implementation after extraction. Historical
+  Underlay subpaths remain only long enough for existing consumers to adopt
+  the standalone package and must not gain new callers.
+- The standalone package may peer on Svelte and consume the lowest required
+  Poodle surface. It must not acquire SvelteKit, Vite, template, auth, client,
+  or application-runtime dependencies merely because those exist in Underlay.
