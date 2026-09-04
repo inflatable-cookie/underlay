@@ -25,6 +25,7 @@ temporary compatibility facade over the same released implementation.
 ## Package Boundary
 
 - repository: `github.com/inflatable-cookie/nightfire`
+- local sibling checkout: `../nightfire`
 - root package: `@inflatable-cookie/nightfire`
 - distribution: immutable Git tags; no private registry prerequisite
 - package shape: one root package with focused subpaths, not independently
