@@ -216,10 +216,10 @@ Rules:
 
 The root JavaScript package is npm-private (`package.json` has
 `private: true`). Underlay distributes both language surfaces to consumers
-through immutable Git tags. The independently versioned
-`@inflatable-cookie/nightfire` package follows the same private Git-tag model
-from `github.com/inflatable-cookie/nightfire`; it is not an Underlay workspace
-package and does not require registry publication.
+through immutable Git tags. The independently versioned Nightfire repository
+follows the same private Git-tag model for both
+`@inflatable-cookie/nightfire` and Rust crate `nightfire`; neither requires
+registry publication and neither remains an Underlay implementation.
 
 The synchronized Rust workspace and JavaScript package versions follow the
 release process and semantic versioning. Roadmap generation numbers never
@@ -238,6 +238,15 @@ The only committed standalone Nightfire form is:
 "@inflatable-cookie/nightfire": "git+ssh://git@github.com/inflatable-cookie/nightfire.git#vX.Y.Z"
 ```
 
+The committed standalone Nightfire Cargo form is:
+
+```toml
+nightfire = { git = "ssh://git@github.com/inflatable-cookie/nightfire.git", tag = "vX.Y.Z" }
+```
+
+Consumers with a local package also named `nightfire` use an explicit key such
+as `nightfire-core` plus `package = "nightfire"`.
+
 The only committed Cargo form is:
 
 ```toml
@@ -246,8 +255,8 @@ underlay-core = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", t
 
 Rules:
 
-- pin the same released tag on every JavaScript and Cargo declaration in that
-  consumer
+- pin one released Underlay tag on all Underlay declarations and one released
+  Nightfire tag on all Nightfire declarations in that consumer
 - a consumer cannot pin an unreleased shared commit, branch, or local checkout
 - holding a consumer back means retaining its previous proven tag
 - upgrading means changing every declared Underlay tag in the consumer root,
@@ -263,6 +272,9 @@ Rules:
 - the historical `@inflatable-cookie/underlay/nightfire/*` exports are a
   deprecation facade during `g12`; they resolve to the same released
   Nightfire implementation and cannot become a fork
+- the historical Rust `underlay-nightfire` crate becomes a deprecation facade
+  during `g12`; it re-exports the same released `nightfire` implementation and
+  cannot remain a fork
 - retirement of that facade requires a caller inventory and consumer proof;
   no removal date is guessed before the inventory exists
 

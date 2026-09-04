@@ -6,12 +6,12 @@ Depends on: `040-storage-blob-and-media-systems.md`, `050-media-library-and-usag
 
 ## Purpose
 
-Define the shared structured-content and migration contract Underlay owns
-across:
+Define the shared structured-content contract Nightfire owns and the migration
+and integration contract Underlay owns across:
 
 - the durable Nightfire value and block protocol
 - the generic Nightfire strategy, registry, and validation seams
-- the retained TS editor, renderer, validator, and strategy-loading shell
+- the generic TS editor, renderer, validator, and strategy-loading shell
 - the deterministic migration-core pipeline, bundle, replay, and governance
   model
 
@@ -23,21 +23,19 @@ top of this shared protocol and are owned by consuming apps.
 
 Primary:
 
-- [`rust/crates/underlay-nightfire/src/lib.rs`](../../rust/crates/underlay-nightfire/src/lib.rs)
-- [`rust/crates/underlay-nightfire/src/value.rs`](../../rust/crates/underlay-nightfire/src/value.rs)
-- [`rust/crates/underlay-nightfire/src/block.rs`](../../rust/crates/underlay-nightfire/src/block.rs)
-- [`rust/crates/underlay-nightfire/src/registry.rs`](../../rust/crates/underlay-nightfire/src/registry.rs)
-- [`rust/crates/underlay-nightfire/src/validation.rs`](../../rust/crates/underlay-nightfire/src/validation.rs)
-- [`rust/crates/underlay-nightfire/src/strategy.rs`](../../rust/crates/underlay-nightfire/src/strategy.rs)
+- standalone repository `github.com/inflatable-cookie/nightfire`, root npm
+  package `@inflatable-cookie/nightfire`, and Rust crate `nightfire` after Card
+  278 extraction
+- the current [`rust/crates/underlay-nightfire/`](../../rust/crates/underlay-nightfire/)
+  tree only until Card 278 is accepted and Card 274 replaces it with a
+  compatibility facade
+- the current [`ts/src/nightfire/`](../../ts/src/nightfire/) tree only until
+  Card 274 replaces it with compatibility re-exports
 - [`rust/crates/underlay-migration-core/src/lib.rs`](../../rust/crates/underlay-migration-core/src/lib.rs)
 - [`rust/crates/underlay-migration-core/src/pipeline.rs`](../../rust/crates/underlay-migration-core/src/pipeline.rs)
 - [`rust/crates/underlay-migration-core/src/plugin.rs`](../../rust/crates/underlay-migration-core/src/plugin.rs)
 - [`rust/crates/underlay-migration-core/src/context.rs`](../../rust/crates/underlay-migration-core/src/context.rs)
 - [`rust/crates/underlay-migration-core/src/manifest.rs`](../../rust/crates/underlay-migration-core/src/manifest.rs)
-- standalone repository `github.com/inflatable-cookie/nightfire`, root package
-  `@inflatable-cookie/nightfire` (after `g12` extraction)
-- the current [`ts/src/nightfire/`](../../ts/src/nightfire/) tree only until
-  that extraction is accepted and replaced by compatibility re-exports
 
 Supporting:
 
@@ -46,15 +44,14 @@ Supporting:
 - [`050-media-library-and-usage.md`](./050-media-library-and-usage.md)
 - [`docs/architecture/010-package-map.md`](../architecture/010-package-map.md)
 
-If these diverge, the Rust crate owns the Rust wire model and the standalone
-Nightfire package owns the TypeScript/Svelte implementation. Their shared
-conformance fixtures must agree. Underlay compatibility exports never become
-a third authority.
+After Card 278, the standalone Nightfire repository owns both the Rust wire
+model and TypeScript/Svelte implementation. Their shared conformance fixtures
+must agree. Underlay compatibility facades never become another authority.
 
 ## Contract Goal
 
-Underlay should provide one reusable content-system and migration discipline
-with clear seams:
+Nightfire should provide one reusable content system while Underlay provides
+its media, HTTP, and migration integration with clear seams:
 
 - content values have a stable durable wire shape
 - block strategies constrain what a field may contain without hard-coding
@@ -70,7 +67,9 @@ The goal is shared protocol and discipline, not a universal CMS.
 
 ### Nightfire durable value protocol
 
-`underlay-nightfire` owns the canonical structured-content value model.
+Standalone Rust crate `nightfire` owns the canonical structured-content value
+model. Until Card 274, Underlay's implementation is the migration source; after
+that card, `underlay-nightfire` is only a compatibility facade.
 
 Core pieces:
 
@@ -103,12 +102,12 @@ Rules:
 - the first `VERSIONS` entry is the current implementation; remaining entries
   stay readable via registry-declared coercion
 - export shape must stay serializable and portable across Rust and TS callers
-- Underlay owns the generic `BlockData` envelope, not the application block
+- Nightfire owns the generic `BlockData` envelope, not the application block
   payload schema inside `data`
 
 ### Nightfire strategies and registries
 
-Underlay owns the generic field-strategy model.
+Nightfire owns the generic field-strategy model.
 
 Core pieces:
 
@@ -129,7 +128,7 @@ Rules:
 
 ### Nightfire validation seam
 
-Underlay owns the generic structural validation path.
+Nightfire owns the generic structural validation path.
 
 Core pieces:
 
@@ -168,11 +167,13 @@ Rules:
 - older field-name matcher extraction may exist as a compatibility seam, but it
   is not the preferred steady-state extension model
 
-### Standalone TS Nightfire runtime shell
+### Standalone Nightfire language tranches
 
-The standalone Nightfire package owns the generic TS surface over the durable
-protocol. During migration, Underlay re-exports it from the historical
-subpaths without changing behavior.
+The standalone Nightfire repository owns the Rust durable protocol and generic
+TypeScript/Svelte surface together. It separates implementation under `rust/`
+and `ts/`, with shared root wire fixtures. During migration, Underlay re-exports
+both released implementations from historical surfaces without changing
+behavior.
 
 Core pieces:
 
@@ -193,6 +194,8 @@ Rules:
 
 - TS editor and renderer runtime is registry-driven by `schema` and `type`
 - the root package is distributed from its own repository by immutable Git tag
+- the root Cargo workspace exposes crate `nightfire` from the same immutable
+  tag; Rust and npm manifest versions stay synchronized
 - focused subpaths separate core, renderer, editor, markdown, registries,
   strategies, validation, and media helpers without creating multiple sibling
   packages that the Git dependency model cannot install independently
@@ -224,24 +227,28 @@ Rules:
 - a bounded overlap is allowed only between the first standalone release and
   the Underlay compatibility adoption, with no semantic changes during that
   window
-- Underlay then depends on the released Nightfire tag, deletes its internal TS
-  implementation, and re-exports the old paths
-- new consumers import `@inflatable-cookie/nightfire/*` directly
+- Underlay then depends on the released Nightfire tag, deletes its internal
+  Rust and TS implementations, and re-exports the old crate name and subpaths
+- new consumers import `nightfire` and `@inflatable-cookie/nightfire/*`
 - Froyo must prove its installed and bundled dependency graph contains no
   `@inflatable-cookie/underlay` edge before Bovine Desktop removes Underlay
   from its frozen private candidate
-- `underlay-nightfire` remains in Underlay; moving the Rust crate is outside
-  this extraction
+- Farmyard moves its generic Rust core dependency directly to `nightfire`; its
+  app-local blocks, registries, schemas, and media handlers remain local
 
 ### Ownership split for content features
 
-Underlay owns:
+Nightfire owns:
 
 - the durable value shape
 - block export envelope
 - schema/strategy/registry model
 - generic editor/renderer/validator registration seams
 - strategy-loading runtime shell
+
+Underlay owns its media traversal integration, validation-to-HTTP adaptation,
+and temporary compatibility facades. Those are consumers of Nightfire, not
+part of its generic core.
 
 Apps own:
 

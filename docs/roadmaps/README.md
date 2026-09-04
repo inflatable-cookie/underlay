@@ -56,17 +56,17 @@ README surfaces.
 - [`g11`](g11/README.md) — immutable verified media publication and
   five-consumer rollout; `v0.9.7` is released and consumer lanes are
   unblocked.
-- [`g12`](g12/README.md) — standalone TypeScript/Svelte Nightfire extraction
-  and direct Froyo/Desktop adoption.
+- [`g12`](g12/README.md) — standalone Rust and TypeScript/Svelte Nightfire
+  extraction with direct consumer adoption.
 
 ## Current Queue
 
 `g11.001` Cards 001–004 are complete and `v0.9.7` is released at `8a7ce84b`.
 Affected consumer lanes are unblocked and run as independent repository lanes.
 
-`g12.001` is operator-confirmed. Acowtancy Market Card 272 is the first ready
-lane. The release and consumer lanes remain serial behind its accepted
-extraction proof.
+`g12.001` is operator-confirmed. Card 272 closed incomplete after excluding
+Rust; Acowtancy Market Card 278 is the ready corrective lane. The release and
+consumer lanes remain serial behind its accepted dual-language proof.
 
 ## Archived generations
 
@@ -85,4 +85,4 @@ that risk.
 
 ## Next Task
 
-Run Market Card 272 while the independent `g11` consumer rollouts continue.
+Run Market Card 278 while the independent `g11` consumer rollouts continue.

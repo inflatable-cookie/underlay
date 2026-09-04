@@ -46,7 +46,7 @@ controlled breaking batches with six-consumer proof.
 | `underlay-media` | Media library: file management, storage orchestration, usage tracking |
 | `underlay-media-postgres` | PostgreSQL adapter for `underlay-media` repository contracts |
 | `underlay-migration-core` | Deterministic migration contracts: pipeline stages, plugin traits, run-store and decision journal types |
-| `underlay-nightfire` | Block-based structured content protocol (JSON document format) |
+| `underlay-nightfire` | Temporary compatibility facade over standalone Rust crate `nightfire` after `g12` Card 274 |
 
 ### Infrastructure
 
@@ -106,10 +106,10 @@ Several crates use feature flags to keep optional dependencies out of the defaul
 
 ### Nightfire extraction boundary
 
-The retained `nightfire/` tree is a temporary source location, not its final
-package boundary. Generation `g12` moves the generic TypeScript/Svelte
-structured-content runtime to the standalone
-`@inflatable-cookie/nightfire` package in
+The retained TypeScript `nightfire/` tree and Rust `underlay-nightfire` crate
+are temporary source locations, not the final package boundary. Generation
+`g12` moves the generic structured-content system to Rust crate `nightfire` and
+TypeScript/Svelte package `@inflatable-cookie/nightfire` in
 `github.com/inflatable-cookie/nightfire`.
 
 The standalone package owns its own focused subpaths for protocol types,
@@ -119,9 +119,10 @@ or Underlay client/runtime surfaces. Underlay may depend on a released
 Nightfire Git tag and temporarily re-export the historical
 `@inflatable-cookie/underlay/nightfire/*` paths.
 
-The Rust `underlay-nightfire` crate stays in this repository. Cross-language
-fixture parity, not repository co-location, keeps the Rust and TypeScript wire
-models aligned.
+The standalone Nightfire repository owns both Rust crate `nightfire` and the
+TypeScript/Svelte package. Underlay's `underlay-nightfire` package becomes a
+temporary re-export facade after Card 274. Shared fixtures in the standalone
+repository keep both language implementations aligned.
 
 Public package guidance is documented in the repo root [README.md](../../README.md)
 and the architecture overview rather than repeated here as an old namespace map.
