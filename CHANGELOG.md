@@ -7,6 +7,13 @@ While Underlay is `0.x`, breaking changes raise the minor version.
 
 ## [Unreleased]
 
+## [0.9.8] - 2026-09-05
+
+### Changed
+- Updated the Underlay JavaScript integration to consume Poodle `0.3.0`,
+  including the markdown-family imports moved to the Poodle `/markdown`
+  subpath.
+
 ## [0.9.7] - 2026-09-02
 
 ### Added
