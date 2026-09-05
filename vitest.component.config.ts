@@ -4,6 +4,9 @@ import { resolve } from "path";
 
 export default defineConfig({
 	plugins: [svelte()],
+	ssr: {
+		noExternal: [/^@inflatable-cookie\/poodle-/],
+	},
 	test: {
 		globals: true,
 		environment: "jsdom",
