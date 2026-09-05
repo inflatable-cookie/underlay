@@ -5,7 +5,7 @@
     "": {
       "name": "@inflatable-cookie/underlay",
       "dependencies": {
-        "@inflatable-cookie/poodle-svelte": "0.2.2",
+        "@inflatable-cookie/poodle-svelte": "0.3.0",
         "esm-env": "^1.2.2",
         "isomorphic-dompurify": "^3.0.0",
         "marked": "^17.0.3",
@@ -136,9 +136,9 @@
 
     "@floating-ui/utils": ["@floating-ui/utils@0.2.12", "", {}, "sha512-HpCo8tmWzLVad5s2d19EhAz5zqrrQ6s69qd6moPMQvkOuSwDT1YgRfWSVuc4ennqrgv3OHppiOGMQ7oC13yIww=="],
 
-    "@inflatable-cookie/poodle-core": ["@inflatable-cookie/poodle-core@0.2.2", "", { "bin": { "poodle-icons": "src/icons/build.mjs" } }, "sha512-8B6iCQhRDxmXibBXAQc4Qp8sIfSYih/u1uhtRE6UnKzcX4YcqV4ornXiF7fiF2faogdnt4nWiNrNBeBSXDaBPg=="],
+    "@inflatable-cookie/poodle-core": ["@inflatable-cookie/poodle-core@0.3.0", "", { "bin": { "poodle-icons": "dist/icons/build.mjs" } }, "sha512-/l1yl11lXFq3Th7DnXKYBtAuvUJRNfhRLluqs4HTov3MPEnN6htgDw/FFV0XZrKdEq9/cgs3M+U5lFRKP/aIPQ=="],
 
-    "@inflatable-cookie/poodle-svelte": ["@inflatable-cookie/poodle-svelte@0.2.2", "", { "dependencies": { "@inflatable-cookie/poodle-core": "0.2.2", "marked": "^18.0.9" }, "peerDependencies": { "svelte": ">=5.38.6 <6" } }, "sha512-BZIKZuqZ3DdoqvyGstuOgaOX23t4+kpXgu7U0BEY7zEsUbYvOrxte1iu+S2/AsIpqaND0BYL3Wu/N5z1ekzc2A=="],
+    "@inflatable-cookie/poodle-svelte": ["@inflatable-cookie/poodle-svelte@0.3.0", "", { "dependencies": { "@inflatable-cookie/poodle-core": "0.3.0" }, "peerDependencies": { "marked": "^18.0.9", "svelte": ">=5.56.8 <6" }, "optionalPeers": ["marked"] }, "sha512-MlbrMgXSdsKYEK9dOm+qedJpmc8I7DDzt6TDqYSlTQFSgM8iGtKsdJQuByVCNK2pZrl9GMFLIgXRxPW7keFvdw=="],
 
     "@internationalized/date": ["@internationalized/date@3.12.3", "", { "dependencies": { "@swc/helpers": "^0.5.0" } }, "sha512-fuLX+3ZKLsxI73y8b01EG/WjHb6gE6weCqlfawPO27kBWGMh9G1yH6Csv1uU7/cac9H2GHmOMt6CjmuQ1aia4Q=="],
 
@@ -491,8 +491,6 @@
     "zimmerframe": ["zimmerframe@1.1.4", "", {}, "sha512-B58NGBEoc8Y9MWWCQGl/gq9xBCe4IiKM0a2x7GZdQKOW5Exr8S1W24J6OgM1njK8xCRGvAJIL/MxXHf6SkmQKQ=="],
 
     "zod": ["zod@4.4.3", "", {}, "sha512-ytENFjIJFl2UwYglde2jchW2Hwm4GJFLDiSXWdTrJQBIN9Fcyp7n4DhxJEiWNAJMV1/BqWfW/kkg71UDcHJyTQ=="],
-
-    "@inflatable-cookie/poodle-svelte/marked": ["marked@18.0.9", "", { "bin": { "marked": "bin/marked.js" } }, "sha512-/Sa4qiiHZxf0/FQdBBowr9q4r10krCwMvpK48FUBdXdUXScDxiQGR9zCPrFgRVR5LU3iySOiIjy09ZQvADir1w=="],
 
     "@sveltejs/kit/magic-string": ["magic-string@0.30.21", "", { "dependencies": { "@jridgewell/sourcemap-codec": "^1.5.5" } }, "sha512-vd2F4YUyEXKGcLHoq+TEyCjxueSeHnFxyyjNp80yg0XV4vUhnDer/lvvlqM/arB5bXQN5K2/3oinyCRyx8T2CQ=="],
 
