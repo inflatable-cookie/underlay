@@ -5,9 +5,10 @@ Updated: 2026-05-08
 
 This page is no longer the live rollout authority.
 
-Use it as frozen rollout evidence only. The active template-system delivery
-state lives in `docs/roadmaps/g03/` and the contract/assessment state lives in
-`docs/roadmaps/g04/`.
+Use it as frozen rollout evidence only. The template-system delivery record
+is in [`docs/roadmaps/archive/g03.md`](../../roadmaps/archive/g03.md) and
+the contract/assessment record in
+[`docs/roadmaps/archive/g04.md`](../../roadmaps/archive/g04.md).
 
 ## Rollout Order
 

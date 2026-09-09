@@ -18,7 +18,6 @@ shape.
 
 ## Disposition
 
-Promoted to
-[`g09.060`](../roadmaps/g09/060-released-dependency-rollout-contract-normalization.md)
+Promoted to `g09.060` (see [`archive/g09.md`](../roadmaps/archive/g09.md))
 and resolved in Underlay PR13 at reviewed head `1bfe15c2`, merge commit
 `a65797f0`. This note remains only as the closed discovery record.

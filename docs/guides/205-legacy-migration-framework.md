@@ -20,10 +20,10 @@ This guide describes how to set up and operate an Underlay migration system from
 
 It is implementation-oriented and complements roadmap design docs:
 
-1. [025 Universal Legacy Migration Foundation](../roadmaps/g01/025-universal-legacy-migration-foundation.md)
-2. [026 Migration Bundles and OCI Distribution](../roadmaps/g01/026-migration-bundles-and-oci-distribution.md)
-3. [027 Incremental Decision Memory and AI Reuse](../roadmaps/g01/027-incremental-decision-memory-and-ai-reuse.md)
-4. [028 Migration Operations and Hardening](../roadmaps/g01/028-migration-operations-and-hardening.md)
+1. [025 Universal Legacy Migration Foundation](../roadmaps/archive/g01.md)
+2. [026 Migration Bundles and OCI Distribution](../roadmaps/archive/g01.md)
+3. [027 Incremental Decision Memory and AI Reuse](../roadmaps/archive/g01.md)
+4. [028 Migration Operations and Hardening](../roadmaps/archive/g01.md)
 
 For current Underlay-site project layout policy and Effigy integration, use
 [Migration State Layout And Effigy](../usage/migration/000-state-layout-and-effigy.md).

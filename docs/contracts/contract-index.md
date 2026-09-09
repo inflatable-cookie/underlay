@@ -98,5 +98,5 @@ Do not promote a system into active implementation-assessment work until:
 
 ## Next Task
 
-Review the `g09.060` PR at exact head. See
-[`docs/roadmaps/g09/README.md`](../roadmaps/g09/README.md).
+`g09.060` is complete (Underlay PR13, merge commit `a65797f0`); evidence:
+[`docs/roadmaps/archive/g09.md`](../roadmaps/archive/g09.md).

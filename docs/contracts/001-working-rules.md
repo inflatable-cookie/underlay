@@ -8,12 +8,14 @@ Depends on: `docs/architecture/product-guardrails.md`
 
 - Treat `docs/roadmaps/`, `docs/specs/`, and `docs/logs/` as the execution
   authority chain for active Underlay work.
-- Every generation work item must exist as a numbered roadmap file directly
-  under `docs/roadmaps/gNN/`.
+- Every generation work item must exist as one numbered Northstar task file
+  directly under `docs/roadmaps/gNN/` (`NNN-<slug>.md`, referenced as
+  `gNN.NNN`). The generation README owns the roadmap and approved frontier.
 - Use the strict spec lane when a consumer-facing shared-surface wave needs a
-  tighter boundary than the roadmap alone.
-- Strict batch cards may decompose one roadmap; they must not substitute for the
-  roadmap queue or advance generation numbering independently.
+  tighter boundary than the task alone.
+- No milestone wrapper or nested `batch-cards/` hierarchy is supported; a
+  former milestone and its cards collapse into top-level tasks with later IDs
+  assigned in dependency order.
 - In the strict lane, a bare `continue` should resolve through the previous
   closeout's `Next Task`, normally into the current ready roadmap.
 - Completed roadmaps must not remain advertised as ready.
@@ -40,25 +42,23 @@ In parallel mode:
 - multiple active generations may coexist when the work streams are genuinely
   independent
 - each generation operates as its own queue
-- roadmap files stay directly under `docs/roadmaps/gNN/`; optional batch cards
-  stay under `docs/roadmaps/gNN/batch-cards/`
-- each generation README remains the authoritative front door for its thread
+- roadmap files stay directly under `docs/roadmaps/gNN/` as the sole
+  executable planning units
+- each generation README owns that generation's roadmap and approved frontier
 
 ## Current Posture
 
-Underlay is in sequential mode:
+Underlay runs parallel active generations:
 
-- `g01`–`g09` are closed historical generations
-- `g10` is closed after the Northstar instruction and language-quality audit
-- `g11` is active for immutable verified media publication and five-consumer
-  rollout
-- `v0.9.6` is released; Card 003's positive-ownership repair merged as PR #25
-- Card 004 is ready and explicitly authorized to publish `v0.9.7`
+- `g01`–`g10` are compacted archival roll-ups under `docs/roadmaps/archive/`
+- `g11` is active: `g11.001` complete (`v0.9.7`), `g11.002` ready
+  (five-consumer adoption), `g11.003` blocked (fleet closeout)
+- `g12` is active: `g12.001` owns the Nightfire extraction and rollout
 - the completed monorepo rollout spec remains archived
 - open triage and backlog files are retained evidence, not execution authority
-- a later generation requires explicit planning and numbered roadmaps before
+- a later generation requires explicit planning and numbered tasks before
   dispatch
 
 ## Next Task
 
-Execute `g11.001` Card 004 against the exact pushed release candidate.
+Run `g11.002` (Underlay Reference first) and the `g12.001` Card 278 lane.

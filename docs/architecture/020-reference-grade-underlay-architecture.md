@@ -197,6 +197,6 @@ Stop and re-enter planning if:
 
 ## Next Task
 
-Open a bounded `g09` roadmap card before retiring deferred compatibility
-exports or starting another architecture reset lane. See
-[`docs/roadmaps/g09/README.md`](../roadmaps/g09/README.md).
+Open a bounded task in the active generation before retiring deferred
+compatibility exports or starting another architecture reset lane. See
+[`docs/roadmaps/README.md`](../roadmaps/README.md).

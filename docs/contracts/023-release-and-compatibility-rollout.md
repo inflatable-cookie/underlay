@@ -34,8 +34,8 @@ Shared release and upgrade guidance:
 
 Prior rollout and retirement evidence:
 
-- [`docs/roadmaps/g01/031-consumer-upgrade-and-change-communication.md`](../roadmaps/g01/031-consumer-upgrade-and-change-communication.md)
-- [`docs/roadmaps/g05/009-rust-runtime-contract-audit-and-next-contract-set.md`](../roadmaps/g05/009-rust-runtime-contract-audit-and-next-contract-set.md)
+- [`docs/roadmaps/archive/g01.md`](../roadmaps/archive/g01.md) (consumer-upgrade communication evidence)
+- [`docs/roadmaps/archive/g05.md`](../roadmaps/archive/g05.md) (Rust runtime contract audit evidence)
 - [`027-api-canonical-path-cutovers-and-compatibility-retirement.md`](./027-api-canonical-path-cutovers-and-compatibility-retirement.md)
 - [`111-consumer-template-adoption-and-exception-policy.md`](./111-consumer-template-adoption-and-exception-policy.md)
 

@@ -132,6 +132,6 @@ Every system should pass through the same loop:
 
 ## Next Task
 
-Resolve the release and app-owner decision gates for `g09.047`; keep it planned
-until those gates are satisfied. See
-[`docs/roadmaps/g09/README.md`](../roadmaps/g09/README.md).
+The `g09.047` gates are closed with the generation. Evidence:
+[`docs/roadmaps/archive/g09.md`](../roadmaps/archive/g09.md). New repair
+work needs explicit planning in the active generation.

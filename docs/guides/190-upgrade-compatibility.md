@@ -253,14 +253,14 @@ Reusable templates:
   - `g07.021`: all known consumers moved live aggregate `client/types` imports
     to `client/envelopes` or `client/restore`
 - Changed guidance:
-  - [g07.012 closeout artifact](../roadmaps/g07/012-ts-boundary-hardening-closeout-artifact.md)
-  - [g07.013 suggestion helper compatibility export retirement](../roadmaps/g07/013-suggestion-helper-compatibility-export-retirement.md)
-  - [g07.015 runtime data subpath split](../roadmaps/g07/015-runtime-data-subpath-split.md)
-  - [g07.016 runtime data focused consumer migration](../roadmaps/g07/016-runtime-data-focused-consumer-migration.md)
-  - [g07.018 runtime media subpath split](../roadmaps/g07/018-runtime-media-subpath-split.md)
-  - [g07.019 runtime media focused consumer migration](../roadmaps/g07/019-runtime-media-focused-consumer-migration.md)
-  - [g07.020 client types subpath split](../roadmaps/g07/020-client-types-subpath-split.md)
-  - [g07.021 client types focused consumer migration](../roadmaps/g07/021-client-types-focused-consumer-migration.md)
+  - [g07.012 closeout artifact](../roadmaps/archive/g07.md)
+  - [g07.013 suggestion helper compatibility export retirement](../roadmaps/archive/g07.md)
+  - [g07.015 runtime data subpath split](../roadmaps/archive/g07.md)
+  - [g07.016 runtime data focused consumer migration](../roadmaps/archive/g07.md)
+  - [g07.018 runtime media subpath split](../roadmaps/archive/g07.md)
+  - [g07.019 runtime media focused consumer migration](../roadmaps/archive/g07.md)
+  - [g07.020 client types subpath split](../roadmaps/archive/g07.md)
+  - [g07.021 client types focused consumer migration](../roadmaps/archive/g07.md)
   - [090 TS runtime and client orchestration](../contracts/090-ts-runtime-and-client-orchestration.md)
   - [100 shared patterns and workflow shells](../contracts/100-shared-patterns-and-workflow-shells.md)
   - [120 tooling, testing, and contract artifacts](../contracts/120-tooling-testing-and-contract-artifacts.md)
@@ -322,7 +322,7 @@ Reusable templates:
   - `songsprout`: `effigy health` passed
   - `loophole/composer`: `effigy health` passed
 - Changed guidance:
-  - [g06.178 consumer sweep](../roadmaps/g06/178-six-consumer-rust-api-compatibility-sweep-artifact.md)
+  - [g06.178 consumer sweep](../roadmaps/archive/g06.md)
   - [122 Rust public API inventory](../contracts/122-rust-public-api-inventory.md)
 
 ### Rust Adapter Crate Extraction (`2026-06-05`)
@@ -371,7 +371,7 @@ Reusable templates:
   - `loophole/composer/composer-api`: `cargo check -p composer-api`
 - Changed guidance:
   - [055 Background Jobs](055-background-jobs.md)
-  - [g06.025 rollout proof](../roadmaps/g06/025-six-consumer-rollout-and-compatibility-retirement-proof.md)
+  - [g06.025 rollout proof](../roadmaps/archive/g06.md)
   - [122 Rust public API inventory](../contracts/122-rust-public-api-inventory.md)
 
 ### Rust Platform Contract Transition (`2026-06-05`)
@@ -431,8 +431,8 @@ Reusable templates:
     lockfile warning are tracked as follow-up hardening, not consumer migration
     work
 - Changed guidance:
-  - [g06.014 validation closeout](../roadmaps/g06/014-rust-platform-transition-validation-and-release-readiness-closeout.md)
-  - [g06.015 release-note handoff](../roadmaps/g06/015-rust-platform-transition-release-note-handoff.md)
+  - [g06.014 validation closeout](../roadmaps/archive/g06.md)
+  - [g06.015 release-note handoff](../roadmaps/archive/g06.md)
   - [122 Rust public API inventory](../contracts/122-rust-public-api-inventory.md)
 
 ### Root Package Teaching Retirement (`2026-04-08`)
@@ -611,7 +611,7 @@ Reusable templates:
   - Poodle guide surface and retained Underlay boundary docs
   - [075-validation.md](./075-validation.md)
   - [110-admin.md](./110-admin.md)
-  - [043-poodle-public-prop-normalization.md](../roadmaps/g01/043-poodle-public-prop-normalization.md)
+  - [043-poodle-public-prop-normalization.md](../roadmaps/archive/g01.md)
 
 ### Passkey Hooks and Manager (`2026-03-11`)
 

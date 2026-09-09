@@ -45,8 +45,9 @@ outrun the plan.
 - Treat `docs/roadmaps/README.md` and `docs/roadmaps/generation-index.md` as
   the live queue authority when active shared-surface or consumer-normalization
   work is in flight.
-- Treat numbered files directly under the active generation as the roadmap
-  queue. Strict batch cards may refine a roadmap but never replace that queue.
+- Treat numbered task files directly under the active generation
+  (`gNN/NNN-<slug>.md`, referenced as `gNN.NNN`) as the roadmap queue.
+  No milestone wrapper or nested `batch-cards/` hierarchy is supported.
 - Treat `docs/architecture/product-guardrails.md`,
   `docs/contracts/001-working-rules.md`, and `docs/specs/` as the strict
   control pack for the active lane.
@@ -108,7 +109,8 @@ effigy test --plan       # when the test shape is what you need to know
 - `./docs/sweeps/`
 - `./docs/roadmaps/README.md`
 - `./docs/roadmaps/generation-index.md`
-- `./docs/roadmaps/g10/README.md`
+- `./docs/roadmaps/g11/README.md`
+- `./docs/roadmaps/g12/README.md`
 - `./docs/logs/README.md`
 
 ## Internal Writing Style

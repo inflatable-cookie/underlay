@@ -31,7 +31,7 @@ Shared media contracts:
 
 Convergence evidence:
 
-- [`docs/roadmaps/g05/004-cross-app-media-library-template-consolidation.md`](../roadmaps/g05/004-cross-app-media-library-template-consolidation.md)
+- [`docs/roadmaps/archive/g05.md`](../roadmaps/archive/g05.md) (cross-app media-library consolidation evidence)
 - [`docs/contracts/media-capability/fleet-media-capability-matrix.csv`](./media-capability/fleet-media-capability-matrix.csv)
 
 If these diverge, the contract plus the capability matrix win.

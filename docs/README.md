@@ -96,5 +96,5 @@ guides, architecture docs, contracts, or front-door READMEs.
 
 ## Next Task
 
-`v0.9.7` is released at `8a7ce84b`. Resume Underlay Reference on that tag,
-then route the other `g11.001` consumer lanes independently.
+`v0.9.7` is released at `8a7ce84b`. Run `g11.002` consumer adoption from
+that tag, Underlay Reference first.

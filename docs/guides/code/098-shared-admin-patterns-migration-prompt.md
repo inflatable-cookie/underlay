@@ -4,7 +4,7 @@
 
 The Underlay library at `.` has 8 new shared admin patterns (roadmap 021). Full documentation is at:
 
-- **Roadmap**: `docs/roadmaps/g01/021-shared-admin-components.md`
+- **Roadmap record**: `docs/roadmaps/archive/g01.md` (021 shared admin patterns)
 - **Guide**: `docs/guides/098-shared-admin-patterns.md`
 
 Read both files thoroughly before starting. The patterns are:
