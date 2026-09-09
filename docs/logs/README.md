@@ -7,6 +7,9 @@ Logs capture meaningful documentation and delivery batches for Underlay.
 The flattened-task switchover merged as Underlay PR #27 at
 `06ed95d8899e6346e56ec8704981c15f9b501a99`; its canonical closeout is
 [`2026-09/09-142914-flattened-task-switchover-closeout.md`](./2026-09/09-142914-flattened-task-switchover-closeout.md).
+The roadmap-backlog retirement merged as Underlay PR #28 at
+`6be9d71dfad1eb62eeca8394685b5560700e95de`; its canonical closeout is
+[`2026-09/09-143225-roadmap-backlog-retirement-closeout.md`](./2026-09/09-143225-roadmap-backlog-retirement-closeout.md).
 The latest evidence window is `g11` under `docs/logs/2026-09/`. Card 003's
 owned-promotion recovery merged as PR #25, with closeout in
 `2026-09/02-230000-g11-003-owned-promotion-closeout.md`. Card 002 published
