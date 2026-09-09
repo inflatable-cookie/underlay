@@ -4,7 +4,8 @@ title: "Flatten Northstar tasks and compact historic generations in underlay"
 handoff_mode: worker-pr-loop
 worker_mode: implementation
 dispatch_authority: orchestrator
-status: ready-to-launch
+status: complete
+updated: 2026-09-09
 base_required: pushed-main
 queue_dispatch: northstar-queue
 queue_approval: "The operator authorized Chatterbox on 2026-09-09 to orchestrate the flattened-task migration across projects without Orchestrator-tagged Paseo threads, and explicitly required Northstar Queue for dispatch."
@@ -118,3 +119,32 @@ retire only the queue-owned migration threads/workspace. Final report must give
 historic classifications, preservation manifest, old-to-new mapping, exact
 changes, validation/review evidence, retained exceptions, new frontier, and
 whether normal dispatch resumed.
+
+## Review And Merge Closeout
+
+Complete. PR [#27](https://github.com/inflatable-cookie/underlay/pull/27)
+merged the switchover at reviewed worker head
+`69c2708365668d761e91b9a8fe44de8014f48b6d` as merge commit
+`06ed95d8899e6346e56ec8704981c15f9b501a99` on 2026-09-09.
+
+The accepted exact-head review is recorded in the
+[Northstar review comment](https://github.com/inflatable-cookie/underlay/pull/27#issuecomment-5602568616).
+It found no required changes. The two retained follow-ups are non-blocking:
+the stale g01 example in `scripts/check-file-length.sh` and the historical
+Card 003 wording in `docs/patterns/media-upload-pipeline.md`.
+
+Post-merge validation passed: the integration checkout matched
+`origin/main`, `effigy health`, `effigy qa:docs`, `effigy qa:northstar`, the
+focused docs link check, and `git diff --check`. The worker's full `effigy qa`
+attempt remains honestly deferred because the worktree had no `node_modules`
+for `svelte-check`; this migration changed no product or manifest files.
+
+The preservation manifest and old-to-new map remain at
+`docs/logs/2026-09/09-160000-flattened-task-switchover-manifest.md`. Normal
+dispatch resumes with `g11.002` (Underlay Reference first) while Market Card
+278 runs under `g12.001`; no new planning decision is needed.
+
+## Next Task
+
+Run `g11.002` (Underlay Reference first) while Acowtancy Market Card 278 runs
+under `g12.001`.

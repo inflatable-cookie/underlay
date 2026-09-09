@@ -4,6 +4,9 @@ Logs capture meaningful documentation and delivery batches for Underlay.
 
 ## Current Evidence Window
 
+The flattened-task switchover merged as Underlay PR #27 at
+`06ed95d8899e6346e56ec8704981c15f9b501a99`; its canonical closeout is
+[`2026-09/09-142914-flattened-task-switchover-closeout.md`](./2026-09/09-142914-flattened-task-switchover-closeout.md).
 The latest evidence window is `g11` under `docs/logs/2026-09/`. Card 003's
 owned-promotion recovery merged as PR #25, with closeout in
 `2026-09/02-230000-g11-003-owned-promotion-closeout.md`. Card 002 published
@@ -110,6 +113,7 @@ Papercuts wave 4 then landed merge closeout and retired-path inventory tooling
 
 ## Next Task
 
-`v0.9.7` is released at `8a7ce84b`
-([release log](./2026-09/02-232800-g11-004-underlay-v0-9-7-release.md)).
-Resume Underlay Reference on `v0.9.7`, then the other consumer lanes.
+The flattened-task switchover is complete
+([closeout](./2026-09/09-142914-flattened-task-switchover-closeout.md)).
+Run `g11.002` (Underlay Reference first) while Market Card 278 runs under
+`g12.001`.

@@ -1,7 +1,7 @@
 # Underlay Roadmap Generation Index
 
 Status: active
-Updated: 2026-09-04
+Updated: 2026-09-09
 
 ## Mode
 
@@ -12,6 +12,11 @@ Updated: 2026-09-04
 - `g11` — immutable verified media publication and five-consumer rollout.
 - `g12` — standalone TypeScript/Svelte Nightfire extraction and direct
   consumer adoption.
+
+The flattened-task switchover completed in Underlay PR #27 and is recorded in
+the [closeout log](../logs/2026-09/09-142914-flattened-task-switchover-closeout.md).
+It leaves `g11.002` ready, `g11.003` blocked on `g11.002`, and `g12.001`
+ready for its approved Market Card 278 lane.
 
 ## Generation log
 
