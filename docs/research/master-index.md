@@ -96,7 +96,7 @@ Purpose: Navigate from architecture or implementation questions to the most rele
 | Structured Content Editor Patterns | ✅ Complete | IDR-006 |
 | Nightfire Slash Commands | ✅ Complete | IDR-007 |
 
-### Longer Term (Backlog)
+### Longer Term (Deferred)
 | Topic | Status |
 |-------|--------|
 | Media Processing | 🔴 Not started |

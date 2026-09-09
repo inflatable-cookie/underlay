@@ -425,7 +425,7 @@ Reusable templates:
   - `songsprout/nursery`: `cargo check -p nursery-api` passed
   - `loophole/composer/composer-api`: `cargo check -p composer-api` passed
 - Caveat:
-  - remaining Effigy scanner backlog is not release-blocking for this
+  - remaining Effigy scanner findings are not release-blocking for this
     transition: god-file scan is at `critical=0`, `high=17`, `warning=44`
   - supply-chain policy hardening and the yanked `wasm-bindgen 0.2.111`
     lockfile warning are tracked as follow-up hardening, not consumer migration

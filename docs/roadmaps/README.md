@@ -4,7 +4,7 @@ Roadmaps are executable delivery plans for Underlay library work.
 
 ## Rules
 
-- Keep one active queue per generation and use backlog for deferred scope.
+- Keep one active queue per generation and use triage for deferred candidates until promotion.
 - In sequential mode, maintain at most one active generation. A deliberate
   between-generation pause may have none.
 - In parallel mode, keep every active generation front door accurate for its
@@ -38,7 +38,7 @@ Roadmaps are executable delivery plans for Underlay library work.
 - `gNN/NNN-<slug>.md` executable Northstar task files, one per outcome
 - `archive/gNN.md` non-procedural roll-ups for compacted closed generations
 - `generation-index.md` active generation mode and history
-- `backlog/` deferred items with promotion criteria
+- deferred candidates live as non-authoritative notes in `../triage/` until promotion
 
 ## Evidence Boundary
 

@@ -283,7 +283,7 @@ None (extends existing Nightfire component)
 | Structured Content Editors | ✅ IDR ready | IDR-006 |
 | Nightfire Slash Commands | ✅ IDR ready | IDR-007 |
 
-### Longer Term (Backlog)
+### Longer Term (Deferred)
 | Topic | Status |
 |-------|--------|
 | Media Processing | 🔴 Not started |

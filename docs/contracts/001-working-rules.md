@@ -31,7 +31,7 @@ before rollover is even worth discussing.
 In sequential mode:
 
 - every roadmap in the old generation must be explicitly closed, paused,
-  superseded, or moved to backlog
+  superseded, or moved to triage as a non-authoritative candidate
 - the roadmap front doors must reflect that closed state before the next
   generation opens
 - stale specs from the closing generation must be archived or removed from
@@ -55,7 +55,7 @@ Underlay runs parallel active generations:
   (five-consumer adoption), `g11.003` blocked (fleet closeout)
 - `g12` is active: `g12.001` owns the Nightfire extraction and rollout
 - the completed monorepo rollout spec remains archived
-- open triage and backlog files are retained evidence, not execution authority
+- open triage notes are retained evidence, not execution authority
 - a later generation requires explicit planning and numbered tasks before
   dispatch
 

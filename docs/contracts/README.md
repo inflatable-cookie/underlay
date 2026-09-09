@@ -60,4 +60,4 @@ machine-readable policy files.
 - all `g09.001`–`g09.062` roadmaps are complete
 - whole-app fixed-schema DB suites remain app-owned; `TestDb` stays the shared
   single-schema seam
-- open triage and backlog surfaces remain unpromoted evidence
+- open triage notes remain unpromoted evidence
