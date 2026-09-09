@@ -79,11 +79,7 @@ Primary docs:
 
 Rollout evidence:
 
-- [`docs/roadmaps/g03/001-template-system-generation-rollover.md`](../roadmaps/g03/001-template-system-generation-rollover.md)
-- [`docs/roadmaps/g03/006-acme-admin-list-page-proof.md`](../roadmaps/g03/006-acme-admin-list-page-proof.md)
-- [`docs/roadmaps/g03/009-acme-admin-detail-page-proof.md`](../roadmaps/g03/009-acme-admin-detail-page-proof.md)
-- [`docs/roadmaps/g03/010-dairy-complex-validation.md`](../roadmaps/g03/010-dairy-complex-validation.md)
-- [`docs/roadmaps/g03/013-entity-form-templates.md`](../roadmaps/g03/013-entity-form-templates.md)
+- [`docs/roadmaps/archive/g03.md`](../roadmaps/archive/g03.md) (generation rollover, Acme list/detail proofs, Dairy validation, and entity-form evidence)
 
 If these diverge, the shared code wins.
 
@@ -789,5 +785,5 @@ Apps own:
 
 ## Next Task
 
-Use [../roadmaps/g04/032-template-docs-and-public-type-authority-repair.md](../roadmaps/g04/032-template-docs-and-public-type-authority-repair.md)
-to repair the template docs and public type authority.
+The `g04.032` repair lane is complete; evidence:
+[../roadmaps/archive/g04.md](../roadmaps/archive/g04.md).

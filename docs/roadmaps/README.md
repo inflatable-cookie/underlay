@@ -17,9 +17,11 @@ Roadmaps are executable delivery plans for Underlay library work.
 
 ## Generation model
 
-- Use generation folders such as `docs/roadmaps/g01/`.
-- Roadmap filenames use `NNN-<slug>.md`.
-- Roadmap references use generation-qualified IDs such as `g01.021`.
+- Use generation folders such as `docs/roadmaps/g11/`.
+- Task filenames use `NNN-<slug>.md` and are referenced as `gNN.NNN`.
+- The generation README owns the roadmap and approved frontier;
+  `docs/roadmaps/gNN/NNN-<slug>.md` is the sole executable planning unit.
+- No milestone wrapper or nested `batch-cards/` hierarchy is supported.
 - Generation rollover is manual only.
 - Treat generations as substantial sequencing eras, not one-or-two-file
   buckets. A healthy default is roughly 20 to 40 roadmap files in one
@@ -32,10 +34,9 @@ Roadmaps are executable delivery plans for Underlay library work.
 
 ## Layout
 
-- `gNN/README.md` generation front door
-- `gNN/NNN-<slug>.md` executable roadmap files
-- `gNN/batch-cards/` optional strict-spec decomposition; batch cards may refine
-  a roadmap but never replace the generation roadmap queue
+- `gNN/README.md` generation front door: roadmap and approved frontier
+- `gNN/NNN-<slug>.md` executable Northstar task files, one per outcome
+- `archive/gNN.md` non-procedural roll-ups for compacted closed generations
 - `generation-index.md` active generation mode and history
 - `backlog/` deferred items with promotion criteria
 
@@ -61,8 +62,9 @@ README surfaces.
 
 ## Current Queue
 
-`g11.001` Cards 001–004 are complete and `v0.9.7` is released at `8a7ce84b`.
-Affected consumer lanes are unblocked and run as independent repository lanes.
+`g11.001` is complete and `v0.9.7` is released at `8a7ce84b`. Ready:
+`g11.002` five-consumer adoption, Underlay Reference first, as independent
+repository lanes. Blocked: `g11.003` fleet closeout until those lanes merge.
 
 `g12.001` is operator-confirmed. Card 272 closed incomplete after excluding
 Rust; Acowtancy Market Card 278 is the ready corrective lane. The release and
@@ -70,19 +72,14 @@ consumer lanes remain serial behind its accepted dual-language proof.
 
 ## Archived generations
 
-Closed generations `g01`-`g10` are **frozen archival record**, not active
-navigation. Enter them only via
-[`generation-index.md`](generation-index.md), which is the authoritative history.
-Do not open new work in a closed generation.
-
-They remain in place under `docs/roadmaps/g0N/` rather than being physically
-relocated: ~15 active contracts/guides link into them and the closed generations
-cross-link each other with relative paths, so a bulk move would break links that
-the front-door link check (nine fixed files) cannot detect. Physical relocation
-to an archive surface is deferred to a human-reviewed pass; the frozen-record
-designation and the generation-index give the same navigational benefit without
-that risk.
+Closed generations `g01`-`g10` are compacted non-procedural roll-ups under
+[`archive/`](archive/README.md), not active navigation. Enter them only via
+[`generation-index.md`](generation-index.md), which is the authoritative
+history. Do not open new work in a closed generation. Current contract
+evidence links resolve to the matching roll-up; git history remains the
+full-fidelity archive.
 
 ## Next Task
 
-Run Market Card 278 while the independent `g11` consumer rollouts continue.
+Run `g11.002` (Underlay Reference first) while Market Card 278 runs under
+`g12.001`.

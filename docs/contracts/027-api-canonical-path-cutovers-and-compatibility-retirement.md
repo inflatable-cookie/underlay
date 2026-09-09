@@ -31,7 +31,7 @@ Primary shared sources:
 
 Reference migration evidence:
 
-- [`docs/roadmaps/g05/009-rust-runtime-contract-audit-and-next-contract-set.md`](../roadmaps/g05/009-rust-runtime-contract-audit-and-next-contract-set.md)
+- [`docs/roadmaps/archive/g05.md`](../roadmaps/archive/g05.md) (Rust runtime contract audit evidence)
 
 If these diverge, the contract plus the cleanest current cutover proof win.
 

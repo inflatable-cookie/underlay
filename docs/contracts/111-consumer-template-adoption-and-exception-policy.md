@@ -37,12 +37,7 @@ Primary shared contract and usage surfaces:
 
 Cross-app convergence evidence:
 
-- [`docs/roadmaps/g05/001-dairy-detail-and-tab-template-convergence-sweep.md`](../roadmaps/g05/001-dairy-detail-and-tab-template-convergence-sweep.md)
-- [`docs/roadmaps/g05/002-compli-me-and-contact-patch-detail-page-convergence-sweep.md`](../roadmaps/g05/002-compli-me-and-contact-patch-detail-page-convergence-sweep.md)
-- [`docs/roadmaps/g05/003-underlay-reference-template-completion-and-contract-hardening-sweep.md`](../roadmaps/g05/003-underlay-reference-template-completion-and-contract-hardening-sweep.md)
-- [`docs/roadmaps/g05/004-cross-app-media-library-template-consolidation.md`](../roadmaps/g05/004-cross-app-media-library-template-consolidation.md)
-- [`docs/roadmaps/g05/005-system-index-page-template-proof.md`](../roadmaps/g05/005-system-index-page-template-proof.md)
-- [`docs/roadmaps/g05/006-admin-dashboard-page-template-proof.md`](../roadmaps/g05/006-admin-dashboard-page-template-proof.md)
+- [`docs/roadmaps/archive/g05.md`](../roadmaps/archive/g05.md) (Dairy detail/tab, Compli Me/Contact Patch detail, Underlay Reference completion, cross-app media-library, system-index, and admin-dashboard convergence evidence)
 
 If these diverge, the contract plus the clearest retained reference posture
 (`underlay-reference`, then the grouped `g05` proofs) win.

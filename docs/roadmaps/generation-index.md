@@ -27,7 +27,7 @@ Updated: 2026-09-04
 | `g08` | 2026-07-17 | Audit remediation after July 2026 deep audit (security edge, correctness bugs, Rust/TS structure, docs/versioning/i18n posture) | Complete - all 32 roadmaps done; `v0.8.0` tagged |
 | `g09` | 2026-08-03 | Config-convergence follow-through; extended with dependency upgrades, consumer workspace convergence, and contract fidelity | Closed 2026-08-27 - all 62 roadmaps complete; exact-main doctor green |
 | `g10` | 2026-09-01 | Explicit operator-directed repository instruction and language-quality audit | Closed 2026-09-01 after PR 22 merged |
-| `g11` | 2026-09-02 | Contact Patch Bughunt exposed a shared mutable-upload publication gap; operator extended the repair to all five Underlay sites | Active; `v0.9.7` released, consumer lanes unblocked |
+| `g11` | 2026-09-02 | Contact Patch Bughunt exposed a shared mutable-upload publication gap; operator extended the repair to all five Underlay sites | Active; `g11.001` complete at `v0.9.7`, `g11.002` ready, `g11.003` blocked |
 | `g12` | 2026-09-04 | Froyo needs Nightfire without inheriting the full Underlay web-framework package | Active; extraction card ready, release and adoption lanes gated |
 
 An earlier invalid `g10` rollover was removed rather than retained. Its
@@ -40,16 +40,19 @@ renumbered the unstarted fleet closeout to `g09.054`.
 
 ## Historical generations
 
-- [g10 - Northstar Instruction And Language Quality Audit](g10/README.md) (complete)
-- [g09 - Config Convergence And Contract Fidelity](g09/README.md) (complete)
-- [g08 - Audit Remediation And Edge Hardening](g08/README.md) (complete)
-- [g07 - Runtime, Workflow, And Doctor Warning Boundary Hardening](g07/README.md) (complete)
-- [g06 - Rust Platform Contract Transition](g06/README.md) (complete)
-- [g05 - Shared Page, Workflow Template, And Query Variant Work](g05/README.md) (complete)
-- [g03 - Template System](g03/README.md) (complete)
-- [g04 - Contract Coverage And Assessment](g04/README.md) (complete)
-- [g02 - Poodle-Era Consumer Normalization](g02/README.md) (complete)
-- [g01 - Extraction and Contraction](g01/README.md) (complete)
+Compacted non-procedural roll-ups (2026-09-09 flattened-task switchover;
+git history is the full-fidelity archive):
+
+- [g10 - Northstar Instruction And Language Quality Audit](archive/g10.md) (complete)
+- [g09 - Config Convergence And Contract Fidelity](archive/g09.md) (complete)
+- [g08 - Audit Remediation And Edge Hardening](archive/g08.md) (complete)
+- [g07 - Runtime, Workflow, And Doctor Warning Boundary Hardening](archive/g07.md) (complete)
+- [g06 - Rust Platform Contract Transition](archive/g06.md) (complete)
+- [g05 - Shared Page, Workflow Template, And Query Variant Work](archive/g05.md) (complete)
+- [g03 - Template System](archive/g03.md) (complete)
+- [g04 - Contract Coverage And Assessment](archive/g04.md) (complete)
+- [g02 - Poodle-Era Consumer Normalization](archive/g02.md) (complete)
+- [g01 - Extraction and Contraction](archive/g01.md) (complete)
 
 ## Rollover policy
 
@@ -68,5 +71,5 @@ In parallel mode:
 
 ## Next Task
 
-Run the independent `g11` consumer lanes and Acowtancy Market Card 278 in
-parallel.
+Run `g11.002` (Underlay Reference first) and Acowtancy Market Card 278
+under `g12.001` in parallel.

@@ -68,8 +68,7 @@ still own its committed manifest policy.
 The operator chose the green-doctor finish line. Promoted the two independent
 error repairs into parallel roadmaps:
 
-- [`g09.061`](../roadmaps/g09/061-attention-marker-policy-normalization.md)
-- [`g09.062`](../roadmaps/g09/062-workspace-shape-internal-modularization.md)
+- `g09.061` and `g09.062` (see [`archive/g09.md`](../roadmaps/archive/g09.md))
 
 The warning inventory stays advisory. Deprecated API retirement remains a
 separate compatibility planning candidate and is not execution authority.

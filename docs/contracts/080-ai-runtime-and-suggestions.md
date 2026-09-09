@@ -247,5 +247,5 @@ Apps own:
 
 ## Next Task
 
-Use [../roadmaps/g04/026-ts-ai-and-suggestion-authority-repair.md](../roadmaps/g04/026-ts-ai-and-suggestion-authority-repair.md)
-to execute the current repair lane.
+The `g04.026` repair lane is complete; evidence:
+[../roadmaps/archive/g04.md](../roadmaps/archive/g04.md).

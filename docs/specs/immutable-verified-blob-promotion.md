@@ -121,5 +121,6 @@ their target-owned cards and real finalisation oracles.
 
 ## Next Task
 
-Execute `g11.001` Card 003 for owned promotion recovery. Card 004 releases the
-accepted surface as `v0.9.7` before affected consumers resume.
+Shared work is complete at `v0.9.7`. Run `g11.002` consumer adoption from
+that tag (Contact Patch Card 015 on its retained lane, Underlay Reference
+first), then `g11.003` fleet closeout.

@@ -457,5 +457,5 @@ Resolved assessment:
 
 ## Next Task
 
-Use [../roadmaps/g04/009-ai-runtime-and-suggestions-contract.md](../roadmaps/g04/009-ai-runtime-and-suggestions-contract.md)
-to write the next contract.
+The `g04` contract-authorship lane is complete; evidence:
+[../roadmaps/archive/g04.md](../roadmaps/archive/g04.md).

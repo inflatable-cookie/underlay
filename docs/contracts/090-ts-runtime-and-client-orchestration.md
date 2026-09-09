@@ -414,5 +414,5 @@ live in `client/page-lists`.
 
 ## Next Task
 
-Use [../roadmaps/g04/028-route-protection-and-runtime-client-authority-repair.md](../roadmaps/g04/028-route-protection-and-runtime-client-authority-repair.md)
-to execute the current repair lane.
+The `g04.028` repair lane is complete; evidence:
+[../roadmaps/archive/g04.md](../roadmaps/archive/g04.md).
