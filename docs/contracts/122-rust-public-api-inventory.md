@@ -163,7 +163,7 @@ Acceptance:
 - targeted consumer API checks pass or failures are classified
 - additive, internal, breaking, compatibility-fix, and deprecation impact is
   explicit
-- remaining structural validation backlog is visible
+- remaining structural validation findings are visible
 
 Status: complete in `g06.008`.
 

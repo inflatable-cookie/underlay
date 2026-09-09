@@ -39,9 +39,9 @@ promoted; the roll-ups point at those destinations.
 ## Open commitments
 
 No open commitment lives only in closed history. The one deferred item,
-TypeScript 7 adoption, already has its active home at
-`docs/roadmaps/backlog/ts-7-adoption.md` (referenced from the `g09`
-roll-up). No explicit removals.
+TypeScript 7 adoption, lives in the retirement triage note at
+`docs/triage/20260909-170000-roadmap-backlog-retirement.md` (referenced
+from the `g09` roll-up). No explicit removals.
 
 ## Selected evidence retained per roll-up
 

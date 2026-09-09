@@ -84,7 +84,7 @@ Underlay.
 
 Package scripts remain convenience wrappers, but direct `effigy ...` is canonical when you are already in this repo.
 
-Use `effigy doctor` when you want broader repo scans. Underlay currently carries structural scan backlog in that surface, so `health` is the better day-to-day baseline.
+Use `effigy doctor` when you want broader repo scans. Underlay currently carries structural scan findings in that surface, so `health` is the better day-to-day baseline.
 
 ### Postgres Integration Tests
 

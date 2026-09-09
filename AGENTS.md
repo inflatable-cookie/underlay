@@ -58,7 +58,7 @@ Effigy is the command surface; the contract block at the end of this file
 covers how to route by job. What is specific to Underlay:
 
 - Prefer `effigy health` as the day-to-day baseline. `effigy doctor` is useful
-  for broader repo scans, but Underlay carries known structural scan backlog
+  for broader repo scans, but Underlay carries known structural scan findings
   there, so its warnings are not a fresh regression signal.
 - Northstar AGENTS reviews use `effigy qa:docs:agent-defaults` here. This repo
   does not ship `check:agent-instructions`.
