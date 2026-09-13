@@ -1,6 +1,5 @@
 # g12 - Standalone Nightfire Package
 
-Status: active
 Owner: repo maintainers and Acowtancy cross-repo Coordinator
 Started: 2026-09-04
 
@@ -46,8 +45,8 @@ behind Froyo.
 
 ## Next Task
 
-Dispatch Acowtancy Market Card 278. Queue may dispatch `g12.002` after its
-Northstar prerequisite closes; it does not change the product frontier.
+Dispatch Acowtancy Market Card 278. No further roadmap task is queued
+after the current lanes; the product frontier does not change.
 <!-- northstar:lifecycle:begin schema=northstar.lifecycle.projection.v2 digest=sha256:339f0f952c3613bbd95f9de92f05357ff50815df2e995b535e2a888fdc4c20eb -->
 | Generation | Disposition | Runway state |
 | --- | --- | --- |

@@ -1,6 +1,5 @@
 # g11 - Immutable Verified Media Publication
 
-Status: active
 Owner: repo maintainers
 Started: 2026-09-02
 
