@@ -98,3 +98,12 @@ guides, architecture docs, contracts, or front-door READMEs.
 
 `v0.9.7` is released at `8a7ce84b`. Run `g11.002` consumer adoption from
 that tag, Underlay Reference first.
+<!-- northstar:lifecycle:begin schema=northstar.lifecycle.projection.v2 digest=sha256:339f0f952c3613bbd95f9de92f05357ff50815df2e995b535e2a888fdc4c20eb -->
+| Generation | Disposition | Runway state |
+| --- | --- | --- |
+| g11 | open | planning_required |
+| g12 | open | planning_required |
+| Task | Status | Stage | Revision | Record digest |
+| --- | --- | --- | --- | --- |
+| g12.002 | complete | none | 8 | sha256:77d3fad9d4fddc202e121350453db1fd50b2da313f4e23ba365f3c4b84ba6a9c |
+<!-- northstar:lifecycle:end -->
