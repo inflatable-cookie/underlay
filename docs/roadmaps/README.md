@@ -84,8 +84,7 @@ full-fidelity archive.
 ## Next Task
 
 Run `g11.002` (Underlay Reference first) while Market Card 278 runs under
-`g12.001`. Queue may run `g12.002` when its explicit Northstar prerequisite
-closes.
+`g12.001`. No further roadmap task is queued after the current lanes.
 <!-- northstar:lifecycle:begin schema=northstar.lifecycle.projection.v2 digest=sha256:339f0f952c3613bbd95f9de92f05357ff50815df2e995b535e2a888fdc4c20eb -->
 | Generation | Disposition | Runway state |
 | --- | --- | --- |
