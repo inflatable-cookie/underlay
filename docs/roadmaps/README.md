@@ -68,7 +68,9 @@ repository lanes. Blocked: `g11.003` fleet closeout until those lanes merge.
 
 `g12.001` is operator-confirmed. Card 272 closed incomplete after excluding
 Rust; Acowtancy Market Card 278 is the ready corrective lane. The release and
-consumer lanes remain serial behind its accepted dual-language proof.
+consumer lanes remain serial behind its accepted dual-language proof. The
+configuration-only `g12.002` lifecycle task waits on Northstar's plural
+projection contract and does not change that frontier.
 
 ## Archived generations
 
@@ -82,4 +84,5 @@ full-fidelity archive.
 ## Next Task
 
 Run `g11.002` (Underlay Reference first) while Market Card 278 runs under
-`g12.001`.
+`g12.001`. Queue may run `g12.002` when its explicit Northstar prerequisite
+closes.

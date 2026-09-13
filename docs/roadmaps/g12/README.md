@@ -21,6 +21,10 @@ milestone wrapper or nested `batch-cards/` hierarchy.
    — complete both language extractions, release, retain Underlay
    compatibility facades, move Froyo and Farmyard, then remove
    Underlay from Bovine Desktop's frozen graph (`active`)
+2. [ ] [`g12.002`](002-adopt-effigy-hosted-lifecycle-hook.md) — adopt
+   configuration-only lifecycle hooks with truthful parallel-generation
+   projections (`queued` behind Northstar task
+   `73d569cd-82c1-427d-b636-d75117bbe350`)
 
 `g12.001` was already flat and is unchanged by the switchover except
 for this frontier wording.
@@ -29,7 +33,8 @@ for this frontier wording.
 
 Ready: Acowtancy Market Card 278 lane under `g12.001` only. The
 release and consumer lanes remain serial behind its accepted
-dual-language proof.
+dual-language proof. `g12.002` is a separate maintenance task queued behind
+Northstar's plural lifecycle contract.
 
 ## Dependencies And Parallelism
 
@@ -41,4 +46,5 @@ behind Froyo.
 
 ## Next Task
 
-Dispatch Acowtancy Market Card 278 only.
+Dispatch Acowtancy Market Card 278. Queue may dispatch `g12.002` after its
+Northstar prerequisite closes; it does not change the product frontier.
