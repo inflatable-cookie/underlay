@@ -1,0 +1,10 @@
+{
+  "schema_version": "northstar.lifecycle.projection-targets.v2",
+  "targets": [
+    "docs/README.md",
+    "docs/roadmaps/README.md",
+    "docs/roadmaps/g11/README.md",
+    "docs/roadmaps/g12/README.md"
+  ],
+  "active_generations": ["g11", "g12"]
+}
