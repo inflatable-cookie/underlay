@@ -36,10 +36,11 @@ repository is edited.
   `>=5.56.8 <6` peer. `marked` remains an optional Poodle peer; Underlay's
   existing direct `17.x` contract does not change in this lane.
 - Caller census: 86 source/test files import Poodle. Superseded by the
-  worker re-census at `d6435435`: 85 real source/test importers (88 raw
-  `rg` matches minus one vendor fixture `package.json` and two
-  workspace-shape name-list files; see the g13.002 execution log). Four use
-  `Tabs` or
+  worker re-census at `d6435435`: 83 real source/test importers (88 raw
+  `rg` matches minus five reference-only files — two JSDoc `@example`
+  import lines, two workspace-shape package-name string lists, and one
+  vendor fixture `package.json`; enumerated in the g13.002 execution log,
+  confirmed by statement-level and comment-aware scans). Four use `Tabs` or
   `TabItem`: `LoginMethodTabs.svelte`, `TwoFactorStep.svelte`,
   `EntityDetailPage.svelte`, and `MediaPickerWorkflow.svelte`. None passes
   `crossWindowSourceBridge`. The upstream fix therefore repairs a latent
