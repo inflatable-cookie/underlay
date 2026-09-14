@@ -4,7 +4,8 @@
     "docs/README.md",
     "docs/roadmaps/README.md",
     "docs/roadmaps/g11/README.md",
-    "docs/roadmaps/g12/README.md"
+    "docs/roadmaps/g12/README.md",
+    "docs/roadmaps/g13/README.md"
   ],
-  "active_generations": ["g11", "g12"]
+  "active_generations": ["g11", "g12", "g13"]
 }
