@@ -92,13 +92,15 @@ full-fidelity archive.
 Run `g11.002` (Underlay Reference first) while Market Card 278 runs under
 `g12.001` and `g13.001` ships the Poodle 0.4.1 producer release in parallel.
 No further roadmap task is queued after the current lanes.
-<!-- northstar:lifecycle:begin schema=northstar.lifecycle.projection.v2 digest=sha256:9800c132011948850d976f7f877ed18e3fb71e11b9e9fa2452ee90cf7459defe -->
+<!-- northstar:lifecycle:begin schema=northstar.lifecycle.projection.v2 digest=sha256:def280657ebe3b43d4acc3c8b7c3c9e36b2845dc90b4d09bd157f2049fa6f031 -->
 | Generation | Disposition | Runway state |
 | --- | --- | --- |
 | g11 | open | planning_required |
 | g12 | open | planning_required |
+| g13 | open | planning_required |
 | Task | Status | Stage | Revision | Record digest |
 | --- | --- | --- | --- | --- |
 | g12.002 | complete | none | 8 | sha256:77d3fad9d4fddc202e121350453db1fd50b2da313f4e23ba365f3c4b84ba6a9c |
 | g12.003 | complete | none | 8 | sha256:05cbbdf87f96ef842b4e70b8b9a53a96423e20bb5fe64493fc848e35050a5cc5 |
+| g13.001 | complete | none | 8 | sha256:e3c2120126b98eab06603171a71aa6eb247d7b5083e3b337ac300c3660b2a8b3 |
 <!-- northstar:lifecycle:end -->
