@@ -51,7 +51,7 @@ is independent of `g12`.
 ## Next Task
 
 Run `g11.002`, Underlay Reference first.
-<!-- northstar:lifecycle:begin schema=northstar.lifecycle.projection.v2 digest=sha256:def280657ebe3b43d4acc3c8b7c3c9e36b2845dc90b4d09bd157f2049fa6f031 -->
+<!-- northstar:lifecycle:begin schema=northstar.lifecycle.projection.v2 digest=sha256:05c9b6bbf4143e45fb9bea85fbedbd8e388e0b96c95b6b008a311bfb6bd9b6d9 -->
 | Generation | Disposition | Runway state |
 | --- | --- | --- |
 | g11 | open | planning_required |
@@ -62,4 +62,5 @@ Run `g11.002`, Underlay Reference first.
 | g12.002 | complete | none | 8 | sha256:77d3fad9d4fddc202e121350453db1fd50b2da313f4e23ba365f3c4b84ba6a9c |
 | g12.003 | complete | none | 8 | sha256:05cbbdf87f96ef842b4e70b8b9a53a96423e20bb5fe64493fc848e35050a5cc5 |
 | g13.001 | complete | none | 8 | sha256:e3c2120126b98eab06603171a71aa6eb247d7b5083e3b337ac300c3660b2a8b3 |
+| g13.002 | complete | none | 8 | sha256:27ebe07858d9d9e19b4774e67cdb633762cf2744a672ef74c99cdae746ff499a |
 <!-- northstar:lifecycle:end -->
