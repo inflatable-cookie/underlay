@@ -7,6 +7,23 @@ While Underlay is `0.x`, breaking changes raise the minor version.
 
 ## [Unreleased]
 
+## [0.9.10] - 2026-09-14
+
+### Changed
+- Updated the Underlay JavaScript integration to consume the published Poodle
+  `0.4.2` patch, which repairs the published Svelte Tabs cross-window bridge
+  regression without an API change. Existing Underlay Poodle callers remain
+  source-compatible: the four `Tabs` callers (`LoginMethodTabs.svelte`,
+  `TwoFactorStep.svelte`, `EntityDetailPage.svelte`, and
+  `MediaPickerWorkflow.svelte`) pass the Svelte component suite unchanged, and
+  no Underlay caller passes `crossWindowSourceBridge`.
+- Impact class: additive patch correction. Consumer action: move the Underlay
+  dependency tag to `v0.9.10` in the consumer root and regenerate the root
+  locks; consumers do not change their own Poodle pins. Validation: full
+  `effigy qa` at the producer root (see
+  `docs/roadmaps/g13/002-poodle-0-4-2-producer-release.md`). Rollback: retain
+  or return to the proven `v0.9.9` tag.
+
 ## [0.9.9] - 2026-09-14
 
 ### Changed
