@@ -7,8 +7,6 @@ While Underlay is `0.x`, breaking changes raise the minor version.
 
 ## [Unreleased]
 
-## [0.9.9] - 2026-09-14
-
 ### Changed
 - Updated the Underlay JavaScript integration to consume the published Poodle
   `0.4.1` patch. Existing Underlay Poodle callers remain source-compatible;
@@ -154,8 +152,7 @@ While Underlay is `0.x`, breaking changes raise the minor version.
 - First tagged release. Changelog tracking starts with this file; see the Git
   history for detail before this point.
 
-[Unreleased]: https://github.com/inflatable-cookie/underlay/compare/v0.9.9...HEAD
-[0.9.9]: https://github.com/inflatable-cookie/underlay/releases/tag/v0.9.9
+[Unreleased]: https://github.com/inflatable-cookie/underlay/compare/v0.9.8...HEAD
 [0.9.8]: https://github.com/inflatable-cookie/underlay/releases/tag/v0.9.8
 [0.9.7]: https://github.com/inflatable-cookie/underlay/releases/tag/v0.9.7
 [0.9.6]: https://github.com/inflatable-cookie/underlay/releases/tag/v0.9.6
