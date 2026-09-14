@@ -8,8 +8,8 @@ Started: 2026-09-14
 `g13` is the operator-directed producer lane for truthful published Poodle
 pins. `g13.001` shipped Underlay `v0.9.9` with Poodle `0.4.1`. Poodle `0.4.2`
 then replaced that web package after repairing its published Svelte Tabs
-cross-window bridge regression. `g13.002` moves Underlay to that corrected
-package and prepares `v0.9.10` without consumer edits.
+cross-window bridge regression. `g13.002` moved Underlay to that corrected
+package and released `v0.9.10` without consumer edits.
 
 This README owns the `g13` roadmap and approved frontier. The
 `g13.NNN` files below are the sole executable planning units; there is
@@ -19,14 +19,14 @@ no milestone wrapper or nested `batch-cards/` hierarchy.
 
 1. [x] [`g13.001`](001-poodle-0-4-1-producer-release.md) — Poodle `0.4.1`
    producer release, complete at Underlay `v0.9.9`.
-2. [ ] [`g13.002`](002-poodle-0-4-2-producer-release.md) — pin
+2. [x] [`g13.002`](002-poodle-0-4-2-producer-release.md) — pin
    `poodle-svelte` exact `0.4.2`, regenerate `bun.lock`, prove the current
-   caller surface, and prepare Underlay `v0.9.10` (`ready`).
+   caller surface, and release Underlay `v0.9.10` (`complete`).
 
 ## Approved Frontier
 
-Ready: `g13.002`. It follows completed `g13.001` and produces the corrected
-Underlay tag required by Desktop `g02.109`.
+No ready task remains in g13. `g13.002` produced the corrected Underlay tag
+required by Desktop `g02.109`.
 
 ## Dependencies And Parallelism
 
@@ -38,7 +38,8 @@ consumer fleet remain outside this repository lane.
 
 ## Next Task
 
-Run `g13.002`.
+No further g13 task is ready. Downstream adoption belongs to Desktop g02.109
+and the owning consumer lanes.
 <!-- northstar:lifecycle:begin schema=northstar.lifecycle.projection.v2 digest=sha256:05c9b6bbf4143e45fb9bea85fbedbd8e388e0b96c95b6b008a311bfb6bd9b6d9 -->
 | Generation | Disposition | Runway state |
 | --- | --- | --- |

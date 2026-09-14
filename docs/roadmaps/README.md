@@ -60,7 +60,7 @@ README surfaces.
 - [`g12`](g12/README.md) — standalone Rust and TypeScript/Svelte Nightfire
   extraction with direct consumer adoption.
 - [`g13`](g13/README.md) — Poodle producer releases; `g13.001` complete at
-  `v0.9.9`, `g13.002` ready for corrected Poodle `0.4.2` / Underlay `v0.9.10`.
+  `v0.9.9`, and `g13.002` complete at corrected Underlay `v0.9.10`.
 
 ## Current Queue
 
@@ -74,8 +74,7 @@ consumer lanes remain serial behind its accepted dual-language proof. The
 configuration-only `g12.002` lifecycle task waits on Northstar's plural
 projection contract and does not change that frontier.
 
-`g13.001` is complete at `v0.9.9`. Ready: `g13.002` pins the corrected
-`poodle-svelte` `0.4.2`, regenerates the root lock, and prepares validated
+`g13.001` is complete at `v0.9.9`, and `g13.002` is complete at validated
 Underlay `v0.9.10` for Desktop `g02.109`.
 
 ## Archived generations
@@ -90,7 +89,8 @@ full-fidelity archive.
 ## Next Task
 
 Run `g11.002` (Underlay Reference first) while Market Card 278 runs under
-`g12.001` and `g13.002` ships the Poodle `0.4.2` producer release in parallel.
+`g12.001`. The g13 producer release is complete; downstream adoption is owned
+by the consumer lanes.
 <!-- northstar:lifecycle:begin schema=northstar.lifecycle.projection.v2 digest=sha256:05c9b6bbf4143e45fb9bea85fbedbd8e388e0b96c95b6b008a311bfb6bd9b6d9 -->
 | Generation | Disposition | Runway state |
 | --- | --- | --- |

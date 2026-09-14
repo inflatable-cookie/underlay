@@ -1,6 +1,6 @@
 # g13.002 - Poodle 0.4.2 Producer Release
 
-Status: ready
+Status: complete
 Owner: repo maintainers
 Created: 2026-09-14
 Depends on: g13.001 complete; Underlay `v0.9.9` released at
@@ -15,9 +15,9 @@ UI classification: none
 
 Underlay declares `@inflatable-cookie/poodle-svelte` exact `0.4.2`, the root
 lock resolves `poodle-svelte` and transitive `poodle-core` at one public
-`0.4.2` identity, and synchronous release metadata prepares truthful Underlay
-`v0.9.10`. Existing Underlay behavior remains unchanged. No consumer or sibling
-repository is edited.
+`0.4.2` identity, and synchronous release metadata produced truthful Underlay
+`v0.9.10`. Existing Underlay behavior remains unchanged. No consumer or
+sibling repository was edited.
 
 ## Current evidence
 
@@ -45,7 +45,14 @@ repository is edited.
   `EntityDetailPage.svelte`, and `MediaPickerWorkflow.svelte`. None passes
   `crossWindowSourceBridge`. The upstream fix therefore repairs a latent
   producer defect without requiring an Underlay API change.
-- No local or remote `v0.9.10` tag exists.
+- The reviewed PR merged at `f1a39b41be2ee3b9070e1bef140c8b955cbdbf20`.
+- The release-state repair landed at
+  `40767d2721ba6be2031194eb3c4ce0f8a58406e3`; exact-SHA hosted Rust CI run
+  `34856863932` passed all format, clippy, build, unit, and Postgres suites.
+- The release commit is
+  `5f2f3fdecb896e495f42f0491b88d0a5ecdb1a22`; annotated tag `v0.9.10` points
+  to it and the GitHub Release is published at
+  https://github.com/inflatable-cookie/underlay/releases/tag/v0.9.10.
 
 ## Dispatch manifest
 
@@ -58,7 +65,7 @@ repository is edited.
 - Excluded: consumer repositories, Poodle, Market, Desktop, Longhorn,
   `.github/workflows/`, product behavior, new shims, dependency overrides,
   local package links, merge, and tag creation by the worker.
-- After accepted review and Queue-owned merge, maintainers cut and validate
+- After the accepted review and merge, maintainers cut and validated
   `v0.9.10` from the merged release commit under contract 023.
 
 ## Work
@@ -115,7 +122,19 @@ Record the caller census, manifest/lock before and after identities, public
 integrities, frozen-install result, validation commands, reviewed PR head,
 merge commit, and final `v0.9.10` tag/commit.
 
+## Delivery
+
+- PR: https://github.com/inflatable-cookie/underlay/pull/32
+- Reviewed head: `9047682599ce6e83d8ec599b3953edffb2ce0264`
+- Merge commit: `f1a39b41be2ee3b9070e1bef140c8b955cbdbf20`
+- Release-state repair: `40767d2721ba6be2031194eb3c4ce0f8a58406e3`
+- Exact-SHA hosted CI: run `34856863932`, passed.
+- Release commit: `5f2f3fdecb896e495f42f0491b88d0a5ecdb1a22`
+- Tag: `v0.9.10` (annotated tag object `ca77155d205f3586b936fd186614e16f35bbd013`)
+- GitHub Release: https://github.com/inflatable-cookie/underlay/releases/tag/v0.9.10
+- Consumer handoff: Desktop `g02.109` may now adopt Underlay `v0.9.10`.
+
 ## Next task
 
-After the validated tag exists, return its exact identity to Desktop g02.109.
-No consumer edit or automatic follow-on dispatch belongs to this task.
+The validated tag identity is returned to Desktop g02.109. No consumer edit or
+automatic follow-on dispatch belongs to this task.

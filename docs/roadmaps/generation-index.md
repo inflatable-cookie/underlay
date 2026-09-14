@@ -36,7 +36,7 @@ ready for its approved Market Card 278 lane.
 | `g10` | 2026-09-01 | Explicit operator-directed repository instruction and language-quality audit | Closed 2026-09-01 after PR 22 merged |
 | `g11` | 2026-09-02 | Contact Patch Bughunt exposed a shared mutable-upload publication gap; operator extended the repair to all five Underlay sites | Active; `g11.001` complete at `v0.9.7`, `g11.002` ready, `g11.003` blocked |
 | `g12` | 2026-09-04 | Froyo needs Nightfire without inheriting the full Underlay web-framework package | Active; extraction card ready, release and adoption lanes gated |
-| `g13` | 2026-09-14 | Operator-directed truthful Poodle producer releases | Active; `g13.001` complete at `v0.9.9`, `g13.002` ready for `v0.9.10` |
+| `g13` | 2026-09-14 | Operator-directed truthful Poodle producer releases | Active; `g13.001` complete at `v0.9.9`, `g13.002` complete at `v0.9.10` |
 
 An earlier invalid `g10` rollover was removed rather than retained. Its
 completed and remaining work was recovered into `g09.021`–`g09.045` on

@@ -96,8 +96,9 @@ guides, architecture docs, contracts, or front-door READMEs.
 
 ## Next Task
 
-Run `g11.002` consumer adoption from `v0.9.7`, Underlay Reference first, while
-`g13.002` prepares Underlay `v0.9.10` with corrected Poodle `0.4.2`.
+Run `g11.002` consumer adoption from `v0.9.7`, Underlay Reference first. The
+g13 producer lane has released Underlay `v0.9.10` with corrected Poodle
+`0.4.2`; downstream adoption is owned by the consumer lanes.
 <!-- northstar:lifecycle:begin schema=northstar.lifecycle.projection.v2 digest=sha256:05c9b6bbf4143e45fb9bea85fbedbd8e388e0b96c95b6b008a311bfb6bd9b6d9 -->
 | Generation | Disposition | Runway state |
 | --- | --- | --- |
