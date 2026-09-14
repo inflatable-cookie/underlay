@@ -1,7 +1,7 @@
 # Underlay Roadmap Generation Index
 
 Status: active
-Updated: 2026-09-09
+Updated: 2026-09-14
 
 ## Mode
 
@@ -12,7 +12,8 @@ Updated: 2026-09-09
 - `g11` — immutable verified media publication and five-consumer rollout.
 - `g12` — standalone TypeScript/Svelte Nightfire extraction and direct
   consumer adoption.
-- `g13` — Poodle 0.4.1 producer release for the blocked Market lane.
+- `g13` — truthful Poodle producer releases; `v0.9.9` complete and the
+  corrected `0.4.2` follow-up ready.
 
 The flattened-task switchover completed in Underlay PR #27 and is recorded in
 the [closeout log](../logs/2026-09/09-142914-flattened-task-switchover-closeout.md).
@@ -35,7 +36,7 @@ ready for its approved Market Card 278 lane.
 | `g10` | 2026-09-01 | Explicit operator-directed repository instruction and language-quality audit | Closed 2026-09-01 after PR 22 merged |
 | `g11` | 2026-09-02 | Contact Patch Bughunt exposed a shared mutable-upload publication gap; operator extended the repair to all five Underlay sites | Active; `g11.001` complete at `v0.9.7`, `g11.002` ready, `g11.003` blocked |
 | `g12` | 2026-09-04 | Froyo needs Nightfire without inheriting the full Underlay web-framework package | Active; extraction card ready, release and adoption lanes gated |
-| `g13` | 2026-09-14 | Operator-directed Poodle 0.4.1 producer release for blocked Market `g05.070` | Active; `g13.001` ready |
+| `g13` | 2026-09-14 | Operator-directed truthful Poodle producer releases | Active; `g13.001` complete at `v0.9.9`, `g13.002` ready for `v0.9.10` |
 
 An earlier invalid `g10` rollover was removed rather than retained. Its
 completed and remaining work was recovered into `g09.021`–`g09.045` on
@@ -79,4 +80,4 @@ In parallel mode:
 ## Next Task
 
 Run `g11.002` (Underlay Reference first), Acowtancy Market Card 278
-under `g12.001`, and `g13.001` (Poodle 0.4.1 producer release) in parallel.
+under `g12.001`, and `g13.002` (Poodle `0.4.2` producer release) in parallel.

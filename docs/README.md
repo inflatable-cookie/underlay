@@ -96,8 +96,8 @@ guides, architecture docs, contracts, or front-door READMEs.
 
 ## Next Task
 
-`v0.9.7` is released at `8a7ce84b`. Run `g11.002` consumer adoption from
-that tag, Underlay Reference first.
+Run `g11.002` consumer adoption from `v0.9.7`, Underlay Reference first, while
+`g13.002` prepares Underlay `v0.9.10` with corrected Poodle `0.4.2`.
 <!-- northstar:lifecycle:begin schema=northstar.lifecycle.projection.v2 digest=sha256:def280657ebe3b43d4acc3c8b7c3c9e36b2845dc90b4d09bd157f2049fa6f031 -->
 | Generation | Disposition | Runway state |
 | --- | --- | --- |
