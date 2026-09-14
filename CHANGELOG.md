@@ -7,6 +7,8 @@ While Underlay is `0.x`, breaking changes raise the minor version.
 
 ## [Unreleased]
 
+## [0.9.9] - 2026-09-14
+
 ### Changed
 - Updated the Underlay JavaScript integration to consume the published Poodle
   `0.4.1` patch. Existing Underlay Poodle callers remain source-compatible;
