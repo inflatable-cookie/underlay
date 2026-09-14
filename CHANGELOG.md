@@ -7,6 +7,8 @@ While Underlay is `0.x`, breaking changes raise the minor version.
 
 ## [Unreleased]
 
+## [0.9.10] - 2026-09-14
+
 ### Changed
 - Updated the Underlay JavaScript integration to consume the published Poodle
   `0.4.2` patch, which repairs the published Svelte Tabs cross-window bridge
