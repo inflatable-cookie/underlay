@@ -99,7 +99,7 @@ guides, architecture docs, contracts, or front-door READMEs.
 Run `g11.002` consumer adoption from `v0.9.7`, Underlay Reference first. The
 g13 producer lane has released Underlay `v0.9.10` with corrected Poodle
 `0.4.2`; downstream adoption is owned by the consumer lanes.
-<!-- northstar:lifecycle:begin schema=northstar.lifecycle.projection.v2 digest=sha256:05c9b6bbf4143e45fb9bea85fbedbd8e388e0b96c95b6b008a311bfb6bd9b6d9 -->
+<!-- northstar:lifecycle:begin schema=northstar.lifecycle.projection.v2 digest=sha256:fddca8ff83f90d187146e5dd01b686737e9c00b378f24d20c1450bb1721a9664 -->
 | Generation | Disposition | Runway state |
 | --- | --- | --- |
 | g11 | open | planning_required |
@@ -109,6 +109,7 @@ g13 producer lane has released Underlay `v0.9.10` with corrected Poodle
 | --- | --- | --- | --- | --- |
 | g12.002 | complete | none | 8 | sha256:77d3fad9d4fddc202e121350453db1fd50b2da313f4e23ba365f3c4b84ba6a9c |
 | g12.003 | complete | none | 8 | sha256:05cbbdf87f96ef842b4e70b8b9a53a96423e20bb5fe64493fc848e35050a5cc5 |
+| g12.004 | complete | none | 8 | sha256:a9c141f6c2c3a6cc36fa2b8ad1d2004b0c8f1ccf532d3aa06693d6ec93fe724e |
 | g13.001 | complete | none | 8 | sha256:e3c2120126b98eab06603171a71aa6eb247d7b5083e3b337ac300c3660b2a8b3 |
 | g13.002 | complete | none | 8 | sha256:27ebe07858d9d9e19b4774e67cdb633762cf2744a672ef74c99cdae746ff499a |
 <!-- northstar:lifecycle:end -->
