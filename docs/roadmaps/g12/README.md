@@ -24,6 +24,9 @@ milestone wrapper or nested `batch-cards/` hierarchy.
    configuration-only lifecycle hooks with truthful parallel-generation
    projections (`queued` behind Northstar task
    `73d569cd-82c1-427d-b636-d75117bbe350`)
+3. [ ] [`g12.004`](004-prospective-merge-protocol-migration.md) — migrate the
+   Queue control manifest to v4 prospective-merge evaluation (`ready`
+   configuration maintenance; independent of product sequencing)
 
 `g12.001` was already flat and is unchanged by the switchover except
 for this frontier wording.
@@ -34,6 +37,8 @@ Ready: Acowtancy Market Card 278 lane under `g12.001` only. The
 release and consumer lanes remain serial behind its accepted
 dual-language proof. `g12.002` is a separate maintenance task queued behind
 Northstar's plural lifecycle contract.
+`g12.004` is separately authorized portfolio maintenance and changes no product
+frontier.
 
 ## Dependencies And Parallelism
 
