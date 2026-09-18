@@ -3015,7 +3015,7 @@ dependencies = [
 [[package]]
 name = "nightfire"
 version = "0.2.0"
-source = "git+ssh://git@github.com/inflatable-cookie/nightfire.git?tag=v0.2.0#1931cfc2d4d77959140c39ee56047b581b11256d"
+source = "git+https://github.com/inflatable-cookie/nightfire.git?tag=v0.2.0#1931cfc2d4d77959140c39ee56047b581b11256d"
 dependencies = [
  "blake3",
  "serde",
