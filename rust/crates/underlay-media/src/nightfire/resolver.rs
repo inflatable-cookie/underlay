@@ -1,5 +1,5 @@
-use serde_json::Value;
 use nightfire::{NightfireMediaLocator, NightfireValue};
+use serde_json::Value;
 
 use crate::domain::MediaLocatorKind;
 

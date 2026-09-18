@@ -1,5 +1,5 @@
-use serde_json::json;
 use nightfire::{BlockData, NightfireValue};
+use serde_json::json;
 use uuid::Uuid;
 
 use super::support::{HeroBlockHandler, MediaBlockHandler, PopupBlockHandler};

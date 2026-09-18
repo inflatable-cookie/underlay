@@ -1,8 +1,8 @@
 use std::sync::{Arc, Mutex};
 
 use chrono::Utc;
-use serde_json::json;
 use nightfire::NightfireValue;
+use serde_json::json;
 use uuid::Uuid;
 
 use super::support::{block, TestUsageSyncRepository};

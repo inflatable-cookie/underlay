@@ -1,5 +1,5 @@
-use serde_json::Value;
 use nightfire::BlockData;
+use serde_json::Value;
 
 use super::walk::normalize_relative_pointer;
 
