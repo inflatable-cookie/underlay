@@ -22,7 +22,7 @@ Both language surfaces use the same Nightfire `0.2.0` release.
 
 ```toml
 [dependencies]
-nightfire = { git = "ssh://git@github.com/inflatable-cookie/nightfire.git", tag = "v0.2.0" }
+nightfire = { git = "https://github.com/inflatable-cookie/nightfire.git", tag = "v0.2.0" }
 ```
 
 ```json
@@ -116,7 +116,7 @@ extraction from `NightfireValue`:
 ```toml
 [dependencies]
 underlay-media = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "vX.Y.Z", features = ["nightfire"] }
-nightfire = { git = "ssh://git@github.com/inflatable-cookie/nightfire.git", tag = "v0.2.0" }
+nightfire = { git = "https://github.com/inflatable-cookie/nightfire.git", tag = "v0.2.0" }
 ```
 
 Underlay supplies:
@@ -139,7 +139,7 @@ responses:
 ```toml
 [dependencies]
 underlay-validation = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "vX.Y.Z", features = ["nightfire"] }
-nightfire = { git = "ssh://git@github.com/inflatable-cookie/nightfire.git", tag = "v0.2.0" }
+nightfire = { git = "https://github.com/inflatable-cookie/nightfire.git", tag = "v0.2.0" }
 ```
 
 Nightfire remains the validation authority. Underlay only converts errors at
