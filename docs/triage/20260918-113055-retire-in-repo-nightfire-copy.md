@@ -5,10 +5,12 @@ Raised: 2026-09-18. From the Acowtancy workspace (operator-directed).
 ## Request
 
 The Nightfire capability was extracted out of this repository and now has its own release train. It
-is published: **`@inflatable-cookie/nightfire` 0.1.0** on npm and the Rust crate tagged **`v0.1.0`**
-(tag only, no registry), following the same pattern as Poodle and Longhorn. This repository still
+is published: **`@inflatable-cookie/nightfire` 0.2.0** (git tag `v0.2.0`, commit `1931cfc2`) — do
+**not** pin 0.1.0; that release shipped no schemas and still had `./media`. This repository still
 hosts and publishes the pre-extraction copy, so consumers can still depend on a source that is
 supposed to have moved.
+
+Promoted: `docs/roadmaps/g12/005-consume-nightfire-v0-2-0.md`.
 
 Please retire this repository's copy **after** swapping its own internal uses — this is not a leaf
 deletion, see below.
@@ -42,10 +44,13 @@ also adds `./core` and `./types`. So the repointing is a mapping rather than a r
 
 ## Sequencing
 
-The Nightfire copy must not disappear before its consumers move. The Acowtancy workspace is swapping
-its own dependency (`underlay-nightfire` at tag `v0.9.8` → the released crate) under its own task,
-and that swap is the one that closes the last external consumer. Coordinating so this repository's
-retirement lands **after** that swap avoids a window where neither source is usable.
+The Nightfire copy must not disappear before its consumers move. Acowtancy Farmyard already consumes
+released `nightfire` `v0.2.0` (g05.154) and still bridges `underlay-media` / `underlay-validation` at
+this repository’s `v0.9.8`. This swap lands first; Farmyard drops the bridges after **this**
+repository tags (Acowtancy g05.155).
+
+Nightfire v0.2.0 **removed** `./media`. Underlay `./nightfire/media` (picker context) is
+Underlay-owned and must stay.
 
 ## Note on the maintained command surface
 

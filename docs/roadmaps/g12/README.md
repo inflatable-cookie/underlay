@@ -27,6 +27,9 @@ milestone wrapper or nested `batch-cards/` hierarchy.
 3. [ ] [`g12.004`](004-prospective-merge-protocol-migration.md) — migrate the
    Queue control manifest to v4 prospective-merge evaluation (`ready`
    configuration maintenance; independent of product sequencing)
+4. [ ] [`g12.005`](005-consume-nightfire-v0-2-0.md) — consume nightfire
+   `v0.2.0` internally, keep historical facades, keep Underlay-owned
+   `./nightfire/media` (`ready`; Card 274 slice)
 
 `g12.001` was already flat and is unchanged by the switchover except
 for this frontier wording.
@@ -50,8 +53,9 @@ behind Froyo.
 
 ## Next Task
 
-Dispatch Acowtancy Market Card 278. No further roadmap task is queued
-after the current lanes; the product frontier does not change.
+Dispatch `g12.005` (consume nightfire v0.2.0; Card 274). Do not publish
+without the operator. Farmyard bridge-drop is Acowtancy g05.155 after
+this repository tags.
 <!-- northstar:lifecycle:begin schema=northstar.lifecycle.projection.v2 digest=sha256:fddca8ff83f90d187146e5dd01b686737e9c00b378f24d20c1450bb1721a9664 -->
 | Generation | Disposition | Runway state |
 | --- | --- | --- |
