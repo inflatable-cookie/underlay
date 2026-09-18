@@ -1,5 +1,5 @@
 <script lang="ts">
-  import MarkdownEditor from "../../src/nightfire/markup/MarkdownEditorSurface.svelte";
+  import { MarkdownEditorSurface as MarkdownEditor } from "@inflatable-cookie/underlay/nightfire/markdown";
 
   interface Props {
     label?: string | null;

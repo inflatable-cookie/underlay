@@ -1,11 +1,11 @@
 <script lang="ts">
   import { untrack } from "svelte";
-  import NightfireEditor from "../../src/nightfire/NightfireEditor.svelte";
-  import type {
-    NightfireBlockOptionInput,
-    NightfireSlashCommandsConfig,
-    NightfireValue
-  } from "../../src/nightfire";
+  import {
+    NightfireEditor,
+    type NightfireBlockOptionInput,
+    type NightfireSlashCommandsConfig,
+    type NightfireValue
+  } from "@inflatable-cookie/underlay/nightfire/editor";
 
   interface Props {
     schema?: string;

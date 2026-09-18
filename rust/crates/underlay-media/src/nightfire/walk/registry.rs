@@ -1,4 +1,4 @@
-use underlay_nightfire::{BlockData, NightfireValue};
+use nightfire::{BlockData, NightfireValue};
 
 use crate::domain::{MediaContentKind, MediaUsageEdgeInput};
 use crate::error::{MediaError, MediaResult};

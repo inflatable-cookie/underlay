@@ -23,6 +23,7 @@ describe("nightfire/NightfireEditor slash commands", () => {
 
   it("opens the slash palette and inserts a new block below the active markdown block", async () => {
     const view = render(NightfireEditorHarness, {
+      modeOverride: "multi",
       slashCommands: {
         enabled: true
       }

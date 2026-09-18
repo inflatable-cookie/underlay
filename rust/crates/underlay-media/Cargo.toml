@@ -9,7 +9,7 @@ description = "Media library types and repository for Underlay applications"
 default = []
 object-keys = []
 renditions = ["tracing", "dep:image"]
-nightfire = ["underlay-nightfire"]
+nightfire = ["dep:nightfire"]
 full = ["renditions", "nightfire"]
 
 [dependencies]
@@ -24,7 +24,7 @@ uuid = { workspace = true }
 image = { workspace = true, optional = true }
 
 underlay-blob = { path = "../underlay-blob" }
-underlay-nightfire = { path = "../underlay-nightfire", optional = true }
+nightfire = { workspace = true, optional = true }
 
 # Rendition generation (optional)
 tracing = { workspace = true, optional = true }

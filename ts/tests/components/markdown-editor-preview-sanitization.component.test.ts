@@ -2,7 +2,7 @@
 import { describe, expect, it } from "vitest";
 import { render } from "@testing-library/svelte";
 
-import MarkdownEditorSurface from "../../src/nightfire/markup/MarkdownEditorSurface.svelte";
+import { MarkdownEditorSurface } from "@inflatable-cookie/underlay/nightfire/markdown";
 
 describe("nightfire/markup MarkdownEditorSurface preview sanitization", () => {
   it("does not render script tags or event handlers in the live preview", () => {

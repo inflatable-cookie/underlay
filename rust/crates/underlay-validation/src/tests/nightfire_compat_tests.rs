@@ -1,5 +1,5 @@
 use super::*;
-use underlay_nightfire::StrategyCardinality;
+use nightfire::StrategyCardinality;
 
 #[test]
 fn converts_cardinality_mismatch() {

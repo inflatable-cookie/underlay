@@ -1,4 +1,4 @@
-use underlay_nightfire::NightfireValue;
+use nightfire::NightfireValue;
 use uuid::Uuid;
 
 use super::walk::BlockAnchor;

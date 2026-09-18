@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
 use std::sync::Arc;
 
-use underlay_nightfire::BlockRegistration;
+use nightfire::BlockRegistration;
 
 use crate::domain::{MediaId, MediaUsageRole};
 use crate::error::MediaResult;

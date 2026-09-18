@@ -23,8 +23,8 @@ validator = { version = "0.21", optional = true }
 underlay-core = { path = "../underlay-core", optional = true }
 uuid = { workspace = true, optional = true }
 
-# Optional nightfire content validation
-underlay-nightfire = { path = "../underlay-nightfire", optional = true }
+# Optional Nightfire content validation
+nightfire = { workspace = true, optional = true }
 
 # Optional slugify conversion (deunicode for unicode transliteration)
 deunicode = { version = "1.6", optional = true }
@@ -34,7 +34,7 @@ default = ["derive"]
 derive = ["underlay-validation-derive"]
 axum = ["dep:axum", "dep:http", "dep:underlay-core"]
 validator-compat = ["dep:validator", "dep:underlay-core"]
-nightfire = ["dep:underlay-nightfire", "dep:underlay-core"]
+nightfire = ["dep:nightfire", "dep:underlay-core"]
 field-validation = ["dep:uuid"]
 slugify = ["dep:deunicode"]
 
