@@ -28,7 +28,13 @@ Nightfire is its own repository and release train. This repo still hosts `rust/c
 
 ## Work (order)
 
-1. Depend on released Nightfire: Rust `nightfire = { git = "ssh://git@github.com/inflatable-cookie/nightfire.git", tag = "v0.2.0" }`; TS `@inflatable-cookie/nightfire` `0.2.0` (git tag, same pattern as Poodle).
+1. Depend on released Nightfire at tag `v0.2.0` / commit `1931cfc2`. **Transport is HTTPS, not SSH:**
+   `nightfire = { git = "https://github.com/inflatable-cookie/nightfire.git", tag = "v0.2.0" }`.
+   Nightfire is a public repository; Underlay GitHub Actions has no SSH key to it, and this
+   lane does not add credentials or edit `.github/workflows/`. TS `@inflatable-cookie/nightfire`
+   `0.2.0` via the same HTTPS git tag. Do not use `ssh://git@github.com/...` in Cargo.toml,
+   Cargo.lock, or package.json — that is what blocked PR #34 (Clippy fetch failed:
+   `ssh-agent authentication with no usernames succeeding`).
 2. Point `underlay-validation` (`nightfire` feature) and `underlay-media` (`nightfire` feature) at that crate. Prove they compile and their Nightfire-typed tests still pass.
 3. Turn historical TS `./nightfire/*` subpaths into facades over `@inflatable-cookie/nightfire` **except** `./nightfire/media`, which stays Underlay-owned. Keep `./nightfire` plus editor, renderer, block-editor, block-registration, markdown, editor-registry, render-registry, validator-registry, strategies, media-locator, block-ids, block-versions, utils, validation. Map each to the Nightfire counterpart (`./core` / `./types` as needed). Callers must not have to change import paths in this lane.
 4. Turn `underlay-nightfire` into a thin crate-name facade over `nightfire`, or delete the implementation once nothing in this workspace uses the path crate. Card 274: delete internal implementations; retain behaviour-compatible historical names. Public API inventory `docs/contracts/122-rust-public-api-inventory.md` still names `underlay-nightfire` as a deprecation facade — honour that.
@@ -55,6 +61,7 @@ Nightfire is its own repository and release train. This repo still hosts `rust/c
 - A historical subpath cannot facade onto v0.2.0 without changing caller imports — return the subpath; do not break Dairy.
 - `underlay-media` extractor cannot type against `nightfire` v0.2.0 `NightfireValue` — return that; do not paper over with a serde round-trip that drops new core blocks.
 - Publication or a Nightfire-repo edit would be required.
+- SSH git transport would be required for CI — use HTTPS instead; do not add Actions credentials.
 
 ## Next Task
 
