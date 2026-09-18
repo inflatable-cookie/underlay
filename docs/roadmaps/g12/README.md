@@ -56,7 +56,7 @@ behind Froyo.
 Dispatch `g12.005` (consume nightfire v0.2.0; Card 274). Do not publish
 without the operator. Farmyard bridge-drop is Acowtancy g05.155 after
 this repository tags.
-<!-- northstar:lifecycle:begin schema=northstar.lifecycle.projection.v2 digest=sha256:fddca8ff83f90d187146e5dd01b686737e9c00b378f24d20c1450bb1721a9664 -->
+<!-- northstar:lifecycle:begin schema=northstar.lifecycle.projection.v2 digest=sha256:c2fcd46900f7500a2f200fe83068e5eb942ce28e198d285c5db6339d712d683e -->
 | Generation | Disposition | Runway state |
 | --- | --- | --- |
 | g11 | open | planning_required |
@@ -67,6 +67,7 @@ this repository tags.
 | g12.002 | complete | none | 8 | sha256:77d3fad9d4fddc202e121350453db1fd50b2da313f4e23ba365f3c4b84ba6a9c |
 | g12.003 | complete | none | 8 | sha256:05cbbdf87f96ef842b4e70b8b9a53a96423e20bb5fe64493fc848e35050a5cc5 |
 | g12.004 | complete | none | 8 | sha256:a9c141f6c2c3a6cc36fa2b8ad1d2004b0c8f1ccf532d3aa06693d6ec93fe724e |
+| g12.005 | complete | none | 8 | sha256:d326252feb63f5d07fe602e2a583cbaf38da80b35bb44e4b7792b770c56b4ade |
 | g13.001 | complete | none | 8 | sha256:e3c2120126b98eab06603171a71aa6eb247d7b5083e3b337ac300c3660b2a8b3 |
 | g13.002 | complete | none | 8 | sha256:27ebe07858d9d9e19b4774e67cdb633762cf2744a672ef74c99cdae746ff499a |
 <!-- northstar:lifecycle:end -->
