@@ -1,4 +1,4 @@
-use underlay_nightfire::{BlockData, NightfireMediaLocator};
+use nightfire::{BlockData, NightfireMediaLocator};
 
 use crate::domain::MediaLocatorKind;
 use crate::error::{MediaError, MediaResult};

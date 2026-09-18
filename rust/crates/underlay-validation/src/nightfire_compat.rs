@@ -21,8 +21,8 @@
 
 use std::collections::HashMap;
 
+use nightfire::NightfireValidationError;
 use underlay_core::AppError;
-use underlay_nightfire::NightfireValidationError;
 
 /// Convert a Nightfire validation error to an AppError with field errors.
 ///

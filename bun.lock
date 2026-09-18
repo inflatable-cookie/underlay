@@ -5,6 +5,7 @@
     "": {
       "name": "@inflatable-cookie/underlay",
       "dependencies": {
+        "@inflatable-cookie/nightfire": "0.2.0",
         "@inflatable-cookie/poodle-svelte": "0.4.2",
         "esm-env": "^1.2.2",
         "isomorphic-dompurify": "^3.0.0",
@@ -145,6 +146,8 @@
     "@floating-ui/dom": ["@floating-ui/dom@1.8.0", "", { "dependencies": { "@floating-ui/core": "^1.8.0", "@floating-ui/utils": "^0.2.12" } }, "sha512-yXSrzeHZBTZadLOlfyhCkJHNeLJnHRnRInwdZ40L7ZiaAtrBwoYlsDrX3v5zB1Utk7CLfzcOVnVVWoXEky7Ceg=="],
 
     "@floating-ui/utils": ["@floating-ui/utils@0.2.12", "", {}, "sha512-HpCo8tmWzLVad5s2d19EhAz5zqrrQ6s69qd6moPMQvkOuSwDT1YgRfWSVuc4ennqrgv3OHppiOGMQ7oC13yIww=="],
+
+    "@inflatable-cookie/nightfire": ["@inflatable-cookie/nightfire@0.2.0", "", { "dependencies": { "@inflatable-cookie/poodle-svelte": "0.4.2", "isomorphic-dompurify": "3.22.0", "marked": "17.0.6" }, "peerDependencies": { "svelte": ">=5.38.6 <6" } }, "sha512-Dlj2JLdpvAfGH0qsQy5eyG01nLUCliIvFTtMN5Kyb8JmmT/y+rwQ0tFFvGZAgxL2N/Pn28w6gnoIMUJgYJUTpA=="],
 
     "@inflatable-cookie/poodle-core": ["@inflatable-cookie/poodle-core@0.4.2", "", { "bin": { "poodle-icons": "dist/icons/build.mjs" } }, "sha512-4VJ2EejtpDEeVyxy4gI0QFqJd2BTrwf+ML3mB6RgEHz7seJ+7zWuy20Trh+o51bBd8xnVmu/UZ0Ovr3jbbtOTQ=="],
 

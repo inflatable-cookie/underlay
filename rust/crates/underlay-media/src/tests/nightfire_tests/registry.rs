@@ -1,5 +1,5 @@
+use nightfire::{BlockData, NightfireValue};
 use serde_json::json;
-use underlay_nightfire::{BlockData, NightfireValue};
 use uuid::Uuid;
 
 use super::support::{HeroBlockHandler, MediaBlockHandler, PopupBlockHandler};
@@ -149,8 +149,8 @@ fn handler_map_accepts_generic_block_registrations() {
     }
 
     let registry = NightfireBlockMediaHandlerMap::from_block_registrations([
-        underlay_nightfire::BlockRegistration::new(
-            underlay_nightfire::BlockDescriptor::new("hero", "Hero", TestCategory::Content),
+        nightfire::BlockRegistration::new(
+            nightfire::BlockDescriptor::new("hero", "Hero", TestCategory::Content),
             NightfireBlockMediaRegistration::new("hero", HeroBlockHandler),
         ),
     ]);

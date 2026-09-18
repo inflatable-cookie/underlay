@@ -1,8 +1,10 @@
 // @vitest-environment jsdom
 import { describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/svelte";
-import SlashCommandPalette from "../../src/nightfire/SlashCommandPalette.svelte";
-import type { NightfireSlashCommand } from "../../src/nightfire";
+import {
+  SlashCommandPalette,
+  type NightfireSlashCommand,
+} from "@inflatable-cookie/underlay/nightfire/editor";
 
 const commands: NightfireSlashCommand[] = [
   {

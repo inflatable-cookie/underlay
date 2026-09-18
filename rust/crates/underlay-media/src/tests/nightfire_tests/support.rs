@@ -1,7 +1,7 @@
 use std::sync::{Arc, Mutex};
 
 use async_trait::async_trait;
-use underlay_nightfire::BlockData;
+use nightfire::BlockData;
 use uuid::Uuid;
 
 use crate::domain::MediaUsageEdgeKey;

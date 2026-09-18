@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from "vitest";
 
-import { renderSafeMarkdownPreview } from "../../src/nightfire/markup/markdown-preview";
+import { renderSafeMarkdownPreview } from "@inflatable-cookie/underlay/nightfire";
 
 describe("nightfire/markup renderSafeMarkdownPreview", () => {
 	it("renders plain markdown to HTML", () => {

@@ -24,13 +24,11 @@ top of this shared protocol and are owned by consuming apps.
 Primary:
 
 - standalone repository `github.com/inflatable-cookie/nightfire`, root npm
-  package `@inflatable-cookie/nightfire`, and Rust crate `nightfire` after Card
-  278 extraction
-- the current [`rust/crates/underlay-nightfire/`](../../rust/crates/underlay-nightfire/)
-  tree only until Card 278 is accepted and Card 274 replaces it with a
-  compatibility facade
-- the current [`ts/src/nightfire/`](../../ts/src/nightfire/) tree only until
-  Card 274 replaces it with compatibility re-exports
+  package `@inflatable-cookie/nightfire`, and Rust crate `nightfire`
+- [`rust/crates/underlay-nightfire/src/lib.rs`](../../rust/crates/underlay-nightfire/src/lib.rs)
+  for the historical Rust crate-name facade
+- [`ts/src/nightfire/`](../../ts/src/nightfire/) for historical TypeScript
+  subpath facades and the Underlay-owned media-picker context/editor adapter
 - [`rust/crates/underlay-migration-core/src/lib.rs`](../../rust/crates/underlay-migration-core/src/lib.rs)
 - [`rust/crates/underlay-migration-core/src/pipeline.rs`](../../rust/crates/underlay-migration-core/src/pipeline.rs)
 - [`rust/crates/underlay-migration-core/src/plugin.rs`](../../rust/crates/underlay-migration-core/src/plugin.rs)
@@ -44,9 +42,9 @@ Supporting:
 - [`050-media-library-and-usage.md`](./050-media-library-and-usage.md)
 - [`docs/architecture/010-package-map.md`](../architecture/010-package-map.md)
 
-After Card 278, the standalone Nightfire repository owns both the Rust wire
-model and TypeScript/Svelte implementation. Their shared conformance fixtures
-must agree. Underlay compatibility facades never become another authority.
+The standalone Nightfire repository owns both the Rust wire model and
+TypeScript/Svelte implementation. Their shared conformance fixtures must agree.
+Underlay compatibility facades never become another authority.
 
 ## Contract Goal
 
@@ -68,8 +66,7 @@ The goal is shared protocol and discipline, not a universal CMS.
 ### Nightfire durable value protocol
 
 Standalone Rust crate `nightfire` owns the canonical structured-content value
-model. Until Card 274, Underlay's implementation is the migration source; after
-that card, `underlay-nightfire` is only a compatibility facade.
+model. `underlay-nightfire` is only a compatibility facade.
 
 Core pieces:
 
@@ -224,11 +221,8 @@ Rules:
 ### Extraction and compatibility rules
 
 - move the implementation; do not maintain long-lived copies in both repos
-- a bounded overlap is allowed only between the first standalone release and
-  the Underlay compatibility adoption, with no semantic changes during that
-  window
-- Underlay then depends on the released Nightfire tag, deletes its internal
-  Rust and TS implementations, and re-exports the old crate name and subpaths
+- Underlay depends on the released Nightfire tag, contains no generic Rust or
+  TS implementation copy, and re-exports the old crate name and subpaths
 - new consumers import `nightfire` and `@inflatable-cookie/nightfire/*`
 - Froyo must prove its installed and bundled dependency graph contains no
   `@inflatable-cookie/underlay` edge before Bovine Desktop removes Underlay
@@ -427,16 +421,9 @@ but the migration discipline itself is defined here.
 
 ## Known Drift To Assess Later
 
-- `ts/src/nightfire/types.ts` reduces the durable Nightfire protocol to a very
-  weak `{ schema; block?; blocks? }` shape and does not encode the stronger
-  Rust-side invariants
-- the TS Nightfire surface mixes durable protocol, runtime shell, and
-  convenience registrations more loosely than the Rust side
-- `validator-registry.ts` only offers block-level transformation hooks and does
-  not model the fuller strategy/cardinality validation contract from Rust
-- some retained Nightfire helpers such as markdown/media registrations and
-  slash-command shell may still deserve a later ownership challenge during the
-  runtime and patterns contract passes
+- Generic protocol and runtime drift is assessed in the standalone Nightfire
+  repository. Underlay assessment stays limited to its media traversal,
+  validation-to-HTTP adapter, picker context, and compatibility facades.
 
 Resolved assessment:
 
@@ -446,10 +433,10 @@ Resolved assessment:
 
 ## Assessment Questions
 
-- does the TS Nightfire type and runtime surface actually preserve the durable
-  protocol goals from Rust, or has it drifted into a weak compatibility shell
-- is the current split between Nightfire core, media-linked content handling,
-  and retained workflow helpers still the right ownership boundary
+- do Underlay's TypeScript facades remain re-exports of the released Nightfire
+  package, apart from the explicit media-picker context/editor adapter
+- is the current split between Nightfire core and Underlay media-linked content
+  handling still the right ownership boundary
 - does migration-core still need every retained subsystem it exports, or has
   some of that surface become too broad for a shared foundation crate
 - do the decision-memory, audit, and replay artifacts actually fulfil the goal
@@ -457,5 +444,5 @@ Resolved assessment:
 
 ## Next Task
 
-The `g04` contract-authorship lane is complete; evidence:
-[../roadmaps/archive/g04.md](../roadmaps/archive/g04.md).
+Release the Underlay compatibility adoption before Acowtancy removes its
+remaining `underlay-media` and `underlay-validation` bridges.

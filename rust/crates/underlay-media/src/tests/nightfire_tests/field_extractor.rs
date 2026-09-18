@@ -1,5 +1,5 @@
+use nightfire::NightfireValue;
 use serde_json::json;
-use underlay_nightfire::NightfireValue;
 use uuid::Uuid;
 
 use super::support::{block, matcher};

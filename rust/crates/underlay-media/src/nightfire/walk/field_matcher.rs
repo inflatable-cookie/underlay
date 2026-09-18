@@ -1,5 +1,5 @@
+use nightfire::BlockData;
 use serde_json::Value;
-use underlay_nightfire::BlockData;
 
 use crate::domain::{MediaContentKind, MediaUsageEdgeInput};
 use crate::error::MediaResult;

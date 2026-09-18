@@ -31,9 +31,10 @@ Nightfire is its own repository and release train. This repo still hosts `rust/c
 1. Depend on released Nightfire at tag `v0.2.0` / commit `1931cfc2`. **Transport is HTTPS, not SSH:**
    `nightfire = { git = "https://github.com/inflatable-cookie/nightfire.git", tag = "v0.2.0" }`.
    Nightfire is a public repository; Underlay GitHub Actions has no SSH key to it, and this
-   lane does not add credentials or edit `.github/workflows/`. TS `@inflatable-cookie/nightfire`
-   `0.2.0` via the same HTTPS git tag. Do not use `ssh://git@github.com/...` in Cargo.toml,
-   Cargo.lock, or package.json — that is what blocked PR #34 (Clippy fetch failed:
+   lane does not add credentials or edit `.github/workflows/`. TypeScript uses released npm
+   package `@inflatable-cookie/nightfire` `0.2.0` because Bun cannot resolve the annotated Git
+   tag. Any Git-based Nightfire pin must use HTTPS. Do not use `ssh://git@github.com/...` in
+   Cargo.toml, Cargo.lock, or package.json — that is what blocked PR #34 (Clippy fetch failed:
    `ssh-agent authentication with no usernames succeeding`).
 2. Point `underlay-validation` (`nightfire` feature) and `underlay-media` (`nightfire` feature) at that crate. Prove they compile and their Nightfire-typed tests still pass.
 3. Turn historical TS `./nightfire/*` subpaths into facades over `@inflatable-cookie/nightfire` **except** `./nightfire/media`, which stays Underlay-owned. Keep `./nightfire` plus editor, renderer, block-editor, block-registration, markdown, editor-registry, render-registry, validator-registry, strategies, media-locator, block-ids, block-versions, utils, validation. Map each to the Nightfire counterpart (`./core` / `./types` as needed). Callers must not have to change import paths in this lane.

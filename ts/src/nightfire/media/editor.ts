@@ -4,10 +4,9 @@ import {
   registerBlockEmptyChecker
 } from "../editor-registry";
 
-// Register the media block editor for schemas that allow media blocks.
-// Unregistered schemas fall back to markup via resolveSchemaDefinition,
-// so registering for markup covers both.
-registerBlockEditor("acow:content/markup", "media", "Media", MediaEditor);
+// Keep the historical Underlay media-library picker available to any schema
+// whose Nightfire strategy admits the `media` block type.
+registerBlockEditor(null, "media", "Media", MediaEditor);
 
 registerBlockEmptyChecker("media", (block) => {
   const mediaId = block?.data?.media_id;
