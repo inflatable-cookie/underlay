@@ -7,6 +7,17 @@ While Underlay is `0.x`, breaking changes raise the minor version.
 
 ## [Unreleased]
 
+## [0.9.12] - 2026-09-19
+
+### Fixed
+- `Cargo.lock` for `v0.9.11` rewrote the third-party `rsa` crate from `0.9.10`
+  to `0.9.11`, which does not exist on crates.io (`jsonwebtoken` needs
+  `rsa ^0.9.6`). Clippy on GitHub Actions failed to select a version.
+  `v0.9.12` restores `rsa = 0.9.10` and is the pin consumers should use.
+  Do not pin `v0.9.11`.
+- Impact class: additive patch (lockfile correction). Consumer action: pin
+  `v0.9.12`, not `v0.9.11`. Rollback: `v0.9.10`.
+
 ## [0.9.11] - 2026-09-19
 
 ### Changed
@@ -185,7 +196,8 @@ While Underlay is `0.x`, breaking changes raise the minor version.
 - First tagged release. Changelog tracking starts with this file; see the Git
   history for detail before this point.
 
-[Unreleased]: https://github.com/inflatable-cookie/underlay/compare/v0.9.11...HEAD
+[Unreleased]: https://github.com/inflatable-cookie/underlay/compare/v0.9.12...HEAD
+[0.9.12]: https://github.com/inflatable-cookie/underlay/releases/tag/v0.9.12
 [0.9.11]: https://github.com/inflatable-cookie/underlay/releases/tag/v0.9.11
 [0.9.10]: https://github.com/inflatable-cookie/underlay/releases/tag/v0.9.10
 [0.9.9]: https://github.com/inflatable-cookie/underlay/releases/tag/v0.9.9
