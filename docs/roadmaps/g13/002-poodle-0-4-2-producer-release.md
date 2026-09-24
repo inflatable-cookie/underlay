@@ -1,6 +1,5 @@
 # g13.002 - Poodle 0.4.2 Producer Release
 
-Status: complete
 Owner: repo maintainers
 Created: 2026-09-14
 Depends on: g13.001 complete; Underlay `v0.9.9` released at

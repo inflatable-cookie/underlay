@@ -1,6 +1,5 @@
 # g13.001 - Poodle 0.4.1 Producer Release
 
-Status: ready
 Owner: repo maintainers
 Created: 2026-09-14
 Depends on: published Poodle `0.4.1` (Core and Svelte in the npm

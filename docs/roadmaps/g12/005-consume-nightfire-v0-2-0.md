@@ -1,6 +1,5 @@
 # g12.005 — Consume Nightfire v0.2.0; keep facades, not a second copy
 
-Status: Ready; execution authorized
 Owner: Underlay Nightfire facades (`underlay-nightfire`, TS `./nightfire/*`)
 Created: 2026-09-18
 Depends on: nightfire `v0.2.0` (tag `1931cfc2d4d77959140c39ee56047b581b11256d`, npm `@inflatable-cookie/nightfire@0.2.0`)
