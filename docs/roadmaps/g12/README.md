@@ -56,7 +56,7 @@ behind Froyo.
 
 ## Next Task
 
-Dispatch `g12.005` (consume nightfire v0.2.0; Card 274). Do not publish
+Resume the approved product frontier after this maintenance closes. Do not publish
 without the operator. Farmyard bridge-drop is Acowtancy g05.155 after
 this repository tags.
 <!-- northstar:lifecycle:begin schema=northstar.lifecycle.projection.v2 digest=sha256:c2fcd46900f7500a2f200fe83068e5eb942ce28e198d285c5db6339d712d683e -->
