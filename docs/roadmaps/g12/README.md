@@ -30,6 +30,9 @@ milestone wrapper or nested `batch-cards/` hierarchy.
 4. [ ] [`g12.005`](005-consume-nightfire-v0-2-0.md) — consume nightfire
    `v0.2.0` internally, keep historical facades, keep Underlay-owned
    `./nightfire/media` (`ready`; Card 274 slice)
+5. [ ] [`g12.006`](006-repair-lifecycle-currentness.md) — repair the four
+   audited lifecycle currentness findings across `g12` and `g13` (`ready`
+   documentation maintenance; independent of product sequencing)
 
 `g12.001` was already flat and is unchanged by the switchover except
 for this frontier wording.
