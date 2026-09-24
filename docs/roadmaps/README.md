@@ -91,7 +91,7 @@ full-fidelity archive.
 Run `g11.002` (Underlay Reference first) while Market Card 278 runs under
 `g12.001`. The g13 producer release is complete; downstream adoption is owned
 by the consumer lanes.
-<!-- northstar:lifecycle:begin schema=northstar.lifecycle.projection.v2 digest=sha256:c2fcd46900f7500a2f200fe83068e5eb942ce28e198d285c5db6339d712d683e -->
+<!-- northstar:lifecycle:begin schema=northstar.lifecycle.projection.v2 digest=sha256:4b999c7bc68e27cd75d56041bd06844815bc1585bd9681af2bf554c3abe6fe21 -->
 | Generation | Disposition | Runway state |
 | --- | --- | --- |
 | g11 | open | planning_required |
@@ -103,6 +103,7 @@ by the consumer lanes.
 | g12.003 | complete | none | 8 | sha256:05cbbdf87f96ef842b4e70b8b9a53a96423e20bb5fe64493fc848e35050a5cc5 |
 | g12.004 | complete | none | 8 | sha256:a9c141f6c2c3a6cc36fa2b8ad1d2004b0c8f1ccf532d3aa06693d6ec93fe724e |
 | g12.005 | complete | none | 8 | sha256:d326252feb63f5d07fe602e2a583cbaf38da80b35bb44e4b7792b770c56b4ade |
+| g12.006 | complete | none | 8 | sha256:986a78c855db6659cac21e162b6fde7f78d809ad5f75b4f7063a1d4d2bd1fa0c |
 | g13.001 | complete | none | 8 | sha256:e3c2120126b98eab06603171a71aa6eb247d7b5083e3b337ac300c3660b2a8b3 |
 | g13.002 | complete | none | 8 | sha256:27ebe07858d9d9e19b4774e67cdb633762cf2744a672ef74c99cdae746ff499a |
 <!-- northstar:lifecycle:end -->
