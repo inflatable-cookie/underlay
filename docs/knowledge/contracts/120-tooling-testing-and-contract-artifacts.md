@@ -30,7 +30,7 @@ Primary Rust support:
 - [`../../rust/crates/underlay-devtools/src/lib.rs`](../../../rust/crates/underlay-devtools/src/lib.rs)
 - [`../../rust/crates/underlay-devtools/src/sync_migrations.rs`](../../../rust/crates/underlay-devtools/src/sync_migrations.rs)
 - [`../../rust/crates/underlay-devtools/src/migration_bundle.rs`](../../../rust/crates/underlay-devtools/src/migration_bundle.rs)
-- [`../../rust/crates/underlay-devtools/src/seed_bundle.rs`](../../../rust/crates/underlay-devtools/src/seed_bundle.rs)
+- [`rust/crates/underlay-devtools/src/seed_bundle/`](../../../rust/crates/underlay-devtools/src/seed_bundle/)
 - [`../../rust/crates/underlay-devtools/src/migration_report.rs`](../../../rust/crates/underlay-devtools/src/migration_report.rs)
 
 Primary TS support:
