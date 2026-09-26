@@ -55,6 +55,11 @@ When a change alters what is true, update the owning knowledge file in the same
 PR. An operator ruling given in conversation goes into its owning file before
 the thread ends.
 
+## Papercuts
+
+File small, recurring friction in Queue with `papercut.add` (see the
+`northstar-lean` skill). There is no `PAPERCUTS.md`.
+
 ## Effigy-First Execution
 
 Effigy is the command surface; the contract block at the end of this file
