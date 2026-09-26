@@ -11,3 +11,12 @@ terms = ["roadmap card", "generation index", "lifecycle record", "northstar:life
 paths = [".northstar/lifecycle/", "docs/roadmaps/", "docs/handoffs/", "docs/logs/", "docs/research/", "docs/specs/", "docs/vision/", "docs/policy/"]
 config_keys = ["northstar/queue:hook", "paseo.queue.control.v4"]
 allow = ["CHANGELOG.md", "docs/triage/20260909-170000-roadmap-backlog-retirement.md"]
+
+[[retired]]
+id = "papercuts-file"
+retired = "2026-09-26"
+replacement = "Queue papercuts"
+owner = "AGENTS.md"
+terms = ["PAPERCUTS.md"]
+paths = ["PAPERCUTS.md"]
+allow = ["CHANGELOG.md"]
